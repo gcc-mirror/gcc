@@ -1,3 +1,24 @@
+2019-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses): Don't sorry_at on lastprivate
+	conditional on combined for simd.
+	* omp-low.c (struct omp_context): Add combined_into_simd_safelen0
+	member.
+	(lower_rec_input_clauses): For gimple_omp_for_combined_into_p max_vf 1
+	constructs, don't remove lastprivate_conditional_map, but instead set
+	ctx->combined_into_simd_safelen0 and adjust hash_map, so that it points
+	to parent construct temporaries.
+	(lower_lastprivate_clauses): Handle ctx->combined_into_simd_safelen0
+	like !ctx->lastprivate_conditional_map.
+	(lower_omp_1) <case GIMPLE_ASSIGN>: If up->combined_into_simd_safelen0,
+	use up->outer context instead of up.
+	* omp-expand.c (expand_omp_for_generic): Perform cond_var bump even if
+	gimple_omp_for_combined_p.
+	(expand_omp_for_static_nochunk): Likewise.
+	(expand_omp_for_static_chunk): Add forgotten cond_var bump that was
+	probably moved over into expand_omp_for_generic rather than being copied
+	there.
+
 2019-06-04  Martin Liska  <mliska@suse.cz>
 
 	* value-prof.c (dump_histogram_value): Fix typo.

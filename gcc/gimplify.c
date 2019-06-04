@@ -8145,31 +8145,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c) = 0;
 	    }
 	  if (OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
-	    {
-	      splay_tree_node n = NULL;
-	      if (code == OMP_SIMD
-		  && outer_ctx
-		  && outer_ctx->region_type == ORT_WORKSHARE)
-		{
-		  n = splay_tree_lookup (outer_ctx->variables,
-					 (splay_tree_key) decl);
-		  if (n == NULL
-		      && outer_ctx->outer_context
-		      && (outer_ctx->outer_context->region_type
-			  == ORT_COMBINED_PARALLEL))
-		    n = splay_tree_lookup (outer_ctx->outer_context->variables,
-					   (splay_tree_key) decl);
-		}
-	      if (n && (n->value & GOVD_LASTPRIVATE_CONDITIONAL) != 0)
-		{
-		  sorry_at (OMP_CLAUSE_LOCATION (c),
-			    "%<conditional%> modifier on %<lastprivate%> "
-			    "clause not supported yet");
-		  OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c) = 0;
-		}
-	      else
-		flags |= GOVD_LASTPRIVATE_CONDITIONAL;
-	    }
+	    flags |= GOVD_LASTPRIVATE_CONDITIONAL;
 	  if (outer_ctx
 	      && (outer_ctx->region_type == ORT_COMBINED_PARALLEL
 		  || ((outer_ctx->region_type & ORT_COMBINED_TEAMS)

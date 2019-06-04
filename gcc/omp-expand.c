@@ -3257,6 +3257,25 @@ expand_omp_for_generic (struct omp_region *region,
       vmain = gimple_omp_continue_control_use (cont_stmt);
       vback = gimple_omp_continue_control_def (cont_stmt);
 
+      if (cond_var)
+	{
+	  tree itype = TREE_TYPE (cond_var);
+	  tree t2;
+	  if ((fd->ordered && fd->collapse == 1)
+	       || bias
+	       || POINTER_TYPE_P (type)
+	       || TREE_CODE (fd->loop.n1) != INTEGER_CST
+	       || fd->loop.cond_code != LT_EXPR)
+	    t2 = build_int_cst (itype, 1);
+	  else
+	    t2 = fold_convert (itype, fd->loop.step);
+	  t2 = fold_build2 (PLUS_EXPR, itype, cond_var, t2);
+	  t2 = force_gimple_operand_gsi (&gsi, t2, false,
+					 NULL_TREE, true, GSI_SAME_STMT);
+	  assign_stmt = gimple_build_assign (cond_var, t2);
+	  gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
+	}
+
       if (!gimple_omp_for_combined_p (fd->for_stmt))
 	{
 	  if (POINTER_TYPE_P (type))
@@ -3269,25 +3288,6 @@ expand_omp_for_generic (struct omp_region *region,
 					NULL_TREE, true, GSI_SAME_STMT);
 	  assign_stmt = gimple_build_assign (vback, t);
 	  gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
-
-	  if (cond_var)
-	    {
-	      tree itype = TREE_TYPE (cond_var);
-	      tree t2;
-	      if ((fd->ordered && fd->collapse == 1)
-		  || bias
-		  || POINTER_TYPE_P (type)
-		  || TREE_CODE (fd->loop.n1) != INTEGER_CST
-		  || fd->loop.cond_code != LT_EXPR)
-		t2 = build_int_cst (itype, 1);
-	      else
-		t2 = fold_convert (itype, fd->loop.step);
-	      t2 = fold_build2 (PLUS_EXPR, itype, cond_var, t2);
-	      t2 = force_gimple_operand_gsi (&gsi, t2, false,
-					     NULL_TREE, true, GSI_SAME_STMT);
-	      assign_stmt = gimple_build_assign (cond_var, t2);
-	      gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
-	    }
 
 	  if (fd->ordered && counts[fd->collapse - 1] == NULL_TREE)
 	    {
@@ -3962,6 +3962,23 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       vmain = gimple_omp_continue_control_use (cont_stmt);
       vback = gimple_omp_continue_control_def (cont_stmt);
 
+      if (cond_var)
+	{
+	  tree itype = TREE_TYPE (cond_var);
+	  tree t2;
+	  if (POINTER_TYPE_P (type)
+	      || TREE_CODE (n1) != INTEGER_CST
+	      || fd->loop.cond_code != LT_EXPR)
+	    t2 = build_int_cst (itype, 1);
+	  else
+	    t2 = fold_convert (itype, step);
+	  t2 = fold_build2 (PLUS_EXPR, itype, cond_var, t2);
+	  t2 = force_gimple_operand_gsi (&gsi, t2, false,
+					 NULL_TREE, true, GSI_SAME_STMT);
+	  assign_stmt = gimple_build_assign (cond_var, t2);
+	  gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
+	}
+
       if (!gimple_omp_for_combined_p (fd->for_stmt))
 	{
 	  if (POINTER_TYPE_P (type))
@@ -3974,23 +3991,6 @@ expand_omp_for_static_nochunk (struct omp_region *region,
 					NULL_TREE, true, GSI_SAME_STMT);
 	  assign_stmt = gimple_build_assign (vback, t);
 	  gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
-
-	  if (cond_var)
-	    {
-	      tree itype = TREE_TYPE (cond_var);
-	      tree t2;
-	      if (POINTER_TYPE_P (type)
-		  || TREE_CODE (n1) != INTEGER_CST
-		  || fd->loop.cond_code != LT_EXPR)
-		t2 = build_int_cst (itype, 1);
-	      else
-		t2 = fold_convert (itype, step);
-	      t2 = fold_build2 (PLUS_EXPR, itype, cond_var, t2);
-	      t2 = force_gimple_operand_gsi (&gsi, t2, false,
-					     NULL_TREE, true, GSI_SAME_STMT);
-	      assign_stmt = gimple_build_assign (cond_var, t2);
-	      gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
-	    }
 
 	  t = build2 (fd->loop.cond_code, boolean_type_node,
 		      DECL_P (vback) && TREE_ADDRESSABLE (vback)
@@ -4606,6 +4606,23 @@ expand_omp_for_static_chunk (struct omp_region *region,
       gomp_continue *cont_stmt = as_a <gomp_continue *> (gsi_stmt (gsi));
       vmain = gimple_omp_continue_control_use (cont_stmt);
       vback = gimple_omp_continue_control_def (cont_stmt);
+
+      if (cond_var)
+	{
+	  tree itype = TREE_TYPE (cond_var);
+	  tree t2;
+	  if (POINTER_TYPE_P (type)
+	      || TREE_CODE (n1) != INTEGER_CST
+	      || fd->loop.cond_code != LT_EXPR)
+	    t2 = build_int_cst (itype, 1);
+	  else
+	    t2 = fold_convert (itype, step);
+	  t2 = fold_build2 (PLUS_EXPR, itype, cond_var, t2);
+	  t2 = force_gimple_operand_gsi (&gsi, t2, false,
+					 NULL_TREE, true, GSI_SAME_STMT);
+	  assign_stmt = gimple_build_assign (cond_var, t2);
+	  gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
+	}
 
       if (!gimple_omp_for_combined_p (fd->for_stmt))
 	{
