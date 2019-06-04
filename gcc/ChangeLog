@@ -1,5 +1,10 @@
 2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/vsx.md: Replace all <VSa> that are used with VSX_TI
+	with just "wa".
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/constraints.md (define_register_constraint "ww"):
 	Delete.
 	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.

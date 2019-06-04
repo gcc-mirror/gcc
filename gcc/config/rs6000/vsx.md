@@ -972,9 +972,9 @@
 ;; special V1TI container class, which it is not appropriate to use vec_select
 ;; for the type.
 (define_insn "*vsx_le_permute_<mode>"
-  [(set (match_operand:VSX_TI 0 "nonimmediate_operand" "=<VSa>,<VSa>,Z,&r,&r,Q")
+  [(set (match_operand:VSX_TI 0 "nonimmediate_operand" "=wa,wa,Z,&r,&r,Q")
 	(rotate:VSX_TI
-	 (match_operand:VSX_TI 1 "input_operand" "<VSa>,Z,<VSa>,r,Q,r")
+	 (match_operand:VSX_TI 1 "input_operand" "wa,Z,wa,r,Q,r")
 	 (const_int 64)))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "@
@@ -988,10 +988,10 @@
    (set_attr "type" "vecperm,vecload,vecstore,*,load,store")])
 
 (define_insn_and_split "*vsx_le_undo_permute_<mode>"
-  [(set (match_operand:VSX_TI 0 "vsx_register_operand" "=<VSa>,<VSa>")
+  [(set (match_operand:VSX_TI 0 "vsx_register_operand" "=wa,wa")
 	(rotate:VSX_TI
 	 (rotate:VSX_TI
-	  (match_operand:VSX_TI 1 "vsx_register_operand" "0,<VSa>")
+	  (match_operand:VSX_TI 1 "vsx_register_operand" "0,wa")
 	  (const_int 64))
 	 (const_int 64)))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX"
