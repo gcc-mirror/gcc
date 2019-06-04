@@ -2974,9 +2974,25 @@ maybe_add_class_template_decl_list (tree type, tree t, int friend_p)
 {
   if (CLASSTYPE_TEMPLATE_INFO (type)
       && TREE_CODE (t) != CONST_DECL)
-    CLASSTYPE_DECL_LIST (type)
-      = tree_cons (friend_p ? NULL_TREE : type,
-		   t, CLASSTYPE_DECL_LIST (type));
+    {
+      tree purpose = type;
+      if (friend_p)
+	{
+	  // FIXME: Can we also handle local templates here, rather
+	  // push_template_decl_real? 
+	  if (TREE_CODE (t) == FUNCTION_DECL
+	      && DECL_TEMPLATE_INFO (t)
+	      && TREE_CODE (DECL_TI_TEMPLATE (t)) == OVERLOAD)
+	    {
+	      gcc_checking_assert (!DECL_CHAIN (t));
+	      DECL_CHAIN (t) = type;
+	    }
+	  purpose = NULL_TREE;
+	}
+
+      CLASSTYPE_DECL_LIST (type)
+	= tree_cons (purpose, t, CLASSTYPE_DECL_LIST (type));
+    }
 }
 
 /* This function is called from declare_virt_assop_and_dtor via

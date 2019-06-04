@@ -4254,15 +4254,15 @@ friend_from_decl_list (tree frnd)
   if (TYPE_P (frnd))
     {
       if (!CLASSTYPE_TEMPLATE_INFO (frnd))
-	frnd = NULL_TREE;
+	frnd = NULL_TREE; // reachable?
       else
 	frnd = CLASSTYPE_TI_TEMPLATE (frnd);
     }
   else if (TREE_CODE (frnd) == TEMPLATE_DECL)
     ;
   else if (!DECL_TEMPLATE_INFO (frnd))
-    frnd = NULL;
-  else
+    frnd = NULL; // FIXME: Is this ever reachable?
+  else if (TREE_CODE (DECL_TI_TEMPLATE (frnd)) == TEMPLATE_DECL)
     frnd = DECL_TI_TEMPLATE (frnd);
 
   return frnd;
@@ -5533,8 +5533,15 @@ trees_out::core_vals (tree t)
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_VEC))
-    for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
-      WT (TREE_VEC_ELT (t, ix));
+    {
+      for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
+	WT (TREE_VEC_ELT (t, ix));
+      /* We stash NON_DEFAULT_TEMPLATE_ARGS_COUNT on TREE_CHAIN!  */
+      gcc_checking_assert (!t->type_common.common.chain
+			   || (TREE_CODE (t->type_common.common.chain)
+			       == INTEGER_CST));
+      WT (t->type_common.common.chain);
+    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_EXP))
     {
@@ -5995,8 +6002,11 @@ trees_in::core_vals (tree t)
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_VEC))
-    for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
-      RT (TREE_VEC_ELT (t, ix));
+    {
+      for (unsigned ix = TREE_VEC_LENGTH (t); ix--;)
+	RT (TREE_VEC_ELT (t, ix));
+      RT (t->type_common.common.chain);
+    }
 
   if (CODE_CONTAINS_STRUCT (code, TS_EXP))
     {
@@ -7055,8 +7065,9 @@ trees_out::tree_value (tree t, walk_kind walk)
 	  /* Never start in the middle of a template.  */
 	  int use_tpl = -1;
 	  if (tree ti = node_template_info (t, use_tpl))
-	    gcc_checking_assert (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti))
-				 != t);
+	    gcc_checking_assert (TREE_CODE (TI_TEMPLATE (ti)) == OVERLOAD
+				 || (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti))
+				     != t));
 	}
 
       /* A new node -> tt_node.  */
@@ -8842,7 +8853,7 @@ trees_out::mark_class_def (tree defn)
 		 local to us.  Such have their DECL_CHAIN set to the
 		 befriending type.  */
 	      if (DECL_CHAIN (frnd) == type)
-		mark_class_member (frnd, true);
+		mark_declaration (frnd, has_definition (frnd));
 	    }
 	}
     }

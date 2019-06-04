@@ -1,5 +1,14 @@
 2019-06-04  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* class.c (maybe_add_class_template_decl): Mark (some) local
+	templates.
+	* module.cc (friend_from_decl_list): Some friends are overloads.
+	(trees_{in,out}::core_vals): Stream TREE_VEC CHAIN.
+	(trees_out::mark_class_def): Directly mark friend decls.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-friend-6_[ab].C: New.
+
 	gcc/testsuite/
 	* g++.dg/modules/tpl-friend-5_[ab].C: New.
 
@@ -7,7 +16,7 @@
 	* name-lookup.c (lookup_type_scope_1): Look in imported slots too.
 	gcc/testsuite/
 	* g++.dg/modules/class-8_[ab].C: New.
- 
+
 	gcc/cp/
 	* name-lookup.c (lookup_type_scope_1): Reimplement, handle local
 	and namespace scopes separately.
