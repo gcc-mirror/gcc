@@ -13,6 +13,6 @@
 #define TYPE float
 #define IS_FLOAT 1
 #define NO_ALTIVEC 1
-#define VSX_REG_ATTR "ww"
+#define VSX_REG_ATTR "wa"
 
 #include "direct-move.h"
