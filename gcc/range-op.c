@@ -400,7 +400,7 @@ irange_pointer_optimization (enum tree_code code, signop s, irange &r,
   else if (n == WIDE_INT_RANGE_NULL)
     r.union_ (range_zero (type));
   else if (n == WIDE_INT_RANGE_NONNULL)
-    r.union_ (range_non_zero (type));
+    r.union_ (range_nonzero (type));
   else
     gcc_unreachable ();
 }
@@ -2157,7 +2157,7 @@ operator_addr_expr::fold_range (irange& r, const irange& lh,
     r = range_zero (rh.type ());
   else
     if (!lh.contains_p (wi::zero (TYPE_PRECISION (lh.type ()))))
-      r = range_non_zero (rh.type ());
+      r = range_nonzero (rh.type ());
     else
       return false;
   return true;

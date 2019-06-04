@@ -691,7 +691,7 @@ ssa_ranger::range_of_call (irange &r, gcall *call, tree name ATTRIBUTE_UNUSED,
 
   if (gimple_call_nonnull_result_p (call))
     {
-      r = range_non_zero (type);
+      r = range_nonzero (type);
       return true;
     }
   r.set_varying (type);
@@ -893,7 +893,7 @@ global_ranger::range_of_expr (irange&r, tree op, gimple *s)
       // there is a deref.   Punt for now.
       if (!cfun->can_throw_non_call_exceptions && r.varying_p () &&
 	  m_gori.non_null_deref_p (op, bb))
-	r = range_non_zero (TREE_TYPE (op));
+	r = range_nonzero (TREE_TYPE (op));
       return true;
     }
 

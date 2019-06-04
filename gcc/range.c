@@ -160,7 +160,7 @@ get_tree_range (irange &r, tree expr)
 	  if (irange::supports_type_p (type))
 	    {
 	      if (tree_single_nonzero_warnv_p (expr, &ov))
-		r = range_non_zero (type);
+		r = range_nonzero (type);
 	      else
 		r.set_varying (type);
 	      return true;
@@ -305,7 +305,7 @@ irange::cast (tree new_type)
     {
       if (!contains_p (wi::zero (TYPE_PRECISION (m_type))))
 	{
-	  // Don't use range_non_zero because it will recurse into cast().
+	  // Don't use range_nonzero because it will recurse into cast().
 	  unsigned prec = TYPE_PRECISION (new_type);
 	  irange nz (new_type, wi::zero (prec), wi::zero (prec),
 		     irange::INVERSE);
@@ -799,7 +799,7 @@ irange::dump (pretty_printer *buffer) const
 {
   wide_int min = wi::min_value (TYPE_PRECISION (m_type), TYPE_SIGN (m_type));
   wide_int max = wi::max_value (TYPE_PRECISION (m_type), TYPE_SIGN (m_type));
-  if (POINTER_TYPE_P (m_type) && non_zero_p ())
+  if (POINTER_TYPE_P (m_type) && nonzero_p ())
     pp_string (buffer, "[ non-zero pointer ]");
   else
     for (unsigned i = 0; i < m_nitems; ++i)
@@ -894,7 +894,7 @@ range_zero (tree type)
 }
 
 irange
-range_non_zero (tree type)
+range_nonzero (tree type)
 {
   wide_int zero = wi::zero (TYPE_PRECISION (type));
   return irange (type, zero, zero, irange::INVERSE);
@@ -1077,7 +1077,7 @@ irange_tests ()
 				  UCHAR (0), UCHAR (254)));
 
   // Test that NOT(0) is [1..255] in 8-bit land.
-  irange not_zero = range_non_zero (unsigned_char_type_node);
+  irange not_zero = range_nonzero (unsigned_char_type_node);
   ASSERT_TRUE (not_zero == irange (unsigned_char_type_node, UCHAR (1), UCHAR (255)));
 
   // Check that [0,127][0x..ffffff80,0x..ffffff]
@@ -1289,7 +1289,7 @@ irange_tests ()
   // "NOT 0 at signed 32-bits" ==> [-MIN_32,-1][1, +MAX_32].  This is
   // is outside of the range of a smaller range, return the full
   // smaller range.
-  r0 = range_non_zero (integer_type_node);
+  r0 = range_nonzero (integer_type_node);
   r0.cast (short_integer_type_node);
   r1 = irange (short_integer_type_node,
 	       TYPE_MIN_VALUE (short_integer_type_node),
@@ -1300,7 +1300,7 @@ irange_tests ()
   //
   // NONZERO signed 16-bits is [-MIN_16,-1][1, +MAX_16].
   // Converting this to 32-bits signed is [-MIN_16,-1][1, +MAX_16].
-  r0 = range_non_zero (short_integer_type_node);
+  r0 = range_nonzero (short_integer_type_node);
   r0.cast (integer_type_node);
   r1 = irange (integer_type_node, INT (-32768), INT (-1));
   r2 = irange (integer_type_node, INT (1), INT (32767));
@@ -1540,10 +1540,10 @@ irange_tests ()
   r0 = irange (integer_type_node, INT (0), INT (0));
   ASSERT_TRUE (r0.zero_p ());
 
-  // Test non_zero_p().
+  // Test nonzero_p().
   r0 = irange (integer_type_node, INT (0), INT (0));
   r0.invert ();
-  ASSERT_TRUE (r0.non_zero_p ());
+  ASSERT_TRUE (r0.nonzero_p ());
 
   // Test irange / value_range conversion functions.
   r0 = irange (integer_type_node, INT (10), INT (20), irange::INVERSE);

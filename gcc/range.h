@@ -79,7 +79,7 @@ class irange
   bool varying_p () const;
   bool undefined_p () const;
   bool zero_p () const;
-  bool non_zero_p () const;
+  bool nonzero_p () const;
   bool singleton_p () const;
   bool singleton_p (wide_int &) const;
   bool contains_p (const wide_int &element) const;
@@ -112,7 +112,7 @@ private:
 }; // class irange
 
 irange range_zero (tree type);
-irange range_non_zero (tree type);
+irange range_nonzero (tree type);
 irange range_intersect (const irange &, const irange &);
 irange range_union (const irange &, const irange &);
 irange range_invert (const irange &);
@@ -225,7 +225,7 @@ irange::zero_p () const
 }
 
 inline bool
-irange::non_zero_p () const
+irange::nonzero_p () const
 {
   unsigned prec = TYPE_PRECISION (m_type);
   return *this == irange (m_type, wi::zero (prec), wi::zero (prec), INVERSE);

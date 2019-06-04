@@ -1546,7 +1546,7 @@ canonicalize_value_range (value_range_base *vr, tree expr_type)
 	      && (max == vr->max ()
 		  || operand_equal_p (vr->max (), max, 0)))))
     {
-      vr->set_nonnull (expr_type);
+      vr->set_nonzero (expr_type);
       return;
     }
 }
@@ -1641,7 +1641,7 @@ normalize_value_range_to_irange (irange &ir, const value_range_base *vr,
     ir = value_range_to_irange (vr_type, *vr);
   /* This will return ~[0,0] for [&var, &var].  */
   else if (POINTER_TYPE_P (expr_type) && !range_includes_zero_p (vr))
-    ir = range_non_zero (expr_type);
+    ir = range_nonzero (expr_type);
   else
     ir.set_varying (vr_type);
 }
@@ -1681,7 +1681,7 @@ ranger_fold (value_range_base *vr, enum tree_code code,
       && (code == MAX_EXPR || code == MIN_EXPR)
       && POINTER_TYPE_P (res.type ())
       && !res.zero_p ()
-      && !res.non_zero_p ())
+      && !res.nonzero_p ())
     {
       vr->set_varying ();
       return;
@@ -1714,9 +1714,9 @@ ranger_fold_unary (value_range_base *vr, enum tree_code code, tree expr_type,
       && (POINTER_TYPE_P (expr_type) || POINTER_TYPE_P (vr0_type)))
     {
       if (!range_includes_zero_p (vr0))
-	vr->set_nonnull (expr_type);
-      else if (range_is_null (vr0))
-	vr->set_null (expr_type);
+	vr->set_nonzero (expr_type);
+      else if (vr0->zero_p ())
+	vr->set_zero (expr_type);
       else
 	vr->set_varying ();
       return;
