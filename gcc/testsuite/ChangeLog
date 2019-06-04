@@ -1,5 +1,14 @@
 2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* gcc.target/powerpc/direct-move-double1.c (VSX_REG_ATTR): Delete.
+	* gcc.target/powerpc/direct-move-double2.c: Ditto.
+	* gcc.target/powerpc/direct-move-float1.c: Ditto.
+	* gcc.target/powerpc/direct-move-float2.c: Ditto.
+	* gcc.target/powerpc/direct-move-vint1.c: Ditto.
+	* gcc.target/powerpc/direct-move-vint2.c: Ditto.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* gcc.target/powerpc/direct-move-float1.c: Use "wa" instead of "ww"
 	constraint.
 
