@@ -2511,12 +2511,10 @@ rs6000_debug_reg_global (void)
 	   "wd reg_class = %s\n"
 	   "we reg_class = %s\n"
 	   "wf reg_class = %s\n"
-	   "wi reg_class = %s\n"
 	   "wp reg_class = %s\n"
 	   "wq reg_class = %s\n"
 	   "wr reg_class = %s\n"
 	   "ws reg_class = %s\n"
-	   "wt reg_class = %s\n"
 	   "wv reg_class = %s\n"
 	   "ww reg_class = %s\n"
 	   "wx reg_class = %s\n"
@@ -2529,12 +2527,10 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wd]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_we]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wf]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wi]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wp]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wq]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wr]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ws]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wt]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wv]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ww]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wx]],
@@ -3148,11 +3144,9 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	wc - Reserved to represent individual CR bits (used in LLVM).
 	wd - Preferred register class for V2DFmode.
 	wf - Preferred register class for V4SFmode.
-	wi - FP or VSX register to hold 64-bit integers for VSX insns.
 	wn - always NO_REGS.
 	wr - GPR if 64-bit mode is permitted.
 	ws - Register class to do ISA 2.06 DF operations.
-	wt - VSX register for TImode in VSX registers.
 	wv - Altivec register for ISA 2.06 VSX DF/DI load/stores.
 	ww - Register class to do SF conversions in with VSX operations.
 	wx - Float register if we can do 32-bit int stores.  */
@@ -3170,8 +3164,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       rs6000_constraints[RS6000_CONSTRAINT_wf] = VSX_REGS;	/* V4SFmode  */
       rs6000_constraints[RS6000_CONSTRAINT_ws] = VSX_REGS;	/* DFmode  */
       rs6000_constraints[RS6000_CONSTRAINT_wv] = ALTIVEC_REGS;	/* DFmode  */
-      rs6000_constraints[RS6000_CONSTRAINT_wi] = VSX_REGS;	/* DImode  */
-      rs6000_constraints[RS6000_CONSTRAINT_wt] = VSX_REGS;	/* TImode  */
     }
 
   /* Add conditional constraints based on various options, to allow us to
