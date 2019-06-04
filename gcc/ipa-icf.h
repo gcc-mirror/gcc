@@ -29,7 +29,8 @@ class congruence_class
 {
 public:
   /* Congruence class constructor for a new class with _ID.  */
-  congruence_class (unsigned int _id): in_worklist (false), id(_id)
+  congruence_class (unsigned int _id): in_worklist (false), id (_id),
+  referenced_by_count (0)
   {
   }
 
@@ -54,6 +55,9 @@ public:
 
   /* Global unique class identifier.  */
   unsigned int id;
+
+  /* Total number of references to items of this class.  */
+  unsigned referenced_by_count;
 };
 
 /* Semantic item type enum.  */
@@ -530,7 +534,7 @@ public:
 
   /* Worklist of congruence classes that can potentially
      refine classes of congruence.  */
-  std::list<congruence_class *> worklist;
+  fibonacci_heap<unsigned, congruence_class> worklist;
 
   /* Remove semantic ITEM and release memory.  */
   void remove_item (sem_item *item);
