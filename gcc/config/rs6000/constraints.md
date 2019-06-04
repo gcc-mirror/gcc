@@ -67,12 +67,6 @@
 ;; There is a mode_attr that resolves to wa for SDmode and wn for SFmode
 (define_register_constraint "wn" "NO_REGS" "No register (NO_REGS).")
 
-(define_register_constraint "wp" "rs6000_constraints[RS6000_CONSTRAINT_wp]"
-  "VSX register to use for IEEE 128-bit fp TFmode, or NO_REGS.")
-
-(define_register_constraint "wq" "rs6000_constraints[RS6000_CONSTRAINT_wq]"
-  "VSX register to use for IEEE 128-bit fp KFmode, or NO_REGS.")
-
 (define_register_constraint "wr" "rs6000_constraints[RS6000_CONSTRAINT_wr]"
   "General purpose register if 64-bit instructions are enabled or NO_REGS.")
 
