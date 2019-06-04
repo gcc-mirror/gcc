@@ -15650,8 +15650,9 @@ aarch64_asm_output_alias (FILE *stream, const tree decl, const tree target)
    function symbol references.  */
 
 void
-aarch64_asm_output_external (FILE *stream, const tree decl, const char* name)
+aarch64_asm_output_external (FILE *stream, tree decl, const char* name)
 {
+  default_elf_asm_output_external (stream, decl, name);
   aarch64_asm_output_variant_pcs (stream, decl, name);
 }
 
