@@ -115,7 +115,7 @@
 			 (V2DI  "wd")
 			 (V2DF  "wd")
 			 (DI	"wa")
-			 (DF    "ws")
+			 (DF    "wa")
 			 (SF	"ww")
 			 (TF	"wp")
 			 (KF	"wq")
@@ -127,7 +127,7 @@
 ;; hold the data
 (define_mode_attr VSr2	[(V2DF  "wd")
 			 (V4SF  "wf")
-			 (DF    "ws")
+			 (DF    "wa")
 			 (SF	"ww")
 			 (DI	"wa")
 			 (KF	"wq")
@@ -135,20 +135,20 @@
 
 (define_mode_attr VSr3	[(V2DF  "wa")
 			 (V4SF  "wa")
-			 (DF    "ws")
+			 (DF    "wa")
 			 (SF	"ww")
 			 (DI	"wa")
 			 (KF	"wq")
 			 (TF	"wp")])
 
 ;; Map the register class for sp<->dp float conversions, destination
-(define_mode_attr VSr4	[(SF	"ws")
+(define_mode_attr VSr4	[(SF	"wa")
 			 (DF	"f")
 			 (V2DF  "wd")
 			 (V4SF	"v")])
 
 ;; Map the register class for sp<->dp float conversions, source
-(define_mode_attr VSr5	[(SF	"ws")
+(define_mode_attr VSr5	[(SF	"wa")
 			 (DF	"f")
 			 (V2DF  "v")
 			 (V4SF	"wd")])
@@ -163,7 +163,7 @@
 			 (V2DI  "wa")
 			 (V2DF  "wa")
 			 (DI	"wa")
-			 (DF    "ws")
+			 (DF    "wa")
 			 (SF	"ww")
 			 (V1TI	"wa")
 			 (TI    "wa")
@@ -277,7 +277,7 @@
 
 ;; Map register class for 64-bit element in 128-bit vector for normal register
 ;; to register moves
-(define_mode_attr VS_64reg [(V2DF	"ws")
+(define_mode_attr VS_64reg [(V2DF	"wa")
 			    (V2DI	"wa")])
 
 ;; Iterators for loading constants with xxspltib
@@ -2199,7 +2199,7 @@
 
 ;; xscvspdp, represent the scalar SF type as V4SF
 (define_insn "vsx_xscvspdp"
-  [(set (match_operand:DF 0 "vsx_register_operand" "=ws")
+  [(set (match_operand:DF 0 "vsx_register_operand" "=wa")
 	(unspec:DF [(match_operand:V4SF 1 "vsx_register_operand" "wa")]
 		   UNSPEC_VSX_CVSPDP))]
   "VECTOR_UNIT_VSX_P (V4SFmode)"
@@ -2237,14 +2237,14 @@
 ;; ISA 2.07 xscvdpspn/xscvspdpn that does not raise an error on signalling NaNs
 (define_insn "vsx_xscvdpspn"
   [(set (match_operand:V4SF 0 "vsx_register_operand" "=ww")
-	(unspec:V4SF [(match_operand:DF 1 "vsx_register_operand" "ws")]
+	(unspec:V4SF [(match_operand:DF 1 "vsx_register_operand" "wa")]
 		     UNSPEC_VSX_CVDPSPN))]
   "TARGET_XSCVDPSPN"
   "xscvdpspn %x0,%x1"
   [(set_attr "type" "fp")])
 
 (define_insn "vsx_xscvspdpn"
-  [(set (match_operand:DF 0 "vsx_register_operand" "=ws")
+  [(set (match_operand:DF 0 "vsx_register_operand" "=wa")
 	(unspec:DF [(match_operand:V4SF 1 "vsx_register_operand" "wa")]
 		   UNSPEC_VSX_CVSPDPN))]
   "TARGET_XSCVSPDPN"
@@ -2453,7 +2453,7 @@
   [(set_attr "type" "vecdouble")])
 
 (define_insn "vsx_xvcvsxwdp_df"
-  [(set (match_operand:DF 0 "vsx_register_operand" "=ws")
+  [(set (match_operand:DF 0 "vsx_register_operand" "=wa")
 	(unspec:DF [(match_operand:V4SI 1 "vsx_register_operand" "wa")]
 		   UNSPEC_VSX_CVSXWDP))]
   "TARGET_VSX"
@@ -2469,7 +2469,7 @@
   [(set_attr "type" "vecdouble")])
 
 (define_insn "vsx_xvcvuxwdp_df"
-  [(set (match_operand:DF 0 "vsx_register_operand" "=ws")
+  [(set (match_operand:DF 0 "vsx_register_operand" "=wa")
 	(unspec:DF [(match_operand:V4SI 1 "vsx_register_operand" "wa")]
 		   UNSPEC_VSX_CVUXWDP))]
   "TARGET_VSX"
@@ -3771,7 +3771,7 @@
 ;; Optimize double d = (double) vec_extract (vi, <n>)
 ;; Get the element into the top position and use XVCVSWDP/XVCVUWDP
 (define_insn_and_split "*vsx_extract_si_<uns>float_df"
-  [(set (match_operand:DF 0 "gpc_reg_operand" "=ws")
+  [(set (match_operand:DF 0 "gpc_reg_operand" "=wa")
 	(any_float:DF
 	 (vec_select:SI
 	  (match_operand:V4SI 1 "gpc_reg_operand" "v")
@@ -3818,7 +3818,7 @@
 	  (match_operand:V4SI 1 "gpc_reg_operand" "v")
 	  (parallel [(match_operand:QI 2 "const_0_to_3_operand" "n")]))))
    (clobber (match_scratch:V4SI 3 "=v"))
-   (clobber (match_scratch:DF 4 "=ws"))]
+   (clobber (match_scratch:DF 4 "=wa"))]
   "VECTOR_MEM_VSX_P (V4SImode) && TARGET_DIRECT_MOVE_64BIT"
   "#"
   "&& 1"
@@ -4350,7 +4350,7 @@
 ;; to the top element of the V2DF array without doing an extract.
 
 (define_insn_and_split "*vsx_reduc_<VEC_reduc_name>_v2df_scalar"
-  [(set (match_operand:DF 0 "vfloat_operand" "=&ws,&?ws,ws,?ws")
+  [(set (match_operand:DF 0 "vfloat_operand" "=&wa,&?wa,wa,?wa")
 	(vec_select:DF
 	 (VEC_reduc:V2DF
 	  (vec_concat:V2DF
