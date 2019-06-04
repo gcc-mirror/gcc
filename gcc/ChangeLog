@@ -1,5 +1,11 @@
 2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/vsx.md (define_mode_attr VS_64reg): Delete.
+	(*vsx_extract_<P:mode>_<VSX_D:mode>_load): Adjust.
+	(vsx_splat_<mode>_reg): Adjust.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/constraints.md (define_register_constraint "ws"):
 	Delete.
 	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
