@@ -1125,8 +1125,15 @@ number_of_iterations_ne (struct loop *loop, tree type, affine_iv *iv,
     }
 
   c = fold_build2 (EXACT_DIV_EXPR, niter_type, c, d);
-  tmp = fold_build2 (MULT_EXPR, niter_type, c, inverse (s, bound));
-  niter->niter = fold_build2 (BIT_AND_EXPR, niter_type, tmp, bound);
+  if (integer_onep (s))
+    {
+      niter->niter = c;
+    }
+  else
+    {
+      tmp = fold_build2 (MULT_EXPR, niter_type, c, inverse (s, bound));
+      niter->niter = fold_build2 (BIT_AND_EXPR, niter_type, tmp, bound);
+    }
   return true;
 }
 
