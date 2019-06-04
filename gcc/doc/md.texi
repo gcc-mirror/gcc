@@ -3196,7 +3196,7 @@ Altivec vector register
 @item wa
 Any VSX register if the @option{-mvsx} option was used or NO_REGS.
 
-When using any of the register constraints (@code{wa}, @code{wd}, @code{wf},
+When using any of the register constraints (@code{wa}, @code{wf},
 @code{wp}, @code{wq}, or @code{ww})
 that take VSX registers, you must use @code{%x<n>} in the template so
 that the correct register is used.  Otherwise the register number
@@ -3243,9 +3243,6 @@ asm ("xsaddqp %x0,%x1,%x2"
 
 @noindent
 is incorrect.
-
-@item wd
-VSX vector register to hold vector double data or NO_REGS.
 
 @item we
 VSX register if the @option{-mcpu=power9} and @option{-m64} options
