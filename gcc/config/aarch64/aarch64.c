@@ -17574,7 +17574,10 @@ aarch64_expand_subvti (rtx op0, rtx low_dest, rtx low_in1,
 static unsigned HOST_WIDE_INT
 aarch64_asan_shadow_offset (void)
 {
-  return (HOST_WIDE_INT_1 << 36);
+  if (TARGET_ILP32)
+    return (HOST_WIDE_INT_1 << 29);
+  else
+    return (HOST_WIDE_INT_1 << 36);
 }
 
 static rtx

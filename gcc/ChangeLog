@@ -1,3 +1,8 @@
+2019-06-04  Andrew Pinski  <apinski@marvell.com>
+
+	* config/aarch64/aarch64.c (aarch64_asan_shadow_offset):
+	Fix ILP32 value.
+
 2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/constraints.md (define_register_constraint "wd"):
