@@ -137,6 +137,10 @@ struct omp_context
 
   /* True if this construct can be cancelled.  */
   bool cancellable;
+
+  /* True if lower_omp_1 should look up lastprivate conditional in parent
+     context.  */
+  bool combined_into_simd_safelen0;
 };
 
 static splay_tree all_contexts;
@@ -4816,6 +4820,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 				      void_node);
 			  gimple_seq tseq = NULL;
 			  gimplify_and_add (x, &tseq);
+			  if (ctx->outer)
+			    lower_omp (&tseq, ctx->outer);
 			  gimple_seq_add_seq (&llist[1], tseq);
 			}
 		      if (y)
@@ -5278,11 +5284,31 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
       sctx.is_simt = false;
       if (ctx->lastprivate_conditional_map)
 	{
-	  /* When not vectorized, treat lastprivate(conditional:) like
-	     normal lastprivate, as there will be just one simd lane
-	     writing the privatized variable.  */
-	  delete ctx->lastprivate_conditional_map;
-	  ctx->lastprivate_conditional_map = NULL;
+	  if (gimple_omp_for_combined_into_p (ctx->stmt))
+	    {
+	      /* Signal to lower_omp_1 that it should use parent context.  */
+	      ctx->combined_into_simd_safelen0 = true;
+	      for (c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
+		if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
+		    && OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
+		  {
+		    tree o = lookup_decl (OMP_CLAUSE_DECL (c), ctx);
+		    tree *v
+		      = ctx->lastprivate_conditional_map->get (o);
+		    tree po = lookup_decl (OMP_CLAUSE_DECL (c), ctx->outer);
+		    tree *pv
+		      = ctx->outer->lastprivate_conditional_map->get (po);
+		    *v = *pv;
+		  }
+	    }
+	  else
+	    {
+	      /* When not vectorized, treat lastprivate(conditional:) like
+		 normal lastprivate, as there will be just one simd lane
+		 writing the privatized variable.  */
+	      delete ctx->lastprivate_conditional_map;
+	      ctx->lastprivate_conditional_map = NULL;
+	    }
 	}
     }
 
@@ -5652,7 +5678,8 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *body_p,
 
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
 	  && OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c)
-	  && ctx->lastprivate_conditional_map)
+	  && ctx->lastprivate_conditional_map
+	  && !ctx->combined_into_simd_safelen0)
 	{
 	  gcc_assert (body_p);
 	  if (simduid)
@@ -10812,6 +10839,8 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    if (tree *v = up->lastprivate_conditional_map->get (lhs))
 	      {
 		tree clauses;
+		if (up->combined_into_simd_safelen0)
+		  up = up->outer;
 		if (gimple_code (up->stmt) == GIMPLE_OMP_FOR)
 		  clauses = gimple_omp_for_clauses (up->stmt);
 		else
