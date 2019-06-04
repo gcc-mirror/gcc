@@ -19,4 +19,4 @@ real function f()
    !$acc end parallel
  end
  
-! { dg-final { scan-ipa-dump-times "With total: 0 items" 5 "icf" } }
+! { dg-final { scan-ipa-dump-times "with total: 0 items" 5 "icf" } }

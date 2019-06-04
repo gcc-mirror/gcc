@@ -44,4 +44,4 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-ipa-dump-times "With total: 1 items" 5 "icf" } }  */
+/* { dg-final { scan-ipa-dump-times "with total: 1 items" 5 "icf" } }  */
