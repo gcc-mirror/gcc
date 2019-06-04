@@ -116,7 +116,7 @@
 			 (V2DF  "wa")
 			 (DI	"wa")
 			 (DF    "wa")
-			 (SF	"ww")
+			 (SF	"wa")
 			 (TF	"wp")
 			 (KF	"wq")
 			 (V1TI  "v")
@@ -127,7 +127,7 @@
 (define_mode_attr VSr3	[(V2DF  "wa")
 			 (V4SF  "wa")
 			 (DF    "wa")
-			 (SF	"ww")
+			 (SF	"wa")
 			 (DI	"wa")
 			 (KF	"wq")
 			 (TF	"wp")])
@@ -155,7 +155,7 @@
 			 (V2DF  "wa")
 			 (DI	"wa")
 			 (DF    "wa")
-			 (SF	"ww")
+			 (SF	"wa")
 			 (V1TI	"wa")
 			 (TI    "wa")
 			 (TF	"wp")
@@ -2182,7 +2182,7 @@
 
 ;; Same as vsx_xscvspdp, but use SF as the type
 (define_insn "vsx_xscvspdp_scalar2"
-  [(set (match_operand:SF 0 "vsx_register_operand" "=ww")
+  [(set (match_operand:SF 0 "vsx_register_operand" "=wa")
 	(unspec:SF [(match_operand:V4SF 1 "vsx_register_operand" "wa")]
 		   UNSPEC_VSX_CVSPDP))]
   "VECTOR_UNIT_VSX_P (V4SFmode)"
@@ -2202,7 +2202,7 @@
 ;; format of scalars is actually DF.
 (define_insn "vsx_xscvdpsp_scalar"
   [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
-	(unspec:V4SF [(match_operand:SF 1 "vsx_register_operand" "ww")]
+	(unspec:V4SF [(match_operand:SF 1 "vsx_register_operand" "wa")]
 		     UNSPEC_VSX_CVSPDP))]
   "VECTOR_UNIT_VSX_P (V4SFmode)"
   "xscvdpsp %x0,%x1"
@@ -2210,7 +2210,7 @@
 
 ;; ISA 2.07 xscvdpspn/xscvspdpn that does not raise an error on signalling NaNs
 (define_insn "vsx_xscvdpspn"
-  [(set (match_operand:V4SF 0 "vsx_register_operand" "=ww")
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
 	(unspec:V4SF [(match_operand:DF 1 "vsx_register_operand" "wa")]
 		     UNSPEC_VSX_CVDPSPN))]
   "TARGET_XSCVDPSPN"
@@ -2227,7 +2227,7 @@
 
 (define_insn "vsx_xscvdpspn_scalar"
   [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
-	(unspec:V4SF [(match_operand:SF 1 "vsx_register_operand" "ww")]
+	(unspec:V4SF [(match_operand:SF 1 "vsx_register_operand" "wa")]
 		     UNSPEC_VSX_CVDPSPN))]
   "TARGET_XSCVDPSPN"
   "xscvdpspn %x0,%x1"
@@ -2921,8 +2921,8 @@
 (define_insn "vsx_concat_v2sf"
   [(set (match_operand:V2DF 0 "vsx_register_operand" "=wa")
 	(unspec:V2DF
-	 [(match_operand:SF 1 "vsx_register_operand" "ww")
-	  (match_operand:SF 2 "vsx_register_operand" "ww")]
+	 [(match_operand:SF 1 "vsx_register_operand" "wa")
+	  (match_operand:SF 2 "vsx_register_operand" "wa")]
 	 UNSPEC_VSX_CONCAT))]
   "VECTOR_MEM_VSX_P (V2DFmode)"
 {
@@ -3287,7 +3287,7 @@
 
 ;; Extract a SF element from V4SF
 (define_insn_and_split "vsx_extract_v4sf"
-  [(set (match_operand:SF 0 "vsx_register_operand" "=ww")
+  [(set (match_operand:SF 0 "vsx_register_operand" "=wa")
 	(vec_select:SF
 	 (match_operand:V4SF 1 "vsx_register_operand" "wa")
 	 (parallel [(match_operand:QI 2 "u5bit_cint_operand" "n")])))
@@ -3339,7 +3339,7 @@
 
 ;; Variable V4SF extract
 (define_insn_and_split "vsx_extract_v4sf_var"
-  [(set (match_operand:SF 0 "gpc_reg_operand" "=ww,ww,?r")
+  [(set (match_operand:SF 0 "gpc_reg_operand" "=wa,wa,?r")
 	(unspec:SF [(match_operand:V4SF 1 "input_operand" "v,m,m")
 		    (match_operand:DI 2 "gpc_reg_operand" "r,r,r")]
 		   UNSPEC_VSX_EXTRACT))
@@ -3786,7 +3786,7 @@
 ;; not double.  First convert the value to double, and then to the desired
 ;; type.
 (define_insn_and_split "*vsx_extract_si_<uns>float_<mode>"
-  [(set (match_operand:VSX_EXTRACT_FL 0 "gpc_reg_operand" "=ww")
+  [(set (match_operand:VSX_EXTRACT_FL 0 "gpc_reg_operand" "=wa")
 	(any_float:VSX_EXTRACT_FL
 	 (vec_select:SI
 	  (match_operand:V4SI 1 "gpc_reg_operand" "v")
@@ -3920,7 +3920,7 @@
   [(set (match_operand:V4SF 0 "gpc_reg_operand" "=wa")
 	(unspec:V4SF
 	 [(match_operand:V4SF 1 "gpc_reg_operand" "0")
-	  (match_operand:SF 2 "gpc_reg_operand" "ww")
+	  (match_operand:SF 2 "gpc_reg_operand" "wa")
 	  (match_operand:QI 3 "const_0_to_3_operand" "n")]
 	 UNSPEC_VSX_SET))
    (clobber (match_scratch:SI 4 "=&wa"))]
