@@ -564,7 +564,7 @@ Warn about format strings that contain NUL bytes.
 
 Wformat-diag
 C ObjC C++ ObjC++ Var(warn_format_diag) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
-Warn about GCC format strings with strings unsuitable for diagnostics..
+Warn about GCC format strings with strings unsuitable for diagnostics.
 
 Wformat-extra-args
 C ObjC C++ ObjC++ Var(warn_format_extra_args) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
