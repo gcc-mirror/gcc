@@ -5301,7 +5301,13 @@ trees_out::core_vals (tree t)
 	 and main variants already in the type table, so emit them
 	 now.  */
       WT (t->type_common.main_variant);
-      WT (t->type_common.canonical);
+      tree canonical = t->type_common.canonical;
+      if (code == TEMPLATE_TYPE_PARM
+	  || code == TEMPLATE_TEMPLATE_PARM)
+	/* We do not want to wander into different templates.
+	   Reconstructed on stream in.  */
+	canonical = t;
+      WT (canonical);
 
       /* type_common.next_variant is internally manipulated.  */
       /* type_common.pointer_to, type_common.reference_to.  */
@@ -8380,10 +8386,7 @@ trees_in::finish_type (tree type)
 	   || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
     {
       tree canon = canonical_type_parameter (type);
-      if (TYPE_CANONICAL (type) == type)
-	type = canon;
-      else
-	TYPE_CANONICAL (type) = canon;
+      TYPE_CANONICAL (type) = canon;
       dump (dumper::TREE) && dump ("Adding template type %p with canonical %p",
 				   (void *)type, (void *)canon);
     }

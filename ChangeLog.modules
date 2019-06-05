@@ -1,11 +1,24 @@
 2019-06-05  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_out::core_vals): Template type parms are their
+	own canonical.
+	(trees_in::finish_type): Never subst a canonical type parm for the type.
+	gcc/testsuite/
+	* g++.dg/modules/ttp-2_[ab].C: New.
+
+	gcc/cp/
+	* module.cc (global_tree_arys): Add c_global_trees.
+	gcc/c-family/
+	* c-common.h (enum c_tree_index): Add CTI_MODULE_HWM, move voltale
+	entries below it.
+
 	Merge trunk r271953.
 
 	gcc/
 	* tree-core.h (enum tree_index): Add TI_MODULE_HWM.
 	gcc/cp/
-	* cp-tree.h (enum cp_tree_index): Add CPTI_MODULE_HWM  Move
+	* cp-tree.h (enum cp_tree_index): Add CPTI_MODULE_HWM, move
 	volatile CPTI's below it.
 	(CPTI_STD_IDENTIFIER, std_identifier): Delete.
 	(DECL_NAMESPACE_STD): Simplify.
