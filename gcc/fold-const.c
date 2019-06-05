@@ -6475,8 +6475,12 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	 apply the distributive law to commute the multiply and addition
 	 if the multiplication of the constants doesn't overflow
 	 and overflow is defined.  With undefined overflow
-	 op0 * c might overflow, while (op0 + orig_op1) * c doesn't.  */
-      if (code == MULT_EXPR && TYPE_OVERFLOW_WRAPS (ctype))
+	 op0 * c might overflow, while (op0 + orig_op1) * c doesn't.
+	 But fold_plusminus_mult_expr would factor back any power-of-two
+	 value so do not distribute in the first place in this case.  */
+      if (code == MULT_EXPR
+	  && TYPE_OVERFLOW_WRAPS (ctype)
+	  && !(tree_fits_shwi_p (c) && pow2p_hwi (absu_hwi (tree_to_shwi (c)))))
 	return fold_build2 (tcode, ctype,
 			    fold_build2 (code, ctype,
 					 fold_convert (ctype, op0),
@@ -7124,14 +7128,13 @@ fold_plusminus_mult_expr (location_t loc, enum tree_code code, tree type,
   /* No identical multiplicands; see if we can find a common
      power-of-two factor in non-power-of-two multiplies.  This
      can help in multi-dimensional array access.  */
-  else if (tree_fits_shwi_p (arg01)
-	   && tree_fits_shwi_p (arg11))
+  else if (tree_fits_shwi_p (arg01) && tree_fits_shwi_p (arg11))
     {
-      HOST_WIDE_INT int01, int11, tmp;
+      HOST_WIDE_INT int01 = tree_to_shwi (arg01);
+      HOST_WIDE_INT int11 = tree_to_shwi (arg11);
+      HOST_WIDE_INT tmp;
       bool swap = false;
       tree maybe_same;
-      int01 = tree_to_shwi (arg01);
-      int11 = tree_to_shwi (arg11);
 
       /* Move min of absolute values to int11.  */
       if (absu_hwi (int01) < absu_hwi (int11))
@@ -7144,7 +7147,10 @@ fold_plusminus_mult_expr (location_t loc, enum tree_code code, tree type,
       else
 	maybe_same = arg11;
 
-      if (exact_log2 (absu_hwi (int11)) > 0 && int01 % int11 == 0
+      const unsigned HOST_WIDE_INT factor = absu_hwi (int11);
+      if (factor > 1
+	  && pow2p_hwi (factor)
+	  && (int01 & (factor - 1)) == 0
 	  /* The remainder should not be a constant, otherwise we
 	     end up folding i * 4 + 2 to (i * 2 + 1) * 2 which has
 	     increased the number of multiplications necessary.  */
