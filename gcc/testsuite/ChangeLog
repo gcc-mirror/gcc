@@ -1,3 +1,7 @@
+2019-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/vect/simd-1.cc: New test.
+
 2019-06-05  Hongtao Liu  <hongtao.liu@intel.com>
 
 	PR target/89803

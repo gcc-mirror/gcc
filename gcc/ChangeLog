@@ -1,3 +1,14 @@
+2019-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_rec_input_clauses): Force max_vf if is_simd and
+	on privatization clauses OMP_CLAUSE_DECL is privatized by reference
+	and references a VLA.  Handle references to non-VLAs if is_simd
+	all privatization clauses like reductions.
+	(lower_rec_input_clauses) <case do_private, case do_firstprivate>:
+	If omp_is_reference, use always omp simd arrays and set
+	DECL_VALUE_EXPR in that case, if lower_rec_simd_input_clauses
+	fails, emit reference initialization.
+
 2019-06-05  Hongtao Liu  <hongtao.liu@intel.com>
 
 	PR target/89803
