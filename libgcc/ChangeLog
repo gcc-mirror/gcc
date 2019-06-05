@@ -1,3 +1,12 @@
+2019-06-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix-unwind.h (LR_REGNO): Rename to R_LR.
+	(CR2_REGNO): Rename to R_CR2.
+	(XER_REGNO): Rename to R_XER.
+	(FIRST_ALTIVEC_REGNO): Rename to R_FIRST_ALTIVEC.
+	(VRSAVE_REGNO): Rename to R_VRSAVE.
+	(VSCR_REGNO): R_VSCR.
+
 2019-05-29  Yoshinori Sato  <ysato@users.sourceforge.jp>
 
 	* config.host (rx-*-linux*): Add new case.
