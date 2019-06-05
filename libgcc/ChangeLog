@@ -1,3 +1,9 @@
+2019-06-05  James Clarke  <jrtc27@jrtc27.com>
+
+	* config/ia64/crtbegin.S (__dso_handle): Put in .sdata/.sbss
+	rather than .data/.bss so it can be accessed via gp-relative
+	addressing.
+
 2019-06-05  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/aix-unwind.h (LR_REGNO): Rename to R_LR.
