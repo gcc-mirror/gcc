@@ -1,3 +1,12 @@
+2019-06-05  Sam Tebbs  <sam.tebbs@arm.com>
+
+	* gcc.target/aarch64/return_address_sign_b_1.c: New file.
+	* gcc.target/aarch64/return_address_sign_b_2.c: New file.
+	* gcc.target/aarch64/return_address_sign_b_3.c: New file.
+	* gcc.target/aarch64/return_address_sign_builtin.c: New file.
+	* g++.target/aarch64/return_address_sign_ab_exception.C: New file.
+	* g++.target/aarch64/return_address_sign_b_exception.C: New file.
+
 2019-06-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/90733
