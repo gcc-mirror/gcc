@@ -1,3 +1,7 @@
+2019-06-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* g++.target/powerpc/undef-bool-3.C: Add -maltivec to dg-options.
+
 2019-06-05  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/weak/weak-19.c: New test.
