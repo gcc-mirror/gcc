@@ -25,8 +25,8 @@ namespace bar
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::X@foo:2'@foo} module } }
 
 // { dg-final { scan-lang-dump {Cluster:3 3 depsets\n  \[0\]=specialization definition '::foo::X@bar:1<0x0>'\n  \[1\]=specialization declaration '::foo::X@bar:1<0x0>::X<0x0>'\n  \[2\]=specialization declaration '::foo::X@bar:1<0x0>::__conv_op @bar:1<0x0>'} module } }
-// { dg-final { scan-lang-dump {Wrote:-17 global specialization type_decl:'::foo::X@bar:1<0x0>'} module } }
+// { dg-final { scan-lang-dump {Wrote:-[0-9]* global specialization type_decl:'::foo::X@bar:1<0x0>'} module } }
 // { dg-final { scan-lang-dump {Depset:0 specialization type_decl:'::foo::X@bar:1<0x0>'} module } }
-// { dg-final { scan-lang-dump {Wrote mergeable:-17 type_decl:'::foo::X@bar:1<0x0>'} module } }
+// { dg-final { scan-lang-dump {Wrote mergeable:-[0-9]* type_decl:'::foo::X@bar:1<0x0>'} module } }
 // { dg-final { scan-lang-dump {Voldemort:1 '::foo::X@bar:1<0x0>'} module } }
 // { dg-final { scan-lang-dump {Inserted:-1 horcrux:1@0 for '::foo::X@bar:1<0x0>'} module } }

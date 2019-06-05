@@ -9,6 +9,6 @@ int main ()
 }
 
 // { dg-final { scan-lang-dump {Lazily binding '::operator delete \[\]'@'builtin' section:.} module } }
-// { dg-final { scan-lang-dump {Read:-2 matched mergeable decl function_decl:'::operator delete \[\]'} module } }
+// { dg-final { scan-lang-dump {Read:-[0-9]* matched mergeable decl function_decl:'::operator delete \[\]'} module } }
 // { dg-final { scan-lang-dump {Lazily binding '::operator delete'@'builtin' section:.} module } }
-// { dg-final { scan-lang-dump {Read:-2 matched mergeable decl function_decl:'::operator delete'} module } }
+// { dg-final { scan-lang-dump {Read:-[0-9]* matched mergeable decl function_decl:'::operator delete'} module } }

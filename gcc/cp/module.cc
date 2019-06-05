@@ -1,4 +1,3 @@
-
 /* C++ modules.  Experimental!
    Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
@@ -7000,7 +6999,10 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
     }
   else if (tree name = TYPE_STUB_DECL (type))
     {
-      if (DECL_IMPLICIT_TYPEDEF_P (name))
+      if (DECL_IMPLICIT_TYPEDEF_P (name)
+	  || (type == TYPE_MAIN_VARIANT (type)
+	      && (TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
+		  || TREE_CODE (type) == TEMPLATE_TYPE_PARM)))
 	{
 	  /* Make sure this is not a named builtin. We should find
 	     those some other way to be canonically correct.  */
@@ -8011,11 +8013,65 @@ trees_out::tree_mergeable (depset *dep)
 
   bool is_specialization = dep->get_entity_kind () == depset::EK_SPECIALIZATION;
 
+  /* Stream the skeleton of our version.  That is the
+     MAYBE-TEMPLATE->DECL->MAYBE-STRUCTURED-TYPE chain, along with all
+     the core booleans within.  We need to do this before the
+     information to locate it, because template template parms will
+     refer to it.  */
+  int tag = insert (decl, WK_new_mergeable);
+
+  if (streaming_p ())
+    {
+      u (TREE_CODE (decl));
+      tree_node_bools (decl);
+
+      dump (dumper::MERGE)
+	&& dump ("Wrote:%d global %s %C:%N", tag,
+		 dep->entity_kind_name (), TREE_CODE (decl), decl);
+    }
+
+  tree inner = decl;
+  if (TREE_CODE (inner) == TEMPLATE_DECL)
+    {
+      inner = DECL_TEMPLATE_RESULT (inner);
+      tag = insert (inner, WK_new_mergeable);
+      if (streaming_p ())
+	{
+	  u (TREE_CODE (inner));
+	  tree_node_bools (inner);
+
+	  dump (dumper::MERGE)
+	    && dump ("Wrote:%d dependent global %C:%N", tag,
+		     TREE_CODE (inner), inner);
+	}
+    }
+
+  if (DECL_IMPLICIT_TYPEDEF_P (inner))
+    {
+      tree type = TREE_TYPE (inner);
+      gcc_assert (TYPE_MAIN_VARIANT (type) == type);
+      tag = insert (type, WK_new_mergeable);
+      if (streaming_p ())
+	{
+	  u (TREE_CODE (type));
+	  tree_node_bools (type);
+
+	  dump (dumper::MERGE)
+	    && dump ("Wrote:%d dependent global %C:%N", tag,
+		     TREE_CODE (type), type);
+	}
+    }
+
+
+  /* A template needs its template parms for identification.  */
+  if (decl != inner)
+    tpl_header (DECL_TEMPLATE_PARMS (decl));
+
+  /* Now write the locating information. */
   if (is_specialization)
     {
       /* Specializations are located via their originating template,
          and the set of template args they specialize.  */
-
       depset *spec = dep;
       if (!streaming_p ())
 	{
@@ -8050,13 +8106,11 @@ trees_out::tree_mergeable (depset *dep)
       /* The template will not be a namespace!  */
       tree_node (tmpl);
       tree_node (args);
-      // FIXME: Do I need to write out parms etc when merging a
-      // partial specialization?
     }
   else
     {
-      /* Non-templates are initially located by their context, name.
-	 (see below about further data.)  */
+      /* Non-templates are located by their context, name, and
+	 additional disambiguating data.  */
       tree ctx = CP_DECL_CONTEXT (decl);
       gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
       tree_ctx (ctx, true, decl);
@@ -8069,91 +8123,26 @@ trees_out::tree_mergeable (depset *dep)
 	    is_mod = MAYBE_DECL_MODULE_OWNER (decl) != MODULE_NONE;
 	  u (is_mod);
 	}
-    }
 
-  int tag = insert (decl, WK_new_mergeable);
-
-  /* Now stream the skeleton of our version.  That is the
-     MAYBE-TEMPLATE->DECL->MAYBE-STRUCTURED-TYPE chain, along with
-     all the core booleans within.  */
-  if (streaming_p ())
-    {
-      u (TREE_CODE (decl));
-      tree_node_bools (decl);
-
-      dump (dumper::MERGE)
-	&& dump ("Wrote:%d global %s %C:%N", tag,
-		 dep->entity_kind_name (), TREE_CODE (decl), decl);
-    }
-
-  tree inner = decl;
-  if (TREE_CODE (inner) == TEMPLATE_DECL)
-    {
-      inner = DECL_TEMPLATE_RESULT (inner);
-      tag = insert (inner, WK_new_mergeable);
-      if (streaming_p ())
+      if (TREE_CODE (inner) == FUNCTION_DECL)
 	{
-	  u (TREE_CODE (inner));
-	  tree_node_bools (inner);
+	  /* Functions are distinguished by parameter types.  */
+	  tree fn_type = TREE_TYPE (inner);
+	  fn_parms (TYPE_ARG_TYPES (fn_type));
 
-	  dump (dumper::MERGE)
-	    && dump ("Wrote:%d dependent global %C:%N", tag,
-		     TREE_CODE (inner), inner);
-	}
-
-      if (!is_specialization)
-	{
-	  /* A template also needs its template parms for
-	     identification.  */
-	  tpl_header (DECL_TEMPLATE_PARMS (decl));
-
-	  if (TREE_CODE (inner) == FUNCTION_DECL)
+	  if (decl != inner)
 	    /* And a function template needs the return type.  */
 	    // FIXME: What if the return type is a voldemort?
-	    tree_node (TREE_TYPE (TREE_TYPE (inner)));
+	    tree_node (TREE_TYPE (fn_type));
 	}
     }
 
-  switch (TREE_CODE (inner))
-    {
-    case FUNCTION_DECL:
-      if (!is_specialization)
-	/* Functions are distinguished by parameter types.  */
-	fn_parms (TYPE_ARG_TYPES (TREE_TYPE (inner)));
-      break;
 
-    case VAR_DECL:
-      break;
-
-    case TYPE_DECL:
-      gcc_checking_assert (TREE_CODE (TREE_TYPE (inner))
-			   != TEMPLATE_TEMPLATE_PARM);
-      if (DECL_IMPLICIT_TYPEDEF_P (inner))
-	{
-	  tree type = TREE_TYPE (inner);
-	  gcc_assert (TYPE_MAIN_VARIANT (type) == type);
-	  tag = insert (type, WK_new_mergeable);
-	  if (streaming_p ())
-	    {
-	      u (TREE_CODE (type));
-	      tree_node_bools (type);
-
-	      dump (dumper::MERGE)
-	        && dump ("Wrote:%d dependent global %C:%N", tag,
-			 TREE_CODE (type), type);
-
-	      /* Write the core values too, so we can deal with making
-		 type variants in later mergeable references.
-		 lang_vals are written later.  */
-	      core_vals (type);
-	    }
-	}
-      break;
-
-    default:
-      // FIXME: More cases
-      gcc_unreachable ();
-    }
+  if (DECL_IMPLICIT_TYPEDEF_P (inner))
+    /* Write the core values too, so we can deal with making
+       type variants in later mergeable references.
+       lang_vals are written later.  */
+    core_vals (TREE_TYPE (inner));
 }
 
 bool
@@ -8161,16 +8150,7 @@ trees_in::tree_mergeable (bool mod_mergeable)
 {
   location_t loc = state->read_location (*this);
 
-  tree ctx = tree_node ();  /* Template or namespace.  */
-  tree name = tree_node ();  /* Identifier or template args.  */
-
-  int is_specialization = ctx && TREE_CODE (ctx) != NAMESPACE_DECL;
-  bool is_mod = !is_specialization && u ();
-
-  tree tpl = NULL_TREE;
-  tree ret = NULL_TREE;
-  tree args = NULL_TREE;
-
+  /* Build the skeleton nodes.  */
   unsigned code = u ();
   tree decl = start (code, tcc_declaration);
   if (!decl || !tree_node_bools (decl))
@@ -8178,17 +8158,6 @@ trees_in::tree_mergeable (bool mod_mergeable)
 
   int tag = insert (decl);
   DECL_SOURCE_LOCATION (decl) = loc;
-
-  if (is_specialization)
-    {
-      /* Copy from the primary template.  */
-      DECL_CONTEXT (decl) = DECL_CONTEXT (ctx);
-      args = name;
-      name = DECL_NAME (ctx);
-    }
-  else
-    DECL_CONTEXT (decl) = FROB_CONTEXT (ctx);
-  DECL_NAME (decl) = name;
 
   tree inner = decl;
   tree type = NULL_TREE;
@@ -8205,49 +8174,55 @@ trees_in::tree_mergeable (bool mod_mergeable)
       inner_tag = insert (inner);
 
       DECL_TEMPLATE_RESULT (decl) = inner;
-      DECL_CONTEXT (inner) = DECL_CONTEXT (decl);
-      DECL_NAME (inner) = name;
-      if (!is_specialization)
+    }
+
+  if (DECL_IMPLICIT_TYPEDEF_P (inner))
+    {
+      type = start (u (), tcc_type);
+      if (!type || !tree_node_bools (type))
+	return false;
+
+      type_tag = insert (type);
+
+      TREE_TYPE (decl) = TREE_TYPE (inner) = type;
+      TYPE_NAME (type) = inner;
+    }
+
+  /* Load the disambiguating information.  */
+  tree tpl = decl != inner ? tpl_header () : NULL_TREE;
+  tree ret = NULL_TREE;
+  tree args = NULL_TREE;
+  tree ctx = tree_node ();  /* Template or namespace.  */
+  tree name = tree_node ();  /* Identifier or template args.  */
+
+  int is_specialization = ctx && TREE_CODE (ctx) != NAMESPACE_DECL;
+  bool is_mod = false;
+
+  if (is_specialization)
+    {
+      /* Copy from the primary template.  */
+      DECL_NAME (decl) = DECL_NAME (ctx);
+      DECL_CONTEXT (decl) = DECL_CONTEXT (ctx);
+    }
+  else
+    {
+      is_mod = u ();
+      if (TREE_CODE (inner) == FUNCTION_DECL)
 	{
-	  // FIXME: What about partial specializations?
-	  tpl = tpl_header ();
-	  if (code == FUNCTION_DECL)
+	  args = fn_parms ();
+	  if (decl != inner)
 	    ret = tree_node ();
 	}
+      DECL_NAME (decl) = name;
+      DECL_CONTEXT (decl) = FROB_CONTEXT (ctx);
     }
 
-  switch (code)
+  if (decl != inner)
     {
-    case FUNCTION_DECL:
-      if (!is_specialization)
-	args = fn_parms ();
-      break;
-
-    case VAR_DECL:
-      break;
-
-    case TYPE_DECL:
-      if (DECL_IMPLICIT_TYPEDEF_P (inner))
-	{
-	  is_specialization = -is_specialization;
-	  type = start (u (), tcc_type);
-	  if (!type || !tree_node_bools (type))
-	    return false;
-
-	  type_tag = insert (type);
-
-	  TREE_TYPE (inner) = type;
-	  TYPE_NAME (type) = inner;
-	}
-      break;
-
-      default:
-	// FIXME: More cases
-	set_overrun ();
+      DECL_NAME (inner) = DECL_NAME (decl);
+      DECL_CONTEXT (inner) = DECL_CONTEXT (decl);
+      DECL_SOURCE_LOCATION (inner) = DECL_SOURCE_LOCATION (decl);
     }
-
-  if (get_overrun ())
-    return false;
 
   const char *kind = "new";
   tree existing = NULL_TREE;
@@ -8256,9 +8231,9 @@ trees_in::tree_mergeable (bool mod_mergeable)
     kind = "unique";
   else if (!is_specialization)
     existing = match_mergeable_decl (decl, ctx, name, is_mod, tpl, ret, args);
-  else if (is_specialization < 0)
+  else if (type)
     {
-      existing = match_mergeable_specialization (type, ctx, args);
+      existing = match_mergeable_specialization (type, ctx, name);
 
       if (existing)
 	{
@@ -8280,7 +8255,7 @@ trees_in::tree_mergeable (bool mod_mergeable)
 	}
     }
   else
-    existing = match_mergeable_specialization (decl, ctx, args);
+    existing = match_mergeable_specialization (decl, ctx, name);
 
   register_mergeable (decl, existing);
 

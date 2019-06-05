@@ -16,5 +16,5 @@ int main ()
 // { dg-final { scan-lang-dump {Reading definition function_decl '::foo@foo:2<float>'} module } }
 // { dg-final { scan-lang-dump {Inserted:-2 horcrux:1@0 function_decl:'::foo@foo:2<float>'} module } }
 
-// { dg-final { scan-lang-dump {Read:-2 unique mergeable decl function_decl:'::baz@foo:2'} module } }
-// { dg-final { scan-lang-dump {Read:-3 unique mergeable decl function_decl:'::baz@foo:2'} module } }
+// { dg-final { scan-lang-dump {Read:-[0-9]* unique mergeable decl function_decl:'::baz@foo:2'} module } }
+// { dg-final { scan-lang-dump {Read:-[0-9]* unique mergeable decl function_decl:'::baz@foo:2'} module } }

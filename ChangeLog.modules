@@ -1,6 +1,15 @@
 2019-06-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::tree_type): We can meet ttps here.
+	(trees_{in,out}::tree_mergeable): Stream skeleton before locating info.
+	gcc/testsuite/
+	* g++.dg/modules/ttp-3_[ab].C: New.
+	* g++.dg/modules/builtin-1_[ab].C: Adjust module scan.
+	* g++.dg/modules/indirect-[234]_b.C: Likewise.
+	* g++.dg/modules/inst-[1234]_[ab].C: Likewise.
+
+	gcc/cp/
 	* module.cc (trees_out::core_vals): Template type parms are their
 	own canonical.
 	(trees_in::finish_type): Never subst a canonical type parm for the type.
