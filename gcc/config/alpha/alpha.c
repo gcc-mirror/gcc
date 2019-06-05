@@ -731,19 +731,6 @@ alpha_vector_mode_supported_p (machine_mode mode)
   return mode == V8QImode || mode == V4HImode || mode == V2SImode;
 }
 
-/* Return 1 if this function can directly return via $26.  */
-
-int
-direct_return (void)
-{
-  return (TARGET_ABI_OSF
-	  && reload_completed
-	  && alpha_sa_size () == 0
-	  && get_frame_size () == 0
-	  && crtl->outgoing_args_size == 0
-	  && crtl->args.pretend_args_size == 0);
-}
-
 /* Return the TLS model to use for SYMBOL.  */
 
 static enum tls_model
@@ -4840,6 +4827,10 @@ struct GTY(()) alpha_links;
 
 struct GTY(()) machine_function
 {
+  unsigned HOST_WIDE_INT sa_mask;
+  HOST_WIDE_INT sa_size;
+  HOST_WIDE_INT frame_size;
+
   /* For flag_reorder_blocks_and_partition.  */
   rtx gp_save_rtx;
 
@@ -7271,83 +7262,59 @@ static int vms_save_fp_regno;
 /* Register number used to reference objects off our PV.  */
 static int vms_base_regno;
 
-/* Compute register masks for saved registers.  */
-
+/* Compute register masks for saved registers, register save area size,
+   and total frame size.  */
 static void
-alpha_sa_mask (unsigned long *imaskP, unsigned long *fmaskP)
+alpha_compute_frame_layout (void)
 {
-  unsigned long imask = 0;
-  unsigned long fmask = 0;
-  unsigned int i;
+  unsigned HOST_WIDE_INT sa_mask = 0;
+  HOST_WIDE_INT frame_size;
+  int sa_size;
 
   /* When outputting a thunk, we don't have valid register life info,
      but assemble_start_function wants to output .frame and .mask
      directives.  */
-  if (cfun->is_thunk)
+  if (!cfun->is_thunk)
     {
-      *imaskP = 0;
-      *fmaskP = 0;
-      return;
-    }
+      if (TARGET_ABI_OPEN_VMS && alpha_procedure_type == PT_STACK)
+	sa_mask |= HOST_WIDE_INT_1U << HARD_FRAME_POINTER_REGNUM;
 
-  if (TARGET_ABI_OPEN_VMS && alpha_procedure_type == PT_STACK)
-    imask |= (1UL << HARD_FRAME_POINTER_REGNUM);
+      /* One for every register we have to save.  */
+      for (unsigned i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (! fixed_regs[i] && ! call_used_regs[i]
+	    && df_regs_ever_live_p (i) && i != REG_RA)
+	  sa_mask |= HOST_WIDE_INT_1U << i;
 
-  /* One for every register we have to save.  */
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (! fixed_regs[i] && ! call_used_regs[i]
-	&& df_regs_ever_live_p (i) && i != REG_RA)
-      {
-	if (i < 32)
-	  imask |= (1UL << i);
-	else
-	  fmask |= (1UL << (i - 32));
-      }
-
-  /* We need to restore these for the handler.  */
-  if (crtl->calls_eh_return)
-    {
-      for (i = 0; ; ++i)
+      /* We need to restore these for the handler.  */
+      if (crtl->calls_eh_return)
 	{
-	  unsigned regno = EH_RETURN_DATA_REGNO (i);
-	  if (regno == INVALID_REGNUM)
-	    break;
-	  imask |= 1UL << regno;
+	  for (unsigned i = 0; ; ++i)
+	    {
+	      unsigned regno = EH_RETURN_DATA_REGNO (i);
+	      if (regno == INVALID_REGNUM)
+		break;
+	      sa_mask |= HOST_WIDE_INT_1U << regno;
+	    }
 	}
+
+      /* If any register spilled, then spill the return address also.  */
+      /* ??? This is required by the Digital stack unwind specification
+	 and isn't needed if we're doing Dwarf2 unwinding.  */
+      if (sa_mask || alpha_ra_ever_killed ())
+	sa_mask |= HOST_WIDE_INT_1U << REG_RA;
     }
 
-  /* If any register spilled, then spill the return address also.  */
-  /* ??? This is required by the Digital stack unwind specification
-     and isn't needed if we're doing Dwarf2 unwinding.  */
-  if (imask || fmask || alpha_ra_ever_killed ())
-    imask |= (1UL << REG_RA);
-
-  *imaskP = imask;
-  *fmaskP = fmask;
-}
-
-int
-alpha_sa_size (void)
-{
-  unsigned long mask[2];
-  int sa_size = 0;
-  int i, j;
-
-  alpha_sa_mask (&mask[0], &mask[1]);
-
-  for (j = 0; j < 2; ++j)
-    for (i = 0; i < 32; ++i)
-      if ((mask[j] >> i) & 1)
-	sa_size++;
+  sa_size = popcount_hwi(sa_mask);
+  frame_size = get_frame_size ();
 
   if (TARGET_ABI_OPEN_VMS)
     {
       /* Start with a stack procedure if we make any calls (REG_RA used), or
 	 need a frame pointer, with a register procedure if we otherwise need
 	 at least a slot, and with a null procedure in other cases.  */
-      if ((mask[0] >> REG_RA) & 1 || frame_pointer_needed)
+      if ((sa_mask >> REG_RA) & 1 || frame_pointer_needed)
 	alpha_procedure_type = PT_STACK;
-      else if (get_frame_size() != 0)
+      else if (frame_size != 0)
 	alpha_procedure_type = PT_REGISTER;
       else
 	alpha_procedure_type = PT_NULL;
@@ -7371,12 +7338,15 @@ alpha_sa_size (void)
 
       /* If we want to copy PV into FP, we need to find some register
 	 in which to save FP.  */
-
       vms_save_fp_regno = -1;
       if (vms_base_regno == HARD_FRAME_POINTER_REGNUM)
-	for (i = 0; i < 32; i++)
-	  if (! fixed_regs[i] && call_used_regs[i] && ! df_regs_ever_live_p (i))
-	    vms_save_fp_regno = i;
+	for (unsigned i = 0; i < 32; i++)
+	  if (! fixed_regs[i] && call_used_regs[i]
+	      && ! df_regs_ever_live_p (i))
+	    {
+	      vms_save_fp_regno = i;
+	      break;
+	    }
 
       /* A VMS condition handler requires a stack procedure in our
 	 implementation. (not required by the calling standard).  */
@@ -7401,8 +7371,34 @@ alpha_sa_size (void)
       if (sa_size & 1)
 	sa_size++;
     }
+  sa_size *= 8;
 
-  return sa_size * 8;
+  if (TARGET_ABI_OPEN_VMS)
+    frame_size = ALPHA_ROUND (sa_size
+			      + (alpha_procedure_type == PT_STACK ? 8 : 0)
+			      + frame_size
+			      + crtl->args.pretend_args_size);
+  else
+    frame_size = (ALPHA_ROUND (crtl->outgoing_args_size)
+		  + sa_size
+		  + ALPHA_ROUND (frame_size + crtl->args.pretend_args_size));
+
+  cfun->machine->sa_mask = sa_mask;
+  cfun->machine->sa_size = sa_size;
+  cfun->machine->frame_size = frame_size;
+}
+
+#undef  TARGET_COMPUTE_FRAME_LAYOUT
+#define TARGET_COMPUTE_FRAME_LAYOUT  alpha_compute_frame_layout
+
+/* Return 1 if this function can directly return via $26.  */
+
+bool
+direct_return (void)
+{
+  return (TARGET_ABI_OSF
+	  && reload_completed
+	  && cfun->machine->frame_size == 0);
 }
 
 /* Define the offset between two registers, one to be eliminated,
@@ -7414,7 +7410,7 @@ alpha_initial_elimination_offset (unsigned int from,
 {
   HOST_WIDE_INT ret;
 
-  ret = alpha_sa_size ();
+  ret = cfun->machine->sa_size;
   ret += ALPHA_ROUND (crtl->outgoing_args_size);
 
   switch (from)
@@ -7442,9 +7438,6 @@ alpha_initial_elimination_offset (unsigned int from,
 static bool
 alpha_vms_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 {
-  /* We need the alpha_procedure_type to decide. Evaluate it now.  */
-  alpha_sa_size ();
-
   switch (alpha_procedure_type)
     {
     case PT_NULL:
@@ -7474,7 +7467,7 @@ alpha_vms_initial_elimination_offset (unsigned int from, unsigned int to)
      on the proper computations and will need the register save area size
      in most cases.  */
 
-  HOST_WIDE_INT sa_size = alpha_sa_size ();
+  HOST_WIDE_INT sa_size = cfun->machine->sa_size;
 
   /* PT_NULL procedures have no frame of their own and we only allow
      elimination to the stack pointer. This is the argument pointer and we
@@ -7706,24 +7699,6 @@ emit_frame_store (unsigned int regno, rtx base_reg,
   emit_frame_store_1 (reg, base_reg, frame_bias, base_ofs, reg);
 }
 
-/* Compute the frame size.  SIZE is the size of the "naked" frame
-   and SA_SIZE is the size of the register save area.  */
-
-static HOST_WIDE_INT
-compute_frame_size (HOST_WIDE_INT size, HOST_WIDE_INT sa_size)
-{
-  if (TARGET_ABI_OPEN_VMS)
-    return ALPHA_ROUND (sa_size 
-			+ (alpha_procedure_type == PT_STACK ? 8 : 0)
-			+ size
-			+ crtl->args.pretend_args_size);
-  else
-    return ALPHA_ROUND (crtl->outgoing_args_size)
-	   + sa_size
-	   + ALPHA_ROUND (size
-			  + crtl->args.pretend_args_size);
-}
-
 /* Write function prologue.  */
 
 /* On vms we have two kinds of functions:
@@ -7745,22 +7720,17 @@ void
 alpha_expand_prologue (void)
 {
   /* Registers to save.  */
-  unsigned long imask = 0;
-  unsigned long fmask = 0;
+  unsigned HOST_WIDE_INT sa_mask = cfun->machine->sa_mask;
   /* Stack space needed for pushing registers clobbered by us.  */
-  HOST_WIDE_INT sa_size, sa_bias;
+  HOST_WIDE_INT sa_size = cfun->machine->sa_size;
   /* Complete stack size needed.  */
-  HOST_WIDE_INT frame_size;
+  HOST_WIDE_INT frame_size = cfun->machine->frame_size;
   /* Probed stack size; it additionally includes the size of
      the "reserve region" if any.  */
-  HOST_WIDE_INT probed_size;
+  HOST_WIDE_INT probed_size, sa_bias;
   /* Offset from base reg to register save area.  */
   HOST_WIDE_INT reg_offset;
   rtx sa_reg;
-  int i;
-
-  sa_size = alpha_sa_size ();
-  frame_size = compute_frame_size (get_frame_size (), sa_size);
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = frame_size;
@@ -7769,8 +7739,6 @@ alpha_expand_prologue (void)
     reg_offset = 8 + 8 * cfun->machine->uses_condition_handler;
   else
     reg_offset = ALPHA_ROUND (crtl->outgoing_args_size);
-
-  alpha_sa_mask (&imask, &fmask);
 
   /* Emit an insn to reload GP, if needed.  */
   if (TARGET_ABI_OSF)
@@ -7910,28 +7878,14 @@ alpha_expand_prologue (void)
   if (TARGET_ABI_OPEN_VMS && alpha_procedure_type == PT_STACK)
     emit_frame_store (REG_PV, stack_pointer_rtx, 0, 0);
 
-  /* Save register RA next.  */
-  if (imask & (1UL << REG_RA))
+  /* Save register RA next, followed by any other registers
+     that need to be saved.  */
+  for (unsigned i = REG_RA; sa_mask != 0; i = ctz_hwi(sa_mask))
     {
-      emit_frame_store (REG_RA, sa_reg, sa_bias, reg_offset);
-      imask &= ~(1UL << REG_RA);
+      emit_frame_store (i, sa_reg, sa_bias, reg_offset);
       reg_offset += 8;
+      sa_mask &= ~(HOST_WIDE_INT_1U << i);
     }
-
-  /* Now save any other registers required to be saved.  */
-  for (i = 0; i < 31; i++)
-    if (imask & (1UL << i))
-      {
-	emit_frame_store (i, sa_reg, sa_bias, reg_offset);
-	reg_offset += 8;
-      }
-
-  for (i = 0; i < 31; i++)
-    if (fmask & (1UL << i))
-      {
-	emit_frame_store (i+32, sa_reg, sa_bias, reg_offset);
-	reg_offset += 8;
-      }
 
   if (TARGET_ABI_OPEN_VMS)
     {
@@ -8019,14 +7973,11 @@ void
 alpha_start_function (FILE *file, const char *fnname,
 		      tree decl ATTRIBUTE_UNUSED)
 {
-  unsigned long imask = 0;
-  unsigned long fmask = 0;
-  /* Stack space needed for pushing registers clobbered by us.  */
-  HOST_WIDE_INT sa_size;
+  unsigned long imask, fmask;
   /* Complete stack size needed.  */
-  unsigned HOST_WIDE_INT frame_size;
+  HOST_WIDE_INT frame_size = cfun->machine->frame_size;
   /* The maximum debuggable frame size.  */
-  unsigned HOST_WIDE_INT max_frame_size = 1UL << 31;
+  const HOST_WIDE_INT max_frame_size = HOST_WIDE_INT_1 << 31;
   /* Offset from base reg to register save area.  */
   HOST_WIDE_INT reg_offset;
   char *entry_label = (char *) alloca (strlen (fnname) + 6);
@@ -8038,15 +7989,14 @@ alpha_start_function (FILE *file, const char *fnname,
 #endif
 
   alpha_fnname = fnname;
-  sa_size = alpha_sa_size ();
-  frame_size = compute_frame_size (get_frame_size (), sa_size);
 
   if (TARGET_ABI_OPEN_VMS)
     reg_offset = 8 + 8 * cfun->machine->uses_condition_handler;
   else
     reg_offset = ALPHA_ROUND (crtl->outgoing_args_size);
 
-  alpha_sa_mask (&imask, &fmask);
+  imask = cfun->machine->sa_mask & 0xffffffffu;
+  fmask = cfun->machine->sa_mask >> 32;
 
   /* Issue function start and label.  */
   if (TARGET_ABI_OPEN_VMS || !flag_inhibit_size_directive)
@@ -8113,7 +8063,7 @@ alpha_start_function (FILE *file, const char *fnname,
     fprintf (file, "\t.frame $%d," HOST_WIDE_INT_PRINT_DEC ",$26,"
 	     HOST_WIDE_INT_PRINT_DEC "\n",
 	     vms_unwind_regno,
-	     frame_size >= (1UL << 31) ? 0 : frame_size,
+	     frame_size >= max_frame_size ? 0 : frame_size,
 	     reg_offset);
   else if (!flag_inhibit_size_directive)
     fprintf (file, "\t.frame $%d," HOST_WIDE_INT_PRINT_DEC ",$26,%d\n",
@@ -8193,12 +8143,11 @@ void
 alpha_expand_epilogue (void)
 {
   /* Registers to save.  */
-  unsigned long imask = 0;
-  unsigned long fmask = 0;
+  unsigned HOST_WIDE_INT sa_mask = cfun->machine->sa_mask;
   /* Stack space needed for pushing registers clobbered by us.  */
-  HOST_WIDE_INT sa_size;
+  HOST_WIDE_INT sa_size = cfun->machine->sa_size;
   /* Complete stack size needed.  */
-  HOST_WIDE_INT frame_size;
+  HOST_WIDE_INT frame_size = cfun->machine->frame_size;
   /* Offset from base reg to register save area.  */
   HOST_WIDE_INT reg_offset;
   int fp_is_frame_pointer, fp_offset;
@@ -8206,10 +8155,6 @@ alpha_expand_epilogue (void)
   rtx sp_adj1, sp_adj2, mem, reg, insn;
   rtx eh_ofs;
   rtx cfa_restores = NULL_RTX;
-  int i;
-
-  sa_size = alpha_sa_size ();
-  frame_size = compute_frame_size (get_frame_size (), sa_size);
 
   if (TARGET_ABI_OPEN_VMS)
     {
@@ -8220,8 +8165,6 @@ alpha_expand_epilogue (void)
     }
   else
     reg_offset = ALPHA_ROUND (crtl->outgoing_args_size);
-
-  alpha_sa_mask (&imask, &fmask);
 
   fp_is_frame_pointer
     = (TARGET_ABI_OPEN_VMS
@@ -8261,43 +8204,23 @@ alpha_expand_epilogue (void)
 	}
 
       /* Restore registers in order, excepting a true frame pointer.  */
-
-      mem = gen_frame_mem (DImode, plus_constant (Pmode, sa_reg, reg_offset));
-      reg = gen_rtx_REG (DImode, REG_RA);
-      emit_move_insn (reg, mem);
-      cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
-
-      reg_offset += 8;
-      imask &= ~(1UL << REG_RA);
-
-      for (i = 0; i < 31; ++i)
-	if (imask & (1UL << i))
-	  {
-	    if (i == HARD_FRAME_POINTER_REGNUM && fp_is_frame_pointer)
-	      fp_offset = reg_offset;
-	    else
-	      {
-		mem = gen_frame_mem (DImode,
-				     plus_constant (Pmode, sa_reg,
-						    reg_offset));
-		reg = gen_rtx_REG (DImode, i);
-		emit_move_insn (reg, mem);
-		cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
-					       cfa_restores);
-	      }
-	    reg_offset += 8;
-	  }
-
-      for (i = 0; i < 31; ++i)
-	if (fmask & (1UL << i))
-	  {
-	    mem = gen_frame_mem (DFmode, plus_constant (Pmode, sa_reg,
-						        reg_offset));
-	    reg = gen_rtx_REG (DFmode, i+32);
-	    emit_move_insn (reg, mem);
-	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
-	    reg_offset += 8;
-	  }
+      for (unsigned i = REG_RA; sa_mask != 0; i = ctz_hwi(sa_mask))
+	{
+	  if (i == HARD_FRAME_POINTER_REGNUM && fp_is_frame_pointer)
+	    fp_offset = reg_offset;
+	  else
+	    {
+	      mem = gen_frame_mem (DImode,
+				   plus_constant (Pmode, sa_reg,
+						  reg_offset));
+	      reg = gen_rtx_REG (DImode, i);
+	      emit_move_insn (reg, mem);
+	      cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
+					     cfa_restores);
+	    }
+	  reg_offset += 8;
+	  sa_mask &= ~(HOST_WIDE_INT_1U << i);
+	}
     }
 
   if (frame_size || eh_ofs)

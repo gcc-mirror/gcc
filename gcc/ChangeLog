@@ -1,3 +1,22 @@
+2019-06-05  Richard Henderson  <rth@twiddle.net>
+
+	* config/alpha/alpha.c (direct_return): Move down after
+	struct machine_function definition; use saved frame_size;
+	return bool.
+	(struct machine_function): Add sa_mask, sa_size, frame_size.
+	(alpha_sa_mask, alpha_sa_size, compute_frame_size): Merge into ...
+	(alpha_compute_frame_layout): ... new function.
+	(TARGET_COMPUTE_FRAME_LAYOUT): New.
+	(alpha_initial_elimination_offset): Use saved sa_size.
+	(alpha_vms_initial_elimination_offset): Likewise.
+	(alpha_vms_can_eliminate): Remove alpha_sa_size call.
+	(alpha_expand_prologue): Use saved frame data.  Merge integer
+	and fp register save loops.
+	(alpha_expand_epilogue): Likewise.
+	(alpha_start_function): Use saved frame data.
+	* config/alpha/alpha-protos.h (direct_return): Update.
+	(alpha_sa_size): Remove.
+
 2019-06-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (extract_muldiv_1) <PLUS_EXPR>: Do not distribute a
