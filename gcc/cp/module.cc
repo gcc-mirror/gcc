@@ -3519,6 +3519,7 @@ static const std::pair<tree *, unsigned> global_tree_arys[] =
     std::pair<tree *, unsigned> (sizetype_tab, stk_type_kind_last),
     std::pair<tree *, unsigned> (integer_types, itk_none),
     std::pair<tree *, unsigned> (global_trees, TI_MODULE_HWM),
+    std::pair<tree *, unsigned> (c_global_trees, CTI_MODULE_HWM),
     std::pair<tree *, unsigned> (cp_global_trees, CPTI_MODULE_HWM),
     std::pair<tree *, unsigned> (NULL, 0)
   };
