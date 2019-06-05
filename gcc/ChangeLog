@@ -1,3 +1,10 @@
+2019-06-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (extract_muldiv_1) <PLUS_EXPR>: Do not distribute a
+	multiplication by a power-of-two value.
+	(fold_plusminus_mult_expr): Use pow2p_hwi to spot a power-of-two value
+	and turn the modulo operation into a masking operation.
+
 2019-06-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/90733
