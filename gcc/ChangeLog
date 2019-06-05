@@ -1,3 +1,9 @@
+2019-06-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-23  Iain Sandoe  <iain@sandoe.co.uk>
+	* doc/sourcebuild.texi: Document mfentry target support.
+
 2019-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-predcom.c (is_inv_store_elimination_chain): Fix a typo - lenght
@@ -9,7 +15,6 @@
 	2019-05-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/i386/darwin.h: Reject -mfentry*.
-	* doc/sourcebuild.texi: Document mfentry target support.
 
 2019-05-30  Iain Sandoe  <iain@sandoe.co.uk>
 
