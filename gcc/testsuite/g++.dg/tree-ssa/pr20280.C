@@ -44,9 +44,9 @@ void f(X &x, bool b)
   (void)(b ? x.i : x.k);
   (void)(b ? x.j : x.k);
 
-  g (b ? x.i : x.j); // { dg-error "cannot bind bitfield" }
-  g (b ? x.i : x.k); // { dg-error "cannot bind bitfield" }
-  g (b ? x.j : x.k); // { dg-error "cannot bind bitfield" }
+  g (b ? x.i : x.j); // { dg-error "cannot bind bit-field" }
+  g (b ? x.i : x.k); // { dg-error "cannot bind bit-field" }
+  g (b ? x.j : x.k); // { dg-error "cannot bind bit-field" }
 
   // It's not entirely clear whether these should be accepted.  The
   // conditional expressions are lvalues for sure, and 8.5.3/5 exempts

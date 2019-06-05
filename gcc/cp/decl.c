@@ -5131,7 +5131,7 @@ start_decl (const cp_declarator *declarator,
       && DECL_UNINLINABLE (decl)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
     warning_at (DECL_SOURCE_LOCATION (decl), 0,
-		"inline function %qD given attribute noinline", decl);
+		"inline function %qD given attribute %qs", decl, "noinline");
 
   if (TYPE_P (context) && COMPLETE_TYPE_P (complete_type (context)))
     {
@@ -5703,7 +5703,7 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
 	    {
 	      if (complain & tf_error)
 		show_notes = permerror (DECL_SOURCE_LOCATION (decl),
-				        "uninitialized const %qD", decl);
+				        "uninitialized %<const %D%>", decl);
 	    }
 	  else
 	    {
@@ -9148,7 +9148,7 @@ grokfndecl (tree ctype,
 	  else if (long_double_p)
 	    {
 	      if (cpp_interpret_float_suffix (parse_in, suffix, strlen (suffix)))
-		warning_at (location, 0, "floating point suffix %qs"
+		warning_at (location, 0, "floating-point suffix %qs"
 			    " shadowed by implementation", suffix);
 	    }
 	  /* 17.6.3.3.5  */
@@ -10184,7 +10184,7 @@ check_special_function_return_type (special_function_kind sfk,
       for (int i = 0; i < ds_last; ++i)
 	if (i != ds_explicit && locations[i])
 	  error_at (locations[i],
-		    "decl-specifier in declaration of deduction guide");
+		    "%<decl-specifier%> in declaration of deduction guide");
       break;
 
     default:
@@ -14747,7 +14747,7 @@ finish_enum_value_list (tree enumtype)
       if (TYPE_PRECISION (enumtype))
 	{
 	  if (precision > TYPE_PRECISION (enumtype))
-	    error ("specified mode too small for enumeral values");
+	    error ("specified mode too small for enumerated values");
 	  else
 	    {
 	      use_short_enum = true;
@@ -15276,7 +15276,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   if (DECL_DECLARED_INLINE_P (decl1)
       && lookup_attribute ("noinline", attrs))
     warning_at (DECL_SOURCE_LOCATION (decl1), 0,
-		"inline function %qD given attribute noinline", decl1);
+		"inline function %qD given attribute %qs", decl1, "noinline");
 
   /* Handle gnu_inline attribute.  */
   if (GNU_INLINE_P (decl1))

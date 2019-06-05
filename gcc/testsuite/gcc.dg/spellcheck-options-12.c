@@ -4,4 +4,4 @@
 
 /* { dg-do compile } */
 /* { dg-options "-fno-stack-protector-explicit" } */
-/* { dg-error "unrecognized command line option .-fno-stack-protector-explicit.; did you mean .-fstack-protector-explicit.." "" { target *-*-* } 0 } */
+/* { dg-error "unrecognized command-line option .-fno-stack-protector-explicit.; did you mean .-fstack-protector-explicit.." "" { target *-*-* } 0 } */

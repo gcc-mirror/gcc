@@ -627,6 +627,15 @@ release_defs_bitset (bitmap toremove)
 
 }
 
+/* Disable warnings about missing quoting in GCC diagnostics for
+   the verification errors.  Their format strings don't follow GCC
+   diagnostic conventions and the calls are ultimately followed by
+   one to internal_error.  */
+#if __GNUC__ > 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* Verify virtual SSA form.  */
 
 bool
@@ -1193,6 +1202,9 @@ err:
   internal_error ("verify_ssa failed");
 }
 
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
 
 /* Initialize global DFA and SSA structures.  */
 

@@ -32,6 +32,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cfgloop.h"
 
+/* Disable warnings about missing quoting in GCC diagnostics.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* A pointer to one of the hooks containers.  */
 static struct cfg_hooks *cfg_hooks;
 
@@ -1491,3 +1497,7 @@ profile_record_account_profile (profile_record *record)
       cfg_hooks->account_profile_record (bb, record);
    }
 }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif

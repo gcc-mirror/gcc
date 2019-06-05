@@ -3,15 +3,15 @@
 
 extern int t();
 
-static inline void __attribute__((__noinline__)) function_definition(void) {t();} /* { dg-warning "inline function \[^\n\]* given attribute noinline" } */
+static inline void __attribute__((__noinline__)) function_definition(void) {t();} /* { dg-warning "inline function \[^\n\]* given attribute 'noinline'" } */
 
-static inline void __attribute__((__noinline__)) function_declaration_both_before(void); /* { dg-warning "inline function \[^\n\]* given attribute noinline" } */
+static inline void __attribute__((__noinline__)) function_declaration_both_before(void); /* { dg-warning "inline function \[^\n\]* given attribute 'noinline'" } */
 
 static void function_declaration_both_before(void) {t();}
 
 static void function_declaration_both_after(void);
 
-static inline void __attribute__((__noinline__)) function_declaration_both_after(void); /* { dg-warning "(inline function \[^\n\]* given attribute noinline|declared inline after its definition)" } */
+static inline void __attribute__((__noinline__)) function_declaration_both_after(void); /* { dg-warning "(inline function \[^\n\]* given attribute .noinline.|declared inline after its definition)" } */
 
 static void function_declaration_both_after(void) {t();}
 

@@ -54,6 +54,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-rtl.h"
 #include "rtl-iter.h"
 
+/* Disable warnings about quoting issues in the pp_xxx calls below
+   that (intentionally) don't follow GCC diagnostic conventions.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* String printed at beginning of each RTL when it is dumped.
    This string is set to ASM_COMMENT_START when the RTL is dumped in
    the assembly output file.  */
@@ -2141,4 +2148,8 @@ debug_bb_n_slim (int n)
   debug_bb_slim (bb);
 }
 
+#endif
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
 #endif

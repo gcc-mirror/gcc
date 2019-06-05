@@ -2061,7 +2061,8 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
   data = lto_get_section_data (file_data, LTO_section_decls, NULL, &len);
   if (data == NULL)
     {
-      internal_error ("cannot read LTO decls from %s", file_data->file_name);
+      internal_error ("cannot read %<LTO_section_decls%> from %s",
+		      file_data->file_name);
       return;
     }
   /* Frees resolutions.  */

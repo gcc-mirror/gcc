@@ -883,7 +883,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	    return rval;
 	  else if (complain & tf_error)
 	    error_at (loc,
-		      "%q#T used where a floating point value was expected",
+		      "%q#T used where a floating-point value was expected",
 		      TREE_TYPE (e));
 	}
       if (code == REAL_TYPE)

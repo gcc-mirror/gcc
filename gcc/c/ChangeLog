@@ -1,3 +1,14 @@
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* c-decl.c (start_decl): Adjust quoting and hyphenation
+	in diagnostics.
+	(finish_decl): Same.
+	(finish_enum): Same.
+	(start_function): Same.
+	(declspecs_add_type): Same.
+	* c-parser.c (warn_for_abs): Same.
+	* c-typeck.c (build_binary_op): Same.
+
 2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR c/89433

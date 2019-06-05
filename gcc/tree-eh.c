@@ -4728,6 +4728,14 @@ make_pass_cleanup_eh (gcc::context *ctxt)
   return new pass_cleanup_eh (ctxt);
 }
 
+/* Disable warnings about missing quoting in GCC diagnostics for
+   the verification errors.  Their format strings don't follow GCC
+   diagnostic conventions but are only used for debugging.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* Verify that BB containing STMT as the last statement, has precisely the
    edge that make_eh_edges would create.  */
 
@@ -4874,3 +4882,7 @@ verify_eh_dispatch_edge (geh_dispatch *stmt)
 
   return false;
 }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif

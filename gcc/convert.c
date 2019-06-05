@@ -235,7 +235,7 @@ convert_to_real_1 (tree type, tree expr, bool fold_p)
 		     (T1) sqrtT4 ((T4) exprT3)
 
 		  , where T1 is TYPE, T2 is ITYPE, T3 is TREE_TYPE (ARG0),
-		 and T4 is NEWTYPE.  All those types are of floating point types.
+		 and T4 is NEWTYPE.  All those types are of floating-point types.
 		 T4 (NEWTYPE) should be narrower than T2 (ITYPE). This conversion
 		 is safe only if P1 >= P2*2+2, where P1 and P2 are precisions of
 		 T2 and T4.  See the following URL for a reference:
@@ -415,11 +415,11 @@ convert_to_real_1 (tree type, tree expr, bool fold_p)
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      error ("pointer value used where a floating point was expected");
+      error ("pointer value used where a floating-point was expected");
       return convert_to_real_1 (type, integer_zero_node, fold_p);
 
     default:
-      error ("aggregate value used where a floating point was expected");
+      error ("aggregate value used where a floating-point was expected");
       return convert_to_real_1 (type, integer_zero_node, fold_p);
     }
 }

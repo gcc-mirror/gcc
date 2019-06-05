@@ -43,6 +43,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "cfgloop.h"
 
+/* Disable warnings about quoting issues in the pp_xxx calls below
+   that (intentionally) don't follow GCC diagnostic conventions.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 #define INDENT(SPACE)							\
   do { int i; for (i = 0; i < SPACE; i++) pp_space (buffer); } while (0)
 
@@ -2978,3 +2985,7 @@ percent_G_format (text_info *text)
   tree block = gimple_block (stmt);
   percent_K_format (text, gimple_location (stmt), block);
 }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif

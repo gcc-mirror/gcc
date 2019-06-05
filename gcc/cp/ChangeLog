@@ -1,3 +1,21 @@
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* call.c (build_conditional_expr_1): Adjust quoting and hyphenation.
+	(convert_like_real): Same.
+	(convert_arg_to_ellipsis): Same.
+	* constexpr.c (diag_array_subscript): Same.
+	* constraint.cc (diagnose_trait_expression): Same.
+	* cvt.c (ocp_convert): Same.
+	* decl.c (start_decl): Same.
+	(check_for_uninitialized_const_var): Same.
+	(grokfndecl): Same.
+	(check_special_function_return_type): Same.
+	(finish_enum_value_list): Same.
+	(start_preparsed_function): Same.
+	* parser.c (cp_parser_decl_specifier_seq): Same.
+	* typeck.c (cp_build_binary_op): Same.
+	(build_static_cast_1): Same.
+
 2019-06-04  Nina Dinka Ranns  <dinka.ranns@gmail.com>
 
 	PR c++/63149 - Wrong auto deduction from braced-init-list.
