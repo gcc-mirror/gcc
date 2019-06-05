@@ -1,3 +1,14 @@
+2019-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90598
+	2019-05-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/propagate_const/requirements2.cc: Adjust
+	dg-error.
+
 2019-06-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90700
