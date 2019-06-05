@@ -323,9 +323,14 @@ Expression::convert_type_to_interface(Type* lhs_type, Expression* rhs,
     {
       // We are assigning a non-pointer value to the interface; the
       // interface gets a copy of the value in the heap if it escapes.
-      obj = Expression::make_heap_expression(rhs, location);
-      if (on_stack)
-        obj->heap_expression()->set_allocate_on_stack();
+      if (rhs->is_constant())
+        obj = Expression::make_unary(OPERATOR_AND, rhs, location);
+      else
+        {
+          obj = Expression::make_heap_expression(rhs, location);
+          if (on_stack)
+            obj->heap_expression()->set_allocate_on_stack();
+        }
     }
 
   return Expression::make_interface_value(lhs_type, first_field, obj, location);
@@ -4894,6 +4899,18 @@ Unary_expression::do_get_backend(Translate_context* context)
                                                 true, false, btype, loc);
           gogo->backend()->immutable_struct_set_init(decl, var_name, true,
 						     false, btype, loc, bexpr);
+          bexpr = gogo->backend()->var_expression(decl, loc);
+        }
+      else if (this->expr_->is_constant())
+        {
+          std::string var_name(gogo->initializer_name());
+          std::string asm_name(go_selectively_encode_id(var_name));
+          Bvariable* decl =
+              gogo->backend()->implicit_variable(var_name, asm_name, btype,
+                                                 true, true, false, 0);
+          gogo->backend()->implicit_variable_set_init(decl, var_name, btype,
+                                                      true, true, false,
+                                                      bexpr);
           bexpr = gogo->backend()->var_expression(decl, loc);
         }
 
