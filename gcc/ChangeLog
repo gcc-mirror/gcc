@@ -1,3 +1,21 @@
+2019-06-05  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/89803
+	* config/i386/avx512dqintrin.h (_mm_mask_fpclass_ss_mask,
+	_mm_mask_fpclass_sd_mask): New intrinsics.
+	(_mm_fpclass_ss_mask, _mm_fpclass_sd_mask): Modified, use new builtins.
+	* config/i386/i386-builtin.def
+	(__builtin_ia32_fpclassss_mask, __builtin_ia32_fpclasssd_mask):
+	New builtins.
+	(__builtin_ia32_fpclassss, __builtin_ia32_fpclasssd): Deleted.
+	* config/i386/i386-builtin-types.def (DEF_FUNCTION_TYPE (QI, V2DF, INT),
+	DEF_FUNCTION_TYPE (QI, V4SF, INT)): Deleted.
+	* config/i386/i386-expand.c (case QI_FTYPE_V4SF_INT,
+	case QI_FTYPE_V2SF_INT): Ditto.
+	* config/i386/sse.md
+	(define_insn "avx512dq_vmfpclass<mode><mask_scalar_merge_name>):
+	Extended to insnstructions with mask operands.
+
 2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/constraints.md (define_register_constraint "wp"):
