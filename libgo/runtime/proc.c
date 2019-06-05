@@ -378,8 +378,6 @@ runtime_mcall(FuncVal *fv)
 extern G* allocg(void)
   __asm__ (GOSYM_PREFIX "runtime.allocg");
 
-Sched*	runtime_sched;
-
 bool	runtime_isarchive;
 
 extern void kickoff(void)
@@ -887,12 +885,4 @@ resetNewG(G *newg, void **sp, uintptr *spsize)
   newg->gcnextsp = (uintptr)(*sp);
   newg->gcnextsp2 = (uintptr)(newg->gcinitialsp2);
 #endif
-}
-
-// Return whether we are waiting for a GC.  This gc toolchain uses
-// preemption instead.
-bool
-runtime_gcwaiting(void)
-{
-	return runtime_sched->gcwaiting;
 }

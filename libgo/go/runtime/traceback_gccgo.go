@@ -63,11 +63,11 @@ func callers(skip int, locbuf []location) int {
 
 //go:noescape
 //extern runtime_callersRaw
-func c_callersRaw(skip int32, pcs *uintptr, max int32) int32
+func c_callersRaw(pcs *uintptr, max int32) int32
 
 // callersRaw returns a raw (PCs only) stack trace of the current goroutine.
-func callersRaw(skip int, pcbuf []uintptr) int {
-	n := c_callersRaw(int32(skip)+1, &pcbuf[0], int32(len(pcbuf)))
+func callersRaw(pcbuf []uintptr) int {
+	n := c_callersRaw(&pcbuf[0], int32(len(pcbuf)))
 	return int(n)
 }
 

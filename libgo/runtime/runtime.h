@@ -115,11 +115,6 @@ extern M*	runtime_m(void);
 extern G*	runtime_g(void)
   __asm__(GOSYM_PREFIX "runtime.getg");
 
-extern M*	runtime_m0(void)
-  __asm__(GOSYM_PREFIX "runtime.runtime_m0");
-extern G*	runtime_g0(void)
-  __asm__(GOSYM_PREFIX "runtime.runtime_g0");
-
 enum
 {
 	true	= 1,
@@ -196,15 +191,6 @@ void	runtime_hashinit(void);
  */
 extern	uintptr* runtime_getZerobase(void)
   __asm__(GOSYM_PREFIX "runtime.getZerobase");
-extern G* runtime_getallg(intgo)
-  __asm__(GOSYM_PREFIX "runtime.getallg");
-extern uintptr runtime_getallglen(void)
-  __asm__(GOSYM_PREFIX "runtime.getallglen");
-extern	M*	runtime_getallm(void)
-  __asm__(GOSYM_PREFIX "runtime.getallm");
-extern	Sched*  runtime_sched;
-extern	uint32	runtime_panicking(void)
-  __asm__ (GOSYM_PREFIX "runtime.getPanicking");
 
 extern	bool	runtime_isstarted;
 extern	bool	runtime_isarchive;
@@ -447,7 +433,6 @@ int32 getproccount(void);
 
 #define PREFETCH(p) __builtin_prefetch(p)
 
-bool	runtime_gcwaiting(void);
 void	runtime_badsignal(int);
 Defer*	runtime_newdefer(void);
 void	runtime_freedefer(Defer*);

@@ -1,3 +1,98 @@
+2019-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/90733
+	* gcc.dg/pr90733.c: New test.
+
+2019-06-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90726
+	* gcc.dg/pr90726.c: Enable IVOPTs.
+
+2019-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/vect/simd-1.cc: New test.
+
+2019-06-05  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/89803
+	* gcc.target/i386/avx-1.c (__builtin_ia32_fpclasssss,
+	__builtin_ia32_fpclasssd): Removed.
+	(__builtin_ia32_fpclassss_mask, __builtin_ia32_fpclasssd_mask): Define.
+	* gcc.target/i386/sse-13.c (__builtin_ia32_fpclasssss,
+	__builtin_ia32_fpclasssd): Removed.
+	(__builtin_ia32_fpclassss_mask, __builtin_ia32_fpclasssd_mask): Define.
+	* gcc.target/i386/sse-23.c (__builtin_ia32_fpclasssss,
+	__builtin_ia32_fpclasssd): Removed.
+	(__builtin_ia32_fpclassss_mask, __builtin_ia32_fpclasssd_mask): Define.
+	* gcc.target/i386/avx512dq-vfpclassss-2.c: New.
+	* gcc.target/i386/avx512dq-vfpclasssd-2.c: New.
+	* gcc.target/i386/avx512dq-vfpclassss-1.c (avx512f_test):
+	Add test for _mm_mask_fpclass_ss_mask.
+	* gcc.target/i386/avx512dq-vfpclasssd-1.c (avx512f_test):
+	Add test for _mm_mask_fpclass_sd_mask.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/direct-move-double1.c (VSX_REG_ATTR): Delete.
+	* gcc.target/powerpc/direct-move-double2.c: Ditto.
+	* gcc.target/powerpc/direct-move-float1.c: Ditto.
+	* gcc.target/powerpc/direct-move-float2.c: Ditto.
+	* gcc.target/powerpc/direct-move-vint1.c: Ditto.
+	* gcc.target/powerpc/direct-move-vint2.c: Ditto.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/direct-move-float1.c: Use "wa" instead of "ww"
+	constraint.
+
+2019-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/concepts/pr60573.C: Test locations too.
+	* g++.dg/cpp0x/deleted13.C: Likewise.
+	* g++.dg/parse/error29.C: Likewise.
+	* g++.dg/parse/qualified4.C: Likewise.
+	* g++.dg/template/crash96.C Likewise.
+	* g++.old-deja/g++.brendan/crash22.C Likewise.
+	* g++.old-deja/g++.brendan/crash23.C Likewise.
+	* g++.old-deja/g++.law/visibility10.C Likewise.
+	* g++.old-deja/g++.other/decl5.C: Likewise.
+
+2019-06-04  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/78263
+	* g++.target/powerpc: New directory.
+	* g++.target/powerpc/powerpc.exp: New test driver.
+	* g++.target/powerpc/undef-bool-3.C: New.
+
+2019-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/lastprivate-conditional-2.c (foo): Don't expect
+	a sorry_at on any of the clauses.
+
+2019-06-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90726
+	* gcc.dg/pr90726.c: New testcase.
+
+2019-06-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90738
+	* gcc.dg/torture/pr90738.c: New testcase.
+
+	Revert
+	2019-06-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/alias-access-path-1.c: Scan fre1.
+
+2019-06-04  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/goacc/acc-icf.c: Change scanned pattern.
+	* gfortran.dg/goacc/pr78027.f90: Likewise.
+
+2019-06-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/mmfpgpr.c: Delete.
+
 2019-06-03  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/debug/enum-1.c: Add -fno-eliminate-unused-debug-symbols

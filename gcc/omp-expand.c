@@ -100,6 +100,9 @@ struct omp_region
   /* True if this is a combined parallel+workshare region.  */
   bool is_combined_parallel;
 
+  /* Copy of fd.lastprivate_conditional != 0.  */
+  bool has_lastprivate_conditional;
+
   /* The ordered stmt if type is GIMPLE_OMP_ORDERED and it has
      a depend clause.  */
   gomp_ordered *ord_stmt;
@@ -601,8 +604,12 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 	  switch (region->inner->sched_kind)
 	    {
 	    case OMP_CLAUSE_SCHEDULE_RUNTIME:
-	      if ((region->inner->sched_modifiers
-		   & OMP_CLAUSE_SCHEDULE_NONMONOTONIC) != 0)
+	      /* For lastprivate(conditional:), our implementation
+		 requires monotonic behavior.  */
+	      if (region->inner->has_lastprivate_conditional != 0)
+		start_ix2 = 3;
+	      else if ((region->inner->sched_modifiers
+		       & OMP_CLAUSE_SCHEDULE_NONMONOTONIC) != 0)
 		start_ix2 = 6;
 	      else if ((region->inner->sched_modifiers
 			& OMP_CLAUSE_SCHEDULE_MONOTONIC) == 0)
@@ -613,7 +620,8 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 	    case OMP_CLAUSE_SCHEDULE_DYNAMIC:
 	    case OMP_CLAUSE_SCHEDULE_GUIDED:
 	      if ((region->inner->sched_modifiers
-		   & OMP_CLAUSE_SCHEDULE_MONOTONIC) == 0)
+		   & OMP_CLAUSE_SCHEDULE_MONOTONIC) == 0
+		  && !region->inner->has_lastprivate_conditional)
 		{
 		  start_ix2 = 3 + region->inner->sched_kind;
 		  break;
@@ -3257,6 +3265,25 @@ expand_omp_for_generic (struct omp_region *region,
       vmain = gimple_omp_continue_control_use (cont_stmt);
       vback = gimple_omp_continue_control_def (cont_stmt);
 
+      if (cond_var)
+	{
+	  tree itype = TREE_TYPE (cond_var);
+	  tree t2;
+	  if ((fd->ordered && fd->collapse == 1)
+	       || bias
+	       || POINTER_TYPE_P (type)
+	       || TREE_CODE (fd->loop.n1) != INTEGER_CST
+	       || fd->loop.cond_code != LT_EXPR)
+	    t2 = build_int_cst (itype, 1);
+	  else
+	    t2 = fold_convert (itype, fd->loop.step);
+	  t2 = fold_build2 (PLUS_EXPR, itype, cond_var, t2);
+	  t2 = force_gimple_operand_gsi (&gsi, t2, false,
+					 NULL_TREE, true, GSI_SAME_STMT);
+	  assign_stmt = gimple_build_assign (cond_var, t2);
+	  gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
+	}
+
       if (!gimple_omp_for_combined_p (fd->for_stmt))
 	{
 	  if (POINTER_TYPE_P (type))
@@ -3269,25 +3296,6 @@ expand_omp_for_generic (struct omp_region *region,
 					NULL_TREE, true, GSI_SAME_STMT);
 	  assign_stmt = gimple_build_assign (vback, t);
 	  gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
-
-	  if (cond_var)
-	    {
-	      tree itype = TREE_TYPE (cond_var);
-	      tree t2;
-	      if ((fd->ordered && fd->collapse == 1)
-		  || bias
-		  || POINTER_TYPE_P (type)
-		  || TREE_CODE (fd->loop.n1) != INTEGER_CST
-		  || fd->loop.cond_code != LT_EXPR)
-		t2 = build_int_cst (itype, 1);
-	      else
-		t2 = fold_convert (itype, fd->loop.step);
-	      t2 = fold_build2 (PLUS_EXPR, itype, cond_var, t2);
-	      t2 = force_gimple_operand_gsi (&gsi, t2, false,
-					     NULL_TREE, true, GSI_SAME_STMT);
-	      assign_stmt = gimple_build_assign (cond_var, t2);
-	      gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
-	    }
 
 	  if (fd->ordered && counts[fd->collapse - 1] == NULL_TREE)
 	    {
@@ -3962,6 +3970,23 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       vmain = gimple_omp_continue_control_use (cont_stmt);
       vback = gimple_omp_continue_control_def (cont_stmt);
 
+      if (cond_var)
+	{
+	  tree itype = TREE_TYPE (cond_var);
+	  tree t2;
+	  if (POINTER_TYPE_P (type)
+	      || TREE_CODE (n1) != INTEGER_CST
+	      || fd->loop.cond_code != LT_EXPR)
+	    t2 = build_int_cst (itype, 1);
+	  else
+	    t2 = fold_convert (itype, step);
+	  t2 = fold_build2 (PLUS_EXPR, itype, cond_var, t2);
+	  t2 = force_gimple_operand_gsi (&gsi, t2, false,
+					 NULL_TREE, true, GSI_SAME_STMT);
+	  assign_stmt = gimple_build_assign (cond_var, t2);
+	  gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
+	}
+
       if (!gimple_omp_for_combined_p (fd->for_stmt))
 	{
 	  if (POINTER_TYPE_P (type))
@@ -3974,23 +3999,6 @@ expand_omp_for_static_nochunk (struct omp_region *region,
 					NULL_TREE, true, GSI_SAME_STMT);
 	  assign_stmt = gimple_build_assign (vback, t);
 	  gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
-
-	  if (cond_var)
-	    {
-	      tree itype = TREE_TYPE (cond_var);
-	      tree t2;
-	      if (POINTER_TYPE_P (type)
-		  || TREE_CODE (n1) != INTEGER_CST
-		  || fd->loop.cond_code != LT_EXPR)
-		t2 = build_int_cst (itype, 1);
-	      else
-		t2 = fold_convert (itype, step);
-	      t2 = fold_build2 (PLUS_EXPR, itype, cond_var, t2);
-	      t2 = force_gimple_operand_gsi (&gsi, t2, false,
-					     NULL_TREE, true, GSI_SAME_STMT);
-	      assign_stmt = gimple_build_assign (cond_var, t2);
-	      gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
-	    }
 
 	  t = build2 (fd->loop.cond_code, boolean_type_node,
 		      DECL_P (vback) && TREE_ADDRESSABLE (vback)
@@ -4606,6 +4614,23 @@ expand_omp_for_static_chunk (struct omp_region *region,
       gomp_continue *cont_stmt = as_a <gomp_continue *> (gsi_stmt (gsi));
       vmain = gimple_omp_continue_control_use (cont_stmt);
       vback = gimple_omp_continue_control_def (cont_stmt);
+
+      if (cond_var)
+	{
+	  tree itype = TREE_TYPE (cond_var);
+	  tree t2;
+	  if (POINTER_TYPE_P (type)
+	      || TREE_CODE (n1) != INTEGER_CST
+	      || fd->loop.cond_code != LT_EXPR)
+	    t2 = build_int_cst (itype, 1);
+	  else
+	    t2 = fold_convert (itype, step);
+	  t2 = fold_build2 (PLUS_EXPR, itype, cond_var, t2);
+	  t2 = force_gimple_operand_gsi (&gsi, t2, false,
+					 NULL_TREE, true, GSI_SAME_STMT);
+	  assign_stmt = gimple_build_assign (cond_var, t2);
+	  gsi_insert_before (&gsi, assign_stmt, GSI_SAME_STMT);
+	}
 
       if (!gimple_omp_for_combined_p (fd->for_stmt))
 	{
@@ -6211,6 +6236,7 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
 			&fd, loops);
   region->sched_kind = fd.sched_kind;
   region->sched_modifiers = fd.sched_modifiers;
+  region->has_lastprivate_conditional = fd.lastprivate_conditional != 0;
 
   gcc_assert (EDGE_COUNT (region->entry->succs) == 2);
   BRANCH_EDGE (region->entry)->flags &= ~EDGE_ABNORMAL;
@@ -6263,14 +6289,16 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
       switch (fd.sched_kind)
 	{
 	case OMP_CLAUSE_SCHEDULE_RUNTIME:
-	  if ((fd.sched_modifiers & OMP_CLAUSE_SCHEDULE_NONMONOTONIC) != 0)
+	  if ((fd.sched_modifiers & OMP_CLAUSE_SCHEDULE_NONMONOTONIC) != 0
+	      && fd.lastprivate_conditional == 0)
 	    {
 	      gcc_assert (!fd.have_ordered);
 	      fn_index = 6;
 	      sched = 4;
 	    }
 	  else if ((fd.sched_modifiers & OMP_CLAUSE_SCHEDULE_MONOTONIC) == 0
-		   && !fd.have_ordered)
+		   && !fd.have_ordered
+		   && fd.lastprivate_conditional == 0)
 	    fn_index = 7;
 	  else
 	    {
@@ -6281,7 +6309,8 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
 	case OMP_CLAUSE_SCHEDULE_DYNAMIC:
 	case OMP_CLAUSE_SCHEDULE_GUIDED:
 	  if ((fd.sched_modifiers & OMP_CLAUSE_SCHEDULE_MONOTONIC) == 0
-	      && !fd.have_ordered)
+	      && !fd.have_ordered
+	      && fd.lastprivate_conditional == 0)
 	    {
 	      fn_index = 3 + fd.sched_kind;
 	      sched = (fd.sched_kind == OMP_CLAUSE_SCHEDULE_GUIDED) + 2;

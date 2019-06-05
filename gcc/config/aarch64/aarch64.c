@@ -15650,8 +15650,9 @@ aarch64_asm_output_alias (FILE *stream, const tree decl, const tree target)
    function symbol references.  */
 
 void
-aarch64_asm_output_external (FILE *stream, const tree decl, const char* name)
+aarch64_asm_output_external (FILE *stream, tree decl, const char* name)
 {
+  default_elf_asm_output_external (stream, decl, name);
   aarch64_asm_output_variant_pcs (stream, decl, name);
 }
 
@@ -17573,7 +17574,10 @@ aarch64_expand_subvti (rtx op0, rtx low_dest, rtx low_in1,
 static unsigned HOST_WIDE_INT
 aarch64_asan_shadow_offset (void)
 {
-  return (HOST_WIDE_INT_1 << 36);
+  if (TARGET_ILP32)
+    return (HOST_WIDE_INT_1 << 29);
+  else
+    return (HOST_WIDE_INT_1 << 36);
 }
 
 static rtx

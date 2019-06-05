@@ -201,6 +201,10 @@ class Export : public String_dump
   void
   write_unsigned(unsigned);
 
+  // Return the index of a package.
+  int
+  package_index(const Package* p) const;
+
  private:
   Export(const Export&);
   Export& operator=(const Export&);
@@ -255,7 +259,7 @@ class Export : public String_dump
   // Index number of next type.
   int type_index_;
   // Packages we have written out.
-  Unordered_set(const Package*) packages_;
+  Unordered_map(const Package*, int) packages_;
 };
 
 // An export streamer that puts the export stream in a named section.
@@ -353,6 +357,11 @@ class Export_function_body : public String_dump
   void
   decrement_indent()
   { --this->indent_; }
+
+  // Return the index of a package.
+  int
+  package_index(const Package* p) const
+  { return this->exp_->package_index(p); }
 
   // Return a reference to the completed body.
   const std::string&

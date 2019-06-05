@@ -1,3 +1,37 @@
+2019-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use declarator->id_loc in two
+	additional places.
+
+2019-06-04  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (lookup_type_scope_1): Reimplement, handle local
+	and namespace scopes separately.
+
+2019-06-04  Harald van Dijk  <harald@gigawatt.nl>
+
+	PR c++/60531 - Wrong error about unresolved overloaded function
+	* typeck.c (cp_build_binary_op): See if overload can be resolved.
+	(cp_build_unary_op): Ditto.
+
+2019-06-04  Jason Merrill  <jason@redhat.com>
+
+	Reduce accumulated garbage in constexpr evaluation.
+	* constexpr.c (cxx_eval_call_expression): ggc_free any bindings we
+	don't save.
+	(cxx_eval_increment_expression): ggc_free the MODIFY_EXPR after
+	evaluating it.
+
+2019-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (CP_OMP_CLAUSE_INFO): Allow for any clauses up to _condvar_
+	instead of only up to linear.
+
+2019-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_unqualified_id): Use build_min_nt_loc in
+	five places.
+
 2019-06-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/85254

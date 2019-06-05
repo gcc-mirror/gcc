@@ -2508,18 +2508,8 @@ rs6000_debug_reg_global (void)
 	   "f  reg_class = %s\n"
 	   "v  reg_class = %s\n"
 	   "wa reg_class = %s\n"
-	   "wd reg_class = %s\n"
 	   "we reg_class = %s\n"
-	   "wf reg_class = %s\n"
-	   "wg reg_class = %s\n"
-	   "wi reg_class = %s\n"
-	   "wp reg_class = %s\n"
-	   "wq reg_class = %s\n"
 	   "wr reg_class = %s\n"
-	   "ws reg_class = %s\n"
-	   "wt reg_class = %s\n"
-	   "wv reg_class = %s\n"
-	   "ww reg_class = %s\n"
 	   "wx reg_class = %s\n"
 	   "wA reg_class = %s\n"
 	   "\n",
@@ -2527,18 +2517,8 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_f]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_v]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wa]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wd]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_we]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wf]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wg]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wi]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wp]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wq]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wr]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ws]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wt]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wv]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ww]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wx]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wA]]);
 
@@ -3148,16 +3128,8 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	v  - Altivec register.
 	wa - Any VSX register.
 	wc - Reserved to represent individual CR bits (used in LLVM).
-	wd - Preferred register class for V2DFmode.
-	wf - Preferred register class for V4SFmode.
-	wg - Float register for power6x move insns.
-	wi - FP or VSX register to hold 64-bit integers for VSX insns.
 	wn - always NO_REGS.
 	wr - GPR if 64-bit mode is permitted.
-	ws - Register class to do ISA 2.06 DF operations.
-	wt - VSX register for TImode in VSX registers.
-	wv - Altivec register for ISA 2.06 VSX DF/DI load/stores.
-	ww - Register class to do SF conversions in with VSX operations.
 	wx - Float register if we can do 32-bit int stores.  */
 
   if (TARGET_HARD_FLOAT)
@@ -3167,23 +3139,12 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
     }
 
   if (TARGET_VSX)
-    {
-      rs6000_constraints[RS6000_CONSTRAINT_wa] = VSX_REGS;
-      rs6000_constraints[RS6000_CONSTRAINT_wd] = VSX_REGS;	/* V2DFmode  */
-      rs6000_constraints[RS6000_CONSTRAINT_wf] = VSX_REGS;	/* V4SFmode  */
-      rs6000_constraints[RS6000_CONSTRAINT_ws] = VSX_REGS;	/* DFmode  */
-      rs6000_constraints[RS6000_CONSTRAINT_wv] = ALTIVEC_REGS;	/* DFmode  */
-      rs6000_constraints[RS6000_CONSTRAINT_wi] = VSX_REGS;	/* DImode  */
-      rs6000_constraints[RS6000_CONSTRAINT_wt] = VSX_REGS;	/* TImode  */
-    }
+    rs6000_constraints[RS6000_CONSTRAINT_wa] = VSX_REGS;
 
   /* Add conditional constraints based on various options, to allow us to
      collapse multiple insn patterns.  */
   if (TARGET_ALTIVEC)
     rs6000_constraints[RS6000_CONSTRAINT_v] = ALTIVEC_REGS;
-
-  if (TARGET_MFPGPR)						/* DFmode  */
-    rs6000_constraints[RS6000_CONSTRAINT_wg] = FLOAT_REGS;
 
   if (TARGET_POWERPC64)
     {
@@ -3191,20 +3152,8 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       rs6000_constraints[RS6000_CONSTRAINT_wA] = BASE_REGS;
     }
 
-  if (TARGET_P8_VECTOR)						/* SFmode  */
-    rs6000_constraints[RS6000_CONSTRAINT_ww] = VSX_REGS;
-  else if (TARGET_VSX)
-    rs6000_constraints[RS6000_CONSTRAINT_ww] = FLOAT_REGS;
-
   if (TARGET_STFIWX)
     rs6000_constraints[RS6000_CONSTRAINT_wx] = FLOAT_REGS;	/* DImode  */
-
-  if (TARGET_FLOAT128_TYPE)
-    {
-      rs6000_constraints[RS6000_CONSTRAINT_wq] = VSX_REGS;	/* KFmode  */
-      if (FLOAT128_IEEE_P (TFmode))
-	rs6000_constraints[RS6000_CONSTRAINT_wp] = VSX_REGS;	/* TFmode  */
-    }
 
   /* Support for new direct moves (ISA 3.0 + 64bit).  */
   if (TARGET_DIRECT_MOVE_128)
@@ -7479,30 +7428,22 @@ gpr_or_gpr_p (rtx op0, rtx op1)
 bool
 direct_move_p (rtx op0, rtx op1)
 {
-  int regno0, regno1;
-
   if (!REG_P (op0) || !REG_P (op1))
     return false;
 
-  if (!TARGET_DIRECT_MOVE && !TARGET_MFPGPR)
+  if (!TARGET_DIRECT_MOVE)
     return false;
 
-  regno0 = REGNO (op0);
-  regno1 = REGNO (op1);
+  int regno0 = REGNO (op0);
+  int regno1 = REGNO (op1);
   if (!HARD_REGISTER_NUM_P (regno0) || !HARD_REGISTER_NUM_P (regno1))
     return false;
 
-  if (INT_REGNO_P (regno0))
-    return (TARGET_DIRECT_MOVE) ? VSX_REGNO_P (regno1) : FP_REGNO_P (regno1);
+  if (INT_REGNO_P (regno0) && VSX_REGNO_P (regno1))
+    return true;
 
-  else if (INT_REGNO_P (regno1))
-    {
-      if (TARGET_MFPGPR && FP_REGNO_P (regno0))
-	return true;
-
-      else if (TARGET_DIRECT_MOVE && VSX_REGNO_P (regno0))
-	return true;
-    }
+  if (VSX_REGNO_P (regno0) && INT_REGNO_P (regno1))
+    return true;
 
   return false;
 }
@@ -19084,12 +19025,6 @@ rs6000_secondary_reload_simple_move (enum rs6000_reg_type to_type,
       if (mode == SDmode)
 	return true;
     }
-
-  /* Power6+: MFTGPR or MFFGPR.  */
-  else if (TARGET_MFPGPR && TARGET_POWERPC64 && size == 8
-      && ((to_type == GPR_REG_TYPE && from_type == FPR_REG_TYPE)
-	  || (to_type == FPR_REG_TYPE && from_type == GPR_REG_TYPE)))
-    return true;
 
   /* Move to/from SPR.  */
   else if ((size == 4 || (TARGET_POWERPC64 && size == 8))
@@ -36458,7 +36393,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "htm",			OPTION_MASK_HTM,		false, true  },
   { "isel",			OPTION_MASK_ISEL,		false, true  },
   { "mfcrf",			OPTION_MASK_MFCRF,		false, true  },
-  { "mfpgpr",			OPTION_MASK_MFPGPR,		false, true  },
+  { "mfpgpr",			0,				false, true  },
   { "modulo",			OPTION_MASK_MODULO,		false, true  },
   { "mulhw",			OPTION_MASK_MULHW,		false, true  },
   { "multiple",			OPTION_MASK_MULTIPLE,		false, true  },
@@ -37890,9 +37825,7 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 						 gen_rtx_PLUS (Pmode, stack_ptr,
 							       stack_toc_offset));
 	      MEM_VOLATILE_P (stack_toc_mem) = 1;
-	      if (HAVE_AS_PLTSEQ
-		  && DEFAULT_ABI == ABI_ELFv2
-		  && GET_CODE (func_desc) == SYMBOL_REF)
+	      if (is_pltseq_longcall)
 		{
 		  rtvec v = gen_rtvec (3, toc_reg, func_desc, tlsarg);
 		  rtx mark_toc_reg = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);

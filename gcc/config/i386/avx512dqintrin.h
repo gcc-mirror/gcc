@@ -1362,14 +1362,30 @@ extern __inline __mmask8
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_fpclass_ss_mask (__m128 __A, const int __imm)
 {
-  return (__mmask8) __builtin_ia32_fpclassss ((__v4sf) __A, __imm);
+  return (__mmask8) __builtin_ia32_fpclassss_mask ((__v4sf) __A, __imm,
+						   (__mmask8) -1);
 }
 
 extern __inline __mmask8
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_fpclass_sd_mask (__m128d __A, const int __imm)
 {
-  return (__mmask8) __builtin_ia32_fpclasssd ((__v2df) __A, __imm);
+  return (__mmask8) __builtin_ia32_fpclasssd_mask ((__v2df) __A, __imm,
+						   (__mmask8) -1);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fpclass_ss_mask (__mmask8 __U, __m128 __A, const int __imm)
+{
+  return (__mmask8) __builtin_ia32_fpclassss_mask ((__v4sf) __A, __imm, __U);
+}
+
+extern __inline __mmask8
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fpclass_sd_mask (__mmask8 __U, __m128d __A, const int __imm)
+{
+  return (__mmask8) __builtin_ia32_fpclasssd_mask ((__v2df) __A, __imm, __U);
 }
 
 extern __inline __m512i
@@ -2617,11 +2633,21 @@ _mm512_fpclass_ps_mask (__m512 __A, const int __imm)
     (__v16si)(__m512i)_mm512_setzero_si512 (),\
     (__mmask16)(U)))
 
-#define _mm_fpclass_ss_mask(X, C)						\
-  ((__mmask8) __builtin_ia32_fpclassss ((__v4sf) (__m128) (X), (int) (C)))  \
+#define _mm_fpclass_ss_mask(X, C)					\
+  ((__mmask8) __builtin_ia32_fpclassss_mask ((__v4sf) (__m128) (X),	\
+					     (int) (C), (__mmask8) (-1))) \
 
-#define _mm_fpclass_sd_mask(X, C)						\
-  ((__mmask8) __builtin_ia32_fpclasssd ((__v2df) (__m128d) (X), (int) (C))) \
+#define _mm_fpclass_sd_mask(X, C)					\
+  ((__mmask8) __builtin_ia32_fpclasssd_mask ((__v2df) (__m128d) (X),	\
+					     (int) (C), (__mmask8) (-1))) \
+
+#define _mm_mask_fpclass_ss_mask(X, C, U)				\
+  ((__mmask8) __builtin_ia32_fpclassss_mask ((__v4sf) (__m128) (X),	\
+					     (int) (C), (__mmask8) (U)))
+
+#define _mm_mask_fpclass_sd_mask(X, C, U)				\
+  ((__mmask8) __builtin_ia32_fpclasssd_mask ((__v2df) (__m128d) (X),	\
+					     (int) (C), (__mmask8) (U)))
 
 #define _mm512_mask_fpclass_pd_mask(u, X, C)                            \
   ((__mmask8) __builtin_ia32_fpclasspd512_mask ((__v8df) (__m512d) (X), \

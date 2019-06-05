@@ -6326,7 +6326,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 		    && constructor_name_p (token->u.value, scope))))
 	  {
 	    cp_lexer_consume_token (parser->lexer);
-	    return cp_expr (build_nt (BIT_NOT_EXPR, scope), loc);
+	    return build_min_nt_loc (loc, BIT_NOT_EXPR, scope);
 	  }
 
 	/* ~auto means the destructor of whatever the object is.  */
@@ -6337,7 +6337,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 		       "%<~auto%> only available with "
 		       "%<-std=c++14%> or %<-std=gnu++14%>");
 	    cp_lexer_consume_token (parser->lexer);
-	    return cp_expr (build_nt (BIT_NOT_EXPR, make_auto (), loc));
+	    return build_min_nt_loc (loc, BIT_NOT_EXPR, make_auto ());
 	  }
 
 	/* If there was an explicit qualification (S::~T), first look
@@ -6427,8 +6427,8 @@ cp_parser_unqualified_id (cp_parser* parser,
 		   time.  */
 		type_decl = cp_parser_identifier (parser);
 		if (type_decl != error_mark_node)
-		  type_decl = build_nt (BIT_NOT_EXPR, type_decl);
-		return cp_expr (type_decl, loc);
+		  type_decl = build_min_nt_loc (loc, BIT_NOT_EXPR, type_decl);
+		return type_decl;
 	      }
 	  }
 	/* If an error occurred, assume that the name of the
@@ -6436,7 +6436,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	   class.  That allows us to keep parsing after running
 	   into ill-formed destructor names.  */
 	if (type_decl == error_mark_node && scope)
-	  return build_nt (BIT_NOT_EXPR, scope);
+	  return build_min_nt_loc (loc, BIT_NOT_EXPR, scope);
 	else if (type_decl == error_mark_node)
 	  return error_mark_node;
 
@@ -6463,7 +6463,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 		    "typedef-name %qD used as destructor declarator",
 		    type_decl);
 
-	return cp_expr (build_nt (BIT_NOT_EXPR, TREE_TYPE (type_decl), loc));
+	return build_min_nt_loc (loc, BIT_NOT_EXPR, TREE_TYPE (type_decl));
       }
 
     case CPP_KEYWORD:

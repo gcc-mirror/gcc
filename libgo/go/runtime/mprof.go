@@ -56,6 +56,7 @@ type bucket struct {
 	hash    uintptr
 	size    uintptr
 	nstk    uintptr
+	skip    int
 }
 
 // A memRecord is the bucket data for a bucket of type memProfile,
@@ -185,7 +186,7 @@ func max(x, y uintptr) uintptr {
 }
 
 // newBucket allocates a bucket with the given type and number of stack entries.
-func newBucket(typ bucketType, nstk int) *bucket {
+func newBucket(typ bucketType, nstk int, skipCount int) *bucket {
 	size := payloadOffset(typ, uintptr(nstk))
 	switch typ {
 	default:
@@ -203,6 +204,7 @@ func newBucket(typ bucketType, nstk int) *bucket {
 	bucketmem += size
 	b.typ = typ
 	b.nstk = uintptr(nstk)
+	b.skip = skipCount
 	return b
 }
 
@@ -229,7 +231,7 @@ func (b *bucket) bp() *blockRecord {
 }
 
 // Return the bucket for stk[0:nstk], allocating new bucket if needed.
-func stkbucket(typ bucketType, size uintptr, stk []uintptr, alloc bool) *bucket {
+func stkbucket(typ bucketType, size uintptr, skip int, stk []uintptr, alloc bool) *bucket {
 	if buckhash == nil {
 		buckhash = (*[buckHashSize]*bucket)(sysAlloc(unsafe.Sizeof(*buckhash), &memstats.buckhash_sys))
 		if buckhash == nil {
@@ -264,7 +266,7 @@ func stkbucket(typ bucketType, size uintptr, stk []uintptr, alloc bool) *bucket 
 	}
 
 	// Create new bucket.
-	b := newBucket(typ, len(stk))
+	b := newBucket(typ, len(stk), skip)
 	copy(b.stk(), stk)
 	b.hash = h
 	b.size = size
@@ -369,9 +371,10 @@ func mProf_PostSweep() {
 // Called by malloc to record a profiled block.
 func mProf_Malloc(p unsafe.Pointer, size uintptr) {
 	var stk [maxStack]uintptr
-	nstk := callersRaw(1, stk[:])
+	nstk := callersRaw(stk[:])
 	lock(&proflock)
-	b := stkbucket(memProfile, size, stk[:nstk], true)
+	skip := 1
+	b := stkbucket(memProfile, size, skip, stk[:nstk], true)
 	c := mProf.cycle
 	mp := b.mp()
 	mpc := &mp.future[(c+2)%uint32(len(mp.future))]
@@ -446,14 +449,14 @@ func saveblockevent(cycles int64, skip int, which bucketType) {
 	var nstk int
 	var stk [maxStack]uintptr
 	if gp.m.curg == nil || gp.m.curg == gp {
-		nstk = callersRaw(skip, stk[:])
+		nstk = callersRaw(stk[:])
 	} else {
 		// FIXME: This should get a traceback of gp.m.curg.
 		// nstk = gcallers(gp.m.curg, skip, stk[:])
-		nstk = callersRaw(skip, stk[:])
+		nstk = callersRaw(stk[:])
 	}
 	lock(&proflock)
-	b := stkbucket(which, 0, stk[:nstk], true)
+	b := stkbucket(which, 0, skip, stk[:nstk], true)
 	b.bp().count++
 	b.bp().cycles += cycles
 	unlock(&proflock)
@@ -605,9 +608,12 @@ func freebucket(tofree *bucket) *bucket {
 // later. Note: there is code in go-callers.c's backtrace_full callback()
 // function that performs very similar fixups; these two code paths
 // should be kept in sync.
-func fixupStack(stk []uintptr, canonStack *[maxStack]uintptr, size uintptr) int {
+func fixupStack(stk []uintptr, skip int, canonStack *[maxStack]uintptr, size uintptr) int {
 	var cidx int
 	var termTrace bool
+	// Increase the skip count to take into account the frames corresponding
+	// to runtime.callersRaw and to the C routine that it invokes.
+	skip += 2
 	for _, pc := range stk {
 		// Subtract 1 from PC to undo the 1 we added in callback in
 		// go-callers.c.
@@ -669,6 +675,16 @@ func fixupStack(stk []uintptr, canonStack *[maxStack]uintptr, size uintptr) int 
 			break
 		}
 	}
+
+	// Apply skip count. Needs to be done after expanding inline frames.
+	if skip != 0 {
+		if skip >= cidx {
+			return 0
+		}
+		copy(canonStack[:cidx-skip], canonStack[skip:])
+		return cidx - skip
+	}
+
 	return cidx
 }
 
@@ -680,8 +696,8 @@ func fixupStack(stk []uintptr, canonStack *[maxStack]uintptr, size uintptr) int 
 // the new bucket.
 func fixupBucket(b *bucket) {
 	var canonStack [maxStack]uintptr
-	frames := fixupStack(b.stk(), &canonStack, b.size)
-	cb := stkbucket(prunedProfile, b.size, canonStack[:frames], true)
+	frames := fixupStack(b.stk(), b.skip, &canonStack, b.size)
+	cb := stkbucket(prunedProfile, b.size, 0, canonStack[:frames], true)
 	switch b.typ {
 	default:
 		throw("invalid profile bucket type")

@@ -253,7 +253,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					    _Equal, _H1, _H2, _Hash,
 					    _RehashPolicy, _Traits>;
 
-      using __reuse_or_alloc_node_type =
+      using __reuse_or_alloc_node_gen_t =
 	__detail::_ReuseOrAllocNode<__node_alloc_type>;
 
       // Metaprogramming for picking apart hash caching.
@@ -277,9 +277,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					      (std::size_t)0)),
 		    "Cache the hash code or qualify your functors involved"
 		    " in hash code and bucket index computation with noexcept");
-
-      // Following two static assertions are necessary to guarantee
-      // that local_iterator will be default constructible.
 
       // When hash codes are cached local iterator inherits from H2 functor
       // which must then be default constructible.
@@ -331,7 +328,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _RehashPolicy		_M_rehash_policy;
 
       // A single bucket used when only need for 1 bucket. Especially
-      // interesting in move semantic to leave hashtable with only 1 buckets
+      // interesting in move semantic to leave hashtable with only 1 bucket
       // which is not allocated so that we can have those operations noexcept
       // qualified.
       // Note that we can't leave hashtable with 0 bucket without adding
@@ -350,24 +347,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_base_alloc() { return *this; }
 
       __bucket_type*
-      _M_allocate_buckets(size_type __n)
+      _M_allocate_buckets(size_type __bkt_count)
       {
-	if (__builtin_expect(__n == 1, false))
+	if (__builtin_expect(__bkt_count == 1, false))
 	  {
 	    _M_single_bucket = nullptr;
 	    return &_M_single_bucket;
 	  }
 
-	return __hashtable_alloc::_M_allocate_buckets(__n);
+	return __hashtable_alloc::_M_allocate_buckets(__bkt_count);
       }
 
       void
-      _M_deallocate_buckets(__bucket_type* __bkts, size_type __n)
+      _M_deallocate_buckets(__bucket_type* __bkts, size_type __bkt_count)
       {
 	if (_M_uses_single_bucket(__bkts))
 	  return;
 
-	__hashtable_alloc::_M_deallocate_buckets(__bkts, __n);
+	__hashtable_alloc::_M_deallocate_buckets(__bkts, __bkt_count);
       }
 
       void
@@ -394,10 +391,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_assign(const _Hashtable&, const _NodeGenerator&);
 
       void
-      _M_move_assign(_Hashtable&&, std::true_type);
+      _M_move_assign(_Hashtable&&, true_type);
 
       void
-      _M_move_assign(_Hashtable&&, std::false_type);
+      _M_move_assign(_Hashtable&&, false_type);
 
       void
       _M_reset() noexcept;
@@ -405,21 +402,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Hashtable(const _H1& __h1, const _H2& __h2, const _Hash& __h,
 		 const _Equal& __eq, const _ExtractKey& __exk,
 		 const allocator_type& __a)
-	: __hashtable_base(__exk, __h1, __h2, __h, __eq),
-	  __hashtable_alloc(__node_alloc_type(__a))
+      : __hashtable_base(__exk, __h1, __h2, __h, __eq),
+	__hashtable_alloc(__node_alloc_type(__a))
       { }
 
     public:
       // Constructor, destructor, assignment, swap
       _Hashtable() = default;
-      _Hashtable(size_type __bucket_hint,
+      _Hashtable(size_type __bkt_count_hint,
 		 const _H1&, const _H2&, const _Hash&,
 		 const _Equal&, const _ExtractKey&,
 		 const allocator_type&);
 
       template<typename _InputIterator>
 	_Hashtable(_InputIterator __first, _InputIterator __last,
-		   size_type __bucket_hint,
+		   size_type __bkt_count_hint,
 		   const _H1&, const _H2&, const _Hash&,
 		   const _Equal&, const _ExtractKey&,
 		   const allocator_type&);
@@ -435,34 +432,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Use delegating constructors.
       explicit
       _Hashtable(const allocator_type& __a)
-	: __hashtable_alloc(__node_alloc_type(__a))
+      : __hashtable_alloc(__node_alloc_type(__a))
       { }
 
       explicit
-      _Hashtable(size_type __n,
+      _Hashtable(size_type __bkt_count_hint,
 		 const _H1& __hf = _H1(),
 		 const key_equal& __eql = key_equal(),
 		 const allocator_type& __a = allocator_type())
-      : _Hashtable(__n, __hf, _H2(), _Hash(), __eql,
+      : _Hashtable(__bkt_count_hint, __hf, _H2(), _Hash(), __eql,
 		   __key_extract(), __a)
       { }
 
       template<typename _InputIterator>
 	_Hashtable(_InputIterator __f, _InputIterator __l,
-		   size_type __n = 0,
+		   size_type __bkt_count_hint = 0,
 		   const _H1& __hf = _H1(),
 		   const key_equal& __eql = key_equal(),
 		   const allocator_type& __a = allocator_type())
-	: _Hashtable(__f, __l, __n, __hf, _H2(), _Hash(), __eql,
+	: _Hashtable(__f, __l, __bkt_count_hint, __hf, _H2(), _Hash(), __eql,
 		     __key_extract(), __a)
 	{ }
 
       _Hashtable(initializer_list<value_type> __l,
-		 size_type __n = 0,
+		 size_type __bkt_count_hint = 0,
 		 const _H1& __hf = _H1(),
 		 const key_equal& __eql = key_equal(),
 		 const allocator_type& __a = allocator_type())
-      : _Hashtable(__l.begin(), __l.end(), __n, __hf, _H2(), _Hash(), __eql,
+      : _Hashtable(__l.begin(), __l.end(), __bkt_count_hint,
+		   __hf, _H2(), _Hash(), __eql,
 		   __key_extract(), __a)
       { }
 
@@ -485,7 +483,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Hashtable&
       operator=(initializer_list<value_type> __l)
       {
-	__reuse_or_alloc_node_type __roan(_M_begin(), *this);
+	__reuse_or_alloc_node_gen_t __roan(_M_begin(), *this);
 	_M_before_begin._M_nxt = nullptr;
 	clear();
 	this->_M_insert_range(__l.begin(), __l.end(), __roan, __unique_keys());
@@ -557,46 +555,46 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return max_size(); }
 
       size_type
-      bucket_size(size_type __n) const
-      { return std::distance(begin(__n), end(__n)); }
+      bucket_size(size_type __bkt) const
+      { return std::distance(begin(__bkt), end(__bkt)); }
 
       size_type
       bucket(const key_type& __k) const
       { return _M_bucket_index(__k, this->_M_hash_code(__k)); }
 
       local_iterator
-      begin(size_type __n)
+      begin(size_type __bkt)
       {
-	return local_iterator(*this, _M_bucket_begin(__n),
-			      __n, _M_bucket_count);
+	return local_iterator(*this, _M_bucket_begin(__bkt),
+			      __bkt, _M_bucket_count);
       }
 
       local_iterator
-      end(size_type __n)
-      { return local_iterator(*this, nullptr, __n, _M_bucket_count); }
+      end(size_type __bkt)
+      { return local_iterator(*this, nullptr, __bkt, _M_bucket_count); }
 
       const_local_iterator
-      begin(size_type __n) const
+      begin(size_type __bkt) const
       {
-	return const_local_iterator(*this, _M_bucket_begin(__n),
-				    __n, _M_bucket_count);
+	return const_local_iterator(*this, _M_bucket_begin(__bkt),
+				    __bkt, _M_bucket_count);
       }
 
       const_local_iterator
-      end(size_type __n) const
-      { return const_local_iterator(*this, nullptr, __n, _M_bucket_count); }
+      end(size_type __bkt) const
+      { return const_local_iterator(*this, nullptr, __bkt, _M_bucket_count); }
 
       // DR 691.
       const_local_iterator
-      cbegin(size_type __n) const
+      cbegin(size_type __bkt) const
       {
-	return const_local_iterator(*this, _M_bucket_begin(__n),
-				    __n, _M_bucket_count);
+	return const_local_iterator(*this, _M_bucket_begin(__bkt),
+				    __bkt, _M_bucket_count);
       }
 
       const_local_iterator
-      cend(size_type __n) const
-      { return const_local_iterator(*this, nullptr, __n, _M_bucket_count); }
+      cend(size_type __bkt) const
+      { return const_local_iterator(*this, nullptr, __bkt, _M_bucket_count); }
 
       float
       load_factor() const noexcept
@@ -686,22 +684,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename... _Args>
 	std::pair<iterator, bool>
-	_M_emplace(std::true_type, _Args&&... __args);
+	_M_emplace(true_type, _Args&&... __args);
 
       template<typename... _Args>
 	iterator
-	_M_emplace(std::false_type __uk, _Args&&... __args)
+	_M_emplace(false_type __uk, _Args&&... __args)
 	{ return _M_emplace(cend(), __uk, std::forward<_Args>(__args)...); }
 
       // Emplace with hint, useless when keys are unique.
       template<typename... _Args>
 	iterator
-	_M_emplace(const_iterator, std::true_type __uk, _Args&&... __args)
+	_M_emplace(const_iterator, true_type __uk, _Args&&... __args)
 	{ return _M_emplace(__uk, std::forward<_Args>(__args)...).first; }
 
       template<typename... _Args>
 	iterator
-	_M_emplace(const_iterator, std::false_type, _Args&&... __args);
+	_M_emplace(const_iterator, false_type, _Args&&... __args);
 
       template<typename _Arg, typename _NodeGenerator>
 	std::pair<iterator, bool>
@@ -733,10 +731,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  const _NodeGenerator&, false_type);
 
       size_type
-      _M_erase(std::true_type, const key_type&);
+      _M_erase(true_type, const key_type&);
 
       size_type
-      _M_erase(std::false_type, const key_type&);
+      _M_erase(false_type, const key_type&);
 
       iterator
       _M_erase(size_type __bkt, __node_base* __prev_n, __node_type* __n);
@@ -777,8 +775,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       clear() noexcept;
 
-      // Set number of buckets to be appropriate for container of n element.
-      void rehash(size_type __n);
+      // Set number of buckets keeping it appropriate for container's number
+      // of elements.
+      void rehash(size_type __bkt_count);
 
       // DR 1189.
       // reserve, if present, comes from _Rehash_base.
@@ -918,14 +917,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       // Helper rehash method used when keys are unique.
-      void _M_rehash_aux(size_type __n, std::true_type);
+      void _M_rehash_aux(size_type __bkt_count, true_type);
 
       // Helper rehash method used when keys can be non-unique.
-      void _M_rehash_aux(size_type __n, std::false_type);
+      void _M_rehash_aux(size_type __bkt_count, false_type);
 
       // Unconditionally change size of bucket array to n, restore
       // hash policy state to __state on exception.
-      void _M_rehash(size_type __n, const __rehash_state& __state);
+      void _M_rehash(size_type __bkt_count, const __rehash_state& __state);
     };
 
 
@@ -950,17 +949,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _Traits>
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    _Hashtable(size_type __bucket_hint,
+    _Hashtable(size_type __bkt_count_hint,
 	       const _H1& __h1, const _H2& __h2, const _Hash& __h,
 	       const _Equal& __eq, const _ExtractKey& __exk,
 	       const allocator_type& __a)
-      : _Hashtable(__h1, __h2, __h, __eq, __exk, __a)
+    : _Hashtable(__h1, __h2, __h, __eq, __exk, __a)
     {
-      auto __bkt = _M_rehash_policy._M_next_bkt(__bucket_hint);
-      if (__bkt > _M_bucket_count)
+      auto __bkt_count = _M_rehash_policy._M_next_bkt(__bkt_count_hint);
+      if (__bkt_count > _M_bucket_count)
 	{
-	  _M_buckets = _M_allocate_buckets(__bkt);
-	  _M_bucket_count = __bkt;
+	  _M_buckets = _M_allocate_buckets(__bkt_count);
+	  _M_bucket_count = __bkt_count;
 	}
     }
 
@@ -972,17 +971,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
       _Hashtable(_InputIterator __f, _InputIterator __l,
-		 size_type __bucket_hint,
+		 size_type __bkt_count_hint,
 		 const _H1& __h1, const _H2& __h2, const _Hash& __h,
 		 const _Equal& __eq, const _ExtractKey& __exk,
 		 const allocator_type& __a)
-	: _Hashtable(__h1, __h2, __h, __eq, __exk, __a)
+      : _Hashtable(__h1, __h2, __h, __eq, __exk, __a)
       {
 	auto __nb_elems = __detail::__distance_fw(__f, __l);
 	auto __bkt_count =
 	  _M_rehash_policy._M_next_bkt(
 	    std::max(_M_rehash_policy._M_bkt_for_elements(__nb_elems),
-		     __bucket_hint));
+		     __bkt_count_hint));
 
 	if (__bkt_count > _M_bucket_count)
 	  {
@@ -1044,7 +1043,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Reuse allocated buckets and nodes.
       _M_assign_elements(__ht,
-	[](const __reuse_or_alloc_node_type& __roan, const __node_type* __n)
+	[](const __reuse_or_alloc_node_gen_t& __roan, const __node_type* __n)
 	{ return __roan(__n->_M_v()); });
       return *this;
     }
@@ -1078,7 +1077,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __hashtable_base::operator=(std::forward<_Ht>(__ht));
 	    _M_element_count = __ht._M_element_count;
 	    _M_rehash_policy = __ht._M_rehash_policy;
-	    __reuse_or_alloc_node_type __roan(_M_begin(), *this);
+	    __reuse_or_alloc_node_gen_t __roan(_M_begin(), *this);
 	    _M_before_begin._M_nxt = nullptr;
 	    _M_assign(__ht,
 		      [&__node_gen, &__roan](__node_type* __n)
@@ -1175,7 +1174,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    _M_move_assign(_Hashtable&& __ht, std::true_type)
+    _M_move_assign(_Hashtable&& __ht, true_type)
     {
       this->_M_deallocate_nodes(_M_begin());
       _M_deallocate_buckets();
@@ -1207,15 +1206,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    _M_move_assign(_Hashtable&& __ht, std::false_type)
+    _M_move_assign(_Hashtable&& __ht, false_type)
     {
       if (__ht._M_node_allocator() == this->_M_node_allocator())
-	_M_move_assign(std::move(__ht), std::true_type());
+	_M_move_assign(std::move(__ht), true_type());
       else
 	{
 	  // Can't move memory, move elements then.
 	  _M_assign_elements(std::move(__ht),
-		[](const __reuse_or_alloc_node_type& __roan, __node_type* __n)
+		[](const __reuse_or_alloc_node_gen_t& __roan, __node_type* __n)
 		{ return __roan(std::move_if_noexcept(__n->_M_v())); });
 	  __ht.clear();
 	}
@@ -1415,8 +1414,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     -> iterator
     {
       __hash_code __code = this->_M_hash_code(__k);
-      std::size_t __n = _M_bucket_index(__k, __code);
-      __node_type* __p = _M_find_node(__n, __k, __code);
+      std::size_t __bkt = _M_bucket_index(__k, __code);
+      __node_type* __p = _M_find_node(__bkt, __k, __code);
       return __p ? iterator(__p) : end();
     }
 
@@ -1431,8 +1430,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     -> const_iterator
     {
       __hash_code __code = this->_M_hash_code(__k);
-      std::size_t __n = _M_bucket_index(__k, __code);
-      __node_type* __p = _M_find_node(__n, __k, __code);
+      std::size_t __bkt = _M_bucket_index(__k, __code);
+      __node_type* __p = _M_find_node(__bkt, __k, __code);
       return __p ? const_iterator(__p) : end();
     }
 
@@ -1447,8 +1446,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     -> size_type
     {
       __hash_code __code = this->_M_hash_code(__k);
-      std::size_t __n = _M_bucket_index(__k, __code);
-      __node_type* __p = _M_bucket_begin(__n);
+      std::size_t __bkt = _M_bucket_index(__k, __code);
+      __node_type* __p = _M_bucket_begin(__bkt);
       if (!__p)
 	return 0;
 
@@ -1462,7 +1461,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    // found a non-equivalent value after an equivalent one it
 	    // means that we won't find any new equivalent value.
 	    break;
-	  if (!__p->_M_nxt || _M_bucket_index(__p->_M_next()) != __n)
+	  if (!__p->_M_nxt || _M_bucket_index(__p->_M_next()) != __bkt)
 	    break;
 	}
       return __result;
@@ -1479,13 +1478,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     -> pair<iterator, iterator>
     {
       __hash_code __code = this->_M_hash_code(__k);
-      std::size_t __n = _M_bucket_index(__k, __code);
-      __node_type* __p = _M_find_node(__n, __k, __code);
+      std::size_t __bkt = _M_bucket_index(__k, __code);
+      __node_type* __p = _M_find_node(__bkt, __k, __code);
 
       if (__p)
 	{
 	  __node_type* __p1 = __p->_M_next();
-	  while (__p1 && _M_bucket_index(__p1) == __n
+	  while (__p1 && _M_bucket_index(__p1) == __bkt
 		 && this->_M_equals(__k, __code, __p1))
 	    __p1 = __p1->_M_next();
 
@@ -1506,13 +1505,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     -> pair<const_iterator, const_iterator>
     {
       __hash_code __code = this->_M_hash_code(__k);
-      std::size_t __n = _M_bucket_index(__k, __code);
-      __node_type* __p = _M_find_node(__n, __k, __code);
+      std::size_t __bkt = _M_bucket_index(__k, __code);
+      __node_type* __p = _M_find_node(__bkt, __k, __code);
 
       if (__p)
 	{
 	  __node_type* __p1 = __p->_M_next();
-	  while (__p1 && _M_bucket_index(__p1) == __n
+	  while (__p1 && _M_bucket_index(__p1) == __bkt
 		 && this->_M_equals(__k, __code, __p1))
 	    __p1 = __p1->_M_next();
 
@@ -1522,7 +1521,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return std::make_pair(end(), end());
     }
 
-  // Find the node whose key compares equal to k in the bucket n.
+  // Find the node whose key compares equal to k in the bucket bkt.
   // Return nullptr if no node is found.
   template<typename _Key, typename _Value,
 	   typename _Alloc, typename _ExtractKey, typename _Equal,
@@ -1531,11 +1530,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     auto
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    _M_find_before_node(size_type __n, const key_type& __k,
+    _M_find_before_node(size_type __bkt, const key_type& __k,
 			__hash_code __code) const
     -> __node_base*
     {
-      __node_base* __prev_p = _M_buckets[__n];
+      __node_base* __prev_p = _M_buckets[__bkt];
       if (!__prev_p)
 	return nullptr;
 
@@ -1545,7 +1544,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (this->_M_equals(__k, __code, __p))
 	    return __prev_p;
 
-	  if (!__p->_M_nxt || _M_bucket_index(__p->_M_next()) != __n)
+	  if (!__p->_M_nxt || _M_bucket_index(__p->_M_next()) != __bkt)
 	    break;
 	  __prev_p = __p;
 	}
@@ -1631,11 +1630,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-      _M_emplace(std::true_type, _Args&&... __args)
+      _M_emplace(true_type, _Args&&... __args)
       -> pair<iterator, bool>
       {
 	// First build the node to get access to the hash code
-	__node_type* __node = this->_M_allocate_node(std::forward<_Args>(__args)...);
+	__node_type* __node
+	  = this->_M_allocate_node(std::forward<_Args>(__args)...);
 	const key_type& __k = this->_M_extract()(__node->_M_v());
 	__hash_code __code;
 	__try
@@ -1669,7 +1669,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-      _M_emplace(const_iterator __hint, std::false_type, _Args&&... __args)
+      _M_emplace(const_iterator __hint, false_type, _Args&&... __args)
       -> iterator
       {
 	// First build the node to get its hash code.
@@ -1711,7 +1711,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (__do_rehash.first)
 	    {
 	      _M_rehash(__do_rehash.second, __saved_state);
-	      __bkt = _M_bucket_index(this->_M_extract()(__node->_M_v()), __code);
+	      __bkt
+		= _M_bucket_index(this->_M_extract()(__node->_M_v()), __code);
 	    }
 
 	  this->_M_store_code(__node, __code);
@@ -1896,7 +1897,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     auto
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    _M_erase(std::true_type, const key_type& __k)
+    _M_erase(true_type, const key_type& __k)
     -> size_type
     {
       __hash_code __code = this->_M_hash_code(__k);
@@ -1920,7 +1921,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     auto
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    _M_erase(std::false_type, const key_type& __k)
+    _M_erase(false_type, const key_type& __k)
     -> size_type
     {
       __hash_code __code = this->_M_hash_code(__k);
@@ -2038,16 +2039,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    rehash(size_type __n)
+    rehash(size_type __bkt_count)
     {
       const __rehash_state& __saved_state = _M_rehash_policy._M_state();
-      std::size_t __buckets
+      __bkt_count
 	= std::max(_M_rehash_policy._M_bkt_for_elements(_M_element_count + 1),
-		   __n);
-      __buckets = _M_rehash_policy._M_next_bkt(__buckets);
+		   __bkt_count);
+      __bkt_count = _M_rehash_policy._M_next_bkt(__bkt_count);
 
-      if (__buckets != _M_bucket_count)
-	_M_rehash(__buckets, __saved_state);
+      if (__bkt_count != _M_bucket_count)
+	_M_rehash(__bkt_count, __saved_state);
       else
 	// No rehash, restore previous state to keep it consistent with
 	// container state.
@@ -2061,11 +2062,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    _M_rehash(size_type __n, const __rehash_state& __state)
+    _M_rehash(size_type __bkt_count, const __rehash_state& __state)
     {
       __try
 	{
-	  _M_rehash_aux(__n, __unique_keys());
+	  _M_rehash_aux(__bkt_count, __unique_keys());
 	}
       __catch(...)
 	{
@@ -2084,16 +2085,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    _M_rehash_aux(size_type __n, std::true_type)
+    _M_rehash_aux(size_type __bkt_count, true_type)
     {
-      __bucket_type* __new_buckets = _M_allocate_buckets(__n);
+      __bucket_type* __new_buckets = _M_allocate_buckets(__bkt_count);
       __node_type* __p = _M_begin();
       _M_before_begin._M_nxt = nullptr;
       std::size_t __bbegin_bkt = 0;
       while (__p)
 	{
 	  __node_type* __next = __p->_M_next();
-	  std::size_t __bkt = __hash_code_base::_M_bucket_index(__p, __n);
+	  std::size_t __bkt
+	    = __hash_code_base::_M_bucket_index(__p, __bkt_count);
 	  if (!__new_buckets[__bkt])
 	    {
 	      __p->_M_nxt = _M_before_begin._M_nxt;
@@ -2112,7 +2114,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       _M_deallocate_buckets();
-      _M_bucket_count = __n;
+      _M_bucket_count = __bkt_count;
       _M_buckets = __new_buckets;
     }
 
@@ -2125,9 +2127,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
-    _M_rehash_aux(size_type __n, std::false_type)
+    _M_rehash_aux(size_type __bkt_count, false_type)
     {
-      __bucket_type* __new_buckets = _M_allocate_buckets(__n);
+      __bucket_type* __new_buckets = _M_allocate_buckets(__bkt_count);
 
       __node_type* __p = _M_begin();
       _M_before_begin._M_nxt = nullptr;
@@ -2139,7 +2141,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       while (__p)
 	{
 	  __node_type* __next = __p->_M_next();
-	  std::size_t __bkt = __hash_code_base::_M_bucket_index(__p, __n);
+	  std::size_t __bkt
+	    = __hash_code_base::_M_bucket_index(__p, __bkt_count);
 
 	  if (__prev_p && __prev_bkt == __bkt)
 	    {
@@ -2166,7 +2169,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    {
 		      std::size_t __next_bkt
 			= __hash_code_base::_M_bucket_index(__prev_p->_M_next(),
-							    __n);
+							    __bkt_count);
 		      if (__next_bkt != __prev_bkt)
 			__new_buckets[__next_bkt] = __prev_p;
 		    }
@@ -2196,13 +2199,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__check_bucket && __prev_p->_M_nxt)
 	{
 	  std::size_t __next_bkt
-	    = __hash_code_base::_M_bucket_index(__prev_p->_M_next(), __n);
+	    = __hash_code_base::_M_bucket_index(__prev_p->_M_next(),
+						__bkt_count);
 	  if (__next_bkt != __prev_bkt)
 	    __new_buckets[__next_bkt] = __prev_p;
 	}
 
       _M_deallocate_buckets();
-      _M_bucket_count = __n;
+      _M_bucket_count = __bkt_count;
       _M_buckets = __new_buckets;
     }
 

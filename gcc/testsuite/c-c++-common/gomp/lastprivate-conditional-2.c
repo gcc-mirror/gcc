@@ -13,7 +13,7 @@ foo (int *p)
     if (p[i])
       b = i;
   #pragma omp parallel
-  #pragma omp for simd lastprivate (conditional: c) /* { dg-message "not supported yet" } */
+  #pragma omp for simd lastprivate (conditional: c)
   for (i = 0; i < 32; i++)
     if (p[i])
       c = i;
@@ -21,7 +21,7 @@ foo (int *p)
   for (i = 0; i < 32; i++)
     if (p[i])
       d = i;
-  #pragma omp parallel for simd lastprivate (conditional: e) /* { dg-message "not supported yet" } */
+  #pragma omp parallel for simd lastprivate (conditional: e)
   for (i = 0; i < 32; i++)
     if (p[i])
       e = i;

@@ -1,5 +1,7 @@
 2019-06-05  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r271953.
+
 	gcc/
 	* tree-core.h (enum tree_index): Add TI_MODULE_HWM.
 	gcc/cp/

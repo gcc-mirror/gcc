@@ -5432,13 +5432,6 @@ Generate code that uses (does not use) the move from condition
 register field instruction implemented on the POWER4 processor and
 other processors that support the PowerPC V2.01 architecture.
 
-@item mfpgpr
-@itemx no-mfpgpr
-@cindex @code{target("mfpgpr")} function attribute, PowerPC
-Generate code that uses (does not use) the FP move to/from general
-purpose register instructions implemented on the POWER6X processor and
-other processors that support the extended PowerPC V2.05 architecture.
-
 @item mulhw
 @itemx no-mulhw
 @cindex @code{target("mulhw")} function attribute, PowerPC
@@ -16879,8 +16872,8 @@ enabling the @option{-mpowerpc64}, @option{-mpowerpc-gpopt},
 @option{-mpowerpc-gfxopt}, @option{-mmfcrf}, @option{-mpopcntb},
 @option{-mfprnd}, @option{-mcmpb}, @option{-mhard-dfp}, and
 @option{-mrecip-precision} options.  Specify the
-@option{-maltivec} and @option{-mfpgpr} options explicitly in
-combination with the above options if they are desired.
+@option{-maltivec} option explicitly in
+combination with the above options if desired.
 
 The following functions require option @option{-mcmpb}.
 @smallexample

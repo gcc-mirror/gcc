@@ -617,6 +617,11 @@ class Gogo
     this->gc_roots_.push_back(expr);
   }
 
+  // Add a type to the descriptor list.
+  void
+  add_type_descriptor(Type* type)
+  { this->type_descriptors_.push_back(type); }
+
   // Traverse the tree.  See the Traverse class.
   void
   traverse(Traverse*);
@@ -901,6 +906,14 @@ class Gogo
   std::string
   type_descriptor_name(Type*, Named_type*);
 
+  // Return the name of the type descriptor list symbol of a package.
+  std::string
+  type_descriptor_list_symbol(Package*);
+
+  // Return the name of the list of all type descriptor lists.
+  std::string
+  typelists_symbol();
+
   // Return the assembler name for the GC symbol for a type.
   std::string
   gc_symbol_name(Type*);
@@ -966,6 +979,15 @@ class Gogo
   register_gc_vars(const std::vector<Named_object*>&,
                    std::vector<Bstatement*>&,
                    Bfunction* init_bfunction);
+
+  // Build the list of type descriptors.
+  void
+  build_type_descriptor_list();
+
+  // Register the type descriptors with the runtime.
+  void
+  register_type_descriptors(std::vector<Bstatement*>&,
+                            Bfunction* init_bfunction);
 
   void
   propagate_writebarrierrec();
@@ -1108,6 +1130,8 @@ class Gogo
   std::vector<Analysis_set> analysis_sets_;
   // A list of objects to add to the GC roots.
   std::vector<Expression*> gc_roots_;
+  // A list of type descriptors that we need to register.
+  std::vector<Type*> type_descriptors_;
   // A list of function declarations with imported bodies that we may
   // want to inline.
   std::vector<Named_object*> imported_inlinable_functions_;
@@ -1486,6 +1510,11 @@ class Function
   set_is_inline_only()
   { this->is_inline_only_ = true; }
 
+  // Mark the function as referenced by an inline body.
+  void
+  set_is_referenced_by_inline()
+  { this->is_referenced_by_inline_ = true; }
+
   // Swap with another function.  Used only for the thunk which calls
   // recover.
   void
@@ -1538,17 +1567,18 @@ class Function
 
   // Export the function.
   void
-  export_func(Export*, const std::string& name) const;
+  export_func(Export*, const Named_object*) const;
 
   // Export a function with a type.
   static void
-  export_func_with_type(Export*, const std::string& name,
+  export_func_with_type(Export*, const Named_object*,
 			const Function_type*, Results*, bool nointerface,
 			Block* block, Location);
 
-  // Import a function.
-  static void
-  import_func(Import*, std::string* pname, Typed_identifier** receiver,
+  // Import a function.  Reports whether the import succeeded.
+  static bool
+  import_func(Import*, std::string* pname, Package** pkg,
+	      bool* is_exported, Typed_identifier** receiver,
 	      Typed_identifier_list** pparameters,
 	      Typed_identifier_list** presults, bool* is_varargs,
 	      bool* nointerface, std::string* body);
@@ -1628,6 +1658,9 @@ class Function
   // True if this function is inline only: if it should not be emitted
   // if it is not inlined.
   bool is_inline_only_ : 1;
+  // True if this function is referenced from an inlined body that
+  // will be put into the export data.
+  bool is_referenced_by_inline_ : 1;
 };
 
 // A snapshot of the current binding state.
@@ -1768,9 +1801,9 @@ class Function_declaration
 
   // Export a function declaration.
   void
-  export_func(Export* exp, const std::string& name) const
+  export_func(Export* exp, const Named_object* no) const
   {
-    Function::export_func_with_type(exp, name, this->fntype_, NULL,
+    Function::export_func_with_type(exp, no, this->fntype_, NULL,
 				    this->is_method() && this->nointerface(),
 				    NULL, this->location_);
   }
@@ -2022,6 +2055,14 @@ class Variable
     this->in_unique_section_ = true;
   }
 
+  // Mark the variable as referenced by an inline body.
+  void
+  set_is_referenced_by_inline()
+  {
+    go_assert(this->is_global_);
+    this->is_referenced_by_inline_ = true;
+  }
+
   // Return the top-level declaration for this variable.
   Statement*
   toplevel_decl()
@@ -2062,11 +2103,12 @@ class Variable
 
   // Export the variable.
   void
-  export_var(Export*, const std::string& name) const;
+  export_var(Export*, const Named_object*) const;
 
-  // Import a variable.
-  static void
-  import_var(Import*, std::string* pname, Type** ptype);
+  // Import a variable.  Reports whether the import succeeded.
+  static bool
+  import_var(Import*, std::string* pname, Package** pkg, bool* is_exported,
+	     Type** ptype);
 
  private:
   // The type of a tuple.
@@ -2133,6 +2175,9 @@ class Variable
   // True if this variable should be put in a unique section.  This is
   // used for field tracking.
   bool in_unique_section_ : 1;
+  // True if this variable is referenced from an inlined body that
+  // will be put into the export data.
+  bool is_referenced_by_inline_ : 1;
   // The top-level declaration for this variable. Only used for local
   // variables. Must be a Temporary_statement if not NULL.
   Statement* toplevel_decl_;

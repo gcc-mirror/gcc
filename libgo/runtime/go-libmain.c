@@ -230,7 +230,6 @@ gostart (void *arg)
   runtime_args (a->argc, (byte **) a->argv);
   setncpu (getproccount ());
   setpagesize (getpagesize ());
-  runtime_sched = runtime_getsched();
   runtime_schedinit ();
   __go_go ((uintptr)(runtime_main), NULL);
   runtime_mstart (runtime_m ());

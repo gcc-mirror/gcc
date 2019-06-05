@@ -29,7 +29,8 @@ class congruence_class
 {
 public:
   /* Congruence class constructor for a new class with _ID.  */
-  congruence_class (unsigned int _id): in_worklist (false), id(_id)
+  congruence_class (unsigned int _id): in_worklist (false), id (_id),
+  referenced_by_count (0)
   {
   }
 
@@ -54,6 +55,9 @@ public:
 
   /* Global unique class identifier.  */
   unsigned int id;
+
+  /* Total number of references to items of this class.  */
+  unsigned referenced_by_count;
 };
 
 /* Semantic item type enum.  */
@@ -126,7 +130,6 @@ struct symbol_compare_hash : nofree_ptr_hash <symbol_compare_collection>
   }
 };
 
-
 /* Semantic item usage pair.  */
 class sem_usage_pair
 {
@@ -140,6 +143,32 @@ public:
   /* Index of usage of such an item.  */
   unsigned int index;
 };
+
+struct sem_usage_pair_hash : pointer_hash <sem_usage_pair>
+{
+  static inline hashval_t hash (sem_usage_pair *);
+  static inline bool equal (sem_usage_pair *, sem_usage_pair *);
+};
+
+inline hashval_t
+sem_usage_pair_hash::hash (sem_usage_pair *pair)
+{
+  inchash::hash hstate;
+
+  hstate.add_ptr (pair->item);
+  hstate.add_int (pair->index);
+
+  return hstate.end ();
+}
+
+inline bool
+sem_usage_pair_hash::equal (sem_usage_pair *p1, sem_usage_pair *p2)
+{
+  return p1->item == p2->item && p1->index == p2->index;
+}
+
+struct sem_usage_hash : sem_usage_pair_hash, typed_delete_remove <sem_usage_pair> {};
+typedef hash_map<sem_usage_hash, auto_vec<sem_item *> > ref_map;
 
 typedef std::pair<symtab_node *, symtab_node *> symtab_pair;
 
@@ -161,14 +190,11 @@ public:
   /* Dump function for debugging purpose.  */
   DEBUG_FUNCTION void dump (void);
 
-  /* Initialize semantic item by info reachable during LTO WPA phase.  */
-  virtual void init_wpa (void) = 0;
-
   /* Semantic item initialization function.  */
   virtual void init (void) = 0;
 
   /* Add reference to a semantic TARGET.  */
-  void add_reference (sem_item *target);
+  void add_reference (ref_map *map, sem_item *target);
 
   /* Fast equality function based on knowledge known in WPA.  */
   virtual bool equals_wpa (sem_item *item,
@@ -216,17 +242,15 @@ public:
   /* Declaration tree node.  */
   tree decl;
 
-  /* Semantic references used that generate congruence groups.  */
-  vec <sem_item *> refs;
+  /* Number of references to a semantic symbols (function calls,
+     variable references).  */
+  unsigned reference_count;
 
   /* Pointer to a congruence class the item belongs to.  */
   congruence_class *cls;
 
   /* Index of the item in a class belonging to.  */
   unsigned int index_in_class;
-
-  /* List of semantic items where the instance is used.  */
-  vec <sem_usage_pair *> usages;
 
   /* A bitmap with indices of all classes referencing this item.  */
   bitmap usage_index_bitmap;
@@ -239,6 +263,9 @@ public:
 
   /* Temporary hash used where hash values of references are added.  */
   hashval_t global_hash;
+
+  /* Number of references to this symbol.  */
+  unsigned referenced_by_count;
 protected:
   /* Cached, once calculated hash for the item.  */
 
@@ -294,10 +321,6 @@ public:
   sem_function (cgraph_node *_node, bitmap_obstack *stack);
 
   ~sem_function ();
-
-  inline virtual void init_wpa (void)
-  {
-  }
 
   virtual void init (void);
   virtual bool equals_wpa (sem_item *item,
@@ -402,8 +425,6 @@ public:
 
   sem_variable (varpool_node *_node, bitmap_obstack *stack);
 
-  inline virtual void init_wpa (void) {}
-
   /* Semantic variable initialization function.  */
   inline virtual void init (void)
   {
@@ -504,7 +525,7 @@ public:
 
   /* Worklist of congruence classes that can potentially
      refine classes of congruence.  */
-  std::list<congruence_class *> worklist;
+  fibonacci_heap<unsigned, congruence_class> worklist;
 
   /* Remove semantic ITEM and release memory.  */
   void remove_item (sem_item *item);
@@ -581,7 +602,7 @@ private:
 
   /* Tests if a class CLS used as INDEXth splits any congruence classes.
      Bitmap stack BMSTACK is used for bitmap allocation.  */
-  void do_congruence_step_for_index (congruence_class *cls, unsigned int index);
+  bool do_congruence_step_for_index (congruence_class *cls, unsigned int index);
 
   /* Makes pairing between a congruence class CLS and semantic ITEM.  */
   static void add_item_to_class (congruence_class *cls, sem_item *item);
@@ -644,6 +665,9 @@ private:
   /* Vector of merged variables.  Needed for fixup of points-to-analysis
      info.  */
   vec <symtab_pair> m_merged_variables;
+
+  /* Hash map will all references.  */
+  ref_map m_references;
 }; // class sem_item_optimizer
 
 } // ipa_icf namespace

@@ -1,3 +1,390 @@
+2019-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/90733
+	* var-tracking.c (vt_expand_loc_callback): Don't create raw subregs
+	with VOIDmode inner operands.
+
+2019-06-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90726
+	* tree-ssa-loop-niter.c (expand_simple_operations): Do not
+	turn an expression graph into a tree.
+
+2019-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.c (struct omp_region): Add has_lastprivate_conditional
+	member.
+	(expand_parallel_call): If region->inner->has_lastprivate_conditional,
+	treat it like explicit monotonic schedule modifier.
+	(expand_omp_for): Initialize has_lastprivate_conditional.
+	If fd.lastprivate_conditional != 0, treat it like explicit monotonic
+	schedule modifier.
+
+	* omp-low.c (lower_rec_input_clauses): For lastprivate conditional
+	references, lookup in in hash map MEM_REF operand instead of the
+	MEM_REF itself.
+	(lower_omp_1): When looking for lastprivate conditional assignments,
+	handle MEM_REFs with REFERENCE_TYPE operands.
+
+	* omp-low.c (lower_rec_input_clauses): Force max_vf if is_simd and
+	on privatization clauses OMP_CLAUSE_DECL is privatized by reference
+	and references a VLA.  Handle references to non-VLAs if is_simd
+	all privatization clauses like reductions.
+	(lower_rec_input_clauses) <case do_private, case do_firstprivate>:
+	If omp_is_reference, use always omp simd arrays and set
+	DECL_VALUE_EXPR in that case, if lower_rec_simd_input_clauses
+	fails, emit reference initialization.
+
+2019-06-05  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/89803
+	* config/i386/avx512dqintrin.h (_mm_mask_fpclass_ss_mask,
+	_mm_mask_fpclass_sd_mask): New intrinsics.
+	(_mm_fpclass_ss_mask, _mm_fpclass_sd_mask): Modified, use new builtins.
+	* config/i386/i386-builtin.def
+	(__builtin_ia32_fpclassss_mask, __builtin_ia32_fpclasssd_mask):
+	New builtins.
+	(__builtin_ia32_fpclassss, __builtin_ia32_fpclasssd): Deleted.
+	* config/i386/i386-builtin-types.def (DEF_FUNCTION_TYPE (QI, V2DF, INT),
+	DEF_FUNCTION_TYPE (QI, V4SF, INT)): Deleted.
+	* config/i386/i386-expand.c (case QI_FTYPE_V4SF_INT,
+	case QI_FTYPE_V2SF_INT): Ditto.
+	* config/i386/sse.md
+	(define_insn "avx512dq_vmfpclass<mode><mask_scalar_merge_name>):
+	Extended to insnstructions with mask operands.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (define_register_constraint "wp"):
+	Delete.
+	(define_register_constraint "wq"): Delete.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wp and RS6000_CONSTRAINT_wq.
+	* config/rs6000/vsx.md (define_mode_attr VSr3): Delete.
+	(define_mode_attr VSa): Delete.
+	(define_mode_attr VSisa): New.
+	(rest of file): Adjust.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (define_attr "isa"): Add p9kf and p9tf.
+	(define_attr "enabled"): Handle those new isa values.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/vsx.md (define_mode_attr VSr4): Delete.
+	(define_mode_attr VSr5): Delete.
+	(define_mode_attr VStype_sqrt): Delete.
+	(define_mode_iterator VSX_SPDP): Delete.
+	(define_mode_attr VS_spdp_res): Delete.
+	(define_mode_attr VS_spdp_insn): Delete.
+	(define_mode_attr VS_spdp_type): Delete.
+	(*vsx_sqrt<mode>2): Adjust.
+	(vsx_<VS_spdp_insn>): Delete, split to...
+	(vsx_xscvdpsp): ... this.  New.  And...
+	(vsx_xvcvspdp): ... this.  New.  And...
+	(vsx_xvcvdpsp): ... this.  New.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (define_mode_attr sd): Add values for V4SF
+	and V2DF.
+	* config/rs6000/vsx.md (define_mode_attr VSs): Delete.
+	(rest of file): Adjust.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/vsx.md (vsx_<VS_spdp_insn>): Use wa instead of <VSa>.
+	(vsx_extract_<mode>_var): Ditto.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/vsx.md: Replace all <VSa> that are used with VSX_TI
+	with just "wa".
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (define_register_constraint "ww"):
+	Delete.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_ww.
+	* config/rs6000/rs6000.md: Adjust.
+	* config/rs6000/vsx.md: Adjust.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (SFDF, SFDF2): Adjust comments.
+	(define_mode_attr sd): New.
+	(define_mode_attr s): New.
+	(define_mode_attr Ftrad): Delete.
+	(define_mode_attr Fvsx): Delete.
+	(define_mode_attr Fs): Delete.
+	(rest of file): Use the new mode attributes.
+	* config.rs6000/vsx.md: Use the new mode attributes.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/vsx.md: Replace all <VSa> that are used with VSX_W
+	with just "wa".
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/vsx.md (define_mode_attr VSr2): Delete.
+	(rest of file): Replace all <VSa>, <VSr>, <VSr2>, and <VSr3> that are
+	used with VSX_B, VSX_D, or VSX_F, with just "wa".
+
+2019-06-04  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR target/78263
+	* config/rs6000/altivec.h: Don't #define vector, pixel, bool for
+	C++ with strict ANSI requirements.
+
+2019-06-04  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-ssa-loop-niter.c (number_of_iterations_ne): Skip
+	computations when step is 1.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (define_register_constraint "wf"):
+	Delete.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wf.
+	* config/rs6000/rs6000.md: Adjust.
+	* config/rs6000/vsx.md: Adjust.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-06-04  Andrew Pinski  <apinski@marvell.com>
+
+	* config/aarch64/aarch64.c (aarch64_asan_shadow_offset):
+	Fix ILP32 value.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (define_register_constraint "wd"):
+	Delete.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wd.
+	* config/rs6000/rs6000.md: Adjust.
+	* config/rs6000/vsx.md: Adjust.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (define_mode_attr Fv2): Delete.
+	(rest of file): Adjust.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/vsx.md (define_mode_attr VS_64reg): Delete.
+	(*vsx_extract_<P:mode>_<VSX_D:mode>_load): Adjust.
+	(vsx_splat_<mode>_reg): Adjust.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (define_register_constraint "ws"):
+	Delete.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_ws.
+	* config/rs6000/rs6000.md: Adjust.
+	* config/rs6000/vsx.md: Adjust.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (define_register_constraint "wv"):
+	Delete.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wv.
+	* config/rs6000/rs6000.md: Adjust.
+	* config/rs6000/vsx.md: Adjust.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (define_register_constraint "wi"):
+	Delete.
+	(define_register_constraint "wt"): Delete.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wi and RS6000_CONSTRAINT_wt.
+	* config/rs6000/rs6000.md: Adjust.
+	* config/rs6000/vsx.md: Adjust.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-06-04  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_asm_output_external): Remove
+	const.
+	* config/aarch64/aarch64.c (aarch64_asm_output_external): Call
+	default_elf_asm_output_external.
+
+2019-06-04  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c (INCLUDE_LIST): Remove.
+	(sem_item_optimizer::execute): Remove call to init_wpa.
+	* ipa-icf.h (init_wpa): Remove.
+
+2019-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses): Don't sorry_at on lastprivate
+	conditional on combined for simd.
+	* omp-low.c (struct omp_context): Add combined_into_simd_safelen0
+	member.
+	(lower_rec_input_clauses): For gimple_omp_for_combined_into_p max_vf 1
+	constructs, don't remove lastprivate_conditional_map, but instead set
+	ctx->combined_into_simd_safelen0 and adjust hash_map, so that it points
+	to parent construct temporaries.
+	(lower_lastprivate_clauses): Handle ctx->combined_into_simd_safelen0
+	like !ctx->lastprivate_conditional_map.
+	(lower_omp_1) <case GIMPLE_ASSIGN>: If up->combined_into_simd_safelen0,
+	use up->outer context instead of up.
+	* omp-expand.c (expand_omp_for_generic): Perform cond_var bump even if
+	gimple_omp_for_combined_p.
+	(expand_omp_for_static_nochunk): Likewise.
+	(expand_omp_for_static_chunk): Add forgotten cond_var bump that was
+	probably moved over into expand_omp_for_generic rather than being copied
+	there.
+
+2019-06-04  Martin Liska  <mliska@suse.cz>
+
+	* value-prof.c (dump_histogram_value): Fix typo.
+	(gimple_mod_subtract_transform): Likewise.
+
+2019-06-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/90726
+	* tree-chrec.c (chrec_contains_symbols): Add to visited.
+	(tree_contains_chrecs): Likewise.
+	(chrec_contains_symbols_defined_in_loop): Move here and avoid
+	exponential behaivor from ...
+	* tree-scalar-evolution.c (chrec_contains_symbols_defined_in_loop):
+	... here.
+	(expression_expensive_p): Avoid exponential behavior and compute
+	expanded size, rejecting any expansion.
+	* tree-ssa-loop-ivopts.c (abnormal_ssa_name_p): Remove.
+	(idx_contains_abnormal_ssa_name_p): Likewise.
+	(contains_abnormal_ssa_name_p_1): New helper for walk_tree.
+	(contains_abnormal_ssa_name_p): Simplify and use
+	walk_tree_without_duplicates.
+
+2019-06-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90738
+	Revert
+	2019-06-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (ao_ref_init_from_vn_reference): Get original
+	full reference tree and record in ref->ref.
+	(vn_reference_lookup_3): Pass in original ref to
+	ao_ref_init_from_vn_reference.
+	(vn_reference_lookup): Likewise.
+	* tree-ssa-sccvn.h (ao_ref_init_from_vn_reference): Adjust prototype.
+	* tree-ssa-alias.c (nonoverlapping_component_refs_of_decl_p):
+	Handle non-decl bases in the original reference.
+
+2019-06-04  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c (sem_item_optimizer::add_item_to_class): Count
+	number of references.
+	(sem_item_optimizer::do_congruence_step):
+	(sem_item_optimizer::worklist_push): Dump how references
+	a class has.
+	(sem_item_optimizer::worklist_pop): Use heap.
+	(sem_item_optimizer::process_cong_reduction): Likewise.
+	* ipa-icf.h: Use fibonacci_heap insteam of std::list.
+
+2019-06-04  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.h (struct sem_usage_pair_hash): New.
+	(sem_usage_pair_hash::hash): Likewise.
+	(sem_usage_pair_hash::equal): Likewise.
+	(struct sem_usage_hash): Likewise.
+	* ipa-icf.c (sem_item::sem_item): Initialize
+	referenced_by_count.
+	(sem_item::add_reference): Register a reference
+	in ref_map and not in target->usages.
+	(sem_item::setup): Remove initialization of
+	dead vectors.
+	(sem_item::~sem_item): Remove usage of dead vectors.
+	(sem_item::dump): Remove dump of references.
+	(sem_item_optimizer::sem_item_optimizer): Initialize
+	m_references.
+	(sem_item_optimizer::read_section): Remove useless
+	dump.
+	(sem_item_optimizer::parse_funcs_and_vars): Likewise here.
+	(sem_item_optimizer::build_graph): Pass m_references
+	to ::add_reference.
+	(sem_item_optimizer::verify_classes): Remove usage of dead
+	vectors.
+	(sem_item_optimizer::traverse_congruence_split): Return true
+	when a class is split.
+	(sem_item_optimizer::do_congruence_step_for_index): Use
+	hash_map for look up of (sem_item *, index). That brings
+	significant speed up.
+	(sem_item_optimizer::do_congruence_step): Return true
+	when a split is done.
+	(congruence_class::is_class_used): Use referenced_by_count.
+
+2019-06-04  Alan Modra  <amodra@gmail.com>
+
+	PR target/90689
+	* config/rs6000/rs6000.c (rs6000_call_aix): Correct r271753 merge
+	error.
+
+2019-06-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.h (MASK_MFPGPR): Delete.
+	* config/rs6000/rs6000.c (direct_move_p): Adjust.
+	(rs6000_secondary_reload_simple_move): Adjust.
+	(rs6000_opt_masks): Neuter the "mfpgpr" option.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Adjust.
+	* config/rs6000/rs6000-cpus.def (ISA_2_5_MASKS_EMBEDDED): Adjust
+	comment.
+	(power6x): Adjust.
+	* config/rs6000/rs6000.md (floatsi<mode>2_lfiwax): Adjust.
+	(floatunssi<mode>2_lfiwzx): Adjust.
+	(fix_trunc<mode>si2_stfiwx): Adjust.
+	(fixuns_trunc<mode>si2_stfiwx): Adjust.
+	* config/rs6000/rs6000.opt (mno-mfpgpr): New.
+	(mfpgpr): Mark as deprecated.
+	* doc/extend.texi (PowerPC Function Attributes): Delete mfpgpr.
+	(Basic PowerPC Built-in Functions Available on ISA 2.05): Adjust.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Delete -mmfpgpr.
+
+2019-06-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/constraints.md (define_register_constraint "wg"):
+	Delete.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Delete
+	RS6000_CONSTRAINT_wg.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Adjust.
+	(rs6000_init_hard_regno_mode_ok): Adjust.
+	* config/rs6000/rs6000.md (*mov<mode>_softfloat32, *movdi_internal64):
+	Delete "wg" alternatives.
+	* doc/md.texi (Machine Constraints): Adjust.
+
+2019-06-03  Alan Modra  <amodra@gmail.com>
+
+	* bb-reorder.c (copy_bb_p): Don't overflow size calculation.
+	(get_uncond_jump_length): Assert length less than INT_MAX and
+	non-negative.
+
 2019-06-03  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR middle-end/64242

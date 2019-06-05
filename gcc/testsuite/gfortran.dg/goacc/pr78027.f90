@@ -19,6 +19,4 @@ real function f()
    !$acc end parallel
  end
  
-! { dg-final { scan-ipa-dump "Not parsed function:f_._omp_fn.1" "icf" } }
-! { dg-final { scan-ipa-dump "Not parsed function:f_._omp_fn.0" "icf" } }
-! { dg-final { scan-ipa-dump "Not parsed function:f_" "icf" } }
+! { dg-final { scan-ipa-dump-times "with total: 0 items" 5 "icf" } }

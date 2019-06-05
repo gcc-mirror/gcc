@@ -137,6 +137,10 @@ struct omp_context
 
   /* True if this construct can be cancelled.  */
   bool cancellable;
+
+  /* True if lower_omp_1 should look up lastprivate conditional in parent
+     context.  */
+  bool combined_into_simd_safelen0;
 };
 
 static splay_tree all_contexts;
@@ -3827,12 +3831,24 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	case OMP_CLAUSE_LASTPRIVATE:
 	  if (is_variable_sized (OMP_CLAUSE_DECL (c)))
 	    sctx.max_vf = 1;
+	  else if (omp_is_reference (OMP_CLAUSE_DECL (c)))
+	    {
+	      tree rtype = TREE_TYPE (TREE_TYPE (OMP_CLAUSE_DECL (c)));
+	      if (!TREE_CONSTANT (TYPE_SIZE_UNIT (rtype)))
+		sctx.max_vf = 1;
+	    }
 	  break;
 	case OMP_CLAUSE_REDUCTION:
 	case OMP_CLAUSE_IN_REDUCTION:
 	  if (TREE_CODE (OMP_CLAUSE_DECL (c)) == MEM_REF
 	      || is_variable_sized (OMP_CLAUSE_DECL (c)))
 	    sctx.max_vf = 1;
+	  else if (omp_is_reference (OMP_CLAUSE_DECL (c)))
+	    {
+	      tree rtype = TREE_TYPE (TREE_TYPE (OMP_CLAUSE_DECL (c)));
+	      if (!TREE_CONSTANT (TYPE_SIZE_UNIT (rtype)))
+		sctx.max_vf = 1;
+	    }
 	  break;
 	case OMP_CLAUSE_IF:
 	  if (integer_zerop (OMP_CLAUSE_IF_EXPR (c)))
@@ -4661,8 +4677,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  /* For reduction in SIMD loop, defer adding the
 		     initialization of the reference, because if we decide
 		     to use SIMD array for it, the initilization could cause
-		     expansion ICE.  */
-		  if (c_kind == OMP_CLAUSE_REDUCTION && is_simd)
+		     expansion ICE.  Ditto for other privatization clauses.  */
+		  if (is_simd)
 		    x = NULL_TREE;
 		  else
 		    {
@@ -4773,10 +4789,21 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  tree y = lang_hooks.decls.omp_clause_dtor (c, new_var);
 		  if ((TREE_ADDRESSABLE (new_var) || nx || y
 		       || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
-		       || OMP_CLAUSE_CODE (c) == OMP_CLAUSE__CONDTEMP_)
+		       || OMP_CLAUSE_CODE (c) == OMP_CLAUSE__CONDTEMP_
+		       || omp_is_reference (var))
 		      && lower_rec_simd_input_clauses (new_var, ctx, &sctx,
 						       ivar, lvar))
 		    {
+		      if (omp_is_reference (var))
+			{
+			  gcc_assert (TREE_CODE (new_var) == MEM_REF);
+			  tree new_vard = TREE_OPERAND (new_var, 0);
+			  gcc_assert (DECL_P (new_vard));
+			  SET_DECL_VALUE_EXPR (new_vard,
+					       build_fold_addr_expr (lvar));
+			  DECL_HAS_VALUE_EXPR_P (new_vard) = 1;
+			}
+
 		      if (nx)
 			x = lang_hooks.decls.omp_clause_default_ctor
 						(c, unshare_expr (ivar), x);
@@ -4791,8 +4818,14 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
 			  && OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
 			{
-			  tree v
-			    = *ctx->lastprivate_conditional_map->get (new_var);
+			  tree v = new_var;
+			  if (!DECL_P (v))
+			    {
+			      gcc_assert (TREE_CODE (v) == MEM_REF);
+			      v = TREE_OPERAND (v, 0);
+			      gcc_assert (DECL_P (v));
+			    }
+			  v = *ctx->lastprivate_conditional_map->get (v);
 			  tree t = create_tmp_var (TREE_TYPE (v));
 			  tree z = build_zero_cst (TREE_TYPE (v));
 			  tree orig_v
@@ -4816,6 +4849,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 				      void_node);
 			  gimple_seq tseq = NULL;
 			  gimplify_and_add (x, &tseq);
+			  if (ctx->outer)
+			    lower_omp (&tseq, ctx->outer);
 			  gimple_seq_add_seq (&llist[1], tseq);
 			}
 		      if (y)
@@ -4831,6 +4866,24 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			    }
 			}
 		      break;
+		    }
+		  if (omp_is_reference (var))
+		    {
+		      gcc_assert (TREE_CODE (new_var) == MEM_REF);
+		      tree new_vard = TREE_OPERAND (new_var, 0);
+		      gcc_assert (DECL_P (new_vard));
+		      tree type = TREE_TYPE (TREE_TYPE (new_vard));
+		      x = TYPE_SIZE_UNIT (type);
+		      if (TREE_CONSTANT (x))
+			{
+			  x = create_tmp_var_raw (type, get_name (var));
+			  gimple_add_tmp_var (x);
+			  TREE_ADDRESSABLE (x) = 1;
+			  x = build_fold_addr_expr_loc (clause_loc, x);
+			  x = fold_convert_loc (clause_loc,
+						TREE_TYPE (new_vard), x);
+			  gimplify_assign (new_vard, x, ilist);
+			}
 		    }
 		}
 	      if (nx)
@@ -4919,6 +4972,28 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 
 		      if (OMP_CLAUSE_LINEAR_ARRAY (c))
 			{
+			  if (omp_is_reference (var))
+			    {
+			      gcc_assert (TREE_CODE (new_var) == MEM_REF);
+			      tree new_vard = TREE_OPERAND (new_var, 0);
+			      gcc_assert (DECL_P (new_vard));
+			      tree type = TREE_TYPE (TREE_TYPE (new_vard));
+			      nx = TYPE_SIZE_UNIT (type);
+			      if (TREE_CONSTANT (nx))
+				{
+				  nx = create_tmp_var_raw (type,
+							   get_name (var));
+				  gimple_add_tmp_var (nx);
+				  TREE_ADDRESSABLE (nx) = 1;
+				  nx = build_fold_addr_expr_loc (clause_loc,
+								 nx);
+				  nx = fold_convert_loc (clause_loc,
+							 TREE_TYPE (new_vard),
+							 nx);
+				  gimplify_assign (new_vard, nx, ilist);
+				}
+			    }
+
 			  x = lang_hooks.decls.omp_clause_linear_ctor
 							(c, new_var, x, t);
 			  gimplify_and_add (x, ilist);
@@ -4933,10 +5008,20 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		    }
 
 		  if ((OMP_CLAUSE_CODE (c) != OMP_CLAUSE_LINEAR
-		       || TREE_ADDRESSABLE (new_var))
+		       || TREE_ADDRESSABLE (new_var)
+		       || omp_is_reference (var))
 		      && lower_rec_simd_input_clauses (new_var, ctx, &sctx,
 						       ivar, lvar))
 		    {
+		      if (omp_is_reference (var))
+			{
+			  gcc_assert (TREE_CODE (new_var) == MEM_REF);
+			  tree new_vard = TREE_OPERAND (new_var, 0);
+			  gcc_assert (DECL_P (new_vard));
+			  SET_DECL_VALUE_EXPR (new_vard,
+					       build_fold_addr_expr (lvar));
+			  DECL_HAS_VALUE_EXPR_P (new_vard) = 1;
+			}
 		      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINEAR)
 			{
 			  tree iv = create_tmp_var (TREE_TYPE (new_var));
@@ -4970,6 +5055,24 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			  gimple_seq_add_seq (&llist[1], tseq);
 			}
 		      break;
+		    }
+		  if (omp_is_reference (var))
+		    {
+		      gcc_assert (TREE_CODE (new_var) == MEM_REF);
+		      tree new_vard = TREE_OPERAND (new_var, 0);
+		      gcc_assert (DECL_P (new_vard));
+		      tree type = TREE_TYPE (TREE_TYPE (new_vard));
+		      nx = TYPE_SIZE_UNIT (type);
+		      if (TREE_CONSTANT (nx))
+			{
+			  nx = create_tmp_var_raw (type, get_name (var));
+			  gimple_add_tmp_var (nx);
+			  TREE_ADDRESSABLE (nx) = 1;
+			  nx = build_fold_addr_expr_loc (clause_loc, nx);
+			  nx = fold_convert_loc (clause_loc,
+						 TREE_TYPE (new_vard), nx);
+			  gimplify_assign (new_vard, nx, ilist);
+			}
 		    }
 		}
 	      x = lang_hooks.decls.omp_clause_copy_ctor
@@ -5278,11 +5381,31 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
       sctx.is_simt = false;
       if (ctx->lastprivate_conditional_map)
 	{
-	  /* When not vectorized, treat lastprivate(conditional:) like
-	     normal lastprivate, as there will be just one simd lane
-	     writing the privatized variable.  */
-	  delete ctx->lastprivate_conditional_map;
-	  ctx->lastprivate_conditional_map = NULL;
+	  if (gimple_omp_for_combined_into_p (ctx->stmt))
+	    {
+	      /* Signal to lower_omp_1 that it should use parent context.  */
+	      ctx->combined_into_simd_safelen0 = true;
+	      for (c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
+		if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
+		    && OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
+		  {
+		    tree o = lookup_decl (OMP_CLAUSE_DECL (c), ctx);
+		    tree *v
+		      = ctx->lastprivate_conditional_map->get (o);
+		    tree po = lookup_decl (OMP_CLAUSE_DECL (c), ctx->outer);
+		    tree *pv
+		      = ctx->outer->lastprivate_conditional_map->get (po);
+		    *v = *pv;
+		  }
+	    }
+	  else
+	    {
+	      /* When not vectorized, treat lastprivate(conditional:) like
+		 normal lastprivate, as there will be just one simd lane
+		 writing the privatized variable.  */
+	      delete ctx->lastprivate_conditional_map;
+	      ctx->lastprivate_conditional_map = NULL;
+	    }
 	}
     }
 
@@ -5652,7 +5775,8 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *body_p,
 
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
 	  && OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c)
-	  && ctx->lastprivate_conditional_map)
+	  && ctx->lastprivate_conditional_map
+	  && !ctx->combined_into_simd_safelen0)
 	{
 	  gcc_assert (body_p);
 	  if (simduid)
@@ -10808,10 +10932,17 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  else if (!up->lastprivate_conditional_map)
 	    break;
 	  tree lhs = get_base_address (gimple_assign_lhs (stmt));
+	  if (TREE_CODE (lhs) == MEM_REF
+	      && DECL_P (TREE_OPERAND (lhs, 0))
+	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (lhs,
+						     0))) == REFERENCE_TYPE)
+	    lhs = TREE_OPERAND (lhs, 0);
 	  if (DECL_P (lhs))
 	    if (tree *v = up->lastprivate_conditional_map->get (lhs))
 	      {
 		tree clauses;
+		if (up->combined_into_simd_safelen0)
+		  up = up->outer;
 		if (gimple_code (up->stmt) == GIMPLE_OMP_FOR)
 		  clauses = gimple_omp_for_clauses (up->stmt);
 		else
