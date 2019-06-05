@@ -3725,7 +3725,8 @@ public:
     CLUSTER = TDF_BLOCKS,   /* -blocks:Clusters.  */
     TREE = TDF_UID, 	/* -uid:Tree streaming.  */
     MERGE = TDF_ALIAS,	/* -alias:Mergeable Entities.  */
-    ELF = TDF_ASMNAME	/* -asmname:Elf data.  */
+    ELF = TDF_ASMNAME,	/* -asmname:Elf data.  */
+    MAPPER = TDF_EH	/* -eh:Mapper.  */
   };
 
 private:
@@ -3788,11 +3789,9 @@ static dumper dump = {0, dump_flags_t (0)};
 unsigned
 dumper::push (module_state *m)
 {
-  bool blank = false;
   FILE *stream = NULL;
   if (!dumps || !dumps->stack.length ())
     {
-      blank = dumps != NULL;
       stream = dump_begin (module_dump_id, &flags);
       if (!stream)
 	return 0;
@@ -3815,12 +3814,14 @@ dumper::push (module_state *m)
   dumps->indent = 0;
   dumps->bol = true;
   dumps->stack.quick_push (m);
-  if (blank)
-    dump ("");
   if (m)
     {
-      module_state *from = (dumps->stack.length () > 1
-			    ? dumps->stack[dumps->stack.length () - 2] : NULL);
+      module_state *from = NULL;
+
+      if (dumps->stack.length () > 1)
+	from = dumps->stack[dumps->stack.length () - 2];
+      else
+	dump ("");
       dump (from ? "Starting module %M (from %M)"
 	    : "Starting module %M", m, from);
     }
@@ -9084,9 +9085,9 @@ trees_in::read_enum_def (tree decl)
 void
 trees_out::write_definition (tree decl)
 {
-  dump () && dump ("%s definition %C:%N",
-		   streaming_p () ? "Writing" : "Depending",
-		   TREE_CODE (decl), decl);
+  dump (streaming_p () ? 0 : dumper::DEPEND)
+    && dump ("%s definition %C:%N",
+	     streaming_p () ? "Writing" : "Depending", TREE_CODE (decl), decl);
 
  again:
   switch (TREE_CODE (decl))
@@ -10786,9 +10787,9 @@ module_mapper::send_command (location_t loc, const char *format, ...)
     }
 
   if (batching)
-    dump () && dump ("Mapper pending request:%s", end);
+    dump (dumper::MAPPER) && dump ("Mapper pending request:%s", end);
   else
-    dump () && dump ("Mapper request:%s", buffer);
+    dump (dumper::MAPPER) && dump ("Mapper request:%s", buffer);
   end += actual;
   *end++ = '\n';
   if (!batching)
@@ -10889,7 +10890,7 @@ module_mapper::get_response (location_t loc)
 	}
 
       buffer[off] = 0;
-      dump () && dump ("Mapper response:%s", buffer);
+      dump (dumper::MAPPER) && dump ("Mapper response:%s", buffer);
       end = buffer + off;
       pos = buffer;
     }
@@ -11125,7 +11126,7 @@ module_mapper::export_done (const module_state *state)
   
   if (mapper->is_server ())
     {
-      dump () && dump ("Completed mapper");
+      dump (dumper::MAPPER) && dump ("Completed mapper");
       mapper->send_command (state->from_loc, "DONE %s%s",
 			    state->get_flatname (true), state->get_flatname ());
     }
@@ -11185,7 +11186,7 @@ module_state::resolve_alias ()
   if (is_alias ())
     {
       result = u1.alias;
-      dump () && dump ("%M is an alias of %M", this, result);
+      dump (dumper::MAPPER) && dump ("%M is an alias of %M", this, result);
     }
   return result;
 }
@@ -15728,7 +15729,7 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 
   dump.push (NULL);
 
-  dump () && dump ("Checking include translation '%s'", path);
+  dump (dumper::MAPPER) && dump ("Checking include translation '%s'", path);
   bool res = false;
   module_mapper *mapper = module_mapper::get (loc);
   if (mapper->is_live ())
@@ -15738,8 +15739,8 @@ module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
       res = mapper->translate_include (loc, path);
     }
 
-  dump () && dump (res ? "Translating include to import"
-		   : "Keeping include as include");
+  dump (dumper::MAPPER) && dump (res ? "Translating include to import"
+				 : "Keeping include as include");
 
   if (res)
     {

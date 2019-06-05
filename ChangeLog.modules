@@ -1,6 +1,11 @@
 2019-06-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (dumper::MAPPER): New flag. Use it on mapper things.
+	(dumper::push): Only do blank line when starting a new module
+	nest.
+
+	gcc/cp/
 	* module.cc (trees_out::tree_type): We can meet ttps here.
 	(trees_{in,out}::tree_mergeable): Stream skeleton before locating info.
 	gcc/testsuite/
