@@ -1,3 +1,22 @@
+2019-06-05  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/89803
+	* gcc.target/i386/avx-1.c (__builtin_ia32_fpclasssss,
+	__builtin_ia32_fpclasssd): Removed.
+	(__builtin_ia32_fpclassss_mask, __builtin_ia32_fpclasssd_mask): Define.
+	* gcc.target/i386/sse-13.c (__builtin_ia32_fpclasssss,
+	__builtin_ia32_fpclasssd): Removed.
+	(__builtin_ia32_fpclassss_mask, __builtin_ia32_fpclasssd_mask): Define.
+	* gcc.target/i386/sse-23.c (__builtin_ia32_fpclasssss,
+	__builtin_ia32_fpclasssd): Removed.
+	(__builtin_ia32_fpclassss_mask, __builtin_ia32_fpclasssd_mask): Define.
+	* gcc.target/i386/avx512dq-vfpclassss-2.c: New.
+	* gcc.target/i386/avx512dq-vfpclasssd-2.c: New.
+	* gcc.target/i386/avx512dq-vfpclassss-1.c (avx512f_test):
+	Add test for _mm_mask_fpclass_ss_mask.
+	* gcc.target/i386/avx512dq-vfpclasssd-1.c (avx512f_test):
+	Add test for _mm_mask_fpclass_sd_mask.
+
 2019-06-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/direct-move-double1.c (VSX_REG_ATTR): Delete.

@@ -21327,7 +21327,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "avx512dq_vmfpclass<mode>"
+(define_insn "avx512dq_vmfpclass<mode><mask_scalar_merge_name>"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
 	(and:<avx512fmaskmode>
 	  (unspec:<avx512fmaskmode>
@@ -21336,7 +21336,7 @@
 	    UNSPEC_FPCLASS)
 	  (const_int 1)))]
    "TARGET_AVX512DQ"
-   "vfpclass<ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %2}";
+   "vfpclass<ssescalarmodesuffix>\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}";
   [(set_attr "type" "sse")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")

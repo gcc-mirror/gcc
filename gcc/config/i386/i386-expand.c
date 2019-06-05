@@ -9272,8 +9272,6 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V4DI_FTYPE_V4DI_INT:
     case V2DI_FTYPE_V4DI_INT:
     case V4DI_FTYPE_V8DI_INT:
-    case QI_FTYPE_V4SF_INT:
-    case QI_FTYPE_V2DF_INT:
     case UQI_FTYPE_UQI_UQI_CONST:
     case UHI_FTYPE_UHI_UQI:
     case USI_FTYPE_USI_UQI:
