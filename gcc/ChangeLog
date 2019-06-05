@@ -1,5 +1,13 @@
 2019-06-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp-expand.c (struct omp_region): Add has_lastprivate_conditional
+	member.
+	(expand_parallel_call): If region->inner->has_lastprivate_conditional,
+	treat it like explicit monotonic schedule modifier.
+	(expand_omp_for): Initialize has_lastprivate_conditional.
+	If fd.lastprivate_conditional != 0, treat it like explicit monotonic
+	schedule modifier.
+
 	* omp-low.c (lower_rec_input_clauses): For lastprivate conditional
 	references, lookup in in hash map MEM_REF operand instead of the
 	MEM_REF itself.
