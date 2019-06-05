@@ -8794,9 +8794,14 @@ push_namespace (tree name, bool make_inline)
   }
 
   if (ns)
-    /* DR2061.  NS might be a member of an inline namespace.  We
-       need to push into those namespaces.  */
-    count += push_inline_namespaces (CP_DECL_CONTEXT (ns));
+    {
+      /* DR2061.  NS might be a member of an inline namespace.  We
+	 need to push into those namespaces.  */
+      count += push_inline_namespaces (CP_DECL_CONTEXT (ns));
+      if (DECL_SOURCE_LOCATION (ns) == BUILTINS_LOCATION)
+	/* It's not builtin now.  */
+	DECL_SOURCE_LOCATION (ns) = input_location;
+    }
   else
     {
       /* Before making a new namespace, see if we already have one in

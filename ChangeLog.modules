@@ -1,3 +1,25 @@
+2019-06-05  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/
+	* tree-core.h (enum tree_index): Add TI_MODULE_HWM.
+	gcc/cp/
+	* cp-tree.h (enum cp_tree_index): Add CPTI_MODULE_HWM  Move
+	volatile CPTI's below it.
+	(CPTI_STD_IDENTIFIER, std_identifier): Delete.
+	(DECL_NAMESPACE_STD): Simplify.
+	* decl.c (initialize_predefined_identifiers): Drop std_identifier.
+	(cxx_init_decl_processing): Adjust std_node creation. Use push/pop
+	nested namespace for std.
+	(cxx_builtin_function, cxx_builtin_function_ext_scope): Use
+	push/pop nested namespace for std.
+	* except.c (init_exception_processing): Likewise.
+	* rtti (init_rtti_processing): Likewise.
+	* module.cc (global_tree_arys): Restrict C & C++ trees.
+	* name-lookup.c (push_namespace): Set location if it was a
+	builtin.
+	gcc/testsuite/
+	* g++.dg/modules/std-1_[ab].C: New.
+
 2019-06-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
