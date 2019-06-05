@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fgimple -O2 -fno-ivopts" } */
+/* { dg-options "-fgimple -O2" } */
 
 int __GIMPLE (ssa,guessed_local(12348030),startwith("fix_loops"))
 un (int dd)
