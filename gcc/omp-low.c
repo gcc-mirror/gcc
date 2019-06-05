@@ -4818,8 +4818,14 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
 			  && OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
 			{
-			  tree v
-			    = *ctx->lastprivate_conditional_map->get (new_var);
+			  tree v = new_var;
+			  if (!DECL_P (v))
+			    {
+			      gcc_assert (TREE_CODE (v) == MEM_REF);
+			      v = TREE_OPERAND (v, 0);
+			      gcc_assert (DECL_P (v));
+			    }
+			  v = *ctx->lastprivate_conditional_map->get (v);
 			  tree t = create_tmp_var (TREE_TYPE (v));
 			  tree z = build_zero_cst (TREE_TYPE (v));
 			  tree orig_v
@@ -10926,6 +10932,11 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  else if (!up->lastprivate_conditional_map)
 	    break;
 	  tree lhs = get_base_address (gimple_assign_lhs (stmt));
+	  if (TREE_CODE (lhs) == MEM_REF
+	      && DECL_P (TREE_OPERAND (lhs, 0))
+	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (lhs,
+						     0))) == REFERENCE_TYPE)
+	    lhs = TREE_OPERAND (lhs, 0);
 	  if (DECL_P (lhs))
 	    if (tree *v = up->lastprivate_conditional_map->get (lhs))
 	      {

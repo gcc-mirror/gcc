@@ -1,5 +1,11 @@
 2019-06-05  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp-low.c (lower_rec_input_clauses): For lastprivate conditional
+	references, lookup in in hash map MEM_REF operand instead of the
+	MEM_REF itself.
+	(lower_omp_1): When looking for lastprivate conditional assignments,
+	handle MEM_REFs with REFERENCE_TYPE operands.
+
 	* omp-low.c (lower_rec_input_clauses): Force max_vf if is_simd and
 	on privatization clauses OMP_CLAUSE_DECL is privatized by reference
 	and references a VLA.  Handle references to non-VLAs if is_simd
