@@ -67,6 +67,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "print-rtl.h"
 
+/* Disable warnings about quoting issues in the pp_xxx calls below
+   that (intentionally) don't follow GCC diagnostic conventions.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 #ifdef INSN_SCHEDULING
 
 /* Some accessor macros for h_i_d members only used within this file.  */
@@ -3947,3 +3954,7 @@ make_pass_sched_fusion (gcc::context *ctxt)
 {
   return new pass_sched_fusion (ctxt);
 }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif

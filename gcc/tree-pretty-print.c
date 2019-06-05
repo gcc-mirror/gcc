@@ -35,6 +35,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "gimple.h"
 
+/* Disable warnings about quoting issues in the pp_xxx calls below
+   that (intentionally) don't follow GCC diagnostic conventions.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* Local functions, macros and variables.  */
 static const char *op_symbol (const_tree);
 static void pretty_print_string (pretty_printer *, const char*, unsigned);
@@ -4250,3 +4257,7 @@ pp_double_int (pretty_printer *pp, double_int d, bool uns)
       pp_string (pp, pp_buffer (pp)->digit_buffer);
     }
 }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif

@@ -16,7 +16,7 @@ struct S { int s : 5; int t; void foo (); } s;
 auto c = __builtin_addressof (s);
 auto d = addressof (s);
 auto e = __builtin_addressof (s.s);		// { dg-error "attempt to take address of bit-field" }
-auto f = addressof (s.s);			// { dg-error "cannot bind bitfield" }
+auto f = addressof (s.s);			// { dg-error "cannot bind bit-field" }
 auto g = __builtin_addressof (S{});		// { dg-error "taking address of rvalue" }
 auto h = addressof (S{});			// { dg-error "cannot bind non-const lvalue reference of type" }
 auto i = __builtin_addressof (S::t);		// { dg-error "invalid use of non-static data member" }

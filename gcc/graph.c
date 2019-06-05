@@ -52,10 +52,17 @@ open_graph_file (const char *base, const char *mode)
 
   fp = fopen (buf, mode);
   if (fp == NULL)
-    fatal_error (input_location, "can%'t open %s: %m", buf);
+    fatal_error (input_location, "cannot open %s: %m", buf);
 
   return fp;
 }
+
+/* Disable warnings about quoting issues in the pp_xxx calls below
+   that (intentionally) don't follow GCC diagnostic conventions.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
 
 /* Draw a basic block BB belonging to the function with FUNCDEF_NO
    as its unique number.  */
@@ -381,3 +388,7 @@ finish_graph_dump_file (const char *base)
   end_graph_dump (fp);
   fclose (fp);
 }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif

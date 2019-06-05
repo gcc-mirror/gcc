@@ -6739,7 +6739,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 loose_warn=
 save_CXXFLAGS="$CXXFLAGS"
-for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual $wf_opt; do
+for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual -Wno-error=format-diag $wf_opt; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
@@ -6797,7 +6797,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 c_loose_warn=
 save_CFLAGS="$CFLAGS"
-for real_option in -Wstrict-prototypes -Wmissing-prototypes; do
+for real_option in -Wstrict-prototypes -Wmissing-prototypes-Wno-error=format-diag; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in

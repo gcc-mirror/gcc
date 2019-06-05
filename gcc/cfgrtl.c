@@ -62,6 +62,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "print-rtl.h"
 
+/* Disable warnings about missing quoting in GCC diagnostics.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* Holds the interesting leading and trailing notes for the function.
    Only applicable if the CFG is in cfglayout mode.  */
 static GTY(()) rtx_insn *cfg_layout_function_footer;
@@ -5191,3 +5197,7 @@ struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
 };
 
 #include "gt-cfgrtl.h"
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif

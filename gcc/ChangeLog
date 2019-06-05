@@ -1,3 +1,25 @@
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* config/i386/i386-features.c (ix86_get_function_versions_dispatcher):
+	Adjust quoting and hyphenation.
+	* convert.c (convert_to_real_1): Same.
+	* gcc.c (driver_wrong_lang_callback): Same.
+	(driver::handle_unrecognized_options): Same.
+	* gimple-ssa-nonnull-compare.c (do_warn_nonnull_compare): Same.
+	* opts-common.c (cmdline_handle_error): Same.
+	(read_cmdline_option): Same.
+	* opts-global.c (complain_wrong_lang): Same.
+	(print_ignored_options): Same.
+	(handle_common_deferred_options): Same.
+	* pretty-print.h: Same.
+	* print-rtl.c (debug_bb_n_slim): Same.
+	* sched-rgn.c (make_pass_sched_fusion): Same.
+	* tree-cfg.c (verify_gimple_assign_unary): Same.
+	(verify_gimple_label): Same.
+	* tree-ssa-operands.c (verify_ssa_operands): Same.
+	* varasm.c (do_assemble_alias): Same.
+	(assemble_alias): Same.
+
 2019-06-05  Richard Henderson  <rth@twiddle.net>
 
 	* config/alpha/alpha.c (direct_return): Move down after

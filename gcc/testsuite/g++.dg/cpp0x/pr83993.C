@@ -7,7 +7,7 @@ const int b[5] = { 1, 2, 3, 4, 5 };
 extern const int c[4];
 constexpr const int *d = &a[0];
 constexpr const int *d2 = a;
-constexpr const int *e = &a[1];		// { dg-error "non-zero array subscript '1' is used with array 'a' of type 'const int \\\[\\\]' with unknown bounds" }
+constexpr const int *e = &a[1];		// { dg-error "nonzero array subscript '1' is used with array 'a' of type 'const int \\\[\\\]' with unknown bounds" }
 constexpr const int *f = &b[0];
 constexpr const int *f2 = b;
 constexpr const int *g = &b[5];
@@ -30,7 +30,7 @@ foo ()
 
 constexpr const int *m = &l[0];
 constexpr const int *m2 = l;
-constexpr const int *n = &l[1];		// { dg-error "non-zero array subscript '1' is used with array 'l' of type 'const int \\\[\\\]' with unknown bounds" }
+constexpr const int *n = &l[1];		// { dg-error "nonzero array subscript '1' is used with array 'l' of type 'const int \\\[\\\]' with unknown bounds" }
 static_assert (d == d2 && f == f2 && i == i2 && m == m2, "");
 const int o[] = { 1, 2 };
 constexpr const int *p = &o[0];
@@ -40,7 +40,7 @@ constexpr const int *r = &o[3];		// { dg-error "array subscript value '3' is out
 struct S { char a; char b[]; } s;
 constexpr const char *t = &s.b[0];
 constexpr const char *t2 = s.b;
-constexpr const char *u = &s.b[1];	// { dg-error "non-zero array subscript '1' is used with array of type 'char \\\[\\\]' with unknown bounds" }
+constexpr const char *u = &s.b[1];	// { dg-error "nonzero array subscript '1' is used with array of type 'char \\\[\\\]' with unknown bounds" }
 struct V { int a; };
 extern V v[];
 constexpr V *w = &v[0];

@@ -3619,7 +3619,7 @@ verify_gimple_assign_unary (gassign *stmt)
 	    && (!VECTOR_INTEGER_TYPE_P (rhs1_type)
 	        || !VECTOR_FLOAT_TYPE_P (lhs_type)))
 	  {
-	    error ("invalid types in conversion to floating point");
+	    error ("invalid types in conversion to floating-point");
 	    debug_generic_expr (lhs_type);
 	    debug_generic_expr (rhs1_type);
 	    return true;
@@ -4811,7 +4811,7 @@ verify_gimple_label (glabel *stmt)
   if (!DECL_NONLOCAL (decl) && !FORCED_LABEL (decl)
       && DECL_CONTEXT (decl) != current_function_decl)
     {
-      error ("label%'s context is not the current function decl");
+      error ("label context is not the current function declaration");
       err |= true;
     }
 
