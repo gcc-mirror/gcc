@@ -1,3 +1,15 @@
+2019-06-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/return-type-invalid-1.C: New.
+	* g++.old-deja/g++.brendan/crash16.C: Adjust.
+	* g++.old-deja/g++.law/ctors5.C: Likewise.
+
+2019-06-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/other/friend4.C: Test locations too.
+	* g++.dg/other/friend5.C: Likewise.
+	* g++.dg/other/friend7.C: Likewise.
+
 2019-06-05  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* g++.target/powerpc/undef-bool-3.C: Add -maltivec to dg-options.

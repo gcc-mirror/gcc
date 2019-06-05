@@ -1,3 +1,14 @@
+2019-06-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (smallest_type_location): New.
+	(check_special_function_return_type): Use it.
+	(grokdeclarator): Lkewise.
+
+2019-06-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use locations[ds_friend]
+	in one place.
+
 2019-06-05  Martin Sebor  <msebor@redhat.com>
 
 	* call.c (build_conditional_expr_1): Adjust quoting and hyphenation.
