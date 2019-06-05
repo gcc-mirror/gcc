@@ -1,3 +1,9 @@
+2019-06-05  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* config.host (rx-*-linux*): Add t-fdpbit to tmake_file
+	Add appropriate tm_file clause as well.
+	* config/rx/t-rx (HOST_LIBGCC2_CFLAGS): Remove.
+
 2019-06-05  James Clarke  <jrtc27@jrtc27.com>
 
 	* config/ia64/crtbegin.S (__dso_handle): Put in .sdata/.sbss
