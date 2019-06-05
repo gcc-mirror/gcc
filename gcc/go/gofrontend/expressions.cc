@@ -1356,6 +1356,29 @@ Func_expression::do_get_backend(Translate_context* context)
   return gogo->backend()->convert_expression(btype, bexpr, this->location());
 }
 
+// The cost of inlining a function reference.
+
+int
+Func_expression::do_inlining_cost() const
+{
+  // FIXME: We don't inline references to nested functions.
+  if (this->closure_ != NULL)
+    return 0x100000;
+  if (this->function_->is_function()
+      && this->function_->func_value()->enclosing() != NULL)
+    return 0x100000;
+
+  return 1;
+}
+
+// Export a reference to a function.
+
+void
+Func_expression::do_export(Export_function_body* efb) const
+{
+  Expression::export_name(efb, this->function_);
+}
+
 // Ast dump for function.
 
 void
@@ -10088,38 +10111,82 @@ void
 Builtin_call_expression::do_export(Export_function_body* efb) const
 {
   Numeric_constant nc;
-  if (!this->numeric_constant_value(&nc))
+  if (this->numeric_constant_value(&nc))
     {
-      go_error_at(this->location(), "value is not constant");
-      return;
-    }
+      if (nc.is_int())
+	{
+	  mpz_t val;
+	  nc.get_int(&val);
+	  Integer_expression::export_integer(efb, val);
+	  mpz_clear(val);
+	}
+      else if (nc.is_float())
+	{
+	  mpfr_t fval;
+	  nc.get_float(&fval);
+	  Float_expression::export_float(efb, fval);
+	  mpfr_clear(fval);
+	}
+      else if (nc.is_complex())
+	{
+	  mpc_t cval;
+	  nc.get_complex(&cval);
+	  Complex_expression::export_complex(efb, cval);
+	  mpc_clear(cval);
+	}
+      else
+	go_unreachable();
 
-  if (nc.is_int())
-    {
-      mpz_t val;
-      nc.get_int(&val);
-      Integer_expression::export_integer(efb, val);
-      mpz_clear(val);
-    }
-  else if (nc.is_float())
-    {
-      mpfr_t fval;
-      nc.get_float(&fval);
-      Float_expression::export_float(efb, fval);
-      mpfr_clear(fval);
-    }
-  else if (nc.is_complex())
-    {
-      mpc_t cval;
-      nc.get_complex(&cval);
-      Complex_expression::export_complex(efb, cval);
-      mpc_clear(cval);
+      // A trailing space lets us reliably identify the end of the number.
+      efb->write_c_string(" ");
     }
   else
-    go_unreachable();
-
-  // A trailing space lets us reliably identify the end of the number.
-  efb->write_c_string(" ");
+    {
+      const char *s = NULL;
+      switch (this->code_)
+	{
+	default:
+	  go_unreachable();
+	case BUILTIN_APPEND:
+	  s = "append";
+	  break;
+	case BUILTIN_COPY:
+	  s = "copy";
+	  break;
+	case BUILTIN_LEN:
+	  s = "len";
+	  break;
+	case BUILTIN_CAP:
+	  s = "cap";
+	  break;
+	case BUILTIN_PRINT:
+	  s = "print";
+	  break;
+	case BUILTIN_PRINTLN:
+	  s = "println";
+	  break;
+	case BUILTIN_PANIC:
+	  s = "panic";
+	  break;
+	case BUILTIN_RECOVER:
+	  s = "recover";
+	  break;
+	case BUILTIN_CLOSE:
+	  s = "close";
+	  break;
+	case BUILTIN_REAL:
+	  s = "real";
+	  break;
+	case BUILTIN_IMAG:
+	  s = "imag";
+	  break;
+	case BUILTIN_COMPLEX:
+	  s = "complex";
+	  break;
+	}
+      efb->write_c_string(s);
+      this->export_arguments(efb);
+    }
 }
 
 // Class Call_expression.
@@ -11637,7 +11704,55 @@ Call_expression::do_get_backend(Translate_context* context)
   return this->call_;
 }
 
-// Dump ast representation for a call expressin.
+// The cost of inlining a call expression.
+
+int
+Call_expression::do_inlining_cost() const
+{
+  Func_expression* fn = this->fn_->func_expression();
+
+  // FIXME: We don't yet support all kinds of calls.
+  if (fn != NULL && fn->closure() != NULL)
+    return 0x100000;
+  if (this->fn_->interface_field_reference_expression())
+    return 0x100000;
+  if (this->get_function_type()->is_method())
+    return 0x100000;
+
+  return 5;
+}
+
+// Export a call expression.
+
+void
+Call_expression::do_export(Export_function_body* efb) const
+{
+  this->fn_->export_expression(efb);
+  this->export_arguments(efb);
+}
+
+// Export call expression arguments.
+
+void
+Call_expression::export_arguments(Export_function_body* efb) const
+{
+  efb->write_c_string("(");
+  if (this->args_ != NULL && !this->args_->empty())
+    {
+      Expression_list::const_iterator pa = this->args_->begin();
+      (*pa)->export_expression(efb);
+      for (pa++; pa != this->args_->end(); pa++)
+	{
+	  efb->write_c_string(", ");
+	  (*pa)->export_expression(efb);
+	}
+      if (this->is_varargs_)
+	efb->write_c_string("...");
+    }
+  efb->write_c_string(")");
+}
+
+// Dump ast representation for a call expression.
 
 void
 Call_expression::do_dump_expression(Ast_dump_context* ast_dump_context) const
@@ -17523,6 +17638,47 @@ Expression::make_backend(Bexpression* bexpr, Type* type, Location location)
 Expression*
 Expression::import_expression(Import_expression* imp, Location loc)
 {
+  Expression* expr = Expression::import_expression_without_suffix(imp, loc);
+  while (true)
+    {
+      if (imp->match_c_string("("))
+	{
+	  imp->advance(1);
+	  Expression_list* args = new Expression_list();
+	  bool is_varargs = false;
+	  while (!imp->match_c_string(")"))
+	    {
+	      Expression* arg = Expression::import_expression(imp, loc);
+	      if (arg->is_error_expression())
+		return arg;
+	      args->push_back(arg);
+	      if (imp->match_c_string(")"))
+		break;
+	      else if (imp->match_c_string("...)"))
+		{
+		  imp->advance(3);
+		  is_varargs = true;
+		  break;
+		}
+	      imp->require_c_string(", ");
+	    }
+	  imp->require_c_string(")");
+	  expr = Expression::make_call(expr, args, is_varargs, loc);
+	}
+      else
+	break;
+    }
+
+  return expr;
+}
+
+// Import an expression without considering a suffix (function
+// arguments, index operations, etc.).
+
+Expression*
+Expression::import_expression_without_suffix(Import_expression* imp,
+					     Location loc)
+{
   int c = imp->peek_char();
   if (c == '+' || c == '-' || c == '!' || c == '^' || c == '&' || c == '*')
     return Unary_expression::do_import(imp, loc);
@@ -17608,7 +17764,21 @@ Expression::import_identifier(Import_function_body* ifb, Location loc)
       return Expression::make_error(loc);
     }
 
-  return Expression::make_var_reference(no, loc);
+  if (no->is_variable() || no->is_result_variable())
+    return Expression::make_var_reference(no, loc);
+  else if (no->is_function() || no->is_function_declaration())
+    return Expression::make_func_reference(no, NULL, loc);
+  else
+    {
+      if (!ifb->saw_error())
+	go_error_at(ifb->location(),
+		    ("import error for %qs: "
+		     "unexpected type of identifier %qs (%d)"),
+		    ifb->name().c_str(),
+		    id.c_str(), no->classification());
+      ifb->set_saw_error();
+      return Expression::make_error(loc);
+    }
 }
 
 // Class Expression_list.

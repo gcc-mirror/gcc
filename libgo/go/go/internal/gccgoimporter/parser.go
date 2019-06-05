@@ -539,10 +539,12 @@ func (p *parser) parseNamedType(nlist []int) types.Type {
 		for p.tok == scanner.Ident {
 			p.expectKeyword("func")
 			if p.tok == '/' {
-				// Skip a /*nointerface*/ comment.
+				// Skip a /*nointerface*/ or /*asm ID */ comment.
 				p.expect('/')
 				p.expect('*')
-				p.expect(scanner.Ident)
+				if p.expect(scanner.Ident) == "asm" {
+					p.parseUnquotedString()
+				}
 				p.expect('*')
 				p.expect('/')
 			}
@@ -727,6 +729,17 @@ func (p *parser) parseFunctionType(pkg *types.Package, nlist []int) *types.Signa
 
 // Func = Name FunctionType [InlineBody] .
 func (p *parser) parseFunc(pkg *types.Package) *types.Func {
+	if p.tok == '/' {
+		// Skip an /*asm ID */ comment.
+		p.expect('/')
+		p.expect('*')
+		if p.expect(scanner.Ident) == "asm" {
+			p.parseUnquotedString()
+		}
+		p.expect('*')
+		p.expect('/')
+	}
+
 	name := p.parseName()
 	if strings.ContainsRune(name, '$') {
 		// This is a Type$equal or Type$hash function, which we don't want to parse,

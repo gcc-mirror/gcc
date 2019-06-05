@@ -133,6 +133,11 @@ Collect_references_from_inline::expression(Expression** pexpr)
   if (fe != NULL)
     {
       Named_object* no = fe->named_object();
+
+      if (no->is_function_declaration()
+	  && no->func_declaration_value()->type()->is_builtin())
+	return TRAVERSE_CONTINUE;
+
       std::pair<Unordered_set(Named_object*)::iterator, bool> ins =
 	this->exports_->insert(no);
 
@@ -247,6 +252,22 @@ Export::export_globals(const std::string& package_name,
 	  if ((*p)->is_function()
 	      && (*p)->func_value()->export_for_inlining())
 	    check_inline_refs.push_back(*p);
+	  else if ((*p)->is_type())
+	    {
+	      const Bindings* methods = (*p)->type_value()->local_methods();
+	      if (methods != NULL)
+		{
+		  for (Bindings::const_definitions_iterator pm =
+			 methods->begin_definitions();
+		       pm != methods->end_definitions();
+		       ++pm)
+		    {
+		      Function* fn = (*pm)->func_value();
+		      if (fn->export_for_inlining())
+			check_inline_refs.push_back(*pm);
+		    }
+		}
+	    }
 	}
     }
 
@@ -282,6 +303,9 @@ Export::export_globals(const std::string& package_name,
 	}
     }
 
+  // Track all imported packages mentioned in export data.
+  Unordered_set(const Package*) all_imports;
+
   // Export the symbols in sorted order.  That will reduce cases where
   // irrelevant changes to the source code affect the exported
   // interface.
@@ -291,15 +315,20 @@ Export::export_globals(const std::string& package_name,
   for (Unordered_set(Named_object*)::const_iterator p = exports.begin();
        p != exports.end();
        ++p)
-    sorted_exports.push_back(*p);
+    {
+      sorted_exports.push_back(*p);
+
+      const Package* pkg = (*p)->package();
+      if (pkg != NULL)
+	all_imports.insert(pkg);
+    }
 
   std::sort(sorted_exports.begin(), sorted_exports.end(), Sort_bindings());
 
   // Assign indexes to all exported types and types referenced by
   // exported types, and collect all packages mentioned.
-  Unordered_set(const Package*) type_imports;
   int unexported_type_index = this->prepare_types(&sorted_exports,
-						  &type_imports);
+						  &all_imports);
 
   // Although the export data is readable, at least this version is,
   // it is conceptually a binary format.  Start with a four byte
@@ -327,7 +356,7 @@ Export::export_globals(const std::string& package_name,
 
   this->write_packages(packages);
 
-  this->write_imports(imports, type_imports);
+  this->write_imports(imports, all_imports);
 
   this->write_imported_init_fns(package_name, import_init_fn,
 				imported_init_fns);
@@ -693,7 +722,7 @@ import_compare(const std::pair<std::string, Package*>& a,
 
 void
 Export::write_imports(const std::map<std::string, Package*>& imports,
-		      const Unordered_set(const Package*)& type_imports)
+		      const Unordered_set(const Package*)& all_imports)
 {
   // Sort the imports for more consistent output.
   Unordered_set(const Package*) seen;
@@ -729,8 +758,8 @@ Export::write_imports(const std::map<std::string, Package*>& imports,
   // Write out a separate list of indirectly imported packages.
   std::vector<const Package*> indirect_imports;
   for (Unordered_set(const Package*)::const_iterator p =
-	 type_imports.begin();
-       p != type_imports.end();
+	 all_imports.begin();
+       p != all_imports.end();
        ++p)
     {
       if (seen.find(*p) == seen.end())

@@ -757,10 +757,11 @@ Import::import_func(Package* package)
   Typed_identifier_list* results;
   bool is_varargs;
   bool nointerface;
+  std::string asm_name;
   std::string body;
   if (!Function::import_func(this, &name, &fpkg, &is_exported, &receiver,
 			     &parameters, &results, &is_varargs, &nointerface,
-			     &body))
+			     &asm_name, &body))
     return;
   if (fpkg == NULL)
     fpkg = package;
@@ -802,12 +803,14 @@ Import::import_func(Package* package)
   else
     {
       no = fpkg->add_function_declaration(name, fntype, loc);
-      if (this->add_to_globals_)
+      if (this->add_to_globals_ && fpkg == package)
 	this->gogo_->add_dot_import_object(no);
     }
 
   if (nointerface)
     no->func_declaration_value()->set_nointerface();
+  if (!asm_name.empty())
+    no->func_declaration_value()->set_asm_name(asm_name);
   if (!body.empty() && !no->func_declaration_value()->has_imported_body())
     no->func_declaration_value()->set_imported_body(this, body);
 }
@@ -1231,6 +1234,12 @@ Import::register_builtin_type(Gogo* gogo, const char* name, Builtin_code code)
   this->builtin_types_[index] = named_object->type_value();
 }
 
+// Characters that stop read_identifier.  We base this on the
+// characters that stop an identifier, without worrying about
+// characters that are permitted in an identifier.  That lets us skip
+// UTF-8 parsing.
+static const char * const identifier_stop = " \n;,()[]";
+
 // Read an identifier from the stream.
 
 std::string
@@ -1242,8 +1251,14 @@ Import::read_identifier()
   while (true)
     {
       c = stream->peek_char();
-      if (c == -1 || c == ' ' || c == '\n' || c == ';' || c == ')')
+      if (c == -1 || strchr(identifier_stop, c) != NULL)
 	break;
+
+      // FIXME: Probably we shouldn't accept '.', but that might break
+      // some existing imports.
+      if (c == '.' && stream->match_c_string("..."))
+	break;
+
       ret += c;
       stream->advance(1);
     }
@@ -1521,7 +1536,18 @@ Import_function_body::read_identifier()
   for (size_t i = start; i < this->body_.length(); i++)
     {
       int c = static_cast<unsigned char>(this->body_[i]);
-      if (c == ' ' || c == '\n' || c == ';' || c == ')')
+      if (strchr(identifier_stop, c) != NULL)
+	{
+	  this->off_ = i;
+	  return this->body_.substr(start, i - start);
+	}
+
+      // FIXME: Probably we shouldn't accept '.', but that might break
+      // some existing imports.
+      if (c == '.'
+	  && i + 2 < this->body_.length()
+	  && this->body_[i + 1] == '.'
+	  && this->body_[i + 2] == '.')
 	{
 	  this->off_ = i;
 	  return this->body_.substr(start, i - start);
