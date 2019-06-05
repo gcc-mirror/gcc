@@ -100,6 +100,9 @@ struct omp_region
   /* True if this is a combined parallel+workshare region.  */
   bool is_combined_parallel;
 
+  /* Copy of fd.lastprivate_conditional != 0.  */
+  bool has_lastprivate_conditional;
+
   /* The ordered stmt if type is GIMPLE_OMP_ORDERED and it has
      a depend clause.  */
   gomp_ordered *ord_stmt;
@@ -601,8 +604,12 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 	  switch (region->inner->sched_kind)
 	    {
 	    case OMP_CLAUSE_SCHEDULE_RUNTIME:
-	      if ((region->inner->sched_modifiers
-		   & OMP_CLAUSE_SCHEDULE_NONMONOTONIC) != 0)
+	      /* For lastprivate(conditional:), our implementation
+		 requires monotonic behavior.  */
+	      if (region->inner->has_lastprivate_conditional != 0)
+		start_ix2 = 3;
+	      else if ((region->inner->sched_modifiers
+		       & OMP_CLAUSE_SCHEDULE_NONMONOTONIC) != 0)
 		start_ix2 = 6;
 	      else if ((region->inner->sched_modifiers
 			& OMP_CLAUSE_SCHEDULE_MONOTONIC) == 0)
@@ -613,7 +620,8 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 	    case OMP_CLAUSE_SCHEDULE_DYNAMIC:
 	    case OMP_CLAUSE_SCHEDULE_GUIDED:
 	      if ((region->inner->sched_modifiers
-		   & OMP_CLAUSE_SCHEDULE_MONOTONIC) == 0)
+		   & OMP_CLAUSE_SCHEDULE_MONOTONIC) == 0
+		  && !region->inner->has_lastprivate_conditional)
 		{
 		  start_ix2 = 3 + region->inner->sched_kind;
 		  break;
@@ -6228,6 +6236,7 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
 			&fd, loops);
   region->sched_kind = fd.sched_kind;
   region->sched_modifiers = fd.sched_modifiers;
+  region->has_lastprivate_conditional = fd.lastprivate_conditional != 0;
 
   gcc_assert (EDGE_COUNT (region->entry->succs) == 2);
   BRANCH_EDGE (region->entry)->flags &= ~EDGE_ABNORMAL;
@@ -6280,14 +6289,16 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
       switch (fd.sched_kind)
 	{
 	case OMP_CLAUSE_SCHEDULE_RUNTIME:
-	  if ((fd.sched_modifiers & OMP_CLAUSE_SCHEDULE_NONMONOTONIC) != 0)
+	  if ((fd.sched_modifiers & OMP_CLAUSE_SCHEDULE_NONMONOTONIC) != 0
+	      && fd.lastprivate_conditional == 0)
 	    {
 	      gcc_assert (!fd.have_ordered);
 	      fn_index = 6;
 	      sched = 4;
 	    }
 	  else if ((fd.sched_modifiers & OMP_CLAUSE_SCHEDULE_MONOTONIC) == 0
-		   && !fd.have_ordered)
+		   && !fd.have_ordered
+		   && fd.lastprivate_conditional == 0)
 	    fn_index = 7;
 	  else
 	    {
@@ -6298,7 +6309,8 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
 	case OMP_CLAUSE_SCHEDULE_DYNAMIC:
 	case OMP_CLAUSE_SCHEDULE_GUIDED:
 	  if ((fd.sched_modifiers & OMP_CLAUSE_SCHEDULE_MONOTONIC) == 0
-	      && !fd.have_ordered)
+	      && !fd.have_ordered
+	      && fd.lastprivate_conditional == 0)
 	    {
 	      fn_index = 3 + fd.sched_kind;
 	      sched = (fd.sched_kind == OMP_CLAUSE_SCHEDULE_GUIDED) + 2;
