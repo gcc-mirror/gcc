@@ -1,3 +1,7 @@
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/weak/weak-19.c: New test.
+
 2019-06-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/discr6.ads: New test.
