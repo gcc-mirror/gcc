@@ -5059,6 +5059,9 @@ Mark_inline_candidates::type(Type* t)
 void
 Gogo::do_exports()
 {
+  if (saw_errors())
+    return;
+
   // Mark any functions whose body should be exported for inlining by
   // other packages.
   Mark_inline_candidates mic;
@@ -5690,7 +5693,7 @@ Function::export_func(Export* exp, const Named_object* no) const
     block = this->block_;
   Function::export_func_with_type(exp, no, this->type_, this->results_,
 				  this->is_method() && this->nointerface(),
-				  block, this->location_);
+				  this->asm_name(), block, this->location_);
 }
 
 // Export a function with a type.
@@ -5699,7 +5702,8 @@ void
 Function::export_func_with_type(Export* exp, const Named_object* no,
 				const Function_type* fntype,
 				Function::Results* result_vars,
-				bool nointerface, Block* block, Location loc)
+				bool nointerface, const std::string& asm_name,
+				Block* block, Location loc)
 {
   exp->write_c_string("func ");
 
@@ -5707,6 +5711,13 @@ Function::export_func_with_type(Export* exp, const Named_object* no,
     {
       go_assert(fntype->is_method());
       exp->write_c_string("/*nointerface*/ ");
+    }
+
+  if (!asm_name.empty())
+    {
+      exp->write_c_string("/*asm ");
+      exp->write_string(asm_name);
+      exp->write_c_string(" */ ");
     }
 
   if (fntype->is_method())
@@ -5848,16 +5859,37 @@ Function::import_func(Import* imp, std::string* pname,
 		      Typed_identifier_list** presults,
 		      bool* is_varargs,
 		      bool* nointerface,
+		      std::string* asm_name,
 		      std::string* body)
 {
   imp->require_c_string("func ");
 
   *nointerface = false;
-  if (imp->match_c_string("/*"))
+  while (imp->match_c_string("/*"))
     {
-      imp->require_c_string("/*nointerface*/ ");
-      *nointerface = true;
+      imp->advance(2);
+      if (imp->match_c_string("nointerface"))
+	{
+	  imp->require_c_string("nointerface*/ ");
+	  *nointerface = true;
+	}
+      else if (imp->match_c_string("asm"))
+	{
+	  imp->require_c_string("asm ");
+	  *asm_name = imp->read_identifier();
+	  imp->require_c_string(" */ ");
+	}
+      else
+	{
+	  go_error_at(imp->location(),
+		      "import error at %d: unrecognized function comment",
+		      imp->pos());
+	  return false;
+	}
+    }
 
+  if (*nointerface)
+    {
       // Only a method can be nointerface.
       go_assert(imp->peek_char() == '(');
     }
@@ -7158,6 +7190,8 @@ Function_declaration::import_function_body(Gogo* gogo, Named_object* no)
       Named_type* rtype = fntype->receiver()->type()->deref()->named_type();
       go_assert(rtype != NULL);
       no = rtype->add_method(no->name(), fn);
+      const Package* package = rtype->named_object()->package();
+      package->bindings()->add_method(no);
     }
 
   Import_function_body ifb(gogo, this->imp_, no, body, nl + 1, outer, indent);

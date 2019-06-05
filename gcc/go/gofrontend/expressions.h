@@ -1253,6 +1253,9 @@ class Expression
   static Expression*
   import_identifier(Import_function_body*, Location);
 
+  static Expression*
+  import_expression_without_suffix(Import_expression*, Location);
+
   // The expression classification.
   Expression_classification classification_;
   // The location in the input file.
@@ -2409,6 +2412,12 @@ class Call_expression : public Expression
   virtual Bexpression*
   do_get_backend(Translate_context*);
 
+  int
+  do_inlining_cost() const;
+
+  void
+  do_export(Export_function_body*) const;
+
   virtual bool
   do_is_recover_call() const;
 
@@ -2430,6 +2439,9 @@ class Call_expression : public Expression
   // determined.
   bool
   determining_types();
+
+  void
+  export_arguments(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2570,6 +2582,10 @@ class Builtin_call_expression : public Call_expression
 
   Bexpression*
   do_get_backend(Translate_context*);
+
+  int
+  do_inlining_cost() const
+  { return 1; }
 
   void
   do_export(Export_function_body*) const;
@@ -2744,6 +2760,12 @@ class Func_expression : public Expression
 
   Bexpression*
   do_get_backend(Translate_context*);
+
+  int
+  do_inlining_cost() const;
+
+  void
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;

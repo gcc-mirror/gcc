@@ -1573,7 +1573,7 @@ class Function
   static void
   export_func_with_type(Export*, const Named_object*,
 			const Function_type*, Results*, bool nointerface,
-			Block* block, Location);
+			const std::string& asm_name, Block* block, Location);
 
   // Import a function.  Reports whether the import succeeded.
   static bool
@@ -1581,7 +1581,7 @@ class Function
 	      bool* is_exported, Typed_identifier** receiver,
 	      Typed_identifier_list** pparameters,
 	      Typed_identifier_list** presults, bool* is_varargs,
-	      bool* nointerface, std::string* body);
+	      bool* nointerface, std::string* asm_name, std::string* body);
 
  private:
   // Type for mapping from label names to Label objects.
@@ -1805,7 +1805,7 @@ class Function_declaration
   {
     Function::export_func_with_type(exp, no, this->fntype_, NULL,
 				    this->is_method() && this->nointerface(),
-				    NULL, this->location_);
+				    this->asm_name_, NULL, this->location_);
   }
 
   // Check that the types used in this declaration's signature are defined.
