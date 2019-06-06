@@ -155,6 +155,8 @@ Statement::import_statement(Import_function_body* ifb, Location loc)
       ifb->advance(6);
       return Statement::make_return_statement(NULL, loc);
     }
+  else if (ifb->match_c_string("var $t"))
+    return Temporary_statement::do_import(ifb, loc);
   else if (ifb->match_c_string("var "))
     return Variable_declaration_statement::do_import(ifb, loc);
 
@@ -691,6 +693,92 @@ Statement::make_temporary(Type* type, Expression* init,
 			  Location location)
 {
   return new Temporary_statement(type, init, location);
+}
+
+// Export a temporary statement.
+
+void
+Temporary_statement::do_export_statement(Export_function_body* efb)
+{
+  unsigned int idx = efb->record_temporary(this);
+  char buf[100];
+  snprintf(buf, sizeof buf, "var $t%u", idx);
+  efb->write_c_string(buf);
+  if (this->type_ != NULL)
+    {
+      efb->write_c_string(" ");
+      efb->write_type(this->type_);
+    }
+  if (this->init_ != NULL)
+    {
+      efb->write_c_string(" = ");
+
+      go_assert(efb->type_context() == NULL);
+      efb->set_type_context(this->type_);
+
+      this->init_->export_expression(efb);
+
+      efb->set_type_context(NULL);
+    }
+}
+
+// Import a temporary statement.
+
+Statement*
+Temporary_statement::do_import(Import_function_body* ifb, Location loc)
+{
+  ifb->require_c_string("var ");
+  std::string id = ifb->read_identifier();
+  go_assert(id[0] == '$' && id[1] == 't');
+  const char *p = id.c_str();
+  char *end;
+  long idx = strtol(p + 2, &end, 10);
+  if (*end != '\0' || idx > 0x7fffffff)
+    {
+      if (!ifb->saw_error())
+	go_error_at(loc,
+		    ("invalid export data for %qs: "
+		     "bad temporary statement index at %lu"),
+		    ifb->name().c_str(),
+		    static_cast<unsigned long>(ifb->off()));
+      ifb->set_saw_error();
+      return Statement::make_error_statement(loc);
+    }
+
+  Type* type = NULL;
+  if (!ifb->match_c_string(" = "))
+    {
+      ifb->require_c_string(" ");
+      type = ifb->read_type();
+    }
+  Expression* init = NULL;
+  if (ifb->match_c_string(" = "))
+    {
+      ifb->advance(3);
+      init = Expression::import_expression(ifb, loc);
+      if (type != NULL)
+	{
+	  Type_context context(type, false);
+	  init->determine_type(&context);
+	}
+    }
+  if (type == NULL && init == NULL)
+    {
+      if (!ifb->saw_error())
+	go_error_at(loc,
+		    ("invalid export data for %qs: "
+		     "temporary statement has neither type nor init at %lu"),
+		    ifb->name().c_str(),
+		    static_cast<unsigned long>(ifb->off()));
+      ifb->set_saw_error();
+      return Statement::make_error_statement(loc);
+    }
+
+  Temporary_statement* temp = Statement::make_temporary(type, init, loc);
+
+  ifb->record_temporary(temp, static_cast<unsigned int>(idx));
+
+  return temp;
 }
 
 // The Move_subexpressions class is used to move all top-level

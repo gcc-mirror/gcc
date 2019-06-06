@@ -1611,3 +1611,34 @@ Import_function_body::read_type()
 
   return type;
 }
+
+// Record the index of a temporary statement.
+
+void
+Import_function_body::record_temporary(Temporary_statement* temp,
+				       unsigned int idx)
+{
+  size_t have = this->temporaries_.size();
+  if (static_cast<size_t>(idx) >= have)
+    {
+      size_t want;
+      if (have == 0)
+	want = 8;
+      else if (have < 256)
+	want = have * 2;
+      else
+	want = have + 64;
+      this->temporaries_.resize(want, NULL);
+    }
+  this->temporaries_[idx] = temp;
+}
+
+// Return a temporary statement given an index.
+
+Temporary_statement*
+Import_function_body::temporary_statement(unsigned int idx)
+{
+  if (static_cast<size_t>(idx) >= this->temporaries_.size())
+    return NULL;
+  return this->temporaries_[idx];
+}
