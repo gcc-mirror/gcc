@@ -882,8 +882,6 @@ sem_function::equals_private (sem_item *item)
     if(!m_checker->compare_bb (bb_sorted[i], m_compared_func->bb_sorted[i]))
       return return_false();
 
-  dump_message ("All BBs are equal\n");
-
   auto_vec <int> bb_dict;
 
   /* Basic block edges check.  */
