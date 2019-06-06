@@ -1,3 +1,16 @@
+2019-06-06  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (struct access): New field grp_same_access_path.
+	(dump_access): Dump it.
+	(build_reconstructed_reference): New function.
+	(build_ref_for_model): Use it if possible.
+	(path_comparable_for_same_access): New function.
+	(same_access_path_p): Likewise.
+	(sort_and_splice_var_accesses): Set the new flag.
+	(analyze_access_subtree): Likewise.
+	(propagate_subaccesses_across_link): Propagate zero value of the new
+	flag down the access tree.
+
 2019-06-06  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config.gcc (amdgcn-*-*): Allow --with-arch=gfx906.
