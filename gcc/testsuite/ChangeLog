@@ -1,3 +1,9 @@
+2019-06-06  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/alias-37.c: New testcase.
+	* gcc.dg/torture/20190604-1.c: Likewise.
+	* gcc.dg/tree-ssa/pta-callused.c: Adjust.
+
 2019-06-06  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* gcc.target/arc/tmac-1.c: Reoreder dg-directives.

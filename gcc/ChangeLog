@@ -1,3 +1,18 @@
+2019-06-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c: Include tree-cfg.h.
+	(make_heapvar): Do not make heap vars artificial.
+	(find_func_aliases_for_builtin_call): Handle stack allocation
+	functions.
+	(find_func_aliases): Delay processing of simple enough returns
+	in non-IPA mode.
+	(set_uids_in_ptset): Adjust.
+	(find_what_var_points_to): Likewise.
+	(solve_constraints): Do not dump points-to sets here.
+	(compute_points_to_sets): Post-process return statements,
+	amending the escaped solution.  Dump points-to sets afterwards.
+	(ipa_pta_execute): Dump points-to sets.
+
 2019-06-06  Martin Liska  <mliska@suse.cz>
 
 	PR web/87933
