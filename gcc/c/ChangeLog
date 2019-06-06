@@ -1,5 +1,11 @@
 2019-06-05  Martin Sebor  <msebor@redhat.com>
 
+	PR c/90737
+	* c-typeck.c (c_finish_return): Only consider functions returning
+	pointers as candidates for -Wreturn-local-addr.
+
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
 	* c-decl.c (start_decl): Adjust quoting and hyphenation
 	in diagnostics.
 	(finish_decl): Same.
