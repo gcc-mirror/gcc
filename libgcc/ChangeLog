@@ -1,3 +1,19 @@
+2019-06-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/slli.S (__mspabi_slli_n): Put function in its own
+	section.
+	(__mspabi_slli): Likewise.
+	(__mspabi_slll_n): Likewise.
+	(__mspabi_slll): Likewise.
+	* config/msp430/srai.S (__mspabi_srai_n): Likewise.
+	(__mspabi_srai): Likewise.
+	(__mspabi_sral_n): Likewise.
+	(__mspabi_sral): Likewise.
+	* config/msp430/srli.S (__mspabi_srli_n): Likewise.
+	(__mspabi_srli): Likewise.
+	(__mspabi_srll_n): Likewise.
+	(__mspabi_srll): Likewise.
+
 2019-06-05  Yoshinori Sato  <ysato@users.sourceforge.jp>
 
 	* config.host (rx-*-linux*): Add t-fdpbit to tmake_file

@@ -22,8 +22,9 @@
 	
 	.text
 
-/* Logical Left Shift - R12 -> R12 */
+/* Logical Left Shift - R12 -> R12.  */
 
+	.section	.text.__mspabi_slli_n
 	.macro	_slli n
 	.global __mspabi_slli_\n
 __mspabi_slli_\n:
@@ -51,6 +52,7 @@ __mspabi_slli_\n:
 	RET
 #endif
 
+	.section	.text.__mspabi_slli
 1:	ADD.W	#-1,R13
 	ADD.W	R12,R12
 	.global	__mspabi_slli
@@ -63,8 +65,9 @@ __mspabi_slli:
 	RET
 #endif
 
-/* Logical Left Shift - R12:R13 -> R12:R13 */
+/* Logical Left Shift - R12:R13 -> R12:R13.  */
 
+	.section	.text.__mspabi_slll_n
 	.macro	_slll	n
 	.global	__mspabi_slll_\n
 __mspabi_slll_\n:
@@ -93,6 +96,7 @@ __mspabi_slll_\n:
 	RET
 #endif
 
+	.section	.text.__mspabi_slll
 1:	ADD.W	#-1,R14
 	ADD.W	R12,R12
 	ADDC.W	R13,R13
