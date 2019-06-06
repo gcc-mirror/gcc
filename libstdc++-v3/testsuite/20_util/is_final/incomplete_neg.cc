@@ -1,4 +1,4 @@
-// { dg-do compile { target c++11 } }
+// { dg-do compile { target c++14 } }
 
 // Copyright (C) 2019 Free Software Foundation, Inc.
 //
@@ -26,5 +26,5 @@ class X;
 
 void test01()
 {
-  std::is_polymorphic<X>();		// { dg-error "required from here" }
+  std::is_final<X>();		// { dg-error "required from here" }
 }

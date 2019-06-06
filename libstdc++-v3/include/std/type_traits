@@ -746,19 +746,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct is_empty
     : public integral_constant<bool, __is_empty(_Tp)>
-    {
-      static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
-	"template argument must be a complete class or an unbounded array");
-    };
+    { };
 
   /// is_polymorphic
   template<typename _Tp>
     struct is_polymorphic
     : public integral_constant<bool, __is_polymorphic(_Tp)>
-    {
-      static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
-	"template argument must be a complete class or an unbounded array");
-    };
+    { };
 
 #if __cplusplus >= 201402L
 #define __cpp_lib_is_final 201402L
@@ -766,20 +760,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct is_final
     : public integral_constant<bool, __is_final(_Tp)>
-    {
-      static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
-	"template argument must be a complete class or an unbounded array");
-    };
+    { };
 #endif
 
   /// is_abstract
   template<typename _Tp>
     struct is_abstract
     : public integral_constant<bool, __is_abstract(_Tp)>
-    {
-      static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
-	"template argument must be a complete class or an unbounded array");
-    };
+    { };
 
   template<typename _Tp,
 	   bool = is_arithmetic<_Tp>::value>
@@ -3174,10 +3162,7 @@ template <typename _From, typename _To>
   template<typename _Tp>
     struct is_aggregate
     : bool_constant<__is_aggregate(remove_cv_t<_Tp>)>
-    {
-      static_assert(std::__is_complete_or_unbounded(__type_identity<_Tp>{}),
-	"template argument must be a complete class or an unbounded array");
-    };
+    { };
 
   /// is_aggregate_v
   template<typename _Tp>

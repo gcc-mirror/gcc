@@ -26,5 +26,5 @@ class X;
 
 void test01()
 {
-  std::is_polymorphic<X>();		// { dg-error "required from here" }
+  std::is_empty<X>();		// { dg-error "required from here" }
 }
