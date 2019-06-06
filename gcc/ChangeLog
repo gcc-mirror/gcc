@@ -1,3 +1,8 @@
+2019-06-06  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/87954
+	* match.pd: Simplify mult where both arguments are 0 or 1.
+
 2019-06-06  Richard Biener  <rguenther@suse.de>
 
 	* vr-values.c (vr_values::extract_range_from_ssa_name): Do not
