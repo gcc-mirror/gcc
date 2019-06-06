@@ -1622,6 +1622,16 @@ Escape_analysis_assign::expression(Expression** pexpr)
                 }
                 break;
 
+              case Runtime::MAPASSIGN_FAST32PTR:
+              case Runtime::MAPASSIGN_FAST64PTR:
+              case Runtime::MAPASSIGN_FASTSTR:
+                {
+                  // Map key escapes. The last argument is the key.
+                  Node* key_node = Node::make_node(call->args()->back());
+                  this->assign(this->context_->sink(), key_node);
+                }
+                break;
+
               case Runtime::IFACEE2T2:
               case Runtime::IFACEI2T2:
                 {

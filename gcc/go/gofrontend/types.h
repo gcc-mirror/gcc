@@ -2912,6 +2912,27 @@ class Map_type : public Type
   Expression*
   fat_zero_value(Gogo*);
 
+  // Map algorithm to use for this map type.  We may use specialized
+  // fast map routines for certain key types.
+  enum Map_alg
+    {
+      // 32-bit key.
+      MAP_ALG_FAST32,
+      // 32-bit pointer key.
+      MAP_ALG_FAST32PTR,
+      // 64-bit key.
+      MAP_ALG_FAST64,
+      // 64-bit pointer key.
+      MAP_ALG_FAST64PTR,
+      // String key.
+      MAP_ALG_FASTSTR,
+      // Anything else.
+      MAP_ALG_SLOW,
+    };
+
+  Map_alg
+  algorithm(Gogo*);
+
   // Return whether VAR is the map zero value.
   static bool
   is_zero_value(Variable* var);
@@ -2931,7 +2952,7 @@ class Map_type : public Type
   static Type*
   make_map_type_descriptor_type();
 
-  // This must be in  sync with libgo/go/runtime/hashmap.go.
+  // This must be in  sync with libgo/go/runtime/map.go.
   static const int bucket_size = 8;
 
  protected:
@@ -2974,7 +2995,7 @@ class Map_type : public Type
   do_export(Export*) const;
 
  private:
-  // These must be in sync with libgo/go/runtime/hashmap.go.
+  // These must be in sync with libgo/go/runtime/map.go.
   static const int max_key_size = 128;
   static const int max_val_size = 128;
   static const int max_zero_size = 1024;
