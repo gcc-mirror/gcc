@@ -1,3 +1,10 @@
+2019-06-05  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (define_mode_suffix vecmemsuffix): New.
+	(define_insn "avx512dq_fpclass<mode><mask_scalar_merge_name>"): Enable
+	memory operand for it.
+	(define_insn "avx512dq_vmfpclass<mode><mask_scalar_merge_name>"): Ditto.
+
 2019-06-05  Martin Sebor  <msebor@redhat.com>
 
 	* config/i386/i386-features.c (ix86_get_function_versions_dispatcher):
