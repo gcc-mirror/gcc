@@ -1,5 +1,75 @@
 2019-06-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/23_containers/deque/requirements/explicit_instantiation/
+	1_c++0x.cc: Remove redundant test.
+	* testsuite/23_containers/deque/requirements/explicit_instantiation/
+	2.cc: Use target selector instead of preprocessor condition.
+	* testsuite/23_containers/deque/requirements/explicit_instantiation/
+	3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/forward_list/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/
+	explicit_instantiation/5.cc: Do not test allocator rebinding extension
+	for C++2a.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	1_c++0x.cc: Remove redundant test.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	2.cc: Use target selector instead of preprocessor condition.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	5.cc: Do not test allocator rebinding extension for C++2a.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/
+	1_c++0x.cc: Remove redundant test.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/
+	2.cc: Adjust comment.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/
+	3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/
+	5.cc: Do not test allocator rebinding extension for C++2a.
+	* testsuite/23_containers/multimap/requirements/explicit_instantiation/
+	1_c++0x.cc: Remove redundant test.
+	* testsuite/23_containers/multimap/requirements/explicit_instantiation/
+	3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/multimap/requirements/explicit_instantiation/
+	5.cc: Do not test allocator rebinding extension for C++2a.
+	* testsuite/23_containers/multiset/requirements/explicit_instantiation/
+	3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/multiset/requirements/explicit_instantiation/
+	5.cc: Do not test allocator rebinding extension for C++2a.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/3.cc:
+	Do not run test for C++2a.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/
+	1_c++0x.cc: Remove redundant test.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/5.cc:
+	Do not test allocator rebinding extension for C++2a.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/5.cc: Do not test allocator rebinding extension
+	for C++2a.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/5.cc: Do not test allocator rebinding extension
+	for C++2a.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/5.cc: Do not test allocator rebinding extension
+	for C++2a.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/5.cc: Do not test allocator rebinding extension
+	for C++2a.
+	* testsuite/23_containers/vector/ext_pointer/explicit_instantiation/
+	2.cc: Remove redundant test.
+	* testsuite/23_containers/vector/ext_pointer/explicit_instantiation/
+	3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/vector/requirements/explicit_instantiation/
+	3.cc: Likewise.
+
 	* include/std/type_traits (is_empty, is_polymorphic, is_final)
 	(is_abstract, is_aggregate): Remove static_assert.
 	* testsuite/20_util/is_abstract/incomplete_neg.cc: Check for error
