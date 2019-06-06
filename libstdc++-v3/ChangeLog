@@ -1,5 +1,15 @@
 2019-06-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/array: Do not include <stdexcept>.
+	* include/std/optional: Include <exception> and
+	<bits/exception_defines.h> instead of <stdexcept>.
+	* testsuite/20_util/function_objects/searchers.cc: Include <cctype>
+	for std::isalnum.
+	* testsuite/20_util/tuple/cons/deduction.cc: Include <memory> for
+	std::allocator.
+	* testsuite/23_containers/map/erasure.cc: Include <string>.
+	* testsuite/23_containers/unordered_map/erasure.cc: Likewise.
+
 	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc: Add
 	dg-prune-output for different C++98 diagnostic.
 	* testsuite/23_containers/deque/requirements/dr438/constructor_1_neg.cc:

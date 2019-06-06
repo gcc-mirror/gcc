@@ -36,7 +36,7 @@
 #else
 
 #include <utility>
-#include <stdexcept>
+#include <bits/functexcept.h>
 #include <bits/stl_algobase.h>
 #include <bits/range_access.h>
 
