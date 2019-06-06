@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-fre3 -fno-tree-sra" } */
+/* { dg-options "-O2 -fdump-tree-fre3" } */
 struct foo
 {
   int val;

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dse1-details -fno-short-enums" } */
+/* { dg-options "-O2 -fdump-tree-dse1-details -fno-short-enums -fno-tree-fre" } */
 /* { dg-skip-if "temporary variable for constraint_expr is never used" { msp430-*-* } } */
 
 enum constraint_expr_type
