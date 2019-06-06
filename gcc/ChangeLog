@@ -1,3 +1,14 @@
+2019-06-06  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf-gimple.h (dump_message_1): Remove.
+	(dump_message): Likewise.
+	(return_false_with_message_1): Print also file.
+	(return_false_with_msg): Likewise.
+	(return_with_result): Likewise.
+	(return_with_debug): Likewise.
+	* ipa-icf.c (sem_function::equals_private): Remove call
+	to dump_message.
+
 2019-06-05  Hongtao Liu  <hongtao.liu@intel.com>
 
 	* config/i386/sse.md (define_mode_suffix vecmemsuffix): New.
