@@ -1,3 +1,7 @@
+2019-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure: Regenerate.
+
 2019-06-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/msp430.md (ashlhi3): Force shift src operand into a
