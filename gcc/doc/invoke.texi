@@ -16211,6 +16211,9 @@ Compile for GCN3 Fiji devices (gfx803).
 @item gfx900
 Compile for GCN5 Vega 10 devices (gfx900).
 
+@item gfx906
+Compile for GCN5 Vega 20 devices (gfx906).
+
 @end table
 
 @item -mstack-size=@var{bytes}

@@ -1,3 +1,19 @@
+2019-09-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+
+	2019-06-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.gcc (amdgcn-*-*): Allow --with-arch=gfx906.
+	* config/gcn/gcn.opt (gpu_type): Add gfx906.
+	* config/gcn/t-gcn-hsa (MULTILIB_OPTIONS): Add gfx906 multilib.
+	(MULTILIB_DIRNAMES): Rename gcn5 to gfx900.
+	Add gfx906.
+
+	2019-06-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* doc/invoke.texi (AMD GCN Options): Add gfx906.
+
 2019-09-06  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.c (gimplify_omp_for): Use for_stmt in call to
