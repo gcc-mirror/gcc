@@ -217,6 +217,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
            || !COMPLEX_FLOAT_TYPE_P (type)))
    (negate @0)))
 
+/* Transform { 0 or 1 } * { 0 or 1 } into { 0 or 1 } & { 0 or 1 } */
+(simplify
+ (mult SSA_NAME@1 SSA_NAME@2)
+  (if (INTEGRAL_TYPE_P (type)
+       && get_nonzero_bits (@1) == 1
+       && get_nonzero_bits (@2) == 1)
+   (bit_and @1 @2)))
+
 /* Transform x * { 0 or 1, 0 or 1, ... } into x & { 0 or -1, 0 or -1, ...},
    unless the target has native support for the former but not the latter.  */
 (simplify
