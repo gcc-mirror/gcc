@@ -7843,63 +7843,33 @@ Builtin_call_expression::do_lower(Gogo*, Named_object* function,
 
     case BUILTIN_DELETE:
       {
-	// Lower to a runtime function call.
-	const Expression_list* args = this->args();
-	if (args == NULL || args->size() < 2)
-	  this->report_error(_("not enough arguments"));
-	else if (args->size() > 2)
-	  this->report_error(_("too many arguments"));
-	else if (args->front()->type()->map_type() == NULL)
-	  this->report_error(_("argument 1 must be a map"));
-	else
-	  {
-	    // Since this function returns no value it must appear in
-	    // a statement by itself, so we don't have to worry about
-	    // order of evaluation of values around it.  Evaluate the
-	    // map first to get order of evaluation right.
-	    Map_type* mt = args->front()->type()->map_type();
-	    Temporary_statement* map_temp =
-	      Statement::make_temporary(mt, args->front(), loc);
-	    inserter->insert(map_temp);
-
-	    Temporary_statement* key_temp =
-	      Statement::make_temporary(mt->key_type(), args->back(), loc);
-	    inserter->insert(key_temp);
-
-	    Expression* e1 = Expression::make_type_descriptor(mt, loc);
-	    Expression* e2 = Expression::make_temporary_reference(map_temp,
-								  loc);
-	    Expression* e3 = Expression::make_temporary_reference(key_temp,
-								  loc);
-
-	    // If the call to delete is deferred, and is in a loop,
-	    // then the loop will only have a single instance of the
-	    // temporary variable.  Passing the address of the
-	    // temporary variable here means that the deferred call
-	    // will see the last value in the loop, not the current
-	    // value.  So for this unusual case copy the value into
-	    // the heap.
-	    if (!this->is_deferred())
-	      e3 = Expression::make_unary(OPERATOR_AND, e3, loc);
-	    else
-	      {
-		Expression* a = Expression::make_allocation(mt->key_type(),
-							    loc);
-		Temporary_statement* atemp =
-		  Statement::make_temporary(NULL, a, loc);
-		inserter->insert(atemp);
-
-		a = Expression::make_temporary_reference(atemp, loc);
-		a = Expression::make_dereference(a, NIL_CHECK_NOT_NEEDED, loc);
-		Statement* s = Statement::make_assignment(a, e3, loc);
-		inserter->insert(s);
-
-		e3 = Expression::make_temporary_reference(atemp, loc);
-	      }
-
-	    return Runtime::make_call(Runtime::MAPDELETE, this->location(),
-				      3, e1, e2, e3);
-	  }
+        const Expression_list* args = this->args();
+        if (args == NULL || args->size() < 2)
+          this->report_error(_("not enough arguments"));
+        else if (args->size() > 2)
+          this->report_error(_("too many arguments"));
+        else if (args->front()->type()->map_type() == NULL)
+          this->report_error(_("argument 1 must be a map"));
+        else
+          {
+            Type* key_type =
+              args->front()->type()->map_type()->key_type();
+            Expression_list::iterator pa = this->args()->begin();
+            pa++;
+            Type* arg_type = (*pa)->type();
+            std::string reason;
+            if (!Type::are_assignable(key_type, arg_type, &reason))
+              {
+                if (reason.empty())
+                  go_error_at(loc, "argument 2 has incompatible type");
+                else
+                  go_error_at(loc, "argument 2 has incompatible type (%s)",
+                              reason.c_str());
+                this->set_is_error();
+              }
+            else if (!Type::are_identical(key_type, arg_type, 0, NULL))
+              *pa = Expression::make_cast(key_type, *pa, loc);
+          }
       }
       break;
 
@@ -7935,6 +7905,12 @@ Expression*
 Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
                                     Statement_inserter* inserter)
 {
+  if (this->is_error_expression())
+    {
+      go_assert(saw_errors());
+      return this;
+    }
+
   Location loc = this->location();
 
   switch (this->code_)
@@ -8078,6 +8054,96 @@ Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
 	  }
       }
       break;
+
+    case BUILTIN_DELETE:
+      {
+        // Lower to a runtime function call.
+        const Expression_list* args = this->args();
+
+        // Since this function returns no value it must appear in
+        // a statement by itself, so we don't have to worry about
+        // order of evaluation of values around it.  Evaluate the
+        // map first to get order of evaluation right.
+        Map_type* mt = args->front()->type()->map_type();
+        Temporary_statement* map_temp =
+          Statement::make_temporary(mt, args->front(), loc);
+        inserter->insert(map_temp);
+
+        Temporary_statement* key_temp =
+          Statement::make_temporary(mt->key_type(), args->back(), loc);
+        inserter->insert(key_temp);
+
+        Expression* e1 = Expression::make_type_descriptor(mt, loc);
+        Expression* e2 = Expression::make_temporary_reference(map_temp,
+                                                              loc);
+        Expression* e3 = Expression::make_temporary_reference(key_temp,
+                                                              loc);
+
+        Runtime::Function code;
+        switch (mt->algorithm(gogo))
+          {
+            case Map_type::MAP_ALG_FAST32:
+            case Map_type::MAP_ALG_FAST32PTR:
+              {
+                code = Runtime::MAPDELETE_FAST32;
+                Type* uint32_type = Type::lookup_integer_type("uint32");
+                Type* uint32_ptr_type = Type::make_pointer_type(uint32_type);
+                e3 = Expression::make_unary(OPERATOR_AND, e3, loc);
+                e3 = Expression::make_unsafe_cast(uint32_ptr_type, e3,
+                                                  loc);
+                e3 = Expression::make_dereference(e3,
+                                                  Expression::NIL_CHECK_NOT_NEEDED,
+                                                  loc);
+                break;
+              }
+            case Map_type::MAP_ALG_FAST64:
+            case Map_type::MAP_ALG_FAST64PTR:
+              {
+                code = Runtime::MAPDELETE_FAST64;
+                Type* uint64_type = Type::lookup_integer_type("uint64");
+                Type* uint64_ptr_type = Type::make_pointer_type(uint64_type);
+                e3 = Expression::make_unary(OPERATOR_AND, e3, loc);
+                e3 = Expression::make_unsafe_cast(uint64_ptr_type, e3,
+                                                  loc);
+                e3 = Expression::make_dereference(e3,
+                                                  Expression::NIL_CHECK_NOT_NEEDED,
+                                                  loc);
+                break;
+              }
+            case Map_type::MAP_ALG_FASTSTR:
+              code = Runtime::MAPDELETE_FASTSTR;
+              break;
+            default:
+              code = Runtime::MAPDELETE;
+
+              // If the call to delete is deferred, and is in a loop,
+              // then the loop will only have a single instance of the
+              // temporary variable.  Passing the address of the
+              // temporary variable here means that the deferred call
+              // will see the last value in the loop, not the current
+              // value.  So for this unusual case copy the value into
+              // the heap.
+              if (!this->is_deferred())
+                e3 = Expression::make_unary(OPERATOR_AND, e3, loc);
+              else
+                {
+                  Expression* a = Expression::make_allocation(mt->key_type(),
+                                                              loc);
+                  Temporary_statement* atemp =
+                    Statement::make_temporary(NULL, a, loc);
+                  inserter->insert(atemp);
+
+                  a = Expression::make_temporary_reference(atemp, loc);
+                  a = Expression::make_dereference(a, NIL_CHECK_NOT_NEEDED, loc);
+                  Statement* s = Statement::make_assignment(a, e3, loc);
+                  inserter->insert(s);
+
+                  e3 = Expression::make_temporary_reference(atemp, loc);
+                }
+          }
+
+        return Runtime::make_call(code, loc, 3, e1, e2, e3);
+      }
     }
 
   return this;
@@ -10158,6 +10224,9 @@ Builtin_call_expression::do_export(Export_function_body* efb) const
 	  break;
 	case BUILTIN_CAP:
 	  s = "cap";
+	  break;
+	case BUILTIN_DELETE:
+	  s = "delete";
 	  break;
 	case BUILTIN_PRINT:
 	  s = "print";
@@ -13031,20 +13100,54 @@ Map_index_expression::get_value_pointer(Gogo* gogo)
 						     this->index_,
                                                      loc);
 
+      Expression* type_expr = Expression::make_type_descriptor(type, loc);
       Expression* zero = type->fat_zero_value(gogo);
-
       Expression* map_index;
-
       if (zero == NULL)
-	map_index =
-          Runtime::make_call(Runtime::MAPACCESS1, loc, 3,
-			     Expression::make_type_descriptor(type, loc),
-                             map_ref, index_ptr);
+        {
+          Runtime::Function code;
+          Expression* key;
+          switch (type->algorithm(gogo))
+            {
+              case Map_type::MAP_ALG_FAST32:
+              case Map_type::MAP_ALG_FAST32PTR:
+                {
+                  Type* uint32_type = Type::lookup_integer_type("uint32");
+                  Type* uint32_ptr_type = Type::make_pointer_type(uint32_type);
+                  key = Expression::make_unsafe_cast(uint32_ptr_type, index_ptr,
+                                                     loc);
+                  key = Expression::make_dereference(key, NIL_CHECK_NOT_NEEDED,
+                                                     loc);
+                  code = Runtime::MAPACCESS1_FAST32;
+                  break;
+                }
+              case Map_type::MAP_ALG_FAST64:
+              case Map_type::MAP_ALG_FAST64PTR:
+                {
+                  Type* uint64_type = Type::lookup_integer_type("uint64");
+                  Type* uint64_ptr_type = Type::make_pointer_type(uint64_type);
+                  key = Expression::make_unsafe_cast(uint64_ptr_type, index_ptr,
+                                                     loc);
+                  key = Expression::make_dereference(key, NIL_CHECK_NOT_NEEDED,
+                                                     loc);
+                  code = Runtime::MAPACCESS1_FAST64;
+                  break;
+                }
+              case Map_type::MAP_ALG_FASTSTR:
+                key = this->index_;
+                code = Runtime::MAPACCESS1_FASTSTR;
+                break;
+              default:
+                key = index_ptr;
+                code = Runtime::MAPACCESS1;
+                break;
+            }
+          map_index = Runtime::make_call(code, loc, 3,
+                                         type_expr, map_ref, key);
+        }
       else
-	map_index =
-	  Runtime::make_call(Runtime::MAPACCESS1_FAT, loc, 4,
-			     Expression::make_type_descriptor(type, loc),
-			     map_ref, index_ptr, zero);
+        map_index = Runtime::make_call(Runtime::MAPACCESS1_FAT, loc, 4,
+                                       type_expr, map_ref, index_ptr, zero);
 
       Type* val_type = type->val_type();
       this->value_pointer_ =

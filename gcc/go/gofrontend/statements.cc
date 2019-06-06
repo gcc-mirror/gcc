@@ -816,7 +816,7 @@ Assignment_statement::do_traverse_assignments(Traverse_assignments* tassign)
 // call.  Mark some slice assignments as not requiring a write barrier.
 
 Statement*
-Assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
+Assignment_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
 			       Statement_inserter*)
 {
   Map_index_expression* mie = this->lhs_->map_index_expression();
@@ -864,7 +864,59 @@ Assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
       Temporary_reference_expression* ref =
 	Expression::make_temporary_reference(key_temp, loc);
       Expression* a3 = Expression::make_unary(OPERATOR_AND, ref, loc);
-      Expression* call = Runtime::make_call(Runtime::MAPASSIGN, loc, 3,
+      Runtime::Function code;
+      Map_type::Map_alg alg = mt->algorithm(gogo);
+      switch (alg)
+        {
+          case Map_type::MAP_ALG_FAST32:
+            {
+              code = Runtime::MAPASSIGN_FAST32;
+              Type* uint32_type = Type::lookup_integer_type("uint32");
+              Type* uint32_ptr_type = Type::make_pointer_type(uint32_type);
+              a3 = Expression::make_unsafe_cast(uint32_ptr_type, a3,
+                                                loc);
+              a3 = Expression::make_dereference(a3,
+                                                Expression::NIL_CHECK_NOT_NEEDED,
+                                                loc);
+              break;
+            }
+          case Map_type::MAP_ALG_FAST64:
+            {
+              code = Runtime::MAPASSIGN_FAST64;
+              Type* uint64_type = Type::lookup_integer_type("uint64");
+              Type* uint64_ptr_type = Type::make_pointer_type(uint64_type);
+              a3 = Expression::make_unsafe_cast(uint64_ptr_type, a3,
+                                                loc);
+              a3 = Expression::make_dereference(a3,
+                                                Expression::NIL_CHECK_NOT_NEEDED,
+                                                loc);
+              break;
+            }
+          case Map_type::MAP_ALG_FAST32PTR:
+          case Map_type::MAP_ALG_FAST64PTR:
+            {
+              code = (alg == Map_type::MAP_ALG_FAST32PTR
+                      ? Runtime::MAPASSIGN_FAST32PTR
+                      : Runtime::MAPASSIGN_FAST64PTR);
+              Type* ptr_type =
+                Type::make_pointer_type(Type::make_void_type());
+              Type* ptr_ptr_type = Type::make_pointer_type(ptr_type);
+              a3 = Expression::make_unsafe_cast(ptr_ptr_type, a3,
+                                                loc);
+              a3 = Expression::make_dereference(a3,
+                                                Expression::NIL_CHECK_NOT_NEEDED,
+                                                loc);
+              break;
+            }
+          case Map_type::MAP_ALG_FASTSTR:
+            code = Runtime::MAPASSIGN_FASTSTR;
+            a3 = ref;
+            break;
+          default:
+            code = Runtime::MAPASSIGN;
+            break;
+        }
+      Expression* call = Runtime::make_call(code, loc, 3,
 					    a1, a2, a3);
       Type* ptrval_type = Type::make_pointer_type(mt->val_type());
       call = Expression::make_cast(ptrval_type, call, loc);
@@ -1451,7 +1503,47 @@ Tuple_map_assignment_statement::do_lower(Gogo* gogo, Named_object*,
   Expression* a4 = map_type->fat_zero_value(gogo);
   Call_expression* call;
   if (a4 == NULL)
-    call = Runtime::make_call(Runtime::MAPACCESS2, loc, 3, a1, a2, a3);
+    {
+      Runtime::Function code;
+      Map_type::Map_alg alg = map_type->algorithm(gogo);
+      switch (alg)
+        {
+          case Map_type::MAP_ALG_FAST32:
+          case Map_type::MAP_ALG_FAST32PTR:
+            {
+              code = Runtime::MAPACCESS2_FAST32;
+              Type* uint32_type = Type::lookup_integer_type("uint32");
+              Type* uint32_ptr_type = Type::make_pointer_type(uint32_type);
+              a3 = Expression::make_unsafe_cast(uint32_ptr_type, a3,
+                                                loc);
+              a3 = Expression::make_dereference(a3,
+                                                Expression::NIL_CHECK_NOT_NEEDED,
+                                                loc);
+              break;
+            }
+          case Map_type::MAP_ALG_FAST64:
+          case Map_type::MAP_ALG_FAST64PTR:
+            {
+              code = Runtime::MAPACCESS2_FAST64;
+              Type* uint64_type = Type::lookup_integer_type("uint64");
+              Type* uint64_ptr_type = Type::make_pointer_type(uint64_type);
+              a3 = Expression::make_unsafe_cast(uint64_ptr_type, a3,
+                                                loc);
+              a3 = Expression::make_dereference(a3,
+                                                Expression::NIL_CHECK_NOT_NEEDED,
+                                                loc);
+              break;
+            }
+          case Map_type::MAP_ALG_FASTSTR:
+            code = Runtime::MAPACCESS2_FASTSTR;
+            a3 = ref;
+            break;
+          default:
+            code = Runtime::MAPACCESS2;
+            break;
+        }
+      call = Runtime::make_call(code, loc, 3, a1, a2, a3);
+    }
   else
     call = Runtime::make_call(Runtime::MAPACCESS2_FAT, loc, 4, a1, a2, a3, a4);
   ref = Expression::make_temporary_reference(val_ptr_temp, loc);
@@ -6325,47 +6417,20 @@ For_range_statement::lower_map_range_clear(Type* map_type,
   if (enclosing->bindings()->lookup_local(index_no->name()) != index_no)
     return NULL;
 
-  // Match the body.  When lowering the builtin delete function, we have
-  // inserted temporaries, so we actually match for
-  //
-  //   tmp1 = m
-  //   tmp2 = k
-  //   runtime.mapdelete(TYPE, tmp1, &tmp2)
-
+  // Match the body, a single call statement delete(m, k).
   const std::vector<Statement*>* statements = this->statements_->statements();
-  if (statements->size() != 3)
+  if (statements->size() != 1)
     return NULL;
-
-  Temporary_statement* ts1 = statements->at(0)->temporary_statement();
-  Temporary_statement* ts2 = statements->at(1)->temporary_statement();
-  Expression_statement* es3 = statements->at(2)->expression_statement();
-  if (ts1 == NULL || ts2 == NULL || es3 == NULL
-      || !Expression::is_same_variable(orig_range_expr, ts1->init())
-      || !Expression::is_same_variable(this->index_var_, ts2->init()))
+  Expression_statement* es = statements->at(0)->expression_statement();
+  if (es == NULL)
     return NULL;
-  Call_expression* call = es3->expr()->call_expression();
-  if (call == NULL)
+  Call_expression* call = es->expr()->call_expression();
+  if (call == NULL || !call->is_builtin()
+      || call->builtin_call_expression()->code()
+         != Builtin_call_expression::BUILTIN_DELETE)
     return NULL;
-  Func_expression* fe = call->fn()->func_expression();
-  if (fe == NULL || !fe->is_runtime_function()
-      || fe->runtime_code() != Runtime::MAPDELETE)
-    return NULL;
-  Expression* a1 = call->args()->at(1);
-  a1 = (a1->unsafe_conversion_expression() != NULL
-        ? a1->unsafe_conversion_expression()->expr()
-        : a1);
-  Temporary_reference_expression* tre = a1->temporary_reference_expression();
-  if (tre == NULL || tre->statement() != ts1)
-    return NULL;
-  Expression* a2 = call->args()->at(2);
-  a2 = (a2->conversion_expression() != NULL
-        ? a2->conversion_expression()->expr()
-        : a2);
-  Unary_expression* ue = a2->unary_expression();
-  if (ue == NULL || ue->op() != OPERATOR_AND)
-    return NULL;
-  tre = ue->operand()->temporary_reference_expression();
-  if (tre == NULL || tre->statement() != ts2)
+  if (!Expression::is_same_variable(call->args()->at(0), orig_range_expr)
+      || !Expression::is_same_variable(call->args()->at(1), this->index_var_))
     return NULL;
 
   // Everything matches. Rewrite to mapclear(TYPE, MAP).

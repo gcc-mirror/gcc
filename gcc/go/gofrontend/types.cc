@@ -7890,7 +7890,7 @@ int64_t Map_type::zero_value_align;
 // pass as the zero value to those functions.  Otherwise, in the
 // normal case, return NULL.  The map requires the "fat" functions if
 // the value size is larger than max_zero_size bytes.  max_zero_size
-// must match maxZero in libgo/go/runtime/hashmap.go.
+// must match maxZero in libgo/go/runtime/map.go.
 
 Expression*
 Map_type::fat_zero_value(Gogo* gogo)
@@ -7936,6 +7936,43 @@ Map_type::fat_zero_value(Gogo* gogo)
   Type* unsafe_ptr_type = Type::make_pointer_type(Type::make_void_type());
   z = Expression::make_cast(unsafe_ptr_type, z, bloc);
   return z;
+}
+
+// Map algorithm to use for this map type.
+
+Map_type::Map_alg
+Map_type::algorithm(Gogo* gogo)
+{
+  int64_t size;
+  bool ok = this->val_type_->backend_type_size(gogo, &size);
+  if (!ok || size > Map_type::max_val_size)
+    return MAP_ALG_SLOW;
+
+  Type* key_type = this->key_type_;
+  if (key_type->is_string_type())
+    return MAP_ALG_FASTSTR;
+  if (!key_type->compare_is_identity(gogo))
+    return MAP_ALG_SLOW;
+
+  ok = key_type->backend_type_size(gogo, &size);
+  if (!ok)
+    return MAP_ALG_SLOW;
+  if (size == 4)
+    return (key_type->has_pointer()
+            ? MAP_ALG_FAST32PTR
+            : MAP_ALG_FAST32);
+  if (size == 8)
+    {
+      if (!key_type->has_pointer())
+        return MAP_ALG_FAST64;
+      Type* ptr_type = Type::make_pointer_type(Type::make_void_type());
+      ok = ptr_type->backend_type_size(gogo, &size);
+      if (ok && size == 8)
+        return MAP_ALG_FAST64PTR;
+      // Key contains pointer but is not a single pointer.
+      // Use slow version.
+    }
+  return MAP_ALG_SLOW;
 }
 
 // Return whether VAR is the map zero value.
@@ -8027,7 +8064,7 @@ Map_type::do_hash_for_method(Gogo* gogo, int flags) const
 
 // Get the backend representation for a map type.  A map type is
 // represented as a pointer to a struct.  The struct is hmap in
-// runtime/hashmap.go.
+// runtime/map.go.
 
 Btype*
 Map_type::do_get_backend(Gogo* gogo)
@@ -8233,7 +8270,7 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 }
 
 // Return the bucket type to use for a map type.  This must correspond
-// to libgo/go/runtime/hashmap.go.
+// to libgo/go/runtime/map.go.
 
 Type*
 Map_type::bucket_type(Gogo* gogo, int64_t keysize, int64_t valsize)
@@ -8265,7 +8302,7 @@ Map_type::bucket_type(Gogo* gogo, int64_t keysize, int64_t valsize)
   // be marked as having no pointers.  Arrange for the bucket to have
   // no pointers by changing the type of the overflow field to uintptr
   // in this case.  See comment on the hmap.overflow field in
-  // libgo/go/runtime/hashmap.go.
+  // libgo/go/runtime/map.go.
   Type* overflow_type;
   if (!key_type->has_pointer() && !val_type->has_pointer())
     overflow_type = Type::lookup_integer_type("uintptr");
