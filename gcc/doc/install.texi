@@ -2,7 +2,6 @@
 @c @ifnothtml
 @c %**start of header
 @setfilename gccinstall.info
-@settitle Installing GCC
 @setchapternewpage odd
 @c %**end of header
 @c @end ifnothtml

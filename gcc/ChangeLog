@@ -1,5 +1,11 @@
 2019-06-06  Martin Liska  <mliska@suse.cz>
 
+	PR web/87933
+	* doc/install.texi: Fix HTML headers and
+	titles for 'Installing GCC' pages.
+
+2019-06-06  Martin Liska  <mliska@suse.cz>
+
 	* ipa-icf-gimple.h (dump_message_1): Remove.
 	(dump_message): Likewise.
 	(return_false_with_message_1): Print also file.
