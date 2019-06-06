@@ -22,7 +22,8 @@
 #include <forward_list>
 
 // { dg-do compile { target c++11 } }
-// { dg-skip-if "no extensions in strict dialects" { *-*-* } { "-std=c++*" } }
+// The extension that implicitly rebinds allocators is in gnu++98/11/14/17 only
+// { dg-skip-if "" { *-*-* } { "-std=c++*" "-std=gnu++2*" } }
 
 // libstdc++/21770
 template class std::forward_list<int, std::allocator<char> >;
