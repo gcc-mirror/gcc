@@ -1,3 +1,8 @@
+2019-06-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/cpp0x/alignas4.C: Amend test to check for zerofill syntax
+	on Darwin.
+
 2019-06-06  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/tree-ssa/alias-access-path-1.c: Remove -fno-tree-sra option.
