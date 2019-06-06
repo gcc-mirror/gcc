@@ -67,7 +67,7 @@ MODULE_VERSION := $(shell date -r $(srcdir)/cp '+%y%m%d-%H%M' 2>/dev/null || \
 ifeq ($(REVISION),)
 # There is no REVISION file, try svnversion
 MODULE_REVISION := $(shell svnversion $(srcdir) 2>/dev/null)
-ifneq ($(MODULE_REVISION),)
+ifneq ($(firstword $(MODULE_REVISION)),Unversioned)
 MODULE_REVISION := svn-$(lastword $(subst :, ,$(MODULE_REVISION)))
 else
 # Look in Changelog.modules
