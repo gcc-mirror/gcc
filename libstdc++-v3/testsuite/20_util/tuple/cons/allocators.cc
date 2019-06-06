@@ -186,12 +186,26 @@ void test03()
   struct dr2586
   {
     using allocator_type = std::allocator<int>;
+    dr2586() { }
     dr2586(std::allocator_arg_t, allocator_type&&) { }
-    dr2586(const allocator_type&) { }
+    dr2586(const allocator_type&) : expected(true) { }
+    bool expected = false;
   };
 
   const dr2586::allocator_type a;
   std::tuple<dr2586> t{std::allocator_arg, a};
+  VERIFY( std::get<0>(t).expected );
+}
+
+void test04()
+{
+  struct X {
+    X(std::allocator_arg_t) { }
+  };
+
+  // The element types are not default constructible, so the allocator-extended
+  // default constructor should not participate in overload resolution.
+  std::tuple<X, void(&)()> t(std::allocator_arg, *+[]{});
 }
 
 int main()
@@ -199,5 +213,6 @@ int main()
   test01();
   test02();
   test03();
+  test04();
   return 0;
 }
