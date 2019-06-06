@@ -1817,9 +1817,6 @@ build_reconstructed_reference (location_t, tree base, struct access *model)
       expr = TREE_OPERAND (expr, 0);
     }
 
-  if (get_object_alignment (base) < get_object_alignment (expr))
-    return NULL;
-
   TREE_OPERAND (prev_expr, 0) = base;
   tree ref = unshare_expr (model->expr);
   TREE_OPERAND (prev_expr, 0) = expr;

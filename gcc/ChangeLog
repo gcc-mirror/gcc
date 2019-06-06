@@ -1,5 +1,10 @@
 2019-06-06  Martin Jambor  <mjambor@suse.cz>
 
+	* tree-sra.c (build_reconstructed_reference): Drop the alignment
+	check.
+
+2019-06-06  Martin Jambor  <mjambor@suse.cz>
+
 	* tree-sra.c (struct access): New field grp_same_access_path.
 	(dump_access): Dump it.
 	(build_reconstructed_reference): New function.
