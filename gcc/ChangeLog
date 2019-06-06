@@ -1,3 +1,10 @@
+2019-06-06  Jim Wilson  <jimw@sifive.com>
+
+	PR target/89955
+	* config/riscv/riscv.h (STARTFILE_PREFIX_SPEC): Deleted.
+	* config/riscv/freebsd.h (STARTFILE_PREFIX_SPEC): Added.
+	* config/riscv/linux.h (STARTFILE_PREFIX_SPEC): Added.
+
 2019-06-06  Martin Sebor  <msebor@redhat.com>
 
 	* tree-ssa-strlen.c (adjust_related_strinfos): Avoid trailing article.
