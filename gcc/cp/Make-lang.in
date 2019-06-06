@@ -65,12 +65,22 @@ cp/module.o : $(srcdir)/cp
 MODULE_VERSION := $(shell date -r $(srcdir)/cp '+%y%m%d-%H%M' 2>/dev/null || \
 	date '+%y%m%d-0000' 2>/dev/null || echo 0)
 ifeq ($(REVISION),)
-# There is no REVISION file
+# There is no REVISION file, try svnversion
+MODULE_REVISION := $(shell svnversion $(srcdir) 2>/dev/null)
+ifneq ($(MODULE_REVISION),)
+MODULE_REVISION := svn-$(lastword $(subst :, ,$(MODULE_REVISION)))
+else
 # Look in Changelog.modules
 MODULE_REVISION := $(shell tail -1 $(srcdir)/../ChangeLog.modules 2>/dev/null)
-version.o : $(srcdir)/cp/module.cc
+ifeq ($(firstword $(MODULE_REVISION)),$$Rev:)
+MODULE_REVISION := log-$(word 2,$(MODULE_REVISION))
+else
+MODULE_REVISION := unknown
+endif
+endif
+version.o : $(srcdir)/cp
 # Set REVISION string
-REVISION_s := '" [c++-modules$(MODULE_REVISION):20$(MODULE_VERSION)]"'
+REVISION_s := '" [c++-modules:$(MODULE_REVISION):20$(MODULE_VERSION)]"'
 endif
 CFLAGS-cp/module.o += -DMODULE_VERSION='($(subst -,,$(MODULE_VERSION))U)'
 endif
