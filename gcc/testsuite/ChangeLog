@@ -1,3 +1,8 @@
+2019-06-06  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/tmac-1.c: Reoreder dg-directives.
+	* gcc.target/arc/tmac-2.c: Likewise.
+
 2019-06-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c/90737

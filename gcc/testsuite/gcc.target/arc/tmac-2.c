@@ -1,5 +1,5 @@
-/* { dg-skip-if "" { ! { clmcpu } } } */
 /* { dg-do compile } */
+/* { dg-skip-if "" { ! { clmcpu } } } */
 /* { dg-options "-O2 -mcpu=archs -mmpy-option=7" } */
 
 /* Test MAC operation for MPY_OPTION = 7.  */
