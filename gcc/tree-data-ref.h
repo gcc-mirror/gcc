@@ -478,7 +478,7 @@ dr_alignment (data_reference *dr)
 }
 
 extern bool dr_may_alias_p (const struct data_reference *,
-			    const struct data_reference *, bool);
+			    const struct data_reference *, struct loop *);
 extern bool dr_equal_offsets_p (struct data_reference *,
                                 struct data_reference *);
 

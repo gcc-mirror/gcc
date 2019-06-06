@@ -1,3 +1,16 @@
+2019-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-05-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90402
+	* gcc.dg/torture/pr90402-1.c: New testcase.
+
+	2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90328
+	* gcc.dg/torture/pr90328.c: New testcase.
+
 2019-06-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/discr6.ads: New test.

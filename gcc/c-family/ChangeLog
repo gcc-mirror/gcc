@@ -1,3 +1,13 @@
+2019-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR c/90474
+	* c-common.c (c_common_mark_addressable_vec): Also mark
+	a COMPOUND_LITERAL_EXPR_DECL addressable similar to
+	c_mark_addressable.
+
 2019-05-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (compare_node): Compare the DECL_UIDs as a last resort.
