@@ -1,3 +1,14 @@
+2019-06-06  Martin Sebor  <msebor@redhat.com>
+
+	* tree-ssa-strlen.c (adjust_related_strinfos): Avoid trailing article.
+	(handle_builtin_malloc): Remove trailing spaces.
+	(handle_builtin_memset): Same.
+	(handle_builtin_memcmp): Same.
+	(compute_string_length): Same.
+	(determine_min_objsize): Same.
+	(handle_builtin_string_cmp): Same.
+	(handle_char_store): Same.  Break up excessively long line.
+
 2019-06-06  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (build_reconstructed_reference): Drop the alignment
