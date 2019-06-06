@@ -587,7 +587,8 @@ class Import_function_body : public Import_expression
 		       const std::string& body, size_t off, Block* block,
 		       int indent)
     : gogo_(gogo), imp_(imp), named_object_(named_object), body_(body),
-      off_(off), block_(block), indent_(indent), saw_error_(false)
+      off_(off), block_(block), indent_(indent), temporaries_(),
+      saw_error_(false)
   { }
 
   // The IR.
@@ -695,6 +696,14 @@ class Import_function_body : public Import_expression
   version() const
   { return this->imp_->version(); }
 
+  // Record the index of a temporary statement.
+  void
+  record_temporary(Temporary_statement*, unsigned int);
+
+  // Return a temporary statement given an index.
+  Temporary_statement*
+  temporary_statement(unsigned int);
+
   // Implement Import_expression.
   Import_function_body*
   ifb()
@@ -736,6 +745,8 @@ class Import_function_body : public Import_expression
   Block* block_;
   // Current expected indentation level.
   int indent_;
+  // Temporary statements by index.
+  std::vector<Temporary_statement*> temporaries_;
   // Whether we've seen an error.  Used to avoid reporting excess
   // errors.
   bool saw_error_;

@@ -739,6 +739,10 @@ class Temporary_statement : public Statement
   Bvariable*
   get_backend_variable(Translate_context*) const;
 
+  // Import the declaration of a temporary.
+  static Statement*
+  do_import(Import_function_body*, Location);
+
  protected:
   int
   do_traverse(Traverse*);
@@ -751,6 +755,13 @@ class Temporary_statement : public Statement
 
   void
   do_check_types(Gogo*);
+
+  int
+  do_inlining_cost()
+  { return 1; }
+
+  void
+  do_export_statement(Export_function_body*);
 
   Statement*
   do_flatten(Gogo*, Named_object*, Block*, Statement_inserter*);

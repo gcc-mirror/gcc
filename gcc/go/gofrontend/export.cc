@@ -6,15 +6,14 @@
 
 #include "go-system.h"
 
-#include "go-sha1.h"
 #include "go-c.h"
-
+#include "go-diagnostics.h"
+#include "go-sha1.h"
 #include "gogo.h"
 #include "types.h"
 #include "expressions.h"
 #include "statements.h"
 #include "export.h"
-
 #include "go-linemap.h"
 #include "backend.h"
 
@@ -1296,4 +1295,34 @@ void
 Stream_to_section::do_write(const char* bytes, size_t length)
 {
   this->backend_->write_export_data (bytes, length);
+}
+
+// Class Export_function_body.
+
+// Record a temporary statement.
+
+unsigned int
+Export_function_body::record_temporary(const Temporary_statement* temp)
+{
+  unsigned int ret = this->next_temporary_index_;
+  if (ret > 0x7fffffff)
+    go_error_at(temp->location(),
+		"too many temporary statements in export data");
+  ++this->next_temporary_index_;
+  std::pair<const Temporary_statement*, unsigned int> val(temp, ret);
+  std::pair<Unordered_map(const Temporary_statement*, unsigned int)::iterator,
+	    bool> ins = this->temporary_indexes_.insert(val);
+  go_assert(ins.second);
+  return ret;
+}
+
+// Return the index of a temporary statement.
+
+unsigned int
+Export_function_body::temporary_index(const Temporary_statement* temp)
+{
+  Unordered_map(const Temporary_statement*, unsigned int)::const_iterator p =
+    this->temporary_indexes_.find(temp);
+  go_assert(p != this->temporary_indexes_.end());
+  return p->second;
 }

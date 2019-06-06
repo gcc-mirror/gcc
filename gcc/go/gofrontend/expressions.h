@@ -1531,6 +1531,9 @@ class Temporary_reference_expression : public Expression
   set_is_lvalue()
   { this->is_lvalue_ = true; }
 
+  static Expression*
+  do_import(Import_function_body*, Location);
+
  protected:
   Type*
   do_type();
@@ -1542,6 +1545,13 @@ class Temporary_reference_expression : public Expression
   Expression*
   do_copy()
   { return make_temporary_reference(this->statement_, this->location()); }
+
+  int
+  do_inlining_cost() const
+  { return 1; }
+
+  void
+  do_export(Export_function_body*) const;
 
   bool
   do_is_addressable() const
