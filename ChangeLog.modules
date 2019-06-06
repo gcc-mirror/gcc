@@ -1,5 +1,9 @@
 2019-06-06  Nathan Sidwell  <nathan@acm.org>
 
+	Update Revision number
+
+2019-06-06  Nathan Sidwell  <nathan@acm.org>
+
 	gcc/cp/
 	* Make-lang.in (MODULE_REVISION): Read from Changelog.modules.
 
