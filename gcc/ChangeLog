@@ -1,3 +1,36 @@
+2019-06-06  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90450
+	* tree-ssa-loop-im.c (struct im_mem_ref): Add ref_decomposed.
+	(mem_ref_hasher::equal): Check it.
+	(mem_ref_alloc): Initialize it.
+	(gather_mem_refs_stmt): Set it.
+
+	2019-05-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90402
+	* tree-if-conv.c (tree_if_conversion): Value number only
+	the loop body by making the latch an exit of the region
+	as well.
+	* tree-ssa-sccvn.c (process_bb): Add flag whether to skip
+	processing PHIs.
+	(do_rpo_vn): Deal with multiple edges into the entry block
+	that are not backedges inside the region by skipping PHIs
+	of the entry block.
+
+	2019-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90328
+	* tree-data-ref.h (dr_may_alias_p): Pass in the actual loop nest.
+	* tree-data-ref.c (dr_may_alias_p): Check whether the clique
+	is valid in the loop nest before using it.
+	(initialize_data_dependence_relation): Adjust.
+	* graphite-scop-detection.c (build_alias_set): Pass the SCOP enclosing
+	loop as loop-nest to dr_may_alias_p.
+
 2019-06-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fold-const.c (extract_muldiv_1) <PLUS_EXPR>: Do not distribute a

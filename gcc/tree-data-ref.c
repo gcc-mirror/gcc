@@ -2232,7 +2232,7 @@ object_address_invariant_in_loop_p (const struct loop *loop, const_tree obj)
 
 bool
 dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
-		bool loop_nest)
+		struct loop *loop_nest)
 {
   tree addr_a = DR_BASE_OBJECT (a);
   tree addr_b = DR_BASE_OBJECT (b);
@@ -2256,6 +2256,11 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
 
   if ((TREE_CODE (addr_a) == MEM_REF || TREE_CODE (addr_a) == TARGET_MEM_REF)
       && (TREE_CODE (addr_b) == MEM_REF || TREE_CODE (addr_b) == TARGET_MEM_REF)
+      /* For cross-iteration dependences the cliques must be valid for the
+	 whole loop, not just individual iterations.  */
+      && (!loop_nest
+	  || MR_DEPENDENCE_CLIQUE (addr_a) == 1
+	  || MR_DEPENDENCE_CLIQUE (addr_a) == loop_nest->owned_clique)
       && MR_DEPENDENCE_CLIQUE (addr_a) == MR_DEPENDENCE_CLIQUE (addr_b)
       && MR_DEPENDENCE_BASE (addr_a) != MR_DEPENDENCE_BASE (addr_b))
     return false;
@@ -2367,7 +2372,7 @@ initialize_data_dependence_relation (struct data_reference *a,
     }
 
   /* If the data references do not alias, then they are independent.  */
-  if (!dr_may_alias_p (a, b, loop_nest.exists ()))
+  if (!dr_may_alias_p (a, b, loop_nest.exists () ? loop_nest[0] : NULL))
     {
       DDR_ARE_DEPENDENT (res) = chrec_known;
       return res;
