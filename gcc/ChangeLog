@@ -1,3 +1,13 @@
+2019-06-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.md (ashlhi3): Use the const_variant of shift
+	library functions only when not optimizing for size.
+	(ashlsi3): Likewise.
+	(ashrhi3): Likewise.
+	(ashrsi3): Likewise.
+	(lshrhi3): Likewise.
+	(lshrsi3): Likewise.
+
 2019-06-06  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	PR rtl-optimization/88751
