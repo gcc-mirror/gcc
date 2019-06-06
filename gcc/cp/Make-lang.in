@@ -64,20 +64,13 @@ cp/module.o : $(srcdir)/cp
 # date (don't bootstrap at midnight).
 MODULE_VERSION := $(shell date -r $(srcdir)/cp '+%y%m%d-%H%M' 2>/dev/null || \
 	date '+%y%m%d-0000' 2>/dev/null || echo 0)
-ifneq ($(REVISION_s),$(REVISION_s:%]\""=%))
-# REVISION_s ended with ]\""
-MODULE_REVISION := $(shell svn status -v $(srcdir)/../ChangeLog.modules \
-	2>/dev/null | sed 's/^.......... *[^ ]* *\([^ ]*\).*$$/:svn-\1/')
-ifeq ($(MODULE_REVISION),)
-MODULE_REVISION := $(shell git rev-list --max-count=1 HEAD -- \
-	$(srcdir)/../ChangeLog.modules 2>/dev/null | \
-	sed 's/[^ ]* *\([^ ]*\).*$$/:git-\1/')
-endif
+ifeq ($(REVISION),)
+# There is no REVISION file
+# Look in Changelog.modules
+MODULE_REVISION := $(shell tail -1 $(srcdir)/../ChangeLog.modules 2>/dev/null)
 version.o : $(srcdir)/cp/module.cc
-# Wedge the MODULE_VERSION & MODULE_REVISION into REVISION_s so that
-# it turns up in -v invocations.  Remember, Make thinks of REVISION_s
-# as a set of space-separated words
-REVISION_s := $(REVISION_s:%]\""=%$(MODULE_REVISION):20$(MODULE_VERSION)]\"")
+# Set REVISION string
+REVISION_s := '" [c++-modules$(MODULE_REVISION):20$(MODULE_VERSION)]"'
 endif
 CFLAGS-cp/module.o += -DMODULE_VERSION='($(subst -,,$(MODULE_VERSION))U)'
 endif

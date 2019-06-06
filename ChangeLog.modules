@@ -1,3 +1,8 @@
+2019-06-06  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* Make-lang.in (MODULE_REVISION): Read from Changelog.modules.
+
 2019-06-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
@@ -11031,3 +11036,4 @@ Local Variables:
 mode: change-log
 change-log-default-name: "ChangeLog.modules"
 End:
+:svn-$Rev$

@@ -541,7 +541,7 @@ diagnostic_action_after_output (diagnostic_context *context,
 
 #if 1
 	fnotice (stderr, "We are damaged, This is broken.\n"
-		 "Partial device,\nPliable design,\n"
+		 "Logical loss,\nWe struggle,\n"
 		 "Hunt through the rubble for what once was.\n");
 #else
 	fnotice (stderr, "Please submit a full bug report,\n"
