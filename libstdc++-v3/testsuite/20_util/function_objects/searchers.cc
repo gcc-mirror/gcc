@@ -19,6 +19,7 @@
 
 #include <functional>
 #include <cstring>
+#include <cctype>
 #ifdef _GLIBCXX_USE_WCHAR_T
 # include <cwchar>
 #endif
