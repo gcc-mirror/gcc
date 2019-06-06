@@ -1,5 +1,16 @@
 2019-06-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/18_support/set_terminate.cc: Do not run for C++98 mode.
+	* testsuite/18_support/set_unexpected.cc: Likewise.
+	* testsuite/20_util/is_nothrow_invocable/value.cc: Test converting to
+	void.
+	* testsuite/20_util/is_nothrow_invocable/value_ext.cc: Fix constexpr
+	function to be valid in C++11.
+	* testsuite/26_numerics/complex/proj.cc: Do not run for C++98 mode.
+	* testsuite/experimental/names.cc: Do not run for C++98 mode. Do not
+	include Library Fundamentals or Networking headers in C++11 mode.
+	* testsuite/ext/char8_t/atomic-1.cc: Do not run for C++98 mode.
+
 	* include/std/tuple (_TC): Replace with _TupleConstraints.
 	(_TupleConstraints): New helper for SFINAE constraints, with more
 	expressive member functions to reduce duplication when used.
