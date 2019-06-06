@@ -1,5 +1,10 @@
 2019-06-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/23_containers/unordered_map/requirements/debug_container.cc:
+	Do not test allocator rebinding extension for C++2a.
+	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: Change
+	dg-do directive for C++17 and C++2a.
+
 	* testsuite/23_containers/deque/requirements/explicit_instantiation/
 	1_c++0x.cc: Remove redundant test.
 	* testsuite/23_containers/deque/requirements/explicit_instantiation/
