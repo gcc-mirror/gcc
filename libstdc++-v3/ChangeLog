@@ -1,3 +1,30 @@
+2019-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple (_TC): Replace with _TupleConstraints.
+	(_TupleConstraints): New helper for SFINAE constraints, with more
+	expressive member functions to reduce duplication when used.
+	(tuple::_TC2, tuple::_TMC, tuple::_TNTC): Remove.
+	(tuple::_TCC): Replace dummy type parameter with bool non-type
+	parameter that can be used to check the pack size.
+	(tuple::_ImplicitDefaultCtor, tuple::_ExplicitDefaultCtor)
+	(tuple::_ImplicitCtor, tuple::_ExplicitCtor): New alias templates for
+	checking constraints in constructors.
+	(tuple::__valid_args, tuple::_UseOtherCtor, tuple::__use_other_ctor):
+	New SFINAE helpers.
+	(tuple::tuple): Use new helpers to reduce repitition in constraints.
+	(tuple::tuple(allocator_arg_t, const Alloc&)): Constrain.
+	(tuple<T1, T2>::_TCC, tuple<T1, T2>::_ImplicitDefaultCtor)
+	(tuple<T1, T2>::_ExplicitDefaultCtor, tuple<T1, T2>::_ImplicitCtor)
+	(tuple<T1, T2>::_ExplicitCtor): New alias templates for checking
+	constraints in constructors.
+	(tuple::__is_alloc_arg()): New SFINAE helpers.
+	(tuple<T1, T2>::tuple): Use new helpers to reduce repitition in
+	constraints.
+	(tuple<T1, T2>::tuple(allocator_arg_t, const Alloc&)): Constrain.
+	* testsuite/20_util/tuple/cons/90700.cc: New test.
+	* testsuite/20_util/tuple/cons/allocators.cc: Add default constructor
+	to meet new constraint on allocator-extended default constructor.
+
 2019-06-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_map.h (map): Disable static assert for C++98 mode.
