@@ -768,6 +768,7 @@
 ;; Half modes of all vector modes, in lower-case.
 (define_mode_attr Vhalf [(V8QI "v4qi")  (V16QI "v8qi")
 			 (V4HI "v2hi")  (V8HI  "v4hi")
+			 (V8HF  "v4hf")
 			 (V2SI "si")    (V4SI  "v2si")
 			 (V2DI "di")    (V2SF  "sf")
 			 (V4SF "v2sf")  (V2DF  "df")])

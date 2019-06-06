@@ -3216,7 +3216,7 @@
 ;; In this insn, operand 1 should be low, and operand 2 the high part of the
 ;; dest vector.
 
-(define_insn "*aarch64_combinez<mode>"
+(define_insn "@aarch64_combinez<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand" "=w,w,w")
 	(vec_concat:<VDBL>
 	  (match_operand:VDC 1 "general_operand" "w,?r,m")
@@ -3230,7 +3230,7 @@
    (set_attr "arch" "simd,fp,simd")]
 )
 
-(define_insn "*aarch64_combinez_be<mode>"
+(define_insn "@aarch64_combinez_be<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand" "=w,w,w")
         (vec_concat:<VDBL>
 	  (match_operand:VDC 2 "aarch64_simd_or_scalar_imm_zero")
@@ -5952,6 +5952,15 @@
 
 (define_expand "vec_init<mode><Vel>"
   [(match_operand:VALL_F16 0 "register_operand" "")
+   (match_operand 1 "" "")]
+  "TARGET_SIMD"
+{
+  aarch64_expand_vector_init (operands[0], operands[1]);
+  DONE;
+})
+
+(define_expand "vec_init<mode><Vhalf>"
+  [(match_operand:VQ_NO2E 0 "register_operand" "")
    (match_operand 1 "" "")]
   "TARGET_SIMD"
 {

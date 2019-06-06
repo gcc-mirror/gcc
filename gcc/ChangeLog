@@ -1,3 +1,16 @@
+2019-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR tree-optimization/90332
+	* config/aarch64/aarch64.c (aarch64_expand_vector_init):
+	Handle VALS containing two vectors.
+	* config/aarch64/aarch64-simd.md (*aarch64_combinez<mode>): Rename
+	to...
+	(@aarch64_combinez<mode>): ... This.
+	(*aarch64_combinez_be<mode>): Rename to...
+	(@aarch64_combinez_be<mode>): ... This.
+	(vec_init<mode><Vhalf>): New define_expand.
+	* config/aarch64/iterators.md (Vhalf): Handle V8HF.
+
 2019-06-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/msp430.md (ashlhi3): Use the const_variant of shift
