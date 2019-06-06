@@ -25,7 +25,7 @@ msgstr ""
 "Project-Id-Version: gcc 9.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-05-02 20:28+0000\n"
-"PO-Revision-Date: 2019-06-02 13:24+0200\n"
+"PO-Revision-Date: 2019-06-04 10:48+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -59525,28 +59525,24 @@ msgid "FUNCTION result %s cannot be a POINTER in FUNCTION %s at %L"
 msgstr "FUNCTION-resultat %s får inte vara en POINTER i FUNCTION %s vid %L"
 
 #: fortran/resolve.c:856
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "ENTRY result %s can't be a POINTER in FUNCTION %s at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "ENTRY result %s cannot be a POINTER in FUNCTION %s at %L"
 msgstr "ENTRY-resultat %s får inte vara en POINTER i FUNCTION %s vid %L"
 
 #: fortran/resolve.c:894
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "FUNCTION result %s can't be of type %s in FUNCTION %s at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "FUNCTION result %s cannot be of type %s in FUNCTION %s at %L"
 msgstr "FUNCTION-resultat %s får inte vara av typen %s i FUNCTION %s vid %L"
 
 #: fortran/resolve.c:899
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "ENTRY result %s can't be of type %s in FUNCTION %s at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "ENTRY result %s cannot be of type %s in FUNCTION %s at %L"
 msgstr "ENTRY-resultat %s får inte vara av typen %s i FUNCTION %s vid %L"
 
 #: fortran/resolve.c:945
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "COMMON block /%s/ not found at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "COMMON block at %L"
-msgstr "COMMON-block /%s/ finns inte vid %C"
+msgstr "COMMON-block vid %L"
 
 #: fortran/resolve.c:952
 #, gcc-internal-format
@@ -59604,8 +59600,7 @@ msgid "COMMON block %qs at %L is used as PARAMETER at %L"
 msgstr "COMMON-block %qs vid %L används som PARAMETER vid %L"
 
 #: fortran/resolve.c:1092
-#, fuzzy, gcc-internal-format
-#| msgid "COMMON block %qs at %L can not have the EXTERNAL attribute"
+#, gcc-internal-format
 msgid "COMMON block %qs at %L cannot have the EXTERNAL attribute"
 msgstr "COMMON-blocket %qs vid %L får inte ha attributet EXTERNAL"
 
@@ -59936,16 +59931,14 @@ msgid "logical_to_bitwise(): Bad intrinsic"
 msgstr "logical_to_bitwise(): Felaktig inbyggd"
 
 #: fortran/resolve.c:3863
-#, fuzzy, gcc-internal-format
-#| msgid "CHARACTER(*) function %qs at %L cannot be pointer-valued"
+#, gcc-internal-format
 msgid "Impure function %qs at %L might not be evaluated"
-msgstr "CHARACTER(*)-funktion %qs vid %L kan inte ha pekarvärde"
+msgstr "Den orena funktionen %qs vid %L beräknas eventuellt inte"
 
 #: fortran/resolve.c:3867
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "always_inline function might not be inlinable"
+#, gcc-internal-format, gfc-internal-format
 msgid "Impure function at %L might not be evaluated"
-msgstr "always_inline-funktion kanske inte kan inline:as"
+msgstr "Den orena funktionen vid %L beräknas eventuellt inte"
 
 #: fortran/resolve.c:4144
 #, gcc-internal-format
@@ -60201,10 +60194,9 @@ msgid "Coindexed object with polymorphic allocatable subcomponent at %L"
 msgstr "Co-indexerat objekt med polymorf allokerbar delkomponent vid %L"
 
 #: fortran/resolve.c:5956 fortran/resolve.c:6108
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Error in type-spec at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Error in typebound call at %L"
-msgstr "Fel i typspecifikation vid %L"
+msgstr "Fel i typbundet anrop vid %L"
 
 #: fortran/resolve.c:6072
 #, gcc-internal-format, gfc-internal-format
@@ -60727,10 +60719,9 @@ msgid "The FORALL with index %qs is not used on the left side of the assignment 
 msgstr "FORALL med index %qs används inte på vänster sida av en tilldelning vid %L och kan därför orsaka multipla tilldelningar till detta objekt"
 
 #: fortran/resolve.c:10180
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "BLOCK construct at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "FORALL construct at %L"
-msgstr "BLOCK-konstruktion vid %C"
+msgstr "FORALL-konstruktion vid %L"
 
 #: fortran/resolve.c:10201
 #, gcc-internal-format, gfc-internal-format
@@ -61162,8 +61153,7 @@ msgid "Only array FINAL procedures declared for derived type %qs defined at %L, 
 msgstr "Endast vektor-FINAL-procedurer deklarerade för den härledda typen %qs definierade vid %L, föreslår även en skalär"
 
 #: fortran/resolve.c:13136
-#, fuzzy, gcc-internal-format
-#| msgid "%qs and %qs can't be mixed FUNCTION/SUBROUTINE for GENERIC %qs at %L"
+#, gcc-internal-format
 msgid "%qs and %qs cannot be mixed FUNCTION/SUBROUTINE for GENERIC %qs at %L"
 msgstr "%qs och %qs kan inte blandad FUNCTION/SUBROUTINE för GENERIC %qs vid %L"
 
@@ -61183,16 +61173,14 @@ msgid "GENERIC %qs at %L must target a specific binding, %qs is GENERIC, too"
 msgstr "GENERIC %qs vid %L måste ha som mål en specifik bindning, %qs är också GENERIC"
 
 #: fortran/resolve.c:13271
-#, fuzzy, gcc-internal-format
-#| msgid "GENERIC %qs at %L can't overwrite specific binding with the same name"
+#, gcc-internal-format
 msgid "GENERIC %qs at %L cannot overwrite specific binding with the same name"
 msgstr "GENERIC %qs vid %L kan inte åsidosätta en specifik bindning med samma namn"
 
 #: fortran/resolve.c:13327
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Type-bound operator at %L can't be NOPASS"
+#, gcc-internal-format, gfc-internal-format
 msgid "Type-bound operator at %L cannot be NOPASS"
-msgstr "Typgränsoperator vid %L kan inte vara NOPASS"
+msgstr "Typbindningsoperator vid %L kan inte vara NOPASS"
 
 #: fortran/resolve.c:13519
 #, gcc-internal-format
@@ -61360,10 +61348,9 @@ msgid "Generic name %qs of function %qs at %L being the same name as derived typ
 msgstr "Det generiska namnet %qs på funktionen %qs vid %L är samma namn som den härledda typen vid %L"
 
 #: fortran/resolve.c:14433
-#, fuzzy, gcc-internal-format
-#| msgid "Derived type %qs at %L must be extensible"
+#, gcc-internal-format
 msgid "Derived type %qs at %L has not been declared"
-msgstr "Härledd typ %qs vid %L måste vara utökningsbar"
+msgstr "Härledd typ %qs vid %L har inte deklarerats"
 
 #: fortran/resolve.c:14498
 #, gcc-internal-format
@@ -61646,8 +61633,7 @@ msgid "LOGICAL result variable %qs at %L with non-C_Bool kind in BIND(C) procedu
 msgstr "LOGICAL-resultatvariabeln %qs vid %L med icke-C_Bool-sort i BIND(C)-proceduren %qs"
 
 #: fortran/resolve.c:15430
-#, fuzzy, gcc-internal-format
-#| msgid "Namelist %qs can not be an argument to subroutine or function at %L"
+#, gcc-internal-format
 msgid "Namelist %qs cannot be an argument to subroutine or function at %L"
 msgstr "Namnlistan %qs får inte vara ett argument till en subrutin eller funktion vid %L"
 
@@ -61662,10 +61648,9 @@ msgid "!$OMP DECLARE TARGET variable %qs at %L isn't SAVEd"
 msgstr "!$OMP DECLARE TARGET-variabeln %qs vid %L är inte SAVE:ad"
 
 #: fortran/resolve.c:15616
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Expecting list of named entities at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expecting definable entity near %L"
-msgstr "Lista med namngivna entiteter förväntades vid %C"
+msgstr "Definierbar entitet förväntades nära %L"
 
 #: fortran/resolve.c:15624
 #, gcc-internal-format
@@ -61913,8 +61898,7 @@ msgid "Illegal preprocessor directive"
 msgstr "Ogiltigt preprocessordirektiv"
 
 #: fortran/scanner.c:2471
-#, fuzzy, gcc-internal-format
-#| msgid "Can't open file %qs"
+#, gcc-internal-format
 msgid "Cannot open file %qs"
 msgstr "Kan inte öppna filen %qs"
 
@@ -62165,10 +62149,9 @@ msgid "gfc_simplify_mod(): Bad arguments"
 msgstr "gfc_simplify_mod(): Felaktiga argument"
 
 #: fortran/simplify.c:5906 fortran/simplify.c:5914
-#, fuzzy, gcc-internal-format
-#| msgid "Argument %qs of MOD at %L shall not be zero"
+#, gcc-internal-format
 msgid "Argument %qs of MODULO at %L shall not be zero"
-msgstr "Argument %qs till MOD vid %L får inte vara noll"
+msgstr "Argument %qs till MODULO vid %L får inte vara noll"
 
 #: fortran/simplify.c:5920
 #, gcc-internal-format
@@ -62583,10 +62566,9 @@ msgid "Shared DO termination label %d at %C"
 msgstr "Delad DO-avslutningsetikett %d vid %C"
 
 #: fortran/symbol.c:2814
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "LOCK statement at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Labeled DO statement at %L"
-msgstr "LOCK-sats vid %C"
+msgstr "Etiketterad DO-sats vid %L"
 
 #: fortran/symbol.c:3143
 #, gcc-internal-format
@@ -62759,16 +62741,14 @@ msgid "The equivalence set for %qs cause an invalid extension to COMMON %qs at %
 msgstr "Ekvivalensmängden för %qs orsakar en ogiltig utvidgning av COMMON %qs vid %L"
 
 #: fortran/trans-common.c:1157
-#, fuzzy, gcc-internal-format
-#| msgid "Padding of %d bytes required before %qs in COMMON %qs at %L; reorder elements or use -fno-align-commons"
+#, gcc-internal-format
 msgid "Padding of %d bytes required before %qs in COMMON %qs at %L; reorder elements or use %<-fno-align-commons%>"
-msgstr "Utfyllnad med %d byte krävs före %qs i COMMON %qs vid %L, byt ordning på element eller använd -fno-align-commons"
+msgstr "Utfyllnad med %d byte krävs före %qs i COMMON %qs vid %L, byt ordning på element eller använd %<-fno-align-commons%>"
 
 #: fortran/trans-common.c:1163
-#, fuzzy, gcc-internal-format
-#| msgid "Padding of %d bytes required before %qs in COMMON at %L; reorder elements or use -fno-align-commons"
+#, gcc-internal-format
 msgid "Padding of %d bytes required before %qs in COMMON at %L; reorder elements or use %<-fno-align-commons%>"
-msgstr "Utfyllnad med %d byte krävs före %qs i COMMON vid %L, byt ordning på element eller använd -fno-align-commons"
+msgstr "Utfyllnad med %d byte krävs före %qs i COMMON vid %L, byt ordning på element eller använd %<-fno-align-commons%>"
 
 #: fortran/trans-common.c:1184
 #, gcc-internal-format
@@ -62866,8 +62846,7 @@ msgid "Sorry, !$ACC DECLARE at %L is not allowed in BLOCK construct"
 msgstr "Ledsen, !$ACC DECLARE vid %L är inte tillåtet i BLOCK-konstruktion"
 
 #: fortran/trans-expr.c:929
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Can't compute the length of the char array at %L."
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot compute the length of the char array at %L."
 msgstr "Kan inte beräkna längden på teckenvektorn vid %L."
 
@@ -63048,16 +63027,14 @@ msgid "%s:%s: %E: %E"
 msgstr "%s:%s: %E: %E"
 
 #: lto/lto-lang.c:867
-#, fuzzy, gcc-internal-format
-#| msgid "-fwpa and -fltrans are mutually exclusive"
+#, gcc-internal-format
 msgid "%<-fwpa%> and %<-fltrans%> are mutually exclusive"
-msgstr "-fwpa och -fltrans är ömsesidigt uteslutande"
+msgstr "%<-fwpa%> och %<-fltrans%> är ömsesidigt uteslutande"
 
 #: lto/lto-lang.c:901
-#, fuzzy, gcc-internal-format
-#| msgid "-fwpa and -fltrans are mutually exclusive"
+#, gcc-internal-format
 msgid "%<-flinker-output=rel%> and %<-fltrans%> are mutually exclussive"
-msgstr "-fwpa och -fltrans är ömsesidigt uteslutande"
+msgstr "%<-fwpa%> och %<-fltrans%> är ömsesidigt uteslutande"
 
 #: lto/lto-object.c:107
 #, gcc-internal-format, gfc-internal-format
@@ -63116,10 +63093,9 @@ msgid "previously defined here"
 msgstr "tidigare definition här"
 
 #: lto/lto-symtab.c:712
-#, fuzzy, gcc-internal-format
-#| msgid "%qD violates the C++ One Definition Rule "
+#, gcc-internal-format
 msgid "%qD violates the C++ One Definition Rule"
-msgstr "%qD bryter mot C++ endefinitionsregel "
+msgstr "%qD bryter mot C++ endefinitionsregel"
 
 #: lto/lto-symtab.c:718
 #, gcc-internal-format
@@ -63142,10 +63118,9 @@ msgid "%qD was previously declared here"
 msgstr "%qD deklarerades tidigare här"
 
 #: lto/lto-symtab.c:752
-#, fuzzy, gcc-internal-format
-#| msgid "code may be misoptimized unless -fno-strict-aliasing is used"
+#, gcc-internal-format
 msgid "code may be misoptimized unless %<-fno-strict-aliasing%> is used"
-msgstr "koden kan feloptimeras om inte -fno-strict-aliasing används"
+msgstr "koden kan feloptimeras om inte %<-fno-strict-aliasing%> används"
 
 #: lto/lto-symtab.c:838
 #, gcc-internal-format
@@ -63388,8 +63363,7 @@ msgid "invalid property declaration"
 msgstr "ogiltig egenskapsdeklaration"
 
 #: objc/objc-act.c:910
-#, fuzzy, gcc-internal-format
-#| msgid "property can not be an array"
+#, gcc-internal-format
 msgid "property cannot be an array"
 msgstr "en egenskap kan inte vara en vektor"
 
@@ -63401,8 +63375,7 @@ msgstr "en egenskap kan inte vara en vektor"
 #. underlying instance variable could be a bitfield, but that is
 #. a different matter.
 #: objc/objc-act.c:928
-#, fuzzy, gcc-internal-format
-#| msgid "property can not be a bit-field"
+#, gcc-internal-format
 msgid "property cannot be a bit-field"
 msgstr "en egenskap kan inte vara ett bitfält"
 
@@ -63441,22 +63414,19 @@ msgid "originally specified here"
 msgstr "ursprungligen specificerad här"
 
 #: objc/objc-act.c:1093
-#, fuzzy, gcc-internal-format
-#| msgid "'nonatomic' attribute of property %qD conflicts with previous declaration"
+#, gcc-internal-format
 msgid "%<nonatomic%> attribute of property %qD conflicts with previous declaration"
-msgstr "attributet ”nonatomic” för egenskap %qD står i konflikt med tidigare deklaration"
+msgstr "attributet %<nonatomic%> för egenskap %qD står i konflikt med tidigare deklaration"
 
 #: objc/objc-act.c:1104
-#, fuzzy, gcc-internal-format
-#| msgid "'getter' attribute of property %qD conflicts with previous declaration"
+#, gcc-internal-format
 msgid "%<getter%> attribute of property %qD conflicts with previous declaration"
-msgstr "attributet ”getter” för egenskap %qD står i konflikt med tidigare deklaration"
+msgstr "attributet %<getter%> för egenskap %qD står i konflikt med tidigare deklaration"
 
 #: objc/objc-act.c:1118
-#, fuzzy, gcc-internal-format
-#| msgid "'setter' attribute of property %qD conflicts with previous declaration"
+#, gcc-internal-format
 msgid "%<setter%> attribute of property %qD conflicts with previous declaration"
-msgstr "attributet ”setter” för egenskap %qD står i konflikt med tidigare deklaration"
+msgstr "attributet %<setter%> för egenskap %qD står i konflikt med tidigare deklaration"
 
 #: objc/objc-act.c:1130
 #, gcc-internal-format
@@ -63464,10 +63434,9 @@ msgid "assign semantics attributes of property %qD conflict with previous declar
 msgstr "attribut för tilldelningssemantik för egenskap %qD står i konflikt med tidigare deklaration"
 
 #: objc/objc-act.c:1141
-#, fuzzy, gcc-internal-format
-#| msgid "'readonly' attribute of property %qD conflicts with previous declaration"
+#, gcc-internal-format
 msgid "%<readonly%> attribute of property %qD conflicts with previous declaration"
-msgstr "attributet ”readonly” för egenskap %qD står i konflikt med tidigare deklaration"
+msgstr "attributet %<readonly%> för egenskap %qD står i konflikt med tidigare deklaration"
 
 #: objc/objc-act.c:1180
 #, gcc-internal-format
@@ -63504,8 +63473,7 @@ msgid "could not find setter/getter for %qE in class %qE"
 msgstr "det går inte att hitta setter/getter för %qE i klassen %qE"
 
 #: objc/objc-act.c:1750
-#, fuzzy, gcc-internal-format
-#| msgid "readonly property can not be set"
+#, gcc-internal-format
 msgid "readonly property cannot be set"
 msgstr "egenskapen readonly kan inte sättas"
 
@@ -63525,8 +63493,7 @@ msgid "method definition not in @implementation context"
 msgstr "metoddefinition som inte är i @implementation-kontext"
 
 #: objc/objc-act.c:2060
-#, fuzzy, gcc-internal-format
-#| msgid "method attributes can not be specified in @implementation context"
+#, gcc-internal-format
 msgid "method attributes cannot be specified in @implementation context"
 msgstr "metodattribut kan inte anges i @implementation-kontext"
 
@@ -63686,8 +63653,7 @@ msgid "@catch parameter is not a known Objective-C class type"
 msgstr "@catch-parameter är inte en känd Objective-C-klasstyp"
 
 #: objc/objc-act.c:4217
-#, fuzzy, gcc-internal-format
-#| msgid "@catch parameter can not be protocol-qualified"
+#, gcc-internal-format
 msgid "@catch parameter cannot be protocol-qualified"
 msgstr "@catch-parameter kan inte vara protokollkvalificerad"
 
@@ -63732,8 +63698,7 @@ msgid "inconsistent instance variable specification"
 msgstr "inkonsistent specifikation av instansvariabel"
 
 #: objc/objc-act.c:4684
-#, fuzzy, gcc-internal-format
-#| msgid "can not use an object as parameter to a method"
+#, gcc-internal-format
 msgid "cannot use an object as parameter to a method"
 msgstr "det går inte att använda ett objekt som parameter till en metod"
 
@@ -64008,8 +63973,7 @@ msgid "duplicate interface declaration for class %qE"
 msgstr "dubblerad gränssnittsdeklaration av klass %qE"
 
 #: objc/objc-act.c:7232 objc/objc-act.c:7428
-#, fuzzy, gcc-internal-format
-#| msgid "can not find instance variable associated with property"
+#, gcc-internal-format
 msgid "cannot find instance variable associated with property"
 msgstr "det går inte att hitta någon instansvariabel associerad med egenskapen"
 
@@ -64045,16 +64009,14 @@ msgid "property %qs is using instance variable %qs of incompatible type"
 msgstr "egenskapen %qs använder instansvariabeln %qs av inkompatibel typ"
 
 #: objc/objc-act.c:7645
-#, fuzzy, gcc-internal-format
-#| msgid "'assign' property %qs is using bit-field instance variable %qs"
+#, gcc-internal-format
 msgid "%<assign%> property %qs is using bit-field instance variable %qs"
-msgstr "”assign”-egenskap %qs använder bitfältsinstansvariabeln %qs"
+msgstr "egenskapen %<assign%> %qs använder bitfältsinstansvariabeln %qs"
 
 #: objc/objc-act.c:7659
-#, fuzzy, gcc-internal-format
-#| msgid "'atomic' property %qs is using bit-field instance variable %qs"
+#, gcc-internal-format
 msgid "%<atomic%> property %qs is using bit-field instance variable %qs"
-msgstr "”atomic”-egenskap %qs använder bitfältsinstansvariabeln %qs"
+msgstr "egenskapen %<atomic%> %qs använder bitfältsinstansvariabeln %qs"
 
 #: objc/objc-act.c:7678
 #, gcc-internal-format
@@ -64076,8 +64038,7 @@ msgid "%<@synthesize%> not in @implementation context"
 msgstr "%<@synthesize%> som inte är i @implementation-kontext"
 
 #: objc/objc-act.c:7736
-#, fuzzy, gcc-internal-format
-#| msgid "%<@synthesize%> can not be used in categories"
+#, gcc-internal-format
 msgid "%<@synthesize%> cannot be used in categories"
 msgstr "%<@synthesize%> kan inte användas i kategorier"
 
@@ -64290,10 +64251,9 @@ msgid "no class name specified with %qs"
 msgstr "inget klassnamn angivet med %qs"
 
 #: c-family/c.opt:1519
-#, fuzzy, gcc-internal-format
-#| msgid "-fhandle-exceptions has been renamed -fexceptions (and is now on by default)"
+#, gcc-internal-format
 msgid "%<-fhandle-exceptions%> has been renamed %<-fexceptions%> (and is now on by default)"
-msgstr "-fhandle-exceptions har bytt namn till -fexceptions (och är nu normalt påslagen)"
+msgstr "%<-fhandle-exceptions%> har bytt namn till %<-fexceptions%> (och är nu normalt påslagen)"
 
 #: c-family/c.opt:1602
 #, gcc-internal-format
@@ -64467,1313 +64427,3 @@ msgstr "okänt synlighetsvärde %qs"
 #, gcc-internal-format
 msgid "unknown vtable verify initialization priority %qs"
 msgstr "okänd initieringsprioritet för vtable-verifiering %qs"
-
-#~ msgid "%qE output %wu bytes into a destination of size %wu"
-#~ msgstr "%qE-utdata på %wu byte in i en destination med storlek %wu"
-
-#~ msgid "%qE output %wu bytes"
-#~ msgstr "%qE-utdata %wu byte"
-
-#~ msgid "PIC is not supported for %s. Generating non-PIC code only.."
-#~ msgstr "PIC stödjs inte för %s.  Genererar endast icke-PIC-kod."
-
-#~ msgid "no dispatcher found for %s"
-#~ msgstr "ingen avsändare funnen för %s"
-
-#~ msgid "invalid %%t operand %<%wd%>"
-#~ msgstr "ogiltig %%t-operand %<%wd%>”"
-
-#~ msgid "cannot find '%s'"
-#~ msgstr "kan inte hitta ”%s”"
-
-#~ msgid "junk at end of '#pragma options'"
-#~ msgstr "skräp vid slutet av ”#pragma options”"
-
-#~ msgid "string literal in function template signature"
-#~ msgstr "stränglitteral i funktionsmallsignatur"
-
-#~ msgid "%s is thrown but not caught"
-#~ msgstr "%s kastas men fångas inte"
-
-#~ msgid "`%s` is not defined, perhaps `import %s;` is needed?"
-#~ msgstr "”%s” är inte definierad, kanske ”import %s;” behövs?"
-
-#~ msgid "class %s has no 'super'"
-#~ msgstr "klassen %s har ingen ”super”"
-
-#~ msgid "'this' for nested class must be a class type, not %s"
-#~ msgstr "”this” för en nästad klass måste vara en klasstyp, inte %s"
-
-#~ msgid "default construction is disabled for type %s"
-#~ msgstr "standardkonstrueraren är avaktiverad för typen %s"
-
-#~ msgid "outer class %s 'this' needed to 'new' nested class %s"
-#~ msgstr "den yttre klassen %s ”this” behövs för ”new” på den nästad klassen %s"
-
-#~ msgid "nested type %s should have the same or weaker constancy as enclosing type %s"
-#~ msgstr "den nästade typen %s skall ha samma eller svagare konstanthet som den omslutande typen %s"
-
-#~ msgid "e.new is only for allocating nested classes"
-#~ msgstr "e.new är endast till för att allokera nästade klasser"
-
-#~ msgid "outer function context of %s is needed to 'new' nested class %s"
-#~ msgstr "den yttre funktionskontexten för %s behövs för ”new” på den nästade klassen %s"
-
-#~ msgid "new can only create structs, dynamic arrays or class objects, not %s's"
-#~ msgstr "new kan endast skapa strukturer, dynamiska vektorer eller klassobjekt, inte %s:er"
-
-#~ msgid "%s %s is shadowing %s %s"
-#~ msgstr "%s %s skuggar %s %s"
-
-#~ msgid "need -Jpath switch to import text file %s"
-#~ msgstr "flaggan -Jpath behövs för att importera textfilen %s"
-
-#~ msgid "file %s cannot be found or not in a path specified with -J"
-#~ msgstr "filen %s finns inte eller ligger inte i någon sökväg som anges med -J"
-
-#~ msgid "%smethod %s is not callable using a %s%s"
-#~ msgstr "%smetoden %s kan inte anropas med ett %s%s"
-
-#~ msgid "constructor calls not allowed in loops or after labels"
-#~ msgstr "konstrueraranrop är inte tillåtna i slingor eller efter etiketter"
-
-#~ msgid "function expected before (), not '%s'"
-#~ msgstr "en funktion förvändades före (), inte ”%s”"
-
-#~ msgid "need 'this' for '%s' of type '%s'"
-#~ msgstr "behöver ”this” till ”%s” av typen ”%s”"
-
-#~ msgid "pure %s '%s' cannot call impure %s '%s'"
-#~ msgstr "ren %s ”%s” kan inte anropa oren %s ”%s”"
-
-#~ msgid "@nogc %s '%s' cannot call non-@nogc %s '%s'"
-#~ msgstr "@nogc %s ”%s” kan inte anropa icke-@nogc %s ”%s”"
-
-#~ msgid "@safe %s '%s' cannot call @system %s '%s'"
-#~ msgstr "@safe %s ”%s” kan inte anropa @system %s ”%s”"
-
-#~ msgid "forward reference to inferred return type of function call '%s'"
-#~ msgstr "framåtreferens till en härledd returtyp av funktionsanrop ”%s”"
-
-#~ msgid "'this' reference necessary to take address of member %s in @safe function %s"
-#~ msgstr "en ”this”-referens är nödvändig för att ta adressen till medlemmen %s i @safe-funktionen %s"
-
-#~ msgid "cannot take address of ref return of %s() in @safe function %s"
-#~ msgstr "det går inte att ta adressen till en ref-retur hos %s() i @safe-funktionen %s"
-
-#~ msgid "using * on an array is no longer supported; use *(%s).ptr instead"
-#~ msgstr "att använda * på en vektor stödjs inte längre; använd *(%s).ptr istället"
-
-#~ msgid "can only * a pointer, not a '%s'"
-#~ msgstr "det går bara att använda * på en pekare, inte en ”%s”"
-
-#~ msgid "need upper and lower bound to slice pointer"
-#~ msgstr "behöver övre och undre gräns för att skiva pekare"
-
-#~ msgid "need upper and lower bound to slice tuple"
-#~ msgstr "behöver undre och övre gräns för att skiva tuppel"
-
-#~ msgid "%s must be an array or pointer type, not %s"
-#~ msgstr "%s måste vara en vektor- eller pekartyp, inte %s"
-
-# Första och sista %s blir ett engelskt ord, felrapporterat:
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=89823
-#~ msgid "cannot post-%s array slice '%s', use pre-%s instead"
-#~ msgstr "kan inte efter-%s vektorskivan ”%s”, använd för-%s istället"
-
-#~ msgid "cannot copy void[] to void[] in @safe code"
-#~ msgstr "det går inte att kopiera void[] till void[] i @safe-kod"
-
-#~ msgid "cannot modify compiler-generated variable __ctfe"
-#~ msgstr "det går inte att ändra den kompilatorgenererade variabeln __ctfe"
-
-#~ msgid "cannot perform modulo complex arithmetic"
-#~ msgstr "det gör inte att göra modulo i komplex aritmetik"
-
-#~ msgid "do not use null when comparing class types"
-#~ msgstr "använd inte null vid jämförelse av klasstyper"
-
-#~ msgid "array comparison type mismatch, %s vs %s"
-#~ msgstr "typer stämmer inte i vektorjämförelse, %s mot %s"
-
-#~ msgid "need member function opCmp() for %s %s to compare"
-#~ msgstr "behöver medlemsfunktionen opCmp() för %s %s för att jämföra"
-
-#~ msgid "compare not defined for complex operands"
-#~ msgstr "jämförelse är inte definierad för komplexa operander"
-
-#~ msgid "'%s' is not defined for array comparisons"
-#~ msgstr "”%s” är inte definierat för vektorjämförelser"
-
-#~ msgid "floating point operator '%s' always returns %s for non-floating comparisons"
-#~ msgstr "flyttalsoperatorn ”%s” returnerar alltid %s för jämförelse av icke-flyttal"
-
-#~ msgid "use '%s' for non-floating comparisons rather than floating point operator '%s'"
-#~ msgstr "använd ”%s” för jämförelse av icke-flyttal istället för flyttalsoperatorn ”%s”"
-
-#~ msgid "use std.math.isNaN to deal with NaN operands rather than floating point operator '%s'"
-#~ msgstr "använd std.math.isNaN för att hantera NaN-operander istället för flyttalsoperatorn ”%s”"
-
-#~ msgid "undefined identifier '%s' in %s '%s', did you mean %s '%s'?"
-#~ msgstr "odefinierad identifierare ”%s” i %s ”%s”, menade du %s ”%s”?"
-
-#~ msgid "undefined identifier '%s' in %s '%s'"
-#~ msgstr "odefinierad identifierare ”%s” i %s ”%s”"
-
-#~ msgid "expected constant string constraint for clobber name, not `%s`"
-#~ msgstr "begränsning av konstant sträng förvändades för överskrivet namn, inte ”%s”"
-
-#~ msgid "extended asm statements with labels cannot have output constraints"
-#~ msgstr "utökade asm-satser med etiketter kan inte ha utmatningsbegräsningar"
-
-#~ msgid "cannot infer type from %s %s, possible circular dependency"
-#~ msgstr "det går inte att härleda typen från %s %s, möjligt cirkulärt beroende"
-
-#~ msgid "field %s.%s cannot access pointers in @safe code that overlap other fields"
-#~ msgstr "fältet %s.%s kan inte komma åt pekare i @safe-kod som överlappar andra fält"
-
-#~ msgid "field %s.%s cannot modify fields in @safe code that overlap fields with other storage classes"
-#~ msgstr "fältet %s.%s kan inte ändra fält i @safe-kod som överlappar fält med andra lagringsklasser"
-
-#~ msgid "can't open %s: %m"
-#~ msgstr "det går inte att öppna %s: %m"
-
-#~ msgid "-march=%s: invalid ISA string"
-#~ msgstr "-march=%s: felaktig ISA-sträng"
-
-#~ msgid "-freorder-blocks-and-partition does not work with exceptions on this architecture"
-#~ msgstr "-freorder-blocks-and-partition fungerar inte med undantag på denna arkitektur"
-
-#~ msgid "bad value %qs for -mtune switch"
-#~ msgstr "felaktigt värde %qs till flaggan -mtune"
-
-#~ msgid "the xabort's argument must be an 8-bit immediate"
-#~ msgstr "argumentet till xabort måste vara en 8-bitars omedelbar"
-
-#~ msgid "-freorder-blocks-and-partition does not work on this architecture"
-#~ msgstr "-freorder-blocks-and-partition fungerar inte på denna arkitektur"
-
-#~ msgid "constant argument %d for builtin %qF is out of range ("
-#~ msgstr "det konstanta argumentet %d till den inbyggda %qF ligger utanför intervallet ("
-
-#~ msgid "bad value (%s) for -mcmodel= switch"
-#~ msgstr "felaktigt värde (%s) till flaggan -mcmodel="
-
-#~ msgid "bad value (%s) for -march= switch"
-#~ msgstr "felaktigt värde (%s) till flaggan -march="
-
-#~ msgid "bad value (%s) for -mtune= switch"
-#~ msgstr "felaktigt värde (%s) till flaggan -mtune"
-
-#~ msgid "expected semicolon"
-#~ msgstr "semikolon förväntades"
-
-#~ msgid "expected case label or goto statement"
-#~ msgstr "case-etikett eller goto-sats förväntades"
-
-#~ msgid "body of %<constexpr%> constructor cannot be a function-try-block"
-#~ msgstr "kroppen av %<constexpr%>-konstruerare kan inte vara ett function-try-block"
-
-#~ msgid "size of array %qD is negative"
-#~ msgstr "storleken på vektorn %qD är negativ"
-
-#~ msgid "%<try%> in %<constexpr%> function"
-#~ msgstr "%<try%> i %<constexpr%>-funktion"
-
-#~ msgid "Change of value in conversion from  %qs to %qs at %L"
-#~ msgstr "Ändring av värde vid konvertering från %qs till %qs vid %L"
-
-#~ msgid "The number of elements in the array constructor at %L requires an increase of the allowed %d upper limit.   See -fmax-array-constructor option"
-#~ msgstr "Antalet element i vektorkonstrueraren vid %L kräver en ökning av den tillåtna övre gränsen %d.  Se flaggan -fmax-array-constructor"
-
-#~ msgid "Lower bound has to be present at %L"
-#~ msgstr "Undre gräns måste finnas vid %L"
-
-#~ msgid "Either all or none of the upper bounds must be specified at %L"
-#~ msgstr "Antingen alla eller ingen av de övre gränserna måste anges vid %L"
-
-#~ msgid "Syntax error in !$ACC ROUTINE ( NAME ) at %C, invalid function name %s"
-#~ msgstr "Syntaxfel i !$ACC ROUTINE ( NAMN ) vid %C, felaktigt funktionsnamn %s"
-
-#~ msgid "  -i, --intermediate-format       Output .gcov file in intermediate text format\n"
-#~ msgstr "  -i, --intermediate-format       Skriv .gcov-filer i intermediärt textformat\n"
-
-#~ msgid "Cannot open intermediate output file %s\n"
-#~ msgstr "Kan inte öppna intermediär utdatafil %s\n"
-
-#~ msgid "Maximum size of a SCC before SCCVN stops processing a function."
-#~ msgstr "Maximal storlek på en SCC före SCCVN slutar bearbeta en funktion."
-
-#~ msgid "Maximum number of statements to be included into a single static constructor generated by Pointer Bounds Checker."
-#~ msgstr "Maximalt antal satser som skall inkluderas i en enskild statisk konstruerare genererad av pekargränskontrolleraren."
-
-#~ msgid "-maltivec=le not allowed for big-endian targets"
-#~ msgstr "-maltivec=le är inte tillåtet för mål med rak byteordning"
-
-#~ msgid "-mvsx and -mpaired are incompatible"
-#~ msgstr "-mvsx och -mpaired är inkompatibla"
-
-#~ msgid "-mtoc-fusion requires 64-bit"
-#~ msgstr "--mtoc-fusion kräver 64-bitar"
-
-#~ msgid "-mtoc-fusion requires medium/large code model"
-#~ msgstr "-mtoc-fusion behöver medium/stor kodmodell"
-
-#~ msgid "emit_fusion_p9_load, bad reg #1"
-#~ msgstr "emit_fusion_p9_load, felaktigt register nr. 1"
-
-#~ msgid "emit_fusion_p9_load, bad reg #2"
-#~ msgstr "emit_fusion_p9_load, felaktigt register nr. 2"
-
-#~ msgid "emit_fusion_p9_load not MEM"
-#~ msgstr "emit_fusion_p9_load inte MEM"
-
-#~ msgid "emit_fusion_p9_store, bad reg #1"
-#~ msgstr "emit_fusion_p9_store, felaktigt register nr. 1"
-
-#~ msgid "emit_fusion_p9_store, bad reg #2"
-#~ msgstr "emit_fusion_p9_store, felaktigt register nr. 2"
-
-#~ msgid "emit_fusion_p9_store not MEM"
-#~ msgstr "emit_fusion_p9_store inte MEM"
-
-#~ msgid "Warn about memory access errors found by Pointer Bounds Checker."
-#~ msgstr "Varna för minnesåtkomstfel som hittas av pekargränskontrollen."
-
-#~ msgid "Add Pointer Bounds Checker instrumentation.  fchkp-* flags are used to control instrumentation.  Currently available for C, C++ and ObjC."
-#~ msgstr "Lägg till instrumentering för pekargränskontroller.  fchkp-*-flaggor används för att styra instrumenteringen.  För närvarande tillgängligt för C, C++ och ObjC."
-
-#~ msgid "Generate pointer bounds checks for variables with incomplete type."
-#~ msgstr "Generera pekargränskontroller för variabler med ofullständig typ."
-
-#~ msgid "Use zero bounds for all incoming arguments in 'main' function.  It helps when instrumented binaries are used with legacy libs."
-#~ msgstr "Använd nollgränser för alla inkommande argument i funktionen ”main”.  Det hjälper till när instrumenterade binärer används med gamla bibliotek."
-
-#~ msgid "Forces Pointer Bounds Checker to use narrowed bounds for address of the first field in the structure.  By default pointer to the first field has the same bounds as pointer to the whole structure."
-#~ msgstr "Tvingar pekargränskontrolleraren till att använda avsmalnade gränser för adresser till det första fältet i posten.  Som standard har pekare till det första fältet samma gränser som pekare till hela posten."
-
-#~ msgid "Control how Pointer Bounds Checker handle pointers to object fields.  When narrowing is on, field bounds are used.  Otherwise full object bounds are used."
-#~ msgstr "Styr hur pekargränskontrollen hanterare pekare till objektfält.  När avsmalning är påslaget används fältgränser.  Annars används hela objektets gränser."
-
-#~ msgid "Forces Pointer Bounds Checker to use bounds of the innermost arrays in case of nested static arrays access.  By default outermost array is used."
-#~ msgstr "Tvingar pekargränskontrollen att använda gränser för de innersta vektorerna för nästade statiska vektoråtkomster.  Som standard används den yttersta vektorn."
-
-#~ msgid "Forces Pointer Bounds Checker to treat all trailing arrays in structures as possibly flexible.  By default only arrays fields with zero length or that are marked with attribute bnd_variable_size are treated as flexible."
-#~ msgstr "Tvingar pekargränskontrollen att behandla alla avslutande vektorer i poster som eventuellt flexibla.  Som standard hanteras endast vektorfält med nollängd eller som är märkta med attributet bnd_variable_size som flexibla."
-
-#~ msgid "Allow Pointer Bounds Checker optimizations.  By default allowed on optimization levels >0."
-#~ msgstr "Tillåt optimeringar av pekargränskontrollen.  Som standard tillåts det vid optimeringsnivåer >0."
-
-#~ msgid "Allow to use *_nobnd versions of string functions by Pointer Bounds Checker."
-#~ msgstr "Tillåt användning av *_nobnd-versioner av strängfunktioner av pekargränskontrollen."
-
-#~ msgid "Allow to use *_nochk versions of string functions by Pointer Bounds Checker."
-#~ msgstr "Tillåt användning av *_nochk-versioner av strängfunktioner av pekargränskontrollen."
-
-#~ msgid "Use statically initialized variable for vars bounds instead of generating them each time it is required."
-#~ msgstr "Använd en statiskt initierad variabel för variabelgränser istället för att generera dem varje gång det behövs."
-
-#~ msgid "Use statically initialized variable for constant bounds instead of generating them each time it is required."
-#~ msgstr "Använd en statiskt initierad variabel för konstantgränser istället för att generera dem varje gång det behövs."
-
-#~ msgid "With this option zero size obtained dynamically for objects with incomplete type will be treated as infinite."
-#~ msgstr "Med denna flagga kommer en dynamiskt erhållen storlek på noll för objekt med ofullständig typ hanteras som oändlig."
-
-#~ msgid "Generate checks for all read accesses to memory."
-#~ msgstr "Generera kontroller av alla läsåtkomster till minnet."
-
-#~ msgid "Generate checks for all write accesses to memory."
-#~ msgstr "Generera kontroller av alla skrivåtkomster till minnet."
-
-#~ msgid "Generate bounds stores for pointer writes."
-#~ msgstr "Generera gränslagringar för pekarskrivningar."
-
-#~ msgid "Generate bounds passing for calls."
-#~ msgstr "Generera skickande av gränser för anrop."
-
-#~ msgid "Transform instrumented builtin calls into calls to wrappers."
-#~ msgstr "Transformera instrumenterade inbyggda anrop till anrop av inkapslingar."
-
-#~ msgid "Scope of for-init-statement variables is local to the loop."
-#~ msgstr "Räckvidden av for-init-satsvariabler är lokal till slingan."
-
-#~ msgid "Inject friend functions into enclosing namespace."
-#~ msgstr "Skjut in friend-funktioner i omgivande namnrymd."
-
-#~ msgid "Do not use inline patterns for copying memory."
-#~ msgstr "Använd inte inline-mönster för att kopiera minne."
-
-#~ msgid "Use inline patterns for copying memory."
-#~ msgstr "Använd inline-mönster för att kopiera minne."
-
-#~ msgid "Do not pretend that branches are expensive."
-#~ msgstr "Låtsas inte att grenar är dyra."
-
-#~ msgid "Pretend that branches are expensive."
-#~ msgstr "Låtsas att grenar är dyra."
-
-#~ msgid "Use 32 bit float."
-#~ msgstr "Använd 32 bits float."
-
-#~ msgid "Use 64 bit float."
-#~ msgstr "Använd 64 bits float."
-
-#~ msgid "%<-mpcommit%> was deprecated"
-#~ msgstr "%<-mpcommit%> bör undvikas"
-
-#~ msgid "Support MPX code generation."
-#~ msgstr "Stöd MPX-kodgenerering."
-
-#~ msgid "Attempt to avoid generating instruction sequences containing ret bytes."
-#~ msgstr "Försök undvika att generera instruktionssekvenser som innehåller ret-byte:ar."
-
-#~ msgid "Generate AltiVec instructions using little-endian element order."
-#~ msgstr "Generera AltiVec-instruktioner med elementordning för omvänd byteordning."
-
-#~ msgid "Generate AltiVec instructions using big-endian element order."
-#~ msgstr "Generera AltiVec-instruktioner med elementordning för rak byteordning."
-
-#~ msgid "Generate string instructions for block moves."
-#~ msgstr "Generera stränginstruktioner för blockförflyttningar."
-
-#~ msgid "Specify how many bytes should be moved inline before calling out to memcpy/memmove."
-#~ msgstr "Ange hur många byte som bör flyttas inline före anrop av memcpy/memmove."
-
-#~ msgid "Specify the maximum number pairs of load instructions that should be generated inline for the compare.  If the number needed exceeds the limit, a call to memcmp will be generated instead."
-#~ msgstr "Ange det maximala antalet par av lastningsinstruktioner som skall genereras inline för jämförelsen.  Om antalet som behövs överskrider gränsen kommer istället ett anrop till memcmp genereras."
-
-#~ msgid "Specify the maximum number pairs of load instructions that should be generated inline for the compare.  If the number needed exceeds the limit, a call to strncmp will be generated instead."
-#~ msgstr "Ange det maximala antalet par av lastningsinstruktioner som skall genereras inline för jämförelsen.  Om antalet som behövs överskrider gränsen kommer istället ett anrop till strncmp genereras."
-
-#~ msgid "Deprecated option.  Use -mno-isel instead."
-#~ msgstr "Undanbedd flagga.  Använd -mno-isel istället."
-
-#~ msgid "Deprecated option.  Use -misel instead."
-#~ msgstr "Undanbedd flagga.  Använd -misel istället."
-
-#~ msgid "Generate SPE SIMD instructions on E500."
-#~ msgstr "Generera SPE SIMD-instruktioner för E500."
-
-#~ msgid "Generate PPC750CL paired-single instructions."
-#~ msgstr "Generera PPC750CL:s par-singel-instruktioner."
-
-#~ msgid "Deprecated option.  Use -mno-spe instead."
-#~ msgstr "Undanbedd flagga.  Använd -mno-spe istället."
-
-#~ msgid "Deprecated option.  Use -mspe instead."
-#~ msgstr "Undanbedd flagga.  Använd -mspe istället."
-
-#~ msgid "Use the SPE ABI extensions."
-#~ msgstr "Använd ABI-utökningarna SPE."
-
-#~ msgid "Do not use the SPE ABI extensions."
-#~ msgstr "Använd inte ABI-utökningarna SPE."
-
-#~ msgid "using IEEE extended precision long double"
-#~ msgstr "använder long double med IEEE:s utökade precision"
-
-#~ msgid "using IBM extended precision long double"
-#~ msgstr "använder long double med IBM:s utökade precision"
-
-#~ msgid "-mtraceback=\tSelect full, part, or no traceback table."
-#~ msgstr "-mtraceback=\tVälj fullständig, partiell, eller ingen bakåtspårningstabell."
-
-#~ msgid "Warn when a Cell microcoded instruction is emitted."
-#~ msgstr "Varna när en Cell-mikrokodsinstruktion avges."
-
-#~ msgid "-mfloat-gprs=\tSelect GPR floating point method."
-#~ msgstr "-mfloat-gprs=\tVälj GPR-flyttalsmetod."
-
-#~ msgid "Valid arguments to -mfloat-gprs=:"
-#~ msgstr "Giltiga argument till -mfloat-gprs=:"
-
-#~ msgid "-mlong-double-<n>\tSpecify size of long double (64 or 128 bits)."
-#~ msgstr "-mlong-double-<n>\tAnge storlek på long double (64 eller 128 bitar)."
-
-#~ msgid "Single-precision floating point unit."
-#~ msgstr "Enkelprecisions flyttalsenhet."
-
-#~ msgid "Double-precision floating point unit."
-#~ msgstr "Dubbelprecisions flyttalsenhet."
-
-#~ msgid "Floating point unit does not support divide & sqrt."
-#~ msgstr "Flyttalsenheten stödjer inte division & kvadratrot."
-
-#~ msgid "-mfpu=\tSpecify FP (sp, dp, sp-lite, dp-lite) (implies -mxilinx-fpu)."
-#~ msgstr "-mfpu=\tAnge FP (sp, dp, sp-lite, dp-lite) (implicerar -mxilinx-fpu)."
-
-#~ msgid "Specify Xilinx FPU."
-#~ msgstr "Ange Xilinx-FPU."
-
-#~ msgid "Allow 128-bit integers in VSX registers."
-#~ msgstr "Tillåt 128-bitars heltal i VSX-register."
-
-#~ msgid "Use ISA 2.07 direct move between GPR & VSX register instructions."
-#~ msgstr "Använd ISA 2.07:s direkta förflyttning mellan GPR- och VSX-registerinstruktioner."
-
-#~ msgid "Allow double variables in upper registers with -mcpu=power7 or -mvsx."
-#~ msgstr "Tillåt double-variabler i övre register med -mcpu=power7 eller -mvsx."
-
-#~ msgid "Allow float variables in upper registers with -mcpu=power8 or -mpower8-vector."
-#~ msgstr "Tillåt flyttalsvariabler i övre register med -mcpu=power8 eller -mpower8-vector."
-
-#~ msgid "Allow float/double variables in upper registers if cpu allows it."
-#~ msgstr "Tillåt float/double-variabler i övre register om cpu:n tillåter det."
-
-#~ msgid "Allow 64-bit integer variables in upper registers with -mcpu=power7 or -mvsx."
-#~ msgstr "Tillåt 64-bitars heltalsvariabler i övre register med -mcpu=power7 eller -mvsx."
-
-#~ msgid "Fuse certain operations together for better performance on power9."
-#~ msgstr "Smält samman vissa operationer för bättre prestanda på power9."
-
-#~ msgid "Use scalar register+offset memory instructions added in ISA 3.0."
-#~ msgstr "Använd skalära register+avstånd-minnesinstruktioner som lades till i ISA 3.0."
-
-#~ msgid "Use vector register+offset memory instructions added in ISA 3.0."
-#~ msgstr "Använd register+avstånd vektorminnesinstruktioner som lades till i ISA 3.0."
-
-#~ msgid "Use register+offset memory instructions added in ISA 3.0."
-#~ msgstr "Använd register+avstånds-minnesinstruktioner som lades till i ISA 3.0."
-
-#~ msgid "Allow the IEEE 128-bit types without requiring the __float128 keyword."
-#~ msgstr "Tillåt IEEE 128-bitars flyttalstyper utan att kräva nyckelordet __float128."
-
-#~ msgid "Enable small integers to be in VSX registers."
-#~ msgstr "Aktivera att små heltal får finnas i VSX-register."
-
-#~ msgid "Select ABI calling convention."
-#~ msgstr "Välj ABI-konvention för anrop."
-
-#~ msgid "%<-mstring%> is deprecated"
-#~ msgstr "%<-mstring%> bör undvikas"
-
-#~ msgid "Max number of pairs of load insns for compare."
-#~ msgstr "Maximala antalet par av laddinstruktioner för jämförelser."
-
-#~ msgid "%<-misel=no%> is deprecated; use %<-mno-isel%> instead"
-#~ msgstr "%<-misel=no%> bör undvikas; använd %<-mno-isel%> istället"
-
-#~ msgid "%<-misel=yes%> is deprecated; use %<-misel%> instead"
-#~ msgstr "%<-misel=yes%> bör undvikas; använd %<-misel%> istället"
-
-#~ msgid "Do not generate millicode thunks (needed only with -Os)."
-#~ msgstr "Generera inte millikodsnutt (behövs endast med -Os)."
-
-#~ msgid "Enable lra."
-#~ msgstr "Aktivera lra."
-
-#~ msgid "switch %qs no longer supported"
-#~ msgstr "flaggan %qs stödjs inte längre"
-
-#~ msgid "cannot read working set from %s"
-#~ msgstr "det går inte arbetsmängden från %s"
-
-#~ msgid "Your target platform does not support -fcheck-pointer-bounds"
-#~ msgstr "Din målplattform stödjer inte -fcheck-pointer-bounds"
-
-#~ msgid "Instrumentation clone does not reference original node"
-#~ msgstr "Instrumenteringsklonen refererar inte originalnoden"
-
-#~ msgid "Not instrumented node has non-NULL original declaration"
-#~ msgstr "Oinstrumenterad nod har en originaldeklaration som inte är NULL"
-
-#~ msgid "Instrumented node has wrong original declaration"
-#~ msgstr "Instrumenterad not har felaktig originaldeklaration"
-
-#~ msgid "Node has more than one chkp reference"
-#~ msgstr "Noden har mer än en chkp-referens"
-
-#~ msgid "Wrong node is referenced with chkp reference"
-#~ msgstr "Fel nod refereras med en chkp-referens"
-
-#~ msgid "Analyzed node has no reference to instrumented version"
-#~ msgstr "Analyserad nod har ingen referens till en instrumenterad version"
-
-#~ msgid "Alias chain for instrumented node is broken"
-#~ msgstr "En aliaskedja för en instrumenterad not är bruten"
-
-#~ msgid "Instrumentation thunk has wrong edge callee"
-#~ msgstr "Instrumenteringssnutten har fel anropande båge"
-
-#~ msgid "number of counters is %d instead of %d"
-#~ msgstr "antal räknare är %d istället för %d"
-
-#~ msgid "cannot merge separate %s counters for function %u"
-#~ msgstr "kan inte slå samman separata %s-räknare för funktionen %u"
-
-#~ msgid "iteration variable %qE should not be lastprivate"
-#~ msgstr "iterationsvariabel %qE får inte vara lastprivate"
-
-#~ msgid "iteration variable %qE should not be private"
-#~ msgstr "instansvariabel %qE får inte vara privat"
-
-#~ msgid "function cannot be instrumented"
-#~ msgstr "funktionen kan inte instrumenteras"
-
-#~ msgid "a type with different qualifiers is defined in another translation unit"
-#~ msgstr "en typ med andra kvalificerare är definierad i en annan översättningsenhet"
-
-#~ msgid "a type with different attributes is defined in another translation unit"
-#~ msgstr "en typ med andra attribut är definierad i en annan översättningsenhet"
-
-#~ msgid "a type with different alignment is defined in another translation unit"
-#~ msgstr "en typ med annan justering är definierad i en annan översättningsenhet"
-
-#~ msgid "-falign-jumps=%d is not between 0 and %d"
-#~ msgstr "-falign-jumps=%d är inte mellan 0 och %d"
-
-#~ msgid "-falign-functions=%d is not between 0 and %d"
-#~ msgstr "-falign-functions=%d är inte mellan 0 och %d"
-
-#~ msgid "-falign-labels=%d is not between 0 and %d"
-#~ msgstr "-falign-labels=%d är inte mellan 0 och %d"
-
-#~ msgid "corrupted profile info: edge from %i to %i exceeds maximal count"
-#~ msgstr "trasig profileringsinformation: båge från %i till %i överskred maximalt antal"
-
-#~ msgid "corrupted profile info: sum_all is smaller than sum_max"
-#~ msgstr "trasig profileringsinformation: sum_all är mindre än sum_max"
-
-#~ msgid "size of %q+D is %d bytes"
-#~ msgstr "storleken på %q+D är %d byte"
-
-#~ msgid "size of %q+D is larger than %wd bytes"
-#~ msgstr "storleken på %q+D är större än %wd byte"
-
-#~ msgid "%<-fcheck-pointer-bounds%> is not supported for this target"
-#~ msgstr "%<-fcheck-pointer-bounds%> stödjs inte för denna målarkitektur"
-
-#~ msgid "%<-fcheck-pointer-bounds%> is not supported with %<-fsanitize=bounds-strict%>"
-#~ msgstr "%<-fcheck-pointer-bounds%> stödjs inte med %<-fsanitize=bounds-strict%>"
-
-#~ msgid "%<-fcheck-pointer-bounds%> is not supported with %<-fsanitize=bounds%>"
-#~ msgstr "%<-fcheck-pointer-bounds%> stödjs inte med %<-fsanitize=bounds%>"
-
-#~ msgid "%<-fcheck-pointer-bounds%> is not supported with Address Sanitizer"
-#~ msgstr "%<-fcheck-pointer-bounds%> stödjs inte med adressrengöring"
-
-#~ msgid "%<-fcheck-pointer-bounds%> is not supported with Thread Sanitizer"
-#~ msgstr "%<-fcheck-pointer-bounds%> stödjs inte med trådrengöring"
-
-#~ msgid "SSA name in freelist but still referenced"
-#~ msgstr "SSA-namn i frilista men fortfarande refererad"
-
-#~ msgid "invalid first operand of MEM_REF"
-#~ msgstr "ogiltig första operand till MEM_REF"
-
-#~ msgid "MODIFY_EXPR not expected while having tuples"
-#~ msgstr "MODIFY_EXPR förväntades inte när man har tupler"
-
-#~ msgid "non-integral used in condition"
-#~ msgstr "icke-heltal använt i villkor"
-
-#~ msgid "invalid conditional operand"
-#~ msgstr "ogiltig villkorlig operand"
-
-#~ msgid "invalid reference prefix"
-#~ msgstr "ogiltigt referensprefix"
-
-#~ msgid "invalid operand to plus/minus, type is a pointer"
-#~ msgstr "ogiltig operand till plus/minus, typen är en pekare"
-
-#~ msgid "invalid operand to pointer diff, operand is not a pointer"
-#~ msgstr "ogiltig operand till pekarskillnad, första operanden är inte en pekare"
-
-#~ msgid "invalid type for pointer diff"
-#~ msgstr "ogiltig typ för pekarskillnad"
-
-#~ msgid "invalid operand to pointer plus, first operand is not a pointer"
-#~ msgstr "ogiltig operand till pekarplus, första operanden är inte en pekare"
-
-#~ msgid "invalid operand to pointer plus, second operand is not an integer type of appropriate width"
-#~ msgstr "ogiltig operand till pekarplus, andra operanden är inte en heltalstyp med lämplig bredd"
-
-#~ msgid "type mismatch in fused multiply-add expression"
-#~ msgstr "typer stämmer inte i sammansmält multiplicera-addera-uttryck"
-
-#~ msgid "in statement"
-#~ msgstr "i sats"
-
-#~ msgid "memory access check always fail"
-#~ msgstr "minnesåtkomstkontrollen misslyckas alltid"
-
-#~ msgid "-fcheck-pointer-bounds requires %qs name for internal usage"
-#~ msgstr "-fcheck-pointer-bounds kräver %qs-namn för intern användning"
-
-#~ msgid "pointer bounds were lost due to unexpected expression %s"
-#~ msgstr "pekargränserna gick förlorade på grund av det oväntade uttrycket %s"
-
-#~ msgid "chkp_get_bounds_by_definition: Unexpected var of type %s"
-#~ msgstr "chkp_get_bounds_by_definition: Oväntad variabel av typen %s"
-
-#~ msgid "chkp_get_bounds_by_definition: Unexpected GIMPLE code %s"
-#~ msgstr "chkp_get_bounds_by_definition: Oväntad GIMPLE-kod %s"
-
-#~ msgid "chkp_make_addressed_object_bounds: Unexpected tree code %s"
-#~ msgstr "chkp_make_addressed_object_bounds: Oväntad trädkod %s"
-
-#~ msgid "chkp_find_bounds: Unexpected tree code %s"
-#~ msgstr "chkp_find_bounds: Oväntad trädkod %s"
-
-#~ msgid "chkp_find_bounds: Cannot find bounds for pointer"
-#~ msgstr "chkp_find_bounds: Kan inte hitta gränserna för pekare"
-
-#~ msgid "chkp_walk_pointer_assignments: unexpected RHS type: %s"
-#~ msgstr "chkp_walk_pointer_assignments: oväntad RHS-typ: %s"
-
-#~ msgid "alignment for %q+D must be at least %d"
-#~ msgstr "justering för %q+D måste vara åtminstone %d"
-
-#~ msgid "tls_model argument not a string"
-#~ msgstr "tls_model-argument är inte en sträng"
-
-#~ msgid "tls_model argument must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\""
-#~ msgstr "tls_model-argument måste vara ett av ”local-exec”, ”initial-exec”, ”local-dynamic” eller ”global-dynamic”"
-
-#~ msgid "alloc_size parameter outside range"
-#~ msgstr "alloc_size-parameter utanför giltigt intervall"
-
-#~ msgid "alloc_align parameter outside range"
-#~ msgstr "alloc_align-parameter utanför giltigt intervall"
-
-#~ msgid "assume_aligned parameter not integer constant"
-#~ msgstr "assume_aligned-parameter är inte en heltalskonstant"
-
-#~ msgid "requested alignment is too large"
-#~ msgstr "begärd minnesjustering är för stor"
-
-#~ msgid "format string has invalid operand number"
-#~ msgstr "formatsträng har ogiltigt operandnummer"
-
-#~ msgid "%<...%> has invalid operand number"
-#~ msgstr "%<...%> har ogiltigt operandnummer"
-
-#~ msgid "%<gcall%> is not defined as a type"
-#~ msgstr "%<gcall%> är inte definierad som en typ"
-
-#~ msgid "-Walloca-larger-than=0 is meaningless"
-#~ msgstr "-Walloca-larger-than=0 är meningslöst"
-
-#~ msgid "-Wvla-larger-than=0 is meaningless"
-#~ msgstr "-Wvla-larger-than=0 är meningslöst"
-
-#~ msgid "value of -mirq-ctrl-saved must have form R0-REGx"
-#~ msgstr "värdet på -mirq-ctrl-saved måste ha formen R0-REGx"
-
-#~ msgid "compact-casesi is not applicable to ARCv2"
-#~ msgstr "compact-casesi är inte tillämplig på ARCv2"
-
-#~ msgid "Intel MPX does not support x32"
-#~ msgstr "Intel MPX stödjer inte x32"
-
-#~ msgid "%<-mindirect-branch=thunk-extern%>, %<-fcf-protection=branch%> and %<-fcheck-pointer-bounds%> are not compatible"
-#~ msgstr "%<-mindirect-branch=thunk-extern%>, %<-fcf-protection=branch%> och %<--fcheck-pointer-bounds%> är inte kompatibla"
-
-#~ msgid "Pointer Checker requires MPX support on this target. Use -mmpx options to enable MPX."
-#~ msgstr "Pekarkontrolleraren kräver stöd för MPX på detta mål.  Använd flaggan -mmpx för att aktivera MPX."
-
-#~ msgid "position-independent code not supported"
-#~ msgstr "positionsoberoende kod stödjs inte"
-
-#~ msgid "`custom-%s=' argument requires numeric digits"
-#~ msgstr "argumentet ”custom-%s=” behöver numeriska siffror"
-
-#~ msgid "vec_mul only accepts 2 arguments"
-#~ msgstr "vec_mul tar endast 2 argument"
-
-#~ msgid "vec_cmpne only accepts 2 arguments"
-#~ msgstr "vec_cmpne tar endast 2 argument"
-
-#~ msgid "vec_adde only accepts 3 arguments"
-#~ msgstr "vec_adde tar endast 3 argument"
-
-#~ msgid "vec_addec only accepts 3 arguments"
-#~ msgstr "vec_addec tar endast 3 argument"
-
-#~ msgid "%s only accepts %d arguments"
-#~ msgstr "%s tar endast %d argument"
-
-#~ msgid "%s only accepts 1 argument"
-#~ msgstr "%s tar endast ett argument"
-
-#~ msgid "%s only accepts 2 arguments"
-#~ msgstr "%s tar bara 2 argument"
-
-#~ msgid "vec_extract only accepts 2 arguments"
-#~ msgstr "vec_extract tar endast 2 argument"
-
-#~ msgid "vec_insert only accepts 3 arguments"
-#~ msgstr "vec_insert tar endast 3 argument"
-
-#~ msgid "__builtin_cmpb only accepts 2 arguments"
-#~ msgstr "__builtin_cmpb tar endast 2 argument"
-
-#~ msgid "Builtin function %s not supported in this compiler configuration"
-#~ msgstr "Den inbyggda funktionen %s stödjs inte i denna kompilatorkonfiguration"
-
-#~ msgid "invalid parameter combination for AltiVec intrinsic %s"
-#~ msgstr "ogiltig parameterkombination för inbyggd %s i AltiVec"
-
-#~ msgid "-mrecip requires -ffinite-math or -ffast-math"
-#~ msgstr "-mrecip kräver -ffinite-math eller -ffast-math"
-
-#~ msgid "-mrecip requires -fno-trapping-math or -ffast-math"
-#~ msgstr "-mrecip kräver -fno-trapping-math eller -ffast-math"
-
-#~ msgid "-mrecip requires -freciprocal-math or -ffast-math"
-#~ msgstr "-mrecip kräver -freciprocal-math eller -ffast-math"
-
-#~ msgid "-m64 requires PowerPC64 architecture, enabling"
-#~ msgstr "-m64 kräver PowerPC64-arkitektur, aktiverar"
-
-#~ msgid "-malign-power is not supported for 64-bit Darwin; it is incompatible with the installed C and C++ libraries"
-#~ msgstr "-malign-power stödjs inte för 64-bitars Darwin, det är inkompatibelt med de installerade C- och C++-biblioteken"
-
-#~ msgid "will not generate power9 instructions because assembler lacks power9 support"
-#~ msgstr "kommer inte generera power9-instruktioner för att assemblern saknar stöd för power9"
-
-#~ msgid "will not generate power8 instructions because assembler lacks power8 support"
-#~ msgstr "kommer inte generera power8-instruktioner för att assemblern saknar stöd för power8"
-
-#~ msgid "will not generate power7 instructions because assembler lacks power7 support"
-#~ msgstr "kommer inte generera power7-instruktioner för att assemblern saknar stöd för power7"
-
-#~ msgid "will not generate power6 instructions because assembler lacks power6 support"
-#~ msgstr "kommer inte generera power6-instruktioner för att assemblern saknar stöd för power6"
-
-#~ msgid "will not generate power5 instructions because assembler lacks power5 support"
-#~ msgstr "kommer inte generera power5-instruktioner för att assemblern saknar stöd för power5"
-
-#~ msgid "not configured for SPE ABI"
-#~ msgstr "inte konfigurerad för SPE-ABI"
-
-#~ msgid "not configured for SPE instruction set"
-#~ msgstr "inte konfigurerad för instruktionsuppsättningen SPE"
-
-#~ msgid "target attribute or pragma changes SPE ABI"
-#~ msgstr "målattribut eller pragma ändrar SPE ABI"
-
-#~ msgid "SPE not supported in this target"
-#~ msgstr "SPE stödjs inte på denna målarkitektur"
-
-#~ msgid "-mmultiple is not supported on little endian systems"
-#~ msgstr "-mmultiple stödjs inte på system med omvänd byteordning"
-
-#~ msgid "-mstring is not supported on little endian systems"
-#~ msgstr "-mstring stödjs inte på system med omvänd byteordning"
-
-#~ msgid "-mpower9-minmax incompatible with explicitly disabled options"
-#~ msgstr "-mpower9-minmax är inkompatibel med uttryckligen avaktiverade flaggor"
-
-#~ msgid "Power9 target option is incompatible with -mcpu=<xxx> for <xxx> less than power9"
-#~ msgstr "Målflaggan för power9 är inkompatibel med -mcpu=<xxx> för <xxx> som är mindre än power9"
-
-#~ msgid "-mcrypto requires -maltivec"
-#~ msgstr "-mcrypto behöver -maltivec"
-
-#~ msgid "-mdirect-move requires -mvsx"
-#~ msgstr "-mdirect-move behöver -mvsx"
-
-#~ msgid "-mpower8-vector requires -maltivec"
-#~ msgstr "-mpower8-vector behöver -maltivec"
-
-#~ msgid "-mpower8-vector requires -mvsx"
-#~ msgstr "-mpower8-vector behöver -mvsx"
-
-#~ msgid "-mvsx-timode requires -mvsx"
-#~ msgstr "-mvsx-timode behöver -mvsx"
-
-#~ msgid "-mhard-dfp requires -mhard-float"
-#~ msgstr "-mhard-dfp behöver -mhard-float"
-
-#~ msgid "-mupper-regs-df requires -mvsx"
-#~ msgstr "-mupper-regs-df behöver -mvsx"
-
-#~ msgid "-mupper-regs-di requires -mvsx"
-#~ msgstr "-mupper-regs-di behöver -mvsx"
-
-#~ msgid "-mupper-regs-sf requires -mpower8-vector"
-#~ msgstr "-mupper-regs-sf behöver -mpower8-vector"
-
-#~ msgid "-mpower8-fusion-sign requires -mpower8-fusion"
-#~ msgstr "-mpower8-fusion-sign behöver -mpower8-fusion"
-
-#~ msgid "-mtoc-fusion requires -mpower8-fusion"
-#~ msgstr "-mtoc-fusion behöver -mpower8-fusion"
-
-#~ msgid "-mpower9-fusion requires -mpower8-fusion"
-#~ msgstr "-mpower9-fusion behöver -mpower8-fusion"
-
-#~ msgid "-mpower9-vector requires -mpower8-vector"
-#~ msgstr "-mpower9-vector behöver -mpower8-vector"
-
-#~ msgid "-mpower9-dform requires -mpower9-vector"
-#~ msgstr "-mpower9-dform behöver -mpower9-vector"
-
-#~ msgid "-mpower9-dform, -mpower9-dform-vector, -mpower9-dform-scalar require -mdirect-move"
-#~ msgstr "-mpower9-dform, -mpower9-dform-vector, -mpower9-dform-scalar kräver -mdirect-move"
-
-#~ msgid "-mpower9-dform requires -mupper-regs-df"
-#~ msgstr "-mpower9-dform behöver -mupper-regs-df"
-
-#~ msgid "-mpower9-dform requires -mupper-regs-sf"
-#~ msgstr "-mpower9-dform behöver -mupper-regs-sf"
-
-#~ msgid "-mvsx-timode might need -mlra"
-#~ msgstr "-mvsx-timode kan behöva -mlra"
-
-#~ msgid "-mallow-movmisalign requires -mvsx"
-#~ msgstr "-mallow-movmisalign behöver -mvsx"
-
-#~ msgid "-mefficient-unaligned-vsx requires -mvsx"
-#~ msgstr "-mefficient-unaligned-vsx behöver -mvsx"
-
-#~ msgid "-mefficient-unaligned-vsx requires -mallow-movmisalign"
-#~ msgstr "-mefficient-unaligned-vsx behöver -mallow-movmisalign"
-
-#~ msgid "-mvsx-small-integer requires -mpower8-vector, -mupper-regs-di, and -mdirect-move"
-#~ msgstr "-mvsx-small-integer kräver -mpower8-vector, -mupper-regs-di och -mdirect-move"
-
-#~ msgid "-mfloat128 requires VSX support"
-#~ msgstr "-mfloat128 behöver VSX-stöd"
-
-#~ msgid "-mfloat128-type requires VSX support"
-#~ msgstr "-mfloat128-type behöver VSX-stöd"
-
-#~ msgid "-mfloat128 requires -mfloat128-type"
-#~ msgstr "-mfloat128 behöver -mfloat128-type"
-
-#~ msgid "-mfloat128-hardware requires -mfloat128-type"
-#~ msgstr "-mfloat128-hardware behöver -mfloat128-type"
-
-#~ msgid "-mfloat128-hardware requires full ISA 3.0 support"
-#~ msgstr "-mfloat128-hardware behöver fullt ISA 3.0-stöd"
-
-#~ msgid "-mfloat128-hardware requires -m64"
-#~ msgstr "-mfloat128-hardware behöver -m64"
-
-#~ msgid "unknown vectorization library ABI type (%s) for -mveclibabi= switch"
-#~ msgstr "okänd ABI-typ (%s) till vektoriseringsbibliotek för flaggan -mveclibabi="
-
-#~ msgid "target attribute or pragma changes single precision floating point"
-#~ msgstr "målattribut eller pragma ändrar enkel precisions flyttal"
-
-#~ msgid "target attribute or pragma changes double precision floating point"
-#~ msgstr "målattribut eller pragma ändrar dubbel precisions flyttal"
-
-#~ msgid "-mstack-protector-guard=tls needs a valid base register"
-#~ msgstr "-mstack-protector-guard=tls behöver ett giltigt basregister"
-
-#~ msgid "cannot return value in vector register because altivec instructions are disabled, use -maltivec to enable them"
-#~ msgstr "det går inte att returnera värde i vektorregister för att altivec-instruktioner är avaktiverade, använd -maltivec för att aktivera dem"
-
-#~ msgid "cannot pass argument in vector register because altivec instructions are disabled, use -maltivec to enable them"
-#~ msgstr "det går inte att skicka argument i vektorregister för att altivec-instruktioner är avaktiverade, använd -maltivec för att aktivera dem"
-
-#~ msgid "internal error: builtin function %s already processed"
-#~ msgstr "internt fel: den inbyggda funktionen %s redan bearbetad"
-
-#~ msgid "argument 1 of __builtin_altivec_predicate must be a constant"
-#~ msgstr "argumentet 1 till __builtin_altivec_predicate måste vara en konstant"
-
-#~ msgid "argument 1 of __builtin_altivec_predicate is out of range"
-#~ msgstr "argument 1 till __builtin_altivec_predicate är utanför sitt intervall"
-
-#~ msgid "builtin %s is only valid in 64-bit mode"
-#~ msgstr "inbyggd %s är endast giltigt i 64-bitsläge"
-
-#~ msgid "builtin %s only accepts a string argument"
-#~ msgstr "den inbyggda %s tar endast ett strängargument"
-
-#~ msgid "cpu %s is an invalid argument to builtin %s"
-#~ msgstr "cpu %s är ett ogiltigt argument till den inbyggda %s"
-
-#~ msgid "hwcap %s is an invalid argument to builtin %s"
-#~ msgstr "hwcap %s är ett ogiltigt argument till den inbyggda %s"
-
-#~ msgid "argument to dss must be a 2-bit unsigned literal"
-#~ msgstr "argument till dss måste vara en 2-bitars litteral utan tecken"
-
-#~ msgid "second argument to vec_vextract4b must be 0..12"
-#~ msgstr "andra argumentet till vec_vextract4b måste vara 0..12"
-
-#~ msgid "third argument to vec_vinsert4b must be 0..12"
-#~ msgstr "tredje argumentet till vec_vinsert4b måste vara 0..12"
-
-#~ msgid "argument 1 of __builtin_paired_predicate must be a constant"
-#~ msgstr "argument 1 till __builtin_paired_predicate måste vara en konstant"
-
-#~ msgid "argument 1 of __builtin_paired_predicate is out of range"
-#~ msgstr "argument 1 till __builtin_paired_predicate är utanför sitt intervall"
-
-#~ msgid "argument 1 of __builtin_spe_predicate must be a constant"
-#~ msgstr "argument 1 till __builtin_spe_predicate måste vara en konstant"
-
-#~ msgid "argument 1 of __builtin_spe_predicate is out of range"
-#~ msgstr "argument 1 till __builtin_spe_predicate är utanför sitt intervall"
-
-#~ msgid "Builtin function %s is only valid for the cell processor"
-#~ msgstr "Den inbyggda funktionen %s är endast giltig för cell-processorn"
-
-#~ msgid "Builtin function %s requires the -mvsx option"
-#~ msgstr "Den inbyggda funktionen %s behöver flaggan -mvsx"
-
-#~ msgid "Builtin function %s requires the -mhtm option"
-#~ msgstr "Den inbyggda funktionen %s behöver flaggan -mhtm"
-
-#~ msgid "Builtin function %s requires the -maltivec option"
-#~ msgstr "Den inbyggda funktionen %s behöver flaggan -maltivec"
-
-#~ msgid "Builtin function %s requires the -mpaired option"
-#~ msgstr "Den inbyggda funktionen %s behöver flaggan -mpaired"
-
-#~ msgid "Builtin function %s requires the -mspe option"
-#~ msgstr "Den inbyggda funktionen %s behöver flaggan -mspe"
-
-#~ msgid "Builtin function %s requires the -mhard-dfp and -mpower8-vector options"
-#~ msgstr "Den inbyggda funktionen %s behöver flaggorna -mhard-dfp och -mpower8-vector"
-
-#~ msgid "Builtin function %s requires the -mhard-dfp option"
-#~ msgstr "Den inbyggda funktionen %s behöver flaggan -mhard-dfp"
-
-#~ msgid "Builtin function %s requires the -mpower8-vector option"
-#~ msgstr "Den inbyggda funktionen %s behöver flaggan -mpower8-vector"
-
-#~ msgid "Builtin function %s requires the -mcpu=power9 and -m64 options"
-#~ msgstr "Den inbyggda funktionen %s behöver flaggorna -mcpu=power9 och -m64"
-
-#~ msgid "Builtin function %s requires the -mcpu=power9 option"
-#~ msgstr "Den inbyggda funktionen %s behöver flaggan -mcpu=power9"
-
-#~ msgid "Builtin function %s requires the -mhard-float and -mlong-double-128 options"
-#~ msgstr "Den inbyggda funktionen %s behöver flaggorna -mhard-float och -mlong-double-128"
-
-#~ msgid "Builtin function %s requires the -mhard-float option"
-#~ msgstr "Den inbyggda funktionen %s behöver flaggan -mhard-float"
-
-#~ msgid "Builtin function %s requires the -mfloat128 option"
-#~ msgstr "Den inbyggda funktionen %s behöver flaggan -mfloat128"
-
-#~ msgid "Builtin function %s is not supported with the current options"
-#~ msgstr "Den inbyggda funktionen %s stödjs inte med de aktuella flaggorna"
-
-#~ msgid "internal error: builtin function %s had an unexpected return type %s"
-#~ msgstr "internt fel: inbyggd funktion %s hade en oväntad returtyp %s"
-
-#~ msgid "internal error: builtin function %s, argument %d had unexpected argument type %s"
-#~ msgstr "internt fel: inbyggd funktion %s, argument %d har en oväntad argumenttyp %s"
-
-#~ msgid "-fsplit-stack uses register r29"
-#~ msgstr "-fsplit-stack använder register r29"
-
-#~ msgid "You cannot take the address of a nested function if you use the -mno-pointers-to-nested-functions option."
-#~ msgstr "Du kan inte ta adressen till en nästad funktion om du använder flaggan -mno-pointers-to-nested-functions"
-
-#~ msgid "use of %<long%> in AltiVec types is invalid for 64-bit code without -mvsx"
-#~ msgstr "användning av %<long%> i AltiVec-typer är ogiltigt för 64-bitskod utan -mvsx"
-
-#~ msgid "use of %<long long%> in AltiVec types is invalid without -mvsx"
-#~ msgstr "användning av %<long long%> i AltiVec-typer är ogiltigt utan -mvsx"
-
-#~ msgid "use of %<double%> in AltiVec types is invalid without -mvsx"
-#~ msgstr "användning av %<double%> i AltiVec-typer är ogiltigt utan -mvsx"
-
-#~ msgid "emitting microcode insn %s\t[%s] #%d"
-#~ msgstr "matar ut mikrokodsinstruktion %s\t[%s] nr %d"
-
-#~ msgid "emitting conditional microcode insn %s\t[%s] #%d"
-#~ msgstr "matar ut villkorlig mikrokodsinstruktion %s\t[%s] nr %d"
-
-#~ msgid "invalid cpu \"%s\" for %s\"%s\"%s"
-#~ msgstr "felaktig cpu ”%s” för %s”%s”%s"
-
-#~ msgid "%s\"%s\"%s is not allowed"
-#~ msgstr "%s”%s”%s är inte tillåtet"
-
-#~ msgid "%s\"%s\"%s is invalid"
-#~ msgstr "%s”%s”%s är ogiltigt"
-
-#~ msgid "-mno-%s turns off -m%s"
-#~ msgstr "-mno-%s slår av -m%s"
-
-#~ msgid "-mno-power9-vector turns off -mpower9-dform"
-#~ msgstr "-mno-power9-vector slår av -mpower9-dform"
-
-#~ msgid "AltiVec and SPE instructions cannot coexist"
-#~ msgstr "AltiVec- och SPE-instruktioner kan inte samexistera"
-
-#~ msgid "VSX and SPE instructions cannot coexist"
-#~ msgstr "VSX- och SPE-instruktioner kan inte samexistera"
-
-#~ msgid "64-bit SPE not supported"
-#~ msgstr "64-bitars SPE stödjs inte"
-
-#~ msgid "E500 and FPRs not supported"
-#~ msgstr "E500 och FPR:er stödjs inte"
-
-#~ msgid "bad value for -mcall-%s"
-#~ msgstr "felaktigt värde för -mcall-%s"
-
-#~ msgid "bad value for -msdata=%s"
-#~ msgstr "felaktigt värde för -msdata-%s"
-
-#~ msgid "-mrelocatable and -msdata=%s are incompatible"
-#~ msgstr "-mrelocatable och -msdata=%s är inkompatibla"
-
-#~ msgid "-f%s and -msdata=%s are incompatible"
-#~ msgstr "-f%s och -msdata=%s är inkompatibla"
-
-#~ msgid "-msdata=%s and -mcall-%s are incompatible"
-#~ msgstr "-msdata=%s och -mcall-%s är inkompatibla"
-
-#~ msgid "-mrelocatable and -mno-minimal-toc are incompatible"
-#~ msgstr "-mrelocatable och -mno-minimal-toc är inkompatibla"
-
-#~ msgid "-mrelocatable and -mcall-%s are incompatible"
-#~ msgstr "-mrelocatable och -mcall-%s är inkompatibla"
-
-#~ msgid "-fPIC and -mcall-%s are incompatible"
-#~ msgstr "-fPIC och -mcall-%s är inkompatibla"
-
-#~ msgid "-msecure-plt not supported by your assembler"
-#~ msgstr "-msecure-plt stödjs inte av din assembler"
-
-#~ msgid "-m%s not supported in this configuration"
-#~ msgstr "-m%s stödjs inte i denna konfiguration"
-
-#~ msgid "%qs command-line option is deprecated"
-#~ msgstr "kommandoradsflaggan %qs bör undvikas"
-
-#~ msgid "will not generate %qs instructions because assembler lacks %qs support"
-#~ msgstr "kommer inte generera %qs-instruktioner för att assemblern saknar stöd för %qs"
-
-#~ msgid "CPUs older than z900 are not supported for -fsplit-stack"
-#~ msgstr "CPU:er äldre än z900 stödjs inte med -fsplit-stack"
-
-#~ msgid "%sarch=%s%s is deprecated and will be removed in future releases; use at least %sarch=z900%s"
-#~ msgstr "%sarch=%s%s bör undvikas och kommer tas bort i framtida utgåvor; använd åtminstone %sarch=z900%s"
-
-#~ msgid "%stune=%s%s is deprecated and will be removed in future releases; use at least %stune=z900%s"
-#~ msgstr "%stune=%s%s bör undvikas och kommer tas bort i framtida utgåvor; använd åtminstone %stune=z900%s"
-
-#~ msgid "z/Architecture mode not supported on %s"
-#~ msgstr "z/Architecture-läge stödjs inte på %s"
-
-#~ msgid "-mindirect-branch* options require -march=z900 or higher"
-#~ msgstr "flaggorna -mindirect-branch* kräver -march=z900 eller högre"
-
-#~ msgid "-mfunction-return* options require -march=z900 or higher"
-#~ msgstr "flaggorna -mfunction-return* kräver -march=z900 eller högre"
-
-#~ msgid "out-of-bounds access may be optimized away"
-#~ msgstr "åtkomst utanför gränserna kan optimeras bort"
-
-#~ msgid "containing loop"
-#~ msgstr "kringliggande slinga"
-
-#~ msgid "%E qualifier ignored on asm"
-#~ msgstr "kvalificeraren %E ignorerad på asm"
-
-#~ msgid "expected integer expression before ')'"
-#~ msgstr "heltalsuttryck förväntades före ”)”"
-
-#~ msgid "expected %<tofrom%>"
-#~ msgstr "%<tofrom%> förväntades"
-
-#~ msgid "expected %<scalar%>"
-#~ msgstr "%<scalar%> förväntades"
-
-#~ msgid "cannot pass rvalue to reference parameter"
-#~ msgstr "kan inte skicka rvalue till referensparameter"
-
-#~ msgid "char-array initialized from wide string"
-#~ msgstr "char-vektor initierad från bred sträng"
-
-#~ msgid "wide character array initialized from non-wide string"
-#~ msgstr "bred teckenvektor initierad från icke-bred sträng"
-
-#~ msgid "wide character array initialized from incompatible wide string"
-#~ msgstr "bred teckenvektor initierad från en inkompatibel bred sträng"
-
-#~ msgid "invalid number of operands to __FMA"
-#~ msgstr "felaktigt antal operander till __FMA"
-
-#~ msgid "%q+D declared to take const reference, but implicit declaration would take non-const"
-#~ msgstr "%q+D deklarerad att ta const-referens, men implicit deklaration skulle ta icke-const"
-
-#~ msgid "declaration of %q#D"
-#~ msgstr "deklaration av %q#D"
-
-#~ msgid "changes meaning of %qD from %q#D"
-#~ msgstr "byter betydelse av %qD från %q#D"
-
-#~ msgid "expression %qE has side-effects"
-#~ msgstr "uttrycket %qE har sidoeffekter"
-
-#~ msgid "declaration of %q+#D conflicts with built-in declaration %q#D"
-#~ msgstr "deklaration av %q+#D står i konflikt med inbyggd deklaration %q#D"
-
-#~ msgid "%<-fno-for-scope%> is deprecated"
-#~ msgstr "%<-fno-for-scope%> bör undvikas"
-
-#~ msgid "%<-ffriend-injection%> is deprecated"
-#~ msgstr "%<-ffriend-injection%> bör undvikas"
-
-#~ msgid "%<signed%> or %<unsigned%> invalid for %qs"
-#~ msgstr "%<signed%> eller %<unsigned%> är ogiltigt för %qs"
-
-#~ msgid "%<long long%> invalid for %qs"
-#~ msgstr "%<long long%> ogiltig för %qs"
-
-#~ msgid "%<long%> invalid for %qs"
-#~ msgstr "%<long%> ogiltig för %qs"
-
-#~ msgid "%<short%> invalid for %qs"
-#~ msgstr "%<short%> ogiltig för %qs"
-
-#~ msgid "%<long%> or %<short%> invalid for %qs"
-#~ msgstr "%<long%> eller %<short%> ogiltig för %qs"
-
-#~ msgid "%<long%>, %<int%>, %<short%>, or %<char%> invalid for %qs"
-#~ msgstr "%<long%>, %<int%>, %<short%> eller %<char%> ogiltig för %qs"
-
-#~ msgid "%<long%> or %<short%> specified with char for %qs"
-#~ msgstr "%<long%> eller %<short%> angiven med char för %qs"
-
-#~ msgid "%<short%> or %<long%> invalid for %qs"
-#~ msgstr "%<short%> eller %<long%> ogiltig för %qs"
-
-#~ msgid "long, short, signed or unsigned used invalidly for %qs"
-#~ msgstr "long, short, signed eller unsigned använd felaktigt för %qs"
-
-#~ msgid "storage class specifiers invalid in parameter declarations"
-#~ msgstr "specificerare av lagringsklass ogiltig i parameterdeklarationer"
-
-#~ msgid "conversion to a reference to void will never use a type conversion operator"
-#~ msgstr "konvertering till en referens till void kommer aldrig använda en typkonverteringsoperator"
-
-#~ msgid "member %qD conflicts with virtual function table field name"
-#~ msgstr "medlem %qD står i konflikt med fältnamn i tabell över virtuella funktioner"
-
-#~ msgid "injected friend %qD is visible due to %<-ffriend-injection%>"
-#~ msgstr "inskjuten vän %qD är synlig på grund av %<-ffriend-injection%>"
-
-#~ msgid "name lookup of %qD changed"
-#~ msgstr "namnuppslagning av %qD ändrades"
-
-#~ msgid "matches this %qD under ISO standard rules"
-#~ msgstr "matchar denna %qD under ISO:s standardregler"
-
-#~ msgid "  matches this %qD under old rules"
-#~ msgstr "  stämmer med denna %qD under gamla regler"
-
-#~ msgid "name lookup of %qD changed for ISO %<for%> scoping"
-#~ msgstr "namnuppslagning av %qD ändrad för räckvidd i %<for%> enligt ISO"
-
-#~ msgid "cannot use obsolete binding %qD because it has a destructor"
-#~ msgstr "det går inte att använda föråldrad bindning vid %qD för att den har en destruerare"
-
-#~ msgid "using obsolete binding %qD"
-#~ msgstr "använder föråldrad bindning %qD"
-
-#~ msgid "suggested alternative: %qs"
-#~ msgstr "föreslaget alternativ: %qs"
-
-#~ msgid "lambda-expression in unevaluated context"
-#~ msgstr "lambdauttryck i oevaluerat sammanhang"
-
-#~ msgid "lambda-expression in template-argument"
-#~ msgstr "lambdauttryck i mallargument"
-
-#~ msgid "empty introduction-list"
-#~ msgstr "tom introduktionslista"
-
-#~ msgid "%qE is not a valid template argument for type %qT because it is not an object with linkage"
-#~ msgstr "%qE är inte ett giltigt mallargument för typen %qT eftersom det inte är ett objekt med länkklass"
-
-#~ msgid "%qE is not a valid template argument for type %qT because object %qD does not have linkage"
-#~ msgstr "%qE är inte ett giltigt mallargument för typ %qT eftersom objekt %qD inte har någon länkklass"
-
-#~ msgid "%<num_tasks%> expression must be integral"
-#~ msgstr "%<num_tasks%>-uttryck måste vara ett heltal"
-
-#~ msgid "lambda-expression in a constant expression"
-#~ msgstr "lambdauttryck i ett konstant uttryck"
-
-#~ msgid "taking address of xvalue (rvalue reference)"
-#~ msgstr "tar adressen till xvalue (rvalue-referens)"
-
-#~ msgid "reference to non-lvalue returned"
-#~ msgstr "referens till annat än lvärde returnerad"
-
-#~ msgid "using xvalue (rvalue reference) as lvalue"
-#~ msgstr "hjälp xvärde (rvärdesreferens) som lvärde"
-
-#~ msgid "int-array initialized from non-wide string"
-#~ msgstr "int-vektor initierad från icke-bred sträng"
-
-#~ msgid "int-array initialized from incompatible wide string"
-#~ msgstr "int-vektor initierad från inkompatibel bred sträng"
-
-#~ msgid "BACK argument to %qs intrinsic not yet implemented"
-#~ msgstr "Argumentet BACK till inbyggd %qs är inte implementerat ännu"
-
-#~ msgid "No location in statement"
-#~ msgstr "Ingen plats i sats"
-
-#~ msgid "Namelist %s cannot be renamed by USE association to %s"
-#~ msgstr "Namnlistan %s får inte namnändras av USE-association till %s"
-
-#~ msgid "Loop parallelized across gangs is not allowed inside another loop parallelized across gangs at %L"
-#~ msgstr "Slinga parallelliserad över gang är inte tillåten inuti en annan slinga parallelliserad över gang vid %L"
-
-#~ msgid "Loop parallelized across gangs is not allowed inside loop parallelized across workers at %L"
-#~ msgstr "Slinga parallelliserad över gang är inte tillåten inuti en slinga parallelliserad över worker vid %L"
-
-#~ msgid "Loop parallelized across workers is not allowed inside another loop parallelized across workers at %L"
-#~ msgstr "Slinga parallelliserad över worker är inte tillåten inuti en annan slinga parallelliserad över worker vid %L"
-
-#~ msgid "Loop parallelized across workers is not allowed inside another loop parallelized across vectors at %L"
-#~ msgstr "Slinga parallelliserad över worker är inte tillåten inuti en annan slinga parallelliserad över vektorer vid %L"
-
-#~ msgid "Loop parallelized across vectors is not allowed inside another loop parallelized across vectors at %L"
-#~ msgstr "Slinga parallelliserad över vektorer är inte tillåten inuti en annan slinga parallelliserad över vektorer vid %L"
-
-#~ msgid "Clause SEQ conflicts with INDEPENDENT at %L"
-#~ msgstr "Klausulen SEQ står i konflikt med INDEPENDENT vid %L"
-
-#~ msgid "Clause SEQ conflicts with GANG at %L"
-#~ msgstr "Klausulen SEQ  står i konflikt med GANG vid %L"
-
-#~ msgid "Clause SEQ conflicts with WORKER at %L"
-#~ msgstr "Klausulen SEQ står i konflikt med WORKER vid %L"
-
-#~ msgid "Clause SEQ conflicts with VECTOR at %L"
-#~ msgstr "Klausulen SEQ står i konflikt med VECTOR vid %L"
-
-#~ msgid "Clause SEQ conflicts with AUTO at %L"
-#~ msgstr "Klausulen SEQ står i konflikt med AUTO vid %L"
-
-#~ msgid "Clause AUTO conflicts with GANG at %L"
-#~ msgstr "Klausulen AUTO står i konflikt med GANG vid %L"
-
-#~ msgid "Clause AUTO conflicts with WORKER at %L"
-#~ msgstr "Klausulen AUTO står i konflikt med WORKER vid %L"
-
-#~ msgid "Clause AUTO conflicts with VECTOR at %L"
-#~ msgstr "Klausulen AUTO står i konflikt med VECTOR vid %L"
-
-#~ msgid "The pointer component %qs of %qs at %L is a type that has not been declared"
-#~ msgstr "Pekarkomponenten %qs av %qs vid %L är en typen som inte har deklarerats"
-
-#~ msgid "check_data_variable(): Bad expression"
-#~ msgstr "check_data_variable(): Felaktigt uttryck"
-
-#~ msgid "Second argument of MODULO at %L is zero"
-#~ msgstr "Andra argumentet till MODULO vid %L är noll"
-
-#~ msgid "gfc_convert_constant(): Unexpected type"
-#~ msgstr "gfc_convert_constant(): Oväntad typ"
-
-#~ msgid "gfc_conv_constant_to_tree(): invalid type: %s"
-#~ msgstr "gfc_conv_constant_to_tree(): ogiltig typ: %s"
