@@ -508,7 +508,10 @@ proc dg-function-on-line { args } {
 	}
     }
 
-    if { [istarget hppa*-*-*] } {
+    if { [istarget hppa*-*-linux*] } {
+	set pattern [format {%s:\n\t.PROC\n\t.CALLINFO.*\n\t.ENTRY\n.L.*:\n(\t.file[^\t]*)*\t[^:]+:%d(:[0-9]+)?\n} \
+                     $symbol $line]
+    } elseif { [istarget hppa*-*-*] } {
 	set pattern [format {\t;[^:]+:%d(:[0-9]+)?\n(\t[^\t]+\n)+%s:\n\t.PROC} \
                      $line $symbol]
     } elseif { [istarget mips*-*-*] } {
