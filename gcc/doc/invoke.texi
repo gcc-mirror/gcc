@@ -12140,9 +12140,6 @@ will not try to thread through its block.
 Maximum number of nested calls to search for control dependencies
 during uninitialized variable analysis.
 
-@item indir-call-topn-profile
-Track top N target addresses in indirect-call profile.
-
 @item max-once-peeled-insns
 The maximum number of insns of a peeled loop that rolls only once.
 

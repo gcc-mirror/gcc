@@ -1,3 +1,23 @@
+2019-06-07  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Remove usage of
+	_gcov_merge_icall_topn.
+	* libgcov-driver.c (gcov_sort_n_vals): Remove.
+	(gcov_sort_icall_topn_counter): Likewise.
+	(gcov_sort_topn_counter_arrays): Likewise.
+	(dump_one_gcov): Remove call to gcov_sort_topn_counter_arrays.
+	* libgcov-merge.c (__gcov_merge_icall_topn): Remove.
+	* libgcov-profiler.c (__gcov_topn_value_profiler_body):
+	Likewise.
+	(GCOV_ICALL_COUNTER_CLEAR_THRESHOLD): Remove.
+	(struct indirect_call_tuple): Remove.
+	(__gcov_indirect_call_topn_profiler): Remove.
+	* libgcov-util.c (__gcov_icall_topn_counter_op): Remove.
+	* libgcov.h (gcov_sort_n_vals): Remove.
+	(L_gcov_merge_icall_topn): Likewise.
+	(__gcov_merge_icall_topn): Likewise.
+	(__gcov_indirect_call_topn_profiler): Likewise.
+
 2019-06-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/t-darwin: Ensure that the unwinder is built with

@@ -101,11 +101,7 @@ init_ic_make_global_vars (void)
 
   ic_tuple_var
     = build_decl (UNKNOWN_LOCATION, VAR_DECL,
-		  get_identifier (
-			  (PARAM_VALUE (PARAM_INDIR_CALL_TOPN_PROFILE) ?
-			   "__gcov_indirect_call_topn" :
-			   "__gcov_indirect_call")),
-		  tuple_type);
+		  get_identifier ("__gcov_indirect_call"), tuple_type);
   TREE_PUBLIC (ic_tuple_var) = 1;
   DECL_ARTIFICIAL (ic_tuple_var) = 1;
   DECL_INITIAL (ic_tuple_var) = NULL;
@@ -187,8 +183,6 @@ gimple_init_gcov_profiler (void)
 					  ptr_type_node,
 					  NULL_TREE);
       profiler_fn_name = "__gcov_indirect_call_profiler_v3";
-      if (PARAM_VALUE (PARAM_INDIR_CALL_TOPN_PROFILE))
-	profiler_fn_name = "__gcov_indirect_call_topn_profiler";
 
       tree_indirect_call_profiler_fn
 	      = build_fn_decl (profiler_fn_name, ic_profiler_fn_type);
@@ -375,12 +369,6 @@ gimple_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
   gimple *stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   tree ref_ptr = tree_coverage_counter_addr (tag, base);
-
-  if ( (PARAM_VALUE (PARAM_INDIR_CALL_TOPN_PROFILE) &&
-        tag == GCOV_COUNTER_V_INDIR) ||
-       (!PARAM_VALUE (PARAM_INDIR_CALL_TOPN_PROFILE) &&
-        tag == GCOV_COUNTER_ICALL_TOPNV))
-    return;
 
   ref_ptr = force_gimple_operand_gsi (&gsi, ref_ptr,
 				      true, NULL_TREE, true, GSI_SAME_STMT);

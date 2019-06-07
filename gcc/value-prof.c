@@ -316,22 +316,6 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
       }
       fprintf (dump_file, ".\n");
       break;
-    case HIST_TYPE_INDIR_CALL_TOPN:
-      fprintf (dump_file, "Indirect call topn ");
-      if (hist->hvalue.counters)
-	{
-           int i;
-
-           fprintf (dump_file, "accu:%" PRId64, hist->hvalue.counters[0]);
-           for (i = 1; i < (GCOV_ICALL_TOPN_VAL << 2); i += 2)
-             {
-               fprintf (dump_file, " target:%" PRId64 " value:%" PRId64,
-                       (int64_t) hist->hvalue.counters[i],
-                       (int64_t) hist->hvalue.counters[i+1]);
-             }
-        }
-      fprintf (dump_file, ".\n");
-      break;
     case HIST_TYPE_MAX:
       gcc_unreachable ();
    }
@@ -415,10 +399,6 @@ stream_in_histogram_value (struct lto_input_block *ib, gimple *stmt)
         case HIST_TYPE_TIME_PROFILE:
 	  ncounters = 1;
 	  break;
-
-        case HIST_TYPE_INDIR_CALL_TOPN:
-          ncounters = (GCOV_ICALL_TOPN_VAL << 2) + 1;
-          break;
 
 	case HIST_TYPE_MAX:
 	  gcc_unreachable ();
@@ -1865,12 +1845,8 @@ gimple_indirect_call_to_profile (gimple *stmt, histogram_values *values)
 
   values->reserve (3);
 
-  values->quick_push (gimple_alloc_histogram_value (
-                        cfun,
-                        PARAM_VALUE (PARAM_INDIR_CALL_TOPN_PROFILE) ?
-                          HIST_TYPE_INDIR_CALL_TOPN :
-                          HIST_TYPE_INDIR_CALL,
-			stmt, callee));
+  values->quick_push (gimple_alloc_histogram_value (cfun, HIST_TYPE_INDIR_CALL,
+						    stmt, callee));
 
   return;
 }
@@ -1970,10 +1946,6 @@ gimple_find_values_to_profile (histogram_values *values)
 	case HIST_TYPE_IOR:
 	  hist->n_counters = 1;
 	  break;
-
-        case HIST_TYPE_INDIR_CALL_TOPN:
-          hist->n_counters = GCOV_ICALL_TOPN_NCOUNTS;
-          break;
 
 	default:
 	  gcc_unreachable ();
