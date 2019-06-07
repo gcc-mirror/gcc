@@ -1,3 +1,13 @@
+2019-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (aliasing_component_refs_p): Do not give up
+	immediately after same_types_for_tbaa_p returns -1 and continue
+	looking for possible exact match; if matching types are arrays
+	watch for partial overlaps.
+	(indirect_ref_may_alias_decl_p): Watch for partial array overlaps.
+	(indirect_refs_may_alias_p): Do type based disambiguation first;
+	update comment.
+
 2019-06-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* fwprop.c (propagate_rtx): Fix call to paradoxical_subreg_p.

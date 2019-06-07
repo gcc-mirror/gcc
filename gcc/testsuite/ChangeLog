@@ -1,3 +1,7 @@
+2019-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/lto/alias-access-path-2.0.c: New testcase.
+
 2019-06-07  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/78902
