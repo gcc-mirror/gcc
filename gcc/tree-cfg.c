@@ -2722,10 +2722,10 @@ stmt_starts_bb_p (gimple *stmt, gimple *prev_stmt)
 	  || FORCED_LABEL (gimple_label_label (label_stmt)))
 	return true;
 
-      if (prev_stmt && gimple_code (prev_stmt) == GIMPLE_LABEL)
+      if (glabel *plabel = safe_dyn_cast <glabel *> (prev_stmt))
 	{
-	  if (DECL_NONLOCAL (gimple_label_label (
-			       as_a <glabel *> (prev_stmt))))
+	  if (DECL_NONLOCAL (gimple_label_label (plabel))
+	      || !DECL_ARTIFICIAL (gimple_label_label (plabel)))
 	    return true;
 
 	  cfg_stats.num_merged_labels++;
