@@ -1,5 +1,10 @@
 2019-06-07  Martin Liska  <mliska@suse.cz>
 
+	* tree-ssa-loop.c (get_lsm_tmp_name): Return at the end of the
+	function.
+
+2019-06-07  Martin Liska  <mliska@suse.cz>
+
 	PR tree-optimization/78902
 	* builtin-attrs.def (ATTR_WARN_UNUSED_RESULT): New.
 	(ATTR_MALLOC_NOTHROW_LEAF_LIST): Remove.
