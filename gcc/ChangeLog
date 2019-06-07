@@ -1,3 +1,19 @@
+2019-06-07  John David Anglin  <danglin@gcc.gnu.orig>
+
+	PR target/90751
+	* config/pa/pa-linux.h (ASM_DECLARE_FUNCTION_NAME): Update comment.
+	Call pa_output_function_label.
+	(TARGET_ASM_FUNCTION_PROLOGUE): define.
+	* config/pa/pa-protos.h (pa_output_function_label): Declare.
+	* config/pa/pa.c (pa_output_function_prologue): Add ATTRIBUTE_UNUSED
+	to declaration.
+	(pa_linux_output_function_prologue): Declare.
+	(TARGET_ASM_FUNCTION_PROLOGUE): Delete define.
+	(pa_output_function_label): New.
+	(pa_output_function_prologue): Revise to use pa_output_function_label.
+	(pa_linux_output_function_prologue): New.
+	* config/pa/pa.h (TARGET_ASM_FUNCTION_PROLOGUE): Define.
+
 2019-06-06  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
