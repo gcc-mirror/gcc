@@ -129,22 +129,8 @@ Statement::import_statement(Import_function_body* ifb, Location loc)
 {
   if (ifb->match_c_string("{"))
     {
-      size_t nl = ifb->body().find('\n', ifb->off());
-      if (nl == std::string::npos)
-	{
-	  if (!ifb->saw_error())
-	    go_error_at(ifb->location(),
-			"import error: no newline after { at %lu",
-			static_cast<unsigned long>(ifb->off()));
-	  ifb->set_saw_error();
-	  return Statement::make_error_statement(loc);
-	}
-      ifb->set_off(nl + 1);
-      ifb->increment_indent();
-      Block* block = new Block(ifb->block(), loc);
-      bool ok = Block::import_block(block, ifb, loc);
-      ifb->decrement_indent();
-      if (!ok)
+      Block* block = Block_statement::do_import(ifb, loc);
+      if (block == NULL)
 	return Statement::make_error_statement(loc);
       return Statement::make_block_statement(block, loc);
     }
@@ -159,6 +145,8 @@ Statement::import_statement(Import_function_body* ifb, Location loc)
     return Temporary_statement::do_import(ifb, loc);
   else if (ifb->match_c_string("var "))
     return Variable_declaration_statement::do_import(ifb, loc);
+  else if (ifb->match_c_string("if "))
+    return If_statement::do_import(ifb, loc);
 
   Expression* lhs = Expression::import_expression(ifb, loc);
   ifb->require_c_string(" = ");
@@ -2121,13 +2109,19 @@ Statement::make_statement(Expression* expr, bool is_ignored)
 void
 Block_statement::do_export_statement(Export_function_body* efb)
 {
+  Block_statement::export_block(efb, this->block_);
+}
+
+void
+Block_statement::export_block(Export_function_body* efb, Block* block)
+{
   // We are already indented to the right position.
   char buf[50];
   snprintf(buf, sizeof buf, "{ //%d\n",
-	   Linemap::location_to_line(this->block_->start_location()));
+	   Linemap::location_to_line(block->start_location()));
   efb->write_c_string(buf);
 
-  this->block_->export_block(efb);
+  block->export_block(efb);
   // The indentation is correct for the statements in the block, so
   // subtract one for the closing curly brace.
   efb->decrement_indent();
@@ -2135,6 +2129,32 @@ Block_statement::do_export_statement(Export_function_body* efb)
   efb->write_c_string("}");
   // Increment back to the value the caller thinks it has.
   efb->increment_indent();
+}
+
+// Import a block statement, returning the block.
+
+Block*
+Block_statement::do_import(Import_function_body* ifb, Location loc)
+{
+  go_assert(ifb->match_c_string("{"));
+  size_t nl = ifb->body().find('\n', ifb->off());
+  if (nl == std::string::npos)
+    {
+      if (!ifb->saw_error())
+	go_error_at(ifb->location(),
+		    "import error: no newline after { at %lu",
+		    static_cast<unsigned long>(ifb->off()));
+      ifb->set_saw_error();
+      return NULL;
+    }
+  ifb->set_off(nl + 1);
+  ifb->increment_indent();
+  Block* block = new Block(ifb->block(), loc);
+  bool ok = Block::import_block(block, ifb, loc);
+  ifb->decrement_indent();
+  if (!ok)
+    return NULL;
+  return block;
 }
 
 // Convert a block to the backend representation of a statement.
@@ -3527,6 +3547,73 @@ If_statement::do_get_backend(Translate_context* context)
   return context->backend()->if_statement(bfunction,
                                           cond, then_block, else_block,
 					  this->location());
+}
+
+// Export an if statement.
+
+void
+If_statement::do_export_statement(Export_function_body* efb)
+{
+  efb->write_c_string("if ");
+  this->cond_->export_expression(efb);
+  efb->write_c_string(" ");
+  Block_statement::export_block(efb, this->then_block_);
+  if (this->else_block_ != NULL)
+    {
+      efb->write_c_string(" else ");
+      Block_statement::export_block(efb, this->else_block_);
+    }
+}
+
+// Import an if statement.
+
+Statement*
+If_statement::do_import(Import_function_body* ifb, Location loc)
+{
+  ifb->require_c_string("if ");
+
+  Expression* cond = Expression::import_expression(ifb, loc);
+  Type_context context(Type::lookup_bool_type(), false);
+  cond->determine_type(&context);
+  ifb->require_c_string(" ");
+
+  if (!ifb->match_c_string("{"))
+    {
+      if (!ifb->saw_error())
+	go_error_at(ifb->location(),
+		    "import error for %qs: no block for if statement at %lu",
+		    ifb->name().c_str(),
+		    static_cast<unsigned long>(ifb->off()));
+      ifb->set_saw_error();
+      return Statement::make_error_statement(loc);
+    }
+
+  Block* then_block = Block_statement::do_import(ifb, loc);
+  if (then_block == NULL)
+    return Statement::make_error_statement(loc);
+
+  Block* else_block = NULL;
+  if (ifb->match_c_string(" else "))
+    {
+      ifb->advance(6);
+      if (!ifb->match_c_string("{"))
+	{
+	  if (!ifb->saw_error())
+	    go_error_at(ifb->location(),
+			("import error for %qs: no else block "
+			 "for if statement at %lu"),
+			ifb->name().c_str(),
+			static_cast<unsigned long>(ifb->off()));
+	  ifb->set_saw_error();
+	  return Statement::make_error_statement(loc);
+	}
+
+      else_block = Block_statement::do_import(ifb, loc);
+      if (else_block == NULL)
+	return Statement::make_error_statement(loc);
+    }
+
+  return Statement::make_if_statement(cond, then_block, else_block, loc);
 }
 
 // Dump the AST representation for an if statement
