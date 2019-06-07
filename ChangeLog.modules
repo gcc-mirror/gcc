@@ -1,6 +1,14 @@
 2019-06-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (loc_spans::init): Add lmaps parm, separate main from
+	forced header locs.
+	(loc_spans::SPAN_FIRST): New, use it for first span.
+	(loc_spans::SPAN_MAIN): Just after the first span.
+	gcc/testsuite/
+	* g++.dg/modules/macro-5_[abc].[CH]: Adjust.
+
+	gcc/cp/
 	* module.cc (dumper::MACRO): New flag.
 	(module_state::{write,install}_macros): Use it.
 	(module_state::{undef,deferred}_macro): Likewise.
