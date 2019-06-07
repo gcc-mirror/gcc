@@ -246,6 +246,7 @@ pstl_headers = \
 	${pstl_srcdir}/numeric_impl.h \
 	${pstl_srcdir}/parallel_backend.h \
 	${pstl_srcdir}/parallel_backend_tbb.h \
+	${pstl_srcdir}/parallel_backend_serial.h \
 	${pstl_srcdir}/parallel_backend_utils.h \
 	${pstl_srcdir}/parallel_impl.h \
 	${pstl_srcdir}/pstl_config.h \
