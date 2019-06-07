@@ -1,6 +1,15 @@
 2019-06-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (dumper::MACRO): New flag.
+	(module_state::{write,install}_macros): Use it.
+	(module_state::{undef,deferred}_macro): Likewise.
+	gcc/
+	* doc.invoke (-fdump-lang): Document.
+	gcc/testsuite/
+	* g++.dg/modules/macro-[35]_[abc].[CH]: Update.
+
+	gcc/cp/
 	* module.cc (bytes_out::print_time): New.
 	(module_state::write_readme): Dump some environmental data.
 

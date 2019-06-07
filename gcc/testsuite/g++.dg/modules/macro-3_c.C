@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts -fdump-lang-module" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module-vops" }
 
 import "macro-3_b.H";
 import "macro-3_a.H";

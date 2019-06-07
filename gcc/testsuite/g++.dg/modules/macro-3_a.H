@@ -1,5 +1,5 @@
 // { dg-module-do run }
-// { dg-additional-options "-fmodule-header -fdump-lang-module" }
+// { dg-additional-options "-fmodule-header -fdump-lang-module-vops" }
 // { dg-module-bmi {} }
 
 #ifndef MACRO_3a_H

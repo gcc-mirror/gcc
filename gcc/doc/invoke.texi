@@ -14782,8 +14782,9 @@ unless '@option{slim}' is specified.  This option is applicable to C++ only.
 Dump module information.  Options @option{lineno} (locations),
 @option{graph} (reachability), @option{blocks} (clusters),
 @option{uid} (serialization), @option{alias} (mergeable),
-@option{asmname} (Elrond) & @option{eh} (mapper) may provide
-additional information.  This option is applicable to C++ only.
+@option{asmname} (Elrond), @option{eh} (mapper) & @option{vops}
+(macros) may provide additional information.  This option is
+applicable to C++ only.
 
 @item raw
 Dump the raw internal tree data.  This option is applicable to C++ only.

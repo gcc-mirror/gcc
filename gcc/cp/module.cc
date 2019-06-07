@@ -3735,7 +3735,8 @@ public:
     TREE = TDF_UID, 	/* -uid:Tree streaming.  */
     MERGE = TDF_ALIAS,	/* -alias:Mergeable Entities.  */
     ELF = TDF_ASMNAME,	/* -asmname:Elf data.  */
-    MAPPER = TDF_EH	/* -eh:Mapper.  */
+    MAPPER = TDF_EH,	/* -eh:Mapper.  */
+    MACRO = TDF_VOPS	/* -vops:Macros.  */
   };
 
 private:
@@ -13728,7 +13729,7 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
   unsigned count = 0;
   if (macros.length ())
     {
-      dump () && dump ("No more than %u macros", macros.length ());
+      dump (dumper::MACRO) && dump ("No more than %u macros", macros.length ());
 
       macros.qsort (macro_loc_cmp);
 
@@ -13768,11 +13769,12 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
 
 	  count++;
 	  slot.offset = sec.pos;
-	  dump () && dump ("Writing macro %s%s%s %I at %u",
-			   slot.get_undef () ? "#undef" : "",
-			   slot.get_undef () && slot.get_def () ? " & " : "",
-			   slot.get_def () ? "#define" : "",
-			   identifier (node), slot.offset);
+	  dump (dumper::MACRO)
+	    && dump ("Writing macro %s%s%s %I at %u",
+		     slot.get_undef () ? "#undef" : "",
+		     slot.get_undef () && slot.get_def () ? " & " : "",
+		     slot.get_def () ? "#define" : "",
+		     identifier (node), slot.offset);
 	  if (mac.undef_loc != UNKNOWN_LOCATION)
 	    write_location (sec, mac.undef_loc);
 	  if (mac.def)
@@ -13807,7 +13809,7 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
   dump.outdent ();
   return count;
 }
- 
+
 bool
 module_state::read_macros ()
 {
@@ -13849,12 +13851,13 @@ module_state::install_macros ()
 	slot.set_def ();
       slot.offset = sec.u ();
 
-      dump () && dump ("Read %s macro %s%s%s %I at %u",
-		       imp.length () > 1 ? "add" : "new",
-		       slot.get_undef () ? "#undef" : "",
-		       slot.get_undef () && slot.get_def () ? " & " : "",
-		       slot.get_def () ? "#define" : "",
-		       identifier (node), slot.offset);
+      dump (dumper::MACRO)
+	&& dump ("Read %s macro %s%s%s %I at %u",
+		 imp.length () > 1 ? "add" : "new",
+		 slot.get_undef () ? "#undef" : "",
+		 slot.get_undef () && slot.get_def () ? " & " : "",
+		 slot.get_def () ? "#define" : "",
+		 identifier (node), slot.offset);
 
       /* We'll leak an imported definition's TOKEN_FLD_STR's data
 	 here.  But that only happens when we've had to resolve the
@@ -13867,7 +13870,8 @@ module_state::install_macros ()
 	    macro_export &exp = get_macro_export (slot);
 	    exp.def = cur;
 	    slot.set_def ();
-	    dump () && dump ("Saving current #define %I", identifier (node));
+	    dump (dumper::MACRO)
+	      && dump ("Saving current #define %I", identifier (node));
 	  }
     }
 
@@ -13910,7 +13914,7 @@ module_state::undef_macro (cpp_reader *, location_t loc, cpp_hashnode *node)
   exp.def = NULL;
   slot.clear_def ();
 
-  dump () && dump ("Recording macro #undef %I", identifier (node));
+  dump (dumper::MACRO) && dump ("Recording macro #undef %I", identifier (node));
 
   dump.pop (n);
 }
@@ -13933,8 +13937,7 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
   macro_import &imports = (*macro_imports)[node->deferred - 1];
 
   unsigned n = dump.push (NULL);
-  dump () && dump ("Deferred macro %I", identifier (node));
-  dump.indent ();
+  dump (dumper::MACRO) && dump ("Deferred macro %I", identifier (node));
 
   bitmap visible (BITMAP_GGC_ALLOC ());
 
@@ -13973,12 +13976,13 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
 	      bytes_in &sec = imp->slurp ()->macro_defs;
 	      if (!sec.get_overrun ())
 		{
-		  dump () && dump ("Reading macro %s%s%s %I module %M at %u",
-				   slot.get_undef () ? "#undef" : "",
-				   slot.get_undef () && slot.get_def ()
-				   ? " & " : "",
-				   slot.get_def () ? "#define" : "",
-				   identifier (node), imp, slot.offset);
+		  dump (dumper::MACRO)
+		    && dump ("Reading macro %s%s%s %I module %M at %u",
+			     slot.get_undef () ? "#undef" : "",
+			     slot.get_undef () && slot.get_def ()
+			     ? " & " : "",
+			     slot.get_def () ? "#define" : "",
+			     identifier (node), imp, slot.offset);
 		  sec.random_access (slot.offset);
 
 		  macro_export exp;
@@ -14021,7 +14025,6 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
       def = NULL;
     }
 
-  dump.outdent ();
   dump.pop (n);
 
   return def;
