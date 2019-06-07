@@ -1,3 +1,10 @@
+2019-06-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90770
+	* configure: Regenerate.
+	* src/Makefile.am (stamp-debug): Also test for missing makefile.
+	* src/Makefile.in: Regenerate.
+
 2019-06-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/array: Do not include <stdexcept>.
