@@ -3319,6 +3319,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
  private:
   /* The README, for human consumption.  */
   void write_readme (elf_out *to, const char *opts, const cpp_hashnode *node);
+  void write_env (elf_out *to);
 
  private:
   /* Import tables. */
@@ -11367,6 +11368,60 @@ module_state::write_readme (elf_out *to, const char *options,
   readme.end (to, to->name (MOD_SNAME_PFX ".README"), NULL);
 }
 
+/* Sort environment var names in reverse order.  */
+
+static int
+env_var_cmp (const void *a_, const void *b_)
+{
+  const unsigned char *a = *(const unsigned char *const *)a_;
+  const unsigned char *b = *(const unsigned char *const *)b_;
+
+  for (unsigned ix = 0; ; ix++)
+    {
+      bool a_end = !a[ix] || a[ix] == '=';
+      if (a[ix] == b[ix])
+	{
+	  if (a_end)
+	    break;
+	}
+      else
+	{
+	  bool b_end = !b[ix] || b[ix] == '=';
+
+	  if (!a_end && !b_end)
+	    return a[ix] < b[ix] ? +1 : -1;
+	  if (a_end && b_end)
+	    break;
+	  return a_end ? +1 : -1;
+	}
+    }
+
+  return 0;
+}
+
+/* Write the environment. It is a STRTAB that may be extracted with:
+     readelf -pgnu.c++.ENV $(module).gcm */
+
+void
+module_state::write_env (elf_out *to)
+{
+  vec<const char *> vars;
+  vars.create (20);
+
+  extern char **environ;
+  while (const char *var = environ[vars.length ()])
+    vars.safe_push (var);
+  vars.qsort (env_var_cmp);
+
+  bytes_out env (to);
+  env.begin (false);
+  while (vars.length ())
+    env.printf ("%s", vars.pop ());
+  env.end (to, to->name (MOD_SNAME_PFX ".ENV"), NULL);
+
+  vars.release ();
+}
+
 /* Write the direct or indirect imports.
    u:N
    {
@@ -14548,7 +14603,8 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
 
 /* Use ELROND format to record the following sections:
      qualified-names	    : binding value(s)
-     MOD_SNAME_PFX.README   : human readable, stunningly STRTAB-like
+     MOD_SNAME_PFX.README   : human readable, strings
+     MOD_SNAME_PFX.ENV      : environment strings, strings
      MOD_SNAME_PFX.nms 	    : namespace hierarchy
      MOD_SNAME_PFX.bnd      : binding table
      MOD_SNAME_PFX.tpl	    : template table
@@ -14768,10 +14824,12 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* And finish up.  */
   write_config (to, config, crc);
 
+  sccs.release ();
+
   /* Human-readable info.  */
   write_readme (to, config.opt_str, config.controlling_node);
-
-  sccs.release ();
+  // FIXME: Command line switch?
+  write_env (to);
 
   trees_out::instrument ();
   dump () && dump ("Wrote %u sections", to->get_section_limit ());
