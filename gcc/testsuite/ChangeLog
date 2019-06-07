@@ -1,5 +1,14 @@
 2019-06-07  Iain Sandoe  <iain@sandoe.co.uk>
 
+	PR target/82920
+	* gcc.target/i386/indirect-thunk-bnd-1.c: Adjust scan-asms for Darwin,
+	do not use -fno-pic on Darwin.
+	* gcc.target/i386/indirect-thunk-bnd-2.c: Likewise.
+	* gcc.target/i386/ret-thunk-25.c: Skip for Darwin, which has a
+	different ABI for returning this category of complex value.
+
+2019-06-07  Iain Sandoe  <iain@sandoe.co.uk>
+
 	Backport from mainline.
 	2019-05-15  Iain Sandoe  <iain@sandoe.co.uk>
 
