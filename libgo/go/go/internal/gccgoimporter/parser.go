@@ -261,6 +261,10 @@ func (p *parser) parseField(pkg *types.Package) (field *types.Var, tag string) {
 // Param = Name ["..."] Type .
 func (p *parser) parseParam(pkg *types.Package) (param *types.Var, isVariadic bool) {
 	name := p.parseName()
+	// Ignore names invented for inlinable functions.
+	if strings.HasPrefix(name, "p.") || strings.HasPrefix(name, "r.") || strings.HasPrefix(name, "$ret") {
+		name = ""
+	}
 	if p.tok == '<' && p.scanner.Peek() == 'e' {
 		// EscInfo = "<esc:" int ">" . (optional and ignored)
 		p.next()
@@ -286,7 +290,14 @@ func (p *parser) parseParam(pkg *types.Package) (param *types.Var, isVariadic bo
 // Var = Name Type .
 func (p *parser) parseVar(pkg *types.Package) *types.Var {
 	name := p.parseName()
-	return types.NewVar(token.NoPos, pkg, name, p.parseType(pkg))
+	v := types.NewVar(token.NoPos, pkg, name, p.parseType(pkg))
+	if name[0] == '.' || name[0] == '<' {
+		// This is an unexported variable,
+		// or a variable defined in a different package.
+		// We only want to record exported variables.
+		return nil
+	}
+	return v
 }
 
 // Conversion = "convert" "(" Type "," ConstValue ")" .
@@ -741,14 +752,17 @@ func (p *parser) parseFunc(pkg *types.Package) *types.Func {
 	}
 
 	name := p.parseName()
-	if strings.ContainsRune(name, '$') {
-		// This is a Type$equal or Type$hash function, which we don't want to parse,
-		// except for the types.
-		p.discardDirectiveWhileParsingTypes(pkg)
-		return nil
-	}
 	f := types.NewFunc(token.NoPos, pkg, name, p.parseFunctionType(pkg, nil))
 	p.skipInlineBody()
+
+	if name[0] == '.' || name[0] == '<' || strings.ContainsRune(name, '$') {
+		// This is an unexported function,
+		// or a function defined in a different package,
+		// or a type$equal or type$hash function.
+		// We only want to record exported functions.
+		return nil
+	}
+
 	return f
 }
 
@@ -769,7 +783,9 @@ func (p *parser) parseInterfaceType(pkg *types.Package, nlist []int) types.Type 
 			embeddeds = append(embeddeds, p.parseType(pkg))
 		} else {
 			method := p.parseFunc(pkg)
-			methods = append(methods, method)
+			if method != nil {
+				methods = append(methods, method)
+			}
 		}
 		p.expect(';')
 	}
@@ -1050,23 +1066,6 @@ func (p *parser) parsePackageInit() PackageInit {
 	return PackageInit{Name: name, InitFunc: initfunc, Priority: priority}
 }
 
-// Throw away tokens until we see a newline or ';'.
-// If we see a '<', attempt to parse as a type.
-func (p *parser) discardDirectiveWhileParsingTypes(pkg *types.Package) {
-	for {
-		switch p.tok {
-		case '\n', ';':
-			return
-		case '<':
-			p.parseType(pkg)
-		case scanner.EOF:
-			p.error("unexpected EOF")
-		default:
-			p.next()
-		}
-	}
-}
-
 // Create the package if we have parsed both the package path and package name.
 func (p *parser) maybeCreatePackage() {
 	if p.pkgname != "" && p.pkgpath != "" {
@@ -1204,7 +1203,9 @@ func (p *parser) parseDirective() {
 	case "var":
 		p.next()
 		v := p.parseVar(p.pkg)
-		p.pkg.Scope().Insert(v)
+		if v != nil {
+			p.pkg.Scope().Insert(v)
+		}
 		p.expectEOL()
 
 	case "const":
