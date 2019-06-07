@@ -860,6 +860,7 @@ aliasing_component_refs_p (tree ref1,
   tree type1, type2;
   tree *refp;
   int same_p1 = 0, same_p2 = 0;
+  bool maybe_match = false;
 
   /* Choose bases and base types to search for.  */
   base1 = ref1;
@@ -890,8 +891,14 @@ aliasing_component_refs_p (tree ref1,
 	  if (cmp == 0)
 	    {
 	      same_p2 = same_type_for_tbaa (TREE_TYPE (*refp), type1);
-	      if (same_p2 != 0)
+	      if (same_p2 == 1)
 		break;
+	      /* In case we can't decide whether types are same try to
+		 continue looking for the exact match.
+		 Remember however that we possibly saw a match
+		 to bypass the access path continuations tests we do later.  */
+	      if (same_p2 == -1)
+		maybe_match = true;
 	    }
 	  if (!handled_component_p (*refp))
 	    break;
@@ -901,6 +908,21 @@ aliasing_component_refs_p (tree ref1,
 	{
 	  poly_int64 offadj, sztmp, msztmp;
 	  bool reverse;
+
+	  /* We assume that arrays can overlap by multiple of their elements
+	     size as tested in gcc.dg/torture/alias-2.c.
+	     This partial overlap happen only when both arrays are bases of
+	     the access and not contained within another component ref.
+	     To be safe we also assume partial overlap for VLAs.  */
+	  if (TREE_CODE (TREE_TYPE (base1)) == ARRAY_TYPE
+	      && (!TYPE_SIZE (TREE_TYPE (base1))
+		  || TREE_CODE (TYPE_SIZE (TREE_TYPE (base1))) != INTEGER_CST
+		  || (*refp == base2 && !ref2_is_decl)))
+	    {
+	      ++alias_stats.aliasing_component_refs_p_may_alias;
+	      return true;
+	    }
+
 	  get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp, &reverse);
 	  offset2 -= offadj;
 	  get_ref_base_and_extent (base1, &offadj, &sztmp, &msztmp, &reverse);
@@ -932,8 +954,10 @@ aliasing_component_refs_p (tree ref1,
 	  if (cmp == 0)
 	    {
 	      same_p1 = same_type_for_tbaa (TREE_TYPE (*refp), type2);
-	      if (same_p1 != 0)
+	      if (same_p1 == 1)
 		break;
+	      if (same_p1 == -1)
+		maybe_match = true;
 	    }
 	  if (!handled_component_p (*refp))
 	    break;
@@ -943,6 +967,15 @@ aliasing_component_refs_p (tree ref1,
 	{
 	  poly_int64 offadj, sztmp, msztmp;
 	  bool reverse;
+
+	  if (TREE_CODE (TREE_TYPE (base2)) == ARRAY_TYPE
+	      && (!TYPE_SIZE (TREE_TYPE (base2))
+		  || TREE_CODE (TYPE_SIZE (TREE_TYPE (base2))) != INTEGER_CST
+		  || (*refp == base1 && !ref2_is_decl)))
+	    {
+	      ++alias_stats.aliasing_component_refs_p_may_alias;
+	      return true;
+	    }
 
 	  get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp, &reverse);
 	  offset1 -= offadj;
@@ -965,7 +998,7 @@ aliasing_component_refs_p (tree ref1,
      paths do not overlap and thus accesses alias only if one path can be
      continuation of another.  If we was not able to decide about equivalence,
      we need to give up.  */
-  if (same_p1 == -1 || same_p2 == -1)
+  if (maybe_match)
     return true;
 
   /* If we have two type access paths B1.path1 and B2.path2 they may
@@ -1350,10 +1383,17 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
      For MEM_REFs we require that the component-ref offset we computed
      is relative to the start of the type which we ensure by
      comparing rvalue and access type and disregarding the constant
-     pointer offset.  */
+     pointer offset.
+
+     But avoid treating variable length arrays as "objects", instead assume they
+     can overlap by an exact multiple of their element size.
+     See gcc.dg/torture/alias-2.c.  */
   if ((TREE_CODE (base1) != TARGET_MEM_REF
        || (!TMR_INDEX (base1) && !TMR_INDEX2 (base1)))
-      && same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (dbase2)) == 1)
+      && same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (dbase2)) == 1
+      && (TREE_CODE (TREE_TYPE (base1)) != ARRAY_TYPE
+	  || (TYPE_SIZE (TREE_TYPE (base1))
+	      && TREE_CODE (TYPE_SIZE (TREE_TYPE (base1))) == INTEGER_CST)))
     return ranges_maybe_overlap_p (doffset1, max_size1, doffset2, max_size2);
 
   if (ref1 && ref2
@@ -1446,22 +1486,6 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       || base2_alias_set == 0)
     return true;
 
-  /* If both references are through the same type, they do not alias
-     if the accesses do not overlap.  This does extra disambiguation
-     for mixed/pointer accesses but requires strict aliasing.  */
-  if ((TREE_CODE (base1) != TARGET_MEM_REF
-       || (!TMR_INDEX (base1) && !TMR_INDEX2 (base1)))
-      && (TREE_CODE (base2) != TARGET_MEM_REF
-	  || (!TMR_INDEX (base2) && !TMR_INDEX2 (base2)))
-      && same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) == 1
-      && same_type_for_tbaa (TREE_TYPE (base2), TREE_TYPE (ptrtype2)) == 1
-      && same_type_for_tbaa (TREE_TYPE (ptrtype1),
-			     TREE_TYPE (ptrtype2)) == 1
-      /* But avoid treating arrays as "objects", instead assume they
-         can overlap by an exact multiple of their element size.  */
-      && TREE_CODE (TREE_TYPE (ptrtype1)) != ARRAY_TYPE)
-    return ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2);
-
   /* Do type-based disambiguation.  */
   if (base1_alias_set != base2_alias_set
       && !alias_sets_conflict_p (base1_alias_set, base2_alias_set))
@@ -1471,6 +1495,21 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   if (same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) != 1
       || same_type_for_tbaa (TREE_TYPE (base2), TREE_TYPE (ptrtype2)) != 1)
     return true;
+
+  /* If both references are through the same type, they do not alias
+     if the accesses do not overlap.  This does extra disambiguation
+     for mixed/pointer accesses but requires strict aliasing.  */
+  if ((TREE_CODE (base1) != TARGET_MEM_REF
+       || (!TMR_INDEX (base1) && !TMR_INDEX2 (base1)))
+      && (TREE_CODE (base2) != TARGET_MEM_REF
+	  || (!TMR_INDEX (base2) && !TMR_INDEX2 (base2)))
+      && same_type_for_tbaa (TREE_TYPE (ptrtype1),
+			     TREE_TYPE (ptrtype2)) == 1
+      /* But avoid treating arrays as "objects", instead assume they
+         can overlap by an exact multiple of their element size.
+         See gcc.dg/torture/alias-2.c.  */
+      && TREE_CODE (TREE_TYPE (ptrtype1)) != ARRAY_TYPE)
+    return ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2);
 
   if (ref1 && ref2
       && nonoverlapping_component_refs_p (ref1, ref2))
