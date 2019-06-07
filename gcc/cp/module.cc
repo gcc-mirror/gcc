@@ -179,7 +179,7 @@ Classes used:
 
 /* Mapper Protocol version.  Very new.  */
 #define MAPPER_VERSION 0
-#define _BSD_SOURCE 1 /* To get TZ field of struct tm, if available.  */
+#define _DEFAULT_SOURCE 1 /* To get TZ field of struct tm, if available.  */
 #include "config.h"
 
 /* Include network stuff first.  Excitingly OSX10.14 uses bcmp here, which
@@ -11345,13 +11345,12 @@ module_state::write_readme (elf_out *to, const char *options,
 	struct tm *time;
 
 	time = gmtime (&now);
-	readme.print_time ("zulu", time, "UTC");
+	readme.print_time ("build", time, "UTC");
+
+#if defined (__USE_MISC) || defined (__USE_BSD) /* Is there a better way?  */
 	time = localtime (&now);
-	const char *tz = "";
-#ifdef __USE_BSD /* Is there a better way?  */
-	tz = time->tm_zone;
+	readme.print_time ("local", time, time->tm_zone);
 #endif
-	readme.print_time ("local", time, tz);
       }
   }
 
@@ -12874,7 +12873,7 @@ module_state::write_locations (elf_out *to, unsigned max_rager,
 	    = linemap_lookup_macro_index (line_table, span.macro.first) + 1;
 	  if (span.macro.second != MAX_LOCATION_T + 1)
 	    count -= linemap_lookup_macro_index (line_table,
-						 span.macro.second - 1);
+						 span.macro.second);
 	  dump (dumper::LOCATION) && dump ("Span:%u %u macro maps", ix, count);
 	  num_maps.second += count;
 	}

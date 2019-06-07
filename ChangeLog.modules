@@ -1,6 +1,10 @@
 2019-06-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* Make-lang.in (REVISION_c): Don't test it.
+	* module.cc (module_state::write_locations): Fix off-by-one thinko.
+
+	gcc/cp/
 	* module.cc (loc_spans::init): Add lmaps parm, separate main from
 	forced header locs.
 	(loc_spans::SPAN_FIRST): New, use it for first span.
