@@ -1,3 +1,9 @@
+2019-06-07  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90574
+	* tree-cfg.c (stmt_starts_bb_p): Split blocks at labels
+	that appear after user labels.
+
 2019-06-07  Martin Liska  <mliska@suse.cz>
 
 	* cselib.c (cselib_init): Disable hash table
