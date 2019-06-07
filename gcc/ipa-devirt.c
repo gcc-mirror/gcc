@@ -284,16 +284,6 @@ struct odr_name_hasher : pointer_hash <odr_type_d>
   static inline void remove (odr_type_d *);
 };
 
-/* Has used to unify ODR types based on their associated virtual table.
-   This hash is needed to keep -fno-lto-odr-type-merging to work and contains
-   only polymorphic types.  Types with mangled names are inserted to both.  */
-
-struct odr_vtable_hasher:odr_name_hasher
-{
-  static inline hashval_t hash (const odr_type_d *);
-  static inline bool equal (const odr_type_d *, const tree_node *);
-};
-
 static bool
 can_be_name_hashed_p (tree t)
 {
@@ -329,51 +319,6 @@ odr_name_hasher::hash (const odr_type_d *odr_type)
   return hash_odr_name (odr_type->type);
 }
 
-static bool
-can_be_vtable_hashed_p (tree t)
-{
-  /* vtable hashing can distinguish only main variants.  */
-  if (TYPE_MAIN_VARIANT (t) != t)
-    return false;
-  /* Anonymous namespace types are always handled by name hash.  */
-  if (type_with_linkage_p (t) && type_in_anonymous_namespace_p (t))
-    return false;
-  return (TREE_CODE (t) == RECORD_TYPE
-	  && TYPE_BINFO (t) && BINFO_VTABLE (TYPE_BINFO (t)));
-}
-
-/* Hash type by assembler name of its vtable.  */
-
-static hashval_t
-hash_odr_vtable (const_tree t)
-{
-  tree v = BINFO_VTABLE (TYPE_BINFO (TYPE_MAIN_VARIANT (t)));
-  inchash::hash hstate;
-
-  gcc_checking_assert (in_lto_p);
-  gcc_checking_assert (!type_in_anonymous_namespace_p (t));
-  gcc_checking_assert (TREE_CODE (t) == RECORD_TYPE
-		       && TYPE_BINFO (t) && BINFO_VTABLE (TYPE_BINFO (t)));
-  gcc_checking_assert (TYPE_MAIN_VARIANT (t) == t);
-
-  if (TREE_CODE (v) == POINTER_PLUS_EXPR)
-    {
-      add_expr (TREE_OPERAND (v, 1), hstate);
-      v = TREE_OPERAND (TREE_OPERAND (v, 0), 0);
-    }
-
-  hstate.add_hwi (IDENTIFIER_HASH_VALUE (DECL_ASSEMBLER_NAME (v)));
-  return hstate.end ();
-}
-
-/* Return the computed hashcode for ODR_TYPE.  */
-
-inline hashval_t
-odr_vtable_hasher::hash (const odr_type_d *odr_type)
-{
-  return hash_odr_vtable (odr_type->type);
-}
-
 /* For languages with One Definition Rule, work out if
    types are the same based on their name.
 
@@ -404,60 +349,6 @@ types_same_for_odr (const_tree type1, const_tree type2)
       || (type_with_linkage_p (type2) && type_in_anonymous_namespace_p (type2)))
     return false;
 
-
-  /* ODR name of the type is set in DECL_ASSEMBLER_NAME of its TYPE_NAME.
-
-     Ideally we should never need types without ODR names here.  It can however
-     happen in two cases:
-
-       1) for builtin types that are not streamed but rebuilt in lto/lto-lang.c
-          Here testing for equivalence is safe, since their MAIN_VARIANTs are
-          unique.
-       2) for units streamed with -fno-lto-odr-type-merging.  Here we can't
-	  establish precise ODR equivalency, but for correctness we care only
-	  about equivalency on complete polymorphic types.  For these we can
-	  compare assembler names of their virtual tables.  */
-  if ((!TYPE_NAME (type1) || !DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (type1)))
-      || (!TYPE_NAME (type2) || !DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (type2))))
-    {
-      /* See if types are obviously different (i.e. different codes
-	 or polymorphic wrt non-polymorphic).  This is not strictly correct
-	 for ODR violating programs, but we can't do better without streaming
-	 ODR names.  */
-      if (TREE_CODE (type1) != TREE_CODE (type2))
-	return false;
-      if (TREE_CODE (type1) == RECORD_TYPE
-	  && (TYPE_BINFO (type1) == NULL_TREE)
-	      != (TYPE_BINFO (type2) == NULL_TREE))
-	return false;
-      if (TREE_CODE (type1) == RECORD_TYPE && TYPE_BINFO (type1)
-	  && (BINFO_VTABLE (TYPE_BINFO (type1)) == NULL_TREE)
-	     != (BINFO_VTABLE (TYPE_BINFO (type2)) == NULL_TREE))
-	return false;
-
-      /* At the moment we have no way to establish ODR equivalence at LTO
-	 other than comparing virtual table pointers of polymorphic types.
-	 Eventually we should start saving mangled names in TYPE_NAME.
-	 Then this condition will become non-trivial.  */
-
-      if (TREE_CODE (type1) == RECORD_TYPE
-	  && TYPE_BINFO (type1) && TYPE_BINFO (type2)
-	  && BINFO_VTABLE (TYPE_BINFO (type1))
-	  && BINFO_VTABLE (TYPE_BINFO (type2)))
-	{
-	  tree v1 = BINFO_VTABLE (TYPE_BINFO (type1));
-	  tree v2 = BINFO_VTABLE (TYPE_BINFO (type2));
-	  gcc_assert (TREE_CODE (v1) == POINTER_PLUS_EXPR
-		      && TREE_CODE (v2) == POINTER_PLUS_EXPR);
-	  return (operand_equal_p (TREE_OPERAND (v1, 1),
-				   TREE_OPERAND (v2, 1), 0)
-		  && DECL_ASSEMBLER_NAME
-			 (TREE_OPERAND (TREE_OPERAND (v1, 0), 0))
-		     == DECL_ASSEMBLER_NAME
-			 (TREE_OPERAND (TREE_OPERAND (v2, 0), 0)));
-	}
-      gcc_unreachable ();
-    }
   return (DECL_ASSEMBLER_NAME (TYPE_NAME (type1))
 	  == DECL_ASSEMBLER_NAME (TYPE_NAME (type2)));
 }
@@ -473,11 +364,7 @@ types_odr_comparable (tree t1, tree t2)
   return (!in_lto_p
 	  || TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2)
 	  || (odr_type_p (TYPE_MAIN_VARIANT (t1))
-	      && odr_type_p (TYPE_MAIN_VARIANT (t2)))
-	  || (TREE_CODE (t1) == RECORD_TYPE && TREE_CODE (t2) == RECORD_TYPE
-	      && TYPE_BINFO (t1) && TYPE_BINFO (t2)
-	      && polymorphic_type_binfo_p (TYPE_BINFO (t1))
-	      && polymorphic_type_binfo_p (TYPE_BINFO (t2))));
+	      && odr_type_p (TYPE_MAIN_VARIANT (t2))));
 }
 
 /* Return true if T1 and T2 are ODR equivalent.  If ODR equivalency is not
@@ -569,31 +456,6 @@ odr_name_hasher::equal (const odr_type_d *o1, const tree_node *t2)
 	  == DECL_ASSEMBLER_NAME (TYPE_NAME (t2)));
 }
 
-/* Compare types T1 and T2 and return true if they are
-   equivalent.  */
-
-inline bool
-odr_vtable_hasher::equal (const odr_type_d *o1, const tree_node *t2)
-{
-  tree t1 = o1->type;
-
-  gcc_checking_assert (TYPE_MAIN_VARIANT (t2) == t2);
-  gcc_checking_assert (TYPE_MAIN_VARIANT (t1) == t1);
-  gcc_checking_assert (in_lto_p);
-  t1 = TYPE_MAIN_VARIANT (t1);
-  t2 = TYPE_MAIN_VARIANT (t2);
-  if (t1 == t2)
-    return true;
-  tree v1 = BINFO_VTABLE (TYPE_BINFO (t1));
-  tree v2 = BINFO_VTABLE (TYPE_BINFO (t2));
-  return (operand_equal_p (TREE_OPERAND (v1, 1),
-			   TREE_OPERAND (v2, 1), 0)
-	  && DECL_ASSEMBLER_NAME
-		 (TREE_OPERAND (TREE_OPERAND (v1, 0), 0))
-	     == DECL_ASSEMBLER_NAME
-		 (TREE_OPERAND (TREE_OPERAND (v2, 0), 0)));
-}
-
 /* Free ODR type V.  */
 
 inline void
@@ -610,8 +472,6 @@ odr_name_hasher::remove (odr_type_d *v)
 
 typedef hash_table<odr_name_hasher> odr_hash_type;
 static odr_hash_type *odr_hash;
-typedef hash_table<odr_vtable_hasher> odr_vtable_hash_type;
-static odr_vtable_hash_type *odr_vtable_hash;
 
 /* ODR types are also stored into ODR_TYPE vector to allow consistent
    walking.  Bases appear before derived types.  Vector is garbage collected
@@ -1750,12 +1610,8 @@ add_type_duplicate (odr_type val, tree type)
 
   val->types_set->add (type);
 
-  /* If we now have a mangled name, be sure to record it to val->type
-     so ODR hash can work.  */
-
-  if (can_be_name_hashed_p (type) && !can_be_name_hashed_p (val->type))
-    SET_DECL_ASSEMBLER_NAME (TYPE_NAME (val->type),
-			     DECL_ASSEMBLER_NAME (TYPE_NAME (type)));
+  gcc_checking_assert (can_be_name_hashed_p (type)
+		       && can_be_name_hashed_p (val->type));
 
   bool merge = true;
   bool base_mismatch = false;
@@ -2034,7 +1890,6 @@ odr_type
 get_odr_type (tree type, bool insert)
 {
   odr_type_d **slot = NULL;
-  odr_type_d **vtable_slot = NULL;
   odr_type val = NULL;
   hashval_t hash;
   bool build_bases = false;
@@ -2045,68 +1900,23 @@ get_odr_type (tree type, bool insert)
   if (!in_lto_p && !TYPE_STRUCTURAL_EQUALITY_P (type))
     type = TYPE_CANONICAL (type);
 
-  gcc_checking_assert (can_be_name_hashed_p (type)
-		       || can_be_vtable_hashed_p (type));
+  gcc_checking_assert (can_be_name_hashed_p (type));
 
-  /* Lookup entry, first try name hash, fallback to vtable hash.  */
-  if (can_be_name_hashed_p (type))
-    {
-      hash = hash_odr_name (type);
-      slot = odr_hash->find_slot_with_hash (type, hash,
-					    insert ? INSERT : NO_INSERT);
-    }
-  if ((!slot || !*slot) && in_lto_p && can_be_vtable_hashed_p (type))
-    {
-      hash = hash_odr_vtable (type);
-      if (!odr_vtable_hash)
-        odr_vtable_hash = new odr_vtable_hash_type (23);
-      vtable_slot = odr_vtable_hash->find_slot_with_hash (type, hash,
-					           insert ? INSERT : NO_INSERT);
-    }
+  hash = hash_odr_name (type);
+  slot = odr_hash->find_slot_with_hash (type, hash,
+					insert ? INSERT : NO_INSERT);
 
-  if (!slot && !vtable_slot)
+  if (!slot)
     return NULL;
 
   /* See if we already have entry for type.  */
-  if ((slot && *slot) || (vtable_slot && *vtable_slot))
+  if (*slot)
     {
-      if (slot && *slot)
-	{
-	  val = *slot;
-	  if (flag_checking
-	      && in_lto_p && can_be_vtable_hashed_p (type))
-	    {
-	      hash = hash_odr_vtable (type);
-	      vtable_slot = odr_vtable_hash->find_slot_with_hash (type, hash,
-						                  NO_INSERT);
-	      gcc_assert (!vtable_slot || *vtable_slot == *slot);
-	      vtable_slot = NULL;
-	    }
-	}
-      else if (*vtable_slot)
-	val = *vtable_slot;
+      val = *slot;
 
       if (val->type != type && insert
 	  && (!val->types_set || !val->types_set->add (type)))
-	{
-	  /* We have type duplicate, but it may introduce vtable name or
- 	     mangled name; be sure to keep hashes in sync.  */
-	  if (in_lto_p && can_be_vtable_hashed_p (type)
-	      && (!vtable_slot || !*vtable_slot))
-	    {
-	      if (!vtable_slot)
-		{
-		  hash = hash_odr_vtable (type);
-		  vtable_slot = odr_vtable_hash->find_slot_with_hash
-			     (type, hash, INSERT);
-		  gcc_checking_assert (!*vtable_slot || *vtable_slot == val);
-		}
-	      *vtable_slot = val;
-	    }
-	  if (slot && !*slot)
-	    *slot = val;
-	  build_bases = add_type_duplicate (val, type);
-	}
+	build_bases = add_type_duplicate (val, type);
     }
   else
     {
@@ -2120,10 +1930,7 @@ get_odr_type (tree type, bool insert)
 	val->anonymous_namespace = 0;
       build_bases = COMPLETE_TYPE_P (val->type);
       insert_to_odr_array = true;
-      if (slot)
-        *slot = val;
-      if (vtable_slot)
-	*vtable_slot = val;
+      *slot = val;
     }
 
   if (build_bases && TREE_CODE (type) == RECORD_TYPE && TYPE_BINFO (type)
@@ -2196,11 +2003,7 @@ void
 register_odr_type (tree type)
 {
   if (!odr_hash)
-    {
-      odr_hash = new odr_hash_type (23);
-      if (in_lto_p)
-        odr_vtable_hash = new odr_vtable_hash_type (23);
-    }
+    odr_hash = new odr_hash_type (23);
   if (type == TYPE_MAIN_VARIANT (type))
     {
       /* To get ODR warings right, first register all sub-types.  */
@@ -2258,9 +2061,6 @@ dump_odr_type (FILE *f, odr_type t, int indent=0)
   fprintf (f, "%s\n", t->all_derivations_known ? " (derivations known)":"");
   if (TYPE_NAME (t->type))
     {
-      /*fprintf (f, "%*s defined at: %s:%i\n", indent * 2, "",
-	       DECL_SOURCE_FILE (TYPE_NAME (t->type)),
-	       DECL_SOURCE_LINE (TYPE_NAME (t->type)));*/
       if (DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t->type)))
         fprintf (f, "%*s mangled name: %s\n", indent * 2, "",
 		 IDENTIFIER_POINTER
@@ -2400,8 +2200,6 @@ build_type_inheritance_graph (void)
   timevar_push (TV_IPA_INHERITANCE);
   inheritance_dump_file = dump_begin (TDI_inheritance, &flags);
   odr_hash = new odr_hash_type (23);
-  if (in_lto_p)
-    odr_vtable_hash = new odr_vtable_hash_type (23);
 
   /* We reconstruct the graph starting of types of all methods seen in the
      unit.  */
@@ -2892,10 +2690,7 @@ rebuild_type_inheritance_graph ()
   if (!odr_hash)
     return;
   delete odr_hash;
-  if (in_lto_p)
-    delete odr_vtable_hash;
   odr_hash = NULL;
-  odr_vtable_hash = NULL;
   odr_types_ptr = NULL;
   free_polymorphic_call_targets_hash ();
 }
