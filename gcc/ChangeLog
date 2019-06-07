@@ -1,3 +1,7 @@
+2019-06-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* doc/invoke.texi (AMD GCN Options): Add gfx906.
+
 2019-06-07  Richard Biener  <rguenther@suse.de>
 
 	PR debug/90574
