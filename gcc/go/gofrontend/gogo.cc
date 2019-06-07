@@ -6941,7 +6941,12 @@ Block::import_block(Block* set, Import_function_body *ifb, Location loc)
 
       if (at_end)
 	{
-	  off = nl + 1;
+	  // An if statement can have an "else" following the "}", in
+	  // which case we want to leave the offset where it is, just
+	  // after the "}".  We don't get the block ending location
+	  // quite right for if statements.
+	  if (body.compare(off, 6, " else ") != 0)
+	    off = nl + 1;
 	  break;
 	}
 
