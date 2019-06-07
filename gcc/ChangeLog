@@ -4,6 +4,15 @@
 	2019-05-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/82920
+	* config/i386/darwin.h (CC1_SPEC): Report -mx32 as an error for
+	Darwin.
+
+2019-06-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/82920
 	* config/i386/i386.c (ix86_output_jmp_thunk_or_indirect): New.
 	(ix86_output_indirect_branch_via_reg): Use output mechanism
 	accounting for __USER_LABEL_PREFIX__.
