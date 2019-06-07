@@ -1,5 +1,26 @@
 2019-06-07  Martin Liska  <mliska@suse.cz>
 
+	* doc/invoke.texi: Remove param.
+	* gcov-counter.def (GCOV_COUNTER_ICALL_TOPNV):
+	Remove.
+	* gcov-io.h (GCOV_ICALL_TOPN_VAL): Likewise.
+	(GCOV_ICALL_TOPN_NCOUNTS): Likewise.
+	* params.def (PARAM_INDIR_CALL_TOPN_PROFILE): Likewise.
+	* profile.c (instrument_values): Remove
+	HIST_TYPE_INDIR_CALL_TOPN.
+	* tree-profile.c (init_ic_make_global_vars):
+	Always build __gcov_indirect_call only.
+	(gimple_init_gcov_profiler): Remove usage
+	of PARAM_INDIR_CALL_TOPN_PROFILE.
+	(gimple_gen_ic_profiler): Likewise.
+	* value-prof.c (dump_histogram_value): Likewise.
+	(stream_in_histogram_value): Likewise.
+	(gimple_indirect_call_to_profile): Likewise.
+	(gimple_find_values_to_profile): Likewise.
+	* value-prof.h (enum hist_type): Likewise.
+
+2019-06-07  Martin Liska  <mliska@suse.cz>
+
 	* tree-ssa-loop.c (get_lsm_tmp_name): Return at the end of the
 	function.
 
