@@ -1,3 +1,10 @@
+2019-06-07  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_constant_expression): Call
+	STRIP_ANY_LOCATION_WRAPPER early.
+	[CONVERT_EXPR]: Don't build anything for conversion to void.
+	[ADDR_EXPR]: ggc_free unused ADDR_EXPR.
+
 2019-06-05  Martin Sebor  <msebor@redhat.com>
 
 	PR c/90737
