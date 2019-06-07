@@ -187,19 +187,14 @@ type_with_linkage_p (const_tree t)
   if (!TYPE_NAME (t) || TREE_CODE (TYPE_NAME (t)) != TYPE_DECL)
     return false;
 
-  /* To support -fno-lto-odr-type-merigng recognize types with vtables
-     to have linkage.  */
-  if (RECORD_OR_UNION_TYPE_P (t)
-      && TYPE_BINFO (t) && BINFO_VTABLE (TYPE_BINFO (t)))
-    return true;
-
-  /* After free_lang_data was run and -flto-odr-type-merging we can recongize
+  /* After free_lang_data was run we can recongize
      types with linkage by presence of mangled name.  */
   if (DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t)))
     return true;
 
   if (in_lto_p)
     return false;
+
   /* We used to check for TYPE_STUB_DECL but that is set to NULL for forward
      declarations.  */
 
@@ -243,23 +238,8 @@ odr_type_p (const_tree t)
   /* We do not have this information when not in LTO, but we do not need
      to care, since it is used only for type merging.  */
   gcc_checking_assert (in_lto_p || flag_lto);
-
-  if (!type_with_linkage_p (t))
-    return false;
-
-  /* To support -fno-lto-odr-type-merging consider types with vtables ODR.  */
-  if (type_in_anonymous_namespace_p (t))
-    return true;
-
-  if (TYPE_NAME (t) && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t)))
-    {
-      /* C++ FE uses magic <anon> as assembler names of anonymous types.
- 	 verify that this match with type_in_anonymous_namespace_p.  */
-      gcc_checking_assert (strcmp ("<anon>",
-				   IDENTIFIER_POINTER
-				   (DECL_ASSEMBLER_NAME (TYPE_NAME (t)))));
-      return true;
-    }
+  return TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
+         && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t));
   return false;
 }
 

@@ -1,5 +1,27 @@
 2019-06-07  Jan Hubicka  <hubicka@ucw.cz>
 
+	* common.opt (flto-odr-type-merging): Ignore.
+	* invoke.texi (-flto-odr-type-merging): Remove.
+	* ipa-devirt.c (odr_vtable_hasher:odr_name_hasher): Remove.
+	(can_be_vtable_hashed_p): Remove.
+	(hash_odr_vtable): Remove.
+	(odr_vtable_hasher::hash): Remove.
+	(types_same_for_odr): Remove.
+	(types_odr_comparable): Remove.
+	(odr_vtable_hasher::equal): Remove.
+	(odr_vtable_hash_type, odr_vtable_hash): Remove.	
+	(add_type_duplicate): Do not synchronize vtable and name hashtables.
+	(get_odr_type): Do not use vtable hash.
+	(dump_odr_type): Remove commented out code.
+	(build_type_inheritance_graph): Do not allocate vtable hash.
+	(rebuild_type_inheritance_graph): Do not delete vtable hash.
+	* ipa-utils.h (type_with_linkage_p): Drop vtable hash path.
+	(odr_type_p): Likewise.
+	* tree.c (need_assembler_name_p): Remove flag_lto_odr_type_mering
+	test.
+
+2019-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-ssa-alias.c (aliasing_component_refs_p): Do not give up
 	immediately after same_types_for_tbaa_p returns -1 and continue
 	looking for possible exact match; if matching types are arrays
