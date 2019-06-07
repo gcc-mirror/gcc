@@ -1,3 +1,17 @@
+2019-06-07  Martin Liska  <mliska@suse.cz>
+
+	* cselib.c (cselib_init): Disable hash table
+	sanitization.
+	* hash-set.h: Pass new default argument to m_table.
+	* hash-table.c: Add global variable with hash table
+	sanitization limit.
+	* hash-table.h (Allocator>::hash_table): Add new argument
+	to ctor.
+	(hashtab_chk_error): New.
+	* params.def (PARAM_HASH_TABLE_VERIFICATION_LIMIT): New.
+	* toplev.c (process_options): Set hash_table_sanitize_eq_limit
+	from the PARAM_HASH_TABLE_VERIFICATION_LIMIT value.
+
 2019-06-07  Jan Hubicka  <hubicka@ucw.cz>
 
 	* common.opt (flto-odr-type-merging): Ignore.
