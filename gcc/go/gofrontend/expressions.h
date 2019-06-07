@@ -237,7 +237,7 @@ class Expression
 
   // Make an expression that evaluates to some characteristic of an string.
   // For simplicity, the enum values must match the field indexes in the
-  // underlying struct.
+  // underlying struct.  This returns an lvalue.
   enum String_info
     {
       // The underlying data in the string.
@@ -448,7 +448,7 @@ class Expression
 
   // Make an expression that evaluates to some characteristic of a
   // slice.  For simplicity, the enum values must match the field indexes
-  // in the underlying struct.
+  // in the underlying struct.  This returns an lvalue.
   enum Slice_info
     {
       // The underlying data of the slice.
@@ -469,7 +469,7 @@ class Expression
 
   // Make an expression that evaluates to some characteristic of an
   // interface.  For simplicity, the enum values must match the field indexes
-  // in the underlying struct.
+  // in the underlying struct.  This returns an lvalue.
   enum Interface_info
     {
       // The type descriptor of an empty interface.
