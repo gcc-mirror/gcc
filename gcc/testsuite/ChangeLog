@@ -1,3 +1,7 @@
+2019-06-07  John David Anglin  <danglin@gcc.gnu.org>
+
+	* lib/scanasm.exp (dg-function-on-line): Add pattern for hppa*-*-linux*.
+
 2019-06-06  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
