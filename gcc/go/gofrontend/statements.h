@@ -1521,6 +1521,14 @@ class If_statement : public Statement
   condition() const
   { return this->cond_; }
 
+  Block*
+  then_block() const
+  { return this->then_block_; }
+
+  Block*
+  else_block() const
+  { return this->else_block_; }
+
  protected:
   int
   do_traverse(Traverse*);

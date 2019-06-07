@@ -581,6 +581,12 @@ class Expression
   string_constant_value(std::string* val) const
   { return this->do_string_constant_value(val); }
 
+  // If this is not a constant expression with boolean type, return
+  // false.  If it is one, return true, and set VAL to the value.
+  bool
+  boolean_constant_value(bool* val) const
+  { return this->do_boolean_constant_value(val); }
+
   // This is called if the value of this expression is being
   // discarded.  This issues warnings about computed values being
   // unused.  This returns true if all is well, false if it issued an
@@ -1123,6 +1129,12 @@ class Expression
   // set VAL to the value.
   virtual bool
   do_string_constant_value(std::string*) const
+  { return false; }
+
+  // Return whether this is a constant expression of boolean type, and
+  // set VAL to the value.
+  virtual bool
+  do_boolean_constant_value(bool*) const
   { return false; }
 
   // Called by the parser if the value is being discarded.
@@ -1771,6 +1783,9 @@ class Type_conversion_expression : public Expression
   bool
   do_string_constant_value(std::string*) const;
 
+  bool
+  do_boolean_constant_value(bool*) const;
+
   Type*
   do_type()
   { return this->type_; }
@@ -1965,6 +1980,9 @@ class Unary_expression : public Expression
   bool
   do_numeric_constant_value(Numeric_constant*) const;
 
+  bool
+  do_boolean_constant_value(bool*) const;
+
   Type*
   do_type();
 
@@ -2118,6 +2136,9 @@ class Binary_expression : public Expression
 
   bool
   do_numeric_constant_value(Numeric_constant*) const;
+
+  bool
+  do_boolean_constant_value(bool*) const;
 
   bool
   do_discarding_value();
