@@ -142,6 +142,9 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   if (only_check_syntax)
     return;
 
+  // Do simple deadcode elimination.
+  ::gogo->remove_deadcode();
+
   // Make implicit type conversions explicit.
   ::gogo->add_conversions();
 

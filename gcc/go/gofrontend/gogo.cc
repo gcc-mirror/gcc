@@ -3196,6 +3196,80 @@ Gogo::add_conversions_in_block(Block *b)
   b->traverse(&add_conversions);
 }
 
+// Traversal class for simple deadcode elimination.
+
+class Remove_deadcode : public Traverse
+{
+ public:
+  Remove_deadcode()
+    : Traverse(traverse_statements
+               | traverse_expressions)
+  { }
+
+  int
+  statement(Block*, size_t* pindex, Statement*);
+
+  int
+  expression(Expression**);
+};
+
+// Remove deadcode in a statement.
+
+int
+Remove_deadcode::statement(Block* block, size_t* pindex, Statement* sorig)
+{
+  Location loc = sorig->location();
+  If_statement* ifs = sorig->if_statement();
+  if (ifs != NULL)
+    {
+      // Remove the dead branch of an if statement.
+      bool bval;
+      if (ifs->condition()->boolean_constant_value(&bval))
+        {
+          Statement* s;
+          if (bval)
+            s = Statement::make_block_statement(ifs->then_block(),
+                                                loc);
+          else
+            if (ifs->else_block() != NULL)
+              s = Statement::make_block_statement(ifs->else_block(),
+                                                  loc);
+            else
+              // Make a dummy statement.
+              s = Statement::make_statement(Expression::make_boolean(false, loc),
+                                            true);
+
+          block->replace_statement(*pindex, s);
+        }
+    }
+  return TRAVERSE_CONTINUE;
+}
+
+// Remove deadcode in an expression.
+
+int
+Remove_deadcode::expression(Expression** pexpr)
+{
+  // Discard the right arm of a shortcut expression of constant value.
+  Binary_expression* be = (*pexpr)->binary_expression();
+  bool bval;
+  if (be != NULL
+      && be->boolean_constant_value(&bval)
+      && (be->op() == OPERATOR_ANDAND
+          || be->op() == OPERATOR_OROR))
+    *pexpr = Expression::make_boolean(bval, be->location());
+  return TRAVERSE_CONTINUE;
+}
+
+// Remove deadcode.
+
+void
+Gogo::remove_deadcode()
+{
+  Remove_deadcode remove_deadcode;
+  this->traverse(&remove_deadcode);
+}
+
 // Traverse the tree to create function descriptors as needed.
 
 class Create_function_descriptors : public Traverse

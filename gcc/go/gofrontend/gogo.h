@@ -688,6 +688,10 @@ class Gogo
   void
   check_return_statements();
 
+  // Remove deadcode.
+  void
+  remove_deadcode();
+
   // Make implicit type conversions explicit.
   void
   add_conversions();

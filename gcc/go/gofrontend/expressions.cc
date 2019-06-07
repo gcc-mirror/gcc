@@ -1764,6 +1764,13 @@ class Boolean_expression : public Expression
   { return this->val_ == false; }
 
   bool
+  do_boolean_constant_value(bool* val) const
+  {
+    *val = this->val_;
+    return true;
+  }
+
+  bool
   do_is_static_initializer() const
   { return true; }
 
@@ -3132,6 +3139,9 @@ class Const_expression : public Expression
   bool
   do_string_constant_value(std::string* val) const;
 
+  bool
+  do_boolean_constant_value(bool* val) const;
+
   Type*
   do_type();
 
@@ -3245,6 +3255,21 @@ Const_expression::do_string_constant_value(std::string* val) const
 
   this->seen_ = true;
   bool ok = e->string_constant_value(val);
+  this->seen_ = false;
+
+  return ok;
+}
+
+bool
+Const_expression::do_boolean_constant_value(bool* val) const
+{
+  if (this->seen_)
+    return false;
+
+  Expression* e = this->constant_->const_value()->expr();
+
+  this->seen_ = true;
+  bool ok = e->boolean_constant_value(val);
   this->seen_ = false;
 
   return ok;
@@ -3839,6 +3864,16 @@ Type_conversion_expression::do_string_constant_value(std::string* val) const
   // FIXME: Could handle conversion from const []int here.
 
   return false;
+}
+
+// Return the constant boolean value if there is one.
+
+bool
+Type_conversion_expression::do_boolean_constant_value(bool* val) const
+{
+  if (!this->type_->is_boolean_type())
+    return false;
+  return this->expr_->boolean_constant_value(val);
 }
 
 // Determine the resulting type of the conversion.
@@ -4708,6 +4743,20 @@ Unary_expression::do_numeric_constant_value(Numeric_constant* nc) const
   bool issued_error;
   return Unary_expression::eval_constant(this->op_, &unc, this->location(),
 					 nc, &issued_error);
+}
+
+// Return the boolean constant value of a unary expression, if it has one.
+
+bool
+Unary_expression::do_boolean_constant_value(bool* val) const
+{
+  if (this->op_ == OPERATOR_NOT
+      && this->expr_->boolean_constant_value(val))
+    {
+      *val = !*val;
+      return true;
+    }
+  return false;
 }
 
 // Return the type of a unary expression.
@@ -6185,6 +6234,86 @@ Binary_expression::do_numeric_constant_value(Numeric_constant* nc) const
   bool issued_error;
   return Binary_expression::eval_constant(this->op_, &left_nc, &right_nc,
 					  this->location(), nc, &issued_error);
+}
+
+// Return the boolean constant value, if it has one.
+
+bool
+Binary_expression::do_boolean_constant_value(bool* val) const
+{
+  bool is_comparison = false;
+  switch (this->op_)
+    {
+    case OPERATOR_EQEQ:
+    case OPERATOR_NOTEQ:
+    case OPERATOR_LT:
+    case OPERATOR_LE:
+    case OPERATOR_GT:
+    case OPERATOR_GE:
+      is_comparison = true;
+      break;
+    case OPERATOR_ANDAND:
+    case OPERATOR_OROR:
+      break;
+    default:
+      return false;
+    }
+
+  Numeric_constant left_nc, right_nc;
+  if (is_comparison
+      && this->left_->numeric_constant_value(&left_nc)
+      && this->right_->numeric_constant_value(&right_nc))
+    return Binary_expression::compare_constant(this->op_, &left_nc,
+                                               &right_nc,
+                                               this->location(),
+                                               val);
+
+  std::string left_str, right_str;
+  if (is_comparison
+      && this->left_->string_constant_value(&left_str)
+      && this->right_->string_constant_value(&right_str))
+    {
+      *val = Binary_expression::cmp_to_bool(this->op_,
+                                            left_str.compare(right_str));
+      return true;
+    }
+
+  bool left_bval;
+  if (this->left_->boolean_constant_value(&left_bval))
+    {
+      if (this->op_ == OPERATOR_ANDAND && !left_bval)
+        {
+          *val = false;
+          return true;
+        }
+      else if (this->op_ == OPERATOR_OROR && left_bval)
+        {
+          *val = true;
+          return true;
+        }
+
+      bool right_bval;
+      if (this->right_->boolean_constant_value(&right_bval))
+        {
+          switch (this->op_)
+            {
+            case OPERATOR_EQEQ:
+              *val = (left_bval == right_bval);
+              return true;
+            case OPERATOR_NOTEQ:
+              *val = (left_bval != right_bval);
+              return true;
+            case OPERATOR_ANDAND:
+            case OPERATOR_OROR:
+              *val = right_bval;
+              return true;
+            default:
+              go_unreachable();
+            }
+        }
+    }
+
+  return false;
 }
 
 // Note that the value is being discarded.
