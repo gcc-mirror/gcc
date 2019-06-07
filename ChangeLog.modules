@@ -1,6 +1,10 @@
 2019-06-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::write_env): New.
+	(module_state::write): Call it.
+
+	gcc/cp/
 	* Make-lang.in (REVISION_c): Don't test it.
 	* module.cc (module_state::write_locations): Fix off-by-one thinko.
 
