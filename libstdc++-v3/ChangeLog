@@ -1,3 +1,150 @@
+2019-06-07  Thomas Rodgers  <trodgers@redhat.com>
+
+	Rename PSTL macro's consistent with libstdc++ (and llvm upstream
+	project) standards.
+	* include/bits/c++config: Rename all macros of the form __PSTL* to
+	_PSTL*.
+	* include/std/algorithm: Likewise.
+	* include/std/execution: Likewise.
+	* include/std/numeric: Likewise.
+	* include/std/memory: Likewise.
+	* include/pstl/glue_memory_impl.h: Likewise.
+	* include/pstl/numeric_impl.h: Likewise.
+	* include/pstl/glue_memory_defs.h: Likewise.
+	* include/pstl/execution_defs.h: Likewise.
+	* include/pstl/utils.h: Likewise.
+	* include/pstl/algorithm_fwd.h: Likewise.
+	* include/pstl/unseq_backend_simd.h: Likewise.
+	* include/pstl/glue_execution_defs.h: Likewise.
+	* include/pstl/algorithm_impl.h: Likewise.
+	* include/pstl/parallel_impl.h: Likewise.
+	* include/pstl/memory_impl.h: Likewise.
+	* include/pstl/glue_numeric_defs.h: Likewise.
+	* include/pstl/parallel_backend_utils.h: Likewise.
+	* include/pstl/glue_algorithm_defs.h: Likewise.
+	* include/pstl/parallel_backend.h: Likewise.
+	* include/pstl/glue_numeric_impl.h: Likewise.
+	* include/pstl/parallel_backend_tbb.h: Likewise.
+	* include/pstl/numeric_fwd.h: Likewise.
+	* include/pstl/glue_algorithm_impl.h: Likewise.
+	* include/pstl/execution_impl.h: Likewise.
+	* include/pstl/pstl_config.h: Likewise.
+	* testsuite/util/pstl/pstl_test_config.h: Likewise.
+	* testsuite/util/pstl/test_utils.h: Likewise.
+	* testsuite/20_util/specialized_algorithms/pstl/uninitialized_construct.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/pstl/uninitialized_copy_move.cc:
+	Likewise.
+	* testsuite/26_numerics/pstl/numeric_ops/adjacent_difference.cc:
+	Likewise.
+	* testsuite/26_numerics/pstl/numeric_ops/scan.cc: Likewise.
+	* testsuite/26_numerics/pstl/numeric_ops/transform_scan.cc: Likewise.
+	* testsuite/26_numerics/pstl/numeric_ops/reduce.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/reverse.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/nth_element.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_end.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_if.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/none_of.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/count.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/reverse_copy.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/equal.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/search_n.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/all_of.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_first_of.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/is_heap.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/partial_sort.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/partial_sort_copy.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/lexicographical_compare.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_merge/inplace_merge.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_merge/merge.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/unique_copy_equal.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/replace_copy.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/is_partitioned.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/rotate_copy.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/remove.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/copy_if.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/partition_copy.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/partition.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/copy_move.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/unique.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/rotate.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/any_of.cc: Likewise.
+
+	Rename header guards to be consistent with upstream project's
+	conventions.
+	* include/pstl/glue_memory_impl.h: Rename all macros of the form
+	_PSTL_(.*)_H to _PSTL_\U\1_H.
+	* include/pstl/numeric_impl.h: Likewise.
+	* include/pstl/glue_memory_defs.h: Likewise.
+	* include/pstl/execution_defs.h: Likewise.
+	* include/pstl/utils.h: Likewise.
+	* include/pstl/algorithm_fwd.h: Likewise.
+	* include/pstl/unseq_backend_simd.h: Likewise.
+	* include/pstl/glue_execution_defs.h: Likewise.
+	* include/pstl/algorithm_impl.h: Likewise.
+	* include/pstl/parallel_impl.h: Likewise.
+	* include/pstl/memory_impl.h: Likewise.
+	* include/pstl/glue_numeric_defs.h: Likewise.
+	* include/pstl/parallel_backend_utils.h: Likewise.
+	* include/pstl/glue_algorithm_defs.h: Likewise.
+	* include/pstl/parallel_backend.h: Likewise.
+	* include/pstl/glue_numeric_impl.h: Likewise.
+	* include/pstl/parallel_backend_tbb.h: Likewise.
+	* include/pstl/numeric_fwd.h: Likewise.
+	* include/pstl/glue_algorithm_impl.h: Likewise.
+	* include/pstl/execution_impl.h: Likewise.
+	* include/pstl/pstl_config.h: Likewise.
+	* testsuite/util/pstl/pstl_test_config.h: Likewise.
+
+	Synchronize libstdc++ parallel algorithms with upstream
+	project.
+	* include/pstl/algorithm_fwd.h: Synchronize with
+	upstream PSTL project.
+	* include/pstl/algorithm_impl.h: Likewise.
+	* include/pstl/execution_defs.h: Likewise.
+	* include/pstl/execution_impl.h: Likewise.
+	* include/pstl/glue_algorithm_impl.h: Likewise.
+	* include/pstl/glue_execution_defs.h: Likewise.
+	* include/pstl/numeric_fwd.h: Likewise.
+	* include/pstl/numeric_impl.h: Likewise.
+	* include/pstl/parallel_backend.h: Likewise.
+	* include/pstl/pstl_config.h: Likewise.
+	* include/pstl/unseq_backend_simd.h: Likewise.
+	* include/pstl/parallel_backend_serial.h: New file.
+	* include/Makefile.am (pstl_headers): Add
+	parallel_backend_serial.h.
+	* include/Makefile.in: Regenerate.
+
+	Clean up non-conforming names
+	* include/pstl/algorithm_impl.h (__parallel_set_union_op):
+	Uglfiy copy_range1 and copy_range2
+	(__pattern_walk2_n): Rename local n to __n
+	* include/pstl/parallel_backend_tbb.h (struct __binary_no_op):
+	Rename parameter _T to _Tp.
+
+	Integrate non-TBB serial backend support
+	* include/bits/c++config: Adjust TBB detection logic to select serial
+	PSTL backend if no TBB present.
+	* testsuite/utils/pstl/test_utils.h: Remove check for
+	_PSTL_USE_PAR_POLICIES
+	
 2019-06-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/24_iterators/container_access.cc: Move dg-options before
