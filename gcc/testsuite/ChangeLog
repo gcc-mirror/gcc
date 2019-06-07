@@ -1,3 +1,11 @@
+2019-06-07  Mark Eggleston <mark.eggleston@codethink.com>
+
+	PR fortran/89100
+	* gfortran.dg/fmt_f_default_field_width_3.f90: Modify dg-error
+	to allow use when kind=16 is not supported.
+	* gfortran.dg/fmt_g_default_field_width_3.f90: Modify dg-error
+	to allow use when kind=16 is not supported. 
+
 2019-06-07  Richard Biener  <rguenther@suse.de>
 
 	PR debug/90574
