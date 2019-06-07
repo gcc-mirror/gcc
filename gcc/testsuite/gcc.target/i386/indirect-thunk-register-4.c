@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mindirect-branch=keep -fno-pic" } */
+/* { dg-options "-O2 -mindirect-branch=keep " } */
+/* { dg-additional-options "-fno-pic" { target { ! *-*-darwin* } } } */
 
 extern void (*func_p) (void);
 

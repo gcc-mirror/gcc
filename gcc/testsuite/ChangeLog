@@ -1,3 +1,58 @@
+2019-06-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-12  Iain Sandoe  <iain@sandoe.co.uk>
+	    Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	PR target/82920
+	* gcc.target/i386/indirect-thunk-1.c: Adjust scan-asms for Darwin,
+	do not use -fno-pic on Darwin.
+	* gcc.target/i386/indirect-thunk-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-7.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-7.c: Likewise.
+	* gcc.target/i386/indirect-thunk-attr-8.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-7.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-4.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-7.c: Likewise.
+	* gcc.target/i386/indirect-thunk-register-1.c: Likewise.
+	* gcc.target/i386/indirect-thunk-register-2.c: Likewise.
+	* gcc.target/i386/indirect-thunk-register-3.c: Likewise.
+	* gcc.target/i386/indirect-thunk-register-4.c: Likewise.
+	* gcc.target/i386/ret-thunk-1.c: Likewise.
+	* gcc.target/i386/ret-thunk-10.c: Likewise.
+	* gcc.target/i386/ret-thunk-11.c: Likewise.
+	* gcc.target/i386/ret-thunk-12.c: Likewise.
+	* gcc.target/i386/ret-thunk-13.c: Likewise.
+	* gcc.target/i386/ret-thunk-14.c: Likewise.
+	* gcc.target/i386/ret-thunk-15.c: Likewise.
+	* gcc.target/i386/ret-thunk-16.c: Likewise.
+	* gcc.target/i386/ret-thunk-2.c: Likewise.
+	* gcc.target/i386/ret-thunk-22.c: Likewise.
+	* gcc.target/i386/ret-thunk-23.c: Likewise.
+	* gcc.target/i386/ret-thunk-24.c: Likewise.
+	* gcc.target/i386/ret-thunk-3.c: Likewise.
+	* gcc.target/i386/ret-thunk-4.c: Likewise.
+	* gcc.target/i386/ret-thunk-5.c: Likewise.
+	* gcc.target/i386/ret-thunk-6.c: Likewise.
+	* gcc.target/i386/ret-thunk-7.c: Likewise.
+	* gcc.target/i386/ret-thunk-8.c: Likewise.
+	* gcc.target/i386/ret-thunk-9.c: Likewise.
+
 2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt79.ad[sb]: New test.

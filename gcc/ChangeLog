@@ -1,3 +1,16 @@
+2019-06-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/82920
+	* config/i386/i386.c (ix86_output_jmp_thunk_or_indirect): New.
+	(ix86_output_indirect_branch_via_reg): Use output mechanism
+	accounting for __USER_LABEL_PREFIX__.
+	(ix86_output_indirect_branch_via_push): Likewise.
+	(ix86_output_function_return): Likewise.
+	(ix86_output_indirect_function_return): Likewise.
+
 2019-05-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-predcom.c (is_inv_store_elimination_chain): Fix a typo - lenght
