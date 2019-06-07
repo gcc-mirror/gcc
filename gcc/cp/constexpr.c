@@ -4382,9 +4382,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 			      bool *non_constant_p, bool *overflow_p,
 			      tree *jump_target /* = NULL */)
 {
-  constexpr_ctx new_ctx;
-  tree r = t;
-
   if (jump_target && *jump_target)
     {
       /* If we are jumping, ignore all statements/expressions except those
@@ -4415,6 +4412,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       *non_constant_p = true;
       return t;
     }
+
+  STRIP_ANY_LOCATION_WRAPPER (t);
+
   if (CONSTANT_CLASS_P (t))
     {
       if (TREE_OVERFLOW (t))
@@ -4439,8 +4439,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     }
 
   /* Avoid excessively long constexpr evaluations.  */
-  if (!location_wrapper_p (t)
-      && ++*ctx->constexpr_ops_count >= constexpr_ops_limit)
+  if (++*ctx->constexpr_ops_count >= constexpr_ops_limit)
     {
       if (!ctx->quiet)
 	error_at (cp_expr_loc_or_loc (t, input_location),
@@ -4451,6 +4450,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       *non_constant_p = true;
       return t;
     }
+
+  constexpr_ctx new_ctx;
+  tree r = t;
 
   tree_code tcode = TREE_CODE (t);
   switch (tcode)
@@ -4752,7 +4754,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	/* This function does more aggressive folding than fold itself.  */
 	r = build_fold_addr_expr_with_type (op, TREE_TYPE (t));
 	if (TREE_CODE (r) == ADDR_EXPR && TREE_OPERAND (r, 0) == oldop)
-	  return t;
+	  {
+	    ggc_free (r);
+	    return t;
+	  }
 	break;
       }
 
@@ -5065,6 +5070,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  r = op;
 	else if (tcode == UNARY_PLUS_EXPR)
 	  r = fold_convert (TREE_TYPE (t), op);
+	else if (VOID_TYPE_P (type))
+	  r = void_node;
 	else
 	  r = fold_build1 (tcode, type, op);
 
