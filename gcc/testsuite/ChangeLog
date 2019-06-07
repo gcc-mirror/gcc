@@ -1,3 +1,19 @@
+2019-06-07  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/78902
+	* c-c++-common/asan/alloca_loop_unpoisoning.c: Use result
+	of __builtin_alloca.
+	* c-c++-common/asan/pr88619.c: Likewise.
+	* g++.dg/overload/using2.C: Likewise for malloc.
+	* gcc.dg/attr-alloc_size-5.c: Add new dg-warning.
+	* gcc.dg/nonnull-3.c: Use result of __builtin_strdup.
+	* gcc.dg/pr43643.c: Likewise.
+	* gcc.dg/pr59717.c: Likewise for calloc.
+	* gcc.dg/torture/pr71816.c: Likewise.
+	* gcc.dg/tree-ssa/pr78886.c: Likewise.
+	* gcc.dg/tree-ssa/pr79697.c: Likewise.
+	* gcc.dg/pr78902.c: New test.
+
 2019-06-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/cpp0x/alignas4.C: Amend test to check for zerofill syntax
