@@ -1799,6 +1799,10 @@ process_options (void)
   optimization_default_node = build_optimization_node (&global_options);
   optimization_current_node = optimization_default_node;
 
+  if (flag_checking >= 2)
+    hash_table_sanitize_eq_limit
+      = PARAM_VALUE (PARAM_HASH_TABLE_VERIFICATION_LIMIT);
+
   /* Please don't change global_options after this point, those changes won't
      be reflected in optimization_{default,current}_node.  */
 }

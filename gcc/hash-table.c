@@ -74,6 +74,9 @@ struct prime_ent const prime_tab[] = {
   { 0xfffffffb, 0x00000006, 0x00000008, 31 }
 };
 
+/* Limit number of comparisons when calling hash_table<>::verify.  */
+unsigned int hash_table_sanitize_eq_limit;
+
 /* The following function returns an index into the above table of the
    nearest prime number which is greater than N, and near a power of two. */
 
