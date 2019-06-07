@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts -fdump-lang-module" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module-eh" }
 import kevin;
 
 #if 1

@@ -1,5 +1,5 @@
 // { dg-module-do run }
-// { dg-additional-options {-fmodules-ts -fdump-lang-module-blocks} }
+// { dg-additional-options {-fmodules-ts -fdump-lang-module-graph-blocks} }
 
 export module foo;
 // { dg-module-bmi foo }

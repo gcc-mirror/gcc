@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts -fdump-lang-module -isystem [srcdir]/sys" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module-eh -isystem [srcdir]/sys" }
 
 // These find different headers with the same controlling macro, so
 // are the same

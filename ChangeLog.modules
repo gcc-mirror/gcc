@@ -1,3 +1,9 @@
+2019-06-07  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (bytes_out::print_time): New.
+	(module_state::write_readme): Dump some environmental data.
+
 2019-06-06  Nathan Sidwell  <nathan@acm.org>
 
 	Update Revision number

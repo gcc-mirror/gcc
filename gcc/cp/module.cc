@@ -179,7 +179,7 @@ Classes used:
 
 /* Mapper Protocol version.  Very new.  */
 #define MAPPER_VERSION 0
-
+#define _BSD_SOURCE 1 /* To get TZ field of struct tm, if available.  */
 #include "config.h"
 
 /* Include network stuff first.  Excitingly OSX10.14 uses bcmp here, which
@@ -663,6 +663,7 @@ public:
 public:
   /* Format a NUL-terminated raw string.  */
   void printf (const char *, ...) ATTRIBUTE_PRINTF_2;
+  void print_time (const char *, const tm *, const char *);
 
 public:
   /* Dump instrumentation.  */
@@ -1089,6 +1090,14 @@ bytes_out::printf (const char *format, ...)
       unuse (len);
       len = actual;
     }
+}
+
+void
+bytes_out::print_time (const char *kind, const tm *time, const char *tz)
+{
+  printf ("%stime: %4u/%02u/%02u %02u:%02u:%02u %s",
+	  kind, time->tm_year + 1900, time->tm_mon + 1, time->tm_mday,
+	  time->tm_hour, time->tm_min, time->tm_sec, tz);
 }
 
 /* Encapsulated Lazy Records Of Named Declarations.
@@ -11264,8 +11273,10 @@ module_state::announce (const char *what) const
     }
 }
 
-/* A human-readable README section.  It is a STRTAB that may be
-   extracted with:
+/* A human-readable README section.  The contents of this section to
+   not contribute to the CRC, so the contents can change per
+   compilation.  That allows us to embed CWD, hostname, build time and
+   what not.  It is a STRTAB that may be extracted with:
      readelf -pgnu.c++.README $(module).gcm */
 
 void
@@ -11293,11 +11304,43 @@ module_state::write_readme (elf_out *to, const char *options,
   /* Module information.  */
   readme.printf ("module: %s%s", get_flatname (true), get_flatname ());
   readme.printf ("source: %s", main_input_filename);
-
-  if (options[0])
-    readme.printf ("options: %s", options);
+  readme.printf ("options: %s", options);
   if (node)
     readme.printf ("macro: %s", NODE_NAME (node));
+
+  /* The following fields could be expected to change between
+     otherwise identical compilations.  Consider a distributed build
+     system.  */
+  if (char *cwd = getcwd (NULL, 0))
+    {
+      readme.printf ("cwd: %s", cwd);
+      free (cwd);
+    }
+  readme.printf ("repository: %s", bmi_repo ? bmi_repo : ".");
+#if NETWORKING
+  {
+    char hostname[64];
+    if (!gethostname (hostname, sizeof (hostname)))
+      readme.printf ("host: %s", hostname);
+  }
+#endif
+  {
+    /* This of course will change!  */
+    time_t now = time (NULL);
+    if (now != time_t (-1))
+      {
+	struct tm *time;
+
+	time = gmtime (&now);
+	readme.print_time ("zulu", time, "UTC");
+	time = localtime (&now);
+	const char *tz = "";
+#ifdef __USE_BSD /* Is there a better way?  */
+	tz = time->tm_zone;
+#endif
+	readme.print_time ("local", time, tz);
+      }
+  }
 
   /* Its direct imports.  */
   for (unsigned ix = MODULE_IMPORT_BASE; ix < modules->length (); ix++)
