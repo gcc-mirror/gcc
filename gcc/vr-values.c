@@ -2389,7 +2389,7 @@ vr_values::vrp_evaluate_conditional_warnv_with_ops (enum tree_code code,
 	}
       else
 	{
-	  value_range vro, vri;
+	  value_range_base vro, vri;
 	  if (code == GT_EXPR || code == GE_EXPR)
 	    {
 	      vro.set (VR_ANTI_RANGE, TYPE_MIN_VALUE (TREE_TYPE (op0)), x);

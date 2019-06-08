@@ -211,9 +211,10 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	         getting first [64, +INF] and then ~[0, 0] from
 		 conditions like (s & 0x3cc0) == 0).  */
 	      value_range *old_vr = get_value_range (vrs[i].first);
-	      value_range tem (old_vr->kind (), old_vr->min (), old_vr->max ());
+	      value_range_base tem (old_vr->kind (), old_vr->min (),
+				    old_vr->max ());
 	      tem.intersect (vrs[i].second);
-	      if (tem.equal_p (*old_vr, /*ignore_equivs=*/true))
+	      if (tem.equal_p (*old_vr))
 		continue;
 	      push_value_range (vrs[i].first, vrs[i].second);
 	      if (is_fallthru

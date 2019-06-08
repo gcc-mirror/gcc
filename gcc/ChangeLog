@@ -1,3 +1,19 @@
+2019-06-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.h (value_range_base::intersect): New.
+	(value_range::intersect_helper): Move from here...
+	(value_range_base::intersect_helper): ...to here.
+	* tree-vrp.c (value_range::intersect_helper): Rename to...
+	(value_range_base::intersect_helper): ...this, and rewrite to
+	return a value instead of modifying THIS in place.
+	Also, move equivalence handling...
+	(value_range::intersect): ...here, while calling intersect_helper.
+	* gimple-fold.c (size_must_be_zero_p): Use value_range_base when
+	calling intersect.
+	* gimple-ssa-evrp-analyze.c (ecord_ranges_from_incoming_edge):
+	Same.
+	* vr-values.c (vrp_evaluate_conditional_warnv_with_ops): Same.
+
 2019-06-03  Aldy Hernandez  <aldyh@redhat.com>
 	* tree-vrp.h (value_range_base::nonzero_p): New.
 	(value_range_base::set_nonnull): Rename to...
