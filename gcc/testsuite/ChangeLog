@@ -1,5 +1,10 @@
+2019-06-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/52269
+	* g++.dg/cpp0x/constexpr-decltype4.C: New test.
+
 2019-06-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
-	Tomáš Trnka  <trnka@scm.com>
+	    Tomáš Trnka  <trnka@scm.com>
 
 	PR fortran/90744
 	* gfortran.dg/deferred_character_33.f90: New test.
