@@ -1451,19 +1451,20 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 			      tf_warning_or_error);
   tree fnf2_x = build_class_member_access_expr (actor_frame, fnf_m, NULL_TREE,
 					       false, tf_warning_or_error);
+
+  tree need_free_if = begin_if_stmt ();
+  fnf2_x = build1 (CONVERT_EXPR, integer_type_node, fnf2_x);
+  tree cmp = build2 (NE_EXPR, integer_type_node, fnf2_x, integer_zero_node);
+  finish_if_stmt_cond (cmp, need_free_if);
   tree free_coro_fr
     = build_call_expr_loc (loc,
 			   builtin_decl_explicit (BUILT_IN_FREE), 1, actor_fp);
   free_coro_fr = coro_build_cvt_void_expr_stmt (free_coro_fr, loc);
-  tree free_list = NULL;
-  append_to_statement_list (free_coro_fr, &free_list);
-
-  tree goto_ret_list = NULL;
-  r = build1 (GOTO_EXPR, void_type_node, ret_label);
-  append_to_statement_list (r, &goto_ret_list);
-
-  r = build3 (COND_EXPR, void_type_node, fnf2_x, free_list, goto_ret_list);
-  r = coro_build_expr_stmt (r, loc);
+  add_stmt (free_coro_fr);
+  finish_then_clause (need_free_if);
+  tree scope = IF_SCOPE (need_free_if);
+  IF_SCOPE (need_free_if) = NULL;
+  r = do_poplevel (scope);
   add_stmt (r);
 
   /* This is the eventual (or suspend) return point.  */

@@ -1,5 +1,10 @@
 2019-06-08  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* coroutines.cc (build_actor_fn): Simplify the conditional call to
+	free the coroutine frame.
+
+2019-06-08  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* coroutines.cc (co_return_expander): Look inside cleanup point
 	expressions, and expand co_returns inside, adding cleanup points
 	to the new sub-expressions where needed.
