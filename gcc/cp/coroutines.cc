@@ -689,21 +689,33 @@ co_return_expander (tree *stmt, int *, void *d)
 {
   struct __coro_ret_data *data = (struct __coro_ret_data *) d;
 
-  if (TREE_CODE (*stmt) != CO_RETRN_EXPR)
+  /* Look inside <(void) (expr)> cleanup */
+  tree co_ret_expr = *stmt;
+  if (TREE_CODE (co_ret_expr) == CLEANUP_POINT_EXPR)
+    co_ret_expr = TREE_OPERAND (*stmt, 0);
+
+  if (TREE_CODE (co_ret_expr) != CO_RETRN_EXPR)
     return NULL_TREE;
 
-  location_t loc = EXPR_LOCATION (*stmt);
-  tree expr = TREE_OPERAND (*stmt, 0);
-  tree call = TREE_OPERAND (*stmt, 1);
+  location_t loc = EXPR_LOCATION (co_ret_expr);
+  tree expr = TREE_OPERAND (co_ret_expr, 0);
+  tree call = TREE_OPERAND (co_ret_expr, 1);
   tree stmt_list = NULL;
   if (expr)
-    append_to_statement_list (expr, &stmt_list);
+    {
+      /* This expression must be void.  */
+      expr = maybe_cleanup_point_expr_void (expr);
+      append_to_statement_list (expr, &stmt_list);
+    }
 
   /* Now replace the promise proxy with its real value.  */
   struct __proxy_replace p_data;
   p_data.from = data->promise_proxy;
   p_data.to = data->real_promise;
   cp_walk_tree (&call, replace_proxy, &p_data, NULL);
+  /* p.return_void and p.return_value are probably void, but it's not
+     clear if that's intended to be a guarantee.  CHECKME.  */
+  call = maybe_cleanup_point_expr_void (call);
   append_to_statement_list (call, &stmt_list);
   tree r = build1_loc (loc, GOTO_EXPR, void_type_node, data->fs_label);
   append_to_statement_list (r, &stmt_list);

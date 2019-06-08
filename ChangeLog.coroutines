@@ -1,5 +1,11 @@
 2019-06-08  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* coroutines.cc (co_return_expander): Look inside cleanup point
+	expressions, and expand co_returns inside, adding cleanup points
+	to the new sub-expressions where needed.
+
+2019-06-08  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* coroutines.cc (coro_build_expr_stmt): New helper.
 	(coro_build_cvt_void_expr_stmt): New helper.
 	(co_await_expander): Use EXPR_STMT build helpers.
