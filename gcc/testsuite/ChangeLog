@@ -1,3 +1,8 @@
+2019-06-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/90786
+	* gfortran.dg/proc_ptr_51.f90 : New test.
+
 2019-06-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/52269
@@ -57,7 +62,7 @@
 	* gfortran.dg/fmt_f_default_field_width_3.f90: Modify dg-error
 	to allow use when kind=16 is not supported.
 	* gfortran.dg/fmt_g_default_field_width_3.f90: Modify dg-error
-	to allow use when kind=16 is not supported. 
+	to allow use when kind=16 is not supported.
 
 2019-06-07  Richard Biener  <rguenther@suse.de>
 
