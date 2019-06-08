@@ -1,5 +1,5 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
-/* { dg-options "-O2 -fno-schedule-insns -msve-vector-bits=256 --save-temps" } */
+/* { dg-options "-O -msve-vector-bits=256 --save-temps" } */
 
 /* Case 2.2: Leading constants with stepped sequence.  */
 
