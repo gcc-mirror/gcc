@@ -635,6 +635,20 @@ finish_co_return_stmt (location_t kw, tree expr)
 
 /* ================= Morph and Expand. ================= */
 
+/* Helpers to build EXPR_STMT and void-cast EXPR_STMT, common ops.  */
+static tree
+coro_build_expr_stmt (tree expr, location_t loc)
+{
+  return maybe_cleanup_point_expr_void (build_stmt (loc, EXPR_STMT, expr));
+}
+
+static tree
+coro_build_cvt_void_expr_stmt (tree expr, location_t loc)
+{
+  tree t = build1 (CONVERT_EXPR, void_type_node, expr);
+  return coro_build_expr_stmt (t, loc);
+}
+
 struct __proxy_replace {
   tree from, to;
 };
@@ -846,9 +860,7 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
   tree stmt_list = NULL;
   /* Initialise the var from the provided 'o' expression.  */
   tree r = build2 (INIT_EXPR, await_type, var, expr);
-  r = build1 (CONVERT_EXPR, void_type_node, r);
-  r = build_stmt (loc, EXPR_STMT, r);
-  r = maybe_cleanup_point_expr_void (r);
+  r = coro_build_cvt_void_expr_stmt (r, loc);
   append_to_statement_list (r, &stmt_list);
 
   /* Use the await_ready() call to test if we need to suspend.  */
@@ -861,9 +873,7 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
   tree susp_idx = build_int_cst (short_unsigned_type_node, data->index);
   r = build2_loc (loc, MODIFY_EXPR, short_unsigned_type_node,
 		  data->resume_idx, susp_idx);
-  r = build1 (CONVERT_EXPR, void_type_node, r);
-  r = build_stmt (loc, EXPR_STMT, r);
-  r = maybe_cleanup_point_expr_void (r);
+  r = coro_build_cvt_void_expr_stmt (r, loc);
   append_to_statement_list (r, &body_list);
 
   /* Make a TARGET_EXPR for the handle argument to the suspend call
@@ -893,9 +903,7 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
      for different return type on the suspend, our simple case assumes
      it's void.  */
 
-  suspend = build1 (CONVERT_EXPR, void_type_node, suspend);
-  suspend = build_stmt (loc, EXPR_STMT, suspend);
-  suspend = maybe_cleanup_point_expr_void (suspend);
+  suspend = coro_build_cvt_void_expr_stmt (suspend, loc);
   append_to_statement_list (suspend, &body_list);
 
   tree d_l = build1 (ADDR_EXPR, build_reference_type (void_type_node),
@@ -1244,8 +1252,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 				     create_anon_label_with_ctx (loc, actor));
   add_stmt (ddeflab);
   tree b = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
-  b = build_stmt (loc, EXPR_STMT, b);
-  b = maybe_cleanup_point_expr_void (b);
+  b = coro_build_cvt_void_expr_stmt (b, loc);
   add_stmt (b);
 
   short unsigned lab_num = 3;
@@ -1257,8 +1264,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
       add_stmt (b);
       b = build_call_expr_internal_loc (loc, IFN_CO_ACTOR, void_type_node, 1,
 					l_num);
-      b = build_stmt (loc, EXPR_STMT, b);
-      b = maybe_cleanup_point_expr_void (b);
+      b = coro_build_cvt_void_expr_stmt (b, loc);
       add_stmt (b);
       b = build1 (GOTO_EXPR, void_type_node, CASE_LABEL (ddeflab));
       add_stmt (b);
@@ -1282,8 +1288,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 				  create_anon_label_with_ctx (loc, actor));
   add_stmt (rdeflab);
   b = build_call_expr_loc (loc, builtin_decl_explicit (BUILT_IN_TRAP), 0);
-  b = build_stmt (loc, EXPR_STMT, b);
-  b = maybe_cleanup_point_expr_void (b);
+  b = coro_build_cvt_void_expr_stmt (b, loc);
   add_stmt (b);
 
   lab_num = 2;
@@ -1296,8 +1301,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
       add_stmt (b);
       b = build_call_expr_internal_loc (loc, IFN_CO_ACTOR, void_type_node, 1,
 					l_num);
-      b = build_stmt (loc, EXPR_STMT, b);
-      b = maybe_cleanup_point_expr_void (b);
+      b = coro_build_cvt_void_expr_stmt (b, loc);
       add_stmt (b);
       b = build1 (GOTO_EXPR, void_type_node, CASE_LABEL (rdeflab));
       add_stmt (b);
@@ -1332,9 +1336,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   tree hfa = build_new_method_call (ash, hfa_m, &args, NULL_TREE, LOOKUP_NORMAL,
 				    NULL, tf_warning_or_error);
   r = build2 (INIT_EXPR, handle_type, ash, hfa);
-  r = build1 (CONVERT_EXPR, void_type_node, r);
-  r = build_stmt (loc, EXPR_STMT, r);
-  r = maybe_cleanup_point_expr_void (r);
+  r = coro_build_cvt_void_expr_stmt (r, loc);
   add_stmt (r);
   release_tree_vector (args);
 
@@ -1347,7 +1349,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 
   /* Get a reference to the initial suspend var in the frame.  */
   transform_await_expr (initial_await, &xform);
-  r = build_stmt (loc, EXPR_STMT, initial_await);
+  r = coro_build_expr_stmt (initial_await, loc);
   add_stmt (r);
 
   /* Now we've built the promise etc, process fnbody for co_returns.
@@ -1402,14 +1404,12 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 						tf_warning_or_error);
   r = build1 (CONVERT_EXPR, act_des_fn_ptr, integer_zero_node);
   r = build2 (INIT_EXPR, act_des_fn_ptr, res_x, r);
-  r = build1 (CONVERT_EXPR, void_type_node, r);
-  r = build_stmt (loc, EXPR_STMT, r);
-  r = maybe_cleanup_point_expr_void (r);
+  r = coro_build_cvt_void_expr_stmt (r, loc);
   add_stmt (r);
 
   /* Get a reference to the final suspend var in the frame.  */
   transform_await_expr (final_await, &xform);
-  r = build_stmt (loc, EXPR_STMT, final_await);
+  r = coro_build_expr_stmt (final_await, loc);
   add_stmt (r);
 
   /* now do the tail of the function.  */
@@ -1442,8 +1442,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   tree free_coro_fr
     = build_call_expr_loc (loc,
 			   builtin_decl_explicit (BUILT_IN_FREE), 1, actor_fp);
-  free_coro_fr = build_stmt (loc, EXPR_STMT, free_coro_fr);
-  free_coro_fr = maybe_cleanup_point_expr_void (free_coro_fr);
+  free_coro_fr = coro_build_cvt_void_expr_stmt (free_coro_fr, loc);
   tree free_list = NULL;
   append_to_statement_list (free_coro_fr, &free_list);
 
@@ -1452,8 +1451,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   append_to_statement_list (r, &goto_ret_list);
 
   r = build3 (COND_EXPR, void_type_node, fnf2_x, free_list, goto_ret_list);
-  r = build_stmt (loc, EXPR_STMT, r);
-  r = maybe_cleanup_point_expr_void (r);
+  r = coro_build_expr_stmt (r, loc);
   add_stmt (r);
 
   /* This is the eventual (or suspend) return point.  */
@@ -1530,15 +1528,12 @@ build_destroy_fn (location_t loc, tree coro_frame_type,
   tree dstr_idx = build2 (BIT_IOR_EXPR, short_unsigned_type_node, rat,
 			  build_int_cst (short_unsigned_type_node, 1));
   tree r = build2 (MODIFY_EXPR, short_unsigned_type_node, rat, dstr_idx);
-  r = build1 (CONVERT_EXPR, void_type_node, r);
-  r = build_stmt (loc, EXPR_STMT, r);
-  r = maybe_cleanup_point_expr_void (r);
+  r = coro_build_cvt_void_expr_stmt (r, loc);
   add_stmt (r);
 
   /* So .. call the actor ..  */
   r = build_call_expr_loc (loc, actor, 1, destr_fp);
-  r = build_stmt (loc, EXPR_STMT, r);
-  r = maybe_cleanup_point_expr_void (r);
+  r = coro_build_cvt_void_expr_stmt (r, loc);
   add_stmt (r);
 
   /* done. */
@@ -1969,8 +1964,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 			   TYPE_SIZE_UNIT (coro_frame_type));
   allocated = build1 (CONVERT_EXPR, coro_frame_ptr, allocated);
   r = build2 (INIT_EXPR, TREE_TYPE (coro_fp), coro_fp, allocated);
-  r = build_stmt (fn_start, EXPR_STMT, r);
-  r = maybe_cleanup_point_expr_void (r);
+  r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
   /* Test for NULL and quit.  */
@@ -2006,9 +2000,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree fnf_x = build_class_member_access_expr (deref_fp, fnf_m, NULL_TREE,
 					       false, tf_warning_or_error);
   r = build2 (INIT_EXPR, boolean_type_node, fnf_x, boolean_true_node);
-  r = build1 (CONVERT_EXPR, void_type_node, r);
-  r = build_stmt (fn_start, EXPR_STMT, r);
-  r = maybe_cleanup_point_expr_void (r);
+  r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
   /* We're not suspended.  */
@@ -2017,9 +2009,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree susp_x = build_class_member_access_expr (deref_fp, susp_m, NULL_TREE,
 					       false, tf_warning_or_error);
   r = build2 (INIT_EXPR, boolean_type_node, susp_x, boolean_false_node);
-  r = build1 (CONVERT_EXPR, void_type_node, r);
-  r = build_stmt (fn_start, EXPR_STMT, r);
-  r = maybe_cleanup_point_expr_void (r);
+  r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
   /* Put the resumer and destroyer functions in.  */
@@ -2032,9 +2022,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 						  NULL_TREE, false,
 						  tf_warning_or_error);
   r = build2 (INIT_EXPR, act_des_fn_ptr, resume_x, actor_addr);
-  r = build1 (CONVERT_EXPR, void_type_node, r);
-  r = build_stmt (fn_start, EXPR_STMT, r);
-  r = maybe_cleanup_point_expr_void (r);
+  r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
   tree destroy_addr = build1 (ADDR_EXPR, act_des_fn_ptr, destroy);
@@ -2045,9 +2033,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 						  NULL_TREE, false,
 						  tf_warning_or_error);
   r = build2 (INIT_EXPR, act_des_fn_ptr, destroy_x, destroy_addr);
-  r = build1 (CONVERT_EXPR, void_type_node, r);
-  r = build_stmt (fn_start, EXPR_STMT, r);
-  r = maybe_cleanup_point_expr_void (r);
+  r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
   /* Set up the promise.  */
@@ -2105,9 +2091,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  r = build_modify_expr (fn_start, fld_idx, DECL_ARG_TYPE (arg),
 				 INIT_EXPR, DECL_SOURCE_LOCATION (arg),
 				 arg, DECL_ARG_TYPE (arg));
-	  r = build1 (CONVERT_EXPR, void_type_node, r);
-	  r = build_stmt (fn_start, EXPR_STMT, r);
-	  r = maybe_cleanup_point_expr_void (r);
+	  r = coro_build_cvt_void_expr_stmt (r, fn_start);
 	  add_stmt (r);
 	}
     }
@@ -2139,9 +2123,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   // init our actual var.
   r = build2 (INIT_EXPR, TREE_TYPE (gro), gro, get_ro);
-  r = build1 (CONVERT_EXPR, void_type_node, r);
-  r = build_stmt (fn_start, EXPR_STMT, r);
-  r = maybe_cleanup_point_expr_void (r);
+  r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
   /* Initialise the resume_idx_name to 0, meaning "not started".  */
@@ -2153,9 +2135,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 						    tf_warning_or_error);
   r = build_int_cst (short_unsigned_type_node, 0);
   r = build2 (INIT_EXPR, short_unsigned_type_node, resume_idx, r);
-  r = build1 (CONVERT_EXPR, void_type_node, r);
-  r = build_stmt (fn_start, EXPR_STMT, r);
-  r = maybe_cleanup_point_expr_void (r);
+  r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
   /* So .. call the actor ..  */
@@ -2176,9 +2156,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 				     complete_ctor_identifier, &args,
 				     fn_return_type, LOOKUP_NORMAL,
 				     tf_warning_or_error);
-      r = build1 (CONVERT_EXPR, void_type_node, r);
-      r = build_stmt (fn_start, EXPR_STMT, r);
-      r = maybe_cleanup_point_expr_void (r);
+      r = coro_build_cvt_void_expr_stmt (r, fn_start);
       add_stmt (r);
       release_tree_vector (args);
       // We know it's the correct type.
