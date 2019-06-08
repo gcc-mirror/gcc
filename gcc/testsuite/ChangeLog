@@ -1,3 +1,8 @@
+2019-06-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77771
+	* g++.dg/cpp0x/constexpr-77771.C: New test.
+
 2019-06-07  John David Anglin  <danglin@gcc.gnu.org>
 
 	* lib/scanasm.exp (dg-function-on-line): Add pattern for hppa*-*-linux*.
