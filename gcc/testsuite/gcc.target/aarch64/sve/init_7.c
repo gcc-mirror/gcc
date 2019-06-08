@@ -1,5 +1,5 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
-/* { dg-options "-O2 -fno-schedule-insns -msve-vector-bits=256 --save-temps" } */
+/* { dg-options "-O -msve-vector-bits=256 --save-temps" } */
 
 /* Case 5.1: All elements.  */ 
 
@@ -18,7 +18,6 @@ foo:
 .LFB0:
         .cfi_startproc
         mov     z0.s, w7
-        ptrue   p0.s, vl8
         insr    z0.s, w6
         insr    z0.s, w5
         insr    z0.s, w4
@@ -29,4 +28,4 @@ foo:
         ret
 */
 
-/* { dg-final { scan-assembler {\tmov\t(z[0-9]+\.s), w7\n.*\tinsr\t\1, w6\n\tinsr\t\1, w5\n\tinsr\t\1, w4\n\tinsr\t\1, w3\n\tinsr\t\1, w2\n\tinsr\t\1, w1\n\tinsr\t\1, w0} } } */
+/* { dg-final { scan-assembler {\tmov\t(z[0-9]+\.s), w7\n\tinsr\t\1, w6\n\tinsr\t\1, w5\n\tinsr\t\1, w4\n\tinsr\t\1, w3\n\tinsr\t\1, w2\n\tinsr\t\1, w1\n\tinsr\t\1, w0} } } */
