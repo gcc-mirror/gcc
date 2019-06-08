@@ -1302,3 +1302,6 @@ do {									     \
   (flag_pic ? (TARGET_HPUX ? 198164 : 221312) : 240000)
 
 #define NEED_INDICATE_EXEC_STACK 0
+
+/* Output default function prologue for hpux.  */
+#define TARGET_ASM_FUNCTION_PROLOGUE pa_output_function_prologue
