@@ -1,5 +1,8 @@
 2019-06-07  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/77967
+	* g++.dg/cpp0x/alias-decl-68.C: New test.
+
 	PR c++/77771
 	* g++.dg/cpp0x/constexpr-77771.C: New test.
 
