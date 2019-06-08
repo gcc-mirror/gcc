@@ -788,7 +788,7 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
 
   tree *buried_stmt = NULL;
   tree saved_co_await = NULL_TREE;
-  enum tree_code sub_code;
+  enum tree_code sub_code = NOP_EXPR;
 
   if (stmt_code == EXPR_STMT
       && TREE_CODE (EXPR_STMT_EXPR (stripped_stmt)) == CO_AWAIT_EXPR)
