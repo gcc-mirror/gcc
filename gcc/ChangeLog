@@ -1,3 +1,8 @@
+2019-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (C Dialect Options): Minor grammatical change.
+	(x86 Options): Replace all uses of "PCL_MUL" with "PCLMUL"
+
 2019-06-07  John David Anglin  <danglin@gcc.gnu.orig>
 
 	PR target/90751
