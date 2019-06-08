@@ -1,3 +1,12 @@
+2019-06-08  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (coro_make_frame_entry): New helper.
+	(register_awaits): Use coro_make_frame_entry() to build new frame
+	field entries.
+	(register_param_uses): Likewise.
+	(morph_fn_to_coro): Likewise.
+
 2019-06-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/

@@ -1622,6 +1622,19 @@ register_await_info (tree await_expr, tree aw_type, tree aw_nam, tree h_nam)
   return true;
 }
 
+/* Small helper for the repetitive task of adding a new field to the coro
+   frame type.  */
+static tree
+coro_make_frame_entry (tree *field_list, const char *name,
+		       tree fld_type, location_t loc)
+{
+  tree id = get_identifier (name);
+  tree decl = build_decl (loc, FIELD_DECL, id, fld_type);
+  DECL_CHAIN (decl) = *field_list;
+  *field_list = decl;
+  return id;
+}
+
 struct __susp_frame_data {
   tree *field_list;
   tree handle_type;
@@ -1641,32 +1654,29 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
       && TREE_CODE (*stmt) != CO_YIELD_EXPR)
     return NULL_TREE;
 
-  size_t bufsize = sizeof ("__aw_s.") + 10;
-  char *buf = (char *) alloca (bufsize);
-  snprintf (buf, bufsize, "__aw_s.%d", data->count);
-  tree aw_field_nam = get_identifier (buf);
-  /* TODO: be more intelligent about whether we need a coro handle
-     saved across the suspend.  */
-  snprintf (buf, bufsize, "__aw_h.%d", data->count);
-  tree handle_field_nam = get_identifier (buf);
-
+  /* co_yield is syntactic sugar, re-write it to co_await.  */
   tree aw_expr = *stmt;
   location_t aw_loc = EXPR_LOCATION (aw_expr); /* location of the co_xxxx.  */
   if (TREE_CODE (aw_expr) == CO_YIELD_EXPR)
     {
       aw_expr = TREE_OPERAND (aw_expr, 1);
-      *stmt = aw_expr; //build_stmt (aw_loc, EXPR_STMT, aw_expr);
+      *stmt = aw_expr;
     }
 
   /* The required field has the same type as the proxy stored in the
       await expr.  */
   tree aw_field_type = TREE_TYPE (TREE_OPERAND (aw_expr, 1));
 
-  tree decl = build_decl (aw_loc, FIELD_DECL, aw_field_nam, aw_field_type);
-  DECL_CHAIN (decl) = *data->field_list; *data->field_list = decl;
-
-  decl = build_decl (aw_loc, FIELD_DECL, handle_field_nam, data->handle_type);
-  DECL_CHAIN (decl) = *data->field_list; *data->field_list = decl;
+  size_t bufsize = sizeof ("__aw_s.") + 10;
+  char *buf = (char *) alloca (bufsize);
+  snprintf (buf, bufsize, "__aw_s.%d", data->count);
+  tree aw_field_nam = coro_make_frame_entry (data->field_list, buf,
+					     aw_field_type, aw_loc);
+  /* TODO: be more intelligent about whether we need a coro handle
+     saved across the suspend.  */
+  snprintf (buf, bufsize, "__aw_h.%d", data->count);
+  tree handle_field_nam = coro_make_frame_entry (data->field_list, buf,
+						 data->handle_type, aw_loc);
 
   register_await_info (aw_expr, aw_field_type, aw_field_nam, handle_field_nam);
 
@@ -1701,9 +1711,8 @@ register_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
       size_t namsize = sizeof ("__parm.") + IDENTIFIER_LENGTH (pname) + 1;
       char *buf = (char *) alloca (namsize);
       snprintf (buf, namsize, "__parm.%s", IDENTIFIER_POINTER (pname));
-      parm.field_id = get_identifier (buf);
-      tree decl = build_decl (data->loc, FIELD_DECL, parm.field_id, ptype);
-      DECL_CHAIN (decl) = *data->field_list; *data->field_list = decl;
+      parm.field_id = coro_make_frame_entry (data->field_list, buf,
+					     ptype, data->loc);
       vec_alloc (parm.body_uses, 4);
       parm.body_uses->quick_push (stmt);
       data->param_seen = true;
@@ -1828,41 +1837,32 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
    /* Build our dummy coro frame layout.  */
   coro_frame_type = begin_class_definition (coro_frame_type);
 
-  tree resume_name = get_identifier ("__resume");
-  tree decl = build_decl (fn_start, FIELD_DECL, resume_name, act_des_fn_ptr);
-  tree field_list = decl;
-  tree destroy_name = get_identifier ("__destroy");
-  decl = build_decl (fn_start, FIELD_DECL, destroy_name, act_des_fn_ptr);
-  DECL_CHAIN (decl) = field_list; field_list = decl;
-  tree promise_name = get_identifier ("__p");
-  decl = build_decl (fn_start, FIELD_DECL, promise_name, promise_type);
-  DECL_CHAIN (decl) = field_list; field_list = decl;
-  tree fnf_name = get_identifier ("__frame_needs_free");
-  decl = build_decl (fn_start, FIELD_DECL, fnf_name, boolean_type_node);
-  DECL_CHAIN (decl) = field_list; field_list = decl;
-  tree susp_name = get_identifier ("__suspended");
-  decl = build_decl (fn_start, FIELD_DECL, susp_name, boolean_type_node);
-  DECL_CHAIN (decl) = field_list; field_list = decl;
-  tree resume_idx_name = get_identifier ("__resume_at");
-  decl = build_decl (fn_start, FIELD_DECL, resume_idx_name,
-		     short_unsigned_type_node);
-  DECL_CHAIN (decl) = field_list; field_list = decl;
+  tree field_list = NULL_TREE;
+  tree resume_name = coro_make_frame_entry (&field_list, "__resume",
+					    act_des_fn_ptr, fn_start);
+  tree destroy_name = coro_make_frame_entry (&field_list, "__destroy",
+					    act_des_fn_ptr, fn_start);
+  tree promise_name = coro_make_frame_entry (&field_list, "__p",
+					     promise_type, fn_start);
+  tree fnf_name = coro_make_frame_entry (&field_list, "__frame_needs_free",
+					 boolean_type_node, fn_start);
+  tree susp_name = coro_make_frame_entry (&field_list, "__suspended",
+					  boolean_type_node, fn_start);
+  tree resume_idx_name = coro_make_frame_entry (&field_list, "__resume_at",
+						short_unsigned_type_node,
+						fn_start);
 
   /* We need a handle to this coroutine, which is passed to every
      await_suspend().  There's no point in creating it over and over.  */
-  tree self_h_name = get_identifier ("__self_h");
-  decl = build_decl (fn_start, FIELD_DECL, self_h_name, handle_type);
-  DECL_CHAIN (decl) = field_list; field_list = decl;
+  (void) coro_make_frame_entry (&field_list, "__self_h",
+				handle_type, fn_start);
 
   /* Initial suspend is mandated.  */
-  tree init_susp_name = get_identifier ("__is");
-  decl = build_decl (fn_start, FIELD_DECL, init_susp_name,
-		     initial_suspend_type);
-  DECL_CHAIN (decl) = field_list; field_list = decl;
+  tree init_susp_name = coro_make_frame_entry (&field_list, "__is",
+					      initial_suspend_type, fn_start);
   /* We really need to figure this out from the awaiter type.  */
-  tree init_hand_name = get_identifier ("__ih");
-  decl = build_decl (fn_start, FIELD_DECL, init_hand_name, handle_type);
-  DECL_CHAIN (decl) = field_list; field_list = decl;
+  tree init_hand_name = coro_make_frame_entry (&field_list, "__ih",
+					       handle_type, fn_start);
 
   register_await_info (initial_await, initial_suspend_type,
 		       init_susp_name, init_hand_name);
@@ -1875,12 +1875,11 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   delete visited;
 
   /* Final suspend is mandated.  */
-  tree fin_susp_name = get_identifier ("__fs");
-  decl = build_decl (fn_start, FIELD_DECL, fin_susp_name, final_suspend_type);
-  DECL_CHAIN (decl) = field_list; field_list = decl;
-  tree fin_hand_name = get_identifier ("__fh");
-  decl = build_decl (fn_start, FIELD_DECL, fin_hand_name, handle_type);
-  DECL_CHAIN (decl) = field_list; field_list = decl;
+  tree fin_susp_name = coro_make_frame_entry (&field_list, "__fs",
+					      final_suspend_type, fn_start);
+
+  tree fin_hand_name = coro_make_frame_entry (&field_list, "__fh",
+					      handle_type, fn_start);
 
   register_await_info (final_await, final_suspend_type,
 		       fin_susp_name, fin_hand_name);
