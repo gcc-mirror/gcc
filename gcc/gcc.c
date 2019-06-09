@@ -3769,7 +3769,7 @@ driver_wrong_lang_callback (const struct cl_decoded_option *decoded,
   const struct cl_option *option = &cl_options[decoded->opt_index];
 
   if (option->cl_reject_driver)
-    error ("unrecognized command line option %qs",
+    error ("unrecognized command-line option %qs",
 	   decoded->orig_option_with_args_text);
   else
     save_switch (decoded->canonical_option[0],
@@ -7846,11 +7846,11 @@ driver::handle_unrecognized_options ()
       {
 	const char *hint = m_option_proposer.suggest_option (switches[i].part1);
 	if (hint)
-	  error ("unrecognized command line option %<-%s%>;"
+	  error ("unrecognized command-line option %<-%s%>;"
 		 " did you mean %<-%s%>?",
 		 switches[i].part1, hint);
 	else
-	  error ("unrecognized command line option %<-%s%>",
+	  error ("unrecognized command-line option %<-%s%>",
 		 switches[i].part1);
       }
 }

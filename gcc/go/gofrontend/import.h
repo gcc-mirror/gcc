@@ -72,6 +72,14 @@ class Import_expression
   virtual Type*
   read_type() = 0;
 
+  // Return the maximum valid package index.
+  virtual size_t
+  max_package_index() const = 0;
+
+  // Return the package for a package index.
+  virtual Package*
+  package_at_index(int index) = 0;
+
   // Return the version number of the export data we're reading.
   virtual Export_data_version
   version() const = 0;
@@ -257,6 +265,11 @@ class Import : public Import_expression
   advance(size_t skip)
   { this->stream_->advance(skip); }
 
+  // Stream position, for error reporting.
+  int
+  pos()
+  { return this->stream_->pos(); }
+
   // Return the version number of the export data we're reading.
   Export_data_version
   version() const { return this->version_; }
@@ -278,6 +291,18 @@ class Import : public Import_expression
   // returned as an empty string.  This matches Export::write_name.
   std::string
   read_name();
+
+  // Return the maximum valid package index.  This is the size of
+  // packages_ because we will subtract 1 in package_at_index.
+  size_t
+  max_package_index() const
+  { return this->packages_.size(); }
+
+  // Return the package at an index.  (We subtract 1 because package
+  // index 0 is not used.)
+  Package*
+  package_at_index(int index)
+  { return this->packages_.at(index - 1); }
 
   // Read a type.
   Type*
@@ -303,6 +328,12 @@ class Import : public Import_expression
   Import_function_body*
   ifb()
   { return NULL; }
+
+  // Read a qualified identifier from an Import_expression.  Sets
+  // *NAME, *PKG, and *IS_EXPORTED, and reports whether it succeeded.
+  static bool
+  read_qualified_identifier(Import_expression*, std::string* name,
+			    Package** pkg, bool* is_exported);
 
  private:
   static Stream*
@@ -360,7 +391,7 @@ class Import : public Import_expression
   import_var();
 
   // Import a function.
-  Named_object*
+  void
   import_func(Package*);
 
   // Parse a type definition.
@@ -401,6 +432,8 @@ class Import : public Import_expression
   // Whether to add new objects to the global scope, rather than to a
   // package scope.
   bool add_to_globals_;
+  // Mapping from package index to package.
+  std::vector<Package*> packages_;
   // All type data.
   std::string type_data_;
   // Position of type data in the stream.
@@ -554,7 +587,8 @@ class Import_function_body : public Import_expression
 		       const std::string& body, size_t off, Block* block,
 		       int indent)
     : gogo_(gogo), imp_(imp), named_object_(named_object), body_(body),
-      off_(off), block_(block), indent_(indent), saw_error_(false)
+      off_(off), block_(block), indent_(indent), temporaries_(),
+      saw_error_(false)
   { }
 
   // The IR.
@@ -566,6 +600,11 @@ class Import_function_body : public Import_expression
   Location
   location() const
   { return this->imp_->location(); }
+
+  // The function we are importing.
+  Named_object*
+  function() const
+  { return this->named_object_; }
 
   // A reference to the body we are reading.
   const std::string&
@@ -657,10 +696,28 @@ class Import_function_body : public Import_expression
   version() const
   { return this->imp_->version(); }
 
+  // Record the index of a temporary statement.
+  void
+  record_temporary(Temporary_statement*, unsigned int);
+
+  // Return a temporary statement given an index.
+  Temporary_statement*
+  temporary_statement(unsigned int);
+
   // Implement Import_expression.
   Import_function_body*
   ifb()
   { return this; }
+
+  // Return the maximum valid package index.
+  size_t
+  max_package_index() const
+  { return this->imp_->max_package_index(); }
+
+  // Return the package at an index.
+  Package*
+  package_at_index(int index)
+  { return this->imp_->package_at_index(index); }
 
   // Return whether we have seen an error.
   bool
@@ -688,6 +745,8 @@ class Import_function_body : public Import_expression
   Block* block_;
   // Current expected indentation level.
   int indent_;
+  // Temporary statements by index.
+  std::vector<Temporary_statement*> temporaries_;
   // Whether we've seen an error.  Used to avoid reporting excess
   // errors.
   bool saw_error_;

@@ -3,45 +3,120 @@
   Support
   
 </th><td width="20%" align="right"> <a accesskey="n" href="termination.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="std.support.memory"></a>Dynamic Memory</h2></div></div></div><p>
-    There are six flavors each of <code class="function">new</code> and
-    <code class="function">delete</code>, so make certain that you're using the right
-    ones. Here are quickie descriptions of <code class="function">new</code>:
-  </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
-	single object form, throwing a
-	<code class="classname">bad_alloc</code> on errors; this is what most
-	people are used to using
-      </p></li><li class="listitem"><p>
-	Single object "nothrow" form, returning NULL on errors
-      </p></li><li class="listitem"><p>
-	Array <code class="function">new</code>, throwing
-	<code class="classname">bad_alloc</code> on errors
-      </p></li><li class="listitem"><p>
-	Array nothrow <code class="function">new</code>, returning
-	<code class="constant">NULL</code> on errors
-      </p></li><li class="listitem"><p>
-	Placement <code class="function">new</code>, which does nothing (like
-	it's supposed to)
-      </p></li><li class="listitem"><p>
-	Placement array <code class="function">new</code>, which also does
-	nothing
-      </p></li></ul></div><p>
-     They are distinguished by the parameters that you pass to them, like
-     any other overloaded function.  The six flavors of <code class="function">delete</code>
+    In C++98 there are six flavors each of <code class="function">operator new</code>
+    and <code class="function">operator delete</code>, so make certain that you're
+    using the right ones.
+    Here are quickie descriptions of <code class="function">operator new</code>:
+  </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="code">void* operator new(std::size_t);</code></span></dt><dd>
+	Single object form.
+        Throws <code class="classname">std::bad_alloc</code> on error.
+        This is what most people are used to using.
+      </dd><dt><span class="term"><code class="code">void* operator new(std::size_t, std::nothrow_t) noexcept;</code></span></dt><dd>
+	Single object <span class="quote">“<span class="quote">nothrow</span>”</span> form.
+        Calls <code class="code">operator new(std::size_t)</code> but if that throws,
+        returns a null pointer instead.
+      </dd><dt><span class="term"><code class="code">void* operator new[](std::size_t);</code></span></dt><dd>
+	Array <code class="function">new</code>.
+        Calls <code class="code">operator new(std::size_t)</code> and so
+	throws <code class="classname">std::bad_alloc</code> on error.
+      </dd><dt><span class="term"><code class="code">void* operator new[](std::size_t, std::nothrow_t) noexcept;</code></span></dt><dd>
+	Array <span class="quote">“<span class="quote">nothrow</span>”</span><code class="function">new</code>.
+        Calls <code class="code">operator new[](std::size_t)</code> but if that throws,
+        returns a null pointer instead.
+      </dd><dt><span class="term"><code class="code">void* operator new(std::size_t, void*) noexcept;</code></span></dt><dd>
+	Non-allocating, <span class="quote">“<span class="quote">placement</span>”</span> single-object <code class="function">new</code>,
+        which does nothing except return its argument.
+        This function cannot be replaced.
+      </dd><dt><span class="term"><code class="code">void* operator new[](std::size_t, void*) noexcept;</code></span></dt><dd>
+	Non-allocating, <span class="quote">“<span class="quote">placement</span>”</span> array <code class="function">new</code>,
+        which also does nothing except return its argument.
+        This function cannot be replaced.
+      </dd></dl></div><p>
+     They are distinguished by the arguments that you pass to them, like
+     any other overloaded function.  The six flavors of
+     <code class="function">operator delete</code>
      are distinguished the same way, but none of them are allowed to throw
-     an exception under any circumstances anyhow.  (They match up for
-     completeness' sake.)
+     an exception under any circumstances anyhow.  (The overloads match up
+     with the ones above, for completeness' sake.)
    </p><p>
-     Remember that it is perfectly okay to call <code class="function">delete</code> on a
-     NULL pointer!  Nothing happens, by definition.  That is not the
-     same thing as deleting a pointer twice.
+     The C++ 2014 revision of the standard added two additional overloads of
+     <code class="function">operator delete</code> for <span class="quote">“<span class="quote">sized deallocation</span>”</span>,
+     allowing the compiler to provide the size of the storage being freed.
    </p><p>
-     By default, if one of the <span class="quote">“<span class="quote">throwing <code class="function">new</code>s</span>”</span> can't
-     allocate the memory requested, it tosses an instance of a
-     <code class="classname">bad_alloc</code> exception (or, technically, some class derived
-     from it).  You can change this by writing your own function (called a
-     new-handler) and then registering it with <code class="function">set_new_handler()</code>:
+     The C++ 2017 standard added even more overloads of both
+     <code class="function">operator new</code> and <code class="function">operator delete</code>
+     for allocating and deallocating storage for overaligned types.
+     These overloads correspond to each of the allocating forms of
+     <code class="function">operator new</code> and <code class="function">operator delete</code>
+     but with an additional parameter of type <span class="type">std::align_val_t</span>.
+     These new overloads are not interchangeable with the versions without
+     an aligment parameter, so if memory was allocated by an overload of
+     <code class="function">operator new</code> taking an alignment parameter,
+     then it must be decallocated by the corresponding overload of
+     <code class="function">operator delete</code> that takes an alignment parameter.
+   </p><p>
+     Apart from the non-allocating forms, the default versions of the array
+     and nothrow <code class="function">operator new</code> functions will all result
+     in a call to either <code class="function">operator new(std::size_t)</code> or
+     <code class="function">operator new(std::size_t, std::align_val_t)</code>,
+     and similarly the default versions of the array and nothrow
+     <code class="function">operator delete</code> functions will result in a call to
+     either <code class="function">operator delete(void*)</code> or
+     <code class="function">operator delete(void*, std::align_val_t)</code>
+     (or the sized versions of those).
+   </p><p>
+     Apart from the non-allocating forms, any of these functions can be
+     replaced by defining a function with the same signature in your program.
+     Replacement versions must preserve certain guarantees, such as memory
+     obtained from a nothrow <code class="function">operator new</code> being free-able
+     by the normal (non-nothrow) <code class="function">operator delete</code>,
+     and the sized and unsized forms of <code class="function">operator delete</code>
+     being interchangeable (because it's unspecified whether
+     the compiler calls the sized delete instead of the normal one).
+     The simplest way to meet the guarantees is to only replace the ordinary
+     <code class="function">operator new(size_t)</code> and
+     <code class="function">operator delete(void*)</code> and
+     <code class="function">operator delete(void*, std::size_t)</code>
+     functions, and the replaced versions will be used by all of
+     <code class="function">operator new(size_t, nothrow_t)</code>,
+     <code class="function">operator new[](size_t)</code> and
+     <code class="function">operator new[](size_t, nothrow_t)</code>
+     and the corresponding <code class="function">operator delete</code> functions.
+     To support types with extended alignment you may also need to replace
+     <code class="function">operator new(size_t, align_val_t)</code> and
+     <code class="function">operator delete(void*, align_val_t)</code>
+     <code class="function">operator delete(void*, size_t, align_val_t)</code>
+     (which will then be used by the nothrow and array forms for
+     extended alignments).
+     If you do need to replace other forms (e.g. to define the nothrow
+     <code class="function">operator new</code> to allocate memory directly, so it
+     works with exceptions disabled) then make sure the memory it allocates
+     can still be freed by the non-nothrow forms of
+     <code class="function">operator delete</code>.
+   </p><p>
+     If the default versions of <code class="function">operator new(std::size_t)</code>
+     and <code class="function">operator new(size_t, std::align_val_t)</code>
+     can't allocate the memory requested, they usually throw an exception
+     object of type <code class="classname">std::bad_alloc</code> (or some class
+     derived from that). However, the program can influence that behavior
+     by registering a <span class="quote">“<span class="quote">new-handler</span>”</span>, because what
+     <code class="function">operator new</code> actually does is something like:
    </p><pre class="programlisting">
-   typedef void (*PFV)(void);
+    while (true)
+    {
+      if (void* p = /* try to allocate memory */)
+        return p;
+      else if (std::new_handler h = std::get_new_handler ())
+        h ();
+      else
+        throw bad_alloc{};
+    }
+   </pre><p>
+     This means you can influence what happens on allocation failure by
+     writing your own new-handler and then registering it with
+     <code class="function">std::set_new_handler</code>:
+   </p><pre class="programlisting">
+   typedef void (*PFV)();
 
    static char*  safety;
    static PFV    old_handler;
@@ -49,6 +124,7 @@
    void my_new_handler ()
    {
        delete[] safety;
+       safety = nullptr;
        popup_window ("Dude, you are running low on heap memory.  You"
 		     " should, like, close some windows, or something."
 		     " The next time you run out, we're gonna burn!");
@@ -62,10 +138,15 @@
        old_handler = set_new_handler (&amp;my_new_handler);
        ...
    }
-   </pre><p>
-     <code class="classname">bad_alloc</code> is derived from the base <code class="classname">exception</code>
-     class defined in Sect1 19.
-   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="support.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="support.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="termination.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 4. 
+   </pre><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="std.support.memory.notes"></a>Additional Notes</h3></div></div></div><p>
+     Remember that it is perfectly okay to <code class="function">delete</code> a
+     null pointer!  Nothing happens, by definition.  That is not the
+     same thing as deleting a pointer twice.
+   </p><p>
+     <code class="classname">std::bad_alloc</code> is derived from the base
+     <code class="classname">std::exception</code> class,
+     see <a class="xref" href="diagnostics.html#std.diagnostics.exceptions" title="Exceptions">Exceptions</a>.
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="support.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="support.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="termination.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 4. 
   Support
   
  </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Termination</td></tr></table></div></body></html>

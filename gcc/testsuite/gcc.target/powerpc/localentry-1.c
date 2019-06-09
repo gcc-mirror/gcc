@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mdejagnu-cpu=future -O2" } */
 /* { dg-require-effective-target powerpc_elfv2 } */
+/* { dg-require-effective-target powerpc_future_ok } */
 
 /* Ensure we generate ".localentry fn,1" for both leaf and non-leaf
    functions.  */

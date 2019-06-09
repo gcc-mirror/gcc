@@ -21,9 +21,8 @@ extern int alpha_next_sequence_number;
 
 extern void literal_section (void);
 extern int zap_mask (HOST_WIDE_INT);
-extern int direct_return (void);
+extern bool direct_return (void);
 
-extern int alpha_sa_size (void);
 extern HOST_WIDE_INT alpha_initial_elimination_offset (unsigned int,
 						       unsigned int);
 extern void alpha_expand_prologue (void);

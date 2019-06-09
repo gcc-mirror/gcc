@@ -1,5 +1,9 @@
 2019-06-09  Iain Sandoe  <iain@sandoe.co.uk>
 
+	Merge trunk r272095.
+	
+2019-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/cp/
 	* coroutines.cc (morph_fn_to_coro): Record every use of each function
 	param, not just the first one.

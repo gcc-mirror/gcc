@@ -974,14 +974,14 @@ verify_ssa_operands (struct function *fn, gimple *stmt)
     def = SSA_NAME_VAR (def);
   if (build_vdef != def)
     {
-      error ("virtual definition of statement not up-to-date");
+      error ("virtual definition of statement not up to date");
       return true;
     }
   if (gimple_vdef (stmt)
       && ((def_p = gimple_vdef_op (stmt)) == NULL_DEF_OPERAND_P
 	  || DEF_FROM_PTR (def_p) != gimple_vdef (stmt)))
     {
-      error ("virtual def operand missing for stmt");
+      error ("virtual def operand missing for statement");
       return true;
     }
 
@@ -991,14 +991,14 @@ verify_ssa_operands (struct function *fn, gimple *stmt)
     use = SSA_NAME_VAR (use);
   if (build_vuse != use)
     {
-      error ("virtual use of statement not up-to-date");
+      error ("virtual use of statement not up to date");
       return true;
     }
   if (gimple_vuse (stmt)
       && ((use_p = gimple_vuse_op (stmt)) == NULL_USE_OPERAND_P
 	  || USE_FROM_PTR (use_p) != gimple_vuse (stmt)))
     {
-      error ("virtual use operand missing for stmt");
+      error ("virtual use operand missing for statement");
       return true;
     }
 
@@ -1015,7 +1015,7 @@ verify_ssa_operands (struct function *fn, gimple *stmt)
 	}
       if (i == build_uses.length ())
 	{
-	  error ("excess use operand for stmt");
+	  error ("excess use operand for statement");
 	  debug_generic_expr (USE_FROM_PTR (use_p));
 	  return true;
 	}
@@ -1025,14 +1025,14 @@ verify_ssa_operands (struct function *fn, gimple *stmt)
   FOR_EACH_VEC_ELT (build_uses, i, op)
     if (op != NULL)
       {
-	error ("use operand missing for stmt");
+	error ("use operand missing for statement");
 	debug_generic_expr (*op);
 	return true;
       }
 
   if (gimple_has_volatile_ops (stmt) != volatile_p)
     {
-      error ("stmt volatile flag not up-to-date");
+      error ("statement volatile flag not up to date");
       return true;
     }
 

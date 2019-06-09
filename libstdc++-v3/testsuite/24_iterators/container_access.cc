@@ -1,5 +1,5 @@
-// { dg-do run { target c++17 } }
 // { dg-options "-std=gnu++17" }
+// { dg-do run { target c++17 } }
 
 // Copyright (C) 2015-2019 Free Software Foundation, Inc.
 //

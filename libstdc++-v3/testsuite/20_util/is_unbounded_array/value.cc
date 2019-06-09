@@ -44,6 +44,8 @@ void test01()
   static_assert(test_category<is_unbounded_array, ClassType[]>(true), "");
   static_assert(test_category<is_unbounded_array, ClassType[2][3]>(false), "");
   static_assert(test_category<is_unbounded_array, ClassType[][3]>(true), "");
+  static_assert(test_category<is_unbounded_array, IncompleteClass[2][3]>(false), "");
+  static_assert(test_category<is_unbounded_array, IncompleteClass[][3]>(true), "");
   static_assert(test_category<is_unbounded_array, int(*)[2]>(false), "");
   static_assert(test_category<is_unbounded_array, int(*)[]>(false), "");
   static_assert(test_category<is_unbounded_array, int(&)[2]>(false), "");
@@ -51,6 +53,8 @@ void test01()
 
   // Sanity check.
   static_assert(test_category<is_unbounded_array, ClassType>(false), "");
+  static_assert(test_category<is_unbounded_array, IncompleteClass>(false), "");
+  static_assert(test_category<is_unbounded_array, IncompleteUnion>(false), "");
 }
 
 template <class... T> void pos()

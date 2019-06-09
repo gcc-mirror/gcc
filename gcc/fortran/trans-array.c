@@ -8139,12 +8139,12 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 	 optimizers.  */
 
       if (g77 && optimize && !optimize_size && expr->expr_type == EXPR_VARIABLE
-	  && !is_pointer (expr) && (fsym == NULL
-				    || fsym->ts.type != BT_ASSUMED))
+	  && !is_pointer (expr) && ! gfc_has_dimen_vector_ref (expr)
+	  && (fsym == NULL || fsym->ts.type != BT_ASSUMED))
 	{
 	  gfc_conv_subref_array_arg (se, expr, g77,
 				     fsym ? fsym->attr.intent : INTENT_INOUT,
-				     false, fsym, proc_name, sym);
+				     false, fsym, proc_name, sym, true);
 	  return;
 	}
 

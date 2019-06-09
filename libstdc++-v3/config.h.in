@@ -1038,6 +1038,9 @@
 /* Defined if as can handle rdrand. */
 #undef _GLIBCXX_X86_RDRAND
 
+/* Defined if as can handle rdseed. */
+#undef _GLIBCXX_X86_RDSEED
+
 /* Define to 1 if mutex_timedlock is available. */
 #undef _GTHREAD_USE_MUTEX_TIMEDLOCK
 

@@ -1,3 +1,33 @@
+2019-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c++/lastprivate-conditional-1.C: New test.
+	* testsuite/libgomp.c++/lastprivate-conditional-2.C: New test.
+
+2019-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/lastprivate-conditional-7.c: New test.
+	* testsuite/libgomp.c-c++-common/lastprivate-conditional-8.c: New test.
+	* testsuite/libgomp.c-c++-common/lastprivate-conditional-9.c: New test.
+	* testsuite/libgomp.c-c++-common/lastprivate-conditional-10.c: New test.
+
+2019-05-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Call AX_COUNT_CPUS.
+	Substitute CPU_COUNT.
+	* testsuite/Makefile.am (check-am): Use CPU_COUNT as processor
+	count fallback.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in, testsuite/Makefile.in: Regenerate.
+
+2019-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/lastprivate_conditional_4.c: Rename
+	to ...
+	* testsuite/libgomp.c-c++-common/lastprivate-conditional-4.c: ... this.
+	* testsuite/libgomp.c-c++-common/lastprivate-conditional-5.c: New test.
+	* testsuite/libgomp.c-c++-common/lastprivate-conditional-6.c: New test.
+
 2019-05-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/lastprivate_conditional_4.c: New test.

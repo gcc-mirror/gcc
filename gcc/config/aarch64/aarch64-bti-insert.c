@@ -106,7 +106,9 @@ aarch64_pac_insn_p (rtx x)
 	  int unspec_val = XINT (sub, 1);
 	  switch (unspec_val)
 	    {
-	    case UNSPEC_PACISP:
+	    case UNSPEC_PACIASP:
+            /* fall-through.  */
+            case UNSPEC_PACIBSP:
 	      return true;
 
 	    default:

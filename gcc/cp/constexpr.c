@@ -1733,6 +1733,29 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   bool non_constant_args = false;
   cxx_bind_parameters_in_call (ctx, t, &new_call,
 			       non_constant_p, overflow_p, &non_constant_args);
+
+  /* We build up the bindings list before we know whether we already have this
+     call cached.  If we don't end up saving these bindings, ggc_free them when
+     this function exits.  */
+  struct free_bindings
+  {
+    tree &bindings;
+    bool do_free;
+    free_bindings (tree &b): bindings (b), do_free(true) { }
+    void preserve () { do_free = false; }
+    ~free_bindings () {
+      if (do_free)
+	{
+	  while (bindings)
+	    {
+	      tree b = bindings;
+	      bindings = TREE_CHAIN (bindings);
+	      ggc_free (b);
+	    }
+	}
+    }
+  } fb (new_call.bindings);
+
   if (*non_constant_p)
     return t;
 
@@ -1760,6 +1783,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	     slot can move in the call to cxx_eval_builtin_function_call.  */
 	  *slot = entry = ggc_alloc<constexpr_call> ();
 	  *entry = new_call;
+	  fb.preserve ();
 	}
       /* Calls that are in progress have their result set to NULL,
 	 so that we can detect circular dependencies.  */
@@ -2459,7 +2483,7 @@ diag_array_subscript (const constexpr_ctx *ctx, tree array, tree index)
 	    error ("array subscript value %qE is outside the bounds "
 	           "of array %qD of type %qT", sidx, array, arraytype);
 	  else
-	    error ("non-zero array subscript %qE is used with array %qD of "
+	    error ("nonzero array subscript %qE is used with array %qD of "
 		   "type %qT with unknown bounds", sidx, array, arraytype);
 	  inform (DECL_SOURCE_LOCATION (array), "declared here");
 	}
@@ -2467,7 +2491,7 @@ diag_array_subscript (const constexpr_ctx *ctx, tree array, tree index)
 	error ("array subscript value %qE is outside the bounds "
 	       "of array type %qT", sidx, arraytype);
       else
-	error ("non-zero array subscript %qE is used with array of type %qT "
+	error ("nonzero array subscript %qE is used with array of type %qT "
 	       "with unknown bounds", sidx, arraytype);
     }
 }
@@ -4002,6 +4026,7 @@ cxx_eval_increment_expression (const constexpr_ctx *ctx, tree t,
   tree store = build2 (MODIFY_EXPR, type, op, mod);
   cxx_eval_constant_expression (ctx, store,
 				true, non_constant_p, overflow_p);
+  ggc_free (store);
 
   /* And the value of the expression.  */
   if (code == PREINCREMENT_EXPR || code == PREDECREMENT_EXPR)
@@ -4357,9 +4382,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 			      bool *non_constant_p, bool *overflow_p,
 			      tree *jump_target /* = NULL */)
 {
-  constexpr_ctx new_ctx;
-  tree r = t;
-
   if (jump_target && *jump_target)
     {
       /* If we are jumping, ignore all statements/expressions except those
@@ -4390,6 +4412,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       *non_constant_p = true;
       return t;
     }
+
+  STRIP_ANY_LOCATION_WRAPPER (t);
+
   if (CONSTANT_CLASS_P (t))
     {
       if (TREE_OVERFLOW (t))
@@ -4414,8 +4439,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     }
 
   /* Avoid excessively long constexpr evaluations.  */
-  if (!location_wrapper_p (t)
-      && ++*ctx->constexpr_ops_count >= constexpr_ops_limit)
+  if (++*ctx->constexpr_ops_count >= constexpr_ops_limit)
     {
       if (!ctx->quiet)
 	error_at (cp_expr_loc_or_loc (t, input_location),
@@ -4426,6 +4450,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       *non_constant_p = true;
       return t;
     }
+
+  constexpr_ctx new_ctx;
+  tree r = t;
 
   tree_code tcode = TREE_CODE (t);
   switch (tcode)
@@ -4727,7 +4754,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	/* This function does more aggressive folding than fold itself.  */
 	r = build_fold_addr_expr_with_type (op, TREE_TYPE (t));
 	if (TREE_CODE (r) == ADDR_EXPR && TREE_OPERAND (r, 0) == oldop)
-	  return t;
+	  {
+	    ggc_free (r);
+	    return t;
+	  }
 	break;
       }
 
@@ -5040,6 +5070,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  r = op;
 	else if (tcode == UNARY_PLUS_EXPR)
 	  r = fold_convert (TREE_TYPE (t), op);
+	else if (VOID_TYPE_P (type))
+	  r = void_node;
 	else
 	  r = fold_build1 (tcode, type, op);
 

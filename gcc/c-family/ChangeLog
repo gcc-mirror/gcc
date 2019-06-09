@@ -1,3 +1,26 @@
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* c-attribs.c (handle_mode_attribute): Adjust quoting and hyphenation.
+	(handle_alias_ifunc_attribute): Same.
+	(handle_copy_attribute): Same.
+	(handle_weakref_attribute): Same.
+	(handle_nonnull_attribute): Same.
+	* c-warn.c (warn_for_sign_compare): Same.
+	(warn_for_restrict): Same.
+	* c.opt: Same.
+
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* c-pragma.c (handle_pragma_weak): Adjust quoting in a diagnostic.
+	* c.opt (-Wformat-diag): Remove a spurious period.
+
+2019-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90628
+	* c-common.c (check_builtin_function_arguments)
+	<case BUILTIN_*_OVERFLOW>: Diagnose pointer to const qualified integer
+	as last argument.
+
 2019-05-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (compare_node): Compare the DECL_UIDs as a last resort.

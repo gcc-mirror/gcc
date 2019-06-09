@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_elfv2 } */
+/* { dg-require-effective-target powerpc_future_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=future" } */
 
 

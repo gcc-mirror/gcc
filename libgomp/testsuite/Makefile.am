@@ -69,11 +69,11 @@ distclean-DEJAGNU:
 distclean-am: distclean-DEJAGNU
 check-am:
 	@if test -n "$(filter -j%, $(MFLAGS))"; then \
-	  num_cpus=1; \
+	  num_cpus=@CPU_COUNT@; \
 	  if type -p getconf 2>/dev/null >/dev/null; then \
 	    num_cpus=`getconf _NPROCESSORS_ONLN 2>/dev/null`; \
 	    case "$$num_cpus" in \
-	      '' | 0* | *[!0-9]*) num_cpus=1;; \
+	      '' | 0* | *[!0-9]*) num_cpus=@CPU_COUNT@;; \
 	    esac; \
 	  fi; \
 	  if test $$num_cpus -gt 8 && test -z "$$OMP_NUM_THREADS"; then \

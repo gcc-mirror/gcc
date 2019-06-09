@@ -432,6 +432,8 @@ enum aarch64_builtins
   /* ARMv8.3-A Pointer Authentication Builtins.  */
   AARCH64_PAUTH_BUILTIN_AUTIA1716,
   AARCH64_PAUTH_BUILTIN_PACIA1716,
+  AARCH64_PAUTH_BUILTIN_AUTIB1716,
+  AARCH64_PAUTH_BUILTIN_PACIB1716,
   AARCH64_PAUTH_BUILTIN_XPACLRI,
   /* Special cased Armv8.3-A Complex FMA by Lane quad Builtins.  */
   AARCH64_SIMD_FCMLA_LANEQ_BUILTIN_BASE,
@@ -1051,6 +1053,14 @@ aarch64_init_pauth_hint_builtins (void)
     = add_builtin_function ("__builtin_aarch64_pacia1716", ftype_pointer_auth,
 			    AARCH64_PAUTH_BUILTIN_PACIA1716, BUILT_IN_MD, NULL,
 			    NULL_TREE);
+  aarch64_builtin_decls[AARCH64_PAUTH_BUILTIN_AUTIB1716]
+    = add_builtin_function ("__builtin_aarch64_autib1716", ftype_pointer_auth,
+			    AARCH64_PAUTH_BUILTIN_AUTIB1716, BUILT_IN_MD, NULL,
+			    NULL_TREE);
+  aarch64_builtin_decls[AARCH64_PAUTH_BUILTIN_PACIB1716]
+    = add_builtin_function ("__builtin_aarch64_pacib1716", ftype_pointer_auth,
+			    AARCH64_PAUTH_BUILTIN_PACIB1716, BUILT_IN_MD, NULL,
+			    NULL_TREE);
   aarch64_builtin_decls[AARCH64_PAUTH_BUILTIN_XPACLRI]
     = add_builtin_function ("__builtin_aarch64_xpaclri", ftype_pointer_strip,
 			    AARCH64_PAUTH_BUILTIN_XPACLRI, BUILT_IN_MD, NULL,
@@ -1540,6 +1550,8 @@ aarch64_expand_builtin (tree exp,
 
     case AARCH64_PAUTH_BUILTIN_AUTIA1716:
     case AARCH64_PAUTH_BUILTIN_PACIA1716:
+    case AARCH64_PAUTH_BUILTIN_AUTIB1716:
+    case AARCH64_PAUTH_BUILTIN_PACIB1716:
     case AARCH64_PAUTH_BUILTIN_XPACLRI:
       arg0 = CALL_EXPR_ARG (exp, 0);
       op0 = force_reg (Pmode, expand_normal (arg0));
@@ -1563,8 +1575,24 @@ aarch64_expand_builtin (tree exp,
 	{
 	  tree arg1 = CALL_EXPR_ARG (exp, 1);
 	  rtx op1 = force_reg (Pmode, expand_normal (arg1));
-	  icode = (fcode == AARCH64_PAUTH_BUILTIN_PACIA1716
-		   ? CODE_FOR_paci1716 : CODE_FOR_auti1716);
+	  switch (fcode)
+	    {
+	    case AARCH64_PAUTH_BUILTIN_AUTIA1716:
+	      icode = CODE_FOR_autia1716;
+	      break;
+	    case AARCH64_PAUTH_BUILTIN_AUTIB1716:
+	      icode = CODE_FOR_autib1716;
+	      break;
+	    case AARCH64_PAUTH_BUILTIN_PACIA1716:
+	      icode = CODE_FOR_pacia1716;
+	      break;
+	    case AARCH64_PAUTH_BUILTIN_PACIB1716:
+	      icode = CODE_FOR_pacib1716;
+	      break;
+	    default:
+	      icode = 0;
+	      gcc_unreachable ();
+	    }
 
 	  rtx x16_reg = gen_rtx_REG (Pmode, R16_REGNUM);
 	  rtx x17_reg = gen_rtx_REG (Pmode, R17_REGNUM);

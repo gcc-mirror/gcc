@@ -675,7 +675,7 @@ class Temporary_statement : public Statement
   Temporary_statement(Type* type, Expression* init, Location location)
     : Statement(STATEMENT_TEMPORARY, location),
       type_(type), init_(init), bvariable_(NULL), is_address_taken_(false),
-      value_escapes_(false)
+      value_escapes_(false), assigned_(false), uses_(0)
   { }
 
   // Return the type of the temporary variable.
@@ -686,6 +686,17 @@ class Temporary_statement : public Statement
   Expression*
   init() const
   { return this->init_; }
+
+  // Set the initializer.
+  void
+  set_init(Expression* expr)
+  { this->init_ = expr; }
+
+  // Whether something takes the address of this temporary
+  // variable.
+  bool
+  is_address_taken()
+  { return this->is_address_taken_; }
 
   // Record that something takes the address of this temporary
   // variable.
@@ -703,10 +714,34 @@ class Temporary_statement : public Statement
   set_value_escapes()
   { this->value_escapes_ = true; }
 
+  // Whether this temporary variable is assigned (after initialization).
+  bool
+  assigned()
+  { return this->assigned_; }
+
+  // Record that this temporary variable is assigned.
+  void
+  set_assigned()
+  { this->assigned_ = true; }
+
+  // Number of uses of this temporary variable.
+  int
+  uses()
+  { return this->uses_; }
+
+  // Add one use of this temporary variable.
+  void
+  add_use()
+  { this->uses_++; }
+
   // Return the temporary variable.  This should not be called until
   // after the statement itself has been converted.
   Bvariable*
   get_backend_variable(Translate_context*) const;
+
+  // Import the declaration of a temporary.
+  static Statement*
+  do_import(Import_function_body*, Location);
 
  protected:
   int
@@ -720,6 +755,13 @@ class Temporary_statement : public Statement
 
   void
   do_check_types(Gogo*);
+
+  int
+  do_inlining_cost()
+  { return 1; }
+
+  void
+  do_export_statement(Export_function_body*);
 
   Statement*
   do_flatten(Gogo*, Named_object*, Block*, Statement_inserter*);
@@ -745,6 +787,10 @@ class Temporary_statement : public Statement
   // True if the value assigned to this temporary variable escapes.
   // This is used for select statements.
   bool value_escapes_;
+  // True if this temporary variable is assigned (after initialization).
+  bool assigned_;
+  // Number of uses of this temporary variable.
+  int uses_;
 };
 
 // A variable declaration.  This marks the point in the code where a
@@ -907,6 +953,14 @@ class Block_statement : public Statement
   bool
   is_lowered_for_statement()
   { return this->is_lowered_for_statement_; }
+
+  // Export a block for a block statement.
+  static void
+  export_block(Export_function_body*, Block*);
+
+  // Import a block statement, returning the block.
+  static Block*
+  do_import(Import_function_body*, Location);
 
  protected:
   int
@@ -1475,6 +1529,18 @@ class If_statement : public Statement
   condition() const
   { return this->cond_; }
 
+  Block*
+  then_block() const
+  { return this->then_block_; }
+
+  Block*
+  else_block() const
+  { return this->else_block_; }
+
+  // Import an if statement.
+  static Statement*
+  do_import(Import_function_body*, Location);
+
  protected:
   int
   do_traverse(Traverse*);
@@ -1484,6 +1550,13 @@ class If_statement : public Statement
 
   void
   do_check_types(Gogo*);
+
+  int
+  do_inlining_cost()
+  { return 5; }
+
+  void
+  do_export_statement(Export_function_body*);
 
   bool
   do_may_fall_through() const;

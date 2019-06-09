@@ -595,6 +595,10 @@
 (define_mode_attr ssequarterinsnmode
   [(V16SF "V4SF") (V8DF "V2DF") (V16SI "TI") (V8DI "TI")])
 
+(define_mode_attr vecmemsuffix
+  [(V16SF "{z}") (V8SF "{y}") (V4SF "{x}")
+   (V8DF "{z}") (V4DF "{y}") (V2DF "{x}")])
+
 (define_mode_attr ssedoublemodelower
   [(V16QI "v16hi") (V32QI "v32hi") (V64QI "v64hi")
    (V8HI "v8si")   (V16HI "v16si") (V32HI "v32si")
@@ -21317,26 +21321,26 @@
 (define_insn "avx512dq_fpclass<mode><mask_scalar_merge_name>"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
           (unspec:<avx512fmaskmode>
-            [(match_operand:VF_AVX512VL 1 "register_operand" "v")
+            [(match_operand:VF_AVX512VL 1 "vector_operand" "vm")
              (match_operand:QI 2 "const_0_to_255_operand" "n")]
              UNSPEC_FPCLASS))]
    "TARGET_AVX512DQ"
-   "vfpclass<ssemodesuffix>\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}";
+   "vfpclass<ssemodesuffix><vecmemsuffix>\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}";
   [(set_attr "type" "sse")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "avx512dq_vmfpclass<mode>"
+(define_insn "avx512dq_vmfpclass<mode><mask_scalar_merge_name>"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
 	(and:<avx512fmaskmode>
 	  (unspec:<avx512fmaskmode>
-	    [(match_operand:VF_128 1 "register_operand" "v")
+	    [(match_operand:VF_128 1 "vector_operand" "vm")
              (match_operand:QI 2 "const_0_to_255_operand" "n")]
 	    UNSPEC_FPCLASS)
 	  (const_int 1)))]
    "TARGET_AVX512DQ"
-   "vfpclass<ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %2}";
+   "vfpclass<ssescalarmodesuffix>\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}";
   [(set_attr "type" "sse")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
@@ -21889,21 +21893,21 @@
   "vpopcnt<ssemodesuffix>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}")
 
 ;; Save multiple registers out-of-line.
-(define_insn "save_multiple<mode>"
+(define_insn "*save_multiple<mode>"
   [(match_parallel 0 "save_multiple"
     [(use (match_operand:P 1 "symbol_operand"))])]
   "TARGET_SSE && TARGET_64BIT"
   "call\t%P1")
 
 ;; Restore multiple registers out-of-line.
-(define_insn "restore_multiple<mode>"
+(define_insn "*restore_multiple<mode>"
   [(match_parallel 0 "restore_multiple"
     [(use (match_operand:P 1 "symbol_operand"))])]
   "TARGET_SSE && TARGET_64BIT"
   "call\t%P1")
 
 ;; Restore multiple registers out-of-line and return.
-(define_insn "restore_multiple_and_return<mode>"
+(define_insn "*restore_multiple_and_return<mode>"
   [(match_parallel 0 "restore_multiple"
     [(return)
      (use (match_operand:P 1 "symbol_operand"))
@@ -21914,7 +21918,7 @@
 
 ;; Restore multiple registers out-of-line when hard frame pointer is used,
 ;; perform the leave operation prior to returning (from the function).
-(define_insn "restore_multiple_leave_return<mode>"
+(define_insn "*restore_multiple_leave_return<mode>"
   [(match_parallel 0 "restore_multiple"
     [(return)
      (use (match_operand:P 1 "symbol_operand"))

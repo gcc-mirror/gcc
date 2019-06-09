@@ -891,9 +891,9 @@ adjust_related_strinfos (location_t loc, strinfo *origsi, tree adj)
 	  tree tem;
 
 	  si = unshare_strinfo (si);
-	  /* We shouldn't see delayed lengths here; the caller must have
-	     calculated the old length in order to calculate the
-	     adjustment.  */
+	  /* We shouldn't see delayed lengths here; the caller must
+	     have calculated the old length in order to calculate
+	     the adjustment.  */
 	  gcc_assert (si->nonzero_chars);
 	  tem = fold_convert_loc (loc, TREE_TYPE (si->nonzero_chars), adj);
 	  si->nonzero_chars = fold_build2_loc (loc, PLUS_EXPR,
@@ -2759,7 +2759,7 @@ handle_builtin_malloc (enum built_in_function bcode, gimple_stmt_iterator *gsi)
 
 /* Handle a call to memset.
    After a call to calloc, memset(,0,) is unnecessary.
-   memset(malloc(n),0,n) is calloc(n,1). 
+   memset(malloc(n),0,n) is calloc(n,1).
    return true when the call is transfomred, false otherwise.  */
 
 static bool
@@ -2815,7 +2815,7 @@ handle_builtin_memset (gimple_stmt_iterator *gsi)
 
 /* Handle a call to memcmp.  We try to handle small comparisons by
    converting them to load and compare, and replacing the call to memcmp
-   with a __builtin_memcmp_eq call where possible. 
+   with a __builtin_memcmp_eq call where possible.
    return true when call is transformed, return false otherwise.  */
 
 static bool
@@ -2898,13 +2898,13 @@ handle_builtin_memcmp (gimple_stmt_iterator *gsi)
   return true;
 }
 
-/* Given an index to the strinfo vector, compute the string length for the
-   corresponding string. Return -1 when unknown.  */
- 
-static HOST_WIDE_INT 
+/* Given an index to the strinfo vector, compute the string length
+   for the corresponding string. Return -1 when unknown.  */
+
+static HOST_WIDE_INT
 compute_string_length (int idx)
 {
-  HOST_WIDE_INT string_leni = -1; 
+  HOST_WIDE_INT string_leni = -1;
   gcc_assert (idx != 0);
 
   if (idx < 0)
@@ -2924,9 +2924,9 @@ compute_string_length (int idx)
   return string_leni;
 }
 
-/* Determine the minimum size of the object referenced by DEST expression which
-   must have a pointer type. 
-   Return the minimum size of the object if successful or NULL when the size 
+/* Determine the minimum size of the object referenced by DEST expression
+   which must have a pointer type.
+   Return the minimum size of the object if successful or NULL when the size
    cannot be determined.  */
 static tree
 determine_min_objsize (tree dest)
@@ -2936,8 +2936,8 @@ determine_min_objsize (tree dest)
   if (compute_builtin_object_size (dest, 2, &size))
     return build_int_cst (sizetype, size);
 
-  /* Try to determine the size of the object through the RHS of the 
-     assign statement.  */
+  /* Try to determine the size of the object through the RHS
+     of the assign statement.  */
   if (TREE_CODE (dest) == SSA_NAME)
     {
       gimple *stmt = SSA_NAME_DEF_STMT (dest);
@@ -2962,13 +2962,13 @@ determine_min_objsize (tree dest)
 
   type = TYPE_MAIN_VARIANT (type);
 
-  /* We cannot determine the size of the array if it's a flexible array, 
+  /* We cannot determine the size of the array if it's a flexible array,
      which is declared at the end of a structure.  */
   if (TREE_CODE (type) == ARRAY_TYPE
       && !array_at_struct_end_p (dest))
     {
       tree size_t = TYPE_SIZE_UNIT (type);
-      if (size_t && TREE_CODE (size_t) == INTEGER_CST 
+      if (size_t && TREE_CODE (size_t) == INTEGER_CST
 	  && !integer_zerop (size_t))
         return size_t;
     }
@@ -2976,19 +2976,19 @@ determine_min_objsize (tree dest)
   return NULL_TREE;
 }
 
-/* Handle a call to strcmp or strncmp. When the result is ONLY used to do 
+/* Handle a call to strcmp or strncmp. When the result is ONLY used to do
    equality test against zero:
 
    A. When the lengths of both arguments are constant and it's a strcmp:
       * if the lengths are NOT equal, we can safely fold the call
         to a non-zero value.
       * otherwise, do nothing now.
-  
-   B. When the length of one argument is constant, try to replace the call with
-   a __builtin_str(n)cmp_eq call where possible, i.e:
 
-   strncmp (s, STR, C) (!)= 0 in which, s is a pointer to a string, STR is a 
-   string with constant length , C is a constant.
+   B. When the length of one argument is constant, try to replace the call
+   with a __builtin_str(n)cmp_eq call where possible, i.e:
+
+   strncmp (s, STR, C) (!)= 0 in which, s is a pointer to a string, STR
+   is a string with constant length , C is a constant.
      if (C <= strlen(STR) && sizeof_array(s) > C)
        {
          replace this call with
@@ -3000,16 +3000,16 @@ determine_min_objsize (tree dest)
          can handled by the following strcmp.
        }
 
-   strcmp (s, STR) (!)= 0 in which, s is a pointer to a string, STR is a 
-   string with constant length.
+   strcmp (s, STR) (!)= 0 in which, s is a pointer to a string, STR
+   is a string with constant length.
      if  (sizeof_array(s) > strlen(STR))
        {
          replace this call with
          strcmp_eq (s, STR, strlen(STR)+1) (!)= 0
        }
 
-   Return true when the call is transformed, return false otherwise. 
- */ 
+   Return true when the call is transformed, return false otherwise.
+ */
 
 static bool
 handle_builtin_string_cmp (gimple_stmt_iterator *gsi)
@@ -3047,19 +3047,19 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi)
     return false;
 
   /* When the result is ONLY used to do equality test against zero.  */
-  FOR_EACH_IMM_USE_FAST (use_p, iter, res) 
-    {    
+  FOR_EACH_IMM_USE_FAST (use_p, iter, res)
+    {
       gimple *use_stmt = USE_STMT (use_p);
 
       if (is_gimple_debug (use_stmt))
         continue;
       if (gimple_code (use_stmt) == GIMPLE_ASSIGN)
-	{    
+	{
 	  tree_code code = gimple_assign_rhs_code (use_stmt);
-	  if (code == COND_EXPR) 
+	  if (code == COND_EXPR)
 	    {
 	      tree cond_expr = gimple_assign_rhs1 (use_stmt);
-	      if ((TREE_CODE (cond_expr) != EQ_EXPR 
+	      if ((TREE_CODE (cond_expr) != EQ_EXPR
 		   && (TREE_CODE (cond_expr) != NE_EXPR))
 		  || !integer_zerop (TREE_OPERAND (cond_expr, 1)))
 		return false;
@@ -3069,7 +3069,7 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi)
 	      if (!integer_zerop (gimple_assign_rhs2 (use_stmt)))
 		return false;
             }
-	  else 
+	  else
 	    return false;
 	}
       else if (gimple_code (use_stmt) == GIMPLE_COND)
@@ -3082,21 +3082,21 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi)
       else
         return false;
     }
-  
-  /* When the lengths of both arguments are known, and they are unequal, we can 
-     safely fold the call to a non-zero value for strcmp;
+
+  /* When the lengths of both arguments are known, and they are unequal,
+     we can safely fold the call to a non-zero value for strcmp;
      othewise, do nothing now.  */
   if (idx1 != 0 && idx2 != 0)
     {
       HOST_WIDE_INT const_string_leni1 = compute_string_length (idx1);
       HOST_WIDE_INT const_string_leni2 = compute_string_length (idx2);
 
-      if (!is_ncmp 
+      if (!is_ncmp
 	  && const_string_leni1 != -1
 	  && const_string_leni2 != -1
-	  && const_string_leni1 != const_string_leni2) 
+	  && const_string_leni1 != const_string_leni2)
 	{
-	  replace_call_with_value (gsi, integer_one_node); 
+	  replace_call_with_value (gsi, integer_one_node);
 	  return true;
 	}
       return false;
@@ -3105,56 +3105,56 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi)
   /* When the length of one argument is constant.  */
   tree var_string = NULL_TREE;
   HOST_WIDE_INT const_string_leni = -1;
-  
+
   if (idx1)
     {
       const_string_leni = compute_string_length (idx1);
       var_string = arg2;
-    } 
-  else 
+    }
+  else
     {
       gcc_checking_assert (idx2);
       const_string_leni = compute_string_length (idx2);
       var_string = arg1;
-    } 
+    }
 
-  if (const_string_leni < 0) 
+  if (const_string_leni < 0)
     return false;
- 
+
   unsigned HOST_WIDE_INT var_sizei = 0;
   /* try to determine the minimum size of the object pointed by var_string.  */
   tree size = determine_min_objsize (var_string);
 
   if (!size)
     return false;
- 
+
   if (tree_fits_uhwi_p (size))
     var_sizei = tree_to_uhwi (size);
 
   if (var_sizei == 0)
     return false;
 
-  /* For strncmp, if length > const_string_leni , this call can be safely 
+  /* For strncmp, if length > const_string_leni , this call can be safely
      transformed to a strcmp.  */
   if (is_ncmp && length > const_string_leni)
     is_ncmp = false;
 
-  unsigned HOST_WIDE_INT final_length 
+  unsigned HOST_WIDE_INT final_length
     = is_ncmp ? length : const_string_leni + 1;
 
   /* Replace strcmp or strncmp with the corresponding str(n)cmp_eq.  */
-  if (var_sizei > final_length) 
+  if (var_sizei > final_length)
     {
-      tree fn 
-	= (is_ncmp 
-	   ? builtin_decl_implicit (BUILT_IN_STRNCMP_EQ) 
+      tree fn
+	= (is_ncmp
+	   ? builtin_decl_implicit (BUILT_IN_STRNCMP_EQ)
 	   : builtin_decl_implicit (BUILT_IN_STRCMP_EQ));
       if (!fn)
 	return false;
-      tree const_string_len = build_int_cst (size_type_node, final_length); 
+      tree const_string_len = build_int_cst (size_type_node, final_length);
       update_gimple_call (gsi, fn, 3, arg1, arg2, const_string_len);
     }
-  else 
+  else
     return false;
 
   return true;
@@ -3355,7 +3355,7 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	 and if we aren't storing '\0', we know that the length of the
 	 string and any other zero terminated string in memory remains
 	 the same.  In that case we move to the next gimple statement and
-	 return to signal the caller that it shouldn't invalidate anything.  
+	 return to signal the caller that it shouldn't invalidate anything.
 
 	 This is benefical for cases like:
 
@@ -3370,13 +3370,15 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	   size_t len4 = strlen (q);        // This can be optimized into len2
 	   bar (len, len2, len3, len4);
         }
-	*/ 
+	*/
       else if (storing_nonzero_p && cmp > 0)
 	{
 	  gsi_next (gsi);
 	  return false;
 	}
-      else if (storing_all_zeros_p || storing_nonzero_p || (offset != 0 && cmp > 0))
+      else if (storing_all_zeros_p
+	       || storing_nonzero_p
+	       || (offset != 0 && cmp > 0))
 	{
 	  /* When STORING_NONZERO_P, we know that the string will start
 	     with at least OFFSET + 1 nonzero characters.  If storing

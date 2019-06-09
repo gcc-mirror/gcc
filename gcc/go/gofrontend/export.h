@@ -20,6 +20,7 @@ class Type;
 class Package;
 class Import_init_set;
 class Backend;
+class Temporary_statement;
 
 // Codes used for the builtin types.  These are all negative to make
 // them easily distinct from the codes assigned by Export::write_type.
@@ -201,6 +202,10 @@ class Export : public String_dump
   void
   write_unsigned(unsigned);
 
+  // Return the index of a package.
+  int
+  package_index(const Package* p) const;
+
  private:
   Export(const Export&);
   Export& operator=(const Export&);
@@ -255,7 +260,7 @@ class Export : public String_dump
   // Index number of next type.
   int type_index_;
   // Packages we have written out.
-  Unordered_set(const Package*) packages_;
+  Unordered_map(const Package*, int) packages_;
 };
 
 // An export streamer that puts the export stream in a named section.
@@ -303,7 +308,8 @@ class Export_function_body : public String_dump
 {
  public:
   Export_function_body(Export* exp, int indent)
-    : exp_(exp), type_context_(NULL), indent_(indent)
+    : exp_(exp), body_(), type_context_(NULL), next_temporary_index_(0),
+      temporary_indexes_(), indent_(indent)
   { }
 
   // Write a character to the body.
@@ -354,6 +360,19 @@ class Export_function_body : public String_dump
   decrement_indent()
   { --this->indent_; }
 
+  // Return the index of a package.
+  int
+  package_index(const Package* p) const
+  { return this->exp_->package_index(p); }
+
+  // Record a temporary statement and return its index.
+  unsigned int
+  record_temporary(const Temporary_statement*);
+
+  // Return the index of a temporary statement.
+  unsigned int
+  temporary_index(const Temporary_statement*);
+
   // Return a reference to the completed body.
   const std::string&
   body() const
@@ -366,6 +385,10 @@ class Export_function_body : public String_dump
   std::string body_;
   // Current type context.  Used to avoid duplicate type conversions.
   Type* type_context_;
+  // Index to give to next temporary statement.
+  unsigned int next_temporary_index_;
+  // Map temporary statements to indexes.
+  Unordered_map(const Temporary_statement*, unsigned int) temporary_indexes_;
   // Current indentation level: the number of spaces before each statement.
   int indent_;
 };

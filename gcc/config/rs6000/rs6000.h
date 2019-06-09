@@ -509,7 +509,6 @@ extern int rs6000_vector_align[];
 #define MASK_HTM			OPTION_MASK_HTM
 #define MASK_ISEL			OPTION_MASK_ISEL
 #define MASK_MFCRF			OPTION_MASK_MFCRF
-#define MASK_MFPGPR			OPTION_MASK_MFPGPR
 #define MASK_MULHW			OPTION_MASK_MULHW
 #define MASK_MULTIPLE			OPTION_MASK_MULTIPLE
 #define MASK_NO_UPDATE			OPTION_MASK_NO_UPDATE
@@ -1257,18 +1256,8 @@ enum r6000_reg_class_enum {
   RS6000_CONSTRAINT_f,		/* fpr registers for single values */
   RS6000_CONSTRAINT_v,		/* Altivec registers */
   RS6000_CONSTRAINT_wa,		/* Any VSX register */
-  RS6000_CONSTRAINT_wd,		/* VSX register for V2DF */
   RS6000_CONSTRAINT_we,		/* VSX register if ISA 3.0 vector. */
-  RS6000_CONSTRAINT_wf,		/* VSX register for V4SF */
-  RS6000_CONSTRAINT_wg,		/* FPR register for -mmfpgpr */
-  RS6000_CONSTRAINT_wi,		/* FPR/VSX register to hold DImode */
-  RS6000_CONSTRAINT_wp,		/* VSX reg for IEEE 128-bit fp TFmode. */
-  RS6000_CONSTRAINT_wq,		/* VSX reg for IEEE 128-bit fp KFmode.  */
   RS6000_CONSTRAINT_wr,		/* GPR register if 64-bit  */
-  RS6000_CONSTRAINT_ws,		/* VSX register for DF */
-  RS6000_CONSTRAINT_wt,		/* VSX register for TImode */
-  RS6000_CONSTRAINT_wv,		/* Altivec register for double load/stores.  */
-  RS6000_CONSTRAINT_ww,		/* FP or VSX register for vsx float ops.  */
   RS6000_CONSTRAINT_wx,		/* FPR register for STFIWX */
   RS6000_CONSTRAINT_wA,		/* BASE_REGS if 64-bit.  */
   RS6000_CONSTRAINT_MAX
@@ -1489,6 +1478,15 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 #define CALL_V4_SET_FP_ARGS	0x00000004	/* V.4, FP args were passed */
 #define CALL_LONG		0x00000008	/* always call indirect */
 #define CALL_LIBCALL		0x00000010	/* libcall */
+
+/* Identify PLT sequence for rs6000_pltseq_template.  */
+enum rs6000_pltseq_enum {
+  RS6000_PLTSEQ_TOCSAVE,
+  RS6000_PLTSEQ_PLT16_HA,
+  RS6000_PLTSEQ_PLT16_LO,
+  RS6000_PLTSEQ_MTCTR,
+  RS6000_PLTSEQ_PLT_PCREL34
+};
 
 #define IS_V4_FP_ARGS(OP) \
   ((INTVAL (OP) & (CALL_V4_CLEAR_FP_ARGS | CALL_V4_SET_FP_ARGS)) != 0)
@@ -2493,3 +2491,24 @@ extern GTY(()) tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
 #if (GCC_VERSION >= 3000)
 #pragma GCC poison TARGET_FLOAT128 OPTION_MASK_FLOAT128 MASK_FLOAT128
 #endif
+
+/* Whether a given VALUE is a valid 16- or 34-bit signed offset.  EXTRA is the
+   amount that we can't touch at the high end of the range (typically if the
+   address is split into smaller addresses, the extra covers the addresses
+   which might be generated when the insn is split).  */
+#define SIGNED_16BIT_OFFSET_P(VALUE, EXTRA)				\
+  IN_RANGE (VALUE,							\
+	    -(HOST_WIDE_INT_1 << 15),					\
+	    (HOST_WIDE_INT_1 << 15) - 1 - (EXTRA))
+
+#define SIGNED_34BIT_OFFSET_P(VALUE, EXTRA)				\
+  IN_RANGE (VALUE,							\
+	    -(HOST_WIDE_INT_1 << 33),					\
+	    (HOST_WIDE_INT_1 << 33) - 1 - (EXTRA))
+
+/* Flag to mark SYMBOL_REF objects to say they are local addresses and are used
+   in pc-relative addresses.  */
+#define SYMBOL_FLAG_PCREL	SYMBOL_FLAG_MACH_DEP
+
+#define SYMBOL_REF_PCREL_P(X)						\
+  (SYMBOL_REF_P (X) && SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_PCREL)

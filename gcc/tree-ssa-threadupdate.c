@@ -1142,12 +1142,25 @@ ssa_create_duplicates (struct redirection_data **slot,
       gimple_seq seq = NULL;
       if (gsi_stmt (local_info->template_last_to_copy)
 	  != gsi_stmt (gsi_last_bb (local_info->template_block)))
-	seq = gsi_split_seq_after (local_info->template_last_to_copy);
+	{
+	  if (gsi_end_p (local_info->template_last_to_copy))
+	    {
+	      seq = bb_seq (local_info->template_block);
+	      set_bb_seq (local_info->template_block, NULL);
+	    }
+	  else
+	    seq = gsi_split_seq_after (local_info->template_last_to_copy);
+	}
       create_block_for_threading (local_info->template_block, rd, 0,
 				  &local_info->duplicate_blocks);
       if (seq)
-	gsi_insert_seq_after (&local_info->template_last_to_copy,
-			      seq, GSI_SAME_STMT);
+	{
+	  if (gsi_end_p (local_info->template_last_to_copy))
+	    set_bb_seq (local_info->template_block, seq);
+	  else
+	    gsi_insert_seq_after (&local_info->template_last_to_copy,
+				  seq, GSI_SAME_STMT);
+	}
 
       /* Go ahead and wire up outgoing edges and update PHIs for the duplicate
 	 block.   */

@@ -153,53 +153,6 @@ struct __go_uncommon_type
   struct __go_open_array __methods;
 };
 
-/* The type descriptor for a fixed array type.  */
-
-struct __go_array_type
-{
-  /* Starts like all type descriptors.  */
-  struct __go_type_descriptor __common;
-
-  /* The element type.  */
-  struct __go_type_descriptor *__element_type;
-
-  /* The type of a slice of the same element type.  */
-  struct __go_type_descriptor *__slice_type;
-
-  /* The length of the array.  */
-  uintptr_t __len;
-};
-
-/* The type descriptor for a slice.  */
-
-struct __go_slice_type
-{
-  /* Starts like all other type descriptors.  */
-  struct __go_type_descriptor __common;
-
-  /* The element type.  */
-  struct __go_type_descriptor *__element_type;
-};
-
-/* The direction of a channel.  */
-#define CHANNEL_RECV_DIR 1
-#define CHANNEL_SEND_DIR 2
-#define CHANNEL_BOTH_DIR (CHANNEL_RECV_DIR | CHANNEL_SEND_DIR)
-
-/* The type descriptor for a channel.  */
-
-struct __go_channel_type
-{
-  /* Starts like all other type descriptors.  */
-  struct __go_type_descriptor __common;
-
-  /* The element type.  */
-  const struct __go_type_descriptor *__element_type;
-
-  /* The direction.  */
-  uintptr_t __dir;
-};
-
 /* The type descriptor for a function.  */
 
 struct __go_func_type
@@ -219,34 +172,6 @@ struct __go_func_type
   /* The output parameter types.  This is an array of pointers to
      struct __go_type_descriptor.  */
   struct __go_open_array __out;
-};
-
-/* A method on an interface type.  */
-
-struct __go_interface_method
-{
-  /* The name of the method.  */
-  const struct String *__name;
-
-  /* This is NULL for an exported method, or the name of the package
-     where it lives.  */
-  const struct String *__pkg_path;
-
-  /* The real type of the method.  */
-  struct __go_type_descriptor *__type;
-};
-
-/* An interface type.  */
-
-struct __go_interface_type
-{
-  /* Starts like all other type descriptors.  */
-  struct __go_type_descriptor __common;
-
-  /* Array of __go_interface_method .  The methods are sorted in the
-     same order that they appear in the definition of the
-     interface.  */
-  struct __go_open_array __methods;
 };
 
 /* A map type.  */
@@ -300,70 +225,5 @@ struct __go_ptr_type
   /* The type to which this points.  */
   const struct __go_type_descriptor *__element_type;
 };
-
-/* A field in a structure.  */
-
-struct __go_struct_field
-{
-  /* The name of the field--NULL for an anonymous field.  */
-  const struct String *__name;
-
-  /* This is NULL for an exported method, or the name of the package
-     where it lives.  */
-  const struct String *__pkg_path;
-
-  /* The type of the field.  */
-  const struct __go_type_descriptor *__type;
-
-  /* The field tag, or NULL.  */
-  const struct String *__tag;
-
-  /* The offset of the field in the struct.  */
-  uintptr_t __offset;
-};
-
-/* A struct type.  */
-
-struct __go_struct_type
-{
-  /* Starts like all other type descriptors.  */
-  struct __go_type_descriptor __common;
-
-  /* An array of struct __go_struct_field.  */
-  struct __go_open_array __fields;
-};
-
-/* Whether a type descriptor is a pointer.  */
-
-static inline _Bool
-__go_is_pointer_type (const struct __go_type_descriptor *td)
-{
-  return ((td->__code & GO_CODE_MASK) == GO_PTR
-	  || (td->__code & GO_CODE_MASK) == GO_UNSAFE_POINTER);
-}
-
-/* Call a type hash function, given the __hashfn value.  */
-
-static inline uintptr_t
-__go_call_hashfn (const FuncVal *hashfn, const void *p, uintptr_t seed,
-		  uintptr_t size)
-{
-  uintptr_t (*h) (const void *, uintptr_t, uintptr_t) = (void *) hashfn->fn;
-  return __builtin_call_with_static_chain (h (p, seed, size), hashfn);
-}
-
-/* Call a type equality function, given the __equalfn value.  */
-
-static inline _Bool
-__go_call_equalfn (const FuncVal *equalfn, const void *p1, const void *p2,
-		   uintptr_t size)
-{
-  _Bool (*e) (const void *, const void *, uintptr_t) = (void *) equalfn->fn;
-  return __builtin_call_with_static_chain (e (p1, p2, size), equalfn);
-}
-
-extern _Bool
-__go_type_descriptors_equal(const struct __go_type_descriptor*,
-			    const struct __go_type_descriptor*);
 
 #endif /* !defined(LIBGO_GO_TYPE_H) */

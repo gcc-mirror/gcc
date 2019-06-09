@@ -2858,9 +2858,14 @@ cselib_init (int record_what)
     }
   used_regs = XNEWVEC (unsigned int, cselib_nregs);
   n_used_regs = 0;
-  cselib_hash_table = new hash_table<cselib_hasher> (31);
+  /* FIXME: enable sanitization (PR87845) */
+  cselib_hash_table
+    = new hash_table<cselib_hasher> (31, /* ggc */ false,
+				     /* sanitize_eq_and_hash */ false);
   if (cselib_preserve_constants)
-    cselib_preserved_hash_table = new hash_table<cselib_hasher> (31);
+    cselib_preserved_hash_table
+      = new hash_table<cselib_hasher> (31, /* ggc */ false,
+				       /* sanitize_eq_and_hash */ false);
   next_uid = 1;
 }
 

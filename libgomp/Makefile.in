@@ -16,7 +16,7 @@
 
 # Plugins for offload execution, Makefile.am fragment.
 #
-# Copyright (C) 2014-2018 Free Software Foundation, Inc.
+# Copyright (C) 2014-2019 Free Software Foundation, Inc.
 #
 # Contributed by Mentor Embedded.
 #
@@ -124,6 +124,7 @@ target_triplet = @target@
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/ax_count_cpus.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../config/futex.m4 \
@@ -365,6 +366,7 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CPU_COUNT = @CPU_COUNT@
 CUDA_DRIVER_INCLUDE = @CUDA_DRIVER_INCLUDE@
 CUDA_DRIVER_LIB = @CUDA_DRIVER_LIB@
 CYGPATH_W = @CYGPATH_W@

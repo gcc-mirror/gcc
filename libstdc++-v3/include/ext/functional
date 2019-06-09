@@ -64,14 +64,6 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  using std::size_t;
-  using std::unary_function;
-  using std::binary_function;
-  using std::mem_fun1_t;
-  using std::const_mem_fun1_t;
-  using std::mem_fun1_ref_t;
-  using std::const_mem_fun1_ref_t;
-
   /** The @c identity_element functions are not part of the C++
    *  standard; SGI provided them as an extension.  Its argument is an
    *  operation, and its return value is the identity element for that
@@ -123,8 +115,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// An \link SGIextensions SGI extension \endlink.
   template <class _Operation1, class _Operation2>
     class unary_compose
-    : public unary_function<typename _Operation2::argument_type,
-			    typename _Operation1::result_type>
+    : public std::unary_function<typename _Operation2::argument_type,
+				 typename _Operation1::result_type>
     {
     protected:
       _Operation1 _M_fn1;
@@ -148,8 +140,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// An \link SGIextensions SGI extension \endlink.
   template <class _Operation1, class _Operation2, class _Operation3>
     class binary_compose
-    : public unary_function<typename _Operation2::argument_type,
-			    typename _Operation1::result_type>
+    : public std::unary_function<typename _Operation2::argument_type,
+				 typename _Operation1::result_type>
     {
     protected:
       _Operation1 _M_fn1;
@@ -209,7 +201,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // extension documented next
   template <class _Arg1, class _Arg2>
-    struct _Project1st : public binary_function<_Arg1, _Arg2, _Arg1>
+    struct _Project1st : public std::binary_function<_Arg1, _Arg2, _Arg1>
     {
       _Arg1
       operator()(const _Arg1& __x, const _Arg2&) const
@@ -217,7 +209,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template <class _Arg1, class _Arg2>
-    struct _Project2nd : public binary_function<_Arg1, _Arg2, _Arg2>
+    struct _Project2nd : public std::binary_function<_Arg1, _Arg2, _Arg2>
     {
       _Arg2
       operator()(const _Arg1&, const _Arg2& __y) const
@@ -350,12 +342,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @ingroup SGIextensions
    */
   class subtractive_rng
-  : public unary_function<unsigned int, unsigned int>
+  : public std::unary_function<unsigned int, unsigned int>
   {
   private:
     unsigned int _M_table[55];
-    size_t _M_index1;
-    size_t _M_index2;
+    std::size_t _M_index1;
+    std::size_t _M_index2;
 
   public:
     /// Returns a number less than the argument.
@@ -373,10 +365,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       unsigned int __k = 1;
       _M_table[54] = __seed;
-      size_t __i;
+      std::size_t __i;
       for (__i = 0; __i < 54; __i++)
 	{
-	  size_t __ii = (21 * (__i + 1) % 55) - 1;
+	  std::size_t __ii = (21 * (__i + 1) % 55) - 1;
 	  _M_table[__ii] = __k;
 	  __k = __seed - __k;
 	  __seed = _M_table[__ii];
@@ -404,24 +396,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // the C++ standard.
   
   template <class _Ret, class _Tp, class _Arg>
-    inline mem_fun1_t<_Ret, _Tp, _Arg>
+    inline std::mem_fun1_t<_Ret, _Tp, _Arg>
     mem_fun1(_Ret (_Tp::*__f)(_Arg))
-    { return mem_fun1_t<_Ret, _Tp, _Arg>(__f); }
+    { return std::mem_fun1_t<_Ret, _Tp, _Arg>(__f); }
 
   template <class _Ret, class _Tp, class _Arg>
-    inline const_mem_fun1_t<_Ret, _Tp, _Arg>
+    inline std::const_mem_fun1_t<_Ret, _Tp, _Arg>
     mem_fun1(_Ret (_Tp::*__f)(_Arg) const)
-    { return const_mem_fun1_t<_Ret, _Tp, _Arg>(__f); }
+    { return std::const_mem_fun1_t<_Ret, _Tp, _Arg>(__f); }
 
   template <class _Ret, class _Tp, class _Arg>
-    inline mem_fun1_ref_t<_Ret, _Tp, _Arg>
+    inline std::mem_fun1_ref_t<_Ret, _Tp, _Arg>
     mem_fun1_ref(_Ret (_Tp::*__f)(_Arg))
-    { return mem_fun1_ref_t<_Ret, _Tp, _Arg>(__f); }
+    { return std::mem_fun1_ref_t<_Ret, _Tp, _Arg>(__f); }
 
   template <class _Ret, class _Tp, class _Arg>
-    inline const_mem_fun1_ref_t<_Ret, _Tp, _Arg>
+    inline std::const_mem_fun1_ref_t<_Ret, _Tp, _Arg>
     mem_fun1_ref(_Ret (_Tp::*__f)(_Arg) const)
-    { return const_mem_fun1_ref_t<_Ret, _Tp, _Arg>(__f); }
+    { return std::const_mem_fun1_ref_t<_Ret, _Tp, _Arg>(__f); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

@@ -41,9 +41,6 @@ class Mark_address_taken : public Traverse
   expression(Expression**);
 
  private:
-  Call_expression*
-  find_makeslice_call(Expression*);
-
   // General IR.
   Gogo* gogo_;
   // The function we are traversing.
@@ -100,31 +97,6 @@ Mark_address_taken::statement(Block* block, size_t* pindex, Statement* s)
   return TRAVERSE_CONTINUE;
 }
 
-// Look through the expression of a Slice_value_expression's valmem to
-// find an call to makeslice.
-
-Call_expression*
-Mark_address_taken::find_makeslice_call(Expression* expr)
-{
-  Unsafe_type_conversion_expression* utce =
-    expr->unsafe_conversion_expression();
-  if (utce != NULL)
-    expr = utce->expr();
-
-  Call_expression* call = expr->call_expression();
-  if (call == NULL)
-    return NULL;
-
-  Func_expression* fe = call->fn()->func_expression();
-  if (fe != NULL && fe->runtime_code() == Runtime::MAKESLICE)
-    return call;
-
-  // We don't worry about MAKESLICE64 bcause we don't want to use a
-  // stack allocation for a large slice anyhow.
-
-  return NULL;
-}
-
 // Mark variable addresses taken.
 
 int
@@ -173,7 +145,10 @@ Mark_address_taken::expression(Expression** pexpr)
   Slice_value_expression* sve = expr->slice_value_expression();
   if (sve != NULL)
     {
-      Call_expression* call = this->find_makeslice_call(sve->valmem());
+      std::pair<Call_expression*, Temporary_statement*> p =
+        Expression::find_makeslice_call(sve);
+      Call_expression* call = p.first;
+      Temporary_statement* ts = p.second;
       if (call != NULL
 	  && Node::make_node(call)->encoding() == Node::ESCAPE_NONE)
         {
@@ -203,6 +178,8 @@ Mark_address_taken::expression(Expression** pexpr)
 		Expression::make_slice_value(expr->type(), ptr, len_arg,
 					     cap_arg, loc);
               *pexpr = slice;
+              if (ts != NULL && ts->uses() == 1)
+                ts->set_init(Expression::make_nil(loc));
             }
         }
     }
@@ -845,6 +822,7 @@ Gogo::assign_with_write_barrier(Function* function, Block* enclosing,
   Type* unsafe_ptr_type = Type::make_pointer_type(Type::make_void_type());
   lhs = Expression::make_unsafe_cast(unsafe_ptr_type, lhs, loc);
 
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
   Expression* call;
   switch (type->base()->classification())
     {
@@ -860,17 +838,125 @@ Gogo::assign_with_write_barrier(Function* function, Block* enclosing,
     case Type::TYPE_CHANNEL:
       {
 	// These types are all represented by a single pointer.
-	Type* uintptr_type = Type::lookup_integer_type("uintptr");
 	rhs = Expression::make_unsafe_cast(uintptr_type, rhs, loc);
 	call = Runtime::make_call(Runtime::GCWRITEBARRIER, loc, 2, lhs, rhs);
       }
       break;
 
     case Type::TYPE_STRING:
-    case Type::TYPE_STRUCT:
-    case Type::TYPE_ARRAY:
+      {
+        // Assign the length field directly.
+        Expression* llen =
+          Expression::make_string_info(indir->copy(),
+                                       Expression::STRING_INFO_LENGTH,
+                                       loc);
+        Expression* rlen =
+          Expression::make_string_info(rhs,
+                                       Expression::STRING_INFO_LENGTH,
+                                       loc);
+        Statement* as = Statement::make_assignment(llen, rlen, loc);
+        inserter->insert(as);
+
+        // Assign the data field with a write barrier.
+        lhs =
+          Expression::make_string_info(indir->copy(),
+                                       Expression::STRING_INFO_DATA,
+                                       loc);
+        rhs =
+          Expression::make_string_info(rhs,
+                                       Expression::STRING_INFO_DATA,
+                                       loc);
+        assign = Statement::make_assignment(lhs, rhs, loc);
+        lhs = Expression::make_unary(OPERATOR_AND, lhs, loc);
+        rhs = Expression::make_unsafe_cast(uintptr_type, rhs, loc);
+        call = Runtime::make_call(Runtime::GCWRITEBARRIER, loc, 2, lhs, rhs);
+      }
+      break;
+
     case Type::TYPE_INTERFACE:
       {
+        // Assign the first field directly.
+        // The first field is either a type descriptor or a method table.
+        // Type descriptors are either statically created, or created by
+        // the reflect package. For the latter the reflect package keeps
+        // all references.
+        // Method tables are either statically created or persistently
+        // allocated.
+        // In all cases they don't need a write barrier.
+        Expression* ltab =
+          Expression::make_interface_info(indir->copy(),
+                                          Expression::INTERFACE_INFO_METHODS,
+                                          loc);
+        Expression* rtab =
+          Expression::make_interface_info(rhs,
+                                          Expression::INTERFACE_INFO_METHODS,
+                                          loc);
+        Statement* as = Statement::make_assignment(ltab, rtab, loc);
+        inserter->insert(as);
+
+        // Assign the data field with a write barrier.
+        lhs =
+          Expression::make_interface_info(indir->copy(),
+                                          Expression::INTERFACE_INFO_OBJECT,
+                                          loc);
+        rhs =
+          Expression::make_interface_info(rhs,
+                                          Expression::INTERFACE_INFO_OBJECT,
+                                          loc);
+        assign = Statement::make_assignment(lhs, rhs, loc);
+        lhs = Expression::make_unary(OPERATOR_AND, lhs, loc);
+        rhs = Expression::make_unsafe_cast(uintptr_type, rhs, loc);
+        call = Runtime::make_call(Runtime::GCWRITEBARRIER, loc, 2, lhs, rhs);
+      }
+      break;
+
+    case Type::TYPE_ARRAY:
+      if (type->is_slice_type())
+       {
+          // Assign the lenth fields directly.
+          Expression* llen =
+            Expression::make_slice_info(indir->copy(),
+                                        Expression::SLICE_INFO_LENGTH,
+                                        loc);
+          Expression* rlen =
+            Expression::make_slice_info(rhs,
+                                        Expression::SLICE_INFO_LENGTH,
+                                        loc);
+          Statement* as = Statement::make_assignment(llen, rlen, loc);
+          inserter->insert(as);
+
+          // Assign the capacity fields directly.
+          Expression* lcap =
+            Expression::make_slice_info(indir->copy(),
+                                        Expression::SLICE_INFO_CAPACITY,
+                                        loc);
+          Expression* rcap =
+            Expression::make_slice_info(rhs,
+                                        Expression::SLICE_INFO_CAPACITY,
+                                        loc);
+          as = Statement::make_assignment(lcap, rcap, loc);
+          inserter->insert(as);
+
+          // Assign the data field with a write barrier.
+          lhs =
+            Expression::make_slice_info(indir->copy(),
+                                        Expression::SLICE_INFO_VALUE_POINTER,
+                                        loc);
+          rhs =
+            Expression::make_slice_info(rhs,
+                                        Expression::SLICE_INFO_VALUE_POINTER,
+                                        loc);
+          assign = Statement::make_assignment(lhs, rhs, loc);
+          lhs = Expression::make_unary(OPERATOR_AND, lhs, loc);
+          rhs = Expression::make_unsafe_cast(uintptr_type, rhs, loc);
+          call = Runtime::make_call(Runtime::GCWRITEBARRIER, loc, 2, lhs, rhs);
+          break;
+        }
+      // fallthrough
+
+    case Type::TYPE_STRUCT:
+      {
+        // TODO: split assignments for small struct/array?
 	rhs = Expression::make_unary(OPERATOR_AND, rhs, loc);
 	rhs->unary_expression()->set_does_not_escape();
 	call = Runtime::make_call(Runtime::TYPEDMEMMOVE, loc, 3,

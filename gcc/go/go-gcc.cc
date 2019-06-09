@@ -871,6 +871,8 @@ Gcc_backend::Gcc_backend()
                                NULL_TREE);
   this->define_builtin(BUILT_IN_ATOMIC_AND_FETCH_1, "__atomic_and_fetch_1", NULL,
                        t, false, false);
+  this->define_builtin(BUILT_IN_ATOMIC_FETCH_AND_1, "__atomic_fetch_and_1", NULL,
+                       t, false, false);
 
   t = build_function_type_list(unsigned_char_type_node,
                                ptr_type_node,
@@ -878,6 +880,8 @@ Gcc_backend::Gcc_backend()
                                integer_type_node,
                                NULL_TREE);
   this->define_builtin(BUILT_IN_ATOMIC_OR_FETCH_1, "__atomic_or_fetch_1", NULL,
+                       t, false, false);
+  this->define_builtin(BUILT_IN_ATOMIC_FETCH_OR_1, "__atomic_fetch_or_1", NULL,
                        t, false, false);
 }
 

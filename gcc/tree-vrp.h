@@ -46,8 +46,8 @@ public:
 
   void set (value_range_kind, tree, tree);
   void set (tree);
-  void set_nonnull (tree);
-  void set_null (tree);
+  void set_nonzero (tree);
+  void set_zero (tree);
 
   enum value_range_kind kind () const;
   tree min () const;
@@ -62,6 +62,7 @@ public:
   void set_undefined ();
 
   void union_ (const value_range_base *);
+  void intersect (const value_range_base *);
 
   bool operator== (const value_range_base &) const /* = delete */;
   bool operator!= (const value_range_base &) const /* = delete */;
@@ -72,6 +73,7 @@ public:
   bool may_contain_p (tree) const;
   void set_and_canonicalize (enum value_range_kind, tree, tree);
   bool zero_p () const;
+  bool nonzero_p () const;
   bool singleton_p (tree *result = NULL) const;
   void dump (FILE *) const;
 
@@ -79,6 +81,8 @@ protected:
   void check ();
   static value_range_base union_helper (const value_range_base *,
 					const value_range_base *);
+  static value_range_base intersect_helper (const value_range_base *,
+					    const value_range_base *);
 
   enum value_range_kind m_kind;
 
@@ -118,8 +122,6 @@ class GTY((user)) value_range : public value_range_base
   /* Deep-copies equiv bitmap argument.  */
   void set (value_range_kind, tree, tree, bitmap = NULL);
   void set (tree);
-  void set_nonnull (tree);
-  void set_null (tree);
 
   bool operator== (const value_range &) const /* = delete */;
   bool operator!= (const value_range &) const /* = delete */;
@@ -145,7 +147,6 @@ class GTY((user)) value_range : public value_range_base
   /* Deep-copies bitmap argument.  */
   void set_equiv (bitmap);
   void check ();
-  void intersect_helper (value_range *, const value_range *);
 
   /* Set of SSA names whose value ranges are equivalent to this one.
      This set is only valid when TYPE is VR_RANGE or VR_ANTI_RANGE.  */
@@ -218,6 +219,16 @@ inline bool
 value_range_base::zero_p () const
 {
   return (m_kind == VR_RANGE
+	  && integer_zerop (m_min)
+	  && integer_zerop (m_max));
+}
+
+/* Return TRUE if range is nonzero.  */
+
+inline bool
+value_range_base::nonzero_p () const
+{
+  return (m_kind == VR_ANTI_RANGE
 	  && integer_zerop (m_min)
 	  && integer_zerop (m_max));
 }

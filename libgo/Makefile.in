@@ -248,12 +248,12 @@ am__objects_3 = runtime/aeshash.lo runtime/go-assert.lo \
 	runtime/go-nanotime.lo runtime/go-now.lo runtime/go-nosys.lo \
 	runtime/go-reflect-call.lo runtime/go-runtime-error.lo \
 	runtime/go-setenv.lo runtime/go-signal.lo \
-	runtime/go-strslice.lo runtime/go-typedesc-equal.lo \
-	runtime/go-unsafe-pointer.lo runtime/go-unsetenv.lo \
-	runtime/go-unwind.lo runtime/go-varargs.lo \
-	runtime/env_posix.lo runtime/panic.lo runtime/print.lo \
-	runtime/proc.lo runtime/runtime_c.lo runtime/stack.lo \
-	runtime/yield.lo $(am__objects_1) $(am__objects_2)
+	runtime/go-strslice.lo runtime/go-unsafe-pointer.lo \
+	runtime/go-unsetenv.lo runtime/go-unwind.lo \
+	runtime/go-varargs.lo runtime/env_posix.lo runtime/panic.lo \
+	runtime/print.lo runtime/proc.lo runtime/runtime_c.lo \
+	runtime/stack.lo runtime/yield.lo runtime/go-context.lo \
+	$(am__objects_1) $(am__objects_2)
 am_libgo_llgo_la_OBJECTS = $(am__objects_3)
 libgo_llgo_la_OBJECTS = $(am_libgo_llgo_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -287,6 +287,16 @@ DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+CPPASCOMPILE = $(CCAS) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CCASFLAGS) $(CCASFLAGS)
+LTCPPASCOMPILE = $(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CCAS) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CCASFLAGS) $(CCASFLAGS)
+AM_V_CPPAS = $(am__v_CPPAS_@AM_V@)
+am__v_CPPAS_ = $(am__v_CPPAS_@AM_DEFAULT_V@)
+am__v_CPPAS_0 = @echo "  CPPAS   " $@;
+am__v_CPPAS_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -380,6 +390,9 @@ AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 CC = @CC@
+CCAS = @CCAS@
+CCASDEPMODE = @CCASDEPMODE@
+CCASFLAGS = @CCASFLAGS@
 CCDEPMODE = @CCDEPMODE@
 CC_FOR_BUILD = @CC_FOR_BUILD@
 CFLAGS = @CFLAGS@
@@ -889,7 +902,6 @@ runtime_files = \
 	runtime/go-setenv.c \
 	runtime/go-signal.c \
 	runtime/go-strslice.c \
-	runtime/go-typedesc-equal.c \
 	runtime/go-unsafe-pointer.c \
 	runtime/go-unsetenv.c \
 	runtime/go-unwind.c \
@@ -901,6 +913,7 @@ runtime_files = \
 	runtime/runtime_c.c \
 	runtime/stack.c \
 	runtime/yield.c \
+	runtime/go-context.S \
 	$(rtems_task_variable_add_file) \
 	$(runtime_getncpu_file)
 
@@ -1158,7 +1171,7 @@ all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .c .go .gox .o .obj .lo .a
+.SUFFIXES: .c .go .gox .o .obj .lo .a .S
 am--refresh: Makefile
 	@:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/../multilib.am $(am__configure_deps)
@@ -1351,8 +1364,6 @@ runtime/go-signal.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-strslice.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
-runtime/go-typedesc-equal.lo: runtime/$(am__dirstamp) \
-	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-unsafe-pointer.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-unsetenv.lo: runtime/$(am__dirstamp) \
@@ -1374,6 +1385,8 @@ runtime/runtime_c.lo: runtime/$(am__dirstamp) \
 runtime/stack.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/yield.lo: runtime/$(am__dirstamp) \
+	runtime/$(DEPDIR)/$(am__dirstamp)
+runtime/go-context.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/rtems-task-variable-add.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
@@ -1421,6 +1434,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-cdiv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-cgo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-construct-map.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-context.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-ffi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-fieldtrack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-matherr.Plo@am__quote@
@@ -1435,7 +1449,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-setenv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-signal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-strslice.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-typedesc-equal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-unsafe-pointer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-unsetenv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-unwind.Plo@am__quote@
@@ -1450,6 +1463,30 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/runtime_c.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/stack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/yield.Plo@am__quote@
+
+.S.o:
+@am__fastdepCCAS_TRUE@	$(AM_V_CPPAS)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCCAS_TRUE@	$(CPPASCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCCAS_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	$(AM_V_CPPAS)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	DEPDIR=$(DEPDIR) $(CCASDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCCAS_FALSE@	$(AM_V_CPPAS@am__nodep@)$(CPPASCOMPILE) -c -o $@ $<
+
+.S.obj:
+@am__fastdepCCAS_TRUE@	$(AM_V_CPPAS)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCCAS_TRUE@	$(CPPASCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+@am__fastdepCCAS_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	$(AM_V_CPPAS)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	DEPDIR=$(DEPDIR) $(CCASDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCCAS_FALSE@	$(AM_V_CPPAS@am__nodep@)$(CPPASCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+.S.lo:
+@am__fastdepCCAS_TRUE@	$(AM_V_CPPAS)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCCAS_TRUE@	$(LTCPPASCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCCAS_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	$(AM_V_CPPAS)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCCAS_FALSE@	DEPDIR=$(DEPDIR) $(CCASDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCCAS_FALSE@	$(AM_V_CPPAS@am__nodep@)$(LTCPPASCOMPILE) -c -o $@ $<
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\

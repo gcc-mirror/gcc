@@ -2232,10 +2232,12 @@ warn_for_sign_compare (location_t location,
 		{
 		  if (constant == 0)
 		    warning_at (location, OPT_Wsign_compare,
-				"promoted ~unsigned is always non-zero");
+				"promoted bitwise complement of an unsigned "
+				"value is always nonzero");
 		  else
 		    warning_at (location, OPT_Wsign_compare,
-				"comparison of promoted ~unsigned with constant");
+				"comparison of promoted bitwise complement "
+				"of an unsigned value with constant");
 		}
 	    }
 	}
@@ -2245,7 +2247,8 @@ warn_for_sign_compare (location_t location,
 	       && (TYPE_PRECISION (TREE_TYPE (op1))
 		   < TYPE_PRECISION (result_type)))
 	warning_at (location, OPT_Wsign_compare,
-		    "comparison of promoted ~unsigned with unsigned");
+		    "comparison of promoted bitwise complement "
+		    "of an unsigned value with unsigned");
     }
 }
 
@@ -2597,11 +2600,11 @@ warn_for_restrict (unsigned param_pos, tree *argarray, unsigned nargs)
     }
 
   return warning_n (&richloc, OPT_Wrestrict, arg_positions.length (),
-		    "passing argument %i to restrict-qualified parameter"
+		    "passing argument %i to %qs-qualified parameter"
 		    " aliases with argument %Z",
-		    "passing argument %i to restrict-qualified parameter"
+		    "passing argument %i to %qs-qualified parameter"
 		    " aliases with arguments %Z",
-		    param_pos + 1, arg_positions.address (),
+		    param_pos + 1, "restrict", arg_positions.address (),
 		    arg_positions.length ());
 }
 

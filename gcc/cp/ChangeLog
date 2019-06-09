@@ -1,3 +1,138 @@
+2019-06-07  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_constant_expression): Call
+	STRIP_ANY_LOCATION_WRAPPER early.
+	[CONVERT_EXPR]: Don't build anything for conversion to void.
+	[ADDR_EXPR]: ggc_free unused ADDR_EXPR.
+
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	PR c/90737
+	* typeck.c (maybe_warn_about_returning_address_of_local): Only
+	consider functions returning pointers as candidates for
+	-Wreturn-local-addr.
+
+2019-06-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (smallest_type_location): New.
+	(check_special_function_return_type): Use it.
+	(grokdeclarator): Lkewise.
+
+2019-06-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use locations[ds_friend]
+	in one place.
+
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* call.c (build_conditional_expr_1): Adjust quoting and hyphenation.
+	(convert_like_real): Same.
+	(convert_arg_to_ellipsis): Same.
+	* constexpr.c (diag_array_subscript): Same.
+	* constraint.cc (diagnose_trait_expression): Same.
+	* cvt.c (ocp_convert): Same.
+	* decl.c (start_decl): Same.
+	(check_for_uninitialized_const_var): Same.
+	(grokfndecl): Same.
+	(check_special_function_return_type): Same.
+	(finish_enum_value_list): Same.
+	(start_preparsed_function): Same.
+	* parser.c (cp_parser_decl_specifier_seq): Same.
+	* typeck.c (cp_build_binary_op): Same.
+	(build_static_cast_1): Same.
+
+2019-06-04  Nina Dinka Ranns  <dinka.ranns@gmail.com>
+
+	PR c++/63149 - Wrong auto deduction from braced-init-list.
+	* pt.c (listify_autos): use non cv qualified auto_node in
+	std::initializer_list<auto>.
+
+2019-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use declarator->id_loc in two
+	additional places.
+
+2019-06-04  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (lookup_type_scope_1): Reimplement, handle local
+	and namespace scopes separately.
+
+2019-06-04  Harald van Dijk  <harald@gigawatt.nl>
+
+	PR c++/60531 - Wrong error about unresolved overloaded function
+	* typeck.c (cp_build_binary_op): See if overload can be resolved.
+	(cp_build_unary_op): Ditto.
+
+2019-06-04  Jason Merrill  <jason@redhat.com>
+
+	Reduce accumulated garbage in constexpr evaluation.
+	* constexpr.c (cxx_eval_call_expression): ggc_free any bindings we
+	don't save.
+	(cxx_eval_increment_expression): ggc_free the MODIFY_EXPR after
+	evaluating it.
+
+2019-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (CP_OMP_CLAUSE_INFO): Allow for any clauses up to _condvar_
+	instead of only up to linear.
+
+2019-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_unqualified_id): Use build_min_nt_loc in
+	five places.
+
+2019-06-01  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/85254
+	* class.c (fixup_type_variants): Handle CLASSTYPE_FINAL.
+
+2019-05-31  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (IDENTIFIER_LAMBDA_P): New.
+	(TYPE_ANON_P): New.
+	(LAMBDA_TYPE_P, TYPE_UNNAMED_P):  Likewise.
+	(LAMBDANAME_PREFIX, LAMBDANAME_FORMAT): Delete.
+	(make_lambda_name): Don't declare.
+	* error.c (dump_aggr_type): Check for lambdas before other
+	anonymous names.
+	* lambda.c (begin_lambda_type): Use make_anon_name.
+	* cp-lang.c (cxx_dwarf_name): Lambda names smell anonymous.
+	* mangle.c (write_local_name): Likewise.
+	* name-lookup.c (lambda_cnt, make_lambda_name): Delete.
+
+2019-05-30  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (TYPE_HAS_NONTRIVIAL_DESTRUCTOR): Fix a typo.
+
+2019-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use declarator->id_loc in five
+	error_at calls.
+
+2019-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90598
+	* tree.c (lvalue_kind): Return clk_none for expressions with
+	with VOID_TYPE_P.
+
+2019-05-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/89875
+	* parser.c (cp_parser_sizeof_operand): When the type-id production
+	did not work out commit to the tentative parse.
+
+2019-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	P1091R3 - Extending structured bindings to be more like var decls
+	P1381R1 - Reference capture of structured bindings
+	* decl.c (cp_maybe_mangle_decomp): Handle TREE_STATIC decls even at
+	function scope.
+	(cp_finish_decomp): Copy over various decl properties from decl to
+	v[i] in the tuple case.
+	(grokdeclarator): Allow static, thread_local and __thread for C++2a
+	and use pedwarn instead of error for older standard revisions.
+	Make other structured binding diagnostic messages more i18n friendly.
+
 2019-05-28  Nathan Sidwell  <nathan@acm.org>
 
 	* decl.c (duplicate_decls): Assert a template newdecl has no

@@ -229,3 +229,10 @@ DEF_PREDICTOR (PRED_FORTRAN_ABSENT_DUMMY, "Fortran absent dummy", \
    to be very likely.  */
 DEF_PREDICTOR (PRED_FORTRAN_LOOP_PREHEADER, "Fortran loop preheader", \
 	       HITRATE (99), 0)
+
+/* Fortran assumed size arrays can be non-contiguous, so they need
+   to be repacked.  */
+
+DEF_PREDICTOR (PRED_FORTRAN_CONTIGUOUS, "Fortran contiguous", \
+	       HITRATE (75), 0)
+	

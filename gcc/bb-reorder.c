@@ -1357,8 +1357,8 @@ connect_traces (int n_traces, struct trace *traces)
 static bool
 copy_bb_p (const_basic_block bb, int code_may_grow)
 {
-  int size = 0;
-  int max_size = uncond_jump_length;
+  unsigned int size = 0;
+  unsigned int max_size = uncond_jump_length;
   rtx_insn *insn;
 
   if (EDGE_COUNT (bb->preds) < 2)
@@ -1376,7 +1376,11 @@ copy_bb_p (const_basic_block bb, int code_may_grow)
   FOR_BB_INSNS (bb, insn)
     {
       if (INSN_P (insn))
-	size += get_attr_min_length (insn);
+	{
+	  size += get_attr_min_length (insn);
+	  if (size > max_size)
+	    break;
+	}
     }
 
   if (size <= max_size)
@@ -1385,7 +1389,7 @@ copy_bb_p (const_basic_block bb, int code_may_grow)
   if (dump_file)
     {
       fprintf (dump_file,
-	       "Block %d can't be copied because its size = %d.\n",
+	       "Block %d can't be copied because its size = %u.\n",
 	       bb->index, size);
     }
 
@@ -1397,7 +1401,7 @@ copy_bb_p (const_basic_block bb, int code_may_grow)
 int
 get_uncond_jump_length (void)
 {
-  int length;
+  unsigned int length;
 
   start_sequence ();
   rtx_code_label *label = emit_label (gen_label_rtx ());
@@ -1405,6 +1409,7 @@ get_uncond_jump_length (void)
   length = get_attr_min_length (jump);
   end_sequence ();
 
+  gcc_assert (length < INT_MAX);
   return length;
 }
 

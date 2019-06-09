@@ -2801,6 +2801,11 @@ rl78-*-elf*)
 rx-*-elf*)
 	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
 	tmake_file="${tmake_file} rx/t-rx"
+	extra_options="${extra_options} rx/elf.opt"
+	;;
+rx-*-linux*)
+	tm_file="elfos.h linux.h glibc-stdint.h rx/linux.h ../../libgcc/config/rx/rx-abi.h"
+	tmake_file="${tmake_file} rx/t-linux"
 	;;
 s390-*-linux*)
 	tm_file="s390/s390.h dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h s390/linux.h"
@@ -4122,7 +4127,7 @@ case "${target}" in
 		for which in arch tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | carrizo | fiji | gfx900 )
+			"" | carrizo | fiji | gfx900 | gfx906 )
 				# OK
 				;;
 			*)

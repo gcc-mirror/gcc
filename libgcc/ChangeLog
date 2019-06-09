@@ -1,3 +1,85 @@
+2019-06-07  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Remove usage of
+	_gcov_merge_icall_topn.
+	* libgcov-driver.c (gcov_sort_n_vals): Remove.
+	(gcov_sort_icall_topn_counter): Likewise.
+	(gcov_sort_topn_counter_arrays): Likewise.
+	(dump_one_gcov): Remove call to gcov_sort_topn_counter_arrays.
+	* libgcov-merge.c (__gcov_merge_icall_topn): Remove.
+	* libgcov-profiler.c (__gcov_topn_value_profiler_body):
+	Likewise.
+	(GCOV_ICALL_COUNTER_CLEAR_THRESHOLD): Remove.
+	(struct indirect_call_tuple): Remove.
+	(__gcov_indirect_call_topn_profiler): Remove.
+	* libgcov-util.c (__gcov_icall_topn_counter_op): Remove.
+	* libgcov.h (gcov_sort_n_vals): Remove.
+	(L_gcov_merge_icall_topn): Likewise.
+	(__gcov_merge_icall_topn): Likewise.
+	(__gcov_indirect_call_topn_profiler): Likewise.
+
+2019-06-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/t-darwin: Ensure that the unwinder is built with
+	altivec enabled.
+
+2019-06-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/slli.S (__mspabi_slli_n): Put function in its own
+	section.
+	(__mspabi_slli): Likewise.
+	(__mspabi_slll_n): Likewise.
+	(__mspabi_slll): Likewise.
+	* config/msp430/srai.S (__mspabi_srai_n): Likewise.
+	(__mspabi_srai): Likewise.
+	(__mspabi_sral_n): Likewise.
+	(__mspabi_sral): Likewise.
+	* config/msp430/srli.S (__mspabi_srli_n): Likewise.
+	(__mspabi_srli): Likewise.
+	(__mspabi_srll_n): Likewise.
+	(__mspabi_srll): Likewise.
+
+2019-06-05  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* config.host (rx-*-linux*): Add t-fdpbit to tmake_file
+	Add appropriate tm_file clause as well.
+	* config/rx/t-rx (HOST_LIBGCC2_CFLAGS): Remove.
+
+2019-06-05  James Clarke  <jrtc27@jrtc27.com>
+
+	* config/ia64/crtbegin.S (__dso_handle): Put in .sdata/.sbss
+	rather than .data/.bss so it can be accessed via gp-relative
+	addressing.
+
+2019-06-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix-unwind.h (LR_REGNO): Rename to R_LR.
+	(CR2_REGNO): Rename to R_CR2.
+	(XER_REGNO): Rename to R_XER.
+	(FIRST_ALTIVEC_REGNO): Rename to R_FIRST_ALTIVEC.
+	(VRSAVE_REGNO): Rename to R_VRSAVE.
+	(VSCR_REGNO): R_VSCR.
+
+2019-05-29  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* config.host (rx-*-linux*): Add new case.
+	* config/rx/t-rx (HOST_LIBGCC2_CFLAGS): Force DFmode to SFmode.
+
+2019-05-29  Sam Tebbs  <sam.tebbs@arm.com>
+
+	* config/aarch64/aarch64-unwind.h (aarch64_cie_signed_with_b_key): New
+	function.
+	* config/aarch64/aarch64-unwind.h (aarch64_post_extract_frame_addr,
+	aarch64_post_frob_eh_handler_addr): Add	check for b-key.
+	* config/aarch64/aarch64-unwind-h (aarch64_post_extract_frame_addr,
+	aarch64_post_frob_eh_handler_addr, aarch64_post_frob_update_context):
+	Rename RA_A_SIGNED_BIT to RA_SIGNED_BIT.
+	* unwind-dw2-fde.c (get_cie_encoding): Add check for 'B' in augmentation
+	string.
+	* unwind-dw2.c (extract_cie_info): Add check for 'B' in augmentation
+	string.
+	(RA_A_SIGNED_BIT): Rename to RA_SIGNED_BIT.
+
 2019-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sparc/sol2-unwind.h [__arch64__] (sparc64_is_sighandler):

@@ -6060,7 +6060,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 		    && constructor_name_p (token->u.value, scope))))
 	  {
 	    cp_lexer_consume_token (parser->lexer);
-	    return cp_expr (build_nt (BIT_NOT_EXPR, scope), loc);
+	    return build_min_nt_loc (loc, BIT_NOT_EXPR, scope);
 	  }
 
 	/* ~auto means the destructor of whatever the object is.  */
@@ -6071,7 +6071,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 		       "%<~auto%> only available with "
 		       "%<-std=c++14%> or %<-std=gnu++14%>");
 	    cp_lexer_consume_token (parser->lexer);
-	    return cp_expr (build_nt (BIT_NOT_EXPR, make_auto (), loc));
+	    return build_min_nt_loc (loc, BIT_NOT_EXPR, make_auto ());
 	  }
 
 	/* If there was an explicit qualification (S::~T), first look
@@ -6161,8 +6161,8 @@ cp_parser_unqualified_id (cp_parser* parser,
 		   time.  */
 		type_decl = cp_parser_identifier (parser);
 		if (type_decl != error_mark_node)
-		  type_decl = build_nt (BIT_NOT_EXPR, type_decl);
-		return cp_expr (type_decl, loc);
+		  type_decl = build_min_nt_loc (loc, BIT_NOT_EXPR, type_decl);
+		return type_decl;
 	      }
 	  }
 	/* If an error occurred, assume that the name of the
@@ -6170,7 +6170,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	   class.  That allows us to keep parsing after running
 	   into ill-formed destructor names.  */
 	if (type_decl == error_mark_node && scope)
-	  return build_nt (BIT_NOT_EXPR, scope);
+	  return build_min_nt_loc (loc, BIT_NOT_EXPR, scope);
 	else if (type_decl == error_mark_node)
 	  return error_mark_node;
 
@@ -6197,7 +6197,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 		    "typedef-name %qD used as destructor declarator",
 		    type_decl);
 
-	return cp_expr (build_nt (BIT_NOT_EXPR, TREE_TYPE (type_decl), loc));
+	return build_min_nt_loc (loc, BIT_NOT_EXPR, TREE_TYPE (type_decl));
       }
 
     case CPP_KEYWORD:
@@ -14110,7 +14110,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
       if (found_decl_spec
 	  && (flags & CP_PARSER_FLAGS_ONLY_TYPE_OR_CONSTEXPR)
 	  && token->keyword != RID_CONSTEXPR)
-	error ("decl-specifier invalid in condition");
+	error ("%<decl-specifier%> invalid in condition");
 
       if (found_decl_spec
 	  && (flags & CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR)
@@ -29015,6 +29015,8 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
     {
       tree type = NULL_TREE;
 
+      tentative_firewall firewall (parser);
+
       /* We can't be sure yet whether we're looking at a type-id or an
 	 expression.  */
       cp_parser_parse_tentatively (parser);
@@ -29042,11 +29044,15 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
       /* If all went well, then we're done.  */
       if (cp_parser_parse_definitely (parser))
 	expr = type;
-    }
+      else
+	{
+	  /* Commit to the tentative_firewall so we get syntax errors.  */
+	  cp_parser_commit_to_tentative_parse (parser);
 
-  /* If the type-id production did not work out, then we must be
-     looking at the unary-expression production.  */
-  if (!expr)
+	  expr = cp_parser_unary_expression (parser);
+	}
+    }
+  else
     expr = cp_parser_unary_expression (parser);
 
   /* Go back to evaluating expressions.  */

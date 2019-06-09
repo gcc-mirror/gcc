@@ -1379,7 +1379,7 @@ Common Report Var(flag_ipa_sra) Init(0) Optimization
 Perform interprocedural reduction of aggregates.
 
 feliminate-unused-debug-symbols
-Common Report Var(flag_debug_only_used_symbols)
+Common Report Var(flag_debug_only_used_symbols) Init(1)
 Perform unused symbol elimination in debug info.
 
 feliminate-unused-debug-types
@@ -1888,8 +1888,8 @@ Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1) I
 -flto-compression-level=<number>	Use zlib compression level <number> for IL.
 
 flto-odr-type-merging
-Common Report Var(flag_lto_odr_type_mering) Init(1)
-Merge C++ types using One Definition Rule.
+Common Ignore
+Does nothing.  Preserved for backward compatibility.
 
 flto-report
 Common Report Var(flag_lto_report) Init(0)

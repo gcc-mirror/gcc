@@ -26,6 +26,7 @@ m4_rename([_AC_ARG_VAR_PRECIOUS],[glibgo_PRECIOUS])
 m4_define([_AC_ARG_VAR_PRECIOUS],[])
 AC_PROG_CC
 AC_PROG_GO
+AM_PROG_AS
 m4_rename_force([glibgo_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
 
 AC_SUBST(CFLAGS)

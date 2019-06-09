@@ -944,36 +944,19 @@ stmt_after_increment (struct loop *loop, struct iv_cand *cand, gimple *stmt)
     }
 }
 
-/* Returns true if EXP is a ssa name that occurs in an abnormal phi node.  */
+/* walk_tree callback for contains_abnormal_ssa_name_p.  */
 
-static bool
-abnormal_ssa_name_p (tree exp)
+static tree
+contains_abnormal_ssa_name_p_1 (tree *tp, int *walk_subtrees, void *)
 {
-  if (!exp)
-    return false;
+  if (TREE_CODE (*tp) == SSA_NAME
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (*tp))
+    return *tp;
 
-  if (TREE_CODE (exp) != SSA_NAME)
-    return false;
+  if (!EXPR_P (*tp))
+    *walk_subtrees = 0;
 
-  return SSA_NAME_OCCURS_IN_ABNORMAL_PHI (exp) != 0;
-}
-
-/* Returns false if BASE or INDEX contains a ssa name that occurs in an
-   abnormal phi node.  Callback for for_each_index.  */
-
-static bool
-idx_contains_abnormal_ssa_name_p (tree base, tree *index,
-				  void *data ATTRIBUTE_UNUSED)
-{
-  if (TREE_CODE (base) == ARRAY_REF || TREE_CODE (base) == ARRAY_RANGE_REF)
-    {
-      if (abnormal_ssa_name_p (TREE_OPERAND (base, 2)))
-	return false;
-      if (abnormal_ssa_name_p (TREE_OPERAND (base, 3)))
-	return false;
-    }
-
-  return !abnormal_ssa_name_p (*index);
+  return NULL_TREE;
 }
 
 /* Returns true if EXPR contains a ssa name that occurs in an
@@ -982,61 +965,8 @@ idx_contains_abnormal_ssa_name_p (tree base, tree *index,
 bool
 contains_abnormal_ssa_name_p (tree expr)
 {
-  enum tree_code code;
-  enum tree_code_class codeclass;
-
-  if (!expr)
-    return false;
-
-  code = TREE_CODE (expr);
-  codeclass = TREE_CODE_CLASS (code);
-
-  if (code == CALL_EXPR)
-    {
-      tree arg;
-      call_expr_arg_iterator iter;
-      FOR_EACH_CALL_EXPR_ARG (arg, iter, expr)
-	if (contains_abnormal_ssa_name_p (arg))
-	  return true;
-      return false;
-    }
-
-  if (code == SSA_NAME)
-    return SSA_NAME_OCCURS_IN_ABNORMAL_PHI (expr) != 0;
-
-  if (code == INTEGER_CST
-      || is_gimple_min_invariant (expr))
-    return false;
-
-  if (code == ADDR_EXPR)
-    return !for_each_index (&TREE_OPERAND (expr, 0),
-			    idx_contains_abnormal_ssa_name_p,
-			    NULL);
-
-  if (code == COND_EXPR)
-    return contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 0))
-      || contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 1))
-      || contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 2));
-
-  switch (codeclass)
-    {
-    case tcc_binary:
-    case tcc_comparison:
-      if (contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 1)))
-	return true;
-
-      /* Fallthru.  */
-    case tcc_unary:
-      if (contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 0)))
-	return true;
-
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  return false;
+  return walk_tree_without_duplicates
+	   (&expr, contains_abnormal_ssa_name_p_1, NULL) != NULL_TREE;
 }
 
 /*  Returns the structure describing number of iterations determined from

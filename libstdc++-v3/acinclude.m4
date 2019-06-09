@@ -4054,6 +4054,26 @@ AC_DEFUN([GLIBCXX_CHECK_X86_RDRAND], [
 ])
 
 dnl
+dnl Check whether rdseed is supported in the assembler.
+AC_DEFUN([GLIBCXX_CHECK_X86_RDSEED], [
+  AC_MSG_CHECKING([for rdseed support in assembler])
+  AC_CACHE_VAL(ac_cv_x86_rdseed, [
+  ac_cv_x86_rdseed=no
+  case "$target" in
+    i?86-*-* | \
+    x86_64-*-*)
+    AC_TRY_COMPILE(, [asm("rdseed %eax");],
+		[ac_cv_x86_rdseed=yes], [ac_cv_x86_rdseed=no])
+  esac
+  ])
+  if test $ac_cv_x86_rdseed = yes; then
+    AC_DEFINE(_GLIBCXX_X86_RDSEED, 1,
+		[ Defined if as can handle rdseed. ])
+  fi
+  AC_MSG_RESULT($ac_cv_x86_rdseed)
+])
+
+dnl
 dnl Check whether get_nprocs is available in <sys/sysinfo.h>, and define _GLIBCXX_USE_GET_NPROCS.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_GET_NPROCS], [

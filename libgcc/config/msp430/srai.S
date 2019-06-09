@@ -22,13 +22,14 @@
 	
 	.text
 
+	.section	.text.__mspabi_srai_n
 	.macro	_srai n
 	.global __mspabi_srai_\n
 __mspabi_srai_\n:
 	RRA.W	R12
 	.endm
 
-/* Logical Right Shift - R12 -> R12 */
+/* Arithmetic Right Shift - R12 -> R12.  */
 	_srai	15
 	_srai	14
 	_srai	13
@@ -50,6 +51,7 @@ __mspabi_srai_\n:
 	RET
 #endif
 
+	.section	.text.__mspabi_srai
 1:	ADD.W	#-1,R13
 	RRA.W	R12,R12
 	.global	__mspabi_srai
@@ -62,8 +64,9 @@ __mspabi_srai:
 	RET
 #endif
 
-/* Logical Right Shift - R12:R13 -> R12:R13 */
+/* Arithmetic Right Shift - R12:R13 -> R12:R13.  */
 
+	.section	.text.__mspabi_sral_n
 	.macro	_sral	n
 	.global	__mspabi_sral_\n
 __mspabi_sral_\n:
@@ -92,6 +95,7 @@ __mspabi_sral_\n:
 	RET
 #endif
 
+	.section	.text.__mspabi_sral
 1:	ADD.W	#-1,R14
 	RRA.W	R13
 	RRC.W	R12

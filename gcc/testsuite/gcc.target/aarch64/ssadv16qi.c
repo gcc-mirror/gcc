@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3" } */
 
-#pragma GCC target "+nosve"
+#pragma GCC target "+nosve+nodotprod"
 
 #define N 1024
 

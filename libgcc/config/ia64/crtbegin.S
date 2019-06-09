@@ -45,11 +45,11 @@ dtor_ptr:
 	.type __dso_handle,@object
 	.size __dso_handle,8
 #ifdef SHARED
-	.section .data
+	.section .sdata
 __dso_handle:
 	data8	__dso_handle
 #else
-	.section .bss
+	.section .sbss
 	.align 8
 __dso_handle:
 	.skip	8

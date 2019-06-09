@@ -5078,7 +5078,7 @@ build_conditional_expr_1 (const op_location_t &loc,
 	    {
 	      if (complain & tf_error)
 		error_at (loc, "inferred scalar type %qT is not an integer or "
-			  "floating point type of the same size as %qT", stype,
+			  "floating-point type of the same size as %qT", stype,
 			  COMPARISON_CLASS_P (arg1)
 			  ? TREE_TYPE (TREE_TYPE (TREE_OPERAND (arg1, 0)))
 			  : ctype);
@@ -5497,8 +5497,8 @@ build_conditional_expr_1 (const op_location_t &loc,
 	    /* Two enumerators from the same enumeration can have different
 	       types when the enumeration is still being defined.  */;
           else if (complain & tf_warning)
-            warning_at (loc, OPT_Wenum_compare, "enumeral mismatch in "
-			"conditional expression: %qT vs %qT",
+	    warning_at (loc, OPT_Wenum_compare, "enumerated mismatch "
+			"in conditional expression: %qT vs %qT",
 			arg2_type, arg3_type);
         }
       else if (extra_warnings
@@ -5509,8 +5509,8 @@ build_conditional_expr_1 (const op_location_t &loc,
 					type_promotes_to (arg3_type)))))
         {
           if (complain & tf_warning)
-            warning_at (loc, OPT_Wextra, "enumeral and non-enumeral type in "
-			"conditional expression");
+	    warning_at (loc, OPT_Wextra, "enumerated and non-enumerated "
+			"type in conditional expression");
         }
 
       arg2 = perform_implicit_conversion (result_type, arg2, complain);
@@ -7393,7 +7393,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 		/* If the reference is volatile or non-const, we
 		   cannot create a temporary.  */
 		if (lvalue & clk_bitfield)
-		  error_at (loc, "cannot bind bitfield %qE to %qT",
+		  error_at (loc, "cannot bind bit-field %qE to %qT",
 			    expr, ref_type);
 		else if (lvalue & clk_packed)
 		  error_at (loc, "cannot bind packed field %qE to %qT",
@@ -7500,8 +7500,8 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
   /* [expr.call]
 
      If the argument has integral or enumeration type that is subject
-     to the integral promotions (_conv.prom_), or a floating point
-     type that is subject to the floating point promotion
+     to the integral promotions (_conv.prom_), or a floating-point
+     type that is subject to the floating-point promotion
      (_conv.fpprom_), the value of the argument is converted to the
      promoted type before the call.  */
   if (TREE_CODE (arg_type) == REAL_TYPE

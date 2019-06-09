@@ -1125,8 +1125,15 @@ number_of_iterations_ne (struct loop *loop, tree type, affine_iv *iv,
     }
 
   c = fold_build2 (EXACT_DIV_EXPR, niter_type, c, d);
-  tmp = fold_build2 (MULT_EXPR, niter_type, c, inverse (s, bound));
-  niter->niter = fold_build2 (BIT_AND_EXPR, niter_type, tmp, bound);
+  if (integer_onep (s))
+    {
+      niter->niter = c;
+    }
+  else
+    {
+      tmp = fold_build2 (MULT_EXPR, niter_type, c, inverse (s, bound));
+      niter->niter = fold_build2 (BIT_AND_EXPR, niter_type, tmp, bound);
+    }
   return true;
 }
 
@@ -1977,8 +1984,8 @@ simplify_replace_tree (tree expr, tree old, tree new_tree,
    enough, and return the new expression.  If STOP is specified, stop
    expanding if EXPR equals to it.  */
 
-tree
-expand_simple_operations (tree expr, tree stop)
+static tree
+expand_simple_operations (tree expr, tree stop, hash_map<tree, tree> &cache)
 {
   unsigned i, n;
   tree ret = NULL_TREE, e, ee, e1;
@@ -1998,7 +2005,24 @@ expand_simple_operations (tree expr, tree stop)
       for (i = 0; i < n; i++)
 	{
 	  e = TREE_OPERAND (expr, i);
-	  ee = expand_simple_operations (e, stop);
+	  /* SCEV analysis feeds us with a proper expression
+	     graph matching the SSA graph.  Avoid turning it
+	     into a tree here, thus handle tree sharing
+	     properly.
+	     ???  The SSA walk below still turns the SSA graph
+	     into a tree but until we find a testcase do not
+	     introduce additional tree sharing here.  */
+	  bool existed_p;
+	  tree &cee = cache.get_or_insert (e, &existed_p);
+	  if (existed_p)
+	    ee = cee;
+	  else
+	    {
+	      cee = e;
+	      ee = expand_simple_operations (e, stop, cache);
+	      if (ee != e)
+		*cache.get (e) = ee;
+	    }
 	  if (e == ee)
 	    continue;
 
@@ -2038,7 +2062,7 @@ expand_simple_operations (tree expr, tree stop)
 	  && src->loop_father != dest->loop_father)
 	return expr;
 
-      return expand_simple_operations (e, stop);
+      return expand_simple_operations (e, stop, cache);
     }
   if (gimple_code (stmt) != GIMPLE_ASSIGN)
     return expr;
@@ -2058,7 +2082,7 @@ expand_simple_operations (tree expr, tree stop)
 	return e;
 
       if (code == SSA_NAME)
-	return expand_simple_operations (e, stop);
+	return expand_simple_operations (e, stop, cache);
       else if (code == ADDR_EXPR)
 	{
 	  poly_int64 offset;
@@ -2067,7 +2091,8 @@ expand_simple_operations (tree expr, tree stop)
 	  if (base
 	      && TREE_CODE (base) == MEM_REF)
 	    {
-	      ee = expand_simple_operations (TREE_OPERAND (base, 0), stop);
+	      ee = expand_simple_operations (TREE_OPERAND (base, 0), stop,
+					     cache);
 	      return fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (expr), ee,
 				  wide_int_to_tree (sizetype,
 						    mem_ref_offset (base)
@@ -2082,7 +2107,7 @@ expand_simple_operations (tree expr, tree stop)
     {
     CASE_CONVERT:
       /* Casts are simple.  */
-      ee = expand_simple_operations (e, stop);
+      ee = expand_simple_operations (e, stop, cache);
       return fold_build1 (code, TREE_TYPE (expr), ee);
 
     case PLUS_EXPR:
@@ -2097,12 +2122,19 @@ expand_simple_operations (tree expr, tree stop)
       if (!is_gimple_min_invariant (e1))
 	return expr;
 
-      ee = expand_simple_operations (e, stop);
+      ee = expand_simple_operations (e, stop, cache);
       return fold_build2 (code, TREE_TYPE (expr), ee, e1);
 
     default:
       return expr;
     }
+}
+
+tree
+expand_simple_operations (tree expr, tree stop)
+{
+  hash_map<tree, tree> cache;
+  return expand_simple_operations (expr, stop, cache);
 }
 
 /* Tries to simplify EXPR using the condition COND.  Returns the simplified

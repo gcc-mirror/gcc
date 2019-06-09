@@ -388,7 +388,7 @@ Objective-C and Objective-C++ Dialects}.
 -fno-eliminate-unused-debug-types @gol
 -femit-struct-debug-baseonly  -femit-struct-debug-reduced @gol
 -femit-struct-debug-detailed@r{[}=@var{spec-list}@r{]} @gol
--feliminate-unused-debug-symbols  -femit-class-debug-always @gol
+-fno-eliminate-unused-debug-symbols  -femit-class-debug-always @gol
 -fno-merge-debug-strings  -fno-dwarf2-cfi-asm @gol
 -fvar-tracking  -fvar-tracking-assignments}
 
@@ -632,7 +632,8 @@ Objective-C and Objective-C++ Dialects}.
 -mlow-precision-recip-sqrt  -mlow-precision-sqrt  -mlow-precision-div @gol
 -mpc-relative-literal-loads @gol
 -msign-return-address=@var{scope} @gol
--mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}]|@var{bti} @gol
+-mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}
++@var{b-key}]|@var{bti} @gol
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}  @gol
 -moverride=@var{string}  -mverbose-cost-dump @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{sysreg} @gol
@@ -1075,7 +1076,7 @@ See RS/6000 and PowerPC Options.
 -mpowerpc-gfxopt  -mno-powerpc-gfxopt @gol
 -mmfcrf  -mno-mfcrf  -mpopcntb  -mno-popcntb  -mpopcntd  -mno-popcntd @gol
 -mfprnd  -mno-fprnd @gol
--mcmpb  -mno-cmpb  -mmfpgpr  -mno-mfpgpr  -mhard-dfp  -mno-hard-dfp @gol
+-mcmpb  -mno-cmpb  -mhard-dfp  -mno-hard-dfp @gol
 -mfull-toc   -mminimal-toc  -mno-fp-in-toc  -mno-sum-in-toc @gol
 -m64  -m32  -mxl-compat  -mno-xl-compat  -mpe @gol
 -malign-power  -malign-natural @gol
@@ -2237,7 +2238,7 @@ Some cases of unnamed fields in structures and unions are only
 accepted with this option.  @xref{Unnamed Fields,,Unnamed struct/union
 fields within structs/unions}, for details.
 
-Note that this option is off for all targets but x86 
+Note that this option is off for all targets except for x86
 targets using ms-abi.
 
 @item -fplan9-extensions
@@ -7360,7 +7361,7 @@ Do not warn about compile-time overflow in constant expressions.
 @opindex Wno-odr
 @opindex Wodr
 Warn about One Definition Rule violations during link-time optimization.
-Requires @option{-flto-odr-type-merging} to be enabled.  Enabled by default.
+Enabled by default.
 
 @item -Wopenmp-simd
 @opindex Wopenmp-simd
@@ -7831,10 +7832,11 @@ confusion with @option{-gdwarf-@var{level}}.
 Instead use an additional @option{-g@var{level}} option to change the
 debug level for DWARF.
 
-@item -feliminate-unused-debug-symbols
+@item -fno-eliminate-unused-debug-symbols
 @opindex feliminate-unused-debug-symbols
-Produce debugging information in stabs format (if that is supported),
-for only symbols that are actually used.
+@opindex fno-eliminate-unused-debug-symbols
+By default, no debug information is produced for symbols that are not actually
+used. Use this option if you want debug information for all symbols.
 
 @item -femit-class-debug-always
 @opindex femit-class-debug-always
@@ -10355,12 +10357,6 @@ The value @samp{one} specifies that exactly one partition should be
 used while the value @samp{none} bypasses partitioning and executes
 the link-time optimization step directly from the WPA phase.
 
-@item -flto-odr-type-merging
-@opindex flto-odr-type-merging
-Enable streaming of mangled types names of C++ types and their unification
-at link time.  This increases size of LTO object files, but enables
-diagnostics about One Definition Rule violations.
-
 @item -flto-compression-level=@var{n}
 @opindex flto-compression-level
 This option specifies the level of compression used for intermediate
@@ -12141,9 +12137,6 @@ will not try to thread through its block.
 @item uninit-control-dep-attempts
 Maximum number of nested calls to search for control dependencies
 during uninitialized variable analysis.
-
-@item indir-call-topn-profile
-Track top N target addresses in indirect-call profile.
 
 @item max-once-peeled-insns
 The maximum number of insns of a peeled loop that rolls only once.
@@ -15904,7 +15897,7 @@ functions, and @samp{all}, which enables pointer signing for all functions.  The
 default value is @samp{none}. This option has been deprecated by
 -mbranch-protection.
 
-@item -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}]|@var{bti}
+@item -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}+@var{b-key}]|@var{bti}
 @opindex mbranch-protection
 Select the branch protection features to use.
 @samp{none} is the default and turns off all types of branch protection.
@@ -15915,7 +15908,8 @@ level.
 level: signing functions that save the return address to memory (non-leaf
 functions will practically always do this) using the a-key.  The optional
 argument @samp{leaf} can be used to extend the signing to include leaf
-functions.
+functions.  The optional argument @samp{b-key} can be used to sign the functions
+with the B-key instead of the A-key.
 @samp{bti} turns on branch target identification mechanism.
 
 @item -msve-vector-bits=@var{bits}
@@ -16220,6 +16214,9 @@ Compile for GCN3 Fiji devices (gfx803).
 
 @item gfx900
 Compile for GCN5 Vega 10 devices (gfx900).
+
+@item gfx906
+Compile for GCN5 Vega 20 devices (gfx906).
 
 @end table
 
@@ -24015,8 +24012,6 @@ These @samp{-m} options are defined for the IBM RS/6000 and PowerPC:
 @need 800
 @itemx -mcmpb
 @itemx -mno-cmpb
-@itemx -mmfpgpr
-@itemx -mno-mfpgpr
 @itemx -mhard-dfp
 @itemx -mno-hard-dfp
 @opindex mpowerpc-gpopt
@@ -24035,8 +24030,6 @@ These @samp{-m} options are defined for the IBM RS/6000 and PowerPC:
 @opindex mno-fprnd
 @opindex mcmpb
 @opindex mno-cmpb
-@opindex mmfpgpr
-@opindex mno-mfpgpr
 @opindex mhard-dfp
 @opindex mno-hard-dfp
 You use these options to specify which instructions are available on the
@@ -24070,10 +24063,6 @@ processors that support the PowerPC V2.03 architecture.
 The @option{-mcmpb} option allows GCC to generate the compare bytes
 instruction implemented on the POWER6 processor and other processors
 that support the PowerPC V2.05 architecture.
-The @option{-mmfpgpr} option allows GCC to generate the FP move to/from
-general-purpose register instructions implemented on the POWER6X
-processor and other processors that support the extended PowerPC V2.05
-architecture.
 The @option{-mhard-dfp} option allows GCC to generate the decimal
 floating-point instructions implemented on some POWER processors.
 
@@ -27391,34 +27380,34 @@ instruction set extensions.)
 
 @item bdver1
 CPUs based on AMD Family 15h cores with x86-64 instruction set support.  (This
-supersets FMA4, AVX, XOP, LWP, AES, PCL_MUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A,
+supersets FMA4, AVX, XOP, LWP, AES, PCLMUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A,
 SSSE3, SSE4.1, SSE4.2, ABM and 64-bit instruction set extensions.)
 @item bdver2
 AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
-supersets BMI, TBM, F16C, FMA, FMA4, AVX, XOP, LWP, AES, PCL_MUL, CX16, MMX,
+supersets BMI, TBM, F16C, FMA, FMA4, AVX, XOP, LWP, AES, PCLMUL, CX16, MMX,
 SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM and 64-bit instruction set 
 extensions.)
 @item bdver3
 AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
 supersets BMI, TBM, F16C, FMA, FMA4, FSGSBASE, AVX, XOP, LWP, AES, 
-PCL_MUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM and 
+PCLMUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM and
 64-bit instruction set extensions.
 @item bdver4
 AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
 supersets BMI, BMI2, TBM, F16C, FMA, FMA4, FSGSBASE, AVX, AVX2, XOP, LWP, 
-AES, PCL_MUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, 
+AES, PCLMUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1,
 SSE4.2, ABM and 64-bit instruction set extensions.
 
 @item znver1
 AMD Family 17h core based CPUs with x86-64 instruction set support.  (This
 supersets BMI, BMI2, F16C, FMA, FSGSBASE, AVX, AVX2, ADCX, RDSEED, MWAITX,
-SHA, CLZERO, AES, PCL_MUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3,
+SHA, CLZERO, AES, PCLMUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3,
 SSE4.1, SSE4.2, ABM, XSAVEC, XSAVES, CLFLUSHOPT, POPCNT, and 64-bit
 instruction set extensions.
 @item znver2
 AMD Family 17h core based CPUs with x86-64 instruction set support. (This
 supersets BMI, BMI2, ,CLWB, F16C, FMA, FSGSBASE, AVX, AVX2, ADCX, RDSEED,
-MWAITX, SHA, CLZERO, AES, PCL_MUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A,
+MWAITX, SHA, CLZERO, AES, PCLMUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A,
 SSSE3, SSE4.1, SSE4.2, ABM, XSAVEC, XSAVES, CLFLUSHOPT, POPCNT, and 64-bit
 instruction set extensions.)
 
@@ -27430,7 +27419,7 @@ instruction set extensions.)
 
 @item btver2
 CPUs based on AMD Family 16h cores with x86-64 instruction set support. This
-includes MOVBE, F16C, BMI, AVX, PCL_MUL, AES, SSE4.2, SSE4.1, CX16, ABM,
+includes MOVBE, F16C, BMI, AVX, PCLMUL, AES, SSE4.2, SSE4.1, CX16, ABM,
 SSE4A, SSSE3, SSE3, SSE2, SSE, MMX and 64-bit instruction set extensions.
 
 @item winchip-c6

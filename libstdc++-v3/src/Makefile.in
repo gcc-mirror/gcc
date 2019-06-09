@@ -1047,7 +1047,7 @@ libstdc++convenience.la: $(toolexeclib_LTLIBRARIES)
 	fi; \
 	echo `date` > stamp-libstdc++convenience;
 stamp-debug:
-	if test ! -d ${debugdir}; then \
+	if test ! -d ${debugdir} || test ! -f ${debugdir}/Makefile ; then \
 	  mkdir -p ${debugdir}; \
 	  for d in $(SUBDIRS); do mkdir -p  ${debugdir}/$$d; done; \
 	  (cd ${debugdir}; \

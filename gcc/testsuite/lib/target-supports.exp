@@ -2140,6 +2140,25 @@ proc check_p9modulo_hw_available { } {
     }]
 }
 
+
+# Return 1 if the target supports executing FUTURE instructions, 0 otherwise.
+# Cache the result.  It is assumed that if a simulator does not support the
+# FUTURE instructions, that it will generate an error and this test will fail.
+
+proc check_powerpc_future_hw_available { } {
+    return [check_cached_effective_target powerpc_future_hw_available {
+	check_runtime_nocache powerpc_future_hw_available {
+	    int main()
+	    {
+		/* Set e first and use +r to check if pli actually works.  */
+		long e = -1;
+		asm ("pli %0,%1" : "+r" (e) : "n" (0x12345));
+		return (e == 0x12345);
+	    }
+	} "-mfuture"
+    }]
+}
+
 # Return 1 if the target supports executing __float128 on PowerPC via software
 # emulation, 0 otherwise.  Cache the result.
 
@@ -3306,6 +3325,24 @@ proc check_effective_target_aarch64_sve { } {
     }]
 }
 
+# Return 1 if this is an AArch64 target supporting SVE2.
+proc check_effective_target_aarch64_sve2 { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages aarch64_sve2 assembly {
+	#if !defined (__ARM_FEATURE_SVE2)
+	#error FOO
+	#endif
+    }]
+}
+
+# Return 1 if this is an AArch64 target only supporting SVE (not SVE2).
+proc check_effective_target_aarch64_sve1_only { } {
+    return [expr { [check_effective_target_aarch64_sve]
+		   && ![check_effective_target_aarch64_sve2] }]
+}
+
 # Return the size in bits of an SVE vector, or 0 if the size is variable.
 proc aarch64_sve_bits { } {
     return [check_cached_effective_target aarch64_sve_bits {
@@ -3846,6 +3883,13 @@ proc add_options_for_arm_neon_softfp_fp16 { flags } {
     return "$flags $et_arm_neon_softfp_fp16_flags"
 }
 
+proc add_options_for_aarch64_sve { flags } {
+    if { ![istarget aarch64*-*-*] || [check_effective_target_aarch64_sve] } {
+        return "$flags"
+    }
+    return "$flags -march=armv8.2-a+sve"
+}
+
 # Return 1 if this is an ARM target supporting the FP16 alternative
 # format.  Some multilibs may be incompatible with the options needed.  Also
 # set et_arm_neon_fp16_flags to the best options to add.
@@ -4323,6 +4367,22 @@ proc check_effective_target_aarch64_sve_hw { } {
 	  asm volatile ("ptrue p0.b");
 	  return 0;
 	}
+    } [add_options_for_aarch64_sve ""]]
+}
+
+# Return true if this is an AArch64 target that can run SVE2 code.
+
+proc check_effective_target_aarch64_sve2_hw { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_runtime aarch64_sve2_hw_available {
+	int
+	main (void)
+	{
+	  asm volatile ("addp z0.b, p0/m, z0.b, z1.b");
+	  return 0;
+	}
     }]
 }
 
@@ -4343,7 +4403,7 @@ proc aarch64_sve_hw_bits { bits } {
 	    __builtin_abort ();
 	  return 0;
 	}
-    }]]
+    }] [add_options_for_aarch64_sve ""]]
 }
 
 # Return true if this is an AArch64 target that can run SVE code and
@@ -5118,6 +5178,24 @@ proc check_effective_target_powerpc_p9modulo_ok { } {
 		return (r == 2);
 	    }
 	} "-mmodulo"]
+    } else {
+	return 0
+    }
+}
+
+# Return 1 if this is a PowerPC target supporting -mfuture.
+# Limit this to 64-bit linux systems for now until other
+# targets support FUTURE.
+
+proc check_effective_target_powerpc_future_ok { } {
+    if { ([istarget powerpc64*-*-linux*]) } {
+	return [check_no_compiler_messages powerpc_future_ok object {
+	    int main (void) {
+		long e;
+		asm ("pli %0,%1" : "=r" (e) : "n" (0x12345));
+		return e;
+	    }
+	} "-mfuture"]
     } else {
 	return 0
     }
@@ -6063,7 +6141,7 @@ proc check_effective_target_vect_usad_char { } {
 
 proc check_effective_target_vect_avg_qi {} {
     return [expr { [istarget aarch64*-*-*]
-		   && ![check_effective_target_aarch64_sve] }]
+		   && ![check_effective_target_aarch64_sve1_only] }]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -8591,6 +8669,17 @@ proc check_effective_target_aarch64_large { } {
     }
 }
 
+# Return 1 if the assembler accepts the aarch64 .variant_pcs directive.
+
+proc check_effective_target_aarch64_variant_pcs { } {
+    if { [istarget aarch64*-*-*] } {
+	return [check_no_compiler_messages aarch64_variant_pcs object {
+	    __asm__ (".variant_pcs foo");
+	}]
+    } else {
+	return 0
+    }
+}
 
 # Return 1 if this is a reduced AVR Tiny core.  Such cores have different
 # register set, instruction set, addressing capabilities and ABI.

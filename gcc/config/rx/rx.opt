@@ -82,18 +82,6 @@ Maximum size of global and static variables which can be placed into the small d
 
 ;---------------------------------------------------
 
-msim
-Target
-Use the simulator runtime.
-
-;---------------------------------------------------
-
-mas100-syntax
-Target Mask(AS100_SYNTAX) Report
-Generate assembler output that is compatible with the Renesas AS100 assembler.  This may restrict some of the compiler's capabilities.  The default is to generate GAS compatible syntax.
-
-;---------------------------------------------------
-
 mrelax
 Target
 Enable linker relaxation.
