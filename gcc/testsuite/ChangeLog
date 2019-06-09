@@ -1,5 +1,8 @@
 2019-06-09  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/65175
+	* g++.dg/cpp0x/alias-decl-69.C: New test.
+
 	PR c++/60366
 	* g++.dg/cpp0x/lambda/lambda-ice32.C: New test.
 
