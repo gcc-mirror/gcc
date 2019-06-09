@@ -2,6 +2,13 @@
 
 	Backport from trunk
 	PR fortran/57284
+	* gfortran.dg/assign_10.f90: Bump up counts of "atmp".
+	* gfortran.dg/transpose_optimization_2.f90: Ditto
+
+2019-06-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/57284
 	* gfortran.dg/class_70.f03
 
 2019-06-07  John David Anglin  <danglin@gcc.gnu.org>
