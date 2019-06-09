@@ -1,3 +1,12 @@
+2019-06-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (morph_fn_to_coro): Record every use of each function
+	param, not just the first one.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/func-params-2.C: New test.
+
 2019-06-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (build_actor_fn): Simplify the conditional call to

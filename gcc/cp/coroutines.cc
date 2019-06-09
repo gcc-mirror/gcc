@@ -1919,12 +1919,12 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  parm.body_uses = NULL;
         }
 
-      /* We don't need to revisit nodes.  */
-      visited = new hash_set<tree>;
       struct __param_frame_data param_data =
         { &field_list, param_uses, fn_start, false };
-      cp_walk_tree (&fnbody, register_param_uses, &param_data, visited);
-      delete visited;
+      /* We want to record every instance of param's use, so don't include
+	 a 'visited' hash_set.  */
+      cp_walk_tree (&fnbody, register_param_uses, &param_data, NULL);
+
       /* If no uses were seen, act as if there were no params.  */
       if (!param_data.param_seen)
         {
