@@ -1,3 +1,8 @@
+2019-06-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60366
+	* g++.dg/cpp0x/lambda/lambda-ice32.C: New test.
+
 019-06-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/89365
