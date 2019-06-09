@@ -4632,9 +4632,13 @@ find_array_spec (gfc_expr *e)
   gfc_array_spec *as;
   gfc_component *c;
   gfc_ref *ref;
+  bool class_as = false;
 
   if (e->symtree->n.sym->ts.type == BT_CLASS)
-    as = CLASS_DATA (e->symtree->n.sym)->as;
+    {
+      as = CLASS_DATA (e->symtree->n.sym)->as;
+      class_as = true;
+    }
   else
     as = e->symtree->n.sym->as;
 
@@ -4653,7 +4657,7 @@ find_array_spec (gfc_expr *e)
 	c = ref->u.c.component;
 	if (c->attr.dimension)
 	  {
-	    if (as != NULL)
+	    if (as != NULL && !(class_as && as == c->as))
 	      gfc_internal_error ("find_array_spec(): unused as(1)");
 	    as = c->as;
 	  }

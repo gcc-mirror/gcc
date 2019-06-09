@@ -1,3 +1,14 @@
+2019-06-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/57284
+	* resolve.c (find_array_spec): If this is a class expression
+	and the symbol and component array specs are the same, this is
+	not an error.
+	*trans-intrinsic.c (gfc_conv_intrinsic_size): If a class symbol
+	argument, has no namespace, it has come from the interface
+	mapping and the _data component must be accessed directly.
+
 2019-05-30  Marek Polacek  <polacek@redhat.com>
 
 	* lang.opt (ftail-call-workaround): Fix a typo.
