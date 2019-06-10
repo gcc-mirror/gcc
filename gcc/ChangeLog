@@ -1,3 +1,30 @@
+2019-06-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (arc_check_ior_const): Declare.
+	(arc_split_ior): Likewise.
+	(arc_check_mov_const): Likewise.
+	(arc_split_mov_const): Likewise.
+	* config/arc/arc.c (arc_print_operand): Fix 'z' letter.
+	(arc_rtx_costs): Replace check Crr with Cax constraint.
+	(prepare_move_operands): Cleanup, remove unused code.
+	(arc_split_ior): New function.
+	(arc_check_ior_const): Likewise.
+	(arc_split_mov_const): Likewise.
+	(arc_check_mov_const): Likewise.
+	* config/arc/arc.md (movsi_insn): Restructure it, and convert it
+	in define_insn_and_split pattern.
+	(iorsi3): Likewise.
+	(mulsi3_v2): Add new matching variant.
+	(andsi3_i): Cleanup pattern.
+	(rotrsi3_cnt1): Update pattern.
+	(rotrsi3_cnt8): New pattern.
+	(ashlsi2_cnt8): Likewise.
+	(ashlsi2_cnt16): Likewise.
+	* config/arc/constraints.md (C0p): Update constraint.
+	(Crr): Remove it.
+	(C0x): New pattern.
+	(Cax): New pattern.
+
 2019-06-10  Martin Liska  <mliska@suse.cz>
 
 	* ipa-icf.c (sem_item_optimizer::parse_nonsingleton_classes):
