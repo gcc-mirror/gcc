@@ -1,5 +1,10 @@
 2019-06-10  Martin Liska  <mliska@suse.cz>
 
+	PR bootstrap/90808
+	* libgcov.h: Add ATTRIBUTE_UNUSED.
+
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
 	* Makefile.in: Add __gcov_one_value_profiler_v2,
 	__gcov_one_value_profiler_v2_atomic and
 	__gcov_indirect_call_profiler_v4.
