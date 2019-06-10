@@ -317,6 +317,15 @@ So instead we use the macro below and test it against specific values.  */
 #endif
 #endif
 
+/* Attribute `warn_unused_result' was valid as of gcc 3.3.  */
+#ifndef ATTRIBUTE_WARN_UNUSED_RESULT
+# if GCC_VERSION >= 3003
+#  define ATTRIBUTE_WARN_UNUSED_RESULT __attribute__ ((warn_unused_result))
+# else
+#  define ATTRIBUTE_WARN_UNUSED_RESULT
+# endif
+#endif
+
 /* We use __extension__ in some places to suppress -pedantic warnings
    about GCC extensions.  This feature didn't work properly before
    gcc 2.8.  */

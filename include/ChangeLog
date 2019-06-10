@@ -1,5 +1,15 @@
 2019-06-10  Martin Liska  <mliska@suse.cz>
 
+	* ansidecl.h (ATTRIBUTE_WARN_UNUSED_RESULT): New macro.
+	* libiberty.h (xmalloc): Use it.
+	(xrealloc): Likewise.
+	(xcalloc): Likewise.
+	(xstrdup): Likewise.
+	(xstrndup): Likewise.
+	(xmemdup): Likewise.
+
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
 	* ansidecl.h:
 	(ATTRIBUTE_RESULT_SIZE_1): Define new macro.
 	(ATTRIBUTE_RESULT_SIZE_2): Likewise.
