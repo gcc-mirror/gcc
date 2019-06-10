@@ -189,9 +189,11 @@ switch_edge_manager::calc_switch_ranges (gswitch *sw)
 	high = low;
 
       irange def_case_range (irange::INVERSE, low, high);
+      def_case_range.cast (type);
       default_slot->intersect (def_case_range);
 
       irange case_range (low, high);
+      case_range.cast (type);
       irange *&slot = m_edge_table->get_or_insert (e, &existed);
       if (!existed)
         {

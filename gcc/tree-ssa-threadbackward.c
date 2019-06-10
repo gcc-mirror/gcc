@@ -656,6 +656,7 @@ thread_jumps::resolve_control_statement (gimple *stmt, tree name,
 	    if (!case_high)
 	      case_high = case_low;
 	    irange label_range (case_low, case_high);
+	    label_range.cast (TREE_TYPE (name));
 	    /* If NAME can fall into one of the switch cases, we can't
 	       be sure where the switch will land.  */
 	    if (!range_intersect (range_for_name, label_range).undefined_p ())
