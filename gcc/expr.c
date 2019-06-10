@@ -815,12 +815,27 @@ by_pieces_ninsns (unsigned HOST_WIDE_INT l, unsigned int align,
 		  unsigned int max_size, by_pieces_operation op)
 {
   unsigned HOST_WIDE_INT n_insns = 0;
+  scalar_int_mode mode;
+
+  if (targetm.overlap_op_by_pieces_p () && op != COMPARE_BY_PIECES)
+    {
+      /* NB: Round up L and ALIGN to the widest integer mode for
+	 MAX_SIZE.  */
+      mode = widest_int_mode_for_size (max_size);
+      if (optab_handler (mov_optab, mode) != CODE_FOR_nothing)
+	{
+	  unsigned HOST_WIDE_INT up = ROUND_UP (l, GET_MODE_SIZE (mode));
+	  if (up > l)
+	    l = up;
+	  align = GET_MODE_ALIGNMENT (mode);
+	}
+    }
 
   align = alignment_for_piecewise_move (MOVE_MAX_PIECES, align);
 
   while (max_size > 1 && l > 0)
     {
-      scalar_int_mode mode = widest_int_mode_for_size (max_size);
+      mode = widest_int_mode_for_size (max_size);
       enum insn_code icode;
 
       unsigned int modesize = GET_MODE_SIZE (mode);
@@ -888,7 +903,8 @@ class pieces_addr
   void *m_cfndata;
 public:
   pieces_addr (rtx, bool, by_pieces_constfn, void *);
-  rtx adjust (scalar_int_mode, HOST_WIDE_INT);
+  rtx adjust (scalar_int_mode, HOST_WIDE_INT,
+	      by_pieces_prev * = nullptr);
   void increment_address (HOST_WIDE_INT);
   void maybe_predec (HOST_WIDE_INT);
   void maybe_postinc (HOST_WIDE_INT);
@@ -990,10 +1006,12 @@ pieces_addr::decide_autoinc (machine_mode ARG_UNUSED (mode), bool reverse,
    but we still modify the MEM's properties.  */
 
 rtx
-pieces_addr::adjust (scalar_int_mode mode, HOST_WIDE_INT offset)
+pieces_addr::adjust (scalar_int_mode mode, HOST_WIDE_INT offset,
+		     by_pieces_prev *prev)
 {
   if (m_constfn)
-    return m_constfn (m_cfndata, offset, mode);
+    /* Pass the previous data to m_constfn.  */
+    return m_constfn (m_cfndata, prev, offset, mode);
   if (m_obj == NULL_RTX)
     return NULL_RTX;
   if (m_auto)
@@ -1051,6 +1069,10 @@ class op_by_pieces_d
   unsigned int m_align;
   unsigned int m_max_size;
   bool m_reverse;
+  /* True if this is a stack push.  */
+  bool m_push;
+  /* True if targetm.overlap_op_by_pieces_p () returns true.  */
+  bool m_overlap_op_by_pieces;
 
   /* Virtual functions, overriden by derived classes for the specific
      operation.  */
@@ -1062,7 +1084,7 @@ class op_by_pieces_d
 
  public:
   op_by_pieces_d (rtx, bool, rtx, bool, by_pieces_constfn, void *,
-		  unsigned HOST_WIDE_INT, unsigned int);
+		  unsigned HOST_WIDE_INT, unsigned int, bool);
   void run ();
 };
 
@@ -1077,10 +1099,11 @@ op_by_pieces_d::op_by_pieces_d (rtx to, bool to_load,
 				by_pieces_constfn from_cfn,
 				void *from_cfn_data,
 				unsigned HOST_WIDE_INT len,
-				unsigned int align)
+				unsigned int align, bool push)
   : m_to (to, to_load, NULL, NULL),
     m_from (from, from_load, from_cfn, from_cfn_data),
-    m_len (len), m_max_size (MOVE_MAX_PIECES + 1)
+    m_len (len), m_max_size (MOVE_MAX_PIECES + 1),
+    m_push (push)
 {
   int toi = m_to.get_addr_inc ();
   int fromi = m_from.get_addr_inc ();
@@ -1109,6 +1132,8 @@ op_by_pieces_d::op_by_pieces_d (rtx to, bool to_load,
 
   align = alignment_for_piecewise_move (MOVE_MAX_PIECES, align);
   m_align = align;
+
+  m_overlap_op_by_pieces = targetm.overlap_op_by_pieces_p ();
 }
 
 /* This function returns the largest usable integer mode for LEN bytes
@@ -1145,6 +1170,9 @@ op_by_pieces_d::run ()
   scalar_int_mode mode = widest_int_mode_for_size (m_max_size);
   mode = get_usable_mode (mode, m_len);
 
+  by_pieces_prev to_prev = { nullptr, mode };
+  by_pieces_prev from_prev = { nullptr, mode };
+
   do
     {
       unsigned int size = GET_MODE_SIZE (mode);
@@ -1155,8 +1183,12 @@ op_by_pieces_d::run ()
 	  if (m_reverse)
 	    m_offset -= size;
 
-	  to1 = m_to.adjust (mode, m_offset);
-	  from1 = m_from.adjust (mode, m_offset);
+	  to1 = m_to.adjust (mode, m_offset, &to_prev);
+	  to_prev.data = to1;
+	  to_prev.mode = mode;
+	  from1 = m_from.adjust (mode, m_offset, &from_prev);
+	  from_prev.data = from1;
+	  from_prev.mode = mode;
 
 	  m_to.maybe_predec (-(HOST_WIDE_INT)size);
 	  m_from.maybe_predec (-(HOST_WIDE_INT)size);
@@ -1177,9 +1209,32 @@ op_by_pieces_d::run ()
       if (m_len == 0)
 	return;
 
-      /* NB: widest_int_mode_for_size checks SIZE > 1.  */
-      mode = widest_int_mode_for_size (size);
-      mode = get_usable_mode (mode, m_len);
+      if (!m_push && m_overlap_op_by_pieces)
+	{
+	  /* NB: Generate overlapping operations if it is not a stack
+	     push since stack push must not overlap.  Get the smallest
+	     integer mode for M_LEN bytes.  */
+	  mode = smallest_int_mode_for_size (m_len * BITS_PER_UNIT);
+	  mode = get_usable_mode (mode, GET_MODE_SIZE (mode));
+	  int gap = GET_MODE_SIZE (mode) - m_len;
+	  if (gap > 0)
+	    {
+	      /* If size of MODE > M_LEN, generate the last operation
+		 in MODE for the remaining bytes with ovelapping memory
+		 from the previois operation.  */
+	      if (m_reverse)
+		m_offset += gap;
+	      else
+		m_offset -= gap;
+	      m_len += gap;
+	    }
+	}
+      else
+	{
+	  /* NB: widest_int_mode_for_size checks SIZE > 1.  */
+	  mode = widest_int_mode_for_size (size);
+	  mode = get_usable_mode (mode, m_len);
+	}
     }
   while (1);
 
@@ -1190,6 +1245,12 @@ op_by_pieces_d::run ()
 /* Derived class from op_by_pieces_d, providing support for block move
    operations.  */
 
+#ifdef PUSH_ROUNDING
+#define PUSHG_P(to)  ((to) == nullptr)
+#else
+#define PUSHG_P(to)  false
+#endif
+
 class move_by_pieces_d : public op_by_pieces_d
 {
   insn_gen_fn m_gen_fun;
@@ -1199,7 +1260,8 @@ class move_by_pieces_d : public op_by_pieces_d
  public:
   move_by_pieces_d (rtx to, rtx from, unsigned HOST_WIDE_INT len,
 		    unsigned int align)
-    : op_by_pieces_d (to, false, from, true, NULL, NULL, len, align)
+    : op_by_pieces_d (to, false, from, true, NULL, NULL, len, align,
+		      PUSHG_P (to))
   {
   }
   rtx finish_retmode (memop_ret);
@@ -1294,7 +1356,8 @@ class store_by_pieces_d : public op_by_pieces_d
  public:
   store_by_pieces_d (rtx to, by_pieces_constfn cfn, void *cfn_data,
 		     unsigned HOST_WIDE_INT len, unsigned int align)
-    : op_by_pieces_d (to, false, NULL_RTX, true, cfn, cfn_data, len, align)
+    : op_by_pieces_d (to, false, NULL_RTX, true, cfn, cfn_data, len,
+		      align, false)
   {
   }
   rtx finish_retmode (memop_ret);
@@ -1349,7 +1412,7 @@ store_by_pieces_d::finish_retmode (memop_ret retmode)
 
 int
 can_store_by_pieces (unsigned HOST_WIDE_INT len,
-		     rtx (*constfun) (void *, HOST_WIDE_INT, scalar_int_mode),
+		     by_pieces_constfn constfun,
 		     void *constfundata, unsigned int align, bool memsetp)
 {
   unsigned HOST_WIDE_INT l;
@@ -1396,7 +1459,7 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
 		  if (reverse)
 		    offset -= size;
 
-		  cst = (*constfun) (constfundata, offset, mode);
+		  cst = (*constfun) (constfundata, nullptr, offset, mode);
 		  if (!targetm.legitimate_constant_p (mode, cst))
 		    return 0;
 
@@ -1426,7 +1489,7 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
 
 rtx
 store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
-		 rtx (*constfun) (void *, HOST_WIDE_INT, scalar_int_mode),
+		 by_pieces_constfn constfun,
 		 void *constfundata, unsigned int align, bool memsetp,
 		 memop_ret retmode)
 {
@@ -1454,7 +1517,7 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
    Return const0_rtx unconditionally.  */
 
 static rtx
-clear_by_pieces_1 (void *, HOST_WIDE_INT, scalar_int_mode)
+clear_by_pieces_1 (void *, void *, HOST_WIDE_INT, scalar_int_mode)
 {
   return const0_rtx;
 }
@@ -1490,7 +1553,8 @@ class compare_by_pieces_d : public op_by_pieces_d
   compare_by_pieces_d (rtx op0, rtx op1, by_pieces_constfn op1_cfn,
 		       void *op1_cfn_data, HOST_WIDE_INT len, int align,
 		       rtx_code_label *fail_label)
-    : op_by_pieces_d (op0, true, op1, true, op1_cfn, op1_cfn_data, len, align)
+    : op_by_pieces_d (op0, true, op1, true, op1_cfn, op1_cfn_data, len,
+		      align, false)
   {
     m_fail_label = fail_label;
   }
@@ -5676,7 +5740,8 @@ emit_storent_insn (rtx to, rtx from)
 /* Helper function for store_expr storing of STRING_CST.  */
 
 static rtx
-string_cst_read_str (void *data, HOST_WIDE_INT offset, scalar_int_mode mode)
+string_cst_read_str (void *data, void *, HOST_WIDE_INT offset,
+		     scalar_int_mode mode)
 {
   tree str = (tree) data;
 

@@ -107,7 +107,15 @@ enum block_op_methods
   BLOCK_OP_NO_LIBCALL_RET
 };
 
-typedef rtx (*by_pieces_constfn) (void *, HOST_WIDE_INT, scalar_int_mode);
+typedef rtx (*by_pieces_constfn) (void *, void *, HOST_WIDE_INT,
+				  scalar_int_mode);
+
+/* The second pointer passed to by_pieces_constfn.  */
+struct by_pieces_prev
+{
+  rtx data;
+  scalar_int_mode mode;
+};
 
 extern rtx emit_block_move (rtx, rtx, rtx, enum block_op_methods);
 extern rtx emit_block_move_hints (rtx, rtx, rtx, enum block_op_methods,

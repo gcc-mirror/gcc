@@ -6767,6 +6767,13 @@ in code size, for example where the number of insns emitted to perform a
 move would be greater than that of a library call.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_OVERLAP_OP_BY_PIECES_P (void)
+This target hook should return true if when the @code{by_pieces}
+infrastructure is used, an offset adjusted unaligned memory operation
+in the smallest integer mode for the last piece operation of a memory
+region can be generated to avoid doing more than one smaller operations.
+@end deftypefn
+
 @deftypefn {Target Hook} int TARGET_COMPARE_BY_PIECES_BRANCH_RATIO (machine_mode @var{mode})
 When expanding a block comparison in MODE, gcc can try to reduce the
 number of branches at the expense of more memory operations.  This hook

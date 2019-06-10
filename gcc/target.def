@@ -3643,6 +3643,15 @@ move would be greater than that of a library call.",
  default_use_by_pieces_infrastructure_p)
 
 DEFHOOK
+(overlap_op_by_pieces_p,
+ "This target hook should return true if when the @code{by_pieces}\n\
+infrastructure is used, an offset adjusted unaligned memory operation\n\
+in the smallest integer mode for the last piece operation of a memory\n\
+region can be generated to avoid doing more than one smaller operations.",
+ bool, (void),
+ hook_bool_void_false)
+
+DEFHOOK
 (compare_by_pieces_branch_ratio,
  "When expanding a block comparison in MODE, gcc can try to reduce the\n\
 number of branches at the expense of more memory operations.  This hook\n\
