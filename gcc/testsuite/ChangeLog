@@ -1,3 +1,9 @@
+2019-06-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/90498
+	* gfortran.dg/associate_48.f90 : New test.
+
 2019-06-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk

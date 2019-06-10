@@ -1,3 +1,10 @@
+2019-06-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/90498
+	* trans-stmt.c (trans_associate_var) Do not use the saved
+	descriptor if the expression is a COMPONENT_REF.
+
 2019-06-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
