@@ -18,6 +18,8 @@ class Named_object;
 class Named_type;
 class Expression;
 class Import_function_body;
+class Temporary_statement;
+class Unnamed_label;
 
 // Expressions can be imported either directly from import data (for
 // simple constant expressions that can appear in a const declaration
@@ -587,7 +589,7 @@ class Import_function_body : public Import_expression
 		       const std::string& body, size_t off, Block* block,
 		       int indent)
     : gogo_(gogo), imp_(imp), named_object_(named_object), body_(body),
-      off_(off), block_(block), indent_(indent), temporaries_(),
+      off_(off), block_(block), indent_(indent), temporaries_(), labels_(),
       saw_error_(false)
   { }
 
@@ -704,6 +706,11 @@ class Import_function_body : public Import_expression
   Temporary_statement*
   temporary_statement(unsigned int);
 
+  // Return an unnamed label given an index, defining the label if we
+  // haven't seen it already.
+  Unnamed_label*
+  unnamed_label(unsigned int, Location);
+
   // Implement Import_expression.
   Import_function_body*
   ifb()
@@ -730,6 +737,9 @@ class Import_function_body : public Import_expression
   { this->saw_error_ = true; }
 
  private:
+  static size_t
+  next_size(size_t);
+
   // The IR.
   Gogo* gogo_;
   // The importer.
@@ -747,6 +757,8 @@ class Import_function_body : public Import_expression
   int indent_;
   // Temporary statements by index.
   std::vector<Temporary_statement*> temporaries_;
+  // Unnamed labels by index.
+  std::vector<Unnamed_label*> labels_;
   // Whether we've seen an error.  Used to avoid reporting excess
   // errors.
   bool saw_error_;
