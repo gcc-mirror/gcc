@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <tuple>
+#include <functional>
 
 #define LIFT_FWD(x) std::forward<decltype(x)>(x)
 
