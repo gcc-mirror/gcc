@@ -5560,41 +5560,39 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case CONST_INT:
       {
 	bool nolimm = false; /* Can we do without long immediate?  */
-	bool fast = false; /* Is the result available immediately?  */
-	bool condexec = false; /* Does this allow conditiobnal execution?  */
-	bool compact = false; /* Is a 16 bit opcode available?  */
-	/* CONDEXEC also implies that we can have an unconditional
-	   3-address operation.  */
 
-	nolimm = compact = condexec = false;
+	nolimm = false;
 	if (UNSIGNED_INT6 (INTVAL (x)))
-	  nolimm = condexec = compact = true;
+	  nolimm = true;
 	else
 	  {
-	    if (SMALL_INT (INTVAL (x)))
-	      nolimm = fast = true;
 	    switch (outer_code)
 	      {
 	      case AND: /* bclr, bmsk, ext[bw] */
 		if (satisfies_constraint_Ccp (x) /* bclr */
 		    || satisfies_constraint_C1p (x) /* bmsk */)
-		  nolimm = fast = condexec = compact = true;
+		  nolimm = true;
 		break;
 	      case IOR: /* bset */
 		if (satisfies_constraint_C0p (x)) /* bset */
-		  nolimm = fast = condexec = compact = true;
+		  nolimm = true;
 		break;
 	      case XOR:
 		if (satisfies_constraint_C0p (x)) /* bxor */
-		  nolimm = fast = condexec = true;
+		  nolimm = true;
 		break;
+	      case SET:
+		if (UNSIGNED_INT8 (INTVAL (x)))
+		  nolimm = true;
+		if (satisfies_constraint_Chi (x))
+		  nolimm = true;
+		if (satisfies_constraint_Clo (x))
+		  nolimm = true;
 	      default:
 		break;
 	      }
 	  }
-	/* FIXME: Add target options to attach a small cost if
-	   condexec / compact is not true.  */
-	if (nolimm)
+	if (nolimm && !speed)
 	  {
 	    *total = 0;
 	    return true;
@@ -5607,7 +5605,7 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
-      *total = COSTS_N_INSNS (1);
+      *total = speed ? COSTS_N_INSNS (1) : COSTS_N_INSNS (4);
       return true;
 
     case CONST_DOUBLE:
@@ -5633,16 +5631,10 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case LSHIFTRT:
       if (TARGET_BARREL_SHIFTER)
 	{
-	  /* If we want to shift a constant, we need a LIMM.  */
-	  /* ??? when the optimizers want to know if a constant should be
-	     hoisted, they ask for the cost of the constant.  OUTER_CODE is
-	     insufficient context for shifts since we don't know which operand
-	     we are looking at.  */
 	  if (CONSTANT_P (XEXP (x, 0)))
 	    {
-	      *total += (COSTS_N_INSNS (2)
-			 + rtx_cost (XEXP (x, 1), mode, (enum rtx_code) code,
-				     0, speed));
+	      *total += rtx_cost (XEXP (x, 1), mode, (enum rtx_code) code,
+				  0, speed);
 	      return true;
 	    }
 	  *total = COSTS_N_INSNS (1);
@@ -5662,7 +5654,13 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
     case DIV:
     case UDIV:
-      if (speed)
+      if (GET_MODE_CLASS (mode) == MODE_FLOAT
+	  && (TARGET_FP_SP_SQRT || TARGET_FP_DP_SQRT))
+	*total = COSTS_N_INSNS(1);
+      else if (GET_MODE_CLASS (mode) == MODE_INT
+	       && TARGET_DIVREM)
+	*total = COSTS_N_INSNS(1);
+      else if (speed)
 	*total = COSTS_N_INSNS(30);
       else
 	*total = COSTS_N_INSNS(1);
@@ -5675,19 +5673,28 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	*total= arc_multcost;
       /* We do not want synth_mult sequences when optimizing
 	 for size.  */
-      else if (TARGET_MUL64_SET || TARGET_ARC700_MPY)
+      else if (TARGET_ANY_MPY)
 	*total = COSTS_N_INSNS (1);
       else
 	*total = COSTS_N_INSNS (2);
       return false;
+
     case PLUS:
+      if (outer_code == MEM && CONST_INT_P (XEXP (x, 1))
+	  && RTX_OK_FOR_OFFSET_P (mode, XEXP (x, 1)))
+	{
+	  *total = 0;
+	  return true;
+	}
+
       if ((GET_CODE (XEXP (x, 0)) == ASHIFT
 	   && _1_2_3_operand (XEXP (XEXP (x, 0), 1), VOIDmode))
           || (GET_CODE (XEXP (x, 0)) == MULT
               && _2_4_8_operand (XEXP (XEXP (x, 0), 1), VOIDmode)))
 	{
-	  *total += (rtx_cost (XEXP (x, 1), mode, PLUS, 0, speed)
-		     + rtx_cost (XEXP (XEXP (x, 0), 0), mode, PLUS, 1, speed));
+	  if (CONSTANT_P (XEXP (x, 1)) && !speed)
+	    *total += COSTS_N_INSNS (4);
+	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode, PLUS, 1, speed);
 	  return true;
 	}
       return false;
@@ -5697,11 +5704,13 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
           || (GET_CODE (XEXP (x, 1)) == MULT
               && _2_4_8_operand (XEXP (XEXP (x, 1), 1), VOIDmode)))
 	{
-	  *total += (rtx_cost (XEXP (x, 0), mode, PLUS, 0, speed)
-		     + rtx_cost (XEXP (XEXP (x, 1), 0), mode, PLUS, 1, speed));
+	  if (CONSTANT_P (XEXP (x, 0)) && !speed)
+	    *total += COSTS_N_INSNS (4);
+	  *total += rtx_cost (XEXP (XEXP (x, 1), 0), mode, PLUS, 1, speed);
 	  return true;
 	}
       return false;
+
     case COMPARE:
       {
 	rtx op0 = XEXP (x, 0);
