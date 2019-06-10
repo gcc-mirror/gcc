@@ -240,7 +240,8 @@ alloca_call_type (global_ranger &ranger, gimple *stmt, bool is_vla)
 				   build_int_cst (size_type_node, max_size),
 				   irange::INVERSE);
 
-      if (!r.intersect (invalid_range).undefined_p ())
+      r.intersect (invalid_range);
+      if (!r.undefined_p ())
 	return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE,
 				      wi::to_wide (integer_zero_node));
       return alloca_type_and_limit (ALLOCA_OK);

@@ -80,17 +80,17 @@ class irange
   bool undefined_p () const;
   bool zero_p () const;
   bool nonzero_p () const;
-  bool singleton_p () const;
-  bool singleton_p (wide_int &) const;
-  bool contains_p (const wide_int &element) const;
+  // These two take a tree instead of a wide_int, for API
+  // compatibility with value_range.
+  bool singleton_p (tree * = NULL) const;
   bool contains_p (tree) const;
 
   bool operator== (const irange &r) const;
   bool operator!= (const irange &r) const;
 
-  irange &union_ (const irange &r);
-  irange &intersect (const irange &r);
-  irange &invert ();
+  void union_ (const irange &r);
+  void intersect (const irange &r);
+  void invert ();
 
   void dump () const;
   void dump (FILE *) const;
@@ -101,7 +101,8 @@ private:
   void set_lower_bound (unsigned pair, const wide_int &);
   void set_upper_bound (unsigned pair, const wide_int &);
   void remove_pair (unsigned pair);
-  irange &intersect (const wide_int &x, const wide_int &y);
+  void intersect (const wide_int &x, const wide_int &y);
+  bool contains_p (const wide_int &element) const;
   void dump (pretty_printer *pp) const;
   bool valid_p () const;
 
@@ -269,15 +270,15 @@ class GTY((variable_size)) irange_storage
   friend class irange;
 
  public:
-  void set_irange (const irange &);
-  void set_nonzero_bits (const wide_int &);
-  wide_int get_nonzero_bits ();
-  bool empty_pair_p (unsigned, unsigned, tree) const;
-  void set_empty_pair (unsigned, unsigned, tree);
-  static irange_storage *ggc_alloc_init (const irange &);
+  void set (const irange &);
+  static irange_storage *alloc (const irange &);
 
  private:
   static size_t size (unsigned precision);
+  bool empty_pair_p (unsigned, unsigned, tree) const;
+  void set_empty_pair (unsigned, unsigned, tree);
+  void set_nonzero_bits (const wide_int &);
+  wide_int get_nonzero_bits ();
 
   // The last wide_int in this field is a mask representing which bits in
   // an integer are known to be non-zero.
@@ -309,15 +310,16 @@ irange_storage::size (unsigned precision)
     + trailing_wide_ints<irange::m_max_pairs * 2 + 1>::extra_size (precision);
 }
 
-// Allocate GC memory for an irange_storage with PRECISION and initialize it to IR.
+// Allocate GC memory for an irange_storage with PRECISION and
+// initialize it to IR.
 
 inline irange_storage *
-irange_storage::ggc_alloc_init (const irange &ir)
+irange_storage::alloc (const irange &ir)
 {
   unsigned precision = TYPE_PRECISION (ir.m_type);
   irange_storage *stow = static_cast<irange_storage *> (ggc_internal_alloc
 							(size (precision)));
-  stow->set_irange (ir);
+  stow->set (ir);
   stow->set_nonzero_bits (wi::shwi (-1, precision));
   return stow;
 }

@@ -627,7 +627,6 @@ thread_jumps::resolve_control_statement (gimple *stmt, tree name,
 					 const irange &range_for_name,
 					 tree &result)
 {
-  wide_int singleton;
   switch (gimple_code (stmt))
     {
     case GIMPLE_COND:
@@ -639,19 +638,15 @@ thread_jumps::resolve_control_statement (gimple *stmt, tree name,
 	irange r;
 	if (!m_all_paths_to_ssa.range_of_folded_stmt (r, stmt, var,
 						      range_for_name)
-	    || !r.singleton_p (singleton))
+	    || !r.singleton_p (&result))
 	  return false;
-	result = wide_int_to_tree (TREE_TYPE (name), singleton);
 	return true;
       }
     case GIMPLE_SWITCH:
       {
 	/* Handle the simple case fast.  */
-	if (range_for_name.singleton_p (singleton))
-	  {
-	    result = wide_int_to_tree (TREE_TYPE (name), singleton);
-	    return true;
-	  }
+	if (range_for_name.singleton_p (&result))
+	  return true;
 	gswitch *gs = as_a <gswitch *> (stmt);
 	for (unsigned i = 1; i < gimple_switch_num_labels (gs); ++i)
 	  {
@@ -687,9 +682,8 @@ thread_jumps::resolve_control_statement (gimple *stmt, tree name,
 	return true;
       }
     case GIMPLE_GOTO:
-      if (!range_for_name.singleton_p (singleton))
+      if (!range_for_name.singleton_p (&result))
 	return false;
-      result = wide_int_to_tree (TREE_TYPE (name), singleton);
       return true;
     default:
       gcc_unreachable ();

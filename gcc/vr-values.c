@@ -3174,7 +3174,7 @@ range_misc::simplify_div_or_mod_using_ranges (gimple_stmt_iterator *gsi,
 
   irange positives = range_positives (TREE_TYPE (op0));
   if (TYPE_UNSIGNED (TREE_TYPE (op0))
-      || positives.intersect (ir) == ir)
+      || range_intersect (positives, ir) == ir)
     {
       tree t;
 
@@ -3249,7 +3249,7 @@ range_misc::simplify_abs_using_ranges (gimple_stmt_iterator *gsi,
   irange ir0 = get_irange (op, stmt);
   irange tmp = range_positives (TREE_TYPE (op));
   /* If range is >= 0, eliminate the ABS.  */
-  if (tmp.intersect (ir0) == ir0)
+  if (range_intersect (tmp, ir0) == ir0)
     {
       gimple_assign_set_rhs_code (stmt, SSA_NAME);
       updated = true;
@@ -3260,7 +3260,7 @@ range_misc::simplify_abs_using_ranges (gimple_stmt_iterator *gsi,
       irange izero = range_zero (TREE_TYPE (op));
       tmp = range_negatives (TREE_TYPE (op));
       tmp.union_ (izero);
-      if (tmp.intersect (ir0) == ir0)
+      if (range_intersect (tmp, ir0) == ir0)
 	{
 	  gimple_assign_set_rhs_code (stmt, NEGATE_EXPR);
 	  updated = true;

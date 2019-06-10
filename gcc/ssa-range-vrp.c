@@ -90,9 +90,9 @@ irange_misc::singleton (tree op, gimple *stmt)
   if (TREE_CODE (op) != SSA_NAME)
     return NULL_TREE;
 
-  wide_int w;
-  if (get_irange (op, stmt).singleton_p (w))
-    return wide_int_to_tree (TREE_TYPE (op), w);
+  tree t;
+  if (get_irange (op, stmt).singleton_p (&t))
+    return t;
   return NULL;
 }
 
@@ -126,13 +126,11 @@ static bool
 rvrp_fold_const_assign (gassign *assign, const irange &r)
 {
   irange trange;
-  wide_int wi;
   // ?? Perhaps we could set the assignment to 0 instead?
   if (r.undefined_p ())
     return false;
-  gcc_assert (r.singleton_p (wi));
-  tree lhs = gimple_assign_lhs (assign);
-  tree rhs = wide_int_to_tree (TREE_TYPE (lhs), wi);
+  tree rhs;
+  gcc_assert (r.singleton_p (&rhs));
   delink_stmt_imm_use (assign);
   gimple_assign_set_rhs_code (assign, SSA_NAME);
   gimple_assign_set_rhs1 (assign, rhs);

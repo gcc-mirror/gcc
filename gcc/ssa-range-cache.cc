@@ -168,7 +168,7 @@ ssa_block_ranges::ssa_block_ranges (tree t)
 
   // Create the cached type range.
   tr.set_varying (t);
-  m_type_range = irange_storage::ggc_alloc_init (tr);
+  m_type_range = irange_storage::alloc (tr);
 
   m_tab[ENTRY_BLOCK_PTR_FOR_FN (cfun)->index] = m_type_range;
 }
@@ -189,9 +189,9 @@ ssa_block_ranges::set_bb_range (const basic_block bb, const irange &r)
 
   // If there is already range memory for this block, reuse it.
   if (m && m != m_type_range)
-    m->set_irange (r);
+    m->set (r);
   else
-    m = irange_storage::ggc_alloc_init (r);
+    m = irange_storage::alloc (r);
 
   m_tab[bb->index] = m;
 }
@@ -427,10 +427,10 @@ ssa_global_cache::set_global_range (tree name, const irange& r)
   irange_storage *m = m_tab[v];
 
   if (m)
-    m->set_irange (r);
+    m->set (r);
   else
     {
-      m = irange_storage::ggc_alloc_init (r);
+      m = irange_storage::alloc (r);
       m_tab[SSA_NAME_VERSION (name)] = m;
     }
 }

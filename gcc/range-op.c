@@ -1435,15 +1435,15 @@ operator_exact_divide::op1_range (irange& r,
 				   const irange& lhs,
 				   const irange& op2) const
 {
-  wide_int offset;
+  tree offset;
   // [2, 4] = op1 / [3,3]   since its exact divide, no need to worry about
   // remainders in the endpoints, so op1 = [2,4] * [3,3] = [6,12].
   // We wont bother trying to enumerate all the in between stuff :-P
   // TRUE accuraacy is [6,6][9,9][12,12].  This is unlikely to matter most of
   // the time however.  
   // If op2 is a multiple of 2, we would be able to set some non-zero bits.
-  if (op2.singleton_p (offset) && op_rr (MULT_EXPR, r, lhs, op2)
-      && wi::ne_p (offset, 0))
+  if (op2.singleton_p (&offset) && op_rr (MULT_EXPR, r, lhs, op2)
+      && !integer_zerop (offset))
     return true;
   return false;
 }
@@ -1656,8 +1656,8 @@ operator_logical_and::fold_range (irange& r, const irange& lh,
   // To reach this point, there must be a logical 1 on each side, and the only
   // remaining question is whether there is a zero or not.
 
-  if (lh.contains_p (wi::zero (TYPE_PRECISION (lh.type ())))
-      || rh.contains_p (wi::zero (TYPE_PRECISION (rh.type ()))))
+  if (lh.contains_p (build_zero_cst (lh.type ()))
+      || rh.contains_p (build_zero_cst (rh.type ())))
     r.set_varying (boolean_type_node);
   else
     r = range_true ();
@@ -2156,7 +2156,7 @@ operator_addr_expr::fold_range (irange& r, const irange& lh,
   if (lh.zero_p ())
     r = range_zero (rh.type ());
   else
-    if (!lh.contains_p (wi::zero (TYPE_PRECISION (lh.type ()))))
+    if (!lh.contains_p (build_zero_cst (lh.type ())))
       r = range_nonzero (rh.type ());
     else
       return false;

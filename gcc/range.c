@@ -399,7 +399,7 @@ irange::cast (tree new_type)
   canonicalize ();
 }
 
-// Return TRUE if the current range contains ELEMENT.
+// Return TRUE if the current range contains wide-int ELEMENT.
 
 bool
 irange::contains_p (const wide_int &element) const
@@ -411,17 +411,12 @@ irange::contains_p (const wide_int &element) const
   return false;
 }
 
-// Like above, but ELEMENT can be an INTEGER_CST of any type.
+// Return TRUE if the current range contains tree ELEMENT.
 
 bool
 irange::contains_p (tree element) const
 {
-  gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (element)));
-  tree type = fold_convert (m_type, element);
-  if (TREE_OVERFLOW (type))
-    return false;
-  wide_int wi = wi::to_wide (type);
-  return contains_p (wi);
+  return contains_p (wi::to_wide (element));
 }
 
 // Remove PAIR.
@@ -498,7 +493,7 @@ irange::canonicalize ()
 
 // THIS = THIS U R
 
-irange &
+void
 irange::union_ (const irange &r)
 {
   gcc_checking_assert (range_compatible_p (m_type, r.m_type));
@@ -506,10 +501,10 @@ irange::union_ (const irange &r)
   if (undefined_p ())
     {
       *this = r;
-      return *this;
+      return;
     }
   else if (r.undefined_p ())
-    return *this;
+    return;
 
   // Do not worry about merging and such by reserving twice as many
   // pairs as needed, and then simply sort the 2 ranges into this
@@ -609,7 +604,6 @@ irange::union_ (const irange &r)
   m_nitems = i;
     
   gcc_checking_assert (valid_p ());
-  return *this;
 }
 
 // Return R1 U R2.
@@ -617,12 +611,14 @@ irange::union_ (const irange &r)
 irange
 range_union (const irange &r1, const irange &r2)
 {
-  return irange (r1).union_ (r2);
+  irange tmp (r1);
+  tmp.union_ (r2);
+  return tmp;
 }
 
 // THIS = THIS ^ [X,Y].
 
-irange &
+void
 irange::intersect (const wide_int &x, const wide_int &y)
 {
   unsigned pos = 0;
@@ -645,12 +641,11 @@ irange::intersect (const wide_int &x, const wide_int &y)
     }
   m_nitems = pos;
   gcc_checking_assert (valid_p ());
-  return *this;
 }
 
 // THIS = THIS ^ R.
 
-irange &
+void
 irange::intersect (const irange &r)
 {
   gcc_checking_assert (range_compatible_p (m_type, r.m_type));
@@ -659,7 +654,7 @@ irange::intersect (const irange &r)
   // Intersection with an empty range is an empty range.
   set_undefined ();
   if (orig_range.undefined_p () || r.undefined_p ())
-    return *this;
+    return;
 
   // The general algorithm is as follows.
   //
@@ -673,23 +668,28 @@ irange::intersect (const irange &r)
   // Step 3: [10,20][30,40][50,60] ^ [55,70] => [55,60]
   // Final:  [15,20] U [38,40] U [55,60] => [15,20][38,40][55,60]
   for (unsigned i = 0; i < r.m_nitems; i += 2)
-    union_ (irange (orig_range).intersect (r.m_bounds[i], r.m_bounds[i + 1]));
+    {
+      irange tmp (orig_range);
+      tmp.intersect (r.m_bounds[i], r.m_bounds[i + 1]);
+      union_ (tmp);
+    }
 
   // There is no valid_p() check here because the calls to union_
   // above would have called valid_p().
-  return *this;
 }
 
 // Return R1 ^ R2.
 irange
 range_intersect (const irange &r1, const irange &r2)
 {
-  return irange (r1).intersect (r2);
+  irange tmp (r1);
+  tmp.intersect (r2);
+  return tmp;
 }
 
 // Set THIS to the inverse of its range.
 
-irange &
+void
 irange::invert ()
 {
   // We always need one more set of bounds to represent an inverse, so
@@ -714,14 +714,14 @@ irange::invert ()
     {
       m_bounds[1] = max;
       m_nitems = 2;
-      return *this;
+      return;
     }
 
   // The inverse of the empty set is the entire domain.
   if (undefined_p ())
     {
       set_varying (m_type);
-      return *this;
+      return;
     }
 
   // The algorithm is as follows.  To calculate INVERT ([a,b][c,d]), we
@@ -782,14 +782,15 @@ irange::invert ()
     }
 
   gcc_checking_assert (valid_p ());
-  return *this;
 }
 
 // Return the inverse range of R1.
 irange
 range_invert (const irange &r1)
 {
-  return irange (r1).invert ();
+  irange tmp (r1);
+  tmp.invert ();
+  return tmp;
 }
 
 // Dump the current range onto BUFFER.
@@ -873,7 +874,7 @@ irange::dump () const
 // Initialize the current irange_storage to the irange in IR.
 
 void
-irange_storage::set_irange (const irange &ir)
+irange_storage::set (const irange &ir)
 {
   unsigned precision = TYPE_PRECISION (ir.type ());
   trailing_bounds.set_precision (precision);
@@ -921,23 +922,15 @@ range_negatives (tree type)
   return r;
 }
 
-// Return TRUE if range contains exactly one element.
+// Return TRUE if range contains exactly one element and set RESULT to it.
 
 bool
-irange::singleton_p () const
+irange::singleton_p (tree *result) const
 {
   if (num_pairs () == 1 && lower_bound (0) == upper_bound (0))
-    return true;
-  return false;
-}
-// Return TRUE if range contains exactly one element and set ELEM to it.
-
-bool
-irange::singleton_p (wide_int &elem) const
-{
-  if (singleton_p ())
     {
-      elem = lower_bound (0);
+      if (result)
+	*result = wide_int_to_tree (type (), lower_bound ());
       return true;
     }
   return false;
@@ -1127,9 +1120,8 @@ irange_tests ()
   // Check that [~5] is really [-MIN,4][6,MAX].
   r0 = irange (integer_type_node, INT (5), INT (5), irange::INVERSE);
   r1 = irange (integer_type_node, minint, INT (4));
-  ASSERT_FALSE (r1.union_ (irange (integer_type_node,
-				   INT (6), maxint)).undefined_p ());
-
+  r1.union_ (irange (integer_type_node, INT (6), maxint));
+  ASSERT_FALSE (r1.undefined_p ());
   ASSERT_TRUE (r0 == r1);
 
   r1 = irange (integer_type_node, INT (5), INT (5));
@@ -1143,12 +1135,11 @@ irange_tests ()
   r1 = irange (integer_type_node,
 	       wi::to_wide (INT (5)), wi::to_wide (INT (10)));
   ASSERT_TRUE (r1.valid_p ());
-  ASSERT_TRUE (r1.contains_p (INT (7)));
-  ASSERT_TRUE (r1.contains_p (INT (7)));
+  ASSERT_TRUE (r1.contains_p (wi::to_wide (INT (7))));
 
   r1 = irange (signed_char_type_node, SCHAR (0), SCHAR (20));
-  ASSERT_TRUE (r1.contains_p (INT(15)));
-  ASSERT_FALSE (r1.contains_p (INT(300)));
+  ASSERT_TRUE (r1.contains_p (wi::to_wide (SCHAR(15))));
+  ASSERT_FALSE (r1.contains_p (wi::to_wide (SCHAR(300))));
 
   // If a range is in any way outside of the range for the converted
   // to range, default to the range for the new type.
@@ -1262,8 +1253,8 @@ irange_tests ()
   // NOT([10,20]) ==> [-MIN,9][21,MAX].
   r0 = r1 = irange (integer_type_node, INT (10), INT (20));
   r2 = irange (integer_type_node, minint, INT(9));
-  ASSERT_FALSE (r2.union_ (irange (integer_type_node,
-				   INT(21), maxint)).undefined_p ());
+  r2.union_ (irange (integer_type_node, INT(21), maxint));
+  ASSERT_FALSE (r2.undefined_p ());
   r1.invert ();
   ASSERT_TRUE (r1 == r2);
   // Test that NOT(NOT(x)) == x.
@@ -1272,7 +1263,8 @@ irange_tests ()
 
   // NOT(-MIN,+MAX) is the empty set and should return false.
   r0 = irange (integer_type_node, minint, maxint);
-  ASSERT_TRUE (r0.invert ().undefined_p ());
+  r0.invert ();
+  ASSERT_TRUE (r0.undefined_p ());
   r1.set_undefined ();
   ASSERT_TRUE (r0 == r1);
 
@@ -1512,8 +1504,8 @@ irange_tests ()
 
   // Test non-destructive intersection.
   r0 = rold = irange (integer_type_node, INT (10), INT (20));
-  ASSERT_FALSE (range_intersect (r0,
-				 irange (integer_type_node, INT (15), INT (30))).undefined_p ());
+  ASSERT_FALSE (range_intersect (r0, irange (integer_type_node, INT (15),
+					     INT (30))).undefined_p ());
   ASSERT_TRUE (r0 == rold);
 
   // Test the internal sanity of wide_int's wrt HWIs.
@@ -1523,7 +1515,7 @@ irange_tests ()
 
   // Test irange_storage.
   r0 = irange (integer_type_node, INT (5), INT (10));
-  irange_storage *stow = irange_storage::ggc_alloc_init (r0);
+  irange_storage *stow = irange_storage::alloc (r0);
   r1 = irange (integer_type_node, stow);
   ASSERT_TRUE (r0 == r1);
 
@@ -1532,7 +1524,7 @@ irange_tests ()
   r0 = irange (s1bit_type,
 	       build_int_cst (s1bit_type, -1),
 	       build_int_cst (s1bit_type, 0));
-  stow = irange_storage::ggc_alloc_init (r0);
+  stow = irange_storage::alloc (r0);
   r1 = irange (s1bit_type, stow);
   ASSERT_TRUE (r0 == r1);
 
