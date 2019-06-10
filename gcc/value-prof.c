@@ -230,18 +230,21 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
     case HIST_TYPE_INTERVAL:
       if (hist->hvalue.counters)
 	{
-	  fprintf (dump_file, "Interval counter range %d -- %d",
+	  fprintf (dump_file, "Interval counter range [%d,%d]: [",
 		   hist->hdata.intvl.int_start,
 		   (hist->hdata.intvl.int_start
 		    + hist->hdata.intvl.steps - 1));
 
 	  unsigned int i;
-	  fprintf (dump_file, " [");
 	  for (i = 0; i < hist->hdata.intvl.steps; i++)
-	    fprintf (dump_file, " %d:%" PRId64,
-		     hist->hdata.intvl.int_start + i,
-		     (int64_t) hist->hvalue.counters[i]);
-	  fprintf (dump_file, " ] outside range:%" PRId64 ".\n",
+	    {
+	      fprintf (dump_file, "%d:%" PRId64,
+		       hist->hdata.intvl.int_start + i,
+		       (int64_t) hist->hvalue.counters[i]);
+	      if (i != hist->hdata.intvl.steps - 1)
+		fprintf (dump_file, ", ");
+	    }
+	  fprintf (dump_file, "] outside range: %" PRId64 ".\n",
 		   (int64_t) hist->hvalue.counters[i]);
 	}
       break;
@@ -1112,7 +1115,6 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
   count1 = histogram->hvalue.counters[0];
   count2 = histogram->hvalue.counters[1];
 
-  /* Compute probability of taking the optimal path.  */
   if (check_counter (stmt, "interval", &count1, &all, gimple_bb (stmt)->count))
     {
       gimple_remove_histogram_value (cfun, stmt, histogram);
