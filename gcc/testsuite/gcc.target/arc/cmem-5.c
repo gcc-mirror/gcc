@@ -6,6 +6,6 @@
 
 #include "cmem-st.inc"
 
-/* { dg-final { scan-assembler "xst " } } */
-/* { dg-final { scan-assembler "xstw " } } */
-/* { dg-final { scan-assembler "xstb " } } */
+/* { dg-final { scan-assembler "xst\\s" } } */
+/* { dg-final { scan-assembler "xstw\\s" } } */
+/* { dg-final { scan-assembler "xstb\\s" } } */

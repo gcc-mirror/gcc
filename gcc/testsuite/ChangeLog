@@ -1,3 +1,20 @@
+2019-06-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/and-cnst-size.c: New test.
+	* gcc.target/arc/mov-cnst-size.c: Likewise.
+	* gcc.target/arc/or-cnst-size.c: Likewise.
+	* gcc.target/arc/store-merge-1.c: Update test.
+	* gcc.target/arc/arc700-stld-hazard.c: Likewise.
+	* gcc.target/arc/cmem-1.c: Likewise.
+	* gcc.target/arc/cmem-2.c: Likewise.
+	* gcc.target/arc/cmem-3.c: Likewise.
+	* gcc.target/arc/cmem-4.c: Likewise.
+	* gcc.target/arc/cmem-5.c: Likewise.
+	* gcc.target/arc/cmem-6.c: Likewise.
+	* gcc.target/arc/loop-4.c: Likewise.
+	* gcc.target/arc/movh_cl-1.c: Likewise.
+	* gcc.target/arc/sdata-3.c: Likewise.
+
 2019-06-10  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/ipa/pr68035.c: Update scanned pattern.
