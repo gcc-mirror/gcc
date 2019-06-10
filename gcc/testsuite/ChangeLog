@@ -1,3 +1,10 @@
+2019-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/scan-1.c: New test.
+	* c-c++-common/gomp/scan-2.c: New test.
+	* c-c++-common/gomp/scan-3.c: New test.
+	* c-c++-common/gomp/scan-4.c: New test.
+
 2019-06-10  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/no_profile_instrument_function-attr-1.c: Fix

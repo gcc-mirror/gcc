@@ -11494,6 +11494,13 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
       c_parser_omp_end_declare_target (parser);
       return false;
 
+    case PRAGMA_OMP_SCAN:
+      error_at (c_parser_peek_token (parser)->location,
+		"%<#pragma omp scan%> may only be used in "
+		"a loop construct with %<inscan%> %<reduction%> clause");
+      c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);
+      return false;
+
     case PRAGMA_OMP_SECTION:
       error_at (c_parser_peek_token (parser)->location,
 		"%<#pragma omp section%> may only be used in "
@@ -13558,11 +13565,7 @@ c_parser_omp_clause_reduction (c_parser *parser, enum omp_clause_code kind,
 	      if (strcmp (p, "task") == 0)
 		task = true;
 	      else if (strcmp (p, "inscan") == 0)
-		{
-		  inscan = true;
-		  sorry ("%<inscan%> modifier on %<reduction%> clause "
-			 "not supported yet");
-		}
+		inscan = true;
 	      if (task || inscan)
 		{
 		  c_parser_consume_token (parser);
@@ -16738,6 +16741,71 @@ c_parser_omp_flush (c_parser *parser)
   c_finish_omp_flush (loc, mo);
 }
 
+/* OpenMP 5.0:
+
+   scan-loop-body:
+     { structured-block scan-directive structured-block }  */
+
+static void
+c_parser_omp_scan_loop_body (c_parser *parser, bool open_brace_parsed)
+{
+  tree substmt;
+  location_t loc;
+  tree clauses = NULL_TREE;
+
+  loc = c_parser_peek_token (parser)->location;
+  if (!open_brace_parsed
+      && !c_parser_require (parser, CPP_OPEN_BRACE, "expected %<{%>"))
+    {
+      /* Avoid skipping until the end of the block.  */
+      parser->error = false;
+      return;
+    }
+
+  substmt = c_parser_omp_structured_block (parser, NULL);
+  substmt = build2 (OMP_SCAN, void_type_node, substmt, NULL_TREE);
+  SET_EXPR_LOCATION (substmt, loc);
+  add_stmt (substmt);
+
+  loc = c_parser_peek_token (parser)->location;
+  if (c_parser_peek_token (parser)->pragma_kind == PRAGMA_OMP_SCAN)
+    {
+      enum omp_clause_code clause = OMP_CLAUSE_ERROR;
+
+      c_parser_consume_pragma (parser);
+
+      if (c_parser_next_token_is (parser, CPP_NAME))
+	{
+	  const char *p
+	    = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+	  if (strcmp (p, "inclusive") == 0)
+	    clause = OMP_CLAUSE_INCLUSIVE;
+	  else if (strcmp (p, "exclusive") == 0)
+	    clause = OMP_CLAUSE_EXCLUSIVE;
+	}
+      if (clause != OMP_CLAUSE_ERROR)
+	{
+	  c_parser_consume_token (parser);
+	  clauses = c_parser_omp_var_list_parens (parser, clause, NULL_TREE);
+	}
+      else
+	c_parser_error (parser, "expected %<inclusive%> or "
+				"%<exclusive%> clause");
+      c_parser_skip_to_pragma_eol (parser);
+    }
+  else
+    error ("expected %<#pragma omp scan%>");
+
+  clauses = c_finish_omp_clauses (clauses, C_ORT_OMP);
+  substmt = c_parser_omp_structured_block (parser, NULL);
+  substmt = build2 (OMP_SCAN, void_type_node, substmt, clauses);
+  SET_EXPR_LOCATION (substmt, loc);
+  add_stmt (substmt);
+
+  c_parser_skip_until_found (parser, CPP_CLOSE_BRACE,
+			     "expected %<}%>");
+}
+
 /* Parse the restricted form of loop statements allowed by OpenACC and OpenMP.
    The real trick here is to determine the loop control variable early
    so that we can push a new decl if necessary to make it private.
@@ -16756,6 +16824,7 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
   int i, collapse = 1, ordered = 0, count, nbraces = 0;
   location_t for_loc;
   bool tiling = false;
+  bool inscan = false;
   vec<tree, va_gc> *for_block = make_tree_vector ();
 
   for (cl = clauses; cl; cl = OMP_CLAUSE_CHAIN (cl))
@@ -16772,6 +16841,10 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
 	ordered_cl = cl;
 	ordered = tree_to_shwi (OMP_CLAUSE_ORDERED_EXPR (cl));
       }
+    else if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_REDUCTION
+	     && OMP_CLAUSE_REDUCTION_INSCAN (cl)
+	     && (code == OMP_SIMD || code == OMP_FOR))
+      inscan = true;
 
   if (ordered && ordered < collapse)
     {
@@ -16992,7 +17065,9 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
   c_cont_label = NULL_TREE;
   body = push_stmt_list ();
 
-  if (open_brace_parsed)
+  if (inscan)
+    c_parser_omp_scan_loop_body (parser, open_brace_parsed);
+  else if (open_brace_parsed)
     {
       location_t here = c_parser_peek_token (parser)->location;
       stmt = c_begin_compound_stmt (true);
