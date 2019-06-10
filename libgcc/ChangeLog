@@ -1,3 +1,27 @@
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Add __gcov_one_value_profiler_v2,
+	__gcov_one_value_profiler_v2_atomic and
+	__gcov_indirect_call_profiler_v4.
+	* libgcov-merge.c (__gcov_merge_single): Change
+	function signature.
+	(merge_single_value_set): New.
+	* libgcov-profiler.c (__gcov_one_value_profiler_body):
+	Update functionality.
+	(__gcov_one_value_profiler): Remove.
+	(__gcov_one_value_profiler_v2): ... this.
+	(__gcov_one_value_profiler_atomic): Rename to ...
+	(__gcov_one_value_profiler_v2_atomic): this.
+	(__gcov_indirect_call_profiler_v3): Rename to ...
+	(__gcov_indirect_call_profiler_v4): ... this.
+	* libgcov.h (__gcov_one_value_profiler): Remove.
+	(__gcov_one_value_profiler_atomic): Remove.
+	(__gcov_one_value_profiler_v2_atomic): New.
+	(__gcov_indirect_call_profiler_v3): Remove.
+	(__gcov_one_value_profiler_v2): New.
+	(__gcov_indirect_call_profiler_v4): New.
+	(gcov_get_counter_ignore_scaling): New function.
+
 2019-06-07  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.in: Remove usage of

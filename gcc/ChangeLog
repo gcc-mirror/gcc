@@ -1,5 +1,30 @@
 2019-06-10  Martin Liska  <mliska@suse.cz>
 
+	* gcov-io.h (GCOV_DISK_SINGLE_VALUES): New.
+	(GCOV_SINGLE_VALUE_COUNTERS): Likewise.
+	* ipa-profile.c (ipa_profile_generate_summary):
+	Use get_most_common_single_value.
+	* tree-profile.c (gimple_init_gcov_profiler):
+	Instrument with __gcov_one_value_profiler_v2
+	and __gcov_indirect_call_profiler_v4.
+	* value-prof.c (dump_histogram_value):
+	Print all values for HIST_TYPE_SINGLE_VALUE.
+	(stream_out_histogram_value): Update assert for
+	N values.
+	(stream_in_histogram_value): Set number of
+	counters for HIST_TYPE_SINGLE_VALUE.
+	(get_most_common_single_value): New.
+	(gimple_divmod_fixed_value_transform):
+	Use get_most_common_single_value.
+	(gimple_ic_transform): Likewise.
+	(gimple_stringops_transform): Likewise.
+	(gimple_find_values_to_profile): Set number
+	of counters for HIST_TYPE_SINGLE_VALUE.
+	* value-prof.h (get_most_common_single_value):
+	New.
+
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
 	* hash-map.h: Pass default value to hash_table ctor.
 	* hash-table.h: Add default value to call of a ctor.
 

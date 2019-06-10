@@ -271,9 +271,9 @@ extern void __gcov_interval_profiler_atomic (gcov_type *, gcov_type, int,
 					     unsigned);
 extern void __gcov_pow2_profiler (gcov_type *, gcov_type);
 extern void __gcov_pow2_profiler_atomic (gcov_type *, gcov_type);
-extern void __gcov_one_value_profiler (gcov_type *, gcov_type);
-extern void __gcov_one_value_profiler_atomic (gcov_type *, gcov_type);
-extern void __gcov_indirect_call_profiler_v3 (gcov_type, void *);
+extern void __gcov_one_value_profiler_v2 (gcov_type *, gcov_type);
+extern void __gcov_one_value_profiler_v2_atomic (gcov_type *, gcov_type);
+extern void __gcov_indirect_call_profiler_v4 (gcov_type, void *);
 extern void __gcov_time_profiler (gcov_type *);
 extern void __gcov_time_profiler_atomic (gcov_type *);
 extern void __gcov_average_profiler (gcov_type *, gcov_type);
@@ -321,6 +321,29 @@ gcov_get_counter (void)
      multiply it by the merge weight.  */
 
   return gcov_read_counter_mem () * gcov_get_merge_weight ();
+#endif
+}
+
+/* Similar function as gcov_get_counter(), but do not scale
+   when read value is equal to IGNORE_SCALING.  */
+
+static inline gcov_type
+gcov_get_counter_ignore_scaling (gcov_type ignore_scaling)
+{
+#ifndef IN_GCOV_TOOL
+  /* This version is for reading count values in libgcov runtime:
+     we read from gcda files.  */
+
+  return gcov_read_counter ();
+#else
+  /* This version is for gcov-tool. We read the value from memory and
+     multiply it by the merge weight.  */
+
+  gcov_type v = gcov_read_counter_mem ();
+  if (v != ignore_scaling)
+    v *= gcov_get_merge_weight ();
+
+  return v;
 #endif
 }
 

@@ -191,17 +191,17 @@ ipa_profile_generate_summary (void)
 		     takes away bad histograms.  */
 		  if (h)
 		    {
-		      /* counter 0 is target, counter 1 is number of execution we called target,
-			 counter 2 is total number of executions.  */
-		      if (h->hvalue.counters[2])
+		      gcov_type val, count, all;
+		      if (get_most_common_single_value (NULL, "indirect call",
+							h, &val, &count, &all))
 			{
 			  struct cgraph_edge * e = node->get_edge (stmt);
 			  if (e && !e->indirect_unknown_callee)
 			    continue;
-			  e->indirect_info->common_target_id
-			    = h->hvalue.counters [0];
+
+			  e->indirect_info->common_target_id = val;
 			  e->indirect_info->common_target_probability
-			    = GCOV_COMPUTE_SCALE (h->hvalue.counters [1], h->hvalue.counters [2]);
+			    = GCOV_COMPUTE_SCALE (count, all);
 			  if (e->indirect_info->common_target_probability > REG_BR_PROB_BASE)
 			    {
 			      if (dump_file)
