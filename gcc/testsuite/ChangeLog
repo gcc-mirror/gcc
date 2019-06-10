@@ -1,3 +1,8 @@
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/no_profile_instrument_function-attr-1.c: Fix
+	function name.
+
 2019-06-10  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* gcc.target/arc/jumptables.c: Update test.
