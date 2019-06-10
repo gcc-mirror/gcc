@@ -562,10 +562,8 @@ compute_operand_range_on_stmt (irange &r, gimple *s, const irange &lhs,
 gori_compute::gori_compute ()
 {
   // Create a boolean_type true and false range.
-  m_bool_zero = irange (boolean_type_node, boolean_false_node,
-			boolean_false_node);
-  m_bool_one = irange (boolean_type_node, boolean_true_node,
-		       boolean_true_node);
+  m_bool_zero = irange (boolean_false_node, boolean_false_node);
+  m_bool_one = irange (boolean_true_node, boolean_true_node);
 }
 
 // Destruct a gori_compute_object

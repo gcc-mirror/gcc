@@ -60,7 +60,7 @@ irange
 vr_values::get_irange (tree op, gimple *stmt ATTRIBUTE_UNUSED)
 {
   if (TREE_CODE (op) == INTEGER_CST)
-    return irange (TREE_TYPE (op), op, op);
+    return irange (op, op);
 
   if (TREE_CODE (op) != SSA_NAME)
     return irange (TREE_TYPE (op));
@@ -1819,7 +1819,7 @@ range_misc::adjust_range_with_loop (irange &ir, struct loop *loop,
 		  if (TREE_CODE (init) == SSA_NAME)
 		    trange = get_irange (init, stmt);
 		  else if (is_gimple_min_invariant (init))
-		    trange = irange (TREE_TYPE (init), init, init);
+		    trange = irange (init, init);
 		  else
 		    return;
 
@@ -1904,7 +1904,7 @@ range_misc::adjust_range_with_loop (irange &ir, struct loop *loop,
 
   if (TREE_CODE (min) == INTEGER_CST
       && TREE_CODE (max) == INTEGER_CST)
-    ir = irange (ir.type (), min, max);
+    ir = irange (min, max);
   else
     ir.set_varying (ir.type ());
 }

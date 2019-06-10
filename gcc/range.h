@@ -56,8 +56,10 @@ class irange
 
   irange ();
   irange (tree type);
-  irange (tree type, const wide_int &, const wide_int &, kind = PLAIN);
-  irange (tree type, tree, tree, kind = PLAIN);
+  irange (kind, tree type, const wide_int &, const wide_int &);
+  irange (tree type, const wide_int &, const wide_int &);
+  irange (kind, tree, tree);
+  irange (tree, tree);
   irange (tree type, const irange_storage *);
 
   static bool supports_type_p (tree type);
@@ -229,7 +231,7 @@ inline bool
 irange::nonzero_p () const
 {
   unsigned prec = TYPE_PRECISION (m_type);
-  return *this == irange (m_type, wi::zero (prec), wi::zero (prec), INVERSE);
+  return *this == irange (INVERSE, m_type, wi::zero (prec), wi::zero (prec));
 }
 
 // Return true if this range is the full range for its type.
@@ -252,7 +254,7 @@ irange::varying_p () const
 // To store an irange class X into an irange_storage use:
 //
 // 	irange X = ...;
-// 	irange_storage *stow = irange_storage::ggc_alloc_init (X);
+// 	irange_storage *stow = irange_storage::alloc (X);
 //
 // To convert it back into an irange use:
 //

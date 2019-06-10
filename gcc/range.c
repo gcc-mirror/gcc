@@ -137,7 +137,7 @@ get_tree_range (irange &r, tree expr)
     {
       case INTEGER_CST:
         if (!TREE_OVERFLOW_P (expr))
-	  r = irange (TREE_TYPE (expr), expr, expr);
+	  r = irange (expr, expr);
 	else
 	  // If we encounter an overflow, simply punt and drop to varying
 	  // since we hvae no idea how it will be used.
@@ -191,15 +191,27 @@ irange::irange (tree type)
   set_varying (type);
 }
 
-irange::irange (tree type, const wide_int &lbound, const wide_int &ubound,
-		kind rt)
+irange::irange (kind rt, tree type,
+		const wide_int &lbound, const wide_int &ubound)
 {
   init (type, lbound, ubound, rt);
 }
 
-irange::irange (tree type, tree lbound, tree ubound, kind rt)
+irange::irange (tree type, const wide_int &lbound, const wide_int &ubound)
 {
+  init (type, lbound, ubound, PLAIN);
+}
+
+irange::irange (kind rt, tree lbound, tree ubound)
+{
+  tree type = TREE_TYPE (lbound);
   init (type, wi::to_wide (lbound), wi::to_wide (ubound), rt);
+}
+
+irange::irange (tree lbound, tree ubound)
+{
+  tree type = TREE_TYPE (lbound);
+  init (type, wi::to_wide (lbound), wi::to_wide (ubound), PLAIN);
 }
 
 // Mark pair [i, j] to empty.  This is done by building a non-sensical pair.
@@ -307,8 +319,8 @@ irange::cast (tree new_type)
 	{
 	  // Don't use range_nonzero because it will recurse into cast().
 	  unsigned prec = TYPE_PRECISION (new_type);
-	  irange nz (new_type, wi::zero (prec), wi::zero (prec),
-		     irange::INVERSE);
+	  irange nz (irange::INVERSE, new_type,
+		     wi::zero (prec), wi::zero (prec));
 	  *this = nz;
 	}
       else if (zero_p ())
@@ -485,7 +497,7 @@ irange::canonicalize ()
     {
       /* For -fstrict-enums we may receive out-of-range ranges.  Chop
 	 things off appropriately.  */
-      irange bits (m_type, TYPE_MIN_VALUE (m_type), TYPE_MAX_VALUE (m_type));
+      irange bits (TYPE_MIN_VALUE (m_type), TYPE_MAX_VALUE (m_type));
       intersect (bits);
     }
   gcc_checking_assert (valid_p ());
@@ -890,15 +902,14 @@ irange_storage::set (const irange &ir)
 irange
 range_zero (tree type)
 {
-  unsigned prec = TYPE_PRECISION (type);
-  return irange (type, wi::zero (prec), wi::zero (prec));
+  return irange (build_zero_cst (type), build_zero_cst (type));
 }
 
 irange
 range_nonzero (tree type)
 {
-  wide_int zero = wi::zero (TYPE_PRECISION (type));
-  return irange (type, zero, zero, irange::INVERSE);
+  return irange (irange::INVERSE,
+		 build_zero_cst (type), build_zero_cst (type));
 }
 
 irange
@@ -1008,8 +1019,8 @@ value_range_to_irange (tree type, enum value_range_kind kind,
   if (kind == VR_VARYING || kind == VR_UNDEFINED)
     r.set_varying (type);
   else
-    r = irange (type, min, max,
-		kind == VR_ANTI_RANGE ? irange::INVERSE : irange::PLAIN);
+    r = irange (kind == VR_ANTI_RANGE ? irange::INVERSE : irange::PLAIN,
+		type, min, max);
   return r;
 }
 
@@ -1045,12 +1056,12 @@ value_range_to_irange (tree type, const value_range_base &vr)
 #define UCHAR(N) build_int_cstu (unsigned_char_type_node, (N))
 #define SCHAR(N) build_int_cst (signed_char_type_node, (N))
 
-#define RANGE3(A,B,C,D,E,F) 				\
-( i1 = irange (integer_type_node, INT (A), INT (B)),	\
-  i2 = irange (integer_type_node, INT (C), INT (D)),	\
-  i3 = irange (integer_type_node, INT (E), INT (F)),	\
-  i1.union_ (i2),					\
-  i1.union_ (i3),					\
+#define RANGE3(A,B,C,D,E,F)		\
+( i1 = irange (INT (A), INT (B)),	\
+  i2 = irange (INT (C), INT (D)),	\
+  i3 = irange (INT (E), INT (F)),	\
+  i1.union_ (i2),			\
+  i1.union_ (i3),			\
   i1 )
 
 // Run all of the selftests within this file.
@@ -1064,27 +1075,24 @@ irange_tests ()
   ASSERT_FALSE (r0.valid_p ());
 
   // Test that NOT(255) is [0..254] in 8-bit land.
-  irange not_255 (unsigned_char_type_node, UCHAR (255), UCHAR (255),
-		  irange::INVERSE);
-  ASSERT_TRUE (not_255 == irange (unsigned_char_type_node,
-				  UCHAR (0), UCHAR (254)));
+  irange not_255 (irange::INVERSE, UCHAR (255), UCHAR (255));
+  ASSERT_TRUE (not_255 == irange (UCHAR (0), UCHAR (254)));
 
   // Test that NOT(0) is [1..255] in 8-bit land.
   irange not_zero = range_nonzero (unsigned_char_type_node);
-  ASSERT_TRUE (not_zero == irange (unsigned_char_type_node, UCHAR (1), UCHAR (255)));
+  ASSERT_TRUE (not_zero == irange (UCHAR (1), UCHAR (255)));
 
   // Check that [0,127][0x..ffffff80,0x..ffffff]
   //  => ~[128, 0x..ffffff7f].
-  r0 = irange (u128_type, UINT128 (0), UINT128 (127));
+  r0 = irange (UINT128 (0), UINT128 (127));
   tree high = build_minus_one_cst (u128_type);
   // low = -1 - 127 => 0x..ffffff80.
   tree low = fold_build2 (MINUS_EXPR, u128_type, high, UINT128(127));
-  r1 = irange (u128_type, low, high); // [0x..ffffff80, 0x..ffffffff]
+  r1 = irange (low, high); // [0x..ffffff80, 0x..ffffffff]
   // r0 = [0,127][0x..ffffff80,0x..fffffff].
   r0.union_ (r1);
   // r1 = [128, 0x..ffffff7f].
-  r1 = irange (u128_type,
-	       UINT128(128),
+  r1 = irange (UINT128(128),
 	       fold_build2 (MINUS_EXPR, u128_type,
 			    build_minus_one_cst (u128_type),
 			    UINT128(128)));
@@ -1103,33 +1111,33 @@ irange_tests ()
   tree maxuint = wide_int_to_tree (unsigned_type_node, r0.upper_bound ());
 
   // Check that ~[0,5] => [6,MAX] for unsigned int.
-  r0 = irange (unsigned_type_node, UINT (0), UINT (5));
+  r0 = irange (UINT (0), UINT (5));
   r0.invert ();
-  ASSERT_TRUE (r0 == irange (unsigned_type_node, UINT(6), maxuint));
+  ASSERT_TRUE (r0 == irange (UINT(6), maxuint));
 
   // Check that ~[10,MAX] => [0,9] for unsigned int.
-  r0 = irange (unsigned_type_node, UINT(10), maxuint, irange::PLAIN);
+  r0 = irange (irange::PLAIN, UINT(10), maxuint);
   r0.invert ();
-  ASSERT_TRUE (r0 == irange (unsigned_type_node, UINT (0), UINT (9)));
+  ASSERT_TRUE (r0 == irange (UINT (0), UINT (9)));
 
   // Check that ~[0,5] => [6,MAX] for unsigned 128-bit numbers.
-  r0 = irange (u128_type, UINT128 (0), UINT128 (5), irange::INVERSE);
-  r1 = irange (u128_type, UINT128(6), build_minus_one_cst (u128_type));
+  r0 = irange (irange::INVERSE, UINT128 (0), UINT128 (5));
+  r1 = irange (UINT128(6), build_minus_one_cst (u128_type));
   ASSERT_TRUE (r0 == r1);
 
   // Check that [~5] is really [-MIN,4][6,MAX].
-  r0 = irange (integer_type_node, INT (5), INT (5), irange::INVERSE);
-  r1 = irange (integer_type_node, minint, INT (4));
-  r1.union_ (irange (integer_type_node, INT (6), maxint));
+  r0 = irange (irange::INVERSE, INT (5), INT (5));
+  r1 = irange (minint, INT (4));
+  r1.union_ (irange (INT (6), maxint));
   ASSERT_FALSE (r1.undefined_p ());
   ASSERT_TRUE (r0 == r1);
 
-  r1 = irange (integer_type_node, INT (5), INT (5));
+  r1 = irange (INT (5), INT (5));
   ASSERT_TRUE (r1.valid_p ());
   irange r2 (r1);
   ASSERT_TRUE (r1 == r2);
 
-  r1 = irange (integer_type_node, INT (5), INT (10));
+  r1 = irange (INT (5), INT (10));
   ASSERT_TRUE (r1.valid_p ());
 
   r1 = irange (integer_type_node,
@@ -1137,96 +1145,93 @@ irange_tests ()
   ASSERT_TRUE (r1.valid_p ());
   ASSERT_TRUE (r1.contains_p (wi::to_wide (INT (7))));
 
-  r1 = irange (signed_char_type_node, SCHAR (0), SCHAR (20));
+  r1 = irange (SCHAR (0), SCHAR (20));
   ASSERT_TRUE (r1.contains_p (wi::to_wide (SCHAR(15))));
   ASSERT_FALSE (r1.contains_p (wi::to_wide (SCHAR(300))));
 
   // If a range is in any way outside of the range for the converted
   // to range, default to the range for the new type.
-  r1 = irange (integer_type_node, integer_zero_node, maxint);
+  r1 = irange (integer_zero_node, maxint);
   r1.cast (short_integer_type_node);
   ASSERT_TRUE (r1.lower_bound () == wi::to_wide (minshort)
 	       && r1.upper_bound() == wi::to_wide (maxshort));
 
   // (unsigned char)[-5,-1] => [251,255].
-  r0 = rold = irange (signed_char_type_node, SCHAR (-5), SCHAR (-1));
+  r0 = rold = irange (SCHAR (-5), SCHAR (-1));
   r0.cast (unsigned_char_type_node);
-  ASSERT_TRUE (r0 == irange (unsigned_char_type_node, UCHAR (251), UCHAR (255)));
+  ASSERT_TRUE (r0 == irange (UCHAR (251), UCHAR (255)));
   r0.cast (signed_char_type_node);
   ASSERT_TRUE (r0 == rold);
 
   // (signed char)[15, 150] => [-128,-106][15,127].
-  r0 = rold = irange (unsigned_char_type_node, UCHAR (15), UCHAR (150));
+  r0 = rold = irange (UCHAR (15), UCHAR (150));
   r0.cast (signed_char_type_node);
-  r1 = irange (signed_char_type_node, SCHAR (15), SCHAR (127));
-  r2 = irange (signed_char_type_node, SCHAR (-128), SCHAR (-106));
+  r1 = irange (SCHAR (15), SCHAR (127));
+  r2 = irange (SCHAR (-128), SCHAR (-106));
   r1.union_ (r2);
   ASSERT_TRUE (r1 == r0);
   r0.cast (unsigned_char_type_node);
   ASSERT_TRUE (r0 == rold);
 
   // (unsigned char)[-5, 5] => [0,5][251,255].
-  r0 = rold = irange (signed_char_type_node, SCHAR (-5), SCHAR (5));
+  r0 = rold = irange (SCHAR (-5), SCHAR (5));
   r0.cast (unsigned_char_type_node);
-  r1 = irange (unsigned_char_type_node, UCHAR (251), UCHAR (255));
-  r2 = irange (unsigned_char_type_node, UCHAR (0), UCHAR (5));
+  r1 = irange (UCHAR (251), UCHAR (255));
+  r2 = irange (UCHAR (0), UCHAR (5));
   r1.union_ (r2);
   ASSERT_TRUE (r0 == r1);
   r0.cast (signed_char_type_node);
   ASSERT_TRUE (r0 == rold);
 
   // (unsigned char)[-5,5] => [0,5][251,255].
-  r0 = irange (integer_type_node, INT (-5), INT (5));
+  r0 = irange (INT (-5), INT (5));
   r0.cast (unsigned_char_type_node);
-  r1 = irange (unsigned_char_type_node, UCHAR (0), UCHAR (5));
-  r1.union_ (irange (unsigned_char_type_node, UCHAR (251), UCHAR (255)));
+  r1 = irange (UCHAR (0), UCHAR (5));
+  r1.union_ (irange (UCHAR (251), UCHAR (255)));
   ASSERT_TRUE (r0 == r1);
 
   // (unsigned char)[5U,1974U] => [0,255].
-  r0 = irange (unsigned_type_node, UINT (5), UINT (1974));
+  r0 = irange (UINT (5), UINT (1974));
   r0.cast (unsigned_char_type_node);
-  ASSERT_TRUE (r0 == irange (unsigned_char_type_node, UCHAR (0), UCHAR (255)));
+  ASSERT_TRUE (r0 == irange (UCHAR (0), UCHAR (255)));
   r0.cast (integer_type_node);
   // Going to a wider range should not sign extend.
-  ASSERT_TRUE (r0 == irange (integer_type_node, INT (0), INT (255)));
+  ASSERT_TRUE (r0 == irange (INT (0), INT (255)));
 
   // (unsigned char)[-350,15] => [0,255].
-  r0 = irange (integer_type_node, INT (-350), INT (15));
+  r0 = irange (INT (-350), INT (15));
   r0.cast (unsigned_char_type_node);
-  ASSERT_TRUE (r0 == irange (unsigned_char_type_node,
-			     TYPE_MIN_VALUE (unsigned_char_type_node),
+  ASSERT_TRUE (r0 == irange (TYPE_MIN_VALUE (unsigned_char_type_node),
 			     TYPE_MAX_VALUE (unsigned_char_type_node)));
 
   // Casting [-120,20] from signed char to unsigned short.
   // => [0, 20][0xff88, 0xffff].
-  r0 = irange (signed_char_type_node, SCHAR (-120), SCHAR (20));
+  r0 = irange (SCHAR (-120), SCHAR (20));
   r0.cast (short_unsigned_type_node);
-  r1 = irange (short_unsigned_type_node, UINT16 (0), UINT16 (20));
-  r2 = irange (short_unsigned_type_node, UINT16 (0xff88), UINT16 (0xffff));
+  r1 = irange (UINT16 (0), UINT16 (20));
+  r2 = irange (UINT16 (0xff88), UINT16 (0xffff));
   r1.union_ (r2);
   ASSERT_TRUE (r0 == r1);
   // A truncating cast back to signed char will work because [-120, 20]
   // is representable in signed char.
   r0.cast (signed_char_type_node);
-  ASSERT_TRUE (r0 == irange (signed_char_type_node, SCHAR (-120), SCHAR (20)));
+  ASSERT_TRUE (r0 == irange (SCHAR (-120), SCHAR (20)));
 
   // unsigned char -> signed short
   //	(signed short)[(unsigned char)25, (unsigned char)250]
   // => [(signed short)25, (signed short)250]
-  r0 = rold = irange (unsigned_char_type_node, UCHAR (25), UCHAR (250));
+  r0 = rold = irange (UCHAR (25), UCHAR (250));
   r0.cast (short_integer_type_node);
-  r1 = irange (short_integer_type_node, INT16 (25), INT16 (250));
+  r1 = irange (INT16 (25), INT16 (250));
   ASSERT_TRUE (r0 == r1);
   r0.cast (unsigned_char_type_node);
   ASSERT_TRUE (r0 == rold);
 
-  // Test casting a wider signed [-MIN,MAX] to a narrower unsigned.
-  r0 = irange (long_long_integer_type_node,
-	       TYPE_MIN_VALUE (long_long_integer_type_node),
+  // Test casting a wider signed [-MIN,MAX] to a nar`rower unsigned.
+  r0 = irange (TYPE_MIN_VALUE (long_long_integer_type_node),
 	       TYPE_MAX_VALUE (long_long_integer_type_node));
   r0.cast (short_unsigned_type_node);
-  r1 = irange (short_unsigned_type_node,
-	       TYPE_MIN_VALUE (short_unsigned_type_node),
+  r1 = irange (TYPE_MIN_VALUE (short_unsigned_type_node),
 	       TYPE_MAX_VALUE (short_unsigned_type_node));
   ASSERT_TRUE (r0 == r1);
 
@@ -1236,24 +1241,24 @@ irange_tests ()
   //    (unsigned short)[-5,5][20,30][40,50]...
   // => (unsigned short)[-5,50]
   // => [0,50][65531,65535]
-  r0 = irange (short_integer_type_node, INT16 (-5), INT16 (5));
+  r0 = irange (INT16 (-5), INT16 (5));
   gcc_assert (irange::m_max_pairs * 2 * 10 + 10 < 32767);
   unsigned i;
   for (i = 2; i < irange::m_max_pairs * 2; i += 2)
     {
-      r1 = irange (short_integer_type_node, INT16 (i * 10), INT16 (i * 10 + 10));
+      r1 = irange (INT16 (i * 10), INT16 (i * 10 + 10));
       r0.union_ (r1);
     }
   r0.cast(short_unsigned_type_node);
-  r1 = irange (short_unsigned_type_node, UINT16 (0), UINT16 ((i - 2) * 10 + 10));
-  r2 = irange (short_unsigned_type_node, UINT16 (65531), UINT16 (65535));
+  r1 = irange (UINT16 (0), UINT16 ((i - 2) * 10 + 10));
+  r2 = irange (UINT16 (65531), UINT16 (65535));
   r1.union_ (r2);
   ASSERT_TRUE (r0 == r1);
 
   // NOT([10,20]) ==> [-MIN,9][21,MAX].
-  r0 = r1 = irange (integer_type_node, INT (10), INT (20));
-  r2 = irange (integer_type_node, minint, INT(9));
-  r2.union_ (irange (integer_type_node, INT(21), maxint));
+  r0 = r1 = irange (INT (10), INT (20));
+  r2 = irange (minint, INT(9));
+  r2.union_ (irange (INT(21), maxint));
   ASSERT_FALSE (r2.undefined_p ());
   r1.invert ();
   ASSERT_TRUE (r1 == r2);
@@ -1262,7 +1267,7 @@ irange_tests ()
   ASSERT_TRUE (r0 == r2);
 
   // NOT(-MIN,+MAX) is the empty set and should return false.
-  r0 = irange (integer_type_node, minint, maxint);
+  r0 = irange (minint, maxint);
   r0.invert ();
   ASSERT_TRUE (r0.undefined_p ());
   r1.set_undefined ();
@@ -1270,10 +1275,11 @@ irange_tests ()
 
   // Test that booleans and their inverse work as expected.
   r0 = range_zero (boolean_type_node);
-  ASSERT_TRUE (r0 == irange (boolean_type_node,
-			     wi::zero (1), wi::zero (1)));
+  ASSERT_TRUE (r0 == irange (build_zero_cst (boolean_type_node),
+			     build_zero_cst (boolean_type_node)));
   r0.invert();
-  ASSERT_TRUE (r0 == irange (boolean_type_node, wi::one (1), wi::one (1)));
+  ASSERT_TRUE (r0 == irange (build_one_cst (boolean_type_node),
+			     build_one_cst (boolean_type_node)));
 
   // Casting NONZERO to a narrower type will wrap/overflow so
   // it's just the entire range for the narrower type.
@@ -1283,8 +1289,7 @@ irange_tests ()
   // smaller range.
   r0 = range_nonzero (integer_type_node);
   r0.cast (short_integer_type_node);
-  r1 = irange (short_integer_type_node,
-	       TYPE_MIN_VALUE (short_integer_type_node),
+  r1 = irange (TYPE_MIN_VALUE (short_integer_type_node),
 	       TYPE_MAX_VALUE (short_integer_type_node));
   ASSERT_TRUE (r0 == r1);
 
@@ -1294,47 +1299,45 @@ irange_tests ()
   // Converting this to 32-bits signed is [-MIN_16,-1][1, +MAX_16].
   r0 = range_nonzero (short_integer_type_node);
   r0.cast (integer_type_node);
-  r1 = irange (integer_type_node, INT (-32768), INT (-1));
-  r2 = irange (integer_type_node, INT (1), INT (32767));
+  r1 = irange (INT (-32768), INT (-1));
+  r2 = irange (INT (1), INT (32767));
   r1.union_ (r2);
   ASSERT_TRUE (r0 == r1);
 
   if (irange::m_max_pairs > 2)
     {
       // ([10,20] U [5,8]) U [1,3] ==> [1,3][5,8][10,20].
-      r0 = irange (integer_type_node, INT (10), INT (20));
-      r1 = irange (integer_type_node, INT (5), INT (8));
+      r0 = irange (INT (10), INT (20));
+      r1 = irange (INT (5), INT (8));
       r0.union_ (r1);
-      r1 = irange (integer_type_node, INT (1), INT (3));
+      r1 = irange (INT (1), INT (3));
       r0.union_ (r1);
       ASSERT_TRUE (r0 == RANGE3 (1, 3, 5, 8, 10, 20));
 
       // [1,3][5,8][10,20] U [-5,0] => [-5,3][5,8][10,20].
-      r1 = irange (integer_type_node, INT (-5), INT (0));
+      r1 = irange (INT (-5), INT (0));
       r0.union_ (r1);
       ASSERT_TRUE (r0 == RANGE3 (-5, 3, 5, 8, 10, 20));
     }
 
   // [10,20] U [30,40] ==> [10,20][30,40].
-  r0 = irange (integer_type_node, INT (10), INT (20));
-  r1 = irange (integer_type_node, INT (30), INT (40));
+  r0 = irange (INT (10), INT (20));
+  r1 = irange (INT (30), INT (40));
   r0.union_ (r1);
-  ASSERT_TRUE (r0 == range_union (irange (integer_type_node,
-					  INT (10), INT (20)),
-				   irange (integer_type_node,
-					   INT (30), INT (40))));
+  ASSERT_TRUE (r0 == range_union (irange (INT (10), INT (20)),
+				   irange (INT (30), INT (40))));
   if (irange::m_max_pairs > 2)
     {
       // [10,20][30,40] U [50,60] ==> [10,20][30,40][50,60].
-      r1 = irange (integer_type_node, INT (50), INT (60));
+      r1 = irange (INT (50), INT (60));
       r0.union_ (r1);
       ASSERT_TRUE (r0 == RANGE3 (10, 20, 30, 40, 50, 60));
       // [10,20][30,40][50,60] U [70, 80] ==> [10,20][30,40][50,60][70,80].
-      r1 = irange (integer_type_node, INT (70), INT (80));
+      r1 = irange (INT (70), INT (80));
       r0.union_ (r1);
 
       r2 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r2.union_ (irange (integer_type_node, INT (70), INT (80)));
+      r2.union_ (irange (INT (70), INT (80)));
       ASSERT_TRUE (r0 == r2);
     }
 
@@ -1351,96 +1354,96 @@ irange_tests ()
     {
       // [10,20][30,40][50,60] U [6,35] => [6,40][50,60].
       r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = irange (integer_type_node, INT (6), INT (35));
+      r1 = irange (INT (6), INT (35));
       r0.union_ (r1);
-      ASSERT_TRUE (r0 == range_union (irange (integer_type_node, INT (6), INT (40)),
-				       irange (integer_type_node, INT (50), INT (60))));
+      ASSERT_TRUE (r0 == range_union (irange (INT (6), INT (40)),
+				      irange (INT (50), INT (60))));
 
       // [10,20][30,40][50,60] U [6,60] => [6,60] */
       r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = irange (integer_type_node, INT (6), INT (60));
+      r1 = irange (INT (6), INT (60));
       r0.union_ (r1);
-      ASSERT_TRUE (r0 == irange (integer_type_node, INT (6), INT (60)));
+      ASSERT_TRUE (r0 == irange (INT (6), INT (60)));
 
       // [10,20][30,40][50,60] U [6,70] => [6,70].
       r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = irange (integer_type_node, INT (6), INT (70));
+      r1 = irange (INT (6), INT (70));
       r0.union_ (r1);
-      ASSERT_TRUE (r0 == irange (integer_type_node, INT (6), INT (70)));
+      ASSERT_TRUE (r0 == irange (INT (6), INT (70)));
 
       // [10,20][30,40][50,60] U [35,70] => [10,20][30,70].
       r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = irange (integer_type_node, INT (35), INT (70));
+      r1 = irange (INT (35), INT (70));
       r0.union_ (r1);
-      ASSERT_TRUE (r0 == range_union (irange (integer_type_node, INT (10), INT (20)),
-				       irange (integer_type_node, INT (30), INT (70))));
+      ASSERT_TRUE (r0 == range_union (irange (INT (10), INT (20)),
+				       irange (INT (30), INT (70))));
     }
 
   // [10,20][30,40] U [25,70] => [10,70].
-  r0 = range_union (irange (integer_type_node, INT (10), INT (20)),
-		     irange (integer_type_node, INT (30), INT (40)));
-  r1 = irange (integer_type_node, INT (25), INT (70));
+  r0 = range_union (irange (INT (10), INT (20)),
+		     irange (INT (30), INT (40)));
+  r1 = irange (INT (25), INT (70));
   r0.union_ (r1);
-  ASSERT_TRUE (r0 == range_union (irange (integer_type_node, INT (10), INT (20)),
-				   irange (integer_type_node, INT (25), INT (70))));
+  ASSERT_TRUE (r0 == range_union (irange (INT (10), INT (20)),
+				   irange (INT (25), INT (70))));
 
   if (irange::m_max_pairs > 2)
     {
       // [10,20][30,40][50,60] U [15,35] => [10,40][50,60].
       r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = irange (integer_type_node, INT (15), INT (35));
+      r1 = irange (INT (15), INT (35));
       r0.union_ (r1);
-      ASSERT_TRUE (r0 == range_union (irange (integer_type_node, INT (10), INT (40)),
-				       irange (integer_type_node, INT (50), INT (60))));
+      ASSERT_TRUE (r0 == range_union (irange (INT (10), INT (40)),
+				       irange (INT (50), INT (60))));
     }
 
   // [10,20] U [15, 30] => [10, 30].
-  r0 = irange (integer_type_node, INT (10), INT (20));
-  r1 = irange (integer_type_node, INT (15), INT (30));
+  r0 = irange (INT (10), INT (20));
+  r1 = irange (INT (15), INT (30));
   r0.union_ (r1);
-  ASSERT_TRUE (r0 == irange (integer_type_node, INT (10), INT (30)));
+  ASSERT_TRUE (r0 == irange (INT (10), INT (30)));
 
   // [10,20] U [25,25] => [10,20][25,25].
-  r0 = irange (integer_type_node, INT (10), INT (20));
-  r1 = irange (integer_type_node, INT (25), INT (25));
+  r0 = irange (INT (10), INT (20));
+  r1 = irange (INT (25), INT (25));
   r0.union_ (r1);
-  ASSERT_TRUE (r0 == range_union (irange (integer_type_node, INT (10), INT (20)),
-				   irange (integer_type_node, INT (25), INT (25))));
+  ASSERT_TRUE (r0 == range_union (irange (INT (10), INT (20)),
+				   irange (INT (25), INT (25))));
 
   if (irange::m_max_pairs > 2)
     {
       // [10,20][30,40][50,60] U [35,35] => [10,20][30,40][50,60].
       r0 = RANGE3 (10, 20, 30, 40, 50, 60);
-      r1 = irange (integer_type_node, INT (35), INT (35));
+      r1 = irange (INT (35), INT (35));
       r0.union_ (r1);
       ASSERT_TRUE (r0 == RANGE3 (10, 20, 30, 40, 50, 60));
     }
 
   // [15,40] U [] => [15,40].
-  r0 = irange (integer_type_node, INT (15), INT (40));
+  r0 = irange (INT (15), INT (40));
   r1.set_undefined ();
   r0.union_ (r1);
-  ASSERT_TRUE (r0 == irange (integer_type_node, INT (15), INT (40)));
+  ASSERT_TRUE (r0 == irange (INT (15), INT (40)));
 
   // [10,20] U [10,10] => [10,20].
-  r0 = irange (integer_type_node, INT (10), INT (20));
-  r1 = irange (integer_type_node, INT (10), INT (10));
+  r0 = irange (INT (10), INT (20));
+  r1 = irange (INT (10), INT (10));
   r0.union_ (r1);
-  ASSERT_TRUE (r0 == irange (integer_type_node, INT (10), INT (20)));
+  ASSERT_TRUE (r0 == irange (INT (10), INT (20)));
 
   // [10,20] U [9,9] => [9,20].
-  r0 = irange (integer_type_node, INT (10), INT (20));
-  r1 = irange (integer_type_node, INT (9), INT (9));
+  r0 = irange (INT (10), INT (20));
+  r1 = irange (INT (9), INT (9));
   r0.union_ (r1);
-  ASSERT_TRUE (r0 == irange (integer_type_node, INT (9), INT (20)));
+  ASSERT_TRUE (r0 == irange (INT (9), INT (20)));
 
   if (irange::m_max_pairs > 2)
     {
       // [10,10][12,12][20,100] ^ [15,200].
       r0 = RANGE3 (10, 10, 12, 12, 20, 100);
-      r1 = irange (integer_type_node, INT (15), INT (200));
+      r1 = irange (INT (15), INT (200));
       r0.intersect (r1);
-      ASSERT_TRUE (r0 == irange (integer_type_node, INT (20), INT (100)));
+      ASSERT_TRUE (r0 == irange (INT (20), INT (100)));
 
       // [10,20][30,40][50,60] ^ [15,25][38,51][55,70]
       // => [15,20][38,40][50,51][55,60]
@@ -1456,7 +1459,7 @@ irange_tests ()
       else
 	{
 	  r2 = RANGE3 (15, 20, 38, 40, 50, 51);
-	  r2.union_ (irange (integer_type_node, INT (55), INT (60)));
+	  r2.union_ (irange (INT (55), INT (60)));
 	  ASSERT_TRUE (r0 == r2);
 	}
 
@@ -1474,7 +1477,7 @@ irange_tests ()
       else
 	{
 	  r2 = RANGE3 (15, 20, 30, 35, 40, 40);
-	  r2.union_ (irange (integer_type_node, INT (50), INT (60)));
+	  r2.union_ (irange (INT (50), INT (60)));
 	  ASSERT_TRUE (r0 == r2);
 	}
 
@@ -1482,29 +1485,29 @@ irange_tests ()
       // range.
       //
       // [8,10][135,255] U [14,14] => [8,10][14,14][135,255]
-      r0 = range_union (irange (integer_type_node, INT (8), INT (10)),
-			 irange (integer_type_node, INT (135), INT (255)));
-      r1 = irange (integer_type_node, INT (14), INT (14));
+      r0 = range_union (irange (INT (8), INT (10)),
+			 irange (INT (135), INT (255)));
+      r1 = irange (INT (14), INT (14));
       r0.union_ (r1);
       ASSERT_TRUE (r0 == RANGE3 (8, 10, 14, 14, 135, 255));
     }
 
   // [10,20] ^ [15,30] => [15,20].
-  r0 = irange (integer_type_node, INT (10), INT (20));
-  r1 = irange (integer_type_node, INT (15), INT (30));
+  r0 = irange (INT (10), INT (20));
+  r1 = irange (INT (15), INT (30));
   r0.intersect (r1);
-  ASSERT_TRUE (r0 == irange (integer_type_node, INT (15), INT (20)));
+  ASSERT_TRUE (r0 == irange (INT (15), INT (20)));
 
   // [10,20][30,40] ^ [40,50] => [40,40].
-  r0 = range_union (irange (integer_type_node, INT (10), INT (20)),
-		     irange (integer_type_node, INT (30), INT (40)));
-  r1 = irange (integer_type_node, INT (40), INT (50));
+  r0 = range_union (irange (INT (10), INT (20)),
+		     irange (INT (30), INT (40)));
+  r1 = irange (INT (40), INT (50));
   r0.intersect (r1);
-  ASSERT_TRUE (r0 == irange (integer_type_node, INT (40), INT (40)));
+  ASSERT_TRUE (r0 == irange (INT (40), INT (40)));
 
   // Test non-destructive intersection.
-  r0 = rold = irange (integer_type_node, INT (10), INT (20));
-  ASSERT_FALSE (range_intersect (r0, irange (integer_type_node, INT (15),
+  r0 = rold = irange (INT (10), INT (20));
+  ASSERT_FALSE (range_intersect (r0, irange (INT (15),
 					     INT (30))).undefined_p ());
   ASSERT_TRUE (r0 == rold);
 
@@ -1514,31 +1517,29 @@ irange_tests ()
 	       == wi::uhwi (1, TYPE_PRECISION (boolean_type_node)));
 
   // Test irange_storage.
-  r0 = irange (integer_type_node, INT (5), INT (10));
+  r0 = irange (INT (5), INT (10));
   irange_storage *stow = irange_storage::alloc (r0);
   r1 = irange (integer_type_node, stow);
   ASSERT_TRUE (r0 == r1);
 
   // Test irange_storage with signed 1-bit fields.
   tree s1bit_type = make_signed_type (1);
-  r0 = irange (s1bit_type,
-	       build_int_cst (s1bit_type, -1),
-	       build_int_cst (s1bit_type, 0));
+  r0 = irange (build_int_cst (s1bit_type, -1), build_int_cst (s1bit_type, 0));
   stow = irange_storage::alloc (r0);
   r1 = irange (s1bit_type, stow);
   ASSERT_TRUE (r0 == r1);
 
   // Test zero_p().
-  r0 = irange (integer_type_node, INT (0), INT (0));
+  r0 = irange (INT (0), INT (0));
   ASSERT_TRUE (r0.zero_p ());
 
   // Test nonzero_p().
-  r0 = irange (integer_type_node, INT (0), INT (0));
+  r0 = irange (INT (0), INT (0));
   r0.invert ();
   ASSERT_TRUE (r0.nonzero_p ());
 
   // Test irange / value_range conversion functions.
-  r0 = irange (integer_type_node, INT (10), INT (20), irange::INVERSE);
+  r0 = irange (irange::INVERSE, INT (10), INT (20));
   value_range_base vr = irange_to_value_range (r0);
   ASSERT_TRUE (vr.kind () == VR_ANTI_RANGE);
   ASSERT_TRUE (wi::eq_p (10, wi::to_wide (vr.min ()))

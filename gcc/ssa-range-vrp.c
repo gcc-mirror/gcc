@@ -70,7 +70,7 @@ irange
 irange_misc::get_irange (tree op, gimple *stmt)
 {
   if (TREE_CODE (op) == INTEGER_CST)
-    return irange (TREE_TYPE (op), op, op);
+    return irange (op, op);
 
   irange r;
   m_ranger->range_of_expr (r, op, stmt);

@@ -655,7 +655,7 @@ thread_jumps::resolve_control_statement (gimple *stmt, tree name,
 	    tree case_high = CASE_HIGH (label);
 	    if (!case_high)
 	      case_high = case_low;
-	    irange label_range (TREE_TYPE (name), case_low, case_high);
+	    irange label_range (case_low, case_high);
 	    /* If NAME can fall into one of the switch cases, we can't
 	       be sure where the switch will land.  */
 	    if (!range_intersect (range_for_name, label_range).undefined_p ())
@@ -1162,7 +1162,7 @@ thread_jumps::handle_phi (gphi *phi, tree name, basic_block def_bb)
 
       if (TREE_CODE_CLASS (TREE_CODE (arg)) == tcc_constant)
 	{
-	  irange range (TREE_TYPE (name), arg, arg);
+	  irange range (arg, arg);
 	  register_jump_thread_path_if_profitable (name, range, bbi);
 	}
     }
@@ -1222,7 +1222,7 @@ thread_jumps::handle_assignment (gimple *stmt, tree name, basic_block def_bb)
 
       if (TREE_CODE_CLASS (TREE_CODE (arg)) == tcc_constant)
 	{
-	  irange range (TREE_TYPE (name), arg, arg);
+	  irange range (arg, arg);
 	  register_jump_thread_path_if_profitable (name, range, def_bb);
 	}
 

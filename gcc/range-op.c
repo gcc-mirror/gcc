@@ -1583,16 +1583,16 @@ operator_cast::op1_range (irange& r, const irange& lhs,
 	      r = op2;
 	      return true;
 	    }
-	  /* Boolean casts are weird in GCC. ITs actually an implied mask with
+	  /* Boolean casts are weird in GCC. It's actually an implied mask with
 	      0x01, so all that is known is whether the rightmost bit is 0 or 1,
 	      which implies the only value *not* in the RHS is 0 or -1.  */
 	  unsigned prec = TYPE_PRECISION (op2_type);
 	  if (lhs.zero_p ())
-	    r = irange (op2_type, wi::minus_one (prec), wi::minus_one (prec),
-			irange::INVERSE);
+	    r = irange (irange::INVERSE, op2_type,
+			wi::minus_one (prec), wi::minus_one (prec));
 	  else
-	    r = irange (op2_type, wi::zero (prec), wi::zero (prec),
-			irange::INVERSE);
+	    r = irange (irange::INVERSE, op2_type,
+			wi::zero (prec), wi::zero (prec));
 	  /* And intersect it with what we know about op2.  */
 	  r.intersect (op2);
 	  return true;

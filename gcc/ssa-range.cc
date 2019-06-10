@@ -188,10 +188,10 @@ switch_edge_manager::calc_switch_ranges (gswitch *sw)
       if (!high)
 	high = low;
 
-      irange def_case_range (type, low, high, irange::INVERSE);
+      irange def_case_range (irange::INVERSE, low, high);
       default_slot->intersect (def_case_range);
 
-      irange case_range (type, low, high);
+      irange case_range (low, high);
       irange *&slot = m_edge_table->get_or_insert (e, &existed);
       if (!existed)
         {
@@ -236,7 +236,7 @@ switch_edge_manager::calc_single_range (irange &r, gswitch *sw, edge e)
 	  tree high = CASE_HIGH (gimple_switch_label (sw, x));
 	  if (!high)
 	    high = low;
-	  irange case_range (type, low, high);
+	  irange case_range (low, high);
 	  r.union_ (case_range);
 	}
     }
@@ -251,7 +251,7 @@ switch_edge_manager::calc_single_range (irange &r, gswitch *sw, edge e)
 	  tree high = CASE_HIGH (gimple_switch_label (sw, x));
 	  if (!high)
 	    high = low;
-	  irange case_range (type, low, high, irange::INVERSE);
+	  irange case_range (irange::INVERSE, low, high);
 	  r.intersect (case_range);
 	}
     }
@@ -294,9 +294,9 @@ gimple_outgoing_edge_range_p (irange &r, edge e)
   if (is_a<gcond *> (s))
     {
       if (e->flags & EDGE_TRUE_VALUE)
-	r = irange (boolean_type_node, boolean_true_node, boolean_true_node);
+	r = irange (boolean_true_node, boolean_true_node);
       else if (e->flags & EDGE_FALSE_VALUE)
-	r = irange (boolean_type_node, boolean_false_node, boolean_false_node);
+	r = irange (boolean_false_node, boolean_false_node);
       else
 	gcc_unreachable ();
       return s;
