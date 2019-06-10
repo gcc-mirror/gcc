@@ -1,3 +1,8 @@
+2019-06-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/90695
+	* g++.dg/cpp0x/noexcept15.C: Remove dependency on library header.
+
 2019-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/scan-1.c: New test.
