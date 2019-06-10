@@ -187,7 +187,7 @@ class Statement
 
   // Make a block statement from a Block.  This is an embedded list of
   // statements which may also include variable definitions.
-  static Statement*
+  static Block_statement*
   make_block_statement(Block*, Location);
 
   // Make an increment statement.
@@ -956,11 +956,13 @@ class Block_statement : public Statement
 
   // Export a block for a block statement.
   static void
-  export_block(Export_function_body*, Block*);
+  export_block(Export_function_body*, Block*, bool is_lowered_for_statement);
 
   // Import a block statement, returning the block.
+  // *IS_LOWERED_FOR_STATEMENT reports whether this block statement
+  // was lowered from a for statement.
   static Block*
-  do_import(Import_function_body*, Location);
+  do_import(Import_function_body*, Location, bool* is_lowered_for_statement);
 
  protected:
   int
@@ -1409,6 +1411,10 @@ class Goto_statement : public Statement
   label() const
   { return this->label_; }
 
+  // Import a goto statement.
+  static Statement*
+  do_import(Import_function_body*, Location);
+
  protected:
   int
   do_traverse(Traverse*);
@@ -1422,6 +1428,13 @@ class Goto_statement : public Statement
 
   Bstatement*
   do_get_backend(Translate_context*);
+
+  int
+  do_inlining_cost()
+  { return 5; }
+
+  void
+  do_export_statement(Export_function_body*);
 
   void
   do_dump_statement(Ast_dump_context*) const;
@@ -1455,6 +1468,13 @@ class Goto_unnamed_statement : public Statement
   Bstatement*
   do_get_backend(Translate_context* context);
 
+  int
+  do_inlining_cost()
+  { return 5; }
+
+  void
+  do_export_statement(Export_function_body*);
+
   void
   do_dump_statement(Ast_dump_context*) const;
 
@@ -1477,12 +1497,23 @@ class Label_statement : public Statement
   label() const
   { return this->label_; }
 
+  // Import a label or unnamed label.
+  static Statement*
+  do_import(Import_function_body*, Location);
+
  protected:
   int
   do_traverse(Traverse*);
 
   Bstatement*
   do_get_backend(Translate_context*);
+
+  int
+  do_inlining_cost()
+  { return 1; }
+
+  void
+  do_export_statement(Export_function_body*);
 
   void
   do_dump_statement(Ast_dump_context*) const;
@@ -1505,6 +1536,13 @@ class Unnamed_label_statement : public Statement
 
   Bstatement*
   do_get_backend(Translate_context* context);
+
+  int
+  do_inlining_cost()
+  { return 1; }
+
+  void
+  do_export_statement(Export_function_body*);
 
   void
   do_dump_statement(Ast_dump_context*) const;
