@@ -1321,27 +1321,32 @@ adjust_temp_type (tree type, tree temp)
   return cp_fold_convert (type, temp);
 }
 
-/* Callback for walk_tree used by unshare_constructor.  */
+/* If T is a CONSTRUCTOR, return an unshared copy of T and any
+   sub-CONSTRUCTORs.  Otherwise return T.
 
-static tree
-find_constructor (tree *tp, int *walk_subtrees, void *)
-{
-  if (TYPE_P (*tp))
-    *walk_subtrees = 0;
-  if (TREE_CODE (*tp) == CONSTRUCTOR)
-    return *tp;
-  return NULL_TREE;
-}
-
-/* If T is a CONSTRUCTOR or an expression that has a CONSTRUCTOR node as a
-   subexpression, return an unshared copy of T.  Otherwise return T.  */
+   We use this whenever we initialize an object as a whole, whether it's a
+   parameter, a local variable, or a subobject, so that subsequent
+   modifications don't affect other places where it was used.  */
 
 tree
 unshare_constructor (tree t)
 {
-  tree ctor = walk_tree (&t, find_constructor, NULL, NULL);
-  if (ctor != NULL_TREE)
-    return unshare_expr (t);
+  if (!t || TREE_CODE (t) != CONSTRUCTOR)
+    return t;
+  auto_vec <tree*, 4> ptrs;
+  ptrs.safe_push (&t);
+  while (!ptrs.is_empty ())
+    {
+      tree *p = ptrs.pop ();
+      tree n = copy_node (*p);
+      CONSTRUCTOR_ELTS (n) = vec_safe_copy (CONSTRUCTOR_ELTS (*p));
+      *p = n;
+      vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (n);
+      constructor_elt *ce;
+      for (HOST_WIDE_INT i = 0; vec_safe_iterate (v, i, &ce); ++i)
+	if (TREE_CODE (ce->value) == CONSTRUCTOR)
+	  ptrs.safe_push (&ce->value);
+    }
   return t;
 }
 
@@ -1898,7 +1903,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     clear_no_implicit_zero (result);
 
   pop_cx_call_context ();
-  return unshare_constructor (result);
+  return result;
 }
 
 /* FIXME speed this up, it's taking 16% of compile time on sieve testcase.  */
