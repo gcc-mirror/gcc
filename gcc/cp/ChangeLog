@@ -1,5 +1,9 @@
 2019-06-10  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (unshare_constructor): Only unshare if T is itself a
+	CONSTRUCTOR.
+	(cxx_eval_call_expression): Don't call it on the result here.
+
 	Reduce constexpr_call memory consumption.
 	* constexpr.c (cxx_bind_parameters_in_call): Use TREE_VEC rather
 	than TREE_LIST.
