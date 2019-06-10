@@ -389,7 +389,7 @@ public:
   create_ggc (size_t n CXX_MEM_STAT_INFO)
   {
     hash_table *table = ggc_alloc<hash_table> ();
-    new (table) hash_table (n, true, GATHER_STATISTICS,
+    new (table) hash_table (n, true, true, GATHER_STATISTICS,
 			    HASH_TABLE_ORIGIN PASS_MEM_STAT);
     return table;
   }

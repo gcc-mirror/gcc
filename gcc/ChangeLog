@@ -1,3 +1,8 @@
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
+	* hash-map.h: Pass default value to hash_table ctor.
+	* hash-table.h: Add default value to call of a ctor.
+
 2019-06-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/invoke.texi (C Dialect Options): Minor grammatical change.
