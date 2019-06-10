@@ -7282,6 +7282,7 @@ Function_declaration::import_function_body(Gogo* gogo, Named_object* no)
     return;
 
   gogo->lower_block(no, outer);
+  outer->determine_types();
 
   gogo->add_imported_inline_function(no);
 }
