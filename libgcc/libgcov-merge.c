@@ -34,8 +34,9 @@ void __gcov_merge_add (gcov_type *counters  __attribute__ ((unused)),
 #endif
 
 #ifdef L_gcov_merge_single
-void __gcov_merge_single (gcov_type *counters  __attribute__ ((unused)),
-                          unsigned n_counters __attribute__ ((unused))) {}
+void __gcov_merge_single (gcov_type *counters  __attribute__ ((unused)))
+{
+}
 #endif
 
 #else
@@ -85,40 +86,72 @@ __gcov_merge_time_profile (gcov_type *counters, unsigned n_counters)
 #endif /* L_gcov_merge_time_profile */
 
 #ifdef L_gcov_merge_single
+
+static void
+merge_single_value_set (gcov_type *counters)
+{
+  unsigned j;
+  gcov_type value, counter;
+
+  /* First value is number of total executions of the profiler.  */
+  gcov_type all = gcov_get_counter_ignore_scaling (-1);
+  counters[0] += all;
+  ++counters;
+
+  for (unsigned i = 0; i < GCOV_DISK_SINGLE_VALUES; i++)
+    {
+      value = gcov_get_counter_target ();
+      counter = gcov_get_counter_ignore_scaling (-1);
+
+      if (counter == -1)
+	{
+	  counters[1] = -1;
+	  /* We can't return as we need to read all counters.  */
+	  continue;
+	}
+      else if (counter == 0 || counters[1] == -1)
+	{
+	  /* We can't return as we need to read all counters.  */
+	  continue;
+	}
+
+      for (j = 0; j < GCOV_DISK_SINGLE_VALUES; j++)
+	{
+	  if (counters[2 * j] == value)
+	    {
+	      counters[2 * j + 1] += counter;
+	      break;
+	    }
+	  else if (counters[2 * j + 1] == 0)
+	    {
+	      counters[2 * j] = value;
+	      counters[2 * j + 1] = counter;
+	      break;
+	    }
+	}
+
+      /* We haven't found a free slot for the value, mark overflow.  */
+      if (j == GCOV_DISK_SINGLE_VALUES)
+	counters[1] = -1;
+    }
+}
+
 /* The profile merging function for choosing the most common value.
    It is given an array COUNTERS of N_COUNTERS old counters and it
    reads the same number of counters from the gcov file.  The counters
-   are split into 3-tuples where the members of the tuple have
+   are split into pairs where the members of the tuple have
    meanings:
 
    -- the stored candidate on the most common value of the measured entity
    -- counter
-   -- total number of evaluations of the value  */
+   */
 void
 __gcov_merge_single (gcov_type *counters, unsigned n_counters)
 {
-  unsigned i, n_measures;
-  gcov_type value, counter, all;
+  gcc_assert (!(n_counters % GCOV_SINGLE_VALUE_COUNTERS));
 
-  gcc_assert (!(n_counters % 3));
-  n_measures = n_counters / 3;
-  for (i = 0; i < n_measures; i++, counters += 3)
-    {
-      value = gcov_get_counter_target ();
-      counter = gcov_get_counter ();
-      all = gcov_get_counter ();
-
-      if (counters[0] == value)
-        counters[1] += counter;
-      else if (counter > counters[1])
-        {
-          counters[0] = value;
-          counters[1] = counter - counters[1];
-        }
-      else
-        counters[1] -= counter;
-      counters[2] += all;
-    }
+  for (unsigned i = 0; i < (n_counters / GCOV_SINGLE_VALUE_COUNTERS); i++)
+    merge_single_value_set (counters + (i * GCOV_SINGLE_VALUE_COUNTERS));
 }
 #endif /* L_gcov_merge_single */
 

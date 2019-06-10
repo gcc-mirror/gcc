@@ -259,15 +259,22 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
       break;
 
     case HIST_TYPE_SINGLE_VALUE:
-      fprintf (dump_file, "Single value ");
+    case HIST_TYPE_INDIR_CALL:
+      fprintf (dump_file,
+	       (hist->type == HIST_TYPE_SINGLE_VALUE
+		? "Single value counter " : "Indirect call counter"));
       if (hist->hvalue.counters)
 	{
-	   fprintf (dump_file, "value:%" PRId64
-		    " match:%" PRId64
-		    " wrong:%" PRId64,
-		    (int64_t) hist->hvalue.counters[0],
-		    (int64_t) hist->hvalue.counters[1],
-		    (int64_t) hist->hvalue.counters[2]);
+	  fprintf (dump_file, "all: %" PRId64 ", values: ",
+		   (int64_t) hist->hvalue.counters[0]);
+	  for (unsigned i = 0; i < GCOV_DISK_SINGLE_VALUES; i++)
+	    {
+	      fprintf (dump_file, "[%" PRId64 ":%" PRId64 "]",
+		       (int64_t) hist->hvalue.counters[2 * i + 1],
+		       (int64_t) hist->hvalue.counters[2 * i + 2]);
+	      if (i != GCOV_DISK_SINGLE_VALUES - 1)
+		fprintf (dump_file, ", ");
+	    }
 	}
       fprintf (dump_file, ".\n");
       break;
@@ -294,19 +301,6 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
       fprintf (dump_file, ".\n");
       break;
 
-    case HIST_TYPE_INDIR_CALL:
-      fprintf (dump_file, "Indirect call ");
-      if (hist->hvalue.counters)
-	{
-	   fprintf (dump_file, "value:%" PRId64
-		    " match:%" PRId64
-		    " all:%" PRId64,
-		    (int64_t) hist->hvalue.counters[0],
-		    (int64_t) hist->hvalue.counters[1],
-		    (int64_t) hist->hvalue.counters[2]);
-	}
-      fprintf (dump_file, ".\n");
-      break;
     case HIST_TYPE_TIME_PROFILE:
       fprintf (dump_file, "Time profile ");
       if (hist->hvalue.counters)
@@ -347,7 +341,7 @@ stream_out_histogram_value (struct output_block *ob, histogram_value hist)
       /* When user uses an unsigned type with a big value, constant converted
 	 to gcov_type (a signed type) can be negative.  */
       gcov_type value = hist->hvalue.counters[i];
-      if (hist->type == HIST_TYPE_SINGLE_VALUE && i == 0)
+      if (hist->type == HIST_TYPE_SINGLE_VALUE && (i > 0 && ((i - 1) % 2) == 0))
 	;
       else
 	gcc_assert (value >= 0);
@@ -392,7 +386,7 @@ stream_in_histogram_value (struct lto_input_block *ib, gimple *stmt)
 
 	case HIST_TYPE_SINGLE_VALUE:
 	case HIST_TYPE_INDIR_CALL:
-	  ncounters = 3;
+	  ncounters = GCOV_SINGLE_VALUE_COUNTERS;
 	  break;
 
 	case HIST_TYPE_IOR:
@@ -729,6 +723,48 @@ gimple_divmod_fixed_value (gassign *stmt, tree value, profile_probability prob,
   return tmp2;
 }
 
+/* Return most common value of SINGLE_VALUE histogram.  If
+   there's a unique value, return true and set VALUE and COUNT
+   arguments.  */
+
+bool
+get_most_common_single_value (gimple *stmt, const char *counter_type,
+			      histogram_value hist,
+			      gcov_type *value, gcov_type *count,
+			      gcov_type *all)
+{
+  if (hist->hvalue.counters[2] == -1)
+    return false;
+
+  *count = 0;
+  *value = 0;
+
+  gcov_type read_all = hist->hvalue.counters[0];
+
+  for (unsigned i = 0; i < GCOV_DISK_SINGLE_VALUES; i++)
+    {
+      gcov_type v = hist->hvalue.counters[2 * i + 1];
+      gcov_type c = hist->hvalue.counters[2 * i + 2];
+
+      /* Indirect calls can't be vereified.  */
+      if (stmt && check_counter (stmt, counter_type, &c, &read_all,
+				 gimple_bb (stmt)->count))
+	return false;
+
+      *all = read_all;
+
+      if (c > *count)
+	{
+	  *value = v;
+	  *count = c;
+	}
+      else if (c == *count && v > *value)
+	*value = v;
+    }
+
+  return true;
+}
+
 /* Do transform 1) on INSN if applicable.  */
 
 static bool
@@ -758,21 +794,17 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
   if (!histogram)
     return false;
 
+  if (!get_most_common_single_value (stmt, "divmod", histogram, &val, &count,
+				     &all))
+    return false;
+
   value = histogram->hvalue.value;
-  val = histogram->hvalue.counters[0];
-  count = histogram->hvalue.counters[1];
-  all = histogram->hvalue.counters[2];
   gimple_remove_histogram_value (cfun, stmt, histogram);
 
-  /* We require that count is at least half of all; this means
-     that for the transformation to fire the value must be constant
-     at least 50% of time (and 75% gives the guarantee of usage).  */
+  /* We require that count is at least half of all.  */
   if (simple_cst_equal (gimple_assign_rhs2 (stmt), value) != 1
       || 2 * count < all
       || optimize_bb_for_size_p (gimple_bb (stmt)))
-    return false;
-
-  if (check_counter (stmt, "value", &count, &all, gimple_bb (stmt)->count))
     return false;
 
   /* Compute probability of taking the optimal path.  */
@@ -1401,7 +1433,7 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
 {
   gcall *stmt;
   histogram_value histogram;
-  gcov_type val, count, all, bb_all;
+  gcov_type val, count, all;
   struct cgraph_node *direct_call;
 
   stmt = dyn_cast <gcall *> (gsi_stmt (*gsi));
@@ -1418,21 +1450,9 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
   if (!histogram)
     return false;
 
-  val = histogram->hvalue.counters [0];
-  count = histogram->hvalue.counters [1];
-  all = histogram->hvalue.counters [2];
-
-  bb_all = gimple_bb (stmt)->count.ipa ().to_gcov_type ();
-  /* The order of CHECK_COUNTER calls is important -
-     since check_counter can correct the third parameter
-     and we want to make count <= all <= bb_all. */
-  if (check_counter (stmt, "ic", &all, &bb_all, gimple_bb (stmt)->count)
-      || check_counter (stmt, "ic", &count, &all,
-		        profile_count::from_gcov_type (all)))
-    {
-      gimple_remove_histogram_value (cfun, stmt, histogram);
-      return false;
-    }
+  if (!get_most_common_single_value (NULL, "indirect call", histogram, &val,
+				     &count, &all))
+    return false;
 
   if (4 * count <= 3 * all)
     return false;
@@ -1644,19 +1664,19 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
   if (TREE_CODE (blck_size) == INTEGER_CST)
     return false;
 
-  histogram = gimple_histogram_value_of_type (cfun, stmt, HIST_TYPE_SINGLE_VALUE);
+  histogram = gimple_histogram_value_of_type (cfun, stmt,
+					      HIST_TYPE_SINGLE_VALUE);
   if (!histogram)
     return false;
 
-  val = histogram->hvalue.counters[0];
-  count = histogram->hvalue.counters[1];
-  all = histogram->hvalue.counters[2];
+  if (!get_most_common_single_value (stmt, "stringops", histogram, &val,
+				     &count, &all))
+    return false;
+
   gimple_remove_histogram_value (cfun, stmt, histogram);
 
-  /* We require that count is at least half of all; this means
-     that for the transformation to fire the value must be constant
-     at least 80% of time.  */
-  if ((6 * count / 5) < all || optimize_bb_for_size_p (gimple_bb (stmt)))
+  /* We require that count is at least half of all.  */
+  if (2 * count < all || optimize_bb_for_size_p (gimple_bb (stmt)))
     return false;
   if (check_counter (stmt, "value", &count, &all, gimple_bb (stmt)->count))
     return false;
@@ -1928,11 +1948,11 @@ gimple_find_values_to_profile (histogram_values *values)
 	  break;
 
 	case HIST_TYPE_SINGLE_VALUE:
-	  hist->n_counters = 3;
+	  hist->n_counters = GCOV_SINGLE_VALUE_COUNTERS;
 	  break;
 
- 	case HIST_TYPE_INDIR_CALL:
- 	  hist->n_counters = 3;
+	case HIST_TYPE_INDIR_CALL:
+	  hist->n_counters = GCOV_SINGLE_VALUE_COUNTERS;
 	  break;
 
         case HIST_TYPE_TIME_PROFILE:

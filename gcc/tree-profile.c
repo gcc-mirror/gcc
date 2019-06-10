@@ -165,10 +165,10 @@ gimple_init_gcov_profiler (void)
 	      = build_function_type_list (void_type_node,
 					  gcov_type_ptr, gcov_type_node,
 					  NULL_TREE);
-      fn_name = concat ("__gcov_one_value_profiler", fn_suffix, NULL);
+      fn_name = concat ("__gcov_one_value_profiler_v2", fn_suffix, NULL);
       tree_one_value_profiler_fn = build_fn_decl (fn_name,
 						  one_value_profiler_fn_type);
-      free (CONST_CAST (char *, fn_name));
+
       TREE_NOTHROW (tree_one_value_profiler_fn) = 1;
       DECL_ATTRIBUTES (tree_one_value_profiler_fn)
 	= tree_cons (get_identifier ("leaf"), NULL,
@@ -182,7 +182,7 @@ gimple_init_gcov_profiler (void)
 					  gcov_type_node,
 					  ptr_type_node,
 					  NULL_TREE);
-      profiler_fn_name = "__gcov_indirect_call_profiler_v3";
+      profiler_fn_name = "__gcov_indirect_call_profiler_v4";
 
       tree_indirect_call_profiler_fn
 	      = build_fn_decl (profiler_fn_name, ic_profiler_fn_type);
