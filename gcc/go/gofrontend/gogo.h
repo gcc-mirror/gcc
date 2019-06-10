@@ -765,6 +765,12 @@ class Gogo
   assign_with_write_barrier(Function*, Block*, Statement_inserter*,
 			    Expression* lhs, Expression* rhs, Location);
 
+  // Return a statement that tests whether write barriers are enabled
+  // and executes either the efficient code (WITHOUT) or the write
+  // barrier function call (WITH), depending.
+  Statement*
+  check_write_barrier(Block*, Statement* without, Statement* with);
+
   // Flatten parse tree.
   void
   flatten();
@@ -998,9 +1004,6 @@ class Gogo
 
   Named_object*
   write_barrier_variable();
-
-  Statement*
-  check_write_barrier(Block*, Statement*, Statement*);
 
   // Type used to map import names to packages.
   typedef std::map<std::string, Package*> Imports;

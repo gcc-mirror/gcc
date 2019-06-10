@@ -16387,17 +16387,43 @@ Heap_expression::do_get_backend(Translate_context* context)
 					    &edecl);
       Bexpression* btempref = gogo->backend()->var_expression(btemp,
 							      loc);
-      Bexpression* addr = gogo->backend()->address_expression(btempref, loc);
-
-      Expression* td = Expression::make_type_descriptor(etype, loc);
-      Type* etype_ptr = Type::make_pointer_type(etype);
       space = gogo->backend()->var_expression(space_temp, loc);
+      Type* etype_ptr = Type::make_pointer_type(etype);
       Expression* elhs = Expression::make_backend(space, etype_ptr, loc);
-      Expression* erhs = Expression::make_backend(addr, etype_ptr, loc);
-      Expression* call = Runtime::make_call(Runtime::TYPEDMEMMOVE, loc, 3,
-					    td, elhs, erhs);
-      Bexpression* bcall = call->get_backend(context);
-      Bstatement* s = gogo->backend()->expression_statement(fndecl, bcall);
+      Expression* erhs;
+      Expression* call;
+      if (etype->is_direct_iface_type())
+        {
+          // Single pointer.
+          Type* uintptr_type = Type::lookup_integer_type("uintptr");
+          erhs = Expression::make_backend(btempref, etype, loc);
+          erhs = Expression::unpack_direct_iface(erhs, loc);
+          erhs = Expression::make_unsafe_cast(uintptr_type, erhs, loc);
+          call = Runtime::make_call(Runtime::GCWRITEBARRIER, loc, 2,
+                                    elhs, erhs);
+        }
+      else
+        {
+          Expression* td = Expression::make_type_descriptor(etype, loc);
+          Bexpression* addr =
+            gogo->backend()->address_expression(btempref, loc);
+          erhs = Expression::make_backend(addr, etype_ptr, loc);
+          call = Runtime::make_call(Runtime::TYPEDMEMMOVE, loc, 3,
+                                    td, elhs, erhs);
+        }
+      Statement* cs = Statement::make_statement(call, false);
+
+      space = gogo->backend()->var_expression(space_temp, loc);
+      Bexpression* ref =
+        gogo->backend()->indirect_expression(expr_btype, space, true, loc);
+      Expression* eref = Expression::make_backend(ref, etype, loc);
+      btempref = gogo->backend()->var_expression(btemp, loc);
+      erhs = Expression::make_backend(btempref, etype, loc);
+      Statement* as = Statement::make_assignment(eref, erhs, loc);
+
+      as = gogo->check_write_barrier(context->block(), as, cs);
+      Bstatement* s = as->get_backend(context);
+
       assn = gogo->backend()->compound_statement(edecl, s);
     }
   decl = gogo->backend()->compound_statement(decl, assn);
