@@ -2744,20 +2744,20 @@ sem_item_optimizer::build_graph (void)
 void
 sem_item_optimizer::parse_nonsingleton_classes (void)
 {
-  unsigned int init_called_count = 0;
+  unsigned int counter = 0;
 
   for (unsigned i = 0; i < m_items.length (); i++)
     if (m_items[i]->cls->members.length () > 1)
       {
 	m_items[i]->init ();
-	init_called_count++;
+	++counter;
       }
 
   if (dump_file)
-    fprintf (dump_file, "Init called for %u items (%.2f%%).\n",
-	     init_called_count,
-	     m_items.length () ? 100.0f * init_called_count / m_items.length ()
-			       : 0.0f);
+    {
+      float f = m_items.length () ? 100.0f * counter / m_items.length () : 0.0f;
+      fprintf (dump_file, "Init called for %u items (%.2f%%).\n", counter, f);
+    }
 }
 
 /* Equality function for semantic items is used to subdivide existing
@@ -3274,13 +3274,9 @@ sem_item_optimizer::dump_cong_classes (void)
   if (!dump_file)
     return;
 
-  fprintf (dump_file,
-	   "Congruence classes: %u (unique hash values: %lu), with total: "
-	   "%u items\n", m_classes_count,
-	   (unsigned long) m_classes.elements (), m_items.length ());
-
   /* Histogram calculation.  */
   unsigned int max_index = 0;
+  unsigned int single_element_classes = 0;
   unsigned int* histogram = XCNEWVEC (unsigned int, m_items.length () + 1);
 
   for (hash_table<congruence_class_hash>::iterator it = m_classes.begin ();
@@ -3292,21 +3288,25 @@ sem_item_optimizer::dump_cong_classes (void)
 
 	if (c > max_index)
 	  max_index = c;
+
+	if (c == 1)
+	  ++single_element_classes;
       }
 
   fprintf (dump_file,
+	   "Congruence classes: %lu with total: %u items (in a non-singular "
+	   "class: %u)\n", (unsigned long) m_classes.elements (),
+	   m_items.length (), m_items.length () - single_element_classes);
+  fprintf (dump_file,
 	   "Class size histogram [num of members]: number of classe number "
 	   "of classess\n");
-
   for (unsigned int i = 0; i <= max_index; i++)
     if (histogram[i])
-      fprintf (dump_file, "[%u]: %u classes\n", i, histogram[i]);
-
-  fprintf (dump_file, "\n\n");
+      fprintf (dump_file, "%6u: %6u\n", i, histogram[i]);
 
   if (dump_flags & TDF_DETAILS)
-  for (hash_table<congruence_class_hash>::iterator it = m_classes.begin ();
-       it != m_classes.end (); ++it)
+    for (hash_table<congruence_class_hash>::iterator it = m_classes.begin ();
+	 it != m_classes.end (); ++it)
       {
 	fprintf (dump_file, "  group: with %u classes:\n",
 		 (*it)->classes.length ());

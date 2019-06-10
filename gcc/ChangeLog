@@ -1,5 +1,13 @@
 2019-06-10  Martin Liska  <mliska@suse.cz>
 
+	* ipa-icf.c (sem_item_optimizer::parse_nonsingleton_classes):
+	Update coding style.
+	(sem_item_optimizer::dump_cong_classes):
+	Print how many items are in a non-singular class.  Improve
+	coding style.
+
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
 	* value-prof.c (dump_histogram_value): Change dump format.
 	(gimple_mod_subtract_transform): Remove legacy comment.
 
