@@ -955,14 +955,21 @@ Gogo::assign_with_write_barrier(Function* function, Block* enclosing,
       // fallthrough
 
     case Type::TYPE_STRUCT:
-      {
-        // TODO: split assignments for small struct/array?
-	rhs = Expression::make_unary(OPERATOR_AND, rhs, loc);
-	rhs->unary_expression()->set_does_not_escape();
-	call = Runtime::make_call(Runtime::TYPEDMEMMOVE, loc, 3,
-				  Expression::make_type_descriptor(type, loc),
-				  lhs, rhs);
-      }
+      if (type->is_direct_iface_type())
+        {
+          rhs = Expression::unpack_direct_iface(rhs, loc);
+          rhs = Expression::make_unsafe_cast(uintptr_type, rhs, loc);
+          call = Runtime::make_call(Runtime::GCWRITEBARRIER, loc, 2, lhs, rhs);
+        }
+      else
+        {
+          // TODO: split assignments for small struct/array?
+          rhs = Expression::make_unary(OPERATOR_AND, rhs, loc);
+          rhs->unary_expression()->set_does_not_escape();
+          call = Runtime::make_call(Runtime::TYPEDMEMMOVE, loc, 3,
+                                    Expression::make_type_descriptor(type, loc),
+                                    lhs, rhs);
+        }
       break;
     }
 
