@@ -328,7 +328,7 @@ gcov_get_counter (void)
    when read value is equal to IGNORE_SCALING.  */
 
 static inline gcov_type
-gcov_get_counter_ignore_scaling (gcov_type ignore_scaling)
+gcov_get_counter_ignore_scaling (gcov_type ignore_scaling ATTRIBUTE_UNUSED)
 {
 #ifndef IN_GCOV_TOOL
   /* This version is for reading count values in libgcov runtime:
