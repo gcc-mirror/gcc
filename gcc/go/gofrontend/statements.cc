@@ -465,8 +465,6 @@ Variable_declaration_statement::do_import(Import_function_body* ifb,
     {
       ifb->advance(3);
       init = Expression::import_expression(ifb, loc);
-      Type_context context(type, false);
-      init->determine_type(&context);
     }
   Variable* var = new Variable(type, init, false, false, false, loc);
   var->set_is_used();
@@ -753,11 +751,6 @@ Temporary_statement::do_import(Import_function_body* ifb, Location loc)
     {
       ifb->advance(3);
       init = Expression::import_expression(ifb, loc);
-      if (type != NULL)
-	{
-	  Type_context context(type, false);
-	  init->determine_type(&context);
-	}
     }
   if (type == NULL && init == NULL)
     {
@@ -3730,8 +3723,6 @@ If_statement::do_import(Import_function_body* ifb, Location loc)
   ifb->require_c_string("if ");
 
   Expression* cond = Expression::import_expression(ifb, loc);
-  Type_context context(Type::lookup_bool_type(), false);
-  cond->determine_type(&context);
   ifb->require_c_string(" ");
 
   if (!ifb->match_c_string("{"))

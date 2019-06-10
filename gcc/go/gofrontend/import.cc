@@ -1238,7 +1238,7 @@ Import::register_builtin_type(Gogo* gogo, const char* name, Builtin_code code)
 // characters that stop an identifier, without worrying about
 // characters that are permitted in an identifier.  That lets us skip
 // UTF-8 parsing.
-static const char * const identifier_stop = " \n;,()[]";
+static const char * const identifier_stop = " \n;:,()[]";
 
 // Read an identifier from the stream.
 
