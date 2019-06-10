@@ -1,5 +1,10 @@
 2019-06-10  Martin Liska  <mliska@suse.cz>
 
+	* value-prof.c (dump_histogram_value): Change dump format.
+	(gimple_mod_subtract_transform): Remove legacy comment.
+
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
 	* value-prof.c (dump_histogram_value): Print histogram values
 	only if present.
 
