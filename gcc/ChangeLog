@@ -1,8 +1,55 @@
+2019-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.def (OMP_SCAN): New tree code.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_INCLUSIVE and
+	OMP_CLAUSE_EXCLUSIVE.
+	* tree.h (OMP_CLAUSES): Use OMP_SCAN instead of OMP_TASKGROUP.
+	(OMP_SCAN_BODY, OMP_SCAN_CLAUSES): Define.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name): Add entries for
+	OMP_CLAUSE_{IN,EX}CLUSIVE.
+	(walk_tree_1): Handle OMP_CLAUSE_{IN,EX}CLUSIVE.
+	* tree-nested.c (convert_nonlocal_reference_stmt,
+	convert_local_reference_stmt, convert_gimple_call): Handle
+	GIMPLE_OMP_SCAN.
+	* tree-pretty-print.c (dump_omp_clause): Handle
+	OMP_CLAUSE_{IN,EX}CLUSIVE.
+	(dump_generic_node): Handle OMP_SCAN.
+	* gimple.def (GIMPLE_OMP_SCAN): New gimple code.
+	* gimple.h (gomp_scan): New type.
+	(is_a_helper <gomp_scan *>::test,
+	is_a_helper <const gomp_scan *>::test): New templates.
+	(gimple_build_omp_scan): Declare.
+	(gimple_omp_scan_clauses, gimple_omp_scan_clauses_ptr,
+	gimple_omp_scan_set_clauses): New inline functions.
+	(CASE_GIMPLE_OMP): Add case GIMPLE_OMP_SCAN:.
+	* gimple.c (gimple_build_omp_scan): New function.
+	(gimple_copy): Handle GIMPLE_OMP_SCAN.
+	* gimple-walk.c (walk_gimple_op, walk_gimple_stmt): Likewise.
+	* gimple-pretty-print.c (dump_gimple_omp_block): Don't handle
+	GIMPLE_OMP_TASKGROUP.
+	(dump_gimple_omp_scan): New function.
+	(pp_gimple_stmt_1): Handle GIMPLE_OMP_SCAN.
+	* gimple-low.c (lower_stmt): Handle GIMPLE_OMP_SCAN.
+	* tree-inline.c (remap_gimple_stmt, estimate_num_insns): Likewise.
+	* gimplify.c (enum gimplify_omp_var_data): Add GOVD_REDUCTION_INSCAN.
+	(is_gimple_stmt): Handle OMP_SCAN.
+	(gimplify_scan_omp_clauses): Reject inscan reductions on constructs
+	other than OMP_FOR or OMP_SIMD.  Handle OMP_CLAUSE_{IN,EX}CLUSIVE.
+	(gimplify_adjust_omp_clauses): Diagnose inscan reductions not
+	mentioned in nested #pragma omp scan.  Handle
+	OMP_CLAUSE_{IN,EX}CLUSIVE.
+	(gimplify_expr): Handle OMP_SCAN.
+	* omp-low.c (check_omp_nesting_restrictions): For parent context,
+	look through GIMPLE_OMP_SCAN context.  Allow #pragma omp scan in
+	simd constructs.
+	(scan_omp_1_stmt, lower_omp_1, diagnose_sb_1, diagnose_sb_2): Handle
+	GIMPLE_OMP_SCAN.
+
 2019-06-10  Martin Liska  <mliska@suse.cz>
 
 	* ipa-cp.c (ignore_edge_p): New function.
 	(build_toporder_info): Use it.
-	* ipa-inline.c (ignore_edge_p): New function/
+	* ipa-inline.c (ignore_edge_p): New function.
 	(inline_small_functions): Use it.
 	* ipa-pure-const.c (ignore_edge_for_nothrow):
 	Verify opt_for_fn for caller and callee.

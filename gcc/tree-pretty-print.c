@@ -467,6 +467,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
     case OMP_CLAUSE_IS_DEVICE_PTR:
       name = "is_device_ptr";
       goto print_remap;
+    case OMP_CLAUSE_INCLUSIVE:
+      name = "inclusive";
+      goto print_remap;
+    case OMP_CLAUSE_EXCLUSIVE:
+      name = "exclusive";
+      goto print_remap;
     case OMP_CLAUSE__LOOPTEMP_:
       name = "_looptemp_";
       goto print_remap;
@@ -3306,6 +3312,14 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case OMP_SECTION:
       pp_string (pp, "#pragma omp section");
+      goto dump_omp_body;
+
+    case OMP_SCAN:
+      if (OMP_SCAN_CLAUSES (node))
+	{
+	  pp_string (pp, "#pragma omp scan");
+	  dump_omp_clauses (pp, OMP_SCAN_CLAUSES (node), spc, flags);
+	}
       goto dump_omp_body;
 
     case OMP_MASTER:

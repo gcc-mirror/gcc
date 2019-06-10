@@ -741,7 +741,8 @@ struct GTY((tag("GSS_OMP_CONTINUE")))
   tree control_use;
 };
 
-/* GIMPLE_OMP_SINGLE, GIMPLE_OMP_ORDERED, GIMPLE_OMP_TASKGROUP.  */
+/* GIMPLE_OMP_SINGLE, GIMPLE_OMP_ORDERED, GIMPLE_OMP_TASKGROUP,
+   GIMPLE_OMP_SCAN.  */
 
 struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
   gimple_statement_omp_single_layout : public gimple_statement_omp
@@ -771,6 +772,13 @@ struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
 {
     /* No extra fields; adds invariant:
 	 stmt->code == GIMPLE_OMP_ORDERED.  */
+};
+
+struct GTY((tag("GSS_OMP_SINGLE_LAYOUT")))
+  gomp_scan : public gimple_statement_omp_single_layout
+{
+    /* No extra fields; adds invariant:
+	 stmt->code == GIMPLE_OMP_SCAN.  */
 };
 
 
@@ -1115,6 +1123,14 @@ is_a_helper <gomp_ordered *>::test (gimple *gs)
 template <>
 template <>
 inline bool
+is_a_helper <gomp_scan *>::test (gimple *gs)
+{
+  return gs->code == GIMPLE_OMP_SCAN;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <gomp_for *>::test (gimple *gs)
 {
   return gs->code == GIMPLE_OMP_FOR;
@@ -1333,6 +1349,14 @@ is_a_helper <const gomp_ordered *>::test (const gimple *gs)
 template <>
 template <>
 inline bool
+is_a_helper <const gomp_scan *>::test (const gimple *gs)
+{
+  return gs->code == GIMPLE_OMP_SCAN;
+}
+
+template <>
+template <>
+inline bool
 is_a_helper <const gomp_for *>::test (const gimple *gs)
 {
   return gs->code == GIMPLE_OMP_FOR;
@@ -1475,6 +1499,7 @@ gimple *gimple_build_omp_taskgroup (gimple_seq, tree);
 gomp_continue *gimple_build_omp_continue (tree, tree);
 gomp_ordered *gimple_build_omp_ordered (gimple_seq, tree);
 gimple *gimple_build_omp_return (bool);
+gomp_scan *gimple_build_omp_scan (gimple_seq, tree);
 gomp_sections *gimple_build_omp_sections (gimple_seq, tree);
 gimple *gimple_build_omp_sections_switch (void);
 gomp_single *gimple_build_omp_single (gimple_seq, tree);
@@ -4946,6 +4971,35 @@ gimple_omp_ordered_set_clauses (gomp_ordered *ord_stmt, tree clauses)
 }
 
 
+/* Return the clauses associated with OMP_SCAN statement SCAN_STMT.  */
+
+static inline tree
+gimple_omp_scan_clauses (const gomp_scan *scan_stmt)
+{
+  return scan_stmt->clauses;
+}
+
+
+/* Return a pointer to the clauses associated with OMP scan statement
+   ORD_STMT.  */
+
+static inline tree *
+gimple_omp_scan_clauses_ptr (gomp_scan *scan_stmt)
+{
+  return &scan_stmt->clauses;
+}
+
+
+/* Set CLAUSES to be the clauses associated with OMP scan statement
+   ORD_STMT.  */
+
+static inline void
+gimple_omp_scan_set_clauses (gomp_scan *scan_stmt, tree clauses)
+{
+  scan_stmt->clauses = clauses;
+}
+
+
 /* Return the clauses associated with OMP_TASKGROUP statement GS.  */
 
 static inline tree
@@ -6379,6 +6433,7 @@ gimple_return_set_retval (greturn *gs, tree retval)
     case GIMPLE_OMP_TASKGROUP:			\
     case GIMPLE_OMP_ORDERED:			\
     case GIMPLE_OMP_CRITICAL:			\
+    case GIMPLE_OMP_SCAN:			\
     case GIMPLE_OMP_RETURN:			\
     case GIMPLE_OMP_ATOMIC_LOAD:		\
     case GIMPLE_OMP_ATOMIC_STORE:		\

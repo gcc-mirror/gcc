@@ -336,6 +336,16 @@ walk_gimple_op (gimple *stmt, walk_tree_fn callback_op,
       }
       break;
 
+    case GIMPLE_OMP_SCAN:
+      {
+	gomp_scan *scan_stmt = as_a <gomp_scan *> (stmt);
+	ret = walk_tree (gimple_omp_scan_clauses_ptr (scan_stmt),
+			 callback_op, wi, pset);
+	if (ret)
+	  return ret;
+      }
+      break;
+
     case GIMPLE_OMP_FOR:
       ret = walk_tree (gimple_omp_for_clauses_ptr (stmt), callback_op, wi,
 		       pset);
@@ -650,6 +660,7 @@ walk_gimple_stmt (gimple_stmt_iterator *gsi, walk_stmt_fn callback_stmt,
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
+    case GIMPLE_OMP_SCAN:
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
