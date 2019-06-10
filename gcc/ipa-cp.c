@@ -806,6 +806,21 @@ public:
   {}
 };
 
+/* Skip edges from and to nodes without ipa_cp enabled.
+   Ignore not available symbols.  */
+
+static bool
+ignore_edge_p (cgraph_edge *e)
+{
+  enum availability avail;
+  cgraph_node *ultimate_target
+    = e->callee->function_or_virtual_thunk_symbol (&avail, e->caller);
+
+  return (avail <= AVAIL_INTERPOSABLE
+	  || !opt_for_fn (e->caller->decl, flag_ipa_cp)
+	  || !opt_for_fn (ultimate_target->decl, flag_ipa_cp));
+}
+
 /* Allocate the arrays in TOPO and topologically sort the nodes into order.  */
 
 static void
@@ -815,7 +830,8 @@ build_toporder_info (struct ipa_topo_info *topo)
   topo->stack = XCNEWVEC (struct cgraph_node *, symtab->cgraph_count);
 
   gcc_checking_assert (topo->stack_top == 0);
-  topo->nnodes = ipa_reduced_postorder (topo->order, true, NULL);
+  topo->nnodes = ipa_reduced_postorder (topo->order, true,
+					ignore_edge_p);
 }
 
 /* Free information about strongly connected components and the arrays in

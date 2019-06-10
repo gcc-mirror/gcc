@@ -1,3 +1,17 @@
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
+	* ipa-cp.c (ignore_edge_p): New function.
+	(build_toporder_info): Use it.
+	* ipa-inline.c (ignore_edge_p): New function/
+	(inline_small_functions): Use it.
+	* ipa-pure-const.c (ignore_edge_for_nothrow):
+	Verify opt_for_fn for caller and callee.
+	(ignore_edge_for_pure_const): Likewise.
+	* ipa-reference.c (ignore_edge_p): Extend to check
+	for opt_for_fn.
+	* ipa-utils.c (searchc): Refactor.
+	* ipa-utils.h: Fix coding style.
+
 2019-06-10  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (arc_rtx_costs): Update costs.
