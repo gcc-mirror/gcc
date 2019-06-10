@@ -12657,8 +12657,10 @@ module_state::write_location (bytes_out &sec, location_t loc)
       location_t locus = get_location_from_adhoc_loc (line_table, loc);
       write_location (sec, locus);
       source_range range = get_range_from_loc (line_table, loc);
-      write_location (sec,
-		      range.m_start == locus ? UNKNOWN_LOCATION : range.m_start);
+      if (range.m_start == locus)
+	/* Compress.  */
+	range.m_start = UNKNOWN_LOCATION;
+      write_location (sec, range.m_start);
       write_location (sec, range.m_finish);
     }
   else if (IS_MACRO_LOC (loc))
@@ -12730,7 +12732,7 @@ module_state::read_location (bytes_in &sec) const
 	locus = read_location (sec);
 	source_range range;
 	range.m_start = read_location (sec);
-	if (range.m_start == loc)
+	if (range.m_start == UNKNOWN_LOCATION)
 	  range.m_start = locus;
 	range.m_finish = read_location (sec);
 	if (locus != loc && range.m_start != loc && range.m_finish != loc)
@@ -12808,9 +12810,6 @@ module_state::read_location (bytes_in &sec) const
       break;
     }
 
-  if (locus == UNKNOWN_LOCATION)
-    locus = loc;
-
   return locus;
 }
 
@@ -12861,10 +12860,10 @@ module_state::prepare_locations ()
 
       span.macro_delta = mac_off - span.macro.second;
       mac_off -= span.macro.second - span.macro.first;
-      dump () && dump ("Macro:%u [%u,%u)=%u->%u", ix,
+      dump () && dump ("Macro span:%u [%u,%u):%u->%d(%u)", ix,
 		       span.macro.first, span.macro.second,
 		       span.macro.second - span.macro.first,
-		       span.macro.first + span.macro_delta);
+		       span.macro_delta, span.macro.first + span.macro_delta);
 
       line_map_ordinary const *omap
 	= linemap_check_ordinary (linemap_lookup (line_table,
@@ -12884,8 +12883,9 @@ module_state::prepare_locations ()
 	  unsigned to = start_loc + span.ordinary_delta;
 	  location_t end_loc = MAP_START_LOCATION (omap + 1);
 	  
-	  dump () && dump ("Ordinary:%u [%u,%u)=%u->%u", ix, start_loc,
-			   end_loc, end_loc - start_loc, to);
+	  dump () && dump ("Ordinary span:%u [%u,%u):%u->%d(%u)", ix, start_loc,
+			   end_loc, end_loc - start_loc,
+			   span.ordinary_delta, to);
 
 	  /* There should be no change in the low order bits.  */
 	  gcc_checking_assert (((start_loc ^ to) & range_mask) == 0);
@@ -12893,7 +12893,7 @@ module_state::prepare_locations ()
       /* The ending serialized value.  */
       ord_off = span.ordinary.second + span.ordinary_delta;
     }
-  dump () && dump ("Location hwm:%u", ord_off);
+  dump () && dump ("Ordinary hwm:%u macro lwm:%u", ord_off, mac_off);
 
   dump.outdent ();
 
@@ -12902,10 +12902,9 @@ module_state::prepare_locations ()
 
 /* Write the location maps.  This also determines the shifts for the
    location spans.  */
-// FIXME: I do not prune the unreachable locations out of the GMF.
-// Modules with GMFs could well cause us to run out of locations.
-// FIXME: location tables of partitions need incorporating into the
-// primary module.
+// FIXME: I do not prune the unreachable locations.  Modules with
+// textually-large GMFs could well cause us to run out of locations.
+// Regular single-file modules could also be affected.
 
 void
 module_state::write_locations (elf_out *to, unsigned max_rager,
@@ -13231,7 +13230,9 @@ module_state::read_locations ()
 	map->to_file = (fnum < filenames.length () ? filenames[fnum] : "");
 	map->to_line = sec.u ();
 
-	map->included_from = read_location (sec);
+	/* Root the outermost map at our location.  */
+	location_t from = read_location (sec);
+	map->included_from = from != UNKNOWN_LOCATION ? from : loc;
       }
 
     location_t hwm = sec.u ();
