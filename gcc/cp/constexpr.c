@@ -1350,6 +1350,30 @@ unshare_constructor (tree t)
   return t;
 }
 
+/* If T is a CONSTRUCTOR, ggc_free T and any sub-CONSTRUCTORs.  */
+
+static void
+free_constructor (tree t)
+{
+  if (!t || TREE_CODE (t) != CONSTRUCTOR)
+    return;
+  releasing_vec ctors;
+  vec_safe_push (ctors, t);
+  while (!ctors->is_empty ())
+    {
+      tree c = ctors->pop ();
+      if (vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (c))
+	{
+	  constructor_elt *ce;
+	  for (HOST_WIDE_INT i = 0; vec_safe_iterate (elts, i, &ce); ++i)
+	    if (TREE_CODE (ce->value) == CONSTRUCTOR)
+	      vec_safe_push (ctors, ce->value);
+	  ggc_free (elts);
+	}
+      ggc_free (c);
+    }
+}
+
 /* Subroutine of cxx_eval_call_expression.
    We are processing a call expression (either CALL_EXPR or
    AGGR_INIT_EXPR) in the context of CTX.  Evaluate
@@ -1398,7 +1422,8 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 
       if (!*non_constant_p)
 	{
-	  /* Don't share a CONSTRUCTOR that might be changed.  */
+	  /* Unsharing here isn't necessary for correctness, but it
+	     significantly improves memory performance for some reason.  */
 	  arg = unshare_constructor (arg);
 	  /* Make sure the binding has the same type as the parm.  But
 	     only for constant args.  */
@@ -1733,7 +1758,11 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     void preserve () { do_free = false; }
     ~free_bindings () {
       if (do_free)
-	ggc_free (bindings);
+	{
+	  for (int i = 0; i < TREE_VEC_LENGTH (bindings); ++i)
+	    free_constructor (TREE_VEC_ELT (bindings, i));
+	  ggc_free (bindings);
+	}
     }
   } fb (new_call.bindings);
 
@@ -1804,6 +1833,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       else
 	{
 	  tree body, parms, res;
+	  releasing_vec ctors;
 
 	  /* Reuse or create a new unshared copy of this function's body.  */
 	  tree copy = get_fundef_copy (new_call.fundef);
@@ -1819,6 +1849,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      tree arg = TREE_VEC_ELT (bound, i);
 	      /* Don't share a CONSTRUCTOR that might be changed.  */
 	      arg = unshare_constructor (arg);
+	      if (TREE_CODE (arg) == CONSTRUCTOR)
+		vec_safe_push (ctors, arg);
 	      ctx->values->put (remapped, arg);
 	      remapped = DECL_CHAIN (remapped);
 	    }
@@ -1883,6 +1915,14 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	    ctx->values->remove (slot);
 	  for (tree parm = parms; parm; parm = TREE_CHAIN (parm))
 	    ctx->values->remove (parm);
+
+	  /* Free any parameter CONSTRUCTORs we aren't returning directly.  */
+	  while (!ctors->is_empty ())
+	    {
+	      tree c = ctors->pop ();
+	      if (c != result)
+		free_constructor (c);
+	    }
 
 	  /* Make the unshared function copy we used available for re-use.  */
 	  save_fundef_copy (fun, copy);
