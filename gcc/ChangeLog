@@ -1,3 +1,8 @@
+2019-06-10  Martin Sebor  <msebor@redhat.com>
+
+	* gimple-fold.c (get_range_strlen): Update comment that didn't
+	make it into r267503 or related commits.
+
 2019-06-10  Vladislav Ivanishin  <vlad@ispras.ru>
 
 	* gcov-tool.c (merge_usage, rewrite_usage): Mark with
