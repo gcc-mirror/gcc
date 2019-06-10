@@ -1,3 +1,11 @@
+2019-06-10  Jason Merrill  <jason@redhat.com>
+
+	Reduce constexpr_call memory consumption.
+	* constexpr.c (cxx_bind_parameters_in_call): Use TREE_VEC rather
+	than TREE_LIST.
+	(constexpr_call_hasher::equal, cxx_bind_parameters_in_call)
+	(cxx_eval_call_expression): Adjust.
+
 2019-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_clause_reduction): Don't sorry_at on inscan
