@@ -1,5 +1,10 @@
 2019-06-10  Martin Liska  <mliska@suse.cz>
 
+	* value-prof.c (dump_histogram_value): Print histogram values
+	only if present.
+
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
 	* gcov-io.h (GCOV_DISK_SINGLE_VALUES): New.
 	(GCOV_SINGLE_VALUE_COUNTERS): Likewise.
 	* ipa-profile.c (ipa_profile_generate_summary):

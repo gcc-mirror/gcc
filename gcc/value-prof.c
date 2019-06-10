@@ -228,87 +228,74 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
   switch (hist->type)
     {
     case HIST_TYPE_INTERVAL:
-      fprintf (dump_file, "Interval counter range %d -- %d",
-	       hist->hdata.intvl.int_start,
-	       (hist->hdata.intvl.int_start
-	        + hist->hdata.intvl.steps - 1));
       if (hist->hvalue.counters)
 	{
-	   unsigned int i;
-	   fprintf (dump_file, " [");
-           for (i = 0; i < hist->hdata.intvl.steps; i++)
-	     fprintf (dump_file, " %d:%" PRId64,
-		      hist->hdata.intvl.int_start + i,
-		      (int64_t) hist->hvalue.counters[i]);
-	   fprintf (dump_file, " ] outside range:%" PRId64,
-		    (int64_t) hist->hvalue.counters[i]);
+	  fprintf (dump_file, "Interval counter range %d -- %d",
+		   hist->hdata.intvl.int_start,
+		   (hist->hdata.intvl.int_start
+		    + hist->hdata.intvl.steps - 1));
+
+	  unsigned int i;
+	  fprintf (dump_file, " [");
+	  for (i = 0; i < hist->hdata.intvl.steps; i++)
+	    fprintf (dump_file, " %d:%" PRId64,
+		     hist->hdata.intvl.int_start + i,
+		     (int64_t) hist->hvalue.counters[i]);
+	  fprintf (dump_file, " ] outside range:%" PRId64 ".\n",
+		   (int64_t) hist->hvalue.counters[i]);
 	}
-      fprintf (dump_file, ".\n");
       break;
 
     case HIST_TYPE_POW2:
-      fprintf (dump_file, "Pow2 counter ");
       if (hist->hvalue.counters)
-	{
-	   fprintf (dump_file, "pow2:%" PRId64
-		    " nonpow2:%" PRId64,
-		    (int64_t) hist->hvalue.counters[1],
-		    (int64_t) hist->hvalue.counters[0]);
-	}
-      fprintf (dump_file, ".\n");
+	fprintf (dump_file, "Pow2 counter pow2:%" PRId64
+		 " nonpow2:%" PRId64 ".\n",
+		 (int64_t) hist->hvalue.counters[1],
+		 (int64_t) hist->hvalue.counters[0]);
       break;
 
     case HIST_TYPE_SINGLE_VALUE:
     case HIST_TYPE_INDIR_CALL:
-      fprintf (dump_file,
-	       (hist->type == HIST_TYPE_SINGLE_VALUE
-		? "Single value counter " : "Indirect call counter"));
       if (hist->hvalue.counters)
 	{
-	  fprintf (dump_file, "all: %" PRId64 ", values: ",
-		   (int64_t) hist->hvalue.counters[0]);
-	  for (unsigned i = 0; i < GCOV_DISK_SINGLE_VALUES; i++)
+	  fprintf (dump_file,
+		   (hist->type == HIST_TYPE_SINGLE_VALUE
+		    ? "Single value counter " : "Indirect call counter"));
+	  if (hist->hvalue.counters)
 	    {
-	      fprintf (dump_file, "[%" PRId64 ":%" PRId64 "]",
-		       (int64_t) hist->hvalue.counters[2 * i + 1],
-		       (int64_t) hist->hvalue.counters[2 * i + 2]);
-	      if (i != GCOV_DISK_SINGLE_VALUES - 1)
-		fprintf (dump_file, ", ");
+	      fprintf (dump_file, "all: %" PRId64 ", values: ",
+		       (int64_t) hist->hvalue.counters[0]);
+	      for (unsigned i = 0; i < GCOV_DISK_SINGLE_VALUES; i++)
+		{
+		  fprintf (dump_file, "[%" PRId64 ":%" PRId64 "]",
+			   (int64_t) hist->hvalue.counters[2 * i + 1],
+			   (int64_t) hist->hvalue.counters[2 * i + 2]);
+		  if (i != GCOV_DISK_SINGLE_VALUES - 1)
+		    fprintf (dump_file, ", ");
+		}
+	      fprintf (dump_file, ".\n");
 	    }
 	}
-      fprintf (dump_file, ".\n");
       break;
 
     case HIST_TYPE_AVERAGE:
-      fprintf (dump_file, "Average value ");
       if (hist->hvalue.counters)
-	{
-	   fprintf (dump_file, "sum:%" PRId64
-		    " times:%" PRId64,
-		    (int64_t) hist->hvalue.counters[0],
-		    (int64_t) hist->hvalue.counters[1]);
-	}
-      fprintf (dump_file, ".\n");
+	fprintf (dump_file, "Average value sum:%" PRId64
+		 " times:%" PRId64 ".\n",
+		 (int64_t) hist->hvalue.counters[0],
+		 (int64_t) hist->hvalue.counters[1]);
       break;
 
     case HIST_TYPE_IOR:
-      fprintf (dump_file, "IOR value ");
       if (hist->hvalue.counters)
-	{
-	   fprintf (dump_file, "ior:%" PRId64,
-		    (int64_t) hist->hvalue.counters[0]);
-	}
-      fprintf (dump_file, ".\n");
+	fprintf (dump_file, "IOR value ior:%" PRId64 ".\n",
+		 (int64_t) hist->hvalue.counters[0]);
       break;
 
     case HIST_TYPE_TIME_PROFILE:
-      fprintf (dump_file, "Time profile ");
       if (hist->hvalue.counters)
-      {
-        fprintf (dump_file, "time:%" PRId64,
-                 (int64_t) hist->hvalue.counters[0]);
-      }
-      fprintf (dump_file, ".\n");
+	fprintf (dump_file, "Time profile time:%" PRId64 ".\n",
+		 (int64_t) hist->hvalue.counters[0]);
       break;
     case HIST_TYPE_MAX:
       gcc_unreachable ();
