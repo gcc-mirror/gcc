@@ -974,12 +974,7 @@ explain_invalid_constexpr_fn (tree fun)
 struct GTY((for_user)) constexpr_call {
   /* Description of the constexpr function definition.  */
   constexpr_fundef *fundef;
-  /* Parameter bindings environment.  A TREE_LIST where each TREE_PURPOSE
-     is a parameter _DECL and the TREE_VALUE is the value of the parameter.
-     Note: This arrangement is made to accommodate the use of
-     iterative_hash_template_arg (see pt.c).  If you change this
-     representation, also change the hash calculation in
-     cxx_eval_call_expression.  */
+  /* Parameter bindings environment.  A TREE_VEC of arguments.  */
   tree bindings;
   /* Result of the call.
        NULL means the call is being evaluated.
@@ -1069,8 +1064,6 @@ constexpr_call_hasher::hash (constexpr_call *info)
 bool
 constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
 {
-  tree lhs_bindings;
-  tree rhs_bindings;
   if (lhs == rhs)
     return true;
   if (lhs->hash != rhs->hash)
@@ -1079,19 +1072,7 @@ constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
     return false;
   if (!constexpr_fundef_hasher::equal (lhs->fundef, rhs->fundef))
     return false;
-  lhs_bindings = lhs->bindings;
-  rhs_bindings = rhs->bindings;
-  while (lhs_bindings != NULL && rhs_bindings != NULL)
-    {
-      tree lhs_arg = TREE_VALUE (lhs_bindings);
-      tree rhs_arg = TREE_VALUE (rhs_bindings);
-      gcc_assert (same_type_p (TREE_TYPE (lhs_arg), TREE_TYPE (rhs_arg)));
-      if (!cp_tree_equal (lhs_arg, rhs_arg))
-        return false;
-      lhs_bindings = TREE_CHAIN (lhs_bindings);
-      rhs_bindings = TREE_CHAIN (rhs_bindings);
-    }
-  return lhs_bindings == rhs_bindings;
+  return cp_tree_equal (lhs->bindings, rhs->bindings);
 }
 
 /* Initialize the constexpr call table, if needed.  */
@@ -1380,7 +1361,10 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
   tree fun = new_call->fundef->decl;
   tree parms = new_call->fundef->parms;
   int i;
-  tree *p = &new_call->bindings;
+  /* We don't record ellipsis args below.  */
+  int nparms = list_length (parms);
+  int nbinds = nargs < nparms ? nargs : nparms;
+  tree binds = new_call->bindings = make_tree_vec (nbinds);
   for (i = 0; i < nargs; ++i)
     {
       tree x, arg;
@@ -1417,8 +1401,7 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 	    arg = adjust_temp_type (type, arg);
 	  if (!TREE_CONSTANT (arg))
 	    *non_constant_args = true;
-	  *p = build_tree_list (parms, arg);
-	  p = &TREE_CHAIN (*p);
+	  TREE_VEC_ELT (binds, i) = arg;
 	}
       parms = TREE_CHAIN (parms);
     }
@@ -1745,14 +1728,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     void preserve () { do_free = false; }
     ~free_bindings () {
       if (do_free)
-	{
-	  while (bindings)
-	    {
-	      tree b = bindings;
-	      bindings = TREE_CHAIN (bindings);
-	      ggc_free (b);
-	    }
-	}
+	ggc_free (bindings);
     }
   } fb (new_call.bindings);
 
@@ -1833,15 +1809,12 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  /* Associate the bindings with the remapped parms.  */
 	  tree bound = new_call.bindings;
 	  tree remapped = parms;
-	  while (bound)
+	  for (int i = 0; i < TREE_VEC_LENGTH (bound); ++i)
 	    {
-	      tree oparm = TREE_PURPOSE (bound);
-	      tree arg = TREE_VALUE (bound);
-	      gcc_assert (DECL_NAME (remapped) == DECL_NAME (oparm));
+	      tree arg = TREE_VEC_ELT (bound, i);
 	      /* Don't share a CONSTRUCTOR that might be changed.  */
 	      arg = unshare_constructor (arg);
 	      ctx->values->put (remapped, arg);
-	      bound = TREE_CHAIN (bound);
 	      remapped = DECL_CHAIN (remapped);
 	    }
 	  /* Add the RESULT_DECL to the values map, too.  */
