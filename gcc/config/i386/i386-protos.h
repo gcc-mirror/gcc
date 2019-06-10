@@ -121,6 +121,8 @@ extern rtx ix86_expand_adjust_ufix_to_sfix_si (rtx, rtx *);
 extern enum ix86_fpcmp_strategy ix86_fp_comparison_strategy (enum rtx_code);
 extern void ix86_expand_fp_absneg_operator (enum rtx_code, machine_mode,
 					    rtx[]);
+extern void ix86_split_fp_absneg_operator (enum rtx_code, machine_mode,
+					   rtx[]);
 extern void ix86_expand_copysign (rtx []);
 extern void ix86_split_copysign_const (rtx []);
 extern void ix86_split_copysign_var (rtx []);

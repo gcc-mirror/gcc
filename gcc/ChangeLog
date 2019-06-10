@@ -1,3 +1,42 @@
+2019-06-10  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-protos.h (ix86_split_fp_absneg_operator):
+	New prototype.
+	* config/i386/i386-expand.c (ix86_expand_fp_absneg_operator):
+	Emit clobber also for non-sse operations.
+	(ix86_split_fp_absneg_operator): New function.
+	* config/i386/i386.md (SSEMODEF): New mode iterator.
+	(ssevecmodef): New mode attribute.
+	(<code>tf2): Use absneg code iterator.
+	(*<code>tf2_1): Rename from *absnegtf3_sse. Use absneg code iterator.
+	Add three-operand AVX alternatives.
+	(*<code><mode>2_i387_1): Rename from *absnegxf2_i387.
+	Use absneg code iterator and X87MODEF mode iterator.
+	(absneg fp_reg non-sse splitter): Call absneg code iterator
+	and X87MODEF mode iterator.
+	(absneg general_reg non-sse splitter): Use absneg code iterator
+	and X87MODEF mode iterator.  Use ix86_split_fp_absneg_operator.
+	(*<code><mode>2_1): Rename from *absneg<mode>2.  Use absneg
+	code iterator.  Add three-operand AVX alternative.
+	(absneg sse_reg splitter): Use absneg code iterator
+	and SSEMODEF mode iterator.  Handle AVX operands.
+	(absneg fp_reg splitter): Use absneg code iterator
+	and MODEF mode iterator.
+	(absneg general_reg splitter): Merge splitters using MODEF mode
+	iterator.  Use absneg code iterator.  Call
+	ix86_split_fp_absneg_operator.
+	(*<code><mode>2_i387): Rename from *<code><mode>2_1.
+	Do not enable for non-sse modes before reload.
+	(CSGNMODE): Remove.
+	(CSGNVMODE): Ditto.
+	(copysing<mode>3): Use SSEMODEF instead of CSGNMODE and
+	ssevecmodef mode attribute instaed of CSGNVMODE.
+	(copysign<mode>3_const): Ditto.
+	(copysign<mode>3_var): Ditto.
+	* config/i386/i386.md (*<code><mode>2): Rename from *absneg<mode>2.
+	Use absneg code iterator.  Simplify code using std::swap.
+	* config/i386/predicates.md (absneg_operator): Remove.
+
 2019-06-10  Martin Sebor  <msebor@redhat.com>
 
 	* gimple-fold.c (get_range_strlen): Update comment that didn't
