@@ -10099,12 +10099,14 @@ loc_spans::init (const line_maps *lmaps, const line_map_ordinary *map)
   spans.reserve (20);
 
   span interval;
-  interval.macro.first = interval.macro.second = MAX_LOCATION_T + 1;
+  interval.ordinary.first = 0;
+  interval.macro.second = MAX_LOCATION_T + 1;
   interval.ordinary_delta = interval.macro_delta = 0;
 
   /* A span for reserved fixed locs.  */
   interval.ordinary.second
     = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 0));
+  interval.macro.first = interval.macro.second;
   dump (dumper::LOCATION)
     && dump ("Fixed span %u ordinary:[%u,%u) macro:[%u,%u)", spans.length (),
 	     interval.ordinary.first, interval.ordinary.second,
@@ -10113,9 +10115,9 @@ loc_spans::init (const line_maps *lmaps, const line_map_ordinary *map)
 
   /* A span for command line & forced headers.  */
   interval.ordinary.first = interval.ordinary.second;
-  interval.macro.first = interval.macro.second;
+  interval.macro.second = interval.macro.first;
   interval.ordinary.second = map->start_location;
-  interval.macro.second = LINEMAPS_MACRO_LOWEST_LOCATION (lmaps);
+  interval.macro.first = LINEMAPS_MACRO_LOWEST_LOCATION (lmaps);
   dump (dumper::LOCATION)
     && dump ("Pre span %u ordinary:[%u,%u) macro:[%u,%u)", spans.length (),
 	     interval.ordinary.first, interval.ordinary.second,
@@ -10124,7 +10126,7 @@ loc_spans::init (const line_maps *lmaps, const line_map_ordinary *map)
   
   /* Start an interval for the main file.  */
   interval.ordinary.first = interval.ordinary.second;
-  interval.macro.first = interval.macro.second;
+  interval.macro.second = interval.macro.first;
   dump (dumper::LOCATION)
     && dump ("Main span %u ordinary:[%u,*) macro:[*,%u)", spans.length (),
 	     interval.ordinary.first, interval.macro.second);
@@ -10160,11 +10162,10 @@ loc_spans::close ()
 {
   span &interval = spans.last ();
 
-  interval.macro.first = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
-
   interval.ordinary.second
     = ((line_table->highest_location + (1 << line_table->default_range_bits))
        & ~((1u << line_table->default_range_bits) - 1));
+  interval.macro.first = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
   dump (dumper::LOCATION)
     && dump ("Closing span %u ordinary:[%u,%u) macro:[%u,%u)",
 	     spans.length () - 1,
@@ -12926,9 +12927,8 @@ module_state::write_locations (elf_out *to, unsigned max_rager,
 	{
 	  unsigned count
 	    = linemap_lookup_macro_index (line_table, span.macro.first) + 1;
-	  if (span.macro.second != MAX_LOCATION_T + 1)
-	    count -= linemap_lookup_macro_index (line_table,
-						 span.macro.second);
+	  count -= linemap_lookup_macro_index (line_table,
+					       span.macro.second - 1);
 	  dump (dumper::LOCATION) && dump ("Span:%u %u macro maps", ix, count);
 	  num_maps.second += count;
 	}
@@ -12986,11 +12986,13 @@ module_state::write_locations (elf_out *to, unsigned max_rager,
     }
 
   /* The reserved locations.  */
-  dump () && dump ("Reserved locations < %u and >= %u",
-		   spans[loc_spans::SPAN_FIRST - 1].ordinary.second,
-		   spans[loc_spans::SPAN_FIRST - 1].macro.first);
-  sec.u (spans[loc_spans::SPAN_FIRST - 1].ordinary.second);
-  sec.u (spans[loc_spans::SPAN_FIRST - 1].macro.first);
+  dump () && dump ("Reserved locations [%u,%u) macro [%u,%u)",
+		   spans[loc_spans::SPAN_RESERVED].ordinary.first,
+		   spans[loc_spans::SPAN_RESERVED].ordinary.second,
+		   spans[loc_spans::SPAN_RESERVED].macro.first,
+		   spans[loc_spans::SPAN_RESERVED].macro.second);
+  sec.u (spans[loc_spans::SPAN_RESERVED].ordinary.second);
+  sec.u (spans[loc_spans::SPAN_RESERVED].macro.first);
 
   {
     /* Write the ordinary maps.   */
@@ -13089,17 +13091,17 @@ module_state::write_locations (elf_out *to, unsigned max_rager,
 	      break;
 	    if (macro_num == num_maps.second)
 	      {
-		/* We're ending on an empty macro expansion.  */
-		// FIXME: Why is the preprocessor emitting empty macro
-		// expansion locations?  That's suboptimal.
-		// This goes to show we should be eliding all
+		/* We're ending on an empty macro expansion.  The
+		   preprocessor doesn't prune such things.  */
+		// FIXME: This goes to show we should be eliding all
 		// macro expansions that are not covering any location
 		// we need to output (just like non-macro locations,
-		// mentioned above).
+		// mentioned above).  They also happen in #if
+		// conditionals, that we don't care about at all.
 		gcc_checking_assert (!mmap->n_tokens);
 		continue;
 	      }
-	    
+
 	    sec.u (offset);
 	    sec.u (mmap->n_tokens);
 	    sec.cpp_node (mmap->macro);
