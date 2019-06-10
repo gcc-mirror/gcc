@@ -292,6 +292,31 @@ So instead we use the macro below and test it against specific values.  */
 # endif
 #endif
 
+/* Attribute `alloc_size' was valid as of gcc 4.3.  */
+#ifndef ATTRIBUTE_RESULT_SIZE_1
+# if (GCC_VERSION >= 4003)
+#  define ATTRIBUTE_RESULT_SIZE_1 __attribute__ ((alloc_size (1)))
+# else
+#  define ATTRIBUTE_RESULT_SIZE_1
+#endif
+#endif
+
+#ifndef ATTRIBUTE_RESULT_SIZE_2
+# if (GCC_VERSION >= 4003)
+#  define ATTRIBUTE_RESULT_SIZE_2 __attribute__ ((alloc_size (2)))
+# else
+#  define ATTRIBUTE_RESULT_SIZE_2
+#endif
+#endif
+
+#ifndef ATTRIBUTE_RESULT_SIZE_1_2
+# if (GCC_VERSION >= 4003)
+#  define ATTRIBUTE_RESULT_SIZE_1_2 __attribute__ ((alloc_size (1, 2)))
+# else
+#  define ATTRIBUTE_RESULT_SIZE_1_2
+#endif
+#endif
+
 /* We use __extension__ in some places to suppress -pedantic warnings
    about GCC extensions.  This feature didn't work properly before
    gcc 2.8.  */

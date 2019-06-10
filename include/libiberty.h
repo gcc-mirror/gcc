@@ -310,18 +310,18 @@ extern void xmalloc_failed (size_t) ATTRIBUTE_NORETURN;
    message to stderr (using the name set by xmalloc_set_program_name,
    if any) and then call xexit.  */
 
-extern void *xmalloc (size_t) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;
+extern void *xmalloc (size_t) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_RESULT_SIZE_1;
 
 /* Reallocate memory without fail.  This works like xmalloc.  Note,
    realloc type functions are not suitable for attribute malloc since
    they may return the same address across multiple calls. */
 
-extern void *xrealloc (void *, size_t) ATTRIBUTE_RETURNS_NONNULL;
+extern void *xrealloc (void *, size_t) ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_RESULT_SIZE_2;
 
 /* Allocate memory without fail and set it to zero.  This works like
    xmalloc.  */
 
-extern void *xcalloc (size_t, size_t) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL;
+extern void *xcalloc (size_t, size_t) ATTRIBUTE_MALLOC ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_RESULT_SIZE_1_2;
 
 /* Copy a string into a memory buffer without fail.  */
 
