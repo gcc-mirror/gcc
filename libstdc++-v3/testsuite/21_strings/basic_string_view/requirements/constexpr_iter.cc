@@ -30,7 +30,11 @@ test()
   static_assert('W' == *(hw.cbegin() + 7));
 
   std::array<int, hw.size()> a2{{0,0,0,0,0,0,0,0,0,0,0,0,0}};
-  std::copy(hw.begin(), hw.end(), a2.begin());
+  auto hwi = hw.begin();
+  auto hwe = hw.end();
+  auto a2i = a2.begin();
+  while (hwi != hwe)
+    *a2i++ = *hwi++;
 
   return *(hw.cbegin() + 3);
 }
