@@ -386,10 +386,10 @@ public:
 
   /* Create a hash_table in gc memory.  */
   static hash_table *
-  create_ggc (size_t n CXX_MEM_STAT_INFO)
+  create_ggc (size_t n, bool sanitize_eq_and_hash = true CXX_MEM_STAT_INFO)
   {
     hash_table *table = ggc_alloc<hash_table> ();
-    new (table) hash_table (n, true, true, GATHER_STATISTICS,
+    new (table) hash_table (n, true, sanitize_eq_and_hash, GATHER_STATISTICS,
 			    HASH_TABLE_ORIGIN PASS_MEM_STAT);
     return table;
   }

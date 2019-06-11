@@ -1,3 +1,9 @@
+2019-06-11  Martin Liska  <mliska@suse.cz>
+
+	PR c++/87847
+	* hash-table.h: Extend create_gcc, add one parameter
+	that is passed into hash_table::hash_table.
+
 2019-06-10  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-protos.h (ix86_split_fp_absneg_operator):
