@@ -3005,6 +3005,9 @@ get_formal_from_actual_arglist (gfc_symbol *sym, gfc_actual_arglist *actual_args
 	  else
 	    {
 	      s->ts = a->expr->ts;
+	      s->ts.deferred = 0;
+	      s->ts.is_iso_c = 0;
+	      s->ts.is_c_interop = 0;
 	      s->attr.flavor = FL_VARIABLE;
 	      if (a->expr->rank > 0)
 		{
