@@ -1,3 +1,8 @@
+2019-06-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/62041
+	* fold-const.c (fold_real_zero_addition_p): Handle vectors.
+
 2019-06-11  Jason Merrill  <jason@redhat.com>
 
 	* gdbhooks.py (TreePrinter.to_string): Recognize ggc_free'd memory.
