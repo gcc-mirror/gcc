@@ -28,6 +28,13 @@ test()
   auto n = a1[0] * a1[1]* a1[2];
   static_assert(1 == *a1.cbegin());
 
+  std::array<int, 3> a2{{0, 0, 0}};
+  auto a1i = a1.begin();
+  auto a1e = a1.end();
+  auto a2i = a2.begin();
+  while (a1i != a1e)
+    *a2i++ = *a1i++;
+
   return n;
 }
 
