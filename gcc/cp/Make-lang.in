@@ -66,7 +66,7 @@ MODULE_VERSION := $(shell date -r $(srcdir)/cp '+%y%m%d-%H%M' 2>/dev/null || \
 	date '+%y%m%d-0000' 2>/dev/null || echo 0)
 # Try svnversion
 MODULE_REVISION := $(shell svnversion $(srcdir) 2>/dev/null | sed 's/[0-9]*://')
-ifeq ($(shell echo $(MODULE_REVISION) | sed 's/^[0-9][0-9]*M*S*P*/SVN/$$'),SVN)
+ifeq ($(shell echo $(MODULE_REVISION) | sed 's/^[0-9][0-9]*M*S*P*$$/SVN/'),SVN)
 MODULE_REVISION := svn-$(MODULE_REVISION)
 else
 # Look in Changelog.modules
