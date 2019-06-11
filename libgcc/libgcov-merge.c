@@ -34,9 +34,8 @@ void __gcov_merge_add (gcov_type *counters  __attribute__ ((unused)),
 #endif
 
 #ifdef L_gcov_merge_single
-void __gcov_merge_single (gcov_type *counters  __attribute__ ((unused)))
-{
-}
+void __gcov_merge_single (gcov_type *counters  __attribute__ ((unused)),
+			  unsigned n_counters __attribute__ ((unused))) {}
 #endif
 
 #else
