@@ -1,3 +1,13 @@
+2019-06-11  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000-cpus.def (ISA_FUTURE_MASKS_SERVER): Delete
+	enabling -mpcrel by default.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Update
+	test for -mpcrel and/or -mprefixed-addr needing -mcpu=future, so
+	that the test against -mcpu=future is done first.  Then test if
+	-mprefixed-addr is on for -mpcrel.
+	(rs6000_disable_incompatible_switches): Add -mcpu=future support.
+
 2019-06-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/90811
