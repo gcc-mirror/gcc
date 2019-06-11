@@ -233,6 +233,15 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
     return;
 
   code = TREE_CODE (node);
+
+  /* It is unsafe to look at any other fields of a node with ERROR_MARK or
+     invalid code.  */
+  if (code == ERROR_MARK || code >= MAX_TREE_CODES)
+    {
+      print_node_brief (file, prefix, node, indent);
+      return;
+    }
+
   tclass = TREE_CODE_CLASS (code);
 
   /* Don't get too deep in nesting.  If the user wants to see deeper,
@@ -246,13 +255,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
     }
 
   if (indent > 8 && (tclass == tcc_type || tclass == tcc_declaration))
-    {
-      print_node_brief (file, prefix, node, indent);
-      return;
-    }
-
-  /* It is unsafe to look at any other fields of an ERROR_MARK node.  */
-  if (code == ERROR_MARK)
     {
       print_node_brief (file, prefix, node, indent);
       return;

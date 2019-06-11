@@ -1,3 +1,10 @@
+2019-06-11  Jason Merrill  <jason@redhat.com>
+
+	* gdbhooks.py (TreePrinter.to_string): Recognize ggc_free'd memory.
+	* tree.c (get_tree_code_name): Likewise.
+	* print-tree.c (print_node): Only briefly print a node with an
+	invalid code.
+
 2019-06-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/90819
