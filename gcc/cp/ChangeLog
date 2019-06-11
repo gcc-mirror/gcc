@@ -1,3 +1,9 @@
+2019-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90810
+	* init.c (constant_value_1): Handle VECTOR_CST DECL_INITIAL for
+	!DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P decls like CONSTRUCTOR.
+
 2019-06-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
