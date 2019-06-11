@@ -1,3 +1,7 @@
+2019-06-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/cmpexactdiv-5.c: New file.
+
 2019-06-11  Matthew Beliveau  <mbelivea@redhat.com>
 
 	PR c++/90449 - add -Winaccessible-base option.

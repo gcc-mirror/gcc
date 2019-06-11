@@ -1,3 +1,7 @@
+2019-06-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (X/[ex]4<Y/[ex]4): Handle conversions.
+
 2019-06-11  Matthew Beliveau  <mbelivea@redhat.com>
 
 	PR c++/90449 - add -Winaccessible-base option.
