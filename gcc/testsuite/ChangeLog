@@ -1,3 +1,9 @@
+2019-06-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/65364
+	* gcc.dg/uninit-19.c (fn1): Adjust target condition for Darwin.
+	(fn2): Likewise.
+
 2019-06-11  Michael Meissner  <meissner@linux.ibm.com>
 
 	* gcc.target/powerpc/localentry-1.c: Add -mpcrel option.
