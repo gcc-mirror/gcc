@@ -1,5 +1,5 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
-/* { dg-options "-O2 -fno-schedule-insns -msve-vector-bits=256 --save-temps" } */
+/* { dg-options "-O -msve-vector-bits=256 --save-temps" } */
 
 /* Case 2.1: Leading constants with stepped sequence.  */
 
@@ -17,7 +17,6 @@ vnx4si foo(int a, int b)
 foo:
 .LFB0:
         .cfi_startproc
-        ptrue   p0.s, vl8
         index   z0.s, #6, #-1
         insr    z0.s, w0
         insr    z0.s, w1

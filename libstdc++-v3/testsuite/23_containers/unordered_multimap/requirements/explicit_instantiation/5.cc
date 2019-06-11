@@ -28,7 +28,7 @@ using __gnu_test::ExplicitConsAlloc;
 template class
   std::unordered_multimap<int, int, std::hash<int>, std::equal_to<int>,
 			  ExplicitConsAlloc<std::pair<const int, int>>>;
-#ifndef __STRICT_ANSI__
+#if !defined __STRICT_ANSI__ && __cplusplus <= 201703L
 template class std::unordered_multimap<int, int, std::hash<int>,
 				       std::equal_to<int>,
 				       ExplicitConsAlloc<char>>;

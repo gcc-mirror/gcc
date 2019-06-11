@@ -1,3 +1,98 @@
+2019-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgcov-merge.c (__gcov_merge_single): Revert previous change.
+
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/90808
+	* libgcov.h: Add ATTRIBUTE_UNUSED.
+
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Add __gcov_one_value_profiler_v2,
+	__gcov_one_value_profiler_v2_atomic and
+	__gcov_indirect_call_profiler_v4.
+	* libgcov-merge.c (__gcov_merge_single): Change
+	function signature.
+	(merge_single_value_set): New.
+	* libgcov-profiler.c (__gcov_one_value_profiler_body):
+	Update functionality.
+	(__gcov_one_value_profiler): Remove.
+	(__gcov_one_value_profiler_v2): ... this.
+	(__gcov_one_value_profiler_atomic): Rename to ...
+	(__gcov_one_value_profiler_v2_atomic): this.
+	(__gcov_indirect_call_profiler_v3): Rename to ...
+	(__gcov_indirect_call_profiler_v4): ... this.
+	* libgcov.h (__gcov_one_value_profiler): Remove.
+	(__gcov_one_value_profiler_atomic): Remove.
+	(__gcov_one_value_profiler_v2_atomic): New.
+	(__gcov_indirect_call_profiler_v3): Remove.
+	(__gcov_one_value_profiler_v2): New.
+	(__gcov_indirect_call_profiler_v4): New.
+	(gcov_get_counter_ignore_scaling): New function.
+
+2019-06-07  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Remove usage of
+	_gcov_merge_icall_topn.
+	* libgcov-driver.c (gcov_sort_n_vals): Remove.
+	(gcov_sort_icall_topn_counter): Likewise.
+	(gcov_sort_topn_counter_arrays): Likewise.
+	(dump_one_gcov): Remove call to gcov_sort_topn_counter_arrays.
+	* libgcov-merge.c (__gcov_merge_icall_topn): Remove.
+	* libgcov-profiler.c (__gcov_topn_value_profiler_body):
+	Likewise.
+	(GCOV_ICALL_COUNTER_CLEAR_THRESHOLD): Remove.
+	(struct indirect_call_tuple): Remove.
+	(__gcov_indirect_call_topn_profiler): Remove.
+	* libgcov-util.c (__gcov_icall_topn_counter_op): Remove.
+	* libgcov.h (gcov_sort_n_vals): Remove.
+	(L_gcov_merge_icall_topn): Likewise.
+	(__gcov_merge_icall_topn): Likewise.
+	(__gcov_indirect_call_topn_profiler): Likewise.
+
+2019-06-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/t-darwin: Ensure that the unwinder is built with
+	altivec enabled.
+
+2019-06-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/slli.S (__mspabi_slli_n): Put function in its own
+	section.
+	(__mspabi_slli): Likewise.
+	(__mspabi_slll_n): Likewise.
+	(__mspabi_slll): Likewise.
+	* config/msp430/srai.S (__mspabi_srai_n): Likewise.
+	(__mspabi_srai): Likewise.
+	(__mspabi_sral_n): Likewise.
+	(__mspabi_sral): Likewise.
+	* config/msp430/srli.S (__mspabi_srli_n): Likewise.
+	(__mspabi_srli): Likewise.
+	(__mspabi_srll_n): Likewise.
+	(__mspabi_srll): Likewise.
+
+2019-06-05  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* config.host (rx-*-linux*): Add t-fdpbit to tmake_file
+	Add appropriate tm_file clause as well.
+	* config/rx/t-rx (HOST_LIBGCC2_CFLAGS): Remove.
+
+2019-06-05  James Clarke  <jrtc27@jrtc27.com>
+
+	* config/ia64/crtbegin.S (__dso_handle): Put in .sdata/.sbss
+	rather than .data/.bss so it can be accessed via gp-relative
+	addressing.
+
+2019-06-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix-unwind.h (LR_REGNO): Rename to R_LR.
+	(CR2_REGNO): Rename to R_CR2.
+	(XER_REGNO): Rename to R_XER.
+	(FIRST_ALTIVEC_REGNO): Rename to R_FIRST_ALTIVEC.
+	(VRSAVE_REGNO): Rename to R_VRSAVE.
+	(VSCR_REGNO): R_VSCR.
+
 2019-05-29  Yoshinori Sato  <ysato@users.sourceforge.jp>
 
 	* config.host (rx-*-linux*): Add new case.

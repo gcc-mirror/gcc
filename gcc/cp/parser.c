@@ -14548,7 +14548,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
       if (found_decl_spec
 	  && (flags & CP_PARSER_FLAGS_ONLY_TYPE_OR_CONSTEXPR)
 	  && token->keyword != RID_CONSTEXPR)
-	error ("decl-specifier invalid in condition");
+	error ("%<decl-specifier%> invalid in condition");
 
       if (found_decl_spec
 	  && (flags & CP_PARSER_FLAGS_ONLY_MUTABLE_OR_CONSTEXPR)
@@ -34249,11 +34249,7 @@ cp_parser_omp_clause_reduction (cp_parser *parser, enum omp_clause_code kind,
 	  if (strcmp (p, "task") == 0)
 	    task = true;
 	  else if (strcmp (p, "inscan") == 0)
-	    {
-	      inscan = true;
-	      sorry ("%<inscan%> modifier on %<reduction%> clause "
-		     "not supported yet");
-	    }
+	    inscan = true;
 	  if (task || inscan)
 	    {
 	      cp_lexer_consume_token (parser->lexer);
@@ -37296,6 +37292,63 @@ cp_finish_omp_range_for (tree orig, tree begin)
     cp_finish_decomp (decl, decomp_first_name, decomp_cnt);
 }
 
+/* OpenMP 5.0:
+
+   scan-loop-body:
+     { structured-block scan-directive structured-block }  */
+
+static void
+cp_parser_omp_scan_loop_body (cp_parser *parser)
+{
+  tree substmt, clauses = NULL_TREE;
+
+  matching_braces braces;
+  if (!braces.require_open (parser))
+    return;
+
+  substmt = cp_parser_omp_structured_block (parser, NULL);
+  substmt = build2 (OMP_SCAN, void_type_node, substmt, NULL_TREE);
+  add_stmt (substmt);
+
+  cp_token *tok = cp_lexer_peek_token (parser->lexer);
+  if (cp_parser_pragma_kind (tok) == PRAGMA_OMP_SCAN)
+    {
+      enum omp_clause_code clause = OMP_CLAUSE_ERROR;
+
+      cp_lexer_consume_token (parser->lexer);
+
+      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	{
+	  tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+	  const char *p = IDENTIFIER_POINTER (id);
+	  if (strcmp (p, "inclusive") == 0)
+	    clause = OMP_CLAUSE_INCLUSIVE;
+	  else if (strcmp (p, "exclusive") == 0)
+	    clause = OMP_CLAUSE_EXCLUSIVE;
+	}
+      if (clause != OMP_CLAUSE_ERROR)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  clauses = cp_parser_omp_var_list (parser, clause, NULL_TREE);
+	}
+      else
+	cp_parser_error (parser, "expected %<inclusive%> or "
+				 "%<exclusive%> clause");
+
+      cp_parser_require_pragma_eol (parser, tok);
+    }
+  else
+    error ("expected %<#pragma omp scan%>");
+
+  clauses = finish_omp_clauses (clauses, C_ORT_OMP);
+  substmt = cp_parser_omp_structured_block (parser, NULL);
+  substmt = build2_loc (tok->location, OMP_SCAN, void_type_node, substmt,
+			clauses);
+  add_stmt (substmt);
+
+  braces.require_close (parser);
+}
+
 /* Parse the restricted form of the for statement allowed by OpenMP.  */
 
 static tree
@@ -37312,6 +37365,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
   releasing_vec for_block;
   auto_vec<tree, 4> orig_inits;
   bool tiling = false;
+  bool inscan = false;
 
   for (cl = clauses; cl; cl = OMP_CLAUSE_CHAIN (cl))
     if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_COLLAPSE)
@@ -37327,6 +37381,10 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	ordered_cl = cl;
 	ordered = tree_to_shwi (OMP_CLAUSE_ORDERED_EXPR (cl));
       }
+    else if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_REDUCTION
+	     && OMP_CLAUSE_REDUCTION_INSCAN (cl)
+	     && (code == OMP_SIMD || code == OMP_FOR))
+      inscan = true;
 
   if (ordered && ordered < collapse)
     {
@@ -37655,7 +37713,10 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
     }
   else
     body = push_stmt_list ();
-  cp_parser_statement (parser, NULL_TREE, false, if_p);
+  if (inscan)
+    cp_parser_omp_scan_loop_body (parser);
+  else
+    cp_parser_statement (parser, NULL_TREE, false, if_p);
   if (orig_declv)
     body = finish_omp_structured_block (body);
   else
@@ -41521,6 +41582,12 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
     case PRAGMA_OMP_END_DECLARE_TARGET:
       cp_parser_omp_end_declare_target (parser, pragma_tok);
       return false;
+
+    case PRAGMA_OMP_SCAN:
+      error_at (pragma_tok->location,
+		"%<#pragma omp scan%> may only be used in "
+		"a loop construct with %<inscan%> %<reduction%> clause");
+      break;
 
     case PRAGMA_OMP_SECTION:
       error_at (pragma_tok->location, 

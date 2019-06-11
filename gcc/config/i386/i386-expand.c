@@ -1704,10 +1704,11 @@ void
 ix86_expand_fp_absneg_operator (enum rtx_code code, machine_mode mode,
 				rtx operands[])
 {
-  rtx mask, set, dst, src;
+  rtx set, dst, src;
   bool use_sse = false;
   bool vector_mode = VECTOR_MODE_P (mode);
   machine_mode vmode = mode;
+  rtvec par;
 
   if (vector_mode)
     use_sse = true;
@@ -1722,24 +1723,19 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, machine_mode mode,
 	vmode = V2DFmode;
     }
 
-  /* NEG and ABS performed with SSE use bitwise mask operations.
-     Create the appropriate mask now.  */
-  if (use_sse)
-    mask = ix86_build_signbit_mask (vmode, vector_mode, code == ABS);
-  else
-    mask = NULL_RTX;
-
   dst = operands[0];
   src = operands[1];
 
   set = gen_rtx_fmt_e (code, mode, src);
   set = gen_rtx_SET (dst, set);
 
-  if (mask)
+  if (use_sse)
     {
-      rtx use, clob;
-      rtvec par;
+      rtx mask, use, clob;
 
+      /* NEG and ABS performed with SSE use bitwise mask operations.
+	 Create the appropriate mask now.  */
+      mask = ix86_build_signbit_mask (vmode, vector_mode, code == ABS);
       use = gen_rtx_USE (VOIDmode, mask);
       if (vector_mode)
 	par = gen_rtvec (2, set, use);
@@ -1748,10 +1744,104 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, machine_mode mode,
           clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
 	  par = gen_rtvec (3, set, use, clob);
         }
-      emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
     }
   else
-    emit_insn (set);
+    {
+      rtx clob;
+
+      /* Changing of sign for FP values is doable using integer unit too.  */
+      clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
+      par = gen_rtvec (2, set, clob);
+    }
+
+  emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
+}
+
+/* Deconstruct a floating point ABS or NEG operation
+   with integer registers into integer operations.  */
+
+void
+ix86_split_fp_absneg_operator (enum rtx_code code, machine_mode mode,
+			       rtx operands[])
+{
+  enum rtx_code absneg_op;
+  rtx dst, set;
+
+  gcc_assert (operands_match_p (operands[0], operands[1]));
+
+  switch (mode)
+    {
+    case E_SFmode:
+      dst = gen_lowpart (SImode, operands[0]);
+
+      if (code == ABS)
+	{
+	  set = gen_int_mode (0x7fffffff, SImode);
+	  absneg_op = AND;
+	}
+      else
+	{
+	  set = gen_int_mode (0x80000000, SImode);
+	  absneg_op = XOR;
+	}
+      set = gen_rtx_fmt_ee (absneg_op, SImode, dst, set);
+      break;
+
+    case E_DFmode:
+      if (TARGET_64BIT)
+	{
+	  dst = gen_lowpart (DImode, operands[0]);
+	  dst = gen_rtx_ZERO_EXTRACT (DImode, dst, const1_rtx, GEN_INT (63));
+
+	  if (code == ABS)
+	    set = const0_rtx;
+	  else
+	    set = gen_rtx_NOT (DImode, dst);
+	}
+      else
+	{
+	  dst = gen_highpart (SImode, operands[0]);
+
+	  if (code == ABS)
+	    {
+	      set = gen_int_mode (0x7fffffff, SImode);
+	      absneg_op = AND;
+	    }
+	  else
+	    {
+	      set = gen_int_mode (0x80000000, SImode);
+	      absneg_op = XOR;
+	    }
+	  set = gen_rtx_fmt_ee (absneg_op, SImode, dst, set);
+	}
+      break;
+
+    case E_XFmode:
+      dst = gen_rtx_REG (SImode,
+			 REGNO (operands[0]) + (TARGET_64BIT ? 1 : 2));
+      if (code == ABS)
+	{
+	  set = GEN_INT (0x7fff);
+	  absneg_op = AND;
+	}
+      else
+	{
+	  set = GEN_INT (0x8000);
+	  absneg_op = XOR;
+	}
+      set = gen_rtx_fmt_ee (absneg_op, SImode, dst, set);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  set = gen_rtx_SET (dst, set);
+
+  rtx clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
+  rtvec par = gen_rtvec (2, set, clob);
+
+  emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
 }
 
 /* Expand a copysign operation.  Special case operand 0 being a constant.  */

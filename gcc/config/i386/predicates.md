@@ -1404,9 +1404,6 @@
 (define_predicate "compare_operator"
   (match_code "compare"))
 
-(define_predicate "absneg_operator"
-  (match_code "abs,neg"))
-
 ;; Return true if OP is a memory operand, aligned to
 ;; less than its natural alignment.
 (define_predicate "misaligned_operand"

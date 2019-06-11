@@ -36,34 +36,22 @@ along with GCC; see the file COPYING3.  If not see
 #define FPRINTF_SPACES(file, space_count, format, ...) \
   fprintf (file, "%*s" format, space_count, " ", ##__VA_ARGS__);
 
-/* Prints a MESSAGE to dump_file if exists. FUNC is name of function and
-   LINE is location in the source file.  */
-
-static inline void
-dump_message_1 (const char *message, const char *func, unsigned int line)
-{
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  debug message: %s (%s:%u)\n", message, func, line);
-}
-
-/* Prints a MESSAGE to dump_file if exists.  */
-#define dump_message(message) dump_message_1 (message, __func__, __LINE__)
-
 /* Logs a MESSAGE to dump_file if exists and returns false. FUNC is name
    of function and LINE is location in the source file.  */
 
 static inline bool
-return_false_with_message_1 (const char *message, const char *func,
-			     unsigned int line)
+return_false_with_message_1 (const char *message, const char *filename,
+			     const char *func, unsigned int line)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  false returned: '%s' (%s:%u)\n", message, func, line);
+    fprintf (dump_file, "  false returned: '%s' in %s at %s:%u\n", message, func,
+	     filename, line);
   return false;
 }
 
 /* Logs a MESSAGE to dump_file if exists and returns false.  */
 #define return_false_with_msg(message) \
-  return_false_with_message_1 (message, __func__, __LINE__)
+  return_false_with_message_1 (message, __FILE__, __func__, __LINE__)
 
 /* Return false and log that false value is returned.  */
 #define return_false() return_false_with_msg ("")
@@ -72,16 +60,19 @@ return_false_with_message_1 (const char *message, const char *func,
    is location in the source file.  */
 
 static inline bool
-return_with_result (bool result, const char *func, unsigned int line)
+return_with_result (bool result, const char *filename,
+		    const char *func, unsigned int line)
 {
   if (!result && dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  false returned: (%s:%u)\n", func, line);
+    fprintf (dump_file, "  false returned: '' in %s at %s:%u\n", func,
+	     filename, line);
 
   return result;
 }
 
 /* Logs return value if RESULT is false.  */
-#define return_with_debug(result) return_with_result (result, __func__, __LINE__)
+#define return_with_debug(result) return_with_result \
+  (result, __FILE__, __func__, __LINE__)
 
 /* Verbose logging function logging statements S1 and S2 of a CODE.
    FUNC is name of function and LINE is location in the source file.  */

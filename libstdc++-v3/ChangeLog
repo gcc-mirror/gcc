@@ -1,3 +1,328 @@
+2019-06-08  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Test for C++20 p0858 - ConstexprIterator requirements.
+	* testsuite/21_strings/basic_string_view/requirements/constexpr_iter.cc:
+	New test.
+	* testsuite/23_containers/array/requirements/constexpr_iter.cc:
+	New test.
+
+2019-06-07  Thomas Rodgers  <trodgers@redhat.com>
+
+	Rename PSTL macro's consistent with libstdc++ (and llvm upstream
+	project) standards.
+	* include/bits/c++config: Rename all macros of the form __PSTL* to
+	_PSTL*.
+	* include/std/algorithm: Likewise.
+	* include/std/execution: Likewise.
+	* include/std/numeric: Likewise.
+	* include/std/memory: Likewise.
+	* include/pstl/glue_memory_impl.h: Likewise.
+	* include/pstl/numeric_impl.h: Likewise.
+	* include/pstl/glue_memory_defs.h: Likewise.
+	* include/pstl/execution_defs.h: Likewise.
+	* include/pstl/utils.h: Likewise.
+	* include/pstl/algorithm_fwd.h: Likewise.
+	* include/pstl/unseq_backend_simd.h: Likewise.
+	* include/pstl/glue_execution_defs.h: Likewise.
+	* include/pstl/algorithm_impl.h: Likewise.
+	* include/pstl/parallel_impl.h: Likewise.
+	* include/pstl/memory_impl.h: Likewise.
+	* include/pstl/glue_numeric_defs.h: Likewise.
+	* include/pstl/parallel_backend_utils.h: Likewise.
+	* include/pstl/glue_algorithm_defs.h: Likewise.
+	* include/pstl/parallel_backend.h: Likewise.
+	* include/pstl/glue_numeric_impl.h: Likewise.
+	* include/pstl/parallel_backend_tbb.h: Likewise.
+	* include/pstl/numeric_fwd.h: Likewise.
+	* include/pstl/glue_algorithm_impl.h: Likewise.
+	* include/pstl/execution_impl.h: Likewise.
+	* include/pstl/pstl_config.h: Likewise.
+	* testsuite/util/pstl/pstl_test_config.h: Likewise.
+	* testsuite/util/pstl/test_utils.h: Likewise.
+	* testsuite/20_util/specialized_algorithms/pstl/uninitialized_construct.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/pstl/uninitialized_copy_move.cc:
+	Likewise.
+	* testsuite/26_numerics/pstl/numeric_ops/adjacent_difference.cc:
+	Likewise.
+	* testsuite/26_numerics/pstl/numeric_ops/scan.cc: Likewise.
+	* testsuite/26_numerics/pstl/numeric_ops/transform_scan.cc: Likewise.
+	* testsuite/26_numerics/pstl/numeric_ops/reduce.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/reverse.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/nth_element.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_end.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_if.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/none_of.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/count.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/reverse_copy.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/equal.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/search_n.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/all_of.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_first_of.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/is_heap.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/partial_sort.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/partial_sort_copy.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/lexicographical_compare.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_merge/inplace_merge.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_merge/merge.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/unique_copy_equal.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/replace_copy.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/is_partitioned.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/rotate_copy.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/remove.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/copy_if.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/partition_copy.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/partition.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/copy_move.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/unique.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/rotate.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/any_of.cc: Likewise.
+
+	Rename header guards to be consistent with upstream project's
+	conventions.
+	* include/pstl/glue_memory_impl.h: Rename all macros of the form
+	_PSTL_(.*)_H to _PSTL_\U\1_H.
+	* include/pstl/numeric_impl.h: Likewise.
+	* include/pstl/glue_memory_defs.h: Likewise.
+	* include/pstl/execution_defs.h: Likewise.
+	* include/pstl/utils.h: Likewise.
+	* include/pstl/algorithm_fwd.h: Likewise.
+	* include/pstl/unseq_backend_simd.h: Likewise.
+	* include/pstl/glue_execution_defs.h: Likewise.
+	* include/pstl/algorithm_impl.h: Likewise.
+	* include/pstl/parallel_impl.h: Likewise.
+	* include/pstl/memory_impl.h: Likewise.
+	* include/pstl/glue_numeric_defs.h: Likewise.
+	* include/pstl/parallel_backend_utils.h: Likewise.
+	* include/pstl/glue_algorithm_defs.h: Likewise.
+	* include/pstl/parallel_backend.h: Likewise.
+	* include/pstl/glue_numeric_impl.h: Likewise.
+	* include/pstl/parallel_backend_tbb.h: Likewise.
+	* include/pstl/numeric_fwd.h: Likewise.
+	* include/pstl/glue_algorithm_impl.h: Likewise.
+	* include/pstl/execution_impl.h: Likewise.
+	* include/pstl/pstl_config.h: Likewise.
+	* testsuite/util/pstl/pstl_test_config.h: Likewise.
+
+	Synchronize libstdc++ parallel algorithms with upstream
+	project.
+	* include/pstl/algorithm_fwd.h: Synchronize with
+	upstream PSTL project.
+	* include/pstl/algorithm_impl.h: Likewise.
+	* include/pstl/execution_defs.h: Likewise.
+	* include/pstl/execution_impl.h: Likewise.
+	* include/pstl/glue_algorithm_impl.h: Likewise.
+	* include/pstl/glue_execution_defs.h: Likewise.
+	* include/pstl/numeric_fwd.h: Likewise.
+	* include/pstl/numeric_impl.h: Likewise.
+	* include/pstl/parallel_backend.h: Likewise.
+	* include/pstl/pstl_config.h: Likewise.
+	* include/pstl/unseq_backend_simd.h: Likewise.
+	* include/pstl/parallel_backend_serial.h: New file.
+	* include/Makefile.am (pstl_headers): Add
+	parallel_backend_serial.h.
+	* include/Makefile.in: Regenerate.
+
+	Clean up non-conforming names
+	* include/pstl/algorithm_impl.h (__parallel_set_union_op):
+	Uglfiy copy_range1 and copy_range2
+	(__pattern_walk2_n): Rename local n to __n
+	* include/pstl/parallel_backend_tbb.h (struct __binary_no_op):
+	Rename parameter _T to _Tp.
+
+	Integrate non-TBB serial backend support
+	* include/bits/c++config: Adjust TBB detection logic to select serial
+	PSTL backend if no TBB present.
+	* testsuite/utils/pstl/test_utils.h: Remove check for
+	_PSTL_USE_PAR_POLICIES
+	
+2019-06-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/24_iterators/container_access.cc: Move dg-options before
+	dg-do directive so the target check uses the -std option.
+
+	PR libstdc++/90770
+	* configure: Regenerate.
+	* src/Makefile.am (stamp-debug): Also test for missing makefile.
+	* src/Makefile.in: Regenerate.
+
+2019-06-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/array: Do not include <stdexcept>.
+	* include/std/optional: Include <exception> and
+	<bits/exception_defines.h> instead of <stdexcept>.
+	* testsuite/20_util/function_objects/searchers.cc: Include <cctype>
+	for std::isalnum.
+	* testsuite/20_util/tuple/cons/deduction.cc: Include <memory> for
+	std::allocator.
+	* testsuite/23_containers/map/erasure.cc: Include <string>.
+	* testsuite/23_containers/unordered_map/erasure.cc: Likewise.
+
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc: Add
+	dg-prune-output for different C++98 diagnostic.
+	* testsuite/23_containers/deque/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/libstdc++-prettyprinters/compat.cc: Do not run for C++98.
+
+	* testsuite/23_containers/unordered_map/requirements/debug_container.cc:
+	Do not test allocator rebinding extension for C++2a.
+	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: Change
+	dg-do directive for C++17 and C++2a.
+
+	* testsuite/23_containers/deque/requirements/explicit_instantiation/
+	1_c++0x.cc: Remove redundant test.
+	* testsuite/23_containers/deque/requirements/explicit_instantiation/
+	2.cc: Use target selector instead of preprocessor condition.
+	* testsuite/23_containers/deque/requirements/explicit_instantiation/
+	3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/forward_list/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/
+	explicit_instantiation/5.cc: Do not test allocator rebinding extension
+	for C++2a.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	1_c++0x.cc: Remove redundant test.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	2.cc: Use target selector instead of preprocessor condition.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	5.cc: Do not test allocator rebinding extension for C++2a.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/
+	1_c++0x.cc: Remove redundant test.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/
+	2.cc: Adjust comment.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/
+	3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/
+	5.cc: Do not test allocator rebinding extension for C++2a.
+	* testsuite/23_containers/multimap/requirements/explicit_instantiation/
+	1_c++0x.cc: Remove redundant test.
+	* testsuite/23_containers/multimap/requirements/explicit_instantiation/
+	3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/multimap/requirements/explicit_instantiation/
+	5.cc: Do not test allocator rebinding extension for C++2a.
+	* testsuite/23_containers/multiset/requirements/explicit_instantiation/
+	3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/multiset/requirements/explicit_instantiation/
+	5.cc: Do not test allocator rebinding extension for C++2a.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/3.cc:
+	Do not run test for C++2a.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/
+	1_c++0x.cc: Remove redundant test.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/5.cc:
+	Do not test allocator rebinding extension for C++2a.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/5.cc: Do not test allocator rebinding extension
+	for C++2a.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/5.cc: Do not test allocator rebinding extension
+	for C++2a.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/5.cc: Do not test allocator rebinding extension
+	for C++2a.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/5.cc: Do not test allocator rebinding extension
+	for C++2a.
+	* testsuite/23_containers/vector/ext_pointer/explicit_instantiation/
+	2.cc: Remove redundant test.
+	* testsuite/23_containers/vector/ext_pointer/explicit_instantiation/
+	3.cc: Do not run test for C++2a.
+	* testsuite/23_containers/vector/requirements/explicit_instantiation/
+	3.cc: Likewise.
+
+	* include/std/type_traits (is_empty, is_polymorphic, is_final)
+	(is_abstract, is_aggregate): Remove static_assert.
+	* testsuite/20_util/is_abstract/incomplete_neg.cc: Check for error
+	from builtin only.
+	* testsuite/20_util/is_aggregate/incomplete_neg.cc: Likewise. Add
+	missing -std=gnu++17 option.
+	* testsuite/20_util/is_empty/incomplete_neg.cc: New test.
+	* testsuite/20_util/is_final/incomplete_neg.cc: New test.
+	* testsuite/20_util/is_polymorphic/incomplete_neg.cc: Check for error
+	from builtin only.
+
+	* testsuite/18_support/set_terminate.cc: Do not run for C++98 mode.
+	* testsuite/18_support/set_unexpected.cc: Likewise.
+	* testsuite/20_util/is_nothrow_invocable/value.cc: Test converting to
+	void.
+	* testsuite/20_util/is_nothrow_invocable/value_ext.cc: Fix constexpr
+	function to be valid in C++11.
+	* testsuite/26_numerics/complex/proj.cc: Do not run for C++98 mode.
+	* testsuite/experimental/names.cc: Do not run for C++98 mode. Do not
+	include Library Fundamentals or Networking headers in C++11 mode.
+	* testsuite/ext/char8_t/atomic-1.cc: Do not run for C++98 mode.
+
+	* include/std/tuple (_TC): Replace with _TupleConstraints.
+	(_TupleConstraints): New helper for SFINAE constraints, with more
+	expressive member functions to reduce duplication when used.
+	(tuple::_TC2, tuple::_TMC, tuple::_TNTC): Remove.
+	(tuple::_TCC): Replace dummy type parameter with bool non-type
+	parameter that can be used to check the pack size.
+	(tuple::_ImplicitDefaultCtor, tuple::_ExplicitDefaultCtor)
+	(tuple::_ImplicitCtor, tuple::_ExplicitCtor): New alias templates for
+	checking constraints in constructors.
+	(tuple::__valid_args, tuple::_UseOtherCtor, tuple::__use_other_ctor):
+	New SFINAE helpers.
+	(tuple::tuple): Use new helpers to reduce repitition in constraints.
+	(tuple::tuple(allocator_arg_t, const Alloc&)): Constrain.
+	(tuple<T1, T2>::_TCC, tuple<T1, T2>::_ImplicitDefaultCtor)
+	(tuple<T1, T2>::_ExplicitDefaultCtor, tuple<T1, T2>::_ImplicitCtor)
+	(tuple<T1, T2>::_ExplicitCtor): New alias templates for checking
+	constraints in constructors.
+	(tuple::__is_alloc_arg()): New SFINAE helpers.
+	(tuple<T1, T2>::tuple): Use new helpers to reduce repitition in
+	constraints.
+	(tuple<T1, T2>::tuple(allocator_arg_t, const Alloc&)): Constrain.
+	* testsuite/20_util/tuple/cons/90700.cc: New test.
+	* testsuite/20_util/tuple/cons/allocators.cc: Add default constructor
+	to meet new constraint on allocator-extended default constructor.
+
 2019-06-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_map.h (map): Disable static assert for C++98 mode.

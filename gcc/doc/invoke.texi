@@ -2239,7 +2239,7 @@ Some cases of unnamed fields in structures and unions are only
 accepted with this option.  @xref{Unnamed Fields,,Unnamed struct/union
 fields within structs/unions}, for details.
 
-Note that this option is off for all targets but x86 
+Note that this option is off for all targets except for x86
 targets using ms-abi.
 
 @item -fplan9-extensions
@@ -7397,7 +7397,7 @@ Do not warn about compile-time overflow in constant expressions.
 @opindex Wno-odr
 @opindex Wodr
 Warn about One Definition Rule violations during link-time optimization.
-Requires @option{-flto-odr-type-merging} to be enabled.  Enabled by default.
+Enabled by default.
 
 @item -Wopenmp-simd
 @opindex Wopenmp-simd
@@ -10393,12 +10393,6 @@ The value @samp{one} specifies that exactly one partition should be
 used while the value @samp{none} bypasses partitioning and executes
 the link-time optimization step directly from the WPA phase.
 
-@item -flto-odr-type-merging
-@opindex flto-odr-type-merging
-Enable streaming of mangled types names of C++ types and their unification
-at link time.  This increases size of LTO object files, but enables
-diagnostics about One Definition Rule violations.
-
 @item -flto-compression-level=@var{n}
 @opindex flto-compression-level
 This option specifies the level of compression used for intermediate
@@ -12179,9 +12173,6 @@ will not try to thread through its block.
 @item uninit-control-dep-attempts
 Maximum number of nested calls to search for control dependencies
 during uninitialized variable analysis.
-
-@item indir-call-topn-profile
-Track top N target addresses in indirect-call profile.
 
 @item max-once-peeled-insns
 The maximum number of insns of a peeled loop that rolls only once.
@@ -16272,6 +16263,9 @@ Compile for GCN3 Fiji devices (gfx803).
 
 @item gfx900
 Compile for GCN5 Vega 10 devices (gfx900).
+
+@item gfx906
+Compile for GCN5 Vega 20 devices (gfx906).
 
 @end table
 
@@ -27435,34 +27429,34 @@ instruction set extensions.)
 
 @item bdver1
 CPUs based on AMD Family 15h cores with x86-64 instruction set support.  (This
-supersets FMA4, AVX, XOP, LWP, AES, PCL_MUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A,
+supersets FMA4, AVX, XOP, LWP, AES, PCLMUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A,
 SSSE3, SSE4.1, SSE4.2, ABM and 64-bit instruction set extensions.)
 @item bdver2
 AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
-supersets BMI, TBM, F16C, FMA, FMA4, AVX, XOP, LWP, AES, PCL_MUL, CX16, MMX,
+supersets BMI, TBM, F16C, FMA, FMA4, AVX, XOP, LWP, AES, PCLMUL, CX16, MMX,
 SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM and 64-bit instruction set 
 extensions.)
 @item bdver3
 AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
 supersets BMI, TBM, F16C, FMA, FMA4, FSGSBASE, AVX, XOP, LWP, AES, 
-PCL_MUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM and 
+PCLMUL, CX16, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, SSE4.2, ABM and
 64-bit instruction set extensions.
 @item bdver4
 AMD Family 15h core based CPUs with x86-64 instruction set support.  (This
 supersets BMI, BMI2, TBM, F16C, FMA, FMA4, FSGSBASE, AVX, AVX2, XOP, LWP, 
-AES, PCL_MUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1, 
+AES, PCLMUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3, SSE4.1,
 SSE4.2, ABM and 64-bit instruction set extensions.
 
 @item znver1
 AMD Family 17h core based CPUs with x86-64 instruction set support.  (This
 supersets BMI, BMI2, F16C, FMA, FSGSBASE, AVX, AVX2, ADCX, RDSEED, MWAITX,
-SHA, CLZERO, AES, PCL_MUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3,
+SHA, CLZERO, AES, PCLMUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A, SSSE3,
 SSE4.1, SSE4.2, ABM, XSAVEC, XSAVES, CLFLUSHOPT, POPCNT, and 64-bit
 instruction set extensions.
 @item znver2
 AMD Family 17h core based CPUs with x86-64 instruction set support. (This
 supersets BMI, BMI2, ,CLWB, F16C, FMA, FSGSBASE, AVX, AVX2, ADCX, RDSEED,
-MWAITX, SHA, CLZERO, AES, PCL_MUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A,
+MWAITX, SHA, CLZERO, AES, PCLMUL, CX16, MOVBE, MMX, SSE, SSE2, SSE3, SSE4A,
 SSSE3, SSE4.1, SSE4.2, ABM, XSAVEC, XSAVES, CLFLUSHOPT, POPCNT, and 64-bit
 instruction set extensions.)
 
@@ -27474,7 +27468,7 @@ instruction set extensions.)
 
 @item btver2
 CPUs based on AMD Family 16h cores with x86-64 instruction set support. This
-includes MOVBE, F16C, BMI, AVX, PCL_MUL, AES, SSE4.2, SSE4.1, CX16, ABM,
+includes MOVBE, F16C, BMI, AVX, PCLMUL, AES, SSE4.2, SSE4.1, CX16, ABM,
 SSE4A, SSSE3, SSE3, SSE2, SSE, MMX and 64-bit instruction set extensions.
 
 @item winchip-c6

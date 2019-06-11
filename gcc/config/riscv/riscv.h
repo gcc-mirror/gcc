@@ -893,12 +893,6 @@ extern unsigned riscv_stack_boundary;
   "%{mabi=lp64f:lp64f}" \
   "%{mabi=lp64d:lp64d}" \
 
-#define STARTFILE_PREFIX_SPEC 			\
-   "/lib" XLEN_SPEC "/" ABI_SPEC "/ "		\
-   "/usr/lib" XLEN_SPEC "/" ABI_SPEC "/ "	\
-   "/lib/ "					\
-   "/usr/lib/ "
-
 /* ISA constants needed for code generation.  */
 #define OPCODE_LW    0x2003
 #define OPCODE_LD    0x3003

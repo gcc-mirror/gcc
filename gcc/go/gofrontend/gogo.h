@@ -688,6 +688,10 @@ class Gogo
   void
   check_return_statements();
 
+  // Remove deadcode.
+  void
+  remove_deadcode();
+
   // Make implicit type conversions explicit.
   void
   add_conversions();
@@ -760,6 +764,12 @@ class Gogo
   Statement*
   assign_with_write_barrier(Function*, Block*, Statement_inserter*,
 			    Expression* lhs, Expression* rhs, Location);
+
+  // Return a statement that tests whether write barriers are enabled
+  // and executes either the efficient code (WITHOUT) or the write
+  // barrier function call (WITH), depending.
+  Statement*
+  check_write_barrier(Block*, Statement* without, Statement* with);
 
   // Flatten parse tree.
   void
@@ -994,9 +1004,6 @@ class Gogo
 
   Named_object*
   write_barrier_variable();
-
-  Statement*
-  check_write_barrier(Block*, Statement*, Statement*);
 
   // Type used to map import names to packages.
   typedef std::map<std::string, Package*> Imports;
@@ -1573,7 +1580,7 @@ class Function
   static void
   export_func_with_type(Export*, const Named_object*,
 			const Function_type*, Results*, bool nointerface,
-			Block* block, Location);
+			const std::string& asm_name, Block* block, Location);
 
   // Import a function.  Reports whether the import succeeded.
   static bool
@@ -1581,7 +1588,7 @@ class Function
 	      bool* is_exported, Typed_identifier** receiver,
 	      Typed_identifier_list** pparameters,
 	      Typed_identifier_list** presults, bool* is_varargs,
-	      bool* nointerface, std::string* body);
+	      bool* nointerface, std::string* asm_name, std::string* body);
 
  private:
   // Type for mapping from label names to Label objects.
@@ -1805,7 +1812,7 @@ class Function_declaration
   {
     Function::export_func_with_type(exp, no, this->fntype_, NULL,
 				    this->is_method() && this->nointerface(),
-				    NULL, this->location_);
+				    this->asm_name_, NULL, this->location_);
   }
 
   // Check that the types used in this declaration's signature are defined.

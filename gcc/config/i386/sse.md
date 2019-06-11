@@ -595,6 +595,10 @@
 (define_mode_attr ssequarterinsnmode
   [(V16SF "V4SF") (V8DF "V2DF") (V16SI "TI") (V8DI "TI")])
 
+(define_mode_attr vecmemsuffix
+  [(V16SF "{z}") (V8SF "{y}") (V4SF "{x}")
+   (V8DF "{z}") (V4DF "{y}") (V2DF "{x}")])
+
 (define_mode_attr ssedoublemodelower
   [(V16QI "v16hi") (V32QI "v32hi") (V64QI "v64hi")
    (V8HI "v8si")   (V16HI "v16si") (V32HI "v32si")
@@ -1716,41 +1720,31 @@
   "TARGET_SSE"
   "ix86_expand_fp_absneg_operator (<CODE>, <MODE>mode, operands); DONE;")
 
-(define_insn_and_split "*absneg<mode>2"
+(define_insn_and_split "*<code><mode>2"
   [(set (match_operand:VF 0 "register_operand" "=x,x,v,v")
-	(match_operator:VF 3 "absneg_operator"
-	  [(match_operand:VF 1 "vector_operand" "0,  xBm,v, m")]))
+	(absneg:VF
+	  (match_operand:VF 1 "vector_operand" "0,  xBm,v, m")))
    (use (match_operand:VF 2 "vector_operand"    "xBm,0,  vm,v"))]
   "TARGET_SSE"
   "#"
   "&& reload_completed"
-  [(const_int 0)]
+  [(set (match_dup 0) (match_dup 3))]
 {
-  enum rtx_code absneg_op;
-  rtx op1, op2;
-  rtx t;
+  enum rtx_code absneg_op = <CODE> == ABS ? AND : XOR;
 
   if (TARGET_AVX)
     {
       if (MEM_P (operands[1]))
-	op1 = operands[2], op2 = operands[1];
-      else
-	op1 = operands[1], op2 = operands[2];
+        std::swap (operands[1], operands[2]);
     }
   else
-    {
-      op1 = operands[0];
-      if (rtx_equal_p (operands[0], operands[1]))
-	op2 = operands[2];
-      else
-	op2 = operands[1];
-    }
+   {
+     if (operands_match_p (operands[0], operands[2]))
+       std::swap (operands[1], operands[2]);
+   }
 
-  absneg_op = GET_CODE (operands[3]) == NEG ? XOR : AND;
-  t = gen_rtx_fmt_ee (absneg_op, <MODE>mode, op1, op2);
-  t = gen_rtx_SET (operands[0], t);
-  emit_insn (t);
-  DONE;
+  operands[3]
+    = gen_rtx_fmt_ee (absneg_op, <MODE>mode, operands[1], operands[2]);
 }
   [(set_attr "isa" "noavx,noavx,avx,avx")])
 
@@ -21317,11 +21311,11 @@
 (define_insn "avx512dq_fpclass<mode><mask_scalar_merge_name>"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
           (unspec:<avx512fmaskmode>
-            [(match_operand:VF_AVX512VL 1 "register_operand" "v")
+            [(match_operand:VF_AVX512VL 1 "vector_operand" "vm")
              (match_operand:QI 2 "const_0_to_255_operand" "n")]
              UNSPEC_FPCLASS))]
    "TARGET_AVX512DQ"
-   "vfpclass<ssemodesuffix>\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}";
+   "vfpclass<ssemodesuffix><vecmemsuffix>\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}";
   [(set_attr "type" "sse")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
@@ -21331,7 +21325,7 @@
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
 	(and:<avx512fmaskmode>
 	  (unspec:<avx512fmaskmode>
-	    [(match_operand:VF_128 1 "register_operand" "v")
+	    [(match_operand:VF_128 1 "vector_operand" "vm")
              (match_operand:QI 2 "const_0_to_255_operand" "n")]
 	    UNSPEC_FPCLASS)
 	  (const_int 1)))]

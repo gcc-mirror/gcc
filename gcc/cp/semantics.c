@@ -6127,10 +6127,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool branch_seen = false;
   bool copyprivate_seen = false;
   bool ordered_seen = false;
+  bool schedule_seen = false;
   bool oacc_async = false;
   tree last_iterators = NULL_TREE;
   bool last_iterators_remove = false;
-  bool reduction_seen = false;
+  /* 1 if normal/task reduction has been seen, -1 if inscan reduction
+     has been seen, -2 if mixed inscan/normal reduction diagnosed.  */
+  int reduction_seen = 0;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -6165,7 +6168,17 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  field_ok = ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP);
 	  goto check_dup_generic;
 	case OMP_CLAUSE_REDUCTION:
-	  reduction_seen = true;
+	  if (reduction_seen == 0)
+	    reduction_seen = OMP_CLAUSE_REDUCTION_INSCAN (c) ? -1 : 1;
+	  else if (reduction_seen != -2
+		   && reduction_seen != (OMP_CLAUSE_REDUCTION_INSCAN (c)
+					 ? -1 : 1))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<inscan%> and non-%<inscan%> %<reduction%> clauses "
+			"on the same construct");
+	      reduction_seen = -2;
+	    }
 	  /* FALLTHRU */
 	case OMP_CLAUSE_IN_REDUCTION:
 	case OMP_CLAUSE_TASK_REDUCTION:
@@ -6175,6 +6188,15 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      if (handle_omp_array_sections (c, ort))
 		{
+		  remove = true;
+		  break;
+		}
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+		  && OMP_CLAUSE_REDUCTION_INSCAN (c))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<inscan%> %<reduction%> clause with array "
+			    "section");
 		  remove = true;
 		  break;
 		}
@@ -6685,6 +6707,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		}
 	      OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (c) = t;
 	    }
+	  if (!remove)
+	    schedule_seen = true;
 	  break;
 
 	case OMP_CLAUSE_SIMDLEN:
@@ -7584,6 +7608,37 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  branch_seen = true;
 	  break;
 
+	case OMP_CLAUSE_INCLUSIVE:
+	case OMP_CLAUSE_EXCLUSIVE:
+	  t = omp_clause_decl_field (OMP_CLAUSE_DECL (c));
+	  if (!t)
+	    t = OMP_CLAUSE_DECL (c);
+	  if (t == current_class_ptr)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<this%> allowed in OpenMP only in %<declare simd%>"
+			" clauses");
+	      remove = true;
+	      break;
+	    }
+	  if (!VAR_P (t)
+	      && TREE_CODE (t) != PARM_DECL
+	      && TREE_CODE (t) != FIELD_DECL)
+	    {
+	      if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
+		break;
+	      if (DECL_P (t))
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD is not a variable in clause %qs", t,
+			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      else
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qE is not a variable in clause %qs", t,
+			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      remove = true;
+	    }
+	  break;
+
 	default:
 	  gcc_unreachable ();
 	}
@@ -7593,6 +7648,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
       else
 	pc = &OMP_CLAUSE_CHAIN (c);
     }
+
+  if (reduction_seen < 0 && (ordered_seen || schedule_seen))
+    reduction_seen = -2;
 
   for (pc = &clauses, c = clauses; c ; c = *pc)
     {
@@ -7629,8 +7687,14 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  need_implicitly_determined = true;
 	  break;
 	case OMP_CLAUSE_REDUCTION:
+	  if (reduction_seen == -2)
+	    OMP_CLAUSE_REDUCTION_INSCAN (c) = 0;
+	  need_implicitly_determined = true;
+	  break;
 	case OMP_CLAUSE_IN_REDUCTION:
 	case OMP_CLAUSE_TASK_REDUCTION:
+	case OMP_CLAUSE_INCLUSIVE:
+	case OMP_CLAUSE_EXCLUSIVE:
 	  need_implicitly_determined = true;
 	  break;
 	case OMP_CLAUSE_LINEAR:
@@ -7681,6 +7745,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  (OMP_CLAUSE_SCHEDULE_KIND (c)
 		   & ~OMP_CLAUSE_SCHEDULE_NONMONOTONIC);
 	    }
+	  if (reduction_seen == -2)
+	    error_at (OMP_CLAUSE_LOCATION (c),
+		      "%qs clause specified together with %<inscan%> "
+		      "%<reduction%> clause", "schedule");
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 	case OMP_CLAUSE_NOGROUP:
@@ -7692,6 +7760,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      *pc = OMP_CLAUSE_CHAIN (c);
 	      continue;
 	    }
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+	case OMP_CLAUSE_ORDERED:
+	  if (reduction_seen == -2)
+	    error_at (OMP_CLAUSE_LOCATION (c),
+		      "%qs clause specified together with %<inscan%> "
+		      "%<reduction%> clause", "ordered");
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 	case OMP_CLAUSE_NOWAIT:

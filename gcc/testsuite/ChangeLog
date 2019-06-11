@@ -1,3 +1,256 @@
+2019-06-10  Matthew Beliveau  <mbelivea@redhat.com>
+
+	PR c++/87250
+	* g++.dg/cpp0x/pr87250.C: New test.
+
+2019-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/90772
+	* g++.dg/cpp1y/feat-cxx14.C: Use std::size_t instead of size_t.
+	* g++.dg/cpp1z/feat-cxx1z.C: Likewise.
+	* g++.dg/cpp2a/feat-cxx2a.C: Likewise.
+	* g++.dg/cpp1z/pr85569.C: Include <functional>.
+	* g++.dg/tree-ssa/pr80293.C: Include <cstdint>.
+	* g++.dg/tree-ssa/pr69336.C: Include <stdexcept>.
+
+2019-06-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/90695
+	* g++.dg/cpp0x/noexcept15.C: Remove dependency on library header.
+
+2019-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/scan-1.c: New test.
+	* c-c++-common/gomp/scan-2.c: New test.
+	* c-c++-common/gomp/scan-3.c: New test.
+	* c-c++-common/gomp/scan-4.c: New test.
+
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/no_profile_instrument_function-attr-1.c: Fix
+	function name.
+
+2019-06-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/jumptables.c: Update test.
+
+2019-06-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/and-cnst-size.c: New test.
+	* gcc.target/arc/mov-cnst-size.c: Likewise.
+	* gcc.target/arc/or-cnst-size.c: Likewise.
+	* gcc.target/arc/store-merge-1.c: Update test.
+	* gcc.target/arc/arc700-stld-hazard.c: Likewise.
+	* gcc.target/arc/cmem-1.c: Likewise.
+	* gcc.target/arc/cmem-2.c: Likewise.
+	* gcc.target/arc/cmem-3.c: Likewise.
+	* gcc.target/arc/cmem-4.c: Likewise.
+	* gcc.target/arc/cmem-5.c: Likewise.
+	* gcc.target/arc/cmem-6.c: Likewise.
+	* gcc.target/arc/loop-4.c: Likewise.
+	* gcc.target/arc/movh_cl-1.c: Likewise.
+	* gcc.target/arc/sdata-3.c: Likewise.
+
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/ipa/pr68035.c: Update scanned pattern.
+
+2019-06-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/attr-copy-6.c: Require alias support.
+
+2019-06-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/65175
+	* g++.dg/cpp0x/alias-decl-69.C: New test.
+
+	PR c++/60366
+	* g++.dg/cpp0x/lambda/lambda-ice32.C: New test.
+
+019-06-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89365
+	* gfortran.dg/assumed_rank_bounds_3.f90 : New test.
+
+2019-06-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/90786
+	* gfortran.dg/proc_ptr_51.f90 : New test.
+
+2019-06-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/52269
+	* g++.dg/cpp0x/constexpr-decltype4.C: New test.
+
+2019-06-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	    Tomáš Trnka  <trnka@scm.com>
+
+	PR fortran/90744
+	* gfortran.dg/deferred_character_33.f90: New test.
+	* gfortran.dg/deferred_character_33a.f90: New test.
+
+2019-06-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77548
+	* g++.dg/other/pr77548.C: New test.
+
+	PR c++/72845
+	* g++.dg/cpp0x/noexcept41.C: New test.
+
+2019-06-08  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.target/aarch64/sve/init_1.c: Remove options
+	-O2 -fno-schedule-insns and instead pass -O.
+	Update assembly in comments.
+	* gcc.target/aarch64/sve/init_2.c: Likewise.
+	* gcc.target/aarch64/sve/init_3.c: Likewise.
+	* gcc.target/aarch64/sve/init_4.c: Likewise.
+	* gcc.target/aarch64/sve/init_5.c: Likewise and additionally
+	adjust dg-scan.
+	* gcc.target/aarch64/sve/init_6.c: Likewise.
+	* gcc.target/aarch64/sve/init_7.c: Likewise.
+	* gcc.target/aarch64/sve/init_8.c: Likewise.
+	* gcc.target/aarch64/sve/init_9.c: Likewise.
+	* gcc.target/aarch64/sve/init_10.c: Likewise.
+	* gcc.target/aarch64/sve/init_11.c: Likewise.
+	* gcc.target/aarch64/sve/init_12.c: Likewise.
+
+2019-06-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77747
+	* g++.dg/cpp0x/inh-ctor33.C: New test.
+
+	PR c++/77967
+	* g++.dg/cpp0x/alias-decl-68.C: New test.
+
+	PR c++/77771
+	* g++.dg/cpp0x/constexpr-77771.C: New test.
+
+2019-06-07  John David Anglin  <danglin@gcc.gnu.org>
+
+	* lib/scanasm.exp (dg-function-on-line): Add pattern for hppa*-*-linux*.
+
+2019-06-07  Mark Eggleston <mark.eggleston@codethink.com>
+
+	PR fortran/89100
+	* gfortran.dg/fmt_f_default_field_width_3.f90: Modify dg-error
+	to allow use when kind=16 is not supported.
+	* gfortran.dg/fmt_g_default_field_width_3.f90: Modify dg-error
+	to allow use when kind=16 is not supported.
+
+2019-06-07  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90574
+	* gcc.misc-tests/gcov-pr90574-1.c: New testcase.
+	* gcc.misc-tests/gcov-pr90574-2.c: Likewise.
+
+2019-06-07  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/lto/alias-access-path-2.0.c: New testcase.
+
+2019-06-07  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/78902
+	* c-c++-common/asan/alloca_loop_unpoisoning.c: Use result
+	of __builtin_alloca.
+	* c-c++-common/asan/pr88619.c: Likewise.
+	* g++.dg/overload/using2.C: Likewise for malloc.
+	* gcc.dg/attr-alloc_size-5.c: Add new dg-warning.
+	* gcc.dg/nonnull-3.c: Use result of __builtin_strdup.
+	* gcc.dg/pr43643.c: Likewise.
+	* gcc.dg/pr59717.c: Likewise for calloc.
+	* gcc.dg/torture/pr71816.c: Likewise.
+	* gcc.dg/tree-ssa/pr78886.c: Likewise.
+	* gcc.dg/tree-ssa/pr79697.c: Likewise.
+	* gcc.dg/pr78902.c: New test.
+
+2019-06-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/cpp0x/alignas4.C: Amend test to check for zerofill syntax
+	on Darwin.
+
+2019-06-06  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/tree-ssa/alias-access-path-1.c: Remove -fno-tree-sra option.
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Disable FRE.
+	* gnat.dg/opt39.adb: Adjust scan dump.
+
+2019-06-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/size-optimized-shifts.c: New test.
+
+2019-06-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/emulate-slli.c: New test.
+	* gcc.target/msp430/emulate-srai.c: New test.
+	* gcc.target/msp430/emulate-srli.c: New test.
+
+2019-06-06  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/87954
+	* gcc.dg/pr87954.c: New test.
+
+2019-06-06  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/alias-37.c: New testcase.
+	* gcc.dg/torture/20190604-1.c: Likewise.
+	* gcc.dg/tree-ssa/pta-callused.c: Adjust.
+
+2019-06-06  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/tmac-1.c: Reoreder dg-directives.
+	* gcc.target/arc/tmac-2.c: Likewise.
+
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	PR c/90737
+	* c-c++-common/Wreturn-local-addr.c: New test.
+	* g++.dg/warn/Wreturn-local-addr-6.C: New test.
+
+2019-06-05  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512dq-vfpclasspd-1.c: Adjust scan assember
+	for {x,y,z} suffix.
+	* gcc.target/i386/avx512dq-vfpclassps-1.c: Ditto.
+
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/format/gcc_diag-11.c: Skip until -Wformat-diag has
+	been committed.
+
+2019-06-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/return-type-invalid-1.C: New.
+	* g++.old-deja/g++.brendan/crash16.C: Adjust.
+	* g++.old-deja/g++.law/ctors5.C: Likewise.
+
+2019-06-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/other/friend4.C: Test locations too.
+	* g++.dg/other/friend5.C: Likewise.
+	* g++.dg/other/friend7.C: Likewise.
+
+2019-06-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* g++.target/powerpc/undef-bool-3.C: Add -maltivec to dg-options.
+
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/weak/weak-19.c: New test.
+
+2019-06-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/discr6.ads: New test.
+
+2019-06-05  Sam Tebbs  <sam.tebbs@arm.com>
+
+	* gcc.target/aarch64/return_address_sign_b_1.c: New file.
+	* gcc.target/aarch64/return_address_sign_b_2.c: New file.
+	* gcc.target/aarch64/return_address_sign_b_3.c: New file.
+	* gcc.target/aarch64/return_address_sign_builtin.c: New file.
+	* g++.target/aarch64/return_address_sign_ab_exception.C: New file.
+	* g++.target/aarch64/return_address_sign_b_exception.C: New file.
+
 2019-06-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/90733

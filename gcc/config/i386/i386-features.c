@@ -2581,7 +2581,7 @@ ix86_get_function_versions_dispatcher (void *decl)
 #endif
     {
       error_at (DECL_SOURCE_LOCATION (default_node->decl),
-		"multiversioning needs ifunc which is not supported "
+		"multiversioning needs %<ifunc%> which is not supported "
 		"on this target");
     }
 

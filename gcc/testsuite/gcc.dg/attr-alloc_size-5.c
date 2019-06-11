@@ -230,5 +230,5 @@ test_alloca (size_t n)
 {
   extern void* alloca (size_t);
 
-  alloca (0);
+  alloca (0); /* { dg-warning "ignoring return value of '.*' declared with attribute 'warn_unused_result'" } */
 }

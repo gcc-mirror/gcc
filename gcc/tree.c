@@ -300,6 +300,8 @@ unsigned const char omp_clause_num_ops[] =
   2, /* OMP_CLAUSE_MAP  */
   1, /* OMP_CLAUSE_USE_DEVICE_PTR  */
   1, /* OMP_CLAUSE_IS_DEVICE_PTR  */
+  1, /* OMP_CLAUSE_INCLUSIVE  */
+  1, /* OMP_CLAUSE_EXCLUSIVE  */
   2, /* OMP_CLAUSE__CACHE_  */
   2, /* OMP_CLAUSE_GANG  */
   1, /* OMP_CLAUSE_ASYNC  */
@@ -378,6 +380,8 @@ const char * const omp_clause_code_name[] =
   "map",
   "use_device_ptr",
   "is_device_ptr",
+  "inclusive",
+  "exclusive",
   "_cache_",
   "gang",
   "async",
@@ -5600,8 +5604,7 @@ need_assembler_name_p (tree decl)
 
   if (TREE_CODE (decl) == TYPE_DECL)
     {
-      if (flag_lto_odr_type_mering
-	  && DECL_NAME (decl)
+      if (DECL_NAME (decl)
 	  && decl == TYPE_NAME (TREE_TYPE (decl))
 	  && TYPE_MAIN_VARIANT (TREE_TYPE (decl)) == TREE_TYPE (decl)
 	  && !TYPE_ARTIFICIAL (TREE_TYPE (decl))
@@ -12306,6 +12309,8 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_LINK:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
+	case OMP_CLAUSE_INCLUSIVE:
+	case OMP_CLAUSE_EXCLUSIVE:
 	case OMP_CLAUSE__LOOPTEMP_:
 	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE__CONDTEMP_:

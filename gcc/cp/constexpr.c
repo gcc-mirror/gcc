@@ -973,12 +973,7 @@ explain_invalid_constexpr_fn (tree fun)
 struct GTY((for_user)) constexpr_call {
   /* Description of the constexpr function definition.  */
   constexpr_fundef *fundef;
-  /* Parameter bindings environment.  A TREE_LIST where each TREE_PURPOSE
-     is a parameter _DECL and the TREE_VALUE is the value of the parameter.
-     Note: This arrangement is made to accommodate the use of
-     iterative_hash_template_arg (see pt.c).  If you change this
-     representation, also change the hash calculation in
-     cxx_eval_call_expression.  */
+  /* Parameter bindings environment.  A TREE_VEC of arguments.  */
   tree bindings;
   /* Result of the call.
        NULL means the call is being evaluated.
@@ -1068,8 +1063,6 @@ constexpr_call_hasher::hash (constexpr_call *info)
 bool
 constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
 {
-  tree lhs_bindings;
-  tree rhs_bindings;
   if (lhs == rhs)
     return true;
   if (lhs->hash != rhs->hash)
@@ -1078,19 +1071,7 @@ constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
     return false;
   if (!constexpr_fundef_hasher::equal (lhs->fundef, rhs->fundef))
     return false;
-  lhs_bindings = lhs->bindings;
-  rhs_bindings = rhs->bindings;
-  while (lhs_bindings != NULL && rhs_bindings != NULL)
-    {
-      tree lhs_arg = TREE_VALUE (lhs_bindings);
-      tree rhs_arg = TREE_VALUE (rhs_bindings);
-      gcc_assert (same_type_p (TREE_TYPE (lhs_arg), TREE_TYPE (rhs_arg)));
-      if (!cp_tree_equal (lhs_arg, rhs_arg))
-        return false;
-      lhs_bindings = TREE_CHAIN (lhs_bindings);
-      rhs_bindings = TREE_CHAIN (rhs_bindings);
-    }
-  return lhs_bindings == rhs_bindings;
+  return cp_tree_equal (lhs->bindings, rhs->bindings);
 }
 
 /* Initialize the constexpr call table, if needed.  */
@@ -1339,28 +1320,57 @@ adjust_temp_type (tree type, tree temp)
   return cp_fold_convert (type, temp);
 }
 
-/* Callback for walk_tree used by unshare_constructor.  */
+/* If T is a CONSTRUCTOR, return an unshared copy of T and any
+   sub-CONSTRUCTORs.  Otherwise return T.
 
-static tree
-find_constructor (tree *tp, int *walk_subtrees, void *)
-{
-  if (TYPE_P (*tp))
-    *walk_subtrees = 0;
-  if (TREE_CODE (*tp) == CONSTRUCTOR)
-    return *tp;
-  return NULL_TREE;
-}
-
-/* If T is a CONSTRUCTOR or an expression that has a CONSTRUCTOR node as a
-   subexpression, return an unshared copy of T.  Otherwise return T.  */
+   We use this whenever we initialize an object as a whole, whether it's a
+   parameter, a local variable, or a subobject, so that subsequent
+   modifications don't affect other places where it was used.  */
 
 tree
 unshare_constructor (tree t)
 {
-  tree ctor = walk_tree (&t, find_constructor, NULL, NULL);
-  if (ctor != NULL_TREE)
-    return unshare_expr (t);
+  if (!t || TREE_CODE (t) != CONSTRUCTOR)
+    return t;
+  auto_vec <tree*, 4> ptrs;
+  ptrs.safe_push (&t);
+  while (!ptrs.is_empty ())
+    {
+      tree *p = ptrs.pop ();
+      tree n = copy_node (*p);
+      CONSTRUCTOR_ELTS (n) = vec_safe_copy (CONSTRUCTOR_ELTS (*p));
+      *p = n;
+      vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (n);
+      constructor_elt *ce;
+      for (HOST_WIDE_INT i = 0; vec_safe_iterate (v, i, &ce); ++i)
+	if (TREE_CODE (ce->value) == CONSTRUCTOR)
+	  ptrs.safe_push (&ce->value);
+    }
   return t;
+}
+
+/* If T is a CONSTRUCTOR, ggc_free T and any sub-CONSTRUCTORs.  */
+
+static void
+free_constructor (tree t)
+{
+  if (!t || TREE_CODE (t) != CONSTRUCTOR)
+    return;
+  releasing_vec ctors;
+  vec_safe_push (ctors, t);
+  while (!ctors->is_empty ())
+    {
+      tree c = ctors->pop ();
+      if (vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (c))
+	{
+	  constructor_elt *ce;
+	  for (HOST_WIDE_INT i = 0; vec_safe_iterate (elts, i, &ce); ++i)
+	    if (TREE_CODE (ce->value) == CONSTRUCTOR)
+	      vec_safe_push (ctors, ce->value);
+	  ggc_free (elts);
+	}
+      ggc_free (c);
+    }
 }
 
 /* Subroutine of cxx_eval_call_expression.
@@ -1379,7 +1389,10 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
   tree fun = new_call->fundef->decl;
   tree parms = new_call->fundef->parms;
   int i;
-  tree *p = &new_call->bindings;
+  /* We don't record ellipsis args below.  */
+  int nparms = list_length (parms);
+  int nbinds = nargs < nparms ? nargs : nparms;
+  tree binds = new_call->bindings = make_tree_vec (nbinds);
   for (i = 0; i < nargs; ++i)
     {
       tree x, arg;
@@ -1408,7 +1421,8 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 
       if (!*non_constant_p)
 	{
-	  /* Don't share a CONSTRUCTOR that might be changed.  */
+	  /* Unsharing here isn't necessary for correctness, but it
+	     significantly improves memory performance for some reason.  */
 	  arg = unshare_constructor (arg);
 	  /* Make sure the binding has the same type as the parm.  But
 	     only for constant args.  */
@@ -1416,8 +1430,7 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 	    arg = adjust_temp_type (type, arg);
 	  if (!TREE_CONSTANT (arg))
 	    *non_constant_args = true;
-	  *p = build_tree_list (parms, arg);
-	  p = &TREE_CHAIN (*p);
+	  TREE_VEC_ELT (binds, i) = arg;
 	}
       parms = TREE_CHAIN (parms);
     }
@@ -1745,12 +1758,9 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     ~free_bindings () {
       if (do_free)
 	{
-	  while (bindings)
-	    {
-	      tree b = bindings;
-	      bindings = TREE_CHAIN (bindings);
-	      ggc_free (b);
-	    }
+	  for (int i = 0; i < TREE_VEC_LENGTH (bindings); ++i)
+	    free_constructor (TREE_VEC_ELT (bindings, i));
+	  ggc_free (bindings);
 	}
     }
   } fb (new_call.bindings);
@@ -1822,6 +1832,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       else
 	{
 	  tree body, parms, res;
+	  releasing_vec ctors;
 
 	  /* Reuse or create a new unshared copy of this function's body.  */
 	  tree copy = get_fundef_copy (new_call.fundef);
@@ -1832,15 +1843,14 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  /* Associate the bindings with the remapped parms.  */
 	  tree bound = new_call.bindings;
 	  tree remapped = parms;
-	  while (bound)
+	  for (int i = 0; i < TREE_VEC_LENGTH (bound); ++i)
 	    {
-	      tree oparm = TREE_PURPOSE (bound);
-	      tree arg = TREE_VALUE (bound);
-	      gcc_assert (DECL_NAME (remapped) == DECL_NAME (oparm));
+	      tree arg = TREE_VEC_ELT (bound, i);
 	      /* Don't share a CONSTRUCTOR that might be changed.  */
 	      arg = unshare_constructor (arg);
+	      if (TREE_CODE (arg) == CONSTRUCTOR)
+		vec_safe_push (ctors, arg);
 	      ctx->values->put (remapped, arg);
-	      bound = TREE_CHAIN (bound);
 	      remapped = DECL_CHAIN (remapped);
 	    }
 	  /* Add the RESULT_DECL to the values map, too.  */
@@ -1905,6 +1915,14 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  for (tree parm = parms; parm; parm = TREE_CHAIN (parm))
 	    ctx->values->remove (parm);
 
+	  /* Free any parameter CONSTRUCTORs we aren't returning directly.  */
+	  while (!ctors->is_empty ())
+	    {
+	      tree c = ctors->pop ();
+	      if (c != result)
+		free_constructor (c);
+	    }
+
 	  /* Make the unshared function copy we used available for re-use.  */
 	  save_fundef_copy (fun, copy);
 	}
@@ -1924,7 +1942,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     clear_no_implicit_zero (result);
 
   pop_cx_call_context ();
-  return unshare_constructor (result);
+  return result;
 }
 
 /* FIXME speed this up, it's taking 16% of compile time on sieve testcase.  */
@@ -2482,7 +2500,7 @@ diag_array_subscript (const constexpr_ctx *ctx, tree array, tree index)
 	    error ("array subscript value %qE is outside the bounds "
 	           "of array %qD of type %qT", sidx, array, arraytype);
 	  else
-	    error ("non-zero array subscript %qE is used with array %qD of "
+	    error ("nonzero array subscript %qE is used with array %qD of "
 		   "type %qT with unknown bounds", sidx, array, arraytype);
 	  inform (DECL_SOURCE_LOCATION (array), "declared here");
 	}
@@ -2490,7 +2508,7 @@ diag_array_subscript (const constexpr_ctx *ctx, tree array, tree index)
 	error ("array subscript value %qE is outside the bounds "
 	       "of array type %qT", sidx, arraytype);
       else
-	error ("non-zero array subscript %qE is used with array of type %qT "
+	error ("nonzero array subscript %qE is used with array of type %qT "
 	       "with unknown bounds", sidx, arraytype);
     }
 }
@@ -4381,9 +4399,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 			      bool *non_constant_p, bool *overflow_p,
 			      tree *jump_target /* = NULL */)
 {
-  constexpr_ctx new_ctx;
-  tree r = t;
-
   if (jump_target && *jump_target)
     {
       /* If we are jumping, ignore all statements/expressions except those
@@ -4414,6 +4429,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       *non_constant_p = true;
       return t;
     }
+
+  STRIP_ANY_LOCATION_WRAPPER (t);
+
   if (CONSTANT_CLASS_P (t))
     {
       if (TREE_OVERFLOW (t))
@@ -4438,8 +4456,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     }
 
   /* Avoid excessively long constexpr evaluations.  */
-  if (!location_wrapper_p (t)
-      && ++*ctx->constexpr_ops_count >= constexpr_ops_limit)
+  if (++*ctx->constexpr_ops_count >= constexpr_ops_limit)
     {
       if (!ctx->quiet)
 	error_at (cp_expr_loc_or_loc (t, input_location),
@@ -4450,6 +4467,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       *non_constant_p = true;
       return t;
     }
+
+  constexpr_ctx new_ctx;
+  tree r = t;
 
   tree_code tcode = TREE_CODE (t);
   switch (tcode)
@@ -4751,7 +4771,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	/* This function does more aggressive folding than fold itself.  */
 	r = build_fold_addr_expr_with_type (op, TREE_TYPE (t));
 	if (TREE_CODE (r) == ADDR_EXPR && TREE_OPERAND (r, 0) == oldop)
-	  return t;
+	  {
+	    ggc_free (r);
+	    return t;
+	  }
 	break;
       }
 
@@ -5064,6 +5087,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  r = op;
 	else if (tcode == UNARY_PLUS_EXPR)
 	  r = fold_convert (TREE_TYPE (t), op);
+	else if (VOID_TYPE_P (type))
+	  r = void_node;
 	else
 	  r = fold_build1 (tcode, type, op);
 

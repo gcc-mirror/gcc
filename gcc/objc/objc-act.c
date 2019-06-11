@@ -1747,7 +1747,7 @@ objc_build_setter_call (tree lhs, tree rhs)
 
   if (PROPERTY_READONLY (property_decl))
     {
-      error ("readonly property cannot be set");
+      error ("%qs property cannot be set", "readonly");
       return error_mark_node;
     }
   else

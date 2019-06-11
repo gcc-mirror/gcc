@@ -5013,8 +5013,8 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
       && DECL_DECLARED_INLINE_P (decl)
       && DECL_UNINLINABLE (decl)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
-    warning (OPT_Wattributes, "inline function %q+D given attribute noinline",
-	     decl);
+    warning (OPT_Wattributes, "inline function %q+D given attribute %qs",
+	     decl, "noinline");
 
   /* C99 6.7.4p3: An inline definition of a function with external
      linkage shall not contain a definition of a modifiable object
@@ -5399,7 +5399,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
       type = strip_array_types (type);
       if (TREE_READONLY (decl))
 	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc___compat,
-		    "uninitialized const %qD is invalid in C++", decl);
+		    "uninitialized %<const %D%> is invalid in C++", decl);
       else if (RECORD_OR_UNION_TYPE_P (type)
 	       && C_TYPE_FIELDS_READONLY (type))
 	diagnose_uninitialized_cst_member (decl, type);
@@ -8674,7 +8674,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
       if (precision > TYPE_PRECISION (enumtype))
 	{
 	  TYPE_PRECISION (enumtype) = 0;
-	  error ("specified mode too small for enumeral values");
+	  error ("specified mode too small for enumerated values");
 	}
       else
 	precision = TYPE_PRECISION (enumtype);
@@ -8935,8 +8935,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
       && DECL_UNINLINABLE (decl1)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl1)))
     warning_at (loc, OPT_Wattributes,
-		"inline function %qD given attribute noinline",
-		decl1);
+		"inline function %qD given attribute %qs",
+		decl1, "noinline");
 
   /* Handle gnu_inline attribute.  */
   if (declspecs->inline_p
@@ -10941,10 +10941,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      }
 	      if (!targetm.decimal_float_supported_p ())
 		error_at (loc,
-			  ("decimal floating point not supported "
+			  ("decimal floating-point not supported "
 			   "for this target"));
 	      pedwarn (loc, OPT_Wpedantic,
-		       "ISO C does not support decimal floating point");
+		       "ISO C does not support decimal floating-point");
 	      return specs;
 	    case RID_FRACT:
 	    case RID_ACCUM:

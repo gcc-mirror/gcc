@@ -398,7 +398,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #if __cplusplus > 201402L
 // Parallel STL algorithms
-# if __PSTL_EXECUTION_POLICIES_DEFINED
+# if _PSTL_EXECUTION_POLICIES_DEFINED
 // If <execution> has already been included, pull in implementations
 #  include <pstl/glue_memory_impl.h>
 # else

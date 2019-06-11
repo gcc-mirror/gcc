@@ -2574,6 +2574,10 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 
   if (ctx != NULL)
     {
+      if (gimple_code (ctx->stmt) == GIMPLE_OMP_SCAN
+	  && ctx->outer
+	  && gimple_code (ctx->outer->stmt) == GIMPLE_OMP_FOR)
+	ctx = ctx->outer;
       if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
 	  && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
 	{
@@ -2600,7 +2604,8 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 		}
 	    }
 	  else if (gimple_code (stmt) == GIMPLE_OMP_ATOMIC_LOAD
-		   || gimple_code (stmt) == GIMPLE_OMP_ATOMIC_STORE)
+		   || gimple_code (stmt) == GIMPLE_OMP_ATOMIC_STORE
+		   || gimple_code (stmt) == GIMPLE_OMP_SCAN)
 	    return true;
 	  error_at (gimple_location (stmt),
 		    "OpenMP constructs other than %<#pragma omp ordered simd%>"
@@ -3328,6 +3333,7 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_CRITICAL:
+    case GIMPLE_OMP_SCAN:
     case GIMPLE_OMP_GRID_BODY:
       ctx = new_omp_context (stmt, ctx);
       scan_omp (gimple_omp_body_ptr (stmt), ctx);
@@ -10834,6 +10840,15 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       gcc_assert (ctx);
       lower_omp_ordered (gsi_p, ctx);
       break;
+    case GIMPLE_OMP_SCAN:
+      ctx = maybe_lookup_ctx (stmt);
+      gcc_assert (ctx);
+      gsi_insert_seq_after (gsi_p, gimple_omp_body (stmt), GSI_SAME_STMT);
+      if (gimple_omp_scan_clauses (as_a <gomp_scan *> (stmt)))
+	sorry_at (gimple_location (stmt),
+		  "%<#pragma omp scan%> not supported yet");
+      gsi_replace (gsi_p, gimple_build_nop (), true);
+      break;
     case GIMPLE_OMP_CRITICAL:
       ctx = maybe_lookup_ctx (stmt);
       gcc_assert (ctx);
@@ -10925,6 +10940,7 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      || gimple_code (up->stmt) == GIMPLE_OMP_CRITICAL
 	      || gimple_code (up->stmt) == GIMPLE_OMP_TASKGROUP
 	      || gimple_code (up->stmt) == GIMPLE_OMP_SECTION
+	      || gimple_code (up->stmt) == GIMPLE_OMP_SCAN
 	      || (gimple_code (up->stmt) == GIMPLE_OMP_TARGET
 		  && (gimple_omp_target_kind (up->stmt)
 		      == GF_OMP_TARGET_KIND_DATA)))
@@ -11195,6 +11211,7 @@ diagnose_sb_1 (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_ORDERED:
+    case GIMPLE_OMP_SCAN:
     case GIMPLE_OMP_CRITICAL:
     case GIMPLE_OMP_TARGET:
     case GIMPLE_OMP_TEAMS:
@@ -11255,6 +11272,7 @@ diagnose_sb_2 (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_ORDERED:
+    case GIMPLE_OMP_SCAN:
     case GIMPLE_OMP_CRITICAL:
     case GIMPLE_OMP_TARGET:
     case GIMPLE_OMP_TEAMS:

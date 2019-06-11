@@ -3708,9 +3708,9 @@ tm_memopt_compute_available (struct tm_region *region,
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks in the region.  */
+  gcc_assert (!blocks.is_empty ());
   qlen = blocks.length () - 1;
-  qin = qout = worklist =
-    XNEWVEC (basic_block, qlen);
+  qin = qout = worklist = XNEWVEC (basic_block, qlen);
 
   /* Put every block in the region on the worklist.  */
   for (i = 0; blocks.iterate (i, &bb); ++i)

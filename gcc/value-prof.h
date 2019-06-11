@@ -33,8 +33,6 @@ enum hist_type
   HIST_TYPE_AVERAGE,	/* Compute average value (sum of all values).  */
   HIST_TYPE_IOR,	/* Used to compute expected alignment.  */
   HIST_TYPE_TIME_PROFILE, /* Used for time profile */
-  HIST_TYPE_INDIR_CALL_TOPN, /* Tries to identify the top N most frequently
-                                called functions in indirect call.  */
   HIST_TYPE_MAX
 };
 
@@ -92,6 +90,10 @@ void free_histograms (function *);
 void stringop_block_profile (gimple *, unsigned int *, HOST_WIDE_INT *);
 gcall *gimple_ic (gcall *, struct cgraph_node *, profile_probability);
 bool check_ic_target (gcall *, struct cgraph_node *);
+bool get_most_common_single_value (gimple *stmt, const char *counter_type,
+				   histogram_value hist,
+				   gcov_type *value, gcov_type *count,
+				   gcov_type *all);
 
 
 /* In tree-profile.c.  */

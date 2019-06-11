@@ -1,3 +1,87 @@
+2019-06-11  Martin Liska  <mliska@suse.cz>
+
+	PR c++/87847
+	* pt.c (init_template_processing): Disable hash table
+	sanitization for decl_specializations and type_specializations.
+
+2019-06-10  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (free_constructor): New.
+	(cxx_eval_call_expression): Free parameter value CONSTRUCTORs.
+
+	* constexpr.c (unshare_constructor): Only unshare if T is itself a
+	CONSTRUCTOR.
+	(cxx_eval_call_expression): Don't call it on the result here.
+
+	Reduce constexpr_call memory consumption.
+	* constexpr.c (cxx_bind_parameters_in_call): Use TREE_VEC rather
+	than TREE_LIST.
+	(constexpr_call_hasher::equal, cxx_bind_parameters_in_call)
+	(cxx_eval_call_expression): Adjust.
+
+2019-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_reduction): Don't sorry_at on inscan
+	reductions.
+	(cp_parser_omp_scan_loop_body): New function.
+	(cp_parser_omp_for_loop): Call cp_parser_omp_scan_loop_body if there
+	are inscan reduction clauses.
+	(cp_parser_pragma): Reject PRAGMA_OMP_SCAN.
+	* semantics.c (finish_omp_clauses): Reject mixing inscan with
+	non-inscan reductions on the same construct, or inscan reductions with
+	ordered or schedule clauses, or inscan array reductions.
+	* pt.c (tsubst_omp_clauses): Handle OMP_CLAUSE_{IN,EX}CLUSIVE.
+	(tsubst_expr): Handle OMP_SCAN.
+
+2019-06-07  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_constant_expression): Call
+	STRIP_ANY_LOCATION_WRAPPER early.
+	[CONVERT_EXPR]: Don't build anything for conversion to void.
+	[ADDR_EXPR]: ggc_free unused ADDR_EXPR.
+
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	PR c/90737
+	* typeck.c (maybe_warn_about_returning_address_of_local): Only
+	consider functions returning pointers as candidates for
+	-Wreturn-local-addr.
+
+2019-06-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (smallest_type_location): New.
+	(check_special_function_return_type): Use it.
+	(grokdeclarator): Lkewise.
+
+2019-06-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use locations[ds_friend]
+	in one place.
+
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* call.c (build_conditional_expr_1): Adjust quoting and hyphenation.
+	(convert_like_real): Same.
+	(convert_arg_to_ellipsis): Same.
+	* constexpr.c (diag_array_subscript): Same.
+	* constraint.cc (diagnose_trait_expression): Same.
+	* cvt.c (ocp_convert): Same.
+	* decl.c (start_decl): Same.
+	(check_for_uninitialized_const_var): Same.
+	(grokfndecl): Same.
+	(check_special_function_return_type): Same.
+	(finish_enum_value_list): Same.
+	(start_preparsed_function): Same.
+	* parser.c (cp_parser_decl_specifier_seq): Same.
+	* typeck.c (cp_build_binary_op): Same.
+	(build_static_cast_1): Same.
+
+2019-06-04  Nina Dinka Ranns  <dinka.ranns@gmail.com>
+
+	PR c++/63149 - Wrong auto deduction from braced-init-list.
+	* pt.c (listify_autos): use non cv qualified auto_node in
+	std::initializer_list<auto>.
+
 2019-06-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokdeclarator): Use declarator->id_loc in two

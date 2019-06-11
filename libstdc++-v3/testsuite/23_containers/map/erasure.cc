@@ -19,6 +19,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <map>
+#include <string>
 #include <testsuite_hooks.h>
 
 #ifndef __cpp_lib_erase_if

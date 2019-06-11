@@ -2722,10 +2722,10 @@ stmt_starts_bb_p (gimple *stmt, gimple *prev_stmt)
 	  || FORCED_LABEL (gimple_label_label (label_stmt)))
 	return true;
 
-      if (prev_stmt && gimple_code (prev_stmt) == GIMPLE_LABEL)
+      if (glabel *plabel = safe_dyn_cast <glabel *> (prev_stmt))
 	{
-	  if (DECL_NONLOCAL (gimple_label_label (
-			       as_a <glabel *> (prev_stmt))))
+	  if (DECL_NONLOCAL (gimple_label_label (plabel))
+	      || !DECL_ARTIFICIAL (gimple_label_label (plabel)))
 	    return true;
 
 	  cfg_stats.num_merged_labels++;
@@ -3619,7 +3619,7 @@ verify_gimple_assign_unary (gassign *stmt)
 	    && (!VECTOR_INTEGER_TYPE_P (rhs1_type)
 	        || !VECTOR_FLOAT_TYPE_P (lhs_type)))
 	  {
-	    error ("invalid types in conversion to floating point");
+	    error ("invalid types in conversion to floating-point");
 	    debug_generic_expr (lhs_type);
 	    debug_generic_expr (rhs1_type);
 	    return true;
@@ -4811,7 +4811,7 @@ verify_gimple_label (glabel *stmt)
   if (!DECL_NONLOCAL (decl) && !FORCED_LABEL (decl)
       && DECL_CONTEXT (decl) != current_function_decl)
     {
-      error ("label%'s context is not the current function decl");
+      error ("label context is not the current function declaration");
       err |= true;
     }
 

@@ -9,6 +9,14 @@ import (
 	"unsafe"
 )
 
+// For gccgo, use go:linkname to rename compiler-called functions to
+// themselves, so that the compiler will export them.
+//
+//go:linkname mapaccess1_faststr runtime.mapaccess1_faststr
+//go:linkname mapaccess2_faststr runtime.mapaccess2_faststr
+//go:linkname mapassign_faststr runtime.mapassign_faststr
+//go:linkname mapdelete_faststr runtime.mapdelete_faststr
+
 func mapaccess1_faststr(t *maptype, h *hmap, ky string) unsafe.Pointer {
 	if raceenabled && h != nil {
 		callerpc := getcallerpc()

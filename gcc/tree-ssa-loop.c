@@ -768,9 +768,9 @@ get_lsm_tmp_name (tree ref, unsigned n, const char *suffix)
       ns[1] = 0;
       lsm_tmp_name_add (ns);
     }
-  return lsm_tmp_name;
   if (suffix != NULL)
     lsm_tmp_name_add (suffix);
+  return lsm_tmp_name;
 }
 
 /* Computes an estimated number of insns in LOOP, weighted by WEIGHTS.  */

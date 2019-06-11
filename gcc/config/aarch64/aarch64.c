@@ -15106,6 +15106,45 @@ aarch64_expand_vector_init (rtx target, rtx vals)
   rtx v0 = XVECEXP (vals, 0, 0);
   bool all_same = true;
 
+  /* This is a special vec_init<M><N> where N is not an element mode but a
+     vector mode with half the elements of M.  We expect to find two entries
+     of mode N in VALS and we must put their concatentation into TARGET.  */
+  if (XVECLEN (vals, 0) == 2 && VECTOR_MODE_P (GET_MODE (XVECEXP (vals, 0, 0))))
+    {
+      gcc_assert (known_eq (GET_MODE_SIZE (mode),
+		  2 * GET_MODE_SIZE (GET_MODE (XVECEXP (vals, 0, 0)))));
+      rtx lo = XVECEXP (vals, 0, 0);
+      rtx hi = XVECEXP (vals, 0, 1);
+      machine_mode narrow_mode = GET_MODE (lo);
+      gcc_assert (GET_MODE_INNER (narrow_mode) == inner_mode);
+      gcc_assert (narrow_mode == GET_MODE (hi));
+
+      /* When we want to concatenate a half-width vector with zeroes we can
+	 use the aarch64_combinez[_be] patterns.  Just make sure that the
+	 zeroes are in the right half.  */
+      if (BYTES_BIG_ENDIAN
+	  && aarch64_simd_imm_zero (lo, narrow_mode)
+	  && general_operand (hi, narrow_mode))
+	emit_insn (gen_aarch64_combinez_be (narrow_mode, target, hi, lo));
+      else if (!BYTES_BIG_ENDIAN
+	       && aarch64_simd_imm_zero (hi, narrow_mode)
+	       && general_operand (lo, narrow_mode))
+	emit_insn (gen_aarch64_combinez (narrow_mode, target, lo, hi));
+      else
+	{
+	  /* Else create the two half-width registers and combine them.  */
+	  if (!REG_P (lo))
+	    lo = force_reg (GET_MODE (lo), lo);
+	  if (!REG_P (hi))
+	    hi = force_reg (GET_MODE (hi), hi);
+
+	  if (BYTES_BIG_ENDIAN)
+	    std::swap (lo, hi);
+	  emit_insn (gen_aarch64_simd_combine (narrow_mode, target, lo, hi));
+	}
+     return;
+   }
+
   /* Count the number of variable elements to initialise.  */
   for (int i = 0; i < n_elts; ++i)
     {

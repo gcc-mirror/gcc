@@ -1,5 +1,5 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
-/* { dg-options "-O2 -fno-schedule-insns -msve-vector-bits=256 --save-temps" } */
+/* { dg-options "-O -msve-vector-bits=256 --save-temps" } */
 
 /* Case 5.2: Interleaved elements and constants.  */ 
 
@@ -18,15 +18,15 @@ foo:
 .LFB0:
         .cfi_startproc
         ptrue   p0.s, vl8
+        adrp    x4, .LANCHOR0
+        add     x4, x4, :lo12:.LANCHOR0
+        ld1w    z1.s, p0/z, [x4]
         mov     z0.s, w3
-        adrp    x3, .LANCHOR0
         insr    z0.s, w2
-        add     x3, x3, :lo12:.LANCHOR0
         insr    z0.s, w1
-        ld1w    z1.s, p0/z, [x3]
         insr    z0.s, w0
         zip1    z0.s, z0.s, z1.s
         ret
 */
 
-/* { dg-final { scan-assembler {\tmov\t(z[0-9]+\.s), w3\n\tadrp\t(x[0-9]+), \.LANCHOR0\n\tinsr\t\1, w2\n\tadd\t\2, \2, :lo12:\.LANCHOR0\n\tinsr\t\1, w1\n\tld1w\t(z[0-9]+\.s), p[0-9]+/z, \[\2\]\n\tinsr\t\1, w0\n\tzip1\t\1, \1, \3} } } */
+/* { dg-final { scan-assembler {\tld1w\t(z[0-9]+\.s), p[0-9]+/z, \[x[0-9]+\]\n\tmov\t(z[0-9]+\.s), w3\n\tinsr\t\2, w2\n\tinsr\t\2, w1\n\tinsr\t\2, w0\n\tzip1\t\2, \2, \1} } } */

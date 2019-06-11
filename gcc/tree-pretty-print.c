@@ -35,6 +35,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "gimple.h"
 
+/* Disable warnings about quoting issues in the pp_xxx calls below
+   that (intentionally) don't follow GCC diagnostic conventions.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* Local functions, macros and variables.  */
 static const char *op_symbol (const_tree);
 static void pretty_print_string (pretty_printer *, const char*, unsigned);
@@ -459,6 +466,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       goto print_remap;
     case OMP_CLAUSE_IS_DEVICE_PTR:
       name = "is_device_ptr";
+      goto print_remap;
+    case OMP_CLAUSE_INCLUSIVE:
+      name = "inclusive";
+      goto print_remap;
+    case OMP_CLAUSE_EXCLUSIVE:
+      name = "exclusive";
       goto print_remap;
     case OMP_CLAUSE__LOOPTEMP_:
       name = "_looptemp_";
@@ -3301,6 +3314,14 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       pp_string (pp, "#pragma omp section");
       goto dump_omp_body;
 
+    case OMP_SCAN:
+      if (OMP_SCAN_CLAUSES (node))
+	{
+	  pp_string (pp, "#pragma omp scan");
+	  dump_omp_clauses (pp, OMP_SCAN_CLAUSES (node), spc, flags);
+	}
+      goto dump_omp_body;
+
     case OMP_MASTER:
       pp_string (pp, "#pragma omp master");
       goto dump_omp_body;
@@ -4250,3 +4271,7 @@ pp_double_int (pretty_printer *pp, double_int d, bool uns)
       pp_string (pp, pp_buffer (pp)->digit_buffer);
     }
 }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif

@@ -3196,6 +3196,80 @@ Gogo::add_conversions_in_block(Block *b)
   b->traverse(&add_conversions);
 }
 
+// Traversal class for simple deadcode elimination.
+
+class Remove_deadcode : public Traverse
+{
+ public:
+  Remove_deadcode()
+    : Traverse(traverse_statements
+               | traverse_expressions)
+  { }
+
+  int
+  statement(Block*, size_t* pindex, Statement*);
+
+  int
+  expression(Expression**);
+};
+
+// Remove deadcode in a statement.
+
+int
+Remove_deadcode::statement(Block* block, size_t* pindex, Statement* sorig)
+{
+  Location loc = sorig->location();
+  If_statement* ifs = sorig->if_statement();
+  if (ifs != NULL)
+    {
+      // Remove the dead branch of an if statement.
+      bool bval;
+      if (ifs->condition()->boolean_constant_value(&bval))
+        {
+          Statement* s;
+          if (bval)
+            s = Statement::make_block_statement(ifs->then_block(),
+                                                loc);
+          else
+            if (ifs->else_block() != NULL)
+              s = Statement::make_block_statement(ifs->else_block(),
+                                                  loc);
+            else
+              // Make a dummy statement.
+              s = Statement::make_statement(Expression::make_boolean(false, loc),
+                                            true);
+
+          block->replace_statement(*pindex, s);
+        }
+    }
+  return TRAVERSE_CONTINUE;
+}
+
+// Remove deadcode in an expression.
+
+int
+Remove_deadcode::expression(Expression** pexpr)
+{
+  // Discard the right arm of a shortcut expression of constant value.
+  Binary_expression* be = (*pexpr)->binary_expression();
+  bool bval;
+  if (be != NULL
+      && be->boolean_constant_value(&bval)
+      && (be->op() == OPERATOR_ANDAND
+          || be->op() == OPERATOR_OROR))
+    *pexpr = Expression::make_boolean(bval, be->location());
+  return TRAVERSE_CONTINUE;
+}
+
+// Remove deadcode.
+
+void
+Gogo::remove_deadcode()
+{
+  Remove_deadcode remove_deadcode;
+  this->traverse(&remove_deadcode);
+}
+
 // Traverse the tree to create function descriptors as needed.
 
 class Create_function_descriptors : public Traverse
@@ -5059,6 +5133,9 @@ Mark_inline_candidates::type(Type* t)
 void
 Gogo::do_exports()
 {
+  if (saw_errors())
+    return;
+
   // Mark any functions whose body should be exported for inlining by
   // other packages.
   Mark_inline_candidates mic;
@@ -5690,7 +5767,7 @@ Function::export_func(Export* exp, const Named_object* no) const
     block = this->block_;
   Function::export_func_with_type(exp, no, this->type_, this->results_,
 				  this->is_method() && this->nointerface(),
-				  block, this->location_);
+				  this->asm_name(), block, this->location_);
 }
 
 // Export a function with a type.
@@ -5699,7 +5776,8 @@ void
 Function::export_func_with_type(Export* exp, const Named_object* no,
 				const Function_type* fntype,
 				Function::Results* result_vars,
-				bool nointerface, Block* block, Location loc)
+				bool nointerface, const std::string& asm_name,
+				Block* block, Location loc)
 {
   exp->write_c_string("func ");
 
@@ -5707,6 +5785,13 @@ Function::export_func_with_type(Export* exp, const Named_object* no,
     {
       go_assert(fntype->is_method());
       exp->write_c_string("/*nointerface*/ ");
+    }
+
+  if (!asm_name.empty())
+    {
+      exp->write_c_string("/*asm ");
+      exp->write_string(asm_name);
+      exp->write_c_string(" */ ");
     }
 
   if (fntype->is_method())
@@ -5848,16 +5933,37 @@ Function::import_func(Import* imp, std::string* pname,
 		      Typed_identifier_list** presults,
 		      bool* is_varargs,
 		      bool* nointerface,
+		      std::string* asm_name,
 		      std::string* body)
 {
   imp->require_c_string("func ");
 
   *nointerface = false;
-  if (imp->match_c_string("/*"))
+  while (imp->match_c_string("/*"))
     {
-      imp->require_c_string("/*nointerface*/ ");
-      *nointerface = true;
+      imp->advance(2);
+      if (imp->match_c_string("nointerface"))
+	{
+	  imp->require_c_string("nointerface*/ ");
+	  *nointerface = true;
+	}
+      else if (imp->match_c_string("asm"))
+	{
+	  imp->require_c_string("asm ");
+	  *asm_name = imp->read_identifier();
+	  imp->require_c_string(" */ ");
+	}
+      else
+	{
+	  go_error_at(imp->location(),
+		      "import error at %d: unrecognized function comment",
+		      imp->pos());
+	  return false;
+	}
+    }
 
+  if (*nointerface)
+    {
       // Only a method can be nointerface.
       go_assert(imp->peek_char() == '(');
     }
@@ -6217,7 +6323,7 @@ Function::build(Gogo* gogo, Named_object* named_function)
   // Variables that need to be declared for this function and their
   // initial values.
   std::vector<Bvariable*> vars;
-  std::vector<Bexpression*> var_inits;
+  std::vector<Expression*> var_inits;
   std::vector<Statement*> var_decls_stmts;
   for (Bindings::const_definitions_iterator p =
 	 this->block_->bindings()->begin_definitions();
@@ -6260,7 +6366,7 @@ Function::build(Gogo* gogo, Named_object* named_function)
                                                  loc);
               if ((*p)->var_value()->is_in_heap())
                 parm_ref = Expression::make_heap_expression(parm_ref, loc);
-              var_inits.push_back(parm_ref->get_backend(&context));
+              var_inits.push_back(parm_ref);
 	    }
 	  else if ((*p)->var_value()->is_in_heap())
 	    {
@@ -6277,7 +6383,7 @@ Function::build(Gogo* gogo, Named_object* named_function)
 	      Expression* var_ref =
 		  Expression::make_var_reference(parm_no, loc);
 	      var_ref = Expression::make_heap_expression(var_ref, loc);
-              var_inits.push_back(var_ref->get_backend(&context));
+              var_inits.push_back(var_ref);
 	    }
           param_vars.push_back(parm_bvar);
 	}
@@ -6286,15 +6392,15 @@ Function::build(Gogo* gogo, Named_object* named_function)
 	  Bvariable* bvar = (*p)->get_backend_variable(gogo, named_function);
 
 	  Type* type = (*p)->result_var_value()->type();
-	  Bexpression* init;
+	  Expression* init;
 	  if (!(*p)->result_var_value()->is_in_heap())
 	    {
 	      Btype* btype = type->get_backend(gogo);
-	      init = gogo->backend()->zero_expression(btype);
+	      Bexpression* binit = gogo->backend()->zero_expression(btype);
+              init = Expression::make_backend(binit, type, loc);
 	    }
 	  else
-	    init = Expression::make_allocation(type,
-					       loc)->get_backend(&context);
+	    init = Expression::make_allocation(type, loc);
 
           vars.push_back(bvar);
           var_inits.push_back(init);
@@ -6367,13 +6473,16 @@ Function::build(Gogo* gogo, Named_object* named_function)
       Bblock* code_block = this->block_->get_backend(&context);
 
       // Initialize variables if necessary.
+      Translate_context icontext(gogo, named_function, this->block_,
+                                 var_decls);
       std::vector<Bstatement*> init;
       go_assert(vars.size() == var_inits.size());
       for (size_t i = 0; i < vars.size(); ++i)
 	{
+          Bexpression* binit = var_inits[i]->get_backend(&icontext);
           Bstatement* init_stmt =
               gogo->backend()->init_statement(this->fndecl_, vars[i],
-                                              var_inits[i]);
+                                              binit);
           init.push_back(init_stmt);
 	}
       Bstatement* var_init = gogo->backend()->statement_list(init);
@@ -6835,7 +6944,12 @@ Block::import_block(Block* set, Import_function_body *ifb, Location loc)
 
       if (at_end)
 	{
-	  off = nl + 1;
+	  // An if statement can have an "else" following the "}", in
+	  // which case we want to leave the offset where it is, just
+	  // after the "}".  We don't get the block ending location
+	  // quite right for if statements.
+	  if (body.compare(off, 6, " else ") != 0)
+	    off = nl + 1;
 	  break;
 	}
 
@@ -7158,6 +7272,8 @@ Function_declaration::import_function_body(Gogo* gogo, Named_object* no)
       Named_type* rtype = fntype->receiver()->type()->deref()->named_type();
       go_assert(rtype != NULL);
       no = rtype->add_method(no->name(), fn);
+      const Package* package = rtype->named_object()->package();
+      package->bindings()->add_method(no);
     }
 
   Import_function_body ifb(gogo, this->imp_, no, body, nl + 1, outer, indent);
@@ -7166,6 +7282,7 @@ Function_declaration::import_function_body(Gogo* gogo, Named_object* no)
     return;
 
   gogo->lower_block(no, outer);
+  outer->determine_types();
 
   gogo->add_imported_inline_function(no);
 }

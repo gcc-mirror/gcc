@@ -15,7 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do run { target { c++98_only || { c++11_only || c++14_only } } } }
+// { dg-options "-std=gnu++11" }
+// { dg-do run { target { c++11_only || c++14_only } } }
 
 #include <exception>
 #include <testsuite_hooks.h>

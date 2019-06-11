@@ -5,5 +5,5 @@
 
 struct A
 {
-  friend A::~A() {} // { dg-error "implicitly friends of their class" }
+  friend A::~A() {} // { dg-error "3:member functions are implicitly friends of their class" }
 };

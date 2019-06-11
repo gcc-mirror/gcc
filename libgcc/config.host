@@ -1212,7 +1212,8 @@ rx-*-elf)
 	tm_file="$tm_file rx/rx-abi.h rx/rx-lib.h"
 	;;
 rx-*-linux*)
-	tmake_file="rx/t-rx"
+	tmake_file="rx/t-rx t-fdpbit"
+	tm_file="$tm_file rx/rx-lib.h"
 	;;
 s390-*-linux*)
 	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux s390/32/t-floattodi t-stack s390/t-stack-s390"

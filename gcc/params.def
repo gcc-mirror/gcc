@@ -992,14 +992,6 @@ DEFPARAM (PARAM_PROFILE_FUNC_INTERNAL_ID,
 	  "Use internal function id in profile lookup.",
 	  0, 0, 1)
 
-/* When the parameter is 1, track the most frequent N target
-   addresses in indirect-call profile. This disables
-   indirect_call_profiler_v3 which tracks single target.  */
-DEFPARAM (PARAM_INDIR_CALL_TOPN_PROFILE,
-	  "indir-call-topn-profile",
-	  "Track top N target addresses in indirect-call profile.",
-	  0, 0, 1)
-
 /* Avoid SLP vectorization of large basic blocks.  */
 DEFPARAM (PARAM_SLP_MAX_INSNS_IN_BB,
 	  "slp-max-insns-in-bb",
@@ -1439,9 +1431,16 @@ DEFPARAM(PARAM_GIMPLE_FE_COMPUTED_HOT_BB_THRESHOLD,
 	 " The parameter is used only in GIMPLE FE.",
 	 0, 0, 0)
 
+DEFPARAM(PARAM_HASH_TABLE_VERIFICATION_LIMIT,
+	 "hash-table-verification-limit",
+	 "The number of elements for which hash table verification is done for "
+	 "each searched element.",
+	 100, 0, 0)
+
 DEFPARAM(PARAM_LAZY_MODULES,
 	 "lazy-modules",
-	 "Maximum number of concurrently open module files when lazy loading.",
+	 "Maximum number of concurrently open C++ module files"
+	 " when lazy loading.",
 	 0, 0, 32768)
 
 /*

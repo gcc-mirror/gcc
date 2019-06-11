@@ -266,11 +266,12 @@ GCOV_COUNTERS
 #define GCOV_N_VALUE_COUNTERS \
   (GCOV_LAST_VALUE_COUNTER - GCOV_FIRST_VALUE_COUNTER + 1)
 
-/* The number of hottest callees to be tracked.  */
-#define GCOV_ICALL_TOPN_VAL  2
+/* Number of single value histogram values that live
+   on disk representation.  */
+#define GCOV_DISK_SINGLE_VALUES 4
 
-/* The number of counter entries per icall callsite.  */
-#define GCOV_ICALL_TOPN_NCOUNTS (1 + GCOV_ICALL_TOPN_VAL * 4)
+/* Total number of single value counters.  */
+#define GCOV_SINGLE_VALUE_COUNTERS (2 * GCOV_DISK_SINGLE_VALUES + 1)
 
 /* Convert a counter index to a tag.  */
 #define GCOV_TAG_FOR_COUNTER(COUNT)				\

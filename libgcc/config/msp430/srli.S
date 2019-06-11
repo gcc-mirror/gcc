@@ -22,6 +22,7 @@
 	
 	.text
 
+	.section	.text.__mspabi_srli_n
 	.macro	_srli n
 	.global __mspabi_srli_\n
 __mspabi_srli_\n:
@@ -29,7 +30,7 @@ __mspabi_srli_\n:
 	RRC.W	R12
 	.endm
 
-/* Logical Right Shift - R12 -> R12 */
+/* Logical Right Shift - R12 -> R12.  */
 	_srli	15
 	_srli	14
 	_srli	13
@@ -51,6 +52,7 @@ __mspabi_srli_\n:
 	RET
 #endif
 
+	.section	.text.__mspabi_srli
 1:	ADD.W	#-1,R13
 	CLRC
 	RRC.W	R12,R12
@@ -64,8 +66,9 @@ __mspabi_srli:
 	RET
 #endif
 
-/* Logical Right Shift - R12:R13 -> R12:R13 */
+/* Logical Right Shift - R12:R13 -> R12:R13.  */
 
+	.section	.text.__mspabi_srll_n
 	.macro	_srll	n
 	.global	__mspabi_srll_\n
 __mspabi_srll_\n:
@@ -95,6 +98,7 @@ __mspabi_srll_\n:
 	RET
 #endif
 
+	.section	.text.__mspabi_srll
 1:	ADD.W	#-1,R14
 	CLRC
 	RRC.W	R13

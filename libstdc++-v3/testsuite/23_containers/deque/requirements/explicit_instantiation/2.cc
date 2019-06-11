@@ -21,10 +21,8 @@
 #include <deque>
 #include <testsuite_api.h>
 
-// { dg-do compile }
+// { dg-do compile { target c++98_only } }
 
-// N.B. In C++0x mode we cannot instantiate with T == NonDefaultConstructible
-// because of 23.3.2.1.4
-#if __cplusplus < 201103L
+// N.B. Since C++11 we cannot instantiate with T == NonDefaultConstructible
+// because of [deque.cons] p4: "Requires: T shall be DefaultConstructible."
 template class std::deque<__gnu_test::NonDefaultConstructible>;
-#endif

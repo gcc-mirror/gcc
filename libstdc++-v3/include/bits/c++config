@@ -656,9 +656,7 @@ namespace std
 
 #if __cplusplus >= 201703L
 // Preserved here so we have some idea which version of upstream we've pulled in
-// #define PSTL_VERSION 104
-// #define PSTL_VERSION_MAJOR (PSTL_VERSION/100)
-// #define PSTL_VERSION_MINOR (PSTL_VERSION - PSTL_VERSION_MAJOR * 100)
+// #define PSTL_VERSION 9000
 
 // For now this defaults to being based on the presence of Thread Building Blocks
 # ifndef _GLIBCXX_USE_TBB_PAR_BACKEND
@@ -666,11 +664,13 @@ namespace std
 # endif
 // This section will need some rework when a new (default) backend type is added
 # if _GLIBCXX_USE_TBB_PAR_BACKEND
-#  define __PSTL_USE_PAR_POLICIES 1
+#  define _PSTL_PAR_BACKEND_TBB
+# else
+#  define _PSTL_PAR_BACKEND_SERIAL
 # endif
 
-# define __PSTL_ASSERT(_Condition) __glibcxx_assert(_Condition)
-# define __PSTL_ASSERT_MSG(_Condition, _Message) __glibcxx_assert(_Condition)
+# define _PSTL_ASSERT(_Condition) __glibcxx_assert(_Condition)
+# define _PSTL_ASSERT_MSG(_Condition, _Message) __glibcxx_assert(_Condition)
 
 #include <pstl/pstl_config.h>
 

@@ -1,7 +1,5 @@
 // { dg-do compile { target c++11 } }
-// { dg-prune-output "invalid use of incomplete type" }
-// { dg-prune-output "must be a complete" }
-//
+
 // Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -18,6 +16,9 @@
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
+
+// Expect the compiler builtin to do the completeness check.
+// { dg-error "incomplete type" "" { target *-*-* } 0 }
 
 #include <type_traits>
 

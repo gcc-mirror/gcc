@@ -1622,6 +1622,16 @@ Escape_analysis_assign::expression(Expression** pexpr)
                 }
                 break;
 
+              case Runtime::MAPASSIGN_FAST32PTR:
+              case Runtime::MAPASSIGN_FAST64PTR:
+              case Runtime::MAPASSIGN_FASTSTR:
+                {
+                  // Map key escapes. The last argument is the key.
+                  Node* key_node = Node::make_node(call->args()->back());
+                  this->assign(this->context_->sink(), key_node);
+                }
+                break;
+
               case Runtime::IFACEE2T2:
               case Runtime::IFACEI2T2:
                 {
@@ -2763,15 +2773,8 @@ Gogo::assign_connectivity(Escape_context* context, Named_object* fn)
       if (!p->type()->has_pointer())
         continue;
 
-      // External function?  Parameters must escape unless //go:noescape is set.
-      // TODO(cmang): Implement //go:noescape directive.
-      if (fn->package() != NULL)
-	param_node->set_encoding(Node::ESCAPE_HEAP);
-      else
-        {
-          param_node->set_encoding(Node::ESCAPE_NONE);
-          context->track(param_node);
-        }
+      param_node->set_encoding(Node::ESCAPE_NONE);
+      context->track(param_node);
     }
 
   Escape_analysis_loop el;
@@ -3309,9 +3312,6 @@ Escape_analysis_tag::tag(Named_object* fn)
 {
   // External functions are assumed unsafe
   // unless //go:noescape is given before the declaration.
-  if (fn->package() != NULL)
-    return;
-
   if (fn->is_function_declaration())
     {
       Function_declaration* fdcl = fn->func_declaration_value();
