@@ -45,20 +45,19 @@ class irange_storage;
 // Consequently, there are no GTY markers.  For long term storage, use
 // the irange_storage class described later.
 
+enum irange_kind { IRANGE_PLAIN, IRANGE_INVERSE };
+
 class irange
 {
   friend class irange_storage;
   friend void irange_tests ();
 
  public:
-  // Denotes whether this a regular or the inverse of a range.
-  enum kind { PLAIN, INVERSE };
-
   irange ();
   irange (tree type);
-  irange (kind, tree type, const wide_int &, const wide_int &);
+  irange (irange_kind, tree type, const wide_int &, const wide_int &);
   irange (tree type, const wide_int &, const wide_int &);
-  irange (kind, tree, tree);
+  irange (irange_kind, tree, tree);
   irange (tree, tree);
   irange (tree type, const irange_storage *);
 
@@ -98,7 +97,8 @@ class irange
   void dump (FILE *) const;
 
 private:
-  void init (tree type, const wide_int &, const wide_int &, kind = PLAIN);
+  void init (tree type, const wide_int &, const wide_int &,
+	     irange_kind = IRANGE_PLAIN);
   void canonicalize ();
   void set_lower_bound (unsigned pair, const wide_int &);
   void set_upper_bound (unsigned pair, const wide_int &);
@@ -231,7 +231,8 @@ inline bool
 irange::nonzero_p () const
 {
   unsigned prec = TYPE_PRECISION (m_type);
-  return *this == irange (INVERSE, m_type, wi::zero (prec), wi::zero (prec));
+  return *this == irange (IRANGE_INVERSE, m_type,
+			  wi::zero (prec), wi::zero (prec));
 }
 
 // Return true if this range is the full range for its type.

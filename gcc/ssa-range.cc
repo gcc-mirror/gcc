@@ -188,7 +188,7 @@ switch_edge_manager::calc_switch_ranges (gswitch *sw)
       if (!high)
 	high = low;
 
-      irange def_case_range (irange::INVERSE, low, high);
+      irange def_case_range (IRANGE_INVERSE, low, high);
       def_case_range.cast (type);
       default_slot->intersect (def_case_range);
 
@@ -253,7 +253,7 @@ switch_edge_manager::calc_single_range (irange &r, gswitch *sw, edge e)
 	  tree high = CASE_HIGH (gimple_switch_label (sw, x));
 	  if (!high)
 	    high = low;
-	  irange case_range (irange::INVERSE, low, high);
+	  irange case_range (IRANGE_INVERSE, low, high);
 	  r.intersect (case_range);
 	}
     }
