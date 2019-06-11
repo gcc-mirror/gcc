@@ -24,6 +24,8 @@ module gcc.sections.elf_shared;
 
 version (RISCV32) version = RISCV_Any;
 version (RISCV64) version = RISCV_Any;
+version (S390)    version = IBMZ_Any;
+version (SystemZ) version = IBMZ_Any;
 
 version (CRuntime_Glibc) enum SharedELF = true;
 else version (CRuntime_Musl) enum SharedELF = true;
@@ -1060,7 +1062,7 @@ else version (MIPS32)
     enum TLS_DTV_OFFSET = 0x8000;
 else version (MIPS64)
     enum TLS_DTV_OFFSET = 0x8000;
-else version (SystemZ)
+else version (IBMZ_Any)
     enum TLS_DTV_OFFSET = 0x0;
 else
     static assert( false, "Platform not supported." );
@@ -1070,20 +1072,25 @@ void[] getTLSRange(size_t mod, size_t sz) nothrow @nogc
     if (mod == 0)
         return null;
 
-    version (Solaris)
-    {
-        static if (!OS_Have_Dlpi_Tls_Modid)
-            mod -= 1;
-    }
-
-    // base offset
-    auto ti = tls_index(mod, 0);
-    version (SystemZ)
-    {
-        auto idx = cast(void *)__tls_get_addr_internal(&ti)
-            + cast(ulong)__builtin_thread_pointer();
-        return idx[0 .. sz];
-    }
+    version (GNU_EMUTLS)
+        return null;    // Handled in scanTLSRanges().
     else
-        return (__tls_get_addr(&ti)-TLS_DTV_OFFSET)[0 .. sz];
+    {
+        version (Solaris)
+        {
+            static if (!OS_Have_Dlpi_Tls_Modid)
+                mod -= 1;
+        }
+
+        // base offset
+        auto ti = tls_index(mod, 0);
+        version (IBMZ_Any)
+        {
+            auto idx = cast(void *)__tls_get_addr_internal(&ti)
+                + cast(ulong)__builtin_thread_pointer();
+            return idx[0 .. sz];
+        }
+        else
+            return (__tls_get_addr(&ti)-TLS_DTV_OFFSET)[0 .. sz];
+    }
 }

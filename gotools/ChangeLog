@@ -1,3 +1,7 @@
+2019-05-03  Release Manager
+
+	* GCC 9.1.0 released.
+
 2019-02-28  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/89406

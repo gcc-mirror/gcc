@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 9.1-b20190414\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-04-13 17:21+0200\n"
-"PO-Revision-Date: 2019-04-19 21:07+0200\n"
+"PO-Revision-Date: 2019-04-30 20:26+0200\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -338,7 +338,7 @@ msgstr "  -print-file-name=<Bib>   Vollen Pfad zur Bibliothek <Bib> anzeigen.\n"
 
 #: gcc.c:3561
 msgid "  -print-prog-name=<prog>  Display the full path to compiler component <prog>.\n"
-msgstr "  -print-prog-name=<Prog>  Vollen Pfad zur Compilerkomponente <Prog> anzeigen\n"
+msgstr "  -print-prog-name=<Prog>  Vollen Pfad zur Compilerkomponente <Prog> anzeigen.\n"
 
 #: gcc.c:3562
 msgid ""
@@ -386,15 +386,15 @@ msgstr "  -Wl,<Optionen>           Die durch Kommata getrennten <Optionen> an de
 
 #: gcc.c:3575
 msgid "  -Xassembler <arg>        Pass <arg> on to the assembler.\n"
-msgstr "  -Xassembler <arg>        <arg> an den Assembler übergeben.\n"
+msgstr "  -Xassembler <Arg>        <Arg> an den Assembler übergeben.\n"
 
 #: gcc.c:3576
 msgid "  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor.\n"
-msgstr "  -Xpreprocessor <arg>     <arg> an den Präprozessor übergeben.\n"
+msgstr "  -Xpreprocessor <Arg>     <Arg> an den Präprozessor übergeben.\n"
 
 #: gcc.c:3577
 msgid "  -Xlinker <arg>           Pass <arg> on to the linker.\n"
-msgstr "  -Xlinker <arg>           <arg> an den Linker übergeben.\n"
+msgstr "  -Xlinker <Arg>           <Arg> an den Linker übergeben.\n"
 
 #: gcc.c:3578
 msgid "  -save-temps              Do not delete intermediate files.\n"
@@ -402,7 +402,7 @@ msgstr "  -save-temps              Temporäre Dateien nicht löschen.\n"
 
 #: gcc.c:3579
 msgid "  -save-temps=<arg>        Do not delete intermediate files.\n"
-msgstr "  -save-temps=<arg>        Temporäre Dateien nicht löschen.\n"
+msgstr "  -save-temps=<Arg>        Temporäre Dateien nicht löschen.\n"
 
 #: gcc.c:3580
 msgid ""
@@ -410,11 +410,11 @@ msgid ""
 "                           prefixes to other gcc components.\n"
 msgstr ""
 "  -no-canonical-prefixes   Pfade beim Erzeugen relativer Präfixe zu anderen\n"
-"                           GCC-Komponenten nicht kanonisieren\n"
+"                           GCC-Komponenten nicht kanonisieren.\n"
 
 #: gcc.c:3583
 msgid "  -pipe                    Use pipes rather than intermediate files.\n"
-msgstr "  -pipe                    Pipes statt temporärer Dateien verwenden\n"
+msgstr "  -pipe                    Pipes statt temporärer Dateien verwenden.\n"
 
 #: gcc.c:3584
 msgid "  -time                    Time the execution of each subprocess.\n"
@@ -424,7 +424,7 @@ msgstr "  -time                    Zeit für die Ausführung jedes Subprozesses 
 msgid "  -specs=<file>            Override built-in specs with the contents of <file>.\n"
 msgstr ""
 "  -specs=<Datei>           Eingebaute Spezifikationen mit dem Inhalt von <Datei>\n"
-"                           überschreiben\n"
+"                           überschreiben.\n"
 
 #: gcc.c:3586
 msgid "  -std=<standard>          Assume that the input sources are for <standard>.\n"
@@ -455,7 +455,7 @@ msgstr ""
 #: gcc.c:3593
 msgid "  -E                       Preprocess only; do not compile, assemble or link.\n"
 msgstr ""
-"  -E                       Nur den Präprozessor ausführen, nicht Kompiler, Assembler oder\n"
+"  -E                       Nur den Präprozessor ausführen, nicht Compiler, Assembler oder\n"
 "                           Linker.\n"
 
 #: gcc.c:3594
@@ -1307,7 +1307,7 @@ msgstr "Die folgenden Optionen steuern Optimierungen"
 
 #: opts.c:1639 opts.c:1678
 msgid "The following options are language-independent"
-msgstr "Die folgenden Optionen sind sprach-unabhängig"
+msgstr "Die folgenden Optionen sind sprachunabhängig"
 
 #: opts.c:1642
 msgid "The --param option recognizes the following as parameters"
@@ -2314,7 +2314,7 @@ msgstr "Die Anzahl der Register in jeder Klasse, die von Schleifeninvariantenbew
 #: params.def:925
 #, no-c-format
 msgid "The max number of reload pseudos which are considered during spilling a non-reload pseudo."
-msgstr "Die maximale Anzahl Reload-Pseudos, die beim Auslagern eines Nicht-Reload-Pseudos berücksichtigt werden."
+msgstr "Die Höchstzahl Reload-Pseudos, die beim Auslagern eines Nicht-Reload-Pseudos berücksichtigt werden."
 
 #: params.def:930
 #, no-c-format
@@ -5693,7 +5693,7 @@ msgstr "evtl. »-pg« statt »-p« mit gprof(1) verwenden"
 
 #: config/arc/arc.h:68 config/mips/mips.h:1452
 msgid "may not use both -EB and -EL"
-msgstr "»-EB« und »-EL« können nicht gleichzeitig verwendet werden"
+msgstr "»-EB« und »-EL« dürfen nicht gleichzeitig verwendet werden"
 
 #: config/arm/arm.h:88
 msgid "-mfloat-abi=soft and -mfloat-abi=hard may not be used together"
@@ -5796,7 +5796,7 @@ msgstr "-fsanitize=address wird in dieser Konfiguration nicht unterstützt"
 #: config/sparc/netbsd-elf.h:108 config/sparc/netbsd-elf.h:117
 #: config/sparc/sol2.h:237 config/sparc/sol2.h:243
 msgid "may not use both -m32 and -m64"
-msgstr "»-m32« und »-m64« können nicht zusammen angegeben werden"
+msgstr "»-m32« und »-m64« dürfen nicht zusammen angegeben werden"
 
 #: config/vax/netbsd-elf.h:51
 msgid "the -shared option is not currently supported for VAX ELF"
@@ -14925,11 +14925,11 @@ msgstr "-fconstexpr-depth=<Zahl>\tGrößte Rekursionstiefe für konstante Ausdr�
 
 #: c-family/c.opt:1417
 msgid "-fconstexpr-loop-limit=<number>\tSpecify maximum constexpr loop iteration count."
-msgstr "-fconstexpr-loop-limit=<Anzahl>\tMaximale Anzahl der Schleifeniterationen für »constexpr« angeben."
+msgstr "-fconstexpr-loop-limit=<Anzahl>\tHöchstzahl der Schleifeniterationen für »constexpr« angeben."
 
 #: c-family/c.opt:1421
 msgid "-fconstexpr-ops-limit=<number>\tSpecify maximum number of constexpr operations during a single constexpr evaluation."
-msgstr "-fconstexpr-ops-limit=<Anzahl>\tMaximale Anzahl der constexpr-Operationen pro einzelner »constexpr« angeben."
+msgstr "-fconstexpr-ops-limit=<Anzahl>\tHöchstzahl der constexpr-Operationen pro einzelner »constexpr« angeben."
 
 #: c-family/c.opt:1425
 msgid "Emit debug annotations during preprocessing."
@@ -42350,7 +42350,7 @@ msgstr "%<__int%d%> wird von diesem Ziel nicht unterstützt"
 #: cp/decl.c:10778
 #, gcc-internal-format
 msgid "ISO C++ does not support %<__int%d%> for %qs"
-msgstr "ISO-C++ unterstützt %<__int%d%> for %qs nicht"
+msgstr "ISO-C++ unterstützt %<__int%d%> für %qs nicht"
 
 #: cp/decl.c:10832
 #, gcc-internal-format
@@ -63477,7 +63477,7 @@ msgstr "Kategorie-Attribute sind in Objective-C 1.0 nicht verfügbar"
 #: objc/objc-act.c:596
 #, gcc-internal-format
 msgid "category attributes are not available in this version of the compiler, (ignored)"
-msgstr "Kategorie-Attribute sind in dieser Version des Kompilers nicht verfügbar (wird ignoriert)"
+msgstr "Kategorie-Attribute sind in dieser Version des Compilers nicht verfügbar (wird ignoriert)"
 
 #: objc/objc-act.c:602
 #, gcc-internal-format

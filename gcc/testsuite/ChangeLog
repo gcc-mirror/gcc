@@ -1,3 +1,30 @@
+2019-05-03  Release Manager
+
+	* GCC 9.1.0 released.
+
+2019-05-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/spellcheck-options-5.c: Restrict to Linux and
+	GNU targets.
+
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-04-27  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/90258
+	* gcc.dg/completion-5.c: New test.
+	* gcc.target/i386/spellcheck-options-5.c: New test.
+
+2019-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90240
+	Revert:
+	2019-04-23  Bin Cheng  <bin.cheng@linux.alibaba.com>
+ 
+	PR tree-optimization/90078
+	* gcc/testsuite/g++.dg/tree-ssa/pr90078.C: New test.
+
 2019-04-25  Martin Liska  <mliska@suse.cz>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 

@@ -25,8 +25,10 @@ nothrow:
 
 version (RISCV32) version = RISCV_Any;
 version (RISCV64) version = RISCV_Any;
+version (S390)    version = IBMZ_Any;
 version (SPARC)   version = SPARC_Any;
 version (SPARC64) version = SPARC_Any;
+version (SystemZ) version = IBMZ_Any;
 version (X86)     version = X86_Any;
 version (X86_64)  version = X86_Any;
 
@@ -719,7 +721,7 @@ version (CRuntime_Glibc)
         alias greg_t = c_ulong;
         alias gregset_t = greg_t[NGREG];
     }
-    else version (SystemZ)
+    else version (IBMZ_Any)
     {
         public import core.sys.posix.signal : sigset_t;
 

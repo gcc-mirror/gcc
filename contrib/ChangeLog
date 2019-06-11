@@ -1,3 +1,11 @@
+2019-05-03  Release Manager
+
+	* GCC 9.1.0 released.
+
+2019-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 9.
+
 2019-04-19  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR translation/90118

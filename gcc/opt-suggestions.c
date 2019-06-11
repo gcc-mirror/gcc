@@ -141,12 +141,14 @@ option_proposer::build_option_suggestions (const char *prefix)
 	    }
 	  else
 	    {
+	      bool option_added = false;
 	      if (option->flags & CL_TARGET)
 		{
 		  vec<const char *> option_values
 		    = targetm_common.get_valid_option_values (i, prefix);
 		  if (!option_values.is_empty ())
 		    {
+		      option_added = true;
 		      for (unsigned j = 0; j < option_values.length (); j++)
 			{
 			  char *with_arg = concat (opt_text, option_values[j],
@@ -158,7 +160,8 @@ option_proposer::build_option_suggestions (const char *prefix)
 		    }
 		  option_values.release ();
 		}
-	      else
+
+	      if (!option_added)
 		add_misspelling_candidates (m_option_suggestions, option,
 					    opt_text);
 	    }

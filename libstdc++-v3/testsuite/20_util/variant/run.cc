@@ -22,7 +22,6 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
-#include <memory_resource>
 #include <ext/throw_allocator.h>
 #include <testsuite_hooks.h>
 
@@ -433,9 +432,30 @@ void test_visit()
   }
 }
 
+struct Hashable
+{
+  Hashable(const char* s) : s(s) { }
+  // Non-trivial special member functions:
+  Hashable(const Hashable&) { }
+  Hashable(Hashable&&) noexcept { }
+  ~Hashable() { }
+
+  string s;
+
+  bool operator==(const Hashable& rhs) const noexcept
+  { return s == rhs.s; }
+};
+
+namespace std {
+  template<> struct hash<Hashable> {
+    size_t operator()(const Hashable& h) const noexcept
+    { return hash<std::string>()(h.s); }
+  };
+}
+
 void test_hash()
 {
-  unordered_set<variant<int, pmr::string>> s;
+  unordered_set<variant<int, Hashable>> s;
   VERIFY(s.emplace(3).second);
   VERIFY(s.emplace("asdf").second);
   VERIFY(s.emplace().second);
@@ -447,12 +467,12 @@ void test_hash()
   {
     struct A
     {
-      operator pmr::string()
+      operator Hashable()
       {
         throw nullptr;
       }
     };
-    variant<int, pmr::string> v;
+    variant<int, Hashable> v;
     try
       {
         v.emplace<1>(A{});

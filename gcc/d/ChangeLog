@@ -1,3 +1,7 @@
+2019-05-03  Release Manager
+
+	* GCC 9.1.0 released.
+
 2019-04-25  Johannes Pfau  <johannespfau@gmail.com>
 
 	* config-lang.in: Do not add target_libs if phobos is disabled.

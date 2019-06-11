@@ -1,3 +1,7 @@
+2019-05-03  Release Manager
+
+	* GCC 9.1.0 released.
+
 2019-04-22  Roman Zhuykov  <zhroma@ispras.ru>
 
 	* MAINTAINERS (Various Maintainers): Remove Ayal Zaks and add myself

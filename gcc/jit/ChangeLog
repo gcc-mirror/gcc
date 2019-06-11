@@ -1,3 +1,7 @@
+2019-05-03  Release Manager
+
+	* GCC 9.1.0 released.
+
 2019-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* jit-recording.c (reproducer::m_set_identifiers): Use false as Lazy

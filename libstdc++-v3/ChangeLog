@@ -1,3 +1,73 @@
+2019-05-03  Release Manager
+
+	* GCC 9.1.0 released.
+
+2019-05-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/i386-solaris2.10/baseline_symbols.txt: Regenerate.
+	* config/abi/post/i386-solaris2.10/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/i386-solaris2.11/baseline_symbols.txt: Likewise.
+	* config/abi/post/i386-solaris2.11/amd64/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris2.10/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris2.10/sparcv9/baseline_symbols.txt:
+	Likewise.
+	* config/abi/post/sparc-solaris2.11/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris2.11/sparcv9/baseline_symbols.txt:
+	Likewise.
+
+2019-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.26): Change _Lock_policyE2 exports
+	to _Lock_policyE[012].
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
+
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
+
+2019-04-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2019-04-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt: Updated.
+
+2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/variant/run.cc: Use a new Hashable type to test
+	hashing, because pmr::string depends on _GLIBCXX_USE_CXX11_ABI==1.
+	* testsuite/21_strings/basic_string/hash/hash.cc
+	[!_GLIBCXX_USE_CXX11_ABI]: Don't test pmr strings.
+	* testsuite/21_strings/basic_string/hash/hash_char8_t.cc
+	[!_GLIBCXX_USE_CXX11_ABI]: Likewise.
+
+2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4): Replace wildcard that matches
+	wstring::_M_replace_dispatch with more specific patterns.
+
+2019-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/s390x-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt: Update.
+
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Update.
+
+2019-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90239
+	* doc/xml/manual/status_cxx2020.xml: Correct status of P0591R4.
+	* doc/html/*: Regenerate.
+
 2019-04-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Document P0024R2 status.

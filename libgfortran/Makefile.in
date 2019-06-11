@@ -717,7 +717,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @LIBGFOR_USE_SYMVER_GNU_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_dep = $(srcdir)/gfortran.map
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_dep = gfortran.map-sun
 gfor_c_HEADERS = $(srcdir)/ISO_Fortran_binding.h
-gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/include
+gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
 	    $(lt_host_flags)
 

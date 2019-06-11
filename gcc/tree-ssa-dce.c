@@ -1237,6 +1237,7 @@ eliminate_unnecessary_stmts (void)
       bb = h.pop ();
 
       /* Remove dead statements.  */
+      auto_bitmap debug_seen;
       for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi = psi)
 	{
 	  stmt = gsi_stmt (gsi);
@@ -1282,11 +1283,15 @@ eliminate_unnecessary_stmts (void)
 			}
 		    }
 		  if (!dead)
-		    continue;
+		    {
+		      bitmap_clear (debug_seen);
+		      continue;
+		    }
 		}
 	      if (!is_gimple_debug (stmt))
 		something_changed = true;
 	      remove_dead_stmt (&gsi, bb, to_remove_edges);
+	      continue;
 	    }
 	  else if (is_gimple_call (stmt))
 	    {
@@ -1352,6 +1357,18 @@ eliminate_unnecessary_stmts (void)
 		    break;
 		  }
 	    }
+	  else if (gimple_debug_bind_p (stmt))
+	    {
+	      /* We are only keeping the last debug-bind of a
+	         non-DEBUG_EXPR_DECL variable in a series of
+		 debug-bind stmts.  */
+	      tree var = gimple_debug_bind_get_var (stmt);
+	      if (TREE_CODE (var) != DEBUG_EXPR_DECL
+		  && !bitmap_set_bit (debug_seen, DECL_UID (var)))
+		remove_dead_stmt (&gsi, bb, to_remove_edges);
+	      continue;
+	    }
+	  bitmap_clear (debug_seen);
 	}
 
       /* Remove dead PHI nodes.  */

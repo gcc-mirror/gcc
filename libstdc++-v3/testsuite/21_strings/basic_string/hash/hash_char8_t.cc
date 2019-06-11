@@ -39,9 +39,11 @@ void
 test01()
 {
   VERIFY( test(std::string("a narrow string")) );
-  VERIFY( test(std::pmr::string("a narrow string, but with PMR!")) );
   VERIFY( test(std::u8string(u8"a utf-8 string")) );
+#if _GLIBCXX_USE_CXX11_ABI
+  VERIFY( test(std::pmr::string("a narrow string, but with PMR!")) );
   VERIFY( test(std::pmr::u8string(u8"a utf-8 string, but with PMR!")) );
+#endif
 }
 
 void

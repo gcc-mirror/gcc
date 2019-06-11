@@ -1,3 +1,76 @@
+2019-05-03  Release Manager
+
+	* GCC 9.1.0 released.
+
+2019-04-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	Backport from mainline.
+	2019-04-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	PR target/86538
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins):
+	Define __ARM_FEATURE_ATOMICS
+
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	PR translation/90274
+	* opts.c (print_filtered_help): Wrap string in _(...).
+
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-04-27  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/90258
+	* opt-suggestions.c (option_proposer::build_option_suggestions):
+	When get_valid_option_values returns empty values, add the
+	misspelling candidate.
+
+2019-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90273
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Eliminate
+	useless debug stmts.
+
+2019-04-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/netbsd-d.c: Include memmodel.h.  Remove unused tree.h,
+	varasm.h, and netbsd-protos.h.
+
+2019-04-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR other/90257
+	Revert the revert:
+	2019-04-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/90178
+	Revert:
+	2018-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert the revert:
+	2013-10-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	Revert:
+	2013-10-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-spills.c (lra_final_code_change): Remove useless move insns.
+
+2019-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/90240
+	Revert:
+	2019-04-23  Bin Cheng  <bin.cheng@linux.alibaba.com>
+ 
+	PR tree-optimization/90078
+	* tree-ssa-loop-ivopts.c (comp_cost::operator +,-,+=,-+,/=,*=): Add
+	checks for infinite_cost overflow.
+
+2019-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* DEV-PHASE: Set to prerelease.
+
 2019-04-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/89765
