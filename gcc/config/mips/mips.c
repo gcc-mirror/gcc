@@ -20636,9 +20636,19 @@ mips_final_postscan_insn (FILE *file ATTRIBUTE_UNUSED, rtx_insn *insn,
   if (INSN_P (insn)
       && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
       && XINT (PATTERN (insn), 1) == UNSPEC_CONSTTABLE_END)
-    mips_set_text_contents_type (asm_out_file, "__pend_",
-				 INTVAL (XVECEXP (PATTERN (insn), 0, 0)),
-				 TRUE);
+    {
+      rtx_insn *next_insn = next_real_nondebug_insn (insn);
+      bool code_p = (next_insn != NULL
+		     && INSN_P (next_insn)
+		     && (GET_CODE (PATTERN (next_insn)) != UNSPEC_VOLATILE
+			 || XINT (PATTERN (next_insn), 1) != UNSPEC_CONSTTABLE));
+
+      /* Switch content type depending on whether there is code beyond
+	 the constant pool.  */
+      mips_set_text_contents_type (asm_out_file, "__pend_",
+				   INTVAL (XVECEXP (PATTERN (insn), 0, 0)),
+				   code_p);
+    }
 }
 
 /* Return the function that is used to expand the <u>mulsidi3 pattern.
