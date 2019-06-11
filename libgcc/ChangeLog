@@ -1,3 +1,7 @@
+2019-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgcov-merge.c (__gcov_merge_single): Revert previous change.
+
 2019-06-10  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/90808
