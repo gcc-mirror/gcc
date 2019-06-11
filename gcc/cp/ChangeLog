@@ -1,3 +1,10 @@
+2019-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR c++/90801
+	* typeck2.c (split_nonconstant_init_1): Avoid ordered remove
+	from CONSTRUCTOR by marking to remove elements and doing all
+	of them in a O(n) scan.
+
 2019-06-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90810

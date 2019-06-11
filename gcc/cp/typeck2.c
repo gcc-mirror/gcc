@@ -603,7 +603,7 @@ cxx_incomplete_type_error (location_t loc, const_tree value, const_tree type)
 static bool
 split_nonconstant_init_1 (tree dest, tree init)
 {
-  unsigned HOST_WIDE_INT idx;
+  unsigned HOST_WIDE_INT idx, tidx;
   tree field_index, value;
   tree type = TREE_TYPE (dest);
   tree inner_type = NULL;
@@ -657,7 +657,8 @@ split_nonconstant_init_1 (tree dest, tree init)
 	      if (!split_nonconstant_init_1 (sub, value))
 		complete_p = false;
 	      else
-		CONSTRUCTOR_ELTS (init)->ordered_remove (idx--);
+		/* Mark element for removal.  */
+		CONSTRUCTOR_ELT (init, idx)->index = NULL_TREE;
 	      num_split_elts++;
 	    }
 	  else if (!initializer_constant_valid_p (value, inner_type))
@@ -665,15 +666,8 @@ split_nonconstant_init_1 (tree dest, tree init)
 	      tree code;
 	      tree sub;
 
-	      /* FIXME: Ordered removal is O(1) so the whole function is
-		 worst-case quadratic. This could be fixed using an aside
-		 bitmap to record which elements must be removed and remove
-		 them all at the same time. Or by merging
-		 split_non_constant_init into process_init_constructor_array,
-		 that is separating constants from non-constants while building
-		 the vector.  */
-	      CONSTRUCTOR_ELTS (init)->ordered_remove (idx);
-	      --idx;
+	      /* Mark element for removal.  */
+	      CONSTRUCTOR_ELT (init, idx)->index = NULL_TREE;
 
 	      if (TREE_CODE (field_index) == RANGE_EXPR)
 		{
@@ -710,6 +704,21 @@ split_nonconstant_init_1 (tree dest, tree init)
 
 	      num_split_elts++;
 	    }
+	}
+      if (num_split_elts != 0)
+	{
+	  /* Perform the delayed ordered removal of non-constant elements
+	     we split out.  */
+	  for (tidx = 0, idx = 0; idx < CONSTRUCTOR_NELTS (init); ++idx)
+	    if (CONSTRUCTOR_ELT (init, idx)->index == NULL_TREE)
+	      ;
+	    else
+	      {
+		if (tidx != idx)
+		  *CONSTRUCTOR_ELT (init, tidx) = *CONSTRUCTOR_ELT (init, idx);
+		++tidx;
+	      }
+	  vec_safe_truncate (CONSTRUCTOR_ELTS (init), tidx);
 	}
       break;
 
