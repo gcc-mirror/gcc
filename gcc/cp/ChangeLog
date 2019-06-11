@@ -1,3 +1,14 @@
+2019-06-11  Matthew Beliveau  <mbelivea@redhat.com>
+
+	PR c++/90449 - add -Winaccessible-base option.
+	* class.c (warn_about_ambiguous_bases): Changed name to:
+	maybe_warn_about_inaccessible_bases.
+	(maybe_warn_about_inaccessible_bases):  Implemented new
+	Winaccessible-base warning option for both direct and virtual
+	base warnings.
+	(layout_class_type): Call to warn_about_ambiguous_bases changed to fit
+	new name.
+
 2019-06-11  Richard Biener  <rguenther@suse.de>
 
 	PR c++/90801

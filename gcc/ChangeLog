@@ -1,3 +1,8 @@
+2019-06-11  Matthew Beliveau  <mbelivea@redhat.com>
+
+	PR c++/90449 - add -Winaccessible-base option.
+	* doc/invoke.texi (Winaccessible-base): Document.
+
 2019-06-11  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/62041
