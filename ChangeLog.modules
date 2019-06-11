@@ -1,6 +1,13 @@
 2019-06-10  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::read_location): Don't map
+	UNKNOWN_LOCATION to loc.
+	(module_state::read_locations): Don't rely on that.
+	gcc/testsuite/
+	* g++.dg/modules/predef-2{.h,_[ab].C}: New.
+
+	gcc/cp/
 	* module.cc (loc_spans::init): Correct macro range ordering.
 	(module_state::write_locations): Fix more off-by-ones.
 	gcc/testsuite/
