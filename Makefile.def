@@ -4,7 +4,7 @@ AutoGen definitions Makefile.tpl;
 // Makefile.in is generated from Makefile.tpl by 'autogen Makefile.def'.
 // This file was originally written by Nathanael Nerode.
 //
-//   Copyright 2002-2013 Free Software Foundation
+//   Copyright 2002-2019 Free Software Foundation
 //
 // This file is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -128,6 +128,8 @@ host_modules= { module= lto-plugin; bootstrap=true;
 		extra_make_flags='@extra_linker_plugin_flags@'; };
 host_modules= { module= libcc1; extra_configure_flags=--enable-shared; };
 host_modules= { module= gotools; };
+host_modules= { module= libctf; no_install=true; no_check=true;
+		bootstrap=true; };
 
 target_modules = { module= libstdc++-v3;
 		   bootstrap=true;
@@ -428,6 +430,7 @@ dependencies = { module=all-binutils; on=all-build-flex; };
 dependencies = { module=all-binutils; on=all-build-bison; };
 dependencies = { module=all-binutils; on=all-intl; };
 dependencies = { module=all-binutils; on=all-gas; };
+dependencies = { module=all-binutils; on=all-libctf; };
 
 // We put install-opcodes before install-binutils because the installed
 // binutils might be on PATH, and they might need the shared opcodes
@@ -518,6 +521,14 @@ dependencies = { module=all-sim; on=configure-gdb; };
 dependencies = { module=all-fastjar; on=all-zlib; };
 dependencies = { module=all-fastjar; on=all-build-texinfo; };
 dependencies = { module=all-fastjar; on=all-libiberty; };
+dependencies = { module=all-libctf; on=all-libiberty; hard=true; };
+dependencies = { module=all-libctf; on=all-bfd; };
+dependencies = { module=all-libctf; on=all-zlib; };
+// So that checking for ELF support in BFD from libctf configure is possible.
+dependencies = { module=configure-libctf; on=all-bfd; };
+dependencies = { module=configure-libctf; on=all-intl; };
+dependencies = { module=configure-libctf; on=all-zlib; };
+dependencies = { module=configure-libctf; on=all-libiconv; };
 
 // Warning, these are not well tested.
 dependencies = { module=all-bison; on=all-intl; };
