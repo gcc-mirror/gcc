@@ -4245,6 +4245,17 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
 
+  /* -mprefixed-addr (and hence -mpcrel) requires -mcpu=future.  */
+  if (TARGET_PREFIXED_ADDR && !TARGET_FUTURE)
+    {
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
+	error ("%qs requires %qs", "-mpcrel", "-mcpu=future");
+      else if ((rs6000_isa_flags_explicit & OPTION_MASK_PREFIXED_ADDR) != 0)
+	error ("%qs requires %qs", "-mprefixed-addr", "-mcpu=future");
+
+      rs6000_isa_flags &= ~(OPTION_MASK_PCREL | OPTION_MASK_PREFIXED_ADDR);
+    }
+
   /* -mpcrel requires prefixed load/store addressing.  */
   if (TARGET_PCREL && !TARGET_PREFIXED_ADDR)
     {
@@ -4252,15 +4263,6 @@ rs6000_option_override_internal (bool global_init_p)
 	error ("%qs requires %qs", "-mpcrel", "-mprefixed-addr");
 
       rs6000_isa_flags &= ~OPTION_MASK_PCREL;
-    }
-
-  /* -mprefixed-addr (and hence -mpcrel) requires -mcpu=future.  */
-  if (TARGET_PREFIXED_ADDR && !TARGET_FUTURE)
-    {
-      if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
-	error ("%qs requires %qs", "-mprefixed-addr", "-mcpu=future");
-
-      rs6000_isa_flags &= ~(OPTION_MASK_PCREL | OPTION_MASK_PREFIXED_ADDR);
     }
 
   /* Print the options after updating the defaults.  */
@@ -37155,6 +37157,7 @@ rs6000_disable_incompatible_switches (void)
     const HOST_WIDE_INT dep_flags;	/* flags that depend on this option.  */
     const char *const name;		/* name of the switch.  */
   } flags[] = {
+    { OPTION_MASK_FUTURE,	OTHER_FUTURE_MASKS,	"future"	},
     { OPTION_MASK_P9_VECTOR,	OTHER_P9_VECTOR_MASKS,	"power9-vector"	},
     { OPTION_MASK_P8_VECTOR,	OTHER_P8_VECTOR_MASKS,	"power8-vector"	},
     { OPTION_MASK_VSX,		OTHER_VSX_VECTOR_MASKS,	"vsx"		},
