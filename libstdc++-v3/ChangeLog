@@ -1,3 +1,11 @@
+2019-06-09  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Fix ConstexprIterator requirements tests - No constexpr algorithms!
+	* testsuite/21_strings/basic_string_view/requirements/constexpr_iter.cc:
+	Replace copy with hand-rolled loop.
+	* testsuite/23_containers/array/requirements/constexpr_iter.cc:
+	Ditto.
+
 2019-06-08  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Test for C++20 p0858 - ConstexprIterator requirements.
