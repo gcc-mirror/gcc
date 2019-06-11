@@ -1,3 +1,8 @@
+2019-06-11  Faraz Shahbazker  <fshahbazker@wavecomp.com>
+
+	* gcc.target/mips/data-sym-pool.c: Update expected output.
+	* gcc.target/mips/data-sym-multi-pool.c: New test.
+
 2019-06-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR testsuite/65364
