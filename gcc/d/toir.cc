@@ -65,10 +65,10 @@ pop_binding_label (Statement * const &, d_label_entry *ent, binding_level *bl)
 }
 
 /* At the end of a function, all labels declared within the function
-   go out of scope.  BLOCK is the top-level block for the function.  */
+   go out of scope.  Queue them in LABELS.  */
 
 bool
-pop_label (Statement * const &s, d_label_entry *ent, tree block)
+pop_label (Statement * const &, d_label_entry *ent, vec<tree> &labels)
 {
   if (!ent->bc_label)
     {
@@ -77,12 +77,9 @@ pop_label (Statement * const &s, d_label_entry *ent, tree block)
       if (DECL_NAME (ent->label))
 	{
 	  gcc_assert (DECL_INITIAL (ent->label) != NULL_TREE);
-	  DECL_CHAIN (ent->label) = BLOCK_VARS (block);
-	  BLOCK_VARS (block) = ent->label;
+	  labels.safe_push (ent->label);
 	}
     }
-
-  d_function_chain->labels->remove (s);
 
   return true;
 }
@@ -101,6 +98,14 @@ push_binding_level (level_kind kind)
   new_level->kind = kind;
 
   current_binding_level = new_level;
+}
+
+static int
+cmp_labels (const void *p1, const void *p2)
+{
+  const tree *l1 = (const tree *)p1;
+  const tree *l2 = (const tree *)p2;
+  return DECL_UID (*l1) - DECL_UID (*l2);
 }
 
 tree
@@ -125,7 +130,17 @@ pop_binding_level (void)
 
       /* Pop all the labels declared in the function.  */
       if (d_function_chain->labels)
-	d_function_chain->labels->traverse<tree, &pop_label> (block);
+	{
+	  auto_vec<tree> labels;
+	  d_function_chain->labels->traverse<vec<tree> &, &pop_label> (labels);
+	  d_function_chain->labels->empty ();
+	  labels.qsort (cmp_labels);
+	  for (unsigned i = 0; i < labels.length (); ++i)
+	    {
+	      DECL_CHAIN (labels[i]) = BLOCK_VARS (block);
+	      BLOCK_VARS (block) = labels[i];
+	    }
+	}
     }
   else
     {
