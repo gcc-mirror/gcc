@@ -1,3 +1,9 @@
+2019-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90811
+	* config/nvptx/nvptx.c (nvptx_output_softstack_switch): Use and.b%d
+	instead of and.u%d.
+
 2019-06-07  John David Anglin  <danglin@gcc.gnu.orig>
 
 	PR target/90751
