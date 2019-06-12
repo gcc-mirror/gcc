@@ -1,3 +1,49 @@
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/abi-arg-struct.c: New test.
+	* gcc.target/pru/ashiftrt.c: New test.
+	* gcc.target/pru/builtins-1.c: New test.
+	* gcc.target/pru/builtins-error.c: New test.
+	* gcc.target/pru/clearbit.c: New test.
+	* gcc.target/pru/loop-asm.c: New test.
+	* gcc.target/pru/loop-dowhile.c: New test.
+	* gcc.target/pru/loop-hi-1.c: New test.
+	* gcc.target/pru/loop-hi-2.c: New test.
+	* gcc.target/pru/loop-qi-1.c: New test.
+	* gcc.target/pru/loop-qi-2.c: New test.
+	* gcc.target/pru/loop-short-1.c: New test.
+	* gcc.target/pru/loop-short-2.c: New test.
+	* gcc.target/pru/loop-si-1.c: New test.
+	* gcc.target/pru/loop-si-2.c: New test.
+	* gcc.target/pru/loop-u8_pcrel_overflow.c: New test.
+	* gcc.target/pru/loop-ubyte-1.c: New test.
+	* gcc.target/pru/loop-ubyte-2.c: New test.
+	* gcc.target/pru/lra-framepointer-fragmentation-1.c: New test.
+	* gcc.target/pru/lra-framepointer-fragmentation-2.c: New test.
+	* gcc.target/pru/mabi-ti-1.c: New test.
+	* gcc.target/pru/mabi-ti-2.c: New test.
+	* gcc.target/pru/mabi-ti-3.c: New test.
+	* gcc.target/pru/mabi-ti-4.c: New test.
+	* gcc.target/pru/mabi-ti-5.c: New test.
+	* gcc.target/pru/mabi-ti-6.c: New test.
+	* gcc.target/pru/mabi-ti-7.c: New test.
+	* gcc.target/pru/pr64366.c: New test.
+	* gcc.target/pru/pragma-ctable_entry.c: New test.
+	* gcc.target/pru/pru.exp: New file.
+	* gcc.target/pru/qbbc-1.c: New test.
+	* gcc.target/pru/qbbc-2.c: New test.
+	* gcc.target/pru/qbbc-3.c: New test.
+	* gcc.target/pru/qbbs-1.c: New test.
+	* gcc.target/pru/qbbs-2.c: New test.
+	* gcc.target/pru/setbit.c: New test.
+	* gcc.target/pru/zero_extend-and-hisi.c: New test.
+	* gcc.target/pru/zero_extend-and-qihi.c: New test.
+	* gcc.target/pru/zero_extend-and-qisi.c: New test.
+	* gcc.target/pru/zero_extend-hisi.c: New test.
+	* gcc.target/pru/zero_extend-qihi.c: New test.
+	* gcc.target/pru/zero_extend-qisi.c: New test.
+	* lib/target-supports.exp: Add PRU to feature filters.
+
 2019-06-12  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/90002
