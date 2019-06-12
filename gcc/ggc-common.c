@@ -1014,5 +1014,5 @@ ggc_prune_overhead_list (void)
       (*it).second.first->m_collected += (*it).second.second;
 
   delete ggc_mem_desc.m_reverse_object_map;
-  ggc_mem_desc.m_reverse_object_map = new map_t (13, false, false);
+  ggc_mem_desc.m_reverse_object_map = new map_t (13, false, false, false);
 }

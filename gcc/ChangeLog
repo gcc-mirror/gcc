@@ -1,3 +1,11 @@
+2019-06-12  Martin Liska  <mliska@suse.cz>
+
+	* ggc-common.c (ggc_prune_overhead_list): Do not sanitize
+	the created map.
+	* hash-map.h: Add sanitize_eq_and_hash into ::hash_map.
+	* mem-stats.h (mem_alloc_description::mem_alloc_description):
+	Do not sanitize created maps.
+
 2019-06-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-ssa-evrp.c (evrp_dom_walker::before_dom_children): Use
