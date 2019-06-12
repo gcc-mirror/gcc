@@ -1,3 +1,16 @@
+2019-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90811
+	* cfgexpand.c (align_local_variable): Add really_expand argument,
+	don't SET_DECL_ALIGN if it is false.
+	(add_stack_var): Add really_expand argument, pass it through to
+	align_local_variable.
+	(expand_one_stack_var_1): Pass true as really_expand to
+	align_local_variable.
+	(expand_one_ssa_partition): Pass true as really_expand to
+	add_stack_var.
+	(expand_one_var): Pass really_expand through to add_stack_var.
+
 2019-06-12  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
 
         * config/arm/iterators.md (VABAL): New int iterator.

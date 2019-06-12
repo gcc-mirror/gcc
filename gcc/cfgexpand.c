@@ -361,7 +361,7 @@ static bool has_short_buffer;
    we can't do with expected alignment of the stack boundary.  */
 
 static unsigned int
-align_local_variable (tree decl)
+align_local_variable (tree decl, bool really_expand)
 {
   unsigned int align;
 
@@ -370,7 +370,12 @@ align_local_variable (tree decl)
   else
     {
       align = LOCAL_DECL_ALIGNMENT (decl);
-      SET_DECL_ALIGN (decl, align);
+      /* Don't change DECL_ALIGN when called from estimated_stack_frame_size.
+	 That is done before IPA and could bump alignment based on host
+	 backend even for offloaded code which wants different
+	 LOCAL_DECL_ALIGNMENT.  */
+      if (really_expand)
+	SET_DECL_ALIGN (decl, align);
     }
   return align / BITS_PER_UNIT;
 }
@@ -418,7 +423,7 @@ alloc_stack_frame_space (poly_int64 size, unsigned HOST_WIDE_INT align)
 /* Accumulate DECL into STACK_VARS.  */
 
 static void
-add_stack_var (tree decl)
+add_stack_var (tree decl, bool really_expand)
 {
   struct stack_var *v;
 
@@ -446,7 +451,7 @@ add_stack_var (tree decl)
      variables that are simultaneously live.  */
   if (known_eq (v->size, 0U))
     v->size = 1;
-  v->alignb = align_local_variable (decl);
+  v->alignb = align_local_variable (decl, really_expand);
   /* An alignment of zero can mightily confuse us later.  */
   gcc_assert (v->alignb != 0);
 
@@ -1323,7 +1328,7 @@ expand_one_stack_var_1 (tree var)
   else
     {
       size = tree_to_poly_uint64 (DECL_SIZE_UNIT (var));
-      byte_align = align_local_variable (var);
+      byte_align = align_local_variable (var, true);
     }
 
   /* We handle highly aligned variables in expand_stack_vars.  */
@@ -1413,7 +1418,7 @@ expand_one_ssa_partition (tree var)
   if (!use_register_for_decl (var))
     {
       if (defer_stack_allocation (var, true))
-	add_stack_var (var);
+	add_stack_var (var, true);
       else
 	expand_one_stack_var_1 (var);
       return;
@@ -1695,7 +1700,7 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
 	}
     }
   else if (defer_stack_allocation (var, toplevel))
-    add_stack_var (origvar);
+    add_stack_var (origvar, really_expand);
   else
     {
       if (really_expand)
