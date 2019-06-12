@@ -1,5 +1,12 @@
 2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
 
+	* lib/gcc-dg.exp: Filter unsupported features in PRU's TI ABI mode.
+	* lib/target-utils.exp: Ditto.
+	* lib/target-supports.exp (check_effective_target_function_pointers,
+	check_effective_target_large_return_values): New.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
 	* lib/gcc-dg.exp: Bail on region overflow for tiny targets.
 	* lib/target-utils.exp: Ditto.
 	* lib/target-supports.exp: Declare PRU target as tiny.
