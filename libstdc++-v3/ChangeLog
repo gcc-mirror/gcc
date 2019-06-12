@@ -1,5 +1,8 @@
 2019-06-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/mutex (scoped_lock::~scoped_lock()): Use fold
+	expression.
+
 	* include/Makefile.am: Add new <bits/charconv.h> header.
 	* include/Makefile.in: Regenerate.
 	* include/bits/basic_string.h (to_string(int), to_string(unsigned))
