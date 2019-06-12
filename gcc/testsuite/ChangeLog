@@ -1,5 +1,10 @@
 2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
 
+	* gcc.dg/builtin-apply2.c: Skip for PRU.
+	* gcc.dg/torture/stackalign/builtin-apply-2.c: Ditto.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
 	* g++.old-deja/g++.abi/ptrmem.C: Add PRU to list.
 
 2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
