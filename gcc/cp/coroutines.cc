@@ -1216,6 +1216,23 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   tree stmt = begin_compound_stmt (BCS_FN_BODY);
 
   tree actor_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+  tree top_block = make_node (BLOCK);
+  BIND_EXPR_BLOCK (actor_bind) = top_block;
+
+  /* Update the block associated with the outer scope of the orig fn.  */
+  tree first = expr_first (fnbody);
+  if (first && TREE_CODE (first) == BIND_EXPR) {
+    /* We will discard this, since it's connected to the original scope
+       nest... ??? CHECKME, this might be overly cautious.  */
+    tree block = BIND_EXPR_BLOCK (first);
+    tree replace_blk = make_node (BLOCK);
+    BLOCK_VARS (replace_blk) = BLOCK_VARS (block);
+    /* .. and connect it here.  */
+    BLOCK_SUPERCONTEXT (replace_blk) = top_block;
+    BIND_EXPR_BLOCK (first) = replace_blk;
+    BLOCK_SUBBLOCKS (top_block) = replace_blk;
+  }
+
   add_stmt (actor_bind);
   tree actor_body = push_stmt_list ();
 
@@ -1948,18 +1965,34 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree coro_fp = build_lang_decl (VAR_DECL, get_identifier ("coro.frameptr"),
 				  coro_frame_ptr);
   DECL_CONTEXT (coro_fp) = current_scope ();
-  tree r = build_stmt (fn_start, DECL_EXPR, coro_fp);
-  add_stmt (r);
   tree varlist = coro_fp;
 
   /* Collected the scope vars we need ... only one for now. */
   BIND_EXPR_VARS (ramp_bind) = nreverse (varlist);
+
+  /* We're now going to create or reconnect the scope block from the original
+     function.  */
+  tree first = expr_first (fnbody);
+  tree top_block;
+  if (first && TREE_CODE (first) == BIND_EXPR)
+    top_block = BIND_EXPR_BLOCK (first);
+  else
+    top_block = make_node (BLOCK);
+
+  BLOCK_VARS (top_block) = BIND_EXPR_VARS (ramp_bind);
+  BLOCK_SUBBLOCKS (top_block) = NULL_TREE;
+  BIND_EXPR_BLOCK (ramp_bind) = top_block;
 
   /* FIXME: this is development marker, remove later.  */
   tree ramp_label = create_named_label_with_ctx (fn_start, "ramp.start",
 						 current_scope ());
   ramp_label = build_stmt (fn_start, LABEL_EXPR, ramp_label);
   add_stmt (ramp_label);
+
+  /* The decl_expr for the coro frame pointer.  */
+  tree r = build_stmt (fn_start, DECL_EXPR, coro_fp);
+  add_stmt (r);
+
   /* Allocate the frame.  This is the "real version"...
   tree allocated
     = build_call_expr_internal_loc (fn_start, IFN_CO_FRAME,
@@ -2113,6 +2146,11 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* Set up a new bind context for the GRO.  */
   tree gro_context_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+  /* Make and connect the scope blocks.  */
+  tree gro_block = make_node (BLOCK);
+  BLOCK_SUPERCONTEXT (gro_block) = top_block;
+  BLOCK_SUBBLOCKS (top_block) = gro_block;
+  BIND_EXPR_BLOCK (gro_context_bind) = gro_block;
   add_stmt (gro_context_bind);
 
   tree gro_meth = lookup_promise_member (orig, "get_return_object",

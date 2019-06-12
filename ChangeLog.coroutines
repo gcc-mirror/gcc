@@ -1,6 +1,13 @@
 2019-06-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (build_actor_fn): Adjust scopes in the re-
+	mapped function.
+	(morph_fn_to_coro): Build new scope for the ramp.
+
+2019-06-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (build_destroy_fn): Don't generate a BIND_EXPR.
 
 2019-06-12  Iain Sandoe  <iain@sandoe.co.uk>
