@@ -1,5 +1,10 @@
 2019-06-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/variant (get<T>, get<N>, get_if<N>, get_if<T>)
+	(variant::emplace): Change static_assert messages from "should be"
+	to "must be".
+	(hash<monostate>::operator()): Remove name of unused parameter.
+
 	* include/std/mutex (scoped_lock::~scoped_lock()): Use fold
 	expression.
 
