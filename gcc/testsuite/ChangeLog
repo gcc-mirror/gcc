@@ -1,5 +1,9 @@
 2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
 
+	* g++.old-deja/g++.abi/ptrmem.C: Add PRU to list.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
 	* gcc.dg/tree-ssa/20040204-1.c: XFAIL on pru.
 	* gcc.dg/tree-ssa/reassoc-33.c: Ditto.
 	* gcc.dg/tree-ssa/reassoc-34.c: Ditto.
