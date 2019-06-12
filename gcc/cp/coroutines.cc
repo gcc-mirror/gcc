@@ -649,6 +649,31 @@ coro_build_cvt_void_expr_stmt (tree expr, location_t loc)
   return coro_build_expr_stmt (t, loc);
 }
 
+/* Helpers for label creation.  */
+static tree
+create_anon_label_with_ctx (location_t loc, tree ctx)
+{
+  tree lab = build_decl (loc, LABEL_DECL, NULL_TREE, void_type_node);
+
+  DECL_ARTIFICIAL (lab) = 1;
+  DECL_IGNORED_P (lab) = 1;
+  DECL_CONTEXT (lab) = ctx;
+  return lab;
+}
+
+/* We mark our named labels as used, because we want to keep them in place
+   during development.  FIXME: Remove this before integration.  */
+static tree
+create_named_label_with_ctx (location_t loc, const char *name, tree ctx)
+{
+  tree lab_id = get_identifier (name);
+  tree lab = define_label (loc, lab_id);
+  DECL_CONTEXT (lab) = ctx;
+  DECL_ARTIFICIAL (lab) = 1;
+  TREE_USED (lab) = 1;
+  return lab;
+}
+
 struct __proxy_replace {
   tree from, to;
 };
@@ -743,18 +768,6 @@ struct __coro_aw_data {
   tree self_h;
   unsigned index; // resume point.
 };
-
-
-static tree
-create_anon_label_with_ctx (location_t loc, tree ctx)
-{
-  tree lab = build_decl (loc, LABEL_DECL, NULL_TREE, void_type_node);
-
-  DECL_ARTIFICIAL (lab) = 1;
-  DECL_IGNORED_P (lab) = 1;
-  DECL_CONTEXT (lab) = ctx;
-  return lab;
-}
 
 static tree
 co_await_find_in_subtree (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED,
@@ -853,13 +866,9 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
   size_t bufsize = sizeof ("destroy.") + 10;
   char *buf = (char *) alloca (bufsize);
   snprintf (buf, bufsize, "destroy.%d", resume_point);
-  tree destroy_label = get_identifier (buf);
-  destroy_label = define_label (loc, destroy_label);
-  DECL_CONTEXT (destroy_label) = actor;
+  tree destroy_label = create_named_label_with_ctx (loc, buf, actor);
   snprintf (buf, bufsize, "resume.%d", resume_point);
-  tree resume_label = get_identifier (buf);
-  resume_label = define_label (loc, resume_label);
-  DECL_CONTEXT (resume_label) = actor;
+  tree resume_label = create_named_label_with_ctx (loc, buf, actor);
   tree empty_list = build_empty_stmt (loc);
 
   tree dtor = NULL_TREE;
@@ -1210,11 +1219,10 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   add_stmt (actor_bind);
   tree actor_body = push_stmt_list ();
 
-  tree actor_begin_label = get_identifier ("actor.begin");
-  actor_begin_label = define_label (loc, actor_begin_label);
-  DECL_CONTEXT (actor_begin_label) = actor;
-
   tree actor_frame = build1 (INDIRECT_REF, coro_frame_type, actor_fp);
+  /* FIXME: this is development marker, remove later.  */
+  tree actor_begin_label = create_named_label_with_ctx (loc, "actor.begin",
+							actor);
 
   /* Re-write param references in the body, no code should be generated
      here.  */
@@ -1247,9 +1255,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   tree rat = build3 (COMPONENT_REF, short_unsigned_type_node, actor_frame,
 		    rat_field, NULL_TREE);
 
-  tree ret_label = get_identifier ("actor.ret");
-  ret_label = define_label (input_location, ret_label);
-  DECL_CONTEXT (ret_label) = actor;
+  tree ret_label = create_named_label_with_ctx (loc, "actor.ret", actor);
 
   tree lsb_if = begin_if_stmt ();
   tree chkb0 = build2 (BIT_AND_EXPR, short_unsigned_type_node, rat,
@@ -1379,9 +1385,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 					 tf_warning_or_error);
 
   /* co_return branches to the final_suspend label, so declare that now.  */
-  tree fs_label = get_identifier ("final_suspend");
-  fs_label = define_label (loc, fs_label);
-  DECL_CONTEXT (fs_label) = actor;
+  tree fs_label = create_named_label_with_ctx (loc, "final.suspend", actor);
 
   /* Expand co_returns in the saved function body  */
   fnbody = expand_co_returns (&fnbody, promise_proxy, ap, fs_label);
@@ -1425,10 +1429,9 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   add_stmt (r);
 
   /* now do the tail of the function.  */
-
-  tree del_promise_label = get_identifier ("coro.delete.promise");
-  del_promise_label = define_label (input_location, del_promise_label);
-  DECL_CONTEXT (del_promise_label) = actor;
+  tree del_promise_label = create_named_label_with_ctx (loc,
+							"coro.delete.promise",
+							actor);
   r = build_stmt (loc, LABEL_EXPR, del_promise_label);
   add_stmt (r);
 
@@ -1438,9 +1441,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 				tf_warning_or_error);
   add_stmt (r);
 
-  tree del_frame_label = get_identifier ("coro.delete.frame");
-  del_frame_label = define_label (input_location, del_frame_label);
-  DECL_CONTEXT (del_frame_label) = actor;
+  tree del_frame_label = create_named_label_with_ctx (loc, "coro.delete.frame",
+						      actor);
   r = build_stmt (loc, LABEL_EXPR, del_frame_label);
   add_stmt (r);
 
@@ -1943,12 +1945,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   coro_frame_type = finish_struct (coro_frame_type, NULL_TREE);
 
   /* Ramp: */
-  tree ramp_label = get_identifier ("ramp.start");
-  ramp_label = define_label (fn_start, ramp_label);
-  
-  ramp_label = build_stmt (fn_start, LABEL_EXPR, ramp_label);
-  add_stmt (ramp_label);
-
   /* Now build the ramp function pieces.  */
   tree ramp_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
   add_stmt (ramp_bind);
@@ -1965,6 +1961,11 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* Collected the scope vars we need ... only one for now. */
   BIND_EXPR_VARS (ramp_bind) = nreverse (varlist);
 
+  /* FIXME: this is development marker, remove later.  */
+  tree ramp_label = create_named_label_with_ctx (fn_start, "ramp.start",
+						 current_scope ());
+  ramp_label = build_stmt (fn_start, LABEL_EXPR, ramp_label);
+  add_stmt (ramp_label);
   /* Allocate the frame.  This is the "real version"...
   tree allocated
     = build_call_expr_internal_loc (fn_start, IFN_CO_FRAME,
@@ -1980,11 +1981,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
-  /* Test for NULL and quit.  */
+  /* Test for NULL and quit if so.  */
 
-  tree cfra_label = get_identifier ("coro.frame.active");
-  cfra_label = define_label (fn_start, cfra_label);
-
+  tree cfra_label = create_named_label_with_ctx (fn_start, "coro.frame.active",
+						 current_scope ());
   tree early_ret_list = NULL;
   r = build_stmt (input_location, RETURN_EXPR, NULL);
   TREE_NO_WARNING (r) |= 1; /* We don't want a warning about this.  */
@@ -2182,8 +2182,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   add_stmt (r);
 
 #if CLANG_DOES_THIS_BUT_IT_SEEMS_UNREACHABLE
-  tree del_gro_label = get_identifier ("coro.destroy.retval");
-  del_gro_label = define_label (input_location, del_gro_label);
+  tree del_gro_label = create_named_label_with_ctx (input_location,
+						    "coro.destroy.retval",
+						     current_scope ());
   r = build_stmt (input_location, LABEL_EXPR, del_gro_label);
   add_stmt (r);
 
