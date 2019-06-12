@@ -2257,7 +2257,13 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   pop_deferring_access_checks ();
 
   DECL_SAVED_TREE (orig) = newbody;
+  /* Link our new functions into the list.  */
+  TREE_CHAIN (destroy) = TREE_CHAIN (orig);
+  TREE_CHAIN (actor) = destroy;
+  TREE_CHAIN (orig) = actor;
+  
   *resumer = actor;
   *destroyer = destroy;
+  
   return true;
 }
