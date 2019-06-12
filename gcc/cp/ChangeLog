@@ -1,5 +1,9 @@
 2019-06-12  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/66999 - 'this' captured by reference.
+	* parser.c (cp_parser_lambda_introducer): Reject `&this'.  Use
+	cp_lexer_nth_token_is instead of cp_lexer_peek_nth_token.
+
 	PR c++/90825 - endless recursion when evaluating sizeof.
 	PR c++/90832 - endless recursion when evaluating sizeof.
 	* constexpr.c (cxx_eval_constant_expression): Don't recurse on the
