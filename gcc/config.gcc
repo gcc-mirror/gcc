@@ -514,6 +514,9 @@ powerpc*-*-*)
 	esac
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
 	;;
+pru-*-*)
+	cpu_type=pru
+	;;
 riscv*)
 	cpu_type=riscv
 	extra_objs="riscv-builtins.o riscv-c.o"
@@ -2762,6 +2765,12 @@ powerpcle-*-eabi*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h usegas.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/sysv4le.h rs6000/eabi.h"
 	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
 	extra_options="${extra_options} rs6000/sysv4.opt"
+	use_gcc_stdint=wrap
+	;;
+pru*-*-*)
+	tm_file="elfos.h newlib-stdint.h ${tm_file}"
+	tmake_file="${tmake_file} pru/t-pru"
+	extra_objs="pru-pragma.o pru-passes.o"
 	use_gcc_stdint=wrap
 	;;
 rs6000-ibm-aix6.* | powerpc-ibm-aix6.*)
