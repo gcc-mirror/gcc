@@ -1219,10 +1219,10 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   add_stmt (actor_bind);
   tree actor_body = push_stmt_list ();
 
-  tree actor_frame = build1 (INDIRECT_REF, coro_frame_type, actor_fp);
   /* FIXME: this is development marker, remove later.  */
   tree actor_begin_label = create_named_label_with_ctx (loc, "actor.begin",
 							actor);
+  tree actor_frame = build1_loc (loc, INDIRECT_REF, coro_frame_type, actor_fp);
 
   /* Re-write param references in the body, no code should be generated
      here.  */
@@ -1238,8 +1238,9 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 	  tree fld_ref = lookup_member (coro_frame_type, parm.field_id,
 					/*protect*/1,  /*want_type*/ 0,
 					tf_warning_or_error);
-	  tree fld_idx = build3 (COMPONENT_REF, TREE_TYPE (arg),
-				 actor_frame, fld_ref, NULL_TREE);
+	  tree fld_idx = build3_loc (loc,
+				     COMPONENT_REF, TREE_TYPE (arg),
+				     actor_frame, fld_ref, NULL_TREE);
 	  int i;
 	  tree *puse;
 	  FOR_EACH_VEC_ELT (*parm.body_uses, i, puse)
@@ -2034,7 +2035,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree resume_x = build_class_member_access_expr (deref_fp, resume_m,
 						  NULL_TREE, false,
 						  tf_warning_or_error);
-  r = build2 (INIT_EXPR, act_des_fn_ptr, resume_x, actor_addr);
+  r = build2_loc (fn_start, INIT_EXPR, act_des_fn_ptr, resume_x, actor_addr);
   r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
@@ -2045,7 +2046,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree destroy_x = build_class_member_access_expr (deref_fp, destroy_m,
 						  NULL_TREE, false,
 						  tf_warning_or_error);
-  r = build2 (INIT_EXPR, act_des_fn_ptr, destroy_x, destroy_addr);
+  r = build2_loc (fn_start, INIT_EXPR, act_des_fn_ptr, destroy_x, destroy_addr);
   r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
@@ -2135,7 +2136,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree gro_bind_vars = gro;
 
   // init our actual var.
-  r = build2 (INIT_EXPR, TREE_TYPE (gro), gro, get_ro);
+  r = build2_loc (fn_start, INIT_EXPR, TREE_TYPE (gro), gro, get_ro);
   r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
@@ -2147,7 +2148,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 						    NULL_TREE, false,
 						    tf_warning_or_error);
   r = build_int_cst (short_unsigned_type_node, 0);
-  r = build2 (INIT_EXPR, short_unsigned_type_node, resume_idx, r);
+  r = build2_loc (fn_start, INIT_EXPR, short_unsigned_type_node, resume_idx, r);
   r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
@@ -2156,6 +2157,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
 
+  /* Switch to using 'input_location' as the loc, since we're now more
+     logically doing things related to the end of the function.  */
   /* done, we just need the return value.  */
   bool no_warning;
   if (same_type_p (TREE_TYPE (gro), fn_return_type))
@@ -2169,7 +2172,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 				     complete_ctor_identifier, &args,
 				     fn_return_type, LOOKUP_NORMAL,
 				     tf_warning_or_error);
-      r = coro_build_cvt_void_expr_stmt (r, fn_start);
+      r = coro_build_cvt_void_expr_stmt (r, input_location);
       add_stmt (r);
       release_tree_vector (args);
       // We know it's the correct type.

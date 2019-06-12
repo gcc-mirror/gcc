@@ -1,5 +1,12 @@
 2019-06-12  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* coroutines.cc (build_actor_fn): Add location information to
+	generated trees.
+	(morph_fn_to_coro): Likewise.
+
+2019-06-12  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/testsuite/
 	* g++.dg/coroutines/coroutines.exp: Append '-fno-exceptions' to
 	the test flags.
