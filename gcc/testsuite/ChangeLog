@@ -1,5 +1,13 @@
 2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
 
+	* gcc.dg/tree-ssa/20040204-1.c: XFAIL on pru.
+	* gcc.dg/tree-ssa/reassoc-33.c: Ditto.
+	* gcc.dg/tree-ssa/reassoc-34.c: Ditto.
+	* gcc.dg/tree-ssa/reassoc-35.c: Ditto.
+	* gcc.dg/tree-ssa/reassoc-36.c: Ditto.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
 	* gcc.dg/stack-usage-1.c: Define PRU stack usage.
 
 2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
