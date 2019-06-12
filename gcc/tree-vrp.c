@@ -1154,21 +1154,6 @@ range_includes_p (const value_range_base *vr, HOST_WIDE_INT x)
   return vr->may_contain_p (build_int_cst (vr->type (), x));
 }
 
-/* If *VR has a value range that is a single constant value return that,
-   otherwise return NULL_TREE.
-
-   ?? This actually returns TRUE for [&x, &x], so perhaps "constant"
-   is not the best name.  */
-
-tree
-value_range_constant_singleton (const value_range_base *vr)
-{
-  tree result = NULL;
-  if (vr->singleton_p (&result))
-    return result;
-  return NULL;
-}
-
 /* Value range wrapper for wide_int_range_set_zero_nonzero_bits.
 
    Compute MAY_BE_NONZERO and MUST_BE_NONZERO bit masks for range in VR.

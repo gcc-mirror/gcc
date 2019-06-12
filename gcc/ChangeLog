@@ -1,3 +1,12 @@
+2019-06-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-evrp.c (evrp_dom_walker::before_dom_children): Use
+	value_range::singleton_p.
+	* tree-vrp.c (value_range_constant_singleton): Remove.
+	* tree-vrp.h (value_range_constant_singleton): Remove.
+	* vr-values.c (vr_values::singleton): Use
+	value_range::singleton_p.
+
 2019-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/90811
