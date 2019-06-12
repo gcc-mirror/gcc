@@ -1,3 +1,8 @@
+2019-06-12  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+        * gcc.target/arm/ssadv16qi.c: New test.
+        * gcc.target/arm/usadv16qi.c: Likewise.
+
 2019-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/90760

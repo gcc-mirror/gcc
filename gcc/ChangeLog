@@ -1,3 +1,10 @@
+2019-06-12  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+        * config/arm/iterators.md (VABAL): New int iterator.
+        * config/arm/neon.md (<sup>sadv16qi): New define_expand.
+        * config/arm/unspecs.md ("unspec"): Define UNSPEC_VABAL_S, UNSPEC_VABAL_U
+        values.
+
 2019-06-12  Martin Liska  <mliska@suse.cz>
 
 	* value-prof.c (stream_out_histogram_value): Only first value
