@@ -1,5 +1,9 @@
 2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
 
+	* gcc.dg/stack-usage-1.c: Define PRU stack usage.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
 	* gcc.c-torture/execute/20101011-1.c: Define DO_TEST to 0 for PRU.
 	* gcc.dg/20020312-2.c: No PIC register for PRU.
 

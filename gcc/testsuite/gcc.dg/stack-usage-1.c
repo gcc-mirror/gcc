@@ -93,6 +93,8 @@
 #  define SIZE 254
 #elif defined (__nios2__)
 #  define SIZE 252
+#elif defined (__PRU__)
+#  define SIZE 252
 #elif defined (__v850__)
 #define SIZE 260
 #elif defined (__mn10300__)
