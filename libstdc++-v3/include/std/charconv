@@ -36,7 +36,10 @@
 #include <type_traits>
 #include <limits>
 #include <cctype>
+#include <bits/charconv.h> // for __to_chars_len, __to_chars_10_impl
 #include <bits/error_constants.h> // for std::errc
+
+// Define when floating point is supported: #define __cpp_lib_to_chars 201611L
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -76,42 +79,30 @@ namespace __detail
     using __integer_to_chars_result_type
       = enable_if_t<__is_int_to_chars_type<_Tp>::value, to_chars_result>;
 
+  // Pick an unsigned type of suitable size. This is used to reduce the
+  // number of specializations of __to_chars_len, __to_chars etc. that
+  // get instantiated. For example, to_chars<char> and to_chars<short>
+  // and to_chars<unsigned> will all use the same code, and so will
+  // to_chars<long> when sizeof(int) == sizeof(long).
   template<typename _Tp>
-    using __unsigned_least_t
-      = conditional_t<(sizeof(_Tp) <= sizeof(int)), unsigned int,
-	conditional_t<(sizeof(_Tp) <= sizeof(long)), unsigned long,
-	conditional_t<(sizeof(_Tp) <= sizeof(long long)), unsigned long long,
+    struct __to_chars_unsigned_type : __make_unsigned_selector_base
+    {
+      using _UInts = _List<unsigned int, unsigned long, unsigned long long
 #if _GLIBCXX_USE_INT128
-	conditional_t<(sizeof(_Tp) <= sizeof(__int128)), unsigned __int128,
+	, unsigned __int128
 #endif
-	void
-#if _GLIBCXX_USE_INT128
-	>
-#endif
-	>>>;
+	>;
+      using type = typename __select<sizeof(_Tp), _UInts>::__type;
+    };
+
+  template<typename _Tp>
+    using __unsigned_least_t = typename __to_chars_unsigned_type<_Tp>::type;
 
   // Generic implementation for arbitrary bases.
+  // Defined in <bits/charconv.h>.
   template<typename _Tp>
     constexpr unsigned
-    __to_chars_len(_Tp __value, int __base = 10) noexcept
-    {
-      static_assert(is_integral<_Tp>::value, "implementation bug");
-      static_assert(is_unsigned<_Tp>::value, "implementation bug");
-
-      unsigned __n = 1;
-      const int __b2 = __base  * __base;
-      const int __b3 = __b2 * __base;
-      const int __b4 = __b3 * __base;
-      for (;;)
-	{
-	  if (__value < __base) return __n;
-	  if (__value < __b2) return __n + 1;
-	  if (__value < __b3) return __n + 2;
-	  if (__value < __b4) return __n + 3;
-	  __value /= (unsigned)__b4;
-	  __n += 4;
-	}
-    }
+    __to_chars_len(_Tp __value, int __base /* = 10 */) noexcept;
 
   template<typename _Tp>
     constexpr unsigned
@@ -242,7 +233,7 @@ namespace __detail
     }
 
   template<typename _Tp>
-    __integer_to_chars_result_type<_Tp>
+    inline __integer_to_chars_result_type<_Tp>
     __to_chars_10(char* __first, char* __last, _Tp __val) noexcept
     {
       static_assert(is_integral<_Tp>::value, "implementation bug");
@@ -259,29 +250,7 @@ namespace __detail
 	  return __res;
 	}
 
-      static constexpr char __digits[201] =
-	"0001020304050607080910111213141516171819"
-	"2021222324252627282930313233343536373839"
-	"4041424344454647484950515253545556575859"
-	"6061626364656667686970717273747576777879"
-	"8081828384858687888990919293949596979899";
-      unsigned __pos = __len - 1;
-      while (__val >= 100)
-	{
-	  auto const __num = (__val % 100) * 2;
-	  __val /= 100;
-	  __first[__pos] = __digits[__num + 1];
-	  __first[__pos - 1] = __digits[__num];
-	  __pos -= 2;
-	}
-      if (__val >= 10)
-	{
-	  auto const __num = __val * 2;
-	  __first[__pos] = __digits[__num + 1];
-	  __first[__pos - 1] = __digits[__num];
-	}
-      else
-	__first[__pos] = '0' + __val;
+      __detail::__to_chars_10_impl(__first, __len, __val);
       __res.ptr = __first + __len;
       __res.ec = {};
       return __res;
