@@ -1,4 +1,7 @@
-2019-06-11  Marek Polacek  <polacek@redhat.com>
+2019-06-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/66999 - 'this' captured by reference.
+	* g++.dg/cpp0x/lambda/lambda-this21.C: New test.
 
 	PR c++/90825 - endless recursion when evaluating sizeof.
 	PR c++/90832 - endless recursion when evaluating sizeof.

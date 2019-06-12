@@ -10526,7 +10526,8 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 
   /* Record default capture mode.  "[&" "[=" "[&," "[=,"  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_AND)
-      && cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_NAME)
+      && !cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME)
+      && !cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_THIS))
     LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) = CPLD_REFERENCE;
   else if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
     LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) = CPLD_COPY;
@@ -10606,6 +10607,17 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	    add_capture (lambda_expr, /*id=*/this_identifier,
 			 /*initializer=*/finish_this_expr (),
 			 /*by_reference_p=*/false, explicit_init_p);
+	  continue;
+	}
+
+      /* But reject `&this'.  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_AND)
+	  && cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_THIS))
+	{
+	  error_at (cp_lexer_peek_token (parser->lexer)->location,
+		    "%<this%> cannot be captured by reference");
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_lexer_consume_token (parser->lexer);
 	  continue;
 	}
 
