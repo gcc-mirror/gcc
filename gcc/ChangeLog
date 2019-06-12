@@ -1,4 +1,4 @@
-2019-06-19  Dimitar Dimitrov  <dimitar@dinux.eu>
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* common/config/pru/pru-common.c: New file.
 	* config.gcc: Add PRU target.
