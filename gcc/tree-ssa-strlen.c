@@ -296,34 +296,77 @@ get_stridx (tree exp)
     {
       if (ssa_ver_to_stridx[SSA_NAME_VERSION (exp)])
 	return ssa_ver_to_stridx[SSA_NAME_VERSION (exp)];
-      int i;
+
       tree e = exp;
-      HOST_WIDE_INT off = 0;
-      for (i = 0; i < 5; i++)
+      HOST_WIDE_INT offset = 0;
+      /* Follow a chain of at most 5 assignments.  */
+      for (int i = 0; i < 5; i++)
 	{
 	  gimple *def_stmt = SSA_NAME_DEF_STMT (e);
-	  if (!is_gimple_assign (def_stmt)
-	      || gimple_assign_rhs_code (def_stmt) != POINTER_PLUS_EXPR)
+	  if (!is_gimple_assign (def_stmt))
 	    return 0;
-	  tree rhs1 = gimple_assign_rhs1 (def_stmt);
-	  tree rhs2 = gimple_assign_rhs2 (def_stmt);
-	  if (TREE_CODE (rhs1) != SSA_NAME
-	      || !tree_fits_shwi_p (rhs2))
+
+	  tree_code rhs_code = gimple_assign_rhs_code (def_stmt);
+	  tree ptr, off;
+
+	  if (rhs_code == ADDR_EXPR)
+	    {
+	      /* Handle indices/offsets into VLAs which are implemented
+	         as pointers to arrays.  */
+	      ptr = gimple_assign_rhs1 (def_stmt);
+	      ptr = TREE_OPERAND (ptr, 0);
+
+	      /* Handle also VLAs of types larger than char.  */
+	      if (tree eltsize = TYPE_SIZE_UNIT (TREE_TYPE (ptr)))
+		{
+		  if (TREE_CODE (ptr) == ARRAY_REF)
+		    {
+		      off = TREE_OPERAND (ptr, 1);
+		      /* Scale the array index by the size of the element
+			 type (normally 1 for char).  */
+		      off = fold_build2 (MULT_EXPR, TREE_TYPE (off), off,
+					 eltsize);
+		      ptr = TREE_OPERAND (ptr, 0);
+		    }
+		  else
+		    off = integer_zero_node;
+		}
+	      else
+		return 0;
+
+	      if (TREE_CODE (ptr) != MEM_REF)
+	        return 0;
+
+	      /* Add the MEM_REF byte offset.  */
+	      tree mem_off = TREE_OPERAND (ptr, 1);
+	      off = fold_build2 (PLUS_EXPR, TREE_TYPE (off), off, mem_off);
+	      ptr = TREE_OPERAND (ptr, 0);
+	    }
+	  else if (rhs_code == POINTER_PLUS_EXPR)
+	    {
+	      ptr = gimple_assign_rhs1 (def_stmt);
+	      off = gimple_assign_rhs2 (def_stmt);
+	    }
+	  else
 	    return 0;
-	  HOST_WIDE_INT this_off = tree_to_shwi (rhs2);
+
+	  if (TREE_CODE (ptr) != SSA_NAME
+	      || !tree_fits_shwi_p (off))
+	    return 0;
+	  HOST_WIDE_INT this_off = tree_to_shwi (off);
 	  if (this_off < 0)
 	    return 0;
-	  off = (unsigned HOST_WIDE_INT) off + this_off;
-	  if (off < 0)
+	  offset = (unsigned HOST_WIDE_INT) offset + this_off;
+	  if (offset < 0)
 	    return 0;
-	  if (ssa_ver_to_stridx[SSA_NAME_VERSION (rhs1)])
+	  if (ssa_ver_to_stridx[SSA_NAME_VERSION (ptr)])
 	    {
 	      strinfo *si
-		= get_strinfo (ssa_ver_to_stridx[SSA_NAME_VERSION (rhs1)]);
-	      if (si && compare_nonzero_chars (si, off) >= 0)
-		return get_stridx_plus_constant (si, off, exp);
+	        = get_strinfo (ssa_ver_to_stridx[SSA_NAME_VERSION (ptr)]);
+	      if (si && compare_nonzero_chars (si, offset) >= 0)
+	        return get_stridx_plus_constant (si, offset, exp);
 	    }
-	  e = rhs1;
+	  e = ptr;
 	}
       return 0;
     }
