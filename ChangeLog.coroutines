@@ -1,5 +1,18 @@
 2019-06-12  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/
+	* coroutines.cc (morph_fn_to_coro):  Return a default-constructed
+	object on morph error.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/co-yield-syntax-3.C (struct DummyYield):
+	* g++.dg/coroutines/coro-missing-gro.C (struct MissingGRO):
+	* g++.dg/coroutines/coro-missing-promise-yield.C (struct MissingPromiseYield):
+	* g++.dg/coroutines/coro-missing-ret-value.C (struct MissingRetValue):
+	* g++.dg/coroutines/coro-missing-ret-void.C (struct MissingRetVoid):
+
+2019-06-12  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/cp/
 	* coroutines.cc (build_actor_fn): Add location information to
 	generated trees.

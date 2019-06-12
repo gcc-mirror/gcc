@@ -5,6 +5,7 @@ namespace coro = std::experimental::coroutines_n4775;
 
 struct MissingPromiseYield {
   coro::coroutine_handle<> handle;
+  MissingPromiseYield () : handle (nullptr) {}
   MissingPromiseYield (coro::coroutine_handle<> handle) : handle (handle) {}
   struct missing_yield {
     coro::suspend_never initial_suspend() { return {}; }

@@ -6,6 +6,7 @@ namespace coro = std::experimental::coroutines_n4775;
 /* Diagose missing return_void() in the promise type.  */
 struct MissingRetValue {
   coro::coroutine_handle<> handle;
+  MissingRetValue () : handle (nullptr) {}
   MissingRetValue (coro::coroutine_handle<> handle) : handle (handle) {}
   struct missing_retvoid {
     coro::suspend_never initial_suspend() { return {}; }

@@ -1987,8 +1987,16 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree cfra_label = create_named_label_with_ctx (fn_start, "coro.frame.active",
 						 current_scope ());
   tree early_ret_list = NULL;
-  r = build_stmt (input_location, RETURN_EXPR, NULL);
-  TREE_NO_WARNING (r) |= 1; /* We don't want a warning about this.  */
+  /* Default construct an empty return object.  */
+  r = build_special_member_call (DECL_RESULT (orig), complete_ctor_identifier,
+				 NULL, fn_return_type, LOOKUP_NORMAL,
+				 tf_warning_or_error);
+  r = coro_build_cvt_void_expr_stmt (r, fn_start);
+  append_to_statement_list (r, &early_ret_list);
+  // We know it's the correct type.
+  r = DECL_RESULT (orig);
+  r = build_stmt (fn_start, RETURN_EXPR, r);
+  TREE_NO_WARNING (r) |= 1;
   r = maybe_cleanup_point_expr_void (r);
   append_to_statement_list (r, &early_ret_list);
 

@@ -6,6 +6,7 @@ namespace coro = std::experimental::coroutines_n4775;
 /* Diagose missing return_void() in the promise type.  */
 struct DummyYield {
   coro::coroutine_handle<> handle;
+  DummyYield () : handle (nullptr) {}
   DummyYield (coro::coroutine_handle<> handle) : handle (handle) {}
   struct dummy_yield {
     coro::suspend_never initial_suspend() { return {}; }
