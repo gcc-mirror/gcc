@@ -1,5 +1,11 @@
 2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
 
+	* lib/gcc-dg.exp: Bail on region overflow for tiny targets.
+	* lib/target-utils.exp: Ditto.
+	* lib/target-supports.exp: Declare PRU target as tiny.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
 	* gcc.target/pru/abi-arg-struct.c: New test.
 	* gcc.target/pru/ashiftrt.c: New test.
 	* gcc.target/pru/builtins-1.c: New test.
