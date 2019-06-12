@@ -22,6 +22,4 @@ void test_signed_msg_encoding(void)
     f();
 }
 
-/* { dg-final { scan-tree-dump-times "MEM\\\[\\(struct _s \\*\\)&signInfo \\+ \[0-9\]+B\\\] = {}" 1 "dse1" { target { ! store_merge } } } }
-   { dg-final { scan-tree-dump-times "MEM <char\\\[8]> \\\[\\(struct _s \\*\\)&signInfo \\+ \[0-9\]+B\\\] = {}" 1 "dse1" { target { store_merge } } } } */
-
+/* { dg-final { scan-tree-dump-times "MEM <char\\\[\[0-9\]+]> \\\[\\(struct _s \\*\\)&signInfo \\+ \[0-9\]+B\\\] = {}" 1 "dse1"  } } */
