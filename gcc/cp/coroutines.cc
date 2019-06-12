@@ -1528,10 +1528,6 @@ build_destroy_fn (location_t loc, tree coro_frame_type,
   current_stmt_tree ()->stmts_are_full_exprs_p = 1;
   tree dstr_stmt = begin_compound_stmt (BCS_FN_BODY);
 
-  tree destr_bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
-  add_stmt (destr_bind);
-  tree destr_body = push_stmt_list ();
-
   tree destr_frame = build1 (INDIRECT_REF, coro_frame_type, destr_fp);
 
   tree resume_idx_name = get_identifier ("__resume_at");
@@ -1556,9 +1552,6 @@ build_destroy_fn (location_t loc, tree coro_frame_type,
   r = build_stmt (loc, RETURN_EXPR, NULL);
   r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
-
-  destr_body = pop_stmt_list (destr_body);
-  BIND_EXPR_BODY (destr_bind) = destr_body;
 
   finish_compound_stmt (dstr_stmt);
   DECL_SAVED_TREE (destroy) = pop_stmt_list (destr_outer);

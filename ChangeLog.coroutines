@@ -1,11 +1,16 @@
 2019-06-12  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* coroutines.cc (build_destroy_fn): Don't generate a BIND_EXPR.
+
+2019-06-12  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/testsuite/
 	* g++.dg/coroutines/torture/func-params-3.C: New test.
 
 2019-06-12  Iain Sandoe  <iain@sandoe.co.uk>
 
-	gcc/
+	gcc/cp/
 	* coroutines.cc (morph_fn_to_coro):  Return a default-constructed
 	object on morph error.
 
