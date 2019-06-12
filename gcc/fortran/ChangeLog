@@ -1,5 +1,9 @@
 2019-06-12  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	* gfortran.h (gfc_free_dt_list): Remove prototype.
+
+2019-06-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/90002
 	* array.c (gfc_free_array_spec): When freeing an array-spec, avoid
 	an ICE for assumed-shape coarrays 

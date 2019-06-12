@@ -3117,8 +3117,6 @@ void gfc_traverse_user_op (gfc_namespace *, void (*)(gfc_user_op *));
 void gfc_save_all (gfc_namespace *);
 
 void gfc_enforce_clean_symbol_state (void);
-void gfc_free_dt_list (void);
-
 
 gfc_gsymbol *gfc_get_gsymbol (const char *, bool bind_c);
 gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, const char *);
