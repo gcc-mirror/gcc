@@ -1,3 +1,10 @@
+2019-06-12  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90662
+	* gcc.dg/strlenopt-62.c: New test.
+	* gcc.dg/strlenopt-63.c: New test.
+	* gcc.dg/strlenopt-64.c: New test.
+
 2019-06-12  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
 
         * gcc.target/arm/ssadv16qi.c: New test.
