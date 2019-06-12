@@ -1,5 +1,11 @@
 2019-06-12  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/testsuite/
+	* g++.dg/coroutines/coroutines.exp: Append '-fno-exceptions' to
+	the test flags.
+
+2019-06-12  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/cp/
 	* coroutines.cc (create_anon_label_with_ctx): Moved.
 	(create_named_label_with_ctx): New Helper.
