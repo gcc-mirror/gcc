@@ -1,3 +1,10 @@
+2019-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* io.c (check_format): Use G_(...) instead of _(...) for error values,
+	append " in format string at %L" to all strings but unexpected_element,
+	use error as gfc_error formating string instead of
+	"%s in format string at %L".  Formatting fixes.
+
 2019-06-12  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.h (gfc_free_dt_list): Remove prototype.
