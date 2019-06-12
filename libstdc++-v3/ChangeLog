@@ -1,5 +1,10 @@
 2019-06-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/algorithm (__cpp_lib_parallel_algorithm): Fix value.
+	* include/std/memory (__cpp_lib_parallel_algorithm): Likewise.
+	* include/std/numeric (__cpp_lib_parallel_algorithm): Likewise.
+	* testsuite/25_algorithms/pstl/feature_test.cc: New test.
+
 	* include/std/variant (get<T>, get<N>, get_if<N>, get_if<T>)
 	(variant::emplace): Change static_assert messages from "should be"
 	to "must be".
