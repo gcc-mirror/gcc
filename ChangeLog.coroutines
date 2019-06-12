@@ -1,6 +1,27 @@
 2019-06-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (struct __local_vars_transform): New.
+	(transform_local_var_uses): Initialise local variable frame
+	copies and then rewrite uses to them.
+	(build_actor_fn): Use transform_local_var_uses to rewrite local
+	variables.
+	(struct __local_vars_frame_data): New.
+	(register_local_var_uses): Make space for local vars in the frame.
+	(register_param_uses): Update comment about the frame.
+	(morph_fn_to_coro): Use register_local_var_uses to record the
+	local var space.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/co-ret-4.C: Remove 'inline'.
+	* g++.dg/coroutines/torture/local-var-0.C: New test.
+	* g++.dg/coroutines/torture/local-var-1.C: New test.
+	* g++.dg/coroutines/torture/local-var-2.C: New test.
+	* g++.dg/coroutines/torture/local-var-3.C: New test.
+
+2019-06-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (morph_fn_to_coro): Chain the new funtions
 	directly after the ramp.
 

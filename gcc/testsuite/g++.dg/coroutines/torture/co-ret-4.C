@@ -102,7 +102,6 @@ struct coro1 {
   //int x;
 };
 
-inline
 struct coro1 f () noexcept
 {
   PRINT ("coro1: about to return");

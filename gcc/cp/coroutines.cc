@@ -1174,16 +1174,131 @@ transform_await_wrapper (tree *stmt, int *do_subtree, void *d)
   return NULL_TREE;
 }
 
-/* The actor transform.  */
 typedef struct __param_info {
   tree field_id;
   vec<tree *> *body_uses;
 } __param_info_t;
 
+typedef struct __local_var_info {
+  tree field_id;
+  tree field_idx;
+  location_t def_loc;
+} __local_var_info_t;
+
+/* For figuring out what local variable usage we have.  */
+struct __local_vars_transform {
+  tree context;
+  tree actor_frame;
+  tree coro_frame_type;
+  location_t loc;
+  hash_map<tree, __local_var_info_t> *local_var_uses;
+};
+
+static tree
+transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
+{
+  struct __local_vars_transform *lvd = (struct __local_vars_transform *) d;
+
+  /* For each var in this bind expr (that has a frame id, which means it was
+     accessed), build a frame reference for each and then walk the bind expr
+     statements, substituting the frame ref for the orginal var.
+  */
+  if (TREE_CODE (*stmt) == BIND_EXPR)
+    {
+      tree lvar;
+      for (lvar = BIND_EXPR_VARS (*stmt);
+	   lvar != NULL; lvar = DECL_CHAIN (lvar))
+	{
+	  bool existed;
+	  __local_var_info_t &local_var =
+	  lvd->local_var_uses->get_or_insert (lvar, &existed);
+	  gcc_checking_assert (existed);
+
+	  /* Re-write the variable's context to be in the actor func.  */
+	  DECL_CONTEXT (lvar) = lvd->context;
+
+	  /* we need to walk some of the decl trees, which might contain
+	     references to vars replaced at a higher level.  */
+	  cp_walk_tree (&DECL_INITIAL (lvar), transform_local_var_uses,
+		        d, NULL);
+          cp_walk_tree (&DECL_SIZE (lvar), transform_local_var_uses,
+		        d, NULL);
+          cp_walk_tree (&DECL_SIZE_UNIT (lvar), transform_local_var_uses,
+		        d, NULL);
+
+	  /* TODO: implement selective generation of fields when vars are
+	     known not-used.  */
+	  if (local_var.field_id == NULL_TREE)
+	    continue; /* Wasn't used.  */
+	    
+	  tree fld_ref = lookup_member (lvd->coro_frame_type,
+					local_var.field_id,
+					/*protect*/1,  /*want_type*/ 0,
+					tf_warning_or_error);
+	  tree fld_idx = build3_loc (lvd->loc, COMPONENT_REF, TREE_TYPE (lvar),
+				     lvd->actor_frame, fld_ref, NULL_TREE);
+	  local_var.field_idx = fld_idx;
+	}
+      cp_walk_tree (&BIND_EXPR_BODY (*stmt), transform_local_var_uses,
+		    d, NULL);
+      *do_subtree = 0; /* We've done the body already.  */
+      return NULL_TREE;
+    }
+
+  tree var_decl = *stmt;
+  /* Look inside cleanups, we don't want to wrap a statement list in a
+     cleanup.  */
+  if (TREE_CODE(var_decl) == CLEANUP_POINT_EXPR)
+    var_decl = TREE_OPERAND (var_decl, 0);
+  /* Look inside the decl_expr for the actual var.  */
+  bool decl_expr_p = TREE_CODE(var_decl) == DECL_EXPR;
+  if (decl_expr_p && TREE_CODE (DECL_EXPR_DECL (var_decl)) == VAR_DECL)
+    var_decl = DECL_EXPR_DECL (var_decl);
+  else if (TREE_CODE (var_decl) != VAR_DECL)
+    return NULL_TREE;
+
+  /* VAR_DECLs that are not recorded can belong to the proxies we've placed
+     for the promise and coroutine handle(s), to global vars or to compiler
+     temporaries.  Skip past these, we will handle them later.  */
+  __local_var_info_t *local_var_info = lvd->local_var_uses->get(var_decl);
+  if (local_var_info == NULL)
+    return NULL_TREE;
+
+  /* This is our revised 'local' i.e. a frame slot.  */
+  tree revised = local_var_info->field_idx;
+  gcc_checking_assert (DECL_CONTEXT (var_decl) == lvd->context);
+
+  if (decl_expr_p)
+    {
+      location_t loc = DECL_SOURCE_LOCATION (var_decl);
+      tree init_and_copy = push_stmt_list ();
+      /* Just copy the original cleanup/DECL, including any init, the
+         contained var's context should have been re-written when its bind
+         expression was processed.  */
+      add_stmt (*stmt);
+      /* Now add an initialiser for the frame version of this var, with the
+	 intent that the obvious optimisation will get done.  */
+      tree r = build_modify_expr (loc, revised, TREE_TYPE (revised),
+				 INIT_EXPR, EXPR_LOCATION (*stmt),
+				 var_decl, TREE_TYPE (var_decl));
+      r = coro_build_cvt_void_expr_stmt (r, EXPR_LOCATION (*stmt));
+      add_stmt (r);
+      *stmt = pop_stmt_list (init_and_copy);
+    }
+  else
+    *stmt = revised;
+
+  if (decl_expr_p)
+    *do_subtree = 0; /* We've accounted for the nested use.  */
+  return NULL_TREE;
+}
+
+/* The actor transform.  */
 static void
 build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 	        tree fnbody, tree orig,
 	        hash_map<tree, __param_info_t> *param_uses,
+	        hash_map<tree, __local_var_info_t> *local_var_uses,
 		tree initial_await, tree final_await, unsigned body_count)
 {
   verify_stmt_tree (fnbody);
@@ -1266,6 +1381,11 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 	    }
 	}
     }
+
+  /* Re-write local vars, similarly.  */
+  struct __local_vars_transform xform_vars_data =
+    { actor, actor_frame, coro_frame_type, loc, local_var_uses };
+  cp_walk_tree (&fnbody, transform_local_var_uses, &xform_vars_data, NULL);
 
   tree resume_idx_name = get_identifier ("__resume_at");
   tree rat_field = lookup_member (coro_frame_type, resume_idx_name, 1, 0,
@@ -1744,6 +1864,65 @@ register_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
   return NULL_TREE;
 }
 
+/* For figuring out what local variable usage we have.  */
+struct __local_vars_frame_data {
+  tree *field_list;
+  hash_map<tree, __local_var_info_t> *local_var_uses;
+  unsigned int nest_depth, bind_indx;
+  location_t loc;
+  bool local_var_seen;
+};
+
+static tree
+register_local_var_uses (tree *stmt, int *do_subtree, void *d)
+{
+  struct __local_vars_frame_data *lvd = (struct __local_vars_frame_data *) d;
+
+  /* As we enter a bind expression - record the vars there and then recurse.
+     As we exit drop the nest depth.
+     The bind index is a growing count of how many bind indices we've seen.
+     We build a space in the frame for each local var.
+  */
+  if (TREE_CODE (*stmt) == BIND_EXPR)
+    {
+      lvd->bind_indx++;
+      lvd->nest_depth++;
+      tree lvar;
+      for (lvar = BIND_EXPR_VARS (*stmt);
+	   lvar != NULL; lvar = DECL_CHAIN (lvar))
+	{
+	  bool existed;
+	  __local_var_info_t &local_var =
+	  lvd->local_var_uses->get_or_insert (lvar, &existed);
+	  if (existed)
+	    {
+	      fprintf(stderr,"duplicate lvar: ");
+	      debug_tree (lvar);
+	      gcc_checking_assert (!existed);
+	    }
+	  tree lvtype = TREE_TYPE (lvar);
+	  tree lvname = DECL_NAME (lvar);
+	  /* TODO: make names depth+index unique.  */
+	  size_t namsize = sizeof ("__lv.") + IDENTIFIER_LENGTH (lvname) + 1;
+	  char *buf = (char *) alloca (namsize);
+	  snprintf (buf, namsize, "__lv.%s", IDENTIFIER_POINTER (lvname));
+	  /* TODO: Figure out if we should build a local type that has any
+	     excess alignment or size from the original decl.  */
+	  local_var.field_id = coro_make_frame_entry (lvd->field_list, buf,
+						      lvtype, lvd->loc);
+	  local_var.def_loc = DECL_SOURCE_LOCATION (lvar);
+	  local_var.field_idx = NULL_TREE;
+	  /* We don't walk any of the local var sub-trees, they won't contain
+	     any bind exprs - well, CHECKME, but I don't think so...  */
+	}
+      cp_walk_tree (&BIND_EXPR_BODY (*stmt), register_local_var_uses,
+		    d, NULL);
+      *do_subtree = 0; /* We've done this.  */
+      lvd->nest_depth--;
+    }
+  return NULL_TREE;
+}
+
 /* Here we:
    a) Check that the function and promise type are valid for a
       coroutine.
@@ -1772,8 +1951,9 @@ register_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
   (maybe) handle_type i_hand;
   coro1::suspend_always_prt __fs;
   (maybe) handle_type f_hand;
-  // here could be args.
-  // and then trailing space.
+  (maybe) parameters used in the body.
+  (maybe) local variables saved
+  (maybe) trailing space.
  };
 
 */
@@ -1945,6 +2125,13 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
           param_uses = NULL;
         }
     }
+
+  /* Now make space for local vars, this is conservative again, and we would
+     expect to delete unused entries later.  */
+  hash_map<tree, __local_var_info_t> local_var_uses;
+  struct __local_vars_frame_data local_vars_data =
+    { &field_list, &local_var_uses, 0, 0, fn_start, false };
+  cp_walk_tree (&fnbody, register_local_var_uses, &local_vars_data, NULL);
 
   /* Tie off the struct for now, so that we can build offsets to the
      known entries.  */
@@ -2118,6 +2305,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     r = build_special_member_call(p, complete_ctor_identifier, NULL,
 				  promise_type, LOOKUP_NORMAL,
 				  tf_warning_or_error);
+  r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
   /* Copy in any of the function params we found to be used.  */
@@ -2249,7 +2437,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* Actor...  */
   build_actor_fn (fn_start, coro_frame_type, actor, fnbody, orig, param_uses,
-		  initial_await, final_await, body_aw_points.count);
+		  &local_var_uses, initial_await, final_await,
+		  body_aw_points.count);
   
   /* Destroyer ... */
   build_destroy_fn (fn_start, coro_frame_type, destroy, actor);
