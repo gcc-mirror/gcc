@@ -1,0 +1,50 @@
+# Makefile fragment for building LIBGCC for the TI PRU processor.
+# Copyright (C) 2014-2019 Free Software Foundation, Inc.
+# Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published
+# by the Free Software Foundation; either version 3, or (at your
+# option) any later version.
+#
+# GCC is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+# the GNU General Public License for more details.
+#
+# You should have received a copy of the  GNU General Public
+# License along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Note - we have separate versions of the lib2div<mode> files
+# as the functions are quite large and we do not want to pull
+# in unneeded division routines.
+
+LIB2ADD += \
+	$(srcdir)/config/pru/lib2divQI.c \
+	$(srcdir)/config/pru/lib2divHI.c \
+	$(srcdir)/config/pru/lib2divSI.c \
+	$(srcdir)/config/pru/lib2bitcountHI.c \
+	$(srcdir)/config/pru/mpyll.S \
+	$(srcdir)/config/pru/gef.c \
+	$(srcdir)/config/pru/gtf.c \
+	$(srcdir)/config/pru/lef.c \
+	$(srcdir)/config/pru/ltf.c \
+	$(srcdir)/config/pru/eqf.c \
+	$(srcdir)/config/pru/ged.c \
+	$(srcdir)/config/pru/gtd.c \
+	$(srcdir)/config/pru/led.c \
+	$(srcdir)/config/pru/ltd.c \
+	$(srcdir)/config/pru/eqd.c \
+	$(srcdir)/config/pru/asri.c
+
+HOST_LIBGCC2_CFLAGS += -Os -ffunction-sections -fdata-sections
+
+LIB2FUNCS_EXCLUDE = _muldi3
+
+SHLIB_MAPFILES += $(srcdir)/config/pru/libgcc-eabi.ver
+# Local Variables:
+# mode: Makefile
+# End:

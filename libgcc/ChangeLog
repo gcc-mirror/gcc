@@ -1,3 +1,29 @@
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config.host: Add PRU target.
+	* config/pru/asri.c: New file.
+	* config/pru/eqd.c: New file.
+	* config/pru/eqf.c: New file.
+	* config/pru/ged.c: New file.
+	* config/pru/gef.c: New file.
+	* config/pru/gtd.c: New file.
+	* config/pru/gtf.c: New file.
+	* config/pru/led.c: New file.
+	* config/pru/lef.c: New file.
+	* config/pru/lib2bitcountHI.c: New file.
+	* config/pru/lib2divHI.c: New file.
+	* config/pru/lib2divQI.c: New file.
+	* config/pru/lib2divSI.c: New file.
+	* config/pru/libgcc-eabi.ver: New file.
+	* config/pru/ltd.c: New file.
+	* config/pru/ltf.c: New file.
+	* config/pru/mpyll.S: New file.
+	* config/pru/pru-abi.h: New file.
+	* config/pru/pru-asm.h: New file.
+	* config/pru/pru-divmod.h: New file.
+	* config/pru/sfp-machine.h: New file.
+	* config/pru/t-pru: New file.
+
 2019-06-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgcov-merge.c (__gcov_merge_single): Revert previous change.

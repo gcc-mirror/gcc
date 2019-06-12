@@ -175,6 +175,9 @@ or1k*-*-*)
 powerpc*-*-*)
 	cpu_type=rs6000
 	;;
+pru-*-*)
+	cpu_type=pru
+	;;
 rs6000*-*-*)
 	;;
 riscv*-*-*)
@@ -1177,6 +1180,10 @@ powerpcle-*-eabisim*)
 powerpcle-*-eabi*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
 	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
+	;;
+pru-*-*)
+	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp t-gnu-prefix pru/t-pru"
+	tm_file="$tm_file pru/pru-abi.h"
 	;;
 riscv*-*-linux*)
 	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address}"

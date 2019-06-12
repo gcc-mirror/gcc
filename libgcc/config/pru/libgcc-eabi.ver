@@ -1,0 +1,88 @@
+# Copyright (C) 2017-2019 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+GCC_9.0.0 {
+  __pruabi_asri
+  __pruabi_asrll
+  __pruabi_mpyll
+  __pruabi_negll
+  __pruabi_lslll
+  __pruabi_lsrll
+  __pruabi_fixfu
+  __pruabi_fixdu
+  __pruabi_fixflli
+  __pruabi_fixdlli
+  __pruabi_fixfull
+  __pruabi_fixdull
+  __pruabi_fltllif
+  __pruabi_fltllid
+  __pruabi_fltullf
+  __pruabi_fltulld
+  __pruabi_divlli
+  __pruabi_remlli
+  __pruabi_divull
+  __pruabi_remull
+  __pruabi_divremull
+  __pruabi_gef
+  __pruabi_gtf
+  __pruabi_lef
+  __pruabi_ltf
+  __pruabi_eqf
+  __pruabi_ged
+  __pruabi_gtd
+  __pruabi_led
+  __pruabi_ltd
+  __pruabi_eqd
+  __pruabi_addf
+  __pruabi_divf
+  __pruabi_neqf
+  __pruabi_cmpf
+  __pruabi_mpyf
+  __pruabi_negf
+  __pruabi_subf
+  __pruabi_unordf
+  __pruabi_fixfi
+  __pruabi_fltif
+  __pruabi_fltuf
+  __pruabi_addd
+  __pruabi_divd
+  __pruabi_neqd
+  __pruabi_cmpd
+  __pruabi_mpyd
+  __pruabi_negd
+  __pruabi_subd
+  __pruabi_unordd
+  __pruabi_fixdi
+  __pruabi_fltid
+  __pruabi_fltud
+  __pruabi_cvtfd
+  __pruabi_cvtdf
+  __pruabi_mulcf
+  __pruabi_mulcd
+  __pruabi_divcf
+  __pruabi_divcd
+
+  __gnu_ltsf2
+  __gnu_ltdf2
+  __gnu_gesf2
+  __gnu_gedf2
+  __gnu_gtsf2
+  __gnu_gtdf2
+  __gnu_eqsf2
+  __gnu_eqdf2
+}
