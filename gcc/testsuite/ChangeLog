@@ -4,11 +4,12 @@
 	* gcc.dg/tree-ssa/dump-6.c: New test.
 	* g++.dg/tree-ssa/pr19807.C: Adjust expected output.
 	* g++.dg/tree-ssa/ssa-dse-1.C: Same.
-	* gcc.dg/tree-prof/stringop-2.c
+	* gcc.dg/store_merging_5.c: Same.
+	* gcc.dg/tree-prof/stringop-2.c: Same.
 	* gcc.dg/tree-ssa/pr30375.c: Same.
-	* gcc.dg/tree-ssa/slsr-27.c (f): Same.
-	* gcc.dg/tree-ssa/slsr-28.c (f): Same.
-	* gcc.dg/tree-ssa/slsr-29.c (f): Same.
+	* gcc.dg/tree-ssa/slsr-27.c: Same.
+	* gcc.dg/tree-ssa/slsr-28.c: Same.
+	* gcc.dg/tree-ssa/slsr-29.c: Same.
 	* gcc.dg/tree-ssa/ssa-dse-24.c: Same.
 
 2019-06-12  Martin Sebor  <msebor@redhat.com>
