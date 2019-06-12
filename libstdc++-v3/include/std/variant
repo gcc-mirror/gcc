@@ -1074,7 +1074,7 @@ namespace __variant
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
-      static_assert(!is_void_v<_Tp>, "_Tp should not be void");
+      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
       return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
     }
 
@@ -1083,7 +1083,7 @@ namespace __variant
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
-      static_assert(!is_void_v<_Tp>, "_Tp should not be void");
+      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
       return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
 	std::move(__v));
     }
@@ -1093,7 +1093,7 @@ namespace __variant
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
-      static_assert(!is_void_v<_Tp>, "_Tp should not be void");
+      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
       return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(__v);
     }
 
@@ -1102,7 +1102,7 @@ namespace __variant
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
-      static_assert(!is_void_v<_Tp>, "_Tp should not be void");
+      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
       return std::get<__detail::__variant::__index_of_v<_Tp, _Types...>>(
 	std::move(__v));
     }
@@ -1113,8 +1113,8 @@ namespace __variant
     {
       using _Alternative_type = variant_alternative_t<_Np, variant<_Types...>>;
       static_assert(_Np < sizeof...(_Types),
-		    "The index should be in [0, number of alternatives)");
-      static_assert(!is_void_v<_Alternative_type>, "_Tp should not be void");
+		    "The index must be in [0, number of alternatives)");
+      static_assert(!is_void_v<_Alternative_type>, "_Tp must not be void");
       if (__ptr && __ptr->index() == _Np)
 	return std::addressof(__detail::__variant::__get<_Np>(*__ptr));
       return nullptr;
@@ -1127,8 +1127,8 @@ namespace __variant
     {
       using _Alternative_type = variant_alternative_t<_Np, variant<_Types...>>;
       static_assert(_Np < sizeof...(_Types),
-		    "The index should be in [0, number of alternatives)");
-      static_assert(!is_void_v<_Alternative_type>, "_Tp should not be void");
+		    "The index must be in [0, number of alternatives)");
+      static_assert(!is_void_v<_Alternative_type>, "_Tp must not be void");
       if (__ptr && __ptr->index() == _Np)
 	return std::addressof(__detail::__variant::__get<_Np>(*__ptr));
       return nullptr;
@@ -1140,7 +1140,7 @@ namespace __variant
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
-      static_assert(!is_void_v<_Tp>, "_Tp should not be void");
+      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
       return std::get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(
 	  __ptr);
     }
@@ -1151,7 +1151,7 @@ namespace __variant
     {
       static_assert(__detail::__variant::__exactly_once<_Tp, _Types...>,
 		    "T must occur exactly once in alternatives");
-      static_assert(!is_void_v<_Tp>, "_Tp should not be void");
+      static_assert(!is_void_v<_Tp>, "_Tp must not be void");
       return std::get_if<__detail::__variant::__index_of_v<_Tp, _Types...>>(
 	  __ptr);
     }
@@ -1421,7 +1421,7 @@ namespace __variant
 	emplace(_Args&&... __args)
 	{
 	  static_assert(_Np < sizeof...(_Types),
-			"The index should be in [0, number of alternatives)");
+			"The index must be in [0, number of alternatives)");
 	  using type = variant_alternative_t<_Np, variant>;
 	  // Provide the strong exception-safety guarantee when possible,
 	  // to avoid becoming valueless.
@@ -1474,7 +1474,7 @@ namespace __variant
 	emplace(initializer_list<_Up> __il, _Args&&... __args)
 	{
 	  static_assert(_Np < sizeof...(_Types),
-			"The index should be in [0, number of alternatives)");
+			"The index must be in [0, number of alternatives)");
 	  using type = variant_alternative_t<_Np, variant>;
 	  // Provide the strong exception-safety guarantee when possible,
 	  // to avoid becoming valueless.
@@ -1602,7 +1602,7 @@ namespace __variant
     get(variant<_Types...>& __v)
     {
       static_assert(_Np < sizeof...(_Types),
-		    "The index should be in [0, number of alternatives)");
+		    "The index must be in [0, number of alternatives)");
       if (__v.index() != _Np)
 	__throw_bad_variant_access(__v.valueless_by_exception());
       return __detail::__variant::__get<_Np>(__v);
@@ -1613,7 +1613,7 @@ namespace __variant
     get(variant<_Types...>&& __v)
     {
       static_assert(_Np < sizeof...(_Types),
-		    "The index should be in [0, number of alternatives)");
+		    "The index must be in [0, number of alternatives)");
       if (__v.index() != _Np)
 	__throw_bad_variant_access(__v.valueless_by_exception());
       return __detail::__variant::__get<_Np>(std::move(__v));
@@ -1624,7 +1624,7 @@ namespace __variant
     get(const variant<_Types...>& __v)
     {
       static_assert(_Np < sizeof...(_Types),
-		    "The index should be in [0, number of alternatives)");
+		    "The index must be in [0, number of alternatives)");
       if (__v.index() != _Np)
 	__throw_bad_variant_access(__v.valueless_by_exception());
       return __detail::__variant::__get<_Np>(__v);
@@ -1635,7 +1635,7 @@ namespace __variant
     get(const variant<_Types...>&& __v)
     {
       static_assert(_Np < sizeof...(_Types),
-		    "The index should be in [0, number of alternatives)");
+		    "The index must be in [0, number of alternatives)");
       if (__v.index() != _Np)
 	__throw_bad_variant_access(__v.valueless_by_exception());
       return __detail::__variant::__get<_Np>(std::move(__v));
@@ -1730,7 +1730,7 @@ namespace __variant
       using argument_type [[__deprecated__]] = monostate;
 
       size_t
-      operator()(const monostate& __t) const noexcept
+      operator()(const monostate&) const noexcept
       {
 	constexpr size_t __magic_monostate_hash = -7777;
 	return __magic_monostate_hash;
