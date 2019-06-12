@@ -1,3 +1,8 @@
+2019-06-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90002
+	* gfortran.dg/pr90002.f90: New test.
+
 2019-06-12  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/90676
