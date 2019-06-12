@@ -23039,6 +23039,7 @@ information.
 * ARM Pragmas::
 * M32C Pragmas::
 * MeP Pragmas::
+* PRU Pragmas::
 * RS/6000 and PowerPC Pragmas::
 * S/390 Pragmas::
 * Darwin Pragmas::
@@ -23186,6 +23187,26 @@ call model when calling the named functions.  Examples:
 @smallexample
 extern int foo ();
 #pragma call foo
+@end smallexample
+
+@end table
+
+@node PRU Pragmas
+@subsection PRU Pragmas
+
+@table @code
+
+@item ctable_entry @var{index} @var{constant_address}
+@cindex pragma, ctable_entry
+Specifies that the PRU CTABLE entry given by @var{index} has the value
+@var{constant_address}.  This enables GCC to emit LBCO/SBCO instructions
+when the load/store address is known and can be addressed with some CTABLE
+entry.  For example:
+
+@smallexample
+/* will compile to "sbco Rx, 2, 0x10, 4" */
+#pragma ctable_entry 2 0x4802a000
+*(unsigned int *)0x4802a010 = val;
 @end smallexample
 
 @end table
