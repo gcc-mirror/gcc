@@ -1,5 +1,9 @@
 2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
 
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
 	* configure: Regenerate.
 	* configure.ac: Add PRU target.
 
