@@ -1,5 +1,12 @@
 2019-06-12  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/90676
+	* tree-pretty-print.c (dump_mem_ref): New function.  Include
+	MEM_REF type in output when different size than operand.
+	(dump_generic_node): Move code to dump_mem_ref and call it.
+
+2019-06-12  Martin Sebor  <msebor@redhat.com>
+
 	PR tree-optimization/90662
 	* tree-ssa-strlen.c (get_stridx): Handle simple VLAs and pointers
 	to arrays.
