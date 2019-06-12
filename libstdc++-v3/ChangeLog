@@ -1,3 +1,27 @@
+2019-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new <bits/charconv.h> header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/basic_string.h (to_string(int), to_string(unsigned))
+	(to_string(long), to_string(unsigned long), to_string(long long))
+	(to_string(unsigned long long)): Rewrite to use __to_chars_10_impl.
+	* include/bits/charconv.h: New header.
+	(__detail::__to_chars_len): Move here from <charconv>.
+	(__detail::__to_chars_10_impl): New function extracted from
+	__detail::__to_chars_10.
+	* include/std/charconv (__cpp_lib_to_chars): Add, but comment out.
+	(__to_chars_unsigned_type): New class template that reuses
+	__make_unsigned_selector_base::__select to pick a type.
+	(__unsigned_least_t): Redefine as __to_chars_unsigned_type<T>::type.
+	(__detail::__to_chars_len): Move to new header.
+	(__detail::__to_chars_10): Add inline specifier. Move code doing the
+	output to __detail::__to_chars_10_impl and call that.
+	* include/std/version (__cpp_lib_to_chars): Add, but comment out.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/
+	to_string.cc: Fix reference in comment. Remove unused variable.
+	* testsuite/21_strings/basic_string/numeric_conversions/char/
+	to_string_int.cc: New test.
+
 2019-06-09  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Fix ConstexprIterator requirements tests - No constexpr algorithms!
