@@ -273,11 +273,12 @@ class GTY((variable_size)) irange_storage
   friend class irange;
 
  public:
-  void set (const irange &);
   static irange_storage *alloc (const irange &);
+  bool update (const irange &);
 
  private:
   static size_t size (unsigned precision);
+  void set (const irange &);
   bool empty_pair_p (unsigned, unsigned, tree) const;
   void set_empty_pair (unsigned, unsigned, tree);
   void set_nonzero_bits (const wide_int &);

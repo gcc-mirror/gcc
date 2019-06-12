@@ -188,8 +188,8 @@ ssa_block_ranges::set_bb_range (const basic_block bb, const irange &r)
   irange_storage *m = m_tab[bb->index];
 
   // If there is already range memory for this block, reuse it.
-  if (m && m != m_type_range)
-    m->set (r);
+  if (m && m != m_type_range && m->update (r))
+    ;
   else
     m = irange_storage::alloc (r);
 
@@ -426,8 +426,8 @@ ssa_global_cache::set_global_range (tree name, const irange& r)
     m_tab.safe_grow_cleared (num_ssa_names + 1);
   irange_storage *m = m_tab[v];
 
-  if (m)
-    m->set (r);
+  if (m && m->update (r))
+    ;
   else
     {
       m = irange_storage::alloc (r);

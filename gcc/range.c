@@ -899,6 +899,21 @@ irange_storage::set (const irange &ir)
     set_empty_pair (i, i + 1, ir.type ());
 }
 
+// Update a previously initialized irange_storage to NEW_RANGE, iff the
+// precision of the present range is the same as the precision of
+// the new range.  Return TRUE if update was successful.
+
+bool
+irange_storage::update (const irange &new_range)
+{
+  if (trailing_bounds.get_precision () == TYPE_PRECISION (new_range.type ()))
+    {
+      set (new_range);
+      return true;
+    }
+  return false;
+}
+
 irange
 range_zero (tree type)
 {
