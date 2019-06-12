@@ -513,7 +513,8 @@ proc check_effective_target_trampolines { } {
 	 || [istarget msp430-*-*]
 	 || [istarget nvptx-*-*]
 	 || [istarget hppa2.0w-hp-hpux11.23]
-	 || [istarget hppa64-hp-hpux11.23] } {
+	 || [istarget hppa64-hp-hpux11.23]
+	 || [istarget pru-*-*] } {
 	return 0;
     }
     return 1
@@ -687,6 +688,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget nvptx-*-*]
 	     || [istarget powerpc-*-eabi*]
 	     || [istarget powerpc-*-elf]
+	     || [istarget pru-*-*]
 	     || [istarget rx-*-*]	
 	     || [istarget tic6x-*-elf]
 	     || [istarget visium-*-*]
