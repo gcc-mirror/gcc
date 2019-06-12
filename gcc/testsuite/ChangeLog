@@ -1,3 +1,13 @@
+2019-06-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/90676
+	* gcc.dg/tree-ssa/pr30375.c: Adjust and simplify expected test
+	output some more.
+	* gcc.dg/tree-ssa/slsr-27.c: Ditto.
+	* gcc.dg/tree-ssa/slsr-28.c: Ditto.
+	* gcc.dg/tree-ssa/slsr-29.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-dse-24.c: Ditto.
+
 2019-06-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90736 - bogus error with alignof.
