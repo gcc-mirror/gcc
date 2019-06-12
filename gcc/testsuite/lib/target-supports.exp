@@ -8765,6 +8765,11 @@ proc check_effective_target_tiny {} {
 	    && [check_effective_target_avr_tiny] } {
 	   return 1
       }
+      # PRU Program Counter is 16-bits, and trampolines are not supported.
+      # Hence directly declare as a tiny target.
+      if [istarget pru-*-*] {
+	   return 1
+      }
       return 0
     }]
 }

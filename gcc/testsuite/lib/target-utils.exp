@@ -35,6 +35,10 @@ proc ${tool}_check_unsupported_p { output } {
           && [check_effective_target_tiny] } {
         return "memory full"
      }
+    if { [regexp "(^|\n)\[^\n\]*: region \[^\n\]* overflowed" $output]
+          && [check_effective_target_tiny] } {
+	return "memory full"
+    }
 
     if { [istarget spu-*-*] && \
 	     [string match "*exceeds local store*" $output] } {
