@@ -1,3 +1,8 @@
+2019-06-12  Tom de Vries  <tdevries@suse.de>
+
+	PR tree-optimization/90009
+	* config/nvptx/nvptx.c (nvptx_find_par): Assert fork has at most join.
+
 2019-06-12  Martin Liska  <mliska@suse.cz>
 
 	* ggc-common.c (ggc_prune_overhead_list): Do not sanitize

@@ -3258,6 +3258,7 @@ nvptx_find_par (bb_insn_map_t *map, parallel *par, basic_block block)
 	    unsigned mask = UINTVAL (XVECEXP (PATTERN (end), 0, 0));
 
 	    gcc_assert (par->mask == mask);
+	    gcc_assert (par->join_block == NULL);
 	    par->join_block = block;
 	    par->join_insn = end;
 	    if (nvptx_needs_shared_bcast (mask))
