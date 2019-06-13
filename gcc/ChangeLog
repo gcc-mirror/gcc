@@ -1,5 +1,17 @@
 2019-06-13  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
+	PR target/88838
+	* tree-vect-loop-manip.c (vect_set_loop_masks_directly): If the
+	compare_type is not with Pmode size, we will create an IV with
+	Pmode size with truncated use (i.e. converted to the correct type).
+	* tree-vect-loop.c (vect_verify_full_masking): Find IV type.
+	(vect_iv_limit_for_full_masking): New. Factored out of
+	vect_set_loop_condition_masked.
+	* tree-vectorizer.h (LOOP_VINFO_MASK_IV_TYPE): New.
+	(vect_iv_limit_for_full_masking): Declare.
+
+2019-06-13  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
 	PR target/88834
 	* tree-ssa-loop-ivopts.c (get_mem_type_for_internal_fn): Handle
 	IFN_MASK_LOAD_LANES and IFN_MASK_STORE_LANES.

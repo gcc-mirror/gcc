@@ -435,6 +435,10 @@ typedef struct _loop_vec_info : public vec_info {
      is false and vectorized loop otherwise.  */
   tree simd_if_cond;
 
+  /* Type of the IV to use in the WHILE_ULT call for fully-masked
+     loops.  */
+  tree iv_type;
+
   /* Unknown DRs according to which loop was peeled.  */
   struct dr_vec_info *unaligned_dr;
 
@@ -570,6 +574,7 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_MASKS(L)                (L)->masks
 #define LOOP_VINFO_MASK_SKIP_NITERS(L)     (L)->mask_skip_niters
 #define LOOP_VINFO_MASK_COMPARE_TYPE(L)    (L)->mask_compare_type
+#define LOOP_VINFO_MASK_IV_TYPE(L)         (L)->iv_type
 #define LOOP_VINFO_PTR_MASK(L)             (L)->ptr_mask
 #define LOOP_VINFO_LOOP_NEST(L)            (L)->shared->loop_nest
 #define LOOP_VINFO_DATAREFS(L)             (L)->shared->datarefs
@@ -1582,6 +1587,7 @@ extern tree vect_create_addr_base_for_vector_ref (stmt_vec_info, gimple_seq *,
 /* FORNOW: Used in tree-parloops.c.  */
 extern stmt_vec_info vect_force_simple_reduction (loop_vec_info, stmt_vec_info,
 						  bool *, bool);
+extern widest_int vect_iv_limit_for_full_masking (loop_vec_info loop_vinfo);
 /* Used in gimple-loop-interchange.c.  */
 extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);

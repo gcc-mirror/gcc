@@ -415,6 +415,7 @@ vect_set_loop_masks_directly (struct loop *loop, loop_vec_info loop_vinfo,
 			      bool might_wrap_p)
 {
   tree compare_type = LOOP_VINFO_MASK_COMPARE_TYPE (loop_vinfo);
+  tree iv_type = LOOP_VINFO_MASK_IV_TYPE (loop_vinfo);
   tree mask_type = rgm->mask_type;
   unsigned int nscalars_per_iter = rgm->max_nscalars_per_iter;
   poly_uint64 nscalars_per_mask = TYPE_VECTOR_SUBPARTS (mask_type);
@@ -445,11 +446,16 @@ vect_set_loop_masks_directly (struct loop *loop, loop_vec_info loop_vinfo,
   tree index_before_incr, index_after_incr;
   gimple_stmt_iterator incr_gsi;
   bool insert_after;
-  tree zero_index = build_int_cst (compare_type, 0);
   standard_iv_increment_position (loop, &incr_gsi, &insert_after);
-  create_iv (zero_index, nscalars_step, NULL_TREE, loop, &incr_gsi,
+
+  tree zero_index = build_int_cst (iv_type, 0);
+  tree step = build_int_cst (iv_type,
+			     LOOP_VINFO_VECT_FACTOR (loop_vinfo));
+  /* Create IV of iv_type.  */
+  create_iv (zero_index, step, NULL_TREE, loop, &incr_gsi,
 	     insert_after, &index_before_incr, &index_after_incr);
 
+  zero_index = build_int_cst (compare_type, 0);
   tree test_index, test_limit, first_limit;
   gimple_stmt_iterator *test_gsi;
   if (might_wrap_p)
@@ -529,6 +535,10 @@ vect_set_loop_masks_directly (struct loop *loop, loop_vec_info loop_vinfo,
   tree next_mask = NULL_TREE;
   tree mask;
   unsigned int i;
+  gimple_seq test_seq = NULL;
+  test_index = gimple_convert (&test_seq, compare_type, test_index);
+  gsi_insert_seq_before (test_gsi, test_seq, GSI_SAME_STMT);
+
   FOR_EACH_VEC_ELT_REVERSE (rgm->masks, i, mask)
     {
       /* Previous masks will cover BIAS scalars.  This mask covers the
@@ -637,12 +647,12 @@ vect_set_loop_condition_masked (struct loop *loop, loop_vec_info loop_vinfo,
 
   tree compare_type = LOOP_VINFO_MASK_COMPARE_TYPE (loop_vinfo);
   unsigned int compare_precision = TYPE_PRECISION (compare_type);
-  unsigned HOST_WIDE_INT max_vf = vect_max_vf (loop_vinfo);
   tree orig_niters = niters;
 
   /* Type of the initial value of NITERS.  */
   tree ni_actual_type = TREE_TYPE (niters);
   unsigned int ni_actual_precision = TYPE_PRECISION (ni_actual_type);
+  tree niters_skip = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
 
   /* Convert NITERS to the same size as the compare.  */
   if (compare_precision > ni_actual_precision
@@ -661,33 +671,7 @@ vect_set_loop_condition_masked (struct loop *loop, loop_vec_info loop_vinfo,
   else
     niters = gimple_convert (&preheader_seq, compare_type, niters);
 
-  /* Convert skip_niters to the right type.  */
-  tree niters_skip = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
-
-  /* Now calculate the value that the induction variable must be able
-     to hit in order to ensure that we end the loop with an all-false mask.
-     This involves adding the maximum number of inactive trailing scalar
-     iterations.  */
-  widest_int iv_limit;
-  bool known_max_iters = max_loop_iterations (loop, &iv_limit);
-  if (known_max_iters)
-    {
-      if (niters_skip)
-	{
-	  /* Add the maximum number of skipped iterations to the
-	     maximum iteration count.  */
-	  if (TREE_CODE (niters_skip) == INTEGER_CST)
-	    iv_limit += wi::to_widest (niters_skip);
-	  else
-	    iv_limit += max_vf - 1;
-	}
-      /* IV_LIMIT is the maximum number of latch iterations, which is also
-	 the maximum in-range IV value.  Round this value down to the previous
-	 vector alignment boundary and then add an extra full iteration.  */
-      poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-      iv_limit = (iv_limit & -(int) known_alignment (vf)) + max_vf;
-    }
-
+  widest_int iv_limit = vect_iv_limit_for_full_masking (loop_vinfo);
   /* Get the vectorization factor in tree form.  */
   tree vf = build_int_cst (compare_type,
 			   LOOP_VINFO_VECT_FACTOR (loop_vinfo));
@@ -717,7 +701,7 @@ vect_set_loop_condition_masked (struct loop *loop, loop_vec_info loop_vinfo,
 	/* See whether zero-based IV would ever generate all-false masks
 	   before wrapping around.  */
 	bool might_wrap_p
-	  = (!known_max_iters
+	  = (iv_limit == -1
 	     || (wi::min_precision (iv_limit * rgm->max_nscalars_per_iter,
 				    UNSIGNED)
 		 > compare_precision));
