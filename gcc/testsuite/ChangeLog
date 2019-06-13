@@ -1,5 +1,11 @@
 2019-06-13  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
+	PR target/88838
+	* gcc.target/aarch64/pr88838.c: New test.
+	* gcc.target/aarch64/sve/while_1.c: Adjust.
+
+2019-06-13  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
 	PR target/88834
 	* gcc.target/aarch64/pr88834.c: New test.
 	* gcc.target/aarch64/sve/struct_vect_1.c: Adjust.
