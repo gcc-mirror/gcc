@@ -1,3 +1,11 @@
+2019-06-13  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (depset::hash::add_specializations): Partial
+	instantiations need their template.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-tpl-mem-1_[ab].C: New.
+
 2019-06-11  Nathan Sidwell  <nathan@acm.org>
 
 	Update Revision number

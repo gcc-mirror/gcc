@@ -9651,12 +9651,34 @@ depset::hash::add_specializations (bool decl_p, bitmap partitions)
 	      /* Get the TEMPLATE_DECL for the partial
 		 specialization.  */
 	      spec = TREE_VALUE (partial);
+	      gcc_assert (DECL_USE_TEMPLATE (spec) == use_tpl);
 	    }
 	  else
-	    spec = TYPE_NAME (spec);
+	    {
+	      tree ti = CLASSTYPE_TEMPLATE_INFO (spec);
+	      tree tmpl = TI_TEMPLATE (ti);
+
+	      spec = TYPE_NAME (spec);
+	      if (spec == DECL_TEMPLATE_RESULT (tmpl))
+		{
+		  spec = tmpl;
+		  use_tpl = DECL_USE_TEMPLATE (spec);
+		}
+	    }
+	}
+      else if (tree ti = DECL_TEMPLATE_INFO (spec))
+	{
+	  tree tmpl = TI_TEMPLATE (ti);
+
+	  use_tpl = DECL_USE_TEMPLATE (spec);
+	  if (spec == DECL_TEMPLATE_RESULT (tmpl))
+	    {
+	      spec = tmpl;
+	      gcc_checking_assert (DECL_USE_TEMPLATE (spec) == use_tpl);
+	    }
 	}
       else
-	use_tpl = DECL_USE_TEMPLATE (spec);
+	gcc_assert (!DECL_USE_TEMPLATE (spec));
 
       bool needs_reaching = false;
       if (use_tpl == 1)
