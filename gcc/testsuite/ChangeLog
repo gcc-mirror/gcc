@@ -1,3 +1,8 @@
+2019-06-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/90869
+	* g++.dg/tree-ssa/alias-access-path-1.C: New testcase.
+
 2019-06-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90856

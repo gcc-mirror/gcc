@@ -1,3 +1,10 @@
+2019-06-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/90869
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Watch for view
+	converts in MEM_REF referencing decl rather than view converts
+	from decl type to MEM_REF type.
+
 2019-06-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90856

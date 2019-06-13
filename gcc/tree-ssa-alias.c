@@ -1370,11 +1370,16 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   poly_offset_int doffset2 = offset2;
   if (TREE_CODE (dbase2) == MEM_REF
       || TREE_CODE (dbase2) == TARGET_MEM_REF)
-    doffset2 -= mem_ref_offset (dbase2) << LOG2_BITS_PER_UNIT;
+    {
+      doffset2 -= mem_ref_offset (dbase2) << LOG2_BITS_PER_UNIT;
+      tree ptrtype2 = TREE_TYPE (TREE_OPERAND (dbase2, 1));
+      /* If second reference is view-converted, give up now.  */
+      if (same_type_for_tbaa (TREE_TYPE (dbase2), TREE_TYPE (ptrtype2)) != 1)
+	return true;
+    }
 
-  /* If either reference is view-converted, give up now.  */
-  if (same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) != 1
-      || same_type_for_tbaa (TREE_TYPE (dbase2), TREE_TYPE (base2)) != 1)
+  /* If first reference is view-converted, give up now.  */
+  if (same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) != 1)
     return true;
 
   /* If both references are through the same type, they do not alias
@@ -1408,7 +1413,13 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 				      offset1, max_size1,
 				      ref2,
 				      ref2_alias_set, base2_alias_set,
-				      offset2, max_size2, true);
+				      offset2, max_size2, 
+				      /* Only if the other reference is actual
+					 decl we can safely check only toplevel
+					 part of access path 1.  */
+				      same_type_for_tbaa (TREE_TYPE (dbase2),
+					                  TREE_TYPE (base2))
+				      == 1);
 
   return true;
 }
