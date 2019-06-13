@@ -2381,11 +2381,13 @@ get_mem_type_for_internal_fn (gcall *call, tree *op_p)
   switch (gimple_call_internal_fn (call))
     {
     case IFN_MASK_LOAD:
+    case IFN_MASK_LOAD_LANES:
       if (op_p == gimple_call_arg_ptr (call, 0))
 	return TREE_TYPE (gimple_call_lhs (call));
       return NULL_TREE;
 
     case IFN_MASK_STORE:
+    case IFN_MASK_STORE_LANES:
       if (op_p == gimple_call_arg_ptr (call, 0))
 	return TREE_TYPE (gimple_call_arg (call, 3));
       return NULL_TREE;
@@ -3429,6 +3431,26 @@ add_iv_candidate_for_use (struct ivopts_data *data, struct iv_use *use)
   if (POINTER_TYPE_P (basetype))
     basetype = sizetype;
   record_common_cand (data, build_int_cst (basetype, 0), iv->step, use);
+
+  /* Compare the cost of an address with an unscaled index with the cost of
+    an address with a scaled index and add candidate if useful.  */
+  poly_int64 step;
+  if (use != NULL
+      && poly_int_tree_p (iv->step, &step)
+      && address_p (use->type))
+    {
+      poly_int64 new_step;
+      unsigned int fact = preferred_mem_scale_factor
+	(use->iv->base,
+	 TYPE_MODE (use->mem_type),
+	 optimize_loop_for_speed_p (data->current_loop));
+
+      if (fact != 1
+	  && multiple_p (step, fact, &new_step))
+	add_candidate (data, size_int (0),
+		       wide_int_to_tree (sizetype, new_step),
+		       true, NULL);
+    }
 
   /* Record common candidate with constant offset stripped in base.
      Like the use itself, we also add candidate directly for it.  */
@@ -7042,6 +7064,8 @@ get_alias_ptr_type_for_ptr_address (iv_use *use)
     {
     case IFN_MASK_LOAD:
     case IFN_MASK_STORE:
+    case IFN_MASK_LOAD_LANES:
+    case IFN_MASK_STORE_LANES:
       /* The second argument contains the correct alias type.  */
       gcc_assert (use->op_p = gimple_call_arg_ptr (call, 0));
       return TREE_TYPE (gimple_call_arg (call, 1));

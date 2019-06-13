@@ -1,5 +1,16 @@
 2019-06-13  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
+	PR target/88834
+	* tree-ssa-loop-ivopts.c (get_mem_type_for_internal_fn): Handle
+	IFN_MASK_LOAD_LANES and IFN_MASK_STORE_LANES.
+	(get_alias_ptr_type_for_ptr_address): Likewise.
+	(add_iv_candidate_for_use): Add scaled index candidate if useful.
+	* tree-ssa-address.c (preferred_mem_scale_factor): New.
+	* config/aarch64/aarch64.c (aarch64_classify_address): Relax
+	allow_reg_index_p.
+
+2019-06-13  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
 	* config/aarch64/iterators.md (ADDSUB): Fix typo in comment.
 
 2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
