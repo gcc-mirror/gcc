@@ -1,3 +1,12 @@
+2019-06-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_loop_vectorized_call): Declare.
+	* tree-vectorizer.c (vect_loop_vectorized_call): Export and
+	also return the condition stmt.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Compute outermost
+	loop we can version and version that, reusing the loop version
+	created by if-conversion instead of versioning again.
+
 2019-06-13  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-loop-versioning.cc (prune_loop_conditions): Use
