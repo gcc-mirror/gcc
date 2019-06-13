@@ -910,6 +910,7 @@ irange::dump (pretty_printer *buffer) const
 
   pp_character (buffer, ' ');
   dump_generic_node (buffer, m_type, 0, TDF_NONE, false);
+  pp_flush (buffer);
 }
 
 // Dump the current range onto FILE F.
