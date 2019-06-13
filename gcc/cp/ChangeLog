@@ -1,3 +1,16 @@
+2019-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use id_loc in five additional places
+	in the last part of the function.
+
+2019-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Move further up the declaration of
+	id_loc, use it immediately, update its value after the loop
+	over declarator, use it again in the final part of function;
+	improve locations of error messages about multiple data types
+	and conflicting specifiers.
+
 2019-06-13  Richard Biener  <rguenther@suse.de>
 
 	PR c++/90801
