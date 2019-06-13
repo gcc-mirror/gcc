@@ -1,3 +1,9 @@
+2019-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR c++/90801
+	* typeck2.c (split_nonconstant_init_1): Properly count
+	num_split_elts, optimize single constructor elt removal.
+
 2019-06-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/66999 - 'this' captured by reference.
