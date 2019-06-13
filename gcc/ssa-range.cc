@@ -813,7 +813,7 @@ global_ranger::range_on_entry (irange &r, basic_block bb, tree name)
   // Start with any known range
   gcc_assert (range_of_stmt (r, SSA_NAME_DEF_STMT (name), name));
 
-  // NOw see if there is any on_entry value which may refine it .
+  // Now see if there is any on_entry value which may refine it .
   if (m_gori.block_range (entry_range, bb, name))
     r.intersect (entry_range);
 }
@@ -961,8 +961,10 @@ global_ranger::export_global_ranges ()
 		  print_generic_expr (dump_file, name , TDF_SLIM);
 		  fprintf (dump_file, " --> ");
 		  vr.dump (dump_file);
+		  fprintf (dump_file, "\n");
 		  fprintf (dump_file, "         irange : ");
 		  r.dump (dump_file);
+		  fprintf (dump_file, "\n");
 		}
 	    }
 	}
@@ -1000,7 +1002,8 @@ global_ranger::dump (FILE *f)
 	       {
 		 print_generic_expr (f, name, TDF_SLIM);
 		 fprintf (f, " : ");
-		 range.dump(f);
+		 range.dump (f);
+		 fprintf (f, "\n");
 	       }
 
 	    }
@@ -1036,6 +1039,7 @@ global_ranger::dump (FILE *f)
 			  print_generic_expr (f, name, TDF_SLIM);
 			  fprintf(f, " : \t");
 			  range.dump(f);
+			  fprintf (f, "\n");
 			}
 		    }
 		}
@@ -1044,6 +1048,7 @@ global_ranger::dump (FILE *f)
     }
 
   m_gori.m_globals.dump (dump_file);
+  fprintf (f, "\n");
 
   if (dump_flags & TDF_DETAILS)
     {
@@ -1095,6 +1100,7 @@ global_ranger::calculate_and_dump (FILE *output)
     }
   // The dump it.
   dump (output);
+  fprintf (output, "\n");
 }
 
 loop_ranger::loop_ranger ()
@@ -1129,8 +1135,10 @@ loop_ranger::adjust_phi_with_loop_info (irange &r, gphi *phi)
 	      print_gimple_stmt (dump_file, phi, 0, TDF_SLIM);
 	      fprintf (dump_file, "  from this range: ");
 	      old.dump (dump_file);
+	      fprintf (dump_file, "\n");
 	      fprintf (dump_file, "  into this range: ");
 	      r.dump (dump_file);
+	      fprintf (dump_file, "\n");
 	    }
 	}
     }
@@ -1197,7 +1205,10 @@ trace_ranger::trailer (unsigned counter, const char *caller, bool result,
 	print_generic_expr (dump_file, name, TDF_SLIM);
       fputs (") ",dump_file);
       if (result)
-	r.dump (dump_file);
+	{
+	  r.dump (dump_file);
+	  fputc('\n', dump_file);
+	}
       else
 	fputc('\n', dump_file);
     }
@@ -1345,7 +1356,10 @@ trace_ranger::outgoing_edge_range_p (irange &r, edge e, tree name,
       fprintf (dump_file, ") on edge %d->%d, with range ", e->src->index,
 	       e->dest->index);
       if (name_range)
-        name_range->dump (dump_file);
+	{
+	  name_range->dump (dump_file);
+	  fprintf (dump_file, "\n");
+	}
       else
         fputs ("NULL\n", dump_file);
       indent += bump;

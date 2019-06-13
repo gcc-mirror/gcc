@@ -21,6 +21,18 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RANGE_H
 #define GCC_RANGE_H
 
+// Enable this to implement irange piggybacking on value_range.
+#define IRANGE_WITH_VALUE_RANGE 0
+
+#if IRANGE_WITH_VALUE_RANGE
+#include "tree-vrp.h"
+typedef value_range_base irange;
+typedef value_range_storage irange_storage;
+#define IRANGE_PLAIN VR_RANGE
+#define IRANGE_INVERSE VR_ANTI_RANGE
+#else
+// This is the standalone irange implementation.
+
 class irange_storage;
 
 // This is a class for working with ranges, currently integer ones.
@@ -107,28 +119,13 @@ private:
   bool contains_p (const wide_int &element) const;
   void dump (pretty_printer *pp) const;
   bool valid_p () const;
+  void check () const;
 
   tree m_type;
   unsigned char m_nitems;
   static const unsigned int m_max_pairs = 3;
   wide_int m_bounds[m_max_pairs * 2];
 }; // class irange
-
-irange range_zero (tree type);
-irange range_nonzero (tree type);
-irange range_intersect (const irange &, const irange &);
-irange range_union (const irange &, const irange &);
-irange range_invert (const irange &);
-irange range_from_ssa (tree ssa);
-irange range_positives (tree type);
-irange range_negatives (tree type);
-irange value_range_to_irange (tree type, const value_range_base &);
-irange value_range_to_irange (tree type, enum value_range_kind kind,
-			      const wide_int &, const wide_int &);
-value_range_base irange_to_value_range (const irange &);
-
-// Extract a range from a tree node.
-bool get_tree_range (irange &r, tree expr);
 
 inline
 irange::irange () : m_type (NULL), m_nitems (0)
@@ -183,41 +180,6 @@ inline bool
 irange::undefined_p () const
 {
   return !m_nitems;
-}
-
-// Return true if TYPE is a valid type for irange to operate on.
-// Otherwise return FALSE.
-
-inline bool
-irange::supports_type_p (tree type)
-{
-  if (type && (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type)))
-    return type;
-  return NULL;
-}
-
-// Return true if SSA is a valid ssa_name for irange to operate on.
-// Otherwise return FALSE.
-
-inline bool
-irange::supports_ssa_p (tree ssa)
-{
-  if (!SSA_NAME_IS_VIRTUAL_OPERAND (ssa))
-    return supports_type_p (TREE_TYPE (ssa));
- return false;
-}
-
-// Return true if EXPR is a valid tree expression for irange to operate on.
-// Otherwise return FALSE.
-
-inline bool
-irange::supports_p (tree expr)
-{
-  if (TYPE_P (expr))
-    return supports_type_p (expr);
-  else if (TREE_CODE (expr) == SSA_NAME)
-    return supports_ssa_p (expr);
-  return supports_type_p (TREE_TYPE (expr));
 }
 
 inline bool
@@ -339,6 +301,61 @@ irange_storage::empty_pair_p (unsigned i, unsigned j, tree type) const
 	    && trailing_bounds[j] == wi::one (precision));
   return (trailing_bounds[i] == wi::one (precision)
 	  && trailing_bounds[j] == wi::zero (precision));
+}
+
+#endif // IRANGE_WITH_VALUE_RANGE
+
+// Common code between the alternate irange implementations.
+
+irange range_zero (tree type);
+irange range_nonzero (tree type);
+irange range_intersect (const irange &, const irange &);
+irange range_union (const irange &, const irange &);
+irange range_invert (const irange &);
+irange range_from_ssa (tree ssa);
+irange range_positives (tree type);
+irange range_negatives (tree type);
+irange value_range_to_irange (tree type, const value_range_base &);
+irange value_range_to_irange (tree type, enum value_range_kind kind,
+			      const wide_int &, const wide_int &);
+value_range_base irange_to_value_range (const irange &);
+
+// Extract a range from a tree node.
+bool get_tree_range (irange &r, tree expr);
+
+// Return true if TYPE is a valid type for irange to operate on.
+// Otherwise return FALSE.
+
+inline bool
+irange::supports_type_p (tree type)
+{
+  if (type && (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type)))
+    return type;
+  return NULL;
+}
+
+// Return true if SSA is a valid ssa_name for irange to operate on.
+// Otherwise return FALSE.
+
+inline bool
+irange::supports_ssa_p (tree ssa)
+{
+  if (!SSA_NAME_IS_VIRTUAL_OPERAND (ssa))
+    return supports_type_p (TREE_TYPE (ssa));
+ return false;
+}
+
+// Return true if EXPR is a valid tree expression for irange to operate on.
+// Otherwise return FALSE.
+
+inline bool
+irange::supports_p (tree expr)
+{
+  if (TYPE_P (expr))
+    return supports_type_p (expr);
+  else if (TREE_CODE (expr) == SSA_NAME)
+    return supports_ssa_p (expr);
+  return supports_type_p (TREE_TYPE (expr));
 }
 
 #endif // GCC_RANGE_H

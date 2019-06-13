@@ -31,6 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "wide-int-range.h"
 
+// Common code between the alternate irange implementations.
+
 // Return TRUE if two types are compatible for range operations.
 
 static bool
@@ -46,6 +48,168 @@ range_compatible_p (tree t1, tree t2)
 
   return types_compatible_p (t1, t2);
 }
+
+bool
+irange::operator== (const irange &r) const
+{
+  /* Special case UNDEFINED, because the value_range_base
+     implementation may not have a type for a freshly initialized
+     UNDEFINED.  */
+  if (undefined_p ())
+    return r.undefined_p ();
+
+  if (num_pairs () != r.num_pairs ()
+      || !range_compatible_p (type (), r.type ()))
+    return false;
+
+  for (unsigned p = 0; p < num_pairs (); p++)
+    if (wi::ne_p (lower_bound (p), r.lower_bound (p))
+	|| wi::ne_p (upper_bound (p), r.upper_bound (p)))
+      return false;
+
+  return true;
+}
+
+bool
+irange::operator!= (const irange &r) const
+{
+  return !(*this == r);
+}
+
+// Set range from an SSA_NAME's available range.  If there is no
+// available range, build a range for its entire domain.
+
+irange
+range_from_ssa (tree ssa)
+{
+  tree type = TREE_TYPE (ssa);
+  gcc_checking_assert (irange::supports_type_p (type));
+  if (!SSA_NAME_RANGE_INFO (ssa) || POINTER_TYPE_P (type))
+    return irange (type);
+  wide_int min, max;
+  enum value_range_kind kind = get_range_info (ssa, &min, &max);
+  return value_range_to_irange (type, kind, min, max);
+}
+
+// This function returns a range for tree node EXPR in R.  Return
+// false if ranges are not supported.
+
+bool
+get_tree_range (irange &r, tree expr)
+{
+  tree type;
+  switch (TREE_CODE (expr))
+    {
+      case INTEGER_CST:
+        if (!TREE_OVERFLOW_P (expr))
+	  r = irange (expr, expr);
+	else
+	  // If we encounter an overflow, simply punt and drop to varying
+	  // since we hvae no idea how it will be used.
+	  r.set_varying (TREE_TYPE (expr));
+	return true;
+
+      case SSA_NAME:
+        if (irange::supports_ssa_p (expr))
+	  {
+	    r = range_from_ssa (expr);
+	    return true;
+	  }
+	break;
+
+      case ADDR_EXPR:
+        {
+	  // handle &var which can show up in phi arguments
+	  bool ov;
+	  type = TREE_TYPE (expr);
+	  if (irange::supports_type_p (type))
+	    {
+	      if (tree_single_nonzero_warnv_p (expr, &ov))
+		r = range_nonzero (type);
+	      else
+		r.set_varying (type);
+	      return true;
+	    }
+	  break;
+	}
+
+      default:
+	if (TYPE_P (expr))
+	  type = expr;
+	else
+	  type = TREE_TYPE (expr);
+	if (irange::supports_type_p (type))
+	  {
+	    // Set to range for this type.
+	    r.set_varying (type);
+	    return true;
+	  }
+	break;
+    }
+
+  return false;
+}
+
+irange
+range_intersect (const irange &r1, const irange &r2)
+{
+  irange tmp (r1);
+  tmp.intersect (r2);
+  return tmp;
+}
+
+irange
+range_invert (const irange &r1)
+{
+  irange tmp (r1);
+  tmp.invert ();
+  return tmp;
+}
+
+irange
+range_union (const irange &r1, const irange &r2)
+{
+  irange tmp (r1);
+  tmp.union_ (r2);
+  return tmp;
+}
+
+irange
+range_zero (tree type)
+{
+  return irange (build_zero_cst (type), build_zero_cst (type));
+}
+
+irange
+range_nonzero (tree type)
+{
+  return irange (IRANGE_INVERSE,
+		 build_zero_cst (type), build_zero_cst (type));
+}
+
+irange
+range_positives (tree type)
+{
+  unsigned prec = TYPE_PRECISION (type);
+  signop sign = TYPE_SIGN (type);
+  return irange (type, wi::zero (prec), wi::max_value (prec, sign));
+}
+
+irange
+range_negatives (tree type)
+{
+  unsigned prec = TYPE_PRECISION (type);
+  signop sign = TYPE_SIGN (type);
+  irange r;
+  if (sign == UNSIGNED)
+    r.set_undefined (type);
+  else
+    r = irange (type, wi::min_value (prec, sign), wi::minus_one (prec));
+  return r;
+}
+
+#if !IRANGE_WITH_VALUE_RANGE
+// Standalone irange implementation.
 
 // Subtract 1 from X and set OVERFLOW if the operation overflows.
 
@@ -110,81 +274,6 @@ irange::init (tree type, const wide_int &lbound, const wide_int &ubound,
       m_nitems = 2;
     }
 }
-
-// Set range from an SSA_NAME's available range.  If there is no
-// available range, build a range for its entire domain.
-
-irange
-range_from_ssa (tree ssa)
-{
-  tree type = TREE_TYPE (ssa);
-  gcc_checking_assert (irange::supports_type_p (type));
-  if (!SSA_NAME_RANGE_INFO (ssa) || POINTER_TYPE_P (type))
-    return irange (type);
-  wide_int min, max;
-  enum value_range_kind kind = get_range_info (ssa, &min, &max);
-  return value_range_to_irange (type, kind, min, max);
-}
-
-// This function returns a range for tree node EXPR in R.  
-// Return false if ranges are not supported.
-
-bool
-get_tree_range (irange &r, tree expr)
-{
-  tree type;
-  switch (TREE_CODE (expr))
-    {
-      case INTEGER_CST:
-        if (!TREE_OVERFLOW_P (expr))
-	  r = irange (expr, expr);
-	else
-	  // If we encounter an overflow, simply punt and drop to varying
-	  // since we hvae no idea how it will be used.
-	  r.set_varying (TREE_TYPE (expr));
-	return true;
-
-      case SSA_NAME:
-        if (irange::supports_ssa_p (expr))
-	  {
-	    r = range_from_ssa (expr);
-	    return true;
-	  }
-	break;
-
-      case ADDR_EXPR:
-        {
-	  // handle &var which can show up in phi arguments
-	  bool ov;
-	  type = TREE_TYPE (expr);
-	  if (irange::supports_type_p (type))
-	    {
-	      if (tree_single_nonzero_warnv_p (expr, &ov))
-		r = range_nonzero (type);
-	      else
-		r.set_varying (type);
-	      return true;
-	    }
-	  break;
-	}
-
-      default:
-	if (TYPE_P (expr))
-	  type = expr;
-	else
-	  type = TREE_TYPE (expr);
-	if (irange::supports_type_p (type))
-	  {
-	    // Set to range for this type.
-	    r.set_varying (type);
-	    return true;
-	  }
-	break;
-    }
-
-  return false;
-}
-
 
 irange::irange (tree type)
 {
@@ -254,23 +343,6 @@ irange::irange (tree type, const irange_storage *storage)
   m_nitems = i;
 }
 
-bool
-irange::operator== (const irange &r) const
-{
-  if (m_nitems != r.m_nitems || !range_compatible_p (m_type, r.m_type))
-    return false;
-  for (unsigned i = 0; i < m_nitems; ++i)
-    if (!wi::eq_p (m_bounds[i], r.m_bounds[i]))
-      return false;
-  return true;
-}
-
-bool
-irange::operator!= (const irange &r) const
-{
-  return !(*this == r);
-}
-
 // Set range from the full domain of TYPE.
 
 void
@@ -304,6 +376,12 @@ irange::valid_p () const
 	return false;
     }
   return true;
+}
+
+void
+irange::check () const
+{
+  gcc_assert (valid_p ());
 }
 
 // Convert the current range in place into a range of type NEW_TYPE.
@@ -500,7 +578,8 @@ irange::canonicalize ()
       irange bits (TYPE_MIN_VALUE (m_type), TYPE_MAX_VALUE (m_type));
       intersect (bits);
     }
-  gcc_checking_assert (valid_p ());
+  if (flag_checking)
+    check ();
 }
 
 // THIS = THIS U R
@@ -614,18 +693,9 @@ irange::union_ (const irange &r)
   for (j = 0; j < i ; j++)
     m_bounds[j] = res [j];
   m_nitems = i;
-    
-  gcc_checking_assert (valid_p ());
-}
 
-// Return R1 U R2.
-
-irange
-range_union (const irange &r1, const irange &r2)
-{
-  irange tmp (r1);
-  tmp.union_ (r2);
-  return tmp;
+  if (flag_checking)
+    check ();
 }
 
 // THIS = THIS ^ [X,Y].
@@ -652,7 +722,8 @@ irange::intersect (const wide_int &x, const wide_int &y)
 	}
     }
   m_nitems = pos;
-  gcc_checking_assert (valid_p ());
+  if (flag_checking)
+    check ();
 }
 
 // THIS = THIS ^ R.
@@ -685,18 +756,8 @@ irange::intersect (const irange &r)
       tmp.intersect (r.m_bounds[i], r.m_bounds[i + 1]);
       union_ (tmp);
     }
-
-  // There is no valid_p() check here because the calls to union_
-  // above would have called valid_p().
-}
-
-// Return R1 ^ R2.
-irange
-range_intersect (const irange &r1, const irange &r2)
-{
-  irange tmp (r1);
-  tmp.intersect (r2);
-  return tmp;
+  // There is no check here because the calls to union_ above would
+  // have verified sanity.
 }
 
 // Set THIS to the inverse of its range.
@@ -793,16 +854,8 @@ irange::invert ()
 	m_nitems -= 2;
     }
 
-  gcc_checking_assert (valid_p ());
-}
-
-// Return the inverse range of R1.
-irange
-range_invert (const irange &r1)
-{
-  irange tmp (r1);
-  tmp.invert ();
-  return tmp;
+  if (flag_checking)
+    check ();
 }
 
 // Dump the current range onto BUFFER.
@@ -857,7 +910,6 @@ irange::dump (pretty_printer *buffer) const
 
   pp_character (buffer, ' ');
   dump_generic_node (buffer, m_type, 0, TDF_NONE, false);
-  pp_newline_and_flush (buffer);
 }
 
 // Dump the current range onto FILE F.
@@ -912,40 +964,6 @@ irange_storage::update (const irange &new_range)
       return true;
     }
   return false;
-}
-
-irange
-range_zero (tree type)
-{
-  return irange (build_zero_cst (type), build_zero_cst (type));
-}
-
-irange
-range_nonzero (tree type)
-{
-  return irange (IRANGE_INVERSE,
-		 build_zero_cst (type), build_zero_cst (type));
-}
-
-irange
-range_positives (tree type)
-{
-  unsigned prec = TYPE_PRECISION (type);
-  signop sign = TYPE_SIGN (type);
-  return irange (type, wi::zero (prec), wi::max_value (prec, sign));
-}
-
-irange
-range_negatives (tree type)
-{
-  unsigned prec = TYPE_PRECISION (type);
-  signop sign = TYPE_SIGN (type);
-  irange r;
-  if (sign == UNSIGNED)
-    r.set_undefined (type);
-  else
-    r = irange (type, wi::min_value (prec, sign), wi::minus_one (prec));
-  return r;
 }
 
 // Return TRUE if range contains exactly one element and set RESULT to it.
@@ -1053,6 +1071,7 @@ value_range_to_irange (tree type, const value_range_base &vr)
 			       wi::to_wide (vr.max ()));
   return r;
 }
+#endif // !IRANGE_WITH_VALUE_RANGE
 
 #if CHECKING_P
 #include "stor-layout.h"
@@ -1087,7 +1106,6 @@ irange_tests ()
   tree u128_type = build_nonstandard_integer_type (128, /*unsigned=*/1);
   irange i1, i2, i3;
   irange r0, r1, rold;
-  ASSERT_FALSE (r0.valid_p ());
 
   // Test that NOT(255) is [0..254] in 8-bit land.
   irange not_255 (IRANGE_INVERSE, UCHAR (255), UCHAR (255));
@@ -1148,21 +1166,21 @@ irange_tests ()
   ASSERT_TRUE (r0 == r1);
 
   r1 = irange (INT (5), INT (5));
-  ASSERT_TRUE (r1.valid_p ());
+  r1.check ();
   irange r2 (r1);
   ASSERT_TRUE (r1 == r2);
 
   r1 = irange (INT (5), INT (10));
-  ASSERT_TRUE (r1.valid_p ());
+  r1.check ();
 
   r1 = irange (integer_type_node,
 	       wi::to_wide (INT (5)), wi::to_wide (INT (10)));
-  ASSERT_TRUE (r1.valid_p ());
-  ASSERT_TRUE (r1.contains_p (wi::to_wide (INT (7))));
+  r1.check ();
+  ASSERT_TRUE (r1.contains_p (INT (7)));
 
   r1 = irange (SCHAR (0), SCHAR (20));
-  ASSERT_TRUE (r1.contains_p (wi::to_wide (SCHAR(15))));
-  ASSERT_FALSE (r1.contains_p (wi::to_wide (SCHAR(300))));
+  ASSERT_TRUE (r1.contains_p (SCHAR(15)));
+  ASSERT_FALSE (r1.contains_p (SCHAR(300)));
 
   // If a range is in any way outside of the range for the converted
   // to range, default to the range for the new type.

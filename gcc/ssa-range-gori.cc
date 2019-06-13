@@ -466,6 +466,7 @@ gori_map::dump(FILE *f)
   FOR_EACH_BB_FN (bb, cfun)
     {
       dump (f, bb);
+      fprintf (f, "\n");
     }
 }
 

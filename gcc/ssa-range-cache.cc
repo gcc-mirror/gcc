@@ -241,6 +241,7 @@ ssa_block_ranges::dump (FILE *f)
       {
 	fprintf (f, "BB%d  -> ", bb->index);
 	r.dump (f);
+	fprintf (f, "\n");
       }
 }
 
@@ -334,6 +335,7 @@ block_range_cache::dump (FILE *f)
 	  print_generic_expr (f, ssa_name (x), TDF_NONE);
 	  fprintf (f, ":\n");
 	  m_ssa_ranges[x]->dump (f);
+	  fprintf (f, "\n");
 	}
     }
   
@@ -360,6 +362,7 @@ block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
 	  print_generic_expr (f, ssa_name (x), TDF_NONE);
 	  fprintf (f, "\t");
 	  r.dump(f);
+	  fprintf (f, "\n");
 	}
     }
   // If there were any varying entries, lump them all together.
@@ -470,6 +473,7 @@ ssa_global_cache::dump (FILE *f)
         print_generic_expr (f, ssa_name (x), TDF_NONE);
 	fprintf (f, "  : ");
         r.dump (f);
+	fprintf (f, "\n");
       }
   fputc ('\n', dump_file);
 }
