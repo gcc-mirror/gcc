@@ -1,3 +1,8 @@
+2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-minversion-1.c: Use compile rather than link/run.
+	* gcc.dg/darwin-minversion-2.c: Likewise.
+
 2019-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR target/90871
