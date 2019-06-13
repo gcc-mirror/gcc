@@ -1,3 +1,9 @@
+2019-06-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90870
+	* gfortran.dg/deferred_character_33.f90: Remove failing test.
+	* gfortran.dg/deferred_character_33a.f90: Likewise.
+
 2019-06-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	Tomáš Trnka  <trnka@scm.com>
 
