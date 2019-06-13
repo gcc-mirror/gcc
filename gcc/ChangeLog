@@ -1,3 +1,13 @@
+2019-06-13  Jiufu Guo  <guojiufu@linux.ibm.com>
+	    Lijia He  <helijia@linux.ibm.com>
+
+	PR tree-optimization/77820
+	* tree-ssa-threadedge.c
+	(edge_forwards_cmp_to_conditional_jump_through_empty_bb_p): New
+	function.
+	(thread_across_edge): Add call to
+	edge_forwards_cmp_to_conditional_jump_through_empty_bb_p.
+
 2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin-driver.c (validate_macosx_version_min): New.

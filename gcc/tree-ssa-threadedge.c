@@ -1157,6 +1157,68 @@ thread_through_normal_block (edge e,
   return 0;
 }
 
+/* There are basic blocks look like:
+   <P0>
+   p0 = a CMP b ; or p0 = (INT) (a CMP b)
+   goto <X>;
+
+   <P1>
+   p1 = c CMP d
+   goto <X>;
+
+   <X>
+   # phi = PHI <p0 (P0), p1 (P1)>
+   if (phi != 0) goto <Y>; else goto <Z>;
+
+   Then, edge (P0,X) or (P1,X) could be marked as EDGE_START_JUMP_THREAD
+   And edge (X,Y), (X,Z) is EDGE_COPY_SRC_JOINER_BLOCK
+
+   Return true if E is (P0,X) or (P1,X)  */
+
+bool
+edge_forwards_cmp_to_conditional_jump_through_empty_bb_p (edge e)
+{
+  /* See if there is only one stmt which is gcond.  */
+  gcond *gs;
+  if (!(gs = safe_dyn_cast<gcond *> (last_and_only_stmt (e->dest))))
+    return false;
+
+  /* See if gcond's cond is "(phi !=/== 0/1)" in the basic block.  */
+  tree cond = gimple_cond_lhs (gs);
+  enum tree_code code = gimple_cond_code (gs);
+  tree rhs = gimple_cond_rhs (gs);
+  if (TREE_CODE (cond) != SSA_NAME
+      || (code != NE_EXPR && code != EQ_EXPR)
+      || (!integer_onep (rhs) && !integer_zerop (rhs)))
+    return false;
+  gphi *phi = dyn_cast <gphi *> (SSA_NAME_DEF_STMT (cond));
+  if (phi == NULL || gimple_bb (phi) != e->dest)
+    return false;
+
+  /* Check if phi's incoming value is CMP.  */
+  gassign *def;
+  tree value = PHI_ARG_DEF_FROM_EDGE (phi, e);
+  if (TREE_CODE (value) != SSA_NAME
+      || !has_single_use (value)
+      || !(def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (value))))
+    return false;
+
+  /* Or if it is (INT) (a CMP b).  */
+  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def)))
+    {
+      value = gimple_assign_rhs1 (def);
+      if (TREE_CODE (value) != SSA_NAME
+	  || !has_single_use (value)
+	  || !(def = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (value))))
+	return false;
+    }
+
+  if (TREE_CODE_CLASS (gimple_assign_rhs_code (def)) != tcc_comparison)
+    return false;
+
+  return true;
+}
+
 /* We are exiting E->src, see if E->dest ends with a conditional
    jump which has a known value when reached via E.
 
@@ -1317,10 +1379,12 @@ thread_across_edge (gcond *dummy_cond,
 
 	/* If we were able to thread through a successor of E->dest, then
 	   record the jump threading opportunity.  */
-	if (found)
+	if (found
+	    || edge_forwards_cmp_to_conditional_jump_through_empty_bb_p (e))
 	  {
-	    propagate_threaded_block_debug_into (path->last ()->e->dest,
-						 taken_edge->dest);
+	    if (taken_edge->dest != path->last ()->e->dest)
+	      propagate_threaded_block_debug_into (path->last ()->e->dest,
+						   taken_edge->dest);
 	    register_jump_thread (path);
 	  }
 	else

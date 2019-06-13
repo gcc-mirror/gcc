@@ -1,3 +1,14 @@
+2019-06-13  Jiufu Guo  <guojiufu@linux.ibm.com>
+	    Lijia He  <helijia@linux.ibm.com>
+
+	PR tree-optimization/77820
+	* gcc.dg/tree-ssa/phi_on_compare-1.c: New testcase.
+	* gcc.dg/tree-ssa/phi_on_compare-2.c: New testcase.
+	* gcc.dg/tree-ssa/phi_on_compare-3.c: New testcase.
+	* gcc.dg/tree-ssa/phi_on_compare-4.c: New testcase.
+	* gcc.dg/tree-ssa/split-path-6.c: Update testcase.
+	* gcc.target/sh/pr51244-20.c: Update testcase.
+
 2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.dg/darwin-minversion-link.c: New test.
