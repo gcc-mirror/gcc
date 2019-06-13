@@ -7,6 +7,9 @@
 	(and->zext post-reload splitter): Use gen_extend_insn
 	instead of indirect functions.
 	(anddi->zext pre-reload splitter): New.
+	(*zext<mode>_doubleword_and): Remove.
+	(*zext<mode>_doubleword): Ditto.
+	(*zextsi_doubleword): Dittto.
 
 2019-06-13  Uroš Bizjak  <ubizjak@gmail.com>
 
