@@ -1625,7 +1625,7 @@ compare_range_with_value (enum tree_code comp, value_range *vr, tree val,
 	return NULL_TREE;
 
       /* ~[VAL_1, VAL_2] OP VAL is known if VAL_1 <= VAL <= VAL_2.  */
-      if (value_inside_range (val, vr->min (), vr->max ()) == 1)
+      if (!vr->may_contain_p (val))
 	return (comp == NE_EXPR) ? boolean_true_node : boolean_false_node;
 
       return NULL_TREE;

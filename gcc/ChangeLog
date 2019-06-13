@@ -1,3 +1,17 @@
+2019-06-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-loop-versioning.cc (prune_loop_conditions): Use
+	may_contain_p.
+	* tree-vrp (value_range_base::may_contain_p): Call into
+	value_inside_range.
+	(value_inside_range): Make private inside value_range_base class.
+	Take min/max from *this.
+	(range_includes_p): Remove.
+	* tree-vrp.h (value_range_base): Add value_inside_range.
+	(range_includes_p): Remove.
+	(range_includes_zero_p): Call may_contain_p.
+	* vr-values.c (compare_range_with_value): Same.
+
 2019-06-13  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* doc/extend.texi (ARC Function Attributes): Update info.
