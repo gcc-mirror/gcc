@@ -1,3 +1,9 @@
+2019-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/nvptx/nvptx.c (nvptx_sese_number, nvptx_sese_pseudo): Don't
+	wrap ei variable name in the declaration in ()s.
+	(nvptx_single): Actually use mode_label variable.  Formatting fix.
+
 2019-06-13  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (vect_loop_vectorized_call): Declare.
