@@ -1,3 +1,14 @@
+2019-06-13  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	PR target/88834
+	* gcc.target/aarch64/pr88834.c: New test.
+	* gcc.target/aarch64/sve/struct_vect_1.c: Adjust.
+	* gcc.target/aarch64/sve/struct_vect_14.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_15.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_16.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_17.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_7.c: Likewise.
+
 2019-06-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87410
