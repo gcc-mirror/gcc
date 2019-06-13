@@ -4303,27 +4303,15 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	    case E_V2DImode:
 		{
 		  rtx t1, t2, mask;
-		  rtx (*gen_sub3) (rtx, rtx, rtx);
 
-		  switch (mode)
-		    {
-		    case E_V16SImode: gen_sub3 = gen_subv16si3; break;
-		    case E_V8DImode: gen_sub3 = gen_subv8di3; break;
-		    case E_V8SImode: gen_sub3 = gen_subv8si3; break;
-		    case E_V4DImode: gen_sub3 = gen_subv4di3; break;
-		    case E_V4SImode: gen_sub3 = gen_subv4si3; break;
-		    case E_V2DImode: gen_sub3 = gen_subv2di3; break;
-		    default:
-		      gcc_unreachable ();
-		    }
 		  /* Subtract (-(INT MAX) - 1) from both operands to make
 		     them signed.  */
 		  mask = ix86_build_signbit_mask (mode, true, false);
 		  t1 = gen_reg_rtx (mode);
-		  emit_insn (gen_sub3 (t1, cop0, mask));
+		  emit_insn (gen_sub3_insn (t1, cop0, mask));
 
 		  t2 = gen_reg_rtx (mode);
-		  emit_insn (gen_sub3 (t2, cop1, mask));
+		  emit_insn (gen_sub3_insn (t2, cop1, mask));
 
 		  cop0 = t1;
 		  cop1 = t2;
@@ -4339,9 +4327,8 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	    case E_V8HImode:
 	      /* Perform a parallel unsigned saturating subtraction.  */
 	      x = gen_reg_rtx (mode);
-	      emit_insn (gen_rtx_SET (x, gen_rtx_US_MINUS (mode, cop0,
-							   cop1)));
-
+	      emit_insn (gen_rtx_SET
+			 (x, gen_rtx_US_MINUS (mode, cop0, cop1)));
 	      cop0 = x;
 	      cop1 = CONST0_RTX (mode);
 	      code = EQ;
@@ -5562,18 +5549,17 @@ ix86_split_long_move (rtx operands[])
 static void
 ix86_expand_ashl_const (rtx operand, int count, machine_mode mode)
 {
-  rtx (*insn)(rtx, rtx, rtx);
-
   if (count == 1
       || (count * ix86_cost->add <= ix86_cost->shift_const
 	  && !optimize_insn_for_size_p ()))
     {
-      insn = mode == DImode ? gen_addsi3 : gen_adddi3;
       while (count-- > 0)
-	emit_insn (insn (operand, operand, operand));
+	emit_insn (gen_add2_insn (operand, operand));
     }
   else
     {
+      rtx (*insn)(rtx, rtx, rtx);
+
       insn = mode == DImode ? gen_ashlsi3 : gen_ashldi3;
       emit_insn (insn (operand, operand, GEN_INT (count)));
     }
@@ -6506,10 +6492,7 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx vec_value,
 static void
 ix86_adjust_counter (rtx countreg, HOST_WIDE_INT value)
 {
-  rtx (*gen_add)(rtx, rtx, rtx)
-    = GET_MODE (countreg) == DImode ? gen_adddi3 : gen_addsi3;
-
-  emit_insn (gen_add (countreg, countreg, GEN_INT (-value)));
+  emit_insn (gen_add2_insn (countreg, GEN_INT (-value)));
 }
 
 /* Depending on ISSETMEM, copy enough from SRCMEM to DESTMEM or set enough to
