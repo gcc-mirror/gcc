@@ -1,3 +1,25 @@
+2019-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/variably-modified-type-1.C: New.
+	* g++.dg/cpp0x/alias-decl-1.C: Test the location too.
+	* g++.dg/other/pr84792-1.C: Likewise.
+	* g++.dg/other/pr84792-2.C: Likewise.
+	* g++.dg/parse/error24.C: Likewise.
+	* g++.dg/parse/error32.C: Likewise.
+	* g++.dg/parse/error33.C: Likewise.
+	* g++.dg/parse/saved1.C: Likewise.
+	* g++.dg/template/operator6.C: Likewise.
+	* g++.dg/template/pr61745.C: Likewise.
+	* g++.dg/template/typedef41.C: Likewise.
+	* g++.old-deja/g++.jason/crash10.C: Likewise.
+
+2019-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/conflicting-specifiers-1.C: New.
+	* g++.dg/diagnostic/two-or-more-data-types-1.C: Likewise.
+	* g++.dg/parse/error10.C: Adjust location.
+	* g++.dg/parse/pragma2.C: Likewise.
+
 2019-06-13  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR tree-optimization/89713

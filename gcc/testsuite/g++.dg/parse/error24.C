@@ -2,7 +2,7 @@
 // PR c++/19395
 
 struct A {
-  typedef int ::X; // { dg-error "17:typedef name may not be a nested-name-specifier" }
+  typedef int ::X; // { dg-error "15:typedef name may not be a nested-name-specifier" }
 };
 
 
