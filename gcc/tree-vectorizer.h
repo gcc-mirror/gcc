@@ -1656,5 +1656,7 @@ void vect_pattern_recog (vec_info *);
 /* In tree-vectorizer.c.  */
 unsigned vectorize_loops (void);
 void vect_free_loop_info_assumptions (struct loop *);
+gimple *vect_loop_vectorized_call (struct loop *, gcond **cond = NULL);
+
 
 #endif  /* GCC_TREE_VECTORIZER_H  */

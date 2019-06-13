@@ -3016,7 +3016,8 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
     vect_create_cond_for_niters_checks (loop_vinfo, &cond_expr);
 
   if (cond_expr)
-    cond_expr = force_gimple_operand_1 (cond_expr, &cond_expr_stmt_list,
+    cond_expr = force_gimple_operand_1 (unshare_expr (cond_expr),
+					&cond_expr_stmt_list,
 					is_gimple_condexpr, NULL_TREE);
 
   if (version_align)
@@ -3060,45 +3061,136 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 				      is_gimple_condexpr, NULL_TREE);
   gimple_seq_add_seq (&cond_expr_stmt_list, gimplify_stmt_list);
 
-  initialize_original_copy_tables ();
-  if (scalar_loop)
+  /* Compute the outermost loop cond_expr and cond_expr_stmt_list are
+     invariant in.  */
+  struct loop *outermost = outermost_invariant_loop_for_expr (loop, cond_expr);
+  for (gimple_stmt_iterator gsi = gsi_start (cond_expr_stmt_list);
+       !gsi_end_p (gsi); gsi_next (&gsi))
     {
-      edge scalar_e;
-      basic_block preheader, scalar_preheader;
+      gimple *stmt = gsi_stmt (gsi);
+      update_stmt (stmt);
+      ssa_op_iter iter;
+      use_operand_p use_p;
+      basic_block def_bb;
+      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
+	if ((def_bb = gimple_bb (SSA_NAME_DEF_STMT (USE_FROM_PTR (use_p))))
+	    && flow_bb_inside_loop_p (outermost, def_bb))
+	  outermost = superloop_at_depth (loop, bb_loop_depth (def_bb) + 1);
+    }
 
-      /* We don't want to scale SCALAR_LOOP's frequencies, we need to
-	 scale LOOP's frequencies instead.  */
-      nloop = loop_version (scalar_loop, cond_expr, &condition_bb,
-			    prob, prob.invert (), prob, prob.invert (), true);
-      scale_loop_frequencies (loop, prob);
-      /* CONDITION_BB was created above SCALAR_LOOP's preheader,
-	 while we need to move it above LOOP's preheader.  */
-      e = loop_preheader_edge (loop);
-      scalar_e = loop_preheader_edge (scalar_loop);
-      /* The vector loop preheader might not be empty, since new
-	 invariants could have been created while analyzing the loop.  */
-      gcc_assert (single_pred_p (e->src));
-      gcc_assert (empty_block_p (scalar_e->src)
-		  && single_pred_p (scalar_e->src));
-      gcc_assert (single_pred_p (condition_bb));
-      preheader = e->src;
-      scalar_preheader = scalar_e->src;
-      scalar_e = find_edge (condition_bb, scalar_preheader);
-      e = single_pred_edge (preheader);
-      redirect_edge_and_branch_force (single_pred_edge (condition_bb),
-				      scalar_preheader);
-      redirect_edge_and_branch_force (scalar_e, preheader);
-      redirect_edge_and_branch_force (e, condition_bb);
-      set_immediate_dominator (CDI_DOMINATORS, condition_bb,
-			       single_pred (condition_bb));
-      set_immediate_dominator (CDI_DOMINATORS, scalar_preheader,
-			       single_pred (scalar_preheader));
-      set_immediate_dominator (CDI_DOMINATORS, preheader,
-			       condition_bb);
+  /* Search for the outermost loop we can version.  Avoid versioning of
+     non-perfect nests but allow if-conversion versioned loops inside.  */
+  struct loop *loop_to_version = loop;
+  if (flow_loop_nested_p (outermost, loop))
+    { 
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "trying to apply versioning to outer loop %d\n",
+			 outermost->num);
+      if (outermost->num == 0)
+	outermost = superloop_at_depth (loop, 1);
+      /* And avoid applying versioning on non-perfect nests.  */
+      while (loop_to_version != outermost
+	     && single_exit (loop_outer (loop_to_version))
+	     && (!loop_outer (loop_to_version)->inner->next
+		 || vect_loop_vectorized_call (loop_to_version))
+	     && (!loop_outer (loop_to_version)->inner->next
+		 || !loop_outer (loop_to_version)->inner->next->next))
+	loop_to_version = loop_outer (loop_to_version);
+    }
+
+  /* Apply versioning.  If there is already a scalar version created by
+     if-conversion re-use that.  */
+  gcond *cond;
+  if (gimple *call = vect_loop_vectorized_call (loop_to_version, &cond))
+    {
+      gcc_assert (scalar_loop);
+      condition_bb = gimple_bb (cond);
+      gimple_cond_set_condition_from_tree (cond, cond_expr);
+      update_stmt (cond);
+
+      if (cond_expr_stmt_list)
+	{
+	  cond_exp_gsi = gsi_for_stmt (call);
+	  gsi_insert_seq_before (&cond_exp_gsi, cond_expr_stmt_list,
+				 GSI_SAME_STMT);
+	}
+
+      /* ???  if-conversion uses profile_probability::always () but
+         prob below is profile_probability::likely ().  */
+      nloop = scalar_loop;
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "reusing %sloop version created by if conversion\n",
+			 loop_to_version != loop ? "outer " : "");
     }
   else
-    nloop = loop_version (loop, cond_expr, &condition_bb,
-			  prob, prob.invert (), prob, prob.invert (), true);
+    {
+      if (loop_to_version != loop
+	  && dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "applying loop versioning to outer loop %d\n",
+			 loop_to_version->num);
+
+      initialize_original_copy_tables ();
+      nloop = loop_version (loop_to_version, cond_expr, &condition_bb,
+			    prob, prob.invert (), prob, prob.invert (), true);
+      gcc_assert (nloop);
+      nloop = get_loop_copy (loop);
+
+      /* Kill off IFN_LOOP_VECTORIZED_CALL in the copy, nobody will
+         reap those otherwise;  they also refer to the original
+	 loops.  */
+      struct loop *l = loop;
+      while (gimple *call = vect_loop_vectorized_call (l))
+	{
+	  call = SSA_NAME_DEF_STMT (get_current_def (gimple_call_lhs (call)));
+	  fold_loop_internal_call (call, boolean_false_node);
+	  l = loop_outer (l);
+	}
+      free_original_copy_tables ();
+
+      if (cond_expr_stmt_list)
+	{
+	  cond_exp_gsi = gsi_last_bb (condition_bb);
+	  gsi_insert_seq_before (&cond_exp_gsi, cond_expr_stmt_list,
+				 GSI_SAME_STMT);
+	}
+
+      /* Loop versioning violates an assumption we try to maintain during
+	 vectorization - that the loop exit block has a single predecessor.
+	 After versioning, the exit block of both loop versions is the same
+	 basic block (i.e. it has two predecessors). Just in order to simplify
+	 following transformations in the vectorizer, we fix this situation
+	 here by adding a new (empty) block on the exit-edge of the loop,
+	 with the proper loop-exit phis to maintain loop-closed-form.
+	 If loop versioning wasn't done from loop, but scalar_loop instead,
+	 merge_bb will have already just a single successor.  */
+
+      merge_bb = single_exit (loop_to_version)->dest;
+      if (EDGE_COUNT (merge_bb->preds) >= 2)
+	{
+	  gcc_assert (EDGE_COUNT (merge_bb->preds) >= 2);
+	  new_exit_bb = split_edge (single_exit (loop_to_version));
+	  new_exit_e = single_exit (loop_to_version);
+	  e = EDGE_SUCC (new_exit_bb, 0);
+
+	  for (gsi = gsi_start_phis (merge_bb); !gsi_end_p (gsi);
+	       gsi_next (&gsi))
+	    {
+	      tree new_res;
+	      orig_phi = gsi.phi ();
+	      new_res = copy_ssa_name (PHI_RESULT (orig_phi));
+	      new_phi = create_phi_node (new_res, new_exit_bb);
+	      arg = PHI_ARG_DEF_FROM_EDGE (orig_phi, e);
+	      add_phi_arg (new_phi, arg, new_exit_e,
+			   gimple_phi_arg_location_from_edge (orig_phi, e));
+	      adjust_phi_and_debug_stmts (orig_phi, e, PHI_RESULT (new_phi));
+	    }
+	}
+
+      update_ssa (TODO_update_ssa);
+    }
 
   if (version_niter)
     {
@@ -3125,48 +3217,6 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 			 "alignment\n");
 
     }
-  free_original_copy_tables ();
-
-  /* Loop versioning violates an assumption we try to maintain during
-     vectorization - that the loop exit block has a single predecessor.
-     After versioning, the exit block of both loop versions is the same
-     basic block (i.e. it has two predecessors). Just in order to simplify
-     following transformations in the vectorizer, we fix this situation
-     here by adding a new (empty) block on the exit-edge of the loop,
-     with the proper loop-exit phis to maintain loop-closed-form.
-     If loop versioning wasn't done from loop, but scalar_loop instead,
-     merge_bb will have already just a single successor.  */
-
-  merge_bb = single_exit (loop)->dest;
-  if (scalar_loop == NULL || EDGE_COUNT (merge_bb->preds) >= 2)
-    {
-      gcc_assert (EDGE_COUNT (merge_bb->preds) >= 2);
-      new_exit_bb = split_edge (single_exit (loop));
-      new_exit_e = single_exit (loop);
-      e = EDGE_SUCC (new_exit_bb, 0);
-
-      for (gsi = gsi_start_phis (merge_bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  tree new_res;
-	  orig_phi = gsi.phi ();
-	  new_res = copy_ssa_name (PHI_RESULT (orig_phi));
-	  new_phi = create_phi_node (new_res, new_exit_bb);
-	  arg = PHI_ARG_DEF_FROM_EDGE (orig_phi, e);
-	  add_phi_arg (new_phi, arg, new_exit_e,
-		       gimple_phi_arg_location_from_edge (orig_phi, e));
-	  adjust_phi_and_debug_stmts (orig_phi, e, PHI_RESULT (new_phi));
-	}
-    }
-
-  /* End loop-exit-fixes after versioning.  */
-
-  if (cond_expr_stmt_list)
-    {
-      cond_exp_gsi = gsi_last_bb (condition_bb);
-      gsi_insert_seq_before (&cond_exp_gsi, cond_expr_stmt_list,
-			     GSI_SAME_STMT);
-    }
-  update_ssa (TODO_update_ssa);
 
   return nloop;
 }
