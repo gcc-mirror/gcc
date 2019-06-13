@@ -1,3 +1,8 @@
+2019-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR target/90871
+	* g++.dg/ext/altivec-15.C: Add dg-error directive.
+
 2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.dg/pr90760.c: Require alias support.
