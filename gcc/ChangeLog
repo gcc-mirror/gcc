@@ -1,3 +1,21 @@
+2019-06-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (SWIM1248s): Rename from SWIM1248x.
+	Update all uses.
+	(and<mode>3): Use gen_extend_insn instead of indirect functions.
+	Do not generate DImode extends for 32bit targets.
+	(and->zext post-reload splitter): Use gen_extend_insn
+	instead of indirect functions.
+	(anddi->zext pre-reload splitter): New.
+
+2019-06-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_int_sse_cmp):
+	Use gen_sub3_insn instead of indirect function.
+	(ix86_expand_ashl_const): Use gen_add2_insn instead of
+	indirect function.
+	(ix86_adjust_counter): Ditto.
+
 2019-06-13  Jiufu Guo  <guojiufu@linux.ibm.com>
 	    Lijia He  <helijia@linux.ibm.com>
 
