@@ -1,3 +1,7 @@
+2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/pr71694.C: Use non-PIC codegen for Darwin m32.
+
 2019-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/89344
