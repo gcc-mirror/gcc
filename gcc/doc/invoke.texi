@@ -413,6 +413,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdevirtualize-at-ltrans  -fdse @gol
 -fearly-inlining  -fipa-sra  -fexpensive-optimizations  -ffat-lto-objects @gol
 -ffast-math  -ffinite-math-only  -ffloat-store  -fexcess-precision=@var{style} @gol
+-ffinite-loops @gol
 -fforward-propagate  -ffp-contract=@var{style}  -ffunction-sections @gol
 -fgcse  -fgcse-after-reload  -fgcse-las  -fgcse-lm  -fgraphite-identity @gol
 -fgcse-sm  -fhoist-adjacent-loads  -fif-conversion @gol
@@ -8303,6 +8304,7 @@ also turns on the following optimization flags:
 -fdelete-null-pointer-checks @gol
 -fdevirtualize  -fdevirtualize-speculatively @gol
 -fexpensive-optimizations @gol
+-ffinite-loops @gol
 -fgcse  -fgcse-lm  @gol
 -fhoist-adjacent-loads @gol
 -finline-small-functions @gol
@@ -9523,6 +9525,15 @@ Perform conditional dead code elimination (DCE) for calls to built-in functions
 that may set @code{errno} but are otherwise free of side effects.  This flag is
 enabled by default at @option{-O2} and higher if @option{-Os} is not also
 specified.
+
+@item -ffinite-loops
+@opindex ffinite-loops
+@opindex fno-finite-loops
+Assume that a loop with an exit will eventually take the exit and not loop
+indefinitely.  This allows the compiler to remove loops that otherwise have
+no side-effects, not considering eventual endless looping as such.
+
+This option is enabled by default at @option{-O2}.
 
 @item -ftree-dominator-opts
 @opindex ftree-dominator-opts
