@@ -2141,7 +2141,7 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 
 	  /* Index for the reverse array.  */
 	  m = -1;
-	  for (n=0; n < lref->u.ar.dimen; n++)
+	  for (n = 0; n < lref->u.ar.dimen; n++)
 	    {
 	      /* Handle dependency when either of array reference is vector
 		 subscript. There is no dependency if the vector indices
@@ -2163,7 +2163,8 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 
 	      if (lref->u.ar.dimen_type[n] == DIMEN_RANGE
 		  && rref->u.ar.dimen_type[n] == DIMEN_RANGE)
-		this_dep = check_section_vs_section (&lref->u.ar, &rref->u.ar, n);
+		this_dep = check_section_vs_section (&lref->u.ar,
+						     &rref->u.ar, n);
 	      else if (lref->u.ar.dimen_type[n] == DIMEN_ELEMENT
 		       && rref->u.ar.dimen_type[n] == DIMEN_RANGE)
 		this_dep = gfc_check_element_vs_section (lref, rref, n);
@@ -2196,35 +2197,38 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 	      if (rref->u.ar.dimen_type[n] == DIMEN_RANGE
 		    && lref->u.ar.dimen_type[n] == DIMEN_RANGE)
 		{
-		  /* Set reverse if backward dependence and not inhibited.  */
-		  if (reverse && reverse[m] == GFC_ENABLE_REVERSE)
-		    reverse[m] = (this_dep == GFC_DEP_BACKWARD) ?
-			         GFC_REVERSE_SET : reverse[m];
-
-		  /* Set forward if forward dependence and not inhibited.  */
-		  if (reverse && reverse[m] == GFC_ENABLE_REVERSE)
-		    reverse[m] = (this_dep == GFC_DEP_FORWARD) ?
-			         GFC_FORWARD_SET : reverse[m];
-
-		  /* Flag up overlap if dependence not compatible with
-		     the overall state of the expression.  */
-		  if (reverse && reverse[m] == GFC_REVERSE_SET
-		        && this_dep == GFC_DEP_FORWARD)
+		  if (reverse)
 		    {
-	              reverse[m] = GFC_INHIBIT_REVERSE;
-		      this_dep = GFC_DEP_OVERLAP;
-		    }
-		  else if (reverse && reverse[m] == GFC_FORWARD_SET
-		        && this_dep == GFC_DEP_BACKWARD)
-		    {
-	              reverse[m] = GFC_INHIBIT_REVERSE;
-		      this_dep = GFC_DEP_OVERLAP;
+		      /* Reverse if backward dependence and not inhibited.  */
+		      if (reverse[m] == GFC_ENABLE_REVERSE
+			  && this_dep == GFC_DEP_BACKWARD)
+			reverse[m] = GFC_REVERSE_SET;
+
+		      /* Forward if forward dependence and not inhibited.  */
+		      if (reverse[m] == GFC_ENABLE_REVERSE
+			  && this_dep == GFC_DEP_FORWARD)
+			reverse[m] = GFC_FORWARD_SET;
+
+		      /* Flag up overlap if dependence not compatible with
+			 the overall state of the expression.  */
+		      if (reverse[m] == GFC_REVERSE_SET
+			  && this_dep == GFC_DEP_FORWARD)
+			{
+			  reverse[m] = GFC_INHIBIT_REVERSE;
+			  this_dep = GFC_DEP_OVERLAP;
+			}
+		      else if (reverse[m] == GFC_FORWARD_SET
+			       && this_dep == GFC_DEP_BACKWARD)
+			{
+			  reverse[m] = GFC_INHIBIT_REVERSE;
+			  this_dep = GFC_DEP_OVERLAP;
+			}
 		    }
 
 		  /* If no intention of reversing or reversing is explicitly
 		     inhibited, convert backward dependence to overlap.  */
-		  if ((reverse == NULL && this_dep == GFC_DEP_BACKWARD)
-		      || (reverse != NULL && reverse[m] == GFC_INHIBIT_REVERSE))
+		  if ((!reverse && this_dep == GFC_DEP_BACKWARD)
+		      || (reverse && reverse[m] == GFC_INHIBIT_REVERSE))
 		    this_dep = GFC_DEP_OVERLAP;
 		}
 

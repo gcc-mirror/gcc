@@ -1,3 +1,9 @@
+2019-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88810
+	* dependency.c (gfc_dep_resolver): Re-arrange code to make the logic
+	a bit more transparent.  Fix 2 nearby formatting issues.
+
 2019-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* io.c (check_format): Use G_(...) instead of _(...) for error values,
