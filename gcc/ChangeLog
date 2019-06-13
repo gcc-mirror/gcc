@@ -1,3 +1,7 @@
+2019-06-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* doc/extend.texi (ARC Function Attributes): Update info.
+
 2019-06-13  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR tree-optimization/89713
