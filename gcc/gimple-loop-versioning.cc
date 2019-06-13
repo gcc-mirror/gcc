@@ -1488,7 +1488,7 @@ loop_versioning::prune_loop_conditions (struct loop *loop, vr_values *vrs)
     {
       tree name = ssa_name (i);
       value_range *vr = vrs->get_value_range (name);
-      if (vr && !range_includes_p (vr, 1))
+      if (vr && !vr->may_contain_p (build_one_cst (TREE_TYPE (name))))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, find_loop_location (loop),
