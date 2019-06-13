@@ -475,7 +475,7 @@ ssa_global_cache::dump (FILE *f)
         r.dump (f);
 	fprintf (f, "\n");
       }
-  fputc ('\n', dump_file);
+  fputc ('\n', f);
 }
 
 
