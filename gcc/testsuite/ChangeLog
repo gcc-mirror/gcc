@@ -1,5 +1,10 @@
 2019-06-12  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/87410
+	* g++.dg/cpp1y/pr87410.C: New test.
+
+2019-06-12  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/66999 - 'this' captured by reference.
 	* g++.dg/cpp0x/lambda/lambda-this21.C: New test.
 
