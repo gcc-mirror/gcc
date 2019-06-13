@@ -1393,8 +1393,10 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
      But avoid treating variable length arrays as "objects", instead assume they
      can overlap by an exact multiple of their element size.
      See gcc.dg/torture/alias-2.c.  */
-  if ((TREE_CODE (base1) != TARGET_MEM_REF
+  if (((TREE_CODE (base1) != TARGET_MEM_REF
        || (!TMR_INDEX (base1) && !TMR_INDEX2 (base1)))
+       && (TREE_CODE (dbase2) != TARGET_MEM_REF
+	   || (!TMR_INDEX (dbase2) && !TMR_INDEX2 (base2))))
       && same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (dbase2)) == 1
       && (TREE_CODE (TREE_TYPE (base1)) != ARRAY_TYPE
 	  || (TYPE_SIZE (TREE_TYPE (base1))

@@ -1,3 +1,9 @@
+2019-06-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR bootstrap/90873
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Also check that
+	dbase is not TARGET_MEM_REF.
+
 2019-06-13  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (SWIM1248s): Rename from SWIM1248x.
