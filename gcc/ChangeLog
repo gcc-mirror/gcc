@@ -1,3 +1,7 @@
+2019-06-13  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* config/aarch64/iterators.md (ADDSUB): Fix typo in comment.
+
 2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* common/config/pru/pru-common.c: New file.
