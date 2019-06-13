@@ -1,3 +1,7 @@
+2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-minversion-link.c: New test.
+
 2019-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68544
