@@ -1,3 +1,16 @@
+2019-06-13  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/89713
+	* doc/invoke.texi (-ffinite-loops): Document new option.
+	* common.opt (-ffinite-loops): New option.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Mark
+	IFN_GOACC_LOOP calls as necessary.
+	* tree-ssa-loop-niter.c (finite_loop_p): Assume loop with an exit
+	is finite.
+	* omp-offload.c (oacc_xform_loop): Skip lowering if return value of
+	IFN_GOACC_LOOP call is not used.
+	* opts.c (default_options_table): Enable -ffinite-loops at -O2+.
+
 2019-06-13  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
 	PR target/88838
