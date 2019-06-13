@@ -1,3 +1,8 @@
+2019-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90856
+	* gcc.target/i386/pr90856.c: New testcase.
+
 2019-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/tree-ssa/ssa-dse-1.C: Don't match exact number of chars of
