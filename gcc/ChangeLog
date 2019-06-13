@@ -1,3 +1,9 @@
+2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (validate_macosx_version_min): New.
+	(darwin_default_min_version): Cleanup and validate supplied version.
+	(darwin_driver_init): Likewise and push cleaned version into opts.
+
 2019-06-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR tree-optimization/90869
