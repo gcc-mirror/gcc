@@ -1,3 +1,10 @@
+2019-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/tree-ssa/ssa-dse-1.C: Don't match exact number of chars of
+	= {} store.
+	* g++.dg/tree-ssa/pr31146.C: Change -fdump-tree-forwprop to
+	-fdump-tree-forwprop1 in dg-options.  Expect <int[5]> in MEM.
+
 2019-06-13  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/vect-version-1.c: New testcase.
