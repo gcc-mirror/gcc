@@ -109,8 +109,8 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 
       value_range *vr = evrp_range_analyzer.get_value_range (lhs);
       /* Mark PHIs whose lhs we fully propagate for removal.  */
-      tree val = value_range_constant_singleton (vr);
-      if (val && may_propagate_copy (lhs, val))
+      tree val;
+      if (vr->singleton_p (&val) && may_propagate_copy (lhs, val))
 	{
 	  stmts_to_remove.safe_push (phi);
 	  continue;
@@ -158,7 +158,7 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	      value_range *vr = evrp_range_analyzer.get_value_range (output);
 
 	      /* Mark stmts whose output we fully propagate for removal.  */
-	      if ((val = value_range_constant_singleton (vr))
+	      if (vr->singleton_p (&val)
 		  && may_propagate_copy (output, val)
 		  && !stmt_could_throw_p (cfun, stmt)
 		  && !gimple_has_side_effects (stmt))
@@ -204,8 +204,8 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	      || virtual_operand_p (arg))
 	    continue;
 	  value_range *vr = evrp_range_analyzer.get_value_range (arg);
-	  tree val = value_range_constant_singleton (vr);
-	  if (val && may_propagate_copy (arg, val))
+	  tree val;
+	  if (vr->singleton_p (&val) && may_propagate_copy (arg, val))
 	    propagate_value (use_p, val);
 	}
     }

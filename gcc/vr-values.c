@@ -414,7 +414,10 @@ vr_values::singleton (tree op, gimple *stmt ATTRIBUTE_UNUSED)
   if (TREE_CODE (op) != SSA_NAME)
     return NULL_TREE;
 
-  return value_range_constant_singleton (get_value_range (op));
+  tree t;
+  if (get_value_range (op)->singleton_p (&t))
+    return t;
+  return NULL;
 }
 
 /* Return true if op is in a boolean [0, 1] value-range.  */
