@@ -1,3 +1,9 @@
+2019-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68544
+	* gfortran.dg/pr68544.f90: New test.
+	* gfortran.dg/pr85687.f90: Modify test for new error message.
+
 2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/pr71694.C: Use non-PIC codegen for Darwin m32.

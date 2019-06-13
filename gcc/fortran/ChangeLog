@@ -1,3 +1,10 @@
+2019-06-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68544
+	* resolve.c (is_dt_name): New function to compare symbol name against
+	list of derived types.
+	(resolve_actual_arglist): Use it to find wrong code.
+
 2019-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/89344
