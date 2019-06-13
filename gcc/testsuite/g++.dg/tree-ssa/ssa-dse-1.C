@@ -98,4 +98,4 @@ int main()
 
 
 /* { dg-final { scan-tree-dump-times "MEM\\\[\\(struct FixBuf \\*\\)&<retval> \\+ \[0-9\]+B\\\] = {}" 1 "dse1" { target { ! store_merge } } } }
-   { dg-final { scan-tree-dump-times "MEM <char\\\[176]> \\\[\\(struct FixBuf \\*\\)&<retval> \\+ \[0-9\]+B\\\] = {}" 1 "dse1" { target { store_merge } } } } */
+   { dg-final { scan-tree-dump-times "MEM <char\\\[\[0-9\]+]> \\\[\\(struct FixBuf \\*\\)&<retval> \\+ \[0-9\]+B\\\] = {}" 1 "dse1" { target { store_merge } } } } */
