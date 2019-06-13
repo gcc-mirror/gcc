@@ -4765,9 +4765,19 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       break;
 
     case SIZEOF_EXPR:
-      r = cxx_eval_constant_expression (ctx, fold_sizeof_expr (t), lval,
-					non_constant_p, overflow_p,
-					jump_target);
+      r = fold_sizeof_expr (t);
+      /* In a template, fold_sizeof_expr may merely create a new SIZEOF_EXPR,
+	 which could lead to an infinite recursion.  */
+      if (TREE_CODE (r) != SIZEOF_EXPR)
+	r = cxx_eval_constant_expression (ctx, r, lval,
+					  non_constant_p, overflow_p,
+					  jump_target);
+      else
+	{
+	  *non_constant_p = true;
+	  gcc_assert (ctx->quiet);
+	}
+
       break;
 
     case COMPOUND_EXPR:
