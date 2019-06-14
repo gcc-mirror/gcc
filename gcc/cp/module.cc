@@ -9368,10 +9368,11 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	      else if (TREE_CODE (STRIP_TEMPLATE (decl)) != TYPE_DECL
 		       && TREE_CODE (STRIP_TEMPLATE (decl)) != CONST_DECL
 		       && DECL_THIS_STATIC (STRIP_TEMPLATE (decl)))
-		/* An internal decl.  */
-		// FIXME  disable because static inline in header units
-		//  dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
-		;
+		{
+		  /* An internal decl.  */
+		  if (!header_module_p ())
+		    dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
+		}
 	      else if (DECL_IMPLICIT_TYPEDEF_P (decl)
 		       && IDENTIFIER_ANON_P (DECL_NAME (decl)))
 		/* No linkage or linkage from typedef name (which
@@ -9481,11 +9482,16 @@ depset::hash::add_binding (tree ns, tree value)
 	/* Ignore global module fragment entities.  */
 	continue;
 
-      if (TREE_CODE (STRIP_TEMPLATE (decl)) != CONST_DECL
-	  && TREE_CODE (STRIP_TEMPLATE (decl)) != TYPE_DECL
-	  && DECL_THIS_STATIC (STRIP_TEMPLATE (decl)))
-	/* Ignore internal-linkage entitites.  */
-	continue;
+      tree not_tmpl = STRIP_TEMPLATE (decl);
+      if (TREE_CODE (not_tmpl) != CONST_DECL
+	  && TREE_CODE (not_tmpl) != TYPE_DECL
+	  && DECL_THIS_STATIC (not_tmpl))
+	{
+	  if (!header_module_p ())
+	    /* Ignore internal-linkage entitites.  */
+	    continue;
+	  // FIXME: Promote here?  Or should we have done that already?
+	}
 
       if ((TREE_CODE (decl) == VAR_DECL
 	   || TREE_CODE (decl) == TYPE_DECL)

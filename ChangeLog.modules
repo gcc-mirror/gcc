@@ -1,6 +1,13 @@
 2019-06-14  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::hash::add_dependency): Don't register
+	internal entities when in a header module.
+	(depset::hash::add_binding): Add internal entities in header modules.
+	gcc/testsuite/
+	* g++.dg/modules/stat-tpl-1_a.H: New.
+
+	gcc/cp/
 	* module.cc (depset::hash::add_dependency): Inhibit internal
 	linkage setting on functions.
 	(cluster_cmp): We can meet matching using decls.
