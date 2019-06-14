@@ -1,6 +1,15 @@
 2019-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-06-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90770
+	* src/Makefile.am (stamp-debug): Also test for missing makefile.
+	* src/Makefile.in: Regenerate.
+
+2019-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2019-05-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90252
