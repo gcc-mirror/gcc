@@ -1,3 +1,15 @@
+2019-06-14  Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/90877
+	* config/i386/i386-features.c
+	(dimode_scalar_chain::compute_convert_gain): Replace
+	mmxsse_to_integer with sse_to_integer.
+	* config/i386/i386.c (ix86_register_move_cost): Verify that
+	moves between MMX and non-MMX units require secondary memory.
+	Correct costs of moves between SSE and integer units.
+	* config/i386/i386.h (processor_costs): Rename cost of moving
+	SSE register to integer to sse_to_integer.  Rename cost of
+
 2019-06-14  Matt Thomas  <matt@3am-software.com>
 	    Matthew Green  <mrg@eterna.com.au>
 	    Nick Hudson  <skrll@netbsd.org>

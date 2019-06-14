@@ -554,7 +554,7 @@ dimode_scalar_chain::compute_convert_gain ()
     fprintf (dump_file, "  Instruction conversion gain: %d\n", gain);
 
   EXECUTE_IF_SET_IN_BITMAP (defs_conv, 0, insn_uid, bi)
-    cost += DF_REG_DEF_COUNT (insn_uid) * ix86_cost->mmxsse_to_integer;
+    cost += DF_REG_DEF_COUNT (insn_uid) * ix86_cost->sse_to_integer;
 
   if (dump_file)
     fprintf (dump_file, "  Registers conversion cost: %d\n", cost);
