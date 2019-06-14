@@ -1,3 +1,10 @@
+2019-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2019-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/shared_ptr.xml: Fix names of lock policy constants.
+
 2019-06-11  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Fix ConstexprIterator requirements tests - No constexpr algorithms!
