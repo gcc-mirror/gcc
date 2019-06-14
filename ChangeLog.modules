@@ -1,6 +1,12 @@
 2019-06-14  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::hash::add_dependency): Unnamed elaborated
+	types have no linkage.
+	gcc/testsuite/
+	* g++.dg/modules/enum-5_[ab].[HC]: New.
+
+	gcc/cp/
 	* module.cc (module_state::{read,write}_cluster): Check stat hack
 	is for implicit typedefs.
 

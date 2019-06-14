@@ -2459,14 +2459,13 @@ public:
     bool for_mergeable;	     /* For mergeables.  */
     bool sneakoscope;        /* Detecting dark magic (of a voldemort
 				type).  */
-    bool bad_refs;	     /* bad references are present.  */
     bool reached_unreached;  /* We reached an unreached entity.  */
 
   public:
     hash (size_t size)
       : parent (size), current (NULL),
 	for_mergeable (false), sneakoscope (false),
-	bad_refs (false), reached_unreached (false)
+	reached_unreached (false)
     {
       worklist.create (size);
     }
@@ -9363,31 +9362,17 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	      tree ctx = CP_DECL_CONTEXT (decl);
 	      gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
 
-	      if (DECL_IMPLICIT_TYPEDEF_P (decl)
-		  && IDENTIFIER_ANON_P (DECL_NAME (decl)))
-		/* An anonymous elaborated type.  */
-		{
-		  tree linkage_name = TYPE_LINKAGE_IDENTIFIER (TREE_TYPE (decl));
-		  if (linkage_name == DECL_NAME (decl))
-		    /* With no linkage.  */
-		    dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
-		  else
-		    {
-		      /* It has a name for linkage purposes.  */
-		      tree naming_decl = TYPE_NAME (TREE_TYPE (decl));
-		      gcc_checking_assert (linkage_name
-					   == DECL_NAME (naming_decl));
-		      dump (dumper::DEPEND)
-			&& dump ("Anon %N named by typedef %N added",
-				 decl, naming_decl);
-		    }
-		}
-	      else if ((TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL
-			|| TREE_CODE (STRIP_TEMPLATE (decl)) == CONST_DECL)
-		       ? !TREE_PUBLIC (ctx)
-		       : DECL_THIS_STATIC (STRIP_TEMPLATE (decl)))
+	      if ((TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL
+		   || TREE_CODE (STRIP_TEMPLATE (decl)) == CONST_DECL)
+		  ? !TREE_PUBLIC (ctx)
+		  : DECL_THIS_STATIC (STRIP_TEMPLATE (decl)))
 		/* An internal decl.  */
 		dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
+	      else if (DECL_IMPLICIT_TYPEDEF_P (decl)
+		       && IDENTIFIER_ANON_P (DECL_NAME (decl)))
+		/* No linkage or linkage from typedef name (which
+		   cannot be internal, because that's from the linkage
+		   of the context.  */;
 	      else
 		{
 		  // FIXME: We have to walk the non-emitted entities
@@ -9397,7 +9382,6 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 		     it to its scope's binding depset.  */
 		  gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (decl)
 				       == MODULE_NONE);
-		  tree ctx = CP_DECL_CONTEXT (decl);
 		  depset **bslot = binding_slot (ctx, DECL_NAME (decl), true);
 		  depset *bdep = *bslot;
 		  if (!bdep)
@@ -9441,10 +9425,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 		current->set_flag_bit<DB_REFS_UNNAMED_BIT> ();
 
 	      if (dep->is_internal ())
-		{
-		  current->set_flag_bit<DB_REFS_INTERNAL_BIT> ();
-		  bad_refs |= 1;
-		}
+		current->set_flag_bit<DB_REFS_INTERNAL_BIT> ();
 
 	      if (TREE_CODE (decl) == TYPE_DECL
 		  && UNSCOPED_ENUM_P (TREE_TYPE (decl))
