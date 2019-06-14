@@ -107,7 +107,7 @@ case ${host} in
 	;;
     esac
     ;;
-  arm*-*-freebsd* | arm*-*-linux* | arm*-*-fuchsia*)
+  arm*-*-freebsd* | arm*-*-netbsd* | arm*-*-linux* | arm*-*-fuchsia*)
     case ${target} in
       arm*-*-*)
 	host_extra_gcc_objs="driver-arm.o"

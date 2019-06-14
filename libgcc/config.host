@@ -436,7 +436,16 @@ arm*-*-fuchsia*)
 	unwind_header=config/arm/unwind-arm.h
 	;;
 arm*-*-netbsdelf*)
-	tmake_file="$tmake_file arm/t-arm arm/t-netbsd t-slibgcc-gld-nover"
+	tmake_file="$tmake_file arm/t-arm"
+	case ${host} in
+	  arm*-*-netbsdelf-*eabi*)
+	    tmake_file="${tmake_file} arm/t-netbsd-eabi"
+	    unwind_header=config/arm/unwind-arm.h
+	    ;;
+	  *)
+	    tmake_file="${tmake_file} arm/t-netbsd t-slibgcc-gld-nover"
+	    ;;
+	esac
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
 	tmake_file="${tmake_file} arm/t-arm t-fixedpoint-gnu-prefix t-crtfm"

@@ -1162,10 +1162,35 @@ arm*-*-freebsd*)                # ARM FreeBSD EABI
 	with_tls=${with_tls:-gnu}
 	;;
 arm*-*-netbsdelf*)
-	tm_file="dbxelf.h elfos.h ${nbsd_tm_file} arm/elf.h arm/aout.h ${tm_file} arm/netbsd-elf.h"
-	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
-	tmake_file="${tmake_file} arm/t-arm"
 	target_cpu_cname="strongarm"
+	tmake_file="${tmake_file} arm/t-arm"
+	tm_file="dbxelf.h elfos.h ${nbsd_tm_file} arm/elf.h"
+	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
+	case ${target} in
+	arm*eb-*) tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1" ;;
+	esac
+	case ${target} in
+	arm*-*-netbsdelf-*eabi*)
+	    tm_file="$tm_file arm/bpabi.h arm/netbsd-elf.h arm/netbsd-eabi.h"
+	    tmake_file="$tmake_file arm/t-bpabi arm/t-netbsdeabi"
+	    ;;
+	*)
+	    tm_file="$tm_file arm/netbsd-elf.h"
+	    tmake_file="$tmake_file arm/t-netbsd"
+	    ;;
+	esac
+	tm_file="${tm_file} arm/aout.h arm/arm.h"
+	case ${target} in
+	arm*-*-netbsdelf-*eabihf*)
+	    # Hard-float requires at least Arm v5te
+	    target_cpu_cname="arm10e"
+	    tm_defines="${tm_defines} TARGET_DEFAULT_FLOAT_ABI=ARM_FLOAT_ABI_HARD"
+	    ;;
+	esac
+	case ${target} in
+	armv6*) target_cpu_cname="arm1176jzf-s";;
+	armv7*) target_cpu_cname="generic-armv7-a";;
+	esac
 	;;
 arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
