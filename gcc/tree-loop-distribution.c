@@ -1658,9 +1658,11 @@ classify_builtin_ldst (loop_p loop, struct graph *rdg, partition *partition,
 
 /* Classifies the builtin kind we can generate for PARTITION of RDG and LOOP.
    For the moment we detect memset, memcpy and memmove patterns.  Bitmap
-   STMT_IN_ALL_PARTITIONS contains statements belonging to all partitions.  */
+   STMT_IN_ALL_PARTITIONS contains statements belonging to all partitions.
+   Returns true if there is a reduction in all partitions and we
+   possibly did not mark PARTITION as having one for this reason.  */
 
-static void
+static bool
 classify_partition (loop_p loop, struct graph *rdg, partition *partition,
 		    bitmap stmt_in_all_partitions)
 {
@@ -1688,25 +1690,27 @@ classify_partition (loop_p loop, struct graph *rdg, partition *partition,
 	     to all partitions.  In such case, reduction will be computed
 	     correctly no matter how partitions are fused/distributed.  */
 	  if (!bitmap_bit_p (stmt_in_all_partitions, i))
-	    {
-	      partition->reduction_p = true;
-	      return;
-	    }
-	  has_reduction = true;
+	    partition->reduction_p = true;
+	  else
+	    has_reduction = true;
 	}
     }
 
+  /* Simple workaround to prevent classifying the partition as builtin
+     if it contains any use outside of loop.  For the case where all
+     partitions have the reduction this simple workaround is delayed
+     to only affect the last partition.  */
+  if (partition->reduction_p)
+     return has_reduction;
+
   /* Perform general partition disqualification for builtins.  */
   if (volatiles_p
-      /* Simple workaround to prevent classifying the partition as builtin
-	 if it contains any use outside of loop.  */
-      || has_reduction
       || !flag_tree_loop_distribute_patterns)
-    return;
+    return has_reduction;
 
   /* Find single load/store data references for builtin partition.  */
   if (!find_single_drs (loop, rdg, partition, &single_st, &single_ld))
-    return;
+    return has_reduction;
 
   partition->loc = gimple_location (DR_STMT (single_st));
 
@@ -1715,6 +1719,7 @@ classify_partition (loop_p loop, struct graph *rdg, partition *partition,
     classify_builtin_st (loop, partition, single_st);
   else
     classify_builtin_ldst (loop, rdg, partition, single_st, single_ld);
+  return has_reduction;
 }
 
 /* Returns true when PARTITION1 and PARTITION2 access the same memory
@@ -2782,7 +2787,6 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
   ddrs_table = new hash_table<ddr_hasher> (389);
   struct graph *rdg;
   partition *partition;
-  bool any_builtin;
   int i, nbp;
 
   *destroy_p = false;
@@ -2842,10 +2846,12 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
   for (i = 1; partitions.iterate (i, &partition); ++i)
     bitmap_and_into (stmt_in_all_partitions, partitions[i]->stmts);
 
-  any_builtin = false;
+  bool any_builtin = false;
+  bool reduction_in_all = false;
   FOR_EACH_VEC_ELT (partitions, i, partition)
     {
-      classify_partition (loop, rdg, partition, stmt_in_all_partitions);
+      reduction_in_all
+	|= classify_partition (loop, rdg, partition, stmt_in_all_partitions);
       any_builtin |= partition_builtin_p (partition);
     }
 
@@ -2920,6 +2926,21 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 	i--;
     }
 
+  /* Put a non-builtin partition last if we need to preserve a reduction.
+     ???  This is a workaround that makes sort_partitions_by_post_order do
+     the correct thing while in reality it should sort each component
+     separately and then put the component with a reduction or a non-builtin
+     last.  */
+  if (reduction_in_all
+      && partition_builtin_p (partitions.last()))
+    FOR_EACH_VEC_ELT (partitions, i, partition)
+      if (!partition_builtin_p (partition))
+	{
+	  partitions.unordered_remove (i);
+	  partitions.quick_push (partition);
+	  break;
+	}
+
   /* Build the partition dependency graph and fuse partitions in strong
      connected component.  */
   if (partitions.length () > 1)
@@ -2939,6 +2960,21 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
     }
 
   finalize_partitions (loop, &partitions, &alias_ddrs);
+
+  /* If there is a reduction in all partitions make sure the last one
+     is not classified for builtin code generation.  */
+  if (reduction_in_all)
+    {
+      partition = partitions.last ();
+      if (only_patterns_p
+	  && partition_builtin_p (partition)
+	  && !partition_builtin_p (partitions[0]))
+	{
+	  nbp = 0;
+	  goto ldist_done;
+	}
+      partition->kind = PKIND_NORMAL;
+    }
 
   nbp = partitions.length ();
   if (nbp == 0

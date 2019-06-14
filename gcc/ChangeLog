@@ -1,3 +1,12 @@
+2019-06-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.c (classify_partition): Return
+	whether a reduction appeared in all partitions and do not
+	stop builtin detection because of this.
+	(distribute_loop): Sort a non-builtin partition last if
+	there's a reduction in all partitions and make sure the
+	partition prevailing as last is not a builtin.
+
 2019-06-14  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR ipa/90401
