@@ -1,6 +1,16 @@
 2019-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/algorithm (__cpp_lib_parallel_algorithm): Fix value.
+	* include/std/memory (__cpp_lib_parallel_algorithm): Likewise.
+	* include/std/numeric (__cpp_lib_parallel_algorithm): Likewise.
+	* testsuite/25_algorithms/pstl/feature_test.cc: New test.
+
+2019-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2019-06-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90770
