@@ -4021,13 +4021,6 @@ locate_and_pad_parm (machine_mode passed_mode, tree type, int in_regs,
 	}
     }
 
-  /* Remember if the outgoing parameter requires extra alignment on the
-     calling function side.  */
-  if (crtl->stack_alignment_needed < boundary)
-    crtl->stack_alignment_needed = boundary;
-  if (crtl->preferred_stack_boundary < boundary)
-    crtl->preferred_stack_boundary = boundary;
-
   if (ARGS_GROW_DOWNWARD)
     {
       locate->slot_offset.constant = -initial_offset_ptr->constant;

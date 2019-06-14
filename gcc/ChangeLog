@@ -1,4 +1,14 @@
-2019-06-14  Hongtao Liu  <hongtao.liu@intel.com>
+2019-06-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/90765
+	* calls.c (update_stack_alignment_for_call): New function.
+	(expand_call): Call update_stack_alignment_for_call when
+	outgoing parameter is passed in the stack.
+	(emit_library_call_value_1): Likewise.
+	* function.c (locate_and_pad_parm): Don't update
+	stack_alignment_needed and preferred_stack_boundary.
+
+2019-06-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/90877
 	* config/i386/i386-features.c
