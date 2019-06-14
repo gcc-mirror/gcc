@@ -3,6 +3,19 @@
 	Backport from mainline
 	2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4): Replace wildcard that matches
+	wstring::_M_replace_dispatch with more specific patterns.
+	* include/bits/fs_path.h (path::_S_convert_loc<_InputIterator>):
+	Create const std::string to avoid redundant call to _S_convert_loc
+	with non-const pointers.
+	* include/bits/locale_conv.h (__do_str_codecvt): Use if-constexpr to
+	avoid unnecessary basic_string::assign instantiations.
+
+2019-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2019-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
 	* include/experimental/bits/fs_path.h
 	(path::_S_convert_loc<_InputIterator>): Create const std::string to
 	avoid redundant call to _S_convert_loc with non-const pointers.
