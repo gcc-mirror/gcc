@@ -1,3 +1,8 @@
+2019-06-14  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* runtime/memory.c (SIZE_MAX):Remove macro definition.
+	(xmallocarray): Use __builtin_mul_overflow.
+
 2019-05-22  Jeff Law  <law@redhat.com>
 
 	PR fortran/89100
