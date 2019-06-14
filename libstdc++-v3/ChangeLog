@@ -1,6 +1,14 @@
 2019-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-05-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_path.cc (path::parent_path()): Create whole path at
+	once instead of building it iteratively.
+
+2019-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2019-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/intro.xml: Fix DR 2537 and DR 2566 confusion.
