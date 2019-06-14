@@ -128,15 +128,16 @@ along with GCC; see the file COPYING3.  If not see
 /* This is a workaround for a tool bug: see PR100340.  */
 
 #ifdef HAVE_AS_MLLVM_X86_PAD_FOR_ALIGN
-#define EXTRA_ASM_OPTS " -mllvm -x86-pad-for-align=false"
+#define EXTRA_ASM_OPTS " -mllvm -x86-pad-for-align=false "
 #else
 #define EXTRA_ASM_OPTS ""
 #endif
 
 #undef ASM_SPEC
-#define ASM_SPEC "-arch %(darwin_arch) \
-  " ASM_OPTIONS " -force_cpusubtype_ALL \
-  %{static}" ASM_MMACOSX_VERSION_MIN_SPEC EXTRA_ASM_OPTS
+#define ASM_SPEC \
+"%{static} -arch %(darwin_arch) " \
+ ASM_OPTIONS ASM_MMACOSX_VERSION_MIN_SPEC EXTRA_ASM_OPTS \
+"%{!force_cpusubtype_ALL:-force_cpusubtype_ALL} "
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
