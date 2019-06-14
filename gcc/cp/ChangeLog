@@ -1,3 +1,8 @@
+2019-06-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85552 - wrong instantiation of dtor for DMI.
+	* typeck2.c (digest_nsdmi_init): Set tf_no_cleanup for direct-init.
+
 2019-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokdeclarator): Use id_loc in five additional places
