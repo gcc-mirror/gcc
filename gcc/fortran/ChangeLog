@@ -1,4 +1,10 @@
-2019-06-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+2019-06-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/89646
+	* dependency.c (gfc_check_argument_var_dependency): Suppress spurious
+	warnings by comparing variable names.
+
+2019-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/68544
 	* resolve.c (is_dt_name): New function to compare symbol name against
