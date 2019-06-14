@@ -1,3 +1,14 @@
+2019-06-14  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/90401
+	* ipa-prop.c (add_to_agg_contents_list): New function.
+	(clobber_by_agg_contents_list_p): Likewise.
+	(extract_mem_content): Likewise.
+	(get_place_in_agg_contents_list): Delete.
+	(determine_known_aggregate_parts): Renamed from
+	determine_locally_known_aggregate_parts.  New parameter
+	aa_walk_budget_p.
+
 2019-06-13  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/90662
