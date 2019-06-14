@@ -1,3 +1,8 @@
+2019-06-14  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/90401
+	* gcc.dg/ipa/ipcp-agg-10.c: New test.
+
 2019-06-13  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/90662
