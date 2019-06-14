@@ -276,9 +276,8 @@ struct processor_costs {
   const int sse_store[5];	/* cost of storing SSE register
 				   in SImode, DImode and TImode.  */
   const int sse_unaligned_store[5];/* cost of unaligned store.  */
-  const int mmxsse_to_integer;	/* cost of moving mmxsse register to
-				   integer.  */
-  const int ssemmx_to_integer;  /* cost of moving integer to mmxsse register. */
+  const int sse_to_integer;	/* cost of moving SSE register to integer.  */
+  const int integer_to_sse;	/* cost of moving integer register to SSE. */
   const int gather_static, gather_per_elt; /* Cost of gather load is computed
 				   as static + per_item * nelts. */
   const int scatter_static, scatter_per_elt; /* Cost of gather store is
