@@ -1,3 +1,19 @@
+2019-06-14  Matt Thomas  <matt@3am-software.com>
+	    Matthew Green  <mrg@eterna.com.au>
+	    Nick Hudson  <skrll@netbsd.org>
+	    Maya Rashish  <coypu@sdf.org>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.gcc (arm*-*-netbsdelf*) Add support for EABI configuration.
+	* config.host (arm*-*-netbsd*): Use driver-arm.o on native NetBSD.
+	* config/arm/netbsd-eabi.h: New file.
+	* config/arm/netbsd-elf.h (TARGET_OS_CPP_BUILTINS): Undefine before
+	redefining.
+	(SUBTARGET_EXTRA_ASM_SPEC): Don't pass -matpcs to the assembler.
+	* config/netbsd-elf.h (NETBSD_LINK_LD_ELF_SO_SPEC): New define.
+	(NETBSD_SUBTARGET_EXTRA_SPECS): New define.
+	(SUBTARGET_EXTRA_SPECS): Define to NETBSD_SUBTARGET_EXTRA_SPECS.
+
 2019-06-14  Richard Biener  <rguenther@suse.de>
 
 	* tree-loop-distribution.c (classify_partition): Return

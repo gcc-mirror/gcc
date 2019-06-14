@@ -53,7 +53,7 @@ case "${target_cpu}" in
   arm*)
 	ARCH=arm
 	case "${target}" in
-            arm*-*-freebsd*)
+            arm*-*-freebsd* | arm*-*-netbsd*)
                 ;;
             *)
                 # ??? Detect when -march=armv7 is already enabled.
