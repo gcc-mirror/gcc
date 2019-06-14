@@ -1,5 +1,10 @@
 2019-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/type_traits (experimental::nonesuch): Use
+	pragma to disable -Wctor-dtor-privacy warnings.
+	* include/std/type_traits (__is_convertible_helper<From, To, false>)
+	(__is_nt_convertible_helper<From, To, false>, __nonesuch): Likewise.
+
 	* include/std/version (__cpp_lib_bind_front): Add missing macro.
 
 2019-06-12  Jonathan Wakely  <jwakely@redhat.com>
