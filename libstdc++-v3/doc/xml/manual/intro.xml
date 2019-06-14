@@ -1121,18 +1121,18 @@ requirements of the license of GCC.
     </para></listitem></varlistentry>
 
     <varlistentry xml:id="manual.bugs.dr2537"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2537">2537</link>:
-       <emphasis>Requirements on the first template parameter of container adaptors
-       </emphasis>
-    </term>
-    <listitem><para>Add static assertions to enforce the requirement.
-    </para></listitem></varlistentry>
-
-    <varlistentry xml:id="manual.bugs.dr2566"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2566">2566</link>:
        <emphasis>Constructors for <code>priority_queue</code> taking allocators
 	 should call <code>make_heap</code>
        </emphasis>
     </term>
     <listitem><para>Call <code>make_heap</code>.
+    </para></listitem></varlistentry>
+
+    <varlistentry xml:id="manual.bugs.dr2566"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2566">2566</link>:
+       <emphasis>Requirements on the first template parameter of container adaptors
+       </emphasis>
+    </term>
+    <listitem><para>Add static assertions to enforce the requirement.
     </para></listitem></varlistentry>
 
     <varlistentry xml:id="manual.bugs.dr2583"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2583">2583</link>:

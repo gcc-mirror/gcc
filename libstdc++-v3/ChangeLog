@@ -1,6 +1,13 @@
 2019-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Fix DR 2537 and DR 2566 confusion.
+
+2019-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2019-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/version (__cpp_lib_bind_front): Add missing macro.
