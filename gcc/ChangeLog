@@ -1,3 +1,8 @@
+2019-06-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.opt: Add RejectNegative where needed, reorder
+	and add minimal functional descriptions.
+
 2019-06-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/90765
