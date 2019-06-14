@@ -9362,12 +9362,16 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	      tree ctx = CP_DECL_CONTEXT (decl);
 	      gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
 
-	      if ((TREE_CODE (STRIP_TEMPLATE (decl)) == TYPE_DECL
-		   || TREE_CODE (STRIP_TEMPLATE (decl)) == CONST_DECL)
-		  ? !TREE_PUBLIC (ctx)
-		  : DECL_THIS_STATIC (STRIP_TEMPLATE (decl)))
-		/* An internal decl.  */
+	      if (!TREE_PUBLIC (ctx))
+		/* Member of internal namespace.  */
 		dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
+	      else if (TREE_CODE (STRIP_TEMPLATE (decl)) != TYPE_DECL
+		       && TREE_CODE (STRIP_TEMPLATE (decl)) != CONST_DECL
+		       && DECL_THIS_STATIC (STRIP_TEMPLATE (decl)))
+		/* An internal decl.  */
+		// FIXME  disable because static inline in header units
+		//  dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
+		;
 	      else if (DECL_IMPLICIT_TYPEDEF_P (decl)
 		       && IDENTIFIER_ANON_P (DECL_NAME (decl)))
 		/* No linkage or linkage from typedef name (which
@@ -10037,14 +10041,24 @@ cluster_cmp (const void *a_, const void *b_)
     /* Different entities, order by their UID.  */
     return DECL_UID (a_decl) < DECL_UID (b_decl) ? -1 : +1;
 
-  /* Same decl.  They must be bindings.  Order by identifier hash
-     (hey, it's a consistent number).  */
-  // FIXME: strcmp for user-meaningful order?
-  gcc_checking_assert (a->is_binding ()
-		       && a->get_name () != b->get_name ());
-  return (IDENTIFIER_HASH_VALUE (a->get_name ())
-	  < IDENTIFIER_HASH_VALUE (b->get_name ())
-	  ? -1 : +1);
+  /* Same decl.  They must be bindings or using_decls (when not in the
+     same cluster).  */
+
+  if (a->is_binding ())
+    {
+      /* Order by identifier hash (hey, it's a consistent number).  */
+      // FIXME: strcmp for user-meaningful order?
+      gcc_checking_assert (a->get_name () != b->get_name ());
+      return (IDENTIFIER_HASH_VALUE (a->get_name ())
+	      < IDENTIFIER_HASH_VALUE (b->get_name ())
+	      ? -1 : +1);
+    }
+
+  /* Must be doing global ordering.  */
+  gcc_checking_assert (a->get_entity_kind () == depset::EK_USING
+		       && !a->section && !b->section);
+  /* Order by depset address.  Not the best, but it is something.  */
+  return a < b ? -1 : +1;
 }
 
 /* Reduce graph to SCCS clusters.  SCCS will be populated with the

@@ -1,6 +1,11 @@
 2019-06-14  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::hash::add_dependency): Inhibit internal
+	linkage setting on functions.
+	(cluster_cmp): We can meet matching using decls.
+
+	gcc/cp/
 	* module.cc (depset::hash::add_dependency): Unnamed elaborated
 	types have no linkage.
 	gcc/testsuite/
