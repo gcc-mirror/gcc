@@ -259,14 +259,11 @@ maybe_get_sysroot_from_sdkroot ()
   return xstrndup (maybe_sysroot, strlen (maybe_sysroot));
 }
 
-/* Translate -filelist and -framework options in *DECODED_OPTIONS
-   (size *DECODED_OPTIONS_COUNT) to use -Xlinker so that they are
-   considered to be linker inputs in the case that no other inputs are
-   specified.  Handling these options in DRIVER_SELF_SPECS does not
-   suffice because specs are too late to add linker inputs, and
-   handling them in LINK_SPEC does not suffice because the linker will
-   not be called if there are no other inputs.  When native, also
-   default the -mmacosx-version-min flag.  */
+/* Handle the deduction of m32/m64 from -arch flags and the interactions
+   between them (i.e. try to warn a user who thinks that they have a driver
+   that can produce multi-slice "FAT" outputs with more than one arch).
+   Default the -mmacosx-version-min flag, which requires a system call on
+   native hosts.  */
 
 void
 darwin_driver_init (unsigned int *decoded_options_count,
@@ -324,23 +321,6 @@ darwin_driver_init (unsigned int *decoded_options_count,
 
 	case OPT_m64:
 	  seenM64 = true;
-	  break;
-
-	case OPT_filelist:
-	case OPT_framework:
-	  ++*decoded_options_count;
-	  *decoded_options = XRESIZEVEC (struct cl_decoded_option,
-					 *decoded_options,
-					 *decoded_options_count);
-	  memmove (*decoded_options + i + 2,
-		   *decoded_options + i + 1,
-		   ((*decoded_options_count - i - 2)
-		    * sizeof (struct cl_decoded_option)));
-	  generate_option (OPT_Xlinker, (*decoded_options)[i].arg, 1,
-			   CL_DRIVER, &(*decoded_options)[i + 1]);
-	  generate_option (OPT_Xlinker,
-			   (*decoded_options)[i].canonical_option[0], 1,
-			   CL_DRIVER, &(*decoded_options)[i]);
 	  break;
 
 	case OPT_mmacosx_version_min_:
@@ -420,6 +400,10 @@ darwin_driver_init (unsigned int *decoded_options_count,
     }
 #endif
 
+  /* If there is nothing else on the command line, do not add sysroot etc.  */
+  if (*decoded_options_count <= 1)
+    return;
+
   if (appendM32 || appendM64)
     {
       ++*decoded_options_count;
@@ -430,7 +414,7 @@ darwin_driver_init (unsigned int *decoded_options_count,
 		       &(*decoded_options)[*decoded_options_count - 1]);
     }
 
-  if (! seen_sysroot_p)
+  if (!seen_sysroot_p)
     {
       /* We will pick up an SDKROOT if we didn't specify a sysroot and treat
 	 it as overriding any configure-time --with-sysroot.  */
@@ -449,7 +433,7 @@ darwin_driver_init (unsigned int *decoded_options_count,
   /* We will need to know the OS X version we're trying to build for here
      so that we can figure out the mechanism and source for the sysroot to
      be used.  */
-  if (! seen_version_min && *decoded_options_count > 1)
+  if (!seen_version_min)
     /* Not set by the User, try to figure it out.  */
     vers_string = darwin_default_min_version ();
 
