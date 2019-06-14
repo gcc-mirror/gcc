@@ -1,3 +1,9 @@
+2019-06-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90884 - stray note with -Wctor-dtor-privacy.
+	* g++.dg/warn/ctor-dtor-privacy-4.C: New.
+	* g++.dg/warn/ctor-dtor-privacy-4.h: New.
+
 2019-06-14  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ldist-26.c: Adjust.

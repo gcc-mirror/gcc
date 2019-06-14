@@ -2150,10 +2150,10 @@ maybe_warn_about_overly_private_class (tree t)
 
       if (!nonprivate_ctor)
 	{
-	  warning (OPT_Wctor_dtor_privacy,
-		   "%q#T only defines private constructors and has no friends",
-		   t);
-	  if (copy_or_move)
+	  bool w = warning (OPT_Wctor_dtor_privacy,
+			    "%q#T only defines private constructors and has "
+			    "no friends", t);
+	  if (w && copy_or_move)
 	    inform (DECL_SOURCE_LOCATION (copy_or_move),
 		    "%q#D is public, but requires an existing %q#T object",
 		    copy_or_move, t);
