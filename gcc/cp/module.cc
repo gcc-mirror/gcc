@@ -7010,32 +7010,12 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
   if (ref == WK_body)
     return true;
 
-  // FIXME: Simplify this if-tree
-  if (TYPE_NAME (type)
-      && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-      && DECL_ORIGINAL_TYPE (TYPE_NAME (type)))
-    {
-      /* A typedef type that is not the original type.  */
-      tree name = TYPE_NAME (type);
-      if (streaming_p ())
-	{
-	  i (tt_typedef_decl);
-	  dump (dumper::TREE)
-	    && dump ("Writing typedef %C:%N%S",
-		     TREE_CODE (name), name, name);
-	}
-      tree_ctx (TYPE_NAME (type), looking_inside, NULL_TREE);
-      if (streaming_p ())
-	dump (dumper::TREE) && dump ("Wrote typedef %C:%N%S",
-				     TREE_CODE (name), name, name);
-      if (TREE_VISITED (type))
-	{
-	  /* We emitted the type node via the name.  */
-	  walk_kind ref = ref_node (type);
-	  gcc_checking_assert (ref == WK_none);
-	  return false;
-	}
-    }
+  tree name = TYPE_NAME (type);
+  
+  if (name
+      && TREE_CODE (name) == TYPE_DECL
+      && DECL_ORIGINAL_TYPE (name))
+    /* A typedef type that is not the original type.  */;
   else if (TYPE_PTRMEMFUNC_P (type))
     {
       tree fn_type = TYPE_PTRMEMFUNC_FN_TYPE (type);
@@ -7047,41 +7027,48 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 	dump (dumper::TREE) && dump ("Writen:%d ptrmem type", tag);
       return false;
     }
-  else if (tree name = TYPE_STUB_DECL (type))
+  else
     {
-      if (DECL_IMPLICIT_TYPEDEF_P (name)
-	  || (type == TYPE_MAIN_VARIANT (type)
-	      && (TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
-		  || TREE_CODE (type) == TEMPLATE_TYPE_PARM)))
+      name = TYPE_STUB_DECL (type);
+      if (name && DECL_IMPLICIT_TYPEDEF_P (name))
+	/* Implicit typedef.  */;
+      else if (type == TYPE_MAIN_VARIANT (type)
+	       && (TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
+		   || TREE_CODE (type) == TEMPLATE_TYPE_PARM))
+	/* A template parameter.  */;
+      else
 	{
-	  /* Make sure this is not a named builtin. We should find
-	     those some other way to be canonically correct.  */
-	  gcc_assert (DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
-
-	  if (streaming_p ())
-	    {
-	      i (tt_typedef_decl);
-	      dump (dumper::TREE)
-		&& dump ("Writing typedef %C:%N%S",
-			 TREE_CODE (name), name, name);
-	    }
-	  tree_ctx (name, looking_inside, NULL_TREE);
-	  if (streaming_p ())
-	    dump (dumper::TREE) && dump ("Wrote typedef %C:%N%S",
-					 TREE_CODE (name), name, name);
-	  if (TREE_VISITED (type))
-	    {
-	      /* We emitted the type node via the name.  */
-	      walk_kind ref = ref_node (type);
-	      gcc_checking_assert (ref == WK_none);
-	      return false;
-	    }
+	  gcc_checking_assert (TREE_CODE (type) != TEMPLATE_TEMPLATE_PARM
+			       || (type != TYPE_MAIN_VARIANT (type)
+				   && TREE_VISITED (TYPE_MAIN_VARIANT (type))
+				   && TREE_VISITED (name)));
+	  name = NULL_TREE;
 	}
-      else if (TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
+    }
+
+  if (name)
+    {
+      /* Make sure this is not a named builtin. We should find
+	 those some other way to be canonically correct.  */
+      gcc_assert (DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
+
+      if (streaming_p ())
 	{
-	  gcc_assert (type != TYPE_MAIN_VARIANT (type)
-		      && TREE_VISITED (TYPE_MAIN_VARIANT (type))
-		      && TREE_VISITED (name));
+	  i (tt_typedef_decl);
+	  dump (dumper::TREE)
+	    && dump ("Writing typedef %C:%N%S",
+		     TREE_CODE (name), name, name);
+	}
+      tree_ctx (name, looking_inside, NULL_TREE);
+      if (streaming_p ())
+	dump (dumper::TREE) && dump ("Wrote typedef %C:%N%S",
+				     TREE_CODE (name), name, name);
+      if (TREE_VISITED (type))
+	{
+	  /* We emitted the type node via the name.  */
+	  walk_kind ref = ref_node (type);
+	  gcc_checking_assert (ref == WK_none);
+	  return false;
 	}
     }
 

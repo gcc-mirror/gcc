@@ -1,6 +1,9 @@
 2019-06-14  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::tree_type): Simplify if-tree.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::core_vals): Stream original_type of type of
 	typedefs, not their type.
 	(trees_out::tree_type): Stream type_name of typedefs.
