@@ -1,6 +1,16 @@
 2019-06-14  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::core_vals): Stream original_type of type of
+	typedefs, not their type.
+	(trees_out::tree_type): Stream type_name of typedefs.
+	(trees_out::tree_value): Insert the type of a typedef.
+	(trees_in::tree_value): Reconstruct the type of a typedef.
+	gcc/testsuite/
+	* g++.dg/modules/tdef-4_[abc].C: New.
+	* g++.dg/modules/class-3_b.C: Adjust scan.
+
+	gcc/cp/
 	* module.cc (binding_cmp): There can be an implicit and
 	non-implicit type_decl.
 	* name-lookup.c (check_mergeable_decl): Check implicitness of

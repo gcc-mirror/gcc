@@ -8,7 +8,7 @@ export inline void Frob (X &q)
   q.b = q.a;
 }
 
-// { dg-final { scan-lang-dump {Writing implicit typedef type_decl:'::X@One:2'} module } }
+// { dg-final { scan-lang-dump {Writing typedef type_decl:'::X@One:2'} module } }
 // { dg-final { scan-lang-dump {Wrote import:-7 type_decl:'::X@One:2'@One} module } }
 // { dg-final { scan-lang-dump {Wrote decl's type:-8 record_type:'::X@One:2'} module } }
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* type_decl:'::X@One:2'@One} module } }

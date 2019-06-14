@@ -69,19 +69,19 @@ along with GCC; see the file COPYING3.  If not see
    optimization that shares the slot for adjacent modules that declare
    the same such namespace.
 
-   A module interface compilation produces a Binary Module Interface
-   (BMI).  I use ELROND format, which allows a bunch of named sections
+   A module interface compilation produces a Compiled Module Interface
+   (CMI).  I use ELROND format, which allows a bunch of named sections
    containing arbitrary data.  Although I don't defend against
-   actively hostile BMIs, there is some checksumming involved to
+   actively hostile CMIs, there is some checksumming involved to
    verify data integrity.  When dumping out an interface, we generate
    a list of all the namespace-scope DECLS that are needed.  From that
    we determine the strongly connected components (SCC) within this
-   TU.  Each SCC is dumped to a separate section of the BMI.  We
+   TU.  Each SCC is dumped to a separate section of the CMI.  We
    generate a binding table section, mapping each namespace&name to a
    defining section.  This allows lazy loading.
 
    Notice this means we embed section indices into the contents of
-   other sections.  Thus random manipulation of the BMI file by ELF
+   other sections.  Thus random manipulation of the CMI file by ELF
    tools may well break it.  The kosher way would probably be to
    introduce indirection via section symbols, but that would require
    defining a relocation type.
@@ -1136,7 +1136,7 @@ protected:
     SHF_NONE = 0x00,	/* Nothing.  */
     SHF_STRINGS = 0x20,  /* NUL-Terminated strings.  */
 
-    /* I really hope we do not get BMI files larger than 4GB.  */
+    /* I really hope we do not get CMI files larger than 4GB.  */
     MY_CLASS = CLASS32,
     /* It is host endianness that is relevant.  */
     MY_ENDIAN = DATA2LSB
@@ -1235,7 +1235,7 @@ public:
   {
     return !get_error ();
   }
-  /* Finish reading/writing file.  Return NULL or error string.  */
+  /* Finish reading/writing file.  Return false on error.  */
   bool end ();
 };
 
@@ -1245,7 +1245,7 @@ const char *
 elf::get_error (const char *name) const
 {
   if (!name)
-    return "Unknown BMI mapping";
+    return "Unknown CMI mapping";
 
   switch (err)
     {
@@ -2668,7 +2668,8 @@ enum tree_tag {
   tt_anon_id,		/* Anonymous name.  */
   tt_lambda_id,		/* Lambda name.  */
 
-  tt_typedef,		/* A maybe-implicit typedef.  */
+  tt_typedef_decl,	/* A maybe-implicit typedef.  */
+
   tt_tinfo_var,		/* Typeinfo object. */
   tt_tinfo_typedef,	/* Typeinfo typedef.  */
   tt_ptrmem_type,	/* Pointer to member type.  */
@@ -3189,7 +3190,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   } GTY ((desc ("%1.alias_p"))) u1;
 
   const char *flatname;	/* Flatname of module.  */
-  char *filename;	/* BMI Filename */
+  char *filename;	/* CMI Filename */
 
   /* Unnnamed decls can be referred to transitively.  Base and number
      of them for this module.  */
@@ -3516,7 +3517,7 @@ static const char *module_mapper_name;
 /* Deferred imports.  */
 static vec<module_state *, va_heap, vl_embed> *pending_imports;
 
-/* BMI repository path and workspace.  */
+/* CMI repository path and workspace.  */
 static char *bmi_repo;
 static size_t bmi_repo_length;
 static char *bmi_path;
@@ -4240,7 +4241,7 @@ create_dirs (char *path)
       }
 }
 
-/* If BMI path TO begins with the prefix, return a pointer to the
+/* If CMI path TO begins with the prefix, return a pointer to the
    trailing suffix.  Otherwise return TO.  */
 
 static char *
@@ -5347,10 +5348,16 @@ trees_out::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
     {
-      if (code != ENUMERAL_TYPE || ENUM_IS_SCOPED (t))
+      tree inner = code == TEMPLATE_DECL ? DECL_TEMPLATE_RESULT (t) : t;
+      if (TREE_CODE (inner) == TYPE_DECL && DECL_ORIGINAL_TYPE (inner))
+	/* This is a typedecl'd.  We set its type separately.  */
+	WT (NULL_TREE);
+      else if (code != ENUMERAL_TYPE || ENUM_IS_SCOPED (t))
 	WT (t->typed.type);
       else if (streaming_p ())
 	{
+	  // FIXME: I wonder if we can make DECL_ORIGINAL_TYPE point at
+	  // the (unrestricted) underlying type?
 	  // Unscoped enums have an integral type, but with a
 	  // restricted precision.  The type's name matches one of the
 	  // known integer types.
@@ -5455,7 +5462,9 @@ trees_out::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
     {
-      /* decl_non_common.result. */
+      // FIXME: spurious behaviour with other nodes, probably wrong elsewhere
+      if (code == TYPE_DECL)
+	WT (t->decl_non_common.result);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_PARM_DECL))
@@ -5931,9 +5940,10 @@ trees_in::core_vals (tree t)
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
     {} // FIXME?
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_NON_COMMON))
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
     {
-      /* decl_non_common.result. */
+      if (code == TYPE_DECL)
+	RT (t->decl_non_common.result);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_PARM_DECL))
@@ -6983,11 +6993,11 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
       /* Make sure the type is in the map too.  Otherwise we get
 	 different RECORD_TYPEs for the same type, and things go
 	 south.  */
-      proxy = TREE_TYPE (proxy);
-      tag = insert (proxy);
+      tree proxy_type = TREE_TYPE (proxy);
+      tag = insert (proxy_type);
       if (streaming_p ())
 	dump (dumper::TREE) && dump ("Wrote decl's type:%d %C:%N", tag,
-				     TREE_CODE (proxy), proxy);
+				     TREE_CODE (proxy_type), proxy_type);
     }
 
   return false;
@@ -7000,9 +7010,34 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
   if (ref == WK_body)
     return true;
 
-  if (TYPE_PTRMEMFUNC_P (type))
+  // FIXME: Simplify this if-tree
+  if (TYPE_NAME (type)
+      && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+      && DECL_ORIGINAL_TYPE (TYPE_NAME (type)))
     {
-      // FIXME: what if this is a typedef?
+      /* A typedef type that is not the original type.  */
+      tree name = TYPE_NAME (type);
+      if (streaming_p ())
+	{
+	  i (tt_typedef_decl);
+	  dump (dumper::TREE)
+	    && dump ("Writing typedef %C:%N%S",
+		     TREE_CODE (name), name, name);
+	}
+      tree_ctx (TYPE_NAME (type), looking_inside, NULL_TREE);
+      if (streaming_p ())
+	dump (dumper::TREE) && dump ("Wrote typedef %C:%N%S",
+				     TREE_CODE (name), name, name);
+      if (TREE_VISITED (type))
+	{
+	  /* We emitted the type node via the name.  */
+	  walk_kind ref = ref_node (type);
+	  gcc_checking_assert (ref == WK_none);
+	  return false;
+	}
+    }
+  else if (TYPE_PTRMEMFUNC_P (type))
+    {
       tree fn_type = TYPE_PTRMEMFUNC_FN_TYPE (type);
       if (streaming_p ())
 	i (tt_ptrmem_type);
@@ -7025,14 +7060,14 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 
 	  if (streaming_p ())
 	    {
-	      i (tt_typedef);
+	      i (tt_typedef_decl);
 	      dump (dumper::TREE)
-		&& dump ("Writing implicit typedef %C:%N%S",
+		&& dump ("Writing typedef %C:%N%S",
 			 TREE_CODE (name), name, name);
 	    }
 	  tree_ctx (name, looking_inside, NULL_TREE);
 	  if (streaming_p ())
-	    dump (dumper::TREE) && dump ("Wrote implicit typedef %C:%N%S",
+	    dump (dumper::TREE) && dump ("Wrote typedef %C:%N%S",
 					 TREE_CODE (name), name, name);
 	  if (TREE_VISITED (type))
 	    {
@@ -7049,29 +7084,6 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 		      && TREE_VISITED (name));
 	}
     }
-
-  if (false)
-  if (tree name = TYPE_NAME (type))
-    if (name != TYPE_STUB_DECL (type))
-      {
-	if (streaming_p ())
-	  {
-	    dump (dumper::TREE)
-	      && dump ("Writing typedef %C:%N%S",
-		       TREE_CODE (name), name, name);
-	    i (tt_typedef);
-	  }
-	tree_ctx (name, looking_inside, NULL_TREE);
-
-	/* We may have visited the type during the name walk.  */
-	if (TREE_VISITED (type))
-	  {
-	    /* We emitted the type node via the name.  */
-	    walk_kind ref = ref_node (type);
-	    gcc_checking_assert (ref == WK_none);
-	    return false;
-	  }
-      }
 
   return true;
 }
@@ -7178,9 +7190,9 @@ trees_out::tree_value (tree t, walk_kind walk)
 	    }
 	}
       else
-	/* Regular typedef.  We'll stream its _TYPE node using the
-	   regular machinery.  */
+	/* Regular typedef.  */
 	type = NULL_TREE;
+      gcc_assert (!type || !DECL_ORIGINAL_TYPE (inner));
     }
 
   if (inner != t)
@@ -7199,6 +7211,17 @@ trees_out::tree_value (tree t, walk_kind walk)
 	core_vals (type);
       lang_vals (type);
     }
+
+  if (TREE_CODE (inner) == TYPE_DECL
+      && DECL_ORIGINAL_TYPE (inner))
+    {
+      int type_tag = insert (TREE_TYPE (inner));
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Cloned:%d typedef %C:%N", type_tag,
+		   TREE_CODE (TREE_TYPE (inner)), TREE_TYPE (inner));
+    }
+    
   if (streaming_p ())
     dump (dumper::TREE) && dump ("Written:%d %C:%N", tag, TREE_CODE (t), t);
 }
@@ -7366,6 +7389,15 @@ trees_in::tree_value (bool is_mergeable_node)
 
   dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (res), res);
 
+  /* Regular typedefs will have a NULL TREE_TYPE at this point.  */
+  bool is_typedef = TREE_CODE (inner) == TYPE_DECL && !TREE_TYPE (inner);
+  if (is_typedef)
+    {
+      /* Frob it to be ready for cloning.  */
+      TREE_TYPE (inner) = DECL_ORIGINAL_TYPE (inner);
+      DECL_ORIGINAL_TYPE (inner) = NULL_TREE;
+    }
+
   if (!is_mergeable_node)
     {
       tree found = finish (res);
@@ -7381,6 +7413,13 @@ trees_in::tree_value (bool is_mergeable_node)
 	  dump (dumper::TREE)
 	    && dump ("Remapping:%d to %C:%N%S", tag,
 		     res ? TREE_CODE (res) : ERROR_MARK, res, res);
+	}
+      else if (is_typedef)
+	{
+	  set_underlying_type (inner);
+
+	  if (res != inner)
+	    TREE_TYPE (res) = TREE_TYPE (inner);
 	}
     }
   else if (existing)
@@ -7406,6 +7445,15 @@ trees_in::tree_value (bool is_mergeable_node)
 
       /* And our result is the existing node.  */
       res = existing;
+    }
+
+  if (is_typedef)
+    {
+      /* Insert the type into the array now.  */
+      tag = insert (TREE_TYPE (res));
+      dump (dumper::TREE)
+	&& dump ("Cloned:%d typedef %C:%N",
+		 tag, TREE_CODE (TREE_TYPE (res)), TREE_TYPE (res));
     }
 
   return res;
@@ -7607,7 +7655,7 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_typedef:
+    case tt_typedef_decl:
       res = tree_node ();
       dump (dumper::TREE)
 	&& dump ("Read typedef %C:%N%S",
@@ -7810,11 +7858,11 @@ trees_in::tree_node ()
 
 	    if (DECL_IMPLICIT_TYPEDEF_P (proxy))
 	      {
-		proxy = TREE_TYPE (proxy);
-		tag = insert (proxy);
+		tree proxy_type = TREE_TYPE (proxy);
+		tag = insert (proxy_type);
 		dump (dumper::TREE)
 		  && dump ("Read decl's type:%d %C:%N", tag,
-			   TREE_CODE (proxy), proxy);
+			   TREE_CODE (proxy_type), proxy_type);
 	      }
 	  }
       }
@@ -14867,7 +14915,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   dump () && dump ("Wrote %u sections", to->get_section_limit ());
 }
 
-/* Read a BMI from FD.  E is errno from its fopen.  Reading will
+/* Read a CMI from FD.  E is errno from its fopen.  Reading will
    be lazy, if this is an import and flag_module_lazy is in effect.  */
 
 module_state *
@@ -15397,7 +15445,7 @@ module_state::set_flatname ()
     flatname = IDENTIFIER_POINTER (name);
 }
 
-/* Read the BMI file for a module.  FNAME, if not NULL, is the name we
+/* Read the CMI file for a module.  FNAME, if not NULL, is the name we
    know it as.  */
 
 bool
@@ -15940,7 +15988,7 @@ module_preprocess (mkdeps *deps, module_state *state, int is_module)
 
   const char *path = NULL;
   if (is_module > 0
-      /* Partitions always produce a BMI.  */
+      /* Partitions always produce a CMI.  */
       || (is_module < 0 && state->is_partition ()))
     {
       path = state->filename;
@@ -16271,7 +16319,7 @@ load_macros (cpp_reader *reader, cpp_hashnode *node, void *)
   return 1;
 }
 
-/* Write the BMI, if we're a module interface.  */
+/* Write the CMI, if we're a module interface.  */
 
 void
 finish_module_processing (cpp_reader *reader)
