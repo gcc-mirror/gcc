@@ -1,3 +1,9 @@
+2019-06-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90662
+	* tree-ssa-strlen.c (get_stridx): Convert fold_build2 operands
+	to the same type.
+
 2019-06-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR bootstrap/90873

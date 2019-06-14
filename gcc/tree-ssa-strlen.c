@@ -322,11 +322,17 @@ get_stridx (tree exp)
 		  if (TREE_CODE (ptr) == ARRAY_REF)
 		    {
 		      off = TREE_OPERAND (ptr, 1);
-		      /* Scale the array index by the size of the element
-			 type (normally 1 for char).  */
-		      off = fold_build2 (MULT_EXPR, TREE_TYPE (off), off,
-					 eltsize);
 		      ptr = TREE_OPERAND (ptr, 0);
+		      if (!integer_onep (eltsize))
+			{
+			  /* Scale the array index by the size of the element
+			     type in the rare case that it's greater than
+			     the typical 1 for char, making sure both operands
+			     have the same type.  */
+			  eltsize = fold_convert (ssizetype, eltsize);
+			  off = fold_convert (ssizetype, off);
+			  off = fold_build2 (MULT_EXPR, ssizetype, off, eltsize);
+			}
 		    }
 		  else
 		    off = integer_zero_node;
