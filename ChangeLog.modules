@@ -1,6 +1,10 @@
 2019-06-14  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::{read,write}_cluster): Check stat hack
+	is for implicit typedefs.
+
+	gcc/cp/
 	* module.cc (trees_out::tree_type): Simplify if-tree.
 
 	gcc/cp/

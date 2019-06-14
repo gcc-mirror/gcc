@@ -11986,6 +11986,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		  }
 		else
 		  {
+		    /* An implicit typedef must be at zero.  */
+		    gcc_assert (!DECL_IMPLICIT_TYPEDEF_P (decl) || !jx);
 		    if (dep->is_hidden ())
 		      flags |= cbf_hidden;
 		    else if (DECL_MODULE_EXPORT_P (decl))
@@ -12139,7 +12141,7 @@ module_state::read_cluster (unsigned snum)
 		if (decls && TREE_CODE (decl) == TYPE_DECL)
 		  {
 		    /* Stat hack.  */
-		    if (type)
+		    if (type || !DECL_IMPLICIT_TYPEDEF_P (decl))
 		      sec.set_overrun ();
 		    type = decl;
 		  }
