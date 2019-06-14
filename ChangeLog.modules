@@ -1,3 +1,11 @@
+2019-06-14  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (binding_cmp): There can be an implicit and
+	non-implicit type_decl.
+	* name-lookup.c (check_mergeable_decl): Check implicitness of
+	type_decl.
+
 2019-06-13  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

@@ -3538,6 +3538,12 @@ check_mergeable_decl (tree decl, tree ovl, tree tpl, tree ret, tree args)
 	    return match;
 	  break;
 
+	case TYPE_DECL:
+	  if (DECL_IMPLICIT_TYPEDEF_P (d_inner)
+	      == DECL_IMPLICIT_TYPEDEF_P (m_inner))
+	    return match;
+	  break;
+
 	default:
 	  return match;
 	}

@@ -2877,6 +2877,8 @@ public:
 
 private:
   void start (tree);
+
+private:
   walk_kind ref_node (tree);
 
 private:
@@ -8286,6 +8288,9 @@ trees_in::tree_mergeable (bool mod_mergeable)
 	  back_refs[~inner_tag] = existing_inner;
 	}
 
+      gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (existing_inner)
+			   == DECL_IMPLICIT_TYPEDEF_P (inner));
+
       if (type_tag)
 	back_refs[~type_tag] = TREE_TYPE (existing_inner);
 
@@ -9824,19 +9829,21 @@ binding_cmp (const void *a_, const void *b_)
   depset *a = *(depset *const *)a_;
   depset *b = *(depset *const *)b_;
 
-  gcc_checking_assert (!a->is_binding () && !b->is_binding ());
   tree a_ent = a->get_entity ();
   tree b_ent = b->get_entity ();
+  gcc_checking_assert (a_ent != b_ent
+		       && !a->is_binding ()
+		       && !b->is_binding ());
 
-  /* Types come first.  */
-  if (TREE_CODE (a_ent) == TYPE_DECL)
+  /* Implicit typedefs come first.  */
+  bool a_implicit = DECL_IMPLICIT_TYPEDEF_P (a_ent);
+  bool b_implicit = DECL_IMPLICIT_TYPEDEF_P (b_ent);
+  if (a_implicit || b_implicit)
     {
-      gcc_checking_assert (TREE_CODE (b_ent) != TYPE_DECL);
-      return -1;  /* A first.  */
+      /* A binding with two implicit type decls?  That's unpossible!  */
+      gcc_checking_assert (!(a_implicit && b_implicit));
+      return a_implicit ? -1 : +1;  /* Implicit first.  */
     }
-
-  if (TREE_CODE (b_ent) == TYPE_DECL)
-    return +1;  /* B first.  */
 
   /* Hidden before non-hidden.  */
   bool a_hidden = a->is_hidden ();
