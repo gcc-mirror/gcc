@@ -1,3 +1,43 @@
+2019-06-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/90709
+	* objc-obj-c++-shared/CF-CFString.h: New.
+	* objc-obj-c++-shared/F-NSArray.h: New.
+	* objc-obj-c++-shared/F-NSAutoreleasePool.h: New.
+	* objc-obj-c++-shared/F-NSObject.h: New.
+	* objc-obj-c++-shared/F-NSString.h: New.
+	* objc-obj-c++-shared/F-NSValue.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFArray.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFAvailability.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFBase.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFCharacterSet.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFData.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFDictionary.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFLocale.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFString.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSArray.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSAutoreleasePool.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSDate.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSEnumerator.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSGeometry.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSObjCRuntime.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSObject.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSRange.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSString.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSValue.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSZone.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/GNUstep.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/GSBlocks.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/GSConfig.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/GSObjCRuntime.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/GSVersionMacros.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/NSArray+GNUstepBase.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/NSMutableString+GNUstepBase.h:
+	New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/NSNumber+GNUstepBase.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/NSObject+GNUstepBase.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/NSString+GNUstepBase.h: New.
+
 2019-06-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/90779
