@@ -100,6 +100,10 @@ static struct {
   unsigned HOST_WIDE_INT call_may_clobber_ref_p_no_alias;
   unsigned HOST_WIDE_INT aliasing_component_refs_p_may_alias;
   unsigned HOST_WIDE_INT aliasing_component_refs_p_no_alias;
+  unsigned HOST_WIDE_INT nonoverlapping_component_refs_p_may_alias;
+  unsigned HOST_WIDE_INT nonoverlapping_component_refs_p_no_alias;
+  unsigned HOST_WIDE_INT nonoverlapping_component_refs_of_decl_p_may_alias;
+  unsigned HOST_WIDE_INT nonoverlapping_component_refs_of_decl_p_no_alias;
 } alias_stats;
 
 void
@@ -124,7 +128,19 @@ dump_alias_stats (FILE *s)
 	   alias_stats.call_may_clobber_ref_p_no_alias,
 	   alias_stats.call_may_clobber_ref_p_no_alias
 	   + alias_stats.call_may_clobber_ref_p_may_alias);
-  fprintf (s, "  aliasing_component_ref_p: "
+  fprintf (s, "  nonoverlapping_component_refs_p: "
+	   HOST_WIDE_INT_PRINT_DEC" disambiguations, "
+	   HOST_WIDE_INT_PRINT_DEC" queries\n",
+	   alias_stats.nonoverlapping_component_refs_p_no_alias,
+	   alias_stats.nonoverlapping_component_refs_p_no_alias
+	   + alias_stats.nonoverlapping_component_refs_p_may_alias);
+  fprintf (s, "  nonoverlapping_component_refs_of_decl_p: "
+	   HOST_WIDE_INT_PRINT_DEC" disambiguations, "
+	   HOST_WIDE_INT_PRINT_DEC" queries\n",
+	   alias_stats.nonoverlapping_component_refs_of_decl_p_no_alias,
+	   alias_stats.nonoverlapping_component_refs_of_decl_p_no_alias
+	   + alias_stats.nonoverlapping_component_refs_of_decl_p_may_alias);
+  fprintf (s, "  aliasing_component_refs_p: "
 	   HOST_WIDE_INT_PRINT_DEC" disambiguations, "
 	   HOST_WIDE_INT_PRINT_DEC" queries\n",
 	   alias_stats.aliasing_component_refs_p_no_alias,
@@ -1047,7 +1063,10 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
   if (TREE_CODE (ref1) == MEM_REF)
     {
       if (!integer_zerop (TREE_OPERAND (ref1, 1)))
-	return false;
+	{
+	  ++alias_stats.nonoverlapping_component_refs_of_decl_p_may_alias;
+	  return false;
+	}
       ref1 = TREE_OPERAND (TREE_OPERAND (ref1, 0), 0);
     }
 
@@ -1060,7 +1079,10 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
   if (TREE_CODE (ref2) == MEM_REF)
     {
       if (!integer_zerop (TREE_OPERAND (ref2, 1)))
-	return false;
+	{
+	  ++alias_stats.nonoverlapping_component_refs_of_decl_p_may_alias;
+	  return false;
+	}
       ref2 = TREE_OPERAND (TREE_OPERAND (ref2, 0), 0);
     }
 
@@ -1080,7 +1102,10 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
       do
 	{
 	  if (component_refs1.is_empty ())
-	    return false;
+	    {
+	      ++alias_stats.nonoverlapping_component_refs_of_decl_p_may_alias;
+	      return false;
+	    }
 	  ref1 = component_refs1.pop ();
 	}
       while (!RECORD_OR_UNION_TYPE_P (TREE_TYPE (TREE_OPERAND (ref1, 0))));
@@ -1088,7 +1113,10 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
       do
 	{
 	  if (component_refs2.is_empty ())
-	     return false;
+	    {
+	      ++alias_stats.nonoverlapping_component_refs_of_decl_p_may_alias;
+	      return false;
+	    }
 	  ref2 = component_refs2.pop ();
 	}
       while (!RECORD_OR_UNION_TYPE_P (TREE_TYPE (TREE_OPERAND (ref2, 0))));
@@ -1096,7 +1124,10 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
       /* Beware of BIT_FIELD_REF.  */
       if (TREE_CODE (ref1) != COMPONENT_REF
 	  || TREE_CODE (ref2) != COMPONENT_REF)
-	return false;
+	{
+	  ++alias_stats.nonoverlapping_component_refs_of_decl_p_may_alias;
+	  return false;
+	}
 
       tree field1 = TREE_OPERAND (ref1, 1);
       tree field2 = TREE_OPERAND (ref2, 1);
@@ -1109,7 +1140,10 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
 
       /* We cannot disambiguate fields in a union or qualified union.  */
       if (type1 != type2 || TREE_CODE (type1) != RECORD_TYPE)
-	 return false;
+	{
+	  ++alias_stats.nonoverlapping_component_refs_of_decl_p_may_alias;
+	  return false;
+	}
 
       if (field1 != field2)
 	{
@@ -1117,15 +1151,23 @@ nonoverlapping_component_refs_of_decl_p (tree ref1, tree ref2)
 	     same.  */
 	  if (DECL_BIT_FIELD_REPRESENTATIVE (field1) == field2
 	      || DECL_BIT_FIELD_REPRESENTATIVE (field2) == field1)
-	    return false;
+	    {
+	      ++alias_stats.nonoverlapping_component_refs_of_decl_p_may_alias;
+	      return false;
+	    }
 	  /* Different fields of the same record type cannot overlap.
 	     ??? Bitfields can overlap at RTL level so punt on them.  */
 	  if (DECL_BIT_FIELD (field1) && DECL_BIT_FIELD (field2))
-	    return false;
+	    {
+	      ++alias_stats.nonoverlapping_component_refs_of_decl_p_may_alias;
+	      return false;
+	    }
+	  ++alias_stats.nonoverlapping_component_refs_of_decl_p_no_alias;
 	  return true;
 	}
     }
 
+  ++alias_stats.nonoverlapping_component_refs_of_decl_p_may_alias;
   return false;
 }
 
@@ -1154,40 +1196,67 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
 {
   if (!flag_strict_aliasing
       || !x || !y
-      || TREE_CODE (x) != COMPONENT_REF
-      || TREE_CODE (y) != COMPONENT_REF)
-    return false;
+      || !handled_component_p (x)
+      || !handled_component_p (y))
+    {
+      ++alias_stats.nonoverlapping_component_refs_p_may_alias;
+      return false;
+    }
 
   auto_vec<const_tree, 16> fieldsx;
-  while (TREE_CODE (x) == COMPONENT_REF)
+  while (handled_component_p (x))
     {
-      tree field = TREE_OPERAND (x, 1);
-      tree type = DECL_FIELD_CONTEXT (field);
-      if (TREE_CODE (type) == RECORD_TYPE)
-	fieldsx.safe_push (field);
+      if (TREE_CODE (x) == COMPONENT_REF)
+	{
+	  tree field = TREE_OPERAND (x, 1);
+	  tree type = DECL_FIELD_CONTEXT (field);
+	  if (TREE_CODE (type) == RECORD_TYPE)
+	    fieldsx.safe_push (field);
+	}
+      else if (TREE_CODE (x) == VIEW_CONVERT_EXPR)
+	fieldsx.truncate (0);
       x = TREE_OPERAND (x, 0);
     }
   if (fieldsx.length () == 0)
     return false;
   auto_vec<const_tree, 16> fieldsy;
-  while (TREE_CODE (y) == COMPONENT_REF)
+  while (handled_component_p (y))
     {
-      tree field = TREE_OPERAND (y, 1);
-      tree type = DECL_FIELD_CONTEXT (field);
-      if (TREE_CODE (type) == RECORD_TYPE)
-	fieldsy.safe_push (TREE_OPERAND (y, 1));
+      if (TREE_CODE (y) == COMPONENT_REF)
+	{
+	  tree field = TREE_OPERAND (y, 1);
+	  tree type = DECL_FIELD_CONTEXT (field);
+	  if (TREE_CODE (type) == RECORD_TYPE)
+	    fieldsy.safe_push (TREE_OPERAND (y, 1));
+	}
+      else if (TREE_CODE (y) == VIEW_CONVERT_EXPR)
+	fieldsx.truncate (0);
       y = TREE_OPERAND (y, 0);
     }
   if (fieldsy.length () == 0)
-    return false;
+    {
+      ++alias_stats.nonoverlapping_component_refs_p_may_alias;
+      return false;
+    }
 
   /* Most common case first.  */
   if (fieldsx.length () == 1
       && fieldsy.length () == 1)
-    return ((DECL_FIELD_CONTEXT (fieldsx[0])
-	     == DECL_FIELD_CONTEXT (fieldsy[0]))
-	    && fieldsx[0] != fieldsy[0]
-	    && !(DECL_BIT_FIELD (fieldsx[0]) && DECL_BIT_FIELD (fieldsy[0])));
+   {
+     if ((DECL_FIELD_CONTEXT (fieldsx[0])
+         == DECL_FIELD_CONTEXT (fieldsy[0]))
+        && fieldsx[0] != fieldsy[0]
+        && !(DECL_BIT_FIELD (fieldsx[0]) && DECL_BIT_FIELD (fieldsy[0])))
+      {
+         ++alias_stats.nonoverlapping_component_refs_p_no_alias;
+         return true;
+      }
+     else
+      {
+         ++alias_stats.nonoverlapping_component_refs_p_may_alias;
+         return false;
+      }
+   }
 
   if (fieldsx.length () == 2)
     {
@@ -1222,11 +1291,18 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
 		 same.  */
 	      if (DECL_BIT_FIELD_REPRESENTATIVE (fieldx) == fieldy
 		  || DECL_BIT_FIELD_REPRESENTATIVE (fieldy) == fieldx)
-		return false;
+		{
+		   ++alias_stats.nonoverlapping_component_refs_p_may_alias;
+		   return false;
+		}
 	      /* Different fields of the same record type cannot overlap.
 		 ??? Bitfields can overlap at RTL level so punt on them.  */
 	      if (DECL_BIT_FIELD (fieldx) && DECL_BIT_FIELD (fieldy))
-		return false;
+		{
+		   ++alias_stats.nonoverlapping_component_refs_p_may_alias;
+		   return false;
+		}
+	      ++alias_stats.nonoverlapping_component_refs_p_no_alias;
 	      return true;
 	    }
 	}
@@ -1245,6 +1321,7 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
     }
   while (1);
 
+  ++alias_stats.nonoverlapping_component_refs_p_may_alias;
   return false;
 }
 
