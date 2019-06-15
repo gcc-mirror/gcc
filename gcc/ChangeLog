@@ -1,3 +1,13 @@
+2019-06-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (CCEITHER): New define_mode_iterator.
+	(un): New define_mode_attr.
+	(isel_signed_<mode>, isel_unsigned_<mode>): Delete, merge into ...
+	(isel_<un>signed_<GPR:mode>): ... this.  New define_insn.
+	(isel_reversed_signed_<mode>, isel_reversed_unsigned_<mode>): Delete,
+	merge into ...
+	(isel_reversed_<un>signed_<GPR:mode>): ... this.  New define_insn.
+
 2019-06-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.opt: Add RejectNegative where needed, reorder
