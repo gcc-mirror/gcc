@@ -1,3 +1,15 @@
+2019-06-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (alias_stats): Add
+	nonoverlapping_component_refs_p_may_alias,
+	nonoverlapping_component_refs_p_no_alias,
+	nonoverlapping_component_refs_of_decl_p_may_alias,
+	nonoverlapping_component_refs_of_decl_p_no_alias.
+	(dump_alias_stats): Dump them.
+	(nonoverlapping_component_refs_of_decl_p): Add stats.
+	(nonoverlapping_component_refs_p): Add stats; do not stop on first
+	ARRAY_REF.
+
 2019-06-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (and<mode>3): Generate zero-extends for
