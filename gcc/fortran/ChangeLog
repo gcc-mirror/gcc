@@ -1,3 +1,8 @@
+2019-06-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* arith.c (arith_power): Rework overflow of an integer to an integer
+	exponent.
+
 2019-06-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/90577
