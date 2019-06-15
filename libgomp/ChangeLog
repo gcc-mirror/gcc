@@ -1,3 +1,8 @@
+2019-06-15  Tom de Vries  <tdevries@suse.de>
+
+	PR tree-optimization/90009
+	* testsuite/libgomp.oacc-c-c++-common/pr90009.c: New test.
+
 2019-06-13  Feng Xue  <fxue@os.amperecomputing.com>
 
 	PR tree-optimization/89713
