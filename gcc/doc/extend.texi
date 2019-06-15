@@ -3215,9 +3215,9 @@ marked symbols.
 @item no_sanitize ("@var{sanitize_option}")
 @cindex @code{no_sanitize} function attribute
 The @code{no_sanitize} attribute on functions is used
-to inform the compiler that it should not do sanitization of all options
+to inform the compiler that it should not do sanitization of any option
 mentioned in @var{sanitize_option}.  A list of values acceptable by
-@option{-fsanitize} option can be provided.
+the @option{-fsanitize} option can be provided.
 
 @smallexample
 void __attribute__ ((no_sanitize ("alignment", "object-size")))
