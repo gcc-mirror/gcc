@@ -7237,6 +7237,14 @@ esac
 CONFIGURE_GDB_TK=`echo ${GDB_TK} | sed s/-all-/-configure-/g`
 INSTALL_GDB_TK=`echo ${GDB_TK} | sed s/-all-/-install-/g`
 
+# gdb depends on gnulib, but as nothing else does, only include it if
+# gdb is built.
+if echo " ${configdirs} " | grep " gdb " > /dev/null 2>&1 ; then
+  # The Makefile provides the ordering, so it's enough here to add
+  # gnulib to the list.
+  configdirs="${configdirs} gnulib"
+fi
+
 # Strip out unwanted targets.
 
 # While at that, we remove Makefiles if we were started for recursive
