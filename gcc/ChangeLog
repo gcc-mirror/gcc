@@ -1,3 +1,8 @@
+2019-06-15  Maya Rashish  <coypu@sdf.org>
+
+	* doc/invoke.texi (Spec Files): Update location of the
+	Fortran spec file.
+
 2019-06-15  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/extend.texi (Common Function Attributes): Clarify
