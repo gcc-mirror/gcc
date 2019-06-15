@@ -1,6 +1,6 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
 #   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012,
-#   2014, 2015, 2016 Free Software Foundation, Inc.
+#   2014, 2015, 2016, 2019 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -2749,6 +2749,14 @@ case "$enable_gdbtk" in
 esac
 CONFIGURE_GDB_TK=`echo ${GDB_TK} | sed s/-all-/-configure-/g`
 INSTALL_GDB_TK=`echo ${GDB_TK} | sed s/-all-/-install-/g`
+
+# gdb depends on gnulib, but as nothing else does, only include it if
+# gdb is built.
+if echo " ${configdirs} " | grep " gdb " > /dev/null 2>&1 ; then
+  # The Makefile provides the ordering, so it's enough here to add
+  # gnulib to the list.
+  configdirs="${configdirs} gnulib"
+fi
 
 # Strip out unwanted targets.
 
