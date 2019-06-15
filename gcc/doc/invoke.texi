@@ -29347,7 +29347,7 @@ Like @samp{%g}, except if @option{-pipe} is in effect.  In that case
 all.  These are the two most common ways to instruct a program that it
 should read from standard input or write to standard output.  If you
 need something more elaborate you can use an @samp{%@{pipe:@code{X}@}}
-construct: see for example @file{f/lang-specs.h}.
+construct: see for example @file{gcc/fortran/lang-specs.h}.
 
 @item %.@var{SUFFIX}
 Substitutes @var{.SUFFIX} for the suffixes of a matched switch's args
