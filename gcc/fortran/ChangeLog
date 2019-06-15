@@ -1,3 +1,8 @@
+2019-06-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* decl.c (gfc_match_derived_decl): Dummy argument cannot be a derived
+	type.
+
 2019-06-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* arith.c (arith_power): Rework overflow of an integer to an integer
