@@ -21,10 +21,10 @@ program test
   print *, (-1)**huge(0_8)
   print *, (-1)**(-huge(0_8)-1_8)
 
-  print *, 2**huge(0) ! { dg-error "Arithmetic overflow" }
-  print *, 2**huge(0_8) ! { dg-error "Arithmetic overflow" }
-  print *, (-2)**huge(0) ! { dg-error "Arithmetic overflow" }
-  print *, (-2)**huge(0_8) ! { dg-error "Arithmetic overflow" }
+  print *, 2**huge(0) ! { dg-error "Arithmetic overflow|exceeds the range" }
+  print *, 2**huge(0_8) ! { dg-error "Arithmetic overflow|exceeds the range" }
+  print *, (-2)**huge(0) ! { dg-error "Arithmetic overflow|exceeds the range" }
+  print *, (-2)**huge(0_8) ! { dg-error "Arithmetic overflow|exceeds the range" }
 
   print *, 2**(-huge(0)-1)
   print *, 2**(-huge(0_8)-1_8)

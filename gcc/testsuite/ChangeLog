@@ -1,3 +1,9 @@
+2019-06-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/integer_exponentiation_4.f90: Update test.
+	* gfortran.dg/integer_exponentiation_5.F90: Ditto.
+	* gfortran.dg/no_range_check_1.f90: Ditto.
+
 2019-06-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/90577
