@@ -201,7 +201,7 @@ int
 func2 (int a)
 {
   extern int vb4;	/* { dg-error "directive for use" } */
-  static int vb5;	/* { dg-error "directive for use" } */
+  static int vb5;
 
   vb4 = a + 1;
   vb5 = vb4 + 1;
