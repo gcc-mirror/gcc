@@ -1,3 +1,7 @@
+2019-06-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/ieee/ieee_4.f90: Un-xfail on i?86-*-freebsd.
+
 2019-06-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR objc/90709
