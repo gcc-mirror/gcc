@@ -1,6 +1,29 @@
 2019-06-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR objc/90709
+	* obj-c++.dg/proto-lossage-7.mm: Use proxy headers.
+	* obj-c++.dg/strings/const-cfstring-2.mm: Likewise.
+	* obj-c++.dg/strings/const-cfstring-5.mm: Likewise
+	* obj-c++.dg/strings/const-str-12.mm: Likewise.
+	* obj-c++.dg/syntax-error-1.mm: Likewise.
+	* obj-c++.dg/torture/strings/const-cfstring-1.mm: Likewise.
+	* obj-c++.dg/torture/strings/const-str-10.mm: Likewise.
+	* obj-c++.dg/torture/strings/const-str-11.mm: Likewise.
+	* obj-c++.dg/torture/strings/const-str-9.mm: Likewise.
+	* obj-c++.dg/cxx-ivars-3.mm: Skip on later Darwin, where the 10.4 API
+	in no longer supported, also on m64 where there's no meaning to it.
+	* obj-c++.dg/isa-field-1.mm: Suppress unwanted warning, add comment why.
+	* obj-c++.dg/objc-gc-3.mm: Skip for Darwin > 16, the API use is an error
+	there.
+	* obj-c++.dg/qual-types-1.mm: Prune a spurious l64 warning.
+	* obj-c++.dg/stubify-1.mm: Tidy up after better compiler warnings.
+	* obj-c++.dg/stubify-2.mm: Likewise.
+	* obj-c++.dg/try-catch-1.mm: Likewise.
+	* obj-c++.dg/try-catch-3.mm: Likewise.
+
+2019-06-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/90709
 	* objc.dg/encode-7-next-64bit.m: Use proxy headers.
 	* objc.dg/image-info.m: Likewise.
 	* objc.dg/method-6.m: Likewise.
