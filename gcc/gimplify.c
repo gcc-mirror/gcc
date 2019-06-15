@@ -65,6 +65,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "dbgcnt.h"
+#include "omp-offload.h"
+#include "context.h"
 
 /* Hash set of poisoned variables in a bind expr.  */
 static hash_set<tree> *asan_poisoned_variables = NULL;
@@ -1323,17 +1325,45 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 	  struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
 
 	  /* Mark variable as local.  */
-	  if (ctx && ctx->region_type != ORT_NONE && !DECL_EXTERNAL (t)
-	      && (! DECL_SEEN_IN_BIND_EXPR_P (t)
-		  || splay_tree_lookup (ctx->variables,
-					(splay_tree_key) t) == NULL))
+	  if (ctx && ctx->region_type != ORT_NONE && !DECL_EXTERNAL (t))
 	    {
-	      if (ctx->region_type == ORT_SIMD
-		  && TREE_ADDRESSABLE (t)
-		  && !TREE_STATIC (t))
-		omp_add_variable (ctx, t, GOVD_PRIVATE | GOVD_SEEN);
-	      else
-		omp_add_variable (ctx, t, GOVD_LOCAL | GOVD_SEEN);
+	      if (! DECL_SEEN_IN_BIND_EXPR_P (t)
+		  || splay_tree_lookup (ctx->variables,
+					(splay_tree_key) t) == NULL)
+		{
+		  if (ctx->region_type == ORT_SIMD
+		      && TREE_ADDRESSABLE (t)
+		      && !TREE_STATIC (t))
+		    omp_add_variable (ctx, t, GOVD_PRIVATE | GOVD_SEEN);
+		  else
+		    omp_add_variable (ctx, t, GOVD_LOCAL | GOVD_SEEN);
+		}
+	      /* Static locals inside of target construct or offloaded
+		 routines need to be "omp declare target".  */
+	      if (TREE_STATIC (t))
+		for (; ctx; ctx = ctx->outer_context)
+		  if ((ctx->region_type & ORT_TARGET) != 0)
+		    {
+		      if (!lookup_attribute ("omp declare target",
+					     DECL_ATTRIBUTES (t)))
+			{
+			  tree id = get_identifier ("omp declare target");
+			  DECL_ATTRIBUTES (t)
+			    = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+			  varpool_node *node = varpool_node::get (t);
+			  if (node)
+			    {
+			      node->offloadable = 1;
+			      if (ENABLE_OFFLOADING && !DECL_EXTERNAL (t))
+				{
+				  g->have_offload = true;
+				  if (!in_lto_p)
+				    vec_safe_push (offload_vars, t);
+				}
+			    }
+			}
+		      break;
+		    }
 	    }
 
 	  DECL_SEEN_IN_BIND_EXPR_P (t) = 1;

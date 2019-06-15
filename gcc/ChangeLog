@@ -1,3 +1,11 @@
+2019-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/90779
+	* gimplify.c: Include omp-offload.h and context.h.
+	(gimplify_bind_expr): Add "omp declare target" attributes
+	to static block scope variables inside of target region or target
+	functions.
+
 2019-06-15  Tom de Vries  <tdevries@suse.de>
 
 	PR tree-optimization/90009

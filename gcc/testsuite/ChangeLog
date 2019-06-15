@@ -1,3 +1,9 @@
+2019-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/90779
+	* c-c++-common/goacc/routine-5.c (func2): Don't expect error for
+	static block scope variable in #pragma acc routine.
+
 2019-06-14  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/integer_exponentiation_4.f90: Update test.
