@@ -1,3 +1,8 @@
+2019-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (aliasing_component_refs_p): Watch for arrays
+	at the end of structures.
+
 2019-06-16  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.c (machopic_indirect_call_target): Use renamed
