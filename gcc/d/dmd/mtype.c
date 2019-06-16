@@ -6734,6 +6734,10 @@ void TypeQualified::resolveHelper(Loc loc, Scope *sc,
                 goto L3;
             if (VarDeclaration *v = s->isVarDeclaration())
             {
+                // https://issues.dlang.org/show_bug.cgi?id=19913
+                // v->type would be null if it is a forward referenced member.
+                if (v->type == NULL)
+                    v->semantic(sc);
                 if (v->storage_class & (STCconst | STCimmutable | STCmanifest) ||
                     v->type->isConst() || v->type->isImmutable())
                 {
