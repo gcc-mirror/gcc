@@ -5851,16 +5851,8 @@ public:
                 if (exp->op != TOKassign)
                 {
                     // If multidimensional static array, treat as one large array
-                    dinteger_t dim = ((TypeSArray *)t1)->dim->toInteger();
-                    Type *t = t1;
-                    while (1)
-                    {
-                        t = t->nextOf()->toBasetype();
-                        if (t->ty != Tsarray)
-                            break;
-                        dim *= ((TypeSArray *)t)->dim->toInteger();
-                        e1x->type = t->nextOf()->sarrayOf(dim);
-                    }
+                    dinteger_t dim = t1->numberOfElems(exp->loc);
+                    e1x->type = t1->baseElemOf()->sarrayOf(dim);
                 }
                 SliceExp *sle = new SliceExp(e1x->loc, e1x, NULL, NULL);
                 sle->arrayop = true;
