@@ -1,4 +1,9 @@
-2019-06-15  Jan Hubicka  <hubicka@ucw.cz>
+2019-06-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.opt (prebind, noprebind, seglinkedit,
+	noseglinkedit): Add RejectNegative.
+
+2019-06-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-alias.c (nonoverlapping_component_refs_p): Fix pasto
 	in my previous patch.
