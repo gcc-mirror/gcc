@@ -1,3 +1,10 @@
+2019-06-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR middle-end/64242
+	* config/pa/pa.md (nonlocal_goto): Restore frame pointer last.  Add
+	frame clobbers and schedule block.
+	(builtin_longjmp): Likewise.
+
 2019-06-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/msp430.c (msp430_expand_helper): Setup arguments which
