@@ -496,6 +496,8 @@ int blockExit(Statement *s, FuncDeclaration *func, bool mustNotThrow)
         }
     };
 
+    if (!s)
+        return BEfallthru;
     BlockExit be(func, mustNotThrow);
     s->accept(&be);
     return be.result;

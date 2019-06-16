@@ -2035,7 +2035,7 @@ public:
         ss->_body = semantic(ss->_body, sc);
         sc->noctor--;
 
-        if (conditionError || ss->_body->isErrorStatement())
+        if (conditionError || (ss->_body && ss->_body->isErrorStatement()))
             goto Lerror;
 
         // Resolve any goto case's with exp
@@ -2111,7 +2111,7 @@ public:
         {
             ss->hasNoDefault = 1;
 
-            if (!ss->isFinal && !ss->_body->isErrorStatement())
+            if (!ss->isFinal && (!ss->_body || !ss->_body->isErrorStatement()))
                 ss->error("switch statement without a default; use 'final switch' or add 'default: assert(0);' or add 'default: break;'");
 
             // Generate runtime error if the default is hit
