@@ -2085,9 +2085,9 @@ public:
             if (v->ident == Id::ctfe)
                 return new IntegerExp(loc, 1, Type::tbool);
 
-            if (!v->originalType && v->_scope)   // semantic() not yet run
+            if (!v->originalType && v->semanticRun < PASSsemanticdone) // semantic() not yet run
             {
-                v->semantic (v->_scope);
+                v->semantic(NULL);
                 if (v->type->ty == Terror)
                     return CTFEExp::cantexp;
             }
