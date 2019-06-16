@@ -1,3 +1,8 @@
+2019-06-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (nonoverlapping_component_refs_p): Fix pasto
+	in my previous patch.
+
 2019-06-16  Tom de Vries  <tdevries@suse.de>
 
 	PR tree-optimization/89376
