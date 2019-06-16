@@ -2517,6 +2517,33 @@ void Type::checkComplexTransition(Loc loc)
     }
 }
 
+/*******************************************
+ * Compute number of elements for a (possibly multidimensional) static array,
+ * or 1 for other types.
+ * Params:
+ *  loc = for error message
+ * Returns:
+ *  number of elements, uint.max on overflow
+ */
+unsigned Type::numberOfElems(const Loc &loc)
+{
+  //printf("Type::numberOfElems()\n");
+  uinteger_t n = 1;
+  Type *tb = this;
+  while ((tb = tb->toBasetype())->ty == Tsarray)
+    {
+      bool overflow = false;
+      n = mulu(n, ((TypeSArray *)tb)->dim->toUInteger(), overflow);
+      if (overflow || n >= UINT32_MAX)
+      {
+          error(loc, "static array `%s` size overflowed to %llu", toChars(), (unsigned long long)n);
+          return UINT32_MAX;
+      }
+      tb = ((TypeSArray *)tb)->next;
+    }
+  return (unsigned)n;
+}
+
 /****************************************
  * Return the mask that an integral type will
  * fit into.
@@ -3900,25 +3927,17 @@ Type *TypeSArray::syntaxCopy()
 d_uns64 TypeSArray::size(Loc loc)
 {
     //printf("TypeSArray::size()\n");
-    dinteger_t sz;
-    if (!dim)
-        return Type::size(loc);
-    sz = dim->toInteger();
-
+    uinteger_t n = numberOfElems(loc);
+    uinteger_t elemsize = baseElemOf()->size();
+    bool overflow = false;
+    uinteger_t sz = mulu(n, elemsize, overflow);
+    if (overflow || sz >= UINT32_MAX)
     {
-        bool overflow = false;
-
-        sz = mulu(next->size(), sz, overflow);
-        if (overflow)
-            goto Loverflow;
+        if (elemsize != SIZE_INVALID && n != UINT32_MAX)
+            error(loc, "static array `%s` size overflowed to %lld", toChars(), (long long)sz);
+        return SIZE_INVALID;
     }
-    if (sz > UINT32_MAX)
-        goto Loverflow;
     return sz;
-
-Loverflow:
-    error(loc, "static array %s size overflowed to %lld", toChars(), (long long)sz);
-    return SIZE_INVALID;
 }
 
 unsigned TypeSArray::alignsize()

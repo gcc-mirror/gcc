@@ -1,5 +1,10 @@
 2019-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	PR d/90559
+	* d-target.cc (Target::_init): Reduce max static data size to INT_MAX.
+
+2019-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	PR d/90651
 	* typeinfo.cc (object_module): New variable.
 	(make_frontend_typeinfo): Update signature.  Set temporary on
