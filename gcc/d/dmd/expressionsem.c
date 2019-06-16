@@ -75,6 +75,7 @@ Expression *semantic(Expression *e, Scope *sc);
 Expression *semanticY(DotIdExp *exp, Scope *sc, int flag);
 Expression *semanticY(DotTemplateInstanceExp *exp, Scope *sc, int flag);
 StringExp *semanticString(Scope *sc, Expression *exp, const char *s);
+Initializer *semantic(Initializer *init, Scope *sc, Type *t, NeedInterpret needInterpret);
 
 /****************************************
  * Preprocess arguments to function.
@@ -1225,6 +1226,23 @@ public:
                 {
                     exp->error("no constructor for %s", cd->toChars());
                     return setError();
+                }
+
+                // https://issues.dlang.org/show_bug.cgi?id=19941
+                // Run semantic on all field initializers to resolve any forward
+                // references. This is the same as done for structs in sd->fill().
+                for (ClassDeclaration *c = cd; c; c = c->baseClass)
+                {
+                    for (size_t i = 0; i < c->fields.dim; i++)
+                    {
+                        VarDeclaration *v = c->fields[i];
+                        if (v->inuse || v->_scope == NULL || v->_init == NULL ||
+                            v->_init->isVoidInitializer())
+                            continue;
+                        v->inuse++;
+                        v->_init = semantic(v->_init, v->_scope, v->type, INITinterpret);
+                        v->inuse--;
+                    }
                 }
             }
         }
