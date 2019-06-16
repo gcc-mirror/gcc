@@ -2617,6 +2617,15 @@ proc check_effective_target_int32plus { } {
     }]
 }
 
+# Return 1 if we're generating 64-bit long long using default options,
+# 0 otherwise.
+
+proc check_effective_target_longlong64 { } {
+    return [check_no_compiler_messages longlong64 object {
+	int dummy[sizeof (long long) == 8 ? 1 : -1];
+    }]
+}
+
 # Return 1 if we're generating 32-bit or larger pointers using default
 # options, 0 otherwise.
 

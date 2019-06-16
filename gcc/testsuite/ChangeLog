@@ -1,3 +1,7 @@
+2019-06-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* lib/target-supports.exp: Add check_effective_target_longlong64. 
+
 2019-06-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.dg/tree-ssa/alias-access-path-4.c: New testcase.
