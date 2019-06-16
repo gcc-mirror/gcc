@@ -4134,8 +4134,7 @@ Type *TypeSArray::semantic(Loc loc, Scope *sc)
              * when the bottom of element type is opaque.
              */
         }
-        else if (tbn->isintegral() ||
-                 tbn->isfloating() ||
+        else if (tbn->isTypeBasic() ||
                  tbn->ty == Tpointer ||
                  tbn->ty == Tarray ||
                  tbn->ty == Tsarray ||
