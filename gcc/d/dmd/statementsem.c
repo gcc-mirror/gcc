@@ -3492,12 +3492,18 @@ public:
             }
 
             s->semantic(sc);
-            Module::addDeferredSemantic2(s);     // Bugzilla 14666
-            sc->insert(s);
-
-            for (size_t j = 0; j < s->aliasdecls.dim; j++)
+            // https://issues.dlang.org/show_bug.cgi?id=19942
+            // If the module that's being imported doesn't exist, don't add it to the symbol table
+            // for the current scope.
+            if (s->mod != NULL)
             {
-                sc->insert(s->aliasdecls[j]);
+                Module::addDeferredSemantic2(s);     // Bugzilla 14666
+                sc->insert(s);
+
+                for (size_t j = 0; j < s->aliasdecls.dim; j++)
+                {
+                    sc->insert(s->aliasdecls[j]);
+                }
             }
         }
         result = imps;
