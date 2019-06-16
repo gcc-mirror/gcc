@@ -1,3 +1,14 @@
+2019-06-17  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.md (define_insn "call_insn"): Rename to ...
+	(define_insn "call_insn_<mode>"): ... this.  Use P iterator on
+	match_operand 0.
+	(define_insn "call_value_insn"): Rename to ...
+	(define_insn "call_value_insn_<mode>"): this.  Use P iterator on
+	match_operand 0.
+	(define_insn "nvptx_red_partition"): Set unspec_volatile result mode to
+	DI.
+
 2019-06-16  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR middle-end/64242
