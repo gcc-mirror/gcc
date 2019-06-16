@@ -1,5 +1,12 @@
 2019-06-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* gcc.target/msp430/mspabi_sllll.c: New test.
+	* gcc.target/msp430/mspabi_srall.c: New test.
+	* gcc.target/msp430/mspabi_srlll.c: New test.
+	* gcc.c-torture/execute/shiftdi-2.c: New test.
+
+2019-06-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* lib/target-supports.exp: Add check_effective_target_longlong64. 
 
 2019-06-16  Jan Hubicka  <hubicka@ucw.cz>

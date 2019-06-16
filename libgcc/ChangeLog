@@ -1,3 +1,12 @@
+2019-06-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/slli.S (__mspabi_sllll): New library function for
+	performing a logical left shift of a 64-bit value.
+	* config/msp430/srai.S (__mspabi_srall): New library function for
+	performing a arithmetic right shift of a 64-bit value.
+	* config/msp430/srll.S (__mspabi_srlll): New library function for
+	performing a logical right shift of a 64-bit value.
+
 2019-06-14  Matt Thomas  <matt@3am-software.com>
 	    Matthew Green  <mrg@eterna.com.au>
 	    Nick Hudson  <skrll@netbsd.org>

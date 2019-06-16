@@ -3046,6 +3046,7 @@ msp430_expand_helper (rtx *operands, const char *helper_name, bool const_variant
 {
   rtx c, f;
   char *helper_const = NULL;
+  int arg1 = 12;
   int arg2 = 13;
   int arg1sz = 1;
   machine_mode arg0mode = GET_MODE (operands[0]);
@@ -3079,6 +3080,13 @@ msp430_expand_helper (rtx *operands, const char *helper_name, bool const_variant
       arg2 = 14;
       arg1sz = 2;
     }
+  else if (arg1mode == DImode)
+    {
+      /* Shift value in R8:R11, shift amount in R12.  */
+      arg1 = 8;
+      arg1sz = 4;
+      arg2 = 12;
+    }
 
   if (const_variants
       && CONST_INT_P (operands[2])
@@ -3091,7 +3099,7 @@ msp430_expand_helper (rtx *operands, const char *helper_name, bool const_variant
       snprintf (helper_const, len, "%s_%d", helper_name, (int) INTVAL (operands[2]));
     }
 
-  emit_move_insn (gen_rtx_REG (arg1mode, 12),
+  emit_move_insn (gen_rtx_REG (arg1mode, arg1),
 		  operands[1]);
   if (!helper_const)
     emit_move_insn (gen_rtx_REG (arg2mode, arg2),
@@ -3104,12 +3112,13 @@ msp430_expand_helper (rtx *operands, const char *helper_name, bool const_variant
   RTL_CONST_CALL_P (c) = 1;
 
   f = 0;
-  use_regs (&f, 12, arg1sz);
+  use_regs (&f, arg1, arg1sz);
   if (!helper_const)
     use_regs (&f, arg2, 1);
   add_function_usage_to (c, f);
 
   emit_move_insn (operands[0],
+		  /* Return value will always start in R12.  */
 		  gen_rtx_REG (arg0mode, 12));
 }
 

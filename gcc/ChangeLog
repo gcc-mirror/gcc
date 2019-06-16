@@ -1,5 +1,13 @@
 2019-06-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* config/msp430/msp430.c (msp430_expand_helper): Setup arguments which
+	describe how to perform MSPABI compliant 64-bit shift.
+	* config/msp430/msp430.md (ashldi3): New define_expand.
+	(ashrdi3): New define_expand.
+	(lshrdi3): New define_expand.
+
+2019-06-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* doc/sourcebuild.texi: Document new effective target keyword
 	longlong64.
 
