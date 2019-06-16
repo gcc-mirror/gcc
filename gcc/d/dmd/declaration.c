@@ -830,6 +830,11 @@ VarDeclaration::VarDeclaration(Loc loc, Type *type, Identifier *id, Initializer 
     this->sequenceNumber = ++nextSequenceNumber;
 }
 
+VarDeclaration *VarDeclaration::create(Loc loc, Type *type, Identifier *id, Initializer *init)
+{
+    return new VarDeclaration(loc, type, id, init);
+}
+
 Dsymbol *VarDeclaration::syntaxCopy(Dsymbol *s)
 {
     //printf("VarDeclaration::syntaxCopy(%s)\n", toChars());
