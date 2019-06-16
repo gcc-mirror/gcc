@@ -1,3 +1,8 @@
+2019-06-16  Tom de Vries  <tdevries@suse.de>
+
+	PR tree-optimization/89376
+	* tree-parloops.c (oacc_entry_exit_ok_1): Handle red == NULL.
+
 2019-06-15  Maya Rashish  <coypu@sdf.org>
 
 	* doc/invoke.texi (Spec Files): Update location of the
