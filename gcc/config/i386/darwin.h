@@ -89,14 +89,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
-/* Generate branch islands stubs if this is true.  */
-extern int darwin_emit_branch_islands;
-
-#undef TARGET_MACHO_BRANCH_ISLANDS
-#define TARGET_MACHO_BRANCH_ISLANDS darwin_emit_branch_islands
+/* Generate pic symbol indirection stubs if this is true.  */
+#undef TARGET_MACHO_PICSYM_STUBS
+#define TARGET_MACHO_PICSYM_STUBS (darwin_picsymbol_stubs)
 
 /* For compatibility with OSX system tools, use the new style of pic stub
-   if this is set.  */
+   if this is set (default).  */
 #undef  MACHOPIC_ATT_STUB
 #define MACHOPIC_ATT_STUB (darwin_macho_att_stub)
 
@@ -244,7 +242,7 @@ extern int darwin_emit_branch_islands;
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)				\
   do {									\
-    if (TARGET_MACHO_BRANCH_ISLANDS 					\
+    if (TARGET_MACHO_PICSYM_STUBS 					\
 	&& MACHOPIC_INDIRECT && !TARGET_64BIT)				\
       {									\
 	const char *name = machopic_mcount_stub_name ();		\

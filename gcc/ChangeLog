@@ -1,5 +1,22 @@
 2019-06-16  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/darwin.c (machopic_indirect_call_target): Use renamed
+	darwin_picsymbol_stubs to decide on output.
+	(darwin_override_options): Handle darwin_picsymbol_stubs.
+	* config/darwin.h (MIN_LD64_OMIT_STUBS): New.
+	(LD64_VERSION): Revise default.
+	* config/darwin.opt: (mpic-symbol-stubs): New option.
+	(darwin_picsymbol_stubs): New variable.
+	* config/i386/darwin.h (TARGET_MACHO_BRANCH_ISLANDS):
+	rename to TARGET_MACHO_PICSYM_STUBS.
+	* config/i386/i386.c (output_pic_addr_const): Likewise.
+	* config/i386/i386.h Likewise.
+	* config/rs6000/darwin.h: Likewise.
+	* config/rs6000/rs6000.c (rs6000_call_darwin_1): Use renamed
+	darwin_picsymbol_stubs.
+
+2019-06-16  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* config/darwin.opt (prebind, noprebind, seglinkedit,
 	noseglinkedit): Add RejectNegative.
 

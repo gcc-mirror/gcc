@@ -20893,7 +20893,7 @@ print_operand (FILE *file, rtx x, int code)
 	{
 	  const char *name = XSTR (x, 0);
 #if TARGET_MACHO
-	  if (darwin_emit_branch_islands
+	  if (darwin_picsymbol_stubs
 	      && MACHOPIC_INDIRECT
 	      && machopic_classify_symbol (x) == MACHOPIC_UNDEFINED_FUNCTION)
 	    name = machopic_indirection_name (x, /*stub_p=*/true);
@@ -38151,7 +38151,8 @@ rs6000_call_darwin_1 (rtx value, rtx func_desc, rtx tlsarg,
   if ((cookie_val & CALL_LONG) != 0
       && GET_CODE (func_desc) == SYMBOL_REF)
     {
-      if (darwin_emit_branch_islands && TARGET_32BIT)
+      /* FIXME: the longcall opt should not hang off picsymbol stubs.  */
+      if (darwin_picsymbol_stubs && TARGET_32BIT)
 	make_island = true; /* Do nothing yet, retain the CALL_LONG flag.  */
       else
 	{
