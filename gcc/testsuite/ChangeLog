@@ -1,3 +1,8 @@
+2019-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/alias-access-path-4.c: New testcase.
+	* gcc.dg/tree-ssa/alias-access-path-5.c: New testcase.
+
 2019-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/90650
