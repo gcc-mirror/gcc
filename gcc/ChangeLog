@@ -1,5 +1,8 @@
 2019-06-16  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p,
+	indirect_refs_may_alias_p): Revert accidental commits.
+
 	* tree-ssa-alias.c (aliasing_component_refs_p): Watch for arrays
 	at the end of structures.
 

@@ -1532,9 +1532,8 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       && same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (dbase2)) == 1
       && (TREE_CODE (TREE_TYPE (base1)) != ARRAY_TYPE
 	  || (TYPE_SIZE (TREE_TYPE (base1))
-	      && TREE_CODE (TYPE_SIZE (TREE_TYPE (base1))) == INTEGER_CST))
-      && !ranges_maybe_overlap_p (doffset1, max_size1, doffset2, max_size2))
-    return false;
+	      && TREE_CODE (TYPE_SIZE (TREE_TYPE (base1))) == INTEGER_CST)))
+    return ranges_maybe_overlap_p (doffset1, max_size1, doffset2, max_size2);
 
   if (ref1 && ref2
       && nonoverlapping_component_refs_p (ref1, ref2))
@@ -1614,9 +1613,8 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
     {
       poly_offset_int moff1 = mem_ref_offset (base1) << LOG2_BITS_PER_UNIT;
       poly_offset_int moff2 = mem_ref_offset (base2) << LOG2_BITS_PER_UNIT;
-      if (!ranges_maybe_overlap_p (offset1 + moff1, max_size1,
-				   offset2 + moff2, max_size2))
-	return false;
+      return ranges_maybe_overlap_p (offset1 + moff1, max_size1,
+				     offset2 + moff2, max_size2);
     }
   if (!ptr_derefs_may_alias_p (ptr1, ptr2))
     return false;
@@ -1655,9 +1653,8 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       /* But avoid treating arrays as "objects", instead assume they
          can overlap by an exact multiple of their element size.
          See gcc.dg/torture/alias-2.c.  */
-      && TREE_CODE (TREE_TYPE (ptrtype1)) != ARRAY_TYPE
-      && !ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2))
-    return false;
+      && TREE_CODE (TREE_TYPE (ptrtype1)) != ARRAY_TYPE)
+    return ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2);
 
   if (ref1 && ref2
       && nonoverlapping_component_refs_p (ref1, ref2))
