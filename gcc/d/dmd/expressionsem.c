@@ -397,6 +397,7 @@ public:
             // Create the magic __ctfe bool variable
             VarDeclaration *vd = new VarDeclaration(exp->loc, Type::tbool, Id::ctfe, NULL);
             vd->storage_class |= STCtemp;
+            vd->semanticRun = PASSsemanticdone;
             Expression *e = new VarExp(exp->loc, vd);
             e = semantic(e, sc);
             result = e;
@@ -1441,7 +1442,10 @@ public:
 
     void visit(VarExp *e)
     {
-        if (FuncDeclaration *fd = e->var->isFuncDeclaration())
+        VarDeclaration *vd = e->var->isVarDeclaration();
+        FuncDeclaration *fd = e->var->isFuncDeclaration();
+
+        if (fd)
         {
             //printf("L%d fd = %s\n", __LINE__, f->toChars());
             if (!fd->functionSemantic())
@@ -1452,7 +1456,14 @@ public:
             e->type = e->var->type;
 
         if (e->type && !e->type->deco)
+        {
+            Declaration *decl = e->var->isDeclaration();
+            if (decl)
+                decl->inuse++;
             e->type = e->type->semantic(e->loc, sc);
+            if (decl)
+                decl->inuse--;
+        }
 
         /* Fix for 1161 doesn't work because it causes protection
          * problems when instantiating imported templates passing private
@@ -1460,7 +1471,7 @@ public:
          */
         //checkAccess(e->loc, sc, NULL, e->var);
 
-        if (VarDeclaration *vd = e->var->isVarDeclaration())
+        if (vd)
         {
             if (vd->checkNestedReference(sc, e->loc))
                 return setError();
@@ -1468,7 +1479,7 @@ public:
             // the purity violation error is redundant.
             //checkPurity(sc, vd);
         }
-        else if (FuncDeclaration *fd = e->var->isFuncDeclaration())
+        else if (fd)
         {
             // TODO: If fd isn't yet resolved its overload, the checkNestedReference
             // call would cause incorrect validation.
@@ -1962,8 +1973,8 @@ public:
                         ClassDeclaration *cd = ((TypeClass *)e->targ)->sym;
                         Parameters *args = new Parameters;
                         args->reserve(cd->baseclasses->dim);
-                        if (cd->_scope && !cd->symtab)
-                            cd->semantic(cd->_scope);
+                        if (cd->semanticRun < PASSsemanticdone)
+                            cd->semantic(NULL);
                         for (size_t i = 0; i < cd->baseclasses->dim; i++)
                         {
                             BaseClass *b = (*cd->baseclasses)[i];

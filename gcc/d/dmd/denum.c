@@ -110,6 +110,9 @@ void EnumDeclaration::semantic(Scope *sc)
         _scope = NULL;
     }
 
+    if (!sc)
+        return;
+
     parent = sc->parent;
     type = type->semantic(loc, sc);
 

@@ -4672,7 +4672,7 @@ Type *TypeAArray::semantic(Loc loc, Scope *sc)
         /* AA's need typeid(index).equals() and getHash(). Issue error if not correctly set up.
          */
         StructDeclaration *sd = ((TypeStruct *)tbase)->sym;
-        if (sd->_scope)
+        if (sd->semanticRun < PASSsemanticdone)
             sd->semantic(NULL);
 
         // duplicate a part of StructDeclaration::semanticTypeInfoMembers
@@ -4739,7 +4739,7 @@ Type *TypeAArray::semantic(Loc loc, Scope *sc)
     else if (tbase->ty == Tclass && !((TypeClass *)tbase)->sym->isInterfaceDeclaration())
     {
         ClassDeclaration *cd = ((TypeClass *)tbase)->sym;
-        if (cd->_scope)
+        if (cd->semanticRun < PASSsemanticdone)
             cd->semantic(NULL);
 
         if (!ClassDeclaration::object)
@@ -5336,7 +5336,7 @@ int Type::covariant(Type *t, StorageClass *pstc, bool fix17349)
 
         // If t1n is forward referenced:
         ClassDeclaration *cd = ((TypeClass *)t1n)->sym;
-        if (cd->_scope)
+        if (cd->semanticRun < PASSsemanticdone && !cd->isBaseInfoComplete())
             cd->semantic(NULL);
         if (!cd->isBaseInfoComplete())
         {
@@ -5448,6 +5448,13 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
 
     bool errors = false;
 
+    if (inuse > 500)
+    {
+        inuse = 0;
+        ::error(loc, "recursive type");
+        return Type::terror;
+    }
+
     /* Copy in order to not mess up original.
      * This can produce redundant copies if inferring return type,
      * as semantic() will get called again on this.
@@ -5532,9 +5539,9 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
         for (size_t i = 0; i < dim; i++)
         {
             Parameter *fparam = Parameter::getNth(tf->parameters, i);
-            tf->inuse++;
+            inuse++;
             fparam->type = fparam->type->semantic(loc, argsc);
-            if (tf->inuse == 1) tf->inuse--;
+            inuse--;
 
             if (fparam->type->ty == Terror)
             {
@@ -5775,13 +5782,6 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
         errors = true;
     }
     tf->iswild = wildparams;
-
-    if (tf->inuse)
-    {
-        error(loc, "recursive type");
-        tf->inuse = 0;
-        errors = true;
-    }
 
     if (tf->isproperty && (tf->varargs || Parameter::dim(tf->parameters) > 2))
     {
@@ -7444,8 +7444,8 @@ Expression *TypeEnum::dotExp(Scope *sc, Expression *e, Identifier *ident, int fl
     if (ident == Id::_mangleof)
         return getProperty(e->loc, ident, flag & 1);
 
-    if (sym->_scope)
-        sym->semantic(sym->_scope);
+    if (sym->semanticRun < PASSsemanticdone)
+        sym->semantic(NULL);
     if (!sym->members)
     {
         if (sym->isSpecial())
@@ -7914,8 +7914,8 @@ L1:
                 return e;
             }
         }
-        if (d->semanticRun == PASSinit && d->_scope)
-            d->semantic(d->_scope);
+        if (d->semanticRun == PASSinit)
+            d->semantic(NULL);
         checkAccess(e->loc, sc, e, d);
         VarExp *ve = new VarExp(e->loc, d);
         if (d->isVarDeclaration() && d->needThis())
@@ -8443,7 +8443,7 @@ L1:
 
         if (ident == Id::outer && sym->vthis)
         {
-            if (sym->vthis->_scope)
+            if (sym->vthis->semanticRun == PASSinit)
                 sym->vthis->semantic(NULL);
 
             if (ClassDeclaration *cdp = sym->toParent2()->isClassDeclaration())
@@ -8670,8 +8670,8 @@ L1:
             }
         }
         //printf("e = %s, d = %s\n", e->toChars(), d->toChars());
-        if (d->semanticRun == PASSinit && d->_scope)
-            d->semantic(d->_scope);
+        if (d->semanticRun == PASSinit)
+            d->semantic(NULL);
         checkAccess(e->loc, sc, e, d);
         VarExp *ve = new VarExp(e->loc, d);
         if (d->isVarDeclaration() && d->needThis())
@@ -8727,9 +8727,9 @@ MATCH TypeClass::implicitConvTo(Type *to)
     if (cdto)
     {
         //printf("TypeClass::implicitConvTo(to = '%s') %s, isbase = %d %d\n", to->toChars(), toChars(), cdto->isBaseInfoComplete(), sym->isBaseInfoComplete());
-        if (cdto->_scope && !cdto->isBaseInfoComplete())
+        if (cdto->semanticRun < PASSsemanticdone && !cdto->isBaseInfoComplete())
             cdto->semantic(NULL);
-        if (sym->_scope && !sym->isBaseInfoComplete())
+        if (sym->semanticRun < PASSsemanticdone && !sym->isBaseInfoComplete())
             sym->semantic(NULL);
         if (cdto->isBaseOf(sym, NULL) && MODimplicitConv(mod, to->mod))
         {

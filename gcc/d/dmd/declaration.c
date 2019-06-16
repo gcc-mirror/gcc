@@ -865,6 +865,11 @@ void VarDeclaration::semantic(Scope *sc)
         _scope = NULL;
     }
 
+    if (!sc)
+        return;
+
+    semanticRun = PASSsemantic;
+
     /* Pick up storage classes from context, but except synchronized,
      * override, abstract, and final.
      */
@@ -1038,6 +1043,7 @@ void VarDeclaration::semantic(Scope *sc)
                 else if (isAliasThisTuple(e))
                 {
                     VarDeclaration *v = copyToTemp(0, "__tup", e);
+                    v->semantic(sc);
                     VarExp *ve = new VarExp(loc, v);
                     ve->type = e->type;
 
@@ -1439,7 +1445,7 @@ Lnomatch:
                         if (!e)
                         {
                             error("is not a static and cannot have static initializer");
-                            return;
+                            e = new ErrorExp();
                         }
                     }
                     ei = new ExpInitializer(_init->loc, e);

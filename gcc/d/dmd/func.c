@@ -471,6 +471,9 @@ void FuncDeclaration::semantic(Scope *sc)
         _scope = NULL;
     }
 
+    if (!sc || errors)
+        return;
+
     parent = sc->parent;
     Dsymbol *parent = toParent();
 
@@ -932,6 +935,7 @@ void FuncDeclaration::semantic(Scope *sc)
 
             case -2:
                 // can't determine because of forward references
+                errors = true;
                 return;
 
             default:
@@ -1049,6 +1053,7 @@ void FuncDeclaration::semantic(Scope *sc)
 
                 case -2:
                     // can't determine because of forward references
+                    errors = true;
                     return;
 
                 default:
