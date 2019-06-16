@@ -26,3 +26,16 @@ enum payloadOffset = C2.bytes.offsetof;
 static assert(C2.int1.offsetof == payloadOffset + 8);
 static assert(C2.alignof == size_t.sizeof);
 static assert(__traits(classInstanceSize, C2) == payloadOffset + 12);
+
+
+/***************************************************/
+// https://issues.dlang.org/show_bug.cgi?id=19914
+// https://issues.dlang.org/show_bug.cgi?id=19915
+
+class TemplatedClass(T)
+{
+    align T field;
+}
+
+mixin TemplatedClass!(string);
+alias TCint = TemplatedClass!(int);
