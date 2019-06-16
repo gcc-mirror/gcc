@@ -3396,13 +3396,13 @@ bool test3512()
     assert(q == 6);
 
     // _aApplycw2
-    foreach (int i, wchar c; s)
+    foreach (ptrdiff_t i, wchar c; s)
     {
         assert(i >= 0 && i < s.length);
     }
 
     // _aApplycd2
-    foreach (int i, dchar c; s)
+    foreach (ptrdiff_t i, dchar c; s)
     {
         assert(i >= 0 && i < s.length);
     }
@@ -3424,13 +3424,13 @@ bool test3512()
     assert(q == 13);
 
     // _aApplywc2
-    foreach (int i, char c; w)
+    foreach (ptrdiff_t i, char c; w)
     {
         assert(i >= 0 && i < w.length);
     }
 
     // _aApplywd2
-    foreach (int i, dchar c; w)
+    foreach (ptrdiff_t i, dchar c; w)
     {
         assert(i >= 0 && i < w.length);
     }
@@ -3454,19 +3454,19 @@ bool test3512()
     assert(q == 3);
 
     // _aApplydc2
-    foreach (int i, char c; d)
+    foreach (ptrdiff_t i, char c; d)
     {
         assert(i >= 0 && i < d.length);
     }
     // _aApplydw2
-    foreach (int i, wchar c; d)
+    foreach (ptrdiff_t i, wchar c; d)
     {
         assert(i >= 0 && i < d.length);
     }
 
     dchar[] dr = "squop"d.dup;
 
-    foreach (int n, char c; dr)
+    foreach (ptrdiff_t n, char c; dr)
     {
         if (n == 2)
             break;
@@ -3482,7 +3482,7 @@ bool test3512()
     {}
 
     // _aApplyRdc2
-    foreach_reverse (int n, char c; dr)
+    foreach_reverse (ptrdiff_t n, char c; dr)
     {
         if (n == 4)
             break;
@@ -3490,14 +3490,14 @@ bool test3512()
     }
 
     // _aApplyRdw2
-    foreach_reverse (int i, wchar c; dr)
+    foreach_reverse (ptrdiff_t i, wchar c; dr)
     {
         assert(i >= 0 && i < dr.length);
     }
 
     q = 0;
     wstring w2 = ['x', 'ü', 'm']; // foreach over array literals
-    foreach_reverse (int n, char c; w2)
+    foreach_reverse (ptrdiff_t n, char c; w2)
     {
         ++q;
         if (c == 'm') assert(n == 2 && q == 1);
