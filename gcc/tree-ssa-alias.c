@@ -1230,7 +1230,7 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
 	    fieldsy.safe_push (TREE_OPERAND (y, 1));
 	}
       else if (TREE_CODE (y) == VIEW_CONVERT_EXPR)
-	fieldsx.truncate (0);
+	fieldsy.truncate (0);
       y = TREE_OPERAND (y, 0);
     }
   if (fieldsy.length () == 0)
