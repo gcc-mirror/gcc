@@ -265,6 +265,7 @@ public:
     IntRange *range;            // if !NULL, the variable is known to be within the range
 
     VarDeclaration(Loc loc, Type *t, Identifier *id, Initializer *init);
+    static VarDeclaration *create(Loc loc, Type *t, Identifier *id, Initializer *init);
     Dsymbol *syntaxCopy(Dsymbol *);
     void semantic(Scope *sc);
     void setFieldOffset(AggregateDeclaration *ad, unsigned *poffset, bool isunion);
