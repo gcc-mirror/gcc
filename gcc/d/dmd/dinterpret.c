@@ -6053,9 +6053,16 @@ public:
         result = (*se->elements)[i];
         if (!result)
         {
-            e->error("Internal Compiler Error: null field %s", v->toChars());
-            result = CTFEExp::cantexp;
-            return;
+            // https://issues.dlang.org/show_bug.cgi?id=19897
+            // Zero-length fields don't have an initializer.
+            if (v->type->size() == 0)
+                result = voidInitLiteral(e->type, v).copy();
+            else
+            {
+                e->error("Internal Compiler Error: null field %s", v->toChars());
+                result = CTFEExp::cantexp;
+                return;
+            }
         }
         if (result->op == TOKvoid)
         {
