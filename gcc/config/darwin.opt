@@ -237,11 +237,11 @@ Driver RejectNegative
 (Obsolete after 10.4)	Set MH_NOMULTIDEFS in an umbrella framework.
 
 noprebind
-Driver Negative(prebind)
+Driver RejectNegative Negative(prebind)
 (Obsolete) LD_PREBIND is no longer supported.
 
 noseglinkedit
-Driver Negative(seglinkedit)
+Driver RejectNegative Negative(seglinkedit)
 (Obsolete) This is the default.
 
 object
@@ -252,7 +252,7 @@ Driver RejectNegative Separate
 -pagezero_size size	Allows setting the page 0 size to 4kb for certain special cases.
 
 prebind
-Driver Negative(noprebind)
+Driver RejectNegative Negative(noprebind)
 (Obsolete) LD_PREBIND is no longer supported.
 
 prebind_all_twolevel_modules
@@ -317,7 +317,7 @@ Driver RejectNegative Separate Args(3)
 (Obsolete, ld_classic only) -sectcreate segname sectname file
 
 seglinkedit
-Driver Negative(noseglinkedit)
+Driver RejectNegative Negative(noseglinkedit)
 (Obsolete) Object files with LINKEDIT sections are no longer supported.
 
 segprot
