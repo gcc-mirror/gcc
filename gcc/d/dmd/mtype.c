@@ -8350,7 +8350,12 @@ L1:
 
         if (ident == Id::classinfo)
         {
-            assert(Type::typeinfoclass);
+            if (!Type::typeinfoclass)
+            {
+                error(e->loc, "`object.TypeInfo_Class` could not be found, but is implicitly used");
+                return new ErrorExp();
+            }
+
             Type *t = Type::typeinfoclass->type;
             if (e->op == TOKtype || e->op == TOKdottype)
             {
