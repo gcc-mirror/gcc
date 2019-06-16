@@ -95,6 +95,8 @@ public:
             s->exp = semantic(s->exp, sc);
             s->exp = resolveProperties(sc, s->exp);
             s->exp = s->exp->addDtorHook(sc);
+            if (checkNonAssignmentArrayOp(s->exp))
+                s->exp = new ErrorExp();
             if (FuncDeclaration *f = isFuncAddress(s->exp))
             {
                 if (f->checkForwardRef(s->exp->loc))
@@ -370,6 +372,8 @@ public:
 
         ds->condition = semantic(ds->condition, sc);
         ds->condition = resolveProperties(sc, ds->condition);
+        if (checkNonAssignmentArrayOp(ds->condition))
+            ds->condition = new ErrorExp();
         ds->condition = ds->condition->optimize(WANTvalue);
         ds->condition = checkGC(sc, ds->condition);
 
@@ -440,6 +444,8 @@ public:
 
             fs->condition = semantic(fs->condition, sc);
             fs->condition = resolveProperties(sc, fs->condition);
+            if (checkNonAssignmentArrayOp(fs->condition))
+                fs->condition = new ErrorExp();
             fs->condition = fs->condition->optimize(WANTvalue);
             fs->condition = checkGC(sc, fs->condition);
             fs->condition = fs->condition->toBoolean(sc);
@@ -450,6 +456,8 @@ public:
                 ((CommaExp *)fs->increment)->allowCommaExp = true;
             fs->increment = semantic(fs->increment, sc);
             fs->increment = resolveProperties(sc, fs->increment);
+            if (checkNonAssignmentArrayOp(fs->increment))
+                fs->increment = new ErrorExp();
             fs->increment = fs->increment->optimize(WANTvalue);
             fs->increment = checkGC(sc, fs->increment);
         }
@@ -1723,6 +1731,8 @@ public:
             ifs->condition = resolveProperties(sc, ifs->condition);
             ifs->condition = ifs->condition->addDtorHook(sc);
         }
+        if (checkNonAssignmentArrayOp(ifs->condition))
+            ifs->condition = new ErrorExp();
         ifs->condition = checkGC(sc, ifs->condition);
 
         // Convert to boolean after declaring prm so this works:
@@ -1971,6 +1981,8 @@ public:
                 break;
             }
         }
+        if (checkNonAssignmentArrayOp(ss->condition))
+            ss->condition = new ErrorExp();
         ss->condition = ss->condition->optimize(WANTvalue);
         ss->condition = checkGC(sc, ss->condition);
         if (ss->condition->op == TOKerror)

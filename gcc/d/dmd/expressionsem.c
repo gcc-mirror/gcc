@@ -2185,6 +2185,9 @@ public:
         }
         if (exp->e1->op == TOKslice || exp->e1->type->ty == Tarray || exp->e1->type->ty == Tsarray)
         {
+            if (checkNonAssignmentArrayOp(exp->e1))
+                return setError();
+
             if (exp->e1->op == TOKslice)
                 ((SliceExp *)exp->e1)->arrayop = true;
 
@@ -6232,6 +6235,9 @@ public:
         assert(exp->e1->type && exp->e2->type);
         if (exp->e1->op == TOKslice || exp->e1->type->ty == Tarray || exp->e1->type->ty == Tsarray)
         {
+            if (checkNonAssignmentArrayOp(exp->e1))
+                return setError();
+
             // T[] ^^= ...
             if (exp->e2->implicitConvTo(exp->e1->type->nextOf()))
             {
