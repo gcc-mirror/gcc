@@ -26149,6 +26149,20 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
     vec<tree, va_gc> *vec;
     int attr_flag = normal_attr;
 
+    /* Maybe we don't expect to see any arguments for this attribute.  */
+    const attribute_spec *as
+      = lookup_attribute_spec (TREE_PURPOSE (attribute));
+    if (as && as->max_length == 0)
+      {
+	error_at (token->location, "%qE attribute does not take any arguments",
+		  attr_id);
+	cp_parser_skip_to_closing_parenthesis (parser,
+					       /*recovering=*/true,
+					       /*or_comma=*/false,
+					       /*consume_paren=*/true);
+	return error_mark_node;
+      }
+
     if (attr_ns == gnu_identifier
 	&& attribute_takes_identifier_p (attr_id))
       /* A GNU attribute that takes an identifier in parameter.  */

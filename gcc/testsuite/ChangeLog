@@ -1,3 +1,8 @@
+2019-06-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/83820 - excessive attribute arguments not detected.
+	* g++.dg/cpp0x/gen-attrs-67.C: New test.
+
 2019-06-17  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/90754
