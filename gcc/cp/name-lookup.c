@@ -6487,15 +6487,15 @@ lookup_type_scope_1 (tree name, tag_scope scope)
 	     typedef struct C {} C;
 	   correctly.  */
 	if (tree type = iter->type)
-	  if ((scope != ts_current
-	       || LOCAL_BINDING_P (iter)
-	       || DECL_CONTEXT (type) == iter->scope->this_entity)
-	      && qualify_lookup (iter->type, LOOKUP_PREFER_TYPES))
-	    return iter->type;
+	  if (qualify_lookup (type, LOOKUP_PREFER_TYPES)
+	      && (scope != ts_current
+		  || LOCAL_BINDING_P (iter)
+		  || DECL_CONTEXT (type) == iter->scope->this_entity))
+	    return type;
 
-	if ((scope != ts_current
-	     || !INHERITED_VALUE_BINDING_P (iter))
-	    && qualify_lookup (iter->value, LOOKUP_PREFER_TYPES))
+	if (qualify_lookup (iter->value, LOOKUP_PREFER_TYPES)
+	    && (scope != ts_current
+		|| !INHERITED_VALUE_BINDING_P (iter)))
 	  return iter->value;
       }
 
