@@ -1,3 +1,9 @@
+2019-06-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (ld_vers) <*-*-solaris2*>: Remove support for
+	alternative Solaris 11.4 format.
+	* configure: Regenerate.
+
 2019-06-17  Tom de Vries  <tdevries@suse.de>
 
 	* config/nvptx/nvptx.md (define_insn "call_insn"): Rename to ...
