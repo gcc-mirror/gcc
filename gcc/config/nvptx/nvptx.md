@@ -1071,8 +1071,8 @@
   DONE;
 })
 
-(define_insn "set_softstack_insn"
-  [(unspec [(match_operand 0 "nvptx_register_operand" "R")]
+(define_insn "set_softstack_<mode>"
+  [(unspec [(match_operand:P 0 "nvptx_register_operand" "R")]
 	   UNSPEC_SET_SOFTSTACK)]
   "TARGET_SOFT_STACK"
 {
@@ -1237,10 +1237,10 @@
 
 ;; Patterns for OpenMP SIMD-via-SIMT lowering
 
-(define_insn "omp_simt_enter_insn"
-  [(set (match_operand 0 "nvptx_register_operand" "=R")
-	(unspec_volatile [(match_operand 1 "nvptx_nonmemory_operand" "Ri")
-			    (match_operand 2 "nvptx_nonmemory_operand" "Ri")]
+(define_insn "omp_simt_enter_<mode>"
+  [(set (match_operand:P 0 "nvptx_register_operand" "=R")
+	(unspec_volatile:P [(match_operand:P 1 "nvptx_nonmemory_operand" "Ri")
+			    (match_operand:P 2 "nvptx_nonmemory_operand" "Ri")]
 			   UNSPECV_SIMT_ENTER))]
   ""
 {
@@ -1261,12 +1261,32 @@
   cfun->machine->simt_stack_align = MAX (UINTVAL (operands[2]),
 					 cfun->machine->simt_stack_align);
   cfun->machine->has_simtreg = true;
-  emit_insn (gen_omp_simt_enter_insn (operands[0], operands[1], operands[2]));
+  gcc_assert (GET_MODE (operands[0]) == Pmode);
+  if (GET_MODE (operands[0]) == DImode)
+    emit_insn (gen_omp_simt_enter_di (operands[0], operands[1], operands[2]));
+  else if (GET_MODE (operands[0]) == SImode)
+    emit_insn (gen_omp_simt_enter_si (operands[0], operands[1], operands[2]));
+  else
+    gcc_unreachable ();
   DONE;
 })
 
-(define_insn "omp_simt_exit"
-  [(unspec_volatile [(match_operand 0 "nvptx_register_operand" "R")]
+(define_expand "omp_simt_exit"
+  [(match_operand 0 "nvptx_register_operand" "R")]
+  ""
+{
+  gcc_assert (GET_MODE (operands[0]) == Pmode);
+  if (GET_MODE (operands[0]) == DImode)
+    emit_insn (gen_omp_simt_exit_di (operands[0]));
+  else if (GET_MODE (operands[0]) == SImode)
+    emit_insn (gen_omp_simt_exit_si (operands[0]));
+  else
+    gcc_unreachable ();
+  DONE;
+})
+
+(define_insn "omp_simt_exit_<mode>"
+  [(unspec_volatile [(match_operand:P 0 "nvptx_register_operand" "R")]
 		    UNSPECV_SIMT_EXIT)]
   ""
 {
