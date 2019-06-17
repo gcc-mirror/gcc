@@ -2345,26 +2345,14 @@ pru_emit_doloop (rtx *operands, int is_end)
 
   tag = GEN_INT (cfun->machine->doloop_tags - 1);
   machine_mode opmode = GET_MODE (operands[0]);
+  gcc_assert (opmode == HImode || opmode == SImode);
+
   if (is_end)
-    {
-      if (opmode == HImode)
-	emit_jump_insn (gen_doloop_end_internalhi (operands[0],
-						   operands[1], tag));
-      else if (opmode == SImode)
-	emit_jump_insn (gen_doloop_end_internalsi (operands[0],
-						   operands[1], tag));
-      else
-	gcc_unreachable ();
-    }
+    emit_jump_insn (gen_doloop_end_internal (opmode, operands[0],
+					     operands[1], tag));
   else
-    {
-      if (opmode == HImode)
-	emit_insn (gen_doloop_begin_internalhi (operands[0], operands[0], tag));
-      else if (opmode == SImode)
-	emit_insn (gen_doloop_begin_internalsi (operands[0], operands[0], tag));
-      else
-	gcc_unreachable ();
-    }
+    emit_insn (gen_doloop_begin_internal (opmode, operands[0],
+					  operands[0], tag));
 }
 
 
@@ -2607,6 +2595,7 @@ pru_reorg_loop (rtx_insn *insns)
 	/* Case (1) or (2).  */
 	rtx_code_label *repeat_label;
 	rtx label_ref;
+	rtx loop_rtx;
 
 	/* Create a new label for the repeat insn.  */
 	repeat_label = gen_label_rtx ();
@@ -2616,23 +2605,16 @@ pru_reorg_loop (rtx_insn *insns)
 	   will utilize an internal for the PRU core LOOP register.  */
 	label_ref = gen_rtx_LABEL_REF (VOIDmode, repeat_label);
 	machine_mode loop_mode = GET_MODE (loop->begin->loop_count);
-	if (loop_mode == HImode)
-	  emit_insn_before (gen_pruloophi (loop->begin->loop_count, label_ref),
-			    loop->begin->insn);
-	else if (loop_mode == SImode)
-	  {
-	    rtx loop_rtx = gen_pruloopsi (loop->begin->loop_count, label_ref);
-	    emit_insn_before (loop_rtx, loop->begin->insn);
-	  }
-	else if (loop_mode == VOIDmode)
+	if (loop_mode == VOIDmode)
 	  {
 	    gcc_assert (CONST_INT_P (loop->begin->loop_count));
 	    gcc_assert (UBYTE_INT ( INTVAL (loop->begin->loop_count)));
-	    rtx loop_rtx = gen_pruloopsi (loop->begin->loop_count, label_ref);
-	    emit_insn_before (loop_rtx, loop->begin->insn);
+	    loop_mode = SImode;
 	  }
-	else
-	  gcc_unreachable ();
+	gcc_assert (loop_mode == HImode || loop_mode == SImode);
+	loop_rtx = gen_pruloop (loop_mode, loop->begin->loop_count, label_ref);
+	emit_insn_before (loop_rtx, loop->begin->insn);
+
 	delete_insn (loop->begin->insn);
 
 	/* Insert the repeat label before the first doloop_end.
