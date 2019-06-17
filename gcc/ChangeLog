@@ -1,3 +1,11 @@
+2019-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/62055
+	* config/i386/i386.md (*nabstf2_1): New insn pattern.
+	(*nabs<mode>2_1): Ditto.
+	(nabs sse-reg splitter): New splitter.
+	* config/i386/sse.md (*nabs<mode>2): New insn_and_split pattern.
+
 2019-06-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR bootstrap/90873.
