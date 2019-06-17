@@ -1,3 +1,11 @@
+2019-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+PR ada/80590
+
+	* exp_ch9.adb (Expand_N_Delay_Relative_Statement): Swap the two
+	conditions to avoid a unnecessary exception propagation in the default
+	case.
+
 2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (walk_nesting_tree): New static function.
