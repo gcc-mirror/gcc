@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <experimental/unordered_map>
+#include <string>
 #include <testsuite_hooks.h>
 
 auto is_odd_pair = [](const std::pair<const int, std::string>& p)

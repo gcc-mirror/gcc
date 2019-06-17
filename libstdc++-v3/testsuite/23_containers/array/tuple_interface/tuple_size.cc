@@ -26,6 +26,7 @@ test01()
 {
   using std::array;
   using std::tuple_size;
+  using std::size_t;
   // This relies on the fact that <utility> includes <type_traits>:
   using std::is_same;
 

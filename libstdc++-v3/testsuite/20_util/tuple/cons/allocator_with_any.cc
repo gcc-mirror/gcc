@@ -23,6 +23,7 @@
 // this test may begin to fail.
 
 #include <tuple>
+#include <memory>
 #include <experimental/any>
 #include <testsuite_hooks.h>
 
