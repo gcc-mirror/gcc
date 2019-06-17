@@ -576,11 +576,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { } // calling thread owns mutex
 
       ~scoped_lock()
-      {
-	std::apply([](_MutexTypes&... __m) {
-	  char __i[] __attribute__((__unused__)) = { (__m.unlock(), 0)... };
-	}, _M_devices);
-      }
+      { std::apply([](auto&... __m) { (__m.unlock(), ...); }, _M_devices); }
 
       scoped_lock(const scoped_lock&) = delete;
       scoped_lock& operator=(const scoped_lock&) = delete;

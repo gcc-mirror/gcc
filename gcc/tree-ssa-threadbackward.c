@@ -261,6 +261,11 @@ thread_jumps::profitable_jump_thread_path (basic_block bbi, tree name,
 	       gsi_next_nondebug (&gsi))
 	    {
 	      gimple *stmt = gsi_stmt (gsi);
+	      if (gimple_call_internal_p (stmt, IFN_UNIQUE))
+		{
+		  m_path.pop ();
+		  return NULL;
+		}
 	      /* Do not count empty statements and labels.  */
 	      if (gimple_code (stmt) != GIMPLE_NOP
 		  && !(gimple_code (stmt) == GIMPLE_ASSIGN

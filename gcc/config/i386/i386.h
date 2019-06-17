@@ -276,9 +276,8 @@ struct processor_costs {
   const int sse_store[5];	/* cost of storing SSE register
 				   in SImode, DImode and TImode.  */
   const int sse_unaligned_store[5];/* cost of unaligned store.  */
-  const int mmxsse_to_integer;	/* cost of moving mmxsse register to
-				   integer.  */
-  const int ssemmx_to_integer;  /* cost of moving integer to mmxsse register. */
+  const int sse_to_integer;	/* cost of moving SSE register to integer.  */
+  const int integer_to_sse;	/* cost of moving integer register to SSE. */
   const int gather_static, gather_per_elt; /* Cost of gather load is computed
 				   as static + per_item * nelts. */
   const int scatter_static, scatter_per_elt; /* Cost of gather store is
@@ -646,7 +645,7 @@ extern tree x86_mfence;
 /* Replace MACH-O, ifdefs by in-line tests, where possible. 
    (a) Macros defined in config/i386/darwin.h  */
 #define TARGET_MACHO 0
-#define TARGET_MACHO_BRANCH_ISLANDS 0
+#define TARGET_MACHO_PICSYM_STUBS 0
 #define MACHOPIC_ATT_STUB 0
 /* (b) Macros defined in config/darwin.h  */
 #define MACHO_DYNAMIC_NO_PIC_P 0

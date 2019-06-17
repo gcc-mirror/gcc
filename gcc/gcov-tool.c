@@ -188,7 +188,7 @@ static const struct option merge_options[] =
 
 /* Print merge usage and exit.  */
 
-static void
+static void ATTRIBUTE_NORETURN
 merge_usage (void)
 {
   fnotice (stderr, "Merge subcomand usage:");
@@ -284,7 +284,7 @@ static const struct option rewrite_options[] =
 
 /* Print profile rewrite usage and exit.  */
 
-static void
+static void ATTRIBUTE_NORETURN
 rewrite_usage (void)
 {
   fnotice (stderr, "Rewrite subcommand usage:");

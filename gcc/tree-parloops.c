@@ -3052,11 +3052,11 @@ oacc_entry_exit_ok_1 (bitmap in_loop_bbs, vec<basic_block> region_bbs,
 		{
 		  use_operand_p use_p;
 		  gimple *use_stmt;
+		  struct reduction_info *red;
 		  single_imm_use (lhs, &use_p, &use_stmt);
-		  if (gimple_code (use_stmt) == GIMPLE_PHI)
+		  if (gimple_code (use_stmt) == GIMPLE_PHI
+		      && (red = reduction_phi (reduction_list, use_stmt)))
 		    {
-		      struct reduction_info *red;
-		      red = reduction_phi (reduction_list, use_stmt);
 		      tree val = PHI_RESULT (red->keep_res);
 		      if (has_single_use (val))
 			{

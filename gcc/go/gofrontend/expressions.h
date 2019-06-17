@@ -3089,6 +3089,13 @@ class Array_index_expression : public Expression
   Bexpression*
   do_get_backend(Translate_context*);
 
+  int
+  do_inlining_cost() const
+  { return this->end_ != NULL ? 2 : 1; }
+
+  void
+  do_export(Export_function_body*) const;
+
   void
   do_dump_expression(Ast_dump_context*) const;
 
@@ -3160,6 +3167,13 @@ class String_index_expression : public Expression
 
   Bexpression*
   do_get_backend(Translate_context*);
+
+  int
+  do_inlining_cost() const
+  { return this->end_ != NULL ? 2 : 1; }
+
+  void
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -3246,6 +3260,13 @@ class Map_index_expression : public Expression
 
   Bexpression*
   do_get_backend(Translate_context*);
+
+  int
+  do_inlining_cost() const
+  { return 5; }
+
+  void
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;

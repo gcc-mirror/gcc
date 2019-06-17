@@ -59,4 +59,4 @@ void foo(int prec,
     bar (&info);
 }
 
-/* { dg-final { scan-tree-dump-times "MEM\\\[\\(struct printf_info \\*\\)&info \\+ \[0-9\]+B\\\] = {}" 1 "dse1" } } */
+/* { dg-final { scan-tree-dump-times "MEM <char\\\[\[0-9\]+]> \\\[\\(struct printf_info \\*\\)&info \\+ \[0-9\]+B\\\] = {}" 1 "dse1" } } */

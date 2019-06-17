@@ -278,7 +278,7 @@ IntRange IntRange::fromType(Type *type)
 
 IntRange IntRange::fromType(Type *type, bool isUnsigned)
 {
-    if (!type->isintegral())
+    if (!type->isintegral() || type->toBasetype()->ty == Tvector)
         return widest();
 
     uinteger_t mask = type->sizemask();
@@ -404,7 +404,7 @@ IntRange& IntRange::castDchar()
 
 IntRange& IntRange::cast(Type *type)
 {
-    if (!type->isintegral())
+    if (!type->isintegral() || type->toBasetype()->ty == Tvector)
         return *this;
     else if (!type->isunsigned())
         return castSigned(type->sizemask());
@@ -416,7 +416,7 @@ IntRange& IntRange::cast(Type *type)
 
 IntRange& IntRange::castUnsigned(Type *type)
 {
-    if (!type->isintegral())
+    if (!type->isintegral() || type->toBasetype()->ty == Tvector)
         return castUnsigned(UINT64_MAX);
     else if (type->toBasetype()->ty == Tdchar)
         return castDchar();

@@ -3226,6 +3226,19 @@ can_implement_as_sibling_call_p (tree exp,
   return true;
 }
 
+/* Update stack alignment when the parameter is passed in the stack
+   since the outgoing parameter requires extra alignment on the calling
+   function side. */
+
+static void
+update_stack_alignment_for_call (struct locate_and_pad_arg_data *locate)
+{
+  if (crtl->stack_alignment_needed < locate->boundary)
+    crtl->stack_alignment_needed = locate->boundary;
+  if (crtl->preferred_stack_boundary < locate->boundary)
+    crtl->preferred_stack_boundary = locate->boundary;
+}
+
 /* Generate all the code for a CALL_EXPR exp
    and return an rtx for its value.
    Store the value in TARGET (specified as an rtx) if convenient.
@@ -3703,6 +3716,12 @@ expand_call (tree exp, rtx target, int ignore)
   /* Ensure current function's preferred stack boundary is at least
      what we need.  Stack alignment may also increase preferred stack
      boundary.  */
+  for (i = 0; i < num_actuals; i++)
+    if (reg_parm_stack_space > 0
+	|| args[i].reg == 0
+	|| args[i].partial != 0
+	|| args[i].pass_on_stack)
+      update_stack_alignment_for_call (&args[i].locate);
   if (crtl->preferred_stack_boundary < preferred_stack_boundary)
     crtl->preferred_stack_boundary = preferred_stack_boundary;
   else
@@ -4960,6 +4979,12 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
       targetm.calls.function_arg_advance (args_so_far, mode, (tree) 0, true);
     }
+
+  for (int i = 0; i < nargs; i++)
+    if (reg_parm_stack_space > 0
+	|| argvec[i].reg == 0
+	|| argvec[i].partial != 0)
+      update_stack_alignment_for_call (&argvec[i].locate);
 
   /* If this machine requires an external definition for library
      functions, write one out.  */

@@ -1238,7 +1238,7 @@ Import::register_builtin_type(Gogo* gogo, const char* name, Builtin_code code)
 // characters that stop an identifier, without worrying about
 // characters that are permitted in an identifier.  That lets us skip
 // UTF-8 parsing.
-static const char * const identifier_stop = " \n;,()[]";
+static const char * const identifier_stop = " \n;:,()[]";
 
 // Read an identifier from the stream.
 
@@ -1612,6 +1612,19 @@ Import_function_body::read_type()
   return type;
 }
 
+// Return the next size to use for a vector mapping indexes to values.
+
+size_t
+Import_function_body::next_size(size_t have)
+{
+  if (have == 0)
+    return 8;
+  else if (have < 256)
+    return have * 2;
+  else
+    return have + 64;
+}
+
 // Record the index of a temporary statement.
 
 void
@@ -1619,16 +1632,11 @@ Import_function_body::record_temporary(Temporary_statement* temp,
 				       unsigned int idx)
 {
   size_t have = this->temporaries_.size();
-  if (static_cast<size_t>(idx) >= have)
+  while (static_cast<size_t>(idx) >= have)
     {
-      size_t want;
-      if (have == 0)
-	want = 8;
-      else if (have < 256)
-	want = have * 2;
-      else
-	want = have + 64;
+      size_t want = Import_function_body::next_size(have);
       this->temporaries_.resize(want, NULL);
+      have = want;
     }
   this->temporaries_[idx] = temp;
 }
@@ -1641,4 +1649,26 @@ Import_function_body::temporary_statement(unsigned int idx)
   if (static_cast<size_t>(idx) >= this->temporaries_.size())
     return NULL;
   return this->temporaries_[idx];
+}
+
+// Return an unnamed label given an index, defining the label if we
+// haven't seen it already.
+
+Unnamed_label*
+Import_function_body::unnamed_label(unsigned int idx, Location loc)
+{
+  size_t have = this->labels_.size();
+  while (static_cast<size_t>(idx) >= have)
+    {
+      size_t want = Import_function_body::next_size(have);
+      this->labels_.resize(want, NULL);
+      have = want;
+    }
+  Unnamed_label* label = this->labels_[idx];
+  if (label == NULL)
+    {
+      label = new Unnamed_label(loc);
+      this->labels_[idx] = label;
+    }
+  return label;
 }

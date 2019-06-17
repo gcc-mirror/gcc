@@ -471,6 +471,9 @@ void FuncDeclaration::semantic(Scope *sc)
         _scope = NULL;
     }
 
+    if (!sc || errors)
+        return;
+
     parent = sc->parent;
     Dsymbol *parent = toParent();
 
@@ -932,6 +935,7 @@ void FuncDeclaration::semantic(Scope *sc)
 
             case -2:
                 // can't determine because of forward references
+                errors = true;
                 return;
 
             default:
@@ -1049,6 +1053,7 @@ void FuncDeclaration::semantic(Scope *sc)
 
                 case -2:
                     // can't determine because of forward references
+                    errors = true;
                     return;
 
                 default:
@@ -1520,6 +1525,18 @@ void FuncDeclaration::semantic3(Scope *sc)
         {
             if (f->linkage == LINKd)
             {
+                // Variadic arguments depend on Typeinfo being defined
+                if (!global.params.useTypeInfo || !Type::dtypeinfo || !Type::typeinfotypelist)
+                {
+                    if (!global.params.useTypeInfo)
+                        error("D-style variadic functions cannot be used with -betterC");
+                    else if (!Type::typeinfotypelist)
+                        error("`object.TypeInfo_Tuple` could not be found, but is implicitly used in D-style variadic functions");
+                    else
+                        error("`object.TypeInfo` could not be found, but is implicitly used in D-style variadic functions");
+                    fatal();
+                }
+
                 // Declare _arguments[]
                 v_arguments = new VarDeclaration(Loc(), Type::typeinfotypelist->type, Id::_arguments_typeinfo, NULL);
                 v_arguments->storage_class |= STCtemp | STCparameter;

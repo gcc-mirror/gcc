@@ -48,6 +48,10 @@ extern bool arc_is_uncached_mem_p (rtx);
 extern bool gen_operands_ldd_std (rtx *operands, bool load, bool commute);
 extern bool arc_check_multi (rtx, bool);
 extern void arc_adjust_reg_alloc_order (void);
+extern bool arc_check_ior_const (HOST_WIDE_INT );
+extern void arc_split_ior (rtx *);
+extern bool arc_check_mov_const (HOST_WIDE_INT );
+extern bool arc_split_mov_const (rtx *);
 #endif /* RTX_CODE */
 
 extern unsigned int arc_compute_frame_size (int);

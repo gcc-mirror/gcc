@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "gomp-constants.h"
 #include "gimple.h"
+#include "fold-const.h"
 
 /* Disable warnings about quoting issues in the pp_xxx calls below
    that (intentionally) don't follow GCC diagnostic conventions.  */
@@ -466,6 +467,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       goto print_remap;
     case OMP_CLAUSE_IS_DEVICE_PTR:
       name = "is_device_ptr";
+      goto print_remap;
+    case OMP_CLAUSE_INCLUSIVE:
+      name = "inclusive";
+      goto print_remap;
+    case OMP_CLAUSE_EXCLUSIVE:
+      name = "exclusive";
       goto print_remap;
     case OMP_CLAUSE__LOOPTEMP_:
       name = "_looptemp_";
@@ -1372,6 +1379,129 @@ dump_omp_atomic_memory_order (pretty_printer *pp, enum omp_memory_order mo)
     }
 }
 
+/* Helper to dump a MEM_REF node.  */
+
+static void
+dump_mem_ref (pretty_printer *pp, tree node, int spc, dump_flags_t flags)
+{
+  if (flags & TDF_GIMPLE)
+    {
+      pp_string (pp, "__MEM <");
+      dump_generic_node (pp, TREE_TYPE (node),
+			 spc, flags | TDF_SLIM, false);
+      if (TYPE_ALIGN (TREE_TYPE (node))
+	  != TYPE_ALIGN (TYPE_MAIN_VARIANT (TREE_TYPE (node))))
+	{
+	  pp_string (pp, ", ");
+	  pp_decimal_int (pp, TYPE_ALIGN (TREE_TYPE (node)));
+	}
+      pp_greater (pp);
+      pp_string (pp, " (");
+      if (TREE_TYPE (TREE_OPERAND (node, 0))
+	  != TREE_TYPE (TREE_OPERAND (node, 1)))
+	{
+	  pp_left_paren (pp);
+	  dump_generic_node (pp, TREE_TYPE (TREE_OPERAND (node, 1)),
+			     spc, flags | TDF_SLIM, false);
+	  pp_right_paren (pp);
+	}
+      dump_generic_node (pp, TREE_OPERAND (node, 0),
+			 spc, flags | TDF_SLIM, false);
+      if (! integer_zerop (TREE_OPERAND (node, 1)))
+	{
+	  pp_string (pp, " + ");
+	  dump_generic_node (pp, TREE_OPERAND (node, 1),
+			     spc, flags | TDF_SLIM, false);
+	}
+      pp_right_paren (pp);
+    }
+  else if (integer_zerop (TREE_OPERAND (node, 1))
+	   /* Dump the types of INTEGER_CSTs explicitly, for we can't
+	      infer them and MEM_ATTR caching will share MEM_REFs
+	      with differently-typed op0s.  */
+	   && TREE_CODE (TREE_OPERAND (node, 0)) != INTEGER_CST
+	   /* Released SSA_NAMES have no TREE_TYPE.  */
+	   && TREE_TYPE (TREE_OPERAND (node, 0)) != NULL_TREE
+	   /* Same pointer types, but ignoring POINTER_TYPE vs.
+	      REFERENCE_TYPE.  */
+	   && (TREE_TYPE (TREE_TYPE (TREE_OPERAND (node, 0)))
+	       == TREE_TYPE (TREE_TYPE (TREE_OPERAND (node, 1))))
+	   && (TYPE_MODE (TREE_TYPE (TREE_OPERAND (node, 0)))
+	       == TYPE_MODE (TREE_TYPE (TREE_OPERAND (node, 1))))
+	   && (TYPE_REF_CAN_ALIAS_ALL (TREE_TYPE (TREE_OPERAND (node, 0)))
+	       == TYPE_REF_CAN_ALIAS_ALL (TREE_TYPE (TREE_OPERAND (node, 1))))
+	   /* Same value types ignoring qualifiers.  */
+	   && (TYPE_MAIN_VARIANT (TREE_TYPE (node))
+	       == TYPE_MAIN_VARIANT
+	       (TREE_TYPE (TREE_TYPE (TREE_OPERAND (node, 1)))))
+	   && (!(flags & TDF_ALIAS)
+	       || MR_DEPENDENCE_CLIQUE (node) == 0))
+    {
+      if (TREE_CODE (TREE_OPERAND (node, 0)) != ADDR_EXPR)
+	{
+	  /* Enclose pointers to arrays in parentheses.  */
+	  tree op0 = TREE_OPERAND (node, 0);
+	  tree op0type = TREE_TYPE (op0);
+	  if (POINTER_TYPE_P (op0type)
+	      && TREE_CODE (TREE_TYPE (op0type)) == ARRAY_TYPE)
+	    pp_left_paren (pp);
+	  pp_star (pp);
+	  dump_generic_node (pp, op0, spc, flags, false);
+	  if (POINTER_TYPE_P (op0type)
+	      && TREE_CODE (TREE_TYPE (op0type)) == ARRAY_TYPE)
+	    pp_right_paren (pp);
+	}
+      else
+	dump_generic_node (pp,
+			   TREE_OPERAND (TREE_OPERAND (node, 0), 0),
+			   spc, flags, false);
+    }
+  else
+    {
+      pp_string (pp, "MEM");
+
+      tree nodetype = TREE_TYPE (node);
+      tree op0 = TREE_OPERAND (node, 0);
+      tree op1 = TREE_OPERAND (node, 1);
+      tree op1type = TYPE_MAIN_VARIANT (TREE_TYPE (op1));
+
+      tree op0size = TYPE_SIZE (nodetype);
+      tree op1size = TYPE_SIZE (TREE_TYPE (op1type));
+
+      if (!op0size || !op1size
+	  || !operand_equal_p (op0size, op1size, 0))
+	{
+	  pp_string (pp, " <");
+	  /* If the size of the type of the operand is not the same
+	     as the size of the MEM_REF expression include the type
+	     of the latter similar to the TDF_GIMPLE output to make
+	     it clear how many bytes of memory are being accessed.  */
+	  dump_generic_node (pp, nodetype, spc, flags | TDF_SLIM, false);
+	  pp_string (pp, "> ");
+	}
+
+      pp_string (pp, "[(");
+      dump_generic_node (pp, op1type, spc, flags | TDF_SLIM, false);
+      pp_right_paren (pp);
+      dump_generic_node (pp, op0, spc, flags, false);
+      if (!integer_zerop (op1))
+      if (!integer_zerop (TREE_OPERAND (node, 1)))
+	{
+	  pp_string (pp, " + ");
+	  dump_generic_node (pp, op1, spc, flags, false);
+	}
+      if ((flags & TDF_ALIAS)
+	  && MR_DEPENDENCE_CLIQUE (node) != 0)
+	{
+	  pp_string (pp, " clique ");
+	  pp_unsigned_wide_integer (pp, MR_DEPENDENCE_CLIQUE (node));
+	  pp_string (pp, " base ");
+	  pp_unsigned_wide_integer (pp, MR_DEPENDENCE_BASE (node));
+	}
+      pp_right_bracket (pp);
+    }
+ }
+
 /* Dump the node NODE on the pretty_printer PP, SPC spaces of
    indent.  FLAGS specifies details to show in the dump (see TDF_* in
    dumpfile.h).  If IS_STMT is true, the object printed is considered
@@ -1630,109 +1760,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       break;
 
     case MEM_REF:
-      {
-	if (flags & TDF_GIMPLE)
-	  {
-	    pp_string (pp, "__MEM <");
-	    dump_generic_node (pp, TREE_TYPE (node),
-			       spc, flags | TDF_SLIM, false);
-	    if (TYPE_ALIGN (TREE_TYPE (node))
-		!= TYPE_ALIGN (TYPE_MAIN_VARIANT (TREE_TYPE (node))))
-	      {
-		pp_string (pp, ", ");
-		pp_decimal_int (pp, TYPE_ALIGN (TREE_TYPE (node)));
-	      }
-	    pp_greater (pp);
-	    pp_string (pp, " (");
-	    if (TREE_TYPE (TREE_OPERAND (node, 0))
-		!= TREE_TYPE (TREE_OPERAND (node, 1)))
-	      {
-		pp_left_paren (pp);
-		dump_generic_node (pp, TREE_TYPE (TREE_OPERAND (node, 1)),
-				   spc, flags | TDF_SLIM, false);
-		pp_right_paren (pp);
-	      }
-	    dump_generic_node (pp, TREE_OPERAND (node, 0),
-			       spc, flags | TDF_SLIM, false);
-	    if (! integer_zerop (TREE_OPERAND (node, 1)))
-	      {
-		pp_string (pp, " + ");
-		dump_generic_node (pp, TREE_OPERAND (node, 1),
-				   spc, flags | TDF_SLIM, false);
-	      }
-	    pp_right_paren (pp);
-	  }
-	else if (integer_zerop (TREE_OPERAND (node, 1))
-	    /* Dump the types of INTEGER_CSTs explicitly, for we can't
-	       infer them and MEM_ATTR caching will share MEM_REFs
-	       with differently-typed op0s.  */
-	    && TREE_CODE (TREE_OPERAND (node, 0)) != INTEGER_CST
-	    /* Released SSA_NAMES have no TREE_TYPE.  */
-	    && TREE_TYPE (TREE_OPERAND (node, 0)) != NULL_TREE
-	    /* Same pointer types, but ignoring POINTER_TYPE vs.
-	       REFERENCE_TYPE.  */
-	    && (TREE_TYPE (TREE_TYPE (TREE_OPERAND (node, 0)))
-		== TREE_TYPE (TREE_TYPE (TREE_OPERAND (node, 1))))
-	    && (TYPE_MODE (TREE_TYPE (TREE_OPERAND (node, 0)))
-		== TYPE_MODE (TREE_TYPE (TREE_OPERAND (node, 1))))
-	    && (TYPE_REF_CAN_ALIAS_ALL (TREE_TYPE (TREE_OPERAND (node, 0)))
-		== TYPE_REF_CAN_ALIAS_ALL (TREE_TYPE (TREE_OPERAND (node, 1))))
-	    /* Same value types ignoring qualifiers.  */
-	    && (TYPE_MAIN_VARIANT (TREE_TYPE (node))
-		== TYPE_MAIN_VARIANT
-		    (TREE_TYPE (TREE_TYPE (TREE_OPERAND (node, 1)))))
-	    && (!(flags & TDF_ALIAS)
-		|| MR_DEPENDENCE_CLIQUE (node) == 0))
-	  {
-	    if (TREE_CODE (TREE_OPERAND (node, 0)) != ADDR_EXPR)
-	      {
-		/* Enclose pointers to arrays in parentheses.  */
-		tree op0 = TREE_OPERAND (node, 0);
-		tree op0type = TREE_TYPE (op0);
-		if (POINTER_TYPE_P (op0type)
-		    && TREE_CODE (TREE_TYPE (op0type)) == ARRAY_TYPE)
-		  pp_left_paren (pp);
-		pp_star (pp);
-		dump_generic_node (pp, op0, spc, flags, false);
-		if (POINTER_TYPE_P (op0type)
-		    && TREE_CODE (TREE_TYPE (op0type)) == ARRAY_TYPE)
-		  pp_right_paren (pp);
-	      }
-	    else
-	      dump_generic_node (pp,
-				 TREE_OPERAND (TREE_OPERAND (node, 0), 0),
-				 spc, flags, false);
-	  }
-	else
-	  {
-	    tree ptype;
-
-	    pp_string (pp, "MEM[");
-	    pp_left_paren (pp);
-	    ptype = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (node, 1)));
-	    dump_generic_node (pp, ptype,
-			       spc, flags | TDF_SLIM, false);
-	    pp_right_paren (pp);
-	    dump_generic_node (pp, TREE_OPERAND (node, 0),
-			       spc, flags, false);
-	    if (!integer_zerop (TREE_OPERAND (node, 1)))
-	      {
-		pp_string (pp, " + ");
-		dump_generic_node (pp, TREE_OPERAND (node, 1),
-				   spc, flags, false);
-	      }
-	    if ((flags & TDF_ALIAS)
-		&& MR_DEPENDENCE_CLIQUE (node) != 0)
-	      {
-		pp_string (pp, " clique ");
-		pp_unsigned_wide_integer (pp, MR_DEPENDENCE_CLIQUE (node));
-		pp_string (pp, " base ");
-		pp_unsigned_wide_integer (pp, MR_DEPENDENCE_BASE (node));
-	      }
-	    pp_right_bracket (pp);
-	  }
-	break;
-      }
+      dump_mem_ref (pp, node, spc, flags);
+      break;
 
     case TARGET_MEM_REF:
       {
@@ -3306,6 +3335,14 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case OMP_SECTION:
       pp_string (pp, "#pragma omp section");
+      goto dump_omp_body;
+
+    case OMP_SCAN:
+      if (OMP_SCAN_CLAUSES (node))
+	{
+	  pp_string (pp, "#pragma omp scan");
+	  dump_omp_clauses (pp, OMP_SCAN_CLAUSES (node), spc, flags);
+	}
       goto dump_omp_body;
 
     case OMP_MASTER:

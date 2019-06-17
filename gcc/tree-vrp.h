@@ -97,6 +97,9 @@ protected:
   friend void gt_ggc_mx (value_range_base *&);
   friend void gt_pch_nx (value_range_base &);
   friend void gt_pch_nx (value_range_base *, gt_pointer_operator, void *);
+
+private:
+  int value_inside_range (tree) const;
 };
 
 /* Note value_range cannot currently be used with GC memory, only
@@ -254,12 +257,10 @@ struct assert_info
 extern void register_edge_assert_for (tree, edge, enum tree_code,
 				      tree, tree, vec<assert_info> &);
 extern bool stmt_interesting_for_vrp (gimple *);
-extern bool range_includes_p (const value_range_base *, HOST_WIDE_INT);
 extern bool infer_value_range (gimple *, tree, tree_code *, tree *);
 
 extern bool vrp_bitmap_equal_p (const_bitmap, const_bitmap);
 
-extern tree value_range_constant_singleton (const value_range_base *);
 extern bool range_int_cst_p (const value_range_base *);
 extern bool range_int_cst_singleton_p (const value_range_base *);
 
@@ -268,7 +269,6 @@ extern int compare_values_warnv (tree, tree, bool *);
 extern int operand_less_p (tree, tree);
 extern bool vrp_val_is_min (const_tree);
 extern bool vrp_val_is_max (const_tree);
-extern int value_inside_range (tree, tree, tree);
 
 extern tree vrp_val_min (const_tree);
 extern tree vrp_val_max (const_tree);
@@ -301,7 +301,13 @@ extern value_range_kind determine_value_range (tree, wide_int *, wide_int *);
 inline bool
 range_includes_zero_p (const value_range_base *vr)
 {
-  return range_includes_p (vr, 0);
+  if (vr->undefined_p ())
+    return false;
+
+  if (vr->varying_p ())
+    return true;
+
+  return vr->may_contain_p (build_zero_cst (vr->type ()));
 }
 
 #endif /* GCC_TREE_VRP_H */

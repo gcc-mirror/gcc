@@ -745,19 +745,19 @@
 
 ;; Calls
 
-(define_insn "call_insn"
+(define_insn "call_insn_<mode>"
   [(match_parallel 2 "call_operation"
-    [(call (mem:QI (match_operand 0 "call_insn_operand" "Rs"))
+    [(call (mem:QI (match_operand:P 0 "call_insn_operand" "Rs"))
 	   (match_operand 1))])]
   ""
 {
   return nvptx_output_call_insn (insn, NULL_RTX, operands[0]);
 })
 
-(define_insn "call_value_insn"
+(define_insn "call_value_insn_<mode>"
   [(match_parallel 3 "call_operation"
     [(set (match_operand 0 "nvptx_register_operand" "=R")
-	  (call (mem:QI (match_operand 1 "call_insn_operand" "Rs"))
+	  (call (mem:QI (match_operand:P 1 "call_insn_operand" "Rs"))
 		(match_operand 2)))])]
   ""
 {
@@ -1513,7 +1513,7 @@
 
 (define_insn "nvptx_red_partition"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=R")
-	(unspec_volatile [(match_operand:DI 1 "const_int_operand")]
+	(unspec_volatile:DI [(match_operand:DI 1 "const_int_operand")]
 	 UNSPECV_RED_PART))]
   ""
   {

@@ -1,3 +1,30 @@
+2019-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90559
+	* d-target.cc (Target::_init): Reduce max static data size to INT_MAX.
+
+2019-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90651
+	* typeinfo.cc (object_module): New variable.
+	(make_frontend_typeinfo): Update signature.  Set temporary on
+	generated TypeInfo classes.
+	(create_tinfo_types): Set object_module.  Move generation of front-end
+	typeinfo into ...
+	(create_frontend_tinfo_types): ... New function.
+	(layout_typeinfo): Call create_frontend_tinfo_types.
+	(layout_classinfo): Likewise.
+	(layout_cpp_typeinfo): Likewise.
+	(create_typeinfo): Likewise.
+
+2019-06-11  Richard Biener  <rguenthe@suse.de>
+
+	d/90778
+	* toir.cc (pop_label): Only queue labels in a vector.
+	(cmp_labels): Label decl comparator.
+	(pop_binding_level): Pop labels in DECL_UID order to avoid
+	debug info differences.
+
 2019-05-24  Nathan Sidwell  <nathan@acm.org>
 
 	* types.cc (fixup_anonymous_offset): Use IDENTIFIER_ANON_P.

@@ -61,8 +61,8 @@
     }							\
   while (0)
 
-/* Generate branch islands stubs if this is true.  */
-extern int darwin_emit_branch_islands;
+/* Generate pic symbol stubs if this is true.  */
+extern int darwin_emit_picsym_stub;
 
 #define SUBTARGET_OVERRIDE_OPTIONS darwin_rs6000_override_options ()
 

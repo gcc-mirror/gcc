@@ -4223,7 +4223,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 
     case 'z':
       if (GET_CODE (x) == CONST_INT)
-	fprintf (file, "%d",exact_log2(INTVAL (x)) );
+	fprintf (file, "%d",exact_log2 (INTVAL (x) & 0xffffffff));
       else
 	output_operand_lossage ("invalid operand to %%z code");
 
@@ -5560,44 +5560,39 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case CONST_INT:
       {
 	bool nolimm = false; /* Can we do without long immediate?  */
-	bool fast = false; /* Is the result available immediately?  */
-	bool condexec = false; /* Does this allow conditiobnal execution?  */
-	bool compact = false; /* Is a 16 bit opcode available?  */
-	/* CONDEXEC also implies that we can have an unconditional
-	   3-address operation.  */
 
-	nolimm = compact = condexec = false;
+	nolimm = false;
 	if (UNSIGNED_INT6 (INTVAL (x)))
-	  nolimm = condexec = compact = true;
+	  nolimm = true;
 	else
 	  {
-	    if (SMALL_INT (INTVAL (x)))
-	      nolimm = fast = true;
 	    switch (outer_code)
 	      {
 	      case AND: /* bclr, bmsk, ext[bw] */
 		if (satisfies_constraint_Ccp (x) /* bclr */
 		    || satisfies_constraint_C1p (x) /* bmsk */)
-		  nolimm = fast = condexec = compact = true;
+		  nolimm = true;
 		break;
 	      case IOR: /* bset */
 		if (satisfies_constraint_C0p (x)) /* bset */
-		  nolimm = fast = condexec = compact = true;
+		  nolimm = true;
 		break;
 	      case XOR:
 		if (satisfies_constraint_C0p (x)) /* bxor */
-		  nolimm = fast = condexec = true;
+		  nolimm = true;
 		break;
 	      case SET:
-		if (satisfies_constraint_Crr (x)) /* ror b,u6 */
+		if (UNSIGNED_INT8 (INTVAL (x)))
+		  nolimm = true;
+		if (satisfies_constraint_Chi (x))
+		  nolimm = true;
+		if (satisfies_constraint_Clo (x))
 		  nolimm = true;
 	      default:
 		break;
 	      }
 	  }
-	/* FIXME: Add target options to attach a small cost if
-	   condexec / compact is not true.  */
-	if (nolimm)
+	if (nolimm && !speed)
 	  {
 	    *total = 0;
 	    return true;
@@ -5610,7 +5605,7 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
-      *total = COSTS_N_INSNS (1);
+      *total = speed ? COSTS_N_INSNS (1) : COSTS_N_INSNS (4);
       return true;
 
     case CONST_DOUBLE:
@@ -5636,16 +5631,10 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case LSHIFTRT:
       if (TARGET_BARREL_SHIFTER)
 	{
-	  /* If we want to shift a constant, we need a LIMM.  */
-	  /* ??? when the optimizers want to know if a constant should be
-	     hoisted, they ask for the cost of the constant.  OUTER_CODE is
-	     insufficient context for shifts since we don't know which operand
-	     we are looking at.  */
 	  if (CONSTANT_P (XEXP (x, 0)))
 	    {
-	      *total += (COSTS_N_INSNS (2)
-			 + rtx_cost (XEXP (x, 1), mode, (enum rtx_code) code,
-				     0, speed));
+	      *total += rtx_cost (XEXP (x, 1), mode, (enum rtx_code) code,
+				  0, speed);
 	      return true;
 	    }
 	  *total = COSTS_N_INSNS (1);
@@ -5665,7 +5654,13 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
     case DIV:
     case UDIV:
-      if (speed)
+      if (GET_MODE_CLASS (mode) == MODE_FLOAT
+	  && (TARGET_FP_SP_SQRT || TARGET_FP_DP_SQRT))
+	*total = COSTS_N_INSNS(1);
+      else if (GET_MODE_CLASS (mode) == MODE_INT
+	       && TARGET_DIVREM)
+	*total = COSTS_N_INSNS(1);
+      else if (speed)
 	*total = COSTS_N_INSNS(30);
       else
 	*total = COSTS_N_INSNS(1);
@@ -5678,19 +5673,28 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	*total= arc_multcost;
       /* We do not want synth_mult sequences when optimizing
 	 for size.  */
-      else if (TARGET_MUL64_SET || TARGET_ARC700_MPY)
+      else if (TARGET_ANY_MPY)
 	*total = COSTS_N_INSNS (1);
       else
 	*total = COSTS_N_INSNS (2);
       return false;
+
     case PLUS:
+      if (outer_code == MEM && CONST_INT_P (XEXP (x, 1))
+	  && RTX_OK_FOR_OFFSET_P (mode, XEXP (x, 1)))
+	{
+	  *total = 0;
+	  return true;
+	}
+
       if ((GET_CODE (XEXP (x, 0)) == ASHIFT
 	   && _1_2_3_operand (XEXP (XEXP (x, 0), 1), VOIDmode))
           || (GET_CODE (XEXP (x, 0)) == MULT
               && _2_4_8_operand (XEXP (XEXP (x, 0), 1), VOIDmode)))
 	{
-	  *total += (rtx_cost (XEXP (x, 1), mode, PLUS, 0, speed)
-		     + rtx_cost (XEXP (XEXP (x, 0), 0), mode, PLUS, 1, speed));
+	  if (CONSTANT_P (XEXP (x, 1)) && !speed)
+	    *total += COSTS_N_INSNS (4);
+	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode, PLUS, 1, speed);
 	  return true;
 	}
       return false;
@@ -5700,11 +5704,13 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
           || (GET_CODE (XEXP (x, 1)) == MULT
               && _2_4_8_operand (XEXP (XEXP (x, 1), 1), VOIDmode)))
 	{
-	  *total += (rtx_cost (XEXP (x, 0), mode, PLUS, 0, speed)
-		     + rtx_cost (XEXP (XEXP (x, 1), 0), mode, PLUS, 1, speed));
+	  if (CONSTANT_P (XEXP (x, 0)) && !speed)
+	    *total += COSTS_N_INSNS (4);
+	  *total += rtx_cost (XEXP (XEXP (x, 1), 0), mode, PLUS, 1, speed);
 	  return true;
 	}
       return false;
+
     case COMPARE:
       {
 	rtx op0 = XEXP (x, 0);
@@ -9079,31 +9085,6 @@ prepare_move_operands (rtx *operands, machine_mode mode)
 	  MEM_COPY_ATTRIBUTES (pat, operands[0]);
 	  operands[0] = pat;
 	}
-      if (!cse_not_expected)
-	{
-	  rtx pat = XEXP (operands[0], 0);
-
-	  pat = arc_legitimize_address_0 (pat, pat, mode);
-	  if (pat)
-	    {
-	      pat = change_address (operands[0], mode, pat);
-	      MEM_COPY_ATTRIBUTES (pat, operands[0]);
-	      operands[0] = pat;
-	    }
-	}
-    }
-
-  if (MEM_P (operands[1]) && !cse_not_expected)
-    {
-      rtx pat = XEXP (operands[1], 0);
-
-      pat = arc_legitimize_address_0 (pat, pat, mode);
-      if (pat)
-	{
-	  pat = change_address (operands[1], mode, pat);
-	  MEM_COPY_ATTRIBUTES (pat, operands[1]);
-	  operands[1] = pat;
-	}
     }
 
   return false;
@@ -11447,6 +11428,198 @@ arc_memory_move_cost (machine_mode mode,
 
   return (2 * GET_MODE_SIZE (mode));
 }
+
+/* Split an OR instruction into multiple BSET/OR instructions in a
+   attempt to avoid long immediate constants.  The next strategies are
+   employed when destination is 'q' reg.
+
+   1. if there are up to three bits set in the mask, a succession of
+   three bset instruction will be emitted:
+   OR rA, rB, mask ->
+   BSET(_S) rA,rB,mask1/BSET_S rA,rA,mask2/BSET_S rA,rA,mask3
+
+   2. if the lower 6 bits of the mask is set and there is only one
+   bit set in the upper remaining bits then we will emit one bset and
+   one OR instruction:
+   OR rA, rB, mask -> OR rA,rB,mask1/BSET_S rA,mask2
+
+   3. otherwise an OR with limm will be emmitted.  */
+
+void
+arc_split_ior (rtx *operands)
+{
+  unsigned HOST_WIDE_INT mask, maskx;
+  rtx op1 = operands[1];
+
+  gcc_assert (CONST_INT_P (operands[2]));
+  mask =  INTVAL (operands[2]) & 0xffffffff;
+
+  if (__builtin_popcount (mask) > 3 || (mask & 0x3f))
+    {
+      maskx = mask & 0x3f;
+      emit_insn (gen_rtx_SET (operands[0],
+			      gen_rtx_IOR (SImode, op1, GEN_INT (maskx))));
+      op1 = operands[0];
+      mask &= ~maskx;
+    }
+
+  switch (__builtin_popcount (mask))
+    {
+    case 3:
+      maskx = 1 << (__builtin_ffs (mask) - 1);
+      emit_insn (gen_rtx_SET (operands[0],
+			      gen_rtx_IOR (SImode, op1, GEN_INT (maskx))));
+      mask &= ~maskx;
+      op1 = operands[0];
+      /* FALLTHRU */
+    case 2:
+      maskx = 1 << (__builtin_ffs (mask) - 1);
+      emit_insn (gen_rtx_SET (operands[0],
+			      gen_rtx_IOR (SImode, op1, GEN_INT (maskx))));
+      mask &= ~maskx;
+      op1 = operands[0];
+      /* FALLTHRU */
+    case 1:
+      maskx = 1 << (__builtin_ffs (mask) - 1);
+      emit_insn (gen_rtx_SET (operands[0],
+			      gen_rtx_IOR (SImode, op1, GEN_INT (maskx))));
+      break;
+    default:
+      break;
+    }
+}
+
+/* Helper to check C0x constraint.  */
+
+bool
+arc_check_ior_const (HOST_WIDE_INT ival)
+{
+  unsigned int mask = (unsigned int) (ival & 0xffffffff);
+  if (__builtin_popcount (mask) <= 3)
+    return true;
+  if (__builtin_popcount (mask & ~0x3f) <= 1)
+    return true;
+  return false;
+}
+
+/* Split a mov with long immediate instruction into smaller, size
+   friendly instructions.  */
+
+bool
+arc_split_mov_const (rtx *operands)
+{
+  unsigned HOST_WIDE_INT ival;
+  HOST_WIDE_INT shimm;
+  machine_mode mode = GET_MODE (operands[0]);
+
+  /* Manage a constant.  */
+  gcc_assert (CONST_INT_P (operands[1]));
+  ival = INTVAL (operands[1]) & 0xffffffff;
+
+  if (SIGNED_INT12 (ival))
+    return false;
+
+  /* 1. Check if we can just rotate limm by 8 but using ROR8.  */
+  if (TARGET_BARREL_SHIFTER && TARGET_V2
+      && ((ival & ~0x3f000000) == 0))
+    {
+      shimm = (ival >> 24) & 0x3f;
+      emit_insn (gen_rtx_SET (operands[0],
+			      gen_rtx_ROTATERT (mode, GEN_INT (shimm),
+						GEN_INT (8))));
+      return true;
+    }
+  /* 2. Check if we can just shift by 8 to fit into the u6 of LSL8.  */
+  if (TARGET_BARREL_SHIFTER && TARGET_V2
+      && ((ival & ~0x3f00) == 0))
+    {
+      shimm = (ival >> 8) & 0x3f;
+      emit_insn (gen_rtx_SET (operands[0],
+			      gen_rtx_ASHIFT (mode, GEN_INT (shimm),
+					      GEN_INT (8))));
+      return true;
+    }
+
+  /* 3. Check if we can just shift by 16 to fit into the u6 of LSL16.  */
+  if (TARGET_BARREL_SHIFTER && TARGET_V2
+      && ((ival & ~0x3f0000) == 0))
+    {
+      shimm = (ival >> 16) & 0x3f;
+      emit_insn (gen_rtx_SET (operands[0],
+			      gen_rtx_ASHIFT (mode, GEN_INT (shimm),
+					      GEN_INT (16))));
+      return true;
+    }
+
+  /* 4. Check if we can do something like mov_s h,u8 / asl_s ra,h,#nb.  */
+  if (((ival >> (__builtin_ffs (ival) - 1)) & 0xffffff00) == 0
+      && TARGET_BARREL_SHIFTER)
+    {
+      HOST_WIDE_INT shift = __builtin_ffs (ival);
+      shimm = (ival >> (shift - 1)) & 0xff;
+      emit_insn (gen_rtx_SET (operands[0], GEN_INT (shimm)));
+      emit_insn (gen_rtx_SET (operands[0],
+			      gen_rtx_ASHIFT (mode, operands[0],
+					      GEN_INT (shift - 1))));
+      return true;
+    }
+
+  /* 5. Check if we can just rotate the limm, useful when no barrel
+     shifter is present.  */
+  if ((ival & ~0x8000001f) == 0)
+    {
+      shimm = (ival * 2 + 1) & 0x3f;
+      emit_insn (gen_rtx_SET (operands[0],
+			      gen_rtx_ROTATERT (mode, GEN_INT (shimm),
+						const1_rtx)));
+      return true;
+    }
+
+  /* 6. Check if we can do something with bmask.  */
+  if (IS_POWEROF2_P (ival + 1))
+    {
+      emit_insn (gen_rtx_SET (operands[0], constm1_rtx));
+      emit_insn (gen_rtx_SET (operands[0],
+			      gen_rtx_AND (mode, operands[0],
+					   GEN_INT (ival))));
+      return true;
+    }
+
+  return false;
+}
+
+/* Helper to check Cax constraint.  */
+
+bool
+arc_check_mov_const (HOST_WIDE_INT ival)
+{
+  ival = ival & 0xffffffff;
+
+  if ((ival & ~0x8000001f) == 0)
+    return true;
+
+  if (IS_POWEROF2_P (ival + 1))
+    return true;
+
+  /* The next rules requires a barrel shifter.  */
+  if (!TARGET_BARREL_SHIFTER)
+    return false;
+
+  if (((ival >> (__builtin_ffs (ival) - 1)) & 0xffffff00) == 0)
+    return true;
+
+  if ((ival & ~0x3f00) == 0)
+    return true;
+
+  if ((ival & ~0x3f0000) == 0)
+    return true;
+
+  if ((ival & ~0x3f000000) == 0)
+    return true;
+
+  return false;
+}
+
 
 #undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
 #define TARGET_USE_ANCHORS_FOR_SYMBOL_P arc_use_anchors_for_symbol_p

@@ -1494,7 +1494,12 @@ class Typed_identifier
   // Set the escape note.
   void
   set_note(const std::string& note)
-  { this->note_ = new std::string(note); }
+  {
+    if (this->note_ != NULL)
+      go_assert(*this->note_ == note);
+    else
+      this->note_ = new std::string(note);
+  }
 
  private:
   // Identifier name.

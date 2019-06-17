@@ -1475,7 +1475,7 @@ nvptx_output_softstack_switch (FILE *file, bool entering,
       fputs (";\n", file);
       if (!CONST_INT_P (size) || UINTVAL (align) > GET_MODE_SIZE (DImode))
 	fprintf (file,
-		 "\t\tand.u%d %%r%d, %%r%d, -" HOST_WIDE_INT_PRINT_DEC ";\n",
+		 "\t\tand.b%d %%r%d, %%r%d, -" HOST_WIDE_INT_PRINT_DEC ";\n",
 		 bits, regno, regno, UINTVAL (align));
     }
   if (cfun->machine->has_softstack)
@@ -3258,6 +3258,7 @@ nvptx_find_par (bb_insn_map_t *map, parallel *par, basic_block block)
 	    unsigned mask = UINTVAL (XVECEXP (PATTERN (end), 0, 0));
 
 	    gcc_assert (par->mask == mask);
+	    gcc_assert (par->join_block == NULL);
 	    par->join_block = block;
 	    par->join_insn = end;
 	    if (nvptx_needs_shared_bcast (mask))
@@ -3551,7 +3552,7 @@ nvptx_sese_number (int n, int p, int dir, basic_block b,
       size_t offset = (dir > 0 ? offsetof (edge_def, dest)
 		       : offsetof (edge_def, src));
       edge e;
-      edge_iterator (ei);
+      edge_iterator ei;
 
       FOR_EACH_EDGE (e, ei, edges)
 	{
@@ -3574,7 +3575,7 @@ nvptx_sese_pseudo (basic_block me, bb_sese *sese, int depth, int dir,
 		   vec<edge, va_gc> *edges, size_t offset)
 {
   edge e;
-  edge_iterator (ei);
+  edge_iterator ei;
   int hi_back = depth;
   pseudo_node_t node_back (0, depth);
   int hi_child = depth;
@@ -4402,8 +4403,10 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
       {
 	rtx_code_label *label = gen_label_rtx ();
 	rtx pred = cfun->machine->axis_predicate[mode - GOMP_DIM_WORKER];
-	rtx_insn **mode_jump = mode == GOMP_DIM_VECTOR ? &vector_jump : &worker_jump;
-	rtx_insn **mode_label = mode == GOMP_DIM_VECTOR ? &vector_label : &worker_label;
+	rtx_insn **mode_jump
+	  = mode == GOMP_DIM_VECTOR ? &vector_jump : &worker_jump;
+	rtx_insn **mode_label
+	  = mode == GOMP_DIM_VECTOR ? &vector_label : &worker_label;
 
 	if (!pred)
 	  {
@@ -4437,10 +4440,7 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 	      emit_insn_after (gen_exit (), label_insn);
 	  }
 
-	if (mode == GOMP_DIM_VECTOR)
-	  vector_label = label_insn;
-	else
-	  worker_label = label_insn;
+	*mode_label = label_insn;
       }
 
   /* Now deal with propagating the branch condition.  */

@@ -1108,6 +1108,25 @@ gimple_build_omp_return (bool wait_p)
 }
 
 
+/* Build a GIMPLE_OMP_SCAN statement.
+
+   BODY is the sequence of statements to be executed by the scan
+   construct.
+   CLAUSES are any of the construct's clauses.  */
+
+gomp_scan *
+gimple_build_omp_scan (gimple_seq body, tree clauses)
+{
+  gomp_scan *p
+    = as_a <gomp_scan *> (gimple_alloc (GIMPLE_OMP_SCAN, 0));
+  gimple_omp_scan_set_clauses (p, clauses);
+  if (body)
+    gimple_omp_set_body (p, body);
+
+  return p;
+}
+
+
 /* Build a GIMPLE_OMP_SECTIONS statement.
 
    BODY is a sequence of section statements.
@@ -1941,6 +1960,12 @@ gimple_copy (gimple *stmt)
 	  t = unshare_expr (gimple_omp_ordered_clauses
 				(as_a <gomp_ordered *> (stmt)));
 	  gimple_omp_ordered_set_clauses (as_a <gomp_ordered *> (copy), t);
+	  goto copy_omp_body;
+
+	case GIMPLE_OMP_SCAN:
+	  t = gimple_omp_scan_clauses (as_a <gomp_scan *> (stmt));
+	  t = unshare_expr (t);
+	  gimple_omp_scan_set_clauses (as_a <gomp_scan *> (copy), t);
 	  goto copy_omp_body;
 
 	case GIMPLE_OMP_TASKGROUP:

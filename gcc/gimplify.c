@@ -65,6 +65,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "dbgcnt.h"
+#include "omp-offload.h"
+#include "context.h"
 
 /* Hash set of poisoned variables in a bind expr.  */
 static hash_set<tree> *asan_poisoned_variables = NULL;
@@ -117,6 +119,9 @@ enum gimplify_omp_var_data
   GOVD_LASTPRIVATE_CONDITIONAL = 0x800000,
 
   GOVD_CONDTEMP = 0x1000000,
+
+  /* Flag for GOVD_REDUCTION: inscan seen in {in,ex}clusive clause.  */
+  GOVD_REDUCTION_INSCAN = 0x2000000,
 
   GOVD_DATA_SHARE_CLASS = (GOVD_SHARED | GOVD_PRIVATE | GOVD_FIRSTPRIVATE
 			   | GOVD_LASTPRIVATE | GOVD_REDUCTION | GOVD_LINEAR
@@ -1320,17 +1325,45 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 	  struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
 
 	  /* Mark variable as local.  */
-	  if (ctx && ctx->region_type != ORT_NONE && !DECL_EXTERNAL (t)
-	      && (! DECL_SEEN_IN_BIND_EXPR_P (t)
-		  || splay_tree_lookup (ctx->variables,
-					(splay_tree_key) t) == NULL))
+	  if (ctx && ctx->region_type != ORT_NONE && !DECL_EXTERNAL (t))
 	    {
-	      if (ctx->region_type == ORT_SIMD
-		  && TREE_ADDRESSABLE (t)
-		  && !TREE_STATIC (t))
-		omp_add_variable (ctx, t, GOVD_PRIVATE | GOVD_SEEN);
-	      else
-		omp_add_variable (ctx, t, GOVD_LOCAL | GOVD_SEEN);
+	      if (! DECL_SEEN_IN_BIND_EXPR_P (t)
+		  || splay_tree_lookup (ctx->variables,
+					(splay_tree_key) t) == NULL)
+		{
+		  if (ctx->region_type == ORT_SIMD
+		      && TREE_ADDRESSABLE (t)
+		      && !TREE_STATIC (t))
+		    omp_add_variable (ctx, t, GOVD_PRIVATE | GOVD_SEEN);
+		  else
+		    omp_add_variable (ctx, t, GOVD_LOCAL | GOVD_SEEN);
+		}
+	      /* Static locals inside of target construct or offloaded
+		 routines need to be "omp declare target".  */
+	      if (TREE_STATIC (t))
+		for (; ctx; ctx = ctx->outer_context)
+		  if ((ctx->region_type & ORT_TARGET) != 0)
+		    {
+		      if (!lookup_attribute ("omp declare target",
+					     DECL_ATTRIBUTES (t)))
+			{
+			  tree id = get_identifier ("omp declare target");
+			  DECL_ATTRIBUTES (t)
+			    = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+			  varpool_node *node = varpool_node::get (t);
+			  if (node)
+			    {
+			      node->offloadable = 1;
+			      if (ENABLE_OFFLOADING && !DECL_EXTERNAL (t))
+				{
+				  g->have_offload = true;
+				  if (!in_lto_p)
+				    vec_safe_push (offload_vars, t);
+				}
+			    }
+			}
+		      break;
+		    }
 	    }
 
 	  DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
@@ -5492,6 +5525,7 @@ is_gimple_stmt (tree t)
     case OMP_SIMD:
     case OMP_DISTRIBUTE:
     case OACC_LOOP:
+    case OMP_SCAN:
     case OMP_SECTIONS:
     case OMP_SECTION:
     case OMP_SINGLE:
@@ -8119,13 +8153,13 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      case OMP_DISTRIBUTE:
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "conditional %<lastprivate%> clause on "
-			  "%<distribute%> construct");
+			  "%qs construct", "distribute");
 		OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c) = 0;
 		break;
 	      case OMP_TASKLOOP:
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "conditional %<lastprivate%> clause on "
-			  "%<taskloop%> construct");
+			  "%qs construct", "taskloop");
 		OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c) = 0;
 		break;
 	      default:
@@ -8242,6 +8276,36 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  OMP_CLAUSE_REDUCTION_TASK (c) = 0;
 		}
 	    }
+	  if (OMP_CLAUSE_REDUCTION_INSCAN (c))
+	    switch (code)
+	      {
+	      case OMP_SECTIONS:
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%<inscan%> %<reduction%> clause on "
+			  "%qs construct", "sections");
+		OMP_CLAUSE_REDUCTION_INSCAN (c) = 0;
+		break;
+	      case OMP_PARALLEL:
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%<inscan%> %<reduction%> clause on "
+			  "%qs construct", "parallel");
+		OMP_CLAUSE_REDUCTION_INSCAN (c) = 0;
+		break;
+	      case OMP_TEAMS:
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%<inscan%> %<reduction%> clause on "
+			  "%qs construct", "teams");
+		OMP_CLAUSE_REDUCTION_INSCAN (c) = 0;
+		break;
+	      case OMP_TASKLOOP:
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%<inscan%> %<reduction%> clause on "
+			  "%qs construct", "taskloop");
+		OMP_CLAUSE_REDUCTION_INSCAN (c) = 0;
+		break;
+	      default:
+		break;
+	      }
 	  /* FALLTHRU */
 	case OMP_CLAUSE_IN_REDUCTION:
 	case OMP_CLAUSE_TASK_REDUCTION:
@@ -9290,6 +9354,36 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  ctx->default_kind = OMP_CLAUSE_DEFAULT_KIND (c);
 	  break;
 
+	case OMP_CLAUSE_INCLUSIVE:
+	case OMP_CLAUSE_EXCLUSIVE:
+	  decl = OMP_CLAUSE_DECL (c);
+	  {
+	    splay_tree_node n = splay_tree_lookup (outer_ctx->variables,
+						   (splay_tree_key) decl);
+	    if (n == NULL || (n->value & GOVD_REDUCTION) == 0)
+	      {
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "%qD specified in %qs clause but not in %<inscan%> "
+			  "%<reduction%> clause on the containing construct",
+			  decl, omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		remove = true;
+	      }
+	    else
+	      {
+		n->value |= GOVD_REDUCTION_INSCAN;
+		if (outer_ctx->region_type == ORT_SIMD
+		    && outer_ctx->outer_context
+		    && outer_ctx->outer_context->region_type == ORT_WORKSHARE)
+		  {
+		    n = splay_tree_lookup (outer_ctx->outer_context->variables,
+					   (splay_tree_key) decl);
+		    if (n && (n->value & GOVD_REDUCTION) != 0)
+		      n->value |= GOVD_REDUCTION_INSCAN;
+		  }
+	      }
+	  }
+	  break;
+
 	default:
 	  gcc_unreachable ();
 	}
@@ -9683,7 +9777,9 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 			     enum tree_code code)
 {
   struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
+  tree *orig_list_p = list_p;
   tree c, decl;
+  bool has_inscan_reductions = false;
 
   if (body)
     {
@@ -10024,6 +10120,21 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	  break;
 
 	case OMP_CLAUSE_REDUCTION:
+	  if (OMP_CLAUSE_REDUCTION_INSCAN (c))
+	    {
+	      decl = OMP_CLAUSE_DECL (c);
+	      n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+	      if ((n->value & GOVD_REDUCTION_INSCAN) == 0)
+		{
+		  remove = true;
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%qD specified in %<inscan%> %<reduction%> clause "
+			    "but not in %<scan%> directive clause", decl);
+		  break;
+		}
+	      has_inscan_reductions = true;
+	    }
+	  /* FALLTHRU */
 	case OMP_CLAUSE_IN_REDUCTION:
 	case OMP_CLAUSE_TASK_REDUCTION:
 	  decl = OMP_CLAUSE_DECL (c);
@@ -10105,6 +10216,8 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
+	case OMP_CLAUSE_INCLUSIVE:
+	case OMP_CLAUSE_EXCLUSIVE:
 	  break;
 
 	default:
@@ -10122,6 +10235,18 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
   data.list_p = list_p;
   data.pre_p = pre_p;
   splay_tree_foreach (ctx->variables, gimplify_adjust_omp_clauses_1, &data);
+
+  if (has_inscan_reductions)
+    for (c = *orig_list_p; c; c = OMP_CLAUSE_CHAIN (c))
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LINEAR
+	  && !OMP_CLAUSE_LINEAR_NO_COPYIN (c))
+	{
+	  error_at (OMP_CLAUSE_LOCATION (c),
+		    "%<inscan%> %<reduction%> clause used together with "
+		    "%<linear%> clause for a variable other than loop "
+		    "iterator");
+	  break;
+	}
 
   gimplify_omp_ctxp = ctx->outer_context;
   delete_omp_context (ctx);
@@ -13124,6 +13249,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case OMP_MASTER:
 	case OMP_ORDERED:
 	case OMP_CRITICAL:
+	case OMP_SCAN:
 	  {
 	    gimple_seq body = NULL;
 	    gimple *g;
@@ -13149,6 +13275,14 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		g = gimple_build_omp_critical (body,
 		    			       OMP_CRITICAL_NAME (*expr_p),
 		    			       OMP_CRITICAL_CLAUSES (*expr_p));
+		break;
+	      case OMP_SCAN:
+		gimplify_scan_omp_clauses (&OMP_SCAN_CLAUSES (*expr_p),
+					   pre_p, ORT_WORKSHARE, OMP_SCAN);
+		gimplify_adjust_omp_clauses (pre_p, body,
+					     &OMP_SCAN_CLAUSES (*expr_p),
+					     OMP_SCAN);
+		g = gimple_build_omp_scan (body, OMP_SCAN_CLAUSES (*expr_p));
 		break;
 	      default:
 		gcc_unreachable ();
@@ -13514,6 +13648,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		  && code != OMP_TASKGROUP
 		  && code != OMP_ORDERED
 		  && code != OMP_PARALLEL
+		  && code != OMP_SCAN
 		  && code != OMP_SECTIONS
 		  && code != OMP_SECTION
 		  && code != OMP_SINGLE);

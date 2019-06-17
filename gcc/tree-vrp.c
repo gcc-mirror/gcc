@@ -287,18 +287,7 @@ value_range::set_varying ()
 bool
 value_range_base::may_contain_p (tree val) const
 {
-  if (varying_p ())
-    return true;
-
-  if (undefined_p ())
-    return true;
-
-  if (m_kind == VR_ANTI_RANGE)
-    {
-      int res = value_inside_range (val, min (), max ());
-      return res == 0 || res == -2;
-    }
-  return value_inside_range (val, min (), max ()) != 0;
+  return value_inside_range (val) != 0;
 }
 
 void
@@ -1118,55 +1107,38 @@ compare_values (tree val1, tree val2)
 }
 
 
-/* Return 1 if VAL is inside value range MIN <= VAL <= MAX,
-          0 if VAL is not inside [MIN, MAX],
+/* Return 1 if VAL is inside value range.
+          0 if VAL is not inside value range.
 	 -2 if we cannot tell either way.
 
    Benchmark compile/20001226-1.c compilation time after changing this
    function.  */
 
 int
-value_inside_range (tree val, tree min, tree max)
+value_range_base::value_inside_range (tree val) const
 {
   int cmp1, cmp2;
 
-  cmp1 = operand_less_p (val, min);
+  if (varying_p ())
+    return 1;
+
+  if (undefined_p ())
+    return 0;
+
+  cmp1 = operand_less_p (val, m_min);
   if (cmp1 == -2)
     return -2;
   if (cmp1 == 1)
-    return 0;
+    return m_kind != VR_RANGE;
 
-  cmp2 = operand_less_p (max, val);
+  cmp2 = operand_less_p (m_max, val);
   if (cmp2 == -2)
     return -2;
 
-  return !cmp2;
-}
-
-
-/* Return TRUE if *VR includes the value X.  */
-
-bool
-range_includes_p (const value_range_base *vr, HOST_WIDE_INT x)
-{
-  if (vr->varying_p () || vr->undefined_p ())
-    return true;
-  return vr->may_contain_p (build_int_cst (vr->type (), x));
-}
-
-/* If *VR has a value range that is a single constant value return that,
-   otherwise return NULL_TREE.
-
-   ?? This actually returns TRUE for [&x, &x], so perhaps "constant"
-   is not the best name.  */
-
-tree
-value_range_constant_singleton (const value_range_base *vr)
-{
-  tree result = NULL;
-  if (vr->singleton_p (&result))
-    return result;
-  return NULL;
+  if (m_kind == VR_RANGE)
+    return !cmp2;
+  else
+    return !!cmp2;
 }
 
 /* Value range wrapper for wide_int_range_set_zero_nonzero_bits.

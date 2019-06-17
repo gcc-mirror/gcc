@@ -31,4 +31,4 @@ int switchCase(int value, int b)
 }
 
 /* { dg-final { scan-assembler-times "bih" 1 } } */
-/* { dg-final { scan-assembler-times "b_s" 8 } } */
+/* { dg-final { scan-assembler-times "b_s" 6 } } */

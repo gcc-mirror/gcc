@@ -129,10 +129,15 @@ Statement::import_statement(Import_function_body* ifb, Location loc)
 {
   if (ifb->match_c_string("{"))
     {
-      Block* block = Block_statement::do_import(ifb, loc);
+      bool is_lowered_for_statement;
+      Block* block = Block_statement::do_import(ifb, loc,
+						&is_lowered_for_statement);
       if (block == NULL)
 	return Statement::make_error_statement(loc);
-      return Statement::make_block_statement(block, loc);
+      Block_statement* s = Statement::make_block_statement(block, loc);
+      if (is_lowered_for_statement)
+	s->set_is_lowered_for_statement();
+      return s;
     }
   else if (ifb->match_c_string("return"))
     {
@@ -147,6 +152,10 @@ Statement::import_statement(Import_function_body* ifb, Location loc)
     return Variable_declaration_statement::do_import(ifb, loc);
   else if (ifb->match_c_string("if "))
     return If_statement::do_import(ifb, loc);
+  else if (ifb->match_c_string(":"))
+    return Label_statement::do_import(ifb, loc);
+  else if (ifb->match_c_string("goto "))
+    return Goto_statement::do_import(ifb, loc);
 
   Expression* lhs = Expression::import_expression(ifb, loc);
   ifb->require_c_string(" = ");
@@ -456,8 +465,6 @@ Variable_declaration_statement::do_import(Import_function_body* ifb,
     {
       ifb->advance(3);
       init = Expression::import_expression(ifb, loc);
-      Type_context context(type, false);
-      init->determine_type(&context);
     }
   Variable* var = new Variable(type, init, false, false, false, loc);
   var->set_is_used();
@@ -744,11 +751,6 @@ Temporary_statement::do_import(Import_function_body* ifb, Location loc)
     {
       ifb->advance(3);
       init = Expression::import_expression(ifb, loc);
-      if (type != NULL)
-	{
-	  Type_context context(type, false);
-	  init->determine_type(&context);
-	}
     }
   if (type == NULL && init == NULL)
     {
@@ -2109,15 +2111,20 @@ Statement::make_statement(Expression* expr, bool is_ignored)
 void
 Block_statement::do_export_statement(Export_function_body* efb)
 {
-  Block_statement::export_block(efb, this->block_);
+  Block_statement::export_block(efb, this->block_,
+				this->is_lowered_for_statement_);
 }
 
 void
-Block_statement::export_block(Export_function_body* efb, Block* block)
+Block_statement::export_block(Export_function_body* efb, Block* block,
+			      bool is_lowered_for_statement)
 {
   // We are already indented to the right position.
   char buf[50];
-  snprintf(buf, sizeof buf, "{ //%d\n",
+  efb->write_c_string("{");
+  if (is_lowered_for_statement)
+    efb->write_c_string(" /*for*/");
+  snprintf(buf, sizeof buf, " //%d\n",
 	   Linemap::location_to_line(block->start_location()));
   efb->write_c_string(buf);
 
@@ -2134,9 +2141,16 @@ Block_statement::export_block(Export_function_body* efb, Block* block)
 // Import a block statement, returning the block.
 
 Block*
-Block_statement::do_import(Import_function_body* ifb, Location loc)
+Block_statement::do_import(Import_function_body* ifb, Location loc,
+			   bool* is_lowered_for_statement)
 {
   go_assert(ifb->match_c_string("{"));
+  *is_lowered_for_statement = false;
+  if (ifb->match_c_string(" /*for*/"))
+    {
+      ifb->advance(8);
+      *is_lowered_for_statement = true;
+    }
   size_t nl = ifb->body().find('\n', ifb->off());
   if (nl == std::string::npos)
     {
@@ -2176,7 +2190,7 @@ Block_statement::do_dump_statement(Ast_dump_context*) const
 
 // Make a block statement.
 
-Statement*
+Block_statement*
 Statement::make_block_statement(Block* block, Location location)
 {
   return new Block_statement(block, location);
@@ -3344,6 +3358,61 @@ Goto_statement::do_get_backend(Translate_context* context)
   return context->backend()->goto_statement(blabel, this->location());
 }
 
+// Export a goto statement.
+
+void
+Goto_statement::do_export_statement(Export_function_body *efb)
+{
+  efb->write_c_string("goto ");
+  efb->write_string(this->label_->name());
+}
+
+// Import a goto or goto unnamed statement.
+
+Statement*
+Goto_statement::do_import(Import_function_body* ifb, Location loc)
+{
+  ifb->require_c_string("goto ");
+  std::string id = ifb->read_identifier();
+  if (id[0] != '$')
+    {
+      Function* fn = ifb->function()->func_value();
+      Label* label = fn->add_label_reference(ifb->gogo(), id, loc, false);
+      return Statement::make_goto_statement(label, loc);
+    }
+  else
+    {
+      if (id[1] != 'l')
+	{
+	  if (!ifb->saw_error())
+	    go_error_at(loc,
+			("invalid export data for %qs: "
+			 "bad unnamed label at %lu"),
+			ifb->name().c_str(),
+			static_cast<unsigned long>(ifb->off()));
+	  ifb->set_saw_error();
+	  return Statement::make_error_statement(loc);
+	}
+      const char* p = id.c_str();
+      char* end;
+      long idx = strtol(p + 2, &end, 10);
+      if (*end != '\0' || idx > 0x7fffffff)
+	{
+	  if (!ifb->saw_error())
+	    go_error_at(loc,
+			("invalid export data for %qs: "
+			 "bad unnamed label index at %lu"),
+			ifb->name().c_str(),
+			static_cast<unsigned long>(ifb->off()));
+	  ifb->set_saw_error();
+	  return Statement::make_error_statement(loc);
+	}
+
+      Unnamed_label* label = ifb->unnamed_label(idx, loc);
+      return Statement::make_goto_unnamed_statement(label, loc);
+    }
+}
+
 // Dump the AST representation for a goto statement.
 
 void
@@ -3375,6 +3444,17 @@ Bstatement*
 Goto_unnamed_statement::do_get_backend(Translate_context* context)
 {
   return this->label_->get_goto(context, this->location());
+}
+
+// Export a goto unnamed statement.
+
+void
+Goto_unnamed_statement::do_export_statement(Export_function_body *efb)
+{
+  unsigned int index = efb->unnamed_label_index(this->label_);
+  char buf[100];
+  snprintf(buf, sizeof buf, "goto $l%u", index);
+  efb->write_c_string(buf);
 }
 
 // Dump the AST representation for an unnamed goto statement
@@ -3424,6 +3504,64 @@ Label_statement::do_get_backend(Translate_context* context)
   return context->backend()->label_definition_statement(blabel);
 }
 
+// Export a label.
+
+void
+Label_statement::do_export_statement(Export_function_body* efb)
+{
+  if (this->label_->is_dummy_label())
+    return;
+  // We use a leading colon, not a trailing one, to simplify import.
+  efb->write_c_string(":");
+  efb->write_string(this->label_->name());
+}
+
+// Import a label or an unnamed label.
+
+Statement*
+Label_statement::do_import(Import_function_body* ifb, Location loc)
+{
+  ifb->require_c_string(":");
+  std::string id = ifb->read_identifier();
+  if (id[0] != '$')
+    {
+      Function* fn = ifb->function()->func_value();
+      Label* label = fn->add_label_definition(ifb->gogo(), id, loc);
+      return Statement::make_label_statement(label, loc);
+    }
+  else
+    {
+      if (id[1] != 'l')
+	{
+	  if (!ifb->saw_error())
+	    go_error_at(loc,
+			("invalid export data for %qs: "
+			 "bad unnamed label at %lu"),
+			ifb->name().c_str(),
+			static_cast<unsigned long>(ifb->off()));
+	  ifb->set_saw_error();
+	  return Statement::make_error_statement(loc);
+	}
+      const char* p = id.c_str();
+      char* end;
+      long idx = strtol(p + 2, &end, 10);
+      if (*end != '\0' || idx > 0x7fffffff)
+	{
+	  if (!ifb->saw_error())
+	    go_error_at(loc,
+			("invalid export data for %qs: "
+			 "bad unnamed label index at %lu"),
+			ifb->name().c_str(),
+			static_cast<unsigned long>(ifb->off()));
+	  ifb->set_saw_error();
+	  return Statement::make_error_statement(loc);
+	}
+
+      Unnamed_label* label = ifb->unnamed_label(idx, loc);
+      return Statement::make_unnamed_label_statement(label);
+    }
+}
+
 // Dump the AST for a label definition statement.
 
 void
@@ -3460,6 +3598,18 @@ Bstatement*
 Unnamed_label_statement::do_get_backend(Translate_context* context)
 {
   return this->label_->get_definition(context);
+}
+
+// Export an unnamed label.
+
+void
+Unnamed_label_statement::do_export_statement(Export_function_body* efb)
+{
+  unsigned int index = efb->unnamed_label_index(this->label_);
+  char buf[50];
+  // We use a leading colon, not a trailing one, to simplify import.
+  snprintf(buf, sizeof buf, ":$l%u", index);
+  efb->write_c_string(buf);
 }
 
 // Dump the AST representation for an unnamed label definition statement.
@@ -3557,11 +3707,11 @@ If_statement::do_export_statement(Export_function_body* efb)
   efb->write_c_string("if ");
   this->cond_->export_expression(efb);
   efb->write_c_string(" ");
-  Block_statement::export_block(efb, this->then_block_);
+  Block_statement::export_block(efb, this->then_block_, false);
   if (this->else_block_ != NULL)
     {
       efb->write_c_string(" else ");
-      Block_statement::export_block(efb, this->else_block_);
+      Block_statement::export_block(efb, this->else_block_, false);
     }
 }
 
@@ -3573,8 +3723,6 @@ If_statement::do_import(Import_function_body* ifb, Location loc)
   ifb->require_c_string("if ");
 
   Expression* cond = Expression::import_expression(ifb, loc);
-  Type_context context(Type::lookup_bool_type(), false);
-  cond->determine_type(&context);
   ifb->require_c_string(" ");
 
   if (!ifb->match_c_string("{"))
@@ -3588,9 +3736,22 @@ If_statement::do_import(Import_function_body* ifb, Location loc)
       return Statement::make_error_statement(loc);
     }
 
-  Block* then_block = Block_statement::do_import(ifb, loc);
+  bool is_lowered_for_statement;
+  Block* then_block = Block_statement::do_import(ifb, loc,
+						 &is_lowered_for_statement);
   if (then_block == NULL)
     return Statement::make_error_statement(loc);
+  if (is_lowered_for_statement)
+    {
+      if (!ifb->saw_error())
+	go_error_at(ifb->location(),
+		    ("import error for %qs: "
+		     "unexpected lowered for in if statement at %lu"),
+		    ifb->name().c_str(),
+		    static_cast<unsigned long>(ifb->off()));
+      ifb->set_saw_error();
+      return Statement::make_error_statement(loc);
+    }
 
   Block* else_block = NULL;
   if (ifb->match_c_string(" else "))
@@ -3608,9 +3769,21 @@ If_statement::do_import(Import_function_body* ifb, Location loc)
 	  return Statement::make_error_statement(loc);
 	}
 
-      else_block = Block_statement::do_import(ifb, loc);
+      else_block = Block_statement::do_import(ifb, loc,
+					      &is_lowered_for_statement);
       if (else_block == NULL)
 	return Statement::make_error_statement(loc);
+      if (is_lowered_for_statement)
+	{
+	  if (!ifb->saw_error())
+	    go_error_at(ifb->location(),
+			("import error for %qs: "
+			 "unexpected lowered for in if statement at %lu"),
+			ifb->name().c_str(),
+			static_cast<unsigned long>(ifb->off()));
+	  ifb->set_saw_error();
+	  return Statement::make_error_statement(loc);
+	}
     }
 
   return Statement::make_if_statement(cond, then_block, else_block, loc);

@@ -1312,7 +1312,7 @@ Statement *OnScopeStatement::syntaxCopy()
     return new OnScopeStatement(loc, tok, statement->syntaxCopy());
 }
 
-Statement *OnScopeStatement::scopeCode(Scope *, Statement **sentry, Statement **sexception, Statement **sfinally)
+Statement *OnScopeStatement::scopeCode(Scope *sc, Statement **sentry, Statement **sexception, Statement **sfinally)
 {
     //printf("OnScopeStatement::scopeCode()\n");
     //print();
@@ -1340,6 +1340,7 @@ Statement *OnScopeStatement::scopeCode(Scope *, Statement **sentry, Statement **
              *  sfinally: if (!x) statement;
              */
             VarDeclaration *v = copyToTemp(0, "__os", new IntegerExp(Loc(), 0, Type::tbool));
+            v->semantic(sc);
             *sentry = new ExpStatement(loc, v);
 
             Expression *e = new IntegerExp(Loc(), 1, Type::tbool);

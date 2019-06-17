@@ -749,66 +749,63 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 ; In order to allow the ccfsm machinery to do its work, the leading compact
 ; alternatives say 'canuse' - there is another alternative that will match
 ; when the condition codes are used.
-; Rcq won't match if the condition is actually used; to avoid a spurious match
-; via q, q is inactivated as constraint there.
-; Likewise, the length of an alternative that might be shifted to conditional
+; The length of an alternative that might be shifted to conditional
 ; execution must reflect this, lest out-of-range branches are created.
 ; the iscompact attribute allows the epilogue expander to know for which
 ; insns it should lengthen the return insn.
-; N.B. operand 1 of alternative 7 expands into pcl,symbol@gotpc .
-(define_insn "*movsi_insn"			;   0     1     2     3    4  5  6   7   8   9   10  11  12  13    14  15   16  17  18     19     20  21  22    23    24 25 26    27 28  29  30   31
-  [(set (match_operand:SI 0 "move_dest_operand" "=Rcq,Rcq#q,    w,Rcq#q,   h,wl, w,  w,  w,  w,  w,???w, ?w,  w,Rcq#q,  h,  wl,Rcq,  S,   Us<,RcqRck,!*x,  r,!*Rsd,!*Rcd,r,Ucm,  Usd,m,???m,  m,VUsc")
-	(match_operand:SI 1 "move_src_operand"  "  cL,   cP,Rcq#q,    P,hCm1,cL, I,Crr,Clo,Chi,Cbi,?Rac,Cpc,Clb, ?Cal,Cal,?Cal,Uts,Rcq,RcqRck,   Us>,Usd,Ucm,  Usd,  Ucd,m,  w,!*Rzd,c,?Rac,Cm3, C32"))]
+(define_insn_and_split "*movsi_insn"		; 0  1 2 3    4  5  6   7   8   9  10  11  12  13  14  15  16    17      18  19  20    21   22 23  24   25 26  27  28
+  [(set (match_operand:SI 0 "move_dest_operand" "=q, q,r,q,   h,rl, r,  r,  r,  r, ?r,  r,  q,  h, rl,  q,  S,   Us<,RcqRck,!*x,  r,!*Rsd,!*Rcd,r,Ucm,  Usd,m,  m,VUsc")
+	(match_operand:SI 1 "move_src_operand"  "rL,rP,q,P,hCm1,rL, I,Clo,Chi,Cbi,Cpc,Clb,Cax,Cal,Cal,Uts,Rcq,RcqRck,   Us>,Usd,Ucm,  Usd,  Ucd,m,  r,!*Rzd,r,Cm3, C32"))]
   "register_operand (operands[0], SImode)
    || register_operand (operands[1], SImode)
    || (CONSTANT_P (operands[1])
-       /* Don't use a LIMM that we could load with a single insn - we loose
-	  delay-slot filling opportunities.  */
-       && !satisfies_constraint_I (operands[1])
+       && (!satisfies_constraint_I (operands[1]) || !optimize_size)
        && satisfies_constraint_Usc (operands[0]))
    || (satisfies_constraint_Cm3 (operands[1])
       && memory_operand (operands[0], SImode))"
   "@
-   mov%? %0,%1%&	;0
-   mov%? %0,%1%&	;1
-   mov%? %0,%1%&	;2
-   mov%? %0,%1%&	;3
-   mov%? %0,%1%&	;4
-   mov%? %0,%1		;5
-   mov%? %0,%1		;6
-   ror %0,((%1*2+1) & 0x3f) ;7
-   movl.cl %0,%1	;8
-   movh.cl %0,%L1>>16   ;9
-   * return INTVAL (operands[1]) & 0xffffff ? \"movbi.cl %0,%1 >> %p1,%p1,8;10\" : \"movbi.cl %0,%L1 >> 24,24,8;10\";
-   mov%? %0,%1		;11
-   add %0,%1		;12
-   add %0,pcl,%1@pcl    ;13
-   mov%? %0,%j1 	;14
-   mov%? %0,%j1		;15
-   mov%? %0,%j1		;16
-   ld%? %0,%1		;17
-   st%? %1,%0%&		;18
-   * return arc_short_long (insn, \"push%? %1%&\", \"st%U0 %1,%0%&\");
-   * return arc_short_long (insn, \"pop%? %0%&\",  \"ld%U1 %0,%1%&\");
-   ld%? %0,%1%&		;21
-   xld%U1 %0,%1		;22
-   ld%? %0,%1%&		;23
-   ld%? %0,%1%&		;24
-   ld%U1%V1 %0,%1	;25
-   xst%U0 %1,%0		;26
-   st%? %1,%0%&		;27
-   st%U0%V0 %1,%0	;28
-   st%U0%V0 %1,%0	;29
-   st%U0%V0 %1,%0	;30
-   st%U0%V0 %1,%0	;31"
-   ;                         0     1     2     3    4    5      6       7           8     9    10     11    12    13           14        15    16   17    18    19   20    21    22   23  24    25    26    27    28    29   30   31
-  [(set_attr "type"       "move, move, move,move,move, move, move,two_cycle_core,shift,shift,shift, move,binary,binary,      move,      move, move,load,store,store,load,load, load,load,load, load,store,store,store,store,store,store")
-   (set_attr "iscompact" "maybe,maybe,maybe,true,true,false,false,         false,false,false,false,false, false, false,maybe_limm,maybe_limm,false,true, true, true,true,true,false,true,true,false,false, true,false,false,false,false")
-   ; Use default length for iscompact to allow for COND_EXEC.  But set length
-   ; of Crr to 4.
-   (set_attr "length" "*,*,*,*,*,4,4,4,4,4,4,4,8,8,*,*,*,*,*,*,*,*,4,*,4,*,*,*,*,*,*,8")
-   (set_attr "predicable" "yes,no,yes,no,no,yes,no,no,no,no,no,yes,no,no,yes,yes,yes,no,no,no,no,no,no,no,no,no,no,no,no,no,no,no")
-   (set_attr "cpu_facility" "av1,av1,av1,av2,av2,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,av2,av2,*,*,av2,*,*,av2,*")])
+   mov%?\\t%0,%1	;0
+   mov%?\\t%0,%1	;1
+   mov%?\\t%0,%1	;2
+   mov%?\\t%0,%1	;3
+   mov%?\\t%0,%1	;4
+   mov%?\\t%0,%1	;5
+   mov%?\\t%0,%1	;6
+   movl.cl\\t %0,%1	;7
+   movh.cl\\t %0,%L1>>16 ;8
+   * return INTVAL (operands[1]) & 0xffffff ? \"movbi.cl\\t%0,%1 >> %p1,%p1,8;9\" : \"movbi.cl\\t%0,%L1 >> 24,24,8;9\";
+   add\\t%0,%1		;10
+   add\\t%0,pcl,%1@pcl  ;11
+   #
+   mov%?\\t%0,%j1	;13
+   mov%?\\t%0,%j1	;14
+   ld%?\\t%0,%1		;15
+   st%?\\t %1,%0	;16
+   * return arc_short_long (insn, \"push%?\\t%1%&\", \"st%U0\\t%1,%0%&\");
+   * return arc_short_long (insn, \"pop%?\\t%0%&\",  \"ld%U1\\t%0,%1%&\");
+   ld%?\\t%0,%1		;19
+   xld%U1\\t%0,%1	;20
+   ld%?\\t%0,%1		;21
+   ld%?\\t%0,%1		;22
+   ld%U1%V1\\t%0,%1	;23
+   xst%U0\\t%1,%0	;24
+   st%?\\t%1,%0%&	;25
+   st%U0%V0\\t%1,%0	;26
+   st%U0%V0\\t%1,%0	;37
+   st%U0%V0\\t%1,%0	;28"
+  "reload_completed && satisfies_constraint_Cax (operands[1])
+   && register_operand (operands[0], SImode)"
+  [(const_int 0)]
+  "
+   arc_split_mov_const (operands);
+   DONE;
+  "
+   ;                          0     1     2     3    4    5     6     7     8     9     10     11    12   13    14   15    16    17   18   19    20   21   22    23    24    25    26    27   28
+  [(set_attr "type"       "move, move, move,move,move, move, move,shift,shift,shift,binary,binary,multi,move, move,load,store,store,load,load, load,load,load, load,store,store,store,store,store")
+   (set_attr "iscompact" "maybe,maybe,maybe,true,true,false,false,false,false,false, false, false,false,true,false,true, true, true,true,true,false,true,true,false,false, true,false,false,false")
+   (set_attr "length"    "*,*,*,*,*,4,4,4,4,4,8,8,*,6,*,*,*,*,*,*,4,*,4,*,*,*,*,*,8")
+   (set_attr "predicable" "yes,no,yes,no,no,yes,no,no,no,yes,no,no,no,yes,yes,no,no,no,no,no,no,no,no,no,no,no,no,no,no")
+   (set_attr "cpu_facility" "av1,av1,av1,av2,av2,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,av2,av2,*,*,av2,*,av2,*")])
 
 ;; Sometimes generated by the epilogue code.  We don't want to
 ;; recognize these addresses in general, because the limm is costly,
@@ -2303,16 +2300,23 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 ; ARCv2 has no penalties between mpy and mpyu. So, we use mpy because of its
 ; short variant. LP_COUNT constraints are still valid.
 (define_insn "mulsi3_v2"
- [(set (match_operand:SI 0 "mpy_dest_reg_operand"        "=Rcqq,Rcr, r,r,Rcr,  r")
-	(mult:SI (match_operand:SI 1 "register_operand"     "%0,  0, c,0,  0,  c")
-		 (match_operand:SI 2 "nonmemory_operand" " Rcqq, cL,cL,I,Cal,Cal")))]
+ [(set (match_operand:SI 0 "mpy_dest_reg_operand"        "=q,q, r, r,r,  r,  r")
+	(mult:SI (match_operand:SI 1 "register_operand"  "%0,q, 0, r,0,  0,  c")
+		 (match_operand:SI 2 "nonmemory_operand"  "q,0,rL,rL,I,Cal,Cal")))]
  "TARGET_MULTI"
- "mpy%? %0,%1,%2"
- [(set_attr "length" "*,4,4,4,8,8")
-  (set_attr "iscompact" "maybe,false,false,false,false,false")
+ "@
+  mpy%?\\t%0,%1,%2
+  mpy%?\\t%0,%2,%1
+  mpy%?\\t%0,%1,%2
+  mpy%?\\t%0,%1,%2
+  mpy%?\\t%0,%1,%2
+  mpy%?\\t%0,%1,%2
+  mpy%?\\t%0,%1,%2"
+ [(set_attr "length" "*,*,4,4,4,8,8")
+  (set_attr "iscompact" "maybe,maybe,false,false,false,false,false")
   (set_attr "type" "umulti")
-  (set_attr "predicable" "no,yes,no,no,yes,no")
-  (set_attr "cond" "nocond,canuse,nocond,canuse_limm,canuse,nocond")])
+  (set_attr "predicable" "no,no,yes,no,no,yes,no")
+  (set_attr "cond" "nocond,nocond,canuse,nocond,canuse_limm,canuse,nocond")])
 
 (define_expand "mulsidi3"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -3216,10 +3220,10 @@ core_3, archs4x, archs4xd, archs4xd_slow"
      operands[1] = force_reg (SImode, operands[1]);
   ")
 
-(define_insn "andsi3_i"
-  [(set (match_operand:SI 0 "dest_reg_operand"          "=Rcqq,Rcq,Rcqq,Rcqq,Rcqq,Rcw,Rcw,   Rcw,Rcw,Rcw,Rcw, w,     w,  w,  w,Rrq,w,Rcw,  w,W")
-	(and:SI (match_operand:SI 1 "nonimmediate_operand" "%0,Rcq,   0,   0,Rcqq,  0,  c,     0,  0,  0,  0, c,     c,  c,  c,Rrq,0,  0,  c,o")
-		(match_operand:SI 2 "nonmemory_operand"  "Rcqq,  0, C1p, Ccp, Cux, cL,  0,C2pC1p,Ccp,CnL,  I,Lc,C2pC1p,Ccp,CnL,Cbf,I,Cal,Cal,Cux")))]
+(define_insn "andsi3_i"                                     ;0 1   2   3   4  5 6      7   8  9 10 11     12  13  14  15 16 17  18   19
+  [(set (match_operand:SI 0 "dest_reg_operand"             "=q,q,  q,  q,  q, r,r,     r,  r,  r,r, r,     r,  r,  r,  q,r,  r,  r,  W")
+	(and:SI (match_operand:SI 1 "nonimmediate_operand" "%0,q,  0,  0,  q, 0,r,     0,  0,  0,0, r,     r,  r,  r,  q,0,  0,  r,  o")
+		(match_operand:SI 2 "nonmemory_operand"     "q,0,C1p,Ccp,Cux,rL,0,C2pC1p,Ccp,CnL,I,rL,C2pC1p,Ccp,CnL,Cbf,I,Cal,Cal,Cux")))]
   "(register_operand (operands[1], SImode)
     && nonmemory_operand (operands[2], SImode))
    || (memory_operand (operands[1], SImode)
@@ -3317,27 +3321,35 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   (set_attr "predicable" "no,yes,no,yes,no,no,no")
   (set_attr "cond" "canuse,canuse,canuse_limm,canuse,nocond,nocond,nocond")])
 
-(define_insn "iorsi3"
-  [(set (match_operand:SI 0 "dest_reg_operand"        "=Rcqq,Rcq,Rcqq,Rcw,Rcw,Rcw,Rcw,w,  w,w,Rcw,  w")
-	(ior:SI (match_operand:SI 1 "nonmemory_operand" "% 0,Rcq,   0,  0,  c,  0, 0, c,  c,0,  0,  c")
-		(match_operand:SI 2 "nonmemory_operand" "Rcqq, 0, C0p, cL,  0,C0p, I,cL,C0p,I,Cal,Cal")))]
+(define_insn_and_split "iorsi3"
+  [(set (match_operand:SI 0 "dest_reg_operand"          "=q,q,  q, r,r,  r,r, r,  r,r,  q,  r,  r")
+	(ior:SI (match_operand:SI 1 "register_operand"  "%0,q,  0, 0,r,  0,0, r,  r,0,  r,  0,  r")
+		(match_operand:SI 2 "nonmemory_operand"  "q,0,C0p,rL,0,C0p,I,rL,C0p,I,C0x,Cal,Cal")))]
   ""
-  "*
-  switch (which_alternative)
-    {
-    case 0: case 3: case 6: case 7: case 9: case 10: case 11:
-      return \"or%? %0,%1,%2%&\";
-    case 1: case 4:
-      return \"or%? %0,%2,%1%&\";
-    case 2: case 5: case 8:
-      return \"bset%? %0,%1,%z2%&\";
-    default:
-      gcc_unreachable ();
-    }"
-  [(set_attr "iscompact" "maybe,maybe,maybe,false,false,false,false,false,false,false,false,false")
-   (set_attr "length" "*,*,*,4,4,4,4,4,4,4,8,8")
-   (set_attr "predicable" "no,no,no,yes,yes,yes,no,no,no,no,yes,no")
-   (set_attr "cond" "canuse,canuse,canuse,canuse,canuse,canuse,canuse_limm,nocond,nocond,canuse_limm,canuse,nocond")])
+  "@
+   or%?\\t%0,%1,%2
+   or%?\\t%0,%2,%1
+   bset%?\\t%0,%1,%z2
+   or%?\\t%0,%1,%2
+   or%?\\t%0,%2,%1
+   bset%?\\t%0,%1,%z2
+   or%?\\t%0,%1,%2
+   or%?\\t%0,%1,%2
+   bset%?\\t%0,%1,%z2
+   or%?\\t%0,%1,%2
+   #
+   or%?\\t%0,%1,%2
+   or%?\\t%0,%1,%2"
+  "reload_completed && satisfies_constraint_C0x (operands[2])"
+  [(const_int 0)]
+  "
+   arc_split_ior (operands);
+   DONE;
+  "
+  [(set_attr "iscompact" "maybe,maybe,maybe,false,false,false,false,false,false,false,false,false,false")
+   (set_attr "length" "*,*,*,4,4,4,4,4,4,4,*,8,8")
+   (set_attr "predicable" "no,no,no,yes,yes,yes,no,no,no,no,no,yes,no")
+   (set_attr "cond" "canuse,canuse,canuse,canuse,canuse,canuse,canuse_limm,nocond,nocond,canuse_limm,nocond,canuse,nocond")])
 
 (define_insn "xorsi3"
   [(set (match_operand:SI 0 "dest_reg_operand"          "=Rcqq,Rcq,Rcw,Rcw,Rcw,Rcw, w,  w,w,  w,  w")
@@ -5972,11 +5984,21 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (match_dup 1)])
 
 (define_insn "*rotrsi3_cnt1"
-  [(set (match_operand:SI 0 "dest_reg_operand"             "=w")
-	(rotatert:SI (match_operand:SI 1 "register_operand" "c")
+  [(set (match_operand:SI 0 "dest_reg_operand"              "=r")
+	(rotatert:SI (match_operand:SI 1 "nonmemory_operand" "rL")
 		     (const_int 1)))]
   ""
-  "ror %0,%1%&"
+  "ror\\t%0,%1"
+  [(set_attr "type" "shift")
+   (set_attr "predicable" "no")
+   (set_attr "length" "4")])
+
+(define_insn "*rotrsi3_cnt8"
+  [(set (match_operand:SI 0 "register_operand"             "=r")
+	(rotatert:SI (match_operand:SI 1 "nonmemory_operand" "rL")
+		     (const_int 8)))]
+  "TARGET_BARREL_SHIFTER && TARGET_V2"
+  "ror8\\t%0,%1"
   [(set_attr "type" "shift")
    (set_attr "predicable" "no")
    (set_attr "length" "4")])
@@ -5989,7 +6011,30 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   "asl%? %0,%1%&"
   [(set_attr "type" "shift")
    (set_attr "iscompact" "maybe,false")
+   (set_attr "length" "4")
    (set_attr "predicable" "no,no")])
+
+(define_insn "*ashlsi2_cnt8"
+  [(set (match_operand:SI 0 "register_operand"            "=r")
+	(ashift:SI (match_operand:SI 1 "nonmemory_operand" "rL")
+		   (const_int 8)))]
+  "TARGET_BARREL_SHIFTER && TARGET_V2"
+  "lsl8\\t%0,%1"
+  [(set_attr "type" "shift")
+   (set_attr "iscompact" "false")
+   (set_attr "length" "4")
+   (set_attr "predicable" "no")])
+
+(define_insn "*ashlsi2_cnt16"
+  [(set (match_operand:SI 0 "register_operand"            "=r")
+	(ashift:SI (match_operand:SI 1 "nonmemory_operand" "rL")
+		   (const_int 16)))]
+  "TARGET_BARREL_SHIFTER && TARGET_V2"
+  "lsl16\\t%0,%1"
+  [(set_attr "type" "shift")
+   (set_attr "iscompact" "false")
+   (set_attr "length" "4")
+   (set_attr "predicable" "no")])
 
 (define_insn "*lshrsi3_cnt1"
   [(set (match_operand:SI 0 "dest_reg_operand"             "=Rcqq,w")

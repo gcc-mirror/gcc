@@ -1326,3 +1326,26 @@ Export_function_body::temporary_index(const Temporary_statement* temp)
   go_assert(p != this->temporary_indexes_.end());
   return p->second;
 }
+
+// Return the index of an unnamed label.  If it doesn't already have
+// an index, give it one.
+
+unsigned int
+Export_function_body::unnamed_label_index(const Unnamed_label* label)
+{
+  unsigned int next = this->next_label_index_;
+  std::pair<const Unnamed_label*, unsigned int> val(label, next);
+  std::pair<Unordered_map(const Unnamed_label*, unsigned int)::iterator,
+	    bool> ins =
+    this->label_indexes_.insert(val);
+  if (!ins.second)
+    return ins.first->second;
+  else
+    {
+      if (next > 0x7fffffff)
+	go_error_at(label->location(),
+		    "too many unnamed labels in export data");
+      ++this->next_label_index_;
+      return next;
+    }
+}

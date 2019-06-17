@@ -3400,6 +3400,25 @@ Vector constant that is all zeros.
 
 @end table
 
+@item PRU---@file{config/pru/constraints.md}
+@table @code
+@item I
+An unsigned 8-bit integer constant.
+
+@item J
+An unsigned 16-bit integer constant.
+
+@item L
+An unsigned 5-bit integer constant (for shift counts).
+
+@item T
+A text segment (program memory) constant label.
+
+@item Z
+Integer constant zero.
+
+@end table
+
 @item RL78---@file{config/rl78/constraints.md}
 @table @code
 

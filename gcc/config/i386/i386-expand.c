@@ -1704,10 +1704,11 @@ void
 ix86_expand_fp_absneg_operator (enum rtx_code code, machine_mode mode,
 				rtx operands[])
 {
-  rtx mask, set, dst, src;
+  rtx set, dst, src;
   bool use_sse = false;
   bool vector_mode = VECTOR_MODE_P (mode);
   machine_mode vmode = mode;
+  rtvec par;
 
   if (vector_mode)
     use_sse = true;
@@ -1722,24 +1723,19 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, machine_mode mode,
 	vmode = V2DFmode;
     }
 
-  /* NEG and ABS performed with SSE use bitwise mask operations.
-     Create the appropriate mask now.  */
-  if (use_sse)
-    mask = ix86_build_signbit_mask (vmode, vector_mode, code == ABS);
-  else
-    mask = NULL_RTX;
-
   dst = operands[0];
   src = operands[1];
 
   set = gen_rtx_fmt_e (code, mode, src);
   set = gen_rtx_SET (dst, set);
 
-  if (mask)
+  if (use_sse)
     {
-      rtx use, clob;
-      rtvec par;
+      rtx mask, use, clob;
 
+      /* NEG and ABS performed with SSE use bitwise mask operations.
+	 Create the appropriate mask now.  */
+      mask = ix86_build_signbit_mask (vmode, vector_mode, code == ABS);
       use = gen_rtx_USE (VOIDmode, mask);
       if (vector_mode)
 	par = gen_rtvec (2, set, use);
@@ -1748,10 +1744,104 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, machine_mode mode,
           clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
 	  par = gen_rtvec (3, set, use, clob);
         }
-      emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
     }
   else
-    emit_insn (set);
+    {
+      rtx clob;
+
+      /* Changing of sign for FP values is doable using integer unit too.  */
+      clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
+      par = gen_rtvec (2, set, clob);
+    }
+
+  emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
+}
+
+/* Deconstruct a floating point ABS or NEG operation
+   with integer registers into integer operations.  */
+
+void
+ix86_split_fp_absneg_operator (enum rtx_code code, machine_mode mode,
+			       rtx operands[])
+{
+  enum rtx_code absneg_op;
+  rtx dst, set;
+
+  gcc_assert (operands_match_p (operands[0], operands[1]));
+
+  switch (mode)
+    {
+    case E_SFmode:
+      dst = gen_lowpart (SImode, operands[0]);
+
+      if (code == ABS)
+	{
+	  set = gen_int_mode (0x7fffffff, SImode);
+	  absneg_op = AND;
+	}
+      else
+	{
+	  set = gen_int_mode (0x80000000, SImode);
+	  absneg_op = XOR;
+	}
+      set = gen_rtx_fmt_ee (absneg_op, SImode, dst, set);
+      break;
+
+    case E_DFmode:
+      if (TARGET_64BIT)
+	{
+	  dst = gen_lowpart (DImode, operands[0]);
+	  dst = gen_rtx_ZERO_EXTRACT (DImode, dst, const1_rtx, GEN_INT (63));
+
+	  if (code == ABS)
+	    set = const0_rtx;
+	  else
+	    set = gen_rtx_NOT (DImode, dst);
+	}
+      else
+	{
+	  dst = gen_highpart (SImode, operands[0]);
+
+	  if (code == ABS)
+	    {
+	      set = gen_int_mode (0x7fffffff, SImode);
+	      absneg_op = AND;
+	    }
+	  else
+	    {
+	      set = gen_int_mode (0x80000000, SImode);
+	      absneg_op = XOR;
+	    }
+	  set = gen_rtx_fmt_ee (absneg_op, SImode, dst, set);
+	}
+      break;
+
+    case E_XFmode:
+      dst = gen_rtx_REG (SImode,
+			 REGNO (operands[0]) + (TARGET_64BIT ? 1 : 2));
+      if (code == ABS)
+	{
+	  set = GEN_INT (0x7fff);
+	  absneg_op = AND;
+	}
+      else
+	{
+	  set = GEN_INT (0x8000);
+	  absneg_op = XOR;
+	}
+      set = gen_rtx_fmt_ee (absneg_op, SImode, dst, set);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  set = gen_rtx_SET (dst, set);
+
+  rtx clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, FLAGS_REG));
+  rtvec par = gen_rtvec (2, set, clob);
+
+  emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
 }
 
 /* Expand a copysign operation.  Special case operand 0 being a constant.  */
@@ -4213,27 +4303,15 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	    case E_V2DImode:
 		{
 		  rtx t1, t2, mask;
-		  rtx (*gen_sub3) (rtx, rtx, rtx);
 
-		  switch (mode)
-		    {
-		    case E_V16SImode: gen_sub3 = gen_subv16si3; break;
-		    case E_V8DImode: gen_sub3 = gen_subv8di3; break;
-		    case E_V8SImode: gen_sub3 = gen_subv8si3; break;
-		    case E_V4DImode: gen_sub3 = gen_subv4di3; break;
-		    case E_V4SImode: gen_sub3 = gen_subv4si3; break;
-		    case E_V2DImode: gen_sub3 = gen_subv2di3; break;
-		    default:
-		      gcc_unreachable ();
-		    }
 		  /* Subtract (-(INT MAX) - 1) from both operands to make
 		     them signed.  */
 		  mask = ix86_build_signbit_mask (mode, true, false);
 		  t1 = gen_reg_rtx (mode);
-		  emit_insn (gen_sub3 (t1, cop0, mask));
+		  emit_insn (gen_sub3_insn (t1, cop0, mask));
 
 		  t2 = gen_reg_rtx (mode);
-		  emit_insn (gen_sub3 (t2, cop1, mask));
+		  emit_insn (gen_sub3_insn (t2, cop1, mask));
 
 		  cop0 = t1;
 		  cop1 = t2;
@@ -4249,9 +4327,8 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	    case E_V8HImode:
 	      /* Perform a parallel unsigned saturating subtraction.  */
 	      x = gen_reg_rtx (mode);
-	      emit_insn (gen_rtx_SET (x, gen_rtx_US_MINUS (mode, cop0,
-							   cop1)));
-
+	      emit_insn (gen_rtx_SET
+			 (x, gen_rtx_US_MINUS (mode, cop0, cop1)));
 	      cop0 = x;
 	      cop1 = CONST0_RTX (mode);
 	      code = EQ;
@@ -5472,18 +5549,17 @@ ix86_split_long_move (rtx operands[])
 static void
 ix86_expand_ashl_const (rtx operand, int count, machine_mode mode)
 {
-  rtx (*insn)(rtx, rtx, rtx);
-
   if (count == 1
       || (count * ix86_cost->add <= ix86_cost->shift_const
 	  && !optimize_insn_for_size_p ()))
     {
-      insn = mode == DImode ? gen_addsi3 : gen_adddi3;
       while (count-- > 0)
-	emit_insn (insn (operand, operand, operand));
+	emit_insn (gen_add2_insn (operand, operand));
     }
   else
     {
+      rtx (*insn)(rtx, rtx, rtx);
+
       insn = mode == DImode ? gen_ashlsi3 : gen_ashldi3;
       emit_insn (insn (operand, operand, GEN_INT (count)));
     }
@@ -6416,10 +6492,7 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx vec_value,
 static void
 ix86_adjust_counter (rtx countreg, HOST_WIDE_INT value)
 {
-  rtx (*gen_add)(rtx, rtx, rtx)
-    = GET_MODE (countreg) == DImode ? gen_adddi3 : gen_addsi3;
-
-  emit_insn (gen_add (countreg, countreg, GEN_INT (-value)));
+  emit_insn (gen_add2_insn (countreg, GEN_INT (-value)));
 }
 
 /* Depending on ISSETMEM, copy enough from SRCMEM to DESTMEM or set enough to

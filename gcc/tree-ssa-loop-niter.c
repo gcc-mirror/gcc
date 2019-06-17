@@ -2830,6 +2830,27 @@ finite_loop_p (struct loop *loop)
 		 loop->num);
       return true;
     }
+
+  if (flag_finite_loops)
+    {
+      unsigned i;
+      vec<edge> exits = get_loop_exit_edges (loop);
+      edge ex;
+
+      /* If the loop has a normal exit, we can assume it will terminate.  */
+      FOR_EACH_VEC_ELT (exits, i, ex)
+	if (!(ex->flags & (EDGE_EH | EDGE_ABNORMAL | EDGE_FAKE)))
+	  {
+	    exits.release ();
+	    if (dump_file)
+	      fprintf (dump_file, "Assume loop %i to be finite: it has an exit "
+		       "and -ffinite-loops is on.\n", loop->num);
+	    return true;
+	  }
+
+      exits.release ();
+    }
+
   return false;
 }
 

@@ -727,8 +727,8 @@ vect_free_loop_info_assumptions (struct loop *loop)
 /* If LOOP has been versioned during ifcvt, return the internal call
    guarding it.  */
 
-static gimple *
-vect_loop_vectorized_call (struct loop *loop)
+gimple *
+vect_loop_vectorized_call (struct loop *loop, gcond **cond)
 {
   basic_block bb = loop_preheader_edge (loop)->src;
   gimple *g;
@@ -744,6 +744,8 @@ vect_loop_vectorized_call (struct loop *loop)
   while (1);
   if (g && gimple_code (g) == GIMPLE_COND)
     {
+      if (cond)
+	*cond = as_a <gcond *> (g);
       gimple_stmt_iterator gsi = gsi_for_stmt (g);
       gsi_prev (&gsi);
       if (!gsi_end_p (gsi))

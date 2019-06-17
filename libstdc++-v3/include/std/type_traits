@@ -1448,6 +1448,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename is_void<_To>::type type;
     };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
   template<typename _From, typename _To>
     class __is_convertible_helper<_From, _To, false>
     {
@@ -1466,7 +1468,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       typedef decltype(__test<_From, _To>(0)) type;
     };
-
+#pragma GCC diagnostic pop
 
   /// is_convertible
   template<typename _From, typename _To>
@@ -1481,6 +1483,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : is_void<_To>
     { };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
   template<typename _From, typename _To>
     class __is_nt_convertible_helper<_From, _To, false>
     {
@@ -1499,6 +1503,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       using type = decltype(__test<_From, _To>(0));
     };
+#pragma GCC diagnostic pop
 
   // is_nothrow_convertible for C++11
   template<typename _From, typename _To>
@@ -2894,12 +2899,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
              __call_is_nothrow_<_Fn, _Args...>>::type
     { };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
   struct __nonesuchbase {};
   struct __nonesuch : private __nonesuchbase {
     ~__nonesuch() = delete;
     __nonesuch(__nonesuch const&) = delete;
     void operator=(__nonesuch const&) = delete;
   };
+#pragma GCC diagnostic pop
 
 #if __cplusplus >= 201703L
 # define __cpp_lib_is_invocable 201703

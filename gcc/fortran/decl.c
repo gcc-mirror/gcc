@@ -10193,6 +10193,13 @@ gfc_match_derived_decl (void)
       && !gfc_add_function (&gensym->attr, gensym->name, NULL))
     return MATCH_ERROR;
 
+  if (gensym->attr.dummy)
+    {
+      gfc_error ("Dummy argument %qs at %L cannot be a derived type at %C",
+		 name, &gensym->declared_at);
+      return MATCH_ERROR;
+    }
+
   sym = gfc_find_dt_in_generic (gensym);
 
   if (sym && (sym->components != NULL || sym->attr.zero_comp))

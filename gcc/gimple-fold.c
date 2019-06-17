@@ -1672,30 +1672,16 @@ get_range_strlen (tree arg, bitmap *visited,
     }
 }
 
-/* Determine the minimum and maximum value or string length that ARG
-   refers to and store each in the first two elements of MINMAXLEN.
-   For expressions that point to strings of unknown lengths that are
-   character arrays, use the upper bound of the array as the maximum
-   length.  For example, given an expression like 'x ? array : "xyz"'
-   and array declared as 'char array[8]', MINMAXLEN[0] will be set
-   to 0 and MINMAXLEN[1] to 7, the longest string that could be
-   stored in array.
-   Return true if the range of the string lengths has been obtained
-   from the upper bound of an array at the end of a struct.  Such
-   an array may hold a string that's longer than its upper bound
-   due to it being used as a poor-man's flexible array member.
-
-   STRICT is true if it will handle PHIs and COND_EXPRs conservatively
-   and false if PHIs and COND_EXPRs are to be handled optimistically,
-   if we can determine string length minimum and maximum; it will use
-   the minimum from the ones where it can be determined.
-   STRICT false should be only used for warning code.
-   When non-null, clear *NONSTR if ARG refers to a constant array
-   that is known not be nul-terminated.  Otherwise set it to
-   the declaration of the constant non-terminated array.
-
-   ELTSIZE is 1 for normal single byte character strings, and 2 or
-   4 for wide characer strings.  ELTSIZE is by default 1.  */
+/* Try to obtain the range of the lengths of the string(s) referenced
+   by ARG, or the size of the largest array ARG refers to if the range
+   of lengths cannot be determined, and store all in *PDATA.  ELTSIZE
+   is the expected size of the string element in bytes: 1 for char and
+   some power of 2 for wide characters.
+   Return true if the range [PDATA->MINLEN, PDATA->MAXLEN] is suitable
+   for optimization.  Returning false means that a nonzero PDATA->MINLEN
+   doesn't reflect the true lower bound of the range when PDATA->MAXLEN
+   is -1 (in that case, the actual range is indeterminate, i.e.,
+   [0, PTRDIFF_MAX - 2].  */
 
 bool
 get_range_strlen (tree arg, c_strlen_data *pdata, unsigned eltsize)

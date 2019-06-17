@@ -185,28 +185,36 @@ make_internal_typeinfo (tinfo_kind tk, Identifier *ident, ...)
   va_end (ap);
 }
 
-/* Helper for create_tinfo_types.  Creates a typeinfo class declaration
-   incase one wasn't supplied by reading `object.d'.  */
+/* Reference to the `object` module, where all TypeInfo is defined.  */
+
+static Module *object_module;
+
+/* Helper for create_frontend_tinfo_types.  Creates a typeinfo class
+   declaration incase one wasn't supplied by reading `object.d'.  */
 
 static void
-make_frontend_typeinfo (Module *mod, Identifier *ident,
-			ClassDeclaration *base = NULL)
+make_frontend_typeinfo (Identifier *ident, ClassDeclaration *base = NULL)
 {
   if (!base)
     base = Type::dtypeinfo;
 
+  gcc_assert (object_module);
+
   /* Create object module in order to complete the semantic.  */
-  if (!mod->_scope)
-    mod->importAll (NULL);
+  if (!object_module->_scope)
+    object_module->importAll (NULL);
 
   /* Assignment of global typeinfo variables is managed by the ClassDeclaration
      constructor, so only need to new the declaration here.  */
-  Loc loc = (mod->md) ? mod->md->loc : mod->loc;
+  Loc loc = (object_module->md) ? object_module->md->loc : object_module->loc;
   ClassDeclaration *tinfo = ClassDeclaration::create (loc, ident, NULL, NULL,
 						      true);
-  tinfo->parent = mod;
-  tinfo->semantic (mod->_scope);
+  tinfo->parent = object_module;
+  tinfo->semantic (object_module->_scope);
   tinfo->baseClass = base;
+  /* This is a compiler generated class, and shouldn't be mistaken for being
+     the type declared in the runtime library.  */
+  tinfo->storage_class |= STCtemp;
 }
 
 /* Make sure the required builtin types exist for generating the TypeInfo
@@ -227,69 +235,78 @@ create_tinfo_types (Module *mod)
 			  ptr_type_node, d_uint_type, ptr_type_node,
 			  array_type_node, ptr_type_node, ptr_type_node, NULL);
 
+  object_module = mod;
+}
+
+/* Same as create_tinfo_types, but builds all front-end TypeInfo variable
+   definitions.  */
+
+static void
+create_frontend_tinfo_types (void)
+{
   /* If there's no Object class defined, then neither can TypeInfo be.  */
-  if (ClassDeclaration::object == NULL)
+  if (object_module == NULL || ClassDeclaration::object == NULL)
     return;
 
   /* Create all frontend TypeInfo classes declarations.  We rely on all
      existing, even if only just as stubs.  */
   if (!Type::dtypeinfo)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo"),
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo"),
 			    ClassDeclaration::object);
 
   if (!Type::typeinfoclass)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo_Class"));
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo_Class"));
 
   if (!Type::typeinfointerface)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo_Interface"));
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo_Interface"));
 
   if (!Type::typeinfostruct)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo_Struct"));
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo_Struct"));
 
   if (!Type::typeinfopointer)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo_Pointer"));
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo_Pointer"));
 
   if (!Type::typeinfoarray)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo_Array"));
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo_Array"));
 
   if (!Type::typeinfostaticarray)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo_StaticArray"));
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo_StaticArray"));
 
   if (!Type::typeinfoassociativearray)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo_AssociativeArray"));
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo_AssociativeArray"));
 
   if (!Type::typeinfoenum)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo_Enum"));
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo_Enum"));
 
   if (!Type::typeinfofunction)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo_Function"));
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo_Function"));
 
   if (!Type::typeinfodelegate)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo_Delegate"));
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo_Delegate"));
 
   if (!Type::typeinfotypelist)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo_Tuple"));
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo_Tuple"));
 
   if (!Type::typeinfoconst)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo_Const"));
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo_Const"));
 
   if (!Type::typeinfoinvariant)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo_Invariant"),
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo_Invariant"),
 			    Type::typeinfoconst);
 
   if (!Type::typeinfoshared)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo_Shared"),
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo_Shared"),
 			    Type::typeinfoconst);
 
   if (!Type::typeinfowild)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo_Wild"),
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo_Wild"),
 			    Type::typeinfoconst);
 
   if (!Type::typeinfovector)
-    make_frontend_typeinfo (mod, Identifier::idPool ("TypeInfo_Vector"));
+    make_frontend_typeinfo (Identifier::idPool ("TypeInfo_Vector"));
 
   if (!ClassDeclaration::cpp_type_info_ptr)
-    make_frontend_typeinfo (mod, Identifier::idPool ("__cpp_type_info_ptr"),
+    make_frontend_typeinfo (Identifier::idPool ("__cpp_type_info_ptr"),
 			    ClassDeclaration::object);
 }
 
@@ -1132,6 +1149,9 @@ public:
 tree
 layout_typeinfo (TypeInfoDeclaration *d)
 {
+  if (!Type::dtypeinfo)
+    create_frontend_tinfo_types ();
+
   tree type = TREE_TYPE (get_typeinfo_decl (d));
   TypeInfoVisitor v = TypeInfoVisitor (type);
   d->accept (&v);
@@ -1144,6 +1164,9 @@ layout_typeinfo (TypeInfoDeclaration *d)
 tree
 layout_classinfo (ClassDeclaration *cd)
 {
+  if (!Type::dtypeinfo)
+    create_frontend_tinfo_types ();
+
   TypeInfoClassDeclaration *d = TypeInfoClassDeclaration::create (cd->type);
   tree type = TREE_TYPE (get_classinfo_decl (cd));
   TypeInfoVisitor v = TypeInfoVisitor (type);
@@ -1366,6 +1389,9 @@ build_typeinfo (const Loc &loc, Type *type)
 void
 layout_cpp_typeinfo (ClassDeclaration *cd)
 {
+  if (!Type::dtypeinfo)
+    create_frontend_tinfo_types ();
+
   gcc_assert (cd->isCPPclass ());
 
   tree decl = get_cpp_typeinfo_decl (cd);
@@ -1434,6 +1460,9 @@ get_cpp_typeinfo_decl (ClassDeclaration *decl)
 void
 create_typeinfo (Type *type, Module *mod)
 {
+  if (!Type::dtypeinfo)
+    create_frontend_tinfo_types ();
+
   /* Do this since not all Type's are merged.  */
   Type *t = type->merge2 ();
   Identifier *ident;

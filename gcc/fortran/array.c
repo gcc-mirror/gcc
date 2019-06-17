@@ -324,10 +324,22 @@ gfc_free_array_spec (gfc_array_spec *as)
   if (as == NULL)
     return;
 
-  for (i = 0; i < as->rank + as->corank; i++)
+  if (as->corank == 0)
     {
-      gfc_free_expr (as->lower[i]);
-      gfc_free_expr (as->upper[i]);
+      for (i = 0; i < as->rank; i++)
+	{
+	  gfc_free_expr (as->lower[i]);
+	  gfc_free_expr (as->upper[i]);
+	}
+    }
+  else
+    {
+      int n = as->rank + as->corank - (as->cotype == AS_EXPLICIT ? 1 : 0);
+      for (i = 0; i < n; i++)
+	{
+	  gfc_free_expr (as->lower[i]);
+	  gfc_free_expr (as->upper[i]);
+	}
     }
 
   free (as);

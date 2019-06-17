@@ -11463,7 +11463,7 @@ output_pic_addr_const (FILE *file, rtx x, int code)
       break;
 
     case SYMBOL_REF:
-      if (TARGET_64BIT || ! TARGET_MACHO_BRANCH_ISLANDS)
+      if (TARGET_64BIT || ! TARGET_MACHO_PICSYM_STUBS)
 	output_addr_const (file, x);
       else
 	{
@@ -18633,18 +18633,21 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
       return cost;
     }
 
-  /* Moves between SSE/MMX and integer unit are expensive.  */
-  if (MMX_CLASS_P (class1) != MMX_CLASS_P (class2)
-      || SSE_CLASS_P (class1) != SSE_CLASS_P (class2))
+  /* Moves between MMX and non-MMX units require secondary memory.  */
+  if (MMX_CLASS_P (class1) != MMX_CLASS_P (class2))
+    gcc_unreachable ();
+
+  /* Moves between SSE and integer units are expensive.  */
+  if (SSE_CLASS_P (class1) != SSE_CLASS_P (class2))
 
     /* ??? By keeping returned value relatively high, we limit the number
-       of moves between integer and MMX/SSE registers for all targets.
+       of moves between integer and SSE registers for all targets.
        Additionally, high value prevents problem with x86_modes_tieable_p(),
-       where integer modes in MMX/SSE registers are not tieable
+       where integer modes in SSE registers are not tieable
        because of missing QImode and HImode moves to, from or between
        MMX/SSE registers.  */
-    return MAX (8, MMX_CLASS_P (class1) || MMX_CLASS_P (class2)
-		? ix86_cost->mmxsse_to_integer : ix86_cost->ssemmx_to_integer);
+    return MAX (8, SSE_CLASS_P (class1)
+		? ix86_cost->sse_to_integer : ix86_cost->integer_to_sse);
 
   if (MAYBE_FLOAT_CLASS_P (class1))
     return ix86_cost->fp_move;
