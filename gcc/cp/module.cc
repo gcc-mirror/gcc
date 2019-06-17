@@ -8022,7 +8022,16 @@ void
 trees_out::fn_parms (tree parms)
 {
   for (; parms; parms = TREE_CHAIN (parms))
-    tree_node (TREE_VALUE (parms));
+    {
+      tree ptype = TREE_VALUE (parms);
+      // FIXME: If there is no canonical, perhaps this isn't a
+      // mergeable decl?  But need to think about streaming defn
+      // separate from decl.
+      if (tree canon = TYPE_CANONICAL (ptype))
+	ptype = canon;
+
+      tree_node (ptype);
+    }
   tree_node (NULL_TREE);
 }
 
@@ -9361,16 +9370,22 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	    {
 	      tree ctx = CP_DECL_CONTEXT (decl);
 	      gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
+	      tree not_tmpl = STRIP_TEMPLATE (decl);
 
 	      if (!TREE_PUBLIC (ctx))
 		/* Member of internal namespace.  */
 		dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
-	      else if (TREE_CODE (STRIP_TEMPLATE (decl)) != TYPE_DECL
-		       && TREE_CODE (STRIP_TEMPLATE (decl)) != CONST_DECL
-		       && DECL_THIS_STATIC (STRIP_TEMPLATE (decl)))
+	      else if (TREE_CODE (not_tmpl) != TYPE_DECL
+		       && TREE_CODE (not_tmpl) != CONST_DECL
+		       && DECL_THIS_STATIC (not_tmpl))
 		{
-		  /* An internal decl.  */
-		  if (!header_module_p ())
+		  /* An internal decl.  In header modules permit
+		     extern "C" static inline functions
+		     ... because.  */
+		  if (!header_module_p ()
+		      || !(TREE_CODE (decl) == FUNCTION_DECL
+			   && DECL_DECLARED_INLINE_P (decl)
+			   && DECL_EXTERN_C_P (decl)))
 		    dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
 		}
 	      else if (DECL_IMPLICIT_TYPEDEF_P (decl)

@@ -1,0 +1,11 @@
+class exception_ptr;
+
+
+void rethrow_exception(exception_ptr);
+
+
+class exception_ptr
+{
+  friend void rethrow_exception(exception_ptr);
+};
+
