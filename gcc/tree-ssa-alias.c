@@ -1268,7 +1268,8 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
 	  if (TREE_CODE (type) == RECORD_TYPE)
 	    fieldsx.safe_push (field);
 	}
-      else if (TREE_CODE (x) == VIEW_CONVERT_EXPR)
+      else if (TREE_CODE (x) == VIEW_CONVERT_EXPR
+	       || TREE_CODE (x) == BIT_FIELD_REF)
 	fieldsx.truncate (0);
       x = TREE_OPERAND (x, 0);
     }
@@ -1284,7 +1285,8 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
 	  if (TREE_CODE (type) == RECORD_TYPE)
 	    fieldsy.safe_push (TREE_OPERAND (y, 1));
 	}
-      else if (TREE_CODE (y) == VIEW_CONVERT_EXPR)
+      else if (TREE_CODE (y) == VIEW_CONVERT_EXPR
+	       || TREE_CODE (y) == BIT_FIELD_REF)
 	fieldsy.truncate (0);
       y = TREE_OPERAND (y, 0);
     }
