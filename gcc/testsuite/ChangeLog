@@ -1,3 +1,8 @@
+2019-06-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/90754
+	* g++.dg/lookup/pr90754.C: New.
+
 2019-06-17  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR middle-end/64242

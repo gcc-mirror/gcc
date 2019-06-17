@@ -1,3 +1,9 @@
+2019-06-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/90754
+	* name-lookup.c (lookup_type_scope_1): Calll qualify_lookup before
+	checking context.
+
 2019-06-14  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90884 - stray note with -Wctor-dtor-privacy.
