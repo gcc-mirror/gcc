@@ -628,22 +628,26 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     -> decltype(filesystem::path(__first, __last, std::locale::classic()))
     {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      codecvt_utf8<path::value_type> __cvt;
+      // XXX This assumes native wide encoding is UTF-16.
+      std::codecvt_utf8_utf16<path::value_type> __cvt;
       path::string_type __tmp;
       if constexpr (is_pointer_v<_InputIterator>)
 	{
-	  if (__str_codecvt_in(__first, __last, __tmp, __cvt))
+	  if (__str_codecvt_in_all(__first, __last, __tmp, __cvt))
 	    return path{ __tmp };
 	}
       else
 	{
 	  const std::string __u8str{__first, __last};
 	  const char* const __ptr = __u8str.data();
-	  if (__str_codecvt_in(__ptr, __ptr + __u8str.size(), __tmp, __cvt))
+	  if (__str_codecvt_in_all(__ptr, __ptr + __u8str.size(), __tmp, __cvt))
 	    return path{ __tmp };
 	}
-      return {};
+      _GLIBCXX_THROW_OR_ABORT(filesystem_error(
+	    "Cannot convert character sequence",
+	    std::make_error_code(errc::illegal_byte_sequence)));
 #else
+      // This assumes native normal encoding is UTF-8.
       return path{ __first, __last };
 #endif
     }
@@ -723,72 +727,68 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	{ return string_type{__first, __last}; }
     };
 
+#if !defined _GLIBCXX_FILESYSTEM_IS_WINDOWS  && defined _GLIBCXX_USE_CHAR8_T
+  // For POSIX converting from char8_t to char is also 'noconv'
+  template<>
+    struct path::_Cvt<char8_t>
+    {
+      template<typename _Iter>
+	static string_type
+	_S_convert(_Iter __first, _Iter __last)
+	{ return string_type(__first, __last); }
+    };
+#endif
+
   template<typename _CharT>
     struct path::_Cvt
     {
+      static string_type
+      _S_convert(const _CharT* __f, const _CharT* __l)
+      {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      static string_type
-      _S_wconvert(const char* __f, const char* __l, true_type)
-      {
-	using _Cvt = std::codecvt<wchar_t, char, mbstate_t>;
-	const auto& __cvt = std::use_facet<_Cvt>(std::locale{});
 	std::wstring __wstr;
-	if (__str_codecvt_in(__f, __l, __wstr, __cvt))
-	    return __wstr;
-	_GLIBCXX_THROW_OR_ABORT(filesystem_error(
-	      "Cannot convert character sequence",
-	      std::make_error_code(errc::illegal_byte_sequence)));
-      }
-
-      static string_type
-      _S_wconvert(const _CharT* __f, const _CharT* __l, false_type)
-      {
-	std::codecvt_utf8<_CharT> __cvt;
-	std::string __str;
-	if (__str_codecvt_out(__f, __l, __str, __cvt))
+	if constexpr (is_same_v<_CharT, char>)
 	  {
-	    const char* __f2 = __str.data();
-	    const char* __l2 = __f2 + __str.size();
-	    std::codecvt_utf8<wchar_t> __wcvt;
-	    std::wstring __wstr;
-	    if (__str_codecvt_in(__f2, __l2, __wstr, __wcvt))
+	    struct _UCvt : std::codecvt<wchar_t, char, std::mbstate_t>
+	    { } __cvt;
+	    if (__str_codecvt_in_all(__f, __l, __wstr, __cvt))
 	      return __wstr;
 	  }
-	_GLIBCXX_THROW_OR_ABORT(filesystem_error(
-	      "Cannot convert character sequence",
-	      std::make_error_code(errc::illegal_byte_sequence)));
-      }
-
-      static string_type
-      _S_convert(const _CharT* __f, const _CharT* __l)
-      {
-	return _S_wconvert(__f, __l, is_same<_CharT, char>{});
-      }
-#else
-      static string_type
-      _S_convert(const _CharT* __f, const _CharT* __l)
-      {
 #ifdef _GLIBCXX_USE_CHAR8_T
-	if constexpr (is_same_v<_CharT, char8_t>)
+	else if constexpr (is_same_v<_CharT, char8_t>)
 	  {
-	    string_type __str(__f, __l);
-	    return __str;
+	    const char* __f2 = (const char*)__f;
+	    const char* __l2 = (const char*)__l;
+	    std::codecvt_utf8_utf16<wchar_t> __wcvt;
+	    if (__str_codecvt_in_all(__f2, __l2, __wstr, __wcvt))
+	      return __wstr;
 	  }
-	else
-	  {
 #endif
-	    std::codecvt_utf8<_CharT> __cvt;
+	else // char16_t or char32_t
+	  {
+	    struct _UCvt : std::codecvt<_CharT, char, std::mbstate_t>
+	    { } __cvt;
 	    std::string __str;
-	    if (__str_codecvt_out(__f, __l, __str, __cvt))
-	      return __str;
-#ifdef _GLIBCXX_USE_CHAR8_T
+	    if (__str_codecvt_out_all(__f, __l, __str, __cvt))
+	      {
+		const char* __f2 = __str.data();
+		const char* __l2 = __f2 + __str.size();
+		std::codecvt_utf8_utf16<wchar_t> __wcvt;
+		if (__str_codecvt_in_all(__f2, __l2, __wstr, __wcvt))
+		  return __wstr;
+	      }
 	  }
+#else // ! windows
+	struct _UCvt : std::codecvt<_CharT, char, std::mbstate_t>
+	{ } __cvt;
+	std::string __str;
+	if (__str_codecvt_out_all(__f, __l, __str, __cvt))
+	  return __str;
 #endif
 	_GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	      "Cannot convert character sequence",
 	      std::make_error_code(errc::illegal_byte_sequence)));
       }
-#endif
 
       static string_type
       _S_convert(_CharT* __f, _CharT* __l)
@@ -971,61 +971,51 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     std::basic_string<_CharT, _Traits, _Allocator>
     path::_S_str_convert(const string_type& __str, const _Allocator& __a)
     {
-      if (__str.size() == 0)
-	return std::basic_string<_CharT, _Traits, _Allocator>(__a);
+      static_assert(!is_same_v<_CharT, value_type>);
 
-      const value_type* __first = __str.data();
-      const value_type* __last = __first + __str.size();
-
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      using _CharAlloc = __alloc_rebind<_Allocator, char>;
-      using _String = basic_string<char, char_traits<char>, _CharAlloc>;
       using _WString = basic_string<_CharT, _Traits, _Allocator>;
 
-      // use codecvt_utf8<wchar_t> to convert native string to UTF-8
-      codecvt_utf8<value_type> __cvt;
+      if (__str.size() == 0)
+	return _WString(__a);
+
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+      // First convert native string from UTF-16 to to UTF-8.
+      // XXX This assumes that the execution wide-character set is UTF-16.
+      std::codecvt_utf8_utf16<value_type> __cvt;
+
+      using _CharAlloc = __alloc_rebind<_Allocator, char>;
+      using _String = basic_string<char, char_traits<char>, _CharAlloc>;
       _String __u8str{_CharAlloc{__a}};
-      if (__str_codecvt_out(__first, __last, __u8str, __cvt))
-	{
-	  if constexpr (is_same_v<_CharT, char>)
-	    return __u8str;
-#ifdef _GLIBCXX_USE_CHAR8_T
-	  else if constexpr (is_same_v<_CharT, char8_t>)
-	    {
-	      const char* __f = __u8str.data();
-	      const char* __l = __f + __u8str.size();
-	      _WString __wstr(__f, __l);
-	      return __wstr;
-	    }
-#endif
-	  else
-	    {
-	      _WString __wstr;
-	      // use codecvt_utf8<_CharT> to convert UTF-8 to wide string
-	      codecvt_utf8<_CharT> __cvt;
-	      const char* __f = __u8str.data();
-	      const char* __l = __f + __u8str.size();
-	      if (__str_codecvt_in(__f, __l, __wstr, __cvt))
-		return __wstr;
-	    }
-	}
+      const value_type* __wfirst = __str.data();
+      const value_type* __wlast = __wfirst + __str.size();
+      if (__str_codecvt_out_all(__wfirst, __wlast, __u8str, __cvt)) {
+      if constexpr (is_same_v<_CharT, char>)
+	return __u8str; // XXX assumes native ordinary encoding is UTF-8.
+      else {
+
+      const char* __first = __u8str.data();
+      const char* __last = __first + __u8str.size();
 #else
+      const value_type* __first = __str.data();
+      const value_type* __last = __first + __str.size();
+#endif
+
+      // Convert UTF-8 string to requested format.
 #ifdef _GLIBCXX_USE_CHAR8_T
       if constexpr (is_same_v<_CharT, char8_t>)
-	{
-	  basic_string<_CharT, _Traits, _Allocator> __wstr{__first, __last, __a};
-	  return __wstr;
-	}
+	return _WString(__first, __last, __a);
       else
+#endif
 	{
-#endif
-	  codecvt_utf8<_CharT> __cvt;
-	  basic_string<_CharT, _Traits, _Allocator> __wstr{__a};
-	  if (__str_codecvt_in(__first, __last, __wstr, __cvt))
+	  // Convert UTF-8 to wide string.
+	  _WString __wstr(__a);
+	  struct _UCvt : std::codecvt<_CharT, char, std::mbstate_t> { } __cvt;
+	  if (__str_codecvt_in_all(__first, __last, __wstr, __cvt))
 	    return __wstr;
-#ifdef _GLIBCXX_USE_CHAR8_T
 	}
-#endif
+
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+      } }
 #endif
       _GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	    "Cannot convert character sequence",
@@ -1038,7 +1028,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     path::string(const _Allocator& __a) const
     {
       if constexpr (is_same_v<_CharT, value_type>)
-	return { _M_pathname, __a };
+	return { _M_pathname.c_str(), _M_pathname.length(), __a };
       else
 	return _S_str_convert<_CharT, _Traits>(_M_pathname, __a);
     }
@@ -1060,11 +1050,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
     std::string __str;
-    // convert from native encoding to UTF-8
-    codecvt_utf8<value_type> __cvt;
+    // convert from native wide encoding (assumed to be UTF-16) to UTF-8
+    std::codecvt_utf8_utf16<value_type> __cvt;
     const value_type* __first = _M_pathname.data();
     const value_type* __last = __first + _M_pathname.size();
-    if (__str_codecvt_out(__first, __last, __str, __cvt))
+    if (__str_codecvt_out_all(__first, __last, __str, __cvt))
       return __str;
     _GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	  "Cannot convert character sequence",
