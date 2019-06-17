@@ -1,3 +1,21 @@
+2019-06-17  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-protos.h (gen_set_softstack_insn): Declare.
+	* config/nvptx/nvptx.c (gen_set_softstack_insn): New function.
+	* config/nvptx/nvptx.md (define_insn "set_softstack_insn"): Rename to
+	...
+	(define_insn "set_softstack_<mode>"): ... this.  Use P iterator on
+	match_operand 0.
+	(define_insn "omp_simt_enter_insn"): Rename to ...
+	(define_insn "omp_simt_enter_<mode>"): ... this.  Use P iterator on
+	match_operand 0, 1 and 2, as well as the unspec_volatile result.
+	(define_expand "omp_simt_enter): Use gen_omp_simt_enter_di and
+	gen_omp_simt_enter_si.
+	(define_expand "omp_simt_exit"): New.
+	(define_insn "omp_simt_exit"): Rename to ...
+	(define_insn "omp_simt_exit_<mode>"): ... this.  Use P iterator on
+	match_operand 0.
+
 2019-06-17  Matthew Green  <mrg@eterna.com.au>
 	    Maya Rashish  <coypu@sdf.org>
 
