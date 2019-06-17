@@ -1,5 +1,7 @@
 2019-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/c_global/cmath (__lerp, lerp): Add noexcept (LWG 3201).
+
 	PR libstdc++/90281 Fix string conversions for filesystem::path
 	* include/bits/fs_path.h (u8path) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]:
 	Use codecvt_utf8_utf16 instead of codecvt_utf8. Use
