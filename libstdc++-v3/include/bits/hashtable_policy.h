@@ -706,17 +706,19 @@ namespace __detail
       __hashtable* __h = static_cast<__hashtable*>(this);
       __hash_code __code = __h->_M_hash_code(__k);
       std::size_t __bkt = __h->_M_bucket_index(__k, __code);
-      __node_type* __p = __h->_M_find_node(__bkt, __k, __code);
+      if (__node_type* __node = __h->_M_find_node(__bkt, __k, __code))
+	return __node->_M_v().second;
 
-      if (!__p)
-	{
-	  __p = __h->_M_allocate_node(std::piecewise_construct,
-				      std::tuple<const key_type&>(__k),
-				      std::tuple<>());
-	  return __h->_M_insert_unique_node(__bkt, __code, __p)->second;
-	}
-
-      return __p->_M_v().second;
+      typename __hashtable::_Scoped_node __node {
+	__h,
+	std::piecewise_construct,
+	std::tuple<const key_type&>(__k),
+	std::tuple<>()
+      };
+      auto __pos
+	= __h->_M_insert_unique_node(__k, __bkt, __code, __node._M_node);
+      __node._M_node = nullptr;
+      return __pos->second;
     }
 
   template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
@@ -731,17 +733,19 @@ namespace __detail
       __hashtable* __h = static_cast<__hashtable*>(this);
       __hash_code __code = __h->_M_hash_code(__k);
       std::size_t __bkt = __h->_M_bucket_index(__k, __code);
-      __node_type* __p = __h->_M_find_node(__bkt, __k, __code);
+      if (__node_type* __node = __h->_M_find_node(__bkt, __k, __code))
+	return __node->_M_v().second;
 
-      if (!__p)
-	{
-	  __p = __h->_M_allocate_node(std::piecewise_construct,
-				      std::forward_as_tuple(std::move(__k)),
-				      std::tuple<>());
-	  return __h->_M_insert_unique_node(__bkt, __code, __p)->second;
-	}
-
-      return __p->_M_v().second;
+      typename __hashtable::_Scoped_node __node {
+	__h,
+	std::piecewise_construct,
+	std::forward_as_tuple(std::move(__k)),
+	std::tuple<>()
+      };
+      auto __pos
+	= __h->_M_insert_unique_node(__k, __bkt, __code, __node._M_node);
+      __node._M_node = nullptr;
+      return __pos->second;
     }
 
   template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
@@ -1972,8 +1976,8 @@ namespace __detail
     }
 
   /**
-   * This type deals with all allocation and keeps an allocator instance through
-   * inheritance to benefit from EBO when possible.
+   * This type deals with all allocation and keeps an allocator instance
+   * through inheritance to benefit from EBO when possible.
    */
   template<typename _NodeAlloc>
     struct _Hashtable_alloc : private _Hashtable_ebo_helper<0, _NodeAlloc>
@@ -2012,17 +2016,21 @@ namespace __detail
       _M_node_allocator() const
       { return __ebo_node_alloc::_M_cget(); }
 
+      // Allocate a node and construct an element within it.
       template<typename... _Args>
 	__node_type*
 	_M_allocate_node(_Args&&... __args);
 
+      // Destroy the element within a node and deallocate the node.
       void
       _M_deallocate_node(__node_type* __n);
 
+      // Deallocate a node.
       void
       _M_deallocate_node_ptr(__node_type* __n);
 
-      // Deallocate the linked list of nodes pointed to by __n
+      // Deallocate the linked list of nodes pointed to by __n.
+      // The elements within the nodes are destroyed.
       void
       _M_deallocate_nodes(__node_type* __n);
 
