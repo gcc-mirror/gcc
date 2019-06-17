@@ -1,3 +1,22 @@
+2019-06-17  François Dumont  <fdumont@gcc.gnu.org>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (struct _Hashtable::_Scoped_node): New type.
+	(_Hashtable::_M_insert_unique_node): Add key_type parameter. Don't
+	deallocate node if insertion fails.
+	(_Hashtable::_M_insert_multi_node): Likewise.
+	(_Hashtable::_M_reinsert_node): Pass additional key argument.
+	(_Hashtable::_M_reinsert_node_multi): Likewise. Remove FIXME.
+	(_Hashtable::_M_extract_node(size_t, __node_base*)): New function.
+	(_Hashtable::extract(const_iterator)): Use _M_extract_node.
+	(_Hashtable::extract(const _Key&)): Likewise.
+	(_Hashtable::_M_merge_unique): Pass additional key argument.
+	(_Hashtable::_M_emplace<Args>(true_type, Args&&...)): Likewise. Use
+	_Scoped_node.
+	(_Hashtable::_M_insert): Likewise.
+	* include/bits/hashtable_policy.h (_Map_base::operator[]): Likewise.
+	(_Hashtable_alloc): Add comments to functions with misleading names.
+
 2019-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/bad_function_call/what.cc: Include <string> header
