@@ -1,5 +1,14 @@
 2019-06-17  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* coroutines.cc (register_local_var_uses): Make frame local var ids
+	unique for each bind scope.
+	
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/local-var-4.C: New test.
+
+2019-06-17  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* g++.dg/coroutines/torture/local-var-0.C: New test.
 	* g++.dg/coroutines/torture/local-var-1.C: New test.
 	* g++.dg/coroutines/torture/local-var-2.C: New test.

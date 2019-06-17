@@ -1902,10 +1902,12 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	    }
 	  tree lvtype = TREE_TYPE (lvar);
 	  tree lvname = DECL_NAME (lvar);
-	  /* TODO: make names depth+index unique.  */
-	  size_t namsize = sizeof ("__lv.") + IDENTIFIER_LENGTH (lvname) + 1;
+	  /* Make names depth+index unique, so that we can support nested
+	     scopes with identically named locals.  */
+	  size_t namsize = sizeof ("__lv...") + IDENTIFIER_LENGTH (lvname) + 18;
 	  char *buf = (char *) alloca (namsize);
-	  snprintf (buf, namsize, "__lv.%s", IDENTIFIER_POINTER (lvname));
+	  snprintf (buf, namsize, "__lv.%u.%u.%s", lvd->bind_indx,
+		    lvd->nest_depth, IDENTIFIER_POINTER (lvname));
 	  /* TODO: Figure out if we should build a local type that has any
 	     excess alignment or size from the original decl.  */
 	  local_var.field_id = coro_make_frame_entry (lvd->field_list, buf,
