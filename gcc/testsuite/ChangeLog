@@ -1,3 +1,9 @@
+2019-05-20  Jeff Law  <law@redhat.com>
+
+	Backported from mainline
+	2019-05-31  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+	* gcc.target/mips/msa-fmadd.c: New.
+
 2019-06-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	Tomáš Trnka  <trnka@scm.com>
 
