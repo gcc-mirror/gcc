@@ -1,3 +1,10 @@
+2019-06-17  Matthew Green  <mrg@eterna.com.au>
+	    Maya Rashish  <coypu@sdf.org>
+
+	* config.gcc (aarch64*-*-netbsd*): New target.
+	* config/aarch64/aarch64-netbsd.h: New file.
+	* config/aarch64/t-aarch64-netbsd: Likewise.
+
 2019-06-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-alias.c (aliasing_component_refs_p): Consider only
