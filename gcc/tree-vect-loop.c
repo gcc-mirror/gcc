@@ -824,6 +824,7 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in, vec_info_shared *shared)
     peeling_for_alignment (0),
     ptr_mask (0),
     ivexpr_map (NULL),
+    scan_map (NULL),
     slp_unrolling_factor (1),
     single_scalar_iteration_cost (0),
     vectorizable (false),
@@ -863,8 +864,8 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in, vec_info_shared *shared)
 	  gimple *stmt = gsi_stmt (si);
 	  gimple_set_uid (stmt, 0);
 	  add_stmt (stmt);
-	  /* If .GOMP_SIMD_LANE call for the current loop has 2 arguments, the
-	     second argument is the #pragma omp simd if (x) condition, when 0,
+	  /* If .GOMP_SIMD_LANE call for the current loop has 3 arguments, the
+	     third argument is the #pragma omp simd if (x) condition, when 0,
 	     loop shouldn't be vectorized, when non-zero constant, it should
 	     be vectorized normally, otherwise versioned with vectorized loop
 	     done if the condition is non-zero at runtime.  */
@@ -872,12 +873,12 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in, vec_info_shared *shared)
 	      && is_gimple_call (stmt)
 	      && gimple_call_internal_p (stmt)
 	      && gimple_call_internal_fn (stmt) == IFN_GOMP_SIMD_LANE
-	      && gimple_call_num_args (stmt) >= 2
+	      && gimple_call_num_args (stmt) >= 3
 	      && TREE_CODE (gimple_call_arg (stmt, 0)) == SSA_NAME
 	      && (loop_in->simduid
 		  == SSA_NAME_VAR (gimple_call_arg (stmt, 0))))
 	    {
-	      tree arg = gimple_call_arg (stmt, 1);
+	      tree arg = gimple_call_arg (stmt, 2);
 	      if (integer_zerop (arg) || TREE_CODE (arg) == SSA_NAME)
 		simd_if_cond = arg;
 	      else
@@ -959,6 +960,7 @@ _loop_vec_info::~_loop_vec_info ()
 
   release_vec_loop_masks (&masks);
   delete ivexpr_map;
+  delete scan_map;
 
   loop->aux = NULL;
 }

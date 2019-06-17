@@ -1,3 +1,10 @@
+2019-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/vect-simd-8.c: New test.
+	* gcc.dg/vect/vect-simd-9.c: New test.
+	* g++.dg/vect/simd-2.cc: New test.
+	* g++.dg/gomp/scan-1.C: New test.
+
 2019-06-17  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/62055

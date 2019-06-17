@@ -1,3 +1,8 @@
+2019-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_omp_clauses): For OMP_CLAUSE_REDUCTION_INSCAN
+	set need_copy_assignment.
+
 2019-06-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/83820 - excessive attribute arguments not detected.
