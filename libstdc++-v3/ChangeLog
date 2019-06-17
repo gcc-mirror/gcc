@@ -1,3 +1,21 @@
+2019-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/bad_function_call/what.cc: Include <string> header
+	for std::string.
+	* testsuite/20_util/shared_ptr/cons/weak_ptr_expired.cc: Likewise.
+	* testsuite/20_util/tuple/cons/allocator_with_any.cc: Include <memory>
+	header for std::allocator.
+	* testsuite/23_containers/array/tuple_interface/tuple_element.cc: Add
+	using-declaration for std::size_t.
+	* testsuite/23_containers/array/tuple_interface/tuple_size.cc:
+	Likewise.
+	* testsuite/23_containers/deque/cons/55977.cc: Include <istream> for
+	std::istream.
+	* testsuite/23_containers/vector/cons/55977.cc: Likewise.
+	* testsuite/experimental/map/erasure.cc: Include <string> for
+	std::string.
+	* testsuite/experimental/unordered_map/erasure.cc: Likewise.
+
 2019-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/type_traits (experimental::nonesuch): Use
