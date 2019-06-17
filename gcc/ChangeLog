@@ -1,3 +1,39 @@
+2019-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (struct omp_context): Add scan_inclusive field.
+	(scan_omp_1_stmt) <case GIMPLE_OMP_SCAN>: Set ctx->scan_inclusive
+	if inclusive scan.
+	(struct omplow_simd_context): Add lastlane member.
+	(lower_rec_simd_input_clauses): Add rvar argument, handle inscan
+	reductions.  Build 2 or 3 argument .GOMP_SIMD_LANE calls rather than
+	1 or 2 argument.
+	(lower_rec_input_clauses): Handle inscan reductions in simd contexts.
+	(lower_lastprivate_clauses): Set TREE_THIS_NOTRAP on the ARRAY_REF.
+	(lower_omp_scan): New function.
+	(lower_omp_1) <case GIMPLE_OMP_SCAN>: Use lower_omp_scan.
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): For IFN_GOMP_SIMD_LANE
+	check 3rd argument if present rather than 2nd.
+	* tree-vectorizer.h (struct _loop_vec_info): Add scan_map member.
+	(struct _stmt_vec_info): Change simd_lane_access_p from bool into
+	2-bit bitfield.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Initialize
+	scan_map.  For IFN_GOMP_SIMD_LANE check 3rd argument if present rather
+	than 2nd.
+	(_loop_vec_info::~_loop_vec_info): Delete scan_map.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_accesses): Allow two
+	different STMT_VINFO_SIMD_LANE_ACCESS_P refs if they have the same
+	init.
+	(vect_find_stmt_data_reference): Encode in ->aux the 2nd
+	IFN_GOMP_SIMD_LANE argument.
+	(vect_analyze_data_refs): Set STMT_VINFO_SIMD_LANE_ACCESS_P from the
+	encoded ->aux value.
+	* tree-vect-stmts.c: Include attribs.h.
+	(vectorizable_call): Adjust comment about IFN_GOMP_SIMD_LANE.
+	(scan_operand_equal_p, check_scan_store, vectorizable_scan_store): New
+	functions.
+	(vectorizable_load): For STMT_VINFO_SIMD_LANE_ACCESS_P tests use != 0.
+	(vectorizable_store): Handle STMT_VINFO_SIMD_LANE_ACCESS_P > 1.
+
 2019-06-17  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/62055
