@@ -1,5 +1,8 @@
 2019-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/allocator/1.cc: Add sized delete, which fixes a
+	failure on AIX.
+
 	* include/c_global/cmath (__lerp, lerp): Add noexcept (LWG 3201).
 
 	PR libstdc++/90281 Fix string conversions for filesystem::path
