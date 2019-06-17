@@ -1,5 +1,11 @@
 2019-06-17  Jan Hubicka  <hubicka@ucw.cz>
 
+	* tree-ssa-alias.c (aliasing_component_refs_p): Consider only
+	the access path from base to first VIEW_CONVERT_EXPR or
+	BIT_FIELD_REF.
+
+2019-06-17  Jan Hubicka  <hubicka@ucw.cz>
+
 	* tree-ssa-alias.c (nonoverlapping_component_refs_p): Also truncate
 	access path on BIT_FIELD_REFs.
 

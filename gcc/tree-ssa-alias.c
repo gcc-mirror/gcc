@@ -874,7 +874,6 @@ aliasing_component_refs_p (tree ref1,
      disambiguating q->i and p->a.j.  */
   tree base1, base2;
   tree type1, type2;
-  tree *refp;
   int same_p1 = 0, same_p2 = 0;
   bool maybe_match = false;
   tree end_struct_ref1 = NULL, end_struct_ref2 = NULL;
@@ -903,6 +902,9 @@ aliasing_component_refs_p (tree ref1,
 	  gcc_checking_assert (!end_struct_ref1);
           end_struct_ref1 = base1;
 	}
+      if (TREE_CODE (base1) == VIEW_CONVERT_EXPR
+	  || TREE_CODE (base1) == BIT_FIELD_REF)
+	ref1 = TREE_OPERAND (base1, 0);
       base1 = TREE_OPERAND (base1, 0);
     }
   type1 = TREE_TYPE (base1);
@@ -918,6 +920,9 @@ aliasing_component_refs_p (tree ref1,
 	  gcc_checking_assert (!end_struct_ref2);
 	  end_struct_ref2 = base2;
 	}
+      if (TREE_CODE (base2) == VIEW_CONVERT_EXPR
+	  || TREE_CODE (base2) == BIT_FIELD_REF)
+	ref2 = TREE_OPERAND (base2, 0);
       base2 = TREE_OPERAND (base2, 0);
     }
   type2 = TREE_TYPE (base2);
@@ -934,23 +939,23 @@ aliasing_component_refs_p (tree ref1,
       || (end_struct_ref2
 	  && compare_type_sizes (TREE_TYPE (end_struct_ref2), type1) >= 0))
     {
-      refp = &ref2;
+      tree ref = ref2;
       while (true)
 	{
 	  /* We walk from inner type to the outer types. If type we see is
 	     already too large to be part of type1, terminate the search.  */
-	  int cmp = compare_type_sizes (type1, TREE_TYPE (*refp));
+	  int cmp = compare_type_sizes (type1, TREE_TYPE (ref));
 
 	  if (cmp < 0
 	      && (!end_struct_ref1
 		  || compare_type_sizes (TREE_TYPE (end_struct_ref1),
-					 TREE_TYPE (*refp)) < 0))
+					 TREE_TYPE (ref)) < 0))
 	    break;
 	  /* If types may be of same size, see if we can decide about their
 	     equality.  */
 	  if (cmp == 0)
 	    {
-	      same_p2 = same_type_for_tbaa (TREE_TYPE (*refp), type1);
+	      same_p2 = same_type_for_tbaa (TREE_TYPE (ref), type1);
 	      if (same_p2 == 1)
 		break;
 	      /* In case we can't decide whether types are same try to
@@ -960,9 +965,9 @@ aliasing_component_refs_p (tree ref1,
 	      if (same_p2 == -1)
 		maybe_match = true;
 	    }
-	  if (!handled_component_p (*refp))
+	  if (!handled_component_p (ref))
 	    break;
-	  refp = &TREE_OPERAND (*refp, 0);
+	  ref = TREE_OPERAND (ref, 0);
 	}
       if (same_p2 == 1)
 	{
@@ -977,13 +982,13 @@ aliasing_component_refs_p (tree ref1,
 	  if (TREE_CODE (TREE_TYPE (base1)) == ARRAY_TYPE
 	      && (!TYPE_SIZE (TREE_TYPE (base1))
 		  || TREE_CODE (TYPE_SIZE (TREE_TYPE (base1))) != INTEGER_CST
-		  || (*refp == base2 && !ref2_is_decl)))
+		  || (ref == base2 && !ref2_is_decl)))
 	    {
 	      ++alias_stats.aliasing_component_refs_p_may_alias;
 	      return true;
 	    }
 
-	  get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp, &reverse);
+	  get_ref_base_and_extent (ref, &offadj, &sztmp, &msztmp, &reverse);
 	  offset2 -= offadj;
 	  get_ref_base_and_extent (base1, &offadj, &sztmp, &msztmp, &reverse);
 	  offset1 -= offadj;
@@ -1005,28 +1010,28 @@ aliasing_component_refs_p (tree ref1,
       || (end_struct_ref1
 	  && compare_type_sizes (TREE_TYPE (end_struct_ref1), type1) <= 0))
     {
-      refp = &ref1;
+      tree ref = ref1;
       while (true)
 	{
-	  int cmp = compare_type_sizes (type2, TREE_TYPE (*refp));
+	  int cmp = compare_type_sizes (type2, TREE_TYPE (ref));
 	  if (cmp < 0
 	      && (!end_struct_ref2
 		  || compare_type_sizes (TREE_TYPE (end_struct_ref2),
-					 TREE_TYPE (*refp)) < 0))
+					 TREE_TYPE (ref)) < 0))
 	    break;
 	  /* If types may be of same size, see if we can decide about their
 	     equality.  */
 	  if (cmp == 0)
 	    {
-	      same_p1 = same_type_for_tbaa (TREE_TYPE (*refp), type2);
+	      same_p1 = same_type_for_tbaa (TREE_TYPE (ref), type2);
 	      if (same_p1 == 1)
 		break;
 	      if (same_p1 == -1)
 		maybe_match = true;
 	    }
-	  if (!handled_component_p (*refp))
+	  if (!handled_component_p (ref))
 	    break;
-	  refp = &TREE_OPERAND (*refp, 0);
+	  ref = TREE_OPERAND (ref, 0);
 	}
       if (same_p1 == 1)
 	{
@@ -1036,13 +1041,13 @@ aliasing_component_refs_p (tree ref1,
 	  if (TREE_CODE (TREE_TYPE (base2)) == ARRAY_TYPE
 	      && (!TYPE_SIZE (TREE_TYPE (base2))
 		  || TREE_CODE (TYPE_SIZE (TREE_TYPE (base2))) != INTEGER_CST
-		  || (*refp == base1 && !ref2_is_decl)))
+		  || (ref == base1 && !ref2_is_decl)))
 	    {
 	      ++alias_stats.aliasing_component_refs_p_may_alias;
 	      return true;
 	    }
 
-	  get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp, &reverse);
+	  get_ref_base_and_extent (ref, &offadj, &sztmp, &msztmp, &reverse);
 	  offset1 -= offadj;
 	  get_ref_base_and_extent (base2, &offadj, &sztmp, &msztmp, &reverse);
 	  offset2 -= offadj;
