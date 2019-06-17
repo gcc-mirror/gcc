@@ -7,6 +7,7 @@ broken_longjmp (void *p)
 {
   void *buf[32];
   __builtin_memcpy (buf, p, 5 * sizeof (void*));
+  __builtin_memset (p, 0, 5 * sizeof (void*));
   /* Corrupts stack pointer...  */
   __builtin_longjmp (buf, 1);
 }

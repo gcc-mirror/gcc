@@ -1,3 +1,8 @@
+2019-06-17  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR middle-end/64242
+	* gcc.c-torture/execute/pr64242.c: Improve test.
+
 2019-06-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc.target/msp430/mspabi_sllll.c: New test.
