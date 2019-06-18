@@ -643,6 +643,19 @@ default_has_ifunc_p (void)
   return HAVE_GNU_INDIRECT_FUNCTION;
 }
 
+/* Return true if we predict the loop LOOP will be transformed to a
+   low-overhead loop, otherwise return false.
+
+   By default, false is returned, as this hook's applicability should be
+   verified for each target.  Target maintainers should re-define the hook
+   if the target can take advantage of it.  */
+
+bool
+default_predict_doloop_p (struct loop *loop ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
 /* NULL if INSN insn is valid within a low-overhead loop, otherwise returns
    an error message.
 

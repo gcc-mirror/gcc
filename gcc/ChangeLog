@@ -1,3 +1,15 @@
+2019-06-18  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR middle-end/80791
+	* target.def (predict_doloop_p): New hook.
+	* targhooks.h (default_predict_doloop_p): New declaration.
+	* targhooks.c (default_predict_doloop_p): New function.
+	* doc/tm.texi.in (TARGET_PREDICT_DOLOOP_P): New hook.
+	* doc/tm.texi: Regenerate.
+	* config/rs6000/rs6000.c (rs6000_predict_doloop_p): New function.
+	(TARGET_PREDICT_DOLOOP_P): New macro.
+	* tree-ssa-loop-ivopts.c (generic_predict_doloop_p): New function.
+
 2019-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (struct omp_context): Add scan_inclusive field.
