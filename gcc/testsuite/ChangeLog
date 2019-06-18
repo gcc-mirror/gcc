@@ -1,5 +1,8 @@
 2019-06-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR middle-end/90859
+	* c-c++-common/goacc/firstprivate-mappings-1.c: Update.
+
 	* c-c++-common/goacc/firstprivate-mappings-1.c: New file.
 	* g++.dg/goacc/firstprivate-mappings-1.C: Likewise.
 
