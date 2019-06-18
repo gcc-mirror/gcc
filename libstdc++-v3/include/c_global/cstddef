@@ -121,70 +121,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __byte_op_t = typename __byte_operand<_IntegerType>::__type;
 
   template<typename _IntegerType>
-    constexpr __byte_op_t<_IntegerType>&
-    operator<<=(byte& __b, _IntegerType __shift) noexcept
-    { return __b = byte(static_cast<unsigned char>(__b) << __shift); }
-
-  template<typename _IntegerType>
     constexpr __byte_op_t<_IntegerType>
     operator<<(byte __b, _IntegerType __shift) noexcept
-    { return byte(static_cast<unsigned char>(__b) << __shift); }
-
-  template<typename _IntegerType>
-    constexpr __byte_op_t<_IntegerType>&
-    operator>>=(byte& __b, _IntegerType __shift) noexcept
-    { return __b = byte(static_cast<unsigned char>(__b) >> __shift); }
+    { return (byte)(unsigned char)((unsigned)__b << __shift); }
 
   template<typename _IntegerType>
     constexpr __byte_op_t<_IntegerType>
     operator>>(byte __b, _IntegerType __shift) noexcept
-    { return byte(static_cast<unsigned char>(__b) >> __shift); }
-
-  constexpr byte&
-  operator|=(byte& __l, byte __r) noexcept
-  {
-    return __l =
-      byte(static_cast<unsigned char>(__l) | static_cast<unsigned char>(__r));
-  }
+    { return (byte)(unsigned char)((unsigned)__b >> __shift); }
 
   constexpr byte
   operator|(byte __l, byte __r) noexcept
-  {
-    return
-      byte(static_cast<unsigned char>(__l) | static_cast<unsigned char>(__r));
-  }
-
-  constexpr byte&
-  operator&=(byte& __l, byte __r) noexcept
-  {
-   return __l =
-     byte(static_cast<unsigned char>(__l) & static_cast<unsigned char>(__r));
-  }
+  { return (byte)(unsigned char)((unsigned)__l | (unsigned)__r); }
 
   constexpr byte
   operator&(byte __l, byte __r) noexcept
-  {
-    return
-      byte(static_cast<unsigned char>(__l) & static_cast<unsigned char>(__r));
-  }
-
-  constexpr byte&
-  operator^=(byte& __l, byte __r) noexcept
-  {
-    return __l =
-      byte(static_cast<unsigned char>(__l) ^ static_cast<unsigned char>(__r));
-  }
+  { return (byte)(unsigned char)((unsigned)__l & (unsigned)__r); }
 
   constexpr byte
   operator^(byte __l, byte __r) noexcept
-  {
-    return
-      byte(static_cast<unsigned char>(__l) ^ static_cast<unsigned char>(__r));
-  }
+  { return (byte)(unsigned char)((unsigned)__l ^ (unsigned)__r); }
 
   constexpr byte
   operator~(byte __b) noexcept
-  { return byte(~static_cast<unsigned char>(__b)); }
+  { return (byte)(unsigned char)~(unsigned)__b; }
+
+  template<typename _IntegerType>
+    constexpr __byte_op_t<_IntegerType>&
+    operator<<=(byte& __b, _IntegerType __shift) noexcept
+    { return __b = __b << __shift; }
+
+  template<typename _IntegerType>
+    constexpr __byte_op_t<_IntegerType>&
+    operator>>=(byte& __b, _IntegerType __shift) noexcept
+    { return __b = __b >> __shift; }
+
+  constexpr byte&
+  operator|=(byte& __l, byte __r) noexcept
+  { return __l = __l | __r; }
+
+  constexpr byte&
+  operator&=(byte& __l, byte __r) noexcept
+  { return __l = __l & __r; }
+
+  constexpr byte&
+  operator^=(byte& __l, byte __r) noexcept
+  { return __l = __l ^ __r; }
 
   template<typename _IntegerType>
     constexpr _IntegerType
