@@ -488,7 +488,7 @@
       {
 	/* The last element can be extracted with a LASTB and a false
 	   predicate.  */
-	rtx sel = force_reg (<VPRED>mode, CONST0_RTX (<VPRED>mode));
+	rtx sel = aarch64_pfalse_reg (<VPRED>mode);
 	emit_insn (gen_extract_last_<mode> (operands[0], sel, operands[1]));
 	DONE;
       }
