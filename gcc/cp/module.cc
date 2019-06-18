@@ -9642,6 +9642,9 @@ specialization_cmp (const void *a_, const void *b_)
   const spec_entry *ea = *reinterpret_cast<const spec_entry *const *> (a_);
   const spec_entry *eb = *reinterpret_cast<const spec_entry *const *> (b_);
 
+  if (ea == eb)
+    return 0;
+
   tree a = ea->spec;
   tree b = eb->spec;
   if (TYPE_P (a))
@@ -9650,15 +9653,13 @@ specialization_cmp (const void *a_, const void *b_)
       b = TYPE_NAME (b);
     }
 
-  if (DECL_UID (a) != DECL_UID (b))
-    return DECL_UID (a) < DECL_UID (b) ? -1 : +1;
+  if (a == b)
+    /* This can happen with friend specializations.  Just order by
+       entry address.  See note in depset_cmp.  */
+    return ea < eb ? -1 : +1;
 
-  gcc_checking_assert (a == b);
-  return 0;
+  return DECL_UID (a) < DECL_UID (b) ? -1 : +1;
 }
-
-// DECL_TEMPLATE_INSTANTIATIONS
-// DECL_TEMPLATE_SPECIALIZATIONS
 
 /* We add all kinds of specialializations.  Implicit specializations
    should only streamed and walked if they are reachable from
@@ -10013,6 +10014,57 @@ depset::tarjan::connect (depset *v)
     }
 }
 
+/* Compare two depsets.  The specific ordering is unimportant, we're
+   just trying to get consistency.  */
+
+static int
+depset_cmp (const void *a_, const void *b_)
+{
+  depset *a = *(depset *const *)a_;
+  depset *b = *(depset *const *)b_;
+
+  depset::entity_kind a_kind = a->get_entity_kind ();
+  depset::entity_kind b_kind = b->get_entity_kind ();
+
+  if  (a_kind != b_kind)
+    /* Different entity kinds, order by that.  */
+    return a_kind < b_kind ? -1 : +1;
+  
+  tree a_decl = a->get_entity ();
+  tree b_decl = b->get_entity ();
+  if (a_kind == depset::EK_USING)
+    {
+      /* If one is a using, the other must be too.  */
+      a_decl = OVL_FUNCTION (a_decl);
+      b_decl = OVL_FUNCTION (b_decl);
+    }
+
+  if (a_decl != b_decl)
+    /* Different entities, order by their UID.  */
+    return DECL_UID (a_decl) < DECL_UID (b_decl) ? -1 : +1;
+
+  if (a_kind == depset::EK_BINDING)
+    {
+      /* Both are bindings.  */
+      /* Order by identifier hash (hey, it's a consistent number).  */
+      // FIXME: strcmp for user-meaningful order?
+      gcc_checking_assert (a->get_name () != b->get_name ());
+      return (IDENTIFIER_HASH_VALUE (a->get_name ())
+	      < IDENTIFIER_HASH_VALUE (b->get_name ())
+	      ? -1 : +1);
+    }
+
+  /* They are the same decl.  This can happen with two using decls
+     pointing to the same target.  The best we can aim for is
+     consistently telling qsort how to order them.  Hopefully we'll
+     never have to debug a case that depends on this.  Oh, who am I
+     kidding?  Good luck.  */
+  gcc_checking_assert (a_kind == depset::EK_USING);
+
+  /* Order by depset address.  Not the best, but it is something.  */
+  return a < b ? -1 : +1;
+}
+
 /* Compare members of a cluster.  Order defn < decl < bind.  depsets
    of the same kind can be arbitrary, but we want something
    stable.  */
@@ -10106,9 +10158,8 @@ depset::hash::connect ()
      that has advantages, it causes 2 problems.  Firstly repeatable
      builds are tricky.  Secondly creating testcases that check
      dependencies are correct by making sure a bad ordering would
-     happen if that was wrong.  We can use the same ordering as that
-     for clusters themselves.  */
-  deps.qsort (cluster_cmp);
+     happen if that was wrong.  */
+  deps.qsort (depset_cmp);
 
   while (deps.length ())
     {
@@ -14810,13 +14861,17 @@ module_state::write (elf_out *to, cpp_reader *reader)
       if (base[0]->get_entity_kind () == depset::EK_NAMESPACE)
 	{
 	  /* A namespace decl, these are handled specially.  */
+	  gcc_checking_assert (size == 1);
 	  n_spaces++;
 	  dump (dumper::CLUSTER)
 	    && dump ("Cluster namespace %N", base[0]->get_entity ());
 	}
       else if (!base[0]->is_binding () && base[0]->is_import ())
-	dump (dumper::CLUSTER)
-	  && dump ("Cluster imported entity %N", base[0]->get_entity ());
+	{
+	  gcc_checking_assert (size == 1);
+	  dump (dumper::CLUSTER)
+	    && dump ("Cluster imported entity %N", base[0]->get_entity ());
+	}
       else
 	{
 	  dump (dumper::CLUSTER)
