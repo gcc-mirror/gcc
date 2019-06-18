@@ -1,5 +1,5 @@
-/* Test invalid uses of declare directive.  */
-/* { dg-do compile } */
+/* Test invalid use of the OpenACC 'declare' directive.  */
+
 
 #pragma acc declare /* { dg-error "no valid clauses" } */
 
@@ -42,6 +42,7 @@ int va11;
 int va12;
 #pragma acc declare create (va12) link (va12) /* { dg-error "more than once" } */
 
+
 void
 f (void)
 {
@@ -64,4 +65,34 @@ f (void)
 #pragma acc declare present_or_copyout(ve4) /* { dg-error "invalid use of" } */
 
 #pragma acc declare present (v2) /* { dg-error "invalid use of" } */
+}
+
+
+/* The same as 'f' but everything contained in an OpenACC 'data' construct.  */
+
+void
+f_data (void)
+{
+#pragma acc data
+  {
+    int va0;
+# pragma acc declare link(va0) /* { dg-error "global variable" } */
+
+    extern int ve0;
+# pragma acc declare copy(ve0) /* { dg-error "invalid use of" } */
+
+    extern int ve1;
+# pragma acc declare copyout(ve1) /* { dg-error "invalid use of" } */
+
+    extern int ve2;
+# pragma acc declare present(ve2) /* { dg-error "invalid use of" } */
+
+    extern int ve3;
+# pragma acc declare present_or_copy(ve3) /* { dg-error "invalid use of" } */
+
+    extern int ve4;
+# pragma acc declare present_or_copyout(ve4) /* { dg-error "invalid use of" } */
+
+# pragma acc declare present (v2) /* { dg-error "invalid use of" } */
+  }
 }
