@@ -1,3 +1,9 @@
+2019-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90900
+	* cfgexpand.c (expand_debug_expr): Treat NOTE_P DECL_RTL
+	as if optimized away.
+
 2019-06-18  Tom de Vries  <tdevries@suse.de>
 
 	* config/nvptx/nvptx-protos.h (gen_set_softstack_insn): Remove.

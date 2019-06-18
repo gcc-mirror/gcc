@@ -1,3 +1,8 @@
+2019-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90900
+	* gcc.dg/gomp/pr90900.c: New testcase.
+
 2019-06-18  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/pr90866-2.c: Remove a pointless declaration
