@@ -1,3 +1,7 @@
+2019-06-18  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/crt0.c (__main): Declare.
+
 2019-06-17  Matthew Green  <mrg@eterna.com.au>
 	    Maya Rashish  <coypu@sdf.org>
 
