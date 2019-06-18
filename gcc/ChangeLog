@@ -1,3 +1,30 @@
+2019-06-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (@cmp<mode>_1): Rename from cmp<mode>_1.
+	(@add<mode>3_carry): Rename from add<mode>3_carry.
+	(@sub<mode>3_carry_ccc): Rename from sub<mode>3_carry_ccc.
+	(@sub<mode>3_carry_ccgz): Rename form sub<mode>3_carry_ccgz.
+	(@copysign<mode>3_const): Rename from copysign<mode>3_const.
+	(@copysign<mode>3_var): Rename from copysign<mode>3_var.
+	(@xorsign<mode>3_1): Rename from xorsign<mode>3_1.
+	(@x86_shift<mode>_adj_1): Rename from x86_shift<mode>_adj_1.
+	(@x86_shift<mode>_adj_2): Rename from x86_shift<mode>_adj_2.
+	(@x86_shift<mode>_adj_3): Rename from x86_shift<mode>_adj_3.
+	(cmpstrnsi): Use gen_cmp_1.
+	(lwp_slwpcb): Use gen_lwp_slwpcb_1.
+	(@lwp_slwpcb<mode>_1): Rename from lwp_slwpcb<mode>_1.
+	(@umonitor_<mode>): Rename from umonitor_<mode>.
+	* config/i386/i386-expand.c (ix86_expand_copysign):
+	Use gen_copysign3_const and gen_copysign3_var.
+	(ix86_expand_xorsign): Use gen_xorsign3_1.
+	(ix86_expand_branch): Use gen_sub3_carry_ccc,
+	gen_sub3_carry_ccgz and gen_cmp1.
+	(ix86_expand_int_addcc): Use gen_sub3_carry and gen_add3_carry.
+	(ix86_split_ashl): Use gen_x86_shift_adj_1 and gen_x86_shift_adj_2.
+	(ix86_split_ashr): Use gen_x86_shift_adj_1 and gen_x86_shift_adj_3.
+	(ix86_split_lshr): Ditto.
+	(ix86_expand_builtin) <case IX86_BUILTIN_UMONITOR>: Use gen_umonitor.
+
 2019-06-18  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (build_constructor): Add MEM_STAT_DECL.
@@ -55,7 +82,8 @@
 
 	* config/nvptx/nvptx-protos.h (gen_set_softstack_insn): Remove.
 	* config/nvptx/nvptx.c (gen_set_softstack_insn): Remove.
-	* config/nvptx/nvptx.md (define_insn "set_softstack_<mode>"): Rename to ...
+	* config/nvptx/nvptx.md (define_insn "set_softstack_<mode>"):
+	Rename to ...
 	(define_insn "@set_softstack_<mode>"): ... this.
 	(define_insn "omp_simt_enter_<mode>"): Rename to ...
 	(define_insn "@omp_simt_enter_<mode>"): ... this.
