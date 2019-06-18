@@ -13,7 +13,7 @@ typedef struct {
   e buffer;
 } f;
 int g, h;
-int i();
+
 int i(f *j, d *k, b l, int m) {
   if (l)
     if (m) {
