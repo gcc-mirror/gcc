@@ -6337,6 +6337,7 @@ gfc_conv_intrinsic_shift (gfc_se * se, gfc_expr * expr, bool right_shift,
 			  bool arithmetic)
 {
   tree args[2], type, num_bits, cond;
+  tree bigshift;
 
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
 
@@ -6356,6 +6357,18 @@ gfc_conv_intrinsic_shift (gfc_se * se, gfc_expr * expr, bool right_shift,
   if (!arithmetic)
     se->expr = fold_convert (type, se->expr);
 
+  if (!arithmetic)
+    bigshift = build_int_cst (type, 0);
+  else
+    {
+      tree nonneg = fold_build2_loc (input_location, GE_EXPR,
+				     logical_type_node, args[0],
+				     build_int_cst (TREE_TYPE (args[0]), 0));
+      bigshift = fold_build3_loc (input_location, COND_EXPR, type, nonneg,
+				  build_int_cst (type, 0),
+				  build_int_cst (type, -1));
+    }
+
   /* The Fortran standard allows shift widths <= BIT_SIZE(I), whereas
      gcc requires a shift width < BIT_SIZE(I), so we have to catch this
      special case.  */
@@ -6364,7 +6377,7 @@ gfc_conv_intrinsic_shift (gfc_se * se, gfc_expr * expr, bool right_shift,
 			  args[1], num_bits);
 
   se->expr = fold_build3_loc (input_location, COND_EXPR, type, cond,
-			      build_int_cst (type, 0), se->expr);
+			      bigshift, se->expr);
 }
 
 /* ISHFT (I, SHIFT) = (abs (shift) >= BIT_SIZE (i))
