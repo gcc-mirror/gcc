@@ -1,3 +1,9 @@
+2019-06-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90862
+	* omp-low.c (check_omp_nesting_restrictions): Handle
+	GF_OMP_TARGET_KIND_OACC_DECLARE.
+
 2019-06-18  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (@cmp<mode>_1): Rename from cmp<mode>_1.
