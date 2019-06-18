@@ -1,5 +1,9 @@
 2019-06-18  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (cxx_eval_store_expression): Delay target evaluation.
+
+2019-06-18  Jason Merrill  <jason@redhat.com>
+
 	* constexpr.c (eval_and_check_array_index): Split out from...
 	(cxx_eval_array_reference): ...here.
 	(cxx_eval_store_expression): Use it here, too.
