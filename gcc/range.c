@@ -989,12 +989,12 @@ irange_to_value_range (const irange &r)
   value_range_base vr;
   if (r.varying_p ())
     {
-      vr.set_varying ();
+      vr.set_varying (r.type ());
       return vr;
     }
   if (r.undefined_p ())
     {
-      vr.set_undefined ();
+      vr.set_undefined (r.type ());
       return vr;
     }
   tree type = r.type ();
