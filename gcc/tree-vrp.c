@@ -192,7 +192,6 @@ value_range_base::check ()
       }
     case VR_UNDEFINED:
     case VR_VARYING:
-      gcc_assert (!min () && !max ());
       break;
     default:
       gcc_unreachable ();
@@ -219,6 +218,13 @@ value_range::check ()
 bool
 value_range_base::equal_p (const value_range_base &other) const
 {
+  /* Ignore types for undefined.  All undefines are equal.  */
+  if (undefined_p ())
+    return m_kind == other.m_kind;
+
+  if (varying_p ())
+    return m_kind == other.m_kind && types_compatible_p (m_min, other.m_min);
+
   return (m_kind == other.m_kind
 	  && vrp_operand_equal_p (m_min, other.m_min)
 	  && vrp_operand_equal_p (m_max, other.m_max));
@@ -261,27 +267,29 @@ value_range_base::constant_p () const
 }
 
 void
-value_range_base::set_undefined ()
+value_range_base::set_undefined (tree type)
 {
-  set (VR_UNDEFINED, NULL, NULL);
+  set (VR_UNDEFINED, type, type);
 }
 
 void
-value_range::set_undefined ()
+value_range::set_undefined (tree type)
 {
-  set (VR_UNDEFINED, NULL, NULL, NULL);
+  value_range_base::set_undefined (type);
+  equiv_clear ();
 }
 
 void
-value_range_base::set_varying ()
+value_range_base::set_varying (tree type)
 {
-  set (VR_VARYING, NULL, NULL);
+  set (VR_VARYING, type, type);
 }
 
 void
-value_range::set_varying ()
+value_range::set_varying (tree type)
 {
-  set (VR_VARYING, NULL, NULL, NULL);
+  value_range_base::set_varying (type);
+  equiv_clear ();
 }
 
 /* Return TRUE if it is possible that range contains VAL.  */
@@ -340,21 +348,29 @@ value_range_base::singleton_p (tree *result) const
 tree
 value_range_base::type () const
 {
-  /* Types are only valid for VR_RANGE and VR_ANTI_RANGE, which are
-     known to have non-zero min/max.  */
-  gcc_assert (min ());
+  if (undefined_p () || varying_p ())
+    {
+      gcc_assert (min () != NULL);
+      return min ();
+    }
   return TREE_TYPE (min ());
 }
 
 void
 value_range_base::dump (FILE *file) const
 {
+  tree ttype;
+  if (undefined_p () || varying_p ())
+    ttype = m_min;
+  else ttype = TREE_TYPE (m_min);
+
   if (undefined_p ())
-    fprintf (file, "UNDEFINED");
+    {
+      print_generic_expr (file, ttype);
+      fprintf (file, " UNDEFINED");
+    }
   else if (m_kind == VR_RANGE || m_kind == VR_ANTI_RANGE)
     {
-      tree ttype = type ();
-
       print_generic_expr (file, ttype);
       fprintf (file, " ");
 
@@ -380,7 +396,10 @@ value_range_base::dump (FILE *file) const
       fprintf (file, "]");
     }
   else if (varying_p ())
-    fprintf (file, "VARYING");
+    {
+      print_generic_expr (file, ttype);
+      fprintf (file, " VARYING");
+    }
   else
     gcc_unreachable ();
 }
@@ -631,15 +650,16 @@ void
 value_range_base::set_and_canonicalize (enum value_range_kind kind,
 					tree min, tree max)
 {
-  /* Use the canonical setters for VR_UNDEFINED and VR_VARYING.  */
   if (kind == VR_UNDEFINED)
     {
-      set_undefined ();
+      gcc_assert (TYPE_P (min));
+      set_undefined (min);
       return;
     }
   else if (kind == VR_VARYING)
     {
-      set_varying ();
+      gcc_assert (TYPE_P (min));
+      set_varying (min);
       return;
     }
 
@@ -662,7 +682,7 @@ value_range_base::set_and_canonicalize (enum value_range_kind kind,
 	 for VR_ANTI_RANGE empty range, so drop to varying as well.  */
       if (TYPE_PRECISION (TREE_TYPE (min)) == 1)
 	{
-	  set_varying ();
+	  set_varying (TREE_TYPE (min));
 	  return;
 	}
 
@@ -676,7 +696,7 @@ value_range_base::set_and_canonicalize (enum value_range_kind kind,
 	 to varying in this case.  */
       if (tree_int_cst_lt (max, min))
 	{
-	  set_varying ();
+	  set_varying (TREE_TYPE (min));
 	  return;
 	}
 
@@ -698,7 +718,7 @@ value_range_base::set_and_canonicalize (enum value_range_kind kind,
 	{
 	  /* We cannot deal with empty ranges, drop to varying.
 	     ???  This could be VR_UNDEFINED instead.  */
-	  set_varying ();
+	  set_varying (type);
 	  return;
 	}
       else if (TYPE_PRECISION (TREE_TYPE (min)) == 1
@@ -1193,8 +1213,8 @@ ranges_from_anti_range (const value_range_base *ar,
 {
   tree type = ar->type ();
 
-  vr0->set_undefined ();
-  vr1->set_undefined ();
+  vr0->set_undefined (type);
+  vr1->set_undefined (type);
 
   /* As a future improvement, we could handle ~[0, A] as: [-INF, -1] U
      [A+1, +INF].  Not sure if this helps in practice, though.  */
@@ -1217,7 +1237,7 @@ ranges_from_anti_range (const value_range_base *ar,
   if (vr0->undefined_p ())
     {
       *vr0 = *vr1;
-      vr1->set_undefined ();
+      vr1->set_undefined (type);
     }
 
   return !vr0->undefined_p ();
@@ -1285,7 +1305,7 @@ extract_range_from_multiplicative_op (value_range_base *vr,
 			      wide_int_to_tree (type, res_lb),
 			      wide_int_to_tree (type, res_ub));
   else
-    vr->set_varying ();
+    vr->set_varying (type);
 }
 
 /* If BOUND will include a symbolic bound, adjust it accordingly,
@@ -1498,7 +1518,7 @@ canonicalize_value_range (value_range_base *vr, tree expr_type)
       && operand_equal_p (TYPE_MIN_VALUE (expr_type), vr->min (), 0)
       && operand_equal_p (TYPE_MAX_VALUE (expr_type), vr->max (), 0))
     {
-      vr->set_varying ();
+      vr->set_varying (expr_type);
       return;
     }
   // The canonicalizations below are only needed when comparing with VRP.
@@ -1627,22 +1647,23 @@ ranger_fold (value_range_base *vr, enum tree_code code,
 {
   range_operator *op = range_op_handler (code);
   irange res;
+  tree type = ir0.type ();
   if (!op)
     {
-      vr->set_varying ();
+      vr->set_varying (type);
       return;
     }
   if (!op->fold_range (res, ir0, ir1))
     {
       if (res.undefined_p ())
-	vr->set_undefined ();
+	vr->set_undefined (type);
       else
-	vr->set_varying ();
+	vr->set_varying (type);
       return;
     }
   if (res.undefined_p ())
     {
-      vr->set_undefined ();
+      vr->set_undefined (type);
       return;
     }
   // MAX/MIN of pointers in VRP dumbs everything down to
@@ -1655,7 +1676,7 @@ ranger_fold (value_range_base *vr, enum tree_code code,
       && !res.zero_p ()
       && !res.nonzero_p ())
     {
-      vr->set_varying ();
+      vr->set_varying (type);
       return;
     }
   *vr = irange_to_value_range (res);
@@ -1690,7 +1711,7 @@ ranger_fold_unary (value_range_base *vr, enum tree_code code, tree expr_type,
       else if (vr0->zero_p ())
 	vr->set_zero (expr_type);
       else
-	vr->set_varying ();
+	vr->set_varying (expr_type);
       return;
     }
   irange res, vr0_irange, vr1_irange;
@@ -1720,7 +1741,7 @@ extract_range_from_binary_expr (value_range_base *vr,
   if (!INTEGRAL_TYPE_P (expr_type)
       && !POINTER_TYPE_P (expr_type))
     {
-      vr->set_varying ();
+      vr->set_varying (expr_type);
       return;
     }
 
@@ -1744,14 +1765,14 @@ extract_range_from_binary_expr (value_range_base *vr,
       && code != BIT_IOR_EXPR
       && code != BIT_XOR_EXPR)
     {
-      vr->set_varying ();
+      vr->set_varying (expr_type);
       return;
     }
 
   /* If both ranges are UNDEFINED, so is the result.  */
   if (vr0.undefined_p () && vr1.undefined_p ())
     {
-      vr->set_undefined ();
+      vr->set_undefined (expr_type);
       return;
     }
   /* If one of the ranges is UNDEFINED drop it to VARYING for the following
@@ -1759,9 +1780,9 @@ extract_range_from_binary_expr (value_range_base *vr,
      have UNDEFINED result for all or some value-ranges of the not UNDEFINED
      operand.  */
   else if (vr0.undefined_p ())
-    vr0.set_varying ();
+    vr0.set_varying (expr_type);
   else if (vr1.undefined_p ())
-    vr1.set_varying ();
+    vr1.set_varying (expr_type);
 
   /* We get imprecise results from ranges_from_anti_range when
      code is EXACT_DIV_EXPR.  We could mask out bits in the resulting
@@ -1833,7 +1854,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 	  || vr0.symbolic_p ()
 	  || vr1.symbolic_p ()))
     {
-      vr->set_varying ();
+      vr->set_varying (expr_type);
       return;
     }
 
@@ -1881,7 +1902,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 	  else if (vr0.zero_p () && vr1.zero_p ())
 	    vr->set_zero (expr_type);
 	  else
-	    vr->set_varying ();
+	    vr->set_varying (expr_type);
 	}
       else if (code == POINTER_PLUS_EXPR)
 	{
@@ -1912,7 +1933,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 	  else if (vr0.zero_p () && vr1.zero_p ())
 	    vr->set_zero (expr_type);
 	  else
-	    vr->set_varying ();
+	    vr->set_varying (expr_type);
 	}
       else if (code == BIT_AND_EXPR)
 	{
@@ -1923,10 +1944,10 @@ extract_range_from_binary_expr (value_range_base *vr,
 	  else if (vr0.zero_p () || vr1.zero_p ())
 	    vr->set_zero (expr_type);
 	  else
-	    vr->set_varying ();
+	    vr->set_varying (expr_type);
 	}
       else
-	vr->set_varying ();
+	vr->set_varying (expr_type);
 
       return;
     }
@@ -1993,7 +2014,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 	  if (((bool)min_ovf && sym_min_op0 != sym_min_op1)
 	      || ((bool)max_ovf && sym_max_op0 != sym_max_op1))
 	    {
-	      vr->set_varying ();
+	      vr->set_varying (expr_type);
 	      return;
 	    }
 
@@ -2004,7 +2025,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 					 wmin, wmax, min_ovf, max_ovf);
 	  if (type == VR_VARYING)
 	    {
-	      vr->set_varying ();
+	      vr->set_varying (expr_type);
 	      return;
 	    }
 
@@ -2030,7 +2051,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 	     a single range or anti-range as the above is
 		 [-INF+1, +INF(OVF)] intersected with ~[5, 5]
 	     but one could use a scheme similar to equivalences for this. */
-	  vr->set_varying ();
+	  vr->set_varying (expr_type);
 	  return;
 	}
     }
@@ -2047,7 +2068,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 	vr->set (VR_RANGE, wide_int_to_tree (expr_type, wmin),
 		 wide_int_to_tree (expr_type, wmax));
       else
-	vr->set_varying ();
+	vr->set_varying (expr_type);
       return;
     }
   else if (code == MULT_EXPR)
@@ -2055,7 +2076,7 @@ extract_range_from_binary_expr (value_range_base *vr,
       if (!range_int_cst_p (&vr0)
 	  || !range_int_cst_p (&vr1))
 	{
-	  vr->set_varying ();
+	  vr->set_varying (expr_type);
 	  return;
 	}
       extract_range_from_multiplicative_op (vr, code, &vr0, &vr1);
@@ -2100,7 +2121,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 		}
 	    }
 	}
-      vr->set_varying ();
+      vr->set_varying (expr_type);
       return;
     }
   else if (code == TRUNC_DIV_EXPR
@@ -2116,7 +2137,7 @@ extract_range_from_binary_expr (value_range_base *vr,
       /* Special case explicit division by zero as undefined.  */
       if (vr1.zero_p ())
 	{
-	  vr->set_undefined ();
+	  vr->set_undefined (expr_type);
 	  return;
 	}
 
@@ -2137,7 +2158,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 			       TYPE_OVERFLOW_UNDEFINED (expr_type),
 			       extra_range_p, extra_min, extra_max))
 	{
-	  vr->set_varying ();
+	  vr->set_varying (expr_type);
 	  return;
 	}
       vr->set (VR_RANGE, wide_int_to_tree (expr_type, wmin),
@@ -2155,7 +2176,7 @@ extract_range_from_binary_expr (value_range_base *vr,
     {
       if (vr1.zero_p ())
 	{
-	  vr->set_undefined ();
+	  vr->set_undefined (expr_type);
 	  return;
 	}
       wide_int wmin, wmax, tmp;
@@ -2196,7 +2217,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 	      vr->set (VR_RANGE, min, max);
 	    }
 	  else
-	    vr->set_varying ();
+	    vr->set_varying (expr_type);
 	  return;
 	}
       else if (code == BIT_IOR_EXPR)
@@ -2214,7 +2235,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 	      vr->set (VR_RANGE, min, max);
 	    }
 	  else
-	    vr->set_varying ();
+	    vr->set_varying (expr_type);
 	  return;
 	}
       else if (code == BIT_XOR_EXPR)
@@ -2230,7 +2251,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 	      vr->set (VR_RANGE, min, max);
 	    }
 	  else
-	    vr->set_varying ();
+	    vr->set_varying (expr_type);
 	  return;
 	}
     }
@@ -2244,7 +2265,7 @@ extract_range_from_binary_expr (value_range_base *vr,
       || max == NULL_TREE
       || TREE_OVERFLOW_P (max))
     {
-      vr->set_varying ();
+      vr->set_varying (expr_type);
       return;
     }
 
@@ -2253,7 +2274,7 @@ extract_range_from_binary_expr (value_range_base *vr,
      Note that we do accept [-INF, -INF] and [+INF, +INF].  */
   if (vrp_val_is_min (min) && vrp_val_is_max (max))
     {
-      vr->set_varying ();
+      vr->set_varying (expr_type);
       return;
     }
 
@@ -2263,7 +2284,7 @@ extract_range_from_binary_expr (value_range_base *vr,
       /* If the new range has its limits swapped around (MIN > MAX),
 	 then the operation caused one of them to wrap around, mark
 	 the new range VARYING.  */
-      vr->set_varying ();
+      vr->set_varying (expr_type);
     }
   else
     vr->set (type, min, max);
@@ -2289,14 +2310,14 @@ extract_range_from_unary_expr (value_range_base *vr,
       || !(INTEGRAL_TYPE_P (type)
 	   || POINTER_TYPE_P (type)))
     {
-      vr->set_varying ();
+      vr->set_varying (type);
       return;
     }
 
   /* If VR0 is UNDEFINED, so is the result.  */
   if (vr0.undefined_p ())
     {
-      vr->set_undefined ();
+      vr->set_undefined (type);
       return;
     }
 
@@ -2322,7 +2343,7 @@ extract_range_from_unary_expr (value_range_base *vr,
 	  flag_ranges_mode = save;
 
 	  canonicalize_value_range (&old_vr, type);
-	  vr1.set_varying ();
+	  vr1.set_varying (type);
 	  compare_value_ranges (code, &vr0, &vr1, &old_vr, vr, type);
 	}
       return;
@@ -2389,7 +2410,7 @@ extract_range_from_unary_expr (value_range_base *vr,
 	  else if (vr0.zero_p ())
 	    vr->set_zero (type);
 	  else
-	    vr->set_varying ();
+	    vr->set_varying (type);
 	  return;
 	}
 
@@ -2424,7 +2445,7 @@ extract_range_from_unary_expr (value_range_base *vr,
 	  vr->set_and_canonicalize (VR_RANGE, min, max);
 	}
       else
-	vr->set_varying ();
+	vr->set_varying (outer_type);
       return;
     }
   else if (code == ABS_EXPR)
@@ -2437,7 +2458,7 @@ extract_range_from_unary_expr (value_range_base *vr,
 	vr->set (VR_RANGE, wide_int_to_tree (type, wmin),
 		 wide_int_to_tree (type, wmax));
       else
-	vr->set_varying ();
+	vr->set_varying (type);
       return;
     }
   else if (code == ABSU_EXPR)
@@ -2452,7 +2473,7 @@ extract_range_from_unary_expr (value_range_base *vr,
     }
 
   /* For unhandled operations fall back to varying.  */
-  vr->set_varying ();
+  vr->set_varying (type);
   return;
 }
 
@@ -5448,7 +5469,7 @@ vrp_prop::vrp_initialize ()
 	  if (!stmt_interesting_for_vrp (phi))
 	    {
 	      tree lhs = PHI_RESULT (phi);
-	      get_value_range (lhs)->set_varying ();
+	      get_value_range (lhs)->set_varying (TREE_TYPE (lhs));
 	      prop_set_simulate_again (phi, false);
 	    }
 	  else
@@ -5643,7 +5664,7 @@ vrp_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 	    use_operand_p use_p;
 	    enum ssa_prop_result res = SSA_PROP_VARYING;
 
-	    get_value_range (lhs)->set_varying ();
+	    get_value_range (lhs)->set_varying (TREE_TYPE (lhs));
 
 	    FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
 	      {
@@ -6331,6 +6352,11 @@ value_range_base::intersect_helper (const value_range_base *vr0,
      VR_RANGE can still be a VR_RANGE.  Work on a temporary so we can
      fall back to vr0 when this turns things to varying.  */
   value_range_base tem;
+  if (vr0type == VR_UNDEFINED || vr0type == VR_VARYING)
+    {
+      vr0min = TREE_TYPE (vr0->min ());
+      vr0max = TREE_TYPE (vr0->min ());
+    }
   tem.set_and_canonicalize (vr0type, vr0min, vr0max);
   /* If that failed, use the saved original VR0.  */
   if (tem.varying_p ())
@@ -6436,6 +6462,11 @@ value_range_base::union_helper (const value_range_base *vr0,
 
   /* Work on a temporary so we can still use vr0 when union returns varying.  */
   value_range_base tem;
+  if (vr0type == VR_UNDEFINED || vr0type == VR_VARYING)
+    {
+      vr0min = TREE_TYPE (vr0->min ());
+      vr0max = TREE_TYPE (vr0->min ());
+    }
   tem.set_and_canonicalize (vr0type, vr0min, vr0max);
 
   /* Failed to find an efficient meet.  Before giving up and setting
@@ -7189,7 +7220,7 @@ determine_value_range_1 (value_range_base *vr, tree expr)
 	vr->set (kind, wide_int_to_tree (TREE_TYPE (expr), min),
 		 wide_int_to_tree (TREE_TYPE (expr), max));
       else
-	vr->set_varying ();
+	vr->set_varying (TREE_TYPE (expr));
     }
 }
 

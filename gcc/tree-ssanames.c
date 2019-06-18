@@ -441,7 +441,7 @@ get_range_info (const_tree name, value_range_base &vr)
   enum value_range_kind kind = get_range_info (name, &wmin, &wmax);
 
   if (kind == VR_VARYING || kind == VR_UNDEFINED)
-    min = max = NULL;
+    min = max = TREE_TYPE (name);
   else
     {
       min = wide_int_to_tree (TREE_TYPE (name), wmin);

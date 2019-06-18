@@ -58,8 +58,8 @@ public:
   bool constant_p () const;
   bool undefined_p () const;
   bool varying_p () const;
-  void set_varying ();
-  void set_undefined ();
+  void set_varying (tree);
+  void set_undefined (tree = NULL);
 
   void union_ (const value_range_base *);
   void intersect (const value_range_base *);
@@ -133,8 +133,8 @@ class GTY((user)) value_range : public value_range_base
   bool equal_p (const value_range &, bool ignore_equivs) const;
 
   /* Types of value ranges.  */
-  void set_undefined ();
-  void set_varying ();
+  void set_undefined (tree = NULL);
+  void set_varying (tree);
 
   /* Equivalence bitmap methods.  */
   bitmap equiv () const;

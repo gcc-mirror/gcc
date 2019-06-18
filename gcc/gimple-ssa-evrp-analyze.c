@@ -258,7 +258,7 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
 	vr_values->extract_range_from_phi_node (phi, &vr_result);
       else
 	{
-	  vr_result.set_varying ();
+	  vr_result.set_varying (TREE_TYPE (lhs));
 	  /* When we have an unvisited executable predecessor we can't
 	     use PHI arg ranges which may be still UNDEFINED but have
 	     to use VARYING for them.  But we can still resort to

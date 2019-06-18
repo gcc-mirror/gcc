@@ -314,7 +314,7 @@ public:
   inline bool set_to_bottom ();
   bool meet_with (const value_range_base *p_vr);
   bool meet_with (const ipcp_vr_lattice &other);
-  void init () { gcc_assert (m_vr.undefined_p ()); }
+  void init (tree type) { m_vr.set_undefined (type); }
   void print (FILE * f);
 
 private:
@@ -962,7 +962,7 @@ ipcp_vr_lattice::set_to_bottom ()
 {
   if (m_vr.varying_p ())
     return false;
-  m_vr.set_varying ();
+  m_vr.set_varying (m_vr.type ());
   return true;
 }
 
@@ -1190,7 +1190,8 @@ initialize_node_lattices (struct cgraph_node *node)
   for (i = 0; i < ipa_get_param_count (info); i++)
     {
       struct ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
-      plats->m_value_range.init ();
+      tree type = ipa_get_type (info, i);
+      plats->m_value_range.init (type);
     }
 
   if (disable || variable)
