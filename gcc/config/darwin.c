@@ -99,6 +99,10 @@ int generating_for_darwin_version ;
    for weak or single-definition items.  */
 static bool ld_uses_coal_sects = false;
 
+/* Very old (ld_classic) linkers need a symbol to mark the start of
+   each FDE.  */
+static bool ld_needs_eh_markers = false;
+
 /* Section names.  */
 section * darwin_sections[NUM_DARWIN_SECTIONS];
 
@@ -2080,11 +2084,11 @@ darwin_emit_unwind_label (FILE *file, tree decl, int for_eh, int empty)
   static int invok_count = 0;
   static tree last_fun_decl = NULL_TREE;
   
-  /* We use the linker to emit the .eh labels for Darwin 9 and above.  */
-  if (! for_eh || generating_for_darwin_version >= 9)
+  /* Modern linkers can produce distinct FDEs without compiler support.  */
+  if (! for_eh || ! ld_needs_eh_markers)
     return;
 
-  /* FIXME: This only works when the eh for all sections of a function is 
+  /* FIXME: This only works when the eh for all sections of a function are 
      emitted at the same time.  If that changes, we would need to use a lookup
      table of some form to determine what to do.  Also, we should emit the
      unadorned label for the partition containing the public label for a
@@ -3257,16 +3261,29 @@ darwin_override_options (void)
      indirections and we no longer need to emit pic symbol stubs.
      However, if we are generating code for earlier ones (or for use in the 
      kernel) the stubs might still be required, and this will be set true.
-     If the user sets it on or off - then that takes precedence. */
+     If the user sets it on or off - then that takes precedence.
+
+     Linkers that don't need stubs, don't need the EH symbol markers either.
+  */
 
   if (!global_options_set.x_darwin_picsymbol_stubs)
     {
-      if (darwin_target_linker) {
-	if (strverscmp (darwin_target_linker, MIN_LD64_OMIT_STUBS) < 0)
+      if (darwin_target_linker) 
+	{
+	  if (strverscmp (darwin_target_linker, MIN_LD64_OMIT_STUBS) < 0)
+	    {
+	      darwin_picsymbol_stubs = true;
+	      ld_needs_eh_markers = true;
+	    }
+	} 
+      else if (generating_for_darwin_version < 9)
+	{
+	  /* If we don't know the linker version and we're targeting an old
+	     system, we know no better than to assume the use of an earlier 
+	     linker.  */
 	  darwin_picsymbol_stubs = true;
-      } else if (generating_for_darwin_version < 9)
-	/* We know no better than to assume the use of an earlier linker.  */
-	darwin_picsymbol_stubs = true;
+	  ld_needs_eh_markers = true;
+	}
     }
   else if (DARWIN_X86 && darwin_picsymbol_stubs && TARGET_64BIT)
     {
