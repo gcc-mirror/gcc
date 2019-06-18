@@ -1,3 +1,14 @@
+2019-06-18  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-protos.h (gen_set_softstack_insn): Remove.
+	* config/nvptx/nvptx.c (gen_set_softstack_insn): Remove.
+	* config/nvptx/nvptx.md (define_insn "set_softstack_<mode>"): Rename to ...
+	(define_insn "@set_softstack_<mode>"): ... this.
+	(define_insn "omp_simt_enter_<mode>"): Rename to ...
+	(define_insn "@omp_simt_enter_<mode>"): ... this.
+	(define_insn "omp_simt_exit_<mode>"): Rename to ...
+	(define_insn "@omp_simt_exit_<mode>"): ... this.
+
 2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-vect-loop-manip.c (vect_set_loop_masks_directly): Remove
