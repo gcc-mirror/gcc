@@ -112,18 +112,6 @@ enum nvptx_data_area
   DATA_AREA_MAX
 };
 
-rtx
-gen_set_softstack_insn (rtx op)
-{
-  gcc_assert (GET_MODE (op) == Pmode);
-  if (GET_MODE (op) == DImode)
-    return gen_set_softstack_di (op);
-  else if (GET_MODE (op) == SImode)
-    return gen_set_softstack_si (op);
-  else
-    gcc_unreachable ();
-}
-
 /*  We record the data area in the target symbol flags.  */
 #define SYMBOL_DATA_AREA(SYM) \
   (nvptx_data_area)((SYMBOL_REF_FLAGS (SYM) >> SYMBOL_FLAG_MACH_DEP_SHIFT) \
