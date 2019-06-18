@@ -1,3 +1,10 @@
+2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md (*cond_<optab><mode>_0): Delete.
+	(*cond_<optab><mode>_z): Fold into...
+	(*cond_<optab><mode>_any): ...here.  Also handle cases in which
+	operand 4 can be tied to operand 0 (either inherently or via RA).
+
 2019-06-18  Richard Biener  <rguenther@suse.de>
 
 	PR debug/90900
