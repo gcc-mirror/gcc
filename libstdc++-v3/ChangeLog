@@ -1,3 +1,8 @@
+2019-06-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_global/cstddef (std::byte): Perform arithmetic operations
+	in unsigned int to avoid promotion (LWG 2950).
+
 2019-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/allocator/1.cc: Add sized delete, which fixes a
