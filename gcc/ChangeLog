@@ -1,5 +1,11 @@
 2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-protos.h (aarch64_pfalse_reg): Declare.
+	* config/aarch64/aarch64.c (aarch64_pfalse_reg): New function.
+	* config/aarch64/aarch64-sve.md: Use it.
+
+2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_ptrue_reg): Declare.
 	* config/aarch64/aarch64.c (aarch64_ptrue_reg): New functions.
 	(aarch64_expand_sve_widened_duplicate, aarch64_expand_sve_mem_move)

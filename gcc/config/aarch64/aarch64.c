@@ -2467,6 +2467,15 @@ aarch64_ptrue_reg (machine_mode mode)
   return force_reg (mode, CONSTM1_RTX (mode));
 }
 
+/* Return an all-false predicate register of mode MODE.  */
+
+rtx
+aarch64_pfalse_reg (machine_mode mode)
+{
+  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL);
+  return force_reg (mode, CONST0_RTX (mode));
+}
+
 /* Return true if we can move VALUE into a register using a single
    CNT[BHWD] instruction.  */
 
