@@ -35,14 +35,23 @@ enum value_range_kind
   VR_LAST
 };
 
+class value_range_storage;
 
 /* Range of values that can be associated with an SSA_NAME after VRP
    has executed.  */
 class GTY((for_user)) value_range_base
 {
+  friend value_range_storage;
+  friend void irange_tests ();
 public:
   value_range_base ();
   value_range_base (value_range_kind, tree, tree);
+  value_range_base (tree, tree);
+  value_range_base (value_range_kind,
+		    tree type, const wide_int &, const wide_int &);
+  value_range_base (tree type, const wide_int &, const wide_int &);
+  value_range_base (tree type, const value_range_storage *);
+  value_range_base (tree type);
 
   void set (value_range_kind, tree, tree);
   void set (tree);
@@ -77,7 +86,25 @@ public:
   bool singleton_p (tree *result = NULL) const;
   void dump (FILE *) const;
 
+  /* Support machinery for irange.  */
+  static const unsigned int m_max_pairs = 2;
+  static bool supports_type_p (tree type);
+  static bool supports_ssa_p (tree ssa);
+  static bool supports_p (tree expr);
+  void cast (tree);
+  bool contains_p (tree) const;
+  unsigned num_pairs () const;
+  wide_int lower_bound (unsigned = 0) const;
+  wide_int upper_bound (unsigned) const;
+  wide_int upper_bound () const;
+  void invert ();
+  void dump () const { dump (stderr); }
+  // FIXME: Perhaps rewrite the irange versions to use pointers instead.
+  void union_ (const value_range_base &);
+  void intersect (const value_range_base &);
+
 protected:
+  value_range_base normalize_symbolics () const;
   void check ();
   static value_range_base union_helper (const value_range_base *,
 					const value_range_base *);
@@ -154,6 +181,29 @@ class GTY((user)) value_range : public value_range_base
   /* Set of SSA names whose value ranges are equivalent to this one.
      This set is only valid when TYPE is VR_RANGE or VR_ANTI_RANGE.  */
   bitmap m_equiv;
+};
+
+class value_range_storage
+{
+  friend class value_range_base;
+public:
+  static value_range_storage *alloc (const value_range_base &r)
+  {
+    value_range_storage *p = ggc_alloc<value_range_storage> ();
+    p->set (r);
+    return p;
+  }
+  bool update (const value_range_base &r)
+  {
+    set (r);
+    return true;
+  }
+private:
+  void set (const value_range_base &r)
+  {
+    m_vr = r;
+  }
+  value_range_base m_vr;
 };
 
 inline
@@ -267,11 +317,11 @@ extern bool range_int_cst_singleton_p (const value_range_base *);
 extern int compare_values (tree, tree);
 extern int compare_values_warnv (tree, tree, bool *);
 extern int operand_less_p (tree, tree);
-extern bool vrp_val_is_min (const_tree);
-extern bool vrp_val_is_max (const_tree);
+extern bool vrp_val_is_min (const_tree, bool handle_pointers = false);
+extern bool vrp_val_is_max (const_tree, bool handle_pointers = false);
 
-extern tree vrp_val_min (const_tree);
-extern tree vrp_val_max (const_tree);
+extern tree vrp_val_min (const_tree, bool handle_pointers = false);
+extern tree vrp_val_max (const_tree, bool handle_pointers = false);
 
 extern void extract_range_from_unary_expr (value_range_base *vr,
 					   enum tree_code code,

@@ -16,7 +16,7 @@
 /* The ssa-range branch gets 4 paths because we thread the default
    case of the switch through the loop comparison.  Basically, we know
    that s != SI coming out of the default case.  */
-/* { dg-final { scan-tree-dump "Jumps threaded: \[45\]" "thread3" } } */
+/* { dg-final { scan-tree-dump "Jumps threaded: \[345\]" "thread3" } } */
 
 enum STATE {
   S0=0,

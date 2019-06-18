@@ -105,7 +105,7 @@ set_value_range_to_truthvalue (value_range *vr, tree type)
 value_range *
 vr_values::get_value_range (const_tree var)
 {
-  static const value_range vr_const_varying (VR_VARYING, NULL, NULL);
+  tree type = TREE_TYPE (var);
   value_range *vr;
   tree sym;
   unsigned ver = SSA_NAME_VERSION (var);
@@ -118,7 +118,13 @@ vr_values::get_value_range (const_tree var)
      We should get here at most from the substitute-and-fold stage which
      will never try to change values.  */
   if (ver >= num_vr_values)
-    return CONST_CAST (value_range *, &vr_const_varying);
+    {
+      /* ?? At some point we should find a way to cache varying ranges
+	 by type.  In the tree type itself?  */
+      vr = vrp_value_range_pool.allocate ();
+      vr->set_varying (type);
+      return vr;
+    }
 
   vr = vr_value[ver];
   if (vr)
@@ -126,11 +132,16 @@ vr_values::get_value_range (const_tree var)
 
   /* After propagation finished do not allocate new value-ranges.  */
   if (values_propagated)
-    return CONST_CAST (value_range *, &vr_const_varying);
+    {
+      /* See note about caching varying above.  */
+      vr = vrp_value_range_pool.allocate ();
+      vr->set_varying (type);
+      return vr;
+    }
 
   /* Create a default value range.  */
   vr_value[ver] = vr = vrp_value_range_pool.allocate ();
-  vr->set_undefined ();
+  vr->set_undefined (type);
 
   /* If VAR is a default definition of a parameter, the variable can
      take any value in VAR's type.  */
@@ -179,9 +190,7 @@ vr_values::set_defs_to_varying (gimple *stmt)
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, i, SSA_OP_DEF)
     {
       value_range *vr = get_value_range (def);
-      /* Avoid writing to vr_const_varying get_value_range may return.  */
-      if (!vr->varying_p ())
-	vr->set_varying (TREE_TYPE (def));
+      vr->set_varying (TREE_TYPE (def));
     }
 }
 
@@ -995,6 +1004,9 @@ check_for_binary_op_overflow (enum tree_code subcode, tree type,
 			      tree op1, irange &ir1,
 			      bool *ovf)
 {
+  if (ir0.undefined_p () || ir1.undefined_p ())
+    return false;
+
   tree vr0min = wide_int_to_tree (TREE_TYPE (op0), ir0.lower_bound ());
   tree vr0max = wide_int_to_tree (TREE_TYPE (op0), ir0.upper_bound ());
   tree vr1min = wide_int_to_tree (TREE_TYPE (op1), ir1.lower_bound ());
@@ -3947,6 +3959,12 @@ range_misc::simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi,
   scalar_int_mode mode;
   tree tem;
   gassign *conv;
+
+  /* An undefined means this statement is unreachable.  Bail to avoid
+     calculating anything in range_fits_type_p below.  Perhaps we
+     should generically bail from simplify_stmt_using_ranges.  */
+  if (ir.undefined_p ())
+    return false;
 
   /* First check if we can use a signed type in place of an unsigned.  */
   scalar_int_mode rhs_mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (rhs1));

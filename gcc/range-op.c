@@ -1831,7 +1831,7 @@ public:
 } op_logical_not;
 
 
-/* Folding a logical NOT, oddly enough, invlves doing nothing on the
+/* Folding a logical NOT, oddly enough, involves doing nothing on the
    forward pass thru.  During the initial walk backwards, the logical NOT
    reversed the desired outcome on the way back, so on the way forward all
    we do is pass the range forward.

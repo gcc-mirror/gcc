@@ -131,6 +131,21 @@ rvrp_fold_const_assign (gassign *assign, const irange &r)
     return false;
   tree rhs;
   gcc_assert (r.singleton_p (&rhs));
+
+  /* Avoid building incompatible assignments.
+
+     Fortran has different precision booleans and
+     operator_not_equal::fold_range is building booleans that don't
+     match.  Consequently, the global range table is being populated
+     by range kind:1 whereas sometimes Fortran can have other sized
+     booleans. */
+  tree type = TREE_TYPE (gimple_assign_lhs (assign));
+  if (!types_compatible_p (type, r.type ()))
+    {
+      gcc_checking_assert (TREE_CODE (r.type ()) == BOOLEAN_TYPE);
+      rhs = fold_convert (type, rhs);
+    }
+
   delink_stmt_imm_use (assign);
   gimple_assign_set_rhs_code (assign, SSA_NAME);
   gimple_assign_set_rhs1 (assign, rhs);
