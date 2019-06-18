@@ -42,3 +42,4 @@ TEST_ALL (ADD_LOOP)
 /* { dg-final { scan-assembler-times {\tst1w\tz[0-9]+\.s, p[0-7], \[x0, x[0-9]+, lsl 2\]\n} 3 } } */
 /* { dg-final { scan-assembler-times {\tld1d\tz[0-9]+\.d, p[0-7]/z, \[x0, x[0-9]+, lsl 3\]\n} 3 } } */
 /* { dg-final { scan-assembler-times {\tst1d\tz[0-9]+\.d, p[0-7], \[x0, x[0-9]+, lsl 3\]\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tb\.any\t} 10 } } */

@@ -1,3 +1,15 @@
+2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/struct_vect_18.c: Allow branches to
+	contain dots.
+	* gcc.target/aarch64/sve/struct_vect_19.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_20.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_21.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_22.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_23.c: Likewise.
+	* gcc.target/aarch64/sve/unroll-1.c: Likewise.
+	* gcc.target/aarch64/sve/while_1.c: Check for b.any.
+
 2019-06-18  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr81563.c (dg-final): Check that no

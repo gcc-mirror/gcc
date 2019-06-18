@@ -1308,6 +1308,13 @@ static const char * const aarch64_condition_codes[] =
   "hi", "ls", "ge", "lt", "gt", "le", "al", "nv"
 };
 
+/* The preferred condition codes for SVE conditions.  */
+static const char *const aarch64_sve_condition_codes[] =
+{
+  "none", "any", "nlast", "last", "first", "nfrst", "vs", "vc",
+  "pmore", "plast", "tcont", "tstop", "gt", "le", "al", "nv"
+};
+
 /* Generate code to enable conditional branches in functions over 1 MiB.  */
 const char *
 aarch64_gen_far_branch (rtx * operands, int pos_label, const char * dest,
@@ -7401,6 +7408,21 @@ aarch64_get_condition_code_1 (machine_mode mode, enum rtx_code comp_code)
 	}
       break;
 
+    case E_CC_NZCmode:
+      switch (comp_code)
+	{
+	case NE: return AARCH64_NE; /* = any */
+	case EQ: return AARCH64_EQ; /* = none */
+	case GE: return AARCH64_PL; /* = nfrst */
+	case LT: return AARCH64_MI; /* = first */
+	case GEU: return AARCH64_CS; /* = nlast */
+	case GTU: return AARCH64_HI; /* = pmore */
+	case LEU: return AARCH64_LS; /* = plast */
+	case LTU: return AARCH64_CC; /* = last */
+	default: return -1;
+	}
+      break;
+
     case E_CC_NZmode:
       switch (comp_code)
 	{
@@ -7734,7 +7756,10 @@ aarch64_print_operand (FILE *f, rtx x, int code)
         gcc_assert (cond_code >= 0);
 	if (code == 'M')
 	  cond_code = AARCH64_INVERSE_CONDITION_CODE (cond_code);
-	fputs (aarch64_condition_codes[cond_code], f);
+	if (GET_MODE (XEXP (x, 0)) == CC_NZCmode)
+	  fputs (aarch64_sve_condition_codes[cond_code], f);
+	else
+	  fputs (aarch64_condition_codes[cond_code], f);
       }
       break;
 
@@ -17059,7 +17084,7 @@ aarch64_emit_sve_ptrue_op_cc (rtx target, rtx ptrue, rtx op)
   rtx unspec = gen_rtx_UNSPEC (GET_MODE (target),
 			       gen_rtvec (2, ptrue, op),
 			       UNSPEC_MERGE_PTRUE);
-  rtx_insn *insn = emit_insn (gen_set_clobber_cc (target, unspec));
+  rtx_insn *insn = emit_insn (gen_set_clobber_cc_nzc (target, unspec));
   set_unique_reg_note (insn, REG_EQUAL, copy_rtx (op));
 }
 
