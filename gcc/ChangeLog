@@ -1,3 +1,10 @@
+2019-06-18  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/90922
+	* config/xtensa/xtensa.c (xtensa_expand_prologue): Add stack
+	pointer adjustment for the case of no callee-saved registers and
+	stack frame bigger than 128 bytes.
+
 2019-06-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR middle-end/90862
