@@ -1,5 +1,12 @@
 2019-06-18  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (eval_and_check_array_index): Split out from...
+	(cxx_eval_array_reference): ...here.
+	(cxx_eval_store_expression): Use it here, too.
+	(diag_array_subscript): Take location.  Strip location wrapper.
+
+2019-06-18  Jason Merrill  <jason@redhat.com>
+
 	* constexpr.c (cxx_eval_constant_expression): Handle conversion from
 	and then to the same type.
 
