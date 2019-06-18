@@ -1331,7 +1331,7 @@ adjust_temp_type (tree type, tree temp)
    modifications don't affect other places where it was used.  */
 
 tree
-unshare_constructor (tree t)
+unshare_constructor (tree t MEM_STAT_DECL)
 {
   if (!t || TREE_CODE (t) != CONSTRUCTOR)
     return t;
@@ -1340,8 +1340,8 @@ unshare_constructor (tree t)
   while (!ptrs.is_empty ())
     {
       tree *p = ptrs.pop ();
-      tree n = copy_node (*p);
-      CONSTRUCTOR_ELTS (n) = vec_safe_copy (CONSTRUCTOR_ELTS (*p));
+      tree n = copy_node (*p PASS_MEM_STAT);
+      CONSTRUCTOR_ELTS (n) = vec_safe_copy (CONSTRUCTOR_ELTS (*p) PASS_MEM_STAT);
       *p = n;
       vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (n);
       constructor_elt *ce;
