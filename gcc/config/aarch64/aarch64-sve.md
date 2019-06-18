@@ -232,7 +232,7 @@
 	  UNSPEC_LD1_GATHER))]
   "TARGET_SVE"
   {
-    operands[5] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[5] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -289,7 +289,7 @@
 	  UNSPEC_ST1_SCATTER))]
   "TARGET_SVE"
   {
-    operands[5] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[5] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -629,7 +629,7 @@
   {
     if (MEM_P (operands[1]))
       {
-	rtx ptrue = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+	rtx ptrue = aarch64_ptrue_reg (<VPRED>mode);
 	emit_insn (gen_sve_ld1r<mode> (operands[0], ptrue, operands[1],
 				       CONST0_RTX (<MODE>mode)));
 	DONE;
@@ -744,7 +744,7 @@
 	  UNSPEC_LDN))]
   "TARGET_SVE"
   {
-    operands[2] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -773,7 +773,7 @@
 	  UNSPEC_STN))]
   "TARGET_SVE"
   {
-    operands[2] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -932,7 +932,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -1019,7 +1019,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -1050,7 +1050,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -1080,7 +1080,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[2] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -1150,7 +1150,7 @@
 	  (match_dup 3)))]
   "TARGET_SVE"
   {
-    operands[3] = force_reg (<MODE>mode, CONSTM1_RTX (<MODE>mode));
+    operands[3] = aarch64_ptrue_reg (<MODE>mode);
   }
 )
 
@@ -1197,7 +1197,7 @@
 	  (match_dup 2)))]
   "TARGET_SVE"
   {
-    operands[2] = force_reg (<MODE>mode, CONSTM1_RTX (<MODE>mode));
+    operands[2] = aarch64_ptrue_reg (<MODE>mode);
   }
 )
 
@@ -1246,7 +1246,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -1738,7 +1738,7 @@
 	  (pc)))]
   ""
   {
-    rtx ptrue = force_reg (<MODE>mode, CONSTM1_RTX (<MODE>mode));
+    rtx ptrue = aarch64_ptrue_reg (<MODE>mode);
     rtx pred;
     if (operands[2] == CONST0_RTX (<MODE>mode))
       pred = operands[1];
@@ -1764,7 +1764,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -1793,7 +1793,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -1823,7 +1823,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2017,7 +2017,7 @@
 		      UNSPEC_ADDV))]
   "TARGET_SVE"
   {
-    operands[2] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2039,7 +2039,7 @@
 		      UNSPEC_FADDV))]
   "TARGET_SVE"
   {
-    operands[2] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2061,7 +2061,7 @@
 		      MAXMINV))]
   "TARGET_SVE"
   {
-    operands[2] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2083,7 +2083,7 @@
 		      FMAXMINV))]
   "TARGET_SVE"
   {
-    operands[2] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2104,7 +2104,7 @@
 		      BITWISEV))]
   "TARGET_SVE"
   {
-    operands[2] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2126,7 +2126,7 @@
 		      UNSPEC_FADDA))]
   "TARGET_SVE"
   {
-    operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2167,7 +2167,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2203,7 +2203,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2243,7 +2243,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2289,7 +2289,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[4] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[4] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2322,7 +2322,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[4] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[4] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2356,7 +2356,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[4] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[4] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2391,7 +2391,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[4] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[4] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2424,7 +2424,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[3] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2453,7 +2453,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[2] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2491,7 +2491,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[2] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2518,7 +2518,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[2] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2569,7 +2569,7 @@
 	  UNSPEC_MERGE_PTRUE))]
   "TARGET_SVE"
   {
-    operands[2] = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
@@ -2707,7 +2707,7 @@
 		? gen_aarch64_sve_zip2<mode>
 		: gen_aarch64_sve_zip1<mode>)
 		(temp, operands[1], operands[1]));
-    rtx ptrue = force_reg (<VWIDE_PRED>mode, CONSTM1_RTX (<VWIDE_PRED>mode));
+    rtx ptrue = aarch64_ptrue_reg (<VWIDE_PRED>mode);
     emit_insn (gen_aarch64_sve_extend<mode><Vwide>2 (operands[0],
 						     ptrue, temp));
     DONE;
@@ -2733,7 +2733,7 @@
 	        ? gen_aarch64_sve_zip2vnx4si
 	        : gen_aarch64_sve_zip1vnx4si)
 	       (temp, operands[1], operands[1]));
-    rtx ptrue = force_reg (VNx2BImode, CONSTM1_RTX (VNx2BImode));
+    rtx ptrue = aarch64_ptrue_reg (VNx2BImode);
     emit_insn (gen_aarch64_sve_<FLOATUORS:optab>vnx4sivnx2df2 (operands[0],
 							       ptrue, temp));
     DONE;
@@ -2783,7 +2783,7 @@
 	(unspec:SVE_HSF [(match_dup 4) (match_dup 5)] UNSPEC_UZP1))]
   "TARGET_SVE"
   {
-    operands[3] = force_reg (<VWIDE_PRED>mode, CONSTM1_RTX (<VWIDE_PRED>mode));
+    operands[3] = aarch64_ptrue_reg (<VWIDE_PRED>mode);
     operands[4] = gen_reg_rtx (<MODE>mode);
     operands[5] = gen_reg_rtx (<MODE>mode);
   }
@@ -2805,7 +2805,7 @@
 	(unspec:VNx4SI [(match_dup 4) (match_dup 5)] UNSPEC_UZP1))]
   "TARGET_SVE"
   {
-    operands[3] = force_reg (VNx2BImode, CONSTM1_RTX (VNx2BImode));
+    operands[3] = aarch64_ptrue_reg (VNx2BImode);
     operands[4] = gen_reg_rtx (VNx4SImode);
     operands[5] = gen_reg_rtx (VNx4SImode);
   }
@@ -3073,7 +3073,7 @@
 		(match_operand:SVE_I 2 "register_operand"))]
   "TARGET_SVE"
   {
-    rtx pred = force_reg (<VPRED>mode, CONSTM1_RTX (<VPRED>mode));
+    rtx pred = aarch64_ptrue_reg (<VPRED>mode);
     emit_insn (gen_aarch64_<su>abd<mode>_3 (operands[0], pred, operands[1],
 					    operands[2]));
     DONE;
