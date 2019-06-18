@@ -1,5 +1,15 @@
 2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-protos.h (aarch64_ptrue_reg): Declare.
+	* config/aarch64/aarch64.c (aarch64_ptrue_reg): New functions.
+	(aarch64_expand_sve_widened_duplicate, aarch64_expand_sve_mem_move)
+	(aarch64_maybe_expand_sve_subreg_move, aarch64_evpc_rev_local)
+	(aarch64_expand_sve_vec_cmp_int): Use it.
+	(aarch64_expand_sve_vec_cmp_float): Likewise.
+	* config/aarch64/aarch64-sve.md: Likewise throughout.
+
+2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve.md (*cond_<optab><mode>_0): Delete.
 	(*cond_<optab><mode>_z): Fold into...
 	(*cond_<optab><mode>_any): ...here.  Also handle cases in which
