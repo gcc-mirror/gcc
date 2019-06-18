@@ -205,6 +205,472 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #endif // C++14
 
 #if __cplusplus > 201402L
+#include <bits/stl_function.h>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  /// @addtogroup numeric_ops
+  /// @{
+
+  /// @cond undocumented
+  template<typename _It, typename _Traits = iterator_traits<_It>,
+	   typename _Cat = typename _Traits::iterator_category>
+    using __is_random_access_iter
+      = is_base_of<random_access_iterator_tag, _Cat>;
+  /// @endcond
+
+  /**
+   *  @brief  Calculate reduction of values in a range.
+   *
+   *  @param  __first  Start of range.
+   *  @param  __last  End of range.
+   *  @param  __init  Starting value to add other values to.
+   *  @param  __binary_op A binary function object.
+   *  @return  The final sum.
+   *
+   *  Reduce the values in the range `[first,last)` using a binary operation.
+   *  The initial value is `init`.  The values are not necessarily processed
+   *  in order.
+   *
+   *  This algorithm is similar to `std::accumulate` but is not required to
+   *  perform the operations in order from first to last. For operations
+   *  that are commutative and associative the result will be the same as
+   *  for `std::accumulate`, but for other operations (such as floating point
+   *  arithmetic) the result can be different.
+   */
+  template<typename _InputIterator, typename _Tp, typename _BinaryOperation>
+    _Tp
+    reduce(_InputIterator __first, _InputIterator __last, _Tp __init,
+	   _BinaryOperation __binary_op)
+    {
+      using value_type = typename iterator_traits<_InputIterator>::value_type;
+      static_assert(is_invocable_r_v<_Tp, _BinaryOperation, _Tp&, _Tp&>);
+      static_assert(is_convertible_v<value_type, _Tp>);
+      if constexpr (__is_random_access_iter<_InputIterator>::value)
+	{
+	  while ((__last - __first) >= 4)
+	    {
+	      _Tp __v1 = __binary_op(__first[0], __first[1]);
+	      _Tp __v2 = __binary_op(__first[2], __first[3]);
+	      _Tp __v3 = __binary_op(__v1, __v2);
+	      __init = __binary_op(__init, __v3);
+	      __first += 4;
+	    }
+	}
+      for (; __first != __last; ++__first)
+	__init = __binary_op(__init, *__first);
+      return __init;
+    }
+
+ /**
+   *  @brief  Calculate reduction of values in a range.
+   *
+   *  @param  __first  Start of range.
+   *  @param  __last  End of range.
+   *  @param  __init  Starting value to add other values to.
+   *  @return  The final sum.
+   *
+   *  Reduce the values in the range `[first,last)` using addition.
+   *  Equivalent to calling std::reduce(first, last, init, std::plus<>())`.
+   */
+  template<typename _InputIterator, typename _Tp>
+    inline _Tp
+    reduce(_InputIterator __first, _InputIterator __last, _Tp __init)
+    { return std::reduce(__first, __last, __init, plus<>()); }
+
+  /**
+   *  @brief  Calculate reduction of values in a range.
+   *
+   *  @param  __first  Start of range.
+   *  @param  __last  End of range.
+   *  @return  The final sum.
+   *
+   *  Reduce the values in the range `[first,last)` using addition, with
+   *  an initial value of `T{}`, where `T` is the iterator's value type.
+   *  Equivalent to calling std::reduce(first, last, T{}, std::plus<>())`.
+   */
+  template<typename _InputIterator>
+    inline typename iterator_traits<_InputIterator>::value_type
+    reduce(_InputIterator __first, _InputIterator __last)
+    {
+      using value_type = typename iterator_traits<_InputIterator>::value_type;
+      return std::reduce(__first, __last, value_type{}, plus<>());
+    }
+
+  /**
+   *  @brief  Combine elements from two ranges and reduce
+   *
+   *  @param  __first1  Start of first range.
+   *  @param  __last1  End of first range.
+   *  @param  __first2  Start of second range.
+   *  @param  __init  Starting value to add other values to.
+   *  @param  __binary_op1 The function used to perform reduction.
+   *  @param  __binary_op2 The function used to combine values from the ranges.
+   *  @return  The final sum.
+   *
+   *  Call `binary_op2(first1[n],first2[n])` for each `n` in `[0,last1-first1)`
+   *  and then use `binary_op1` to reduce the values returned by `binary_op2`
+   *  to a single value of type `T`.
+   *
+   *  The range beginning at `first2` must contain at least `last1-first1`
+   *  elements.
+   */
+  template<typename _InputIterator1, typename _InputIterator2, typename _Tp,
+	   typename _BinaryOperation1, typename _BinaryOperation2>
+    _Tp
+    transform_reduce(_InputIterator1 __first1, _InputIterator1 __last1,
+		     _InputIterator2 __first2, _Tp __init,
+		     _BinaryOperation1 __binary_op1,
+		     _BinaryOperation2 __binary_op2)
+    {
+      if constexpr (__and_v<__is_random_access_iter<_InputIterator1>,
+			    __is_random_access_iter<_InputIterator2>>)
+	{
+	  while ((__last1 - __first1) >= 4)
+	    {
+	      _Tp __v1 = __binary_op1(__binary_op2(__first1[0], __first2[0]),
+				      __binary_op2(__first1[1], __first2[1]));
+	      _Tp __v2 = __binary_op1(__binary_op2(__first1[2], __first2[2]),
+				      __binary_op2(__first1[3], __first2[3]));
+	      _Tp __v3 = __binary_op1(__v1, __v2);
+	      __init = __binary_op1(__init, __v3);
+	      __first1 += 4;
+	      __first2 += 4;
+	    }
+	}
+      for (; __first1 != __last1; ++__first1, (void) ++__first2)
+	__init = __binary_op1(__init, __binary_op2(*__first1, *__first2));
+      return __init;
+    }
+
+  /**
+   *  @brief  Combine elements from two ranges and reduce
+   *
+   *  @param  __first1  Start of first range.
+   *  @param  __last1  End of first range.
+   *  @param  __first2  Start of second range.
+   *  @param  __init  Starting value to add other values to.
+   *  @return  The final sum.
+   *
+   *  Call `first1[n]*first2[n]` for each `n` in `[0,last1-first1)` and then
+   *  use addition to sum those products to a single value of type `T`.
+   *
+   *  The range beginning at `first2` must contain at least `last1-first1`
+   *  elements.
+   */
+  template<typename _InputIterator1, typename _InputIterator2, typename _Tp>
+    inline _Tp
+    transform_reduce(_InputIterator1 __first1, _InputIterator1 __last1,
+		     _InputIterator2 __first2, _Tp __init)
+    {
+      return std::transform_reduce(__first1, __last1, __first2,
+				   std::move(__init),
+				   plus<>(), multiplies<>());
+    }
+
+  /**
+   *  @brief  Transform the elements of a range and reduce
+   *
+   *  @param  __first  Start of range.
+   *  @param  __last  End of range.
+   *  @param  __init  Starting value to add other values to.
+   *  @param  __binary_op The function used to perform reduction.
+   *  @param  __unary_op The function used to transform values from the range.
+   *  @return  The final sum.
+   *
+   *  Call `unary_op(first[n])` for each `n` in `[0,last-first)` and then
+   *  use `binary_op` to reduce the values returned by `unary_op`
+   *  to a single value of type `T`.
+   */
+  template<typename _InputIterator, typename _Tp,
+	   typename _BinaryOperation, typename _UnaryOperation>
+    _Tp
+    transform_reduce(_InputIterator __first, _InputIterator __last, _Tp __init,
+		     _BinaryOperation __binary_op, _UnaryOperation __unary_op)
+    {
+      if constexpr (__is_random_access_iter<_InputIterator>::value)
+	{
+	  while ((__last - __first) >= 4)
+	    {
+	      _Tp __v1 = __binary_op(__unary_op(__first[0]),
+				     __unary_op(__first[1]));
+	      _Tp __v2 = __binary_op(__unary_op(__first[2]),
+				     __unary_op(__first[3]));
+	      _Tp __v3 = __binary_op(__v1, __v2);
+	      __init = __binary_op(__init, __v3);
+	      __first += 4;
+	    }
+	}
+      for (; __first != __last; ++__first)
+	__init = __binary_op(__init, __unary_op(*__first));
+      return __init;
+    }
+
+  /** @brief Output the cumulative sum of one range to a second range
+   *
+   *  @param __first  Start of input range.
+   *  @param __last   End of input range.
+   *  @param __result Start of output range.
+   *  @param __init   Initial value.
+   *  @param __binary_op Function to perform summation.
+   *  @return The end of the output range.
+   *
+   *  Write the cumulative sum (aka prefix sum, aka scan) of the input range
+   *  to the output range. Each element of the output range contains the
+   *  running total of all earlier elements (and the initial value),
+   *  using `binary_op` for summation.
+   *
+   *  This function generates an "exclusive" scan, meaning the Nth element
+   *  of the output range is the sum of the first N-1 input elements,
+   *  so the Nth input element is not included.
+   */
+  template<typename _InputIterator, typename _OutputIterator, typename _Tp,
+	   typename _BinaryOperation>
+    _OutputIterator
+    exclusive_scan(_InputIterator __first, _InputIterator __last,
+		   _OutputIterator __result, _Tp __init,
+		   _BinaryOperation __binary_op)
+    {
+      while (__first != __last)
+	{
+	  auto __v = __init;
+	  __init = __binary_op(__init, *__first);
+	  ++__first;
+	  *__result++ = std::move(__v);
+	}
+      return __result;
+    }
+
+  /** @brief Output the cumulative sum of one range to a second range
+   *
+   *  @param __first  Start of input range.
+   *  @param __last   End of input range.
+   *  @param __result Start of output range.
+   *  @param __init   Initial value.
+   *  @return The end of the output range.
+   *
+   *  Write the cumulative sum (aka prefix sum, aka scan) of the input range
+   *  to the output range. Each element of the output range contains the
+   *  running total of all earlier elements (and the initial value),
+   *  using `std::plus<>` for summation.
+   *
+   *  This function generates an "exclusive" scan, meaning the Nth element
+   *  of the output range is the sum of the first N-1 input elements,
+   *  so the Nth input element is not included.
+   */
+  template<typename _InputIterator, typename _OutputIterator, typename _Tp>
+    inline _OutputIterator
+    exclusive_scan(_InputIterator __first, _InputIterator __last,
+		   _OutputIterator __result, _Tp __init)
+    {
+      return std::exclusive_scan(__first, __last, __result, std::move(__init),
+				 plus<>());
+    }
+
+  /** @brief Output the cumulative sum of one range to a second range
+   *
+   *  @param __first  Start of input range.
+   *  @param __last   End of input range.
+   *  @param __result Start of output range.
+   *  @param __binary_op Function to perform summation.
+   *  @param __init   Initial value.
+   *  @return The end of the output range.
+   *
+   *  Write the cumulative sum (aka prefix sum, aka scan) of the input range
+   *  to the output range. Each element of the output range contains the
+   *  running total of all earlier elements (and the initial value),
+   *  using `binary_op` for summation.
+   *
+   *  This function generates an "inclusive" scan, meaning the Nth element
+   *  of the output range is the sum of the first N input elements,
+   *  so the Nth input element is included.
+   */
+  template<typename _InputIterator, typename _OutputIterator,
+	   typename _BinaryOperation, typename _Tp>
+    _OutputIterator
+    inclusive_scan(_InputIterator __first, _InputIterator __last,
+		   _OutputIterator __result, _BinaryOperation __binary_op,
+		   _Tp __init)
+    {
+      for (; __first != __last; ++__first)
+	*__result++ = __init = __binary_op(__init, *__first);
+      return __result;
+    }
+
+  /** @brief Output the cumulative sum of one range to a second range
+   *
+   *  @param __first  Start of input range.
+   *  @param __last   End of input range.
+   *  @param __result Start of output range.
+   *  @param __binary_op Function to perform summation.
+   *  @return The end of the output range.
+   *
+   *  Write the cumulative sum (aka prefix sum, aka scan) of the input range
+   *  to the output range. Each element of the output range contains the
+   *  running total of all earlier elements, using `binary_op` for summation.
+   *
+   *  This function generates an "inclusive" scan, meaning the Nth element
+   *  of the output range is the sum of the first N input elements,
+   *  so the Nth input element is included.
+   */
+  template<typename _InputIterator, typename _OutputIterator,
+	   typename _BinaryOperation>
+    _OutputIterator
+    inclusive_scan(_InputIterator __first, _InputIterator __last,
+		   _OutputIterator __result, _BinaryOperation __binary_op)
+    {
+      if (__first != __last)
+	{
+	  auto __init = *__first;
+	  *__result++ = __init;
+	  ++__first;
+	  if (__first != __last)
+	    __result = std::inclusive_scan(__first, __last, __result,
+					   __binary_op, std::move(__init));
+	}
+      return __result;
+    }
+
+  /** @brief Output the cumulative sum of one range to a second range
+   *
+   *  @param __first  Start of input range.
+   *  @param __last   End of input range.
+   *  @param __result Start of output range.
+   *  @return The end of the output range.
+   *
+   *  Write the cumulative sum (aka prefix sum, aka scan) of the input range
+   *  to the output range. Each element of the output range contains the
+   *  running total of all earlier elements, using `std::plus<>` for summation.
+   *
+   *  This function generates an "inclusive" scan, meaning the Nth element
+   *  of the output range is the sum of the first N input elements,
+   *  so the Nth input element is included.
+   */
+  template<typename _InputIterator, typename _OutputIterator>
+    inline _OutputIterator
+    inclusive_scan(_InputIterator __first, _InputIterator __last,
+		   _OutputIterator __result)
+    { return std::inclusive_scan(__first, __last, __result, plus<>()); }
+
+  /** @brief Output the cumulative sum of one range to a second range
+   *
+   *  @param __first  Start of input range.
+   *  @param __last   End of input range.
+   *  @param __result Start of output range.
+   *  @param __init   Initial value.
+   *  @param __binary_op Function to perform summation.
+   *  @param __unary_op Function to transform elements of the input range.
+   *  @return The end of the output range.
+   *
+   *  Write the cumulative sum (aka prefix sum, aka scan) of the input range
+   *  to the output range. Each element of the output range contains the
+   *  running total of all earlier elements (and the initial value),
+   *  using `__unary_op` to transform the input elements
+   *  and using `__binary_op` for summation.
+   *
+   *  This function generates an "exclusive" scan, meaning the Nth element
+   *  of the output range is the sum of the first N-1 input elements,
+   *  so the Nth input element is not included.
+   */
+  template<typename _InputIterator, typename _OutputIterator, typename _Tp,
+	   typename _BinaryOperation, typename _UnaryOperation>
+    _OutputIterator
+    transform_exclusive_scan(_InputIterator __first, _InputIterator __last,
+			     _OutputIterator __result, _Tp __init,
+			     _BinaryOperation __binary_op,
+			     _UnaryOperation __unary_op)
+    {
+      while (__first != __last)
+	{
+	  auto __v = __init;
+	  __init = __binary_op(__init, __unary_op(*__first));
+	  ++__first;
+	  *__result++ = std::move(__v);
+	}
+      return __result;
+    }
+
+  /** @brief Output the cumulative sum of one range to a second range
+   *
+   *  @param __first  Start of input range.
+   *  @param __last   End of input range.
+   *  @param __result Start of output range.
+   *  @param __binary_op Function to perform summation.
+   *  @param __unary_op Function to transform elements of the input range.
+   *  @param __init   Initial value.
+   *  @return The end of the output range.
+   *
+   *  Write the cumulative sum (aka prefix sum, aka scan) of the input range
+   *  to the output range. Each element of the output range contains the
+   *  running total of all earlier elements (and the initial value),
+   *  using `__unary_op` to transform the input elements
+   *  and using `__binary_op` for summation.
+   *
+   *  This function generates an "inclusive" scan, meaning the Nth element
+   *  of the output range is the sum of the first N input elements,
+   *  so the Nth input element is included.
+   */
+  template<typename _InputIterator, typename _OutputIterator,
+	   typename _BinaryOperation, typename _UnaryOperation, typename _Tp>
+    _OutputIterator
+    transform_inclusive_scan(_InputIterator __first, _InputIterator __last,
+			     _OutputIterator __result,
+			     _BinaryOperation __binary_op,
+			     _UnaryOperation __unary_op,
+			     _Tp __init)
+    {
+      for (; __first != __last; ++__first)
+	*__result++ = __init = __binary_op(__init, __unary_op(*__first));
+      return __result;
+    }
+
+  /** @brief Output the cumulative sum of one range to a second range
+   *
+   *  @param __first  Start of input range.
+   *  @param __last   End of input range.
+   *  @param __result Start of output range.
+   *  @param __binary_op Function to perform summation.
+   *  @param __unary_op Function to transform elements of the input range.
+   *  @return The end of the output range.
+   *
+   *  Write the cumulative sum (aka prefix sum, aka scan) of the input range
+   *  to the output range. Each element of the output range contains the
+   *  running total of all earlier elements,
+   *  using `__unary_op` to transform the input elements
+   *  and using `__binary_op` for summation.
+   *
+   *  This function generates an "inclusive" scan, meaning the Nth element
+   *  of the output range is the sum of the first N input elements,
+   *  so the Nth input element is included.
+   */
+  template<typename _InputIterator, typename _OutputIterator,
+	  typename _BinaryOperation, typename _UnaryOperation>
+    _OutputIterator
+    transform_inclusive_scan(_InputIterator __first, _InputIterator __last,
+			     _OutputIterator __result,
+			     _BinaryOperation __binary_op,
+			     _UnaryOperation __unary_op)
+    {
+      if (__first != __last)
+	{
+	  auto __init = __unary_op(*__first);
+	  *__result++ = __init;
+	  ++__first;
+	  if (__first != __last)
+	    __result = std::transform_inclusive_scan(__first, __last, __result,
+						     __binary_op, __unary_op,
+						     std::move(__init));
+	}
+      return __result;
+    }
+
+  // @} group numeric_ops
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+
 // Parallel STL algorithms
 # if _PSTL_EXECUTION_POLICIES_DEFINED
 // If <execution> has already been included, pull in implementations

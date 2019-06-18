@@ -60,12 +60,16 @@
 #include <debug/debug.h>
 #include <bits/move.h> // For _GLIBCXX_MOVE
 
-#if __cplusplus >= 201103L
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  /** @defgroup numeric_ops Generalized Numeric operations
+   *  @ingroup algorithms
+   */
+
+#if __cplusplus >= 201103L
   /**
    *  @brief  Create a range of sequentially increasing values.
    *
@@ -76,6 +80,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __last  End of range.
    *  @param  __value  Starting value.
    *  @return  Nothing.
+   *  @ingroup numeric_ops
    */
   template<typename _ForwardIterator, typename _Tp>
     void
@@ -94,14 +99,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  ++__value;
 	}
     }
-
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace std
-
 #endif
 
-namespace std _GLIBCXX_VISIBILITY(default)
-{
+_GLIBCXX_END_NAMESPACE_VERSION
+
 _GLIBCXX_BEGIN_NAMESPACE_ALGO
 
 #if __cplusplus > 201703L
@@ -111,6 +112,9 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 #else
 # define _GLIBCXX_MOVE_IF_20(_E) _E
 #endif
+
+  /// @addtogroup numeric_ops
+  /// @{
 
   /**
    *  @brief  Accumulate values in a range.
@@ -139,8 +143,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   /**
    *  @brief  Accumulate values in a range with operation.
    *
-   *  Accumulates the values in the range [first,last) using the function
-   *  object @p __binary_op.  The initial value is @p __init.  The values are
+   *  Accumulates the values in the range `[first,last)` using the function
+   *  object `__binary_op`.  The initial value is `__init`.  The values are
    *  processed in order.
    *
    *  @param  __first  Start of range.
@@ -389,6 +393,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	}
       return ++__result;
     }
+
+  // @} group numeric_ops
 
 #undef _GLIBCXX_MOVE_IF_20
 
