@@ -112,6 +112,7 @@ host_modules= { module= texinfo; no_install= true; };
 host_modules= { module= zlib; no_install=true; no_check=true;
 		bootstrap=true;
 	        extra_configure_flags='@extra_host_zlib_configure_flags@';};
+host_modules= { module= gnulib; };
 host_modules= { module= gdb; };
 host_modules= { module= expect; };
 host_modules= { module= guile; };
@@ -392,11 +393,13 @@ dependencies = { module=all-intl; on=all-libiconv; };
 dependencies = { module=configure-gdb; on=all-intl; };
 dependencies = { module=configure-gdb; on=configure-sim; };
 dependencies = { module=configure-gdb; on=all-bfd; };
+dependencies = { module=configure-gdb; on=all-gnulib; };
 // Depend on all-libiconv so that configure checks for iconv
 // functions will work.
 dependencies = { module=configure-gdb; on=all-libiconv; };
 dependencies = { module=all-gdb; on=all-libiberty; };
 dependencies = { module=all-gdb; on=all-libiconv; };
+dependencies = { module=all-gdb; on=all-gnulib; };
 dependencies = { module=all-gdb; on=all-opcodes; };
 dependencies = { module=all-gdb; on=all-readline; };
 dependencies = { module=all-gdb; on=all-build-bison; };

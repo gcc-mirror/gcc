@@ -139,6 +139,7 @@
 #endif
 #define __cpp_lib_shared_ptr_weak_type 201606
 #define __cpp_lib_string_view 201603
+// #define __cpp_lib_to_chars 201611L
 #define __cpp_lib_type_trait_variable_templates 201510L
 #define __cpp_lib_uncaught_exceptions 201411L
 #define __cpp_lib_unordered_map_insertion 201411
@@ -149,6 +150,7 @@
 
 #if __cplusplus > 201703L
 // c++2a
+#define __cpp_lib_bind_front 201902L
 #define __cpp_lib_bounded_array_traits 201902L
 #if __cpp_impl_destroying_delete
 # define __cpp_lib_destroying_delete 201806L

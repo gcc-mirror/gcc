@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-thread2-details -fdump-tree-thread3-details -fdump-tree-thread4-details" } */
+/* { dg-options "-O2 -fdump-tree-thread2-details -fdump-tree-thread3-details -fdump-tree-thread4-details -fno-finite-loops" } */
 /* { dg-final { scan-tree-dump "FSM" "thread2" } } */
 /* { dg-final { scan-tree-dump "FSM" "thread3" } } */
 /* { dg-final { scan-tree-dump "FSM" "thread4" { xfail *-*-* } } } */

@@ -422,6 +422,17 @@ proc gcc-dg-prune { system text } {
 	return "::unsupported::memory full"
     }
 
+    if { [string match "*error: function pointers not supported*" $text]
+	  && ![check_effective_target_function_pointers] } {
+	# The format here is important.  See dg.exp.
+	return "::unsupported::funcptr"
+    }
+    if { [string match "*error: large return values not supported*" $text]
+    	  && ![check_effective_target_large_return_values] } {
+	# The format here is important.  See dg.exp.
+	return "::unsupported::large return values"
+    }
+
     return $text
 }
 

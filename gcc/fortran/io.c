@@ -596,12 +596,16 @@ token_to_string (format_token t)
 static bool
 check_format (bool is_input)
 {
-  const char *posint_required	  = _("Positive width required");
-  const char *nonneg_required	  = _("Nonnegative width required");
-  const char *unexpected_element  = _("Unexpected element %qc in format "
-				      "string at %L");
-  const char *unexpected_end	  = _("Unexpected end of format string");
-  const char *zero_width	  = _("Zero width in format descriptor");
+  const char *posint_required
+    = G_("Positive width required in format string at %L");
+  const char *nonneg_required
+    = G_("Nonnegative width required in format string at %L");
+  const char *unexpected_element 
+    = G_("Unexpected element %qc in format string at %L");
+  const char *unexpected_end
+    = G_("Unexpected end of format string in format string at %L");
+  const char *zero_width
+    = G_("Zero width in format descriptor in format string at %L");
 
   const char *error = NULL;
   format_token t, u;
@@ -621,7 +625,7 @@ check_format (bool is_input)
     goto fail;
   if (t != FMT_LPAREN)
     {
-      error = _("Missing leading left parenthesis");
+      error = G_("Missing leading left parenthesis in format string at %L");
       goto syntax;
     }
 
@@ -650,7 +654,8 @@ format_item_1:
 	  level++;
 	  goto format_item;
 	}
-      error = _("Left parenthesis required after %<*%>");
+      error = G_("Left parenthesis required after %<*%> in format string "
+		 "at %L");
       goto syntax;
 
     case FMT_POSINT:
@@ -681,7 +686,7 @@ format_item_1:
 	goto fail;
       if (t != FMT_P)
 	{
-	  error = _("Expected P edit descriptor");
+	  error = G_("Expected P edit descriptor in format string at %L");
 	  goto syntax;
 	}
 
@@ -689,7 +694,8 @@ format_item_1:
 
     case FMT_P:
       /* P requires a prior number.  */
-      error = _("P descriptor requires leading scale factor");
+      error = G_("P descriptor requires leading scale factor in format "
+		 "string at %L");
       goto syntax;
 
     case FMT_X:
@@ -783,7 +789,8 @@ data_desc:
 	  && t != FMT_F && t != FMT_E && t != FMT_EN && t != FMT_ES
 	  && t != FMT_D && t != FMT_G && t != FMT_RPAREN && t != FMT_SLASH)
 	{
-	  error = _("Comma required after P descriptor");
+	  error = G_("Comma required after P descriptor in format string "
+		     "at %L");
 	  goto syntax;
 	}
       if (t != FMT_COMMA)
@@ -794,10 +801,11 @@ data_desc:
 	      if (t == FMT_ERROR)
 		goto fail;
 	    }
-          if (t != FMT_F && t != FMT_E && t != FMT_EN && t != FMT_ES && t != FMT_D
-	      && t != FMT_G && t != FMT_RPAREN && t != FMT_SLASH)
+	  if (t != FMT_F && t != FMT_E && t != FMT_EN && t != FMT_ES
+	      && t != FMT_D && t != FMT_G && t != FMT_RPAREN && t != FMT_SLASH)
 	    {
-	      error = _("Comma required after P descriptor");
+	      error = G_("Comma required after P descriptor in format string "
+			 "at %L");
 	      goto syntax;
 	    }
 	}
@@ -811,7 +819,8 @@ data_desc:
       t = format_lex ();
       if (t != FMT_POSINT)
 	{
-	  error = _("Positive width required with T descriptor");
+	  error = G_("Positive width required with T descriptor in format "
+		     "string at %L");
 	  goto syntax;
 	}
       break;
@@ -894,7 +903,8 @@ data_desc:
 	  u = format_lex ();
 	  if (u == FMT_E)
 	    {
-	      error = _("E specifier not allowed with g0 descriptor");
+	      error = G_("E specifier not allowed with g0 descriptor in "
+			 "format string at %L");
 	      goto syntax;
 	    }
 	  saved_token = u;
@@ -961,9 +971,7 @@ data_desc:
       if (u == FMT_ERROR)
 	goto fail;
       if (u != FMT_E)
-	{
-	  saved_token = u;
-	}
+	saved_token = u;
       else
 	{
 	  u = format_lex ();
@@ -971,7 +979,8 @@ data_desc:
 	    goto fail;
 	  if (u != FMT_POSINT)
 	    {
-	      error = _("Positive exponent width required");
+	      error = G_("Positive exponent width required in format string "
+			 "at %L");
 	      goto syntax;
 	    }
 	}
@@ -1017,7 +1026,8 @@ data_desc:
 	    goto dtio_vlist;
 	  if (t != FMT_RPAREN)
 	    {
-	      error = _("Right parenthesis expected at %C");
+	      error = G_("Right parenthesis expected at %C in format string "
+			 "at %L");
 	      goto syntax;
 	    }
 	  goto between_desc;
@@ -1058,7 +1068,8 @@ data_desc:
 	  /* Warn if -std=legacy, otherwise error.  */
 	  if (gfc_option.warn_std != 0)
 	    {
-	      error = _("Period required in format specifier");
+	      error = G_("Period required in format specifier in format "
+			 "string at %L");
 	      goto syntax;
 	    }
 	  if (mode != MODE_FORMAT)
@@ -1132,9 +1143,7 @@ data_desc:
       if (t == FMT_ERROR)
 	goto fail;
       if (t != FMT_PERIOD)
-	{
-	  saved_token = t;
-	}
+	saved_token = t;
       else
 	{
 	  t = format_lex ();
@@ -1262,7 +1271,7 @@ syntax:
   if (error == unexpected_element)
     gfc_error (error, error_element, &format_locus);
   else
-    gfc_error ("%s in format string at %L", error, &format_locus);
+    gfc_error (error, &format_locus);
 fail:
   rv = false;
 

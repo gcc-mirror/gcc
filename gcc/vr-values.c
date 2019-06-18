@@ -387,7 +387,10 @@ vr_values::op_with_constant_singleton_value_range (tree op)
   if (TREE_CODE (op) != SSA_NAME)
     return NULL_TREE;
 
-  return value_range_constant_singleton (get_value_range (op));
+  tree t;
+  if (get_value_range (op)->singleton_p (&t))
+    return t;
+  return NULL;
 }
 
 /* Return true if op is in a boolean [0, 1] value-range.  */
@@ -1622,7 +1625,7 @@ compare_range_with_value (enum tree_code comp, value_range *vr, tree val,
 	return NULL_TREE;
 
       /* ~[VAL_1, VAL_2] OP VAL is known if VAL_1 <= VAL <= VAL_2.  */
-      if (value_inside_range (val, vr->min (), vr->max ()) == 1)
+      if (!vr->may_contain_p (val))
 	return (comp == NE_EXPR) ? boolean_true_node : boolean_false_node;
 
       return NULL_TREE;

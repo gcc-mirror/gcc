@@ -10,7 +10,7 @@ program test_rshift_lshift
          1, 2, 127, 128, 129, huge(i)/2, huge(i) /)
 
   do n = 1, size(i)
-    do j = -30, 30
+    do j = 0, 31
       if (lshift(i(n),j) /= c_lshift(i(n),j)) STOP 1
       if (rshift(i(n),j) /= c_rshift(i(n),j)) STOP 2
     end do

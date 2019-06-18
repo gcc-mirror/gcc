@@ -3003,6 +3003,13 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	      || TREE_CODE (DR_INIT (drb)) != INTEGER_CST)
 	    break;
 
+	  /* Different .GOMP_SIMD_LANE calls still give the same lane,
+	     just hold extra information.  */
+	  if (STMT_VINFO_SIMD_LANE_ACCESS_P (stmtinfo_a)
+	      && STMT_VINFO_SIMD_LANE_ACCESS_P (stmtinfo_b)
+	      && data_ref_compare_tree (DR_INIT (dra), DR_INIT (drb)) == 0)
+	    break;
+
 	  /* Sorting has ensured that DR_INIT (dra) <= DR_INIT (drb).  */
 	  HOST_WIDE_INT init_a = TREE_INT_CST_LOW (DR_INIT (dra));
 	  HOST_WIDE_INT init_b = TREE_INT_CST_LOW (DR_INIT (drb));
@@ -4101,7 +4108,8 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
 			  DR_STEP_ALIGNMENT (newdr)
 			    = highest_pow2_factor (step);
 			  /* Mark as simd-lane access.  */
-			  newdr->aux = (void *)-1;
+			  tree arg2 = gimple_call_arg (def, 1);
+			  newdr->aux = (void *) (-1 - tree_to_uhwi (arg2));
 			  free_data_ref (dr);
 			  datarefs->safe_push (newdr);
 			  return opt_result::success ();
@@ -4210,14 +4218,17 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
         }
 
       /* See if this was detected as SIMD lane access.  */
-      if (dr->aux == (void *)-1)
+      if (dr->aux == (void *)-1
+	  || dr->aux == (void *)-2
+	  || dr->aux == (void *)-3)
 	{
 	  if (nested_in_vect_loop_p (loop, stmt_info))
 	    return opt_result::failure_at (stmt_info->stmt,
 					   "not vectorized:"
 					   " data ref analysis failed: %G",
 					   stmt_info->stmt);
-	  STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info) = true;
+	  STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info)
+	    = -(uintptr_t) dr->aux;
 	}
 
       tree base = get_base_address (DR_REF (dr));

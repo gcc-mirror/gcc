@@ -435,6 +435,10 @@ typedef struct _loop_vec_info : public vec_info {
      is false and vectorized loop otherwise.  */
   tree simd_if_cond;
 
+  /* Type of the IV to use in the WHILE_ULT call for fully-masked
+     loops.  */
+  tree iv_type;
+
   /* Unknown DRs according to which loop was peeled.  */
   struct dr_vec_info *unaligned_dr;
 
@@ -486,6 +490,10 @@ typedef struct _loop_vec_info : public vec_info {
 
   /* Map of IV base/step expressions to inserted name in the preheader.  */
   hash_map<tree_operand_hash, tree> *ivexpr_map;
+
+  /* Map of OpenMP "omp simd array" scan variables to corresponding
+     rhs of the store of the initializer.  */
+  hash_map<tree, tree> *scan_map;
 
   /* The unrolling factor needed to SLP the loop. In case of that pure SLP is
      applied to the loop, i.e., no unrolling is needed, this is 1.  */
@@ -570,6 +578,7 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_MASKS(L)                (L)->masks
 #define LOOP_VINFO_MASK_SKIP_NITERS(L)     (L)->mask_skip_niters
 #define LOOP_VINFO_MASK_COMPARE_TYPE(L)    (L)->mask_compare_type
+#define LOOP_VINFO_MASK_IV_TYPE(L)         (L)->iv_type
 #define LOOP_VINFO_PTR_MASK(L)             (L)->ptr_mask
 #define LOOP_VINFO_LOOP_NEST(L)            (L)->shared->loop_nest
 #define LOOP_VINFO_DATAREFS(L)             (L)->shared->datarefs
@@ -908,7 +917,7 @@ struct _stmt_vec_info {
   bool strided_p;
 
   /* For both loads and stores.  */
-  bool simd_lane_access_p;
+  unsigned simd_lane_access_p : 2;
 
   /* Classifies how the load or store is going to be implemented
      for loop vectorization.  */
@@ -1582,6 +1591,7 @@ extern tree vect_create_addr_base_for_vector_ref (stmt_vec_info, gimple_seq *,
 /* FORNOW: Used in tree-parloops.c.  */
 extern stmt_vec_info vect_force_simple_reduction (loop_vec_info, stmt_vec_info,
 						  bool *, bool);
+extern widest_int vect_iv_limit_for_full_masking (loop_vec_info loop_vinfo);
 /* Used in gimple-loop-interchange.c.  */
 extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);
@@ -1650,5 +1660,7 @@ void vect_pattern_recog (vec_info *);
 /* In tree-vectorizer.c.  */
 unsigned vectorize_loops (void);
 void vect_free_loop_info_assumptions (struct loop *);
+gimple *vect_loop_vectorized_call (struct loop *, gcond **cond = NULL);
+
 
 #endif  /* GCC_TREE_VECTORIZER_H  */

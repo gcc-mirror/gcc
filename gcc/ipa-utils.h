@@ -240,7 +240,6 @@ odr_type_p (const_tree t)
   gcc_checking_assert (in_lto_p || flag_lto);
   return TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL
          && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t));
-  return false;
 }
 
 #endif  /* GCC_IPA_UTILS_H  */

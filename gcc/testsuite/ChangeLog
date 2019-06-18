@@ -1,3 +1,525 @@
+2019-06-18  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/pr90866-2.c: Remove a pointless declaration
+	to avoid compilation errors on arm-none-eabi.
+
+2019-06-18  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/pcs_attribute-2.c: Remove ifunc usage.
+	* gcc.target/aarch64/pcs_attribute-3.c: New test.
+
+2019-06-18  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+	* gcc.target/aarch64/sve/fadda_1.c: New test.
+
+2019-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/vect-simd-8.c: New test.
+	* gcc.dg/vect/vect-simd-9.c: New test.
+	* g++.dg/vect/simd-2.cc: New test.
+	* g++.dg/gomp/scan-1.C: New test.
+
+2019-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/62055
+	* gcc.target/i386/fnabs.c: New test.
+
+2019-06-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/83820 - excessive attribute arguments not detected.
+	* g++.dg/cpp0x/gen-attrs-67.C: New test.
+
+2019-06-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/90754
+	* g++.dg/lookup/pr90754.C: New.
+
+2019-06-17  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR middle-end/64242
+	* gcc.c-torture/execute/pr64242.c: Improve test.
+
+2019-06-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/mspabi_sllll.c: New test.
+	* gcc.target/msp430/mspabi_srall.c: New test.
+	* gcc.target/msp430/mspabi_srlll.c: New test.
+	* gcc.c-torture/execute/shiftdi-2.c: New test.
+
+2019-06-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* lib/target-supports.exp: Add check_effective_target_longlong64.
+
+2019-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/alias-access-path-4.c: New testcase.
+	* gcc.dg/tree-ssa/alias-access-path-5.c: New testcase.
+
+2019-06-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90650
+	* gdc.dg/pr90650a.d: New test.
+	* gdc.dg/pr90650b.d: New test.
+
+2019-06-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/dummy_derived_typed.f90: New test.
+
+2019-06-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/tree-ssa/alias-access-path-2.c: New testcase.
+
+2019-06-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/ieee/ieee_4.f90: Un-xfail on i?86-*-freebsd.
+
+2019-06-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/90709
+	* obj-c++.dg/proto-lossage-7.mm: Use proxy headers.
+	* obj-c++.dg/strings/const-cfstring-2.mm: Likewise.
+	* obj-c++.dg/strings/const-cfstring-5.mm: Likewise
+	* obj-c++.dg/strings/const-str-12.mm: Likewise.
+	* obj-c++.dg/syntax-error-1.mm: Likewise.
+	* obj-c++.dg/torture/strings/const-cfstring-1.mm: Likewise.
+	* obj-c++.dg/torture/strings/const-str-10.mm: Likewise.
+	* obj-c++.dg/torture/strings/const-str-11.mm: Likewise.
+	* obj-c++.dg/torture/strings/const-str-9.mm: Likewise.
+	* obj-c++.dg/cxx-ivars-3.mm: Skip on later Darwin, where the 10.4 API
+	in no longer supported, also on m64 where there's no meaning to it.
+	* obj-c++.dg/isa-field-1.mm: Suppress unwanted warning, add comment why.
+	* obj-c++.dg/objc-gc-3.mm: Skip for Darwin > 16, the API use is an error
+	there.
+	* obj-c++.dg/qual-types-1.mm: Prune a spurious l64 warning.
+	* obj-c++.dg/stubify-1.mm: Tidy up after better compiler warnings.
+	* obj-c++.dg/stubify-2.mm: Likewise.
+	* obj-c++.dg/try-catch-1.mm: Likewise.
+	* obj-c++.dg/try-catch-3.mm: Likewise.
+
+2019-06-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/90709
+	* objc.dg/encode-7-next-64bit.m: Use proxy headers.
+	* objc.dg/image-info.m: Likewise.
+	* objc.dg/method-6.m: Likewise.
+	* objc.dg/no-extra-load.m: Likewise.
+	* objc.dg/objc-foreach-4.m: Likewise.
+	* objc.dg/objc-foreach-5.m: Likewise.
+	* objc.dg/proto-lossage-7.m: Likewise.
+	* objc.dg/strings/const-cfstring-2.m: Likewise.
+	* objc.dg/strings/const-cfstring-5.m: Likewise.
+	* objc.dg/strings/const-str-12b.m: Likewise.
+	* objc.dg/symtab-1.m: Likewise.
+	* objc.dg/torture/strings/const-cfstring-1.m: Likewise.
+	* objc.dg/torture/strings/const-str-10.m: Likewise.
+	* objc.dg/torture/strings/const-str-11.m: Likewise.
+	* objc.dg/torture/strings/const-str-9.m: Likewise.
+	* objc.dg/zero-link-1.m: Likewise.
+	* objc.dg/zero-link-2.m: Likewise.
+	* objc.dg/zero-link-3.m: Likewise.
+	* objc.dg/isa-field-1.m: Suppress unwanted warning, add comment why.
+	* objc.dg/headers.m: XFAIL for Darwin14-19.
+	* objc.dg/objc-gc-4.m: Skip for Darwin > 16, the API use is an error
+	there.
+
+2019-06-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/90709
+	* objc-obj-c++-shared/CF-CFString.h: New.
+	* objc-obj-c++-shared/F-NSArray.h: New.
+	* objc-obj-c++-shared/F-NSAutoreleasePool.h: New.
+	* objc-obj-c++-shared/F-NSObject.h: New.
+	* objc-obj-c++-shared/F-NSString.h: New.
+	* objc-obj-c++-shared/F-NSValue.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFArray.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFAvailability.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFBase.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFCharacterSet.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFData.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFDictionary.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFLocale.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFString.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSArray.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSAutoreleasePool.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSDate.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSEnumerator.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSGeometry.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSObjCRuntime.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSObject.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSRange.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSString.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSValue.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSZone.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/GNUstep.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/GSBlocks.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/GSConfig.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/GSObjCRuntime.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/GSVersionMacros.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/NSArray+GNUstepBase.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/NSMutableString+GNUstepBase.h:
+	New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/NSNumber+GNUstepBase.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/NSObject+GNUstepBase.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/NSString+GNUstepBase.h: New.
+
+2019-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/90779
+	* c-c++-common/goacc/routine-5.c (func2): Don't expect error for
+	static block scope variable in #pragma acc routine.
+
+2019-06-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/integer_exponentiation_4.f90: Update test.
+	* gfortran.dg/integer_exponentiation_5.F90: Ditto.
+	* gfortran.dg/no_range_check_1.f90: Ditto.
+
+2019-06-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/90577
+	PR fortran/90578
+	* gfortran.dg/lrshift_1.f90: Adjust testcase.
+	* gfortran.dg/shiftalr_3.f90: New testcase.
+
+2019-06-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/89646
+	* gfortran.dg/pr89646.f90: New test.
+
+2019-06-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/90765
+	* gcc.target/i386/pr90765-1.c: New test.
+	* gcc.target/i386/pr90765-2.c: Likewise.
+
+2019-06-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90884 - stray note with -Wctor-dtor-privacy.
+	* g++.dg/warn/ctor-dtor-privacy-4.C: New.
+	* g++.dg/warn/ctor-dtor-privacy-4.h: New.
+
+2019-06-14  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ldist-26.c: Adjust.
+
+2019-06-14  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/90401
+	* gcc.dg/ipa/ipcp-agg-10.c: New test.
+
+2019-06-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90662
+	* gcc.dg/pr90866-2.c: New test.
+	* gcc.dg/pr90866.c: Ditto.
+
+2019-06-13  Jiufu Guo  <guojiufu@linux.ibm.com>
+	    Lijia He  <helijia@linux.ibm.com>
+
+	PR tree-optimization/77820
+	* gcc.dg/tree-ssa/phi_on_compare-1.c: New testcase.
+	* gcc.dg/tree-ssa/phi_on_compare-2.c: New testcase.
+	* gcc.dg/tree-ssa/phi_on_compare-3.c: New testcase.
+	* gcc.dg/tree-ssa/phi_on_compare-4.c: New testcase.
+	* gcc.dg/tree-ssa/split-path-6.c: Update testcase.
+	* gcc.target/sh/pr51244-20.c: Update testcase.
+
+2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-minversion-link.c: New test.
+
+2019-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68544
+	* gfortran.dg/pr68544.f90: New test.
+	* gfortran.dg/pr85687.f90: Modify test for new error message.
+
+2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/pr71694.C: Use non-PIC codegen for Darwin m32.
+
+2019-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/89344
+	* gfortran.dg/pr89344.f90: New test.
+
+2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-minversion-1.c: Use compile rather than link/run.
+	* gcc.dg/darwin-minversion-2.c: Likewise.
+
+2019-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR target/90871
+	* g++.dg/ext/altivec-15.C: Add dg-error directive.
+
+2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/pr90760.c: Require alias support.
+
+2019-06-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/90869
+	* g++.dg/tree-ssa/alias-access-path-1.C: New testcase.
+
+2019-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90856
+	* gcc.target/i386/pr90856.c: New testcase.
+
+2019-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/tree-ssa/ssa-dse-1.C: Don't match exact number of chars of
+	= {} store.
+	* g++.dg/tree-ssa/pr31146.C: Change -fdump-tree-forwprop to
+	-fdump-tree-forwprop1 in dg-options.  Expect <int[5]> in MEM.
+
+2019-06-13  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-version-1.c: New testcase.
+	* gcc.dg/vect/vect-version-2.c: Likewise.
+
+2019-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/variably-modified-type-1.C: New.
+	* g++.dg/cpp0x/alias-decl-1.C: Test the location too.
+	* g++.dg/other/pr84792-1.C: Likewise.
+	* g++.dg/other/pr84792-2.C: Likewise.
+	* g++.dg/parse/error24.C: Likewise.
+	* g++.dg/parse/error32.C: Likewise.
+	* g++.dg/parse/error33.C: Likewise.
+	* g++.dg/parse/saved1.C: Likewise.
+	* g++.dg/template/operator6.C: Likewise.
+	* g++.dg/template/pr61745.C: Likewise.
+	* g++.dg/template/typedef41.C: Likewise.
+	* g++.old-deja/g++.jason/crash10.C: Likewise.
+
+2019-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/conflicting-specifiers-1.C: New.
+	* g++.dg/diagnostic/two-or-more-data-types-1.C: Likewise.
+	* g++.dg/parse/error10.C: Adjust location.
+	* g++.dg/parse/pragma2.C: Likewise.
+
+2019-06-13  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/89713
+	* g++.dg/tree-ssa/empty-loop.C: New test.
+	* gcc.dg/tree-ssa/dce-2.c: New test.
+	* gcc.dg/const-1.c: Add -fno-finite-loops option.
+	* gcc.dg/graphite/graphite.exp: Likewise.
+	* gcc.dg/loop-unswitch-1.c: Likewise.
+	* gcc.dg/predict-9.c: Likewise.
+	* gcc.dg/pure-2.c: Likewise.
+	* gcc.dg/tree-ssa/20040211-1.c: Likewise.
+	* gcc.dg/tree-ssa/loop-10.c: Likewise.
+	* gcc.dg/tree-ssa/split-path-6.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-thread-12.c: Likewise.
+
+2019-06-13  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	PR target/88838
+	* gcc.target/aarch64/pr88838.c: New test.
+	* gcc.target/aarch64/sve/while_1.c: Adjust.
+
+2019-06-13  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	PR target/88834
+	* gcc.target/aarch64/pr88834.c: New test.
+	* gcc.target/aarch64/sve/struct_vect_1.c: Adjust.
+	* gcc.target/aarch64/sve/struct_vect_14.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_15.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_16.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_17.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_7.c: Likewise.
+
+2019-06-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87410
+	* g++.dg/cpp1y/pr87410.C: New test.
+
+2019-06-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/66999 - 'this' captured by reference.
+	* g++.dg/cpp0x/lambda/lambda-this21.C: New test.
+
+	PR c++/90825 - endless recursion when evaluating sizeof.
+	PR c++/90832 - endless recursion when evaluating sizeof.
+	* g++.dg/cpp0x/constexpr-sizeof2.C: New test.
+	* g++.dg/cpp0x/constexpr-sizeof3.C: New test.
+
+2019-06-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/90676
+	* gcc.dg/tree-ssa/pr30375.c: Adjust and simplify expected test
+	output some more.
+	* gcc.dg/tree-ssa/slsr-27.c: Ditto.
+	* gcc.dg/tree-ssa/slsr-28.c: Ditto.
+	* gcc.dg/tree-ssa/slsr-29.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-dse-24.c: Ditto.
+
+2019-06-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90736 - bogus error with alignof.
+	* g++.dg/cpp0x/alignof5.C: New test.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/builtin-apply2.c: Skip for PRU.
+	* gcc.dg/torture/stackalign/builtin-apply-2.c: Ditto.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* g++.old-deja/g++.abi/ptrmem.C: Add PRU to list.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/tree-ssa/20040204-1.c: XFAIL on pru.
+	* gcc.dg/tree-ssa/reassoc-33.c: Ditto.
+	* gcc.dg/tree-ssa/reassoc-34.c: Ditto.
+	* gcc.dg/tree-ssa/reassoc-35.c: Ditto.
+	* gcc.dg/tree-ssa/reassoc-36.c: Ditto.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/stack-usage-1.c: Define PRU stack usage.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.c-torture/execute/20101011-1.c: Define DO_TEST to 0 for PRU.
+	* gcc.dg/20020312-2.c: No PIC register for PRU.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* lib/gcc-dg.exp: Filter unsupported features in PRU's TI ABI mode.
+	* lib/target-utils.exp: Ditto.
+	* lib/target-supports.exp (check_effective_target_function_pointers,
+	check_effective_target_large_return_values): New.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* lib/gcc-dg.exp: Bail on region overflow for tiny targets.
+	* lib/target-utils.exp: Ditto.
+	* lib/target-supports.exp: Declare PRU target as tiny.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/abi-arg-struct.c: New test.
+	* gcc.target/pru/ashiftrt.c: New test.
+	* gcc.target/pru/builtins-1.c: New test.
+	* gcc.target/pru/builtins-error.c: New test.
+	* gcc.target/pru/clearbit.c: New test.
+	* gcc.target/pru/loop-asm.c: New test.
+	* gcc.target/pru/loop-dowhile.c: New test.
+	* gcc.target/pru/loop-hi-1.c: New test.
+	* gcc.target/pru/loop-hi-2.c: New test.
+	* gcc.target/pru/loop-qi-1.c: New test.
+	* gcc.target/pru/loop-qi-2.c: New test.
+	* gcc.target/pru/loop-short-1.c: New test.
+	* gcc.target/pru/loop-short-2.c: New test.
+	* gcc.target/pru/loop-si-1.c: New test.
+	* gcc.target/pru/loop-si-2.c: New test.
+	* gcc.target/pru/loop-u8_pcrel_overflow.c: New test.
+	* gcc.target/pru/loop-ubyte-1.c: New test.
+	* gcc.target/pru/loop-ubyte-2.c: New test.
+	* gcc.target/pru/lra-framepointer-fragmentation-1.c: New test.
+	* gcc.target/pru/lra-framepointer-fragmentation-2.c: New test.
+	* gcc.target/pru/mabi-ti-1.c: New test.
+	* gcc.target/pru/mabi-ti-2.c: New test.
+	* gcc.target/pru/mabi-ti-3.c: New test.
+	* gcc.target/pru/mabi-ti-4.c: New test.
+	* gcc.target/pru/mabi-ti-5.c: New test.
+	* gcc.target/pru/mabi-ti-6.c: New test.
+	* gcc.target/pru/mabi-ti-7.c: New test.
+	* gcc.target/pru/pr64366.c: New test.
+	* gcc.target/pru/pragma-ctable_entry.c: New test.
+	* gcc.target/pru/pru.exp: New file.
+	* gcc.target/pru/qbbc-1.c: New test.
+	* gcc.target/pru/qbbc-2.c: New test.
+	* gcc.target/pru/qbbc-3.c: New test.
+	* gcc.target/pru/qbbs-1.c: New test.
+	* gcc.target/pru/qbbs-2.c: New test.
+	* gcc.target/pru/setbit.c: New test.
+	* gcc.target/pru/zero_extend-and-hisi.c: New test.
+	* gcc.target/pru/zero_extend-and-qihi.c: New test.
+	* gcc.target/pru/zero_extend-and-qisi.c: New test.
+	* gcc.target/pru/zero_extend-hisi.c: New test.
+	* gcc.target/pru/zero_extend-qihi.c: New test.
+	* gcc.target/pru/zero_extend-qisi.c: New test.
+	* lib/target-supports.exp: Add PRU to feature filters.
+
+2019-06-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90002
+	* gfortran.dg/pr90002.f90: New test.
+
+2019-06-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/90676
+	* gcc.dg/tree-ssa/dump-6.c: New test.
+	* g++.dg/tree-ssa/pr19807.C: Adjust expected output.
+	* g++.dg/tree-ssa/ssa-dse-1.C: Same.
+	* gcc.dg/store_merging_5.c: Same.
+	* gcc.dg/tree-prof/stringop-2.c: Same.
+	* gcc.dg/tree-ssa/pr30375.c: Same.
+	* gcc.dg/tree-ssa/slsr-27.c: Same.
+	* gcc.dg/tree-ssa/slsr-28.c: Same.
+	* gcc.dg/tree-ssa/slsr-29.c: Same.
+	* gcc.dg/tree-ssa/ssa-dse-24.c: Same.
+
+2019-06-12  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90662
+	* gcc.dg/strlenopt-62.c: New test.
+	* gcc.dg/strlenopt-63.c: New test.
+	* gcc.dg/strlenopt-64.c: New test.
+
+2019-06-12  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+        * gcc.target/arm/ssadv16qi.c: New test.
+        * gcc.target/arm/usadv16qi.c: Likewise.
+
+2019-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90760
+	* gcc.dg/pr90760.c: New test.
+
+2019-06-11  Faraz Shahbazker  <fshahbazker@wavecomp.com>
+
+	* gcc.target/mips/data-sym-pool.c: Update expected output.
+	* gcc.target/mips/data-sym-multi-pool.c: New test.
+
+2019-06-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/65364
+	* gcc.dg/uninit-19.c (fn1): Adjust target condition for Darwin.
+	(fn2): Likewise.
+
+2019-06-11  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/localentry-1.c: Add -mpcrel option.
+	* gcc.target/powerpc/localentry-detect-1.c: Explicitly set and
+	unset -mpcrel in the target pragmas.
+	* gcc.target/powerpc/notoc-direct-1.c: Add -mpcrel option.
+	* gcc.target/powerpc/pcrel-sibcall-1.c: Explicitly set and
+	unset -mpcrel in the target pragmas.
+
+2019-06-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/cmpexactdiv-5.c: New file.
+
+2019-06-11  Matthew Beliveau  <mbelivea@redhat.com>
+
+	PR c++/90449 - add -Winaccessible-base option.
+	* g++.dg/warn/Winaccessible-base-1.C: New file.
+	* g++.dg/warn/Winaccessible-base-2.C: New file.
+	* g++.dg/warn/Winaccessible-virtual-base-1.C: New file.
+	* g++.dg/warn/Winaccessible-virtual-base-2.C: New file.
+
+2019-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90810
+	* g++.dg/ext/vector37.C: New test.
+
 2019-06-10  Matthew Beliveau  <mbelivea@redhat.com>
 
 	PR c++/87250

@@ -16,9 +16,9 @@ extern int bogonic (int, int, int) ;
 - (Document *) close;
 @end
 @implementation Document
-- (Document *) class { }
-- (Document *) close { }
-- (Document *) window { }
+- (Document *) class { return (Document *)0; }
+- (Document *) close { return (Document *)0; }
+- (Document *) window { return (Document *)0; }
 - (void)willEndCloseSheet:(void *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo {
   [[self window] close];
   ((void (*)(id, char *, int))objc_msgSend)([self class], (char *)contextInfo, 1);

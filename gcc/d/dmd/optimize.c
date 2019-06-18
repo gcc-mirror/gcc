@@ -34,8 +34,8 @@ Expression *expandVar(int result, VarDeclaration *v)
     Expression *e = NULL;
     if (!v)
         return e;
-    if (!v->originalType && v->_scope)   // semantic() not yet run
-        v->semantic (v->_scope);
+    if (!v->originalType && v->semanticRun < PASSsemanticdone) // semantic() not yet run
+        v->semantic(NULL);
 
     if (v->isConst() || v->isImmutable() || v->storage_class & STCmanifest)
     {

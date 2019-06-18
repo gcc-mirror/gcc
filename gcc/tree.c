@@ -13460,7 +13460,11 @@ get_tree_code_name (enum tree_code code)
   const char *invalid = "<invalid tree code>";
 
   if (code >= MAX_TREE_CODES)
-    return invalid;
+    {
+      if (code == 0xa5a5)
+	return "ggc_freed";
+      return invalid;
+    }
 
   return tree_code_name[code];
 }

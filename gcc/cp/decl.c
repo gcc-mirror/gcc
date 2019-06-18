@@ -10493,6 +10493,10 @@ grokdeclarator (const cp_declarator *declarator,
   if (typespec_loc == UNKNOWN_LOCATION)
     typespec_loc = input_location;
 
+  location_t id_loc = declarator ? declarator->id_loc : input_location;
+  if (id_loc == UNKNOWN_LOCATION)
+    id_loc = input_location;
+
   /* Look inside a declarator for the name being declared
      and get it as a string, for an error message.  */
   for (id_declarator = declarator;
@@ -10657,8 +10661,7 @@ grokdeclarator (const cp_declarator *declarator,
      D1 ( parameter-declaration-clause) ...  */
   if (funcdef_flag && innermost_code != cdk_function)
     {
-      error_at (declarator->id_loc,
-		"function definition does not declare parameters");
+      error_at (id_loc, "function definition does not declare parameters");
       return error_mark_node;
     }
 
@@ -10666,8 +10669,7 @@ grokdeclarator (const cp_declarator *declarator,
       && innermost_code != cdk_function
       && ! (ctype && !declspecs->any_specifiers_p))
     {
-      error_at (declarator->id_loc,
-		"declaration of %qD as non-function", dname);
+      error_at (id_loc, "declaration of %qD as non-function", dname);
       return error_mark_node;
     }
 
@@ -10676,8 +10678,7 @@ grokdeclarator (const cp_declarator *declarator,
       if (UDLIT_OPER_P (dname)
 	  && innermost_code != cdk_function)
 	{
-	  error_at (declarator->id_loc,
-		    "declaration of %qD as non-function", dname);
+	  error_at (id_loc, "declaration of %qD as non-function", dname);
 	  return error_mark_node;
 	}
 
@@ -10685,14 +10686,12 @@ grokdeclarator (const cp_declarator *declarator,
 	{
 	  if (typedef_p)
 	    {
-	      error_at (declarator->id_loc,
-			"declaration of %qD as %<typedef%>", dname);
+	      error_at (id_loc, "declaration of %qD as %<typedef%>", dname);
 	      return error_mark_node;
 	    }
 	  else if (decl_context == PARM || decl_context == CATCHPARM)
 	    {
-	      error_at (declarator->id_loc,
-			"declaration of %qD as parameter", dname);
+	      error_at (id_loc, "declaration of %qD as parameter", dname);
 	      return error_mark_node;
 	    }
 	}
@@ -10742,13 +10741,16 @@ grokdeclarator (const cp_declarator *declarator,
      issue an error message.  */
   if (declspecs->multiple_types_p)
     {
-      error ("two or more data types in declaration of %qs", name);
+      error_at (typespec_loc,
+		"two or more data types in declaration of %qs", name);
       return error_mark_node;
     }
 
   if (declspecs->conflicting_specifiers_p)
     {
-      error ("conflicting specifiers in declaration of %qs", name);
+      error_at (min_location (declspecs->locations[ds_typedef],
+			      declspecs->locations[ds_storage_class]),
+		"conflicting specifiers in declaration of %qs", name);
       return error_mark_node;
     }
 
@@ -11898,6 +11900,8 @@ grokdeclarator (const cp_declarator *declarator,
 	}
     }
 
+  id_loc = declarator ? declarator->id_loc : input_location;
+
   /* A `constexpr' specifier used in an object declaration declares
      the object as `const'.  */
   if (constexpr_p && innermost_code != cdk_function)
@@ -11920,8 +11924,6 @@ grokdeclarator (const cp_declarator *declarator,
 	     unqualified_id);
       unqualified_id = dname;
     }
-
-  location_t loc = declarator ? declarator->id_loc : input_location;
 
   /* If TYPE is a FUNCTION_TYPE, but the function name was explicitly
      qualified with a class-name, turn it into a METHOD_TYPE, unless
@@ -11949,7 +11951,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      friendp = 0;
 	    }
 	  else
-	    permerror (loc, "extra qualification %<%T::%> on member %qs",
+	    permerror (id_loc, "extra qualification %<%T::%> on member %qs",
 		       ctype, name);
 	}
       else if (/* If the qualifying type is already complete, then we
@@ -11978,7 +11980,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  if (current_class_type
 	      && (!friendp || funcdef_flag || initialized))
 	    {
-	      error_at (loc, funcdef_flag || initialized
+	      error_at (id_loc, funcdef_flag || initialized
 			? G_("cannot define member function %<%T::%s%> "
 			     "within %qT")
 			: G_("cannot declare member function %<%T::%s%> "
@@ -11989,7 +11991,7 @@ grokdeclarator (const cp_declarator *declarator,
 	}
       else if (typedef_p && current_class_type)
 	{
-	  error_at (loc, "cannot declare member %<%T::%s%> within %qT",
+	  error_at (id_loc, "cannot declare member %<%T::%s%> within %qT",
 		    ctype, name, current_class_type);
 	  return error_mark_node;
 	}
@@ -12037,9 +12039,11 @@ grokdeclarator (const cp_declarator *declarator,
       && variably_modified_type_p (type, NULL_TREE))
     {
       if (decl_context == FIELD)
-	error ("data member may not have variably modified type %qT", type);
+	error_at (id_loc,
+		  "data member may not have variably modified type %qT", type);
       else
-	error ("parameter may not have variably modified type %qT", type);
+	error_at (id_loc,
+		  "parameter may not have variably modified type %qT", type);
       type = error_mark_node;
     }
 
@@ -12143,14 +12147,14 @@ grokdeclarator (const cp_declarator *declarator,
 
       if (id_declarator && declarator->u.id.qualifying_scope)
 	{
-	  error ("typedef name may not be a nested-name-specifier");
+	  error_at (id_loc, "typedef name may not be a nested-name-specifier");
 	  type = error_mark_node;
 	}
 
       if (decl_context == FIELD)
-	decl = build_lang_decl_loc (loc, TYPE_DECL, unqualified_id, type);
+	decl = build_lang_decl_loc (id_loc, TYPE_DECL, unqualified_id, type);
       else
-	decl = build_decl (loc, TYPE_DECL, unqualified_id, type);
+	decl = build_decl (id_loc, TYPE_DECL, unqualified_id, type);
 
       if (decl_context != FIELD)
 	{
@@ -12170,7 +12174,7 @@ grokdeclarator (const cp_declarator *declarator,
 	}
       else if (current_class_type
 	       && constructor_name_p (unqualified_id, current_class_type))
-	permerror (input_location, "ISO C++ forbids nested type %qD with same name "
+	permerror (id_loc, "ISO C++ forbids nested type %qD with same name "
 		   "as enclosing class",
 		   unqualified_id);
 
@@ -12328,7 +12332,7 @@ grokdeclarator (const cp_declarator *declarator,
       /* Only functions may be declared using an operator-function-id.  */
       if (dname && IDENTIFIER_ANY_OP_P (dname))
 	{
-	  error ("declaration of %qD as non-function", dname);
+	  error_at (id_loc, "declaration of %qD as non-function", dname);
 	  return error_mark_node;
 	}
 
@@ -12438,8 +12442,8 @@ grokdeclarator (const cp_declarator *declarator,
 		if (in_system_header_at (input_location))
 		  /* Do not warn on flexible array members in system
 		     headers because glibc uses them.  */;
-		else if (name && declarator)
-		  pedwarn (declarator->id_loc, OPT_Wpedantic,
+		else if (name)
+		  pedwarn (id_loc, OPT_Wpedantic,
 			   "ISO C++ forbids flexible array member %qs", name);
 		else
 		  pedwarn (input_location, OPT_Wpedantic,
@@ -12591,7 +12595,7 @@ grokdeclarator (const cp_declarator *declarator,
 			       initialized == SD_DELETED, sfk,
 			       funcdef_flag, late_return_type_p,
 			       template_count, in_namespace,
-			       attrlist, declarator->id_loc);
+			       attrlist, id_loc);
             decl = set_virt_specifiers (decl, virt_specifiers);
 	    if (decl == NULL_TREE)
 	      return error_mark_node;
@@ -12624,8 +12628,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 		if (unqualified_id)
 		  {
-		    error_at (declarator->id_loc,
-			      "field %qD has incomplete type %qT",
+		    error_at (id_loc, "field %qD has incomplete type %qT",
 			      unqualified_id, type);
 		    cxx_incomplete_type_inform (strip_array_types (type));
 		  }
@@ -12640,8 +12643,8 @@ grokdeclarator (const cp_declarator *declarator,
 	  {
 	    if (friendp)
 	      {
-		if (unqualified_id && declarator)
-		  error_at (declarator->id_loc,
+		if (unqualified_id)
+		  error_at (id_loc,
 			    "%qE is neither function nor member function; "
 			    "cannot be declared friend", unqualified_id);
 		else
@@ -12685,7 +12688,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 		/* C++ allows static class members.  All other work
 		   for this is done by grokfield.  */
-		decl = build_lang_decl_loc (loc, VAR_DECL,
+		decl = build_lang_decl_loc (id_loc, VAR_DECL,
 					    unqualified_id, type);
 		set_linkage_for_static_data_member (decl);
 		if (concept_p)
@@ -12733,7 +12736,7 @@ grokdeclarator (const cp_declarator *declarator,
 			      unqualified_id);
 		    constexpr_p = false;
 		  }
-		decl = build_decl (loc, FIELD_DECL, unqualified_id, type);
+		decl = build_decl (id_loc, FIELD_DECL, unqualified_id, type);
 		DECL_NONADDRESSABLE_P (decl) = bitfield;
 		if (bitfield && !unqualified_id)
 		  {
@@ -12851,7 +12854,7 @@ grokdeclarator (const cp_declarator *declarator,
                            funcdef_flag,
 			   late_return_type_p,
 			   template_count, in_namespace, attrlist,
-			   declarator->id_loc);
+			   id_loc);
 	if (decl == NULL_TREE)
 	  return error_mark_node;
 
@@ -12898,7 +12901,7 @@ grokdeclarator (const cp_declarator *declarator,
 			    concept_p,
 			    template_count,
 			    ctype ? ctype : in_namespace,
-			    loc);
+			    id_loc);
 	if (decl == NULL_TREE)
 	  return error_mark_node;
 
@@ -12944,7 +12947,7 @@ grokdeclarator (const cp_declarator *declarator,
 	if (innermost_code == cdk_decomp)
 	  {
 	    gcc_assert (declarator && declarator->kind == cdk_decomp);
-	    DECL_SOURCE_LOCATION (decl) = declarator->id_loc;
+	    DECL_SOURCE_LOCATION (decl) = id_loc;
 	    DECL_ARTIFICIAL (decl) = 1;
 	    fit_decomposition_lang_decl (decl, NULL_TREE);
 	  }

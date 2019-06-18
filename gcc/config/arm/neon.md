@@ -3256,6 +3256,32 @@
   [(set_attr "type" "neon_arith_acc<q>")]
 )
 
+(define_expand "<sup>sadv16qi"
+  [(use (match_operand:V4SI 0 "register_operand"))
+   (unspec:V16QI [(use (match_operand:V16QI 1 "register_operand"))
+                  (use (match_operand:V16QI 2 "register_operand"))] VABAL)
+   (use (match_operand:V4SI 3 "register_operand"))]
+  "TARGET_NEON"
+  {
+    rtx reduc = gen_reg_rtx (V8HImode);
+    rtx op1_highpart = gen_reg_rtx (V8QImode);
+    rtx op2_highpart = gen_reg_rtx (V8QImode);
+
+    emit_insn (gen_neon_vabdl<sup>v8qi (reduc,
+                                        gen_lowpart (V8QImode, operands[1]),
+                                        gen_lowpart (V8QImode, operands[2])));
+
+    emit_insn (gen_neon_vget_highv16qi (op1_highpart, operands[1]));
+    emit_insn (gen_neon_vget_highv16qi (op2_highpart, operands[2]));
+    emit_insn (gen_neon_vabal<sup>v8qi (reduc, reduc,
+                                        op1_highpart, op2_highpart));
+    emit_insn (gen_neon_vpadal<sup>v8hi (operands[3], operands[3], reduc));
+
+    emit_move_insn (operands[0], operands[3]);
+    DONE;
+  }
+)
+
 (define_insn "neon_v<maxmin><sup><mode>"
   [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
         (unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w")

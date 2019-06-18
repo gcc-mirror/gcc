@@ -20,7 +20,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 21.4 Numeric Conversions [string.conversions]
+// C++11 21.5 Numeric Conversions [string.conversions]
 
 #include <string>
 #include <testsuite_hooks.h>
@@ -28,7 +28,6 @@
 void
 test01()
 {
-  bool test = true;
   using namespace std;
   
   long long ll1 = -2;
@@ -59,5 +58,4 @@ test01()
 int main()
 {
   test01();
-  return 0;
 }

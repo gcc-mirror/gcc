@@ -1,5 +1,7 @@
 2019-06-18  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r272419.
+
 	gcc/cp/
 	* module.cc (specialization_cmp): Deal with more equivalencies.
 	(depset_cmp): New, cloned and adjusted from cluster_cmp.

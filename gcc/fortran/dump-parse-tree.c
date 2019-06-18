@@ -66,6 +66,19 @@ void debug (symbol_attribute *attr)
   dumpfile = tmp;
 }
 
+void debug (gfc_formal_arglist *formal)
+{
+  FILE *tmp = dumpfile;
+  dumpfile = stderr;
+  for (; formal; formal = formal->next)
+    {
+      fputc ('\n', dumpfile);
+      show_symbol (formal->sym);
+    }
+  fputc ('\n', dumpfile);
+  dumpfile = tmp;
+}
+
 void debug (symbol_attribute attr)
 {
   debug (&attr);
@@ -75,9 +88,15 @@ void debug (gfc_expr *e)
 {
   FILE *tmp = dumpfile;
   dumpfile = stderr;
-  show_expr (e);
-  fputc (' ', dumpfile);
-  show_typespec (&e->ts);
+  if (e != NULL)
+    {
+      show_expr (e);
+      fputc (' ', dumpfile);
+      show_typespec (&e->ts);
+    }
+  else
+    fputs ("() ", dumpfile);
+
   fputc ('\n', dumpfile);
   dumpfile = tmp;
 }

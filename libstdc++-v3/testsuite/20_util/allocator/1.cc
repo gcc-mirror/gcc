@@ -24,6 +24,12 @@
 #include <cstdlib>
 #include <testsuite_hooks.h>
 
+#if __cplusplus >= 201103L
+# define NOTHROW noexcept
+#else
+# define NOTHROW throw()
+#endif
+
 struct gnu { };
 
 bool check_new = false;
@@ -36,11 +42,18 @@ operator new(std::size_t n) THROW(std::bad_alloc)
   return std::malloc(n);
 }
 
-void operator delete(void *v) throw()
+void operator delete(void *v) NOTHROW
 {
   check_delete = true;
   return std::free(v);
 }
+
+#if __cpp_sized_deallocation
+void operator delete(void *v, std::size_t) NOTHROW
+{
+  ::operator delete(v);
+}
+#endif
 
 void test01()
 {

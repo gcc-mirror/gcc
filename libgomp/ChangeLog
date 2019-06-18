@@ -1,3 +1,35 @@
+2019-06-16  Tom de Vries  <tdevries@suse.de>
+
+	PR tree-optimization/89376
+	* testsuite/libgomp.oacc-c-c++-common/pr89376.c: New test.
+
+2019-06-15  Tom de Vries  <tdevries@suse.de>
+
+	PR tree-optimization/89713
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-2.c: Expect no bar.sync.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-4.c: Same.
+
+2019-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/90779
+	* testsuite/libgomp.c/pr90779.c: New test.
+	* testsuite/libgomp.fortran/pr90779.f90: New test.
+
+2019-06-15  Tom de Vries  <tdevries@suse.de>
+
+	PR tree-optimization/90009
+	* testsuite/libgomp.oacc-c-c++-common/pr90009.c: New test.
+
+2019-06-13  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/89713
+	* testsuite/libgomp.oacc-c-c++-common/pr84955-1.c: New test.
+
+2019-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90811
+	* testsuite/libgomp.c/pr90811.c: New test.
+
 2019-06-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c++/lastprivate-conditional-1.C: New test.

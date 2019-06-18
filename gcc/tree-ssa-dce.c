@@ -245,6 +245,17 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	    mark_stmt_necessary (stmt, true);
 	    return;
 	  }
+	/* IFN_GOACC_LOOP calls are necessary in that they are used to
+	   represent parameter (i.e. step, bound) of a lowered OpenACC
+	   partitioned loop.  But this kind of partitioned loop might not
+	   survive from aggressive loop removal for it has loop exit and
+	   is assumed to be finite.  Therefore, we need to explicitly mark
+	   these calls. (An example is libgomp.oacc-c-c++-common/pr84955.c) */
+	if (gimple_call_internal_p (stmt, IFN_GOACC_LOOP))
+	  {
+	    mark_stmt_necessary (stmt, true);
+	    return;
+	  }
 	if (!gimple_call_lhs (stmt))
 	  return;
 	break;
@@ -1328,14 +1339,14 @@ eliminate_unnecessary_stmts (void)
 		  update_stmt (stmt);
 		  release_ssa_name (name);
 
-		  /* GOMP_SIMD_LANE (unless two argument) or ASAN_POISON
+		  /* GOMP_SIMD_LANE (unless three argument) or ASAN_POISON
 		     without lhs is not needed.  */
 		  if (gimple_call_internal_p (stmt))
 		    switch (gimple_call_internal_fn (stmt))
 		      {
 		      case IFN_GOMP_SIMD_LANE:
-			if (gimple_call_num_args (stmt) >= 2
-			    && !integer_nonzerop (gimple_call_arg (stmt, 1)))
+			if (gimple_call_num_args (stmt) >= 3
+			    && !integer_nonzerop (gimple_call_arg (stmt, 2)))
 			  break;
 			/* FALLTHRU */
 		      case IFN_ASAN_POISON:

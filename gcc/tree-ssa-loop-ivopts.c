@@ -2381,11 +2381,13 @@ get_mem_type_for_internal_fn (gcall *call, tree *op_p)
   switch (gimple_call_internal_fn (call))
     {
     case IFN_MASK_LOAD:
+    case IFN_MASK_LOAD_LANES:
       if (op_p == gimple_call_arg_ptr (call, 0))
 	return TREE_TYPE (gimple_call_lhs (call));
       return NULL_TREE;
 
     case IFN_MASK_STORE:
+    case IFN_MASK_STORE_LANES:
       if (op_p == gimple_call_arg_ptr (call, 0))
 	return TREE_TYPE (gimple_call_arg (call, 3));
       return NULL_TREE;
@@ -3430,6 +3432,26 @@ add_iv_candidate_for_use (struct ivopts_data *data, struct iv_use *use)
     basetype = sizetype;
   record_common_cand (data, build_int_cst (basetype, 0), iv->step, use);
 
+  /* Compare the cost of an address with an unscaled index with the cost of
+    an address with a scaled index and add candidate if useful.  */
+  poly_int64 step;
+  if (use != NULL
+      && poly_int_tree_p (iv->step, &step)
+      && address_p (use->type))
+    {
+      poly_int64 new_step;
+      unsigned int fact = preferred_mem_scale_factor
+	(use->iv->base,
+	 TYPE_MODE (use->mem_type),
+	 optimize_loop_for_speed_p (data->current_loop));
+
+      if (fact != 1
+	  && multiple_p (step, fact, &new_step))
+	add_candidate (data, size_int (0),
+		       wide_int_to_tree (sizetype, new_step),
+		       true, NULL);
+    }
+
   /* Record common candidate with constant offset stripped in base.
      Like the use itself, we also add candidate directly for it.  */
   base = strip_offset (iv->base, &offset);
@@ -3710,6 +3732,63 @@ prepare_decl_rtl (tree *expr_p, int *ws, void *data)
     }
 
   return NULL_TREE;
+}
+
+/* Predict whether the given loop will be transformed in the RTL
+   doloop_optimize pass.  Attempt to duplicate some doloop_optimize checks.
+   This is only for target independent checks, see targetm.predict_doloop_p
+   for the target dependent ones.
+
+   Note that according to some initial investigation, some checks like costly
+   niter check and invalid stmt scanning don't have much gains among general
+   cases, so keep this as simple as possible first.
+
+   Some RTL specific checks seems unable to be checked in gimple, if any new
+   checks or easy checks _are_ missing here, please add them.  */
+
+static bool ATTRIBUTE_UNUSED
+generic_predict_doloop_p (struct ivopts_data *data)
+{
+  struct loop *loop = data->current_loop;
+
+  /* Call target hook for target dependent checks.  */
+  if (!targetm.predict_doloop_p (loop))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Predict doloop failure due to"
+			    " target specific checks.\n");
+      return false;
+    }
+
+  /* Similar to doloop_optimize, check iteration description to know it's
+     suitable or not.  Keep it as simple as possible, feel free to extend it
+     if you find any multiple exits cases matter.  */
+  edge exit = single_dom_exit (loop);
+  struct tree_niter_desc *niter_desc;
+  if (!exit || !(niter_desc = niter_for_exit (data, exit)))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Predict doloop failure due to"
+			    " unexpected niters.\n");
+      return false;
+    }
+
+  /* Similar to doloop_optimize, check whether iteration count too small
+     and not profitable.  */
+  HOST_WIDE_INT est_niter = get_estimated_loop_iterations_int (loop);
+  if (est_niter == -1)
+    est_niter = get_likely_max_loop_iterations_int (loop);
+  if (est_niter >= 0 && est_niter < 3)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Predict doloop failure due to"
+		 " too few iterations (%u).\n",
+		 (unsigned int) est_niter);
+      return false;
+    }
+
+  return true;
 }
 
 /* Determines cost of the computation of EXPR.  */
@@ -7042,6 +7121,8 @@ get_alias_ptr_type_for_ptr_address (iv_use *use)
     {
     case IFN_MASK_LOAD:
     case IFN_MASK_STORE:
+    case IFN_MASK_LOAD_LANES:
+    case IFN_MASK_STORE_LANES:
       /* The second argument contains the correct alias type.  */
       gcc_assert (use->op_p = gimple_call_arg_ptr (call, 0));
       return TREE_TYPE (gimple_call_arg (call, 1));

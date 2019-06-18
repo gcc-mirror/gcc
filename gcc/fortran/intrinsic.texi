@@ -9689,10 +9689,10 @@ The return value is a @code{INTEGER(4)} variable.
 @table @asis
 @item @emph{Description}:
 @code{LSHIFT} returns a value corresponding to @var{I} with all of the
-bits shifted left by @var{SHIFT} places.  If the absolute value of
-@var{SHIFT} is greater than @code{BIT_SIZE(I)}, the value is undefined. 
-Bits shifted out from the left end are lost; zeros are shifted in from
-the opposite end.
+bits shifted left by @var{SHIFT} places.  @var{SHIFT} shall be
+nonnegative and less than or equal to @code{BIT_SIZE(I)}, otherwise
+the result value is undefined.  Bits shifted out from the left end are
+lost; zeros are shifted in from the opposite end.
 
 This function has been superseded by the @code{ISHFT} intrinsic, which
 is standard in Fortran 95 and later, and the @code{SHIFTL} intrinsic,
@@ -12244,11 +12244,12 @@ The value returned is equal to
 @table @asis
 @item @emph{Description}:
 @code{RSHIFT} returns a value corresponding to @var{I} with all of the
-bits shifted right by @var{SHIFT} places.  If the absolute value of
-@var{SHIFT} is greater than @code{BIT_SIZE(I)}, the value is undefined.
-Bits shifted out from the right end are lost. The fill is arithmetic: the
-bits shifted in from the left end are equal to the leftmost bit, which in
-two's complement representation is the sign bit.
+bits shifted right by @var{SHIFT} places.  @var{SHIFT} shall be
+nonnegative and less than or equal to @code{BIT_SIZE(I)}, otherwise
+the result value is undefined.  Bits shifted out from the right end
+are lost. The fill is arithmetic: the bits shifted in from the left
+end are equal to the leftmost bit, which in two's complement
+representation is the sign bit.
 
 This function has been superseded by the @code{SHIFTA} intrinsic, which
 is standard in Fortran 2008 and later.
@@ -12783,11 +12784,12 @@ END PROGRAM
 @table @asis
 @item @emph{Description}:
 @code{SHIFTA} returns a value corresponding to @var{I} with all of the
-bits shifted right by @var{SHIFT} places.  If the absolute value of
-@var{SHIFT} is greater than @code{BIT_SIZE(I)}, the value is undefined.
-Bits shifted out from the right end are lost. The fill is arithmetic: the
-bits shifted in from the left end are equal to the leftmost bit, which in
-two's complement representation is the sign bit.
+bits shifted right by @var{SHIFT} places.  @var{SHIFT} that be
+nonnegative and less than or equal to @code{BIT_SIZE(I)}, otherwise
+the result value is undefined.  Bits shifted out from the right end
+are lost. The fill is arithmetic: the bits shifted in from the left
+end are equal to the leftmost bit, which in two's complement
+representation is the sign bit.
 
 @item @emph{Standard}:
 Fortran 2008 and later
@@ -12823,10 +12825,10 @@ The return value is of type @code{INTEGER} and of the same kind as
 @table @asis
 @item @emph{Description}:
 @code{SHIFTL} returns a value corresponding to @var{I} with all of the
-bits shifted left by @var{SHIFT} places.  If the absolute value of
-@var{SHIFT} is greater than @code{BIT_SIZE(I)}, the value is undefined.
-Bits shifted out from the left end are lost, and bits shifted in from
-the right end are set to 0.
+bits shifted left by @var{SHIFT} places.  @var{SHIFT} shall be
+nonnegative and less than or equal to @code{BIT_SIZE(I)}, otherwise
+the result value is undefined.  Bits shifted out from the left end are
+lost, and bits shifted in from the right end are set to 0.
 
 @item @emph{Standard}:
 Fortran 2008 and later
@@ -12862,10 +12864,10 @@ The return value is of type @code{INTEGER} and of the same kind as
 @table @asis
 @item @emph{Description}:
 @code{SHIFTR} returns a value corresponding to @var{I} with all of the
-bits shifted right by @var{SHIFT} places.  If the absolute value of
-@var{SHIFT} is greater than @code{BIT_SIZE(I)}, the value is undefined.
-Bits shifted out from the right end are lost, and bits shifted in from
-the left end are set to 0.
+bits shifted right by @var{SHIFT} places.  @var{SHIFT} shall be
+nonnegative and less than or equal to @code{BIT_SIZE(I)}, otherwise
+the result value is undefined.  Bits shifted out from the right end
+are lost, and bits shifted in from the left end are set to 0.
 
 @item @emph{Standard}:
 Fortran 2008 and later

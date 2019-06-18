@@ -53,21 +53,6 @@ ATTR void bar_def_vpcs (void)
 {
 }
 
-static void (*f_ifunc_resolver ()) (void)
-{
-  return (void (*)(void))f_local_vpcs;
-}
-
-__attribute__ ((ifunc ("f_ifunc_resolver")))
-ATTR void f_ifunc_vpcs (void);
-
-__attribute__ ((visibility ("hidden")))
-__attribute__ ((ifunc ("f_ifunc_resolver")))
-ATTR void f_hidden_ifunc_vpcs (void);
-
-__attribute__ ((ifunc ("f_ifunc_resolver")))
-ATTR static void f_local_ifunc_vpcs (void);
-
 void (*refs_basepcs[]) (void) = {
 	f_undef_basepcs,
 	f_def_basepcs,
@@ -86,9 +71,6 @@ void (*ATTR refs_vpcs[]) (void) = {
 	f_local_weakref_def_vpcs,
 	bar_undef_vpcs,
 	bar_def_vpcs,
-	f_ifunc_vpcs,
-	f_hidden_ifunc_vpcs,
-	f_local_ifunc_vpcs,
 };
 
 /* Note: local symbols don't need .variant_pcs, but gcc generates it, so
@@ -109,6 +91,3 @@ void (*ATTR refs_vpcs[]) (void) = {
 /* { dg-final { scan-assembler-times {\.variant_pcs\tf_local_weakref_def_vpcs} 1 } } */
 /* { dg-final { scan-assembler-times {\.variant_pcs\tf_undef_renamed_vpcs} 1 } } */
 /* { dg-final { scan-assembler-times {\.variant_pcs\tf_def_renamed_vpcs} 1 } } */
-/* { dg-final { scan-assembler-times {\.variant_pcs\tf_ifunc_vpcs} 1 } } */
-/* { dg-final { scan-assembler-times {\.variant_pcs\tf_hidden_ifunc_vpcs} 1 } } */
-/* { dg-final { scan-assembler-times {\.variant_pcs\tf_local_ifunc_vpcs} 1 } } */

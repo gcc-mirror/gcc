@@ -1909,6 +1909,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
 
+#undef TARGET_PREDICT_DOLOOP_P
+#define TARGET_PREDICT_DOLOOP_P rs6000_predict_doloop_p
+
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV rs6000_atomic_assign_expand_fenv
 
@@ -4245,6 +4248,17 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
 
+  /* -mprefixed-addr (and hence -mpcrel) requires -mcpu=future.  */
+  if (TARGET_PREFIXED_ADDR && !TARGET_FUTURE)
+    {
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
+	error ("%qs requires %qs", "-mpcrel", "-mcpu=future");
+      else if ((rs6000_isa_flags_explicit & OPTION_MASK_PREFIXED_ADDR) != 0)
+	error ("%qs requires %qs", "-mprefixed-addr", "-mcpu=future");
+
+      rs6000_isa_flags &= ~(OPTION_MASK_PCREL | OPTION_MASK_PREFIXED_ADDR);
+    }
+
   /* -mpcrel requires prefixed load/store addressing.  */
   if (TARGET_PCREL && !TARGET_PREFIXED_ADDR)
     {
@@ -4252,15 +4266,6 @@ rs6000_option_override_internal (bool global_init_p)
 	error ("%qs requires %qs", "-mpcrel", "-mprefixed-addr");
 
       rs6000_isa_flags &= ~OPTION_MASK_PCREL;
-    }
-
-  /* -mprefixed-addr (and hence -mpcrel) requires -mcpu=future.  */
-  if (TARGET_PREFIXED_ADDR && !TARGET_FUTURE)
-    {
-      if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
-	error ("%qs requires %qs", "-mprefixed-addr", "-mcpu=future");
-
-      rs6000_isa_flags &= ~(OPTION_MASK_PCREL | OPTION_MASK_PREFIXED_ADDR);
     }
 
   /* Print the options after updating the defaults.  */
@@ -20891,7 +20896,7 @@ print_operand (FILE *file, rtx x, int code)
 	{
 	  const char *name = XSTR (x, 0);
 #if TARGET_MACHO
-	  if (darwin_emit_branch_islands
+	  if (darwin_picsymbol_stubs
 	      && MACHOPIC_INDIRECT
 	      && machopic_classify_symbol (x) == MACHOPIC_UNDEFINED_FUNCTION)
 	    name = machopic_indirection_name (x, /*stub_p=*/true);
@@ -37155,6 +37160,7 @@ rs6000_disable_incompatible_switches (void)
     const HOST_WIDE_INT dep_flags;	/* flags that depend on this option.  */
     const char *const name;		/* name of the switch.  */
   } flags[] = {
+    { OPTION_MASK_FUTURE,	OTHER_FUTURE_MASKS,	"future"	},
     { OPTION_MASK_P9_VECTOR,	OTHER_P9_VECTOR_MASKS,	"power9-vector"	},
     { OPTION_MASK_P8_VECTOR,	OTHER_P8_VECTOR_MASKS,	"power8-vector"	},
     { OPTION_MASK_VSX,		OTHER_VSX_VECTOR_MASKS,	"vsx"		},
@@ -38148,7 +38154,8 @@ rs6000_call_darwin_1 (rtx value, rtx func_desc, rtx tlsarg,
   if ((cookie_val & CALL_LONG) != 0
       && GET_CODE (func_desc) == SYMBOL_REF)
     {
-      if (darwin_emit_branch_islands && TARGET_32BIT)
+      /* FIXME: the longcall opt should not hang off picsymbol stubs.  */
+      if (darwin_picsymbol_stubs && TARGET_32BIT)
 	make_island = true; /* Do nothing yet, retain the CALL_LONG flag.  */
       else
 	{
@@ -39413,7 +39420,27 @@ rs6000_mangle_decl_assembler_name (tree decl, tree id)
   return id;
 }
 
-
+/* Predict whether the given loop in gimple will be transformed in the RTL
+   doloop_optimize pass.  */
+
+static bool
+rs6000_predict_doloop_p (struct loop *loop)
+{
+  gcc_assert (loop);
+
+  /* On rs6000, targetm.can_use_doloop_p is actually
+     can_use_doloop_if_innermost.  Just ensure the loop is innermost.  */
+  if (loop->inner != NULL)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Predict doloop failure due to"
+			    " loop nesting.\n");
+      return false;
+    }
+
+  return true;
+}
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-rs6000.h"

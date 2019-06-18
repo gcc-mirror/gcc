@@ -817,7 +817,6 @@ ignore_edge_p (cgraph_edge *e)
     = e->callee->function_or_virtual_thunk_symbol (&avail, e->caller);
 
   return (avail <= AVAIL_INTERPOSABLE
-	  || !opt_for_fn (e->caller->decl, flag_ipa_cp)
 	  || !opt_for_fn (ultimate_target->decl, flag_ipa_cp));
 }
 

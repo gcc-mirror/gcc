@@ -1,3 +1,8 @@
+2019-06-11  Matthew Beliveau  <mbelivea@redhat.com>
+
+	PR c++/90449 - add -Winaccessible-base option.
+	* c.opt (Winaccessible-base): New option.
+
 2019-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_SCAN.

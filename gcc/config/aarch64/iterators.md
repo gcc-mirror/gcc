@@ -1215,7 +1215,7 @@
 ;; Signed and unsigned max operations.
 (define_code_iterator USMAX [smax umax])
 
-;; Code iterator for variants of vector max and min.
+;; Code iterator for plus and minus.
 (define_code_iterator ADDSUB [plus minus])
 
 ;; Code iterator for variants of vector saturating binary ops.

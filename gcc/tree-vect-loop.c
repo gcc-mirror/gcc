@@ -824,6 +824,7 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in, vec_info_shared *shared)
     peeling_for_alignment (0),
     ptr_mask (0),
     ivexpr_map (NULL),
+    scan_map (NULL),
     slp_unrolling_factor (1),
     single_scalar_iteration_cost (0),
     vectorizable (false),
@@ -863,8 +864,8 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in, vec_info_shared *shared)
 	  gimple *stmt = gsi_stmt (si);
 	  gimple_set_uid (stmt, 0);
 	  add_stmt (stmt);
-	  /* If .GOMP_SIMD_LANE call for the current loop has 2 arguments, the
-	     second argument is the #pragma omp simd if (x) condition, when 0,
+	  /* If .GOMP_SIMD_LANE call for the current loop has 3 arguments, the
+	     third argument is the #pragma omp simd if (x) condition, when 0,
 	     loop shouldn't be vectorized, when non-zero constant, it should
 	     be vectorized normally, otherwise versioned with vectorized loop
 	     done if the condition is non-zero at runtime.  */
@@ -872,12 +873,12 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in, vec_info_shared *shared)
 	      && is_gimple_call (stmt)
 	      && gimple_call_internal_p (stmt)
 	      && gimple_call_internal_fn (stmt) == IFN_GOMP_SIMD_LANE
-	      && gimple_call_num_args (stmt) >= 2
+	      && gimple_call_num_args (stmt) >= 3
 	      && TREE_CODE (gimple_call_arg (stmt, 0)) == SSA_NAME
 	      && (loop_in->simduid
 		  == SSA_NAME_VAR (gimple_call_arg (stmt, 0))))
 	    {
-	      tree arg = gimple_call_arg (stmt, 1);
+	      tree arg = gimple_call_arg (stmt, 2);
 	      if (integer_zerop (arg) || TREE_CODE (arg) == SSA_NAME)
 		simd_if_cond = arg;
 	      else
@@ -959,6 +960,7 @@ _loop_vec_info::~_loop_vec_info ()
 
   release_vec_loop_masks (&masks);
   delete ivexpr_map;
+  delete scan_map;
 
   loop->aux = NULL;
 }
@@ -1030,6 +1032,8 @@ vect_verify_full_masking (loop_vec_info loop_vinfo)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   unsigned int min_ni_width;
+  unsigned int max_nscalars_per_iter
+    = vect_get_max_nscalars_per_iter (loop_vinfo);
 
   /* Use a normal loop if there are no statements that need masking.
      This only happens in rare degenerate cases: it means that the loop
@@ -1048,7 +1052,7 @@ vect_verify_full_masking (loop_vec_info loop_vinfo)
     max_ni = wi::smin (max_ni, max_back_edges + 1);
 
   /* Account for rgroup masks, in which each bit is replicated N times.  */
-  max_ni *= vect_get_max_nscalars_per_iter (loop_vinfo);
+  max_ni *= max_nscalars_per_iter;
 
   /* Work out how many bits we need to represent the limit.  */
   min_ni_width = wi::min_precision (max_ni, UNSIGNED);
@@ -1056,6 +1060,14 @@ vect_verify_full_masking (loop_vec_info loop_vinfo)
   /* Find a scalar mode for which WHILE_ULT is supported.  */
   opt_scalar_int_mode cmp_mode_iter;
   tree cmp_type = NULL_TREE;
+  tree iv_type = NULL_TREE;
+  widest_int iv_limit = vect_iv_limit_for_full_masking (loop_vinfo);
+  unsigned int iv_precision = UINT_MAX;
+
+  if (iv_limit != -1)
+    iv_precision = wi::min_precision (iv_limit * max_nscalars_per_iter,
+				      UNSIGNED);
+
   FOR_EACH_MODE_IN_CLASS (cmp_mode_iter, MODE_INT)
     {
       unsigned int cmp_bits = GET_MODE_BITSIZE (cmp_mode_iter.require ());
@@ -1067,10 +1079,32 @@ vect_verify_full_masking (loop_vec_info loop_vinfo)
 	      && can_produce_all_loop_masks_p (loop_vinfo, this_type))
 	    {
 	      /* Although we could stop as soon as we find a valid mode,
-		 it's often better to continue until we hit Pmode, since the
-		 operands to the WHILE are more likely to be reusable in
-		 address calculations.  */
-	      cmp_type = this_type;
+		 there are at least two reasons why that's not always the
+		 best choice:
+
+		 - An IV that's Pmode or wider is more likely to be reusable
+		   in address calculations than an IV that's narrower than
+		   Pmode.
+
+		 - Doing the comparison in IV_PRECISION or wider allows
+		   a natural 0-based IV, whereas using a narrower comparison
+		   type requires mitigations against wrap-around.
+
+		 Conversely, if the IV limit is variable, doing the comparison
+		 in a wider type than the original type can introduce
+		 unnecessary extensions, so picking the widest valid mode
+		 is not always a good choice either.
+
+		 Here we prefer the first IV type that's Pmode or wider,
+		 and the first comparison type that's IV_PRECISION or wider.
+		 (The comparison type must be no wider than the IV type,
+		 to avoid extensions in the vector loop.)
+
+		 ??? We might want to try continuing beyond Pmode for ILP32
+		 targets if CMP_BITS < IV_PRECISION.  */
+	      iv_type = this_type;
+	      if (!cmp_type || iv_precision > TYPE_PRECISION (cmp_type))
+		cmp_type = this_type;
 	      if (cmp_bits >= GET_MODE_BITSIZE (Pmode))
 		break;
 	    }
@@ -1081,6 +1115,7 @@ vect_verify_full_masking (loop_vec_info loop_vinfo)
     return false;
 
   LOOP_VINFO_MASK_COMPARE_TYPE (loop_vinfo) = cmp_type;
+  LOOP_VINFO_MASK_IV_TYPE (loop_vinfo) = iv_type;
   return true;
 }
 
@@ -5881,6 +5916,30 @@ vect_expand_fold_left (gimple_stmt_iterator *gsi, tree scalar_dest,
   return lhs;
 }
 
+/* Get a masked internal function equivalent to REDUC_FN.  VECTYPE_IN is the
+   type of the vector input.  */
+
+static internal_fn
+get_masked_reduction_fn (internal_fn reduc_fn, tree vectype_in)
+{
+  internal_fn mask_reduc_fn;
+
+  switch (reduc_fn)
+    {
+    case IFN_FOLD_LEFT_PLUS:
+      mask_reduc_fn = IFN_MASK_FOLD_LEFT_PLUS;
+      break;
+
+    default:
+      return IFN_LAST;
+    }
+
+  if (direct_internal_fn_supported_p (mask_reduc_fn, vectype_in,
+				      OPTIMIZE_FOR_SPEED))
+    return mask_reduc_fn;
+  return IFN_LAST;
+}
+
 /* Perform an in-order reduction (FOLD_LEFT_REDUCTION).  STMT_INFO is the
    statement that sets the live-out value.  REDUC_DEF_STMT is the phi
    statement.  CODE is the operation performed by STMT_INFO and OPS are
@@ -5903,6 +5962,7 @@ vectorize_fold_left_reduction (stmt_vec_info stmt_info,
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree vectype_out = STMT_VINFO_VECTYPE (stmt_info);
   stmt_vec_info new_stmt_info = NULL;
+  internal_fn mask_reduc_fn = get_masked_reduction_fn (reduc_fn, vectype_in);
 
   int ncopies;
   if (slp_node)
@@ -5979,16 +6039,21 @@ vectorize_fold_left_reduction (stmt_vec_info stmt_info,
 	  def0 = negated;
 	}
 
-      if (mask)
+      if (mask && mask_reduc_fn == IFN_LAST)
 	def0 = merge_with_identity (gsi, mask, vectype_out, def0,
 				    vector_identity);
 
       /* On the first iteration the input is simply the scalar phi
 	 result, and for subsequent iterations it is the output of
 	 the preceding operation.  */
-      if (reduc_fn != IFN_LAST)
+      if (reduc_fn != IFN_LAST || (mask && mask_reduc_fn != IFN_LAST))
 	{
-	  new_stmt = gimple_build_call_internal (reduc_fn, 2, reduc_var, def0);
+	  if (mask && mask_reduc_fn != IFN_LAST)
+	    new_stmt = gimple_build_call_internal (mask_reduc_fn, 3, reduc_var,
+						   def0, mask);
+	  else
+	    new_stmt = gimple_build_call_internal (reduc_fn, 2, reduc_var,
+						   def0);
 	  /* For chained SLP reductions the output of the previous reduction
 	     operation serves as the input of the next. For the final statement
 	     the output cannot be a temporary - we reuse the original
@@ -9014,3 +9079,45 @@ optimize_mask_stores (struct loop *loop)
       add_phi_arg (phi, gimple_vuse (last_store), e, UNKNOWN_LOCATION);
     }
 }
+
+/* Decide whether it is possible to use a zero-based induction variable
+   when vectorizing LOOP_VINFO with a fully-masked loop.  If it is,
+   return the value that the induction variable must be able to hold
+   in order to ensure that the loop ends with an all-false mask.
+   Return -1 otherwise.  */
+widest_int
+vect_iv_limit_for_full_masking (loop_vec_info loop_vinfo)
+{
+  tree niters_skip = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  unsigned HOST_WIDE_INT max_vf = vect_max_vf (loop_vinfo);
+
+  /* Calculate the value that the induction variable must be able
+     to hit in order to ensure that we end the loop with an all-false mask.
+     This involves adding the maximum number of inactive trailing scalar
+     iterations.  */
+  widest_int iv_limit = -1;
+  if (max_loop_iterations (loop, &iv_limit))
+    {
+      if (niters_skip)
+	{
+	  /* Add the maximum number of skipped iterations to the
+	     maximum iteration count.  */
+	  if (TREE_CODE (niters_skip) == INTEGER_CST)
+	    iv_limit += wi::to_widest (niters_skip);
+	  else
+	    iv_limit += max_vf - 1;
+	}
+      else if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo))
+	/* Make a conservatively-correct assumption.  */
+	iv_limit += max_vf - 1;
+
+      /* IV_LIMIT is the maximum number of latch iterations, which is also
+	 the maximum in-range IV value.  Round this value down to the previous
+	 vector alignment boundary and then add an extra full iteration.  */
+      poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+      iv_limit = (iv_limit & -(int) known_alignment (vf)) + max_vf;
+    }
+  return iv_limit;
+}
+

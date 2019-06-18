@@ -175,6 +175,9 @@ or1k*-*-*)
 powerpc*-*-*)
 	cpu_type=rs6000
 	;;
+pru-*-*)
+	cpu_type=pru
+	;;
 rs6000*-*-*)
 	;;
 riscv*-*-*)
@@ -356,6 +359,12 @@ aarch64*-*-freebsd*)
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
 	md_unwind_header=aarch64/freebsd-unwind.h
 	;;
+aarch64*-*-netbsd*)
+	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
+	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
+	md_unwind_header=aarch64/aarch64-unwind.h
+	;;
 aarch64*-*-fuchsia*)
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp"
@@ -433,7 +442,16 @@ arm*-*-fuchsia*)
 	unwind_header=config/arm/unwind-arm.h
 	;;
 arm*-*-netbsdelf*)
-	tmake_file="$tmake_file arm/t-arm arm/t-netbsd t-slibgcc-gld-nover"
+	tmake_file="$tmake_file arm/t-arm"
+	case ${host} in
+	  arm*-*-netbsdelf-*eabi*)
+	    tmake_file="${tmake_file} arm/t-netbsd-eabi"
+	    unwind_header=config/arm/unwind-arm.h
+	    ;;
+	  *)
+	    tmake_file="${tmake_file} arm/t-netbsd t-slibgcc-gld-nover"
+	    ;;
+	esac
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
 	tmake_file="${tmake_file} arm/t-arm t-fixedpoint-gnu-prefix t-crtfm"
@@ -1177,6 +1195,10 @@ powerpcle-*-eabisim*)
 powerpcle-*-eabi*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
 	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
+	;;
+pru-*-*)
+	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp t-gnu-prefix pru/t-pru"
+	tm_file="$tm_file pru/pru-abi.h"
 	;;
 riscv*-*-linux*)
 	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address}"

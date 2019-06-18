@@ -1748,6 +1748,33 @@
 }
   [(set_attr "isa" "noavx,noavx,avx,avx")])
 
+(define_insn_and_split "*nabs<mode>2"
+  [(set (match_operand:VF 0 "register_operand" "=x,x,v,v")
+	(neg:VF
+	  (abs:VF
+	    (match_operand:VF 1 "vector_operand" "0,xBm,v,m"))))
+   (use (match_operand:VF 2 "vector_operand"    "xBm,0,vm,v"))]
+  "TARGET_SSE"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (match_dup 3))]
+{
+  if (TARGET_AVX)
+    {
+      if (MEM_P (operands[1]))
+        std::swap (operands[1], operands[2]);
+    }
+  else
+   {
+     if (operands_match_p (operands[0], operands[2]))
+       std::swap (operands[1], operands[2]);
+   }
+
+  operands[3]
+    = gen_rtx_fmt_ee (IOR, <MODE>mode, operands[1], operands[2]);
+}
+  [(set_attr "isa" "noavx,noavx,avx,avx")])
+
 (define_expand "<plusminus_insn><mode>3<mask_name><round_name>"
   [(set (match_operand:VF 0 "register_operand")
 	(plusminus:VF

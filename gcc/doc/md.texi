@@ -3400,6 +3400,25 @@ Vector constant that is all zeros.
 
 @end table
 
+@item PRU---@file{config/pru/constraints.md}
+@table @code
+@item I
+An unsigned 8-bit integer constant.
+
+@item J
+An unsigned 16-bit integer constant.
+
+@item L
+An unsigned 5-bit integer constant (for shift counts).
+
+@item T
+A text segment (program memory) constant label.
+
+@item Z
+Integer constant zero.
+
+@end table
+
 @item RL78---@file{config/rl78/constraints.md}
 @table @code
 
@@ -5397,6 +5416,11 @@ operand 2.  Store the result in scalar operand 0.  The vector has
 mode @var{m} and the scalars have the mode appropriate for one
 element of @var{m}.  The operation is strictly in-order: there is
 no reassociation.
+
+@cindex @code{mask_fold_left_plus_@var{m}} instruction pattern
+@item @code{mask_fold_left_plus_@var{m}}
+Like @samp{fold_left_plus_@var{m}}, but takes an additional mask operand
+(operand 3) that specifies which elements of the source vector should be added.
 
 @cindex @code{sdot_prod@var{m}} instruction pattern
 @item @samp{sdot_prod@var{m}}

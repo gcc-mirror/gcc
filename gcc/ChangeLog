@@ -1,3 +1,617 @@
+2019-06-18  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-protos.h (gen_set_softstack_insn): Remove.
+	* config/nvptx/nvptx.c (gen_set_softstack_insn): Remove.
+	* config/nvptx/nvptx.md (define_insn "set_softstack_<mode>"): Rename to ...
+	(define_insn "@set_softstack_<mode>"): ... this.
+	(define_insn "omp_simt_enter_<mode>"): Rename to ...
+	(define_insn "@omp_simt_enter_<mode>"): ... this.
+	(define_insn "omp_simt_exit_<mode>"): Rename to ...
+	(define_insn "@omp_simt_exit_<mode>"): ... this.
+
+2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop-manip.c (vect_set_loop_masks_directly): Remove
+	vf parameter.  Restore the previous iv step of nscalars_step,
+	but give it iv_type rather than compare_type.  Tweak code order
+	to match the comments.
+	(vect_set_loop_condition_masked): Update accordingly.
+	* tree-vect-loop.c (vect_verify_full_masking): Use "unsigned int"
+	for iv_precision.  Tweak comment formatting.
+
+2019-06-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+        * config/darwin.c: Strip trailing whitespace.
+
+2019-06-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_emit_unwind_label): New default to false.
+	(darwin_override_options): Set darwin_emit_unwind_label as needed.
+
+2019-06-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/90889
+	* ipa-cp.c (ignore_edge_p): Do not ignore edges when only the
+	caller does not have flag_ipa_cp set.
+
+2019-06-18  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	* config/aarch64/aarch64-sve.md (mask_fold_left_plus_<mode>): Renamed
+	from "*fold_left_plus_<mode>", updated operands order.
+	* doc/md.texi (mask_fold_left_plus_@var{m}): Documented new optab.
+	* internal-fn.c (mask_fold_left_direct): New define.
+	(expand_mask_fold_left_optab_fn): Likewise.
+	(direct_mask_fold_left_optab_supported_p): Likewise.
+	* internal-fn.def (MASK_FOLD_LEFT_PLUS): New internal function.
+	* optabs.def (mask_fold_left_plus_optab): New optab.
+	* tree-vect-loop.c (mask_fold_left_plus_optab): New function to get a
+	masked internal_fn for a reduction ifn.
+	(vectorize_fold_left_reduction): Add support for masking reductions.
+
+2019-06-18  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR middle-end/80791
+	* target.def (predict_doloop_p): New hook.
+	* targhooks.h (default_predict_doloop_p): New declaration.
+	* targhooks.c (default_predict_doloop_p): New function.
+	* doc/tm.texi.in (TARGET_PREDICT_DOLOOP_P): New hook.
+	* doc/tm.texi: Regenerate.
+	* config/rs6000/rs6000.c (rs6000_predict_doloop_p): New function.
+	(TARGET_PREDICT_DOLOOP_P): New macro.
+	* tree-ssa-loop-ivopts.c (generic_predict_doloop_p): New function.
+
+2019-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (struct omp_context): Add scan_inclusive field.
+	(scan_omp_1_stmt) <case GIMPLE_OMP_SCAN>: Set ctx->scan_inclusive
+	if inclusive scan.
+	(struct omplow_simd_context): Add lastlane member.
+	(lower_rec_simd_input_clauses): Add rvar argument, handle inscan
+	reductions.  Build 2 or 3 argument .GOMP_SIMD_LANE calls rather than
+	1 or 2 argument.
+	(lower_rec_input_clauses): Handle inscan reductions in simd contexts.
+	(lower_lastprivate_clauses): Set TREE_THIS_NOTRAP on the ARRAY_REF.
+	(lower_omp_scan): New function.
+	(lower_omp_1) <case GIMPLE_OMP_SCAN>: Use lower_omp_scan.
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): For IFN_GOMP_SIMD_LANE
+	check 3rd argument if present rather than 2nd.
+	* tree-vectorizer.h (struct _loop_vec_info): Add scan_map member.
+	(struct _stmt_vec_info): Change simd_lane_access_p from bool into
+	2-bit bitfield.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Initialize
+	scan_map.  For IFN_GOMP_SIMD_LANE check 3rd argument if present rather
+	than 2nd.
+	(_loop_vec_info::~_loop_vec_info): Delete scan_map.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_accesses): Allow two
+	different STMT_VINFO_SIMD_LANE_ACCESS_P refs if they have the same
+	init.
+	(vect_find_stmt_data_reference): Encode in ->aux the 2nd
+	IFN_GOMP_SIMD_LANE argument.
+	(vect_analyze_data_refs): Set STMT_VINFO_SIMD_LANE_ACCESS_P from the
+	encoded ->aux value.
+	* tree-vect-stmts.c: Include attribs.h.
+	(vectorizable_call): Adjust comment about IFN_GOMP_SIMD_LANE.
+	(scan_operand_equal_p, check_scan_store, vectorizable_scan_store): New
+	functions.
+	(vectorizable_load): For STMT_VINFO_SIMD_LANE_ACCESS_P tests use != 0.
+	(vectorizable_store): Handle STMT_VINFO_SIMD_LANE_ACCESS_P > 1.
+
+2019-06-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/62055
+	* config/i386/i386.md (*nabstf2_1): New insn pattern.
+	(*nabs<mode>2_1): Ditto.
+	(nabs sse-reg splitter): New splitter.
+	* config/i386/sse.md (*nabs<mode>2): New insn_and_split pattern.
+
+2019-06-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR bootstrap/90873.
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Fix
+	TMR index check.
+
+2019-06-17  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx-protos.h (gen_set_softstack_insn): Declare.
+	* config/nvptx/nvptx.c (gen_set_softstack_insn): New function.
+	* config/nvptx/nvptx.md (define_insn "set_softstack_insn"): Rename to
+	...
+	(define_insn "set_softstack_<mode>"): ... this.  Use P iterator on
+	match_operand 0.
+	(define_insn "omp_simt_enter_insn"): Rename to ...
+	(define_insn "omp_simt_enter_<mode>"): ... this.  Use P iterator on
+	match_operand 0, 1 and 2, as well as the unspec_volatile result.
+	(define_expand "omp_simt_enter): Use gen_omp_simt_enter_di and
+	gen_omp_simt_enter_si.
+	(define_expand "omp_simt_exit"): New.
+	(define_insn "omp_simt_exit"): Rename to ...
+	(define_insn "omp_simt_exit_<mode>"): ... this.  Use P iterator on
+	match_operand 0.
+
+2019-06-17  Matthew Green  <mrg@eterna.com.au>
+	    Maya Rashish  <coypu@sdf.org>
+
+	* config.gcc (aarch64*-*-netbsd*): New target.
+	* config/aarch64/aarch64-netbsd.h: New file.
+	* config/aarch64/t-aarch64-netbsd: Likewise.
+
+2019-06-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (aliasing_component_refs_p): Consider only
+	the access path from base to first VIEW_CONVERT_EXPR or
+	BIT_FIELD_REF.
+
+2019-06-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (nonoverlapping_component_refs_p): Also truncate
+	access path on BIT_FIELD_REFs.
+
+2019-06-17  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/90874
+	* ipa-utils.h (odr_type_p): Remove dead code.
+
+2019-06-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (ld_vers) <*-*-solaris2*>: Remove support for
+	alternative Solaris 11.4 format.
+	* configure: Regenerate.
+
+2019-06-17  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/nvptx.md (define_insn "call_insn"): Rename to ...
+	(define_insn "call_insn_<mode>"): ... this.  Use P iterator on
+	match_operand 0.
+	(define_insn "call_value_insn"): Rename to ...
+	(define_insn "call_value_insn_<mode>"): this.  Use P iterator on
+	match_operand 0.
+	(define_insn "nvptx_red_partition"): Set unspec_volatile result mode to
+	DI.
+
+2019-06-16  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR middle-end/64242
+	* config/pa/pa.md (nonlocal_goto): Restore frame pointer last.  Add
+	frame clobbers and schedule block.
+	(builtin_longjmp): Likewise.
+
+2019-06-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_expand_helper): Setup arguments which
+	describe how to perform MSPABI compliant 64-bit shift.
+	* config/msp430/msp430.md (ashldi3): New define_expand.
+	(ashrdi3): New define_expand.
+	(lshrdi3): New define_expand.
+
+2019-06-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* doc/sourcebuild.texi: Document new effective target keyword
+	longlong64.
+
+2019-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p,
+	indirect_refs_may_alias_p): Revert accidental commits.
+
+	* tree-ssa-alias.c (aliasing_component_refs_p): Watch for arrays
+	at the end of structures.
+
+2019-06-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (machopic_indirect_call_target): Use renamed
+	darwin_picsymbol_stubs to decide on output.
+	(darwin_override_options): Handle darwin_picsymbol_stubs.
+	* config/darwin.h (MIN_LD64_OMIT_STUBS): New.
+	(LD64_VERSION): Revise default.
+	* config/darwin.opt: (mpic-symbol-stubs): New option.
+	(darwin_picsymbol_stubs): New variable.
+	* config/i386/darwin.h (TARGET_MACHO_BRANCH_ISLANDS):
+	rename to TARGET_MACHO_PICSYM_STUBS.
+	* config/i386/i386.c (output_pic_addr_const): Likewise.
+	* config/i386/i386.h Likewise.
+	* config/rs6000/darwin.h: Likewise.
+	* config/rs6000/rs6000.c (rs6000_call_darwin_1): Use renamed
+	darwin_picsymbol_stubs.
+
+2019-06-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.opt (prebind, noprebind, seglinkedit,
+	noseglinkedit): Add RejectNegative.
+
+2019-06-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (nonoverlapping_component_refs_p): Fix pasto
+	in my previous patch.
+
+2019-06-16  Tom de Vries  <tdevries@suse.de>
+
+	PR tree-optimization/89376
+	* tree-parloops.c (oacc_entry_exit_ok_1): Handle red == NULL.
+
+2019-06-15  Maya Rashish  <coypu@sdf.org>
+
+	* doc/invoke.texi (Spec Files): Update location of the
+	Fortran spec file.
+
+2019-06-15  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (Common Function Attributes): Clarify
+	no_sanitize.  Fix grammar.
+
+2019-06-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (alias_stats): Add
+	nonoverlapping_component_refs_p_may_alias,
+	nonoverlapping_component_refs_p_no_alias,
+	nonoverlapping_component_refs_of_decl_p_may_alias,
+	nonoverlapping_component_refs_of_decl_p_no_alias.
+	(dump_alias_stats): Dump them.
+	(nonoverlapping_component_refs_of_decl_p): Add stats.
+	(nonoverlapping_component_refs_p): Add stats; do not stop on first
+	ARRAY_REF.
+
+2019-06-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (and<mode>3): Generate zero-extends for
+	TARGET_ZERO_EXTEND_WITH_AND && optimize_function_for_speed_p (cfun))
+	only.
+	(*anddi3_doubleword): Split before reload. Merge with
+	anddi->zext pre-reload splitter.
+	(*andndi3_doubleword): Split before reload.
+	(*<code>di3_doubleword): Ditto.
+	(*one_cmpldi2_doubleword): Ditto.
+
+2019-06-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/90779
+	* gimplify.c: Include omp-offload.h and context.h.
+	(gimplify_bind_expr): Add "omp declare target" attributes
+	to static block scope variables inside of target region or target
+	functions.
+
+2019-06-15  Tom de Vries  <tdevries@suse.de>
+
+	PR tree-optimization/90009
+	* tree-ssa-threadbackward.c (thread_jumps::profitable_jump_thread_path):
+	Return NULL if bb contains IFN_UNIQUE.
+
+2019-06-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (CCEITHER): New define_mode_iterator.
+	(un): New define_mode_attr.
+	(isel_signed_<mode>, isel_unsigned_<mode>): Delete, merge into ...
+	(isel_<un>signed_<GPR:mode>): ... this.  New define_insn.
+	(isel_reversed_signed_<mode>, isel_reversed_unsigned_<mode>): Delete,
+	merge into ...
+	(isel_reversed_<un>signed_<GPR:mode>): ... this.  New define_insn.
+
+2019-06-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.opt: Add RejectNegative where needed, reorder
+	and add minimal functional descriptions.
+
+2019-06-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/90765
+	* calls.c (update_stack_alignment_for_call): New function.
+	(expand_call): Call update_stack_alignment_for_call when
+	outgoing parameter is passed in the stack.
+	(emit_library_call_value_1): Likewise.
+	* function.c (locate_and_pad_parm): Don't update
+	stack_alignment_needed and preferred_stack_boundary.
+
+2019-06-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/90877
+	* config/i386/i386-features.c
+	(dimode_scalar_chain::compute_convert_gain): Replace
+	mmxsse_to_integer with sse_to_integer.
+	* config/i386/i386.c (ix86_register_move_cost): Verify that
+	moves between MMX and non-MMX units require secondary memory.
+	Correct costs of moves between SSE and integer units.
+	* config/i386/i386.h (processor_costs): Rename cost of moving
+	SSE register to integer to sse_to_integer.  Rename cost of
+
+2019-06-14  Matt Thomas  <matt@3am-software.com>
+	    Matthew Green  <mrg@eterna.com.au>
+	    Nick Hudson  <skrll@netbsd.org>
+	    Maya Rashish  <coypu@sdf.org>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.gcc (arm*-*-netbsdelf*) Add support for EABI configuration.
+	* config.host (arm*-*-netbsd*): Use driver-arm.o on native NetBSD.
+	* config/arm/netbsd-eabi.h: New file.
+	* config/arm/netbsd-elf.h (TARGET_OS_CPP_BUILTINS): Undefine before
+	redefining.
+	(SUBTARGET_EXTRA_ASM_SPEC): Don't pass -matpcs to the assembler.
+	* config/netbsd-elf.h (NETBSD_LINK_LD_ELF_SO_SPEC): New define.
+	(NETBSD_SUBTARGET_EXTRA_SPECS): New define.
+	(SUBTARGET_EXTRA_SPECS): Define to NETBSD_SUBTARGET_EXTRA_SPECS.
+
+2019-06-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.c (classify_partition): Return
+	whether a reduction appeared in all partitions and do not
+	stop builtin detection because of this.
+	(distribute_loop): Sort a non-builtin partition last if
+	there's a reduction in all partitions and make sure the
+	partition prevailing as last is not a builtin.
+
+2019-06-14  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR ipa/90401
+	* ipa-prop.c (add_to_agg_contents_list): New function.
+	(clobber_by_agg_contents_list_p): Likewise.
+	(extract_mem_content): Likewise.
+	(get_place_in_agg_contents_list): Delete.
+	(determine_known_aggregate_parts): Renamed from
+	determine_locally_known_aggregate_parts.  New parameter
+	aa_walk_budget_p.
+
+2019-06-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90662
+	* tree-ssa-strlen.c (get_stridx): Convert fold_build2 operands
+	to the same type.
+
+2019-06-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR bootstrap/90873
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Also check that
+	dbase is not TARGET_MEM_REF.
+
+2019-06-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (SWIM1248s): Rename from SWIM1248x.
+	Update all uses.
+	(and<mode>3): Use gen_extend_insn instead of indirect functions.
+	Do not generate DImode extends for 32bit targets.
+	(and->zext post-reload splitter): Use gen_extend_insn
+	instead of indirect functions.
+	(anddi->zext pre-reload splitter): New.
+	(*zext<mode>_doubleword_and): Remove.
+	(*zext<mode>_doubleword): Ditto.
+	(*zextsi_doubleword): Dittto.
+
+2019-06-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_int_sse_cmp):
+	Use gen_sub3_insn instead of indirect function.
+	(ix86_expand_ashl_const): Use gen_add2_insn instead of
+	indirect function.
+	(ix86_adjust_counter): Ditto.
+
+2019-06-13  Jiufu Guo  <guojiufu@linux.ibm.com>
+	    Lijia He  <helijia@linux.ibm.com>
+
+	PR tree-optimization/77820
+	* tree-ssa-threadedge.c
+	(edge_forwards_cmp_to_conditional_jump_through_empty_bb_p): New
+	function.
+	(thread_across_edge): Add call to
+	edge_forwards_cmp_to_conditional_jump_through_empty_bb_p.
+
+2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (validate_macosx_version_min): New.
+	(darwin_default_min_version): Cleanup and validate supplied version.
+	(darwin_driver_init): Likewise and push cleaned version into opts.
+
+2019-06-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/90869
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Watch for view
+	converts in MEM_REF referencing decl rather than view converts
+	from decl type to MEM_REF type.
+
+2019-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90856
+	* tree-sra.c (build_ref_for_model): Only use
+	build_reconstructed_reference when address-spaces are the same.
+
+2019-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/nvptx/nvptx.c (nvptx_sese_number, nvptx_sese_pseudo): Don't
+	wrap ei variable name in the declaration in ()s.
+	(nvptx_single): Actually use mode_label variable.  Formatting fix.
+
+2019-06-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_loop_vectorized_call): Declare.
+	* tree-vectorizer.c (vect_loop_vectorized_call): Export and
+	also return the condition stmt.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Compute outermost
+	loop we can version and version that, reusing the loop version
+	created by if-conversion instead of versioning again.
+
+2019-06-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-loop-versioning.cc (prune_loop_conditions): Use
+	may_contain_p.
+	* tree-vrp (value_range_base::may_contain_p): Call into
+	value_inside_range.
+	(value_inside_range): Make private inside value_range_base class.
+	Take min/max from *this.
+	(range_includes_p): Remove.
+	* tree-vrp.h (value_range_base): Add value_inside_range.
+	(range_includes_p): Remove.
+	(range_includes_zero_p): Call may_contain_p.
+	* vr-values.c (compare_range_with_value): Same.
+
+2019-06-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* doc/extend.texi (ARC Function Attributes): Update info.
+
+2019-06-13  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/89713
+	* doc/invoke.texi (-ffinite-loops): Document new option.
+	* common.opt (-ffinite-loops): New option.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Mark
+	IFN_GOACC_LOOP calls as necessary.
+	* tree-ssa-loop-niter.c (finite_loop_p): Assume loop with an exit
+	is finite.
+	* omp-offload.c (oacc_xform_loop): Skip lowering if return value of
+	IFN_GOACC_LOOP call is not used.
+	* opts.c (default_options_table): Enable -ffinite-loops at -O2+.
+
+2019-06-13  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	PR target/88838
+	* tree-vect-loop-manip.c (vect_set_loop_masks_directly): If the
+	compare_type is not with Pmode size, we will create an IV with
+	Pmode size with truncated use (i.e. converted to the correct type).
+	* tree-vect-loop.c (vect_verify_full_masking): Find IV type.
+	(vect_iv_limit_for_full_masking): New. Factored out of
+	vect_set_loop_condition_masked.
+	* tree-vectorizer.h (LOOP_VINFO_MASK_IV_TYPE): New.
+	(vect_iv_limit_for_full_masking): Declare.
+
+2019-06-13  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	PR target/88834
+	* tree-ssa-loop-ivopts.c (get_mem_type_for_internal_fn): Handle
+	IFN_MASK_LOAD_LANES and IFN_MASK_STORE_LANES.
+	(get_alias_ptr_type_for_ptr_address): Likewise.
+	(add_iv_candidate_for_use): Add scaled index candidate if useful.
+	* tree-ssa-address.c (preferred_mem_scale_factor): New.
+	* config/aarch64/aarch64.c (aarch64_classify_address): Relax
+	allow_reg_index_p.
+
+2019-06-13  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* config/aarch64/iterators.md (ADDSUB): Fix typo in comment.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* common/config/pru/pru-common.c: New file.
+	* config.gcc: Add PRU target.
+	* config/pru/alu-zext.md: New file.
+	* config/pru/constraints.md: New file.
+	* config/pru/predicates.md: New file.
+	* config/pru/pru-opts.h: New file.
+	* config/pru/pru-passes.c: New file.
+	* config/pru/pru-pragma.c: New file.
+	* config/pru/pru-protos.h: New file.
+	* config/pru/pru.c: New file.
+	* config/pru/pru.h: New file.
+	* config/pru/pru.md: New file.
+	* config/pru/pru.opt: New file.
+	* config/pru/t-pru: New file.
+	* doc/extend.texi: Document PRU pragmas.
+	* doc/invoke.texi: Document PRU-specific options.
+	* doc/md.texi: Document PRU asm constraints.
+
+2019-06-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/90676
+	* tree-pretty-print.c (dump_mem_ref): New function.  Include
+	MEM_REF type in output when different size than operand.
+	(dump_generic_node): Move code to dump_mem_ref and call it.
+
+2019-06-12  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90662
+	* tree-ssa-strlen.c (get_stridx): Handle simple VLAs and pointers
+	to arrays.
+
+2019-06-12  Tom de Vries  <tdevries@suse.de>
+
+	PR tree-optimization/90009
+	* config/nvptx/nvptx.c (nvptx_find_par): Assert fork has at most join.
+
+2019-06-12  Martin Liska  <mliska@suse.cz>
+
+	* ggc-common.c (ggc_prune_overhead_list): Do not sanitize
+	the created map.
+	* hash-map.h: Add sanitize_eq_and_hash into ::hash_map.
+	* mem-stats.h (mem_alloc_description::mem_alloc_description):
+	Do not sanitize created maps.
+
+2019-06-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-evrp.c (evrp_dom_walker::before_dom_children): Use
+	value_range::singleton_p.
+	* tree-vrp.c (value_range_constant_singleton): Remove.
+	* tree-vrp.h (value_range_constant_singleton): Remove.
+	* vr-values.c (vr_values::singleton): Use
+	value_range::singleton_p.
+
+2019-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90811
+	* cfgexpand.c (align_local_variable): Add really_expand argument,
+	don't SET_DECL_ALIGN if it is false.
+	(add_stack_var): Add really_expand argument, pass it through to
+	align_local_variable.
+	(expand_one_stack_var_1): Pass true as really_expand to
+	align_local_variable.
+	(expand_one_ssa_partition): Pass true as really_expand to
+	add_stack_var.
+	(expand_one_var): Pass really_expand through to add_stack_var.
+
+2019-06-12  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
+
+        * config/arm/iterators.md (VABAL): New int iterator.
+        * config/arm/neon.md (<sup>sadv16qi): New define_expand.
+        * config/arm/unspecs.md ("unspec"): Define UNSPEC_VABAL_S, UNSPEC_VABAL_U
+        values.
+
+2019-06-12  Martin Liska  <mliska@suse.cz>
+
+	* value-prof.c (stream_out_histogram_value): Only first value
+	can't be negative.
+
+2019-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90760
+	* symtab.c (symtab_node::set_section): Allow being called on aliases
+	as long as they aren't analyzed yet.
+
+2019-06-11  Faraz Shahbazker  <fshahbazker@wavecomp.com>
+
+	* config/mips/mips.c (mips_final_postscan_insn): Modify call
+	to `mips_set_text_contents_type' to indicate whether a
+	non-debug insn follows.
+
+2019-06-11  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000-cpus.def (ISA_FUTURE_MASKS_SERVER): Delete
+	enabling -mpcrel by default.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Update
+	test for -mpcrel and/or -mprefixed-addr needing -mcpu=future, so
+	that the test against -mcpu=future is done first.  Then test if
+	-mprefixed-addr is on for -mpcrel.
+	(rs6000_disable_incompatible_switches): Add -mcpu=future support.
+
+2019-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90811
+	* config/nvptx/nvptx.c (nvptx_output_softstack_switch): Use and.b%d
+	instead of and.u%d.
+
+2019-06-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (X/[ex]4<Y/[ex]4): Handle conversions.
+
+2019-06-11  Matthew Beliveau  <mbelivea@redhat.com>
+
+	PR c++/90449 - add -Winaccessible-base option.
+	* doc/invoke.texi (Winaccessible-base): Document.
+
+2019-06-11  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/62041
+	* fold-const.c (fold_real_zero_addition_p): Handle vectors.
+
+2019-06-11  Jason Merrill  <jason@redhat.com>
+
+	* gdbhooks.py (TreePrinter.to_string): Recognize ggc_free'd memory.
+	* tree.c (get_tree_code_name): Likewise.
+	* print-tree.c (print_node): Only briefly print a node with an
+	invalid code.
+
 2019-06-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/90819

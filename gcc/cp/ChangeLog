@@ -1,3 +1,89 @@
+2019-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_omp_clauses): For OMP_CLAUSE_REDUCTION_INSCAN
+	set need_copy_assignment.
+
+2019-06-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/83820 - excessive attribute arguments not detected.
+	* parser.c (cp_parser_std_attribute): Detect excessive arguments.
+
+2019-06-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/90754
+	* name-lookup.c (lookup_type_scope_1): Calll qualify_lookup before
+	checking context.
+
+2019-06-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90884 - stray note with -Wctor-dtor-privacy.
+	* class.c (maybe_warn_about_overly_private_class): Guard the call to
+	inform.
+
+2019-06-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85552 - wrong instantiation of dtor for DMI.
+	* typeck2.c (digest_nsdmi_init): Set tf_no_cleanup for direct-init.
+
+2019-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use id_loc in five additional places
+	in the last part of the function.
+
+2019-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Move further up the declaration of
+	id_loc, use it immediately, update its value after the loop
+	over declarator, use it again in the final part of function;
+	improve locations of error messages about multiple data types
+	and conflicting specifiers.
+
+2019-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR c++/90801
+	* typeck2.c (split_nonconstant_init_1): Properly count
+	num_split_elts, optimize single constructor elt removal.
+
+2019-06-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/66999 - 'this' captured by reference.
+	* parser.c (cp_parser_lambda_introducer): Reject `&this'.  Use
+	cp_lexer_nth_token_is instead of cp_lexer_peek_nth_token.
+
+	PR c++/90825 - endless recursion when evaluating sizeof.
+	PR c++/90832 - endless recursion when evaluating sizeof.
+	* constexpr.c (cxx_eval_constant_expression): Don't recurse on the
+	result of fold_sizeof_expr if is returns a SIZEOF_EXPR.
+	* typeck.c (cxx_sizeof_expr): Only return a SIZEOF_EXPR if the operand
+	is instantiation-dependent.
+
+	PR c++/90736 - bogus error with alignof.
+	* constexpr.c (adjust_temp_type): Use cv_unqualified type.
+
+2019-06-11  Matthew Beliveau  <mbelivea@redhat.com>
+
+	PR c++/90449 - add -Winaccessible-base option.
+	* class.c (warn_about_ambiguous_bases): Changed name to:
+	maybe_warn_about_inaccessible_bases.
+	(maybe_warn_about_inaccessible_bases):  Implemented new
+	Winaccessible-base warning option for both direct and virtual
+	base warnings.
+	(layout_class_type): Call to warn_about_ambiguous_bases changed to fit
+	new name.
+
+2019-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR c++/90801
+	* typeck2.c (split_nonconstant_init_1): Avoid ordered remove
+	from CONSTRUCTOR by marking to remove elements and doing all
+	of them in a O(n) scan.
+
+2019-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90810
+	* init.c (constant_value_1): Handle VECTOR_CST DECL_INITIAL for
+	!DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P decls like CONSTRUCTOR.
+
 2019-06-11  Martin Liska  <mliska@suse.cz>
 
 	PR c++/87847

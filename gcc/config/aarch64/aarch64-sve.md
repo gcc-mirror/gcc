@@ -2180,14 +2180,14 @@
 )
 
 ;; In-order FP reductions predicated with PTRUE.
-(define_insn "*fold_left_plus_<mode>"
+(define_insn "mask_fold_left_plus_<mode>"
   [(set (match_operand:<VEL> 0 "register_operand" "=w")
-	(unspec:<VEL> [(match_operand:<VPRED> 1 "register_operand" "Upl")
-		       (match_operand:<VEL> 2 "register_operand" "0")
-		       (match_operand:SVE_F 3 "register_operand" "w")]
+	(unspec:<VEL> [(match_operand:<VPRED> 3 "register_operand" "Upl")
+		       (match_operand:<VEL> 1 "register_operand" "0")
+		       (match_operand:SVE_F 2 "register_operand" "w")]
 		      UNSPEC_FADDA))]
   "TARGET_SVE"
-  "fadda\t%<Vetype>0, %1, %<Vetype>0, %3.<Vetype>"
+  "fadda\t%<Vetype>0, %3, %<Vetype>0, %2.<Vetype>"
 )
 
 ;; Predicated form of the above in-order reduction.

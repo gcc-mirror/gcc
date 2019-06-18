@@ -1,3 +1,13 @@
+2019-06-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libsanitizer/87880
+	* asan/asan_interceptors.h:
+	(ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION): New.
+	* asan/Makefile.am (DEFS): Add 
+	ASAN_HAS_CXA_RETHROW_PRIMARY_EXCEPTION, defined to 0.
+	* asan/Makefile.in: Regenerated.
+	* asan/libtool-version: Bump version.
+
 2019-05-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/90639

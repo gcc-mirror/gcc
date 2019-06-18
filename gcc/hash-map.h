@@ -118,16 +118,19 @@ class GTY((user)) hash_map
 
 public:
   explicit hash_map (size_t n = 13, bool ggc = false,
+		     bool sanitize_eq_and_hash = true,
 		     bool gather_mem_stats = GATHER_STATISTICS
 		     CXX_MEM_STAT_INFO)
-    : m_table (n, ggc, true, gather_mem_stats, HASH_MAP_ORIGIN PASS_MEM_STAT)
+    : m_table (n, ggc, sanitize_eq_and_hash, gather_mem_stats,
+	       HASH_MAP_ORIGIN PASS_MEM_STAT)
   {
   }
 
   explicit hash_map (const hash_map &h, bool ggc = false,
+		     bool sanitize_eq_and_hash = true,
 		     bool gather_mem_stats = GATHER_STATISTICS
 		     CXX_MEM_STAT_INFO)
-    : m_table (h.m_table, ggc, true, gather_mem_stats,
+    : m_table (h.m_table, ggc, sanitize_eq_and_hash, gather_mem_stats,
 	       HASH_MAP_ORIGIN PASS_MEM_STAT) {}
 
   /* Create a hash_map in ggc memory.  */
@@ -136,7 +139,7 @@ public:
 			       CXX_MEM_STAT_INFO)
     {
       hash_map *map = ggc_alloc<hash_map> ();
-      new (map) hash_map (size, true, gather_mem_stats PASS_MEM_STAT);
+      new (map) hash_map (size, true, true, gather_mem_stats PASS_MEM_STAT);
       return map;
     }
 

@@ -481,7 +481,7 @@ void ClassDeclaration::semantic(Scope *sc)
             baseClass = tc->sym;
             b->sym = baseClass;
 
-            if (tc->sym->_scope && tc->sym->baseok < BASEOKdone)
+            if (tc->sym->baseok < BASEOKdone)
                 resolveBase(this, sc, scx, tc->sym); // Try to resolve forward reference
             if (tc->sym->baseok < BASEOKdone)
             {
@@ -533,7 +533,7 @@ void ClassDeclaration::semantic(Scope *sc)
 
             b->sym = tc->sym;
 
-            if (tc->sym->_scope && tc->sym->baseok < BASEOKdone)
+            if (tc->sym->baseok < BASEOKdone)
                 resolveBase(this, sc, scx, tc->sym); // Try to resolve forward reference
             if (tc->sym->baseok < BASEOKdone)
             {
@@ -918,10 +918,10 @@ bool ClassDeclaration::isBaseOf(ClassDeclaration *cd, int *poffset)
     {
         /* cd->baseClass might not be set if cd is forward referenced.
          */
-        if (!cd->baseClass && cd->_scope && !cd->isInterfaceDeclaration())
+        if (!cd->baseClass && cd->semanticRun < PASSsemanticdone && !cd->isInterfaceDeclaration())
         {
             cd->semantic(NULL);
-            if (!cd->baseClass && cd->_scope)
+            if (!cd->baseClass && cd->semanticRun < PASSsemanticdone)
                 cd->error("base class is forward referenced by %s", toChars());
         }
 
@@ -1574,7 +1574,7 @@ void InterfaceDeclaration::semantic(Scope *sc)
 
             b->sym = tc->sym;
 
-            if (tc->sym->_scope && tc->sym->baseok < BASEOKdone)
+            if (tc->sym->baseok < BASEOKdone)
                 resolveBase(this, sc, scx, tc->sym); // Try to resolve forward reference
             if (tc->sym->baseok < BASEOKdone)
             {

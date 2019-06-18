@@ -20,5 +20,6 @@ public:
   Zp  operator-() const { return Zp(p-val); }
   // In C++2A, we have an unqualified-id (operator-) followed by
   // '<', and name lookup found a function.
-  friend Zp<INT,P> operator- <>(const Zp<INT,P>& a, const Zp<INT,P>& b); // { dg-error "declaration|expected" "" { target c++17_down } }
+  friend Zp<INT,P> operator- <>(const Zp<INT,P>& a, const Zp<INT,P>& b); // { dg-error "20:declaration of .operator\\-. as non-function" "" { target c++17_down } }
+  // { dg-error "expected" "" { target c++17_down } .-1 }
 };

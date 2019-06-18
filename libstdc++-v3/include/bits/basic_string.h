@@ -6500,6 +6500,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
 
 #include <ext/string_conversions.h>
+#include <bits/charconv.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -6547,43 +6548,68 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   { return __gnu_cxx::__stoa(&std::strtold, "stold", __str.c_str(), __idx); }
 #endif // _GLIBCXX_USE_C99_STDLIB
 
-#if _GLIBCXX_USE_C99_STDIO
-  // NB: (v)snprintf vs sprintf.
+  // DR 1261. Insufficent overloads for to_string / to_wstring
 
-  // DR 1261.
   inline string
   to_string(int __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, 4 * sizeof(int),
-					   "%d", __val); }
+  {
+    const bool __neg = __val < 0;
+    const unsigned __uval = __neg ? (unsigned)~__val + 1u : __val;
+    const auto __len = __detail::__to_chars_len(__uval);
+    string __str(__neg + __len, '-');
+    __detail::__to_chars_10_impl(&__str[__neg], __len, __uval);
+    return __str;
+  }
 
   inline string
   to_string(unsigned __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
-					   4 * sizeof(unsigned),
-					   "%u", __val); }
+  {
+    string __str(__detail::__to_chars_len(__val), '\0');
+    __detail::__to_chars_10_impl(&__str[0], __str.size(), __val);
+    return __str;
+  }
 
   inline string
   to_string(long __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, 4 * sizeof(long),
-					   "%ld", __val); }
+  {
+    const bool __neg = __val < 0;
+    const unsigned long __uval = __neg ? (unsigned long)~__val + 1ul : __val;
+    const auto __len = __detail::__to_chars_len(__uval);
+    string __str(__neg + __len, '-');
+    __detail::__to_chars_10_impl(&__str[__neg], __len, __uval);
+    return __str;
+  }
 
   inline string
   to_string(unsigned long __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
-					   4 * sizeof(unsigned long),
-					   "%lu", __val); }
+  {
+    string __str(__detail::__to_chars_len(__val), '\0');
+    __detail::__to_chars_10_impl(&__str[0], __str.size(), __val);
+    return __str;
+  }
 
   inline string
   to_string(long long __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
-					   4 * sizeof(long long),
-					   "%lld", __val); }
+  {
+    const bool __neg = __val < 0;
+    const unsigned long long __uval
+      = __neg ? (unsigned long long)~__val + 1ull : __val;
+    const auto __len = __detail::__to_chars_len(__uval);
+    string __str(__neg + __len, '-');
+    __detail::__to_chars_10_impl(&__str[__neg], __len, __uval);
+    return __str;
+  }
 
   inline string
   to_string(unsigned long long __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
-					   4 * sizeof(unsigned long long),
-					   "%llu", __val); }
+  {
+    string __str(__detail::__to_chars_len(__val), '\0');
+    __detail::__to_chars_10_impl(&__str[0], __str.size(), __val);
+    return __str;
+  }
+
+#if _GLIBCXX_USE_C99_STDIO
+  // NB: (v)snprintf vs sprintf.
 
   inline string
   to_string(float __val)

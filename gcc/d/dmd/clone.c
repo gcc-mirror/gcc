@@ -841,12 +841,7 @@ FuncDeclaration *buildPostBlit(StructDeclaration *sd, Scope *sc)
         {
             // __ArrayPostblit((cast(S*)this.v.ptr)[0 .. n])
 
-            uinteger_t n = 1;
-            while (tv->ty == Tsarray)
-            {
-                n *= ((TypeSArray *)tv)->dim->toUInteger();
-                tv = tv->nextOf()->toBasetype();
-            }
+            uinteger_t n = tv->numberOfElems(loc);
             if (n == 0)
                 continue;
 
@@ -898,12 +893,7 @@ FuncDeclaration *buildPostBlit(StructDeclaration *sd, Scope *sc)
         {
             // __ArrayDtor((cast(S*)this.v.ptr)[0 .. n])
 
-            uinteger_t n = 1;
-            while (tv->ty == Tsarray)
-            {
-                n *= ((TypeSArray *)tv)->dim->toUInteger();
-                tv = tv->nextOf()->toBasetype();
-            }
+            uinteger_t n = tv->numberOfElems(loc);
             //if (n == 0)
             //    continue;
 
@@ -1049,12 +1039,7 @@ FuncDeclaration *buildDtor(AggregateDeclaration *ad, Scope *sc)
         {
             // __ArrayDtor((cast(S*)this.v.ptr)[0 .. n])
 
-            uinteger_t n = 1;
-            while (tv->ty == Tsarray)
-            {
-                n *= ((TypeSArray *)tv)->dim->toUInteger();
-                tv = tv->nextOf()->toBasetype();
-            }
+            uinteger_t n = tv->numberOfElems(loc);
             if (n == 0)
                 continue;
 

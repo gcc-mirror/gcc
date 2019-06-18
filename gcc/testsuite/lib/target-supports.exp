@@ -513,7 +513,8 @@ proc check_effective_target_trampolines { } {
 	 || [istarget msp430-*-*]
 	 || [istarget nvptx-*-*]
 	 || [istarget hppa2.0w-hp-hpux11.23]
-	 || [istarget hppa64-hp-hpux11.23] } {
+	 || [istarget hppa64-hp-hpux11.23]
+	 || [istarget pru-*-*] } {
 	return 0;
     }
     return 1
@@ -687,6 +688,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget nvptx-*-*]
 	     || [istarget powerpc-*-eabi*]
 	     || [istarget powerpc-*-elf]
+	     || [istarget pru-*-*]
 	     || [istarget rx-*-*]	
 	     || [istarget tic6x-*-elf]
 	     || [istarget visium-*-*]
@@ -2615,6 +2617,15 @@ proc check_effective_target_int32plus { } {
     }]
 }
 
+# Return 1 if we're generating 64-bit long long using default options,
+# 0 otherwise.
+
+proc check_effective_target_longlong64 { } {
+    return [check_no_compiler_messages longlong64 object {
+	int dummy[sizeof (long long) == 8 ? 1 : -1];
+    }]
+}
+
 # Return 1 if we're generating 32-bit or larger pointers using default
 # options, 0 otherwise.
 
@@ -2640,6 +2651,32 @@ proc check_effective_target_size20plus { } {
     return [check_no_compiler_messages size20plus object {
 	char dummy[65537L];
     }]
+}
+
+# Return 1 if target supports function pointers, 0 otherwise.
+
+proc check_effective_target_function_pointers { } {
+    if { [istarget pru-*-*] } {
+	return [check_no_compiler_messages func_ptr_avail assembly {
+	    #ifdef __PRU_EABI_GNU__
+	    #error unsupported
+	    #endif
+	}]
+    }
+    return 1
+}
+
+# Return 1 if target supports arbitrarily large return values, 0 otherwise.
+
+proc check_effective_target_large_return_values { } {
+    if { [istarget pru-*-*] } {
+	return [check_no_compiler_messages large_return_values assembly {
+	    #ifdef __PRU_EABI_GNU__
+	    #error unsupported
+	    #endif
+	}]
+    }
+    return 1
 }
 
 # Return 1 if we support 24-bit or larger array and structure sizes
@@ -8761,6 +8798,11 @@ proc check_effective_target_tiny {} {
       }
       if { [istarget avr-*-*]
 	    && [check_effective_target_avr_tiny] } {
+	   return 1
+      }
+      # PRU Program Counter is 16-bits, and trampolines are not supported.
+      # Hence directly declare as a tiny target.
+      if [istarget pru-*-*] {
 	   return 1
       }
       return 0

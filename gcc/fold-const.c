@@ -6722,15 +6722,21 @@ fold_real_zero_addition_p (const_tree type, const_tree addend, int negate)
     return false;
 
   /* Don't allow the fold with -fsignaling-nans.  */
-  if (HONOR_SNANS (element_mode (type)))
+  if (HONOR_SNANS (type))
     return false;
 
   /* Allow the fold if zeros aren't signed, or their sign isn't important.  */
-  if (!HONOR_SIGNED_ZEROS (element_mode (type)))
+  if (!HONOR_SIGNED_ZEROS (type))
     return true;
 
+  /* There is no case that is safe for all rounding modes.  */
+  if (HONOR_SIGN_DEPENDENT_ROUNDING (type))
+    return false;
+
   /* In a vector or complex, we would need to check the sign of all zeros.  */
-  if (TREE_CODE (addend) != REAL_CST)
+  if (TREE_CODE (addend) == VECTOR_CST)
+    addend = uniform_vector_p (addend);
+  if (!addend || TREE_CODE (addend) != REAL_CST)
     return false;
 
   /* Treat x + -0 as x - 0 and x - -0 as x + 0.  */
@@ -6739,9 +6745,8 @@ fold_real_zero_addition_p (const_tree type, const_tree addend, int negate)
 
   /* The mode has signed zeros, and we have to honor their sign.
      In this situation, there is only one case we can return true for.
-     X - 0 is the same as X unless rounding towards -infinity is
-     supported.  */
-  return negate && !HONOR_SIGN_DEPENDENT_ROUNDING (element_mode (type));
+     X - 0 is the same as X with default rounding.  */
+  return negate;
 }
 
 /* Subroutine of match.pd that optimizes comparisons of a division by

@@ -1,3 +1,69 @@
+2019-06-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump_parse_tree (debug): Add verison for formal arglist.
+	Do not crash when a gfc_expr is NULL.
+
+2019-06-15  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* decl.c (gfc_match_derived_decl): Dummy argument cannot be a derived
+	type.
+
+2019-06-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* arith.c (arith_power): Rework overflow of an integer to an integer
+	exponent.
+
+2019-06-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/90577
+	PR fortran/90578
+	* trans-intrinsic.c (gfc_conv_intrinsic_shift): Properly
+	distinguish logical/arithmetic shifts.
+	* intrinsic.texi: Update documentation for SHIFTR/SHIFTL/SHIFTA
+	(Fortran 2008) and LSHIFT/RSHIFT (GNU extensions).
+
+2019-06-14  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/89646
+	* dependency.c (gfc_check_argument_var_dependency): Suppress spurious
+	warnings by comparing variable names.
+
+2019-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/68544
+	* resolve.c (is_dt_name): New function to compare symbol name against
+	list of derived types.
+	(resolve_actual_arglist): Use it to find wrong code.
+
+2019-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/89344
+	* expr.c (gfc_check_vardef_context): Check for INTENT(IN) variable
+	in SELECT TYPE construct.
+
+2019-06-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88810
+	* dependency.c (gfc_dep_resolver): Re-arrange code to make the logic
+	a bit more transparent.  Fix 2 nearby formatting issues.
+
+2019-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* io.c (check_format): Use G_(...) instead of _(...) for error values,
+	append " in format string at %L" to all strings but unexpected_element,
+	use error as gfc_error formating string instead of
+	"%s in format string at %L".  Formatting fixes.
+
+2019-06-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.h (gfc_free_dt_list): Remove prototype.
+
+2019-06-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90002
+	* array.c (gfc_free_array_spec): When freeing an array-spec, avoid
+	an ICE for assumed-shape coarrays 
+
 2019-06-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/90786

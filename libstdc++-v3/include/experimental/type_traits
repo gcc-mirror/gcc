@@ -227,6 +227,8 @@ inline namespace fundamentals_v2
 
 template<typename...> using void_t = void;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
 struct __nonesuchbase {};
 struct nonesuch : private __nonesuchbase
 {
@@ -234,6 +236,7 @@ struct nonesuch : private __nonesuchbase
   nonesuch(nonesuch const&) = delete;
   void operator=(nonesuch const&) = delete;
 };
+#pragma GCC diagnostic pop
 
 template<template<typename...> class _Op, typename... _Args>
   using is_detected

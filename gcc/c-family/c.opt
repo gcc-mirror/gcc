@@ -625,6 +625,10 @@ Wignored-attributes
 C C++ Var(warn_ignored_attributes) Init(1) Warning
 Warn whenever attributes are ignored.
 
+Winaccessible-base
+C++ ObjC++ Var(warn_inaccessible_base) Init(1) Warning
+Warn when a base is inaccessible in derived due to ambiguity.
+
 Wincompatible-pointer-types
 C ObjC Var(warn_incompatible_pointer_types) Init(1) Warning
 Warn when there is a conversion between pointers that have incompatible types.

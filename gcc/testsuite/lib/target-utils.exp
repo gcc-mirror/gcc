@@ -35,10 +35,22 @@ proc ${tool}_check_unsupported_p { output } {
           && [check_effective_target_tiny] } {
         return "memory full"
      }
+    if { [regexp "(^|\n)\[^\n\]*: region \[^\n\]* overflowed" $output]
+          && [check_effective_target_tiny] } {
+	return "memory full"
+    }
 
     if { [istarget spu-*-*] && \
 	     [string match "*exceeds local store*" $output] } {
 	return "memory full"
+    }
+    if { [string match "*error: function pointers not supported*" $output]
+	  && ![check_effective_target_function_pointers] } {
+	return "function pointers not supported"
+    }
+    if { [string match "*error: large return values not supported*" $output]
+	  && ![check_effective_target_large_return_values] } {
+	return "large return values not supported"
     }
     return ""
 }

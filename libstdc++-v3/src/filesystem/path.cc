@@ -500,7 +500,7 @@ path::_S_convert_loc(const char* __first, const char* __last,
 #if _GLIBCXX_USE_WCHAR_T
   auto& __cvt = std::use_facet<codecvt<wchar_t, char, mbstate_t>>(__loc);
   basic_string<wchar_t> __ws;
-  if (!__str_codecvt_in(__first, __last, __ws, __cvt))
+  if (!__str_codecvt_in_all(__first, __last, __ws, __cvt))
     _GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	  "Cannot convert character sequence",
 	  std::make_error_code(errc::illegal_byte_sequence)));

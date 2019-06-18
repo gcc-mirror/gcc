@@ -7,7 +7,7 @@
 /* { dg-skip-if "NeXT-only" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-options "-freplace-objc-classes" } */
 
-#include <Foundation/NSObject.h>
+#include "../objc-obj-c++-shared/F-NSObject.h"
 
 extern void abort(void);
 #define CHECK_IF(expr) if(!(expr)) abort();
