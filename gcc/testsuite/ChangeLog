@@ -1,5 +1,8 @@
 2019-06-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR testsuite/90861
+	* c-c++-common/goacc/declare-pr90861.c: New file.
+
 	PR testsuite/90868
 	* c-c++-common/goacc/declare-1.c: Update.
 	* c-c++-common/goacc/declare-2.c: Likewise.
