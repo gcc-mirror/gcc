@@ -10,22 +10,20 @@
 
 #pragma once
 
-#include "root/root.h"
-#include "root/stringtable.h"
+#include "root/dsystem.h"
+#include "arraytypes.h"
 
-class Identifier;
-class FuncDeclaration;
+class AggregateDeclaration;
+class AttribDeclaration;
 class ClassDeclaration;
+class FuncDeclaration;
+class Identifier;
 class InterfaceDeclaration;
+
 struct Scope;
-class StructDeclaration;
 
 struct ObjcSelector
 {
-    static StringTable stringtable;
-    static StringTable vTableDispatchSelectors;
-    static int incnum;
-
     const char *stringvalue;
     size_t stringlen;
     size_t paramCount;
@@ -34,10 +32,27 @@ struct ObjcSelector
 
     ObjcSelector(const char *sv, size_t len, size_t pcount);
 
-    static ObjcSelector *lookup(const char *s);
-    static ObjcSelector *lookup(const char *s, size_t len, size_t pcount);
-
     static ObjcSelector *create(FuncDeclaration *fdecl);
+};
+
+struct ObjcClassDeclaration
+{
+    bool isMeta;
+    bool isExtern;
+
+    Identifier* identifier;
+    ClassDeclaration* classDeclaration;
+    ClassDeclaration* metaclass;
+    DArray<FuncDeclaration*> methodList;
+
+    bool isRootClass() const;
+};
+
+struct ObjcFuncDeclaration
+{
+    ObjcSelector* selector;
+    VarDeclaration* selectorParameter;
+    bool isOptional;
 };
 
 class Objc
@@ -47,7 +62,23 @@ public:
 
     virtual void setObjc(ClassDeclaration* cd) = 0;
     virtual void setObjc(InterfaceDeclaration*) = 0;
+    virtual const char *toPrettyChars(ClassDeclaration *cd, bool qualifyTypes) const = 0;
+
     virtual void setSelector(FuncDeclaration*, Scope* sc) = 0;
     virtual void validateSelector(FuncDeclaration* fd) = 0;
     virtual void checkLinkage(FuncDeclaration* fd) = 0;
+    virtual bool isVirtual(const FuncDeclaration*) const = 0;
+    virtual void setAsOptional(FuncDeclaration *fd, Scope *sc) const = 0;
+    virtual void validateOptional(FuncDeclaration *fd) const = 0;
+    virtual ClassDeclaration* getParent(FuncDeclaration*, ClassDeclaration*) const = 0;
+    virtual void addToClassMethodList(FuncDeclaration*, ClassDeclaration*) const = 0;
+    virtual AggregateDeclaration* isThis(FuncDeclaration* fd) = 0;
+    virtual VarDeclaration* createSelectorParameter(FuncDeclaration*, Scope*) const = 0;
+
+    virtual void setMetaclass(InterfaceDeclaration* id, Scope*) const = 0;
+    virtual void setMetaclass(ClassDeclaration* id, Scope*) const = 0;
+    virtual ClassDeclaration* getRuntimeMetaclass(ClassDeclaration* cd) = 0;
+
+    virtual void addSymbols(AttribDeclaration*, ClassDeclarations*, ClassDeclarations*) const = 0;
+    virtual void addSymbols(ClassDeclaration*, ClassDeclarations*, ClassDeclarations*) const = 0;
 };

@@ -20,7 +20,7 @@ struct complex_t
     real_t re;
     real_t im;
 
-    complex_t(real_t re) : re(re), im(ldouble(0)) {}
+    complex_t(real_t re) : re(re), im(CTFloat::zero) {}
     complex_t(real_t re, real_t im) : re(re), im(im) {}
 
     complex_t operator + (complex_t y) { return complex_t(re + y.re, im + y.im); }
@@ -52,7 +52,7 @@ struct complex_t
     int operator != (complex_t y) { return re != y.re || im != y.im; }
 
 private:
-    complex_t() : re(ldouble(0)), im(ldouble(0)) {}
+    complex_t() : re(CTFloat::zero), im(CTFloat::zero) {}
 };
 
 inline complex_t operator * (real_t x, complex_t y) { return complex_t(x) * y; }

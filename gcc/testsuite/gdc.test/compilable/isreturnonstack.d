@@ -1,3 +1,4 @@
+
 struct S { int[10] a; }
 int test1();
 S test2();

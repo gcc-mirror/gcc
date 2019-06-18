@@ -5,15 +5,11 @@
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
  * http://www.boost.org/LICENSE_1_0.txt
- * https://github.com/D-Programming-Language/dmd/blob/master/src/doc.h
+ * https://github.com/dlang/dmd/blob/master/src/dmd/doc.h
  */
 
 #pragma once
 
-#include "root/dsystem.h"
-
 class Module;
-struct OutBuffer;
 
-void escapeDdocString(OutBuffer *buf, size_t start);
 void gendocfile(Module *m);

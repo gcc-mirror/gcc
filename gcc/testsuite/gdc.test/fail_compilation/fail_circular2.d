@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail_circular2.d(10): Error: circular initialization of variable 'fail_circular2.S.d1'
-fail_compilation/fail_circular2.d(12): Error: circular initialization of variable 'fail_circular2.S.e1'
+fail_compilation/fail_circular2.d(10): Error: circular initialization of variable `fail_circular2.S.d1`
+fail_compilation/fail_circular2.d(12): Error: circular initialization of variable `fail_circular2.S.e1`
 ---
 */
 struct S
@@ -15,8 +15,8 @@ struct S
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail_circular2.d(24): Error: circular initialization of variable 'fail_circular2.C.d1'
-fail_compilation/fail_circular2.d(26): Error: circular initialization of variable 'fail_circular2.C.e1'
+fail_compilation/fail_circular2.d(24): Error: circular initialization of variable `fail_circular2.C.d1`
+fail_compilation/fail_circular2.d(26): Error: circular initialization of variable `fail_circular2.C.e1`
 ---
 */
 class C

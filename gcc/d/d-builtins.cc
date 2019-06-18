@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 
 #include "d-tree.h"
+#include "d-frontend.h"
 #include "d-target.h"
 
 
@@ -98,7 +99,7 @@ build_frontend_type (tree type)
 	  if (TYPE_MAIN_VARIANT (TREE_TYPE (type)) == char_type_node)
 	    return Type::tchar->addMod (dtype->mod)->pointerTo ()->addMod (mod);
 
-	  if (dtype->ty == Tfunction)
+	  if (dtype->ty == TY::Tfunction)
 	    return (TypePointer::create (dtype))->addMod (mod);
 
 	  return dtype->pointerTo ()->addMod (mod);
@@ -130,7 +131,7 @@ build_frontend_type (tree type)
 
       /* For now, skip support for cent/ucent until the frontend
 	 has better support for handling it.  */
-      for (size_t i = Tint8; i <= Tuns64; i++)
+      for (size_t i = (size_t) TY::Tint8; i <= (size_t) TY::Tuns64; i++)
 	{
 	  dtype = Type::basic[i];
 
@@ -148,7 +149,7 @@ build_frontend_type (tree type)
     {
       unsigned size = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type));
 
-      for (size_t i = Tfloat32; i <= Tfloat80; i++)
+      for (size_t i = (size_t) TY::Tfloat32; i <= (size_t) TY::Tfloat80; i++)
 	{
 	  dtype = Type::basic[i];
 
@@ -164,7 +165,8 @@ build_frontend_type (tree type)
     case COMPLEX_TYPE:
     {
       unsigned size = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type));
-      for (size_t i = Tcomplex32; i <= Tcomplex80; i++)
+      for (size_t i = (size_t) TY::Tcomplex32; i <= (size_t) TY::Tcomplex80;
+	   i++)
 	{
 	  dtype = Type::basic[i];
 
@@ -235,7 +237,7 @@ build_frontend_type (tree type)
       sdecl->structsize = int_size_in_bytes (type);
       sdecl->alignsize = TYPE_ALIGN_UNIT (type);
       sdecl->alignment = STRUCTALIGN_DEFAULT;
-      sdecl->sizeok = SIZEOKdone;
+      sdecl->sizeok = Sizeok::done;
       sdecl->type = (TypeStruct::create (sdecl))->addMod (mod);
       sdecl->type->ctype = type;
       sdecl->type->merge2 ();
@@ -243,7 +245,7 @@ build_frontend_type (tree type)
       /* Add both named and anonymous fields as members of the struct.
 	 Anonymous fields still need a name in D, so call them "__pad%u".  */
       unsigned anonfield_id = 0;
-      sdecl->members = new Dsymbols;
+      sdecl->members = d_gc_malloc<Dsymbols> ();
 
       for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	{
@@ -253,7 +255,6 @@ build_frontend_type (tree type)
 	      /* Drop any field types that got cached before the conversion
 		 of this record type failed.  */
 	      builtin_converted_decls.truncate (saved_builtin_decls_length);
-	      delete sdecl->members;
 	      return NULL;
 	    }
 
@@ -292,7 +293,7 @@ build_frontend_type (tree type)
 	  tree parms = TYPE_ARG_TYPES (type);
 	  VarArg varargs_p = VARARGvariadic;
 
-	  Parameters *args = new Parameters;
+	  Parameters *args = d_gc_malloc<Parameters> ();
 	  args->reserve (list_length (parms));
 
 	  /* Attempt to convert all parameter types.  */
@@ -318,7 +319,6 @@ build_frontend_type (tree type)
 		  /* Drop any parameter types that got cached before the
 		     conversion of this function type failed.  */
 		  builtin_converted_decls.truncate (saved_builtin_decls_length);
-		  delete args;
 		  return NULL;
 		}
 
@@ -329,7 +329,7 @@ build_frontend_type (tree type)
 	     have no named parameters, and so can't be represented in D.  */
 	  if (args->length != 0 || varargs_p == VARARGnone)
 	    {
-	      dtype = TypeFunction::create (args, dtype, varargs_p, LINKc);
+	      dtype = TypeFunction::create (args, dtype, varargs_p, LINK::c);
 	      return dtype->addMod (mod);
 	    }
 	}
@@ -386,7 +386,7 @@ d_eval_constant_expression (const Loc &loc, tree cst)
       else if (code == VECTOR_CST)
 	{
 	  dinteger_t nunits = VECTOR_CST_NELTS (cst).to_constant ();
-	  Expressions *elements = new Expressions;
+	  Expressions *elements = d_gc_malloc<Expressions> ();
 	  elements->setDim (nunits);
 
 	  for (size_t i = 0; i < nunits; i++)
@@ -520,7 +520,7 @@ build_alias_declaration (const char *alias, Type *type)
 void
 d_build_builtins_module (Module *m)
 {
-  Dsymbols *members = new Dsymbols;
+  Dsymbols *members = d_gc_malloc<Dsymbols> ();
   tree decl;
 
   for (size_t i = 0; vec_safe_iterate (gcc_builtins_functions, i, &decl); ++i)
@@ -543,16 +543,16 @@ d_build_builtins_module (Module *m)
 	   flag_unsafe_math_optimizations.
 	 - Built-ins never use the GC or raise a D exception, and so are always
 	   marked as `nothrow' and `@nogc'.  */
-      tf->purity = DECL_PURE_P (decl) ? PUREstrong
-	: TREE_READONLY (decl) ? PUREconst
-	: DECL_IS_NOVOPS (decl) ? PUREweak
-	: !DECL_ASSEMBLER_NAME_SET_P (decl) ? PUREweak
-	: PUREimpure;
-      tf->trust = !DECL_ASSEMBLER_NAME_SET_P (decl) ? TRUSTsafe
-	: TREE_NOTHROW (decl) ? TRUSTtrusted
-	: TRUSTsystem;
-      tf->isnothrow = true;
-      tf->isnogc = true;
+      tf->purity = DECL_PURE_P (decl) ? PURE::strong
+	: TREE_READONLY (decl) ? PURE::const_
+	: DECL_IS_NOVOPS (decl) ? PURE::weak
+	: !DECL_ASSEMBLER_NAME_SET_P (decl) ? PURE::weak
+	: PURE::impure;
+      tf->trust = !DECL_ASSEMBLER_NAME_SET_P (decl) ? TRUST::safe
+	: TREE_NOTHROW (decl) ? TRUST::trusted
+	: TRUST::system;
+      tf->isnothrow (true);
+      tf->isnogc (true);
 
       FuncDeclaration *func
 	= FuncDeclaration::create (Loc (), Loc (),
@@ -560,7 +560,7 @@ d_build_builtins_module (Module *m)
 				   STCextern, tf);
       DECL_LANG_SPECIFIC (decl) = build_lang_decl (func);
       func->csym = decl;
-      func->builtin = BUILTINgcc;
+      func->builtin = BUILTIN::gcc;
 
       members->push (func);
     }
@@ -660,7 +660,7 @@ d_build_builtins_module (Module *m)
     members->push (build_alias_declaration ("__builtin_unwind_uint", t));
   }
 
-  m->members->push (LinkDeclaration::create (LINKc, members));
+  m->members->push (LinkDeclaration::create (Loc (), LINK::c, members));
 }
 
 /* Search for any `extern(C)' functions that match any known GCC library builtin
@@ -700,7 +700,7 @@ maybe_set_builtin_1 (Dsymbol *d)
 	  /* Found a match, tell the frontend this is a builtin.  */
 	  DECL_LANG_SPECIFIC (t) = build_lang_decl (fd);
 	  fd->csym = t;
-	  fd->builtin = BUILTINgcc;
+	  fd->builtin = BUILTIN::gcc;
 	  return;
 	}
     }
@@ -858,7 +858,7 @@ d_build_d_type_nodes (void)
 
   /* Calling build_ctype() links the front-end Type to the GCC node,
      and sets the TYPE_NAME to the D language type.  */
-  for (unsigned ty = 0; ty < TMAX; ty++)
+  for (unsigned ty = 0; ty < (unsigned) TY::TMAX; ty++)
     {
       if (Type::basic[ty] != NULL)
 	build_ctype (Type::basic[ty]);

@@ -1,3 +1,9 @@
+/*
+RUN_OUTPUT:
+---
+Success
+---
+*/
 
 import core.stdc.stdio;
 

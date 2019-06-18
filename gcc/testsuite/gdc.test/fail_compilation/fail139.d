@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail139.d(8): Error: forward reference to 'test'
+fail_compilation/fail139.d(8): Error: forward reference to `test`
 ---
 */
 

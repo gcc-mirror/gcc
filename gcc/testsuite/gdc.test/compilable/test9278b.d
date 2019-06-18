@@ -1,4 +1,4 @@
-// PREMUTE_ARGS:
+// PERMUTE_ARGS:
 
 // Works fine here
 //struct datum { float num = 0.0; }

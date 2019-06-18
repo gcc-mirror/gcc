@@ -94,7 +94,7 @@ bool
 valist_array_p (Type *type)
 {
   Type *tvalist = target.va_listType (Loc (), NULL);
-  if (tvalist->ty == Tsarray)
+  if (tvalist->ty == TY::Tsarray)
     {
       Type *tb = type->toBasetype ();
       if (same_type_p (tb, tvalist))
@@ -170,7 +170,7 @@ make_array_type (Type *type, unsigned HOST_WIDE_INT size)
 {
   /* In [arrays/void-arrays], void arrays can also be static, the length is
      specified in bytes.  */
-  if (type->toBasetype ()->ty == Tvoid)
+  if (type->toBasetype ()->ty == TY::Tvoid)
     type = Type::tuns8;
 
   /* In [arrays/static-arrays], a static array with a dimension of 0 is allowed,
@@ -546,9 +546,9 @@ merge_aggregate_types (Type *type, tree deco)
 {
   AggregateDeclaration *sym;
 
-  if (type->ty == Tstruct)
+  if (type->ty == TY::Tstruct)
     sym = type->isTypeStruct ()->sym;
-  else if (type->ty == Tclass)
+  else if (type->ty == TY::Tclass)
     sym = type->isTypeClass ()->sym;
   else
     gcc_unreachable ();
@@ -646,31 +646,31 @@ public:
 
     switch (t->ty)
       {
-      case Tvoid:	  t->ctype = void_type_node; break;
-      case Tbool:	  t->ctype = d_bool_type; break;
-      case Tint8:	  t->ctype = d_byte_type; break;
-      case Tuns8:	  t->ctype = d_ubyte_type; break;
-      case Tint16:	  t->ctype = d_short_type; break;
-      case Tuns16:	  t->ctype = d_ushort_type; break;
-      case Tint32:	  t->ctype = d_int_type; break;
-      case Tuns32:	  t->ctype = d_uint_type; break;
-      case Tint64:	  t->ctype = d_long_type; break;
-      case Tuns64:	  t->ctype = d_ulong_type; break;
-      case Tint128:	  t->ctype = d_cent_type; break;
-      case Tuns128:	  t->ctype = d_ucent_type; break;
-      case Tfloat32:	  t->ctype = float_type_node; break;
-      case Tfloat64:	  t->ctype = double_type_node; break;
-      case Tfloat80:	  t->ctype = long_double_type_node; break;
-      case Timaginary32:  t->ctype = ifloat_type_node; break;
-      case Timaginary64:  t->ctype = idouble_type_node; break;
-      case Timaginary80:  t->ctype = ireal_type_node; break;
-      case Tcomplex32:	  t->ctype = complex_float_type_node; break;
-      case Tcomplex64:	  t->ctype = complex_double_type_node; break;
-      case Tcomplex80:	  t->ctype = complex_long_double_type_node; break;
-      case Tchar:	  t->ctype = char8_type_node; break;
-      case Twchar:	  t->ctype = char16_type_node; break;
-      case Tdchar:	  t->ctype = char32_type_node; break;
-      default:		  gcc_unreachable ();
+      case TY::Tvoid:	     t->ctype = void_type_node; break;
+      case TY::Tbool:	     t->ctype = d_bool_type; break;
+      case TY::Tint8:	     t->ctype = d_byte_type; break;
+      case TY::Tuns8:	     t->ctype = d_ubyte_type; break;
+      case TY::Tint16:	     t->ctype = d_short_type; break;
+      case TY::Tuns16:	     t->ctype = d_ushort_type; break;
+      case TY::Tint32:	     t->ctype = d_int_type; break;
+      case TY::Tuns32:	     t->ctype = d_uint_type; break;
+      case TY::Tint64:	     t->ctype = d_long_type; break;
+      case TY::Tuns64:	     t->ctype = d_ulong_type; break;
+      case TY::Tint128:	     t->ctype = d_cent_type; break;
+      case TY::Tuns128:	     t->ctype = d_ucent_type; break;
+      case TY::Tfloat32:     t->ctype = float_type_node; break;
+      case TY::Tfloat64:     t->ctype = double_type_node; break;
+      case TY::Tfloat80:     t->ctype = long_double_type_node; break;
+      case TY::Timaginary32: t->ctype = ifloat_type_node; break;
+      case TY::Timaginary64: t->ctype = idouble_type_node; break;
+      case TY::Timaginary80: t->ctype = ireal_type_node; break;
+      case TY::Tcomplex32:   t->ctype = complex_float_type_node; break;
+      case TY::Tcomplex64:   t->ctype = complex_double_type_node; break;
+      case TY::Tcomplex80:   t->ctype = complex_long_double_type_node; break;
+      case TY::Tchar:	     t->ctype = char8_type_node; break;
+      case TY::Twchar:	     t->ctype = char16_type_node; break;
+      case TY::Tdchar:	     t->ctype = char32_type_node; break;
+      default:		     gcc_unreachable ();
       }
 
     TYPE_NAME (t->ctype) = get_identifier (t->toChars ());
@@ -786,7 +786,7 @@ public:
     if (t->next != NULL)
       {
 	fntype = build_ctype (t->next);
-	if (t->isref)
+	if (t->isref ())
 	  fntype = build_reference_type (fntype);
       }
     else
@@ -800,7 +800,7 @@ public:
     /* Handle any special support for calling conventions.  */
     switch (t->linkage)
       {
-      case LINKwindows:
+      case LINK::windows:
 	{
 	  /* [attribute/linkage]
 
@@ -815,10 +815,10 @@ public:
 	  break;
 	}
 
-      case LINKc:
-      case LINKcpp:
-      case LINKd:
-      case LINKobjc:
+      case LINK::c:
+      case LINK::cpp:
+      case LINK::d:
+      case LINK::objc:
 	/* [abi/function-calling-conventions]
 
 	  The extern (C) and extern (D) calling convention matches
@@ -1013,8 +1013,8 @@ public:
     TYPE_CONTEXT (t->ctype) = d_decl_context (t->sym);
     build_type_decl (t->ctype, t->sym);
 
-    /* For structs with a user defined postblit or a destructor,
-       also set TREE_ADDRESSABLE on the type and all variants.
+    /* For structs with a user defined postblit, copy constructor, or a
+       destructor, also set TREE_ADDRESSABLE on the type and all variants.
        This will make the struct be passed around by reference.  */
     if (!t->sym->isPOD ())
       {

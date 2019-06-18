@@ -38,10 +38,12 @@ import core.stdc.config;
 */
 
 nothrow:
+@nogc:
 extern (C):
 
-const char[] ZLIB_VERSION = "1.2.11";
-const ZLIB_VERNUM = 0x12b0;
+// Those are extern(D) as they should be mangled
+extern(D) immutable string ZLIB_VERSION = "1.2.11";
+extern(D) immutable ZLIB_VERNUM = 0x12b0;
 
 /*
     The 'zlib' compression library provides in-memory compression and
@@ -227,7 +229,8 @@ enum
 }
 /* The deflate compression method (the only one supported in this version) */
 
-const int Z_NULL = 0;  /* for initializing zalloc, zfree, opaque */
+/// for initializing zalloc, zfree, opaque (extern(D) for mangling)
+extern(D) immutable void* Z_NULL = null;
 
                         /* basic functions */
 

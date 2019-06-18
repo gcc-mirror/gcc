@@ -8,8 +8,8 @@ fail_compilation/fail117.d(38): Error: expression `foo.mixin MGettor!(b) getb;
 ---
 */
 
-// Issue 420 - mixin make dmd break
-
+// https://issues.dlang.org/show_bug.cgi?id=420
+// mixin make dmd break
 //import std.stdio;
 
 template MGettor(alias Fld)

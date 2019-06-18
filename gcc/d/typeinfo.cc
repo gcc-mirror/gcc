@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 
 #include "d-tree.h"
+#include "d-frontend.h"
 #include "d-target.h"
 
 
@@ -110,37 +111,37 @@ get_typeinfo_kind (Type *type)
 
   switch (type->ty)
     {
-    case Tpointer:
+    case TY::Tpointer:
       return TK_POINTER_TYPE;
 
-    case  Tarray:
+    case TY::Tarray:
       return TK_ARRAY_TYPE;
 
-    case Tsarray:
+    case TY::Tsarray:
       return TK_STATICARRAY_TYPE;
 
-    case Taarray:
+    case TY::Taarray:
       return TK_ASSOCIATIVEARRAY_TYPE;
 
-    case Tstruct:
+    case TY::Tstruct:
       return TK_STRUCT_TYPE;
 
-    case Tvector:
+    case TY::Tvector:
       return TK_VECTOR_TYPE;
 
-    case Tenum:
+    case TY::Tenum:
       return TK_ENUMERAL_TYPE;
 
-    case Tfunction:
+    case TY::Tfunction:
       return TK_FUNCTION_TYPE;
 
-    case Tdelegate:
+    case TY::Tdelegate:
       return TK_DELEGATE_TYPE;
 
-    case Ttuple:
+    case TY::Ttuple:
       return TK_TYPELIST_TYPE;
 
-    case Tclass:
+    case TY::Tclass:
       if (type->isTypeClass ()->sym->isInterfaceDeclaration ())
 	return TK_INTERFACE_TYPE;
       else
@@ -216,7 +217,7 @@ make_frontend_typeinfo (Identifier *ident, ClassDeclaration *base = NULL)
 	    = ClassDeclaration::create (loc, Identifier::idPool ("Object"),
 					NULL, NULL, true);
 	  object->parent = object_module;
-	  object->members = new Dsymbols;
+	  object->members = d_gc_malloc<Dsymbols> ();
 	  object->storage_class |= STCtemp;
 	}
 
@@ -228,7 +229,7 @@ make_frontend_typeinfo (Identifier *ident, ClassDeclaration *base = NULL)
   ClassDeclaration *tinfo = ClassDeclaration::create (loc, ident, NULL, NULL,
 						      true);
   tinfo->parent = object_module;
-  tinfo->members = new Dsymbols;
+  tinfo->members = d_gc_malloc<Dsymbols> ();
   dsymbolSemantic (tinfo, object_module->_scope);
   tinfo->baseClass = base;
   /* This is a compiler generated class, and shouldn't be mistaken for being
@@ -836,7 +837,7 @@ public:
 	/* Name of the class declaration.  */
 	const char *name = cd->ident->toChars ();
 	if (!(strlen (name) > 9 && memcmp (name, "TypeInfo_", 9) == 0))
-	  name = cd->toPrettyChars ();
+	  name = cd->toPrettyChars (true);
 	this->layout_string (name);
 
 	/* The vtable of the class declaration.  */
@@ -857,7 +858,7 @@ public:
 	this->layout_field (base);
 
 	/* void *destructor;  */
-	tree dtor = (cd->dtor) ? build_address (get_symbol_decl (cd->dtor))
+	tree dtor = (cd->tidtor) ? build_address (get_symbol_decl (cd->tidtor))
 	  : null_pointer_node;
 	this->layout_field (dtor);
 
@@ -911,10 +912,7 @@ public:
 	this->layout_field (build_integer_cst (flags, d_uint_type));
 
 	/* void *deallocator;  */
-	tree ddtor = (cd->aggDelete)
-	  ? build_address (get_symbol_decl (cd->aggDelete))
-	  : null_pointer_node;
-	this->layout_field (ddtor);
+	this->layout_field (null_pointer_node);
 
 	/* OffsetTypeInfo[] m_offTi;  (not implemented)  */
 	this->layout_field (null_array_node);
@@ -942,7 +940,7 @@ public:
 	this->layout_field (null_array_node);
 
 	/* Name of the interface declaration.  */
-	this->layout_string (cd->toPrettyChars ());
+	this->layout_string (cd->toPrettyChars (true));
 
 	/* No vtable for interface declaration.  */
 	this->layout_field (null_array_node);
@@ -1024,7 +1022,7 @@ public:
   /* Layout of TypeInfo_Struct is:
 	void **__vptr;
 	void *__monitor;
-	string name;
+	string mangledName;
 	void[] m_init;
 	hash_t function(in void*) xtoHash;
 	bool function(in void*, in void*) xopEquals;
@@ -1047,8 +1045,8 @@ public:
     if (!sd->members)
       return;
 
-    /* Name of the struct declaration.  */
-    this->layout_string (sd->toPrettyChars ());
+    /* Mangled name of the struct declaration.  */
+    this->layout_string (ti->deco);
 
     /* Default initializer for struct.  */
     tree ptr = (sd->zeroInit) ? null_pointer_node
@@ -1064,7 +1062,7 @@ public:
     if (sd->xhash)
       {
 	TypeFunction *tf = sd->xhash->type->toTypeFunction ();
-	if (!tf->isnothrow || tf->trust == TRUSTsystem)
+	if (!tf->isnothrow () || tf->trust == TRUST::system)
 	  {
 	    warning (sd->xhash->loc, "toHash() must be declared as "
 		     "extern (D) size_t toHash() const nothrow @safe, "
@@ -1096,7 +1094,7 @@ public:
     this->layout_field (build_integer_cst (m_flags, d_uint_type));
 
     /* void function(void*) xdtor;  */
-    tree dtor = (sd->dtor) ? build_address (get_symbol_decl (sd->dtor))
+    tree dtor = (sd->tidtor) ? build_address (get_symbol_decl (sd->tidtor))
       : null_pointer_node;
     this->layout_field (dtor);
 
@@ -1298,17 +1296,17 @@ layout_classinfo_interfaces (ClassDeclaration *decl)
 static bool
 builtin_typeinfo_p (Type *type)
 {
-  if (type->isTypeBasic () || type->ty == Tclass || type->ty == Tnull)
+  if (type->isTypeBasic () || type->ty == TY::Tclass || type->ty == TY::Tnull)
     return !type->mod;
 
-  if (type->ty == Tarray)
+  if (type->ty == TY::Tarray)
     {
       /* Strings are so common, make them builtin.  */
       Type *next = type->nextOf ();
       return !type->mod
 	&& ((next->isTypeBasic () != NULL && !next->mod)
-	    || (next->ty == Tchar && next->mod == MODimmutable)
-	    || (next->ty == Tchar && next->mod == MODconst));
+	    || (next->ty == TY::Tchar && next->mod == MODimmutable)
+	    || (next->ty == TY::Tchar && next->mod == MODconst));
     }
 
   return false;
@@ -1361,7 +1359,7 @@ get_typeinfo_decl (TypeInfoDeclaration *decl)
   if (decl->csym)
     return decl->csym;
 
-  gcc_assert (decl->tinfo->ty != Terror);
+  gcc_assert (decl->tinfo->ty != TY::Terror);
 
   TypeInfoDeclVisitor v = TypeInfoDeclVisitor ();
   decl->accept (&v);
@@ -1436,7 +1434,7 @@ check_typeinfo_type (const Loc &loc, Scope *sc)
 tree
 build_typeinfo (const Loc &loc, Type *type)
 {
-  gcc_assert (type->ty != Terror);
+  gcc_assert (type->ty != TY::Terror);
   check_typeinfo_type (loc, NULL);
   create_typeinfo (type, NULL);
   return build_address (get_typeinfo_decl (type->vtinfo));

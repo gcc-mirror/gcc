@@ -1,6 +1,6 @@
 // PERMUTE_ARGS:
 // REQUIRED_ARGS: -D -Dd${RESULTS_DIR}/compilable -o-
-// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh 13
+// POST_SCRIPT: compilable/extra-files/ddocAny-postscript.sh
 
 /// struct doc
 struct Bug4107(T)

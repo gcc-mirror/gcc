@@ -17,13 +17,13 @@ module core.sync.rwmutex;
 
 
 public import core.sync.exception;
-private import core.sync.condition;
-private import core.sync.mutex;
-private import core.memory;
+import core.sync.condition;
+import core.sync.mutex;
+import core.memory;
 
 version (Posix)
 {
-    private import core.sys.posix.pthread;
+    import core.sys.posix.pthread;
 }
 
 
@@ -225,6 +225,51 @@ class ReadWriteMutex
             }
         }
 
+        /**
+         * Attempts to acquire a read lock on the enclosing mutex. If one can
+         * be obtained without blocking, the lock is acquired and true is
+         * returned. If not, the function blocks until either the lock can be
+         * obtained or the time elapsed exceeds $(D_PARAM timeout), returning
+         * true if the lock was acquired and false if the function timed out.
+         *
+         * Params:
+         *  timeout = maximum amount of time to wait for the lock
+         * Returns:
+         *  true if the lock was acquired and false if not.
+         */
+        bool tryLock(Duration timeout)
+        {
+            synchronized( m_commonMutex )
+            {
+                if (!shouldQueueReader)
+                {
+                    ++m_numActiveReaders;
+                    return true;
+                }
+
+                enum zero = Duration.zero();
+                if (timeout <= zero)
+                    return false;
+
+                ++m_numQueuedReaders;
+                scope(exit) --m_numQueuedReaders;
+
+                enum maxWaitPerCall = dur!"hours"(24 * 365); // Avoid problems calling wait with huge Duration.
+                const initialTime = MonoTime.currTime;
+                m_readerQueue.wait(timeout < maxWaitPerCall ? timeout : maxWaitPerCall);
+                while (shouldQueueReader)
+                {
+                    const timeElapsed = MonoTime.currTime - initialTime;
+                    if (timeElapsed >= timeout)
+                        return false;
+                    auto nextWait = timeout - timeElapsed;
+                    m_readerQueue.wait(nextWait < maxWaitPerCall ? nextWait : maxWaitPerCall);
+                }
+                ++m_numActiveReaders;
+                return true;
+            }
+        }
+
 
     private:
         @property bool shouldQueueReader()
@@ -341,6 +386,50 @@ class ReadWriteMutex
             }
         }
 
+        /**
+         * Attempts to acquire a write lock on the enclosing mutex. If one can
+         * be obtained without blocking, the lock is acquired and true is
+         * returned. If not, the function blocks until either the lock can be
+         * obtained or the time elapsed exceeds $(D_PARAM timeout), returning
+         * true if the lock was acquired and false if the function timed out.
+         *
+         * Params:
+         *  timeout = maximum amount of time to wait for the lock
+         * Returns:
+         *  true if the lock was acquired and false if not.
+         */
+        bool tryLock(Duration timeout)
+        {
+            synchronized( m_commonMutex )
+            {
+                if (!shouldQueueWriter)
+                {
+                    ++m_numActiveWriters;
+                    return true;
+                }
+
+                enum zero = Duration.zero();
+                if (timeout <= zero)
+                    return false;
+
+                ++m_numQueuedWriters;
+                scope(exit) --m_numQueuedWriters;
+
+                enum maxWaitPerCall = dur!"hours"(24 * 365); // Avoid problems calling wait with huge Duration.
+                const initialTime = MonoTime.currTime;
+                m_writerQueue.wait(timeout < maxWaitPerCall ? timeout : maxWaitPerCall);
+                while (shouldQueueWriter)
+                {
+                    const timeElapsed = MonoTime.currTime - initialTime;
+                    if (timeElapsed >= timeout)
+                        return false;
+                    auto nextWait = timeout - timeElapsed;
+                    m_writerQueue.wait(nextWait < maxWaitPerCall ? nextWait : maxWaitPerCall);
+                }
+                ++m_numActiveWriters;
+                return true;
+            }
+        }
 
     private:
         @property bool shouldQueueWriter()
@@ -525,4 +614,80 @@ unittest
     }
     runTest(ReadWriteMutex.Policy.PREFER_READERS);
     runTest(ReadWriteMutex.Policy.PREFER_WRITERS);
+}
+
+unittest
+{
+    import core.atomic, core.thread;
+    __gshared ReadWriteMutex rwmutex;
+    shared static bool threadTriedOnceToGetLock;
+    shared static bool threadFinallyGotLock;
+
+    rwmutex = new ReadWriteMutex();
+    atomicFence;
+    const maxTimeAllowedForTest = dur!"seconds"(20);
+    // Test ReadWriteMutex.Reader.tryLock(Duration).
+    {
+        static void testReaderTryLock()
+        {
+            assert(!rwmutex.reader.tryLock(Duration.min));
+            threadTriedOnceToGetLock.atomicStore(true);
+            assert(rwmutex.reader.tryLock(Duration.max));
+            threadFinallyGotLock.atomicStore(true);
+            rwmutex.reader.unlock;
+        }
+        assert(rwmutex.writer.tryLock(Duration.zero), "should have been able to obtain lock without blocking");
+        auto otherThread = new Thread(&testReaderTryLock).start;
+        const failIfThisTimeisReached = MonoTime.currTime + maxTimeAllowedForTest;
+        Thread.yield;
+        // We started otherThread with the writer lock held so otherThread's
+        // first rwlock.reader.tryLock with timeout Duration.min should fail.
+        while (!threadTriedOnceToGetLock.atomicLoad)
+        {
+            assert(MonoTime.currTime < failIfThisTimeisReached, "timed out");
+            Thread.yield;
+        }
+        rwmutex.writer.unlock;
+        // Soon after we release the writer lock otherThread's second
+        // rwlock.reader.tryLock with timeout Duration.max should succeed.
+        while (!threadFinallyGotLock.atomicLoad)
+        {
+            assert(MonoTime.currTime < failIfThisTimeisReached, "timed out");
+            Thread.yield;
+        }
+        otherThread.join;
+    }
+    threadTriedOnceToGetLock.atomicStore(false); // Reset.
+    threadFinallyGotLock.atomicStore(false); // Reset.
+    // Test ReadWriteMutex.Writer.tryLock(Duration).
+    {
+        static void testWriterTryLock()
+        {
+            assert(!rwmutex.writer.tryLock(Duration.min));
+            threadTriedOnceToGetLock.atomicStore(true);
+            assert(rwmutex.writer.tryLock(Duration.max));
+            threadFinallyGotLock.atomicStore(true);
+            rwmutex.writer.unlock;
+        }
+        assert(rwmutex.reader.tryLock(Duration.zero), "should have been able to obtain lock without blocking");
+        auto otherThread = new Thread(&testWriterTryLock).start;
+        const failIfThisTimeisReached = MonoTime.currTime + maxTimeAllowedForTest;
+        Thread.yield;
+        // We started otherThread with the reader lock held so otherThread's
+        // first rwlock.writer.tryLock with timeout Duration.min should fail.
+        while (!threadTriedOnceToGetLock.atomicLoad)
+        {
+            assert(MonoTime.currTime < failIfThisTimeisReached, "timed out");
+            Thread.yield;
+        }
+        rwmutex.reader.unlock;
+        // Soon after we release the reader lock otherThread's second
+        // rwlock.writer.tryLock with timeout Duration.max should succeed.
+        while (!threadFinallyGotLock.atomicLoad)
+        {
+            assert(MonoTime.currTime < failIfThisTimeisReached, "timed out");
+            Thread.yield;
+        }
+        otherThread.join;
+    }
 }

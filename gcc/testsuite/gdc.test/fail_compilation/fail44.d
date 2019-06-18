@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail44.d(18): Error: expression bar[i] is void and has no value
+fail_compilation/fail44.d(18): Error: expression `bar[i]` is `void` and has no value
 ---
 */
 

@@ -17,7 +17,7 @@ int testinvariant()
     printf("hello\n");
     Foo f = new Foo();
     printf("f = %p\n", f);
-    printf("f.sizeof = x%x\n", Foo.sizeof);
+    printf("f.sizeof = x%zx\n", Foo.sizeof);
     printf("f.classinfo = %p\n", f.classinfo);
     printf("f.classinfo._invariant = %p\n", f.classinfo.base);
     f.test();
@@ -26,7 +26,7 @@ int testinvariant()
 }
 
 /***************************************************/
-// 6453
+// https://issues.dlang.org/show_bug.cgi?id=6453
 
 void test6453()
 {
@@ -107,7 +107,7 @@ void test6453()
 }
 
 /***************************************************/
-// 13113
+// https://issues.dlang.org/show_bug.cgi?id=13113
 
 struct S13113
 {
@@ -140,7 +140,7 @@ void test13113()
 }
 
 /***************************************************/
-// 13147
+// https://issues.dlang.org/show_bug.cgi?id=13147
 
 version (D_InlineAsm_X86)
     enum x86iasm = true;

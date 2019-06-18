@@ -1,5 +1,5 @@
 // PERMUTE_ARGS:
-
+// EXTRA_FILES: imports/imp12242a.d imports/imp12242a1.d imports/imp12242a2.d imports/imp12242b.d imports/imp12242b1.d imports/imp12242b2.d
 module testimport12242;
 
 import imports.imp12242a;   // test         // stripA == OverloadSet

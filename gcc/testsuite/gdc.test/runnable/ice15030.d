@@ -1,6 +1,7 @@
 // REQUIRED_ARGS: -unittest -boundscheck=off
 // PERMUTE_ARGS:
 // EXTRA_SOURCES: imports/a15030.d imports/b15030.d
+// EXTRA_FILES: imports/std15030algo.d
 
 void main() {}
 

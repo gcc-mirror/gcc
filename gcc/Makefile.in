@@ -1092,6 +1092,10 @@ SYSLIBS = @GNAT_LIBEXC@
 GNATBIND = @GNATBIND@
 GNATMAKE = @GNATMAKE@
 
+# Used from d/Make-lang.in
+GDC = @GDC@
+GDCFLAGS = @GDCFLAGS@
+
 # Libs needed (at present) just for jcf-dump.
 LDEXP_LIB = @LDEXP_LIB@
 

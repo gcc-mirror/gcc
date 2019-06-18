@@ -1,4 +1,7 @@
-///
+// Written in the D programming language.
+/**
+Source: $(PHOBOSSRC std/experimental/logger/core.d)
+*/
 module std.experimental.logger.core;
 
 import core.sync.mutex : Mutex;
@@ -9,9 +12,9 @@ import std.traits;
 
 import std.experimental.logger.filelogger;
 
-/** This template evaluates if the passed $(D LogLevel) is active.
+/** This template evaluates if the passed `LogLevel` is active.
 The previously described version statements are used to decide if the
-$(D LogLevel) is active. The version statements only influence the compile
+`LogLevel` is active. The version statements only influence the compile
 unit they are used with, therefore this function can only disable logging this
 specific compile unit.
 */
@@ -56,10 +59,10 @@ template isLoggingActiveAt(LogLevel ll)
     }
 }
 
-/// This compile-time flag is $(D true) if logging is not statically disabled.
+/// This compile-time flag is `true` if logging is not statically disabled.
 enum isLoggingActive = isLoggingActiveAt!(LogLevel.all);
 
-/** This functions is used at runtime to determine if a $(D LogLevel) is
+/** This functions is used at runtime to determine if a `LogLevel` is
 active. The same previously defined version statements are used to disable
 certain levels. Again the version statements are associated with a compile
 unit and can therefore not disable logging in other compile units.
@@ -96,19 +99,19 @@ bool isLoggingEnabled()(LogLevel ll, LogLevel loggerLL,
         && condition;
 }
 
-/** This template returns the $(D LogLevel) named "logLevel" of type $(D
+/** This template returns the `LogLevel` named "logLevel" of type $(D
 LogLevel) defined in a user defined module where the filename has the
-suffix "_loggerconfig.d". This $(D LogLevel) sets the minimal $(D LogLevel)
+suffix "_loggerconfig.d". This `LogLevel` sets the minimal `LogLevel`
 of the module.
 
-A minimal $(D LogLevel) can be defined on a per module basis.
-In order to define a module $(D LogLevel) a file with a modulename
+A minimal `LogLevel` can be defined on a per module basis.
+In order to define a module `LogLevel` a file with a modulename
 "MODULENAME_loggerconfig" must be found. If no such module exists and the
 module is a nested module, it is checked if there exists a
 "PARENT_MODULE_loggerconfig" module with such a symbol.
-If this module exists and it contains a $(D LogLevel) called logLevel this $(D
+If this module exists and it contains a `LogLevel` called logLevel this $(D
 LogLevel) will be used. This parent lookup is continued until there is no
-parent module. Then the moduleLogLevel is $(D LogLevel.all).
+parent module. Then the moduleLogLevel is `LogLevel.all`.
 */
 template moduleLogLevel(string moduleName)
 if (!moduleName.length)
@@ -156,16 +159,16 @@ private string parentOf(string mod)
     return null;
 }
 
-/* This function formates a $(D SysTime) into an $(D OutputRange).
+/* This function formates a `SysTime` into an `OutputRange`.
 
-The $(D SysTime) is formatted similar to
+The `SysTime` is formatted similar to
 $(LREF std.datatime.DateTime.toISOExtString) except the fractional second part.
 The fractional second part is in milliseconds and is always 3 digits.
 */
 void systimeToISOString(OutputRange)(OutputRange o, const ref SysTime time)
 if (isOutputRange!(OutputRange,string))
 {
-    import std.format : formattedWrite;
+    import std.format.write : formattedWrite;
 
     const auto dt = cast(DateTime) time;
     const auto fsec = time.fracSecs.total!"msecs";
@@ -177,13 +180,13 @@ if (isOutputRange!(OutputRange,string))
 
 /** This function logs data.
 
-In order for the data to be processed, the $(D LogLevel) of the log call must
-be greater or equal to the $(D LogLevel) of the $(D sharedLog) and the
-$(D defaultLogLevel); additionally the condition passed must be $(D true).
+In order for the data to be processed, the `LogLevel` of the log call must
+be greater or equal to the `LogLevel` of the `sharedLog` and the
+`defaultLogLevel`; additionally the condition passed must be `true`.
 
 Params:
-  ll = The $(D LogLevel) used by this log call.
-  condition = The condition must be $(D true) for the data to be logged.
+  ll = The `LogLevel` used by this log call.
+  condition = The condition must be `true` for the data to be logged.
   args = The data that should be logged.
 
 Example:
@@ -224,11 +227,11 @@ void log(T, string moduleName = __MODULE__)(const LogLevel ll,
 
 /** This function logs data.
 
-In order for the data to be processed the $(D LogLevel) of the log call must
-be greater or equal to the $(D LogLevel) of the $(D sharedLog).
+In order for the data to be processed the `LogLevel` of the log call must
+be greater or equal to the `LogLevel` of the `sharedLog`.
 
 Params:
-  ll = The $(D LogLevel) used by this log call.
+  ll = The `LogLevel` used by this log call.
   args = The data that should be logged.
 
 Example:
@@ -268,12 +271,12 @@ void log(T, string moduleName = __MODULE__)(const LogLevel ll, lazy T arg,
 
 /** This function logs data.
 
-In order for the data to be processed the $(D LogLevel) of the
-$(D sharedLog) must be greater or equal to the $(D defaultLogLevel)
-add the condition passed must be $(D true).
+In order for the data to be processed the `LogLevel` of the
+`sharedLog` must be greater or equal to the `defaultLogLevel`
+add the condition passed must be `true`.
 
 Params:
-  condition = The condition must be $(D true) for the data to be logged.
+  condition = The condition must be `true` for the data to be logged.
   args = The data that should be logged.
 
 Example:
@@ -307,8 +310,8 @@ void log(T, string moduleName = __MODULE__)(lazy bool condition, lazy T arg,
 
 /** This function logs data.
 
-In order for the data to be processed the $(D LogLevel) of the
-$(D sharedLog) must be greater or equal to the $(D defaultLogLevel).
+In order for the data to be processed the `LogLevel` of the
+`sharedLog` must be greater or equal to the `defaultLogLevel`.
 
 Params:
   args = The data that should be logged.
@@ -343,16 +346,16 @@ void log(T)(lazy T arg, int line = __LINE__, string file = __FILE__,
     }
 }
 
-/** This function logs data in a $(D printf)-style manner.
+/** This function logs data in a `printf`-style manner.
 
-In order for the data to be processed the $(D LogLevel) of the log call must
-be greater or equal to the $(D LogLevel) of the $(D sharedLog) and the
-$(D defaultLogLevel) additionally the condition passed must be $(D true).
+In order for the data to be processed the `LogLevel` of the log call must
+be greater or equal to the `LogLevel` of the `sharedLog` and the
+`defaultLogLevel` additionally the condition passed must be `true`.
 
 Params:
-  ll = The $(D LogLevel) used by this log call.
-  condition = The condition must be $(D true) for the data to be logged.
-  msg = The $(D printf)-style string.
+  ll = The `LogLevel` used by this log call.
+  condition = The condition must be `true` for the data to be logged.
+  msg = The `printf`-style string.
   args = The data that should be logged.
 
 Example:
@@ -376,15 +379,15 @@ void logf(int line = __LINE__, string file = __FILE__,
     }
 }
 
-/** This function logs data in a $(D printf)-style manner.
+/** This function logs data in a `printf`-style manner.
 
-In order for the data to be processed the $(D LogLevel) of the log call must
-be greater or equal to the $(D LogLevel) of the $(D sharedLog) and the
-$(D defaultLogLevel).
+In order for the data to be processed the `LogLevel` of the log call must
+be greater or equal to the `LogLevel` of the `sharedLog` and the
+`defaultLogLevel`.
 
 Params:
-  ll = The $(D LogLevel) used by this log call.
-  msg = The $(D printf)-style string.
+  ll = The `LogLevel` used by this log call.
+  msg = The `printf`-style string.
   args = The data that should be logged.
 
 Example:
@@ -407,15 +410,15 @@ void logf(int line = __LINE__, string file = __FILE__,
     }
 }
 
-/** This function logs data in a $(D printf)-style manner.
+/** This function logs data in a `printf`-style manner.
 
-In order for the data to be processed the $(D LogLevel) of the log call must
-be greater or equal to the $(D defaultLogLevel) additionally the condition
-passed must be $(D true).
+In order for the data to be processed the `LogLevel` of the log call must
+be greater or equal to the `defaultLogLevel` additionally the condition
+passed must be `true`.
 
 Params:
-  condition = The condition must be $(D true) for the data to be logged.
-  msg = The $(D printf)-style string.
+  condition = The condition must be `true` for the data to be logged.
+  msg = The `printf`-style string.
   args = The data that should be logged.
 
 Example:
@@ -435,13 +438,13 @@ void logf(int line = __LINE__, string file = __FILE__,
     }
 }
 
-/** This function logs data in a $(D printf)-style manner.
+/** This function logs data in a `printf`-style manner.
 
-In order for the data to be processed the $(D LogLevel) of the log call must
-be greater or equal to the $(D defaultLogLevel).
+In order for the data to be processed the `LogLevel` of the log call must
+be greater or equal to the `defaultLogLevel`.
 
 Params:
-  msg = The $(D printf)-style string.
+  msg = The `printf`-style string.
   args = The data that should be logged.
 
 Example:
@@ -461,7 +464,7 @@ void logf(int line = __LINE__, string file = __FILE__,
     }
 }
 
-/** This template provides the global log functions with the $(D LogLevel)
+/** This template provides the global log functions with the `LogLevel`
 is encoded in the function name.
 
 The aliases following this template create the public names of these log
@@ -495,18 +498,18 @@ template defaultLogFunction(LogLevel ll)
     }
 }
 
-/** This function logs data to the $(D stdThreadLocalLog), optionally depending
+/** This function logs data to the `stdThreadLocalLog`, optionally depending
 on a condition.
 
-In order for the resulting log message to be logged the $(D LogLevel) must
-be greater or equal than the $(D LogLevel) of the $(D stdThreadLocalLog) and
-must be greater or equal than the global $(D LogLevel).
-Additionally the $(D LogLevel) must be greater or equal than the $(D LogLevel)
-of the $(D stdSharedLogger).
-If a condition is given, it must evaluate to $(D true).
+In order for the resulting log message to be logged the `LogLevel` must
+be greater or equal than the `LogLevel` of the `stdThreadLocalLog` and
+must be greater or equal than the global `LogLevel`.
+Additionally the `LogLevel` must be greater or equal than the `LogLevel`
+of the `stdSharedLogger`.
+If a condition is given, it must evaluate to `true`.
 
 Params:
-  condition = The condition must be $(D true) for the data to be logged.
+  condition = The condition must be `true` for the data to be logged.
   args = The data that should be logged.
 
 Example:
@@ -535,8 +538,8 @@ alias critical = defaultLogFunction!(LogLevel.critical);
 /// Ditto
 alias fatal = defaultLogFunction!(LogLevel.fatal);
 
-/** This template provides the global $(D printf)-style log functions with
-the $(D LogLevel) is encoded in the function name.
+/** This template provides the global `printf`-style log functions with
+the `LogLevel` is encoded in the function name.
 
 The aliases following this template create the public names of the log
 functions.
@@ -569,17 +572,17 @@ template defaultLogFunctionf(LogLevel ll)
     }
 }
 
-/** This function logs data to the $(D sharedLog) in a $(D printf)-style
+/** This function logs data to the `sharedLog` in a `printf`-style
 manner.
 
-In order for the resulting log message to be logged the $(D LogLevel) must
-be greater or equal than the $(D LogLevel) of the $(D sharedLog) and
-must be greater or equal than the global $(D LogLevel).
-Additionally the $(D LogLevel) must be greater or equal than the $(D LogLevel)
-of the $(D stdSharedLogger).
+In order for the resulting log message to be logged the `LogLevel` must
+be greater or equal than the `LogLevel` of the `sharedLog` and
+must be greater or equal than the global `LogLevel`.
+Additionally the `LogLevel` must be greater or equal than the `LogLevel`
+of the `stdSharedLogger`.
 
 Params:
-  msg = The $(D printf)-style string.
+  msg = The `printf`-style string.
   args = The data that should be logged.
 
 Example:
@@ -591,18 +594,18 @@ criticalf("is number %d", 4);
 fatalf("is number %d", 5);
 --------------------
 
-The second version of the function logs data to the $(D sharedLog) in a $(D
+The second version of the function logs data to the `sharedLog` in a $(D
 printf)-style manner.
 
-In order for the resulting log message to be logged the $(D LogLevel) must
-be greater or equal than the $(D LogLevel) of the $(D sharedLog) and
-must be greater or equal than the global $(D LogLevel).
-Additionally the $(D LogLevel) must be greater or equal than the $(D LogLevel)
-of the $(D stdSharedLogger).
+In order for the resulting log message to be logged the `LogLevel` must
+be greater or equal than the `LogLevel` of the `sharedLog` and
+must be greater or equal than the global `LogLevel`.
+Additionally the `LogLevel` must be greater or equal than the `LogLevel`
+of the `stdSharedLogger`.
 
 Params:
-  condition = The condition must be $(D true) for the data to be logged.
-  msg = The $(D printf)-style string.
+  condition = The condition must be `true` for the data to be logged.
+  msg = The `printf`-style string.
   args = The data that should be logged.
 
 Example:
@@ -654,7 +657,7 @@ private struct MsgRange
 
 private void formatString(A...)(MsgRange oRange, A args)
 {
-    import std.format : formattedWrite;
+    import std.format.write : formattedWrite;
 
     foreach (arg; args)
     {
@@ -677,13 +680,13 @@ private void formatString(A...)(MsgRange oRange, A args)
 /**
 There are eight usable logging level. These level are $(I all), $(I trace),
 $(I info), $(I warning), $(I error), $(I critical), $(I fatal), and $(I off).
-If a log function with $(D LogLevel.fatal) is called the shutdown handler of
+If a log function with `LogLevel.fatal` is called the shutdown handler of
 that logger is called.
 */
 enum LogLevel : ubyte
 {
-    all = 1, /** Lowest possible assignable $(D LogLevel). */
-    trace = 32, /** $(D LogLevel) for tracing the execution of the program. */
+    all = 1, /** Lowest possible assignable `LogLevel`. */
+    trace = 32, /** `LogLevel` for tracing the execution of the program. */
     info = 64, /** This level is used to display information about the
                 program. */
     warning = 96, /** warnings about the program should be displayed with this
@@ -694,15 +697,15 @@ enum LogLevel : ubyte
                     logged with this level. */
     fatal = 192,   /** Log messages that describe fatal errors should use this
                   level. */
-    off = ubyte.max /** Highest possible $(D LogLevel). */
+    off = ubyte.max /** Highest possible `LogLevel`. */
 }
 
 /** This class is the base of every logger. In order to create a new kind of
-logger a deriving class needs to implement the $(D writeLogMsg) method. By
+logger a deriving class needs to implement the `writeLogMsg` method. By
 default this is not thread-safe.
 
-It is also possible to $(D override) the three methods $(D beginLogMsg),
-$(D logMsgPart) and $(D finishLogMsg) together, this option gives more
+It is also possible to `override` the three methods `beginLogMsg`,
+`logMsgPart` and `finishLogMsg` together, this option gives more
 flexibility.
 */
 abstract class Logger
@@ -727,7 +730,7 @@ abstract class Logger
         string prettyFuncName;
         /// the name of the module the log message is coming from
         string moduleName;
-        /// the $(D LogLevel) associated with the log message
+        /// the `LogLevel` associated with the log message
         LogLevel logLevel;
         /// thread id of the log message
         Tid threadId;
@@ -735,7 +738,7 @@ abstract class Logger
         SysTime timestamp;
         /// the message of the log message
         string msg;
-        /// A refernce to the $(D Logger) used to create this $(D LogEntry)
+        /// A refernce to the `Logger` used to create this `LogEntry`
         Logger logger;
     }
 
@@ -759,7 +762,7 @@ abstract class Logger
     }
 
     /** A custom logger must implement this method in order to work in a
-    $(D MultiLogger) and $(D ArrayLogger).
+    `MultiLogger` and `ArrayLogger`.
 
     Params:
       payload = All information associated with call to log function.
@@ -768,14 +771,14 @@ abstract class Logger
     */
     abstract protected void writeLogMsg(ref LogEntry payload) @safe;
 
-    /* The default implementation will use an $(D std.array.appender)
+    /* The default implementation will use an `std.array.appender`
     internally to construct the message string. This means dynamic,
     GC memory allocation. A logger can avoid this allocation by
-    reimplementing $(D beginLogMsg), $(D logMsgPart) and $(D finishLogMsg).
-    $(D beginLogMsg) is always called first, followed by any number of calls
-    to $(D logMsgPart) and one call to $(D finishLogMsg).
+    reimplementing `beginLogMsg`, `logMsgPart` and `finishLogMsg`.
+    `beginLogMsg` is always called first, followed by any number of calls
+    to `logMsgPart` and one call to `finishLogMsg`.
 
-    As an example for such a custom $(D Logger) compare this:
+    As an example for such a custom `Logger` compare this:
     ----------------
     class CLogger : Logger
     {
@@ -822,7 +825,7 @@ abstract class Logger
     }
 
     /** Logs a part of the log message. */
-    protected void logMsgPart(const(char)[] msg) @safe
+    protected void logMsgPart(scope const(char)[] msg) @safe
     {
         static if (isLoggingActive)
         {
@@ -831,7 +834,7 @@ abstract class Logger
     }
 
     /** Signals that the message has been written and no more calls to
-    $(D logMsgPart) follow. */
+    `logMsgPart` follow. */
     protected void finishLogMsg() @safe
     {
         static if (isLoggingActive)
@@ -841,12 +844,12 @@ abstract class Logger
         }
     }
 
-    /** The $(D LogLevel) determines if the log call are processed or dropped
-    by the $(D Logger). In order for the log call to be processed the
-    $(D LogLevel) of the log call must be greater or equal to the $(D LogLevel)
-    of the $(D logger).
+    /** The `LogLevel` determines if the log call are processed or dropped
+    by the `Logger`. In order for the log call to be processed the
+    `LogLevel` of the log call must be greater or equal to the `LogLevel`
+    of the `logger`.
 
-    These two methods set and get the $(D LogLevel) of the used $(D Logger).
+    These two methods set and get the `LogLevel` of the used `Logger`.
 
     Example:
     -----------
@@ -866,10 +869,10 @@ abstract class Logger
         synchronized (mutex) this.logLevel_ = lv;
     }
 
-    /** This $(D delegate) is called in case a log message with
-    $(D LogLevel.fatal) gets logged.
+    /** This `delegate` is called in case a log message with
+    `LogLevel.fatal` gets logged.
 
-    By default an $(D Error) will be thrown.
+    By default an `Error` will be thrown.
     */
     @property final void delegate() fatalHandler() @safe @nogc
     {
@@ -884,10 +887,10 @@ abstract class Logger
 
     /** This method allows forwarding log entries from one logger to another.
 
-    $(D forwardMsg) will ensure proper synchronization and then call
-    $(D writeLogMsg). This is an API for implementing your own loggers and
+    `forwardMsg` will ensure proper synchronization and then call
+    `writeLogMsg`. This is an API for implementing your own loggers and
     should not be called by normal user code. A notable difference from other
-    logging functions is that the $(D globalLogLevel) wont be evaluated again
+    logging functions is that the `globalLogLevel` wont be evaluated again
     since it is assumed that the caller already checked that.
     */
     void forwardMsg(ref LogEntry payload) @trusted
@@ -905,8 +908,8 @@ abstract class Logger
         }
     }
 
-    /** This template provides the log functions for the $(D Logger) $(D class)
-    with the $(D LogLevel) encoded in the function name.
+    /** This template provides the log functions for the `Logger` `class`
+    with the `LogLevel` encoded in the function name.
 
     For further information see the the two functions defined inside of this
     template.
@@ -916,11 +919,11 @@ abstract class Logger
     */
     template memLogFunctions(LogLevel ll)
     {
-        /** This function logs data to the used $(D Logger).
+        /** This function logs data to the used `Logger`.
 
-        In order for the resulting log message to be logged the $(D LogLevel)
-        must be greater or equal than the $(D LogLevel) of the used $(D Logger)
-        and must be greater or equal than the global $(D LogLevel).
+        In order for the resulting log message to be logged the `LogLevel`
+        must be greater or equal than the `LogLevel` of the used `Logger`
+        and must be greater or equal than the global `LogLevel`.
 
         Params:
           args = The data that should be logged.
@@ -960,16 +963,16 @@ abstract class Logger
             }
         }
 
-        /** This function logs data to the used $(D Logger) depending on a
+        /** This function logs data to the used `Logger` depending on a
         condition.
 
-        In order for the resulting log message to be logged the $(D LogLevel) must
-        be greater or equal than the $(D LogLevel) of the used $(D Logger) and
-        must be greater or equal than the global $(D LogLevel) additionally the
-        condition passed must be $(D true).
+        In order for the resulting log message to be logged the `LogLevel` must
+        be greater or equal than the `LogLevel` of the used `Logger` and
+        must be greater or equal than the global `LogLevel` additionally the
+        condition passed must be `true`.
 
         Params:
-          condition = The condition must be $(D true) for the data to be logged.
+          condition = The condition must be `true` for the data to be logged.
           args = The data that should be logged.
 
         Example:
@@ -1008,17 +1011,17 @@ abstract class Logger
             }
         }
 
-        /** This function logs data to the used $(D Logger) in a
-        $(D printf)-style manner.
+        /** This function logs data to the used `Logger` in a
+        `printf`-style manner.
 
-        In order for the resulting log message to be logged the $(D LogLevel)
-        must be greater or equal than the $(D LogLevel) of the used $(D Logger)
-        and must be greater or equal than the global $(D LogLevel) additionally
-           the passed condition must be $(D true).
+        In order for the resulting log message to be logged the `LogLevel`
+        must be greater or equal than the `LogLevel` of the used `Logger`
+        and must be greater or equal than the global `LogLevel` additionally
+           the passed condition must be `true`.
 
         Params:
-          condition = The condition must be $(D true) for the data to be logged.
-          msg = The $(D printf)-style string.
+          condition = The condition must be `true` for the data to be logged.
+          msg = The `printf`-style string.
           args = The data that should be logged.
 
         Example:
@@ -1040,7 +1043,7 @@ abstract class Logger
             static if (isLoggingActiveAt!ll && ll >= moduleLogLevel!moduleName)
                 synchronized (mutex)
             {
-                import std.format : formattedWrite;
+                import std.format.write : formattedWrite;
 
                 if (isLoggingEnabled(ll, this.logLevel_, globalLogLevel,
                                      condition))
@@ -1059,15 +1062,15 @@ abstract class Logger
             }
         }
 
-        /** This function logs data to the used $(D Logger) in a
-        $(D printf)-style manner.
+        /** This function logs data to the used `Logger` in a
+        `printf`-style manner.
 
-        In order for the resulting log message to be logged the $(D LogLevel) must
-        be greater or equal than the $(D LogLevel) of the used $(D Logger) and
-        must be greater or equal than the global $(D LogLevel).
+        In order for the resulting log message to be logged the `LogLevel` must
+        be greater or equal than the `LogLevel` of the used `Logger` and
+        must be greater or equal than the global `LogLevel`.
 
         Params:
-          msg = The $(D printf)-style string.
+          msg = The `printf`-style string.
           args = The data that should be logged.
 
         Example:
@@ -1088,7 +1091,7 @@ abstract class Logger
             static if (isLoggingActiveAt!ll && ll >= moduleLogLevel!moduleName)
                 synchronized (mutex)
             {
-                import std.format : formattedWrite;
+                import std.format.write : formattedWrite;
 
                 if (isLoggingEnabled(ll, this.logLevel_, globalLogLevel))
                 {
@@ -1132,15 +1135,15 @@ abstract class Logger
     /// Ditto
     alias fatalf = memLogFunctions!(LogLevel.fatal).logImplf;
 
-    /** This method logs data with the $(D LogLevel) of the used $(D Logger).
+    /** This method logs data with the `LogLevel` of the used `Logger`.
 
-    This method takes a $(D bool) as first argument. In order for the
-    data to be processed the $(D bool) must be $(D true) and the $(D LogLevel)
-    of the Logger must be greater or equal to the global $(D LogLevel).
+    This method takes a `bool` as first argument. In order for the
+    data to be processed the `bool` must be `true` and the `LogLevel`
+    of the Logger must be greater or equal to the global `LogLevel`.
 
     Params:
       args = The data that should be logged.
-      condition = The condition must be $(D true) for the data to be logged.
+      condition = The condition must be `true` for the data to be logged.
       args = The data that is to be logged.
 
     Returns: The logger used by the logging function as reference.
@@ -1200,15 +1203,15 @@ abstract class Logger
         }
     }
 
-    /** This function logs data to the used $(D Logger) with a specific
-    $(D LogLevel).
+    /** This function logs data to the used `Logger` with a specific
+    `LogLevel`.
 
-    In order for the resulting log message to be logged the $(D LogLevel)
-    must be greater or equal than the $(D LogLevel) of the used $(D Logger)
-    and must be greater or equal than the global $(D LogLevel).
+    In order for the resulting log message to be logged the `LogLevel`
+    must be greater or equal than the `LogLevel` of the used `Logger`
+    and must be greater or equal than the global `LogLevel`.
 
     Params:
-      ll = The specific $(D LogLevel) used for logging the log message.
+      ll = The specific `LogLevel` used for logging the log message.
       args = The data that should be logged.
 
     Example:
@@ -1268,16 +1271,16 @@ abstract class Logger
         }
     }
 
-    /** This function logs data to the used $(D Logger) depending on a
-    explicitly passed condition with the $(D LogLevel) of the used
-    $(D Logger).
+    /** This function logs data to the used `Logger` depending on a
+    explicitly passed condition with the `LogLevel` of the used
+    `Logger`.
 
-    In order for the resulting log message to be logged the $(D LogLevel)
-    of the used $(D Logger) must be greater or equal than the global
-    $(D LogLevel) and the condition must be $(D true).
+    In order for the resulting log message to be logged the `LogLevel`
+    of the used `Logger` must be greater or equal than the global
+    `LogLevel` and the condition must be `true`.
 
     Params:
-      condition = The condition must be $(D true) for the data to be logged.
+      condition = The condition must be `true` for the data to be logged.
       args = The data that should be logged.
 
     Example:
@@ -1339,12 +1342,12 @@ abstract class Logger
         }
     }
 
-    /** This function logs data to the used $(D Logger) with the $(D LogLevel)
-    of the used $(D Logger).
+    /** This function logs data to the used `Logger` with the `LogLevel`
+    of the used `Logger`.
 
-    In order for the resulting log message to be logged the $(D LogLevel)
-    of the used $(D Logger) must be greater or equal than the global
-    $(D LogLevel).
+    In order for the resulting log message to be logged the `LogLevel`
+    of the used `Logger` must be greater or equal than the global
+    `LogLevel`.
 
     Params:
       args = The data that should be logged.
@@ -1365,7 +1368,7 @@ abstract class Logger
         string moduleName = __MODULE__, A...)(lazy A args)
         if ((args.length > 1
                 && !is(Unqual!(A[0]) : bool)
-                && !is(Unqual!(A[0]) == LogLevel))
+                && !is(immutable A[0] == immutable LogLevel))
             || args.length == 0)
     {
         static if (isLoggingActive) synchronized (mutex)
@@ -1409,17 +1412,17 @@ abstract class Logger
         }
     }
 
-    /** This function logs data to the used $(D Logger) with a specific
-    $(D LogLevel) and depending on a condition in a $(D printf)-style manner.
+    /** This function logs data to the used `Logger` with a specific
+    `LogLevel` and depending on a condition in a `printf`-style manner.
 
-    In order for the resulting log message to be logged the $(D LogLevel)
-    must be greater or equal than the $(D LogLevel) of the used $(D Logger)
-    and must be greater or equal than the global $(D LogLevel) and the
-    condition must be $(D true).
+    In order for the resulting log message to be logged the `LogLevel`
+    must be greater or equal than the `LogLevel` of the used `Logger`
+    and must be greater or equal than the global `LogLevel` and the
+    condition must be `true`.
 
     Params:
-      ll = The specific $(D LogLevel) used for logging the log message.
-      condition = The condition must be $(D true) for the data to be logged.
+      ll = The specific `LogLevel` used for logging the log message.
+      condition = The condition must be `true` for the data to be logged.
       msg = The format string used for this log call.
       args = The data that should be logged.
 
@@ -1441,7 +1444,7 @@ abstract class Logger
     {
         static if (isLoggingActive) synchronized (mutex)
         {
-            import std.format : formattedWrite;
+            import std.format.write : formattedWrite;
 
             if (isLoggingEnabled(ll, this.logLevel_, globalLogLevel, condition))
             {
@@ -1459,15 +1462,15 @@ abstract class Logger
         }
     }
 
-    /** This function logs data to the used $(D Logger) with a specific
-    $(D LogLevel) in a $(D printf)-style manner.
+    /** This function logs data to the used `Logger` with a specific
+    `LogLevel` in a `printf`-style manner.
 
-    In order for the resulting log message to be logged the $(D LogLevel)
-    must be greater or equal than the $(D LogLevel) of the used $(D Logger)
-    and must be greater or equal than the global $(D LogLevel).
+    In order for the resulting log message to be logged the `LogLevel`
+    must be greater or equal than the `LogLevel` of the used `Logger`
+    and must be greater or equal than the global `LogLevel`.
 
     Params:
-      ll = The specific $(D LogLevel) used for logging the log message.
+      ll = The specific `LogLevel` used for logging the log message.
       msg = The format string used for this log call.
       args = The data that should be logged.
 
@@ -1489,7 +1492,7 @@ abstract class Logger
     {
         static if (isLoggingActive) synchronized (mutex)
         {
-            import std.format : formattedWrite;
+            import std.format.write : formattedWrite;
 
             if (isLoggingEnabled(ll, this.logLevel_, globalLogLevel))
             {
@@ -1507,16 +1510,16 @@ abstract class Logger
         }
     }
 
-    /** This function logs data to the used $(D Logger) depending on a
-    condition with the $(D LogLevel) of the used $(D Logger) in a
-    $(D printf)-style manner.
+    /** This function logs data to the used `Logger` depending on a
+    condition with the `LogLevel` of the used `Logger` in a
+    `printf`-style manner.
 
-    In order for the resulting log message to be logged the $(D LogLevel)
-    of the used $(D Logger) must be greater or equal than the global
-    $(D LogLevel) and the condition must be $(D true).
+    In order for the resulting log message to be logged the `LogLevel`
+    of the used `Logger` must be greater or equal than the global
+    `LogLevel` and the condition must be `true`.
 
     Params:
-      condition = The condition must be $(D true) for the data to be logged.
+      condition = The condition must be `true` for the data to be logged.
       msg = The format string used for this log call.
       args = The data that should be logged.
 
@@ -1538,7 +1541,7 @@ abstract class Logger
     {
         static if (isLoggingActive) synchronized (mutex)
         {
-            import std.format : formattedWrite;
+            import std.format.write : formattedWrite;
 
             if (isLoggingEnabled(this.logLevel_, this.logLevel_, globalLogLevel,
                 condition))
@@ -1557,11 +1560,11 @@ abstract class Logger
         }
     }
 
-    /** This method logs data to the used $(D Logger) with the $(D LogLevel)
-    of the this $(D Logger) in a $(D printf)-style manner.
+    /** This method logs data to the used `Logger` with the `LogLevel`
+    of the this `Logger` in a `printf`-style manner.
 
-    In order for the data to be processed the $(D LogLevel) of the $(D Logger)
-    must be greater or equal to the global $(D LogLevel).
+    In order for the data to be processed the `LogLevel` of the `Logger`
+    must be greater or equal to the global `LogLevel`.
 
     Params:
       msg = The format string used for this log call.
@@ -1584,7 +1587,7 @@ abstract class Logger
     {
         static if (isLoggingActive) synchronized (mutex)
         {
-            import std.format : formattedWrite;
+            import std.format.write : formattedWrite;
 
             if (isLoggingEnabled(this.logLevel_, this.logLevel_,
                 globalLogLevel))
@@ -1622,10 +1625,10 @@ private shared LogLevel stdLoggerGlobalLogLevel = LogLevel.all;
  */
 private @property Logger defaultSharedLoggerImpl() @trusted
 {
-    import std.conv : emplace;
+    import core.lifetime : emplace;
     import std.stdio : stderr;
 
-    static __gshared align(FileLogger.alignof) void[__traits(classInstanceSize, FileLogger)] _buffer;
+    __gshared align(FileLogger.alignof) void[__traits(classInstanceSize, FileLogger)] _buffer;
 
     import std.concurrency : initOnce;
     initOnce!stdSharedDefaultLogger({
@@ -1636,25 +1639,25 @@ private @property Logger defaultSharedLoggerImpl() @trusted
     return stdSharedDefaultLogger;
 }
 
-/** This property sets and gets the default $(D Logger).
+/** This property sets and gets the default `Logger`.
 
 Example:
 -------------
 sharedLog = new FileLogger(yourFile);
 -------------
-The example sets a new $(D FileLogger) as new $(D sharedLog).
+The example sets a new `FileLogger` as new `sharedLog`.
 
 If at some point you want to use the original default logger again, you can
 use $(D sharedLog = null;). This will put back the original.
 
 Note:
-While getting and setting $(D sharedLog) is thread-safe, it has to be considered
+While getting and setting `sharedLog` is thread-safe, it has to be considered
 that the returned reference is only a current snapshot and in the following
 code, you must make sure no other thread reassigns to it between reading and
-writing $(D sharedLog).
+writing `sharedLog`.
 
-$(D sharedLog) is only thread-safe if the the used $(D Logger) is thread-safe.
-The default $(D Logger) is thread-safe.
+`sharedLog` is only thread-safe if the the used `Logger` is thread-safe.
+The default `Logger` is thread-safe.
 -------------
 if (sharedLog !is myLogger)
     sharedLog = new myLogger;
@@ -1688,11 +1691,11 @@ if (sharedLog !is myLogger)
     atomicStore!(MemoryOrder.rel)(stdSharedLogger, cast(shared) logger);
 }
 
-/** This methods get and set the global $(D LogLevel).
+/** This methods get and set the global `LogLevel`.
 
-Every log message with a $(D LogLevel) lower as the global $(D LogLevel)
-will be discarded before it reaches $(D writeLogMessage) method of any
-$(D Logger).
+Every log message with a `LogLevel` lower as the global `LogLevel`
+will be discarded before it reaches `writeLogMessage` method of any
+`Logger`.
 */
 /* Implementation note:
 For any public logging call, the global log level shall only be queried once on
@@ -1712,18 +1715,18 @@ different levels at different spots in the code.
 
 // Thread Local
 
-/** The $(D StdForwardLogger) will always forward anything to the sharedLog.
+/** The `StdForwardLogger` will always forward anything to the sharedLog.
 
-The $(D StdForwardLogger) will not throw if data is logged with $(D
+The `StdForwardLogger` will not throw if data is logged with $(D
 LogLevel.fatal).
 */
 class StdForwardLogger : Logger
 {
-    /** The default constructor for the $(D StdForwardLogger).
+    /** The default constructor for the `StdForwardLogger`.
 
     Params:
-      lv = The $(D LogLevel) for the $(D MultiLogger). By default the $(D
-          LogLevel) is $(D all).
+      lv = The `LogLevel` for the `MultiLogger`. By default the $(D
+          LogLevel) is `all`.
     */
     this(const LogLevel lv = LogLevel.all) @safe
     {
@@ -1743,9 +1746,9 @@ class StdForwardLogger : Logger
     auto nl1 = new StdForwardLogger(LogLevel.all);
 }
 
-/** This $(D LogLevel) is unqiue to every thread.
+/** This `LogLevel` is unqiue to every thread.
 
-The thread local $(D Logger) will use this $(D LogLevel) to filter log calls
+The thread local `Logger` will use this `LogLevel` to filter log calls
 every same way as presented earlier.
 */
 //public LogLevel threadLogLevel = LogLevel.all;
@@ -1756,7 +1759,7 @@ private Logger stdLoggerDefaultThreadLogger;
 */
 private @property Logger stdThreadLocalLogImpl() @trusted
 {
-    import std.conv : emplace;
+    import core.lifetime : emplace;
 
     static void*[(__traits(classInstanceSize, StdForwardLogger) - 1) / (void*).sizeof + 1] _buffer;
 
@@ -1769,14 +1772,14 @@ private @property Logger stdThreadLocalLogImpl() @trusted
     return stdLoggerDefaultThreadLogger;
 }
 
-/** This function returns a thread unique $(D Logger), that by default
-propergates all data logged to it to the $(D sharedLog).
+/** This function returns a thread unique `Logger`, that by default
+propergates all data logged to it to the `sharedLog`.
 
-These properties can be used to set and get this $(D Logger). Every
-modification to this $(D Logger) will only be visible in the thread the
+These properties can be used to set and get this `Logger`. Every
+modification to this `Logger` will only be visible in the thread the
 modification has been done from.
 
-This $(D Logger) is called by the free standing log functions. This allows to
+This `Logger` is called by the free standing log functions. This allows to
 create thread local redirections and still use the free standing log
 functions.
 */
@@ -1843,7 +1846,7 @@ package class TestLogger : Logger
     }
 }
 
-version (unittest) private void testFuncNames(Logger logger) @safe
+version (StdUnittest) private void testFuncNames(Logger logger) @safe
 {
     string s = "I'm here";
     logger.log(s);
@@ -3068,7 +3071,7 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
     stdThreadLocalLog.logLevel = LogLevel.all;
 }
 
-// Issue 14940
+// https://issues.dlang.org/show_bug.cgi?id=14940
 @safe unittest
 {
     import std.typecons : Nullable;
@@ -3098,7 +3101,7 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
     assert(tl.msg == SystemToStringMsg);
 }
 
-// Issue 17328
+// https://issues.dlang.org/show_bug.cgi?id=17328
 @safe unittest
 {
     import std.format : format;
@@ -3120,7 +3123,7 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
     assert(fs.length == 2);
 }
 
-// Issue 15954
+// https://issues.dlang.org/show_bug.cgi?id=15954
 @safe unittest
 {
     import std.conv : to;
@@ -3129,7 +3132,7 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
     assert(tl.msg == "123456789");
 }
 
-// Issue 16256
+// https://issues.dlang.org/show_bug.cgi?id=16256
 @safe unittest
 {
     import std.conv : to;
@@ -3138,14 +3141,15 @@ private void trustedStore(T)(ref shared T dst, ref T src) @trusted
     assert(tl.msg == "123456789");
 }
 
-// Issue 15517
+// https://issues.dlang.org/show_bug.cgi?id=15517
 @system unittest
 {
-    import std.file : exists, remove;
+    import std.file : exists, remove, tempDir;
+    import std.path : buildPath;
     import std.stdio : File;
     import std.string : indexOf;
 
-    string fn = "logfile.log";
+    string fn = tempDir.buildPath("logfile.log");
     if (exists(fn))
     {
         remove(fn);

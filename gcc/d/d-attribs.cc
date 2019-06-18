@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "dmd/attrib.h"
 #include "dmd/declaration.h"
+#include "dmd/expression.h"
 #include "dmd/module.h"
 #include "dmd/mtype.h"
 #include "dmd/template.h"

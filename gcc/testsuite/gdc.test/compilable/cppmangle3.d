@@ -1,3 +1,6 @@
+// https://issues.dlang.org/show_bug.cgi?id=15512
+// https://issues.dlang.org/show_bug.cgi?id=19893
+// https://issues.dlang.org/show_bug.cgi?id=19920
 module cppmangle3;
 
 
@@ -34,4 +37,22 @@ struct Foo
 alias Alias(alias a) = a;
 alias Alias(T) = T;
 
-static assert(is(Alias!(__traits(parent, bar)) == Foo));
+static assert(is(Alias!(__traits(parent, Foo.bar)) == Foo));
+
+extern(C++, "std"):
+debug = 456;
+debug = def;
+version = 456;
+version = def;
+
+extern(C++, "std")
+{
+    debug = 456;
+    debug = def;
+    version = 456;
+    version = def;
+}
+
+extern(C++, "foo")
+extern(C++, "bar")
+version = baz;

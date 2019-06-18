@@ -2,8 +2,9 @@
  * Contains the implementation for object monitors.
  *
  * Copyright: Copyright Digital Mars 2000 - 2015.
- * License:   $(WEB www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   Walter Bright, Sean Kelly, Martin Nowak
+ * Source: $(DRUNTIMESRC rt/_monitor_.d)
  */
 
 /* NOTE: This file has been patched from the original DMD distribution to
@@ -25,7 +26,7 @@ in
 {
     assert(ownee.__monitor is null);
 }
-body
+do
 {
     auto m = ensureMonitor(cast(Object) owner);
     if (m.impl is null)
@@ -81,7 +82,7 @@ in
 {
     assert(h !is null, "Synchronized object must not be null.");
 }
-body
+do
 {
     auto m = cast(Monitor*) ensureMonitor(h);
     auto i = m.impl;
@@ -185,6 +186,7 @@ version (GNU)
 
 version (SingleThreaded)
 {
+@nogc:
     alias Mutex = int;
 
     void initMutex(Mutex* mtx)
@@ -262,7 +264,7 @@ struct Monitor
 
 private:
 
-@property ref shared(Monitor*) monitor(Object h) pure nothrow @nogc
+@property ref shared(Monitor*) monitor(return Object h) pure nothrow @nogc
 {
     return *cast(shared Monitor**)&h.__monitor;
 }

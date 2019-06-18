@@ -3,8 +3,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/deprecated6760.d(13): Deprecation: function deprecated6760.Foo.opEquals overridden functions cannot be annotated @disable
-fail_compilation/deprecated6760.d(18): Deprecation: function deprecated6760.Bar.opEquals deprecated functions cannot be annotated @disable
+fail_compilation/deprecated6760.d(13): Deprecation: `deprecated6760.Foo.opEquals` cannot be annotated with `@disable` because it is overriding a function in the base class
+fail_compilation/deprecated6760.d(18): Deprecation: `deprecated6760.Bar.opEquals` cannot be marked as `deprecated` because it is overriding a function in the base class
 ---
 */
 

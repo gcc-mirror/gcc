@@ -2,8 +2,10 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/issue3827.d(12): Deprecation: Implicit string concatenation is deprecated, use "Hello" ~ "World" instead
-fail_compilation/issue3827.d(13): Deprecation: Implicit string concatenation is deprecated, use "A" ~ "B" instead
+fail_compilation/issue3827.d(14): Error: Implicit string concatenation is error-prone and disallowed in D
+fail_compilation/issue3827.d(14):        Use the explicit syntax instead (concatenating literals is `@nogc`): "Hello" ~ "World"
+fail_compilation/issue3827.d(15): Error: Implicit string concatenation is error-prone and disallowed in D
+fail_compilation/issue3827.d(15):        Use the explicit syntax instead (concatenating literals is `@nogc`): "A" ~ "B"
 ---
 */
 

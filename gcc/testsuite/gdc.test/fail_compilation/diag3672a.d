@@ -1,10 +1,11 @@
-// PERMUTE_ARGS:
 // REQUIRED_ARGS: -de
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag3672a.d(16): Deprecation: read-modify-write operations are not allowed for shared variables. Use core.atomic.atomicOp!"+="(ns.x, 1) instead.
-fail_compilation/diag3672a.d(18): Deprecation: read-modify-write operations are not allowed for shared variables. Use core.atomic.atomicOp!"+="(s.sx, 1) instead.
+fail_compilation/diag3672a.d(17): Error: read-modify-write operations are not allowed for `shared` variables
+fail_compilation/diag3672a.d(17):        Use `core.atomic.atomicOp!"+="(ns.x, 1)` instead
+fail_compilation/diag3672a.d(19): Error: read-modify-write operations are not allowed for `shared` variables
+fail_compilation/diag3672a.d(19):        Use `core.atomic.atomicOp!"+="(s.sx, 1)` instead
 ---
 */
 class NS { shared int x; }
@@ -21,8 +22,10 @@ void main()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag3672a.d(32): Deprecation: read-modify-write operations are not allowed for shared variables. Use core.atomic.atomicOp!"+="(s.var, 1) instead.
-fail_compilation/diag3672a.d(33): Deprecation: read-modify-write operations are not allowed for shared variables. Use core.atomic.atomicOp!"-="(s.var, 2) instead.
+fail_compilation/diag3672a.d(35): Error: read-modify-write operations are not allowed for `shared` variables
+fail_compilation/diag3672a.d(35):        Use `core.atomic.atomicOp!"+="(s.var, 1)` instead
+fail_compilation/diag3672a.d(36): Error: read-modify-write operations are not allowed for `shared` variables
+fail_compilation/diag3672a.d(36):        Use `core.atomic.atomicOp!"-="(s.var, 2)` instead
 ---
 */
 void test13003()

@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail158.d(17): Error: more initializers than fields (2) of S
+fail_compilation/fail158.d(17): Error: more initializers than fields (2) of `S`
 ---
 */
 

@@ -1,11 +1,10 @@
-/* REQUIRED_ARGS:
-   PERMUTE_ARGS:
-   TEST_OUTPUT:
+/*
+TEST_OUTPUT:
 ---
-fail_compilation/test16365.d(22): Error: 'this' reference necessary to take address of member f1 in @safe function main
-fail_compilation/test16365.d(24): Error: cannot implicitly convert expression `&f2` of type `void delegate() pure nothrow @nogc @safe` to `void function() @safe`
-fail_compilation/test16365.d(28): Error: address of variable `s` assigned to `dg` with longer lifetime
-fail_compilation/test16365.d(29): Error: dg.funcptr cannot be used in @safe code
+fail_compilation/test16365.d(21): Error: `this` reference necessary to take address of member `f1` in `@safe` function `main`
+fail_compilation/test16365.d(23): Error: cannot implicitly convert expression `&f2` of type `void delegate() pure nothrow @nogc @safe` to `void function() @safe`
+fail_compilation/test16365.d(27): Error: address of variable `s` assigned to `dg` with longer lifetime
+fail_compilation/test16365.d(28): Error: `dg.funcptr` cannot be used in `@safe` code
 ---
 */
 

@@ -1,5 +1,11 @@
-// PERMUTE_ARGS:
-// EXTRA_SOURCES: imports/mod2.d
+/*
+PERMUTE_ARGS:
+EXTRA_SOURCES: imports/mod2.d
+RUN_OUTPUT:
+---
+EvilOne
+---
+*/
 
 // mod1.d
 

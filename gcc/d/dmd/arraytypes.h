@@ -27,6 +27,8 @@ typedef Array<class Dsymbol *> Dsymbols;
 
 typedef Array<class RootObject *> Objects;
 
+typedef Array<class DtorDeclaration *> DtorDeclarations;
+
 typedef Array<class FuncDeclaration *> FuncDeclarations;
 
 typedef Array<class Parameter *> Parameters;
@@ -48,8 +50,6 @@ typedef Array<class AliasDeclaration *> AliasDeclarations;
 
 typedef Array<class Module *> Modules;
 
-typedef Array<struct File *> Files;
-
 typedef Array<class CaseStatement *> CaseStatements;
 
 typedef Array<class ScopeStatement *> ScopeStatements;
@@ -63,3 +63,8 @@ typedef Array<class GotoStatement *> GotoStatements;
 typedef Array<class TemplateInstance *> TemplateInstances;
 
 typedef Array<struct Ensure> Ensures;
+
+typedef Array<struct Designator> Designators;
+
+typedef Array<struct DesigInit> DesigInits;
+

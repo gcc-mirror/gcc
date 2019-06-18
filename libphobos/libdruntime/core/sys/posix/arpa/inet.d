@@ -68,8 +68,6 @@ version (CRuntime_Glibc)
         in_addr_t s_addr;
     }
 
-    enum INET_ADDRSTRLEN = 16;
-
     @trusted pure
     {
     uint32_t htonl(uint32_t);
@@ -92,8 +90,6 @@ else version (Darwin)
     {
         in_addr_t s_addr;
     }
-
-    enum INET_ADDRSTRLEN = 16;
 
     @trusted pure
     {
@@ -118,8 +114,6 @@ else version (FreeBSD)
         in_addr_t s_addr;
     }
 
-    enum INET_ADDRSTRLEN = 16;
-
     @trusted pure
     {
     uint32_t htonl(uint32_t);
@@ -142,8 +136,6 @@ else version (NetBSD)
     {
         in_addr_t s_addr;
     }
-
-    enum INET_ADDRSTRLEN = 16;
 
     @trusted pure
     {
@@ -168,30 +160,22 @@ else version (OpenBSD)
         in_addr_t s_addr;
     }
 
-    enum INET_ADDRSTRLEN = 16;
-
     @safe pure extern (D)
     {
-        private
+        version (BigEndian)
         {
-            uint32_t __swap32( uint32_t x )
-            {
-                uint32_t byte32_swap = (x & 0xff) << 24 | (x &0xff00) << 8 |
-                                     (x & 0xff0000) >> 8 | (x & 0xff000000) >> 24;
-                return byte32_swap;
-            }
-
-            uint16_t __swap16( uint16_t x )
-            {
-                uint16_t byte16_swap = (x & 0xff) << 8 | (x & 0xff00) >> 8;
-                return byte16_swap;
-            }
+            uint32_t htonl(uint32_t x) { return x; }
+            uint16_t htons(uint16_t x) { return x; }
         }
+        else
+        {
+            import core.bitop : bswap, byteswap;
 
-        uint32_t htonl(uint32_t x) { return __swap32(x); }
-        uint16_t htons(uint16_t x) { return __swap16(x); }
-        uint32_t ntohl(uint32_t x) { return __swap32(x); }
-        uint16_t ntohs(uint16_t x) { return __swap16(x); }
+            uint32_t htonl(uint32_t x) { return bswap(x); }
+            uint16_t htons(uint16_t x) { return byteswap(x); }
+        }
+        alias ntohl = htonl;
+        alias ntohs = htons;
     }
 
     in_addr_t       inet_addr(const scope char*);
@@ -208,8 +192,6 @@ else version (DragonFlyBSD)
     {
         in_addr_t s_addr;
     }
-
-    enum INET_ADDRSTRLEN = 16;
 
     @trusted pure
     {
@@ -233,7 +215,6 @@ else version (Solaris)
     {
         in_addr_t s_addr;
     }
-    enum INET_ADDRSTRLEN = 16;
 
     @trusted pure
     {
@@ -257,30 +238,22 @@ else version (CRuntime_Bionic)
         in_addr_t s_addr;
     }
 
-    enum INET_ADDRSTRLEN = 16;
-
     @safe pure extern (D)
     {
-        private
+        version (BigEndian)
         {
-            uint32_t __swap32( uint32_t x )
-            {
-                uint32_t byte32_swap = (x & 0xff) << 24 | (x &0xff00) << 8 |
-                                     (x & 0xff0000) >> 8 | (x & 0xff000000) >> 24;
-                return byte32_swap;
-            }
-
-            uint16_t __swap16( uint16_t x )
-            {
-                uint16_t byte16_swap = (x & 0xff) << 8 | (x & 0xff00) >> 8;
-                return byte16_swap;
-            }
+            uint32_t htonl(uint32_t x) { return x; }
+            uint16_t htons(uint16_t x) { return x; }
         }
+        else
+        {
+            import core.bitop : bswap, byteswap;
 
-        uint32_t htonl(uint32_t x) { return __swap32(x); }
-        uint16_t htons(uint16_t x) { return __swap16(x); }
-        uint32_t ntohl(uint32_t x) { return __swap32(x); }
-        uint16_t ntohs(uint16_t x) { return __swap16(x); }
+            uint32_t htonl(uint32_t x) { return bswap(x); }
+            uint16_t htons(uint16_t x) { return byteswap(x); }
+        }
+        alias ntohl = htonl;
+        alias ntohs = htons;
     }
 
     in_addr_t       inet_addr(const scope char*);
@@ -298,8 +271,6 @@ else version (CRuntime_Musl)
         in_addr_t s_addr;
     }
 
-    enum INET_ADDRSTRLEN = 16;
-
     @trusted pure
     {
     uint32_t htonl(uint32_t);
@@ -323,8 +294,6 @@ else version (CRuntime_UClibc)
         in_addr_t s_addr;
     }
 
-    enum INET_ADDRSTRLEN = 16;
-
     @trusted pure
     {
     uint32_t htonl(uint32_t);
@@ -339,9 +308,6 @@ else version (CRuntime_UClibc)
     int             inet_pton(int, const scope char*, void*);
 }
 
-//
-// IPV6 (IP6)
-//
 /*
 NOTE: The following must must be defined in core.sys.posix.arpa.inet to break
       a circular import: INET6_ADDRSTRLEN.
@@ -349,39 +315,5 @@ NOTE: The following must must be defined in core.sys.posix.arpa.inet to break
 INET6_ADDRSTRLEN // from core.sys.posix.netinet.in_
 */
 
-version (CRuntime_Glibc)
-{
-    enum INET6_ADDRSTRLEN = 46;
-}
-else version (Darwin)
-{
-    enum INET6_ADDRSTRLEN = 46;
-}
-else version (FreeBSD)
-{
-    enum INET6_ADDRSTRLEN = 46;
-}
-else version (NetBSD)
-{
-    enum INET6_ADDRSTRLEN = 46;
-}
-else version (OpenBSD)
-{
-    enum INET6_ADDRSTRLEN = 46;
-}
-else version (DragonFlyBSD)
-{
-    enum INET6_ADDRSTRLEN = 46;
-}
-else version (Solaris)
-{
-    enum INET6_ADDRSTRLEN = 46;
-}
-else version (CRuntime_Bionic)
-{
-    enum INET6_ADDRSTRLEN = 46;
-}
-else version (CRuntime_UClibc)
-{
-    enum INET6_ADDRSTRLEN = 46;
-}
+enum INET_ADDRSTRLEN  = 16;
+enum INET6_ADDRSTRLEN = 46;

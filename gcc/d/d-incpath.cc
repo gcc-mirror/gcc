@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 
 #include "dmd/globals.h"
+#include "d-frontend.h"
 
 #include "cppdefault.h"
 
@@ -71,7 +72,7 @@ add_globalpaths (Strings *paths)
   if (paths)
     {
       if (!global.path)
-	global.path = new Strings ();
+	global.path = d_gc_malloc<Strings> ();
 
       for (size_t i = 0; i < paths->length; i++)
 	{
@@ -98,7 +99,7 @@ add_filepaths (Strings *paths)
   if (paths)
     {
       if (!global.filePath)
-	global.filePath = new Strings ();
+	global.filePath = d_gc_malloc<Strings> ();
 
       for (size_t i = 0; i < paths->length; i++)
 	{

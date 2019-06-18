@@ -276,11 +276,14 @@ POSTSTAGE1_HOST_EXPORTS = \
 	$(POSTSTAGE1_CXX_EXPORT) \
 	$(LTO_EXPORTS) \
 	GDC="$$r/$(HOST_SUBDIR)/prev-gcc/gdc$(exeext) -B$$r/$(HOST_SUBDIR)/prev-gcc/ \
-	  -B$(build_tooldir)/bin/ $(GDC_FLAGS_FOR_TARGET) \
+	  -B$(build_tooldir)/bin/ $(GDCFLAGS_FOR_TARGET) \
+	  -B$$r/prev-$(TARGET_SUBDIR)/libphobos/libdruntime/gcc \
 	  -B$$r/prev-$(TARGET_SUBDIR)/libphobos/src \
+	  -B$$r/prev-$(TARGET_SUBDIR)/libphobos/src/.libs \
 	  -I$$r/prev-$(TARGET_SUBDIR)/libphobos/libdruntime -I$$s/libphobos/libdruntime \
 	  -L$$r/prev-$(TARGET_SUBDIR)/libphobos/src/.libs \
-	  -L$$r/prev-$(TARGET_SUBDIR)/libphobos/libdruntime/.libs"; \
+	  -B$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/src/.libs \
+	  -L$$r/prev-$(TARGET_SUBDIR)/libstdc++-v3/src/.libs"; \
 	export GDC; \
 	GDC_FOR_BUILD="$$GDC"; export GDC_FOR_BUILD; \
 	GNATBIND="$$r/$(HOST_SUBDIR)/prev-gcc/gnatbind"; export GNATBIND; \
@@ -486,6 +489,11 @@ STAGE1_LANGUAGES = @stage1_languages@
 STAGE1_CONFIGURE_FLAGS = --disable-intermodule $(STAGE1_CHECKING) \
 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" \
 	  --disable-build-format-warnings
+
+@if target-libphobos-bootstrap
+STAGE1_CONFIGURE_FLAGS += --with-libphobos-druntime-only
+STAGE2_CONFIGURE_FLAGS += --with-libphobos-druntime-only
+@endif target-libphobos-bootstrap
 
 # When using the slow stage1 compiler disable IL verification and forcefully
 # enable it when using the stage2 compiler instead.  As we later compare

@@ -340,7 +340,7 @@ if (is(T == uint))
 pure struct Cmp(T)
 if (is(T == double))
 {
-    import std.math : approxEqual;
+    import std.math.operations : isClose;
 
     static auto iota(size_t low = 1, size_t high = 11)
     {
@@ -354,7 +354,7 @@ if (is(T == double))
         arr = iota().array;
     }
 
-    alias cmp = approxEqual!(double,double);
+    alias cmp = isClose!(double,double,double);
 
     enum dummyValue = 1337.0;
     enum dummyValueRslt = 1337.0 * 2.0;
@@ -386,8 +386,6 @@ struct TestFoo
 pure struct Cmp(T)
 if (is(T == TestFoo))
 {
-    import std.math : approxEqual;
-
     static auto iota(size_t low = 1, size_t high = 11)
     {
         import std.algorithm.iteration : map;
@@ -421,7 +419,6 @@ if (is(T == TestFoo))
 {
     import std.algorithm.comparison : equal;
     import std.range : iota, retro, repeat;
-    import std.traits : Unqual;
 
     static void testInputRange(T,Cmp)()
     {
@@ -431,7 +428,7 @@ if (is(T == TestFoo))
         {
             if (numRuns == 1)
             {
-                static if (is(Unqual!(ElementType!(T)) == uint))
+                static if (is(immutable ElementType!(T) == immutable uint))
                 {
                     it.reinit();
                 }
@@ -540,7 +537,7 @@ if (is(T == TestFoo))
 
     import std.meta : AliasSeq;
 
-    foreach (S; AliasSeq!(uint, double, TestFoo))
+    static foreach (S; AliasSeq!(uint, double, TestFoo))
     {
         foreach (T; AllDummyRangesType!(S[]))
         {

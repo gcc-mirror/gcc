@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/failoffset.d(12): Error: no property 'offset' for type 'int'
+fail_compilation/failoffset.d(12): Error: no property `offset` for type `int`
 fail_compilation/failoffset.d(12):        while evaluating: `static assert(b.offset == 4)`
 ---
 */

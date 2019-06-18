@@ -19,10 +19,12 @@
 # We define several parameters used by configure:
 #
 # language	- name of language as it would appear in $(LANGUAGES)
+# boot_language	- "yes" if we need to build this language in stage1
 # compilers	- value to add to $(COMPILERS)
 
 language="d"
 
+boot_language=yes
 compilers="d21\$(exeext)"
 
 phobos_target_deps="target-zlib target-libbacktrace"

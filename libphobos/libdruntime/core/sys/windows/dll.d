@@ -425,7 +425,6 @@ int dll_getRefCount( HINSTANCE hInstance ) nothrow @nogc
                 mov peb, RAX;
             }
         }
-
     }
     else version (Win32)
     {

@@ -1,7 +1,13 @@
+/*
+RUN_OUTPUT:
+---
+Success
+---
+*/
 extern(C) int printf(const char*, ...);
 
 /******************************************/
-// 12078
+// https://issues.dlang.org/show_bug.cgi?id=12078
 
 class B12078(T)
 {
@@ -26,7 +32,7 @@ void test12078()
 }
 
 /******************************************/
-// 12143
+// https://issues.dlang.org/show_bug.cgi?id=12143
 
 class Node12143
 {
@@ -39,7 +45,7 @@ class Type12143 : Node12143 {}
 class Class12143 : Type12143 {}
 
 /***************************************************/
-// 13353
+// https://issues.dlang.org/show_bug.cgi?id=13353
 
 interface Base13353(T)
 {
@@ -57,7 +63,7 @@ class Concrete13353 : Derived13353
 }
 
 /***************************************************/
-// 15733
+// https://issues.dlang.org/show_bug.cgi?id=15733
 
 class CStmt15733 : CNode15733 {}
 class CDecl15733 : CStmt15733 {}
@@ -71,8 +77,48 @@ template IMix(T){ mixin("static " ~ T.stringof ~ " x;"); }
 
 /***************************************************/
 
+// https://issues.dlang.org/show_bug.zip?id=20716
+
+extern(C++):
+
+struct S20716
+{
+    void* s;
+    ~this() {}
+    // or this(this) {}
+}
+
+interface I20716
+{
+    S20716 x();
+}
+
+final class C20716 : I20716
+{
+    int l = 3;
+
+    S20716 x()
+    {
+	//printf("this = %p, %p\n", this, &this.l);
+        assert(l == 3); //fails
+        return S20716.init;
+    }
+}
+
+extern(D):
+
+void test20716()
+{
+    auto s = new C20716().x;
+    auto t = new C20716().I20716.x;
+}
+
+/***************************************************/
+
 int main()
 {
+    test20716();
+
     printf("Success\n");
     return 0;
 }

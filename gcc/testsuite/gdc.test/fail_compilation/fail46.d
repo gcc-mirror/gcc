@@ -2,7 +2,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail46.d(19): Error: need 'this' for 'bug' of type 'int()'
+fail_compilation/fail46.d(19): Error: need `this` for `bug` of type `int()`
 ---
 */
 

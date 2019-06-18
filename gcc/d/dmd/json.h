@@ -11,7 +11,9 @@
 #pragma once
 
 #include "arraytypes.h"
+#include "globals.h"
 
 struct OutBuffer;
 
 void json_generate(OutBuffer *, Modules *);
+JsonFieldFlags tryParseJsonField(const char *fieldName);

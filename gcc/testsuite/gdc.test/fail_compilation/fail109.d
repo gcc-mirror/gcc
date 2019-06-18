@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail109.d(12): Error: enum member fail109.Bool.Unknown initialization with `Bool.True+1` causes overflow for type `bool`
+fail_compilation/fail109.d(12): Error: enum member `fail109.Bool.Unknown` initialization with `Bool.True+1` causes overflow for type `bool`
 ---
 */
 
@@ -12,11 +12,11 @@ enum Bool : bool
     Unknown
 }
 
-/* Bugzilla 11088
+/* https://issues.dlang.org/show_bug.cgi?id=11088
 TEST_OUTPUT:
 ---
-fail_compilation/fail109.d(25): Error: enum member fail109.E.B initialization with `E.A+1` causes overflow for type `int`
-fail_compilation/fail109.d(31): Error: enum member fail109.E1.B initialization with `E1.A+1` causes overflow for type `short`
+fail_compilation/fail109.d(25): Error: enum member `fail109.E.B` initialization with `E.A+1` causes overflow for type `int`
+fail_compilation/fail109.d(31): Error: enum member `fail109.E1.B` initialization with `E1.A+1` causes overflow for type `short`
 ---
 */
 enum E
@@ -31,11 +31,11 @@ enum E1 : short
     B
 }
 
-/* Bugzilla 14950
+/* https://issues.dlang.org/show_bug.cgi?id=14950
 TEST_OUTPUT:
 ---
-fail_compilation/fail109.d(50): Deprecation: Comparison between different enumeration types `B` and `C`; If this behavior is intended consider using `std.conv.asOriginalType`
-fail_compilation/fail109.d(50): Error: enum member fail109.B.end initialization with `B.start+1` causes overflow for type `C`
+fail_compilation/fail109.d(50): Error: Comparison between different enumeration types `B` and `C`; If this behavior is intended consider using `std.conv.asOriginalType`
+fail_compilation/fail109.d(50): Error: enum member `fail109.B.end` initialization with `B.start+1` causes overflow for type `C`
 ---
 */
 enum C
@@ -50,7 +50,7 @@ enum B
     end
 }
 
-/* Bugzilla 11849
+/* https://issues.dlang.org/show_bug.cgi?id=11849
 TEST_OUTPUT:
 ---
 fail_compilation/fail109.d(72): Error: enum member `fail109.RegValueType1a.Unknown` is forward referenced looking for `.max`

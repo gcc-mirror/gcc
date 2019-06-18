@@ -4,10 +4,11 @@ This module is a submodule of $(MREF std, range).
 The main $(MREF std, range) module provides template-based tools for working with
 ranges, but sometimes an object-based interface for ranges is needed, such as
 when runtime polymorphism is required. For this purpose, this submodule
-provides a number of object and $(D interface) definitions that can be used to
-wrap around _range objects created by the $(MREF std, range) templates.
+provides a number of object and `interface` definitions that can be used to
+wrap around range objects created by the $(MREF std, range) templates.
 
 $(SCRIPT inhibitQuickIndex = 1;)
+$(DIVC quickindex,
 $(BOOKTABLE ,
     $(TR $(TD $(LREF InputRange))
         $(TD Wrapper for input ranges.
@@ -40,33 +41,35 @@ $(BOOKTABLE ,
         $(TD Wrapper for output ranges.
     ))
     $(TR $(TD $(LREF OutputRangeObject))
-        $(TD Class that implements the $(D OutputRange) interface and wraps the
-        $(D put) methods in virtual functions.
+        $(TD Class that implements the `OutputRange` interface and wraps the
+        `put` methods in virtual functions.
+    ))
     $(TR $(TD $(LREF outputRangeObject))
-        Convenience function for creating an $(D OutputRangeObject) with a base
+        $(TD Convenience function for creating an `OutputRangeObject` with a base
         range of type R that accepts types E.
     ))
     $(TR $(TD $(LREF InputRangeObject))
-        $(TD Class that implements the $(D InputRange) interface and wraps the
-        input _range methods in virtual functions.
+        $(TD Class that implements the `InputRange` interface and wraps the
+        input range methods in virtual functions.
     ))
     $(TR $(TD $(LREF inputRangeObject))
-        $(TD Convenience function for creating an $(D InputRangeObject)
+        $(TD Convenience function for creating an `InputRangeObject`
         of the proper type.
     ))
     $(TR $(TD $(LREF MostDerivedInputRange))
-        $(TD Returns the interface type that best matches the range.)
+        $(TD Returns the interface type that best matches the range.
     ))
-)
+))
 
 
-Source: $(PHOBOSSRC std/range/_interfaces.d)
+Source: $(PHOBOSSRC std/range/interfaces.d)
 
 License: $(HTTP boost.org/LICENSE_1_0.txt, Boost License 1.0).
 
-Authors: $(HTTP erdani.com, Andrei Alexandrescu), David Simcha,
-and Jonathan M Davis. Credit for some of the ideas in building this module goes
-to $(HTTP fantascienza.net/leonardo/so/, Leonardo Maffi).
+Authors: $(HTTP erdani.com, Andrei Alexandrescu), David Simcha, and
+         $(HTTP jmdavisprog.com, Jonathan M Davis). Credit for some of the ideas
+         in building this module goes to
+         $(HTTP fantascienza.net/leonardo/so/, Leonardo Maffi).
 */
 module std.range.interfaces;
 
@@ -80,11 +83,11 @@ import std.traits;
  * needs to accept a generic range as a parameter. Note that
  * $(REF_ALTTEXT isInputRange, isInputRange, std, range, primitives)
  * and friends check for conformance to structural interfaces
- * not for implementation of these $(D interface) types.
+ * not for implementation of these `interface` types.
  *
  * Limitations:
  *
- * These interfaces are not capable of forwarding $(D ref) access to elements.
+ * These interfaces are not capable of forwarding `ref` access to elements.
  *
  * Infiniteness of the wrapped range is not propagated.
  *
@@ -115,7 +118,7 @@ interface InputRange(E) {
      * InputRangeObject, range primitives:  877 milliseconds  (3.15x penalty)
      */
 
-    /**$(D foreach) iteration uses opApply, since one delegate call per loop
+    /**`foreach` iteration uses opApply, since one delegate call per loop
      * iteration is faster than three virtual function calls.
      */
     int opApply(scope int delegate(E));
@@ -145,13 +148,13 @@ interface InputRange(E) {
     useRange(squaresWrapped);
 }
 
-/**Interface for a forward range of type $(D E).*/
+/**Interface for a forward range of type `E`.*/
 interface ForwardRange(E) : InputRange!E {
     ///
     @property ForwardRange!E save();
 }
 
-/**Interface for a bidirectional range of type $(D E).*/
+/**Interface for a bidirectional range of type `E`.*/
 interface BidirectionalRange(E) : ForwardRange!(E) {
     ///
     @property BidirectionalRange!E save();
@@ -166,7 +169,7 @@ interface BidirectionalRange(E) : ForwardRange!(E) {
     void popBack();
 }
 
-/**Interface for a finite random access range of type $(D E).*/
+/**Interface for a finite random access range of type `E`.*/
 interface RandomAccessFinite(E) : BidirectionalRange!(E) {
     ///
     @property RandomAccessFinite!E save();
@@ -192,7 +195,7 @@ interface RandomAccessFinite(E) : BidirectionalRange!(E) {
     }
 }
 
-/**Interface for an infinite random access range of type $(D E).*/
+/**Interface for an infinite random access range of type `E`.*/
 interface RandomAccessInfinite(E) : ForwardRange!E {
     ///
     E moveAt(size_t);
@@ -241,16 +244,16 @@ interface RandomFiniteAssignable(E) : RandomAccessFinite!E, BidirectionalAssigna
     void opIndexAssign(E val, size_t index);
 }
 
-/**Interface for an output range of type $(D E).  Usage is similar to the
- * $(D InputRange) interface and descendants.*/
+/**Interface for an output range of type `E`.  Usage is similar to the
+ * `InputRange` interface and descendants.*/
 interface OutputRange(E) {
     ///
     void put(E);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=6973
 @safe unittest
 {
-    // 6973
     static assert(isOutputRange!(OutputRange!int, int));
 }
 
@@ -271,8 +274,8 @@ private string putMethods(E...)()
     return ret;
 }
 
-/**Implements the $(D OutputRange) interface for all types E and wraps the
- * $(D put) method for each type $(D E) in a virtual function.
+/**Implements the `OutputRange` interface for all types E and wraps the
+ * `put` method for each type `E` in a virtual function.
  */
 class OutputRangeObject(R, E...) : staticMap!(OutputRange, E) {
     // @BUG 4689:  There should be constraints on this template class, but
@@ -288,7 +291,7 @@ class OutputRangeObject(R, E...) : staticMap!(OutputRange, E) {
 }
 
 
-/**Returns the interface type that best matches $(D R).*/
+/**Returns the interface type that best matches `R`.*/
 template MostDerivedInputRange(R)
 if (isInputRange!(Unqual!R))
 {
@@ -344,9 +347,9 @@ if (isInputRange!(Unqual!R))
     }
 }
 
-/**Implements the most derived interface that $(D R) works with and wraps
- * all relevant range primitives in virtual functions.  If $(D R) is already
- * derived from the $(D InputRange) interface, aliases itself away.
+/**Implements the most derived interface that `R` works with and wraps
+ * all relevant range primitives in virtual functions.  If `R` is already
+ * derived from the `InputRange` interface, aliases itself away.
  */
 template InputRangeObject(R)
 if (isInputRange!(Unqual!R))
@@ -480,7 +483,7 @@ if (isInputRange!(Unqual!R))
     }
 }
 
-/**Convenience function for creating an $(D InputRangeObject) of the proper type.
+/**Convenience function for creating an `InputRangeObject` of the proper type.
  * See $(LREF InputRange) for an example.
  */
 InputRangeObject!R inputRangeObject(R)(R range)
@@ -496,8 +499,8 @@ if (isInputRange!R)
     }
 }
 
-/**Convenience function for creating an $(D OutputRangeObject) with a base range
- * of type $(D R) that accepts types $(D E).
+/**Convenience function for creating an `OutputRangeObject` with a base range
+ * of type `R` that accepts types `E`.
 */
 template outputRangeObject(E...) {
 

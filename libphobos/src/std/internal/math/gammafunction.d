@@ -21,6 +21,7 @@ Macros:
 module std.internal.math.gammafunction;
 import std.internal.math.errorfunction;
 import std.math;
+import core.math : fabs, sin, sqrt;
 
 pure:
 nothrow:
@@ -34,46 +35,46 @@ immutable real EULERGAMMA = 0.57721_56649_01532_86060_65120_90082_40243_10421_59
 
 // Polynomial approximations for gamma and loggamma.
 
-immutable real[8] GammaNumeratorCoeffs = [ 1.0,
-    0x1.acf42d903366539ep-1, 0x1.73a991c8475f1aeap-2, 0x1.c7e918751d6b2a92p-4,
-    0x1.86d162cca32cfe86p-6, 0x1.0c378e2e6eaf7cd8p-8, 0x1.dc5c66b7d05feb54p-12,
-    0x1.616457b47e448694p-15
+immutable real[8] GammaNumeratorCoeffs = [ 1.0L,
+    0x1.acf42d903366539ep-1L, 0x1.73a991c8475f1aeap-2L, 0x1.c7e918751d6b2a92p-4L,
+    0x1.86d162cca32cfe86p-6L, 0x1.0c378e2e6eaf7cd8p-8L, 0x1.dc5c66b7d05feb54p-12L,
+    0x1.616457b47e448694p-15L
 ];
 
-immutable real[9] GammaDenominatorCoeffs = [ 1.0,
-  0x1.a8f9faae5d8fc8bp-2,  -0x1.cb7895a6756eebdep-3,  -0x1.7b9bab006d30652ap-5,
-  0x1.c671af78f312082ep-6, -0x1.a11ebbfaf96252dcp-11, -0x1.447b4d2230a77ddap-10,
-  0x1.ec1d45bb85e06696p-13,-0x1.d4ce24d05bd0a8e6p-17
+immutable real[9] GammaDenominatorCoeffs = [ 1.0L,
+  0x1.a8f9faae5d8fc8bp-2L,  -0x1.cb7895a6756eebdep-3L,  -0x1.7b9bab006d30652ap-5L,
+  0x1.c671af78f312082ep-6L, -0x1.a11ebbfaf96252dcp-11L, -0x1.447b4d2230a77ddap-10L,
+  0x1.ec1d45bb85e06696p-13L,-0x1.d4ce24d05bd0a8e6p-17L
 ];
 
-immutable real[9] GammaSmallCoeffs = [ 1.0,
-    0x1.2788cfc6fb618f52p-1, -0x1.4fcf4026afa2f7ecp-1, -0x1.5815e8fa24d7e306p-5,
-    0x1.5512320aea2ad71ap-3, -0x1.59af0fb9d82e216p-5,  -0x1.3b4b61d3bfdf244ap-7,
-    0x1.d9358e9d9d69fd34p-8, -0x1.38fc4bcbada775d6p-10
+immutable real[9] GammaSmallCoeffs = [ 1.0L,
+    0x1.2788cfc6fb618f52p-1L, -0x1.4fcf4026afa2f7ecp-1L, -0x1.5815e8fa24d7e306p-5L,
+    0x1.5512320aea2ad71ap-3L, -0x1.59af0fb9d82e216p-5L,  -0x1.3b4b61d3bfdf244ap-7L,
+    0x1.d9358e9d9d69fd34p-8L, -0x1.38fc4bcbada775d6p-10L
 ];
 
-immutable real[9] GammaSmallNegCoeffs = [ -1.0,
-    0x1.2788cfc6fb618f54p-1, 0x1.4fcf4026afa2bc4cp-1, -0x1.5815e8fa2468fec8p-5,
-    -0x1.5512320baedaf4b6p-3, -0x1.59af0fa283baf07ep-5, 0x1.3b4a70de31e05942p-7,
-    0x1.d9398be3bad13136p-8, 0x1.291b73ee05bcbba2p-10
+immutable real[9] GammaSmallNegCoeffs = [ -1.0L,
+    0x1.2788cfc6fb618f54p-1L, 0x1.4fcf4026afa2bc4cp-1L, -0x1.5815e8fa2468fec8p-5L,
+    -0x1.5512320baedaf4b6p-3L, -0x1.59af0fa283baf07ep-5L, 0x1.3b4a70de31e05942p-7L,
+    0x1.d9398be3bad13136p-8L, 0x1.291b73ee05bcbba2p-10L
 ];
 
 immutable real[7] logGammaStirlingCoeffs = [
-    0x1.5555555555553f98p-4, -0x1.6c16c16c07509b1p-9, 0x1.a01a012461cbf1e4p-11,
-    -0x1.3813089d3f9d164p-11, 0x1.b911a92555a277b8p-11, -0x1.ed0a7b4206087b22p-10,
-    0x1.402523859811b308p-8
+    0x1.5555555555553f98p-4L, -0x1.6c16c16c07509b1p-9L, 0x1.a01a012461cbf1e4p-11L,
+    -0x1.3813089d3f9d164p-11L, 0x1.b911a92555a277b8p-11L, -0x1.ed0a7b4206087b22p-10L,
+    0x1.402523859811b308p-8L
 ];
 
 immutable real[7] logGammaNumerator = [
-    -0x1.0edd25913aaa40a2p+23, -0x1.31c6ce2e58842d1ep+24, -0x1.f015814039477c3p+23,
-    -0x1.74ffe40c4b184b34p+22, -0x1.0d9c6d08f9eab55p+20,  -0x1.54c6b71935f1fc88p+16,
-    -0x1.0e761b42932b2aaep+11
+    -0x1.0edd25913aaa40a2p+23L, -0x1.31c6ce2e58842d1ep+24L, -0x1.f015814039477c3p+23L,
+    -0x1.74ffe40c4b184b34p+22L, -0x1.0d9c6d08f9eab55p+20L,  -0x1.54c6b71935f1fc88p+16L,
+    -0x1.0e761b42932b2aaep+11L
 ];
 
 immutable real[8] logGammaDenominator = [
-    -0x1.4055572d75d08c56p+24, -0x1.deeb6013998e4d76p+24, -0x1.106f7cded5dcc79ep+24,
-    -0x1.25e17184848c66d2p+22, -0x1.301303b99a614a0ap+19, -0x1.09e76ab41ae965p+15,
-    -0x1.00f95ced9e5f54eep+9, 1.0
+    -0x1.4055572d75d08c56p+24L, -0x1.deeb6013998e4d76p+24L, -0x1.106f7cded5dcc79ep+24L,
+    -0x1.25e17184848c66d2p+22L, -0x1.301303b99a614a0ap+19L, -0x1.09e76ab41ae965p+15L,
+    -0x1.00f95ced9e5f54eep+9L, 1.0L
 ];
 
 /*
@@ -89,9 +90,9 @@ real gammaStirling(real x)
     // CEPHES code Copyright 1994 by Stephen L. Moshier
 
     static immutable real[9] SmallStirlingCoeffs = [
-        0x1.55555555555543aap-4, 0x1.c71c71c720dd8792p-9, -0x1.5f7268f0b5907438p-9,
-        -0x1.e13cd410e0477de6p-13, 0x1.9b0f31643442616ep-11, 0x1.2527623a3472ae08p-14,
-        -0x1.37f6bc8ef8b374dep-11,-0x1.8c968886052b872ap-16, 0x1.76baa9c6d3eeddbcp-11
+        0x1.55555555555543aap-4L, 0x1.c71c71c720dd8792p-9L, -0x1.5f7268f0b5907438p-9L,
+        -0x1.e13cd410e0477de6p-13L, 0x1.9b0f31643442616ep-11L, 0x1.2527623a3472ae08p-14L,
+        -0x1.37f6bc8ef8b374dep-11L,-0x1.8c968886052b872ap-16L, 0x1.76baa9c6d3eeddbcp-11L
     ];
 
     static immutable real[7] LargeStirlingCoeffs = [ 1.0L,
@@ -144,76 +145,76 @@ real gammaStirling(real x)
 real igammaTemmeLarge(real a, real x)
 {
     static immutable real[][13] coef = [
-        [ -0.333333333333333333333, 0.0833333333333333333333,
-          -0.0148148148148148148148, 0.00115740740740740740741,
-          0.000352733686067019400353, -0.0001787551440329218107,
-          0.39192631785224377817e-4, -0.218544851067999216147e-5,
-          -0.18540622107151599607e-5, 0.829671134095308600502e-6,
-          -0.176659527368260793044e-6, 0.670785354340149858037e-8,
-          0.102618097842403080426e-7, -0.438203601845335318655e-8,
-          0.914769958223679023418e-9, -0.255141939949462497669e-10,
-          -0.583077213255042506746e-10, 0.243619480206674162437e-10,
-          -0.502766928011417558909e-11 ],
-        [ -0.00185185185185185185185, -0.00347222222222222222222,
-          0.00264550264550264550265, -0.000990226337448559670782,
-          0.000205761316872427983539, -0.40187757201646090535e-6,
-          -0.18098550334489977837e-4, 0.764916091608111008464e-5,
-          -0.161209008945634460038e-5, 0.464712780280743434226e-8,
-          0.137863344691572095931e-6, -0.575254560351770496402e-7,
-          0.119516285997781473243e-7, -0.175432417197476476238e-10,
-          -0.100915437106004126275e-8, 0.416279299184258263623e-9,
-          -0.856390702649298063807e-10 ],
-        [ 0.00413359788359788359788, -0.00268132716049382716049,
-          0.000771604938271604938272, 0.200938786008230452675e-5,
-          -0.000107366532263651605215, 0.529234488291201254164e-4,
-          -0.127606351886187277134e-4, 0.342357873409613807419e-7,
-          0.137219573090629332056e-5, -0.629899213838005502291e-6,
-          0.142806142060642417916e-6, -0.204770984219908660149e-9,
-          -0.140925299108675210533e-7, 0.622897408492202203356e-8,
-          -0.136704883966171134993e-8 ],
-        [ 0.000649434156378600823045, 0.000229472093621399176955,
-          -0.000469189494395255712128, 0.000267720632062838852962,
-          -0.756180167188397641073e-4, -0.239650511386729665193e-6,
-          0.110826541153473023615e-4, -0.56749528269915965675e-5,
-          0.142309007324358839146e-5, -0.278610802915281422406e-10,
-          -0.169584040919302772899e-6, 0.809946490538808236335e-7,
-          -0.191111684859736540607e-7 ],
-        [ -0.000861888290916711698605, 0.000784039221720066627474,
-          -0.000299072480303190179733, -0.146384525788434181781e-5,
-          0.664149821546512218666e-4, -0.396836504717943466443e-4,
-          0.113757269706784190981e-4, 0.250749722623753280165e-9,
-          -0.169541495365583060147e-5, 0.890750753220530968883e-6,
-          -0.229293483400080487057e-6],
-        [ -0.000336798553366358150309, -0.697281375836585777429e-4,
-          0.000277275324495939207873, -0.000199325705161888477003,
-          0.679778047793720783882e-4, 0.141906292064396701483e-6,
-          -0.135940481897686932785e-4, 0.801847025633420153972e-5,
-          -0.229148117650809517038e-5 ],
-        [ 0.000531307936463992223166, -0.000592166437353693882865,
-          0.000270878209671804482771, 0.790235323266032787212e-6,
-          -0.815396936756196875093e-4, 0.561168275310624965004e-4,
-          -0.183291165828433755673e-4, -0.307961345060330478256e-8,
-          0.346515536880360908674e-5, -0.20291327396058603727e-5,
-          0.57887928631490037089e-6 ],
-        [ 0.000344367606892377671254, 0.517179090826059219337e-4,
-          -0.000334931610811422363117, 0.000281269515476323702274,
-          -0.000109765822446847310235, -0.127410090954844853795e-6,
-          0.277444515115636441571e-4, -0.182634888057113326614e-4,
-          0.578769494973505239894e-5 ],
-        [ -0.000652623918595309418922, 0.000839498720672087279993,
-          -0.000438297098541721005061, -0.696909145842055197137e-6,
-          0.000166448466420675478374, -0.000127835176797692185853,
-          0.462995326369130429061e-4 ],
-        [ -0.000596761290192746250124, -0.720489541602001055909e-4,
-          0.000678230883766732836162, -0.0006401475260262758451,
-          0.000277501076343287044992 ],
-        [ 0.00133244544948006563713, -0.0019144384985654775265,
-          0.00110893691345966373396 ],
-        [ 0.00157972766073083495909, 0.000162516262783915816899,
-          -0.00206334210355432762645, 0.00213896861856890981541,
-          -0.00101085593912630031708 ],
-        [ -0.00407251211951401664727, 0.00640336283380806979482,
-          -0.00404101610816766177474 ]
+        [ -0.333333333333333333333L, 0.0833333333333333333333L,
+          -0.0148148148148148148148L, 0.00115740740740740740741L,
+          0.000352733686067019400353L, -0.0001787551440329218107L,
+          0.39192631785224377817e-4L, -0.218544851067999216147e-5L,
+          -0.18540622107151599607e-5L, 0.829671134095308600502e-6L,
+          -0.176659527368260793044e-6L, 0.670785354340149858037e-8L,
+          0.102618097842403080426e-7L, -0.438203601845335318655e-8L,
+          0.914769958223679023418e-9L, -0.255141939949462497669e-10L,
+          -0.583077213255042506746e-10L, 0.243619480206674162437e-10L,
+          -0.502766928011417558909e-11L ],
+        [ -0.00185185185185185185185L, -0.00347222222222222222222L,
+          0.00264550264550264550265L, -0.000990226337448559670782L,
+          0.000205761316872427983539L, -0.40187757201646090535e-6L,
+          -0.18098550334489977837e-4L, 0.764916091608111008464e-5L,
+          -0.161209008945634460038e-5L, 0.464712780280743434226e-8L,
+          0.137863344691572095931e-6L, -0.575254560351770496402e-7L,
+          0.119516285997781473243e-7L, -0.175432417197476476238e-10L,
+          -0.100915437106004126275e-8L, 0.416279299184258263623e-9L,
+          -0.856390702649298063807e-10L ],
+        [ 0.00413359788359788359788L, -0.00268132716049382716049L,
+          0.000771604938271604938272L, 0.200938786008230452675e-5L,
+          -0.000107366532263651605215L, 0.529234488291201254164e-4L,
+          -0.127606351886187277134e-4L, 0.342357873409613807419e-7L,
+          0.137219573090629332056e-5L, -0.629899213838005502291e-6L,
+          0.142806142060642417916e-6L, -0.204770984219908660149e-9L,
+          -0.140925299108675210533e-7L, 0.622897408492202203356e-8L,
+          -0.136704883966171134993e-8L ],
+        [ 0.000649434156378600823045L, 0.000229472093621399176955L,
+          -0.000469189494395255712128L, 0.000267720632062838852962L,
+          -0.756180167188397641073e-4L, -0.239650511386729665193e-6L,
+          0.110826541153473023615e-4L, -0.56749528269915965675e-5L,
+          0.142309007324358839146e-5L, -0.278610802915281422406e-10L,
+          -0.169584040919302772899e-6L, 0.809946490538808236335e-7L,
+          -0.191111684859736540607e-7L ],
+        [ -0.000861888290916711698605L, 0.000784039221720066627474L,
+          -0.000299072480303190179733L, -0.146384525788434181781e-5L,
+          0.664149821546512218666e-4L, -0.396836504717943466443e-4L,
+          0.113757269706784190981e-4L, 0.250749722623753280165e-9L,
+          -0.169541495365583060147e-5L, 0.890750753220530968883e-6L,
+          -0.229293483400080487057e-6L ],
+        [ -0.000336798553366358150309L, -0.697281375836585777429e-4L,
+          0.000277275324495939207873L, -0.000199325705161888477003L,
+          0.679778047793720783882e-4L, 0.141906292064396701483e-6L,
+          -0.135940481897686932785e-4L, 0.801847025633420153972e-5L,
+          -0.229148117650809517038e-5L ],
+        [ 0.000531307936463992223166L, -0.000592166437353693882865L,
+          0.000270878209671804482771L, 0.790235323266032787212e-6L,
+          -0.815396936756196875093e-4L, 0.561168275310624965004e-4L,
+          -0.183291165828433755673e-4L, -0.307961345060330478256e-8L,
+          0.346515536880360908674e-5L, -0.20291327396058603727e-5L,
+          0.57887928631490037089e-6L ],
+        [ 0.000344367606892377671254L, 0.517179090826059219337e-4L,
+          -0.000334931610811422363117L, 0.000281269515476323702274L,
+          -0.000109765822446847310235L, -0.127410090954844853795e-6L,
+          0.277444515115636441571e-4L, -0.182634888057113326614e-4L,
+          0.578769494973505239894e-5L ],
+        [ -0.000652623918595309418922L, 0.000839498720672087279993L,
+          -0.000438297098541721005061L, -0.696909145842055197137e-6L,
+          0.000166448466420675478374L, -0.000127835176797692185853L,
+          0.462995326369130429061e-4L ],
+        [ -0.000596761290192746250124L, -0.720489541602001055909e-4L,
+          0.000678230883766732836162L, -0.0006401475260262758451L,
+          0.000277501076343287044992L ],
+        [ 0.00133244544948006563713L, -0.0019144384985654775265L,
+          0.00110893691345966373396L ],
+        [ 0.00157972766073083495909L, 0.000162516262783915816899L,
+          -0.00206334210355432762645L, 0.00213896861856890981541L,
+          -0.00101085593912630031708L ],
+        [ -0.00407251211951401664727L, 0.00640336283380806979482L,
+          -0.00404101610816766177474L ]
     ];
 
     // avoid nans when one of the arguments is inf:
@@ -492,7 +493,7 @@ real logGamma(real x)
         }
         while ( x < 2.0L )
         {
-            if ( fabs(x) <= 0.03125 )
+            if ( fabs(x) <= 0.03125L )
             {
                 if ( x == 0.0L )
                     return real.infinity;
@@ -568,9 +569,9 @@ real logGamma(real x)
             assert( feqrel(log(fabs(gamma(testpoints[i]))), testpoints[i+1]) > real.mant_dig-5);
         }
     }
-    assert(logGamma(-50.2) == log(fabs(gamma(-50.2))));
-    assert(logGamma(-0.008) == log(fabs(gamma(-0.008))));
-    assert(feqrel(logGamma(-38.8),log(fabs(gamma(-38.8)))) > real.mant_dig-4);
+    assert(feqrel(logGamma(-50.2L),log(fabs(gamma(-50.2L)))) > real.mant_dig-2);
+    assert(feqrel(logGamma(-0.008L),log(fabs(gamma(-0.008L)))) > real.mant_dig-2);
+    assert(feqrel(logGamma(-38.8L),log(fabs(gamma(-38.8L)))) > real.mant_dig-4);
     static if (real.mant_dig >= 64) // incl. 80-bit reals
         assert(feqrel(logGamma(1500.0L),log(gamma(1500.0L))) > real.mant_dig-2);
     else static if (real.mant_dig >= 53) // incl. 64-bit reals
@@ -597,8 +598,8 @@ private {
  */
 static if (floatTraits!(real).realFormat == RealFormat.ieeeQuadruple)
 {
-    enum real MAXLOG = 0x1.62e42fefa39ef35793c7673007e6p+13;  // log(real.max)
-    enum real MINLOG = -0x1.6546282207802c89d24d65e96274p+13; // log(real.min_normal*real.epsilon) = log(smallest denormal)
+    enum real MAXLOG = 0x1.62e42fefa39ef35793c7673007e6p+13L;  // log(real.max)
+    enum real MINLOG = -0x1.6546282207802c89d24d65e96274p+13L; // log(real.min_normal*real.epsilon) = log(smallest denormal)
 }
 else static if (floatTraits!(real).realFormat == RealFormat.ieeeExtended)
 {
@@ -1039,17 +1040,17 @@ done:
 
     // Test against Mathematica   betaRegularized[z,a,b]
     // These arbitrary points are chosen to give good code coverage.
-    assert(feqrel(betaIncomplete(8, 10, 0.2), 0.010_934_315_234_099_2L) >=  real.mant_dig - 5);
-    assert(feqrel(betaIncomplete(2, 2.5, 0.9), 0.989_722_597_604_452_767_171_003_59L) >= real.mant_dig - 1);
+    assert(feqrel(betaIncomplete(8, 10, 0.2L), 0.010_934_315_234_099_2L) >=  real.mant_dig - 5);
+    assert(feqrel(betaIncomplete(2, 2.5L, 0.9L), 0.989_722_597_604_452_767_171_003_59L) >= real.mant_dig - 1);
     static if (real.mant_dig >= 64) // incl. 80-bit reals
-        assert(feqrel(betaIncomplete(1000, 800, 0.5), 1.179140859734704555102808541457164E-06L) >= real.mant_dig - 13);
+        assert(feqrel(betaIncomplete(1000, 800, 0.5L), 1.179140859734704555102808541457164E-06L) >= real.mant_dig - 13);
     else
-        assert(feqrel(betaIncomplete(1000, 800, 0.5), 1.179140859734704555102808541457164E-06L) >= real.mant_dig - 14);
-    assert(feqrel(betaIncomplete(0.0001, 10000, 0.0001), 0.999978059362107134278786L) >= real.mant_dig - 18);
-    assert(betaIncomplete(0.01, 327726.7, 0.545113) == 1.0);
+        assert(feqrel(betaIncomplete(1000, 800, 0.5L), 1.179140859734704555102808541457164E-06L) >= real.mant_dig - 14);
+    assert(feqrel(betaIncomplete(0.0001, 10000, 0.0001L), 0.999978059362107134278786L) >= real.mant_dig - 18);
+    assert(betaIncomplete(0.01L, 327726.7L, 0.545113L) == 1.0);
     assert(feqrel(betaIncompleteInv(8, 10, 0.010_934_315_234_099_2L), 0.2L) >= real.mant_dig - 2);
-    assert(feqrel(betaIncomplete(0.01, 498.437, 0.0121433), 0.99999664562033077636065L) >= real.mant_dig - 1);
-    assert(feqrel(betaIncompleteInv(5, 10, 0.2000002972865658842), 0.229121208190918L) >= real.mant_dig - 3);
+    assert(feqrel(betaIncomplete(0.01L, 498.437L, 0.0121433L), 0.99999664562033077636065L) >= real.mant_dig - 1);
+    assert(feqrel(betaIncompleteInv(5, 10, 0.2000002972865658842L), 0.229121208190918L) >= real.mant_dig - 3);
     assert(feqrel(betaIncompleteInv(4, 7, 0.8000002209179505L), 0.483657360076904L) >= real.mant_dig - 3);
 
     // Coverage tests. I don't have correct values for these tests, but
@@ -1060,32 +1061,32 @@ done:
     // significant improvement over the original CEPHES code.
     static if (real.mant_dig == 64) // 80-bit reals
     {
-        assert(betaIncompleteInv(0.01, 8e-48, 5.45464e-20) == 1-real.epsilon);
-        assert(betaIncompleteInv(0.01, 8e-48, 9e-26) == 1-real.epsilon);
+        assert(betaIncompleteInv(0.01L, 8e-48L, 5.45464e-20L) == 1-real.epsilon);
+        assert(betaIncompleteInv(0.01L, 8e-48L, 9e-26L) == 1-real.epsilon);
 
         // Beware: a one-bit change in pow() changes almost all digits in the result!
         assert(feqrel(
-            betaIncompleteInv(0x1.b3d151fbba0eb18p+1, 1.2265e-19, 2.44859e-18),
+            betaIncompleteInv(0x1.b3d151fbba0eb18p+1L, 1.2265e-19L, 2.44859e-18L),
             0x1.c0110c8531d0952cp-1L
         ) > 10);
         // This next case uncovered a one-bit difference in the FYL2X instruction
         // between Intel and AMD processors. This difference gets magnified by 2^^38.
         // WolframAlpha crashes attempting to calculate this.
-        assert(feqrel(betaIncompleteInv(0x1.ff1275ae5b939bcap-41, 4.6713e18, 0.0813601),
+        assert(feqrel(betaIncompleteInv(0x1.ff1275ae5b939bcap-41L, 4.6713e18L, 0.0813601L),
             0x1.f97749d90c7adba8p-63L) >= real.mant_dig - 39);
-        real a1 = 3.40483;
-        assert(betaIncompleteInv(a1, 4.0640301659679627772e19L, 0.545113) == 0x1.ba8c08108aaf5d14p-109);
-        real b1 = 2.82847e-25;
-        assert(feqrel(betaIncompleteInv(0.01, b1, 9e-26), 0x1.549696104490aa9p-830L) >= real.mant_dig-10);
+        real a1 = 3.40483L;
+        assert(betaIncompleteInv(a1, 4.0640301659679627772e19L, 0.545113L) == 0x1.ba8c08108aaf5d14p-109L);
+        real b1 = 2.82847e-25L;
+        assert(feqrel(betaIncompleteInv(0.01L, b1, 9e-26L), 0x1.549696104490aa9p-830L) >= real.mant_dig-10);
 
         // --- Problematic cases ---
         // This is a situation where the series expansion fails to converge
-        assert( isNaN(betaIncompleteInv(0.12167, 4.0640301659679627772e19L, 0.0813601)));
+        assert( isNaN(betaIncompleteInv(0.12167L, 4.0640301659679627772e19L, 0.0813601L)));
         // This next result is almost certainly erroneous.
         // Mathematica states: "(cannot be determined by current methods)"
-        assert(betaIncomplete(1.16251e20, 2.18e39, 5.45e-20) == -real.infinity);
+        assert(betaIncomplete(1.16251e20L, 2.18e39L, 5.45e-20L) == -real.infinity);
         // WolframAlpha gives no result for this, though indicates that it approximately 1.0 - 1.3e-9
-        assert(1 - betaIncomplete(0.01, 328222, 4.0375e-5) == 0x1.5f62926b4p-30);
+        assert(1 - betaIncomplete(0.01L, 328222, 4.0375e-5L) == 0x1.5f62926b4p-30L);
     }
 }
 
@@ -1326,11 +1327,13 @@ real betaDistPowerSeries(real a, real b, real x )
  * values of a and x.
  */
 real gammaIncomplete(real a, real x )
-in {
+in
+{
    assert(x >= 0);
    assert(a > 0);
 }
-body {
+do
+{
     /* left tail of incomplete gamma function:
      *
      *          inf.      k
@@ -1370,11 +1373,13 @@ body {
 
 /** ditto */
 real gammaIncompleteCompl(real a, real x )
-in {
+in
+{
    assert(x >= 0);
    assert(a > 0);
 }
-body {
+do
+{
     if (x == 0)
         return 1.0L;
     if ( (x < 1.0L) || (x < a) )
@@ -1456,11 +1461,13 @@ body {
  * root of incompleteGammaCompl(a,x) - p = 0.
  */
 real gammaIncompleteComplInv(real a, real p)
-in {
+in
+{
   assert(p >= 0 && p <= 1);
   assert(a>0);
 }
-body {
+do
+{
     if (p == 0) return real.infinity;
 
     real y0 = p;
@@ -1585,17 +1592,17 @@ ihalve:
 @safe unittest
 {
 //Values from Excel's GammaInv(1-p, x, 1)
-assert(fabs(gammaIncompleteComplInv(1, 0.5) - 0.693147188044814) < 0.00000005);
-assert(fabs(gammaIncompleteComplInv(12, 0.99) - 5.42818075054289) < 0.00000005);
-assert(fabs(gammaIncompleteComplInv(100, 0.8) - 91.5013985848288L) < 0.000005);
+assert(fabs(gammaIncompleteComplInv(1, 0.5L) - 0.693147188044814L) < 0.00000005L);
+assert(fabs(gammaIncompleteComplInv(12, 0.99L) - 5.42818075054289L) < 0.00000005L);
+assert(fabs(gammaIncompleteComplInv(100, 0.8L) - 91.5013985848288L) < 0.000005L);
 assert(gammaIncomplete(1, 0)==0);
 assert(gammaIncompleteCompl(1, 0)==1);
 assert(gammaIncomplete(4545, real.infinity)==1);
 
 // Values from Excel's (1-GammaDist(x, alpha, 1, TRUE))
 
-assert(fabs(1.0L-gammaIncompleteCompl(0.5, 2) - 0.954499729507309L) < 0.00000005);
-assert(fabs(gammaIncomplete(0.5, 2) - 0.954499729507309L) < 0.00000005);
+assert(fabs(1.0L-gammaIncompleteCompl(0.5L, 2) - 0.954499729507309L) < 0.00000005L);
+assert(fabs(gammaIncomplete(0.5L, 2) - 0.954499729507309L) < 0.00000005L);
 // Fixed Cephes bug:
 assert(gammaIncompleteCompl(384, real.infinity)==0);
 assert(gammaIncompleteComplInv(3, 0)==real.infinity);
@@ -1603,9 +1610,9 @@ assert(gammaIncompleteComplInv(3, 0)==real.infinity);
 // x was larger than a, but not by much, and both were large:
 // The value is from WolframAlpha (Gamma[100000, 100001, inf] / Gamma[100000])
 static if (real.mant_dig >= 64) // incl. 80-bit reals
-    assert(fabs(gammaIncompleteCompl(100000, 100001) - 0.49831792109) < 0.000000000005);
+    assert(fabs(gammaIncompleteCompl(100000, 100001) - 0.49831792109L) < 0.000000000005L);
 else
-    assert(fabs(gammaIncompleteCompl(100000, 100001) - 0.49831792109) < 0.00000005);
+    assert(fabs(gammaIncompleteCompl(100000, 100001) - 0.49831792109L) < 0.00000005L);
 }
 
 
@@ -1688,7 +1695,7 @@ real digamma(real x)
         s += 1.0;
     }
 
-    if ( s < 1.0e17 )
+    if ( s < 1.0e17L )
     {
         z = 1.0/(s * s);
         y = z * poly(z, Bn_n);
@@ -1755,7 +1762,7 @@ real logmdigamma(real x)
     }
 
     real y;
-    if ( s < 1.0e17 )
+    if ( s < 1.0e17L )
     {
         immutable real z = 1.0/(s * s);
         y = z * poly(z, Bn_n);
@@ -1771,9 +1778,9 @@ real logmdigamma(real x)
     assert(isIdentical(logmdigamma(NaN(0xABC)), NaN(0xABC)));
     assert(logmdigamma(0.0) == real.infinity);
     for (auto x = 0.01; x < 1.0; x += 0.1)
-        assert(approxEqual(digamma(x), log(x) - logmdigamma(x)));
+        assert(isClose(digamma(x), log(x) - logmdigamma(x)));
     for (auto x = 1.0; x < 15.0; x += 1.0)
-        assert(approxEqual(digamma(x), log(x) - logmdigamma(x)));
+        assert(isClose(digamma(x), log(x) - logmdigamma(x)));
 }
 
 /** Inverse of the Log Minus Digamma function
@@ -1830,12 +1837,12 @@ real logmdigammaInverse(real y)
         tuple(1017.644138623741168814449776695062817947092468536L, 1.0L/1024),
     ];
     foreach (test; testData)
-        assert(approxEqual(logmdigammaInverse(test[0]), test[1], 2e-15, 0));
+        assert(isClose(logmdigammaInverse(test[0]), test[1], 2e-15L));
 
-    assert(approxEqual(logmdigamma(logmdigammaInverse(1)), 1, 1e-15, 0));
-    assert(approxEqual(logmdigamma(logmdigammaInverse(real.min_normal)), real.min_normal, 1e-15, 0));
-    assert(approxEqual(logmdigamma(logmdigammaInverse(real.max/2)), real.max/2, 1e-15, 0));
-    assert(approxEqual(logmdigammaInverse(logmdigamma(1)), 1, 1e-15, 0));
-    assert(approxEqual(logmdigammaInverse(logmdigamma(real.min_normal)), real.min_normal, 1e-15, 0));
-    assert(approxEqual(logmdigammaInverse(logmdigamma(real.max/2)), real.max/2, 1e-15, 0));
+    assert(isClose(logmdigamma(logmdigammaInverse(1)), 1, 1e-15L));
+    assert(isClose(logmdigamma(logmdigammaInverse(real.min_normal)), real.min_normal, 1e-15L));
+    assert(isClose(logmdigamma(logmdigammaInverse(real.max/2)), real.max/2, 1e-15L));
+    assert(isClose(logmdigammaInverse(logmdigamma(1)), 1, 1e-15L));
+    assert(isClose(logmdigammaInverse(logmdigamma(real.min_normal)), real.min_normal, 1e-15L));
+    assert(isClose(logmdigammaInverse(logmdigamma(real.max/2)), real.max/2, 1e-15L));
 }

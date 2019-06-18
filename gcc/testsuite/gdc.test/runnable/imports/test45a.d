@@ -1,6 +1,6 @@
 module imports.test45a;
 
-import std.stdio;
+import core.stdc.stdio;
 
 int foo()
 {

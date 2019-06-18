@@ -25,7 +25,8 @@
 module gcc.emutls;
 
 import core.atomic, core.stdc.stdlib, core.stdc.string, core.sync.mutex;
-import rt.util.container.array, rt.util.container.hashtab;
+import core.internal.container.array;
+import core.internal.container.hashtab;
 import core.internal.traits : classInstanceAlignment;
 import gcc.builtins, gcc.gthread;
 

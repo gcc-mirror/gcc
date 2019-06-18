@@ -1,6 +1,6 @@
 /* TEST_OUTPUT:
 ---
-fail_compilation/test15191.d(17): Error: cannot take address of ref return of foo() in @safe function bar
+fail_compilation/test15191.d(17): Error: cannot take address of `ref return` of `foo()` in `@safe` function `bar`
 ---
 */
 

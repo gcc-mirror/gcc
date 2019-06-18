@@ -6,14 +6,14 @@
  * License:   Distributed under the
  *            $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost Software License 1.0).
  * Authors:   Walter Bright, Kenji Hara
- * Source:    $(DRUNTIMESRC src/rt/_arrayassign.d)
+ * Source:    $(DRUNTIMESRC rt/_arrayassign.d)
  */
 
 module rt.arrayassign;
 
 private
 {
-    import rt.util.array;
+    import core.internal.util.array;
     import core.stdc.string;
     import core.stdc.stdlib;
     debug(PRINTF) import core.stdc.stdio;

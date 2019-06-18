@@ -249,7 +249,7 @@ public:
     tree t1 = build_expr (e->e1);
     tree t2 = build_expr (e->e2);
 
-    if (e->type->ty != Tvoid)
+    if (e->type->ty != TY::Tvoid)
       {
 	t1 = convert_expr (t1, e->e1->type, e->type);
 	t2 = convert_expr (t2, e->e2->type, e->type);
@@ -268,8 +268,8 @@ public:
     Type *tb1 = e->e1->type->toBasetype ();
     Type *tb2 = e->e2->type->toBasetype ();
 
-    if ((tb1->ty == Tsarray || tb1->ty == Tarray)
-	&& (tb2->ty == Tsarray || tb2->ty == Tarray))
+    if ((tb1->ty == TY::Tsarray || tb1->ty == TY::Tarray)
+	&& (tb2->ty == TY::Tsarray || tb2->ty == TY::Tarray))
       {
 	/* For static and dynamic arrays, identity is defined as referring to
 	   the same array elements and the same number of elements.  */
@@ -278,7 +278,7 @@ public:
 	this->result_ = d_convert (build_ctype (e->type),
 				   build_boolop (code, t1, t2));
       }
-    else if (tb1->isfloating () && tb1->ty != Tvector)
+    else if (tb1->isfloating () && tb1->ty != TY::Tvector)
       {
 	/* For floating-point values, identity is defined as the bits in the
 	   operands being identical.  */
@@ -333,8 +333,8 @@ public:
     Type *tb2 = e->e2->type->toBasetype ();
     tree_code code = (e->op == TOKequal) ? EQ_EXPR : NE_EXPR;
 
-    if ((tb1->ty == Tsarray || tb1->ty == Tarray)
-	&& (tb2->ty == Tsarray || tb2->ty == Tarray))
+    if ((tb1->ty == TY::Tsarray || tb1->ty == TY::Tarray)
+	&& (tb2->ty == TY::Tsarray || tb2->ty == TY::Tarray))
       {
 	/* For static and dynamic arrays, equality is defined as the lengths of
 	   the arrays matching, and all the elements are equal.  */
@@ -346,8 +346,9 @@ public:
 		e1.length == e2.length && memcmp(e1.ptr, e2.ptr, size) == 0;
 	    Or when generating a NE expression:
 		e1.length != e2.length || memcmp(e1.ptr, e2.ptr, size) != 0;  */
-	if ((t1elem->isintegral () || t1elem->ty == Tvoid
-	     || (t1elem->ty == Tstruct && !t1elem->isTypeStruct ()->sym->xeq))
+	if ((t1elem->isintegral () || t1elem->ty == TY::Tvoid
+	     || (t1elem->ty == TY::Tstruct
+		 && !t1elem->isTypeStruct ()->sym->xeq))
 	    && t1elem->ty == t2elem->ty)
 	  {
 	    tree t1 = d_array_convert (e->e1);
@@ -368,7 +369,7 @@ public:
 
 	    /* Compare arrays using memcmp if possible, otherwise for structs,
 	       each field is compared inline.  */
-	    if (t1elem->ty != Tstruct
+	    if (t1elem->ty != TY::Tstruct
 		|| identity_compare_p (t1elem->isTypeStruct ()->sym))
 	      {
 		tree size = size_mult_expr (t1len, size_int (t1elem->size ()));
@@ -398,7 +399,7 @@ public:
 	    /* Finally, check if lengths of both arrays match if dynamic.
 	       The frontend should have already guaranteed that static arrays
 	       have same size.  */
-	    if (tb1->ty == Tsarray && tb2->ty == Tsarray)
+	    if (tb1->ty == TY::Tsarray && tb2->ty == TY::Tsarray)
 	      gcc_assert (tb1->size () == tb2->size ());
 	    else
 	      {
@@ -444,7 +445,7 @@ public:
 
 	this->result_ = build_struct_comparison (code, ts->sym, t1, t2);
       }
-    else if (tb1->ty == Taarray && tb2->ty == Taarray)
+    else if (tb1->ty == TY::Taarray && tb2->ty == TY::Taarray)
       {
 	/* Use _aaEqual() for associative arrays.  */
 	tree result = build_libcall (LIBCALL_AAEQUAL, e->type, 3,
@@ -518,23 +519,14 @@ public:
 	gcc_unreachable ();
       }
 
-    if ((tb1->ty == Tsarray || tb1->ty == Tarray)
-	&& (tb2->ty == Tsarray || tb2->ty == Tarray))
+    /* For static and dynamic arrays, the relational op is turned into a
+       library call.  It is not lowered during codegen.  */
+    if ((tb1->ty == TY::Tsarray || tb1->ty == TY::Tarray)
+	&& (tb2->ty == TY::Tsarray || tb2->ty == TY::Tarray))
       {
-	/* For static and dynamic arrays, the result of the relational op is
-	   the result of the operator applied to the first non-equal element
-	   of the array.  If two arrays compare equal, but are of different
-	   lengths, the shorter array compares as less than the longer.  */
-	Type *telem = tb1->nextOf ()->toBasetype ();
-
-	tree call = build_libcall (LIBCALL_ADCMP2, Type::tint32, 3,
-				   d_array_convert (e->e1),
-				   d_array_convert (e->e2),
-				   build_typeinfo (e->loc, telem->arrayOf ()));
-	result = build_boolop (code, call, integer_zero_node);
-
-	this->result_ = d_convert (build_ctype (e->type), result);
-	return;
+	error ("cannot handle comparison of type %<%s == %s%>",
+	       tb1->toChars (), tb2->toChars ());
+	gcc_unreachable ();
       }
 
     /* Simple comparison.  */
@@ -550,7 +542,7 @@ public:
   {
     tree_code code = (e->op == TOKandand) ? TRUTH_ANDIF_EXPR : TRUTH_ORIF_EXPR;
 
-    if (e->e2->type->toBasetype ()->ty != Tvoid)
+    if (e->e2->type->toBasetype ()->ty != TY::Tvoid)
       {
 	tree t1 = build_expr (e->e1);
 	tree t2 = build_expr (e->e2);
@@ -618,7 +610,8 @@ public:
 	   The front-end rewrites `(p1 - p2)' into `(p1 - p2) / stride'.  */
 	if (MinExp *me = e->e1->isMinExp ())
 	  {
-	    if (me->e1->type->ty == Tpointer && me->e2->type->ty == Tpointer
+	    if (me->e1->type->ty == TY::Tpointer
+		&& me->e2->type->ty == TY::Tpointer
 		&& e->e2->op == TOKint64)
 	      {
 		code = EXACT_DIV_EXPR;
@@ -678,7 +671,7 @@ public:
     Type *tb2 = e->e2->type->toBasetype ();
     Type *etype;
 
-    if (tb1->ty == Tarray || tb1->ty == Tsarray)
+    if (tb1->ty == TY::Tarray || tb1->ty == TY::Tsarray)
       etype = tb1->nextOf ();
     else
       etype = tb2->nextOf ();
@@ -839,13 +832,13 @@ public:
     tree ptr = d_save_expr (build_address (lhs));
     tree result = NULL_TREE;
 
-    if (tb1->ty == Tarray && tb2->ty == Tdchar
-	&& (etype->ty == Tchar || etype->ty == Twchar))
+    if (tb1->ty == TY::Tarray && tb2->ty == TY::Tdchar
+	&& (etype->ty == TY::Tchar || etype->ty == TY::Twchar))
       {
 	/* Append a dchar to a char[] or wchar[]:
 	   The assignment is handled by the D run-time library, so only
 	   need to call `_d_arrayappend[cw]d(&e1, e2)'  */
-	libcall_fn libcall = (etype->ty == Tchar)
+	libcall_fn libcall = (etype->ty == TY::Tchar)
 	  ? LIBCALL_ARRAYAPPENDCD : LIBCALL_ARRAYAPPENDWD;
 
 	result = build_libcall (libcall, e->type, 2,
@@ -853,9 +846,9 @@ public:
       }
     else
       {
-	gcc_assert (tb1->ty == Tarray || tb2->ty == Tsarray);
+	gcc_assert (tb1->ty == TY::Tarray || tb2->ty == TY::Tsarray);
 
-	if ((tb2->ty == Tarray || tb2->ty == Tsarray)
+	if ((tb2->ty == TY::Tarray || tb2->ty == TY::Tsarray)
 	    && same_type_p (etype, tb2->nextOf ()->toBasetype ()))
 	  {
 	    /* Append an array to another array:
@@ -917,23 +910,9 @@ public:
     /* Look for array.length = n;  */
     if (e->e1->op == TOKarraylength)
       {
-	/* Assignment to an array's length property; resize the array.  */
-	ArrayLengthExp *ale = e->e1->isArrayLengthExp ();
-	tree newlength = convert_expr (build_expr (e->e2), e->e2->type,
-				       Type::tsize_t);
-	tree ptr = build_address (build_expr (ale->e1));
-
-	/* Don't want the basetype for the element type.  */
-	Type *etype = ale->e1->type->toBasetype ()->nextOf ();
-	libcall_fn libcall = etype->isZeroInit ()
-	  ? LIBCALL_ARRAYSETLENGTHT : LIBCALL_ARRAYSETLENGTHIT;
-
-	tree result = build_libcall (libcall, ale->e1->type, 3,
-				     build_typeinfo (ale->loc, ale->e1->type),
-				     newlength, ptr);
-
-	this->result_ = d_array_length (result);
-	return;
+	/* This case should have been rewritten to `_d_arraysetlengthT` in the
+	   semantic phase.  */
+	gcc_unreachable ();
       }
 
     /* Look for array[] = n;  */
@@ -947,12 +926,16 @@ public:
 	bool postblit = needs_postblit (etype) && lvalue_p (e->e2);
 	bool destructor = needs_dtor (etype);
 
-	if (e->memset & blockAssign)
+	if (e->memset == MemorySet::blockAssign)
 	  {
 	    /* Set a range of elements to one value.  */
-	    tree t1 = d_save_expr (build_expr (e->e1));
+	    tree t1 = build_expr (e->e1);
 	    tree t2 = build_expr (e->e2);
 	    tree result;
+
+	    /* Extract any array bounds checks from the slice expression.  */
+	    tree init = stabilize_expr (&t1);
+	    t1 = d_save_expr (t1);
 
 	    if ((postblit || destructor) && e->op != TOKblit)
 	      {
@@ -962,15 +945,12 @@ public:
 		Type *tm = etype->unSharedOf ()->mutableOf ();
 		tree ti = build_typeinfo (e->loc, tm);
 
-		tree result = build_libcall (libcall, Type::tvoid, 4,
-					     d_array_ptr (t1),
-					     build_address (t2),
-					     d_array_length (t1), ti);
-		this->result_ = compound_expr (result, t1);
-		return;
+		result = build_libcall (libcall, Type::tvoid, 4,
+					d_array_ptr (t1),
+					build_address (t2),
+					d_array_length (t1), ti);
 	      }
-
-	    if (integer_zerop (t2))
+	    else if (integer_zerop (t2))
 	      {
 		tree size = size_mult_expr (d_array_length (t1),
 					    size_int (etype->size ()));
@@ -980,12 +960,13 @@ public:
 	      result = build_array_set (d_array_ptr (t1),
 					d_array_length (t1), t2);
 
+	    result = compound_expr (init, result);
 	    this->result_ = compound_expr (result, t1);
 	  }
 	else
 	  {
 	    /* Perform a memcpy operation.  */
-	    gcc_assert (e->e2->type->ty != Tpointer);
+	    gcc_assert (e->e2->type->ty != TY::Tpointer);
 
 	    if (!postblit && !destructor)
 	      {
@@ -1056,7 +1037,7 @@ public:
       }
 
     /* Look for reference initializations.  */
-    if (e->memset & referenceInit)
+    if (e->memset == MemorySet::referenceInit)
       {
 	gcc_assert (e->op == TOKconstruct || e->op == TOKblit);
 	gcc_assert (e->e1->op == TOKvar);
@@ -1082,7 +1063,7 @@ public:
     tree_code modifycode = (e->op == TOKconstruct) ? INIT_EXPR : MODIFY_EXPR;
 
     /* Look for struct assignment.  */
-    if (tb1->ty == Tstruct)
+    if (tb1->ty == TY::Tstruct)
       {
 	tree t1 = build_expr (e->e1);
 	tree t2 = convert_for_assignment (build_expr (e->e2, false, true),
@@ -1136,7 +1117,7 @@ public:
       }
 
     /* Look for static array assignment.  */
-    if (tb1->ty == Tsarray)
+    if (tb1->ty == TY::Tsarray)
       {
 	/* Look for array = 0.  */
 	if (e->e2->op == TOKint64)
@@ -1148,7 +1129,7 @@ public:
 	  }
 
 	Type *etype = tb1->nextOf ();
-	gcc_assert (e->e2->type->toBasetype ()->ty == Tsarray);
+	gcc_assert (e->e2->type->toBasetype ()->ty == TY::Tsarray);
 
 	/* Determine if we need to run postblit.  */
 	bool postblit = needs_postblit (etype);
@@ -1171,7 +1152,8 @@ public:
 	    return;
 	  }
 
-	Type *arrtype = (e->type->ty == Tsarray) ? etype->arrayOf () : e->type;
+	Type *arrtype = (e->type->ty == TY::Tsarray)
+	  ? etype->arrayOf () : e->type;
 	tree result;
 
 	if (e->op == TOKconstruct)
@@ -1198,7 +1180,7 @@ public:
 	  }
 
 	/* Cast the libcall result back to a static array.  */
-	if (e->type->ty == Tsarray)
+	if (e->type->ty == TY::Tsarray)
 	  result = indirect_ref (build_ctype (e->type),
 				 d_array_ptr (result));
 
@@ -1243,7 +1225,7 @@ public:
   {
     Type *tb1 = e->e1->type->toBasetype ();
 
-    if (tb1->ty == Taarray)
+    if (tb1->ty == TY::Taarray)
       {
 	/* Get the key for the associative array.  */
 	Type *tkey = tb1->isTypeAArray ()->index->toBasetype ();
@@ -1289,7 +1271,7 @@ public:
 	tree ptr = convert_expr (array, tb1, tb1->nextOf ()->pointerTo ());
 
 	tree length = NULL_TREE;
-	if (tb1->ty != Tpointer)
+	if (tb1->ty != TY::Tpointer)
 	  length = get_array_length (array, tb1);
 	else
 	  gcc_assert (e->lengthVar == NULL);
@@ -1304,7 +1286,7 @@ public:
 
 	/* If it's a static array and the index is constant, the front end has
 	   already checked the bounds.  */
-	if (tb1->ty != Tpointer)
+	if (tb1->ty != TY::Tpointer)
 	  index = build_bounds_index_condition (e, index, length);
 
 	/* Index the .ptr.  */
@@ -1330,7 +1312,7 @@ public:
 
   void visit (ArrayLengthExp *e)
   {
-    if (e->e1->type->toBasetype ()->ty == Tarray)
+    if (e->e1->type->toBasetype ()->ty == TY::Tarray)
       this->result_ = d_array_length (build_expr (e->e1));
     else
       {
@@ -1364,13 +1346,13 @@ public:
   {
     Type *tb = e->type->toBasetype ();
     Type *tb1 = e->e1->type->toBasetype ();
-    gcc_assert (tb->ty == Tarray || tb->ty == Tsarray);
+    gcc_assert (tb->ty == TY::Tarray || tb->ty == TY::Tsarray);
 
     /* Use convert-to-dynamic-array code if possible.  */
     if (!e->lwr)
       {
 	tree result = build_expr (e->e1);
-	if (e->e1->type->toBasetype ()->ty == Tsarray)
+	if (e->e1->type->toBasetype ()->ty == TY::Tsarray)
 	  result = convert_expr (result, e->e1->type, e->type);
 
 	this->result_ = result;
@@ -1386,7 +1368,7 @@ public:
 
     /* Our array is already a SAVE_EXPR if necessary, so we don't make length
        a SAVE_EXPR which is, at most, a COMPONENT_REF on top of array.  */
-    if (tb1->ty != Tpointer)
+    if (tb1->ty != TY::Tpointer)
       length = get_array_length (array, tb1);
     else
       gcc_assert (e->lengthVar == NULL);
@@ -1415,13 +1397,13 @@ public:
 
     /* Nothing more to do for static arrays, their bounds checking has been
        done at compile-time.  */
-    if (tb->ty == Tsarray)
+    if (tb->ty == TY::Tsarray)
       {
 	this->result_ = indirect_ref (build_ctype (e->type), ptr);
 	return;
       }
     else
-      gcc_assert (tb->ty == Tarray);
+      gcc_assert (tb->ty == TY::Tarray);
 
     /* Generate bounds checking code.  */
     tree newlength = build_bounds_slice_condition (e, lwr_tree, upr_tree,
@@ -1440,7 +1422,7 @@ public:
     tree result = build_expr (e->e1, this->constp_, this->literalp_);
 
     /* Just evaluate e1 if it has any side effects.  */
-    if (tbtype->ty == Tvoid)
+    if (tbtype->ty == TY::Tvoid)
       this->result_ = build_nop (build_ctype (tbtype), result);
     else
       this->result_ = convert_for_rvalue (result, ebtype, tbtype);
@@ -1453,7 +1435,7 @@ public:
     tree t1 = build_expr (e->e1);
     Type *tb1 = e->e1->type->toBasetype ();
 
-    if (tb1->ty == Tclass)
+    if (tb1->ty == TY::Tclass)
       {
 	/* For class object references, if there is a destructor for that class,
 	   the destructor is called for the object instance.  */
@@ -1480,7 +1462,7 @@ public:
 	t1 = build_address (t1);
 	this->result_ = build_libcall (libcall, Type::tvoid, 1, t1);
       }
-    else if (tb1->ty == Tarray)
+    else if (tb1->ty == TY::Tarray)
       {
 	/* For dynamic arrays, the garbage collector is called to immediately
 	   release the memory.  */
@@ -1498,7 +1480,7 @@ public:
 	this->result_ = build_libcall (LIBCALL_DELARRAYT, Type::tvoid, 2,
 				       build_address (t1), ti);
       }
-    else if (tb1->ty == Tpointer)
+    else if (tb1->ty == TY::Tpointer)
       {
 	/* For pointers to a struct instance, if the struct has overloaded
 	   operator delete, then that operator is called.  */
@@ -1533,7 +1515,7 @@ public:
   void visit (RemoveExp *e)
   {
     /* Check that the array is actually an associative array.  */
-    if (e->e1->type->toBasetype ()->ty == Taarray)
+    if (e->e1->type->toBasetype ()->ty == TY::Taarray)
       {
 	Type *tb = e->e1->type->toBasetype ();
 	Type *tkey = tb->isTypeAArray ()->index->toBasetype ();
@@ -1569,7 +1551,7 @@ public:
   void visit (ComExp *e)
   {
     TY ty1 = e->e1->type->toBasetype ()->ty;
-    gcc_assert (ty1 != Tarray && ty1 != Tsarray);
+    gcc_assert (ty1 != TY::Tarray && ty1 != TY::Tsarray);
 
     this->result_ = fold_build1 (BIT_NOT_EXPR, build_ctype (e->type),
 				 build_expr (e->e1));
@@ -1580,7 +1562,7 @@ public:
   void visit (NegExp *e)
   {
     TY ty1 = e->e1->type->toBasetype ()->ty;
-    gcc_assert (ty1 != Tarray && ty1 != Tsarray);
+    gcc_assert (ty1 != TY::Tarray && ty1 != TY::Tsarray);
 
     tree type = build_ctype (e->type);
     tree expr = build_expr (e->e1);
@@ -1630,7 +1612,7 @@ public:
     /* Produce better code by converting *(#record + n) to
        COMPONENT_REFERENCE.  Otherwise, the variable will always be
        allocated in memory because its address is taken.  */
-    if (tnext && tnext->ty == Tstruct)
+    if (tnext && tnext->ty == TY::Tstruct)
       {
 	StructDeclaration *sd = tnext->isTypeStruct ()->sym;
 
@@ -1716,7 +1698,7 @@ public:
 	gcc_assert (var->isFuncDeclaration () && !var->needThis ());
       }
 
-    if (e1b->op == TOKdotvar && tb->ty != Tdelegate)
+    if (e1b->op == TOKdotvar && tb->ty != TY::Tdelegate)
       {
 	DotVarExp *dve = e1b->isDotVarExp ();
 
@@ -1775,7 +1757,7 @@ public:
 		/* C++ constructors return void, even though front-end semantic
 		   treats them as implicitly returning `this'.  Set returnvalue
 		   to override the result of this expression.  */
-		if (fd->isCtorDeclaration () && fd->linkage == LINKcpp)
+		if (fd->isCtorDeclaration () && fd->linkage == LINK::cpp)
 		  {
 		    thisexp = d_save_expr (thisexp);
 		    returnvalue = thisexp;
@@ -1805,7 +1787,7 @@ public:
 
 	extract_from_method_call (callee, callee, object);
       }
-    else if (tb->ty == Tdelegate)
+    else if (tb->ty == TY::Tdelegate)
       {
 	/* Delegate call, extract .object and .funcptr from var.  */
 	callee = d_save_expr (callee);
@@ -1850,7 +1832,7 @@ public:
     if (returnvalue != NULL_TREE)
       exp = compound_expr (exp, returnvalue);
 
-    if (tf->isref)
+    if (tf->isref ())
       exp = build_deref (exp);
 
     /* Some library calls are defined to return a generic type.
@@ -1888,7 +1870,7 @@ public:
     tree fndecl;
     tree object;
 
-    if (e->func->isNested ())
+    if (e->func->isNested () && !e->func->isThis ())
       {
 	if (e->e1->op == TOKnull)
 	  object = build_expr (e->e1);
@@ -1909,12 +1891,12 @@ public:
 	object = build_expr (e->e1);
 
 	/* Want reference to `this' object.  */
-	if (e->e1->type->ty != Tclass && e->e1->type->ty != Tpointer)
+	if (e->e1->type->ty != TY::Tclass && e->e1->type->ty != TY::Tpointer)
 	  object = build_address (object);
 
 	/* Object reference could be the outer `this' field of a class or
 	   closure of type `void*'.  Cast it to the right type.  */
-	if (e->e1->type->ty == Tclass)
+	if (e->e1->type->ty == TY::Tclass)
 	  object = d_convert (build_ctype (e->e1->type), object);
 
 	fndecl = get_symbol_decl (e->func);
@@ -1958,7 +1940,7 @@ public:
 	  {
 	    tree object = build_expr (e->e1);
 
-	    if (e->e1->type->toBasetype ()->ty != Tstruct)
+	    if (e->e1->type->toBasetype ()->ty != TY::Tstruct)
 	      object = build_deref (object);
 
 	    this->result_ = component_ref (object, get_symbol_decl (vd));
@@ -2005,7 +1987,7 @@ public:
 	  {
 	    /* If the condition is a D class or struct object with an invariant,
 	       call it if the condition result is true.  */
-	    if (tb1->ty == Tclass)
+	    if (tb1->ty == TY::Tclass)
 	      {
 		ClassDeclaration *cd = tb1->isClassHandle ();
 		if (!cd->isInterfaceDeclaration () && !cd->isCPPclass ())
@@ -2015,7 +1997,8 @@ public:
 						 Type::tvoid, 1, arg);
 		  }
 	      }
-	    else if (tb1->ty == Tpointer && tb1->nextOf ()->ty == Tstruct)
+	    else if (tb1->ty == TY::Tpointer
+		     && tb1->nextOf ()->ty == TY::Tstruct)
 	      {
 		StructDeclaration *sd = tb1->nextOf ()->isTypeStruct ()->sym;
 		if (sd->inv != NULL)
@@ -2093,7 +2076,7 @@ public:
     else if (Expression *tid = isExpression (e->obj))
       {
 	Type *type = tid->type->toBasetype ();
-	assert (type->ty == Tclass);
+	assert (type->ty == TY::Tclass);
 
 	/* Generate **classptr to get the classinfo.  */
 	tree ci = build_expr (tid);
@@ -2117,7 +2100,7 @@ public:
     Type *ftype = e->type->toBasetype ();
 
     /* This check is for lambda's, remove `vthis' as function isn't nested.  */
-    if (e->fd->tok == TOKreserved && ftype->ty == Tpointer)
+    if (e->fd->tok == TOKreserved && ftype->ty == TY::Tpointer)
       {
 	e->fd->tok = TOKfunction;
 	e->fd->vthis = NULL;
@@ -2226,7 +2209,7 @@ public:
 	tree init = NULL_TREE;
 
 	if (var && (var->isConst () || var->isImmutable ())
-	    && e->type->toBasetype ()->ty != Tsarray && var->_init)
+	    && e->type->toBasetype ()->ty != TY::Tsarray && var->_init)
 	  {
 	    if (var->inuse)
 	      error_at (make_location_t (e->loc), "recursive reference %qs",
@@ -2279,7 +2262,7 @@ public:
 	result = get_decl_tree (fd->vthis);
       }
 
-    if (e->type->ty == Tstruct)
+    if (e->type->ty == TY::Tstruct)
       result = build_deref (result);
 
     this->result_ = result;
@@ -2293,10 +2276,7 @@ public:
     Type *tb = e->type->toBasetype ();
     tree result;
 
-    if (e->allocator)
-      gcc_assert (e->newargs);
-
-    if (tb->ty == Tclass)
+    if (tb->ty == TY::Tclass)
       {
 	/* Allocating a new class.  */
 	tb = e->newtype->toBasetype ();
@@ -2315,20 +2295,13 @@ public:
 	    new_call = build_nop (type, build_address (var));
 	    setup_exp = modify_expr (var, aggregate_initializer_decl (cd));
 	  }
-	else if (e->allocator)
-	  {
-	    /* Call class allocator, and copy the initializer into memory.  */
-	    new_call = d_build_call_expr (e->allocator, NULL_TREE, e->newargs);
-	    new_call = d_save_expr (new_call);
-	    new_call = build_nop (type, new_call);
-	    setup_exp = modify_expr (build_deref (new_call),
-				     aggregate_initializer_decl (cd));
-	  }
 	else
 	  {
 	    /* Generate: _d_newclass()  */
 	    tree arg = build_address (get_classinfo_decl (cd));
-	    new_call = build_libcall (LIBCALL_NEWCLASS, tb, 1, arg);
+	    libcall_fn libcall = (global.params.ehnogc && e->thrownew)
+	      ? LIBCALL_NEWTHROW : LIBCALL_NEWCLASS;
+	    new_call = build_libcall (libcall, tb, 1, arg);
 	  }
 
 	/* Set the context pointer for nested classes.  */
@@ -2340,13 +2313,15 @@ public:
 	    if (e->thisexp)
 	      {
 		ClassDeclaration *tcd = e->thisexp->type->isClassHandle ();
-		Dsymbol *outer = cd->toParent2 ();
-		int offset = 0;
+		/* The class or function we're nested in.  */
+		Dsymbol *outer = cd->toParentLocal ();
 
 		value = build_expr (e->thisexp);
+
 		if (outer != tcd)
 		  {
 		    ClassDeclaration *ocd = outer->isClassDeclaration ();
+		    int offset = 0;
 		    gcc_assert (ocd->isBaseOf (tcd, &offset));
 		    /* Could just add offset...  */
 		    value = convert_expr (value, e->thisexp->type, ocd->type);
@@ -2375,7 +2350,8 @@ public:
 	if (e->argprefix)
 	  result = compound_expr (build_expr (e->argprefix), result);
       }
-    else if (tb->ty == Tpointer && tb->nextOf ()->toBasetype ()->ty == Tstruct)
+    else if (tb->ty == TY::Tpointer
+	     && tb->nextOf ()->toBasetype ()->ty == TY::Tstruct)
       {
 	/* Allocating memory for a new struct.  */
 	Type *htype = e->newtype->toBasetype ();
@@ -2393,20 +2369,11 @@ public:
 	    return;
 	  }
 
-	if (e->allocator)
-	  {
-	    /* Call struct allocator.  */
-	    new_call = d_build_call_expr (e->allocator, NULL_TREE, e->newargs);
-	    new_call = build_nop (build_ctype (tb), new_call);
-	  }
-	else
-	  {
-	    /* Generate: _d_newitemT()  */
-	    libcall_fn libcall = htype->isZeroInit ()
-	      ? LIBCALL_NEWITEMT : LIBCALL_NEWITEMIT;
-	    tree arg = build_typeinfo (e->loc, e->newtype);
-	    new_call = build_libcall (libcall, tb, 1, arg);
-	  }
+	/* Generate: _d_newitemT()  */
+	libcall_fn libcall = htype->isZeroInit ()
+	  ? LIBCALL_NEWITEMT : LIBCALL_NEWITEMIT;
+	tree arg = build_typeinfo (e->loc, e->newtype);
+	new_call = build_libcall (libcall, tb, 1, arg);
 
 	if (e->member || !e->arguments)
 	  {
@@ -2449,13 +2416,12 @@ public:
 	if (e->argprefix)
 	  result = compound_expr (build_expr (e->argprefix), result);
       }
-    else if (tb->ty == Tarray)
+    else if (tb->ty == TY::Tarray)
       {
 	/* Allocating memory for a new D array.  */
 	tb = e->newtype->toBasetype ();
 	TypeDArray *tarray = tb->isTypeDArray ();
 
-	gcc_assert (!e->allocator);
 	gcc_assert (e->arguments && e->arguments->length >= 1);
 
 	if (e->arguments->length == 1)
@@ -2492,7 +2458,7 @@ public:
 		Expression *arg = (*e->arguments)[i];
 		CONSTRUCTOR_APPEND_ELT (elms, size_int (i), build_expr (arg));
 
-		gcc_assert (telem->ty == Tarray);
+		gcc_assert (telem->ty == TY::Tarray);
 		telem = telem->toBasetype ()->nextOf ();
 		gcc_assert (telem);
 	      }
@@ -2517,7 +2483,7 @@ public:
 	if (e->argprefix)
 	  result = compound_expr (build_expr (e->argprefix), result);
       }
-    else if (tb->ty == Tpointer)
+    else if (tb->ty == TY::Tpointer)
       {
 	/* Allocating memory for a new pointer.  */
 	TypePointer *tpointer = tb->isTypePointer ();
@@ -2576,15 +2542,15 @@ public:
 
     switch (e->type->toBasetype ()->ty)
       {
-      case Tcomplex32:
+      case TY::Tcomplex32:
 	tnext = (TypeBasic *) Type::tfloat32;
 	break;
 
-      case Tcomplex64:
+      case TY::Tcomplex64:
 	tnext = (TypeBasic *) Type::tfloat64;
 	break;
 
-      case Tcomplex80:
+      case TY::Tcomplex80:
 	tnext = (TypeBasic *) Type::tfloat80;
 	break;
 
@@ -2605,7 +2571,7 @@ public:
     Type *tb = e->type->toBasetype ();
     tree type = build_ctype (e->type);
 
-    if (tb->ty == Tsarray)
+    if (tb->ty == TY::Tsarray)
       {
 	/* Turn the string into a constructor for the static array.  */
 	vec <constructor_elt, va_gc> *elms = NULL;
@@ -2635,7 +2601,7 @@ public:
 	TREE_TYPE (value) = make_array_type (tb->nextOf (), length + 1);
 	value = build_address (value);
 
-	if (tb->ty == Tarray)
+	if (tb->ty == TY::Tarray)
 	  value = d_array_value (type, size_int (e->len), value);
 
 	TREE_CONSTANT (value) = 1;
@@ -2674,15 +2640,16 @@ public:
     Type *tb = e->type->toBasetype ();
 
     /* Implicitly convert void[n] to ubyte[n].  */
-    if (tb->ty == Tsarray && tb->nextOf ()->toBasetype ()->ty == Tvoid)
+    if (tb->ty == TY::Tsarray && tb->nextOf ()->toBasetype ()->ty == TY::Tvoid)
       tb = Type::tuns8->sarrayOf (tb->isTypeSArray ()->dim->toUInteger ());
 
-    gcc_assert (tb->ty == Tarray || tb->ty == Tsarray || tb->ty == Tpointer);
+    gcc_assert (tb->ty == TY::Tarray || tb->ty == TY::Tsarray
+		|| tb->ty == TY::Tpointer);
 
     /* Handle empty array literals.  */
     if (e->elements->length == 0)
       {
-	if (tb->ty == Tarray)
+	if (tb->ty == TY::Tarray)
 	  this->result_ = d_array_value (build_ctype (e->type),
 					 size_int (0), null_pointer_node);
 	else
@@ -2732,15 +2699,15 @@ public:
     tree type = build_ctype (e->type);
 
     /* Nothing else to do for static arrays.  */
-    if (tb->ty == Tsarray || this->constp_)
+    if (tb->ty == TY::Tsarray || this->constp_)
       {
 	/* Can't take the address of the constructor, so create an anonymous
 	   static symbol, and then refer to it.  */
-	if (tb->ty != Tsarray)
+	if (tb->ty != TY::Tsarray)
 	  {
 	    tree decl = build_artificial_decl (TREE_TYPE (ctor), ctor, "A");
 	    ctor = build_address (decl);
-	    if (tb->ty == Tarray)
+	    if (tb->ty == TY::Tarray)
 	      ctor = d_array_value (type, size_int (e->elements->length), ctor);
 
 	    d_pushdecl (decl);
@@ -2789,7 +2756,7 @@ public:
 	/* Return the array pointed to by MEM.  */
 	result = compound_expr (result, mem);
 
-	if (tb->ty == Tarray)
+	if (tb->ty == TY::Tarray)
 	  result = d_array_value (type, size_int (e->elements->length), result);
 
 	this->result_ = compound_expr (saved_elems, result);
@@ -2882,7 +2849,7 @@ public:
     gcc_assert (e->elements->length <= e->sd->fields.length);
 
     Type *tb = e->type->toBasetype ();
-    gcc_assert (tb->ty == Tstruct);
+    gcc_assert (tb->ty == TY::Tstruct);
 
     for (size_t i = 0; i < e->elements->length; i++)
       {
@@ -2895,7 +2862,7 @@ public:
 	Type *ftype = field->type->toBasetype ();
 	tree value = NULL_TREE;
 
-	if (ftype->ty == Tsarray && !same_type_p (type, ftype))
+	if (ftype->ty == TY::Tsarray && !same_type_p (type, ftype))
 	  {
 	    /* Initialize a static array with a single element.  */
 	    tree elem = build_expr (exp, this->constp_, true);
@@ -3126,7 +3093,7 @@ build_return_dtor (Expression *e, Type *type, TypeFunction *tf)
   tree result = build_expr (e);
 
   /* Convert for initializing the DECL_RESULT.  */
-  if (tf->isref)
+  if (tf->isref ())
     {
       /* If we are returning a reference, take the address.  */
       result = convert_expr (result, e->type, type);

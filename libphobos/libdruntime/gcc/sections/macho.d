@@ -31,8 +31,8 @@ import core.sys.darwin.mach.dyld;
 import core.sys.darwin.mach.getsect;
 import core.sys.posix.pthread;
 import rt.minfo;
-import rt.util.container.array;
-import rt.util.container.hashtab;
+import core.internal.container.array;
+import core.internal.container.hashtab;
 import gcc.sections.common;
 
 version (GNU_EMUTLS)
@@ -66,7 +66,7 @@ struct DSO
         return _moduleGroup.modules;
     }
 
-    @property ref inout(ModuleGroup) moduleGroup() inout nothrow @nogc
+    @property ref inout(ModuleGroup) moduleGroup() inout return nothrow @nogc
     {
         return _moduleGroup;
     }

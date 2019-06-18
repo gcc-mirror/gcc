@@ -3,14 +3,16 @@
 /**
 Classes and functions for handling and transcoding between various encodings.
 
-For cases where the _encoding is known at compile-time, functions are provided
-for arbitrary _encoding and decoding of characters, arbitrary transcoding
+For cases where the encoding is known at compile-time, functions are provided
+for arbitrary encoding and decoding of characters, arbitrary transcoding
 between strings of different type, as well as validation and sanitization.
 
 Encodings currently supported are UTF-8, UTF-16, UTF-32, ASCII, ISO-8859-1
-(also known as LATIN-1), ISO-8859-2 (LATIN-2), WINDOWS-1250 and WINDOWS-1252.
+(also known as LATIN-1), ISO-8859-2 (LATIN-2), WINDOWS-1250, WINDOWS-1251
+and WINDOWS-1252.
 
 $(SCRIPT inhibitQuickIndex = 1;)
+$(DIVC quickindex,
 $(BOOKTABLE,
 $(TR $(TH Category) $(TH Functions))
 $(TR $(TD Decode) $(TD
@@ -53,6 +55,7 @@ $(TR $(TD Encoding schemes) $(TD
     $(LREF EncodingSchemeUtf32Native)
     $(LREF EncodingSchemeUtf8)
     $(LREF EncodingSchemeWindows1250)
+    $(LREF EncodingSchemeWindows1251)
     $(LREF EncodingSchemeWindows1252)
 ))
 $(TR $(TD Representation) $(TD
@@ -64,6 +67,8 @@ $(TR $(TD Representation) $(TD
     $(LREF Latin2String)
     $(LREF Windows1250Char)
     $(LREF Windows1250String)
+    $(LREF Windows1251Char)
+    $(LREF Windows1251String)
     $(LREF Windows1252Char)
     $(LREF Windows1252String)
 ))
@@ -71,9 +76,9 @@ $(TR $(TD Exceptions) $(TD
     $(LREF INVALID_SEQUENCE)
     $(LREF EncodingException)
 ))
-)
+))
 
-For cases where the _encoding is not known at compile-time, but is
+For cases where the encoding is not known at compile-time, but is
 known at run-time, the abstract class $(LREF EncodingScheme)
 and its subclasses is provided.  To construct a run-time encoder/decoder,
 one does e.g.
@@ -84,16 +89,16 @@ auto e = EncodingScheme.create("utf-8");
 
 This library supplies $(LREF EncodingScheme) subclasses for ASCII,
 ISO-8859-1 (also known as LATIN-1), ISO-8859-2 (LATIN-2), WINDOWS-1250,
-WINDOWS-1252, UTF-8, and (on little-endian architectures) UTF-16LE and
-UTF-32LE; or (on big-endian architectures) UTF-16BE and UTF-32BE.
+WINDOWS-1251, WINDOWS-1252, UTF-8, and (on little-endian architectures)
+UTF-16LE and UTF-32LE; or (on big-endian architectures) UTF-16BE and UTF-32BE.
 
 This library provides a mechanism whereby other modules may add $(LREF
-EncodingScheme) subclasses for any other _encoding.
+EncodingScheme) subclasses for any other encoding.
 
 Copyright: Copyright Janice Caron 2008 - 2009.
 License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
 Authors:   Janice Caron
-Source:    $(PHOBOSSRC std/_encoding.d)
+Source:    $(PHOBOSSRC std/encoding.d)
 */
 /*
          Copyright Janice Caron 2008 - 2009.
@@ -277,6 +282,55 @@ import std.typecons;
         "\uFFFD","\uFFFD","\uFFFD","\uFFFD","\uFFFD","\uFFFD","\uFFFD","\uFFFD",
     ];
 
+    // HELPER FUNCTIONS
+    // we can probably do this better...
+    static char toHexDigit(int n)
+    {
+        return "0123456789ABCDEF"[n & 0xF];
+    }
+
+    static string makeReadable(string s)
+    {
+        string r = "\"";
+        foreach (char c;s)
+        {
+            if (c >= 0x20 && c < 0x80)
+            {
+                r ~= c;
+            }
+            else
+            {
+                r ~= "\\x";
+                r ~= toHexDigit(c >> 4);
+                r ~= toHexDigit(c);
+            }
+        }
+        r ~= "\"";
+        return r;
+    }
+
+    void transcodeReverse(Src,Dst)(immutable(Src)[] s, out immutable(Dst)[] r)
+    {
+        static if (is(Src == Dst))
+        {
+            return s;
+        }
+        else static if (is(Src == AsciiChar))
+        {
+            transcodeReverse!(char,Dst)(cast(string) s,r);
+        }
+        else
+        {
+            foreach_reverse (d;codePoints(s))
+            {
+                foreach_reverse (c;codeUnits!(Dst)(d))
+                {
+                    r = c ~ r;
+                }
+            }
+        }
+    }
+
     // Make sure everything that should be valid, is
     foreach (a;validStrings)
     {
@@ -395,6 +449,10 @@ import std.typecons;
         Windows1250String y;
         transcode(s,y);
         assert(y == cast(Windows1250Char[])[0x8e, 'l', 'u', 0x9d, 'o', 'u', 0xe8, 'k', 0xfd, ' ', 'k', 0xf9, 0xf2]);
+        s = "\u0402lu\u0403ou\u201D\u045C k\u0414\u044F";
+        Windows1251String s51;
+        transcode(s,s51);
+        assert(s51 == cast(Windows1251Char[])[0x80, 'l', 'u', 0x81, 'o', 'u', 0x94, 0x9d, ' ', 'k', 0xc4, 0xff]);
     }
 
     // Make sure we can count properly
@@ -419,7 +477,7 @@ import std.typecons;
 
 //=============================================================================
 
-/** Special value returned by $(D safeDecode) */
+/** Special value returned by `safeDecode` */
 enum dchar INVALID_SEQUENCE = cast(dchar) 0xFFFFFFFF;
 
 template EncoderFunctions()
@@ -595,7 +653,7 @@ struct CodePoints(E)
     {
         assert(isValid(s));
     }
-    body
+    do
     {
         this.s = s;
     }
@@ -663,7 +721,7 @@ struct CodeUnits(E)
     {
         assert(isValidCodePoint(d));
     }
-    body
+    do
     {
         s = encode!(E)(d);
     }
@@ -727,7 +785,7 @@ private template GenericEncoder()
     {
         assert(canEncode(c));
     }
-    body
+    do
     {
         return 1;
     }
@@ -790,7 +848,7 @@ private template GenericEncoder()
 //=============================================================================
 
 /** Defines various character sets. */
-enum AsciiChar : ubyte { init }
+enum AsciiChar : ubyte { _init }
 /// Ditto
 alias AsciiString = immutable(AsciiChar)[];
 
@@ -819,7 +877,7 @@ template EncoderInstance(CharType : AsciiChar)
     {
         assert(canEncode(c));
     }
-    body
+    do
     {
         return 1;
     }
@@ -870,7 +928,7 @@ template EncoderInstance(CharType : AsciiChar)
 //=============================================================================
 
 /** Defines an Latin1-encoded character. */
-enum Latin1Char : ubyte { init }
+enum Latin1Char : ubyte { _init }
 /**
 Defines an Latin1-encoded string (as an array of $(D
 immutable(Latin1Char))).
@@ -902,7 +960,7 @@ template EncoderInstance(CharType : Latin1Char)
     {
         assert(canEncode(c));
     }
-    body
+    do
     {
         return 1;
     }
@@ -946,7 +1004,7 @@ template EncoderInstance(CharType : Latin1Char)
 //=============================================================================
 
 /// Defines a Latin2-encoded character.
-enum Latin2Char : ubyte { init }
+enum Latin2Char : ubyte { _init }
 
 /**
  * Defines an Latin2-encoded string (as an array of $(D
@@ -1026,7 +1084,7 @@ private template EncoderInstance(CharType : Latin2Char)
 //=============================================================================
 
 /// Defines a Windows1250-encoded character.
-enum Windows1250Char : ubyte { init }
+enum Windows1250Char : ubyte { _init }
 
 /**
  * Defines an Windows1250-encoded string (as an array of $(D
@@ -1115,11 +1173,106 @@ private template EncoderInstance(CharType : Windows1250Char)
 }
 
 //=============================================================================
+//          WINDOWS-1251
+//=============================================================================
+
+/// Defines a Windows1251-encoded character.
+enum Windows1251Char : ubyte { _init }
+
+/**
+ * Defines an Windows1251-encoded string (as an array of $(D
+ * immutable(Windows1251Char))).
+ */
+alias Windows1251String = immutable(Windows1251Char)[];
+
+private template EncoderInstance(CharType : Windows1251Char)
+{
+    import std.typecons : Tuple, tuple;
+
+    alias E = Windows1251Char;
+    alias EString = Windows1251String;
+
+    @property string encodingName() @safe pure nothrow @nogc
+    {
+        return "windows-1251";
+    }
+
+    private static immutable dchar m_charMapStart = 0x80;
+    private static immutable dchar m_charMapEnd = 0xff;
+
+    private immutable wstring charMap =
+        "\u0402\u0403\u201A\u0453\u201E\u2026\u2020\u2021"~
+        "\u20AC\u2030\u0409\u2039\u040A\u040C\u040B\u040F"~
+        "\u0452\u2018\u2019\u201C\u201D\u2022\u2013\u2014"~
+        "\uFFFD\u2122\u0459\u203A\u045A\u045C\u045B\u045F"~
+        "\u00A0\u040E\u045E\u0408\u00A4\u0490\u00A6\u00A7"~
+        "\u0401\u00A9\u0404\u00AB\u00AC\u00AD\u00AE\u0407"~
+        "\u00B0\u00B1\u0406\u0456\u0491\u00B5\u00B6\u00B7"~
+        "\u0451\u2116\u0454\u00BB\u0458\u0405\u0455\u0457"~
+        "\u0410\u0411\u0412\u0413\u0414\u0415\u0416\u0417"~
+        "\u0418\u0419\u041A\u041B\u041C\u041D\u041E\u041F"~
+        "\u0420\u0421\u0422\u0423\u0424\u0425\u0426\u0427"~
+        "\u0428\u0429\u042A\u042B\u042C\u042D\u042E\u042F"~
+        "\u0430\u0431\u0432\u0433\u0434\u0435\u0436\u0437"~
+        "\u0438\u0439\u043A\u043B\u043C\u043D\u043E\u043F"~
+        "\u0440\u0441\u0442\u0443\u0444\u0445\u0446\u0447"~
+        "\u0448\u0449\u044A\u044B\u044C\u044D\u044E\u044F";
+
+    private immutable Tuple!(wchar, char)[] bstMap = [
+        tuple('\u0432','\xE2'),tuple('\u0412','\xC2'),tuple('\u0453','\x83'),
+        tuple('\u0401','\xA8'),tuple('\u0422','\xD2'),tuple('\u0442','\xF2'),
+        tuple('\u2018','\x91'),tuple('\u00AD','\xAD'),tuple('\u0409','\x8A'),
+        tuple('\u041A','\xCA'),tuple('\u042A','\xDA'),tuple('\u043A','\xEA'),
+        tuple('\u044A','\xFA'),tuple('\u045B','\x9E'),tuple('\u2022','\x95'),
+        tuple('\u00A7','\xA7'),tuple('\u00B5','\xB5'),tuple('\u0405','\xBD'),
+        tuple('\u040E','\xA1'),tuple('\u0416','\xC6'),tuple('\u041E','\xCE'),
+        tuple('\u0426','\xD6'),tuple('\u042E','\xDE'),tuple('\u0436','\xE6'),
+        tuple('\u043E','\xEE'),tuple('\u0446','\xF6'),tuple('\u044E','\xFE'),
+        tuple('\u0457','\xBF'),tuple('\u0490','\xA5'),tuple('\u201D','\x94'),
+        tuple('\u203A','\x9B'),tuple('\u00A4','\xA4'),tuple('\u00AB','\xAB'),
+        tuple('\u00B0','\xB0'),tuple('\u00B7','\xB7'),tuple('\u0403','\x81'),
+        tuple('\u0407','\xAF'),tuple('\u040B','\x8E'),tuple('\u0410','\xC0'),
+        tuple('\u0414','\xC4'),tuple('\u0418','\xC8'),tuple('\u041C','\xCC'),
+        tuple('\u0420','\xD0'),tuple('\u0424','\xD4'),tuple('\u0428','\xD8'),
+        tuple('\u042C','\xDC'),tuple('\u0430','\xE0'),tuple('\u0434','\xE4'),
+        tuple('\u0438','\xE8'),tuple('\u043C','\xEC'),tuple('\u0440','\xF0'),
+        tuple('\u0444','\xF4'),tuple('\u0448','\xF8'),tuple('\u044C','\xFC'),
+        tuple('\u0451','\xB8'),tuple('\u0455','\xBE'),tuple('\u0459','\x9A'),
+        tuple('\u045E','\xA2'),tuple('\u2013','\x96'),tuple('\u201A','\x82'),
+        tuple('\u2020','\x86'),tuple('\u2030','\x89'),tuple('\u2116','\xB9'),
+        tuple('\u00A0','\xA0'),tuple('\u00A6','\xA6'),tuple('\u00A9','\xA9'),
+        tuple('\u00AC','\xAC'),tuple('\u00AE','\xAE'),tuple('\u00B1','\xB1'),
+        tuple('\u00B6','\xB6'),tuple('\u00BB','\xBB'),tuple('\u0402','\x80'),
+        tuple('\u0404','\xAA'),tuple('\u0406','\xB2'),tuple('\u0408','\xA3'),
+        tuple('\u040A','\x8C'),tuple('\u040C','\x8D'),tuple('\u040F','\x8F'),
+        tuple('\u0411','\xC1'),tuple('\u0413','\xC3'),tuple('\u0415','\xC5'),
+        tuple('\u0417','\xC7'),tuple('\u0419','\xC9'),tuple('\u041B','\xCB'),
+        tuple('\u041D','\xCD'),tuple('\u041F','\xCF'),tuple('\u0421','\xD1'),
+        tuple('\u0423','\xD3'),tuple('\u0425','\xD5'),tuple('\u0427','\xD7'),
+        tuple('\u0429','\xD9'),tuple('\u042B','\xDB'),tuple('\u042D','\xDD'),
+        tuple('\u042F','\xDF'),tuple('\u0431','\xE1'),tuple('\u0433','\xE3'),
+        tuple('\u0435','\xE5'),tuple('\u0437','\xE7'),tuple('\u0439','\xE9'),
+        tuple('\u043B','\xEB'),tuple('\u043D','\xED'),tuple('\u043F','\xEF'),
+        tuple('\u0441','\xF1'),tuple('\u0443','\xF3'),tuple('\u0445','\xF5'),
+        tuple('\u0447','\xF7'),tuple('\u0449','\xF9'),tuple('\u044B','\xFB'),
+        tuple('\u044D','\xFD'),tuple('\u044F','\xFF'),tuple('\u0452','\x90'),
+        tuple('\u0454','\xBA'),tuple('\u0456','\xB3'),tuple('\u0458','\xBC'),
+        tuple('\u045A','\x9C'),tuple('\u045C','\x9D'),tuple('\u045F','\x9F'),
+        tuple('\u0491','\xB4'),tuple('\u2014','\x97'),tuple('\u2019','\x92'),
+        tuple('\u201C','\x93'),tuple('\u201E','\x84'),tuple('\u2021','\x87'),
+        tuple('\u2026','\x85'),tuple('\u2039','\x8B'),tuple('\u20AC','\x88'),
+        tuple('\u2122','\x99')
+    ];
+
+    mixin GenericEncoder!();
+}
+
+//=============================================================================
 //          WINDOWS-1252
 //=============================================================================
 
 /// Defines a Windows1252-encoded character.
-enum Windows1252Char : ubyte { init }
+enum Windows1252Char : ubyte { _init }
 
 /**
  * Defines an Windows1252-encoded string (as an array of $(D
@@ -1204,7 +1357,7 @@ template EncoderInstance(CharType : char)
     {
         assert(c >= 0x80);
     }
-    body
+    do
     {
         return tailTable[c-0x80];
     }
@@ -1214,7 +1367,7 @@ template EncoderInstance(CharType : char)
     {
         assert(canEncode(c));
     }
-    body
+    do
     {
         if (c < 0x80) return 1;
         if (c < 0x800) return 2;
@@ -1358,7 +1511,7 @@ template EncoderInstance(CharType : wchar)
     {
         assert(canEncode(c));
     }
-    body
+    do
     {
         return (c < 0x10000) ? 1 : 2;
     }
@@ -1455,7 +1608,7 @@ template EncoderInstance(CharType : dchar)
     {
         assert(canEncode(c));
     }
-    body
+    do
     {
         return 1;
     }
@@ -1505,10 +1658,10 @@ Returns true if c is a valid code point
  characters).
 
  Supersedes:
- This function supersedes $(D std.utf.startsValidDchar()).
+ This function supersedes `std.utf.startsValidDchar()`.
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     c = the code point to be tested
@@ -1525,7 +1678,7 @@ bool isValidCodePoint(dchar c) @safe pure nothrow @nogc
  explicitly specify the encoding type.
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
  */
 @property string encodingName(T)()
 {
@@ -1542,6 +1695,7 @@ bool isValidCodePoint(dchar c) @safe pure nothrow @nogc
     assert(encodingName!(Latin1Char) == "ISO-8859-1");
     assert(encodingName!(Latin2Char) == "ISO-8859-2");
     assert(encodingName!(Windows1250Char) == "windows-1250");
+    assert(encodingName!(Windows1251Char) == "windows-1251");
     assert(encodingName!(Windows1252Char) == "windows-1252");
 }
 
@@ -1553,7 +1707,7 @@ bool isValidCodePoint(dchar c) @safe pure nothrow @nogc
  explicitly specify the encoding type.
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
  */
 bool canEncode(E)(dchar c)
 {
@@ -1571,6 +1725,9 @@ bool canEncode(E)(dchar c)
     assert( canEncode!(Windows1250Char)('\u20AC'));
     assert(!canEncode!(Windows1250Char)('\u20AD'));
     assert(!canEncode!(Windows1250Char)('\uFFFD'));
+    assert( canEncode!(Windows1251Char)('\u0402'));
+    assert(!canEncode!(Windows1251Char)('\u20AD'));
+    assert(!canEncode!(Windows1251Char)('\uFFFD'));
     assert( canEncode!(Windows1252Char)('\u20AC'));
     assert(!canEncode!(Windows1252Char)('\u20AD'));
     assert(!canEncode!(Windows1252Char)('\uFFFD'));
@@ -1595,7 +1752,7 @@ bool canEncode(E)(dchar c)
  0x00 to 0x7F.
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     c = the code unit to be tested
@@ -1615,6 +1772,8 @@ bool isValidCodeUnit(E)(E c)
     assert(!isValidCodeUnit(cast(AsciiChar) 0xA0));
     assert( isValidCodeUnit(cast(Windows1250Char) 0x80));
     assert(!isValidCodeUnit(cast(Windows1250Char) 0x81));
+    assert( isValidCodeUnit(cast(Windows1251Char) 0x80));
+    assert(!isValidCodeUnit(cast(Windows1251Char) 0x98));
     assert( isValidCodeUnit(cast(Windows1252Char) 0x80));
     assert(!isValidCodeUnit(cast(Windows1252Char) 0x81));
 }
@@ -1628,7 +1787,7 @@ bool isValidCodeUnit(E)(E c)
  whereas the older function would throw an exception.
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     s = the string to be tested
@@ -1650,7 +1809,7 @@ bool isValid(E)(const(E)[] s)
  the first code unit, which is validly encoded.
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     s = the string to be tested
@@ -1679,7 +1838,7 @@ size_t validLength(E)(const(E)[] s)
  replaced with '?'.
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     s = the string to be sanitized
@@ -1736,7 +1895,7 @@ immutable(E)[] sanitize(E)(immutable(E)[] s)
  This is enforced by the function's in-contract.
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
  s = the string to be sliced
@@ -1748,7 +1907,7 @@ in
     const(E)[] u = s;
     assert(safeDecode(u) != INVALID_SEQUENCE);
 }
-body
+do
 {
     auto before = s.length;
     EncoderInstance!(E).skip(s);
@@ -1769,7 +1928,7 @@ body
  This is enforced by the function's in-contract.
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     s = the string to be sliced
@@ -1780,7 +1939,7 @@ in
     assert(s.length != 0);
     assert(isValid(s));
 }
-body
+do
 {
     const(E)[] t = s;
     EncoderInstance!(E).decodeReverse(s);
@@ -1804,7 +1963,7 @@ body
  This function supersedes std.utf.toUTFindex().
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     s = the string to be counted
@@ -1816,7 +1975,7 @@ in
     assert(isValid(s));
     assert(n >= 0);
 }
-body
+do
 {
     const(E)[] t = s;
     for (size_t i=0; i<n; ++i) EncoderInstance!(E).skip(s);
@@ -1844,7 +2003,7 @@ body
  function codePoints() supersedes it more conveniently.
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     s = the string whose first code point is to be decoded
@@ -1856,7 +2015,7 @@ in
     auto u = s;
     assert(safeDecode(u) != INVALID_SEQUENCE);
 }
-body
+do
 {
     return EncoderInstance!(typeof(s[0])).decode(s);
 }
@@ -1871,7 +2030,7 @@ body
  This is enforced by the function's in-contract.
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     s = the string whose first code point is to be decoded
@@ -1882,7 +2041,7 @@ in
     assert(s.length != 0);
     assert(isValid(s));
 }
-body
+do
 {
     return EncoderInstance!(E).decodeReverse(s);
 }
@@ -1898,7 +2057,7 @@ body
  function will remove it, and return the value INVALID_SEQUENCE.
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     s = the string whose first code point is to be decoded
@@ -1908,7 +2067,7 @@ in
 {
     assert(s.length != 0);
 }
-body
+do
 {
     return EncoderInstance!(typeof(s[0])).safeDecode(s);
 }
@@ -1923,7 +2082,7 @@ body
  explicitly specify the encoding as a template parameter.
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     c = the code point to be encoded
@@ -1933,7 +2092,7 @@ in
 {
     assert(isValidCodePoint(c));
 }
-body
+do
 {
     return EncoderInstance!(E).encodedLength(c);
 }
@@ -1955,7 +2114,7 @@ body
  function codeUnits() supersedes it more conveniently.
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     c = the code point to be encoded
@@ -1965,7 +2124,7 @@ in
 {
     assert(isValidCodePoint(c));
 }
-body
+do
 {
     return EncoderInstance!(E).encode(c);
 }
@@ -1988,7 +2147,7 @@ body
  function codeUnits() supersedes it more conveniently.
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     c     = the code point to be encoded
@@ -2002,7 +2161,7 @@ in
 {
     assert(isValidCodePoint(c));
 }
-body
+do
 {
     E[] t = array;
     EncoderInstance!(E).encode(c,t);
@@ -2010,13 +2169,13 @@ body
 }
 
 /*
-Encodes $(D c) in units of type $(D E) and writes the result to the
-output range $(D R). Returns the number of $(D E)s written.
+Encodes `c` in units of type `E` and writes the result to the
+output range `R`. Returns the number of `E`s written.
  */
 size_t encode(E, R)(dchar c, auto ref R range)
 if (isNativeOutputRange!(R, E))
 {
-    static if (is(Unqual!E == char))
+    static if (is(immutable E == immutable char))
     {
         if (c <= 0x7F)
         {
@@ -2049,7 +2208,7 @@ if (isNativeOutputRange!(R, E))
             assert(0);
         }
     }
-    else static if (is(Unqual!E == wchar))
+    else static if (is(immutable E == immutable wchar))
     {
         if (c <= 0xFFFF)
         {
@@ -2060,7 +2219,7 @@ if (isNativeOutputRange!(R, E))
         range.put(cast(wchar) (((c - 0x10000) & 0x3FF) + 0xDC00));
         return 2;
     }
-    else static if (is(Unqual!E == dchar))
+    else static if (is(immutable E == immutable dchar))
     {
         range.put(c);
         return 1;
@@ -2097,7 +2256,7 @@ if (isNativeOutputRange!(R, E))
  function codeUnits() supersedes it more conveniently.
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     c  = the code point to be encoded
@@ -2108,18 +2267,18 @@ in
 {
     assert(isValidCodePoint(c));
 }
-body
+do
 {
     EncoderInstance!(E).encode(c,dg);
 }
 
 /**
-Encodes the contents of $(D s) in units of type $(D Tgt), writing the result to an
+Encodes the contents of `s` in units of type `Tgt`, writing the result to an
 output range.
 
-Returns: The number of $(D Tgt) elements written.
+Returns: The number of `Tgt` elements written.
 Params:
-Tgt = Element type of $(D range).
+Tgt = Element type of `range`.
 s = Input array.
 range = Output range.
  */
@@ -2149,7 +2308,7 @@ size_t encode(Tgt, Src, R)(in Src[] s, R range)
  This function supersedes std.utf.decode().
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     s = the string to be decoded
@@ -2171,7 +2330,7 @@ in
 {
     assert(isValid(s));
 }
-body
+do
 {
     return CodePoints!(E)(s);
 }
@@ -2202,7 +2361,7 @@ body
  This function supersedes std.utf.encode().
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     c = the code point to be encoded
@@ -2212,7 +2371,7 @@ in
 {
     assert(isValidCodePoint(c));
 }
-body
+do
 {
     return CodeUnits!(E)(c);
 }
@@ -2240,7 +2399,7 @@ body
  (but note that to!() supersedes it more conveniently).
 
  Standards: Unicode 5.0, ASCII, ISO-8859-1, ISO-8859-2, WINDOWS-1250,
- WINDOWS-1252
+ WINDOWS-1251, WINDOWS-1252
 
  Params:
     s = Source string. $(B Must) be validly encoded.
@@ -2255,23 +2414,23 @@ in
 {
     assert(isValid(s));
 }
-body
+do
 {
     static if (is(Src == Dst) && is(Src == immutable))
     {
         r = s;
     }
-    else static if (is(Unqual!Src == AsciiChar))
+    else static if (is(immutable Src == immutable AsciiChar))
     {
         transcode(cast(const(char)[])s, r);
     }
     else
     {
-        static if (is(Unqual!Dst == wchar))
+        static if (is(immutable Dst == immutable wchar))
         {
             immutable minReservePlace = 2;
         }
-        else static if (is(Unqual!Dst == dchar))
+        else static if (is(immutable Dst == immutable dchar))
         {
             immutable minReservePlace = 1;
         }
@@ -2309,7 +2468,7 @@ body
     Latin1String ls;
     // transcode from UTF-16 to ISO-8859-1
     transcode(ws, ls);
-    assert(ws == "hello world");
+    assert(ls == "hello world");
 }
 
 @system pure unittest
@@ -2322,7 +2481,7 @@ body
         string asciiCharString = to!string(iota(0, 128, 1));
 
         alias Types = AliasSeq!(string, Latin1String, Latin2String, AsciiString,
-            Windows1250String, Windows1252String, dstring, wstring);
+            Windows1250String, Windows1251String, Windows1252String, dstring, wstring);
         foreach (S; Types)
             foreach (D; Types)
             {
@@ -2356,8 +2515,8 @@ body
 {
     import std.meta : AliasSeq;
 
-    foreach (O; AliasSeq!(Latin1Char, const Latin1Char, immutable Latin1Char))
-    {
+    static foreach (O; AliasSeq!(Latin1Char, const Latin1Char, immutable Latin1Char))
+    {{
         O[] output;
 
         char[] mutableInput = "äbc".dup;
@@ -2371,17 +2530,17 @@ body
         immutable char[] immutInput = "übc";
         transcode(immutInput, output);
         assert(output == [0xFC, 'b', 'c']);
-    }
+    }}
 
     // Make sure that const/mutable input is copied.
-    foreach (C; AliasSeq!(char, const char))
-    {
+    static foreach (C; AliasSeq!(char, const char))
+    {{
         C[] input = "foo".dup;
         C[] output;
         transcode(input, output);
         assert(input == output);
         assert(input !is output);
-    }
+    }}
 
     // But immutable input should not be copied.
     string input = "foo";
@@ -2466,6 +2625,7 @@ abstract class EncodingScheme
             EncodingScheme.register!EncodingSchemeLatin1;
             EncodingScheme.register!EncodingSchemeLatin2;
             EncodingScheme.register!EncodingSchemeWindows1250;
+            EncodingScheme.register!EncodingSchemeWindows1251;
             EncodingScheme.register!EncodingSchemeWindows1252;
             EncodingScheme.register!EncodingSchemeUtf8;
             EncodingScheme.register!EncodingSchemeUtf16Native;
@@ -2680,7 +2840,7 @@ abstract class EncodingScheme
         const(ubyte)[] u = s;
         assert(safeDecode(u) != INVALID_SEQUENCE);
     }
-    body
+    do
     {
         const(ubyte)[] t = s;
         decode(s);
@@ -2701,7 +2861,7 @@ abstract class EncodingScheme
     {
         assert(isValid(s));
     }
-    body
+    do
     {
         size_t n = 0;
         while (s.length != 0)
@@ -2728,7 +2888,7 @@ abstract class EncodingScheme
         assert(isValid(s));
         assert(n >= 0);
     }
-    body
+    do
     {
         const(ubyte)[] t = s;
         for (size_t i=0; i<n; ++i) decode(s);
@@ -3056,6 +3216,74 @@ class EncodingSchemeWindows1250 : EncodingScheme
 }
 
 /**
+ EncodingScheme to handle Windows-1251
+
+ This scheme recognises the following names:
+                 "windows-1251"
+ */
+class EncodingSchemeWindows1251 : EncodingScheme
+{
+    /* // moved to std.internal.phobosinit
+    shared static this()
+    {
+        EncodingScheme.register("std.encoding.EncodingSchemeWindows1251");
+    }*/
+
+    const
+    {
+        override string[] names() @safe pure nothrow
+        {
+            return
+            [
+                "windows-1251"
+            ];
+        }
+
+        override string toString() @safe pure nothrow @nogc
+        {
+            return "windows-1251";
+        }
+
+        override bool canEncode(dchar c) @safe pure nothrow @nogc
+        {
+            return std.encoding.canEncode!(Windows1251Char)(c);
+        }
+
+        override size_t encodedLength(dchar c) @safe pure nothrow @nogc
+        {
+            return std.encoding.encodedLength!(Windows1251Char)(c);
+        }
+
+        override size_t encode(dchar c, ubyte[] buffer) @safe pure nothrow @nogc
+        {
+            auto r = cast(Windows1251Char[]) buffer;
+            return std.encoding.encode(c,r);
+        }
+
+        override dchar decode(ref const(ubyte)[] s) @safe pure nothrow @nogc
+        {
+            auto t = cast(const(Windows1251Char)[]) s;
+            dchar c = std.encoding.decode(t);
+            s = s[$-t.length..$];
+            return c;
+        }
+
+        override dchar safeDecode(ref const(ubyte)[] s) @safe pure nothrow @nogc
+        {
+            auto t = cast(const(Windows1251Char)[]) s;
+            dchar c = std.encoding.safeDecode(t);
+            s = s[$-t.length..$];
+            return c;
+        }
+
+        override @property immutable(ubyte)[] replacementSequence() @safe pure nothrow @nogc
+        {
+            return cast(immutable(ubyte)[])"?";
+        }
+    }
+}
+
+/**
  EncodingScheme to handle Windows-1252
 
  This scheme recognises the following names:
@@ -3121,6 +3349,75 @@ class EncodingSchemeWindows1252 : EncodingScheme
             return cast(immutable(ubyte)[])"?";
         }
     }
+}
+
+@system unittest
+{
+    static string[] schemeNames =
+    [
+        "ASCII",
+        "ISO-8859-1",
+        "ISO-8859-2",
+        "windows-1250",
+        "windows-1251",
+        "windows-1252"
+    ];
+
+    EncodingScheme[] schemes;
+
+    foreach (name;schemeNames)
+    {
+       schemes ~= EncodingScheme.create(name);
+    }
+
+    ubyte[1] buffer;
+    static dchar[][] valid =
+    [
+        //Valid ASCII
+        ['\u0001','\u0020','\u0040','\u0060','\u007F'],
+        //Vaild 8859-1
+        ['\u0001','\u0020','\u0070','\u00DA','\u00FF'],
+        //Valid 8859-2
+        ['\u0020','\u00D7','\u00DF','\u010F','\u02D9'],
+        //Valid 1250
+        ['\u0020','\u20AC','\u201E','\u2021','\u2039'],
+        //Valid 1251
+        ['\u0402','\u00A4','\u0415','\u0439','\u044F'],
+        //Valid 1252
+        ['\u20AC','\u0160','\u2019','\u2122','\u0178'],
+    ];
+
+    static const(ubyte)[] invalid = [0xA0,0xFF,0xFF,0x81,0x98,0x81];
+
+    foreach (i,scheme;schemes)
+    {
+        assert(scheme.toString() == schemeNames[i],"Error in the name of encoding scheme"~schemeNames[i]);
+        assert(!scheme.canEncode('\uFFFD'));
+        assert(scheme.encodedLength('A') == 1);
+        const(ubyte)[] encodeStr;
+        dchar[] decStr;
+        foreach (chr;valid[i])
+        {
+            assert(scheme.encode(chr,buffer) == 1);
+            encodeStr ~= buffer;
+            const(ubyte)[] buf = buffer;
+            decStr ~= scheme.decode(buf);
+        }
+
+        assert(scheme.isValid(encodeStr),"Not correctly encoded UTF => " ~ schemeNames[i]);
+        assert(valid[i] == decStr,"Error encode/decode UTF8 <=> " ~ schemeNames[i]);
+
+        if (schemeNames[i] == "ISO-8859-1" || schemeNames[i] == "ISO-8859-2")
+        {
+            assert(scheme.safeDecode(invalid) != INVALID_SEQUENCE);
+        }
+        else
+        {
+            assert(scheme.safeDecode(invalid) == INVALID_SEQUENCE);
+        }
+        assert(scheme.replacementSequence() == cast(immutable(ubyte)[])"?");
+    }
+    assert(invalid.length == 0);
 }
 
 /**
@@ -3242,7 +3539,7 @@ class EncodingSchemeUtf16Native : EncodingScheme
         {
             assert((s.length & 1) == 0);
         }
-        body
+        do
         {
             auto t = cast(const(wchar)[]) s;
             dchar c = std.encoding.decode(t);
@@ -3255,7 +3552,7 @@ class EncodingSchemeUtf16Native : EncodingScheme
         {
             assert((s.length & 1) == 0);
         }
-        body
+        do
         {
             auto t = cast(const(wchar)[]) s;
             dchar c = std.encoding.safeDecode(t);
@@ -3338,7 +3635,7 @@ class EncodingSchemeUtf32Native : EncodingScheme
         {
             assert((s.length & 3) == 0);
         }
-        body
+        do
         {
             auto t = cast(const(dchar)[]) s;
             dchar c = std.encoding.decode(t);
@@ -3351,7 +3648,7 @@ class EncodingSchemeUtf32Native : EncodingScheme
         {
             assert((s.length & 3) == 0);
         }
-        body
+        do
         {
             auto t = cast(const(dchar)[]) s;
             dchar c = std.encoding.safeDecode(t);
@@ -3386,121 +3683,16 @@ class EncodingSchemeUtf32Native : EncodingScheme
 //=============================================================================
 
 
-// Helper functions
-version (unittest)
-{
-    void transcodeReverse(Src,Dst)(immutable(Src)[] s, out immutable(Dst)[] r)
-    {
-        static if (is(Src == Dst))
-        {
-            return s;
-        }
-        else static if (is(Src == AsciiChar))
-        {
-            transcodeReverse!(char,Dst)(cast(string) s,r);
-        }
-        else
-        {
-            foreach_reverse (d;codePoints(s))
-            {
-                foreach_reverse (c;codeUnits!(Dst)(d))
-                {
-                    r = c ~ r;
-                }
-            }
-        }
-    }
-
-    string makeReadable(string s)
-    {
-        string r = "\"";
-        foreach (char c;s)
-        {
-            if (c >= 0x20 && c < 0x80)
-            {
-                r ~= c;
-            }
-            else
-            {
-                r ~= "\\x";
-                r ~= toHexDigit(c >> 4);
-                r ~= toHexDigit(c);
-            }
-        }
-        r ~= "\"";
-        return r;
-    }
-
-    string makeReadable(wstring s)
-    {
-        string r = "\"";
-        foreach (wchar c;s)
-        {
-            if (c >= 0x20 && c < 0x80)
-            {
-                r ~= cast(char) c;
-            }
-            else
-            {
-                r ~= "\\u";
-                r ~= toHexDigit(c >> 12);
-                r ~= toHexDigit(c >> 8);
-                r ~= toHexDigit(c >> 4);
-                r ~= toHexDigit(c);
-            }
-        }
-        r ~= "\"w";
-        return r;
-    }
-
-    string makeReadable(dstring s)
-    {
-        string r = "\"";
-        foreach (dchar c; s)
-        {
-            if (c >= 0x20 && c < 0x80)
-            {
-                r ~= cast(char) c;
-            }
-            else if (c < 0x10000)
-            {
-                r ~= "\\u";
-                r ~= toHexDigit(c >> 12);
-                r ~= toHexDigit(c >> 8);
-                r ~= toHexDigit(c >> 4);
-                r ~= toHexDigit(c);
-            }
-            else
-            {
-                r ~= "\\U00";
-                r ~= toHexDigit(c >> 20);
-                r ~= toHexDigit(c >> 16);
-                r ~= toHexDigit(c >> 12);
-                r ~= toHexDigit(c >> 8);
-                r ~= toHexDigit(c >> 4);
-                r ~= toHexDigit(c);
-            }
-        }
-        r ~= "\"d";
-        return r;
-    }
-
-    char toHexDigit(int n)
-    {
-        return "0123456789ABCDEF"[n & 0xF];
-    }
-}
-
 /** Definitions of common Byte Order Marks.
-The elements of the $(D enum) can used as indices into $(D bomTable) to get
-matching $(D BOMSeq).
+The elements of the `enum` can used as indices into `bomTable` to get
+matching `BOMSeq`.
 */
 enum BOM
 {
     none      = 0,  /// no BOM was found
     utf32be   = 1,  /// [0x00, 0x00, 0xFE, 0xFF]
     utf32le   = 2,  /// [0xFF, 0xFE, 0x00, 0x00]
-    utf7      = 3,  /*  [0x2B, 0x2F, 0x76, 0x38]
+    utf7      = 3,  /** [0x2B, 0x2F, 0x76, 0x38]
                         [0x2B, 0x2F, 0x76, 0x39],
                         [0x2B, 0x2F, 0x76, 0x2B],
                         [0x2B, 0x2F, 0x76, 0x2F],
@@ -3516,7 +3708,7 @@ enum BOM
     utf16le   = 15  /// [0xFF, 0xFE]
 }
 
-/// The type stored inside $(D bomTable).
+/// The type stored inside `bomTable`.
 alias BOMSeq = Tuple!(BOM, "schema", ubyte[], "sequence");
 
 /** Mapping of a byte sequence to $(B Byte Order Mark (BOM))
@@ -3540,20 +3732,20 @@ immutable bomTable = [
     BOMSeq(BOM.utf16le, cast(ubyte[])([0xFF, 0xFE]))
 ];
 
-/** Returns a $(D BOMSeq) for a given $(D input).
-If no $(D BOM) is present the $(D BOMSeq) for $(D BOM.none) is
-returned. The $(D BOM) sequence at the beginning of the range will
+/** Returns a `BOMSeq` for a given `input`.
+If no `BOM` is present the `BOMSeq` for `BOM.none` is
+returned. The `BOM` sequence at the beginning of the range will
 not be comsumed from the passed range. If you pass a reference type
-range make sure that $(D save) creates a deep copy.
+range make sure that `save` creates a deep copy.
 
 Params:
-    input = The sequence to check for the $(D BOM)
+    input = The sequence to check for the `BOM`
 
 Returns:
-    the found $(D BOMSeq) corresponding to the passed $(D input).
+    the found `BOMSeq` corresponding to the passed `input`.
 */
 immutable(BOMSeq) getBOM(Range)(Range input)
-if (isForwardRange!Range && is(Unqual!(ElementType!Range) == ubyte))
+if (isForwardRange!Range && is(immutable ElementType!Range == immutable ubyte))
 {
     import std.algorithm.searching : startsWith;
     foreach (it; bomTable[1 .. $])

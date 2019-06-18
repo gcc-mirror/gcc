@@ -106,14 +106,67 @@ gcc_attribute_p (Dsymbol *decl)
 {
   ModuleDeclaration *md = decl->getModule ()->md;
 
-  if (md && md->packages && md->packages->length == 1)
+  if (md && md->packages.length == 1)
     {
-      if (!strcmp ((*md->packages)[0]->toChars (), "gcc")
+      if (!strcmp (md->packages.ptr[0]->toChars (), "gcc")
 	  && !strcmp (md->id->toChars (), "attributes"))
 	return true;
     }
 
   return false;
+}
+
+/* Subroutine of pragma declaration visitor for marking the function in the
+   defined in SYM as a global constructor or destructor.  If ISCTOR is true,
+   then we're applying pragma(crt_constructor).  */
+
+static int
+apply_pragma_crt (Dsymbol *sym, bool isctor)
+{
+  AttribDeclaration *ad = sym->isAttribDeclaration ();
+  if (ad != NULL)
+    {
+      int nested = 0;
+
+      /* Walk all declarations of the attribute scope.  */
+      Dsymbols *ds = ad->include (NULL);
+      if (ds)
+	{
+	  for (size_t i = 0; i < ds->length; i++)
+	    nested += apply_pragma_crt ((*ds)[i], isctor);
+	}
+
+      return nested;
+    }
+
+  FuncDeclaration *fd = sym->isFuncDeclaration ();
+  if (fd != NULL)
+    {
+      tree decl = get_decl_tree (fd);
+
+      /* Apply flags to the function.  */
+      if (isctor)
+	{
+	  DECL_STATIC_CONSTRUCTOR (decl) = 1;
+	  decl_init_priority_insert (decl, DEFAULT_INIT_PRIORITY);
+	}
+      else
+	{
+	  DECL_STATIC_DESTRUCTOR (decl) = 1;
+	  decl_fini_priority_insert (decl, DEFAULT_INIT_PRIORITY);
+	}
+
+      if (fd->linkage != LINK::c)
+	{
+	  error_at (make_location_t (fd->loc),
+		    "must be %<extern(C)%> for %<pragma(%s)%>",
+		    isctor ? "crt_constructor" : "crt_destructor");
+	}
+
+      return 1;
+    }
+
+  return 0;
 }
 
 /* Implements the visitor interface to lower all Declaration AST classes
@@ -246,18 +299,30 @@ public:
   }
 
   /* Pragmas are a way to pass special information to the compiler and to add
-     vendor specific extensions to D.  We don't do anything here, yet.  */
+     vendor specific extensions to D.  */
 
   void visit (PragmaDeclaration *d)
   {
-    if (!global.params.ignoreUnsupportedPragmas)
+    if (d->ident == Identifier::idPool ("lib")
+	|| d->ident == Identifier::idPool ("startaddress"))
       {
-	if (d->ident == Identifier::idPool ("lib")
-	    || d->ident == Identifier::idPool ("startaddress"))
+	if (!global.params.ignoreUnsupportedPragmas)
 	  {
 	    warning_at (make_location_t (d->loc), OPT_Wunknown_pragmas,
 			"pragma(%s) not implemented", d->ident->toChars ());
 	  }
+      }
+    else if (d->ident == Identifier::idPool ("crt_constructor")
+	     || d->ident == Identifier::idPool ("crt_destructor"))
+      {
+	/* Handle pragma(crt_constructor) and pragma(crt_destructor).  Apply
+	   flag to indicate that the functions enclosed should run automatically
+	   at the beginning or end of execution.  */
+	bool isctor = (d->ident == Identifier::idPool ("crt_constructor"));
+
+	if (apply_pragma_crt (d, isctor) > 1)
+	  error_at (make_location_t (d->loc),
+		    "can only apply to a single declaration");
       }
 
     visit ((AttribDeclaration *) d);
@@ -311,14 +376,14 @@ public:
        nested members.  Only applies to classes or structs.  */
     Type *tb = fd->type->nextOf ()->baseElemOf ();
 
-    while (tb->ty == Tarray || tb->ty == Tpointer)
+    while (tb->ty == TY::Tarray || tb->ty == TY::Tpointer)
       tb = tb->nextOf ()->baseElemOf ();
 
     TemplateInstance *ti = NULL;
 
-    if (tb->ty == Tstruct)
+    if (tb->ty == TY::Tstruct)
       ti = tb->isTypeStruct ()->sym->isInstantiated ();
-    else if (tb->ty == Tclass)
+    else if (tb->ty == TY::Tclass)
       ti = tb->isTypeClass ()->sym->isInstantiated ();
 
     /* Return type is instantiated from this template declaration, walk over
@@ -360,7 +425,7 @@ public:
     if (d->semanticRun >= PASSobj)
       return;
 
-    if (d->type->ty == Terror)
+    if (d->type->ty == TY::Terror)
       {
 	error_at (make_location_t (d->loc),
 		  "had semantic errors when compiling");
@@ -447,7 +512,8 @@ public:
 	    if (fd2->isFuture ())
 	      continue;
 
-	    if (fd->leastAsSpecialized (fd2) || fd2->leastAsSpecialized (fd))
+	    if (fd->leastAsSpecialized (fd2) != MATCH::nomatch
+		|| fd2->leastAsSpecialized (fd) != MATCH::nomatch)
 	      {
 		error_at (make_location_t (fd->loc), "use of %qs",
 			  fd->toPrettyChars ());
@@ -474,7 +540,7 @@ public:
     if (d->semanticRun >= PASSobj)
       return;
 
-    if (d->type->ty == Terror)
+    if (d->type->ty == TY::Terror)
       {
 	error_at (make_location_t (d->loc),
 		  "had semantic errors when compiling");
@@ -495,7 +561,8 @@ public:
 
     /* Generate C symbols.  */
     d->csym = get_classinfo_decl (d);
-    d->vtblsym = get_vtable_decl (d);
+    Dsymbol *vtblsym = d->vtblSymbol ();
+    vtblsym->csym = get_vtable_decl (d);
     tree sinit = aggregate_initializer_decl (d);
 
     /* Generate static initializer.  */
@@ -527,9 +594,9 @@ public:
 	  }
       }
 
-    DECL_INITIAL (d->vtblsym)
-      = build_constructor (TREE_TYPE (d->vtblsym), elms);
-    d_finish_decl (d->vtblsym);
+    DECL_INITIAL (vtblsym->csym)
+      = build_constructor (TREE_TYPE (vtblsym->csym), elms);
+    d_finish_decl (vtblsym->csym);
 
     /* Add this decl to the current binding level.  */
     tree ctype = TREE_TYPE (build_ctype (d->type));
@@ -547,7 +614,7 @@ public:
     if (d->semanticRun >= PASSobj)
       return;
 
-    if (d->type->ty == Terror)
+    if (d->type->ty == TY::Terror)
       {
 	error_at (make_location_t (d->loc),
 		  "had semantic errors when compiling");
@@ -590,7 +657,7 @@ public:
     if (d->semanticRun >= PASSobj)
       return;
 
-    if (d->errors || d->type->ty == Terror)
+    if (d->errors || d->type->ty == TY::Terror)
       {
 	error_at (make_location_t (d->loc),
 		  "had semantic errors when compiling");
@@ -629,7 +696,7 @@ public:
     if (d->semanticRun >= PASSobj)
       return;
 
-    if (d->type->ty == Terror)
+    if (d->type->ty == TY::Terror)
       {
 	error_at (make_location_t (d->loc),
 		  "had semantic errors when compiling");
@@ -695,7 +762,7 @@ public:
 
 	/* Frontend should have already caught this.  */
 	gcc_assert (!integer_zerop (size)
-		    || d->type->toBasetype ()->ty == Tsarray);
+		    || d->type->toBasetype ()->ty == TY::Tsarray);
 
 	d_finish_decl (decl);
 
@@ -770,7 +837,7 @@ public:
     /* Check if any errors occurred when running semantic.  */
     if (TypeFunction *tf = d->type->isTypeFunction ())
       {
-	if (tf->next == NULL || tf->next->ty == Terror)
+	if (tf->next == NULL || tf->next->ty == TY::Terror)
 	  return;
       }
 
@@ -1183,6 +1250,17 @@ get_symbol_decl (Declaration *decl)
     }
   else if (TREE_CODE (decl->csym) == FUNCTION_DECL)
     {
+      /* Dual-context functions require the code generation to build an array
+	 for the context pointer of the function, making the delicate task of
+	 tracking which context to follow when encountering a non-local symbol,
+	 and so are a not planned to be supported.  */
+      if (fd->needThis () && !fd->isMember2 ())
+	{
+	  fatal_error (make_location_t (fd->loc),
+		       "function requires a dual-context, which is not yet "
+		       "supported by GDC");
+	}
+
       /* The real function type may differ from its declaration.  */
       tree fntype = TREE_TYPE (decl->csym);
       tree newfntype = NULL_TREE;
@@ -1238,9 +1316,9 @@ get_symbol_decl (Declaration *decl)
 
       /* In [pragma/inline], functions decorated with `pragma(inline)' affects
 	 whether they are inlined or not.  */
-      if (fd->inlining == PINLINEalways)
+      if (fd->inlining == PINLINE::always)
 	DECL_DECLARED_INLINE_P (decl->csym) = 1;
-      else if (fd->inlining == PINLINEnever)
+      else if (fd->inlining == PINLINE::never)
 	DECL_UNINLINABLE (decl->csym) = 1;
 
       /* Function was declared `naked'.  */
@@ -1254,13 +1332,6 @@ get_symbol_decl (Declaration *decl)
       if (fd->generated)
 	DECL_ARTIFICIAL (decl->csym) = 1;
 
-      /* Vector array operations are always compiler generated.  */
-      if (fd->isArrayOp)
-	{
-	  DECL_ARTIFICIAL (decl->csym) = 1;
-	  DECL_DECLARED_INLINE_P (decl->csym) = 1;
-	}
-
       /* Ensure and require contracts are lexically nested in the function they
 	 part of, but are always publicly callable.  */
       if (fd->ident == Identifier::idPool ("ensure")
@@ -1271,7 +1342,7 @@ get_symbol_decl (Declaration *decl)
 	DECL_FINAL_P (decl->csym) = 1;
 
       /* Function is of type `noreturn' or `typeof(*null)'.  */
-      if (fd->type->nextOf ()->ty == Tnoreturn)
+      if (fd->type->nextOf ()->ty == TY::Tnoreturn)
 	TREE_THIS_VOLATILE (decl->csym) = 1;
 
       /* Check whether this function is expanded by the frontend.  */
@@ -1298,10 +1369,10 @@ get_symbol_decl (Declaration *decl)
   if (decl->storage_class & STCvolatile)
     TREE_THIS_VOLATILE (decl->csym) = 1;
 
-  /* Protection attributes are used by the debugger.  */
-  if (decl->protection.kind == Prot::private_)
+  /* Visibility attributes are used by the debugger.  */
+  if (decl->visibility.kind == Visibility::private_)
     TREE_PRIVATE (decl->csym) = 1;
-  else if (decl->protection.kind == Prot::protected_)
+  else if (decl->visibility.kind == Visibility::protected_)
     TREE_PROTECTED (decl->csym) = 1;
 
   /* Likewise, so could the deprecated attribute.  */
@@ -1794,7 +1865,7 @@ make_thunk (FuncDeclaration *decl, int offset)
      forcing a D local thunk to be emitted.  */
   const char *ident;
 
-  if (decl->linkage == LINKcpp)
+  if (decl->linkage == LINK::cpp)
     ident = target.cpp.thunkMangle (decl, offset);
   else
     {
@@ -1810,7 +1881,9 @@ make_thunk (FuncDeclaration *decl, int offset)
   SET_DECL_ASSEMBLER_NAME (thunk, DECL_NAME (thunk));
 
   d_keep (thunk);
-  free (CONST_CAST (char *, ident));
+
+  if (decl->linkage != LINK::cpp)
+    free (CONST_CAST (char *, ident));
 
   if (!DECL_EXTERNAL (function))
     finish_thunk (thunk, function);
@@ -1989,26 +2062,27 @@ d_mark_needed (tree decl)
 tree
 get_vtable_decl (ClassDeclaration *decl)
 {
-  if (decl->vtblsym)
-    return decl->vtblsym;
+  if (decl->vtblsym && decl->vtblsym->csym)
+    return decl->vtblsym->csym;
 
   tree ident = mangle_internal_decl (decl, "__vtbl", "Z");
   /* Note: Using a static array type for the VAR_DECL, the DECL_INITIAL value
      will have a different type.  However the back-end seems to accept this.  */
   tree type = build_ctype (Type::tvoidptr->sarrayOf (decl->vtbl.length));
 
-  decl->vtblsym = declare_extern_var (ident, type);
-  DECL_LANG_SPECIFIC (decl->vtblsym) = build_lang_decl (NULL);
+  Dsymbol *vtblsym = decl->vtblSymbol ();
+  vtblsym->csym = declare_extern_var (ident, type);
+  DECL_LANG_SPECIFIC (vtblsym->csym) = build_lang_decl (NULL);
 
   /* Class is a reference, want the record type.  */
-  DECL_CONTEXT (decl->vtblsym) = TREE_TYPE (build_ctype (decl->type));
-  TREE_READONLY (decl->vtblsym) = 1;
-  DECL_VIRTUAL_P (decl->vtblsym) = 1;
+  DECL_CONTEXT (vtblsym->csym) = TREE_TYPE (build_ctype (decl->type));
+  TREE_READONLY (vtblsym->csym) = 1;
+  DECL_VIRTUAL_P (vtblsym->csym) = 1;
 
-  SET_DECL_ALIGN (decl->vtblsym, TARGET_VTABLE_ENTRY_ALIGN);
-  DECL_USER_ALIGN (decl->vtblsym) = true;
+  SET_DECL_ALIGN (vtblsym->csym, TARGET_VTABLE_ENTRY_ALIGN);
+  DECL_USER_ALIGN (vtblsym->csym) = true;
 
-  return decl->vtblsym;
+  return vtblsym->csym;
 }
 
 /* Helper function of build_class_instance.  Find the field inside aggregate

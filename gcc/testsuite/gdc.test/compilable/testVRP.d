@@ -371,7 +371,7 @@ void bug1977_comment20()
 }
 
 /******************************************/
-// 9617
+// https://issues.dlang.org/show_bug.cgi?id=9617
 
 void test9617()
 {

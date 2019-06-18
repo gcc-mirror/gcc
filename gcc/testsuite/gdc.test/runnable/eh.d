@@ -104,7 +104,7 @@ printf("catch, i = %d\n", i);
         }
     }
 
-    printf("iterations %d totals: %ld, %ld\n", cIterations, total_x, total_nox);
+    printf("iterations %d totals: %lld, %lld\n", cIterations, total_x, total_nox);
 }
 
 int fn2_nox()
@@ -170,7 +170,7 @@ void test4()
     catch(Exception e)
     {
         auto es = e.toString();
-                printf("%.*s\n", es.length, es.ptr);
+                printf("%.*s\n", cast(int)es.length, es.ptr);
         b++;
     }
     finally
@@ -213,7 +213,7 @@ void test4()
     {
         d++;
         string es = e.toString;
-        printf("%.*s\n", es.length, es.ptr);
+        printf("%.*s\n", cast(int)es.length, es.ptr);
     }
 
     assert(a == 2);
@@ -255,7 +255,7 @@ void test4()
     {
         q3++;
                 string es = e.toString;
-        printf("%.*s\n", es.length, es.ptr);
+        printf("%.*s\n", cast(int)es.length, es.ptr);
     }
 
     assert(q0 == 1);
@@ -287,7 +287,7 @@ void test5()
             result ~= cast(char)('a' + i);
         }
     }
-    printf("--- %.*s", result.length, result.ptr);
+    printf("--- %.*s", cast(int)result.length, result.ptr);
     if (result != "tctbta")
         assert(0);
 }
@@ -352,6 +352,38 @@ void test7()
 
 /****************************************************
  * Exception chaining tests. See also test4.d
+ * Don writes about the complexity:
+
+I can explain this, since I did the original implementation.
+When I originally implemented this, I discovered that the idea of
+"chained exceptions" was hopeless naive. The idea was that while
+processing one exception, if you encounter a second one, and you
+chain them together. Then you get a third, fourth, etc.
+
+The problem is that it's much more complicated than that. Each of
+the exceptions can be a chain of exceptions themselves. This means
+that you don't end up with a chain of exceptions, but rather a tree
+of exceptions. That's why there are those really nasty test cases
+in the test suite.
+
+The examples in the test suite are very difficult to understand if
+you expect it to be a simple chain!
+
+On the one hand, I was very proud that I was able to work out the
+barely-documented behaviour of Windows SEH, and it was really
+thorough. In the initial implementation, all the complexity
+was covered. It wasn't the bugfix-driven-development which dmd
+usually operates under <g>.
+
+But on the other hand, once you can see all of the complexity,
+exception chaining becomes much less convincing as a concept. Sure,
+the full exception tree is available in the final exception which
+you catch. But, is it of any use? I doubt it very much.
+It's pretty clearly a nett loss to the language, it increases
+complexity with negligible benefit. Fortunately in this case, the
+cost isn't really high.
+
+https://digitalmars.com/d/archives/digitalmars/D/Dicebot_on_leaving_D_It_is_anarchy_driven_development_in_all_its_317950.html#N318305
  ****************************************************/
 int result1513;
 
@@ -379,6 +411,15 @@ void bug1513b()
         assert(e.msg == "d");
         assert(e.next.msg == "f");
         assert(!e.next.next);
+        int i;
+        foreach (u; e)
+        {
+            if (i)
+                assert(u.msg == "f");
+            else
+                assert(u.msg == "d");
+            ++i;
+        }
     }
 }
 
@@ -658,7 +699,7 @@ void test9()
 }
 
 /****************************************************/
-// 10964
+// https://issues.dlang.org/show_bug.cgi?id=10964
 
 void test10964()
 {
@@ -836,6 +877,137 @@ void test17481()
 
 /****************************************************/
 
+// a nothrow function, even though it is not marked as nothrow
+void test12()
+{
+    int i = 3;
+    try
+    {
+        try
+        {
+            ++i;
+            goto L10;
+        }
+        finally
+        {
+            i *= 2;
+            printf("f1\n");
+        }
+    }
+    finally
+    {
+        i += 5;
+        printf("f2\n");
+    }
+
+L10:
+    printf("3\n");
+    assert(i == (3 + 1) * 2 + 5);
+}
+
+/****************************************************/
+
+void foo13() { }
+
+void test13()
+{
+    int i = 3;
+    try
+    {
+        try
+        {
+            foo13(); // compiler assumes it throws
+            ++i;
+            goto L10;
+        }
+        finally
+        {
+            i *= 2;
+            printf("f1\n");
+        }
+    }
+    finally
+    {
+        i += 5;
+        printf("f2\n");
+    }
+
+L10:
+    printf("3\n");
+    assert(i == (3 + 1) * 2 + 5);
+}
+
+/****************************************************/
+
+// https://issues.dlang.org/show_bug.cgi?id=10966
+
+void bug10966a(void* p)
+{
+    void* pstart = p;
+
+    try
+    {
+        p = null;
+        throw new Exception("dummy");
+    }
+    catch (Throwable o)
+    {
+        assert(p != pstart);
+    }
+}
+
+void bug10966b()
+{
+    int x = 0;
+    int i = 0;
+    try
+    {
+        i = 1;
+        throw new Exception("dummy");
+    }
+    catch (Throwable o)
+    {
+        x = i;
+    }
+    assert(x == 1);
+}
+
+void test10966()
+{
+    int s;
+    bug10966a(&s);
+    bug10966b();
+}
+
+/****************************************************/
+
+// https://issues.dlang.org/show_bug.cgi?id=11049
+
+void test11049()
+{
+    int[] arr = [1,2,3];
+
+#line 4100 "foo"
+    try { auto n = arr[3]; }
+    catch (Error e)
+    {
+        //printf("e.file = %s\n", e.file.ptr);
+        assert(e.file == "foo");  // fails
+        assert(e.line == 4100);
+    }
+
+#line 4200 "bar"
+    try { auto a = arr[3..9]; }
+    catch (Error e)
+    {
+        //printf("e.file = %s\n", e.file.ptr);
+        assert(e.file == "bar");  // fails
+        assert(e.line == 4200);
+    }
+}
+
+/****************************************************/
+
 int main()
 {
     printf("start\n");
@@ -860,6 +1032,10 @@ int main()
     test10();
     test11();
     test17481();
+    test12();
+    test13();
+    test10966();
+    test11049();
 
     printf("finish\n");
     return 0;
