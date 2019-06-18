@@ -5034,6 +5034,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	if (*non_constant_p)
 	  return t;
 	tree type = TREE_TYPE (t);
+
+	if (VOID_TYPE_P (type))
+	  return void_node;
+
 	if (TREE_CODE (op) == PTRMEM_CST
 	    && !TYPE_PTRMEM_P (type))
 	  op = cplus_expand_constant (op);
@@ -5094,14 +5098,18 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	     conversion.  */
 	  return fold (t);
 
+	tree sop;
+
 	/* Handle an array's bounds having been deduced after we built
 	   the wrapping expression.  */
 	if (same_type_ignoring_tlq_and_bounds_p (type, TREE_TYPE (op)))
 	  r = op;
+	else if (sop = tree_strip_nop_conversions (op),
+		 sop != op && (same_type_ignoring_tlq_and_bounds_p
+			       (type, TREE_TYPE (sop))))
+	  r = sop;
 	else if (tcode == UNARY_PLUS_EXPR)
 	  r = fold_convert (TREE_TYPE (t), op);
-	else if (VOID_TYPE_P (type))
-	  r = void_node;
 	else
 	  r = fold_build1 (tcode, type, op);
 
