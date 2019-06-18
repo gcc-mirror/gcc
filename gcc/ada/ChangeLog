@@ -1,3 +1,10 @@
+2019-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+PR ada/80590
+
+	* sem_ch5.adb (Analyze_Loop_Statement): Avoid exception propagation
+	during normal processing.
+
 2019-06-17  Arnaud Charlet  <charlet@adacore.com>
 
 PR ada/80590
