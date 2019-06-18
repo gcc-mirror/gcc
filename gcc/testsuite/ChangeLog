@@ -1,3 +1,8 @@
+2019-06-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/71548
+	* g++.dg/cpp0x/variadic177.C: New test.
+
 2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/struct_vect_18.c: Allow branches to
