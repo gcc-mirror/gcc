@@ -1,5 +1,7 @@
 ! Test valid usage of the OpenACC 'declare' directive.
 
+! { dg-additional-options "-fdump-tree-original" }
+
 module mod_a
   implicit none
   integer :: a
@@ -44,4 +46,8 @@ program test
   use mod_c
   use mod_d
   use mod_e
+
+  ! { dg-final { scan-tree-dump {(?n)#pragma acc data map\(force_alloc:d\) map\(force_deviceptr:c\) map\(force_to:b\) map\(force_alloc:a\)$} original } }
 end program test
+
+! { dg-final { scan-tree-dump-times {#pragma acc data} 1 original } }

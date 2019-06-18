@@ -1,5 +1,8 @@
 2019-06-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR fortran/90921
+	* gfortran.dg/goacc/declare-3.f95: Update.
+
 	PR fortran/85221
 	* gfortran.dg/goacc/declare-3.f95: New file.
 

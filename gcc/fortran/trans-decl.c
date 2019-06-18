@@ -6491,6 +6491,7 @@ finish_oacc_declare (gfc_namespace *ns, gfc_symbol *sym, bool block)
   gfc_omp_clauses *omp_clauses = NULL;
   gfc_omp_namelist *n, *p;
 
+  module_oacc_clauses = NULL;
   gfc_traverse_ns (ns, find_module_oacc_declare_clauses);
 
   if (module_oacc_clauses && sym->attr.flavor == FL_PROGRAM)
@@ -6502,7 +6503,6 @@ finish_oacc_declare (gfc_namespace *ns, gfc_symbol *sym, bool block)
       new_oc->clauses = module_oacc_clauses;
 
       ns->oacc_declare = new_oc;
-      module_oacc_clauses = NULL;
     }
 
   if (!ns->oacc_declare)
