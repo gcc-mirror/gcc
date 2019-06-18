@@ -7725,7 +7725,7 @@ extern void explain_invalid_constexpr_fn        (tree);
 extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
 extern void clear_cv_and_fold_caches		(void);
-extern tree unshare_constructor			(tree);
+extern tree unshare_constructor			(tree CXX_MEM_STAT_INFO);
 
 /* In cp-ubsan.c */
 extern void cp_ubsan_maybe_instrument_member_call (tree);

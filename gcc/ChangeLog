@@ -1,3 +1,7 @@
+2019-06-18  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (build_constructor): Add MEM_STAT_DECL.
+
 2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64-modes.def (CC_NZC): New CC_MODE.
