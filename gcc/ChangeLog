@@ -1,3 +1,13 @@
+2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-loop-manip.c (vect_set_loop_masks_directly): Remove
+	vf parameter.  Restore the previous iv step of nscalars_step,
+	but give it iv_type rather than compare_type.  Tweak code order
+	to match the comments.
+	(vect_set_loop_condition_masked): Update accordingly.
+	* tree-vect-loop.c (vect_verify_full_masking): Use "unsigned int"
+	for iv_precision.  Tweak comment formatting.
+
 2019-06-18  Iain Sandoe  <iain@sandoe.co.uk>
 
         * config/darwin.c: Strip trailing whitespace.

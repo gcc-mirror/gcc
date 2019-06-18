@@ -1062,7 +1062,7 @@ vect_verify_full_masking (loop_vec_info loop_vinfo)
   tree cmp_type = NULL_TREE;
   tree iv_type = NULL_TREE;
   widest_int iv_limit = vect_iv_limit_for_full_masking (loop_vinfo);
-  widest_int iv_precision = UINT_MAX;
+  unsigned int iv_precision = UINT_MAX;
 
   if (iv_limit != -1)
     iv_precision = wi::min_precision (iv_limit * max_nscalars_per_iter,
@@ -1083,12 +1083,12 @@ vect_verify_full_masking (loop_vec_info loop_vinfo)
 		 best choice:
 
 		 - An IV that's Pmode or wider is more likely to be reusable
-		 in address calculations than an IV that's narrower than
-		 Pmode.
+		   in address calculations than an IV that's narrower than
+		   Pmode.
 
 		 - Doing the comparison in IV_PRECISION or wider allows
-		 a natural 0-based IV, whereas using a narrower comparison
-		 type requires mitigations against wrap-around.
+		   a natural 0-based IV, whereas using a narrower comparison
+		   type requires mitigations against wrap-around.
 
 		 Conversely, if the IV limit is variable, doing the comparison
 		 in a wider type than the original type can introduce
