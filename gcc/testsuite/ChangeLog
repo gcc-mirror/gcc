@@ -1,3 +1,8 @@
+2019-06-18  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/pr90866-2.c: Remove a pointless declaration
+	to avoid compilation errors on arm-none-eabi.
+
 2019-06-18  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* gcc.target/aarch64/pcs_attribute-2.c: Remove ifunc usage.
