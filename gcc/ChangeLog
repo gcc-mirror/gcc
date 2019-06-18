@@ -1,5 +1,9 @@
 2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-sve.md: Tabify file.
+
+2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_pfalse_reg): Declare.
 	* config/aarch64/aarch64.c (aarch64_pfalse_reg): New function.
 	* config/aarch64/aarch64-sve.md: Use it.

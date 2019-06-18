@@ -72,7 +72,7 @@
        head of the file) and increases the addressing choices for
        little-endian.  */
     if ((MEM_P (operands[0]) || MEM_P (operands[1]))
-        && can_create_pseudo_p ())
+	&& can_create_pseudo_p ())
       {
 	aarch64_expand_sve_mem_move (operands[0], operands[1], <VPRED>mode);
 	DONE;
@@ -88,7 +88,7 @@
     /* Optimize subregs on big-endian targets: we can use REV[BHW]
        instead of going through memory.  */
     if (BYTES_BIG_ENDIAN
-        && aarch64_maybe_expand_sve_subreg_move (operands[0], operands[1]))
+	&& aarch64_maybe_expand_sve_subreg_move (operands[0], operands[1]))
       DONE;
   }
 )
@@ -100,7 +100,7 @@
 (define_insn_and_split "*aarch64_sve_mov<mode>_subreg_be"
   [(set (match_operand:SVE_ALL 0 "aarch64_sve_nonimmediate_operand" "=w")
 	(unspec:SVE_ALL
-          [(match_operand:VNx16BI 1 "register_operand" "Upl")
+	  [(match_operand:VNx16BI 1 "register_operand" "Upl")
 	   (match_operand 2 "aarch64_any_register_operand" "w")]
 	  UNSPEC_REV_SUBREG))]
   "TARGET_SVE && BYTES_BIG_ENDIAN"
@@ -147,7 +147,7 @@
 (define_expand "aarch64_sve_reload_be"
   [(parallel
      [(set (match_operand 0)
-           (match_operand 1))
+	   (match_operand 1))
       (clobber (match_operand:VNx16BI 2 "register_operand" "=Upl"))])]
   "TARGET_SVE && BYTES_BIG_ENDIAN"
   {
@@ -1442,24 +1442,24 @@
 (define_insn_and_split "*pred_cmp<cmp_op><mode>_combine"
   [(set (match_operand:<VPRED> 0 "register_operand" "=Upa, Upa")
        (and:<VPRED>
-         (unspec:<VPRED>
-           [(match_operand:<VPRED> 1)
-            (SVE_INT_CMP:<VPRED>
-              (match_operand:SVE_I 2 "register_operand" "w, w")
-              (match_operand:SVE_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
-           UNSPEC_MERGE_PTRUE)
-         (match_operand:<VPRED> 4 "register_operand" "Upl, Upl")))
+	 (unspec:<VPRED>
+	   [(match_operand:<VPRED> 1)
+	    (SVE_INT_CMP:<VPRED>
+	      (match_operand:SVE_I 2 "register_operand" "w, w")
+	      (match_operand:SVE_I 3 "aarch64_sve_cmp_<sve_imm_con>_operand" "<sve_imm_con>, w"))]
+	   UNSPEC_MERGE_PTRUE)
+	 (match_operand:<VPRED> 4 "register_operand" "Upl, Upl")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_SVE"
   "#"
   "&& 1"
   [(parallel
      [(set (match_dup 0)
-          (and:<VPRED>
-            (SVE_INT_CMP:<VPRED>
-              (match_dup 2)
-              (match_dup 3))
-            (match_dup 4)))
+	  (and:<VPRED>
+	    (SVE_INT_CMP:<VPRED>
+	      (match_dup 2)
+	      (match_dup 3))
+	    (match_dup 4)))
       (clobber (reg:CC CC_REGNUM))])]
 )
 
@@ -2730,8 +2730,8 @@
        a ZIP whose first operand is zero.  */
     rtx temp = gen_reg_rtx (VNx4SImode);
     emit_insn ((<hi_lanes_optab>
-	        ? gen_aarch64_sve_zip2vnx4si
-	        : gen_aarch64_sve_zip1vnx4si)
+		? gen_aarch64_sve_zip2vnx4si
+		: gen_aarch64_sve_zip1vnx4si)
 	       (temp, operands[1], operands[1]));
     rtx ptrue = aarch64_ptrue_reg (VNx2BImode);
     emit_insn (gen_aarch64_sve_<FLOATUORS:optab>vnx4sivnx2df2 (operands[0],
