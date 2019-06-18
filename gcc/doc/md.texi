@@ -5417,6 +5417,11 @@ mode @var{m} and the scalars have the mode appropriate for one
 element of @var{m}.  The operation is strictly in-order: there is
 no reassociation.
 
+@cindex @code{mask_fold_left_plus_@var{m}} instruction pattern
+@item @code{mask_fold_left_plus_@var{m}}
+Like @samp{fold_left_plus_@var{m}}, but takes an additional mask operand
+(operand 3) that specifies which elements of the source vector should be added.
+
 @cindex @code{sdot_prod@var{m}} instruction pattern
 @item @samp{sdot_prod@var{m}}
 @cindex @code{udot_prod@var{m}} instruction pattern

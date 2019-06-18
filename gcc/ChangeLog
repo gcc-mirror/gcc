@@ -1,3 +1,17 @@
+2019-06-18  Alejandro Martinez  <alejandro.martinezvicente@arm.com>
+
+	* config/aarch64/aarch64-sve.md (mask_fold_left_plus_<mode>): Renamed
+	from "*fold_left_plus_<mode>", updated operands order.
+	* doc/md.texi (mask_fold_left_plus_@var{m}): Documented new optab.
+	* internal-fn.c (mask_fold_left_direct): New define.
+	(expand_mask_fold_left_optab_fn): Likewise.
+	(direct_mask_fold_left_optab_supported_p): Likewise.
+	* internal-fn.def (MASK_FOLD_LEFT_PLUS): New internal function.
+	* optabs.def (mask_fold_left_plus_optab): New optab.
+	* tree-vect-loop.c (mask_fold_left_plus_optab): New function to get a
+	masked internal_fn for a reduction ifn.
+	(vectorize_fold_left_reduction): Add support for masking reductions.
+
 2019-06-18  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR middle-end/80791
