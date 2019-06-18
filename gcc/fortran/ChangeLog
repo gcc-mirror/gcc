@@ -1,3 +1,15 @@
+2019-06-18  Harald Anlauf  <anlauf@gmx.de>
+
+	Backport from mainline
+	2019-06-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/90577
+	PR fortran/90578
+	* trans-intrinsic.c (gfc_conv_intrinsic_shift): Properly
+	distinguish logical/arithmetic shifts.
+	* intrinsic.texi: Update documentation for SHIFTR/SHIFTL/SHIFTA
+	(Fortran 2008) and LSHIFT/RSHIFT (GNU extensions).
+
 2019-06-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	Tomáš Trnka  <trnka@scm.com>
 
