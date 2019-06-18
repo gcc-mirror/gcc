@@ -10,4 +10,4 @@ fully_peel_me (double *x)
     x[i] = x[i] * 2;
 }
 
-/* { dg-final { scan-assembler-times {b..\t\.L.\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tb[.a-z]+\t} 1 } } */

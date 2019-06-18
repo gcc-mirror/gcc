@@ -1,5 +1,21 @@
 2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-modes.def (CC_NZC): New CC_MODE.
+	* config/aarch64/aarch64-sve.md (*<optab><mode>3_cc)
+	(ptest_ptrue<mode>, while_ult<GPI:mode><PRED_ALL:mode>)
+	(*while_ult<GPI:mode><PRED_ALL:mode>_cc, *cmp<cmp_op><mode>)
+	(*cmp<cmp_op><mode>_ptest, *cmp<cmp_op><mode>_cc)
+	(*pred_cmp<cmp_op><mode>_combine, *pred_cmp<cmp_op><mode>)
+	(vec_cmp<mode><vpred>, vec_cmpu<mode><vpred>, cbranch<mode>4):
+	Use CC_NZC instead of CC.
+	* config/aarch64/aarch64.md (condjump): Print a '.' in SVE conditions.
+	* config/aarch64/aarch64.c (aarch64_sve_condition_codes): New variable.
+	(aarch64_print_operand): Handle E_CC_NZCmode.
+	(aarch64_emit_sve_ptrue_op_cc): Use gen_set_clobber_cc_nzc instead
+	of gen_set_clobber_cc.
+
+2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve.md: Tabify file.
 
 2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
