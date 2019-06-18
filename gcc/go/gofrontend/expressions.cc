@@ -7408,6 +7408,26 @@ String_concat_expression::do_flatten(Gogo*, Named_object*,
     return this;
   Location loc = this->location();
   Type* type = this->type();
+
+  // Mark string([]byte) operands to reuse the backing store.
+  // runtime.concatstrings does not keep the reference.
+  //
+  // Note: in the gc runtime, if all but one inputs are empty,
+  // concatstrings returns the only nonempty input without copy.
+  // So it is not safe to reuse the backing store if it is a
+  // string([]byte) conversion. So the gc compiler does the
+  // no-copy optimization only when there is at least one
+  // constant nonempty input. Currently the gccgo runtime
+  // doesn't do this, so we don't do the check.
+  for (Expression_list::iterator p = this->exprs_->begin();
+       p != this->exprs_->end();
+       ++p)
+    {
+      Type_conversion_expression* tce = (*p)->conversion_expression();
+      if (tce != NULL)
+        tce->set_no_copy(true);
+    }
+
   Expression* nil_arg = Expression::make_nil(loc);
   Expression* call;
   switch (this->exprs_->size())
