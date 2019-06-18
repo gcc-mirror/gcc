@@ -1,5 +1,13 @@
 2019-06-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR fortran/90743
+	* oacc-parallel.c (GOACC_parallel_keyed): Handle NULL mapping
+	case.
+	* testsuite/libgomp.fortran/target-allocatable-1-1.f90: New file.
+	* testsuite/libgomp.fortran/target-allocatable-1-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/allocatable-1-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/allocatable-1-2.f90: Likewise.
+
 	PR testsuite/90861
 	* testsuite/libgomp.oacc-c-c++-common/declare-vla.c: Update.
 
