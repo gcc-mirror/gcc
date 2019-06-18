@@ -3734,6 +3734,63 @@ prepare_decl_rtl (tree *expr_p, int *ws, void *data)
   return NULL_TREE;
 }
 
+/* Predict whether the given loop will be transformed in the RTL
+   doloop_optimize pass.  Attempt to duplicate some doloop_optimize checks.
+   This is only for target independent checks, see targetm.predict_doloop_p
+   for the target dependent ones.
+
+   Note that according to some initial investigation, some checks like costly
+   niter check and invalid stmt scanning don't have much gains among general
+   cases, so keep this as simple as possible first.
+
+   Some RTL specific checks seems unable to be checked in gimple, if any new
+   checks or easy checks _are_ missing here, please add them.  */
+
+static bool ATTRIBUTE_UNUSED
+generic_predict_doloop_p (struct ivopts_data *data)
+{
+  struct loop *loop = data->current_loop;
+
+  /* Call target hook for target dependent checks.  */
+  if (!targetm.predict_doloop_p (loop))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Predict doloop failure due to"
+			    " target specific checks.\n");
+      return false;
+    }
+
+  /* Similar to doloop_optimize, check iteration description to know it's
+     suitable or not.  Keep it as simple as possible, feel free to extend it
+     if you find any multiple exits cases matter.  */
+  edge exit = single_dom_exit (loop);
+  struct tree_niter_desc *niter_desc;
+  if (!exit || !(niter_desc = niter_for_exit (data, exit)))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Predict doloop failure due to"
+			    " unexpected niters.\n");
+      return false;
+    }
+
+  /* Similar to doloop_optimize, check whether iteration count too small
+     and not profitable.  */
+  HOST_WIDE_INT est_niter = get_estimated_loop_iterations_int (loop);
+  if (est_niter == -1)
+    est_niter = get_likely_max_loop_iterations_int (loop);
+  if (est_niter >= 0 && est_niter < 3)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Predict doloop failure due to"
+		 " too few iterations (%u).\n",
+		 (unsigned int) est_niter);
+      return false;
+    }
+
+  return true;
+}
+
 /* Determines cost of the computation of EXPR.  */
 
 static unsigned

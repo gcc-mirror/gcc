@@ -4236,6 +4236,15 @@ DEFHOOK
 rtx, (machine_mode mode, rtx result, rtx val, rtx failval),
  default_speculation_safe_value)
  
+DEFHOOK
+(predict_doloop_p,
+ "Return true if we can predict it is possible to use a low-overhead loop\n\
+for a particular loop.  The parameter @var{loop} is a pointer to the loop.\n\
+This target hook is required only when the target supports low-overhead\n\
+loops, and will help ivopts to make some decisions.\n\
+The default version of this hook returns false.",
+ bool, (struct loop *loop),
+ default_predict_doloop_p)
 
 DEFHOOK
 (can_use_doloop_p,
