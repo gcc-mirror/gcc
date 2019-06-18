@@ -3747,22 +3747,18 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       if (*non_constant_p)
 	return t;
     }
-  target = cxx_eval_constant_expression (ctx, target,
-					 true,
-					 non_constant_p, overflow_p);
-  if (*non_constant_p)
-    return t;
 
-  if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (target), type))
+  bool evaluated = false;
+  if (lval)
     {
-      /* For initialization of an empty base, the original target will be
-         *(base*)this, which the above evaluation resolves to the object
-	 argument, which has the derived type rather than the base type.  In
-	 this situation, just evaluate the initializer and return, since
-	 there's no actual data to store.  */
-      gcc_assert (is_empty_class (type));
-      return cxx_eval_constant_expression (ctx, init, false,
-					   non_constant_p, overflow_p);
+      /* If we want to return a reference to the target, we need to evaluate it
+	 as a whole; otherwise, only evaluate the innermost piece to avoid
+	 building up unnecessary *_REFs.  */
+      target = cxx_eval_constant_expression (ctx, target, true,
+					     non_constant_p, overflow_p);
+      evaluated = true;
+      if (*non_constant_p)
+	return t;
     }
 
   /* Find the underlying variable.  */
@@ -3792,7 +3788,17 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  break;
 
 	default:
-	  object = probe;
+	  if (evaluated)
+	    object = probe;
+	  else
+	    {
+	      probe = cxx_eval_constant_expression (ctx, probe, true,
+						    non_constant_p, overflow_p);
+	      evaluated = true;
+	      if (*non_constant_p)
+		return t;
+	    }
+	  break;
 	}
     }
 
@@ -3948,7 +3954,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       new_ctx.object = target;
       init = cxx_eval_constant_expression (&new_ctx, init, false,
 					   non_constant_p, overflow_p);
-      if (target == object)
+      if (ctors->is_empty())
 	/* The hash table might have moved since the get earlier.  */
 	valp = ctx->values->get (object);
     }
@@ -3961,6 +3967,17 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
     {
       /* An outer ctx->ctor might be pointing to *valp, so replace
 	 its contents.  */
+      if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (init),
+						      TREE_TYPE (*valp)))
+	{
+	  /* For initialization of an empty base, the original target will be
+	   *(base*)this, evaluation of which resolves to the object
+	   argument, which has the derived type rather than the base type.  In
+	   this situation, just evaluate the initializer and return, since
+	   there's no actual data to store.  */
+	  gcc_assert (is_empty_class (TREE_TYPE (init)) && !lval);
+	  return init;
+	}
       CONSTRUCTOR_ELTS (*valp) = CONSTRUCTOR_ELTS (init);
       TREE_CONSTANT (*valp) = TREE_CONSTANT (init);
       TREE_SIDE_EFFECTS (*valp) = TREE_SIDE_EFFECTS (init);
