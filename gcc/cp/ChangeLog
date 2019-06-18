@@ -1,5 +1,10 @@
 2019-06-18  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (cxx_eval_constant_expression): Handle conversion from
+	and then to the same type.
+
+2019-06-18  Jason Merrill  <jason@redhat.com>
+
 	* constexpr.c (unshare_constructor): Add MEM_STAT_DECL.
 
 2019-06-17  Jakub Jelinek  <jakub@redhat.com>
