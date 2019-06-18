@@ -1,5 +1,9 @@
 2019-06-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR testsuite/90868
+	* c-c++-common/goacc/declare-1.c: Update.
+	* c-c++-common/goacc/declare-2.c: Likewise.
+
 	PR middle-end/90862
 	* c-c++-common/goacc/declare-1.c: Update.
 	* c-c++-common/goacc/declare-2.c: Likewise.
