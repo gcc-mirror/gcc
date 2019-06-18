@@ -1,5 +1,9 @@
 2019-06-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c++/firstprivate-mappings-1.C: New file.
+	* testsuite/libgomp.oacc-c-c++-common/firstprivate-mappings-1.c:
+	Likewise.
+
 	* testsuite/libgomp.fortran/allocatable3.f90: Add missing results
 	check.
 
