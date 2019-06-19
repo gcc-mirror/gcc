@@ -1,3 +1,7 @@
+2019-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/ubsan/pr63956.C: Adjust expected diagnostics.
+
 2019-06-19  Jim MacArthur  <jim.macarthur@codethink.co.uk>
 	    Mark Eggleston  <mark.eggleston@codethink.com>
 
