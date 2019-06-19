@@ -1,3 +1,7 @@
+2019-06-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (cmpstrnsi): Remove dead code.
+
 2019-06-19  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR middle-end/84521
