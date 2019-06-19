@@ -1,3 +1,12 @@
+2019-06-19  Michael Weghorn  <m.weghorn@posteo.de>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90945
+	* python/libstdcxx/v6/printers.py (StdVectorPrinter._iterator): Use
+	values of type bool for vector<bool> elements.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Test vector<bool>.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+
 2019-06-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90920 partially revert r263433
