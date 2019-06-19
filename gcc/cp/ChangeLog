@@ -1,3 +1,8 @@
+2019-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cp_genericize_r): Handle OMP_CLAUSE_{IN,EX}CLUSIVE
+	like OMP_CLAUSE_SHARED.
+
 2019-06-18  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.c (cxx_eval_store_expression): Delay target evaluation.

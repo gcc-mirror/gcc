@@ -1,5 +1,11 @@
 2019-06-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/vect/simd-3.cc: New test.
+	* g++.dg/vect/simd-4.cc: New test.
+	* g++.dg/vect/simd-5.cc: New test.
+
+2019-06-19  Jakub Jelinek  <jakub@redhat.com>
+
 	* g++.dg/ubsan/pr63956.C: Adjust expected diagnostics.
 
 2019-06-19  Jim MacArthur  <jim.macarthur@codethink.co.uk>
