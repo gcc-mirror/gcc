@@ -1,3 +1,8 @@
+2019-06-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+        * config/darwin-driver.c (darwin_driver_init): Fix off-by-one errors
+        in computing the number of options to be moved.
+
 2019-06-19  Maya Rashish  <coypu@sdf.org>
 
 	*  config/arm/netbsd-elf.h (SYSARCH_ARM_SYNC_ICACHE): New definition.
