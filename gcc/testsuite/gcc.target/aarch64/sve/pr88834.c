@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-S -O3 -march=armv8.2-a+sve" } */
+/* { dg-options "-O3" } */
 
 void
 f (int *restrict x, int *restrict y, int *restrict z, int n)
