@@ -1,3 +1,8 @@
+2019-06-19  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/90156
+	* gcc.dg/format/gcc_diag-11.c: Enable.
+
 2019-06-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/69499

@@ -1,8 +1,7 @@
 /* Test warnings for common punctuation, quoting, and spelling issues
    in GCC diagnostics.
    { dg-do compile }
-   { dg-options "-Wformat -Wformat-diag" }
-   { dg-skip-if "-Wformat-diag not available yet" { *-*-* } }
+   { dg-options "-Wformat -Wformat-diag" } */
 
 /* Magic identifiers must be set before the attribute is used.  */
 
