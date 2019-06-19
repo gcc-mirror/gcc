@@ -12,6 +12,6 @@ export inline int frob (int x)
 }
 
 // { dg-final { scan-lang-dump {Read:-[0-9] new mergeable decl function_decl:'::foo@:bar:2'} module } }
-// { dg-final { scan-lang-dump {Read:-[0-9] matched mergeable decl function_decl:'::foo@:bar:2'} module } }
+// { dg-final { scan-lang-dump {Read:-[0-9] matched mergeable decl function_decl:'::foo@:baz:3'} module } }
 // { dg-final { scan-lang-dump {Recording new skippable function_decl:'::foo@:bar:2'} module } }
 // { dg-final { scan-lang-dump {Declaration sections are \[1,3\)} module } }

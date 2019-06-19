@@ -3489,8 +3489,8 @@ record_mergeable_decl (tree *slot, tree name, tree decl)
   add_mergeable_decl (gslot, decl);
 }
 
-/* DECL is a new declaration that may be duplicated in OVL.  Use TPL,
-   RET & ARGS to find its clone, or NULL.
+/* DECL is a new declaration that may be duplicated in OVL.  Use RET &
+   ARGS to find its clone, or NULL.
 
    We're conservative with matches, so ambiguous decls will be
    registered as different, then lead to a lookup error if the two
@@ -3499,7 +3499,7 @@ record_mergeable_decl (tree *slot, tree name, tree decl)
    some special casing for namespaces.  */
 
 static tree
-check_mergeable_decl (tree decl, tree ovl, tree tpl, tree ret, tree args)
+check_mergeable_decl (tree decl, tree ovl, tree ret, tree args)
 {
   for (ovl_iterator iter (ovl); iter; ++iter)
     {
@@ -3522,7 +3522,8 @@ check_mergeable_decl (tree decl, tree ovl, tree tpl, tree ret, tree args)
       switch (TREE_CODE (d_inner))
 	{
 	case TEMPLATE_DECL:
-	  if (comp_template_parms (tpl, DECL_TEMPLATE_PARMS (m_inner)))
+	  if (comp_template_parms (DECL_TEMPLATE_PARMS (d_inner),
+				   DECL_TEMPLATE_PARMS (m_inner)))
 	    {
 	      d_inner = DECL_TEMPLATE_RESULT (d_inner);
 	      m_inner = DECL_TEMPLATE_RESULT (m_inner);
@@ -3633,16 +3634,12 @@ check_module_override (tree decl, tree mvec, bool is_friend,
 
       if (mergeable)
 	{
-	  tree tpl = NULL_TREE;
 	  tree ret = NULL_TREE;
 	  tree args = NULL_TREE;
 	  tree inner = decl;
 
 	  if (TREE_CODE (decl) == TEMPLATE_DECL)
-	    {
-	      tpl = DECL_TEMPLATE_PARMS (decl);
-	      inner = DECL_TEMPLATE_RESULT (decl);
-	    }
+	    inner = DECL_TEMPLATE_RESULT (decl);
 
 	  if (TREE_CODE (inner) == FUNCTION_DECL)
 	    {
@@ -3651,8 +3648,7 @@ check_module_override (tree decl, tree mvec, bool is_friend,
 	      args = TYPE_ARG_TYPES (TREE_TYPE (inner));
 	    }
 
-	  if (tree match
-	      = check_mergeable_decl (decl, mergeable, tpl, ret, args))
+	  if (tree match = check_mergeable_decl (decl, mergeable, ret, args))
 	    {
 	      match = duplicate_decls (decl, match, is_friend);
 	      if (TREE_CODE (match) == TYPE_DECL)
@@ -3896,20 +3892,20 @@ lookup_enum_member (tree etype, tree name)
 
 /* DECL is a yet-to-be-loaded mergeable entity in namespace CTX slot
    NAME.  PARTITION is true if it is from a module partition
-   (otherwise it is a global module entity), TPL, RET and ARGS are its
+   (otherwise it is a global module entity), RET and ARGS are its
    distinguishing features (some of which may be NULL).  Look for an
    existing mergeable that matches and return that if found.
    Otherwise add this DECL into the mergeable list.  */
 
 tree
 match_mergeable_decl (tree decl, tree ctx, tree name, bool partition,
-		      tree tpl, tree ret, tree args)
+		      tree ret, tree args)
 {
   tree *slot = find_namespace_slot (ctx, name, true);
   tree *gslot = get_fixed_binding_slot
     (slot, name, partition ? MODULE_SLOT_PARTITION : MODULE_SLOT_GLOBAL, true);
 
-  if (tree match = check_mergeable_decl (decl, *gslot, tpl, ret, args))
+  if (tree match = check_mergeable_decl (decl, *gslot, ret, args))
     return match;
 
   add_mergeable_decl (gslot, decl);
@@ -8739,7 +8735,7 @@ make_namespace_finish (tree ns, tree *slot, bool from_import = false)
       /* Merge into global slot.  */
       tree *gslot = get_fixed_binding_slot (slot, DECL_NAME (ns),
 					    MODULE_SLOT_GLOBAL, true);
-      if (!check_mergeable_decl (ns, *gslot, NULL, NULL, NULL))
+      if (!check_mergeable_decl (ns, *gslot, NULL, NULL))
 	*gslot = ns;
     }
 

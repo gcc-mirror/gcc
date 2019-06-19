@@ -1,3 +1,43 @@
+2019-06-19  Nathan Sidwell  <nathan@acm.org>
+
+	Stream mergeables inline.
+	gcc/cp/
+	* module.cc (depset): Add DB_MERGEABLE_BIT.
+	(depset::is_mergeable): New.
+	(depset::hash::set_for_mergeable): Delete.
+	(trees_{in,out}::tree_mergeable): Delete.
+	(tress_{in,out}::key_mergeable): New.
+	(trees_out::tags): New enum.
+	(trees_out::mark_{mergeable,merged}): New.
+	(trees_out::reserve_mergeable,unset_for_mergeable): Delete.
+	(trees_out::{insert,ref_node}): Adjust.
+	(trees_out::core_vals): Don't stream tpl-tpl-parm contexts.
+	(trees_out::tree_decl): tpl-tpl-parms not found by name.
+	(trees_{in,out}::tree_value): Stream merging info inline.
+	(trees_{in,out}::tpl_header): Take template, not parms.
+	(trees_out::mark_declaration): Mark the template parms.
+	(depset::hash::find_dependencies): Adjust mergeable walk.
+	(depset::hash::add_mergeable): Adjust.
+	(module_state::sort_mergeables): Replace with ...
+	(sort_mergeables): ... this.
+	(enum cluster_tag): Delete ct_mergeable.
+	(module_state::write_cluster): Determine mergable ordering
+	earlier.  Don't write a mergeable table.
+	(module_state::read_cluster): No mergeables to deal with here.
+	(module_state::write): Move cluster member dumping to write_cluster.
+	* name-lookup.h (match_mergeable_decl): Drop tpl_args parm.
+	* name-lookup.c (check_mergeable_decl): Likewise.  Update callers.
+	gcc/testsuite/
+	* g++.dg/modules/builtin-1_a.C: Adjust dump scans.
+	* g++.dg/modules/friend-1_a.C: Likewise.
+	* g++.dg/modules/indirect-[234]_[bc].C: Likewise.
+	* g++.dg/modules/inst-[23]_[ab].C: Likewise.
+	* g++.dg/modules/part-3_[cd].C: Likewise.
+	* g++.dg/modules/scc-1.C: Likewise.
+	* g++.dg/modules/tpl-friend-[12]_a.C: Likewise.
+	* g++.dg/modules/tpl-spec-[12345]_[ab].C: Likewise.
+	* g++.dg/modules/vmort-2_b.C: Likewise.
+
 2019-06-18  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r272419.

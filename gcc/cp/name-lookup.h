@@ -372,7 +372,7 @@ extern tree lookup_all_conversions (tree);
 
 /* Lower level interface for modules. */
 extern tree match_mergeable_decl (tree decl, tree ctx, tree name, bool partition,
-				  tree tpl_args, tree ret, tree args);
+				  tree ret, tree args);
 extern bool import_module_binding (tree ctx, tree name, unsigned mod,
 				   unsigned snum);
 extern bool set_module_binding (tree ctx, tree name, unsigned mod, bool iface,

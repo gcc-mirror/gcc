@@ -8,4 +8,4 @@ int main ()
 }
 
 // { dg-final { scan-lang-dump { Read:-[0-9] unique mergeable decl function_decl:'::frob@foo:2'} module } }
-// { dg-final { scan-lang-dump {> Read:-[0-9] unique mergeable decl function_decl:'::foo@foo:2'} module } }
+// { dg-final { scan-lang-dump {>  Read:-[0-9] unique mergeable decl function_decl:'::foo@foo:2'} module } }

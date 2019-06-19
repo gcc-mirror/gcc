@@ -16,7 +16,7 @@ template <> int foo<int> (int y)
 
 // { dg-final { scan-lang-dump {Dependencies of specialization function_decl:'::foo@TPL:1<int>'} module } }
 // { dg-final { scan-lang-dump-not {Depending definition function_decl:'::foo@TPL:1<int>'} module } }
-// { dg-final { scan-lang-dump {Cluster:2 1 depsets\n  \[0\]=specialization declaration '::foo@TPL:1<int>'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization declaration '::foo@TPL:1<int>'} module } }
 // { dg-final { scan-lang-dump {Specialization '::foo@TPL:1<int>' section:2 keyed to '::foo@TPL:1<T>' \(2\)} module } }
 
 // { dg-final { scan-assembler {_Z3fooIiEiT_:} } }

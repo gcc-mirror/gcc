@@ -13,6 +13,5 @@ int main ()
 // { dg-final { scan-lang-dump {>Lazily binding '::foo::TPL'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Imported:-[0-9]* template_decl:'::foo::TPL@foo:2'@foo} module } }
 
-// { dg-final { scan-lang-dump {Inserted:-[0-9]* horcrux:2@0 template_decl:'::foo::TPL@bar:3<0x1>::frob<#unnamed#>'\n>* *Inserted:-[0-9]* template result function_decl:'::foo::TPL@bar:3<0x1>::frob@bar:3<#unnamed#>'} module } }
 // { dg-final { scan-lang-dump {Reading definition function_decl '::foo::TPL@bar:3<0x1>::frob@bar:3<0x2>'} module } }
 // { dg-final { scan-lang-dump {Reading definition type_decl '::foo::TPL@bar:3<0x1>'} module } }
