@@ -444,6 +444,10 @@ fdec
 Fortran Var(flag_dec)
 Enable all DEC language extensions.
 
+fdec-blank-format-item
+Fortran Var(flag_dec_blank_format_item)
+Enable the use of blank format items in format strings.
+
 fdec-include
 Fortran Var(flag_dec_include)
 Enable legacy parsing of INCLUDE as statement.

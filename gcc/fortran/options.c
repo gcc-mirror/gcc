@@ -75,6 +75,7 @@ set_dec_flags (int value)
   SET_BITFLAG (flag_dec_math, value, value);
   SET_BITFLAG (flag_dec_include, value, value);
   SET_BITFLAG (flag_dec_format_defaults, value, value);
+  SET_BITFLAG (flag_dec_blank_format_item, value, value);
 }
 
 /* Finalize DEC flags.  */
