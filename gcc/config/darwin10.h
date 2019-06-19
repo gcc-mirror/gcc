@@ -18,17 +18,12 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Fix PR41260 by passing -no_compact_unwind on darwin10 and later until
-   unwinder in libSystem is fixed to digest new epilog unwinding notes.
+/* Fix PR47558 by linking against libSystem ahead of libgcc_ext. */
 
-   Fix PR47558 by linking against libSystem ahead of libgcc_ext. */
 #undef  LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC \
-"%:version-compare(>= 10.6 mmacosx-version-min= -no_compact_unwind) \
- %{!static:%{!static-libgcc: \
+"%{!static:%{!static-libgcc: \
     %:version-compare(>= 10.6 mmacosx-version-min= -lSystem) } } \
- %{fno-pic|fno-PIC|fno-pie|fno-PIE|fapple-kext|mkernel|static|mdynamic-no-pic: \
-   %:version-compare(>= 10.7 mmacosx-version-min= -no_pie) } \
  %{!nostdlib:%:version-compare(>< 10.6 10.7 mmacosx-version-min= -ld10-uwfef.o)} \
   %G %{!nolibc:%L}"
 
