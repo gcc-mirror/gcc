@@ -1,3 +1,10 @@
+2019-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/numeric (reduce(Iter, Iter, T, BinOp)): Fix value
+	category used in invocable check.
+	(reduce(Iter, Iter, T)): Pass initial value as rvalue.
+	* testsuite/26_numerics/reduce/2.cc: New test.
+
 2019-06-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/algorithmfwd.h: Change title of doc group.

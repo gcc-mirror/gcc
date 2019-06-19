@@ -246,7 +246,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   _BinaryOperation __binary_op)
     {
       using value_type = typename iterator_traits<_InputIterator>::value_type;
-      static_assert(is_invocable_r_v<_Tp, _BinaryOperation, _Tp&, _Tp&>);
+      static_assert(is_invocable_r_v<_Tp, _BinaryOperation&, _Tp&, _Tp&>);
       static_assert(is_convertible_v<value_type, _Tp>);
       if constexpr (__is_random_access_iter<_InputIterator>::value)
 	{
@@ -278,7 +278,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _InputIterator, typename _Tp>
     inline _Tp
     reduce(_InputIterator __first, _InputIterator __last, _Tp __init)
-    { return std::reduce(__first, __last, __init, plus<>()); }
+    { return std::reduce(__first, __last, std::move(__init), plus<>()); }
 
   /**
    *  @brief  Calculate reduction of values in a range.
