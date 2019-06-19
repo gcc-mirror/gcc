@@ -1822,9 +1822,8 @@ class Type_conversion_expression : public Expression
   // True if a string([]byte) conversion can reuse the backing store
   // without copying.  Only used in string([]byte) conversion.
   bool no_copy_;
-  // True if a conversion to interface does not escape, so it does
-  // not need a heap allocation.  Only used in type-to-interface
-  // conversion.
+  // True if a conversion does not escape.  Used in type-to-interface
+  // conversions and slice-to/from-string conversions.
   bool no_escape_;
 };
 
@@ -3561,12 +3560,18 @@ class Allocation_expression : public Expression
  public:
   Allocation_expression(Type* type, Location location)
     : Expression(EXPRESSION_ALLOCATION, location),
-      type_(type), allocate_on_stack_(false)
+      type_(type), allocate_on_stack_(false),
+      no_zero_(false)
   { }
 
   void
   set_allocate_on_stack()
   { this->allocate_on_stack_ = true; }
+
+  // Mark that the allocated memory doesn't need zeroing.
+  void
+  set_no_zero()
+  { this->no_zero_ = true; }
 
  protected:
   int
@@ -3596,6 +3601,8 @@ class Allocation_expression : public Expression
   Type* type_;
   // Whether or not this is a stack allocation.
   bool allocate_on_stack_;
+  // Whether we don't need to zero the allocated memory.
+  bool no_zero_;
 };
 
 // A general composite literal.  This is lowered to a type specific
@@ -4540,5 +4547,9 @@ class Numeric_constant
   // constant.
   Type* type_;
 };
+
+// Temporary buffer size for string conversions.
+// Also known to the runtime as tmpStringBufSize in runtime/string.go.
+static const int tmp_string_buf_size = 32;
 
 #endif // !defined(GO_EXPRESSIONS_H)
