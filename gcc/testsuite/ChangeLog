@@ -1,3 +1,11 @@
+2019-06-19  Jim MacArthur  <jim.macarthur@codethink.co.uk>
+	    Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/89103
+	* gfortran.dg/dec_format_empty_item_1.f: New test.
+	* gfortran.dg/dec_format_empty_item_2.f: New test.
+	* gfortran.dg/dec_format_empty_item_3.f: New test. 
+
 2019-06-19  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
 	* gcc.target/aarch64/pr88834.c: Move from here...

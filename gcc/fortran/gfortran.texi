@@ -1761,11 +1761,16 @@ When omitted, the count is implicitly assumed to be one.
 
 To support legacy codes, GNU Fortran allows the comma separator
 to be omitted immediately before and after character string edit
-descriptors in @code{FORMAT} statements.
+descriptors in @code{FORMAT} statements.  A comma with no following format
+decriptor is permited if the @option{-fdec-blank-format-item} is given on
+the command line. This is considered non-conforming code and is
+discouraged.
 
 @smallexample
        PRINT 10, 2, 3
 10     FORMAT ('FOO='I1' BAR='I2)
+       print 20, 5, 6
+20     FORMAT (I3, I3,)
 @end smallexample
 
 
