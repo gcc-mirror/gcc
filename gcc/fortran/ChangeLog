@@ -1,5 +1,11 @@
 2019-06-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/69398
+	* decl.c (attr_decl): Check for duplicate DIMENSION attribute for a
+	CLASS entity.
+
+2019-06-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/87907
 	* resolve.c (resolve_contained_fntype): Do not dereference a NULL
 	pointer.
