@@ -57,6 +57,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       istream_type*	_M_stream;
       _Tp		_M_value;
+      // This bool becomes false at end-of-stream. It should be sufficient to
+      // check _M_stream != nullptr instead, but historically we did not set
+      // _M_stream to null when reaching the end, so we need to keep this flag.
       bool		_M_ok;
 
     public:
@@ -66,7 +69,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       ///  Construct start of input stream iterator.
       istream_iterator(istream_type& __s)
-      : _M_stream(std::__addressof(__s))
+      : _M_stream(std::__addressof(__s)), _M_ok(true)
       { _M_read(); }
 
       istream_iterator(const istream_iterator& __obj)
@@ -76,6 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
       istream_iterator& operator=(const istream_iterator&) = default;
+      ~istream_iterator() = default;
 #endif
 
       const _Tp&
@@ -111,36 +115,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __tmp;
       }
 
+    private:
       bool
       _M_equal(const istream_iterator& __x) const
-      { return (_M_ok == __x._M_ok) && (!_M_ok || _M_stream == __x._M_stream); }
+      {
+	// Ideally this would just return _M_stream == __x._M_stream,
+	// but code compiled with old versions never sets _M_stream to null.
+	return (_M_ok == __x._M_ok) && (!_M_ok || _M_stream == __x._M_stream);
+      }
 
-    private:
       void
       _M_read()
       {
-	_M_ok = (_M_stream && *_M_stream) ? true : false;
-	if (_M_ok)
-	  {
-	    *_M_stream >> _M_value;
-	    _M_ok = *_M_stream ? true : false;
-	  }
+        if (_M_stream && !(*_M_stream >> _M_value))
+          {
+            _M_stream = 0;
+            _M_ok = false;
+          }
       }
+
+      /// Return true if the iterators refer to the same stream,
+      /// or are both at end-of-stream.
+      friend bool
+      operator==(const istream_iterator& __x, const istream_iterator& __y)
+      { return __x._M_equal(__y); }
+
+      /// Return true if the iterators refer to different streams,
+      /// or if one is at end-of-stream and the other is not.
+      friend bool
+      operator!=(const istream_iterator& __x, const istream_iterator& __y)
+      { return !__x._M_equal(__y); }
     };
-
-  ///  Return true if x and y are both end or not end, or x and y are the same.
-  template<typename _Tp, typename _CharT, typename _Traits, typename _Dist>
-    inline bool
-    operator==(const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __x,
-	       const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __y)
-    { return __x._M_equal(__y); }
-
-  ///  Return false if x and y are both end or not end, or x and y are the same.
-  template <class _Tp, class _CharT, class _Traits, class _Dist>
-    inline bool
-    operator!=(const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __x,
-	       const istream_iterator<_Tp, _CharT, _Traits, _Dist>& __y)
-    { return !__x._M_equal(__y); }
 
   /**
    *  @brief  Provides output iterator semantics for streams.
@@ -171,6 +176,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const _CharT*	_M_string;
 
     public:
+#if __cplusplus > 201703L
+      constexpr ostream_iterator() noexcept
+      : _M_stream(nullptr), _M_string(nullptr) { }
+#endif
+
       /// Construct from an ostream.
       ostream_iterator(ostream_type& __s)
       : _M_stream(std::__addressof(__s)), _M_string(0) {}
@@ -186,7 +196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @param  __c  CharT delimiter string to insert.
       */
       ostream_iterator(ostream_type& __s, const _CharT* __c)
-      : _M_stream(&__s), _M_string(__c)  { }
+      : _M_stream(std::__addressof(__s)), _M_string(__c)  { }
 
       /// Copy constructor.
       ostream_iterator(const ostream_iterator& __obj)
@@ -205,7 +215,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				_M_message(__gnu_debug::__msg_output_ostream)
 				._M_iterator(*this));
 	*_M_stream << __value;
-	if (_M_string) *_M_stream << _M_string;
+	if (_M_string)
+          *_M_stream << _M_string;
 	return *this;
       }
 

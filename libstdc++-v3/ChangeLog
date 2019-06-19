@@ -1,3 +1,24 @@
+2019-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stream_iterator.h (istream_iterator::_M_equal()): Make
+	private.
+	(istream_iterator::_M_read()): Do not check stream state before
+	attempting extraction. Set stream pointer to null when extraction
+	fails (P0738R2).
+	(operator==(const istream_iterator&, const istream_iterator&)): Change
+	to be a hidden friend of istream_iterator.
+	(operator!=(const istream_iterator&, const istream_iterator&)):
+	Likewise.
+	(ostream_iterator::ostream_iterator()): Add default constructor.
+	(ostream_iterator::ostream_iterator(ostream_type*, const C*)): Use
+	addressof.
+	* testsuite/24_iterators/istream_iterator/1.cc: New test.
+	* testsuite/24_iterators/ostream_iterator/1.cc: New test.
+	* testsuite/24_iterators/ostream_iterator/70766.cc: Also check
+	constructor taking a string.
+	* testsuite/24_iterators/ostream_iterator/requirements/constexpr.cc:
+	New test.
+
 2019-06-19  Michael Weghorn  <m.weghorn@posteo.de>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
