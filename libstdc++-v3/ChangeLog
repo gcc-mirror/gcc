@@ -1,5 +1,10 @@
 2019-06-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/90920 partially revert r263433
+	* include/bits/stl_algo.h (__rotate): Restore checks for empty ranges.
+	(rotate): Remove checks.
+	* testsuite/25_algorithms/rotate/90920.cc: New test.
+
 	* include/std/numeric (reduce(Iter, Iter, T, BinOp)): Fix value
 	category used in invocable check.
 	(reduce(Iter, Iter, T)): Pass initial value as rvalue.
