@@ -1,0 +1,158 @@
+#!/bin/bash
+
+# Script to measure memset and memcpy for different sizes and strategies.
+#
+# Contributed by Jan Hubicka <jh@suse.cz>
+#
+# Copyright (C) 2019 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING.  If not, write to
+# the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+# Boston, MA 02110-1301, USA.
+
+# This script will search a line starting with 'spawn' that includes the
+# pattern you are looking for (typically a source file name).
+#
+# Once it finds that pattern, it re-executes the whole command
+# in the spawn line.  If the pattern matches more than one spawn
+# command, it asks which one you want.
+
+test()
+{
+rm -f a.out
+cat <<END | $1 -x c -O3 $3 -DAVG_SIZE=$2 $STRINGOP -DMEMORY_COPIES=$memsize -
+#define BUFFER_SIZE (16*1024*1024 + AVG_SIZE*2)
+/*#define MEMORY_COPIES (1024*1024*64*(long long)10)*/
+$type t[BUFFER_SIZE];
+int main()
+{
+  unsigned int i;
+  for (i=0;i<((long long)MEMORY_COPIES + AVG_SIZE * 2 - 1)/AVG_SIZE*2;i++)
+#ifdef test_memset
+    __builtin_memset (t+(i*1024*1024+i*1)%(BUFFER_SIZE - AVG_SIZE*2), i, (AVG_SIZE + i) % (AVG_SIZE * 2 + 0));
+#else
+    __builtin_memcpy (t+(i*1024*1024+i*1)%(BUFFER_SIZE - AVG_SIZE*2), t+((i+1)*1024*1024*4+i*1)%(BUFFER_SIZE - AVG_SIZE *2), (AVG_SIZE + i) % (AVG_SIZE * 2 + 0));
+#endif
+  return 0;
+}
+END
+TIME=`/usr/bin/time -f "%E" ./a.out 2>&1`
+echo -n " "$TIME
+echo $TIME $4 >>/tmp/accum
+}
+
+test2()
+{
+rm -f a.out
+cat <<END | clang -x c -O3 $3 -DAVG_SIZE=$2 $STRINGOP -DMEMORY_COPIES=$memsize 2>/dev/null -
+#define BUFFER_SIZE (16*1024*1024 + AVG_SIZE*2)
+/*#define MEMORY_COPIES (1024*1024*64*(long long)10)*/
+$type t[BUFFER_SIZE];
+int main()
+{
+  unsigned int i;
+  for (i=0;i<((long long)MEMORY_COPIES + AVG_SIZE * 2 - 1)/AVG_SIZE*2;i++)
+#ifdef test_memset
+    __builtin_memset (t+(i*1024*1024+i*1)%(BUFFER_SIZE - AVG_SIZE*2), i, (AVG_SIZE + i) % (AVG_SIZE * 2 + 0));
+#else
+    __builtin_memcpy (t+(i*1024*1024+i*1)%(BUFFER_SIZE - AVG_SIZE*2), t+((i+1)*1024*1024*4+i*1)%(BUFFER_SIZE - AVG_SIZE *2), (AVG_SIZE + i) % (AVG_SIZE * 2 + 0));
+#endif
+  return 0;
+}
+END
+TIME=`/usr/bin/time -f "%E" ./a.out 2>&1`
+echo -n " "$TIME
+echo $TIME $4 >>/tmp/accum
+}
+
+testrow()
+{
+echo -n "" >/tmp/accum
+printf "%12i " $3
+test "$2" "$3" "-mstringop-strategy=libcall" libcall
+test "$2" "$3" "-mstringop-strategy=rep_byte -malign-stringops" rep1
+test "$2" "$3" "-mstringop-strategy=rep_byte -mno-align-stringops" rep1noalign
+test "$2" "$3" "-mstringop-strategy=rep_4byte -malign-stringops" rep4
+test "$2" "$3" "-mstringop-strategy=rep_4byte -mno-align-stringops" rep4noalign
+if [ "$mode" == 64 ]
+then
+test "$2" "$3" "-mstringop-strategy=rep_8byte -malign-stringops" rep8
+test "$2" "$3" "-mstringop-strategy=rep_8byte -mno-align-stringops" rep8noalign
+fi
+test "$2" "$3" "-mstringop-strategy=loop -malign-stringops"  loop
+test "$2" "$3" "-mstringop-strategy=loop -mno-align-stringops"  loopnoalign
+test "$2" "$3" "-mstringop-strategy=unrolled_loop -malign-stringops" unrl
+test "$2" "$3" "-mstringop-strategy=unrolled_loop -mno-align-stringops" unrlnoalign
+test "$2" "$3" "-mstringop-strategy=vector_loop -malign-stringops" sse
+test "$2" "$3" "-mstringop-strategy=vector_loop -mno-align-stringops -msse2" ssenoalign
+#test2 "$2" "$3" "" 
+test "$2" "$3" "-mstringop-strategy=byte_loop" byte
+best=`cat /tmp/accum | sort | head -1`
+test "$2" "$3" " -fprofile-generate" >/dev/null 2>&1
+test "$2" "$3" " -fprofile-use"
+test "$2" "$3" " -minline-stringops-dynamically"
+echo "    $best"
+}
+
+test_all_sizes()
+{
+if [ "$mode" == 64 ]
+then
+echo "  block size  libcall rep1    noalg   rep4    noalg   rep8    noalg   loop    noalg   unrl    noalg   sse     noalg   byte    PGO     dynamic    BEST"
+else
+echo "  block size  libcall rep1    noalg   rep4    noalg   loop    noalg   unrl    noalg   sse     noalg   byte    PGO     dynamic    BEST"
+fi
+#for size in 1 2 3 4 6 8 10 12 14 16 24 32 48 64 128 256 512 1024 4096 8192 81920 819200 8192000
+#for size in 8192000 819200 81920 8192 4096 2048 1024 512 256 128 64 48 32 24 16 14 12 10 8 6 5 4 3 2 1
+for size in 8192000 819200 81920 20480 8192 4096 2048 1024 512 256 128 64 48 32 24 16 14 12 10 8 6 4 1
+#for size in 128 256 1024 4096 8192 81920 819200
+do
+testrow "$1" "$2" $size
+done
+}
+
+mode=$1
+shift
+export memsize=$1
+shift
+cmdline=$*
+if [ "$mode" != 32 ]
+then
+  if [ "$mode" != 64 ]
+  then
+    echo "Usage:"
+    echo "test_stringop mode size cmdline"
+    echo "mode is either 32 or 64"
+    echo "size is amount of memory copied in each test.  Should be chosed small enough so runtime is less than minute for each test and sorting works"
+    echo "Example: test_stringop 32 640000000 ./xgcc -B ./ -march=pentium3"
+    exit
+  fi
+fi
+
+echo "memcpy"
+export STRINGOP=""
+type=char
+test_all_sizes $mode "$cmdline -m$mode"
+echo "Aligned"
+type=long
+test_all_sizes $mode "$cmdline -m$mode"
+echo "memset"
+export STRINGOP="-Dtest_memset=1"
+type=char
+test_all_sizes $mode "$cmdline -m$mode"
+echo "Aligned"
+type=long
+test_all_sizes $mode "$cmdline -m$mode"
