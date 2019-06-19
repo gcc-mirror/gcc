@@ -679,7 +679,6 @@ static void sparc_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static void sparc_file_end (void);
 static bool sparc_frame_pointer_required (void);
 static bool sparc_can_eliminate (const int, const int);
-static rtx sparc_builtin_setjmp_frame_value (void);
 static void sparc_conditional_register_usage (void);
 static bool sparc_use_pseudo_pic_reg (void);
 static void sparc_init_pic_reg (void);
@@ -877,9 +876,6 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED sparc_frame_pointer_required
-
-#undef TARGET_BUILTIN_SETJMP_FRAME_VALUE
-#define TARGET_BUILTIN_SETJMP_FRAME_VALUE sparc_builtin_setjmp_frame_value
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE sparc_can_eliminate
@@ -13001,14 +12997,6 @@ static bool
 sparc_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 {
   return to == HARD_FRAME_POINTER_REGNUM || !sparc_frame_pointer_required ();
-}
-
-/* Return the hard frame pointer directly to bypass the stack bias.  */
-
-static rtx
-sparc_builtin_setjmp_frame_value (void)
-{
-  return hard_frame_pointer_rtx;
 }
 
 /* If !TARGET_FPU, then make the fp registers and fp cc regs fixed so that

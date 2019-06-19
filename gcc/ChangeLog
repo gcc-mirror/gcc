@@ -1,3 +1,31 @@
+2019-06-19  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR middle-end/84521
+	* builtins.c (expand_builtin_setjmp_setup): Save
+	hard_frame_pointer_rtx.
+	(expand_builtin_setjmp_receiver): Do not emit sfp = fp move since we
+	restore fp.
+	* function.c (expand_function_start): Save hard_frame_pointer_rtx for
+	non-local goto.
+	* lra-eliminations.c (eliminate_regs_in_insn): Remove sfp = fp
+	elimination code.
+	(remove_reg_equal_offset_note): Remove unused function.
+	* reload1.c (eliminate_regs_in_insn): Remove sfp = hfp elimination
+	code.
+	* config/arc/arc.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Remove.
+	(arc_builtin_setjmp_frame_value): Remove function.
+	* config/avr/avr.c  (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Remove.
+	(avr_builtin_setjmp_frame_value): Remove function.
+	* config/i386/i386.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Remove.
+	(ix86_builtin_setjmp_frame_value): Remove function.
+	* config/pa/pa.md (nonlocal_goto): Remove FP adjustment.
+	* config/sparc/sparc.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Remove.
+	(sparc_builtin_setjmp_frame_value): Remove function.
+	* config/vax/vax.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Remove.
+	(vax_builtin_setjmp_frame_value): Remove function.
+	* config/xtensa/xtensa.c (xtensa_frame_pointer_required): Force frame
+	pointer	if has_nonlocal_label.
+
 2019-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/md.texi: Document vec_shl_<mode> pattern.

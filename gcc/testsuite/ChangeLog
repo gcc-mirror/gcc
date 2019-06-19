@@ -1,3 +1,8 @@
+2019-06-19  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR middle-end/84521
+	* gcc.c-torture/execute/pr84521.c: New test.
+
 2019-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/vect/vect-simd-8.c: If main is defined, don't include

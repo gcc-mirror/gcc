@@ -2739,7 +2739,7 @@ xtensa_frame_pointer_required (void)
      This seems wrong but maybe it's necessary for other architectures.
      This function is derived from the i386 code.  */
 
-  if (cfun->machine->accesses_prev_frame)
+  if (cfun->machine->accesses_prev_frame || cfun->has_nonlocal_label)
     return true;
 
   return false;
