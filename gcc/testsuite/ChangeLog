@@ -1,5 +1,12 @@
 2019-06-19  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/90626
+	* gcc.dg/strlenopt-65.c: New test.
+	* gcc.dg/strlenopt-66.c: New test.
+	* gcc.dg/strlenopt.h (strcmp, strncmp): Declare.
+
+2019-06-19  Martin Sebor  <msebor@redhat.com>
+
 	PR translation/90156
 	* gcc.dg/format/gcc_diag-11.c: Enable.
 
