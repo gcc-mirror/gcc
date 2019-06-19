@@ -1,3 +1,9 @@
+2019-06-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90626
+	* tree-ssa-strlen.c (strxcmp_unequal): New function.
+	(handle_builtin_string_cmp): Call it.
+
 2019-06-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.h (DRIVER_SELF_SPECS): Add RDYNAMIC, DARWIN_PIE_SPEC

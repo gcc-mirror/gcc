@@ -15,6 +15,8 @@ void *memmove (void *, const void *, size_t);
 char *strcpy (char *__restrict, const char *__restrict);
 char *strcat (char *__restrict, const char *__restrict);
 char *strchr (const char *, int);
+int strcmp (const char *, const char *);
+int strncmp (const char *, const char *, size_t);
 void *memset (void *, int, size_t);
 int memcmp (const void *, const void *, size_t);
 int strcmp (const char *, const char *);
