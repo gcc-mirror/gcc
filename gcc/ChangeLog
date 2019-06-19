@@ -1,3 +1,14 @@
+2019-06-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60364 - noreturn after first decl not diagnosed.
+	* attribs.c (get_attribute_namespace): No longer static.
+	(decl_attributes): Avoid shadowing.  Preserve the C++11 form for C++11
+	attributes.
+	(attr_noreturn_exclusions): Make it extern.
+	* attribs.h (get_attribute_namespace): Declare.
+	* tree-inline.c (function_attribute_inlinable_p): Use
+	get_attribute_name.
+
 2019-06-19  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/90626

@@ -49,7 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 static tree handle_packed_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nocommon_attribute (tree *, tree, tree, int, bool *);
 static tree handle_common_attribute (tree *, tree, tree, int, bool *);
-static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 static tree handle_hot_attribute (tree *, tree, tree, int, bool *);
 static tree handle_cold_attribute (tree *, tree, tree, int, bool *);
 static tree handle_no_sanitize_attribute (tree *, tree, tree, int, bool *);
@@ -190,7 +189,7 @@ static const struct attribute_spec::exclusions attr_noinline_exclusions[] =
   ATTR_EXCL (NULL, false, false, false),
 };
 
-static const struct attribute_spec::exclusions attr_noreturn_exclusions[] =
+extern const struct attribute_spec::exclusions attr_noreturn_exclusions[] =
 {
   ATTR_EXCL ("alloc_align", true, true, true),
   ATTR_EXCL ("alloc_size", true, true, true),
@@ -779,7 +778,7 @@ handle_common_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 /* Handle a "noreturn" attribute; arguments as in
    struct attribute_spec.handler.  */
 
-static tree
+tree
 handle_noreturn_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 			   int ARG_UNUSED (flags), bool *no_add_attrs)
 {

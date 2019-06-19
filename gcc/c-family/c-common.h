@@ -1344,6 +1344,8 @@ extern int tm_attr_to_mask (tree);
 extern tree tm_mask_to_attr (int);
 extern tree find_tm_attribute (tree);
 extern const struct attribute_spec::exclusions attr_cold_hot_exclusions[];
+extern const struct attribute_spec::exclusions attr_noreturn_exclusions[];
+extern tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 
 /* In c-format.c.  */
 extern bool valid_format_string_type_p (tree);
