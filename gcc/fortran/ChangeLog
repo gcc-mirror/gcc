@@ -1,3 +1,9 @@
+2019-06-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/87907
+	* resolve.c (resolve_contained_fntype): Do not dereference a NULL
+	pointer.
+
 2019-06-19  Jim MacArthur  <jim.macarthur@codethink.co.uk>
 	    Mark Eggleston  <mark.eggleston@codethink.com>
 	
