@@ -3899,7 +3899,7 @@ function_attribute_inlinable_p (const_tree fndecl)
 
       for (a = DECL_ATTRIBUTES (fndecl); a; a = TREE_CHAIN (a))
 	{
-	  const_tree name = TREE_PURPOSE (a);
+	  const_tree name = get_attribute_name (a);
 	  int i;
 
 	  for (i = 0; targetm.attribute_table[i].name != NULL; i++)

@@ -1,3 +1,12 @@
+2019-06-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60364 - noreturn after first decl not diagnosed.
+	* decl.c (duplicate_decls): Give an error when a function is
+	declared [[noreturn]] after its first declaration.
+	* parser.c (cp_parser_std_attribute): Don't treat C++11 noreturn
+	attribute as equivalent to GNU's.
+	* tree.c (std_attribute_table): Add noreturn.
+
 2019-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-gimplify.c (cp_genericize_r): Handle OMP_CLAUSE_{IN,EX}CLUSIVE

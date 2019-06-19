@@ -1922,10 +1922,29 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
-      if (merge_attr && diagnose_mismatched_attributes (olddecl, newdecl))
-	inform (olddecl_loc, DECL_INITIAL (olddecl)
-		? G_("previous definition of %qD here")
-		: G_("previous declaration of %qD here"), olddecl);
+      if (merge_attr)
+	{
+	  if (diagnose_mismatched_attributes (olddecl, newdecl))
+	    inform (olddecl_loc, DECL_INITIAL (olddecl)
+		    ? G_("previous definition of %qD here")
+		    : G_("previous declaration of %qD here"), olddecl);
+
+	  /* [dcl.attr.noreturn]: The first declaration of a function shall
+	     specify the noreturn attribute if any declaration of that function
+	     specifies the noreturn attribute.  */
+	  tree a;
+	  if (TREE_THIS_VOLATILE (newdecl)
+	      && !TREE_THIS_VOLATILE (olddecl)
+	      /* This applies to [[noreturn]] only, not its GNU variants.  */
+	      && (a = lookup_attribute ("noreturn", DECL_ATTRIBUTES (newdecl)))
+	      && cxx11_attribute_p (a)
+	      && get_attribute_namespace (a) == NULL_TREE)
+	    {
+	      error_at (newdecl_loc, "function %qD declared %<[[noreturn]]%> "
+			"but its first declaration was not", newdecl);
+	      inform (olddecl_loc, "previous declaration of %qD", olddecl);
+	    }
+	}
 
       /* Now that functions must hold information normally held
 	 by field decls, there is extra work to do so that

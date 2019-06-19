@@ -4453,6 +4453,8 @@ const struct attribute_spec std_attribute_table[] =
     handle_likeliness_attribute, attr_cold_hot_exclusions },
   { "unlikely", 0, 0, false, false, false, false,
     handle_likeliness_attribute, attr_cold_hot_exclusions },
+  { "noreturn", 0, 0, true, false, false, false,
+    handle_noreturn_attribute, attr_noreturn_exclusions },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 

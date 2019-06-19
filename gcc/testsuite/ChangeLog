@@ -1,3 +1,11 @@
+2019-06-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60364 - noreturn after first decl not diagnosed.
+	* g++.dg/warn/noreturn-8.C: New test.
+	* g++.dg/warn/noreturn-9.C: New test.
+	* g++.dg/warn/noreturn-10.C: New test.
+	* g++.dg/warn/noreturn-11.C: New test.
+
 2019-06-19  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/90626

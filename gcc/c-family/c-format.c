@@ -1168,7 +1168,7 @@ check_function_format (const_tree fntype, tree attrs, int nargs,
   /* See if this function has any format attributes.  */
   for (a = attrs; a; a = TREE_CHAIN (a))
     {
-      if (is_attribute_p ("format", TREE_PURPOSE (a)))
+      if (is_attribute_p ("format", get_attribute_name (a)))
 	{
 	  /* Yup; check it.  */
 	  function_format_info info;

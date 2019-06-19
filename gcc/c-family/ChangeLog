@@ -1,3 +1,11 @@
+2019-06-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60364 - noreturn after first decl not diagnosed.
+	* c-attribs.c (handle_noreturn_attribute): No longer static.
+	* c-common.h (handle_noreturn_attribute, attr_noreturn_exclusions):
+	Declare.
+	* c-format.c (check_function_format): Use get_attribute_name.
+
 2019-06-19  Martin Sebor  <msebor@redhat.com>
 
 	PR translation/90156
