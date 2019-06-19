@@ -1134,6 +1134,10 @@ unsigned int
 preferred_mem_scale_factor (tree base, machine_mode mem_mode,
 			    bool speed)
 {
+  /* For BLKmode, we can't do anything so return 1.  */
+  if (mem_mode == BLKmode)
+    return 1;
+
   struct mem_address parts = {};
   addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (base));
   unsigned int fact = GET_MODE_UNIT_SIZE (mem_mode);
