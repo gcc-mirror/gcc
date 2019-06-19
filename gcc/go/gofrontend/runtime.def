@@ -36,16 +36,8 @@ DEF_GO_RUNTIME(DECODERUNE, "runtime.decoderune", P2(STRING, INT),
 	       R2(RUNE, INT))
 
 // Concatenate strings.
-DEF_GO_RUNTIME(CONCATSTRINGS, "runtime.concatstrings", P2(POINTER, SLICE),
-	       R1(STRING))
-DEF_GO_RUNTIME(CONCATSTRING2, "runtime.concatstring2",
-	       P2(POINTER, ARRAY2STRING), R1(STRING))
-DEF_GO_RUNTIME(CONCATSTRING3, "runtime.concatstring3",
-	       P2(POINTER, ARRAY3STRING), R1(STRING))
-DEF_GO_RUNTIME(CONCATSTRING4, "runtime.concatstring4",
-	       P2(POINTER, ARRAY4STRING), R1(STRING))
-DEF_GO_RUNTIME(CONCATSTRING5, "runtime.concatstring5",
-	       P2(POINTER, ARRAY5STRING), R1(STRING))
+DEF_GO_RUNTIME(CONCATSTRINGS, "runtime.concatstrings",
+               P3(POINTER, POINTER, INT), R1(STRING))
 
 // Compare two strings for equality.
 DEF_GO_RUNTIME(EQSTRING, "runtime.eqstring", P2(STRING, STRING), R1(BOOL))
