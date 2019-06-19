@@ -1,5 +1,22 @@
 2019-06-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* doc/md.texi: Document vec_shl_<mode> pattern.
+	* optabs.def (vec_shl_optab): New optab.
+	* optabs.c (shift_amt_for_vec_perm_mask): Add shift_optab
+	argument, if == vec_shl_optab, check for left whole vector shift
+	pattern rather than right shift.
+	(expand_vec_perm_const): Add vec_shl_optab support.
+	* optabs-query.c (can_vec_perm_var_p): Mention also vec_shl optab
+	in the comment.
+	* tree-vect-generic.c (lower_vec_perm): Support permutations which
+	can be handled by vec_shl_optab.
+	* tree-vect-stmts.c (scan_store_can_perm_p): New function.
+	(check_scan_store): Use it.
+	(vectorizable_scan_store): If target can't do normal permutations,
+	try to use whole vector left shifts and if needed a VEC_COND_EXPR
+	after it.
+	* config/i386/sse.md (vec_shl_<mode>): New expander.
+
 	* omp-low.c (lower_rec_input_clauses): Handle references properly
 	in inscan clauses.
 	(lower_omp_scan): Likewise.
