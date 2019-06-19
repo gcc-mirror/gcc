@@ -18,20 +18,31 @@
 // { dg-do compile { target c++11 } }
 
 #include <iterator>
-#include <ostream>
-
-namespace adl
-{
-  template<typename T>
-    void operator&(const T&) = delete;
-
-  struct traits : std::char_traits<char> { };
-}
+#include <sstream>
+#include <testsuite_hooks.h>
 
 void
 test01()
 {
-  std::basic_ostream<char, adl::traits> os(nullptr);
-  std::ostream_iterator<int, char, adl::traits> oi(os);
-  std::ostream_iterator<int, char, adl::traits> oi2(os, "");
+  std::ostringstream ss;
+  std::ostream_iterator<int> iter(ss);
+  for (int i = 0; i < 5; ++i)
+    *iter++ = i;
+  VERIFY( ss.str() == "01234" );
+}
+
+void
+test02()
+{
+  std::ostringstream ss;
+  std::ostream_iterator<int> iter(ss, " - ");
+  for (int i = 0; i < 5; ++i)
+    *iter++ = i;
+  VERIFY( ss.str() == "0 - 1 - 2 - 3 - 4 - " );
+}
+
+int main()
+{
+  test01();
+  test02();
 }
