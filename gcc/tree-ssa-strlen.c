@@ -2981,7 +2981,7 @@ strxcmp_unequal (int idx1, int idx2, unsigned HOST_WIDE_INT n)
   if (idx2 < 0)
     {
       len2 = ~idx2;
-      nulterm1 = true;
+      nulterm2 = true;
     }
   else if (strinfo *si = get_strinfo (idx2))
     {
@@ -3003,7 +3003,8 @@ strxcmp_unequal (int idx1, int idx2, unsigned HOST_WIDE_INT n)
   if (len2 > n)
     len2 = n;
 
-  if (len1 != len2 && (nulterm1 || nulterm2))
+  if ((len1 < len2 && nulterm1)
+      || (len2 < len1 && nulterm2))
     /* The string lengths are definitely unequal and the result can
        be folded to one (since it's used for comparison with zero).  */
     return true;
