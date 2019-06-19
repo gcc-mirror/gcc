@@ -1,3 +1,8 @@
+2019-06-19  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* tree-ssa-address.c (preferred_mem_scale_factor): Handle when
+	mem_mode is BLKmode.
+
 2019-06-18  Max Filippov  <jcmvbkbc@gmail.com>
 
 	PR target/90922
