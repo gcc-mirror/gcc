@@ -6219,6 +6219,13 @@ gfc_match_select_type (void)
   if (m != MATCH_YES)
     return m;
 
+  if (gfc_current_state() == COMP_MODULE
+      || gfc_current_state() == COMP_SUBMODULE)
+    {
+      gfc_error ("SELECT TYPE at %C cannot appear in this scope");
+      return MATCH_ERROR;
+    }
+
   gfc_current_ns = gfc_build_block_ns (ns);
   m = gfc_match (" %n => %e", name, &expr2);
   if (m == MATCH_YES)
