@@ -7442,7 +7442,7 @@ String_concat_expression::do_check_types(Gogo*)
 
 Expression*
 String_concat_expression::do_flatten(Gogo*, Named_object*,
-				     Statement_inserter*)
+				     Statement_inserter* inserter)
 {
   if (this->is_error_expression())
     return this;
@@ -7497,56 +7497,22 @@ String_concat_expression::do_flatten(Gogo*, Named_object*,
     }
   if (buf == NULL)
     buf = Expression::make_nil(loc);
-  Expression* call;
-  switch (this->exprs_->size())
-    {
-    case 0: case 1:
-      go_unreachable();
-
-    case 2: case 3: case 4: case 5:
-      {
-	Expression* len = Expression::make_integer_ul(this->exprs_->size(),
-						      NULL, loc);
-	Array_type* arg_type = Type::make_array_type(type, len);
-	arg_type->set_is_array_incomparable();
-	Expression* arg =
-	  Expression::make_array_composite_literal(arg_type, this->exprs_,
-						   loc);
-	Runtime::Function code;
-	switch (this->exprs_->size())
-	  {
-	  default:
-	    go_unreachable();
-	  case 2:
-	    code = Runtime::CONCATSTRING2;
-	    break;
-	  case 3:
-	    code = Runtime::CONCATSTRING3;
-	    break;
-	  case 4:
-	    code = Runtime::CONCATSTRING4;
-	    break;
-	  case 5:
-	    code = Runtime::CONCATSTRING5;
-	    break;
-	  }
-	call = Runtime::make_call(code, loc, 2, buf, arg);
-      }
-      break;
-
-    default:
-      {
-	Type* arg_type = Type::make_array_type(type, NULL);
-	Slice_construction_expression* sce =
-	  Expression::make_slice_composite_literal(arg_type, this->exprs_,
-						   loc);
-	sce->set_storage_does_not_escape();
-	call = Runtime::make_call(Runtime::CONCATSTRINGS, loc, 2, buf,
-				  sce);
-      }
-      break;
-    }
-
+  go_assert(this->exprs_->size() > 1);
+  Expression* len =
+    Expression::make_integer_ul(this->exprs_->size(), NULL, loc);
+  Array_type* array_type = Type::make_array_type(type, len);
+  array_type->set_is_array_incomparable();
+  Expression* array =
+    Expression::make_array_composite_literal(array_type, this->exprs_,
+                                             loc);
+  Temporary_statement* ts =
+    Statement::make_temporary(array_type, array, loc);
+  inserter->insert(ts);
+  Expression* ref = Expression::make_temporary_reference(ts, loc);
+  ref = Expression::make_unary(OPERATOR_AND, ref, loc);
+	Expression* call =
+    Runtime::make_call(Runtime::CONCATSTRINGS, loc, 3, buf,
+                       ref, len->copy());
   return Expression::make_cast(type, call, loc);
 }
 
