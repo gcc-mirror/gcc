@@ -1,3 +1,9 @@
+2019-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_rec_input_clauses): Handle references properly
+	in inscan clauses.
+	(lower_omp_scan): Likewise.
+
 2019-06-19  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 
 	* tree-ssa-address.c (preferred_mem_scale_factor): Handle when
