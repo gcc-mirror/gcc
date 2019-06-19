@@ -1,5 +1,19 @@
 2019-06-19  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/vect/vect-simd-8.c: If main is defined, don't include
+	tree-vect.h nor call check_vect.
+	* gcc.dg/vect/vect-simd-9.c: Likewise.
+	* gcc.dg/vect/vect-simd-10.c: New test.
+	* gcc.target/i386/sse2-vect-simd-8.c: New test.
+	* gcc.target/i386/sse2-vect-simd-9.c: New test.
+	* gcc.target/i386/sse2-vect-simd-10.c: New test.
+	* gcc.target/i386/avx2-vect-simd-8.c: New test.
+	* gcc.target/i386/avx2-vect-simd-9.c: New test.
+	* gcc.target/i386/avx2-vect-simd-10.c: New test.
+	* gcc.target/i386/avx512f-vect-simd-8.c: New test.
+	* gcc.target/i386/avx512f-vect-simd-9.c: New test.
+	* gcc.target/i386/avx512f-vect-simd-10.c: New test.
+
 	* g++.dg/vect/simd-3.cc: New test.
 	* g++.dg/vect/simd-4.cc: New test.
 	* g++.dg/vect/simd-5.cc: New test.

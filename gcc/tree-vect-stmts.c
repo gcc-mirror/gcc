@@ -6356,6 +6356,71 @@ scan_operand_equal_p (tree ref1, tree ref2)
 
 /* Function check_scan_store.
 
+   Verify if we can perform the needed permutations or whole vector shifts.
+   Return -1 on failure, otherwise exact log2 of vectype's nunits.  */
+
+static int
+scan_store_can_perm_p (tree vectype, tree init, int *use_whole_vector_p = NULL)
+{
+  enum machine_mode vec_mode = TYPE_MODE (vectype);
+  unsigned HOST_WIDE_INT nunits;
+  if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&nunits))
+    return -1;
+  int units_log2 = exact_log2 (nunits);
+  if (units_log2 <= 0)
+    return -1;
+
+  int i;
+  for (i = 0; i <= units_log2; ++i)
+    {
+      unsigned HOST_WIDE_INT j, k;
+      vec_perm_builder sel (nunits, nunits, 1);
+      sel.quick_grow (nunits);
+      if (i == 0)
+	{
+	  for (j = 0; j < nunits; ++j)
+	    sel[j] = nunits - 1;
+	}
+      else
+	{
+	  for (j = 0; j < (HOST_WIDE_INT_1U << (i - 1)); ++j)
+	    sel[j] = j;
+	  for (k = 0; j < nunits; ++j, ++k)
+	    sel[j] = nunits + k;
+	}
+      vec_perm_indices indices (sel, i == 0 ? 1 : 2, nunits);
+      if (!can_vec_perm_const_p (vec_mode, indices))
+	break;
+    }
+
+  if (i == 0)
+    return -1;
+
+  if (i <= units_log2)
+    {
+      if (optab_handler (vec_shl_optab, vec_mode) == CODE_FOR_nothing)
+	return -1;
+      int kind = 1;
+      /* Whole vector shifts shift in zeros, so if init is all zero constant,
+	 there is no need to do anything further.  */
+      if ((TREE_CODE (init) != INTEGER_CST
+	   && TREE_CODE (init) != REAL_CST)
+	  || !initializer_zerop (init))
+	{
+	  tree masktype = build_same_sized_truth_vector_type (vectype);
+	  if (!expand_vec_cond_expr_p (vectype, masktype, VECTOR_CST))
+	    return -1;
+	  kind = 2;
+	}
+      if (use_whole_vector_p)
+	*use_whole_vector_p = kind;
+    }
+  return units_log2;
+}
+
+
+/* Function check_scan_store.
+
    Check magic stores for #pragma omp scan {in,ex}clusive reductions.  */
 
 static bool
@@ -6596,34 +6661,9 @@ check_scan_store (stmt_vec_info stmt_info, tree vectype,
   if (!optab || optab_handler (optab, vec_mode) == CODE_FOR_nothing)
     goto fail;
 
-  unsigned HOST_WIDE_INT nunits;
-  if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&nunits))
+  int units_log2 = scan_store_can_perm_p (vectype, *init);
+  if (units_log2 == -1)
     goto fail;
-  int units_log2 = exact_log2 (nunits);
-  if (units_log2 <= 0)
-    goto fail;
-
-  for (int i = 0; i <= units_log2; ++i)
-    {
-      unsigned HOST_WIDE_INT j, k;
-      vec_perm_builder sel (nunits, nunits, 1);
-      sel.quick_grow (nunits);
-      if (i == units_log2)
-	{
-	  for (j = 0; j < nunits; ++j)
-	    sel[j] = nunits - 1;
-	}
-      else
-	{
-	  for (j = 0; j < (HOST_WIDE_INT_1U << i); ++j)
-	    sel[j] = nunits + j;
-	  for (k = 0; j < nunits; ++j, ++k)
-	    sel[j] = k;
-	}
-      vec_perm_indices indices (sel, i == units_log2 ? 1 : 2, nunits);
-      if (!can_vec_perm_const_p (vec_mode, indices))
-	goto fail;
-    }
 
   return true;
 }
@@ -6686,7 +6726,8 @@ vectorizable_scan_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   unsigned HOST_WIDE_INT nunits;
   if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&nunits))
     gcc_unreachable ();
-  int units_log2 = exact_log2 (nunits);
+  int use_whole_vector_p = 0;
+  int units_log2 = scan_store_can_perm_p (vectype, *init, &use_whole_vector_p);
   gcc_assert (units_log2 > 0);
   auto_vec<tree, 16> perms;
   perms.quick_grow (units_log2 + 1);
@@ -6696,21 +6737,25 @@ vectorizable_scan_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       vec_perm_builder sel (nunits, nunits, 1);
       sel.quick_grow (nunits);
       if (i == units_log2)
-	{
-	  for (j = 0; j < nunits; ++j)
-	    sel[j] = nunits - 1;
-	}
-      else
-	{
-	  for (j = 0; j < (HOST_WIDE_INT_1U << i); ++j)
-	    sel[j] = nunits + j;
-	  for (k = 0; j < nunits; ++j, ++k)
-	    sel[j] = k;
-	}
+	for (j = 0; j < nunits; ++j)
+	  sel[j] = nunits - 1;
+	else
+	  {
+	    for (j = 0; j < (HOST_WIDE_INT_1U << i); ++j)
+	      sel[j] = j;
+	    for (k = 0; j < nunits; ++j, ++k)
+	      sel[j] = nunits + k;
+	  }
       vec_perm_indices indices (sel, i == units_log2 ? 1 : 2, nunits);
-      perms[i] = vect_gen_perm_mask_checked (vectype, indices);
+      if (use_whole_vector_p && i < units_log2)
+	perms[i] = vect_gen_perm_mask_any (vectype, indices);
+      else
+	perms[i] = vect_gen_perm_mask_checked (vectype, indices);
     }
 
+  tree zero_vec = use_whole_vector_p ? build_zero_cst (vectype) : NULL_TREE;
+  tree masktype = (use_whole_vector_p == 2
+		   ? build_same_sized_truth_vector_type (vectype) : NULL_TREE);
   stmt_vec_info prev_stmt_info = NULL;
   tree vec_oprnd1 = NULL_TREE;
   tree vec_oprnd2 = NULL_TREE;
@@ -6742,14 +6787,34 @@ vectorizable_scan_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       for (int i = 0; i < units_log2; ++i)
 	{
 	  tree new_temp = make_ssa_name (vectype);
-	  gimple *g = gimple_build_assign (new_temp, VEC_PERM_EXPR, v,
-					   vec_oprnd1, perms[i]);
+	  gimple *g = gimple_build_assign (new_temp, VEC_PERM_EXPR,
+					   zero_vec ? zero_vec : vec_oprnd1, v,
+					   perms[i]);
 	  new_stmt_info = vect_finish_stmt_generation (stmt_info, g, gsi);
 	  if (prev_stmt_info == NULL)
 	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt_info;
 	  else
 	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
 	  prev_stmt_info = new_stmt_info;
+
+	  if (use_whole_vector_p == 2)
+	    {
+	      /* Whole vector shift shifted in zero bits, but if *init
+		 is not initializer_zerop, we need to replace those elements
+		 with elements from vec_oprnd1.  */
+	      tree_vector_builder vb (masktype, nunits, 1);
+	      for (unsigned HOST_WIDE_INT k = 0; k < nunits; ++k)
+		vb.quick_push (k < (HOST_WIDE_INT_1U << i)
+			       ? boolean_false_node : boolean_true_node);
+
+	      tree new_temp2 = make_ssa_name (vectype);
+	      g = gimple_build_assign (new_temp2, VEC_COND_EXPR, vb.build (),
+				       new_temp, vec_oprnd1);
+	      new_stmt_info = vect_finish_stmt_generation (stmt_info, g, gsi);
+	      STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt_info;
+	      prev_stmt_info = new_stmt_info;
+	      new_temp = new_temp2;
+	    }
 
 	  tree new_temp2 = make_ssa_name (vectype);
 	  g = gimple_build_assign (new_temp2, code, v, new_temp);
