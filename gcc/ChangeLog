@@ -1,3 +1,12 @@
+2019-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-stmts.c (enum scan_store_kind): New type.
+	(scan_store_can_perm_p): Change last argument from int * to
+	vec<enum scan_store_kind> *, record precisely which permutations
+	need whole vector left shift or that plus VEC_COND_EXPR.
+	(vectorizable_scan_store): Adjust caller, use whole vector left shift
+	and additional VEC_COND_EXPR only for those iterations that need it.
+
 2019-06-20  Alexandre Oliva <oliva@adacore.com>
 
 	* config.gcc: Fix ARM --with-fpu checking and error message.
