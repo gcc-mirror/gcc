@@ -1,5 +1,9 @@
 2019-06-20  Tom de Vries  <tdevries@suse.de>
 
+	* gcc.dg/pr90866-2.c: Require global_constructor.
+
+2019-06-20  Tom de Vries  <tdevries@suse.de>
+
 	* gcc.c-torture/compile/pr89280.c: Require nonlocal_goto.
 	* gcc.dg/pr88870.c: Same.
 	* gcc.dg/pr90082.c: Same.
