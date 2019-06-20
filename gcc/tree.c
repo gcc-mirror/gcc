@@ -13459,7 +13459,9 @@ get_tree_code_name (enum tree_code code)
 {
   const char *invalid = "<invalid tree code>";
 
-  if (code >= MAX_TREE_CODES)
+  /* The tree_code enum promotes to signed, bit we could be getting
+     invalid values, so force an unsigned comparison.  */
+  if (unsigned (code) >= MAX_TREE_CODES)
     {
       if (code == 0xa5a5)
 	return "ggc_freed";

@@ -1,3 +1,18 @@
+2019-06-20  Nathan Sidwell  <nathan@acm.org>
+
+	Deconstruct types.
+	gcc/cp/
+	* module.cc (enum tree_tag): Add tt_typename_decl,
+	tt_derived_type, tt_variant_type.
+	(trees_out::tree_decl): Stream typename types.
+	(trees_out::tree_type): Emit tt_{derived,variant}_type records.
+	(trees_in::tree_node): Add tt_typename_decl, tt_derived_type,
+	tt_variant_type handling.
+	gcc/testsuite/
+	* g++.dg/modules/class-3_b.C: Adjust dump scan.
+	* g++.dg/modules/tname-spec-1_[ab].[HC]: New.
+	* g++.dg/modules/typename-1_[ab].C: New.
+
 2019-06-19  Nathan Sidwell  <nathan@acm.org>
 
 	Stream mergeables inline.

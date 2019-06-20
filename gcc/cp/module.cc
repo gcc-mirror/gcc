@@ -2668,7 +2668,11 @@ enum tree_tag {
   tt_anon_id,		/* Anonymous name.  */
   tt_lambda_id,		/* Lambda name.  */
 
-  tt_typedef_decl,	/* A maybe-implicit typedef.  */
+  tt_typedef_type,	/* A (possibly implicit) typedefed type.  */
+  tt_typename_decl,	/* A type decl for a typedef.  */
+
+  tt_derived_type,	/* A type derived from another type.  */
+  tt_variant_type,	/* A variant of another type.  */
 
   tt_tinfo_var,		/* Typeinfo object. */
   tt_tinfo_typedef,	/* Typeinfo typedef.  */
@@ -6778,6 +6782,39 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
        when emitting the containing template_decl.  */
     return true;
 
+  if (TREE_CODE (decl) == TYPE_DECL
+      && decl == TYPE_STUB_DECL (TREE_TYPE (decl))
+      && TREE_CODE (TREE_TYPE (decl)) == TYPENAME_TYPE)
+    {
+      /* A type_decl of a typename.  */
+      if (streaming_p ())
+	i (tt_typename_decl);
+      tree type = TREE_TYPE (decl);
+      tree_node (TYPE_CONTEXT (type));
+      tree_node (DECL_NAME (decl));
+      tree_node (TYPENAME_TYPE_FULLNAME (type));
+      if (streaming_p ())
+	{
+	  enum tag_types tag_type = none_type;
+	  if (TYPENAME_IS_ENUM_P (type))
+	    tag_type = enum_type;
+	  else if (TYPENAME_IS_CLASS_P (type))
+	    tag_type = class_type;
+	  u (int (tag_type));
+	}
+
+      int tag = insert (decl);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Wrote:%d typename decl %P", tag,
+		   TYPE_CONTEXT (type), DECL_NAME (decl));
+      int type_tag = insert (type);
+      if (streaming_p ())
+	dump (dumper::TREE) && dump ("Wrote:%d typename typ", type_tag);
+
+      return false;
+    }
+
   int use_tpl = -1;
   tree ti = node_template_info (decl, use_tpl);
   /* TI_TEMPLATE is not a TEMPLATE_DECL for (some) friends.  */
@@ -7017,6 +7054,8 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
     /* A typedef type that is not the original type.  */;
   else if (TYPE_PTRMEMFUNC_P (type))
     {
+      // FIXME: Qualified ptr to mem?  Move this portion after
+      // tt_variant_type emission.
       tree fn_type = TYPE_PTRMEMFUNC_FN_TYPE (type);
       if (streaming_p ())
 	i (tt_ptrmem_type);
@@ -7031,6 +7070,8 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
       name = TYPE_STUB_DECL (type);
       if (name && DECL_IMPLICIT_TYPEDEF_P (name))
 	/* Implicit typedef.  */;
+      else if (name && TREE_CODE (type) == TYPENAME_TYPE)
+	/* A typename type.  */;
       else if (type == TYPE_MAIN_VARIANT (type)
 	       && (TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
 		   || TREE_CODE (type) == TEMPLATE_TYPE_PARM))
@@ -7053,7 +7094,7 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 
       if (streaming_p ())
 	{
-	  i (tt_typedef_decl);
+	  i (tt_typedef_type);
 	  dump (dumper::TREE)
 	    && dump ("Writing typedef %C:%N%S",
 		     TREE_CODE (name), name, name);
@@ -7062,13 +7103,146 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
       if (streaming_p ())
 	dump (dumper::TREE) && dump ("Wrote typedef %C:%N%S",
 				     TREE_CODE (name), name, name);
-      if (TREE_VISITED (type))
+      if (ref_node (type) == WK_none)
+	/* We emitted the type node via the name.  */
+	return false;
+    }
+
+  tree root = (TYPE_NAME (type)
+	       ? TREE_TYPE (TYPE_NAME (type)) : TYPE_MAIN_VARIANT (type));
+  
+  if (type != root)
+    {
+      if (streaming_p ())
+	i (tt_variant_type);
+      tree_node (root);
+
+      int flags = -1;
+      
+      if (TREE_CODE (type) == FUNCTION_TYPE
+	  || TREE_CODE (type) == METHOD_TYPE)
 	{
-	  /* We emitted the type node via the name.  */
-	  walk_kind ref = ref_node (type);
-	  gcc_checking_assert (ref == WK_none);
-	  return false;
+	  int quals = type_memfn_quals (type);
+	  int rquals = type_memfn_rqual (type);
+	  tree raises = TYPE_RAISES_EXCEPTIONS (type);
+	  bool late = TYPE_HAS_LATE_RETURN_TYPE (type);
+
+	  if (raises != TYPE_RAISES_EXCEPTIONS (root)
+	      || rquals != type_memfn_rqual (root)
+	      || quals != type_memfn_quals (root)
+	      || late != TYPE_HAS_LATE_RETURN_TYPE (root))
+	    flags = rquals | (int (late) << 2) | (quals << 3);
 	}
+      else
+	{
+	  // FIXME: Align
+	}
+
+      if (streaming_p ())
+	i (flags);
+
+      if (flags < 0)
+	;
+      else if (TREE_CODE (type) == FUNCTION_TYPE
+	       || TREE_CODE (type) == METHOD_TYPE)
+	{
+	  tree raises = TYPE_RAISES_EXCEPTIONS (type);
+	  if (raises == TYPE_RAISES_EXCEPTIONS (root))
+	    raises = error_mark_node;
+	  tree_node (raises);
+	}
+
+      tree_node (error_mark_node);  // FIXME: Attribs
+
+      if (streaming_p ())
+	{
+	  /* Qualifiers.  */
+	  int rquals = cp_type_quals (root);
+	  int quals = cp_type_quals (type);
+	  if (quals == rquals)
+	    quals = -1;
+	  i (quals);
+	}
+
+      if (ref_node (type) != WK_none)
+	{
+	  int tag = insert (type);
+	  if (streaming_p ())
+	    {
+	      i (0);
+	      dump (dumper::TREE)
+		&& dump ("Wrote:%d variant type %C", tag, TREE_CODE (type));
+	    }
+	}
+      return false;
+    }
+
+  switch (TREE_CODE (type))
+    {
+    default:
+      // FIXME: Hm, does this have NULL TREE_TYPE?
+      // FIXME: Hook other C++-specific types for reconstruction?
+      return true;
+
+    case ARRAY_TYPE:
+    case OFFSET_TYPE:
+    case FUNCTION_TYPE:
+    case METHOD_TYPE:
+    case REFERENCE_TYPE:
+    case POINTER_TYPE:
+      {
+	if (streaming_p ())
+	  {
+	    u (tt_derived_type);
+	    u (TREE_CODE (type));
+	  }
+	tree_node (TREE_TYPE (type));
+	switch (TREE_CODE (type))
+	  {
+	  default:
+	    gcc_unreachable ();
+
+	  case ARRAY_TYPE:
+	    tree_node (TYPE_DOMAIN (type));
+	    break;
+
+	  case OFFSET_TYPE:
+	    tree_node (TYPE_OFFSET_BASETYPE (type));
+	    break;
+
+	  case FUNCTION_TYPE:
+	    tree_node (TYPE_ARG_TYPES (type));
+	    break;
+
+	  case METHOD_TYPE:
+	    tree_node (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (type))));
+	    tree_node (TREE_CHAIN (TYPE_ARG_TYPES (type)));
+	    break;
+
+	  case REFERENCE_TYPE:
+	    if (streaming_p ())
+	      u (TYPE_REF_IS_RVALUE (type));
+	    break;
+
+	  case POINTER_TYPE:
+	    /* No additional data.  */
+	    break;
+	  }
+
+	/* We may have met the type during emitting the above.  */
+	if (ref_node (type) != WK_none)
+	  {
+	    int tag = insert (type);
+	    if (streaming_p ())
+	      {
+		i (0);
+		dump (dumper::TREE)
+		  && dump ("Wrote:%d derived type %C", tag, TREE_CODE (type));
+	      }
+	  }
+	  
+	return false;
+      }
     }
 
   return true;
@@ -7707,12 +7881,34 @@ trees_in::tree_node ()
       }
       break;
 
-    case tt_typedef_decl:
+    case tt_typedef_type:
       res = tree_node ();
       dump (dumper::TREE)
 	&& dump ("Read typedef %C:%N%S",
 		 res ? TREE_CODE (res) : ERROR_MARK, res, res);
       res = tree_node ();
+      break;
+
+    case tt_typename_decl:
+      {
+	tree context = tree_node ();
+	tree name = tree_node ();
+	tree fullname = tree_node ();
+	enum tag_types tag_type = tag_types (u ());
+
+	if (!get_overrun ())
+	  {
+	    res = build_typename_type (context, name, fullname, tag_type);
+	    tree decl = TYPE_STUB_DECL (res);
+	    int decl_tag = insert (decl);
+	    dump (dumper::TREE)
+	      && dump ("Created:%d typename decl %P", decl_tag, context, name);
+
+	    int type_tag = insert (res);
+	    dump (dumper::TREE)
+	      && dump ("Created:%d typename type", type_tag);
+	  }
+      }
       break;
 
     case tt_ptrmem_type:
@@ -7728,6 +7924,133 @@ trees_in::tree_node ()
 	  }
 	else
 	  set_overrun ();
+      }
+      break;
+
+    case tt_derived_type:
+      /* A type derived from some other type.  */
+      {
+	enum tree_code code = tree_code (u ());
+	res = tree_node ();
+
+	switch (code)
+	  {
+	  default:
+	    set_overrun ();
+	    break;
+
+	  case ARRAY_TYPE:
+	    {
+	      tree domain = tree_node ();
+	      res = build_cplus_array_type (res, domain);
+	    }
+	    break;
+
+	  case OFFSET_TYPE:
+	    {
+	      tree base = tree_node ();
+	      res = build_offset_type (base, res);
+	    }
+	    break;
+
+	  case FUNCTION_TYPE:
+	    {
+	      tree args = tree_node ();
+	      res = build_function_type (res, args);
+	    }
+	    break;
+
+	  case METHOD_TYPE:
+	    {
+	      tree klass = tree_node ();
+	      tree args = tree_node ();
+
+	      res = build_method_type_directly (klass, res, args);
+	    }
+	    break;
+	    
+	  case REFERENCE_TYPE:
+	    {
+	      bool rval = bool (u ());
+	      res = cp_build_reference_type (res, rval);
+	    }
+	    break;
+
+	  case POINTER_TYPE:
+	    res = build_pointer_type (res);
+	    break;
+	  }
+
+	int tag = i ();
+	if (tag)
+	  {
+	    res = back_refs[~tag];
+	    if (res)
+	      dump (dumper::TREE)
+		&& dump ("Found:%d already derived type %C", tag, code);
+	  }
+	else
+	  {
+	    tag = insert (res);
+	    if (res)
+	      dump (dumper::TREE)
+		&& dump ("Created:%d derived type %C", tag, code);
+	  }
+      }
+      break;
+
+    case tt_variant_type:
+      /* Variant of some type.  */
+      {
+	res = tree_node ();
+	int flags = i ();
+	if (flags < 0)
+	  /* No change.  */;
+	else if (TREE_CODE (res) == FUNCTION_TYPE
+		 || TREE_CODE (res) == METHOD_TYPE)
+	  {
+	    cp_ref_qualifier rqual = cp_ref_qualifier (flags & 3);
+	    bool late = (flags >> 2) & 1;
+	    cp_cv_quals quals = cp_cv_quals (flags >> 3);
+
+	    tree raises = tree_node ();
+	    if (raises == error_mark_node)
+	      raises = TYPE_RAISES_EXCEPTIONS (res);
+
+	    res = build_cp_fntype_variant (res, rqual, raises, late);
+	    if (TREE_CODE (res) == FUNCTION_TYPE)
+	      res = apply_memfn_quals (res, quals, rqual);
+	  }
+	else
+	  {
+	    res = build_aligned_type (res, flags);
+	    TYPE_USER_ALIGN (res) = true;
+	  }
+
+	tree attribs = tree_node ();
+	if (attribs != error_mark_node)
+	  res = cp_build_type_attribute_variant (res, attribs);
+
+	int quals = i ();
+	if (quals >= 0)
+	  res = cp_build_qualified_type (res, quals);
+
+	int tag = i ();
+	if (tag)
+	  {
+	    res = back_refs[~tag];
+	    if (res)
+	      dump (dumper::TREE)
+		&& dump ("Found:%d already variant type %C",
+			 tag, TREE_CODE (res));
+	  }
+	else
+	  {
+	    tag = insert (res);
+	    if (res)
+	      dump (dumper::TREE)
+		&& dump ("Created:%d variant type %C", tag, TREE_CODE (res));
+	  }
       }
       break;
 
@@ -8247,6 +8570,7 @@ trees_in::finish_type (tree type)
 
   if (main != type)
     {
+      // FIXME: Review given we now have tt_derived_type & tt_variant_type.
       /* See if we have this type already on the variant
 	 list.  This could only happen if the originally read in main
 	 variant was remapped, but we don't have that knowledge.
@@ -8321,6 +8645,7 @@ trees_in::finish_type (tree type)
     }
 
   if (RECORD_OR_UNION_CODE_P (TREE_CODE (type))
+      // FIXME: enums?
       && main != type)
     {
       /* The main variant might already have been defined, copy
