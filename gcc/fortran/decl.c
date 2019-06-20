@@ -2779,6 +2779,16 @@ variable_decl (int elem)
 	  m = match_pointer_init (&initializer, 0);
 	  if (m != MATCH_YES)
 	    goto cleanup;
+
+	  /* The target of a pointer initialization must have the SAVE
+	     attribute.  A variable in PROGRAM, MODULE, or SUBMODULE scope
+	     is implicit SAVEd.  Explicitly, set the SAVE_IMPLICIT value.  */
+	  if (initializer->expr_type == EXPR_VARIABLE
+	      && initializer->symtree->n.sym->attr.save == SAVE_NONE
+	      && (gfc_current_state () == COMP_PROGRAM
+		  || gfc_current_state () == COMP_MODULE
+		  || gfc_current_state () == COMP_SUBMODULE))
+	    initializer->symtree->n.sym->attr.save = SAVE_IMPLICIT;
 	}
       else if (gfc_match_char ('=') == MATCH_YES)
 	{
