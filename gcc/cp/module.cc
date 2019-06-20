@@ -5513,7 +5513,7 @@ trees_out::core_vals (tree t)
     {
       WT (t->field_decl.offset);
       WT (t->field_decl.bit_field_type);
-      WT (t->field_decl.qualifier);
+      WT (t->field_decl.qualifier); /* bitfield unit.  */
       WT (t->field_decl.bit_offset);
       WT (t->field_decl.fcontext);
     }
@@ -9121,7 +9121,12 @@ trees_out::mark_class_def (tree defn)
   for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
     /* Do not mark enum consts here.  */
     if (TREE_CODE (member) != CONST_DECL)
-      mark_class_member (member);
+      {
+	mark_class_member (member);
+	if (TREE_CODE (member) == FIELD_DECL)
+	  if (tree repr = DECL_BIT_FIELD_REPRESENTATIVE (member))
+	    mark_declaration (repr, false);
+      }
 
   /* Mark the binfo heirarchy.  */
   for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))

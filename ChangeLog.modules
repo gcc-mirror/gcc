@@ -1,5 +1,12 @@
 2019-06-20  Nathan Sidwell  <nathan@acm.org>
 
+	Bitfields.
+	gcc/cp/
+	* module.cc (tree_out::mark_class_def): Mark bitfield's
+	representative field.
+	gcc/testsuite/
+	* g++.dg/modules/bfield-1_[ab].C: New.
+
 	Thunks.
 	gcc/cp/
 	* module.cc (enum tree_tag): Add tt_thunk.
