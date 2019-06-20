@@ -2683,6 +2683,7 @@ enum tree_tag {
   tt_namespace,		/* Namespace reference.  */
   tt_binfo,		/* A BINFO.  */
   tt_vtable,		/* A vtable.  */
+  tt_thunk,		/* A thunk.  */
 
   tt_named, 	 	/* Named decl. */
   tt_anon,		/* Anonymous decl.  */
@@ -6776,6 +6777,28 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     /* If this is a fixed decl, we're done.  */
     return false;
 
+  if (DECL_THUNK_P (decl))
+    {
+      /* Thunks are similar to binfos -- write the thunked-to decl and
+	 then thunk-specific key info.  */
+      if (streaming_p ())
+	{
+	  i (tt_thunk);
+	  i (THUNK_FIXED_OFFSET (decl));
+	}
+
+      tree target = decl;
+      while (DECL_THUNK_P (target))
+	target = THUNK_TARGET (target);
+      tree_node (target);
+      tree_node (THUNK_VIRTUAL_OFFSET (decl));
+      int tag = insert (decl);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Wrote:%d thunk %N to %N", tag, DECL_NAME (decl), target);
+      return false;
+    }
+
   if (TREE_CODE (decl) == TEMPLATE_DECL
       && TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM)
     /* We rely on first meeting these when writing the template parms
@@ -7254,6 +7277,9 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 void
 trees_out::tree_value (tree t, walk_kind walk)
 {
+  /* We should never walk into a thunk by accident.  */
+  gcc_assert (walk == WK_body || !DECL_THUNK_P (t));
+
   if (streaming_p ())
     {
       if (CHECKING_P && DECL_P (t))
@@ -8301,6 +8327,32 @@ trees_in::tree_node ()
       }
       break;
 
+    case tt_thunk:
+      {
+	int fixed = i ();
+	tree target = tree_node ();
+	tree virt = tree_node ();
+
+	for (tree thunk = DECL_THUNKS (target);
+	     thunk; thunk = DECL_CHAIN (thunk))
+	  if (THUNK_FIXED_OFFSET (thunk) == fixed
+	      && !THUNK_VIRTUAL_OFFSET (thunk) == !virt
+	      && (!virt
+		  || tree_int_cst_equal (virt, THUNK_VIRTUAL_OFFSET (thunk))))
+	    {
+	      res = thunk;
+	      break;
+	    }
+
+	int tag = insert (res);
+	if (res)
+	  dump (dumper::TREE)
+	    && dump ("Read:%d thunk %N to %N", tag, DECL_NAME (res), target);
+	else
+	  set_overrun ();
+      }
+      break;
+
     case tt_mergeable:
     case tt_node:
       /* A new node.  Stream it in.  */
@@ -9011,6 +9063,20 @@ trees_out::write_class_def (tree defn)
 	}
       /* End of decls.  */
       tree_node (NULL_TREE);
+
+      if (TYPE_CONTAINS_VPTR_P (type))
+	{
+	  /* Write the thunks.  */
+	  for (tree decls = TYPE_FIELDS (type);
+	       decls; decls = DECL_CHAIN (decls))
+	    if (TREE_CODE (decls) == FUNCTION_DECL
+		&& DECL_VIRTUAL_P (decls))
+	      {
+		tree_node (decls);
+		chained_decls (DECL_THUNKS (decls));
+	      }
+	  tree_node (NULL_TREE);
+	}
     }
 
   // FIXME: lang->nested_udts
@@ -9070,6 +9136,16 @@ trees_out::mark_class_def (tree defn)
       for (tree vtable = CLASSTYPE_VTABLES (type);
 	   vtable; vtable = TREE_CHAIN (vtable))
 	mark_declaration (vtable, true);
+
+      if (TYPE_CONTAINS_VPTR_P (type))
+	/* Mark the thunks, they belong to the class definition,
+	   /not/ the thunked-to function.  */
+	for (tree decls = TYPE_FIELDS (type);
+	     decls; decls = DECL_CHAIN (decls))
+	  if (TREE_CODE (decls) == FUNCTION_DECL)
+	    for (tree thunks = DECL_THUNKS (decls);
+		 thunks; thunks = DECL_CHAIN (thunks))
+	      mark_declaration (thunks, false);
 
       for (tree decls = CLASSTYPE_DECL_LIST (type);
 	   decls; decls = TREE_CHAIN (decls))
@@ -9283,6 +9359,15 @@ trees_in::read_class_def (tree defn)
 				 type, TREE_CODE (f), f);
 	      }
 	}
+
+      if (TYPE_CONTAINS_VPTR_P (type))
+	/* Read and install the thunks.  */
+	while (tree vfunc = tree_node ())
+	  {
+	    tree thunks = chained_decls ();
+	    if (!odr)
+	      SET_DECL_THUNKS (vfunc, thunks);
+	  }
     }
 
   /* Propagate to all variants.  */

@@ -1,5 +1,17 @@
 2019-06-20  Nathan Sidwell  <nathan@acm.org>
 
+	Thunks.
+	gcc/cp/
+	* module.cc (enum tree_tag): Add tt_thunk.
+	(trees_out::tree_decl): Emit it.
+	(trees_out::tree_value): Assert we don't accidentally meet a
+	thunk.
+	(trees_in::tree_node): Read it.
+	(trees_out::{mark,write}_class_def): Emit thunks by value.
+	(trees_in::read_class_def): Install thunks.
+	gcc/testsuite/
+	* g++.dg/modules/thunk-1_[ab].C: New.
+
 	gcc/cp/
 	* parser.c (cp_lexer_tokenize): Skip pragmas.
 	* lex.c (module_preprocess_token): Likewise.
