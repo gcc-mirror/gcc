@@ -1,3 +1,8 @@
+2019-06-20  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (isa attribute): Add support for
+	for a future processor.
+
 2019-06-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/54855
