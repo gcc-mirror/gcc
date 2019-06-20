@@ -1,3 +1,8 @@
+2019-06-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90937
+	* gfortran.dg/external_procedure_4.f90: New test.
+
 2019-06-20  Tom de Vries  <tdevries@suse.de>
 
 	* gcc.dg/pr90866-2.c: Require global_constructor.
@@ -118,7 +123,7 @@
 	PR fortran/89103
 	* gfortran.dg/dec_format_empty_item_1.f: New test.
 	* gfortran.dg/dec_format_empty_item_2.f: New test.
-	* gfortran.dg/dec_format_empty_item_3.f: New test. 
+	* gfortran.dg/dec_format_empty_item_3.f: New test.
 
 2019-06-19  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
 

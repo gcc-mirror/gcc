@@ -1,7 +1,14 @@
+2019-06-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90937
+	* trans-types.c (get_formal_from_actual_arglist): Get symbol from
+	current namespace so it will be freed later.  If symbol is of type
+	character, get an empty character length.
+
 2019-06-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/69499
-	* match.c (gfc_match_select_type):  SELECT TYPE is an executable 
+	* match.c (gfc_match_select_type):  SELECT TYPE is an executable
 	statement, and cannot appear in MODULE or SUBMODULE scope.
 
 2019-06-19  Steven G. Kargl  <kargl@gcc.gnu.org>
@@ -18,7 +25,7 @@
 
 2019-06-19  Jim MacArthur  <jim.macarthur@codethink.co.uk>
 	    Mark Eggleston  <mark.eggleston@codethink.com>
-	
+
 	PR fortran/89103
 	* gfortran.texi: Add -fdec-blank-format-item
 	* invoke.texi: Add option to list of options.
@@ -105,7 +112,7 @@
 
 	PR fortran/90002
 	* array.c (gfc_free_array_spec): When freeing an array-spec, avoid
-	an ICE for assumed-shape coarrays 
+	an ICE for assumed-shape coarrays.
 
 2019-06-08  Paul Thomas  <pault@gcc.gnu.org>
 
