@@ -1,5 +1,9 @@
 2019-06-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* acinclude.m4 (GLIBCXX_ENABLE_DEBUG): Only do debug build for final
+	stage of bootstrap.
+	* configure: Regenerate.
+
 	* include/std/variant (_Variant_storage, _Extra_visit_slot_needed):
 	Qualify calls to __never_valueless.
 

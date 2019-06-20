@@ -18257,6 +18257,7 @@ $as_echo "$as_me: Debug build flags set to $DEBUG_FLAGS" >&6;}
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for additional debug build" >&5
 $as_echo_n "checking for additional debug build... " >&6; }
+  skip_debug_build=
    # Check whether --enable-libstdcxx-debug was given.
 if test "${enable_libstdcxx_debug+set}" = set; then :
   enableval=$enable_libstdcxx_debug;
@@ -18270,8 +18271,19 @@ else
 fi
 
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libstdcxx_debug" >&5
-$as_echo "$enable_libstdcxx_debug" >&6; }
+  if test x$enable_libstdcxx_debug = xyes; then
+    if test -f $toplevel_builddir/../stage_final \
+      && test -f $toplevel_builddir/../stage_current; then
+      stage_final=`cat $toplevel_builddir/../stage_final`
+      stage_current=`cat $toplevel_builddir/../stage_current`
+      if test x$stage_current != x$stage_final ; then
+	skip_debug_build=" (skipped for bootstrap stage $stage_current)"
+	enable_libstdcxx_debug=no
+      fi
+    fi
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libstdcxx_debug$skip_debug_build" >&5
+$as_echo "$enable_libstdcxx_debug$skip_debug_build" >&6; }
 
 
 
