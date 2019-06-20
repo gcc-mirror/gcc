@@ -4529,16 +4529,6 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
       curr_comp = curr_comp->next;
     } while (curr_comp != NULL);
 
-
-  /* Make sure we don't have conflicts with the attributes.  */
-  if (derived_sym->attr.access == ACCESS_PRIVATE)
-    {
-      gfc_error ("Derived type %qs at %L cannot be declared with both "
-                 "PRIVATE and BIND(C) attributes", derived_sym->name,
-                 &(derived_sym->declared_at));
-      retval = false;
-    }
-
   if (derived_sym->attr.sequence != 0)
     {
       gfc_error ("Derived type %qs at %L cannot have the SEQUENCE "
