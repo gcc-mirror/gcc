@@ -1,5 +1,8 @@
 2019-06-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/status_cxx2017.xml: Fix outdated reference to
+	C++17 working draft.
+
 	* testsuite/libstdc++-prettyprinters/simple.cc: Use non-palindromic
 	vector<bool> for test.
 	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
