@@ -1,5 +1,6 @@
 /* PR middle-end/87099 */
 /* { dg-do compile } */
+/* { dg-require-effective-target alloca } */
 /* { dg-options "-Wstringop-overflow" } */
 
 void bar (char *);

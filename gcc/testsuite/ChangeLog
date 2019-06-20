@@ -1,3 +1,26 @@
+2019-06-20  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.c-torture/compile/pr77754-1.c: Require alloca.
+	* gcc.c-torture/compile/pr77754-2.c: Same.
+	* gcc.c-torture/compile/pr77754-3.c: Same.
+	* gcc.c-torture/compile/pr77754-4.c: Same.
+	* gcc.c-torture/compile/pr77754-5.c: Same.
+	* gcc.c-torture/compile/pr77754-6.c: Same.
+	* gcc.c-torture/compile/pr87110.c: Same.
+	* gcc.c-torture/execute/pr86528.c: Same.
+	* gcc.dg/Walloca-larger-than-2.c: Same.
+	* gcc.dg/Walloca-larger-than.c: Same.
+	* gcc.dg/Warray-bounds-41.c: Same.
+	* gcc.dg/Wrestrict-17.c: Same.
+	* gcc.dg/Wstrict-overflow-27.c: Same.
+	* gcc.dg/Wstringop-truncation-3.c: Same.
+	* gcc.dg/pr78902.c: Same.
+	* gcc.dg/pr87099.c: Same.
+	* gcc.dg/pr87320.c: Same.
+	* gcc.dg/pr89045.c: Same.
+	* gcc.dg/strlenopt-62.c: Same.
+	* gcc.dg/tree-ssa/alias-37.c: Same.
+
 2019-06-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/60364 - noreturn after first decl not diagnosed.
