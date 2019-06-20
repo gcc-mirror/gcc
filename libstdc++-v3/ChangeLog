@@ -1,5 +1,8 @@
 2019-06-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/variant (_Variant_storage, _Extra_visit_slot_needed):
+	Qualify calls to __never_valueless.
+
 	* doc/xml/manual/status_cxx2017.xml: Fix outdated reference to
 	C++17 working draft.
 
