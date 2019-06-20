@@ -14214,6 +14214,17 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       return;
 
     case E_V2DFmode:
+      /* NB: For ELT == 0, use standard scalar operation patterns which
+	 preserve the rest of the vector for combiner:
+
+	 (vec_merge:V2DF
+	   (vec_duplicate:V2DF (reg:DF))
+	   (reg:V2DF)
+	   (const_int 1))
+       */
+      if (elt == 0)
+	goto do_vec_merge;
+
       {
 	rtx op0, op1;
 
@@ -14511,6 +14522,7 @@ quarter:
     }
   else if (use_vec_merge)
     {
+do_vec_merge:
       tmp = gen_rtx_VEC_DUPLICATE (mode, val);
       tmp = gen_rtx_VEC_MERGE (mode, tmp, target,
 			       GEN_INT (HOST_WIDE_INT_1U << elt));
