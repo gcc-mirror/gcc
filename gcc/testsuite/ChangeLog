@@ -1,3 +1,8 @@
+2019-06-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89873
+	* g++.dg/cpp1y/noexcept1.C: New test.
+
 2019-06-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/90937
