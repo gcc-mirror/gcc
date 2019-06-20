@@ -4002,12 +4002,13 @@ case "${target}" in
 
 		# see if --with-fpu matches any of the supported FPUs
 		if [ x"$with_fpu" != x ] ; then
+		  val=$with_fpu
 		  fpu=`awk -f ${srcdir}/config/arm/parsecpu.awk \
-			-v cmd="chkfpu $with_fpu" \
+			-v cmd="chkfpu $val" \
 			${srcdir}/config/arm/arm-cpus.in`
-		  if [ "$fpu" = "error"]
+		  if [ "$fpu" = "error" ]
 		  then
-		    echo "Unknown target in --with-$which=$val" 1>&2
+		    echo "Unknown target in --with-fpu=$val" 1>&2
 		    exit 1
 		  fi
 		fi
