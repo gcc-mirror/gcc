@@ -1,6 +1,13 @@
 2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from mainline
+	PR fortran/69398
+	* decl.c (attr_decl): Check for duplicate DIMENSION attribute for a
+	CLASS entity.
+
+2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from mainline
 	PR fortran/68544
 	* resolve.c (is_dt_name): New function to compare symbol name against
 	list of derived types.
