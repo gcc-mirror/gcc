@@ -1,3 +1,17 @@
+2019-06-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/54855
+	* gcc.target/i386/pr54855-1.c: New test.
+	* gcc.target/i386/pr54855-2.c: Likewise.
+	* gcc.target/i386/pr54855-3.c: Likewise.
+	* gcc.target/i386/pr54855-4.c: Likewise.
+	* gcc.target/i386/pr54855-5.c: Likewise.
+	* gcc.target/i386/pr54855-6.c: Likewise.
+	* gcc.target/i386/pr54855-7.c: Likewise.
+	* gcc.target/i386/pr54855-8.c: Likewise.
+	* gcc.target/i386/pr54855-9.c: Likewise.
+	* gcc.target/i386/pr54855-10.c: Likewise.
+
 2019-06-20  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/execute/alias-access-path-1.c: New testcase.
