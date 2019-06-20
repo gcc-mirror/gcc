@@ -386,6 +386,7 @@ module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
    msm_other_decl,
    msm_module_decl,
    msm_extern_decl,
+   msm_pragma,
   };
   struct state
   {
@@ -416,6 +417,7 @@ module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
 
   if (!tok)
     {
+      /* Initialize.  */
       if (data)
 	{
 	  delete data;
@@ -433,7 +435,18 @@ module_preprocess_token (cpp_reader *pfile, cpp_token *tok, void *data_)
   tree ident = NULL_TREE;
   switch (data->mode)
     {
+    case msm_pragma:
+      if (tok->type == CPP_PRAGMA_EOL)
+	data->mode = msm_start_decl;
+      break;
+
     case msm_start_decl:
+      if (tok->type == CPP_PRAGMA)
+	{
+	  data->mode = msm_pragma;
+	  break;
+	}
+
       if (!data->depth && tok->type == CPP_NAME)
 	{
 	  tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));

@@ -837,6 +837,7 @@ cp_lexer_tokenize (cp_lexer *lexer, int extern_c_depth)
     decl_other,
     decl_header,
     decl_extern_c,
+    decl_pragma,
   } mode = decl_start;
   unsigned depth = 0;
 
@@ -862,8 +863,19 @@ cp_lexer_tokenize (cp_lexer *lexer, int extern_c_depth)
       cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
 
     first:
+      if (mode == decl_pragma)
+	{
+	  if (tok->type == CPP_PRAGMA_EOL)
+	    mode = decl_start;
+	  continue;
+	}
+
       switch (tok->type)
 	{
+	case CPP_PRAGMA:
+	  mode = decl_pragma;
+	  break;
+
 	case CPP_EOF:
 	  done_lexing = true;
 	  goto done;

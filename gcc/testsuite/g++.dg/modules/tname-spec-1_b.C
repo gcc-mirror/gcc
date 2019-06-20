@@ -1,7 +1,7 @@
 // { dg-additional-options -fmodules-ts }
 
-import "tname-spec-1_a.H";
 #include <typeinfo>
+import "tname-spec-1_a.H";
 
 struct X
 {

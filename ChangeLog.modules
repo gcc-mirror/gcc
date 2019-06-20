@@ -1,5 +1,12 @@
 2019-06-20  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* parser.c (cp_lexer_tokenize): Skip pragmas.
+	* lex.c (module_preprocess_token): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/pragma-1_[ab].[HC]: New.
+	* g++.dg/modules/tname-spec-1_b.C: Move include earlier.
+
 	Deconstruct types.
 	gcc/cp/
 	* module.cc (enum tree_tag): Add tt_typename_decl,
