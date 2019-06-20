@@ -1,3 +1,13 @@
+2019-06-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/aarch64/aarch64-errata.h: New file.
+	* config/aarch64/aarch64-elf-raw.h (CA53_ERR_835769_SPEC): Delete.
+	(CA53_ERR_843419_SPEC): Delete.
+	(LINK_SPEC): Use AARCH64_ERRATA_LINK_SPEC instead of above.
+	* config/aarch64/aarch64-linux.h: Likewise.
+	* config/aarch64/aarch64-netbsd.h: Likewise.
+	* config/aarch64/aarch64-freebsd.h: Likewise.
+
 2019-06-20  Marek Polacek  <polacek@redhat.com>
 
 	* config/sh/sh.c (sh2a_function_vector_p): Use get_attribute_name.
