@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target indirect_jumps } */
 /* { dg-require-effective-target label_values } */
 /* { dg-options "-O2 -fdump-tree-profile_estimate" } */
 
