@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target label_values } */
 
 int *a;
 void b()

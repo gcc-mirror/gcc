@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target label_values } */
 
 typedef __INTPTR_TYPE__ intptr_t;
 intptr_t a, b, c, d;
