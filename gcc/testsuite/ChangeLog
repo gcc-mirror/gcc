@@ -1,3 +1,8 @@
+2019-06-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/79781
+	* g++.dg/ext/goto1.C: New test.
+
 2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77632
