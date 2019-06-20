@@ -1,3 +1,28 @@
+2019-06-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (@unaligned_store<mode>):
+	Rename from unaligned_store<mode>.
+	(@reload_in<mode>_aligned): Rename from reload_in<mode>_aligned.
+	* config/alpha/sync.md (@load_locked_<mode>): Rename
+	from load_locked_<mode>.
+	(@store_conditional_<mode>): Rename from store_conditional_<mode>.
+	(@atomic_compare_and_swap<mode>_1): Rename
+	from atomic_compare_and_swap<mode>_1.
+	(@atomic_exchange<mode>_1): Rename from atomic_exchange<mode>_1.
+	* config/alpha/alpha.c (alpha_expand_mov_nobwx):
+	Use gen_reload_in_aligned and gen_unaligned_store.
+	(emit_load_locked): Remove.
+	(emit_store_conditional): Ditto.
+	(alpha_split_atomic_op): Use gen_load_locked and gen_store_conditional.
+	(alpha_split_compare_and_swap): Ditto.
+	(alpha_expand_compare_and_swap_12): Use gen_atomic_compare_and_swap_1.
+	(alpha_split_compare_and_swap_12): Use gen_load_locked
+	and gen_store_conditional.
+	(alpha_split_atomic_exchange): Ditto.
+	(alpha_expand_atomic_exchange_12): Use gen_atomic_exchange_1.
+	(alpha_split_atomic_exchange_12): Use gen_load_locked
+	and gen_store_conditional.
+
 2019-06-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/aarch64/aarch64-errata.h: New file.
