@@ -1435,7 +1435,7 @@ DEFPARAM(PARAM_HASH_TABLE_VERIFICATION_LIMIT,
 	 "hash-table-verification-limit",
 	 "The number of elements for which hash table verification is done for "
 	 "each searched element.",
-	 100, 0, 0)
+	 10, 0, 0)
 
 /*
 
