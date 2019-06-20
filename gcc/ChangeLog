@@ -1,3 +1,7 @@
+2019-06-20  Marek Polacek  <polacek@redhat.com>
+
+	* config/sh/sh.c (sh2a_function_vector_p): Use get_attribute_name.
+
 2019-06-20  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000.md (isa attribute): Add support for
