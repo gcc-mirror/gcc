@@ -534,9 +534,9 @@ vr_values::extract_range_for_var_from_comparison_expr (tree var,
          vice-versa.  Use set_and_canonicalize which does this for
          us.  */
       if (cond_code == LE_EXPR)
-        vr_p->set_and_canonicalize (VR_RANGE, min, max, vr_p->equiv ());
+        vr_p->set (VR_RANGE, min, max, vr_p->equiv ());
       else if (cond_code == GT_EXPR)
-        vr_p->set_and_canonicalize (VR_ANTI_RANGE, min, max, vr_p->equiv ());
+        vr_p->set (VR_ANTI_RANGE, min, max, vr_p->equiv ());
       else
 	gcc_unreachable ();
     }
@@ -608,7 +608,7 @@ vr_values::extract_range_for_var_from_comparison_expr (tree var,
 	  && vrp_val_is_max (max))
 	min = max = limit;
 
-      vr_p->set_and_canonicalize (VR_ANTI_RANGE, min, max, vr_p->equiv ());
+      vr_p->set (VR_ANTI_RANGE, min, max, vr_p->equiv ());
     }
   else if (cond_code == LE_EXPR || cond_code == LT_EXPR)
     {

@@ -571,13 +571,6 @@ irange::canonicalize ()
       else
 	++p;
     }
-  if (TREE_CODE (m_type) == ENUMERAL_TYPE)
-    {
-      /* For -fstrict-enums we may receive out-of-range ranges.  Chop
-	 things off appropriately.  */
-      irange bits (TYPE_MIN_VALUE (m_type), TYPE_MAX_VALUE (m_type));
-      intersect (bits);
-    }
   if (flag_checking)
     check ();
 }

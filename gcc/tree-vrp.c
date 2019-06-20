@@ -81,18 +81,10 @@ ranges_from_anti_range (const value_range_base *ar,
 static sbitmap *live;
 
 void
-value_range_base::set (enum value_range_kind kind, tree min, tree max)
-{
-  m_kind = kind;
-  m_min = min;
-  m_max = max;
-  if (flag_checking)
-    check ();
-}
-
-void
 value_range::set_equiv (bitmap equiv)
 {
+  if (undefined_p () || varying_p ())
+    equiv = NULL;
   /* Since updating the equivalence set involves deep copying the
      bitmaps, only do it if absolutely necessary.
 
@@ -154,7 +146,7 @@ value_range_base::value_range_base (enum value_range_kind kind,
   tree min = wide_int_to_tree (type, wmin);
   tree max = wide_int_to_tree (type, wmax);
   gcc_assert (kind == VR_RANGE || kind == VR_ANTI_RANGE);
-  set_and_canonicalize (kind, min, max);
+  set (kind, min, max);
 }
 
 value_range_base::value_range_base (tree type,
@@ -163,7 +155,7 @@ value_range_base::value_range_base (tree type,
 {
   tree min = wide_int_to_tree (type, wmin);
   tree max = wide_int_to_tree (type, wmax);
-  set_and_canonicalize (VR_RANGE, min, max);
+  set (VR_RANGE, min, max);
 }
 
 value_range_base::value_range_base (tree min, tree max)
@@ -310,7 +302,8 @@ value_range_base::constant_p () const
 void
 value_range_base::set_undefined (tree type)
 {
-  set (VR_UNDEFINED, type, type);
+  m_kind = VR_UNDEFINED;
+  m_min = m_max = type;
 }
 
 void
@@ -323,7 +316,8 @@ value_range::set_undefined (tree type)
 void
 value_range_base::set_varying (tree type)
 {
-  set (VR_VARYING, type, type);
+  m_kind = VR_VARYING;
+  m_min = m_max = type;
 }
 
 void
@@ -707,8 +701,7 @@ intersect_range_with_nonzero_bits (enum value_range_kind vr_type,
    extract ranges from var + CST op limit.  */
 
 void
-value_range_base::set_and_canonicalize (enum value_range_kind kind,
-					tree min, tree max)
+value_range_base::set (enum value_range_kind kind, tree min, tree max)
 {
   if (kind == VR_UNDEFINED)
     {
@@ -727,7 +720,9 @@ value_range_base::set_and_canonicalize (enum value_range_kind kind,
   if (TREE_CODE (min) != INTEGER_CST
       || TREE_CODE (max) != INTEGER_CST)
     {
-      set (kind, min, max);
+      m_kind = kind;
+      m_min = min;
+      m_max = max;
       return;
     }
 
@@ -811,19 +806,18 @@ value_range_base::set_and_canonicalize (enum value_range_kind kind,
         }
     }
 
-  /* FIXME: The ranger chops off out-of-bound ranges for
-     -fstrict-enums.  Do the same here.  This is only here to make
-     sure the ranger and VRP compare correctly.  */
-  if (TREE_CODE (type) == ENUMERAL_TYPE
-      && kind == VR_RANGE)
-    {
-      if (tree_int_cst_compare (min, TYPE_MIN_VALUE (type)) < 0)
-	min = TYPE_MIN_VALUE (type);
-      if (tree_int_cst_compare (max, TYPE_MAX_VALUE (type)) > 0)
-	max = TYPE_MAX_VALUE (type);
-    }
+  /* Normalize [MIN, MAX] into VARYING and ~[MIN, MAX] into UNDEFINED.
 
-  if (vrp_val_is_min (min) && vrp_val_is_max (max))
+     Avoid using TYPE_{MIN,MAX}_VALUE because -fstrict-enums can
+     restrict those to a subset of what actually fits in the type.
+     Instead use the extremes of the type precision which will allow
+     compare_range_with_value() to check if a value is inside a range,
+     whereas if we used TYPE_*_VAL, said function would just punt
+     upon seeing a VARYING.  */
+  unsigned prec = TYPE_PRECISION (type);
+  signop sign = TYPE_SIGN (type);
+  if (wi::eq_p (wi::to_wide (min), wi::min_value (prec, sign))
+      && wi::eq_p (wi::to_wide (max), wi::max_value (prec, sign)))
     {
       if (kind == VR_RANGE)
 	set_varying (type);
@@ -838,18 +832,11 @@ value_range_base::set_and_canonicalize (enum value_range_kind kind,
      to make sure VRP iteration terminates, otherwise we can get into
      oscillations.  */
 
-  set (kind, min, max);
-}
-
-void
-value_range::set_and_canonicalize (enum value_range_kind kind,
-				   tree min, tree max, bitmap equiv)
-{
-  value_range_base::set_and_canonicalize (kind, min, max);
-  if (this->kind () == VR_RANGE || this->kind () == VR_ANTI_RANGE)
-    set_equiv (equiv);
-  else
-    equiv_clear ();
+  m_kind = kind;
+  m_min = min;
+  m_max = max;
+  if (flag_checking)
+    check ();
 }
 
 void
@@ -1351,7 +1338,8 @@ static void
 extract_range_from_multiplicative_op (value_range_base *vr,
 				      enum tree_code code,
 				      const value_range_base *vr0,
-				      const value_range_base *vr1)
+				      const value_range_base *vr1,
+				      tree type)
 {
   gcc_assert (code == MULT_EXPR
 	      || code == TRUNC_DIV_EXPR
@@ -1361,13 +1349,25 @@ extract_range_from_multiplicative_op (value_range_base *vr,
 	      || code == ROUND_DIV_EXPR
 	      || code == RSHIFT_EXPR
 	      || code == LSHIFT_EXPR);
-  gcc_assert (vr0->kind () == VR_RANGE
-	      && vr0->kind () == vr1->kind ());
+  if (!range_int_cst_p (vr1))
+    {
+      vr->set_varying (type);
+      return;
+    }
 
-  tree type = vr0->type ();
+  /* Even if vr0 is VARYING or otherwise not usable, we can derive
+     useful ranges just from the shift count.  E.g.
+     x >> 63 for signed 64-bit x is always [-1, 0].  */
+  tree vr0_min = vr0->min (), vr0_max = vr0->max ();
+  if (vr0->kind () != VR_RANGE || vr0->symbolic_p ())
+    {
+      vr0_min = vrp_val_min (type);
+      vr0_max = vrp_val_max (type);
+    }
+
   wide_int res_lb, res_ub;
-  wide_int vr0_lb = wi::to_wide (vr0->min ());
-  wide_int vr0_ub = wi::to_wide (vr0->max ());
+  wide_int vr0_lb = wi::to_wide (vr0_min);
+  wide_int vr0_ub = wi::to_wide (vr0_max);
   wide_int vr1_lb = wi::to_wide (vr1->min ());
   wide_int vr1_ub = wi::to_wide (vr1->max ());
   bool overflow_undefined = TYPE_OVERFLOW_UNDEFINED (type);
@@ -1377,9 +1377,8 @@ extract_range_from_multiplicative_op (value_range_base *vr,
 					code, TYPE_SIGN (type), prec,
 					vr0_lb, vr0_ub, vr1_lb, vr1_ub,
 					overflow_undefined))
-    vr->set_and_canonicalize (VR_RANGE,
-			      wide_int_to_tree (type, res_lb),
-			      wide_int_to_tree (type, res_ub));
+    vr->set (VR_RANGE, wide_int_to_tree (type, res_lb),
+	     wide_int_to_tree (type, res_ub));
   else
     vr->set_varying (type);
 }
@@ -2032,19 +2031,30 @@ extract_range_from_binary_expr (value_range_base *vr,
      range and see what we end up with.  */
   if (code == PLUS_EXPR || code == MINUS_EXPR)
     {
+      value_range_kind vr0_kind = vr0.kind (), vr1_kind = vr1.kind ();
+      tree vr0_min = vr0.min (), vr0_max = vr0.max ();
+      tree vr1_min = vr1.min (), vr1_max = vr1.max ();
       /* This will normalize things such that calculating
 	 [0,0] - VR_VARYING is not dropped to varying, but is
 	 calculated as [MIN+1, MAX].  */
       if (vr0.varying_p ())
-	vr0.set (VR_RANGE, vrp_val_min (expr_type), vrp_val_max (expr_type));
+	{
+	  vr0_kind = VR_RANGE;
+	  vr0_min = vrp_val_min (expr_type);
+	  vr0_max = vrp_val_max (expr_type);
+	}
       if (vr1.varying_p ())
-	vr1.set (VR_RANGE, vrp_val_min (expr_type), vrp_val_max (expr_type));
+	{
+	  vr1_kind = VR_RANGE;
+	  vr1_min = vrp_val_min (expr_type);
+	  vr1_max = vrp_val_max (expr_type);
+	}
 
       const bool minus_p = (code == MINUS_EXPR);
-      tree min_op0 = vr0.min ();
-      tree min_op1 = minus_p ? vr1.max () : vr1.min ();
-      tree max_op0 = vr0.max ();
-      tree max_op1 = minus_p ? vr1.min () : vr1.max ();
+      tree min_op0 = vr0_min;
+      tree min_op1 = minus_p ? vr1_max : vr1_min;
+      tree max_op0 = vr0_max;
+      tree max_op1 = minus_p ? vr1_min : vr1_max;
       tree sym_min_op0 = NULL_TREE;
       tree sym_min_op1 = NULL_TREE;
       tree sym_max_op0 = NULL_TREE;
@@ -2057,7 +2067,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 	 single-symbolic ranges, try to compute the precise resulting range,
 	 but only if we know that this resulting range will also be constant
 	 or single-symbolic.  */
-      if (vr0.kind () == VR_RANGE && vr1.kind () == VR_RANGE
+      if (vr0_kind == VR_RANGE && vr1_kind == VR_RANGE
 	  && (TREE_CODE (min_op0) == INTEGER_CST
 	      || (sym_min_op0
 		  = get_single_symbol (min_op0, &neg_min_op0, &min_op0)))
@@ -2155,7 +2165,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 	  vr->set_varying (expr_type);
 	  return;
 	}
-      extract_range_from_multiplicative_op (vr, code, &vr0, &vr1);
+      extract_range_from_multiplicative_op (vr, code, &vr0, &vr1, expr_type);
       return;
     }
   else if (code == RSHIFT_EXPR
@@ -2170,13 +2180,8 @@ extract_range_from_binary_expr (value_range_base *vr,
 	{
 	  if (code == RSHIFT_EXPR)
 	    {
-	      /* Even if vr0 is VARYING or otherwise not usable, we can derive
-		 useful ranges just from the shift count.  E.g.
-		 x >> 63 for signed 64-bit x is always [-1, 0].  */
-	      if (vr0.kind () != VR_RANGE || vr0.symbolic_p ())
-		vr0.set (VR_RANGE, vrp_val_min (expr_type),
-			 vrp_val_max (expr_type));
-	      extract_range_from_multiplicative_op (vr, code, &vr0, &vr1);
+	      extract_range_from_multiplicative_op (vr, code, &vr0, &vr1,
+						    expr_type);
 	      return;
 	    }
 	  else if (code == LSHIFT_EXPR
@@ -2192,7 +2197,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 		{
 		  min = wide_int_to_tree (expr_type, res_lb);
 		  max = wide_int_to_tree (expr_type, res_ub);
-		  vr->set_and_canonicalize (VR_RANGE, min, max);
+		  vr->set (VR_RANGE, min, max);
 		  return;
 		}
 	    }
@@ -2518,7 +2523,7 @@ extract_range_from_unary_expr (value_range_base *vr,
 	{
 	  tree min = wide_int_to_tree (outer_type, wmin);
 	  tree max = wide_int_to_tree (outer_type, wmax);
-	  vr->set_and_canonicalize (VR_RANGE, min, max);
+	  vr->set (VR_RANGE, min, max);
 	}
       else
 	vr->set_varying (outer_type);
@@ -6433,7 +6438,7 @@ value_range_base::intersect_helper (const value_range_base *vr0,
       vr0min = TREE_TYPE (vr0->min ());
       vr0max = TREE_TYPE (vr0->min ());
     }
-  tem.set_and_canonicalize (vr0type, vr0min, vr0max);
+  tem.set (vr0type, vr0min, vr0max);
   /* If that failed, use the saved original VR0.  */
   if (tem.varying_p ())
     return *vr0;
@@ -6543,7 +6548,7 @@ value_range_base::union_helper (const value_range_base *vr0,
       vr0min = TREE_TYPE (vr0->min ());
       vr0max = TREE_TYPE (vr0->min ());
     }
-  tem.set_and_canonicalize (vr0type, vr0min, vr0max);
+  tem.set (vr0type, vr0min, vr0max);
 
   /* Failed to find an efficient meet.  Before giving up and setting
      the result to VARYING, see if we can at least derive a useful
@@ -6776,10 +6781,6 @@ value_range_base::contains_p (tree cst) const
 void
 value_range_base::invert ()
 {
-  /* Canonicalize first to consider [MIN, MAX] as VARYING and ~[MIN,
-     MAX] as UNDEFINED.  */
-  set_and_canonicalize (m_kind, m_min, m_max);
-
   if (undefined_p ())
     set_varying (type ());
   else if (varying_p ())

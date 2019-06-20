@@ -80,7 +80,6 @@ public:
   /* Misc methods.  */
   tree type () const;
   bool may_contain_p (tree) const;
-  void set_and_canonicalize (enum value_range_kind, tree, tree);
   bool zero_p () const;
   bool nonzero_p () const;
   bool singleton_p (tree *result = NULL) const;
@@ -170,7 +169,6 @@ class GTY((user)) value_range : public value_range_base
 
   /* Misc methods.  */
   void deep_copy (const value_range *);
-  void set_and_canonicalize (enum value_range_kind, tree, tree, bitmap = NULL);
   void dump (FILE *) const;
 
  private:
