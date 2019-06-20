@@ -1,6 +1,13 @@
 2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from mainline
+	PR fortran/69499
+	* match.c (gfc_match_select_type):  SELECT TYPE is an executable 
+	statement, and cannot appear in MODULE or SUBMODULE scope.
+
+2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from mainline
 	PR fortran/69398
 	* decl.c (attr_decl): Check for duplicate DIMENSION attribute for a
 	CLASS entity.
