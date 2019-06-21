@@ -1,5 +1,8 @@
 2019-06-21  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/60223 - ICE with T{} in non-deduced context.
+	* pt.c (unify): Allow COMPOUND_LITERAL_P in a non-deduced context.
+
 	PR c++/64235 - missing syntax error with invalid alignas.
 	* parser.c (cp_parser_std_attribute_spec): Commit to tentative parse
 	if there's a missing close paren.

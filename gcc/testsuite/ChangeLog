@@ -1,4 +1,10 @@
-2019-06-19  Marek Polacek  <polacek@redhat.com>
+2019-06-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60223 - ICE with T{} in non-deduced context.
+	* g++.dg/cpp0x/nondeduced1.C: New test.
+	* g++.dg/cpp0x/nondeduced2.C: New test.
+	* g++.dg/cpp0x/nondeduced3.C: New test.
+	* g++.dg/cpp0x/nondeduced4.C: New test.
 
 	PR c++/64235 - missing syntax error with invalid alignas.
 	* g++.dg/parse/alignas1.C: New test.
