@@ -4005,25 +4005,22 @@ dumper::operator () (const char *format, ...)
 
   if (dumps->bol)
     {
+      /* Module import indent.  */
       if (unsigned depth = dumps->stack.length () - 1)
 	{
-	  /* Module import indenting.  */
-	  const char *indent = ">>>>";
-	  const char *dots   = ">...>";
-	  if (depth > strlen (indent))
-	    indent = dots;
-	  else
-	    indent += strlen (indent) - depth;
-	  fputs (indent, dumps->stream);
+	  const char *prefix = ">>>>";
+	  fprintf (dumps->stream, (depth <= strlen (prefix)
+				   ? &prefix[strlen (prefix) - depth]
+				   : ">.%d.>"), depth);
 	}
+
+      /* Local indent.  */
       if (unsigned indent = dumps->indent)
 	{
-	  /* Tree indenting.  */
-	  const char *spaces = "      ";
-	  const char *dots  =  "   ... ";
-
-	  fputs (indent > strlen (spaces) ? dots
-		 : &spaces[strlen (spaces) - indent], dumps->stream);
+	  const char *prefix = "      ";
+	  fprintf (dumps->stream, (indent <= strlen (prefix)
+				   ? &prefix[strlen (prefix) - indent]
+				   : "  .%d.  "), indent);
 	}
       dumps->bol = false;
     }
@@ -15991,7 +15988,7 @@ module_state::freeze_an_elf ()
 
 /* *SLOT is a lazy binding in namespace NS named ID.  Load it, or die
    trying.  */
-
+// FIXME: Should we emit something when noisy ()?
 bool
 module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
 {

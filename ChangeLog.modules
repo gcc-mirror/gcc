@@ -1,6 +1,11 @@
 2019-06-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* modules.cc (dumper::operator ()): Print indentation level.
+	gcc/testsuite/
+	* g++.dg/modules/scc-1.C: Adjust dump scan.
+
+	gcc/cp/
 	* modules.cc (node_template_info): Enums are awkwarder.
 	gcc/testsuite/
 	* g++.dg/modules/enum-4_[ab].C: New.
