@@ -1,6 +1,13 @@
 2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from mainline
+	PR fortran/86587
+	* symbol.c (verify_bind_c_derived_type): Remove erroneous error
+	checking for BIND(C) and PRIVATE attributes.
+
+2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from mainline
 	PR fortran/77632
 	* /decl.c (variable_decl): Mark a variable that is a target in pointer
 	initialization when in PROGRAM, MODULE, or SUBMODULE scope with an
