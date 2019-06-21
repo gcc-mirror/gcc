@@ -365,6 +365,8 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
       fn (hostaddrs);
       goto out_prof;
     }
+  else if (profiling_p)
+    api_info.device_api = acc_device_api_cuda;
 
   /* Default: let the runtime choose.  */
   for (i = 0; i != GOMP_DIM_MAX; i++)

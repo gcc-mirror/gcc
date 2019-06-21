@@ -1,3 +1,35 @@
+2019-01-23  Thomas Schwinge <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c: Update.
+
+2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* oacc-init.c (get_property_any): Add profiling code.
+
+2017-02-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.am (libgomp_la_SOURCES): Add
+	oacc-profiling-acc_register_library.c.
+	* Makefile.in: Regenerate.
+	* libgomp.texi: Remove paragraph about acc_register_library.
+	* oacc-parallel.c (GOACC_parallel_keyed_internal): Set device_api for
+	profiling.
+	* oacc-profiling-acc_register_library.c: New file.
+	* oacc-profiling.c (goacc_profiling_initialize): Call
+	acc_register_library.  Avoid duplicate registration.
+	(acc_register_library): Remove.
+	* config/nvptx/oacc-profiling-acc_register_library.c:
+	New empty file.
+	* config/nvptx/oacc-profiling.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-dispatch-1.c: Remove
+	call to acc_register_library.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-init-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-parallel-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-valid_bytes-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-version-1.c: Likewise.
+
 2019-05-16  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/kernels-for-index-reuse-1.c: New
