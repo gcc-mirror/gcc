@@ -3717,11 +3717,19 @@ node_template_info (tree decl, int &use)
 
       if (ti)
 	{
-	  if (!TYPE_LANG_SPECIFIC (type))
-	    /* Take it from the type's context, which must itself be a
-	       template.  */
-	    type = DECL_CONTEXT (decl);
-	  use_tpl = CLASSTYPE_USE_TEMPLATE (type);
+	  if (TYPE_LANG_SPECIFIC (type))
+	    use_tpl = CLASSTYPE_USE_TEMPLATE (type);
+	  else
+	    {
+	      /* An enum, where we don't explicitly encode use_tpl.
+		 If the containing type (there must be one), is an
+		 ({im,ex}plicit) instantiation, then this is too.  If
+		 it's a partial or explicit specialization, then this
+		 is not!.  */
+	      use_tpl = CLASSTYPE_USE_TEMPLATE (DECL_CONTEXT (decl));
+	      if (use_tpl == 2)
+		use_tpl = 0;
+	    }
 	}
     }
   else if (DECL_LANG_SPECIFIC (decl)

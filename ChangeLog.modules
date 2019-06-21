@@ -1,3 +1,10 @@
+2019-06-21  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* modules.cc (node_template_info): Enums are awkwarder.
+	gcc/testsuite/
+	* g++.dg/modules/enum-4_[ab].C: New.
+
 2019-06-20  Nathan Sidwell  <nathan@acm.org>
 
 	Bitfields.
