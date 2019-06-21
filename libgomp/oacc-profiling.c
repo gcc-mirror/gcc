@@ -104,7 +104,12 @@ goacc_profiling_initialize (void)
   for (int i = 0; i < acc_ev_last; ++i)
     goacc_prof_callbacks_enabled[i] = true;
 
-
+  /* We are to invoke an external acc_register_library routine, defaulting to
+     our stub oacc-profiling-acc_register_library.c:acc_register_library
+     implementation.  */
+  gomp_debug (0, "%s: calling acc_register_library\n", __FUNCTION__);
+  //TODO.
+  acc_register_library (acc_prof_register, acc_prof_unregister, NULL);
 #ifdef PLUGIN_SUPPORT
   char *acc_proflibs = secure_getenv ("ACC_PROFLIB");
   while (acc_proflibs != NULL && acc_proflibs[0] != '\0')
@@ -141,10 +146,20 @@ goacc_profiling_initialize (void)
 		= dlsym (dl_handle, "acc_register_library");
 	      if (a_r_l == NULL)
 		goto dl_fail;
-	      gomp_debug (0, "  %s: calling %s:acc_register_library\n",
-			  __FUNCTION__, acc_proflib);
-	      a_r_l (acc_prof_register, acc_prof_unregister,
-		     acc_prof_lookup);
+	      /* Avoid duplicate registration, for example if the same shared
+		 library is specified in LD_PRELOAD and ACC_PROFLIB -- which
+		 TAU 2.26 does when using "tau_exec -openacc".  */
+	      if (a_r_l != acc_register_library)
+		{
+		  gomp_debug (0, "  %s: calling %s:acc_register_library\n",
+			      __FUNCTION__, acc_proflib);
+		  //TODO.
+		  a_r_l (acc_prof_register, acc_prof_unregister, NULL);
+		}
+	      else
+		gomp_debug (0, "  %s: skipping duplicate"
+			    " %s:acc_register_library\n",
+			    __FUNCTION__, acc_proflib);
 	    }
 	  else
 	    {
@@ -485,13 +500,6 @@ acc_prof_lookup (const char *name)
 	      __FUNCTION__, name ?: "NULL");
 
   return NULL;
-}
-
-void
-acc_register_library (acc_prof_reg reg, acc_prof_reg unreg,
-		      acc_prof_lookup_func lookup)
-{
-  gomp_fatal ("TODO");
 }
 
 /* Prepare to dispatch events?  */
