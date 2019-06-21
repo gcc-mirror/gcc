@@ -1,6 +1,13 @@
 2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from mainline
+	PR fortran/87907
+	* resolve.c (resolve_contained_fntype): Do not dereference a NULL
+	pointer.
+
+2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from mainline
 	PR fortran/86587
 	* symbol.c (verify_bind_c_derived_type): Remove erroneous error
 	checking for BIND(C) and PRIVATE attributes.

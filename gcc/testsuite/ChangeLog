@@ -1,6 +1,12 @@
 2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from mainline
+	PR fortran/87907
+	* gfortran.dg/pr87907.f90: New testcase.
+
+2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from mainline
 	PR fortran/86587
 	* gfortran.dg/pr86587.f90: New test.
 
