@@ -56,8 +56,6 @@ void acc_register_library (acc_prof_reg reg_, acc_prof_reg unreg_, acc_prof_look
 
 int main()
 {
-  acc_register_library (acc_prof_register, acc_prof_unregister, acc_prof_lookup);
-
   ev_count = 0;
 
   /* Trigger tests done in 'cb_*' functions.  */

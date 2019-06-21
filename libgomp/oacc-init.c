@@ -791,13 +791,29 @@ get_property_any (int ord, acc_device_t d, acc_device_property_t prop)
   if (d == acc_device_current && (!thr || !thr->dev))
     return (union gomp_device_property_value) { .val = 0 };
 
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
+
   if (d == acc_device_current)
     {
+      if (profiling_p)
+	{
+	  prof_info.device_type = acc_device_type (thr->dev->type);
+	  prof_info.device_number = thr->dev->target_id;
+	}
+
       dev = thr->dev;
     }
   else
     {
       int num_devices;
+
+      if (profiling_p)
+	{
+	  prof_info.device_type = d;
+	  prof_info.device_number = ord;
+	}
 
       gomp_mutex_lock (&acc_device_lock);
 
@@ -821,6 +837,12 @@ get_property_any (int ord, acc_device_t d, acc_device_property_t prop)
   assert (dev);
 
   propval = dev->get_property_func (dev->target_id, prop);
+
+  if (profiling_p)
+    {
+      thr->prof_info = NULL;
+      thr->api_info = NULL;
+    }
 
   return propval;
 }
