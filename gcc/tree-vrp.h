@@ -41,7 +41,7 @@ class value_range_storage;
    has executed.  */
 class GTY((for_user)) value_range_base
 {
-  friend value_range_storage;
+  friend class value_range_storage;
   friend void irange_tests ();
 public:
   value_range_base ();
