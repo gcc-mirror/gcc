@@ -270,8 +270,6 @@ static void cb_compute_construct_end (acc_prof_info *prof_info, acc_event_info *
 
 int main()
 {
-  acc_register_library (acc_prof_register, acc_prof_unregister, acc_prof_lookup);
-
   STATE_OP (state, = 0);
   reg (acc_ev_device_init_start, cb_device_init_start, acc_reg);
   reg (acc_ev_device_init_end, cb_device_init_end, acc_reg);
