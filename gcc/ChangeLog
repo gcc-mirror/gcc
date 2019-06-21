@@ -1,3 +1,9 @@
+2019-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90913
+	* tree-vect-loop-manip.c (vect_loop_versioning): Do not re-use
+	the scalar variant of if-conversion versioning.
+
 2019-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (lower_rec_simd_input_clauses): Add rvar2 argument,
