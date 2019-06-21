@@ -1,3 +1,11 @@
+2019-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-data-refs.c (vect_find_stmt_data_reference): Handle
+	even zero DR_OFFSET, but DR_BASE_ADDRESS of POINTER_PLUS_EXPR
+	containing the offset as possible simd lane access.  Look through
+	widening conversion.  Move the
+	TREE_CODE (DR_INIT (newdr)) == INTEGER_CST test earlier and reindent.
+
 2019-06-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90930

@@ -1,7 +1,7 @@
 // { dg-require-effective-target size32plus }
 // { dg-additional-options "-fopenmp-simd" }
 // { dg-additional-options "-mavx" { target avx_runtime } }
-// { dg-final { scan-tree-dump-times "vectorized \[1-3] loops" 2 "vect" { xfail *-*-* } } }
+// { dg-final { scan-tree-dump-times "vectorized \[1-3] loops" 2 "vect" { target i?86-*-* x86_64-*-* } } }
 
 #include "../../gcc.dg/vect/tree-vect.h"
 
