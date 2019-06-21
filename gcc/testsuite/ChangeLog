@@ -1,3 +1,8 @@
+2019-06-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/64235 - missing syntax error with invalid alignas.
+	* g++.dg/parse/alignas1.C: New test.
+
 2019-06-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67884

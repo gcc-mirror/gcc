@@ -26371,6 +26371,12 @@ cp_parser_std_attribute_spec (cp_parser *parser)
       if (alignas_expr == error_mark_node)
 	return error_mark_node;
 
+      /* Missing ')' means the code cannot possibly be valid; go ahead
+	 and commit to make sure we issue a hard error.  */
+      if (cp_parser_uncommitted_to_tentative_parse_p (parser)
+	  && cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN))
+	cp_parser_commit_to_tentative_parse (parser);
+
       if (!parens.require_close (parser))
 	return error_mark_node;
 
