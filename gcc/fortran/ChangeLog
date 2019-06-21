@@ -1,6 +1,13 @@
 2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from mainline
+	PR fortran/89344
+	* expr.c (gfc_check_vardef_context): Check for INTENT(IN) variable
+	in SELECT TYPE construct.
+
+2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from mainline
 	PR fortran/87907
 	* resolve.c (resolve_contained_fntype): Do not dereference a NULL
 	pointer.
