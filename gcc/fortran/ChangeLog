@@ -1,3 +1,9 @@
+2019-06-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/51991
+	* decl.c (gfc_match_save): If SAVE was not seen, return MATCH_NO
+	instead issuing an error message and returning MATCH_ERROR.
+
 2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/77632

@@ -9302,8 +9302,13 @@ gfc_match_save (void)
   return MATCH_YES;
 
 syntax:
-  gfc_error ("Syntax error in SAVE statement at %C");
-  return MATCH_ERROR;
+  if (gfc_current_ns->seen_save)
+    {
+      gfc_error ("Syntax error in SAVE statement at %C");
+      return MATCH_ERROR;
+    }
+  else
+      return MATCH_NO;
 }
 
 
