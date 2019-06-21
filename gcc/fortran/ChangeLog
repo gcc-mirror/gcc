@@ -1,6 +1,12 @@
 2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from mainline
+	PR fortran/90290
+	* match.c (gfc_match_stopcode): Check F2008 condition on stop code.
+
+2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from mainline
 	PR fortran/90002
 	* array.c (gfc_free_array_spec): When freeing an array-spec, avoid
 	an ICE for assumed-shape coarrays 
