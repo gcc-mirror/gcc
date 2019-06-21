@@ -1,5 +1,27 @@
 2019-06-21  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/vect/vect-simd-12.c: New test.
+	* gcc.dg/vect/vect-simd-13.c: New test.
+	* gcc.dg/vect/vect-simd-14.c: New test.
+	* gcc.dg/vect/vect-simd-15.c: New test.
+	* gcc.target/i386/sse2-vect-simd-12.c: New test.
+	* gcc.target/i386/sse2-vect-simd-13.c: New test.
+	* gcc.target/i386/sse2-vect-simd-14.c: New test.
+	* gcc.target/i386/sse2-vect-simd-15.c: New test.
+	* gcc.target/i386/avx2-vect-simd-12.c: New test.
+	* gcc.target/i386/avx2-vect-simd-13.c: New test.
+	* gcc.target/i386/avx2-vect-simd-14.c: New test.
+	* gcc.target/i386/avx2-vect-simd-15.c: New test.
+	* gcc.target/i386/avx512f-vect-simd-12.c: New test.
+	* gcc.target/i386/avx512f-vect-simd-13.c: New test.
+	* gcc.target/i386/avx512f-vect-simd-14.c: New test.
+	* gcc.target/i386/avx512bw-vect-simd-15.c: New test.
+	* g++.dg/vect/simd-6.cc: New test.
+	* g++.dg/vect/simd-7.cc: New test.
+	* g++.dg/vect/simd-8.cc: New test.
+	* g++.dg/vect/simd-9.cc: New test.
+	* c-c++-common/gomp/scan-2.c: Don't expect any diagnostics.
+
 	PR c++/90950
 	* g++.dg/gomp/lastprivate-1.C: New test.
 

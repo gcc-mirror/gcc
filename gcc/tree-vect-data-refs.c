@@ -4223,7 +4223,8 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
       /* See if this was detected as SIMD lane access.  */
       if (dr->aux == (void *)-1
 	  || dr->aux == (void *)-2
-	  || dr->aux == (void *)-3)
+	  || dr->aux == (void *)-3
+	  || dr->aux == (void *)-4)
 	{
 	  if (nested_in_vect_loop_p (loop, stmt_info))
 	    return opt_result::failure_at (stmt_info->stmt,
