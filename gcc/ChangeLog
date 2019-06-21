@@ -1,3 +1,8 @@
+2019-06-21  Matthew Beliveau  <mbelivea@redhat.com>
+
+	PR c++/90875 - added -Wswitch-outside-range option
+	* doc/invoke.texi (Wswitch-outside-range): Document.
+
 2019-06-21  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/90949
