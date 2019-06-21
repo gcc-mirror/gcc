@@ -8244,7 +8244,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       /* See if the function member or the whole class type is declared
 	 final and the call can be devirtualized.  */
       if (DECL_FINAL_P (fn)
-	  || CLASSTYPE_FINAL (TREE_TYPE (argtype)))
+	  || CLASSTYPE_FINAL (TYPE_METHOD_BASETYPE (TREE_TYPE (fn))))
 	flags |= LOOKUP_NONVIRTUAL;
 
       /* [class.mfct.nonstatic]: If a nonstatic member function of a class
