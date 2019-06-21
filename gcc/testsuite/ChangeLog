@@ -1,3 +1,8 @@
+2019-06-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90953 - ICE with -Wmissing-format-attribute.
+	* g++.dg/warn/miss-format-7.C: New test.
+
 2019-06-21  Richard Biener  <rguenther@suse.de>
 
 	PR debug/90914
