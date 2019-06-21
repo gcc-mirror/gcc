@@ -1074,6 +1074,11 @@ class Expression
   static Expression*
   unpack_direct_iface(Expression*, Location);
 
+  // Return an expression representing the type descriptor field of an
+  // interface.
+  static Expression*
+  get_interface_type_descriptor(Expression*);
+
   // Look through the expression of a Slice_value_expression's valmem to
   // find an call to makeslice.
   static std::pair<Call_expression*, Temporary_statement*>
@@ -1255,9 +1260,6 @@ class Expression
 	    ? static_cast<const Expression_class*>(this)
 	    : NULL);
   }
-
-  static Expression*
-  get_interface_type_descriptor(Expression*);
 
   static Expression*
   convert_interface_to_type(Type*, Expression*, Location);

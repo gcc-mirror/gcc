@@ -4614,11 +4614,12 @@ Type_case_clauses::Type_case_clause::lower(Type* switch_val_type,
 	cond = Expression::make_binary(OPERATOR_EQEQ, ref,
 				       Expression::make_nil(loc),
 				       loc);
+      else if (type->interface_type() == NULL)
+        cond = Expression::make_binary(OPERATOR_EQEQ, ref,
+                                       Expression::make_type_descriptor(type, loc),
+                                       loc);
       else
-	cond = Runtime::make_call((type->interface_type() == NULL
-				   ? Runtime::IFACETYPEEQ
-				   : Runtime::IFACET2IP),
-				  loc, 2,
+	cond = Runtime::make_call(Runtime::IFACET2IP, loc, 2,
 				  Expression::make_type_descriptor(type, loc),
 				  ref);
 
@@ -4871,23 +4872,23 @@ Type_switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
       return Statement::make_error_statement(loc);
     }
 
+  Temporary_statement* val_temp =
+    Statement::make_temporary(NULL, this->expr_, loc);
+  b->add_statement(val_temp);
+
   // var descriptor_temp DESCRIPTOR_TYPE
   Type* descriptor_type = Type::make_type_descriptor_ptr_type();
   Temporary_statement* descriptor_temp =
     Statement::make_temporary(descriptor_type, NULL, loc);
   b->add_statement(descriptor_temp);
 
-  // descriptor_temp = ifacetype(val_temp) FIXME: This should be
-  // inlined.
-  bool is_empty = val_type->interface_type()->is_empty();
-  Expression* call = Runtime::make_call((is_empty
-					 ? Runtime::EFACETYPE
-					 : Runtime::IFACETYPE),
-					loc, 1, this->expr_);
+  // descriptor_temp = ifacetype(val_temp)
+  Expression* ref = Expression::make_temporary_reference(val_temp, loc);
+  Expression* td = Expression::get_interface_type_descriptor(ref);
   Temporary_reference_expression* lhs =
     Expression::make_temporary_reference(descriptor_temp, loc);
   lhs->set_is_lvalue();
-  Statement* s = Statement::make_assignment(lhs, call, loc);
+  Statement* s = Statement::make_assignment(lhs, td, loc);
   b->add_statement(s);
 
   if (this->clauses_ != NULL)

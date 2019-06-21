@@ -15,10 +15,7 @@ import (
 //
 //go:linkname requireitab runtime.requireitab
 //go:linkname assertitab runtime.assertitab
-//go:linkname assertI2T runtime.assertI2T
-//go:linkname ifacetypeeq runtime.ifacetypeeq
-//go:linkname efacetype runtime.efacetype
-//go:linkname ifacetype runtime.ifacetype
+//go:linkname panicdottype runtime.panicdottype
 //go:linkname ifaceE2E2 runtime.ifaceE2E2
 //go:linkname ifaceI2E2 runtime.ifaceI2E2
 //go:linkname ifaceE2I2 runtime.ifaceE2I2
@@ -356,35 +353,9 @@ func assertitab(lhs, rhs *_type) unsafe.Pointer {
 	return getitab(lhs, rhs, false)
 }
 
-// Check whether an interface type may be converted to a non-interface
-// type, panicing if not.
-func assertI2T(lhs, rhs, inter *_type) {
-	if rhs == nil {
-		panic(&TypeAssertionError{nil, nil, lhs, ""})
-	}
-	if !eqtype(lhs, rhs) {
-		panic(&TypeAssertionError{inter, rhs, lhs, ""})
-	}
-}
-
-// Compare two type descriptors for equality.
-func ifacetypeeq(a, b *_type) bool {
-	return eqtype(a, b)
-}
-
-// Return the type descriptor of an empty interface.
-// FIXME: This should be inlined by the compiler.
-func efacetype(e eface) *_type {
-	return e._type
-}
-
-// Return the type descriptor of a non-empty interface.
-// FIXME: This should be inlined by the compiler.
-func ifacetype(i iface) *_type {
-	if i.tab == nil {
-		return nil
-	}
-	return *(**_type)(i.tab)
+// panicdottype is called when doing an i.(T) conversion and the conversion fails.
+func panicdottype(lhs, rhs, inter *_type) {
+	panic(&TypeAssertionError{inter, rhs, lhs, ""})
 }
 
 // Convert an empty interface to an empty interface, for a comma-ok
