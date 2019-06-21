@@ -398,6 +398,8 @@ GOACC_parallel_keyed_internal (int flags_m, int params, void (*fn) (void *),
       goacc_call_host_fn (fn, mapnum, hostaddrs, params);
       goto out_prof;
     }
+  else if (profiling_p)
+    api_info.device_api = acc_device_api_cuda;
 
   /* Default: let the runtime choose.  */
   for (i = 0; i != GOMP_DIM_MAX; i++)

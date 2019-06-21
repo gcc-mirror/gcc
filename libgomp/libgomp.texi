@@ -3386,14 +3386,6 @@ every event that has been registered.
 We're not yet accounting for the fact that @cite{OpenACC events may
 occur during event processing}.
 
-We're not yet implementing initialization via a
-@code{acc_register_library} function that is either statically linked
-in, or dynamically via @env{LD_PRELOAD}.
-Initialization via @code{acc_register_library} functions dynamically
-loaded via the @env{ACC_PROFLIB} environment variable does work, as
-does directly calling @code{acc_prof_register},
-@code{acc_prof_unregister}, @code{acc_prof_lookup}.
-
 As currently there are no inquiry functions defined, calls to
 @code{acc_prof_lookup} will always return @code{NULL}.
 

@@ -16,7 +16,7 @@
 
 # Plugins for offload execution, Makefile.am fragment.
 #
-# Copyright (C) 2014-2019 Free Software Foundation, Inc.
+# Copyright (C) 2014-2020 Free Software Foundation, Inc.
 #
 # Contributed by Mentor Embedded.
 #
@@ -230,7 +230,8 @@ am_libgomp_la_OBJECTS = alloc.lo atomic.lo barrier.lo critical.lo \
 	target.lo splay-tree.lo libgomp-plugin.lo oacc-parallel.lo \
 	oacc-host.lo oacc-init.lo oacc-mem.lo oacc-async.lo \
 	oacc-plugin.lo oacc-cuda.lo priority_queue.lo affinity-fmt.lo \
-	teams.lo oacc-profiling.lo oacc-target.lo $(am__objects_1)
+	teams.lo oacc-profiling.lo oacc-target.lo \
+	oacc-profiling-acc_register_library.lo $(am__objects_1)
 libgomp_la_OBJECTS = $(am_libgomp_la_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -544,7 +545,7 @@ search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) $(top_srcdir) \
 
 fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/finclude
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
-libgomp_la_LIBADD = $(LIBFFI)
+@USE_LIBFFI_TRUE@libgomp_la_LIBADD = $(LIBFFI)
 AM_CPPFLAGS = $(addprefix -I, $(search_path)) $(LIBFFIINCS)
 AM_CFLAGS = $(XCFLAGS)
 AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
@@ -575,7 +576,7 @@ libgomp_la_SOURCES = alloc.c atomic.c barrier.c critical.c env.c \
 	oacc-parallel.c oacc-host.c oacc-init.c oacc-mem.c \
 	oacc-async.c oacc-plugin.c oacc-cuda.c priority_queue.c \
 	affinity-fmt.c teams.c oacc-profiling.c oacc-target.c \
-	$(am__append_4)
+	oacc-profiling-acc_register_library.c $(am__append_4)
 
 # Nvidia PTX OpenACC plugin.
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_version_info = -version-info $(libtool_VERSION)
@@ -793,6 +794,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-mem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-parallel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-plugin.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-profiling-acc_register_library.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-profiling.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oacc-target.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ordered.Plo@am__quote@
