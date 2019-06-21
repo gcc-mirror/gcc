@@ -13082,11 +13082,6 @@ Bexpression*
 String_index_expression::do_get_backend(Translate_context* context)
 {
   Location loc = this->location();
-  Expression* string_arg = this->string_;
-  if (this->string_->type()->points_to() != NULL)
-    string_arg = Expression::make_dereference(this->string_,
-                                              NIL_CHECK_NOT_NEEDED, loc);
-
   Expression* bad_index = Expression::check_bounds(this->start_, loc);
 
   int code = (this->end_ == NULL
@@ -13110,23 +13105,27 @@ String_index_expression::do_get_backend(Translate_context* context)
       return context->backend()->error_expression();
     }
 
+  go_assert(this->string_->is_variable());
+  go_assert(this->start_->is_variable());
+
   Expression* start = Expression::make_cast(int_type, this->start_, loc);
   Bfunction* bfn = context->function()->func_value()->get_decl();
 
+  Expression* length =
+    Expression::make_string_info(this->string_, STRING_INFO_LENGTH, loc);
+  Expression* bytes =
+    Expression::make_string_info(this->string_, STRING_INFO_DATA, loc);
+
+  Bexpression* bstart = start->get_backend(context);
+  Bexpression* ptr = bytes->get_backend(context);
+
   if (this->end_ == NULL)
     {
-      Expression* length =
-          Expression::make_string_info(this->string_, STRING_INFO_LENGTH, loc);
-
       Expression* start_too_large =
           Expression::make_binary(OPERATOR_GE, start, length, loc);
       bad_index = Expression::make_binary(OPERATOR_OROR, start_too_large,
                                           bad_index, loc);
-      Expression* bytes =
-	Expression::make_string_info(this->string_, STRING_INFO_DATA, loc);
 
-      Bexpression* bstart = start->get_backend(context);
-      Bexpression* ptr = bytes->get_backend(context);
       ptr = gogo->backend()->pointer_offset_expression(ptr, bstart, loc);
       Btype* ubtype = Type::lookup_integer_type("uint8")->get_backend(gogo);
       Bexpression* index =
@@ -13141,20 +13140,53 @@ String_index_expression::do_get_backend(Translate_context* context)
 
   Expression* end = NULL;
   if (this->end_->is_nil_expression())
-    end = Expression::make_integer_sl(-1, int_type, loc);
+    end = length;
   else
     {
+      go_assert(this->end_->is_variable());
       Expression* bounds_check = Expression::check_bounds(this->end_, loc);
       bad_index =
           Expression::make_binary(OPERATOR_OROR, bounds_check, bad_index, loc);
       end = Expression::make_cast(int_type, this->end_, loc);
+
+      Expression* end_too_large =
+        Expression::make_binary(OPERATOR_GT, end, length, loc);
+      bad_index = Expression::make_binary(OPERATOR_OROR, end_too_large,
+                                          bad_index, loc);
     }
+  Expression* start_too_large =
+    Expression::make_binary(OPERATOR_GT, start->copy(), end->copy(), loc);
+  bad_index = Expression::make_binary(OPERATOR_OROR, start_too_large,
+                                      bad_index, loc);
 
-  Expression* strslice = Runtime::make_call(Runtime::STRING_SLICE, loc, 3,
-                                            string_arg, start, end);
-  Bexpression* bstrslice = strslice->get_backend(context);
+  end = end->copy();
+  Bexpression* bend = end->get_backend(context);
+  Bexpression* new_length =
+    gogo->backend()->binary_expression(OPERATOR_MINUS, bend, bstart, loc);
 
-  Btype* str_btype = strslice->type()->get_backend(gogo);
+  // If the new length is zero, don't change pointer.  Otherwise we can
+  // get a pointer to the next object in memory, keeping it live
+  // unnecessarily.  When the length is zero, the actual pointer
+  // value doesn't matter.
+  Btype* int_btype = int_type->get_backend(gogo);
+  Bexpression* zero =
+    Expression::make_integer_ul(0, int_type, loc)->get_backend(context);
+  Bexpression* cond =
+    gogo->backend()->binary_expression(OPERATOR_EQEQ, new_length, zero,
+                                       loc);
+  Bexpression* offset =
+    gogo->backend()->conditional_expression(bfn, int_btype, cond, zero,
+                                            bstart, loc);
+
+  ptr = gogo->backend()->pointer_offset_expression(ptr, offset, loc);
+
+  Btype* str_btype = this->type()->get_backend(gogo);
+  std::vector<Bexpression*> init;
+  init.push_back(ptr);
+  init.push_back(new_length);
+  Bexpression* bstrslice =
+    gogo->backend()->constructor_expression(str_btype, init, loc);
+
   Bexpression* index_error = bad_index->get_backend(context);
   return gogo->backend()->conditional_expression(bfn, str_btype, index_error,
 						 crash, bstrslice, loc);
