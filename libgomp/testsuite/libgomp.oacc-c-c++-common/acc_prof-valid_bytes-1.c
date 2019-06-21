@@ -143,8 +143,6 @@ typedef struct E
 
 int main()
 {
-  acc_register_library (acc_prof_register, acc_prof_unregister, acc_prof_lookup);
-
   A A1;
   DEBUG_printf ("s=%zd, vb=%zd\n", sizeof A1, VALID_BYTES_A);
   assert (VALID_BYTES_A <= sizeof A1);
