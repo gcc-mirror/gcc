@@ -1,3 +1,9 @@
+2019-06-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/90937
+	* gfortran.dg/external_procedure_4.f90: New test.
+
 2019-06-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/90870
