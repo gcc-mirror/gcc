@@ -45,10 +45,6 @@ DEF_GO_RUNTIME(EQSTRING, "runtime.eqstring", P2(STRING, STRING), R1(BOOL))
 // Compare two strings.
 DEF_GO_RUNTIME(CMPSTRING, "runtime.cmpstring", P2(STRING, STRING), R1(INT))
 
-// Take a slice of a string.
-DEF_GO_RUNTIME(STRING_SLICE, "__go_string_slice", P3(STRING, INT, INT),
-	       R1(STRING))
-
 // Convert an integer to a string.
 DEF_GO_RUNTIME(INTSTRING, "runtime.intstring", P2(POINTER, INT64), R1(STRING))
 

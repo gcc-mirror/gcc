@@ -3133,6 +3133,18 @@ class String_index_expression : public Expression
   string() const
   { return this->string_; }
 
+  // Return the index of a simple index expression, or the start index
+  // of a slice expression.
+  Expression*
+  start() const
+  { return this->start_; }
+
+  // Return the end index of a slice expression.  This is NULL for a
+  // simple index expression.
+  Expression*
+  end() const
+  { return this->end_; }
+
  protected:
   int
   do_traverse(Traverse*);

@@ -1021,6 +1021,18 @@ Assignment_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
 	  && ival == 0)
 	this->omit_write_barrier_ = true;
     }
+  String_index_expression* sie = this->rhs_->string_index_expression();
+  if (sie != NULL
+      && sie->end() != NULL
+      && Expression::is_same_variable(this->lhs_, sie->string()))
+    {
+      Numeric_constant nc;
+      unsigned long ival;
+      if (sie->start()->numeric_constant_value(&nc)
+	  && nc.to_unsigned_long(&ival) == Numeric_constant::NC_UL_VALID
+	  && ival == 0)
+        this->omit_write_barrier_ = true;
+    }
 
   return this;
 }
