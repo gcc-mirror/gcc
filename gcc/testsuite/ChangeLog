@@ -1,3 +1,8 @@
+2019-06-21  Jeff Law  <law@redhat.com>
+
+        PR tree-optimization/90949
+	* gcc.c-torture/execute/pr90949.c: New test.
+
 2019-06-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90953 - ICE with -Wmissing-format-attribute.

@@ -1,3 +1,9 @@
+2019-06-21  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/90949
+	* tree-ssa-copy.c (fini_copy_prop): Use reset_flow_sensitive_info.
+	* tree-ssanames.c (reset_flow_sensitive_info): Reset non-null state.
+
 2019-06-21  Richard Biener  <rguenther@suse.de>
 
 	PR debug/90914
