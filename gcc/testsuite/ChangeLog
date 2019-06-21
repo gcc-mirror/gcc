@@ -1,6 +1,12 @@
 2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	Backport from mainline
+	PR fortran/90002
+	* gfortran.dg/pr90002.f90: New test.
+
+2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backport from mainline
 	PR fortran/89344
 	* gfortran.dg/pr89344.f90: New test.
 
