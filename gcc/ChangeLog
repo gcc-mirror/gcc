@@ -292,6 +292,7 @@
 	* config/aarch64/aarch64-sve.md: Likewise throughout.
 
 2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* config/aarch64/aarch64-sve.md (*cond_<optab><mode>_0): Delete.
 	(*cond_<optab><mode>_z): Fold into...
