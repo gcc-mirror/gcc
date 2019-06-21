@@ -1,5 +1,9 @@
 2019-06-21  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/61490 - qualified-id in friend function definition.
+	* g++.dg/diagnostic/friend2.C: New test.
+	* g++.dg/diagnostic/friend3.C: New test.
+
 	PR c++/60223 - ICE with T{} in non-deduced context.
 	* g++.dg/cpp0x/nondeduced1.C: New test.
 	* g++.dg/cpp0x/nondeduced2.C: New test.

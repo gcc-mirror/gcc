@@ -11624,12 +11624,28 @@ grokdeclarator (const cp_declarator *declarator,
 		    friendp = 0;
 		  }
 		if (decl_context == NORMAL)
-		  error ("friend declaration not in class definition");
+		  error_at (declarator->id_loc,
+			    "friend declaration not in class definition");
 		if (current_function_decl && funcdef_flag)
 		  {
-		    error ("cannot define friend function %qs in a local "
-			   "class definition", name);
+		    error_at (declarator->id_loc,
+			      "cannot define friend function %qs in a local "
+			      "class definition", name);
 		    friendp = 0;
+		  }
+		/* [class.friend]/6: A function can be defined in a friend
+		   declaration if the function name is unqualified.  */
+		if (funcdef_flag && in_namespace)
+		  {
+		    if (in_namespace == global_namespace)
+		      error_at (declarator->id_loc,
+				"friend function definition %qs cannot have "
+				"a name qualified with %<::%>", name);
+		    else
+		      error_at (declarator->id_loc,
+				"friend function definition %qs cannot have "
+				"a name qualified with %<%D::%>", name,
+				in_namespace);
 		  }
 	      }
 	    else if (ctype && sfk == sfk_conversion)
