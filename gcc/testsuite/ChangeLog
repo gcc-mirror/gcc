@@ -1,3 +1,17 @@
+2019-06-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90909
+	Revert:
+	2019-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67184
+	PR c++/69445
+	* g++.dg/other/final3.C: New.
+	* g++.dg/other/final4.C: Likewise.
+	* g++.dg/other/final5.C: Likewise.
+
+	* g++.dg/other/final6.C: New.
+
 2019-06-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/61490 - qualified-id in friend function definition.
