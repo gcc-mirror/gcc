@@ -4075,14 +4075,17 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
 	  && integer_zerop (DR_STEP (newdr)))
 	{
 	  tree off = DR_OFFSET (newdr);
+	  tree step = ssize_int (1);
 	  STRIP_NOPS (off);
-	  if (TREE_CODE (DR_INIT (newdr)) == INTEGER_CST
-	      && TREE_CODE (off) == MULT_EXPR
+	  if (TREE_CODE (off) == MULT_EXPR
 	      && tree_fits_uhwi_p (TREE_OPERAND (off, 1)))
 	    {
-	      tree step = TREE_OPERAND (off, 1);
+	      step = TREE_OPERAND (off, 1);
 	      off = TREE_OPERAND (off, 0);
 	      STRIP_NOPS (off);
+	    }
+	  if (TREE_CODE (DR_INIT (newdr)) == INTEGER_CST)
+	    {
 	      if (CONVERT_EXPR_P (off)
 		  && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (off, 0)))
 		      < TYPE_PRECISION (TREE_TYPE (off))))

@@ -1,3 +1,8 @@
+2019-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-data-refs.c (vect_find_stmt_data_reference): Handle
+	"omp simd array" arrays with one byte elements.
+
 2019-06-20  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (@unaligned_store<mode>):
