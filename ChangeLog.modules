@@ -1,6 +1,14 @@
 2019-06-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* modules.cc (depset): Add DB_OOT_SPEC_BIT.
+	(depset::~depset): Free the spec entry if we own it.
+	(trees_{in,out}::note_definition): Check template result isn't
+	there.
+	(depset::hash::add_dependency): Correctly insert discovered
+	non-member template instantiations.
+
+	gcc/cp/
 	* modules.cc (note_defs): New checking hash table.
 	(trees_{in,out}::note_definition): New checkers
 	(trees_in::read_{function,class,var,enum}_def): Add maybe_template

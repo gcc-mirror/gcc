@@ -2259,6 +2259,7 @@ private:
     DB_HIDDEN_BIT,		/* A hidden binding.  */
     DB_FRIEND_BIT,		/* An injected friend of a template.  */
     DB_MERGEABLE_BIT,		/* An entity that needs merging.  */
+    DB_OOT_SPEC_BIT,		/* Out Of Table spec entry.  */
   };
 
 public:
@@ -2538,6 +2539,8 @@ depset::depset (tree entity)
 inline
 depset::~depset ()
 {
+  if (!is_binding () && get_flag_bit<DB_OOT_SPEC_BIT> ())
+    delete reinterpret_cast <spec_entry *> (deps[0]);
   deps.release ();
 }
 
@@ -3209,6 +3212,8 @@ trees_in::note_definition (tree decl ATTRIBUTE_UNUSED, int odr ATTRIBUTE_UNUSED)
     /* If this is the mergeable entity, it should already be there.
        Otherwise it should not be.  */
     gcc_assert (note_defs->contains (decl) == is_existing_mergeable (decl));
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    gcc_assert (!note_defs->contains (DECL_TEMPLATE_RESULT (decl)));
 #endif
 }
 
@@ -3218,6 +3223,8 @@ trees_out::note_definition (tree decl ATTRIBUTE_UNUSED)
 #if CHECKING_P
   bool existed = note_defs->add (decl);
   gcc_assert (!existed);
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    gcc_assert (!note_defs->contains (DECL_TEMPLATE_RESULT (decl)));
 #endif
 }
 
@@ -8572,6 +8579,8 @@ trees_out::key_mergeable (tree decl, tree inner, tree)
 	}
       else
 	{
+	  // FIXME: Not reachable now add_dependency creates them on insertion.
+	  gcc_unreachable ();
 	  /* most_general_template stops at specializations.  We don't
 	     want that.  */
 	  tmpl  = decl;
@@ -9718,15 +9727,38 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 
       if (!dep)
 	{
-	  /* We should not be adding new non-import specializations
-	     during the dependency finding.  */
-	  //	  gcc_checking_assert (ek != EK_SPECIALIZATION || !current || is_import);
 	  bool has_def = (!is_for_mergeable () && ek != EK_USING
 			  && has_definition (decl));
 
 	  /* The only OVERLOADS we should see are USING decls from
 	     bindings.  */
 	  *slot = dep = make_entity (decl, ek, has_def);
+
+	  if (current && ek == EK_SPECIALIZATION)
+	    {
+	      /* We can meet specializations during the dependency
+		 walk because non-member templates (of templates) aren't in
+		 the specialization table. But are for our purposes.  */
+	      tree ctx = DECL_CONTEXT (decl);
+	      tree tmpl = DECL_TI_TEMPLATE (decl);
+
+	      gcc_assert (CLASS_TYPE_P (ctx)
+			  && !DECL_MEMBER_TEMPLATE_P (tmpl));
+	      spec_entry *entry = new spec_entry ();
+
+	      entry->tmpl = tmpl;
+	      entry->args = DECL_TI_ARGS (decl);
+	      entry->spec = decl;
+	      dep->set_flag_bit<DB_OOT_SPEC_BIT> ();
+	      dep->set_marked ();
+	      dep->deps.safe_push (reinterpret_cast<depset *> (entry));
+	    }
+
+	  if (TREE_CODE (decl) == TEMPLATE_DECL)
+	    /* If we add a template, its result better not also be
+	       present.  */
+	    gcc_checking_assert
+	      (!entity_slot (DECL_TEMPLATE_RESULT (decl), false));
 
 	  if (binding_p)
 	    /* Dependency of a namespace binding.  */;
@@ -9735,10 +9767,11 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	  else if (ek == EK_UNNAMED
 		   || ek == EK_SPECIALIZATION)
 	    {
-	    /* Dependency is unnameable.  We do not have to apply the
-	       below checks to this entity, because we can only refer
-	       to it by depending on its containing entity, and that
-	       entity will have the below checks applied to it.  */;
+	      /* Dependency is unnameable.  We do not have to apply
+		 the below checks to this entity, because we can only
+		 refer to it by depending on its containing entity,
+		 and that entity will have the below checks applied to
+		 it.  */
 
 	      if (is_import)
 		/* Note this entity came from elsewhere.  */
