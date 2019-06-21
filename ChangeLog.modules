@@ -1,6 +1,20 @@
 2019-06-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* modules.cc (note_defs): New checking hash table.
+	(trees_{in,out}::note_definition): New checkers
+	(trees_in::read_{function,class,var,enum}_def): Add maybe_template
+	arg, use it.  Note definitions.
+	(member_owned_by_class): New, extracted from ...
+	(trees_out::mark_class_member): ... here.  Call it.
+	(trees_out::write_class_def): Only write the owned definitions.
+	(trees_out::write_definition): Note definition.
+	(trees_in::read_definition): Pass maybe_template to readers.
+	(module_state::write): Reset note_defs hash.
+	(init_module_processing): Init it.
+	(finish_module_processing): Delete it.
+
+	gcc/cp/
 	* modules.cc (dumper::operator ()): Print indentation level.
 	gcc/testsuite/
 	* g++.dg/modules/scc-1.C: Adjust dump scan.

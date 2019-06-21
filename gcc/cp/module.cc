@@ -2757,10 +2757,10 @@ public:
 private:
   bool is_matching_decl (tree existing, tree node);
   int is_skippable_defn (tree node, bool have_defn);
-  bool read_function_def (tree decl);
-  bool read_var_def (tree decl);
-  bool read_class_def (tree decl);
-  bool read_enum_def (tree decl);
+  bool read_function_def (tree decl, tree maybe_template);
+  bool read_var_def (tree decl, tree maybe_template);
+  bool read_class_def (tree decl, tree maybe_template);
+  bool read_enum_def (tree decl, tree maybe_template);
 
 public:
   bool key_mergeable (tree, tree, tree,
@@ -2817,6 +2817,9 @@ private:
   {
     post_decls.safe_push (decl);
   }
+
+private:
+  void note_definition (tree, int);
 };
 
 trees_in::trees_in (module_state *state)
@@ -2964,6 +2967,9 @@ private:
   void write_function_def (tree decl);
   void write_class_def (tree decl);
   void write_enum_def (tree decl);
+
+private:
+  static void note_definition (tree);
 
 public:
   static void instrument ();
@@ -3182,6 +3188,37 @@ slurping::~slurping ()
   if (macro_tbl.size)
     elf_in::release (from, macro_tbl);
   close ();
+}
+
+#if CHECKING_P
+/* We should stream each definition at most once.  */
+static hash_set<tree> *note_defs;
+#endif
+
+void
+trees_in::note_definition (tree decl ATTRIBUTE_UNUSED, int odr ATTRIBUTE_UNUSED)
+{
+#if CHECKING_P
+  if (!odr)
+    {
+      /* We must be inserting for the first time.  */
+      bool existed = note_defs->add (decl);
+      gcc_assert (!existed);
+    }
+  else
+    /* If this is the mergeable entity, it should already be there.
+       Otherwise it should not be.  */
+    gcc_assert (note_defs->contains (decl) == is_existing_mergeable (decl));
+#endif
+}
+
+void
+trees_out::note_definition (tree decl ATTRIBUTE_UNUSED)
+{
+#if CHECKING_P
+  bool existed = note_defs->add (decl);
+  gcc_assert (!existed);
+#endif
 }
 
 /********************************************************************/
@@ -7698,7 +7735,7 @@ trees_in::tree_value (bool is_mergeable_node)
       bool matched = is_matching_decl (existing, res);
       /* Record EXISTING as the skip defn, because that's what we'll
 	 see when reading a definition.  */
-      record_skip_defn (STRIP_TEMPLATE (existing), !matched, false);
+      record_skip_defn (existing, !matched, false);
 
       /* And our result is the existing node.  */
       res = existing;
@@ -8794,6 +8831,9 @@ has_definition (tree decl)
 }
 
 /* Return the namespace scope DECL enclosing T.  */
+// FIXME: Isn't this the wrong thing for instantiations?
+// And to deal with partial specializations, I think we have to go
+// from the skip_defn array to each scope enclosing defn
 
 static tree
 topmost_decl (tree t)
@@ -8824,6 +8864,8 @@ topmost_decl (tree t)
 int
 trees_in::is_skippable_defn (tree defn, bool have_defn)
 {
+  gcc_assert (DECL_P (defn));
+
   if (get_overrun ())
     return +1;
 
@@ -8848,9 +8890,6 @@ trees_in::is_skippable_defn (tree defn, bool have_defn)
      defn.  */
   if (!have_defn)
     return 0;
-
-  if (TYPE_P (defn))
-    defn = TYPE_NAME (defn);
 
   if (defn)
     {
@@ -8894,7 +8933,7 @@ trees_out::mark_function_def (tree)
 }
 
 bool
-trees_in::read_function_def (tree decl)
+trees_in::read_function_def (tree decl, tree maybe_template)
 {
   dump () && dump ("Reading function definition %N", decl);
   tree result = tree_node ();
@@ -8914,7 +8953,9 @@ trees_in::read_function_def (tree decl)
   if (get_overrun ())
     return NULL_TREE;
 
-  int odr = is_skippable_defn (decl, DECL_SAVED_TREE (decl) != NULL_TREE);
+  int odr = is_skippable_defn (maybe_template,
+			       DECL_SAVED_TREE (decl) != NULL_TREE);
+  note_definition (maybe_template, odr);
 
   if (!odr)
     {
@@ -8947,15 +8988,16 @@ trees_out::mark_var_def (tree)
 }
 
 bool
-trees_in::read_var_def (tree decl)
+trees_in::read_var_def (tree decl, tree maybe_template)
 {
   tree init = tree_node ();
 
   if (get_overrun ())
     return false;
 
-  int odr = is_skippable_defn (decl, DECL_INITIAL (decl) != NULL_TREE);
-
+  int odr = is_skippable_defn (maybe_template,
+			       DECL_INITIAL (decl) != NULL_TREE);
+  note_definition (maybe_template, odr);
   if (!odr)
     {
       DECL_INITIAL (decl) = init;
@@ -8966,6 +9008,28 @@ trees_in::read_var_def (tree decl)
     }
 
   return true;
+}
+
+/* If MEMBER doesn't have an independent life outside the class,
+   return it (or it's TEMPLATE_DECL).  Otherwise NULL.  */
+
+static tree
+member_owned_by_class (tree member)
+{
+  gcc_assert (DECL_P (member));
+
+  int use_tpl = -1;
+  if (tree ti = node_template_info (member, use_tpl))
+    {
+      // FIXME: don't bail on things that CANNOT have their own
+      // template header.  No, make sure they're in the same cluster.
+      if (use_tpl > 0)
+	return NULL_TREE;
+
+      if (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == member)
+	member = TI_TEMPLATE (ti);
+    }
+  return member;
 }
 
 void
@@ -9086,13 +9150,14 @@ trees_out::write_class_def (tree defn)
 
   // FIXME: lang->nested_udts
 
-  /* Now define all the members.  */
+  /* Now define all the members that do not have independent definitions.  */
   for (tree member = TYPE_FIELDS (type); member; member = TREE_CHAIN (member))
     if (has_definition (member))
-      {
-	tree_node (member);
-	write_definition (member);
-      }
+      if (tree mine = member_owned_by_class (member))
+	{
+	  tree_node (mine);
+	  write_definition (mine);
+	}
 
   /* End of definitions.  */
   tree_node (NULL_TREE);
@@ -9103,19 +9168,9 @@ trees_out::mark_class_member (tree member, bool do_defn)
 {
   gcc_assert (DECL_P (member));
 
-  int use_tpl = -1;
-  if (tree ti = node_template_info (member, use_tpl))
-    {
-      // FIXME: don't bail on things that CANNOT have their own
-      // template header.  No, make sure they're in the same cluster.
-      if (use_tpl > 0)
-	return;
-
-      if (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == member)
-	member = TI_TEMPLATE (ti);
-    }
-
-  mark_declaration (member, do_defn && has_definition (member));
+  member = member_owned_by_class (member);
+  if (member)
+    mark_declaration (member, do_defn && has_definition (member));
 }
 
 void
@@ -9198,7 +9253,7 @@ nop (void *, void *)
 }
 
 bool
-trees_in::read_class_def (tree defn)
+trees_in::read_class_def (tree defn, tree maybe_template)
 {
   gcc_assert (DECL_P (defn));
   dump () && dump ("Reading class definition %N", defn);
@@ -9241,7 +9296,8 @@ trees_in::read_class_def (tree defn)
   // FIXME: Read more stuff!
   // lang->nested_udts
 
-  int odr = is_skippable_defn (type, TYPE_SIZE (type) != NULL_TREE);
+  int odr = is_skippable_defn (maybe_template, TYPE_SIZE (type) != NULL_TREE);
+  note_definition (maybe_template, odr);
   if (!odr)
     {
       TYPE_SIZE (type) = size;
@@ -9280,14 +9336,14 @@ trees_in::read_class_def (tree defn)
       if (as_base)
 	{
 	  if (as_base != defn)
-	    read_class_def (as_base);
+	    read_class_def (as_base, as_base);
 	  as_base = TREE_TYPE (as_base);
 	}
 
       /* Read the vtables.  */
       tree vtables = chained_decls ();
       for (tree vt = vtables; vt; vt = TREE_CHAIN (vt))
-	read_var_def (vt);
+	read_var_def (vt, vt);
 
       // FIXME: We should be able to reverse the lists in the writer
       tree friend_classes = NULL_TREE;
@@ -9423,15 +9479,19 @@ trees_out::mark_enum_def (tree decl)
 }
 
 bool
-trees_in::read_enum_def (tree decl)
+trees_in::read_enum_def (tree defn, tree maybe_template)
 {
-  tree type = TREE_TYPE (decl);
+  tree type = TREE_TYPE (defn);
   tree values = tree_node ();
   tree min = tree_node ();
   tree max = tree_node ();
 
   if (get_overrun ())
     return false;
+
+  // FIXME: ODR ?
+  int odr = 0;
+  note_definition (maybe_template, odr);
 
   TYPE_VALUES (type) = values;
   TYPE_MIN_VALUE (type) = min;
@@ -9445,11 +9505,17 @@ trees_in::read_enum_def (tree decl)
 void
 trees_out::write_definition (tree decl)
 {
-  dump (streaming_p () ? 0 : dumper::DEPEND)
-    && dump ("%s definition %C:%N",
-	     streaming_p () ? "Writing" : "Depending", TREE_CODE (decl), decl);
+  if (streaming_p ())
+    {
+      note_definition (decl);
+      dump ()
+	&& dump ("Writing definition %C:%N", TREE_CODE (decl), decl);
+    }
+  else
+    dump (dumper::DEPEND)
+      && dump ("Depending definition %C:%N", TREE_CODE (decl), decl);
 
- again:
+  again:
   switch (TREE_CODE (decl))
     {
     default:
@@ -9542,6 +9608,8 @@ trees_in::read_definition (tree decl)
 {
   dump () && dump ("Reading definition %C %N", TREE_CODE (decl), decl);
 
+  tree maybe_template = decl;
+
  again:
   switch (TREE_CODE (decl))
     {
@@ -9553,10 +9621,10 @@ trees_in::read_definition (tree decl)
       goto again;
 
     case FUNCTION_DECL:
-      return read_function_def (decl);
+      return read_function_def (decl, maybe_template);
 
     case VAR_DECL:
-      return read_var_def (decl);
+      return read_var_def (decl, maybe_template);
 
     case TYPE_DECL:
       {
@@ -9564,9 +9632,9 @@ trees_in::read_definition (tree decl)
 	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
 		    && TYPE_MAIN_VARIANT (type) == type);
 	if (TREE_CODE (type) == ENUMERAL_TYPE)
-	  return read_enum_def (decl);
+	  return read_enum_def (decl, maybe_template);
 	else
-	  return read_class_def (decl);
+	  return read_class_def (decl, maybe_template);
       }
       break;
     }
@@ -15150,6 +15218,15 @@ module_state::write (elf_out *to, cpp_reader *reader)
       return;
     }
 
+#if CHECKING_P
+  // FIXME: Do we need to clear this? why would we write out a
+  // definition we read in?
+  /* We're done verifying at-most once reading, reset to verify
+     at-most once writing.  */
+  delete note_defs;
+  note_defs = new hash_set<tree> (1000);
+#endif
+
   /* Determine Strongy Connected Components.  */
   vec<depset *> sccs = table.connect ();
 
@@ -16534,7 +16611,10 @@ init_module_processing (cpp_reader *reader)
      user could have overriden that.  */
   if (pch_file)
     fatal_error (input_location,
-		 "C++ modules incompatible with precompiled headers");
+		 "C++ modules are incompatible with precompiled headers");
+  if (flag_use_repository)
+    fatal_error (input_location,
+		 "C++ modules are incompatible with a template repository");
 
   if (flag_preprocess_only)
     {
@@ -16676,6 +16756,10 @@ init_module_processing (cpp_reader *reader)
       specset::table = new specset::hash (400);
     }
 
+#if CHECKING_P
+  note_defs = new hash_set<tree> (1000);
+#endif
+
   /* Collect here to make sure things are tagged correctly (when
      aggressively GC'd).  */
   ggc_collect ();
@@ -16810,6 +16894,11 @@ finish_module_processing (cpp_reader *reader)
   set_bmi_repo (NULL);
   module_mapper::fini (input_location);
   module_state_config::release ();
+
+#if CHECKING_P
+  delete note_defs;
+  note_defs = NULL;
+#endif
 
   if (modules)
     for (unsigned ix = modules->length (); --ix >= MODULE_IMPORT_BASE;)
