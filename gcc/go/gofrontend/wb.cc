@@ -735,6 +735,26 @@ Gogo::assign_needs_write_barrier(Expression* lhs)
 	}
     }
 
+  // Nothing to do for an assignment to *(convert(&x)) where
+  // x is local variable or a temporary variable.
+  Unary_expression* ue = lhs->unary_expression();
+  if (ue != NULL && ue->op() == OPERATOR_MULT)
+    {
+      Expression* expr = ue->operand();
+      while (true)
+        {
+          if (expr->conversion_expression() != NULL)
+            expr = expr->conversion_expression()->expr();
+          else if (expr->unsafe_conversion_expression() != NULL)
+            expr = expr->unsafe_conversion_expression()->expr();
+          else
+            break;
+        }
+      ue = expr->unary_expression();
+      if (ue != NULL && ue->op() == OPERATOR_AND)
+        return this->assign_needs_write_barrier(ue->operand());
+    }
+
   // For a struct assignment, we don't need a write barrier if all the
   // pointer types can not be in the heap.
   Struct_type* st = lhs->type()->struct_type();
