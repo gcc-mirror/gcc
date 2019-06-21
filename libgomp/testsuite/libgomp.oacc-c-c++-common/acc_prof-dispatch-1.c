@@ -114,8 +114,6 @@ void acc_register_library (acc_prof_reg reg_, acc_prof_reg unreg_, acc_prof_look
 
 int main()
 {
-  acc_register_library (acc_prof_register, acc_prof_unregister, acc_prof_lookup);
-
   STATE_OP (state, = 0);
   reg (acc_ev_compute_construct_start, cb_compute_construct_start_1, acc_reg);
   reg (acc_ev_compute_construct_start, cb_compute_construct_start_1, acc_reg);

@@ -810,6 +810,16 @@ get_property_any (int ord, acc_device_t d, acc_device_property_t prop)
   if (d == acc_device_current && thr && thr->dev)
     return thr->dev->openacc.get_property_func (thr->dev->target_id, prop);
 
+  acc_prof_info prof_info;
+  acc_api_info api_info;
+  bool profiling_p = GOACC_PROFILING_SETUP_P (thr, &prof_info, &api_info);
+
+  if (profiling_p)
+    {
+      prof_info.device_type = d;
+      prof_info.device_number = ord;
+    }
+
   gomp_mutex_lock (&acc_device_lock);
 
   struct gomp_device_descr *dev = resolve_device (d, true);
@@ -830,7 +840,16 @@ get_property_any (int ord, acc_device_t d, acc_device_property_t prop)
 
   assert (dev);
 
-  return dev->openacc.get_property_func (dev->target_id, prop);
+  union goacc_property_value propval =
+      dev->openacc.get_property_func (dev->target_id, prop);
+
+  if (profiling_p)
+    {
+      thr->prof_info = NULL;
+      thr->api_info = NULL;
+    }
+
+  return propval;
 }
 
 size_t
