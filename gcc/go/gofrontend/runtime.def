@@ -428,6 +428,8 @@ DEF_GO_RUNTIME(BUILTIN_DWARF_CFA, "__builtin_dwarf_cfa", P0(),
                R1(POINTER))
 
 // Swap bytes.
+DEF_GO_RUNTIME(BUILTIN_BSWAP16, "__builtin_bswap16", P1(UINT16),
+               R1(UINT16))
 DEF_GO_RUNTIME(BUILTIN_BSWAP32, "__builtin_bswap32", P1(UINT32),
                R1(UINT32))
 DEF_GO_RUNTIME(BUILTIN_BSWAP64, "__builtin_bswap64", P1(UINT64),
@@ -436,6 +438,14 @@ DEF_GO_RUNTIME(BUILTIN_BSWAP64, "__builtin_bswap64", P1(UINT64),
 // Count trailing zeros.
 DEF_GO_RUNTIME(BUILTIN_CTZ, "__builtin_ctz", P1(UINT32), R1(INT32))
 DEF_GO_RUNTIME(BUILTIN_CTZLL, "__builtin_ctzll", P1(UINT64), R1(INT32))
+
+// Count leading zeros.
+DEF_GO_RUNTIME(BUILTIN_CLZ, "__builtin_clz", P1(UINT32), R1(INT32))
+DEF_GO_RUNTIME(BUILTIN_CLZLL, "__builtin_clzll", P1(UINT64), R1(INT32))
+
+// Count one bits.
+DEF_GO_RUNTIME(BUILTIN_POPCOUNT, "__builtin_popcount", P1(UINT32), R1(INT32))
+DEF_GO_RUNTIME(BUILTIN_POPCOUNTLL, "__builtin_popcountll", P1(UINT64), R1(INT32))
 
 // Atomics.
 DEF_GO_RUNTIME(ATOMIC_LOAD_4, "__atomic_load_4", P2(POINTER, INT32),

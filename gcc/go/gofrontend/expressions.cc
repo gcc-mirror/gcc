@@ -11063,6 +11063,25 @@ Call_expression::intrinsify(Gogo* gogo,
       package = "runtime/internal/atomic";
     }
 
+  if (package == "runtime/internal/sys")
+    {
+      // runtime/internal/sys functions and math/bits functions
+      // are very similar. In order not to duplicate code, we just
+      // redirect to the latter and let the code below to handle them.
+      if (name == "Bswap32")
+        name = "ReverseBytes32";
+      else if (name == "Bswap64")
+        name = "ReverseBytes64";
+      else if (name == "Ctz32")
+        name = "TrailingZeros32";
+      else if (name == "Ctz64")
+        name = "TrailingZeros64";
+      else
+        return NULL;
+
+      package = "math/bits";
+    }
+
   if (package == "runtime")
     {
       // Handle a couple of special runtime functions.  In the runtime
@@ -11093,21 +11112,44 @@ Call_expression::intrinsify(Gogo* gogo,
           return Expression::make_cast(uintptr_type, call, loc);
         }
     }
-  else if (package == "runtime/internal/sys")
+  else if (package == "math/bits")
     {
-      if (name == "Bswap32"
+      if ((name == "ReverseBytes16" || name == "ReverseBytes32"
+           || name == "ReverseBytes64" || name == "ReverseBytes")
           && this->args_ != NULL && this->args_->size() == 1)
         {
+          Runtime::Function code;
+          if (name == "ReverseBytes16")
+            code = Runtime::BUILTIN_BSWAP16;
+          else if (name == "ReverseBytes32")
+            code = Runtime::BUILTIN_BSWAP32;
+          else if (name == "ReverseBytes64")
+            code = Runtime::BUILTIN_BSWAP64;
+          else if (name == "ReverseBytes")
+            code = (int_size == 8 ? Runtime::BUILTIN_BSWAP64 : Runtime::BUILTIN_BSWAP32);
+          else
+            go_unreachable();
           Expression* arg = this->args_->front();
-          return Runtime::make_call(Runtime::BUILTIN_BSWAP32, loc, 1, arg);
+          Expression* call = Runtime::make_call(code, loc, 1, arg);
+          if (name == "ReverseBytes")
+            return Expression::make_cast(uint_type, call, loc);
+          return call;
         }
-      else if (name == "Bswap64"
+      else if ((name == "TrailingZeros8" || name == "TrailingZeros16")
                && this->args_ != NULL && this->args_->size() == 1)
         {
+          // GCC does not have a ctz8 or ctz16 intrinsic. We do
+          // ctz32(0x100 | arg) or ctz32(0x10000 | arg).
           Expression* arg = this->args_->front();
-          return Runtime::make_call(Runtime::BUILTIN_BSWAP64, loc, 1, arg);
+          arg = Expression::make_cast(uint32_type, arg, loc);
+          unsigned long mask = (name == "TrailingZeros8" ? 0x100 : 0x10000);
+          Expression* c = Expression::make_integer_ul(mask, uint32_type, loc);
+          arg = Expression::make_binary(OPERATOR_OR, arg, c, loc);
+          Expression* call = Runtime::make_call(Runtime::BUILTIN_CTZ, loc, 1, arg);
+          return Expression::make_cast(int_type, call, loc);
         }
-      else if (name == "Ctz32"
+      else if ((name == "TrailingZeros32"
+                || (name == "TrailingZeros" && int_size == 4))
                && this->args_ != NULL && this->args_->size() == 1)
         {
           Expression* arg = this->args_->front();
@@ -11125,7 +11167,8 @@ Call_expression::intrinsify(Gogo* gogo,
           call = Expression::make_cast(int_type, call, loc);
           return Expression::make_conditional(cmp, c32, call, loc);
         }
-      else if (name == "Ctz64"
+      else if ((name == "TrailingZeros64"
+                || (name == "TrailingZeros" && int_size == 8))
                && this->args_ != NULL && this->args_->size() == 1)
         {
           Expression* arg = this->args_->front();
@@ -11142,6 +11185,99 @@ Call_expression::intrinsify(Gogo* gogo,
           Expression* call = Runtime::make_call(Runtime::BUILTIN_CTZLL, loc, 1, arg->copy());
           call = Expression::make_cast(int_type, call, loc);
           return Expression::make_conditional(cmp, c64, call, loc);
+        }
+      else if ((name == "LeadingZeros8" || name == "LeadingZeros16"
+                || name == "Len8" || name == "Len16")
+               && this->args_ != NULL && this->args_->size() == 1)
+        {
+          // GCC does not have a clz8 ir clz16 intrinsic. We do
+          // clz32(arg<<24 | 0xffffff) or clz32(arg<<16 | 0xffff).
+          Expression* arg = this->args_->front();
+          arg = Expression::make_cast(uint32_type, arg, loc);
+          unsigned long shift =
+            ((name == "LeadingZeros8" || name == "Len8") ? 24 : 16);
+          Expression* c = Expression::make_integer_ul(shift, uint32_type, loc);
+          arg = Expression::make_binary(OPERATOR_LSHIFT, arg, c, loc);
+          unsigned long mask =
+            ((name == "LeadingZeros8" || name == "Len8") ? 0xffffff : 0xffff);
+          c = Expression::make_integer_ul(mask, uint32_type, loc);
+          arg = Expression::make_binary(OPERATOR_OR, arg, c, loc);
+          Expression* call = Runtime::make_call(Runtime::BUILTIN_CLZ, loc, 1, arg);
+          call = Expression::make_cast(int_type, call, loc);
+          // len = width - clz
+          if (name == "Len8")
+            {
+              c = Expression::make_integer_ul(8, int_type, loc);
+              return Expression::make_binary(OPERATOR_MINUS, c, call, loc);
+            }
+          else if (name == "Len16")
+            {
+              c = Expression::make_integer_ul(16, int_type, loc);
+              return Expression::make_binary(OPERATOR_MINUS, c, call, loc);
+            }
+          return call;
+        }
+      else if ((name == "LeadingZeros32" || name == "Len32"
+                || ((name == "LeadingZeros" || name == "Len") && int_size == 4))
+               && this->args_ != NULL && this->args_->size() == 1)
+        {
+          Expression* arg = this->args_->front();
+          if (!arg->is_variable())
+            {
+              Temporary_statement* ts = Statement::make_temporary(uint32_type, arg, loc);
+              inserter->insert(ts);
+              arg = Expression::make_temporary_reference(ts, loc);
+            }
+          // arg == 0 ? 32 : __builtin_clz(arg)
+          Expression* zero = Expression::make_integer_ul(0, uint32_type, loc);
+          Expression* cmp = Expression::make_binary(OPERATOR_EQEQ, arg, zero, loc);
+          Expression* c32 = Expression::make_integer_ul(32, int_type, loc);
+          Expression* call = Runtime::make_call(Runtime::BUILTIN_CLZ, loc, 1, arg->copy());
+          call = Expression::make_cast(int_type, call, loc);
+          Expression* cond = Expression::make_conditional(cmp, c32, call, loc);
+          // len = 32 - clz
+          if (name == "Len32" || name == "Len")
+            return Expression::make_binary(OPERATOR_MINUS, c32->copy(), cond, loc);
+          return cond;
+        }
+      else if ((name == "LeadingZeros64" || name == "Len64"
+                || ((name == "LeadingZeros" || name == "Len") && int_size == 8))
+               && this->args_ != NULL && this->args_->size() == 1)
+        {
+          Expression* arg = this->args_->front();
+          if (!arg->is_variable())
+            {
+              Temporary_statement* ts = Statement::make_temporary(uint64_type, arg, loc);
+              inserter->insert(ts);
+              arg = Expression::make_temporary_reference(ts, loc);
+            }
+          // arg == 0 ? 64 : __builtin_clzll(arg)
+          Expression* zero = Expression::make_integer_ul(0, uint64_type, loc);
+          Expression* cmp = Expression::make_binary(OPERATOR_EQEQ, arg, zero, loc);
+          Expression* c64 = Expression::make_integer_ul(64, int_type, loc);
+          Expression* call = Runtime::make_call(Runtime::BUILTIN_CLZLL, loc, 1, arg->copy());
+          call = Expression::make_cast(int_type, call, loc);
+          Expression* cond = Expression::make_conditional(cmp, c64, call, loc);
+          // len = 64 - clz
+          if (name == "Len64" || name == "Len")
+            return Expression::make_binary(OPERATOR_MINUS, c64->copy(), cond, loc);
+          return cond;
+        }
+      else if ((name == "OnesCount8" || name == "OnesCount16"
+           || name == "OnesCount32" || name == "OnesCount64"
+           || name == "OnesCount")
+          && this->args_ != NULL && this->args_->size() == 1)
+        {
+          Runtime::Function code;
+          if (name == "OnesCount64")
+            code = Runtime::BUILTIN_POPCOUNTLL;
+          else if (name == "OnesCount")
+            code = (int_size == 8 ? Runtime::BUILTIN_POPCOUNTLL : Runtime::BUILTIN_POPCOUNT);
+          else
+            code = Runtime::BUILTIN_POPCOUNT;
+          Expression* arg = this->args_->front();
+          Expression* call = Runtime::make_call(code, loc, 1, arg);
+          return Expression::make_cast(int_type, call, loc);
         }
     }
   else if (package == "runtime/internal/atomic")
