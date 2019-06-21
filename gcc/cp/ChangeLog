@@ -1,3 +1,12 @@
+2019-06-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90490 - fix decltype issues in noexcept-specifier.
+	* except.c (build_noexcept_spec): Call
+	instantiate_non_dependent_expr_sfinae before
+	build_converted_constant_expr instead of calling
+	instantiate_non_dependent_expr after it.  Add
+	processing_template_decl_sentinel.
+
 2019-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90950
