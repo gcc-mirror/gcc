@@ -1,5 +1,11 @@
 2019-06-21  Richard Biener  <rguenther@suse.de>
 
+	PR debug/90914
+	* dwarf2out.c (prune_unused_types_walk): Always consider
+	function-local extern declarations as used.
+
+2019-06-21  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/90913
 	* tree-vect-loop-manip.c (vect_loop_versioning): Do not re-use
 	the scalar variant of if-conversion versioning.
