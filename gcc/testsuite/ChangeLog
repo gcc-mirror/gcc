@@ -1,3 +1,11 @@
+2019-06-21  Matthew Beliveau  <mbelivea@redhat.com>
+
+	PR c++/90875 - added -Wswitch-outside-range option
+	* c-c++-common/Wswitch-outside-range-1.c: New test.
+	* c-c++-common/Wswitch-outside-range-2.c: New test.
+	* c-c++-common/Wswitch-outside-range-3.c: New test.
+	* c-c++-common/Wswitch-outside-range-4.c: New test.
+
 2019-06-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/51991

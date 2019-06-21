@@ -5390,6 +5390,13 @@ switch ((int) (a == 4))
 @end smallexample
 This warning is enabled by default for C and C++ programs.
 
+@item -Wswitch-outside-range
+@opindex Wswitch-outside-range
+@opindex Wno-switch-outside-range
+Warn whenever a @code{switch} case has a value that is outside of its
+respective type range.  This warning is enabled by default for
+C and C++ programs.
+
 @item -Wswitch-unreachable
 @opindex Wswitch-unreachable
 @opindex Wno-switch-unreachable
