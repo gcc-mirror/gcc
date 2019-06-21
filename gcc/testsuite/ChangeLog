@@ -1,5 +1,8 @@
 2019-06-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/90950
+	* g++.dg/gomp/lastprivate-1.C: New test.
+
 	* gcc.dg/vect/vect-simd-11.c: New test.
 	* gcc.target/i386/sse2-vect-simd-11.c: New test.
 	* gcc.target/i386/avx2-vect-simd-11.c: New test.
