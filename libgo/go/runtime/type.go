@@ -48,11 +48,6 @@ func (t *_type) pkgpath() string {
 	return ""
 }
 
-// Return whether two type descriptors are equal.
-func eqtype(t1, t2 *_type) bool {
-	return t1 == t2
-}
-
 type method struct {
 	name    *string
 	pkgPath *string

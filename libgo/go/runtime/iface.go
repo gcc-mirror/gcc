@@ -233,7 +233,7 @@ func (m *itab) init() string {
 			ri++
 		}
 
-		if !eqtype(lhsMethod.typ, rhsMethod.mtyp) {
+		if lhsMethod.typ != rhsMethod.mtyp {
 			m.methods[1] = nil
 			return *lhsMethod.name
 		}
@@ -406,7 +406,7 @@ func ifaceI2I2(inter *_type, i iface) (iface, bool) {
 
 // Convert an empty interface to a pointer non-interface type.
 func ifaceE2T2P(t *_type, e eface) (unsafe.Pointer, bool) {
-	if !eqtype(t, e._type) {
+	if t != e._type {
 		return nil, false
 	} else {
 		return e.data, true
@@ -415,7 +415,7 @@ func ifaceE2T2P(t *_type, e eface) (unsafe.Pointer, bool) {
 
 // Convert a non-empty interface to a pointer non-interface type.
 func ifaceI2T2P(t *_type, i iface) (unsafe.Pointer, bool) {
-	if i.tab == nil || !eqtype(t, *(**_type)(i.tab)) {
+	if i.tab == nil || t != *(**_type)(i.tab) {
 		return nil, false
 	} else {
 		return i.data, true
@@ -424,7 +424,7 @@ func ifaceI2T2P(t *_type, i iface) (unsafe.Pointer, bool) {
 
 // Convert an empty interface to a non-pointer non-interface type.
 func ifaceE2T2(t *_type, e eface, ret unsafe.Pointer) bool {
-	if !eqtype(t, e._type) {
+	if t != e._type {
 		typedmemclr(t, ret)
 		return false
 	} else {
@@ -439,7 +439,7 @@ func ifaceE2T2(t *_type, e eface, ret unsafe.Pointer) bool {
 
 // Convert a non-empty interface to a non-pointer non-interface type.
 func ifaceI2T2(t *_type, i iface, ret unsafe.Pointer) bool {
-	if i.tab == nil || !eqtype(t, *(**_type)(i.tab)) {
+	if i.tab == nil || t != *(**_type)(i.tab) {
 		typedmemclr(t, ret)
 		return false
 	} else {
@@ -485,7 +485,7 @@ func ifaceT2Ip(to, from *_type) bool {
 			ri++
 		}
 
-		if !eqtype(fromMethod.mtyp, toMethod.typ) {
+		if fromMethod.mtyp != toMethod.typ {
 			return false
 		}
 
