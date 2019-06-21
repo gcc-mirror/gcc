@@ -1,5 +1,20 @@
 2019-06-21  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp-low.c (lower_rec_simd_input_clauses): Add rvar2 argument,
+	create another "omp scan inscan exclusive" array if
+	!ctx->scan_inclusive.
+	(lower_rec_input_clauses): Handle exclusive scan inscan reductions.
+	(lower_omp_scan): Likewise.
+	* tree-vectorizer.h (struct _stmt_vec_info): Use 3-bit instead of
+	2-bit bitfield for simd_lane_access_p member.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Also handle
+	aux == (void *)-4 as simd lane access.
+	* tree-vect-stmts.c (check_scan_store): Handle exclusive scan.  Update
+	comment with permutations to show the canonical permutation order.
+	(vectorizable_scan_store): Handle exclusive scan.
+	(vectorizable_store): Call vectorizable_scan_store even for
+	STMT_VINFO_SIMD_LANE_ACCESS_P > 3.
+
 	* tree-vect-data-refs.c (vect_find_stmt_data_reference): Handle
 	"omp simd array" arrays with one byte elements.
 

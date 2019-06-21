@@ -917,7 +917,7 @@ struct _stmt_vec_info {
   bool strided_p;
 
   /* For both loads and stores.  */
-  unsigned simd_lane_access_p : 2;
+  unsigned simd_lane_access_p : 3;
 
   /* Classifies how the load or store is going to be implemented
      for loop vectorization.  */
