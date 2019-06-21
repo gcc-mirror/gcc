@@ -1,3 +1,8 @@
+2019-06-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90909
+	* g++.dg/other/final7.C: New.
+
 2019-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/vect/simd-2.cc: Don't xfail, instead expect vectorization on
