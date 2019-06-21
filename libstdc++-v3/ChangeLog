@@ -1,3 +1,13 @@
+2019-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2019-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90920 partially revert r263433
+	* include/bits/stl_algo.h (__rotate): Restore checks for empty ranges.
+	(rotate): Remove checks.
+	* testsuite/25_algorithms/rotate/90920.cc: New test.
+
 2019-06-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/90281 Fix string conversions for filesystem::path
