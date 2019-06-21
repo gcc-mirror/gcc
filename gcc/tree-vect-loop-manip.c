@@ -3095,9 +3095,12 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
     }
 
   /* Apply versioning.  If there is already a scalar version created by
-     if-conversion re-use that.  */
+     if-conversion re-use that.  Note we cannot re-use the copy of
+     an if-converted outer-loop when vectorizing the inner loop only.  */
   gcond *cond;
-  if (gimple *call = vect_loop_vectorized_call (loop_to_version, &cond))
+  gimple *call;
+  if ((!loop_to_version->inner || loop == loop_to_version)
+      && (call = vect_loop_vectorized_call (loop_to_version, &cond)))
     {
       gcc_assert (scalar_loop);
       condition_bb = gimple_bb (cond);
