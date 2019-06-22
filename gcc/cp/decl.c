@@ -10816,13 +10816,14 @@ grokdeclarator (const cp_declarator *declarator,
       else if (in_system_header_at (input_location) || flag_ms_extensions)
 	/* Allow it, sigh.  */;
       else if (! is_main)
-	permerror (input_location, "ISO C++ forbids declaration of %qs with no type", name);
+	permerror (id_loc, "ISO C++ forbids declaration of %qs with no type",
+		   name);
       else if (pedantic)
-	pedwarn (input_location, OPT_Wpedantic,
+	pedwarn (id_loc, OPT_Wpedantic,
 		 "ISO C++ forbids declaration of %qs with no type", name);
       else
-	warning (OPT_Wreturn_type,
-		 "ISO C++ forbids declaration of %qs with no type", name);
+	warning_at (id_loc, OPT_Wreturn_type,
+		    "ISO C++ forbids declaration of %qs with no type", name);
 
       if (type_was_error_mark_node && template_parm_flag)
 	/* FIXME we should be able to propagate the error_mark_node as is
@@ -11251,7 +11252,8 @@ grokdeclarator (const cp_declarator *declarator,
   else if (toplevel_bindings_p ())
     {
       if (storage_class == sc_auto)
-	error ("top-level declaration of %qs specifies %<auto%>", name);
+	error_at (declspecs->locations[ds_storage_class],
+		  "top-level declaration of %qs specifies %<auto%>", name);
     }
   else if (thread_p
 	   && storage_class != sc_extern
@@ -12358,9 +12360,10 @@ grokdeclarator (const cp_declarator *declarator,
 	  && !(cxx_dialect >= cxx17 && template_parm_flag))
 	{
 	  if (cxx_dialect >= cxx14)
-	    error ("%<auto%> parameter not permitted in this context");
+	    error_at (typespec_loc,
+		      "%<auto%> parameter not permitted in this context");
 	  else
-	    error ("parameter declared %<auto%>");
+	    error_at (typespec_loc, "parameter declared %<auto%>");
 	  type = error_mark_node;
 	}
 
@@ -12781,9 +12784,12 @@ grokdeclarator (const cp_declarator *declarator,
 	// FIXME:gcc_assert (original_name == dname);
 
 	if (storage_class == sc_auto)
-	  error ("storage class %<auto%> invalid for function %qs", name);
+	  error_at (declspecs->locations[ds_storage_class],
+		    "storage class %<auto%> invalid for function %qs", name);
 	else if (storage_class == sc_register)
-	  error ("storage class %<register%> invalid for function %qs", name);
+	  error_at (declspecs->locations[ds_storage_class],
+		    "storage class %<register%> invalid for function %qs",
+		    name);
 	else if (thread_p)
 	  {
 	    if (declspecs->gnu_thread_keyword_p)

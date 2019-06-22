@@ -1,3 +1,15 @@
+2019-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/auto-storage-1.C: New.
+	* g++.dg/diagnostic/no-type-1.C: Likewise.
+	* g++.dg/diagnostic/no-type-2.C: Likewise.
+	* g++.dg/diagnostic/top-level-auto-1.C: Likewise.
+	* g++.dg/cpp0x/auto9.C: Test some locations too.
+	* g++.dg/cpp1z/register1.C: Likewise.
+	* g++.dg/cpp1z/register2.C: Likewise.
+	* g++.dg/cpp1z/register3.C: Likewise.
+	* g++.dg/other/error34.C: Likewise.
+
 2019-06-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/90909
