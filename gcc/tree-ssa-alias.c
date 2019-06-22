@@ -1350,19 +1350,16 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
 		 same.  */
 	      if (DECL_BIT_FIELD_REPRESENTATIVE (fieldx) == fieldy
 		  || DECL_BIT_FIELD_REPRESENTATIVE (fieldy) == fieldx)
-		{
-		   ++alias_stats.nonoverlapping_component_refs_p_may_alias;
-		   return false;
-		}
+		;
 	      /* Different fields of the same record type cannot overlap.
 		 ??? Bitfields can overlap at RTL level so punt on them.  */
-	      if (DECL_BIT_FIELD (fieldx) && DECL_BIT_FIELD (fieldy))
+	      else if (DECL_BIT_FIELD (fieldx) && DECL_BIT_FIELD (fieldy))
+		;
+	      else
 		{
-		   ++alias_stats.nonoverlapping_component_refs_p_may_alias;
-		   return false;
+		  ++alias_stats.nonoverlapping_component_refs_p_no_alias;
+		  return true;
 		}
-	      ++alias_stats.nonoverlapping_component_refs_p_no_alias;
-	      return true;
 	    }
 	}
       if (TYPE_UID (typex) < TYPE_UID (typey))
