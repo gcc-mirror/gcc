@@ -1,3 +1,9 @@
+2019-06-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/89782
+	* io.c (gfc_resolve_dt): Check that internal units are not
+	character PARAMETER.
+
 2019-06-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/67884
