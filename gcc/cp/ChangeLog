@@ -1,3 +1,8 @@
+2019-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use id_loc, typespec_loc, and
+	locations[ds_storage_class] in a few additional places.
+
 2019-06-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/90909
