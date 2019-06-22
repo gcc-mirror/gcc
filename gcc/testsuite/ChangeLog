@@ -1,3 +1,8 @@
+2019-06-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90881 - bogus -Wunused-value in unevaluated context.
+	* g++.dg/cpp0x/Wunused-value1.C: New test.
+
 2019-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/diagnostic/auto-storage-1.C: New.
