@@ -3328,6 +3328,14 @@ gfc_resolve_dt (gfc_dt *dt, locus *loc)
       return false;
     }
 
+  if (e->symtree && e->symtree->n.sym->attr.flavor == FL_PARAMETER
+      && e->ts.type == BT_CHARACTER)
+    {
+      gfc_error ("UNIT specification at %L must "
+      "not be a character PARAMETER", &e->where);
+      return false;
+    }
+
   if (gfc_resolve_expr (e)
       && (e->ts.type != BT_INTEGER
 	  && (e->ts.type != BT_CHARACTER || e->expr_type != EXPR_VARIABLE)))

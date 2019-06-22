@@ -1,3 +1,8 @@
+2019-06-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/89782
+	* gfortran.dg/io_constraints.f90: New test.
+
 2019-06-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/powerpc/pr64205.c: Require effective target dfp.
