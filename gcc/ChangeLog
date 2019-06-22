@@ -1,3 +1,9 @@
+2019-06-22  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-alias.c (nonoverlapping_component_refs_p): Do not
+	give up on bitfields; continue searching for different refs
+	appearing later.
+
 2019-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-data-refs.c (vect_find_stmt_data_reference): Handle

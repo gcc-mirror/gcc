@@ -1,3 +1,7 @@
+2019-06-22  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/alias-access-path-6.c: New testcase.
+
 2019-06-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/86476 - noexcept-specifier is a complete-class context.
