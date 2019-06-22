@@ -1,5 +1,12 @@
 2019-06-22  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/65707
+	PR c++/89480
+	PR c++/58836
+	* g++.dg/cpp0x/nondeduced5.C: New test.
+	* g++.dg/cpp0x/nondeduced6.C: New test.
+	* g++.dg/cpp0x/nondeduced7.C: New test.
+
 	PR c++/66256
 	* g++.dg/cpp0x/noexcept54.C: New test.
 
