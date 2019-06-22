@@ -1,5 +1,10 @@
 2019-06-22  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc.target/powerpc/pr64205.c: Require effective target dfp.
+	* gcc.target/powerpc/pr79909.c: Likewise.
+
+2019-06-22  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc.target/powerpc/darwin-bool-1.c: Suppress the pedantic
 	warning about _Bool.
 
