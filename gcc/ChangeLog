@@ -1,3 +1,7 @@
+2019-06-22  Jeff Law  <law@redhat.com>
+
+	* config/avr/avr.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Remove.
+
 2019-06-22  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-alias.c (nonoverlapping_component_refs_p): Do not
