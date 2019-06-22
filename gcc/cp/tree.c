@@ -2546,6 +2546,7 @@ canonical_eh_spec (tree raises)
   if (raises == NULL_TREE)
     return raises;
   else if (DEFERRED_NOEXCEPT_SPEC_P (raises)
+	   || UNPARSED_NOEXCEPT_SPEC_P (raises)
 	   || uses_template_parms (raises)
 	   || uses_template_parms (TREE_PURPOSE (raises)))
     /* Keep a dependent or deferred exception specification.  */
@@ -3656,6 +3657,7 @@ cp_tree_equal (tree t1, tree t2)
     case IDENTIFIER_NODE:
     case SSA_NAME:
     case USING_DECL:
+    case DEFAULT_ARG:
       return false;
 
     case BASELINK:

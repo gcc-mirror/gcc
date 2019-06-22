@@ -18,7 +18,7 @@ struct D : private B
 				// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } .-2 }
 struct E : public D
 {
-  virtual void V () throw (D); // { dg-error "looser throw" "" { target { ! c++17 } } }
+  virtual void V () throw (D); // { dg-error "looser exception" "" { target { ! c++17 } } }
 };			       // { dg-error "dynamic exception specification" "" { target c++17 } .-1 }
 			       // { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } .-2 }
 B* foo (D *);

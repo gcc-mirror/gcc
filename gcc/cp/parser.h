@@ -166,6 +166,9 @@ struct GTY(()) cp_unparsed_functions_entry {
   /* Nested classes go in this vector, so that we can do some final
      processing after parsing any NSDMIs.  */
   vec<tree, va_gc> *classes;
+
+  /* Functions with noexcept-specifiers that require post-processing.  */
+  vec<tree, va_gc> *noexcepts;
 };
 
 

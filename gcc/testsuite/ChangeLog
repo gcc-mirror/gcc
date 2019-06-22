@@ -1,5 +1,18 @@
 2019-06-22  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/86476 - noexcept-specifier is a complete-class context.
+	PR c++/52869
+	* g++.dg/cpp0x/noexcept45.C: New test.
+	* g++.dg/cpp0x/noexcept46.C: New test.
+	* g++.dg/cpp0x/noexcept47.C: New test.
+	* g++.dg/cpp0x/noexcept48.C: New test.
+	* g++.dg/cpp0x/noexcept49.C: New test.
+	* g++.dg/cpp0x/noexcept50.C: New test.
+	* g++.dg/cpp0x/noexcept51.C: New test.
+	* g++.dg/cpp0x/noexcept52.C: New test.
+	* g++.dg/cpp0x/noexcept53.C: New test.
+	* g++.dg/eh/shadow1.C: Adjust dg-error.
+
 	PR c++/90881 - bogus -Wunused-value in unevaluated context.
 	* g++.dg/cpp0x/Wunused-value1.C: New test.
 
