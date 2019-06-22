@@ -1,5 +1,48 @@
 2019-06-22  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/86476 - noexcept-specifier is a complete-class context.
+	PR c++/52869
+	* cp-tree.def (DEFAULT_ARG): Update commentary.
+	* cp-tree.h (UNPARSED_NOEXCEPT_SPEC_P):	New macro.
+	(tree_default_arg): Use tree_base instead of tree_common.
+	(do_push_parm_decls, maybe_check_overriding_exception_spec): Declare.
+	* decl.c (do_push_parm_decls): New function, broken out of...
+	(store_parm_decls): ...here.  Call it.
+	* except.c (nothrow_spec_p): Accept DEFAULT_ARG in the assert.
+	* parser.c (cp_parser_noexcept_specification_opt,
+	cp_parser_late_noexcept_specifier, noexcept_override_late_checks):
+	Forward-declare.
+	(unparsed_noexcepts): New macro.
+	(push_unparsed_function_queues): Update initializer.
+	(cp_parser_direct_declarator): Pass FRIEND_P to
+	cp_parser_exception_specification_opt.
+	(inject_parm_decls): New.
+	(pop_injected_parms): New.
+	(cp_parser_class_specifier_1): Implement delayed parsing of
+	noexcept-specifiers.
+	(cp_parser_save_noexcept): New.
+	(cp_parser_late_noexcept_specifier): New.
+	(noexcept_override_late_checks): New.
+	(cp_parser_noexcept_specification_opt): Add FRIEND_P parameter.  Call
+	cp_parser_save_noexcept instead of the normal processing if needed.
+	(cp_parser_exception_specification_opt): Add FRIEND_P parameter and
+	pass it to cp_parser_noexcept_specification_opt.
+	(cp_parser_save_member_function_body): Fix comment.
+	(cp_parser_save_default_args): Maybe save the noexcept-specifier to
+	post process.
+	(cp_parser_transaction): Update call to
+	cp_parser_noexcept_specification_opt.
+	(cp_parser_transaction_expression): Likewise.
+	* parser.h (cp_unparsed_functions_entry): Add new field to carry
+	a noexcept-specifier.
+	* pt.c (dependent_type_p_r): Handle unparsed noexcept expression.
+	* search.c (maybe_check_overriding_exception_spec): New function, broken
+	out of...
+	(check_final_overrider): ...here.  Call
+	maybe_check_overriding_exception_spec.
+	* tree.c (canonical_eh_spec): Handle UNPARSED_NOEXCEPT_SPEC_P.
+	(cp_tree_equal): Handle DEFAULT_ARG.
+
 	PR c++/90881 - bogus -Wunused-value in unevaluated context.
 	* cvt.c (convert_to_void): Don't emit unused warnings in
 	an unevaluated context.

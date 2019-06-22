@@ -247,6 +247,12 @@ static void cp_lexer_stop_debugging
 
 static cp_token_cache *cp_token_cache_new
   (cp_token *, cp_token *);
+static tree cp_parser_noexcept_specification_opt
+  (cp_parser *, bool, bool *, bool, bool);
+static tree cp_parser_late_noexcept_specifier
+  (cp_parser *, tree);
+static void noexcept_override_late_checks
+  (tree, tree);
 
 static void cp_parser_initial_pragma
   (cp_token *);
@@ -1974,11 +1980,14 @@ cp_parser_context_new (cp_parser_context* next)
   parser->unparsed_queues->last ().nsdmis
 #define unparsed_classes \
   parser->unparsed_queues->last ().classes
+#define unparsed_noexcepts \
+  parser->unparsed_queues->last ().noexcepts
 
 static void
 push_unparsed_function_queues (cp_parser *parser)
 {
-  cp_unparsed_functions_entry e = {NULL, make_tree_vector (), NULL, NULL};
+  cp_unparsed_functions_entry e = { NULL, make_tree_vector (), NULL, NULL,
+				    NULL };
   vec_safe_push (parser->unparsed_queues, e);
 }
 
@@ -2361,7 +2370,7 @@ static tree cp_parser_exception_declaration
 static tree cp_parser_throw_expression
   (cp_parser *);
 static tree cp_parser_exception_specification_opt
-  (cp_parser *);
+  (cp_parser *, bool = false);
 static tree cp_parser_type_id_list
   (cp_parser *);
 
@@ -20816,7 +20825,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  tree tx_qual = cp_parser_tx_qualifier_opt (parser);
 		  /* And the exception-specification.  */
 		  exception_specification
-		    = cp_parser_exception_specification_opt (parser);
+		    = cp_parser_exception_specification_opt (parser, friend_p);
 
 		  attrs = cp_parser_std_attribute_spec_seq (parser);
 
@@ -23310,6 +23319,34 @@ cp_parser_class_name (cp_parser *parser,
   return decl;
 }
 
+/* Make sure that any member-function parameters are in scope.
+   For instance, a function's noexcept-specifier can use the function's
+   parameters:
+
+   struct S {
+     void fn (int p) noexcept(noexcept(p));
+   };
+
+   so we need to make sure name lookup can find them.  This is used
+   when we delay parsing of the noexcept-specifier.  */
+
+static void
+inject_parm_decls (tree decl)
+{
+  begin_scope (sk_function_parms, decl);
+  tree args = DECL_ARGUMENTS (decl);
+
+  do_push_parm_decls (decl, args, /*nonparms=*/NULL);
+}
+
+/* Undo the effects of inject_parm_decls.  */
+
+static void
+pop_injected_parms (void)
+{
+  pop_bindings_and_leave_scope ();
+}
+
 /* Parse a class-specifier.
 
    class-specifier:
@@ -23619,6 +23656,60 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	after_nsdmi_defaulted_late_checks (class_type);
       vec_safe_truncate (unparsed_classes, 0);
       after_nsdmi_defaulted_late_checks (type);
+
+      /* If there are noexcept-specifiers that have not yet been processed,
+	 take care of them now.  */
+      class_type = NULL_TREE;
+      pushed_scope = NULL_TREE;
+      FOR_EACH_VEC_SAFE_ELT (unparsed_noexcepts, ix, decl)
+	{
+	  tree ctx = DECL_CONTEXT (decl);
+	  if (class_type != ctx)
+	    {
+	      if (pushed_scope)
+		pop_scope (pushed_scope);
+	      class_type = ctx;
+	      pushed_scope = push_scope (class_type);
+	    }
+
+	  tree spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl));
+	  spec = TREE_PURPOSE (spec);
+
+	  /* Make sure that any template parameters are in scope.  */
+	  maybe_begin_member_template_processing (decl);
+
+	  /* Make sure that any member-function parameters are in scope.  */
+	  inject_parm_decls (decl);
+
+	  /* 'this' is not allowed in static member functions.  */
+	  unsigned char local_variables_forbidden_p
+	    = parser->local_variables_forbidden_p;
+	  if (DECL_THIS_STATIC (decl))
+	    parser->local_variables_forbidden_p |= THIS_FORBIDDEN;
+
+	  /* Now we can parse the noexcept-specifier.  */
+	  spec = cp_parser_late_noexcept_specifier (parser, spec);
+
+	  if (spec != error_mark_node)
+	    TREE_TYPE (decl) = build_exception_variant (TREE_TYPE (decl), spec);
+
+	  /* Restore the state of local_variables_forbidden_p.  */
+	  parser->local_variables_forbidden_p = local_variables_forbidden_p;
+
+	  /* The finish_struct call above performed various override checking,
+	     but it skipped unparsed noexcept-specifier operands.  Now that we
+	     have resolved them, check again.  */
+	  noexcept_override_late_checks (type, decl);
+
+	  /* Remove any member-function parameters from the symbol table.  */
+	  pop_injected_parms ();
+
+	  /* Remove any template parameters from the symbol table.  */
+	  maybe_end_member_template_processing ();
+	}
+      vec_safe_truncate (unparsed_noexcepts, 0);
+      if (pushed_scope)
+	pop_scope (pushed_scope);
 
       /* Now parse the body of the functions.  */
       if (flag_openmp)
@@ -25175,6 +25266,89 @@ cp_parser_base_specifier (cp_parser* parser)
 
 /* Exception handling [gram.exception] */
 
+/* Save the tokens that make up the noexcept-specifier for a member-function.
+   Returns a DEFAULT_ARG.  */
+
+static tree
+cp_parser_save_noexcept (cp_parser *parser)
+{
+  cp_token *first = parser->lexer->next_token;
+  /* We want everything up to, including, the final ')'.  */
+  cp_parser_cache_group (parser, CPP_CLOSE_PAREN, /*depth=*/0);
+  cp_token *last = parser->lexer->next_token;
+
+  /* As with default arguments and NSDMIs, make use of DEFAULT_ARG
+     to carry the information we will need.  */
+  tree expr = make_node (DEFAULT_ARG);
+  /* Save away the noexcept-specifier; we will process it when the
+     class is complete.  */
+  DEFARG_TOKENS (expr) = cp_token_cache_new (first, last);
+  expr = build_tree_list (expr, NULL_TREE);
+  return expr;
+}
+
+/* Used for late processing of noexcept-specifiers of member-functions.
+   DEFAULT_ARG is the unparsed operand of a noexcept-specifier which
+   we saved for later; parse it now.  */
+
+static tree
+cp_parser_late_noexcept_specifier (cp_parser *parser, tree default_arg)
+{
+  /* Make sure we've gotten something that hasn't been parsed yet.  */
+  gcc_assert (TREE_CODE (default_arg) == DEFAULT_ARG);
+
+  push_unparsed_function_queues (parser);
+
+  /* Push the saved tokens for the noexcept-specifier onto the parser's
+     lexer stack.  */
+  cp_token_cache *tokens = DEFARG_TOKENS (default_arg);
+  cp_parser_push_lexer_for_tokens (parser, tokens);
+
+  /* Parse the cached noexcept-specifier.  */
+  tree parsed_arg
+    = cp_parser_noexcept_specification_opt (parser,
+					    /*require_constexpr=*/true,
+					    /*consumed_expr=*/NULL,
+					    /*return_cond=*/false,
+					    /*friend_p=*/false);
+
+  /* Revert to the main lexer.  */
+  cp_parser_pop_lexer (parser);
+
+  /* Restore the queue.  */
+  pop_unparsed_function_queues (parser);
+
+  /* And we're done.  */
+  return parsed_arg;
+}
+
+/* Perform late checking of overriding function with respect to their
+   noexcept-specifiers.  TYPE is the class and FNDECL is the function
+   that potentially overrides some virtual function with the same
+   signature.  */
+
+static void
+noexcept_override_late_checks (tree type, tree fndecl)
+{
+  tree binfo = TYPE_BINFO (type);
+  tree base_binfo;
+
+  if (DECL_STATIC_FUNCTION_P (fndecl))
+    return;
+
+  for (int i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
+    {
+      tree basetype = BINFO_TYPE (base_binfo);
+
+      if (!TYPE_POLYMORPHIC_P (basetype))
+	continue;
+
+      tree fn = look_for_overrides_here (basetype, fndecl);
+      if (fn)
+	maybe_check_overriding_exception_spec (fndecl, fn);
+    }
+}
+
 /* Parse an (optional) noexcept-specification.
 
    noexcept-specification:
@@ -25185,13 +25359,15 @@ cp_parser_base_specifier (cp_parser* parser)
    expression if parentheses follow noexcept, or return BOOLEAN_TRUE_NODE if
    there are no parentheses.  CONSUMED_EXPR will be set accordingly.
    Otherwise, returns a noexcept specification unless RETURN_COND is true,
-   in which case a boolean condition is returned instead.  */
+   in which case a boolean condition is returned instead.  If FRIEND_P is true,
+   the function with this noexcept-specification had the `friend' specifier.  */
 
 static tree
 cp_parser_noexcept_specification_opt (cp_parser* parser,
 				      bool require_constexpr,
 				      bool* consumed_expr,
-				      bool return_cond)
+				      bool return_cond,
+				      bool friend_p)
 {
   cp_token *token;
   const char *saved_message;
@@ -25203,6 +25379,27 @@ cp_parser_noexcept_specification_opt (cp_parser* parser,
   if (cp_parser_is_keyword (token, RID_NOEXCEPT))
     {
       tree expr;
+
+      /* [class.mem]/6 says that a noexcept-specifer (within the
+	 member-specification of the class) is a complete-class context of
+	 a class.  So, if the noexcept-specifier has the optional expression,
+	 just save the tokens, and reparse this after we're done with the
+	 class.  */
+      const bool literal_p
+	= ((cp_lexer_nth_token_is (parser->lexer, 3, CPP_NUMBER)
+	    || cp_lexer_nth_token_is (parser->lexer, 3, CPP_KEYWORD))
+	   && cp_lexer_nth_token_is (parser->lexer, 4, CPP_CLOSE_PAREN));
+
+      if (cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_PAREN)
+	  /* No need to delay parsing for a number literal or true/false.  */
+	  && !literal_p
+	  && at_class_scope_p ()
+	  /* Don't delay parsing for friend member functions.  */
+	  && !friend_p
+	  && TYPE_BEING_DEFINED (current_class_type)
+	  && !LAMBDA_TYPE_P (current_class_type))
+	return cp_parser_save_noexcept (parser);
+
       cp_lexer_consume_token (parser->lexer);
 
       if (cp_lexer_peek_token (parser->lexer)->type == CPP_OPEN_PAREN)
@@ -25273,10 +25470,11 @@ cp_parser_noexcept_specification_opt (cp_parser* parser,
      throw ( type-id-list [opt] )
 
    Returns a TREE_LIST representing the exception-specification.  The
-   TREE_VALUE of each node is a type.  */
+   TREE_VALUE of each node is a type.  If FRIEND_P is true, the function
+   with this noexcept-specification had the `friend' specifier.  */
 
 static tree
-cp_parser_exception_specification_opt (cp_parser* parser)
+cp_parser_exception_specification_opt (cp_parser* parser, bool friend_p)
 {
   cp_token *token;
   tree type_id_list;
@@ -25286,8 +25484,12 @@ cp_parser_exception_specification_opt (cp_parser* parser)
   token = cp_lexer_peek_token (parser->lexer);
 
   /* Is it a noexcept-specification?  */
-  type_id_list = cp_parser_noexcept_specification_opt (parser, true, NULL,
-						       false);
+  type_id_list
+    = cp_parser_noexcept_specification_opt (parser,
+					    /*require_constexpr=*/true,
+					    /*consumed_expr=*/NULL,
+					    /*return_cond=*/false,
+					    friend_p);
   if (type_id_list != NULL_TREE)
     return type_id_list;
 
@@ -28435,7 +28637,7 @@ cp_parser_save_member_function_body (cp_parser* parser,
       return error_mark_node;
     }
 
-  /* Remember it, if there default args to post process.  */
+  /* Remember it, if there are default args to post process.  */
   cp_parser_save_default_args (parser, fn);
 
   /* Save away the tokens that make up the body of the
@@ -28728,6 +28930,11 @@ cp_parser_save_default_args (cp_parser* parser, tree decl)
 	vec_safe_push (unparsed_funs_with_default_args, entry);
 	break;
       }
+
+  /* Remember if there is a noexcept-specifier to post process.  */
+  tree spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl));
+  if (UNPARSED_NOEXCEPT_SPEC_P (spec))
+    vec_safe_push (unparsed_noexcepts, decl);
 }
 
 /* DEFAULT_ARG contains the saved tokens for the initializer of DECL,
@@ -40599,7 +40806,11 @@ cp_parser_transaction (cp_parser *parser, cp_token *token)
       noex = NULL_TREE;
     }
   else
-    noex = cp_parser_noexcept_specification_opt (parser, true, NULL, true);
+    noex = cp_parser_noexcept_specification_opt (parser,
+						 /*require_constexpr=*/true,
+						 /*consumed_expr=*/NULL,
+						 /*return_cond=*/true,
+						 /*friend_p=*/false);
 
   /* Keep track if we're in the lexical scope of an outer transaction.  */
   new_in = this_in | (old_in & TM_STMT_ATTR_OUTER);
@@ -40659,8 +40870,11 @@ cp_parser_transaction_expression (cp_parser *parser, enum rid keyword)
   parser->in_transaction = this_in;
 
   /* Parse a noexcept specification.  */
-  noex = cp_parser_noexcept_specification_opt (parser, false, &noex_expr,
-					       true);
+  noex = cp_parser_noexcept_specification_opt (parser,
+					       /*require_constexpr=*/false,
+					       &noex_expr,
+					       /*return_cond=*/true,
+					       /*friend_p=*/false);
 
   if (!noex || !noex_expr
       || cp_lexer_peek_token (parser->lexer)->type == CPP_OPEN_PAREN)

@@ -15761,6 +15761,39 @@ use_eh_spec_block (tree fn)
 	  && !DECL_DEFAULTED_FN (fn));
 }
 
+/* Helper function to push ARGS into the current lexical scope.  DECL
+   is the function declaration.  NONPARMS is used to handle enum
+   constants.  */
+
+void
+do_push_parm_decls (tree decl, tree args, tree *nonparms)
+{
+  /* If we're doing semantic analysis, then we'll call pushdecl
+     for each of these.  We must do them in reverse order so that
+     they end in the correct forward order.  */
+  args = nreverse (args);
+
+  tree next;
+  for (tree parm = args; parm; parm = next)
+    {
+      next = DECL_CHAIN (parm);
+      if (TREE_CODE (parm) == PARM_DECL)
+	pushdecl (parm);
+      else if (nonparms)
+	{
+	  /* If we find an enum constant or a type tag, put it aside for
+	     the moment.  */
+	  TREE_CHAIN (parm) = NULL_TREE;
+	  *nonparms = chainon (*nonparms, parm);
+	}
+    }
+
+  /* Get the decls in their original chain order and record in the
+     function.  This is all and only the PARM_DECLs that were
+     pushed into scope by the loop above.  */
+  DECL_ARGUMENTS (decl) = get_local_decls ();
+}
+
 /* Store the parameter declarations into the current function declaration.
    This is called after parsing the parameter declarations, before
    digesting the body of the function.
@@ -15771,7 +15804,6 @@ static void
 store_parm_decls (tree current_function_parms)
 {
   tree fndecl = current_function_decl;
-  tree parm;
 
   /* This is a chain of any other decls that came in among the parm
      declarations.  If a parm is declared with  enum {foo, bar} x;
@@ -15786,35 +15818,12 @@ store_parm_decls (tree current_function_parms)
 	 and complain if any redundant old-style parm decls were written.  */
 
       tree specparms = current_function_parms;
-      tree next;
 
       /* Must clear this because it might contain TYPE_DECLs declared
 	     at class level.  */
       current_binding_level->names = NULL;
 
-      /* If we're doing semantic analysis, then we'll call pushdecl
-	     for each of these.  We must do them in reverse order so that
-	     they end in the correct forward order.  */
-      specparms = nreverse (specparms);
-
-      for (parm = specparms; parm; parm = next)
-	{
-	  next = DECL_CHAIN (parm);
-	  if (TREE_CODE (parm) == PARM_DECL)
-	    pushdecl (parm);
-	  else
-	    {
-	      /* If we find an enum constant or a type tag,
-		 put it aside for the moment.  */
-	      TREE_CHAIN (parm) = NULL_TREE;
-	      nonparms = chainon (nonparms, parm);
-	    }
-	}
-
-      /* Get the decls in their original chain order and record in the
-	 function.  This is all and only the PARM_DECLs that were
-	 pushed into scope by the loop above.  */
-      DECL_ARGUMENTS (fndecl) = get_local_decls ();
+      do_push_parm_decls (fndecl, specparms, &nonparms);
     }
   else
     DECL_ARGUMENTS (fndecl) = NULL_TREE;

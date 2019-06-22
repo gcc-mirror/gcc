@@ -209,7 +209,8 @@ DEFTREECODE (USING_STMT, "using_stmt", tcc_statement, 1)
 
 /* An un-parsed default argument.  Holds a vector of input tokens and
    a vector of places where the argument was instantiated before
-   parsing had occurred.  */
+   parsing had occurred.  This is also used for delayed NSDMIs and
+   noexcept-specifier parsing.  */
 DEFTREECODE (DEFAULT_ARG, "default_arg", tcc_exceptional, 0)
 
 /* An uninstantiated/unevaluated noexcept-specification.  For the

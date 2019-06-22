@@ -1190,7 +1190,7 @@ enum cp_identifier_kind {
   (((struct tree_default_arg *)DEFAULT_ARG_CHECK (NODE))->instantiations)
 
 struct GTY (()) tree_default_arg {
-  struct tree_common common;
+  struct tree_base base;
   struct cp_token_cache *tokens;
   vec<tree, va_gc> *instantiations;
 };
@@ -1206,6 +1206,9 @@ struct GTY (()) tree_default_arg {
 #define UNEVALUATED_NOEXCEPT_SPEC_P(NODE)				\
   (DEFERRED_NOEXCEPT_SPEC_P (NODE)					\
    && DEFERRED_NOEXCEPT_PATTERN (TREE_PURPOSE (NODE)) == NULL_TREE)
+#define UNPARSED_NOEXCEPT_SPEC_P(NODE) \
+  ((NODE) && (TREE_PURPOSE (NODE)) \
+   && (TREE_CODE (TREE_PURPOSE (NODE)) == DEFAULT_ARG))
 
 struct GTY (()) tree_deferred_noexcept {
   struct tree_base base;
@@ -6467,6 +6470,7 @@ extern bool check_array_designated_initializer  (constructor_elt *,
 						 unsigned HOST_WIDE_INT);
 extern bool check_for_uninitialized_const_var   (tree, bool, tsubst_flags_t);
 extern tree build_explicit_specifier		(tree, tsubst_flags_t);
+extern void do_push_parm_decls			(tree, tree, tree *);
 
 /* in decl2.c */
 extern void record_mangling			(tree, bool);
@@ -6932,6 +6936,7 @@ extern tree copied_binfo			(tree, tree);
 extern tree original_binfo			(tree, tree);
 extern int shared_member_p			(tree);
 extern bool any_dependent_bases_p (tree = current_nonlambda_class_type ());
+extern bool maybe_check_overriding_exception_spec (tree, tree);
 
 /* The representation of a deferred access check.  */
 
