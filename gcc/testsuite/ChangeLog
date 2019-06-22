@@ -1,3 +1,8 @@
+2019-06-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/66256
+	* g++.dg/cpp0x/noexcept54.C: New test.
+
 2019-06-22  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/alias-access-path-6.c: New testcase.
