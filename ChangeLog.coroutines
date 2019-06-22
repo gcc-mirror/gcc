@@ -1,3 +1,16 @@
+2019-06-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (build_actor_fn): Run DTORs for params that had
+	corresponding CTORs.
+	(register_param_uses): Strip references.
+	(morph_fn_to_coro): Where the type of a param requires constucting
+	build a placement new for the frame entry constructed from the
+	param.  Pass the list of constructed entries to the actor build fn.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/func-params-4.C: New test.
+
 2019-06-17  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/

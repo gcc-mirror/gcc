@@ -1299,6 +1299,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 	        tree fnbody, tree orig,
 	        hash_map<tree, __param_info_t> *param_uses,
 	        hash_map<tree, __local_var_info_t> *local_var_uses,
+	        vec<tree, va_gc> *param_dtor_list,
 		tree initial_await, tree final_await, unsigned body_count)
 {
   verify_stmt_tree (fnbody);
@@ -1596,6 +1597,26 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   fnf2_x = build1 (CONVERT_EXPR, integer_type_node, fnf2_x);
   tree cmp = build2 (NE_EXPR, integer_type_node, fnf2_x, integer_zero_node);
   finish_if_stmt_cond (cmp, need_free_if);
+  if (param_dtor_list != NULL)
+    {
+      int i;
+      tree pid;
+      FOR_EACH_VEC_ELT (*param_dtor_list, i, pid)
+	{
+	  tree m = lookup_member (coro_frame_type, pid, 1, 0,
+				  tf_warning_or_error);
+	  tree a = build_class_member_access_expr (actor_frame, m, NULL_TREE,
+						  false, tf_warning_or_error);
+	  tree t = TREE_TYPE (a);
+	  tree dtor;
+	  dtor = build_special_member_call (a, complete_dtor_identifier,
+					    NULL, t,
+					    LOOKUP_NORMAL,
+					    tf_warning_or_error);
+	  add_stmt (dtor);
+	}
+    }
+
   tree free_coro_fr
     = build_call_expr_loc (loc,
 			   builtin_decl_explicit (BUILT_IN_FREE), 1, actor_fp);
@@ -1848,6 +1869,8 @@ register_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
   if (parm.field_id == NULL_TREE)
     {
       tree ptype = DECL_ARG_TYPE (*stmt);
+      if (TREE_CODE (ptype) == REFERENCE_TYPE)
+	ptype = TREE_TYPE (ptype);
       tree pname = DECL_NAME (*stmt);
       size_t namsize = sizeof ("__parm.") + IDENTIFIER_LENGTH (pname) + 1;
       char *buf = (char *) alloca (namsize);
@@ -2295,7 +2318,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       tree arg;
       for (arg = DECL_ARGUMENTS (orig); arg != NULL; arg = DECL_CHAIN (arg))
         vec_safe_push (args, arg);
-      r = build_special_member_call(p, complete_ctor_identifier, &args,
+      r = build_special_member_call (p, complete_ctor_identifier, &args,
 				    promise_type, LOOKUP_NORMAL,
 				    tf_none);
       release_tree_vector (args);
@@ -2304,13 +2327,16 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     r = NULL_TREE;
     
   if (r == NULL_TREE || r == error_mark_node)
-    r = build_special_member_call(p, complete_ctor_identifier, NULL,
+    r = build_special_member_call (p, complete_ctor_identifier, NULL,
 				  promise_type, LOOKUP_NORMAL,
 				  tf_warning_or_error);
   r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
-  /* Copy in any of the function params we found to be used.  */
+  /* Copy in any of the function params we found to be used.
+     Param types with non-trivial dtors will have to be moved into position
+     and the dtor run before the frame is freed.  */
+  vec<tree, va_gc> *param_dtor_list = NULL;
   if (DECL_ARGUMENTS (orig) && param_uses != NULL)
     {
       tree arg;
@@ -2320,15 +2346,31 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  __param_info_t &parm = param_uses->get_or_insert (arg, &existed);
 	  if (parm.field_id == NULL_TREE)
 	    continue; /* Wasn't used.  */
+
 	  tree fld_ref = lookup_member (coro_frame_type, parm.field_id,
 					/*protect*/1,  /*want_type*/ 0,
 					tf_warning_or_error);
 	  tree fld_idx = build_class_member_access_expr (deref_fp, fld_ref,
 						         NULL_TREE, false,
 						         tf_warning_or_error);
-	  r = build_modify_expr (fn_start, fld_idx, DECL_ARG_TYPE (arg),
-				 INIT_EXPR, DECL_SOURCE_LOCATION (arg),
-				 arg, DECL_ARG_TYPE (arg));
+	  tree parm_orig_type = TREE_TYPE (arg);
+	  if (TYPE_NEEDS_CONSTRUCTING (parm_orig_type))
+	    {
+	      vec<tree, va_gc> *p_in = make_tree_vector_single (arg);
+	      /* Make a placement new.  */
+	      r = build_special_member_call (fld_idx, complete_ctor_identifier,
+					    &p_in, parm_orig_type,
+					    LOOKUP_NORMAL,
+					    tf_warning_or_error);
+	      release_tree_vector (p_in);
+	      if (param_dtor_list == NULL)
+	        param_dtor_list = make_tree_vector ();
+	      vec_safe_push (param_dtor_list, parm.field_id);
+	    }
+	  else
+	    r = build_modify_expr (fn_start, fld_idx, DECL_ARG_TYPE (arg),
+				   INIT_EXPR, DECL_SOURCE_LOCATION (arg),
+				   arg, DECL_ARG_TYPE (arg));
 	  r = coro_build_cvt_void_expr_stmt (r, fn_start);
 	  add_stmt (r);
 	}
@@ -2439,7 +2481,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   /* Actor...  */
   build_actor_fn (fn_start, coro_frame_type, actor, fnbody, orig, param_uses,
-		  &local_var_uses, initial_await, final_await,
+		  &local_var_uses, param_dtor_list, initial_await, final_await,
 		  body_aw_points.count);
   
   /* Destroyer ... */
