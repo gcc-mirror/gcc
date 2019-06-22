@@ -1,3 +1,9 @@
+2019-06-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90881 - bogus -Wunused-value in unevaluated context.
+	* cvt.c (convert_to_void): Don't emit unused warnings in
+	an unevaluated context.
+
 2019-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokdeclarator): Use id_loc, typespec_loc, and
