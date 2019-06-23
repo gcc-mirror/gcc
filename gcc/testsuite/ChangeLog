@@ -1,5 +1,9 @@
 2019-06-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc.target/powerpc/builtins-2.c: Require VSX hardware support.
+
+2019-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc.target/powerpc/pr80125.c (foo): Use an unsigned char
 	vector explicitly for the vec_perm.
 
