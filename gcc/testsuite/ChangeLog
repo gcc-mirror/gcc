@@ -1,5 +1,10 @@
 2019-06-23  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc.target/powerpc/builtins-1.c: Account for Darwin's use of
+	__USER_LABEL_PREFIX__.
+
+2019-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc.target/powerpc/pr71785.c: For Darwin, make test non-PIC,
 	expect the out-of-line GPR restore, and test specifically for
 	absence of branches to local labels.
