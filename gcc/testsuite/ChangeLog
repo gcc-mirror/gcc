@@ -1,3 +1,9 @@
+2019-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/powerpc/pr71785.c: For Darwin, make test non-PIC,
+	expect the out-of-line GPR restore, and test specifically for
+	absence of branches to local labels.
+
 2019-06-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/89782
