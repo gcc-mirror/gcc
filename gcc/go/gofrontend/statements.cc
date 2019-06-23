@@ -2168,7 +2168,7 @@ Block_statement::do_import(Import_function_body* ifb, Location loc,
     {
       if (!ifb->saw_error())
 	go_error_at(ifb->location(),
-		    "import error: no newline after { at %lu",
+		    "import error: no newline after %<{%> at %lu",
 		    static_cast<unsigned long>(ifb->off()));
       ifb->set_saw_error();
       return NULL;

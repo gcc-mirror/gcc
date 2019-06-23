@@ -1,3 +1,7 @@
+2019-06-23  Ian Lance Taylor  <iant@golang.org>
+
+	* go.test/test/blank1.go: Update for diagnostic message changes.
+
 2019-06-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/powerpc/builtins-2.c: Require VSX hardware support.

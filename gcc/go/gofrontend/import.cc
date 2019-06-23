@@ -925,7 +925,7 @@ Import::read_type()
     {
       if (!stream->saw_error())
 	go_error_at(this->location_,
-		    "error in import data at %d: expected %< %> or %<>%>'",
+		    "error in import data at %d: expected %< %> or %<>%>",
 		    stream->pos());
       stream->set_saw_error();
       stream->advance(1);
@@ -1126,7 +1126,7 @@ Import::type_for_index(int index, const std::string& input_name,
       if (static_cast<size_t>(index) >= this->type_offsets_.size())
 	{
 	  go_error_at(this->location_,
-		      "error in %s at %lu: bad type index %d >= %d",
+		      "error in %s at %lu: bad type index %d, max %d",
 		      input_name.c_str(),
 		      static_cast<unsigned long>(input_offset),
 		      index, static_cast<int>(this->type_offsets_.size()));
