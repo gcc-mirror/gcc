@@ -80,13 +80,13 @@ constexpr int
 fn5 (const int *a, int b)
 {
   if (b != 2)
-    b = a[b];
+    b = a[b]; // { dg-error "array subscript" }
   return b;
 }
 
 constexpr int m1[4] = { 1, 2, 3, 4 };
 constexpr int m2 = fn5 (m1, 3);
-constexpr int m3 = fn5 (m1, 4); // { dg-error "array subscript|in .constexpr. expansion of " }
+constexpr int m3 = fn5 (m1, 4); // { dg-message "in .constexpr. expansion of " }
 
 constexpr int
 fn6 (const int &a, int b)
@@ -112,11 +112,11 @@ constexpr int
 fn8 (int i)
 {
   constexpr int g[10] = { };
-  return g[i];
+  return g[i]; // { dg-error "array subscript" }
 }
 
 constexpr int o1 = fn8 (9);
-constexpr int o2 = fn8 (10); // { dg-error "array subscript|in .constexpr. expansion of " }
+constexpr int o2 = fn8 (10); // { dg-message "in .constexpr. expansion of " }
 
 constexpr int
 fn9 (int a, int b)

@@ -980,7 +980,7 @@ esac
 case ${target} in
 aarch64*-*-elf | aarch64*-*-fuchsia* | aarch64*-*-rtems*)
 	tm_file="${tm_file} dbxelf.h elfos.h newlib-stdint.h"
-	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-elf-raw.h"
+	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-errata.h aarch64/aarch64-elf-raw.h"
 	tmake_file="${tmake_file} aarch64/t-aarch64"
 	case $target in
 	aarch64-*-elf*)
@@ -1017,19 +1017,19 @@ aarch64*-*-elf | aarch64*-*-fuchsia* | aarch64*-*-rtems*)
 	;;
 aarch64*-*-freebsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file}"
-	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-freebsd.h"
+	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-errata.h aarch64/aarch64-freebsd.h"
 	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-freebsd"
 	tm_defines="${tm_defines}  TARGET_DEFAULT_ASYNC_UNWIND_TABLES=1"
 	;;
 aarch64*-*-netbsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h ${nbsd_tm_file}"
-	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-netbsd.h"
+	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-errata.h aarch64/aarch64-netbsd.h"
 	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-netbsd"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
 aarch64*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h"
-	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-linux.h"
+	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-errata.h aarch64/aarch64-linux.h"
 	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-linux"
 	tm_defines="${tm_defines}  TARGET_DEFAULT_ASYNC_UNWIND_TABLES=1"
 	case $target in
@@ -4002,12 +4002,13 @@ case "${target}" in
 
 		# see if --with-fpu matches any of the supported FPUs
 		if [ x"$with_fpu" != x ] ; then
+		  val=$with_fpu
 		  fpu=`awk -f ${srcdir}/config/arm/parsecpu.awk \
-			-v cmd="chkfpu $with_fpu" \
+			-v cmd="chkfpu $val" \
 			${srcdir}/config/arm/arm-cpus.in`
-		  if [ "$fpu" = "error"]
+		  if [ "$fpu" = "error" ]
 		  then
-		    echo "Unknown target in --with-$which=$val" 1>&2
+		    echo "Unknown target in --with-fpu=$val" 1>&2
 		    exit 1
 		  fi
 		fi

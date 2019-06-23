@@ -36,26 +36,14 @@ DEF_GO_RUNTIME(DECODERUNE, "runtime.decoderune", P2(STRING, INT),
 	       R2(RUNE, INT))
 
 // Concatenate strings.
-DEF_GO_RUNTIME(CONCATSTRINGS, "runtime.concatstrings", P2(POINTER, SLICE),
-	       R1(STRING))
-DEF_GO_RUNTIME(CONCATSTRING2, "runtime.concatstring2",
-	       P2(POINTER, ARRAY2STRING), R1(STRING))
-DEF_GO_RUNTIME(CONCATSTRING3, "runtime.concatstring3",
-	       P2(POINTER, ARRAY3STRING), R1(STRING))
-DEF_GO_RUNTIME(CONCATSTRING4, "runtime.concatstring4",
-	       P2(POINTER, ARRAY4STRING), R1(STRING))
-DEF_GO_RUNTIME(CONCATSTRING5, "runtime.concatstring5",
-	       P2(POINTER, ARRAY5STRING), R1(STRING))
+DEF_GO_RUNTIME(CONCATSTRINGS, "runtime.concatstrings",
+               P3(POINTER, POINTER, INT), R1(STRING))
 
 // Compare two strings for equality.
 DEF_GO_RUNTIME(EQSTRING, "runtime.eqstring", P2(STRING, STRING), R1(BOOL))
 
 // Compare two strings.
 DEF_GO_RUNTIME(CMPSTRING, "runtime.cmpstring", P2(STRING, STRING), R1(INT))
-
-// Take a slice of a string.
-DEF_GO_RUNTIME(STRING_SLICE, "__go_string_slice", P3(STRING, INT, INT),
-	       R1(STRING))
 
 // Convert an integer to a string.
 DEF_GO_RUNTIME(INTSTRING, "runtime.intstring", P2(POINTER, INT64), R1(STRING))
@@ -332,22 +320,12 @@ DEF_GO_RUNTIME(ASSERTITAB, "runtime.assertitab", P2(TYPE, TYPE), R1(POINTER))
 DEF_GO_RUNTIME(REQUIREITAB, "runtime.requireitab", P2(TYPE, TYPE),
 	       R1(POINTER))
 
-// Check whether an interface type may be converted to a
-// non-interface type.
-DEF_GO_RUNTIME(ASSERTI2T, "runtime.assertI2T", P3(TYPE, TYPE, TYPE), R0())
+// Panic when an interface type to non-interface type conversion fails.
+DEF_GO_RUNTIME(PANICDOTTYPE, "runtime.panicdottype", P3(TYPE, TYPE, TYPE),
+               R0())
 
 // Return whether we can convert a type to an interface type.
 DEF_GO_RUNTIME(IFACET2IP, "runtime.ifaceT2Ip", P2(TYPE, TYPE), R1(BOOL))
-
-// Get the type descriptor of an empty interface.
-DEF_GO_RUNTIME(EFACETYPE, "runtime.efacetype", P1(EFACE), R1(TYPE))
-
-// Get the type descriptor of a non-empty interface.
-DEF_GO_RUNTIME(IFACETYPE, "runtime.ifacetype", P1(IFACE), R1(TYPE))
-
-
-// Compare two type descriptors for equality.
-DEF_GO_RUNTIME(IFACETYPEEQ, "runtime.ifacetypeeq", P2(TYPE, TYPE), R1(BOOL))
 
 // Compare two empty interface values.
 DEF_GO_RUNTIME(EFACEEQ, "runtime.efaceeq", P2(EFACE, EFACE), R1(BOOL))
@@ -450,6 +428,8 @@ DEF_GO_RUNTIME(BUILTIN_DWARF_CFA, "__builtin_dwarf_cfa", P0(),
                R1(POINTER))
 
 // Swap bytes.
+DEF_GO_RUNTIME(BUILTIN_BSWAP16, "__builtin_bswap16", P1(UINT16),
+               R1(UINT16))
 DEF_GO_RUNTIME(BUILTIN_BSWAP32, "__builtin_bswap32", P1(UINT32),
                R1(UINT32))
 DEF_GO_RUNTIME(BUILTIN_BSWAP64, "__builtin_bswap64", P1(UINT64),
@@ -458,6 +438,14 @@ DEF_GO_RUNTIME(BUILTIN_BSWAP64, "__builtin_bswap64", P1(UINT64),
 // Count trailing zeros.
 DEF_GO_RUNTIME(BUILTIN_CTZ, "__builtin_ctz", P1(UINT32), R1(INT32))
 DEF_GO_RUNTIME(BUILTIN_CTZLL, "__builtin_ctzll", P1(UINT64), R1(INT32))
+
+// Count leading zeros.
+DEF_GO_RUNTIME(BUILTIN_CLZ, "__builtin_clz", P1(UINT32), R1(INT32))
+DEF_GO_RUNTIME(BUILTIN_CLZLL, "__builtin_clzll", P1(UINT64), R1(INT32))
+
+// Count one bits.
+DEF_GO_RUNTIME(BUILTIN_POPCOUNT, "__builtin_popcount", P1(UINT32), R1(INT32))
+DEF_GO_RUNTIME(BUILTIN_POPCOUNTLL, "__builtin_popcountll", P1(UINT64), R1(INT32))
 
 // Atomics.
 DEF_GO_RUNTIME(ATOMIC_LOAD_4, "__atomic_load_4", P2(POINTER, INT32),

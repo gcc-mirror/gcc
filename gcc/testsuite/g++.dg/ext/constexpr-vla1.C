@@ -21,10 +21,10 @@ fn_not_ok (int n)
     int z = 0;
 
     for (unsigned i = 0; i < sizeof (a); ++i)
-      z += a[i];
+      z += a[i];		// { dg-error "array subscript" }
 
     return z;
 }
 
 constexpr int n1 = fn_ok (3);
-constexpr int n2 = fn_not_ok (3); // { dg-error "array subscript|in .constexpr. expansion of " }
+constexpr int n2 = fn_not_ok (3); // { dg-message "in .constexpr. expansion of " }

@@ -1432,10 +1432,15 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
       list = oacc_replace_fn_attrib_attr (list, dims);
     }
 
-  if (sym_attr.omp_declare_target_link)
+  if (sym_attr.omp_declare_target_link
+      || sym_attr.oacc_declare_link)
     list = tree_cons (get_identifier ("omp declare target link"),
 		      NULL_TREE, list);
-  else if (sym_attr.omp_declare_target)
+  else if (sym_attr.omp_declare_target
+	   || sym_attr.oacc_declare_create
+	   || sym_attr.oacc_declare_copyin
+	   || sym_attr.oacc_declare_deviceptr
+	   || sym_attr.oacc_declare_device_resident)
     list = tree_cons (get_identifier ("omp declare target"),
 		      clauses, list);
 
@@ -6486,6 +6491,7 @@ finish_oacc_declare (gfc_namespace *ns, gfc_symbol *sym, bool block)
   gfc_omp_clauses *omp_clauses = NULL;
   gfc_omp_namelist *n, *p;
 
+  module_oacc_clauses = NULL;
   gfc_traverse_ns (ns, find_module_oacc_declare_clauses);
 
   if (module_oacc_clauses && sym->attr.flavor == FL_PROGRAM)
@@ -6497,7 +6503,6 @@ finish_oacc_declare (gfc_namespace *ns, gfc_symbol *sym, bool block)
       new_oc->clauses = module_oacc_clauses;
 
       ns->oacc_declare = new_oc;
-      module_oacc_clauses = NULL;
     }
 
   if (!ns->oacc_declare)

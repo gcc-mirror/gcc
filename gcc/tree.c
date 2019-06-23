@@ -2033,9 +2033,9 @@ verify_constructor_flags (tree c)
 /* Return a new CONSTRUCTOR node whose type is TYPE and whose values
    are in the vec pointed to by VALS.  */
 tree
-build_constructor (tree type, vec<constructor_elt, va_gc> *vals)
+build_constructor (tree type, vec<constructor_elt, va_gc> *vals MEM_STAT_DECL)
 {
-  tree c = make_node (CONSTRUCTOR);
+  tree c = make_node (CONSTRUCTOR PASS_MEM_STAT);
 
   TREE_TYPE (c) = type;
   CONSTRUCTOR_ELTS (c) = vals;

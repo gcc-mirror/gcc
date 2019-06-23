@@ -1952,10 +1952,29 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
-      if (merge_attr && diagnose_mismatched_attributes (olddecl, newdecl))
-	inform (olddecl_loc, DECL_INITIAL (olddecl)
-		? G_("previous definition of %qD here")
-		: G_("previous declaration of %qD here"), olddecl);
+      if (merge_attr)
+	{
+	  if (diagnose_mismatched_attributes (olddecl, newdecl))
+	    inform (olddecl_loc, DECL_INITIAL (olddecl)
+		    ? G_("previous definition of %qD here")
+		    : G_("previous declaration of %qD here"), olddecl);
+
+	  /* [dcl.attr.noreturn]: The first declaration of a function shall
+	     specify the noreturn attribute if any declaration of that function
+	     specifies the noreturn attribute.  */
+	  tree a;
+	  if (TREE_THIS_VOLATILE (newdecl)
+	      && !TREE_THIS_VOLATILE (olddecl)
+	      /* This applies to [[noreturn]] only, not its GNU variants.  */
+	      && (a = lookup_attribute ("noreturn", DECL_ATTRIBUTES (newdecl)))
+	      && cxx11_attribute_p (a)
+	      && get_attribute_namespace (a) == NULL_TREE)
+	    {
+	      error_at (newdecl_loc, "function %qD declared %<[[noreturn]]%> "
+			"but its first declaration was not", newdecl);
+	      inform (olddecl_loc, "previous declaration of %qD", olddecl);
+	    }
+	}
 
       /* Now that functions must hold information normally held
 	 by field decls, there is extra work to do so that
@@ -11642,12 +11661,28 @@ grokdeclarator (const cp_declarator *declarator,
 		    friendp = 0;
 		  }
 		if (decl_context == NORMAL)
-		  error ("friend declaration not in class definition");
+		  error_at (declarator->id_loc,
+			    "friend declaration not in class definition");
 		if (current_function_decl && funcdef_flag)
 		  {
-		    error ("cannot define friend function %qs in a local "
-			   "class definition", name);
+		    error_at (declarator->id_loc,
+			      "cannot define friend function %qs in a local "
+			      "class definition", name);
 		    friendp = 0;
+		  }
+		/* [class.friend]/6: A function can be defined in a friend
+		   declaration if the function name is unqualified.  */
+		if (funcdef_flag && in_namespace)
+		  {
+		    if (in_namespace == global_namespace)
+		      error_at (declarator->id_loc,
+				"friend function definition %qs cannot have "
+				"a name qualified with %<::%>", name);
+		    else
+		      error_at (declarator->id_loc,
+				"friend function definition %qs cannot have "
+				"a name qualified with %<%D::%>", name,
+				in_namespace);
 		  }
 	      }
 	    else if (ctype && sfk == sfk_conversion)

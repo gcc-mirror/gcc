@@ -340,7 +340,7 @@ lookup_attribute_spec (const_tree name)
    Please read the comments of cxx11_attribute_p to understand the
    format of attributes.  */
 
-static tree
+tree
 get_attribute_namespace (const_tree attr)
 {
   if (cxx11_attribute_p (attr))
@@ -469,7 +469,6 @@ tree
 decl_attributes (tree *node, tree attributes, int flags,
 		 tree last_decl /* = NULL_TREE */)
 {
-  tree a;
   tree returned_attrs = NULL_TREE;
 
   if (TREE_TYPE (*node) == error_mark_node || attributes == error_mark_node)
@@ -548,22 +547,23 @@ decl_attributes (tree *node, tree attributes, int flags,
 
   /* Note that attributes on the same declaration are not necessarily
      in the same order as in the source.  */
-  for (a = attributes; a; a = TREE_CHAIN (a))
+  for (tree attr = attributes; attr; attr = TREE_CHAIN (attr))
     {
-      tree ns = get_attribute_namespace (a);
-      tree name = get_attribute_name (a);
-      tree args = TREE_VALUE (a);
+      tree ns = get_attribute_namespace (attr);
+      tree name = get_attribute_name (attr);
+      tree args = TREE_VALUE (attr);
       tree *anode = node;
       const struct attribute_spec *spec
 	= lookup_scoped_attribute_spec (ns, name);
       int fn_ptr_quals = 0;
       tree fn_ptr_tmp = NULL_TREE;
+      const bool cxx11_attr_p = cxx11_attribute_p (attr);
 
       if (spec == NULL)
 	{
 	  if (!(flags & (int) ATTR_FLAG_BUILT_IN))
 	    {
-	      if (ns == NULL_TREE || !cxx11_attribute_p (a))
+	      if (ns == NULL_TREE || !cxx11_attr_p)
 		warning (OPT_Wattributes, "%qE attribute directive ignored",
 			 name);
 	      else
@@ -584,7 +584,7 @@ decl_attributes (tree *node, tree attributes, int flags,
       gcc_assert (is_attribute_p (spec->name, name));
 
       if (TYPE_P (*node)
-	  && cxx11_attribute_p (a)
+	  && cxx11_attr_p
 	  && !(flags & ATTR_FLAG_TYPE_IN_PLACE))
 	{
 	  /* This is a c++11 attribute that appertains to a
@@ -707,8 +707,7 @@ decl_attributes (tree *node, tree attributes, int flags,
 
       if (spec->handler != NULL)
 	{
-	  int cxx11_flag =
-	    cxx11_attribute_p (a) ? ATTR_FLAG_CXX11 : 0;
+	  int cxx11_flag = (cxx11_attr_p ? ATTR_FLAG_CXX11 : 0);
 
 	  /* Pass in an array of the current declaration followed
 	     by the last pushed/merged declaration if  one exists.
@@ -756,17 +755,23 @@ decl_attributes (tree *node, tree attributes, int flags,
 	  if (a == NULL_TREE)
 	    {
 	      /* This attribute isn't already in the list.  */
+	      tree r;
+	      /* Preserve the C++11 form.  */
+	      if (cxx11_attr_p)
+		r = tree_cons (build_tree_list (ns, name), args, old_attrs);
+	      else
+		r = tree_cons (name, args, old_attrs);
+
 	      if (DECL_P (*anode))
-		DECL_ATTRIBUTES (*anode) = tree_cons (name, args, old_attrs);
+		DECL_ATTRIBUTES (*anode) = r;
 	      else if (flags & (int) ATTR_FLAG_TYPE_IN_PLACE)
 		{
-		  TYPE_ATTRIBUTES (*anode) = tree_cons (name, args, old_attrs);
+		  TYPE_ATTRIBUTES (*anode) = r;
 		  /* If this is the main variant, also push the attributes
 		     out to the other variants.  */
 		  if (*anode == TYPE_MAIN_VARIANT (*anode))
 		    {
-		      tree variant;
-		      for (variant = *anode; variant;
+		      for (tree variant = *anode; variant;
 			   variant = TYPE_NEXT_VARIANT (variant))
 			{
 			  if (TYPE_ATTRIBUTES (variant) == old_attrs)
@@ -780,9 +785,7 @@ decl_attributes (tree *node, tree attributes, int flags,
 		    }
 		}
 	      else
-		*anode = build_type_attribute_variant (*anode,
-						       tree_cons (name, args,
-								  old_attrs));
+		*anode = build_type_attribute_variant (*anode, r);
 	    }
 	}
 

@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target indirect_jumps } */
+/* { dg-require-effective-target label_values } */
 
 int a;
 static int b;

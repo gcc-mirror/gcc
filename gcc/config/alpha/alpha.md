@@ -4232,7 +4232,7 @@
 ;; be the same temporary, if desired.  If the address is in a register,
 ;; operand 2 can be that register.
 
-(define_expand "unaligned_store<mode>"
+(define_expand "@unaligned_store<mode>"
   [(set (match_operand:DI 3 "register_operand")
 	(mem:DI (and:DI (match_operand:DI 0 "address_operand")
 			(const_int -8))))
@@ -4417,7 +4417,7 @@
 ;; always get a proper address for a stack slot during reload_foo
 ;; expansion, so we must delay our address manipulations until after.
 
-(define_insn_and_split "reload_in<mode>_aligned"
+(define_insn_and_split "@reload_in<mode>_aligned"
   [(set (match_operand:I12MODE 0 "register_operand" "=r")
         (match_operand:I12MODE 1 "memory_operand" "m"))]
   "!TARGET_BWX && (reload_in_progress || reload_completed)"

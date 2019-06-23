@@ -1,6 +1,7 @@
 /* PR tree-optimization/90662 - strlen of a string in a vla plus offset
    not folded
    { dg-do compile }
+   { dg-require-effective-target alloca }
    { dg-options "-O2 -Wall -fdump-tree-gimple -fdump-tree-optimized" } */
 
 #include "strlenopt.h"

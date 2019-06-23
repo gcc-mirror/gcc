@@ -583,6 +583,9 @@ resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
       || sym->attr.entry_master)
     return;
 
+  if (!sym->result)
+    return;
+
   /* Try to find out of what the return type is.  */
   if (sym->result->ts.type == BT_UNKNOWN && sym->result->ts.interface == NULL)
     {
@@ -12385,6 +12388,10 @@ deferred_requirements (gfc_symbol *sym)
 	   || sym->attr.associate_var
 	   || sym->attr.omp_udr_artificial_var))
     {
+      /* If a function has a result variable, only check the variable.  */
+      if (sym->result && sym->name != sym->result->name)
+	return true;
+
       gfc_error ("Entity %qs at %L has a deferred type parameter and "
 		 "requires either the POINTER or ALLOCATABLE attribute",
 		 sym->name, &sym->declared_at);
@@ -12593,6 +12600,10 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 
   if (sym->attr.function
       && !resolve_fl_var_and_proc (sym, mp_flag))
+    return false;
+
+  /* Constraints on deferred type parameter.  */
+  if (!deferred_requirements (sym))
     return false;
 
   if (sym->ts.type == BT_CHARACTER)

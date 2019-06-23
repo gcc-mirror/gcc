@@ -26614,11 +26614,11 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
       attr_id = canonicalize_attr_name (attr_id);
       attribute = build_tree_list (build_tree_list (NULL_TREE, attr_id),
 				   NULL_TREE);
-      /* C++11 noreturn attribute is equivalent to GNU's.  */
-      if (is_attribute_p ("noreturn", attr_id))
-	TREE_PURPOSE (TREE_PURPOSE (attribute)) = gnu_identifier;
+      /* We used to treat C++11 noreturn attribute as equivalent to GNU's,
+	 but no longer: we have to be able to tell [[noreturn]] and
+	 __attribute__((noreturn)) apart.  */
       /* C++14 deprecated attribute is equivalent to GNU's.  */
-      else if (is_attribute_p ("deprecated", attr_id))
+      if (is_attribute_p ("deprecated", attr_id))
 	TREE_PURPOSE (TREE_PURPOSE (attribute)) = gnu_identifier;
       /* C++17 fallthrough attribute is equivalent to GNU's.  */
       else if (is_attribute_p ("fallthrough", attr_id))
@@ -26863,6 +26863,12 @@ cp_parser_std_attribute_spec (cp_parser *parser)
       /* Something went wrong, so don't build the attribute.  */
       if (alignas_expr == error_mark_node)
 	return error_mark_node;
+
+      /* Missing ')' means the code cannot possibly be valid; go ahead
+	 and commit to make sure we issue a hard error.  */
+      if (cp_parser_uncommitted_to_tentative_parse_p (parser)
+	  && cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN))
+	cp_parser_commit_to_tentative_parse (parser);
 
       if (!parens.require_close (parser))
 	return error_mark_node;

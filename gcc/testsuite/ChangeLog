@@ -1,3 +1,366 @@
+2019-06-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90909
+	* g++.dg/other/final7.C: New.
+
+2019-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/vect/simd-2.cc: Don't xfail, instead expect vectorization on
+	x86.
+	* g++.dg/vect/simd-5.cc: Likewise.
+
+2019-06-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90909
+	Revert:
+	2019-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67184
+	PR c++/69445
+	* g++.dg/other/final3.C: New.
+	* g++.dg/other/final4.C: Likewise.
+	* g++.dg/other/final5.C: Likewise.
+
+	* g++.dg/other/final6.C: New.
+
+2019-06-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/61490 - qualified-id in friend function definition.
+	* g++.dg/diagnostic/friend2.C: New test.
+	* g++.dg/diagnostic/friend3.C: New test.
+
+	PR c++/60223 - ICE with T{} in non-deduced context.
+	* g++.dg/cpp0x/nondeduced1.C: New test.
+	* g++.dg/cpp0x/nondeduced2.C: New test.
+	* g++.dg/cpp0x/nondeduced3.C: New test.
+	* g++.dg/cpp0x/nondeduced4.C: New test.
+
+	PR c++/64235 - missing syntax error with invalid alignas.
+	* g++.dg/parse/alignas1.C: New test.
+
+2019-06-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/67884
+	* gfortran.dg/dummy_procedure_8.f90: Remove a test that is ...
+	* gfortran.dg/pr67884.f90: ... covered here.  New test.
+
+2019-06-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90490 - fix decltype issues in noexcept-specifier.
+	* g++.dg/cpp0x/noexcept43.C: New test.
+	* g++.dg/cpp0x/noexcept44.C: New test.
+
+2019-06-21  Matthew Beliveau  <mbelivea@redhat.com>
+
+	PR c++/90875 - added -Wswitch-outside-range option
+	* c-c++-common/Wswitch-outside-range-1.c: New test.
+	* c-c++-common/Wswitch-outside-range-2.c: New test.
+	* c-c++-common/Wswitch-outside-range-3.c: New test.
+	* c-c++-common/Wswitch-outside-range-4.c: New test.
+
+2019-06-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/51991
+	gfortran.dg/pr51991.f90
+
+2019-06-21  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/90949
+	* gcc.c-torture/execute/pr90949.c: New test.
+
+2019-06-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90953 - ICE with -Wmissing-format-attribute.
+	* g++.dg/warn/miss-format-7.C: New test.
+
+2019-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90914
+	* g++.dg/debug/pr90914.C: New testcase.
+
+2019-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90913
+	* gfortran.dg/vect/pr90913.f90: New testcase.
+
+2019-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/vect-simd-12.c: New test.
+	* gcc.dg/vect/vect-simd-13.c: New test.
+	* gcc.dg/vect/vect-simd-14.c: New test.
+	* gcc.dg/vect/vect-simd-15.c: New test.
+	* gcc.target/i386/sse2-vect-simd-12.c: New test.
+	* gcc.target/i386/sse2-vect-simd-13.c: New test.
+	* gcc.target/i386/sse2-vect-simd-14.c: New test.
+	* gcc.target/i386/sse2-vect-simd-15.c: New test.
+	* gcc.target/i386/avx2-vect-simd-12.c: New test.
+	* gcc.target/i386/avx2-vect-simd-13.c: New test.
+	* gcc.target/i386/avx2-vect-simd-14.c: New test.
+	* gcc.target/i386/avx2-vect-simd-15.c: New test.
+	* gcc.target/i386/avx512f-vect-simd-12.c: New test.
+	* gcc.target/i386/avx512f-vect-simd-13.c: New test.
+	* gcc.target/i386/avx512f-vect-simd-14.c: New test.
+	* gcc.target/i386/avx512bw-vect-simd-15.c: New test.
+	* g++.dg/vect/simd-6.cc: New test.
+	* g++.dg/vect/simd-7.cc: New test.
+	* g++.dg/vect/simd-8.cc: New test.
+	* g++.dg/vect/simd-9.cc: New test.
+	* c-c++-common/gomp/scan-2.c: Don't expect any diagnostics.
+
+	PR c++/90950
+	* g++.dg/gomp/lastprivate-1.C: New test.
+
+	* gcc.dg/vect/vect-simd-11.c: New test.
+	* gcc.target/i386/sse2-vect-simd-11.c: New test.
+	* gcc.target/i386/avx2-vect-simd-11.c: New test.
+	* gcc.target/i386/avx512bw-vect-simd-11.c: New test.
+
+2019-06-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/79781
+	* g++.dg/ext/goto1.C: New test.
+
+2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77632
+	* gfortran.dg/pr77632_1.f90: New test.
+
+2019-06-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/68265
+	* g++.dg/parse/error62.C: New test.
+
+2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/86587
+	* gfortran.dg/pr86587.f90: New test.
+
+2019-06-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/stubify-1.mm: Adjust options and scan-asm checks.
+	* obj-c++.dg/stubify-2.mm: Likewise.
+	* objc.dg/stubify-1.m: Likewise.
+	* objc.dg/stubify-2.m: Likewise.
+
+2019-06-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87512
+	* g++.dg/cpp1z/inline-var7.C: New test.
+
+2019-06-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/54855
+	* gcc.target/i386/pr54855-1.c: New test.
+	* gcc.target/i386/pr54855-2.c: Likewise.
+	* gcc.target/i386/pr54855-3.c: Likewise.
+	* gcc.target/i386/pr54855-4.c: Likewise.
+	* gcc.target/i386/pr54855-5.c: Likewise.
+	* gcc.target/i386/pr54855-6.c: Likewise.
+	* gcc.target/i386/pr54855-7.c: Likewise.
+	* gcc.target/i386/pr54855-8.c: Likewise.
+	* gcc.target/i386/pr54855-9.c: Likewise.
+	* gcc.target/i386/pr54855-10.c: Likewise.
+
+2019-06-20  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/execute/alias-access-path-1.c: New testcase.
+
+2019-06-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/89873
+	* g++.dg/cpp1y/noexcept1.C: New test.
+
+2019-06-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90937
+	* gfortran.dg/external_procedure_4.f90: New test.
+
+2019-06-20  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/pr90866-2.c: Require global_constructor.
+
+2019-06-20  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.c-torture/compile/pr89280.c: Require nonlocal_goto.
+	* gcc.dg/pr88870.c: Same.
+	* gcc.dg/pr90082.c: Same.
+
+2019-06-20  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.dg/pr89737.c: Require indirect_jumps.
+	* gcc.dg/torture/pr87693.c: Same.
+	* gcc.dg/torture/pr89135.c: Same.
+	* gcc.dg/torture/pr90071.c: Same.
+
+2019-06-20  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.c-torture/compile/pr89280.c: Require label_values.
+	* gcc.dg/pr89737.c: Same.
+	* gcc.dg/pr90082.c: Same.
+	* gcc.dg/torture/pr89135.c: Same.
+	* gcc.dg/torture/pr89247.c: Same.
+	* gcc.dg/torture/pr90071.c: Same.
+
+2019-06-20  Tom de Vries  <tdevries@suse.de>
+
+	* gcc.c-torture/compile/pr77754-1.c: Require alloca.
+	* gcc.c-torture/compile/pr77754-2.c: Same.
+	* gcc.c-torture/compile/pr77754-3.c: Same.
+	* gcc.c-torture/compile/pr77754-4.c: Same.
+	* gcc.c-torture/compile/pr77754-5.c: Same.
+	* gcc.c-torture/compile/pr77754-6.c: Same.
+	* gcc.c-torture/compile/pr87110.c: Same.
+	* gcc.c-torture/execute/pr86528.c: Same.
+	* gcc.dg/Walloca-larger-than-2.c: Same.
+	* gcc.dg/Walloca-larger-than.c: Same.
+	* gcc.dg/Warray-bounds-41.c: Same.
+	* gcc.dg/Wrestrict-17.c: Same.
+	* gcc.dg/Wstrict-overflow-27.c: Same.
+	* gcc.dg/Wstringop-truncation-3.c: Same.
+	* gcc.dg/pr78902.c: Same.
+	* gcc.dg/pr87099.c: Same.
+	* gcc.dg/pr87320.c: Same.
+	* gcc.dg/pr89045.c: Same.
+	* gcc.dg/strlenopt-62.c: Same.
+	* gcc.dg/tree-ssa/alias-37.c: Same.
+
+2019-06-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60364 - noreturn after first decl not diagnosed.
+	* g++.dg/warn/noreturn-8.C: New test.
+	* g++.dg/warn/noreturn-9.C: New test.
+	* g++.dg/warn/noreturn-10.C: New test.
+	* g++.dg/warn/noreturn-11.C: New test.
+
+2019-06-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90626
+	* gcc.dg/strlenopt-65.c: New test.
+	* gcc.dg/strlenopt-66.c: New test.
+	* gcc.dg/strlenopt.h (strcmp, strncmp): Declare.
+
+2019-06-19  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/90156
+	* gcc.dg/format/gcc_diag-11.c: Enable.
+
+2019-06-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/69499
+	* gfortran.dg/pr69499.f90: New test.
+	* gfortran.dg/module_error_1.f90: Update dg-error string.
+
+2019-06-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/69398
+	* gfortran.dg/pr69398.f90: New test.
+
+2019-06-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/87907
+	* gfortran.dg/pr87907.f90: New testcase.
+
+2019-06-19  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR middle-end/84521
+	* gcc.c-torture/execute/pr84521.c: New test.
+
+2019-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/vect-simd-8.c: If main is defined, don't include
+	tree-vect.h nor call check_vect.
+	* gcc.dg/vect/vect-simd-9.c: Likewise.
+	* gcc.dg/vect/vect-simd-10.c: New test.
+	* gcc.target/i386/sse2-vect-simd-8.c: New test.
+	* gcc.target/i386/sse2-vect-simd-9.c: New test.
+	* gcc.target/i386/sse2-vect-simd-10.c: New test.
+	* gcc.target/i386/avx2-vect-simd-8.c: New test.
+	* gcc.target/i386/avx2-vect-simd-9.c: New test.
+	* gcc.target/i386/avx2-vect-simd-10.c: New test.
+	* gcc.target/i386/avx512f-vect-simd-8.c: New test.
+	* gcc.target/i386/avx512f-vect-simd-9.c: New test.
+	* gcc.target/i386/avx512f-vect-simd-10.c: New test.
+
+	* g++.dg/vect/simd-3.cc: New test.
+	* g++.dg/vect/simd-4.cc: New test.
+	* g++.dg/vect/simd-5.cc: New test.
+
+2019-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/ubsan/pr63956.C: Adjust expected diagnostics.
+
+2019-06-19  Jim MacArthur  <jim.macarthur@codethink.co.uk>
+	    Mark Eggleston  <mark.eggleston@codethink.com>
+
+	PR fortran/89103
+	* gfortran.dg/dec_format_empty_item_1.f: New test.
+	* gfortran.dg/dec_format_empty_item_2.f: New test.
+	* gfortran.dg/dec_format_empty_item_3.f: New test.
+
+2019-06-19  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* gcc.target/aarch64/pr88834.c: Move from here...
+	* gcc.target/aarch64/sve/pr88834.c: ...to here.
+
+2019-06-18  Cherry Zhang  <cherryyz@google.com>
+
+	* go.dg/concatstring.go: New test.
+
+2019-06-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/90921
+	* gfortran.dg/goacc/declare-3.f95: Update.
+
+	PR fortran/85221
+	* gfortran.dg/goacc/declare-3.f95: New file.
+
+	PR middle-end/90859
+	* c-c++-common/goacc/firstprivate-mappings-1.c: Update.
+
+	* c-c++-common/goacc/firstprivate-mappings-1.c: New file.
+	* g++.dg/goacc/firstprivate-mappings-1.C: Likewise.
+
+	PR testsuite/90861
+	* c-c++-common/goacc/declare-pr90861.c: New file.
+
+	PR testsuite/90868
+	* c-c++-common/goacc/declare-1.c: Update.
+	* c-c++-common/goacc/declare-2.c: Likewise.
+
+	PR middle-end/90862
+	* c-c++-common/goacc/declare-1.c: Update.
+	* c-c++-common/goacc/declare-2.c: Likewise.
+
+2019-06-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/84698
+	* g++.dg/cpp0x/noexcept42.C: New test.
+
+	PR c++/71548
+	* g++.dg/cpp0x/variadic177.C: New test.
+
+2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/struct_vect_18.c: Allow branches to
+	contain dots.
+	* gcc.target/aarch64/sve/struct_vect_19.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_20.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_21.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_22.c: Likewise.
+	* gcc.target/aarch64/sve/struct_vect_23.c: Likewise.
+	* gcc.target/aarch64/sve/unroll-1.c: Likewise.
+	* gcc.target/aarch64/sve/while_1.c: Check for b.any.
+
+2019-06-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr81563.c (dg-final): Check that no
+	registers are restored from %esp.
+
+2019-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90900
+	* gcc.dg/gomp/pr90900.c: New testcase.
+
 2019-06-18  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/pr90866-2.c: Remove a pointless declaration

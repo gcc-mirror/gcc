@@ -5135,7 +5135,7 @@ expand_function_start (tree subr)
       r_save = expand_expr (t_save, NULL_RTX, VOIDmode, EXPAND_WRITE);
       gcc_assert (GET_MODE (r_save) == Pmode);
 
-      emit_move_insn (r_save, targetm.builtin_setjmp_frame_value ());
+      emit_move_insn (r_save, hard_frame_pointer_rtx);
       update_nonlocal_goto_save_area ();
     }
 

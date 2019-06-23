@@ -1,3 +1,46 @@
+2019-06-21  Matthew Beliveau  <mbelivea@redhat.com>
+
+	PR c++/90875 - added -Wswitch-outside-range option
+	* c.opt (Wswitch-outside-range): Added new option.
+	* c-warn.c (c_do_switch_warnings): Use OPT_Wswitch-outside-range.
+
+2019-06-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90953 - ICE with -Wmissing-format-attribute.
+	* c-common.c (check_function_arguments_recurse): Use
+	get_attribute_name.
+	(check_missing_format_attribute): Likewise.
+
+2019-06-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60364 - noreturn after first decl not diagnosed.
+	* c-attribs.c (handle_noreturn_attribute): No longer static.
+	* c-common.h (handle_noreturn_attribute, attr_noreturn_exclusions):
+	Declare.
+	* c-format.c (check_function_format): Use get_attribute_name.
+
+2019-06-19  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/90156
+	* c-format.c (function_format_info::format_type): Adjust type.
+	(function_format_info::is_raw): New member.
+	(decode_format_type): Adjust signature.  Handle "raw" diag attributes.
+	(decode_format_attr): Adjust call to decode_format_type.
+	Avoid a redundant call to convert_format_name_to_system_name.
+	Avoid abbreviating the word "arguments" in a diagnostic.
+	(format_warning_substr): New function.
+	(avoid_dollar_number): Quote dollar sign in a diagnostic.
+	(finish_dollar_format_checking): Same.
+	(check_format_info): Same.
+	(struct baltoks_t): New.
+	(c_opers, c_keywords, cxx_keywords, badwords, contrs): New arrays.
+	(maybe_diag_unbalanced_tokens, check_tokens, check_plain): New
+	functions.
+	(check_format_info_main): Call check_plain.  Use baltoks_t.  Call
+	maybe_diag_unbalanced_tokens.
+	(handle_format_attribute): Spell out the word "arguments" in
+	a diagnostic.
+
 2019-06-11  Matthew Beliveau  <mbelivea@redhat.com>
 
 	PR c++/90449 - add -Winaccessible-base option.

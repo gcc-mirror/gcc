@@ -2899,8 +2899,20 @@ dnl       Where DEFAULT is either `yes' or `no'.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_DEBUG], [
   AC_MSG_CHECKING([for additional debug build])
+  skip_debug_build=
   GLIBCXX_ENABLE(libstdcxx-debug,$1,,[build extra debug library])
-  AC_MSG_RESULT($enable_libstdcxx_debug)
+  if test x$enable_libstdcxx_debug = xyes; then
+    if test -f $toplevel_builddir/../stage_final \
+      && test -f $toplevel_builddir/../stage_current; then
+      stage_final=`cat $toplevel_builddir/../stage_final`
+      stage_current=`cat $toplevel_builddir/../stage_current`
+      if test x$stage_current != x$stage_final ; then
+	skip_debug_build=" (skipped for bootstrap stage $stage_current)"
+	enable_libstdcxx_debug=no
+      fi
+    fi
+  fi
+  AC_MSG_RESULT($enable_libstdcxx_debug$skip_debug_build)
   GLIBCXX_CONDITIONAL(GLIBCXX_BUILD_DEBUG, test $enable_libstdcxx_debug = yes)
 ])
 

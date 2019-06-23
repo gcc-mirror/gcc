@@ -2947,6 +2947,74 @@ handle_builtin_memcmp (gimple_stmt_iterator *gsi)
   return true;
 }
 
+/* If IDX1 and IDX2 refer to strings A and B of unequal lengths, return
+   the result of 0 == strncmp (A, B, N) (which is the same as strcmp for
+   sufficiently large N).  Otherwise return false.  */
+
+static bool
+strxcmp_unequal (int idx1, int idx2, unsigned HOST_WIDE_INT n)
+{
+  unsigned HOST_WIDE_INT len1;
+  unsigned HOST_WIDE_INT len2;
+
+  bool nulterm1;
+  bool nulterm2;
+
+  if (idx1 < 0)
+    {
+      len1 = ~idx1;
+      nulterm1 = true;
+    }
+  else if (strinfo *si = get_strinfo (idx1))
+    {
+      if (tree_fits_uhwi_p (si->nonzero_chars))
+	{
+	  len1 = tree_to_uhwi (si->nonzero_chars);
+	  nulterm1 = si->full_string_p;
+	}
+      else
+	return false;
+    }
+  else
+    return false;
+
+  if (idx2 < 0)
+    {
+      len2 = ~idx2;
+      nulterm2 = true;
+    }
+  else if (strinfo *si = get_strinfo (idx2))
+    {
+      if (tree_fits_uhwi_p (si->nonzero_chars))
+	{
+	  len2 = tree_to_uhwi (si->nonzero_chars);
+	  nulterm2 = si->full_string_p;
+	}
+      else
+	return false;
+    }
+  else
+    return false;
+
+  /* N is set to UHWI_MAX for strcmp and less to strncmp.  Adjust
+     the length of each string to consider to be no more than N.  */
+  if (len1 > n)
+    len1 = n;
+  if (len2 > n)
+    len2 = n;
+
+  if ((len1 < len2 && nulterm1)
+      || (len2 < len1 && nulterm2))
+    /* The string lengths are definitely unequal and the result can
+       be folded to one (since it's used for comparison with zero).  */
+    return true;
+
+  /* The string lengths may be equal or unequal.  Even when equal and
+     both strings nul-terminated, without the string contents there's
+     no way to determine whether they are equal.  */
+  return false;
+}
+
 /* Given an index to the strinfo vector, compute the string length
    for the corresponding string. Return -1 when unknown.  */
 
@@ -3132,18 +3200,12 @@ handle_builtin_string_cmp (gimple_stmt_iterator *gsi)
         return false;
     }
 
-  /* When the lengths of both arguments are known, and they are unequal,
+  /* When the lengths of the arguments are known to be unequal
      we can safely fold the call to a non-zero value for strcmp;
-     othewise, do nothing now.  */
+     otherwise, do nothing now.  */
   if (idx1 != 0 && idx2 != 0)
     {
-      HOST_WIDE_INT const_string_leni1 = compute_string_length (idx1);
-      HOST_WIDE_INT const_string_leni2 = compute_string_length (idx2);
-
-      if (!is_ncmp
-	  && const_string_leni1 != -1
-	  && const_string_leni2 != -1
-	  && const_string_leni1 != const_string_leni2)
+      if (strxcmp_unequal (idx1, idx2, length))
 	{
 	  replace_call_with_value (gsi, integer_one_node);
 	  return true;

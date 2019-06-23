@@ -819,6 +819,10 @@ Wswitch-bool
 C ObjC C++ ObjC++ Var(warn_switch_bool) Warning Init(1)
 Warn about switches with boolean controlling expression.
 
+Wswitch-outside-range
+C ObjC C++ ObjC++ Var(warn_switch_outside_range) Warning Init(1)
+Warn about switch values that are outside of the switch's type range.
+
 Wtemplates
 C++ ObjC++ Var(warn_templates) Warning
 Warn on primary template declaration.

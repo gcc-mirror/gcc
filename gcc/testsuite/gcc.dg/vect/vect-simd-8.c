@@ -3,7 +3,9 @@
 /* { dg-additional-options "-mavx" { target avx_runtime } } */
 /* { dg-final { scan-tree-dump-times "vectorized \[1-3] loops" 2 "vect" { target i?86-*-* x86_64-*-* } } } */
 
+#ifndef main
 #include "tree-vect.h"
+#endif
 
 int r, a[1024], b[1024];
 
@@ -63,7 +65,9 @@ int
 main ()
 {
   int s = 0;
+#ifndef main
   check_vect ();
+#endif
   for (int i = 0; i < 1024; ++i)
     {
       a[i] = i;

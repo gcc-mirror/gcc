@@ -1,3 +1,74 @@
+2019-06-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/90909
+	Revert:
+	2019-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67184
+	PR c++/69445
+	* call.c (build_over_call): Devirtualize when the final overrider
+	comes from the base.
+
+2019-06-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/61490 - qualified-id in friend function definition.
+	* decl.c (grokdeclarator): Diagnose qualified-id in friend function
+	definition.  Improve location for diagnostics of friend functions.
+
+	PR c++/60223 - ICE with T{} in non-deduced context.
+	* pt.c (unify): Allow COMPOUND_LITERAL_P in a non-deduced context.
+
+	PR c++/64235 - missing syntax error with invalid alignas.
+	* parser.c (cp_parser_std_attribute_spec): Commit to tentative parse
+	if there's a missing close paren.
+
+	PR c++/90490 - fix decltype issues in noexcept-specifier.
+	* except.c (build_noexcept_spec): Call
+	instantiate_non_dependent_expr_sfinae before
+	build_converted_constant_expr instead of calling
+	instantiate_non_dependent_expr after it.  Add
+	processing_template_decl_sentinel.
+
+2019-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90950
+	* semantics.c (finish_omp_clauses): Don't reject references to
+	incomplete types if processing_template_decl.
+
+2019-06-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60364 - noreturn after first decl not diagnosed.
+	* decl.c (duplicate_decls): Give an error when a function is
+	declared [[noreturn]] after its first declaration.
+	* parser.c (cp_parser_std_attribute): Don't treat C++11 noreturn
+	attribute as equivalent to GNU's.
+	* tree.c (std_attribute_table): Add noreturn.
+
+2019-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.c (cp_genericize_r): Handle OMP_CLAUSE_{IN,EX}CLUSIVE
+	like OMP_CLAUSE_SHARED.
+
+2019-06-18  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_store_expression): Delay target evaluation.
+
+2019-06-18  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (eval_and_check_array_index): Split out from...
+	(cxx_eval_array_reference): ...here.
+	(cxx_eval_store_expression): Use it here, too.
+	(diag_array_subscript): Take location.  Strip location wrapper.
+
+2019-06-18  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_eval_constant_expression): Handle conversion from
+	and then to the same type.
+
+2019-06-18  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (unshare_constructor): Add MEM_STAT_DECL.
+
 2019-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* semantics.c (finish_omp_clauses): For OMP_CLAUSE_REDUCTION_INSCAN

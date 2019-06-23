@@ -2292,10 +2292,7 @@ alpha_expand_mov_nobwx (machine_mode mode, rtx *operands)
 	{
 	  if (reload_in_progress)
 	    {
-	      if (mode == QImode)
-		seq = gen_reload_inqi_aligned (operands[0], operands[1]);
-	      else
-		seq = gen_reload_inhi_aligned (operands[0], operands[1]);
+	      seq = gen_reload_in_aligned (mode, operands[0], operands[1]);
 	      emit_insn (seq);
 	    }
 	  else
@@ -2378,10 +2375,8 @@ alpha_expand_mov_nobwx (machine_mode mode, rtx *operands)
 	  rtx temp3 = gen_reg_rtx (DImode);
 	  rtx ua = get_unaligned_address (operands[0]);
 
-	  if (mode == QImode)
-	    seq = gen_unaligned_storeqi (ua, operands[1], temp1, temp2, temp3);
-	  else
-	    seq = gen_unaligned_storehi (ua, operands[1], temp1, temp2, temp3);
+	  seq = gen_unaligned_store
+	    (mode, ua, operands[1], temp1, temp2, temp3);
 
 	  alpha_set_memflags (seq, operands[0]);
 	  emit_insn (seq);
@@ -4349,34 +4344,6 @@ emit_unlikely_jump (rtx cond, rtx label)
   add_reg_br_prob_note (insn, profile_probability::very_unlikely ());
 }
 
-/* A subroutine of the atomic operation splitters.  Emit a load-locked
-   instruction in MODE.  */
-
-static void
-emit_load_locked (machine_mode mode, rtx reg, rtx mem)
-{
-  rtx (*fn) (rtx, rtx) = NULL;
-  if (mode == SImode)
-    fn = gen_load_locked_si;
-  else if (mode == DImode)
-    fn = gen_load_locked_di;
-  emit_insn (fn (reg, mem));
-}
-
-/* A subroutine of the atomic operation splitters.  Emit a store-conditional
-   instruction in MODE.  */
-
-static void
-emit_store_conditional (machine_mode mode, rtx res, rtx mem, rtx val)
-{
-  rtx (*fn) (rtx, rtx, rtx) = NULL;
-  if (mode == SImode)
-    fn = gen_store_conditional_si;
-  else if (mode == DImode)
-    fn = gen_store_conditional_di;
-  emit_insn (fn (res, mem, val));
-}
-
 /* Subroutines of the atomic operation splitters.  Emit barriers
    as needed for the memory MODEL.  */
 
@@ -4448,7 +4415,7 @@ alpha_split_atomic_op (enum rtx_code code, rtx mem, rtx val, rtx before,
 
   if (before == NULL)
     before = scratch;
-  emit_load_locked (mode, before, mem);
+  emit_insn (gen_load_locked (mode, before, mem));
 
   if (code == NOT)
     {
@@ -4463,7 +4430,7 @@ alpha_split_atomic_op (enum rtx_code code, rtx mem, rtx val, rtx before,
     emit_insn (gen_rtx_SET (after, copy_rtx (x)));
   emit_insn (gen_rtx_SET (scratch, x));
 
-  emit_store_conditional (mode, cond, mem, scratch);
+  emit_insn (gen_store_conditional (mode, cond, mem, scratch));
 
   x = gen_rtx_EQ (DImode, cond, const0_rtx);
   emit_unlikely_jump (x, label);
@@ -4502,7 +4469,7 @@ alpha_split_compare_and_swap (rtx operands[])
     }
   label2 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
 
-  emit_load_locked (mode, retval, mem);
+  emit_insn (gen_load_locked (mode, retval, mem));
 
   x = gen_lowpart (DImode, retval);
   if (oldval == const0_rtx)
@@ -4519,7 +4486,8 @@ alpha_split_compare_and_swap (rtx operands[])
   emit_unlikely_jump (x, label2);
 
   emit_move_insn (cond, newval);
-  emit_store_conditional (mode, cond, mem, gen_lowpart (mode, cond));
+  emit_insn (gen_store_conditional
+	     (mode, cond, mem, gen_lowpart (mode, cond)));
 
   if (!is_weak)
     {
@@ -4542,7 +4510,6 @@ alpha_expand_compare_and_swap_12 (rtx operands[])
   rtx cond, dst, mem, oldval, newval, is_weak, mod_s, mod_f;
   machine_mode mode;
   rtx addr, align, wdst;
-  rtx (*gen) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
 
   cond = operands[0];
   dst = operands[1];
@@ -4567,12 +4534,9 @@ alpha_expand_compare_and_swap_12 (rtx operands[])
     newval = emit_insxl (mode, newval, addr);
 
   wdst = gen_reg_rtx (DImode);
-  if (mode == QImode)
-    gen = gen_atomic_compare_and_swapqi_1;
-  else
-    gen = gen_atomic_compare_and_swaphi_1;
-  emit_insn (gen (cond, wdst, mem, oldval, newval, align,
-		  is_weak, mod_s, mod_f));
+  emit_insn (gen_atomic_compare_and_swap_1
+	     (mode, cond, wdst, mem, oldval, newval, align,
+	      is_weak, mod_s, mod_f));
 
   emit_move_insn (dst, gen_lowpart (mode, wdst));
 }
@@ -4614,7 +4578,7 @@ alpha_split_compare_and_swap_12 (rtx operands[])
     }
   label2 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
 
-  emit_load_locked (DImode, scratch, mem);
+  emit_insn (gen_load_locked (DImode, scratch, mem));
   
   width = GEN_INT (GET_MODE_BITSIZE (mode));
   mask = GEN_INT (mode == QImode ? 0xff : 0xffff);
@@ -4638,7 +4602,7 @@ alpha_split_compare_and_swap_12 (rtx operands[])
   if (newval != const0_rtx)
     emit_insn (gen_iordi3 (cond, cond, newval));
 
-  emit_store_conditional (DImode, cond, mem, cond);
+  emit_insn (gen_store_conditional (DImode, cond, mem, cond));
 
   if (!is_weak)
     {
@@ -4678,9 +4642,9 @@ alpha_split_atomic_exchange (rtx operands[])
   label = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
   emit_label (XEXP (label, 0));
 
-  emit_load_locked (mode, retval, mem);
+  emit_insn (gen_load_locked (mode, retval, mem));
   emit_move_insn (scratch, val);
-  emit_store_conditional (mode, cond, mem, scratch);
+  emit_insn (gen_store_conditional (mode, cond, mem, scratch));
 
   x = gen_rtx_EQ (DImode, cond, const0_rtx);
   emit_unlikely_jump (x, label);
@@ -4694,7 +4658,6 @@ alpha_expand_atomic_exchange_12 (rtx operands[])
   rtx dst, mem, val, model;
   machine_mode mode;
   rtx addr, align, wdst;
-  rtx (*gen) (rtx, rtx, rtx, rtx, rtx);
 
   dst = operands[0];
   mem = operands[1];
@@ -4714,11 +4677,7 @@ alpha_expand_atomic_exchange_12 (rtx operands[])
     val = emit_insxl (mode, val, addr);
 
   wdst = gen_reg_rtx (DImode);
-  if (mode == QImode)
-    gen = gen_atomic_exchangeqi_1;
-  else
-    gen = gen_atomic_exchangehi_1;
-  emit_insn (gen (wdst, mem, val, align, model));
+  emit_insn (gen_atomic_exchange_1 (mode, wdst, mem, val, align, model));
 
   emit_move_insn (dst, gen_lowpart (mode, wdst));
 }
@@ -4750,7 +4709,7 @@ alpha_split_atomic_exchange_12 (rtx operands[])
   label = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
   emit_label (XEXP (label, 0));
 
-  emit_load_locked (DImode, scratch, mem);
+  emit_insn (gen_load_locked (DImode, scratch, mem));
   
   width = GEN_INT (GET_MODE_BITSIZE (mode));
   mask = GEN_INT (mode == QImode ? 0xff : 0xffff);
@@ -4759,7 +4718,7 @@ alpha_split_atomic_exchange_12 (rtx operands[])
   if (val != const0_rtx)
     emit_insn (gen_iordi3 (scratch, scratch, val));
 
-  emit_store_conditional (DImode, scratch, mem, scratch);
+  emit_insn (gen_store_conditional (DImode, scratch, mem, scratch));
 
   x = gen_rtx_EQ (DImode, scratch, const0_rtx);
   emit_unlikely_jump (x, label);

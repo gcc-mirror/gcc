@@ -1238,6 +1238,8 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	case OMP_CLAUSE_FIRSTPRIVATE:
 	case OMP_CLAUSE_COPYIN:
 	case OMP_CLAUSE_COPYPRIVATE:
+	case OMP_CLAUSE_INCLUSIVE:
+	case OMP_CLAUSE_EXCLUSIVE:
 	  /* Don't dereference an invisiref in OpenMP clauses.  */
 	  if (is_invisiref_parm (OMP_CLAUSE_DECL (stmt)))
 	    *walk_subtrees = 0;

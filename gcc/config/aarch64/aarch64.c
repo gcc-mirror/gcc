@@ -1308,6 +1308,13 @@ static const char * const aarch64_condition_codes[] =
   "hi", "ls", "ge", "lt", "gt", "le", "al", "nv"
 };
 
+/* The preferred condition codes for SVE conditions.  */
+static const char *const aarch64_sve_condition_codes[] =
+{
+  "none", "any", "nlast", "last", "first", "nfrst", "vs", "vc",
+  "pmore", "plast", "tcont", "tstop", "gt", "le", "al", "nv"
+};
+
 /* Generate code to enable conditional branches in functions over 1 MiB.  */
 const char *
 aarch64_gen_far_branch (rtx * operands, int pos_label, const char * dest,
@@ -2458,6 +2465,24 @@ aarch64_force_temporary (machine_mode mode, rtx x, rtx value)
     }
 }
 
+/* Return an all-true predicate register of mode MODE.  */
+
+rtx
+aarch64_ptrue_reg (machine_mode mode)
+{
+  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL);
+  return force_reg (mode, CONSTM1_RTX (mode));
+}
+
+/* Return an all-false predicate register of mode MODE.  */
+
+rtx
+aarch64_pfalse_reg (machine_mode mode)
+{
+  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL);
+  return force_reg (mode, CONST0_RTX (mode));
+}
+
 /* Return true if we can move VALUE into a register using a single
    CNT[BHWD] instruction.  */
 
@@ -3187,7 +3212,7 @@ aarch64_expand_sve_widened_duplicate (rtx dest, scalar_int_mode src_mode,
   machine_mode mode = GET_MODE (dest);
   unsigned int elem_bytes = GET_MODE_UNIT_SIZE (mode);
   machine_mode pred_mode = aarch64_sve_pred_mode (elem_bytes).require ();
-  rtx ptrue = force_reg (pred_mode, CONSTM1_RTX (pred_mode));
+  rtx ptrue = aarch64_ptrue_reg (pred_mode);
   src = gen_rtx_UNSPEC (mode, gen_rtvec (2, ptrue, src), UNSPEC_LD1RQ);
   emit_insn (gen_rtx_SET (dest, src));
   return true;
@@ -3448,7 +3473,7 @@ void
 aarch64_expand_sve_mem_move (rtx dest, rtx src, machine_mode pred_mode)
 {
   machine_mode mode = GET_MODE (dest);
-  rtx ptrue = force_reg (pred_mode, CONSTM1_RTX (pred_mode));
+  rtx ptrue = aarch64_ptrue_reg (pred_mode);
   if (!register_operand (src, mode)
       && !register_operand (dest, mode))
     {
@@ -3512,7 +3537,7 @@ aarch64_maybe_expand_sve_subreg_move (rtx dest, rtx src)
     return false;
 
   /* Generate *aarch64_sve_mov<mode>_subreg_be.  */
-  rtx ptrue = force_reg (VNx16BImode, CONSTM1_RTX (VNx16BImode));
+  rtx ptrue = aarch64_ptrue_reg (VNx16BImode);
   rtx unspec = gen_rtx_UNSPEC (GET_MODE (dest), gen_rtvec (2, ptrue, src),
 			       UNSPEC_REV_SUBREG);
   emit_insn (gen_rtx_SET (dest, unspec));
@@ -7383,6 +7408,21 @@ aarch64_get_condition_code_1 (machine_mode mode, enum rtx_code comp_code)
 	}
       break;
 
+    case E_CC_NZCmode:
+      switch (comp_code)
+	{
+	case NE: return AARCH64_NE; /* = any */
+	case EQ: return AARCH64_EQ; /* = none */
+	case GE: return AARCH64_PL; /* = nfrst */
+	case LT: return AARCH64_MI; /* = first */
+	case GEU: return AARCH64_CS; /* = nlast */
+	case GTU: return AARCH64_HI; /* = pmore */
+	case LEU: return AARCH64_LS; /* = plast */
+	case LTU: return AARCH64_CC; /* = last */
+	default: return -1;
+	}
+      break;
+
     case E_CC_NZmode:
       switch (comp_code)
 	{
@@ -7716,7 +7756,10 @@ aarch64_print_operand (FILE *f, rtx x, int code)
         gcc_assert (cond_code >= 0);
 	if (code == 'M')
 	  cond_code = AARCH64_INVERSE_CONDITION_CODE (cond_code);
-	fputs (aarch64_condition_codes[cond_code], f);
+	if (GET_MODE (XEXP (x, 0)) == CC_NZCmode)
+	  fputs (aarch64_sve_condition_codes[cond_code], f);
+	else
+	  fputs (aarch64_condition_codes[cond_code], f);
       }
       break;
 
@@ -16753,7 +16796,7 @@ aarch64_evpc_rev_local (struct expand_vec_perm_d *d)
   rtx src = gen_rtx_UNSPEC (d->vmode, gen_rtvec (1, d->op0), unspec);
   if (d->vec_flags == VEC_SVE_DATA)
     {
-      rtx pred = force_reg (pred_mode, CONSTM1_RTX (pred_mode));
+      rtx pred = aarch64_ptrue_reg (pred_mode);
       src = gen_rtx_UNSPEC (d->vmode, gen_rtvec (2, pred, src),
 			    UNSPEC_MERGE_PTRUE);
     }
@@ -17041,7 +17084,7 @@ aarch64_emit_sve_ptrue_op_cc (rtx target, rtx ptrue, rtx op)
   rtx unspec = gen_rtx_UNSPEC (GET_MODE (target),
 			       gen_rtvec (2, ptrue, op),
 			       UNSPEC_MERGE_PTRUE);
-  rtx_insn *insn = emit_insn (gen_set_clobber_cc (target, unspec));
+  rtx_insn *insn = emit_insn (gen_set_clobber_cc_nzc (target, unspec));
   set_unique_reg_note (insn, REG_EQUAL, copy_rtx (op));
 }
 
@@ -17101,7 +17144,7 @@ aarch64_expand_sve_vec_cmp_int (rtx target, rtx_code code, rtx op0, rtx op1)
   if (!aarch64_sve_cmp_operand_p (code, op1))
     op1 = force_reg (data_mode, op1);
 
-  rtx ptrue = force_reg (pred_mode, CONSTM1_RTX (pred_mode));
+  rtx ptrue = aarch64_ptrue_reg (pred_mode);
   rtx cond = gen_rtx_fmt_ee (code, pred_mode, op0, op1);
   aarch64_emit_sve_ptrue_op_cc (target, ptrue, cond);
 }
@@ -17160,7 +17203,7 @@ aarch64_expand_sve_vec_cmp_float (rtx target, rtx_code code,
   machine_mode pred_mode = GET_MODE (target);
   machine_mode data_mode = GET_MODE (op0);
 
-  rtx ptrue = force_reg (pred_mode, CONSTM1_RTX (pred_mode));
+  rtx ptrue = aarch64_ptrue_reg (pred_mode);
   switch (code)
     {
     case UNORDERED:

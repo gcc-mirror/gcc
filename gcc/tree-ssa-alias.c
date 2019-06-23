@@ -850,8 +850,7 @@ type_has_components_p (tree type)
 
 /* Determine if the two component references REF1 and REF2 which are
    based on access types TYPE1 and TYPE2 and of which at least one is based
-   on an indirect reference may alias.  REF2 is the only one that can
-   be a decl in which case REF2_IS_DECL is true.
+   on an indirect reference may alias.  
    REF1_ALIAS_SET, BASE1_ALIAS_SET, REF2_ALIAS_SET and BASE2_ALIAS_SET
    are the respective alias sets.  */
 
@@ -863,8 +862,7 @@ aliasing_component_refs_p (tree ref1,
 			   tree ref2,
 			   alias_set_type ref2_alias_set,
 			   alias_set_type base2_alias_set,
-			   poly_int64 offset2, poly_int64 max_size2,
-			   bool ref2_is_decl)
+			   poly_int64 offset2, poly_int64 max_size2)
 {
   /* If one reference is a component references through pointers try to find a
      common base and apply offset based disambiguation.  This handles
@@ -982,7 +980,7 @@ aliasing_component_refs_p (tree ref1,
 	  if (TREE_CODE (TREE_TYPE (base1)) == ARRAY_TYPE
 	      && (!TYPE_SIZE (TREE_TYPE (base1))
 		  || TREE_CODE (TYPE_SIZE (TREE_TYPE (base1))) != INTEGER_CST
-		  || (ref == base2 && !ref2_is_decl)))
+		  || ref == base2))
 	    {
 	      ++alias_stats.aliasing_component_refs_p_may_alias;
 	      return true;
@@ -1041,7 +1039,7 @@ aliasing_component_refs_p (tree ref1,
 	  if (TREE_CODE (TREE_TYPE (base2)) == ARRAY_TYPE
 	      && (!TYPE_SIZE (TREE_TYPE (base2))
 		  || TREE_CODE (TYPE_SIZE (TREE_TYPE (base2))) != INTEGER_CST
-		  || (ref == base1 && !ref2_is_decl)))
+		  || ref == base1))
 	    {
 	      ++alias_stats.aliasing_component_refs_p_may_alias;
 	      return true;
@@ -1089,8 +1087,7 @@ aliasing_component_refs_p (tree ref1,
       return true;
     }
   /* If this is ptr vs. decl then we know there is no ptr ... decl path.  */
-  if (!ref2_is_decl
-      && compare_type_sizes (TREE_TYPE (ref1), type2) >= 0
+  if (compare_type_sizes (TREE_TYPE (ref1), type2) >= 0
       && (!end_struct_ref2
 	  || compare_type_sizes (TREE_TYPE (ref1),
 		 		 TREE_TYPE (end_struct_ref2)) >= 0)
@@ -1554,13 +1551,7 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 				      offset1, max_size1,
 				      ref2,
 				      ref2_alias_set, base2_alias_set,
-				      offset2, max_size2, 
-				      /* Only if the other reference is actual
-					 decl we can safely check only toplevel
-					 part of access path 1.  */
-				      same_type_for_tbaa (TREE_TYPE (dbase2),
-					                  TREE_TYPE (base2))
-				      == 1);
+				      offset2, max_size2);
 
   return true;
 }
@@ -1675,7 +1666,7 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 				      offset1, max_size1,
 				      ref2,
 				      ref2_alias_set, base2_alias_set,
-				      offset2, max_size2, false);
+				      offset2, max_size2);
 
   return true;
 }

@@ -1,8 +1,341 @@
+2019-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-data-refs.c (vect_find_stmt_data_reference): Handle
+	even zero DR_OFFSET, but DR_BASE_ADDRESS of POINTER_PLUS_EXPR
+	containing the offset as possible simd lane access.  Look through
+	widening conversion.  Move the
+	TREE_CODE (DR_INIT (newdr)) == INTEGER_CST test earlier and reindent.
+
+2019-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90930
+	* tree-ssa-reassoc.c (rewrite_expr_tree_parallel): Set visited
+	flag on new stmts to avoid re-processing them.
+
+2019-06-21  Matthew Beliveau  <mbelivea@redhat.com>
+
+	PR c++/90875 - added -Wswitch-outside-range option
+	* doc/invoke.texi (Wswitch-outside-range): Document.
+
+2019-06-21  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/90949
+	* tree-ssa-copy.c (fini_copy_prop): Use reset_flow_sensitive_info.
+	* tree-ssanames.c (reset_flow_sensitive_info): Reset non-null state.
+
+2019-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90914
+	* dwarf2out.c (prune_unused_types_walk): Always consider
+	function-local extern declarations as used.
+
+2019-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90913
+	* tree-vect-loop-manip.c (vect_loop_versioning): Do not re-use
+	the scalar variant of if-conversion versioning.
+
+2019-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_rec_simd_input_clauses): Add rvar2 argument,
+	create another "omp scan inscan exclusive" array if
+	!ctx->scan_inclusive.
+	(lower_rec_input_clauses): Handle exclusive scan inscan reductions.
+	(lower_omp_scan): Likewise.
+	* tree-vectorizer.h (struct _stmt_vec_info): Use 3-bit instead of
+	2-bit bitfield for simd_lane_access_p member.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Also handle
+	aux == (void *)-4 as simd lane access.
+	* tree-vect-stmts.c (check_scan_store): Handle exclusive scan.  Update
+	comment with permutations to show the canonical permutation order.
+	(vectorizable_scan_store): Handle exclusive scan.
+	(vectorizable_store): Call vectorizable_scan_store even for
+	STMT_VINFO_SIMD_LANE_ACCESS_P > 3.
+
+	* tree-vect-data-refs.c (vect_find_stmt_data_reference): Handle
+	"omp simd array" arrays with one byte elements.
+
+2019-06-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (@unaligned_store<mode>):
+	Rename from unaligned_store<mode>.
+	(@reload_in<mode>_aligned): Rename from reload_in<mode>_aligned.
+	* config/alpha/sync.md (@load_locked_<mode>): Rename
+	from load_locked_<mode>.
+	(@store_conditional_<mode>): Rename from store_conditional_<mode>.
+	(@atomic_compare_and_swap<mode>_1): Rename
+	from atomic_compare_and_swap<mode>_1.
+	(@atomic_exchange<mode>_1): Rename from atomic_exchange<mode>_1.
+	* config/alpha/alpha.c (alpha_expand_mov_nobwx):
+	Use gen_reload_in_aligned and gen_unaligned_store.
+	(emit_load_locked): Remove.
+	(emit_store_conditional): Ditto.
+	(alpha_split_atomic_op): Use gen_load_locked and gen_store_conditional.
+	(alpha_split_compare_and_swap): Ditto.
+	(alpha_expand_compare_and_swap_12): Use gen_atomic_compare_and_swap_1.
+	(alpha_split_compare_and_swap_12): Use gen_load_locked
+	and gen_store_conditional.
+	(alpha_split_atomic_exchange): Ditto.
+	(alpha_expand_atomic_exchange_12): Use gen_atomic_exchange_1.
+	(alpha_split_atomic_exchange_12): Use gen_load_locked
+	and gen_store_conditional.
+
+2019-06-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/aarch64/aarch64-errata.h: New file.
+	* config/aarch64/aarch64-elf-raw.h (CA53_ERR_835769_SPEC): Delete.
+	(CA53_ERR_843419_SPEC): Delete.
+	(LINK_SPEC): Use AARCH64_ERRATA_LINK_SPEC instead of above.
+	* config/aarch64/aarch64-linux.h: Likewise.
+	* config/aarch64/aarch64-netbsd.h: Likewise.
+	* config/aarch64/aarch64-freebsd.h: Likewise.
+
+2019-06-20  Marek Polacek  <polacek@redhat.com>
+
+	* config/sh/sh.c (sh2a_function_vector_p): Use get_attribute_name.
+
+2019-06-20  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (isa attribute): Add support for
+	for a future processor.
+
+2019-06-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/54855
+	* config/i386/i386-expand.c (ix86_expand_vector_set): Generate
+	standard scalar operation pattern for V2DF.
+	* config/i386/sse.md (*<sse>_vm<plusminus_insn><mode>3): New.
+	(*<sse>_vm<multdiv_mnemonic><mode>3): Likewise.
+	(*ieee_<ieee_maxmin><mode>3): Likewise.
+	(vec_setv2df_0): Likewise.
+
+2019-06-20  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-alias.c (aliasing_component_refs_p): Remove ref2_is_decl
+	parameter; it has no use in gimple memory model.
+	(indirect_ref_may_alias_decl_p): Update.
+
+2019-06-20  Martin Liska  <mliska@suse.cz>
+
+	* params.def (PARAM_HASH_TABLE_VERIFICATION_LIMIT): Decrease
+	to 10.
+
+2019-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-stmts.c (enum scan_store_kind): New type.
+	(scan_store_can_perm_p): Change last argument from int * to
+	vec<enum scan_store_kind> *, record precisely which permutations
+	need whole vector left shift or that plus VEC_COND_EXPR.
+	(vectorizable_scan_store): Adjust caller, use whole vector left shift
+	and additional VEC_COND_EXPR only for those iterations that need it.
+
+2019-06-20  Alexandre Oliva <oliva@adacore.com>
+
+	* config.gcc: Fix ARM --with-fpu checking and error message.
+
+2019-06-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60364 - noreturn after first decl not diagnosed.
+	* attribs.c (get_attribute_namespace): No longer static.
+	(decl_attributes): Avoid shadowing.  Preserve the C++11 form for C++11
+	attributes.
+	(attr_noreturn_exclusions): Make it extern.
+	* attribs.h (get_attribute_namespace): Declare.
+	* tree-inline.c (function_attribute_inlinable_p): Use
+	get_attribute_name.
+
+2019-06-19  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90626
+	* tree-ssa-strlen.c (strxcmp_unequal): Fix typos.
+
+	PR tree-optimization/90626
+	* tree-ssa-strlen.c (strxcmp_unequal): New function.
+	(handle_builtin_string_cmp): Call it.
+
+2019-06-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (DRIVER_SELF_SPECS): Add RDYNAMIC, DARWIN_PIE_SPEC
+	and DARWIN_NOPIE_SPEC.
+	(RDYNAMIC): New, modified from DARWIN_EXPORT_DYNAMIC.
+	(DARWIN_PIE_SPEC): Collate from darwin.h and darwin9.h.
+	(DARWIN_NOPIE_SPEC): Collate from darwin10.h.
+	(DARWIN_NOCOMPACT_UNWIND): New from darwin10.h
+	(DARWIN_EXPORT_DYNAMIC): Delete.
+	* config/darwin10.h (LINK_GCC_C_SEQUENCE_SPEC): Move no_compact_unwind
+	and pie options processing to  darwin.h.
+	* config/darwin9.h (DARWIN_PIE_SPEC): Move pie processing to darwin.h
+
+2019-06-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (darwin_driver_init): Fix off-by-one errors
+	in computing the number of options to be moved.
+
+2019-06-19  Maya Rashish  <coypu@sdf.org>
+
+	*  config/arm/netbsd-elf.h (SYSARCH_ARM_SYNC_ICACHE): New definition.
+	(CLEAR_INSN_CACHE) Use it.
+
+2019-06-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (cmpstrnsi): Remove dead code.
+
+2019-06-19  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR middle-end/84521
+	* builtins.c (expand_builtin_setjmp_setup): Save
+	hard_frame_pointer_rtx.
+	(expand_builtin_setjmp_receiver): Do not emit sfp = fp move since we
+	restore fp.
+	* function.c (expand_function_start): Save hard_frame_pointer_rtx for
+	non-local goto.
+	* lra-eliminations.c (eliminate_regs_in_insn): Remove sfp = fp
+	elimination code.
+	(remove_reg_equal_offset_note): Remove unused function.
+	* reload1.c (eliminate_regs_in_insn): Remove sfp = hfp elimination
+	code.
+	* config/arc/arc.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Remove.
+	(arc_builtin_setjmp_frame_value): Remove function.
+	* config/avr/avr.c  (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Remove.
+	(avr_builtin_setjmp_frame_value): Remove function.
+	* config/i386/i386.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Remove.
+	(ix86_builtin_setjmp_frame_value): Remove function.
+	* config/pa/pa.md (nonlocal_goto): Remove FP adjustment.
+	* config/sparc/sparc.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Remove.
+	(sparc_builtin_setjmp_frame_value): Remove function.
+	* config/vax/vax.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Remove.
+	(vax_builtin_setjmp_frame_value): Remove function.
+	* config/xtensa/xtensa.c (xtensa_frame_pointer_required): Force frame
+	pointer	if has_nonlocal_label.
+
+2019-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/md.texi: Document vec_shl_<mode> pattern.
+	* optabs.def (vec_shl_optab): New optab.
+	* optabs.c (shift_amt_for_vec_perm_mask): Add shift_optab
+	argument, if == vec_shl_optab, check for left whole vector shift
+	pattern rather than right shift.
+	(expand_vec_perm_const): Add vec_shl_optab support.
+	* optabs-query.c (can_vec_perm_var_p): Mention also vec_shl optab
+	in the comment.
+	* tree-vect-generic.c (lower_vec_perm): Support permutations which
+	can be handled by vec_shl_optab.
+	* tree-vect-stmts.c (scan_store_can_perm_p): New function.
+	(check_scan_store): Use it.
+	(vectorizable_scan_store): If target can't do normal permutations,
+	try to use whole vector left shifts and if needed a VEC_COND_EXPR
+	after it.
+	* config/i386/sse.md (vec_shl_<mode>): New expander.
+
+	* omp-low.c (lower_rec_input_clauses): Handle references properly
+	in inscan clauses.
+	(lower_omp_scan): Likewise.
+
+2019-06-19  Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* tree-ssa-address.c (preferred_mem_scale_factor): Handle when
+	mem_mode is BLKmode.
+
+2019-06-18  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/90922
+	* config/xtensa/xtensa.c (xtensa_expand_prologue): Add stack
+	pointer adjustment for the case of no callee-saved registers and
+	stack frame bigger than 128 bytes.
+
+2019-06-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90862
+	* omp-low.c (check_omp_nesting_restrictions): Handle
+	GF_OMP_TARGET_KIND_OACC_DECLARE.
+
+2019-06-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (@cmp<mode>_1): Rename from cmp<mode>_1.
+	(@add<mode>3_carry): Rename from add<mode>3_carry.
+	(@sub<mode>3_carry_ccc): Rename from sub<mode>3_carry_ccc.
+	(@sub<mode>3_carry_ccgz): Rename form sub<mode>3_carry_ccgz.
+	(@copysign<mode>3_const): Rename from copysign<mode>3_const.
+	(@copysign<mode>3_var): Rename from copysign<mode>3_var.
+	(@xorsign<mode>3_1): Rename from xorsign<mode>3_1.
+	(@x86_shift<mode>_adj_1): Rename from x86_shift<mode>_adj_1.
+	(@x86_shift<mode>_adj_2): Rename from x86_shift<mode>_adj_2.
+	(@x86_shift<mode>_adj_3): Rename from x86_shift<mode>_adj_3.
+	(cmpstrnsi): Use gen_cmp_1.
+	(lwp_slwpcb): Use gen_lwp_slwpcb_1.
+	(@lwp_slwpcb<mode>_1): Rename from lwp_slwpcb<mode>_1.
+	(@umonitor_<mode>): Rename from umonitor_<mode>.
+	* config/i386/i386-expand.c (ix86_expand_copysign):
+	Use gen_copysign3_const and gen_copysign3_var.
+	(ix86_expand_xorsign): Use gen_xorsign3_1.
+	(ix86_expand_branch): Use gen_sub3_carry_ccc,
+	gen_sub3_carry_ccgz and gen_cmp1.
+	(ix86_expand_int_addcc): Use gen_sub3_carry and gen_add3_carry.
+	(ix86_split_ashl): Use gen_x86_shift_adj_1 and gen_x86_shift_adj_2.
+	(ix86_split_ashr): Use gen_x86_shift_adj_1 and gen_x86_shift_adj_3.
+	(ix86_split_lshr): Ditto.
+	(ix86_expand_builtin) <case IX86_BUILTIN_UMONITOR>: Use gen_umonitor.
+
+2019-06-18  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (build_constructor): Add MEM_STAT_DECL.
+
+2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-modes.def (CC_NZC): New CC_MODE.
+	* config/aarch64/aarch64-sve.md (*<optab><mode>3_cc)
+	(ptest_ptrue<mode>, while_ult<GPI:mode><PRED_ALL:mode>)
+	(*while_ult<GPI:mode><PRED_ALL:mode>_cc, *cmp<cmp_op><mode>)
+	(*cmp<cmp_op><mode>_ptest, *cmp<cmp_op><mode>_cc)
+	(*pred_cmp<cmp_op><mode>_combine, *pred_cmp<cmp_op><mode>)
+	(vec_cmp<mode><vpred>, vec_cmpu<mode><vpred>, cbranch<mode>4):
+	Use CC_NZC instead of CC.
+	* config/aarch64/aarch64.md (condjump): Print a '.' in SVE conditions.
+	* config/aarch64/aarch64.c (aarch64_sve_condition_codes): New variable.
+	(aarch64_print_operand): Handle E_CC_NZCmode.
+	(aarch64_emit_sve_ptrue_op_cc): Use gen_set_clobber_cc_nzc instead
+	of gen_set_clobber_cc.
+
+2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md: Tabify file.
+
+2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_pfalse_reg): Declare.
+	* config/aarch64/aarch64.c (aarch64_pfalse_reg): New function.
+	* config/aarch64/aarch64-sve.md: Use it.
+
+2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_ptrue_reg): Declare.
+	* config/aarch64/aarch64.c (aarch64_ptrue_reg): New functions.
+	(aarch64_expand_sve_widened_duplicate, aarch64_expand_sve_mem_move)
+	(aarch64_maybe_expand_sve_subreg_move, aarch64_evpc_rev_local)
+	(aarch64_expand_sve_vec_cmp_int): Use it.
+	(aarch64_expand_sve_vec_cmp_float): Likewise.
+	* config/aarch64/aarch64-sve.md: Likewise throughout.
+
+2019-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* config/aarch64/aarch64-sve.md (*cond_<optab><mode>_0): Delete.
+	(*cond_<optab><mode>_z): Fold into...
+	(*cond_<optab><mode>_any): ...here.  Also handle cases in which
+	operand 4 can be tied to operand 0 (either inherently or via RA).
+
+2019-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90900
+	* cfgexpand.c (expand_debug_expr): Treat NOTE_P DECL_RTL
+	as if optimized away.
+
 2019-06-18  Tom de Vries  <tdevries@suse.de>
 
 	* config/nvptx/nvptx-protos.h (gen_set_softstack_insn): Remove.
 	* config/nvptx/nvptx.c (gen_set_softstack_insn): Remove.
-	* config/nvptx/nvptx.md (define_insn "set_softstack_<mode>"): Rename to ...
+	* config/nvptx/nvptx.md (define_insn "set_softstack_<mode>"):
+	Rename to ...
 	(define_insn "@set_softstack_<mode>"): ... this.
 	(define_insn "omp_simt_enter_<mode>"): Rename to ...
 	(define_insn "@omp_simt_enter_<mode>"): ... this.

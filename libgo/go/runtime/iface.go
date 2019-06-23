@@ -15,10 +15,7 @@ import (
 //
 //go:linkname requireitab runtime.requireitab
 //go:linkname assertitab runtime.assertitab
-//go:linkname assertI2T runtime.assertI2T
-//go:linkname ifacetypeeq runtime.ifacetypeeq
-//go:linkname efacetype runtime.efacetype
-//go:linkname ifacetype runtime.ifacetype
+//go:linkname panicdottype runtime.panicdottype
 //go:linkname ifaceE2E2 runtime.ifaceE2E2
 //go:linkname ifaceI2E2 runtime.ifaceI2E2
 //go:linkname ifaceE2I2 runtime.ifaceE2I2
@@ -236,7 +233,7 @@ func (m *itab) init() string {
 			ri++
 		}
 
-		if !eqtype(lhsMethod.typ, rhsMethod.mtyp) {
+		if lhsMethod.typ != rhsMethod.mtyp {
 			m.methods[1] = nil
 			return *lhsMethod.name
 		}
@@ -356,35 +353,9 @@ func assertitab(lhs, rhs *_type) unsafe.Pointer {
 	return getitab(lhs, rhs, false)
 }
 
-// Check whether an interface type may be converted to a non-interface
-// type, panicing if not.
-func assertI2T(lhs, rhs, inter *_type) {
-	if rhs == nil {
-		panic(&TypeAssertionError{nil, nil, lhs, ""})
-	}
-	if !eqtype(lhs, rhs) {
-		panic(&TypeAssertionError{inter, rhs, lhs, ""})
-	}
-}
-
-// Compare two type descriptors for equality.
-func ifacetypeeq(a, b *_type) bool {
-	return eqtype(a, b)
-}
-
-// Return the type descriptor of an empty interface.
-// FIXME: This should be inlined by the compiler.
-func efacetype(e eface) *_type {
-	return e._type
-}
-
-// Return the type descriptor of a non-empty interface.
-// FIXME: This should be inlined by the compiler.
-func ifacetype(i iface) *_type {
-	if i.tab == nil {
-		return nil
-	}
-	return *(**_type)(i.tab)
+// panicdottype is called when doing an i.(T) conversion and the conversion fails.
+func panicdottype(lhs, rhs, inter *_type) {
+	panic(&TypeAssertionError{inter, rhs, lhs, ""})
 }
 
 // Convert an empty interface to an empty interface, for a comma-ok
@@ -435,7 +406,7 @@ func ifaceI2I2(inter *_type, i iface) (iface, bool) {
 
 // Convert an empty interface to a pointer non-interface type.
 func ifaceE2T2P(t *_type, e eface) (unsafe.Pointer, bool) {
-	if !eqtype(t, e._type) {
+	if t != e._type {
 		return nil, false
 	} else {
 		return e.data, true
@@ -444,7 +415,7 @@ func ifaceE2T2P(t *_type, e eface) (unsafe.Pointer, bool) {
 
 // Convert a non-empty interface to a pointer non-interface type.
 func ifaceI2T2P(t *_type, i iface) (unsafe.Pointer, bool) {
-	if i.tab == nil || !eqtype(t, *(**_type)(i.tab)) {
+	if i.tab == nil || t != *(**_type)(i.tab) {
 		return nil, false
 	} else {
 		return i.data, true
@@ -453,7 +424,7 @@ func ifaceI2T2P(t *_type, i iface) (unsafe.Pointer, bool) {
 
 // Convert an empty interface to a non-pointer non-interface type.
 func ifaceE2T2(t *_type, e eface, ret unsafe.Pointer) bool {
-	if !eqtype(t, e._type) {
+	if t != e._type {
 		typedmemclr(t, ret)
 		return false
 	} else {
@@ -468,7 +439,7 @@ func ifaceE2T2(t *_type, e eface, ret unsafe.Pointer) bool {
 
 // Convert a non-empty interface to a non-pointer non-interface type.
 func ifaceI2T2(t *_type, i iface, ret unsafe.Pointer) bool {
-	if i.tab == nil || !eqtype(t, *(**_type)(i.tab)) {
+	if i.tab == nil || t != *(**_type)(i.tab) {
 		typedmemclr(t, ret)
 		return false
 	} else {
@@ -514,7 +485,7 @@ func ifaceT2Ip(to, from *_type) bool {
 			ri++
 		}
 
-		if !eqtype(fromMethod.mtyp, toMethod.typ) {
+		if fromMethod.mtyp != toMethod.typ {
 			return false
 		}
 

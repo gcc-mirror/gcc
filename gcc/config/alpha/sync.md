@@ -43,7 +43,7 @@
   "mb"
   [(set_attr "type" "mb")])
 
-(define_insn "load_locked_<mode>"
+(define_insn "@load_locked_<mode>"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
 	(unspec_volatile:I48MODE
 	  [(match_operand:I48MODE 1 "memory_operand" "m")]
@@ -52,7 +52,7 @@
   "ld<modesuffix>_l %0,%1"
   [(set_attr "type" "ld_l")])
 
-(define_insn "store_conditional_<mode>"
+(define_insn "@store_conditional_<mode>"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (unspec_volatile:DI [(const_int 0)] UNSPECV_SC))
    (set (match_operand:I48MODE 1 "memory_operand" "=m")
@@ -132,7 +132,7 @@
   DONE;
 })
 
-(define_insn_and_split "atomic_compare_and_swap<mode>_1"
+(define_insn_and_split "@atomic_compare_and_swap<mode>_1"
   [(set (match_operand:DI 0 "register_operand" "=&r")		;; bool out
 	(unspec_volatile:DI [(const_int 0)] UNSPECV_CMPXCHG))
    (set (match_operand:DI 1 "register_operand" "=&r")		;; val out
@@ -189,7 +189,7 @@
   DONE;
 })
 
-(define_insn_and_split "atomic_exchange<mode>_1"
+(define_insn_and_split "@atomic_exchange<mode>_1"
   [(set (match_operand:DI 0 "register_operand" "=&r")		;; output
 	(zero_extend:DI
 	  (match_operand:I12MODE 1 "mem_noofs_operand" "+w")))	;; memory

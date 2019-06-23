@@ -762,6 +762,15 @@ format_item_1:
       error = unexpected_end;
       goto syntax;
 
+    case FMT_RPAREN:
+      if (flag_dec_blank_format_item)
+	goto finished;
+      else
+	{
+	  error = G_("Missing item in format string at %L");
+	  goto syntax;
+	}
+
     default:
       error = unexpected_element;
       goto syntax;
