@@ -1,3 +1,7 @@
+2019-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h: (__PPC__, __PPC64__): New.
+
 2019-06-22  Jeff Law  <law@redhat.com>
 
 	* config/avr/avr.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Remove.
