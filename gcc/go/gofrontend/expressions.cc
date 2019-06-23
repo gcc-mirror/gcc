@@ -1347,7 +1347,8 @@ Func_expression::get_code_pointer(Gogo* gogo, Named_object* no, Location loc)
   if (fntype->is_builtin())
     {
       go_error_at(loc,
-		  "invalid use of special builtin function %qs; must be called",
+		  ("invalid use of special built-in function %qs; "
+		   "must be called"),
 		  no->message_name().c_str());
       return gogo->backend()->error_expression();
     }
@@ -1386,7 +1387,7 @@ Func_expression::do_get_backend(Translate_context* context)
 	  if (no->func_declaration_value()->type()->is_builtin())
 	    {
 	      go_error_at(this->location(),
-			  ("invalid use of special builtin function %qs; "
+			  ("invalid use of special built-in function %qs; "
 			   "must be called"),
 			  no->message_name().c_str());
 	      return gogo->backend()->error_expression();
@@ -8425,7 +8426,7 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
 
   if (!type->in_heap())
     go_error_at(first_arg->location(),
-		"can't make slice of go:notinheap type");
+		"cannot make slice of go:notinheap type");
 
   bool is_slice = false;
   bool is_map = false;
@@ -9804,7 +9805,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	  {
 	    if (this->code_ == BUILTIN_PRINT)
 	      go_warning_at(this->location(), 0,
-			 "no arguments for builtin function %<%s%>",
+			 "no arguments for built-in function %<%s%>",
 			 (this->code_ == BUILTIN_PRINT
 			  ? "print"
 			  : "println"));
@@ -9946,7 +9947,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	Type* element_type = slice_type->array_type()->element_type();
 	if (!element_type->in_heap())
 	  go_error_at(args->front()->location(),
-		      "can't append to slice of go:notinheap type");
+		      "cannot append to slice of go:notinheap type");
 	if (this->is_varargs())
 	  {
 	    if (!args->back()->type()->is_slice_type()
@@ -14452,7 +14453,7 @@ void
 Allocation_expression::do_check_types(Gogo*)
 {
   if (!this->type_->in_heap())
-    go_error_at(this->location(), "can't heap allocate go:notinheap type");
+    go_error_at(this->location(), "cannot heap allocate go:notinheap type");
 }
 
 // Make a copy of an allocation expression.
@@ -19025,7 +19026,7 @@ Numeric_constant::check_int_type(Integer_type* type, bool issue_error,
 	  if (issue_error)
             {
               go_error_at(location,
-                          "floating point constant truncated to integer");
+                          "floating-point constant truncated to integer");
               this->set_invalid();
             }
 	  return false;
@@ -19113,7 +19114,8 @@ Numeric_constant::check_float_type(Float_type* type, bool issue_error,
 	  if (issue_error)
             {
               this->set_invalid();
-              go_error_at(location, "complex constant truncated to float");
+              go_error_at(location,
+			  "complex constant truncated to floating-point");
             }
 	  return false;
 	}
@@ -19178,7 +19180,7 @@ Numeric_constant::check_float_type(Float_type* type, bool issue_error,
 
   if (!ret && issue_error)
     {
-      go_error_at(location, "floating point constant overflow");
+      go_error_at(location, "floating-point constant overflow");
       this->set_invalid();
     }
 

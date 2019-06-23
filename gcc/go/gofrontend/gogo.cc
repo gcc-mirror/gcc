@@ -552,7 +552,7 @@ Gogo::import_package(const std::string& filename,
       if (package->pkgpath() == this->pkgpath())
 	go_error_at(location,
 		    ("imported package uses same package path as package "
-		     "being compiled (see -fgo-pkgpath option)"));
+		     "being compiled (see %<-fgo-pkgpath%> option)"));
 
       this->imports_.insert(std::make_pair(filename, package));
     }
@@ -2525,7 +2525,7 @@ Gogo::add_linkname(const std::string& go_name, bool is_exported,
   else
     go_error_at(loc,
 		("%s is not a function; "
-		 "//go:linkname is only supported for functions"),
+		 "%<//go:linkname%> is only supported for functions"),
 		go_name.c_str());
 }
 
@@ -3693,7 +3693,7 @@ Check_types_traverse::variable(Named_object* named_object)
           if (fntype->is_builtin())
             {
 	      go_error_at(init->location(),
-			  "invalid use of special builtin function %qs; "
+			  "invalid use of special built-in function %qs; "
 			  "must be called",
 			  no->message_name().c_str());
             }
@@ -8161,7 +8161,7 @@ Type_declaration::define_methods(Named_type* nt)
 	       ++p)
 	    go_error_at((*p)->location(),
 			("invalid receiver type "
-			 "(receiver must be a named type"));
+			 "(receiver must be a named type)"));
 	  return;
 	}
     }

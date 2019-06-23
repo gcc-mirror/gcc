@@ -420,7 +420,7 @@ Archive_file::read_big_archive_header(off_t off, std::string* pname,
       char* buf = new char[sizeof(hdr.ar_size) + 1];
       memcpy(buf, hdr.ar_size, sizeof(hdr.ar_size));
       go_error_at(this->location_,
-                  ("%s: malformed ar_size in entry header at %ld"
+                  ("%s: malformed size in entry header at %ld"
                    " (expected decimal, got %s)"),
                   this->filename_.c_str(), static_cast<long>(off), buf);
       delete[] buf;
@@ -434,7 +434,7 @@ Archive_file::read_big_archive_header(off_t off, std::string* pname,
       char* buf = new char[sizeof(hdr.ar_namlen) + 1];
       memcpy(buf, hdr.ar_namlen, sizeof(hdr.ar_namlen));
       go_error_at(this->location_,
-                  ("%s: malformed ar_namlen in entry header at %ld"
+                  ("%s: malformed name length in entry header at %ld"
                    " (expected decimal, got %s)"),
                   this->filename_.c_str(), static_cast<long>(off), buf);
       delete[] buf;
@@ -460,7 +460,7 @@ Archive_file::read_big_archive_header(off_t off, std::string* pname,
       char* buf = new char[sizeof(hdr.ar_nxtmem) + 1];
       memcpy(buf, hdr.ar_nxtmem, sizeof(hdr.ar_nxtmem));
       go_error_at(this->location_,
-                  ("%s: malformed ar_nxtmem in entry header at %ld"
+                  ("%s: malformed next member offset in entry header at %ld"
                    " (expected decimal, got %s)"),
                   this->filename_.c_str(), static_cast<long>(off), buf);
       delete[] buf;
@@ -655,7 +655,7 @@ Archive_file::get_file_and_offset(off_t off, const std::string& hdrname,
 	  int nfd = open(filename.c_str(), O_RDONLY | O_BINARY);
 	  if (nfd < 0)
 	    {
-	      go_error_at(this->location_, "%s: can't open nested archive %s",
+	      go_error_at(this->location_, "%s: cannot open nested archive %s",
 			  this->filename_.c_str(), filename.c_str());
 	      return false;
 	    }

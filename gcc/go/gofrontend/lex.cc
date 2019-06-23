@@ -1863,7 +1863,7 @@ Lex::skip_cpp_comment()
 	    }
 	}
       if (go_name.empty() || ext_name.empty())
-	go_error_at(loc, "usage: //go:linkname localname linkname");
+	go_error_at(loc, "usage: %<//go:linkname%> localname linkname");
       else
 	{
 	  if (this->linknames_ == NULL)

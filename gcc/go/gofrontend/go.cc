@@ -92,7 +92,7 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
 		   p != linknames->end();
 		   ++p)
 		go_error_at(p->second.loc,
-			    ("//go:linkname only allowed in Go files that "
+			    ("%<//go:linkname%> only allowed in Go files that "
 			     "import \"unsafe\""));
 	    }
 	  all_linknames.insert(linknames->begin(), linknames->end());
