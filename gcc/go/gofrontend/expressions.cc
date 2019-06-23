@@ -4026,7 +4026,7 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
           if (this->no_copy_)
             {
               if (gogo->debug_optimization())
-                go_inform(loc, "no copy string([]byte)");
+                go_debug(loc, "no copy string([]byte)");
               Expression* ptr = Expression::make_slice_info(this->expr_,
                                                             SLICE_INFO_VALUE_POINTER,
                                                             loc);
