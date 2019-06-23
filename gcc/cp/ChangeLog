@@ -1,3 +1,50 @@
+2019-06-23  Marek Polacek  <polacek@redhat.com>
+
+	* call.c (convert_default_arg): Use DEFERRED_PARSE instead of
+	DEFAULT_ARG.
+	* cp-objcp-common.c (cp_tree_size): Likewise.  Use tree_deferred_parse
+	instead of tree_default_arg.
+	* cp-tree.def: Rename DEFAULT_ARG to DEFERRED_PARSE.
+	* cp-tree.h: Rename DEFARG_TOKENS to DEFPARSE_TOKENS.  Rename
+	DEFARG_INSTANTIATIONS to DEFPARSE_INSTANTIATIONS.  Rename
+	tree_default_arg to tree_deferred_parse.
+	(UNPARSED_NOEXCEPT_SPEC_P): Use DEFERRED_PARSE instead of DEFAULT_ARG.
+	(cp_tree_node_structure_enum): Rename TS_CP_DEFAULT_ARG to
+	TS_CP_DEFERRED_PARSE.
+	(lang_tree_node): Rename tree_default_arg to tree_deferred_parse.
+	Rename default_arg to deferred_parse.  Use TS_CP_DEFERRED_PARSE instead
+	of TS_CP_DEFAULT_ARG.
+	(defarg_location): Remove declaration.
+	(defparse_location): Add declaration.
+	* decl.c (grokfndecl): Use DEFERRED_PARSE instead of DEFAULT_ARG.
+	Call defparse_location instead of defarg_location.
+	(check_default_argument): Use DEFERRED_PARSE instead of DEFAULT_ARG.
+	(cp_tree_node_structure): Likewise.  Use TS_CP_DEFERRED_PARSE instead
+	of TS_CP_DEFAULT_ARG.
+	* decl2.c (grokfield): Use DEFERRED_PARSE instead of DEFAULT_ARG.
+	* error.c (dump_expr): Likewise.
+	(location_of): Likewise.
+	* init.c (get_nsdmi): Likewise.
+	* parser.c (cp_parser_save_noexcept): Likewise.  Use DEFPARSE_TOKENS
+	instead of DEFARG_TOKENS.
+	(cp_parser_late_noexcept_specifier): Likewise.
+	(cp_parser_late_parse_one_default_arg): Use DEFPARSE_TOKENS instead
+	of DEFARG_TOKENS.
+	(cp_parser_late_parsing_default_args): Use DEFERRED_PARSE instead of
+	DEFAULT_ARG.  Use DEFPARSE_INSTANTIATIONS instead of
+	DEFARG_INSTANTIATIONS.
+	(cp_parser_cache_defarg): Use DEFERRED_PARSE instead of DEFAULT_ARG.
+	Use DEFPARSE_TOKENS instead of DEFARG_TOKENS.  Use
+	DEFPARSE_INSTANTIATIONS instead of DEFARG_INSTANTIATIONS.
+	(defparse_location): Renamed from defarg_location.
+	* pt.c (tsubst_default_argument): Use DEFERRED_PARSE instead of
+	DEFAULT_ARG.
+	(tsubst_arg_types): Likewise.
+	(dependent_type_p_r): Likewise.
+	* tree.c (cp_tree_equal): Likewise.
+	(cp_walk_subtrees): Likewise.
+	* typeck.c (convert_arguments): Likewise.
+
 2019-06-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/86476 - noexcept-specifier is a complete-class context.

@@ -25267,7 +25267,7 @@ cp_parser_base_specifier (cp_parser* parser)
 /* Exception handling [gram.exception] */
 
 /* Save the tokens that make up the noexcept-specifier for a member-function.
-   Returns a DEFAULT_ARG.  */
+   Returns a DEFERRED_PARSE.  */
 
 static tree
 cp_parser_save_noexcept (cp_parser *parser)
@@ -25277,12 +25277,12 @@ cp_parser_save_noexcept (cp_parser *parser)
   cp_parser_cache_group (parser, CPP_CLOSE_PAREN, /*depth=*/0);
   cp_token *last = parser->lexer->next_token;
 
-  /* As with default arguments and NSDMIs, make use of DEFAULT_ARG
+  /* As with default arguments and NSDMIs, make use of DEFERRED_PARSE
      to carry the information we will need.  */
-  tree expr = make_node (DEFAULT_ARG);
+  tree expr = make_node (DEFERRED_PARSE);
   /* Save away the noexcept-specifier; we will process it when the
      class is complete.  */
-  DEFARG_TOKENS (expr) = cp_token_cache_new (first, last);
+  DEFPARSE_TOKENS (expr) = cp_token_cache_new (first, last);
   expr = build_tree_list (expr, NULL_TREE);
   return expr;
 }
@@ -25295,13 +25295,13 @@ static tree
 cp_parser_late_noexcept_specifier (cp_parser *parser, tree default_arg)
 {
   /* Make sure we've gotten something that hasn't been parsed yet.  */
-  gcc_assert (TREE_CODE (default_arg) == DEFAULT_ARG);
+  gcc_assert (TREE_CODE (default_arg) == DEFERRED_PARSE);
 
   push_unparsed_function_queues (parser);
 
   /* Push the saved tokens for the noexcept-specifier onto the parser's
      lexer stack.  */
-  cp_token_cache *tokens = DEFARG_TOKENS (default_arg);
+  cp_token_cache *tokens = DEFPARSE_TOKENS (default_arg);
   cp_parser_push_lexer_for_tokens (parser, tokens);
 
   /* Parse the cached noexcept-specifier.  */
@@ -28718,7 +28718,7 @@ cp_parser_save_member_function_body (cp_parser* parser,
 }
 
 /* Save the tokens that make up the in-class initializer for a non-static
-   data member.  Returns a DEFAULT_ARG.  */
+   data member.  Returns a DEFERRED_PARSE.  */
 
 static tree
 cp_parser_save_nsdmi (cp_parser* parser)
@@ -28955,7 +28955,7 @@ cp_parser_late_parse_one_default_arg (cp_parser *parser, tree decl,
 
   /* Push the saved tokens for the default argument onto the parser's
      lexer stack.  */
-  tokens = DEFARG_TOKENS (default_arg);
+  tokens = DEFPARSE_TOKENS (default_arg);
   cp_parser_push_lexer_for_tokens (parser, tokens);
 
   start_lambda_scope (decl);
@@ -29022,7 +29022,7 @@ cp_parser_late_parsing_nsdmi (cp_parser *parser, tree field)
 }
 
 /* FN is a FUNCTION_DECL which may contains a parameter with an
-   unparsed DEFAULT_ARG.  Parse the default args now.  This function
+   unparsed DEFERRED_PARSE.  Parse the default args now.  This function
    assumes that the current scope is the scope in which the default
    argument should be processed.  */
 
@@ -29060,7 +29060,7 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       if (!default_arg)
 	continue;
 
-      if (TREE_CODE (default_arg) != DEFAULT_ARG)
+      if (TREE_CODE (default_arg) != DEFERRED_PARSE)
 	/* This can happen for a friend declaration for a function
 	   already declared with default arguments.  */
 	continue;
@@ -29072,7 +29072,7 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       TREE_PURPOSE (parm) = parsed_arg;
 
       /* Update any instantiations we've already created.  */
-      for (insts = DEFARG_INSTANTIATIONS (default_arg), ix = 0;
+      for (insts = DEFPARSE_INSTANTIATIONS (default_arg), ix = 0;
 	   vec_safe_iterate (insts, ix, &copy); ix++)
 	TREE_PURPOSE (copy) = parsed_arg;
     }
@@ -30239,22 +30239,22 @@ cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
       token = cp_lexer_consume_token (parser->lexer);
     }
 
-  /* Create a DEFAULT_ARG to represent the unparsed default
+  /* Create a DEFERRED_PARSE to represent the unparsed default
      argument.  */
-  default_argument = make_node (DEFAULT_ARG);
-  DEFARG_TOKENS (default_argument)
+  default_argument = make_node (DEFERRED_PARSE);
+  DEFPARSE_TOKENS (default_argument)
     = cp_token_cache_new (first_token, token);
-  DEFARG_INSTANTIATIONS (default_argument) = NULL;
+  DEFPARSE_INSTANTIATIONS (default_argument) = NULL;
 
   return default_argument;
 }
 
-/* A location to use for diagnostics about an unparsed DEFAULT_ARG.  */
+/* A location to use for diagnostics about an unparsed DEFERRED_PARSE.  */
 
 location_t
-defarg_location (tree default_argument)
+defparse_location (tree default_argument)
 {
-  cp_token_cache *tokens = DEFARG_TOKENS (default_argument);
+  cp_token_cache *tokens = DEFPARSE_TOKENS (default_argument);
   location_t start = tokens->first->location;
   location_t end = tokens->last->location;
   return make_location (start, start, end);
