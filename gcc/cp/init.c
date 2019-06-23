@@ -564,7 +564,7 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
       location_t expr_loc
 	= cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (member));
       tree *slot;
-      if (TREE_CODE (init) == DEFAULT_ARG)
+      if (TREE_CODE (init) == DEFERRED_PARSE)
 	/* Unparsed.  */;
       else if (nsdmi_inst && (slot = nsdmi_inst->get (member)))
 	init = *slot;
@@ -629,7 +629,7 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
   else
     init = DECL_INITIAL (member);
 
-  if (init && TREE_CODE (init) == DEFAULT_ARG)
+  if (init && TREE_CODE (init) == DEFERRED_PARSE)
     {
       if (complain & tf_error)
 	{
