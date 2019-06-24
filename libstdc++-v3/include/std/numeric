@@ -69,9 +69,8 @@
  * @defgroup numerics Numerics
  *
  * Components for performing numeric operations. Includes support for
- * for complex number types, random number generation, numeric
- * (n-at-a-time) arrays, generalized numeric algorithms, and special
- * math functions.
+ * complex number types, random number generation, numeric (n-at-a-time)
+ * arrays, generalized numeric algorithms, and mathematical special functions.
  */
 
 #if __cplusplus >= 201402L
@@ -156,11 +155,22 @@ namespace __detail
 
 #endif // C++17
 
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+
+#endif // C++14
+
 #if __cplusplus > 201703L
+#include <limits>
+#include <bits/std_abs.h>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
   // midpoint
 # define __cpp_lib_interpolate 201902L
 
-template<typename _Tp>
+  template<typename _Tp>
     constexpr
     enable_if_t<__and_v<is_arithmetic<_Tp>, is_same<remove_cv_t<_Tp>, _Tp>,
 			__not_<is_same<_Tp, bool>>>,
@@ -182,11 +192,17 @@ template<typename _Tp>
 	    }
 	  return __a + __k * _Tp(_Up(__M - __m) / 2);
 	}
-      else
+      else // is_floating
 	{
-	  return __builtin_isnormal(__a) && __builtin_isnormal(__b)
-	    ? __a / 2 + __b / 2
-	    : (__a + __b) / 2;
+	  constexpr _Tp __lo = numeric_limits<_Tp>::min() * 2;
+	  constexpr _Tp __hi = numeric_limits<_Tp>::max() / 2;
+	  if (std::abs(__a) <= __hi && std::abs(__b) <= __hi) [[likely]]
+	    return (__a + __b) / 2; // always correctly rounded
+	  if (std::abs(__a) < __lo) // not safe to halve __a
+	    return __a + __b/2;
+	  if (std::abs(__b) < __lo) // not safe to halve __b
+	    return __a/2 + __b;
+	  return __a/2 + __b/2;	    // otherwise correctly rounded
 	}
     }
 
@@ -197,12 +213,10 @@ template<typename _Tp>
     {
       return __a  + (__b - __a) / 2;
     }
-#endif // C++20
-
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif // C++14
+#endif // C++20
 
 #if __cplusplus > 201402L
 #include <bits/stl_function.h>

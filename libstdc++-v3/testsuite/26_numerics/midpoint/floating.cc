@@ -20,6 +20,7 @@
 
 #include <numeric>
 #include <limits>
+#include <cfloat>
 #include <testsuite_hooks.h>
 
 void
@@ -55,6 +56,19 @@ test03()
   VERIFY( std::midpoint(0.0l, 0.4l) == 0.2l );
   VERIFY( std::midpoint(0.0l, -0.0l) == 0.0l );
   VERIFY( std::midpoint(9e9l, -9e9l) == 0.0l );
+}
+
+namespace test04
+{
+  // https://gcc.gnu.org/ml/libstdc++/2019-03/msg00065.html
+  constexpr double d = DBL_MIN + DBL_TRUE_MIN;
+  static_assert( std::midpoint(d, d) == d );
+
+  constexpr float f = FLT_MIN + FLT_TRUE_MIN;
+  static_assert( std::midpoint(f, f) == f );
+
+  constexpr long double l = LDBL_MIN + LDBL_TRUE_MIN;
+  static_assert( std::midpoint(l, l) == l );
 }
 
 int main()
