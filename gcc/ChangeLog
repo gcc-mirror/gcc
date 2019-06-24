@@ -1,3 +1,10 @@
+2019-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90930
+	PR tree-optimization/90316
+	* tree-ssa-alias.c (walk_non_aliased_vuses): Add missing
+	decrement of limit.
+
 2019-06-16  Jeff Law  <law@redhat.com>
 
 	Backport from mainline
