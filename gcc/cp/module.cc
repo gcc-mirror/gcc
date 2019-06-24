@@ -2259,7 +2259,6 @@ private:
     DB_HIDDEN_BIT,		/* A hidden binding.  */
     DB_FRIEND_BIT,		/* An injected friend of a template.  */
     DB_MERGEABLE_BIT,		/* An entity that needs merging.  */
-    DB_OOT_SPEC_BIT,		/* Out Of Table spec entry.  */
   };
 
 public:
@@ -2539,8 +2538,6 @@ depset::depset (tree entity)
 inline
 depset::~depset ()
 {
-  if (!is_binding () && get_flag_bit<DB_OOT_SPEC_BIT> ())
-    delete reinterpret_cast <spec_entry *> (deps[0]);
   deps.release ();
 }
 
@@ -8570,29 +8567,10 @@ trees_out::key_mergeable (tree decl, tree inner, tree)
 	}
 
       tree tmpl, args;
-      // FIXME: Why aren't all specializations so marked?
-      if (spec->is_marked ())
-	{
-	  spec_entry *entry = reinterpret_cast <spec_entry *> (spec->deps[0]);
-	  tmpl = entry->tmpl;
-	  args = entry->args;
-	}
-      else
-	{
-	  // FIXME: Not reachable now add_dependency creates them on insertion.
-	  gcc_unreachable ();
-	  /* most_general_template stops at specializations.  We don't
-	     want that.  */
-	  tmpl  = decl;
-	  args = NULL;
-	  int use_tpl;
-	  while (tree ti = node_template_info (tmpl, use_tpl))
-	    {
-	      if (!args)
-		args = TI_ARGS (ti);
-	      tmpl = TI_TEMPLATE (ti);
-	    }
-	}
+      gcc_assert (spec->is_marked ());
+      spec_entry *entry = reinterpret_cast <spec_entry *> (spec->deps[0]);
+      tmpl = entry->tmpl;
+      args = entry->args;
 
       /* The template will not be a namespace!  */
       tree_ctx (tmpl, false, NULL_TREE);
@@ -9734,25 +9712,8 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	     bindings.  */
 	  *slot = dep = make_entity (decl, ek, has_def);
 
-	  if (current && ek == EK_SPECIALIZATION)
-	    {
-	      /* We can meet specializations during the dependency
-		 walk because non-member templates (of templates) aren't in
-		 the specialization table. But are for our purposes.  */
-	      tree ctx = DECL_CONTEXT (decl);
-	      tree tmpl = DECL_TI_TEMPLATE (decl);
-
-	      gcc_assert (CLASS_TYPE_P (ctx)
-			  && !DECL_MEMBER_TEMPLATE_P (tmpl));
-	      spec_entry *entry = new spec_entry ();
-
-	      entry->tmpl = tmpl;
-	      entry->args = DECL_TI_ARGS (decl);
-	      entry->spec = decl;
-	      dep->set_flag_bit<DB_OOT_SPEC_BIT> ();
-	      dep->set_marked ();
-	      dep->deps.safe_push (reinterpret_cast<depset *> (entry));
-	    }
+	  /* We should never meet an unknown specialization.  */
+	  gcc_assert (!(current && ek == EK_SPECIALIZATION));
 
 	  if (TREE_CODE (decl) == TEMPLATE_DECL)
 	    /* If we add a template, its result better not also be

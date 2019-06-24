@@ -121,36 +121,42 @@ proc module_bmi_p { src ifs } {
 }
 
 # link and maybe run a set of object files
-# dg-module-do WHAT OPTIONS WHEN
+# dg-module-do WHAT WHEN
 proc dg-module-do { args } {
-    if { [llength $args] > 4 } {
+    if { [llength $args] > 3 } {
 	error "[lindex $args 0]: too many arguments"
 	return
     }
 
+    set do_what [lindex $args 1]
+    set expected "P"
+    if { [llength $args] > 2 } {
+	set expected [dg-process-target [lindex $args 2]]
+    }
+
     global module_do
-    set module_do $args
+    set module_do [list $do_what $expected]
 }
 
 proc module_do_it { do_what testcase asm_list } {
     global tool
 
     set run 0
-    switch [lindex $do_what 1] {
+    switch [lindex $do_what 0] {
+	"compile" { return 1 }
 	"link" { }
 	"run" { set run 1 }
 	default { error "unknown module-do action [lindex $do_what 0]" }
     }
 
     set xfail {}
-    if { [llength $do_what] > 2 } {
-	switch [dg-process-target [lindex $do_what 2]] {
-	    "S" { }
-	    "N" { return 1 }
-	    "F" { set xfail {setup_xfail "*-*-*"} }
-	    "P" { }
-	}
+    switch [lindex $do_what 1] {
+	"S" { }
+	"N" { return 1 }
+	"F" { set xfail {setup_xfail "*-*-*"} }
+	"P" { }
     }
+
     set ok 1
     # make sure all asms are around
     foreach asm $asm_list {
@@ -245,26 +251,27 @@ foreach src [lsort [find $srcdir/$subdir {*_a.[CH}]] {
 			      [regsub {_a.[CH]$} [file tail $src] {_[a-z].[CH]}]]]
 
 	set mod_files {}
-	set module_do {}
+	global module_do
+	set module_do {"compile" "P"}
 	set asm_list {}
 	foreach test $tests {
-	    set module_bmis {}
-	    set nshort [file tail [file dirname $test]]/[file tail $test]
-	    verbose "Testing $nshort" 1
-	    if { [file extension $test] == ".C" } {
-		lappend asm_list [file rootname [file tail $test]].s
+	    if { [lindex $module_do 1] != "N" } {
+		set module_bmis {}
+		set nshort [file tail [file dirname $test]]/[file tail $test]
+		verbose "Testing $nshort" 1
+		if { [file extension $test] == ".C" } {
+		    lappend asm_list [file rootname [file tail $test]].s
+		}
+		dg-test -keep-output $test "" $DEFAULT_MODFLAGS
+		set testcase [string range $test [string length "$srcdir/"] end]
+		lappend mod_files [module_bmi_p $testcase $module_bmis]
 	    }
-	    dg-test -keep-output $test "" $DEFAULT_MODFLAGS
-	    set testcase [string range $test [string length "$srcdir/"] end]
-	    lappend mod_files [module_bmi_p $testcase $module_bmis]
 	}
 	set ok 1
-	if { $module_do != "" } {
-	    set testcase [regsub {_a.[CH]} $src {}]
-	    set testcase \
-		[string range $testcase [string length "$srcdir/"] end]
-	    set ok [module_do_it $module_do $testcase $asm_list]
-	}
+	set testcase [regsub {_a.[CH]} $src {}]
+	set testcase \
+	    [string range $testcase [string length "$srcdir/"] end]
+	set ok [module_do_it $module_do $testcase $asm_list]
 	if { $ok } {
 	    foreach asm $asm_list {
 		file_on_host delete $asm
