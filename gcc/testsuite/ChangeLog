@@ -1,5 +1,10 @@
 2019-06-24  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc.target/powerpc/spec-barr-1.c: Adjust scan assembler regex
+	to recognise Darwin's register names.
+
+2019-06-24  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc.dg/cpp/isysroot-1.c: Use <example.h> as the test header.
 	* gcc.dg/cpp/usr/include/stdio.h: Rename...
 	* gcc.dg/cpp/usr/include/example.h: ... to this.
