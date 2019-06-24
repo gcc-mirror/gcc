@@ -1,3 +1,8 @@
+2019-06-24  Martin Sebor  <msebor@redhat.com>
+
+	* gcc-interface/utils.c (handle_nonnull_attribute): Quote attribute
+	name.
+
 2019-06-18  Arnaud Charlet  <charlet@adacore.com>
 
 PR ada/80590

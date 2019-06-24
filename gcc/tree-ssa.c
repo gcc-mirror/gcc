@@ -631,7 +631,7 @@ release_defs_bitset (bitmap toremove)
    the verification errors.  Their format strings don't follow GCC
    diagnostic conventions and the calls are ultimately followed by
    one to internal_error.  */
-#if __GNUC__ > 10
+#if __GNUC__ >= 10
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wformat-diag"
 #endif

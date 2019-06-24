@@ -1,3 +1,8 @@
+2019-06-24  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wfloat-equal-1.c: Adjust text of expected diagnostic.
+	* gcc.dg/misc-column.c: Ditto.
+
 2019-06-23  Ian Lance Taylor  <iant@golang.org>
 
 	* go.test/test/blank1.go: Update for diagnostic message changes.

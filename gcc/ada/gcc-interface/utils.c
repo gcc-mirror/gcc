@@ -6234,7 +6234,8 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 	  && (!TYPE_ATTRIBUTES (type)
 	      || !lookup_attribute ("type generic", TYPE_ATTRIBUTES (type))))
 	{
-	  error ("nonnull attribute without arguments on a non-prototype");
+	  error ("%qs attribute without arguments on a non-prototype",
+		 "nonnull");
 	  *no_add_attrs = true;
 	}
       return NULL_TREE;
@@ -6248,8 +6249,8 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 
       if (!get_nonnull_operand (TREE_VALUE (args), &arg_num))
 	{
-	  error ("nonnull argument has invalid operand number (argument %lu)",
-		 (unsigned long) attr_arg_num);
+	  error ("%qs argument has invalid operand number (argument %lu)",
+		 "nonnull", (unsigned long) attr_arg_num);
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -6270,8 +6271,8 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 	  if (!argument
 	      || TREE_CODE (argument) == VOID_TYPE)
 	    {
-	      error ("nonnull argument with out-of-range operand number "
-		     "(argument %lu, operand %lu)",
+	      error ("%qs argument with out-of-range operand number "
+		     "(argument %lu, operand %lu)", "nonnull",
 		     (unsigned long) attr_arg_num, (unsigned long) arg_num);
 	      *no_add_attrs = true;
 	      return NULL_TREE;
@@ -6279,8 +6280,8 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 
 	  if (TREE_CODE (argument) != POINTER_TYPE)
 	    {
-	      error ("nonnull argument references non-pointer operand "
-		     "(argument %lu, operand %lu)",
+	      error ("%qs argument references non-pointer operand "
+		     "(argument %lu, operand %lu)", "nonnull",
 		   (unsigned long) attr_arg_num, (unsigned long) arg_num);
 	      *no_add_attrs = true;
 	      return NULL_TREE;

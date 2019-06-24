@@ -13,7 +13,7 @@ extern void bar();
 
 void foo (void)
 {
-  if (a == b) /* { dg-warning "9:comparing floating point with" } */
+  if (a == b) /* { dg-warning "9:comparing floating-point with" } */
     bar ();
 
   if (p < q) /* { dg-warning "9:comparison of distinct pointer types" } */
