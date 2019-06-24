@@ -1,3 +1,11 @@
+2019-06-24  Jan Hubicka  <jh@suse.cz>
+
+	* trans-expr.c (gfc_conv_substring): Check that
+	type is array or integer prior checking string flag.
+	(gfc_conv_string_parameter): Likewise.
+	* trans-openmp.c (gfc_omp_scalar_p): Likewise.
+	* trans.c (gfc_build_array_ref): Likewise.
+
 2019-06-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/89782

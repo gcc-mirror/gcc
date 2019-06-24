@@ -1138,7 +1138,8 @@ gnat_signed_type_for (tree type_node)
 static inline tree
 maybe_character_type (tree type)
 {
-  if (TYPE_STRING_FLAG (type) && !TYPE_UNSIGNED (type))
+  if (TREE_CODE (type) == INTEGER_TYPE
+      && TYPE_STRING_FLAG (type) && !TYPE_UNSIGNED (type))
     type = gnat_unsigned_type_for (type);
 
   return type;
@@ -1151,7 +1152,8 @@ maybe_character_value (tree expr)
 {
   tree type = TREE_TYPE (expr);
 
-  if (TYPE_STRING_FLAG (type) && !TYPE_UNSIGNED (type))
+  if (TREE_CODE (type) == INTEGER_TYPE
+      && TYPE_STRING_FLAG (type) && !TYPE_UNSIGNED (type))
     {
       type = gnat_unsigned_type_for (type);
       expr = convert (type, expr);

@@ -1,3 +1,10 @@
+2019-06-24  Jan Hubicka  <jh@suse.cz>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Check that
+	type is array or integer prior checking string flag.
+	* gcc-interface/gigi.h (gnat_signed_type_for,
+	maybe_character_value): Likewise.
+
 2019-06-24  Martin Sebor  <msebor@redhat.com>
 
 	* gcc-interface/utils.c (handle_nonnull_attribute): Quote attribute

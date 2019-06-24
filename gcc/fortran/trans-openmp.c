@@ -1222,7 +1222,8 @@ gfc_omp_scalar_p (tree decl)
 	  || GFC_CLASS_TYPE_P (type))
 	return false;
     }
-  if (TYPE_STRING_FLAG (type))
+  if ((TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == INTEGER_TYPE)
+      && TYPE_STRING_FLAG (type))
     return false;
   if (INTEGRAL_TYPE_P (type)
       || SCALAR_FLOAT_TYPE_P (type)

@@ -1143,7 +1143,6 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
       hstate.add_hwi (TYPE_MODE (t));
-      hstate.add_flag (TYPE_STRING_FLAG (t));
       /* TYPE_NO_FORCE_BLK is private to stor-layout and need
  	 no streaming.  */
       hstate.add_flag (TYPE_PACKED (t));
@@ -1154,9 +1153,12 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 	{
 	  hstate.add_flag (TYPE_TRANSPARENT_AGGR (t));
 	  hstate.add_flag (TYPE_FINAL_P (t));
+          hstate.add_flag (TYPE_CXX_ODR_P (t));
 	}
       else if (code == ARRAY_TYPE)
 	hstate.add_flag (TYPE_NONALIASED_COMPONENT (t));
+      if (code == ARRAY_TYPE || code == INTEGER_TYPE)
+        hstate.add_flag (TYPE_STRING_FLAG (t));
       if (AGGREGATE_TYPE_P (t))
 	hstate.add_flag (TYPE_TYPELESS_STORAGE (t));
       hstate.commit_flag ();
