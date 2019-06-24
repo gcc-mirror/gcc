@@ -1,3 +1,8 @@
+2019-06-24  Jason Merrill  <jason@redhat.com>
+
+	* class.c (layout_class_type): Don't use a separate
+	CLASSTYPE_AS_BASE if it's the same size.
+
 2019-06-23  Marek Polacek  <polacek@redhat.com>
 
 	* call.c (convert_default_arg): Use DEFERRED_PARSE instead of
