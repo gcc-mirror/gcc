@@ -1,5 +1,11 @@
 2019-06-24  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/90972
+	* tree-vect-stmts.c (vect_init_vector): Handle CONSTANT_CLASS_P
+	in common code, dealing with STRING_CST properly.
+
+2019-06-24  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/90930
 	PR tree-optimization/90316
 	* tree-ssa-alias.c (walk_non_aliased_vuses): Add missing
