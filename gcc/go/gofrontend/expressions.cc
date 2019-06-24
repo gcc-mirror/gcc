@@ -6199,7 +6199,8 @@ Binary_expression::lower_compare_to_memcmp(Gogo*, Statement_inserter* inserter)
 					       TYPE_INFO_SIZE);
 
   Expression* call = Runtime::make_call(Runtime::MEMCMP, loc, 3, a1, a2, len);
-  Expression* zero = Expression::make_integer_ul(0, NULL, loc);
+  Type* int32_type = Type::lookup_integer_type("int32");
+  Expression* zero = Expression::make_integer_ul(0, int32_type, loc);
   return Expression::make_binary(this->op_, call, zero, loc);
 }
 
