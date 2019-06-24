@@ -1,3 +1,8 @@
+2019-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90972
+	* gcc.dg/torture/pr90972.c: New testcase.
+
 2019-06-24  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/Wfloat-equal-1.c: Adjust text of expected diagnostic.
