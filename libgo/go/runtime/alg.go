@@ -44,7 +44,6 @@ import (
 //go:linkname ifacevaleq runtime.ifacevaleq
 //go:linkname ifaceefaceeq runtime.ifaceefaceeq
 //go:linkname efacevaleq runtime.efacevaleq
-//go:linkname eqstring runtime.eqstring
 //go:linkname cmpstring runtime.cmpstring
 //
 // Temporary to be called from C code.
