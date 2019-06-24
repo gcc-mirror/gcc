@@ -520,6 +520,8 @@ const char * aarch64_output_probe_sve_stack_clash (rtx, rtx, rtx, rtx);
 void aarch64_err_no_fpadvsimd (machine_mode);
 void aarch64_expand_epilogue (bool);
 void aarch64_expand_mov_immediate (rtx, rtx, rtx (*) (rtx, rtx) = 0);
+rtx aarch64_ptrue_reg (machine_mode);
+rtx aarch64_pfalse_reg (machine_mode);
 void aarch64_emit_sve_pred_move (rtx, rtx, rtx);
 void aarch64_expand_sve_mem_move (rtx, rtx, machine_mode);
 bool aarch64_maybe_expand_sve_subreg_move (rtx, rtx);

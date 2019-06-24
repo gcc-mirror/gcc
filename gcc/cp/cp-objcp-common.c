@@ -67,7 +67,7 @@ cp_tree_size (enum tree_code code)
     case PTRMEM_CST:		return sizeof (ptrmem_cst);
     case BASELINK:		return sizeof (tree_baselink);
     case TEMPLATE_PARM_INDEX:	return sizeof (template_parm_index);
-    case DEFAULT_ARG:		return sizeof (tree_default_arg);
+    case DEFERRED_PARSE:	return sizeof (tree_deferred_parse);
     case DEFERRED_NOEXCEPT:	return sizeof (tree_deferred_noexcept);
     case OVERLOAD:		return sizeof (tree_overload);
     case STATIC_ASSERT:         return sizeof (tree_static_assert);

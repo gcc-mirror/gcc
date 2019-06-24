@@ -20,6 +20,7 @@
 // 20.6.6.2 Template class shared_ptr [util.smartptr.shared]
 
 #include <memory>
+#include <string>
 #include <testsuite_hooks.h>
 
 struct A { };

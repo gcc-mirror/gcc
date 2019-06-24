@@ -33,6 +33,8 @@
 CC_MODE (CCFP);
 CC_MODE (CCFPE);
 CC_MODE (CC_SWP);
+CC_MODE (CC_NZC);   /* Only N, Z and C bits of condition flags are valid.
+		       (Used with SVE predicate tests.)  */
 CC_MODE (CC_NZ);    /* Only N and Z bits of condition flags are valid.  */
 CC_MODE (CC_Z);     /* Only Z bit of condition flags is valid.  */
 CC_MODE (CC_C);     /* C represents unsigned overflow of a simple addition.  */

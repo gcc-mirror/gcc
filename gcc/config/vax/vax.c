@@ -59,7 +59,6 @@ static rtx vax_function_arg (cumulative_args_t, machine_mode,
 static void vax_function_arg_advance (cumulative_args_t, machine_mode,
 				      const_tree, bool);
 static rtx vax_struct_value_rtx (tree, int);
-static rtx vax_builtin_setjmp_frame_value (void);
 static void vax_asm_trampoline_template (FILE *);
 static void vax_trampoline_init (rtx, tree, rtx);
 static poly_int64 vax_return_pops_args (tree, tree, poly_int64);
@@ -98,9 +97,6 @@ static HOST_WIDE_INT vax_starting_frame_offset (void);
 
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX vax_struct_value_rtx
-
-#undef TARGET_BUILTIN_SETJMP_FRAME_VALUE
-#define TARGET_BUILTIN_SETJMP_FRAME_VALUE vax_builtin_setjmp_frame_value
 
 #undef TARGET_LRA_P
 #define TARGET_LRA_P hook_bool_void_false
@@ -1065,12 +1061,6 @@ vax_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 		      int incoming ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (Pmode, VAX_STRUCT_VALUE_REGNUM);
-}
-
-static rtx
-vax_builtin_setjmp_frame_value (void)
-{
-  return hard_frame_pointer_rtx;
 }
 
 /* Worker function for NOTICE_UPDATE_CC.  */

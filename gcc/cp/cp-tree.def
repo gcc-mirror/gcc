@@ -207,10 +207,11 @@ DEFTREECODE (USING_DECL, "using_decl", tcc_declaration, 0)
 /* A using directive. The operand is USING_STMT_NAMESPACE.  */
 DEFTREECODE (USING_STMT, "using_stmt", tcc_statement, 1)
 
-/* An un-parsed default argument.  Holds a vector of input tokens and
+/* An un-parsed operand.  Holds a vector of input tokens and
    a vector of places where the argument was instantiated before
-   parsing had occurred.  */
-DEFTREECODE (DEFAULT_ARG, "default_arg", tcc_exceptional, 0)
+   parsing had occurred.  This is used for default arguments, delayed
+   NSDMIs, and noexcept-specifier parsing.  */
+DEFTREECODE (DEFERRED_PARSE, "deferred_parse", tcc_exceptional, 0)
 
 /* An uninstantiated/unevaluated noexcept-specification.  For the
    uninstantiated case, DEFERRED_NOEXCEPT_PATTERN is the pattern from the

@@ -1025,8 +1025,8 @@
   ""
 {
   if (TARGET_SOFT_STACK)
-    emit_insn (gen_set_softstack_insn (gen_rtx_REG (Pmode,
-						    SOFTSTACK_PREV_REGNUM)));
+    emit_insn (gen_set_softstack (Pmode, gen_rtx_REG (Pmode,
+						      SOFTSTACK_PREV_REGNUM)));
   emit_jump_insn (gen_return ());
   DONE;
 })
@@ -1059,7 +1059,7 @@
     {
       emit_move_insn (stack_pointer_rtx,
 		      gen_rtx_MINUS (Pmode, stack_pointer_rtx, operands[1]));
-      emit_insn (gen_set_softstack_insn (stack_pointer_rtx));
+      emit_insn (gen_set_softstack (Pmode, stack_pointer_rtx));
       emit_move_insn (operands[0], virtual_stack_dynamic_rtx);
       DONE;
     }
@@ -1071,8 +1071,8 @@
   DONE;
 })
 
-(define_insn "set_softstack_insn"
-  [(unspec [(match_operand 0 "nvptx_register_operand" "R")]
+(define_insn "@set_softstack_<mode>"
+  [(unspec [(match_operand:P 0 "nvptx_register_operand" "R")]
 	   UNSPEC_SET_SOFTSTACK)]
   "TARGET_SOFT_STACK"
 {
@@ -1087,7 +1087,7 @@
   if (TARGET_SOFT_STACK)
     {
       emit_move_insn (operands[0], operands[1]);
-      emit_insn (gen_set_softstack_insn (operands[0]));
+      emit_insn (gen_set_softstack (Pmode, operands[0]));
     }
   DONE;
 })
@@ -1237,10 +1237,10 @@
 
 ;; Patterns for OpenMP SIMD-via-SIMT lowering
 
-(define_insn "omp_simt_enter_insn"
-  [(set (match_operand 0 "nvptx_register_operand" "=R")
-	(unspec_volatile [(match_operand 1 "nvptx_nonmemory_operand" "Ri")
-			    (match_operand 2 "nvptx_nonmemory_operand" "Ri")]
+(define_insn "@omp_simt_enter_<mode>"
+  [(set (match_operand:P 0 "nvptx_register_operand" "=R")
+	(unspec_volatile:P [(match_operand:P 1 "nvptx_nonmemory_operand" "Ri")
+			    (match_operand:P 2 "nvptx_nonmemory_operand" "Ri")]
 			   UNSPECV_SIMT_ENTER))]
   ""
 {
@@ -1261,12 +1261,20 @@
   cfun->machine->simt_stack_align = MAX (UINTVAL (operands[2]),
 					 cfun->machine->simt_stack_align);
   cfun->machine->has_simtreg = true;
-  emit_insn (gen_omp_simt_enter_insn (operands[0], operands[1], operands[2]));
+  emit_insn (gen_omp_simt_enter (Pmode, operands[0], operands[1], operands[2]));
   DONE;
 })
 
-(define_insn "omp_simt_exit"
-  [(unspec_volatile [(match_operand 0 "nvptx_register_operand" "R")]
+(define_expand "omp_simt_exit"
+  [(match_operand 0 "nvptx_register_operand" "R")]
+  ""
+{
+  emit_insn (gen_omp_simt_exit (Pmode, operands[0]));
+  DONE;
+})
+
+(define_insn "@omp_simt_exit_<mode>"
+  [(unspec_volatile [(match_operand:P 0 "nvptx_register_operand" "R")]
 		    UNSPECV_SIMT_EXIT)]
   ""
 {

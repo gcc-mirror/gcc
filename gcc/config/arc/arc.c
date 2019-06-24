@@ -689,8 +689,6 @@ static rtx arc_legitimize_address_0 (rtx, rtx, machine_mode mode);
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P arc_modes_tieable_p
-#undef TARGET_BUILTIN_SETJMP_FRAME_VALUE
-#define TARGET_BUILTIN_SETJMP_FRAME_VALUE arc_builtin_setjmp_frame_value
 
 /* Try to keep the (mov:DF _, reg) as early as possible so
    that the d<add/sub/mul>h-lr insns appear together and can
@@ -10958,28 +10956,6 @@ compact_memory_operand_p (rtx op, machine_mode mode,
 	 for 16-bit load instructions.  */
     }
   return false;
-}
-
-/* Return the frame pointer value to be backed up in the setjmp buffer.  */
-
-static rtx
-arc_builtin_setjmp_frame_value (void)
-{
-  /* We always want to preserve whatever value is currently in the frame
-     pointer register.  For frames that are using the frame pointer the new
-     value of the frame pointer register will have already been computed
-     (as part of the prologue).  For frames that are not using the frame
-     pointer it is important that we backup whatever value is in the frame
-     pointer register, as earlier (more outer) frames may have placed a
-     value into the frame pointer register.  It might be tempting to try
-     and use `frame_pointer_rtx` here, however, this is not what we want.
-     For frames that are using the frame pointer this will give the
-     correct value.  However, for frames that are not using the frame
-     pointer this will still give the value that _would_ have been the
-     frame pointer value for this frame (if the use of the frame pointer
-     had not been removed).  We really do want the raw frame pointer
-     register value.  */
-  return gen_raw_REG (Pmode, HARD_FRAME_POINTER_REGNUM);
 }
 
 /* Return nonzero if a jli call should be generated for a call from

@@ -1748,6 +1748,33 @@
 }
   [(set_attr "isa" "noavx,noavx,avx,avx")])
 
+(define_insn_and_split "*nabs<mode>2"
+  [(set (match_operand:VF 0 "register_operand" "=x,x,v,v")
+	(neg:VF
+	  (abs:VF
+	    (match_operand:VF 1 "vector_operand" "0,xBm,v,m"))))
+   (use (match_operand:VF 2 "vector_operand"    "xBm,0,vm,v"))]
+  "TARGET_SSE"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (match_dup 3))]
+{
+  if (TARGET_AVX)
+    {
+      if (MEM_P (operands[1]))
+        std::swap (operands[1], operands[2]);
+    }
+  else
+   {
+     if (operands_match_p (operands[0], operands[2]))
+       std::swap (operands[1], operands[2]);
+   }
+
+  operands[3]
+    = gen_rtx_fmt_ee (IOR, <MODE>mode, operands[1], operands[2]);
+}
+  [(set_attr "isa" "noavx,noavx,avx,avx")])
+
 (define_expand "<plusminus_insn><mode>3<mask_name><round_name>"
   [(set (match_operand:VF 0 "register_operand")
 	(plusminus:VF
@@ -1798,6 +1825,28 @@
   [(set_attr "prefix" "evex")
    (set_attr "type" "sseadd")
    (set_attr "mode" "<MODE>")])
+
+;; Standard scalar operation patterns which preserve the rest of the
+;; vector for combiner.
+(define_insn "*<sse>_vm<plusminus_insn><mode>3"
+  [(set (match_operand:VF_128 0 "register_operand" "=x,v")
+	(vec_merge:VF_128
+	  (vec_duplicate:VF_128
+	    (plusminus:<ssescalarmode>
+	      (vec_select:<ssescalarmode>
+	        (match_operand:VF_128 1 "register_operand" "0,v")
+		(parallel [(const_int 0)]))
+	      (match_operand:<ssescalarmode> 2 "nonimmediate_operand" "xm,vm")))
+	  (match_dup 1)
+	  (const_int 1)))]
+  "TARGET_SSE"
+  "@
+   <plusminus_mnemonic><ssescalarmodesuffix>\t{%2, %0|%0, %<iptr>2}
+   v<plusminus_mnemonic><ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %<iptr>2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sseadd")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "<ssescalarmode>")])
 
 (define_insn "<sse>_vm<plusminus_insn><mode>3<mask_scalar_name><round_scalar_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=x,v")
@@ -1852,6 +1901,29 @@
   [(set_attr "prefix" "evex")
    (set_attr "type" "ssemul")
    (set_attr "mode" "<MODE>")])
+
+;; Standard scalar operation patterns which preserve the rest of the
+;; vector for combiner.
+(define_insn "*<sse>_vm<multdiv_mnemonic><mode>3"
+  [(set (match_operand:VF_128 0 "register_operand" "=x,v")
+	(vec_merge:VF_128
+	  (vec_duplicate:VF_128
+	    (multdiv:<ssescalarmode>
+	      (vec_select:<ssescalarmode>
+	        (match_operand:VF_128 1 "register_operand" "0,v")
+		(parallel [(const_int 0)]))
+	      (match_operand:<ssescalarmode> 2 "nonimmediate_operand" "xm,vm")))
+	  (match_dup 1)
+	  (const_int 1)))]
+  "TARGET_SSE"
+  "@
+   <multdiv_mnemonic><ssescalarmodesuffix>\t{%2, %0|%0, %<iptr>2}
+   v<multdiv_mnemonic><ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %<iptr>2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sse<multdiv_mnemonic>")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "btver2_decode" "direct,double")
+   (set_attr "mode" "<ssescalarmode>")])
 
 (define_insn "<sse>_vm<multdiv_mnemonic><mode>3<mask_scalar_name><round_scalar_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=x,v")
@@ -2201,6 +2273,30 @@
    (set_attr "btver2_sse_attr" "maxmin")
    (set_attr "prefix" "<mask_prefix3>")
    (set_attr "mode" "<MODE>")])
+
+;; Standard scalar operation patterns which preserve the rest of the
+;; vector for combiner.
+(define_insn "*ieee_<ieee_maxmin><mode>3"
+  [(set (match_operand:VF_128 0 "register_operand" "=x,v")
+	(vec_merge:VF_128
+	  (vec_duplicate:VF_128
+	    (unspec:<ssescalarmode>
+	      [(vec_select:<ssescalarmode>
+	         (match_operand:VF_128 1 "register_operand" "0,v")
+		 (parallel [(const_int 0)]))
+	       (match_operand:<ssescalarmode> 2 "nonimmediate_operand" "xm,vm")]
+	       IEEE_MAXMIN))
+	  (match_dup 1)
+	  (const_int 1)))]
+  "TARGET_SSE"
+  "@
+   <ieee_maxmin><ssescalarmodesuffix>\t{%2, %0|%0, %2}
+   v<ieee_maxmin><ssescalarmodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sseadd")
+   (set_attr "btver2_sse_attr" "maxmin")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "<ssescalarmode>")])
 
 (define_insn "<sse>_vm<code><mode>3<mask_scalar_name><round_saeonly_scalar_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=x,v")
@@ -7884,6 +7980,25 @@
   [(set (match_dup 0) (match_dup 1))]
   "operands[0] = adjust_address (operands[0], <ssescalarmode>mode, 0);")
 
+;; Standard scalar operation patterns which preserve the rest of the
+;; vector for combiner.
+(define_insn "vec_setv2df_0"
+  [(set (match_operand:V2DF 0 "register_operand"       "=x,v,x,v")
+	(vec_merge:V2DF
+	  (vec_duplicate:V2DF
+	    (match_operand:DF 2 "nonimmediate_operand" " x,v,m,m"))
+	  (match_operand:V2DF 1 "register_operand"     " 0,v,0,v")
+	  (const_int 1)))]
+  "TARGET_SSE2"
+  "@
+   movsd\t{%2, %0|%0, %2}
+   vmovsd\t{%2, %1, %0|%0, %1, %2}
+   movlpd\t{%2, %0|%0, %2}
+   vmovlpd\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx,noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "mode" "DF")])
+
 (define_expand "vec_set<mode>"
   [(match_operand:V 0 "register_operand")
    (match_operand:<ssescalarmode> 1 "register_operand")
@@ -11730,6 +11845,19 @@
        (const_string "0")))
    (set_attr "mode" "<sseinsnmode>")])
 
+
+(define_expand "vec_shl_<mode>"
+  [(set (match_dup 3)
+	(ashift:V1TI
+	 (match_operand:VI_128 1 "register_operand")
+	 (match_operand:SI 2 "const_0_to_255_mul_8_operand")))
+   (set (match_operand:VI_128 0 "register_operand") (match_dup 4))]
+  "TARGET_SSE2"
+{
+  operands[1] = gen_lowpart (V1TImode, operands[1]);
+  operands[3] = gen_reg_rtx (V1TImode);
+  operands[4] = gen_lowpart (<MODE>mode, operands[3]);
+})
 
 (define_expand "vec_shr_<mode>"
   [(set (match_dup 3)

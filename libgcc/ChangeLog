@@ -1,3 +1,12 @@
+2019-06-18  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/crt0.c (__main): Declare.
+
+2019-06-17  Matthew Green  <mrg@eterna.com.au>
+	    Maya Rashish  <coypu@sdf.org>
+
+	* config.host (aarch64*-*-netbsd*): New case.
+
 2019-06-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/slli.S (__mspabi_sllll): New library function for

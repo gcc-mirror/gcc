@@ -422,7 +422,7 @@ namespace __variant
       constexpr bool
       _M_valid() const noexcept
       {
-	if constexpr (__never_valueless<_Types...>())
+	if constexpr (__variant::__never_valueless<_Types...>())
 	  return true;
 	return this->_M_index != __index_type(variant_npos);
       }
@@ -456,7 +456,7 @@ namespace __variant
       constexpr bool
       _M_valid() const noexcept
       {
-	if constexpr (__never_valueless<_Types...>())
+	if constexpr (__variant::__never_valueless<_Types...>())
 	  return true;
 	return this->_M_index != __index_type(variant_npos);
       }
@@ -799,7 +799,7 @@ namespace __variant
 
       template <typename... _Types>
 	struct _Variant_never_valueless<variant<_Types...>>
-	: bool_constant<__never_valueless<_Types...>()> {};
+	: bool_constant<__variant::__never_valueless<_Types...>()> {};
 
       static constexpr bool value =
 	(is_same_v<_Maybe_variant_cookie, __variant_cookie>

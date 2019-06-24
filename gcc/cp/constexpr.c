@@ -1331,7 +1331,7 @@ adjust_temp_type (tree type, tree temp)
    modifications don't affect other places where it was used.  */
 
 tree
-unshare_constructor (tree t)
+unshare_constructor (tree t MEM_STAT_DECL)
 {
   if (!t || TREE_CODE (t) != CONSTRUCTOR)
     return t;
@@ -1340,8 +1340,8 @@ unshare_constructor (tree t)
   while (!ptrs.is_empty ())
     {
       tree *p = ptrs.pop ();
-      tree n = copy_node (*p);
-      CONSTRUCTOR_ELTS (n) = vec_safe_copy (CONSTRUCTOR_ELTS (*p));
+      tree n = copy_node (*p PASS_MEM_STAT);
+      CONSTRUCTOR_ELTS (n) = vec_safe_copy (CONSTRUCTOR_ELTS (*p) PASS_MEM_STAT);
       *p = n;
       vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (n);
       constructor_elt *ce;
@@ -2488,7 +2488,7 @@ find_array_ctor_elt (tree ary, tree dindex, bool insert)
    an out-of-bounds subscript INDEX into the expression ARRAY.  */
 
 static void
-diag_array_subscript (const constexpr_ctx *ctx, tree array, tree index)
+diag_array_subscript (location_t loc, const constexpr_ctx *ctx, tree array, tree index)
 {
   if (!ctx->quiet)
     {
@@ -2497,22 +2497,23 @@ diag_array_subscript (const constexpr_ctx *ctx, tree array, tree index)
       /* Convert the unsigned array subscript to a signed integer to avoid
 	 printing huge numbers for small negative values.  */
       tree sidx = fold_convert (ssizetype, index);
+      STRIP_ANY_LOCATION_WRAPPER (array);
       if (DECL_P (array))
 	{
 	  if (TYPE_DOMAIN (arraytype))
-	    error ("array subscript value %qE is outside the bounds "
-	           "of array %qD of type %qT", sidx, array, arraytype);
+	    error_at (loc, "array subscript value %qE is outside the bounds "
+		      "of array %qD of type %qT", sidx, array, arraytype);
 	  else
-	    error ("nonzero array subscript %qE is used with array %qD of "
-		   "type %qT with unknown bounds", sidx, array, arraytype);
+	    error_at (loc, "nonzero array subscript %qE is used with array %qD of "
+		      "type %qT with unknown bounds", sidx, array, arraytype);
 	  inform (DECL_SOURCE_LOCATION (array), "declared here");
 	}
       else if (TYPE_DOMAIN (arraytype))
-	error ("array subscript value %qE is outside the bounds "
-	       "of array type %qT", sidx, arraytype);
+	error_at (loc, "array subscript value %qE is outside the bounds "
+		  "of array type %qT", sidx, arraytype);
       else
-	error ("nonzero array subscript %qE is used with array of type %qT "
-	       "with unknown bounds", sidx, arraytype);
+	error_at (loc, "nonzero array subscript %qE is used with array of type %qT "
+		  "with unknown bounds", sidx, arraytype);
     }
 }
 
@@ -2563,6 +2564,44 @@ extract_string_elt (tree string, unsigned chars_per_elt, unsigned index)
   return r;
 }
 
+/* Subroutine of cxx_eval_array_reference.  T is an ARRAY_REF; evaluate the
+   subscript, diagnose any problems with it, and return the result.  */
+
+static tree
+eval_and_check_array_index (const constexpr_ctx *ctx,
+			    tree t, bool allow_one_past,
+			    bool *non_constant_p, bool *overflow_p)
+{
+  location_t loc = cp_expr_loc_or_loc (t, input_location);
+  tree ary = TREE_OPERAND (t, 0);
+  t = TREE_OPERAND (t, 1);
+  tree index = cxx_eval_constant_expression (ctx, t, false,
+					     non_constant_p, overflow_p);
+  VERIFY_CONSTANT (index);
+
+  if (!tree_fits_shwi_p (index)
+      || tree_int_cst_sgn (index) < 0)
+    {
+      diag_array_subscript (loc, ctx, ary, index);
+      *non_constant_p = true;
+      return t;
+    }
+
+  tree nelts = get_array_or_vector_nelts (ctx, TREE_TYPE (ary), non_constant_p,
+					  overflow_p);
+  VERIFY_CONSTANT (nelts);
+  if (allow_one_past
+      ? !tree_int_cst_le (index, nelts)
+      : !tree_int_cst_lt (index, nelts))
+    {
+      diag_array_subscript (loc, ctx, ary, index);
+      *non_constant_p = true;
+      return t;
+    }
+
+  return index;
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    Attempt to reduce a reference to an array slot.  */
 
@@ -2575,71 +2614,47 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
   tree ary = cxx_eval_constant_expression (ctx, oldary,
 					   lval,
 					   non_constant_p, overflow_p);
-  tree index, oldidx;
-  HOST_WIDE_INT i = 0;
-  tree elem_type = NULL_TREE;
-  unsigned len = 0, elem_nchars = 1;
   if (*non_constant_p)
     return t;
-  oldidx = TREE_OPERAND (t, 1);
-  index = cxx_eval_constant_expression (ctx, oldidx,
-					false,
-					non_constant_p, overflow_p);
-  VERIFY_CONSTANT (index);
-  if (!lval)
-    {
-      elem_type = TREE_TYPE (TREE_TYPE (ary));
-      if (TREE_CODE (ary) == VIEW_CONVERT_EXPR
-	  && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (ary, 0)))
-	  && TREE_TYPE (t) == TREE_TYPE (TREE_TYPE (TREE_OPERAND (ary, 0))))
-	ary = TREE_OPERAND (ary, 0);
-      if (TREE_CODE (ary) == CONSTRUCTOR)
-	len = CONSTRUCTOR_NELTS (ary);
-      else if (TREE_CODE (ary) == STRING_CST)
-	{
-	  elem_nchars = (TYPE_PRECISION (elem_type)
-			 / TYPE_PRECISION (char_type_node));
-	  len = (unsigned) TREE_STRING_LENGTH (ary) / elem_nchars;
-	}
-      else if (TREE_CODE (ary) == VECTOR_CST)
-	/* We don't create variable-length VECTOR_CSTs.  */
-	len = VECTOR_CST_NELTS (ary).to_constant ();
-      else
-	{
-	  /* We can't do anything with other tree codes, so use
-	     VERIFY_CONSTANT to complain and fail.  */
-	  VERIFY_CONSTANT (ary);
-	  gcc_unreachable ();
-	}
+  if (TREE_CODE (ary) == VIEW_CONVERT_EXPR
+      && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (ary, 0)))
+      && TREE_TYPE (t) == TREE_TYPE (TREE_TYPE (TREE_OPERAND (ary, 0))))
+    ary = TREE_OPERAND (ary, 0);
 
-      if (!tree_fits_shwi_p (index)
-	  || (i = tree_to_shwi (index)) < 0)
-	{
-	  diag_array_subscript (ctx, ary, index);
-	  *non_constant_p = true;
-	  return t;
-	}
-    }
-
-  tree nelts = get_array_or_vector_nelts (ctx, TREE_TYPE (ary), non_constant_p,
-					  overflow_p);
-  VERIFY_CONSTANT (nelts);
-  if ((lval
-       ? !tree_int_cst_le (index, nelts)
-       : !tree_int_cst_lt (index, nelts))
-      || tree_int_cst_sgn (index) < 0)
-    {
-      diag_array_subscript (ctx, ary, index);
-      *non_constant_p = true;
-      return t;
-    }
+  tree oldidx = TREE_OPERAND (t, 1);
+  tree index = eval_and_check_array_index (ctx, t, lval,
+					   non_constant_p, overflow_p);
+  if (*non_constant_p)
+    return t;
 
   if (lval && ary == oldary && index == oldidx)
     return t;
   else if (lval)
     return build4 (ARRAY_REF, TREE_TYPE (t), ary, index, NULL, NULL);
 
+  unsigned len = 0, elem_nchars = 1;
+  tree elem_type = TREE_TYPE (TREE_TYPE (ary));
+  if (TREE_CODE (ary) == CONSTRUCTOR)
+    len = CONSTRUCTOR_NELTS (ary);
+  else if (TREE_CODE (ary) == STRING_CST)
+    {
+      elem_nchars = (TYPE_PRECISION (elem_type)
+		     / TYPE_PRECISION (char_type_node));
+      len = (unsigned) TREE_STRING_LENGTH (ary) / elem_nchars;
+    }
+  else if (TREE_CODE (ary) == VECTOR_CST)
+    /* We don't create variable-length VECTOR_CSTs.  */
+    len = VECTOR_CST_NELTS (ary).to_constant ();
+  else
+    {
+      /* We can't do anything with other tree codes, so use
+	 VERIFY_CONSTANT to complain and fail.  */
+      VERIFY_CONSTANT (ary);
+      gcc_unreachable ();
+    }
+
   bool found;
+  HOST_WIDE_INT i = 0;
   if (TREE_CODE (ary) == CONSTRUCTOR)
     {
       HOST_WIDE_INT ix = find_array_ctor_elt (ary, index);
@@ -2648,7 +2663,10 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
 	i = ix;
     }
   else
-    found = (i < len);
+    {
+      i = tree_to_shwi (index);
+      found = (i < len);
+    }
 
   if (found)
     {
@@ -3729,60 +3747,21 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       if (*non_constant_p)
 	return t;
     }
-  target = cxx_eval_constant_expression (ctx, target,
-					 true,
-					 non_constant_p, overflow_p);
-  if (*non_constant_p)
-    return t;
 
-  /* cxx_eval_array_reference for lval = true allows references one past
-     end of array, because it does not know if it is just taking address
-     (which is valid), or actual dereference.  Here we know it is
-     a dereference, so diagnose it here.  */
-  for (tree probe = target; probe; )
+  bool evaluated = false;
+  if (lval)
     {
-      switch (TREE_CODE (probe))
-	{
-	case ARRAY_REF:
-	  tree nelts, ary;
-	  ary = TREE_OPERAND (probe, 0);
-	  nelts = get_array_or_vector_nelts (ctx, TREE_TYPE (ary),
+      /* If we want to return a reference to the target, we need to evaluate it
+	 as a whole; otherwise, only evaluate the innermost piece to avoid
+	 building up unnecessary *_REFs.  */
+      target = cxx_eval_constant_expression (ctx, target, true,
 					     non_constant_p, overflow_p);
-	  VERIFY_CONSTANT (nelts);
-	  gcc_assert (TREE_CODE (nelts) == INTEGER_CST
-		      && TREE_CODE (TREE_OPERAND (probe, 1)) == INTEGER_CST);
-	  if (wi::to_widest (TREE_OPERAND (probe, 1)) == wi::to_widest (nelts))
-	    {
-	      diag_array_subscript (ctx, ary, TREE_OPERAND (probe, 1));
-	      *non_constant_p = true;
-	      return t;
-	    }
-	  /* FALLTHRU */
-
-	case BIT_FIELD_REF:
-	case COMPONENT_REF:
-	  probe = TREE_OPERAND (probe, 0);
-	  continue;
-
-	default:
-	  probe = NULL_TREE;
-	  continue;
-	}
+      evaluated = true;
+      if (*non_constant_p)
+	return t;
     }
 
-  if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (target), type))
-    {
-      /* For initialization of an empty base, the original target will be
-         *(base*)this, which the above evaluation resolves to the object
-	 argument, which has the derived type rather than the base type.  In
-	 this situation, just evaluate the initializer and return, since
-	 there's no actual data to store.  */
-      gcc_assert (is_empty_class (type));
-      return cxx_eval_constant_expression (ctx, init, false,
-					   non_constant_p, overflow_p);
-    }
-
-  /* And then find the underlying variable.  */
+  /* Find the underlying variable.  */
   releasing_vec refs;
   tree object = NULL_TREE;
   for (tree probe = target; object == NULL_TREE; )
@@ -3792,13 +3771,34 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	case BIT_FIELD_REF:
 	case COMPONENT_REF:
 	case ARRAY_REF:
-	  vec_safe_push (refs, TREE_OPERAND (probe, 1));
-	  vec_safe_push (refs, TREE_TYPE (probe));
-	  probe = TREE_OPERAND (probe, 0);
+	  {
+	    tree ob = TREE_OPERAND (probe, 0);
+	    tree elt = TREE_OPERAND (probe, 1);
+	    if (TREE_CODE (probe) == ARRAY_REF)
+	      {
+		elt = eval_and_check_array_index (ctx, probe, false,
+						  non_constant_p, overflow_p);
+		if (*non_constant_p)
+		  return t;
+	      }
+	    vec_safe_push (refs, elt);
+	    vec_safe_push (refs, TREE_TYPE (probe));
+	    probe = ob;
+	  }
 	  break;
 
 	default:
-	  object = probe;
+	  if (evaluated)
+	    object = probe;
+	  else
+	    {
+	      probe = cxx_eval_constant_expression (ctx, probe, true,
+						    non_constant_p, overflow_p);
+	      evaluated = true;
+	      if (*non_constant_p)
+		return t;
+	    }
+	  break;
 	}
     }
 
@@ -3954,7 +3954,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       new_ctx.object = target;
       init = cxx_eval_constant_expression (&new_ctx, init, false,
 					   non_constant_p, overflow_p);
-      if (target == object)
+      if (ctors->is_empty())
 	/* The hash table might have moved since the get earlier.  */
 	valp = ctx->values->get (object);
     }
@@ -3967,6 +3967,17 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
     {
       /* An outer ctx->ctor might be pointing to *valp, so replace
 	 its contents.  */
+      if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (init),
+						      TREE_TYPE (*valp)))
+	{
+	  /* For initialization of an empty base, the original target will be
+	   *(base*)this, evaluation of which resolves to the object
+	   argument, which has the derived type rather than the base type.  In
+	   this situation, just evaluate the initializer and return, since
+	   there's no actual data to store.  */
+	  gcc_assert (is_empty_class (TREE_TYPE (init)) && !lval);
+	  return init;
+	}
       CONSTRUCTOR_ELTS (*valp) = CONSTRUCTOR_ELTS (init);
       TREE_CONSTANT (*valp) = TREE_CONSTANT (init);
       TREE_SIDE_EFFECTS (*valp) = TREE_SIDE_EFFECTS (init);
@@ -5034,6 +5045,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	if (*non_constant_p)
 	  return t;
 	tree type = TREE_TYPE (t);
+
+	if (VOID_TYPE_P (type))
+	  return void_node;
+
 	if (TREE_CODE (op) == PTRMEM_CST
 	    && !TYPE_PTRMEM_P (type))
 	  op = cplus_expand_constant (op);
@@ -5094,14 +5109,18 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	     conversion.  */
 	  return fold (t);
 
+	tree sop;
+
 	/* Handle an array's bounds having been deduced after we built
 	   the wrapping expression.  */
 	if (same_type_ignoring_tlq_and_bounds_p (type, TREE_TYPE (op)))
 	  r = op;
+	else if (sop = tree_strip_nop_conversions (op),
+		 sop != op && (same_type_ignoring_tlq_and_bounds_p
+			       (type, TREE_TYPE (sop))))
+	  r = sop;
 	else if (tcode == UNARY_PLUS_EXPR)
 	  r = fold_convert (TREE_TYPE (t), op);
-	else if (VOID_TYPE_P (type))
-	  r = void_node;
 	else
 	  r = fold_build1 (tcode, type, op);
 

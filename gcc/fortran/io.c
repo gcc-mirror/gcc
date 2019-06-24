@@ -762,6 +762,15 @@ format_item_1:
       error = unexpected_end;
       goto syntax;
 
+    case FMT_RPAREN:
+      if (flag_dec_blank_format_item)
+	goto finished;
+      else
+	{
+	  error = G_("Missing item in format string at %L");
+	  goto syntax;
+	}
+
     default:
       error = unexpected_element;
       goto syntax;
@@ -3316,6 +3325,14 @@ gfc_resolve_dt (gfc_dt *dt, locus *loc)
   if (e == NULL)
     {
       gfc_error ("UNIT not specified at %L", loc);
+      return false;
+    }
+
+  if (e->symtree && e->symtree->n.sym->attr.flavor == FL_PARAMETER
+      && e->ts.type == BT_CHARACTER)
+    {
+      gfc_error ("UNIT specification at %L must "
+      "not be a character PARAMETER", &e->where);
       return false;
     }
 

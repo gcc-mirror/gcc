@@ -2546,6 +2546,7 @@ canonical_eh_spec (tree raises)
   if (raises == NULL_TREE)
     return raises;
   else if (DEFERRED_NOEXCEPT_SPEC_P (raises)
+	   || UNPARSED_NOEXCEPT_SPEC_P (raises)
 	   || uses_template_parms (raises)
 	   || uses_template_parms (TREE_PURPOSE (raises)))
     /* Keep a dependent or deferred exception specification.  */
@@ -3656,6 +3657,7 @@ cp_tree_equal (tree t1, tree t2)
     case IDENTIFIER_NODE:
     case SSA_NAME:
     case USING_DECL:
+    case DEFERRED_PARSE:
       return false;
 
     case BASELINK:
@@ -4453,6 +4455,8 @@ const struct attribute_spec std_attribute_table[] =
     handle_likeliness_attribute, attr_cold_hot_exclusions },
   { "unlikely", 0, 0, false, false, false, false,
     handle_likeliness_attribute, attr_cold_hot_exclusions },
+  { "noreturn", 0, 0, true, false, false, false,
+    handle_noreturn_attribute, attr_noreturn_exclusions },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -4784,7 +4788,7 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
   result = NULL_TREE;
   switch (code)
     {
-    case DEFAULT_ARG:
+    case DEFERRED_PARSE:
     case TEMPLATE_TEMPLATE_PARM:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
     case UNBOUND_CLASS_TEMPLATE:

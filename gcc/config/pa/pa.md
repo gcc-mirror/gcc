@@ -6909,10 +6909,7 @@
 
   lab = copy_to_reg (lab);
 
-  /* Restore the stack and frame pointers.  The virtual_stack_vars_rtx
-     is saved instead of the hard_frame_pointer_rtx in the save area.
-     As a result, an extra instruction is needed to adjust for the offset
-     of the virtual stack variables and the hard frame pointer.  */
+  /* Restore the stack and frame pointers.  */
   fp = copy_to_reg (fp);
   emit_stack_restore (SAVE_NONLOCAL, stack);
 
@@ -6920,7 +6917,7 @@
   emit_insn (gen_blockage ());
   emit_clobber (hard_frame_pointer_rtx);
   emit_clobber (frame_pointer_rtx);
-  emit_move_insn (hard_frame_pointer_rtx, plus_constant (Pmode, fp, -8));
+  emit_move_insn (hard_frame_pointer_rtx, fp);
 
   emit_use (hard_frame_pointer_rtx);
   emit_use (stack_pointer_rtx);

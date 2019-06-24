@@ -3003,6 +3003,13 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	      || TREE_CODE (DR_INIT (drb)) != INTEGER_CST)
 	    break;
 
+	  /* Different .GOMP_SIMD_LANE calls still give the same lane,
+	     just hold extra information.  */
+	  if (STMT_VINFO_SIMD_LANE_ACCESS_P (stmtinfo_a)
+	      && STMT_VINFO_SIMD_LANE_ACCESS_P (stmtinfo_b)
+	      && data_ref_compare_tree (DR_INIT (dra), DR_INIT (drb)) == 0)
+	    break;
+
 	  /* Sorting has ensured that DR_INIT (dra) <= DR_INIT (drb).  */
 	  HOST_WIDE_INT init_a = TREE_INT_CST_LOW (DR_INIT (dra));
 	  HOST_WIDE_INT init_b = TREE_INT_CST_LOW (DR_INIT (drb));
@@ -4065,47 +4072,67 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
 	  && DR_OFFSET (newdr)
 	  && DR_INIT (newdr)
 	  && DR_STEP (newdr)
+	  && TREE_CODE (DR_INIT (newdr)) == INTEGER_CST
 	  && integer_zerop (DR_STEP (newdr)))
 	{
+	  tree base_address = DR_BASE_ADDRESS (newdr);
 	  tree off = DR_OFFSET (newdr);
+	  tree step = ssize_int (1);
+	  if (integer_zerop (off)
+	      && TREE_CODE (base_address) == POINTER_PLUS_EXPR)
+	    {
+	      off = TREE_OPERAND (base_address, 1);
+	      base_address = TREE_OPERAND (base_address, 0);
+	    }
 	  STRIP_NOPS (off);
-	  if (TREE_CODE (DR_INIT (newdr)) == INTEGER_CST
-	      && TREE_CODE (off) == MULT_EXPR
+	  if (TREE_CODE (off) == MULT_EXPR
 	      && tree_fits_uhwi_p (TREE_OPERAND (off, 1)))
 	    {
-	      tree step = TREE_OPERAND (off, 1);
+	      step = TREE_OPERAND (off, 1);
 	      off = TREE_OPERAND (off, 0);
 	      STRIP_NOPS (off);
-	      if (CONVERT_EXPR_P (off)
-		  && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (off, 0)))
-		      < TYPE_PRECISION (TREE_TYPE (off))))
-		off = TREE_OPERAND (off, 0);
-	      if (TREE_CODE (off) == SSA_NAME)
+	    }
+	  if (CONVERT_EXPR_P (off)
+	      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (off, 0)))
+		  < TYPE_PRECISION (TREE_TYPE (off))))
+	    off = TREE_OPERAND (off, 0);
+	  if (TREE_CODE (off) == SSA_NAME)
+	    {
+	      gimple *def = SSA_NAME_DEF_STMT (off);
+	      /* Look through widening conversion.  */
+	      if (is_gimple_assign (def)
+		  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def)))
 		{
-		  gimple *def = SSA_NAME_DEF_STMT (off);
+		  tree rhs1 = gimple_assign_rhs1 (def);
+		  if (TREE_CODE (rhs1) == SSA_NAME
+		      && INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+		      && (TYPE_PRECISION (TREE_TYPE (off))
+			  > TYPE_PRECISION (TREE_TYPE (rhs1))))
+		    def = SSA_NAME_DEF_STMT (rhs1);
+		}
+	      if (is_gimple_call (def)
+		  && gimple_call_internal_p (def)
+		  && (gimple_call_internal_fn (def) == IFN_GOMP_SIMD_LANE))
+		{
+		  tree arg = gimple_call_arg (def, 0);
 		  tree reft = TREE_TYPE (DR_REF (newdr));
-		  if (is_gimple_call (def)
-		      && gimple_call_internal_p (def)
-		      && (gimple_call_internal_fn (def) == IFN_GOMP_SIMD_LANE))
+		  gcc_assert (TREE_CODE (arg) == SSA_NAME);
+		  arg = SSA_NAME_VAR (arg);
+		  if (arg == loop->simduid
+		      /* For now.  */
+		      && tree_int_cst_equal (TYPE_SIZE_UNIT (reft), step))
 		    {
-		      tree arg = gimple_call_arg (def, 0);
-		      gcc_assert (TREE_CODE (arg) == SSA_NAME);
-		      arg = SSA_NAME_VAR (arg);
-		      if (arg == loop->simduid
-			  /* For now.  */
-			  && tree_int_cst_equal (TYPE_SIZE_UNIT (reft), step))
-			{
-			  DR_OFFSET (newdr) = ssize_int (0);
-			  DR_STEP (newdr) = step;
-			  DR_OFFSET_ALIGNMENT (newdr) = BIGGEST_ALIGNMENT;
-			  DR_STEP_ALIGNMENT (newdr)
-			    = highest_pow2_factor (step);
-			  /* Mark as simd-lane access.  */
-			  newdr->aux = (void *)-1;
-			  free_data_ref (dr);
-			  datarefs->safe_push (newdr);
-			  return opt_result::success ();
-			}
+		      DR_BASE_ADDRESS (newdr) = base_address;
+		      DR_OFFSET (newdr) = ssize_int (0);
+		      DR_STEP (newdr) = step;
+		      DR_OFFSET_ALIGNMENT (newdr) = BIGGEST_ALIGNMENT;
+		      DR_STEP_ALIGNMENT (newdr) = highest_pow2_factor (step);
+		      /* Mark as simd-lane access.  */
+		      tree arg2 = gimple_call_arg (def, 1);
+		      newdr->aux = (void *) (-1 - tree_to_uhwi (arg2));
+		      free_data_ref (dr);
+		      datarefs->safe_push (newdr);
+		      return opt_result::success ();
 		    }
 		}
 	    }
@@ -4210,14 +4237,18 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
         }
 
       /* See if this was detected as SIMD lane access.  */
-      if (dr->aux == (void *)-1)
+      if (dr->aux == (void *)-1
+	  || dr->aux == (void *)-2
+	  || dr->aux == (void *)-3
+	  || dr->aux == (void *)-4)
 	{
 	  if (nested_in_vect_loop_p (loop, stmt_info))
 	    return opt_result::failure_at (stmt_info->stmt,
 					   "not vectorized:"
 					   " data ref analysis failed: %G",
 					   stmt_info->stmt);
-	  STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info) = true;
+	  STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info)
+	    = -(uintptr_t) dr->aux;
 	}
 
       tree base = get_base_address (DR_REF (dr));

@@ -1,3 +1,187 @@
+2019-06-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_DEBUG): Only do debug build for final
+	stage of bootstrap.
+	* configure: Regenerate.
+
+	* include/std/variant (_Variant_storage, _Extra_visit_slot_needed):
+	Qualify calls to __never_valueless.
+
+	* doc/xml/manual/status_cxx2017.xml: Fix outdated reference to
+	C++17 working draft.
+
+	* testsuite/libstdc++-prettyprinters/simple.cc: Use non-palindromic
+	vector<bool> for test.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+
+2019-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stream_iterator.h (istream_iterator::_M_equal()): Make
+	private.
+	(istream_iterator::_M_read()): Do not check stream state before
+	attempting extraction. Set stream pointer to null when extraction
+	fails (P0738R2).
+	(operator==(const istream_iterator&, const istream_iterator&)): Change
+	to be a hidden friend of istream_iterator.
+	(operator!=(const istream_iterator&, const istream_iterator&)):
+	Likewise.
+	(ostream_iterator::ostream_iterator()): Add default constructor.
+	(ostream_iterator::ostream_iterator(ostream_type*, const C*)): Use
+	addressof.
+	* testsuite/24_iterators/istream_iterator/1.cc: New test.
+	* testsuite/24_iterators/ostream_iterator/1.cc: New test.
+	* testsuite/24_iterators/ostream_iterator/70766.cc: Also check
+	constructor taking a string.
+	* testsuite/24_iterators/ostream_iterator/requirements/constexpr.cc:
+	New test.
+
+2019-06-19  Michael Weghorn  <m.weghorn@posteo.de>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90945
+	* python/libstdcxx/v6/printers.py (StdVectorPrinter._iterator): Use
+	values of type bool for vector<bool> elements.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Test vector<bool>.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+
+2019-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90920 partially revert r263433
+	* include/bits/stl_algo.h (__rotate): Restore checks for empty ranges.
+	(rotate): Remove checks.
+	* testsuite/25_algorithms/rotate/90920.cc: New test.
+
+	* include/std/numeric (reduce(Iter, Iter, T, BinOp)): Fix value
+	category used in invocable check.
+	(reduce(Iter, Iter, T)): Pass initial value as rvalue.
+	* testsuite/26_numerics/reduce/2.cc: New test.
+
+2019-06-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/algorithmfwd.h: Change title of doc group.
+	* include/bits/stl_algo.h (for_each_n): Add new C++17 algorithm from
+	P0024R2.
+	* include/bits/stl_numeric.h: Define doc group and add algos to it.
+	* include/std/numeric (__is_random_access_iter): New internal trait.
+	(reduce, transform_reduce, exclusive_scan, inclusive_scan)
+	(transform_exclusive_scan, transform_inclusive_scan): Likewise.
+	* testsuite/25_algorithms/for_each/for_each_n.cc: New test.
+	* testsuite/26_numerics/exclusive_scan/1.cc: New test.
+	* testsuite/26_numerics/inclusive_scan/1.cc: New test.
+	* testsuite/26_numerics/reduce/1.cc: New test.
+	* testsuite/26_numerics/transform_exclusive_scan/1.cc: New test.
+	* testsuite/26_numerics/transform_inclusive_scan/1.cc: New test.
+	* testsuite/26_numerics/transform_reduce/1.cc: New test.
+	* testsuite/util/testsuite_iterators.h (test_container::size()): New
+	member function.
+
+	* include/c_global/cstddef (std::byte): Perform arithmetic operations
+	in unsigned int to avoid promotion (LWG 2950).
+
+2019-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/allocator/1.cc: Add sized delete, which fixes a
+	failure on AIX.
+
+	* include/c_global/cmath (__lerp, lerp): Add noexcept (LWG 3201).
+
+	PR libstdc++/90281 Fix string conversions for filesystem::path
+	* include/bits/fs_path.h (u8path) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]:
+	Use codecvt_utf8_utf16 instead of codecvt_utf8. Use
+	__str_codecvt_in_all to fail for partial conversions and throw on
+	error.
+	[!_GLIBCXX_FILESYSTEM_IS_WINDOWS && _GLIBCXX_USE_CHAR8_T]
+	(path::_Cvt<char8_t>): Add explicit specialization.
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS] (path::_Cvt::_S_wconvert): Remove
+	overloads.
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS] (path::_Cvt::_S_convert): Use
+	if-constexpr instead of dispatching to _S_wconvert. Use codecvt
+	instead of codecvt_utf8. Use __str_codecvt_in_all and
+	__str_codecvt_out_all.
+	[!_GLIBCXX_FILESYSTEM_IS_WINDOWS] (path::_Cvt::_S_convert): Use
+	codecvt instead of codecvt_utf8. Use __str_codecvt_out_all.
+	(path::_S_str_convert) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Use
+	codecvt_utf8_utf16 instead of codecvt_utf8. Construct return values
+	with allocator. Use __str_codecvt_out_all. Fallthrough to POSIX code
+	after converting to UTF-8.
+	(path::_S_str_convert): Use codecvt instead of codecvt_utf8. Use
+	__str_codecvt_in_all.
+	(path::string): Fix initialization of string types with different
+	allocators.
+	(path::u8string) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Use
+	codecvt_utf8_utf16 instead of codecvt_utf8. Use __str_codecvt_out_all.
+	* include/bits/locale_conv.h (__do_str_codecvt): Reorder static and
+	runtime conditions.
+	(__str_codecvt_out_all, __str_codecvt_in_all): New functions that
+	return false for partial conversions.
+	* include/experimental/bits/fs_path.h (u8path):
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Implement correctly for mingw.
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS] (path::_Cvt::_S_wconvert): Add
+	missing handling for char8_t. Use codecvt and codecvt_utf8_utf16
+	instead of codecvt_utf8. Use __str_codecvt_in_all and
+	__str_codecvt_out_all.
+	[!_GLIBCXX_FILESYSTEM_IS_WINDOWS] (path::_Cvt::_S_convert): Use
+	codecvt instead of codecvt_utf8. Use __str_codecvt_out_all.
+	(path::string) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Use
+	codecvt_utf8_utf16 instead of codecvt_utf8. Construct return values
+	with allocator. Use __str_codecvt_out_all and __str_codecvt_in_all.
+	(path::string) [!_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Use
+	__str_codecvt_in_all.
+	(path::u8string) [_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Use
+	codecvt_utf8_utf16 instead of codecvt_utf8. Use __str_codecvt_out_all.
+	* src/c++17/fs_path.cc (path::_S_convert_loc): Use
+	__str_codecvt_in_all.
+	* src/filesystem/path.cc (path::_S_convert_loc): Likewise.
+	* testsuite/27_io/filesystem/path/construct/90281.cc: New test.
+	* testsuite/27_io/filesystem/path/factory/u8path.cc: New test.
+	* testsuite/27_io/filesystem/path/native/string.cc: Test with empty
+	strings and with Unicode characters outside the basic multilingual
+	plane.
+	* testsuite/27_io/filesystem/path/native/alloc.cc: New test.
+	* testsuite/experimental/filesystem/path/construct/90281.cc: New test.
+	* testsuite/experimental/filesystem/path/factory/u8path.cc: New test.
+	* testsuite/experimental/filesystem/path/native/alloc.cc: New test.
+	* testsuite/experimental/filesystem/path/native/string.cc: Test with
+	empty strings and with Unicode characters outside the basic
+	multilingual plane.
+
+2019-06-17  François Dumont  <fdumont@gcc.gnu.org>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (struct _Hashtable::_Scoped_node): New type.
+	(_Hashtable::_M_insert_unique_node): Add key_type parameter. Don't
+	deallocate node if insertion fails.
+	(_Hashtable::_M_insert_multi_node): Likewise.
+	(_Hashtable::_M_reinsert_node): Pass additional key argument.
+	(_Hashtable::_M_reinsert_node_multi): Likewise. Remove FIXME.
+	(_Hashtable::_M_extract_node(size_t, __node_base*)): New function.
+	(_Hashtable::extract(const_iterator)): Use _M_extract_node.
+	(_Hashtable::extract(const _Key&)): Likewise.
+	(_Hashtable::_M_merge_unique): Pass additional key argument.
+	(_Hashtable::_M_emplace<Args>(true_type, Args&&...)): Likewise. Use
+	_Scoped_node.
+	(_Hashtable::_M_insert): Likewise.
+	* include/bits/hashtable_policy.h (_Map_base::operator[]): Likewise.
+	(_Hashtable_alloc): Add comments to functions with misleading names.
+
+2019-06-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/bad_function_call/what.cc: Include <string> header
+	for std::string.
+	* testsuite/20_util/shared_ptr/cons/weak_ptr_expired.cc: Likewise.
+	* testsuite/20_util/tuple/cons/allocator_with_any.cc: Include <memory>
+	header for std::allocator.
+	* testsuite/23_containers/array/tuple_interface/tuple_element.cc: Add
+	using-declaration for std::size_t.
+	* testsuite/23_containers/array/tuple_interface/tuple_size.cc:
+	Likewise.
+	* testsuite/23_containers/deque/cons/55977.cc: Include <istream> for
+	std::istream.
+	* testsuite/23_containers/vector/cons/55977.cc: Likewise.
+	* testsuite/experimental/map/erasure.cc: Include <string> for
+	std::string.
+	* testsuite/experimental/unordered_map/erasure.cc: Likewise.
+
 2019-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/type_traits (experimental::nonesuch): Use

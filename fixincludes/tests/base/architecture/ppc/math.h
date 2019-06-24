@@ -12,3 +12,8 @@
 #if defined( BROKEN_NAN_CHECK )
 #if 1
 #endif  /* BROKEN_NAN_CHECK */
+
+
+#if defined( DARWIN_LL_FUNCS_AVAIL_CHECK )
+#if !(__DARWIN_NO_LONG_LONG)
+#endif  /* DARWIN_LL_FUNCS_AVAIL_CHECK */

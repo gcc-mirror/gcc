@@ -382,8 +382,7 @@ vect_maybe_permute_loop_masks (gimple_seq *seq, rgroup_masks *dest_rgm,
    Use LOOP_COND_GSI to insert code before the exit gcond.
 
    RGM belongs to loop LOOP.  The loop originally iterated NITERS
-   times and has been vectorized according to LOOP_VINFO.  Each iteration
-   of the vectorized loop handles VF iterations of the scalar loop.
+   times and has been vectorized according to LOOP_VINFO.
 
    If NITERS_SKIP is nonnull, the first iteration of the vectorized loop
    starts with NITERS_SKIP dummy iterations of the scalar loop before
@@ -410,8 +409,7 @@ static tree
 vect_set_loop_masks_directly (struct loop *loop, loop_vec_info loop_vinfo,
 			      gimple_seq *preheader_seq,
 			      gimple_stmt_iterator loop_cond_gsi,
-			      rgroup_masks *rgm, tree vf,
-			      tree niters, tree niters_skip,
+			      rgroup_masks *rgm, tree niters, tree niters_skip,
 			      bool might_wrap_p)
 {
   tree compare_type = LOOP_VINFO_MASK_COMPARE_TYPE (loop_vinfo);
@@ -419,26 +417,28 @@ vect_set_loop_masks_directly (struct loop *loop, loop_vec_info loop_vinfo,
   tree mask_type = rgm->mask_type;
   unsigned int nscalars_per_iter = rgm->max_nscalars_per_iter;
   poly_uint64 nscalars_per_mask = TYPE_VECTOR_SUBPARTS (mask_type);
+  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
 
   /* Calculate the maximum number of scalar values that the rgroup
      handles in total, the number that it handles for each iteration
      of the vector loop, and the number that it should skip during the
      first iteration of the vector loop.  */
   tree nscalars_total = niters;
-  tree nscalars_step = vf;
+  tree nscalars_step = build_int_cst (iv_type, vf);
   tree nscalars_skip = niters_skip;
   if (nscalars_per_iter != 1)
     {
       /* We checked before choosing to use a fully-masked loop that these
 	 multiplications don't overflow.  */
-      tree factor = build_int_cst (compare_type, nscalars_per_iter);
+      tree compare_factor = build_int_cst (compare_type, nscalars_per_iter);
+      tree iv_factor = build_int_cst (iv_type, nscalars_per_iter);
       nscalars_total = gimple_build (preheader_seq, MULT_EXPR, compare_type,
-				     nscalars_total, factor);
-      nscalars_step = gimple_build (preheader_seq, MULT_EXPR, compare_type,
-				    nscalars_step, factor);
+				     nscalars_total, compare_factor);
+      nscalars_step = gimple_build (preheader_seq, MULT_EXPR, iv_type,
+				    nscalars_step, iv_factor);
       if (nscalars_skip)
 	nscalars_skip = gimple_build (preheader_seq, MULT_EXPR, compare_type,
-				      nscalars_skip, factor);
+				      nscalars_skip, compare_factor);
     }
 
   /* Create an induction variable that counts the number of scalars
@@ -447,15 +447,10 @@ vect_set_loop_masks_directly (struct loop *loop, loop_vec_info loop_vinfo,
   gimple_stmt_iterator incr_gsi;
   bool insert_after;
   standard_iv_increment_position (loop, &incr_gsi, &insert_after);
+  create_iv (build_int_cst (iv_type, 0), nscalars_step, NULL_TREE, loop,
+	     &incr_gsi, insert_after, &index_before_incr, &index_after_incr);
 
-  tree zero_index = build_int_cst (iv_type, 0);
-  tree step = build_int_cst (iv_type,
-			     LOOP_VINFO_VECT_FACTOR (loop_vinfo));
-  /* Create IV of iv_type.  */
-  create_iv (zero_index, step, NULL_TREE, loop, &incr_gsi,
-	     insert_after, &index_before_incr, &index_after_incr);
-
-  zero_index = build_int_cst (compare_type, 0);
+  tree zero_index = build_int_cst (compare_type, 0);
   tree test_index, test_limit, first_limit;
   gimple_stmt_iterator *test_gsi;
   if (might_wrap_p)
@@ -487,7 +482,8 @@ vect_set_loop_masks_directly (struct loop *loop, loop_vec_info loop_vinfo,
 	 where the rightmost subtraction can be done directly in
 	 COMPARE_TYPE.  */
       test_index = index_before_incr;
-      tree adjust = nscalars_step;
+      tree adjust = gimple_convert (preheader_seq, compare_type,
+				    nscalars_step);
       if (nscalars_skip)
 	adjust = gimple_build (preheader_seq, MINUS_EXPR, compare_type,
 			       adjust, nscalars_skip);
@@ -531,14 +527,16 @@ vect_set_loop_masks_directly (struct loop *loop, loop_vec_info loop_vinfo,
       first_limit = test_limit;
     }
 
-  /* Provide a definition of each mask in the group.  */
-  tree next_mask = NULL_TREE;
-  tree mask;
-  unsigned int i;
+  /* Convert the IV value to the comparison type (either a no-op or
+     a demotion).  */
   gimple_seq test_seq = NULL;
   test_index = gimple_convert (&test_seq, compare_type, test_index);
   gsi_insert_seq_before (test_gsi, test_seq, GSI_SAME_STMT);
 
+  /* Provide a definition of each mask in the group.  */
+  tree next_mask = NULL_TREE;
+  tree mask;
+  unsigned int i;
   FOR_EACH_VEC_ELT_REVERSE (rgm->masks, i, mask)
     {
       /* Previous masks will cover BIAS scalars.  This mask covers the
@@ -672,9 +670,6 @@ vect_set_loop_condition_masked (struct loop *loop, loop_vec_info loop_vinfo,
     niters = gimple_convert (&preheader_seq, compare_type, niters);
 
   widest_int iv_limit = vect_iv_limit_for_full_masking (loop_vinfo);
-  /* Get the vectorization factor in tree form.  */
-  tree vf = build_int_cst (compare_type,
-			   LOOP_VINFO_VECT_FACTOR (loop_vinfo));
 
   /* Iterate over all the rgroups and fill in their masks.  We could use
      the first mask from any rgroup for the loop condition; here we
@@ -709,7 +704,7 @@ vect_set_loop_condition_masked (struct loop *loop, loop_vec_info loop_vinfo,
 	/* Set up all masks for this group.  */
 	test_mask = vect_set_loop_masks_directly (loop, loop_vinfo,
 						  &preheader_seq,
-						  loop_cond_gsi, rgm, vf,
+						  loop_cond_gsi, rgm,
 						  niters, niters_skip,
 						  might_wrap_p);
       }
@@ -3100,9 +3095,12 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
     }
 
   /* Apply versioning.  If there is already a scalar version created by
-     if-conversion re-use that.  */
+     if-conversion re-use that.  Note we cannot re-use the copy of
+     an if-converted outer-loop when vectorizing the inner loop only.  */
   gcond *cond;
-  if (gimple *call = vect_loop_vectorized_call (loop_to_version, &cond))
+  gimple *call;
+  if ((!loop_to_version->inner || loop == loop_to_version)
+      && (call = vect_loop_vectorized_call (loop_to_version, &cond)))
     {
       gcc_assert (scalar_loop);
       condition_bb = gimple_bb (cond);

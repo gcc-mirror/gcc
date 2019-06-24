@@ -1460,8 +1460,9 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
 				       min_value) >= 0)
 	    {
 	      location_t loc = EXPR_LOCATION ((tree) node->value);
-	      warning_at (loc, 0, "lower value in case label range"
-				  " less than minimum value for type");
+	      warning_at (loc, OPT_Wswitch_outside_range,
+			  "lower value in case label range less than minimum"
+			  " value for type");
 	      CASE_LOW ((tree) node->value) = convert (TREE_TYPE (cond),
 						       min_value);
 	      node->key = (splay_tree_key) CASE_LOW ((tree) node->value);
@@ -1474,8 +1475,8 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
 	      if (node == NULL || !node->key)
 		break;
 	      location_t loc = EXPR_LOCATION ((tree) node->value);
-	      warning_at (loc, 0, "case label value is less than minimum "
-				  "value for type");
+	      warning_at (loc, OPT_Wswitch_outside_range, "case label value is"
+			  " less than minimum value for type");
 	      splay_tree_remove (cases, node->key);
 	    }
 	  while (1);
@@ -1491,8 +1492,8 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
 				   max_value) > 0)
 	{
 	  location_t loc = EXPR_LOCATION ((tree) node->value);
-	  warning_at (loc, 0, "upper value in case label range"
-			      " exceeds maximum value for type");
+	  warning_at (loc, OPT_Wswitch_outside_range, "upper value in case"
+		      " label range exceeds maximum value for type");
 	  CASE_HIGH ((tree) node->value)
 	    = convert (TREE_TYPE (cond), max_value);
 	  outside_range_p = true;
@@ -1503,7 +1504,7 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
 	     != NULL)
 	{
 	  location_t loc = EXPR_LOCATION ((tree) node->value);
-	  warning_at (loc, 0,
+	  warning_at (loc, OPT_Wswitch_outside_range,
 		      "case label value exceeds maximum value for type");
 	  splay_tree_remove (cases, node->key);
 	  outside_range_p = true;

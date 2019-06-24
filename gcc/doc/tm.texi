@@ -11610,6 +11610,14 @@ function version at run-time for a given set of function versions.
 body must be generated.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_PREDICT_DOLOOP_P (struct loop *@var{loop})
+Return true if we can predict it is possible to use a low-overhead loop
+for a particular loop.  The parameter @var{loop} is a pointer to the loop.
+This target hook is required only when the target supports low-overhead
+loops, and will help ivopts to make some decisions.
+The default version of this hook returns false.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_CAN_USE_DOLOOP_P (const widest_int @var{&iterations}, const widest_int @var{&iterations_max}, unsigned int @var{loop_depth}, bool @var{entered_at_top})
 Return true if it is possible to use low-overhead loops (@code{doloop_end}
 and @code{doloop_begin}) for a particular loop.  @var{iterations} gives the

@@ -1909,6 +1909,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
 
+#undef TARGET_PREDICT_DOLOOP_P
+#define TARGET_PREDICT_DOLOOP_P rs6000_predict_doloop_p
+
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV rs6000_atomic_assign_expand_fenv
 
@@ -39417,7 +39420,27 @@ rs6000_mangle_decl_assembler_name (tree decl, tree id)
   return id;
 }
 
-
+/* Predict whether the given loop in gimple will be transformed in the RTL
+   doloop_optimize pass.  */
+
+static bool
+rs6000_predict_doloop_p (struct loop *loop)
+{
+  gcc_assert (loop);
+
+  /* On rs6000, targetm.can_use_doloop_p is actually
+     can_use_doloop_if_innermost.  Just ensure the loop is innermost.  */
+  if (loop->inner != NULL)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Predict doloop failure due to"
+			    " loop nesting.\n");
+      return false;
+    }
+
+  return true;
+}
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-rs6000.h"

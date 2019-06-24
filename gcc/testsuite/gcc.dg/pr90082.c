@@ -1,5 +1,7 @@
 /* PR rtl-optimization/90082 */
 /* { dg-do compile } */
+/* { dg-require-effective-target nonlocal_goto } */
+/* { dg-require-effective-target label_values } */
 /* { dg-options "-O1 -fnon-call-exceptions -ftrapv" } */
 
 void *buf[5];

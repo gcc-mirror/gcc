@@ -5758,7 +5758,7 @@ check_function_arguments_recurse (void (*callback)
       for (attrs = TYPE_ATTRIBUTES (type);
 	   attrs;
 	   attrs = TREE_CHAIN (attrs))
-	if (is_attribute_p ("format_arg", TREE_PURPOSE (attrs)))
+	if (is_attribute_p ("format_arg", get_attribute_name (attrs)))
 	  {
 	    tree inner_arg;
 	    tree format_num_expr;
@@ -7606,13 +7606,13 @@ check_missing_format_attribute (tree ltype, tree rtype)
   tree ra;
 
   for (ra = TYPE_ATTRIBUTES (ttr); ra; ra = TREE_CHAIN (ra))
-    if (is_attribute_p ("format", TREE_PURPOSE (ra)))
+    if (is_attribute_p ("format", get_attribute_name (ra)))
       break;
   if (ra)
     {
       tree la;
       for (la = TYPE_ATTRIBUTES (ttl); la; la = TREE_CHAIN (la))
-	if (is_attribute_p ("format", TREE_PURPOSE (la)))
+	if (is_attribute_p ("format", get_attribute_name (la)))
 	  break;
       return !la;
     }

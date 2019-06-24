@@ -8646,7 +8646,7 @@ sh2a_function_vector_p (tree func)
     return false;
 
   for (tree list = SH_ATTRIBUTES (func); list; list = TREE_CHAIN (list))
-    if (is_attribute_p ("function_vector", TREE_PURPOSE (list)))
+    if (is_attribute_p ("function_vector", get_attribute_name (list)))
       return true;
 
   return false;

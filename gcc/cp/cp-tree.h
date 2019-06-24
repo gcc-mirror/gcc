@@ -1182,15 +1182,15 @@ enum cp_identifier_kind {
 #define C_TYPE_FIELDS_READONLY(TYPE) \
   (LANG_TYPE_CLASS_CHECK (TYPE)->fields_readonly)
 
-/* The tokens stored in the default argument.  */
+/* The tokens stored in the unparsed operand.  */
 
-#define DEFARG_TOKENS(NODE) \
-  (((struct tree_default_arg *)DEFAULT_ARG_CHECK (NODE))->tokens)
-#define DEFARG_INSTANTIATIONS(NODE) \
-  (((struct tree_default_arg *)DEFAULT_ARG_CHECK (NODE))->instantiations)
+#define DEFPARSE_TOKENS(NODE) \
+  (((struct tree_deferred_parse *)DEFERRED_PARSE_CHECK (NODE))->tokens)
+#define DEFPARSE_INSTANTIATIONS(NODE) \
+  (((struct tree_deferred_parse *)DEFERRED_PARSE_CHECK (NODE))->instantiations)
 
-struct GTY (()) tree_default_arg {
-  struct tree_common common;
+struct GTY (()) tree_deferred_parse {
+  struct tree_base base;
   struct cp_token_cache *tokens;
   vec<tree, va_gc> *instantiations;
 };
@@ -1206,6 +1206,9 @@ struct GTY (()) tree_default_arg {
 #define UNEVALUATED_NOEXCEPT_SPEC_P(NODE)				\
   (DEFERRED_NOEXCEPT_SPEC_P (NODE)					\
    && DEFERRED_NOEXCEPT_PATTERN (TREE_PURPOSE (NODE)) == NULL_TREE)
+#define UNPARSED_NOEXCEPT_SPEC_P(NODE) \
+  ((NODE) && (TREE_PURPOSE (NODE)) \
+   && (TREE_CODE (TREE_PURPOSE (NODE)) == DEFERRED_PARSE))
 
 struct GTY (()) tree_deferred_noexcept {
   struct tree_base base;
@@ -1586,7 +1589,7 @@ enum cp_tree_node_structure_enum {
   TS_CP_OVERLOAD,
   TS_CP_BASELINK,
   TS_CP_TEMPLATE_DECL,
-  TS_CP_DEFAULT_ARG,
+  TS_CP_DEFERRED_PARSE,
   TS_CP_DEFERRED_NOEXCEPT,
   TS_CP_STATIC_ASSERT,
   TS_CP_ARGUMENT_PACK_SELECT,
@@ -1607,7 +1610,7 @@ union GTY((desc ("cp_tree_node_structure (&%h)"),
   struct tree_overload GTY ((tag ("TS_CP_OVERLOAD"))) overload;
   struct tree_baselink GTY ((tag ("TS_CP_BASELINK"))) baselink;
   struct tree_template_decl GTY ((tag ("TS_CP_TEMPLATE_DECL"))) template_decl;
-  struct tree_default_arg GTY ((tag ("TS_CP_DEFAULT_ARG"))) default_arg;
+  struct tree_deferred_parse GTY ((tag ("TS_CP_DEFERRED_PARSE"))) deferred_parse;
   struct tree_deferred_noexcept GTY ((tag ("TS_CP_DEFERRED_NOEXCEPT"))) deferred_noexcept;
   struct lang_identifier GTY ((tag ("TS_CP_IDENTIFIER"))) identifier;
   struct tree_static_assert GTY ((tag ("TS_CP_STATIC_ASSERT"))) 
@@ -6509,6 +6512,7 @@ extern bool check_array_designated_initializer  (constructor_elt *,
 						 unsigned HOST_WIDE_INT);
 extern bool check_for_uninitialized_const_var   (tree, bool, tsubst_flags_t);
 extern tree build_explicit_specifier		(tree, tsubst_flags_t);
+extern void do_push_parm_decls			(tree, tree, tree *);
 
 /* in decl2.c */
 extern void record_mangling			(tree, bool);
@@ -6742,7 +6746,7 @@ extern void cp_finish_omp_range_for (tree, tree);
 extern bool parsing_nsdmi (void);
 extern bool parsing_default_capturing_generic_lambda_in_template (void);
 extern void inject_this_parameter (tree, cp_cv_quals);
-extern location_t defarg_location (tree);
+extern location_t defparse_location (tree);
 extern void maybe_show_extern_c_location (void);
 extern bool literal_integer_zerop (const_tree);
 
@@ -6974,6 +6978,7 @@ extern tree copied_binfo			(tree, tree);
 extern tree original_binfo			(tree, tree);
 extern int shared_member_p			(tree);
 extern bool any_dependent_bases_p (tree = current_nonlambda_class_type ());
+extern bool maybe_check_overriding_exception_spec (tree, tree);
 
 /* The representation of a deferred access check.  */
 
@@ -7767,7 +7772,7 @@ extern void explain_invalid_constexpr_fn        (tree);
 extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
 extern void clear_cv_and_fold_caches		(void);
-extern tree unshare_constructor			(tree);
+extern tree unshare_constructor			(tree CXX_MEM_STAT_INFO);
 
 /* In cp-ubsan.c */
 extern void cp_ubsan_maybe_instrument_member_call (tree);

@@ -491,6 +491,10 @@ typedef struct _loop_vec_info : public vec_info {
   /* Map of IV base/step expressions to inserted name in the preheader.  */
   hash_map<tree_operand_hash, tree> *ivexpr_map;
 
+  /* Map of OpenMP "omp simd array" scan variables to corresponding
+     rhs of the store of the initializer.  */
+  hash_map<tree, tree> *scan_map;
+
   /* The unrolling factor needed to SLP the loop. In case of that pure SLP is
      applied to the loop, i.e., no unrolling is needed, this is 1.  */
   poly_uint64 slp_unrolling_factor;
@@ -913,7 +917,7 @@ struct _stmt_vec_info {
   bool strided_p;
 
   /* For both loads and stores.  */
-  bool simd_lane_access_p;
+  unsigned simd_lane_access_p : 3;
 
   /* Classifies how the load or store is going to be implemented
      for loop vectorization.  */

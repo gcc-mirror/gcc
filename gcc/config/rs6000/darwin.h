@@ -54,7 +54,9 @@
   do							\
     {							\
       if (!TARGET_64BIT) builtin_define ("__ppc__");	\
+      if (!TARGET_64BIT) builtin_define ("__PPC__");	\
       if (TARGET_64BIT) builtin_define ("__ppc64__");	\
+      if (TARGET_64BIT) builtin_define ("__PPC64__");	\
       builtin_define ("__POWERPC__");			\
       builtin_define ("__NATURAL_ALIGNMENT__");		\
       darwin_cpp_builtins (pfile);			\
@@ -398,6 +400,7 @@ extern int darwin_emit_picsym_stub;
   do \
     { \
       DARWIN_REGISTER_TARGET_PRAGMAS(); \
+      targetm.target_option.pragma_parse = rs6000_pragma_target_parse; \
       targetm.resolve_overloaded_builtin = altivec_resolve_overloaded_builtin; \
     } \
   while (0)

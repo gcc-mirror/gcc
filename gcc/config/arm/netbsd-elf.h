@@ -138,6 +138,8 @@
 #undef DEFAULT_STRUCTURE_SIZE_BOUNDARY
 #define DEFAULT_STRUCTURE_SIZE_BOUNDARY 8
 
+#define SYSARCH_ARM_SYNC_ICACHE	0
+
 /* Clear the instruction cache from `BEG' to `END'.  This makes a
    call to the ARM_SYNC_ICACHE architecture specific syscall.  */
 #define CLEAR_INSN_CACHE(BEG, END)					\
@@ -151,6 +153,6 @@ do									\
       } s;								\
     s.addr = (unsigned int)(BEG);					\
     s.len = (END) - (BEG);						\
-    (void) sysarch (0, &s);						\
+    (void) sysarch (SYSARCH_ARM_SYNC_ICACHE, &s);			\
   }									\
 while (0)

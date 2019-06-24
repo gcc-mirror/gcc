@@ -1,3 +1,18 @@
+2019-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+PR ada/80590
+
+	* sem_ch5.adb (Analyze_Loop_Statement): Avoid exception propagation
+	during normal processing.
+
+2019-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+PR ada/80590
+
+	* exp_ch9.adb (Expand_N_Delay_Relative_Statement): Swap the two
+	conditions to avoid a unnecessary exception propagation in the default
+	case.
+
 2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (handle_stack_protect_attribute): Move around.

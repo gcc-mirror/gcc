@@ -18,4 +18,5 @@
   l = l.or.any (a.ne.0)
   deallocate (a)
 !$omp end parallel
+  if (l.or.allocated (a)) STOP 2
 end

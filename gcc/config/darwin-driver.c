@@ -261,7 +261,7 @@ darwin_driver_init (unsigned int *decoded_options_count,
 	  if (*decoded_options_count > i) {
 	    memmove (*decoded_options + i,
 		     *decoded_options + i + 1,
-		     ((*decoded_options_count - i)
+		     ((*decoded_options_count - i - 1)
 		      * sizeof (struct cl_decoded_option)));
 	  }
 	  --i;
@@ -307,7 +307,7 @@ darwin_driver_init (unsigned int *decoded_options_count,
 	  if (*decoded_options_count > i) {
 	    memmove (*decoded_options + i,
 		     *decoded_options + i + 1,
-		     ((*decoded_options_count - i)
+		     ((*decoded_options_count - i - 1)
 		      * sizeof (struct cl_decoded_option)));
 	  }
 	  --i;

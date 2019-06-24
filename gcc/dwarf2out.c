@@ -29419,9 +29419,16 @@ prune_unused_types_walk (dw_die_ref die)
 	    break;
 
 	  /* premark_used_variables marks external variables --- don't mark
-	     them here.  */
+	     them here.  But function-local externals are always considered
+	     used.  */
 	  if (get_AT (die, DW_AT_external))
-	    return;
+	    {
+	      for (c = die->die_parent; c; c = c->die_parent)
+		if (c->die_tag == DW_TAG_subprogram)
+		  break;
+	      if (!c)
+		return;
+	    }
 	}
       /* FALLTHROUGH */
 

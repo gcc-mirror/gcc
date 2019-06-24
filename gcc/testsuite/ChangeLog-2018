@@ -572,6 +572,8 @@
 	* gcc.target/avr/pr88253.c: New test.
 
 2018-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.dg/loop-versioning-1.c: New test.
 	* gcc.dg/loop-versioning-10.c: Likewise.

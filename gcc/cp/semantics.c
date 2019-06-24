@@ -7688,6 +7688,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_REDUCTION:
 	  if (reduction_seen == -2)
 	    OMP_CLAUSE_REDUCTION_INSCAN (c) = 0;
+	  if (OMP_CLAUSE_REDUCTION_INSCAN (c))
+	    need_copy_assignment = true;
 	  need_implicitly_determined = true;
 	  break;
 	case OMP_CLAUSE_IN_REDUCTION:
@@ -7829,7 +7831,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  t = require_complete_type (t);
 	  if (t == error_mark_node)
 	    remove = true;
-	  else if (TYPE_REF_P (TREE_TYPE (t))
+	  else if (!processing_template_decl
+		   && TYPE_REF_P (TREE_TYPE (t))
 		   && !complete_type_or_else (TREE_TYPE (TREE_TYPE (t)), t))
 	    remove = true;
 	}

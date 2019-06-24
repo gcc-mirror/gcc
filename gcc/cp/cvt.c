@@ -1518,7 +1518,8 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
       if (implicit != ICV_CAST
 	  && warn_unused_value
 	  && !TREE_NO_WARNING (expr)
-	  && !processing_template_decl)
+	  && !processing_template_decl
+	  && !cp_unevaluated_operand)
 	{
 	  /* The middle end does not warn about expressions that have
 	     been explicitly cast to void, so we must do so here.  */

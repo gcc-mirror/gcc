@@ -5417,6 +5417,11 @@ mode @var{m} and the scalars have the mode appropriate for one
 element of @var{m}.  The operation is strictly in-order: there is
 no reassociation.
 
+@cindex @code{mask_fold_left_plus_@var{m}} instruction pattern
+@item @code{mask_fold_left_plus_@var{m}}
+Like @samp{fold_left_plus_@var{m}}, but takes an additional mask operand
+(operand 3) that specifies which elements of the source vector should be added.
+
 @cindex @code{sdot_prod@var{m}} instruction pattern
 @item @samp{sdot_prod@var{m}}
 @cindex @code{udot_prod@var{m}} instruction pattern
@@ -5453,6 +5458,14 @@ away from element 0) and fill the vacated element 0 with the scalar
 in operand 2.  Store the result in vector output operand 0.  Operands
 0 and 1 have mode @var{m} and operand 2 has the mode appropriate for
 one element of @var{m}.
+
+@cindex @code{vec_shl_@var{m}} instruction pattern
+@item @samp{vec_shl_@var{m}}
+Whole vector left shift in bits, i.e.@: away from element 0.
+Operand 1 is a vector to be shifted.
+Operand 2 is an integer shift amount in bits.
+Operand 0 is where the resulting shifted vector is stored.
+The output and input vectors should have the same modes.
 
 @cindex @code{vec_shr_@var{m}} instruction pattern
 @item @samp{vec_shr_@var{m}}
