@@ -1,3 +1,7 @@
+2019-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/headers/cfloat/values_c++17.cc: New test.
+
 2019-06-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_DEBUG): Only do debug build for final
