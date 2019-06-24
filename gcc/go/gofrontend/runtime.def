@@ -39,9 +39,6 @@ DEF_GO_RUNTIME(DECODERUNE, "runtime.decoderune", P2(STRING, INT),
 DEF_GO_RUNTIME(CONCATSTRINGS, "runtime.concatstrings",
                P3(POINTER, POINTER, INT), R1(STRING))
 
-// Compare two strings for equality.
-DEF_GO_RUNTIME(EQSTRING, "runtime.eqstring", P2(STRING, STRING), R1(BOOL))
-
 // Compare two strings.
 DEF_GO_RUNTIME(CMPSTRING, "runtime.cmpstring", P2(STRING, STRING), R1(INT))
 

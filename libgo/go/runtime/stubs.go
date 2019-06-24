@@ -273,18 +273,6 @@ func checkASM() bool {
 	return true
 }
 
-func eqstring(x, y string) bool {
-	a := stringStructOf(&x)
-	b := stringStructOf(&y)
-	if a.len != b.len {
-		return false
-	}
-	if a.str == b.str {
-		return true
-	}
-	return memequal(a.str, b.str, uintptr(a.len))
-}
-
 // For gccgo this is in the C code.
 func osyield()
 
