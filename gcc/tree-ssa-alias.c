@@ -2818,6 +2818,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
 	      res = NULL;
 	      break;
 	    }
+	  --limit;
 	  if (stmt_may_clobber_ref_p_1 (def_stmt, ref))
 	    {
 	      if (!translate)
