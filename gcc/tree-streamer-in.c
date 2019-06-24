@@ -372,7 +372,6 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
 
   mode = bp_unpack_machine_mode (bp);
   SET_TYPE_MODE (expr, mode);
-  TYPE_STRING_FLAG (expr) = (unsigned) bp_unpack_value (bp, 1);
   /* TYPE_NO_FORCE_BLK is private to stor-layout and need
      no streaming.  */
   TYPE_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -383,9 +382,12 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
     {
       TYPE_TRANSPARENT_AGGR (expr) = (unsigned) bp_unpack_value (bp, 1);
       TYPE_FINAL_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+      TYPE_CXX_ODR_P (expr) = (unsigned) bp_unpack_value (bp, 1);
     }
   else if (TREE_CODE (expr) == ARRAY_TYPE)
     TYPE_NONALIASED_COMPONENT (expr) = (unsigned) bp_unpack_value (bp, 1);
+  if (TREE_CODE (expr) == ARRAY_TYPE || TREE_CODE (expr) == INTEGER_TYPE)
+    TYPE_STRING_FLAG (expr) = (unsigned) bp_unpack_value (bp, 1);
   if (AGGREGATE_TYPE_P (expr))
     TYPE_TYPELESS_STORAGE (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_EMPTY_P (expr) = (unsigned) bp_unpack_value (bp, 1);

@@ -8847,7 +8847,8 @@ braced_lists_to_strings (tree type, tree ctor)
   else
     return ctor;
 
-  if (TYPE_STRING_FLAG (ttp))
+  if ((TREE_CODE (ttp) == ARRAY_TYPE || TREE_CODE (ttp) == INTEGER_TYPE)
+      && TYPE_STRING_FLAG (ttp))
     return braced_list_to_string (type, ctor);
 
   code = TREE_CODE (ttp);

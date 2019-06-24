@@ -1,3 +1,8 @@
+2019-06-24  Jan Hubicka  <jh@suse.cz>
+
+	* c-common.c (braced_lists_to_strings): Check that
+	type is array or integer prior checking string flag.
+
 2019-06-21  Matthew Beliveau  <mbelivea@redhat.com>
 
 	PR c++/90875 - added -Wswitch-outside-range option

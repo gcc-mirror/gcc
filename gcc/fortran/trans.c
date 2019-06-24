@@ -418,7 +418,8 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
       tmp = gfc_build_addr_expr (pvoid_type_node, base);
       tmp = fold_build_pointer_plus_loc (input_location, tmp, offset);
       tmp = fold_convert (build_pointer_type (type), tmp);
-      if (!TYPE_STRING_FLAG (type))
+      if ((TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != ARRAY_TYPE)
+	  || !TYPE_STRING_FLAG (type))
 	tmp = build_fold_indirect_ref_loc (input_location, tmp);
       return tmp;
     }

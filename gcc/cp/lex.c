@@ -884,6 +884,9 @@ cxx_make_type (enum tree_code code MEM_STAT_DECL)
       CLASSTYPE_INTERFACE_ONLY (t) = finfo->interface_only;
     }
 
+  if (code == RECORD_TYPE || code == UNION_TYPE)
+    TYPE_CXX_ODR_P (t) = 1;
+
   return t;
 }
 

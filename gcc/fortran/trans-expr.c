@@ -2309,7 +2309,9 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
 	start.expr = gfc_evaluate_now (start.expr, &se->pre);
 
       /* Change the start of the string.  */
-      if (TYPE_STRING_FLAG (TREE_TYPE (se->expr)))
+      if ((TREE_CODE (TREE_TYPE (se->expr)) == ARRAY_TYPE
+	   || TREE_CODE (TREE_TYPE (se->expr)) == INTEGER_TYPE)
+	  && TYPE_STRING_FLAG (TREE_TYPE (se->expr)))
 	tmp = se->expr;
       else
 	tmp = build_fold_indirect_ref_loc (input_location,
@@ -9479,7 +9481,9 @@ gfc_conv_string_parameter (gfc_se * se)
       return;
     }
 
-  if (TYPE_STRING_FLAG (TREE_TYPE (se->expr)))
+  if ((TREE_CODE (TREE_TYPE (se->expr)) == ARRAY_TYPE
+       || TREE_CODE (TREE_TYPE (se->expr)) == INTEGER_TYPE)
+      && TYPE_STRING_FLAG (TREE_TYPE (se->expr)))
     {
       if (TREE_CODE (se->expr) != INDIRECT_REF)
 	{

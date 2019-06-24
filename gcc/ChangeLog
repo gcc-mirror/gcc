@@ -1,3 +1,26 @@
+2019-06-24  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-utils.h (type_with_linkage_p): Verify that type is
+	CXX_ODR_P.
+	(odr_type_p): Remove extra return.
+	* lto-streamer-out.c (hash_tree): Hash TYPE_CXX_ODR_P;
+	hash STRING_FLAG only for arrays and integers.
+	* tree-stremaer-in.c (unpack_ts_type_common_value_fields):
+	Update analogously.
+	* tree-streamer-out.c (pack_ts_type_common_value_fields):
+	Likewise.
+	* print-tree.c (print_node): Print cxx-odr-p
+	and string-flag.
+	* tree.c (need_assembler_name_p): Also check that type
+	is CXX_ODR_TYPE_P
+	(verify_type_variant): Update verification of SRING_FLAG;
+	also check CXX_ODR_P.
+	* tree.h (ARRAY_OR_INTEGER_TYPE_CHECK): New macro.
+	(TYPE_STRING_FLAG): Use it.
+	(TYPE_CXX_ODR_P): New macro.
+	* dwarf2out.c (gen_array_type_die): First check that type
+	is an array and then test string flag.
+
 2019-06-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90972

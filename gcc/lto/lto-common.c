@@ -1124,15 +1124,17 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
       compare_values (TYPE_MODE);
-      compare_values (TYPE_STRING_FLAG);
       compare_values (TYPE_NEEDS_CONSTRUCTING);
       if (RECORD_OR_UNION_TYPE_P (t1))
 	{
 	  compare_values (TYPE_TRANSPARENT_AGGR);
 	  compare_values (TYPE_FINAL_P);
+          compare_values (TYPE_CXX_ODR_P);
 	}
       else if (code == ARRAY_TYPE)
 	compare_values (TYPE_NONALIASED_COMPONENT);
+      if (code == ARRAY_TYPE || code == INTEGER_TYPE)
+        compare_values (TYPE_STRING_FLAG);
       if (AGGREGATE_TYPE_P (t1))
 	compare_values (TYPE_TYPELESS_STORAGE);
       compare_values (TYPE_EMPTY_P);
