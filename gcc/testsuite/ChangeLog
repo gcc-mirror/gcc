@@ -1,3 +1,8 @@
+2019-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/90954
+	* c-c++-common/gomp/pr90954.c: New test.
+
 2019-06-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/powerpc/safe-indirect-jump-1.c: Skip for Darwin.

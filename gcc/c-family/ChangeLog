@@ -1,3 +1,9 @@
+2019-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/90954
+	* c-omp.c (c_finish_omp_atomic): Allow tree_invariant_p in addition
+	to SAVE_EXPR in first operand of a COMPOUND_EXPR.
+
 2019-06-24  Jan Hubicka  <jh@suse.cz>
 
 	* c-common.c (braced_lists_to_strings): Check that
