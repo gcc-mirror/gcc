@@ -7477,10 +7477,12 @@ resolves_to_fixed_type_p (tree instance, int* nonnull)
     }
 
   fixed = fixed_type_or_null (instance, nonnull, &cdtorp);
-  if (fixed == NULL_TREE)
-    return 0;
   if (INDIRECT_TYPE_P (t))
     t = TREE_TYPE (t);
+  if (CLASS_TYPE_P (t) && CLASSTYPE_FINAL (t))
+    return 1;
+  if (fixed == NULL_TREE)
+    return 0;
   if (!same_type_ignoring_top_level_qualifiers_p (t, fixed))
     return 0;
   return cdtorp ? -1 : 1;
