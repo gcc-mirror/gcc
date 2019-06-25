@@ -1,3 +1,29 @@
+2019-06-25  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc/c-family/c-common.c (c_common_nodes_and_builtins): Define
+	alternate "__intN__" name for "__intN" types.
+	* gcc/c/c-parser.c (c_parse_init): Create keyword for "__intN__" type.
+	* gcc/cp/lex.c (init_reswords): Likewise.
+	* gcc/config/msp430/msp430.h: Use __int20__ for SIZE_TYPE and
+	PTRDIFF_TYPE.
+	* gcc/cp/cp-tree.h (cp_decl_specifier_seq): New bitfield "int_n_alt".
+	* gcc/c/c-decl.c (declspecs_add_type): Don't pedwarn about "__intN" ISO
+	C incompatibility if alternate "__intN__" form is used.
+	* gcc/cp/decl.c (grokdeclarator): Likewise.
+	* gcc/cp/parser.c (cp_parser_simple_type_specifier): Set
+	decl_specs->int_n_alt if "__intN__" form is used.
+	* gcc/gimple-ssa-sprintf.c (build_intmax_type_nodes): Accept "__intN__"
+	format of "__intN" types for UINTMAX_TYPE.
+	* gcc/brig/brig-lang.c (brig_build_c_type_nodes): Accept "__intN__"
+	format of "__intN" types for SIZE_TYPE.
+	* gcc/lto/lto-lang.c (lto_build_c_type_nodes): Likewise.
+	* gcc/stor-layout.c (initialize_sizetypes): Accept "__intN__"
+	format of "__intN" types for SIZETYPE.
+	* gcc/tree.c (build_common_tree_nodes): Accept "__intN__"
+	format of "__intN" types for SIZE_TYPE and PTRDIFF_TYPE.
+	* gcc/doc/invoke.texi: Document that __intN__ disables pedantic
+	warnings.
+
 2019-06-25  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Check that

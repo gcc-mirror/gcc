@@ -17622,6 +17622,12 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	{
 	  decl_specs->explicit_intN_p = true;
 	  decl_specs->int_n_idx = idx;
+	  /* Check if the alternate "__intN__" form has been used instead of
+	     "__intN".  */
+	  if (strncmp (IDENTIFIER_POINTER (token->u.value)
+			+ (IDENTIFIER_LENGTH (token->u.value) - 2),
+			"__", 2) == 0)
+	    decl_specs->int_n_alt = true;
 	}
       type = int_n_trees [idx].signed_type;
       break;
