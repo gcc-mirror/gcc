@@ -1,3 +1,9 @@
+2019-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90969
+	* constexpr.c (cxx_eval_array_reference): Don't look through VCE from
+	vector type if lval.
+
 2019-06-24  Jan Hubicka  <jh@suse.cz>
 
 	* lex.c (cxx_make_type): Set TYPE_CXX_ODR_P.
