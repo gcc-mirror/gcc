@@ -1,3 +1,9 @@
+2019-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90930
+	* gcc.dg/tree-ssa/reassoc-24.c: Adjust.
+	* gcc.dg/tree-ssa/reassoc-25.c: Likewise.
+
 2019-06-25  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* gcc.target/arc/pr89838.c: New file.
