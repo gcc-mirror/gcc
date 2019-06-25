@@ -1,3 +1,8 @@
+2019-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/90939
+	* ipa-cp.c (ipcp_bits_lattice::meet_with): Remove assert.
+
 2019-06-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90930
