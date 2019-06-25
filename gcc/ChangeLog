@@ -1,5 +1,10 @@
 2019-06-25  Martin Liska  <mliska@suse.cz>
 
+	* hash-table.c (hashtab_chk_error): Move here from ...
+	* hash-table.h (hashtab_chk_error): ... here.
+
+2019-06-25  Martin Liska  <mliska@suse.cz>
+
 	PR tree-optimization/90978
 	* df-scan.c (df_update_entry_block_defs): Remove dead else
 	branch.

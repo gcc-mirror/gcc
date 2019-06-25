@@ -303,6 +303,8 @@ extern unsigned int hash_table_sanitize_eq_limit;
 extern unsigned int hash_table_higher_prime_index (unsigned long n)
    ATTRIBUTE_PURE;
 
+extern ATTRIBUTE_NORETURN ATTRIBUTE_COLD void hashtab_chk_error ();
+
 /* Return X % Y using multiplicative inverse values INV and SHIFT.
 
    The multiplicative inverses computed above are for 32-bit types,
@@ -1008,18 +1010,6 @@ hash_table<Descriptor, Lazy, Allocator>
 
   m_n_elements++;
   return &m_entries[index];
-}
-
-/* Report a hash table checking error.  */
-
-ATTRIBUTE_NORETURN ATTRIBUTE_COLD
-static void
-hashtab_chk_error ()
-{
-  fprintf (stderr, "hash table checking failed: "
-	   "equal operator returns true for a pair "
-	   "of values with a different hash value\n");
-  gcc_unreachable ();
 }
 
 /* Verify that all existing elements in th hash table which are
