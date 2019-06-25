@@ -1,3 +1,8 @@
+2019-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/numeric (midpoint(T, T)): Avoid std::abs in constexpr
+	function.
+
 2019-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/pstl/pstl_config.h (_PSTL_PRAGMA_SIMD_SCAN,
