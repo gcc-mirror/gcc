@@ -132,6 +132,11 @@ extern int darwin_emit_picsym_stub;
 #define DARWIN_CRT2_SPEC \
   "%{!m64:%:version-compare(!> 10.4 mmacosx-version-min= crt2.o%s)}"
 
+/* The PPC regs save/restore functions are leaves and could, conceivably
+   be used by the tm destructor.  */
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC TM_DESTRUCTOR "-lef_ppc"
+
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS			\
   DARWIN_EXTRA_SPECS                            \

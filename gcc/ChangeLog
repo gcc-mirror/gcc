@@ -1,4 +1,8 @@
-2019-06-24  Bill Seurer  <seurer@linux.vnet.ibm.com>
+2019-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (ENDFILE_SPEC): New.
+
+2019-06-25  Bill Seurer  <seurer@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (stack_info, rs6000_pic_labelno,
 	savres_routine_syms, savres_routine_name, morestack_ref,
