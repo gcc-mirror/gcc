@@ -1,3 +1,10 @@
+2019-06-25  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/90978
+	* df-scan.c (df_update_entry_block_defs): Remove dead else
+	branch.
+	(df_update_exit_block_uses): Likewise.
+
 2019-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
             Andrew Stubbs  <ams@codesourcery.com>
 
