@@ -3277,6 +3277,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool alias_p : 1;	/* Alias for other module.  */
   bool partition_p : 1; /* A partition.  */
   bool from_partition_p : 1; /* Direct import of a partition.  */
+  bool cmi_noted_p : 1;
 
  public:
   module_state (tree name, module_state *, bool);
@@ -3393,6 +3394,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void write_config (elf_out *to, struct module_state_config &, unsigned crc);
   bool read_config (cpp_reader *, struct module_state_config &);
 
+ public:
+  void note_cmi_name ();
+
  private:
   static unsigned write_bindings (elf_out *to, vec<depset *> depsets,
 				  depset::hash &table, unsigned *crc_ptr);
@@ -3485,7 +3489,7 @@ module_state::module_state (tree name, module_state *parent, bool partition)
 {
   u1.slurp = NULL;
   header_p = direct_p = primary_p = interface_p = exported_p
-    = imported_p = alias_p = from_partition_p = false;
+    = imported_p = alias_p = from_partition_p = cmi_noted_p = false;
   if (name && TREE_CODE (name) == STRING_CST)
     header_p = true;
   gcc_checking_assert (header_p
@@ -6750,7 +6754,7 @@ trees_out::tree_ctx (tree ctx, bool need_contents, tree inner_decl)
 	tree_namespace (ctx, walk, inner_decl);
       else
 	by_value = tree_decl (ctx, walk, need_contents);
-  
+
       if (by_value)
 	tree_value (ctx, walk);
     }
@@ -8532,7 +8536,8 @@ trees_in::fn_parms ()
 
 /* Write out key information about a mergeable DEP.  Does not write
    the contents of DEP itself.  */
-// FIXME: constaints probable need streaming too
+// FIXME: constraints probably need streaming too?
+
 void
 trees_out::key_mergeable (tree decl, tree inner, tree)
 {
@@ -10105,6 +10110,7 @@ depset::hash::add_specializations (bool decl_p, bitmap partitions)
 	    }
 	}
       else
+	/* This is some kind of friend.  */
 	gcc_assert (!DECL_USE_TEMPLATE (spec));
 
       bool needs_reaching = false;
@@ -14922,6 +14928,17 @@ module_state::write_config (elf_out *to, module_state_config &config,
   dump () && dump ("Writing CRC=%x", crc);
 }
 
+void
+module_state::note_cmi_name ()
+{
+  if (!cmi_noted_p && filename)
+    {
+      cmi_noted_p = true;
+      inform (loc, "compiled module file is %qs",
+	      maybe_add_bmi_prefix (filename));
+    }
+}
+
 bool
 module_state::read_config (cpp_reader *reader, module_state_config &config)
 {
@@ -14947,17 +14964,20 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
 	  || MODULE_MAJOR (my_ver) != MODULE_MAJOR (their_ver))
 	{
 	  /* Non-experimental or majors differ, decline.  */
-	  error_at (loc, "file is version %s, this is version %s",
-		    their_string, my_string);
-	
+	  error_at (loc, "compiled module is version %s", their_string);
+	  inform (loc, "compiler is version %s", my_string);
 	  cfg.set_overrun ();
 	  goto done;
 	}
       else
 	/* Minors differ, give it a go.  */
-	warning_at (loc, 0, "file is version %s, compiler is version %s,"
+	if (warning_at (loc, 0, "compiled module is version %s", their_string))
+	  {
+	    inform (loc, "compiler is version %s,"
 		    " close enough? \xc2\xaf\\_(\xe3\x83\x84)_/\xc2\xaf",
-		    their_string, my_string);
+		    my_string);
+	    note_cmi_name ();
+	  }
     }
 
   /*  We wrote the inner crc merely to merge it, so simply read it
@@ -15545,8 +15565,8 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
 		  ns, &"::"[ns == global_namespace ? 2 : 0], id,
 		  get_flatname (), err);
       else
-	error_at  (loc, "failed reading from %qs: %s",
-		   filename ? maybe_add_bmi_prefix (filename) : "UNKNOWN", err);
+	error_at (loc, "failed to read compiled module: %s", err);
+      note_cmi_name ();
 
       if (e == EMFILE
 	  || e == ENFILE

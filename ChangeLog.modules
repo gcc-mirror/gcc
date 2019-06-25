@@ -1,3 +1,20 @@
+2019-06-25  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (module_state:note_cmi_name): New.
+	(module_state::read_config): Use it.
+	(module_state::check_read): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/atom-decl-3.C: Adjust diags.
+	* g++.dg/modules/atom-preamble-3.C: Likewise.
+	* g++.dg/modules/bad-mapper-1.C: Likewise.
+	* g++.dg/modules/bad-mapper-3.C: Likewise.
+	* g++.dg/modules/circ-1_c.C: Likewise.
+	* g++.dg/modules/flag-1_b.C: Likewise.
+	* g++.dg/modules/import-2.C: Likewise.
+	* g++.dg/modules/mod-stamp-1_d.C: Likewise.
+	* g++.dg/modules/p0713-3.C: Likewise.
+
 2019-06-24  Nathan Sidwell  <nathan@acm.org>
 
 	Revert late specialization insertion.

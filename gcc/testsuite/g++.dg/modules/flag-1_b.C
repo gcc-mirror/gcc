@@ -4,6 +4,6 @@
 
 import opt;
 
-// { dg-error "failed reading" "" { target *-*-* } 0 }
+// { dg-error "failed to read" "" { target *-*-* } 0 }
 // { dg-prune-output "compilation terminated" }
 // { dg-prune-output "fatal error" }
