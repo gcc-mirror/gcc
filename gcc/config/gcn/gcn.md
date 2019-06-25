@@ -784,10 +784,10 @@
     if (cfun && cfun->machine && cfun->machine->normal_function)
       return "s_setpc_b64\ts[18:19]";
     else
-      return "s_dcache_wb\;s_endpgm";
+      return "s_waitcnt\tlgkmcnt(0)\;s_dcache_wb\;s_endpgm";
   }
   [(set_attr "type" "sop1")
-   (set_attr "length" "8")])
+   (set_attr "length" "12")])
 
 (define_expand "call"
   [(parallel [(call (match_operand 0 "")
