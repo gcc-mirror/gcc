@@ -3,6 +3,15 @@
 	Backport from mainline
 	2019-05-24  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn-run.c (main): Set a non-zero return value if the
+	kernel does not exit cleanly.
+	* config/gcn/gcn.md (gcn_return): Insert s_waitcnt before s_dcache_wb.
+
+2019-06-25  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline
+	2019-05-24  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn.c (gcn_expand_prologue): Use gen_addsi3_scalar_carry
 	for lo-part.
 
