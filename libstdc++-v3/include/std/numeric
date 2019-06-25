@@ -162,7 +162,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #if __cplusplus > 201703L
 #include <limits>
-#include <bits/std_abs.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -196,11 +195,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  constexpr _Tp __lo = numeric_limits<_Tp>::min() * 2;
 	  constexpr _Tp __hi = numeric_limits<_Tp>::max() / 2;
-	  if (std::abs(__a) <= __hi && std::abs(__b) <= __hi) [[likely]]
+	  const _Tp __abs_a = __a < 0 ? -__a : __a;
+	  const _Tp __abs_b = __b < 0 ? -__b : __b;
+	  if (__abs_a <= __hi && __abs_b <= __hi) [[likely]]
 	    return (__a + __b) / 2; // always correctly rounded
-	  if (std::abs(__a) < __lo) // not safe to halve __a
+	  if (__abs_a < __lo) // not safe to halve __a
 	    return __a + __b/2;
-	  if (std::abs(__b) < __lo) // not safe to halve __b
+	  if (__abs_b < __lo) // not safe to halve __b
 	    return __a/2 + __b;
 	  return __a/2 + __b/2;	    // otherwise correctly rounded
 	}
