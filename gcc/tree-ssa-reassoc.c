@@ -4812,6 +4812,7 @@ rewrite_expr_tree_parallel (gassign *stmt, int width,
       else
 	{
 	  stmts[i] = build_and_add_sum (TREE_TYPE (last_rhs1), op1, op2, opcode);
+	  gimple_set_visited (stmts[i], true);
 	}
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
