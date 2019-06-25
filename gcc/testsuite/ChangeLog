@@ -1,3 +1,8 @@
+2019-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/90939
+	* g++.dg/lto/pr90939_[01].C: New test.
+
 2019-06-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90930
