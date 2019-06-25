@@ -1,3 +1,8 @@
+2019-06-25  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver-system.c (replace_filename_variables): Do not
+	call strlen with NULL argument.
+
 2019-06-25  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/t-amdgcn (LIB2ADD): Add unwind-gcn.c.
