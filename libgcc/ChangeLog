@@ -1,3 +1,12 @@
+2019-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: Add libef_ppc.a to the extra files for powerpc-darwin.
+	* config/rs6000/t-darwin: (PPC_ENDFILE_SRC, PPC_ENDFILE_OBJS): New.
+	Build objects for the out of line save/restore register functions
+	so that they can be used for any supported Darwin version.
+	* config/t-darwin: Default the build Darwin version to Darwin8
+	(MacOS 10.4).
+
 2019-06-25  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-driver-system.c (replace_filename_variables): Do not
