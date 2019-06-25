@@ -1,3 +1,11 @@
+2019-06-25  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline
+	2019-05-24  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_expand_prologue): Use gen_addsi3_scalar_carry
+	for lo-part.
+
 2019-06-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/90930

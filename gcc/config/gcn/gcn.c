@@ -2826,9 +2826,9 @@ gcn_expand_prologue ()
       emit_move_insn (fp_lo, gen_rtx_REG (SImode, 0));
       emit_insn (gen_andsi3_scc (fp_hi, gen_rtx_REG (SImode, 1),
 				 gen_int_mode (0xffff, SImode)));
-      emit_insn (gen_addsi3_scc (fp_lo, fp_lo, wave_offset));
-      emit_insn (gen_addcsi3_scalar_zero (fp_hi, fp_hi,
-					  gen_rtx_REG (BImode, SCC_REG)));
+      rtx scc = gen_rtx_REG (BImode, SCC_REG);
+      emit_insn (gen_addsi3_scalar_carry (fp_lo, fp_lo, wave_offset, scc));
+      emit_insn (gen_addcsi3_scalar_zero (fp_hi, fp_hi, scc));
 
       if (sp_adjust > 0)
 	emit_insn (gen_adddi3_scc (sp, fp, gen_int_mode (sp_adjust, DImode)));
