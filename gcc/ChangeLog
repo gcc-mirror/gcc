@@ -1,3 +1,85 @@
+2019-06-24  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (stack_info, rs6000_pic_labelno,
+	savres_routine_syms, savres_routine_name, morestack_ref,
+	rs6000_init_machine_status, save_reg_p, first_reg_to_save,
+	first_fp_reg_to_save, first_altivec_reg_to_save, compute_vrsave_mask,
+	compute_save_world_info, is_altivec_return_reg, fixed_reg_p,
+	rs6000_savres_strategy, rs6000_stack_info, debug_stack_info,
+	rs6000_return_addr, rs6000_decl_ok_for_sibcall,
+	rs6000_function_ok_for_sibcall, rs6000_ra_ever_killed,
+	rs6000_emit_load_toc_table, rs6000_emit_eh_reg_restore, uses_TOC,
+	create_TOC_reference, rs6000_aix_asm_output_dwarf_table_ref,
+	rs6000_emit_stack_tie, rs6000_emit_allocate_stack_1,
+	get_stack_clash_protection_probe_interval,
+	get_stack_clash_protection_guard_size,
+	rs6000_emit_probe_stack_range_stack_clash, rs6000_emit_allocate_stack,
+	rs6000_emit_probe_stack_range, output_probe_stack_range_1,
+	interesting_frame_related_regno, output_probe_stack_range_stack_clash,
+	output_probe_stack_range, rs6000_frame_related, generate_set_vrsave,
+	gen_frame_set, gen_frame_load, gen_frame_store, emit_frame_save,
+	gen_frame_mem_offset, rs6000_savres_routine_name,
+	rs6000_savres_routine_sym, rs6000_emit_stack_reset,
+	ptr_regno_for_savres, rs6000_emit_savres_rtx,
+	rs6000_emit_prologue_move_from_cr, split_stack_arg_pointer_used_p,
+	rs6000_global_entry_point_prologue_needed_p,
+	rs6000_get_separate_components, rs6000_components_for_bb,
+	rs6000_disqualify_components, rs6000_emit_prologue_components,
+	rs6000_emit_epilogue_components, rs6000_set_handled_components,
+	emit_vrsave_prologue, emit_split_stack_prologue, rs6000_emit_prologue,
+	rs6000_output_savres_externs, rs6000_output_function_prologue,
+	rs6000_keep_leaf_when_profiled, load_cr_save, restore_saved_cr,
+	load_lr_save, restore_saved_lr, add_crlr_cfa_restore,
+	offset_below_red_zone_p, emit_cfa_restores, rs6000_emit_epilogue,
+	rs6000_output_function_epilogue, gen_add3_const,
+	rs6000_expand_split_stack_prologue, rs6000_live_on_entry,
+	rs6000_split_stack_space_check, rs6000_save_toc_in_prologue_p): Moved
+	to rs6000-logue.c.
+	(machine_function): Moved to rs6000.h.
+	(rs6000_stack_t, ALTIVEC_REG_BIT, quad_address_offset_p) Moved to
+	rs6000-internal.h.
+	* config/rs6000/rs6000-logue.c(stack_info, rs6000_pic_labelno,
+	savres_routine_syms, savres_routine_name, morestack_ref,
+	rs6000_init_machine_status, save_reg_p, first_reg_to_save,
+	first_fp_reg_to_save, first_altivec_reg_to_save, compute_vrsave_mask,
+	compute_save_world_info, is_altivec_return_reg, fixed_reg_p,
+	rs6000_savres_strategy, rs6000_stack_info, debug_stack_info,
+	rs6000_return_addr, rs6000_decl_ok_for_sibcall,
+	rs6000_function_ok_for_sibcall, rs6000_ra_ever_killed,
+	rs6000_emit_load_toc_table, rs6000_emit_eh_reg_restore, uses_TOC,
+	create_TOC_reference, rs6000_aix_asm_output_dwarf_table_ref,
+	rs6000_emit_stack_tie, rs6000_emit_allocate_stack_1,
+	get_stack_clash_protection_probe_interval,
+	get_stack_clash_protection_guard_size,
+	rs6000_emit_probe_stack_range_stack_clash, rs6000_emit_allocate_stack,
+	rs6000_emit_probe_stack_range, output_probe_stack_range_1,
+	interesting_frame_related_regno, output_probe_stack_range_stack_clash,
+	output_probe_stack_range, rs6000_frame_related, generate_set_vrsave,
+	gen_frame_set, gen_frame_load, gen_frame_store, emit_frame_save,
+	gen_frame_mem_offset, rs6000_savres_routine_name,
+	rs6000_savres_routine_sym, rs6000_emit_stack_reset,
+	ptr_regno_for_savres, rs6000_emit_savres_rtx,
+	rs6000_emit_prologue_move_from_cr, split_stack_arg_pointer_used_p,
+	rs6000_global_entry_point_prologue_needed_p,
+	rs6000_get_separate_components, rs6000_components_for_bb,
+	rs6000_disqualify_components, rs6000_emit_prologue_components,
+	rs6000_emit_epilogue_components, rs6000_set_handled_components,
+	emit_vrsave_prologue, emit_split_stack_prologue, rs6000_emit_prologue,
+	rs6000_output_savres_externs, rs6000_output_function_prologue,
+	rs6000_keep_leaf_when_profiled, load_cr_save, restore_saved_cr,
+	load_lr_save, restore_saved_lr, add_crlr_cfa_restore,
+	offset_below_red_zone_p, emit_cfa_restores, rs6000_emit_epilogue,
+	rs6000_output_function_epilogue, gen_add3_const,
+	rs6000_expand_split_stack_prologue, rs6000_live_on_entry,
+	rs6000_split_stack_space_check, rs6000_save_toc_in_prologue_p): Moved
+	to here from rs6000.c.
+	* config/rs6000/rs6000.h (machine_function): Moved to here from rs6000.c.
+	* config/rs6000/rs6000-internal.h: (rs6000_stack_t, ALTIVEC_REG_BIT,
+	quad_address_offset_p) Moved to here from rs6000.c.
+	* config/rs6000/t-rs6000: Add new source file rs6000-logue.c.
+	* config/config.gcc: Add new source file rs6000-logue.c to garbage
+	collector.
+
 2019-06-25  Martin Liska  <mliska@suse.cz>
 
 	* hash-table.c (hashtab_chk_error): Move here from ...
