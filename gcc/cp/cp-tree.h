@@ -5866,6 +5866,9 @@ struct cp_decl_specifier_seq {
   BOOL_BITFIELD gnu_thread_keyword_p : 1;
   /* True iff the type is a decltype.  */
   BOOL_BITFIELD decltype_p : 1;
+  /* True iff the alternate "__intN__" form of the __intN type has been
+     used.  */
+  BOOL_BITFIELD int_n_alt: 1;
 };
 
 /* The various kinds of declarators.  */

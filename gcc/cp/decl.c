@@ -10368,6 +10368,7 @@ grokdeclarator (const cp_declarator *declarator,
   tree type = NULL_TREE;
   int longlong = 0;
   int explicit_intN = 0;
+  int int_n_alt = 0;
   int virtualp, explicitp, friendp, inlinep, staticp;
   int explicit_int = 0;
   int explicit_char = 0;
@@ -10441,6 +10442,7 @@ grokdeclarator (const cp_declarator *declarator,
   long_p = decl_spec_seq_has_spec_p (declspecs, ds_long);
   longlong = decl_spec_seq_has_spec_p (declspecs, ds_long_long);
   explicit_intN = declspecs->explicit_intN_p;
+  int_n_alt = declspecs->int_n_alt;
   thread_p = decl_spec_seq_has_spec_p (declspecs, ds_thread);
 
   // Was concept_p specified? Note that ds_concept
@@ -10843,7 +10845,9 @@ grokdeclarator (const cp_declarator *declarator,
 		 int_n_data[declspecs->int_n_idx].bitsize);
 	  explicit_intN = false;
 	}
-      else if (pedantic && ! in_system_header_at (input_location))
+      /* Don't pedwarn if the alternate "__intN__" form has been used instead
+	 of "__intN".  */
+      else if (!int_n_alt && pedantic && ! in_system_header_at (input_location))
 	pedwarn (input_location, OPT_Wpedantic,
 		 "ISO C++ does not support %<__int%d%> for %qs",
 		 int_n_data[declspecs->int_n_idx].bitsize, name);

@@ -262,6 +262,11 @@ init_reswords (void)
       id = get_identifier (name);
       C_SET_RID_CODE (id, RID_FIRST_INT_N + i);
       set_identifier_kind (id, cik_keyword);
+
+      sprintf (name, "__int%d__", int_n_data[i].bitsize);
+      id = get_identifier (name);
+      C_SET_RID_CODE (id, RID_FIRST_INT_N + i);
+      set_identifier_kind (id, cik_keyword);
     }
 }
 

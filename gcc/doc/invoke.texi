@@ -4337,8 +4337,10 @@ without this option, certain GNU extensions and traditional C and C++
 features are supported as well.  With this option, they are rejected.
 
 @option{-Wpedantic} does not cause warning messages for use of the
-alternate keywords whose names begin and end with @samp{__}.  Pedantic
-warnings are also disabled in the expression that follows
+alternate keywords whose names begin and end with @samp{__}.  This alternate
+format can also be used to disable warnings for non-ISO @samp{__intN} types,
+i.e. @samp{__intN__}.
+Pedantic warnings are also disabled in the expression that follows
 @code{__extension__}.  However, only system header files should use
 these escape routes; application programs should avoid them.
 @xref{Alternate Keywords}.

@@ -1,3 +1,7 @@
+2019-06-25  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/mlarge-pedwarns.c: New test.
+
 2019-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/90954

@@ -1019,10 +1019,12 @@ build_intmax_type_nodes (tree *pintmax, tree *puintmax)
       for (int i = 0; i < NUM_INT_N_ENTS; i++)
 	if (int_n_enabled_p[i])
 	  {
-	    char name[50];
+	    char name[50], altname[50];
 	    sprintf (name, "__int%d unsigned", int_n_data[i].bitsize);
+	    sprintf (altname, "__int%d__ unsigned", int_n_data[i].bitsize);
 
-	    if (strcmp (name, UINTMAX_TYPE) == 0)
+	    if (strcmp (name, UINTMAX_TYPE) == 0
+		|| strcmp (altname, UINTMAX_TYPE) == 0)
 	      {
 	        *pintmax = int_n_trees[i].signed_type;
 	        *puintmax = int_n_trees[i].unsigned_type;
