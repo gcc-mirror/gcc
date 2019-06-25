@@ -1,3 +1,9 @@
+2019-06-25  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/90973
+	* tree-vect-loop.c (vect_get_known_peeling_cost): Sum retval
+	of prologue and epilogue.
+
 2019-06-24  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-utils.h (type_with_linkage_p): Verify that type is
