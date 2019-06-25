@@ -1,3 +1,7 @@
+2019-06-25  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/pr89838.c: New file.
+
 2019-06-25  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc.target/msp430/mlarge-pedwarns.c: New test.

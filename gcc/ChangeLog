@@ -1,3 +1,17 @@
+2019-06-25  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_symbol_binds_local_p): New function.
+	(arc_legitimize_pic_address): Simplify and cleanup the function.
+	(SYMBOLIC_CONST): Remove.
+	(prepare_pic_move): Likewise.
+	(prepare_move_operands): Handle complex mov cases here.
+	(arc_legitimize_address_0): Remove call to
+	arc_legitimize_pic_address.
+	(arc_legitimize_address): Remove call to
+	arc_legitimize_tls_address.
+	* config/arc/arc.md (movqi_insn): Allow Cm3 match.
+	(movhi_insn): Likewise.
+
 2019-06-25  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc/c-family/c-common.c (c_common_nodes_and_builtins): Define
