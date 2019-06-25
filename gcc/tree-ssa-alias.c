@@ -1458,10 +1458,8 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   if (!flag_strict_aliasing || !tbaa_p)
     return true;
 
-  ptrtype1 = TREE_TYPE (TREE_OPERAND (base1, 1));
-
   /* If the alias set for a pointer access is zero all bets are off.  */
-  if (base1_alias_set == 0)
+  if (base1_alias_set == 0 || base2_alias_set == 0)
     return true;
 
   /* When we are trying to disambiguate an access with a pointer dereference
@@ -1479,6 +1477,9 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   if (base1_alias_set != base2_alias_set
       && !alias_sets_conflict_p (base1_alias_set, base2_alias_set))
     return false;
+
+  ptrtype1 = TREE_TYPE (TREE_OPERAND (base1, 1));
+
   /* If the size of the access relevant for TBAA through the pointer
      is bigger than the size of the decl we can't possibly access the
      decl via that pointer.  */

@@ -1,3 +1,8 @@
+2019-06-25  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Check that
+	base2_alias_set is non-zero before doing TBAA based disambiguation.
+
 2019-06-25  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/90973
