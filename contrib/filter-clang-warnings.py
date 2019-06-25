@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 #
-# Script to analyze warnings produced by rtags command (using LLVM):
-# rc --diagnose-all --synchronous-diagnostics --json
+# Script to analyze warnings produced by clang.
 #
 # This file is part of GCC.
 #
@@ -23,26 +22,26 @@
 #
 
 import sys
-import json
 import argparse
 
-def skip_warning(filename, warning):
+def skip_warning(filename, message):
     ignores = {
             '': ['-Warray-bounds', '-Wmismatched-tags', 'gcc_gfc: -Wignored-attributes', '-Wchar-subscripts',
                 'string literal (potentially insecure): -Wformat-security', '-Wdeprecated-register',
                 '-Wvarargs', 'keyword is hidden by macro definition', "but the argument has type 'char *': -Wformat-pedantic",
-                '-Wnested-anon-types', 'qualifier in explicit instantiation of', 'attribute argument not supported: asm_fprintf'],
+                '-Wnested-anon-types', 'qualifier in explicit instantiation of', 'attribute argument not supported: asm_fprintf',
+                'when in C++ mode, this behavior is deprecated', '-Wignored-attributes', '-Wgnu-zero-variadic-macro-arguments',
+                '-Wformat-security'],
             'insn-modes.c': ['-Wshift-count-overflow'],
             'insn-emit.c': ['-Wtautological-compare'],
             'insn-attrtab.c': ['-Wparentheses-equality'],
             'gimple-match.c': ['-Wunused-', '-Wtautological-compare'],
             'generic-match.c': ['-Wunused-', '-Wtautological-compare'],
+            'i386.md': ['-Wparentheses-equality', '-Wtautological-compare'],
+            'sse.md': ['-Wparentheses-equality', '-Wtautological-compare'],
+            'genautomata.c': ['-Wstring-plus-int']
+
     }
-
-    message = warning['message']
-
-    if warning['type'] == 'fixit':
-        return True
 
     for name, ignores in ignores.items():
         for i in ignores:
@@ -52,20 +51,22 @@ def skip_warning(filename, warning):
     return False
 
 parser = argparse.ArgumentParser()
-parser.add_argument('json_file', help = 'Rtags JSON file with diagnostics')
-parser.add_argument('-n', '--no-filter', action = 'store_true', help = 'No filter')
-
+parser.add_argument('log', help = 'Log file with clang warnings')
 args = parser.parse_args()
 
-data = json.load(open(args.json_file))
-file_warnings = data['checkStyle']
-
+lines = [l.strip() for l in open(args.log)]
 total = 0
-for filename, warnings in file_warnings.items():
-    if warnings:
-        for w in warnings:
-            if args.no_filter or not skip_warning(filename, w):
-                total += 1
-                print('%s:%d:%d:%s' % (filename, w['line'], w['column'], w['message']))
+messages = []
+for l in lines:
+    token = ': warning: '
+    i = l.find(token)
+    if i != -1:
+        location = l[:i]
+        message = l[i + len(token):]
+        if not skip_warning(location, message):
+            total += 1
+            messages.append(l)
 
-print('Total: %d' % total)
+for l in sorted(messages):
+    print(l)
+print('\nTotal warnings: %d' % total)
