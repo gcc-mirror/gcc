@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 --param tree-reassoc-width=3 -fdump-tree-reassoc1-details" } */
+/* { dg-options "-O2 --param tree-reassoc-width=3 -fdump-tree-reassoc2-details" } */
 
 unsigned int
 foo (int a, int b, int c, int d)
@@ -15,4 +15,4 @@ foo (int a, int b, int c, int d)
 }
 
 /* Verify reassociation width was chosen to be 2.  */
-/* { dg-final { scan-tree-dump-times "Width = 2" 1 "reassoc1"} } */
+/* { dg-final { scan-tree-dump-times "Width = 2" 1 "reassoc2"} } */
