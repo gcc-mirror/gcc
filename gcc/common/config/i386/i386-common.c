@@ -100,6 +100,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_XSAVEC_SET \
   (OPTION_MASK_ISA_XSAVEC | OPTION_MASK_ISA_XSAVE_SET)
 #define OPTION_MASK_ISA_CLWB_SET OPTION_MASK_ISA_CLWB
+#define OPTION_MASK_ISA_AVX512VP2INTERSECT_SET OPTION_MASK_ISA_AVX512VP2INTERSECT
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -240,6 +241,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_WAITPKG_UNSET OPTION_MASK_ISA_WAITPKG
 #define OPTION_MASK_ISA_CLDEMOTE_UNSET OPTION_MASK_ISA_CLDEMOTE
 #define OPTION_MASK_ISA_ENQCMD_UNSET OPTION_MASK_ISA_ENQCMD
+#define OPTION_MASK_ISA_AVX512VP2INTERSECT_UNSET OPTION_MASK_ISA_AVX512VP2INTERSECT
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -282,7 +284,8 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_AVX512F_UNSET \
   (OPTION_MASK_ISA_AVX512BF16_UNSET \
    | OPTION_MASK_ISA_AVX5124FMAPS_UNSET \
-   | OPTION_MASK_ISA_AVX5124VNNIW_UNSET)
+   | OPTION_MASK_ISA_AVX5124VNNIW_UNSET \
+   | OPTION_MASK_ISA_AVX512VP2INTERSECT_UNSET)
 #define OPTION_MASK_ISA2_GENERAL_REGS_ONLY_UNSET \
   (OPTION_MASK_ISA2_AVX512F_UNSET)
 
@@ -877,6 +880,23 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_AVX512VBMI_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX512VBMI_UNSET;
+	}
+      return true;
+
+    case OPT_mavx512vp2intersect:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX512VP2INTERSECT_SET;
+	  opts->x_ix86_isa_flags2_explicit |=
+	    OPTION_MASK_ISA_AVX512VP2INTERSECT_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512F_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX512F_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_AVX512VP2INTERSECT_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |=
+	    OPTION_MASK_ISA_AVX512VP2INTERSECT_UNSET;
 	}
       return true;
 

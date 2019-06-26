@@ -1,3 +1,53 @@
+2019-06-25  Hongtao Liu  <hongtao.liu@intel.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+	    Olga Makhotina  <olga.makhotina@intel.com>
+
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_AVX512VP2INTERSECT_SET,
+	OPTION_MASK_ISA_AVX512VP2INTERSECT_UNSET): New macros.
+	(OPTION_MASK_ISA2_AVX512F_UNSET): Add
+	OPTION_MASK_ISA_AVX512VP2INTERSECT_UNSET.
+	(ix86_handle_option): Handle -mavx512vp2intersect.
+	* config/i386/avx512vp2intersectintrin.h: New.
+	* config/i386/avx512vp2intersectvlintrin.h: New.
+	* config/i386/cpuid.h (bit_AVX512VP2INTERSECT): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	AVX512VP2INTERSECT.
+	* config/i386/i386-builtin-types.def: Add new types.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/i386-builtins.c: (enum processor_features): Add
+	F_AVX512VP2INTERSECT.
+	(static const _isa_names_table isa_names_table): Ditto.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__AVX512VP2INTERSECT__.
+	* config/i386/i386-expand.c (ix86_expand_builtin): Expand
+	IX86_BUILTIN_2INTERSECTD512, IX86_BUILTIN_2INTERSECTQ512,
+	IX86_BUILTIN_2INTERSECTD256, IX86_BUILTIN_2INTERSECTQ256,
+	IX86_BUILTIN_2INTERSECTD128, IX86_BUILTIN_2INTERSECTQ128.
+	* config/i386/i386-modes.def (P2QI, P2HI): New modes.
+	* config/i386/i386-options.c (ix86_target_string): Add
+	-mavx512vp2intersect.
+	(ix86_option_override_internal): Handle AVX512VP2INTERSECT.
+	* config/i386/i386.c (ix86_hard_regno_nregs): Allocate two regs for
+	P2HImode and P2QImode.
+	(ix86_hard_regno_mode_ok): Register pair only starts at even hardreg
+	number for P2QImode and P2HImode.
+	(ix86_regmode_natural_size): New function.
+	* config/i386/i386.h (TARGET_AVX512VP2INTERSECT,
+	TARGET_AVX512VP2INTERSECT_P, PTA_AVX512VP2INTERSECT
+	REGMODE_NATURAL_SIZE, MASK_PAIR_REGNO_P): New.
+	* config/i386/i386-protos.h (ix86_regmode_natural_size): Declare
+	* config/i386/i386.opt: Add -mavx512vp2intersect.
+	* config/i386/immintrin.h: Include avx512vp2intersectintrin.h and
+	avx512vp2intersectvlintrin.h.
+	* config/i386/sse.md (define_c_enum "unspec"): Add UNSPEC_VP2INTERSECT.
+	(define_mode_iterator VI48_AVX512VP2VL): New.
+	(avx512vp2intersect_2intersect<mode>,
+	avx512vp2intersect_2intersectv16si): New define_insn patterns.
+	* config.gcc: Add avx512vp2intersectvlintrin.h and
+	avx512vp2intersectintrin.h to extra_headers.
+	* doc/invoke.texi: Document -mavx512vp2intersect.
+
 2019-06-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/darwin.h (ENDFILE_SPEC): New.
