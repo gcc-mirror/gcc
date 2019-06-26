@@ -2823,7 +2823,7 @@ private:
   }
 
 private:
-  void note_definition (tree, int);
+  void assert_definition (tree, int);
 };
 
 trees_in::trees_in (module_state *state)
@@ -2973,7 +2973,7 @@ private:
   void write_enum_def (tree decl);
 
 private:
-  static void note_definition (tree);
+  static void assert_definition (tree);
 
 public:
   static void instrument ();
@@ -3200,7 +3200,7 @@ static hash_set<tree> *note_defs;
 #endif
 
 void
-trees_in::note_definition (tree decl ATTRIBUTE_UNUSED, int odr ATTRIBUTE_UNUSED)
+trees_in::assert_definition (tree decl ATTRIBUTE_UNUSED, int odr ATTRIBUTE_UNUSED)
 {
 #if CHECKING_P
   if (!odr)
@@ -3219,7 +3219,7 @@ trees_in::note_definition (tree decl ATTRIBUTE_UNUSED, int odr ATTRIBUTE_UNUSED)
 }
 
 void
-trees_out::note_definition (tree decl ATTRIBUTE_UNUSED)
+trees_out::assert_definition (tree decl ATTRIBUTE_UNUSED)
 {
 #if CHECKING_P
   bool existed = note_defs->add (decl);
@@ -6964,6 +6964,8 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 
 	  dep = dep_hash->add_dependency (decl, depset::EK_MAYBE_SPEC,
 					  owner >= MODULE_IMPORT_BASE);
+	  /* We should always insert or find something.  */
+	  gcc_assert (dep);
 	}
       else
 	dep = dep_hash->find_entity (decl);
@@ -8969,7 +8971,7 @@ trees_in::read_function_def (tree decl, tree maybe_template)
 
   int odr = is_skippable_defn (maybe_template,
 			       DECL_SAVED_TREE (decl) != NULL_TREE);
-  note_definition (maybe_template, odr);
+  assert_definition (maybe_template, odr);
 
   if (!odr)
     {
@@ -9011,7 +9013,7 @@ trees_in::read_var_def (tree decl, tree maybe_template)
 
   int odr = is_skippable_defn (maybe_template,
 			       DECL_INITIAL (decl) != NULL_TREE);
-  note_definition (maybe_template, odr);
+  assert_definition (maybe_template, odr);
   if (!odr)
     {
       DECL_INITIAL (decl) = init;
@@ -9311,7 +9313,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
   // lang->nested_udts
 
   int odr = is_skippable_defn (maybe_template, TYPE_SIZE (type) != NULL_TREE);
-  note_definition (maybe_template, odr);
+  assert_definition (maybe_template, odr);
   if (!odr)
     {
       TYPE_SIZE (type) = size;
@@ -9505,7 +9507,7 @@ trees_in::read_enum_def (tree defn, tree maybe_template)
 
   // FIXME: ODR ?
   int odr = 0;
-  note_definition (maybe_template, odr);
+  assert_definition (maybe_template, odr);
 
   TYPE_VALUES (type) = values;
   TYPE_MIN_VALUE (type) = min;
@@ -9521,7 +9523,7 @@ trees_out::write_definition (tree decl)
 {
   if (streaming_p ())
     {
-      note_definition (decl);
+      assert_definition (decl);
       dump ()
 	&& dump ("Writing definition %C:%N", TREE_CODE (decl), decl);
     }
@@ -12357,7 +12359,6 @@ enum ct_bind_flags
 static unsigned
 sort_mergeables (depset *scc[], unsigned size)
 {
-  unsigned count = 0;
   depset::hash table (size, true);
 
   dump.indent ();
@@ -12413,6 +12414,7 @@ sort_mergeables (depset *scc[], unsigned size)
 
   unsigned cluster = 0;
   unsigned pos = 0;
+  unsigned count = 0;
   for (unsigned ix = 0; ix != order.length (); ix++)
     if (order[ix]->is_marked ())
       {

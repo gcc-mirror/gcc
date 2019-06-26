@@ -1,6 +1,10 @@
 2019-06-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::note_definition): Rename to ...
+	 (trees_{in,out}::assert_definition): ... here.  Update callers.
+
+	gcc/cp/
 	* cp-tree.h (match_mergeable_specialization): Add insert parm.
 	* pt.c (match_mergeable_specialization): Add insert parm.
 	* module.cc (depset::entity_kind): Add EK_MAYBE_SPEC.
