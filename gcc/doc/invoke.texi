@@ -6146,8 +6146,8 @@ false positives and is deactivated by default.
 
 @item -Wattribute-alias=@var{n}
 @itemx -Wno-attribute-alias
-@opindex -Wattribute-alias
-@opindex -Wno-attribute-alias
+@opindex Wattribute-alias
+@opindex Wno-attribute-alias
 Warn about declarations using the @code{alias} and similar attributes whose
 target is incompatible with the type of the alias.
 @xref{Function Attributes,,Declaring Attributes of Functions}.
