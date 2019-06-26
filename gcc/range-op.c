@@ -167,71 +167,29 @@ empty_range_check (irange& r, const irange& op1, const irange & op2, tree type)
 }
 
 /* Given newly calculated lbound and ubound, examine their respective
-   overflow bits to determine how to add [lbound, ubound] into range R.
-
-   This is the irange implementation of set_value_range_with_overflow,
-   which we can't share because the VRP implementation deals with
-   yucky anti ranges.
-
-   FIXME: Add a note to set_value_range_with_overflow to keep
-   these two functions in sync.  */
+   overflow bits to determine how to add [lbound, ubound] into range
+   R.  */
 
 static void
-accumulate_range (irange& r,
+accumulate_range (irange &r,
 		  const wide_int &lb, wi::overflow_type ov_lb,
 		  const wide_int &ub, wi::overflow_type ov_ub,
 		  bool overflow_wraps = false)
 {
+  wide_int_range_kind kind;
+  wide_int min = lb, max = ub;
   tree type = r.type ();
-
-  /* For one bit precision if max < min, then the swapped
-     range covers all values.  */
-  if (TYPE_PRECISION (type) == 1 && wi::lt_p (ub, lb, TYPE_SIGN (type)))
+  adjust_range_for_overflow (kind, min, max, type, ov_lb, ov_ub,
+			     overflow_wraps);
+  if (kind == WIDE_INT_RANGE_VARYING)
     {
       r.set_varying (type);
       return;
     }
-
-  if (overflow_wraps)
-    {
-      // No overflow or both overflow or underflow.  The range can be
-      // used as is.
-      if (ov_lb == ov_ub)
-	r.union_ (irange (type, lb, ub));
-      // Underflow on the lower bound.
-      else if (ov_lb == wi::OVF_UNDERFLOW && ov_ub == wi::OVF_NONE)
-	{
-	  r.union_ (irange (type, min_limit (type), ub));
-	  r.union_ (irange (type, lb, max_limit (type)));
-	}
-      // Overflow on the upper bound.
-      else if (ov_lb == wi::OVF_NONE && ov_ub == wi::OVF_OVERFLOW)
-	{
-	  r.union_ (irange (type, lb, max_limit (type)));
-	  r.union_ (irange (type, min_limit (type), ub));
-	}
-      else
-	r.set_varying (type);
-    }
-  else
-    {
-      // If overflow does not wrap, saturate to the types min/max value.
-      wide_int new_lb, new_ub;
-      if (ov_lb == wi::OVF_UNDERFLOW)
-	new_lb = min_limit (type);
-      else if (ov_lb == wi::OVF_OVERFLOW)
-	new_lb = max_limit (type);
-      else
-	new_lb = lb;
-
-      if (ov_ub == wi::OVF_UNDERFLOW)
-	new_ub = min_limit (type);
-      else if (ov_ub == wi::OVF_OVERFLOW)
-	new_ub = max_limit (type);
-      else
-	new_ub = ub;
-      r.union_ (irange (type, new_lb, new_ub));
-    }
+  irange tmp (kind == WIDE_INT_RANGE_PLAIN ? IRANGE_PLAIN : IRANGE_INVERSE,
+	      type, min, max);
+  r.union_ (tmp);
+  return;
 }
 
 static void
@@ -2090,14 +2048,20 @@ operator_min_max::fold_range (irange& r, const irange& lh,
   if (POINTER_TYPE_P (type))
     return true;
 
-  // intersect the union with the max/min values of both to get a set of values.
-  // This allows   MIN  ([1,5][20,30] , [0,4][18,60])  to produce 
-  // [0,5][18,30]  rather than [0,30]
   wide_int_binop (lb, code, lh.lower_bound (), rh.lower_bound (),
 		  TYPE_SIGN (type), &ov);
   wide_int_binop (ub, code, lh.upper_bound (), rh.upper_bound (),
 		  TYPE_SIGN (type), &ov);
+  /* Disable this optimization for now, to make sure we get the same
+     results as VRP.  */
+#if 0
+  // Intersect the union with the max/min values of both to get a set
+  // of values.  This allows MIN ([1,5][20,30] , [0,4][18,60]) to
+  // produce [0,5][18,30] rather than [0,30]
   r.intersect (irange (type, lb, ub));
+#else
+  r = irange (type, lb, ub);
+#endif
   return true;
 }
 

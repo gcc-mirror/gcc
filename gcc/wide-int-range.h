@@ -185,4 +185,17 @@ wide_int_range_zero_p (const wide_int &wmin, const wide_int &wmax,
   return wmin == wmax && wi::eq_p (wmin, wi::zero (prec));
 }
 
+enum wide_int_range_kind {
+  WIDE_INT_RANGE_PLAIN,
+  WIDE_INT_RANGE_INVERSE,
+  WIDE_INT_RANGE_VARYING
+};
+
+void
+adjust_range_for_overflow (wide_int_range_kind &,
+			   wide_int &, wide_int &,
+			   tree type,
+			   wi::overflow_type, wi::overflow_type,
+			   bool overflow_wraps);
+
 #endif /* GCC_WIDE_INT_RANGE_H */

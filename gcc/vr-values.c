@@ -800,6 +800,22 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
 			   vrp_val_max (expr_type));
     }
 
+  /* Temporary testing hack.  */
+#if 0
+  {
+    value_range_base v;
+    tree type = integer_type_node;
+    enum tree_code code = MAX_EXPR;
+    value_range_base vr0 (VR_ANTI_RANGE,
+			  build_int_cst (type, 0),
+			  build_int_cst (type, 0));
+    value_range_base vr1 (VR_RANGE,
+			  build_int_cst (type, -1),
+			  build_int_cst (type, -1));
+    range_fold_binary_expr (&v, code, type, &vr0, &vr1);
+  }
+#endif
+
   range_fold_binary_expr (vr, code, expr_type, &vr0, &vr1);
 
   /* Set value_range for n in following sequence:

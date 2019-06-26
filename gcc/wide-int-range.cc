@@ -863,3 +863,105 @@ wide_int_range_div (wide_int &wmin, wide_int &wmax,
     extra_range_p = false;
   return true;
 }
+
+/* Adjust the range in [WMIN, WMAX] for possible overflow and store the
+   parts of the resulting range in KIND, WMIN, WMAX.
+
+   TYPE is the type of the range.
+
+   MIN_OVF and MAX_OVF indicate what type of overflow, if any,
+   occurred while originally calculating WMIN or WMAX.  */
+
+void
+adjust_range_for_overflow (wide_int_range_kind &kind,
+			   wide_int &wmin, wide_int &wmax,
+			   tree type,
+			   wi::overflow_type min_ovf,
+			   wi::overflow_type max_ovf,
+			   bool overflow_wraps)
+{
+  const signop sgn = TYPE_SIGN (type);
+  const unsigned int prec = TYPE_PRECISION (type);
+
+  /* For one bit precision if max < min, then the swapped
+     range covers all values.  */
+  if (prec == 1 && wi::lt_p (wmax, wmin, sgn))
+    {
+      kind = WIDE_INT_RANGE_VARYING;
+      return;
+    }
+
+  if (overflow_wraps)
+    {
+      /* If overflow wraps, truncate the values and adjust the
+	 range kind and bounds appropriately.  */
+      wide_int tmin = wide_int::from (wmin, prec, sgn);
+      wide_int tmax = wide_int::from (wmax, prec, sgn);
+      if ((min_ovf != wi::OVF_NONE) == (max_ovf != wi::OVF_NONE))
+	{
+	  /* If the limits are swapped, we wrapped around and cover
+	     the entire range.  We have a similar check at the end of
+	     extract_range_from_binary_expr.  */
+	  if (wi::gt_p (tmin, tmax, sgn))
+	    kind = WIDE_INT_RANGE_VARYING;
+	  else
+	    {
+	      kind = WIDE_INT_RANGE_PLAIN;
+	      /* No overflow or both overflow or underflow.  The
+		 range kind stays VR_RANGE.  */
+	      wmin = tmin;
+	      wmax = tmax;
+	    }
+	  return;
+	}
+      else if ((min_ovf == wi::OVF_UNDERFLOW && max_ovf == wi::OVF_NONE)
+	       || (max_ovf == wi::OVF_OVERFLOW && min_ovf == wi::OVF_NONE))
+	{
+	  /* Min underflow or max overflow.  The range kind
+	     changes to VR_ANTI_RANGE.  */
+	  bool covers = false;
+	  wide_int tem = tmin;
+	  tmin = tmax + 1;
+	  if (wi::cmp (tmin, tmax, sgn) < 0)
+	    covers = true;
+	  tmax = tem - 1;
+	  if (wi::cmp (tmax, tem, sgn) > 0)
+	    covers = true;
+	  /* If the anti-range would cover nothing, drop to varying.
+	     Likewise if the anti-range bounds are outside of the
+	     types values.  */
+	  if (covers || wi::cmp (tmin, tmax, sgn) > 0)
+	    {
+	      kind = WIDE_INT_RANGE_VARYING;
+	      return;
+	    }
+	  kind = WIDE_INT_RANGE_INVERSE;
+	  wmin = tmin;
+	  wmax = tmax;
+	  return;
+	}
+      else
+	{
+	  /* Other underflow and/or overflow, drop to VR_VARYING.  */
+	  kind = WIDE_INT_RANGE_VARYING;
+	  return;
+	}
+    }
+  else
+    {
+      /* If overflow does not wrap, saturate to the types min/max
+	 value.  */
+      wide_int type_min = wi::min_value (prec, sgn);
+      wide_int type_max = wi::max_value (prec, sgn);
+      kind = WIDE_INT_RANGE_PLAIN;
+      if (min_ovf == wi::OVF_UNDERFLOW)
+	wmin = type_min;
+      else if (min_ovf == wi::OVF_OVERFLOW)
+	wmin = type_max;
+
+      if (max_ovf == wi::OVF_UNDERFLOW)
+	wmax = type_min;
+      else if (max_ovf == wi::OVF_OVERFLOW)
+	wmax = type_max;
+    }
+}
