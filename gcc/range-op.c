@@ -693,7 +693,7 @@ op_ri (enum tree_code code, irange &r, tree rh_type,
 /* Perform an operation between 2 ranges.  */
 
 static bool
-op_rr (enum tree_code code, irange& r, const irange& lh, const irange& rh)
+op_rr (enum tree_code code, irange &r, const irange &lh, const irange &rh)
 {
   bool res = false;
   tree type = lh.type ();
@@ -726,7 +726,8 @@ op_rr (enum tree_code code, irange& r, const irange& lh, const irange& rh)
 	    wide_int lh_ub = lh.upper_bound (x);
 	    wide_int rh_lb = rh.lower_bound (y);
 	    wide_int rh_ub = rh.upper_bound (y);
-	    res = op_wi (code, r, rh.type (), lh_lb, lh_ub, rh_lb, rh_ub);
+	    tree type = rh.type ();
+	    res = op_wi (code, r, type, lh_lb, lh_ub, rh_lb, rh_ub);
 	    if (!res)
 	      return false;
 	  }

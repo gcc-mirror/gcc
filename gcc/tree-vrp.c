@@ -2290,18 +2290,47 @@ assert_compare_value_ranges (const value_range_base *old_vr,
   if (code == EXACT_DIV_EXPR && vr0->nonzero_p ())
     return;
 
-  /* Full resolution irange can get better ranges here.  Perhaps all
-     these IRANGE_WITH_VALUE_RANGE checks should be irange::max_pairs > 2
-     Triggered by: gcc.target/i386/sse4_2-crc32b.c.  */
-  if (code == BIT_IOR_EXPR && !IRANGE_WITH_VALUE_RANGE
-      && old_vr->varying_p ())
-    return;
+  /* The ordering in which range-ops and
+     extract_range_from_binary_expr split up and handle sub-ranges
+     matters, and this can yield slightly worse results for VRP at
+     times.  This is because the union of intermediate ranges,
+     depending on which order they are done in, can yield
+     unrepresentable ranges that ultimately generate a VARYING.
 
-  /* When running in full resolution irange, we have an
-     optimization in irange_adjust_bit_and_mask() that may
-     give slightly better results than VRP.  Avoid checking
-     BIT_AND_EXPR as it may yield false positives.  */
-  if (code == BIT_AND_EXPR && !IRANGE_WITH_VALUE_RANGE)
+     This is imprecise at best, so avoid comparing pairs of
+     VR_ANTI_RANGES inputs, for which VRP produces VARYING and
+     range-ops does better.
+
+     For example, extract_range_from_binary_expr, with its recursive
+     ranges_from_anti_range approach, will handle ~[5,10] OP [20,30]
+     in this order:
+
+	[0,4][11,MAX] OP [0,19][31,MAX]
+
+		t1 = [0,4] OP [0,19]
+		t2 = [0,4] OP [31,MAX]
+		t3 = union(t1, t2)
+
+		t4 = [11,MAX] OP [0,19]
+		t5 = [11,MAX] OP [31,MAX]
+		t6 = union(t4, t5)
+
+		t = union(t3, t6)
+
+     Whereas, range-ops will do:
+
+		t = union([0,4] OP [0,19])
+		t = union(t, union([0,4] OP [31,MAX]))
+		t = union(t, union([11,MAX] OP [0,19]))
+		t = union(t, union([11,MAX] OP [31,MAX]))
+
+     Ugh.  In the amount of time it took to explain this, I could've
+     rewritten VRP to match range-ops, but let's avoid touching too
+     much of existing code.
+
+     Triggered by: gcc.target/i386/sse4_2-crc32b.c.  */
+  if (vr0->kind () == VR_ANTI_RANGE && vr1->kind () == VR_ANTI_RANGE
+      && old_vr->varying_p ())
     return;
 
   /* MAX/MIN of pointers in VRP dumbs everything down to
