@@ -80,7 +80,7 @@ range_operator::op2_range (irange& r ATTRIBUTE_UNUSED,
 // and automatically register it with the operator table.
 // Simply inherit from this class and overload whatever routines are required.
 // This provides registration as well as default debug dumping for the 
-// tree code and calling op_rr() to resolve fold_range.
+// tree code and calling op_binary() to resolve fold_range.
 
 class trange_operator : public range_operator
 {
@@ -443,9 +443,9 @@ irange_adjust_bit_and_mask (irange &r, signop s,
    the result is assumed to span the entire domain (range_for_type).  */
 
 static bool
-op_wi (enum tree_code code, irange &r, tree rh_type,
-       const wide_int &lh_lb, const wide_int lh_ub,
-       const wide_int &rh_lb, const wide_int &rh_ub)
+op_wide_int (enum tree_code code, irange &r, tree rh_type,
+	     const wide_int &lh_lb, const wide_int lh_ub,
+	     const wide_int &rh_lb, const wide_int &rh_ub)
 {
   wide_int new_lb, new_ub, tmp;
   wi::overflow_type ov_lb, ov_ub;
@@ -664,7 +664,7 @@ op_wi (enum tree_code code, irange &r, tree rh_type,
 /* Perform an operation between 2 ranges.  */
 
 static bool
-op_rr (enum tree_code code, irange &r, const irange &lh, const irange &rh)
+op_binary (enum tree_code code, irange &r, const irange &lh, const irange &rh)
 {
   bool res = false;
   tree type = lh.type ();
@@ -682,7 +682,7 @@ op_rr (enum tree_code code, irange &r, const irange &lh, const irange &rh)
 	wide_int rh_lb = rh.lower_bound (y);
 	wide_int rh_ub = rh.upper_bound (y);
 	tree type = rh.type ();
-	res = op_wi (code, r, type, lh_lb, lh_ub, rh_lb, rh_ub);
+	res = op_wide_int (code, r, type, lh_lb, lh_ub, rh_lb, rh_ub);
 	if (!res)
 	  return false;
       }
@@ -694,7 +694,7 @@ op_rr (enum tree_code code, irange &r, const irange &lh, const irange &rh)
    resulting operation (and thus R).  */
 
 static bool
-op_rr_unary (enum tree_code code, irange &r, const irange &lh, tree type)
+op_unary (enum tree_code code, irange &r, const irange &lh, tree type)
 {
   bool res = false;
   // Clear and set result type.
@@ -707,7 +707,7 @@ op_rr_unary (enum tree_code code, irange &r, const irange &lh, tree type)
     {
       wide_int lower_bound = lh.lower_bound (x);
       wide_int upper_bound = lh.upper_bound (x);
-      res = op_wi (code, r, type,
+      res = op_wide_int (code, r, type,
 		   lower_bound, upper_bound, lower_bound, upper_bound);
       if (!res)
 	return false;
@@ -742,7 +742,7 @@ trange_operator::fold_range (irange& r, const irange& lh,
   if (empty_range_check (r, lh, rh, lh.type ()))
     return true;
 
-  return op_rr (code, r, lh, rh);
+  return op_binary (code, r, lh, rh);
 }
 
 /*  -----------------------------------------------------------------------  */
@@ -1312,14 +1312,14 @@ bool
 operator_plus::op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const
 {
-  return op_rr (MINUS_EXPR, r, lhs, op2);
+  return op_binary (MINUS_EXPR, r, lhs, op2);
 }
 
 bool
 operator_plus::op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const
 {
-  return op_rr (MINUS_EXPR, r, lhs, op1);
+  return op_binary (MINUS_EXPR, r, lhs, op1);
 }
 
 
@@ -1339,7 +1339,7 @@ bool
 operator_minus::op1_range (irange& r, const irange& lhs,
 			    const irange& op2) const
 {
-  return op_rr (PLUS_EXPR, r, lhs, op2);
+  return op_binary (PLUS_EXPR, r, lhs, op2);
 }
 
 /* Adjust irange to be in terms of op2. 
@@ -1348,7 +1348,7 @@ bool
 operator_minus::op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const
 {
-  return op_rr (MINUS_EXPR, r, op1 ,lhs);
+  return op_binary (MINUS_EXPR, r, op1 ,lhs);
 }
 
 
@@ -1384,7 +1384,7 @@ operator_exact_divide::op1_range (irange& r,
   // TRUE accuraacy is [6,6][9,9][12,12].  This is unlikely to matter most of
   // the time however.  
   // If op2 is a multiple of 2, we would be able to set some non-zero bits.
-  if (op2.singleton_p (&offset) && op_rr (MULT_EXPR, r, lhs, op2)
+  if (op2.singleton_p (&offset) && op_binary (MULT_EXPR, r, lhs, op2)
       && !integer_zerop (offset))
     return true;
   return false;
@@ -1431,7 +1431,7 @@ operator_shift::op1_range (irange& r, const irange& lhs,
   wide_int mask;
   if (code == LSHIFT_EXPR)
     {
-      res = op_rr (RSHIFT_EXPR, r, lhs, w2);
+      res = op_binary (RSHIFT_EXPR, r, lhs, w2);
       if (res)
         {
 	  mask = wi::mask (op, true, r.get_precision ());
@@ -1439,7 +1439,7 @@ operator_shift::op1_range (irange& r, const irange& lhs,
     }
   else
     {
-      res = op_rr (LSHIFT_EXPR, r, lhs, w2);
+      res = op_binary (LSHIFT_EXPR, r, lhs, w2);
     }
 
   return res;
@@ -1833,7 +1833,7 @@ operator_bitwise_not::fold_range (irange& r, const irange& lh,
   irange minusone (type,
 		   wi::minus_one (TYPE_PRECISION (type)),
 		   wi::minus_one (TYPE_PRECISION (type)));
-  return op_rr (MINUS_EXPR, r, minusone, lh);
+  return op_binary (MINUS_EXPR, r, minusone, lh);
 }
 
 bool
@@ -1846,7 +1846,7 @@ operator_bitwise_not::op1_range (irange& r, const irange& lhs,
   irange minusone (type,
 		   wi::minus_one (TYPE_PRECISION (type)),
 		   wi::minus_one (TYPE_PRECISION (type)));
-  return op_rr (MINUS_EXPR, r, minusone, lhs);
+  return op_binary (MINUS_EXPR, r, minusone, lhs);
 }
 
 
@@ -1929,7 +1929,7 @@ operator_abs::fold_range (irange &r,
   if (empty_range_check (r, lh, rh, type))
     return true;
 
-  return op_rr_unary (code, r, lh, type);
+  return op_unary (code, r, lh, type);
 }
 
 bool
@@ -1982,7 +1982,7 @@ operator_negate::fold_range (irange &r,
   if (empty_range_check (r, lh, rh, type))
     return true;
   // -X is simply 0 - X.
-  return op_rr (MINUS_EXPR, r, range_zero (type), lh);
+  return op_binary (MINUS_EXPR, r, range_zero (type), lh);
 }
 
 // Disable for now for VRP parity.
