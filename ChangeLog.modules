@@ -1,6 +1,12 @@
 2019-06-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::hash::add_redirect): New.
+	(depset::hash::add_specialization): Use it.
+	(depset::hash::add_mergeable): Use it.
+	(depset::hash::add_dependency): Never add a redirect here.
+
+	gcc/cp/
 	* module.cc (finish_module_processing): Adjust failed to write error.
 	gcc/testsuite/
 	* g++.dg/modules/internal-1.C: Adjust.

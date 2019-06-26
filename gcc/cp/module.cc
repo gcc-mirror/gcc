@@ -2502,6 +2502,7 @@ public:
     void add_mergeable (depset *);
     void add_mergeable_horcrux (depset *);
     depset *add_dependency (tree decl, entity_kind, bool is_import = false);
+    depset *add_redirect (depset *target);
     void add_binding (tree ns, tree value);
     void add_writables (tree ns, bitmap partitions);
     void add_specializations (bool, bitmap partitions);
@@ -9735,7 +9736,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
   gcc_checking_assert ((ek == EK_NAMESPACE)
 		       == (TREE_CODE (decl) == NAMESPACE_DECL
 			   && !DECL_NAMESPACE_ALIAS (decl)));
-  gcc_checking_assert (ek != EK_BINDING);
+  gcc_checking_assert (ek != EK_BINDING && ek != EK_REDIRECT);
   if (is_import)
     /* Only (potentially) unnameable imports need to be so marked.  */
     gcc_checking_assert (ek == EK_UNNAMED || ek == EK_SPECIALIZATION
@@ -9794,8 +9795,6 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	      if (is_import)
 		dep->set_flag_bit<DB_IMPORTED_BIT> ();
 	    }
-	  else if (ek == EK_REDIRECT)
-	    /* A redirection.  */;
 	  else if (ek == EK_UNNAMED
 		   || ek == EK_SPECIALIZATION)
 	    {
@@ -10140,6 +10139,26 @@ specialization_cmp (const void *a_, const void *b_)
   return DECL_UID (a) < DECL_UID (b) ? -1 : +1;
 }
 
+/* Insert a redirect for the DECL_TEMPLATE_RESULT, as we're unable to
+   go from there to here (without repeating the above instantiation
+   search for *every* MAYBE_SPEC dependency add.  */
+
+depset *
+depset::hash::add_redirect (depset *target)
+{
+  target->set_flag_bit<DB_PARTIAL_BIT> ();
+
+  tree inner = DECL_TEMPLATE_RESULT (target->get_entity ());
+  depset *redirect = make_entity (inner, EK_REDIRECT);
+
+  depset **slot = entity_slot (inner, true);
+  gcc_checking_assert (!*slot);
+  *slot = redirect;
+  redirect->deps.safe_push (target);
+
+  return redirect;
+}
+
 /* We add all kinds of specialializations.  Implicit specializations
    should only streamed and walked if they are reachable from
    elsewhere.  Hence the UNREACHED flag.  This is making the
@@ -10256,16 +10275,7 @@ depset::hash::add_specializations (bool decl_p, bitmap partitions)
 	  if (needs_reaching)
 	    dep->set_flag_bit<DB_UNREACHED_BIT> ();
 	  if (is_partial)
-	    {
-	      dep->set_flag_bit<DB_PARTIAL_BIT> ();
-	      /* Also insert a redirect for the DECL_TEMPLATE_RESULT,
-	         as we're unable to go from there to here (without
-	         repeating the above instantiation search for *every*
-	         MAYBE_SPEC dependency add.  */
-	      depset *part = add_dependency (DECL_TEMPLATE_RESULT (spec),
-					     depset::EK_REDIRECT, false);
-	      part->deps.safe_push (dep);
-	    }
+	    add_redirect (dep);
 	}
     }
 }
@@ -10382,17 +10392,7 @@ depset::hash::add_mergeable (depset *mergeable)
   dep->deps.safe_push (mergeable);
 
   if (mergeable->is_partial ())
-    {
-      /* Insert a redirect for the DECL_TEMPLATE_RESULT.  */
-      dep->set_flag_bit<DB_PARTIAL_BIT> ();
-
-      depset **pslot = entity_slot (DECL_TEMPLATE_RESULT (decl), true);
-      gcc_checking_assert (!*pslot);
-      depset *redirect = make_entity (DECL_TEMPLATE_RESULT (decl),
-				      EK_REDIRECT);
-      *pslot = redirect;
-      redirect->deps.safe_push (dep);
-    }
+    add_redirect (dep);
 }
 
 void
