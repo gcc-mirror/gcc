@@ -1,5 +1,11 @@
 2019-06-25  Jason Merrill  <jason@redhat.com>
 
+	PR c++/70462 - unnecessary base ctor variant with final.
+	* optimize.c (populate_clone_array): Skip base variant if
+	CLASSTYPE_FINAL.
+	(maybe_clone_body): We don't need an alias if we are only defining
+	one clone.
+
 	* class.c (resolves_to_fixed_type_p): Check CLASSTYPE_FINAL.
 
 2019-06-25  Jakub Jelinek  <jakub@redhat.com>
