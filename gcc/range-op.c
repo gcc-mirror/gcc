@@ -470,6 +470,18 @@ op_wi (enum tree_code code, irange &r, tree rh_type,
 			TYPE_OVERFLOW_WRAPS (type));
       return true;
 
+    case MAX_EXPR:
+    case MIN_EXPR:
+      if (wide_int_range_min_max (new_lb, new_ub, code, s,
+				  TYPE_PRECISION (type),
+				  lh_lb, lh_ub, rh_lb, rh_ub))
+	{
+	  accumulate_range (r, new_lb, new_ub);
+	  return true;
+	}
+      r.set_varying (type);
+      return false;
+
     case MULT_EXPR:
       if (irange_multiplicative_op (code, s, r, lh_lb, lh_ub, rh_lb, rh_ub))
 	return true;
@@ -1391,6 +1403,8 @@ trange_operator op_floor_div(FLOOR_DIV_EXPR);
 trange_operator op_round_div (ROUND_DIV_EXPR);
 trange_operator op_ceil_div (CEIL_DIV_EXPR);
 trange_operator op_pointer_plus (POINTER_PLUS_EXPR);
+trange_operator op_max (MAX_EXPR);
+trange_operator op_min (MIN_EXPR);
 
 class operator_exact_divide : public trange_operator
 {
@@ -2016,6 +2030,8 @@ operator_negate::fold_range (irange &r,
   return op_rr (MINUS_EXPR, r, range_zero (type), lh);
 }
 
+// Disable for now for VRP parity.
+#if 0
 class operator_min_max : public trange_operator
 {
 public:
@@ -2048,20 +2064,14 @@ operator_min_max::fold_range (irange& r, const irange& lh,
   if (POINTER_TYPE_P (type))
     return true;
 
+  // Intersect the union with the max/min values of both to get a set
+  // of values.  This allows MIN ([1,5][20,30] , [0,4][18,60]) to
+  // produce [0,5][18,30] rather than [0,30]
   wide_int_binop (lb, code, lh.lower_bound (), rh.lower_bound (),
 		  TYPE_SIGN (type), &ov);
   wide_int_binop (ub, code, lh.upper_bound (), rh.upper_bound (),
 		  TYPE_SIGN (type), &ov);
-  /* Disable this optimization for now, to make sure we get the same
-     results as VRP.  */
-#if 0
-  // Intersect the union with the max/min values of both to get a set
-  // of values.  This allows MIN ([1,5][20,30] , [0,4][18,60]) to
-  // produce [0,5][18,30] rather than [0,30]
   r.intersect (irange (type, lb, ub));
-#else
-  r = irange (type, lb, ub);
-#endif
   return true;
 }
 
@@ -2105,7 +2115,7 @@ operator_min_max::op2_range (irange& r, const irange& lhs,
 {
   return operator_min_max::op1_range (r, lhs, op1);
 }
-
+#endif // if 0
 
 class operator_addr_expr : public trange_operator
 {
