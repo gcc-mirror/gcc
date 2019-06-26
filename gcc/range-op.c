@@ -694,9 +694,12 @@ op_ir (enum tree_code code, irange &r, const wide_int &lh, const irange &rh)
 {
   r.set_undefined (r.type ());
   for (unsigned x = 0; x < rh.num_pairs () ; x++)
-    if (!op_wi (code, r, rh.type (),
-		lh, lh, rh.lower_bound (x), rh.upper_bound (x)))
-      return false;
+    {
+      wide_int rh_lb = rh.lower_bound (x);
+      wide_int rh_ub = rh.upper_bound (x);
+      if (!op_wi (code, r, rh.type (), lh, lh, rh_lb, rh_ub))
+	return false;
+    }
   return true;
 }
 
@@ -708,9 +711,12 @@ op_ri (enum tree_code code, irange &r, tree rh_type,
 {
   r.set_undefined (r.type ());
   for (unsigned x = 0; x < lh.num_pairs () ; x++)
-    if (!op_wi (code, r, rh_type,
-		lh.lower_bound (x), lh.upper_bound (x), rh, rh))
-      return false;
+    {
+      wide_int lh_lb = lh.lower_bound (x);
+      wide_int lh_ub = lh.upper_bound (x);
+      if (!op_wi (code, r, rh_type, lh_lb, lh_ub, rh, rh))
+	return false;
+    }
   return true;
 }
 
@@ -729,19 +735,28 @@ op_rr (enum tree_code code, irange& r, const irange& lh, const irange& rh)
 
   /* Try constant cases first to see if we do anything special with them. */
   if (wi::eq_p (lh.upper_bound (), lh.lower_bound ()))
-    res = op_ir (code, r, lh.upper_bound (), rh);
+    {
+      wide_int lh_ub = lh.upper_bound ();
+      res = op_ir (code, r, lh_ub, rh);
+    }
 
   if (!res && wi::eq_p (rh.upper_bound (), rh.lower_bound ()))
-    res = op_ri (code, r, rh.type (), lh, rh.upper_bound ());
+    {
+      tree type = rh.type ();
+      wide_int rh_ub = rh.upper_bound ();
+      res = op_ri (code, r, type, lh, rh_ub);
+    }
 
   if (!res)
     {
       for (unsigned x = 0; x < lh.num_pairs (); ++x)
 	for (unsigned y = 0; y < rh.num_pairs (); ++y)
 	  {
-	    res = op_wi (code, r, rh.type (),
-			 lh.lower_bound (x), lh.upper_bound (x),
-			 rh.lower_bound (y), rh.upper_bound (y));
+	    wide_int lh_lb = lh.lower_bound (x);
+	    wide_int lh_ub = lh.upper_bound (x);
+	    wide_int rh_lb = rh.lower_bound (y);
+	    wide_int rh_ub = rh.upper_bound (y);
+	    res = op_wi (code, r, rh.type (), lh_lb, lh_ub, rh_lb, rh_ub);
 	    if (!res)
 	      return false;
 	  }
