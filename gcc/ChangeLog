@@ -1,5 +1,10 @@
 2019-06-26  Richard Biener  <rguenther@suse.de>
 
+	PR ipa/90982
+	* tree-inline.c (remap_ssa_name): Copy SSA range info.
+
+2019-06-26  Richard Biener  <rguenther@suse.de>
+
 	* lto-streamer.h (lto_bitmap_alloc): Remove.
 	(lto_bitmap_free): Likewise.
 	* lto-streamer.c (lto_bitmap_alloc): Remove.
