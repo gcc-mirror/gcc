@@ -1,7 +1,7 @@
 /* Test whether buffer overflow warnings for __*_chk builtins
    are emitted properly.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wno-format -std=gnu99 -ftrack-macro-expansion=0" } */
+/* { dg-options "-O2 -Wno-format -std=gnu99 -ftrack-macro-expansion=0 -fno-tree-dse" } */
 // { dg-skip-if "packed attribute missing for t" { "epiphany-*-*" } }
 
 extern void abort (void);
