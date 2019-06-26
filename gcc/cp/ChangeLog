@@ -1,3 +1,129 @@
+2019-06-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70462 - unnecessary base ctor variant with final.
+	* optimize.c (populate_clone_array): Skip base variant if
+	CLASSTYPE_FINAL.
+	(maybe_clone_body): We don't need an alias if we are only defining
+	one clone.
+
+	* class.c (resolves_to_fixed_type_p): Check CLASSTYPE_FINAL.
+
+2019-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90969
+	* constexpr.c (cxx_eval_array_reference): Don't look through VCE from
+	vector type if lval.
+
+2019-06-24  Jan Hubicka  <jh@suse.cz>
+
+	* lex.c (cxx_make_type): Set TYPE_CXX_ODR_P.
+
+2019-06-24  Jason Merrill  <jason@redhat.com>
+
+	* class.c (layout_class_type): Don't use a separate
+	CLASSTYPE_AS_BASE if it's the same size.
+
+2019-06-23  Marek Polacek  <polacek@redhat.com>
+
+	* call.c (convert_default_arg): Use DEFERRED_PARSE instead of
+	DEFAULT_ARG.
+	* cp-objcp-common.c (cp_tree_size): Likewise.  Use tree_deferred_parse
+	instead of tree_default_arg.
+	* cp-tree.def: Rename DEFAULT_ARG to DEFERRED_PARSE.
+	* cp-tree.h: Rename DEFARG_TOKENS to DEFPARSE_TOKENS.  Rename
+	DEFARG_INSTANTIATIONS to DEFPARSE_INSTANTIATIONS.  Rename
+	tree_default_arg to tree_deferred_parse.
+	(UNPARSED_NOEXCEPT_SPEC_P): Use DEFERRED_PARSE instead of DEFAULT_ARG.
+	(cp_tree_node_structure_enum): Rename TS_CP_DEFAULT_ARG to
+	TS_CP_DEFERRED_PARSE.
+	(lang_tree_node): Rename tree_default_arg to tree_deferred_parse.
+	Rename default_arg to deferred_parse.  Use TS_CP_DEFERRED_PARSE instead
+	of TS_CP_DEFAULT_ARG.
+	(defarg_location): Remove declaration.
+	(defparse_location): Add declaration.
+	* decl.c (grokfndecl): Use DEFERRED_PARSE instead of DEFAULT_ARG.
+	Call defparse_location instead of defarg_location.
+	(check_default_argument): Use DEFERRED_PARSE instead of DEFAULT_ARG.
+	(cp_tree_node_structure): Likewise.  Use TS_CP_DEFERRED_PARSE instead
+	of TS_CP_DEFAULT_ARG.
+	* decl2.c (grokfield): Use DEFERRED_PARSE instead of DEFAULT_ARG.
+	* error.c (dump_expr): Likewise.
+	(location_of): Likewise.
+	* init.c (get_nsdmi): Likewise.
+	* parser.c (cp_parser_save_noexcept): Likewise.  Use DEFPARSE_TOKENS
+	instead of DEFARG_TOKENS.
+	(cp_parser_late_noexcept_specifier): Likewise.
+	(cp_parser_late_parse_one_default_arg): Use DEFPARSE_TOKENS instead
+	of DEFARG_TOKENS.
+	(cp_parser_late_parsing_default_args): Use DEFERRED_PARSE instead of
+	DEFAULT_ARG.  Use DEFPARSE_INSTANTIATIONS instead of
+	DEFARG_INSTANTIATIONS.
+	(cp_parser_cache_defarg): Use DEFERRED_PARSE instead of DEFAULT_ARG.
+	Use DEFPARSE_TOKENS instead of DEFARG_TOKENS.  Use
+	DEFPARSE_INSTANTIATIONS instead of DEFARG_INSTANTIATIONS.
+	(defparse_location): Renamed from defarg_location.
+	* pt.c (tsubst_default_argument): Use DEFERRED_PARSE instead of
+	DEFAULT_ARG.
+	(tsubst_arg_types): Likewise.
+	(dependent_type_p_r): Likewise.
+	* tree.c (cp_tree_equal): Likewise.
+	(cp_walk_subtrees): Likewise.
+	* typeck.c (convert_arguments): Likewise.
+
+2019-06-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86476 - noexcept-specifier is a complete-class context.
+	PR c++/52869
+	* cp-tree.def (DEFAULT_ARG): Update commentary.
+	* cp-tree.h (UNPARSED_NOEXCEPT_SPEC_P):	New macro.
+	(tree_default_arg): Use tree_base instead of tree_common.
+	(do_push_parm_decls, maybe_check_overriding_exception_spec): Declare.
+	* decl.c (do_push_parm_decls): New function, broken out of...
+	(store_parm_decls): ...here.  Call it.
+	* except.c (nothrow_spec_p): Accept DEFAULT_ARG in the assert.
+	* parser.c (cp_parser_noexcept_specification_opt,
+	cp_parser_late_noexcept_specifier, noexcept_override_late_checks):
+	Forward-declare.
+	(unparsed_noexcepts): New macro.
+	(push_unparsed_function_queues): Update initializer.
+	(cp_parser_direct_declarator): Pass FRIEND_P to
+	cp_parser_exception_specification_opt.
+	(inject_parm_decls): New.
+	(pop_injected_parms): New.
+	(cp_parser_class_specifier_1): Implement delayed parsing of
+	noexcept-specifiers.
+	(cp_parser_save_noexcept): New.
+	(cp_parser_late_noexcept_specifier): New.
+	(noexcept_override_late_checks): New.
+	(cp_parser_noexcept_specification_opt): Add FRIEND_P parameter.  Call
+	cp_parser_save_noexcept instead of the normal processing if needed.
+	(cp_parser_exception_specification_opt): Add FRIEND_P parameter and
+	pass it to cp_parser_noexcept_specification_opt.
+	(cp_parser_save_member_function_body): Fix comment.
+	(cp_parser_save_default_args): Maybe save the noexcept-specifier to
+	post process.
+	(cp_parser_transaction): Update call to
+	cp_parser_noexcept_specification_opt.
+	(cp_parser_transaction_expression): Likewise.
+	* parser.h (cp_unparsed_functions_entry): Add new field to carry
+	a noexcept-specifier.
+	* pt.c (dependent_type_p_r): Handle unparsed noexcept expression.
+	* search.c (maybe_check_overriding_exception_spec): New function, broken
+	out of...
+	(check_final_overrider): ...here.  Call
+	maybe_check_overriding_exception_spec.
+	* tree.c (canonical_eh_spec): Handle UNPARSED_NOEXCEPT_SPEC_P.
+	(cp_tree_equal): Handle DEFAULT_ARG.
+
+	PR c++/90881 - bogus -Wunused-value in unevaluated context.
+	* cvt.c (convert_to_void): Don't emit unused warnings in
+	an unevaluated context.
+
+2019-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use id_loc, typespec_loc, and
+	locations[ds_storage_class] in a few additional places.
+
 2019-06-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/90909

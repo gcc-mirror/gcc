@@ -1,3 +1,385 @@
+2019-06-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89021
+	* config/i386/i386.c (ix86_autovectorize_vector_sizes):
+	Autovectorize 8-byte vectors for TARGET_MMX_WITH_SSE.
+
+2019-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/rs6000-internal.h (branch_island): New typedef.
+	(branch_islands): New extern.
+	* config/rs6000/rs6000-logue.c (macho_branch_islands): Moved from
+	* config/rs6000/rs6000.c: .. here.
+
+2019-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.gcc (powerpc*-*-linux*): Move target_gtfiles from here..
+	(powerpc*-*-*) ... to here.
+
+2019-06-26  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dse.c (initialize_ao_ref_for_dse): Handle _chk variants of
+	memcpy, memmove and memset builtins.
+	(maybe_trim_memstar_call): Likewise.
+
+2019-06-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000-logue.c: Add #ifndef TARGET_PROFILE_KERNEL.
+
+2019-06-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config.gcc (powerpc-ibm-aix*): Define target_gtfiles.
+
+2019-06-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-internal.h (rs6000_keep_leaf_when_profiled): New
+	declaration.
+	* config/rs6000/rs6000-logue.c (rs6000_keep_leaf_when_profiled): Remove
+	"static".
+	* config/rs6000/rs6000-logue.c (rs6000_keep_leaf_when_profiled): Delete
+	declaration.
+
+2019-06-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c: Fix previous commit, it missed some changes.
+
+2019-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/90982
+	* tree-inline.c (remap_ssa_name): Copy SSA range info.
+
+2019-06-26  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer.h (lto_bitmap_alloc): Remove.
+	(lto_bitmap_free): Likewise.
+	* lto-streamer.c (lto_bitmap_alloc): Remove.
+	(lto_bitmap_free): Likewise.
+	(lto_obstack): Likewise.
+	(lto_obstack_initialized): Likewise.
+	* lto-streamer-out.c (lto_output): Use own obstack for local
+	bitmap, free it consistently.
+
+2019-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90991
+	* config/i386/sse.md
+	(*<extract_type>_vinsert<shuffletype><extract_suf>_0): Use vmovupd,
+	vmovups, vmovdqu, vmovdqu32 or vmovdqu64 instead of the aligned
+	insns if operands[2] is misaligned_operand.
+
+2019-06-26  Li Jia He  <helijia@linux.ibm.com>
+
+	* config/rs6000/rs6000.h (TARGET_MADDLD): Remove the restriction of
+	TARGET_POWERPC64.
+	* config/rs6000/rs6000.md (maddld): Change maddld match_operand from DI
+	to GPR.
+
+2019-06-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/invoke.texi (Warning Options): Fix some @opindex syntax.
+
+2019-06-26  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/90973
+	* tree-vect-loop.c (vect_get_known_peeling_cost): Use
+	epilogue_cost_vec instead of prologue_cost_vec for
+	a epilogue cost.
+
+2019-06-26  Martin Liska  <mliska@suse.cz>
+
+	* bb-reorder.c (connect_better_edge_p): Add missing else
+	statement in the middle of if-else statements.
+
+/home/marxin/Programming/gcc/gcc/bb-reorder.c:1031:2: warning: Value stored to 'is_better_edge' is never read
+        is_better_edge = true;
+        ^                ~~~~
+/home/marxin/Programming/gcc/gcc/bb-reorder.c:1034:2: warning: Value stored to 'is_better_edge' is never read
+        is_better_edge = false;
+        ^                ~~~~~
+
+2019-06-25  Hongtao Liu  <hongtao.liu@intel.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+	    Olga Makhotina  <olga.makhotina@intel.com>
+
+	* common/config/i386/i386-common.c
+	(OPTION_MASK_ISA_AVX512VP2INTERSECT_SET,
+	OPTION_MASK_ISA_AVX512VP2INTERSECT_UNSET): New macros.
+	(OPTION_MASK_ISA2_AVX512F_UNSET): Add
+	OPTION_MASK_ISA_AVX512VP2INTERSECT_UNSET.
+	(ix86_handle_option): Handle -mavx512vp2intersect.
+	* config/i386/avx512vp2intersectintrin.h: New.
+	* config/i386/avx512vp2intersectvlintrin.h: New.
+	* config/i386/cpuid.h (bit_AVX512VP2INTERSECT): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	AVX512VP2INTERSECT.
+	* config/i386/i386-builtin-types.def: Add new types.
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/i386-builtins.c: (enum processor_features): Add
+	F_AVX512VP2INTERSECT.
+	(static const _isa_names_table isa_names_table): Ditto.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__AVX512VP2INTERSECT__.
+	* config/i386/i386-expand.c (ix86_expand_builtin): Expand
+	IX86_BUILTIN_2INTERSECTD512, IX86_BUILTIN_2INTERSECTQ512,
+	IX86_BUILTIN_2INTERSECTD256, IX86_BUILTIN_2INTERSECTQ256,
+	IX86_BUILTIN_2INTERSECTD128, IX86_BUILTIN_2INTERSECTQ128.
+	* config/i386/i386-modes.def (P2QI, P2HI): New modes.
+	* config/i386/i386-options.c (ix86_target_string): Add
+	-mavx512vp2intersect.
+	(ix86_option_override_internal): Handle AVX512VP2INTERSECT.
+	* config/i386/i386.c (ix86_hard_regno_nregs): Allocate two regs for
+	P2HImode and P2QImode.
+	(ix86_hard_regno_mode_ok): Register pair only starts at even hardreg
+	number for P2QImode and P2HImode.
+	(ix86_regmode_natural_size): New function.
+	* config/i386/i386.h (TARGET_AVX512VP2INTERSECT,
+	TARGET_AVX512VP2INTERSECT_P, PTA_AVX512VP2INTERSECT
+	REGMODE_NATURAL_SIZE, MASK_PAIR_REGNO_P): New.
+	* config/i386/i386-protos.h (ix86_regmode_natural_size): Declare
+	* config/i386/i386.opt: Add -mavx512vp2intersect.
+	* config/i386/immintrin.h: Include avx512vp2intersectintrin.h and
+	avx512vp2intersectvlintrin.h.
+	* config/i386/sse.md (define_c_enum "unspec"): Add UNSPEC_VP2INTERSECT.
+	(define_mode_iterator VI48_AVX512VP2VL): New.
+	(avx512vp2intersect_2intersect<mode>,
+	avx512vp2intersect_2intersectv16si): New define_insn patterns.
+	* config.gcc: Add avx512vp2intersectvlintrin.h and
+	avx512vp2intersectintrin.h to extra_headers.
+	* doc/invoke.texi: Document -mavx512vp2intersect.
+
+2019-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (ENDFILE_SPEC): New.
+
+2019-06-25  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (stack_info, rs6000_pic_labelno,
+	savres_routine_syms, savres_routine_name, morestack_ref,
+	rs6000_init_machine_status, save_reg_p, first_reg_to_save,
+	first_fp_reg_to_save, first_altivec_reg_to_save, compute_vrsave_mask,
+	compute_save_world_info, is_altivec_return_reg, fixed_reg_p,
+	rs6000_savres_strategy, rs6000_stack_info, debug_stack_info,
+	rs6000_return_addr, rs6000_decl_ok_for_sibcall,
+	rs6000_function_ok_for_sibcall, rs6000_ra_ever_killed,
+	rs6000_emit_load_toc_table, rs6000_emit_eh_reg_restore, uses_TOC,
+	create_TOC_reference, rs6000_aix_asm_output_dwarf_table_ref,
+	rs6000_emit_stack_tie, rs6000_emit_allocate_stack_1,
+	get_stack_clash_protection_probe_interval,
+	get_stack_clash_protection_guard_size,
+	rs6000_emit_probe_stack_range_stack_clash, rs6000_emit_allocate_stack,
+	rs6000_emit_probe_stack_range, output_probe_stack_range_1,
+	interesting_frame_related_regno, output_probe_stack_range_stack_clash,
+	output_probe_stack_range, rs6000_frame_related, generate_set_vrsave,
+	gen_frame_set, gen_frame_load, gen_frame_store, emit_frame_save,
+	gen_frame_mem_offset, rs6000_savres_routine_name,
+	rs6000_savres_routine_sym, rs6000_emit_stack_reset,
+	ptr_regno_for_savres, rs6000_emit_savres_rtx,
+	rs6000_emit_prologue_move_from_cr, split_stack_arg_pointer_used_p,
+	rs6000_global_entry_point_prologue_needed_p,
+	rs6000_get_separate_components, rs6000_components_for_bb,
+	rs6000_disqualify_components, rs6000_emit_prologue_components,
+	rs6000_emit_epilogue_components, rs6000_set_handled_components,
+	emit_vrsave_prologue, emit_split_stack_prologue, rs6000_emit_prologue,
+	rs6000_output_savres_externs, rs6000_output_function_prologue,
+	rs6000_keep_leaf_when_profiled, load_cr_save, restore_saved_cr,
+	load_lr_save, restore_saved_lr, add_crlr_cfa_restore,
+	offset_below_red_zone_p, emit_cfa_restores, rs6000_emit_epilogue,
+	rs6000_output_function_epilogue, gen_add3_const,
+	rs6000_expand_split_stack_prologue, rs6000_live_on_entry,
+	rs6000_split_stack_space_check, rs6000_save_toc_in_prologue_p): Moved
+	to rs6000-logue.c.
+	(machine_function): Moved to rs6000.h.
+	(rs6000_stack_t, ALTIVEC_REG_BIT, quad_address_offset_p) Moved to
+	rs6000-internal.h.
+	* config/rs6000/rs6000-logue.c(stack_info, rs6000_pic_labelno,
+	savres_routine_syms, savres_routine_name, morestack_ref,
+	rs6000_init_machine_status, save_reg_p, first_reg_to_save,
+	first_fp_reg_to_save, first_altivec_reg_to_save, compute_vrsave_mask,
+	compute_save_world_info, is_altivec_return_reg, fixed_reg_p,
+	rs6000_savres_strategy, rs6000_stack_info, debug_stack_info,
+	rs6000_return_addr, rs6000_decl_ok_for_sibcall,
+	rs6000_function_ok_for_sibcall, rs6000_ra_ever_killed,
+	rs6000_emit_load_toc_table, rs6000_emit_eh_reg_restore, uses_TOC,
+	create_TOC_reference, rs6000_aix_asm_output_dwarf_table_ref,
+	rs6000_emit_stack_tie, rs6000_emit_allocate_stack_1,
+	get_stack_clash_protection_probe_interval,
+	get_stack_clash_protection_guard_size,
+	rs6000_emit_probe_stack_range_stack_clash, rs6000_emit_allocate_stack,
+	rs6000_emit_probe_stack_range, output_probe_stack_range_1,
+	interesting_frame_related_regno, output_probe_stack_range_stack_clash,
+	output_probe_stack_range, rs6000_frame_related, generate_set_vrsave,
+	gen_frame_set, gen_frame_load, gen_frame_store, emit_frame_save,
+	gen_frame_mem_offset, rs6000_savres_routine_name,
+	rs6000_savres_routine_sym, rs6000_emit_stack_reset,
+	ptr_regno_for_savres, rs6000_emit_savres_rtx,
+	rs6000_emit_prologue_move_from_cr, split_stack_arg_pointer_used_p,
+	rs6000_global_entry_point_prologue_needed_p,
+	rs6000_get_separate_components, rs6000_components_for_bb,
+	rs6000_disqualify_components, rs6000_emit_prologue_components,
+	rs6000_emit_epilogue_components, rs6000_set_handled_components,
+	emit_vrsave_prologue, emit_split_stack_prologue, rs6000_emit_prologue,
+	rs6000_output_savres_externs, rs6000_output_function_prologue,
+	rs6000_keep_leaf_when_profiled, load_cr_save, restore_saved_cr,
+	load_lr_save, restore_saved_lr, add_crlr_cfa_restore,
+	offset_below_red_zone_p, emit_cfa_restores, rs6000_emit_epilogue,
+	rs6000_output_function_epilogue, gen_add3_const,
+	rs6000_expand_split_stack_prologue, rs6000_live_on_entry,
+	rs6000_split_stack_space_check, rs6000_save_toc_in_prologue_p): Moved
+	to here from rs6000.c.
+	* config/rs6000/rs6000.h (machine_function): Moved to here from rs6000.c.
+	* config/rs6000/rs6000-internal.h: (rs6000_stack_t, ALTIVEC_REG_BIT,
+	quad_address_offset_p) Moved to here from rs6000.c.
+	* config/rs6000/t-rs6000: Add new source file rs6000-logue.c.
+	* config/config.gcc: Add new source file rs6000-logue.c to garbage
+	collector.
+
+2019-06-25  Martin Liska  <mliska@suse.cz>
+
+	* hash-table.c (hashtab_chk_error): Move here from ...
+	* hash-table.h (hashtab_chk_error): ... here.
+
+2019-06-25  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/90978
+	* df-scan.c (df_update_entry_block_defs): Remove dead else
+	branch.
+	(df_update_exit_block_uses): Likewise.
+
+2019-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+            Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.gcc (thread_file): Set to gcn for AMD GCN.
+	* config/gcn/gcn.c (gcn_emutls_var_init): New function.
+	(TARGET_EMUTLS_VAR_INIT): New hook.
+
+2019-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/90939
+	* ipa-cp.c (ipcp_bits_lattice::meet_with): Remove assert.
+
+2019-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90930
+	* tree-ssa-reassoc.c (reassociate_bb): Only rewrite expression
+	into parallel form in the last pass instance.
+
+2019-06-25  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_symbol_binds_local_p): New function.
+	(arc_legitimize_pic_address): Simplify and cleanup the function.
+	(SYMBOLIC_CONST): Remove.
+	(prepare_pic_move): Likewise.
+	(prepare_move_operands): Handle complex mov cases here.
+	(arc_legitimize_address_0): Remove call to
+	arc_legitimize_pic_address.
+	(arc_legitimize_address): Remove call to
+	arc_legitimize_tls_address.
+	* config/arc/arc.md (movqi_insn): Allow Cm3 match.
+	(movhi_insn): Likewise.
+
+2019-06-25  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc/c-family/c-common.c (c_common_nodes_and_builtins): Define
+	alternate "__intN__" name for "__intN" types.
+	* gcc/c/c-parser.c (c_parse_init): Create keyword for "__intN__" type.
+	* gcc/cp/lex.c (init_reswords): Likewise.
+	* gcc/config/msp430/msp430.h: Use __int20__ for SIZE_TYPE and
+	PTRDIFF_TYPE.
+	* gcc/cp/cp-tree.h (cp_decl_specifier_seq): New bitfield "int_n_alt".
+	* gcc/c/c-decl.c (declspecs_add_type): Don't pedwarn about "__intN" ISO
+	C incompatibility if alternate "__intN__" form is used.
+	* gcc/cp/decl.c (grokdeclarator): Likewise.
+	* gcc/cp/parser.c (cp_parser_simple_type_specifier): Set
+	decl_specs->int_n_alt if "__intN__" form is used.
+	* gcc/gimple-ssa-sprintf.c (build_intmax_type_nodes): Accept "__intN__"
+	format of "__intN" types for UINTMAX_TYPE.
+	* gcc/brig/brig-lang.c (brig_build_c_type_nodes): Accept "__intN__"
+	format of "__intN" types for SIZE_TYPE.
+	* gcc/lto/lto-lang.c (lto_build_c_type_nodes): Likewise.
+	* gcc/stor-layout.c (initialize_sizetypes): Accept "__intN__"
+	format of "__intN" types for SIZETYPE.
+	* gcc/tree.c (build_common_tree_nodes): Accept "__intN__"
+	format of "__intN" types for SIZE_TYPE and PTRDIFF_TYPE.
+	* gcc/doc/invoke.texi: Document that __intN__ disables pedantic
+	warnings.
+
+2019-06-25  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Check that
+	base2_alias_set is non-zero before doing TBAA based disambiguation.
+
+2019-06-25  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/90973
+	* tree-vect-loop.c (vect_get_known_peeling_cost): Sum retval
+	of prologue and epilogue.
+
+2019-06-24  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-utils.h (type_with_linkage_p): Verify that type is
+	CXX_ODR_P.
+	(odr_type_p): Remove extra return.
+	* lto-streamer-out.c (hash_tree): Hash TYPE_CXX_ODR_P;
+	hash STRING_FLAG only for arrays and integers.
+	* tree-stremaer-in.c (unpack_ts_type_common_value_fields):
+	Update analogously.
+	* tree-streamer-out.c (pack_ts_type_common_value_fields):
+	Likewise.
+	* print-tree.c (print_node): Print cxx-odr-p
+	and string-flag.
+	* tree.c (need_assembler_name_p): Also check that type
+	is CXX_ODR_TYPE_P
+	(verify_type_variant): Update verification of SRING_FLAG;
+	also check CXX_ODR_P.
+	* tree.h (ARRAY_OR_INTEGER_TYPE_CHECK): New macro.
+	(TYPE_STRING_FLAG): Use it.
+	(TYPE_CXX_ODR_P): New macro.
+	* dwarf2out.c (gen_array_type_die): First check that type
+	is an array and then test string flag.
+
+2019-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90972
+	* tree-vect-stmts.c (vect_init_vector): Handle CONSTANT_CLASS_P
+	in common code, dealing with STRING_CST properly.
+
+2019-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90930
+	PR tree-optimization/90316
+	* tree-ssa-alias.c (walk_non_aliased_vuses): Add missing
+	decrement of limit.
+
+2019-06-24  Martin Sebor  <msebor@redhat.com>
+
+	* tree-pretty-print.h: Remove unnecessary punctuation characters
+	from a diagnostic.
+	* tree-ssa.c (release_defs_bitset): Correct preprocessor conditional.
+
+2019-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* ginclude/float.h (FLT_DECIMAL_DIG, DBL_DECIMAL_DIG, LDBL_DECIMAL_DIG)
+	(FLT_HAS_SUBNORM, DBL_HAS_SUBNORM, LDBL_HAS_SUBNORM, FLT_TRUE_MIN)
+	(DBL_TRUE_MIN, LDBL_TRUE_MIN): Also define for C++17.
+
+2019-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h: Handle GCC target pragma.
+
+2019-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h: (__PPC__, __PPC64__): New.
+
+2019-06-22  Jeff Law  <law@redhat.com>
+
+	* config/avr/avr.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Remove.
+
+2019-06-22  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-alias.c (nonoverlapping_component_refs_p): Do not
+	give up on bitfields; continue searching for different refs
+	appearing later.
+
 2019-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-data-refs.c (vect_find_stmt_data_reference): Handle

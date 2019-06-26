@@ -1456,7 +1456,7 @@ print_usage (int error_p)
   fnotice (file, "  -h, --help       Print this help, then exit\n");
   fnotice (file, "  -n, --noisy      Print progress messages\n");
   fnotice (file, "  -1, --one        One connection and then exit\n");
-  fnotice (file, "  -r, --root DIR   Root binary directory\n");
+  fnotice (file, "  -r, --root DIR   Root compiled module directory\n");
   fnotice (file, "  -s, --sequential Process connections sequentially\n");
   fnotice (file, "  -v, --version    Print version number, then exit\n");
   fnotice (file, "Send SIGTERM(%d) to terminate\n", SIGTERM);

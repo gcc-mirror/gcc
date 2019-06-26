@@ -66,15 +66,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   /// A filesystem path.
   class path
   {
-    template<typename _CharT, typename _Ch = remove_const_t<_CharT>>
-      using __is_encoded_char
-	= __or_<is_same<_Ch, char>,
+    template<typename _CharT>
+      using __is_encoded_char = __is_one_of<remove_const_t<_CharT>,
+	    char,
 #ifdef _GLIBCXX_USE_CHAR8_T
-		is_same<_Ch, char8_t>,
+	    char8_t,
 #endif
-		is_same<_Ch, wchar_t>,
-		is_same<_Ch, char16_t>,
-		is_same<_Ch, char32_t>>;
+#if _GLIBCXX_USE_WCHAR_T
+	    wchar_t,
+#endif
+	    char16_t, char32_t>;
 
     template<typename _Iter,
 	     typename _Iter_traits = std::iterator_traits<_Iter>>

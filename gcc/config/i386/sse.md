@@ -188,6 +188,9 @@
   ;; For AVX512BITALG support
   UNSPEC_VPSHUFBIT
 
+  ;; For VP2INTERSECT support
+  UNSPEC_VP2INTERSECT
+
   ;; For AVX512BF16 support
   UNSPEC_VCVTNE2PS2BF16
   UNSPEC_VCVTNEPS2BF16
@@ -13744,15 +13747,29 @@
   switch (<MODE>mode)
     {
     case E_V8DFmode:
-      return "vmovapd\t{%2, %x0|%x0, %2}";
+      if (misaligned_operand (operands[2], <ssequartermode>mode))
+	return "vmovupd\t{%2, %x0|%x0, %2}";
+      else
+	return "vmovapd\t{%2, %x0|%x0, %2}";
     case E_V16SFmode:
-      return "vmovaps\t{%2, %x0|%x0, %2}";
+      if (misaligned_operand (operands[2], <ssequartermode>mode))
+	return "vmovups\t{%2, %x0|%x0, %2}";
+      else
+	return "vmovaps\t{%2, %x0|%x0, %2}";
     case E_V8DImode:
-      return which_alternative == 2 ? "vmovdqa64\t{%2, %x0|%x0, %2}"
-				    : "vmovdqa\t{%2, %x0|%x0, %2}";
+      if (misaligned_operand (operands[2], <ssequartermode>mode))
+	return which_alternative == 2 ? "vmovdqu64\t{%2, %x0|%x0, %2}"
+				      : "vmovdqu\t{%2, %x0|%x0, %2}";
+      else
+	return which_alternative == 2 ? "vmovdqa64\t{%2, %x0|%x0, %2}"
+				      : "vmovdqa\t{%2, %x0|%x0, %2}";
     case E_V16SImode:
-      return which_alternative == 2 ? "vmovdqa32\t{%2, %x0|%x0, %2}"
-				    : "vmovdqa\t{%2, %x0|%x0, %2}";
+      if (misaligned_operand (operands[2], <ssequartermode>mode))
+	return which_alternative == 2 ? "vmovdqu32\t{%2, %x0|%x0, %2}"
+				      : "vmovdqu\t{%2, %x0|%x0, %2}";
+      else
+	return which_alternative == 2 ? "vmovdqa32\t{%2, %x0|%x0, %2}"
+				      : "vmovdqa\t{%2, %x0|%x0, %2}";
     default:
       gcc_unreachable ();
     }
@@ -22522,6 +22539,30 @@
   "vpshufbitqmb\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}"
   [(set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_mode_iterator VI48_AVX512VP2VL
+  [V8DI
+  (V4DI "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")
+  (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")])
+
+(define_insn "avx512vp2intersect_2intersect<mode>"
+  [(set (match_operand:P2QI 0 "register_operand" "=k")
+	(unspec:P2QI
+	  [(match_operand:VI48_AVX512VP2VL 1 "register_operand" "v")
+	   (match_operand:VI48_AVX512VP2VL 2 "vector_operand" "vm")]
+	  UNSPEC_VP2INTERSECT))]
+  "TARGET_AVX512VP2INTERSECT"
+  "vp2intersect<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr ("prefix") ("evex"))])
+
+(define_insn "avx512vp2intersect_2intersectv16si"
+  [(set (match_operand:P2HI 0 "register_operand" "=k")
+	(unspec:P2HI [(match_operand:V16SI 1 "register_operand" "v")
+		      (match_operand:V16SI 2 "vector_operand" "vm")]
+		UNSPEC_VP2INTERSECT))]
+  "TARGET_AVX512VP2INTERSECT"
+  "vp2intersectd\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr ("prefix") ("evex"))])
 
 (define_mode_iterator BF16 [V32HI (V16HI "TARGET_AVX512VL") (V8HI "TARGET_AVX512VL")])
 ;; Converting from BF to SF

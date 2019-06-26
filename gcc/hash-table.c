@@ -124,3 +124,15 @@ void dump_hash_table_loc_statistics (void)
       hash_table_usage ().dump (origin);
     }
 }
+
+/* Report a hash table checking error.  */
+
+ATTRIBUTE_NORETURN ATTRIBUTE_COLD
+void
+hashtab_chk_error ()
+{
+  fprintf (stderr, "hash table checking failed: "
+	   "equal operator returns true for a pair "
+	   "of values with a different hash value\n");
+  gcc_unreachable ();
+}

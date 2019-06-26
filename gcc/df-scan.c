@@ -3601,23 +3601,13 @@ df_update_entry_block_defs (void)
 
   auto_bitmap refs (&df_bitmap_obstack);
   df_get_entry_block_def_set (refs);
-  if (df->entry_block_defs)
+  gcc_assert (df->entry_block_defs);
+  if (!bitmap_equal_p (df->entry_block_defs, refs))
     {
-      if (!bitmap_equal_p (df->entry_block_defs, refs))
-	{
-	  struct df_scan_bb_info *bb_info = df_scan_get_bb_info (ENTRY_BLOCK);
-	  df_ref_chain_delete_du_chain (bb_info->artificial_defs);
-	  df_ref_chain_delete (bb_info->artificial_defs);
-	  bb_info->artificial_defs = NULL;
-	  changed = true;
-	}
-    }
-  else
-    {
-      struct df_scan_problem_data *problem_data
-	= (struct df_scan_problem_data *) df_scan->problem_data;
-	gcc_unreachable ();
-      df->entry_block_defs = BITMAP_ALLOC (&problem_data->reg_bitmaps);
+      struct df_scan_bb_info *bb_info = df_scan_get_bb_info (ENTRY_BLOCK);
+      df_ref_chain_delete_du_chain (bb_info->artificial_defs);
+      df_ref_chain_delete (bb_info->artificial_defs);
+      bb_info->artificial_defs = NULL;
       changed = true;
     }
 
@@ -3775,23 +3765,13 @@ df_update_exit_block_uses (void)
 
   auto_bitmap refs (&df_bitmap_obstack);
   df_get_exit_block_use_set (refs);
-  if (df->exit_block_uses)
+  gcc_assert (df->exit_block_uses);
+  if (!bitmap_equal_p (df->exit_block_uses, refs))
     {
-      if (!bitmap_equal_p (df->exit_block_uses, refs))
-	{
-	  struct df_scan_bb_info *bb_info = df_scan_get_bb_info (EXIT_BLOCK);
-	  df_ref_chain_delete_du_chain (bb_info->artificial_uses);
-	  df_ref_chain_delete (bb_info->artificial_uses);
-	  bb_info->artificial_uses = NULL;
-	  changed = true;
-	}
-    }
-  else
-    {
-      struct df_scan_problem_data *problem_data
-	= (struct df_scan_problem_data *) df_scan->problem_data;
-	gcc_unreachable ();
-      df->exit_block_uses = BITMAP_ALLOC (&problem_data->reg_bitmaps);
+      struct df_scan_bb_info *bb_info = df_scan_get_bb_info (EXIT_BLOCK);
+      df_ref_chain_delete_du_chain (bb_info->artificial_uses);
+      df_ref_chain_delete (bb_info->artificial_uses);
+      bb_info->artificial_uses = NULL;
       changed = true;
     }
 

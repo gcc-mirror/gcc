@@ -404,6 +404,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
 
   if (isa_flag2 & OPTION_MASK_ISA_WBNOINVD)
     def_or_undef (parse_in, "__WBNOINVD__");
+  if (isa_flag2 & OPTION_MASK_ISA_AVX512VP2INTERSECT)
+    def_or_undef (parse_in, "__AVX512VP2INTERSECT__");
   if (isa_flag & OPTION_MASK_ISA_MMX)
     def_or_undef (parse_in, "__MMX__");
   if (isa_flag & OPTION_MASK_ISA_3DNOW)

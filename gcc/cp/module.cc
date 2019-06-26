@@ -5786,7 +5786,7 @@ trees_out::core_vals (tree t)
 	(TREE_VISITED (((lang_tree_node *)t)->template_decl.result));
       break;
 
-    case TS_CP_DEFAULT_ARG:
+    case TS_CP_DEFERRED_PARSE:
       gcc_unreachable (); /* Should never see.  */
       break;
 
@@ -6235,7 +6235,7 @@ trees_in::core_vals (tree t)
       gcc_assert (((lang_tree_node *)t)->template_decl.result);
       break;
 
-    case TS_CP_DEFAULT_ARG:
+    case TS_CP_DEFERRED_PARSE:
       return false;
 
     case TS_CP_DEFERRED_NOEXCEPT:
@@ -11042,7 +11042,6 @@ module_mapper::module_mapper (location_t loc, const char *option)
   const char *dflt = "|cxx-mapper";
   pex = NULL;
 
-  
   /* We set name as soon as we know what kind of mapper this is.  */
   if (!option)
     option = dflt;

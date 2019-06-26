@@ -222,19 +222,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201703L
 
-  template<typename _Tp, typename _Up, bool = is_integral_v<_Tp>>
-    struct _If_is_unsigned_integer_type { };
-
-  template<typename _Up>
-    struct _If_is_unsigned_integer_type<bool, _Up, true> { };
-
-  template<typename _Tp, typename _Up>
-    struct _If_is_unsigned_integer_type<_Tp, _Up, true>
-    : enable_if<is_same_v<_Tp, make_unsigned_t<_Tp>>, _Up> { };
-
   template<typename _Tp, typename _Up = _Tp>
     using _If_is_unsigned_integer
-      = typename _If_is_unsigned_integer_type<remove_cv_t<_Tp>, _Up>::type;
+      = enable_if_t<__is_unsigned_integer<_Tp>::value, _Up>;
 
 #if ! __STRICT_ANSI__
   // [bitops.rot], rotating
@@ -298,54 +288,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr _If_is_unsigned_integer<_Tp>
     log2p1(_Tp __x) noexcept
     { return std::__log2p1(__x); }
-
-#if ! __STRICT_ANSI__
-  enum class byte : unsigned char;
-
-  constexpr byte
-  rotl(byte __x, unsigned int __s) noexcept
-  { return (byte)std::__rotl((unsigned char)__x, __s); }
-
-  constexpr byte
-  rotr(byte __x, unsigned int __s) noexcept
-  { return (byte)std::__rotr((unsigned char)__x, __s); }
-
-  constexpr int
-  countl_zero(byte __x) noexcept
-  { return std::__countl_zero((unsigned char)__x); }
-
-  constexpr int
-  countl_one(byte __x) noexcept
-  { return std::__countl_one((unsigned char)__x); }
-
-  constexpr int
-  countr_zero(byte __x) noexcept
-  { return std::__countr_zero((unsigned char)__x); }
-
-  constexpr int
-  countr_one(byte __x) noexcept
-  { return std::__countr_one((unsigned char)__x); }
-
-  constexpr int
-  popcount(byte __x) noexcept
-  { return std::__popcount((unsigned char)__x); }
-
-  constexpr bool
-  ispow2(byte __x) noexcept
-  { return std::__ispow2((unsigned char)__x); }
-
-  constexpr byte
-  ceil2(byte __x) noexcept
-  { return (byte)std::__ceil2((unsigned char)__x); }
-
-  constexpr byte
-  floor2(byte __x) noexcept
-  { return (byte)std::__floor2((unsigned char)__x); }
-
-  constexpr byte
-  log2p1(byte __x) noexcept
-  { return (byte)std::__log2p1((unsigned char)__x); }
-#endif
 
 #endif // C++2a
 

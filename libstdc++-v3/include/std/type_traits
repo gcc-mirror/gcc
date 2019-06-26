@@ -659,6 +659,51 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_member_pointer_helper<typename remove_cv<_Tp>::type>::type
     { };
 
+  template<typename, typename>
+    struct is_same;
+
+  template<typename _Tp, typename... _Types>
+    using __is_one_of = __or_<is_same<_Tp, _Types>...>;
+
+  // Check if a type is one of the signed integer types.
+  template<typename _Tp>
+    using __is_signed_integer = __is_one_of<typename remove_cv<_Tp>::type,
+	  signed char, signed short, signed int, signed long,
+	  signed long long
+#if defined(__GLIBCXX_TYPE_INT_N_0)
+	  , signed __GLIBCXX_TYPE_INT_N_0
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_1)
+	  , signed __GLIBCXX_TYPE_INT_N_1
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_2)
+	  , signed __GLIBCXX_TYPE_INT_N_2
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_3)
+	  , signed __GLIBCXX_TYPE_INT_N_3
+#endif
+	  >;
+
+  // Check if a type is one of the unsigned integer types.
+  template<typename _Tp>
+    using __is_unsigned_integer = __is_one_of<typename remove_cv<_Tp>::type,
+	  unsigned char, unsigned short, unsigned int, unsigned long,
+	  unsigned long long
+#if defined(__GLIBCXX_TYPE_INT_N_0)
+	  , unsigned __GLIBCXX_TYPE_INT_N_0
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_1)
+	  , unsigned __GLIBCXX_TYPE_INT_N_1
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_2)
+	  , unsigned __GLIBCXX_TYPE_INT_N_2
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_3)
+	  , unsigned __GLIBCXX_TYPE_INT_N_3
+#endif
+	  >;
+
+
   // Utility to detect referenceable types ([defns.referenceable]).
 
   template<typename _Tp>

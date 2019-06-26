@@ -1860,6 +1860,39 @@ locate_field_accessor (tree basetype_path, tree field_decl, bool const_p)
 				   NULL, &lfd);
 }
 
+/* Check throw specifier of OVERRIDER is at least as strict as
+   the one of BASEFN.  */
+
+bool
+maybe_check_overriding_exception_spec (tree overrider, tree basefn)
+{
+  maybe_instantiate_noexcept (basefn);
+  maybe_instantiate_noexcept (overrider);
+  tree base_throw = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (basefn));
+  tree over_throw = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (overrider));
+
+  if (DECL_INVALID_OVERRIDER_P (overrider))
+    return true;
+
+  /* Can't check this yet.  Pretend this is fine and let
+     noexcept_override_late_checks check this later.  */
+  if (UNPARSED_NOEXCEPT_SPEC_P (base_throw)
+      || UNPARSED_NOEXCEPT_SPEC_P (over_throw))
+    return true;
+
+  if (!comp_except_specs (base_throw, over_throw, ce_derived))
+    {
+      auto_diagnostic_group d;
+      error ("looser exception specification on overriding virtual function "
+	     "%q+#F", overrider);
+      inform (DECL_SOURCE_LOCATION (basefn),
+	      "overridden function is %q#F", basefn);
+      DECL_INVALID_OVERRIDER_P (overrider) = 1;
+      return false;
+    }
+  return true;
+}
+
 /* Check that virtual overrider OVERRIDER is acceptable for base function
    BASEFN. Issue diagnostic, and return zero, if unacceptable.  */
 
@@ -1870,7 +1903,6 @@ check_final_overrider (tree overrider, tree basefn)
   tree base_type = TREE_TYPE (basefn);
   tree over_return = fndecl_declared_return_type (overrider);
   tree base_return = fndecl_declared_return_type (basefn);
-  tree over_throw, base_throw;
 
   int fail = 0;
 
@@ -1954,21 +1986,8 @@ check_final_overrider (tree overrider, tree basefn)
       return 0;
     }
 
-  /* Check throw specifier is at least as strict.  */
-  maybe_instantiate_noexcept (basefn);
-  maybe_instantiate_noexcept (overrider);
-  base_throw = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (basefn));
-  over_throw = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (overrider));
-
-  if (!comp_except_specs (base_throw, over_throw, ce_derived))
-    {
-      auto_diagnostic_group d;
-      error ("looser throw specifier for %q+#F", overrider);
-      inform (DECL_SOURCE_LOCATION (basefn),
-	      "overridden function is %q#F", basefn);
-      DECL_INVALID_OVERRIDER_P (overrider) = 1;
-      return 0;
-    }
+  if (!maybe_check_overriding_exception_spec (overrider, basefn))
+    return 0;
 
   /* Check for conflicting type attributes.  But leave transaction_safe for
      set_one_vmethod_tm_attributes.  */

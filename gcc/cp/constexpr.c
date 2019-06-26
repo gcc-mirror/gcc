@@ -2615,7 +2615,8 @@ cxx_eval_array_reference (const constexpr_ctx *ctx, tree t,
 					   non_constant_p, overflow_p);
   if (*non_constant_p)
     return t;
-  if (TREE_CODE (ary) == VIEW_CONVERT_EXPR
+  if (!lval
+      && TREE_CODE (ary) == VIEW_CONVERT_EXPR
       && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (ary, 0)))
       && TREE_TYPE (t) == TREE_TYPE (TREE_TYPE (TREE_OPERAND (ary, 0))))
     ary = TREE_OPERAND (ary, 0);

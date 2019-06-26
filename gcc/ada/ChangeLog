@@ -1,14 +1,31 @@
+2019-06-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Remove superfluous test
+	in previous change.
+	* gcc-interface/gigi.h (maybe_character_type): Fix formatting.
+	(maybe_character_value): Likewise.
+
+2019-06-24  Jan Hubicka  <jh@suse.cz>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Check that
+	type is array or integer prior checking string flag.
+	* gcc-interface/gigi.h (maybe_character_type): Likewise.
+	(maybe_character_value): Likewise.
+
+2019-06-24  Martin Sebor  <msebor@redhat.com>
+
+	* gcc-interface/utils.c (handle_nonnull_attribute): Quote attribute
+	name.
+
 2019-06-18  Arnaud Charlet  <charlet@adacore.com>
 
-PR ada/80590
-
+	PR ada/80590
 	* sem_ch5.adb (Analyze_Loop_Statement): Avoid exception propagation
 	during normal processing.
 
 2019-06-17  Arnaud Charlet  <charlet@adacore.com>
 
-PR ada/80590
-
+	PR ada/80590
 	* exp_ch9.adb (Expand_N_Delay_Relative_Statement): Swap the two
 	conditions to avoid a unnecessary exception propagation in the default
 	case.

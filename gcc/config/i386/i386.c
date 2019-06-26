@@ -18674,9 +18674,21 @@ ix86_hard_regno_nregs (unsigned int regno, machine_mode mode)
     }
   if (COMPLEX_MODE_P (mode))
     return 2;
+  /* Register pair for mask registers.  */
+  if (mode == P2QImode || mode == P2HImode)
+    return 2;
   if (mode == V64SFmode || mode == V64SImode)
     return 4;
   return 1;
+}
+
+/* Implement REGMODE_NATURAL_SIZE(MODE).  */
+unsigned int
+ix86_regmode_natural_size (machine_mode mode)
+{
+  if (mode == P2HImode || mode == P2QImode)
+    return GET_MODE_SIZE (mode) / 2;
+  return UNITS_PER_WORD;
 }
 
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */
@@ -18688,15 +18700,24 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   if (CC_REGNO_P (regno))
     return GET_MODE_CLASS (mode) == MODE_CC;
   if (GET_MODE_CLASS (mode) == MODE_CC
-      || GET_MODE_CLASS (mode) == MODE_RANDOM
-      || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
+      || GET_MODE_CLASS (mode) == MODE_RANDOM)
     return false;
   if (STACK_REGNO_P (regno))
     return VALID_FP_MODE_P (mode);
   if (MASK_REGNO_P (regno))
-    return (VALID_MASK_REG_MODE (mode)
-	    || (TARGET_AVX512BW
-		&& VALID_MASK_AVX512BW_MODE (mode)));
+    {
+      /* Register pair only starts at even register number.  */
+      if ((mode == P2QImode || mode == P2HImode))
+	return MASK_PAIR_REGNO_P(regno);
+
+      return (VALID_MASK_REG_MODE (mode)
+	      || (TARGET_AVX512BW
+		  && VALID_MASK_AVX512BW_MODE (mode)));
+    }
+
+  if (GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
+    return false;
+
   if (SSE_REGNO_P (regno))
     {
       /* We implement the move patterns for all vector modes into and
@@ -21380,6 +21401,11 @@ ix86_autovectorize_vector_sizes (vector_sizes *sizes, bool all)
       sizes->safe_push (16);
       sizes->safe_push (32);
     }
+  else if (TARGET_MMX_WITH_SSE)
+    sizes->safe_push (16);
+
+  if (TARGET_MMX_WITH_SSE)
+    sizes->safe_push (8);
 }
 
 /* Implemenation of targetm.vectorize.get_mask_mode.  */

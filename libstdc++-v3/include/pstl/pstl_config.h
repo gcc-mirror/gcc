@@ -70,7 +70,7 @@
 #    define _PSTL_PRAGMA_FORCEINLINE
 #endif
 
-#if (__INTEL_COMPILER >= 1900)
+#if (__INTEL_COMPILER >= 1900) || (_PSTL_GCC_VERSION >= 100000)
 #    define _PSTL_PRAGMA_SIMD_SCAN(PRM) _PSTL_PRAGMA(omp simd reduction(inscan, PRM))
 #    define _PSTL_PRAGMA_SIMD_INCLUSIVE_SCAN(PRM) _PSTL_PRAGMA(omp scan inclusive(PRM))
 #    define _PSTL_PRAGMA_SIMD_EXCLUSIVE_SCAN(PRM) _PSTL_PRAGMA(omp scan exclusive(PRM))
@@ -100,7 +100,11 @@
 #    define _PSTL_UDR_PRESENT 0
 #endif
 
-#define _PSTL_UDS_PRESENT (__INTEL_COMPILER >= 1900 && __INTEL_COMPILER_BUILD_DATE >= 20180626)
+#if ((__INTEL_COMPILER >= 1900 && __INTEL_COMPILER_BUILD_DATE >= 20180626) || _PSTL_GCC_VERSION >= 100000)
+#    define _PSTL_UDS_PRESENT 1
+#else
+#    define _PSTL_UDS_PRESENT 0
+#endif
 
 #if _PSTL_EARLYEXIT_PRESENT
 #    define _PSTL_PRAGMA_SIMD_EARLYEXIT _PSTL_PRAGMA(omp simd early_exit)

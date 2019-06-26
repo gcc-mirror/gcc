@@ -199,6 +199,7 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mrdpid",	OPTION_MASK_ISA_RDPID },
     { "-mpconfig",	OPTION_MASK_ISA_PCONFIG },
     { "-mwbnoinvd",     OPTION_MASK_ISA_WBNOINVD },
+    { "-mavx512vp2intersect", OPTION_MASK_ISA_AVX512VP2INTERSECT },
     { "-msgx",		OPTION_MASK_ISA_SGX },
     { "-mavx5124vnniw", OPTION_MASK_ISA_AVX5124VNNIW },
     { "-mavx5124fmaps", OPTION_MASK_ISA_AVX5124FMAPS },
@@ -852,6 +853,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("avx512vbmi2", OPT_mavx512vbmi2),
     IX86_ATTR_ISA ("avx512vnni", OPT_mavx512vnni),
     IX86_ATTR_ISA ("avx512bitalg", OPT_mavx512bitalg),
+    IX86_ATTR_ISA ("avx512vp2intersect", OPT_mavx512vp2intersect),
 
     IX86_ATTR_ISA ("avx512vbmi", OPT_mavx512vbmi),
     IX86_ATTR_ISA ("avx512ifma", OPT_mavx512ifma),
@@ -2027,6 +2029,10 @@ ix86_option_override_internal (bool main_args_p,
 	    & OPTION_MASK_ISA_AVX512BITALG))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512BITALG;
 
+	if (((processor_alias_table[i].flags & PTA_AVX512VP2INTERSECT) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit
+		 & OPTION_MASK_ISA_AVX512VP2INTERSECT))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_AVX512VP2INTERSECT;
 	if (((processor_alias_table[i].flags & PTA_AVX5124VNNIW) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit
 		 & OPTION_MASK_ISA_AVX5124VNNIW))

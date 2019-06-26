@@ -1350,19 +1350,16 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
 		 same.  */
 	      if (DECL_BIT_FIELD_REPRESENTATIVE (fieldx) == fieldy
 		  || DECL_BIT_FIELD_REPRESENTATIVE (fieldy) == fieldx)
-		{
-		   ++alias_stats.nonoverlapping_component_refs_p_may_alias;
-		   return false;
-		}
+		;
 	      /* Different fields of the same record type cannot overlap.
 		 ??? Bitfields can overlap at RTL level so punt on them.  */
-	      if (DECL_BIT_FIELD (fieldx) && DECL_BIT_FIELD (fieldy))
+	      else if (DECL_BIT_FIELD (fieldx) && DECL_BIT_FIELD (fieldy))
+		;
+	      else
 		{
-		   ++alias_stats.nonoverlapping_component_refs_p_may_alias;
-		   return false;
+		  ++alias_stats.nonoverlapping_component_refs_p_no_alias;
+		  return true;
 		}
-	      ++alias_stats.nonoverlapping_component_refs_p_no_alias;
-	      return true;
 	    }
 	}
       if (TYPE_UID (typex) < TYPE_UID (typey))
@@ -1461,10 +1458,8 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   if (!flag_strict_aliasing || !tbaa_p)
     return true;
 
-  ptrtype1 = TREE_TYPE (TREE_OPERAND (base1, 1));
-
   /* If the alias set for a pointer access is zero all bets are off.  */
-  if (base1_alias_set == 0)
+  if (base1_alias_set == 0 || base2_alias_set == 0)
     return true;
 
   /* When we are trying to disambiguate an access with a pointer dereference
@@ -1482,6 +1477,9 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   if (base1_alias_set != base2_alias_set
       && !alias_sets_conflict_p (base1_alias_set, base2_alias_set))
     return false;
+
+  ptrtype1 = TREE_TYPE (TREE_OPERAND (base1, 1));
+
   /* If the size of the access relevant for TBAA through the pointer
      is bigger than the size of the decl we can't possibly access the
      decl via that pointer.  */
@@ -3138,6 +3136,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
 	      res = NULL;
 	      break;
 	    }
+	  --limit;
 	  if (stmt_may_clobber_ref_p_1 (def_stmt, ref))
 	    {
 	      if (!translate)

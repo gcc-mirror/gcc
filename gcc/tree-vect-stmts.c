@@ -1481,20 +1481,19 @@ vect_init_vector (stmt_vec_info stmt_info, tree val, tree type,
 		  val = new_temp;
 		}
 	    }
-	  else if (CONSTANT_CLASS_P (val))
-	    val = fold_convert (TREE_TYPE (type), val);
 	  else
 	    {
-	      new_temp = make_ssa_name (TREE_TYPE (type));
+	      gimple_seq stmts = NULL;
 	      if (! INTEGRAL_TYPE_P (TREE_TYPE (val)))
-		init_stmt = gimple_build_assign (new_temp,
-						 fold_build1 (VIEW_CONVERT_EXPR,
-							      TREE_TYPE (type),
-							      val));
+		val = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+				    TREE_TYPE (type), val);
 	      else
-		init_stmt = gimple_build_assign (new_temp, NOP_EXPR, val);
-	      vect_init_vector_1 (stmt_info, init_stmt, gsi);
-	      val = new_temp;
+		/* ???  Condition vectorization expects us to do
+		   promotion of invariant/external defs.  */
+		val = gimple_convert (&stmts, TREE_TYPE (type), val);
+	      for (gimple_stmt_iterator gsi2 = gsi_start (stmts);
+		   !gsi_end_p (gsi2); gsi_next (&gsi2))
+		vect_init_vector_1 (stmt_info, gsi_stmt (gsi2), gsi);
 	    }
 	}
       val = build_vector_from_val (type, val);

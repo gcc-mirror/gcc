@@ -7674,7 +7674,7 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum,
 
   /* If the ARG is an unparsed default argument expression, the
      conversion cannot be performed.  */
-  if (TREE_CODE (arg) == DEFAULT_ARG)
+  if (TREE_CODE (arg) == DEFERRED_PARSE)
     {
       if (complain & tf_error)
 	error ("call to %qD uses the default argument for parameter %P, which "

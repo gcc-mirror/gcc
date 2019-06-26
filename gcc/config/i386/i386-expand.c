@@ -11339,6 +11339,79 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       emit_move_insn (target, op0);
       return target;
 
+    case IX86_BUILTIN_2INTERSECTD512:
+    case IX86_BUILTIN_2INTERSECTQ512:
+    case IX86_BUILTIN_2INTERSECTD256:
+    case IX86_BUILTIN_2INTERSECTQ256:
+    case IX86_BUILTIN_2INTERSECTD128:
+    case IX86_BUILTIN_2INTERSECTQ128:
+      arg0 = CALL_EXPR_ARG (exp, 0);
+      arg1 = CALL_EXPR_ARG (exp, 1);
+      arg2 = CALL_EXPR_ARG (exp, 2);
+      arg3 = CALL_EXPR_ARG (exp, 3);
+      op0 = expand_normal (arg0);
+      op1 = expand_normal (arg1);
+      op2 = expand_normal (arg2);
+      op3 = expand_normal (arg3);
+
+      if (!address_operand (op0, VOIDmode))
+	{
+	  op0 = convert_memory_address (Pmode, op0);
+	  op0 = copy_addr_to_reg (op0);
+	}
+      if (!address_operand (op1, VOIDmode))
+	{
+	  op1 = convert_memory_address (Pmode, op1);
+	  op1 = copy_addr_to_reg (op1);
+	}
+
+      switch (fcode)
+	{
+	case IX86_BUILTIN_2INTERSECTD512:
+	  mode4 = P2HImode;
+	  icode = CODE_FOR_avx512vp2intersect_2intersectv16si;
+	  break;
+	case IX86_BUILTIN_2INTERSECTQ512:
+	  mode4 = P2QImode;
+	  icode = CODE_FOR_avx512vp2intersect_2intersectv8di;
+	  break;
+	case IX86_BUILTIN_2INTERSECTD256:
+	  mode4 = P2QImode;
+	  icode = CODE_FOR_avx512vp2intersect_2intersectv8si;
+	  break;
+	case IX86_BUILTIN_2INTERSECTQ256:
+	  mode4 = P2QImode;
+	  icode = CODE_FOR_avx512vp2intersect_2intersectv4di;
+	  break;
+	case IX86_BUILTIN_2INTERSECTD128:
+	  mode4 = P2QImode;
+	  icode = CODE_FOR_avx512vp2intersect_2intersectv4si;
+	  break;
+	case IX86_BUILTIN_2INTERSECTQ128:
+	  mode4 = P2QImode;
+	  icode = CODE_FOR_avx512vp2intersect_2intersectv2di;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      mode2 = insn_data[icode].operand[1].mode;
+      mode3 = insn_data[icode].operand[2].mode;
+      if (!insn_data[icode].operand[1].predicate (op2, mode2))
+	op2 = copy_to_mode_reg (mode2, op2);
+      if (!insn_data[icode].operand[2].predicate (op3, mode3))
+	op3 = copy_to_mode_reg (mode3, op3);
+
+      op4 = gen_reg_rtx (mode4);
+      emit_insn (GEN_FCN (icode) (op4, op2, op3));
+      mode0 = mode4 == P2HImode ? HImode : QImode;
+      emit_move_insn (gen_rtx_MEM (mode0, op0),
+		      gen_lowpart (mode0, op4));
+      emit_move_insn (gen_rtx_MEM (mode0, op1),
+		      gen_highpart (mode0, op4));
+
+      return 0;
+
     case IX86_BUILTIN_RDPMC:
     case IX86_BUILTIN_RDTSC:
     case IX86_BUILTIN_RDTSCP:

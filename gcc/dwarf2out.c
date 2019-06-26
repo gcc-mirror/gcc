@@ -21850,8 +21850,8 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 
   /* Emit DW_TAG_string_type for Fortran character types (with kind 1 only, as
      DW_TAG_string_type doesn't have DW_AT_type attribute).  */
-  if (TYPE_STRING_FLAG (type)
-      && TREE_CODE (type) == ARRAY_TYPE
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && TYPE_STRING_FLAG (type)
       && is_fortran ()
       && TYPE_MODE (TREE_TYPE (type)) == TYPE_MODE (char_type_node))
     {

@@ -1,3 +1,8 @@
+2019-06-24  Jan Hubicka  <jh@suse.cz>
+
+	* lto-common.c (compare_tree_sccs_1): Compare CXX_ODR_P;
+	compare STRING_FLAG only for arrays and integers.
+
 2019-06-05  Martin Sebor  <msebor@redhat.com>
 
 	* lto-common.c (lto_file_finalize): Adjust quoting and hyphenation.

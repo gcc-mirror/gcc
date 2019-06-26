@@ -1,3 +1,7 @@
+2019-06-24  Martin Sebor  <msebor@redhat.com>
+
+	* c-typeck.c (build_binary_op): Hyphenate floating-point.
+
 2019-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_pragma): Reject PRAGMA_OMP_SCAN.

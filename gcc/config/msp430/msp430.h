@@ -185,9 +185,11 @@ extern const char * msp430_select_hwmult_lib (int, const char **);
 /* Layout of Source Language Data Types */
 
 #undef  SIZE_TYPE
-#define SIZE_TYPE			(TARGET_LARGE ? "__int20 unsigned" : "unsigned int")
+#define SIZE_TYPE			(TARGET_LARGE \
+					 ? "__int20__ unsigned" \
+					 : "unsigned int")
 #undef  PTRDIFF_TYPE
-#define PTRDIFF_TYPE			(TARGET_LARGE ? "__int20" : "int")
+#define PTRDIFF_TYPE			(TARGET_LARGE ? "__int20__" : "int")
 #undef  WCHAR_TYPE
 #define WCHAR_TYPE			"long int"
 #undef  WCHAR_TYPE_SIZE

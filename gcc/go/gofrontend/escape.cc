@@ -964,9 +964,9 @@ Gogo::analyze_escape()
                 {
                   done = false;
                   if (this->debug_escape_level() > 2)
-                    go_inform((*n)->location(), "Reflooding %s %s",
-                              debug_function_name((*n)->state(context, NULL)->fn).c_str(),
-                              (*n)->ast_format(this).c_str());
+                    go_debug((*n)->location(), "Reflooding %s %s",
+			     debug_function_name((*n)->state(context, NULL)->fn).c_str(),
+			     (*n)->ast_format(this).c_str());
                   escapes[*n] = (*n)->encoding();
                   this->propagate_escape(context, *n);
                 }
@@ -990,9 +990,9 @@ Gogo::analyze_escape()
 	    {
 	      Node::Escape_state* state = (*n)->state(context, NULL);
 	      if ((*n)->encoding() == Node::ESCAPE_NONE)
-		go_inform((*n)->location(), "%s %s does not escape",
-			  strip_packed_prefix(this, debug_function_name(state->fn)).c_str(),
-			  (*n)->ast_format(this).c_str());
+		go_debug((*n)->location(), "%s %s does not escape",
+			 strip_packed_prefix(this, debug_function_name(state->fn)).c_str(),
+			 (*n)->ast_format(this).c_str());
 	    }
 	}
       delete context;
@@ -1333,9 +1333,9 @@ Escape_analysis_assign::statement(Block*, size_t*, Statement* s)
     {
       Node* n = Node::make_node(s);
       std::string fn_name = this->context_->current_function_name();
-      go_inform(s->location(), "[%d] %s esc: %s",
-	        this->context_->loop_depth(), fn_name.c_str(),
-	        n->ast_format(gogo).c_str());
+      go_debug(s->location(), "[%d] %s esc: %s",
+	       this->context_->loop_depth(), fn_name.c_str(),
+	       n->ast_format(gogo).c_str());
     }
 
   switch (s->classification())
@@ -1495,9 +1495,9 @@ move_to_heap(Gogo* gogo, Expression *expr)
     {
       Node* n = Node::make_node(expr);
       if (gogo->debug_escape_level() != 0)
-        go_inform(n->definition_location(),
-                  "moved to heap: %s",
-                  n->ast_format(gogo).c_str());
+        go_debug(n->definition_location(),
+		 "moved to heap: %s",
+		 n->ast_format(gogo).c_str());
       if (gogo->compiling_runtime() && gogo->package_name() == "runtime")
         go_error_at(expr->location(),
                     "%s escapes to heap, not allowed in runtime",
@@ -1519,8 +1519,8 @@ Escape_analysis_assign::expression(Expression** pexpr)
       && n->is_big(this->context_))
     {
       if (debug_level > 1)
-	go_inform((*pexpr)->location(), "%s too large for stack",
-                  n->ast_format(gogo).c_str());
+	go_debug((*pexpr)->location(), "%s too large for stack",
+		 n->ast_format(gogo).c_str());
       move_to_heap(gogo, *pexpr);
       n->set_encoding(Node::ESCAPE_HEAP);
       (*pexpr)->address_taken(true);
@@ -1534,9 +1534,9 @@ Escape_analysis_assign::expression(Expression** pexpr)
     {
       Node* n = Node::make_node(*pexpr);
       std::string fn_name = this->context_->current_function_name();
-      go_inform((*pexpr)->location(), "[%d] %s esc: %s",
-		this->context_->loop_depth(), fn_name.c_str(),
-		n->ast_format(gogo).c_str());
+      go_debug((*pexpr)->location(), "[%d] %s esc: %s",
+	       this->context_->loop_depth(), fn_name.c_str(),
+	       n->ast_format(gogo).c_str());
     }
 
   switch ((*pexpr)->classification())
@@ -1566,8 +1566,8 @@ Escape_analysis_assign::expression(Expression** pexpr)
                       Node* appended = Node::make_node(call->args()->back());
                       this->assign_deref(this->context_->sink(), appended);
                       if (debug_level > 2)
-                        go_inform((*pexpr)->location(),
-                                  "special treatment of append(slice1, slice2...)");
+                        go_debug((*pexpr)->location(),
+				 "special treatment of append(slice1, slice2...)");
                     }
                   else
                     {
@@ -1960,9 +1960,9 @@ Escape_analysis_assign::call(Call_expression* call)
            ++p)
 	{
 	  if (debug_level > 2)
-	    go_inform(call->location(),
-		      "esccall:: indirect call <- %s, untracked",
-		      (*p)->ast_format(gogo).c_str());
+	    go_debug(call->location(),
+		     "esccall:: indirect call <- %s, untracked",
+		     (*p)->ast_format(gogo).c_str());
 	  this->assign(this->context_->sink(), *p);
 	}
 
@@ -1987,8 +1987,8 @@ Escape_analysis_assign::call(Call_expression* call)
       && !fntype->is_tagged())
     {
       if (debug_level > 2)
-	go_inform(call->location(), "esccall:: %s in recursive group",
-		  call_node->ast_format(gogo).c_str());
+	go_debug(call->location(), "esccall:: %s in recursive group",
+		 call_node->ast_format(gogo).c_str());
 
       Function* f = fn->named_object()->func_value();
       const Bindings* callee_bindings = f->block()->bindings();
@@ -2059,8 +2059,8 @@ Escape_analysis_assign::call(Call_expression* call)
 	  for (; p != arg_nodes.end(); ++p)
 	    {
 	      if (debug_level > 2)
-		go_inform(call->location(), "esccall:: ... <- %s, untracked",
-			  (*p)->ast_format(gogo).c_str());
+		go_debug(call->location(), "esccall:: ... <- %s, untracked",
+			 (*p)->ast_format(gogo).c_str());
 	      this->assign(this->context_->sink(), *p);
 	    }
 	}
@@ -2069,8 +2069,8 @@ Escape_analysis_assign::call(Call_expression* call)
     }
 
   if (debug_level > 2)
-    go_inform(call->location(), "esccall:: %s not recursive",
-	      call_node->ast_format(gogo).c_str());
+    go_debug(call->location(), "esccall:: %s not recursive",
+	     call_node->ast_format(gogo).c_str());
 
   Node::Escape_state* call_state = call_node->state(this->context_, NULL);
   if (!call_state->retvals.empty())
@@ -2146,8 +2146,8 @@ Escape_analysis_assign::call(Call_expression* call)
       for (; p != arg_nodes.end(); ++p)
 	{
 	  if (debug_level > 2)
-	    go_inform(call->location(), "esccall:: ... <- %s, untracked",
-                      (*p)->ast_format(gogo).c_str());
+	    go_debug(call->location(), "esccall:: ... <- %s, untracked",
+		     (*p)->ast_format(gogo).c_str());
 	  this->assign(this->context_->sink(), *p);
 	}
     }
@@ -2165,13 +2165,13 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
   Gogo* gogo = this->context_->gogo();
   int debug_level = gogo->debug_escape_level();
   if (debug_level > 1)
-    go_inform(dst->location(), "[%d] %s escassign: %s(%s)[%s] = %s(%s)[%s]",
-	      this->context_->loop_depth(),
-	      strip_packed_prefix(gogo, this->context_->current_function_name()).c_str(),
-	      dst->ast_format(gogo).c_str(), dst->details().c_str(),
-	      dst->op_format().c_str(),
-	      src->ast_format(gogo).c_str(), src->details().c_str(),
-	      src->op_format().c_str());
+    go_debug(dst->location(), "[%d] %s escassign: %s(%s)[%s] = %s(%s)[%s]",
+	     this->context_->loop_depth(),
+	     strip_packed_prefix(gogo, this->context_->current_function_name()).c_str(),
+	     dst->ast_format(gogo).c_str(), dst->details().c_str(),
+	     dst->op_format().c_str(),
+	     src->ast_format(gogo).c_str(), src->details().c_str(),
+	     src->op_format().c_str());
 
   if (dst->is_indirect())
     // Lose track of the dereference.
@@ -2637,9 +2637,9 @@ Escape_analysis_assign::assign_from_note(std::string* note,
     }
 
   if (this->context_->gogo()->debug_escape_level() > 2)
-    go_inform(src->location(), "assignfromtag:: src=%s em=%s",
-              src->ast_format(context_->gogo()).c_str(),
-	      Escape_note::make_tag(enc).c_str());
+    go_debug(src->location(), "assignfromtag:: src=%s em=%s",
+	     src->ast_format(context_->gogo()).c_str(),
+	     Escape_note::make_tag(enc).c_str());
 
   if (enc == Node::ESCAPE_UNKNOWN)
     {
@@ -2707,8 +2707,8 @@ Escape_analysis_assign::flows(Node* dst, Node* src)
 
   Gogo* gogo = this->context_->gogo();
   if (gogo->debug_escape_level() > 2)
-    go_inform(Linemap::unknown_location(), "flows:: %s <- %s",
-              dst->ast_format(gogo).c_str(), src->ast_format(gogo).c_str());
+    go_debug(Linemap::unknown_location(), "flows:: %s <- %s",
+	     dst->ast_format(gogo).c_str(), src->ast_format(gogo).c_str());
 
   if (dst_state->flows.empty())
     this->context_->add_dst(dst);
@@ -2864,18 +2864,18 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
   Gogo* gogo = this->context_->gogo();
   int debug_level = gogo->debug_escape_level();
   if (debug_level > 1)
-    go_inform(Linemap::unknown_location(),
-	      "escwalk: level:{%d %d} depth:%d "
-	      "op=%s %s(%s) "
-	      "scope:%s[%d] "
-	      "extraloopdepth=%d",
-	      level.value(), level.suffix_value(), this->context_->pdepth(),
-	      src->op_format().c_str(),
-	      src->ast_format(gogo).c_str(),
-	      src->details().c_str(),
-	      debug_function_name(src_state->fn).c_str(),
-	      src_state->loop_depth,
-	      extra_loop_depth);
+    go_debug(Linemap::unknown_location(),
+	     "escwalk: level:{%d %d} depth:%d "
+	     "op=%s %s(%s) "
+	     "scope:%s[%d] "
+	     "extraloopdepth=%d",
+	     level.value(), level.suffix_value(), this->context_->pdepth(),
+	     src->op_format().c_str(),
+	     src->ast_format(gogo).c_str(),
+	     src->details().c_str(),
+	     debug_function_name(src_state->fn).c_str(),
+	     src_state->loop_depth,
+	     extra_loop_depth);
 
   this->context_->increase_pdepth();
 
@@ -2911,17 +2911,17 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
       if (debug_level != 0)
 	{
 	  if (debug_level == 1)
-	    go_inform(src->definition_location(),
-		      "leaking param: %s to result %s level=%d",
-		      src->ast_format(gogo).c_str(),
-		      dst->ast_format(gogo).c_str(),
-		      level.value());
+	    go_debug(src->definition_location(),
+		     "leaking param: %s to result %s level=%d",
+		     src->ast_format(gogo).c_str(),
+		     dst->ast_format(gogo).c_str(),
+		     level.value());
 	  else
-	    go_inform(src->definition_location(),
-		      "leaking param: %s to result %s level={%d %d}",
-		      src->ast_format(gogo).c_str(),
-		      dst->ast_format(gogo).c_str(),
-		      level.value(), level.suffix_value());
+	    go_debug(src->definition_location(),
+		     "leaking param: %s to result %s level={%d %d}",
+		     src->ast_format(gogo).c_str(),
+		     dst->ast_format(gogo).c_str(),
+		     level.value(), level.suffix_value());
 	}
 
       if ((src->encoding() & ESCAPE_MASK) != Node::ESCAPE_RETURN)
@@ -2959,8 +2959,8 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
 			   Node::ESCAPE_NONE);
       src->set_encoding(enc);
       if (debug_level != 0)
-	go_inform(src->definition_location(), "mark escaped content: %s",
-		  src->ast_format(gogo).c_str());
+	go_debug(src->definition_location(), "mark escaped content: %s",
+		 src->ast_format(gogo).c_str());
     }
 
   // A src object leaks if its value or address is assigned to a dst object
@@ -2984,14 +2984,14 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
 			       Node::ESCAPE_NONE);
 	  src->set_encoding(enc);
 	  if (debug_level != 0 && osrcesc != src->encoding())
-	    go_inform(src->definition_location(), "leaking param content: %s",
-		      src->ast_format(gogo).c_str());
+	    go_debug(src->definition_location(), "leaking param content: %s",
+		     src->ast_format(gogo).c_str());
 	}
       else
 	{
 	  if (debug_level != 0)
-	    go_inform(src->definition_location(), "leaking param: %s",
-                      src->ast_format(gogo).c_str());
+	    go_debug(src->definition_location(), "leaking param: %s",
+		     src->ast_format(gogo).c_str());
 	  src->set_encoding(Node::ESCAPE_HEAP);
 	}
     }
@@ -3001,8 +3001,8 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
       if (e->enclosed_var_expression() != NULL)
 	{
 	  if (src_leaks && debug_level != 0)
-	    go_inform(src->location(), "leaking closure reference %s",
-		      src->ast_format(gogo).c_str());
+	    go_debug(src->location(), "leaking closure reference %s",
+		     src->ast_format(gogo).c_str());
 
 	  Node* enclosed_node =
 	    Node::make_node(e->enclosed_var_expression()->variable());
@@ -3030,15 +3030,15 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
                 {
                   move_to_heap(gogo, underlying);
                   if (debug_level > 1)
-                    go_inform(src->location(),
-                              "%s escapes to heap, level={%d %d}, "
-                              "dst.eld=%d, src.eld=%d",
-                              src->ast_format(gogo).c_str(), level.value(),
-                              level.suffix_value(), dst_state->loop_depth,
-                              mod_loop_depth);
+                    go_debug(src->location(),
+			     "%s escapes to heap, level={%d %d}, "
+			     "dst.eld=%d, src.eld=%d",
+			     src->ast_format(gogo).c_str(), level.value(),
+			     level.suffix_value(), dst_state->loop_depth,
+			     mod_loop_depth);
                   else if (debug_level > 0)
-                    go_inform(src->location(), "%s escapes to heap",
-                              src->ast_format(gogo).c_str());
+                    go_debug(src->location(), "%s escapes to heap",
+			     src->ast_format(gogo).c_str());
                 }
 
 	      this->flood(level.decrease(), dst,
@@ -3068,8 +3068,8 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
 	    {
 	      src->set_encoding(Node::ESCAPE_HEAP);
 	      if (debug_level != 0 && osrcesc != src->encoding())
-		go_inform(src->location(), "%s escapes to heap",
-			  src->ast_format(gogo).c_str());
+		go_debug(src->location(), "%s escapes to heap",
+			 src->ast_format(gogo).c_str());
 	      extra_loop_depth = mod_loop_depth;
 	    }
 	}
@@ -3100,8 +3100,8 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
                     {
                       src->set_encoding(Node::ESCAPE_HEAP);
                       if (debug_level != 0 && osrcesc != src->encoding())
-                        go_inform(src->location(), "%s escapes to heap",
-                                  src->ast_format(gogo).c_str());
+                        go_debug(src->location(), "%s escapes to heap",
+				 src->ast_format(gogo).c_str());
                       extra_loop_depth = mod_loop_depth;
                     }
                   break;
@@ -3119,11 +3119,11 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
               // This can only happen with functions returning a single result.
               go_assert(src_state->retvals.size() == 1);
               if (debug_level > 2)
-                go_inform(src->location(), "[%d] dst %s escwalk replace src: %s with %s",
-                          this->context_->loop_depth(),
-                          dst->ast_format(gogo).c_str(),
-                          src->ast_format(gogo).c_str(),
-                          src_state->retvals[0]->ast_format(gogo).c_str());
+                go_debug(src->location(), "[%d] dst %s escwalk replace src: %s with %s",
+			 this->context_->loop_depth(),
+			 dst->ast_format(gogo).c_str(),
+			 src->ast_format(gogo).c_str(),
+			 src_state->retvals[0]->ast_format(gogo).c_str());
               src = src_state->retvals[0];
               src_state = src->state(this->context_, NULL);
             }
@@ -3133,8 +3133,8 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
 	  // Calls to Runtime::NEW get lowered into an allocation expression.
 	  src->set_encoding(Node::ESCAPE_HEAP);
 	  if (debug_level != 0 && osrcesc != src->encoding())
-	    go_inform(src->location(), "%s escapes to heap",
-                      src->ast_format(gogo).c_str());
+	    go_debug(src->location(), "%s escapes to heap",
+		     src->ast_format(gogo).c_str());
           extra_loop_depth = mod_loop_depth;
 	}
       else if ((e->map_literal() != NULL
@@ -3145,8 +3145,8 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
         {
           src->set_encoding(Node::ESCAPE_HEAP);
           if (debug_level != 0 && osrcesc != src->encoding())
-            go_inform(src->location(), "%s escapes to heap",
-                      src->ast_format(gogo).c_str());
+            go_debug(src->location(), "%s escapes to heap",
+		     src->ast_format(gogo).c_str());
           extra_loop_depth = mod_loop_depth;
         }
       else if (e->conversion_expression() != NULL && src_leaks)
@@ -3163,8 +3163,8 @@ Escape_analysis_flood::flood(Level level, Node* dst, Node* src,
               // interface(T)
               src->set_encoding(Node::ESCAPE_HEAP);
               if (debug_level != 0 && osrcesc != src->encoding())
-                go_inform(src->location(), "%s escapes to heap",
-                          src->ast_format(gogo).c_str());
+                go_debug(src->location(), "%s escapes to heap",
+			 src->ast_format(gogo).c_str());
               extra_loop_depth = mod_loop_depth;
               if (tt->interface_type() != NULL
                   && ft->has_pointer()
@@ -3276,10 +3276,10 @@ Gogo::propagate_escape(Escape_context* context, Node* dst)
   Node::Escape_state* state = dst->state(context, NULL);
   Gogo* gogo = context->gogo();
   if (gogo->debug_escape_level() > 1)
-    go_inform(Linemap::unknown_location(), "escflood:%d: dst %s scope:%s[%d]",
-	      context->flood_id(), dst->ast_format(gogo).c_str(),
-	      debug_function_name(state->fn).c_str(),
-	      state->loop_depth);
+    go_debug(Linemap::unknown_location(), "escflood:%d: dst %s scope:%s[%d]",
+	     context->flood_id(), dst->ast_format(gogo).c_str(),
+	     debug_function_name(state->fn).c_str(),
+	     state->loop_depth);
 
   Escape_analysis_flood eaf(context);
   for (std::set<Node*>::const_iterator p = state->flows.begin();
