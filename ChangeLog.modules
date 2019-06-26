@@ -1,6 +1,11 @@
 2019-06-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (finish_module_processing): Adjust failed to write error.
+	gcc/testsuite/
+	* g++.dg/modules/internal-1.C: Adjust.
+
+	gcc/cp/
 	* module.cc (depset::entity_kind): Add EK_REDIRECT.
 	(tree_out::tree_decl): Cope with redirects.
 	(depset::hash::add_dependency): Likewise.

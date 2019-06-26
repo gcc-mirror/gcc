@@ -17098,10 +17098,12 @@ finish_module_processing (cpp_reader *reader)
 	      to.set_error (errno);
 
 	  if (to.get_error ())
-	    error_at (state->from_loc,
-		      "failed writing module %<%s%s%> to %qs: %s",
-		      state->get_flatname (true), state->get_flatname (false),
-		      path ? path : "UNKNOWN", to.get_error (state->filename));
+	    {
+	      error_at (state->from_loc,
+			"failed to write compiled module: %s",
+			to.get_error (state->filename));
+	      state->note_cmi_name ();
+	    }
 	}
 
       if (!errorcount)

@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts" }
 
-export module frob; // { dg-error "failed writing module 'frob' to 'frob.gcm':" }
+export module frob; // { dg-error "failed to write" }
 // { dg-module-bmi !frob }
 
 namespace {
