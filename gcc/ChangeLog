@@ -1,3 +1,12 @@
+2019-06-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline
+	2019-06-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (ld_vers) <*-*-solaris2*>: Remove support for
+	alternative Solaris 11.4 format.
+	* configure: Regenerate.
+
 2019-06-16  Jeff Law  <law@redhat.com>
 
 	Backport from mainline
