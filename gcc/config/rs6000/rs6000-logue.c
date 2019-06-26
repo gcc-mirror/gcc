@@ -48,6 +48,10 @@
 #include "params.h"
 #include "alias.h"
 #include "rs6000-internal.h"
+#if TARGET_MACHO
+#include "gstab.h"  /* for N_SLINE */
+#include "dbxout.h" /* dbxout_ */
+#endif
 
 static int rs6000_ra_ever_killed (void);
 static void is_altivec_return_reg (rtx, void *);
@@ -5060,6 +5064,94 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
       emit_cfa_restores (cfa_restores);
     }
 }
+
+#if TARGET_MACHO
+
+/* Generate far-jump branch islands for everything recorded in
+   branch_islands.  Invoked immediately after the last instruction of
+   the epilogue has been emitted; the branch islands must be appended
+   to, and contiguous with, the function body.  Mach-O stubs are
+   generated in machopic_output_stub().  */
+
+static void
+macho_branch_islands (void)
+{
+  char tmp_buf[512];
+
+  while (!vec_safe_is_empty (branch_islands))
+    {
+      branch_island *bi = &branch_islands->last ();
+      const char *label = IDENTIFIER_POINTER (bi->label_name);
+      const char *name = IDENTIFIER_POINTER (bi->function_name);
+      char name_buf[512];
+      /* Cheap copy of the details from the Darwin ASM_OUTPUT_LABELREF().  */
+      if (name[0] == '*' || name[0] == '&')
+	strcpy (name_buf, name+1);
+      else
+	{
+	  name_buf[0] = '_';
+	  strcpy (name_buf+1, name);
+	}
+      strcpy (tmp_buf, "\n");
+      strcat (tmp_buf, label);
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+      if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
+	dbxout_stabd (N_SLINE, bi->line_number);
+#endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
+      if (flag_pic)
+	{
+	  if (TARGET_LINK_STACK)
+	    {
+	      char name[32];
+	      get_ppc476_thunk_name (name);
+	      strcat (tmp_buf, ":\n\tmflr r0\n\tbl ");
+	      strcat (tmp_buf, name);
+	      strcat (tmp_buf, "\n");
+	      strcat (tmp_buf, label);
+	      strcat (tmp_buf, "_pic:\n\tmflr r11\n");
+	    }
+	  else
+	    {
+	      strcat (tmp_buf, ":\n\tmflr r0\n\tbcl 20,31,");
+	      strcat (tmp_buf, label);
+	      strcat (tmp_buf, "_pic\n");
+	      strcat (tmp_buf, label);
+	      strcat (tmp_buf, "_pic:\n\tmflr r11\n");
+	    }
+
+	  strcat (tmp_buf, "\taddis r11,r11,ha16(");
+	  strcat (tmp_buf, name_buf);
+	  strcat (tmp_buf, " - ");
+	  strcat (tmp_buf, label);
+	  strcat (tmp_buf, "_pic)\n");
+
+	  strcat (tmp_buf, "\tmtlr r0\n");
+
+	  strcat (tmp_buf, "\taddi r12,r11,lo16(");
+	  strcat (tmp_buf, name_buf);
+	  strcat (tmp_buf, " - ");
+	  strcat (tmp_buf, label);
+	  strcat (tmp_buf, "_pic)\n");
+
+	  strcat (tmp_buf, "\tmtctr r12\n\tbctr\n");
+	}
+      else
+	{
+	  strcat (tmp_buf, ":\n\tlis r12,hi16(");
+	  strcat (tmp_buf, name_buf);
+	  strcat (tmp_buf, ")\n\tori r12,r12,lo16(");
+	  strcat (tmp_buf, name_buf);
+	  strcat (tmp_buf, ")\n\tmtctr r12\n\tbctr");
+	}
+      output_asm_insn (tmp_buf, 0);
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+      if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
+	dbxout_stabd (N_SLINE, bi->line_number);
+#endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
+      branch_islands->pop ();
+    }
+}
+#endif
 
 /* Write function epilogue.  */
 

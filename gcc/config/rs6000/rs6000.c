@@ -52,7 +52,6 @@
 #include "explow.h"
 #include "expr.h"
 #include "output.h"
-#include "dbxout.h"
 #include "common/common-target.h"
 #include "langhooks.h"
 #include "reload.h"
@@ -74,9 +73,6 @@
 #include "except.h"
 #if TARGET_XCOFF
 #include "xcoffout.h"  /* get declarations of xcoff_*_section_name */
-#endif
-#if TARGET_MACHO
-#include "gstab.h"  /* for N_SLINE */
 #endif
 #include "case-cfn-macros.h"
 #include "ppc-auxv.h"
@@ -1291,7 +1287,6 @@ static rtx rs6000_legitimize_tls_address (rtx, enum tls_model);
 static rtx rs6000_darwin64_record_arg (CUMULATIVE_ARGS *, const_tree,
 				       bool, bool);
 #if TARGET_MACHO
-static void macho_branch_islands (void);
 static tree get_prev_label (tree);
 #endif
 static bool rs6000_mode_dependent_address (const_rtx);
@@ -27438,14 +27433,7 @@ rs6000_fatal_bad_address (rtx op)
 
 #if TARGET_MACHO
 
-typedef struct branch_island_d {
-  tree function_name;
-  tree label_name;
-  int line_number;
-} branch_island;
-
-
-static vec<branch_island, va_gc> *branch_islands;
+vec<branch_island, va_gc> *branch_islands;
 
 /* Remember to generate a branch island for far calls to the given
    function.  */
@@ -27456,91 +27444,6 @@ add_compiler_branch_island (tree label_name, tree function_name,
 {
   branch_island bi = {function_name, label_name, line_number};
   vec_safe_push (branch_islands, bi);
-}
-
-/* Generate far-jump branch islands for everything recorded in
-   branch_islands.  Invoked immediately after the last instruction of
-   the epilogue has been emitted; the branch islands must be appended
-   to, and contiguous with, the function body.  Mach-O stubs are
-   generated in machopic_output_stub().  */
-
-static void
-macho_branch_islands (void)
-{
-  char tmp_buf[512];
-
-  while (!vec_safe_is_empty (branch_islands))
-    {
-      branch_island *bi = &branch_islands->last ();
-      const char *label = IDENTIFIER_POINTER (bi->label_name);
-      const char *name = IDENTIFIER_POINTER (bi->function_name);
-      char name_buf[512];
-      /* Cheap copy of the details from the Darwin ASM_OUTPUT_LABELREF().  */
-      if (name[0] == '*' || name[0] == '&')
-	strcpy (name_buf, name+1);
-      else
-	{
-	  name_buf[0] = '_';
-	  strcpy (name_buf+1, name);
-	}
-      strcpy (tmp_buf, "\n");
-      strcat (tmp_buf, label);
-#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-      if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
-	dbxout_stabd (N_SLINE, bi->line_number);
-#endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
-      if (flag_pic)
-	{
-	  if (TARGET_LINK_STACK)
-	    {
-	      char name[32];
-	      get_ppc476_thunk_name (name);
-	      strcat (tmp_buf, ":\n\tmflr r0\n\tbl ");
-	      strcat (tmp_buf, name);
-	      strcat (tmp_buf, "\n");
-	      strcat (tmp_buf, label);
-	      strcat (tmp_buf, "_pic:\n\tmflr r11\n");
-	    }
-	  else
-	    {
-	      strcat (tmp_buf, ":\n\tmflr r0\n\tbcl 20,31,");
-	      strcat (tmp_buf, label);
-	      strcat (tmp_buf, "_pic\n");
-	      strcat (tmp_buf, label);
-	      strcat (tmp_buf, "_pic:\n\tmflr r11\n");
-	    }
-
-	  strcat (tmp_buf, "\taddis r11,r11,ha16(");
-	  strcat (tmp_buf, name_buf);
-	  strcat (tmp_buf, " - ");
-	  strcat (tmp_buf, label);
-	  strcat (tmp_buf, "_pic)\n");
-
-	  strcat (tmp_buf, "\tmtlr r0\n");
-
-	  strcat (tmp_buf, "\taddi r12,r11,lo16(");
-	  strcat (tmp_buf, name_buf);
-	  strcat (tmp_buf, " - ");
-	  strcat (tmp_buf, label);
-	  strcat (tmp_buf, "_pic)\n");
-
-	  strcat (tmp_buf, "\tmtctr r12\n\tbctr\n");
-	}
-      else
-	{
-	  strcat (tmp_buf, ":\n\tlis r12,hi16(");
-	  strcat (tmp_buf, name_buf);
-	  strcat (tmp_buf, ")\n\tori r12,r12,lo16(");
-	  strcat (tmp_buf, name_buf);
-	  strcat (tmp_buf, ")\n\tmtctr r12\n\tbctr");
-	}
-      output_asm_insn (tmp_buf, 0);
-#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-      if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
-	dbxout_stabd (N_SLINE, bi->line_number);
-#endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
-      branch_islands->pop ();
-    }
 }
 
 /* NO_PREVIOUS_DEF checks in the link list whether the function name is

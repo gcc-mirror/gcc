@@ -1,5 +1,12 @@
 2019-06-26  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/rs6000/rs6000-internal.h (branch_island): New typedef.
+	(branch_islands): New extern.
+	* config/rs6000/rs6000-logue.c (macho_branch_islands): Moved from
+	* config/rs6000/rs6000.c: .. here.
+
+2019-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* config.gcc (powerpc*-*-linux*): Move target_gtfiles from here..
 	(powerpc*-*-*) ... to here.
 
