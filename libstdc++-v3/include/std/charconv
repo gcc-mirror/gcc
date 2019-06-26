@@ -61,23 +61,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 namespace __detail
 {
-  template<typename _Tp, typename... _Types>
-    using __is_one_of = __or_<is_same<_Tp, _Types>...>;
-
-  template<typename _Tp>
-    using __is_int_to_chars_type = __and_<is_integral<_Tp>,
-	  __not_<__is_one_of<_Tp, bool, char16_t, char32_t
-#if _GLIBCXX_USE_WCHAR_T
-	  , wchar_t
-#endif
-#if _GLIBCXX_USE_CHAR8_T
-	  , char8_t
-#endif
-	    >>>;
-
   template<typename _Tp>
     using __integer_to_chars_result_type
-      = enable_if_t<__is_int_to_chars_type<_Tp>::value, to_chars_result>;
+      = enable_if_t<__or_v<__is_signed_integer<_Tp>,
+			   __is_unsigned_integer<_Tp>,
+			   is_same<char, remove_cv_t<_Tp>>>,
+		    to_chars_result>;
 
   // Pick an unsigned type of suitable size. This is used to reduce the
   // number of specializations of __to_chars_len, __to_chars etc. that
@@ -555,7 +544,10 @@ namespace __detail
 
   template<typename _Tp>
     using __integer_from_chars_result_type
-      = enable_if_t<__is_int_to_chars_type<_Tp>::value, from_chars_result>;
+      = enable_if_t<__or_v<__is_signed_integer<_Tp>,
+			   __is_unsigned_integer<_Tp>,
+			   is_same<char, remove_cv_t<_Tp>>>,
+		    from_chars_result>;
 
 } // namespace __detail
 
