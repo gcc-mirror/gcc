@@ -1,5 +1,8 @@
 2019-06-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/charconv (chars_format): Define bitmask type.
+	* testsuite/20_util/to_chars/chars_format.cc: New test.
+
 	* include/bits/fs_path.h (path::__is_encoded_char): Use __is_one_of.
 	* include/std/bit (_If_is_unsigned_integer_type): Remove.
 	(_If_is_unsigned_integer): Use __is_unsigned_integer.
