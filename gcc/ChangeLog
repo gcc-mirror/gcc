@@ -1,3 +1,7 @@
+2019-06-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* rs6000.c: Fix previous commit, it missed some changes.
+
 2019-06-26  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/90982
