@@ -662,39 +662,6 @@ op_wi (enum tree_code code, irange &r, tree rh_type,
     }
 }
 
-/* Perform an operation between a constant and a range.  */
-
-static bool
-op_ir (enum tree_code code, irange &r, const wide_int &lh, const irange &rh)
-{
-  r.set_undefined (r.type ());
-  for (unsigned x = 0; x < rh.num_pairs () ; x++)
-    {
-      wide_int rh_lb = rh.lower_bound (x);
-      wide_int rh_ub = rh.upper_bound (x);
-      if (!op_wi (code, r, rh.type (), lh, lh, rh_lb, rh_ub))
-	return false;
-    }
-  return true;
-}
-
-/* Perform an operation between a range and a constant.  */
-
-static bool
-op_ri (enum tree_code code, irange &r, tree rh_type,
-       const irange &lh, const wide_int &rh)
-{
-  r.set_undefined (r.type ());
-  for (unsigned x = 0; x < lh.num_pairs () ; x++)
-    {
-      wide_int lh_lb = lh.lower_bound (x);
-      wide_int lh_ub = lh.upper_bound (x);
-      if (!op_wi (code, r, rh_type, lh_lb, lh_ub, rh, rh))
-	return false;
-    }
-  return true;
-}
-
 /* Perform an operation between 2 ranges.  */
 
 static bool
@@ -708,35 +675,18 @@ op_rr (enum tree_code code, irange &r, const irange &lh, const irange &rh)
   if (lh.undefined_p () || rh.undefined_p ())
     return true;
 
-  /* Try constant cases first to see if we do anything special with them. */
-  if (wi::eq_p (lh.upper_bound (), lh.lower_bound ()))
-    {
-      wide_int lh_ub = lh.upper_bound ();
-      res = op_ir (code, r, lh_ub, rh);
-    }
-
-  if (!res && wi::eq_p (rh.upper_bound (), rh.lower_bound ()))
-    {
-      tree type = rh.type ();
-      wide_int rh_ub = rh.upper_bound ();
-      res = op_ri (code, r, type, lh, rh_ub);
-    }
-
-  if (!res)
-    {
-      for (unsigned x = 0; x < lh.num_pairs (); ++x)
-	for (unsigned y = 0; y < rh.num_pairs (); ++y)
-	  {
-	    wide_int lh_lb = lh.lower_bound (x);
-	    wide_int lh_ub = lh.upper_bound (x);
-	    wide_int rh_lb = rh.lower_bound (y);
-	    wide_int rh_ub = rh.upper_bound (y);
-	    tree type = rh.type ();
-	    res = op_wi (code, r, type, lh_lb, lh_ub, rh_lb, rh_ub);
-	    if (!res)
-	      return false;
-	  }
-    }
+  for (unsigned x = 0; x < lh.num_pairs (); ++x)
+    for (unsigned y = 0; y < rh.num_pairs (); ++y)
+      {
+	wide_int lh_lb = lh.lower_bound (x);
+	wide_int lh_ub = lh.upper_bound (x);
+	wide_int rh_lb = rh.lower_bound (y);
+	wide_int rh_ub = rh.upper_bound (y);
+	tree type = rh.type ();
+	res = op_wi (code, r, type, lh_lb, lh_ub, rh_lb, rh_ub);
+	if (!res)
+	  return false;
+      }
 
   return res && !r.varying_p ();
 }
