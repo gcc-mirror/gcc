@@ -1,3 +1,17 @@
+2019-06-26  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR Fortran/90988
+	ChangeLog forgotten with revision 272698
+	* decl.c (access_attr_decl): Use temporary variable to reduce
+	unreadability of code.  Normalize jumping to return.
+	(gfc_match_protected): Fix parsing error.  Add comments to 
+	explain code.  Remove dead code.
+	(gfc_match_private): Use temporary variable to reduce unreadability 
+	of code. Fix parsing error.  Move code to test for blank PRIVATE.
+	Remove dead code.
+	(gfc_match_public): Move code to test for blank PUBLIC.  Fix
+	parsing error.  Remove dead code.
+
 2019-06-24  Jan Hubicka  <jh@suse.cz>
 
 	* trans-expr.c (gfc_conv_substring): Check that
