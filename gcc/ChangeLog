@@ -1,3 +1,14 @@
+2019-06-26  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer.h (lto_bitmap_alloc): Remove.
+	(lto_bitmap_free): Likewise.
+	* lto-streamer.c (lto_bitmap_alloc): Remove.
+	(lto_bitmap_free): Likewise.
+	(lto_obstack): Likewise.
+	(lto_obstack_initialized): Likewise.
+	* lto-streamer-out.c (lto_output): Use own obstack for local
+	bitmap, free it consistently.
+
 2019-06-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/90991
