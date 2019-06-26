@@ -1,3 +1,11 @@
+2019-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90991
+	* config/i386/sse.md
+	(*<extract_type>_vinsert<shuffletype><extract_suf>_0): Use vmovupd,
+	vmovups, vmovdqu, vmovdqu32 or vmovdqu64 instead of the aligned
+	insns if operands[2] is misaligned_operand.
+
 2019-06-26  Li Jia He  <helijia@linux.ibm.com>
 
 	* config/rs6000/rs6000.h (TARGET_MADDLD): Remove the restriction of
