@@ -1,9 +1,11 @@
-// { dg-module-do run }
+// Testcase disabled for maintainance.
+// { dg-module-do run { target noarch-*-noos } }
+// { dg-do assemble { target noarch-*-noos } }
 // { dg-additional-options "-fmodules-ts -fdump-lang-module-graph" }
 module;
 #include <iostream>
 export module logger;
-// { dg-module-bmi logger }
+// { dg-module-bmi logger { xfail *-*-* } }
 
 export void Log (char const *msg)
 {

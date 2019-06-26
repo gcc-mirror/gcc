@@ -2234,6 +2234,7 @@ public:
     EK_UNNAMED,		/* An unnameable entity.  */
     EK_SPECIALIZATION,  /* A specialization.  */
     EK_NAMESPACE,	/* A namespace.  */
+    EK_REDIRECT,	/* Redirect to a template_decl.  */
     EK_EXPLICIT_HWM,  
     EK_BINDING = EK_EXPLICIT_HWM, /* Implicitly encoded.  */
     EK_MAYBE_SPEC,	/* Potentially a specialization, else a DECL,
@@ -2550,7 +2551,8 @@ depset::entity_kind_name () const
 {
   /* Same order as entity_kind.  */
   static const char *const names[] = 
-    {"decl", "using", "unnamed", "specialization", "namespace", "binding"};
+    {"decl", "using", "unnamed", "specialization", "namespace", "redirect",
+     "binding"};
   return names[get_entity_kind ()];
 }
 
@@ -6888,12 +6890,14 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 
   int use_tpl = -1;
   tree ti = node_template_info (decl, use_tpl);
+  tree tpl = NULL_TREE;
   /* TI_TEMPLATE is not a TEMPLATE_DECL for (some) friends, because
      we matched a non-template.  */
   if (ti && TREE_CODE (TI_TEMPLATE (ti)) == TEMPLATE_DECL
       && DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == decl)
     {
-      tree tpl = TI_TEMPLATE (ti);
+      tpl = TI_TEMPLATE (ti);
+    partial_template:
       if (streaming_p ())
 	{
 	  i (tt_template);
@@ -6970,7 +6974,18 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
       else
 	dep = dep_hash->find_entity (decl);
 
-      if (dep->get_entity_kind () == depset::EK_SPECIALIZATION)
+      if (dep->get_entity_kind () == depset::EK_REDIRECT)
+	{
+	  /* The DECL_TEMPLATE_RESULT of a partial specialization.
+	     Write the partial specialization's template.  */
+	  depset *redirect = dep->deps[0];
+	  gcc_checking_assert ((redirect->get_entity_kind ()
+				== depset::EK_SPECIALIZATION)
+			       && redirect->is_partial ());
+	  tpl = redirect->get_entity ();
+	  goto partial_template;
+	}
+      else if (dep->get_entity_kind () == depset::EK_SPECIALIZATION)
 	{
 	  kind = "specialization";
 	  goto insert;
@@ -9779,6 +9794,8 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	      if (is_import)
 		dep->set_flag_bit<DB_IMPORTED_BIT> ();
 	    }
+	  else if (ek == EK_REDIRECT)
+	    /* A redirection.  */;
 	  else if (ek == EK_UNNAMED
 		   || ek == EK_SPECIALIZATION)
 	    {
@@ -9804,13 +9821,19 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 		       && TREE_CODE (not_tmpl) != CONST_DECL
 		       && DECL_THIS_STATIC (not_tmpl))
 		{
-		  /* An internal decl.  In header modules permit
+		  /* An internal decl.  In global module permit
 		     extern "C" static inline functions
 		     ... because.  */
-		  if (!header_module_p ()
-		      || !(TREE_CODE (decl) == FUNCTION_DECL
-			   && DECL_DECLARED_INLINE_P (decl)
-			   && DECL_EXTERN_C_P (decl)))
+		  if (!(header_module_p ()
+			|| (TREE_CODE (not_tmpl) == FUNCTION_DECL
+			    && DECL_DECLARED_INLINE_P (not_tmpl)
+#if 0
+			    // FIXME: Disregard language linkage, because our
+			    // std lib is borked.  Templates cannot
+			    // have "C" linkage!
+			    && DECL_EXTERN_C_P (not_tmpl)
+#endif
+			    && true)))
 		    dep->set_flag_bit<DB_IS_INTERNAL_BIT> ();
 		}
 	      else if (DECL_IMPLICIT_TYPEDEF_P (decl)
@@ -9868,7 +9891,9 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	&& dump ("%s on %s %C:%N added", binding_p ? "Binding" : "Dependency",
 		 dep->entity_kind_name (), TREE_CODE (decl), decl);
 
-      if (current && dep->get_entity_kind () != EK_NAMESPACE)
+      if (current
+	  && dep->get_entity_kind () != EK_NAMESPACE
+	  && dep->get_entity_kind () != EK_REDIRECT)
 	{
 	  current->deps.safe_push (dep);
 	  if (current->is_binding ())
@@ -10228,10 +10253,19 @@ depset::hash::add_specializations (bool decl_p, bitmap partitions)
 	{
 	  dep->set_marked ();
 	  dep->deps.safe_push (reinterpret_cast<depset *> (entry));
-	  if (is_partial)
-	    dep->set_flag_bit<DB_PARTIAL_BIT> ();
 	  if (needs_reaching)
 	    dep->set_flag_bit<DB_UNREACHED_BIT> ();
+	  if (is_partial)
+	    {
+	      dep->set_flag_bit<DB_PARTIAL_BIT> ();
+	      /* Also insert a redirect for the DECL_TEMPLATE_RESULT,
+	         as we're unable to go from there to here (without
+	         repeating the above instantiation search for *every*
+	         MAYBE_SPEC dependency add.  */
+	      depset *part = add_dependency (DECL_TEMPLATE_RESULT (spec),
+					     depset::EK_REDIRECT, false);
+	      part->deps.safe_push (dep);
+	    }
 	}
     }
 }
@@ -10346,6 +10380,19 @@ depset::hash::add_mergeable (depset *mergeable)
      mark the first dep.  */
   dep->set_marked ();
   dep->deps.safe_push (mergeable);
+
+  if (mergeable->is_partial ())
+    {
+      /* Insert a redirect for the DECL_TEMPLATE_RESULT.  */
+      dep->set_flag_bit<DB_PARTIAL_BIT> ();
+
+      depset **pslot = entity_slot (DECL_TEMPLATE_RESULT (decl), true);
+      gcc_checking_assert (!*pslot);
+      depset *redirect = make_entity (DECL_TEMPLATE_RESULT (decl),
+				      EK_REDIRECT);
+      *pslot = redirect;
+      redirect->deps.safe_push (dep);
+    }
 }
 
 void
@@ -10446,19 +10493,28 @@ depset::hash::finalize_dependencies ()
 	{
 	  ok = false;
 	  tree decl = dep->get_entity ();
-	  for (unsigned ix = dep->deps.length (); ix--;)
-	    {
-	      depset *rdep = dep->deps[ix];
-	      if (rdep->is_internal ())
-		{
-		  // FIXME: Better location information?  We're
-		  // losing, so it doesn't matter about efficiency
-		  error_at (DECL_SOURCE_LOCATION (decl),
-			    "%q#D references internal linkage entity %q#D",
-			    decl, rdep->get_entity ());
-		  break;
-		}
-	    }
+#if 1
+	  // FIXME: __thread_active_p is borked, so allow it.
+	  if (CP_DECL_CONTEXT (decl) == global_namespace
+	      && DECL_NAME (decl)
+	      && !strcmp (IDENTIFIER_POINTER (DECL_NAME (decl)),
+			  "__gthread_active_p"))
+	    ok = true;
+#endif
+	  if (!ok)
+	    for (unsigned ix = dep->deps.length (); ix--;)
+	      {
+		depset *rdep = dep->deps[ix];
+		if (rdep->is_internal ())
+		  {
+		    // FIXME: Better location information?  We're
+		    // losing, so it doesn't matter about efficiency
+		    error_at (DECL_SOURCE_LOCATION (decl),
+			      "%q#D references internal linkage entity %q#D",
+			      decl, rdep->get_entity ());
+		    break;
+		  }
+	      }
 	}
     }
 
@@ -12472,13 +12528,17 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	    dump ("[%u]=%s %P", ix, dep->entity_kind_name (),
 		  decl, dep->get_name ());
 	  else
-	    dump ("[%u]=%s %s %N", ix, dep->entity_kind_name (),
-		  dep->has_defn () ? "definition" : "declaration",
-		  dep->get_entity ());
+	    {
+	      gcc_checking_assert (dep->get_entity_kind ()
+				   != depset::EK_REDIRECT);
+	      dump ("[%u]=%s %s %N", ix, dep->entity_kind_name (),
+		    dep->has_defn () ? "definition" : "declaration",
+		    dep->get_entity ());
+	    }
 	}
       dump.outdent ();
     }
-	      
+
   /* Determine horcrux numbers for unnamed decls.   */
   for (unsigned ix = 0; ix != size; ix++)
     {
@@ -15425,11 +15485,14 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	     clusters.  */
 	  gcc_checking_assert (base[size]->get_entity_kind ()
 			       != depset::EK_NAMESPACE);
+	  gcc_checking_assert (base[size]->get_entity_kind ()
+			       != depset::EK_REDIRECT);
 	  gcc_checking_assert (base[size]->is_binding ()
 			       || !base[size]->is_import ());
 	}
       base[0]->cluster = base[0]->section = 0;
 
+      // FIXME: Unneeded.
       /* Sort the cluster.  Later processing makes use of the ordering
 	 of defns < decls < bindings. */
       qsort (base, size, sizeof (depset *), cluster_cmp);
@@ -15440,6 +15503,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  gcc_checking_assert (size == 1);
 	  n_spaces++;
 	}
+      else if (base[0]->get_entity_kind () == depset::EK_REDIRECT)
+	gcc_checking_assert (size == 1);
       else if (!base[0]->is_binding () && base[0]->is_import ())
 	gcc_checking_assert (size == 1);
       else
@@ -15467,14 +15532,24 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
       if (!size)
 	{
-	  /* A namespace or import */
+	  /* A namespace, import or redirect.  */
 	  tree decl = base[0]->get_entity ();
-	  if (!base[0]->is_import ())
-	    spaces.quick_push (base[0]);
-	  dump (dumper::CLUSTER)
-	    && dump ("Cluster %s %N",
-		     base[0]->is_import () ? "import" : "namespace",
-		     decl);
+	  depset::entity_kind ek = base[0]->get_entity_kind ();
+	  const char *kind = "";
+	  if (ek == depset::EK_NAMESPACE)
+	    {
+	      spaces.quick_push (base[0]);
+	      kind = "namespace";
+	    }
+	  else if (ek == depset::EK_REDIRECT)
+	    kind = "redirect";
+	  else
+	    {
+	      gcc_checking_assert (base[0]->is_import ());
+	      kind = "import";
+	    }
+
+	  dump (dumper::CLUSTER) && dump ("Cluster %s %N", kind, decl);
 	  size = 1;
 	}
       else

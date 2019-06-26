@@ -1,6 +1,18 @@
 2019-06-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::entity_kind): Add EK_REDIRECT.
+	(tree_out::tree_decl): Cope with redirects.
+	(depset::hash::add_dependency): Likewise.
+	(depset::hash::add_specialization): Add redirect for partials.
+	(depset::hash::add_mergeable): Likewise.
+	(module_state::write_cluster): Assert no redirects here.
+	(module_state::write): Check redirects here.
+	gcc/testsuite/
+	* g++.dg/modules/global-3_a.C: Disable.
+	* g++.dg/modules/tpl-spec-6_[ab].C: New.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::note_definition): Rename to ...
 	 (trees_{in,out}::assert_definition): ... here.  Update callers.
 
