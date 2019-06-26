@@ -6603,9 +6603,14 @@ proc available_vector_sizes { } {
     } elseif { [istarget arm*-*-*]
 		&& [check_effective_target_arm_neon_ok] } {
 	lappend result 128 64
-    } elseif { (([istarget i?86-*-*] || [istarget x86_64-*-*])
-		 && ([check_avx_available] && ![check_prefer_avx128])) } {
-	lappend result 256 128
+    } elseif { [istarget i?86-*-*] || [istarget x86_64-*-*] } {
+	if { [check_avx_available] && ![check_prefer_avx128] } {
+	    lappend result 256
+	}
+	lappend result 128
+	if { ![is-effective-target ia32] } {
+	    lappend result 64
+	}
     } elseif { [istarget sparc*-*-*] } {
 	lappend result 64
     } else {
