@@ -1054,16 +1054,20 @@ value_range_to_irange (tree type, enum value_range_kind kind,
 // Same as above, but takes an entire value_range instead of piecemeal.
 
 irange
-value_range_to_irange (tree type, const value_range_base &vr)
+value_range_to_irange (const value_range_base &vr)
 {
-  irange r;
-  if (vr.varying_p () || vr.undefined_p ())
-    r.set_varying (type);
-  else
-    r = value_range_to_irange (TREE_TYPE (vr.min ()), vr.kind (),
-			       wi::to_wide (vr.min ()),
-			       wi::to_wide (vr.max ()));
-  return r;
+  tree type = vr.type ();
+  if (vr.varying_p ())
+    return irange (type);
+  if (vr.undefined_p ())
+    {
+      irange r;
+      r.set_undefined (type);
+      return r;
+    }
+  return value_range_to_irange (type, vr.kind (),
+			        wi::to_wide (vr.min ()),
+			        wi::to_wide (vr.max ()));
 }
 #endif // !IRANGE_WITH_VALUE_RANGE
 
@@ -1571,7 +1575,7 @@ irange_tests ()
   ASSERT_TRUE (vr.kind () == VR_ANTI_RANGE);
   ASSERT_TRUE (wi::eq_p (10, wi::to_wide (vr.min ()))
 	       && wi::eq_p (20, wi::to_wide (vr.max ())));
-  r1 = value_range_to_irange (integer_type_node, vr);
+  r1 = value_range_to_irange (vr);
   ASSERT_TRUE (r0 == r1);
 }
 

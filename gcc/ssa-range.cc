@@ -1127,7 +1127,7 @@ loop_ranger::adjust_phi_with_loop_info (irange &r, gphi *phi)
       if (vr.constant_p ())
 	{
 	  irange old = r;
-	  r = value_range_to_irange (TREE_TYPE (phi_result), vr);
+	  r = value_range_to_irange (vr);
 	  if (old != r
 	      && dump_file && (dump_flags & TDF_DETAILS))
 	    {

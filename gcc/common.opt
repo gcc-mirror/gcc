@@ -1799,7 +1799,7 @@ Enum(rvrp_order) String(conditionals) Value(RVRP_ORDER_CONDITIONALS)
 ; Temporary testing construct.
 franges=
 Common Joined RejectNegative Enum(ranges_mode) Var(flag_ranges_mode) Init(RANGES_CHECKING)
--franges=[checking|vrp|ranger]	Set the mode for calculating ranges.
+-franges=[checking|vrp|range-ops]	Set the mode for calculating ranges.
 
 Enum
 Name(ranges_mode) Type(enum ranges_mode) UnknownError(unknown ranges mode %qs)
@@ -1811,7 +1811,7 @@ EnumValue
 Enum(ranges_mode) String(vrp) Value(RANGES_VRP)
 
 EnumValue
-Enum(ranges_mode) String(ranger) Value(RANGES_RANGER)
+Enum(ranges_mode) String(range-ops) Value(RANGES_RANGE_OPS)
 
 fira-algorithm=
 Common Joined RejectNegative Enum(ira_algorithm) Var(flag_ira_algorithm) Init(IRA_ALGORITHM_CB) Optimization

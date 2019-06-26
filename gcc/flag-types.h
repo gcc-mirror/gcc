@@ -160,8 +160,8 @@ enum rvrp_order
 enum ranges_mode
 {
   RANGES_VRP = 1,
-  RANGES_RANGER = 2,
-  /* Use both VPR and the ranger, and verify that the results agree.  */
+  RANGES_RANGE_OPS = 2,
+  /* Use both VPR and range-ops, and verify that the results agree.  */
   RANGES_CHECKING = 3
 };
 

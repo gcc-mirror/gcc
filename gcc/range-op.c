@@ -1887,10 +1887,6 @@ operator_bitwise_not::fold_range (irange& r, const irange& lh,
   if (empty_range_check (r, lh, rh, type))
     return true;
 
-  /* If this is a boolean not, call the logical version.  */
-  if (types_compatible_p (type, boolean_type_node))
-    return op_logical_not.fold_range (r, lh, rh);
-
   // ~X is simply -1 - X.
   irange minusone (type,
 		   wi::minus_one (TYPE_PRECISION (type)),
@@ -1903,9 +1899,6 @@ operator_bitwise_not::op1_range (irange& r, const irange& lhs,
 				  const irange& op2 ATTRIBUTE_UNUSED) const
 {
   tree type = lhs.type ();
-  /* If this is a boolean not, call the logical version.  */
-  if (types_compatible_p (type, boolean_type_node))
-    return op_logical_not.op1_range (r, lhs, op2);
 
   // ~X is -1 - X and since bitwise NOT is involutary...do it again.
   irange minusone (type,

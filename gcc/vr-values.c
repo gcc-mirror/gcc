@@ -73,7 +73,7 @@ vr_values::get_irange (tree op, gimple *stmt ATTRIBUTE_UNUSED)
 	  && !vr->constant_p ()))
     return irange (TREE_TYPE (op));
 
-  return value_range_to_irange (TREE_TYPE (op), *vr);
+  return value_range_to_irange (*vr);
 }
 
 /* Set value range VR to a non-negative range of type TYPE.  */
@@ -800,7 +800,7 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
 			   vrp_val_max (expr_type));
     }
 
-  ::extract_range_from_binary_expr (vr, code, expr_type, &vr0, &vr1);
+  range_fold_binary_expr (vr, code, expr_type, &vr0, &vr1);
 
   /* Set value_range for n in following sequence:
      def = __builtin_memchr (arg, 0, sz)
@@ -861,7 +861,7 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
       else
 	n_vr1.set (VR_RANGE, op1, op1);
 
-      ::extract_range_from_binary_expr (vr, code, expr_type, &vr0, &n_vr1);
+      range_fold_binary_expr (vr, code, expr_type, &vr0, &n_vr1);
     }
 
   if (vr->varying_p ()
@@ -885,7 +885,7 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
       else
 	n_vr0.set (op0);
 
-      ::extract_range_from_binary_expr (vr, code, expr_type, &n_vr0, &vr1);
+      range_fold_binary_expr (vr, code, expr_type, &n_vr0, &vr1);
     }
 
   /* If we didn't derive a range for MINUS_EXPR, and
@@ -926,7 +926,7 @@ vr_values::extract_range_from_unary_expr (value_range *vr, enum tree_code code,
   else
     vr0.set_varying (type);
 
-  ::extract_range_from_unary_expr (vr, code, type, &vr0, TREE_TYPE (op0));
+  range_fold_unary_expr (vr, code, type, &vr0);
 }
 
 
@@ -1407,8 +1407,7 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 						     type, op0);
 		      extract_range_from_unary_expr (&vr1, NOP_EXPR,
 						     type, op1);
-		      ::extract_range_from_binary_expr (vr, subcode, type,
-							&vr0, &vr1);
+		      range_fold_binary_expr (vr, subcode, type, &vr0, &vr1);
 		      flag_wrapv = saved_flag_wrapv;
 		    }
 		  return;
@@ -1823,11 +1822,8 @@ range_misc::adjust_range_with_loop (irange &ir, struct loop *loop,
 	      value_range_base vr0 = irange_to_value_range (ir0);
 	      value_range_base vr1 = irange_to_value_range (ir1);
 	      value_range_base maxvr;
-	      /* ?? Deep down inside, this will use range-ops.c, and
-		 therefore can be eventually converted to a direct
-		 call to range_op_handler.  */
-	      ::extract_range_from_binary_expr (&maxvr, PLUS_EXPR,
-						TREE_TYPE (init), &vr0, &vr1);
+	      range_fold_binary_expr (&maxvr, PLUS_EXPR,
+				      TREE_TYPE (init), &vr0, &vr1);
 	      /* Likewise if the addition did.  */
 	      if (maxvr.kind () == VR_RANGE)
 		{
@@ -1933,7 +1929,7 @@ vr_values::adjust_range_with_scev (value_range_base *vr, struct loop *loop,
   /* Bail on anything remotely symbolic.  */
   if (!vr->varying_p () && !vr->undefined_p () && !vr->constant_p ())
     return;
-  irange ir = value_range_to_irange (TREE_TYPE (var), *vr);
+  irange ir = value_range_to_irange (*vr);
   adjust_range_with_loop (ir, loop, stmt, var);
   *vr = irange_to_value_range (ir);
 }
@@ -3618,7 +3614,7 @@ vr_values::simplify_cond_using_ranges_2 (gcond *stmt)
 	  irange ir;
 
 	  if (range_int_cst_p (vr))
-	    ir = value_range_to_irange (TREE_TYPE (innerop), *vr);
+	    ir = value_range_to_irange (*vr);
 
 	  if (!ir.undefined_p ()
 	      && range_fits_type_p (ir,

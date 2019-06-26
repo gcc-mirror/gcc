@@ -97,13 +97,13 @@ public:
   wide_int upper_bound (unsigned) const;
   wide_int upper_bound () const;
   void invert ();
-  void dump () const { dump (stderr); }
+  void dump () const;
+  value_range_base normalize_symbolics () const;
   // FIXME: Perhaps rewrite the irange versions to use pointers instead.
   void union_ (const value_range_base &);
   void intersect (const value_range_base &);
 
 protected:
-  value_range_base normalize_symbolics () const;
   void check ();
   static value_range_base union_helper (const value_range_base *,
 					const value_range_base *);
@@ -343,6 +343,11 @@ extern bool overflow_comparison_p (tree_code, tree, tree, bool, tree *);
 extern tree get_single_symbol (tree, bool *, tree *);
 extern void maybe_set_nonzero_bits (edge, tree);
 extern value_range_kind determine_value_range (tree, wide_int *, wide_int *);
+void range_fold_binary_expr (value_range_base *, enum tree_code, tree,
+			     const value_range_base *,
+			     const value_range_base *);
+void range_fold_unary_expr (value_range_base *, enum tree_code, tree,
+			    const value_range_base *);
 
 /* Return TRUE if *VR includes the value zero.  */
 

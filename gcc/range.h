@@ -315,7 +315,7 @@ irange range_invert (const irange &);
 irange range_from_ssa (tree ssa);
 irange range_positives (tree type);
 irange range_negatives (tree type);
-irange value_range_to_irange (tree type, const value_range_base &);
+irange value_range_to_irange (const value_range_base &);
 irange value_range_to_irange (tree type, enum value_range_kind kind,
 			      const wide_int &, const wide_int &);
 value_range_base irange_to_value_range (const irange &);
