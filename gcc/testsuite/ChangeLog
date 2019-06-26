@@ -1,3 +1,10 @@
+2019-06-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89021
+	* lib/target-supports.exp (available_vector_sizes)
+	<[istarget i?86-*-*] || [istarget x86_64-*-*]>: Add
+	64-bit vectors for !ia32.
+
 2019-06-26  Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/execute/builtins/builtins.exp: Add -fno-tree-dse

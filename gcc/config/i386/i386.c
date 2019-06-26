@@ -21401,6 +21401,11 @@ ix86_autovectorize_vector_sizes (vector_sizes *sizes, bool all)
       sizes->safe_push (16);
       sizes->safe_push (32);
     }
+  else if (TARGET_MMX_WITH_SSE)
+    sizes->safe_push (16);
+
+  if (TARGET_MMX_WITH_SSE)
+    sizes->safe_push (8);
 }
 
 /* Implemenation of targetm.vectorize.get_mask_mode.  */
