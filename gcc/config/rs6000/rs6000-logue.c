@@ -4025,8 +4025,8 @@ rs6000_output_function_prologue (FILE *file)
 
 /* -mprofile-kernel code calls mcount before the function prolog,
    so a profiled leaf function should stay a leaf function.  */
-static bool
-rs6000_keep_leaf_when_profiled ()
+bool
+rs6000_keep_leaf_when_profiled (void)
 {
   return TARGET_PROFILE_KERNEL;
 }

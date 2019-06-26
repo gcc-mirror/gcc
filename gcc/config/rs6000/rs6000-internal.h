@@ -99,6 +99,7 @@ extern bool save_reg_p (int reg);
 extern const char * rs6000_machine_from_flags (void);
 extern void emit_asm_machine (void);
 extern bool rs6000_global_entry_point_prologue_needed_p (void);
+extern bool rs6000_keep_leaf_when_profiled (void);
 
 /* Return true if the OFFSET is valid for the quad address instructions that
    use d-form (register + offset) addressing.  */
