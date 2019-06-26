@@ -1,3 +1,7 @@
+2019-06-26  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* doc/invoke.texi (Warning Options): Fix some @opindex syntax.
+
 2019-06-26  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/90973
