@@ -1,3 +1,19 @@
+2019-06-26  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/90883
+	* tree-ssa-alias.c (stmt_kills_ref_p): Handle BUILT_IN_CALLOC.
+	* tree-ssa-dse.c: Update various comments to distinguish between
+	dead and redundant stores.
+	(initialize_ao_ref_for_dse): Handle BUILT_IN_CALLOC.
+	(dse_optimize_redundant_stores): New function.
+	(delete_dead_or_redundant_call): Renamed from delete_dead_call.
+	Distinguish between dead and redundant calls in dump output.  All
+	callers updated.
+	(delete_dead_or_redundant_assignment): Similarly for assignments.
+	(dse_optimize_stmt): Handle _CHK variants.  For statements which
+	store 0 into multiple memory locations, try to prove a subsequent
+	store is redundant.
+
 2019-06-26  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/89021
