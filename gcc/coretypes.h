@@ -202,6 +202,24 @@ enum profile_update {
   PROFILE_UPDATE_PREFER_ATOMIC
 };
 
+/* Types of ranges.
+
+   This is still prefixed with VR_*, even though it is more general
+   purpose, to avoid having to replace everything across the compiler.
+   Perhaps we should change it later.  */
+enum value_range_kind {
+  /* Empty range.  */
+  VR_UNDEFINED,
+  /* Range spans the entire domain.  */
+  VR_VARYING,
+  /* Range is [MIN, MAX].  */
+  VR_RANGE,
+  /* Range is ~[MIN, MAX].  */
+  VR_ANTI_RANGE,
+  /* Range is a nice guy.  */
+  VR_LAST
+};
+
 /* Types of unwind/exception handling info that can be generated.  */
 
 enum unwind_info_type

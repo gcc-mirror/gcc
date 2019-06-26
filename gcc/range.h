@@ -25,11 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #define IRANGE_WITH_VALUE_RANGE 0
 
 #if IRANGE_WITH_VALUE_RANGE
-#include "tree-vrp.h"
 typedef value_range_base irange;
 typedef value_range_storage irange_storage;
-#define IRANGE_PLAIN VR_RANGE
-#define IRANGE_INVERSE VR_ANTI_RANGE
 #else
 // This is the standalone irange implementation.
 
@@ -57,8 +54,6 @@ class irange_storage;
 // Consequently, there are no GTY markers.  For long term storage, use
 // the irange_storage class described later.
 
-enum irange_kind { IRANGE_PLAIN, IRANGE_INVERSE };
-
 class irange
 {
   friend class irange_storage;
@@ -67,9 +62,9 @@ class irange
  public:
   irange ();
   irange (tree type);
-  irange (irange_kind, tree type, const wide_int &, const wide_int &);
+  irange (value_range_kind, tree type, const wide_int &, const wide_int &);
   irange (tree type, const wide_int &, const wide_int &);
-  irange (irange_kind, tree, tree);
+  irange (value_range_kind, tree, tree);
   irange (tree, tree);
   irange (tree type, const irange_storage *);
 
@@ -110,7 +105,7 @@ class irange
 
 private:
   void init (tree type, const wide_int &, const wide_int &,
-	     irange_kind = IRANGE_PLAIN);
+	     value_range_kind = VR_RANGE);
   void canonicalize ();
   void set_lower_bound (unsigned pair, const wide_int &);
   void set_upper_bound (unsigned pair, const wide_int &);
@@ -193,7 +188,7 @@ inline bool
 irange::nonzero_p () const
 {
   unsigned prec = TYPE_PRECISION (m_type);
-  return *this == irange (IRANGE_INVERSE, m_type,
+  return *this == irange (VR_ANTI_RANGE, m_type,
 			  wi::zero (prec), wi::zero (prec));
 }
 

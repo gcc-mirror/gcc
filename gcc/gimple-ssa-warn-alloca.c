@@ -235,7 +235,7 @@ alloca_call_type (global_ranger &ranger, gimple *stmt, bool is_vla)
       && !r.varying_p ())
     {
       // The invalid bits are anything outside of [0, MAX_SIZE].
-      static irange invalid_range (IRANGE_INVERSE,
+      static irange invalid_range (VR_ANTI_RANGE,
 				   build_int_cst (size_type_node, 0),
 				   build_int_cst (size_type_node, max_size));
 

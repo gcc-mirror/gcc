@@ -183,7 +183,7 @@ range_zero (tree type)
 irange
 range_nonzero (tree type)
 {
-  return irange (IRANGE_INVERSE,
+  return irange (VR_ANTI_RANGE,
 		 build_zero_cst (type), build_zero_cst (type));
 }
 
@@ -229,14 +229,18 @@ subtract_one (const wide_int &x, tree type, wi::overflow_type &overflow)
 
 void
 irange::init (tree type, const wide_int &lbound, const wide_int &ubound,
-	      irange_kind rt)
+	      value_range_kind rt)
 {
+  // Even though we accept a full value_range_kind, we *ONLY* use it to
+  // distinguish a plain range from an inverse range.
+  gcc_checking_assert (rt == VR_RANGE || rt == VR_ANTI_RANGE);
+
   gcc_checking_assert (irange::supports_type_p (type));
   gcc_checking_assert (TYPE_PRECISION (type) == lbound.get_precision ());
   gcc_checking_assert (lbound.get_precision () == ubound.get_precision ());
   m_type = type;
   gcc_checking_assert (wi::le_p (lbound, ubound, TYPE_SIGN (type)));
-  if (rt == IRANGE_INVERSE)
+  if (rt == VR_ANTI_RANGE)
     {
       // Calculate INVERSE([I,J]) as [-MIN, I-1][J+1, +MAX].
       wi::overflow_type ovf;
@@ -280,19 +284,21 @@ irange::irange (tree type)
   set_varying (type);
 }
 
-irange::irange (irange_kind rt, tree type,
+irange::irange (value_range_kind rt, tree type,
 		const wide_int &lbound, const wide_int &ubound)
 {
+  gcc_checking_assert (rt == VR_RANGE || rt == VR_ANTI_RANGE);
   init (type, lbound, ubound, rt);
 }
 
 irange::irange (tree type, const wide_int &lbound, const wide_int &ubound)
 {
-  init (type, lbound, ubound, IRANGE_PLAIN);
+  init (type, lbound, ubound, VR_RANGE);
 }
 
-irange::irange (irange_kind rt, tree lbound, tree ubound)
+irange::irange (value_range_kind rt, tree lbound, tree ubound)
 {
+  gcc_checking_assert (rt == VR_RANGE || rt == VR_ANTI_RANGE);
   tree type = TREE_TYPE (lbound);
   init (type, wi::to_wide (lbound), wi::to_wide (ubound), rt);
 }
@@ -300,7 +306,7 @@ irange::irange (irange_kind rt, tree lbound, tree ubound)
 irange::irange (tree lbound, tree ubound)
 {
   tree type = TREE_TYPE (lbound);
-  init (type, wi::to_wide (lbound), wi::to_wide (ubound), IRANGE_PLAIN);
+  init (type, wi::to_wide (lbound), wi::to_wide (ubound), VR_RANGE);
 }
 
 // Mark pair [i, j] to empty.  This is done by building a non-sensical pair.
@@ -397,7 +403,7 @@ irange::cast (tree new_type)
 	{
 	  // Don't use range_nonzero because it will recurse into cast().
 	  unsigned prec = TYPE_PRECISION (new_type);
-	  irange nz (IRANGE_INVERSE, new_type,
+	  irange nz (VR_ANTI_RANGE, new_type,
 		     wi::zero (prec), wi::zero (prec));
 	  *this = nz;
 	}
@@ -1046,8 +1052,7 @@ value_range_to_irange (tree type, enum value_range_kind kind,
   if (kind == VR_VARYING || kind == VR_UNDEFINED)
     r.set_varying (type);
   else
-    r = irange (kind == VR_ANTI_RANGE ? IRANGE_INVERSE : IRANGE_PLAIN,
-		type, min, max);
+    r = irange (kind, type, min, max);
   return r;
 }
 
@@ -1106,7 +1111,7 @@ irange_tests ()
   irange r0, r1, rold;
 
   // Test that NOT(255) is [0..254] in 8-bit land.
-  irange not_255 (IRANGE_INVERSE, UCHAR (255), UCHAR (255));
+  irange not_255 (VR_ANTI_RANGE, UCHAR (255), UCHAR (255));
   ASSERT_TRUE (not_255 == irange (UCHAR (0), UCHAR (254)));
 
   // Test that NOT(0) is [1..255] in 8-bit land.
@@ -1147,17 +1152,17 @@ irange_tests ()
   ASSERT_TRUE (r0 == irange (UINT(6), maxuint));
 
   // Check that ~[10,MAX] => [0,9] for unsigned int.
-  r0 = irange (IRANGE_PLAIN, UINT(10), maxuint);
+  r0 = irange (VR_RANGE, UINT(10), maxuint);
   r0.invert ();
   ASSERT_TRUE (r0 == irange (UINT (0), UINT (9)));
 
   // Check that ~[0,5] => [6,MAX] for unsigned 128-bit numbers.
-  r0 = irange (IRANGE_INVERSE, UINT128 (0), UINT128 (5));
+  r0 = irange (VR_ANTI_RANGE, UINT128 (0), UINT128 (5));
   r1 = irange (UINT128(6), build_minus_one_cst (u128_type));
   ASSERT_TRUE (r0 == r1);
 
   // Check that [~5] is really [-MIN,4][6,MAX].
-  r0 = irange (IRANGE_INVERSE, INT (5), INT (5));
+  r0 = irange (VR_ANTI_RANGE, INT (5), INT (5));
   r1 = irange (minint, INT (4));
   r1.union_ (irange (INT (6), maxint));
   ASSERT_FALSE (r1.undefined_p ());
@@ -1570,7 +1575,7 @@ irange_tests ()
   ASSERT_TRUE (r0.nonzero_p ());
 
   // Test irange / value_range conversion functions.
-  r0 = irange (IRANGE_INVERSE, INT (10), INT (20));
+  r0 = irange (VR_ANTI_RANGE, INT (10), INT (20));
   value_range_base vr = irange_to_value_range (r0);
   ASSERT_TRUE (vr.kind () == VR_ANTI_RANGE);
   ASSERT_TRUE (wi::eq_p (10, wi::to_wide (vr.min ()))

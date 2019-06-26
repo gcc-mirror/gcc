@@ -1630,21 +1630,15 @@ extract_range_from_plus_expr (value_range_base *vr,
 	  return;
 	}
 
-      wide_int_range_kind wi_kind;
-      adjust_range_for_overflow (wi_kind, wmin, wmax, expr_type,
+      adjust_range_for_overflow (type, wmin, wmax, expr_type,
 				 min_ovf, max_ovf,
 				 TYPE_OVERFLOW_WRAPS (expr_type));
-      if (wi_kind == WIDE_INT_RANGE_VARYING)
+      if (type == VR_VARYING)
 	{
 	  vr->set_varying (expr_type);
 	  return;
 	}
-      if (wi_kind == WIDE_INT_RANGE_PLAIN)
-	type = VR_RANGE;
-      else if (wi_kind == WIDE_INT_RANGE_INVERSE)
-	type = VR_ANTI_RANGE;
-      else
-	gcc_unreachable ();
+      gcc_assert (type != VR_UNDEFINED);
       min = wide_int_to_tree (expr_type, wmin);
       max = wide_int_to_tree (expr_type, wmax);
 

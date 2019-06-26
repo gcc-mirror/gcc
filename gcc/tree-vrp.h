@@ -20,21 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_VRP_H
 #define GCC_TREE_VRP_H
 
-/* Types of value ranges.  */
-enum value_range_kind
-{
-  /* Empty range.  */
-  VR_UNDEFINED,
-  /* Range spans the entire domain.  */
-  VR_VARYING,
-  /* Range is [MIN, MAX].  */
-  VR_RANGE,
-  /* Range is ~[MIN, MAX].  */
-  VR_ANTI_RANGE,
-  /* Range is a nice guy.  */
-  VR_LAST
-};
-
 class value_range_storage;
 
 /* Range of values that can be associated with an SSA_NAME after VRP

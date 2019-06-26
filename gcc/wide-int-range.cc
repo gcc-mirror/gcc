@@ -873,7 +873,7 @@ wide_int_range_div (wide_int &wmin, wide_int &wmax,
    occurred while originally calculating WMIN or WMAX.  */
 
 void
-adjust_range_for_overflow (wide_int_range_kind &kind,
+adjust_range_for_overflow (value_range_kind &kind,
 			   wide_int &wmin, wide_int &wmax,
 			   tree type,
 			   wi::overflow_type min_ovf,
@@ -887,7 +887,7 @@ adjust_range_for_overflow (wide_int_range_kind &kind,
      range covers all values.  */
   if (prec == 1 && wi::lt_p (wmax, wmin, sgn))
     {
-      kind = WIDE_INT_RANGE_VARYING;
+      kind = VR_VARYING;
       return;
     }
 
@@ -903,10 +903,10 @@ adjust_range_for_overflow (wide_int_range_kind &kind,
 	     the entire range.  We have a similar check at the end of
 	     extract_range_from_binary_expr.  */
 	  if (wi::gt_p (tmin, tmax, sgn))
-	    kind = WIDE_INT_RANGE_VARYING;
+	    kind = VR_VARYING;
 	  else
 	    {
-	      kind = WIDE_INT_RANGE_PLAIN;
+	      kind = VR_RANGE;
 	      /* No overflow or both overflow or underflow.  The
 		 range kind stays VR_RANGE.  */
 	      wmin = tmin;
@@ -932,10 +932,10 @@ adjust_range_for_overflow (wide_int_range_kind &kind,
 	     types values.  */
 	  if (covers || wi::cmp (tmin, tmax, sgn) > 0)
 	    {
-	      kind = WIDE_INT_RANGE_VARYING;
+	      kind = VR_VARYING;
 	      return;
 	    }
-	  kind = WIDE_INT_RANGE_INVERSE;
+	  kind = VR_ANTI_RANGE;
 	  wmin = tmin;
 	  wmax = tmax;
 	  return;
@@ -943,7 +943,7 @@ adjust_range_for_overflow (wide_int_range_kind &kind,
       else
 	{
 	  /* Other underflow and/or overflow, drop to VR_VARYING.  */
-	  kind = WIDE_INT_RANGE_VARYING;
+	  kind = VR_VARYING;
 	  return;
 	}
     }
@@ -953,7 +953,7 @@ adjust_range_for_overflow (wide_int_range_kind &kind,
 	 value.  */
       wide_int type_min = wi::min_value (prec, sgn);
       wide_int type_max = wi::max_value (prec, sgn);
-      kind = WIDE_INT_RANGE_PLAIN;
+      kind = VR_RANGE;
       if (min_ovf == wi::OVF_UNDERFLOW)
 	wmin = type_min;
       else if (min_ovf == wi::OVF_OVERFLOW)
