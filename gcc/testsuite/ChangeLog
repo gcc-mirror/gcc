@@ -1,3 +1,7 @@
+2019-06-26  Li Jia He  <helijia@linux.ibm.com>
+
+	* gcc.target/powerpc/maddld-1.c: New testcase.
+
 2019-06-06  Hongtao Liu  <hongtao.liu@intel.com>
 	    Olga Makhotina  <olga.makhotina@intel.com>
 
