@@ -93,6 +93,9 @@ main ()
 #ifdef VPCLMULQDQ
       && (ecx & bit_VPCLMULQDQ)
 #endif
+#ifdef AVX512VP2INTERSECT
+      && (edx & bit_AVX512VP2INTERSECT)
+#endif
       && avx512f_os_support ())
     {
       DO_TEST ();

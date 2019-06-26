@@ -1924,6 +1924,7 @@ enum processor_features
   F_VPCLMULQDQ,
   F_AVX512VNNI,
   F_AVX512BITALG,
+  F_AVX512VP2INTERSECT,
   F_AVX512BF16,
   F_MAX
 };
@@ -2070,6 +2071,7 @@ static const _isa_names_table isa_names_table[] =
   {"vpclmulqdq", F_VPCLMULQDQ, P_ZERO},
   {"avx512vnni", F_AVX512VNNI, P_ZERO},
   {"avx512bitalg", F_AVX512BITALG, P_ZERO},
+  {"avx512vp2intersect",F_AVX512VP2INTERSECT, P_ZERO},
   {"avx512bf16", F_AVX512BF16, P_ZERO}
 };
 

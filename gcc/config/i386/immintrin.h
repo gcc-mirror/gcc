@@ -96,6 +96,10 @@
 
 #include <avx512bitalgintrin.h>
 
+#include <avx512vp2intersectintrin.h>
+
+#include <avx512vp2intersectvlintrin.h>
+
 #include <shaintrin.h>
 
 #include <lzcntintrin.h>

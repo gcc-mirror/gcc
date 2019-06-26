@@ -47,6 +47,7 @@ extern void ix86_reset_previous_fndecl (void);
 
 extern bool ix86_using_red_zone (void);
 
+extern unsigned int ix86_regmode_natural_size (machine_mode);
 #ifdef RTX_CODE
 extern int standard_80387_constant_p (rtx);
 extern const char *standard_80387_constant_opcode (rtx);

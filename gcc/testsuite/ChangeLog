@@ -1,3 +1,19 @@
+2019-06-06  Hongtao Liu  <hongtao.liu@intel.com>
+	    Olga Makhotina  <olga.makhotina@intel.com>
+
+	* gcc.target/i386/avx512-check.h: Handle bit_AVX512VP2INTERSECT.
+	* gcc.target/i386/avx512vp2intersect-2intersect-1a.c: New test.
+	* gcc.target/i386/avx512vp2intersect-2intersect-1b.c: Likewise.
+	* gcc.target/i386/avx512vp2intersect-2intersectvl-1a.c: Likewise.
+	* gcc.target/i386/avx512vp2intersect-2intersectvl-1b.c: Likewise.
+	* gcc.target/i386/sse-12.c: Add -mavx512vp2intersect.
+	* gcc.target/i386/sse-13.c: Likewsie.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* gcc.target/i386/sse-22.c: Likewise.
+	* gcc.target/i386/sse-23.c: Likewise.
+	* g++.dg/other/i386-2.C: Likewise.
+	* g++.dg/other/i386-3.C: Likewise.
+
 2019-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90969
