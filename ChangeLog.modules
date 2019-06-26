@@ -1,6 +1,12 @@
 2019-06-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::hash::add_mergeable_horcrux): Add redirect as
+	necessary.
+	gcc/testsuite/
+	* g++.dg/modules/tpl-spec-7.C: New.
+
+	gcc/cp/
 	* module.cc (depset::hash::add_redirect): New.
 	(depset::hash::add_specialization): Use it.
 	(depset::hash::add_mergeable): Use it.

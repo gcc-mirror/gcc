@@ -10410,6 +10410,8 @@ depset::hash::add_mergeable_horcrux (depset *unnamed)
     {
       dep = make_entity (decl, unnamed->get_entity_kind ());
       *slot = dep;
+      if (unnamed->is_partial ())
+	add_redirect (dep);
     }
 }
 
