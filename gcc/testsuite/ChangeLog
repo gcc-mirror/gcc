@@ -1,3 +1,7 @@
+2019-06-26  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/pr90927.c: New.
+
 2019-06-26  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/90982
