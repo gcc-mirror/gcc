@@ -110,5 +110,18 @@ quad_address_offset_p (HOST_WIDE_INT offset)
   return (IN_RANGE (offset, -32768, 32767) && ((offset) & 0xf) == 0);
 }
 
+/* Mach-O (Darwin) support for longcalls, emitted from  rs6000-logue.c.  */
+
+#if TARGET_MACHO
+
+typedef struct branch_island_d {
+  tree function_name;
+  tree label_name;
+  int line_number;
+ } branch_island;
+
+extern vec<branch_island, va_gc> *branch_islands;
+
+#endif
 
 #endif
