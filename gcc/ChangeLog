@@ -1,3 +1,10 @@
+2019-06-26  Li Jia He  <helijia@linux.ibm.com>
+
+	* config/rs6000/rs6000.h (TARGET_MADDLD): Remove the restriction of
+	TARGET_POWERPC64.
+	* config/rs6000/rs6000.md (maddld): Change maddld match_operand from DI
+	to GPR.
+
 2019-06-26  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* doc/invoke.texi (Warning Options): Fix some @opindex syntax.
