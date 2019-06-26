@@ -513,6 +513,7 @@ powerpc*-*-*)
 		;;
 	esac
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-logue.c"
 	;;
 pru-*-*)
 	cpu_type=pru
@@ -2693,7 +2694,6 @@ powerpc*-*-linux*)
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-ppccomm"
 	extra_objs="$extra_objs rs6000-linux.o"
-	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-logue.c"
 	case ${target} in
 	    powerpc*le-*-*)
 		tm_file="${tm_file} rs6000/sysv4le.h" ;;

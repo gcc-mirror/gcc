@@ -1,3 +1,8 @@
+2019-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.gcc (powerpc*-*-linux*): Move target_gtfiles from here..
+	(powerpc*-*-*) ... to here.
+
 2019-06-26  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dse.c (initialize_ao_ref_for_dse): Handle _chk variants of
