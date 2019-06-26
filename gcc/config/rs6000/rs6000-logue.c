@@ -61,6 +61,11 @@ static rs6000_stack_t stack_info;
 int rs6000_pic_labelno = 0;
 
 
+#ifndef TARGET_PROFILE_KERNEL
+#define TARGET_PROFILE_KERNEL 0
+#endif
+
+
 /* Function to init struct machine_function.
    This will be called, via a pointer variable,
    from push_function_context.  */

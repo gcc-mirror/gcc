@@ -1,5 +1,9 @@
 2019-06-26  David Edelsohn  <dje.gcc@gmail.com>
 
+	* config/rs6000/rs6000-logue.c: Add #ifndef TARGET_PROFILE_KERNEL.
+
+2019-06-26  David Edelsohn  <dje.gcc@gmail.com>
+
 	* config.gcc (powerpc-ibm-aix*): Define target_gtfiles.
 
 2019-06-26  Segher Boessenkool  <segher@kernel.crashing.org>
