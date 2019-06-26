@@ -3405,7 +3405,7 @@ vect_get_known_peeling_cost (loop_vec_info loop_vinfo, int peel_iters_prologue,
          iterations are unknown, count a taken branch per peeled loop.  */
       retval = record_stmt_cost (prologue_cost_vec, 1, cond_branch_taken,
 				 NULL, 0, vect_prologue);
-      retval += record_stmt_cost (prologue_cost_vec, 1, cond_branch_taken,
+      retval += record_stmt_cost (epilogue_cost_vec, 1, cond_branch_taken,
 				  NULL, 0, vect_epilogue);
     }
   else
