@@ -1,3 +1,13 @@
+2019-06-26  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/execute/builtins/builtins.exp: Add -fno-tree-dse
+	as DSE compromises several of these tests.
+	* gcc.dg/builtin-stringop-chk-1.c: Similarly.
+	* gcc.dg/memcpy-2.c: Similarly.
+	* gcc.dg/pr40340-1.c: Similarly.
+	* gcc.dg/pr40340-2.c: Similarly.
+	* gcc.dg/pr40340-5.c: Similarly.
+
 2019-06-26  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR Fortran/90988
