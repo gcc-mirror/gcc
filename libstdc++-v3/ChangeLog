@@ -1,3 +1,17 @@
+2019-06-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2019-05-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90634
+	* include/experimental/bits/fs_path.h (path::path(path&&)): Only call
+	_M_split_cmpts() for a path with multiple components.
+	(path::_S_is_dir_sep()): Add missing 'static' keyword to function.
+	* src/filesystem/path.cc (path::_M_split_cmpts()): Count number of
+	components and reserve space in vector. Return early when there is
+	only one component.
+	* testsuite/experimental/filesystem/path/construct/90634.cc: New test.
+
 2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
