@@ -1,3 +1,10 @@
+2019-06-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67184
+	PR c++/69445
+	* g++.dg/other/final3.C: New.
+	* g++.dg/other/final5.C: Likewise.
+
 2019-06-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/90991
