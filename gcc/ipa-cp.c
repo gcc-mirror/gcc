@@ -1082,7 +1082,6 @@ ipcp_bits_lattice::meet_with (ipcp_bits_lattice& other, unsigned precision,
   if (TREE_CODE_CLASS (code) == tcc_binary)
     {
       tree type = TREE_TYPE (operand);
-      gcc_assert (INTEGRAL_TYPE_P (type));
       widest_int o_value, o_mask;
       get_value_and_mask (operand, &o_value, &o_mask);
 
