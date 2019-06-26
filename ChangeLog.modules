@@ -1,6 +1,11 @@
 2019-06-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* decl.c (duplicate_decls): Non-modules are ok for builtins.
+	gcc/testsuite/
+	* g++.dg/modules/builtin-2.C: New.
+
+	gcc/cp/
 	* module.cc (depset::hash::add_mergeable_horcrux): Add redirect as
 	necessary.
 	gcc/testsuite/

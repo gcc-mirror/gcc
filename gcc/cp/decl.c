@@ -1930,7 +1930,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       else
 	{
 	  gcc_checking_assert (!MAYBE_DECL_MODULE_OWNER (olddecl));
-	  if (!global_purview_p ())
+	  if (!(global_purview_p () || not_module_p ()))
 	    error ("declaration %qD conflicts with builtin", newdecl);
 	  set_module_owner (olddecl);
 	}
