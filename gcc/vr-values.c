@@ -801,20 +801,21 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
     }
 
   /* Temporary testing hack.  */
-#if 0
+  if (getenv("HACK"))
   {
     value_range_base v;
     tree type = signed_char_type_node;
-    enum tree_code code = BIT_IOR_EXPR;
+    enum tree_code code = BIT_AND_EXPR;
+    tree small = TYPE_MIN_VALUE (type);
+    small = fold_build2 (PLUS_EXPR, type, small, build_one_cst (type));
     value_range_base vr0 (VR_ANTI_RANGE,
-			  build_int_cst (type, -127),
-			  build_int_cst (type, 63));
-    value_range_base vr1 (VR_ANTI_RANGE,
-			  build_int_cst (type, -127),
-			  build_int_cst (type, -1));
+			  small,
+			  build_int_cst (type, 0));
+    value_range_base vr1 (VR_RANGE,
+			  build_int_cst (type, -1),
+			  build_int_cst (type, 0));
     range_fold_binary_expr (&v, code, type, &vr0, &vr1);
   }
-#endif
 
   range_fold_binary_expr (vr, code, expr_type, &vr0, &vr1);
 

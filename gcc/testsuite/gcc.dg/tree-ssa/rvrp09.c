@@ -1,6 +1,9 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-rvrp-details -fdisable-tree-ethread -fdisable-tree-forwprop1 -fdisable-tree-ccp1  -fdisable-tree-fre1 " } */
 
+/* NOTE: This stresses irange_adjust_bit_and_mask, which is currently
+   disabled until we can contribute it upstream.  */
+
 extern void exit (int);
 extern void abort (void);
 

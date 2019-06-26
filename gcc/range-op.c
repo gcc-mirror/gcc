@@ -372,6 +372,11 @@ irange_adjust_bit_and_mask (irange &r, signop s,
 			    const wide_int &lh_lb, const wide_int &lh_ub,
 			    const wide_int &rh_lb, const wide_int &rh_ub)
 {
+  /* FIXME: This optimization causes us to miscompare with VRP.
+     Disable for now, and then contribute it independently
+     upstream.  */
+  return;
+
   /* If the resulting range contains 0, AND the least significant bit
      of mask is not set, we can improve the range by making the least
      significant bit set the minimum, and adding in the 0.
