@@ -188,10 +188,11 @@ vr_values::set_defs_to_varying (gimple *stmt)
   ssa_op_iter i;
   tree def;
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, i, SSA_OP_DEF)
-    {
-      value_range *vr = get_value_range (def);
-      vr->set_varying (TREE_TYPE (def));
-    }
+    if (irange::supports_type_p (TREE_TYPE (def)))
+      {
+	value_range *vr = get_value_range (def);
+	vr->set_varying (TREE_TYPE (def));
+      }
 }
 
 /* Update the value range and equivalence set for variable VAR to

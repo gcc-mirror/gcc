@@ -440,14 +440,16 @@ get_range_info (const_tree name, value_range_base &vr)
   wide_int wmin, wmax;
   enum value_range_kind kind = get_range_info (name, &wmin, &wmax);
 
-  if (kind == VR_VARYING || kind == VR_UNDEFINED)
-    min = max = TREE_TYPE (name);
+  if (kind == VR_VARYING)
+    vr.set_varying (TREE_TYPE (name));
+  else if (kind == VR_UNDEFINED)
+    vr.set_undefined (TREE_TYPE (name));
   else
     {
       min = wide_int_to_tree (TREE_TYPE (name), wmin);
       max = wide_int_to_tree (TREE_TYPE (name), wmax);
+      vr.set (kind, min, max);
     }
-  vr.set (kind, min, max);
   return kind;
 }
 

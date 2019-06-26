@@ -170,6 +170,7 @@ class GTY((user)) value_range : public value_range_base
   /* Misc methods.  */
   void deep_copy (const value_range *);
   void dump (FILE *) const;
+  void dump () const;
 
  private:
   /* Deep-copies bitmap argument.  */
@@ -354,11 +355,9 @@ void range_fold_unary_expr (value_range_base *, enum tree_code, tree,
 inline bool
 range_includes_zero_p (const value_range_base *vr)
 {
+  /* UNDEFINED may not have a type in uninitialized ranges.  */
   if (vr->undefined_p ())
     return false;
-
-  if (vr->varying_p ())
-    return true;
 
   return vr->may_contain_p (build_zero_cst (vr->type ()));
 }

@@ -255,9 +255,6 @@ value_range_base::equal_p (const value_range_base &other) const
   if (undefined_p ())
     return m_kind == other.m_kind;
 
-  if (varying_p ())
-    return m_kind == other.m_kind && types_compatible_p (m_min, other.m_min);
-
   return (m_kind == other.m_kind
 	  && vrp_operand_equal_p (m_min, other.m_min)
 	  && vrp_operand_equal_p (m_max, other.m_max));
@@ -303,7 +300,22 @@ void
 value_range_base::set_undefined (tree type)
 {
   m_kind = VR_UNDEFINED;
-  m_min = m_max = type;
+  if (type)
+    {
+      if (irange::supports_type_p (type))
+	{
+	  m_min = vrp_val_min (type, true);
+	  m_max = vrp_val_max (type, true);
+	}
+      else
+	{
+	  /* This is a temporary kludge for ipa-cp which is building
+	     undefined/varying of floats.  ??  */
+	  m_min = m_max = build1 (NOP_EXPR, type, type);
+	}
+    }
+  else
+    m_min = m_max = NULL;
 }
 
 void
@@ -317,7 +329,17 @@ void
 value_range_base::set_varying (tree type)
 {
   m_kind = VR_VARYING;
-  m_min = m_max = type;
+  if (irange::supports_type_p (type))
+    {
+      m_min = vrp_val_min (type, true);
+      m_max = vrp_val_max (type, true);
+    }
+  else
+    {
+      /* This is a temporary kludge for ipa-cp which is building
+	 undefined/varying of floats.  ??  */
+      m_min = m_max = build1 (NOP_EXPR, type, type);
+    }
 }
 
 void
@@ -401,11 +423,6 @@ value_range_base::singleton_p (tree *result) const
 tree
 value_range_base::type () const
 {
-  if (undefined_p () || varying_p ())
-    {
-      gcc_assert (min () != NULL);
-      return min ();
-    }
   return TREE_TYPE (min ());
 }
 
@@ -484,6 +501,12 @@ value_range::dump (FILE *file) const
 
       fprintf (file, "} (%u elements)", c);
     }
+}
+
+void
+value_range::dump () const
+{
+  dump (stderr);
 }
 
 void
@@ -722,14 +745,15 @@ value_range_base::set (enum value_range_kind kind, tree min, tree max)
 {
   if (kind == VR_UNDEFINED)
     {
-      gcc_assert (!min || TYPE_P (min));
-      set_undefined (min);
+      if (min)
+	set_undefined (TREE_TYPE (min));
+      else
+	set_undefined ();
       return;
     }
   else if (kind == VR_VARYING)
     {
-      gcc_assert (TYPE_P (min));
-      set_varying (min);
+      set_varying (TREE_TYPE (min));
       return;
     }
 
@@ -6460,12 +6484,12 @@ value_range_base::intersect_helper (const value_range_base *vr0,
      VR_RANGE can still be a VR_RANGE.  Work on a temporary so we can
      fall back to vr0 when this turns things to varying.  */
   value_range_base tem;
-  if (vr0type == VR_UNDEFINED || vr0type == VR_VARYING)
-    {
-      vr0min = TREE_TYPE (vr0->min ());
-      vr0max = TREE_TYPE (vr0->min ());
-    }
-  tem.set (vr0type, vr0min, vr0max);
+  if (vr0type == VR_UNDEFINED)
+    tem.set_undefined (TREE_TYPE (vr0->min ()));
+  else if (vr0type == VR_VARYING)
+    tem.set_varying (TREE_TYPE (vr0->min ()));
+  else
+    tem.set (vr0type, vr0min, vr0max);
   /* If that failed, use the saved original VR0.  */
   if (tem.varying_p ())
     return *vr0;
@@ -6570,12 +6594,12 @@ value_range_base::union_helper (const value_range_base *vr0,
 
   /* Work on a temporary so we can still use vr0 when union returns varying.  */
   value_range_base tem;
-  if (vr0type == VR_UNDEFINED || vr0type == VR_VARYING)
-    {
-      vr0min = TREE_TYPE (vr0->min ());
-      vr0max = TREE_TYPE (vr0->min ());
-    }
-  tem.set (vr0type, vr0min, vr0max);
+  if (vr0type == VR_UNDEFINED)
+    tem.set_undefined (TREE_TYPE (vr0->min ()));
+  else if (vr0type == VR_VARYING)
+    tem.set_varying (TREE_TYPE (vr0->min ()));
+  else
+    tem.set (vr0type, vr0min, vr0max);
 
   /* Failed to find an efficient meet.  Before giving up and setting
      the result to VARYING, see if we can at least derive a useful
@@ -6655,6 +6679,8 @@ value_range::union_ (const value_range *other)
     }
 }
 
+/* Normalize symbolics into constants.  */
+
 value_range_base
 value_range_base::normalize_symbolics () const
 {
@@ -6666,7 +6692,7 @@ value_range_base::normalize_symbolics () const
 
   // [SYM, SYM] -> VARYING
   if (min_symbolic && max_symbolic)
-    goto varying;
+    return value_range_base (ttype);
   if (kind () == VR_RANGE)
     {
       // [SYM, NUM] -> [-MIN, NUM]
@@ -6684,7 +6710,7 @@ value_range_base::normalize_symbolics () const
 	  tree n = wide_int_to_tree (ttype, wi::to_wide (max ()) + 1);
 	  return value_range_base (VR_RANGE, n, vrp_val_max (ttype));
 	}
-      goto varying;
+      return value_range_base (ttype);
     }
   // ~[NUM, SYM] -> [-MIN, NUM - 1]
   if (!vrp_val_is_min (min ()))
@@ -6692,10 +6718,7 @@ value_range_base::normalize_symbolics () const
       tree n = wide_int_to_tree (ttype, wi::to_wide (min ()) - 1);
       return value_range_base (VR_RANGE, vrp_val_min (ttype), n);
     }
- varying:
-  value_range_base tmp;
-  tmp.set_varying (ttype);
-  return tmp;
+  return value_range_base (ttype);
 }
 
 unsigned
@@ -6727,11 +6750,7 @@ value_range_base::lower_bound (unsigned pair) const
   gcc_assert (!undefined_p ());
   gcc_assert (pair + 1 <= num_pairs ());
   tree t = NULL;
-  if (varying_p ())
-    t = vrp_val_min (type (), true);
-  else if (m_kind == VR_RANGE)
-    t = m_min;
-  else if (m_kind == VR_ANTI_RANGE)
+  if (m_kind == VR_ANTI_RANGE)
     {
       value_range_base vr0, vr1;
       gcc_assert (ranges_from_anti_range (this, &vr0, &vr1, true));
@@ -6742,6 +6761,8 @@ value_range_base::lower_bound (unsigned pair) const
       else
 	gcc_unreachable ();
     }
+  else
+    t = m_min;
   return wi::to_wide (t);
 }
 
@@ -6754,11 +6775,7 @@ value_range_base::upper_bound (unsigned pair) const
   gcc_assert (!undefined_p ());
   gcc_assert (pair + 1 <= num_pairs ());
   tree t = NULL;
-  if (varying_p ())
-    t = vrp_val_max (type (), true);
-  else if (m_kind == VR_RANGE)
-    t = m_max;
-  else if (m_kind == VR_ANTI_RANGE)
+  if (m_kind == VR_ANTI_RANGE)
     {
       value_range_base vr0, vr1;
       gcc_assert (ranges_from_anti_range (this, &vr0, &vr1, true));
@@ -6769,6 +6786,8 @@ value_range_base::upper_bound (unsigned pair) const
       else
 	gcc_unreachable ();
     }
+  else
+    t = m_max;
   return wi::to_wide (t);
 }
 

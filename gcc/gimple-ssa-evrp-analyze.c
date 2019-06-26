@@ -211,8 +211,7 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	         getting first [64, +INF] and then ~[0, 0] from
 		 conditions like (s & 0x3cc0) == 0).  */
 	      value_range *old_vr = get_value_range (vrs[i].first);
-	      value_range_base tem (old_vr->kind (), old_vr->min (),
-				    old_vr->max ());
+	      value_range_base tem = *old_vr;
 	      tem.intersect (vrs[i].second);
 	      if (tem.equal_p (*old_vr))
 		continue;
@@ -250,6 +249,11 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
       gphi *phi = gpi.phi ();
       tree lhs = PHI_RESULT (phi);
       if (virtual_operand_p (lhs))
+	continue;
+
+      /* Skips floats and other things we can't represent in a
+	 range.  */
+      if (!irange::supports_type_p (TREE_TYPE (lhs)))
 	continue;
 
       value_range vr_result;
