@@ -1,3 +1,15 @@
+2019-06-26  Martin Liska  <mliska@suse.cz>
+
+	* bb-reorder.c (connect_better_edge_p): Add missing else
+	statement in the middle of if-else statements.
+
+/home/marxin/Programming/gcc/gcc/bb-reorder.c:1031:2: warning: Value stored to 'is_better_edge' is never read
+        is_better_edge = true;
+        ^                ~~~~
+/home/marxin/Programming/gcc/gcc/bb-reorder.c:1034:2: warning: Value stored to 'is_better_edge' is never read
+        is_better_edge = false;
+        ^                ~~~~~
+
 2019-06-25  Hongtao Liu  <hongtao.liu@intel.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 	    Olga Makhotina  <olga.makhotina@intel.com>

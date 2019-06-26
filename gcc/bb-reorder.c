@@ -1032,7 +1032,7 @@ connect_better_edge_p (const_edge e, bool src_index_p, int best_len,
       else if (e->count () < cur_best_edge->count ())
 	/* The edge has lower probability than the temporary best edge.  */
 	is_better_edge = false;
-      if (e->probability > cur_best_edge->probability)
+      else if (e->probability > cur_best_edge->probability)
 	/* The edge has higher probability than the temporary best edge.  */
 	is_better_edge = true;
       else if (e->probability < cur_best_edge->probability)
