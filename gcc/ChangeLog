@@ -1,5 +1,12 @@
 2019-06-26  Martin Liska  <mliska@suse.cz>
 
+	PR tree-optimization/90973
+	* tree-vect-loop.c (vect_get_known_peeling_cost): Use
+	epilogue_cost_vec instead of prologue_cost_vec for
+	a epilogue cost.
+
+2019-06-26  Martin Liska  <mliska@suse.cz>
+
 	* bb-reorder.c (connect_better_edge_p): Add missing else
 	statement in the middle of if-else statements.
 
