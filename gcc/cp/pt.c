@@ -28392,7 +28392,7 @@ walk_specializations (bool decls_p,
 // Yes.  Yes we do.
 
 tree
-match_mergeable_specialization (tree spec, tree tmpl, tree args)
+match_mergeable_specialization (tree spec, tree tmpl, tree args, bool insert)
 {
   spec_entry elt = {tmpl, args, NULL_TREE};
   hash_table<spec_hasher> *specializations;
@@ -28401,15 +28401,19 @@ match_mergeable_specialization (tree spec, tree tmpl, tree args)
     specializations = type_specializations;
   else
     specializations = decl_specializations;
-  spec_entry **slot = specializations->find_slot (&elt, INSERT);
-  spec_entry *entry = *slot;
+  spec_entry **slot = specializations->find_slot (&elt,
+						  insert ? INSERT : NO_INSERT);
+  spec_entry *entry = slot ? *slot: NULL;
   if (entry)
     return entry->spec;
 
-  entry = ggc_alloc<spec_entry> ();
-  *entry = elt;
-  entry->spec = spec;
-  *slot = entry;
+  if (insert)
+    {
+      entry = ggc_alloc<spec_entry> ();
+      *entry = elt;
+      entry->spec = spec;
+      *slot = entry;
+    }
 
   return NULL_TREE;
 }

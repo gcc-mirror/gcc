@@ -7065,7 +7065,7 @@ extern void walk_specializations		(bool,
 						 void (*)(bool, spec_entry *,
 							  void *),
 						 void *);
-extern tree match_mergeable_specialization	(tree, tree, tree);
+extern tree match_mergeable_specialization	(tree, tree, tree, bool = true);
 
 /* in repo.c */
 extern void init_repo				(void);

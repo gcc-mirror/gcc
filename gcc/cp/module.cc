@@ -2229,13 +2229,15 @@ public:
   /* The kinds of entity the depset could describe.  */
   enum entity_kind
   {
-    EK_DECL,
-    EK_USING,
-    EK_UNNAMED,
-    EK_SPECIALIZATION, /* Any kind of specialization.  */
-    EK_NAMESPACE,
+    EK_DECL,		/* A decl.  */
+    EK_USING,		/* A using declaration.  */
+    EK_UNNAMED,		/* An unnameable entity.  */
+    EK_SPECIALIZATION,  /* A specialization.  */
+    EK_NAMESPACE,	/* A namespace.  */
     EK_EXPLICIT_HWM,  
     EK_BINDING = EK_EXPLICIT_HWM, /* Implicitly encoded.  */
+    EK_MAYBE_SPEC,	/* Potentially a specialization, else a DECL,
+			   never a returned kind.  */
     EK_BITS = 3, /* Only need to encode below EK_EXPLICIT_HWM.  */
   };
 
@@ -2257,8 +2259,9 @@ private:
 				   specialization.  */
     DB_UNREACHED_BIT,		/* A yet-to-be reached entity.  */
     DB_HIDDEN_BIT,		/* A hidden binding.  */
-    DB_FRIEND_BIT,		/* An injected friend of a template.  */
     DB_MERGEABLE_BIT,		/* An entity that needs merging.  */
+    DB_PSEUDO_SPEC_BIT,		/* A non-specialization
+				   specialization.  */
   };
 
 public:
@@ -2359,13 +2362,13 @@ public:
   {
     return get_flag_bit<DB_HIDDEN_BIT> ();
   }
-  bool is_friend () const
-  {
-    return get_flag_bit<DB_FRIEND_BIT> ();
-  }
   bool is_mergeable () const
   {
     return get_flag_bit<DB_MERGEABLE_BIT> ();
+  }
+  bool is_pseudo_spec () const
+  {
+    return get_flag_bit<DB_PSEUDO_SPEC_BIT> ();
   }
 
 public:
@@ -2496,6 +2499,7 @@ public:
 
   public:
     void add_mergeable (depset *);
+    void add_mergeable_horcrux (depset *);
     depset *add_dependency (tree decl, entity_kind, bool is_import = false);
     void add_binding (tree ns, tree value);
     void add_writables (tree ns, bitmap partitions);
@@ -6849,12 +6853,6 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
       return false;
     }
 
-  if (TREE_CODE (decl) == TEMPLATE_DECL
-      && TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM)
-    /* We rely on first meeting these when writing the template parms
-       when emitting the containing template_decl.  */
-    return true;
-
   if (TREE_CODE (decl) == TYPE_DECL
       && decl == TYPE_STUB_DECL (TREE_TYPE (decl))
       && TREE_CODE (TREE_TYPE (decl)) == TYPENAME_TYPE)
@@ -6890,8 +6888,8 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 
   int use_tpl = -1;
   tree ti = node_template_info (decl, use_tpl);
-  /* TI_TEMPLATE is not a TEMPLATE_DECL for (some) friends.  */
-  // FIXME: Why?
+  /* TI_TEMPLATE is not a TEMPLATE_DECL for (some) friends, because
+     we matched a non-template.  */
   if (ti && TREE_CODE (TI_TEMPLATE (ti)) == TEMPLATE_DECL
       && DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == decl)
     {
@@ -6952,18 +6950,31 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
   unsigned owner = MODULE_UNKNOWN;
   if (use_tpl > 0)
     {
-      /* Some kind of specialization. */
-      owner = MAYBE_DECL_MODULE_OWNER (decl);
-      if (owner >= MODULE_IMPORT_BASE)
-	owner = (*modules)[owner]->remap;
-      gcc_assert (!streaming_p ());
-      depset *dep = dep_hash->add_dependency
-	(decl, depset::EK_SPECIALIZATION, owner >= MODULE_IMPORT_BASE);
-      (void)dep;
-      // FIXME: some specializations aren't in the hash??
-      //      gcc_assert (dep->is_import () || dep->is_marked ());
-      kind = "specialization";
-      goto insert;
+      /* Some kind of specialization.   */
+      /* Not all specializations are in the table, so we have to query
+         it.  Those that are not there are findable by name, but a
+         specializations in that their definitions can be generated
+         anywhere -- we need to write them out if we did it.  */
+      depset *dep;
+      if (!streaming_p ())
+	{
+	  owner = MAYBE_DECL_MODULE_OWNER (decl);
+	  if (owner >= MODULE_IMPORT_BASE)
+	    owner = (*modules)[owner]->remap;
+
+	  dep = dep_hash->add_dependency (decl, depset::EK_MAYBE_SPEC,
+					  owner >= MODULE_IMPORT_BASE);
+	}
+      else
+	dep = dep_hash->find_entity (decl);
+
+      if (dep->get_entity_kind () == depset::EK_SPECIALIZATION)
+	{
+	  kind = "specialization";
+	  goto insert;
+	}
+      else
+	gcc_assert (dep->get_entity_kind () == depset::EK_DECL);
     }
 
   {
@@ -7561,11 +7572,12 @@ trees_in::tree_value (bool is_mergeable_node)
       tree fn_args = NULL_TREE;
       tree r_type = NULL_TREE;
 
-      if (!key_mergeable (res, inner, type,
-			  &container, &key, &fn_args, &r_type))
+      bool is_specialization
+	= key_mergeable (res, inner, type, &container, &key, &fn_args, &r_type);
+
+      if (!container)
 	goto bail;
 
-      bool is_specialization = TREE_CODE (container) != NAMESPACE_DECL;
       if (is_specialization)
 	{
 	  /* A specialization of some kind.  */
@@ -8058,7 +8070,14 @@ trees_in::tree_node ()
 	  }
 
 	int tag = i ();
-	if (tag)
+	if (!tag)
+	  {
+	    tag = insert (res);
+	    if (res)
+	      dump (dumper::TREE)
+		&& dump ("Created:%d derived type %C", tag, code);
+	  }
+	else if (unsigned (~tag) < back_refs.length ())
 	  {
 	    res = back_refs[~tag];
 	    if (res)
@@ -8067,10 +8086,8 @@ trees_in::tree_node ()
 	  }
 	else
 	  {
-	    tag = insert (res);
-	    if (res)
-	      dump (dumper::TREE)
-		&& dump ("Created:%d derived type %C", tag, code);
+	    set_overrun ();
+	    res = NULL_TREE;
 	  }
       }
       break;
@@ -8549,6 +8566,7 @@ trees_out::key_mergeable (tree decl, tree inner, tree)
       dump (dumper::MERGE)
 	&& dump ("Writing key for mergeable %s %C:%N",
 		 dep->entity_kind_name (), TREE_CODE (decl), decl);
+      u (is_specialization);
     }
 
   if (decl != inner)
@@ -8577,7 +8595,6 @@ trees_out::key_mergeable (tree decl, tree inner, tree)
       tmpl = entry->tmpl;
       args = entry->args;
 
-      /* The template will not be a namespace!  */
       tree_ctx (tmpl, false, NULL_TREE);
       tree_node (args);
     }
@@ -8616,33 +8633,38 @@ trees_out::key_mergeable (depset *depset)
 }
 
 /* DECL, INNER & TYPE are a skeleton set of nodes for a decl.  Only
-   the bools have been filled in.  Read its merging key.  */
+   the bools have been filled in.  Read its merging key.  Returns
+   IS_SPECIALIZATION.  *CONTAINER will be NULL on error.  */
 
 bool
 trees_in::key_mergeable (tree decl, tree inner, tree,
 			 tree *container, tree *key, tree *fn_args, tree *r_type)
 {
+  *container = *key = NULL_TREE;
+  *fn_args = *r_type = NULL_TREE;
+
+  bool is_specialization = u ();
+
   if (decl != inner)
     /* A template needs its template parms for identification.  */
     if (!tpl_header (decl))
       return false;
 
   /* Now read the locating information. */
-  *container = tree_node ();
+  tree ctx = tree_node ();
   *key = tree_node ();
 
-  if (get_overrun ())
-    return false;
-
-  if (TREE_CODE (*container) == NAMESPACE_DECL
-      && TREE_CODE (inner) == FUNCTION_DECL)
+  if (!is_specialization && TREE_CODE (inner) == FUNCTION_DECL)
     {
       *fn_args = fn_parms ();
       if (decl != inner)
 	*r_type = tree_node ();
     }
 
-  return !get_overrun ();
+  if (!get_overrun ())
+    *container = ctx;
+
+  return is_specialization;
 }
 
 /* Rebuild a streamed in type.  */
@@ -9679,6 +9701,12 @@ depset::hash::find_binding (tree ctx, tree name)
    types, internal-linkage entities or reachable global module
    fragment entities.
 
+   IS_IMPORT indicates a reference to an EK_UNNAMED or
+   EK_SPECIALIZATION from another module.  We need to insert horcrux
+   information for them, and then lazy load.  If we used their general
+   template and instantiation args, we'd load all the instantiations
+   of the template, which might be suboptimal.
+
    DECL will be an OVL_USING_P OVERLOAD, if it's from a binding that's
    a using decl.  */
 
@@ -9691,8 +9719,10 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 		       == (TREE_CODE (decl) == NAMESPACE_DECL
 			   && !DECL_NAMESPACE_ALIAS (decl)));
   gcc_checking_assert (ek != EK_BINDING);
-  gcc_checking_assert (!is_import
-		       || (ek == EK_UNNAMED || ek == EK_SPECIALIZATION));
+  if (is_import)
+    /* Only (potentially) unnameable imports need to be so marked.  */
+    gcc_checking_assert (ek == EK_UNNAMED || ek == EK_SPECIALIZATION
+			 || ek == EK_MAYBE_SPEC);
 
   depset *dep = NULL;
   if (depset **slot = entity_slot (decl, !is_for_mergeable ()))
@@ -9700,25 +9730,35 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
       bool binding_p = current && current->is_binding ();
       dep = *slot;
 
-      gcc_checking_assert (!is_for_mergeable () || !binding_p);
-      /* Usings only occur in bindings.  */
-      gcc_checking_assert (ek != EK_USING || (OVL_USING_P (decl) && binding_p));
-      /* Unnameable things are not namespace scope  */
-      gcc_checking_assert (ek != EK_UNNAMED
-			   || (TREE_CODE (CP_DECL_CONTEXT (decl))
-			       != NAMESPACE_DECL));
+      if (is_for_mergeable ())
+	/* Bindings are never mergeable.  */
+	gcc_checking_assert (!binding_p);
+      if (ek == EK_USING)
+	/* Usings only occur in bindings.  */
+	gcc_checking_assert (OVL_USING_P (decl) && binding_p);
+      if (ek == EK_UNNAMED)
+	/* Unnameable things are not namespace scope  */
+	gcc_checking_assert (TREE_CODE (CP_DECL_CONTEXT (decl))
+			     != NAMESPACE_DECL);
 
       if (!dep)
 	{
 	  bool has_def = (!is_for_mergeable () && ek != EK_USING
 			  && has_definition (decl));
+	  bool maybe_spec = ek == EK_MAYBE_SPEC;
+	  if (maybe_spec)
+	    {
+	      /* We were probing, and didn't find anything.  Therefore
+		 this is a regular-ish decl, but mark it as a pseudo
+		 spec so we know to write a definition.  */
+	      ek = EK_DECL;
+	      dump (dumper::DEPEND)
+		&& dump ("Pseudo specialization %N discovered", decl);
+	    }
 
 	  /* The only OVERLOADS we should see are USING decls from
 	     bindings.  */
 	  *slot = dep = make_entity (decl, ek, has_def);
-
-	  /* We should never meet an unknown specialization.  */
-	  gcc_assert (!(current && ek == EK_SPECIALIZATION));
 
 	  if (TREE_CODE (decl) == TEMPLATE_DECL)
 	    /* If we add a template, its result better not also be
@@ -9730,6 +9770,13 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	    /* Dependency of a namespace binding.  */;
 	  else if (ek == EK_NAMESPACE)
 	    /* Dependency is a namespace.  */;
+	  else if (maybe_spec)
+	    {
+	      /* Remember this has some specialization properties.  */
+	      dep->set_flag_bit<DB_PSEUDO_SPEC_BIT> ();
+	      if (is_import)
+		dep->set_flag_bit<DB_IMPORTED_BIT> ();
+	    }
 	  else if (ek == EK_UNNAMED
 		   || ek == EK_SPECIALIZATION)
 	    {
@@ -9738,7 +9785,6 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 		 refer to it by depending on its containing entity,
 		 and that entity will have the below checks applied to
 		 it.  */
-
 	      if (is_import)
 		/* Note this entity came from elsewhere.  */
 		dep->set_flag_bit<DB_IMPORTED_BIT> ();
@@ -9802,13 +9848,15 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	  if (!dep->is_import ())
 	    worklist.safe_push (dep);
 	}
+      else if (ek == EK_MAYBE_SPEC)
+	/* It's whatever we already found.  */
+	ek = dep->get_entity_kind ();
       else if (ek == EK_DECL && dep->get_entity_kind () == EK_SPECIALIZATION)
 	{
 	  /* decl is a friend of a template instantiation.  These
 	     have some of the properties of regular decls.  */
 	  dump (dumper::DEPEND)
 	    && dump ("Template friend %N discovered", decl);
-	  dep->set_flag_bit<DB_FRIEND_BIT> ();
 	}
       else
 	/* Make sure we have consistent categorization.  */
@@ -9832,10 +9880,10 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	      if (dep->is_internal ())
 		current->set_flag_bit<DB_REFS_INTERNAL_BIT> ();
 
-	      if (TREE_CODE (decl) == TYPE_DECL
-		  && UNSCOPED_ENUM_P (TREE_TYPE (decl))
+	      if (TREE_CODE (dep->get_entity ()) == TYPE_DECL
+		  && UNSCOPED_ENUM_P (TREE_TYPE (dep->get_entity ()))
 		  && (CP_DECL_CONTEXT (current->get_entity ())
-		      == TREE_TYPE (decl)))
+		      == TREE_TYPE (dep->get_entity ())))
 		/* Unscoped enum values are pushed into the containing
 		   scope.  Insert a dependency to the current binding, if it
 		   is one of the enum constants.  */
@@ -9847,8 +9895,8 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	      /* The dependency is reachable now.  */
 	      reached_unreached = true;
 	      dump (dumper::DEPEND)
-		&& dump ("Reaching unreached %s %C:%N",
-			 dep->entity_kind_name (), TREE_CODE (decl), decl);
+		&& dump ("Reaching unreached %s %C:%N", dep->entity_kind_name (),
+			 TREE_CODE (dep->get_entity ()), dep->get_entity ());
 	      dep->clear_flag_bit<DB_UNREACHED_BIT> ();
 	    }
 	}
@@ -9996,10 +10044,35 @@ specialization_add (bool decl_p, spec_entry *entry, void *data_)
   spec_tuple *data = reinterpret_cast <spec_tuple *> (data_);
   tree spec = entry->spec;
 
+#if CHECKING_P
+  /* We exclusively use decls to locate things.  Make sure there's
+     no mismatch between the two specialization tables we keep.
+     pt.c optimizes instantiation lookup using a complicated
+     heuristic.  We don't attempt to replicate that algorithm, but
+     observe its behaviour and reproduce it upon read back.  */
+  if (TREE_CODE (DECL_TEMPLATE_RESULT (entry->tmpl)) == TYPE_DECL
+      && TYPE_DECL_ALIAS_P (DECL_TEMPLATE_RESULT (entry->tmpl)))
+    {
+      // FIXME: It's not entirely clear to me the relationship when
+      // the template's an alias.
+    }
+  else if (!decl_p)
+    {
+      /* If it's a (non-template-alias) type, we don't expect to find
+	 its TYPE_STUB_DECL.  */
+      gcc_checking_assert (DECL_CLASS_TEMPLATE_P (entry->tmpl));
+      tree existing = match_mergeable_specialization
+	(TYPE_STUB_DECL (spec), entry->tmpl, entry->args, false);
+      gcc_checking_assert (!existing);
+    }
+#endif
+
   if (!decl_p)
     {
       if (TYPE_DECL_ALIAS_P (DECL_TEMPLATE_RESULT (entry->tmpl)))
-	// FIXME: Skip for now
+	/* This will be found via the decl walk.  We only want it
+	   once.  */
+	// FIXME: Sure?
 	return;
 
       if (TREE_CODE (TREE_TYPE (DECL_TEMPLATE_RESULT (entry->tmpl)))
@@ -10007,14 +10080,8 @@ specialization_add (bool decl_p, spec_entry *entry, void *data_)
 	// FIXME: Likewise. Hey, make anon enum tags anon
 	return;
 
-      spec = TYPE_NAME (spec);
+      spec = TYPE_STUB_DECL (spec);
     }
-
-  /* Only add specializations from this TU.  */
-  unsigned module = MAYBE_DECL_MODULE_OWNER (spec);
-  if (module >= MODULE_IMPORT_BASE
-      && !(data->first && bitmap_bit_p (data->first, module)))
-    return;
 
   data->second.safe_push (entry);
 }
@@ -10138,13 +10205,32 @@ depset::hash::add_specializations (bool decl_p, bitmap partitions)
     have_spec:;
 #endif
 
-      depset *dep = add_dependency (spec, depset::EK_SPECIALIZATION);
-      dep->set_marked ();
-      dep->deps.safe_push (reinterpret_cast<depset *> (entry));
-      if (is_partial)
-	dep->set_flag_bit<DB_PARTIAL_BIT> ();
-      if (needs_reaching)
-	dep->set_flag_bit<DB_UNREACHED_BIT> ();
+
+      unsigned owner = MAYBE_DECL_MODULE_OWNER (spec);
+      if (owner >= MODULE_IMPORT_BASE)
+	owner = (*modules)[owner]->remap;
+      depset *dep = add_dependency (spec, depset::EK_SPECIALIZATION,
+				    owner >= MODULE_IMPORT_BASE);
+      if (dep->is_marked ())
+	{
+	  /* An already located specialization, this must be a friend
+	     with a different entry->tmpl.  */
+	  spec_entry *other = reinterpret_cast <spec_entry *> (dep->deps[0]);
+	  gcc_checking_assert (other->tmpl != entry->tmpl);
+	  gcc_checking_assert (!is_partial
+			       && needs_reaching == dep->is_unreached ());
+	  // FIXME: Should we record this alias and do something with
+	  // it?
+	}
+      else
+	{
+	  dep->set_marked ();
+	  dep->deps.safe_push (reinterpret_cast<depset *> (entry));
+	  if (is_partial)
+	    dep->set_flag_bit<DB_PARTIAL_BIT> ();
+	  if (needs_reaching)
+	    dep->set_flag_bit<DB_UNREACHED_BIT> ();
+	}
     }
 }
 
@@ -10196,10 +10282,9 @@ depset::hash::find_dependencies ()
 		{
 		  walker.mark_declaration (decl, current->has_defn ());
 
-		  if (current->get_entity_kind () == EK_SPECIALIZATION
-		      // FIXME: as with key_mergeable, why are some unmarked?
-		      && current->is_marked ())
+		  if (current->get_entity_kind () == EK_SPECIALIZATION)
 		    {
+		      gcc_assert (current->is_marked ());
 		      /* Even though specializations end up keyed to
 		         their primary template, we need to explicitly
 		         make them depend on both that and the
@@ -10259,6 +10344,24 @@ depset::hash::add_mergeable (depset *mergeable)
      mark the first dep.  */
   dep->set_marked ();
   dep->deps.safe_push (mergeable);
+}
+
+void
+depset::hash::add_mergeable_horcrux (depset *unnamed)
+{
+  gcc_checking_assert (is_for_mergeable ());
+  tree decl = unnamed->get_entity ();
+
+  /* All horcruxes go into the dependency table.  */
+  depset **slot = entity_slot (decl, true);
+  depset *dep = *slot;
+  if (dep)
+    gcc_checking_assert (!dep->is_marked ());
+  else
+    {
+      dep = make_entity (decl, unnamed->get_entity_kind ());
+      *slot = dep;
+    }
 }
 
 /* Compare two binding entries.  TYPE_DECL before non-exported before
@@ -12240,7 +12343,6 @@ enum ct_decl_flags
   cdf_has_definition = 0x1,	/* There is a definition (to read)  */
   cdf_is_specialization = 0x2,  /* Some kind of specialization.  */
   cdf_is_partial = 0x4,		/* A partial specialization.  */
-  cdf_is_friend = 0x8,		/* A template friend specialization.  */
 };
 
 /* Binding modifiers.  */
@@ -12261,37 +12363,74 @@ sort_mergeables (depset *scc[], unsigned size)
   dump.indent ();
 
   unsigned binding_lwm = size;
+  bool refs_unnamed = false;
   for (unsigned ix = size; ix--;)
     {
       depset *dep = scc[ix];
       if (dep->is_binding ())
-	/* Move bindings to the end.  */
-	scc[--binding_lwm] = dep;
+	{
+	  /* Move bindings to the end.  */
+	  if (--binding_lwm != ix)
+	    {
+	      scc[ix] = scc[binding_lwm];
+	      scc[binding_lwm] = dep;
+	    }
+	}
       else
-	table.add_mergeable (scc[ix]);
+	{
+	  table.add_mergeable (dep);
+	  if (dep->refs_unnamed () && dep->is_mergeable ())
+	    refs_unnamed = true;
+	}
     }
   dump (dumper::MERGE) && dump ("Ordering %u depsets", binding_lwm);
+  if (refs_unnamed)
+    /* Insert horcrux markers for the unnameable decls outside of the
+       mergeable set.  */
+    for (unsigned ix = binding_lwm; ix--;)
+      {
+	depset *dep = scc[ix];
+	if (dep->refs_unnamed () && dep->is_mergeable ())
+	  {
+	    for (unsigned jx = dep->is_marked ();
+		 jx != dep->deps.length (); jx++)
+	      {
+		depset *d = dep->deps[jx];
+		if ((d->get_entity_kind () == depset::EK_UNNAMED
+		     || d->get_entity_kind () == depset::EK_SPECIALIZATION
+		     || (d->get_entity_kind () == depset::EK_DECL
+			 && d->is_pseudo_spec ()))
+		    /* And not in this cluster. */
+		    && d->cluster)
+		  table.add_mergeable_horcrux (d);
+	      }
+	  }
+      }
+
   table.find_dependencies ();
 
   vec<depset *> order = table.connect ();
-  gcc_checking_assert (order.length () == binding_lwm);
 
   unsigned cluster = 0;
-  for (unsigned ix = 0; ix != binding_lwm; ix++)
-    {
-      depset *dep = order[ix]->deps[0];
-      scc[ix] = dep;
+  unsigned pos = 0;
+  for (unsigned ix = 0; ix != order.length (); ix++)
+    if (order[ix]->is_marked ())
+      {
+	gcc_checking_assert (pos != binding_lwm);
+	depset *dep = order[ix]->deps[0];
+	scc[pos++] = dep;
 
-      /* Each entity must be its own cluster.  */
-      gcc_assert (order[ix]->cluster != cluster);
-      cluster = order[ix]->cluster;
-      if (dep->is_mergeable ())
-	{
-	  count++;
-	  dump (dumper::MERGE) && dump ("Mergeable %u is %N",
-					ix, dep->get_entity ());
-	}
-    }
+	/* Each entity must be its own cluster.  */
+	gcc_assert (order[ix]->cluster != cluster);
+	cluster = order[ix]->cluster;
+	if (dep->is_mergeable ())
+	  {
+	    count++;
+	    dump (dumper::MERGE) && dump ("Mergeable %u is %N",
+					  ix, dep->get_entity ());
+	  }
+      }
+  gcc_checking_assert (pos == binding_lwm);
 
   order.release ();
   dump (dumper::MERGE) && dump ("Ordered %u mergeables", count);
@@ -12377,7 +12516,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  depset *b = scc[ix];
 
-	  for (unsigned jx = 0; jx != b->deps.length (); jx++)
+	  for (unsigned jx = b->is_marked (); jx != b->deps.length (); jx++)
 	    {
 	      depset *d = b->deps[jx];
 	      if ((d->get_entity_kind () == depset::EK_UNNAMED
@@ -12519,8 +12658,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  flags |= cdf_is_specialization;
 	  if (b->is_partial ())
 	    flags |= cdf_is_partial;
-	  if (b->is_friend ())
-	    flags |= cdf_is_friend;
 	  /* FALLTHROUGH.  */
 
 	case depset::EK_DECL:
@@ -14964,16 +15101,21 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
 	  || MODULE_MAJOR (my_ver) != MODULE_MAJOR (their_ver))
 	{
 	  /* Non-experimental or majors differ, decline.  */
-	  error_at (loc, "compiled module is version %s", their_string);
-	  inform (loc, "compiler is version %s", my_string);
+	  error_at (loc, "compiled module is %sversion %s",
+		    IS_EXPERIMENTAL (their_ver) ? "experimental " : "",
+		    their_string);
+	  inform (loc, "compiler is %sversion %s",
+		  IS_EXPERIMENTAL (my_ver) ? "experimental " : "",
+		  my_string);
 	  cfg.set_overrun ();
 	  goto done;
 	}
       else
 	/* Minors differ, give it a go.  */
-	if (warning_at (loc, 0, "compiled module is version %s", their_string))
+	if (warning_at (loc, 0, "compiled module is experimental version %s",
+			their_string))
 	  {
-	    inform (loc, "compiler is version %s,"
+	    inform (loc, "compiler is experimental version %s,"
 		    " close enough? \xc2\xaf\\_(\xe3\x83\x84)_/\xc2\xaf",
 		    my_string);
 	    note_cmi_name ();

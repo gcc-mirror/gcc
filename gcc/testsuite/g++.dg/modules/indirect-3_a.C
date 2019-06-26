@@ -1,5 +1,4 @@
-// this test is disabled for maintainance.
-// { dg-module-do run { target nocpu-*-noos } }
+// { dg-module-do run }
 // { dg-additional-options "-fmodules-ts" }
 
 // indirect references to import, template member non-template or

@@ -1,3 +1,26 @@
+2019-06-26  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (match_mergeable_specialization): Add insert parm.
+	* pt.c (match_mergeable_specialization): Add insert parm.
+	* module.cc (depset::entity_kind): Add EK_MAYBE_SPEC.
+	(depset::disc_bits): Delete DB_FRIEND_BIT, ADD DB_PSEUDO_SPEC_BIT.
+	(depset::is_friend): Delete.
+	(depset::is_pseudo_spec): Add.
+	(trees_out::tree_decl): Some specializations are findable by name.
+	(trees_in::tree_value): Mergeables have an explicit kind.
+	(trees_in::tree_node): Protect more.
+	(trees_{in,out{::key_mergeable): Explicitly encode key kind.
+	(depset::hash::add_dependency): Support EK_MAYBE_SPEC.
+	(specialization_add): Add some consistency checking.
+	(depset::hash::add_specialization): Specialization might be an
+	import.
+	(depset::hash::add_mergeable_horcrux): New.
+	(sort_mergeables): Add horcrux deps.
+	(module_state::write_cluster): Don't mark cdf_is_friend.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-3_[ab].C: Reenable. Adjust scans.
+
 2019-06-25  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
