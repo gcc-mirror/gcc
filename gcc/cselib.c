@@ -2518,13 +2518,12 @@ cselib_record_sets (rtx_insn *insn)
   int n_sets = 0;
   int i;
   struct cselib_set sets[MAX_SETS];
-  rtx body = PATTERN (insn);
   rtx cond = 0;
   int n_sets_before_autoinc;
   int n_strict_low_parts = 0;
   struct cselib_record_autoinc_data data;
 
-  body = PATTERN (insn);
+  rtx body = PATTERN (insn);
   if (GET_CODE (body) == COND_EXEC)
     {
       cond = COND_EXEC_TEST (body);

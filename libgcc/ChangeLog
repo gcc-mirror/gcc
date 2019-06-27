@@ -1,5 +1,11 @@
 2019-06-27  Martin Liska  <mliska@suse.cz>
 
+	* libgcov-driver-system.c (gcov_exit_open_gcda_file): Remove obviously
+	dead assignments.
+	* libgcov-util.c: Likewise.
+
+2019-06-27  Martin Liska  <mliska@suse.cz>
+
 	* libgcov-util.c (gcov_profile_merge): Release allocated
 	memory.
 	(calculate_overlap): Likewise.

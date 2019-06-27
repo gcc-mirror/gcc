@@ -259,8 +259,6 @@ verify_flow_info (void)
 	err = 1;
       }
 
-  last_bb_seen = ENTRY_BLOCK_PTR_FOR_FN (cfun);
-
   /* Clean up.  */
   free (last_visited);
   free (edge_checksum);

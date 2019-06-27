@@ -1,3 +1,42 @@
+2019-06-27  Martin Liska  <mliska@suse.cz>
+
+	* asan.c (asan_emit_allocas_unpoison): Remove obviously
+	dead assignments.
+	* bt-load.c (move_btr_def): Likewise.
+	* builtins.c (expand_builtin_apply_args_1): Likewise.
+	(expand_builtin_apply): Likewise.
+	* cfgexpand.c (expand_asm_stmt): Likewise.
+	(construct_init_block): Likewise.
+	* cfghooks.c (verify_flow_info): Likewise.
+	* cfgloopmanip.c (remove_path): Likewise.
+	* cfgrtl.c (rtl_verify_bb_layout): Likewise.
+	* cgraph.c (cgraph_node::set_pure_flag): Likewise.
+	* combine.c (simplify_if_then_else): Likewise.
+	* config/i386/i386.c (ix86_setup_incoming_vararg_bounds): Likewise.
+	(choose_basereg): Likewise.
+	(ix86_expand_prologue): Likewise.
+	(ix86_preferred_output_reload_class): Likewise.
+	* cselib.c (cselib_record_sets): Likewise.
+	* df-scan.c (df_scan_alloc): Likewise.
+	* dojump.c (do_jump_by_parts_greater_rtx): Likewise.
+	* early-remat.c (early_remat::record_equiv_candidates): Likewise.
+	* emit-rtl.c (try_split): Likewise.
+	* graphite-scop-detection.c (assign_parameter_index_in_region): Likewise.
+	* ipa-cp.c (cgraph_edge_brings_all_agg_vals_for_node): Likewise.
+	* ira-color.c (setup_profitable_hard_regs): Likewise.
+	* ira.c (rtx_moveable_p): Likewise.
+	* lra-eliminations.c (eliminate_regs_in_insn): Likewise.
+	* read-rtl.c (read_subst_mapping): Likewise.
+	* regrename.c (scan_rtx): Likewise.
+	* reorg.c (fill_slots_from_thread): Likewise.
+	* tree-inline.c (tree_function_versioning): Likewise.
+	* tree-ssa-reassoc.c (optimize_ops_list): Likewise.
+	* tree-ssa-sink.c (statement_sink_location): Likewise.
+	* tree-ssa-threadedge.c (thread_across_edge): Likewise.
+	* tree-vect-loop.c (vect_get_loop_niters): Likewise.
+	(vect_create_epilog_for_reduction): Likewise.
+	* tree.c (build_nonstandard_integer_type): Likewise.
+
 2019-06-27  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Encode valueized RHS.

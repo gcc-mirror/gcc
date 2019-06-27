@@ -7457,8 +7457,7 @@ unify_bound_ttp_args (tree tparms, tree targs, tree parm, tree& arg,
     {
       /* In keeping with P0522R0, adjust P's template arguments
 	 to apply to A's template; then flatten it again.  */
-      tree nparmvec = parmvec;
-      nparmvec = coerce_ttp_args_for_tta (arg, parmvec, tf_none);
+      tree nparmvec = coerce_ttp_args_for_tta (arg, parmvec, tf_none);
       nparmvec = expand_template_argument_pack (nparmvec);
 
       if (unify (tparms, targs, nparmvec, argvec,
@@ -7885,7 +7884,6 @@ convert_template_argument (tree parm,
 	 invalid, but static members are OK.  In any
 	 case, grab the underlying fields/functions
 	 and issue an error later if required.  */
-      orig_arg = TREE_VALUE (arg);
       TREE_TYPE (arg) = unknown_type_node;
     }
 

@@ -4414,10 +4414,9 @@ rtx_moveable_p (rtx *loc, enum op_type type)
 {
   const char *fmt;
   rtx x = *loc;
-  enum rtx_code code = GET_CODE (x);
   int i, j;
 
-  code = GET_CODE (x);
+  enum rtx_code code = GET_CODE (x);
   switch (code)
     {
     case CONST:

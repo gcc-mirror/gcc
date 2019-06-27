@@ -461,9 +461,8 @@ gcov_read_profile_dir (const char* dir_name, int recompute_summary ATTRIBUTE_UNU
 #ifdef HAVE_FTW_H
   ftw (".", ftw_read_file, 50);
 #endif
-  ret = chdir (pwd);
+  chdir (pwd);
   free (pwd);
-
 
   return gcov_info_head;;
 }

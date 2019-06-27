@@ -4718,8 +4718,6 @@ adjust_clone_args (tree decl)
       tree orig_decl_parms = TYPE_ARG_TYPES (TREE_TYPE (decl));
       tree decl_parms, clone_parms;
 
-      clone_parms = orig_clone_parms;
-
       /* Skip the 'this' parameter.  */
       orig_clone_parms = TREE_CHAIN (orig_clone_parms);
       orig_decl_parms = TREE_CHAIN (orig_decl_parms);
@@ -8549,7 +8547,6 @@ dump_class_hierarchy_r (FILE *stream,
   tree base_binfo;
   int i;
 
-  indented = maybe_indent_hierarchy (stream, indent, 0);
   fprintf (stream, "%s (0x" HOST_WIDE_INT_PRINT_HEX ") ",
 	   type_as_string (BINFO_TYPE (binfo), TFF_PLAIN_IDENTIFIER),
 	   (HOST_WIDE_INT) (uintptr_t) binfo);
@@ -8570,7 +8567,6 @@ dump_class_hierarchy_r (FILE *stream,
     fprintf (stream, " virtual");
   fprintf (stream, "\n");
 
-  indented = 0;
   if (BINFO_PRIMARY_P (binfo))
     {
       indented = maybe_indent_hierarchy (stream, indent + 3, indented);

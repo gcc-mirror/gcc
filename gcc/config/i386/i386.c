@@ -4136,7 +4136,6 @@ ix86_setup_incoming_vararg_bounds (cumulative_args_t cum_v,
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   CUMULATIVE_ARGS next_cum;
   tree fntype;
-  int max;
 
   gcc_assert (!no_rtl);
 
@@ -4152,10 +4151,6 @@ ix86_setup_incoming_vararg_bounds (cumulative_args_t cum_v,
   if (stdarg_p (fntype))
     ix86_function_arg_advance (pack_cumulative_args (&next_cum), mode, type,
 			       true);
-
-  max = cum->regno + cfun->va_list_gpr_size / UNITS_PER_WORD;
-  if (max > X86_64_REGPARM_MAX)
-    max = X86_64_REGPARM_MAX;
 }
 
 
@@ -6291,7 +6286,6 @@ choose_basereg (HOST_WIDE_INT cfa_offset, rtx &base_reg,
 	    {
 	      base_reg = hard_frame_pointer_rtx;
 	      base_offset = toffset;
-	      len = tlen;
 	    }
 	}
     }
@@ -8003,8 +7997,7 @@ ix86_expand_prologue (void)
 				   GEN_INT (-allocate), -1, false);
 
       /* Align the stack.  */
-      insn = emit_insn (gen_and2_insn (stack_pointer_rtx,
-				       GEN_INT (-align_bytes)));
+      emit_insn (gen_and2_insn (stack_pointer_rtx, GEN_INT (-align_bytes)));
       m->fs.sp_offset = ROUND_UP (m->fs.sp_offset, align_bytes);
       m->fs.sp_realigned_offset = m->fs.sp_offset
 					      - frame.stack_realign_allocate;
@@ -18176,12 +18169,10 @@ ix86_preferred_reload_class (rtx x, reg_class_t regclass)
 static reg_class_t
 ix86_preferred_output_reload_class (rtx x, reg_class_t regclass)
 {
-  machine_mode mode = GET_MODE (x);
-
   /* Restrict the output reload class to the register bank that we are doing
      math on.  If we would like not to return a subset of CLASS, reject this
      alternative: if reload cannot do this, it will still use its choice.  */
-  mode = GET_MODE (x);
+  machine_mode mode = GET_MODE (x);
   if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
     return MAYBE_SSE_CLASS_P (regclass) ? ALL_SSE_REGS : NO_REGS;
 

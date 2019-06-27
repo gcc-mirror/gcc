@@ -3044,7 +3044,6 @@ expand_asm_stmt (gasm *stmt)
 	      }
 	}
     }
-  unsigned nclobbers = clobber_rvec.length();
 
   /* First pass over inputs and outputs checks validity and sets
      mark_addressable if needed.  */
@@ -3317,7 +3316,7 @@ expand_asm_stmt (gasm *stmt)
   gcc_assert (constraints.length() == noutputs + ninputs);
 
   /* But it certainly can adjust the clobbers.  */
-  nclobbers = clobber_rvec.length();
+  unsigned nclobbers = clobber_rvec.length ();
 
   /* Third pass checks for easy conflicts.  */
   /* ??? Why are we doing this on trees instead of rtx.  */
@@ -5997,11 +5996,11 @@ construct_init_block (void)
     {
       first_block = e->dest;
       redirect_edge_succ (e, init_block);
-      e = make_single_succ_edge (init_block, first_block, flags);
+      make_single_succ_edge (init_block, first_block, flags);
     }
   else
-    e = make_single_succ_edge (init_block, EXIT_BLOCK_PTR_FOR_FN (cfun),
-			       EDGE_FALLTHRU);
+    make_single_succ_edge (init_block, EXIT_BLOCK_PTR_FOR_FN (cfun),
+			   EDGE_FALLTHRU);
 
   update_bb_for_insn (init_block);
   return init_block;
