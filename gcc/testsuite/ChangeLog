@@ -1,3 +1,9 @@
+2019-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90991
+	* gcc.target/i386/avx2-pr90991-1.c: New test.
+	* gcc.target/i386/avx512dq-pr90991-2.c: New test.
+
 2019-06-27  Jan Beulich  <jbeulich@suse.com>
 
 	* gcc.target/i386/gfni-4.c: Pass -msse2.

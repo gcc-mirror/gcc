@@ -20743,9 +20743,11 @@
 (define_insn "avx_vec_concat<mode>"
   [(set (match_operand:V_256_512 0 "register_operand" "=x,v,x,Yv")
 	(vec_concat:V_256_512
-	  (match_operand:<ssehalfvecmode> 1 "register_operand" "x,v,x,v")
+	  (match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "x,v,xm,vm")
 	  (match_operand:<ssehalfvecmode> 2 "nonimm_or_0_operand" "xm,vm,C,C")))]
-  "TARGET_AVX"
+  "TARGET_AVX
+   && (operands[2] == CONST0_RTX (<ssehalfvecmode>mode)
+       || !MEM_P (operands[1]))"
 {
   switch (which_alternative)
     {
@@ -20771,27 +20773,63 @@
       switch (get_attr_mode (insn))
 	{
 	case MODE_V16SF:
-	  return "vmovaps\t{%1, %t0|%t0, %1}";
+	  if (misaligned_operand (operands[1], <ssehalfvecmode>mode))
+	    return "vmovups\t{%1, %t0|%t0, %1}";
+	  else
+	    return "vmovaps\t{%1, %t0|%t0, %1}";
 	case MODE_V8DF:
-	  return "vmovapd\t{%1, %t0|%t0, %1}";
+	  if (misaligned_operand (operands[1], <ssehalfvecmode>mode))
+	    return "vmovupd\t{%1, %t0|%t0, %1}";
+	  else
+	    return "vmovapd\t{%1, %t0|%t0, %1}";
 	case MODE_V8SF:
-	  return "vmovaps\t{%1, %x0|%x0, %1}";
+	  if (misaligned_operand (operands[1], <ssehalfvecmode>mode))
+	    return "vmovups\t{%1, %x0|%x0, %1}";
+	  else
+	    return "vmovaps\t{%1, %x0|%x0, %1}";
 	case MODE_V4DF:
-	  return "vmovapd\t{%1, %x0|%x0, %1}";
+	  if (misaligned_operand (operands[1], <ssehalfvecmode>mode))
+	    return "vmovupd\t{%1, %x0|%x0, %1}";
+	  else
+	    return "vmovapd\t{%1, %x0|%x0, %1}";
 	case MODE_XI:
-	  if (which_alternative == 2)
-	    return "vmovdqa\t{%1, %t0|%t0, %1}";
-	  else if (GET_MODE_SIZE (<ssescalarmode>mode) == 8)
-	    return "vmovdqa64\t{%1, %t0|%t0, %1}";
+	  if (misaligned_operand (operands[1], <ssehalfvecmode>mode))
+	    {
+	      if (which_alternative == 2)
+		return "vmovdqu\t{%1, %t0|%t0, %1}";
+	      else if (GET_MODE_SIZE (<ssescalarmode>mode) == 8)
+		return "vmovdqu64\t{%1, %t0|%t0, %1}";
+	      else
+		return "vmovdqu32\t{%1, %t0|%t0, %1}";
+	    }
 	  else
-	    return "vmovdqa32\t{%1, %t0|%t0, %1}";
+	    {
+	      if (which_alternative == 2)
+		return "vmovdqa\t{%1, %t0|%t0, %1}";
+	      else if (GET_MODE_SIZE (<ssescalarmode>mode) == 8)
+		return "vmovdqa64\t{%1, %t0|%t0, %1}";
+	      else
+		return "vmovdqa32\t{%1, %t0|%t0, %1}";
+	    }
 	case MODE_OI:
-	  if (which_alternative == 2)
-	    return "vmovdqa\t{%1, %x0|%x0, %1}";
-	  else if (GET_MODE_SIZE (<ssescalarmode>mode) == 8)
-	    return "vmovdqa64\t{%1, %x0|%x0, %1}";
+	  if (misaligned_operand (operands[1], <ssehalfvecmode>mode))
+	    {
+	      if (which_alternative == 2)
+		return "vmovdqu\t{%1, %x0|%x0, %1}";
+	      else if (GET_MODE_SIZE (<ssescalarmode>mode) == 8)
+		return "vmovdqu64\t{%1, %x0|%x0, %1}";
+	      else
+		return "vmovdqu32\t{%1, %x0|%x0, %1}";
+	    }
 	  else
-	    return "vmovdqa32\t{%1, %x0|%x0, %1}";
+	    {
+	      if (which_alternative == 2)
+		return "vmovdqa\t{%1, %x0|%x0, %1}";
+	      else if (GET_MODE_SIZE (<ssescalarmode>mode) == 8)
+		return "vmovdqa64\t{%1, %x0|%x0, %1}";
+	      else
+		return "vmovdqa32\t{%1, %x0|%x0, %1}";
+	    }
 	default:
 	  gcc_unreachable ();
 	}
