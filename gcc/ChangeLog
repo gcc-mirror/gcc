@@ -1,5 +1,10 @@
 2019-06-27  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/rs6000/rs6000.c (darwin_rs6000_override_options): Honour
+	user-specified float mode choice for kernel mode code.
+
+2019-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* config/rs6000/darwin.h (ENDFILE_SPEC): Correct whitespace in the
 	spec.
 
