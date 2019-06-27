@@ -5544,7 +5544,8 @@ trees_out::core_vals (tree t)
 	  WT (t->decl_common.initial);
 	  break;
 	}
-      /* decl_common.initial, decl_common.abstract_origin.  */
+      WT (t->decl_common.abstract_origin);
+      /* decl_common.initial.  */
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
@@ -6024,7 +6025,8 @@ trees_in::core_vals (tree t)
 	  RT (t->decl_common.initial);
 	  break;
 	}
-      /* decl_common.initial, decl_common.abstract_origin.  */
+      RT (t->decl_common.abstract_origin);
+      /* decl_common.initial.  */
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))

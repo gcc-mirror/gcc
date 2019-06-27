@@ -1,6 +1,9 @@
 2019-06-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::core_vals): Stream abstract_origin.
+
+	gcc/cp/
 	* class.c (build_clone): Neaten and assert.
 	* cp-tree.h (lang_decl_u5.cloned_function): Fix comment.
 	* name-lookup.c (get_lookup_ident): Don't fall off end of overload.
