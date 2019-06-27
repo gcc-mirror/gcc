@@ -1,3 +1,10 @@
+2019-06-27  Martin Liska  <mliska@suse.cz>
+
+	* symbol-summary.h (traverse): Pass
+	argument a to the call of callback.
+	(gt_ggc_mx): Mark arguments as unused.
+	(gt_pch_nx): Likewise.
+
 2019-06-27  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR target/62147
