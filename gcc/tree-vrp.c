@@ -301,7 +301,7 @@ value_range_base::set_undefined (tree type)
   m_kind = VR_UNDEFINED;
   if (type)
     {
-      if (irange::supports_type_p (type))
+      if (supports_type_p (type))
 	{
 	  m_min = vrp_val_min (type, true);
 	  m_max = vrp_val_max (type, true);
@@ -328,7 +328,7 @@ void
 value_range_base::set_varying (tree type)
 {
   m_kind = VR_VARYING;
-  if (irange::supports_type_p (type))
+  if (supports_type_p (type))
     {
       m_min = vrp_val_min (type, true);
       m_max = vrp_val_max (type, true);
@@ -2563,9 +2563,9 @@ range_fold_binary_expr (value_range_base *vr,
 			const value_range_base *vr0,
 			const value_range_base *vr1)
 {
-  if (!irange::supports_type_p (expr_type)
-      || !irange::supports_type_p (vr0->type ())
-      || !irange::supports_type_p (vr1->type ()))
+  if (!value_range_base::supports_type_p (expr_type)
+      || !value_range_base::supports_type_p (vr0->type ())
+      || !value_range_base::supports_type_p (vr1->type ()))
     {
       *vr = value_range (expr_type);
       return;
@@ -2593,8 +2593,8 @@ range_fold_unary_expr (value_range_base *vr,
 		       tree expr_type,
 		       const value_range_base *vr0)
 {
-  if (!irange::supports_type_p (expr_type)
-      || !irange::supports_type_p (vr0->type ()))
+  if (!value_range_base::supports_type_p (expr_type)
+      || !value_range_base::supports_type_p (vr0->type ()))
     {
       *vr = value_range (expr_type);
       return;

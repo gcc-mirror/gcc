@@ -188,7 +188,7 @@ vr_values::set_defs_to_varying (gimple *stmt)
   ssa_op_iter i;
   tree def;
   FOR_EACH_SSA_TREE_OPERAND (def, stmt, i, SSA_OP_DEF)
-    if (irange::supports_type_p (TREE_TYPE (def)))
+    if (value_range_base::supports_type_p (TREE_TYPE (def)))
       {
 	value_range *vr = get_value_range (def);
 	vr->set_varying (TREE_TYPE (def));

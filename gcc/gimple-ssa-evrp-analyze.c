@@ -253,7 +253,7 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
 
       /* Skips floats and other things we can't represent in a
 	 range.  */
-      if (!irange::supports_type_p (TREE_TYPE (lhs)))
+      if (!value_range_base::supports_type_p (TREE_TYPE (lhs)))
 	continue;
 
       value_range vr_result;
