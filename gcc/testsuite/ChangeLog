@@ -1,3 +1,8 @@
+2019-06-27  Jun Ma  <JunMa@linux.alibaba.com>
+
+	PR tree-optimization/89772
+	* gcc.dg/builtin-memchr-4.c: New test.
+
 2019-06-27  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/91014

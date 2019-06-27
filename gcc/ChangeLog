@@ -1,3 +1,9 @@
+2019-06-27  Jun Ma <JunMa@linux.alibaba.com>
+
+	PR tree-optimization/89772
+	* gimple-fold.c (gimple_fold_builtin_memchr): consider trailing nuls in
+	out-of-bound accesses checking.
+
 2019-06-27  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/91014
