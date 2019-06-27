@@ -1,3 +1,15 @@
+2019-06-27  Martin Liska  <mliska@suse.cz>
+
+	* class.c (adjust_clone_args): Remove obviously
+	dead assignments.
+	(dump_class_hierarchy_r): Likewise.
+	* decl.c (check_initializer): Likewise.
+	* parser.c (cp_parser_lambda_expression): Likewise.
+	* pt.c (unify_bound_ttp_args): Likewise.
+	(convert_template_argument): Likewise.
+	* rtti.c (build_headof): Likewise.
+	* typeck.c (convert_for_initialization): Likewise.
+
 2019-06-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70462 - unnecessary base ctor variant with final.

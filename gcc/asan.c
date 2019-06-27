@@ -1713,8 +1713,8 @@ asan_emit_allocas_unpoison (rtx top, rtx bot, rtx_insn *before)
   rtx ret = init_one_libfunc ("__asan_allocas_unpoison");
   top = convert_memory_address (ptr_mode, top);
   bot = convert_memory_address (ptr_mode, bot);
-  ret = emit_library_call_value (ret, NULL_RTX, LCT_NORMAL, ptr_mode,
-				 top, ptr_mode, bot, ptr_mode);
+  emit_library_call (ret, LCT_NORMAL, ptr_mode,
+		     top, ptr_mode, bot, ptr_mode);
 
   do_pending_stack_adjust ();
   rtx_insn *insns = get_insns ();

@@ -1123,7 +1123,6 @@ early_remat::record_equiv_candidates (unsigned int cand1_index,
       ec->representative = cand1_index;
       cand1->equiv_class = ec;
     }
-  cand1 = &m_candidates[ec->representative];
   cand2->equiv_class = ec;
   bitmap_set_bit (ec->members, cand2_index);
   if (cand2_index > ec->representative)

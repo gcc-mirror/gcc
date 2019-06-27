@@ -8212,8 +8212,6 @@ build_nonstandard_integer_type (unsigned HOST_WIDE_INT precision,
   else
     fixup_signed_type (itype);
 
-  ret = itype;
-
   inchash::hash hstate;
   inchash::add_expr (TYPE_MAX_VALUE (itype), hstate);
   ret = type_hash_canon (hstate.end (), itype);

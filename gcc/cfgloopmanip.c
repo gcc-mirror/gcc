@@ -364,7 +364,6 @@ remove_path (edge e, bool *irred_invalidated,
 
   for (i = 0; i < nrem; i++)
     {
-      bb = rem_bbs[i];
       FOR_EACH_EDGE (ae, ei, rem_bbs[i]->succs)
 	if (ae->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	    && !bitmap_bit_p (seen, ae->dest->index))

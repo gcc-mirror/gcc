@@ -9189,8 +9189,6 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
   if (exp == error_mark_node)
     return error_mark_node;
 
-  rhstype = non_reference (rhstype);
-
   type = complete_type (type);
 
   if (DIRECT_INIT_EXPR_P (type, rhs))

@@ -2039,9 +2039,6 @@ optimize_ops_list (enum tree_code opcode,
       i++;
     }
 
-  length = ops->length ();
-  oelast = ops->last ();
-
   if (iterate)
     optimize_ops_list (opcode, ops);
 }
