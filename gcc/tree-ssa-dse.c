@@ -129,10 +129,11 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write)
 	    {
 	      tree nelem = gimple_call_arg (stmt, 0);
 	      tree selem = gimple_call_arg (stmt, 1);
+	      tree lhs;
 	      if (TREE_CODE (nelem) == INTEGER_CST
-		  && TREE_CODE (selem) == INTEGER_CST)
+		  && TREE_CODE (selem) == INTEGER_CST
+		  && (lhs = gimple_call_lhs (stmt)) != NULL_TREE)
 		{
-		  tree lhs = gimple_call_lhs (stmt);
 		  tree size = fold_build2 (MULT_EXPR, TREE_TYPE (nelem),
 					   nelem, selem);
 		  ao_ref_init_from_ptr_and_size (write, lhs, size);
