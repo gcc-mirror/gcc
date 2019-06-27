@@ -1,3 +1,10 @@
+2019-06-27  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Enable
+	-fvariable-expansion-in-unroller by default.
+	* doc/invoke.texi (-fvariable-expansion-in-unroller): Document new
+	default for Power.
+
 2019-06-27  David Edelsohn  <dje.gcc@gmail.com>
 
 	Revert

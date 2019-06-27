@@ -3616,6 +3616,12 @@ rs6000_option_override_internal (bool global_init_p)
       && !global_options_set.x_flag_asynchronous_unwind_tables)
     flag_asynchronous_unwind_tables = 1;
 
+  /* -fvariable-expansion-in-unroller is a win for POWER whenever the
+     loop unroller is active.  It is only checked during unrolling, so
+     we can just set it on by default.  */
+  if (!global_options_set.x_flag_variable_expansion_in_unroller)
+    flag_variable_expansion_in_unroller = 1;
+
   /* Set the pointer size.  */
   if (TARGET_64BIT)
     {

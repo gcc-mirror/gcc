@@ -9849,6 +9849,9 @@ This optimization is enabled by default.
 With this option, the compiler creates multiple copies of some
 local variables when unrolling a loop, which can result in superior code.
 
+This optimization is enabled by default for PowerPC targets, but disabled
+by default otherwise.
+
 @item -fpartial-inlining
 @opindex fpartial-inlining
 Inline parts of functions.  This option has any effect only
