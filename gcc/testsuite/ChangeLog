@@ -1,6 +1,11 @@
+2019-06-27  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR target/62147
+	* gcc.target/powerpc/pr62147.c: New test.
+
 2019-06-26  Jeff Law  <law@redhat.com>
 
-        PR tree-optimization/90883
+	PR tree-optimization/90883
 	* g++.dg/tree-ssa/pr90883.C: New test.
 	* gcc.dg/tree-ssa/ssa-dse-36.c: New test.
 
