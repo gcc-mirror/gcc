@@ -1,3 +1,9 @@
+2019-06-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90987
+	* match.c (gfc_match_common): Adjust parsing of fixed and free form
+	source code containing, e.g., COMMONI.
+
 2019-06-27  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/lto/alias-2_0.C: New testcase.
@@ -63,7 +69,7 @@
 2019-06-26  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR Fortran/90988
-	ChangeLog forgotten with revision 272698
+	ChangeLog forgotten with revision 272667
 	* gfortran.dg/pr90988_1.f90: New test.
 	* gfortran.dg/pr90988_2.f90: Ditto.
 	* gfortran.dg/pr90988_3.f90: Ditto.
