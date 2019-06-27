@@ -8691,22 +8691,18 @@ make_namespace (tree ctx, tree name, location_t loc,
 	  if (module_interface_p ())
 	    {
 	      /* We must use the full partition name.  */
-	      const char *names[2];
-	      names[1] = module_name (MODULE_PURVIEW, &names[0]);
-	      unsigned len = 0;
-	      for (unsigned ix = 2; ix--;)
-		len += strlen (names[ix]);
+	      const char *name = module_name (MODULE_PURVIEW);
+	      unsigned len = strlen (name);
 	      unsigned pos = IDENTIFIER_LENGTH (asm_name);
 	      char *buf = XALLOCAVEC (char, pos + len * 3 + 1);
 
 	      memcpy (buf, IDENTIFIER_POINTER (asm_name), pos);
 	      buf[pos++] = '_';
-	      for (unsigned ix = 0; ix != 2; ix++)
-		for (const char *ptr = names[ix]; *ptr; ptr++)
-		  if (ISALNUM (*ptr))
-		    buf[pos++] = *ptr;
-		  else
-		    pos += sprintf (&buf[pos], "_%02x", *ptr);
+	      for (const char *ptr = name; *ptr; ptr++)
+		if (ISALNUM (*ptr))
+		  buf[pos++] = *ptr;
+		else
+		  pos += sprintf (&buf[pos], "_%02x", *ptr);
 	      asm_name = get_identifier_with_length (buf, pos);
 	    }
 	  else if (global_purview_p ())

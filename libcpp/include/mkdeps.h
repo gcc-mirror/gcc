@@ -55,7 +55,7 @@ extern void deps_add_default_target (struct mkdeps *, const char *);
    dependency entered should be the primary source file.  */
 extern void deps_add_dep (struct mkdeps *, const char *);
 
-extern void deps_add_module (struct mkdeps *, const char *, const char *,
+extern void deps_add_module (struct mkdeps *, const char *,
 			     const char * = NULL, bool = false);
 
 /* Write out a deps buffer to a specified file.  The fourth argument

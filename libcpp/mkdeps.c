@@ -336,25 +336,19 @@ deps_add_vpath (struct mkdeps *d, const char *vpath)
    specifying BMI as the output file, of type IS_HEADER_UNIT.  */
 
 void
-deps_add_module (struct mkdeps *d, const char *p, const char *m,
+deps_add_module (struct mkdeps *d, const char *m,
 		 const char *bmi, bool is_header_unit)
 {
-  size_t p_len = p ? strlen (p) : 0;
-  size_t m_len = strlen (m);
-
-  char *name = XNEWVEC (char, m_len + p_len + 1);
-  if (p_len)
-    memcpy (name, p, p_len + 1);
-  memcpy (name + p_len, m, m_len + 1);
+  m = xstrdup (m);
 
   if (bmi)
     {
-      d->module_name = name;
+      d->module_name = m;
       d->is_header_unit = is_header_unit;
       d->bmi_name = xstrdup (bmi);
     }
   else
-    d->modules.push (name);
+    d->modules.push (m);
 }
 
 /* Write NAME, with a leading space to FP, a Makefile.  Advance COL as

@@ -3447,7 +3447,11 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  public:
   void set_flatname ();
-  const char *get_flatname (bool primary = false) const;
+  const char *get_flatname () const
+  {
+    gcc_checking_assert (flatname);
+    return flatname;
+  }
 
  public:
   /* Create a location for module.   */
@@ -10946,6 +10950,14 @@ get_module_slot (tree name, module_state *parent, bool partition, bool insert)
   return modules_hash->find_slot_with_hash (ct, hv, insert ? INSERT : NO_INSERT);
 }
 
+static module_state *
+get_primary (module_state *parent)
+{
+  while (parent->is_partition ())
+    parent = parent->parent;
+  return parent;
+}
+
 /* Find or create module NAME & PARENT in the hash table.  */
 
 module_state *
@@ -10954,11 +10966,7 @@ get_module (tree name, module_state *parent, bool partition)
   if (partition)
     {
       if (!parent)
-	{
-	  parent = (*modules)[MODULE_PURVIEW];
-	  while (parent->is_partition ())
-	    parent = parent->parent;
-	}
+	parent = get_primary ((*modules)[MODULE_PURVIEW]);
 
       if (!parent->is_partition () && !parent->flatname)
 	parent->set_flatname ();
@@ -10978,46 +10986,35 @@ get_module (tree name, module_state *parent, bool partition)
 /* Process string name PTR into a module_state.  */
 
 static module_state *
-get_module (const char *ptr, module_state *parent)
+get_module (const char *ptr)
 {
   if (IS_ABSOLUTE_PATH (ptr) || ptr[0] == '.')
     /* A header name.  */
     return get_module (build_string (strlen (ptr), ptr));
 
-  int partition = 0;
-  if (!parent)
-    {
-      if (ptr[0] == ':')
-	return NULL;
-      partition = -1;
-    }
-
-  if (ptr[0] == ':')
-    {
-      ptr++;
-      partition = 1;
-      while (parent->is_partition ())
-	parent = parent->parent;
-    }
-  else
-    parent = NULL;
+  bool partition = false;
+  module_state *mod = NULL;
 
   for (const char *probe = ptr;; probe++)
     if (!*probe || *probe == '.' || *probe == ':')
       {
 	size_t len = probe - ptr;
-	if (!len || (*probe == ':' && partition >= 0))
+	if (!len)
 	  return NULL;
-	parent = get_module (get_identifier_with_length (ptr, len),
-			     parent, partition > 0);
+	mod = get_module (get_identifier_with_length (ptr, len), mod, partition);
 	ptr = probe;
 	if (*ptr == ':')
-	  partition = +1;
+	  {
+	    if (partition)
+	      return NULL;
+	    partition = true;
+	  }
+
 	if (!*ptr++)
 	  break;
       }
 
-  return parent;
+  return mod;
 }
 
 bool
@@ -11390,7 +11387,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 	    
 	    starting = false;
 	    file = maybe_strip_bmi_prefix (file);
-	    module_state *state = get_module (mod, NULL);
+	    module_state *state = get_module (mod);
 	    if (!state)
 	      response_unexpected (loc);
 	    else if (!state->filename)
@@ -11785,9 +11782,9 @@ module_mapper::handshake (location_t loc, const char *cookie)
 void
 module_mapper::imex_query (const module_state *state, bool exporting)
 {
-  send_command (state->from_loc, "%sPORT %s%s",
+  send_command (state->from_loc, "%sPORT %s",
 		exporting ? "EX" : "IM",
-		state->get_flatname (true), state->get_flatname ());
+		state->get_flatname ());
 }
 
 /* Response to import/export query.  */
@@ -11844,8 +11841,8 @@ module_mapper::export_done (const module_state *state)
   if (mapper->is_server ())
     {
       dump (dumper::MAPPER) && dump ("Completed mapper");
-      mapper->send_command (state->from_loc, "DONE %s%s",
-			    state->get_flatname (true), state->get_flatname ());
+      mapper->send_command (state->from_loc, "DONE %s",
+			    state->get_flatname ());
     }
   else
     ok = mapper->is_live ();
@@ -12010,7 +12007,7 @@ module_state::write_readme (elf_out *to, const char *options,
   readme.printf ("version: %s", string);
 
   /* Module information.  */
-  readme.printf ("module: %s%s", get_flatname (true), get_flatname ());
+  readme.printf ("module: %s", get_flatname ());
   readme.printf ("source: %s", main_input_filename);
   readme.printf ("options: %s", options);
   if (node)
@@ -12186,9 +12183,16 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	}
 
       const char *name = sec.str (NULL);
-      module_state *imp = get_module (name, this);
+      module_state *imp = get_module (name);
       unsigned crc = sec.u32 ();
       bool exported = false;
+
+      /* If the import is a partition, it must be the same primary
+	 module as this TU.  */
+      if (imp && imp->is_partition () &&
+	  (!named_module_p ()
+	   || (get_primary ((*modules)[MODULE_PURVIEW]) != get_primary (imp))))
+	imp = NULL;
 
       if (!imp)
 	sec.set_overrun ();
@@ -12366,8 +12370,9 @@ module_state::read_partitions (unsigned count)
 
       dump () && dump ("Reading elided partition %s (crc=%x)", name, crc);
 
-      module_state *imp = get_module (name, this);
-      if (!imp || !imp->is_partition () || !imp->is_detached ())
+      module_state *imp = get_module (name);
+      if (!imp || !imp->is_partition () || !imp->is_detached ()
+	  || get_primary (imp) != this)
 	{
 	  sec.set_overrun ();
 	  break;
@@ -15068,8 +15073,6 @@ module_state::write_config (elf_out *to, module_state_config &config,
   cfg.u32 (inner_crc);
 
   cfg.u (to->name (is_header () ? "" : get_flatname ()));
-  if (is_partition ())
-    cfg.u (to->name (get_flatname (true)));
 
   if (!is_header ())
     ;
@@ -15192,30 +15195,20 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
   /* Check module name.  */
   {
     const char *their_name = from ()->name (cfg.u ());
-    const char *their_primary = "";
     const char *our_name = "";
-    const char *our_primary = "";
-
-    if (their_name[0] == ':')
-      their_primary = from ()->name (cfg.u ());
 
     if (!is_header ())
-      {
-	our_name = get_flatname ();
-	our_primary = get_flatname (true);
-      }
+      our_name = get_flatname ();
 
     /* Header units can be aliased, so name checking is
        inappropriate.  */
-    if (strcmp (their_name, our_name)
-	|| strcmp (their_primary, our_primary))
+    if (0 != strcmp (their_name, our_name))
       {
 	error_at (loc,
-		  their_name[0] && our_name[0] ? G_("module %<%s%s%> found")
+		  their_name[0] && our_name[0] ? G_("module %qs found")
 		  : their_name[0]
-		  ? G_("header module expected, module %<%s%s%> found")
-		  : G_("module %<%s%s%> expected, header module found"),
-		  their_name[0] ? their_primary : our_primary,
+		  ? G_("header module expected, module %qs found")
+		  : G_("module %qs expected, header module found"),
 		  their_name[0] ? their_name : our_name);
 	cfg.set_overrun ();
 	goto done;
@@ -15825,15 +15818,12 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
    including dots.  */
 
 char const *
-module_name (unsigned ix, const char **maybe_primary)
+module_name (unsigned ix)
 {
   module_state *imp = (*modules)[ix];
 
   if (!imp->name)
     imp = imp->parent;
-
-  if (maybe_primary)
-    *maybe_primary = imp->get_flatname (true);
 
   return imp->get_flatname ();
 }
@@ -16079,24 +16069,6 @@ fixup_unscoped_enum_owner (tree enumtype)
     }
 }
 
-const char *
-module_state::get_flatname (bool primary) const
-{
-  gcc_checking_assert (flatname);
-
-  if (!primary)
-    return flatname;
-  else if (!is_partition ())
-    return "";
-
-  const module_state *p = this;
-  do
-    p = p->parent;
-  while (p->is_partition ());
-
-  return p->get_flatname ();
-}
-
 /* Create the flat name string.  It is simplest to have it handy.  */
 
 void
@@ -16107,19 +16079,34 @@ module_state::set_flatname ()
     {
       auto_vec<tree,5> ids;
       size_t len = 0;
+      char const *primary = NULL;
+      size_t pfx_len = 0;
 
       for (module_state *probe = this;
-	   probe && is_partition () == probe->is_partition ();
+	   probe;
 	   probe = probe->parent)
-	{
-	  ids.safe_push (probe->name);
-	  len += IDENTIFIER_LENGTH (probe->name) + 1;
-	}
-      char *flat = XNEWVEC (char, len + is_partition ());
+	if (is_partition () && !probe->is_partition ())
+	  {
+	    primary = probe->get_flatname ();
+	    pfx_len = strlen (primary);
+	    break;
+	  }
+	else
+	  {
+	    ids.safe_push (probe->name);
+	    len += IDENTIFIER_LENGTH (probe->name) + 1;
+	  }
+
+      char *flat = XNEWVEC (char, pfx_len + len + is_partition ());
       flatname = flat;
 
-      if (is_partition ())
-	*flat++ = ':';
+      if (primary)
+	{
+	  memcpy (flat, primary, pfx_len);
+	  flat += pfx_len;
+	  *flat++ = ':';
+	}
+
       for (unsigned len = 0; ids.length ();)
 	{
 	  if (len)
@@ -16156,7 +16143,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
     }
 
   if (mkdeps *deps = cpp_get_deps (reader))
-    deps_add_module (deps, get_flatname (true), get_flatname (false));
+    deps_add_module (deps, get_flatname ());
 
   int fd = -1;
   int e = ENOENT;
@@ -16690,7 +16677,7 @@ module_preprocess (mkdeps *deps, module_state *state, int is_module)
       path = path ? maybe_add_bmi_prefix (path) : "";
     }
 
-  deps_add_module (deps, state->get_flatname (true), state->get_flatname (false),
+  deps_add_module (deps, state->get_flatname (),
 		   path, state->is_header ());
 }
 
@@ -17067,8 +17054,7 @@ finish_module_processing (cpp_reader *reader)
 	  strcpy (&tmp_name[len], "~");
 
 	  if (mkdeps *deps = cpp_get_deps (reader))
-	    deps_add_module (deps, state->get_flatname (true),
-			     state->get_flatname (false), path,
+	    deps_add_module (deps, state->get_flatname (), path,
 			     state->is_header ());
 
 	  if (!errorcount)
@@ -17087,8 +17073,8 @@ finish_module_processing (cpp_reader *reader)
 
       if (errorcount)
 	warning_at (state->from_loc, 0,
-		    "not writing module %<%s%s%> due to errors",
-		    state->get_flatname (true), state->get_flatname (false));
+		    "not writing module %qs due to errors",
+		    state->get_flatname ());
       else
 	{
 	  elf_out to (fd, e);

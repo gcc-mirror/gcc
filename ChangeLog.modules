@@ -1,5 +1,28 @@
 2019-06-26  Nathan Sidwell  <nathan@acm.org>
 
+	Don't elide primary from partition names.
+	gcc/cp/
+	* cp-tree.h (module_name): Drop maybe_primary parm.
+	* modules (module_state::get_flatname): Just get the flatname.
+	(get_primary): New.
+	(get_module): Expect fully qualified name.  Drop parent arg.
+	Adjust callers.
+	(module_stae:set_flatname): Create fully qualified name.
+	(module_state::read_{imports,partitions}): Check partitions have
+	expected primary.
+	(module_state::{read,write}_config): Adjust.
+	(module_state::do_import, module_preprocess)
+	(finish_module_procesing): Adjust deps_add_module calls.
+	* name-lookup.c (make_namespace): Adjust anon namespace name
+	creation.
+	* ptree.c (cxx_print_decl): Adjust module_name call.
+	gcc/testsuite/
+	* g++.dg/modules/part-2_d.c: Adjust regexp.
+	* g++.dg/modules/part-3_c.c: Adjust scans.
+	libcpp/
+	* include/mkdeps.h (deps_add_module): Drop primary arg.
+	* mkdeps.c (deps_add_module): Drop primary arg.
+
 	Merge trunk r272714.
 
 	gcc/cp/

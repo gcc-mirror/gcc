@@ -6874,7 +6874,7 @@ extern cpp_macro *module_cpp_deferred_macro (cpp_reader *,
 					     location_t, cpp_hashnode *);
 extern void init_module_processing (cpp_reader *);
 extern void finish_module_processing (cpp_reader *);
-extern char const *module_name (unsigned, const char **maybe_primary = NULL);
+extern char const *module_name (unsigned);
 extern char const *module_name (tree decl);
 extern bitmap get_import_bitmap ();
 extern bitmap module_visible_instantiation_path (bitmap *);
