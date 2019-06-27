@@ -44,6 +44,9 @@ struct symbol_entry
   symbol_entry (symtab_node *node_): node (node_)
   {}
 
+  virtual ~symbol_entry ()
+  {}
+
   char* get_name () const
   {
     if (flag_lto_dump_demangle)
@@ -72,6 +75,9 @@ struct variable_entry: public symbol_entry
   variable_entry (varpool_node *node_): symbol_entry (node_)
   {}
 
+  virtual ~variable_entry ()
+  {}
+
   virtual size_t get_size () const
   {
     varpool_node *vnode = dyn_cast<varpool_node *> (node);
@@ -97,6 +103,9 @@ struct variable_entry: public symbol_entry
 struct function_entry: public symbol_entry
 {
   function_entry (cgraph_node *node_): symbol_entry (node_)
+  {}
+
+  virtual ~function_entry ()
   {}
 
   virtual void dump ()
@@ -166,7 +175,10 @@ void dump_list_functions (void)
   int i=0;
   symbol_entry* e;
   FOR_EACH_VEC_ELT (v, i, e)
-    e->dump ();
+    {
+      e->dump ();
+      delete e;
+    }
 }
 
 /* Dump list of variables and their details.  */
@@ -194,7 +206,10 @@ void dump_list_variables (void)
   int i=0;
   symbol_entry* e;
   FOR_EACH_VEC_ELT (v, i, e)
-    e->dump ();
+    {
+      e->dump ();
+      delete e;
+    }
 }
 
 /* Dump symbol list.  */

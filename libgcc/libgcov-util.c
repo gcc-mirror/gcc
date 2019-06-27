@@ -681,6 +681,9 @@ gcov_profile_merge (struct gcov_info *tgt_profile, struct gcov_info *src_profile
       tgt_tail = gi_ptr;
     }
 
+  free (in_src_not_tgt);
+  free (tgt_infos);
+
   return 0;
 }
 
@@ -1279,6 +1282,8 @@ calculate_overlap (struct gcov_info *gcov_list1,
       prg_val += val;
 
     }
+
+  free (all_infos);
 
   if (overlap_obj_level)
     printf("   SUM:%36s  overlap = %6.2f%% (%5.2f%% %5.2f%%)\n",

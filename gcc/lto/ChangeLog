@@ -1,3 +1,11 @@
+2019-06-27  Martin Liska  <mliska@suse.cz>
+
+	* lto-dump.c (struct symbol_entry): Add default dtor.
+	(struct variable_entry): Likewise.
+	(struct function_entry): Likewise.
+	(dump_list_functions): Release memory.
+	(dump_list_variables): Likewise.
+
 2019-06-24  Jan Hubicka  <jh@suse.cz>
 
 	* lto-common.c (compare_tree_sccs_1): Compare CXX_ODR_P;
