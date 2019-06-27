@@ -3004,7 +3004,7 @@ find_simple_exit (struct loop *loop, struct niter_desc *desc)
      well.  It results in incorrect predicate information on the exit condition
      expression.  For example, if says [(int) _1 + -8, + , -8] != 0 finite,
      it means _1 can exactly divide -8.  */
-  if (single_exit (loop) && finite_loop_p (loop))
+  if (desc->infinite && single_exit (loop) && finite_loop_p (loop))
     {
       desc->infinite = NULL_RTX;
       if (dump_file)
