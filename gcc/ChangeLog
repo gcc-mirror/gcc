@@ -1,6 +1,10 @@
 2019-06-26  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/90883
+	* tree-ssa-dse.c (delete_dead_or_redundant_call): Fix signature.
+	(delete_dead_or_redundant_assignment): Likewise.
+
+	PR tree-optimization/90883
 	* tree-ssa-alias.c (stmt_kills_ref_p): Handle BUILT_IN_CALLOC.
 	* tree-ssa-dse.c: Update various comments to distinguish between
 	dead and redundant stores.
