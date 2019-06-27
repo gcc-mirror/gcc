@@ -1,3 +1,10 @@
+2019-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91010
+	* tree-vect-stmts.c (scan_operand_equal_p): If offset1 == offset2,
+	return true.  Otherwise, don't call operand_equal_p if offset1 or
+	offset2 is NULL and just return false.
+
 2019-06-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/rs6000.c (darwin_rs6000_override_options): Honour
