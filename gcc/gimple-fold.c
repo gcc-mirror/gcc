@@ -2543,7 +2543,15 @@ gimple_fold_builtin_memchr (gimple_stmt_iterator *gsi)
       const char *r = (const char *)memchr (p1, c, MIN (length, string_length));
       if (r == NULL)
 	{
-	  if (length <= string_length)
+	  tree mem_size, offset_node;
+	  string_constant (arg1, &offset_node, &mem_size, NULL);
+	  unsigned HOST_WIDE_INT offset = (offset_node == NULL_TREE)
+					  ? 0 : tree_to_uhwi (offset_node);
+	  /* MEM_SIZE is the size of the array the string literal
+	     is stored in.  */
+	  unsigned HOST_WIDE_INT string_size = tree_to_uhwi (mem_size) - offset;
+	  gcc_checking_assert (string_length <= string_size);
+	  if (length <= string_size)
 	    {
 	      replace_call_with_value (gsi, build_int_cst (ptr_type_node, 0));
 	      return true;
