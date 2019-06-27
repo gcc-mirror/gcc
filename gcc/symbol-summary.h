@@ -362,7 +362,7 @@ public:
   {
     for (unsigned i = 0; i < m_vector->length (); i++)
       if ((*m_vector[i]) != NULL)
-	f ((*m_vector)[i]);
+	f ((*m_vector)[i], a);
   }
 
   /* Getter for summary callgraph node pointer.  If a summary for a node
@@ -846,7 +846,7 @@ public:
   {
     for (unsigned i = 0; i < m_vector->length (); i++)
       if ((*m_vector[i]) != NULL)
-	f ((*m_vector)[i]);
+	f ((*m_vector)[i], a);
   }
 
   /* Getter for summary callgraph edge pointer.
@@ -966,21 +966,21 @@ fast_call_summary<T *, V>::is_ggc ()
 
 template <typename T>
 void
-gt_ggc_mx (fast_call_summary<T *, va_heap>* const &summary)
+gt_ggc_mx (fast_call_summary<T *, va_heap>* const &summary ATTRIBUTE_UNUSED)
 {
 }
 
 template <typename T>
 void
-gt_pch_nx (fast_call_summary<T *, va_heap>* const &summary)
+gt_pch_nx (fast_call_summary<T *, va_heap>* const &summary ATTRIBUTE_UNUSED)
 {
 }
 
 template <typename T>
 void
-gt_pch_nx (fast_call_summary<T *, va_heap>* const& summary,
-	   gt_pointer_operator op,
-	   void *cookie)
+gt_pch_nx (fast_call_summary<T *, va_heap>* const& summary ATTRIBUTE_UNUSED,
+	   gt_pointer_operator op ATTRIBUTE_UNUSED,
+	   void *cookie ATTRIBUTE_UNUSED)
 {
 }
 
