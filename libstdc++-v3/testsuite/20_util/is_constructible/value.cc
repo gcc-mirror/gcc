@@ -35,4 +35,11 @@ void test01()
   static_assert(test_property<is_constructible, ExplicitClass>(false), "");
   static_assert(test_property<is_constructible, ExplicitClass,
 		int, double>(false), "");
+  static_assert(test_property<is_constructible, int[]>(false), "PR c++/90532");
+  static_assert(test_property<is_constructible,
+		__gnu_test::construct::Empty[]>(false), "PR c++/90532");
+  static_assert(test_property<is_constructible,
+		__gnu_test::construct::Ukn[]>(false), "PR c++/90532");
+  static_assert(test_property<is_constructible,
+		__gnu_test::construct::nAny[]>(false), "PR c++/90532");
 }

@@ -1,4 +1,4 @@
-/* { dg-do compile { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
+/* { dg-do compile { target { { i?86-*-linux* i?86-*-gnu* x86_64-*-linux* } && lp64 } } } */
 /* { dg-options "-fsanitize=address -mabi=ms" } */
 
 int i;

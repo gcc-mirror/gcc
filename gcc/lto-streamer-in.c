@@ -1005,6 +1005,7 @@ input_struct_function_base (struct function *fn, struct data_in *data_in,
   fn->has_forced_label_in_static = bp_unpack_value (&bp, 1);
   fn->calls_alloca = bp_unpack_value (&bp, 1);
   fn->calls_setjmp = bp_unpack_value (&bp, 1);
+  fn->calls_eh_return = bp_unpack_value (&bp, 1);
   fn->has_force_vectorize_loops = bp_unpack_value (&bp, 1);
   fn->has_simduid_loops = bp_unpack_value (&bp, 1);
   fn->va_list_fpr_size = bp_unpack_value (&bp, 8);
@@ -1700,7 +1701,7 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 		}
 	      /* FALLTHRU */
 	    default:
-	      fatal_error (UNKNOWN_LOCATION, "unsupported mode %s\n", mname);
+	      fatal_error (UNKNOWN_LOCATION, "unsupported mode %qs", mname);
 	      break;
 	    }
 	}

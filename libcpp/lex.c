@@ -3756,7 +3756,11 @@ cpp_token_val_index (const cpp_token *tok)
     case SPELL_LITERAL:
       return CPP_TOKEN_FLD_STR;
     case SPELL_OPERATOR:
-      if (tok->type == CPP_PASTE)
+      /* Operands which were originally spelled as ident keep around
+         the node for the exact spelling.  */
+      if (tok->flags & NAMED_OP)
+	return CPP_TOKEN_FLD_NODE;
+      else if (tok->type == CPP_PASTE)
 	return CPP_TOKEN_FLD_TOKEN_NO;
       else
 	return CPP_TOKEN_FLD_NONE;

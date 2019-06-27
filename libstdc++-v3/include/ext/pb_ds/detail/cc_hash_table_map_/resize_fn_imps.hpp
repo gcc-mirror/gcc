@@ -38,6 +38,8 @@
  * Contains implementations of cc_ht_map_'s resize related functions.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
@@ -132,3 +134,4 @@ resize_imp_no_exceptions(size_type new_size, entry_pointer_array a_p_entries_res
 #include <ext/pb_ds/detail/cc_hash_table_map_/resize_no_store_hash_fn_imps.hpp>
 #include <ext/pb_ds/detail/cc_hash_table_map_/resize_store_hash_fn_imps.hpp>
 
+#endif

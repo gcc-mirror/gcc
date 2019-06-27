@@ -25,8 +25,8 @@ not in any particular release.
 </para>
 
 <para>
-The following table lists new library features that have been accepted into
-the C++17 working draft. The "Proposal" column provides a link to the
+The following table lists new library features that are included in
+the C++17 standard. The "Proposal" column provides a link to the
 ISO C++ committee proposal that describes the feature, while the "Status"
 column indicates the first version of GCC that contains an implementation of
 this feature (if it has been implemented).
@@ -392,7 +392,7 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 7.1 </entry>
-      <entry><code> </code></entry>
+      <entry><code>__cpp_lib_raw_memory_algorithms &gt;= 201606L</code></entry>
     </row>
 
     <row>
@@ -633,17 +633,18 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry> The Parallelism TS Should be Standardized	 </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0024r2.html">
 	P0024R2
 	</link>
       </entry>
-      <entry align="center"> No </entry>
+      <entry align="center"> 9.1 </entry>
       <entry><code> __has_include(&lt;execution&gt;) </code>,
 	     <code> __cpp_lib_execution >= 201603 </code>,
 	     <code> __cpp_lib_parallel_algorithm >= 201603 </code>
+             (requires linking with <code>-ltbb</code>, see Note 3)
       </entry>
     </row>
 
@@ -689,7 +690,7 @@ Feature-testing recommendations for C++</link>.
       </entry>
       <entry align="center"> 7.1 </entry>
       <entry><code> __cpp_lib_math_special_functions >= 201603 </code>
-	     (see Note 3)
+	     (see Note 4)
       </entry>
     </row>
 
@@ -841,7 +842,13 @@ Note 2: This feature is supported in older releases but the
 </para>
 
 <para>
-Note 3: The mathematical special functions are enabled in C++17 mode from
+Note 3: The Parallel Algorithms have an external dependency on Intel TBB 2018
+or later. If the <filename class="headerfile">&lt;execution&gt;</filename>
+header is included then <code>-ltbb</code> must be used to link to TBB.
+</para>
+
+<para>
+Note 4: The mathematical special functions are enabled in C++17 mode from
 GCC 7.1 onwards. For GCC 6.x or for C++11/C++14 define
 <code>__STDCPP_WANT_MATH_SPEC_FUNCS__</code> to a non-zero value
 and test for <code>__STDCPP_MATH_SPEC_FUNCS__ >= 201003L</code>.
@@ -1036,7 +1043,11 @@ and test for <code>__STDCPP_MATH_SPEC_FUNCS__ >= 201003L</code>.
 
    <para>
       <emphasis>23.7.10 [variant.bad.access]</emphasis>
-      <code>what()</code> returns <literal>"Unexpected index"</literal>.
+      <code>what()</code> returns one of the strings
+      <literal>"std::get: variant is valueless"</literal>,
+      <literal>"std::get: wrong index for variant"</literal>,
+      <literal>"std::visit: variant is valueless"</literal>,
+      or <literal>"std::visit&lt;R&gt;: variant is valueless"</literal>.
    </para>
 
    <para>
@@ -1110,7 +1121,7 @@ and test for <code>__STDCPP_MATH_SPEC_FUNCS__ >= 201003L</code>.
    <para>
       <emphasis>30.10.2.1 [fs.conform.9945]</emphasis>
       The behavior of the filesystem library implementation will depend on
-      the target operating system. Some features will not be not supported
+      the target operating system. Some features will not be supported
       on some targets.
    </para>
 

@@ -464,10 +464,14 @@ extern (C) bool runModuleUnitTests()
         import core.sys.freebsd.execinfo;
     else version (NetBSD)
         import core.sys.netbsd.execinfo;
+    else version (DragonFlyBSD)
+        import core.sys.dragonflybsd.execinfo;
     else version (Windows)
         import core.sys.windows.stacktrace;
     else version (Solaris)
         import core.sys.solaris.execinfo;
+    else version (CRuntime_UClibc)
+        import core.sys.linux.execinfo;
 
     static if ( __traits( compiles, new LibBacktrace(0) ) )
     {
@@ -519,9 +523,8 @@ extern (C) bool runModuleUnitTests()
         {
             static enum MAXFRAMES = 128;
             void*[MAXFRAMES]  callstack;
-            int               numframes;
 
-            numframes = backtrace( callstack.ptr, MAXFRAMES );
+            auto numframes = backtrace( callstack.ptr, MAXFRAMES );
             backtrace_symbols_fd( callstack.ptr, numframes, 2 );
         }
 
@@ -592,10 +595,14 @@ Throwable.TraceInfo defaultTraceHandler( void* ptr = null )
         import core.sys.freebsd.execinfo;
     else version (NetBSD)
         import core.sys.netbsd.execinfo;
+    else version (DragonFlyBSD)
+        import core.sys.dragonflybsd.execinfo;
     else version (Windows)
         import core.sys.windows.stacktrace;
     else version (Solaris)
         import core.sys.solaris.execinfo;
+    else version (CRuntime_UClibc)
+        import core.sys.linux.execinfo;
 
     // avoid recursive GC calls in finalizer, trace handlers should be made @nogc instead
     import core.memory : gc_inFinalizer;
@@ -710,6 +717,8 @@ Throwable.TraceInfo defaultTraceHandler( void* ptr = null )
 
                 version (linux) enum enableDwarf = true;
                 else version (FreeBSD) enum enableDwarf = true;
+                else version (DragonFlyBSD) enum enableDwarf = true;
+                else version (Darwin) enum enableDwarf = true;
                 else enum enableDwarf = false;
 
                 static if (enableDwarf)
@@ -833,6 +842,18 @@ Throwable.TraceInfo defaultTraceHandler( void* ptr = null )
                         symEnd = eptr - buf.ptr;
                     }
                 }
+                else version (DragonFlyBSD)
+                {
+                    // format is: 0x00000000 <_D6module4funcAFZv+0x78> at module
+                    auto bptr = cast(char*) memchr( buf.ptr, '<', buf.length );
+                    auto eptr = cast(char*) memchr( buf.ptr, '+', buf.length );
+
+                    if ( bptr++ && eptr )
+                    {
+                        symBeg = bptr - buf.ptr;
+                        symEnd = eptr - buf.ptr;
+                    }
+                }
                 else version (Solaris)
                 {
                     // format is object'symbol+offset [pc]
@@ -897,7 +918,7 @@ Throwable.TraceInfo defaultTraceHandler( void* ptr = null )
         {
             static enum FIRSTFRAME = 0;
         }
-        import core.sys.windows.windows : CONTEXT;
+        import core.sys.windows.winnt : CONTEXT;
         auto s = new StackTrace(FIRSTFRAME, cast(CONTEXT*)ptr);
         return s;
     }

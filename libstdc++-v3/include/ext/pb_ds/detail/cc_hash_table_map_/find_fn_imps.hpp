@@ -38,6 +38,8 @@
  * Contains implementations of cc_ht_map_'s find related functions.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
@@ -69,3 +71,4 @@ PB_DS_CLASS_C_DEC::
 find_end() const
 { return 0; }
 
+#endif

@@ -22,6 +22,12 @@ if { ![isnative] || ![is-effective-target shared] } {
 # Gather a list of all tests.
 set tests [lsort [filter_libphobos_unittests [find $srcdir/../libdruntime "*.d"]]]
 
+set version_flags ""
+
+if { [is-effective-target linux_pre_2639] } {
+    lappend version_flags "-fversion=Linux_Pre_2639"
+}
+
 # Initialize dg.
 dg-init
 
@@ -29,7 +35,7 @@ dg-init
 foreach test $tests {
     set libphobos_test_name "$subdir/[dg-trim-dirname $srcdir/../libdruntime $test]"
     dg-runtest $test "-fversion=Shared -shared-libphobos" \
-	"-fmain -fbuilding-libphobos-tests -fno-moduleinfo"
+	"-fmain -fbuilding-libphobos-tests -fno-moduleinfo $version_flags"
     set libphobos_test_name ""
 }
 

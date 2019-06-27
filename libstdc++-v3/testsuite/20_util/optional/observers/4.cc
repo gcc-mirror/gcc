@@ -26,10 +26,42 @@ struct value_type
   int i;
 };
 
-int main()
+void test01()
 {
   std::optional<value_type> o { value_type { 51 } };
   value_type fallback { 3 };
   VERIFY( o.value_or(fallback).i == 51 );
   VERIFY( o.value_or(fallback).i == (*o).i );
+}
+
+void test02()
+{
+  std::optional<value_type> o;
+  value_type fallback { 3 };
+  VERIFY( o.value_or(fallback).i == 3 );
+}
+
+void test03()
+{
+  std::optional<value_type> o { value_type { 51 } };
+  value_type fallback { 3 };
+  VERIFY( std::move(o).value_or(fallback).i == 51 );
+  VERIFY( o.has_value() );
+  VERIFY( std::move(o).value_or(fallback).i == (*o).i );
+}
+
+void test04()
+{
+  std::optional<value_type> o;
+  value_type fallback { 3 };
+  VERIFY( std::move(o).value_or(fallback).i == 3 );
+  VERIFY( !o.has_value() );
+}
+
+int main()
+{
+  test01();
+  test02();
+  test03();
+  test04();
 }

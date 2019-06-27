@@ -26,7 +26,7 @@ test01()
   using namespace std::experimental;
 
   wstring_view str0{L"olympus mons"};
-  wstring_view::pointer p = str0.data();
+  wstring_view::const_pointer p = str0.data();
   str0.remove_prefix(4);
   VERIFY( str0.data() == p + 4);
   VERIFY( str0.length() == 8 );

@@ -117,6 +117,7 @@ init_internal_fns ()
 #define while_direct { 0, 2, false }
 #define fold_extract_direct { 2, 2, false }
 #define fold_left_direct { 1, 1, false }
+#define mask_fold_left_direct { 1, 1, false }
 
 const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1] = {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) not_direct,
@@ -1753,22 +1754,9 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	  /* If both op0 and op1 are sign (!uns) or zero (uns) extended from
 	     hmode to mode, the multiplication will never overflow.  We can
 	     do just one hmode x hmode => mode widening multiplication.  */
-	  rtx lopart0s = lopart0, lopart1s = lopart1;
-	  if (GET_CODE (lopart0) == SUBREG)
-	    {
-	      lopart0s = shallow_copy_rtx (lopart0);
-	      SUBREG_PROMOTED_VAR_P (lopart0s) = 1;
-	      SUBREG_PROMOTED_SET (lopart0s, uns ? SRP_UNSIGNED : SRP_SIGNED);
-	    }
-	  if (GET_CODE (lopart1) == SUBREG)
-	    {
-	      lopart1s = shallow_copy_rtx (lopart1);
-	      SUBREG_PROMOTED_VAR_P (lopart1s) = 1;
-	      SUBREG_PROMOTED_SET (lopart1s, uns ? SRP_UNSIGNED : SRP_SIGNED);
-	    }
 	  tree halfstype = build_nonstandard_integer_type (hprec, uns);
-	  ops.op0 = make_tree (halfstype, lopart0s);
-	  ops.op1 = make_tree (halfstype, lopart1s);
+	  ops.op0 = make_tree (halfstype, lopart0);
+	  ops.op1 = make_tree (halfstype, lopart1);
 	  ops.code = WIDEN_MULT_EXPR;
 	  ops.type = type;
 	  rtx thisres
@@ -3013,6 +3001,9 @@ expand_while_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 #define expand_fold_left_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 2)
 
+#define expand_mask_fold_left_optab_fn(FN, STMT, OPTAB) \
+  expand_direct_optab_fn (FN, STMT, OPTAB, 3)
+
 /* RETURN_TYPE and ARGS are a return type and argument list that are
    in principle compatible with FN (which satisfies direct_internal_fn_p).
    Return the types that should be used to determine whether the
@@ -3101,6 +3092,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_while_optab_supported_p convert_optab_supported_p
 #define direct_fold_extract_optab_supported_p direct_optab_supported_p
 #define direct_fold_left_optab_supported_p direct_optab_supported_p
+#define direct_mask_fold_left_optab_supported_p direct_optab_supported_p
 
 /* Return the optab used by internal function FN.  */
 

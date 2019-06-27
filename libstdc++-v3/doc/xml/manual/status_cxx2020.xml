@@ -227,14 +227,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Treating Unnecessary <code>decay</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0777r1.pdf">
 	P0777R1
 	</link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 9.1 </entry>
       <entry />
     </row>
 
@@ -674,7 +673,9 @@ Feature-testing recommendations for C++</link>.
 	</link>
       </entry>
       <entry align="center"> 9.1 </entry>
-      <entry />
+      <entry>
+        <code>std::scoped_allocator_adaptor</code> changes missing in 9.1.0
+      </entry>
     </row>
 
     <row>
@@ -700,14 +701,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  A sane <code>variant</code> converting constructor </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0608r3.html">
 	P0608R3
 	</link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 10.1 </entry>
       <entry />
     </row>
 
@@ -861,14 +861,13 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>  Make stateful allocator propagation more consistent for <code>operator+(basic_string)</code> </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1165r1.html">
 	P1165R1
 	</link>
       </entry>
-      <entry align="center"> </entry>
+      <entry align="center"> 10.1 </entry>
       <entry />
     </row>
 
@@ -920,11 +919,73 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>  Improving Completeness Requirements for Type Traits </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1285r0.pdf">
 	P1285R0
+	</link>
+      </entry>
+      <entry align="center"> Partial </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>  Well-behaved interpolation for numbers and pointers </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0811r3.html">
+	P0811R3
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_interpolate &gt;= 201902L</code> </entry>
+    </row>
+
+    <row>
+      <entry>  Missing feature test macros </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1353r0.html">
+	P1353R0
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry>
+        <classname>polymorphic_allocator&lt;&gt;</classname>
+        as a vocabulary type
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0339r6.pdf">
+        P0339R6
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Making std::underlying_type SFINAE-friendly </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0340r3.html">
+        P0340R3
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+        I Stream, You Stream, We All Stream for
+        <classname>istream_iterator</classname>
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0738r2.html">
+        P0738R2
 	</link>
       </entry>
       <entry align="center"> </entry>
@@ -932,16 +993,162 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
-      <entry>  Missing feature test macros </entry>
       <entry>
-        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p1353r0.html">
-	P1353R0
+        Mandating the Standard Library:
+        Clause 16 - Language support library
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1458r1.pdf">
+        P1458R1
 	</link>
       </entry>
-      <entry align="center"> Partial </entry>
+      <entry align="center"> </entry>
+      <entry> Note 1 </entry>
+    </row>
+
+    <row>
+      <entry>
+        Mandating the Standard Library:
+        Clause 18 - Diagnostics library
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1458r1.pdf">
+        P1459R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry> Note 1 </entry>
+    </row>
+
+    <row>
+      <entry>
+        Mandating the Standard Library:
+        Clause 20 - Strings library
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1462r1.html">
+        P1462R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry> Note 1 </entry>
+    </row>
+
+    <row>
+      <entry>
+        Mandating the Standard Library:
+        Clause 21 - Containers library
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1463r1.pdf">
+        P1463R1
+	</link>
+      </entry>
+      <entry align="center"> 10 </entry>
+      <entry/>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+        Mandating the Standard Library:
+        Clause 22 - Iterators library
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1464r1.pdf">
+        P1464R1
+	</link>
+      </entry>
+      <entry align="center"> </entry>
       <entry />
     </row>
+
+    <row>
+      <entry> Make <code>create_directory()</code> Intuitive </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1164r1.pdf">
+        P1164R1
+	</link>
+      </entry>
+      <entry align="center"> 8.3 </entry>
+      <entry> Treated as a DR for C++17 </entry>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+        Target Vectorization Policies from Parallelism V2 TS to C++20
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1001r2.html">
+        P1001R2
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Signed ssize() functions, unsigned size() functions </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1227r2.html">
+        P1227R2
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Ranges Design Cleanup </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1252r2.pdf">
+        P1252R2
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>
+        Usability Enhancements for <classname>std::span</classname>
+      </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1024r3.pdf">
+        P1024R3
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry> Precalculated hash values in lookup </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p0920r2.html">
+        P0920R2
+	</link>
+      </entry>
+      <entry align="center"> </entry>
+      <entry />
+    </row>
+
+    <row>
+      <entry> Traits for [Un]bounded Arrays </entry>
+      <entry>
+        <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1357r1.pdf">
+        P1357R1
+	</link>
+      </entry>
+      <entry align="center"> 9.1 </entry>
+      <entry> <code>__cpp_lib_bounded_array_traits &gt;= 201902L</code> </entry>
+    </row>
+
   </tbody>
 </tgroup>
 </table>

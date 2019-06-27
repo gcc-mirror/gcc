@@ -17,7 +17,6 @@
 
 // { dg-options "-D_GLIBCXX_DEBUG" }
 // { dg-do run { target c++11 } }
-// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
 #include <algorithm>
 #include <functional>

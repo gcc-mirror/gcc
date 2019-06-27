@@ -31,7 +31,7 @@ version_dep =
 endif
 
 gfor_c_HEADERS = $(srcdir)/ISO_Fortran_binding.h
-gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/include
+gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
 	    $(lt_host_flags)
@@ -278,6 +278,7 @@ $(srcdir)/generated/findloc0_i8.c \
 $(srcdir)/generated/findloc0_i16.c \
 $(srcdir)/generated/findloc0_r4.c \
 $(srcdir)/generated/findloc0_r8.c \
+$(srcdir)/generated/findloc0_r10.c \
 $(srcdir)/generated/findloc0_r16.c \
 $(srcdir)/generated/findloc0_c4.c \
 $(srcdir)/generated/findloc0_c8.c \
@@ -295,6 +296,7 @@ $(srcdir)/generated/findloc1_i8.c \
 $(srcdir)/generated/findloc1_i16.c \
 $(srcdir)/generated/findloc1_r4.c \
 $(srcdir)/generated/findloc1_r8.c \
+$(srcdir)/generated/findloc1_r10.c \
 $(srcdir)/generated/findloc1_r16.c \
 $(srcdir)/generated/findloc1_c4.c \
 $(srcdir)/generated/findloc1_c8.c \

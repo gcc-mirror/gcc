@@ -4,7 +4,7 @@
 static inline void
 inline_death ()
 {
-  __asm__ ("");			/* { dg-error "asm not allowed" } */
+  __asm__ ("");			/* { dg-error "'asm' not allowed" } */
 }
 
 void

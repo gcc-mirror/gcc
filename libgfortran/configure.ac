@@ -205,8 +205,7 @@ AM_CONDITIONAL(LIBGFOR_USE_SYMVER_SUN, [test "x$gfortran_use_symver" = xsun])
 # * C library support for other features such as signal, environment
 #   variables, time functions
 
-AM_CONDITIONAL(LIBGFOR_MINIMAL, [test "x${target_cpu}" = xnvptx \
-				 || test "x${target_cpu}" = xamdgcn])
+AM_CONDITIONAL(LIBGFOR_MINIMAL, [test "x${target_cpu}" = xnvptx])
 
 # Figure out whether the compiler supports "-ffunction-sections -fdata-sections",
 # similarly to how libstdc++ does it
@@ -314,8 +313,8 @@ if test "${hardwire_newlib:-0}" -eq 1; then
 else
    AC_CHECK_FUNCS_ONCE(getrusage times mkstemp strtof strtold snprintf \
    ftruncate chsize chdir getentropy getlogin gethostname kill link symlink \
-   sleep ttyname \
-   alarm access fork setmode fcntl writev \
+   sleep ttyname sigaction waitpid \
+   alarm access fork posix_spawn setmode fcntl writev \
    gettimeofday stat fstat lstat getpwuid vsnprintf dup \
    getcwd localtime_r gmtime_r getpwuid_r ttyname_r clock_gettime \
    getgid getpid getuid geteuid umask getegid \

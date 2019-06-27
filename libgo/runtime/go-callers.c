@@ -63,7 +63,9 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
 
   /* Skip thunks and recover functions.  There is no equivalent to
      these functions in the gc toolchain, so returning them here means
-     significantly different results for runtime.Caller(N).  */
+     significantly different results for runtime.Caller(N). See also
+     similar code in runtime/mprof.go that strips out such functions
+     for block/mutex/memory profiles.  */
   if (function != NULL && !arg->keep_thunks)
     {
       const char *p;
@@ -75,7 +77,7 @@ callback (void *data, uintptr_t pc, const char *filename, int lineno,
 	return 0;
       if (p - function > 3 && __builtin_strcmp (p - 3, "..r") == 0)
 	return 0;
-      if (p - function > 6 && __builtin_strcmp (p - 6, "..stub") == 0)
+      if (p - function > 6 && __builtin_strncmp (p - 6, "..stub", 6) == 0)
 	return 0;
     }
 
@@ -262,3 +264,54 @@ Callers (intgo skip, struct __go_open_array pc)
 
   return ret;
 }
+
+struct callersRaw_data
+{
+  uintptr* pcbuf;
+  int index;
+  int max;
+};
+
+// Callback function for backtrace_simple.  Just collect pc's.
+// Return zero to continue, non-zero to stop.
+
+static int callback_raw (void *data, uintptr_t pc)
+{
+  struct callersRaw_data *arg = (struct callersRaw_data *) data;
+
+  /* On the call to backtrace_simple the pc value was most likely
+     decremented if there was a normal call, since the pc referred to
+     the instruction where the call returned and not the call itself.
+     This was done so that the line number referred to the call
+     instruction.  To make sure the actual pc from the call stack is
+     used, it is incremented here.
+
+     In the case of a signal, the pc was not decremented by
+     backtrace_full but still incremented here.  That doesn't really
+     hurt anything since the line number is right and the pc refers to
+     the same instruction.  */
+
+  arg->pcbuf[arg->index] = pc + 1;
+  arg->index++;
+  return arg->index >= arg->max;
+}
+
+/* runtime_callersRaw is similar to runtime_callers() above, but
+   it returns raw PC values as opposed to file/func/line locations. */
+int32
+runtime_callersRaw (uintptr *pcbuf, int32 m)
+{
+  struct callersRaw_data data;
+  struct backtrace_state* state;
+
+  data.pcbuf = pcbuf;
+  data.index = 0;
+  data.max = m;
+  runtime_xadd (&__go_runtime_in_callers, 1);
+  state = __go_get_backtrace_state ();
+  backtrace_simple (state, 0, callback_raw, error_callback, &data);
+  runtime_xadd (&__go_runtime_in_callers, -1);
+
+  return data.index;
+}
+

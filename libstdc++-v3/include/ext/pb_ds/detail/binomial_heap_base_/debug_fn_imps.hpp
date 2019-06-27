@@ -38,6 +38,8 @@
  * Contains an implementation class for a base of binomial heaps.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
@@ -97,4 +99,5 @@ assert_node_consistent(node_const_pointer p_nd, bool strictly_binomial,
     }
 }
 
+#endif
 #endif

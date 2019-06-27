@@ -401,7 +401,7 @@ func (v Value) call(op string, in []Value) []Value {
 	if v.flag&flagMethod != 0 {
 		nin++
 	}
-	firstPointer := len(in) > 0 && t.In(0).Kind() != Ptr && v.flag&flagMethodFn != 0
+	firstPointer := len(in) > 0 && ifaceIndir(t.In(0).common()) && v.flag&flagMethodFn != 0
 	params := make([]unsafe.Pointer, nin)
 	off := 0
 	if v.flag&flagMethod != 0 {

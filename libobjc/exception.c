@@ -220,6 +220,7 @@ get_ttype_entry (struct lsda_header_info *info, _Unwind_Word i)
   while (0)
 
 _Unwind_Reason_Code
+__attribute__((target ("general-regs-only")))
 PERSONALITY_FUNCTION (_Unwind_State state,
 		      struct _Unwind_Exception *ue_header,
 		      struct _Unwind_Context *context)

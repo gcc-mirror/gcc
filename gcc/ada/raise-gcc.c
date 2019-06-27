@@ -1154,10 +1154,18 @@ extern void __gnat_notify_unhandled_exception (struct Exception_Occurrence *);
 #define PERSONALITY_FUNCTION    __gnat_personality_v0
 #endif
 
+#if defined (__ARM_EABI_UNWINDER__) \
+    && (defined (IN_RTS) || GCC_VERSION > 9000)
+#define TARGET_ATTRIBUTE __attribute__((target ("general-regs-only")))
+#else
+#define TARGET_ATTRIBUTE
+#endif
+
 /* Code executed to continue unwinding.  With the ARM unwinder, the
    personality routine must unwind one frame (per EHABI 7.3 4.).  */
 
 static _Unwind_Reason_Code
+TARGET_ATTRIBUTE
 continue_unwind (struct _Unwind_Exception* ue_header ATTRIBUTE_UNUSED,
 		 struct _Unwind_Context* uw_context ATTRIBUTE_UNUSED)
 {
@@ -1172,6 +1180,7 @@ continue_unwind (struct _Unwind_Exception* ue_header ATTRIBUTE_UNUSED,
    between all unwinders.  */
 
 static _Unwind_Reason_Code
+TARGET_ATTRIBUTE
 personality_body (_Unwind_Action uw_phases,
 		  _Unwind_Exception *uw_exception,
 		  _Unwind_Context *uw_context)
@@ -1342,6 +1351,7 @@ PERSONALITY_FUNCTION (_Unwind_State state,
 		      struct _Unwind_Context* uw_context);
 
 PERSONALITY_STORAGE _Unwind_Reason_Code
+TARGET_ATTRIBUTE
 PERSONALITY_FUNCTION (_Unwind_State state,
 		      struct _Unwind_Exception* uw_exception,
 		      struct _Unwind_Context* uw_context)

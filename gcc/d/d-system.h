@@ -25,7 +25,7 @@
 /* Used by the dmd front-end to determine if we have POSIX-style IO.  */
 #define POSIX (__linux__ || __GLIBC__ || __gnu_hurd__ || __APPLE__ \
 	       || __FreeBSD__ || __NetBSD__ || __OpenBSD__ || __DragonFly__ \
-	       || __sun)
+	       || __sun || __unix__)
 
 /* Forward assert invariants to gcc_assert.  */
 #undef assert
@@ -54,5 +54,28 @@
 #define isxdigit(c) ISXDIGIT(c)
 #undef tolower
 #define tolower(c) TOLOWER(c)
+
+/* Forward _mkdir on MinGW to mkdir in system.h.  */
+#ifdef _WIN32
+#undef _mkdir
+#define _mkdir(p) mkdir(p, 0)
+#endif
+
+/* Define any missing _MAX and _MIN macros.  */
+#ifndef INT32_MAX
+# define INT32_MAX INTTYPE_MAXIMUM (int32_t)
+#endif
+#ifndef INT32_MIN
+# define INT32_MIN INTTYPE_MINIMUM (int32_t)
+#endif
+#ifndef INT64_MIN
+# define INT64_MIN INTTYPE_MINIMUM (int64_t)
+#endif
+#ifndef UINT32_MAX
+# define UINT32_MAX INTTYPE_MAXIMUM (uint32_t)
+#endif
+#ifndef UINT64_MAX
+# define UINT64_MAX INTTYPE_MAXIMUM (uint64_t)
+#endif
 
 #endif  /* GCC_D_SYSTEM_H  */

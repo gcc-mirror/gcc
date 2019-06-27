@@ -93,10 +93,10 @@ along with GCC; see the file COPYING3.  If not see
 
 	y = sqrt (x);
      ==>
-	y = IFN_SQRT (x);
 	if (__builtin_isless (x, 0))
-	    sqrt (x);
-
+	  y =  sqrt (x);
+	else
+	  y = IFN_SQRT (x);
      In the vast majority of cases we should then never need to call sqrt.
 
    Note that library functions are not supposed to clear errno to zero without
@@ -362,6 +362,40 @@ can_guard_call_p (gimple *call)
 	  || find_fallthru_edge (gimple_bb (call)->succs));
 }
 
+/* For a comparison code return the comparison code we should use if we don't
+   HONOR_NANS.  */
+
+static enum tree_code
+comparison_code_if_no_nans (tree_code code)
+{
+  switch (code)
+    {
+    case UNLT_EXPR:
+      return LT_EXPR;
+    case UNGT_EXPR:
+      return GT_EXPR;
+    case UNLE_EXPR:
+      return LE_EXPR;
+    case UNGE_EXPR:
+      return GE_EXPR;
+    case UNEQ_EXPR:
+      return EQ_EXPR;
+    case LTGT_EXPR:
+      return NE_EXPR;
+
+    case LT_EXPR:
+    case GT_EXPR:
+    case LE_EXPR:
+    case GE_EXPR:
+    case EQ_EXPR:
+    case NE_EXPR:
+      return code;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* A helper function to generate gimple statements for one bound
    comparison, so that the built-in function is called whenever
    TCODE <ARG, LBUB> is *false*.  TEMP_NAME1/TEMP_NAME2 are names
@@ -378,6 +412,9 @@ gen_one_condition (tree arg, int lbub,
 		   vec<gimple *> conds,
                    unsigned *nconds)
 {
+  if (!HONOR_NANS (arg))
+    tcode = comparison_code_if_no_nans (tcode);
+
   tree lbub_real_cst, lbub_cst, float_type;
   tree temp, tempn, tempc, tempcn;
   gassign *stmt1;
@@ -756,14 +793,16 @@ gen_shrink_wrap_conditions (gcall *bi_call, vec<gimple *> conds,
 }
 
 /* Shrink-wrap BI_CALL so that it is only called when one of the NCONDS
-   conditions in CONDS is false.  */
+   conditions in CONDS is false.  Also move BI_NEWCALL to a new basic block
+   when it is non-null, it is called while all of the CONDS are true.  */
 
 static void
 shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
-					  unsigned int nconds)
+					  unsigned int nconds,
+					  gcall *bi_newcall = NULL)
 {
   gimple_stmt_iterator bi_call_bsi;
-  basic_block bi_call_bb, join_tgt_bb, guard_bb;
+  basic_block bi_call_bb, bi_newcall_bb, join_tgt_bb, guard_bb;
   edge join_tgt_in_edge_from_call, join_tgt_in_edge_fall_thru;
   edge bi_call_in_edge0, guard_bb_in_edge;
   unsigned tn_cond_stmts;
@@ -772,27 +811,26 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
   gimple *cond_expr_start;
 
   /* The cfg we want to create looks like this:
-
-	   [guard n-1]         <- guard_bb (old block)
-	     |    \
-	     | [guard n-2]                   }
-	     |    / \                        }
-	     |   /  ...                      } new blocks
-	     |  /  [guard 0]                 }
-	     | /    /   |                    }
-	    [ call ]    |     <- bi_call_bb  }
-	     | \        |
-	     |  \       |
-	     |   [ join ]     <- join_tgt_bb (old iff call must end bb)
-	     |
+          [guard n-1]         <- guard_bb (old block)
+            |    \
+            | [guard n-2]                   }
+            |    / \                        }
+            |   /  ...                      } new blocks
+            |  /  [guard 0]                 }
+            | /  /    |                     }
+           [call]     |      <- bi_call_bb  }
+             \    [newcall]  <-bi_newcall_bb}
+              \       |
+                [join]       <- join_tgt_bb (old iff call must end bb)
 	 possible EH edges (only if [join] is old)
 
      When [join] is new, the immediate dominators for these blocks are:
 
      1. [guard n-1]: unchanged
      2. [call]: [guard n-1]
-     3. [guard m]: [guard m+1] for 0 <= m <= n-2
-     4. [join]: [guard n-1]
+     3. [newcall]: [guard 0]
+     4. [guard m]: [guard m+1] for 0 <= m <= n-2
+     5. [join]: [guard n-1]
 
      We punt for the more complex case case of [join] being old and
      simply free the dominance info.  We also punt on postdominators,
@@ -888,6 +926,47 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
 
       bi_call_in_edge = make_edge (guard_bb, bi_call_bb, EDGE_FALSE_VALUE);
       edges.quick_push (edge_pair (bi_call_in_edge, guard_bb_in_edge));
+    }
+
+  /* Move BI_NEWCALL to new basic block when it is non-null.  */
+  if (bi_newcall)
+    {
+      /* Get bi_newcall_bb by split join_tgt_in_edge_fall_thru edge,
+         and move BI_NEWCALL to bi_newcall_bb.  */
+      bi_newcall_bb = split_edge (join_tgt_in_edge_fall_thru);
+      gimple_stmt_iterator to_gsi = gsi_start_bb (bi_newcall_bb);
+      gimple_stmt_iterator from_gsi = gsi_for_stmt (bi_newcall);
+      gsi_move_before (&from_gsi, &to_gsi);
+      join_tgt_in_edge_fall_thru = EDGE_SUCC (bi_newcall_bb, 0);
+      join_tgt_bb = join_tgt_in_edge_fall_thru->dest;
+
+      tree bi_newcall_lhs = gimple_call_lhs (bi_newcall);
+      tree bi_call_lhs = gimple_call_lhs (bi_call);
+      if (!bi_call_lhs)
+        {
+          bi_call_lhs = copy_ssa_name (bi_newcall_lhs);
+          gimple_call_set_lhs (bi_call, bi_call_lhs);
+          SSA_NAME_DEF_STMT (bi_call_lhs) = bi_call;
+        }
+
+      /* Create phi node for lhs of BI_CALL and BI_NEWCALL.  */
+      gphi *new_phi = create_phi_node (copy_ssa_name (bi_newcall_lhs),
+				       join_tgt_bb);
+      SSA_NAME_OCCURS_IN_ABNORMAL_PHI (PHI_RESULT (new_phi))
+        = SSA_NAME_OCCURS_IN_ABNORMAL_PHI (bi_newcall_lhs);
+      add_phi_arg (new_phi, bi_call_lhs, join_tgt_in_edge_from_call,
+                   gimple_location (bi_call));
+      add_phi_arg (new_phi, bi_newcall_lhs, join_tgt_in_edge_fall_thru,
+                   gimple_location (bi_newcall));
+
+      /* Replace all use of original return value with result of phi node.  */
+      use_operand_p use_p;
+      gimple *use_stmt;
+      imm_use_iterator iterator;
+      FOR_EACH_IMM_USE_STMT (use_stmt, iterator, bi_newcall_lhs)
+        if (use_stmt != new_phi)
+	  FOR_EACH_IMM_USE_ON_STMT (use_p, iterator)
+	    SET_USE (use_p, PHI_RESULT (new_phi));
     }
 
   /* Now update the probability and profile information, processing the
@@ -993,9 +1072,11 @@ use_internal_fn (gcall *call)
 
   unsigned nconds = 0;
   auto_vec<gimple *, 12> conds;
+  bool is_arg_conds = false;
   if (can_test_argument_range (call))
     {
       gen_shrink_wrap_conditions (call, conds, &nconds);
+      is_arg_conds = true;
       gcc_assert (nconds != 0);
     }
   else
@@ -1045,8 +1126,8 @@ use_internal_fn (gcall *call)
 	  call = new_call;
 	}
     }
-
-  shrink_wrap_one_built_in_call_with_conds (call, conds, nconds);
+  shrink_wrap_one_built_in_call_with_conds (call, conds, nconds,
+					    is_arg_conds ? new_call : NULL);
 }
 
 /* The top level function for conditional dead code shrink

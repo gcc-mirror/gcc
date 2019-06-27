@@ -26,8 +26,6 @@
 
 #ifdef _GLIBCXX_DEBUG
   using std::_GLIBCXX_STD_C::_S_word_bit;
-#elif defined(_GLIBCXX_PROFILE)
-  using std::_GLIBCXX_STD_C::_S_word_bit;
 #else
   using std::_S_word_bit;
 #endif

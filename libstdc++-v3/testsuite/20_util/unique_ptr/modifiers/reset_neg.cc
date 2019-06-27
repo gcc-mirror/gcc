@@ -55,3 +55,5 @@ test02()
   std::unique_ptr<const volatile A[]> cvA3;
   cvA3.reset(p); // { dg-error "no matching function" }
 }
+
+// { dg-prune-output "enable_if" }

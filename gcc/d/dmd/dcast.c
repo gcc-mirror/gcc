@@ -131,7 +131,7 @@ Expression *implicitCastTo(Expression *e, Scope *sc, Type *t)
             visit((Expression *)e);
 
             Type *tb = result->type->toBasetype();
-            if (tb->ty == Tarray)
+            if (tb->ty == Tarray && global.params.useTypeInfo && Type::dtypeinfo)
                 semanticTypeInfo(sc, ((TypeDArray *)tb)->next);
         }
 

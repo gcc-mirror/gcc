@@ -18,14 +18,12 @@ foo (int y)
   return y + bar (y);
 }
 
-/* For !nonpic && ia32 xfails, see PR64895.  */
-
 /* Check that no registers are saved/restored. */
-/* { dg-final { scan-assembler-not "push" { xfail { { ! nonpic } && ia32 } } } } */
-/* { dg-final { scan-assembler-not "pop" { xfail { { ! nonpic } && ia32 } } } } */
+/* { dg-final { scan-assembler-not "push" } } */
+/* { dg-final { scan-assembler-not "pop" } } */
 
 /* Check that addition uses dx. */
-/* { dg-final { scan-assembler-times "addl\t%\[re\]?dx, %\[re\]?ax" 1 { xfail { { ! nonpic } && ia32 } } } } */
+/* { dg-final { scan-assembler-times "addl\t%\[re\]?dx, %\[re\]?ax" 1 } } */
 
 /* Verify that bar is self-recursive.  */
 /* { dg-final { scan-assembler-times "call\t_?bar" 2 } } */

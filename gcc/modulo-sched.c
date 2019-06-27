@@ -1597,6 +1597,7 @@ sms_schedule (void)
       mii = 1; /* Need to pass some estimate of mii.  */
       rec_mii = sms_order_nodes (g, mii, node_order, &max_asap);
       mii = MAX (res_MII (g), rec_mii);
+      mii = MAX (mii, 1);
       maxii = MAX (max_asap, MAXII_FACTOR * mii);
 
       if (dump_file)
@@ -2996,9 +2997,7 @@ ps_insn_find_column (partial_schedule_ptr ps, ps_insn_ptr ps_i,
             last_must_precede = next_ps_i;
         }
       /* The closing branch must be the last in the row.  */
-      if (must_precede 
-	  && bitmap_bit_p (must_precede, next_ps_i->id)
-	  && JUMP_P (ps_rtl_insn (ps, next_ps_i->id)))
+      if (JUMP_P (ps_rtl_insn (ps, next_ps_i->id)))
 	return false;
              
        last_in_row = next_ps_i;

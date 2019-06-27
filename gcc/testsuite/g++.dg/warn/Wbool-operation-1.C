@@ -6,6 +6,6 @@ template <class c>
 decltype (~c{})
 call ()
 {
-  return ~false; // { dg-warning "on an expression of type bool" }
+  return ~false; // { dg-warning "on an expression of type 'bool'" }
 }
 template int call<bool>();

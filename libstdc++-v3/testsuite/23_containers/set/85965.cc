@@ -27,3 +27,12 @@ struct Foo
   // PR libstdc++/85965
   std::set<Derived*, std::less<Base*>> s;
 };
+
+std::size_t
+test01(std::set<Derived*, std::less<Base*>> s)
+{
+  // these operations should not require the comparison object
+  auto copy = s;
+  copy = s;
+  return s.size();
+}

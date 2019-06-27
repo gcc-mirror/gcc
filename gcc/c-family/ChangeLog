@@ -1,3 +1,187 @@
+2019-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/90954
+	* c-omp.c (c_finish_omp_atomic): Allow tree_invariant_p in addition
+	to SAVE_EXPR in first operand of a COMPOUND_EXPR.
+
+2019-06-24  Jan Hubicka  <jh@suse.cz>
+
+	* c-common.c (braced_lists_to_strings): Check that
+	type is array or integer prior checking string flag.
+
+2019-06-21  Matthew Beliveau  <mbelivea@redhat.com>
+
+	PR c++/90875 - added -Wswitch-outside-range option
+	* c.opt (Wswitch-outside-range): Added new option.
+	* c-warn.c (c_do_switch_warnings): Use OPT_Wswitch-outside-range.
+
+2019-06-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90953 - ICE with -Wmissing-format-attribute.
+	* c-common.c (check_function_arguments_recurse): Use
+	get_attribute_name.
+	(check_missing_format_attribute): Likewise.
+
+2019-06-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/60364 - noreturn after first decl not diagnosed.
+	* c-attribs.c (handle_noreturn_attribute): No longer static.
+	* c-common.h (handle_noreturn_attribute, attr_noreturn_exclusions):
+	Declare.
+	* c-format.c (check_function_format): Use get_attribute_name.
+
+2019-06-19  Martin Sebor  <msebor@redhat.com>
+
+	PR translation/90156
+	* c-format.c (function_format_info::format_type): Adjust type.
+	(function_format_info::is_raw): New member.
+	(decode_format_type): Adjust signature.  Handle "raw" diag attributes.
+	(decode_format_attr): Adjust call to decode_format_type.
+	Avoid a redundant call to convert_format_name_to_system_name.
+	Avoid abbreviating the word "arguments" in a diagnostic.
+	(format_warning_substr): New function.
+	(avoid_dollar_number): Quote dollar sign in a diagnostic.
+	(finish_dollar_format_checking): Same.
+	(check_format_info): Same.
+	(struct baltoks_t): New.
+	(c_opers, c_keywords, cxx_keywords, badwords, contrs): New arrays.
+	(maybe_diag_unbalanced_tokens, check_tokens, check_plain): New
+	functions.
+	(check_format_info_main): Call check_plain.  Use baltoks_t.  Call
+	maybe_diag_unbalanced_tokens.
+	(handle_format_attribute): Spell out the word "arguments" in
+	a diagnostic.
+
+2019-06-11  Matthew Beliveau  <mbelivea@redhat.com>
+
+	PR c++/90449 - add -Winaccessible-base option.
+	* c.opt (Winaccessible-base): New option.
+
+2019-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_SCAN.
+	* c-pragma.c (omp_pragmas_simd): Add #pragma omp scan.
+	* c-omp.c (c_omp_split_clauses): Diagnose inscan reductions on
+	combined/composite constructs where it is not allowed.  Copy over
+	OMP_CLAUSE_REDUCTION_INSCAN.
+
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* c-attribs.c (handle_mode_attribute): Adjust quoting and hyphenation.
+	(handle_alias_ifunc_attribute): Same.
+	(handle_copy_attribute): Same.
+	(handle_weakref_attribute): Same.
+	(handle_nonnull_attribute): Same.
+	* c-warn.c (warn_for_sign_compare): Same.
+	(warn_for_restrict): Same.
+	* c.opt: Same.
+
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* c-pragma.c (handle_pragma_weak): Adjust quoting in a diagnostic.
+	* c.opt (-Wformat-diag): Remove a spurious period.
+
+2019-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90628
+	* c-common.c (check_builtin_function_arguments)
+	<case BUILTIN_*_OVERFLOW>: Diagnose pointer to const qualified integer
+	as last argument.
+
+2019-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (compare_node): Compare the DECL_UIDs as a last resort.
+
+2019-05-22  Martin Liska  <mliska@suse.cz>
+
+	PR lto/90500
+	* c-attribs.c (handle_copy_attribute): Do not copy
+	target_clones attribute.
+
+2019-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.h (enum cpp_operation): Add IS_ASSIGNMENT_OPERATOR.
+	* c-ada-spec.c (print_assignment_operator): New function.
+	(dump_ada_declaration) <FUNCTION_DECL>: Call it do dump explicit copy
+	assignment operators declared as methods and filter out the others.
+
+2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR c/89433
+	* c-attribs.c (c_common_attribute_table): Set min_len to -1 for
+	"omp declare target".
+
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+        * c-attribs.c (handle_no_sanitize_attribute): Quote identifiers,
+        keywords, operators, and types in diagnostics.
+        (handle_scalar_storage_order_attribute): Same.
+        (handle_mode_attribute): Same.
+        (handle_visibility_attribute): Same.
+        (handle_assume_aligned_attribute): Same.
+        (handle_no_split_stack_attribute): Same.
+        * c-common.c (shorten_compare): Same.
+        (c_common_truthvalue_conversion): Same.
+        (cb_get_source_date_epoch): Same.
+        * c-lex.c (cb_def_pragma): Quote keywords, operators, and types
+        in diagnostics.
+        (interpret_float): Same.
+        * c-omp.c (c_finish_omp_for): Same.
+        * c-opts.c (c_common_post_options): Same.
+        * c-pch.c (c_common_pch_pragma): Same.
+        * c-pragma.c (pop_alignment): Same.
+        (handle_pragma_pack): Same.
+        (apply_pragma_weak): Same.
+        (handle_pragma_weak): Same.
+        (handle_pragma_scalar_storage_order): Same.
+        (handle_pragma_redefine_extname): Same.
+        (add_to_renaming_pragma_list): Same.
+        (maybe_apply_renaming_pragma): Same.
+        (push_visibility): Same.
+        (handle_pragma_visibility): Same.
+        (handle_pragma_optimize): Same.
+        (handle_pragma_message): Same.
+        * c-warn.c (warn_for_omitted_condop): Same.
+        (lvalue_error): Same.
+
+2019-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR c/90474
+	* c-common.c (c_common_mark_addressable_vec): Also mark
+	a COMPOUND_LITERAL_EXPR_DECL addressable similar to
+	c_mark_addressable.
+ 
+2019-05-06  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.c (handle_defered_opts): Rename struct deps to struc mkdeps.
+
+2019-04-30  Nathan Sidwell  <nathan@acm.org>
+
+	* c-common.c (c_common_init_ts): Use MARK_TS_EXP.  Mark SIZEOF_EXPR.
+
+2019-04-30  Martin Liska  <mliska@suse.cz>
+
+	* c-pragma.c (handle_pragma_diagnostic): Provide hints
+	for unknown options.
+
+2019-04-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-warn.c (strict_aliasing_warning): Apply COMPLETE_TYPE_P to
+	the pointer target rather than the pointer itself.
+
+2019-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89888
+	* c-common.h (c_add_case_label): Remove orig_type and outside_range_p
+	arguments.
+	(c_do_switch_warnings): Remove outside_range_p argument.
+	* c-common.c (check_case_bounds): Removed.
+	(c_add_case_label): Remove orig_type and outside_range_p arguments.
+	Don't call check_case_bounds.  Fold low_value as well as high_value.
+	* c-warn.c (c_do_switch_warnings): Remove outside_range_p argument.
+	Check for case labels outside of range of original type here and
+	adjust them.
+
 2019-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR translation/90041

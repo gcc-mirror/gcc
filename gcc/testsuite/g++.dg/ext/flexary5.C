@@ -62,7 +62,7 @@ ASSERT_AT_END (D4, a);
 // below is benign since GCC computes the expected value.
 struct D5: E1, E2, NE { char a[]; };
 
-ASSERT_AT_END (D5, a);   // { dg-warning "offsetof within non-standard-layout" }
+ASSERT_AT_END (D5, a);   // { dg-warning "'offsetof' within non-standard-layout" }
 
 struct A2x_1 {
   size_t n;
@@ -166,29 +166,29 @@ struct A5x {
 
 struct D22: A5x, E1, E2 { };
 
-ASSERT_AT_END (D22, a);   // { dg-warning "offsetof within non-standard-layout" }
+ASSERT_AT_END (D22, a);   // { dg-warning "'offsetof' within non-standard-layout" }
 
 struct D23: E1, A5x, E2 { };
 
-ASSERT_AT_END (D23, a);   // { dg-warning "offsetof within non-standard-layout" }
+ASSERT_AT_END (D23, a);   // { dg-warning "'offsetof' within non-standard-layout" }
 
 struct D24: E1, E2, A5x { };
 
-ASSERT_AT_END (D24, a);   // { dg-warning "offsetof within non-standard-layout" }
+ASSERT_AT_END (D24, a);   // { dg-warning "'offsetof' within non-standard-layout" }
 
 struct DA5x: A5x { };
 
 struct D25: DA5x, E1, E2 { };
 
-ASSERT_AT_END (D25, a);   // { dg-warning "offsetof within non-standard-layout" }
+ASSERT_AT_END (D25, a);   // { dg-warning "'offsetof' within non-standard-layout" }
 
 struct D26: E1, DA5x, E2 { };
 
-ASSERT_AT_END (D26, a);   // { dg-warning "offsetof within non-standard-layout" }
+ASSERT_AT_END (D26, a);   // { dg-warning "'offsetof' within non-standard-layout" }
 
 struct D27: E1, E2, DA5x { };
 
-ASSERT_AT_END (D27, a);   // { dg-warning "offsetof within non-standard-layout" }
+ASSERT_AT_END (D27, a);   // { dg-warning "'offsetof' within non-standard-layout" }
 
 // Verfify that a flexible array member is diagnosed even when deep
 // in the base class hierarchy.

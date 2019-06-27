@@ -87,6 +87,32 @@ deletable_insn_p_1 (rtx body)
     }
 }
 
+/* Don't delete calls that may throw if we cannot do so.  */
+
+static bool
+can_delete_call (rtx_insn *insn)
+{
+  if (cfun->can_delete_dead_exceptions && can_alter_cfg)
+    return true;
+  if (!insn_nothrow_p (insn))
+    return false;
+  if (can_alter_cfg)
+    return true;
+  /* If we can't alter cfg, even when the call can't throw exceptions, it
+     might have EDGE_ABNORMAL_CALL edges and so we shouldn't delete such
+     calls.  */
+  gcc_assert (CALL_P (insn));
+  if (BLOCK_FOR_INSN (insn) && BB_END (BLOCK_FOR_INSN (insn)) == insn)
+    {
+      edge e;
+      edge_iterator ei;
+
+      FOR_EACH_EDGE (e, ei, BLOCK_FOR_INSN (insn)->succs)
+	if ((e->flags & EDGE_ABNORMAL_CALL) != 0)
+	  return false;
+    }
+  return true;
+}
 
 /* Return true if INSN is a normal instruction that can be deleted by
    the DCE pass.  */
@@ -111,8 +137,7 @@ deletable_insn_p (rtx_insn *insn, bool fast, bitmap arg_stores)
       && (RTL_CONST_OR_PURE_CALL_P (insn)
 	  && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn))
       /* Don't delete calls that may throw if we cannot do so.  */
-      && ((cfun->can_delete_dead_exceptions && can_alter_cfg)
-	  || insn_nothrow_p (insn)))
+      && can_delete_call (insn))
     return find_call_stack_args (as_a <rtx_call_insn *> (insn), false,
 				 fast, arg_stores);
 
@@ -206,8 +231,7 @@ mark_insn (rtx_insn *insn, bool fast)
 	  && !SIBLING_CALL_P (insn)
 	  && (RTL_CONST_OR_PURE_CALL_P (insn)
 	      && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn))
-	  && ((cfun->can_delete_dead_exceptions && can_alter_cfg)
-	      || insn_nothrow_p (insn)))
+	  && can_delete_call (insn))
 	find_call_stack_args (as_a <rtx_call_insn *> (insn), true, fast, NULL);
     }
 }

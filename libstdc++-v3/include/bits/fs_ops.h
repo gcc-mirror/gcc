@@ -40,9 +40,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 namespace filesystem
 {
-  /**
-   * @ingroup filesystem
-   * @{
+  /** @addtogroup filesystem
+   *  @{
    */
 
   path absolute(const path& __p);

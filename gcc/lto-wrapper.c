@@ -155,7 +155,8 @@ get_options_from_collect_gcc_options (const char *collect_gcc,
 	  do
 	    {
 	      if (argv_storage[j] == '\0')
-		fatal_error (input_location, "malformed COLLECT_GCC_OPTIONS");
+		fatal_error (input_location,
+			     "malformed %<COLLECT_GCC_OPTIONS%>");
 	      else if (strncmp (&argv_storage[j], "'\\''", 4) == 0)
 		{
 		  argv_storage[k++] = '\'';
@@ -310,7 +311,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    append_option (decoded_options, decoded_options_count, foption);
 	  else if (strcmp ((*decoded_options)[j].arg, foption->arg))
 	    fatal_error (input_location,
-			 "Option %s with different values",
+			 "option %s with different values",
 			 foption->orig_option_with_args_text);
 	  break;
 
@@ -394,7 +395,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    append_option (decoded_options, decoded_options_count, foption);
 	  else if (foption->value != (*decoded_options)[j].value)
 	    fatal_error (input_location,
-			 "Option %s not used consistently in all LTO input"
+			 "option %s not used consistently in all LTO input"
 			 " files", foption->orig_option_with_args_text);
 	  break;
 
@@ -822,7 +823,7 @@ compile_offload_image (const char *target, const char *compiler_path,
 
   if (!compiler)
     fatal_error (input_location,
-		 "could not find %s in %s (consider using %<-B%>)\n",
+		 "could not find %s in %s (consider using %<-B%>)",
 		 suffix + 1, compiler_path);
 
   /* Generate temporary output file name.  */
@@ -903,7 +904,7 @@ compile_images_for_offload_targets (unsigned in_argc, char *in_argv[],
 				 linker_opts, linker_opt_count);
       if (!offload_names[next_name_entry])
 	fatal_error (input_location,
-		     "problem with building target image for %s\n", names[i]);
+		     "problem with building target image for %s", names[i]);
       next_name_entry++;
     }
 
@@ -960,7 +961,7 @@ find_crtoffloadtable (void)
       }
   if (i == n_paths)
     fatal_error (input_location,
-		 "installation error, can%'t find crtoffloadtable.o");
+		 "installation error, cannot find %<crtoffloadtable.o%>");
 
   free_array_of_ptrs ((void **) paths, n_paths);
 }
@@ -1044,6 +1045,7 @@ debug_objcopy (const char *infile, bool rename)
   int err;
 
   const char *p;
+  const char *orig_infile = infile;
   off_t inoff = 0;
   long loffset;
   int consumed;
@@ -1071,7 +1073,7 @@ debug_objcopy (const char *infile, bool rename)
 				  &off, &len, &errmsg, &err) != 1)
     {
       if (errmsg)
-	fatal_error (0, "%s: %s\n", errmsg, xstrerror (err));
+	fatal_error (0, "%s: %s", errmsg, xstrerror (err));
 
       simple_object_release_read (inobj);
       close (infd);
@@ -1080,9 +1082,9 @@ debug_objcopy (const char *infile, bool rename)
 
   if (save_temps)
     {
-      outfile = (char *) xmalloc (strlen (infile)
+      outfile = (char *) xmalloc (strlen (orig_infile)
 				  + sizeof (".debug.temp.o") + 1);
-      strcpy (outfile, infile);
+      strcpy (outfile, orig_infile);
       strcat (outfile, ".debug.temp.o");
     }
   else
@@ -1091,7 +1093,7 @@ debug_objcopy (const char *infile, bool rename)
   if (errmsg)
     {
       unlink_if_ordinary (outfile);
-      fatal_error (0, "%s: %s\n", errmsg, xstrerror (err));
+      fatal_error (0, "%s: %s", errmsg, xstrerror (err));
     }
 
   simple_object_release_read (inobj);
@@ -1143,11 +1145,11 @@ run_gcc (unsigned argc, char *argv[])
   collect_gcc = getenv ("COLLECT_GCC");
   if (!collect_gcc)
     fatal_error (input_location,
-		 "environment variable COLLECT_GCC must be set");
+		 "environment variable %<COLLECT_GCC%> must be set");
   collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
   if (!collect_gcc_options)
     fatal_error (input_location,
-		 "environment variable COLLECT_GCC_OPTIONS must be set");
+		 "environment variable %<COLLECT_GCC_OPTIONS%> must be set");
   get_options_from_collect_gcc_options (collect_gcc, collect_gcc_options,
 					CL_LANG_ALL,
 					&decoded_options,
@@ -1547,7 +1549,7 @@ cont1:
       int priority;
 
       if (!stream)
-	fatal_error (input_location, "fopen: %s: %m", ltrans_output_file);
+	fatal_error (input_location, "%<fopen%>: %s: %m", ltrans_output_file);
 
       /* Parse the list of LTRANS inputs from the WPA stage.  */
       obstack_init (&env_obstack);
@@ -1564,7 +1566,7 @@ cont1:
 	    {
 	      if (!feof (stream))
 	        fatal_error (input_location,
-		             "Corrupted ltrans output file %s",
+		             "corrupted ltrans output file %s",
 			     ltrans_output_file);
 	      break;
 	    }
@@ -1753,7 +1755,7 @@ main (int argc, char *argv[])
   diagnostic_initialize (global_dc, 0);
 
   if (atexit (lto_wrapper_cleanup) != 0)
-    fatal_error (input_location, "atexit failed");
+    fatal_error (input_location, "%<atexit%> failed");
 
   if (signal (SIGINT, SIG_IGN) != SIG_IGN)
     signal (SIGINT, fatal_signal);

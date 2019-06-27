@@ -199,4 +199,4 @@ int foo(void) { return 1; }
 /* { dg-prune-output "attribute.* is unknown" } */
 /* { dg-prune-output "missing 'target' attribute*" } */
 /* { dg-prune-output "redefinition of 'int foo" } */
-/* { dg-prune-output "no dispatcher found for" } */
+/* { dg-prune-output "ISA '.*' is not supported in 'target' attribute" } */

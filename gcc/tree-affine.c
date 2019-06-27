@@ -259,6 +259,120 @@ aff_combination_convert (aff_tree *comb, tree type)
     }
 }
 
+/* Tries to handle OP0 CODE OP1 as affine combination of parts.  Returns
+   true when that was successful and returns the combination in COMB.  */
+
+static bool
+expr_to_aff_combination (aff_tree *comb, tree_code code, tree type,
+			 tree op0, tree op1 = NULL_TREE)
+{
+  aff_tree tmp;
+  poly_int64 bitpos, bitsize, bytepos;
+
+  switch (code)
+    {
+    case POINTER_PLUS_EXPR:
+      tree_to_aff_combination (op0, type, comb);
+      tree_to_aff_combination (op1, sizetype, &tmp);
+      aff_combination_add (comb, &tmp);
+      return true;
+
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      tree_to_aff_combination (op0, type, comb);
+      tree_to_aff_combination (op1, type, &tmp);
+      if (code == MINUS_EXPR)
+	aff_combination_scale (&tmp, -1);
+      aff_combination_add (comb, &tmp);
+      return true;
+
+    case MULT_EXPR:
+      if (TREE_CODE (op1) != INTEGER_CST)
+	break;
+      tree_to_aff_combination (op0, type, comb);
+      aff_combination_scale (comb, wi::to_widest (op1));
+      return true;
+
+    case NEGATE_EXPR:
+      tree_to_aff_combination (op0, type, comb);
+      aff_combination_scale (comb, -1);
+      return true;
+
+    case BIT_NOT_EXPR:
+      /* ~x = -x - 1 */
+      tree_to_aff_combination (op0, type, comb);
+      aff_combination_scale (comb, -1);
+      aff_combination_add_cst (comb, -1);
+      return true;
+
+    CASE_CONVERT:
+      {
+	tree otype = type;
+	tree inner = op0;
+	tree itype = TREE_TYPE (inner);
+	enum tree_code icode = TREE_CODE (inner);
+
+	/* STRIP_NOPS  */
+	if (tree_nop_conversion_p (otype, itype))
+	  {
+	    tree_to_aff_combination (op0, type, comb);
+	    return true;
+	  }
+
+	/* In principle this is a valid folding, but it isn't necessarily
+	   an optimization, so do it here and not in fold_unary.  */
+	if ((icode == PLUS_EXPR || icode == MINUS_EXPR || icode == MULT_EXPR)
+	    && TREE_CODE (itype) == INTEGER_TYPE
+	    && TREE_CODE (otype) == INTEGER_TYPE
+	    && TYPE_PRECISION (otype) > TYPE_PRECISION (itype))
+	  {
+	    tree op0 = TREE_OPERAND (inner, 0), op1 = TREE_OPERAND (inner, 1);
+
+	    /* If inner type has undefined overflow behavior, fold conversion
+	       for below two cases:
+		 (T1)(X *+- CST) -> (T1)X *+- (T1)CST
+		 (T1)(X + X)     -> (T1)X + (T1)X.  */
+	    if (TYPE_OVERFLOW_UNDEFINED (itype)
+		&& (TREE_CODE (op1) == INTEGER_CST
+		    || (icode == PLUS_EXPR && operand_equal_p (op0, op1, 0))))
+	      {
+		op0 = fold_convert (otype, op0);
+		op1 = fold_convert (otype, op1);
+		return expr_to_aff_combination (comb, icode, otype, op0, op1);
+	      }
+	    wide_int minv, maxv;
+	    /* If inner type has wrapping overflow behavior, fold conversion
+	       for below case:
+		 (T1)(X - CST) -> (T1)X - (T1)CST
+	       if X - CST doesn't overflow by range information.  Also handle
+	       (T1)(X + CST) as (T1)(X - (-CST)).  */
+	    if (TYPE_UNSIGNED (itype)
+		&& TYPE_OVERFLOW_WRAPS (itype)
+		&& TREE_CODE (op0) == SSA_NAME
+		&& TREE_CODE (op1) == INTEGER_CST
+		&& icode != MULT_EXPR
+		&& get_range_info (op0, &minv, &maxv) == VR_RANGE)
+	      {
+		if (icode == PLUS_EXPR)
+		  op1 = wide_int_to_tree (itype, -wi::to_wide (op1));
+		if (wi::geu_p (minv, wi::to_wide (op1)))
+		  {
+		    op0 = fold_convert (otype, op0);
+		    op1 = fold_convert (otype, op1);
+		    return expr_to_aff_combination (comb, MINUS_EXPR, otype,
+						    op0, op1);
+		  }
+	      }
+	  }
+      }
+      break;
+
+    default:;
+    }
+
+  return false;
+}
+
 /* Splits EXPR into an affine combination of parts.  */
 
 void
@@ -266,7 +380,7 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
 {
   aff_tree tmp;
   enum tree_code code;
-  tree cst, core, toffset;
+  tree core, toffset;
   poly_int64 bitpos, bitsize, bytepos;
   machine_mode mode;
   int unsignedp, reversep, volatilep;
@@ -277,39 +391,30 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
   switch (code)
     {
     case POINTER_PLUS_EXPR:
-      tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
-      tree_to_aff_combination (TREE_OPERAND (expr, 1), sizetype, &tmp);
-      aff_combination_add (comb, &tmp);
-      return;
-
     case PLUS_EXPR:
     case MINUS_EXPR:
-      tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
-      tree_to_aff_combination (TREE_OPERAND (expr, 1), type, &tmp);
-      if (code == MINUS_EXPR)
-	aff_combination_scale (&tmp, -1);
-      aff_combination_add (comb, &tmp);
-      return;
-
     case MULT_EXPR:
-      cst = TREE_OPERAND (expr, 1);
-      if (TREE_CODE (cst) != INTEGER_CST)
-	break;
-      tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
-      aff_combination_scale (comb, wi::to_widest (cst));
-      return;
+      if (expr_to_aff_combination (comb, code, type, TREE_OPERAND (expr, 0),
+				   TREE_OPERAND (expr, 1)))
+	return;
+      break;
 
     case NEGATE_EXPR:
-      tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
-      aff_combination_scale (comb, -1);
-      return;
-
     case BIT_NOT_EXPR:
-      /* ~x = -x - 1 */
-      tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
-      aff_combination_scale (comb, -1);
-      aff_combination_add_cst (comb, -1);
-      return;
+      if (expr_to_aff_combination (comb, code, type, TREE_OPERAND (expr, 0)))
+	return;
+      break;
+
+    CASE_CONVERT:
+      /* ???  TREE_TYPE (expr) should be equal to type here, but IVOPTS
+	 calls this with not showing an outer widening cast.  */
+      if (expr_to_aff_combination (comb, code,
+				   TREE_TYPE (expr), TREE_OPERAND (expr, 0)))
+	{
+	  aff_combination_convert (comb, type);
+	  return;
+	}
+      break;
 
     case ADDR_EXPR:
       /* Handle &MEM[ptr + CST] which is equivalent to POINTER_PLUS_EXPR.  */
@@ -349,64 +454,6 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
 	  aff_combination_add (comb, &tmp);
 	}
       return;
-
-    CASE_CONVERT:
-      {
-	tree otype = TREE_TYPE (expr);
-	tree inner = TREE_OPERAND (expr, 0);
-	tree itype = TREE_TYPE (inner);
-	enum tree_code icode = TREE_CODE (inner);
-
-	/* In principle this is a valid folding, but it isn't necessarily
-	   an optimization, so do it here and not in fold_unary.  */
-	if ((icode == PLUS_EXPR || icode == MINUS_EXPR || icode == MULT_EXPR)
-	    && TREE_CODE (itype) == INTEGER_TYPE
-	    && TREE_CODE (otype) == INTEGER_TYPE
-	    && TYPE_PRECISION (otype) > TYPE_PRECISION (itype))
-	  {
-	    tree op0 = TREE_OPERAND (inner, 0), op1 = TREE_OPERAND (inner, 1);
-
-	    /* If inner type has undefined overflow behavior, fold conversion
-	       for below two cases:
-		 (T1)(X *+- CST) -> (T1)X *+- (T1)CST
-		 (T1)(X + X)     -> (T1)X + (T1)X.  */
-	    if (TYPE_OVERFLOW_UNDEFINED (itype)
-		&& (TREE_CODE (op1) == INTEGER_CST
-		    || (icode == PLUS_EXPR && operand_equal_p (op0, op1, 0))))
-	      {
-		op0 = fold_convert (otype, op0);
-		op1 = fold_convert (otype, op1);
-		expr = fold_build2 (icode, otype, op0, op1);
-		tree_to_aff_combination (expr, type, comb);
-		return;
-	      }
-	    wide_int minv, maxv;
-	    /* If inner type has wrapping overflow behavior, fold conversion
-	       for below case:
-		 (T1)(X - CST) -> (T1)X - (T1)CST
-	       if X - CST doesn't overflow by range information.  Also handle
-	       (T1)(X + CST) as (T1)(X - (-CST)).  */
-	    if (TYPE_UNSIGNED (itype)
-		&& TYPE_OVERFLOW_WRAPS (itype)
-		&& TREE_CODE (op0) == SSA_NAME
-		&& TREE_CODE (op1) == INTEGER_CST
-		&& icode != MULT_EXPR
-		&& get_range_info (op0, &minv, &maxv) == VR_RANGE)
-	      {
-		if (icode == PLUS_EXPR)
-		  op1 = wide_int_to_tree (itype, -wi::to_wide (op1));
-		if (wi::geu_p (minv, wi::to_wide (op1)))
-		  {
-		    op0 = fold_convert (otype, op0);
-		    op1 = fold_convert (otype, op1);
-		    expr = fold_build2 (MINUS_EXPR, otype, op0, op1);
-		    tree_to_aff_combination (expr, type, comb);
-		    return;
-		  }
-	      }
-	  }
-      }
-      break;
 
     default:
       {
@@ -665,7 +712,7 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
 {
   unsigned i;
   aff_tree to_add, current, curre;
-  tree e, rhs;
+  tree e;
   gimple *def;
   widest_int scale;
   struct name_expansion *exp;
@@ -715,20 +762,38 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
 	    case PLUS_EXPR:
 	    case MINUS_EXPR:
 	    case MULT_EXPR:
+	      if (!expr_to_aff_combination (&current, code, TREE_TYPE (name),
+					    gimple_assign_rhs1 (def),
+					    gimple_assign_rhs2 (def)))
+		continue;
+	      break;
 	    case NEGATE_EXPR:
 	    case BIT_NOT_EXPR:
+	      if (!expr_to_aff_combination (&current, code, TREE_TYPE (name),
+					    gimple_assign_rhs1 (def)))
+		continue;
+	      break;
 	    CASE_CONVERT:
-	      rhs = gimple_assign_rhs_to_tree (def);
+	      if (!expr_to_aff_combination (&current, code, TREE_TYPE (name),
+					    gimple_assign_rhs1 (def)))
+		/* This makes us always expand conversions which we did
+		   in the past and makes gcc.dg/tree-ssa/ivopts-lt-2.c
+		   PASS, eliminating one induction variable in IVOPTs.
+		   ???  But it is really excessive and we should try
+		   harder to do without it.  */
+		aff_combination_elt (&current, TREE_TYPE (name),
+				     fold_convert (TREE_TYPE (name),
+						   gimple_assign_rhs1 (def)));
 	      break;
 	    case ADDR_EXPR:
 	    case INTEGER_CST:
 	    case POLY_INT_CST:
-	      rhs = gimple_assign_rhs1 (def);
+	      tree_to_aff_combination (gimple_assign_rhs1 (def),
+				       TREE_TYPE (name), &current);
 	      break;
 	    default:
 	      continue;
 	    }
-	  tree_to_aff_combination (rhs, TREE_TYPE (name), &current);
 	  exp = XNEW (struct name_expansion);
 	  exp->in_progress = 1;
 	  if (!*cache)

@@ -38,6 +38,8 @@
  * Contains an implementation class for pat_trie.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::head_allocator
 PB_DS_CLASS_C_DEC::s_head_allocator;
@@ -212,3 +214,4 @@ recursive_copy_node(node_const_pointer p_ncp)
   apply_update(p_ret, (node_update*)this);
   return p_ret;
 }
+#endif

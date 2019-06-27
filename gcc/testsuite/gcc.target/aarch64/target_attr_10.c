@@ -13,4 +13,4 @@ foo (uint8x16_t a, uint8x16_t b, uint8x16_t c)
   return vbslq_u8 (a, b, c); /* { dg-message "called from here" } */
 }
 
-/* { dg-error "inlining failed in call to always_inline" "" { target *-*-* } 0 } */
+/* { dg-error "inlining failed in call to 'always_inline'" "" { target *-*-* } 0 } */

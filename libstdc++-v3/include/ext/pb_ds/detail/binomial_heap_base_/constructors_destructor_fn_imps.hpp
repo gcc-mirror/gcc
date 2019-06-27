@@ -38,6 +38,8 @@
  * Contains an implementation class for a base of binomial heaps.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 template<typename It>
 void
@@ -83,3 +85,4 @@ PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 ~binomial_heap_base()
 { }
+#endif

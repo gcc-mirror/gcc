@@ -31,20 +31,20 @@
 # include <bits/c++config.h>
 # include <pstl/glue_execution_defs.h>
 
-# define __PSTL_EXECUTION_POLICIES_DEFINED 1
+# define _PSTL_EXECUTION_POLICIES_DEFINED 1
 
 // Algorithm implementation
-# if __PSTL_ALGORITHM_FORWARD_DECLARED
+# if _PSTL_ALGORITHM_FORWARD_DECLARED
 #  include <pstl/glue_algorithm_impl.h>
 # endif
 
 // Numeric implementation
-# if __PSTL_NUMERIC_FORWARD_DECLARED
+# if _PSTL_NUMERIC_FORWARD_DECLARED
 #  include <pstl/glue_numeric_impl.h>
 # endif
 
 // Memory implementation
-# if __PSTL_NUMERIC_FORWARD_DECLARED
+# if _PSTL_NUMERIC_FORWARD_DECLARED
 #  include <pstl/glue_memory_impl.h>
 # endif
 

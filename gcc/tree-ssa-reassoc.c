@@ -2143,7 +2143,8 @@ init_range_entry (struct range_entry *r, tree exp, gimple *stmt)
 	  exp_type = boolean_type_node;
 	}
 
-      if (TREE_CODE (arg0) != SSA_NAME)
+      if (TREE_CODE (arg0) != SSA_NAME
+	  || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (arg0))
 	break;
       loc = gimple_location (stmt);
       switch (code)
@@ -4811,6 +4812,7 @@ rewrite_expr_tree_parallel (gassign *stmt, int width,
       else
 	{
 	  stmts[i] = build_and_add_sum (TREE_TYPE (last_rhs1), op1, op2, opcode);
+	  gimple_set_visited (stmts[i], true);
 	}
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -6011,12 +6013,7 @@ reassociate_bb (basic_block bb)
 		{
 		  machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
 		  int ops_num = ops.length ();
-		  int width = get_reassociation_width (ops_num, rhs_code, mode);
-
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    fprintf (dump_file,
-			     "Width = %d was chosen for reassociation\n", width);
-
+		  int width;
 
 		  /* For binary bit operations, if there are at least 3
 		     operands and the last last operand in OPS is a constant,
@@ -6030,10 +6027,21 @@ reassociate_bb (basic_block bb)
 		      && TREE_CODE (ops.last ()->op) == INTEGER_CST)
 		    std::swap (*ops[0], *ops[ops_num - 1]);
 
-		  if (width > 1
-		      && ops.length () > 3)
-		    rewrite_expr_tree_parallel (as_a <gassign *> (stmt),
-						width, ops);
+		  /* Only rewrite the expression tree to parallel in the
+		     last reassoc pass to avoid useless work back-and-forth
+		     with initial linearization.  */
+		  if (!reassoc_insert_powi_p
+		      && ops.length () > 3
+		      && (width = get_reassociation_width (ops_num, rhs_code,
+							   mode)) > 1)
+		    {
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			fprintf (dump_file,
+				 "Width = %d was chosen for reassociation\n",
+				 width);
+		      rewrite_expr_tree_parallel (as_a <gassign *> (stmt),
+						  width, ops);
+		    }
 		  else
                     {
                       /* When there are three operands left, we want

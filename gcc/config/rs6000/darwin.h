@@ -54,15 +54,17 @@
   do							\
     {							\
       if (!TARGET_64BIT) builtin_define ("__ppc__");	\
+      if (!TARGET_64BIT) builtin_define ("__PPC__");	\
       if (TARGET_64BIT) builtin_define ("__ppc64__");	\
+      if (TARGET_64BIT) builtin_define ("__PPC64__");	\
       builtin_define ("__POWERPC__");			\
       builtin_define ("__NATURAL_ALIGNMENT__");		\
       darwin_cpp_builtins (pfile);			\
     }							\
   while (0)
 
-/* Generate branch islands stubs if this is true.  */
-extern int darwin_emit_branch_islands;
+/* Generate pic symbol stubs if this is true.  */
+extern int darwin_emit_picsym_stub;
 
 #define SUBTARGET_OVERRIDE_OPTIONS darwin_rs6000_override_options ()
 
@@ -129,6 +131,11 @@ extern int darwin_emit_branch_islands;
 /* crt2.o is at least partially required for 10.3.x and earlier.  */
 #define DARWIN_CRT2_SPEC \
   "%{!m64:%:version-compare(!> 10.4 mmacosx-version-min= crt2.o%s)}"
+
+/* The PPC regs save/restore functions are leaves and could, conceivably
+   be used by the tm destructor.  */
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC TM_DESTRUCTOR "-lef_ppc"
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS			\
@@ -215,24 +222,27 @@ extern int darwin_emit_branch_islands;
 #undef REGISTER_NAMES
 #define REGISTER_NAMES							\
 {									\
+  /* GPRs */								\
      "r0",  "r1",  "r2",  "r3",  "r4",  "r5",  "r6",  "r7",		\
      "r8",  "r9", "r10", "r11", "r12", "r13", "r14", "r15",		\
     "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23",		\
     "r24", "r25", "r26", "r27", "r28", "r29", "r30", "r31",		\
+  /* FPRs */								\
      "f0",  "f1",  "f2",  "f3",  "f4",  "f5",  "f6",  "f7",		\
      "f8",  "f9", "f10", "f11", "f12", "f13", "f14", "f15",		\
     "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23",		\
     "f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31",		\
-     "mq",  "lr", "ctr",  "ap",						\
+  /* VRs */								\
+     "v0",  "v1",  "v2",  "v3",  "v4",  "v5",  "v6",  "v7",		\
+     "v8",  "v9", "v10", "v11", "v12", "v13", "v14", "v15",		\
+    "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23",		\
+    "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31",		\
+  /* lr ctr ca ap */							\
+     "lr", "ctr", "xer",  "ap",						\
+  /* cr0..cr7 */							\
     "cr0", "cr1", "cr2", "cr3", "cr4", "cr5", "cr6", "cr7",		\
-    "xer",								\
-     "v0",  "v1",  "v2",  "v3",  "v4",  "v5",  "v6",  "v7",             \
-     "v8",  "v9", "v10", "v11", "v12", "v13", "v14", "v15",             \
-    "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23",             \
-    "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31",             \
-    "vrsave", "vscr",							\
-    "sfp",								\
-    "tfhar", "tfiar", "texasr"						\
+  /* vrsave vscr sfp */							\
+    "vrsave", "vscr", "sfp"						\
 }
 
 /* This outputs NAME to FILE.  */
@@ -395,6 +405,7 @@ extern int darwin_emit_branch_islands;
   do \
     { \
       DARWIN_REGISTER_TARGET_PRAGMAS(); \
+      targetm.target_option.pragma_parse = rs6000_pragma_target_parse; \
       targetm.resolve_overloaded_builtin = altivec_resolve_overloaded_builtin; \
     } \
   while (0)

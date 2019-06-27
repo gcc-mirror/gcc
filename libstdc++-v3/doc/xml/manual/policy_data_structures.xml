@@ -458,10 +458,10 @@
 	    priority-queues container), there is a possible need for
 	    different types of iterators for self-organizing containers:
 	    the iterator concept seems overloaded to mean two different
-	    things (in some cases). <remark> XXX
+	    things (in some cases). <!-- <remark> XXX
 	    "ds_gen.html#find_range">Design::Associative
 	    Containers::Data-Structure Genericity::Point-Type and Range-Type
-	    Methods</remark>.
+	    Methods</remark>. -->
 	  </para>
 
 	  <section xml:id="associative.iterators.using">
@@ -3415,7 +3415,9 @@
 
 	    <para>Α<subscript>min</subscript> ≤ (number of
 	    stored elements) / (hash-table size) ≤
-	    Α<subscript>max</subscript><remark>load factor min max</remark></para>
+	    Α<subscript>max</subscript>
+            <!-- <remark>load factor min max</remark> -->
+            </para>
 
 	    <para>Collision-check policies work in the opposite direction of
 	    load-check policies. They focus on keeping the number of

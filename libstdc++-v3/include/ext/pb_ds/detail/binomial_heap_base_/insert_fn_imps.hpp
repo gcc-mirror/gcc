@@ -38,6 +38,8 @@
  * Contains an implementation class for a base of binomial heaps.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
@@ -176,3 +178,4 @@ modify(point_iterator it, const_reference r_new_val)
   m_p_max = 0;
   PB_DS_ASSERT_VALID_COND((*this),true)
 }
+#endif

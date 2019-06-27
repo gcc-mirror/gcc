@@ -38,6 +38,8 @@
  * Contains implementations of cc_ht_map_'s debug-mode functions.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
@@ -55,3 +57,4 @@ assert_valid(const char* __file, int __line) const
 }
 
 #endif 
+#endif

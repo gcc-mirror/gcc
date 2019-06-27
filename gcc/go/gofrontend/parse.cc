@@ -1359,7 +1359,7 @@ Parse::decl(void (Parse::*pfn)(void*, unsigned int), void* varg,
     {
       if (pragmas != 0)
 	go_warning_at(this->location(), 0,
-		      "ignoring magic //go:... comment before group");
+		      "ignoring magic %<//go:...%> comment before group");
       if (!this->advance_token()->is_op(OPERATOR_RPAREN))
 	{
 	  this->list(pfn, varg, true);
@@ -1605,7 +1605,7 @@ Parse::type_spec(void*, unsigned int pragmas)
 	    }
 	  if (pragmas != 0)
 	    go_warning_at(location, 0,
-			  "ignoring magic //go:... comment before type");
+			  "ignoring magic %<//go:...%> comment before type");
 	}
       else
 	{
@@ -1633,7 +1633,7 @@ Parse::var_spec(void*, unsigned int pragmas)
 {
   if (pragmas != 0)
     go_warning_at(this->location(), 0,
-		  "ignoring magic //go:... comment before var");
+		  "ignoring magic %<//go:...%> comment before var");
 
   // Get the variable names.
   Typed_identifier_list til;
@@ -2383,7 +2383,7 @@ Parse::function_decl(unsigned int pragmas)
 	      if (pragma_check[i].decl_ok)
 		continue;
 	      go_warning_at(location, 0,
-			    ("ignoring magic //go:%s comment "
+			    ("ignoring magic %<//go:%s%> comment "
 			     "before declaration"),
 			    pragma_check[i].name);
 	    }
@@ -2392,7 +2392,7 @@ Parse::function_decl(unsigned int pragmas)
 	      if (pragma_check[i].func_ok)
 		continue;
 	      go_warning_at(location, 0,
-			    ("ignoring magic //go:%s comment "
+			    ("ignoring magic %<//go:%s%> comment "
 			     "before function definition"),
 			    pragma_check[i].name);
 	    }
@@ -2401,7 +2401,7 @@ Parse::function_decl(unsigned int pragmas)
 	      if (pragma_check[i].method_ok)
 		continue;
 	      go_warning_at(location, 0,
-			    ("ignoring magic //go:%s comment "
+			    ("ignoring magic %<//go:%s%> comment "
 			     "before method definition"),
 			    pragma_check[i].name);
 	    }
@@ -2602,7 +2602,7 @@ Parse::operand(bool may_be_sink, bool* is_parenthesized)
 	      return Expression::make_sink(location);
 	    else
 	      {
-		go_error_at(location, "cannot use _ as value");
+		go_error_at(location, "cannot use %<_%> as value");
 		return Expression::make_error(location);
 	      }
 	  case Named_object::NAMED_OBJECT_FUNC:
@@ -3483,7 +3483,7 @@ Parse::expression(Precedence precedence, bool may_be_sink,
 
       if (is_parenthesized != NULL)
 	*is_parenthesized = false;
-      
+
       Operator op = token->op();
       Location binop_location = token->location();
 
@@ -3576,7 +3576,7 @@ Parse::unary_expr(bool may_be_sink, bool may_be_composite_lit,
 
   // There is a complex parse for <- chan.  The choices are
   // Convert x to type <- chan int:
-  //   (<- chan int)(x)         
+  //   (<- chan int)(x)
   // Receive from (x converted to type chan <- chan int):
   //   (<- chan <- chan int (x))
   // Convert x to type <- chan (<- chan int).
@@ -4178,7 +4178,7 @@ Parse::tuple_assignment(Expression_list* lhs, bool may_be_composite_lit,
       if ((*pe)->is_error_expression())
 	return;
       if (op != OPERATOR_EQ && (*pe)->is_sink_expression())
-	go_error_at((*pe)->location(), "cannot use _ as value");
+	go_error_at((*pe)->location(), "cannot use %<_%> as value");
     }
   for (Expression_list::const_iterator pe = vals->begin();
        pe != vals->end();
@@ -5721,7 +5721,7 @@ Parse::package_clause()
 	  name = token->identifier();
 	  if (name == "_")
 	    {
-	      go_error_at(this->location(), "invalid package name _");
+	      go_error_at(this->location(), "invalid package name %<_%>");
 	      name = Gogo::erroneous_name();
 	    }
 	  this->advance_token();
@@ -5752,7 +5752,7 @@ Parse::import_spec(void*, unsigned int pragmas)
 {
   if (pragmas != 0)
     go_warning_at(this->location(), 0,
-		  "ignoring magic //go:... comment before import");
+		  "ignoring magic %<//go:...%> comment before import");
 
   const Token* token = this->peek_token();
   Location location = token->location();
@@ -5876,7 +5876,7 @@ Parse::verify_not_sink(Expression* expr)
 {
   if (expr->is_sink_expression())
     {
-      go_error_at(expr->location(), "cannot use _ as value");
+      go_error_at(expr->location(), "cannot use %<_%> as value");
       expr = Expression::make_error(expr->location());
     }
 

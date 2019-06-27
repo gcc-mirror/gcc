@@ -233,6 +233,15 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
     return;
 
   code = TREE_CODE (node);
+
+  /* It is unsafe to look at any other fields of a node with ERROR_MARK or
+     invalid code.  */
+  if (code == ERROR_MARK || code >= MAX_TREE_CODES)
+    {
+      print_node_brief (file, prefix, node, indent);
+      return;
+    }
+
   tclass = TREE_CODE_CLASS (code);
 
   /* Don't get too deep in nesting.  If the user wants to see deeper,
@@ -246,13 +255,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
     }
 
   if (indent > 8 && (tclass == tcc_type || tclass == tcc_declaration))
-    {
-      print_node_brief (file, prefix, node, indent);
-      return;
-    }
-
-  /* It is unsafe to look at any other fields of an ERROR_MARK node.  */
-  if (code == ERROR_MARK)
     {
       print_node_brief (file, prefix, node, indent);
       return;
@@ -599,7 +601,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
       if (TYPE_NO_FORCE_BLK (node))
 	fputs (" no-force-blk", file);
 
-      if (TYPE_STRING_FLAG (node))
+      if (code == ARRAY_TYPE && TYPE_STRING_FLAG (node))
 	fputs (" string-flag", file);
 
       if (TYPE_NEEDS_CONSTRUCTING (node))
@@ -611,6 +613,11 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	   || code == ARRAY_TYPE)
 	  && TYPE_REVERSE_STORAGE_ORDER (node))
 	fputs (" reverse-storage-order", file);
+
+      if ((code == RECORD_TYPE
+	   || code == UNION_TYPE)
+	  && TYPE_CXX_ODR_P (node))
+	fputs (" cxx-odr-p", file);
 
       /* The transparent-union flag is used for different things in
 	 different nodes.  */

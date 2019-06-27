@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++17" }
-// { dg-do compile }
+// { dg-do compile { target c++17 } }
 
 #include <type_traits>
 
@@ -119,9 +119,11 @@ void test01()
   static_assert( ! is_nt_invocable_r< T,     F  >(), "call throws");
   static_assert( ! is_nt_invocable_r< NT,    F  >(), "call throws");
   static_assert( ! is_nt_invocable_r< Ex,    F  >(), "call throws");
+  static_assert( ! is_nt_invocable_r< void,  F  >(), "call throws");
   static_assert( ! is_nt_invocable_r< T,     CF >(), "conversion throws");
   static_assert(   is_nt_invocable_r< NT,    CF >(), "" );
   static_assert( ! is_nt_invocable_r< Ex,    CF >(), "conversion fails");
+  static_assert(   is_nt_invocable_r< void,  CF >(), "");
 
   static_assert( ! is_nt_invocable< F,   int >(), "call throws");
   static_assert(   is_nt_invocable< F&,  int >(), "");
@@ -140,15 +142,31 @@ void test01()
 
   static_assert(   is_nt_invocable_r< char&,  CF,  int >(), "");
   static_assert(   is_nt_invocable_r< char&,  CF&, int >(), "");
+  static_assert(   is_nt_invocable_r< void,   CF&, int >(), "");
 
   static_assert( ! is_nt_invocable_r< T,      CF&, int >(),
 		   "conversion throws");
   static_assert(   is_nt_invocable_r< NT,     CF&, int >(), "");
   static_assert( ! is_nt_invocable_r< Ex,     CF&, int >(),
 		   "conversion fails, would use explicit constructor");
+  static_assert(   is_nt_invocable_r< void,   CF&, int >(), "");
 
   static_assert( ! is_nt_invocable< F, int, int >(),
 		   "would call private member");
   static_assert( ! is_nt_invocable_r<void, F, int, int >(),
 		   "would call private member");
+
+  struct FX {
+    X operator()() const noexcept { return {}; }
+  };
+  static_assert( is_nt_invocable< FX >(), "FX::operator() is nothrow" );
+  static_assert( is_nt_invocable_r<X, FX >(), "no conversion needed" );
+  static_assert( is_nt_invocable_r<void, FX >(), "" );
+
+  struct Y {
+    explicit Y(X) noexcept; // not viable for implicit conversions
+    Y(...);
+  };
+
+  static_assert( ! is_nt_invocable_r<Y, FX >(), "conversion to Y can throw" );
 }

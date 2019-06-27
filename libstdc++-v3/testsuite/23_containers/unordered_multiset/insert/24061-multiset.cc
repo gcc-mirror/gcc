@@ -31,6 +31,7 @@ void test01()
   typedef Mset::const_iterator const_iterator;
 
   Mset ms1;
+  ms1.reserve(3);
   
   iterator it1 = ms1.insert(ms1.begin(), "all the love in the world");
   VERIFY( ms1.size() == 1 );

@@ -839,14 +839,9 @@ FuncDeclaration *buildPostBlit(StructDeclaration *sd, Scope *sc)
         }
         else
         {
-            // _ArrayPostblit((cast(S*)this.v.ptr)[0 .. n])
+            // __ArrayPostblit((cast(S*)this.v.ptr)[0 .. n])
 
-            uinteger_t n = 1;
-            while (tv->ty == Tsarray)
-            {
-                n *= ((TypeSArray *)tv)->dim->toUInteger();
-                tv = tv->nextOf()->toBasetype();
-            }
+            uinteger_t n = tv->numberOfElems(loc);
             if (n == 0)
                 continue;
 
@@ -865,7 +860,7 @@ FuncDeclaration *buildPostBlit(StructDeclaration *sd, Scope *sc)
             ((SliceExp *)ex)->upperIsInBounds = true;
             ((SliceExp *)ex)->lowerIsLessThanUpper = true;
 
-            ex = new CallExp(loc, new IdentifierExp(loc, Id::_ArrayPostblit), ex);
+            ex = new CallExp(loc, new IdentifierExp(loc, Id::__ArrayPostblit), ex);
         }
         a->push(new ExpStatement(loc, ex)); // combine in forward order
 
@@ -896,14 +891,9 @@ FuncDeclaration *buildPostBlit(StructDeclaration *sd, Scope *sc)
         }
         else
         {
-            // _ArrayDtor((cast(S*)this.v.ptr)[0 .. n])
+            // __ArrayDtor((cast(S*)this.v.ptr)[0 .. n])
 
-            uinteger_t n = 1;
-            while (tv->ty == Tsarray)
-            {
-                n *= ((TypeSArray *)tv)->dim->toUInteger();
-                tv = tv->nextOf()->toBasetype();
-            }
+            uinteger_t n = tv->numberOfElems(loc);
             //if (n == 0)
             //    continue;
 
@@ -922,7 +912,7 @@ FuncDeclaration *buildPostBlit(StructDeclaration *sd, Scope *sc)
             ((SliceExp *)ex)->upperIsInBounds = true;
             ((SliceExp *)ex)->lowerIsLessThanUpper = true;
 
-            ex = new CallExp(loc, new IdentifierExp(loc, Id::_ArrayDtor), ex);
+            ex = new CallExp(loc, new IdentifierExp(loc, Id::__ArrayDtor), ex);
         }
         a->push(new OnScopeStatement(loc, TOKon_scope_failure, new ExpStatement(loc, ex)));
     }
@@ -1047,14 +1037,9 @@ FuncDeclaration *buildDtor(AggregateDeclaration *ad, Scope *sc)
         }
         else
         {
-            // _ArrayDtor((cast(S*)this.v.ptr)[0 .. n])
+            // __ArrayDtor((cast(S*)this.v.ptr)[0 .. n])
 
-            uinteger_t n = 1;
-            while (tv->ty == Tsarray)
-            {
-                n *= ((TypeSArray *)tv)->dim->toUInteger();
-                tv = tv->nextOf()->toBasetype();
-            }
+            uinteger_t n = tv->numberOfElems(loc);
             if (n == 0)
                 continue;
 
@@ -1073,7 +1058,7 @@ FuncDeclaration *buildDtor(AggregateDeclaration *ad, Scope *sc)
             ((SliceExp *)ex)->upperIsInBounds = true;
             ((SliceExp *)ex)->lowerIsLessThanUpper = true;
 
-            ex = new CallExp(loc, new IdentifierExp(loc, Id::_ArrayDtor), ex);
+            ex = new CallExp(loc, new IdentifierExp(loc, Id::__ArrayDtor), ex);
         }
         e = Expression::combine(ex, e); // combine in reverse order
     }

@@ -1752,14 +1752,16 @@ UnionExp Cat(Type *type, Expression *e1, Expression *e2)
     }
     else if (e1->op == TOKint64 && e2->op == TOKstring)
     {
-        // Concatenate the strings
+        // [w|d]?char ~ string --> string
+        // We assume that we only ever prepend one char of the same type
+        // (wchar,dchar) as the string's characters.
         StringExp *es2 = (StringExp *)e2;
         size_t len = 1 + es2->len;
         unsigned char sz = es2->sz;
         dinteger_t v = e1->toInteger();
 
         void *s = mem.xmalloc((len + 1) * sz);
-        memcpy((char *)s, &v, sz);
+        Port::valcpy((char *)s, v, sz);
         memcpy((char *)s + sz, es2->string, es2->len * sz);
 
         // Add terminating 0

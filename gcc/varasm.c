@@ -1878,7 +1878,9 @@ assemble_start_function (tree decl, const char *fnname)
   if (patch_area_entry > patch_area_size)
     {
       if (patch_area_size > 0)
-	warning (OPT_Wattributes, "patchable function entry > size");
+	warning (OPT_Wattributes,
+		 "patchable function entry %wu exceeds size %wu",
+		 patch_area_entry, patch_area_size);
       patch_area_entry = 0;
     }
 
@@ -5902,7 +5904,7 @@ do_assemble_alias (tree decl, tree target)
       else
 #endif
 	error_at (DECL_SOURCE_LOCATION (decl),
-		  "ifunc is not supported on this target");
+		  "%qs is not supported on this target", "ifunc");
     }
 
 # ifdef ASM_OUTPUT_DEF_FROM_DECLS
@@ -5960,9 +5962,9 @@ assemble_alias (tree decl, tree target)
       ultimate_transparent_alias_target (&target);
 
       if (alias == target)
-	error ("weakref %q+D ultimately targets itself", decl);
+	error ("%qs symbol %q+D ultimately targets itself", "weakref", decl);
       if (TREE_PUBLIC (decl))
-	error ("weakref %q+D must have static linkage", decl);
+	error ("%qs symbol %q+D must have static linkage", "weakref", decl);
     }
   else
     {
@@ -5979,7 +5981,7 @@ assemble_alias (tree decl, tree target)
 	  if (TREE_CODE (decl) == FUNCTION_DECL
 	      && lookup_attribute ("ifunc", DECL_ATTRIBUTES (decl)))
 	    error_at (DECL_SOURCE_LOCATION (decl),
-		      "ifunc is not supported in this configuration");
+		      "%qs is not supported in this configuration", "ifunc");
 	  else
 	    error_at (DECL_SOURCE_LOCATION (decl),
 		      "only weak aliases are supported in this configuration");

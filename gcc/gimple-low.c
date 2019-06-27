@@ -336,6 +336,7 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
+    case GIMPLE_OMP_SCAN:
     case GIMPLE_OMP_CRITICAL:
     case GIMPLE_OMP_RETURN:
     case GIMPLE_OMP_ATOMIC_LOAD:

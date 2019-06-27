@@ -55,7 +55,7 @@ proc get_line_number {filename marker} {
 proc note-test {var result} {
     global gdb_tests
 
-    lappend gdb_tests $var $result 0
+    lappend gdb_tests $var $result print 0
 }
 
 # A test that uses a regular expression.  This is like note-test, but
@@ -64,14 +64,22 @@ proc note-test {var result} {
 proc regexp-test {var result} {
     global gdb_tests
 
-    lappend gdb_tests $var $result 1
+    lappend gdb_tests $var $result print 1
 }
 
 # A test of 'whatis'.  This tests a type rather than a variable.
 proc whatis-test {var result} {
     global gdb_tests
 
-    lappend gdb_tests $var $result whatis
+    lappend gdb_tests $var $result whatis 0
+}
+
+# A test of 'whatis' that uses a regular expression. This tests a type rather
+# than a variable.
+proc whatis-regexp-test {var result} {
+    global gdb_tests
+
+    lappend gdb_tests $var $result whatis 1
 }
 
 # Utility for testing variable values using gdb, invoked via dg-final.
@@ -136,13 +144,14 @@ proc gdb-test { marker {selector {}} {load_xmethods 0} } {
     puts $fd "info share"
 
     set count 0
-    foreach {var result kind} $gdb_tests {
+    foreach {var result kind rexp} $gdb_tests {
 	incr count
 	set gdb_var($count) $var
 	set gdb_expected($count) $result
 	if {$kind == "whatis"} {
 	    if {$do_whatis_tests} {
 		set gdb_is_type($count) 1
+		set gdb_is_regexp($count) $rexp
 		set gdb_command($count) "whatis $var"
 	    } else {
 	        unsupported "$testname"
@@ -151,7 +160,7 @@ proc gdb-test { marker {selector {}} {load_xmethods 0} } {
 	    }
 	} else {
 	    set gdb_is_type($count) 0
-	    set gdb_is_regexp($count) $kind
+	    set gdb_is_regexp($count) $rexp
 	    set gdb_command($count) "print $var"
 	}
 	puts $fd $gdb_command($count)
@@ -179,9 +188,9 @@ proc gdb-test { marker {selector {}} {load_xmethods 0} } {
 		if {$expect_out(1,string) != "type"} {
 		    error "gdb failure"
 		}
-		set match [expr {![string compare $first \
-				     $gdb_expected($test_counter)]}]
-	    } elseif {$gdb_is_regexp($test_counter)} {
+	    }
+
+	    if {$gdb_is_regexp($test_counter)} {
 		set match [regexp -- $gdb_expected($test_counter) $first]
 	    } else {
 		set match [expr {![string compare $first \

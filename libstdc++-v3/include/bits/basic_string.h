@@ -664,35 +664,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string&
       operator=(const basic_string& __str)
       {
-#if __cplusplus >= 201103L
-	if (_Alloc_traits::_S_propagate_on_copy_assign())
-	  {
-	    if (!_Alloc_traits::_S_always_equal() && !_M_is_local()
-		&& _M_get_allocator() != __str._M_get_allocator())
-	      {
-		// Propagating allocator cannot free existing storage so must
-		// deallocate it before replacing current allocator.
-		if (__str.size() <= _S_local_capacity)
-		  {
-		    _M_destroy(_M_allocated_capacity);
-		    _M_data(_M_local_data());
-		    _M_set_length(0);
-		  }
-		else
-		  {
-		    const auto __len = __str.size();
-		    auto __alloc = __str._M_get_allocator();
-		    // If this allocation throws there are no effects:
-		    auto __ptr = _Alloc_traits::allocate(__alloc, __len + 1);
-		    _M_destroy(_M_allocated_capacity);
-		    _M_data(__ptr);
-		    _M_capacity(__len);
-		    _M_set_length(__len);
-		  }
-	      }
-	    std::__alloc_on_copy(_M_get_allocator(), __str._M_get_allocator());
-	  }
-#endif
 	return this->assign(__str);
       }
 
@@ -1336,8 +1307,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	{
 	  __sv_type __sv = __svt;
 	  return _M_append(__sv.data()
-			   + __sv._M_check(__pos, "basic_string::append"),
-			   __sv._M_limit(__pos, __n));
+	      + std::__sv_check(__sv.size(), __pos, "basic_string::append"),
+	      std::__sv_limit(__sv.size(), __pos, __n));
 	}
 #endif // C++17
 
@@ -1363,6 +1334,35 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       basic_string&
       assign(const basic_string& __str)
       {
+#if __cplusplus >= 201103L
+	if (_Alloc_traits::_S_propagate_on_copy_assign())
+	  {
+	    if (!_Alloc_traits::_S_always_equal() && !_M_is_local()
+		&& _M_get_allocator() != __str._M_get_allocator())
+	      {
+		// Propagating allocator cannot free existing storage so must
+		// deallocate it before replacing current allocator.
+		if (__str.size() <= _S_local_capacity)
+		  {
+		    _M_destroy(_M_allocated_capacity);
+		    _M_data(_M_local_data());
+		    _M_set_length(0);
+		  }
+		else
+		  {
+		    const auto __len = __str.size();
+		    auto __alloc = __str._M_get_allocator();
+		    // If this allocation throws there are no effects:
+		    auto __ptr = _Alloc_traits::allocate(__alloc, __len + 1);
+		    _M_destroy(_M_allocated_capacity);
+		    _M_data(__ptr);
+		    _M_capacity(__len);
+		    _M_set_length(__len);
+		  }
+	      }
+	    std::__alloc_on_copy(_M_get_allocator(), __str._M_get_allocator());
+	  }
+#endif
 	this->_M_assign(__str);
 	return *this;
       }
@@ -1507,9 +1507,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	assign(const _Tp& __svt, size_type __pos, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
-	  return _M_replace(size_type(0), this->size(), __sv.data()
-			    + __sv._M_check(__pos, "basic_string::assign"),
-			    __sv._M_limit(__pos, __n));
+	  return _M_replace(size_type(0), this->size(),
+	      __sv.data()
+	      + std::__sv_check(__sv.size(), __pos, "basic_string::assign"),
+	      std::__sv_limit(__sv.size(), __pos, __n));
 	}
 #endif // C++17
 
@@ -1624,7 +1625,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert value of a string.
-       *  @param __pos1  Iterator referencing location in string to insert at.
+       *  @param __pos1 Position in string to insert at.
        *  @param __str  The string to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
@@ -1641,8 +1642,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a substring.
-       *  @param __pos1  Iterator referencing location in string to insert at.
-       *  @param __str  The string to insert.
+       *  @param __pos1  Position in string to insert at.
+       *  @param __str   The string to insert.
        *  @param __pos2  Start of characters in str to insert.
        *  @param __n  Number of characters to insert.
        *  @return  Reference to this string.
@@ -1666,7 +1667,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a C substring.
-       *  @param __pos  Iterator referencing location in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __s  The C string to insert.
        *  @param __n  The number of characters to insert.
        *  @return  Reference to this string.
@@ -1686,7 +1687,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a C string.
-       *  @param __pos  Iterator referencing location in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __s  The C string to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
@@ -1753,7 +1754,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus >= 201703L
       /**
        *  @brief  Insert a string_view.
-       *  @param __pos  Iterator referencing position in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __svt  The object convertible to string_view to insert.
        *  @return  Reference to this string.
       */
@@ -1767,10 +1768,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a string_view.
-       *  @param __pos  Iterator referencing position in string to insert at.
-       *  @param __svt  The object convertible to string_view to insert from.
-       *  @param __pos  Iterator referencing position in string_view to insert
-       *  from.
+       *  @param __pos1  Position in string to insert at.
+       *  @param __svt   The object convertible to string_view to insert from.
+       *  @param __pos2  Start of characters in str to insert.
        *  @param __n    The number of characters to insert.
        *  @return  Reference to this string.
       */
@@ -1780,9 +1780,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	       size_type __pos2, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
-	  return this->replace(__pos1, size_type(0), __sv.data()
-			       + __sv._M_check(__pos2, "basic_string::insert"),
-			       __sv._M_limit(__pos2, __n));
+	  return this->replace(__pos1, size_type(0),
+	      __sv.data()
+	      + std::__sv_check(__sv.size(), __pos2, "basic_string::insert"),
+	      std::__sv_limit(__sv.size(), __pos2, __n));
 	}
 #endif // C++17
 
@@ -2212,9 +2213,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		size_type __pos2, size_type __n2 = npos)
 	{
 	  __sv_type __sv = __svt;
-	  return this->replace(__pos1, __n1, __sv.data()
-			       + __sv._M_check(__pos2, "basic_string::replace"),
-			       __sv._M_limit(__pos2, __n2));
+	  return this->replace(__pos1, __n1,
+	      __sv.data()
+	      + std::__sv_check(__sv.size(), __pos2, "basic_string::replace"),
+	      std::__sv_limit(__sv.size(), __pos2, __n2));
 	}
 
       /**
@@ -4303,8 +4305,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	{
 	  __sv_type __sv = __svt;
 	  return append(__sv.data()
-			+ __sv._M_check(__pos, "basic_string::append"),
-			__sv._M_limit(__pos, __n));
+	      + std::__sv_check(__sv.size(), __pos, "basic_string::append"),
+	      std::__sv_limit(__sv.size(), __pos, __n));
 	}
 #endif // C++17
 
@@ -4460,8 +4462,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	{
 	  __sv_type __sv = __svt;
 	  return assign(__sv.data()
-			+ __sv._M_check(__pos, "basic_string::assign"),
-			__sv._M_limit(__pos, __n));
+	      + std::__sv_check(__sv.size(), __pos, "basic_string::assign"),
+	      std::__sv_limit(__sv.size(), __pos, __n));
 	}
 #endif // C++17
 
@@ -4516,7 +4518,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert value of a string.
-       *  @param __pos1  Iterator referencing location in string to insert at.
+       *  @param __pos1  Position in string to insert at.
        *  @param __str  The string to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
@@ -4532,7 +4534,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a substring.
-       *  @param __pos1  Iterator referencing location in string to insert at.
+       *  @param __pos1  Position in string to insert at.
        *  @param __str  The string to insert.
        *  @param __pos2  Start of characters in str to insert.
        *  @param __n  Number of characters to insert.
@@ -4557,7 +4559,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a C substring.
-       *  @param __pos  Iterator referencing location in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __s  The C string to insert.
        *  @param __n  The number of characters to insert.
        *  @return  Reference to this string.
@@ -4576,7 +4578,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a C string.
-       *  @param __pos  Iterator referencing location in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __s  The C string to insert.
        *  @return  Reference to this string.
        *  @throw  std::length_error  If new length exceeds @c max_size().
@@ -4643,7 +4645,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus >= 201703L
       /**
        *  @brief  Insert a string_view.
-       *  @param __pos  Iterator referencing position in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __svt  The object convertible to string_view to insert.
        *  @return  Reference to this string.
       */
@@ -4657,9 +4659,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
       /**
        *  @brief  Insert a string_view.
-       *  @param __pos  Iterator referencing position in string to insert at.
+       *  @param __pos  Position in string to insert at.
        *  @param __svt  The object convertible to string_view to insert from.
-       *  @param __pos  Iterator referencing position in string_view to insert
+       *  @param __pos  Position in string_view to insert
        *  from.
        *  @param __n    The number of characters to insert.
        *  @return  Reference to this string.
@@ -4671,8 +4673,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	{
 	  __sv_type __sv = __svt;
 	  return this->replace(__pos1, size_type(0), __sv.data()
-			       + __sv._M_check(__pos2, "basic_string::insert"),
-			       __sv._M_limit(__pos2, __n));
+	      + std::__sv_check(__sv.size(), __pos2, "basic_string::insert"),
+	      std::__sv_limit(__sv.size(), __pos2, __n));
 	}
 #endif // C++17
 
@@ -5062,8 +5064,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	{
 	  __sv_type __sv = __svt;
 	  return this->replace(__pos1, __n1,
-	      __sv.data() + __sv._M_check(__pos2, "basic_string::replace"),
-	      __sv._M_limit(__pos2, __n2));
+	      __sv.data()
+	      + std::__sv_check(__sv.size(), __pos2, "basic_string::replace"),
+	      std::__sv_limit(__sv.size(), __pos2, __n2));
 	}
 
       /**
@@ -6093,11 +6096,21 @@ _GLIBCXX_END_NAMESPACE_CXX11
     operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
 	      basic_string<_CharT, _Traits, _Alloc>&& __rhs)
     {
-      const auto __size = __lhs.size() + __rhs.size();
-      const bool __cond = (__size > __lhs.capacity()
-			   && __size <= __rhs.capacity());
-      return __cond ? std::move(__rhs.insert(0, __lhs))
-	            : std::move(__lhs.append(__rhs));
+#if _GLIBCXX_USE_CXX11_ABI
+      using _Alloc_traits = allocator_traits<_Alloc>;
+      bool __use_rhs = false;
+      if _GLIBCXX17_CONSTEXPR (typename _Alloc_traits::is_always_equal{})
+	__use_rhs = true;
+      else if (__lhs.get_allocator() == __rhs.get_allocator())
+	__use_rhs = true;
+      if (__use_rhs)
+#endif
+	{
+	  const auto __size = __lhs.size() + __rhs.size();
+	  if (__size > __lhs.capacity() && __size <= __rhs.capacity())
+	    return std::move(__rhs.insert(0, __lhs));
+	}
+      return std::move(__lhs.append(__rhs));
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -6487,6 +6500,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
 
 #include <ext/string_conversions.h>
+#include <bits/charconv.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -6534,43 +6548,68 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   { return __gnu_cxx::__stoa(&std::strtold, "stold", __str.c_str(), __idx); }
 #endif // _GLIBCXX_USE_C99_STDLIB
 
-#if _GLIBCXX_USE_C99_STDIO
-  // NB: (v)snprintf vs sprintf.
+  // DR 1261. Insufficent overloads for to_string / to_wstring
 
-  // DR 1261.
   inline string
   to_string(int __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, 4 * sizeof(int),
-					   "%d", __val); }
+  {
+    const bool __neg = __val < 0;
+    const unsigned __uval = __neg ? (unsigned)~__val + 1u : __val;
+    const auto __len = __detail::__to_chars_len(__uval);
+    string __str(__neg + __len, '-');
+    __detail::__to_chars_10_impl(&__str[__neg], __len, __uval);
+    return __str;
+  }
 
   inline string
   to_string(unsigned __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
-					   4 * sizeof(unsigned),
-					   "%u", __val); }
+  {
+    string __str(__detail::__to_chars_len(__val), '\0');
+    __detail::__to_chars_10_impl(&__str[0], __str.size(), __val);
+    return __str;
+  }
 
   inline string
   to_string(long __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf, 4 * sizeof(long),
-					   "%ld", __val); }
+  {
+    const bool __neg = __val < 0;
+    const unsigned long __uval = __neg ? (unsigned long)~__val + 1ul : __val;
+    const auto __len = __detail::__to_chars_len(__uval);
+    string __str(__neg + __len, '-');
+    __detail::__to_chars_10_impl(&__str[__neg], __len, __uval);
+    return __str;
+  }
 
   inline string
   to_string(unsigned long __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
-					   4 * sizeof(unsigned long),
-					   "%lu", __val); }
+  {
+    string __str(__detail::__to_chars_len(__val), '\0');
+    __detail::__to_chars_10_impl(&__str[0], __str.size(), __val);
+    return __str;
+  }
 
   inline string
   to_string(long long __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
-					   4 * sizeof(long long),
-					   "%lld", __val); }
+  {
+    const bool __neg = __val < 0;
+    const unsigned long long __uval
+      = __neg ? (unsigned long long)~__val + 1ull : __val;
+    const auto __len = __detail::__to_chars_len(__uval);
+    string __str(__neg + __len, '-');
+    __detail::__to_chars_10_impl(&__str[__neg], __len, __uval);
+    return __str;
+  }
 
   inline string
   to_string(unsigned long long __val)
-  { return __gnu_cxx::__to_xstring<string>(&std::vsnprintf,
-					   4 * sizeof(unsigned long long),
-					   "%llu", __val); }
+  {
+    string __str(__detail::__to_chars_len(__val), '\0');
+    __detail::__to_chars_10_impl(&__str[0], __str.size(), __val);
+    return __str;
+  }
+
+#if _GLIBCXX_USE_C99_STDIO
+  // NB: (v)snprintf vs sprintf.
 
   inline string
   to_string(float __val)
@@ -6849,10 +6888,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename> struct _Never_valueless_alt; // see <variant>
 
     // Provide the strong exception-safety guarantee when emplacing a
-    // basic_string into a variant, but only if move assignment cannot throw.
+    // basic_string into a variant, but only if moving the string cannot throw.
     template<typename _Tp, typename _Traits, typename _Alloc>
       struct _Never_valueless_alt<std::basic_string<_Tp, _Traits, _Alloc>>
-      : std::is_nothrow_move_assignable<std::basic_string<_Tp, _Traits, _Alloc>>
+      : __and_<
+	is_nothrow_move_constructible<std::basic_string<_Tp, _Traits, _Alloc>>,
+	is_nothrow_move_assignable<std::basic_string<_Tp, _Traits, _Alloc>>
+	>::type
       { };
   }  // namespace __detail::__variant
 #endif // C++17

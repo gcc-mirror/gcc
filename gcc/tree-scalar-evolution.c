@@ -411,49 +411,6 @@ instantiate_cache_type::~instantiate_cache_type ()
 static instantiate_cache_type *global_cache;
 
 
-/* Return true when CHREC contains symbolic names defined in
-   LOOP_NB.  */
-
-bool
-chrec_contains_symbols_defined_in_loop (const_tree chrec, unsigned loop_nb)
-{
-  int i, n;
-
-  if (chrec == NULL_TREE)
-    return false;
-
-  if (is_gimple_min_invariant (chrec))
-    return false;
-
-  if (TREE_CODE (chrec) == SSA_NAME)
-    {
-      gimple *def;
-      loop_p def_loop, loop;
-
-      if (SSA_NAME_IS_DEFAULT_DEF (chrec))
-	return false;
-
-      def = SSA_NAME_DEF_STMT (chrec);
-      def_loop = loop_containing_stmt (def);
-      loop = get_loop (cfun, loop_nb);
-
-      if (def_loop == NULL)
-	return false;
-
-      if (loop == def_loop || flow_loop_nested_p (loop, def_loop))
-	return true;
-
-      return false;
-    }
-
-  n = TREE_OPERAND_LENGTH (chrec);
-  for (i = 0; i < n; i++)
-    if (chrec_contains_symbols_defined_in_loop (TREE_OPERAND (chrec, i),
-						loop_nb))
-      return true;
-  return false;
-}
-
 /* Return true when PHI is a loop-phi-node.  */
 
 static bool
@@ -3505,8 +3462,9 @@ scev_finalize (void)
 /* Returns true if the expression EXPR is considered to be too expensive
    for scev_const_prop.  */
 
-bool
-expression_expensive_p (tree expr)
+static bool
+expression_expensive_p (tree expr, hash_map<tree, uint64_t> &cache,
+			uint64_t &cost)
 {
   enum tree_code code;
 
@@ -3530,6 +3488,19 @@ expression_expensive_p (tree expr)
 	return true;
     }
 
+  bool visited_p;
+  uint64_t &local_cost = cache.get_or_insert (expr, &visited_p);
+  if (visited_p)
+    {
+      uint64_t tem = cost + local_cost;
+      if (tem < cost)
+	return true;
+      cost = tem;
+      return false;
+    }
+  local_cost = 1;
+
+  uint64_t op_cost = 0;
   if (code == CALL_EXPR)
     {
       tree arg;
@@ -3568,37 +3539,60 @@ expression_expensive_p (tree expr)
       if (!is_inexpensive_builtin (get_callee_fndecl (expr)))
 	return true;
       FOR_EACH_CALL_EXPR_ARG (arg, iter, expr)
-	if (expression_expensive_p (arg))
+	if (expression_expensive_p (arg, cache, op_cost))
 	  return true;
+      *cache.get (expr) += op_cost;
+      cost += op_cost + 1;
       return false;
     }
 
   if (code == COND_EXPR)
-    return (expression_expensive_p (TREE_OPERAND (expr, 0))
-	    || (EXPR_P (TREE_OPERAND (expr, 1))
-		&& EXPR_P (TREE_OPERAND (expr, 2)))
-	    /* If either branch has side effects or could trap.  */
-	    || TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1))
-	    || generic_expr_could_trap_p (TREE_OPERAND (expr, 1))
-	    || TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 0))
-	    || generic_expr_could_trap_p (TREE_OPERAND (expr, 0))
-	    || expression_expensive_p (TREE_OPERAND (expr, 1))
-	    || expression_expensive_p (TREE_OPERAND (expr, 2)));
+    {
+      if (expression_expensive_p (TREE_OPERAND (expr, 0), cache, op_cost)
+	  || (EXPR_P (TREE_OPERAND (expr, 1))
+	      && EXPR_P (TREE_OPERAND (expr, 2)))
+	  /* If either branch has side effects or could trap.  */
+	  || TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1))
+	  || generic_expr_could_trap_p (TREE_OPERAND (expr, 1))
+	  || TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 0))
+	  || generic_expr_could_trap_p (TREE_OPERAND (expr, 0))
+	  || expression_expensive_p (TREE_OPERAND (expr, 1),
+				     cache, op_cost)
+	  || expression_expensive_p (TREE_OPERAND (expr, 2),
+				     cache, op_cost))
+	return true;
+      *cache.get (expr) += op_cost;
+      cost += op_cost + 1;
+      return false;
+    }
 
   switch (TREE_CODE_CLASS (code))
     {
     case tcc_binary:
     case tcc_comparison:
-      if (expression_expensive_p (TREE_OPERAND (expr, 1)))
+      if (expression_expensive_p (TREE_OPERAND (expr, 1), cache, op_cost))
 	return true;
 
       /* Fallthru.  */
     case tcc_unary:
-      return expression_expensive_p (TREE_OPERAND (expr, 0));
+      if (expression_expensive_p (TREE_OPERAND (expr, 0), cache, op_cost))
+	return true;
+      *cache.get (expr) += op_cost;
+      cost += op_cost + 1;
+      return false;
 
     default:
       return true;
     }
+}
+
+bool
+expression_expensive_p (tree expr)
+{
+  hash_map<tree, uint64_t> cache;
+  uint64_t expanded_size = 0;
+  return (expression_expensive_p (expr, cache, expanded_size)
+	  || expanded_size > cache.elements ());
 }
 
 /* Do final value replacement for LOOP, return true if we did anything.  */

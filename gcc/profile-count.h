@@ -28,38 +28,45 @@ class profile_count;
    inside of classes, this is in global namespace.  */
 enum profile_quality {
   /* Uninitialized value.  */
-  profile_uninitialized,
+  UNINITIALIZED_PROFILE,
+
   /* Profile is based on static branch prediction heuristics and may
      or may not match reality.  It is local to function and cannot be compared
      inter-procedurally.  Never used by probabilities (they are always local).
    */
-  profile_guessed_local,
+  GUESSED_LOCAL,
+
   /* Profile was read by feedback and was 0, we used local heuristics to guess
      better.  This is the case of functions not run in profile fedback.
      Never used by probabilities.  */
-  profile_guessed_global0,
+  GUESSED_GLOBAL0,
 
-  /* Same as profile_guessed_global0 but global count is adjusted 0.  */
-  profile_guessed_global0adjusted,
+  /* Same as GUESSED_GLOBAL0 but global count is adjusted 0.  */
+  GUESSED_GLOBAL0_ADJUSTED,
 
   /* Profile is based on static branch prediction heuristics.  It may or may
      not reflect the reality but it can be compared interprocedurally
      (for example, we inlined function w/o profile feedback into function
       with feedback and propagated from that).
      Never used by probablities.  */
-  profile_guessed,
+  GUESSED,
+
   /* Profile was determined by autofdo.  */
-  profile_afdo,
+  AFDO,
+
   /* Profile was originally based on feedback but it was adjusted
      by code duplicating optimization.  It may not precisely reflect the
      particular code path.  */
-  profile_adjusted,
+  ADJUSTED,
+
   /* Profile was read from profile feedback or determined by accurate static
      method.  */
-  profile_precise
+  PRECISE
 };
 
 extern const char *profile_quality_as_string (enum profile_quality);
+extern bool parse_profile_quality (const char *value,
+				   profile_quality *quality);
 
 /* The base value for branch probability notes and edge probabilities.  */
 #define REG_BR_PROB_BASE  10000
@@ -103,7 +110,7 @@ safe_scale_64bit (uint64_t a, uint64_t b, uint64_t c, uint64_t *res)
    values greater than 1 needs to be represented otherwise.
 
    In addition to actual value the quality of profile is tracked and propagated
-   through all operations.  Special value UNINITIALIZED is used for probabilities
+   through all operations.  Special value UNINITIALIZED_PROFILE is used for probabilities
    that has not been determined yet (for example bacause of
    -fno-guess-branch-probability)
 
@@ -149,84 +156,98 @@ class GTY((user)) profile_probability
 
   friend class profile_count;
 public:
+  profile_probability (): m_val (uninitialized_probability),
+    m_quality (GUESSED)
+  {}
+
+  profile_probability (uint32_t val, profile_quality quality):
+    m_val (val), m_quality (quality)
+  {}
 
   /* Named probabilities.  */
   static profile_probability never ()
     {
       profile_probability ret;
       ret.m_val = 0;
-      ret.m_quality = profile_precise;
+      ret.m_quality = PRECISE;
       return ret;
     }
+
   static profile_probability guessed_never ()
     {
       profile_probability ret;
       ret.m_val = 0;
-      ret.m_quality = profile_guessed;
+      ret.m_quality = GUESSED;
       return ret;
     }
+
   static profile_probability very_unlikely ()
     {
       /* Be consistent with PROB_VERY_UNLIKELY in predict.h.  */
-      profile_probability r
-	 = profile_probability::guessed_always ().apply_scale (1, 2000);
+      profile_probability r = guessed_always ().apply_scale (1, 2000);
       r.m_val--;
       return r;
     }
+
   static profile_probability unlikely ()
     {
       /* Be consistent with PROB_VERY_LIKELY in predict.h.  */
-      profile_probability r
-	 = profile_probability::guessed_always ().apply_scale (1, 5);
+      profile_probability r = guessed_always ().apply_scale (1, 5);
       r.m_val--;
       return r;
     }
+
   static profile_probability even ()
     {
-      return profile_probability::guessed_always ().apply_scale (1, 2);
+      return guessed_always ().apply_scale (1, 2);
     }
+
   static profile_probability very_likely ()
     {
-      return profile_probability::always () - very_unlikely ();
+      return always () - very_unlikely ();
     }
+
   static profile_probability likely ()
     {
-      return profile_probability::always () - unlikely ();
+      return always () - unlikely ();
     }
+
   static profile_probability guessed_always ()
     {
       profile_probability ret;
       ret.m_val = max_probability;
-      ret.m_quality = profile_guessed;
+      ret.m_quality = GUESSED;
       return ret;
     }
+
   static profile_probability always ()
     {
       profile_probability ret;
       ret.m_val = max_probability;
-      ret.m_quality = profile_precise;
+      ret.m_quality = PRECISE;
       return ret;
     }
+
   /* Probabilities which has not been initialized. Either because
      initialization did not happen yet or because profile is unknown.  */
   static profile_probability uninitialized ()
     {
       profile_probability c;
       c.m_val = uninitialized_probability;
-      c.m_quality = profile_guessed;
+      c.m_quality = GUESSED;
       return c;
     }
-
 
   /* Return true if value has been initialized.  */
   bool initialized_p () const
     {
       return m_val != uninitialized_probability;
     }
+
   /* Return true if value can be trusted.  */
   bool reliable_p () const
     {
-      return m_quality >= profile_adjusted;
+      return m_quality >= ADJUSTED;
     }
 
   /* Conversion from and to REG_BR_PROB_BASE integer fixpoint arithmetics.
@@ -236,9 +257,10 @@ public:
       profile_probability ret;
       gcc_checking_assert (v >= 0 && v <= REG_BR_PROB_BASE);
       ret.m_val = RDIV (v * (uint64_t) max_probability, REG_BR_PROB_BASE);
-      ret.m_quality = profile_guessed;
+      ret.m_quality = GUESSED;
       return ret;
     }
+
   int to_reg_br_prob_base () const
     {
       gcc_checking_assert (initialized_p ());
@@ -253,12 +275,12 @@ public:
       ret.m_quality = (enum profile_quality)(v & 7);
       return ret;
     }
+
   int to_reg_br_prob_note () const
     {
       gcc_checking_assert (initialized_p ());
       int ret = m_val * 8 + m_quality;
-      gcc_checking_assert (profile_probability::from_reg_br_prob_note (ret)
-			   == *this);
+      gcc_checking_assert (from_reg_br_prob_note (ret) == *this);
       return ret;
     }
 
@@ -277,7 +299,7 @@ public:
 	  gcc_checking_assert (tmp <= max_probability);
 	  ret.m_val = tmp;
 	}
-      ret.m_quality = profile_precise;
+      ret.m_quality = PRECISE;
       return ret;
     }
 
@@ -286,31 +308,33 @@ public:
     {
       return m_val == other.m_val && m_quality == other.m_quality;
     }
+
   profile_probability operator+ (const profile_probability &other) const
     {
-      if (other == profile_probability::never ())
+      if (other == never ())
 	return *this;
-      if (*this == profile_probability::never ())
+      if (*this == never ())
 	return other;
       if (!initialized_p () || !other.initialized_p ())
-	return profile_probability::uninitialized ();
+	return uninitialized ();
 
       profile_probability ret;
       ret.m_val = MIN ((uint32_t)(m_val + other.m_val), max_probability);
       ret.m_quality = MIN (m_quality, other.m_quality);
       return ret;
     }
+
   profile_probability &operator+= (const profile_probability &other)
     {
-      if (other == profile_probability::never ())
+      if (other == never ())
 	return *this;
-      if (*this == profile_probability::never ())
+      if (*this == never ())
 	{
 	  *this = other;
 	  return *this;
 	}
       if (!initialized_p () || !other.initialized_p ())
-	return *this = profile_probability::uninitialized ();
+	return *this = uninitialized ();
       else
 	{
 	  m_val = MIN ((uint32_t)(m_val + other.m_val), max_probability);
@@ -318,25 +342,27 @@ public:
 	}
       return *this;
     }
+
   profile_probability operator- (const profile_probability &other) const
     {
-      if (*this == profile_probability::never ()
-	  || other == profile_probability::never ())
+      if (*this == never ()
+	  || other == never ())
 	return *this;
       if (!initialized_p () || !other.initialized_p ())
-	return profile_probability::uninitialized ();
+	return uninitialized ();
       profile_probability ret;
       ret.m_val = m_val >= other.m_val ? m_val - other.m_val : 0;
       ret.m_quality = MIN (m_quality, other.m_quality);
       return ret;
     }
+
   profile_probability &operator-= (const profile_probability &other)
     {
-      if (*this == profile_probability::never ()
-	  || other == profile_probability::never ())
+      if (*this == never ()
+	  || other == never ())
 	return *this;
       if (!initialized_p () || !other.initialized_p ())
-	return *this = profile_probability::uninitialized ();
+	return *this = uninitialized ();
       else
 	{
 	  m_val = m_val >= other.m_val ? m_val - other.m_val : 0;
@@ -344,45 +370,48 @@ public:
 	}
       return *this;
     }
+
   profile_probability operator* (const profile_probability &other) const
     {
-      if (*this == profile_probability::never ()
-	  || other == profile_probability::never ())
-	return profile_probability::never ();
+      if (*this == never ()
+	  || other == never ())
+	return never ();
       if (!initialized_p () || !other.initialized_p ())
-	return profile_probability::uninitialized ();
+	return uninitialized ();
       profile_probability ret;
       ret.m_val = RDIV ((uint64_t)m_val * other.m_val, max_probability);
-      ret.m_quality = MIN (MIN (m_quality, other.m_quality), profile_adjusted);
+      ret.m_quality = MIN (MIN (m_quality, other.m_quality), ADJUSTED);
       return ret;
     }
+
   profile_probability &operator*= (const profile_probability &other)
     {
-      if (*this == profile_probability::never ()
-	  || other == profile_probability::never ())
-	return *this = profile_probability::never ();
+      if (*this == never ()
+	  || other == never ())
+	return *this = never ();
       if (!initialized_p () || !other.initialized_p ())
-	return *this = profile_probability::uninitialized ();
+	return *this = uninitialized ();
       else
 	{
 	  m_val = RDIV ((uint64_t)m_val * other.m_val, max_probability);
-	  m_quality = MIN (MIN (m_quality, other.m_quality), profile_adjusted);
+	  m_quality = MIN (MIN (m_quality, other.m_quality), ADJUSTED);
 	}
       return *this;
     }
+
   profile_probability operator/ (const profile_probability &other) const
     {
-      if (*this == profile_probability::never ())
-	return profile_probability::never ();
+      if (*this == never ())
+	return never ();
       if (!initialized_p () || !other.initialized_p ())
-	return profile_probability::uninitialized ();
+	return uninitialized ();
       profile_probability ret;
       /* If we get probability above 1, mark it as unreliable and return 1. */
       if (m_val >= other.m_val)
 	{
 	  ret.m_val = max_probability;
           ret.m_quality = MIN (MIN (m_quality, other.m_quality),
-			       profile_guessed);
+			       GUESSED);
 	  return ret;
 	}
       else if (!m_val)
@@ -394,15 +423,16 @@ public:
 				 other.m_val),
 			   max_probability);
 	}
-      ret.m_quality = MIN (MIN (m_quality, other.m_quality), profile_adjusted);
+      ret.m_quality = MIN (MIN (m_quality, other.m_quality), ADJUSTED);
       return ret;
     }
+
   profile_probability &operator/= (const profile_probability &other)
     {
-      if (*this == profile_probability::never ())
-	return *this = profile_probability::never ();
+      if (*this == never ())
+	return *this = never ();
       if (!initialized_p () || !other.initialized_p ())
-	return *this = profile_probability::uninitialized ();
+	return *this = uninitialized ();
       else
 	{
           /* If we get probability above 1, mark it as unreliable
@@ -411,7 +441,7 @@ public:
 	    {
 	      m_val = max_probability;
               m_quality = MIN (MIN (m_quality, other.m_quality),
-			       profile_guessed);
+			       GUESSED);
 	      return *this;
 	    }
 	  else if (!m_val)
@@ -423,7 +453,7 @@ public:
 				 other.m_val),
 			   max_probability);
 	    }
-	  m_quality = MIN (MIN (m_quality, other.m_quality), profile_adjusted);
+	  m_quality = MIN (MIN (m_quality, other.m_quality), ADJUSTED);
 	}
       return *this;
     }
@@ -451,14 +481,14 @@ public:
 	 Avoid scaling when overall outcome is supposed to be always.
 	 Without knowing that one is inverse of toher, the result would be
 	 conservative.  */
-      if (!(*this == profile_probability::always ()))
+      if (!(*this == always ()))
         *this = (*this - ret) / ret.invert ();
       return ret;
     }
 
   gcov_type apply (gcov_type val) const
     {
-      if (*this == profile_probability::uninitialized ())
+      if (*this == uninitialized ())
 	return val / 2;
       return RDIV (val * m_val, max_probability);
     }
@@ -466,14 +496,14 @@ public:
   /* Return 1-*THIS.  */
   profile_probability invert () const
     {
-      return profile_probability::always() - *this;
+      return always() - *this;
     }
 
   /* Return THIS with quality dropped to GUESSED.  */
   profile_probability guessed () const
     {
       profile_probability ret = *this;
-      ret.m_quality = profile_guessed;
+      ret.m_quality = GUESSED;
       return ret;
     }
 
@@ -481,22 +511,22 @@ public:
   profile_probability afdo () const
     {
       profile_probability ret = *this;
-      ret.m_quality = profile_afdo;
+      ret.m_quality = AFDO;
       return ret;
     }
 
   /* Return *THIS * NUM / DEN.  */
   profile_probability apply_scale (int64_t num, int64_t den) const
     {
-      if (*this == profile_probability::never ())
+      if (*this == never ())
 	return *this;
       if (!initialized_p ())
-	return profile_probability::uninitialized ();
+	return uninitialized ();
       profile_probability ret;
       uint64_t tmp;
       safe_scale_64bit (m_val, num, den, &tmp);
       ret.m_val = MIN (tmp, max_probability);
-      ret.m_quality = MIN (m_quality, profile_adjusted);
+      ret.m_quality = MIN (m_quality, ADJUSTED);
       return ret;
     }
 
@@ -516,10 +546,9 @@ public:
      noreturn heuristic that is only one giving probability over 99% or bellow
      1%.  In future we might want to propagate reliability information across the
      CFG if we find this information useful on multiple places.   */
-
   bool probably_reliable_p () const
     {
-      if (m_quality >= profile_adjusted)
+      if (m_quality >= ADJUSTED)
 	return true;
       if (!initialized_p ())
 	return false;
@@ -530,10 +559,10 @@ public:
   /* Return false if profile_probability is bogus.  */
   bool verify () const
     {
-      gcc_checking_assert (m_quality != profile_uninitialized);
+      gcc_checking_assert (m_quality != UNINITIALIZED_PROFILE);
       if (m_val == uninitialized_probability)
-	return m_quality == profile_guessed;
-      else if (m_quality < profile_guessed)
+	return m_quality == GUESSED;
+      else if (m_quality < GUESSED)
 	return false;
       return m_val <= max_probability;
     }
@@ -544,6 +573,7 @@ public:
     {
       return initialized_p () && other.initialized_p () && m_val < other.m_val;
     }
+
   bool operator> (const profile_probability &other) const
     {
       return initialized_p () && other.initialized_p () && m_val > other.m_val;
@@ -553,10 +583,17 @@ public:
     {
       return initialized_p () && other.initialized_p () && m_val <= other.m_val;
     }
+
   bool operator>= (const profile_probability &other) const
     {
       return initialized_p () && other.initialized_p () && m_val >= other.m_val;
     }
+
+  /* Get the value of the count.  */
+  uint32_t value () const { return m_val; }
+
+  /* Get the quality of the count.  */
+  enum profile_quality quality () const { return m_quality; }
 
   /* Output THIS to F.  */
   void dump (FILE *f) const;
@@ -566,8 +603,10 @@ public:
 
   /* Return true if THIS is known to differ significantly from OTHER.  */
   bool differs_from_p (profile_probability other) const;
+
   /* Return if difference is greater than 50%.  */
   bool differs_lot_from_p (profile_probability other) const;
+
   /* COUNT1 times event happens with *THIS probability, COUNT2 times OTHER
      happens with COUNT2 probablity. Return probablity that either *THIS or
      OTHER happens.  */
@@ -669,43 +708,46 @@ private:
     {
       if (!initialized_p () || !other.initialized_p ())
 	return true;
-      if (*this == profile_count::zero ()
-	  || other == profile_count::zero ())
+      if (*this == zero ()
+	  || other == zero ())
 	return true;
       return ipa_p () == other.ipa_p ();
     }
 public:
-
   /* Used for counters which are expected to be never executed.  */
   static profile_count zero ()
     {
       return from_gcov_type (0);
     }
+
   static profile_count adjusted_zero ()
     {
       profile_count c;
       c.m_val = 0;
-      c.m_quality = profile_adjusted;
+      c.m_quality = ADJUSTED;
       return c;
     }
+
   static profile_count guessed_zero ()
     {
       profile_count c;
       c.m_val = 0;
-      c.m_quality = profile_guessed;
+      c.m_quality = GUESSED;
       return c;
     }
+
   static profile_count one ()
     {
       return from_gcov_type (1);
     }
+
   /* Value of counters which has not been initialized. Either because
      initialization did not happen yet or because profile is unknown.  */
   static profile_count uninitialized ()
     {
       profile_count c;
       c.m_val = uninitialized_count;
-      c.m_quality = profile_guessed_local;
+      c.m_quality = GUESSED_LOCAL;
       return c;
     }
 
@@ -721,21 +763,27 @@ public:
     {
       return m_val != uninitialized_count;
     }
+
   /* Return true if value can be trusted.  */
   bool reliable_p () const
     {
-      return m_quality >= profile_adjusted;
+      return m_quality >= ADJUSTED;
     }
+
   /* Return true if vlaue can be operated inter-procedurally.  */
   bool ipa_p () const
     {
-      return !initialized_p () || m_quality >= profile_guessed_global0;
+      return !initialized_p () || m_quality >= GUESSED_GLOBAL0;
     }
+
   /* Return true if quality of profile is precise.  */
   bool precise_p () const
     {
-      return m_quality == profile_precise;
+      return m_quality == PRECISE;
     }
+
+  /* Get the value of the count.  */
+  uint32_t value () const { return m_val; }
 
   /* Get the quality of the count.  */
   enum profile_quality quality () const { return m_quality; }
@@ -746,8 +794,8 @@ public:
      that makes it terminate in a way not visible in CFG.  */
   bool ok_for_merging (profile_count other) const
     {
-      if (m_quality < profile_adjusted
-	  || other.m_quality < profile_adjusted)
+      if (m_quality < ADJUSTED
+	  || other.m_quality < ADJUSTED)
 	return true;
       return !(other < *this);
     }
@@ -770,14 +818,15 @@ public:
     {
       return m_val == other.m_val && m_quality == other.m_quality;
     }
+
   profile_count operator+ (const profile_count &other) const
     {
-      if (other == profile_count::zero ())
+      if (other == zero ())
 	return *this;
-      if (*this == profile_count::zero ())
+      if (*this == zero ())
 	return other;
       if (!initialized_p () || !other.initialized_p ())
-	return profile_count::uninitialized ();
+	return uninitialized ();
 
       profile_count ret;
       gcc_checking_assert (compatible_p (other));
@@ -785,17 +834,18 @@ public:
       ret.m_quality = MIN (m_quality, other.m_quality);
       return ret;
     }
+
   profile_count &operator+= (const profile_count &other)
     {
-      if (other == profile_count::zero ())
+      if (other == zero ())
 	return *this;
-      if (*this == profile_count::zero ())
+      if (*this == zero ())
 	{
 	  *this = other;
 	  return *this;
 	}
       if (!initialized_p () || !other.initialized_p ())
-	return *this = profile_count::uninitialized ();
+	return *this = uninitialized ();
       else
 	{
           gcc_checking_assert (compatible_p (other));
@@ -804,24 +854,26 @@ public:
 	}
       return *this;
     }
+
   profile_count operator- (const profile_count &other) const
     {
-      if (*this == profile_count::zero () || other == profile_count::zero ())
+      if (*this == zero () || other == zero ())
 	return *this;
       if (!initialized_p () || !other.initialized_p ())
-	return profile_count::uninitialized ();
+	return uninitialized ();
       gcc_checking_assert (compatible_p (other));
       profile_count ret;
       ret.m_val = m_val >= other.m_val ? m_val - other.m_val : 0;
       ret.m_quality = MIN (m_quality, other.m_quality);
       return ret;
     }
+
   profile_count &operator-= (const profile_count &other)
     {
-      if (*this == profile_count::zero () || other == profile_count::zero ())
+      if (*this == zero () || other == zero ())
 	return *this;
       if (!initialized_p () || !other.initialized_p ())
-	return *this = profile_count::uninitialized ();
+	return *this = uninitialized ();
       else
 	{
           gcc_checking_assert (compatible_p (other));
@@ -834,8 +886,8 @@ public:
   /* Return false if profile_count is bogus.  */
   bool verify () const
     {
-      gcc_checking_assert (m_quality != profile_uninitialized);
-      return m_val != uninitialized_count || m_quality == profile_guessed_local;
+      gcc_checking_assert (m_quality != UNINITIALIZED_PROFILE);
+      return m_val != uninitialized_count || m_quality == GUESSED_LOCAL;
     }
 
   /* Comparsions are three-state and conservative.  False is returned if
@@ -844,30 +896,33 @@ public:
     {
       if (!initialized_p () || !other.initialized_p ())
 	return false;
-      if (*this == profile_count::zero ())
-	return !(other == profile_count::zero ());
-      if (other == profile_count::zero ())
+      if (*this == zero ())
+	return !(other == zero ());
+      if (other == zero ())
 	return false;
       gcc_checking_assert (compatible_p (other));
       return m_val < other.m_val;
     }
+
   bool operator> (const profile_count &other) const
     {
       if (!initialized_p () || !other.initialized_p ())
 	return false;
-      if (*this  == profile_count::zero ())
+      if (*this  == zero ())
 	return false;
-      if (other == profile_count::zero ())
-	return !(*this == profile_count::zero ());
+      if (other == zero ())
+	return !(*this == zero ());
       gcc_checking_assert (compatible_p (other));
       return initialized_p () && other.initialized_p () && m_val > other.m_val;
     }
+
   bool operator< (const gcov_type other) const
     {
       gcc_checking_assert (ipa_p ());
       gcc_checking_assert (other >= 0);
       return initialized_p () && m_val < (uint64_t) other;
     }
+
   bool operator> (const gcov_type other) const
     {
       gcc_checking_assert (ipa_p ());
@@ -879,36 +934,40 @@ public:
     {
       if (!initialized_p () || !other.initialized_p ())
 	return false;
-      if (*this == profile_count::zero ())
+      if (*this == zero ())
 	return true;
-      if (other == profile_count::zero ())
-	return (*this == profile_count::zero ());
+      if (other == zero ())
+	return (*this == zero ());
       gcc_checking_assert (compatible_p (other));
       return m_val <= other.m_val;
     }
+
   bool operator>= (const profile_count &other) const
     {
       if (!initialized_p () || !other.initialized_p ())
 	return false;
-      if (other == profile_count::zero ())
+      if (other == zero ())
 	return true;
-      if (*this == profile_count::zero ())
-	return (other == profile_count::zero ());
+      if (*this == zero ())
+	return (other == zero ());
       gcc_checking_assert (compatible_p (other));
       return m_val >= other.m_val;
     }
+
   bool operator<= (const gcov_type other) const
     {
       gcc_checking_assert (ipa_p ());
       gcc_checking_assert (other >= 0);
       return initialized_p () && m_val <= (uint64_t) other;
     }
+
   bool operator>= (const gcov_type other) const
     {
       gcc_checking_assert (ipa_p ());
       gcc_checking_assert (other >= 0);
       return initialized_p () && m_val >= (uint64_t) other;
     }
+
   /* Return true when value is not zero and can be used for scaling. 
      This is different from *this > 0 because that requires counter to
      be IPA.  */
@@ -926,7 +985,7 @@ public:
       if (ret.m_val == 0)
 	{
 	  ret.m_val = 1;
-          ret.m_quality = MIN (m_quality, profile_adjusted);
+          ret.m_quality = MIN (m_quality, ADJUSTED);
 	}
       return ret;
     }
@@ -937,9 +996,9 @@ public:
 	return other;
       if (!other.initialized_p ())
 	return *this;
-      if (*this == profile_count::zero ())
+      if (*this == zero ())
 	return other;
-      if (other == profile_count::zero ())
+      if (other == zero ())
 	return *this;
       gcc_checking_assert (compatible_p (other));
       if (m_val < other.m_val || (m_val == other.m_val
@@ -956,22 +1015,22 @@ public:
       if (m_val == 0)
 	return *this;
       if (!initialized_p ())
-	return profile_count::uninitialized ();
+	return uninitialized ();
       profile_count ret;
       ret.m_val = RDIV (m_val * prob, REG_BR_PROB_BASE);
-      ret.m_quality = MIN (m_quality, profile_adjusted);
+      ret.m_quality = MIN (m_quality, ADJUSTED);
       return ret;
     }
 
   /* Scale counter according to PROB.  */
   profile_count apply_probability (profile_probability prob) const
     {
-      if (*this == profile_count::zero ())
+      if (*this == zero ())
 	return *this;
       if (prob == profile_probability::never ())
-	return profile_count::zero ();
+	return zero ();
       if (!initialized_p ())
-	return profile_count::uninitialized ();
+	return uninitialized ();
       profile_count ret;
       uint64_t tmp;
       safe_scale_64bit (m_val, prob.m_val, profile_probability::max_probability,
@@ -980,30 +1039,32 @@ public:
       ret.m_quality = MIN (m_quality, prob.m_quality);
       return ret;
     }
+
   /* Return *THIS * NUM / DEN.  */
   profile_count apply_scale (int64_t num, int64_t den) const
     {
       if (m_val == 0)
 	return *this;
       if (!initialized_p ())
-	return profile_count::uninitialized ();
+	return uninitialized ();
       profile_count ret;
       uint64_t tmp;
 
       gcc_checking_assert (num >= 0 && den > 0);
       safe_scale_64bit (m_val, num, den, &tmp);
       ret.m_val = MIN (tmp, max_count);
-      ret.m_quality = MIN (m_quality, profile_adjusted);
+      ret.m_quality = MIN (m_quality, ADJUSTED);
       return ret;
     }
+
   profile_count apply_scale (profile_count num, profile_count den) const
     {
-      if (*this == profile_count::zero ())
+      if (*this == zero ())
 	return *this;
-      if (num == profile_count::zero ())
+      if (num == zero ())
 	return num;
       if (!initialized_p () || !num.initialized_p () || !den.initialized_p ())
-	return profile_count::uninitialized ();
+	return uninitialized ();
       if (num == den)
 	return *this;
       gcc_checking_assert (den.m_val);
@@ -1012,10 +1073,10 @@ public:
       uint64_t val;
       safe_scale_64bit (m_val, num.m_val, den.m_val, &val);
       ret.m_val = MIN (val, max_count);
-      ret.m_quality = MIN (MIN (MIN (m_quality, profile_adjusted),
+      ret.m_quality = MIN (MIN (MIN (m_quality, ADJUSTED),
 			        num.m_quality), den.m_quality);
       if (num.ipa_p () && !ret.ipa_p ())
-	ret.m_quality = MIN (num.m_quality, profile_guessed);
+	ret.m_quality = MIN (num.m_quality, GUESSED);
       return ret;
     }
 
@@ -1025,7 +1086,7 @@ public:
       profile_count ret = *this;
       if (!initialized_p ())
 	return *this;
-      ret.m_quality = profile_guessed_local;
+      ret.m_quality = GUESSED_LOCAL;
       return ret;
     }
 
@@ -1035,7 +1096,7 @@ public:
       profile_count ret = *this;
       if (!initialized_p ())
 	return *this;
-      ret.m_quality = profile_guessed_global0;
+      ret.m_quality = GUESSED_GLOBAL0;
       return ret;
     }
 
@@ -1046,7 +1107,7 @@ public:
       profile_count ret = *this;
       if (!initialized_p ())
 	return *this;
-      ret.m_quality = profile_guessed_global0adjusted;
+      ret.m_quality = GUESSED_GLOBAL0_ADJUSTED;
       return ret;
     }
 
@@ -1054,7 +1115,7 @@ public:
   profile_count guessed () const
     {
       profile_count ret = *this;
-      ret.m_quality = MIN (ret.m_quality, profile_guessed);
+      ret.m_quality = MIN (ret.m_quality, GUESSED);
       return ret;
     }
 
@@ -1062,20 +1123,20 @@ public:
      acorss functions.  */
   profile_count ipa () const
     {
-      if (m_quality > profile_guessed_global0adjusted)
+      if (m_quality > GUESSED_GLOBAL0_ADJUSTED)
 	return *this;
-      if (m_quality == profile_guessed_global0)
-	return profile_count::zero ();
-      if (m_quality == profile_guessed_global0adjusted)
-	return profile_count::adjusted_zero ();
-      return profile_count::uninitialized ();
+      if (m_quality == GUESSED_GLOBAL0)
+	return zero ();
+      if (m_quality == GUESSED_GLOBAL0_ADJUSTED)
+	return adjusted_zero ();
+      return uninitialized ();
     }
 
   /* Return THIS with quality dropped to AFDO.  */
   profile_count afdo () const
     {
       profile_count ret = *this;
-      ret.m_quality = profile_afdo;
+      ret.m_quality = AFDO;
       return ret;
     }
 
@@ -1083,13 +1144,13 @@ public:
      OVERALL.  */
   profile_probability probability_in (const profile_count overall) const
     {
-      if (*this == profile_count::zero ()
-	  && !(overall == profile_count::zero ()))
+      if (*this == zero ()
+	  && !(overall == zero ()))
 	return profile_probability::never ();
       if (!initialized_p () || !overall.initialized_p ()
 	  || !overall.m_val)
 	return profile_probability::uninitialized ();
-      if (*this == overall && m_quality == profile_precise)
+      if (*this == overall && m_quality == PRECISE)
 	return profile_probability::always ();
       profile_probability ret;
       gcc_checking_assert (compatible_p (overall));
@@ -1097,14 +1158,14 @@ public:
       if (overall.m_val < m_val)
 	{
 	  ret.m_val = profile_probability::max_probability;
-	  ret.m_quality = profile_guessed;
+	  ret.m_quality = GUESSED;
 	  return ret;
 	}
       else
 	ret.m_val = RDIV (m_val * profile_probability::max_probability,
 			  overall.m_val);
       ret.m_quality = MIN (MAX (MIN (m_quality, overall.m_quality),
-				profile_guessed), profile_adjusted);
+				GUESSED), ADJUSTED);
       return ret;
     }
 
@@ -1136,7 +1197,8 @@ public:
   /* The profiling runtime uses gcov_type, which is usually 64bit integer.
      Conversions back and forth are used to read the coverage and get it
      into internal representation.  */
-  static profile_count from_gcov_type (gcov_type v);
+  static profile_count from_gcov_type (gcov_type v,
+				       profile_quality quality = PRECISE);
 
   /* LTO streaming support.  */
   static profile_count stream_in (struct lto_input_block *);

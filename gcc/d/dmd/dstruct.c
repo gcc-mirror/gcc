@@ -23,7 +23,7 @@
 #include "template.h"
 #include "tokens.h"
 
-Type *getTypeInfoType(Type *t, Scope *sc);
+Type *getTypeInfoType(Loc loc, Type *t, Scope *sc);
 TypeTuple *toArgTypes(Type *t);
 void unSpeculative(Scope *sc, RootObject *o);
 bool MODimplicitConv(MOD modfrom, MOD modto);
@@ -101,7 +101,7 @@ void semanticTypeInfo(Scope *sc, Type *t)
             {
                 Scope scx;
                 scx._module = sd->getModule();
-                getTypeInfoType(t, &scx);
+                getTypeInfoType(sd->loc, t, &scx);
                 sd->requestTypeInfo = true;
             }
             else if (!sc->minst)
@@ -111,12 +111,12 @@ void semanticTypeInfo(Scope *sc, Type *t)
             }
             else
             {
-                getTypeInfoType(t, sc);
+                getTypeInfoType(sd->loc, t, sc);
                 sd->requestTypeInfo = true;
 
                 // Bugzilla 15149, if the typeid operand type comes from a
                 // result of auto function, it may be yet speculative.
-                unSpeculative(sc, sd);
+                // unSpeculative(sc, sd);
             }
 
             /* Step 2: If the TypeInfo generation requires sd.semantic3, run it later.
@@ -324,6 +324,7 @@ void AggregateDeclaration::semantic3(Scope *sc)
 
     if (sd)
         sd->semanticTypeInfoMembers();
+    semanticRun = PASSsemantic3done;
 }
 
 /***************************************
@@ -359,7 +360,7 @@ bool AggregateDeclaration::determineFields()
 
             AggregateDeclaration *ad = ((SV *)param)->agg;
 
-            if (v->_scope)
+            if (v->semanticRun < PASSsemanticdone)
                 v->semantic(NULL);
             // Note: Aggregate fields or size could have determined during v->semantic.
             if (ad->sizeok != SIZEOKnone)
@@ -1165,9 +1166,12 @@ void StructDeclaration::semantic(Scope *sc)
     buildOpAssign(this, sc2);
     buildOpEquals(this, sc2);
 
-    xeq = buildXopEquals(this, sc2);
-    xcmp = buildXopCmp(this, sc2);
-    xhash = buildXtoHash(this, sc2);
+    if (global.params.useTypeInfo && Type::dtypeinfo)  // these functions are used for TypeInfo
+    {
+        xeq = buildXopEquals(this, sc2);
+        xcmp = buildXopCmp(this, sc2);
+        xhash = buildXtoHash(this, sc2);
+    }
 
     inv = buildInv(this, sc2);
 

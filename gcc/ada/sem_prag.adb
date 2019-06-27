@@ -19349,20 +19349,25 @@ package body Sem_Prag is
          -----------------------
 
          --  pragma Machine_Attribute (
-         --       [Entity         =>] LOCAL_NAME,
-         --       [Attribute_Name =>] static_string_EXPRESSION
-         --    [, [Info           =>] static_EXPRESSION] );
+         --     [Entity         =>] LOCAL_NAME,
+         --     [Attribute_Name =>] static_string_EXPRESSION
+         --  [, [Info           =>] static_EXPRESSION {, static_EXPRESSION}] );
 
          when Pragma_Machine_Attribute => Machine_Attribute : declare
+            Arg : Node_Id;
             Def_Id : Entity_Id;
 
          begin
             GNAT_Pragma;
             Check_Arg_Order ((Name_Entity, Name_Attribute_Name, Name_Info));
 
-            if Arg_Count = 3 then
+            if Arg_Count >= 3 then
                Check_Optional_Identifier (Arg3, Name_Info);
-               Check_Arg_Is_OK_Static_Expression (Arg3);
+               Arg := Arg3;
+               while Present (Arg) loop
+                  Check_Arg_Is_OK_Static_Expression (Arg);
+                  Arg := Next (Arg);
+               end loop;
             else
                Check_Arg_Count (2);
             end if;

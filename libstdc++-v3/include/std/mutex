@@ -55,7 +55,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
-   * @ingroup mutexes
+   * @addtogroup mutexes
    * @{
    */
 
@@ -463,6 +463,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif // _GLIBCXX_HAS_GTHREADS
 
+  /// @cond undocumented
   template<typename _Lock>
     inline unique_lock<_Lock>
     __try_to_lock(_Lock& __l)
@@ -504,6 +505,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
             }
 	}
     };
+  /// @endcond
 
   /** @brief Generic try_lock.
    *  @param __l1 Meets Lockable requirements (try_lock() may throw).
@@ -574,11 +576,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { } // calling thread owns mutex
 
       ~scoped_lock()
-      {
-	std::apply([](_MutexTypes&... __m) {
-	  char __i[] __attribute__((__unused__)) = { (__m.unlock(), 0)... };
-	}, _M_devices);
-      }
+      { std::apply([](auto&... __m) { (__m.unlock(), ...); }, _M_devices); }
 
       scoped_lock(const scoped_lock&) = delete;
       scoped_lock& operator=(const scoped_lock&) = delete;
@@ -624,7 +622,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++17
 
 #ifdef _GLIBCXX_HAS_GTHREADS
-  /// once_flag
+  /// Flag type used by std::call_once
   struct once_flag
   {
   private:
@@ -645,6 +643,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       call_once(once_flag& __once, _Callable&& __f, _Args&&... __args);
   };
 
+  /// @cond undocumented
 #ifdef _GLIBCXX_HAVE_TLS
   extern __thread void* __once_callable;
   extern __thread void (*__once_call)();
@@ -659,8 +658,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   extern "C" void __once_proxy(void);
+  /// @endcond
 
-  /// call_once
+  /// Invoke a callable and synchronize with other calls using the same flag
   template<typename _Callable, typename... _Args>
     void
     call_once(once_flag& __once, _Callable&& __f, _Args&&... __args)

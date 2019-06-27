@@ -746,6 +746,8 @@ classify_insn (rtx x)
     return CALL_INSN;
   if (ANY_RETURN_P (x))
     return JUMP_INSN;
+  if (GET_CODE (x) == ASM_OPERANDS && ASM_OPERANDS_LABEL_VEC (x))
+    return JUMP_INSN;
   if (GET_CODE (x) == SET)
     {
       if (GET_CODE (SET_DEST (x)) == PC)
@@ -771,6 +773,9 @@ classify_insn (rtx x)
 		 && GET_CODE (SET_SRC (XVECEXP (x, 0, j))) == CALL)
 	  return CALL_INSN;
       if (has_return_p)
+	return JUMP_INSN;
+      if (GET_CODE (XVECEXP (x, 0, 0)) == ASM_OPERANDS
+	  && ASM_OPERANDS_LABEL_VEC (XVECEXP (x, 0, 0)))
 	return JUMP_INSN;
     }
 #ifdef GENERATOR_FILE

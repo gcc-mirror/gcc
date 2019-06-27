@@ -38,6 +38,8 @@
  * Contains an implementation class for splay_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
@@ -73,3 +75,4 @@ assert_special_imp(const node_pointer p_nd,
 
 #endif 
 
+#endif

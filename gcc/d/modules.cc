@@ -776,7 +776,8 @@ build_module_tree (Module *decl)
 
   /* Default behavior is to always generate module info because of templates.
      Can be switched off for not compiling against runtime library.  */
-  if (!global.params.betterC
+  if (global.params.useModuleInfo
+      && Module::moduleinfo != NULL
       && decl->ident != Identifier::idPool ("__entrypoint"))
     {
       if (mi.ctors || mi.ctorgates)
@@ -836,7 +837,8 @@ register_module_decl (Declaration *d)
 	 compiling in unittests are kept track of separately so they are
 	 not omitted when compiling with -fbuilding-libphobos-tests.  */
       module_info *minfo;
-      if (flag_building_libphobos_tests && DECL_IN_UNITTEST_CONDITION_P (decl))
+      if (flag_building_libphobos_tests && !fd->isUnitTestDeclaration ()
+	  && DECL_IN_UNITTEST_CONDITION_P (decl))
 	minfo = current_testing_module;
       else
 	minfo = current_moduleinfo;

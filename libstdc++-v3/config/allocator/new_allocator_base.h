@@ -37,11 +37,11 @@ namespace std
 {
   /**
    *  @brief  An alias to the base class for std::allocator.
-   *  @ingroup allocators
    *
    *  Used to set the std::allocator base class to
    *  __gnu_cxx::new_allocator.
    *
+   *  @ingroup allocators
    *  @tparam  _Tp  Type of allocated object.
     */
   template<typename _Tp>

@@ -279,7 +279,8 @@ d.mostlyclean:
 	-rm -f d/*$(objext)
 	-rm -f d/*$(coverageexts)
 	-rm -f $(D_GENERATED_SRCS)
-	-rm -f d/gdc$(exeext) gdc-cross$(exeext) d/d21$(exeext)
+	-rm -f d/idgen$(build_exeext) d/impcnvgen$(build_exeext)
+	-rm -f gdc$(exeext) gdc-cross$(exeext) d21$(exeext)
 d.clean:
 d.distclean:
 d.maintainer-clean:
@@ -316,21 +317,23 @@ d/%.o: d/dmd/root/%.c $(D_GENERATED_SRCS)
 	$(POSTCOMPILE)
 
 # Generated programs.
-d/idgen: d/idgen.dmdgen.o
-	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ $^
+d/idgen$(build_exeext): d/idgen.dmdgen.o $(BUILD_LIBDEPS)
+	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \
+	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
 
-d/impcvgen: d/impcnvgen.dmdgen.o
-	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ $^
+d/impcnvgen$(build_exeext): d/impcnvgen.dmdgen.o $(BUILD_LIBDEPS)
+	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \
+	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
 
 # Generated sources.
-d/id.c: d/idgen
-	cd d && ./idgen
+d/id.c: d/idgen$(build_exeext)
+	cd d && ./idgen$(build_exeext)
 
 # idgen also generates id.h; just verify it exists.
 d/id.h: d/id.c
 
-d/impcnvtab.c: d/impcvgen
-	cd d && ./impcvgen
+d/impcnvtab.c: d/impcnvgen$(build_exeext)
+	cd d && ./impcnvgen$(build_exeext)
 
 d/%.dmdgen.o: $(srcdir)/d/dmd/%.c
 	$(DMDGEN_COMPILE) $(D_INCLUDES) $<

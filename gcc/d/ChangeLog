@@ -1,3 +1,123 @@
+2019-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90559
+	* d-target.cc (Target::_init): Reduce max static data size to INT_MAX.
+
+2019-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90651
+	* typeinfo.cc (object_module): New variable.
+	(make_frontend_typeinfo): Update signature.  Set temporary on
+	generated TypeInfo classes.
+	(create_tinfo_types): Set object_module.  Move generation of front-end
+	typeinfo into ...
+	(create_frontend_tinfo_types): ... New function.
+	(layout_typeinfo): Call create_frontend_tinfo_types.
+	(layout_classinfo): Likewise.
+	(layout_cpp_typeinfo): Likewise.
+	(create_typeinfo): Likewise.
+
+2019-06-11  Richard Biener  <rguenthe@suse.de>
+
+	d/90778
+	* toir.cc (pop_label): Only queue labels in a vector.
+	(cmp_labels): Label decl comparator.
+	(pop_binding_level): Pop labels in DECL_UID order to avoid
+	debug info differences.
+
+2019-05-24  Nathan Sidwell  <nathan@acm.org>
+
+	* types.cc (fixup_anonymous_offset): Use IDENTIFIER_ANON_P.
+	(layout_aggregate_members): Use make_anon_name.
+
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+        * d-builtins.cc (d_init_builtins): Quote keywords, operators,
+        and types in diagnostics.
+        * d-codegen.cc (get_array_length): Same.  Replace can't with cannot.
+        * d-convert.cc (convert_expr): Same.
+        * d-frontend.cc (getTypeInfoType): Quote an option name in
+        a diagnostic.
+        * d-lang.cc (d_handle_option): Same.
+        (d_parse_file): Same.
+        * decl.cc: Remove a trailing period from a diagnostic.
+        * expr.cc: Use a directive for an apostrophe.
+        * toir.cc: Quote keywords, operators, and types in diagnostics.
+        * typeinfo.cc (build_typeinfo): Quote an option name in a diagnostic.
+
+2019-04-25  Johannes Pfau  <johannespfau@gmail.com>
+
+	* config-lang.in: Do not add target_libs if phobos is disabled.
+
+2019-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+	    Robin Dapp  <rdapp@linux.ibm.com>
+
+	* typeinfo.cc (create_typeinfo): Write typeinfo flags as uint.
+
+2019-04-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (d_init_versions): Add D_BetterC, D_ModuleInfo,
+	D_Exceptions, D_TypeInfo as predefined version conditions.
+	* d-codegen.cc (build_bounds_condition): Generate trap if D asserts
+	are turned off.
+	* d-frontend.cc (getTypeInfoType): Add error when -fno-rtti is set.
+	* d-lang.cc (d_init_options): Initialize new front-end options.
+	(d_handle_option): Handle -fdruntime, -fexceptions, and -frtti.
+	(d_post_options): Turn off D runtime features if -fno-druntime is set.
+	* d-spec.cc (lang_specific_driver): Handle -fdruntime.
+	* d-tree.h (have_typeinfo_p): Add prototype.
+	(build_typeinfo): Update prototype.
+	* decl.cc (DeclVisitor::visit(StructDeclaration)): Create typeinfo
+	only if TypeInfo exists.
+	(DeclVisitor::visit(ClassDeclaration)): Likewise.
+	(DeclVisitor::visit(InterfaceDeclaration)): Likewise.
+	(DeclVisitor::visit(EnumDeclaration)): Likewise.
+	* expr.cc: Update all calls to build_typeinfo.
+	* gdc.texi (Runtime Options): Document -fdruntime and -frtti.
+	* lang.opt: Add -fdruntime and -frtti.
+	* modules.cc (build_module_tree): Create module info only if
+	ModuleInfo exists.
+	* toir.cc (IRVisitor::visit(ThrowStatement)): Update test for
+	-fno-exceptions.
+	* typeinfo.cc (create_tinfo_types): Build internal typeinfo classes
+	only if Object exists.
+	(have_typeinfo_p): New function.
+	(class TypeInfoVisitor): Update all calls to build_typeinfo.
+	(build_typeinfo): Add error when -fno-rtti is set.
+
+2019-04-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (DeclVisitor::visit(Import)): Set semanticRun after
+	completion, guard against being called more than once.
+	(DeclVisitor::visit(StructDeclaration)): Likewise.
+	(DeclVisitor::visit(ClassDeclaration)): Likewise.
+	(DeclVisitor::visit(InterfaceDeclaration)): Likewise.
+	(DeclVisitor::visit(VarDeclaration)): Likewise.
+	(DeclVisitor::visit(TypeInfoDeclaration)): Likewise.
+
+2019-04-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* modules.cc (register_module_decl): Don't register unittests against
+	the ModuleInfo symbol for -fbuilding-libphobos-tests.
+
+2019-04-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-system.h (POSIX): Define unix as POSIX.
+	(INT32_MAX, INT32_MIN, INT64_MIN, UINT32_MAX, UINT64_MAX): Provide
+	fallback definitions.
+
+2019-04-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (d.mostyclean): Clean idgen and impcvgen.
+	(d/idgen): Rename to d/idgen$(build_exeext), add BUILD_LIBDEPS.
+	(d/impcvgen): Rename to d/impcvgen$(build_exeext), add BUILD_LIBDEPS.
+	(d/id.c): Call idgen$(build_exeext).
+	(d/impcnvtab.c): Call impcvgen$(build_exeext).
+
+2019-04-14  Johannes Pfau  <johannespfau@gmail.com>
+	PR d/87799
+	* d-system.h (_mkdir): Forward _mkdir on MinGW to mkdir in system.h.
+
 2019-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-tree.h (DECL_IN_UNITTEST_CONDITION_P): Define.

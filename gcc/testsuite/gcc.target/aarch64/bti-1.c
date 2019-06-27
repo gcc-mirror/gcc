@@ -61,3 +61,4 @@ lab2:
 }
 /* { dg-final { scan-assembler-times "hint\t34" 1 } } */
 /* { dg-final { scan-assembler-times "hint\t36" 12 } } */
+/* { dg-final { scan-assembler ".note.gnu.property" { target *-*-linux* } } } */

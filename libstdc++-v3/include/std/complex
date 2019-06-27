@@ -1898,41 +1898,59 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     std::complex<_Tp> proj(const std::complex<_Tp>&);
 
-  template<typename _Tp>
-    std::complex<_Tp>
-    __complex_proj(const std::complex<_Tp>& __z)
-    {
-      const _Tp __den = (__z.real() * __z.real()
-			 + __z.imag() * __z.imag() + _Tp(1.0));
-
-      return std::complex<_Tp>((_Tp(2.0) * __z.real()) / __den,
-			       (_Tp(2.0) * __z.imag()) / __den);
-    }
-
-#if _GLIBCXX_USE_C99_COMPLEX
-  inline __complex__ float
-  __complex_proj(__complex__ float __z)
-  { return __builtin_cprojf(__z); }
-
-  inline __complex__ double
-  __complex_proj(__complex__ double __z)
-  { return __builtin_cproj(__z); }
-
-  inline __complex__ long double
-  __complex_proj(const __complex__ long double& __z)
-  { return __builtin_cprojl(__z); }
-
+  // Generic implementation of std::proj, does not work for infinities.
   template<typename _Tp>
     inline std::complex<_Tp>
-    proj(const std::complex<_Tp>& __z)
-    { return __complex_proj(__z.__rep()); }
-#else
+    __complex_proj(const std::complex<_Tp>& __z)
+    { return __z; }
+
+#if _GLIBCXX_USE_C99_COMPLEX
+  inline complex<float>
+  __complex_proj(const complex<float>& __z)
+  { return __builtin_cprojf(__z.__rep()); }
+
+  inline complex<double>
+  __complex_proj(const complex<double>& __z)
+  { return __builtin_cproj(__z.__rep()); }
+
+  inline complex<long double>
+  __complex_proj(const complex<long double>& __z)
+  { return __builtin_cprojl(__z.__rep()); }
+#elif defined _GLIBCXX_USE_C99_MATH_TR1
+  inline complex<float>
+  __complex_proj(const complex<float>& __z)
+  {
+    if (__builtin_isinf(__z.real()) || __builtin_isinf(__z.imag()))
+      return complex<float>(__builtin_inff(),
+			    __builtin_copysignf(0.0f, __z.imag()));
+    return __z;
+  }
+
+  inline complex<double>
+  __complex_proj(const complex<double>& __z)
+  {
+    if (__builtin_isinf(__z.real()) || __builtin_isinf(__z.imag()))
+      return complex<double>(__builtin_inf(),
+			     __builtin_copysign(0.0, __z.imag()));
+    return __z;
+  }
+
+  inline complex<long double>
+  __complex_proj(const complex<long double>& __z)
+  {
+    if (__builtin_isinf(__z.real()) || __builtin_isinf(__z.imag()))
+      return complex<long double>(__builtin_infl(),
+				  __builtin_copysignl(0.0l, __z.imag()));
+    return __z;
+  }
+#endif
+
   template<typename _Tp>
     inline std::complex<_Tp>
     proj(const std::complex<_Tp>& __z)
     { return __complex_proj(__z); }
-#endif
 
+  // Overload for scalars
   template<typename _Tp>
     inline std::complex<typename __gnu_cxx::__promote<_Tp>::__type>
     proj(_Tp __x)

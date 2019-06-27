@@ -1938,10 +1938,13 @@ frv_asm_output_mi_thunk (FILE *file,
                          HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
                          tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
   const char *name_func = XSTR (XEXP (DECL_RTL (function), 0), 0);
   const char *name_arg0 = reg_names[FIRST_ARG_REGNUM];
   const char *name_jmp = reg_names[JUMP_REGNO];
   const char *parallel = (frv_issue_rate () > 1 ? ".p" : "");
+
+  assemble_start_function (thunk_fndecl, fnname);
 
   /* Do the add using an addi if possible.  */
   if (IN_RANGE (delta, -2048, 2047))
@@ -2018,6 +2021,7 @@ frv_asm_output_mi_thunk (FILE *file,
 
   /* Jump to the function address.  */
   fprintf (file, "\tjmpl @(%s,%s)\n", name_jmp, reg_names[GPR_FIRST+0]);
+  assemble_end_function (thunk_fndecl, fnname);
 }
 
 

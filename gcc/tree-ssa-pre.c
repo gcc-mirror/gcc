@@ -1146,11 +1146,13 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
   edge e = NULL;
   bool use_oracle;
 
-  *same_valid = true;
+  if (same_valid)
+    *same_valid = true;
 
   if (gimple_bb (phi) != phiblock)
     return vuse;
 
+  unsigned int cnt = PARAM_VALUE (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS);
   use_oracle = ao_ref_init_from_vn_reference (&ref, set, type, operands);
 
   /* Use the alias-oracle to find either the PHI node in this block,
@@ -1159,8 +1161,10 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
   if (gimple_code (phi) == GIMPLE_PHI)
     e = find_edge (block, phiblock);
   else if (use_oracle)
-    while (!stmt_may_clobber_ref_p_1 (phi, &ref))
+    while (cnt > 0
+	   && !stmt_may_clobber_ref_p_1 (phi, &ref))
       {
+	--cnt;
 	vuse = gimple_vuse (phi);
 	phi = SSA_NAME_DEF_STMT (vuse);
 	if (gimple_bb (phi) != phiblock)
@@ -1176,26 +1180,21 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
 
   if (e)
     {
-      if (use_oracle)
+      if (use_oracle && same_valid)
 	{
 	  bitmap visited = NULL;
-	  unsigned int cnt;
 	  /* Try to find a vuse that dominates this phi node by skipping
 	     non-clobbering statements.  */
-	  vuse = get_continuation_for_phi (phi, &ref, &cnt, &visited, false,
+	  vuse = get_continuation_for_phi (phi, &ref, cnt, &visited, false,
 					   NULL, NULL);
 	  if (visited)
 	    BITMAP_FREE (visited);
 	}
       else
 	vuse = NULL_TREE;
-      if (!vuse)
-	{
-	  /* If we didn't find any, the value ID can't stay the same,
-	     but return the translated vuse.  */
-	  *same_valid = false;
-	  vuse = PHI_ARG_DEF (phi, e->dest_idx);
-	}
+      /* If we didn't find any, the value ID can't stay the same.  */
+      if (!vuse && same_valid)
+	*same_valid = false;
       /* ??? We would like to return vuse here as this is the canonical
          upmost vdef that this reference is associated with.  But during
 	 insertion of the references into the hash tables we only ever
@@ -1533,7 +1532,8 @@ phi_translate_1 (bitmap_set_t dest,
 						    ? newoperands : operands,
 						    ref->set, ref->type,
 						    vuse, phiblock, pred,
-						    &same_valid);
+						    changed
+						    ? NULL : &same_valid);
 	    if (newvuse == NULL_TREE)
 	      {
 		newoperands.release ();
@@ -3531,7 +3531,7 @@ do_hoist_insertion (basic_block block)
     return false;
 
   /* Hack hoitable_set in-place so we can use sorted_array_from_bitmap_set.  */
-  hoistable_set.values = availout_in_some;
+  bitmap_move (&hoistable_set.values, &availout_in_some);
   hoistable_set.expressions = ANTIC_IN (block)->expressions;
 
   /* Now finally construct the topological-ordered expression set.  */
@@ -3601,92 +3601,80 @@ do_hoist_insertion (basic_block block)
   return new_stuff;
 }
 
-/* Do a dominator walk on the control flow graph, and insert computations
-   of values as necessary for PRE and hoisting.  */
-
-static bool
-insert_aux (basic_block block, bool do_pre, bool do_hoist)
-{
-  basic_block son;
-  bool new_stuff = false;
-
-  if (block)
-    {
-      basic_block dom;
-      dom = get_immediate_dominator (CDI_DOMINATORS, block);
-      if (dom)
-	{
-	  unsigned i;
-	  bitmap_iterator bi;
-	  bitmap_set_t newset;
-
-	  /* First, update the AVAIL_OUT set with anything we may have
-	     inserted higher up in the dominator tree.  */
-	  newset = NEW_SETS (dom);
-	  if (newset)
-	    {
-	      /* Note that we need to value_replace both NEW_SETS, and
-		 AVAIL_OUT. For both the case of NEW_SETS, the value may be
-		 represented by some non-simple expression here that we want
-		 to replace it with.  */
-	      FOR_EACH_EXPR_ID_IN_SET (newset, i, bi)
-		{
-		  pre_expr expr = expression_for_id (i);
-		  bitmap_value_replace_in_set (NEW_SETS (block), expr);
-		  bitmap_value_replace_in_set (AVAIL_OUT (block), expr);
-		}
-	    }
-
-	  /* Insert expressions for partial redundancies.  */
-	  if (do_pre && !single_pred_p (block))
-	    {
-	      new_stuff |= do_pre_regular_insertion (block, dom);
-	      if (do_partial_partial)
-		new_stuff |= do_pre_partial_partial_insertion (block, dom);
-	    }
-
-	  /* Insert expressions for hoisting.  */
-	  if (do_hoist && EDGE_COUNT (block->succs) >= 2)
-	    new_stuff |= do_hoist_insertion (block);
-	}
-    }
-  for (son = first_dom_son (CDI_DOMINATORS, block);
-       son;
-       son = next_dom_son (CDI_DOMINATORS, son))
-    {
-      new_stuff |= insert_aux (son, do_pre, do_hoist);
-    }
-
-  return new_stuff;
-}
-
 /* Perform insertion of partially redundant and hoistable values.  */
 
 static void
 insert (void)
 {
-  bool new_stuff = true;
   basic_block bb;
-  int num_iterations = 0;
 
   FOR_ALL_BB_FN (bb, cfun)
     NEW_SETS (bb) = bitmap_set_new ();
 
-  while (new_stuff)
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  int rpo_num = pre_and_rev_post_order_compute (NULL, rpo, false);
+
+  int num_iterations = 0;
+  bool changed;
+  do
     {
       num_iterations++;
       if (dump_file && dump_flags & TDF_DETAILS)
 	fprintf (dump_file, "Starting insert iteration %d\n", num_iterations);
-      new_stuff = insert_aux (ENTRY_BLOCK_PTR_FOR_FN (cfun), flag_tree_pre,
-			      flag_code_hoisting);
+
+      changed = false;
+      for (int idx = 0; idx < rpo_num; ++idx)
+	{
+	  basic_block block = BASIC_BLOCK_FOR_FN (cfun, rpo[idx]);
+	  basic_block dom = get_immediate_dominator (CDI_DOMINATORS, block);
+	  if (dom)
+	    {
+	      unsigned i;
+	      bitmap_iterator bi;
+	      bitmap_set_t newset;
+
+	      /* First, update the AVAIL_OUT set with anything we may have
+		 inserted higher up in the dominator tree.  */
+	      newset = NEW_SETS (dom);
+	      if (newset)
+		{
+		  /* Note that we need to value_replace both NEW_SETS, and
+		     AVAIL_OUT. For both the case of NEW_SETS, the value may be
+		     represented by some non-simple expression here that we want
+		     to replace it with.  */
+		  FOR_EACH_EXPR_ID_IN_SET (newset, i, bi)
+		    {
+		      pre_expr expr = expression_for_id (i);
+		      bitmap_value_replace_in_set (NEW_SETS (block), expr);
+		      bitmap_value_replace_in_set (AVAIL_OUT (block), expr);
+		    }
+		}
+
+	      /* Insert expressions for partial redundancies.  */
+	      if (flag_tree_pre && !single_pred_p (block))
+		{
+		  changed |= do_pre_regular_insertion (block, dom);
+		  if (do_partial_partial)
+		    changed |= do_pre_partial_partial_insertion (block, dom);
+		}
+
+	      /* Insert expressions for hoisting.  */
+	      if (flag_code_hoisting && EDGE_COUNT (block->succs) >= 2)
+		changed |= do_hoist_insertion (block);
+	    }
+	}
 
       /* Clear the NEW sets before the next iteration.  We have already
-         fully propagated its contents.  */
-      if (new_stuff)
+	 fully propagated its contents.  */
+      if (changed)
 	FOR_ALL_BB_FN (bb, cfun)
 	  bitmap_set_free (NEW_SETS (bb));
     }
+  while (changed);
+
   statistics_histogram_event (cfun, "insert iterations", num_iterations);
+
+  free (rpo);
 }
 
 
@@ -4195,8 +4183,9 @@ pass_pre::execute (function *fun)
   /* This has to happen before VN runs because
      loop_optimizer_init may create new phis, etc.  */
   loop_optimizer_init (LOOPS_NORMAL);
-  split_critical_edges ();
+  split_edges_for_insertion ();
   scev_initialize ();
+  calculate_dominance_info (CDI_DOMINATORS);
 
   run_rpo_vn (VN_WALK);
 

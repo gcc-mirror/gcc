@@ -38,6 +38,8 @@
  * Contains an implementation for rb_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 template<typename It>
 void
@@ -98,3 +100,4 @@ void
 PB_DS_CLASS_C_DEC::
 initialize()
 { base_type::m_p_head->m_red = true; }
+#endif

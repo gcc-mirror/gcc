@@ -24,6 +24,7 @@
 
 /** @file experimental/timer
  *  This is a TS C++ Library header.
+ *  @ingroup networking-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_TIMER
@@ -50,9 +51,8 @@ namespace net
 inline namespace v1
 {
 
-  /**
-   * @ingroup networking
-   * @{
+  /** @addtogroup networking-ts
+   *  @{
    */
 
   template<typename _Clock>

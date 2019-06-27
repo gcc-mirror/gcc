@@ -37,6 +37,11 @@
        (eq_attr "type" "branch"))
   "sifive_7_B")
 
+(define_insn_reservation "sifive_7_sfb_alu" 2
+  (and (eq_attr "tune" "sifive_7")
+       (eq_attr "type" "sfb_alu"))
+  "sifive_7_A+sifive_7_B")
+
 (define_insn_reservation "sifive_7_jump" 1
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "jump,call"))
@@ -101,10 +106,13 @@
        (eq_attr "type" "mfc"))
   "sifive_7_A")
 
-(define_bypass 1 "sifive_7_load,sifive_7_alu,sifive_7_mul,sifive_7_f2i"
+(define_bypass 1 "sifive_7_load,sifive_7_alu,sifive_7_mul,sifive_7_f2i,sifive_7_sfb_alu"
   "sifive_7_alu,sifive_7_branch")
 
-(define_bypass 1 "sifive_7_load,sifive_7_alu,sifive_7_mul,sifive_7_f2i"
+(define_bypass 1 "sifive_7_alu,sifive_7_sfb_alu"
+  "sifive_7_sfb_alu")
+
+(define_bypass 1 "sifive_7_load,sifive_7_alu,sifive_7_mul,sifive_7_f2i,sifive_7_sfb_alu"
   "sifive_7_store" "riscv_store_data_bypass_p")
 
 (define_bypass 2 "sifive_7_i2f"

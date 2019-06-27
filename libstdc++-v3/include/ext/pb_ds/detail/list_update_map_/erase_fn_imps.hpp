@@ -38,6 +38,8 @@
  * Contains implementations of lu_map_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
@@ -132,3 +134,4 @@ actual_erase_entry(entry_pointer p_l)
   s_entry_allocator.deallocate(p_l, 1);
 }
 
+#endif

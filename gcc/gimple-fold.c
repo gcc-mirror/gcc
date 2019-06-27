@@ -207,6 +207,9 @@ create_tmp_reg_or_ssa_name (tree type, gimple *stmt)
 tree
 canonicalize_constructor_val (tree cval, tree from_decl)
 {
+  if (CONSTANT_CLASS_P (cval))
+    return cval;
+
   tree orig_cval = cval;
   STRIP_NOPS (cval);
   if (TREE_CODE (cval) == POINTER_PLUS_EXPR
@@ -257,8 +260,15 @@ canonicalize_constructor_val (tree cval, tree from_decl)
 	cval = fold_convert (TREE_TYPE (orig_cval), cval);
       return cval;
     }
-  if (TREE_OVERFLOW_P (cval))
-    return drop_tree_overflow (cval);
+  /* In CONSTRUCTORs we may see unfolded constants like (int (*) ()) 0.  */
+  if (TREE_CODE (cval) == INTEGER_CST)
+    {
+      if (TREE_OVERFLOW_P (cval))
+	cval = drop_tree_overflow (cval);
+      if (!useless_type_conversion_p (TREE_TYPE (orig_cval), TREE_TYPE (cval)))
+	cval = fold_convert (TREE_TYPE (orig_cval), cval);
+      return cval;
+    }
   return orig_cval;
 }
 
@@ -692,7 +702,7 @@ size_must_be_zero_p (tree size)
 
 static bool
 gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
-			       tree dest, tree src, int endp)
+			       tree dest, tree src, enum built_in_function code)
 {
   gimple *stmt = gsi_stmt (*gsi);
   tree lhs = gimple_call_lhs (stmt);
@@ -839,7 +849,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	    }
 	}
 
-      if (endp == 3)
+      if (code == BUILT_IN_MEMMOVE)
 	{
 	  /* Both DEST and SRC must be pointer types.
 	     ??? This is what old code did.  Is the testing for pointer types
@@ -1102,17 +1112,16 @@ set_vop_and_replace:
 
 done:
   gimple_seq stmts = NULL;
-  if (endp == 0 || endp == 3)
+  if (code == BUILT_IN_MEMCPY || code == BUILT_IN_MEMMOVE)
     len = NULL_TREE;
-  else if (endp == 2)
-    len = gimple_build (&stmts, loc, MINUS_EXPR, TREE_TYPE (len), len,
-			ssize_int (1));
-  if (endp == 2 || endp == 1)
+  else if (code == BUILT_IN_MEMPCPY)
     {
       len = gimple_convert_to_ptrofftype (&stmts, loc, len);
       dest = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
 			   TREE_TYPE (dest), dest, len);
     }
+  else
+    gcc_unreachable ();
 
   gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
   gimple *repl = gimple_build_assign (lhs, dest);
@@ -1663,30 +1672,16 @@ get_range_strlen (tree arg, bitmap *visited,
     }
 }
 
-/* Determine the minimum and maximum value or string length that ARG
-   refers to and store each in the first two elements of MINMAXLEN.
-   For expressions that point to strings of unknown lengths that are
-   character arrays, use the upper bound of the array as the maximum
-   length.  For example, given an expression like 'x ? array : "xyz"'
-   and array declared as 'char array[8]', MINMAXLEN[0] will be set
-   to 0 and MINMAXLEN[1] to 7, the longest string that could be
-   stored in array.
-   Return true if the range of the string lengths has been obtained
-   from the upper bound of an array at the end of a struct.  Such
-   an array may hold a string that's longer than its upper bound
-   due to it being used as a poor-man's flexible array member.
-
-   STRICT is true if it will handle PHIs and COND_EXPRs conservatively
-   and false if PHIs and COND_EXPRs are to be handled optimistically,
-   if we can determine string length minimum and maximum; it will use
-   the minimum from the ones where it can be determined.
-   STRICT false should be only used for warning code.
-   When non-null, clear *NONSTR if ARG refers to a constant array
-   that is known not be nul-terminated.  Otherwise set it to
-   the declaration of the constant non-terminated array.
-
-   ELTSIZE is 1 for normal single byte character strings, and 2 or
-   4 for wide characer strings.  ELTSIZE is by default 1.  */
+/* Try to obtain the range of the lengths of the string(s) referenced
+   by ARG, or the size of the largest array ARG refers to if the range
+   of lengths cannot be determined, and store all in *PDATA.  ELTSIZE
+   is the expected size of the string element in bytes: 1 for char and
+   some power of 2 for wide characters.
+   Return true if the range [PDATA->MINLEN, PDATA->MAXLEN] is suitable
+   for optimization.  Returning false means that a nonzero PDATA->MINLEN
+   doesn't reflect the true lower bound of the range when PDATA->MAXLEN
+   is -1 (in that case, the actual range is indeterminate, i.e.,
+   [0, PTRDIFF_MAX - 2].  */
 
 bool
 get_range_strlen (tree arg, c_strlen_data *pdata, unsigned eltsize)
@@ -3847,14 +3842,10 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 					 gimple_call_arg (stmt, 1),
 					 gimple_call_arg (stmt, 2));
     case BUILT_IN_MEMCPY:
-      return gimple_fold_builtin_memory_op (gsi, gimple_call_arg (stmt, 0),
-					    gimple_call_arg (stmt, 1), 0);
     case BUILT_IN_MEMPCPY:
-      return gimple_fold_builtin_memory_op (gsi, gimple_call_arg (stmt, 0),
-					    gimple_call_arg (stmt, 1), 1);
     case BUILT_IN_MEMMOVE:
       return gimple_fold_builtin_memory_op (gsi, gimple_call_arg (stmt, 0),
-					    gimple_call_arg (stmt, 1), 3);
+					    gimple_call_arg (stmt, 1), fcode);
     case BUILT_IN_SPRINTF_CHK:
     case BUILT_IN_VSPRINTF_CHK:
       return gimple_fold_builtin_sprintf_chk (gsi, fcode);
@@ -6983,14 +6974,10 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 		= wi::sext (wi::to_poly_offset (idx)
 			    - wi::to_poly_offset (low_bound),
 			    TYPE_PRECISION (TREE_TYPE (idx)));
-
+	      woffset *= tree_to_uhwi (unit_size);
+	      woffset *= BITS_PER_UNIT;
 	      if (woffset.to_shwi (&offset))
 		{
-		  /* TODO: This code seems wrong, multiply then check
-		     to see if it fits.  */
-		  offset *= tree_to_uhwi (unit_size);
-		  offset *= BITS_PER_UNIT;
-
 		  base = TREE_OPERAND (t, 0);
 		  ctor = get_base_constructor (base, &offset, valueize);
 		  /* Empty constructor.  Always fold to 0.  */
@@ -7328,6 +7315,7 @@ arith_code_with_undefined_signed_overflow (tree_code code)
 {
   switch (code)
     {
+    case ABS_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:
@@ -7360,12 +7348,15 @@ rewrite_to_defined_overflow (gimple *stmt)
   tree lhs = gimple_assign_lhs (stmt);
   tree type = unsigned_type_for (TREE_TYPE (lhs));
   gimple_seq stmts = NULL;
-  for (unsigned i = 1; i < gimple_num_ops (stmt); ++i)
-    {
-      tree op = gimple_op (stmt, i);
-      op = gimple_convert (&stmts, type, op);
-      gimple_set_op (stmt, i, op);
-    }
+  if (gimple_assign_rhs_code (stmt) == ABS_EXPR)
+    gimple_assign_set_rhs_code (stmt, ABSU_EXPR);
+  else
+    for (unsigned i = 1; i < gimple_num_ops (stmt); ++i)
+      {
+	tree op = gimple_op (stmt, i);
+	op = gimple_convert (&stmts, type, op);
+	gimple_set_op (stmt, i, op);
+      }
   gimple_assign_set_lhs (stmt, make_ssa_name (type, stmt));
   if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
     gimple_assign_set_rhs_code (stmt, PLUS_EXPR);

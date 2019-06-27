@@ -1400,12 +1400,7 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
 	list = chainon (list, attr);
       }
 
-  if (sym_attr.omp_declare_target_link)
-    list = tree_cons (get_identifier ("omp declare target link"),
-		      NULL_TREE, list);
-  else if (sym_attr.omp_declare_target)
-    list = tree_cons (get_identifier ("omp declare target"),
-		      NULL_TREE, list);
+  tree clauses = NULL_TREE;
 
   if (sym_attr.oacc_routine_lop != OACC_ROUTINE_LOP_NONE)
     {
@@ -1430,10 +1425,24 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
 	  gcc_unreachable ();
 	}
       tree c = build_omp_clause (UNKNOWN_LOCATION, code);
+      OMP_CLAUSE_CHAIN (c) = clauses;
+      clauses = c;
 
-      tree dims = oacc_build_routine_dims (c);
+      tree dims = oacc_build_routine_dims (clauses);
       list = oacc_replace_fn_attrib_attr (list, dims);
     }
+
+  if (sym_attr.omp_declare_target_link
+      || sym_attr.oacc_declare_link)
+    list = tree_cons (get_identifier ("omp declare target link"),
+		      NULL_TREE, list);
+  else if (sym_attr.omp_declare_target
+	   || sym_attr.oacc_declare_create
+	   || sym_attr.oacc_declare_copyin
+	   || sym_attr.oacc_declare_deviceptr
+	   || sym_attr.oacc_declare_device_resident)
+    list = tree_cons (get_identifier ("omp declare target"),
+		      clauses, list);
 
   return list;
 }
@@ -2512,6 +2521,17 @@ create_function_arglist (gfc_symbol * sym)
 	  DECL_ARG_TYPE (length) = len_type;
 	  TREE_READONLY (length) = 1;
 	  gfc_finish_decl (length);
+
+	  /* Marking the length DECL_HIDDEN_STRING_LENGTH will lead
+	     to tail calls being disabled.  Only do that if we
+	     potentially have broken callers.  */
+	  if (flag_tail_call_workaround
+	      && f->sym->ts.u.cl
+	      && f->sym->ts.u.cl->length
+	      && f->sym->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	      && (flag_tail_call_workaround == 2
+		  || f->sym->ns->implicit_interface_calls))
+	    DECL_HIDDEN_STRING_LENGTH (length) = 1;
 
 	  /* Remember the passed value.  */
           if (!f->sym->ts.u.cl ||  f->sym->ts.u.cl->passed_length)
@@ -4268,6 +4288,107 @@ gfc_null_and_pass_deferred_len (gfc_symbol *sym, stmtblock_t *init,
 }
 
 
+/* Convert CFI descriptor dummies into gfc types and back again.  */
+static void
+convert_CFI_desc (gfc_wrapped_block * block, gfc_symbol *sym)
+{
+  tree gfc_desc;
+  tree gfc_desc_ptr;
+  tree CFI_desc;
+  tree CFI_desc_ptr;
+  tree dummy_ptr;
+  tree tmp;
+  tree present;
+  tree incoming;
+  tree outgoing;
+  stmtblock_t outer_block;
+  stmtblock_t tmpblock;
+
+  /* dummy_ptr will be the pointer to the passed array descriptor,
+     while CFI_desc is the descriptor itself.  */
+  if (DECL_LANG_SPECIFIC (sym->backend_decl))
+    CFI_desc = GFC_DECL_SAVED_DESCRIPTOR (sym->backend_decl);
+  else
+    CFI_desc = NULL;
+
+  dummy_ptr = CFI_desc;
+
+  if (CFI_desc)
+    {
+      CFI_desc = build_fold_indirect_ref_loc (input_location, CFI_desc);
+
+      /* The compiler will have given CFI_desc the correct gfortran
+	 type. Use this new variable to store the converted
+	 descriptor.  */
+      gfc_desc = gfc_create_var (TREE_TYPE (CFI_desc), "gfc_desc");
+      tmp = build_pointer_type (TREE_TYPE (gfc_desc));
+      gfc_desc_ptr = gfc_create_var (tmp, "gfc_desc_ptr");
+      CFI_desc_ptr = gfc_create_var (pvoid_type_node, "CFI_desc_ptr");
+
+      /* Fix the condition for the presence of the argument.  */
+      gfc_init_block (&outer_block);
+      present = fold_build2_loc (input_location, NE_EXPR,
+				 logical_type_node, dummy_ptr,
+				 build_int_cst (TREE_TYPE (dummy_ptr), 0));
+
+      gfc_init_block (&tmpblock);
+      /* Pointer to the gfc descriptor.  */
+      gfc_add_modify (&tmpblock, gfc_desc_ptr,
+		      gfc_build_addr_expr (NULL, gfc_desc));
+      /* Store the pointer to the CFI descriptor.  */
+      gfc_add_modify (&tmpblock, CFI_desc_ptr,
+		      fold_convert (pvoid_type_node, dummy_ptr));
+      tmp = gfc_build_addr_expr (ppvoid_type_node, CFI_desc_ptr);
+      /* Convert the CFI descriptor.  */
+      incoming = build_call_expr_loc (input_location,
+			gfor_fndecl_cfi_to_gfc, 2, gfc_desc_ptr, tmp);
+      gfc_add_expr_to_block (&tmpblock, incoming);
+      /* Set the dummy pointer to point to the gfc_descriptor.  */
+      gfc_add_modify (&tmpblock, dummy_ptr,
+		      fold_convert (TREE_TYPE (dummy_ptr), gfc_desc_ptr));
+
+      /* The hidden string length is not passed to bind(C) procedures so set
+	 it from the descriptor element length.  */
+      if (sym->ts.type == BT_CHARACTER
+	  && sym->ts.u.cl->backend_decl
+	  && VAR_P (sym->ts.u.cl->backend_decl))
+	{
+	  tmp = build_fold_indirect_ref_loc (input_location, dummy_ptr);
+	  tmp = gfc_conv_descriptor_elem_len (tmp);
+	  gfc_add_modify (&tmpblock, sym->ts.u.cl->backend_decl,
+			  fold_convert (TREE_TYPE (sym->ts.u.cl->backend_decl),
+				        tmp));
+	}
+
+      /* Check that the argument is present before executing the above.  */
+      incoming = build3_v (COND_EXPR, present,
+			   gfc_finish_block (&tmpblock),
+			   build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&outer_block, incoming);
+      incoming = gfc_finish_block (&outer_block);
+
+
+      /* Convert the gfc descriptor back to the CFI type before going
+	 out of scope, if the CFI type was present at entry.  */
+      gfc_init_block (&outer_block);
+      gfc_init_block (&tmpblock);
+
+      tmp = gfc_build_addr_expr (ppvoid_type_node, CFI_desc_ptr);
+      outgoing = build_call_expr_loc (input_location,
+			gfor_fndecl_gfc_to_cfi, 2, tmp, gfc_desc_ptr);
+      gfc_add_expr_to_block (&tmpblock, outgoing);
+
+      outgoing = build3_v (COND_EXPR, present,
+			   gfc_finish_block (&tmpblock),
+			   build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&outer_block, outgoing);
+      outgoing = gfc_finish_block (&outer_block);
+
+      /* Add the lot to the procedure init and finally blocks.  */
+      gfc_add_init_cleanup (block, incoming, outgoing);
+    }
+}
+
 /* Get the result expression for a procedure.  */
 
 static tree
@@ -4844,15 +4965,22 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	}
       else if (!(UNLIMITED_POLY(sym)) && !is_pdt_type)
 	gcc_unreachable ();
+
+      /* Assumed shape and assumed rank arrays are passed to BIND(C) procedures
+	 as ISO Fortran Interop descriptors. These have to be converted to
+	 gfortran descriptors and back again.  This has to be done here so that
+	 the conversion occurs at the start of the init block.  */
+      if (is_CFI_desc (sym, NULL))
+	convert_CFI_desc (block, sym);
     }
 
   gfc_init_block (&tmpblock);
 
   for (f = gfc_sym_get_dummy_args (proc_sym); f; f = f->next)
     {
-      if (f->sym && f->sym->tlink == NULL && f->sym->ts.type == BT_CHARACTER)
+      if (f->sym && f->sym->tlink == NULL && f->sym->ts.type == BT_CHARACTER
+	  && f->sym->ts.u.cl->backend_decl)
 	{
-	  gcc_assert (f->sym->ts.u.cl->backend_decl != NULL);
 	  if (TREE_CODE (f->sym->ts.u.cl->backend_decl) == PARM_DECL)
 	    gfc_trans_vla_type_sizes (f->sym, &tmpblock);
 	}
@@ -6363,6 +6491,7 @@ finish_oacc_declare (gfc_namespace *ns, gfc_symbol *sym, bool block)
   gfc_omp_clauses *omp_clauses = NULL;
   gfc_omp_namelist *n, *p;
 
+  module_oacc_clauses = NULL;
   gfc_traverse_ns (ns, find_module_oacc_declare_clauses);
 
   if (module_oacc_clauses && sym->attr.flavor == FL_PROGRAM)
@@ -6374,7 +6503,6 @@ finish_oacc_declare (gfc_namespace *ns, gfc_symbol *sym, bool block)
       new_oc->clauses = module_oacc_clauses;
 
       ns->oacc_declare = new_oc;
-      module_oacc_clauses = NULL;
     }
 
   if (!ns->oacc_declare)

@@ -38,6 +38,8 @@
  * Contains an implementation for rc_binomial_heap_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 template<typename Pred>
 void
@@ -75,3 +77,4 @@ join(PB_DS_CLASS_C_DEC& other)
   PB_DS_ASSERT_VALID(other)
 }
 
+#endif

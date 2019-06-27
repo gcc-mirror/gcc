@@ -25,7 +25,25 @@ language="d"
 
 compilers="d21\$(exeext)"
 
-target_libs="target-libphobos target-zlib target-libbacktrace"
+phobos_target_deps="target-zlib target-libbacktrace"
+phobos_target_libs="target-libphobos $phobos_target_deps"
+
+case "${noconfigdirs}" in
+  # Check if phobos was disabled as unsupported
+  *target-libphobos*)
+    disabled_target_libs="$disabled_target_libs $phobos_target_deps"
+    ;;
+  *)
+    # The --disable-<component> handler in configure.ac is called after
+    # config-lang.in. So when using --disable-libphobos, it has not been
+    # added to noconfigdirs here yet
+    if test x${enable_libphobos} != xno; then
+      target_libs="$phobos_target_libs"
+    else
+      disabled_target_libs="$disabled_target_libs $phobos_target_libs"
+    fi
+    ;;
+esac
 
 gtfiles="\$(srcdir)/d/d-tree.h \$(srcdir)/d/d-builtins.cc \$(srcdir)/d/d-lang.cc \$(srcdir)/d/modules.cc \$(srcdir)/d/typeinfo.cc"
 

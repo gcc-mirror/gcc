@@ -2365,6 +2365,20 @@
    (set_attr "type" "misc")]
 )
 
+;; There is a unspec operand to record RELAX_GROUP number because each
+;; emitted instruction need a relax_hint above it.
+(define_insn "tls_le"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "nds32_symbolic_operand" "i")] UNSPEC_TLS_IE))
+   (use (unspec [(match_operand:SI 2 "immediate_operand" "i")] UNSPEC_VOLATILE_RELAX_GROUP))]
+  ""
+  {
+    return nds32_output_symrel (operands);
+  }
+  [(set_attr "length" "8")
+   (set_attr "type"   "misc")]
+)
+
 ;; The pattern is for some relaxation groups that have to keep addsi3 in 32-bit mode.
 (define_insn "addsi3_32bit"
   [(set (match_operand:SI 0 "register_operand"             "=r")
@@ -2375,5 +2389,18 @@
   [(set_attr "type"    "alu")
    (set_attr "length"  "4")
    (set_attr "feature" "v1")])
+
+;; Patterns for PIC.
+(define_insn "sym_got"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand:SI 1 "nds32_symbolic_operand" "i")] UNSPEC_GOT))
+   (use (unspec [(match_operand:SI 2 "immediate_operand" "i")] UNSPEC_VOLATILE_RELAX_GROUP))]
+  ""
+  {
+    return nds32_output_symrel (operands);
+  }
+  [(set_attr "length" "8")
+   (set_attr "type"   "misc")]
+)
 
 ;; ----------------------------------------------------------------------------

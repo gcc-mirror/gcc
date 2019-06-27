@@ -836,6 +836,8 @@
 	substituting by zero.
 
 2018-12-17  Richard Sandiford  <richard.sandiford@arm.com>
+	    Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* doc/invoke.texi (-fversion-loops-for-strides): Document
 	(loop-versioning-group-size, loop-versioning-max-inner-insns)

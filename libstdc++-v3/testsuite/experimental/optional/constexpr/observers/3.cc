@@ -1,4 +1,4 @@
-// { dg-do run { target c++14 } }
+// { dg-do compile { target c++14 } }
 
 // Copyright (C) 2013-2019 Free Software Foundation, Inc.
 //

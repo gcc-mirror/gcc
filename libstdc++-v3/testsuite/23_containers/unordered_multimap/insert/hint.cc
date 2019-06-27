@@ -29,6 +29,7 @@ void test01()
   typedef typename Map::value_type Pair;
 
   Map m;
+  m.reserve(3);
 
   auto it1 = m.insert(Pair(0, 0));
   VERIFY( it1 != m.end() );
@@ -58,6 +59,7 @@ void test02()
   typedef typename Map::value_type Pair;
 
   Map m;
+  m.reserve(5);
 
   auto it1 = m.insert(Pair(0, 0));
   auto it2 = m.insert(it1, Pair(1, 0));
@@ -89,6 +91,7 @@ void test03()
   typedef typename Map::value_type Pair;
 
   Map m;
+  m.reserve(3);
 
   auto it1 = m.insert(Pair(0, 0));
   VERIFY( it1 != m.end() );

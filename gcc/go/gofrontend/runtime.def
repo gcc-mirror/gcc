@@ -29,33 +29,18 @@
 // result types.
 
 // The standard C memcmp function, used for struct comparisons.
-DEF_GO_RUNTIME(MEMCMP, "__go_memcmp", P3(POINTER, POINTER, UINTPTR), R1(INT))
+DEF_GO_RUNTIME(MEMCMP, "__builtin_memcmp", P3(POINTER, POINTER, UINTPTR), R1(INT32))
 
 // Decode a non-ASCII rune from a string.
 DEF_GO_RUNTIME(DECODERUNE, "runtime.decoderune", P2(STRING, INT),
 	       R2(RUNE, INT))
 
 // Concatenate strings.
-DEF_GO_RUNTIME(CONCATSTRINGS, "runtime.concatstrings", P2(POINTER, SLICE),
-	       R1(STRING))
-DEF_GO_RUNTIME(CONCATSTRING2, "runtime.concatstring2",
-	       P2(POINTER, ARRAY2STRING), R1(STRING))
-DEF_GO_RUNTIME(CONCATSTRING3, "runtime.concatstring3",
-	       P2(POINTER, ARRAY3STRING), R1(STRING))
-DEF_GO_RUNTIME(CONCATSTRING4, "runtime.concatstring4",
-	       P2(POINTER, ARRAY4STRING), R1(STRING))
-DEF_GO_RUNTIME(CONCATSTRING5, "runtime.concatstring5",
-	       P2(POINTER, ARRAY5STRING), R1(STRING))
-
-// Compare two strings for equality.
-DEF_GO_RUNTIME(EQSTRING, "runtime.eqstring", P2(STRING, STRING), R1(BOOL))
+DEF_GO_RUNTIME(CONCATSTRINGS, "runtime.concatstrings",
+               P3(POINTER, POINTER, INT), R1(STRING))
 
 // Compare two strings.
 DEF_GO_RUNTIME(CMPSTRING, "runtime.cmpstring", P2(STRING, STRING), R1(INT))
-
-// Take a slice of a string.
-DEF_GO_RUNTIME(STRING_SLICE, "__go_string_slice", P3(STRING, INT, INT),
-	       R1(STRING))
 
 // Convert an integer to a string.
 DEF_GO_RUNTIME(INTSTRING, "runtime.intstring", P2(POINTER, INT64), R1(STRING))
@@ -109,6 +94,18 @@ DEF_GO_RUNTIME(CONSTRUCT_MAP, "__go_construct_map",
 DEF_GO_RUNTIME(MAPACCESS1, "runtime.mapaccess1", P3(TYPE, MAP, POINTER),
 	       R1(POINTER))
 
+// Look up a uint32 key in a map.
+DEF_GO_RUNTIME(MAPACCESS1_FAST32, "runtime.mapaccess1_fast32",
+               P3(TYPE, MAP, UINT32), R1(POINTER))
+
+// Look up a uint64 key in a map.
+DEF_GO_RUNTIME(MAPACCESS1_FAST64, "runtime.mapaccess1_fast64",
+               P3(TYPE, MAP, UINT64), R1(POINTER))
+
+// Look up a string key in a map.
+DEF_GO_RUNTIME(MAPACCESS1_FASTSTR, "runtime.mapaccess1_faststr",
+               P3(TYPE, MAP, STRING), R1(POINTER))
+
 // Look up a key in a map when the value is large.
 DEF_GO_RUNTIME(MAPACCESS1_FAT, "runtime.mapaccess1_fat",
 	       P4(TYPE, MAP, POINTER, POINTER), R1(POINTER))
@@ -117,6 +114,21 @@ DEF_GO_RUNTIME(MAPACCESS1_FAT, "runtime.mapaccess1_fat",
 // present.
 DEF_GO_RUNTIME(MAPACCESS2, "runtime.mapaccess2", P3(TYPE, MAP, POINTER),
 	       R2(POINTER, BOOL))
+
+// Look up a uint32 key in a map returning the value and whether
+// it is present.
+DEF_GO_RUNTIME(MAPACCESS2_FAST32, "runtime.mapaccess2_fast32",
+               P3(TYPE, MAP, UINT32), R2(POINTER, BOOL))
+
+// Look up a uint64 key in a map returning the value and whether
+// it is present.
+DEF_GO_RUNTIME(MAPACCESS2_FAST64, "runtime.mapaccess2_fast64",
+               P3(TYPE, MAP, UINT64), R2(POINTER, BOOL))
+
+// Look up a string key in a map returning the value and whether
+// it is present.
+DEF_GO_RUNTIME(MAPACCESS2_FASTSTR, "runtime.mapaccess2_faststr",
+               P3(TYPE, MAP, STRING), R2(POINTER, BOOL))
 
 // Look up a key in a map, returning the value and whether it is
 // present, when the value is large.
@@ -127,8 +139,40 @@ DEF_GO_RUNTIME(MAPACCESS2_FAT, "runtime.mapaccess2_fat",
 DEF_GO_RUNTIME(MAPASSIGN, "runtime.mapassign", P3(TYPE, MAP, POINTER),
 	       R1(POINTER))
 
+// Assignment to a uint32 key in a map.
+DEF_GO_RUNTIME(MAPASSIGN_FAST32, "runtime.mapassign_fast32",
+               P3(TYPE, MAP, UINT32), R1(POINTER))
+
+// Assignment to a uint64 key in a map.
+DEF_GO_RUNTIME(MAPASSIGN_FAST64, "runtime.mapassign_fast64",
+               P3(TYPE, MAP, UINT64), R1(POINTER))
+
+// Assignment to a 32-bit pointer key in a map.
+DEF_GO_RUNTIME(MAPASSIGN_FAST32PTR, "runtime.mapassign_fast32ptr",
+               P3(TYPE, MAP, POINTER), R1(POINTER))
+
+// Assignment to a 64-bit pointer key in a map.
+DEF_GO_RUNTIME(MAPASSIGN_FAST64PTR, "runtime.mapassign_fast64ptr",
+               P3(TYPE, MAP, POINTER), R1(POINTER))
+
+// Assignment to a string key in a map.
+DEF_GO_RUNTIME(MAPASSIGN_FASTSTR, "runtime.mapassign_faststr",
+               P3(TYPE, MAP, STRING), R1(POINTER))
+
 // Delete a key from a map.
 DEF_GO_RUNTIME(MAPDELETE, "runtime.mapdelete", P3(TYPE, MAP, POINTER), R0())
+
+// Delete a uint32 key from a map.
+DEF_GO_RUNTIME(MAPDELETE_FAST32, "runtime.mapdelete_fast32",
+               P3(TYPE, MAP, UINT32), R0())
+
+// Delete a uint64 key from a map.
+DEF_GO_RUNTIME(MAPDELETE_FAST64, "runtime.mapdelete_fast64",
+               P3(TYPE, MAP, UINT64), R0())
+
+// Delete a string key from a map.
+DEF_GO_RUNTIME(MAPDELETE_FASTSTR, "runtime.mapdelete_faststr",
+               P3(TYPE, MAP, STRING), R0())
 
 // Begin a range over a map.
 DEF_GO_RUNTIME(MAPITERINIT, "runtime.mapiterinit", P3(TYPE, MAP, POINTER),
@@ -136,6 +180,9 @@ DEF_GO_RUNTIME(MAPITERINIT, "runtime.mapiterinit", P3(TYPE, MAP, POINTER),
 
 // Range over a map, moving to the next map entry.
 DEF_GO_RUNTIME(MAPITERNEXT, "runtime.mapiternext", P1(POINTER), R0())
+
+// Clear a map.
+DEF_GO_RUNTIME(MAPCLEAR, "runtime.mapclear", P2(TYPE, MAP), R0())
 
 
 // Make a channel.
@@ -209,6 +256,10 @@ DEF_GO_RUNTIME(GROWSLICE, "runtime.growslice",
 // Register roots (global variables) for the garbage collector.
 DEF_GO_RUNTIME(REGISTER_GC_ROOTS, "runtime.registerGCRoots", P1(POINTER), R0())
 
+// Register type descriptors.
+DEF_GO_RUNTIME(REGISTER_TYPE_DESCRIPTORS, "runtime.registerTypeDescriptors",
+               P2(INT, POINTER), R0())
+
 
 // Allocate memory.
 DEF_GO_RUNTIME(NEW, "runtime.newobject", P1(TYPE), R1(POINTER))
@@ -266,22 +317,12 @@ DEF_GO_RUNTIME(ASSERTITAB, "runtime.assertitab", P2(TYPE, TYPE), R1(POINTER))
 DEF_GO_RUNTIME(REQUIREITAB, "runtime.requireitab", P2(TYPE, TYPE),
 	       R1(POINTER))
 
-// Check whether an interface type may be converted to a
-// non-interface type.
-DEF_GO_RUNTIME(ASSERTI2T, "runtime.assertI2T", P3(TYPE, TYPE, TYPE), R0())
+// Panic when an interface type to non-interface type conversion fails.
+DEF_GO_RUNTIME(PANICDOTTYPE, "runtime.panicdottype", P3(TYPE, TYPE, TYPE),
+               R0())
 
 // Return whether we can convert a type to an interface type.
 DEF_GO_RUNTIME(IFACET2IP, "runtime.ifaceT2Ip", P2(TYPE, TYPE), R1(BOOL))
-
-// Get the type descriptor of an empty interface.
-DEF_GO_RUNTIME(EFACETYPE, "runtime.efacetype", P1(EFACE), R1(TYPE))
-
-// Get the type descriptor of a non-empty interface.
-DEF_GO_RUNTIME(IFACETYPE, "runtime.ifacetype", P1(IFACE), R1(TYPE))
-
-
-// Compare two type descriptors for equality.
-DEF_GO_RUNTIME(IFACETYPEEQ, "runtime.ifacetypeeq", P2(TYPE, TYPE), R1(BOOL))
 
 // Compare two empty interface values.
 DEF_GO_RUNTIME(EFACEEQ, "runtime.efaceeq", P2(EFACE, EFACE), R1(BOOL))
@@ -309,6 +350,14 @@ DEF_GO_RUNTIME(GCWRITEBARRIER, "runtime.gcWriteBarrier",
 // Set *dst = *src for an arbitrary type.
 DEF_GO_RUNTIME(TYPEDMEMMOVE, "runtime.typedmemmove",
 	       P3(TYPE, POINTER, POINTER), R0())
+
+// Clear memory that contains no pointer.
+DEF_GO_RUNTIME(MEMCLRNOPTR, "runtime.memclrNoHeapPointers",
+               P2(POINTER, UINTPTR), R0())
+
+// Clear memory that contains pointer.
+DEF_GO_RUNTIME(MEMCLRHASPTR, "runtime.memclrHasPointers",
+               P2(POINTER, UINTPTR), R0())
 
 
 // Lock the printer (for print/println).
@@ -360,6 +409,72 @@ DEF_GO_RUNTIME(FIELDTRACK, "__go_fieldtrack", P1(POINTER), R0())
 
 // Unreachable code.
 DEF_GO_RUNTIME(UNREACHABLE, "__builtin_unreachable", P0(), R0())
+
+// Memmove.
+DEF_GO_RUNTIME(BUILTIN_MEMMOVE, "__builtin_memmove",
+               P3(POINTER, POINTER, UINTPTR), R0())
+
+// Various intrinsics.
+
+// Get the caller's PC, used for runtime.getcallerpc.
+DEF_GO_RUNTIME(BUILTIN_RETURN_ADDRESS, "__builtin_return_address",
+               P1(UINT32), R1(POINTER))
+
+// Get the caller's SP, used for runtime.getcallersp.
+DEF_GO_RUNTIME(BUILTIN_DWARF_CFA, "__builtin_dwarf_cfa", P0(),
+               R1(POINTER))
+
+// Swap bytes.
+DEF_GO_RUNTIME(BUILTIN_BSWAP16, "__builtin_bswap16", P1(UINT16),
+               R1(UINT16))
+DEF_GO_RUNTIME(BUILTIN_BSWAP32, "__builtin_bswap32", P1(UINT32),
+               R1(UINT32))
+DEF_GO_RUNTIME(BUILTIN_BSWAP64, "__builtin_bswap64", P1(UINT64),
+               R1(UINT64))
+
+// Count trailing zeros.
+DEF_GO_RUNTIME(BUILTIN_CTZ, "__builtin_ctz", P1(UINT32), R1(INT32))
+DEF_GO_RUNTIME(BUILTIN_CTZLL, "__builtin_ctzll", P1(UINT64), R1(INT32))
+
+// Count leading zeros.
+DEF_GO_RUNTIME(BUILTIN_CLZ, "__builtin_clz", P1(UINT32), R1(INT32))
+DEF_GO_RUNTIME(BUILTIN_CLZLL, "__builtin_clzll", P1(UINT64), R1(INT32))
+
+// Count one bits.
+DEF_GO_RUNTIME(BUILTIN_POPCOUNT, "__builtin_popcount", P1(UINT32), R1(INT32))
+DEF_GO_RUNTIME(BUILTIN_POPCOUNTLL, "__builtin_popcountll", P1(UINT64), R1(INT32))
+
+// Atomics.
+DEF_GO_RUNTIME(ATOMIC_LOAD_4, "__atomic_load_4", P2(POINTER, INT32),
+               R1(UINT32))
+DEF_GO_RUNTIME(ATOMIC_LOAD_8, "__atomic_load_8", P2(POINTER, INT32),
+               R1(UINT64))
+DEF_GO_RUNTIME(ATOMIC_STORE_4, "__atomic_store_4", P3(POINTER, UINT32, INT32),
+               R0())
+DEF_GO_RUNTIME(ATOMIC_STORE_8, "__atomic_store_8", P3(POINTER, UINT64, INT32),
+               R0())
+DEF_GO_RUNTIME(ATOMIC_EXCHANGE_4, "__atomic_exchange_4", P3(POINTER, UINT32, INT32),
+               R1(UINT32))
+DEF_GO_RUNTIME(ATOMIC_EXCHANGE_8, "__atomic_exchange_8", P3(POINTER, UINT64, INT32),
+               R1(UINT64))
+DEF_GO_RUNTIME(ATOMIC_COMPARE_EXCHANGE_4, "__atomic_compare_exchange_4",
+               P6(POINTER, POINTER, UINT32, BOOL, INT32, INT32),
+               R1(BOOL))
+DEF_GO_RUNTIME(ATOMIC_COMPARE_EXCHANGE_8, "__atomic_compare_exchange_8",
+               P6(POINTER, POINTER, UINT64, BOOL, INT32, INT32),
+               R1(BOOL))
+DEF_GO_RUNTIME(ATOMIC_ADD_FETCH_4, "__atomic_add_fetch_4",
+               P3(POINTER, UINT32, INT32),
+               R1(UINT32))
+DEF_GO_RUNTIME(ATOMIC_ADD_FETCH_8, "__atomic_add_fetch_8",
+               P3(POINTER, UINT64, INT32),
+               R1(UINT64))
+DEF_GO_RUNTIME(ATOMIC_AND_FETCH_1, "__atomic_and_fetch_1",
+               P3(POINTER, UINT8, INT32),
+               R1(UINT8))
+DEF_GO_RUNTIME(ATOMIC_OR_FETCH_1, "__atomic_or_fetch_1",
+               P3(POINTER, UINT8, INT32),
+               R1(UINT8))
 
 // Remove helper macros.
 #undef ABFT6

@@ -340,6 +340,28 @@ path::_M_split_cmpts()
   if (_M_pathname.empty())
     return;
 
+  {
+    // Approximate count of components, to reserve space in _M_cmpts vector:
+    int count = 1;
+    bool saw_sep_last = _S_is_dir_sep(_M_pathname[0]);
+    bool saw_non_sep = !saw_sep_last;
+    for (value_type c : _M_pathname)
+      {
+       if (_S_is_dir_sep(c))
+         saw_sep_last = true;
+       else if (saw_sep_last)
+         {
+           ++count;
+           saw_sep_last = false;
+           saw_non_sep = true;
+         }
+      }
+    if (saw_non_sep && saw_sep_last)
+      ++count; // empty filename after trailing slash
+    if (count > 1)
+      _M_cmpts.reserve(count);
+  }
+
   size_t pos = 0;
   const size_t len = _M_pathname.size();
 
@@ -362,9 +384,13 @@ path::_M_split_cmpts()
 	      pos = 3;
 	      while (pos < len && !_S_is_dir_sep(_M_pathname[pos]))
 		++pos;
+	      if (pos == len)
+		{
+		  _M_type = _Type::_Root_name;
+		  return;
+		}
 	      _M_add_root_name(pos);
-	      if (pos < len) // also got root directory
-		_M_add_root_dir(pos);
+	      _M_add_root_dir(pos);
 	    }
 	  else
 	    {
@@ -372,6 +398,11 @@ path::_M_split_cmpts()
 	      // composed of multiple redundant directory separators
 	      _M_add_root_dir(0);
 	    }
+	}
+      else if (len == 1) // got root directory only
+	{
+	  _M_type = _Type::_Root_dir;
+	  return;
 	}
       else // got root directory
 	_M_add_root_dir(0);
@@ -381,12 +412,28 @@ path::_M_split_cmpts()
   else if (len > 1 && _M_pathname[1] == L':')
     {
       // got disk designator
+      if (len == 2)
+	{
+	  _M_type = _Type::_Root_name;
+	  return;
+	}
       _M_add_root_name(2);
       if (len > 2 && _S_is_dir_sep(_M_pathname[2]))
 	_M_add_root_dir(2);
       pos = 2;
     }
 #endif
+  else
+    {
+      size_t n = 1;
+      for (; n < _M_pathname.size() && !_S_is_dir_sep(_M_pathname[n]); ++n)
+	{ }
+      if (n == _M_pathname.size())
+	{
+	  _M_type = _Type::_Filename;
+	  return;
+	}
+    }
 
   size_t back = pos;
   while (pos < len)
@@ -453,7 +500,7 @@ path::_S_convert_loc(const char* __first, const char* __last,
 #if _GLIBCXX_USE_WCHAR_T
   auto& __cvt = std::use_facet<codecvt<wchar_t, char, mbstate_t>>(__loc);
   basic_string<wchar_t> __ws;
-  if (!__str_codecvt_in(__first, __last, __ws, __cvt))
+  if (!__str_codecvt_in_all(__first, __last, __ws, __cvt))
     _GLIBCXX_THROW_OR_ABORT(filesystem_error(
 	  "Cannot convert character sequence",
 	  std::make_error_code(errc::illegal_byte_sequence)));

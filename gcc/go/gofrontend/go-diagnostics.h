@@ -15,6 +15,12 @@
 #define GO_ATTRIBUTE_GCC_DIAG(m,  n)
 #endif
 
+#if __GNUC__ >= 3
+#define GO_ATTRIBUTE_PRINTF(m, n) __attribute__ ((__format__ (__printf__, m, n))) __attribute__ ((__nonnull__ (m)))
+#else
+#define GO_ATTRIBUTE_PRINTF(m, n)
+#endif
+
 // These declarations define the interface through which the frontend
 // reports errors and warnings. These functions accept printf-like
 // format specifiers (e.g. %d, %f, %s, etc), with the following additional
@@ -40,6 +46,12 @@ extern void go_fatal_error(const Location, const char* fmt, ...)
     GO_ATTRIBUTE_GCC_DIAG(2,3);
 extern void go_inform(const Location, const char* fmt, ...)
     GO_ATTRIBUTE_GCC_DIAG(2,3);
+
+// go_debug is used to report a debugging message at a location.  This
+// uses standard printf formatting.
+
+extern void go_debug(const Location, const char* fmt, ...)
+  GO_ATTRIBUTE_PRINTF(2, 3);
 
 // These interfaces provide a way for the front end to ask for
 // the open/close quote characters it should use when formatting

@@ -28,12 +28,13 @@ Removal of <code class="filename">&lt;ext/tree&gt;</code>, moved to <code class=
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_320"></a><code class="constant">3.2</code></h3></div></div></div><p>
   </p><p>Symbol versioning introduced for shared library.</p><p>Removal of include <code class="filename">&lt;backward/strstream.h&gt;</code>.</p><p>Allocator changes. Change <code class="code">__malloc_alloc</code> to <code class="code">malloc_allocator</code> and <code class="code">__new_alloc</code> to <code class="code">new_allocator</code>. </p><p> For GCC releases from 2.95 through the 3.1 series, defining
    <code class="literal">__USE_MALLOC</code> on the gcc command line would change the
-   default allocation strategy to instead use <code class="code"> malloc</code> and
-   <code class="function">free</code>. For the 3.2 and 3.3 release series the same
+   default allocation strategy to instead use <code class="code">malloc</code> and
+   <code class="code">free</code>. For the 3.2 and 3.3 release series the same
    functionality was spelled <code class="literal">_GLIBCXX_FORCE_NEW</code>. From
-   GCC 3.4 onwards the functionality is enabled by setting
-   <code class="literal">GLIBCXX_FORCE_NEW</code> in the environment, see
-   <a class="link" href="mt_allocator.html" title="Chapter 20. The mt_allocator">the mt allocator chapter</a>
+   GCC 3.4 onwards the default allocator uses <code class="code">new</code> anyway,
+   but for the optional pooling allocators the functionality is enabled by
+   setting <code class="literal">GLIBCXX_FORCE_NEW</code> in the environment, see
+   <a class="link" href="mt_allocator.html" title="Chapter 19. The mt_allocator">the mt allocator chapter</a>
    for details.
    </p><p>Error handling in iostreams cleaned up, made consistent. </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_330"></a><code class="constant">3.3</code></h3></div></div></div><p>
   </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_340"></a><code class="constant">3.4</code></h3></div></div></div><p>
@@ -390,4 +391,9 @@ now defaults to zero.
   <code class="filename">&lt;experimental/socket&gt;</code>,
   and
   <code class="filename">&lt;experimental/timer&gt;</code>.
+</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_101"></a><code class="constant">10</code></h3></div></div></div><p> Deprecated features removed:
+</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"> Profile Mode </li><li class="listitem"><code class="classname">__gnu_cxx::array_allocator</code></li></ul></div><p>
+</p><p>
+  The <code class="classname">std::packaged_task</code> constructors taking
+  an allocator argument are only defined for C++11 and C++14.
 </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="abi.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_porting.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="backwards.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">ABI Policy and Guidelines </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Backwards Compatibility</td></tr></table></div></body></html>

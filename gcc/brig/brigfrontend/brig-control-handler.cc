@@ -102,7 +102,7 @@ brig_directive_control_handler::operator () (const BrigBase *base)
       /* Unimplemented.  */
       break;
     default:
-      sorry ("Unsupported control directive %x.\n", inst->control);
+      sorry ("Unsupported control directive %x.", inst->control);
     }
   return base->byteCount;
 }

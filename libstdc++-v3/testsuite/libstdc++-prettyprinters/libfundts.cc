@@ -1,6 +1,5 @@
 // { dg-do run { target c++14 } }
 // { dg-options "-g -O0" }
-// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
 // Copyright (C) 2014-2019 Free Software Foundation, Inc.
 //
@@ -49,7 +48,7 @@ main()
 // { dg-final { note-test op {std::experimental::optional<void *> = {[contained value] = 0x0}} } }
   optional<std::map<int, double>> om;
   om = std::map<int, double>{ {1, 2.}, {3, 4.}, {5, 6.} };
-// { dg-final { note-test om {std::experimental::optional<std::map<int, double>> containing std::map with 3 elements = {[1] = 2, [3] = 4, [5] = 6}} } }
+// { dg-final { regexp-test om {std::experimental::optional<std::(__debug::)?map<int, double>> containing std::(__debug::)?map with 3 elements = {\[1\] = 2, \[3\] = 4, \[5\] = 6}} } }
   optional<std::string> os{ "stringy" };
 // { dg-final { note-test os {std::experimental::optional<std::string> = {[contained value] = "stringy"}} } }
 
@@ -66,7 +65,7 @@ main()
   any as2("stringiest");
 // { dg-final { regexp-test as2 {std::experimental::any containing const char \* = {\[contained value\] = 0x[[:xdigit:]]+ "stringiest"}} } }
   any am = *om;
-// { dg-final { note-test am {std::experimental::any containing std::map with 3 elements = {[1] = 2, [3] = 4, [5] = 6}} } }
+// { dg-final { regexp-test am {std::experimental::any containing std::(__debug::)?map with 3 elements = {\[1\] = 2, \[3\] = 4, \[5\] = 6}} } }
 
   std::cout << "\n";
   return 0;			// Mark SPOT

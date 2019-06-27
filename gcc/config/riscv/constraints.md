@@ -49,6 +49,11 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, 0, 31)")))
 
+(define_constraint "L"
+  "A U-type 20-bit signed immediate."
+  (and (match_code "const_int")
+       (match_test "LUI_OPERAND (ival)")))
+
 ;; Floating-point constant +0.0, used for FCVT-based moves when FMV is
 ;; not available in RV32.
 (define_constraint "G"

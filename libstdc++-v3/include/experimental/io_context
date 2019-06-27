@@ -22,8 +22,9 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file experimental/io_service
+/** @file experimental/io_context
  *  This is a TS C++ Library header.
+ *  @ingroup networking-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_IO_SERVICE
@@ -61,9 +62,8 @@ namespace net
 inline namespace v1
 {
 
-  /**
-   * @ingroup networking
-   * @{
+  /** @addtogroup networking-ts
+   *  @{
    */
 
   class __socket_impl;

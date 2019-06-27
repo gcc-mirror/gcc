@@ -51,8 +51,14 @@ namespace __detail
 
     if (__n < sizeof(__fast_bkt))
       {
+	if (__n == 0)
+	  // Special case on container 1st initialization with 0 bucket count
+	  // hint. We keep _M_next_resize to 0 to make sure that next time we
+	  // want to add an element allocation will take place.
+	  return 1;
+
 	_M_next_resize =
-	  __builtin_floor(__fast_bkt[__n] * (long double)_M_max_load_factor);
+	  __builtin_floorl(__fast_bkt[__n] * (long double)_M_max_load_factor);
 	return __fast_bkt[__n];
       }
 
@@ -72,10 +78,10 @@ namespace __detail
       // Set next resize to the max value so that we never try to rehash again
       // as we already reach the biggest possible bucket number.
       // Note that it might result in max_load_factor not being respected.
-      _M_next_resize = std::size_t(-1);
+      _M_next_resize = numeric_limits<size_t>::max();
     else
       _M_next_resize =
-	__builtin_floor(*__next_bkt * (long double)_M_max_load_factor);
+	__builtin_floorl(*__next_bkt * (long double)_M_max_load_factor);
 
     return *__next_bkt;
   }
@@ -96,19 +102,23 @@ namespace __detail
   {
     if (__n_elt + __n_ins > _M_next_resize)
       {
-	long double __min_bkts = (__n_elt + __n_ins)
-				   / (long double)_M_max_load_factor;
+	// If _M_next_resize is 0 it means that we have nothing allocated so
+	// far and that we start inserting elements. In this case we start
+	// with an initial bucket size of 11.
+	long double __min_bkts
+	  = std::max<std::size_t>(__n_elt + __n_ins, _M_next_resize ? 0 : 11)
+	  / (long double)_M_max_load_factor;
 	if (__min_bkts >= __n_bkt)
-	  return std::make_pair(true,
-	    _M_next_bkt(std::max<std::size_t>(__builtin_floor(__min_bkts) + 1,
-					      __n_bkt * _S_growth_factor)));
+	  return { true,
+	    _M_next_bkt(std::max<std::size_t>(__builtin_floorl(__min_bkts) + 1,
+					      __n_bkt * _S_growth_factor)) };
 
 	_M_next_resize
-	  = __builtin_floor(__n_bkt * (long double)_M_max_load_factor);
-	return std::make_pair(false, 0);
+	  = __builtin_floorl(__n_bkt * (long double)_M_max_load_factor);
+	return { false, 0 };
       }
     else
-      return std::make_pair(false, 0);
+      return { false, 0 };
   }
 } // namespace __detail
 

@@ -1127,6 +1127,39 @@ maybe_fold_tmr (tree ref)
   return new_ref;
 }
 
+/* Return the preferred index scale factor for accessing memory of mode
+   MEM_MODE in the address space of pointer BASE.  Assume that we're
+   optimizing for speed if SPEED is true and for size otherwise.  */
+unsigned int
+preferred_mem_scale_factor (tree base, machine_mode mem_mode,
+			    bool speed)
+{
+  /* For BLKmode, we can't do anything so return 1.  */
+  if (mem_mode == BLKmode)
+    return 1;
+
+  struct mem_address parts = {};
+  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (base));
+  unsigned int fact = GET_MODE_UNIT_SIZE (mem_mode);
+
+  /* Addressing mode "base + index".  */
+  parts.index = integer_one_node;
+  parts.base = integer_one_node;
+  rtx addr = addr_for_mem_ref (&parts, as, false);
+  unsigned cost = address_cost (addr, mem_mode, as, speed);
+
+  /* Addressing mode "base + index << scale".  */
+  parts.step = wide_int_to_tree (sizetype, fact);
+  addr = addr_for_mem_ref (&parts, as, false);
+  unsigned new_cost = address_cost (addr, mem_mode, as, speed);
+
+  /* Compare the cost of an address with an unscaled index with
+     a scaled index and return factor if useful. */
+  if (new_cost < cost)
+    return GET_MODE_UNIT_SIZE (mem_mode);
+  return 1;
+}
+
 /* Dump PARTS to FILE.  */
 
 extern void dump_mem_address (FILE *, struct mem_address *);

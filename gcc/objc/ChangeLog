@@ -1,3 +1,33 @@
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* objc-act.c (objc_build_setter_call): Adjust quoting and hyphenation.
+	* objc-encoding.c (encode_gnu_bitfield): Same.
+
+2019-05-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc/objc-act.h (OCTI_INSTANCE_TYPE, OCTI_INSTANCETYPE_NAME): New.
+	(objc_global_trees): Add instance type and name.
+	(INSTANCE_TYPEDEF_NAME): New.
+	* objc/objc-act.c (synth_module_prologue): Build decls for
+	objc_instancetype_type and objc_instancetype_name.
+
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+        * objc-act.c (objc_begin_catch_clause): Quote keywords and options
+        in diagnostics.
+        (objc_build_throw_stmt): Same.
+        (objc_finish_message_expr): Same.
+        (get_super_receiver): Same.
+        * objc-next-runtime-abi-01.c (objc_next_runtime_abi_01_init): Spell
+        out "less than" in English./
+        * objc-next-runtime-abi-02.c (objc_next_runtime_abi_02_init): Spell
+        out "greater" in English.
+
+2019-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR pch/90326
+	* config-lang.in (gtfiles): Add c-family/c-format.c.
+
 2019-04-05  Martin Liska  <mliska@suse.cz>
 
 	PR translation/89936

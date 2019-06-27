@@ -52,7 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 */
 
 #include "config.h"
-#define INCLUDE_LIST
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -80,6 +79,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-tree.h"
 #include "ipa-utils.h"
 #include "ipa-icf-gimple.h"
+#include "fibonacci_heap.h"
 #include "ipa-icf.h"
 #include "stor-layout.h"
 #include "dbgcnt.h"
@@ -138,14 +138,15 @@ sem_usage_pair::sem_usage_pair (sem_item *_item, unsigned int _index)
 }
 
 sem_item::sem_item (sem_item_type _type, bitmap_obstack *stack)
-: type (_type), m_hash (-1), m_hash_set (false)
+: type (_type), referenced_by_count (0), m_hash (-1), m_hash_set (false)
 {
   setup (stack);
 }
 
 sem_item::sem_item (sem_item_type _type, symtab_node *_node,
 		    bitmap_obstack *stack)
-: type (_type), node (_node), m_hash (-1), m_hash_set (false)
+: type (_type), node (_node), referenced_by_count (0), m_hash (-1),
+  m_hash_set (false)
 {
   decl = node->decl;
   setup (stack);
@@ -154,13 +155,18 @@ sem_item::sem_item (sem_item_type _type, symtab_node *_node,
 /* Add reference to a semantic TARGET.  */
 
 void
-sem_item::add_reference (sem_item *target)
+sem_item::add_reference (ref_map *refs,
+			 sem_item *target)
 {
-  refs.safe_push (target);
-  unsigned index = refs.length ();
-  target->usages.safe_push (new sem_usage_pair(this, index));
+  unsigned index = reference_count++;
+  bool existed;
+
+  vec<sem_item *> &v
+    = refs->get_or_insert (new sem_usage_pair (target, index), &existed);
+  v.safe_push (this);
   bitmap_set_bit (target->usage_index_bitmap, index);
   refs_set.add (target->node);
+  ++target->referenced_by_count;
 }
 
 /* Initialize internal data structures. Bitmap STACK is used for
@@ -171,20 +177,14 @@ sem_item::setup (bitmap_obstack *stack)
 {
   gcc_checking_assert (node);
 
-  refs.create (0);
+  reference_count = 0;
   tree_refs.create (0);
-  usages.create (0);
   usage_index_bitmap = BITMAP_ALLOC (stack);
 }
 
 sem_item::~sem_item ()
 {
-  for (unsigned i = 0; i < usages.length (); i++)
-    delete usages[i];
-
-  refs.release ();
   tree_refs.release ();
-  usages.release ();
 
   BITMAP_FREE (usage_index_bitmap);
 }
@@ -199,13 +199,6 @@ sem_item::dump (void)
       fprintf (dump_file, "[%s] %s (tree:%p)\n", type == FUNC ? "func" : "var",
 	       node->dump_name (), (void *) node->decl);
       fprintf (dump_file, "  hash: %u\n", get_hash ());
-      fprintf (dump_file, "  references: ");
-
-      for (unsigned i = 0; i < refs.length (); i++)
-	fprintf (dump_file, "%s%s ", refs[i]->node->name (),
-		 i < refs.length() - 1 ? "," : "");
-
-      fprintf (dump_file, "\n");
     }
 }
 
@@ -888,8 +881,6 @@ sem_function::equals_private (sem_item *item)
   for (unsigned i = 0; i < bb_sorted.length (); ++i)
     if(!m_checker->compare_bb (bb_sorted[i], m_compared_func->bb_sorted[i]))
       return return_false();
-
-  dump_message ("All BBs are equal\n");
 
   auto_vec <int> bb_dict;
 
@@ -2230,7 +2221,7 @@ unsigned int sem_item_optimizer::class_id = 0;
 
 sem_item_optimizer::sem_item_optimizer ()
 : worklist (0), m_classes (0), m_classes_count (0), m_cgraph_node_hooks (NULL),
-  m_varpool_node_hooks (NULL), m_merged_variables ()
+  m_varpool_node_hooks (NULL), m_merged_variables (), m_references ()
 {
   m_items.create (0);
   bitmap_obstack_initialize (&m_bmstack);
@@ -2341,12 +2332,7 @@ sem_item_optimizer::read_section (lto_file_decl_data *file_data,
       node = lto_symtab_encoder_deref (encoder, index);
 
       hashval_t hash = streamer_read_uhwi (&ib_main);
-
       gcc_assert (node->definition);
-
-      if (dump_file)
-	fprintf (dump_file, "Symbol added: %s (tree: %p)\n",
-		 node->dump_asm_name (), (void *) node->decl);
 
       if (is_a<cgraph_node *> (node))
 	{
@@ -2475,7 +2461,7 @@ sem_item_optimizer::varpool_removal_hook (varpool_node *node, void *data)
 void
 sem_item_optimizer::remove_symtab_node (symtab_node *node)
 {
-  gcc_assert (!m_classes.elements ());
+  gcc_assert (m_classes.is_empty ());
 
   m_removed_items_set.add (node);
 }
@@ -2556,9 +2542,6 @@ sem_item_optimizer::execute (void)
     fprintf (dump_file, "Dump after hash based groups\n");
   dump_cong_classes ();
 
-  for (unsigned int i = 0; i < m_items.length(); i++)
-    m_items[i]->init_wpa ();
-
   subdivide_classes_by_equality (true);
 
   if (dump_file)
@@ -2611,15 +2594,7 @@ sem_item_optimizer::parse_funcs_and_vars (void)
 	{
 	  m_items.safe_push (f);
 	  m_symtab_node_map.put (cnode, f);
-
-	  if (dump_file)
-	    fprintf (dump_file, "Parsed function:%s\n", f->node->asm_name ());
-
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    f->dump_to_file (dump_file);
 	}
-      else if (dump_file)
-	fprintf (dump_file, "Not parsed function:%s\n", cnode->asm_name ());
     }
 
   varpool_node *vnode;
@@ -2644,6 +2619,7 @@ sem_item_optimizer::add_item_to_class (congruence_class *cls, sem_item *item)
 {
   item->index_in_class = cls->members.length ();
   cls->members.safe_push (item);
+  cls->referenced_by_count += item->referenced_by_count;
   item->cls = cls;
 }
 
@@ -2745,7 +2721,7 @@ sem_item_optimizer::build_graph (void)
 	      sem_item **slot = m_symtab_node_map.get
 		(e->callee->ultimate_alias_target ());
 	      if (slot)
-		item->add_reference (*slot);
+		item->add_reference (&m_references, *slot);
 
 	      e = e->next_callee;
 	    }
@@ -2757,7 +2733,7 @@ sem_item_optimizer::build_graph (void)
 	  sem_item **slot = m_symtab_node_map.get
 	    (ref->referred->ultimate_alias_target ());
 	  if (slot)
-	    item->add_reference (*slot);
+	    item->add_reference (&m_references, *slot);
 	}
     }
 }
@@ -2768,20 +2744,20 @@ sem_item_optimizer::build_graph (void)
 void
 sem_item_optimizer::parse_nonsingleton_classes (void)
 {
-  unsigned int init_called_count = 0;
+  unsigned int counter = 0;
 
   for (unsigned i = 0; i < m_items.length (); i++)
     if (m_items[i]->cls->members.length () > 1)
       {
 	m_items[i]->init ();
-	init_called_count++;
+	++counter;
       }
 
   if (dump_file)
-    fprintf (dump_file, "Init called for %u items (%.2f%%).\n",
-	     init_called_count,
-	     m_items.length () ? 100.0f * init_called_count / m_items.length ()
-			       : 0.0f);
+    {
+      float f = m_items.length () ? 100.0f * counter / m_items.length () : 0.0f;
+      fprintf (dump_file, "Init called for %u items (%.2f%%).\n", counter, f);
+    }
 }
 
 /* Equality function for semantic items is used to subdivide existing
@@ -2987,13 +2963,6 @@ sem_item_optimizer::verify_classes (void)
 
 	      gcc_assert (item);
 	      gcc_assert (item->cls == cls);
-
-	      for (unsigned k = 0; k < item->usages.length (); k++)
-		{
-		  sem_usage_pair *usage = item->usages[k];
-		  gcc_assert (usage->item->index_in_class
-			      < usage->item->cls->members.length ());
-		}
 	    }
 	}
     }
@@ -3106,10 +3075,11 @@ sem_item_optimizer::traverse_congruence_split (congruence_class * const &cls,
       /* Release class if not presented in work list.  */
       if (!in_worklist)
 	delete cls;
+
+      return true;
     }
 
-
-  return true;
+  return false;
 }
 
 /* Compare function for sorting pairs in do_congruence_step_f.  */
@@ -3131,7 +3101,7 @@ sem_item_optimizer::sort_congruence_split (const void *a_, const void *b_)
 /* Tests if a class CLS used as INDEXth splits any congruence classes.
    Bitmap stack BMSTACK is used for bitmap allocation.  */
 
-void
+bool
 sem_item_optimizer::do_congruence_step_for_index (congruence_class *cls,
 						  unsigned int index)
 {
@@ -3140,31 +3110,32 @@ sem_item_optimizer::do_congruence_step_for_index (congruence_class *cls,
   for (unsigned int i = 0; i < cls->members.length (); i++)
     {
       sem_item *item = cls->members[i];
+      sem_usage_pair needle (item, index);
+      vec<sem_item *> *callers = m_references.get (&needle);
+      if (callers == NULL)
+	continue;
 
-      /* Iterate all usages that have INDEX as usage of the item.  */
-      for (unsigned int j = 0; j < item->usages.length (); j++)
+      for (unsigned int j = 0; j < callers->length (); j++)
 	{
-	  sem_usage_pair *usage = item->usages[j];
-
-	  if (usage->index != index)
+	  sem_item *caller = (*callers)[j];
+	  if (caller->cls->members.length () < 2)
 	    continue;
-
-	  bitmap *slot = split_map.get (usage->item->cls);
+	  bitmap *slot = split_map.get (caller->cls);
 	  bitmap b;
 
 	  if(!slot)
 	    {
 	      b = BITMAP_ALLOC (&m_bmstack);
-	      split_map.put (usage->item->cls, b);
+	      split_map.put (caller->cls, b);
 	    }
 	  else
 	    b = *slot;
 
-	  gcc_checking_assert (usage->item->cls);
-	  gcc_checking_assert (usage->item->index_in_class
-			       < usage->item->cls->members.length ());
+	  gcc_checking_assert (caller->cls);
+	  gcc_checking_assert (caller->index_in_class
+			       < caller->cls->members.length ());
 
-	  bitmap_set_bit (b, usage->item->index_in_class);
+	  bitmap_set_bit (b, caller->index_in_class);
 	}
     }
 
@@ -3180,12 +3151,16 @@ sem_item_optimizer::do_congruence_step_for_index (congruence_class *cls,
   pair.cls = cls;
 
   splitter_class_removed = false;
+  bool r = false;
   for (unsigned i = 0; i < to_split.length (); ++i)
-    traverse_congruence_split (to_split[i].first, to_split[i].second, &pair);
+    r |= traverse_congruence_split (to_split[i].first, to_split[i].second,
+				    &pair);
 
   /* Bitmap clean-up.  */
   split_map.traverse <traverse_split_pair *,
 		      sem_item_optimizer::release_split_map> (NULL);
+
+  return r;
 }
 
 /* Every usage of a congruence class CLS is a candidate that can split the
@@ -3206,9 +3181,9 @@ sem_item_optimizer::do_congruence_step (congruence_class *cls)
   EXECUTE_IF_SET_IN_BITMAP (usage, 0, i, bi)
   {
     if (dump_file && (dump_flags & TDF_DETAILS))
-      fprintf (dump_file, "  processing congruence step for class: %u, "
-	       "index: %u\n", cls->id, i);
-
+      fprintf (dump_file, "  processing congruence step for class: %u "
+	       "(%u items, %u references), index: %u\n", cls->id,
+	       cls->referenced_by_count, cls->members.length (), i);
     do_congruence_step_for_index (cls, i);
 
     if (splitter_class_removed)
@@ -3228,7 +3203,7 @@ sem_item_optimizer::worklist_push (congruence_class *cls)
     return;
 
   cls->in_worklist = true;
-  worklist.push_back (cls);
+  worklist.insert (cls->referenced_by_count, cls);
 }
 
 /* Pops a class from worklist. */
@@ -3240,8 +3215,7 @@ sem_item_optimizer::worklist_pop (void)
 
   while (!worklist.empty ())
     {
-      cls = worklist.front ();
-      worklist.pop_front ();
+      cls = worklist.extract_min ();
       if (cls->in_worklist)
 	{
 	  cls->in_worklist = false;
@@ -3273,7 +3247,7 @@ sem_item_optimizer::process_cong_reduction (void)
 
   if (dump_file)
     fprintf (dump_file, "Worklist has been filled with: %lu\n",
-	     (unsigned long) worklist.size ());
+	     (unsigned long) worklist.nodes ());
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Congruence class reduction\n");
@@ -3300,13 +3274,9 @@ sem_item_optimizer::dump_cong_classes (void)
   if (!dump_file)
     return;
 
-  fprintf (dump_file,
-	   "Congruence classes: %u (unique hash values: %lu), with total: "
-	   "%u items\n", m_classes_count,
-	   (unsigned long) m_classes.elements (), m_items.length ());
-
   /* Histogram calculation.  */
   unsigned int max_index = 0;
+  unsigned int single_element_classes = 0;
   unsigned int* histogram = XCNEWVEC (unsigned int, m_items.length () + 1);
 
   for (hash_table<congruence_class_hash>::iterator it = m_classes.begin ();
@@ -3318,21 +3288,25 @@ sem_item_optimizer::dump_cong_classes (void)
 
 	if (c > max_index)
 	  max_index = c;
+
+	if (c == 1)
+	  ++single_element_classes;
       }
 
   fprintf (dump_file,
+	   "Congruence classes: %lu with total: %u items (in a non-singular "
+	   "class: %u)\n", (unsigned long) m_classes.elements (),
+	   m_items.length (), m_items.length () - single_element_classes);
+  fprintf (dump_file,
 	   "Class size histogram [num of members]: number of classe number "
 	   "of classess\n");
-
   for (unsigned int i = 0; i <= max_index; i++)
     if (histogram[i])
-      fprintf (dump_file, "[%u]: %u classes\n", i, histogram[i]);
-
-  fprintf (dump_file, "\n\n");
+      fprintf (dump_file, "%6u: %6u\n", i, histogram[i]);
 
   if (dump_flags & TDF_DETAILS)
-  for (hash_table<congruence_class_hash>::iterator it = m_classes.begin ();
-       it != m_classes.end (); ++it)
+    for (hash_table<congruence_class_hash>::iterator it = m_classes.begin ();
+	 it != m_classes.end (); ++it)
       {
 	fprintf (dump_file, "  group: with %u classes:\n",
 		 (*it)->classes.length ());
@@ -3648,7 +3622,7 @@ bool
 congruence_class::is_class_used (void)
 {
   for (unsigned int i = 0; i < members.length (); i++)
-    if (members[i]->usages.length ())
+    if (members[i]->referenced_by_count)
       return true;
 
   return false;

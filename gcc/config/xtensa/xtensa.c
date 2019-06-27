@@ -2739,7 +2739,7 @@ xtensa_frame_pointer_required (void)
      This seems wrong but maybe it's necessary for other architectures.
      This function is derived from the i386 code.  */
 
-  if (cfun->machine->accesses_prev_frame)
+  if (cfun->machine->accesses_prev_frame || cfun->has_nonlocal_label)
     return true;
 
   return false;
@@ -2865,7 +2865,8 @@ xtensa_expand_prologue (void)
 			    gen_rtx_SET (mem, reg));
 	    }
 	}
-      if (total_size > 1024)
+      if (total_size > 1024
+	  || (!callee_save_size && total_size > 128))
 	{
 	  rtx tmp_reg = gen_rtx_REG (Pmode, A9_REG);
 	  emit_move_insn (tmp_reg, GEN_INT (total_size -

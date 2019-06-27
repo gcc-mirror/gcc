@@ -56,6 +56,12 @@ do {									\
     {									\
       rs6000_current_cmodel = CMODEL_LARGE;				\
     }									\
+  if (! strcmp (lang_hooks.name, "GNU Go")				\
+      && TARGET_32BIT)							\
+    {									\
+      /* aix/ppc doesn't support -mvsx and -maltivec with Go */		\
+      rs6000_isa_flags &= ~(OPTION_MASK_VSX | OPTION_MASK_ALTIVEC);	\
+    }									\
 } while (0)
 
 #undef ASM_SPEC

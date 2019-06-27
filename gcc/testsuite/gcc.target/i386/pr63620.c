@@ -17,4 +17,4 @@ test (__float128 x, int p, func f)
   return x;
 }
 
-/* { dg-final { scan-assembler "get_pc_thunk" { xfail { *-*-solaris2.10* && { ! gld } } } } } */
+/* { dg-final { scan-assembler "get_pc_thunk" } } */

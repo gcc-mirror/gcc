@@ -444,6 +444,45 @@ phi_alternatives_equal (basic_block dest, edge e1, edge e2)
   return true;
 }
 
+/* Move debug stmts from the forwarder block SRC to DEST.  */
+
+static void
+move_debug_stmts_from_forwarder (basic_block src, basic_block dest,
+				 bool dest_single_pred_p)
+{
+  if (!MAY_HAVE_DEBUG_STMTS)
+    return;
+
+  gimple_stmt_iterator gsi_to = gsi_after_labels (dest);
+  for (gimple_stmt_iterator gsi = gsi_after_labels (src); !gsi_end_p (gsi);)
+    {
+      gimple *debug = gsi_stmt (gsi);
+      gcc_assert (is_gimple_debug (debug));
+      /* Move debug binds anyway, but not anything else like begin-stmt
+	 markers unless they are always valid at the destination.  */
+      if (dest_single_pred_p
+	  || gimple_debug_bind_p (debug))
+	{
+	  gsi_move_before (&gsi, &gsi_to);
+	  /* Reset debug-binds that are not always valid at the destination.
+	     Simply dropping them can cause earlier values to become live,
+	     generating wrong debug information.
+	     ???  There are several things we could improve here.  For
+	     one we might be able to move stmts to the predecessor.
+	     For anther, if the debug stmt is immediately followed by a
+	     (debug) definition in the destination (on a post-dominated path?)
+	     we can elide it without any bad effects.  */
+	  if (!dest_single_pred_p)
+	    {
+	      gimple_debug_bind_reset_value (debug);
+	      update_stmt (debug);
+	    }
+	}
+      else
+	gsi_next (&gsi);
+    }
+}
+
 /* Removes forwarder block BB.  Returns false if this failed.  */
 
 static bool
@@ -454,7 +493,6 @@ remove_forwarder_block (basic_block bb)
   gimple *stmt;
   edge_iterator ei;
   gimple_stmt_iterator gsi, gsi_to;
-  bool can_move_debug_stmts;
 
   /* We check for infinite loops already in tree_forwarder_block_p.
      However it may happen that the infinite loop is created
@@ -503,11 +541,10 @@ remove_forwarder_block (basic_block bb)
 	}
     }
 
-  can_move_debug_stmts = MAY_HAVE_DEBUG_STMTS && single_pred_p (dest);
-
   basic_block pred = NULL;
   if (single_pred_p (bb))
     pred = single_pred (bb);
+  bool dest_single_pred_p = single_pred_p (dest);
 
   /* Redirect the edges.  */
   for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
@@ -566,40 +603,7 @@ remove_forwarder_block (basic_block bb)
 
   /* Move debug statements.  Reset them if the destination does not
      have a single predecessor.  */
-  if (!gsi_end_p (gsi))
-    {
-      gsi_to = gsi_after_labels (dest);
-      do
-	{
-	  gimple *debug = gsi_stmt (gsi);
-	  gcc_assert (is_gimple_debug (debug));
-	  /* Move debug binds anyway, but not anything else
-	     like begin-stmt markers unless they are always
-	     valid at the destination.  */
-	  if (can_move_debug_stmts
-	      || gimple_debug_bind_p (debug))
-	    {
-	      gsi_move_before (&gsi, &gsi_to);
-	      /* Reset debug-binds that are not always valid at the
-		 destination.  Simply dropping them can cause earlier
-		 values to become live, generating wrong debug information.
-		 ???  There are several things we could improve here.  For
-		 one we might be able to move stmts to the predecessor.
-		 For anther, if the debug stmt is immediately followed
-		 by a (debug) definition in the destination (on a
-		 post-dominated path?) we can elide it without any bad
-		 effects.  */
-	      if (!can_move_debug_stmts)
-		{
-		  gimple_debug_bind_reset_value (debug);
-		  update_stmt (debug);
-		}
-	    }
-	  else
-	    gsi_next (&gsi);
-	}
-      while (!gsi_end_p (gsi));
-    }
+  move_debug_stmts_from_forwarder (bb, dest, dest_single_pred_p);
 
   bitmap_set_bit (cfgcleanup_altered_bbs, dest->index);
 
@@ -1200,6 +1204,7 @@ remove_forwarder_block_with_phi (basic_block bb)
   basic_block pred = NULL;
   if (single_pred_p (bb))
     pred = single_pred (bb);
+  bool dest_single_pred_p = single_pred_p (dest);
 
   /* Redirect each incoming edge to BB to DEST.  */
   while (EDGE_COUNT (bb->preds) > 0)
@@ -1281,6 +1286,10 @@ remove_forwarder_block_with_phi (basic_block bb)
 
       redirect_edge_var_map_clear (e);
     }
+
+  /* Move debug statements.  Reset them if the destination does not
+     have a single predecessor.  */
+  move_debug_stmts_from_forwarder (bb, dest, dest_single_pred_p);
 
   /* Update the dominators.  */
   dombb = get_immediate_dominator (CDI_DOMINATORS, bb);

@@ -38,6 +38,8 @@
  * Contains an implementation class for pat_trie.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
@@ -267,3 +269,4 @@ rightmost_descendant(node_pointer p_nd)
   return static_cast<inode_pointer>(p_nd)->rightmost_descendant();
 }
 
+#endif

@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
-# Copyright (C) 2017 Free Software Foundation, Inc.
+# Copyright (C) 2017-2019 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -67,7 +67,7 @@ class RegexCache(object):
 cache = RegexCache()
 
 def print_help_and_exit():
-    print """\
+    print("""\
 Usage: %s [-i | --inline] [PATCH]
 Generate ChangeLog template for PATCH.
 PATCH must be generated using diff(1)'s -up or -cp options
@@ -78,7 +78,7 @@ When PATCH is - or missing, read standard input.
 When -i is used, prepends ChangeLog to PATCH.
 If PATCH is not stdin, modifies PATCH in-place, otherwise writes
 to stdout.
-""" % me
+""" % me)
     sys.exit(1)
 
 def run(cmd, die_on_error):
@@ -87,7 +87,7 @@ def run(cmd, die_on_error):
   (out, err) = proc.communicate()
   if die_on_error and proc.returncode != 0:
     error("`%s` failed:\n" % (cmd, proc.stderr))
-  return proc.returncode, out, err
+  return proc.returncode, out.decode(), err
 
 def read_user_info():
   dot_mklog_format_msg = """\
@@ -153,9 +153,9 @@ class FileDiff:
     self.clname, self.relname = get_parent_changelog(filename);
 
   def dump(self):
-    print "Diff for %s:\n  ChangeLog = %s\n  rel name = %s\n" % (self.filename, self.clname, self.relname)
+    print("Diff for %s:\n  ChangeLog = %s\n  rel name = %s\n" % (self.filename, self.clname, self.relname))
     for i, h in enumerate(self.hunks):
-      print "Next hunk %d:" % i
+      print("Next hunk %d:" % i)
       h.dump()
 
 class Hunk:
@@ -167,8 +167,8 @@ class Hunk:
     self.ctx_diff = is_ctx_hunk_start(hdr)
 
   def dump(self):
-    print '%s' % self.hdr
-    print '%s' % '\n'.join(self.lines)
+    print('%s' % self.hdr)
+    print('%s' % '\n'.join(self.lines))
 
   def is_file_addition(self):
     """Does hunk describe addition of file?"""
@@ -358,7 +358,7 @@ def main():
 
   try:
     opts, args = getopt.getopt(sys.argv[1:], 'hiv', ['help', 'verbose', 'inline'])
-  except getopt.GetoptError, err:
+  except getopt.GetoptError as err:
     error(str(err))
 
   inline = False
@@ -380,7 +380,7 @@ def main():
   if len(args) == 1 and args[0] == '-':
     input = sys.stdin
   elif len(args) == 1:
-    input = open(args[0], 'rb')
+    input = open(args[0])
   else:
     error("too many arguments; for more details run with -h")
 
@@ -388,7 +388,7 @@ def main():
   diffs = parse_patch(contents)
 
   if verbose:
-    print "Parse results:"
+    print("Parse results:")
     for d in diffs:
       d.dump()
 
@@ -442,14 +442,14 @@ def main():
     shutil.copymode(args[0], tmp)
 
     # Open the temp file, clearing contents.
-    out = open(tmp, 'wb')
+    out = open(tmp, 'w')
   else:
     tmp = None
     out = sys.stdout
 
   # Print log
   date = time.strftime('%Y-%m-%d')
-  for log_name, msg in sorted(logs.iteritems()):
+  for log_name, msg in sorted(logs.items()):
     out.write("""\
 %s:
 

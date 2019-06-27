@@ -1,0 +1,14 @@
+The files in this subdirectory where noted are part of the D2
+programming language test suite for the Digitial Mars D compiler,
+hosted at https://github.com/dlang/dmd/.
+
+The current git revision number of these tests is maintained in
+gcc/d/dmd/MERGE.
+
+The following directories are part of DMD:
+  compilable/
+  fail_compilation/
+  runnable/
+
+All changes to dmd should go through the upstream repository first,
+then merged back to GCC.

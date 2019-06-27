@@ -459,9 +459,7 @@ runtime_files = \
 	runtime/go-fieldtrack.c \
 	runtime/go-matherr.c \
 	runtime/go-memclr.c \
-	runtime/go-memcmp.c \
 	runtime/go-memequal.c \
-	runtime/go-memmove.c \
 	runtime/go-nanotime.c \
 	runtime/go-now.c \
 	runtime/go-nosys.c \
@@ -469,8 +467,6 @@ runtime_files = \
 	runtime/go-runtime-error.c \
 	runtime/go-setenv.c \
 	runtime/go-signal.c \
-	runtime/go-strslice.c \
-	runtime/go-typedesc-equal.c \
 	runtime/go-unsafe-pointer.c \
 	runtime/go-unsetenv.c \
 	runtime/go-unwind.c \
@@ -482,6 +478,7 @@ runtime_files = \
 	runtime/runtime_c.c \
 	runtime/stack.c \
 	runtime/yield.c \
+	runtime/go-context.S \
 	$(rtems_task_variable_add_file) \
 	$(runtime_getncpu_file)
 

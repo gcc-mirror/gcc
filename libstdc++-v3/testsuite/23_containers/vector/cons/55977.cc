@@ -21,6 +21,7 @@
 #include <utility>
 #include <vector>
 #include <iterator>
+#include <istream>
 
 template <class T>
 struct MyAllocator

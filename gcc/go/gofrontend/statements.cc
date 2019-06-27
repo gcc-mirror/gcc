@@ -129,24 +129,15 @@ Statement::import_statement(Import_function_body* ifb, Location loc)
 {
   if (ifb->match_c_string("{"))
     {
-      size_t nl = ifb->body().find('\n', ifb->off());
-      if (nl == std::string::npos)
-	{
-	  if (!ifb->saw_error())
-	    go_error_at(ifb->location(),
-			"import error: no newline after { at %lu",
-			static_cast<unsigned long>(ifb->off()));
-	  ifb->set_saw_error();
-	  return Statement::make_error_statement(loc);
-	}
-      ifb->set_off(nl + 1);
-      ifb->increment_indent();
-      Block* block = new Block(ifb->block(), loc);
-      bool ok = Block::import_block(block, ifb, loc);
-      ifb->decrement_indent();
-      if (!ok)
+      bool is_lowered_for_statement;
+      Block* block = Block_statement::do_import(ifb, loc,
+						&is_lowered_for_statement);
+      if (block == NULL)
 	return Statement::make_error_statement(loc);
-      return Statement::make_block_statement(block, loc);
+      Block_statement* s = Statement::make_block_statement(block, loc);
+      if (is_lowered_for_statement)
+	s->set_is_lowered_for_statement();
+      return s;
     }
   else if (ifb->match_c_string("return"))
     {
@@ -155,6 +146,16 @@ Statement::import_statement(Import_function_body* ifb, Location loc)
       ifb->advance(6);
       return Statement::make_return_statement(NULL, loc);
     }
+  else if (ifb->match_c_string("var $t"))
+    return Temporary_statement::do_import(ifb, loc);
+  else if (ifb->match_c_string("var "))
+    return Variable_declaration_statement::do_import(ifb, loc);
+  else if (ifb->match_c_string("if "))
+    return If_statement::do_import(ifb, loc);
+  else if (ifb->match_c_string(":"))
+    return Label_statement::do_import(ifb, loc);
+  else if (ifb->match_c_string("goto "))
+    return Goto_statement::do_import(ifb, loc);
 
   Expression* lhs = Expression::import_expression(ifb, loc);
   ifb->require_c_string(" = ");
@@ -322,6 +323,22 @@ Variable_declaration_statement::do_flatten(Gogo* gogo, Named_object* function,
   return this;
 }
 
+// Add explicit type conversions.
+
+void
+Variable_declaration_statement::do_add_conversions()
+{
+  Variable* var = this->var_->var_value();
+  Expression* init = var->init();
+  if (init == NULL)
+    return;
+  Type* lt = var->type();
+  Type* rt = init->type();
+  if (!Type::are_identical(lt, rt, 0, NULL)
+      && lt->interface_type() != NULL)
+    var->set_init(Expression::make_cast(lt, init, this->location()));
+}
+
 // Convert a variable declaration to the backend representation.
 
 Bstatement*
@@ -406,6 +423,55 @@ Statement*
 Statement::make_variable_declaration(Named_object* var)
 {
   return new Variable_declaration_statement(var);
+}
+
+// Export a variable declaration.
+
+void
+Variable_declaration_statement::do_export_statement(Export_function_body* efb)
+{
+  efb->write_c_string("var ");
+  efb->write_string(Gogo::unpack_hidden_name(this->var_->name()));
+  efb->write_c_string(" ");
+  Variable* var = this->var_->var_value();
+  Type* type = var->type();
+  efb->write_type(type);
+  Expression* init = var->init();
+  if (init != NULL)
+    {
+      efb->write_c_string(" = ");
+
+      go_assert(efb->type_context() == NULL);
+      efb->set_type_context(type);
+
+      init->export_expression(efb);
+
+      efb->set_type_context(NULL);
+    }
+}
+
+// Import a variable declaration.
+
+Statement*
+Variable_declaration_statement::do_import(Import_function_body* ifb,
+					  Location loc)
+{
+  ifb->require_c_string("var ");
+  std::string id = ifb->read_identifier();
+  ifb->require_c_string(" ");
+  Type* type = ifb->read_type();
+  Expression* init = NULL;
+  if (ifb->match_c_string(" = "))
+    {
+      ifb->advance(3);
+      init = Expression::import_expression(ifb, loc);
+    }
+  Variable* var = new Variable(type, init, false, false, false, loc);
+  var->set_is_used();
+  // FIXME: The package we are importing does not yet exist, so we
+  // can't pass the correct package here.  It probably doesn't matter.
+  Named_object* no = ifb->block()->bindings()->add_variable(id, NULL, var);
+  return Statement::make_variable_declaration(no);
 }
 
 // Class Temporary_statement.
@@ -529,6 +595,20 @@ Temporary_statement::do_flatten(Gogo*, Named_object*, Block*,
   return this;
 }
 
+// Add explicit type conversions.
+
+void
+Temporary_statement::do_add_conversions()
+{
+  if (this->init_ == NULL)
+    return;
+  Type* lt = this->type();
+  Type* rt = this->init_->type();
+  if (!Type::are_identical(lt, rt, 0, NULL)
+      && lt->interface_type() != NULL)
+    this->init_ = Expression::make_cast(lt, this->init_, this->location());
+}
+
 // Convert to backend representation.
 
 Bstatement*
@@ -608,6 +688,87 @@ Statement::make_temporary(Type* type, Expression* init,
 			  Location location)
 {
   return new Temporary_statement(type, init, location);
+}
+
+// Export a temporary statement.
+
+void
+Temporary_statement::do_export_statement(Export_function_body* efb)
+{
+  unsigned int idx = efb->record_temporary(this);
+  char buf[100];
+  snprintf(buf, sizeof buf, "var $t%u", idx);
+  efb->write_c_string(buf);
+  if (this->type_ != NULL)
+    {
+      efb->write_c_string(" ");
+      efb->write_type(this->type_);
+    }
+  if (this->init_ != NULL)
+    {
+      efb->write_c_string(" = ");
+
+      go_assert(efb->type_context() == NULL);
+      efb->set_type_context(this->type_);
+
+      this->init_->export_expression(efb);
+
+      efb->set_type_context(NULL);
+    }
+}
+
+// Import a temporary statement.
+
+Statement*
+Temporary_statement::do_import(Import_function_body* ifb, Location loc)
+{
+  ifb->require_c_string("var ");
+  std::string id = ifb->read_identifier();
+  go_assert(id[0] == '$' && id[1] == 't');
+  const char *p = id.c_str();
+  char *end;
+  long idx = strtol(p + 2, &end, 10);
+  if (*end != '\0' || idx > 0x7fffffff)
+    {
+      if (!ifb->saw_error())
+	go_error_at(loc,
+		    ("invalid export data for %qs: "
+		     "bad temporary statement index at %lu"),
+		    ifb->name().c_str(),
+		    static_cast<unsigned long>(ifb->off()));
+      ifb->set_saw_error();
+      return Statement::make_error_statement(loc);
+    }
+
+  Type* type = NULL;
+  if (!ifb->match_c_string(" = "))
+    {
+      ifb->require_c_string(" ");
+      type = ifb->read_type();
+    }
+  Expression* init = NULL;
+  if (ifb->match_c_string(" = "))
+    {
+      ifb->advance(3);
+      init = Expression::import_expression(ifb, loc);
+    }
+  if (type == NULL && init == NULL)
+    {
+      if (!ifb->saw_error())
+	go_error_at(loc,
+		    ("invalid export data for %qs: "
+		     "temporary statement has neither type nor init at %lu"),
+		    ifb->name().c_str(),
+		    static_cast<unsigned long>(ifb->off()));
+      ifb->set_saw_error();
+      return Statement::make_error_statement(loc);
+    }
+
+  Temporary_statement* temp = Statement::make_temporary(type, init, loc);
+
+  ifb->record_temporary(temp, static_cast<unsigned int>(idx));
+
+  return temp;
 }
 
 // The Move_subexpressions class is used to move all top-level
@@ -733,7 +894,7 @@ Assignment_statement::do_traverse_assignments(Traverse_assignments* tassign)
 // call.  Mark some slice assignments as not requiring a write barrier.
 
 Statement*
-Assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
+Assignment_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
 			       Statement_inserter*)
 {
   Map_index_expression* mie = this->lhs_->map_index_expression();
@@ -781,7 +942,59 @@ Assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
       Temporary_reference_expression* ref =
 	Expression::make_temporary_reference(key_temp, loc);
       Expression* a3 = Expression::make_unary(OPERATOR_AND, ref, loc);
-      Expression* call = Runtime::make_call(Runtime::MAPASSIGN, loc, 3,
+      Runtime::Function code;
+      Map_type::Map_alg alg = mt->algorithm(gogo);
+      switch (alg)
+        {
+          case Map_type::MAP_ALG_FAST32:
+            {
+              code = Runtime::MAPASSIGN_FAST32;
+              Type* uint32_type = Type::lookup_integer_type("uint32");
+              Type* uint32_ptr_type = Type::make_pointer_type(uint32_type);
+              a3 = Expression::make_unsafe_cast(uint32_ptr_type, a3,
+                                                loc);
+              a3 = Expression::make_dereference(a3,
+                                                Expression::NIL_CHECK_NOT_NEEDED,
+                                                loc);
+              break;
+            }
+          case Map_type::MAP_ALG_FAST64:
+            {
+              code = Runtime::MAPASSIGN_FAST64;
+              Type* uint64_type = Type::lookup_integer_type("uint64");
+              Type* uint64_ptr_type = Type::make_pointer_type(uint64_type);
+              a3 = Expression::make_unsafe_cast(uint64_ptr_type, a3,
+                                                loc);
+              a3 = Expression::make_dereference(a3,
+                                                Expression::NIL_CHECK_NOT_NEEDED,
+                                                loc);
+              break;
+            }
+          case Map_type::MAP_ALG_FAST32PTR:
+          case Map_type::MAP_ALG_FAST64PTR:
+            {
+              code = (alg == Map_type::MAP_ALG_FAST32PTR
+                      ? Runtime::MAPASSIGN_FAST32PTR
+                      : Runtime::MAPASSIGN_FAST64PTR);
+              Type* ptr_type =
+                Type::make_pointer_type(Type::make_void_type());
+              Type* ptr_ptr_type = Type::make_pointer_type(ptr_type);
+              a3 = Expression::make_unsafe_cast(ptr_ptr_type, a3,
+                                                loc);
+              a3 = Expression::make_dereference(a3,
+                                                Expression::NIL_CHECK_NOT_NEEDED,
+                                                loc);
+              break;
+            }
+          case Map_type::MAP_ALG_FASTSTR:
+            code = Runtime::MAPASSIGN_FASTSTR;
+            a3 = ref;
+            break;
+          default:
+            code = Runtime::MAPASSIGN;
+            break;
+        }
+      Expression* call = Runtime::make_call(code, loc, 3,
 					    a1, a2, a3);
       Type* ptrval_type = Type::make_pointer_type(mt->val_type());
       call = Expression::make_cast(ptrval_type, call, loc);
@@ -807,6 +1020,18 @@ Assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
 	  && nc.to_unsigned_long(&ival) == Numeric_constant::NC_UL_VALID
 	  && ival == 0)
 	this->omit_write_barrier_ = true;
+    }
+  String_index_expression* sie = this->rhs_->string_index_expression();
+  if (sie != NULL
+      && sie->end() != NULL
+      && Expression::is_same_variable(this->lhs_, sie->string()))
+    {
+      Numeric_constant nc;
+      unsigned long ival;
+      if (sie->start()->numeric_constant_value(&nc)
+	  && nc.to_unsigned_long(&ival) == Numeric_constant::NC_UL_VALID
+	  && ival == 0)
+        this->omit_write_barrier_ = true;
     }
 
   return this;
@@ -907,6 +1132,18 @@ Assignment_statement::do_flatten(Gogo*, Named_object*, Block*,
   return this;
 }
 
+// Add explicit type conversions.
+
+void
+Assignment_statement::do_add_conversions()
+{
+  Type* lt = this->lhs_->type();
+  Type* rt = this->rhs_->type();
+  if (!Type::are_identical(lt, rt, 0, NULL)
+      && lt->interface_type() != NULL)
+    this->rhs_ = Expression::make_cast(lt, this->rhs_, this->location());
+}
+
 // Convert an assignment statement to the backend representation.
 
 Bstatement*
@@ -948,6 +1185,9 @@ Assignment_statement*
 Statement::make_assignment(Expression* lhs, Expression* rhs,
 			   Location location)
 {
+  Temporary_reference_expression* tre = lhs->temporary_reference_expression();
+  if (tre != NULL)
+    tre->statement()->set_assigned();
   return new Assignment_statement(lhs, rhs, location);
 }
 
@@ -1307,6 +1547,13 @@ Tuple_map_assignment_statement::do_lower(Gogo* gogo, Named_object*,
   if (map_type == NULL)
     return Statement::make_error_statement(loc);
 
+  // Avoid copy for string([]byte) conversions used in map keys.
+  // mapaccess doesn't keep the reference, so this is safe.
+  Type_conversion_expression* ce = map_index->index()->conversion_expression();
+  if (ce != NULL && ce->type()->is_string_type()
+      && ce->expr()->type()->is_slice_type())
+    ce->set_no_copy(true);
+
   Block* b = new Block(enclosing, loc);
 
   // Move out any subexpressions to make sure that functions are
@@ -1346,7 +1593,47 @@ Tuple_map_assignment_statement::do_lower(Gogo* gogo, Named_object*,
   Expression* a4 = map_type->fat_zero_value(gogo);
   Call_expression* call;
   if (a4 == NULL)
-    call = Runtime::make_call(Runtime::MAPACCESS2, loc, 3, a1, a2, a3);
+    {
+      Runtime::Function code;
+      Map_type::Map_alg alg = map_type->algorithm(gogo);
+      switch (alg)
+        {
+          case Map_type::MAP_ALG_FAST32:
+          case Map_type::MAP_ALG_FAST32PTR:
+            {
+              code = Runtime::MAPACCESS2_FAST32;
+              Type* uint32_type = Type::lookup_integer_type("uint32");
+              Type* uint32_ptr_type = Type::make_pointer_type(uint32_type);
+              a3 = Expression::make_unsafe_cast(uint32_ptr_type, a3,
+                                                loc);
+              a3 = Expression::make_dereference(a3,
+                                                Expression::NIL_CHECK_NOT_NEEDED,
+                                                loc);
+              break;
+            }
+          case Map_type::MAP_ALG_FAST64:
+          case Map_type::MAP_ALG_FAST64PTR:
+            {
+              code = Runtime::MAPACCESS2_FAST64;
+              Type* uint64_type = Type::lookup_integer_type("uint64");
+              Type* uint64_ptr_type = Type::make_pointer_type(uint64_type);
+              a3 = Expression::make_unsafe_cast(uint64_ptr_type, a3,
+                                                loc);
+              a3 = Expression::make_dereference(a3,
+                                                Expression::NIL_CHECK_NOT_NEEDED,
+                                                loc);
+              break;
+            }
+          case Map_type::MAP_ALG_FASTSTR:
+            code = Runtime::MAPACCESS2_FASTSTR;
+            a3 = ref;
+            break;
+          default:
+            code = Runtime::MAPACCESS2;
+            break;
+        }
+      call = Runtime::make_call(code, loc, 3, a1, a2, a3);
+    }
   else
     call = Runtime::make_call(Runtime::MAPACCESS2_FAT, loc, 4, a1, a2, a3, a4);
   ref = Expression::make_temporary_reference(val_ptr_temp, loc);
@@ -1836,13 +2123,24 @@ Statement::make_statement(Expression* expr, bool is_ignored)
 void
 Block_statement::do_export_statement(Export_function_body* efb)
 {
+  Block_statement::export_block(efb, this->block_,
+				this->is_lowered_for_statement_);
+}
+
+void
+Block_statement::export_block(Export_function_body* efb, Block* block,
+			      bool is_lowered_for_statement)
+{
   // We are already indented to the right position.
   char buf[50];
-  snprintf(buf, sizeof buf, "{ //%d\n",
-	   Linemap::location_to_line(this->block_->start_location()));
+  efb->write_c_string("{");
+  if (is_lowered_for_statement)
+    efb->write_c_string(" /*for*/");
+  snprintf(buf, sizeof buf, " //%d\n",
+	   Linemap::location_to_line(block->start_location()));
   efb->write_c_string(buf);
 
-  this->block_->export_block(efb);
+  block->export_block(efb);
   // The indentation is correct for the statements in the block, so
   // subtract one for the closing curly brace.
   efb->decrement_indent();
@@ -1850,6 +2148,39 @@ Block_statement::do_export_statement(Export_function_body* efb)
   efb->write_c_string("}");
   // Increment back to the value the caller thinks it has.
   efb->increment_indent();
+}
+
+// Import a block statement, returning the block.
+
+Block*
+Block_statement::do_import(Import_function_body* ifb, Location loc,
+			   bool* is_lowered_for_statement)
+{
+  go_assert(ifb->match_c_string("{"));
+  *is_lowered_for_statement = false;
+  if (ifb->match_c_string(" /*for*/"))
+    {
+      ifb->advance(8);
+      *is_lowered_for_statement = true;
+    }
+  size_t nl = ifb->body().find('\n', ifb->off());
+  if (nl == std::string::npos)
+    {
+      if (!ifb->saw_error())
+	go_error_at(ifb->location(),
+		    "import error: no newline after %<{%> at %lu",
+		    static_cast<unsigned long>(ifb->off()));
+      ifb->set_saw_error();
+      return NULL;
+    }
+  ifb->set_off(nl + 1);
+  ifb->increment_indent();
+  Block* block = new Block(ifb->block(), loc);
+  bool ok = Block::import_block(block, ifb, loc);
+  ifb->decrement_indent();
+  if (!ok)
+    return NULL;
+  return block;
 }
 
 // Convert a block to the backend representation of a statement.
@@ -1871,7 +2202,7 @@ Block_statement::do_dump_statement(Ast_dump_context*) const
 
 // Make a block statement.
 
-Statement*
+Block_statement*
 Statement::make_block_statement(Block* block, Location location)
 {
   return new Block_statement(block, location);
@@ -2578,7 +2909,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
   // just for the call statement now.  The other types are known.
   call_statement->determine_types();
 
-  gogo->flatten_block(function, b);
+  gogo->add_conversions_in_block(b);
 
   if (may_call_recover
       || recover_arg != NULL
@@ -2602,6 +2933,8 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
 	    ce->set_recover_arg(recover_arg);
 	}
     }
+
+  gogo->flatten_block(function, b);
 
   // That is all the thunk has to do.
   gogo->finish_function(location);
@@ -3037,6 +3370,61 @@ Goto_statement::do_get_backend(Translate_context* context)
   return context->backend()->goto_statement(blabel, this->location());
 }
 
+// Export a goto statement.
+
+void
+Goto_statement::do_export_statement(Export_function_body *efb)
+{
+  efb->write_c_string("goto ");
+  efb->write_string(this->label_->name());
+}
+
+// Import a goto or goto unnamed statement.
+
+Statement*
+Goto_statement::do_import(Import_function_body* ifb, Location loc)
+{
+  ifb->require_c_string("goto ");
+  std::string id = ifb->read_identifier();
+  if (id[0] != '$')
+    {
+      Function* fn = ifb->function()->func_value();
+      Label* label = fn->add_label_reference(ifb->gogo(), id, loc, false);
+      return Statement::make_goto_statement(label, loc);
+    }
+  else
+    {
+      if (id[1] != 'l')
+	{
+	  if (!ifb->saw_error())
+	    go_error_at(loc,
+			("invalid export data for %qs: "
+			 "bad unnamed label at %lu"),
+			ifb->name().c_str(),
+			static_cast<unsigned long>(ifb->off()));
+	  ifb->set_saw_error();
+	  return Statement::make_error_statement(loc);
+	}
+      const char* p = id.c_str();
+      char* end;
+      long idx = strtol(p + 2, &end, 10);
+      if (*end != '\0' || idx > 0x7fffffff)
+	{
+	  if (!ifb->saw_error())
+	    go_error_at(loc,
+			("invalid export data for %qs: "
+			 "bad unnamed label index at %lu"),
+			ifb->name().c_str(),
+			static_cast<unsigned long>(ifb->off()));
+	  ifb->set_saw_error();
+	  return Statement::make_error_statement(loc);
+	}
+
+      Unnamed_label* label = ifb->unnamed_label(idx, loc);
+      return Statement::make_goto_unnamed_statement(label, loc);
+    }
+}
+
 // Dump the AST representation for a goto statement.
 
 void
@@ -3068,6 +3456,17 @@ Bstatement*
 Goto_unnamed_statement::do_get_backend(Translate_context* context)
 {
   return this->label_->get_goto(context, this->location());
+}
+
+// Export a goto unnamed statement.
+
+void
+Goto_unnamed_statement::do_export_statement(Export_function_body *efb)
+{
+  unsigned int index = efb->unnamed_label_index(this->label_);
+  char buf[100];
+  snprintf(buf, sizeof buf, "goto $l%u", index);
+  efb->write_c_string(buf);
 }
 
 // Dump the AST representation for an unnamed goto statement
@@ -3117,6 +3516,64 @@ Label_statement::do_get_backend(Translate_context* context)
   return context->backend()->label_definition_statement(blabel);
 }
 
+// Export a label.
+
+void
+Label_statement::do_export_statement(Export_function_body* efb)
+{
+  if (this->label_->is_dummy_label())
+    return;
+  // We use a leading colon, not a trailing one, to simplify import.
+  efb->write_c_string(":");
+  efb->write_string(this->label_->name());
+}
+
+// Import a label or an unnamed label.
+
+Statement*
+Label_statement::do_import(Import_function_body* ifb, Location loc)
+{
+  ifb->require_c_string(":");
+  std::string id = ifb->read_identifier();
+  if (id[0] != '$')
+    {
+      Function* fn = ifb->function()->func_value();
+      Label* label = fn->add_label_definition(ifb->gogo(), id, loc);
+      return Statement::make_label_statement(label, loc);
+    }
+  else
+    {
+      if (id[1] != 'l')
+	{
+	  if (!ifb->saw_error())
+	    go_error_at(loc,
+			("invalid export data for %qs: "
+			 "bad unnamed label at %lu"),
+			ifb->name().c_str(),
+			static_cast<unsigned long>(ifb->off()));
+	  ifb->set_saw_error();
+	  return Statement::make_error_statement(loc);
+	}
+      const char* p = id.c_str();
+      char* end;
+      long idx = strtol(p + 2, &end, 10);
+      if (*end != '\0' || idx > 0x7fffffff)
+	{
+	  if (!ifb->saw_error())
+	    go_error_at(loc,
+			("invalid export data for %qs: "
+			 "bad unnamed label index at %lu"),
+			ifb->name().c_str(),
+			static_cast<unsigned long>(ifb->off()));
+	  ifb->set_saw_error();
+	  return Statement::make_error_statement(loc);
+	}
+
+      Unnamed_label* label = ifb->unnamed_label(idx, loc);
+      return Statement::make_unnamed_label_statement(label);
+    }
+}
+
 // Dump the AST for a label definition statement.
 
 void
@@ -3153,6 +3610,18 @@ Bstatement*
 Unnamed_label_statement::do_get_backend(Translate_context* context)
 {
   return this->label_->get_definition(context);
+}
+
+// Export an unnamed label.
+
+void
+Unnamed_label_statement::do_export_statement(Export_function_body* efb)
+{
+  unsigned int index = efb->unnamed_label_index(this->label_);
+  char buf[50];
+  // We use a leading colon, not a trailing one, to simplify import.
+  snprintf(buf, sizeof buf, ":$l%u", index);
+  efb->write_c_string(buf);
 }
 
 // Dump the AST representation for an unnamed label definition statement.
@@ -3240,6 +3709,96 @@ If_statement::do_get_backend(Translate_context* context)
   return context->backend()->if_statement(bfunction,
                                           cond, then_block, else_block,
 					  this->location());
+}
+
+// Export an if statement.
+
+void
+If_statement::do_export_statement(Export_function_body* efb)
+{
+  efb->write_c_string("if ");
+  this->cond_->export_expression(efb);
+  efb->write_c_string(" ");
+  Block_statement::export_block(efb, this->then_block_, false);
+  if (this->else_block_ != NULL)
+    {
+      efb->write_c_string(" else ");
+      Block_statement::export_block(efb, this->else_block_, false);
+    }
+}
+
+// Import an if statement.
+
+Statement*
+If_statement::do_import(Import_function_body* ifb, Location loc)
+{
+  ifb->require_c_string("if ");
+
+  Expression* cond = Expression::import_expression(ifb, loc);
+  ifb->require_c_string(" ");
+
+  if (!ifb->match_c_string("{"))
+    {
+      if (!ifb->saw_error())
+	go_error_at(ifb->location(),
+		    "import error for %qs: no block for if statement at %lu",
+		    ifb->name().c_str(),
+		    static_cast<unsigned long>(ifb->off()));
+      ifb->set_saw_error();
+      return Statement::make_error_statement(loc);
+    }
+
+  bool is_lowered_for_statement;
+  Block* then_block = Block_statement::do_import(ifb, loc,
+						 &is_lowered_for_statement);
+  if (then_block == NULL)
+    return Statement::make_error_statement(loc);
+  if (is_lowered_for_statement)
+    {
+      if (!ifb->saw_error())
+	go_error_at(ifb->location(),
+		    ("import error for %qs: "
+		     "unexpected lowered for in if statement at %lu"),
+		    ifb->name().c_str(),
+		    static_cast<unsigned long>(ifb->off()));
+      ifb->set_saw_error();
+      return Statement::make_error_statement(loc);
+    }
+
+  Block* else_block = NULL;
+  if (ifb->match_c_string(" else "))
+    {
+      ifb->advance(6);
+      if (!ifb->match_c_string("{"))
+	{
+	  if (!ifb->saw_error())
+	    go_error_at(ifb->location(),
+			("import error for %qs: no else block "
+			 "for if statement at %lu"),
+			ifb->name().c_str(),
+			static_cast<unsigned long>(ifb->off()));
+	  ifb->set_saw_error();
+	  return Statement::make_error_statement(loc);
+	}
+
+      else_block = Block_statement::do_import(ifb, loc,
+					      &is_lowered_for_statement);
+      if (else_block == NULL)
+	return Statement::make_error_statement(loc);
+      if (is_lowered_for_statement)
+	{
+	  if (!ifb->saw_error())
+	    go_error_at(ifb->location(),
+			("import error for %qs: "
+			 "unexpected lowered for in if statement at %lu"),
+			ifb->name().c_str(),
+			static_cast<unsigned long>(ifb->off()));
+	  ifb->set_saw_error();
+	  return Statement::make_error_statement(loc);
+	}
+    }
+
+  return Statement::make_if_statement(cond, then_block, else_block, loc);
 }
 
 // Dump the AST representation for an if statement
@@ -4055,11 +4614,12 @@ Type_case_clauses::Type_case_clause::lower(Type* switch_val_type,
 	cond = Expression::make_binary(OPERATOR_EQEQ, ref,
 				       Expression::make_nil(loc),
 				       loc);
+      else if (type->interface_type() == NULL)
+        cond = Expression::make_binary(OPERATOR_EQEQ, ref,
+                                       Expression::make_type_descriptor(type, loc),
+                                       loc);
       else
-	cond = Runtime::make_call((type->interface_type() == NULL
-				   ? Runtime::IFACETYPEEQ
-				   : Runtime::IFACET2IP),
-				  loc, 2,
+	cond = Runtime::make_call(Runtime::IFACET2IP, loc, 2,
 				  Expression::make_type_descriptor(type, loc),
 				  ref);
 
@@ -4312,23 +4872,23 @@ Type_switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
       return Statement::make_error_statement(loc);
     }
 
+  Temporary_statement* val_temp =
+    Statement::make_temporary(NULL, this->expr_, loc);
+  b->add_statement(val_temp);
+
   // var descriptor_temp DESCRIPTOR_TYPE
   Type* descriptor_type = Type::make_type_descriptor_ptr_type();
   Temporary_statement* descriptor_temp =
     Statement::make_temporary(descriptor_type, NULL, loc);
   b->add_statement(descriptor_temp);
 
-  // descriptor_temp = ifacetype(val_temp) FIXME: This should be
-  // inlined.
-  bool is_empty = val_type->interface_type()->is_empty();
-  Expression* call = Runtime::make_call((is_empty
-					 ? Runtime::EFACETYPE
-					 : Runtime::IFACETYPE),
-					loc, 1, this->expr_);
+  // descriptor_temp = ifacetype(val_temp)
+  Expression* ref = Expression::make_temporary_reference(val_temp, loc);
+  Expression* td = Expression::get_interface_type_descriptor(ref);
   Temporary_reference_expression* lhs =
     Expression::make_temporary_reference(descriptor_temp, loc);
   lhs->set_is_lvalue();
-  Statement* s = Statement::make_assignment(lhs, call, loc);
+  Statement* s = Statement::make_assignment(lhs, td, loc);
   b->add_statement(s);
 
   if (this->clauses_ != NULL)
@@ -4481,6 +5041,18 @@ Send_statement::do_flatten(Gogo*, Named_object*, Block*,
 							this->location());
     }
   return this;
+}
+
+// Add explicit type conversions.
+
+void
+Send_statement::do_add_conversions()
+{
+  Type* lt = this->channel_->type()->channel_type()->element_type();
+  Type* rt = this->val_->type();
+  if (!Type::are_identical(lt, rt, 0, NULL)
+      && lt->interface_type() != NULL)
+    this->val_ = Expression::make_cast(lt, this->val_, this->location());
 }
 
 // Convert a send statement to the backend representation.
@@ -5485,6 +6057,7 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
   Location loc = this->location();
   Block* temp_block = new Block(enclosing, loc);
 
+  Expression* orig_range_expr = this->range_;
   Named_object* range_object = NULL;
   Temporary_statement* range_temp = NULL;
   if (eval)
@@ -5498,6 +6071,41 @@ For_range_statement::do_lower(Gogo* gogo, Named_object*, Block* enclosing,
 	  temp_block->add_statement(range_temp);
 	  this->range_ = NULL;
 	}
+    }
+
+  // Try to match "range clear" patterns and rewrite to simple runtime
+  // calls.
+  if (range_type->map_type() != NULL)
+    {
+      Statement* clear = this->lower_map_range_clear(range_type,
+                                                     enclosing,
+                                                     orig_range_expr,
+                                                     range_object,
+                                                     range_temp, loc);
+      if (clear != NULL)
+        {
+          if (gogo->debug_optimization())
+            go_debug(loc, "map range clear");
+          temp_block->add_statement(clear);
+          return Statement::make_block_statement(temp_block, loc);
+        }
+    }
+  else if (range_type->array_type() != NULL)
+    {
+      // Slice or array.
+      Statement* clear = this->lower_array_range_clear(gogo,
+                                                       range_type,
+                                                       orig_range_expr,
+                                                       temp_block,
+                                                       range_object,
+                                                       range_temp, loc);
+      if (clear != NULL)
+        {
+          if (gogo->debug_optimization())
+            go_debug(loc, "array range clear");
+          temp_block->add_statement(clear);
+          return Statement::make_block_statement(temp_block, loc);
+        }
     }
 
   Temporary_statement* index_temp = Statement::make_temporary(index_type,
@@ -6139,6 +6747,161 @@ For_range_statement::lower_range_channel(Gogo*,
   iter_init->add_statement(s);
 
   *piter_init = iter_init;
+}
+
+// Match
+//
+//   for k := range m { delete(m, k) }
+//
+// Lower it to runtime.mapclear(TYPE, m) on match, return the statement
+// containing the call.  Return NULL otherwise.
+
+Statement*
+For_range_statement::lower_map_range_clear(Type* map_type,
+                                           Block* enclosing,
+                                           Expression* orig_range_expr,
+                                           Named_object* range_object,
+                                           Temporary_statement* range_temp,
+                                           Location loc)
+{
+  if (this->value_var_ != NULL)
+    return NULL;
+  if (this->index_var_ == NULL)
+    return NULL;
+
+  // Require the loop index be a new variable.  We cannot rewrite
+  // if it is used outside of the loop.
+  Var_expression* index_ve = this->index_var_->var_expression();
+  if (index_ve == NULL)
+    return NULL;
+  Named_object* index_no = index_ve->named_object();
+  if (enclosing->bindings()->lookup_local(index_no->name()) != index_no)
+    return NULL;
+
+  // Match the body, a single call statement delete(m, k).
+  const std::vector<Statement*>* statements = this->statements_->statements();
+  if (statements->size() != 1)
+    return NULL;
+  Expression_statement* es = statements->at(0)->expression_statement();
+  if (es == NULL)
+    return NULL;
+  Call_expression* call = es->expr()->call_expression();
+  if (call == NULL || !call->is_builtin()
+      || call->builtin_call_expression()->code()
+         != Builtin_call_expression::BUILTIN_DELETE)
+    return NULL;
+  if (!Expression::is_same_variable(call->args()->at(0), orig_range_expr)
+      || !Expression::is_same_variable(call->args()->at(1), this->index_var_))
+    return NULL;
+
+  // Everything matches. Rewrite to mapclear(TYPE, MAP).
+  Expression* e1 = Expression::make_type_descriptor(map_type, loc);
+  Expression* e2 = this->make_range_ref(range_object, range_temp, loc);
+  call = Runtime::make_call(Runtime::MAPCLEAR, loc, 2, e1, e2);
+  return Statement::make_statement(call, true);
+}
+
+// Match
+//
+//   for i := range a { a[i] = zero }
+//
+// Lower it to call memclr on match, and return the statement.  Return
+// NULL otherwise.
+
+Statement*
+For_range_statement::lower_array_range_clear(Gogo* gogo,
+                                             Type* array_type,
+                                             Expression* orig_range_expr,
+                                             Block* temp_block,
+                                             Named_object* range_object,
+                                             Temporary_statement* range_temp,
+                                             Location loc)
+{
+  if (this->value_var_ != NULL)
+    return NULL;
+  if (this->index_var_ == NULL)
+    return NULL;
+
+  // Match the body, a single assignment statement a[i] = zero.
+  const std::vector<Statement*>* statements = this->statements_->statements();
+  if (statements->size() != 1)
+    return NULL;
+  Assignment_statement* as = statements->at(0)->assignment_statement();
+  if (as == NULL || !as->rhs()->is_zero_value())
+    return NULL;
+  if (as->lhs()->type()->interface_type() != NULL
+      && as->rhs()->type()->interface_type() == NULL
+      && !as->rhs()->type()->is_nil_type())
+    // Implicit type conversion may change a zero value to non-zero, like
+    // interface{}(0).
+    return NULL;
+  Array_index_expression* aie = as->lhs()->array_index_expression();
+  if (aie == NULL || aie->end() != NULL
+      || !Expression::is_same_variable(orig_range_expr, aie->array())
+      || !Expression::is_same_variable(this->index_var_, aie->start()))
+    return NULL;
+
+  // Everything matches. Rewrite to
+  //
+  //   if len(a) != 0 {
+  //     tmp1 = &a[0]
+  //     tmp2 = len(a)*sizeof(elem(a))
+  //     memclr{NoHeap,Has}Pointers(tmp1, tmp2)
+  //     i = len(a) - 1
+  //   }
+
+  Type* elem_type = array_type->array_type()->element_type();
+  int64_t elme_sz;
+  bool ok = elem_type->backend_type_size(gogo, &elme_sz);
+  if (!ok)
+    return NULL;
+
+  Block* b = new Block(temp_block, loc);
+
+  Expression* ref;
+  if (range_object == NULL && range_temp == NULL)
+    // is_same_variable implies no side effect, so it is ok to copy.
+    ref = orig_range_expr->copy();
+  else
+    ref = this->make_range_ref(range_object, range_temp, loc);
+  Expression* len = this->call_builtin(gogo, "len", ref, loc);
+  Temporary_statement* tslen = Statement::make_temporary(NULL, len, loc);
+  temp_block->add_statement(tslen);
+
+  Expression* zero = Expression::make_integer_ul(0, this->index_var_->type(), loc);
+  ref = ref->copy();
+  Expression* elem = Expression::make_array_index(ref, zero, NULL, NULL, loc);
+  elem->array_index_expression()->set_needs_bounds_check(false);
+  Expression* e1 = Expression::make_unary(OPERATOR_AND, elem, loc);
+  Temporary_statement* ts1 = Statement::make_temporary(NULL, e1, loc);
+  b->add_statement(ts1);
+
+  len = Expression::make_temporary_reference(tslen, loc);
+  Expression* sz = Expression::make_integer_int64(elme_sz, len->type(), loc);
+  Expression* e2 = Expression::make_binary(OPERATOR_MULT, len, sz, loc);
+  Temporary_statement* ts2 = Statement::make_temporary(NULL, e2, loc);
+  b->add_statement(ts2);
+
+  Expression* arg1 = Expression::make_temporary_reference(ts1, loc);
+  Expression* arg2 = Expression::make_temporary_reference(ts2, loc);
+  Runtime::Function code = (elem_type->has_pointer()
+                            ? Runtime::MEMCLRHASPTR
+                            : Runtime::MEMCLRNOPTR);
+  Expression* call = Runtime::make_call(code, loc, 2, arg1, arg2);
+  Statement* cs3 = Statement::make_statement(call, true);
+  b->add_statement(cs3);
+
+  len = Expression::make_temporary_reference(tslen, loc);
+  Expression* one = Expression::make_integer_ul(1, len->type(), loc);
+  Expression* rhs = Expression::make_binary(OPERATOR_MINUS, len, one, loc);
+  Expression* lhs = this->index_var_->copy();
+  Statement* as4 = Statement::make_assignment(lhs, rhs, loc);
+  b->add_statement(as4);
+
+  len = Expression::make_temporary_reference(tslen, loc);
+  zero = zero->copy();
+  Expression* cond = Expression::make_binary(OPERATOR_NOTEQ, len, zero, loc);
+  return Statement::make_if_statement(cond, b, NULL, loc);
 }
 
 // Return the break LABEL_EXPR.

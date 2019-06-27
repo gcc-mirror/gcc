@@ -38,6 +38,8 @@
  * Contains an implementation for rc_binomial_heap_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
@@ -152,3 +154,4 @@ make_0_exposed()
   if (p_res->m_p_next_sibling != 0&&  p_res->m_metadata == p_res->m_p_next_sibling->m_metadata)
     m_rc.push(p_res);
 }
+#endif

@@ -906,11 +906,11 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
     sysp = MAX (pfile->buffer->sysp,  file->dir->sysp);
 
   /* Add the file to the dependencies on its first inclusion.  */
-  if (CPP_OPTION (pfile, deps.style) > !!sysp && !file->stack_count)
-    {
-      if (!file->main_file || !CPP_OPTION (pfile, deps.ignore_main_file))
-	deps_add_dep (pfile->deps, file->path);
-    }
+  if (!file->stack_count
+      && CPP_OPTION (pfile, deps.style) > !!sysp
+      && file->path[0]
+      && (!file->main_file || !CPP_OPTION (pfile, deps.ignore_main_file)))
+    deps_add_dep (pfile->deps, file->path);
 
   /* Clear buffer_valid since _cpp_clean_line messes it up.  */
   file->buffer_valid = false;

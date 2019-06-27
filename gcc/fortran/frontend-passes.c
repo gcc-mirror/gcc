@@ -54,7 +54,6 @@ static gfc_code * create_do_loop (gfc_expr *, gfc_expr *, gfc_expr *,
 static gfc_expr* check_conjg_transpose_variable (gfc_expr *, bool *,
 						 bool *);
 static int call_external_blas (gfc_code **, int *, void *);
-static bool has_dimen_vector_ref (gfc_expr *);
 static int matmul_temp_args (gfc_code **, int *,void *data);
 static int index_interchange (gfc_code **, int*, void *);
 
@@ -2868,7 +2867,7 @@ matmul_temp_args (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
     {
       if (matrix_a->expr_type == EXPR_VARIABLE
 	  && (gfc_check_dependency (matrix_a, expr1, true)
-	      || has_dimen_vector_ref (matrix_a)))
+	      || gfc_has_dimen_vector_ref (matrix_a)))
 	a_tmp = true;
     }
   else
@@ -2881,7 +2880,7 @@ matmul_temp_args (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
     {
       if (matrix_b->expr_type == EXPR_VARIABLE
 	  && (gfc_check_dependency (matrix_b, expr1, true)
-	      || has_dimen_vector_ref (matrix_b)))
+	      || gfc_has_dimen_vector_ref (matrix_b)))
 	b_tmp = true;
     }
   else
@@ -3681,8 +3680,8 @@ scalarized_expr (gfc_expr *e_in, gfc_expr **index, int count_index)
 
 /* Helper function to check for a dimen vector as subscript.  */
 
-static bool
-has_dimen_vector_ref (gfc_expr *e)
+bool
+gfc_has_dimen_vector_ref (gfc_expr *e)
 {
   gfc_array_ref *ar;
   int i;
@@ -3838,8 +3837,8 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   if (matrix_b == NULL)
     return 0;
 
-  if (has_dimen_vector_ref (expr1) || has_dimen_vector_ref (matrix_a)
-      || has_dimen_vector_ref (matrix_b))
+  if (gfc_has_dimen_vector_ref (expr1) || gfc_has_dimen_vector_ref (matrix_a)
+      || gfc_has_dimen_vector_ref (matrix_b))
     return 0;
 
   /* We do not handle data dependencies yet.  */

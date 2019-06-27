@@ -325,14 +325,18 @@ struct GTY(()) bitmap_head {
   static bitmap_obstack crashme;
   /* Poison obstack to not make it not a valid initialized GC bitmap.  */
   CONSTEXPR bitmap_head()
-    : indx(0), tree_form(false), first(NULL), current(NULL),
-      obstack (&crashme)
+    : indx (0), tree_form (false), padding (0), alloc_descriptor (0), first (NULL),
+      current (NULL), obstack (&crashme)
   {}
   /* Index of last element looked at.  */
   unsigned int indx;
   /* False if the bitmap is in list form; true if the bitmap is in tree form.
      Bitmap iterators only work on bitmaps in list form.  */
-  bool tree_form;
+  unsigned tree_form: 1;
+  /* Next integer is shifted, so padding is needed.  */
+  unsigned padding: 2;
+  /* Bitmap UID used for memory allocation statistics.  */
+  unsigned alloc_descriptor: 29;
   /* In list form, the first element in the linked list;
      in tree form, the root of the tree.   */
   bitmap_element *first;
@@ -340,7 +344,17 @@ struct GTY(()) bitmap_head {
   bitmap_element * GTY((skip(""))) current;
   /* Obstack to allocate elements from.  If NULL, then use GGC allocation.  */
   bitmap_obstack * GTY((skip(""))) obstack;
+
+  /* Dump bitmap.  */
   void dump ();
+
+  /* Get bitmap descriptor UID casted to an unsigned integer pointer.
+     Shift the descriptor because pointer_hash<Type>::hash is
+     doing >> 3 shift operation.  */
+  unsigned *get_descriptor ()
+  {
+    return (unsigned *)(ptrdiff_t)(alloc_descriptor << 3);
+  }
 };
 
 /* Global data */
@@ -441,6 +455,8 @@ bitmap_initialize (bitmap head, bitmap_obstack *obstack CXX_MEM_STAT_INFO)
 {
   head->first = head->current = NULL;
   head->indx = head->tree_form = 0;
+  head->padding = 0;
+  head->alloc_descriptor = 0;
   head->obstack = obstack;
   if (GATHER_STATISTICS)
     bitmap_register (head PASS_MEM_STAT);

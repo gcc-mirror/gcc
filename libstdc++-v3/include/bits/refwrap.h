@@ -44,6 +44,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  /// @cond undocumented
+
   /**
    * Derives from @c unary_function or @c binary_function, or perhaps
    * nothing, depending on the number of arguments provided. The
@@ -282,10 +284,11 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
     };
 #endif // ! C++20
 
+  /// @endcond
+
   /**
    *  @brief Primary class template for reference_wrapper.
    *  @ingroup functors
-   *  @{
    */
   template<typename _Tp>
     class reference_wrapper
@@ -345,6 +348,8 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
     reference_wrapper(_Tp&) -> reference_wrapper<_Tp>;
 #endif
 
+  /// @relates reference_wrapper @{
+
   /// Denotes a reference should be taken to a variable.
   template<typename _Tp>
     inline reference_wrapper<_Tp>
@@ -375,7 +380,7 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
     cref(reference_wrapper<_Tp> __t) noexcept
     { return { __t.get() }; }
 
-  // @} group functors
+  // @}
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

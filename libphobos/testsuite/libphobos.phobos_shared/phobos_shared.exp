@@ -22,6 +22,12 @@ if { ![isnative] || ![is-effective-target shared] } {
 # Gather a list of all tests.
 set tests [lsort [filter_libphobos_unittests [find $srcdir/../src "*.d"]]]
 
+set libphobos_skip_tests {
+    # Skip curl tests if library is not available
+    { libphobos.phobos_shared/etc/c/curl.d { ! libcurl_available } }
+    { libphobos.phobos_shared/std/net/curl.d { ! libcurl_available } }
+}
+
 # Initialize dg.
 dg-init
 

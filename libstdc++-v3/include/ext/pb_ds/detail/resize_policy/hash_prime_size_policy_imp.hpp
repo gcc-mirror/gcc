@@ -38,6 +38,8 @@
  * Contains a resize size policy implementation.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #pragma GCC system_header
 
 namespace detail
@@ -159,3 +161,4 @@ get_nearest_smaller_size(size_type n) const
     return m_start_size;
   return *p_lower;
 }
+#endif

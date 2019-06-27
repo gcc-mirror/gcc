@@ -458,6 +458,14 @@
                  should neither be constrained nor <code class="code">explicit</code>
        </em></span>
     </span></dt><dd><p>Remove <code class="code">explicit</code> from the constructor.
+    </p></dd><dt><a id="manual.bugs.dr2408"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2408" target="_top">2408</a>:
+       <span class="emphasis"><em>SFINAE-friendly
+         <code class="code">common_type</code>/<code class="code">iterator_traits</code>
+         is missing in C++14
+       </em></span>
+    </span></dt><dd><p>Make <code class="code">iterator_traits</code> empty if any of the
+      types is not present in the iterator.
+      Make <code class="code">common_type&lt;&gt;</code> empty.
     </p></dd><dt><a id="manual.bugs.dr2415"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2415" target="_top">2415</a>:
        <span class="emphasis"><em>Inconsistency between <code class="code">unique_ptr</code> and <code class="code">shared_ptr</code></em></span>
     </span></dt><dd><p>Create empty an <code class="code">shared_ptr</code> from an empty
@@ -491,6 +499,12 @@
        <span class="emphasis"><em><code class="code">std::polar</code> should require a non-negative rho
        </em></span>
     </span></dt><dd><p>Add debug mode assertion.
+    </p></dd><dt><a id="manual.bugs.dr2465"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2465" target="_top">2465</a>:
+       <span class="emphasis"><em>SFINAE-friendly <code class="code">common_type</code> is nearly impossible
+       to specialize correctly and regresses key functionality
+       </em></span>
+    </span></dt><dd><p>Detect whether <code class="code">decay_t</code> changes either type
+      and use the decayed types if so.
     </p></dd><dt><a id="manual.bugs.dr2466"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2466" target="_top">2466</a>:
        <span class="emphasis"><em><code class="code">allocator_traits::max_size()</code> default behavior is incorrect
        </em></span>
@@ -501,14 +515,14 @@
     </span></dt><dd><p>Avoid using <code class="code">dynamic_cast</code> when it would be
     ill-formed.
     </p></dd><dt><a id="manual.bugs.dr2537"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2537" target="_top">2537</a>:
-       <span class="emphasis"><em>Requirements on the first template parameter of container adaptors
-       </em></span>
-    </span></dt><dd><p>Add static assertions to enforce the requirement.
-    </p></dd><dt><a id="manual.bugs.dr2566"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2566" target="_top">2566</a>:
        <span class="emphasis"><em>Constructors for <code class="code">priority_queue</code> taking allocators
 	 should call <code class="code">make_heap</code>
        </em></span>
     </span></dt><dd><p>Call <code class="code">make_heap</code>.
+    </p></dd><dt><a id="manual.bugs.dr2566"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2566" target="_top">2566</a>:
+       <span class="emphasis"><em>Requirements on the first template parameter of container adaptors
+       </em></span>
+    </span></dt><dd><p>Add static assertions to enforce the requirement.
     </p></dd><dt><a id="manual.bugs.dr2583"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2583" target="_top">2583</a>:
        <span class="emphasis"><em>There is no way to supply an allocator for <code class="code">basic_string(str, pos)</code>
        </em></span>
@@ -551,11 +565,21 @@
        <span class="emphasis"><em><code class="code">shared_ptr</code> constructor requirements for a deleter
        </em></span>
     </span></dt><dd><p>Use rvalues for deleters.
+    </p></dd><dt><a id="manual.bugs.dr2921"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2921" target="_top">2921</a>:
+       <span class="emphasis"><em><code class="code">packaged_task</code> and type-erased allocators
+       </em></span>
+    </span></dt><dd><p>For C++17 mode, remove the constructors taking
+      an allocator argument.
     </p></dd><dt><a id="manual.bugs.dr2942"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2942" target="_top">2942</a>:
        <span class="emphasis"><em>LWG 2873's resolution missed
          <code class="code">weak_ptr::owner_before</code>
        </em></span>
     </span></dt><dd><p>Add noexcept.
+    </p></dd><dt><a id="manual.bugs.dr2996"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2996" target="_top">2996</a>:
+       <span class="emphasis"><em>Missing rvalue overloads for
+         <code class="code">shared_ptr</code> operations
+       </em></span>
+    </span></dt><dd><p>Add additional constructor and cast overloads.
     </p></dd><dt><a id="manual.bugs.dr2993"></a><span class="term"><a class="link" href="http://www.open-std.org/jtc1/sc22/wg21/docs/lwg-defects.html#2993" target="_top">2993</a>:
        <span class="emphasis"><em><code class="code">reference_wrapper&lt;T&gt;</code> conversion from <code class="code">T&amp;&amp;</code>
        </em></span>

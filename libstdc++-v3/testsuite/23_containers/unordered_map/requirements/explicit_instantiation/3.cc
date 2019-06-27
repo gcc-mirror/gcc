@@ -1,5 +1,6 @@
 // { dg-do compile { target c++11 } }
-// { dg-skip-if "no extensions in strict dialects" { *-*-* } { "-std=c++*" } }
+// The extension that implicitly rebinds allocators is in gnu++98/11/14/17 only
+// { dg-skip-if "" { *-*-* } { "-std=c++*" "-std=gnu++2*" } }
 
 // Copyright (C) 2007-2019 Free Software Foundation, Inc.
 //

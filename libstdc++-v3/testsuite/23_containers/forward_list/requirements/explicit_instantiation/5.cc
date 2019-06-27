@@ -25,6 +25,6 @@
 
 // libstdc++/50118
 template class std::forward_list<int, __gnu_test::ExplicitConsAlloc<int>>;
-#ifndef __STRICT_ANSI__
+#if !defined __STRICT_ANSI__ && __cplusplus <= 201703L
 template class std::forward_list<int, __gnu_test::ExplicitConsAlloc<char>>;
 #endif

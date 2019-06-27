@@ -641,6 +641,7 @@ vec_info::new_stmt_vec_info (gimple *stmt)
   STMT_VINFO_VECTORIZABLE (res) = true;
   STMT_VINFO_VEC_REDUCTION_TYPE (res) = TREE_CODE_REDUCTION;
   STMT_VINFO_VEC_CONST_COND_REDUC_CODE (res) = ERROR_MARK;
+  STMT_VINFO_SLP_VECT_ONLY (res) = false;
 
   if (gimple_code (stmt) == GIMPLE_PHI
       && is_loop_header_bb_p (gimple_bb (stmt)))
@@ -726,8 +727,8 @@ vect_free_loop_info_assumptions (struct loop *loop)
 /* If LOOP has been versioned during ifcvt, return the internal call
    guarding it.  */
 
-static gimple *
-vect_loop_vectorized_call (struct loop *loop)
+gimple *
+vect_loop_vectorized_call (struct loop *loop, gcond **cond)
 {
   basic_block bb = loop_preheader_edge (loop)->src;
   gimple *g;
@@ -743,6 +744,8 @@ vect_loop_vectorized_call (struct loop *loop)
   while (1);
   if (g && gimple_code (g) == GIMPLE_COND)
     {
+      if (cond)
+	*cond = as_a <gcond *> (g);
       gimple_stmt_iterator gsi = gsi_for_stmt (g);
       gsi_prev (&gsi);
       if (!gsi_end_p (gsi))

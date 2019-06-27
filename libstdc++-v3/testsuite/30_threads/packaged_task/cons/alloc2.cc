@@ -1,4 +1,4 @@
-// { dg-do compile { target c++11 } }
+// { dg-do compile { target { c++11_only || c++14_only } } }
 // { dg-require-gthreads "" }
 
 // Copyright (C) 2011-2019 Free Software Foundation, Inc.

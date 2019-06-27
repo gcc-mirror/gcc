@@ -32,7 +32,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef  HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
-
+#ifdef HAVE_POSIX_SPAWN
+#include <spawn.h>
+extern char **environ;
+#endif
+#if defined(HAVE_POSIX_SPAWN) || defined(HAVE_FORK)
+#include <signal.h>
+#endif
 
 enum { EXEC_SYNCHRONOUS = -2, EXEC_NOERROR = 0, EXEC_SYSTEMFAILED,
        EXEC_CHILDFAILED, EXEC_INVALIDCOMMAND };
@@ -59,6 +65,14 @@ set_cmdstat (int *cmdstat, int value)
 }
 
 
+#if defined(HAVE_WAITPID) && defined(HAVE_SIGACTION)
+static void
+sigchld_handler (int signum __attribute__((unused)))
+{
+  while (waitpid ((pid_t)(-1), NULL, WNOHANG) > 0) {}
+}
+#endif
+
 static void
 execute_command_line (const char *command, bool wait, int *exitstat,
 		      int *cmdstat, char *cmdmsg,
@@ -71,7 +85,7 @@ execute_command_line (const char *command, bool wait, int *exitstat,
   /* Flush all I/O units before executing the command.  */
   flush_all_units();
 
-#if defined(HAVE_FORK)
+#if defined(HAVE_POSIX_SPAWN) || defined(HAVE_FORK)
   if (!wait)
     {
       /* Asynchronous execution.  */
@@ -79,14 +93,35 @@ execute_command_line (const char *command, bool wait, int *exitstat,
 
       set_cmdstat (cmdstat, EXEC_NOERROR);
 
-      if ((pid = fork()) < 0)
+#if defined(HAVE_SIGACTION) && defined(HAVE_WAITPID)
+      static bool sig_init_saved;
+      bool sig_init = __atomic_load_n (&sig_init_saved, __ATOMIC_RELAXED);
+      if (!sig_init)
+	{
+	  struct sigaction sa;
+	  sa.sa_handler = &sigchld_handler;
+	  sigemptyset(&sa.sa_mask);
+	  sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+	  sigaction(SIGCHLD, &sa, 0);
+	  __atomic_store_n (&sig_init_saved, true, __ATOMIC_RELAXED);
+	}
+#endif
+
+#ifdef HAVE_POSIX_SPAWN
+      const char * const argv[] = {"sh", "-c", cmd, NULL};
+      if (posix_spawn (&pid, "/bin/sh", NULL, NULL,
+		       (char * const* restrict) argv, environ))
 	set_cmdstat (cmdstat, EXEC_CHILDFAILED);
+#elif defined(HAVE_FORK)
+      if ((pid = fork()) < 0)
+        set_cmdstat (cmdstat, EXEC_CHILDFAILED);
       else if (pid == 0)
 	{
 	  /* Child process.  */
 	  int res = system (cmd);
 	  _exit (WIFEXITED(res) ? WEXITSTATUS(res) : res);
 	}
+#endif
     }
   else
 #endif
@@ -96,7 +131,7 @@ execute_command_line (const char *command, bool wait, int *exitstat,
 
       if (res == -1)
 	set_cmdstat (cmdstat, EXEC_SYSTEMFAILED);
-#ifndef HAVE_FORK
+#if !defined(HAVE_POSIX_SPAWN) && !defined(HAVE_FORK)
       else if (!wait)
 	set_cmdstat (cmdstat, EXEC_SYNCHRONOUS);
 #endif

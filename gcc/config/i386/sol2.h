@@ -55,7 +55,8 @@ along with GCC; see the file COPYING3.  If not see
 #define CPP_SPEC "%(cpp_subtarget)"
 
 #undef CC1_SPEC
-#define CC1_SPEC "%(cc1_cpu) " ASAN_CC1_SPEC
+#define CC1_SPEC "%(cc1_cpu) " ASAN_CC1_SPEC \
+  " %{mx32:%e-mx32 is not supported on Solaris}"
 
 /* GNU as understands --32 and --64, but the native Solaris
    assembler requires -xarch=generic or -xarch=generic64 instead.  */
@@ -116,11 +117,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX "."
-
-/* The Solaris 10 FCS as doesn't accept "#" comments, while later versions
-   do.  */
-#undef ASM_COMMENT_START
-#define ASM_COMMENT_START "/"
 
 /* The 32-bit Solaris assembler does not support .quad.  Do not use it.  */
 #ifndef HAVE_AS_IX86_QUAD
@@ -246,10 +242,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* -fsanitize=address is currently only supported for 32-bit.  */
 #define ASAN_REJECT_SPEC \
-  DEF_ARCH64_SPEC("%e:-fsanitize=address is not supported in this configuration")
-
-#define USE_IX86_FRAME_POINTER 1
-#define USE_X86_64_FRAME_POINTER 1
+  DEF_ARCH64_SPEC("%e-fsanitize=address is not supported in this configuration")
 
 #undef NO_PROFILE_COUNTERS
 

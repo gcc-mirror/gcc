@@ -24,6 +24,7 @@
 
 /** @file experimental/filesystem
  *  This is a TS C++ Library header.
+ *  @ingroup filesystem-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_FILESYSTEM

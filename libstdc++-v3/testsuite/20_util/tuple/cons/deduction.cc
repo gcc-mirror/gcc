@@ -19,6 +19,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <tuple>
+#include <memory>
 
 template<typename T, typename U> struct require_same;
 template<typename T> struct require_same<T, T> { using type = void; };

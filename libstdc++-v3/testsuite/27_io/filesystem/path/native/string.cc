@@ -46,7 +46,7 @@ test02()
   path p(s);
 
   auto str = p.string<char>();
-  VERIFY( str == u"abc" );
+  VERIFY( str == "abc" );
   VERIFY( str == p.string() );
 
   auto strw = p.string<wchar_t>();
@@ -62,9 +62,36 @@ test02()
   VERIFY( str32 == p.u32string() );
 }
 
+void
+test03()
+{
+  std::filesystem::path p;
+  auto str8 = p.u8string();
+  VERIFY( str8 == u8"" );
+  auto str16 = p.u16string();
+  VERIFY( str16 == u"" );
+  auto str32 = p.u32string();
+  VERIFY( str32 == U"" );
+}
+
+void
+test04()
+{
+  // PR libstdc++/90281
+  auto p = std::filesystem::u8path("\xf0\x9d\x84\x9e");
+  auto str8 = p.u8string();
+  VERIFY( str8 == u8"\U0001D11E" );
+  auto str16 = p.u16string();
+  VERIFY( str16 == u"\U0001D11E" );
+  auto str32 = p.u32string();
+  VERIFY( str32 == U"\U0001D11E" );
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
+  test04();
 }

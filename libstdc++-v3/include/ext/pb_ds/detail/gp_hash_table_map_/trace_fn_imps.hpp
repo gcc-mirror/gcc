@@ -38,6 +38,8 @@
  * Contains implementations of gp_ht_map_'s trace-mode functions.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef PB_DS_HT_MAP_TRACE_
 
 PB_DS_CLASS_T_DEC
@@ -72,3 +74,4 @@ trace() const
 }
 
 #endif // #ifdef PB_DS_HT_MAP_TRACE_
+#endif

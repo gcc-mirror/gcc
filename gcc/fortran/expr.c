@@ -1061,6 +1061,27 @@ gfc_is_constant_expr (gfc_expr *e)
 }
 
 
+/* Is true if the expression or symbol is a passed CFI descriptor.  */
+bool
+is_CFI_desc (gfc_symbol *sym, gfc_expr *e)
+{
+  if (sym == NULL
+      && e && e->expr_type == EXPR_VARIABLE)
+    sym = e->symtree->n.sym;
+
+  if (sym && sym->attr.dummy
+      && sym->ns->proc_name->attr.is_bind_c
+      && sym->attr.dimension
+      && (sym->attr.pointer
+	  || sym->attr.allocatable
+	  || sym->as->type == AS_ASSUMED_SHAPE
+	  || sym->as->type == AS_ASSUMED_RANK))
+    return true;
+
+return false;
+}
+
+
 /* Is true if an array reference is followed by a component or substring
    reference.  */
 bool
@@ -1068,11 +1089,14 @@ is_subref_array (gfc_expr * e)
 {
   gfc_ref * ref;
   bool seen_array;
+  gfc_symbol *sym;
 
   if (e->expr_type != EXPR_VARIABLE)
     return false;
 
-  if (e->symtree->n.sym->attr.subref_array_pointer)
+  sym = e->symtree->n.sym;
+
+  if (sym->attr.subref_array_pointer)
     return true;
 
   seen_array = false;
@@ -1097,10 +1121,10 @@ is_subref_array (gfc_expr * e)
 	return seen_array;
     }
 
-  if (e->symtree->n.sym->ts.type == BT_CLASS
-      && e->symtree->n.sym->attr.dummy
-      && CLASS_DATA (e->symtree->n.sym)->attr.dimension
-      && CLASS_DATA (e->symtree->n.sym)->attr.class_pointer)
+  if (sym->ts.type == BT_CLASS
+      && sym->attr.dummy
+      && CLASS_DATA (sym)->attr.dimension
+      && CLASS_DATA (sym)->attr.class_pointer)
     return true;
 
   return false;
@@ -5689,6 +5713,9 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
   gfc_ref *ref, *part_ref = NULL;
   gfc_symbol *sym;
 
+  if (expr->expr_type == EXPR_ARRAY)
+    return true;
+
   if (expr->expr_type == EXPR_FUNCTION)
     {
       if (expr->value.function.esym)
@@ -6062,7 +6089,12 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 	    check_intentin = false;
 	}
     }
-  if (check_intentin && sym->attr.intent == INTENT_IN)
+
+  if (check_intentin
+      && (sym->attr.intent == INTENT_IN
+	  || (sym->attr.select_type_temporary && sym->assoc
+	      && sym->assoc->target && sym->assoc->target->symtree
+	      && sym->assoc->target->symtree->n.sym->attr.intent == INTENT_IN)))
     {
       if (pointer && is_pointer)
 	{
@@ -6074,10 +6106,12 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 	}
       if (!pointer && !is_pointer && !sym->attr.pointer)
 	{
+	  const char *name = sym->attr.select_type_temporary
+			   ? sym->assoc->target->symtree->name : sym->name;
 	  if (context)
 	    gfc_error ("Dummy argument %qs with INTENT(IN) in variable"
 		       " definition context (%s) at %L",
-		       sym->name, context, &e->where);
+		       name, context, &e->where);
 	  return false;
 	}
     }

@@ -1,3 +1,21 @@
+2019-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+            Andrew Stubbs  <ams@codesourcery.com>
+
+	* gthr.m4 (GCC_AC_THREAD_HEADER): Add case for gcn.
+
+2019-05-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* ax_count_cpus.m4: New file.
+
+2019-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/85574
+	* bootstrap-lto.mk (extra-compare): Set to gcc/lto1$(exeext).
+
+2019-04-16  Martin Liska  <mliska@suse.cz>
+
+	* bootstrap-lto-lean.mk: Filter out -flto in STAGEtrain_CFLAGS.
+
 2019-04-09  Martin Liska  <mliska@suse.cz>
 
 	* bootstrap-lto-lean.mk: New file.

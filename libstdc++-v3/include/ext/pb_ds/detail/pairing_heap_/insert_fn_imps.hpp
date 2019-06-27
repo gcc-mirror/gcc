@@ -38,6 +38,8 @@
  * Contains an implementation class for a pairing heap.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
@@ -86,3 +88,4 @@ modify(point_iterator it, const_reference r_new_val)
   push_imp(it.m_p_nd);
   PB_DS_ASSERT_VALID((*this))
 }
+#endif

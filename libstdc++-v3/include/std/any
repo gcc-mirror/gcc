@@ -189,9 +189,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// Construct with a copy of @p __value as the contained object.
     template <typename _ValueType, typename _Tp = _Decay<_ValueType>,
 	      typename _Mgr = _Manager<_Tp>,
-              enable_if_t<__and_<is_copy_constructible<_Tp>,
-				 __not_<is_constructible<_Tp, _ValueType&&>>,
-			         __not_<__is_in_place_type<_Tp>>>::value,
+              enable_if_t<__and_v<is_copy_constructible<_Tp>,
+				  __not_<is_constructible<_Tp, _ValueType&&>>,
+				  __not_<__is_in_place_type<_Tp>>>,
 			  bool> = false>
       any(_ValueType&& __value)
       : _M_manager(&_Mgr::_S_manage)
@@ -503,20 +503,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
   // @}
 
+  /// @cond undocumented
   template<typename _Tp>
     void* __any_caster(const any* __any)
     {
-      if constexpr (is_copy_constructible_v<decay_t<_Tp>>)
+      // any_cast<T> returns non-null if __any->type() == typeid(T) and
+      // typeid(T) ignores cv-qualifiers so remove them:
+      using _Up = remove_cv_t<_Tp>;
+      // The contained value has a decayed type, so if decay_t<U> is not U,
+      // then it's not possible to have a contained value of type U:
+      if constexpr (!is_same_v<decay_t<_Up>, _Up>)
+	return nullptr;
+      // Only copy constructible types can be used for contained values:
+      else if constexpr (!is_copy_constructible_v<_Up>)
+	return nullptr;
+      // First try comparing function addresses, which works without RTTI
+      else if (__any->_M_manager == &any::_Manager<_Up>::_S_manage
+#if __cpp_rtti
+	  || __any->type() == typeid(_Tp)
+#endif
+	  )
 	{
-	  if (__any->_M_manager == &any::_Manager<decay_t<_Tp>>::_S_manage)
-	    {
-	      any::_Arg __arg;
-	      __any->_M_manager(any::_Op_access, __any, &__arg);
-	      return __arg._M_obj;
-	    }
+	  any::_Arg __arg;
+	  __any->_M_manager(any::_Op_access, __any, &__arg);
+	  return __arg._M_obj;
 	}
       return nullptr;
     }
+  /// @endcond
 
   /**
    * @brief Access the contained object.
@@ -532,16 +546,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _ValueType>
     inline const _ValueType* any_cast(const any* __any) noexcept
     {
-      if (__any)
-	return static_cast<_ValueType*>(__any_caster<_ValueType>(__any));
+      if constexpr (is_object_v<_ValueType>)
+	if (__any)
+	  return static_cast<_ValueType*>(__any_caster<_ValueType>(__any));
       return nullptr;
     }
 
   template<typename _ValueType>
     inline _ValueType* any_cast(any* __any) noexcept
     {
-      if (__any)
-	return static_cast<_ValueType*>(__any_caster<_ValueType>(__any));
+      if constexpr (is_object_v<_ValueType>)
+	if (__any)
+	  return static_cast<_ValueType*>(__any_caster<_ValueType>(__any));
       return nullptr;
     }
   // @}

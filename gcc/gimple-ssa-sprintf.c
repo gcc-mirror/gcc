@@ -1006,10 +1006,12 @@ build_intmax_type_nodes (tree *pintmax, tree *puintmax)
       for (int i = 0; i < NUM_INT_N_ENTS; i++)
 	if (int_n_enabled_p[i])
 	  {
-	    char name[50];
+	    char name[50], altname[50];
 	    sprintf (name, "__int%d unsigned", int_n_data[i].bitsize);
+	    sprintf (altname, "__int%d__ unsigned", int_n_data[i].bitsize);
 
-	    if (strcmp (name, UINTMAX_TYPE) == 0)
+	    if (strcmp (name, UINTMAX_TYPE) == 0
+		|| strcmp (altname, UINTMAX_TYPE) == 0)
 	      {
 	        *pintmax = int_n_trees[i].signed_type;
 	        *puintmax = int_n_trees[i].unsigned_type;
@@ -3002,12 +3004,10 @@ format_directive (const call_info &info,
 	     help the user figure out how big a buffer they need.  */
 
 	  if (min == max)
-	    inform (callloc,
-		    (min == 1
-		     ? G_("%qE output %wu byte into a destination of size %wu")
-		     : G_("%qE output %wu bytes into a destination of size "
-			  "%wu")),
-		    info.func, min, info.objsize);
+	    inform_n (callloc, min,
+		      "%qE output %wu byte into a destination of size %wu",
+		      "%qE output %wu bytes into a destination of size %wu",
+		      info.func, min, info.objsize);
 	  else if (max < HOST_WIDE_INT_MAX)
 	    inform (callloc,
 		    "%qE output between %wu and %wu bytes into "
@@ -3030,11 +3030,9 @@ format_directive (const call_info &info,
 	     of printf with no destination size just print the computed
 	     result.  */
 	  if (min == max)
-	    inform (callloc,
-		    (min == 1
-		     ? G_("%qE output %wu byte")
-		     : G_("%qE output %wu bytes")),
-		    info.func, min);
+	    inform_n (callloc, min,
+		      "%qE output %wu byte", "%qE output %wu bytes",
+		      info.func, min);
 	  else if (max < HOST_WIDE_INT_MAX)
 	    inform (callloc,
 		    "%qE output between %wu and %wu bytes",

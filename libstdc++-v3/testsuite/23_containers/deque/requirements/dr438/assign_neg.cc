@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
+// { dg-prune-output "cannot convert" }
 // { dg-prune-output "no matching function .*_M_fill_assign" }
 
 #include <deque>
@@ -32,3 +33,5 @@ void f()
   std::deque<A> d;
   d.assign(10, 1);		// { dg-error "no match|here" }
 }
+
+// { dg-prune-output "iterator_traits" }

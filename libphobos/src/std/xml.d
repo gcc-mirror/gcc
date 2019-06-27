@@ -2201,8 +2201,10 @@ private
         mixin Check!("Chars");
 
         dchar c;
-        int n = -1;
-        foreach (int i,dchar d; s)
+        ptrdiff_t n = -1;
+        // 'i' must not be smaller than size_t because size_t is used internally in
+        // aApply.d and it will be cast e.g to (int *) which fails on BigEndian targets.
+        foreach (size_t i, dchar d; s)
         {
             if (!isChar(d))
             {
@@ -2238,8 +2240,10 @@ private
         mixin Check!("Name");
 
         if (s.length == 0) fail();
-        int n;
-        foreach (int i,dchar c;s)
+        ptrdiff_t n;
+        // 'i' must not be smaller than size_t because size_t is used internally in
+        // aApply.d and it will be cast e.g to (int *) which fails on BigEndian targets.
+        foreach (size_t i, dchar c; s)
         {
             if (c == '_' || c == ':' || isLetter(c)) continue;
             if (i == 0) fail();

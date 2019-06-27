@@ -1,4 +1,4 @@
-// { dg-do run { target c++14 } }
+// { dg-do compile { target c++14 } }
 
 // Copyright (C) 2013-2019 Free Software Foundation, Inc.
 //
@@ -23,7 +23,7 @@ struct value_type
 {
   int i;
 
-  void* operator&() { return nullptr; } // N.B. non-const
+  void* operator&() const { return nullptr; }
 };
 
 int main()

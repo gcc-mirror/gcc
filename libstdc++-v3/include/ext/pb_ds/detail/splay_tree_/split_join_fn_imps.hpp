@@ -38,6 +38,8 @@
  * Contains an implementation class for splay_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
@@ -110,3 +112,4 @@ split(key_const_reference r_key, PB_DS_CLASS_C_DEC& other)
   PB_DS_ASSERT_VALID(other)
 }
 
+#endif

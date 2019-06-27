@@ -38,6 +38,8 @@
  * Contains a resize policy implementation.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 hash_standard_resize_policy() 
@@ -247,3 +249,4 @@ PB_DS_CLASS_C_DEC::
 get_size_policy() const
 { return *this; }
 
+#endif

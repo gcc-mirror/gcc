@@ -512,7 +512,7 @@ get_typeid (tree type, tsubst_flags_t complain)
 	  || type_memfn_rqual (type) != REF_QUAL_NONE))
     {
       if (complain & tf_error)
-	error ("typeid of qualified function type %qT", type);
+	error ("%<typeid%> of qualified function type %qT", type);
       return error_mark_node;
     }
 
@@ -693,8 +693,8 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 		{
 		  tree expr = throw_bad_cast ();
                   if (complain & tf_warning)
-                    warning (0, "dynamic_cast of %q#D to %q#T can never succeed",
-                             old_expr, type);
+	            warning (0, "%<dynamic_cast<%#T>(%#D)%> can never succeed",
+	                     type, old_expr);
 		  /* Bash it to the expected type.  */
 		  TREE_TYPE (expr) = type;
 		  return expr;
@@ -708,8 +708,8 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 		  && TREE_CODE (TREE_TYPE (op)) == RECORD_TYPE)
 		{
                   if (complain & tf_warning)
-                    warning (0, "dynamic_cast of %q#D to %q#T can never succeed",
-                             op, type);
+	            warning (0, "%<dynamic_cast<%#T>(%#D)%> can never succeed",
+	                     type, op);
 		  retval = build_int_cst (type, 0);
 		  return retval;
 		}
@@ -798,7 +798,7 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
 
  fail:
   if (complain & tf_error)
-    error ("cannot dynamic_cast %qE (of type %q#T) to type %q#T (%s)",
+    error ("cannot %<dynamic_cast%> %qE (of type %q#T) to type %q#T (%s)",
            old_expr, TREE_TYPE (old_expr), type, errstr);
   return error_mark_node;
 }
@@ -1015,8 +1015,7 @@ ptr_initializer (tinfo_s *ti, tree target)
       to = tx_unsafe_fn_variant (to);
     }
   if (flag_noexcept_type
-      && (TREE_CODE (to) == FUNCTION_TYPE
-	  || TREE_CODE (to) == METHOD_TYPE)
+      && FUNC_OR_METHOD_TYPE_P (to)
       && TYPE_NOTHROW_P (to))
     {
       flags |= 0x40;

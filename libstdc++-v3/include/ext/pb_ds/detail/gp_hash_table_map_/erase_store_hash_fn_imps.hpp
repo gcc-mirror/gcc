@@ -39,6 +39,8 @@
  * when the hash value is stored.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
@@ -83,3 +85,4 @@ erase_imp(key_const_reference r_key, true_type)
   return false;
 }
 
+#endif

@@ -136,8 +136,9 @@ struct _Unwind_Context
 #define SIGNAL_FRAME_BIT ((~(_Unwind_Word) 0 >> 1) + 1)
   /* Context which has version/args_size/by_value fields.  */
 #define EXTENDED_CONTEXT_BIT ((~(_Unwind_Word) 0 >> 2) + 1)
-  /* Bit reserved on AArch64, return address has been signed with A key.  */
-#define RA_A_SIGNED_BIT ((~(_Unwind_Word) 0 >> 3) + 1)
+  /* Bit reserved on AArch64, return address has been signed with A or B
+     key.  */
+#define RA_SIGNED_BIT ((~(_Unwind_Word) 0 >> 3) + 1)
   _Unwind_Word flags;
   /* 0 for now, can be increased when further fields are added to
      struct _Unwind_Context.  */
@@ -502,6 +503,11 @@ extract_cie_info (const struct dwarf_cie *cie, struct _Unwind_Context *context,
 	  fs->signal_frame = 1;
 	  aug += 1;
 	}
+      /* aarch64 B-key pointer authentication.  */
+      else if (aug[0] == 'B')
+	{
+	  aug += 1;
+      }
 
       /* Otherwise we have an unknown augmentation string.
 	 Bail unless we saw a 'z' prefix.  */

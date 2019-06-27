@@ -11,9 +11,8 @@ int main()
   else
     return 1;
 
-  if (const bool b2 = 1) // { dg-warning "\\\[-Wunused-variable\\\]" "bug" { xfail c++98_only } }
+  if (const bool b2 = 1) // { dg-warning "\\\[-Wunused-variable\\\]" }
     return 0;
   else
     return 1;
 }
-

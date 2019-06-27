@@ -36,9 +36,13 @@
 /**
  * @file point_iterator.hpp
  * Contains an iterator class returned by the tables' find and insert
- *     methods.
+ * methods.
+ *
+ * This file is intended to be included inside a class definition, with
+ * PB_DS_CLASS_C_DEC defined to the name of the enclosing class.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
 /// Find type iterator.
 class point_iterator_
 {
@@ -124,3 +128,4 @@ protected:
 protected:
   pointer m_p_value;
 };
+#endif

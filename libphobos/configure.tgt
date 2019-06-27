@@ -21,18 +21,33 @@
 
 # Disable the libphobos or libdruntime components on untested or known
 # broken systems.  More targets shall be added after testing.
+LIBPHOBOS_SUPPORTED=no
 case "${target}" in
+  aarch64*-*-linux*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
   arm*-*-linux*)
+	LIBPHOBOS_SUPPORTED=yes
 	;;
   mips*-*-linux*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
+  riscv*-*-linux*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
+  s390*-linux*)
+	LIBPHOBOS_SUPPORTED=yes
 	;;
   x86_64-*-kfreebsd*-gnu | i?86-*-kfreebsd*-gnu)
+	LIBPHOBOS_SUPPORTED=yes
 	;;
   x86_64-*-linux* | i?86-*-linux*)
+	LIBPHOBOS_SUPPORTED=yes
 	;;
   x86_64-*-netbsd* | i?86-*-netbsd*)
+	LIBPHOBOS_SUPPORTED=yes
 	;;
-  *)
-	UNSUPPORTED=1
+  x86_64-*-solaris2.11* | i?86-*-solaris2.11*)
+	LIBPHOBOS_SUPPORTED=yes
 	;;
 esac

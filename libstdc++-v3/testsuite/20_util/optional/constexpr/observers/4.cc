@@ -25,10 +25,42 @@ struct value_type
   int i;
 };
 
-int main()
+void test01()
 {
   constexpr std::optional<value_type> o { value_type { 51 } };
   constexpr value_type fallback { 3 };
-  static_assert( o.value_or(fallback).i == 51, "" );
-  static_assert( o.value_or(fallback).i == (*o).i, "" );
+  static_assert( o.value_or(fallback).i == 51 );
+  static_assert( o.value_or(fallback).i == (*o).i );
+}
+
+void test02()
+{
+  constexpr std::optional<value_type> o;
+  constexpr value_type fallback { 3 };
+  static_assert( o.value_or(fallback).i == 3 );
+}
+
+template<typename T>
+  constexpr std::optional<value_type>
+  make_rvalue(T t)
+  { return std::optional<value_type>{t}; }
+
+void test03()
+{
+  constexpr value_type fallback { 3 };
+  static_assert( make_rvalue(value_type{51}).value_or(fallback).i == 51 );
+}
+
+void test04()
+{
+  constexpr value_type fallback { 3 };
+  static_assert( make_rvalue(std::nullopt).value_or(fallback).i == 3 );
+}
+
+int main()
+{
+  test01();
+  test02();
+  test03();
+  test04();
 }

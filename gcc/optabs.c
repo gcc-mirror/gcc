@@ -5444,19 +5444,45 @@ vector_compare_rtx (machine_mode cmp_mode, enum tree_code tcode,
 }
 
 /* Check if vec_perm mask SEL is a constant equivalent to a shift of
-   the first vec_perm operand, assuming the second operand is a constant
-   vector of zeros.  Return the shift distance in bits if so, or NULL_RTX
-   if the vec_perm is not a shift.  MODE is the mode of the value being
-   shifted.  */
+   the first vec_perm operand, assuming the second operand (for left shift
+   first operand) is a constant vector of zeros.  Return the shift distance
+   in bits if so, or NULL_RTX if the vec_perm is not a shift.  MODE is the
+   mode of the value being shifted.  SHIFT_OPTAB is vec_shr_optab for right
+   shift or vec_shl_optab for left shift.  */
 static rtx
-shift_amt_for_vec_perm_mask (machine_mode mode, const vec_perm_indices &sel)
+shift_amt_for_vec_perm_mask (machine_mode mode, const vec_perm_indices &sel,
+			     optab shift_optab)
 {
   unsigned int bitsize = GET_MODE_UNIT_BITSIZE (mode);
   poly_int64 first = sel[0];
   if (maybe_ge (sel[0], GET_MODE_NUNITS (mode)))
     return NULL_RTX;
 
-  if (!sel.series_p (0, 1, first, 1))
+  if (shift_optab == vec_shl_optab)
+    {
+      unsigned int nelt;
+      if (!GET_MODE_NUNITS (mode).is_constant (&nelt))
+	return NULL_RTX;
+      unsigned firstidx = 0;
+      for (unsigned int i = 0; i < nelt; i++)
+	{
+	  if (known_eq (sel[i], nelt))
+	    {
+	      if (i == 0 || firstidx)
+		return NULL_RTX;
+	      firstidx = i;
+	    }
+	  else if (firstidx
+		   ? maybe_ne (sel[i], nelt + i - firstidx)
+		   : maybe_ge (sel[i], nelt))
+	    return NULL_RTX;
+	}
+
+      if (firstidx == 0)
+	return NULL_RTX;
+      first = firstidx;
+    }
+  else if (!sel.series_p (0, 1, first, 1))
     {
       unsigned int nelt;
       if (!GET_MODE_NUNITS (mode).is_constant (&nelt))
@@ -5544,25 +5570,37 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
      target instruction.  */
   vec_perm_indices indices (sel, 2, GET_MODE_NUNITS (mode));
 
-  /* See if this can be handled with a vec_shr.  We only do this if the
-     second vector is all zeroes.  */
-  insn_code shift_code = optab_handler (vec_shr_optab, mode);
-  insn_code shift_code_qi = ((qimode != VOIDmode && qimode != mode)
-			     ? optab_handler (vec_shr_optab, qimode)
-			     : CODE_FOR_nothing);
-
-  if (v1 == CONST0_RTX (GET_MODE (v1))
-      && (shift_code != CODE_FOR_nothing
-	  || shift_code_qi != CODE_FOR_nothing))
+  /* See if this can be handled with a vec_shr or vec_shl.  We only do this
+     if the second (for vec_shr) or first (for vec_shl) vector is all
+     zeroes.  */
+  insn_code shift_code = CODE_FOR_nothing;
+  insn_code shift_code_qi = CODE_FOR_nothing;
+  optab shift_optab = unknown_optab;
+  rtx v2 = v0;
+  if (v1 == CONST0_RTX (GET_MODE (v1)))
+    shift_optab = vec_shr_optab;
+  else if (v0 == CONST0_RTX (GET_MODE (v0)))
     {
-      rtx shift_amt = shift_amt_for_vec_perm_mask (mode, indices);
+      shift_optab = vec_shl_optab;
+      v2 = v1;
+    }
+  if (shift_optab != unknown_optab)
+    {
+      shift_code = optab_handler (shift_optab, mode);
+      shift_code_qi = ((qimode != VOIDmode && qimode != mode)
+		       ? optab_handler (shift_optab, qimode)
+		       : CODE_FOR_nothing);
+    }
+  if (shift_code != CODE_FOR_nothing || shift_code_qi != CODE_FOR_nothing)
+    {
+      rtx shift_amt = shift_amt_for_vec_perm_mask (mode, indices, shift_optab);
       if (shift_amt)
 	{
 	  struct expand_operand ops[3];
 	  if (shift_code != CODE_FOR_nothing)
 	    {
 	      create_output_operand (&ops[0], target, mode);
-	      create_input_operand (&ops[1], v0, mode);
+	      create_input_operand (&ops[1], v2, mode);
 	      create_convert_operand_from_type (&ops[2], shift_amt, sizetype);
 	      if (maybe_expand_insn (shift_code, 3, ops))
 		return ops[0].value;
@@ -5571,7 +5609,7 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
 	    {
 	      rtx tmp = gen_reg_rtx (qimode);
 	      create_output_operand (&ops[0], tmp, qimode);
-	      create_input_operand (&ops[1], gen_lowpart (qimode, v0), qimode);
+	      create_input_operand (&ops[1], gen_lowpart (qimode, v2), qimode);
 	      create_convert_operand_from_type (&ops[2], shift_amt, sizetype);
 	      if (maybe_expand_insn (shift_code_qi, 3, ops))
 		return gen_lowpart (mode, ops[0].value);

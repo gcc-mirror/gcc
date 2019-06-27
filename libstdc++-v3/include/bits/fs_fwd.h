@@ -40,20 +40,17 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+/** @addtogroup filesystem
+ *  @{
+ */
+
+/// ISO C++ 2017 namespace for File System library
 namespace filesystem
 {
 #if _GLIBCXX_USE_CXX11_ABI
 inline namespace __cxx11 __attribute__((__abi_tag__ ("cxx11"))) { }
 #endif
 
-  /**
-   * @defgroup filesystem Filesystem
-   *
-   * Utilities for performing operations on file systems and their components,
-   * such as paths, regular files, and directories.
-   *
-   * @{
-   */
 
   class file_status;
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
@@ -379,12 +376,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
   bool is_regular_file(file_status) noexcept;
   bool is_symlink(file_status) noexcept;
 
-  // @} group filesystem
 } // namespace filesystem
-
+// @}
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-
 #endif // C++17
-
 #endif // _GLIBCXX_FS_FWD_H

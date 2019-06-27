@@ -43,3 +43,5 @@ test01()
   p1.reset(new constA[5]);      // { dg-error "no matching function" }
   p1.reset(new constA[5], D()); // { dg-error "no matching function" }
 }
+
+// { dg-prune-output "enable_if" }

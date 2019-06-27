@@ -262,6 +262,11 @@ init_reswords (void)
       id = get_identifier (name);
       C_SET_RID_CODE (id, RID_FIRST_INT_N + i);
       set_identifier_kind (id, cik_keyword);
+
+      sprintf (name, "__int%d__", int_n_data[i].bitsize);
+      id = get_identifier (name);
+      C_SET_RID_CODE (id, RID_FIRST_INT_N + i);
+      set_identifier_kind (id, cik_keyword);
     }
 }
 
@@ -385,14 +390,14 @@ parse_strconst_pragma (const char* name, int opt)
   if (t == CPP_STRING)
     {
       if (pragma_lex (&x) != CPP_EOF)
-	warning (0, "junk at end of #pragma %s", name);
+	warning (0, "junk at end of %<#pragma %s%>", name);
       return result;
     }
 
   if (t == CPP_EOF && opt)
     return NULL_TREE;
 
-  error ("invalid #pragma %s", name);
+  error ("invalid %<#pragma %s%>", name);
   return error_mark_node;
 }
 
@@ -400,7 +405,7 @@ static void
 handle_pragma_vtable (cpp_reader* /*dfile*/)
 {
   parse_strconst_pragma ("vtable", 0);
-  sorry ("#pragma vtable no longer supported");
+  sorry ("%<#pragma vtable%> no longer supported");
 }
 
 static void
@@ -472,7 +477,7 @@ handle_pragma_implementation (cpp_reader* /*dfile*/)
     {
       filename = TREE_STRING_POINTER (fname);
       if (cpp_included_before (parse_in, filename, input_location))
-	warning (0, "#pragma implementation for %qs appears after "
+	warning (0, "%<#pragma implementation%> for %qs appears after "
 		 "file is included", filename);
     }
 
@@ -568,8 +573,8 @@ unqualified_fn_lookup_error (cp_expr name_expr)
 	  if (!hint)
 	    {
 	      inform (loc, "(if you use %<-fpermissive%>, G++ will accept your "
-		     "code, but allowing the use of an undeclared name is "
-		     "deprecated)");
+		      "code, but allowing the use of an undeclared name is "
+		      "deprecated)");
 	      hint = true;
 	    }
 	}
@@ -883,6 +888,9 @@ cxx_make_type (enum tree_code code MEM_STAT_DECL)
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, finfo->interface_unknown);
       CLASSTYPE_INTERFACE_ONLY (t) = finfo->interface_only;
     }
+
+  if (code == RECORD_TYPE || code == UNION_TYPE)
+    TYPE_CXX_ODR_P (t) = 1;
 
   return t;
 }

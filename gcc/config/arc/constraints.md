@@ -201,7 +201,7 @@
  "@internal
   power of two"
   (and (match_code "const_int")
-       (match_test "IS_POWEROF2_P (ival)")))
+       (match_test "IS_POWEROF2_P (ival & 0xffffffff)")))
 
 (define_constraint "C1p"
  "@internal
@@ -275,12 +275,6 @@
   (and (match_code "const_int")
        (match_test "ival == 1 || ival == 2 || ival == 4 || ival == 8")))
 
-(define_constraint "Crr"
- "@internal
-  constant that can be loaded with ror b,u6"
-  (and (match_code "const_int")
-       (match_test "(ival & ~0x8000001f) == 0 && !arc_ccfsm_cond_exec_p ()")))
-
 (define_constraint "Cbi"
  "@internal
   constant that can be loaded with movbi.cl"
@@ -289,6 +283,20 @@
        (match_test "!ival
 		    || ((ival & 0xffffffffUL) >> exact_log2 (ival & -ival)
 			<= 0xff)")))
+
+(define_constraint "C0x"
+  "@internal
+  special const_int pattern used to split ior insns"
+  (and (match_code "const_int")
+       (match_test "optimize_size")
+       (match_test "arc_check_ior_const (ival)")))
+
+(define_constraint "Cax"
+  "@internal
+  special const_int pattern used to split mov insns"
+  (and (match_code "const_int")
+       (match_test "optimize_size")
+       (match_test "arc_check_mov_const (ival)")))
 
 ;; Floating-point constraints
 
@@ -479,16 +487,6 @@
    blink (usful for push_s / pop_s)"
   (and (match_code "reg")
        (match_test "REGNO (op) == 31")))
-
-(define_constraint "Rs5"
-  "@internal
-   sibcall register - only allow one of the five available 16 bit isnsn.
-   Registers usable in ARCompact 16-bit instructions: @code{r0}-@code{r3},
-   @code{r12}"
-  (and (match_code "reg")
-       (match_test "!arc_ccfsm_cond_exec_p ()")
-       (ior (match_test "(unsigned) REGNO (op) <= 3")
-	    (match_test "REGNO (op) == 12"))))
 
 (define_constraint "Rcc"
   "@internal

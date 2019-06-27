@@ -508,8 +508,8 @@ riscv_split_integer (HOST_WIDE_INT val, machine_mode mode)
   unsigned HOST_WIDE_INT hival = sext_hwi ((val - loval) >> 32, 32);
   rtx hi = gen_reg_rtx (mode), lo = gen_reg_rtx (mode);
 
-  riscv_move_integer (hi, hi, hival);
-  riscv_move_integer (lo, lo, loval);
+  riscv_move_integer (hi, hi, hival, mode);
+  riscv_move_integer (lo, lo, loval, mode);
 
   hi = gen_rtx_fmt_ee (ASHIFT, mode, hi, GEN_INT (32));
   hi = force_reg (mode, hi);
@@ -1334,10 +1334,12 @@ riscv_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
   return x;
 }
 
-/* Load VALUE into DEST.  TEMP is as for riscv_force_temporary.  */
+/* Load VALUE into DEST.  TEMP is as for riscv_force_temporary.  ORIG_MODE
+   is the original src mode before promotion.  */
 
 void
-riscv_move_integer (rtx temp, rtx dest, HOST_WIDE_INT value)
+riscv_move_integer (rtx temp, rtx dest, HOST_WIDE_INT value,
+		    machine_mode orig_mode)
 {
   struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS];
   machine_mode mode;
@@ -1345,7 +1347,9 @@ riscv_move_integer (rtx temp, rtx dest, HOST_WIDE_INT value)
   rtx x;
 
   mode = GET_MODE (dest);
-  num_ops = riscv_build_integer (codes, value, mode);
+  /* We use the original mode for the riscv_build_integer call, because HImode
+     values are given special treatment.  */
+  num_ops = riscv_build_integer (codes, value, orig_mode);
 
   if (can_create_pseudo_p () && num_ops > 2 /* not a simple constant */
       && num_ops >= riscv_split_integer_cost (value))
@@ -1381,7 +1385,7 @@ riscv_legitimize_const_move (machine_mode mode, rtx dest, rtx src)
   /* Split moves of big integers into smaller pieces.  */
   if (splittable_const_int_operand (src, mode))
     {
-      riscv_move_integer (dest, dest, INTVAL (src));
+      riscv_move_integer (dest, dest, INTVAL (src), mode);
       return;
     }
 
@@ -1428,7 +1432,31 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 {
   if (!register_operand (dest, mode) && !reg_or_0_operand (src, mode))
     {
-      riscv_emit_move (dest, force_reg (mode, src));
+      rtx reg;
+
+      if (GET_CODE (src) == CONST_INT)
+	{
+	  /* Apply the equivalent of PROMOTE_MODE here for constants to
+	     improve cse.  */
+	  machine_mode promoted_mode = mode;
+	  if (GET_MODE_CLASS (mode) == MODE_INT
+	      && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+	    promoted_mode = word_mode;
+
+	  if (splittable_const_int_operand (src, mode))
+	    {
+	      reg = gen_reg_rtx (promoted_mode);
+	      riscv_move_integer (reg, reg, INTVAL (src), mode);
+	    }
+	  else
+	    reg = force_reg (promoted_mode, src);
+
+	  if (promoted_mode != mode)
+	    reg = gen_lowpart (mode, reg);
+	}
+      else
+	reg = force_reg (mode, src);
+      riscv_emit_move (dest, reg);
       return true;
     }
 
@@ -2294,6 +2322,18 @@ riscv_expand_conditional_branch (rtx label, rtx_code code, rtx op0, rtx op1)
 
   rtx condition = gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
   emit_jump_insn (gen_condjump (condition, label));
+}
+
+/* If (CODE OP0 OP1) holds, move CONS to DEST; else move ALT to DEST.  */
+
+void
+riscv_expand_conditional_move (rtx dest, rtx cons, rtx alt, rtx_code code,
+			       rtx op0, rtx op1)
+{
+  riscv_emit_int_compare (&code, &op0, &op1);
+  rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+  emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (GET_MODE (dest), cond,
+						      cons, alt)));
 }
 
 /* Implement TARGET_FUNCTION_ARG_BOUNDARY.  Every parameter gets at
@@ -4361,6 +4401,7 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 		      HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		      tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
   rtx this_rtx, temp1, temp2, fnaddr;
   rtx_insn *insn;
 
@@ -4420,9 +4461,11 @@ riscv_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   insn = get_insns ();
   split_all_insns_noflow ();
   shorten_branches (insn);
+  assemble_start_function (thunk_fndecl, fnname);
   final_start_function (insn, file, 1);
   final (insn, file, 1);
   final_end_function ();
+  assemble_end_function (thunk_fndecl, fnname);
 
   /* Clean up the vars set above.  Note that final_end_function resets
      the global pointer for us.  */

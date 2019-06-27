@@ -8,16 +8,16 @@
 void tst_decimal (_Decimal32 *p32, _Decimal64 *p64, _Decimal128 *p128)
 {
   *p32 = abs(*p32);       /* { dg-warning "using integer absolute value function" } */
-  *p64 = fabs(*p64);      /* { dg-warning "using floating point absolute value function" } */
+  *p64 = fabs(*p64);      /* { dg-warning "using floating-point absolute value function" } */
   *p128 = cabsl(*p128);   /* { dg-warning "using complex absolute value function" } */
 }
 
 void tst_notdecimal (int *pi, double *pd, long double *pld, complex double *pc)
 {
-  *pi = __builtin_fabsd32 (*pi);   /* { dg-warning "using decimal floating point absolute value function" } */
-  *pd = __builtin_fabsd64 (*pd);   /* { dg-warning "using decimal floating point absolute value function" } */
-  *pld = __builtin_fabsd64 (*pld); /* { dg-warning "using decimal floating point absolute value function" } */
-  *pc = __builtin_fabsd128 (*pc);  /* { dg-warning "using decimal floating point absolute value function" } */
+  *pi = __builtin_fabsd32 (*pi);   /* { dg-warning "using decimal floating-point absolute value function" } */
+  *pd = __builtin_fabsd64 (*pd);   /* { dg-warning "using decimal floating-point absolute value function" } */
+  *pld = __builtin_fabsd64 (*pld); /* { dg-warning "using decimal floating-point absolute value function" } */
+  *pc = __builtin_fabsd128 (*pc);  /* { dg-warning "using decimal floating-point absolute value function" } */
 }
 
 void

@@ -396,8 +396,17 @@ enum simd_immediate_check {
   AARCH64_CHECK_MOV  = AARCH64_CHECK_ORR | AARCH64_CHECK_BIC
 };
 
+/* The key type that -msign-return-address should use.  */
+enum aarch64_key_type {
+  AARCH64_KEY_A,
+  AARCH64_KEY_B
+};
+
+extern enum aarch64_key_type aarch64_ra_sign_key;
+
 extern struct tune_params aarch64_tune_params;
 
+void aarch64_post_cfi_startproc (void);
 poly_int64 aarch64_initial_elimination_offset (unsigned, unsigned);
 int aarch64_get_condition_code (rtx);
 bool aarch64_address_valid_for_prefetch_p (rtx, bool);
@@ -427,6 +436,8 @@ bool aarch64_is_long_call_p (rtx);
 bool aarch64_is_noplt_call_p (rtx);
 bool aarch64_label_mentioned_p (rtx);
 void aarch64_declare_function_name (FILE *, const char*, tree);
+void aarch64_asm_output_alias (FILE *, const tree, const tree);
+void aarch64_asm_output_external (FILE *, tree, const char*);
 bool aarch64_legitimate_pic_operand_p (rtx);
 bool aarch64_mask_and_shift_for_ubfiz_p (scalar_int_mode, rtx, rtx);
 bool aarch64_masks_and_shift_for_bfi_p (scalar_int_mode, unsigned HOST_WIDE_INT,
@@ -509,12 +520,15 @@ const char * aarch64_output_probe_sve_stack_clash (rtx, rtx, rtx, rtx);
 void aarch64_err_no_fpadvsimd (machine_mode);
 void aarch64_expand_epilogue (bool);
 void aarch64_expand_mov_immediate (rtx, rtx, rtx (*) (rtx, rtx) = 0);
+rtx aarch64_ptrue_reg (machine_mode);
+rtx aarch64_pfalse_reg (machine_mode);
 void aarch64_emit_sve_pred_move (rtx, rtx, rtx);
 void aarch64_expand_sve_mem_move (rtx, rtx, machine_mode);
 bool aarch64_maybe_expand_sve_subreg_move (rtx, rtx);
 void aarch64_split_sve_subreg_move (rtx, rtx, rtx);
 void aarch64_expand_prologue (void);
 void aarch64_expand_vector_init (rtx, rtx);
+void aarch64_sve_expand_vector_init (rtx, rtx);
 void aarch64_init_cumulative_args (CUMULATIVE_ARGS *, const_tree, rtx,
 				   const_tree, unsigned);
 void aarch64_init_expanders (void);
@@ -624,11 +638,10 @@ bool aarch64_handle_option (struct gcc_options *, struct gcc_options *,
 			     const struct cl_decoded_option *, location_t);
 const char *aarch64_rewrite_selected_cpu (const char *name);
 enum aarch64_parse_opt_result aarch64_parse_extension (const char *,
-						       unsigned long *,
+						       uint64_t *,
 						       std::string *);
 void aarch64_get_all_extension_candidates (auto_vec<const char *> *candidates);
-std::string aarch64_get_extension_string_for_isa_flags (unsigned long,
-							unsigned long);
+std::string aarch64_get_extension_string_for_isa_flags (uint64_t, uint64_t);
 
 /* Defined in aarch64-d.c  */
 extern void aarch64_d_target_versions (void);

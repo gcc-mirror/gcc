@@ -4136,7 +4136,6 @@ func TestArrayOfGenericAlg(t *testing.T) {
 }
 
 func TestArrayOfDirectIface(t *testing.T) {
-	t.Skip("skipping test because gccgo uses a different directiface value")
 	{
 		type T [1]*byte
 		i1 := Zero(TypeOf(T{})).Interface()
@@ -4775,9 +4774,6 @@ func TestStructOfGenericAlg(t *testing.T) {
 	}
 }
 
-/*
-gccgo does not use the same directiface settings as gc.
-
 func TestStructOfDirectIface(t *testing.T) {
 	{
 		type T struct{ X [1]*byte }
@@ -4826,7 +4822,6 @@ func TestStructOfDirectIface(t *testing.T) {
 		}
 	}
 }
-*/
 
 type StructI int
 

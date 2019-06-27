@@ -70,7 +70,6 @@ Parser::Parser(Loc loc, Module *module, const utf8_t *base, size_t length, bool 
     //printf("Parser::Parser()\n");
     scanloc = loc;
 
-#ifndef IN_GCC
     if (loc.filename)
     {
         /* Create a pseudo-filename for the mixin string, as it may not even exist
@@ -80,7 +79,6 @@ Parser::Parser(Loc loc, Module *module, const utf8_t *base, size_t length, bool 
         sprintf(filename, "%s-mixin-%d", loc.filename, (int)loc.linnum);
         scanloc.filename = filename;
     }
-#endif
 
     mod = module;
     md = NULL;

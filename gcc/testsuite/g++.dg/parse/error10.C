@@ -14,4 +14,4 @@ template <typename T> void foo()
   enum typename A<T>::E    e4;
 }
 
-// { dg-error "28:two or more data types in declaration of 'e4'" "2 or more" { target *-*-* } 14 }
+// { dg-error "3:two or more data types in declaration of 'e4'" "2 or more" { target *-*-* } 14 }

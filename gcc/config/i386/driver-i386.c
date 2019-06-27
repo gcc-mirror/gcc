@@ -423,9 +423,12 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_shstk = 0;
   unsigned int has_avx512vnni = 0, has_vaes = 0;
   unsigned int has_vpclmulqdq = 0;
+  unsigned int has_avx512vp2intersect = 0;
   unsigned int has_movdiri = 0, has_movdir64b = 0;
+  unsigned int has_enqcmd = 0;
   unsigned int has_waitpkg = 0;
   unsigned int has_cldemote = 0;
+  unsigned int has_avx512bf16 = 0;
 
   unsigned int has_ptwrite = 0;
 
@@ -525,14 +528,19 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_avx512bitalg = ecx & bit_AVX512BITALG;
       has_movdiri = ecx & bit_MOVDIRI;
       has_movdir64b = ecx & bit_MOVDIR64B;
+      has_enqcmd = ecx & bit_ENQCMD;
       has_cldemote = ecx & bit_CLDEMOTE;
 
       has_avx5124vnniw = edx & bit_AVX5124VNNIW;
       has_avx5124fmaps = edx & bit_AVX5124FMAPS;
+      has_avx512vp2intersect = edx & bit_AVX512VP2INTERSECT;
 
       has_shstk = ecx & bit_SHSTK;
       has_pconfig = edx & bit_PCONFIG;
       has_waitpkg = ecx & bit_WAITPKG;
+
+      __cpuid_count (7, 1, eax, ebx, ecx, edx);
+      has_avx512bf16 = eax & bit_AVX512BF16;
     }
 
   if (max_level >= 13)
@@ -1137,12 +1145,15 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       const char *shstk = has_shstk ? " -mshstk" : " -mno-shstk";
       const char *vaes = has_vaes ? " -mvaes" : " -mno-vaes";
       const char *vpclmulqdq = has_vpclmulqdq ? " -mvpclmulqdq" : " -mno-vpclmulqdq";
+      const char *avx512vp2intersect = has_avx512vp2intersect ? " -mavx512vp2intersect" : " -mno-avx512vp2intersect";
       const char *avx512bitalg = has_avx512bitalg ? " -mavx512bitalg" : " -mno-avx512bitalg";
       const char *movdiri = has_movdiri ? " -mmovdiri" : " -mno-movdiri";
       const char *movdir64b = has_movdir64b ? " -mmovdir64b" : " -mno-movdir64b";
+      const char *enqcmd = has_enqcmd ? " -menqcmd" : " -mno-enqcmd";
       const char *waitpkg = has_waitpkg ? " -mwaitpkg" : " -mno-waitpkg";
       const char *cldemote = has_cldemote ? " -mcldemote" : " -mno-cldemote";
       const char *ptwrite = has_ptwrite ? " -mptwrite" : " -mno-ptwrite";
+      const char *avx512bf16 = has_avx512bf16 ? " -mavx512bf16" : " -mno-avx512bf16";
 
       options = concat (options, mmx, mmx3dnow, sse, sse2, sse3, ssse3,
 			sse4a, cx16, sahf, movbe, aes, sha, pclmul,
@@ -1157,7 +1168,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 			clwb, mwaitx, clzero, pku, rdpid, gfni, shstk,
 			avx512vbmi2, avx512vnni, vaes, vpclmulqdq,
 			avx512bitalg, movdiri, movdir64b, waitpkg, cldemote,
-			ptwrite,
+			ptwrite, avx512bf16, enqcmd, avx512vp2intersect,
 			NULL);
     }
 

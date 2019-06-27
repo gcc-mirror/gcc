@@ -16,4 +16,4 @@ void A::bar (B *)
 {
   foo ((int B::*) nullptr);
 }
-// { dg-warning "nonnull argument" "" {target "*-*-*"} 0 }
+// { dg-warning "'nonnull' argument" "" {target "*-*-*"} 0 }

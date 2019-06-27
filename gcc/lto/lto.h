@@ -69,4 +69,6 @@ struct lto_section_list
   struct lto_section_slot *first, *last;
 };
 
+extern unsigned int lto_option_lang_mask (void);
+
 #endif /* LTO_H */

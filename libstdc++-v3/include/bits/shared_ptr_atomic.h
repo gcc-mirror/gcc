@@ -40,6 +40,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @addtogroup pointer_abstractions
    * @{
    */
+  /// @relates shared_ptr @{
+
+  /// @cond undocumented
 
   struct _Sp_locker
   {
@@ -59,6 +62,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     explicit _Sp_locker(const void*, const void* = nullptr) { }
 #endif
   };
+
+  /// @endcond
 
   /**
    *  @brief  Report whether shared_ptr atomic operations are lock-free.
@@ -322,6 +327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
   // @}
 
+  // @} relates shared_ptr
   // @} group pointer_abstractions
 
 _GLIBCXX_END_NAMESPACE_VERSION

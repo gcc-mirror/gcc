@@ -56,82 +56,22 @@
 (define_register_constraint "wa" "rs6000_constraints[RS6000_CONSTRAINT_wa]"
   "Any VSX register if the -mvsx option was used or NO_REGS.")
 
-(define_register_constraint "wb" "rs6000_constraints[RS6000_CONSTRAINT_wb]"
-  "Altivec register if the -mpower9-dform option was used or NO_REGS.")
-
 ;; NOTE: For compatibility, "wc" is reserved to represent individual CR bits.
 ;; It is currently used for that purpose in LLVM.
-
-(define_register_constraint "wd" "rs6000_constraints[RS6000_CONSTRAINT_wd]"
-  "VSX vector register to hold vector double data or NO_REGS.")
 
 (define_register_constraint "we" "rs6000_constraints[RS6000_CONSTRAINT_we]"
   "VSX register if the -mpower9-vector -m64 options were used or NO_REGS.")
 
-(define_register_constraint "wf" "rs6000_constraints[RS6000_CONSTRAINT_wf]"
-  "VSX vector register to hold vector float data or NO_REGS.")
-
-(define_register_constraint "wg" "rs6000_constraints[RS6000_CONSTRAINT_wg]"
-  "If -mmfpgpr was used, a floating point register or NO_REGS.")
-
-(define_register_constraint "wh" "rs6000_constraints[RS6000_CONSTRAINT_wh]"
-  "Floating point register if direct moves are available, or NO_REGS.")
-
-(define_register_constraint "wi" "rs6000_constraints[RS6000_CONSTRAINT_wi]"
-  "FP or VSX register to hold 64-bit integers for VSX insns or NO_REGS.")
-
-(define_register_constraint "wj" "rs6000_constraints[RS6000_CONSTRAINT_wj]"
-  "FP or VSX register to hold 64-bit integers for direct moves or NO_REGS.")
-
-(define_register_constraint "wk" "rs6000_constraints[RS6000_CONSTRAINT_wk]"
-  "FP or VSX register to hold 64-bit doubles for direct moves or NO_REGS.")
-
-(define_register_constraint "wl" "rs6000_constraints[RS6000_CONSTRAINT_wl]"
-  "Floating point register if the LFIWAX instruction is enabled or NO_REGS.")
-
-(define_register_constraint "wm" "rs6000_constraints[RS6000_CONSTRAINT_wm]"
-  "VSX register if direct move instructions are enabled, or NO_REGS.")
-
 ;; NO_REGs register constraint, used to merge mov{sd,sf}, since movsd can use
 ;; direct move directly, and movsf can't to move between the register sets.
-;; There is a mode_attr that resolves to wm for SDmode and wn for SFmode
+;; There is a mode_attr that resolves to wa for SDmode and wn for SFmode
 (define_register_constraint "wn" "NO_REGS" "No register (NO_REGS).")
-
-(define_register_constraint "wo" "rs6000_constraints[RS6000_CONSTRAINT_wo]"
-  "VSX register if the -mpower9-vector option was used or NO_REGS.")
-
-(define_register_constraint "wp" "rs6000_constraints[RS6000_CONSTRAINT_wp]"
-  "VSX register to use for IEEE 128-bit fp TFmode, or NO_REGS.")
-
-(define_register_constraint "wq" "rs6000_constraints[RS6000_CONSTRAINT_wq]"
-  "VSX register to use for IEEE 128-bit fp KFmode, or NO_REGS.")
 
 (define_register_constraint "wr" "rs6000_constraints[RS6000_CONSTRAINT_wr]"
   "General purpose register if 64-bit instructions are enabled or NO_REGS.")
 
-(define_register_constraint "ws" "rs6000_constraints[RS6000_CONSTRAINT_ws]"
-  "VSX vector register to hold scalar double values or NO_REGS.")
-
-(define_register_constraint "wt" "rs6000_constraints[RS6000_CONSTRAINT_wt]"
-  "VSX vector register to hold 128 bit integer or NO_REGS.")
-
-(define_register_constraint "wu" "rs6000_constraints[RS6000_CONSTRAINT_wu]"
-  "Altivec register to use for float/32-bit int loads/stores  or NO_REGS.")
-
-(define_register_constraint "wv" "rs6000_constraints[RS6000_CONSTRAINT_wv]"
-  "Altivec register to use for double loads/stores  or NO_REGS.")
-
-(define_register_constraint "ww" "rs6000_constraints[RS6000_CONSTRAINT_ww]"
-  "FP or VSX register to perform float operations under -mvsx or NO_REGS.")
-
 (define_register_constraint "wx" "rs6000_constraints[RS6000_CONSTRAINT_wx]"
   "Floating point register if the STFIWX instruction is enabled or NO_REGS.")
-
-(define_register_constraint "wy" "rs6000_constraints[RS6000_CONSTRAINT_wy]"
-  "FP or VSX register to perform ISA 2.07 float ops or NO_REGS.")
-
-(define_register_constraint "wz" "rs6000_constraints[RS6000_CONSTRAINT_wz]"
-  "Floating point register if the LFIWZX instruction is enabled or NO_REGS.")
 
 (define_register_constraint "wA" "rs6000_constraints[RS6000_CONSTRAINT_wA]"
   "BASE_REGS if 64-bit instructions are enabled or NO_REGS.")
@@ -156,18 +96,6 @@
 (define_memory_constraint "wF"
   "Memory operand suitable for power8 GPR load fusion"
   (match_operand 0 "fusion_addis_mem_combo_load"))
-
-(define_register_constraint "wH" "rs6000_constraints[RS6000_CONSTRAINT_wH]"
-  "Altivec register to hold 32-bit integers or NO_REGS.")
-
-(define_register_constraint "wI" "rs6000_constraints[RS6000_CONSTRAINT_wI]"
-  "FPR register to hold 32-bit integers or NO_REGS.")
-
-(define_register_constraint "wJ" "rs6000_constraints[RS6000_CONSTRAINT_wJ]"
-  "FPR register to hold 8/16-bit integers or NO_REGS.")
-
-(define_register_constraint "wK" "rs6000_constraints[RS6000_CONSTRAINT_wK]"
-  "Altivec register to hold 8/16-bit integers or NO_REGS.")
 
 (define_constraint "wL"
   "Int constant that is the element number mfvsrld accesses in a vector."
@@ -251,6 +179,11 @@
   "constant whose negation is signed 16-bit constant"
   (and (match_code "const_int")
        (match_test "((- (unsigned HOST_WIDE_INT) ival) + 0x8000) < 0x10000")))
+
+;; 34-bit signed integer constant
+(define_constraint "eI"
+  "34-bit constant integer that can be loaded with PADDI"
+  (match_operand 0 "cint34_operand"))
 
 ;; Floating-point constraints.  These two are defined so that insn
 ;; length attributes can be calculated exactly.

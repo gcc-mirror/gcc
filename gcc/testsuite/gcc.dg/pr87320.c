@@ -1,5 +1,6 @@
 /* PR tree-optimization/87320 */
 /* { dg-do run } */
+/* { dg-require-effective-target alloca } */
 /* { dg-options "-O3" } */
 /* { dg-additional-options "-mavx" { target avx_runtime } } */
 

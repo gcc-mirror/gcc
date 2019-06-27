@@ -70,7 +70,7 @@
       Program crashes when using library code in a
       dynamically-loaded library
     </a></dt><dt>6.7. <a href="faq.html#faq.memory_leaks">
-      “Memory leaks” in containers
+      “Memory leaks” in libstdc++
     </a></dt><dt>6.8. <a href="faq.html#faq.list_size_on">
       list::size() is O(n)!
     </a></dt><dt>6.9. <a href="faq.html#faq.easy_to_fix">
@@ -593,7 +593,7 @@
       Program crashes when using library code in a
       dynamically-loaded library
     </a></dt><dt>6.7. <a href="faq.html#faq.memory_leaks">
-      “Memory leaks” in containers
+      “Memory leaks” in libstdc++
     </a></dt><dt>6.8. <a href="faq.html#faq.list_size_on">
       list::size() is O(n)!
     </a></dt><dt>6.9. <a href="faq.html#faq.easy_to_fix">
@@ -708,15 +708,27 @@
     Link the executable:<br />
     <span class="command"><strong>g++ -fPIC -rdynamic -o foo ... -L. -lfoo -ldl</strong></span><br />
     </p></div></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.memory_leaks"></a><a id="q-memory_leaks"></a><p><strong>6.7.</strong></p></td><td align="left" valign="top"><p>
-      <span class="quote">“<span class="quote">Memory leaks</span>”</span> in containers
-    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-memory_leaks"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer be relevant.</p></div><p>
-    A few people have reported that the standard containers appear
+      <span class="quote">“<span class="quote">Memory leaks</span>”</span> in libstdc++
+    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-memory_leaks"></a></td><td align="left" valign="top"><p>
+    Since GCC 5.1.0, libstdc++ automatically allocates a pool
+    of a few dozen kilobytes on startup. This pool is used to ensure it's
+    possible to throw exceptions (such as <code class="classname">bad_alloc</code>)
+    even when <code class="code">malloc</code> is unable to allocate any more memory.
+    With some versions of <a class="link" href="http://valgrind.org/" target="_top"><span class="command"><strong>valgrind</strong></span></a>
+    this pool will be shown as "still reachable" when the process exits, e.g.
+    <code class="code">still reachable: 72,704 bytes in 1 blocks</code>.
+    This memory is not a leak, because it's still in use by libstdc++,
+    and the memory will be returned to the OS when the process exits.
+    Later versions of <span class="command"><strong>valgrind</strong></span> know how to free this
+    pool as the process exits, and so won't show any "still reachable" memory.
+    </p><p>
+    In the past, a few people reported that the standard containers appear
     to leak memory when tested with memory checkers such as
     <a class="link" href="http://valgrind.org/" target="_top"><span class="command"><strong>valgrind</strong></span></a>.
     Under some (non-default) configurations the library's allocators keep
     free memory in a
-    pool for later reuse, rather than returning it to the OS.  Although
-    this memory is always reachable by the library and is never
+    pool for later reuse, rather than deallocating it with <code class="code">delete</code>
+    Although this memory is always reachable by the library and is never
     lost, memory debugging tools can report it as a leak.  If you
     want to test the library for memory leaks please read
     <a class="link" href="manual/debug.html#debug.memory" title="Memory Leak Hunting">Tips for memory leak hunting</a>

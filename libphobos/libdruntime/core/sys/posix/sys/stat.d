@@ -709,10 +709,10 @@ version (CRuntime_Glibc)
             }
             int[2] __unused;
         }
-        static if (__USE_FILE_OFFSET64)
+        version (D_LP64)
             static assert(stat_t.sizeof == 128);
         else
-            static assert(stat_t.sizeof == 128);
+            static assert(stat_t.sizeof == 104);
     }
     else version (SPARC64)
     {
@@ -791,7 +791,7 @@ version (CRuntime_Glibc)
         }
         static assert(stat_t.sizeof == 144);
     }
-    else version (SystemZ)
+    else version (S390)
     {
         private
         {
@@ -804,7 +804,83 @@ version (CRuntime_Glibc)
             alias __gid_t = uint;
             alias __off_t = c_long;
             alias __off64_t = long;
-            alias __blksize_t = int;
+            alias __blksize_t = c_long;
+            alias __blkcnt_t = c_long;
+            alias __blkcnt64_t = long;
+            alias __timespec = timespec;
+            alias __time_t = time_t;
+        }
+        struct stat_t
+        {
+            __dev_t st_dev;
+            uint __pad1;
+            static if (!__USE_FILE_OFFSET64)
+                __ino_t st_ino;
+            else
+                __ino_t __st_ino;
+            __mode_t st_mode;
+            __nlink_t st_nlink;
+            __uid_t st_uid;
+            __gid_t st_gid;
+            __dev_t st_rdev;
+            uint __pad2;
+            static if (!__USE_FILE_OFFSET64)
+                __off_t st_size;
+            else
+                __off64_t st_size;
+            __blksize_t st_blksize;
+            static if (!__USE_FILE_OFFSET64)
+                __blkcnt_t st_blocks;
+            else
+                __blkcnt64_t st_blocks;
+            static if (__USE_XOPEN2K8)
+            {
+                __timespec st_atim;
+                __timespec st_mtim;
+                __timespec st_ctim;
+                extern(D)
+                {
+                    @property ref time_t st_atime() { return st_atim.tv_sec; }
+                    @property ref time_t st_mtime() { return st_mtim.tv_sec; }
+                    @property ref time_t st_ctime() { return st_ctim.tv_sec; }
+                }
+            }
+            else
+            {
+                __time_t st_atime;
+                c_ulong st_atimensec;
+                __time_t st_mtime;
+                c_ulong st_mtimensec;
+                __time_t st_ctime;
+                c_ulong st_ctimensec;
+            }
+            static if (!__USE_FILE_OFFSET64)
+            {
+                c_ulong __glibc_reserved4;
+                c_ulong __glibc_reserved5;
+            }
+            else
+                __ino64_t st_ino;
+        }
+        static if (__USE_FILE_OFFSET64)
+            static assert(stat_t.sizeof == 104);
+        else
+            static assert(stat_t.sizeof == 88);
+    }
+    else version (SystemZ)
+    {
+        private
+        {
+            alias __dev_t = ulong;
+            alias __ino_t = c_ulong;
+            alias __ino64_t = ulong;
+            alias __mode_t = uint;
+            alias __nlink_t = ulong;
+            alias __uid_t = uint;
+            alias __gid_t = uint;
+            alias __off_t = c_long;
+            alias __off64_t = long;
+            alias __blksize_t = c_long;
             alias __blkcnt_t = c_long;
             alias __blkcnt64_t = long;
             alias __timespec = timespec;

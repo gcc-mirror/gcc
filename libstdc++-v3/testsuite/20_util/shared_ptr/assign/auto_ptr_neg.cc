@@ -47,3 +47,4 @@ main()
 }
 
 // { dg-prune-output "cannot convert" }
+// { dg-prune-output "enable_if" }

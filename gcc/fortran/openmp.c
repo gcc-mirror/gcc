@@ -5510,8 +5510,7 @@ gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym, bool add_clause)
   if (!omp_current_ctx->is_openmp && !oacc_is_loop (omp_current_ctx->code))
     return;
 
-  if (omp_current_ctx->is_openmp
-      && omp_current_ctx->sharing_clauses->contains (sym))
+  if (omp_current_ctx->sharing_clauses->contains (sym))
     return;
 
   if (! omp_current_ctx->private_iterators->add (sym) && add_clause)
@@ -5971,19 +5970,34 @@ void
 gfc_resolve_oacc_blocks (gfc_code *code, gfc_namespace *ns)
 {
   fortran_omp_context ctx;
+  gfc_omp_clauses *omp_clauses = code->ext.omp_clauses;
+  gfc_omp_namelist *n;
+  int list;
 
   resolve_oacc_loop_blocks (code);
 
   ctx.code = code;
-  ctx.sharing_clauses = NULL;
+  ctx.sharing_clauses = new hash_set<gfc_symbol *>;
   ctx.private_iterators = new hash_set<gfc_symbol *>;
   ctx.previous = omp_current_ctx;
   ctx.is_openmp = false;
   omp_current_ctx = &ctx;
 
+  for (list = 0; list < OMP_LIST_NUM; list++)
+    switch (list)
+      {
+      case OMP_LIST_PRIVATE:
+	for (n = omp_clauses->lists[list]; n; n = n->next)
+	  ctx.sharing_clauses->add (n->sym);
+	break;
+      default:
+	break;
+      }
+
   gfc_resolve_blocks (code->block, ns);
 
   omp_current_ctx = ctx.previous;
+  delete ctx.sharing_clauses;
   delete ctx.private_iterators;
 }
 

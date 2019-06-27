@@ -1,6 +1,5 @@
 // { dg-do run { target c++11 } }
 // { dg-options "-g -O0" }
-// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
 // Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //
@@ -165,27 +164,27 @@ holder<std::csub_match> csub_match_holder;
 
   std::vector<std::deque<std::unique_ptr<char>>> *seq1_ptr;
   holder< std::vector<std::deque<std::unique_ptr<char>>> > seq1_holder;
-// { dg-final { whatis-test seq1_holder "holder<std::vector<std::deque<std::unique_ptr<char>>> >" } }
+// { dg-final { whatis-regexp-test seq1_holder "holder<std::(__debug::)?vector<std::(__debug::)?deque<std::unique_ptr<char>>> >" } }
 
   std::list<std::forward_list<std::unique_ptr<char>>> *seq2_ptr;
   holder< std::list<std::forward_list<std::unique_ptr<char>>> > seq2_holder;
-// { dg-final { whatis-test seq2_holder "holder<std::list<std::forward_list<std::unique_ptr<char>>> >" } }
+// { dg-final { whatis-regexp-test seq2_holder "holder<std::(__debug::)?list<std::(__debug::)?forward_list<std::unique_ptr<char>>> >" } }
 
   std::map<int, std::set<int>> *assoc1_ptr;
   holder< std::map<int, std::set<int>> > assoc1_holder;
-// { dg-final { whatis-test assoc1_holder "holder<std::map<int, std::set<int>> >" } }
+// { dg-final { whatis-regexp-test assoc1_holder "holder<std::(__debug::)?map<int, std::(__debug::)?set<int>> >" } }
 
   std::multimap<int, std::multiset<int>> *assoc2_ptr;
   holder< std::multimap<int, std::multiset<int>> > assoc2_holder;
-// { dg-final { whatis-test assoc2_holder "holder<std::multimap<int, std::multiset<int>> >" } }
+// { dg-final { whatis-regexp-test assoc2_holder "holder<std::(__debug::)?multimap<int, std::(__debug::)?multiset<int>> >" } }
 
   std::unordered_map<int, std::unordered_set<int>> *unord1_ptr;
   holder< std::unordered_map<int, std::unordered_set<int>> > unord1_holder;
-// { dg-final { whatis-test unord1_holder "holder<std::unordered_map<int, std::unordered_set<int>> >" } }
+// { dg-final { whatis-regexp-test unord1_holder "holder<std::(__debug::)?unordered_map<int, std::(__debug::)?unordered_set<int>> >" } }
 
   std::unordered_multimap<int, std::unordered_multiset<int>> *unord2_ptr;
   holder< std::unordered_multimap<int, std::unordered_multiset<int>> > unord2_holder;
-// { dg-final { whatis-test unord2_holder "holder<std::unordered_multimap<int, std::unordered_multiset<int>> >" } }
+// { dg-final { whatis-regexp-test unord2_holder "holder<std::(__debug::)?unordered_multimap<int, std::(__debug::)?unordered_multiset<int>> >" } }
 
 
   placeholder(&ios_ptr);		// Mark SPOT

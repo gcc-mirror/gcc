@@ -5,7 +5,7 @@ int g (void);
 
 int f (void)
 {
-        g();
+  g();
 }
 
-/* { dg-final { scan-assembler "j @g" } } */
+/* { dg-final { scan-assembler "j\\t@g" } } */

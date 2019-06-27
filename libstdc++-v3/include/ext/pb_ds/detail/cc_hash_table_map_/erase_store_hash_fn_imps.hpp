@@ -39,6 +39,8 @@
  * when the hash value is stored.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
@@ -92,3 +94,4 @@ erase_in_pos_imp(key_const_reference r_key, const comp_hash& r_pos_hash_pair)
       p_e = p_next_e;
     }
 }
+#endif

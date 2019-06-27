@@ -107,7 +107,7 @@ case ${host} in
 	;;
     esac
     ;;
-  arm*-*-freebsd* | arm*-*-linux* | arm*-*-fuchsia*)
+  arm*-*-freebsd* | arm*-*-netbsd* | arm*-*-linux* | arm*-*-fuchsia*)
     case ${target} in
       arm*-*-*)
 	host_extra_gcc_objs="driver-arm.o"
@@ -213,7 +213,7 @@ case ${host} in
     out_host_hook_obj=host-hpux.o
     host_xmake_file="${host_xmake_file} x-hpux"
     ;;
-  i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
+  i[34567]86-*-solaris2* | x86_64-*-solaris2*)
     out_host_hook_obj=host-solaris.o
     host_xmake_file="${host_xmake_file} x-solaris"
     ;;

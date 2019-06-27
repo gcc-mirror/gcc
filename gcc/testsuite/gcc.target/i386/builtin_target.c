@@ -265,6 +265,10 @@ check_features (unsigned int ecx, unsigned int edx,
 	assert (__builtin_cpu_supports ("avx5124vnniw"));
       if (edx & bit_AVX5124FMAPS)
 	assert (__builtin_cpu_supports ("avx5124fmaps"));
+
+      __cpuid_count (7, 1, eax, ebx, ecx, edx);
+      if (eax & bit_AVX512BF16)
+	assert (__builtin_cpu_supports ("avx512bf16"));
     }
 
   /* Check cpuid level of extended features.  */

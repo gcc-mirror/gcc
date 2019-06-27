@@ -114,7 +114,7 @@ along with GCC; see the file COPYING3.  If not see
    interface between the GIMPLE and RTL worlds.  */
 
 /* The infinite cost.  */
-#define INFTY 10000000
+#define INFTY 1000000000
 
 /* Returns the expected number of loop iterations for LOOP.
    The average trip count is computed from profile data if it
@@ -180,7 +180,7 @@ struct comp_cost
   comp_cost (): cost (0), complexity (0), scratch (0)
   {}
 
-  comp_cost (int cost, unsigned complexity, int scratch = 0)
+  comp_cost (int64_t cost, unsigned complexity, int64_t scratch = 0)
     : cost (cost), complexity (complexity), scratch (scratch)
   {}
 
@@ -220,16 +220,16 @@ struct comp_cost
   /* Returns true if COST1 is smaller or equal than COST2.  */
   friend bool operator<= (comp_cost cost1, comp_cost cost2);
 
-  int cost;		/* The runtime cost.  */
+  int64_t cost;		/* The runtime cost.  */
   unsigned complexity;  /* The estimate of the complexity of the code for
 			   the computation (in no concrete units --
 			   complexity field should be larger for more
 			   complex expressions and addressing modes).  */
-  int scratch;		/* Scratch used during cost computation.  */
+  int64_t scratch;	/* Scratch used during cost computation.  */
 };
 
 static const comp_cost no_cost;
-static const comp_cost infinite_cost (INFTY, INFTY, INFTY);
+static const comp_cost infinite_cost (INFTY, 0, INFTY);
 
 bool
 comp_cost::infinite_cost_p ()
@@ -243,6 +243,7 @@ operator+ (comp_cost cost1, comp_cost cost2)
   if (cost1.infinite_cost_p () || cost2.infinite_cost_p ())
     return infinite_cost;
 
+  gcc_assert (cost1.cost + cost2.cost < infinite_cost.cost);
   cost1.cost += cost2.cost;
   cost1.complexity += cost2.complexity;
 
@@ -256,6 +257,7 @@ operator- (comp_cost cost1, comp_cost cost2)
     return infinite_cost;
 
   gcc_assert (!cost2.infinite_cost_p ());
+  gcc_assert (cost1.cost - cost2.cost < infinite_cost.cost);
 
   cost1.cost -= cost2.cost;
   cost1.complexity -= cost2.complexity;
@@ -276,6 +278,7 @@ comp_cost::operator+= (HOST_WIDE_INT c)
   if (infinite_cost_p ())
     return *this;
 
+  gcc_assert (this->cost + c < infinite_cost.cost);
   this->cost += c;
 
   return *this;
@@ -287,6 +290,7 @@ comp_cost::operator-= (HOST_WIDE_INT c)
   if (infinite_cost_p ())
     return *this;
 
+  gcc_assert (this->cost - c < infinite_cost.cost);
   this->cost -= c;
 
   return *this;
@@ -295,6 +299,7 @@ comp_cost::operator-= (HOST_WIDE_INT c)
 comp_cost
 comp_cost::operator/= (HOST_WIDE_INT c)
 {
+  gcc_assert (c != 0);
   if (infinite_cost_p ())
     return *this;
 
@@ -309,6 +314,7 @@ comp_cost::operator*= (HOST_WIDE_INT c)
   if (infinite_cost_p ())
     return *this;
 
+  gcc_assert (this->cost * c < infinite_cost.cost);
   this->cost *= c;
 
   return *this;
@@ -638,7 +644,7 @@ struct iv_ca
   comp_cost cand_use_cost;
 
   /* Total cost of candidates.  */
-  unsigned cand_cost;
+  int64_t cand_cost;
 
   /* Number of times each invariant variable is used.  */
   unsigned *n_inv_var_uses;
@@ -938,36 +944,19 @@ stmt_after_increment (struct loop *loop, struct iv_cand *cand, gimple *stmt)
     }
 }
 
-/* Returns true if EXP is a ssa name that occurs in an abnormal phi node.  */
+/* walk_tree callback for contains_abnormal_ssa_name_p.  */
 
-static bool
-abnormal_ssa_name_p (tree exp)
+static tree
+contains_abnormal_ssa_name_p_1 (tree *tp, int *walk_subtrees, void *)
 {
-  if (!exp)
-    return false;
+  if (TREE_CODE (*tp) == SSA_NAME
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (*tp))
+    return *tp;
 
-  if (TREE_CODE (exp) != SSA_NAME)
-    return false;
+  if (!EXPR_P (*tp))
+    *walk_subtrees = 0;
 
-  return SSA_NAME_OCCURS_IN_ABNORMAL_PHI (exp) != 0;
-}
-
-/* Returns false if BASE or INDEX contains a ssa name that occurs in an
-   abnormal phi node.  Callback for for_each_index.  */
-
-static bool
-idx_contains_abnormal_ssa_name_p (tree base, tree *index,
-				  void *data ATTRIBUTE_UNUSED)
-{
-  if (TREE_CODE (base) == ARRAY_REF || TREE_CODE (base) == ARRAY_RANGE_REF)
-    {
-      if (abnormal_ssa_name_p (TREE_OPERAND (base, 2)))
-	return false;
-      if (abnormal_ssa_name_p (TREE_OPERAND (base, 3)))
-	return false;
-    }
-
-  return !abnormal_ssa_name_p (*index);
+  return NULL_TREE;
 }
 
 /* Returns true if EXPR contains a ssa name that occurs in an
@@ -976,61 +965,8 @@ idx_contains_abnormal_ssa_name_p (tree base, tree *index,
 bool
 contains_abnormal_ssa_name_p (tree expr)
 {
-  enum tree_code code;
-  enum tree_code_class codeclass;
-
-  if (!expr)
-    return false;
-
-  code = TREE_CODE (expr);
-  codeclass = TREE_CODE_CLASS (code);
-
-  if (code == CALL_EXPR)
-    {
-      tree arg;
-      call_expr_arg_iterator iter;
-      FOR_EACH_CALL_EXPR_ARG (arg, iter, expr)
-	if (contains_abnormal_ssa_name_p (arg))
-	  return true;
-      return false;
-    }
-
-  if (code == SSA_NAME)
-    return SSA_NAME_OCCURS_IN_ABNORMAL_PHI (expr) != 0;
-
-  if (code == INTEGER_CST
-      || is_gimple_min_invariant (expr))
-    return false;
-
-  if (code == ADDR_EXPR)
-    return !for_each_index (&TREE_OPERAND (expr, 0),
-			    idx_contains_abnormal_ssa_name_p,
-			    NULL);
-
-  if (code == COND_EXPR)
-    return contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 0))
-      || contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 1))
-      || contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 2));
-
-  switch (codeclass)
-    {
-    case tcc_binary:
-    case tcc_comparison:
-      if (contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 1)))
-	return true;
-
-      /* Fallthru.  */
-    case tcc_unary:
-      if (contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 0)))
-	return true;
-
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  return false;
+  return walk_tree_without_duplicates
+	   (&expr, contains_abnormal_ssa_name_p_1, NULL) != NULL_TREE;
 }
 
 /*  Returns the structure describing number of iterations determined from
@@ -2445,11 +2381,13 @@ get_mem_type_for_internal_fn (gcall *call, tree *op_p)
   switch (gimple_call_internal_fn (call))
     {
     case IFN_MASK_LOAD:
+    case IFN_MASK_LOAD_LANES:
       if (op_p == gimple_call_arg_ptr (call, 0))
 	return TREE_TYPE (gimple_call_lhs (call));
       return NULL_TREE;
 
     case IFN_MASK_STORE:
+    case IFN_MASK_STORE_LANES:
       if (op_p == gimple_call_arg_ptr (call, 0))
 	return TREE_TYPE (gimple_call_arg (call, 3));
       return NULL_TREE;
@@ -3494,6 +3432,26 @@ add_iv_candidate_for_use (struct ivopts_data *data, struct iv_use *use)
     basetype = sizetype;
   record_common_cand (data, build_int_cst (basetype, 0), iv->step, use);
 
+  /* Compare the cost of an address with an unscaled index with the cost of
+    an address with a scaled index and add candidate if useful.  */
+  poly_int64 step;
+  if (use != NULL
+      && poly_int_tree_p (iv->step, &step)
+      && address_p (use->type))
+    {
+      poly_int64 new_step;
+      unsigned int fact = preferred_mem_scale_factor
+	(use->iv->base,
+	 TYPE_MODE (use->mem_type),
+	 optimize_loop_for_speed_p (data->current_loop));
+
+      if (fact != 1
+	  && multiple_p (step, fact, &new_step))
+	add_candidate (data, size_int (0),
+		       wide_int_to_tree (sizetype, new_step),
+		       true, NULL);
+    }
+
   /* Record common candidate with constant offset stripped in base.
      Like the use itself, we also add candidate directly for it.  */
   base = strip_offset (iv->base, &offset);
@@ -3776,6 +3734,63 @@ prepare_decl_rtl (tree *expr_p, int *ws, void *data)
   return NULL_TREE;
 }
 
+/* Predict whether the given loop will be transformed in the RTL
+   doloop_optimize pass.  Attempt to duplicate some doloop_optimize checks.
+   This is only for target independent checks, see targetm.predict_doloop_p
+   for the target dependent ones.
+
+   Note that according to some initial investigation, some checks like costly
+   niter check and invalid stmt scanning don't have much gains among general
+   cases, so keep this as simple as possible first.
+
+   Some RTL specific checks seems unable to be checked in gimple, if any new
+   checks or easy checks _are_ missing here, please add them.  */
+
+static bool ATTRIBUTE_UNUSED
+generic_predict_doloop_p (struct ivopts_data *data)
+{
+  struct loop *loop = data->current_loop;
+
+  /* Call target hook for target dependent checks.  */
+  if (!targetm.predict_doloop_p (loop))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Predict doloop failure due to"
+			    " target specific checks.\n");
+      return false;
+    }
+
+  /* Similar to doloop_optimize, check iteration description to know it's
+     suitable or not.  Keep it as simple as possible, feel free to extend it
+     if you find any multiple exits cases matter.  */
+  edge exit = single_dom_exit (loop);
+  struct tree_niter_desc *niter_desc;
+  if (!exit || !(niter_desc = niter_for_exit (data, exit)))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Predict doloop failure due to"
+			    " unexpected niters.\n");
+      return false;
+    }
+
+  /* Similar to doloop_optimize, check whether iteration count too small
+     and not profitable.  */
+  HOST_WIDE_INT est_niter = get_estimated_loop_iterations_int (loop);
+  if (est_niter == -1)
+    est_niter = get_likely_max_loop_iterations_int (loop);
+  if (est_niter >= 0 && est_niter < 3)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Predict doloop failure due to"
+		 " too few iterations (%u).\n",
+		 (unsigned int) est_niter);
+      return false;
+    }
+
+  return true;
+}
+
 /* Determines cost of the computation of EXPR.  */
 
 static unsigned
@@ -4025,16 +4040,16 @@ get_computation_at (struct loop *loop, gimple *at,
    if we're optimizing for speed, amortize it over the per-iteration cost.
    If ROUND_UP_P is true, the result is round up rather than to zero when
    optimizing for speed.  */
-static unsigned
-adjust_setup_cost (struct ivopts_data *data, unsigned cost,
+static int64_t
+adjust_setup_cost (struct ivopts_data *data, int64_t cost,
 		   bool round_up_p = false)
 {
   if (cost == INFTY)
     return cost;
   else if (optimize_loop_for_speed_p (data->current_loop))
     {
-      HOST_WIDE_INT niters = avg_loop_niter (data->current_loop);
-      return ((HOST_WIDE_INT) cost + (round_up_p ? niters - 1 : 0)) / niters;
+      int64_t niters = (int64_t) avg_loop_niter (data->current_loop);
+      return (cost + (round_up_p ? niters - 1 : 0)) / niters;
     }
   else
     return cost;
@@ -4305,7 +4320,7 @@ enum ainc_type
 
 struct ainc_cost_data
 {
-  unsigned costs[AINC_NONE];
+  int64_t costs[AINC_NONE];
 };
 
 static comp_cost
@@ -4557,22 +4572,25 @@ get_address_cost (struct ivopts_data *data, struct iv_use *use,
 static comp_cost
 get_scaled_computation_cost_at (ivopts_data *data, gimple *at, comp_cost cost)
 {
-   int loop_freq = data->current_loop->header->count.to_frequency (cfun);
-   int bb_freq = gimple_bb (at)->count.to_frequency (cfun);
-   if (loop_freq != 0)
-     {
-       gcc_assert (cost.scratch <= cost.cost);
-       int scaled_cost
-	 = cost.scratch + (cost.cost - cost.scratch) * bb_freq / loop_freq;
+  if (data->speed
+      && data->current_loop->header->count.to_frequency (cfun) > 0)
+    {
+      basic_block bb = gimple_bb (at);
+      gcc_assert (cost.scratch <= cost.cost);
+      int scale_factor = (int)(intptr_t) bb->aux;
+      if (scale_factor == 1)
+	return cost;
 
-       if (dump_file && (dump_flags & TDF_DETAILS))
-	 fprintf (dump_file, "Scaling cost based on bb prob "
-		  "by %2.2f: %d (scratch: %d) -> %d (%d/%d)\n",
-		  1.0f * bb_freq / loop_freq, cost.cost,
-		  cost.scratch, scaled_cost, bb_freq, loop_freq);
+      int64_t scaled_cost
+	= cost.scratch + (cost.cost - cost.scratch) * scale_factor;
 
-       cost.cost = scaled_cost;
-     }
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Scaling cost based on bb prob by %2.2f: "
+		 "%" PRId64 " (scratch: %" PRId64 ") -> %" PRId64 "\n",
+		 1.0f * scale_factor, cost.cost, cost.scratch, scaled_cost);
+
+      cost.cost = scaled_cost;
+    }
 
   return cost;
 }
@@ -5536,7 +5554,7 @@ determine_group_iv_costs (struct ivopts_data *data)
 		  || group->cost_map[j].cost.infinite_cost_p ())
 		continue;
 
-	      fprintf (dump_file, "  %d\t%d\t%d\t",
+	      fprintf (dump_file, "  %d\t%" PRId64 "\t%d\t",
 		       group->cost_map[j].cand->id,
 		       group->cost_map[j].cost.cost,
 		       group->cost_map[j].cost.complexity);
@@ -5566,7 +5584,7 @@ static void
 determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
 {
   comp_cost cost_base;
-  unsigned cost, cost_step;
+  int64_t cost, cost_step;
   tree base;
 
   gcc_assert (cand->iv != NULL);
@@ -6136,11 +6154,11 @@ iv_ca_dump (struct ivopts_data *data, FILE *file, struct iv_ca *ivs)
   unsigned i;
   comp_cost cost = iv_ca_cost (ivs);
 
-  fprintf (file, "  cost: %d (complexity %d)\n", cost.cost,
+  fprintf (file, "  cost: %" PRId64 " (complexity %d)\n", cost.cost,
 	   cost.complexity);
-  fprintf (file, "  cand_cost: %d\n  cand_group_cost: %d (complexity %d)\n",
-	   ivs->cand_cost, ivs->cand_use_cost.cost,
-	   ivs->cand_use_cost.complexity);
+  fprintf (file, "  cand_cost: %" PRId64 "\n  cand_group_cost: "
+	   "%" PRId64 " (complexity %d)\n", ivs->cand_cost,
+	   ivs->cand_use_cost.cost, ivs->cand_use_cost.complexity);
   bitmap_print (file, ivs->cands, "  candidates: ","\n");
 
   for (i = 0; i < ivs->upto; i++)
@@ -6148,9 +6166,9 @@ iv_ca_dump (struct ivopts_data *data, FILE *file, struct iv_ca *ivs)
       struct iv_group *group = data->vgroups[i];
       struct cost_pair *cp = iv_ca_cand_for_group (ivs, group);
       if (cp)
-        fprintf (file, "   group:%d --> iv_cand:%d, cost=(%d,%d)\n",
-		 group->id, cp->cand->id, cp->cost.cost,
-		 cp->cost.complexity);
+        fprintf (file, "   group:%d --> iv_cand:%d, cost=("
+		 "%" PRId64 ",%d)\n", group->id, cp->cand->id,
+		 cp->cost.cost, cp->cost.complexity);
       else
 	fprintf (file, "   group:%d --> ??\n", group->id);
     }
@@ -6678,9 +6696,8 @@ try_improve_iv_set (struct ivopts_data *data,
     }
 
   iv_ca_delta_commit (data, ivs, best_delta, true);
-  gcc_assert (best_cost == iv_ca_cost (ivs));
   iv_ca_delta_free (&best_delta);
-  return true;
+  return best_cost == iv_ca_cost (ivs);
 }
 
 /* Attempts to find the optimal set of induction variables.  We do simple
@@ -6717,6 +6734,14 @@ find_optimal_iv_set_1 (struct ivopts_data *data, bool originalp)
 	}
     }
 
+  /* If the set has infinite_cost, it can't be optimal.  */
+  if (iv_ca_cost (set).infinite_cost_p ())
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Overflow to infinite cost in try_improve_iv_set.\n");
+      iv_ca_free (&set);
+    }
   return set;
 }
 
@@ -6741,9 +6766,9 @@ find_optimal_iv_set (struct ivopts_data *data)
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "Original cost %d (complexity %d)\n\n",
+      fprintf (dump_file, "Original cost %" PRId64 " (complexity %d)\n\n",
 	       origcost.cost, origcost.complexity);
-      fprintf (dump_file, "Final cost %d (complexity %d)\n\n",
+      fprintf (dump_file, "Final cost %" PRId64 " (complexity %d)\n\n",
 	       cost.cost, cost.complexity);
     }
 
@@ -7096,6 +7121,8 @@ get_alias_ptr_type_for_ptr_address (iv_use *use)
     {
     case IFN_MASK_LOAD:
     case IFN_MASK_STORE:
+    case IFN_MASK_LOAD_LANES:
+    case IFN_MASK_STORE_LANES:
       /* The second argument contains the correct alias type.  */
       gcc_assert (use->op_p = gimple_call_arg_ptr (call, 0));
       return TREE_TYPE (gimple_call_arg (call, 1));
@@ -7522,6 +7549,49 @@ loop_body_includes_call (basic_block *body, unsigned num_nodes)
   return false;
 }
 
+/* Determine cost scaling factor for basic blocks in loop.  */
+#define COST_SCALING_FACTOR_BOUND (20)
+
+static void
+determine_scaling_factor (struct ivopts_data *data, basic_block *body)
+{
+  int lfreq = data->current_loop->header->count.to_frequency (cfun);
+  if (!data->speed || lfreq <= 0)
+    return;
+
+  int max_freq = lfreq;
+  for (unsigned i = 0; i < data->current_loop->num_nodes; i++)
+    {
+      body[i]->aux = (void *)(intptr_t) 1;
+      if (max_freq < body[i]->count.to_frequency (cfun))
+	max_freq = body[i]->count.to_frequency (cfun);
+    }
+  if (max_freq > lfreq)
+    {
+      int divisor, factor;
+      /* Check if scaling factor itself needs to be scaled by the bound.  This
+	 is to avoid overflow when scaling cost according to profile info.  */
+      if (max_freq / lfreq > COST_SCALING_FACTOR_BOUND)
+	{
+	  divisor = max_freq;
+	  factor = COST_SCALING_FACTOR_BOUND;
+	}
+      else
+	{
+	  divisor = lfreq;
+	  factor = 1;
+	}
+      for (unsigned i = 0; i < data->current_loop->num_nodes; i++)
+	{
+	  int bfreq = body[i]->count.to_frequency (cfun);
+	  if (bfreq <= lfreq)
+	    continue;
+
+	  body[i]->aux = (void*)(intptr_t) (factor * bfreq / divisor);
+	}
+    }
+}
+
 /* Optimizes the LOOP.  Returns true if anything changed.  */
 
 static bool
@@ -7560,7 +7630,6 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop,
   body = get_loop_body (loop);
   data->body_includes_call = loop_body_includes_call (body, loop->num_nodes);
   renumber_gimple_stmt_uids_in_blocks (body, loop->num_nodes);
-  free (body);
 
   data->loop_single_exit_p = exit != NULL && loop_only_exit_p (loop, exit);
 
@@ -7574,6 +7643,9 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop,
   if (data->vgroups.length () > MAX_CONSIDERED_GROUPS)
     goto finish;
 
+  /* Determine cost scaling factor for basic blocks in loop.  */
+  determine_scaling_factor (data, body);
+
   /* Finds candidates for the induction variables (item 2).  */
   find_iv_candidates (data);
 
@@ -7584,6 +7656,9 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop,
 
   /* Find the optimal set of induction variables (item 3, part 2).  */
   iv_ca = find_optimal_iv_set (data);
+  /* Cleanup basic block aux field.  */
+  for (unsigned i = 0; i < data->current_loop->num_nodes; i++)
+    body[i]->aux = NULL;
   if (!iv_ca)
     goto finish;
   changed = true;
@@ -7599,6 +7674,7 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop,
   remove_unused_ivs (data, toremove);
 
 finish:
+  free (body);
   free_loop_data (data);
 
   return changed;

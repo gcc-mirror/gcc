@@ -119,6 +119,12 @@ public:
   /* Return dump name with assembler name.  */
   const char *dump_asm_name () const;
 
+  /* Return visibility name.  */
+  const char *get_visibility_string () const;
+
+  /* Return type_name name.  */
+  const char *get_symtab_type_string () const;
+
   /* Add node into symbol table.  This function is not used directly, but via
      cgraph/varpool node creation routines.  */
   void register_symbol (void);

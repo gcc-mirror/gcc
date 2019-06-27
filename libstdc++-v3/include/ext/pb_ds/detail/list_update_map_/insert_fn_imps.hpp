@@ -38,6 +38,8 @@
  * Contains implementations of lu_map_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline std::pair<
   typename PB_DS_CLASS_C_DEC::point_iterator,
@@ -104,3 +106,4 @@ PB_DS_CLASS_C_DEC::
 init_entry_metadata(entry_pointer, type_to_type<null_type>)
 { }
 
+#endif

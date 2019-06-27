@@ -738,14 +738,7 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
       name = DECL_NAME (name);
     }
 
-  if (name == 0 || anon_aggrname_p (name))
-    {
-      if (flags & TFF_CLASS_KEY_OR_ENUM)
-	pp_string (pp, M_("<unnamed>"));
-      else
-	pp_printf (pp, M_("<unnamed %s>"), variety);
-    }
-  else if (LAMBDA_TYPE_P (t))
+  if (LAMBDA_TYPE_P (t))
     {
       /* A lambda's "type" is essentially its signature.  */
       pp_string (pp, M_("<lambda"));
@@ -755,8 +748,16 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
 			 flags);
       pp_greater (pp);
     }
+  else if (!name || IDENTIFIER_ANON_P (name))
+    {
+      if (flags & TFF_CLASS_KEY_OR_ENUM)
+	pp_string (pp, M_("<unnamed>"));
+      else
+	pp_printf (pp, M_("<unnamed %s>"), variety);
+    }
   else
     pp_cxx_tree_identifier (pp, name);
+
   if (tmplate)
     dump_template_parms (pp, TYPE_TEMPLATE_INFO (t),
 			 !CLASSTYPE_USE_TEMPLATE (t),
@@ -2660,7 +2661,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       dump_expr (pp, TREE_OPERAND (t, 0), flags);
       break;
 
-    case DEFAULT_ARG:
+    case DEFERRED_PARSE:
       pp_string (pp, M_("<unparsed>"));
       break;
 
@@ -3049,8 +3050,8 @@ location_of (tree t)
 
   if (DECL_P (t))
     return DECL_SOURCE_LOCATION (t);
-  if (TREE_CODE (t) == DEFAULT_ARG)
-    return defarg_location (t);
+  if (TREE_CODE (t) == DEFERRED_PARSE)
+    return defparse_location (t);
   return cp_expr_loc_or_loc (t, input_location);
 }
 

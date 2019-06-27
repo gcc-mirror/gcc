@@ -43,17 +43,14 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  /**
-   * @ingroup mutexes
-   * @{
-   */
-
   /** @brief A movable scoped lock type.
    *
    * A unique_lock controls mutex ownership within a scope. Ownership of the
    * mutex can be delayed until after construction and can be transferred
    * to another unique_lock by move construction or move assignment. If a
    * mutex lock is owned when the destructor runs ownership will be released.
+   *
+   * @ingroup mutexes
    */
   template<typename _Mutex>
     class unique_lock
@@ -232,12 +229,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /// Swap overload for unique_lock objects.
+  /// @relates unique_lock
   template<typename _Mutex>
     inline void
     swap(unique_lock<_Mutex>& __x, unique_lock<_Mutex>& __y) noexcept
     { __x.swap(__y); }
 
-  // @} group mutexes
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

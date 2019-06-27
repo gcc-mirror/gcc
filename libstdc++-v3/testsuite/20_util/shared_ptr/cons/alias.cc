@@ -36,13 +36,12 @@ struct B : A
   A a;
 };
 
-void deletefunc(A* p) { delete p; }
-
 // 20.6.6.2.1 shared_ptr constructors [util.smartptr.shared.const]
 
 // Aliasing constructors
 
-int test01()
+void
+test01()
 {
   bool test = true;
 
@@ -55,11 +54,9 @@ int test01()
   std::shared_ptr<bool> b2(b1);
   VERIFY( b2.use_count() == 0 );
   VERIFY( b1.get() == b2.get() );
-
-  return 0;
 }
 
-int
+void
 test02()
 {
   std::shared_ptr<A> a(new A);
@@ -69,11 +66,9 @@ test02()
   std::shared_ptr<int> i2(i1);
   VERIFY( i2.use_count() == 3 );
   VERIFY( i2.get() == &a->i );
-
-  return 0;
 }
 
-int
+void
 test03()
 {
   std::shared_ptr<B> b(new B);
@@ -89,8 +84,6 @@ test03()
 
   a3 = a2;
   VERIFY( a3.get() == &b->a );
-
-  return 0;
 }
 
 int
@@ -99,5 +92,4 @@ main()
   test01();
   test02();
   test03();
-  return 0;
 }

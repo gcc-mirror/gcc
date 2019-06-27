@@ -25,5 +25,5 @@
 // { dg-do compile }
 
 // N.B. We cannot instantiate with T == NonDefaultConstructible
-// because of 23.3.1.2.
+// because of [map.access] p2: "mapped_type shall be DefaultConstructible."
 template class std::map<__gnu_test::NonDefaultConstructible, double>;

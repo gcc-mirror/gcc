@@ -182,12 +182,23 @@ class UniquePointerPrinter:
     def __init__ (self, typename, val):
         self.val = val
         impl_type = val.type.fields()[0].type.tag
-        if is_specialization_of(impl_type, '__uniq_ptr_impl'): # New implementation
-            self.pointer = val['_M_t']['_M_t']['_M_head_impl']
+        # Check for new implementations first:
+        if is_specialization_of(impl_type, '__uniq_ptr_data') \
+            or is_specialization_of(impl_type, '__uniq_ptr_impl'):
+            tuple_member = val['_M_t']['_M_t']
         elif is_specialization_of(impl_type, 'tuple'):
-            self.pointer = val['_M_t']['_M_head_impl']
+            tuple_member = val['_M_t']
         else:
             raise ValueError("Unsupported implementation for unique_ptr: %s" % impl_type)
+        tuple_impl_type = tuple_member.type.fields()[0].type # _Tuple_impl
+        tuple_head_type = tuple_impl_type.fields()[1].type   # _Head_base
+        head_field = tuple_head_type.fields()[0]
+        if head_field.name == '_M_head_impl':
+            self.pointer = tuple_member['_M_head_impl']
+        elif head_field.is_base_class:
+            self.pointer = tuple_member.cast(head_field.type)
+        else:
+            raise ValueError("Unsupported implementation for tuple in unique_ptr: %s" % impl_type)
 
     def children (self):
         return SmartPtrIterator(self.pointer)
@@ -351,16 +362,12 @@ class StdVectorPrinter:
             if self.bitvec:
                 if self.item == self.finish and self.so >= self.fo:
                     raise StopIteration
-                elt = self.item.dereference()
-                if elt & (1 << self.so):
-                    obit = 1
-                else:
-                    obit = 0
+                elt = bool(self.item.dereference() & (1 << self.so))
                 self.so = self.so + 1
                 if self.so >= self.isize:
                     self.item = self.item + 1
                     self.so = 0
-                return ('[%d]' % count, obit)
+                return ('[%d]' % count, elt)
             else:
                 if self.item == self.finish:
                     raise StopIteration
@@ -371,7 +378,7 @@ class StdVectorPrinter:
     def __init__(self, typename, val):
         self.typename = strip_versioned_namespace(typename)
         self.val = val
-        self.is_bool = val.type.template_argument(0).code  == gdb.TYPE_CODE_BOOL
+        self.is_bool = val.type.template_argument(0).code == gdb.TYPE_CODE_BOOL
 
     def children(self):
         return self._iterator(self.val['_M_impl']['_M_start'],
@@ -410,6 +417,8 @@ class StdVectorIteratorPrinter:
         if not self.val['_M_current']:
             return 'non-dereferenceable iterator for std::vector'
         return str(self.val['_M_current'].dereference())
+
+# TODO add printer for vector<bool>'s _Bit_iterator and _Bit_const_iterator
 
 class StdTuplePrinter:
     "Print a std::tuple"
@@ -1565,6 +1574,11 @@ def add_one_template_type_printer(obj, name, defargs):
     """
     printer = TemplateTypePrinter('std::'+name, defargs)
     gdb.types.register_type_printer(obj, printer)
+
+    # Add type printer for same type in debug namespace:
+    printer = TemplateTypePrinter('std::__debug::'+name, defargs)
+    gdb.types.register_type_printer(obj, printer)
+
     if _versioned_namespace:
         # Add second type printer for same type in versioned namespace:
         ns = 'std::' + _versioned_namespace

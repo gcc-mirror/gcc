@@ -24,6 +24,7 @@
 
 /** @file experimental/net
  *  This is a TS C++ Library header.
+ *  @ingroup networking-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_NET

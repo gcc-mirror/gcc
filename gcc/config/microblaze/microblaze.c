@@ -1258,8 +1258,8 @@ microblaze_expand_block_move (rtx dest, rtx src, rtx length, rtx align_rtx)
 
   if (GET_CODE (length) == CONST_INT)
     {
-      HOST_WIDE_INT bytes = INTVAL (length);
-      int align = INTVAL (align_rtx);
+      unsigned HOST_WIDE_INT bytes = UINTVAL (length);
+      unsigned int align = UINTVAL (align_rtx);
 
       if (align > UNITS_PER_WORD)
 	{
@@ -1267,7 +1267,7 @@ microblaze_expand_block_move (rtx dest, rtx src, rtx length, rtx align_rtx)
 	}
       else if (align < UNITS_PER_WORD)
 	{
-	  if (INTVAL (length) <= MAX_MOVE_BYTES)
+	  if (UINTVAL (length) <= MAX_MOVE_BYTES)
 	    {
 	      move_by_pieces (dest, src, bytes, align, RETURN_BEGIN);
 	      return true;
@@ -1276,14 +1276,14 @@ microblaze_expand_block_move (rtx dest, rtx src, rtx length, rtx align_rtx)
 	    return false;
 	}
 
-      if (INTVAL (length) <= 2 * MAX_MOVE_BYTES)
+      if (UINTVAL (length) <= 2 * MAX_MOVE_BYTES)
 	{
-	  microblaze_block_move_straight (dest, src, INTVAL (length));
+	  microblaze_block_move_straight (dest, src, UINTVAL (length));
 	  return true;
 	}
       else if (optimize)
 	{
-	  microblaze_block_move_loop (dest, src, INTVAL (length));
+	  microblaze_block_move_loop (dest, src, UINTVAL (length));
 	  return true;
 	}
     }
@@ -3312,6 +3312,7 @@ microblaze_asm_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
         HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
         tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
   rtx this_rtx, funexp;
   rtx_insn *insn;
 
@@ -3367,9 +3368,11 @@ microblaze_asm_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
      "borrowed" from rs6000.c.  */
   insn = get_insns ();
   shorten_branches (insn);
+  assemble_start_function (thunk_fndecl, fnname);
   final_start_function (insn, file, 1);
   final (insn, file, 1);
   final_end_function ();
+  assemble_end_function (thunk_fndecl, fnname);
 
   reload_completed = 0;
   epilogue_completed = 0;

@@ -105,7 +105,7 @@ float section_c(int *std_case, CFI_cdesc_t * source, int *low, int *str)
   CFI_index_t idx[CFI_MAX_RANK], lower[CFI_MAX_RANK],
 		  strides[CFI_MAX_RANK], upper[CFI_MAX_RANK];
   CFI_CDESC_T(1) section;
-  int ind, size;
+  int ind;
   float *ret_addr;
   float ans = 0.0;
 
@@ -121,9 +121,7 @@ float section_c(int *std_case, CFI_cdesc_t * source, int *low, int *str)
       if (ind) return -2.0;
 
       /* Sum over the section  */
-      size = (section.dim[0].extent - 1)
-		* section.elem_len/section.dim[0].sm + 1;
-      for (idx[0] = 0; idx[0] < size; idx[0]++)
+      for (idx[0] = 0; idx[0] < section.dim[0].extent; idx[0]++)
         ans += *(float*)CFI_address ((CFI_cdesc_t*)&section, idx);
       return ans;
     }
@@ -143,9 +141,7 @@ float section_c(int *std_case, CFI_cdesc_t * source, int *low, int *str)
       if (ind) return -2.0;
 
       /* Sum over the section  */
-      size = (section.dim[0].extent - 1)
-		* section.elem_len/section.dim[0].sm + 1;
-      for (idx[0] = 0; idx[0] < size; idx[0]++)
+      for (idx[0] = 0; idx[0] < section.dim[0].extent; idx[0]++)
         ans += *(float*)CFI_address ((CFI_cdesc_t*)&section, idx);
       return ans;
     }
@@ -191,15 +187,15 @@ int setpointer_c(CFI_cdesc_t * ptr, int lbounds[])
 
 int assumed_size_c(CFI_cdesc_t * desc)
 {
-  int ierr;
+  int res;
 
-  ierr = CFI_is_contiguous(desc);
-  if (ierr)
+  res = CFI_is_contiguous(desc);
+  if (!res)
     return 1;
   if (desc->rank)
-    ierr = 2 * (desc->dim[desc->rank-1].extent
+    res = 2 * (desc->dim[desc->rank-1].extent
 				!= (CFI_index_t)(long long)(-1));
   else
-    ierr = 3;
-  return ierr;
+    res = 3;
+  return res;
 }

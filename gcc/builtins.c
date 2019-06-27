@@ -981,7 +981,7 @@ expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
 
   mem = gen_rtx_MEM (Pmode, buf_addr);
   set_mem_alias_set (mem, setjmp_alias_set);
-  emit_move_insn (mem, targetm.builtin_setjmp_frame_value ());
+  emit_move_insn (mem, hard_frame_pointer_rtx);
 
   mem = gen_rtx_MEM (Pmode, plus_constant (Pmode, buf_addr,
 					   GET_MODE_SIZE (Pmode))),
@@ -1022,31 +1022,6 @@ expand_builtin_setjmp_receiver (rtx receiver_label)
   chain = rtx_for_static_chain (current_function_decl, true);
   if (chain && REG_P (chain))
     emit_clobber (chain);
-
-  /* Now put in the code to restore the frame pointer, and argument
-     pointer, if needed.  */
-  if (! targetm.have_nonlocal_goto ())
-    {
-      /* First adjust our frame pointer to its actual value.  It was
-	 previously set to the start of the virtual area corresponding to
-	 the stacked variables when we branched here and now needs to be
-	 adjusted to the actual hardware fp value.
-
-	 Assignments to virtual registers are converted by
-	 instantiate_virtual_regs into the corresponding assignment
-	 to the underlying register (fp in this case) that makes
-	 the original assignment true.
-	 So the following insn will actually be decrementing fp by
-	 TARGET_STARTING_FRAME_OFFSET.  */
-      emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
-
-      /* Restoring the frame pointer also modifies the hard frame pointer.
-	 Mark it used (so that the previous assignment remains live once
-	 the frame pointer is eliminated) and clobbered (to represent the
-	 implicit update from the assignment).  */
-      emit_use (hard_frame_pointer_rtx);
-      emit_clobber (hard_frame_pointer_rtx);
-    }
 
   if (!HARD_FRAME_POINTER_IS_ARG_POINTER && fixed_regs[ARG_POINTER_REGNUM])
     {
@@ -1137,15 +1112,20 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
 	emit_insn (targetm.gen_nonlocal_goto (value, lab, stack, fp));
       else
 	{
-	  lab = copy_to_reg (lab);
-
 	  emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
 	  emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
+
+	  lab = copy_to_reg (lab);
 
 	  /* Restore the frame pointer and stack pointer.  We must use a
 	     temporary since the setjmp buffer may be a local.  */
 	  fp = copy_to_reg (fp);
 	  emit_stack_restore (SAVE_NONLOCAL, stack);
+
+	  /* Ensure the frame pointer move is not optimized.  */
+	  emit_insn (gen_blockage ());
+	  emit_clobber (hard_frame_pointer_rtx);
+	  emit_clobber (frame_pointer_rtx);
 	  emit_move_insn (hard_frame_pointer_rtx, fp);
 
 	  emit_use (hard_frame_pointer_rtx);
@@ -1284,15 +1264,20 @@ expand_builtin_nonlocal_goto (tree exp)
     emit_insn (targetm.gen_nonlocal_goto (const0_rtx, r_label, r_sp, r_fp));
   else
     {
-      r_label = copy_to_reg (r_label);
-
       emit_clobber (gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode)));
       emit_clobber (gen_rtx_MEM (BLKmode, hard_frame_pointer_rtx));
+
+      r_label = copy_to_reg (r_label);
 
       /* Restore the frame pointer and stack pointer.  We must use a
 	 temporary since the setjmp buffer may be a local.  */
       r_fp = copy_to_reg (r_fp);
       emit_stack_restore (SAVE_NONLOCAL, r_sp);
+
+      /* Ensure the frame pointer move is not optimized.  */
+      emit_insn (gen_blockage ());
+      emit_clobber (hard_frame_pointer_rtx);
+      emit_clobber (frame_pointer_rtx);
       emit_move_insn (hard_frame_pointer_rtx, r_fp);
 
       /* USE of hard_frame_pointer_rtx added for consistency;
@@ -3839,6 +3824,8 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
   unsigned HOST_WIDE_INT max_size;
   unsigned HOST_WIDE_INT probable_max_size;
 
+  bool is_move_done;
+
   /* If DEST is not a pointer type, call the normal function.  */
   if (dest_align == 0)
     return NULL_RTX;
@@ -3888,11 +3875,22 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
   if (CALL_EXPR_TAILCALL (exp)
       && (retmode == RETURN_BEGIN || target == const0_rtx))
     method = BLOCK_OP_TAILCALL;
-  if (retmode == RETURN_END && target != const0_rtx)
+  bool use_mempcpy_call = (targetm.libc_has_fast_function (BUILT_IN_MEMPCPY)
+			   && retmode == RETURN_END
+			   && target != const0_rtx);
+  if (use_mempcpy_call)
     method = BLOCK_OP_NO_LIBCALL_RET;
   dest_addr = emit_block_move_hints (dest_mem, src_mem, len_rtx, method,
 				     expected_align, expected_size,
-				     min_size, max_size, probable_max_size);
+				     min_size, max_size, probable_max_size,
+				     use_mempcpy_call, &is_move_done);
+
+  /* Bail out when a mempcpy call would be expanded as libcall and when
+     we have a target that provides a fast implementation
+     of mempcpy routine.  */
+  if (!is_move_done)
+    return NULL_RTX;
+
   if (dest_addr == pc_rtx)
     return NULL_RTX;
 
@@ -6784,7 +6782,7 @@ expand_builtin_atomic_always_lock_free (tree exp)
 
   if (TREE_CODE (arg0) != INTEGER_CST)
     {
-      error ("non-constant argument 1 to __atomic_always_lock_free");
+      error ("non-constant argument 1 to %qs", "__atomic_always_lock_free");
       return const0_rtx;
     }
 
@@ -6826,7 +6824,7 @@ expand_builtin_atomic_is_lock_free (tree exp)
 
   if (!INTEGRAL_TYPE_P (TREE_TYPE (arg0)))
     {
-      error ("non-integer argument 1 to __atomic_is_lock_free");
+      error ("non-integer argument 1 to %qs", "__atomic_is_lock_free");
       return NULL_RTX;
     }
 
@@ -10224,7 +10222,7 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
 
   if (!stdarg_p (fntype))
     {
-      error ("%<va_start%> used in function with fixed args");
+      error ("%<va_start%> used in function with fixed arguments");
       return true;
     }
 

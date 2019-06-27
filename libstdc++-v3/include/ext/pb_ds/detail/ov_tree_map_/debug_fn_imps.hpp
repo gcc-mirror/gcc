@@ -38,6 +38,8 @@
  * Contains an implementation class for ov_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
@@ -76,4 +78,5 @@ assert_iterators(const char* __file, int __line) const
   PB_DS_DEBUG_VERIFY(iterated_num == m_size);
 }
 
+#endif
 #endif

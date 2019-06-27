@@ -171,6 +171,8 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 
       /* Try folding stmts with the VR discovered.  */
       bool did_replace = evrp_folder.replace_uses_in (stmt);
+      gimple_stmt_iterator prev_gsi = gsi;
+      gsi_prev (&prev_gsi);
       if (fold_stmt (&gsi, follow_single_use_edges)
 	  || did_replace)
 	{
@@ -186,7 +188,23 @@ evrp_dom_walker::before_dom_children (basic_block bb)
 	}
 
       if (did_replace)
-	fixups.record_change (old_stmt, stmt);
+	{
+	  /* If we wound up generating new stmts during folding
+	     drop all their defs to VARYING.  We can't easily
+	     process them because we've already instantiated
+	     ranges on uses on STMT that only hold after it.  */
+	  if (gsi_end_p (prev_gsi))
+	    prev_gsi = gsi_start_bb (bb);
+	  else
+	    gsi_next (&prev_gsi);
+	  while (gsi_stmt (prev_gsi) != gsi_stmt (gsi))
+	    {
+	      evrp_range_analyzer.get_vr_values ()
+		->set_defs_to_varying (gsi_stmt (prev_gsi));
+	      gsi_next (&prev_gsi);
+	    }
+	  fixups.record_change (old_stmt, stmt);
+	}
     }
 
   /* Visit BB successor PHI nodes and replace PHI args.  */

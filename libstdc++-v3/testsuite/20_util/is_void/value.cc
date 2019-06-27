@@ -47,4 +47,6 @@ void test01()
 
   // Sanity check.
   static_assert(test_category<is_void, ClassType>(false), "");
+  static_assert(test_category<is_void, IncompleteClass>(false), "");
+  static_assert(test_category<is_void, IncompleteUnion>(false), "");
 }

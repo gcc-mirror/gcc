@@ -118,7 +118,7 @@ make_thunk (tree function, bool this_adjusting,
   DECL_INTERFACE_KNOWN (thunk) = 1;
   DECL_NOT_REALLY_EXTERN (thunk) = 1;
   DECL_COMDAT (thunk) = DECL_COMDAT (function);
-  DECL_SAVED_FUNCTION_DATA (thunk) = NULL;
+  DECL_SAVED_AUTO_RETURN_TYPE (thunk) = NULL;
   /* The thunk itself is not a constructor or destructor, even if
      the thing it is thunking to is.  */
   DECL_CXX_DESTRUCTOR_P (thunk) = 0;
@@ -206,7 +206,7 @@ make_alias_for (tree target, tree newid)
   DECL_TEMPLATE_INSTANTIATED (alias) = 0;
   if (TREE_CODE (alias) == FUNCTION_DECL)
     {
-      DECL_SAVED_FUNCTION_DATA (alias) = NULL;
+      DECL_SAVED_AUTO_RETURN_TYPE (alias) = NULL;
       DECL_CXX_DESTRUCTOR_P (alias) = 0;
       DECL_CXX_CONSTRUCTOR_P (alias) = 0;
       DECL_PENDING_INLINE_P (alias) = 0;
@@ -790,7 +790,6 @@ do_build_copy_assign (tree fndecl)
 	   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
 	{
 	  tree converted_parm;
-	  vec<tree, va_gc> *parmvec;
 
 	  /* We must convert PARM directly to the base class
 	     explicitly since the base class may be ambiguous.  */
@@ -799,7 +798,7 @@ do_build_copy_assign (tree fndecl)
 	  if (move_p)
 	    converted_parm = move (converted_parm);
 	  /* Call the base class assignment operator.  */
-	  parmvec = make_tree_vector_single (converted_parm);
+	  releasing_vec parmvec (make_tree_vector_single (converted_parm));
 	  finish_expr_stmt
 	    (build_special_member_call (current_class_ref,
 					assign_op_identifier,
@@ -807,7 +806,6 @@ do_build_copy_assign (tree fndecl)
 					base_binfo,
 					flags,
                                         tf_warning_or_error));
-	  release_tree_vector (parmvec);
 	}
 
       /* Assign to each of the non-static data members.  */
@@ -828,13 +826,13 @@ do_build_copy_assign (tree fndecl)
 
 	  if (CP_TYPE_CONST_P (expr_type))
 	    {
-	      error ("non-static const member %q#D, can%'t use default "
+	      error ("non-static const member %q#D, cannot use default "
 		     "assignment operator", field);
 	      continue;
 	    }
 	  else if (TYPE_REF_P (expr_type))
 	    {
-	      error ("non-static reference member %q#D, can%'t use "
+	      error ("non-static reference member %q#D, cannot use "
 		     "default assignment operator", field);
 	      continue;
 	    }
@@ -993,7 +991,6 @@ locate_fn_flags (tree type, tree name, tree argtype, int flags,
 		 tsubst_flags_t complain)
 {
   tree ob, fn, fns, binfo, rval;
-  vec<tree, va_gc> *args;
 
   if (TYPE_P (type))
     binfo = TYPE_BINFO (type);
@@ -1004,7 +1001,7 @@ locate_fn_flags (tree type, tree name, tree argtype, int flags,
     }
 
   ob = build_stub_object (cp_build_reference_type (type, false));
-  args = make_tree_vector ();
+  releasing_vec args;
   if (argtype)
     {
       if (TREE_CODE (argtype) == TREE_LIST)
@@ -1027,7 +1024,6 @@ locate_fn_flags (tree type, tree name, tree argtype, int flags,
   fns = lookup_fnfields (binfo, name, 0);
   rval = build_new_method_call (ob, fns, &args, binfo, flags, &fn, complain);
 
-  release_tree_vector (args);
   if (fn && rval == error_mark_node)
     return rval;
   else
@@ -1205,6 +1201,8 @@ is_xible_helper (enum tree_code code, tree to, tree from, bool trivial)
     expr = assignable_expr (to, from);
   else if (trivial && from && TREE_CHAIN (from))
     return error_mark_node; // only 0- and 1-argument ctors can be trivial
+  else if (TREE_CODE (to) == ARRAY_TYPE && !TYPE_DOMAIN (to))
+    return error_mark_node; // can't construct an array of unknown bound
   else
     expr = constructible_expr (to, from);
   return expr;
@@ -1340,13 +1338,13 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
 	  if (CP_TYPE_CONST_P (mem_type) && !CLASS_TYPE_P (mem_type))
 	    {
 	      if (diag)
-		error ("non-static const member %q#D, can%'t use default "
+		error ("non-static const member %q#D, cannot use default "
 		       "assignment operator", field);
 	    }
 	  else if (TYPE_REF_P (mem_type))
 	    {
 	      if (diag)
-		error ("non-static reference member %q#D, can%'t use "
+		error ("non-static reference member %q#D, cannot use "
 		       "default assignment operator", field);
 	    }
 	  else
@@ -1884,15 +1882,14 @@ maybe_explain_implicit_delete (tree decl)
 void
 explain_implicit_non_constexpr (tree decl)
 {
-  tree parm_type = TREE_VALUE (FUNCTION_FIRST_USER_PARMTYPE (decl));
-  bool const_p = CP_TYPE_CONST_P (non_reference (parm_type));
+  tree parms = FUNCTION_FIRST_USER_PARMTYPE (decl);
+  bool const_p = CP_TYPE_CONST_P (non_reference (TREE_VALUE (parms)));
   tree inh = DECL_INHERITED_CTOR (decl);
   bool dummy;
   synthesized_method_walk (DECL_CLASS_CONTEXT (decl),
 			   special_function_p (decl), const_p,
 			   NULL, NULL, NULL, &dummy, true,
-			   &inh,
-			   FUNCTION_FIRST_USER_PARMTYPE (decl));
+			   &inh, parms);
 }
 
 /* DECL is an instantiation of an inheriting constructor template.  Deduce
@@ -2253,8 +2250,8 @@ defaulted_late_check (tree fn)
       if (!CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
 	{
 	  error ("explicitly defaulted function %q+D cannot be declared "
-		 "as %<constexpr%> because the implicit declaration is not "
-		 "%<constexpr%>:", fn);
+		 "%qs because the implicit declaration is not %qs:",
+		 fn, "constexpr", "constexpr");
 	  explain_implicit_non_constexpr (fn);
 	}
       DECL_DECLARED_CONSTEXPR_P (fn) = false;

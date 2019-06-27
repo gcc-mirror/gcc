@@ -24,6 +24,9 @@
 Language
 LTO
 
+Language
+LTODump
+
 Enum
 Name(lto_linker_output) Type(enum lto_linker_output) UnknownError(unknown linker output %qs)
 
@@ -65,6 +68,65 @@ Run the link-time optimizer in whole program analysis (WPA) mode.
 fwpa=
 LTO Driver RejectNegative Joined Var(flag_wpa)
 Whole program analysis (WPA) mode with number of parallel jobs specified.
+
+
+list
+LTODump Var(flag_lto_dump_list)
+Call the dump function for variables and function in IL.
+
+demangle
+LTODump Var(flag_lto_dump_demangle)
+Dump the demangled output.
+
+defined-only
+LTODump Var(flag_lto_dump_defined)
+Dump only the defined symbols.
+
+print-value
+LTODump Var(flag_lto_print_value)
+Print the initial values of the variables.
+
+name-sort
+LTODump Var(flag_lto_name_sort)
+Sort the symbols alphabetically.
+
+size-sort
+LTODump Var(flag_lto_size_sort)
+Sort the symbols according to size.
+
+reverse-sort
+LTODump Var(flag_lto_reverse_sort)
+Display the symbols in reverse order.
+
+symbol=
+LTODump RejectNegative Joined Var(flag_lto_dump_symbol)
+
+objects
+LTODump Var(flag_lto_dump_objects)
+Dump the details of LTO objects.
+
+type-stats
+LTODump Var(flag_lto_dump_type_stats)
+Dump the statistics of tree types.
+
+tree-stats
+LTODump Var(flag_lto_tree_stats)
+Dump the statistics of trees.
+
+gimple-stats
+LTODump Var(flag_lto_gimple_stats)
+Dump the statistics of gimple statements.
+
+dump-level=
+LTODump RejectNegative Joined Var(flag_dump_level)
+
+dump-body=
+LTODump RejectNegative Joined Var(flag_dump_body)
+
+help
+LTODump Var(flag_lto_dump_tool_help)
+Dump the dump tool command line options.
+
 
 fresolution=
 LTO Joined

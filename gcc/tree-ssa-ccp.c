@@ -1960,6 +1960,35 @@ evaluate_stmt (gimple *stmt)
 		break;
 	      }
 
+	    case BUILT_IN_BSWAP16:
+	    case BUILT_IN_BSWAP32:
+	    case BUILT_IN_BSWAP64:
+	      val = get_value_for_expr (gimple_call_arg (stmt, 0), true);
+	      if (val.lattice_val == UNDEFINED)
+		break;
+	      else if (val.lattice_val == CONSTANT
+		       && val.value
+		       && TREE_CODE (val.value) == INTEGER_CST)
+		{
+		  tree type = TREE_TYPE (gimple_call_lhs (stmt));
+		  int prec = TYPE_PRECISION (type);
+		  wide_int wval = wi::to_wide (val.value);
+		  val.value
+		    = wide_int_to_tree (type,
+					wide_int::from (wval, prec,
+							UNSIGNED).bswap ());
+		  val.mask
+		    = widest_int::from (wide_int::from (val.mask, prec,
+							UNSIGNED).bswap (),
+					UNSIGNED);
+		  if (wi::sext (val.mask, prec) != -1)
+		    break;
+		}
+	      val.lattice_val = VARYING;
+	      val.value = NULL_TREE;
+	      val.mask = -1;
+	      break;
+
 	    default:;
 	    }
 	}
@@ -2170,23 +2199,26 @@ fold_builtin_alloca_with_align (gimple *stmt)
   if (size > threshold)
     return NULL_TREE;
 
+  /* We have to be able to move points-to info.  We used to assert
+     that we can but IPA PTA might end up with two UIDs here
+     as it might need to handle more than one instance being
+     live at the same time.  Instead of trying to detect this case
+     (using the first UID would be OK) just give up for now.  */
+  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (lhs);
+  unsigned uid = 0;
+  if (pi != NULL
+      && !pi->pt.anything
+      && !pt_solution_singleton_or_null_p (&pi->pt, &uid))
+    return NULL_TREE;
+
   /* Declare array.  */
   elem_type = build_nonstandard_integer_type (BITS_PER_UNIT, 1);
   n_elem = size * 8 / BITS_PER_UNIT;
   array_type = build_array_type_nelts (elem_type, n_elem);
   var = create_tmp_var (array_type);
   SET_DECL_ALIGN (var, TREE_INT_CST_LOW (gimple_call_arg (stmt, 1)));
-  {
-    struct ptr_info_def *pi = SSA_NAME_PTR_INFO (lhs);
-    if (pi != NULL && !pi->pt.anything)
-      {
-	bool singleton_p;
-	unsigned uid;
-	singleton_p = pt_solution_singleton_or_null_p (&pi->pt, &uid);
-	gcc_assert (singleton_p);
-	SET_DECL_PT_UID (var, uid);
-      }
-  }
+  if (uid != 0)
+    SET_DECL_PT_UID (var, uid);
 
   /* Fold alloca to the address of the array.  */
   return fold_convert (TREE_TYPE (lhs), build_fold_addr_expr (var));

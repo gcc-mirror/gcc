@@ -175,6 +175,9 @@ or1k*-*-*)
 powerpc*-*-*)
 	cpu_type=rs6000
 	;;
+pru-*-*)
+	cpu_type=pru
+	;;
 rs6000*-*-*)
 	;;
 riscv*-*-*)
@@ -294,11 +297,11 @@ case ${host} in
     extra_parts="$extra_parts crtbeginS.o crtendS.o"
   else
     case ${host} in
-      i?86-*-solaris2.1[0-9]* | x86_64-*-solaris2.1[0-9]*)
+      i?86-*-solaris2* | x86_64-*-solaris2*)
         # Solaris 10+/x86 provides crt1.o, crti.o, crtn.o, and gcrt1.o as
         # part of the base system.
         ;;
-      sparc*-*-solaris2.1[0-9]*)
+      sparc*-*-solaris2*)
         # Solaris 10+/SPARC lacks crt1.o and gcrt1.o.
         extra_parts="$extra_parts crt1.o gcrt1.o"
         ;;
@@ -355,6 +358,12 @@ aarch64*-*-freebsd*)
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
 	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
 	md_unwind_header=aarch64/freebsd-unwind.h
+	;;
+aarch64*-*-netbsd*)
+	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
+	tmake_file="${tmake_file} ${cpu_type}/t-softfp t-softfp t-crtfm"
+	md_unwind_header=aarch64/aarch64-unwind.h
 	;;
 aarch64*-*-fuchsia*)
 	tmake_file="${tmake_file} ${cpu_type}/t-aarch64"
@@ -433,7 +442,16 @@ arm*-*-fuchsia*)
 	unwind_header=config/arm/unwind-arm.h
 	;;
 arm*-*-netbsdelf*)
-	tmake_file="$tmake_file arm/t-arm arm/t-netbsd t-slibgcc-gld-nover"
+	tmake_file="$tmake_file arm/t-arm"
+	case ${host} in
+	  arm*-*-netbsdelf-*eabi*)
+	    tmake_file="${tmake_file} arm/t-netbsd-eabi"
+	    unwind_header=config/arm/unwind-arm.h
+	    ;;
+	  *)
+	    tmake_file="${tmake_file} arm/t-netbsd t-slibgcc-gld-nover"
+	    ;;
+	esac
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
 	tmake_file="${tmake_file} arm/t-arm t-fixedpoint-gnu-prefix t-crtfm"
@@ -703,7 +721,7 @@ i[34567]86-*-rtems*)
 	tmake_file="$tmake_file i386/t-crtstuff t-softfp-sfdftf i386/32/t-softfp i386/t-softfp t-softfp"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
-i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
+i[34567]86-*-solaris2* | x86_64-*-solaris2*)
 	tmake_file="$tmake_file i386/t-crtpc t-crtfm i386/t-msabi"
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	tm_file="${tm_file} i386/elf-lib.h"
@@ -1073,11 +1091,11 @@ powerpc-*-darwin*)
 	  ;;
 	esac
 	tmake_file="$tmake_file rs6000/t-ibm-ldouble"
-	extra_parts="$extra_parts crt2.o"
+	extra_parts="$extra_parts crt2.o libef_ppc.a"
 	;;
 powerpc64-*-darwin*)
 	tmake_file="$tmake_file rs6000/t-darwin64 rs6000/t-ibm-ldouble"
-	extra_parts="$extra_parts crt2.o"
+	extra_parts="$extra_parts crt2.o libef_ppc.a"
 	;;
 powerpc*-*-freebsd*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-savresfgpr rs6000/t-crtstuff rs6000/t-freebsd t-softfp-sfdf t-softfp-excl t-softfp"
@@ -1178,6 +1196,10 @@ powerpcle-*-eabi*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-crtstuff t-crtstuff-pic t-fdpbit"
 	extra_parts="$extra_parts crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	;;
+pru-*-*)
+	tmake_file="${tmake_file} t-softfp-sfdf t-softfp-excl t-softfp t-gnu-prefix pru/t-pru"
+	tm_file="$tm_file pru/pru-abi.h"
+	;;
 riscv*-*-linux*)
 	tmake_file="${tmake_file} riscv/t-softfp${host_address} t-softfp riscv/t-elf riscv/t-elf${host_address}"
 	extra_parts="$extra_parts crtbegin.o crtend.o crti.o crtn.o crtendS.o crtbeginT.o"
@@ -1210,6 +1232,10 @@ rl78-*-elf)
 rx-*-elf)
 	tmake_file="rx/t-rx t-fdpbit"
 	tm_file="$tm_file rx/rx-abi.h rx/rx-lib.h"
+	;;
+rx-*-linux*)
+	tmake_file="rx/t-rx t-fdpbit"
+	tm_file="$tm_file rx/rx-lib.h"
 	;;
 s390-*-linux*)
 	tmake_file="${tmake_file} s390/t-crtstuff s390/t-linux s390/32/t-floattodi t-stack s390/t-stack-s390"

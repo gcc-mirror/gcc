@@ -3,7 +3,7 @@
 
 void f()
 {
-  if constexpr (false)		// { dg-message "enters constexpr if" }
+  if constexpr (false)		// { dg-message "enters 'constexpr if'" }
     {
       goto l;			// { dg-message "from here" }
     }

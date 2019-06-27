@@ -107,6 +107,15 @@
       <entry><literal>-fopenmp</literal></entry>
       <entry>For <link linkend="manual.ext.parallel_mode">parallel</link> mode.</entry>
     </row>
+    
+    <row>
+      <entry><literal>-ltbb</literal></entry>
+      <entry>Linking to tbb (Thread Building Blocks) is required for use of the
+        Parallel Standard Algorithms and execution policies in
+        <filename class="headerfile">&lt;execution&gt;</filename>.
+      </entry>
+    </row>
+    
   </tbody>
 
 </tgroup>
@@ -710,7 +719,6 @@ compiler supports scalar decimal floating-point types defined via
 <row>
 <entry><filename class="headerfile">ext/algorithm</filename></entry>
 <entry><filename class="headerfile">ext/atomicity.h</filename></entry>
-<entry><filename class="headerfile">ext/array_allocator.h</filename></entry>
 <entry><filename class="headerfile">ext/bitmap_allocator.h</filename></entry>
 <entry><filename class="headerfile">ext/cast.h</filename></entry>
 </row>
@@ -788,36 +796,6 @@ compiler supports scalar decimal floating-point types defined via
 <row>
 <entry><filename class="headerfile">debug/vector</filename></entry>
 <entry namest="c2" nameend="c5"/>
-</row>
-
-</tbody>
-</tgroup>
-</table>
-
-<para/>
-
-<table frame="all" xml:id="table.profile_headers">
-<title>Extension Profile Headers</title>
-
-<tgroup cols="4" align="left" colsep="1" rowsep="1">
-<colspec colname="c1"/>
-<colspec colname="c2"/>
-<colspec colname="c3"/>
-<colspec colname="c4"/>
-<tbody>
-
-<row>
-<entry><filename class="headerfile">profile/bitset</filename></entry>
-<entry><filename class="headerfile">profile/deque</filename></entry>
-<entry><filename class="headerfile">profile/list</filename></entry>
-<entry><filename class="headerfile">profile/map</filename></entry>
-</row>
-
-<row>
-<entry><filename class="headerfile">profile/set</filename></entry>
-<entry><filename class="headerfile">profile/unordered_map</filename></entry>
-<entry><filename class="headerfile">profile/unordered_set</filename></entry>
-<entry><filename class="headerfile">profile/vector</filename></entry>
 </row>
 
 </tbody>
@@ -1164,14 +1142,6 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
       <code>_GLIBCXX_ASSERTIONS</code> has a non-zero value, otherwise to zero.
       When defined to a non-zero value, it enables extra error checking and
       assertions in the parallel mode.
-      </para>
-    </listitem></varlistentry>
-
-    <varlistentry><term><code>_GLIBCXX_PROFILE</code></term>
-    <listitem>
-      <para>Undefined by default. When defined, compiles user code
-	using the <link linkend="manual.ext.profile_mode">profile
-	mode</link>.
       </para>
     </listitem></varlistentry>
 

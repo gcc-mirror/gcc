@@ -119,7 +119,8 @@ enum processor_features
   FEATURE_GFNI,
   FEATURE_VPCLMULQDQ,
   FEATURE_AVX512VNNI,
-  FEATURE_AVX512BITALG
+  FEATURE_AVX512BITALG,
+  FEATURE_AVX512BF16
 };
 
 extern struct __processor_model

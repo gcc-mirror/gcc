@@ -562,6 +562,10 @@ Wformat-contains-nul
 C ObjC C++ ObjC++ Var(warn_format_contains_nul) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
 Warn about format strings that contain NUL bytes.
 
+Wformat-diag
+C ObjC C++ ObjC++ Var(warn_format_diag) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
+Warn about GCC format strings with strings unsuitable for diagnostics.
+
 Wformat-extra-args
 C ObjC C++ ObjC++ Var(warn_format_extra_args) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
 Warn if passing too many arguments to a function for its format string.
@@ -620,6 +624,10 @@ Warn whenever type qualifiers are ignored.
 Wignored-attributes
 C C++ Var(warn_ignored_attributes) Init(1) Warning
 Warn whenever attributes are ignored.
+
+Winaccessible-base
+C++ ObjC++ Var(warn_inaccessible_base) Init(1) Warning
+Warn when a base is inaccessible in derived due to ambiguity.
 
 Wincompatible-pointer-types
 C ObjC Var(warn_incompatible_pointer_types) Init(1) Warning
@@ -810,6 +818,10 @@ Warn about all enumerated switches missing a specific case.
 Wswitch-bool
 C ObjC C++ ObjC++ Var(warn_switch_bool) Warning Init(1)
 Warn about switches with boolean controlling expression.
+
+Wswitch-outside-range
+C ObjC C++ ObjC++ Var(warn_switch_outside_range) Warning Init(1)
+Warn about switch values that are outside of the switch's type range.
 
 Wtemplates
 C++ ObjC++ Var(warn_templates) Warning

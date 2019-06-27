@@ -512,7 +512,7 @@ struct cpp_reader
   cpp_token eof;
 
   /* Opaque handle to the dependencies of mkdeps.c.  */
-  struct deps *deps;
+  struct mkdeps *deps;
 
   /* Obstack holding all macro hash nodes.  This never shrinks.
      See identifiers.c */

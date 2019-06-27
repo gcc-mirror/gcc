@@ -25,6 +25,12 @@ nothrow:
 
 version (RISCV32) version = RISCV_Any;
 version (RISCV64) version = RISCV_Any;
+version (S390)    version = IBMZ_Any;
+version (SPARC)   version = SPARC_Any;
+version (SPARC64) version = SPARC_Any;
+version (SystemZ) version = IBMZ_Any;
+version (X86)     version = X86_Any;
+version (X86_64)  version = X86_Any;
 
 //
 // XOpen (XSI)
@@ -715,7 +721,7 @@ version (CRuntime_Glibc)
         alias greg_t = c_ulong;
         alias gregset_t = greg_t[NGREG];
     }
-    else version (SystemZ)
+    else version (IBMZ_Any)
     {
         public import core.sys.posix.signal : sigset_t;
 
@@ -1029,6 +1035,8 @@ else version (DragonFlyBSD)
 }
 else version (Solaris)
 {
+    private import core.stdc.stdint;
+
     alias uint[4] upad128_t;
 
     version (SPARC64)
@@ -1127,10 +1135,13 @@ else version (Solaris)
     }
     else version (X86_64)
     {
-        union _u_st
+        private
         {
-            ushort[5]   fpr_16;
-            upad128_t   __fpr_pad;
+            union _u_st
+            {
+                ushort[5]   fpr_16;
+                upad128_t   __fpr_pad;
+            }
         }
 
         struct fpregset_t
@@ -1189,20 +1200,94 @@ else version (Solaris)
     else
         static assert(0, "unimplemented");
 
-    struct mcontext_t
+    version (SPARC_Any)
     {
-        gregset_t   gregs;
-        fpregset_t  fpregs;
+        private
+        {
+            struct rwindow
+            {
+                greg_t[8]     rw_local;
+                greg_t[8]     rw_in;
+            }
+
+            struct gwindows_t
+            {
+                int         wbcnt;
+                greg_t[31] *spbuf;
+                rwindow[31] wbuf;
+            }
+
+            struct xrs_t
+            {
+                uint         xrs_id;
+                caddr_t      xrs_ptr;
+            }
+
+            struct cxrs_t
+            {
+                uint         cxrs_id;
+                caddr_t      cxrs_ptr;
+            }
+
+            alias int64_t[16] asrset_t;
+        }
+
+        struct mcontext_t
+        {
+            gregset_t    gregs;
+            gwindows_t   *gwins;
+            fpregset_t   fpregs;
+            xrs_t        xrs;
+            version (SPARC64)
+            {
+                asrset_t asrs;
+                cxrs_t   cxrs;
+                c_long[2] filler;
+            }
+            else version (SPARC)
+            {
+                cxrs_t   cxrs;
+                c_long[17] filler;
+            }
+        }
+    }
+    else version (X86_Any)
+    {
+        private
+        {
+            struct xrs_t
+            {
+                uint         xrs_id;
+                caddr_t      xrs_ptr;
+            }
+        }
+
+        struct mcontext_t
+        {
+            gregset_t   gregs;
+            fpregset_t  fpregs;
+        }
     }
 
     struct ucontext_t
     {
-        c_ulong      uc_flags;
+        version (SPARC_Any)
+            uint    uc_flags;
+        else version (X86_Any)
+            c_ulong uc_flags;
         ucontext_t  *uc_link;
         sigset_t    uc_sigmask;
         stack_t     uc_stack;
         mcontext_t  uc_mcontext;
-        c_long[5]   uc_filler;
+        version (SPARC64)
+            c_long[4]  uc_filler;
+        else version (SPARC)
+            c_long[23] uc_filler;
+        else version (X86_Any)
+        {
+            xrs_t      uc_xrs;
+            c_long[3]  uc_filler;
+        }
     }
 }
 else version (CRuntime_UClibc)
@@ -1399,7 +1484,20 @@ int  swapcontext(ucontext_t*, in ucontext_t*);
 static if ( is( ucontext_t ) )
 {
     int  getcontext(ucontext_t*);
-    void makecontext(ucontext_t*, void function(), int, ...);
+
+    version (Solaris)
+    {
+        version (SPARC_Any)
+        {
+            void __makecontext_v2(ucontext_t*, void function(), int, ...);
+            alias makecontext = __makecontext_v2;
+        }
+        else
+            void makecontext(ucontext_t*, void function(), int, ...);
+    }
+    else
+        void makecontext(ucontext_t*, void function(), int, ...);
+
     int  setcontext(in ucontext_t*);
     int  swapcontext(ucontext_t*, in ucontext_t*);
 }

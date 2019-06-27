@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef	LINK_SPEC
 #define LINK_SPEC "\
-  %{m32:-m elf_i386_fbsd} \
+  %{m32:-m elf_i386_fbsd}%{!m32:-m elf_x86_64_fbsd} \
   %{p:%nconsider using '-pg' instead of '-p' with gprof(1)} \
   %{v:-V} \
   %{assert*} %{R*} %{rpath*} %{defsym*} \
@@ -42,3 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 	-dynamic-linker %(fbsd_dynamic_linker) } \
     %{static:-Bstatic}} \
   %{symbolic:-Bsymbolic}"
+
+#undef	MULTILIB_DEFAULTS
+#define MULTILIB_DEFAULTS { "m64" }

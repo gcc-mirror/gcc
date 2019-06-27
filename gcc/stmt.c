@@ -521,7 +521,7 @@ check_unique_operand_names (tree outputs, tree inputs, tree labels)
   return true;
 
  failure:
-  error ("duplicate asm operand name %qs", TREE_STRING_POINTER (i_name));
+  error ("duplicate %<asm%> operand name %qs", TREE_STRING_POINTER (i_name));
   return false;
 }
 

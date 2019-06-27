@@ -39,6 +39,8 @@
  * and related functions.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::entry_allocator
 PB_DS_CLASS_C_DEC::s_entry_allocator;
@@ -221,3 +223,4 @@ initialize()
     m_entries[i].m_stat = empty_entry_status;
 }
 
+#endif

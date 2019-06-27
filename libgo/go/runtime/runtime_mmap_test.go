@@ -32,6 +32,11 @@ func TestPhysPageSize(t *testing.T) {
 		t.Fatalf("Mmap: %v", err)
 	}
 
+	if runtime.GOOS == "aix" {
+		// AIX does not allow mapping a range that is already mapped.
+		runtime.Munmap(unsafe.Pointer(uintptr(b)), 2*ps)
+	}
+
 	// Mmap should fail at a half page into the buffer.
 	_, err = runtime.Mmap(unsafe.Pointer(uintptr(b)+ps/2), ps, 0, runtime.MAP_ANON|runtime.MAP_PRIVATE|runtime.MAP_FIXED, -1, 0)
 	if err == 0 {

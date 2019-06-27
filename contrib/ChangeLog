@@ -1,3 +1,37 @@
+2019-06-19  Martin Liska  <mliska@suse.cz>
+
+	* bench-stringop: New file.
+
+2019-05-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* mklog: Open files in text mode.
+
+2019-05-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * mklog: Convert to Python 3.
+
+2019-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 9.
+
+2019-04-30  Roland Illig  <roland.illig@gmx.de>
+
+	* check-internal-format-escaping.py: New version using polib.
+
+2019-04-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR translation/90118
+	* check-internal-format-escaping.py: Check that %< is not next to
+	a word.
+
+2019-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* dg-extract-results.sh: Only handle WARNING: program timed out
+	lines specially in "$MODE" == "sum".  Restore previous behavior
+	for "$MODE" != "sum".  Clear has_timeout and timeout_cnt if in
+	a different variant or curfile is empty.
+	* dg-extract-results.py: Fix a typo.
+
 2019-04-05  Martin Liska  <mliska@suse.cz>
 
 	PR translation/89936

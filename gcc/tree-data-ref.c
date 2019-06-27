@@ -460,7 +460,6 @@ dump_data_dependence_relation (FILE *outf,
 	  dump_subscript (outf, sub);
 	}
 
-      fprintf (outf, "  inner loop index: %d\n", DDR_INNER_LOOP (ddr));
       fprintf (outf, "  loop nest: (");
       FOR_EACH_VEC_ELT (DDR_LOOP_NEST (ddr), i, loopi)
 	fprintf (outf, "%d ", loopi->num);
@@ -1272,7 +1271,7 @@ create_data_ref (edge nest, loop_p loop, tree memref, gimple *stmt,
   return dr;
 }
 
-/*  A helper function computes order between two tree epxressions T1 and T2.
+/*  A helper function computes order between two tree expressions T1 and T2.
     This is used in comparator functions sorting objects based on the order
     of tree expressions.  The function returns -1, 0, or 1.  */
 
@@ -2232,7 +2231,7 @@ object_address_invariant_in_loop_p (const struct loop *loop, const_tree obj)
 
 bool
 dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
-		bool loop_nest)
+		struct loop *loop_nest)
 {
   tree addr_a = DR_BASE_OBJECT (a);
   tree addr_b = DR_BASE_OBJECT (b);
@@ -2256,6 +2255,11 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
 
   if ((TREE_CODE (addr_a) == MEM_REF || TREE_CODE (addr_a) == TARGET_MEM_REF)
       && (TREE_CODE (addr_b) == MEM_REF || TREE_CODE (addr_b) == TARGET_MEM_REF)
+      /* For cross-iteration dependences the cliques must be valid for the
+	 whole loop, not just individual iterations.  */
+      && (!loop_nest
+	  || MR_DEPENDENCE_CLIQUE (addr_a) == 1
+	  || MR_DEPENDENCE_CLIQUE (addr_a) == loop_nest->owned_clique)
       && MR_DEPENDENCE_CLIQUE (addr_a) == MR_DEPENDENCE_CLIQUE (addr_b)
       && MR_DEPENDENCE_BASE (addr_a) != MR_DEPENDENCE_BASE (addr_b))
     return false;
@@ -2367,7 +2371,7 @@ initialize_data_dependence_relation (struct data_reference *a,
     }
 
   /* If the data references do not alias, then they are independent.  */
-  if (!dr_may_alias_p (a, b, loop_nest.exists ()))
+  if (!dr_may_alias_p (a, b, loop_nest.exists () ? loop_nest[0] : NULL))
     {
       DDR_ARE_DEPENDENT (res) = chrec_known;
       return res;
@@ -2643,7 +2647,6 @@ initialize_data_dependence_relation (struct data_reference *a,
   DDR_ARE_DEPENDENT (res) = NULL_TREE;
   DDR_SUBSCRIPTS (res).create (full_seq.length);
   DDR_LOOP_NEST (res) = loop_nest;
-  DDR_INNER_LOOP (res) = 0;
   DDR_SELF_REFERENCE (res) = false;
 
   for (i = 0; i < full_seq.length; ++i)
@@ -4431,7 +4434,7 @@ add_other_self_distances (struct data_dependence_relation *ddr)
 
       if (TREE_CODE (access_fun) == POLYNOMIAL_CHREC)
 	{
-	  if (!evolution_function_is_univariate_p (access_fun))
+	  if (!evolution_function_is_univariate_p (access_fun, loop->num))
 	    {
 	      if (DDR_NUM_SUBSCRIPTS (ddr) != 1)
 		{
@@ -4478,7 +4481,7 @@ insert_innermost_unit_dist_vector (struct data_dependence_relation *ddr)
 {
   lambda_vector dist_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
 
-  dist_v[DDR_INNER_LOOP (ddr)] = 1;
+  dist_v[0] = 1;
   save_dist_v (ddr, dist_v);
 }
 

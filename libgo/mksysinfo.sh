@@ -735,13 +735,9 @@ if ! grep "const EAI_OVERFLOW " ${OUT} >/dev/null 2>&1; then
 fi
 
 # The passwd struct.
-# Force uid and gid from int32 to uint32 for consistency; they are
-# int32 on Solaris 10 but uint32 everywhere else including Solaris 11.
 grep '^type _passwd ' gen-sysinfo.go | \
     sed -e 's/_passwd/Passwd/' \
       -e 's/ pw_/ Pw_/g' \
-      -e 's/ Pw_uid int32/ Pw_uid uint32/' \
-      -e 's/ Pw_gid int32/ Pw_gid uint32/' \
     >> ${OUT}
 
 # The group struct.

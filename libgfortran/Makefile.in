@@ -371,11 +371,13 @@ am__objects_45 = maxval1_s1.lo maxval1_s4.lo
 am__objects_46 = minval1_s1.lo minval1_s4.lo
 am__objects_47 = findloc0_i1.lo findloc0_i2.lo findloc0_i4.lo \
 	findloc0_i8.lo findloc0_i16.lo findloc0_r4.lo findloc0_r8.lo \
-	findloc0_r16.lo findloc0_c4.lo findloc0_c8.lo findloc0_c16.lo
+	findloc0_r10.lo findloc0_r16.lo findloc0_c4.lo findloc0_c8.lo \
+	findloc0_c16.lo
 am__objects_48 = findloc0_s1.lo findloc0_s4.lo
 am__objects_49 = findloc1_i1.lo findloc1_i2.lo findloc1_i4.lo \
 	findloc1_i8.lo findloc1_i16.lo findloc1_r4.lo findloc1_r8.lo \
-	findloc1_r16.lo findloc1_c4.lo findloc1_c8.lo findloc1_c16.lo
+	findloc1_r10.lo findloc1_r16.lo findloc1_c4.lo findloc1_c8.lo \
+	findloc1_c16.lo
 am__objects_50 = findloc1_s1.lo findloc1_s4.lo
 am__objects_51 = findloc2_s1.lo findloc2_s4.lo
 am__objects_52 = ISO_Fortran_binding.lo
@@ -692,6 +694,7 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -717,7 +720,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @LIBGFOR_USE_SYMVER_GNU_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_dep = $(srcdir)/gfortran.map
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@version_dep = gfortran.map-sun
 gfor_c_HEADERS = $(srcdir)/ISO_Fortran_binding.h
-gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)/include
+gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
 	    $(lt_host_flags)
 
@@ -836,6 +839,7 @@ $(srcdir)/generated/findloc0_i8.c \
 $(srcdir)/generated/findloc0_i16.c \
 $(srcdir)/generated/findloc0_r4.c \
 $(srcdir)/generated/findloc0_r8.c \
+$(srcdir)/generated/findloc0_r10.c \
 $(srcdir)/generated/findloc0_r16.c \
 $(srcdir)/generated/findloc0_c4.c \
 $(srcdir)/generated/findloc0_c8.c \
@@ -853,6 +857,7 @@ $(srcdir)/generated/findloc1_i8.c \
 $(srcdir)/generated/findloc1_i16.c \
 $(srcdir)/generated/findloc1_r4.c \
 $(srcdir)/generated/findloc1_r8.c \
+$(srcdir)/generated/findloc1_r10.c \
 $(srcdir)/generated/findloc1_r16.c \
 $(srcdir)/generated/findloc1_c4.c \
 $(srcdir)/generated/findloc1_c8.c \
@@ -1824,6 +1829,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/findloc0_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/findloc0_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/findloc0_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/findloc0_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/findloc0_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/findloc0_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/findloc0_r8.Plo@am__quote@
@@ -1837,6 +1843,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/findloc1_i2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/findloc1_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/findloc1_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/findloc1_r10.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/findloc1_r16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/findloc1_r4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/findloc1_r8.Plo@am__quote@
@@ -5949,6 +5956,13 @@ findloc0_r8.lo: $(srcdir)/generated/findloc0_r8.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o findloc0_r8.lo `test -f '$(srcdir)/generated/findloc0_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/findloc0_r8.c
 
+findloc0_r10.lo: $(srcdir)/generated/findloc0_r10.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT findloc0_r10.lo -MD -MP -MF $(DEPDIR)/findloc0_r10.Tpo -c -o findloc0_r10.lo `test -f '$(srcdir)/generated/findloc0_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/findloc0_r10.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/findloc0_r10.Tpo $(DEPDIR)/findloc0_r10.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/generated/findloc0_r10.c' object='findloc0_r10.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o findloc0_r10.lo `test -f '$(srcdir)/generated/findloc0_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/findloc0_r10.c
+
 findloc0_r16.lo: $(srcdir)/generated/findloc0_r16.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT findloc0_r16.lo -MD -MP -MF $(DEPDIR)/findloc0_r16.Tpo -c -o findloc0_r16.lo `test -f '$(srcdir)/generated/findloc0_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/findloc0_r16.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/findloc0_r16.Tpo $(DEPDIR)/findloc0_r16.Plo
@@ -6039,6 +6053,13 @@ findloc1_r8.lo: $(srcdir)/generated/findloc1_r8.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/generated/findloc1_r8.c' object='findloc1_r8.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o findloc1_r8.lo `test -f '$(srcdir)/generated/findloc1_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/findloc1_r8.c
+
+findloc1_r10.lo: $(srcdir)/generated/findloc1_r10.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT findloc1_r10.lo -MD -MP -MF $(DEPDIR)/findloc1_r10.Tpo -c -o findloc1_r10.lo `test -f '$(srcdir)/generated/findloc1_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/findloc1_r10.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/findloc1_r10.Tpo $(DEPDIR)/findloc1_r10.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(srcdir)/generated/findloc1_r10.c' object='findloc1_r10.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o findloc1_r10.lo `test -f '$(srcdir)/generated/findloc1_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/findloc1_r10.c
 
 findloc1_r16.lo: $(srcdir)/generated/findloc1_r16.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT findloc1_r16.lo -MD -MP -MF $(DEPDIR)/findloc1_r16.Tpo -c -o findloc1_r16.lo `test -f '$(srcdir)/generated/findloc1_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/findloc1_r16.c

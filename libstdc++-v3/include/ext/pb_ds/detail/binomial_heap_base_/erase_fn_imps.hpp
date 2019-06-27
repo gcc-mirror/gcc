@@ -38,6 +38,8 @@
  * Contains an implementation class for a base of binomial heaps.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
@@ -159,3 +161,4 @@ erase_if(Pred pred)
   PB_DS_ASSERT_VALID_COND((*this),true)
   return ersd;
 }
+#endif

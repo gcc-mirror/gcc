@@ -2085,9 +2085,9 @@ public:
             if (v->ident == Id::ctfe)
                 return new IntegerExp(loc, 1, Type::tbool);
 
-            if (!v->originalType && v->_scope)   // semantic() not yet run
+            if (!v->originalType && v->semanticRun < PASSsemanticdone) // semantic() not yet run
             {
-                v->semantic (v->_scope);
+                v->semantic(NULL);
                 if (v->type->ty == Terror)
                     return CTFEExp::cantexp;
             }
@@ -4633,8 +4633,8 @@ public:
             fd = ((VarExp *)ecall)->var->isFuncDeclaration();
             assert(fd);
 
-            if (fd->ident == Id::_ArrayPostblit ||
-                fd->ident == Id::_ArrayDtor)
+            if (fd->ident == Id::__ArrayPostblit ||
+                fd->ident == Id::__ArrayDtor)
             {
                 assert(e->arguments->dim == 1);
                 Expression *ea = (*e->arguments)[0];
@@ -4654,7 +4654,7 @@ public:
                 if (CTFEExp::isCantExp(result))
                     return;
 
-                if (fd->ident == Id::_ArrayPostblit)
+                if (fd->ident == Id::__ArrayPostblit)
                     result = evaluatePostblit(istate, result);
                 else
                     result = evaluateDtor(istate, result);
@@ -6053,9 +6053,16 @@ public:
         result = (*se->elements)[i];
         if (!result)
         {
-            e->error("Internal Compiler Error: null field %s", v->toChars());
-            result = CTFEExp::cantexp;
-            return;
+            // https://issues.dlang.org/show_bug.cgi?id=19897
+            // Zero-length fields don't have an initializer.
+            if (v->type->size() == 0)
+                result = voidInitLiteral(e->type, v).copy();
+            else
+            {
+                e->error("Internal Compiler Error: null field %s", v->toChars());
+                result = CTFEExp::cantexp;
+                return;
+            }
         }
         if (result->op == TOKvoid)
         {

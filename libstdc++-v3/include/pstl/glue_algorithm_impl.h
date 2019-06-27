@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef __PSTL_glue_algorithm_impl_H
-#define __PSTL_glue_algorithm_impl_H
+#ifndef _PSTL_GLUE_ALGORITHM_IMPL_H
+#define _PSTL_GLUE_ALGORITHM_IMPL_H
 
 #include <functional>
 
@@ -674,7 +674,7 @@ __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, void>
 stable_sort(_ExecutionPolicy&& __exec, _RandomAccessIterator __first, _RandomAccessIterator __last)
 {
     typedef typename std::iterator_traits<_RandomAccessIterator>::value_type _InputType;
-    std::stable_sort(__exec, __first, __last, std::less<_InputType>());
+    std::stable_sort(std::forward<_ExecutionPolicy>(__exec), __first, __last, std::less<_InputType>());
 }
 
 // [mismatch]
@@ -696,8 +696,8 @@ __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, std::pair<_Fo
 mismatch(_ExecutionPolicy&& __exec, _ForwardIterator1 __first1, _ForwardIterator1 __last1, _ForwardIterator2 __first2,
          _BinaryPredicate __pred)
 {
-    return std::mismatch(__exec, __first1, __last1, __first2, std::next(__first2, std::distance(__first1, __last1)),
-                         __pred);
+    return std::mismatch(std::forward<_ExecutionPolicy>(__exec), __first1, __last1, __first2,
+			 std::next(__first2, std::distance(__first1, __last1)), __pred);
 }
 
 template <class _ExecutionPolicy, class _ForwardIterator1, class _ForwardIterator2>
@@ -745,11 +745,11 @@ __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, bool>
 equal(_ExecutionPolicy&& __exec, _ForwardIterator1 __first1, _ForwardIterator1 __last1, _ForwardIterator2 __first2,
       _ForwardIterator2 __last2, _BinaryPredicate __p)
 {
-    //TODO: to get rid of "distance"
-    if (std::distance(__first1, __last1) == std::distance(__first2, __last2))
-        return std::equal(__first1, __last1, __first2, __p);
-    else
-        return false;
+    using namespace __pstl;
+    return __internal::__pattern_equal(
+        std::forward<_ExecutionPolicy>(__exec), __first1, __last1, __first2, __last2, __p,
+        __internal::__is_vectorization_preferred<_ExecutionPolicy, _ForwardIterator1>(__exec),
+        __internal::__is_parallelization_preferred<_ExecutionPolicy, _ForwardIterator1>(__exec));
 }
 
 template <class _ExecutionPolicy, class _ForwardIterator1, class _ForwardIterator2>
@@ -757,8 +757,8 @@ __pstl::__internal::__enable_if_execution_policy<_ExecutionPolicy, bool>
 equal(_ExecutionPolicy&& __exec, _ForwardIterator1 __first1, _ForwardIterator1 __last1, _ForwardIterator2 __first2,
       _ForwardIterator2 __last2)
 {
-    return equal(std::forward<_ExecutionPolicy>(__exec), __first1, __last1, __first2,
-                 __pstl::__internal::__pstl_equal());
+    return std::equal(std::forward<_ExecutionPolicy>(__exec), __first1, __last1, __first2, __last2,
+                      __pstl::__internal::__pstl_equal());
 }
 
 // [alg.move]
@@ -798,7 +798,7 @@ partial_sort(_ExecutionPolicy&& __exec, _RandomAccessIterator __first, _RandomAc
              _RandomAccessIterator __last)
 {
     typedef typename iterator_traits<_RandomAccessIterator>::value_type _InputType;
-    std::partial_sort(__exec, __first, __middle, __last, std::less<_InputType>());
+    std::partial_sort(std::forward<_ExecutionPolicy>(__exec), __first, __middle, __last, std::less<_InputType>());
 }
 
 // [partial.sort.copy]
@@ -908,7 +908,7 @@ inplace_merge(_ExecutionPolicy&& __exec, _BidirectionalIterator __first, _Bidire
               _BidirectionalIterator __last)
 {
     typedef typename std::iterator_traits<_BidirectionalIterator>::value_type _InputType;
-    std::inplace_merge(__exec, __first, __middle, __last, std::less<_InputType>());
+    std::inplace_merge(std::forward<_ExecutionPolicy>(__exec), __first, __middle, __last, std::less<_InputType>());
 }
 
 // [includes]
@@ -1179,4 +1179,4 @@ lexicographical_compare(_ExecutionPolicy&& __exec, _ForwardIterator1 __first1, _
 
 } // namespace std
 
-#endif /* __PSTL_glue_algorithm_impl_H */
+#endif /* _PSTL_GLUE_ALGORITHM_IMPL_H */

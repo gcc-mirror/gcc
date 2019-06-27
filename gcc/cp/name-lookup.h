@@ -1,4 +1,4 @@
-/* Declarations for C++ name lookup routines.
+/* Declarations for -*- C++ -*- name lookup routines.
    Copyright (C) 2003-2019 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
@@ -176,9 +176,6 @@ struct GTY(()) cp_binding_level {
       are wrapped in TREE_LISTs; the TREE_VALUE is the OVERLOAD.  */
   tree names;
 
-  /* A list of USING_DECL nodes.  */
-  tree usings;
-
   /* Using directives.  */
   vec<tree, va_gc> *using_directives;
 
@@ -303,8 +300,8 @@ extern void do_namespace_alias (tree, tree);
 extern tree do_class_using_decl (tree, tree);
 extern tree lookup_arg_dependent (tree, tree, vec<tree, va_gc> *);
 extern tree search_anon_aggr (tree, tree, bool = false);
-extern tree get_class_binding_direct (tree, tree, int type_or_fns = -1);
-extern tree get_class_binding (tree, tree, int type_or_fns = -1);
+extern tree get_class_binding_direct (tree, tree, bool want_type = false);
+extern tree get_class_binding (tree, tree, bool want_type = false);
 extern tree *find_member_slot (tree klass, tree name);
 extern tree *add_member_slot (tree klass, tree name);
 extern void resort_type_member_vec (void *, void *,
@@ -315,10 +312,8 @@ extern tree innermost_non_namespace_value (tree);
 extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
 extern void cp_emit_debug_info_for_using (tree, tree);
 
-extern void finish_namespace_using_decl (tree, tree, tree);
-extern void finish_local_using_decl (tree, tree, tree);
-extern void finish_namespace_using_directive (tree, tree);
-extern void finish_local_using_directive (tree, tree);
+extern void finish_nonmember_using_decl (tree scope, tree name);
+extern void finish_using_directive (tree target, tree attribs);
 extern tree pushdecl (tree, bool is_friend = false);
 extern tree pushdecl_outermost_localscope (tree);
 extern tree pushdecl_top_level (tree, bool is_friend = false);

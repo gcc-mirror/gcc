@@ -114,6 +114,10 @@ as_internal_fn (combined_fn code)
   (MARK_TS_DECL_WITH_VIS (C),				\
    tree_contains_struct[C][TS_DECL_NON_COMMON] = true)
 
+#define MARK_TS_EXP(C)					\
+  (MARK_TS_TYPED (C),					\
+   tree_contains_struct[C][TS_EXP] = true)
+
 /* Returns the string representing CLASS.  */
 
 #define TREE_CODE_CLASS_STRING(CLASS)\
@@ -435,6 +439,8 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   TREE_CHECK3 (T, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE)
 #define NOT_RECORD_OR_UNION_CHECK(T) \
   TREE_NOT_CHECK3 (T, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE)
+#define ARRAY_OR_INTEGER_TYPE_CHECK(T)	\
+  TREE_CHECK2 (T, ARRAY_TYPE, INTEGER_TYPE)
 
 #define NUMERICAL_TYPE_CHECK(T)					\
   TREE_CHECK5 (T, INTEGER_TYPE, ENUMERAL_TYPE, BOOLEAN_TYPE, REAL_TYPE,	\
@@ -900,6 +906,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (TREE_CHECK2 (NODE, VAR_DECL, \
 		RESULT_DECL)->decl_common.decl_nonshareable_flag)
 
+/* In a PARM_DECL, set for Fortran hidden string length arguments that some
+   buggy callers don't pass to the callee.  */
+#define DECL_HIDDEN_STRING_LENGTH(NODE) \
+  (TREE_CHECK (NODE, PARM_DECL)->decl_common.decl_nonshareable_flag)
+
 /* In a CALL_EXPR, means that the call is the jump from a thunk to the
    thunked-to function.  */
 #define CALL_FROM_THUNK_P(NODE) (CALL_EXPR_CHECK (NODE)->base.protected_flag)
@@ -922,6 +933,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    deprecated feature by __attribute__((deprecated)).  */
 #define TREE_DEPRECATED(NODE) \
   ((NODE)->base.deprecated_flag)
+
+/* Nonzero indicates an IDENTIFIER_NODE that names an anonymous
+   aggregate, (as created by anon_aggr_name_format).  */
+#define IDENTIFIER_ANON_P(NODE) \
+  (IDENTIFIER_NODE_CHECK (NODE)->base.private_flag)
 
 /* Nonzero in an IDENTIFIER_NODE if the name is a local alias, whose
    uses are to be substituted for uses of the TREE_CHAINed identifier.  */
@@ -1330,7 +1346,7 @@ class auto_suppress_location_wrappers
 #define OMP_BODY(NODE) \
   TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_MASTER), 0)
 #define OMP_CLAUSES(NODE) \
-  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_TASKGROUP), 1)
+  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_SCAN), 1)
 
 /* Generic accessors for OMP nodes that keep clauses as operand 0.  */
 #define OMP_STANDALONE_CLAUSES(NODE) \
@@ -1421,6 +1437,9 @@ class auto_suppress_location_wrappers
 #define OMP_TARGET_EXIT_DATA_CLAUSES(NODE)\
   TREE_OPERAND (OMP_TARGET_EXIT_DATA_CHECK (NODE), 0)
 
+#define OMP_SCAN_BODY(NODE)	TREE_OPERAND (OMP_SCAN_CHECK (NODE), 0)
+#define OMP_SCAN_CLAUSES(NODE)	TREE_OPERAND (OMP_SCAN_CHECK (NODE), 1)
+
 #define OMP_CLAUSE_SIZE(NODE)						\
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
 					      OMP_CLAUSE_FROM,		\
@@ -1430,7 +1449,7 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_DECL(NODE)      					\
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
 					      OMP_CLAUSE_PRIVATE,	\
-					      OMP_CLAUSE__REDUCTEMP_), 0)
+					      OMP_CLAUSE__CONDTEMP_), 0)
 #define OMP_CLAUSE_HAS_LOCATION(NODE) \
   (LOCATION_LOCUS ((OMP_CLAUSE_CHECK (NODE))->omp_clause.locus)		\
   != UNKNOWN_LOCATION)
@@ -1737,6 +1756,10 @@ class auto_suppress_location_wrappers
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__GRIDDIM_), 0)
 #define OMP_CLAUSE__GRIDDIM__GROUP(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__GRIDDIM_), 1)
+
+/* _CONDTEMP_ holding temporary with iteration count.  */
+#define OMP_CLAUSE__CONDTEMP__ITER(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__CONDTEMP_)->base.public_flag)
 
 /* SSA_NAME accessors.  */
 
@@ -2097,7 +2120,14 @@ extern machine_mode vector_type_mode (const_tree);
 /* If set in an ARRAY_TYPE, indicates a string type (for languages
    that distinguish string from array of char).
    If set in a INTEGER_TYPE, indicates a character type.  */
-#define TYPE_STRING_FLAG(NODE) (TYPE_CHECK (NODE)->type_common.string_flag)
+#define TYPE_STRING_FLAG(NODE) \
+	(ARRAY_OR_INTEGER_TYPE_CHECK (NODE)->type_common.string_flag)
+
+/* If set for RECORD_TYPE or UNION_TYPE it indicates that the type conforms
+   to the C++ one definition rule.  This is used for LTO canonical type
+   computation.  */
+#define TYPE_CXX_ODR_P(NODE) \
+	(RECORD_OR_UNION_CHECK (NODE)->type_common.string_flag)
 
 /* Nonzero in a VECTOR_TYPE if the frontends should not emit warnings
    about missing conversions to other vector types of the same size.  */
@@ -3734,14 +3764,16 @@ TYPE_VECTOR_SUBPARTS (const_tree node)
   unsigned int precision = VECTOR_TYPE_CHECK (node)->type_common.precision;
   if (NUM_POLY_INT_COEFFS == 2)
     {
+      /* See the corresponding code in SET_TYPE_VECTOR_SUBPARTS for a
+	 description of the encoding.  */
       poly_uint64 res = 0;
-      res.coeffs[0] = 1 << (precision & 0xff);
+      res.coeffs[0] = HOST_WIDE_INT_1U << (precision & 0xff);
       if (precision & 0x100)
-	res.coeffs[1] = 1 << (precision & 0xff);
+	res.coeffs[1] = HOST_WIDE_INT_1U << (precision & 0xff);
       return res;
     }
   else
-    return (unsigned HOST_WIDE_INT)1 << precision;
+    return HOST_WIDE_INT_1U << precision;
 }
 
 /* Set the number of elements in VECTOR_TYPE NODE to SUBPARTS, which must
@@ -3756,6 +3788,21 @@ SET_TYPE_VECTOR_SUBPARTS (tree node, poly_uint64 subparts)
   gcc_assert (index >= 0);
   if (NUM_POLY_INT_COEFFS == 2)
     {
+      /* We have two coefficients that are each in the range 1 << [0, 63],
+	 so supporting all combinations would require 6 bits per coefficient
+	 and 12 bits in total.  Since the precision field is only 10 bits
+	 in size, we need to be more restrictive than that.
+
+	 At present, coeff[1] is always either 0 (meaning that the number
+	 of units is constant) or equal to coeff[0] (meaning that the number
+	 of units is N + X * N for some target-dependent zero-based runtime
+	 parameter X).  We can therefore encode coeff[1] in a single bit.
+
+	 The most compact encoding would be to use mask 0x3f for coeff[0]
+	 and 0x40 for coeff[1], leaving 0x380 unused.  It's possible to
+	 get slightly more efficient code on some hosts if we instead
+	 treat the shift amount as an independent byte, so here we use
+	 0xff for coeff[0] and 0x100 for coeff[1].  */
       unsigned HOST_WIDE_INT coeff1 = subparts.coeffs[1];
       gcc_assert (coeff1 == 0 || coeff1 == coeff0);
       VECTOR_TYPE_CHECK (node)->type_common.precision
@@ -4209,7 +4256,7 @@ extern tree build_vec_series (tree, tree, tree);
 extern tree build_index_vector (tree, poly_uint64, poly_uint64);
 extern void recompute_constructor_flags (tree);
 extern void verify_constructor_flags (tree);
-extern tree build_constructor (tree, vec<constructor_elt, va_gc> *);
+extern tree build_constructor (tree, vec<constructor_elt, va_gc> * CXX_MEM_STAT_INFO);
 extern tree build_constructor_single (tree, tree, tree);
 extern tree build_constructor_from_list (tree, tree);
 extern tree build_constructor_va (tree, int, ...);
@@ -4893,6 +4940,7 @@ extern bool stdarg_p (const_tree);
 extern bool prototype_p (const_tree);
 extern bool is_typedef_decl (const_tree x);
 extern bool typedef_variant_p (const_tree);
+extern bool auto_var_p (const_tree);
 extern bool auto_var_in_fn_p (const_tree, const_tree);
 extern tree build_low_bits_mask (tree, unsigned);
 extern bool tree_nop_conversion_p (const_tree, const_tree);
@@ -5414,9 +5462,9 @@ target_opts_for_fn (const_tree fndecl)
 
 /* For anonymous aggregate types, we need some sort of name to
    hold on to.  In practice, this should not appear, but it should
-   not be harmful if it does.  */
-extern const char *anon_aggrname_format();
-extern bool anon_aggrname_p (const_tree);
+   not be harmful if it does.  Identifiers returned will be
+   IDENTIFIER_ANON_P.  */
+extern tree make_anon_name ();
 
 /* The tree and const_tree overload templates.   */
 namespace wi

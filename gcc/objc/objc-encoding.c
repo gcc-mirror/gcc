@@ -801,7 +801,7 @@ encode_gnu_bitfield (int position, tree type, int size)
   else
     {
       /* Do not do any encoding, produce an error and keep going.  */
-      error ("trying to encode non-integer type as a bitfield");
+      error ("trying to encode non-integer type as a bit-field");
       return;
     }
 

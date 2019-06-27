@@ -43,7 +43,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 /**
  * @namespace std::regex_constants
- * @brief ISO C++-0x entities sub namespace for regex.
+ * @brief ISO C++ 2011 namespace for options and flags used with std::regex
  */
 namespace regex_constants
 {

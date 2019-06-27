@@ -1011,21 +1011,17 @@ get_cmp_code (enum tree_code orig_cmp_code, bool swap_cond, bool invert)
   return tc;
 }
 
-/* Returns true if VAL falls in the range defined by BOUNDARY and CMPC, i.e.
-   all values in the range satisfies (x CMPC BOUNDARY) == true.  */
+/* Returns whether VAL CMPC BOUNDARY is true.  */
 
 static bool
 is_value_included_in (tree val, tree boundary, enum tree_code cmpc)
 {
   bool inverted = false;
-  bool is_unsigned;
   bool result;
 
   /* Only handle integer constant here.  */
   if (TREE_CODE (val) != INTEGER_CST || TREE_CODE (boundary) != INTEGER_CST)
     return true;
-
-  is_unsigned = TYPE_UNSIGNED (TREE_TYPE (val));
 
   if (cmpc == GE_EXPR || cmpc == GT_EXPR || cmpc == NE_EXPR)
     {
@@ -1033,36 +1029,40 @@ is_value_included_in (tree val, tree boundary, enum tree_code cmpc)
       inverted = true;
     }
 
-  if (is_unsigned)
-    {
-      if (cmpc == EQ_EXPR)
-	result = tree_int_cst_equal (val, boundary);
-      else if (cmpc == LT_EXPR)
-	result = tree_int_cst_lt (val, boundary);
-      else
-	{
-	  gcc_assert (cmpc == LE_EXPR);
-	  result = tree_int_cst_le (val, boundary);
-	}
-    }
+  if (cmpc == EQ_EXPR)
+    result = tree_int_cst_equal (val, boundary);
+  else if (cmpc == LT_EXPR)
+    result = tree_int_cst_lt (val, boundary);
   else
     {
-      if (cmpc == EQ_EXPR)
-	result = tree_int_cst_equal (val, boundary);
-      else if (cmpc == LT_EXPR)
-	result = tree_int_cst_lt (val, boundary);
-      else
-	{
-	  gcc_assert (cmpc == LE_EXPR);
-	  result = (tree_int_cst_equal (val, boundary)
-		    || tree_int_cst_lt (val, boundary));
-	}
+      gcc_assert (cmpc == LE_EXPR);
+      result = tree_int_cst_le (val, boundary);
     }
 
   if (inverted)
     result ^= 1;
 
   return result;
+}
+
+/* Returns whether VAL satisfies (x CMPC BOUNDARY) predicate.  CMPC can be
+   either one of the range comparison codes ({GE,LT,EQ,NE}_EXPR and the like),
+   or BIT_AND_EXPR.  EXACT_P is only meaningful for the latter.  It modifies the
+   question from whether VAL & BOUNDARY != 0 to whether VAL & BOUNDARY == VAL.
+   For other values of CMPC, EXACT_P is ignored.  */
+
+static bool
+value_sat_pred_p (tree val, tree boundary, enum tree_code cmpc,
+		  bool exact_p = false)
+{
+  if (cmpc != BIT_AND_EXPR)
+    return is_value_included_in (val, boundary, cmpc);
+
+  wide_int andw = wi::to_wide (val) & wi::to_wide (boundary);
+  if (exact_p)
+    return andw == wi::to_wide (val);
+  else
+    return andw.to_uhwi ();
 }
 
 /* Returns true if PRED is common among all the predicate
@@ -1488,15 +1488,18 @@ is_pred_expr_subset_of (pred_info expr1, pred_info expr2)
   if (expr2.invert)
     code2 = invert_tree_comparison (code2, false);
 
-  if ((code1 == EQ_EXPR || code1 == BIT_AND_EXPR) && code2 == BIT_AND_EXPR)
-    return (wi::to_wide (expr1.pred_rhs)
-	    == (wi::to_wide (expr1.pred_rhs) & wi::to_wide (expr2.pred_rhs)));
-
-  if (code1 != code2 && code2 != NE_EXPR)
+  if (code2 == NE_EXPR && code1 == NE_EXPR)
     return false;
 
-  if (is_value_included_in (expr1.pred_rhs, expr2.pred_rhs, code2))
-    return true;
+  if (code2 == NE_EXPR)
+    return !value_sat_pred_p (expr2.pred_rhs, expr1.pred_rhs, code1);
+
+  if (code1 == EQ_EXPR)
+    return value_sat_pred_p (expr1.pred_rhs, expr2.pred_rhs, code2);
+
+  if (code1 == code2)
+    return value_sat_pred_p (expr1.pred_rhs, expr2.pred_rhs, code2,
+			     code1 == BIT_AND_EXPR);
 
   return false;
 }

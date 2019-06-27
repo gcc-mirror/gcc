@@ -72,6 +72,9 @@ fs::absolute(const path& p)
 					     ec));
   return ret;
 #else
+  if (p.empty())
+    _GLIBCXX_THROW_OR_ABORT(filesystem_error("cannot make absolute path", p,
+	  make_error_code(std::errc::invalid_argument)));
   return current_path() / p;
 #endif
 }
@@ -82,7 +85,7 @@ fs::absolute(const path& p, error_code& ec)
   path ret;
   if (p.empty())
     {
-      ec = make_error_code(std::errc::no_such_file_or_directory);
+      ec = make_error_code(std::errc::invalid_argument);
       return ret;
     }
   ec.clear();
@@ -93,6 +96,7 @@ fs::absolute(const path& p, error_code& ec)
     }
 
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  // s must remain null-terminated
   wstring_view s = p.native();
 
   if (p.has_root_directory()) // implies !p.has_root_name()
@@ -104,9 +108,6 @@ fs::absolute(const path& p, error_code& ec)
       __glibcxx_assert(pos != 0);
       s.remove_prefix(std::min(s.length(), pos) - 1);
     }
-
-  // s must be null-terminated
-  __glibcxx_assert(!s.empty() && s.back() == 0);
 
   uint32_t len = 1024;
   wstring buf;
@@ -1394,23 +1395,19 @@ fs::status(const fs::path& p, error_code& ec) noexcept
 #if ! defined __MINGW64_VERSION_MAJOR || __MINGW64_VERSION_MAJOR < 6
   // stat() fails if there's a trailing slash (PR 88881)
   path p2;
-  if (p.has_relative_path())
+  if (p.has_relative_path() && !p.has_filename())
     {
-      wstring_view s = p.native();
-      const auto len = s.find_last_not_of(L"/\\") + wstring_view::size_type(1);
-      if (len != 0 && len != s.length())
+      __try
 	{
-	  __try
-	    {
-	      p2.assign(s.substr(0, len));
-	    }
-	  __catch(const bad_alloc&)
-	    {
-	      ec = std::make_error_code(std::errc::not_enough_memory);
-	      return status;
-	    }
+	  p2 = p.parent_path();
 	  str = p2.c_str();
 	}
+      __catch(const bad_alloc&)
+	{
+	  ec = std::make_error_code(std::errc::not_enough_memory);
+	  return status;
+	}
+      str = p2.c_str();
     }
 #endif
 #endif
@@ -1439,8 +1436,31 @@ fs::file_status
 fs::symlink_status(const fs::path& p, std::error_code& ec) noexcept
 {
   file_status status;
+  auto str = p.c_str();
+
+#if _GLIBCXX_FILESYSTEM_IS_WINDOWS
+#if ! defined __MINGW64_VERSION_MAJOR || __MINGW64_VERSION_MAJOR < 6
+  // stat() fails if there's a trailing slash (PR 88881)
+  path p2;
+  if (p.has_relative_path() && !p.has_filename())
+    {
+      __try
+	{
+	  p2 = p.parent_path();
+	  str = p2.c_str();
+	}
+      __catch(const bad_alloc&)
+	{
+	  ec = std::make_error_code(std::errc::not_enough_memory);
+	  return status;
+	}
+      str = p2.c_str();
+    }
+#endif
+#endif
+
   stat_type st;
-  if (posix::lstat(p.c_str(), &st))
+  if (posix::lstat(str, &st))
     {
       int err = errno;
       ec.assign(err, std::generic_category());

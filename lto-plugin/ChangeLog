@@ -1,3 +1,19 @@
+2019-05-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lto-plugin.c (cleanup_handler): Remove unused var.
+
+2019-05-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lto-plugin.c (exec_lto_wrapper): Make the wrapper
+	arguments filename more user-friendly.
+	(file_exists, maybe_unlink): New.
+	(cleanup_handler): Use maybe unlink to handle the
+	case when temps should be saved.
+	(process_option): Look for -v, —-version, -save-temps.
+	(onload): Record the linker output file name.
+	Check for -v, —-version, -save-temps in the GCC collect
+	options environment.
+
 2019-02-26  Martin Liska  <mliska@suse.cz>
 
 	* lto-symtab.c: Remove.

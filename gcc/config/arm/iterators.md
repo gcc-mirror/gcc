@@ -341,6 +341,8 @@
 
 (define_int_iterator VSUBHN [UNSPEC_VSUBHN UNSPEC_VRSUBHN])
 
+(define_int_iterator VABAL [UNSPEC_VABAL_S UNSPEC_VABAL_U])
+
 (define_int_iterator VABD [UNSPEC_VABD_S UNSPEC_VABD_U])
 
 (define_int_iterator VABDL [UNSPEC_VABDL_S UNSPEC_VABDL_U])
@@ -834,6 +836,7 @@
   (UNSPEC_VSUBW_S "s") (UNSPEC_VSUBW_U "u")
   (UNSPEC_VHSUB_S "s") (UNSPEC_VHSUB_U "u")
   (UNSPEC_VQSUB_S "s") (UNSPEC_VQSUB_U "u")
+  (UNSPEC_VABAL_S "s") (UNSPEC_VABAL_U "u")
   (UNSPEC_VABD_S "s") (UNSPEC_VABD_U "u")
   (UNSPEC_VABDL_S "s") (UNSPEC_VABDL_U "u")
   (UNSPEC_VMAX "s") (UNSPEC_VMAX_U "u")

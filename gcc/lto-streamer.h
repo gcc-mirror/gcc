@@ -120,7 +120,7 @@ along with GCC; see the file COPYING3.  If not see
      String are represented in the table as pairs, a length in ULEB128
      form followed by the data for the string.  */
 
-#define LTO_major_version 8
+#define LTO_major_version 9
 #define LTO_minor_version 0
 
 typedef unsigned char	lto_decl_flags_t;
@@ -822,8 +822,6 @@ extern void lto_append_block (struct lto_output_stream *);
 extern bool lto_stream_offload_p;
 
 extern const char *lto_tag_name (enum LTO_tags);
-extern bitmap lto_bitmap_alloc (void);
-extern void lto_bitmap_free (bitmap);
 extern char *lto_get_section_name (int, const char *, struct lto_file_decl_data *);
 extern void print_lto_report (const char *);
 extern void lto_streamer_init (void);

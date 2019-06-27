@@ -38,6 +38,8 @@
  * Contains an implementation class for bin_search_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline std::pair<typename PB_DS_CLASS_C_DEC::point_iterator, bool>
 PB_DS_CLASS_C_DEC::
@@ -178,3 +180,4 @@ get_new_node_for_leaf_insert(const_reference r_val, true_type)
   ++m_size;
   return p_new_nd;
 }
+#endif

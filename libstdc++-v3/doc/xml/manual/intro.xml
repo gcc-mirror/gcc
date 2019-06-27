@@ -1045,6 +1045,17 @@ requirements of the license of GCC.
     <listitem><para>Remove <code>explicit</code> from the constructor.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2408"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2408">2408</link>:
+       <emphasis>SFINAE-friendly
+         <code>common_type</code>/<code>iterator_traits</code>
+         is missing in C++14
+       </emphasis>
+    </term>
+    <listitem><para>Make <code>iterator_traits</code> empty if any of the
+      types is not present in the iterator.
+      Make <code>common_type&lt;&gt;</code> empty.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr2415"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2415">2415</link>:
        <emphasis>Inconsistency between <code>unique_ptr</code> and <code>shared_ptr</code></emphasis>
     </term>
@@ -1105,6 +1116,15 @@ requirements of the license of GCC.
     <listitem><para>Add debug mode assertion.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2465"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2465">2465</link>:
+       <emphasis>SFINAE-friendly <code>common_type</code> is nearly impossible
+       to specialize correctly and regresses key functionality
+       </emphasis>
+    </term>
+    <listitem><para>Detect whether <code>decay_t</code> changes either type
+      and use the decayed types if so.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr2466"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2466">2466</link>:
        <emphasis><code>allocator_traits::max_size()</code> default behavior is incorrect
        </emphasis>
@@ -1121,18 +1141,18 @@ requirements of the license of GCC.
     </para></listitem></varlistentry>
 
     <varlistentry xml:id="manual.bugs.dr2537"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2537">2537</link>:
-       <emphasis>Requirements on the first template parameter of container adaptors
-       </emphasis>
-    </term>
-    <listitem><para>Add static assertions to enforce the requirement.
-    </para></listitem></varlistentry>
-
-    <varlistentry xml:id="manual.bugs.dr2566"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2566">2566</link>:
        <emphasis>Constructors for <code>priority_queue</code> taking allocators
 	 should call <code>make_heap</code>
        </emphasis>
     </term>
     <listitem><para>Call <code>make_heap</code>.
+    </para></listitem></varlistentry>
+
+    <varlistentry xml:id="manual.bugs.dr2566"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2566">2566</link>:
+       <emphasis>Requirements on the first template parameter of container adaptors
+       </emphasis>
+    </term>
+    <listitem><para>Add static assertions to enforce the requirement.
     </para></listitem></varlistentry>
 
     <varlistentry xml:id="manual.bugs.dr2583"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2583">2583</link>:
@@ -1201,12 +1221,28 @@ requirements of the license of GCC.
     <listitem><para>Use rvalues for deleters.
     </para></listitem></varlistentry>
 
+    <varlistentry xml:id="manual.bugs.dr2921"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2921">2921</link>:
+       <emphasis><code>packaged_task</code> and type-erased allocators
+       </emphasis>
+    </term>
+    <listitem><para>For C++17 mode, remove the constructors taking
+      an allocator argument.
+    </para></listitem></varlistentry>
+
     <varlistentry xml:id="manual.bugs.dr2942"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2942">2942</link>:
        <emphasis>LWG 2873's resolution missed
          <code>weak_ptr::owner_before</code>
        </emphasis>
     </term>
     <listitem><para>Add noexcept.
+    </para></listitem></varlistentry>
+
+    <varlistentry xml:id="manual.bugs.dr2996"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2996">2996</link>:
+       <emphasis>Missing rvalue overloads for
+         <code>shared_ptr</code> operations
+       </emphasis>
+    </term>
+    <listitem><para>Add additional constructor and cast overloads.
     </para></listitem></varlistentry>
 
     <varlistentry xml:id="manual.bugs.dr2993"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2993">2993</link>:

@@ -23,6 +23,7 @@ import (
 //
 //go:linkname typedmemmove runtime.typedmemmove
 //go:linkname typedslicecopy runtime.typedslicecopy
+//go:linkname memclrHasPointers runtime.memclrHasPointers
 
 // Go uses a hybrid barrier that combines a Yuasa-style deletion
 // barrier—which shades the object whose reference is being

@@ -27,6 +27,7 @@ void test01()
 
   // Positive tests.
   static_assert(test_category<is_union, UnionType>(true), "");
+  static_assert(test_category<is_union, IncompleteUnion>(true), "");
 
   // Negative tests.
   static_assert(test_category<is_union, ClassType>(false), "");
@@ -47,4 +48,5 @@ void test01()
   static_assert(test_category<is_union, int (ClassType::*) (int)>(false), "");
   static_assert(test_category<is_union, int (int)>(false), "");
   static_assert(test_category<is_union, EnumType>(false), "");
+  static_assert(test_category<is_union, IncompleteClass>(false), "");
 }

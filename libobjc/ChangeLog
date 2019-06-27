@@ -1,3 +1,11 @@
+2019-04-23  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89093
+	* exception.c (PERSONALITY_FUNCTION): Add general-regs-only target
+	attribute for ARM.
+
 2019-03-06  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* encoding.c (DFmode): #undef before #define.

@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
+// { dg-prune-output "cannot convert" }
 // { dg-prune-output "no matching function .*_M_fill_initialize" }
 
 #include <list>
@@ -28,3 +29,5 @@ void f()
   typedef std::list<std::list<std::pair<char, char> > > list_type;
   list_type l('a', 'b');	// { dg-error "here|no match" }
 }
+
+// { dg-prune-output "iterator_traits" }

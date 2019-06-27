@@ -127,9 +127,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #else
 	auto __depend = nullptr;
 #endif
-        _M_start_thread(_S_make_state(
-	      __make_invoker(std::forward<_Callable>(__f),
-			     std::forward<_Args>(__args)...)),
+	// A call wrapper holding tuple{DECAY_COPY(__f), DECAY_COPY(__args)...}
+	using _Invoker_type = _Invoker<__decayed_tuple<_Callable, _Args...>>;
+
+	_M_start_thread(_S_make_state<_Invoker_type>(
+	      std::forward<_Callable>(__f), std::forward<_Args>(__args)...),
 	    __depend);
       }
 
@@ -188,8 +190,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	_Callable		_M_func;
 
-	_State_impl(_Callable&& __f) : _M_func(std::forward<_Callable>(__f))
-	{ }
+	template<typename... _Args>
+	  _State_impl(_Args&&... __args)
+	  : _M_func{{std::forward<_Args>(__args)...}}
+	  { }
 
 	void
 	_M_run() { _M_func(); }
@@ -198,12 +202,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     _M_start_thread(_State_ptr, void (*)());
 
-    template<typename _Callable>
+    template<typename _Callable, typename... _Args>
       static _State_ptr
-      _S_make_state(_Callable&& __f)
+      _S_make_state(_Args&&... __args)
       {
 	using _Impl = _State_impl<_Callable>;
-	return _State_ptr{new _Impl{std::forward<_Callable>(__f)}};
+	return _State_ptr{new _Impl{std::forward<_Args>(__args)...}};
       }
 #if _GLIBCXX_THREAD_ABI_COMPAT
   public:
@@ -328,8 +332,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   /** @namespace std::this_thread
-   *  @brief ISO C++ 2011 entities sub-namespace for thread.
-   *  30.3.2 Namespace this_thread.
+   *  @brief ISO C++ 2011 namespace for interacting with the current thread
+   *
+   *  C++11 30.3.2 [thread.thread.this] Namespace this_thread.
    */
   namespace this_thread
   {

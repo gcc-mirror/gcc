@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile }
+// { dg-prune-output "cannot convert" }
 // { dg-prune-output "no matching function .*_M_fill_initialize" }
 
 #include <deque>
@@ -27,3 +28,5 @@ void f()
 {
   std::deque<std::deque<std::pair<char, char> > > d('a', 'b'); // { dg-error "here|no match" }
 }
+
+// { dg-prune-output "iterator_traits" }

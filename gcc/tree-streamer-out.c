@@ -212,7 +212,7 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       bp_pack_var_len_unsigned (bp, EH_LANDING_PAD_NR (expr));
     }
 
-  if (TREE_CODE (expr) == FIELD_DECL)
+  else if (TREE_CODE (expr) == FIELD_DECL)
     {
       bp_pack_value (bp, DECL_PACKED (expr), 1);
       bp_pack_value (bp, DECL_NONADDRESSABLE_P (expr), 1);
@@ -220,11 +220,14 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       bp_pack_value (bp, expr->decl_common.off_align, 8);
     }
 
-  if (VAR_P (expr))
+  else if (VAR_P (expr))
     {
       bp_pack_value (bp, DECL_HAS_DEBUG_EXPR_P (expr), 1);
       bp_pack_value (bp, DECL_NONLOCAL_FRAME (expr), 1);
     }
+
+  else if (TREE_CODE (expr) == PARM_DECL)
+    bp_pack_value (bp, DECL_HIDDEN_STRING_LENGTH (expr), 1);
 
   if (TREE_CODE (expr) == RESULT_DECL
       || TREE_CODE (expr) == PARM_DECL
@@ -316,7 +319,6 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
      not necessary valid in a global context.
      Use the raw value previously set by layout_type.  */
   bp_pack_machine_mode (bp, TYPE_MODE_RAW (expr));
-  bp_pack_value (bp, TYPE_STRING_FLAG (expr), 1);
   /* TYPE_NO_FORCE_BLK is private to stor-layout and need
      no streaming.  */
   bp_pack_value (bp, TYPE_PACKED (expr), 1);
@@ -330,9 +332,12 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
     {
       bp_pack_value (bp, TYPE_TRANSPARENT_AGGR (expr), 1);
       bp_pack_value (bp, TYPE_FINAL_P (expr), 1);
+      bp_pack_value (bp, TYPE_CXX_ODR_P (expr), 1);
     }
   else if (TREE_CODE (expr) == ARRAY_TYPE)
     bp_pack_value (bp, TYPE_NONALIASED_COMPONENT (expr), 1);
+  if (TREE_CODE (expr) == ARRAY_TYPE || TREE_CODE (expr) == INTEGER_TYPE)
+    bp_pack_value (bp, TYPE_STRING_FLAG (expr), 1);
   if (AGGREGATE_TYPE_P (expr))
     bp_pack_value (bp, TYPE_TYPELESS_STORAGE (expr), 1);
   bp_pack_value (bp, TYPE_EMPTY_P (expr), 1);
@@ -576,7 +581,7 @@ write_ts_decl_minimal_tree_pointers (struct output_block *ob, tree expr,
   /* Drop names that were created for anonymous entities.  */
   if (DECL_NAME (expr)
       && TREE_CODE (DECL_NAME (expr)) == IDENTIFIER_NODE
-      && anon_aggrname_p (DECL_NAME (expr)))
+      && IDENTIFIER_ANON_P (DECL_NAME (expr)))
     stream_write_tree (ob, NULL_TREE, ref_p);
   else
     stream_write_tree (ob, DECL_NAME (expr), ref_p);

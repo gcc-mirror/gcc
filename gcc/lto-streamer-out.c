@@ -782,7 +782,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
       /* Drop names that were created for anonymous entities.  */
       if (DECL_NAME (expr)
 	  && TREE_CODE (DECL_NAME (expr)) == IDENTIFIER_NODE
-	  && anon_aggrname_p (DECL_NAME (expr)))
+	  && IDENTIFIER_ANON_P (DECL_NAME (expr)))
 	;
       else
 	DFS_follow_tree_edge (DECL_NAME (expr));
@@ -1143,7 +1143,6 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
       hstate.add_hwi (TYPE_MODE (t));
-      hstate.add_flag (TYPE_STRING_FLAG (t));
       /* TYPE_NO_FORCE_BLK is private to stor-layout and need
  	 no streaming.  */
       hstate.add_flag (TYPE_PACKED (t));
@@ -1154,9 +1153,12 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 	{
 	  hstate.add_flag (TYPE_TRANSPARENT_AGGR (t));
 	  hstate.add_flag (TYPE_FINAL_P (t));
+          hstate.add_flag (TYPE_CXX_ODR_P (t));
 	}
       else if (code == ARRAY_TYPE)
 	hstate.add_flag (TYPE_NONALIASED_COMPONENT (t));
+      if (code == ARRAY_TYPE || code == INTEGER_TYPE)
+        hstate.add_flag (TYPE_STRING_FLAG (t));
       if (AGGREGATE_TYPE_P (t))
 	hstate.add_flag (TYPE_TYPELESS_STORAGE (t));
       hstate.commit_flag ();
@@ -1211,7 +1213,7 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
       /* Drop names that were created for anonymous entities.  */
       if (DECL_NAME (t)
 	  && TREE_CODE (DECL_NAME (t)) == IDENTIFIER_NODE
-	  && anon_aggrname_p (DECL_NAME (t)))
+	  && IDENTIFIER_ANON_P (DECL_NAME (t)))
 	;
       else
 	visit (DECL_NAME (t));
@@ -2029,6 +2031,7 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
   bp_pack_value (&bp, fn->has_forced_label_in_static, 1);
   bp_pack_value (&bp, fn->calls_alloca, 1);
   bp_pack_value (&bp, fn->calls_setjmp, 1);
+  bp_pack_value (&bp, fn->calls_eh_return, 1);
   bp_pack_value (&bp, fn->has_force_vectorize_loops, 1);
   bp_pack_value (&bp, fn->has_simduid_loops, 1);
   bp_pack_value (&bp, fn->va_list_fpr_size, 8);
@@ -2394,13 +2397,17 @@ lto_output (void)
 {
   struct lto_out_decl_state *decl_state;
   bitmap output = NULL;
+  bitmap_obstack output_obstack;
   int i, n_nodes;
   lto_symtab_encoder_t encoder = lto_get_out_decl_state ()->symtab_node_encoder;
 
   prune_offload_funcs ();
 
   if (flag_checking)
-    output = lto_bitmap_alloc ();
+    {
+      bitmap_obstack_initialize (&output_obstack);
+      output = BITMAP_ALLOC (&output_obstack);
+    }
 
   /* Initialize the streamer.  */
   lto_streamer_init ();
@@ -2416,10 +2423,7 @@ lto_output (void)
 	      && !node->alias)
 	    {
 	      if (flag_checking)
-		{
-		  gcc_assert (!bitmap_bit_p (output, DECL_UID (node->decl)));
-		  bitmap_set_bit (output, DECL_UID (node->decl));
-		}
+		gcc_assert (bitmap_set_bit (output, DECL_UID (node->decl)));
 	      decl_state = lto_new_out_decl_state ();
 	      lto_push_out_decl_state (decl_state);
 	      if (gimple_has_body_p (node->decl)
@@ -2449,10 +2453,7 @@ lto_output (void)
 	    {
 	      timevar_push (TV_IPA_LTO_CTORS_OUT);
 	      if (flag_checking)
-		{
-		  gcc_assert (!bitmap_bit_p (output, DECL_UID (node->decl)));
-		  bitmap_set_bit (output, DECL_UID (node->decl));
-		}
+		gcc_assert (bitmap_set_bit (output, DECL_UID (node->decl)));
 	      decl_state = lto_new_out_decl_state ();
 	      lto_push_out_decl_state (decl_state);
 	      if (DECL_INITIAL (node->decl) != error_mark_node
@@ -2477,9 +2478,11 @@ lto_output (void)
 
   output_offload_tables ();
 
-#if CHECKING_P
-  lto_bitmap_free (output);
-#endif
+  if (flag_checking)
+    {
+      BITMAP_FREE (output);
+      bitmap_obstack_release (&output_obstack);
+    }
 }
 
 /* Write each node in encoded by ENCODER to OB, as well as those reachable

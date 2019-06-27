@@ -30,3 +30,5 @@ void f()
   test_type l;
   l.insert_after(l.begin(), 10, 1); // { dg-error "no matching" }
 }
+
+// { dg-prune-output "iterator_traits" }

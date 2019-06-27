@@ -757,7 +757,8 @@ vr_values::extract_range_from_ssa_name (value_range *vr, tree var)
   else
     vr->set (var);
 
-  vr->equiv_add (var, get_value_range (var), &vrp_equiv_obstack);
+  if (!vr->undefined_p ())
+    vr->equiv_add (var, get_value_range (var), &vrp_equiv_obstack);
 }
 
 /* Extract range information from a binary expression OP0 CODE OP1 based on

@@ -1,3 +1,256 @@
+2019-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: Add libef_ppc.a to the extra files for powerpc-darwin.
+	* config/rs6000/t-darwin: (PPC_ENDFILE_SRC, PPC_ENDFILE_OBJS): New.
+	Build objects for the out of line save/restore register functions
+	so that they can be used for any supported Darwin version.
+	* config/t-darwin: Default the build Darwin version to Darwin8
+	(MacOS 10.4).
+
+2019-06-25  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver-system.c (replace_filename_variables): Do not
+	call strlen with NULL argument.
+
+2019-06-25  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/t-amdgcn (LIB2ADD): Add unwind-gcn.c.
+	* config/gcn/unwind-gcn.c: New file.
+
+2019-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+            Andrew Stubbs  <ams@codesourcery.com>
+
+	* configure: Regenerate.
+	* config/gcn/gthr-gcn.h: New.
+
+2019-06-18  Tom de Vries  <tdevries@suse.de>
+
+	* config/nvptx/crt0.c (__main): Declare.
+
+2019-06-17  Matthew Green  <mrg@eterna.com.au>
+	    Maya Rashish  <coypu@sdf.org>
+
+	* config.host (aarch64*-*-netbsd*): New case.
+
+2019-06-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/slli.S (__mspabi_sllll): New library function for
+	performing a logical left shift of a 64-bit value.
+	* config/msp430/srai.S (__mspabi_srall): New library function for
+	performing a arithmetic right shift of a 64-bit value.
+	* config/msp430/srll.S (__mspabi_srlll): New library function for
+	performing a logical right shift of a 64-bit value.
+
+2019-06-14  Matt Thomas  <matt@3am-software.com>
+	    Matthew Green  <mrg@eterna.com.au>
+	    Nick Hudson  <skrll@netbsd.org>
+	    Maya Rashish  <coypu@sdf.org>
+
+	* config.host (arm*-*-netbsdelf*): Add support for EABI configurations.
+	* config/arm/t-netbsd (LIB1ASMFUNCS): Add some additional assembler
+	functions to build.
+	* config/arm/t-netbsd-eabi: New file.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config.host: Add PRU target.
+	* config/pru/asri.c: New file.
+	* config/pru/eqd.c: New file.
+	* config/pru/eqf.c: New file.
+	* config/pru/ged.c: New file.
+	* config/pru/gef.c: New file.
+	* config/pru/gtd.c: New file.
+	* config/pru/gtf.c: New file.
+	* config/pru/led.c: New file.
+	* config/pru/lef.c: New file.
+	* config/pru/lib2bitcountHI.c: New file.
+	* config/pru/lib2divHI.c: New file.
+	* config/pru/lib2divQI.c: New file.
+	* config/pru/lib2divSI.c: New file.
+	* config/pru/libgcc-eabi.ver: New file.
+	* config/pru/ltd.c: New file.
+	* config/pru/ltf.c: New file.
+	* config/pru/mpyll.S: New file.
+	* config/pru/pru-abi.h: New file.
+	* config/pru/pru-asm.h: New file.
+	* config/pru/pru-divmod.h: New file.
+	* config/pru/sfp-machine.h: New file.
+	* config/pru/t-pru: New file.
+
+2019-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgcov-merge.c (__gcov_merge_single): Revert previous change.
+
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/90808
+	* libgcov.h: Add ATTRIBUTE_UNUSED.
+
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Add __gcov_one_value_profiler_v2,
+	__gcov_one_value_profiler_v2_atomic and
+	__gcov_indirect_call_profiler_v4.
+	* libgcov-merge.c (__gcov_merge_single): Change
+	function signature.
+	(merge_single_value_set): New.
+	* libgcov-profiler.c (__gcov_one_value_profiler_body):
+	Update functionality.
+	(__gcov_one_value_profiler): Remove.
+	(__gcov_one_value_profiler_v2): ... this.
+	(__gcov_one_value_profiler_atomic): Rename to ...
+	(__gcov_one_value_profiler_v2_atomic): this.
+	(__gcov_indirect_call_profiler_v3): Rename to ...
+	(__gcov_indirect_call_profiler_v4): ... this.
+	* libgcov.h (__gcov_one_value_profiler): Remove.
+	(__gcov_one_value_profiler_atomic): Remove.
+	(__gcov_one_value_profiler_v2_atomic): New.
+	(__gcov_indirect_call_profiler_v3): Remove.
+	(__gcov_one_value_profiler_v2): New.
+	(__gcov_indirect_call_profiler_v4): New.
+	(gcov_get_counter_ignore_scaling): New function.
+
+2019-06-07  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Remove usage of
+	_gcov_merge_icall_topn.
+	* libgcov-driver.c (gcov_sort_n_vals): Remove.
+	(gcov_sort_icall_topn_counter): Likewise.
+	(gcov_sort_topn_counter_arrays): Likewise.
+	(dump_one_gcov): Remove call to gcov_sort_topn_counter_arrays.
+	* libgcov-merge.c (__gcov_merge_icall_topn): Remove.
+	* libgcov-profiler.c (__gcov_topn_value_profiler_body):
+	Likewise.
+	(GCOV_ICALL_COUNTER_CLEAR_THRESHOLD): Remove.
+	(struct indirect_call_tuple): Remove.
+	(__gcov_indirect_call_topn_profiler): Remove.
+	* libgcov-util.c (__gcov_icall_topn_counter_op): Remove.
+	* libgcov.h (gcov_sort_n_vals): Remove.
+	(L_gcov_merge_icall_topn): Likewise.
+	(__gcov_merge_icall_topn): Likewise.
+	(__gcov_indirect_call_topn_profiler): Likewise.
+
+2019-06-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/t-darwin: Ensure that the unwinder is built with
+	altivec enabled.
+
+2019-06-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/slli.S (__mspabi_slli_n): Put function in its own
+	section.
+	(__mspabi_slli): Likewise.
+	(__mspabi_slll_n): Likewise.
+	(__mspabi_slll): Likewise.
+	* config/msp430/srai.S (__mspabi_srai_n): Likewise.
+	(__mspabi_srai): Likewise.
+	(__mspabi_sral_n): Likewise.
+	(__mspabi_sral): Likewise.
+	* config/msp430/srli.S (__mspabi_srli_n): Likewise.
+	(__mspabi_srli): Likewise.
+	(__mspabi_srll_n): Likewise.
+	(__mspabi_srll): Likewise.
+
+2019-06-05  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* config.host (rx-*-linux*): Add t-fdpbit to tmake_file
+	Add appropriate tm_file clause as well.
+	* config/rx/t-rx (HOST_LIBGCC2_CFLAGS): Remove.
+
+2019-06-05  James Clarke  <jrtc27@jrtc27.com>
+
+	* config/ia64/crtbegin.S (__dso_handle): Put in .sdata/.sbss
+	rather than .data/.bss so it can be accessed via gp-relative
+	addressing.
+
+2019-06-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix-unwind.h (LR_REGNO): Rename to R_LR.
+	(CR2_REGNO): Rename to R_CR2.
+	(XER_REGNO): Rename to R_XER.
+	(FIRST_ALTIVEC_REGNO): Rename to R_FIRST_ALTIVEC.
+	(VRSAVE_REGNO): Rename to R_VRSAVE.
+	(VSCR_REGNO): R_VSCR.
+
+2019-05-29  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* config.host (rx-*-linux*): Add new case.
+	* config/rx/t-rx (HOST_LIBGCC2_CFLAGS): Force DFmode to SFmode.
+
+2019-05-29  Sam Tebbs  <sam.tebbs@arm.com>
+
+	* config/aarch64/aarch64-unwind.h (aarch64_cie_signed_with_b_key): New
+	function.
+	* config/aarch64/aarch64-unwind.h (aarch64_post_extract_frame_addr,
+	aarch64_post_frob_eh_handler_addr): Add	check for b-key.
+	* config/aarch64/aarch64-unwind-h (aarch64_post_extract_frame_addr,
+	aarch64_post_frob_eh_handler_addr, aarch64_post_frob_update_context):
+	Rename RA_A_SIGNED_BIT to RA_SIGNED_BIT.
+	* unwind-dw2-fde.c (get_cie_encoding): Add check for 'B' in augmentation
+	string.
+	* unwind-dw2.c (extract_cie_info): Add check for 'B' in augmentation
+	string.
+	(RA_A_SIGNED_BIT): Rename to RA_SIGNED_BIT.
+
+2019-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/sol2-unwind.h [__arch64__] (sparc64_is_sighandler):
+	Remove Solaris 9 and 10 support.
+	(sparc_is_sighandler): Likewise.
+
+2019-05-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-unwind.h (pa32_fallback_frame_state): Add cast.
+
+2019-05-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* soft-fp/extenddftf2.c: Use "_FP_W_TYPE_SIZE < 64" to check if
+	4_FP_W_TYPEs are used for IEEE quad precision.
+	* soft-fp/extendhftf2.c: Likewise.
+	* soft-fp/extendsftf2.c: Likewise.
+	* soft-fp/extendxftf2.c: Likewise.
+	* soft-fp/trunctfdf2.c: Likewise.
+	* soft-fp/trunctfhf2.c: Likewise.
+	* soft-fp/trunctfsf2.c: Likewise.
+	* soft-fp/trunctfxf2.c: Likewise.
+	* config/rs6000/ibm-ldouble.c: Likewise.
+
+2019-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host: Simplify various *-*-solaris2.1[0-9]* to
+	*-*-solaris2*.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+
+	* config/i386/sol2-unwind.h (x86_fallback_frame_state): Remove
+	Solaris 10 and Solaris 11 < snv_125 handling.
+
+2019-05-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin-vecsave.S: Set .machine appropriately.
+
+2019-05-07  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/cpuinfo.c (get_available_features): Detect BF16.
+	* config/i386/cpuinfo.h (enum processor_features): Add
+	FEATURE_AVX512BF16.
+
+2019-04-23  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/89093
+	* config/arm/pr-support.c: Add #pragma GCC target("general-regs-only").
+	* config/arm/unwind-arm.c: Likewise.
+	* unwind-c.c (PERSONALITY_FUNCTION): Add general-regs-only target
+	attribute for ARM.
+
+2019-04-15  Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/linux-unwind.h (SIGRETURN): Remove.
+	(RT_SIGRETURN): Update.
+	(nds32_fallback_frame_state): Update.
+
 2019-02-21  Martin Sebor  <msebor@redhat.com>
 
 	* libgcc2.h (__clear_cache): Correct signature.

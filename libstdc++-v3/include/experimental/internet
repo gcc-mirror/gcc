@@ -24,6 +24,7 @@
 
 /** @file experimental/internet
  *  This is a TS C++ Library header.
+ *  @ingroup networking-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_INTERNET
@@ -69,9 +70,8 @@ inline namespace v1
 namespace ip
 {
 
-  /**
-   * @ingroup networking
-   * @{
+  /** @addtogroup networking-ts
+   *  @{
    */
 
 #ifdef _GLIBCXX_HAVE_NETDB_H
@@ -1111,13 +1111,14 @@ namespace ip
 
   typedef basic_address_range<address_v6> address_v6_range;
 
+  // @}
+
   bool
   operator==(const network_v4& __a, const network_v4& __b) noexcept;
 
   bool
   operator==(const network_v6& __a, const network_v6& __b) noexcept;
 
-  // @}
 
   /// An IPv4 network address.
   class network_v4

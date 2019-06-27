@@ -299,7 +299,8 @@ GLIBCXX_3.4 {
     _ZNSbIwSt11char_traitsIwESaIwEE12_S_constructE[jmy]wRKS1_;
     _ZNSbIwSt11char_traitsIwESaIwEE12_S_empty_repEv;
     _ZNSbIwSt11char_traitsIwESaIwEE13_S_copy_chars*;
-    _ZNSbIwSt11char_traitsIwESaIwEE[0-9][0-9]_M_replace*;
+    _ZNSbIwSt11char_traitsIwESaIwEE14_M_replace_aux*;
+    _ZNSbIwSt11char_traitsIwESaIwEE15_M_replace_safe*;
     _ZNSbIwSt11char_traitsIwESaIwEE4_Rep10_M_destroy*;
     _ZNSbIwSt11char_traitsIwESaIwEE4_Rep10_M_dispose*;
     _ZNSbIwSt11char_traitsIwESaIwEE4_Rep10_M_refcopyEv;
@@ -2233,17 +2234,17 @@ GLIBCXX_3.4.26 {
     _ZNSt10filesystem7__cxx1128recursive_directory_iteratoraSEOS1_;
     _ZNSt10filesystem7__cxx1128recursive_directory_iteratorppEv;
 
-    _ZNSt12__shared_ptrINSt10filesystem4_DirELN9__gnu_cxx12_Lock_policyE2EEC1Ev;
-    _ZNSt12__shared_ptrINSt10filesystem4_DirELN9__gnu_cxx12_Lock_policyE2EEC1EOS4_;
-    _ZNSt12__shared_ptrINSt10filesystem4_DirELN9__gnu_cxx12_Lock_policyE2EEaSEOS4_;
-    _ZNSt12__shared_ptrINSt10filesystem28recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE2EEC1Ev;
-    _ZNSt12__shared_ptrINSt10filesystem28recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE2EEC1EOS5_;
+    _ZNSt12__shared_ptrINSt10filesystem4_DirELN9__gnu_cxx12_Lock_policyE[012]EEC1Ev;
+    _ZNSt12__shared_ptrINSt10filesystem4_DirELN9__gnu_cxx12_Lock_policyE[012]EEC1EOS4_;
+    _ZNSt12__shared_ptrINSt10filesystem4_DirELN9__gnu_cxx12_Lock_policyE[012]EEaSEOS4_;
+    _ZNSt12__shared_ptrINSt10filesystem28recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE[012]EEC1Ev;
+    _ZNSt12__shared_ptrINSt10filesystem28recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE[012]EEC1EOS5_;
 
-    _ZNSt12__shared_ptrINSt10filesystem7__cxx114_DirELN9__gnu_cxx12_Lock_policyE2EEC1Ev;
-    _ZNSt12__shared_ptrINSt10filesystem7__cxx114_DirELN9__gnu_cxx12_Lock_policyE2EEC1EOS5_;
-    _ZNSt12__shared_ptrINSt10filesystem7__cxx114_DirELN9__gnu_cxx12_Lock_policyE2EEaSEOS5_;
-    _ZNSt12__shared_ptrINSt10filesystem7__cxx1128recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE2EEC1Ev;
-    _ZNSt12__shared_ptrINSt10filesystem7__cxx1128recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE2EEC1EOS6_;
+    _ZNSt12__shared_ptrINSt10filesystem7__cxx114_DirELN9__gnu_cxx12_Lock_policyE[012]EEC1Ev;
+    _ZNSt12__shared_ptrINSt10filesystem7__cxx114_DirELN9__gnu_cxx12_Lock_policyE[012]EEC1EOS5_;
+    _ZNSt12__shared_ptrINSt10filesystem7__cxx114_DirELN9__gnu_cxx12_Lock_policyE[012]EEaSEOS5_;
+    _ZNSt12__shared_ptrINSt10filesystem7__cxx1128recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE[012]EEC1Ev;
+    _ZNSt12__shared_ptrINSt10filesystem7__cxx1128recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE[012]EEC1EOS6_;
 
     # basic_ostream::operator<<(nullptr_t)
     _ZNSolsEDn;

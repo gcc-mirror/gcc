@@ -38,6 +38,8 @@
  * Contains implementations of cc_ht_map_'s erase related functions.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
@@ -101,3 +103,4 @@ clear()
 #include <ext/pb_ds/detail/cc_hash_table_map_/erase_no_store_hash_fn_imps.hpp>
 #include <ext/pb_ds/detail/cc_hash_table_map_/erase_store_hash_fn_imps.hpp>
 
+#endif

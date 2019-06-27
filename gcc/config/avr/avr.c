@@ -1302,22 +1302,6 @@ avr_build_builtin_va_list (void)
 }
 
 
-/* Implement `TARGET_BUILTIN_SETJMP_FRAME_VALUE'.  */
-/* Actual start of frame is virtual_stack_vars_rtx this is offset from
-   frame pointer by +TARGET_STARTING_FRAME_OFFSET.
-   Using saved frame = virtual_stack_vars_rtx - TARGET_STARTING_FRAME_OFFSET
-   avoids creating add/sub of offset in nonlocal goto and setjmp.  */
-
-static rtx
-avr_builtin_setjmp_frame_value (void)
-{
-  rtx xval = gen_reg_rtx (Pmode);
-  emit_insn (gen_subhi3 (xval, virtual_stack_vars_rtx,
-                         gen_int_mode (avr_starting_frame_offset (), Pmode)));
-  return xval;
-}
-
-
 /* Return contents of MEM at frame pointer + stack size + 1 (+2 if 3-byte PC).
    This is return address of function.  */
 
@@ -14671,9 +14655,6 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 
 #undef  TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING hook_bool_CUMULATIVE_ARGS_true
-
-#undef  TARGET_BUILTIN_SETJMP_FRAME_VALUE
-#define TARGET_BUILTIN_SETJMP_FRAME_VALUE avr_builtin_setjmp_frame_value
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE avr_conditional_register_usage

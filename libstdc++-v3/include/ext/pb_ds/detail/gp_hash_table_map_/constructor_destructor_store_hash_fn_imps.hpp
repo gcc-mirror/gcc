@@ -39,6 +39,8 @@
  * and related functions.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline void
 PB_DS_CLASS_C_DEC::
@@ -52,3 +54,4 @@ constructor_insert_new_imp(mapped_const_reference r_val, size_type pos,
   p_e->m_stat = valid_entry_status;
   _GLIBCXX_DEBUG_ONLY(debug_base::insert_new(p_e->m_value.first);)
 }
+#endif

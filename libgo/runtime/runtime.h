@@ -78,9 +78,7 @@ typedef	struct	_panic			Panic;
 
 typedef struct	__go_ptr_type		PtrType;
 typedef struct	__go_func_type		FuncType;
-typedef struct	__go_interface_type	InterfaceType;
 typedef struct	__go_map_type		MapType;
-typedef struct	__go_channel_type	ChanType;
 
 typedef struct  tracebackg	Traceback;
 
@@ -116,11 +114,6 @@ struct FuncVal
 extern M*	runtime_m(void);
 extern G*	runtime_g(void)
   __asm__(GOSYM_PREFIX "runtime.getg");
-
-extern M*	runtime_m0(void)
-  __asm__(GOSYM_PREFIX "runtime.runtime_m0");
-extern G*	runtime_g0(void)
-  __asm__(GOSYM_PREFIX "runtime.runtime_g0");
 
 enum
 {
@@ -198,15 +191,6 @@ void	runtime_hashinit(void);
  */
 extern	uintptr* runtime_getZerobase(void)
   __asm__(GOSYM_PREFIX "runtime.getZerobase");
-extern G* runtime_getallg(intgo)
-  __asm__(GOSYM_PREFIX "runtime.getallg");
-extern uintptr runtime_getallglen(void)
-  __asm__(GOSYM_PREFIX "runtime.getallglen");
-extern	M*	runtime_getallm(void)
-  __asm__(GOSYM_PREFIX "runtime.getallm");
-extern	Sched*  runtime_sched;
-extern	uint32	runtime_panicking(void)
-  __asm__ (GOSYM_PREFIX "runtime.getPanicking");
 
 extern	bool	runtime_isstarted;
 extern	bool	runtime_isarchive;
@@ -240,6 +224,8 @@ int32	runtime_snprintf(byte*, int32, const char*, ...);
 #define runtime_memmove(a, b, s) __builtin_memmove((a), (b), (s))
 String	runtime_gostringnocopy(const byte*)
   __asm__ (GOSYM_PREFIX "runtime.gostringnocopy");
+void	runtime_ginit(void)
+  __asm__ (GOSYM_PREFIX "runtime.ginit");
 void	runtime_schedinit(void)
   __asm__ (GOSYM_PREFIX "runtime.schedinit");
 void	runtime_initsig(bool)
@@ -447,7 +433,6 @@ int32 getproccount(void);
 
 #define PREFETCH(p) __builtin_prefetch(p)
 
-bool	runtime_gcwaiting(void);
 void	runtime_badsignal(int);
 Defer*	runtime_newdefer(void);
 void	runtime_freedefer(Defer*);
@@ -483,6 +468,7 @@ struct funcfileline_return
   String retfn;
   String retfile;
   intgo retline;
+  intgo retframes;
 };
 
 struct funcfileline_return
@@ -507,3 +493,20 @@ bool probestackmaps(void)
 // older versions of glibc when a SIGPROF signal arrives while
 // collecting a backtrace.
 extern uint32 __go_runtime_in_callers;
+
+// Cheaper context switch functions.  Currently only defined on
+// Linux/AMD64.
+#if defined(__x86_64__) && defined(__linux__) && !defined(__CET__)
+typedef struct {
+	uint64 regs[8];
+} __go_context_t;
+int __go_getcontext(__go_context_t*);
+int __go_setcontext(__go_context_t*);
+void __go_makecontext(__go_context_t*, void (*)(), void*, size_t);
+#else
+#define __go_context_t	ucontext_t
+#define __go_getcontext(c)	getcontext(c)
+#define __go_setcontext(c)	setcontext(c)
+#define __go_makecontext(c, fn, sp, size) \
+	((c)->uc_stack.ss_sp = sp, (c)->uc_stack.ss_size = size, makecontext(c, fn, 0))
+#endif

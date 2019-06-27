@@ -38,6 +38,8 @@
  * Contains an implementation class for left_child_next_sibling_heap_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
@@ -173,3 +175,4 @@ swap_with_parent(node_pointer p_nd, node_pointer p_parent)
   _GLIBCXX_DEBUG_ASSERT(parent(p_parent) == p_nd);
 }
 
+#endif

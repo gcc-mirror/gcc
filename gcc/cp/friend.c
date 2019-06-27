@@ -638,9 +638,10 @@ do_friend (tree ctype, tree declarator, tree decl,
 				"%q#D declares a non-template function", decl);
 	      if (! explained && warned)
 		{
-		  inform (input_location, "(if this is not what you intended, make sure "
-			  "the function template has already been declared "
-			  "and add <> after the function name here) ");
+		  inform (input_location, "(if this is not what you intended, "
+			  "make sure the function template has already been "
+			  "declared and add %<<>%> after the function name "
+			  "here)");
 		  explained = 1;
 		}
 	    }

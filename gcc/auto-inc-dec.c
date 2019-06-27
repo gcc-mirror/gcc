@@ -471,6 +471,7 @@ attempt_change (rtx new_addr, rtx inc_reg)
   int regno;
   rtx mem = *mem_insn.mem_loc;
   machine_mode mode = GET_MODE (mem);
+  int align = MEM_ALIGN (mem);
   rtx new_mem;
   int old_cost = 0;
   int new_cost = 0;
@@ -478,6 +479,7 @@ attempt_change (rtx new_addr, rtx inc_reg)
 
   PUT_MODE (mem_tmp, mode);
   XEXP (mem_tmp, 0) = new_addr;
+  set_mem_align (mem_tmp, align);
 
   old_cost = (set_src_cost (mem, mode, speed)
 	      + set_rtx_cost (PATTERN (inc_insn.insn), speed));

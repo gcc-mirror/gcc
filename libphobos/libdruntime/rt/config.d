@@ -115,7 +115,7 @@ string rt_envvarsOption(string opt, scope rt_configCallBack dg) @nogc nothrow
         if (opt.length >= 32)
             assert(0);
 
-        char[40] var;
+        char[40] var = void;
         var[0 .. 4] = "DRT_";
         foreach (i, c; opt)
             var[4 + i] = cast(char) toupper(c);

@@ -28,7 +28,7 @@ class hash_set
 public:
   typedef typename Traits::value_type Key;
   explicit hash_set (size_t n = 13, bool ggc = false CXX_MEM_STAT_INFO)
-    : m_table (n, ggc, GATHER_STATISTICS, HASH_SET_ORIGIN PASS_MEM_STAT) {}
+    : m_table (n, ggc, true, GATHER_STATISTICS, HASH_SET_ORIGIN PASS_MEM_STAT) {}
 
   /* Create a hash_set in gc memory with space for at least n elements.  */
 
@@ -87,6 +87,9 @@ public:
   /* Clear the hash table.  */
 
   void empty () { m_table.empty (); }
+
+  /* Return true when there are no elements in this hash set.  */
+  bool is_empty () const { return m_table.is_empty (); }
 
   class iterator
   {

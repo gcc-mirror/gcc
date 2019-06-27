@@ -24,6 +24,7 @@
 
 /** @file experimental/any
  *  This is a TS C++ Library header.
+ *  @ingroup libfund-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_ANY
@@ -49,7 +50,7 @@ inline namespace fundamentals_v1
 {
   /**
    * @defgroup any Type-safe container of any type
-   * @ingroup experimental
+   * @ingroup libfund-ts
    *
    * A type-safe container for single values of value types, as
    * described in n3804 "Any Library Proposal (Revision 3)".
@@ -69,6 +70,7 @@ inline namespace fundamentals_v1
     virtual const char* what() const noexcept { return "bad any_cast"; }
   };
 
+  /// @cond undocumented
   [[gnu::noreturn]] inline void __throw_bad_any_cast()
   {
 #if __cpp_exceptions
@@ -77,6 +79,7 @@ inline namespace fundamentals_v1
     __builtin_abort();
 #endif
   }
+  /// @endcond
 
   /**
    *  @brief A type-safe container of any type.
@@ -300,7 +303,8 @@ inline namespace fundamentals_v1
     _Storage _M_storage;
 
     template<typename _Tp>
-      friend void* __any_caster(const any* __any);
+      friend enable_if_t<is_object<_Tp>::value, void*>
+      __any_caster(const any* __any);
 
     // Manage in-place contained object.
     template<typename _Tp>
@@ -410,18 +414,44 @@ inline namespace fundamentals_v1
     }
   // @}
 
+  /// @cond undocumented
   template<typename _Tp>
-    void* __any_caster(const any* __any)
+    enable_if_t<is_object<_Tp>::value, void*>
+    __any_caster(const any* __any)
     {
-      struct _None { };
-      using _Up = decay_t<_Tp>;
-      using _Vp = conditional_t<is_copy_constructible<_Up>::value, _Up, _None>;
-      if (__any->_M_manager != &any::_Manager<_Vp>::_S_manage)
-	return nullptr;
-      any::_Arg __arg;
-      __any->_M_manager(any::_Op_access, __any, &__arg);
-      return __arg._M_obj;
+      // any_cast<T> returns non-null if __any->type() == typeid(T) and
+      // typeid(T) ignores cv-qualifiers so remove them:
+      using _Up = remove_cv_t<_Tp>;
+      // The contained value has a decayed type, so if decay_t<U> is not U,
+      // then it's not possible to have a contained value of type U.
+      using __does_not_decay = is_same<decay_t<_Up>, _Up>;
+      // Only copy constructible types can be used for contained values.
+      using __is_copyable = is_copy_constructible<_Up>;
+      // If the type _Tp could never be stored in an any we don't want to
+      // instantiate _Manager<_Tp>, so use _Manager<any::_Op> instead, which
+      // is explicitly specialized and has a no-op _S_manage function.
+      using _Vp = conditional_t<__and_<__does_not_decay, __is_copyable>::value,
+				_Up, any::_Op>;
+      // First try comparing function addresses, which works without RTTI
+      if (__any->_M_manager == &any::_Manager<_Vp>::_S_manage
+#if __cpp_rtti
+	  || __any->type() == typeid(_Tp)
+#endif
+	  )
+	{
+	  any::_Arg __arg;
+	  __any->_M_manager(any::_Op_access, __any, &__arg);
+	  return __arg._M_obj;
+	}
+      return nullptr;
     }
+
+  // This overload exists so that std::any_cast<void(*)()>(a) is well-formed.
+  template<typename _Tp>
+    enable_if_t<!is_object<_Tp>::value, _Tp*>
+    __any_caster(const any*) noexcept
+    { return nullptr; }
+  /// @endcond
 
   /**
    * @brief Access the contained object.
@@ -516,6 +546,14 @@ inline namespace fundamentals_v1
 	break;
       }
     }
+
+  // Dummy specialization used by __any_caster.
+  template<>
+    struct any::_Manager_internal<any::_Op>
+    {
+      static void
+      _S_manage(_Op, const any*, _Arg*) { }
+    };
 
   // @} group any
 } // namespace fundamentals_v1

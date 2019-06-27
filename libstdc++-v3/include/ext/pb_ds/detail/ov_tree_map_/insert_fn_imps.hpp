@@ -38,6 +38,8 @@
  * Contains an implementation class for ov_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
@@ -61,3 +63,4 @@ reallocate_metadata(Node_Update_* , size_type new_size)
   std::swap(m_a_metadata, a_new_metadata_vec);
 }
 
+#endif

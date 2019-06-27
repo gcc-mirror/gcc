@@ -40,6 +40,7 @@
 
 #include "openacc.h"
 #include "config.h"
+#include "acc_prof.h"
 #include <stddef.h>
 #include <stdbool.h>
 #include <stdarg.h>
@@ -67,6 +68,12 @@ struct goacc_thread
   /* This is a linked list of data mapped by the "acc data" pragma, following
      strictly push/pop semantics according to lexical scope.  */
   struct target_mem_desc *mapped_data;
+
+  /* Data of the OpenACC Profiling Interface.  */
+  acc_prof_info *prof_info;
+  acc_api_info *api_info;
+  /* Per-thread toggle of OpenACC Profiling Interface callbacks.  */
+  bool prof_callbacks_enabled;
 
   /* These structures form a list: this is the next thread in that list.  */
   struct goacc_thread *next;
@@ -99,6 +106,13 @@ void goacc_restore_bind (void);
 void goacc_lazy_initialize (void);
 void goacc_host_init (void);
 
+void goacc_init_asyncqueues (struct gomp_device_descr *);
+bool goacc_fini_asyncqueues (struct gomp_device_descr *);
+void goacc_async_free (struct gomp_device_descr *, struct goacc_asyncqueue *,
+		       void *);
+struct goacc_asyncqueue *get_goacc_asyncqueue (int);
+struct goacc_asyncqueue *lookup_goacc_asyncqueue (struct goacc_thread *, bool,
+						  int);
 static inline bool
 async_valid_stream_id_p (int async)
 {
@@ -120,6 +134,28 @@ async_synchronous_p (int async)
 
   return async == acc_async_sync;
 }
+
+
+extern bool goacc_prof_enabled;
+/* Tune for the (very common) case that profiling is not enabled.  */
+#define GOACC_PROF_ENABLED \
+  (__builtin_expect (__atomic_load_n (&goacc_prof_enabled, \
+				      MEMMODEL_ACQUIRE) == true, false))
+
+void goacc_profiling_initialize (void);
+bool _goacc_profiling_dispatch_p (bool);
+/* Tune for the (very common) case that profiling is not enabled.  */
+#define GOACC_PROFILING_DISPATCH_P(...) \
+  (GOACC_PROF_ENABLED \
+   && _goacc_profiling_dispatch_p (__VA_ARGS__))
+bool _goacc_profiling_setup_p (struct goacc_thread *,
+			       acc_prof_info *, acc_api_info *);
+/* Tune for the (very common) case that profiling is not enabled.  */
+#define GOACC_PROFILING_SETUP_P(...) \
+  (GOACC_PROFILING_DISPATCH_P (false) \
+   && _goacc_profiling_setup_p (__VA_ARGS__))
+void goacc_profiling_dispatch (acc_prof_info *, acc_event_info *,
+			       acc_api_info *);
 
 #ifdef HAVE_ATTRIBUTE_VISIBILITY
 # pragma GCC visibility pop

@@ -38,6 +38,8 @@
  * Contains an implementation class for a pairing heap.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 template<typename It>
 void
@@ -80,3 +82,4 @@ PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 ~pairing_heap()
 { }
+#endif

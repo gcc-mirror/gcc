@@ -1022,8 +1022,8 @@ c_common_post_options (const char **pfilename)
     warn_return_type = 1;
 
   if (num_in_fnames > 1)
-    error ("too many filenames given.  Type %s --help for usage",
-	   progname);
+    error ("too many filenames given; type %<%s %s%> for usage",
+	   progname, "--help");
 
   if (flag_preprocess_only)
     {
@@ -1057,7 +1057,7 @@ c_common_post_options (const char **pfilename)
 	     debug formats we warn here and refuse to load any PCH files.  */
 	  if (write_symbols != NO_DEBUG && write_symbols != DWARF2_DEBUG)
 	    warning (OPT_Wdeprecated,
-		     "the \"%s\" debug format cannot be used with "
+		     "the %qs debug format cannot be used with "
 		     "pre-compiled headers", debug_type_names[write_symbols]);
 	}
       else if (write_symbols != NO_DEBUG && write_symbols != DWARF2_DEBUG)
@@ -1277,18 +1277,15 @@ check_deps_environment_vars (void)
 static void
 handle_deferred_opts (void)
 {
-  size_t i;
-  struct deps *deps;
-
   /* Avoid allocating the deps buffer if we don't need it.
      (This flag may be true without there having been -MT or -MQ
      options, but we'll still need the deps buffer.)  */
   if (!deps_seen)
     return;
 
-  deps = cpp_get_deps (parse_in);
+  struct mkdeps *deps = cpp_get_deps (parse_in);
 
-  for (i = 0; i < deferred_count; i++)
+  for (size_t i = 0; i < deferred_count; i++)
     {
       struct deferred_opt *opt = &deferred_opts[i];
 

@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "gfortran.h"
 #include "constructor.h"
+#include "version.h"
 
 /* Keep track of indentation for symbol tree dumps.  */
 static int show_level = 0;
@@ -65,6 +66,19 @@ void debug (symbol_attribute *attr)
   dumpfile = tmp;
 }
 
+void debug (gfc_formal_arglist *formal)
+{
+  FILE *tmp = dumpfile;
+  dumpfile = stderr;
+  for (; formal; formal = formal->next)
+    {
+      fputc ('\n', dumpfile);
+      show_symbol (formal->sym);
+    }
+  fputc ('\n', dumpfile);
+  dumpfile = tmp;
+}
+
 void debug (symbol_attribute attr)
 {
   debug (&attr);
@@ -74,9 +88,15 @@ void debug (gfc_expr *e)
 {
   FILE *tmp = dumpfile;
   dumpfile = stderr;
-  show_expr (e);
-  fputc (' ', dumpfile);
-  show_typespec (&e->ts);
+  if (e != NULL)
+    {
+      show_expr (e);
+      fputc (' ', dumpfile);
+      show_typespec (&e->ts);
+    }
+  else
+    fputs ("() ", dumpfile);
+
   fputc ('\n', dumpfile);
   dumpfile = tmp;
 }
@@ -3074,6 +3094,7 @@ gfc_dump_parse_tree (gfc_namespace *ns, FILE *file)
 /* This part writes BIND(C) definition for use in external C programs.  */
 
 static void write_interop_decl (gfc_symbol *);
+static void write_proc (gfc_symbol *, bool);
 
 void
 gfc_dump_c_prototypes (gfc_namespace *ns, FILE *file)
@@ -3084,6 +3105,33 @@ gfc_dump_c_prototypes (gfc_namespace *ns, FILE *file)
     return;
   dumpfile = file;
   gfc_traverse_ns (ns, write_interop_decl);
+}
+
+/* Loop over all global symbols, writing out their declrations.  */
+
+void
+gfc_dump_external_c_prototypes (FILE * file)
+{
+  dumpfile = file;
+  fprintf (dumpfile,
+	   _("/* Prototypes for external procedures generated from %s\n"
+	     "   by GNU Fortran %s%s.\n\n"
+	     "   Use of this interface is discouraged, consider using the\n"
+	     "   BIND(C) feature of standard Fortran instead.  */\n\n"),
+	   gfc_source_file, pkgversion_string, version_string);
+
+  for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
+       gfc_current_ns = gfc_current_ns->sibling)
+    {
+      gfc_symbol *sym = gfc_current_ns->proc_name;
+
+      if (sym == NULL || sym->attr.flavor != FL_PROCEDURE
+	  || sym->attr.is_bind_c)
+	continue;
+
+      write_proc (sym, false);
+    }
+  return;
 }
 
 enum type_return { T_OK=0, T_WARN, T_ERROR };
@@ -3104,7 +3152,7 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
   *asterisk = false;
   *post = "";
   *type_name = "<error>";
-  if (ts->type == BT_REAL || ts->type == BT_INTEGER)
+  if (ts->type == BT_REAL || ts->type == BT_INTEGER || ts->type == BT_COMPLEX)
     {
       if (ts->is_c_interop && ts->interop_kind)
 	{
@@ -3113,6 +3161,12 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
 	    *type_name = "signed char";
 	  else if (strcmp (*type_name, "size_t") == 0)
 	    *type_name = "ssize_t";
+	  else if (strcmp (*type_name, "float_complex") == 0)
+	    *type_name = "__GFORTRAN_FLOAT_COMPLEX";
+	  else if (strcmp (*type_name, "double_complex") == 0)
+	    *type_name = "__GFORTRAN_DOUBLE_COMPLEX";
+	  else if (strcmp (*type_name, "long_double_complex") == 0)
+	    *type_name = "__GFORTRAN_LONG_DOUBLE_COMPLEX";
 
 	  ret = T_OK;
 	}
@@ -3130,6 +3184,12 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
 		    *type_name = "signed char";
 		  else if (strcmp (*type_name, "size_t") == 0)
 		    *type_name = "ssize_t";
+		  else if (strcmp (*type_name, "float_complex") == 0)
+		    *type_name = "__GFORTRAN_FLOAT_COMPLEX";
+		  else if (strcmp (*type_name, "double_complex") == 0)
+		    *type_name = "__GFORTRAN_DOUBLE_COMPLEX";
+		  else if (strcmp (*type_name, "long_double_complex") == 0)
+		    *type_name = "__GFORTRAN_LONG_DOUBLE_COMPLEX";
 
 		  ret = T_WARN;
 		  break;
@@ -3167,16 +3227,21 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
 	}
       else
 	{
-	  /* Let's select an appropriate int, with a warning. */
-	  for (int i = 0; i < ISOCBINDING_NUMBER; i++)
-	    {
-	      if (c_interop_kinds_table[i].f90_type == BT_INTEGER
-		  && c_interop_kinds_table[i].value == ts->kind)
-		{
-		  *type_name = c_interop_kinds_table[i].name + 2;
-		  ret = T_WARN;
-		}
+	  if (ts->kind == gfc_default_character_kind)
+	    *type_name = "char";
+	  else
+	    /* Let's select an appropriate int. */
+	    for (int i = 0; i < ISOCBINDING_NUMBER; i++)
+	      {
+		if (c_interop_kinds_table[i].f90_type == BT_INTEGER
+		    && c_interop_kinds_table[i].value == ts->kind)
+		  {
+		    *type_name = c_interop_kinds_table[i].name + 2;
+		    break;
+		  }
 	    }
+	  ret = T_WARN;
+
 	}
     }
   else if (ts->type == BT_DERIVED)
@@ -3200,12 +3265,14 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
 		}
 	    }
 	  *asterisk = true;
+	  ret = T_OK;
 	}
       else
 	*type_name = ts->u.derived->name;
 
       ret = T_OK;
     }
+
   if (ret != T_ERROR && as)
     {
       mpz_t sz;
@@ -3222,7 +3289,7 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
 /* Write out a declaration.  */
 static void
 write_decl (gfc_typespec *ts, gfc_array_spec *as, const char *sym_name,
-	    bool func_ret, locus *where)
+	    bool func_ret, locus *where, bool bind_c)
 {
   const char *pre, *type_name, *post;
   bool asterisk;
@@ -3245,7 +3312,7 @@ write_decl (gfc_typespec *ts, gfc_array_spec *as, const char *sym_name,
   fputs (sym_name, dumpfile);
   fputs (post, dumpfile);
 
-  if (rok == T_WARN)
+  if (rok == T_WARN && bind_c)
     fprintf (dumpfile," /* WARNING: Converting '%s' to interoperable type */",
 	     gfc_typename (ts));
 }
@@ -3262,7 +3329,7 @@ write_type (gfc_symbol *sym)
   for (c = sym->components; c; c = c->next)
     {
       fputs ("    ", dumpfile);
-      write_decl (&(c->ts), c->as, c->name, false, &sym->declared_at);
+      write_decl (&(c->ts), c->as, c->name, false, &sym->declared_at, true);
       fputs (";\n", dumpfile);
     }
 
@@ -3284,14 +3351,14 @@ write_variable (gfc_symbol *sym)
     sym_name = sym->name;
 
   fputs ("extern ", dumpfile);
-  write_decl (&(sym->ts), sym->as, sym_name, false, &sym->declared_at);
+  write_decl (&(sym->ts), sym->as, sym_name, false, &sym->declared_at, true);
   fputs (";\n", dumpfile);
 }
 
 
 /* Write out a procedure, including its arguments.  */
 static void
-write_proc (gfc_symbol *sym)
+write_proc (gfc_symbol *sym, bool bind_c)
 {
   const char *pre, *type_name, *post;
   bool asterisk;
@@ -3299,22 +3366,35 @@ write_proc (gfc_symbol *sym)
   gfc_formal_arglist *f;
   const char *sym_name;
   const char *intent_in;
+  bool external_character;
+
+  external_character =  sym->ts.type == BT_CHARACTER && !bind_c;
 
   if (sym->binding_label)
     sym_name = sym->binding_label;
   else
     sym_name = sym->name;
 
-  if (sym->ts.type == BT_UNKNOWN)
+  if (sym->ts.type == BT_UNKNOWN || external_character)
     {
       fprintf (dumpfile, "void ");
       fputs (sym_name, dumpfile);
     }
   else
-    write_decl (&(sym->ts), sym->as, sym_name, true, &sym->declared_at);
+    write_decl (&(sym->ts), sym->as, sym_name, true, &sym->declared_at, bind_c);
+
+  if (!bind_c)
+    fputs ("_", dumpfile);
 
   fputs (" (", dumpfile);
-
+  if (external_character)
+    {
+      fprintf (dumpfile, "char *result_%s, size_t result_%s_len",
+	       sym_name, sym_name);
+      if (sym->formal)
+	fputs (", ", dumpfile);
+    }
+      
   for (f = sym->formal; f; f = f->next)
     {
       gfc_symbol *s;
@@ -3325,7 +3405,7 @@ write_proc (gfc_symbol *sym)
 	{
 	  gfc_error_now ("Cannot convert %qs to interoperable type at %L",
 			 gfc_typename (&s->ts), &s->declared_at);
-	  fprintf (stderr, "/* Cannot convert '%s' to interoperable type */",
+	  fprintf (dumpfile, "/* Cannot convert '%s' to interoperable type */",
 		   gfc_typename (&s->ts));
 	  return;
 	}
@@ -3346,12 +3426,17 @@ write_proc (gfc_symbol *sym)
 
       fputs (s->name, dumpfile);
       fputs (post, dumpfile);
-      if (rok == T_WARN)
+      if (bind_c && rok == T_WARN)
 	fputs(" /* WARNING: non-interoperable KIND */ ", dumpfile);
 
       if (f->next)
 	fputs(", ", dumpfile);
     }
+  if (!bind_c)
+    for (f = sym->formal; f; f = f->next)
+      if (f->sym->ts.type == BT_CHARACTER)
+	fprintf (dumpfile, ", size_t %s_len", f->sym->name);
+
   fputs (");\n", dumpfile);
 }
 
@@ -3375,5 +3460,5 @@ write_interop_decl (gfc_symbol *sym)
   else if (sym->attr.flavor == FL_DERIVED)
     write_type (sym);
   else if (sym->attr.flavor == FL_PROCEDURE)
-    write_proc (sym);
+    write_proc (sym, true);
 }

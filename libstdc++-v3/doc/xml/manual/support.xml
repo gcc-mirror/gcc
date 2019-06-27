@@ -26,9 +26,9 @@
 
 <section xml:id="std.support.types" xreflabel="Types"><info><title>Types</title></info>
   <?dbhtml filename="fundamental_types.html"?>
-  
+
   <section xml:id="std.support.types.fundamental" xreflabel="Fundamental Types"><info><title>Fundamental Types</title></info>
-    
+
     <para>
       C++ has the following builtin types:
     </para>
@@ -90,11 +90,9 @@
 
   </section>
   <section xml:id="std.support.types.numeric_limits" xreflabel="Numeric Properties"><info><title>Numeric Properties</title></info>
-    
-
 
     <para>
-    The header <filename class="headerfile">limits</filename> defines
+    The header <filename class="headerfile">&lt;limits&gt;</filename> defines
     traits classes to give access to various implementation
     defined-aspects of the fundamental types. The traits classes --
     fourteen in total -- are all specializations of the class template
@@ -145,42 +143,50 @@
   </section>
 
   <section xml:id="std.support.types.null" xreflabel="NULL"><info><title>NULL</title></info>
-    
+
     <para>
      The only change that might affect people is the type of
      <constant>NULL</constant>: while it is required to be a macro,
      the definition of that macro is <emphasis>not</emphasis> allowed
-     to be <constant>(void*)0</constant>, which is often used in C.
+     to be an expression with pointer type such as
+     <constant>(void*)0</constant>, which is often used in C.
     </para>
 
     <para>
      For <command>g++</command>, <constant>NULL</constant> is
      <code>#define</code>'d to be
      <constant>__null</constant>, a magic keyword extension of
-     <command>g++</command>.
+     <command>g++</command> that is slightly safer than a plain integer.
     </para>
 
     <para>
      The biggest problem of #defining <constant>NULL</constant> to be
      something like <quote>0L</quote> is that the compiler will view
      that as a long integer before it views it as a pointer, so
-     overloading won't do what you expect. (This is why
-     <command>g++</command> has a magic extension, so that
-     <constant>NULL</constant> is always a pointer.)
+     overloading won't do what you expect. It might not even have the
+     same size as a pointer, so passing <constant>NULL</constant> to a
+     varargs function where a pointer is expected might not even work
+     correctly if <code>sizeof(NULL) &lt; sizeof(void*)</code>.
+     The G++ <constant>__null</constant> extension is defined so that
+     <code>sizeof(__null) == sizeof(void*)</code> to avoid this problem.
     </para>
 
-    <para>In his book <link xmlns:xlink="http://www.w3.org/1999/xlink"
-      xlink:href="http://www.aristeia.com/books.html"><emphasis>Effective
-      C++</emphasis></link>, Scott Meyers points out that the best way
-    to solve this problem is to not overload on pointer-vs-integer
-    types to begin with.  He also offers a way to make your own magic
-    <constant>NULL</constant> that will match pointers before it
-    matches integers.
+    <para>
+     Scott Meyers explains this in more detail in his book
+     <link xmlns:xlink="http://www.w3.org/1999/xlink"
+      xlink:href="https://www.aristeia.com/books.html"><emphasis>Effective
+     Modern C++</emphasis></link> and as a guideline to solve this problem
+     recommends to not overload on pointer-vs-integer types to begin with.
     </para>
-    <para>See the
-      <link xmlns:xlink="http://www.w3.org/1999/xlink"
-      xlink:href="http://www.aristeia.com/books.html"><emphasis>Effective
-      C++ CD</emphasis></link> example.
+
+    <para>
+     The C++ 2011 standard added the <constant>nullptr</constant> keyword,
+     which is a null pointer constant of a special type,
+     <classname>std::nullptr_t</classname>. Values of this type can be
+     implicitly converted to <emphasis>any</emphasis> pointer type,
+     and cannot convert to integer types or be deduced as an integer type.
+     Unless you need to be compatible with C++98/C++03 or C you should prefer
+     to use <constant>nullptr</constant>  instead of <constant>NULL</constant>.
     </para>
   </section>
 
@@ -188,59 +194,157 @@
 
 <section xml:id="std.support.memory" xreflabel="Dynamic Memory"><info><title>Dynamic Memory</title></info>
   <?dbhtml filename="dynamic_memory.html"?>
-  
+
   <para>
-    There are six flavors each of <function>new</function> and
-    <function>delete</function>, so make certain that you're using the right
-    ones. Here are quickie descriptions of <function>new</function>:
+    In C++98 there are six flavors each of <function>operator new</function>
+    and <function>operator delete</function>, so make certain that you're
+    using the right ones.
+    Here are quickie descriptions of <function>operator new</function>:
   </para>
-  <itemizedlist>
-      <listitem><para>
-	single object form, throwing a
-	<classname>bad_alloc</classname> on errors; this is what most
-	people are used to using
-      </para></listitem>
-      <listitem><para>
-	Single object "nothrow" form, returning NULL on errors
-      </para></listitem>
-      <listitem><para>
-	Array <function>new</function>, throwing
-	<classname>bad_alloc</classname> on errors
-      </para></listitem>
-      <listitem><para>
-	Array nothrow <function>new</function>, returning
-	<constant>NULL</constant> on errors
-      </para></listitem>
-      <listitem><para>
-	Placement <function>new</function>, which does nothing (like
-	it's supposed to)
-      </para></listitem>
-      <listitem><para>
-	Placement array <function>new</function>, which also does
-	nothing
-      </para></listitem>
-   </itemizedlist>
+  <variablelist>
+    <varlistentry>
+      <term><code>void* operator new(std::size_t);</code></term>
+      <listitem>
+	Single object form.
+        Throws <classname>std::bad_alloc</classname> on error.
+        This is what most people are used to using.
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term><code>void* operator new(std::size_t, std::nothrow_t) noexcept;</code></term>
+      <listitem>
+	Single object <quote>nothrow</quote> form.
+        Calls <code>operator new(std::size_t)</code> but if that throws,
+        returns a null pointer instead.
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term><code>void* operator new[](std::size_t);</code></term>
+      <listitem>
+	Array <function>new</function>.
+        Calls <code>operator new(std::size_t)</code> and so
+	throws <classname>std::bad_alloc</classname> on error.
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term><code>void* operator new[](std::size_t, std::nothrow_t) noexcept;</code></term>
+      <listitem>
+	Array <quote>nothrow</quote> <function>new</function>.
+        Calls <code>operator new[](std::size_t)</code> but if that throws,
+        returns a null pointer instead.
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term><code>void* operator new(std::size_t, void*) noexcept;</code></term>
+      <listitem>
+	Non-allocating, <quote>placement</quote> single-object <function>new</function>,
+        which does nothing except return its argument.
+        This function cannot be replaced.
+      </listitem>
+    </varlistentry>
+    <varlistentry>
+      <term><code>void* operator new[](std::size_t, void*) noexcept;</code></term>
+      <listitem>
+	Non-allocating, <quote>placement</quote> array <function>new</function>,
+        which also does nothing except return its argument.
+        This function cannot be replaced.
+      </listitem>
+    </varlistentry>
+   </variablelist>
    <para>
-     They are distinguished by the parameters that you pass to them, like
-     any other overloaded function.  The six flavors of <function>delete</function>
+     They are distinguished by the arguments that you pass to them, like
+     any other overloaded function.  The six flavors of
+     <function>operator delete</function>
      are distinguished the same way, but none of them are allowed to throw
-     an exception under any circumstances anyhow.  (They match up for
-     completeness' sake.)
+     an exception under any circumstances anyhow.  (The overloads match up
+     with the ones above, for completeness' sake.)
    </para>
    <para>
-     Remember that it is perfectly okay to call <function>delete</function> on a
-     NULL pointer!  Nothing happens, by definition.  That is not the
-     same thing as deleting a pointer twice.
+     The C++ 2014 revision of the standard added two additional overloads of
+     <function>operator delete</function> for <quote>sized deallocation</quote>,
+     allowing the compiler to provide the size of the storage being freed.
    </para>
    <para>
-     By default, if one of the <quote>throwing <function>new</function>s</quote> can't
-     allocate the memory requested, it tosses an instance of a
-     <classname>bad_alloc</classname> exception (or, technically, some class derived
-     from it).  You can change this by writing your own function (called a
-     new-handler) and then registering it with <function>set_new_handler()</function>:
+     The C++ 2017 standard added even more overloads of both
+     <function>operator new</function> and <function>operator delete</function>
+     for allocating and deallocating storage for overaligned types.
+     These overloads correspond to each of the allocating forms of
+     <function>operator new</function> and <function>operator delete</function>
+     but with an additional parameter of type <type>std::align_val_t</type>.
+     These new overloads are not interchangeable with the versions without
+     an aligment parameter, so if memory was allocated by an overload of
+     <function>operator new</function> taking an alignment parameter,
+     then it must be decallocated by the corresponding overload of
+     <function>operator delete</function> that takes an alignment parameter.
+   </para>
+   <para>
+     Apart from the non-allocating forms, the default versions of the array
+     and nothrow <function>operator new</function> functions will all result
+     in a call to either <function>operator new(std::size_t)</function> or
+     <function>operator new(std::size_t, std::align_val_t)</function>,
+     and similarly the default versions of the array and nothrow
+     <function>operator delete</function> functions will result in a call to
+     either <function>operator delete(void*)</function> or
+     <function>operator delete(void*, std::align_val_t)</function>
+     (or the sized versions of those).
+   </para>
+   <para>
+     Apart from the non-allocating forms, any of these functions can be
+     replaced by defining a function with the same signature in your program.
+     Replacement versions must preserve certain guarantees, such as memory
+     obtained from a nothrow <function>operator new</function> being free-able
+     by the normal (non-nothrow) <function>operator delete</function>,
+     and the sized and unsized forms of <function>operator delete</function>
+     being interchangeable (because it's unspecified whether
+     the compiler calls the sized delete instead of the normal one).
+     The simplest way to meet the guarantees is to only replace the ordinary
+     <function>operator new(size_t)</function> and
+     <function>operator delete(void*)</function> and
+     <function>operator delete(void*, std::size_t)</function>
+     functions, and the replaced versions will be used by all of
+     <function>operator new(size_t, nothrow_t)</function>,
+     <function>operator new[](size_t)</function> and
+     <function>operator new[](size_t, nothrow_t)</function>
+     and the corresponding <function>operator delete</function> functions.
+     To support types with extended alignment you may also need to replace
+     <function>operator new(size_t, align_val_t)</function> and
+     <function>operator delete(void*, align_val_t)</function>
+     <function>operator delete(void*, size_t, align_val_t)</function>
+     (which will then be used by the nothrow and array forms for
+     extended alignments).
+     If you do need to replace other forms (e.g. to define the nothrow
+     <function>operator new</function> to allocate memory directly, so it
+     works with exceptions disabled) then make sure the memory it allocates
+     can still be freed by the non-nothrow forms of
+     <function>operator delete</function>.
+   </para>
+   <para>
+     If the default versions of <function>operator new(std::size_t)</function>
+     and <function>operator new(size_t, std::align_val_t)</function>
+     can't allocate the memory requested, they usually throw an exception
+     object of type <classname>std::bad_alloc</classname> (or some class
+     derived from that). However, the program can influence that behavior
+     by registering a <quote>new-handler</quote>, because what
+     <function>operator new</function> actually does is something like:
    </para>
    <programlisting>
-   typedef void (*PFV)(void);
+    while (true)
+    {
+      if (void* p = /* try to allocate memory */)
+        return p;
+      else if (std::new_handler h = std::get_new_handler ())
+        h ();
+      else
+        throw bad_alloc{};
+    }
+   </programlisting>
+   <para>
+     This means you can influence what happens on allocation failure by
+     writing your own new-handler and then registering it with
+     <function>std::set_new_handler</function>:
+   </para>
+   <programlisting>
+   typedef void (*PFV)();
 
    static char*  safety;
    static PFV    old_handler;
@@ -248,6 +352,7 @@
    void my_new_handler ()
    {
        delete[] safety;
+       safety = nullptr;
        popup_window ("Dude, you are running low on heap memory.  You"
 		     " should, like, close some windows, or something."
 		     " The next time you run out, we're gonna burn!");
@@ -262,19 +367,32 @@
        ...
    }
    </programlisting>
+
+   <section xml:id="std.support.memory.notes" xreflabel="Dynamic Memory Notes"><info><title>Additional Notes</title></info>
+
    <para>
-     <classname>bad_alloc</classname> is derived from the base <classname>exception</classname>
-     class defined in Sect1 19.
+     Remember that it is perfectly okay to <function>delete</function> a
+     null pointer!  Nothing happens, by definition.  That is not the
+     same thing as deleting a pointer twice.
    </para>
+   <para>
+     <classname>std::bad_alloc</classname> is derived from the base
+     <classname>std::exception</classname> class,
+     see <xref linkend="std.diagnostics.exceptions"/>.
+   </para>
+   </section>
+
 </section>
 
 <section xml:id="std.support.termination" xreflabel="Termination"><info><title>Termination</title></info>
   <?dbhtml filename="termination.html"?>
-  
+
   <section xml:id="support.termination.handlers" xreflabel="Termination Handlers"><info><title>Termination Handlers</title></info>
-    
+
     <para>
-      Not many changes here to <filename class="headerfile">cstdlib</filename>.  You should note that the
+      Not many changes here to
+      <filename class="headerfile">&lt;cstdlib&gt;</filename>.
+      You should note that the
       <function>abort()</function> function does not call the
       destructors of automatic nor static objects, so if you're
       depending on those to do cleanup, it isn't going to happen.
@@ -306,8 +424,8 @@
 	given this pseudocode:
 	</para>
 <programlisting>
-  extern "C or C++" void  f1 (void);
-  extern "C or C++" void  f2 (void);
+  extern "C or C++" void f1 ();
+  extern "C or C++" void f2 ();
 
   static Thing obj1;
   atexit(f1);
@@ -329,17 +447,28 @@
       Note also that <function>atexit()</function> is only required to store 32
       functions, and the compiler/library might already be using some of
       those slots.  If you think you may run out, we recommend using
-      the <function>xatexit</function>/<function>xexit</function> combination from <literal>libiberty</literal>, which has no such limit.
+      the <function>xatexit</function>/<function>xexit</function> combination
+      from <literal>libiberty</literal>, which has no such limit.
     </para>
   </section>
 
   <section xml:id="support.termination.verbose" xreflabel="Verbose Terminate Handler"><info><title>Verbose Terminate Handler</title></info>
   <?dbhtml filename="verbose_termination.html"?>
-    
+
     <para>
       If you are having difficulty with uncaught exceptions and want a
       little bit of help debugging the causes of the core dumps, you can
       make use of a GNU extension, the verbose terminate handler.
+    </para>
+
+    <para>
+      The verbose terminate handler is only available for hosted environments
+      (see <xref linkend="manual.intro.setup.configure"/>) and will be used
+      by default unless the library is built with
+      <option>--disable-libstdcxx-verbose</option>
+      or with exceptions disabled.
+      If you need to enable it explicitly you can do so by calling the
+      <function>std::set_terminate</function> function.
     </para>
 
 <programlisting>
@@ -357,14 +486,15 @@ int main()
    <para>
      The <function>__verbose_terminate_handler</function> function
      obtains the name of the current exception, attempts to demangle
-     it, and prints it to stderr.  If the exception is derived from
-     <classname>exception</classname> then the output from
+     it, and prints it to <literal>stderr</literal>.
+     If the exception is derived from
+     <classname>std::exception</classname> then the output from
      <function>what()</function> will be included.
    </para>
 
    <para>
      Any replacement termination function is required to kill the
-     program without returning; this one calls abort.
+     program without returning; this one calls <function>std::abort</function>.
    </para>
 
    <para>
@@ -407,15 +537,16 @@ int main(int argc)
    </screen>
 
    <para>
-     The 'Aborted' line comes from the call to
-     <function>abort()</function>, of course.
+     The 'Aborted' line is printed by the shell after the process exits
+     by calling <function>abort()</function>.
    </para>
 
    <para>
-     This is the default termination handler; nothing need be done to
+     As this is the default termination handler, nothing need be done to
      use it.  To go back to the previous <quote>silent death</quote>
-     method, simply include <filename>exception</filename> and
-     <filename>cstdlib</filename>, and call
+     method, simply include
+     <filename class="headerfile">&lt;exception&gt;</filename> and
+     <filename class="headerfile">&lt;cstdlib&gt;</filename>, and call
    </para>
 
    <programlisting>
@@ -429,8 +560,8 @@ int main(int argc)
 
    <para>
      Note: the verbose terminate handler will attempt to write to
-     stderr.  If your application closes stderr or redirects it to an
-     inappropriate location,
+     <literal>stderr</literal>.  If your application closes
+     <literal>stderr</literal> or redirects it to an inappropriate location,
      <function>__verbose_terminate_handler</function> will behave in
      an unspecified manner.
    </para>

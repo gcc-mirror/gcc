@@ -701,7 +701,8 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
       size_t num_files;
 
       if (!lto_wrapper)
-	fatal_error (input_location, "COLLECT_LTO_WRAPPER must be set");
+	fatal_error (input_location, "environment variable "
+		     "%<COLLECT_LTO_WRAPPER%> must be set");
 
       num_lto_c_args++;
 
@@ -1396,7 +1397,7 @@ main (int argc, char **argv)
 
 		  stream = fopen (list_filename, "r");
 		  if (stream == NULL)
-		    fatal_error (input_location, "can%'t open %s: %m",
+		    fatal_error (input_location, "cannot open %s: %m",
 				 list_filename);
 
 		  while (fgets (buf, sizeof buf, stream) != NULL)
@@ -1640,7 +1641,7 @@ main (int argc, char **argv)
       printf ("  --help          Display this information\n");
       printf ("  -v, --version   Display this program's version number\n");
       printf ("\n");
-      printf ("Overview: http://gcc.gnu.org/onlinedocs/gccint/Collect2.html\n");
+      printf ("Overview: https://gcc.gnu.org/onlinedocs/gccint/Collect2.html\n");
       printf ("Report bugs: %s\n", bug_report_url);
       printf ("\n");
     }
@@ -2382,7 +2383,7 @@ is_lto_object_file (const char *prog_name)
     return true;
 
   if (errmsg)
-    fatal_error (0, "%s: %s\n", errmsg, xstrerror (err));
+    fatal_error (0, "%s: %s", errmsg, xstrerror (err));
   return false;
 }
 
@@ -2448,7 +2449,7 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 
   pex = pex_init (PEX_USE_PIPES, "collect2", NULL);
   if (pex == NULL)
-    fatal_error (input_location, "pex_init failed: %m");
+    fatal_error (input_location, "%<pex_init%> failed: %m");
 
   errmsg = pex_run (pex, 0, nm_file_name, real_nm_argv, NULL, HOST_BIT_BUCKET,
 		    &err);
@@ -2470,7 +2471,7 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 
   inf = pex_read_output (pex, 0);
   if (inf == NULL)
-    fatal_error (input_location, "can%'t open nm output: %m");
+    fatal_error (input_location, "cannot open nm output: %m");
 
   if (debug)
     fprintf (stderr, "\nnm output with constructors/destructors.\n");
@@ -2639,7 +2640,7 @@ scan_libraries (const char *prog_name)
 
   inf = pex_read_output (pex, 0);
   if (inf == NULL)
-    fatal_error (input_location, "can%'t open ldd output: %m");
+    fatal_error (input_location, "cannot open ldd output: %m");
 
   if (debug)
     notice ("\nldd output with constructors/destructors.\n");

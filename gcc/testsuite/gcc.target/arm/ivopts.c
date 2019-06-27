@@ -1,5 +1,5 @@
 /* { dg-do assemble } */
-/* { dg-options "-Os -fdump-tree-ivopts -save-temps" } */
+/* { dg-options "-Os -fdump-tree-ivopts -save-temps -fno-tree-loop-distribute-patterns" } */
 
 void
 tr5 (short array[], int n)

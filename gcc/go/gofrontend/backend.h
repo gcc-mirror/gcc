@@ -564,7 +564,7 @@ class Backend
   // ASM_NAME is encoded assembler-friendly version of the name, or the
   // empty string if no encoding is needed.
   //
-  // TYPE is the type of the implicit variable. 
+  // TYPE is the type of the implicit variable.
   //
   // IS_HIDDEN will be true if the descriptor should only be visible
   // within the current object.
@@ -634,7 +634,7 @@ class Backend
   //
   // TYPE will be a struct type; the type of the returned expression
   // must be a pointer to this struct type.
-  // 
+  //
   // We must create the named structure before we know its
   // initializer, because the initializer may refer to its own
   // address.  After calling this the frontend will call
@@ -668,7 +668,7 @@ class Backend
                              Btype* type, Location) = 0;
 
   // Labels.
-  
+
   // Create a new label.  NAME will be empty if this is a label
   // created by the frontend for a loop construct.  The location is
   // where the label is defined.

@@ -39,4 +39,7 @@ tree create_mem_ref (gimple_stmt_iterator *, tree,
 extern void copy_ref_info (tree, tree);
 tree maybe_fold_tmr (tree);
 
+extern unsigned int preferred_mem_scale_factor (tree base,
+						machine_mode mem_mode,
+						bool speed);
 #endif /* GCC_TREE_SSA_ADDRESS_H */

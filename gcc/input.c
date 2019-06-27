@@ -1215,7 +1215,8 @@ dump_location_info (FILE *stream)
 	  if (x == y)
 	    {
 	      if (x < MAP_START_LOCATION (map))
-		inform (x, "token %u has x-location == y-location == %u", i, x);
+		inform (x, "token %u has %<x-location == y-location == %u%>",
+			i, x);
 	      else
 		fprintf (stream,
 			 "x-location == y-location == %u encodes token # %u\n",
@@ -1223,8 +1224,8 @@ dump_location_info (FILE *stream)
 		}
 	  else
 	    {
-	      inform (x, "token %u has x-location == %u", i, x);
-	      inform (x, "token %u has y-location == %u", i, y);
+	      inform (x, "token %u has %<x-location == %u%>", i, x);
+	      inform (x, "token %u has %<y-location == %u%>", i, y);
 	    }
 	}
       fprintf (stream, "\n");

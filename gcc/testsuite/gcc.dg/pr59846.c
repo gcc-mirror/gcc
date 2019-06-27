@@ -17,13 +17,13 @@ fn2 (unsigned int p)
 _Bool
 fn3 (unsigned int p)
 {
-  return p >= 0U; /* { dg-warning "12:comparison of unsigned expression >= 0 is always true" } */
+  return p >= 0U; /* { dg-warning "12:comparison of unsigned expression in '>= 0' is always true" } */
 }
 
 _Bool
 fn4 (unsigned int p)
 {
-  return p < 0U; /* { dg-warning "12:comparison of unsigned expression < 0 is always false" } */
+  return p < 0U; /* { dg-warning "12:comparison of unsigned expression in '< 0' is always false" } */
 }
 
 _Bool

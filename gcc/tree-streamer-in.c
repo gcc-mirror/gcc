@@ -251,7 +251,7 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       LABEL_DECL_UID (expr) = -1;
     }
 
-  if (TREE_CODE (expr) == FIELD_DECL)
+  else if (TREE_CODE (expr) == FIELD_DECL)
     {
       DECL_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_NONADDRESSABLE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -259,11 +259,14 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       expr->decl_common.off_align = bp_unpack_value (bp, 8);
     }
 
-  if (VAR_P (expr))
+  else if (VAR_P (expr))
     {
       DECL_HAS_DEBUG_EXPR_P (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_NONLOCAL_FRAME (expr) = (unsigned) bp_unpack_value (bp, 1);
     }
+
+  else if (TREE_CODE (expr) == PARM_DECL)
+    DECL_HIDDEN_STRING_LENGTH (expr) = (unsigned) bp_unpack_value (bp, 1);
 
   if (TREE_CODE (expr) == RESULT_DECL
       || TREE_CODE (expr) == PARM_DECL
@@ -369,7 +372,6 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
 
   mode = bp_unpack_machine_mode (bp);
   SET_TYPE_MODE (expr, mode);
-  TYPE_STRING_FLAG (expr) = (unsigned) bp_unpack_value (bp, 1);
   /* TYPE_NO_FORCE_BLK is private to stor-layout and need
      no streaming.  */
   TYPE_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -380,9 +382,12 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
     {
       TYPE_TRANSPARENT_AGGR (expr) = (unsigned) bp_unpack_value (bp, 1);
       TYPE_FINAL_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+      TYPE_CXX_ODR_P (expr) = (unsigned) bp_unpack_value (bp, 1);
     }
   else if (TREE_CODE (expr) == ARRAY_TYPE)
     TYPE_NONALIASED_COMPONENT (expr) = (unsigned) bp_unpack_value (bp, 1);
+  if (TREE_CODE (expr) == ARRAY_TYPE || TREE_CODE (expr) == INTEGER_TYPE)
+    TYPE_STRING_FLAG (expr) = (unsigned) bp_unpack_value (bp, 1);
   if (AGGREGATE_TYPE_P (expr))
     TYPE_TYPELESS_STORAGE (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_EMPTY_P (expr) = (unsigned) bp_unpack_value (bp, 1);

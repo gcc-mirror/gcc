@@ -39,6 +39,8 @@
  * when the hash value is not stored.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::pointer
 PB_DS_CLASS_C_DEC::

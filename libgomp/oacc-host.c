@@ -32,7 +32,6 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdint.h>
 
 static struct gomp_device_descr host_dispatch;
 
@@ -140,55 +139,89 @@ host_openacc_exec (void (*fn) (void *),
 		   size_t mapnum __attribute__ ((unused)),
 		   void **hostaddrs,
 		   void **devaddrs __attribute__ ((unused)),
-		   int async __attribute__ ((unused)),
-		   unsigned *dims __attribute ((unused)),
+		   unsigned *dims __attribute__ ((unused)),
 		   void *targ_mem_desc __attribute__ ((unused)))
 {
   fn (hostaddrs);
 }
 
 static void
-host_openacc_register_async_cleanup (void *targ_mem_desc __attribute__ ((unused)),
-				     int async __attribute__ ((unused)))
+host_openacc_async_exec (void (*fn) (void *),
+			 size_t mapnum __attribute__ ((unused)),
+			 void **hostaddrs,
+			 void **devaddrs __attribute__ ((unused)),
+			 unsigned *dims __attribute__ ((unused)),
+			 void *targ_mem_desc __attribute__ ((unused)),
+			 struct goacc_asyncqueue *aq __attribute__ ((unused)))
 {
+  fn (hostaddrs);
 }
 
 static int
-host_openacc_async_test (int async __attribute__ ((unused)))
+host_openacc_async_test (struct goacc_asyncqueue *aq __attribute__ ((unused)))
 {
   return 1;
 }
 
-static int
-host_openacc_async_test_all (void)
+static bool
+host_openacc_async_synchronize (struct goacc_asyncqueue *aq
+				__attribute__ ((unused)))
 {
-  return 1;
+  return true;
+}
+
+static bool
+host_openacc_async_serialize (struct goacc_asyncqueue *aq1
+			      __attribute__ ((unused)),
+			      struct goacc_asyncqueue *aq2
+			      __attribute__ ((unused)))
+{
+  return true;
+}
+
+static bool
+host_openacc_async_host2dev (int ord __attribute__ ((unused)),
+			     void *dst __attribute__ ((unused)),
+			     const void *src __attribute__ ((unused)),
+			     size_t n __attribute__ ((unused)),
+			     struct goacc_asyncqueue *aq
+			     __attribute__ ((unused)))
+{
+  return true;
+}
+
+static bool
+host_openacc_async_dev2host (int ord __attribute__ ((unused)),
+			     void *dst __attribute__ ((unused)),
+			     const void *src __attribute__ ((unused)),
+			     size_t n __attribute__ ((unused)),
+			     struct goacc_asyncqueue *aq
+			     __attribute__ ((unused)))
+{
+  return true;
 }
 
 static void
-host_openacc_async_wait (int async __attribute__ ((unused)))
+host_openacc_async_queue_callback (struct goacc_asyncqueue *aq
+				   __attribute__ ((unused)),
+				   void (*callback_fn)(void *)
+				   __attribute__ ((unused)),
+				   void *userptr __attribute__ ((unused)))
 {
 }
 
-static void
-host_openacc_async_wait_async (int async1 __attribute__ ((unused)),
-			       int async2 __attribute__ ((unused)))
+static struct goacc_asyncqueue *
+host_openacc_async_construct (void)
 {
+  /* Non-NULL 0xffff... value as opaque dummy.  */
+  return (struct goacc_asyncqueue *) -1;
 }
 
-static void
-host_openacc_async_wait_all (void)
+static bool
+host_openacc_async_destruct (struct goacc_asyncqueue *aq
+			     __attribute__ ((unused)))
 {
-}
-
-static void
-host_openacc_async_wait_all_async (int async __attribute__ ((unused)))
-{
-}
-
-static void
-host_openacc_async_set_async (int async __attribute__ ((unused)))
-{
+  return true;
 }
 
 static void *
@@ -235,18 +268,20 @@ static struct gomp_device_descr host_dispatch =
 
       .exec_func = host_openacc_exec,
 
-      .register_async_cleanup_func = host_openacc_register_async_cleanup,
-
-      .async_test_func = host_openacc_async_test,
-      .async_test_all_func = host_openacc_async_test_all,
-      .async_wait_func = host_openacc_async_wait,
-      .async_wait_async_func = host_openacc_async_wait_async,
-      .async_wait_all_func = host_openacc_async_wait_all,
-      .async_wait_all_async_func = host_openacc_async_wait_all_async,
-      .async_set_async_func = host_openacc_async_set_async,
-
       .create_thread_data_func = host_openacc_create_thread_data,
       .destroy_thread_data_func = host_openacc_destroy_thread_data,
+
+      .async = {
+	.construct_func = host_openacc_async_construct,
+	.destruct_func = host_openacc_async_destruct,
+	.test_func = host_openacc_async_test,
+	.synchronize_func = host_openacc_async_synchronize,
+	.serialize_func = host_openacc_async_serialize,
+	.queue_callback_func = host_openacc_async_queue_callback,
+	.exec_func = host_openacc_async_exec,
+	.dev2host_func = host_openacc_async_dev2host,
+	.host2dev_func = host_openacc_async_host2dev,
+      },
 
       .cuda = {
 	.get_current_device_func = NULL,

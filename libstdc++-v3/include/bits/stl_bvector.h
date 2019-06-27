@@ -182,40 +182,40 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_offset = static_cast<unsigned int>(__n);
     }
 
-    bool
-    operator==(const _Bit_iterator_base& __i) const
-    { return _M_p == __i._M_p && _M_offset == __i._M_offset; }
+    friend bool
+    operator==(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
+    { return __x._M_p == __y._M_p && __x._M_offset == __y._M_offset; }
 
-    bool
-    operator<(const _Bit_iterator_base& __i) const
+    friend bool
+    operator<(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
     {
-      return _M_p < __i._M_p
-	    || (_M_p == __i._M_p && _M_offset < __i._M_offset);
+      return __x._M_p < __y._M_p
+	    || (__x._M_p == __y._M_p && __x._M_offset < __y._M_offset);
     }
 
-    bool
-    operator!=(const _Bit_iterator_base& __i) const
-    { return !(*this == __i); }
+    friend bool
+    operator!=(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
+    { return !(__x == __y); }
 
-    bool
-    operator>(const _Bit_iterator_base& __i) const
-    { return __i < *this; }
+    friend bool
+    operator>(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
+    { return __y < __x; }
 
-    bool
-    operator<=(const _Bit_iterator_base& __i) const
-    { return !(__i < *this); }
+    friend bool
+    operator<=(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
+    { return !(__y < __x); }
 
-    bool
-    operator>=(const _Bit_iterator_base& __i) const
-    { return !(*this < __i); }
+    friend bool
+    operator>=(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
+    { return !(__x < __y); }
+
+    friend ptrdiff_t
+    operator-(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
+    {
+      return (int(_S_word_bit) * (__x._M_p - __y._M_p)
+	      + __x._M_offset - __y._M_offset);
+    }
   };
-
-  inline ptrdiff_t
-  operator-(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
-  {
-    return (int(_S_word_bit) * (__x._M_p - __y._M_p)
-	    + __x._M_offset - __y._M_offset);
-  }
 
   struct _Bit_iterator : public _Bit_iterator_base
   {
@@ -280,28 +280,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       return *this;
     }
 
-    iterator
-    operator+(difference_type __i) const
-    {
-      iterator __tmp = *this;
-      return __tmp += __i;
-    }
-
-    iterator
-    operator-(difference_type __i) const
-    {
-      iterator __tmp = *this;
-      return __tmp -= __i;
-    }
-
     reference
     operator[](difference_type __i) const
     { return *(*this + __i); }
-  };
 
-  inline _Bit_iterator
-  operator+(ptrdiff_t __n, const _Bit_iterator& __x)
-  { return __x + __n; }
+    friend iterator
+    operator+(const iterator& __x, difference_type __n)
+    {
+      iterator __tmp = __x;
+      __tmp += __n;
+      return __tmp;
+    }
+
+    friend iterator
+    operator+(difference_type __n, const iterator& __x)
+    { return __x + __n; }
+
+    friend iterator
+    operator-(const iterator& __x, difference_type __n)
+    {
+      iterator __tmp = __x;
+      __tmp -= __n;
+      return __tmp;
+    }
+  };
 
   struct _Bit_const_iterator : public _Bit_iterator_base
   {
@@ -370,28 +372,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       return *this;
     }
 
-    const_iterator
-    operator+(difference_type __i) const
-    {
-      const_iterator __tmp = *this;
-      return __tmp += __i;
-    }
-
-    const_iterator
-    operator-(difference_type __i) const
-    {
-      const_iterator __tmp = *this;
-      return __tmp -= __i;
-    }
-
     const_reference
     operator[](difference_type __i) const
     { return *(*this + __i); }
-  };
 
-  inline _Bit_const_iterator
-  operator+(ptrdiff_t __n, const _Bit_const_iterator& __x)
-  { return __x + __n; }
+    friend const_iterator
+    operator+(const const_iterator& __x, difference_type __n)
+    {
+      const_iterator __tmp = __x;
+      __tmp += __n;
+      return __tmp;
+    }
+
+    friend const_iterator
+    operator-(const const_iterator& __x, difference_type __n)
+    {
+      const_iterator __tmp = __x;
+      __tmp -= __n;
+      return __tmp;
+    }
+
+    friend const_iterator
+    operator+(difference_type __n, const const_iterator& __x)
+    { return __x + __n; }
+  };
 
   inline void
   __fill_bvector(_Bit_type * __v,
@@ -878,7 +882,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return size_type(const_iterator(this->_M_impl._M_end_addr(), 0)
 			 - begin()); }
 
-      bool
+      _GLIBCXX_NODISCARD bool
       empty() const _GLIBCXX_NOEXCEPT
       { return begin() == end(); }
 

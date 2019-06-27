@@ -33,33 +33,56 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int.h"
 #include "sreal.h"
 
+/* Names from profile_quality enum values.  */
+
+const char *profile_quality_names[] =
+{
+  "uninitialized",
+  "guessed_local",
+  "guessed_global0",
+  "guessed_global0adjusted",
+  "guessed",
+  "afdo",
+  "adjusted",
+  "precise"
+};
+
 /* Get a string describing QUALITY.  */
 
 const char *
 profile_quality_as_string (enum profile_quality quality)
 {
-  switch (quality)
-    {
-    default:
-      gcc_unreachable ();
-    case profile_uninitialized:
-      return "uninitialized";
-    case profile_guessed_local:
-      return "guessed_local";
-    case profile_guessed_global0:
-      return "guessed_global0";
-    case profile_guessed_global0adjusted:
-      return "guessed_global0adjusted";
-    case profile_guessed:
-      return "guessed";
-    case profile_afdo:
-      return "afdo";
-    case profile_adjusted:
-      return "adjusted";
-    case profile_precise:
-      return "precise";
-    }
+  return profile_quality_names[quality];
 }
+
+/* Parse VALUE as profile quality and return true when a valid QUALITY.  */
+
+bool
+parse_profile_quality (const char *value, profile_quality *quality)
+{
+  for (unsigned i = 0; i < ARRAY_SIZE (profile_quality_names); i++)
+    if (strcmp (profile_quality_names[i], value) == 0)
+      {
+	*quality = (profile_quality)i;
+	return true;
+      }
+
+  return false;
+}
+
+/* Display names from profile_quality enum values.  */
+
+const char *profile_quality_display_names[] =
+{
+  NULL,
+  "estimated locally",
+  "estimated locally, globally 0",
+  "estimated locally, globally 0 adjusted",
+  "adjusted",
+  "auto FDO",
+  "guessed",
+  "precise"
+};
 
 /* Dump THIS to F.  */
 
@@ -69,23 +92,8 @@ profile_count::dump (FILE *f) const
   if (!initialized_p ())
     fprintf (f, "uninitialized");
   else
-    {
-      fprintf (f, "%" PRId64, m_val);
-      if (m_quality == profile_guessed_local)
-	fprintf (f, " (estimated locally)");
-      else if (m_quality == profile_guessed_global0)
-	fprintf (f, " (estimated locally, globally 0)");
-      else if (m_quality == profile_guessed_global0adjusted)
-	fprintf (f, " (estimated locally, globally 0 adjusted)");
-      else if (m_quality == profile_adjusted)
-	fprintf (f, " (adjusted)");
-      else if (m_quality == profile_afdo)
-	fprintf (f, " (auto FDO)");
-      else if (m_quality == profile_guessed)
-	fprintf (f, " (guessed)");
-      else if (m_quality == profile_precise)
-	fprintf (f, " (precise)");
-    }
+    fprintf (f, "%" PRId64 " (%s)", m_val,
+	     profile_quality_display_names[m_quality]);
 }
 
 /* Dump THIS to stderr.  */
@@ -160,11 +168,11 @@ profile_probability::dump (FILE *f) const
         fprintf (f, "always");
       else
         fprintf (f, "%3.1f%%", (double)m_val * 100 / max_probability);
-      if (m_quality == profile_adjusted)
+      if (m_quality == ADJUSTED)
 	fprintf (f, " (adjusted)");
-      else if (m_quality == profile_afdo)
+      else if (m_quality == AFDO)
 	fprintf (f, " (auto FDO)");
-      else if (m_quality == profile_guessed)
+      else if (m_quality == GUESSED)
 	fprintf (f, " (guessed)");
     }
 }
@@ -260,7 +268,7 @@ profile_count::to_frequency (struct function *fun) const
 {
   if (!initialized_p ())
     return BB_FREQ_MAX;
-  if (*this == profile_count::zero ())
+  if (*this == zero ())
     return 0;
   gcc_assert (REG_BR_PROB_BASE == BB_FREQ_MAX
 	      && fun->cfg->count_max.initialized_p ());
@@ -279,7 +287,7 @@ profile_count::to_cgraph_frequency (profile_count entry_bb_count) const
 {
   if (!initialized_p () || !entry_bb_count.initialized_p ())
     return CGRAPH_FREQ_BASE;
-  if (*this == profile_count::zero ())
+  if (*this == zero ())
     return 0;
   gcc_checking_assert (entry_bb_count.initialized_p ());
   uint64_t scale;
@@ -302,7 +310,7 @@ profile_count::to_sreal_scale (profile_count in, bool *known) const
     }
   if (known)
     *known = true;
-  if (*this == profile_count::zero ())
+  if (*this == zero ())
     return 0;
 
   if (!in.m_val)
@@ -329,7 +337,7 @@ profile_count::adjust_for_ipa_scaling (profile_count *num,
   if (*num == *den)
     return;
   /* Scaling to zero is always zero.  */
-  if (*num == profile_count::zero ())
+  if (*num == zero ())
     return;
   /* If den is non-zero we are safe.  */
   if (den->force_nonzero () == *den)
@@ -345,15 +353,16 @@ profile_count::adjust_for_ipa_scaling (profile_count *num,
    if it is nonzero, not changing anything if IPA is uninitialized
    and if IPA is zero, turning THIS into corresponding local profile with
    global0.  */
+
 profile_count
 profile_count::combine_with_ipa_count (profile_count ipa)
 {
   ipa = ipa.ipa ();
   if (ipa.nonzero_p ())
     return ipa;
-  if (!ipa.initialized_p () || *this == profile_count::zero ())
+  if (!ipa.initialized_p () || *this == zero ())
     return *this;
-  if (ipa == profile_count::zero ())
+  if (ipa == zero ())
     return this->global0 ();
   return this->global0adjusted ();
 }
@@ -361,8 +370,9 @@ profile_count::combine_with_ipa_count (profile_count ipa)
 /* The profiling runtime uses gcov_type, which is usually 64bit integer.
    Conversions back and forth are used to read the coverage and get it
    into internal representation.  */
+
 profile_count
-profile_count::from_gcov_type (gcov_type v)
+profile_count::from_gcov_type (gcov_type v, profile_quality quality)
   {
     profile_count ret;
     gcc_checking_assert (v >= 0);
@@ -371,10 +381,9 @@ profile_count::from_gcov_type (gcov_type v)
 	       "Capping gcov count %" PRId64 " to max_count %" PRId64 "\n",
 	       (int64_t) v, (int64_t) max_count);
     ret.m_val = MIN (v, (gcov_type)max_count);
-    ret.m_quality = profile_precise;
+    ret.m_quality = quality;
     return ret;
   }
-
 
 /* COUNT1 times event happens with *THIS probability, COUNT2 times OTHER
    happens with COUNT2 probablity. Return probablity that either *THIS or
@@ -398,6 +407,5 @@ profile_probability::combine_with_count (profile_count count1,
     return *this * count1.probability_in (count1 + count2)
 	   + other * count2.probability_in (count1 + count2);
   else
-    return *this * profile_probability::even ()
-	   + other * profile_probability::even ();
+    return *this * even () + other * even ();
 }

@@ -29,7 +29,7 @@ func funcPC(f interface{}) uintptr {
 		data unsafe.Pointer
 	}
 	i := (*iface)(unsafe.Pointer(&f))
-	r := **(**uintptr)(i.data)
+	r := *(*uintptr)(i.data)
 	if internalcpu.FunctionDescriptors {
 		// With PPC64 ELF ABI v1 function descriptors the
 		// function address is a pointer to a struct whose

@@ -35,10 +35,10 @@
 
 #include <utility>
 #include <type_traits>
-#include <stdexcept>
+#include <exception>
 #include <new>
 #include <initializer_list>
-#include <bits/functexcept.h>
+#include <bits/exception_defines.h>
 #include <bits/functional_hash.h>
 #include <bits/enable_special_members.h>
 
@@ -888,8 +888,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator->() const
       { return std::__addressof(this->_M_get()); }
 
-      constexpr
-      _Tp*
+      constexpr _Tp*
       operator->()
       { return std::__addressof(this->_M_get()); }
 
@@ -959,7 +958,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Up>
-	_Tp
+	constexpr _Tp
 	value_or(_Up&& __u) &&
 	{
 	  static_assert(is_move_constructible_v<_Tp>);

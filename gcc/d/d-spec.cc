@@ -144,6 +144,7 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
   for (i = 1; i < argc; i++)
     {
       const char *arg = decoded_options[i].arg;
+      const int value = decoded_options[i].value;
 
       switch (decoded_options[i].opt_index)
 	{
@@ -159,6 +160,11 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
 	case OPT_nophoboslib:
 	  need_phobos = false;
 	  args[i] |= SKIPOPT;
+	  break;
+
+	case OPT_fdruntime:
+	  if (!value)
+	    need_phobos = false;
 	  break;
 
 	case OPT_defaultlib_:

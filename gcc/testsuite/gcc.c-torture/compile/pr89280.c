@@ -1,3 +1,5 @@
+// { dg-require-effective-target nonlocal_goto }
+// { dg-require-effective-target label_values }
 /* PR tree-optimization/89280 */
 
 int a;

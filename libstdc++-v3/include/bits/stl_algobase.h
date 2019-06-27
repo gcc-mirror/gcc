@@ -750,13 +750,65 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    __value);
     }
 
+  // Used by fill_n, generate_n, etc. to convert _Size to an integral type:
+  inline _GLIBCXX_CONSTEXPR int
+  __size_to_integer(int __n) { return __n; }
+  inline _GLIBCXX_CONSTEXPR unsigned
+  __size_to_integer(unsigned __n) { return __n; }
+  inline _GLIBCXX_CONSTEXPR long
+  __size_to_integer(long __n) { return __n; }
+  inline _GLIBCXX_CONSTEXPR unsigned long
+  __size_to_integer(unsigned long __n) { return __n; }
+  inline _GLIBCXX_CONSTEXPR long long
+  __size_to_integer(long long __n) { return __n; }
+  inline _GLIBCXX_CONSTEXPR unsigned long long
+  __size_to_integer(unsigned long long __n) { return __n; }
+
+#if defined(__GLIBCXX_TYPE_INT_N_0)
+  inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_0
+  __size_to_integer(__GLIBCXX_TYPE_INT_N_0 __n) { return __n; }
+  inline _GLIBCXX_CONSTEXPR unsigned __GLIBCXX_TYPE_INT_N_0
+  __size_to_integer(unsigned __GLIBCXX_TYPE_INT_N_0 __n) { return __n; }
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_1)
+  inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_1
+  __size_to_integer(__GLIBCXX_TYPE_INT_N_1 __n) { return __n; }
+  inline _GLIBCXX_CONSTEXPR unsigned __GLIBCXX_TYPE_INT_N_1
+  __size_to_integer(unsigned __GLIBCXX_TYPE_INT_N_1 __n) { return __n; }
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_2)
+  inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_2
+  __size_to_integer(__GLIBCXX_TYPE_INT_N_2 __n) { return __n; }
+  inline _GLIBCXX_CONSTEXPR unsigned __GLIBCXX_TYPE_INT_N_2
+  __size_to_integer(unsigned __GLIBCXX_TYPE_INT_N_2 __n) { return __n; }
+#endif
+#if defined(__GLIBCXX_TYPE_INT_N_3)
+  inline _GLIBCXX_CONSTEXPR unsigned __GLIBCXX_TYPE_INT_N_3
+  __size_to_integer(__GLIBCXX_TYPE_INT_N_3 __n) { return __n; }
+  inline _GLIBCXX_CONSTEXPR __GLIBCXX_TYPE_INT_N_3
+  __size_to_integer(unsigned __GLIBCXX_TYPE_INT_N_3 __n) { return __n; }
+#endif
+
+  inline _GLIBCXX_CONSTEXPR long long
+  __size_to_integer(float __n) { return __n; }
+  inline _GLIBCXX_CONSTEXPR long long
+  __size_to_integer(double __n) { return __n; }
+  inline _GLIBCXX_CONSTEXPR long long
+  __size_to_integer(long double __n) { return __n; }
+#if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_FLOAT128)
+  inline _GLIBCXX_CONSTEXPR long long
+  __size_to_integer(__float128 __n) { return __n; }
+#endif
+
   template<typename _OutputIterator, typename _Size, typename _Tp>
     inline typename
     __gnu_cxx::__enable_if<!__is_scalar<_Tp>::__value, _OutputIterator>::__type
     __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value)
     {
-      for (__decltype(__n + 0) __niter = __n;
-	   __niter > 0; --__niter, (void) ++__first)
+#if __cplusplus >= 201103L
+      static_assert(is_integral<_Size>{}, "fill_n must pass integral size");
+#endif
+      for (; __n > 0; --__n, (void) ++__first)
 	*__first = __value;
       return __first;
     }
@@ -766,9 +818,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __gnu_cxx::__enable_if<__is_scalar<_Tp>::__value, _OutputIterator>::__type
     __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value)
     {
+#if __cplusplus >= 201103L
+      static_assert(is_integral<_Size>{}, "fill_n must pass integral size");
+#endif
       const _Tp __tmp = __value;
-      for (__decltype(__n + 0) __niter = __n;
-	   __niter > 0; --__niter, (void) ++__first)
+      for (; __n > 0; --__n, (void) ++__first)
 	*__first = __tmp;
       return __first;
     }
@@ -792,21 +846,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  This function fills a range with copies of the same value.  For char
    *  types filling contiguous areas of memory, this becomes an inline call
-   *  to @c memset or @ wmemset.
+   *  to @c memset or @c wmemset.
    *
-   *  _GLIBCXX_RESOLVE_LIB_DEFECTS
-   *  DR 865. More algorithms that throw away information
+   *  If @p __n is negative, the function does nothing.
   */
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // DR 865. More algorithms that throw away information
+  // DR 426. search_n(), fill_n(), and generate_n() with negative n
   template<typename _OI, typename _Size, typename _Tp>
     inline _OI
     fill_n(_OI __first, _Size __n, const _Tp& __value)
     {
       // concept requirements
       __glibcxx_function_requires(_OutputIteratorConcept<_OI, _Tp>)
-      __glibcxx_requires_can_increment(__first, __n);
 
       return std::__niter_wrap(__first,
-		std::__fill_n_a(std::__niter_base(__first), __n, __value));
+	  std::__fill_n_a(std::__niter_base(__first),
+			  std::__size_to_integer(__n),
+			  __value));
     }
 
   template<bool _BoolType>

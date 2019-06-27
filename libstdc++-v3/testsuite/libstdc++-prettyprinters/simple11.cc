@@ -2,7 +2,6 @@
 
 // { dg-do run { target c++11 } }
 // { dg-options "-g -O0" }
-// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
 // Copyright (C) 2011-2019 Free Software Foundation, Inc.
 //
@@ -45,12 +44,12 @@ main()
   bs[0] = 1;
   bs[5] = 1;
   bs[7] = 1;
-// { dg-final { note-test bs {std::bitset = {[0] = 1, [5] = 1, [7] = 1}} } }
+// { dg-final { regexp-test bs {std::(__debug::)?bitset = {\[0\] = 1, \[5\] = 1, \[7\] = 1}} } }
 
   std::deque<std::string> deq;
   deq.push_back("one");
   deq.push_back("two");
-// { dg-final { note-test deq {std::deque with 2 elements = {"one", "two"}} } }
+// { dg-final { regexp-test deq {std::(__debug::)?deque with 2 elements = {"one", "two"}} } }
 
   std::deque<std::string>::iterator deqiter = deq.begin();
 // { dg-final { note-test deqiter {"one"} } }
@@ -61,7 +60,7 @@ main()
   std::list<std::string> lst;
   lst.push_back("one");
   lst.push_back("two");
-// { dg-final { note-test lst {std::list = {[0] = "one", [1] = "two"}} } }
+// { dg-final { regexp-test lst {std::(__debug::)?list = {\[0\] = "one", \[1\] = "two"}} } }
 
   std::list<std::string>::iterator lstiter = lst.begin();
   tem = *lstiter;
@@ -76,7 +75,7 @@ main()
 
   std::map<std::string, int> mp;
   mp["zardoz"] = 23;
-// { dg-final { note-test mp {std::map with 1 element = {["zardoz"] = 23}} } }
+// { dg-final { regexp-test mp {std::(__debug::)?map with 1 element = {\["zardoz"\] = 23}} } }
 
   std::map<std::string, int>::iterator mpiter = mp.begin();
 // { dg-final { note-test mpiter {{first = "zardoz", second = 23}} } }
@@ -86,12 +85,12 @@ main()
 
   // PR 67440
   const std::set<int> const_intset = {2, 3};
-// { dg-final { note-test const_intset {std::set with 2 elements = {[0] = 2, [1] = 3}} } }
+// { dg-final { regexp-test const_intset {std::(__debug::)?set with 2 elements = {\[0\] = 2, \[1\] = 3}} } }
 
   std::set<std::string> sp;
   sp.insert("clownfish");
   sp.insert("barrel");
-// { dg-final { note-test sp {std::set with 2 elements = {[0] = "barrel", [1] = "clownfish"}} } }
+// { dg-final { regexp-test sp {std::(__debug::)?set with 2 elements = {\[0\] = "barrel", \[1\] = "clownfish"}} } }
 
   std::set<std::string>::const_iterator spciter = sp.begin();
 // { dg-final { note-test spciter {"barrel"} } }
@@ -103,12 +102,23 @@ main()
   v.push_back(1);
   v.push_back(2);
   v.erase(v.begin());
-// { dg-final { note-test v {std::vector of length 1, capacity 2 = {2}} } }
+// { dg-final { regexp-test v {std::(__debug::)?vector of length 1, capacity 2 = \\{2\\}} } }
   std::vector<int>::iterator viter3 = v.begin();
 // { dg-final { note-test viter3 {2} } }
 
   std::vector<int>::iterator viter0;
 // { dg-final { note-test viter0 {non-dereferenceable iterator for std::vector} } }
+
+  std::vector<bool> vb;
+  vb.reserve(100);
+  vb.push_back(true);
+  vb.push_back(true);
+  vb.push_back(true);
+  vb.push_back(false);
+  vb.push_back(false);
+  vb.push_back(true);
+  vb.erase(vb.begin());
+// { dg-final { regexp-test vb {std::(__debug::)?vector<bool> of length 5, capacity 128 = \\{true, true, false, false, true\\}} } }
 
   __gnu_cxx::slist<int> sll;
   sll.push_front(23);

@@ -91,6 +91,9 @@ typedef struct gfc_se
      args alias.  */
   unsigned force_tmp:1;
 
+  /* If set, will pass subref descriptors without a temporary.  */
+  unsigned force_no_tmp:1;
+
   /* Unconditionally calculate offset for array segments and constant
      arrays in gfc_conv_expr_descriptor.  */
   unsigned use_offset:1;
@@ -529,7 +532,13 @@ int gfc_is_intrinsic_libcall (gfc_expr *);
 int gfc_conv_procedure_call (gfc_se *, gfc_symbol *, gfc_actual_arglist *,
 			     gfc_expr *, vec<tree, va_gc> *);
 
-void gfc_conv_subref_array_arg (gfc_se *, gfc_expr *, int, sym_intent, bool);
+void gfc_conv_subref_array_arg (gfc_se *, gfc_expr *, int, sym_intent, bool,
+				const gfc_symbol *fsym = NULL,
+				const char *proc_name = NULL,
+				gfc_symbol *sym = NULL,
+				bool check_contiguous = false);
+
+void gfc_conv_is_contiguous_expr (gfc_se *, gfc_expr *);
 
 /* Generate code for a scalar assignment.  */
 tree gfc_trans_scalar_assign (gfc_se *, gfc_se *, gfc_typespec, bool, bool,

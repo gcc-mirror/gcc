@@ -553,19 +553,22 @@ void test24()
 
 void test25()
 {
-  char[6] cstr = "123456"c;
-  auto str1 = cast(wchar[3])(cstr);
+    char[6] cstr = "123456"c;
+    auto str1 = cast(wchar[3])(cstr);
 
-  writefln("str1: ", (cast(char[])str1).length , " : ", (cast(char[])str1));
-  assert(cast(char[])str1 == "123456"c);
+    writefln("str1: ", (cast(char[])str1).length , " : ", (cast(char[])str1));
+    assert(cast(char[])str1 == "123456"c);
 
-  auto str2 = cast(wchar[3])("789abc"c);
-  writefln("str2: ", (cast(char[])str2).length , " : ", (cast(char[])str2));
-  assert(cast(char[])str2 == "789abc"c);
+    auto str2 = cast(wchar[3])("789abc"c);
+    writefln("str2: ", (cast(char[])str2).length , " : ", (cast(char[])str2));
+    assert(cast(char[])str2 == "789abc"c);
 
-  auto str3 = cast(wchar[3])("defghi");
-  writefln("str3: ", (cast(char[])str3).length , " : ", (cast(char[])str3));
-  assert(cast(char[])str3 == "d\000e\000f\000"c);
+    auto str3 = cast(wchar[3])("defghi");
+    writefln("str3: ", (cast(char[])str3).length , " : ", (cast(char[])str3));
+    version (LittleEndian)
+        assert(cast(char[])str3 == "d\000e\000f\000"c);
+    version (BigEndian)
+        assert(cast(char[])str3 == "\000d\000e\000f"c);
 }
 
 /*******************************************/

@@ -38,6 +38,8 @@
  * Contains an implementation of prefix_search_node_update.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 std::pair<
   typename PB_DS_CLASS_C_DEC::const_iterator,
@@ -137,3 +139,4 @@ inline void
 PB_DS_CLASS_C_DEC::
 operator()(node_iterator /*nd_it*/, node_const_iterator /*end_nd_it*/) const
 { }
+#endif

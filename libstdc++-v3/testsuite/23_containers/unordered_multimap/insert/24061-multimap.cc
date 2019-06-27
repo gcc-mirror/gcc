@@ -32,7 +32,8 @@ void test01()
   typedef Mmap::value_type     value_type;
 
   Mmap mm1;
-  
+  mm1.reserve(3);
+
   iterator it1 = mm1.insert(mm1.begin(),
 			    value_type("all the love in the world", 1));
   VERIFY( mm1.size() == 1 );

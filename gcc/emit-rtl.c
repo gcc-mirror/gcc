@@ -61,6 +61,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "predict.h"
 #include "rtx-vector-builder.h"
+#include "gimple.h"
+#include "gimple-ssa.h"
+#include "gimplify.h"
 
 struct target_rtl default_target_rtl;
 #if SWITCHABLE_TARGET
@@ -2128,6 +2131,27 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	  apply_bitpos = bitpos;
 	}
 
+      /* If this is a reference based on a partitioned decl replace the
+	 base with a MEM_REF of the pointer representative we created
+	 during stack slot partitioning.  */
+      if (attrs.expr
+	  && VAR_P (base)
+	  && ! is_global_var (base)
+	  && cfun->gimple_df->decls_to_pointers != NULL)
+	{
+	  tree *namep = cfun->gimple_df->decls_to_pointers->get (base);
+	  if (namep)
+	    {
+	      attrs.expr = unshare_expr (attrs.expr);
+	      tree *orig_base = &attrs.expr;
+	      while (handled_component_p (*orig_base))
+		orig_base = &TREE_OPERAND (*orig_base, 0);
+	      tree aptrt = reference_alias_ptr_type (*orig_base);
+	      *orig_base = build2 (MEM_REF, TREE_TYPE (*orig_base), *namep,
+				   build_int_cst (aptrt, 0));
+	    }
+	}
+
       /* Compute the alignment.  */
       unsigned int obj_align;
       unsigned HOST_WIDE_INT obj_bitpos;
@@ -3940,6 +3964,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
 	  break;
 
 	case REG_NON_LOCAL_GOTO:
+	case REG_LABEL_TARGET:
 	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
 	    {
 	      if (JUMP_P (insn))

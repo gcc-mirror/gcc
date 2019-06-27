@@ -1216,8 +1216,8 @@ validate_value_data (struct value_data *vd)
 	if (vd->e[i].mode == VOIDmode)
 	  {
 	    if (vd->e[i].next_regno != INVALID_REGNUM)
-	      internal_error ("validate_value_data: [%u] Bad next_regno for empty chain (%u)",
-			      i, vd->e[i].next_regno);
+	      internal_error ("%qs: [%u] bad %<next_regno%> for empty chain (%u)",
+			      __func__, i, vd->e[i].next_regno);
 	    continue;
 	  }
 
@@ -1228,11 +1228,11 @@ validate_value_data (struct value_data *vd)
 	     j = vd->e[j].next_regno)
 	  {
 	    if (TEST_HARD_REG_BIT (set, j))
-	      internal_error ("validate_value_data: Loop in regno chain (%u)",
-			      j);
+	      internal_error ("%qs: loop in %<next_regno%> chain (%u)",
+			      __func__, j);
 	    if (vd->e[j].oldest_regno != i)
-	      internal_error ("validate_value_data: [%u] Bad oldest_regno (%u)",
-			      j, vd->e[j].oldest_regno);
+	      internal_error ("%qs: [%u] bad %<oldest_regno%> (%u)",
+			      __func__, j, vd->e[j].oldest_regno);
 
 	    SET_HARD_REG_BIT (set, j);
 	  }
@@ -1243,8 +1243,9 @@ validate_value_data (struct value_data *vd)
 	&& (vd->e[i].mode != VOIDmode
 	    || vd->e[i].oldest_regno != i
 	    || vd->e[i].next_regno != INVALID_REGNUM))
-      internal_error ("validate_value_data: [%u] Non-empty reg in chain (%s %u %i)",
-		      i, GET_MODE_NAME (vd->e[i].mode), vd->e[i].oldest_regno,
+      internal_error ("%qs: [%u] non-empty register in chain (%s %u %i)",
+		      __func__, i,
+		      GET_MODE_NAME (vd->e[i].mode), vd->e[i].oldest_regno,
 		      vd->e[i].next_regno);
 }
 

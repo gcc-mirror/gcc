@@ -58,7 +58,7 @@ void test02()
   v2 = { test_type::value_type{} };
   v2 = std::move(v1);
 
-  VERIFY( 0 == v1.get_allocator().get_personality() );
+  VERIFY( 1 == v1.get_allocator().get_personality() );
   VERIFY( 1 == v2.get_allocator().get_personality() );
   VERIFY( it == v2.begin() );
 }

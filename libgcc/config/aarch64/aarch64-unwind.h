@@ -35,6 +35,23 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define MD_FROB_UPDATE_CONTEXT(context, fs) \
   aarch64_frob_update_context (context, fs)
 
+static inline int
+aarch64_cie_signed_with_b_key (struct _Unwind_Context *context)
+{
+  const struct dwarf_fde *fde = _Unwind_Find_FDE (context->bases.func,
+						  &context->bases);
+  if (fde != NULL)
+    {
+      const struct dwarf_cie *cie = get_cie (fde);
+      if (cie != NULL)
+	{
+	  char *aug_str = cie->augmentation;
+	  return strchr (aug_str, 'B') == NULL ? 0 : 1;
+	}
+    }
+  return 0;
+}
+
 /* Do AArch64 private extraction on ADDR based on context info CONTEXT and
    unwind frame info FS.  If ADDR is signed, we do address authentication on it
    using CFA of current frame.  */
@@ -43,9 +60,11 @@ static inline void *
 aarch64_post_extract_frame_addr (struct _Unwind_Context *context,
 				 _Unwind_FrameState *fs, void *addr)
 {
-  if (fs->regs.reg[DWARF_REGNUM_AARCH64_RA_STATE].loc.offset & 0x1)
+  if (context->flags & RA_SIGNED_BIT)
     {
       _Unwind_Word salt = (_Unwind_Word) context->cfa;
+      if (aarch64_cie_signed_with_b_key (context) != 0)
+	return __builtin_aarch64_autib1716 (addr, salt);
       return __builtin_aarch64_autia1716 (addr, salt);
     }
   else
@@ -62,9 +81,14 @@ aarch64_post_frob_eh_handler_addr (struct _Unwind_Context *current,
 				   ATTRIBUTE_UNUSED,
 				   void *handler_addr)
 {
-  if (current->flags & RA_A_SIGNED_BIT)
-    return __builtin_aarch64_pacia1716 (handler_addr,
+  if (current->flags & RA_SIGNED_BIT)
+    {
+      if (aarch64_cie_signed_with_b_key (current))
+	return __builtin_aarch64_pacib1716 (handler_addr,
+					    (_Unwind_Word) current->cfa);
+      return __builtin_aarch64_pacia1716 (handler_addr,
 					(_Unwind_Word) current->cfa);
+    }
   else
     return handler_addr;
 }
@@ -79,7 +103,7 @@ aarch64_frob_update_context (struct _Unwind_Context *context,
 {
   if (fs->regs.reg[DWARF_REGNUM_AARCH64_RA_STATE].loc.offset & 0x1)
     /* The flag is used for re-authenticating EH handler's address.  */
-    context->flags |= RA_A_SIGNED_BIT;
+    context->flags |= RA_SIGNED_BIT;
 
   return;
 }

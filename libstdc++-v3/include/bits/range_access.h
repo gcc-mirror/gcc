@@ -245,11 +245,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Return the size of an array.
-   *  @param  __array  Array.
    */
   template <typename _Tp, size_t _Nm>
     constexpr size_t
-    size(const _Tp (&/*__array*/)[_Nm]) noexcept
+    size(const _Tp (&)[_Nm]) noexcept
     { return _Nm; }
 
   /**
@@ -264,11 +263,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    *  @brief  Return whether an array is empty (always false).
-   *  @param  __array  Container.
    */
   template <typename _Tp, size_t _Nm>
     [[nodiscard]] constexpr bool
-    empty(const _Tp (&/*__array*/)[_Nm]) noexcept
+    empty(const _Tp (&)[_Nm]) noexcept
     { return false; }
 
   /**

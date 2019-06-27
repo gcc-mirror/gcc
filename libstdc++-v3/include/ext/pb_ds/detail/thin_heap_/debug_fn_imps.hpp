@@ -38,6 +38,8 @@
  * Contains an implementation for thin_heap_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
@@ -117,3 +119,4 @@ assert_node_consistent(node_const_pointer p_nd, bool root,
 }
 
 #endif 
+#endif

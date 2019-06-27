@@ -38,6 +38,8 @@
  * Contains implementations of cc_ht_map_'s entry-list related functions.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
@@ -89,3 +91,4 @@ rels_entry(entry_pointer p_e)
   s_entry_allocator.deallocate(p_e, 1);
 }
 
+#endif

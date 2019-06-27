@@ -24,10 +24,15 @@
 
 /** @file experimental/memory_resource
  *  This is a TS C++ Library header.
+ *  @ingroup libfund-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_MEMORY_RESOURCE
 #define _GLIBCXX_EXPERIMENTAL_MEMORY_RESOURCE 1
+
+#pragma GCC system_header
+
+#if __cplusplus >= 201402L
 
 #include <memory>			// align, uses_allocator, __uses_alloc
 #include <experimental/utility>		// pair, experimental::erased_type
@@ -37,12 +42,14 @@
 #include <ext/new_allocator.h>
 #include <debug/assertions.h>
 
+/// @cond
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp> class malloc_allocator;
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __gnu_cxx
+/// @endcond
 
 namespace std {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -259,6 +266,7 @@ namespace pmr {
     { return !(__a == __b); }
 
 
+  /// @cond undocumented
   class __resource_adaptor_common
   {
     template<typename, typename> friend class __resource_adaptor_imp;
@@ -354,24 +362,8 @@ namespace pmr {
 	  return __val;
 	}
     };
-
-    template<typename _Alloc>
-      struct __guaranteed_alignment : std::integral_constant<size_t, 1> { };
-
-    template<typename _Tp>
-      struct __guaranteed_alignment<__gnu_cxx::new_allocator<_Tp>>
-      : std::alignment_of<std::max_align_t>::type { };
-
-    template<typename _Tp>
-      struct __guaranteed_alignment<__gnu_cxx::malloc_allocator<_Tp>>
-      : std::alignment_of<std::max_align_t>::type { };
-
-#if _GLIBCXX_USE_ALLOCATOR_NEW
-    template<typename _Tp>
-      struct __guaranteed_alignment<std::allocator<_Tp>>
-      : std::alignment_of<std::max_align_t>::type { };
-#endif
   };
+  /// @endcond
 
   // 8.7.1 __resource_adaptor_imp
   template<typename _Alloc, typename _Resource>
@@ -420,14 +412,22 @@ namespace pmr {
       virtual void*
       do_allocate(size_t __bytes, size_t __alignment) override
       {
-	if (__alignment <= __guaranteed_alignment<_Alloc>::value)
+	// Cannot use max_align_t on 32-bit Solaris x86, see PR libstdc++/77691
+#if ! (defined __sun__ && defined __i386__)
+	if (__alignment == alignof(max_align_t))
+	  return _M_allocate<alignof(max_align_t)>(__bytes);
+#endif
+	switch (__alignment)
 	  {
-	    if (__bytes < __alignment)
-	      __bytes = __alignment;
+	  case 1:
 	    return _M_alloc.allocate(__bytes);
+	  case 2:
+	    return _M_allocate<2>(__bytes);
+	  case 4:
+	    return _M_allocate<4>(__bytes);
+	  case 8:
+	    return _M_allocate<8>(__bytes);
 	  }
-
-
 	const _AlignMgr __mgr(__bytes, __alignment);
 	// Assume _M_alloc returns 1-byte aligned memory, so allocate enough
 	// space to fit a block of the right size and alignment, plus some
@@ -436,21 +436,28 @@ namespace pmr {
       }
 
       virtual void
-      do_deallocate(void* __p, size_t __bytes, size_t __alignment) noexcept
+      do_deallocate(void* __ptr, size_t __bytes, size_t __alignment) noexcept
       override
       {
-	auto __ptr = static_cast<char*>(__p);
-	if (__alignment <= __guaranteed_alignment<_Alloc>::value)
+#if ! (defined __sun__ && defined __i386__)
+	if (__alignment == alignof(max_align_t))
+	  return (void) _M_deallocate<alignof(max_align_t)>(__ptr, __bytes);
+#endif
+	switch (__alignment)
 	  {
-	    if (__bytes < __alignment)
-	      __bytes = __alignment;
-	    _M_alloc.deallocate(__ptr, __bytes);
-	    return;
+	  case 1:
+	    return (void) _M_alloc.deallocate((char*)__ptr, __bytes);
+	  case 2:
+	    return (void) _M_deallocate<2>(__ptr, __bytes);
+	  case 4:
+	    return (void) _M_deallocate<4>(__ptr, __bytes);
+	  case 8:
+	    return (void) _M_deallocate<8>(__ptr, __bytes);
 	  }
-
 	const _AlignMgr __mgr(__bytes, __alignment);
-	// Use the stored token to retrieve the original pointer to deallocate.
-	_M_alloc.deallocate(__mgr._M_unadjust(__ptr), __mgr._M_alloc_size());
+	// Use the stored token to retrieve the original pointer.
+	_M_alloc.deallocate(__mgr._M_unadjust((char*)__ptr),
+	    __mgr._M_alloc_size());
       }
 
       virtual bool
@@ -462,6 +469,31 @@ namespace pmr {
       }
 
     private:
+      template<size_t _Num>
+	struct _Aligned_type { alignas(_Num) char __c[_Num]; };
+
+      // Rebind the allocator to the specified type and use it to allocate.
+      template<size_t _Num, typename _Tp = _Aligned_type<_Num>>
+	void*
+	_M_allocate(size_t __bytes)
+	{
+	  typename allocator_traits<_Alloc>::template
+	    rebind_alloc<_Tp> __a2(_M_alloc);
+	  const size_t __n = (__bytes + _Num - 1) / _Num;
+	  return __a2.allocate(__n);
+	}
+
+      // Rebind the allocator to the specified type and use it to deallocate.
+      template<size_t _Num, typename _Tp = _Aligned_type<_Num>>
+	void
+	_M_deallocate(void* __ptr, size_t __bytes) noexcept
+	{
+	  typename allocator_traits<_Alloc>::template
+	    rebind_alloc<_Tp> __a2(_M_alloc);
+	  const size_t __n = (__bytes + _Num - 1) / _Num;
+	  __a2.deallocate((_Tp*)__ptr, __n);
+	}
+
       _Alloc _M_alloc{};
     };
 
@@ -501,6 +533,7 @@ namespace pmr {
 
   // The default memory resource
 
+  /// @cond undocumented
   inline std::atomic<memory_resource*>&
   __get_default_resource()
   {
@@ -509,11 +542,14 @@ namespace pmr {
     static type* __r = new(__buf) type(new_delete_resource());
     return *__r;
   }
+  /// @endcond
 
+  /// Get the current default resource.
   inline memory_resource*
   get_default_resource() noexcept
   { return __get_default_resource().load(); }
 
+  /// Change the default resource and return the previous one.
   inline memory_resource*
   set_default_resource(memory_resource* __r) noexcept
   {
@@ -528,4 +564,5 @@ namespace pmr {
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+#endif // C++14
 #endif // _GLIBCXX_EXPERIMENTAL_MEMORY_RESOURCE

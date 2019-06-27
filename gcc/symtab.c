@@ -808,6 +808,23 @@ symtab_node::dump_referring (FILE *file)
 
 static const char * const symtab_type_names[] = {"symbol", "function", "variable"};
 
+/* Dump the visibility of the symbol.  */
+
+const char *
+symtab_node::get_visibility_string () const
+{
+  static const char * const visibility_types[]
+    = { "default", "protected", "hidden", "internal" };
+  return visibility_types[DECL_VISIBILITY (decl)];
+}
+
+/* Dump the type_name of the symbol.  */
+const char *
+symtab_node::get_symtab_type_string () const
+{
+  return symtab_type_names[type];
+}
+
 /* Dump base fields of symtab nodes to F.  Not to be used directly.  */
 
 void
@@ -984,6 +1001,15 @@ symtab_node::debug (void)
 }
 
 /* Verify common part of symtab nodes.  */
+
+#if __GNUC__ >= 10
+/* Disable warnings about missing quoting in GCC diagnostics for
+   the verification errors.  Their format strings don't follow GCC
+   diagnostic conventions and the calls are ultimately followed by
+   one to internal_error.  */
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
 
 DEBUG_FUNCTION bool
 symtab_node::verify_base (void)
@@ -1271,6 +1297,10 @@ symtab_node::verify_symtab_nodes (void)
     }
 }
 
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
+
 /* Make DECL local.  FIXME: We shouldn't need to mess with rtl this early,
    but other code such as notice_global_symbol generates rtl.  */
 
@@ -1553,7 +1583,7 @@ symtab_node::set_section (symtab_node *n, void *s)
 void
 symtab_node::set_section (const char *section)
 {
-  gcc_assert (!this->alias);
+  gcc_assert (!this->alias || !this->analyzed);
   call_for_symbol_and_aliases
     (symtab_node::set_section, const_cast<char *>(section), true);
 }

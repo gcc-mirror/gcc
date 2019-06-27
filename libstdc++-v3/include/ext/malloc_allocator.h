@@ -42,9 +42,6 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  using std::size_t;
-  using std::ptrdiff_t;
-
   /**
    *  @brief  An allocator that uses malloc.
    *  @ingroup allocators
@@ -57,8 +54,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class malloc_allocator
     {
     public:
-      typedef size_t     size_type;
-      typedef ptrdiff_t  difference_type;
+      typedef std::size_t     size_type;
+      typedef std::ptrdiff_t  difference_type;
       typedef _Tp*       pointer;
       typedef const _Tp* const_pointer;
       typedef _Tp&       reference;
@@ -141,9 +138,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       max_size() const _GLIBCXX_USE_NOEXCEPT 
       {
 #if __PTRDIFF_MAX__ < __SIZE_MAX__
-	return size_t(__PTRDIFF_MAX__) / sizeof(_Tp);
+	return std::size_t(__PTRDIFF_MAX__) / sizeof(_Tp);
 #else
-	return size_t(-1) / sizeof(_Tp);
+	return std::size_t(-1) / sizeof(_Tp);
 #endif
       }
 

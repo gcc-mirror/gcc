@@ -347,10 +347,6 @@ struct data_dependence_relation
   /* The classic distance vector.  */
   vec<lambda_vector> dist_vects;
 
-  /* An index in loop_nest for the innermost loop that varies for
-     this data dependence relation.  */
-  unsigned inner_loop;
-
   /* Is the dependence reversed with respect to the lexicographic order?  */
   bool reversed_p;
 
@@ -406,7 +402,6 @@ typedef struct data_dependence_relation *ddr_p;
 /* The size of the direction/distance vectors: the number of loops in
    the loop nest.  */
 #define DDR_NB_LOOPS(DDR) (DDR_LOOP_NEST (DDR).length ())
-#define DDR_INNER_LOOP(DDR) (DDR)->inner_loop
 #define DDR_SELF_REFERENCE(DDR) (DDR)->self_reference_p
 
 #define DDR_DIST_VECTS(DDR) ((DDR)->dist_vects)
@@ -478,7 +473,7 @@ dr_alignment (data_reference *dr)
 }
 
 extern bool dr_may_alias_p (const struct data_reference *,
-			    const struct data_reference *, bool);
+			    const struct data_reference *, struct loop *);
 extern bool dr_equal_offsets_p (struct data_reference *,
                                 struct data_reference *);
 

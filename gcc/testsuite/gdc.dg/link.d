@@ -1,4 +1,4 @@
-// { dg-do link { target arm*-*-* i?86-*-* x86_64-*-* } }
+// { dg-do link { target d_runtime } }
 
 /******************************************/
 

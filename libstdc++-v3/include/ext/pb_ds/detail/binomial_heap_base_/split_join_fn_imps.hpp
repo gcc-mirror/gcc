@@ -38,6 +38,8 @@
  * Contains an implementation class for a base of binomial heaps.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 template<typename Pred>
 void
@@ -195,3 +197,4 @@ join(node_pointer p_lhs, node_pointer p_rhs) const
 
   return p_ret;
 }
+#endif

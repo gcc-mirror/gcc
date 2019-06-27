@@ -1291,35 +1291,7 @@ size_t fwrite(scope const void* ptr, size_t size, size_t nmemb, FILE* stream);
     c_long ftell(FILE* stream);
 }
 
-version (MinGW)
-{
-  // No unsafe pointer manipulation.
-  extern (D) @trusted
-  {
-    ///
-    void rewind()(FILE* stream)   { fseek(stream,0L,SEEK_SET); stream._flag = stream._flag & ~_IOERR; }
-    ///
-    pure void clearerr()(FILE* stream) { stream._flag = stream._flag & ~(_IOERR|_IOEOF); }
-    ///
-    pure int  feof()(FILE* stream)     { return stream._flag&_IOEOF; }
-    ///
-    pure int  ferror()(FILE* stream)   { return stream._flag&_IOERR; }
-  }
-  ///
-    int   __mingw_snprintf(scope char* s, size_t n, scope const char* fmt, ...);
-    ///
-    alias __mingw_snprintf _snprintf;
-    ///
-    alias __mingw_snprintf snprintf;
-
-    ///
-    int   __mingw_vsnprintf(scope char* s, size_t n, scope const char* format, va_list arg);
-    ///
-    alias __mingw_vsnprintf _vsnprintf;
-    ///
-    alias __mingw_vsnprintf vsnprintf;
-}
-else version (CRuntime_DigitalMars)
+version (CRuntime_DigitalMars)
 {
   // No unsafe pointer manipulation.
   extern (D) @trusted
@@ -1362,6 +1334,23 @@ else version (CRuntime_Microsoft)
     pure int  fileno(FILE* stream);
   }
 
+  version (MinGW)
+  {
+    int   __mingw_snprintf(scope char* s, size_t n, scope const char* fmt, ...);
+    ///
+    alias __mingw_snprintf _snprintf;
+    ///
+    alias __mingw_snprintf snprintf;
+
+    ///
+    int   __mingw_vsnprintf(scope char* s, size_t n, scope const char* format, va_list arg);
+    ///
+    alias __mingw_vsnprintf _vsnprintf;
+    ///
+    alias __mingw_vsnprintf vsnprintf;
+  }
+  else
+  {
     ///
     int _snprintf(scope char* s, size_t n, scope const char* format, ...);
     ///
@@ -1371,6 +1360,7 @@ else version (CRuntime_Microsoft)
     int _vsnprintf(scope char* s, size_t n, scope const char* format, va_list arg);
     ///
     int  vsnprintf(scope char* s, size_t n, scope const char* format, va_list arg);
+  }
 
     ///
     int _fputc_nolock(int c, FILE *fp);

@@ -24,6 +24,7 @@
 
 /** @file experimental/numeric
  *  This is a TS C++ Library header.
+ *  @ingroup libfund-ts
  */
 
 //

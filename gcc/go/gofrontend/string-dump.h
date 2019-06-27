@@ -10,7 +10,7 @@
 // This abstract class provides an interface strings for whatever purpose.
 // Used for example for exporting and dumping objects.
 
-class String_dump 
+class String_dump
 {
  public:
   // Write a string. Implements the String_dump interface.

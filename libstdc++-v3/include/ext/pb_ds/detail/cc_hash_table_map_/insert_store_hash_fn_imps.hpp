@@ -39,6 +39,8 @@
  * when the hash value is stored.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline std::pair<typename PB_DS_CLASS_C_DEC::point_iterator, bool>
 PB_DS_CLASS_C_DEC::
@@ -69,3 +71,4 @@ insert_imp(const_reference r_val, true_type)
   return std::make_pair(insert_new_imp(r_val, pos_hash_pair), true);
 }
 
+#endif

@@ -3,6 +3,7 @@
 
 #include <array>
 #include <utility>
+#include <stdexcept>
 
 
 template<class Key, class T, size_t N> struct static_map

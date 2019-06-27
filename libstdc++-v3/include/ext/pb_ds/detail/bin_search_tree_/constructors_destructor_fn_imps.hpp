@@ -38,6 +38,8 @@
  * Contains an implementation class for bin_search_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 typename PB_DS_CLASS_C_DEC::node_allocator
 PB_DS_CLASS_C_DEC::s_node_allocator;
@@ -215,4 +217,4 @@ initialize_min_max()
     m_p_head->m_p_right = p_max;
   }
 }
-
+#endif

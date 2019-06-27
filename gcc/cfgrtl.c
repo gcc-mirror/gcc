@@ -62,6 +62,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "print-rtl.h"
 
+/* Disable warnings about missing quoting in GCC diagnostics.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* Holds the interesting leading and trailing notes for the function.
    Only applicable if the CFG is in cfglayout mode.  */
 static GTY(()) rtx_insn *cfg_layout_function_footer;
@@ -543,7 +549,7 @@ update_bb_for_insn (basic_block bb)
 }
 
 
-/* Like active_insn_p, except keep the return value clobber around
+/* Like active_insn_p, except keep the return value use or clobber around
    even after reload.  */
 
 static bool
@@ -556,8 +562,12 @@ flow_active_insn_p (const rtx_insn *insn)
      programs that fail to return a value.  Its effect is to
      keep the return value from being live across the entire
      function.  If we allow it to be skipped, we introduce the
-     possibility for register lifetime confusion.  */
-  if (GET_CODE (PATTERN (insn)) == CLOBBER
+     possibility for register lifetime confusion.
+     Similarly, keep a USE of the function return value, otherwise
+     the USE is dropped and we could fail to thread jump if USE
+     appears on some paths and not on others, see PR90257.  */
+  if ((GET_CODE (PATTERN (insn)) == CLOBBER
+       || GET_CODE (PATTERN (insn)) == USE)
       && REG_P (XEXP (PATTERN (insn), 0))
       && REG_FUNCTION_VALUE_P (XEXP (PATTERN (insn), 0)))
     return true;
@@ -5187,3 +5197,7 @@ struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
 };
 
 #include "gt-cfgrtl.h"
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif

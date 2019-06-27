@@ -46,7 +46,7 @@ bool checkFrameAccess(Loc loc, Scope *sc, AggregateDeclaration *ad, size_t istar
 bool symbolIsVisible(Module *mod, Dsymbol *s);
 VarDeclaration *copyToTemp(StorageClass stc, const char *name, Expression *e);
 Expression *extractSideEffect(Scope *sc, const char *name, Expression **e0, Expression *e, bool alwaysCopy = false);
-Type *getTypeInfoType(Type *t, Scope *sc);
+Type *getTypeInfoType(Loc loc, Type *t, Scope *sc);
 bool MODimplicitConv(MOD modfrom, MOD modto);
 MATCH MODmethodConv(MOD modfrom, MOD modto);
 void MODMatchToBuffer(OutBuffer *buf, unsigned char lhsMod, unsigned char rhsMod);
@@ -75,6 +75,7 @@ Expression *semantic(Expression *e, Scope *sc);
 Expression *semanticY(DotIdExp *exp, Scope *sc, int flag);
 Expression *semanticY(DotTemplateInstanceExp *exp, Scope *sc, int flag);
 StringExp *semanticString(Scope *sc, Expression *exp, const char *s);
+Initializer *semantic(Initializer *init, Scope *sc, Type *t, NeedInterpret needInterpret);
 
 /****************************************
  * Preprocess arguments to function.
@@ -396,6 +397,7 @@ public:
             // Create the magic __ctfe bool variable
             VarDeclaration *vd = new VarDeclaration(exp->loc, Type::tbool, Id::ctfe, NULL);
             vd->storage_class |= STCtemp;
+            vd->semanticRun = PASSsemanticdone;
             Expression *e = new VarExp(exp->loc, vd);
             e = semantic(e, sc);
             result = e;
@@ -713,7 +715,8 @@ public:
             return setError();
         }
 
-        semanticTypeInfo(sc, e->type);
+        if (global.params.useTypeInfo && Type::dtypeinfo)
+            semanticTypeInfo(sc, e->type);
 
         result = e;
     }
@@ -1225,6 +1228,23 @@ public:
                     exp->error("no constructor for %s", cd->toChars());
                     return setError();
                 }
+
+                // https://issues.dlang.org/show_bug.cgi?id=19941
+                // Run semantic on all field initializers to resolve any forward
+                // references. This is the same as done for structs in sd->fill().
+                for (ClassDeclaration *c = cd; c; c = c->baseClass)
+                {
+                    for (size_t i = 0; i < c->fields.dim; i++)
+                    {
+                        VarDeclaration *v = c->fields[i];
+                        if (v->inuse || v->_scope == NULL || v->_init == NULL ||
+                            v->_init->isVoidInitializer())
+                            continue;
+                        v->inuse++;
+                        v->_init = semantic(v->_init, v->_scope, v->type, INITinterpret);
+                        v->inuse--;
+                    }
+                }
             }
         }
         else if (tb->ty == Tstruct)
@@ -1422,7 +1442,10 @@ public:
 
     void visit(VarExp *e)
     {
-        if (FuncDeclaration *fd = e->var->isFuncDeclaration())
+        VarDeclaration *vd = e->var->isVarDeclaration();
+        FuncDeclaration *fd = e->var->isFuncDeclaration();
+
+        if (fd)
         {
             //printf("L%d fd = %s\n", __LINE__, f->toChars());
             if (!fd->functionSemantic())
@@ -1433,7 +1456,14 @@ public:
             e->type = e->var->type;
 
         if (e->type && !e->type->deco)
+        {
+            Declaration *decl = e->var->isDeclaration();
+            if (decl)
+                decl->inuse++;
             e->type = e->type->semantic(e->loc, sc);
+            if (decl)
+                decl->inuse--;
+        }
 
         /* Fix for 1161 doesn't work because it causes protection
          * problems when instantiating imported templates passing private
@@ -1441,7 +1471,7 @@ public:
          */
         //checkAccess(e->loc, sc, NULL, e->var);
 
-        if (VarDeclaration *vd = e->var->isVarDeclaration())
+        if (vd)
         {
             if (vd->checkNestedReference(sc, e->loc))
                 return setError();
@@ -1449,7 +1479,7 @@ public:
             // the purity violation error is redundant.
             //checkPurity(sc, vd);
         }
-        else if (FuncDeclaration *fd = e->var->isFuncDeclaration())
+        else if (fd)
         {
             // TODO: If fd isn't yet resolved its overload, the checkNestedReference
             // call would cause incorrect validation.
@@ -1805,11 +1835,19 @@ public:
         Expression *e;
         if (ea && ta->toBasetype()->ty == Tclass)
         {
-            /* Get the dynamic type, which is .classinfo
-            */
-            ea = semantic(ea, sc);
-            e = new TypeidExp(ea->loc, ea);
-            e->type = Type::typeinfoclass->type;
+            if (!Type::typeinfoclass)
+            {
+                error(exp->loc, "`object.TypeInfo_Class` could not be found, but is implicitly used");
+                e = new ErrorExp();
+            }
+            else
+            {
+                /* Get the dynamic type, which is .classinfo
+                */
+                ea = semantic(ea, sc);
+                e = new TypeidExp(ea->loc, ea);
+                e->type = Type::typeinfoclass->type;
+            }
         }
         else if (ta->ty == Terror)
         {
@@ -1819,7 +1857,7 @@ public:
         {
             // Handle this in the glue layer
             e = new TypeidExp(exp->loc, ta);
-            e->type = getTypeInfoType(ta, sc);
+            e->type = getTypeInfoType(exp->loc, ta, sc);
 
             semanticTypeInfo(sc, ta);
 
@@ -1935,8 +1973,8 @@ public:
                         ClassDeclaration *cd = ((TypeClass *)e->targ)->sym;
                         Parameters *args = new Parameters;
                         args->reserve(cd->baseclasses->dim);
-                        if (cd->_scope && !cd->symtab)
-                            cd->semantic(cd->_scope);
+                        if (cd->semanticRun < PASSsemanticdone)
+                            cd->semantic(NULL);
                         for (size_t i = 0; i < cd->baseclasses->dim; i++)
                         {
                             BaseClass *b = (*cd->baseclasses)[i];
@@ -2184,6 +2222,9 @@ public:
         }
         if (exp->e1->op == TOKslice || exp->e1->type->ty == Tarray || exp->e1->type->ty == Tsarray)
         {
+            if (checkNonAssignmentArrayOp(exp->e1))
+                return setError();
+
             if (exp->e1->op == TOKslice)
                 ((SliceExp *)exp->e1)->arrayop = true;
 
@@ -5821,16 +5862,8 @@ public:
                 if (exp->op != TOKassign)
                 {
                     // If multidimensional static array, treat as one large array
-                    dinteger_t dim = ((TypeSArray *)t1)->dim->toInteger();
-                    Type *t = t1;
-                    while (1)
-                    {
-                        t = t->nextOf()->toBasetype();
-                        if (t->ty != Tsarray)
-                            break;
-                        dim *= ((TypeSArray *)t)->dim->toInteger();
-                        e1x->type = t->nextOf()->sarrayOf(dim);
-                    }
+                    dinteger_t dim = t1->numberOfElems(exp->loc);
+                    e1x->type = t1->baseElemOf()->sarrayOf(dim);
                 }
                 SliceExp *sle = new SliceExp(e1x->loc, e1x, NULL, NULL);
                 sle->arrayop = true;
@@ -6231,6 +6264,9 @@ public:
         assert(exp->e1->type && exp->e2->type);
         if (exp->e1->op == TOKslice || exp->e1->type->ty == Tarray || exp->e1->type->ty == Tsarray)
         {
+            if (checkNonAssignmentArrayOp(exp->e1))
+                return setError();
+
             // T[] ^^= ...
             if (exp->e2->implicitConvTo(exp->e1->type->nextOf()))
             {

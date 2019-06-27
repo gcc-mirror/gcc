@@ -38,6 +38,8 @@
  * Contains an implementation class for left_child_next_sibling_heap_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef _GLIBCXX_DEBUG
 
 PB_DS_CLASS_T_DEC
@@ -135,3 +137,4 @@ degree(node_const_pointer p_nd)
 }
 
 #endif 
+#endif

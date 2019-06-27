@@ -24,6 +24,10 @@ const (
 	blockProfile
 	mutexProfile
 
+	// a profile bucket from one of the categories above whose stack
+	// trace has been fixed up / pruned.
+	prunedProfile
+
 	// size of bucket hash table
 	buckHashSize = 179999
 
@@ -52,6 +56,7 @@ type bucket struct {
 	hash    uintptr
 	size    uintptr
 	nstk    uintptr
+	skip    int
 }
 
 // A memRecord is the bucket data for a bucket of type memProfile,
@@ -138,11 +143,13 @@ type blockRecord struct {
 }
 
 var (
-	mbuckets  *bucket // memory profile buckets
-	bbuckets  *bucket // blocking profile buckets
-	xbuckets  *bucket // mutex profile buckets
-	buckhash  *[179999]*bucket
-	bucketmem uintptr
+	mbuckets    *bucket // memory profile buckets
+	bbuckets    *bucket // blocking profile buckets
+	xbuckets    *bucket // mutex profile buckets
+	sbuckets    *bucket // pre-symbolization profile buckets (stacks fixed up)
+	freebuckets *bucket // freelist of unused fixed up profile buckets
+	buckhash    *[179999]*bucket
+	bucketmem   uintptr
 
 	mProf struct {
 		// All fields in mProf are protected by proflock.
@@ -158,12 +165,35 @@ var (
 
 const mProfCycleWrap = uint32(len(memRecord{}.future)) * (2 << 24)
 
+// payloadOffset() returns a pointer into the part of a bucket
+// containing the profile payload (skips past the bucket struct itself
+// and then the stack trace).
+func payloadOffset(typ bucketType, nstk uintptr) uintptr {
+	if typ == prunedProfile {
+		// To allow reuse of prunedProfile buckets between different
+		// collections, allocate them with the max stack size (the portion
+		// of the stack used will vary from trace to trace).
+		nstk = maxStack
+	}
+	return unsafe.Sizeof(bucket{}) + uintptr(nstk)*unsafe.Sizeof(uintptr)
+}
+
+func max(x, y uintptr) uintptr {
+	if x > y {
+		return x
+	}
+	return y
+}
+
 // newBucket allocates a bucket with the given type and number of stack entries.
-func newBucket(typ bucketType, nstk int) *bucket {
-	size := unsafe.Sizeof(bucket{}) + uintptr(nstk)*unsafe.Sizeof(location{})
+func newBucket(typ bucketType, nstk int, skipCount int) *bucket {
+	size := payloadOffset(typ, uintptr(nstk))
 	switch typ {
 	default:
 		throw("invalid profile bucket type")
+	case prunedProfile:
+		// stack-fixed buckets are large enough to accommodate any payload.
+		size += max(unsafe.Sizeof(memRecord{}), unsafe.Sizeof(blockRecord{}))
 	case memProfile:
 		size += unsafe.Sizeof(memRecord{})
 	case blockProfile, mutexProfile:
@@ -174,35 +204,34 @@ func newBucket(typ bucketType, nstk int) *bucket {
 	bucketmem += size
 	b.typ = typ
 	b.nstk = uintptr(nstk)
+	b.skip = skipCount
 	return b
 }
 
 // stk returns the slice in b holding the stack.
-func (b *bucket) stk() []location {
-	stk := (*[maxStack]location)(add(unsafe.Pointer(b), unsafe.Sizeof(*b)))
+func (b *bucket) stk() []uintptr {
+	stk := (*[maxStack]uintptr)(add(unsafe.Pointer(b), unsafe.Sizeof(*b)))
 	return stk[:b.nstk:b.nstk]
 }
 
 // mp returns the memRecord associated with the memProfile bucket b.
 func (b *bucket) mp() *memRecord {
-	if b.typ != memProfile {
+	if b.typ != memProfile && b.typ != prunedProfile {
 		throw("bad use of bucket.mp")
 	}
-	data := add(unsafe.Pointer(b), unsafe.Sizeof(*b)+b.nstk*unsafe.Sizeof(location{}))
-	return (*memRecord)(data)
+	return (*memRecord)(add(unsafe.Pointer(b), payloadOffset(b.typ, b.nstk)))
 }
 
 // bp returns the blockRecord associated with the blockProfile bucket b.
 func (b *bucket) bp() *blockRecord {
-	if b.typ != blockProfile && b.typ != mutexProfile {
+	if b.typ != blockProfile && b.typ != mutexProfile && b.typ != prunedProfile {
 		throw("bad use of bucket.bp")
 	}
-	data := add(unsafe.Pointer(b), unsafe.Sizeof(*b)+b.nstk*unsafe.Sizeof(location{}))
-	return (*blockRecord)(data)
+	return (*blockRecord)(add(unsafe.Pointer(b), payloadOffset(b.typ, b.nstk)))
 }
 
 // Return the bucket for stk[0:nstk], allocating new bucket if needed.
-func stkbucket(typ bucketType, size uintptr, stk []location, alloc bool) *bucket {
+func stkbucket(typ bucketType, size uintptr, skip int, stk []uintptr, alloc bool) *bucket {
 	if buckhash == nil {
 		buckhash = (*[buckHashSize]*bucket)(sysAlloc(unsafe.Sizeof(*buckhash), &memstats.buckhash_sys))
 		if buckhash == nil {
@@ -212,8 +241,8 @@ func stkbucket(typ bucketType, size uintptr, stk []location, alloc bool) *bucket
 
 	// Hash stack.
 	var h uintptr
-	for _, loc := range stk {
-		h += loc.pc
+	for _, pc := range stk {
+		h += pc
 		h += h << 10
 		h ^= h >> 6
 	}
@@ -237,7 +266,7 @@ func stkbucket(typ bucketType, size uintptr, stk []location, alloc bool) *bucket
 	}
 
 	// Create new bucket.
-	b := newBucket(typ, len(stk))
+	b := newBucket(typ, len(stk), skip)
 	copy(b.stk(), stk)
 	b.hash = h
 	b.size = size
@@ -249,6 +278,9 @@ func stkbucket(typ bucketType, size uintptr, stk []location, alloc bool) *bucket
 	} else if typ == mutexProfile {
 		b.allnext = xbuckets
 		xbuckets = b
+	} else if typ == prunedProfile {
+		b.allnext = sbuckets
+		sbuckets = b
 	} else {
 		b.allnext = bbuckets
 		bbuckets = b
@@ -256,7 +288,7 @@ func stkbucket(typ bucketType, size uintptr, stk []location, alloc bool) *bucket
 	return b
 }
 
-func eqslice(x, y []location) bool {
+func eqslice(x, y []uintptr) bool {
 	if len(x) != len(y) {
 		return false
 	}
@@ -338,10 +370,11 @@ func mProf_PostSweep() {
 
 // Called by malloc to record a profiled block.
 func mProf_Malloc(p unsafe.Pointer, size uintptr) {
-	var stk [maxStack]location
-	nstk := callers(4, stk[:])
+	var stk [maxStack]uintptr
+	nstk := callersRaw(stk[:])
 	lock(&proflock)
-	b := stkbucket(memProfile, size, stk[:nstk], true)
+	skip := 1
+	b := stkbucket(memProfile, size, skip, stk[:nstk], true)
 	c := mProf.cycle
 	mp := b.mp()
 	mpc := &mp.future[(c+2)%uint32(len(mp.future))]
@@ -414,16 +447,16 @@ func blocksampled(cycles int64) bool {
 func saveblockevent(cycles int64, skip int, which bucketType) {
 	gp := getg()
 	var nstk int
-	var stk [maxStack]location
+	var stk [maxStack]uintptr
 	if gp.m.curg == nil || gp.m.curg == gp {
-		nstk = callers(skip, stk[:])
+		nstk = callersRaw(stk[:])
 	} else {
 		// FIXME: This should get a traceback of gp.m.curg.
 		// nstk = gcallers(gp.m.curg, skip, stk[:])
-		nstk = callers(skip, stk[:])
+		nstk = callersRaw(stk[:])
 	}
 	lock(&proflock)
-	b := stkbucket(which, 0, stk[:nstk], true)
+	b := stkbucket(which, 0, skip, stk[:nstk], true)
 	b.bp().count++
 	b.bp().cycles += cycles
 	unlock(&proflock)
@@ -521,6 +554,163 @@ func (r *MemProfileRecord) Stack() []uintptr {
 	return r.Stack0[0:]
 }
 
+// reusebucket tries to pick a prunedProfile bucket off
+// the freebuckets list, returning it if one is available or nil
+// if the free list is empty.
+func reusebucket(nstk int) *bucket {
+	var b *bucket
+	if freebuckets != nil {
+		b = freebuckets
+		freebuckets = freebuckets.allnext
+		b.typ = prunedProfile
+		b.nstk = uintptr(nstk)
+		mp := b.mp()
+		// Hack: rely on the fact that memprofile records are
+		// larger than blockprofile records when clearing.
+		*mp = memRecord{}
+	}
+	return b
+}
+
+// freebucket appends the specified prunedProfile bucket
+// onto the free list, and removes references to it from the hash.
+func freebucket(tofree *bucket) *bucket {
+	// Thread this bucket into the free list.
+	ret := tofree.allnext
+	tofree.allnext = freebuckets
+	freebuckets = tofree
+
+	// Clean up the hash. The hash may point directly to this bucket...
+	i := int(tofree.hash % buckHashSize)
+	if buckhash[i] == tofree {
+		buckhash[i] = tofree.next
+	} else {
+		// ... or when this bucket was inserted by stkbucket, it may have been
+		// chained off some other unrelated bucket.
+		for b := buckhash[i]; b != nil; b = b.next {
+			if b.next == tofree {
+				b.next = tofree.next
+				break
+			}
+		}
+	}
+	return ret
+}
+
+// fixupStack takes a 'raw' stack trace (stack of PCs generated by
+// callersRaw) and performs pre-symbolization fixup on it, returning
+// the results in 'canonStack'. For each frame we look at the
+// file/func/line information, then use that info to decide whether to
+// include the frame in the final symbolized stack (removing frames
+// corresponding to 'morestack' routines, for example). We also expand
+// frames if the PC values to which they refer correponds to inlined
+// functions to allow for expanded symbolic info to be filled in
+// later. Note: there is code in go-callers.c's backtrace_full callback()
+// function that performs very similar fixups; these two code paths
+// should be kept in sync.
+func fixupStack(stk []uintptr, skip int, canonStack *[maxStack]uintptr, size uintptr) int {
+	var cidx int
+	var termTrace bool
+	// Increase the skip count to take into account the frames corresponding
+	// to runtime.callersRaw and to the C routine that it invokes.
+	skip += 2
+	for _, pc := range stk {
+		// Subtract 1 from PC to undo the 1 we added in callback in
+		// go-callers.c.
+		function, file, _, frames := funcfileline(pc-1, -1)
+
+		// Skip split-stack functions (match by function name)
+		skipFrame := false
+		if hasPrefix(function, "_____morestack_") || hasPrefix(function, "__morestack_") {
+			skipFrame = true
+		}
+
+		// Skip split-stack functions (match by file)
+		if hasSuffix(file, "/morestack.S") {
+			skipFrame = true
+		}
+
+		// Skip thunks and recover functions.  There is no equivalent to
+		// these functions in the gc toolchain.
+		fcn := function
+		if hasSuffix(fcn, "..r") {
+			skipFrame = true
+		} else {
+			for fcn != "" && (fcn[len(fcn)-1] >= '0' && fcn[len(fcn)-1] <= '9') {
+				fcn = fcn[:len(fcn)-1]
+			}
+			if hasSuffix(fcn, "..stub") || hasSuffix(fcn, "..thunk") {
+				skipFrame = true
+			}
+		}
+		if skipFrame {
+			continue
+		}
+
+		// Terminate the trace if we encounter a frame corresponding to
+		// runtime.main, runtime.kickoff, makecontext, etc. See the
+		// corresponding code in go-callers.c, callback function used
+		// with backtrace_full.
+		if function == "makecontext" {
+			termTrace = true
+		}
+		if hasSuffix(file, "/proc.c") && function == "runtime_mstart" {
+			termTrace = true
+		}
+		if hasSuffix(file, "/proc.go") &&
+			(function == "runtime.main" || function == "runtime.kickoff") {
+			termTrace = true
+		}
+
+		// Expand inline frames.
+		for i := 0; i < frames; i++ {
+			(*canonStack)[cidx] = pc
+			cidx++
+			if cidx >= maxStack {
+				termTrace = true
+				break
+			}
+		}
+		if termTrace {
+			break
+		}
+	}
+
+	// Apply skip count. Needs to be done after expanding inline frames.
+	if skip != 0 {
+		if skip >= cidx {
+			return 0
+		}
+		copy(canonStack[:cidx-skip], canonStack[skip:])
+		return cidx - skip
+	}
+
+	return cidx
+}
+
+// fixupBucket takes a raw memprofile bucket and creates a new bucket
+// in which the stack trace has been fixed up (inline frames expanded,
+// unwanted frames stripped out). Original bucket is left unmodified;
+// a new symbolizeProfile bucket may be generated as a side effect.
+// Payload information from the original bucket is incorporated into
+// the new bucket.
+func fixupBucket(b *bucket) {
+	var canonStack [maxStack]uintptr
+	frames := fixupStack(b.stk(), b.skip, &canonStack, b.size)
+	cb := stkbucket(prunedProfile, b.size, 0, canonStack[:frames], true)
+	switch b.typ {
+	default:
+		throw("invalid profile bucket type")
+	case memProfile:
+		rawrecord := b.mp()
+		cb.mp().active.add(&rawrecord.active)
+	case blockProfile, mutexProfile:
+		bpcount := b.bp().count
+		cb.bp().count += bpcount
+		cb.bp().cycles += bpcount
+	}
+}
+
 // MemProfile returns a profile of memory allocated and freed per allocation
 // site.
 //
@@ -576,15 +766,31 @@ func MemProfile(p []MemProfileRecord, inuseZero bool) (n int, ok bool) {
 		}
 	}
 	if n <= len(p) {
-		ok = true
-		idx := 0
-		for b := mbuckets; b != nil; b = b.allnext {
+		var bnext *bucket
+
+		// Post-process raw buckets to fix up their stack traces
+		for b := mbuckets; b != nil; b = bnext {
+			bnext = b.allnext
 			mp := b.mp()
 			if inuseZero || mp.active.alloc_bytes != mp.active.free_bytes {
-				record(&p[idx], b)
-				idx++
+				fixupBucket(b)
 			}
 		}
+
+		// Record pruned/fixed-up buckets
+		ok = true
+		idx := 0
+		for b := sbuckets; b != nil; b = b.allnext {
+			record(&p[idx], b)
+			idx++
+		}
+		n = idx
+
+		// Free up pruned buckets for use in next round
+		for b := sbuckets; b != nil; b = bnext {
+			bnext = freebucket(b)
+		}
+		sbuckets = nil
 	}
 	unlock(&proflock)
 	return
@@ -597,18 +803,18 @@ func record(r *MemProfileRecord, b *bucket) {
 	r.FreeBytes = int64(mp.active.free_bytes)
 	r.AllocObjects = int64(mp.active.allocs)
 	r.FreeObjects = int64(mp.active.frees)
-	for i, loc := range b.stk() {
+	for i, pc := range b.stk() {
 		if i >= len(r.Stack0) {
 			break
 		}
-		r.Stack0[i] = loc.pc
+		r.Stack0[i] = pc
 	}
 	for i := int(b.nstk); i < len(r.Stack0); i++ {
 		r.Stack0[i] = 0
 	}
 }
 
-func iterate_memprof(fn func(*bucket, uintptr, *location, uintptr, uintptr, uintptr)) {
+func iterate_memprof(fn func(*bucket, uintptr, *uintptr, uintptr, uintptr, uintptr)) {
 	lock(&proflock)
 	for b := mbuckets; b != nil; b = b.allnext {
 		mp := b.mp()
@@ -625,6 +831,49 @@ type BlockProfileRecord struct {
 	StackRecord
 }
 
+func harvestBlockMutexProfile(buckets *bucket, p []BlockProfileRecord) (n int, ok bool) {
+	for b := buckets; b != nil; b = b.allnext {
+		n++
+	}
+	if n <= len(p) {
+		var bnext *bucket
+
+		// Post-process raw buckets to create pruned/fixed-up buckets
+		for b := buckets; b != nil; b = bnext {
+			bnext = b.allnext
+			fixupBucket(b)
+		}
+
+		// Record
+		ok = true
+		for b := sbuckets; b != nil; b = b.allnext {
+			bp := b.bp()
+			r := &p[0]
+			r.Count = bp.count
+			r.Cycles = bp.cycles
+			i := 0
+			var pc uintptr
+			for i, pc = range b.stk() {
+				if i >= len(r.Stack0) {
+					break
+				}
+				r.Stack0[i] = pc
+			}
+			for ; i < len(r.Stack0); i++ {
+				r.Stack0[i] = 0
+			}
+			p = p[1:]
+		}
+
+		// Free up pruned buckets for use in next round.
+		for b := sbuckets; b != nil; b = bnext {
+			bnext = freebucket(b)
+		}
+		sbuckets = nil
+	}
+	return
+}
+
 // BlockProfile returns n, the number of records in the current blocking profile.
 // If len(p) >= n, BlockProfile copies the profile into p and returns n, true.
 // If len(p) < n, BlockProfile does not change p and returns n, false.
@@ -634,30 +883,7 @@ type BlockProfileRecord struct {
 // of calling BlockProfile directly.
 func BlockProfile(p []BlockProfileRecord) (n int, ok bool) {
 	lock(&proflock)
-	for b := bbuckets; b != nil; b = b.allnext {
-		n++
-	}
-	if n <= len(p) {
-		ok = true
-		for b := bbuckets; b != nil; b = b.allnext {
-			bp := b.bp()
-			r := &p[0]
-			r.Count = bp.count
-			r.Cycles = bp.cycles
-			i := 0
-			var loc location
-			for i, loc = range b.stk() {
-				if i >= len(r.Stack0) {
-					break
-				}
-				r.Stack0[i] = loc.pc
-			}
-			for ; i < len(r.Stack0); i++ {
-				r.Stack0[i] = 0
-			}
-			p = p[1:]
-		}
-	}
+	n, ok = harvestBlockMutexProfile(bbuckets, p)
 	unlock(&proflock)
 	return
 }
@@ -670,30 +896,7 @@ func BlockProfile(p []BlockProfileRecord) (n int, ok bool) {
 // instead of calling MutexProfile directly.
 func MutexProfile(p []BlockProfileRecord) (n int, ok bool) {
 	lock(&proflock)
-	for b := xbuckets; b != nil; b = b.allnext {
-		n++
-	}
-	if n <= len(p) {
-		ok = true
-		for b := xbuckets; b != nil; b = b.allnext {
-			bp := b.bp()
-			r := &p[0]
-			r.Count = int64(bp.count)
-			r.Cycles = bp.cycles
-			i := 0
-			var loc location
-			for i, loc = range b.stk() {
-				if i >= len(r.Stack0) {
-					break
-				}
-				r.Stack0[i] = loc.pc
-			}
-			for ; i < len(r.Stack0); i++ {
-				r.Stack0[i] = 0
-			}
-			p = p[1:]
-		}
-	}
+	n, ok = harvestBlockMutexProfile(xbuckets, p)
 	unlock(&proflock)
 	return
 }

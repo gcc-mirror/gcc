@@ -16,7 +16,6 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++17" }
-// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
 #include <unordered_map>
 #include <testsuite_hooks.h>

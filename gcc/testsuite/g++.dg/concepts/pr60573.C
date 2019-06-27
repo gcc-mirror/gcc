@@ -9,7 +9,7 @@ struct A
     void foo(auto);
   };
 
-  void B::foo(auto) {}  // { dg-error "cannot define" }
+  void B::foo(auto) {}  // { dg-error "8:cannot define" }
 
   struct X
   {
@@ -21,8 +21,8 @@ struct A
       };
     };
 
-    void Y::Z::foo(auto) {}  // { dg-error "cannot define" }
+    void Y::Z::foo(auto) {}  // { dg-error "10:cannot define" }
   };
 
-  void X::Y::Z::foo(auto) {}  // { dg-error "cannot define" }
+  void X::Y::Z::foo(auto) {}  // { dg-error "8:cannot define" }
 };

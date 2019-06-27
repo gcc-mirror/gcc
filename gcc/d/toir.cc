@@ -65,10 +65,10 @@ pop_binding_label (Statement * const &, d_label_entry *ent, binding_level *bl)
 }
 
 /* At the end of a function, all labels declared within the function
-   go out of scope.  BLOCK is the top-level block for the function.  */
+   go out of scope.  Queue them in LABELS.  */
 
 bool
-pop_label (Statement * const &s, d_label_entry *ent, tree block)
+pop_label (Statement * const &, d_label_entry *ent, vec<tree> &labels)
 {
   if (!ent->bc_label)
     {
@@ -77,12 +77,9 @@ pop_label (Statement * const &s, d_label_entry *ent, tree block)
       if (DECL_NAME (ent->label))
 	{
 	  gcc_assert (DECL_INITIAL (ent->label) != NULL_TREE);
-	  DECL_CHAIN (ent->label) = BLOCK_VARS (block);
-	  BLOCK_VARS (block) = ent->label;
+	  labels.safe_push (ent->label);
 	}
     }
-
-  d_function_chain->labels->remove (s);
 
   return true;
 }
@@ -101,6 +98,14 @@ push_binding_level (level_kind kind)
   new_level->kind = kind;
 
   current_binding_level = new_level;
+}
+
+static int
+cmp_labels (const void *p1, const void *p2)
+{
+  const tree *l1 = (const tree *)p1;
+  const tree *l2 = (const tree *)p2;
+  return DECL_UID (*l1) - DECL_UID (*l2);
 }
 
 tree
@@ -125,7 +130,17 @@ pop_binding_level (void)
 
       /* Pop all the labels declared in the function.  */
       if (d_function_chain->labels)
-	d_function_chain->labels->traverse<tree, &pop_label> (block);
+	{
+	  auto_vec<tree> labels;
+	  d_function_chain->labels->traverse<vec<tree> &, &pop_label> (labels);
+	  d_function_chain->labels->empty ();
+	  labels.qsort (cmp_labels);
+	  for (unsigned i = 0; i < labels.length (); ++i)
+	    {
+	      DECL_CHAIN (labels[i]) = BLOCK_VARS (block);
+	      BLOCK_VARS (block) = labels[i];
+	    }
+	}
     }
   else
     {
@@ -367,9 +382,11 @@ public:
       }
 
     if (ent->in_try_scope)
-      error_at (make_location_t (from->loc), "cannot goto into try block");
+      error_at (make_location_t (from->loc),
+		"cannot %<goto%> into %<try%> block");
     else if (ent->in_catch_scope)
-      error_at (make_location_t (from->loc), "cannot goto into catch block");
+      error_at (make_location_t (from->loc),
+		"cannot %<goto%> into %<catch%> block");
   }
 
   /* Check that a previously seen jump to a newly defined label is valid.
@@ -391,21 +408,21 @@ public:
 	      {
 		location = make_location_t (fwdref->statement->loc);
 		if (b->kind == level_try)
-		  error_at (location, "cannot goto into try block");
+		  error_at (location, "cannot %<goto%> into %<try%> block");
 		else
-		  error_at (location, "cannot goto into catch block");
+		  error_at (location, "cannot %<goto%> into %<catch%> block");
 	      }
 	    else if (s->isCaseStatement ())
 	      {
 		location = make_location_t (s->loc);
 		error_at (location, "case cannot be in different "
-			  "try block level from switch");
+			  "%<try%> block level from %<switch%>");
 	      }
 	    else if (s->isDefaultStatement ())
 	      {
 		location = make_location_t (s->loc);
 		error_at (location, "default cannot be in different "
-			  "try block level from switch");
+			  "%<try%> block level from %<switch%>");
 	      }
 	    else
 	      gcc_unreachable ();
@@ -1120,13 +1137,13 @@ public:
     InterfaceDeclaration *id = cd->isInterfaceDeclaration ();
     tree arg = build_expr_dtor (s->exp);
 
-    if (!flag_exceptions)
+    if (!global.params.useExceptions)
       {
 	static int warned = 0;
 	if (!warned)
 	  {
-	    error_at (make_location_t (s->loc), "exception handling disabled, "
-		      "use -fexceptions to enable");
+	    error_at (make_location_t (s->loc), "exception handling disabled; "
+		      "use %<-fexceptions%> to enable");
 	    warned = 1;
 	  }
       }

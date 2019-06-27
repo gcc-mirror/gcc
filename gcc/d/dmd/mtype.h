@@ -332,6 +332,7 @@ public:
     virtual Type *nextOf();
     Type *baseElemOf();
     uinteger_t sizemask();
+    unsigned numberOfElems(const Loc &loc);
     virtual bool needsDestruction();
     virtual bool needsNested();
     void checkComplexTransition(Loc loc);

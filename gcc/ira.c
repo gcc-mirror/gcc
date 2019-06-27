@@ -2326,7 +2326,7 @@ ira_setup_eliminable_regset (void)
 	      SET_HARD_REG_BIT (ira_no_alloc_regs, eliminables[i].from);
 	}
       else if (cannot_elim)
-	error ("%s cannot be used in asm here",
+	error ("%s cannot be used in %<asm%> here",
 	       reg_names[eliminables[i].from]);
       else
 	df_set_regs_ever_live (eliminables[i].from, true);
@@ -2340,7 +2340,7 @@ ira_setup_eliminable_regset (void)
 	    SET_HARD_REG_BIT (ira_no_alloc_regs, HARD_FRAME_POINTER_REGNUM);
 	}
       else if (frame_pointer_needed)
-	error ("%s cannot be used in asm here",
+	error ("%s cannot be used in %<asm%> here",
 	       reg_names[HARD_FRAME_POINTER_REGNUM]);
       else
 	df_set_regs_ever_live (HARD_FRAME_POINTER_REGNUM, true);
@@ -5198,6 +5198,8 @@ ira (FILE *f)
   int ira_max_point_before_emit;
   bool saved_flag_caller_saves = flag_caller_saves;
   enum ira_region saved_flag_ira_region = flag_ira_region;
+  unsigned int i;
+  int num_used_regs = 0;
 
   clear_bb_flags ();
 
@@ -5213,12 +5215,17 @@ ira (FILE *f)
 
   ira_conflicts_p = optimize > 0;
 
+  /* Determine the number of pseudos actually requiring coloring.  */
+  for (i = FIRST_PSEUDO_REGISTER; i < DF_REG_SIZE (df); i++)
+    num_used_regs += !!(DF_REG_USE_COUNT (i) + DF_REG_DEF_COUNT (i));
+
   /* If there are too many pseudos and/or basic blocks (e.g. 10K
      pseudos and 10K blocks or 100K pseudos and 1K blocks), we will
      use simplified and faster algorithms in LRA.  */
   lra_simple_p
     = (ira_use_lra_p
-       && max_reg_num () >= (1 << 26) / last_basic_block_for_fn (cfun));
+       && num_used_regs >= (1 << 26) / last_basic_block_for_fn (cfun));
+
   if (lra_simple_p)
     {
       /* It permits to skip live range splitting in LRA.  */

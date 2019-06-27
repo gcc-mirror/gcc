@@ -28,3 +28,5 @@ void test01(std::chrono::seconds s, X x)
   s / x; // { dg-error "no match" }
   s % x; // { dg-error "no match" }
 }
+
+// { dg-prune-output "enable_if" }

@@ -39,14 +39,23 @@ void
 test01()
 {
   VERIFY( test(std::string("a narrow string")) );
-  VERIFY( test(std::pmr::string("a narrow string, but with PMR!")) );
   VERIFY( test(std::u16string(u"a utf-16 string")) );
-  VERIFY( test(std::pmr::u16string(u"a utf-16 string, but with PMR!")) );
   VERIFY( test(std::u32string(U"a utf-32 string")) );
-  VERIFY( test(std::pmr::u32string(U"a utf-32 string, but with PMR!")) );
 #if _GLIBCXX_USE_WCHAR_T
   VERIFY( test(std::wstring(L"a wide string")) );
+#endif
+}
+
+void
+test02()
+{
+#if _GLIBCXX_USE_CXX11_ABI
+  VERIFY( test(std::pmr::string("a narrow string, but with PMR!")) );
+  VERIFY( test(std::pmr::u16string(u"a utf-16 string, but with PMR!")) );
+  VERIFY( test(std::pmr::u32string(U"a utf-32 string, but with PMR!")) );
+#if _GLIBCXX_USE_WCHAR_T
   VERIFY( test(std::pmr::wstring(L"a wide string, but with PMR!")) );
+#endif
 #endif
 }
 
@@ -54,4 +63,5 @@ int
 main()
 {
   test01();
+  test02();
 }

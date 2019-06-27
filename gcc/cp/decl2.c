@@ -158,8 +158,7 @@ build_memfn_type (tree fntype, tree ctype, cp_cv_quals quals,
   if (fntype == error_mark_node || ctype == error_mark_node)
     return error_mark_node;
 
-  gcc_assert (TREE_CODE (fntype) == FUNCTION_TYPE
-	      || TREE_CODE (fntype) == METHOD_TYPE);
+  gcc_assert (FUNC_OR_METHOD_TYPE_P (fntype));
 
   cp_cv_quals type_quals = quals & ~TYPE_QUAL_RESTRICT;
   ctype = cp_build_qualified_type (ctype, type_quals);
@@ -831,7 +830,8 @@ grokfield (const cp_declarator *declarator,
   if (TREE_CODE (value) == TYPE_DECL && init)
     {
       error_at (cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (value)),
-		"typedef %qD is initialized (use decltype instead)", value);
+		"typedef %qD is initialized (use %qs instead)",
+		value, "decltype");
       init = NULL_TREE;
     }
 
@@ -920,7 +920,7 @@ grokfield (const cp_declarator *declarator,
 		  DECL_DECLARED_INLINE_P (value) = 1;
 		}
 	    }
-	  else if (TREE_CODE (init) == DEFAULT_ARG)
+	  else if (TREE_CODE (init) == DEFERRED_PARSE)
 	    error ("invalid initializer for member function %qD", value);
 	  else if (TREE_CODE (TREE_TYPE (value)) == METHOD_TYPE)
 	    {
@@ -1773,12 +1773,13 @@ coerce_delete_type (tree decl, location_t loc)
       else
 	/* A destroying operator delete shall be a class member function named
 	   operator delete.  */
-	error_at (loc, "destroying operator delete must be a member function");
+	error_at (loc,
+		  "destroying %<operator delete%> must be a member function");
       const ovl_op_info_t *op = IDENTIFIER_OVL_OP_INFO (DECL_NAME (decl));
       if (op->flags & OVL_OP_FLAG_VEC)
-	error_at (loc, "operator delete[] cannot be a destroying delete");
+	error_at (loc, "%<operator delete[]%> cannot be a destroying delete");
       if (!usual_deallocation_fn_p (decl))
-	error_at (loc, "destroying operator delete must be a usual "
+	error_at (loc, "destroying %<operator delete%> must be a usual "
 		  "deallocation function");
     }
 
@@ -4248,6 +4249,8 @@ cpp_check (tree t, cpp_operation op)
 	}
       case IS_ABSTRACT:
 	return DECL_PURE_VIRTUAL_P (t);
+      case IS_ASSIGNMENT_OPERATOR:
+	return DECL_ASSIGNMENT_OPERATOR_P (t);
       case IS_CONSTRUCTOR:
 	return DECL_CONSTRUCTOR_P (t);
       case IS_DESTRUCTOR:

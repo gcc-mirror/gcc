@@ -41,6 +41,10 @@ extern "C++" {
 
 namespace std
 {
+  /** @addtogroup exceptions
+   *  @{
+   */
+
   /** If an %exception is thrown which is not listed in a function's
    *  %exception specification, one of these may be thrown.  */
   class bad_exception : public exception

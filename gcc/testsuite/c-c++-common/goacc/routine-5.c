@@ -150,59 +150,17 @@ void f_static_assert();
 
 #pragma acc routine
 __extension__ extern void ex1();
-#pragma acc routine (ex1) /* { dg-error ".#pragma acc routine. already applied to .\[void \]*ex1" } */
+#pragma acc routine (ex1) worker /* { dg-error "has already been marked with an OpenACC 'routine' directive" } */
 
 #pragma acc routine
 __extension__ __extension__ __extension__ __extension__ __extension__ void ex2()
 {
 }
-#pragma acc routine (ex2) /* { dg-error ".#pragma acc routine. already applied to .\[void \]*ex2" } */
+#pragma acc routine (ex2) worker /* { dg-error "has already been marked with an OpenACC 'routine' directive" } */
 
 #pragma acc routine /* { dg-error ".#pragma acc routine. not immediately followed by function declaration or definition" } */
 __extension__ int ex3;
 #pragma acc routine (ex3) /* { dg-error ".ex3. does not refer to a function" } */
-
-
-/* "#pragma acc routine" already applied.  */
-
-extern void fungsi_1();
-#pragma acc routine(fungsi_1) gang
-#pragma acc routine(fungsi_1) gang /* { dg-error ".#pragma acc routine. already applied to .\[void \]*fungsi_1" } */
-#pragma acc routine(fungsi_1) worker /* { dg-error ".#pragma acc routine. already applied to .\[void \]*fungsi_1" } */
-#pragma acc routine(fungsi_1) vector /* { dg-error ".#pragma acc routine. already applied to .\[void \]*fungsi_1" } */
-
-#pragma acc routine seq
-extern void fungsi_2();
-#pragma acc routine(fungsi_2) seq /* { dg-error ".#pragma acc routine. already applied to .\[void \]*fungsi_2." } */
-#pragma acc routine(fungsi_2) worker /* { dg-error ".#pragma acc routine. already applied to .\[void \]*fungsi_2." } */
-#pragma acc routine(fungsi_2) /* { dg-error ".#pragma acc routine. already applied to .\[void \]*fungsi_2." } */
-
-#pragma acc routine vector
-extern void fungsi_3();
-#pragma acc routine vector /* { dg-error ".#pragma acc routine. already applied to .\[void \]*fungsi_3." } */
-void fungsi_3()
-{
-}
-
-extern void fungsi_4();
-#pragma acc routine (fungsi_4) worker
-#pragma acc routine gang /* { dg-error ".#pragma acc routine. already applied to .\[void \]*fungsi_4." } */
-void fungsi_4()
-{
-}
-
-#pragma acc routine gang
-void fungsi_5()
-{
-}
-#pragma acc routine (fungsi_5) worker /* { dg-error ".#pragma acc routine. already applied to .\[void \]*fungsi_5." } */
-
-#pragma acc routine seq
-void fungsi_6()
-{
-}
-#pragma acc routine seq /* { dg-error ".#pragma acc routine. already applied to .\[void \]*fungsi_6." } */
-extern void fungsi_6();
 
 
 /* "#pragma acc routine" must be applied before.  */
@@ -243,7 +201,7 @@ int
 func2 (int a)
 {
   extern int vb4;	/* { dg-error "directive for use" } */
-  static int vb5;	/* { dg-error "directive for use" } */
+  static int vb5;
 
   vb4 = a + 1;
   vb5 = vb4 + 1;

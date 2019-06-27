@@ -15,7 +15,11 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-SUBDIRS = libdruntime src testsuite
+if ENABLE_LIBPHOBOS
+  SUBDIRS = libdruntime src testsuite
+else
+  SUBDIRS =
+endif
 
 ACLOCAL_AMFLAGS = -I . -I .. -I ../config
 

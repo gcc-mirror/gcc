@@ -24,6 +24,7 @@
 
 /** @file experimental/string_view
  *  This is a TS C++ Library header.
+ *  @ingroup libfund-ts
  */
 
 //
@@ -57,7 +58,7 @@ inline namespace fundamentals_v1
    *
    *  @ingroup strings
    *  @ingroup sequences
-   *  @ingroup experimental
+   *  @ingroup libfund-ts
    *
    *  @tparam _CharT  Type of character
    *  @tparam _Traits  Traits for character type, defaults to
@@ -78,9 +79,9 @@ inline namespace fundamentals_v1
       // types
       using traits_type = _Traits;
       using value_type = _CharT;
-      using pointer = const _CharT*;
+      using pointer = _CharT*;
       using const_pointer = const _CharT*;
-      using reference = const _CharT&;
+      using reference = _CharT&;
       using const_reference = const _CharT&;
       using const_iterator = const _CharT*;
       using iterator = const_iterator;

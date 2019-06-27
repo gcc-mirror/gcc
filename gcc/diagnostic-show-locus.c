@@ -39,6 +39,13 @@ along with GCC; see the file COPYING3.  If not see
 # include <sys/ioctl.h>
 #endif
 
+/* Disable warnings about quoting issues in the pp_xxx calls below
+   that (intentionally) don't follow GCC diagnostic conventions.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* Classes for rendering source code and diagnostics, within an
    anonymous namespace.
    The work is done by "class layout", which embeds and uses
@@ -3740,3 +3747,7 @@ diagnostic_show_locus_c_tests ()
 } // namespace selftest
 
 #endif /* #if CHECKING_P */
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif

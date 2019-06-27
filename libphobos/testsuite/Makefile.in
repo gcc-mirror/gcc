@@ -154,6 +154,7 @@ CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DCFG_ARM_EABI_UNWINDER = @DCFG_ARM_EABI_UNWINDER@
+DCFG_DLPI_TLS_MODID = @DCFG_DLPI_TLS_MODID@
 DCFG_HAVE_64BIT_ATOMICS = @DCFG_HAVE_64BIT_ATOMICS@
 DCFG_HAVE_ATOMIC_BUILTINS = @DCFG_HAVE_ATOMIC_BUILTINS@
 DCFG_HAVE_LIBATOMIC = @DCFG_HAVE_LIBATOMIC@
@@ -196,6 +197,7 @@ NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
+OS_LINK_SPEC = @OS_LINK_SPEC@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -287,6 +289,7 @@ _RUNTEST = $(shell if test -f $(top_srcdir)/../dejagnu/runtest; then \
 	     echo $(top_srcdir)/../dejagnu/runtest; else echo runtest; fi)
 
 RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir $$srcdir
+PWD_COMMAND = $${PWDCMD-pwd}
 check_p_subno = $(word 2,$(subst _, ,$*))
 check_p_numbers0 := 1 2 3 4 5 6 7 8 9
 check_p_numbers1 := 0 $(check_p_numbers0)

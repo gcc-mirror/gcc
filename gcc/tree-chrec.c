@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-ssa-loop-niter.h"
 #include "tree-chrec.h"
+#include "gimple.h"
+#include "tree-ssa-loop.h"
 #include "dumpfile.h"
 #include "params.h"
 #include "tree-scalar-evolution.h"
@@ -959,6 +961,9 @@ chrec_contains_symbols (const_tree chrec, hash_set<const_tree> &visited,
       && flow_loop_nested_p (get_chrec_loop (chrec), loop))
     return true;
 
+  if (visited.add (chrec))
+    return false;
+
   n = TREE_OPERAND_LENGTH (chrec);
   for (i = 0; i < n; i++)
     if (chrec_contains_symbols (TREE_OPERAND (chrec, i), visited, loop))
@@ -976,6 +981,63 @@ chrec_contains_symbols (const_tree chrec, struct loop* loop)
 {
   hash_set<const_tree> visited;
   return chrec_contains_symbols (chrec, visited, loop);
+}
+
+/* Return true when CHREC contains symbolic names defined in
+   LOOP_NB.  */
+
+static bool
+chrec_contains_symbols_defined_in_loop (const_tree chrec, unsigned loop_nb,
+					hash_set<const_tree> &visited)
+{
+  int i, n;
+
+  if (chrec == NULL_TREE)
+    return false;
+
+  if (is_gimple_min_invariant (chrec))
+    return false;
+
+  if (TREE_CODE (chrec) == SSA_NAME)
+    {
+      gimple *def;
+      loop_p def_loop, loop;
+
+      if (SSA_NAME_IS_DEFAULT_DEF (chrec))
+	return false;
+
+      def = SSA_NAME_DEF_STMT (chrec);
+      def_loop = loop_containing_stmt (def);
+      loop = get_loop (cfun, loop_nb);
+
+      if (def_loop == NULL)
+	return false;
+
+      if (loop == def_loop || flow_loop_nested_p (loop, def_loop))
+	return true;
+
+      return false;
+    }
+
+  if (visited.add (chrec))
+    return false;
+
+  n = TREE_OPERAND_LENGTH (chrec);
+  for (i = 0; i < n; i++)
+    if (chrec_contains_symbols_defined_in_loop (TREE_OPERAND (chrec, i),
+						loop_nb, visited))
+      return true;
+  return false;
+}
+
+/* Return true when CHREC contains symbolic names defined in
+   LOOP_NB.  */
+
+bool
+chrec_contains_symbols_defined_in_loop (const_tree chrec, unsigned loop_nb)
+{
+  hash_set<const_tree> visited;
+  return chrec_contains_symbols_defined_in_loop (chrec, loop_nb, visited);
 }
 
 /* Determines whether the chrec contains undetermined coefficients.  */
@@ -1025,6 +1087,9 @@ tree_contains_chrecs (const_tree expr, int *size, hash_set<const_tree> &visited)
 
   if (tree_is_chrec (expr))
     return true;
+
+  if (visited.add (expr))
+    return false;
 
   n = TREE_OPERAND_LENGTH (expr);
   for (i = 0; i < n; i++)
@@ -1142,23 +1207,30 @@ evolution_function_is_affine_multivariate_p (const_tree chrec, int loopnum)
 }
 
 /* Determine whether the given tree is a function in zero or one
-   variables.  */
+   variables with respect to loop specified by LOOPNUM.  Note only positive
+   LOOPNUM stands for a real loop.  */
 
 bool
-evolution_function_is_univariate_p (const_tree chrec)
+evolution_function_is_univariate_p (const_tree chrec, int loopnum)
 {
   if (chrec == NULL_TREE)
     return true;
 
+  tree sub_chrec;
   switch (TREE_CODE (chrec))
     {
     case POLYNOMIAL_CHREC:
       switch (TREE_CODE (CHREC_LEFT (chrec)))
 	{
 	case POLYNOMIAL_CHREC:
-	  if (CHREC_VARIABLE (chrec) != CHREC_VARIABLE (CHREC_LEFT (chrec)))
+	  sub_chrec = CHREC_LEFT (chrec);
+	  if (CHREC_VARIABLE (chrec) != CHREC_VARIABLE (sub_chrec)
+	      && (loopnum <= 0
+		  || CHREC_VARIABLE (sub_chrec) == (unsigned) loopnum
+		  || flow_loop_nested_p (get_loop (cfun, loopnum),
+					 get_chrec_loop (sub_chrec))))
 	    return false;
-	  if (!evolution_function_is_univariate_p (CHREC_LEFT (chrec)))
+	  if (!evolution_function_is_univariate_p (sub_chrec, loopnum))
 	    return false;
 	  break;
 
@@ -1171,9 +1243,14 @@ evolution_function_is_univariate_p (const_tree chrec)
       switch (TREE_CODE (CHREC_RIGHT (chrec)))
 	{
 	case POLYNOMIAL_CHREC:
-	  if (CHREC_VARIABLE (chrec) != CHREC_VARIABLE (CHREC_RIGHT (chrec)))
+	  sub_chrec = CHREC_RIGHT (chrec);
+	  if (CHREC_VARIABLE (chrec) != CHREC_VARIABLE (sub_chrec)
+	      && (loopnum <= 0
+		  || CHREC_VARIABLE (sub_chrec) == (unsigned) loopnum
+		  || flow_loop_nested_p (get_loop (cfun, loopnum),
+					 get_chrec_loop (sub_chrec))))
 	    return false;
-	  if (!evolution_function_is_univariate_p (CHREC_RIGHT (chrec)))
+	  if (!evolution_function_is_univariate_p (sub_chrec, loopnum))
 	    return false;
 	  break;
 

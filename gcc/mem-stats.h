@@ -559,9 +559,9 @@ template <class T>
 inline
 mem_alloc_description<T>::mem_alloc_description ()
 {
-  m_map = new mem_map_t (13, false, false);
-  m_reverse_map = new reverse_mem_map_t (13, false, false);
-  m_reverse_object_map = new reverse_object_map_t (13, false, false);
+  m_map = new mem_map_t (13, false, false, false);
+  m_reverse_map = new reverse_mem_map_t (13, false, false, false);
+  m_reverse_object_map = new reverse_object_map_t (13, false, false, false);
 }
 
 /* Default destructor.  */

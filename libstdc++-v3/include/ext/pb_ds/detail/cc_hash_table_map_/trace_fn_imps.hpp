@@ -38,6 +38,8 @@
  * Contains implementations of cc_ht_map_'s trace-mode functions.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 #ifdef PB_DS_HT_MAP_TRACE_
 
 PB_DS_CLASS_T_DEC
@@ -70,3 +72,4 @@ trace_list(const_entry_pointer p_l) const
 }
 
 #endif 
+#endif

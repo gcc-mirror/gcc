@@ -1158,11 +1158,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_ptr(0), _M_refcount(__p, std::move(__d), std::move(__a))
 	{ }
 
+      // Aliasing constructor
       template<typename _Yp>
 	__shared_ptr(const __shared_ptr<_Yp, _Lp>& __r,
 		     element_type* __p) noexcept
 	: _M_ptr(__p), _M_refcount(__r._M_refcount) // never throws
 	{ }
+
+      // Aliasing constructor
+      template<typename _Yp>
+	__shared_ptr(__shared_ptr<_Yp, _Lp>&& __r,
+		     element_type* __p) noexcept
+	: _M_ptr(__p), _M_refcount()
+	{
+	  _M_refcount._M_swap(__r._M_refcount);
+	  __r._M_ptr = 0;
+	}
 
       __shared_ptr(const __shared_ptr&) noexcept = default;
       __shared_ptr& operator=(const __shared_ptr&) noexcept = default;
@@ -1305,21 +1316,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	reset(_Yp* __p, _Deleter __d, _Alloc __a)
         { __shared_ptr(__p, std::move(__d), std::move(__a)).swap(*this); }
 
+      /// Return the stored pointer.
       element_type*
       get() const noexcept
       { return _M_ptr; }
 
+      /// Return true if the stored pointer is not null.
       explicit operator bool() const // never throws
       { return _M_ptr == 0 ? false : true; }
 
+      /// Return true if use_count() == 1.
       bool
       unique() const noexcept
       { return _M_refcount._M_unique(); }
 
+      /// If *this owns a pointer, return the number of owners, otherwise zero.
       long
       use_count() const noexcept
       { return _M_refcount._M_get_use_count(); }
 
+      /// Exchange both the owned pointer and the stored pointer.
       void
       swap(__shared_ptr<_Tp, _Lp>& __other) noexcept
       {
@@ -1327,6 +1343,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_refcount._M_swap(__other._M_refcount);
       }
 
+      /** @brief Define an ordering based on ownership.
+       *
+       * This function defines a strict weak ordering between two shared_ptr
+       * or weak_ptr objects, such that one object is less than the other
+       * unless they share ownership of the same pointer, or are both empty.
+       * @{
+      */
       template<typename _Tp1>
 	bool
 	owner_before(__shared_ptr<_Tp1, _Lp> const& __rhs) const noexcept
@@ -1336,6 +1359,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	bool
 	owner_before(__weak_ptr<_Tp1, _Lp> const& __rhs) const noexcept
 	{ return _M_refcount._M_less(__rhs._M_refcount); }
+      // @}
 
     protected:
       // This constructor is non-standard, it is used by allocate_shared.

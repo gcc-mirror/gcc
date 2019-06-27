@@ -175,3 +175,25 @@ go_inform(const Location location, const char* fmt, ...)
   go_be_inform(location, expand_message(fmt, ap));
   va_end(ap);
 }
+
+// go_debug uses normal printf formatting, not GCC diagnostic formatting.
+
+void
+go_debug(const Location location, const char* fmt, ...)
+{
+  va_list ap;
+
+  va_start(ap, fmt);
+  char* mbuf = NULL;
+  int nwr = vasprintf(&mbuf, fmt, ap);
+  va_end(ap);
+  if (nwr == -1)
+    {
+      go_be_error_at(Linemap::unknown_location(),
+		     "memory allocation failed in vasprintf");
+      go_assert(0);
+    }
+  std::string rval = std::string(mbuf);
+  free(mbuf);
+  go_be_inform(location, rval);
+}

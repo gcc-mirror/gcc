@@ -52,3 +52,9 @@ along with GCC; see the file COPYING3.  If not see
         %{rdynamic:-export-dynamic}				\
         -dynamic-linker " FBSD_DYNAMIC_LINKER "}		\
         %{static:-static}}"
+
+#define STARTFILE_PREFIX_SPEC 			\
+   "/lib" XLEN_SPEC "/" ABI_SPEC "/ "		\
+   "/usr/lib" XLEN_SPEC "/" ABI_SPEC "/ "	\
+   "/lib/ "					\
+   "/usr/lib/ "

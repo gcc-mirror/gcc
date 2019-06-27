@@ -408,7 +408,9 @@ typedef unsigned int CUMULATIVE_ARGS;
 #define GLOBAL_ASM_OP 		\
   (TARGET_AS100_SYNTAX ? "\t.GLB\t" : "\t.global\t")
 #define ASM_COMMENT_START	" ;"
+#undef ASM_APP_ON
 #define ASM_APP_ON		""
+#undef ASM_APP_OFF
 #define ASM_APP_OFF 		""
 #define LOCAL_LABEL_PREFIX	"L"
 #undef  USER_LABEL_PREFIX

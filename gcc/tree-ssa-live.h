@@ -266,6 +266,11 @@ extern void debug (tree_live_info_d &ref);
 extern void debug (tree_live_info_d *ptr);
 extern void dump_live_info (FILE *, tree_live_info_p, int);
 
+typedef hash_map<int_hash <unsigned int, -1U>, unsigned int> live_vars_map;
+extern vec<bitmap_head> compute_live_vars (struct function *, live_vars_map *);
+extern bitmap live_vars_at_stmt (vec<bitmap_head> &, live_vars_map *,
+				 gimple *);
+extern void destroy_live_vars (vec<bitmap_head> &);
 
 /*  Return TRUE if P is marked as a global in LIVE.  */
 

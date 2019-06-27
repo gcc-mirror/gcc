@@ -406,7 +406,7 @@ match_data_constant (gfc_expr **result)
 	 contains the right constant expression.  Check here.  */
       if ((*result)->symtree == NULL
 	  && (*result)->expr_type == EXPR_CONSTANT
-	  && ((*result)->ts.type == BT_INTEGER 
+	  && ((*result)->ts.type == BT_INTEGER
 	      || (*result)->ts.type == BT_REAL))
 	return m;
 
@@ -1493,19 +1493,18 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
 
           /* Character strings are only C interoperable if they have a
              length of 1.  */
-          if (sym->ts.type == BT_CHARACTER)
+          if (sym->ts.type == BT_CHARACTER && !sym->attr.dimension)
 	    {
 	      gfc_charlen *cl = sym->ts.u.cl;
 	      if (!cl || !cl->length || cl->length->expr_type != EXPR_CONSTANT
                   || mpz_cmp_si (cl->length->value.integer, 1) != 0)
 		{
-		  if (!gfc_notify_std (GFC_STD_F2018,
-				       "Character argument %qs at %L "
-				       "must be length 1 because "
-				       "procedure %qs is BIND(C)",
-				       sym->name, &sym->declared_at,
-				       sym->ns->proc_name->name))
-		    retval = false;
+		  gfc_error ("Character argument %qs at %L "
+			     "must be length 1 because "
+			     "procedure %qs is BIND(C)",
+			     sym->name, &sym->declared_at,
+			     sym->ns->proc_name->name);
+		  retval = false;
 		}
 	    }
 
@@ -2780,6 +2779,16 @@ variable_decl (int elem)
 	  m = match_pointer_init (&initializer, 0);
 	  if (m != MATCH_YES)
 	    goto cleanup;
+
+	  /* The target of a pointer initialization must have the SAVE
+	     attribute.  A variable in PROGRAM, MODULE, or SUBMODULE scope
+	     is implicit SAVEd.  Explicitly, set the SAVE_IMPLICIT value.  */
+	  if (initializer->expr_type == EXPR_VARIABLE
+	      && initializer->symtree->n.sym->attr.save == SAVE_NONE
+	      && (gfc_current_state () == COMP_PROGRAM
+		  || gfc_current_state () == COMP_MODULE
+		  || gfc_current_state () == COMP_SUBMODULE))
+	    initializer->symtree->n.sym->attr.save = SAVE_IMPLICIT;
 	}
       else if (gfc_match_char ('=') == MATCH_YES)
 	{
@@ -6070,6 +6079,28 @@ cleanup:
   return m;
 }
 
+static bool
+in_module_or_interface(void)
+{
+  if (gfc_current_state () == COMP_MODULE
+      || gfc_current_state () == COMP_SUBMODULE
+      || gfc_current_state () == COMP_INTERFACE)
+    return true;
+
+  if (gfc_state_stack->state == COMP_CONTAINS
+      || gfc_state_stack->state == COMP_FUNCTION
+      || gfc_state_stack->state == COMP_SUBROUTINE)
+    {
+      gfc_state_data *p;
+      for (p = gfc_state_stack->previous; p ; p = p->previous)
+	{
+	  if (p->state == COMP_MODULE || p->state == COMP_SUBMODULE
+	      || p->state == COMP_INTERFACE)
+	    return true;
+	}
+    }
+    return false;
+}
 
 /* Match a prefix associated with a function or subroutine
    declaration.  If the typespec pointer is nonnull, then a typespec
@@ -6102,6 +6133,13 @@ gfc_match_prefix (gfc_typespec *ts)
 	{
 	  if (!gfc_notify_std (GFC_STD_F2008, "MODULE prefix at %C"))
 	    goto error;
+
+	  if (!in_module_or_interface ())
+	    {
+	      gfc_error ("MODULE prefix at %C found outside of a module, "
+			 "submodule, or interface");
+	      goto error;
+	    }
 
 	  current_attr.module_procedure = 1;
 	  found_prefix = true;
@@ -6275,7 +6313,7 @@ gfc_match_formal_arglist (gfc_symbol *progname, int st_flag,
     }
 
   if (gfc_match_char (')') == MATCH_YES)
-  {        
+  {
     if (typeparam)
       {
 	gfc_error_now ("A type parameter list is required at %C");
@@ -7460,7 +7498,7 @@ gfc_match_entry (void)
 	  if (!gfc_add_is_bind_c (&(entry->attr), entry->name,
 				  &(entry->declared_at), 1))
 	    return MATCH_ERROR;
-	
+
 	}
 
       if (!gfc_current_ns->parent
@@ -8344,6 +8382,15 @@ attr_decl1 (void)
      to the first component, or '_data' field.  */
   if (sym->ts.type == BT_CLASS && sym->ts.u.derived->attr.is_class)
     {
+      /* gfc_set_array_spec sets sym->attr not CLASS_DATA(sym)->attr.  Check
+	 for duplicate attribute here.  */
+      if (CLASS_DATA(sym)->attr.dimension == 1 && as)
+	{
+	  gfc_error ("Duplicate DIMENSION attribute at %C");
+	  m = MATCH_ERROR;
+	  goto cleanup;
+	}
+
       if (!gfc_copy_attr (&CLASS_DATA(sym)->attr, &current_attr, &var_locus))
 	{
 	  m = MATCH_ERROR;
@@ -8741,6 +8788,7 @@ access_attr_decl (gfc_statement st)
   gfc_symbol *sym, *dt_sym;
   gfc_intrinsic_op op;
   match m;
+  gfc_access access = (st == ST_PUBLIC) ? ACCESS_PUBLIC : ACCESS_PRIVATE;
 
   if (gfc_match (" ::") == MATCH_NO && gfc_match_space () == MATCH_NO)
     goto done;
@@ -8751,7 +8799,7 @@ access_attr_decl (gfc_statement st)
       if (m == MATCH_NO)
 	goto syntax;
       if (m == MATCH_ERROR)
-	return MATCH_ERROR;
+	goto done;
 
       switch (type)
 	{
@@ -8771,18 +8819,12 @@ access_attr_decl (gfc_statement st)
 	      && sym->attr.flavor == FL_UNKNOWN)
 	    sym->attr.flavor = FL_PROCEDURE;
 
-	  if (!gfc_add_access (&sym->attr,
-			       (st == ST_PUBLIC)
-			       ? ACCESS_PUBLIC : ACCESS_PRIVATE,
-			       sym->name, NULL))
-	    return MATCH_ERROR;
+	  if (!gfc_add_access (&sym->attr, access, sym->name, NULL))
+	    goto done;
 
 	  if (sym->attr.generic && (dt_sym = gfc_find_dt_in_generic (sym))
-	      && !gfc_add_access (&dt_sym->attr,
-				  (st == ST_PUBLIC)
-				  ? ACCESS_PUBLIC : ACCESS_PRIVATE,
-				  sym->name, NULL))
-	    return MATCH_ERROR;
+	      && !gfc_add_access (&dt_sym->attr, access, sym->name, NULL))
+	    goto done;
 
 	  break;
 
@@ -8791,17 +8833,14 @@ access_attr_decl (gfc_statement st)
 	    {
 	      gfc_intrinsic_op other_op;
 
-	      gfc_current_ns->operator_access[op] =
-		(st == ST_PUBLIC) ? ACCESS_PUBLIC : ACCESS_PRIVATE;
+	      gfc_current_ns->operator_access[op] = access;
 
 	      /* Handle the case if there is another op with the same
 		 function, for INTRINSIC_EQ vs. INTRINSIC_EQ_OS and so on.  */
 	      other_op = gfc_equivalent_op (op);
 
 	      if (other_op != INTRINSIC_NONE)
-		gfc_current_ns->operator_access[other_op] =
-		  (st == ST_PUBLIC) ? ACCESS_PUBLIC : ACCESS_PRIVATE;
-
+		gfc_current_ns->operator_access[other_op] = access;
 	    }
 	  else
 	    {
@@ -8817,8 +8856,7 @@ access_attr_decl (gfc_statement st)
 
 	  if (uop->access == ACCESS_UNKNOWN)
 	    {
-	      uop->access = (st == ST_PUBLIC)
-			  ? ACCESS_PUBLIC : ACCESS_PRIVATE;
+	      uop->access = access;
 	    }
 	  else
 	    {
@@ -8851,6 +8889,13 @@ gfc_match_protected (void)
 {
   gfc_symbol *sym;
   match m;
+  char c;
+
+  /* PROTECTED has already been seen, but must be followed by whitespace
+     or ::.  */
+  c = gfc_peek_ascii_char ();
+  if (!gfc_is_whitespace (c) && c != ':')
+    return MATCH_NO;
 
   if (!gfc_current_ns->proc_name
       || gfc_current_ns->proc_name->attr.flavor != FL_MODULE)
@@ -8861,14 +8906,12 @@ gfc_match_protected (void)
 
     }
 
+  gfc_match (" ::");
+
   if (!gfc_notify_std (GFC_STD_F2003, "PROTECTED statement at %C"))
     return MATCH_ERROR;
 
-  if (gfc_match (" ::") == MATCH_NO && gfc_match_space () == MATCH_NO)
-    {
-      return MATCH_ERROR;
-    }
-
+  /* PROTECTED has an entity-list.  */
   if (gfc_match_eos () == MATCH_YES)
     goto syntax;
 
@@ -8911,39 +8954,46 @@ syntax:
 match
 gfc_match_private (gfc_statement *st)
 {
+  gfc_state_data *prev;
+  char c;
 
   if (gfc_match ("private") != MATCH_YES)
     return MATCH_NO;
 
+  /* Try matching PRIVATE without an access-list.  */
+  if (gfc_match_eos () == MATCH_YES)
+    {
+      prev = gfc_state_stack->previous;
+      if (gfc_current_state () != COMP_MODULE
+	  && !(gfc_current_state () == COMP_DERIVED
+		&& prev && prev->state == COMP_MODULE)
+	  && !(gfc_current_state () == COMP_DERIVED_CONTAINS
+		&& prev->previous && prev->previous->state == COMP_MODULE))
+	{
+	  gfc_error ("PRIVATE statement at %C is only allowed in the "
+		     "specification part of a module");
+	  return MATCH_ERROR;
+	}
+
+      *st = ST_PRIVATE;
+      return MATCH_YES;
+    }
+
+  /* At this point, PRIVATE must be followed by whitespace or ::.  */
+  c = gfc_peek_ascii_char ();
+  if (!gfc_is_whitespace (c) && c != ':')
+    return MATCH_NO;
+
+  prev = gfc_state_stack->previous;
   if (gfc_current_state () != COMP_MODULE
       && !(gfc_current_state () == COMP_DERIVED
-	   && gfc_state_stack->previous
-	   && gfc_state_stack->previous->state == COMP_MODULE)
+	   && prev && prev->state == COMP_MODULE)
       && !(gfc_current_state () == COMP_DERIVED_CONTAINS
-	   && gfc_state_stack->previous && gfc_state_stack->previous->previous
-	   && gfc_state_stack->previous->previous->state == COMP_MODULE))
+	   && prev->previous && prev->previous->state == COMP_MODULE))
     {
       gfc_error ("PRIVATE statement at %C is only allowed in the "
 		 "specification part of a module");
       return MATCH_ERROR;
-    }
-
-  if (gfc_current_state () == COMP_DERIVED)
-    {
-      if (gfc_match_eos () == MATCH_YES)
-	{
-	  *st = ST_PRIVATE;
-	  return MATCH_YES;
-	}
-
-      gfc_syntax_error (ST_PRIVATE);
-      return MATCH_ERROR;
-    }
-
-  if (gfc_match_eos () == MATCH_YES)
-    {
-      *st = ST_PRIVATE;
-      return MATCH_YES;
     }
 
   *st = ST_ATTR_DECL;
@@ -8954,8 +9004,28 @@ gfc_match_private (gfc_statement *st)
 match
 gfc_match_public (gfc_statement *st)
 {
+  char c;
 
   if (gfc_match ("public") != MATCH_YES)
+    return MATCH_NO;
+
+  /* Try matching PUBLIC without an access-list.  */
+  if (gfc_match_eos () == MATCH_YES)
+    {
+      if (gfc_current_state () != COMP_MODULE)
+	{
+	  gfc_error ("PUBLIC statement at %C is only allowed in the "
+		     "specification part of a module");
+	  return MATCH_ERROR;
+	}
+
+      *st = ST_PUBLIC;
+      return MATCH_YES;
+    }
+
+  /* At this point, PUBLIC must be followed by whitespace or ::.  */
+  c = gfc_peek_ascii_char ();
+  if (!gfc_is_whitespace (c) && c != ':')
     return MATCH_NO;
 
   if (gfc_current_state () != COMP_MODULE)
@@ -8963,12 +9033,6 @@ gfc_match_public (gfc_statement *st)
       gfc_error ("PUBLIC statement at %C is only allowed in the "
 		 "specification part of a module");
       return MATCH_ERROR;
-    }
-
-  if (gfc_match_eos () == MATCH_YES)
-    {
-      *st = ST_PUBLIC;
-      return MATCH_YES;
     }
 
   *st = ST_ATTR_DECL;
@@ -9255,8 +9319,13 @@ gfc_match_save (void)
   return MATCH_YES;
 
 syntax:
-  gfc_error ("Syntax error in SAVE statement at %C");
-  return MATCH_ERROR;
+  if (gfc_current_ns->seen_save)
+    {
+      gfc_error ("Syntax error in SAVE statement at %C");
+      return MATCH_ERROR;
+    }
+  else
+      return MATCH_NO;
 }
 
 
@@ -10164,6 +10233,13 @@ gfc_match_derived_decl (void)
   if (!gensym->attr.function
       && !gfc_add_function (&gensym->attr, gensym->name, NULL))
     return MATCH_ERROR;
+
+  if (gensym->attr.dummy)
+    {
+      gfc_error ("Dummy argument %qs at %L cannot be a derived type at %C",
+		 name, &gensym->declared_at);
+      return MATCH_ERROR;
+    }
 
   sym = gfc_find_dt_in_generic (gensym);
 

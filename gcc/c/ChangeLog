@@ -1,3 +1,140 @@
+2019-06-24  Martin Sebor  <msebor@redhat.com>
+
+	* c-typeck.c (build_binary_op): Hyphenate floating-point.
+
+2019-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_pragma): Reject PRAGMA_OMP_SCAN.
+	(c_parser_omp_clause_reduction): Don't sorry_at on inscan reductions.
+	(c_parser_omp_scan_loop_body): New function.
+	(c_parser_omp_for_loop): Call c_parser_omp_scan_loop_body if there are
+	inscan reduction clauses.
+	* c-typeck.c (c_finish_omp_clauses): Reject mixing inscan with
+	non-inscan reductions on the same construct, or inscan reductions with
+	ordered or schedule clauses, or inscan array reductions.
+
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	PR c/90737
+	* c-typeck.c (c_finish_return): Only consider functions returning
+	pointers as candidates for -Wreturn-local-addr.
+
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* c-decl.c (start_decl): Adjust quoting and hyphenation
+	in diagnostics.
+	(finish_decl): Same.
+	(finish_enum): Same.
+	(start_function): Same.
+	(declspecs_add_type): Same.
+	* c-parser.c (warn_for_abs): Same.
+	* c-typeck.c (build_binary_op): Same.
+
+2019-05-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR c/89433
+	* c-parser.c (c_finish_oacc_routine): Rework checking if already
+	marked with an OpenACC 'routine' directive.
+
+	PR c/89433
+	* c-parser.c (c_parser_oacc_routine): Normalize order of clauses.
+	(c_finish_oacc_routine): Call oacc_verify_routine_clauses.
+
+	PR c/89433
+	* c-parser.c (c_finish_oacc_routine): Refer to OpenACC 'routine'
+	clauses from "omp declare target" attribute.
+
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+        * c-decl.c (start_decl): Quote keywords, operators, and
+        types in diagnostics.
+        (finish_decl): Same.
+        * c-parser.c (c_parser_asm_statement): Same.
+        (c_parser_conditional_expression): Same.
+        (c_parser_transaction_cancel): Same.
+        * c-typeck.c (c_common_type): Same.
+        (build_conditional_expr): Same.
+        (digest_init): Same.
+        (process_init_element): Same.
+        (build_binary_op): Same.
+
+2019-05-17  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_statement): Handle __VEC_PERM.
+	(c_parser_gimple_unary_expression): Likewise.
+	(c_parser_gimple_parentized_ternary_expression): New function.
+
+2019-05-16  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_statement): Handle __BIT_INSERT.
+	(c_parser_gimple_unary_expression): Likewise.
+
+2019-05-15  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Handle
+	__BIT_FIELD_REF.
+
+2019-05-14  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_statement): Remove
+	questionable auto-promotion to VIEW_CONVERT_EXPR.
+	(c_parser_gimple_typespec): Split out from __MEM parsing.
+	(c_parser_gimple_postfix_expression): Handle __VIEW_CONVERT.
+	* tree-pretty-print.c (dump_generic_node): Dump VIEW_CONVERT_EXPR
+	as __VIEW_CONVERT with -gimple.
+
+2019-05-09  Martin Liska  <mliska@suse.cz>
+
+	* gimple-parser.c (c_parser_gimple_statement): Support __MIN and
+	__MAX.
+	(c_parser_gimple_unary_expression): Parse also binary expression
+	__MIN and __MAX.
+	(c_parser_gimple_parentized_binary_expression): New function.
+
+2019-05-09  Martin Liska  <mliska@suse.cz>
+
+	* gimple-parser.c (struct gimple_parser): Add probability.
+	for gimple_parser_edge.
+	(gimple_parser::push_edge): Add new argument probability.
+	(c_parser_gimple_parse_bb_spec): Parse also probability
+	if present.
+	(c_parser_parse_gimple_body): Set edge probability.
+	(c_parser_gimple_compound_statement): Consume token
+	before calling c_parser_gimple_goto_stmt.
+	Parse BB counts.
+	(c_parser_gimple_statement): Pass new argument.
+	(c_parser_gimple_goto_stmt): Likewise.
+	(c_parser_gimple_if_stmt): Likewise.
+	(c_parser_gimple_or_rtl_pass_list): Parse hot_bb_threshold.
+	* c-parser.c (c_parser_declaration_or_fndef): Pass
+	hot_bb_threshold argument.
+	* c-tree.h (struct c_declspecs): Add hot_bb_threshold
+	field.
+	(c_parser_gimple_parse_bb_spec_edge_probability): New.
+
+2019-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/90197
+	* c-tree.h (c_finish_loop): Add 2 further location_t arguments.
+	* c-parser.c (c_parser_while_statement): Adjust c_finish_loop caller.
+	(c_parser_do_statement): Likewise.
+	(c_parser_for_statement): Likewise.  Formatting fixes.
+	* c-typeck.c (c_finish_loop): Add COND_LOCUS and INCR_LOCUS arguments,
+	emit DEBUG_BEGIN_STMTs if needed.
+
+2019-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/89888
+	* c-typeck.c (struct c_switch): Remove outside_range_p member.
+	(c_start_case): Don't clear it.
+	(do_case): Adjust c_add_case_label caller.
+	(c_finish_case): Adjust c_do_switch_warnings caller.
+
+	PR c++/90108
+	* c-decl.c (merge_decls): If remove is main variant and
+	DECL_ORIGINAL_TYPE is some other type, remove a DECL_ORIGINAL_TYPE
+	variant that has newdecl as TYPE_NAME if any.
+
 2019-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/89933

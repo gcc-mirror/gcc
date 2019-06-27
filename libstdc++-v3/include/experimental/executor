@@ -24,6 +24,7 @@
 
 /** @file experimental/executor
  *  This is a TS C++ Library header.
+ *  @ingroup networking-ts
  */
 
 #ifndef _GLIBCXX_EXPERIMENTAL_EXECUTOR
@@ -57,9 +58,8 @@ namespace net
 inline namespace v1
 {
 
-  /**
-   * @ingroup networking
-   * @{
+  /** @addtogroup networking-ts
+   *  @{
    */
 
   /// Customization point for asynchronous operations.

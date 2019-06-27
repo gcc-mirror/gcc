@@ -42,3 +42,28 @@ http://code.google.com/legal/corporate-cla-v1.0.html.
 If the copyright holder for your code has already completed the
 agreement in connection with another Google open source project, it
 does not need to be completed again.
+
+Debugging
+=========
+
+This describes how to test libgo when built as part of gccgo.
+
+To test a specific package, cd to the libgo build directory
+(TARGET/libgo) and run `make PKG/check`.  For example, `make
+bytes/check`.
+
+To see the exact commands that it runs, including how the compiler is
+invoked, run `make GOTESTFLAGS=--trace bytes/check`.  This will
+display the commands if the test fails.  If the test passes, the
+commands and other output will be visible in a file named
+check-testlog in a subdirectory with the name of the package being
+checked.  In the case of bytes/check, this will create
+bytes/check-testlog.
+
+To leave the test program behind, run `make GOTESTFLAGS=--keep
+bytes/check`.  That will leave a gotestNNNN/test directory in the
+libgo build directory.  In that directory you can run
+`LD_LIBRARY_PATH=../../.libs ./a.out -test.short` to run the tests.
+You can run specific failing tests using a -test.run option.  You can
+see the tests being run with the -test.v option.  You can run the
+program under a debugger such as gdb.

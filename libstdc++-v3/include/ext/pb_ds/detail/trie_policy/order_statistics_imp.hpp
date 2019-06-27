@@ -38,6 +38,8 @@
  * Contains forward declarations for order_statistics_key
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::iterator
 PB_DS_CLASS_C_DEC::
@@ -158,3 +160,4 @@ operator()(node_iterator nd_it, node_const_iterator /*end_nd_it*/) const
   const size_type res = (num_children == 0) ? 1 : children_rank;
   const_cast<size_type&>(nd_it.get_metadata()) = res;
 }
+#endif

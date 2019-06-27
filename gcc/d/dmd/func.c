@@ -246,6 +246,15 @@ public:
             s->finalbody && (des = s->finalbody->isDtorExpStatement()) != NULL &&
             fd->nrvo_var == des->var)
         {
+            if (!(global.params.useExceptions && ClassDeclaration::throwable))
+            {
+                /* Don't need to call destructor at all, since it is nrvo
+                 */
+                replaceCurrent(s->_body);
+                s->_body->accept(this);
+                return;
+            }
+
             /* Normally local variable dtors are called regardless exceptions.
              * But for nrvo_var, its dtor should be called only when exception is thrown.
              *
@@ -461,6 +470,9 @@ void FuncDeclaration::semantic(Scope *sc)
         sc = _scope;
         _scope = NULL;
     }
+
+    if (!sc || errors)
+        return;
 
     parent = sc->parent;
     Dsymbol *parent = toParent();
@@ -923,6 +935,7 @@ void FuncDeclaration::semantic(Scope *sc)
 
             case -2:
                 // can't determine because of forward references
+                errors = true;
                 return;
 
             default:
@@ -1040,6 +1053,7 @@ void FuncDeclaration::semantic(Scope *sc)
 
                 case -2:
                     // can't determine because of forward references
+                    errors = true;
                     return;
 
                 default:
@@ -1325,6 +1339,16 @@ static void buildEnsureRequire(FuncDeclaration *fdx)
     }
 }
 
+/* Determine if function should add `return 0;`
+ */
+static bool addReturn0(FuncDeclaration *funcdecl)
+{
+    TypeFunction *f = (TypeFunction *)funcdecl->type;
+
+    return f->next->ty == Tvoid &&
+        (funcdecl->isMain() || (global.params.betterC && funcdecl->isCMain()));
+}
+
 // Do the semantic analysis on the internals of the function.
 
 void FuncDeclaration::semantic3(Scope *sc)
@@ -1501,6 +1525,18 @@ void FuncDeclaration::semantic3(Scope *sc)
         {
             if (f->linkage == LINKd)
             {
+                // Variadic arguments depend on Typeinfo being defined
+                if (!global.params.useTypeInfo || !Type::dtypeinfo || !Type::typeinfotypelist)
+                {
+                    if (!global.params.useTypeInfo)
+                        error("D-style variadic functions cannot be used with -betterC");
+                    else if (!Type::typeinfotypelist)
+                        error("`object.TypeInfo_Tuple` could not be found, but is implicitly used in D-style variadic functions");
+                    else
+                        error("`object.TypeInfo` could not be found, but is implicitly used in D-style variadic functions");
+                    fatal();
+                }
+
                 // Declare _arguments[]
                 v_arguments = new VarDeclaration(Loc(), Type::typeinfotypelist->type, Id::_arguments_typeinfo, NULL);
                 v_arguments->storage_class |= STCtemp | STCparameter;
@@ -1708,7 +1744,10 @@ void FuncDeclaration::semantic3(Scope *sc)
                     Expression *exp = (*returns)[i]->exp;
                     if (exp->op == TOKvar && ((VarExp *)exp)->var == vresult)
                     {
-                        exp->type = f->next;
+                        if (addReturn0(this))
+                            exp->type = Type::tint32;
+                        else
+                            exp->type = f->next;
                         // Remove `return vresult;` from returns
                         returns->remove(i);
                         continue;
@@ -1901,7 +1940,7 @@ void FuncDeclaration::semantic3(Scope *sc)
 
             if (returns)
             {
-                bool implicit0 = (f->next->ty == Tvoid && isMain());
+                bool implicit0 = addReturn0(this);
                 Type *tret = implicit0 ? Type::tint32 : f->next;
                 assert(tret->ty != Tvoid);
                 if (vresult || returnLabel)
@@ -2123,7 +2162,7 @@ void FuncDeclaration::semantic3(Scope *sc)
                     a->push(s);
                 }
             }
-            if (isMain() && f->next->ty == Tvoid)
+            if (addReturn0(this))
             {
                 // Add a return 0; statement
                 Statement *s = new ReturnStatement(Loc(), new IntegerExp(0));

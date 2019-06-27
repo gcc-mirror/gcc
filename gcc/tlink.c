@@ -484,9 +484,11 @@ recompile_files (void)
 	 the new file name already exists.  Therefore, we explicitly
 	 remove the old file first.  */
       if (remove (f->key) == -1)
-	fatal_error (input_location, "removing .rpo file: %m");
+	fatal_error (input_location,
+		     "removing repository file %qs: %m", f->key);
       if (rename (outname, f->key) == -1)
-	fatal_error (input_location, "renaming .rpo file: %m");
+	fatal_error (input_location, "renaming repository file from "
+		     "%qs to %qs: %m", outname, f->key);
 
       if (!f->args)
 	{

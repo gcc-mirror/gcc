@@ -96,6 +96,10 @@
 
 #include <avx512bitalgintrin.h>
 
+#include <avx512vp2intersectintrin.h>
+
+#include <avx512vp2intersectvlintrin.h>
+
 #include <shaintrin.h>
 
 #include <lzcntintrin.h>
@@ -129,6 +133,12 @@
 #include <waitpkgintrin.h>
 
 #include <cldemoteintrin.h>
+
+#include <avx512bf16vlintrin.h>
+
+#include <avx512bf16intrin.h>
+
+#include <enqcmdintrin.h>
 
 #include <rdseedintrin.h>
 

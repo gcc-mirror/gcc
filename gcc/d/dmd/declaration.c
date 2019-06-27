@@ -830,6 +830,11 @@ VarDeclaration::VarDeclaration(Loc loc, Type *type, Identifier *id, Initializer 
     this->sequenceNumber = ++nextSequenceNumber;
 }
 
+VarDeclaration *VarDeclaration::create(Loc loc, Type *type, Identifier *id, Initializer *init)
+{
+    return new VarDeclaration(loc, type, id, init);
+}
+
 Dsymbol *VarDeclaration::syntaxCopy(Dsymbol *s)
 {
     //printf("VarDeclaration::syntaxCopy(%s)\n", toChars());
@@ -859,6 +864,11 @@ void VarDeclaration::semantic(Scope *sc)
         scx = sc;
         _scope = NULL;
     }
+
+    if (!sc)
+        return;
+
+    semanticRun = PASSsemantic;
 
     /* Pick up storage classes from context, but except synchronized,
      * override, abstract, and final.
@@ -1033,6 +1043,7 @@ void VarDeclaration::semantic(Scope *sc)
                 else if (isAliasThisTuple(e))
                 {
                     VarDeclaration *v = copyToTemp(0, "__tup", e);
+                    v->semantic(sc);
                     VarExp *ve = new VarExp(loc, v);
                     ve->type = e->type;
 
@@ -1434,7 +1445,7 @@ Lnomatch:
                         if (!e)
                         {
                             error("is not a static and cannot have static initializer");
-                            return;
+                            e = new ErrorExp();
                         }
                     }
                     ei = new ExpInitializer(_init->loc, e);
@@ -2118,7 +2129,7 @@ Expression *VarDeclaration::callScopeDtor(Scope *)
         }
         else
         {
-            // _ArrayDtor(v[0 .. n])
+            // __ArrayDtor(v[0 .. n])
             e = new VarExp(loc, this);
 
             const d_uns64 sdsz = sd->type->size();
@@ -2133,7 +2144,7 @@ Expression *VarDeclaration::callScopeDtor(Scope *)
             // This is a hack so we can call destructors on const/immutable objects.
             e->type = sd->type->arrayOf();
 
-            e = new CallExp(loc, new IdentifierExp(loc, Id::_ArrayDtor), e);
+            e = new CallExp(loc, new IdentifierExp(loc, Id::__ArrayDtor), e);
         }
         return e;
     }

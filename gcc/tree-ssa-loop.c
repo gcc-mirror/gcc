@@ -330,7 +330,7 @@ const pass_data pass_data_tree_loop_init =
   PROP_cfg, /* properties_required */
   0, /* properties_provided */
   0, /* properties_destroyed */
-  0, /* todo_flags_start */
+  TODO_update_address_taken, /* todo_flags_start */
   0, /* todo_flags_finish */
 };
 
@@ -768,9 +768,9 @@ get_lsm_tmp_name (tree ref, unsigned n, const char *suffix)
       ns[1] = 0;
       lsm_tmp_name_add (ns);
     }
-  return lsm_tmp_name;
   if (suffix != NULL)
     lsm_tmp_name_add (suffix);
+  return lsm_tmp_name;
 }
 
 /* Computes an estimated number of insns in LOOP, weighted by WEIGHTS.  */

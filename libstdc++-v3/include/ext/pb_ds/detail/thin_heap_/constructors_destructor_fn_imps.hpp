@@ -38,6 +38,8 @@
  * Contains an implementation for thin_heap_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 template<typename It>
 void
@@ -103,3 +105,4 @@ PB_DS_CLASS_C_DEC::
 initialize()
 { std::fill(m_a_aux, m_a_aux + max_rank, static_cast<node_pointer>(0)); }
 
+#endif

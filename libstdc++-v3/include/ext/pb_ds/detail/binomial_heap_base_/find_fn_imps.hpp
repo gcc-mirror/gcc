@@ -38,6 +38,8 @@
  * Contains an implementation class for a base of binomial heaps.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::const_reference
 PB_DS_CLASS_C_DEC::
@@ -68,3 +70,4 @@ find_max()
     }
 }
 
+#endif

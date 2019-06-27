@@ -521,7 +521,7 @@ rtx_addr_can_trap_p_1 (const_rtx x, poly_int64 offset, poly_int64 size,
 
 	  return (!known_size_p (decl_size) || known_eq (decl_size, 0)
 		  ? maybe_ne (offset, 0)
-		  : maybe_gt (offset + size, decl_size));
+		  : !known_subrange_p (offset, size, 0, decl_size));
         }
 
       return 0;

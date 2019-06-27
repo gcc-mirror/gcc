@@ -38,6 +38,8 @@
  * Contains a resize trigger implementation.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 cc_hash_max_collision_check_resize_trigger(float load) :
@@ -209,3 +211,4 @@ set_load(float load)
   calc_resize_needed();
 }
 
+#endif

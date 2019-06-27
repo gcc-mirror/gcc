@@ -458,7 +458,6 @@ SUBDIRS = testsuite
 gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 abi_version = -fabi-version=4
 search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) $(top_srcdir)
-fincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/finclude
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 AM_CPPFLAGS = $(addprefix -I, $(search_path))
 AM_CFLAGS = $(XCFLAGS)

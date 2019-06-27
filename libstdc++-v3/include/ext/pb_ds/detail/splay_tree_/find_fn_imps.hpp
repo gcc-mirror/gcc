@@ -38,6 +38,8 @@
  * Contains an implementation class for splay_tree_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
@@ -98,3 +100,4 @@ find_imp(key_const_reference r_key) const
       p_nd = p_nd->m_p_right;
   return base_type::m_p_head;
 }
+#endif

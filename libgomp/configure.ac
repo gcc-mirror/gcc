@@ -318,6 +318,10 @@ if test $enable_symvers = gnu; then
 	    [Define to 1 if GNU symbol versioning is used for libgomp.])
 fi
 
+# Determine cpu count to limit testsuite parallelism.
+AX_COUNT_CPUS
+AC_SUBST(CPU_COUNT)
+
 # Get target configury.
 . ${srcdir}/configure.tgt
 CFLAGS="$save_CFLAGS $XCFLAGS"

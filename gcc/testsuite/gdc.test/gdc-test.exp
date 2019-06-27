@@ -39,6 +39,9 @@ proc gdc-convert-args { args } {
 	} elseif [string match "-allinst" $arg] {
 	    lappend out "-fall-instantiations"
 
+	} elseif [string match "-betterC" $arg] {
+	    lappend out "-fno-druntime"
+
 	} elseif { [string match "-boundscheck" $arg]
 		 || [string match "-boundscheck=on" $arg] } {
 	    lappend out "-fbounds-check"

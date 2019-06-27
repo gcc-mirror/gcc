@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef __PSTL_execution_impl_H
-#define __PSTL_execution_impl_H
+#ifndef _PSTL_EXECUTION_IMPL_H
+#define _PSTL_EXECUTION_IMPL_H
 
 #include <iterator>
 #include <type_traits>
@@ -54,8 +54,8 @@ __lazy_or(_Tp __a, std::false_type)
 template <typename _IteratorType, typename... _OtherIteratorTypes>
 struct __is_random_access_iterator
 {
-    static constexpr bool value =
-      __internal::__is_random_access_iterator<_IteratorType>::value && __internal::__is_random_access_iterator<_OtherIteratorTypes...>::value;
+    static constexpr bool value = __internal::__is_random_access_iterator<_IteratorType>::value &&
+                                  __internal::__is_random_access_iterator<_OtherIteratorTypes...>::value;
     typedef std::integral_constant<bool, value> type;
 };
 
@@ -66,7 +66,7 @@ struct __is_random_access_iterator<_IteratorType>
 };
 
 /* policy */
-template <typename Policy>
+template <typename _Policy>
 struct __policy_traits
 {
 };
@@ -87,7 +87,6 @@ struct __policy_traits<unsequenced_policy>
     typedef std::true_type allow_vector;
 };
 
-#if __PSTL_USE_PAR_POLICIES
 template <>
 struct __policy_traits<parallel_policy>
 {
@@ -103,53 +102,60 @@ struct __policy_traits<parallel_unsequenced_policy>
     typedef std::true_type allow_unsequenced;
     typedef std::true_type allow_vector;
 };
-#endif
 
 template <typename _ExecutionPolicy>
-using __collector_t = typename __internal::__policy_traits<typename std::decay<_ExecutionPolicy>::type>::__collector_type;
+using __collector_t =
+    typename __internal::__policy_traits<typename std::decay<_ExecutionPolicy>::type>::__collector_type;
 
 template <typename _ExecutionPolicy>
-using __allow_vector = typename __internal::__policy_traits<typename std::decay<_ExecutionPolicy>::type>::__allow_vector;
+using __allow_vector =
+    typename __internal::__policy_traits<typename std::decay<_ExecutionPolicy>::type>::__allow_vector;
 
 template <typename _ExecutionPolicy>
-using __allow_unsequenced = typename __internal::__policy_traits<typename std::decay<_ExecutionPolicy>::type>::__allow_unsequenced;
+using __allow_unsequenced =
+    typename __internal::__policy_traits<typename std::decay<_ExecutionPolicy>::type>::__allow_unsequenced;
 
 template <typename _ExecutionPolicy>
-using __allow_parallel = typename __internal::__policy_traits<typename std::decay<_ExecutionPolicy>::type>::__allow_parallel;
+using __allow_parallel =
+    typename __internal::__policy_traits<typename std::decay<_ExecutionPolicy>::type>::__allow_parallel;
 
 template <typename _ExecutionPolicy, typename... _IteratorTypes>
 auto
 __is_vectorization_preferred(_ExecutionPolicy&& __exec)
-    -> decltype(__internal::__lazy_and(__exec.__allow_vector(), typename __internal::__is_random_access_iterator<_IteratorTypes...>::type()))
+    -> decltype(__internal::__lazy_and(__exec.__allow_vector(),
+                                       typename __internal::__is_random_access_iterator<_IteratorTypes...>::type()))
 {
-    return __internal::__lazy_and(__exec.__allow_vector(), typename __internal::__is_random_access_iterator<_IteratorTypes...>::type());
+    return __internal::__lazy_and(__exec.__allow_vector(),
+                                  typename __internal::__is_random_access_iterator<_IteratorTypes...>::type());
 }
 
 template <typename _ExecutionPolicy, typename... _IteratorTypes>
 auto
 __is_parallelization_preferred(_ExecutionPolicy&& __exec)
-    -> decltype(__internal::__lazy_and(__exec.__allow_parallel(), typename __internal::__is_random_access_iterator<_IteratorTypes...>::type()))
+    -> decltype(__internal::__lazy_and(__exec.__allow_parallel(),
+                                       typename __internal::__is_random_access_iterator<_IteratorTypes...>::type()))
 {
-    return __internal::__lazy_and(__exec.__allow_parallel(), typename __internal::__is_random_access_iterator<_IteratorTypes...>::type());
+    return __internal::__lazy_and(__exec.__allow_parallel(),
+                                  typename __internal::__is_random_access_iterator<_IteratorTypes...>::type());
 }
 
 template <typename policy, typename... _IteratorTypes>
 struct __prefer_unsequenced_tag
 {
-    static constexpr bool value =
-        __internal::__allow_unsequenced<policy>::value && __internal::__is_random_access_iterator<_IteratorTypes...>::value;
+    static constexpr bool value = __internal::__allow_unsequenced<policy>::value &&
+                                  __internal::__is_random_access_iterator<_IteratorTypes...>::value;
     typedef std::integral_constant<bool, value> type;
 };
 
 template <typename policy, typename... _IteratorTypes>
 struct __prefer_parallel_tag
 {
-    static constexpr bool value =
-        __internal::__allow_parallel<policy>::value && __internal::__is_random_access_iterator<_IteratorTypes...>::value;
+    static constexpr bool value = __internal::__allow_parallel<policy>::value &&
+                                  __internal::__is_random_access_iterator<_IteratorTypes...>::value;
     typedef std::integral_constant<bool, value> type;
 };
 
 } // namespace __internal
 } // namespace __pstl
 
-#endif /* __PSTL_execution_impl_H */
+#endif /* _PSTL_EXECUTION_IMPL_H */

@@ -1363,6 +1363,15 @@ cancel_loop_tree (struct loop *loop)
   cancel_loop (loop);
 }
 
+/* Disable warnings about missing quoting in GCC diagnostics for
+   the verification errors.  Their format strings don't follow GCC
+   diagnostic conventions and the calls are ultimately followed by
+   a deliberate ICE triggered by a failed assertion.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* Checks that information about loops is correct
      -- sizes of loops are all right
      -- results of get_loop_body really belong to the loop
@@ -1677,7 +1686,7 @@ verify_loop_structure (void)
 
 	      if (eloops != 0)
 		{
-		  error ("wrong list of exited loops for edge  %d->%d",
+		  error ("wrong list of exited loops for edge %d->%d",
 			 e->src->index, e->dest->index);
 		  err = 1;
 		}
@@ -1711,6 +1720,10 @@ verify_loop_structure (void)
   if (!dom_available)
     free_dominance_info (CDI_DOMINATORS);
 }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
 
 /* Returns latch edge of LOOP.  */
 edge

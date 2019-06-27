@@ -170,16 +170,16 @@ end subroutine test_CFI_address
     integer, dimension (2,*) :: arg
     character(4), dimension(2) :: chr
 ! These are contiguous
-    if (c_contiguous (arg) .ne. 0) stop 20
+    if (c_contiguous (arg) .ne. 1) stop 20
     if (.not.allocated (x)) allocate (x(2, 2))
-    if (c_contiguous (x) .ne. 0) stop 22
+    if (c_contiguous (x) .ne. 1) stop 22
     deallocate (x)
-    if (c_contiguous (chr) .ne. 0) stop 23
+    if (c_contiguous (chr) .ne. 1) stop 23
 ! These are not contiguous
-    if (c_contiguous (der%i) .eq. 0) stop 24
-    if (c_contiguous (arg(1:1,1:2)) .eq. 0) stop 25
-    if (c_contiguous (d(4:2:-2, 1:3:2)) .eq. 0) stop 26
-    if (c_contiguous (chr(:)(2:3)) .eq. 0) stop 27
+    if (c_contiguous (der%i) .eq. 1) stop 24
+    if (c_contiguous (arg(1:1,1:2)) .eq. 1) stop 25
+    if (c_contiguous (d(4:2:-2, 1:3:2)) .eq. 1) stop 26
+    if (c_contiguous (chr(:)(2:3)) .eq. 1) stop 27
   end subroutine test_CFI_contiguous
 
   subroutine test_CFI_section (arg)

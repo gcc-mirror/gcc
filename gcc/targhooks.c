@@ -643,6 +643,19 @@ default_has_ifunc_p (void)
   return HAVE_GNU_INDIRECT_FUNCTION;
 }
 
+/* Return true if we predict the loop LOOP will be transformed to a
+   low-overhead loop, otherwise return false.
+
+   By default, false is returned, as this hook's applicability should be
+   verified for each target.  Target maintainers should re-define the hook
+   if the target can take advantage of it.  */
+
+bool
+default_predict_doloop_p (struct loop *loop ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
 /* NULL if INSN insn is valid within a low-overhead loop, otherwise returns
    an error message.
 
@@ -1316,7 +1329,7 @@ default_split_reduction (machine_mode mode)
    is tried.  */
 
 void
-default_autovectorize_vector_sizes (vector_sizes *)
+default_autovectorize_vector_sizes (vector_sizes *, bool)
 {
 }
 
@@ -1600,7 +1613,7 @@ default_target_option_pragma_parse (tree ARG_UNUSED (args),
      do not have the "target" pragma.  */
   if (args)
     warning (OPT_Wpragmas,
-	     "#pragma GCC target is not supported for this machine");
+	     "%<#pragma GCC target%> is not supported for this machine");
 
   return false;
 }
@@ -1648,6 +1661,14 @@ default_libc_has_function (enum function_class fn_class)
       || fn_class == function_c99_math_complex)
     return true;
 
+  return false;
+}
+
+/* By default assume that libc has not a fast implementation.  */
+
+bool
+default_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
+{
   return false;
 }
 
@@ -1818,7 +1839,7 @@ default_print_patchable_function_entry (FILE *file,
       ASM_GENERATE_INTERNAL_LABEL (buf, "LPFE", patch_area_number);
 
       switch_to_section (get_section ("__patchable_function_entries",
-				      0, NULL));
+				      SECTION_WRITE | SECTION_RELRO, NULL));
       fputs (asm_op, file);
       assemble_name_raw (file, buf);
       fputc ('\n', file);

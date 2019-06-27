@@ -1866,6 +1866,9 @@ typedef struct gfc_namespace
 
   /* Set to 1 for !$ACC ROUTINE namespaces.  */
   unsigned oacc_routine:1;
+
+  /* Set to 1 if there are any calls to procedures with implicit interface.  */
+  unsigned implicit_interface_calls:1;
 }
 gfc_namespace;
 
@@ -3114,8 +3117,6 @@ void gfc_traverse_user_op (gfc_namespace *, void (*)(gfc_user_op *));
 void gfc_save_all (gfc_namespace *);
 
 void gfc_enforce_clean_symbol_state (void);
-void gfc_free_dt_list (void);
-
 
 gfc_gsymbol *gfc_get_gsymbol (const char *, bool bind_c);
 gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, const char *);
@@ -3221,6 +3222,7 @@ gfc_actual_arglist *gfc_copy_actual_arglist (gfc_actual_arglist *);
 bool gfc_extract_int (gfc_expr *, int *, int = 0);
 bool gfc_extract_hwi (gfc_expr *, HOST_WIDE_INT *, int = 0);
 
+bool is_CFI_desc (gfc_symbol *, gfc_expr *);
 bool is_subref_array (gfc_expr *);
 bool gfc_is_simply_contiguous (gfc_expr *, bool, bool);
 bool gfc_is_not_contiguous (gfc_expr *);
@@ -3461,6 +3463,7 @@ void gfc_delete_bbt (void *, void *, compare_fn);
 /* dump-parse-tree.c */
 void gfc_dump_parse_tree (gfc_namespace *, FILE *);
 void gfc_dump_c_prototypes (gfc_namespace *, FILE *);
+void gfc_dump_external_c_prototypes (FILE *);
 
 /* parse.c */
 bool gfc_parse_file (void);
@@ -3530,6 +3533,7 @@ typedef int (*walk_expr_fn_t) (gfc_expr **, int *, void *);
 int gfc_dummy_code_callback (gfc_code **, int *, void *);
 int gfc_expr_walker (gfc_expr **, walk_expr_fn_t, void *);
 int gfc_code_walker (gfc_code **, walk_code_fn_t, walk_expr_fn_t, void *);
+bool gfc_has_dimen_vector_ref (gfc_expr *e);
 
 /* simplify.c */
 

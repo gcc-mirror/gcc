@@ -328,7 +328,9 @@ public:
  */
 bool dll_fixTLS( HINSTANCE hInstance, void* tlsstart, void* tlsend, void* tls_callbacks_a, int* tlsindex ) nothrow
 {
-    version (Win64)
+    version (GNU_EMUTLS)
+        return true;
+    else version (Win64)
         return true;                // fixed
     else version (Win32)
     {

@@ -38,6 +38,8 @@
  * Contains an implementation for thin_heap_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 void
 PB_DS_CLASS_C_DEC::
@@ -253,3 +255,4 @@ rank_bound()
 
   return (p_upper - g_a_rank_bounds);
 }
+#endif

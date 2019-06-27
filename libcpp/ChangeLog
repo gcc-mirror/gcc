@@ -1,3 +1,80 @@
+2019-06-26  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/90927
+	* mkdeps.c (mkdeps::vec::operator[]): Add non-const variant.
+	(deps_add_target): Deal with out of order unquoted targets.
+
+2019-05-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR pch/81721
+	* lex.c (cpp_token_val_index <case SPELL_OPERATOR>): If tok->flags
+	has NAMED_OP set, then return CPP_TOKEN_FLD_NODE.
+
+2019-05-14  Martin Liska  <mliska@suse.cz>
+
+	PR preprocessor/90382
+	* line-map.c (first_map_in_common_1): Handle ADHOC
+	locations.
+
+2019-05-14  Martin Liska  <mliska@suse.cz>
+
+	PR preprocessor/90382
+	* include/line-map.h (get_data_from_adhoc_loc): Add const to
+	the first argument.
+	(get_location_from_adhoc_loc): Likewise.
+	* line-map.c(get_data_from_adhoc_loc):  Add const to
+	the first argument.
+	(get_location_from_adhoc_loc): Likewise.
+	(get_combined_adhoc_loc): Use get_location_from_adhoc_loc
+	(or get_data_from_adhoc_loc).
+	(get_range_from_adhoc_loc): Likewise.
+	(get_pure_location): Likewise.
+	(linemap_position_for_loc_and_offset): Likewise.
+	(linemap_lookup): Likewise.
+	(linemap_ordinary_map_lookup): Likewise.
+	(linemap_macro_map_lookup): Likewise.
+	(linemap_get_expansion_line): Likewise.
+	(linemap_get_expansion_filename): Likewise.
+	(linemap_location_in_system_header_p): Likewise.
+	(linemap_location_from_macro_expansion_p): Likewise.
+	(linemap_macro_loc_to_exp_point): Likewise.
+	(linemap_resolve_location): Likewise.
+	(linemap_unwind_toward_expansion): Likewise.
+	(linemap_unwind_to_first_non_reserved_loc): Likewise.
+	(linemap_expand_location): Likewise.
+	(linemap_dump_location): Likewise.
+
+2019-05-07  Nathan Sidwell  <nathan@acm.org>
+
+	* files.c (_cpp_stack_file): Empty filenames aren't dependencies.
+	* mkdeps.c (deps_add_dep): Assert not empty.
+
+	* include/mkdeps.h (deps_write): Add PHONY arg.
+	(deps_phony_targets): Delete.
+	* init.c (cpp_finish): Just call deps_write.
+	* mkdeps.c (struct mkdeps): Add local vector class.  Reimplement
+	vector handling.
+	(munge): Munge to static buffer.
+	(apply_vpath): Adjust vector handling.
+	(deps_init, deps_free): Use new, delete.
+	(deps_add_target): Do not munge here.  Record quoting low water mark.
+	(deps_add_dep): Do not munge here.
+	(deps_add_vpath): Adjust vector handling.
+	(make_write_name): New.  Munge on demand here.
+	(make_write_vec): New.
+	(deps_phony_targets): Delete.
+	(make_write): New.
+	(deps_write): Forward to deps_Write.
+	(deps_save, deps_restore): Adjust vector handling.
+
+2019-05-06  Nathan Sidwell  <nathan@acm.org>
+
+	* include/mkdeps.h: Rename struct deps to struct mkdeps.
+	* mkdeps.c: Likewise.
+	* include/cpplib.h (cpp_get_deps): Rename return type..
+	* directives.c (cpp_get_deps): Likewise.
+	* internal.h (struct cpp_reader): Rename deps field type.
+
 2019-04-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* files.c (search_path_exhausted): Fix typo in comment.

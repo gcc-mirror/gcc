@@ -22,12 +22,18 @@
 
 module gcc.sections.elf_shared;
 
+version (RISCV32) version = RISCV_Any;
+version (RISCV64) version = RISCV_Any;
+version (S390)    version = IBMZ_Any;
+version (SystemZ) version = IBMZ_Any;
+
 version (CRuntime_Glibc) enum SharedELF = true;
 else version (CRuntime_Musl) enum SharedELF = true;
 else version (FreeBSD) enum SharedELF = true;
 else version (NetBSD) enum SharedELF = true;
 else version (DragonFlyBSD) enum SharedELF = true;
 else version (CRuntime_UClibc) enum SharedELF = true;
+else version (Solaris) enum SharedELF = true;
 else enum SharedELF = false;
 static if (SharedELF):
 
@@ -61,11 +67,20 @@ else version (DragonFlyBSD)
     import core.sys.dragonflybsd.sys.elf;
     import core.sys.dragonflybsd.sys.link_elf;
 }
+else version (Solaris)
+{
+    import core.sys.solaris.dlfcn;
+    import core.sys.solaris.link;
+    import core.sys.solaris.sys.elf;
+    import core.sys.solaris.sys.link;
+}
 else
 {
     static assert(0, "unimplemented");
 }
 import core.sys.posix.pthread;
+import gcc.builtins;
+import gcc.config;
 import rt.deh;
 import rt.dmain2;
 import rt.minfo;
@@ -163,6 +178,7 @@ __gshared bool _isRuntimeInitialized;
 version (FreeBSD) private __gshared void* dummy_ref;
 version (DragonFlyBSD) private __gshared void* dummy_ref;
 version (NetBSD) private __gshared void* dummy_ref;
+version (Solaris) private __gshared void* dummy_ref;
 
 /****
  * Gets called on program startup just before GC is initialized.
@@ -174,6 +190,7 @@ void initSections() nothrow @nogc
     version (FreeBSD) dummy_ref = &_d_dso_registry;
     version (DragonFlyBSD) dummy_ref = &_d_dso_registry;
     version (NetBSD) dummy_ref = &_d_dso_registry;
+    version (Solaris) dummy_ref = &_d_dso_registry;
 }
 
 
@@ -207,8 +224,16 @@ version (Shared)
 
     void scanTLSRanges(Array!(ThreadDSO)* tdsos, scope ScanDG dg) nothrow
     {
-        foreach (ref tdso; *tdsos)
-            dg(tdso._tlsRange.ptr, tdso._tlsRange.ptr + tdso._tlsRange.length);
+        version (GNU_EMUTLS)
+        {
+            import gcc.emutls;
+            _d_emutls_scan(dg);
+        }
+        else
+        {
+            foreach (ref tdso; *tdsos)
+                dg(tdso._tlsRange.ptr, tdso._tlsRange.ptr + tdso._tlsRange.length);
+        }
     }
 
     // interface for core.thread to inherit loaded libraries
@@ -285,7 +310,13 @@ else
      */
     Array!(void[])* initTLSRanges() nothrow @nogc
     {
-        return &_tlsRanges();
+        auto rngs = &_tlsRanges();
+        if (rngs.empty)
+        {
+            foreach (ref pdso; _loadedDSOs)
+                rngs.insertBack(pdso.tlsRange());
+        }
+        return rngs;
     }
 
     void finiTLSRanges(Array!(void[])* rngs) nothrow @nogc
@@ -295,8 +326,16 @@ else
 
     void scanTLSRanges(Array!(void[])* rngs, scope ScanDG dg) nothrow
     {
-        foreach (rng; *rngs)
-            dg(rng.ptr, rng.ptr + rng.length);
+        version (GNU_EMUTLS)
+        {
+            import gcc.emutls;
+            _d_emutls_scan(dg);
+        }
+        else
+        {
+            foreach (rng; *rngs)
+                dg(rng.ptr, rng.ptr + rng.length);
+        }
     }
 }
 
@@ -504,6 +543,11 @@ extern(C) void _d_dso_registry(CompilerDSOData* data)
                 _handleToDSO.reset();
             }
             finiLocks();
+            version (GNU_EMUTLS)
+            {
+                import gcc.emutls;
+                _d_emutls_destroy();
+            }
         }
     }
 }
@@ -712,12 +756,23 @@ version (Shared)
                 version (CRuntime_Musl)
                     strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
                 else version (linux)
-                    strtab = cast(const(char)*)dyn.d_un.d_ptr;
+                {
+                    // This might change in future glibc releases (after 2.29) as dynamic sections
+                    // are not required to be read-only on RISC-V. This was copy & pasted from MIPS
+                    // while upstreaming RISC-V support. Otherwise MIPS is the only arch which sets
+                    // in glibc: #define DL_RO_DYN_SECTION 1
+                    version (RISCV_Any)
+                        strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
+                    else
+                        strtab = cast(const(char)*)dyn.d_un.d_ptr;
+                }
                 else version (FreeBSD)
                     strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
                 else version (NetBSD)
                     strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
                 else version (DragonFlyBSD)
+                    strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
+                else version (Solaris)
                     strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
                 else
                     static assert(0, "unimplemented");
@@ -745,7 +800,8 @@ version (Shared)
     void* handleForName(const char* name)
     {
         auto handle = .dlopen(name, RTLD_NOLOAD | RTLD_LAZY);
-        if (handle !is null) .dlclose(handle); // drop reference count
+        version (Solaris) { }
+        else if (handle !is null) .dlclose(handle); // drop reference count
         return handle;
     }
 }
@@ -778,9 +834,47 @@ void scanSegments(in ref dl_phdr_info info, DSO* pdso) nothrow @nogc
             break;
 
         case PT_TLS: // TLS segment
-            safeAssert(!pdso._tlsSize, "Multiple TLS segments in image header.");
-            pdso._tlsMod = info.dlpi_tls_modid;
-            pdso._tlsSize = phdr.p_memsz;
+            version (GNU_EMUTLS)
+            {
+            }
+            else
+            {
+                safeAssert(!pdso._tlsSize, "Multiple TLS segments in image header.");
+                static if (OS_Have_Dlpi_Tls_Modid)
+                {
+                    pdso._tlsMod = info.dlpi_tls_modid;
+                    pdso._tlsSize = phdr.p_memsz;
+                }
+                else version (Solaris)
+                {
+                    struct Rt_map
+                    {
+                        Link_map rt_public;
+                        const char* rt_pathname;
+                        c_ulong rt_padstart;
+                        c_ulong rt_padimlen;
+                        c_ulong rt_msize;
+                        uint rt_flags;
+                        uint rt_flags1;
+                        c_ulong rt_tlsmodid;
+                    }
+
+                    Rt_map* map;
+                    version (Shared)
+                        dlinfo(handleForName(info.dlpi_name), RTLD_DI_LINKMAP, &map);
+                    else
+                        dlinfo(RTLD_SELF, RTLD_DI_LINKMAP, &map);
+                    // Until Solaris 11.4, tlsmodid for the executable is 0.
+                    // Let it start at 1 as the rest of the code expects.
+                    pdso._tlsMod = map.rt_tlsmodid + 1;
+                    pdso._tlsSize = phdr.p_memsz;
+                }
+                else
+                {
+                    pdso._tlsMod = 0;
+                    pdso._tlsSize = 0;
+                }
+            }
             break;
 
         default:
@@ -799,9 +893,10 @@ void scanSegments(in ref dl_phdr_info info, DSO* pdso) nothrow @nogc
  */
 bool findDSOInfoForAddr(in void* addr, dl_phdr_info* result=null) nothrow @nogc
 {
-    version (linux)       enum IterateManually = true;
-    else version (NetBSD) enum IterateManually = true;
-    else                  enum IterateManually = false;
+    version (linux)        enum IterateManually = true;
+    else version (NetBSD)  enum IterateManually = true;
+    else version (Solaris) enum IterateManually = true;
+    else                   enum IterateManually = false;
 
     static if (IterateManually)
     {
@@ -864,6 +959,7 @@ version (linux) import core.sys.linux.errno : program_invocation_name;
 version (FreeBSD) extern(C) const(char)* getprogname() nothrow @nogc;
 version (DragonFlyBSD) extern(C) const(char)* getprogname() nothrow @nogc;
 version (NetBSD) extern(C) const(char)* getprogname() nothrow @nogc;
+version (Solaris) extern(C) const(char)* getprogname() nothrow @nogc;
 
 @property const(char)* progname() nothrow @nogc
 {
@@ -871,6 +967,7 @@ version (NetBSD) extern(C) const(char)* getprogname() nothrow @nogc;
     version (FreeBSD) return getprogname();
     version (DragonFlyBSD) return getprogname();
     version (NetBSD) return getprogname();
+    version (Solaris) return getprogname();
 }
 
 const(char)[] dsoName(const char* dlpi_name) nothrow @nogc
@@ -931,6 +1028,7 @@ struct tls_index
 }
 
 extern(C) void* __tls_get_addr(tls_index* ti) nothrow @nogc;
+extern(C) void* __tls_get_addr_internal(tls_index* ti) nothrow @nogc;
 
 /* The dynamic thread vector (DTV) pointers may point 0x8000 past the start of
  * each TLS block. This is at least true for PowerPC and Mips platforms.
@@ -964,6 +1062,8 @@ else version (MIPS32)
     enum TLS_DTV_OFFSET = 0x8000;
 else version (MIPS64)
     enum TLS_DTV_OFFSET = 0x8000;
+else version (IBMZ_Any)
+    enum TLS_DTV_OFFSET = 0x0;
 else
     static assert( false, "Platform not supported." );
 
@@ -972,7 +1072,25 @@ void[] getTLSRange(size_t mod, size_t sz) nothrow @nogc
     if (mod == 0)
         return null;
 
-    // base offset
-    auto ti = tls_index(mod, 0);
-    return (__tls_get_addr(&ti)-TLS_DTV_OFFSET)[0 .. sz];
+    version (GNU_EMUTLS)
+        return null;    // Handled in scanTLSRanges().
+    else
+    {
+        version (Solaris)
+        {
+            static if (!OS_Have_Dlpi_Tls_Modid)
+                mod -= 1;
+        }
+
+        // base offset
+        auto ti = tls_index(mod, 0);
+        version (IBMZ_Any)
+        {
+            auto idx = cast(void *)__tls_get_addr_internal(&ti)
+                + cast(ulong)__builtin_thread_pointer();
+            return idx[0 .. sz];
+        }
+        else
+            return (__tls_get_addr(&ti)-TLS_DTV_OFFSET)[0 .. sz];
+    }
 }

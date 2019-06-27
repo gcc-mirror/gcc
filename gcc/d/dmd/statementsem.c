@@ -95,6 +95,8 @@ public:
             s->exp = semantic(s->exp, sc);
             s->exp = resolveProperties(sc, s->exp);
             s->exp = s->exp->addDtorHook(sc);
+            if (checkNonAssignmentArrayOp(s->exp))
+                s->exp = new ErrorExp();
             if (FuncDeclaration *f = isFuncAddress(s->exp))
             {
                 if (f->checkForwardRef(s->exp->loc))
@@ -370,6 +372,8 @@ public:
 
         ds->condition = semantic(ds->condition, sc);
         ds->condition = resolveProperties(sc, ds->condition);
+        if (checkNonAssignmentArrayOp(ds->condition))
+            ds->condition = new ErrorExp();
         ds->condition = ds->condition->optimize(WANTvalue);
         ds->condition = checkGC(sc, ds->condition);
 
@@ -440,6 +444,8 @@ public:
 
             fs->condition = semantic(fs->condition, sc);
             fs->condition = resolveProperties(sc, fs->condition);
+            if (checkNonAssignmentArrayOp(fs->condition))
+                fs->condition = new ErrorExp();
             fs->condition = fs->condition->optimize(WANTvalue);
             fs->condition = checkGC(sc, fs->condition);
             fs->condition = fs->condition->toBoolean(sc);
@@ -450,6 +456,8 @@ public:
                 ((CommaExp *)fs->increment)->allowCommaExp = true;
             fs->increment = semantic(fs->increment, sc);
             fs->increment = resolveProperties(sc, fs->increment);
+            if (checkNonAssignmentArrayOp(fs->increment))
+                fs->increment = new ErrorExp();
             fs->increment = fs->increment->optimize(WANTvalue);
             fs->increment = checkGC(sc, fs->increment);
         }
@@ -765,16 +773,48 @@ public:
                         goto Lerror2;
                     }
 
+                    // Finish semantic on all foreach parameter types.
+                    for (size_t i = 0; i < dim; i++)
+                    {
+                        Parameter *p = (*fs->parameters)[i];
+                        p->type = p->type->semantic(loc, sc2);
+                        p->type = p->type->addStorageClass(p->storageClass);
+                    }
+
+                    tn = tab->nextOf()->toBasetype();
+
+                    if (dim == 2)
+                    {
+                        Type *tindex = (*fs->parameters)[0]->type;
+                        if (!tindex->isintegral())
+                        {
+                            fs->error("foreach: key cannot be of non-integral type `%s`",
+                                      tindex->toChars());
+                            goto Lerror2;
+                        }
+                        /* What cases to deprecate implicit conversions for:
+                         *  1. foreach aggregate is a dynamic array
+                         *  2. foreach body is lowered to _aApply (see special case below).
+                         */
+                        Type *tv = (*fs->parameters)[1]->type->toBasetype();
+                        if ((tab->ty == Tarray ||
+                             (tn->ty != tv->ty &&
+                              (tn->ty == Tchar || tn->ty == Twchar || tn->ty == Tdchar) &&
+                              (tv->ty == Tchar || tv->ty == Twchar || tv->ty == Tdchar))) &&
+                            !Type::tsize_t->implicitConvTo(tindex))
+                        {
+                            fs->deprecation("foreach: loop index implicitly converted from `size_t` to `%s`",
+                                            tindex->toChars());
+                        }
+                    }
+
                     /* Look for special case of parsing char types out of char type
                      * array.
                      */
-                    tn = tab->nextOf()->toBasetype();
                     if (tn->ty == Tchar || tn->ty == Twchar || tn->ty == Tdchar)
                     {
                         int i = (dim == 1) ? 0 : 1;     // index of value
                         Parameter *p = (*fs->parameters)[i];
-                        p->type = p->type->semantic(loc, sc2);
-                        p->type = p->type->addStorageClass(p->storageClass);
                         tnv = p->type->toBasetype();
                         if (tnv->ty != tn->ty &&
                             (tnv->ty == Tchar || tnv->ty == Twchar || tnv->ty == Tdchar))
@@ -801,8 +841,6 @@ public:
                     {
                         // Declare parameterss
                         Parameter *p = (*fs->parameters)[i];
-                        p->type = p->type->semantic(loc, sc2);
-                        p->type = p->type->addStorageClass(p->storageClass);
                         VarDeclaration *var;
 
                         if (dim == 2 && i == 0)
@@ -899,6 +937,10 @@ public:
                         Identifier *idkey = Identifier::generateId("__key");
                         fs->key = new VarDeclaration(loc, Type::tsize_t, idkey, NULL);
                         fs->key->storage_class |= STCtemp;
+                    }
+                    else if (fs->key->type->ty != Tsize_t)
+                    {
+                        tmp_length = new CastExp(loc, tmp_length, fs->key->type);
                     }
                     if (fs->op == TOKforeach_reverse)
                         fs->key->_init = new ExpInitializer(loc, tmp_length);
@@ -1032,6 +1074,7 @@ public:
                     else
                     {
                         r = copyToTemp(0, "__r", fs->aggr);
+                        r->semantic(sc);
                         init = new ExpStatement(loc, r);
                         if (vinit)
                             init = new CompoundStatement(loc, new ExpStatement(loc, vinit), init);
@@ -1064,6 +1107,7 @@ public:
                     else
                     {
                         VarDeclaration *vd = copyToTemp(STCref, "__front", einit);
+                        vd->semantic(sc);
                         makeargs = new ExpStatement(loc, vd);
 
                         Type *tfront = NULL;
@@ -1723,6 +1767,8 @@ public:
             ifs->condition = resolveProperties(sc, ifs->condition);
             ifs->condition = ifs->condition->addDtorHook(sc);
         }
+        if (checkNonAssignmentArrayOp(ifs->condition))
+            ifs->condition = new ErrorExp();
         ifs->condition = checkGC(sc, ifs->condition);
 
         // Convert to boolean after declaring prm so this works:
@@ -1971,6 +2017,8 @@ public:
                 break;
             }
         }
+        if (checkNonAssignmentArrayOp(ss->condition))
+            ss->condition = new ErrorExp();
         ss->condition = ss->condition->optimize(WANTvalue);
         ss->condition = checkGC(sc, ss->condition);
         if (ss->condition->op == TOKerror)
@@ -1989,7 +2037,7 @@ public:
         ss->_body = semantic(ss->_body, sc);
         sc->noctor--;
 
-        if (conditionError || ss->_body->isErrorStatement())
+        if (conditionError || (ss->_body && ss->_body->isErrorStatement()))
             goto Lerror;
 
         // Resolve any goto case's with exp
@@ -2065,7 +2113,7 @@ public:
         {
             ss->hasNoDefault = 1;
 
-            if (!ss->isFinal && !ss->_body->isErrorStatement())
+            if (!ss->isFinal && (!ss->_body || !ss->_body->isErrorStatement()))
                 ss->error("switch statement without a default; use 'final switch' or add 'default: assert(0);' or add 'default: break;'");
 
             // Generate runtime error if the default is hit
@@ -2073,8 +2121,19 @@ public:
             CompoundStatement *cs;
             Statement *s;
 
-            if (global.params.useSwitchError)
-                s = new SwitchErrorStatement(ss->loc);
+            if (global.params.useSwitchError &&
+                global.params.checkAction != CHECKACTION_halt)
+            {
+                if (global.params.checkAction == CHECKACTION_C)
+                {
+                    /* Rewrite as an assert(0) and let e2ir generate
+                     * the call to the C assert failure function
+                     */
+                    s = new ExpStatement(ss->loc, new AssertExp(ss->loc, new IntegerExp(ss->loc, 0, Type::tint32)));
+                }
+                else
+                    s = new SwitchErrorStatement(ss->loc);
+            }
             else
                 s = new ExpStatement(ss->loc, new HaltExp(ss->loc));
 
@@ -2929,6 +2988,7 @@ public:
              *  try { body } finally { _d_monitorexit(tmp); }
              */
             VarDeclaration *tmp = copyToTemp(0, "__sync", ss->exp);
+            tmp->semantic(sc);
 
             Statements *cs = new Statements();
             cs->push(new ExpStatement(ss->loc, tmp));
@@ -3076,6 +3136,7 @@ public:
                      * }
                      */
                     VarDeclaration *tmp = copyToTemp(0, "__withtmp", ws->exp);
+                    tmp->semantic(sc);
                     ExpStatement *es = new ExpStatement(ws->loc, tmp);
                     ws->exp = new VarExp(ws->loc, tmp);
                     Statement *ss = new ScopeStatement(ws->loc, new CompoundStatement(ws->loc, es, ws), ws->endloc);
@@ -3118,6 +3179,18 @@ public:
 
     void visit(TryCatchStatement *tcs)
     {
+        if (!global.params.useExceptions)
+        {
+            tcs->error("Cannot use try-catch statements with -betterC");
+            return setError();
+        }
+
+        if (!ClassDeclaration::throwable)
+        {
+            tcs->error("Cannot use try-catch statements because `object.Throwable` was not declared");
+            return setError();
+        }
+
         unsigned flags = 0;
         const unsigned FLAGcpp = 1;
         const unsigned FLAGd = 2;
@@ -3227,7 +3300,14 @@ public:
             return;
         }
 
-        if (blockExit(tfs->_body, sc->func, false) == BEfallthru)
+        int blockexit = blockExit(tfs->_body, sc->func, false);
+
+        // if not worrying about exceptions
+        if (!(global.params.useExceptions && ClassDeclaration::throwable))
+            blockexit &= ~BEthrow;            // don't worry about paths that otherwise may throw
+
+        // Don't care about paths that halt, either
+        if ((blockexit & ~BEhalt) == BEfallthru)
         {
             result = new CompoundStatement(tfs->loc, tfs->_body, tfs->finalbody);
             return;
@@ -3237,7 +3317,6 @@ public:
 
     void visit(OnScopeStatement *oss)
     {
-#ifndef IN_GCC
         if (oss->tok != TOKon_scope_exit)
         {
             // scope(success) and scope(failure) are rewritten to try-catch(-finally) statement,
@@ -3255,7 +3334,6 @@ public:
                 return setError();
             }
         }
-#endif
 
         sc = sc->push();
         sc->tf = NULL;
@@ -3280,6 +3358,18 @@ public:
     void visit(ThrowStatement *ts)
     {
         //printf("ThrowStatement::semantic()\n");
+
+        if (!global.params.useExceptions)
+        {
+            ts->error("Cannot use `throw` statements with -betterC");
+            return setError();
+        }
+
+        if (!ClassDeclaration::throwable)
+        {
+            ts->error("Cannot use `throw` statements because `object.Throwable` was not declared");
+            return setError();
+        }
 
         FuncDeclaration *fd = sc->parent->isFuncDeclaration();
         fd->hasReturnExp |= 2;
@@ -3440,12 +3530,18 @@ public:
             }
 
             s->semantic(sc);
-            Module::addDeferredSemantic2(s);     // Bugzilla 14666
-            sc->insert(s);
-
-            for (size_t j = 0; j < s->aliasdecls.dim; j++)
+            // https://issues.dlang.org/show_bug.cgi?id=19942
+            // If the module that's being imported doesn't exist, don't add it to the symbol table
+            // for the current scope.
+            if (s->mod != NULL)
             {
-                sc->insert(s->aliasdecls[j]);
+                Module::addDeferredSemantic2(s);     // Bugzilla 14666
+                sc->insert(s);
+
+                for (size_t j = 0; j < s->aliasdecls.dim; j++)
+                {
+                    sc->insert(s->aliasdecls[j]);
+                }
             }
         }
         result = imps;
@@ -3463,7 +3559,6 @@ void semantic(Catch *c, Scope *sc)
 {
     //printf("Catch::semantic(%s)\n", ident->toChars());
 
-#ifndef IN_GCC
     if (sc->os && sc->os->tok != TOKon_scope_failure)
     {
         // If enclosing is scope(success) or scope(exit), this will be placed in finally block.
@@ -3481,7 +3576,6 @@ void semantic(Catch *c, Scope *sc)
         error(c->loc, "cannot put catch statement inside finally block");
         c->errors = true;
     }
-#endif
 
     ScopeDsymbol *sym = new ScopeDsymbol();
     sym->parent = sc->scopesym;

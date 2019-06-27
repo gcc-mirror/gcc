@@ -65,7 +65,7 @@ collect_wait (const char *prog, struct pex_obj *pex)
   int status;
 
   if (!pex_get_status (pex, 1, &status))
-    fatal_error (input_location, "can%'t get program status: %m");
+    fatal_error (input_location, "cannot get program status: %m");
   pex_free (pex);
 
   if (response_file && !save_temps)
@@ -180,7 +180,7 @@ collect_execute (const char *prog, char **argv, const char *outname,
 
   pex = pex_init (0, "collect2", NULL);
   if (pex == NULL)
-    fatal_error (input_location, "pex_init failed: %m");
+    fatal_error (input_location, "%<pex_init%> failed: %m");
 
   errmsg = pex_run (pex, flags, argv[0], argv, outname,
 		    errname, &err);

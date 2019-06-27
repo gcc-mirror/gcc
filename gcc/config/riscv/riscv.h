@@ -662,6 +662,17 @@ typedef struct {
 #define BRANCH_COST(speed_p, predictable_p) \
   ((!(speed_p) || (predictable_p)) ? 2 : riscv_branch_cost)
 
+/* True if the target optimizes short forward branches around integer
+   arithmetic instructions into predicated operations, e.g., for
+   conditional-move operations.  The macro assumes that all branch
+   instructions (BEQ, BNE, BLT, BLTU, BGE, BGEU, C.BEQZ, and C.BNEZ)
+   support this feature.  The macro further assumes that any integer
+   arithmetic and logical operation (ADD[I], SUB, SLL[I], SRL[I], SRA[I],
+   SLT[I][U], AND[I], XOR[I], OR[I], LUI, AUIPC, and their compressed
+   counterparts, including C.MV and C.LI) can be in the branch shadow.  */
+
+#define TARGET_SFB_ALU (riscv_microarchitecture == sifive_7)
+
 #define LOGICAL_OP_NON_SHORT_CIRCUIT 0
 
 /* Control the assembler format that we output.  */
@@ -881,12 +892,6 @@ extern unsigned riscv_stack_boundary;
   "%{mabi=lp64:lp64}" \
   "%{mabi=lp64f:lp64f}" \
   "%{mabi=lp64d:lp64d}" \
-
-#define STARTFILE_PREFIX_SPEC 			\
-   "/lib" XLEN_SPEC "/" ABI_SPEC "/ "		\
-   "/usr/lib" XLEN_SPEC "/" ABI_SPEC "/ "	\
-   "/lib/ "					\
-   "/usr/lib/ "
 
 /* ISA constants needed for code generation.  */
 #define OPCODE_LW    0x2003

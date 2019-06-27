@@ -1576,7 +1576,10 @@ ubyte[16] foounsto()
 void testOPvecunsto()
 {
     auto a = foounsto();
-    assert(a == [0, 0, 64, 65, 0, 0, 64, 65, 0, 0, 64, 65, 0, 0, 64, 65]);
+    version (LittleEndian)
+        assert(a == [0, 0, 64, 65, 0, 0, 64, 65, 0, 0, 64, 65, 0, 0, 64, 65]);
+    version (BigEndian)
+        assert(a == [65, 64, 0, 0, 65, 64, 0, 0, 65, 64, 0, 0, 65, 64, 0, 0]);
 }
 
 /*****************************************/

@@ -111,7 +111,7 @@ namespace __detail
 
     public:
       _ReuseOrAllocNode(__node_type* __nodes, __hashtable_alloc& __h)
-	: _M_nodes(__nodes), _M_h(__h) { }
+      : _M_nodes(__nodes), _M_h(__h) { }
       _ReuseOrAllocNode(const _ReuseOrAllocNode&) = delete;
 
       ~_ReuseOrAllocNode()
@@ -159,7 +159,7 @@ namespace __detail
 
     public:
       _AllocNode(__hashtable_alloc& __h)
-	: _M_h(__h) { }
+      : _M_h(__h) { }
 
       template<typename _Arg>
 	__node_type*
@@ -181,8 +181,8 @@ namespace __detail
    *  @tparam _Cache_hash_code  Boolean value. True if the value of
    *  the hash function is stored along with the value. This is a
    *  time-space tradeoff.  Storing it may improve lookup speed by
-   *  reducing the number of times we need to call the _Equal
-   *  function.
+   *  reducing the number of times we need to call the _Hash or _Equal
+   *  functors.
    *
    *  @tparam _Constant_iterators  Boolean value. True if iterator and
    *  const_iterator are both constant iterator types. This is true
@@ -444,7 +444,7 @@ namespace __detail
   /// smallest prime that keeps the load factor small enough.
   struct _Prime_rehash_policy
   {
-    using __has_load_factor = std::true_type;
+    using __has_load_factor = true_type;
 
     _Prime_rehash_policy(float __z = 1.0) noexcept
     : _M_max_load_factor(__z), _M_next_resize(0) { }
@@ -460,7 +460,7 @@ namespace __detail
     // Return a bucket count appropriate for n elements
     std::size_t
     _M_bkt_for_elements(std::size_t __n) const
-    { return __builtin_ceil(__n / (long double)_M_max_load_factor); }
+    { return __builtin_ceill(__n / (long double)_M_max_load_factor); }
 
     // __n_bkt is current bucket count, __n_elt is current element count,
     // and __n_ins is number of elements to be inserted.  Do we need to
@@ -521,7 +521,7 @@ namespace __detail
   /// operations.
   struct _Power2_rehash_policy
   {
-    using __has_load_factor = std::true_type;
+    using __has_load_factor = true_type;
 
     _Power2_rehash_policy(float __z = 1.0) noexcept
     : _M_max_load_factor(__z), _M_next_resize(0) { }
@@ -535,24 +535,32 @@ namespace __detail
     std::size_t
     _M_next_bkt(std::size_t __n) noexcept
     {
+      if (__n == 0)
+	// Special case on container 1st initialization with 0 bucket count
+	// hint. We keep _M_next_resize to 0 to make sure that next time we
+	// want to add an element allocation will take place.
+	return 1;
+
       const auto __max_width = std::min<size_t>(sizeof(size_t), 8);
       const auto __max_bkt = size_t(1) << (__max_width * __CHAR_BIT__ - 1);
       std::size_t __res = __clp2(__n);
 
-      if (__res == __n)
-	__res <<= 1;
-
       if (__res == 0)
 	__res = __max_bkt;
+      else if (__res == 1)
+	// If __res is 1 we force it to 2 to make sure there will be an
+	// allocation so that nothing need to be stored in the initial
+	// single bucket
+	__res = 2;
 
       if (__res == __max_bkt)
 	// Set next resize to the max value so that we never try to rehash again
 	// as we already reach the biggest possible bucket number.
 	// Note that it might result in max_load_factor not being respected.
-	_M_next_resize = std::size_t(-1);
+	_M_next_resize = numeric_limits<size_t>::max();
       else
 	_M_next_resize
-	  = __builtin_ceil(__res * (long double)_M_max_load_factor);
+	  = __builtin_floorl(__res * (long double)_M_max_load_factor);
 
       return __res;
     }
@@ -560,7 +568,7 @@ namespace __detail
     // Return a bucket count appropriate for n elements
     std::size_t
     _M_bkt_for_elements(std::size_t __n) const noexcept
-    { return __builtin_ceil(__n / (long double)_M_max_load_factor); }
+    { return __builtin_ceill(__n / (long double)_M_max_load_factor); }
 
     // __n_bkt is current bucket count, __n_elt is current element count,
     // and __n_ins is number of elements to be inserted.  Do we need to
@@ -570,21 +578,25 @@ namespace __detail
     _M_need_rehash(std::size_t __n_bkt, std::size_t __n_elt,
 		   std::size_t __n_ins) noexcept
     {
-      if (__n_elt + __n_ins >= _M_next_resize)
+      if (__n_elt + __n_ins > _M_next_resize)
 	{
-	  long double __min_bkts = (__n_elt + __n_ins)
-					/ (long double)_M_max_load_factor;
+	  // If _M_next_resize is 0 it means that we have nothing allocated so
+	  // far and that we start inserting elements. In this case we start
+	  // with an initial bucket size of 11.
+	  long double __min_bkts
+	    = std::max<std::size_t>(__n_elt + __n_ins, _M_next_resize ? 0 : 11)
+	      / (long double)_M_max_load_factor;
 	  if (__min_bkts >= __n_bkt)
-	    return std::make_pair(true,
-	      _M_next_bkt(std::max<std::size_t>(__builtin_floor(__min_bkts) + 1,
-						__n_bkt * _S_growth_factor)));
+	    return { true,
+	      _M_next_bkt(std::max<std::size_t>(__builtin_floorl(__min_bkts) + 1,
+						__n_bkt * _S_growth_factor)) };
 
 	  _M_next_resize
-	    = __builtin_floor(__n_bkt * (long double)_M_max_load_factor);
-	  return std::make_pair(false, 0);
+	    = __builtin_floorl(__n_bkt * (long double)_M_max_load_factor);
+	  return { false, 0 };
 	}
       else
-	return std::make_pair(false, 0);
+	return { false, 0 };
     }
 
     typedef std::size_t _State;
@@ -693,18 +705,20 @@ namespace __detail
     {
       __hashtable* __h = static_cast<__hashtable*>(this);
       __hash_code __code = __h->_M_hash_code(__k);
-      std::size_t __n = __h->_M_bucket_index(__k, __code);
-      __node_type* __p = __h->_M_find_node(__n, __k, __code);
+      std::size_t __bkt = __h->_M_bucket_index(__k, __code);
+      if (__node_type* __node = __h->_M_find_node(__bkt, __k, __code))
+	return __node->_M_v().second;
 
-      if (!__p)
-	{
-	  __p = __h->_M_allocate_node(std::piecewise_construct,
-				      std::tuple<const key_type&>(__k),
-				      std::tuple<>());
-	  return __h->_M_insert_unique_node(__n, __code, __p)->second;
-	}
-
-      return __p->_M_v().second;
+      typename __hashtable::_Scoped_node __node {
+	__h,
+	std::piecewise_construct,
+	std::tuple<const key_type&>(__k),
+	std::tuple<>()
+      };
+      auto __pos
+	= __h->_M_insert_unique_node(__k, __bkt, __code, __node._M_node);
+      __node._M_node = nullptr;
+      return __pos->second;
     }
 
   template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
@@ -718,18 +732,20 @@ namespace __detail
     {
       __hashtable* __h = static_cast<__hashtable*>(this);
       __hash_code __code = __h->_M_hash_code(__k);
-      std::size_t __n = __h->_M_bucket_index(__k, __code);
-      __node_type* __p = __h->_M_find_node(__n, __k, __code);
+      std::size_t __bkt = __h->_M_bucket_index(__k, __code);
+      if (__node_type* __node = __h->_M_find_node(__bkt, __k, __code))
+	return __node->_M_v().second;
 
-      if (!__p)
-	{
-	  __p = __h->_M_allocate_node(std::piecewise_construct,
-				      std::forward_as_tuple(std::move(__k)),
-				      std::tuple<>());
-	  return __h->_M_insert_unique_node(__n, __code, __p)->second;
-	}
-
-      return __p->_M_v().second;
+      typename __hashtable::_Scoped_node __node {
+	__h,
+	std::piecewise_construct,
+	std::forward_as_tuple(std::move(__k)),
+	std::tuple<>()
+      };
+      auto __pos
+	= __h->_M_insert_unique_node(__k, __bkt, __code, __node._M_node);
+      __node._M_node = nullptr;
+      return __pos->second;
     }
 
   template<typename _Key, typename _Pair, typename _Alloc, typename _Equal,
@@ -743,8 +759,8 @@ namespace __detail
     {
       __hashtable* __h = static_cast<__hashtable*>(this);
       __hash_code __code = __h->_M_hash_code(__k);
-      std::size_t __n = __h->_M_bucket_index(__k, __code);
-      __node_type* __p = __h->_M_find_node(__n, __k, __code);
+      std::size_t __bkt = __h->_M_bucket_index(__k, __code);
+      __node_type* __p = __h->_M_find_node(__bkt, __k, __code);
 
       if (!__p)
 	__throw_out_of_range(__N("_Map_base::at"));
@@ -762,8 +778,8 @@ namespace __detail
     {
       const __hashtable* __h = static_cast<const __hashtable*>(this);
       __hash_code __code = __h->_M_hash_code(__k);
-      std::size_t __n = __h->_M_bucket_index(__k, __code);
-      __node_type* __p = __h->_M_find_node(__n, __k, __code);
+      std::size_t __bkt = __h->_M_bucket_index(__k, __code);
+      __node_type* __p = __h->_M_find_node(__bkt, __k, __code);
 
       if (!__p)
 	__throw_out_of_range(__N("_Map_base::at"));
@@ -1029,7 +1045,7 @@ namespace __detail
 	   typename _H1, typename _H2, typename _Hash,
 	   typename _RehashPolicy, typename _Traits,
 	   typename =
-	     __detected_or_t<std::false_type, __has_load_factor, _RehashPolicy>>
+	     __detected_or_t<false_type, __has_load_factor, _RehashPolicy>>
     struct _Rehash_base;
 
   /// Specialization when rehash policy doesn't provide load factor management.
@@ -1039,7 +1055,7 @@ namespace __detail
 	   typename _RehashPolicy, typename _Traits>
     struct _Rehash_base<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		      _H1, _H2, _Hash, _RehashPolicy, _Traits,
-		      std::false_type>
+		      false_type>
     {
     };
 
@@ -1050,7 +1066,7 @@ namespace __detail
 	   typename _RehashPolicy, typename _Traits>
     struct _Rehash_base<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 			_H1, _H2, _Hash, _RehashPolicy, _Traits,
-			std::true_type>
+			true_type>
     {
       using __hashtable = _Hashtable<_Key, _Value, _Alloc, _ExtractKey,
 				     _Equal, _H1, _H2, _Hash,
@@ -1074,7 +1090,7 @@ namespace __detail
       reserve(std::size_t __n)
       {
 	__hashtable* __this = static_cast<__hashtable*>(this);
-	__this->rehash(__builtin_ceil(__n / max_load_factor()));
+	__this->rehash(__this->__rehash_policy()._M_bkt_for_elements(__n));
       }
     };
 
@@ -1097,16 +1113,11 @@ namespace __detail
 
       template<typename _OtherTp>
 	_Hashtable_ebo_helper(_OtherTp&& __tp)
-	  : _Tp(std::forward<_OtherTp>(__tp))
+	: _Tp(std::forward<_OtherTp>(__tp))
 	{ }
 
-      static const _Tp&
-      _S_cget(const _Hashtable_ebo_helper& __eboh)
-      { return static_cast<const _Tp&>(__eboh); }
-
-      static _Tp&
-      _S_get(_Hashtable_ebo_helper& __eboh)
-      { return static_cast<_Tp&>(__eboh); }
+      const _Tp& _M_cget() const { return static_cast<const _Tp&>(*this); }
+      _Tp& _M_get() { return static_cast<_Tp&>(*this); }
     };
 
   /// Specialization not using EBO.
@@ -1117,16 +1128,11 @@ namespace __detail
 
       template<typename _OtherTp>
 	_Hashtable_ebo_helper(_OtherTp&& __tp)
-	  : _M_tp(std::forward<_OtherTp>(__tp))
+	: _M_tp(std::forward<_OtherTp>(__tp))
 	{ }
 
-      static const _Tp&
-      _S_cget(const _Hashtable_ebo_helper& __eboh)
-      { return __eboh._M_tp; }
-
-      static _Tp&
-      _S_get(_Hashtable_ebo_helper& __eboh)
-      { return __eboh._M_tp; }
+      const _Tp& _M_cget() const { return _M_tp; }
+      _Tp& _M_get() { return _M_tp; }
 
     private:
       _Tp _M_tp;
@@ -1197,14 +1203,15 @@ namespace __detail
       { return 0; }
 
       std::size_t
-      _M_bucket_index(const _Key& __k, __hash_code, std::size_t __n) const
-      { return _M_ranged_hash()(__k, __n); }
+      _M_bucket_index(const _Key& __k, __hash_code,
+		      std::size_t __bkt_count) const
+      { return _M_ranged_hash()(__k, __bkt_count); }
 
       std::size_t
-      _M_bucket_index(const __node_type* __p, std::size_t __n) const
+      _M_bucket_index(const __node_type* __p, std::size_t __bkt_count) const
 	noexcept( noexcept(declval<const _Hash&>()(declval<const _Key&>(),
 						   (std::size_t)0)) )
-      { return _M_ranged_hash()(_M_extract()(__p->_M_v()), __n); }
+      { return _M_ranged_hash()(_M_extract()(__p->_M_v()), __bkt_count); }
 
       void
       _M_store_code(__node_type*, __hash_code) const
@@ -1217,21 +1224,16 @@ namespace __detail
       void
       _M_swap(_Hash_code_base& __x)
       {
-	std::swap(_M_extract(), __x._M_extract());
-	std::swap(_M_ranged_hash(), __x._M_ranged_hash());
+	std::swap(__ebo_extract_key::_M_get(),
+		  __x.__ebo_extract_key::_M_get());
+	std::swap(__ebo_hash::_M_get(), __x.__ebo_hash::_M_get());
       }
 
       const _ExtractKey&
-      _M_extract() const { return __ebo_extract_key::_S_cget(*this); }
-
-      _ExtractKey&
-      _M_extract() { return __ebo_extract_key::_S_get(*this); }
+      _M_extract() const { return __ebo_extract_key::_M_cget(); }
 
       const _Hash&
-      _M_ranged_hash() const { return __ebo_hash::_S_cget(*this); }
-
-      _Hash&
-      _M_ranged_hash() { return __ebo_hash::_S_get(*this); }
+      _M_ranged_hash() const { return __ebo_hash::_M_cget(); }
     };
 
   // No specialization for ranged hash function while caching hash codes.
@@ -1286,18 +1288,23 @@ namespace __detail
 
       __hash_code
       _M_hash_code(const _Key& __k) const
-      { return _M_h1()(__k); }
+      {
+	static_assert(__is_invocable<const _H1&, const _Key&>{},
+	    "hash function must be invocable with an argument of key type");
+	return _M_h1()(__k);
+      }
 
       std::size_t
-      _M_bucket_index(const _Key&, __hash_code __c, std::size_t __n) const
-      { return _M_h2()(__c, __n); }
+      _M_bucket_index(const _Key&, __hash_code __c,
+		      std::size_t __bkt_count) const
+      { return _M_h2()(__c, __bkt_count); }
 
       std::size_t
-      _M_bucket_index(const __node_type* __p, std::size_t __n) const
+      _M_bucket_index(const __node_type* __p, std::size_t __bkt_count) const
 	noexcept( noexcept(declval<const _H1&>()(declval<const _Key&>()))
 		  && noexcept(declval<const _H2&>()((__hash_code)0,
 						    (std::size_t)0)) )
-      { return _M_h2()(_M_h1()(_M_extract()(__p->_M_v())), __n); }
+      { return _M_h2()(_M_h1()(_M_extract()(__p->_M_v())), __bkt_count); }
 
       void
       _M_store_code(__node_type*, __hash_code) const
@@ -1310,28 +1317,20 @@ namespace __detail
       void
       _M_swap(_Hash_code_base& __x)
       {
-	std::swap(_M_extract(), __x._M_extract());
-	std::swap(_M_h1(), __x._M_h1());
-	std::swap(_M_h2(), __x._M_h2());
+	std::swap(__ebo_extract_key::_M_get(),
+		  __x.__ebo_extract_key::_M_get());
+	std::swap(__ebo_h1::_M_get(), __x.__ebo_h1::_M_get());
+	std::swap(__ebo_h2::_M_get(), __x.__ebo_h2::_M_get());
       }
 
       const _ExtractKey&
-      _M_extract() const { return __ebo_extract_key::_S_cget(*this); }
-
-      _ExtractKey&
-      _M_extract() { return __ebo_extract_key::_S_get(*this); }
+      _M_extract() const { return __ebo_extract_key::_M_cget(); }
 
       const _H1&
-      _M_h1() const { return __ebo_h1::_S_cget(*this); }
-
-      _H1&
-      _M_h1() { return __ebo_h1::_S_get(*this); }
+      _M_h1() const { return __ebo_h1::_M_cget(); }
 
       const _H2&
-      _M_h2() const { return __ebo_h2::_S_cget(*this); }
-
-      _H2&
-      _M_h2() { return __ebo_h2::_S_get(*this); }
+      _M_h2() const { return __ebo_h2::_M_cget(); }
     };
 
   /// Specialization: hash function and range-hashing function,
@@ -1374,18 +1373,22 @@ namespace __detail
 
       __hash_code
       _M_hash_code(const _Key& __k) const
-      { return _M_h1()(__k); }
+      {
+	static_assert(__is_invocable<const _H1&, const _Key&>{},
+	    "hash function must be invocable with an argument of key type");
+	return _M_h1()(__k);
+      }
 
       std::size_t
       _M_bucket_index(const _Key&, __hash_code __c,
-		      std::size_t __n) const
-      { return _M_h2()(__c, __n); }
+		      std::size_t __bkt_count) const
+      { return _M_h2()(__c, __bkt_count); }
 
       std::size_t
-      _M_bucket_index(const __node_type* __p, std::size_t __n) const
+      _M_bucket_index(const __node_type* __p, std::size_t __bkt_count) const
 	noexcept( noexcept(declval<const _H2&>()((__hash_code)0,
 						 (std::size_t)0)) )
-      { return _M_h2()(__p->_M_hash_code, __n); }
+      { return _M_h2()(__p->_M_hash_code, __bkt_count); }
 
       void
       _M_store_code(__node_type* __n, __hash_code __c) const
@@ -1398,61 +1401,21 @@ namespace __detail
       void
       _M_swap(_Hash_code_base& __x)
       {
-	std::swap(_M_extract(), __x._M_extract());
-	std::swap(_M_h1(), __x._M_h1());
-	std::swap(_M_h2(), __x._M_h2());
+	std::swap(__ebo_extract_key::_M_get(),
+		  __x.__ebo_extract_key::_M_get());
+	std::swap(__ebo_h1::_M_get(), __x.__ebo_h1::_M_get());
+	std::swap(__ebo_h2::_M_get(), __x.__ebo_h2::_M_get());
       }
 
       const _ExtractKey&
-      _M_extract() const { return __ebo_extract_key::_S_cget(*this); }
-
-      _ExtractKey&
-      _M_extract() { return __ebo_extract_key::_S_get(*this); }
+      _M_extract() const { return __ebo_extract_key::_M_cget(); }
 
       const _H1&
-      _M_h1() const { return __ebo_h1::_S_cget(*this); }
-
-      _H1&
-      _M_h1() { return __ebo_h1::_S_get(*this); }
+      _M_h1() const { return __ebo_h1::_M_cget(); }
 
       const _H2&
-      _M_h2() const { return __ebo_h2::_S_cget(*this); }
-
-      _H2&
-      _M_h2() { return __ebo_h2::_S_get(*this); }
+      _M_h2() const { return __ebo_h2::_M_cget(); }
     };
-
-  /**
-   *  Primary class template _Equal_helper.
-   *
-   */
-  template <typename _Key, typename _Value, typename _ExtractKey,
-	    typename _Equal, typename _HashCodeType,
-	    bool __cache_hash_code>
-  struct _Equal_helper;
-
-  /// Specialization.
-  template<typename _Key, typename _Value, typename _ExtractKey,
-	   typename _Equal, typename _HashCodeType>
-  struct _Equal_helper<_Key, _Value, _ExtractKey, _Equal, _HashCodeType, true>
-  {
-    static bool
-    _S_equals(const _Equal& __eq, const _ExtractKey& __extract,
-	      const _Key& __k, _HashCodeType __c, _Hash_node<_Value, true>* __n)
-    { return __c == __n->_M_hash_code && __eq(__k, __extract(__n->_M_v())); }
-  };
-
-  /// Specialization.
-  template<typename _Key, typename _Value, typename _ExtractKey,
-	   typename _Equal, typename _HashCodeType>
-  struct _Equal_helper<_Key, _Value, _ExtractKey, _Equal, _HashCodeType, false>
-  {
-    static bool
-    _S_equals(const _Equal& __eq, const _ExtractKey& __extract,
-	      const _Key& __k, _HashCodeType, _Hash_node<_Value, false>* __n)
-    { return __eq(__k, __extract(__n->_M_v())); }
-  };
-
 
   /// Partial specialization used when nodes contain a cached hash code.
   template<typename _Key, typename _Value, typename _ExtractKey,
@@ -1480,7 +1443,7 @@ namespace __detail
 	if (_M_cur)
 	  {
 	    std::size_t __bkt
-	      = __base_type::_S_get(*this)(_M_cur->_M_hash_code,
+	      = __base_type::_M_get()(_M_cur->_M_hash_code,
 					   _M_bucket_count);
 	    if (__bkt != _M_bucket)
 	      _M_cur = nullptr;
@@ -1658,9 +1621,9 @@ namespace __detail
       _Local_iterator() = default;
 
       _Local_iterator(const __hash_code_base& __base,
-		      _Hash_node<_Value, __cache>* __p,
+		      _Hash_node<_Value, __cache>* __n,
 		      std::size_t __bkt, std::size_t __bkt_count)
-	: __base_type(__base, __p, __bkt, __bkt_count)
+      : __base_type(__base, __n, __bkt, __bkt_count)
       { }
 
       reference
@@ -1710,16 +1673,16 @@ namespace __detail
       _Local_const_iterator() = default;
 
       _Local_const_iterator(const __hash_code_base& __base,
-			    _Hash_node<_Value, __cache>* __p,
+			    _Hash_node<_Value, __cache>* __n,
 			    std::size_t __bkt, std::size_t __bkt_count)
-	: __base_type(__base, __p, __bkt, __bkt_count)
+      : __base_type(__base, __n, __bkt, __bkt_count)
       { }
 
       _Local_const_iterator(const _Local_iterator<_Key, _Value, _ExtractKey,
 						  _H1, _H2, _Hash,
 						  __constant_iterators,
 						  __cache>& __x)
-	: __base_type(__x)
+      : __base_type(__x)
       { }
 
       reference
@@ -1807,8 +1770,22 @@ namespace __detail
 						     iterator>::type;
   private:
     using _EqualEBO = _Hashtable_ebo_helper<0, _Equal>;
-    using _EqualHelper =  _Equal_helper<_Key, _Value, _ExtractKey, _Equal,
-					__hash_code, __hash_cached::value>;
+
+    template<typename _NodeT>
+      struct _Equal_hash_code
+      {
+       static bool
+       _S_equals(__hash_code, const _NodeT&)
+       { return true; }
+      };
+
+    template<typename _Ptr2>
+      struct _Equal_hash_code<_Hash_node<_Ptr2, true>>
+      {
+       static bool
+       _S_equals(__hash_code __c, const _Hash_node<_Ptr2, true>& __n)
+       { return __c == __n._M_hash_code; }
+      };
 
   protected:
     _Hashtable_base() = default;
@@ -1820,22 +1797,22 @@ namespace __detail
     bool
     _M_equals(const _Key& __k, __hash_code __c, __node_type* __n) const
     {
-      return _EqualHelper::_S_equals(_M_eq(), this->_M_extract(),
-				     __k, __c, __n);
+      static_assert(__is_invocable<const _Equal&, const _Key&, const _Key&>{},
+	  "key equality predicate must be invocable with two arguments of "
+	  "key type");
+      return _Equal_hash_code<__node_type>::_S_equals(__c, *__n)
+	&& _M_eq()(__k, this->_M_extract()(__n->_M_v()));
     }
 
     void
     _M_swap(_Hashtable_base& __x)
     {
       __hash_code_base::_M_swap(__x);
-      std::swap(_M_eq(), __x._M_eq());
+      std::swap(_EqualEBO::_M_get(), __x._EqualEBO::_M_get());
     }
 
     const _Equal&
-    _M_eq() const { return _EqualEBO::_S_cget(*this); }
-
-    _Equal&
-    _M_eq() { return _EqualEBO::_S_get(*this); }
+    _M_eq() const { return _EqualEBO::_M_cget(); }
   };
 
   /**
@@ -1999,8 +1976,8 @@ namespace __detail
     }
 
   /**
-   * This type deals with all allocation and keeps an allocator instance through
-   * inheritance to benefit from EBO when possible.
+   * This type deals with all allocation and keeps an allocator instance
+   * through inheritance to benefit from EBO when possible.
    */
   template<typename _NodeAlloc>
     struct _Hashtable_alloc : private _Hashtable_ebo_helper<0, _NodeAlloc>
@@ -2028,44 +2005,49 @@ namespace __detail
 
       template<typename _Alloc>
 	_Hashtable_alloc(_Alloc&& __a)
-	  : __ebo_node_alloc(std::forward<_Alloc>(__a))
+	: __ebo_node_alloc(std::forward<_Alloc>(__a))
 	{ }
 
       __node_alloc_type&
       _M_node_allocator()
-      { return __ebo_node_alloc::_S_get(*this); }
+      { return __ebo_node_alloc::_M_get(); }
 
       const __node_alloc_type&
       _M_node_allocator() const
-      { return __ebo_node_alloc::_S_cget(*this); }
+      { return __ebo_node_alloc::_M_cget(); }
 
+      // Allocate a node and construct an element within it.
       template<typename... _Args>
 	__node_type*
 	_M_allocate_node(_Args&&... __args);
 
+      // Destroy the element within a node and deallocate the node.
       void
       _M_deallocate_node(__node_type* __n);
 
+      // Deallocate a node.
       void
       _M_deallocate_node_ptr(__node_type* __n);
 
-      // Deallocate the linked list of nodes pointed to by __n
+      // Deallocate the linked list of nodes pointed to by __n.
+      // The elements within the nodes are destroyed.
       void
       _M_deallocate_nodes(__node_type* __n);
 
       __bucket_type*
-      _M_allocate_buckets(std::size_t __n);
+      _M_allocate_buckets(std::size_t __bkt_count);
 
       void
-      _M_deallocate_buckets(__bucket_type*, std::size_t __n);
+      _M_deallocate_buckets(__bucket_type*, std::size_t __bkt_count);
     };
 
   // Definitions of class template _Hashtable_alloc's out-of-line member
   // functions.
   template<typename _NodeAlloc>
     template<typename... _Args>
-      typename _Hashtable_alloc<_NodeAlloc>::__node_type*
+      auto
       _Hashtable_alloc<_NodeAlloc>::_M_allocate_node(_Args&&... __args)
+      -> __node_type*
       {
 	auto __nptr = __node_alloc_traits::allocate(_M_node_allocator(), 1);
 	__node_type* __n = std::__to_address(__nptr);
@@ -2116,25 +2098,25 @@ namespace __detail
 
   template<typename _NodeAlloc>
     typename _Hashtable_alloc<_NodeAlloc>::__bucket_type*
-    _Hashtable_alloc<_NodeAlloc>::_M_allocate_buckets(std::size_t __n)
+    _Hashtable_alloc<_NodeAlloc>::_M_allocate_buckets(std::size_t __bkt_count)
     {
       __bucket_alloc_type __alloc(_M_node_allocator());
 
-      auto __ptr = __bucket_alloc_traits::allocate(__alloc, __n);
+      auto __ptr = __bucket_alloc_traits::allocate(__alloc, __bkt_count);
       __bucket_type* __p = std::__to_address(__ptr);
-      __builtin_memset(__p, 0, __n * sizeof(__bucket_type));
+      __builtin_memset(__p, 0, __bkt_count * sizeof(__bucket_type));
       return __p;
     }
 
   template<typename _NodeAlloc>
     void
     _Hashtable_alloc<_NodeAlloc>::_M_deallocate_buckets(__bucket_type* __bkts,
-							std::size_t __n)
+							std::size_t __bkt_count)
     {
       typedef typename __bucket_alloc_traits::pointer _Ptr;
       auto __ptr = std::pointer_traits<_Ptr>::pointer_to(*__bkts);
       __bucket_alloc_type __alloc(_M_node_allocator());
-      __bucket_alloc_traits::deallocate(__alloc, __ptr, __n);
+      __bucket_alloc_traits::deallocate(__alloc, __ptr, __bkt_count);
     }
 
  //@} hashtable-detail

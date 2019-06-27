@@ -42,8 +42,6 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  using std::size_t;
-  using std::ptrdiff_t;
 
   typedef void (*__destroy_handler)(void*);
 
@@ -53,11 +51,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Using short int as type for the binmap implies we are never
     // caching blocks larger than 32768 with this allocator.
     typedef unsigned short int _Binmap_type;
+    typedef std::size_t size_t;
 
     // Variables used to configure the behavior of the allocator,
     // assigned and explained in detail below.
     struct _Tune
-     {
+    {
       // Compile time constants for the default _Tune values.
       enum { _S_align = 8 };
       enum { _S_max_bytes = 128 };
@@ -477,7 +476,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       
       static pool_type&
       _S_get_pool()
-      { 
+      {
+	using std::size_t;
 	// Sane defaults for the _PoolTp.
 	typedef typename pool_type::_Block_record _Block_record;
 	const static size_t __a = (__alignof__(_Tp) >= sizeof(_Block_record)
@@ -570,8 +570,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class __mt_alloc_base 
     {
     public:
-      typedef size_t                    size_type;
-      typedef ptrdiff_t                 difference_type;
+      typedef std::size_t               size_type;
+      typedef std::ptrdiff_t            difference_type;
       typedef _Tp*                      pointer;
       typedef const _Tp*                const_pointer;
       typedef _Tp&                      reference;
@@ -594,7 +594,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       size_type
       max_size() const _GLIBCXX_USE_NOEXCEPT 
-      { return size_t(-1) / sizeof(_Tp); }
+      { return size_type(-1) / sizeof(_Tp); }
 
 #if __cplusplus >= 201103L
       template<typename _Up, typename... _Args>
@@ -639,8 +639,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class __mt_alloc : public __mt_alloc_base<_Tp>
     {
     public:
-      typedef size_t                    	size_type;
-      typedef ptrdiff_t                 	difference_type;
+      typedef std::size_t                    	size_type;
+      typedef std::ptrdiff_t                 	difference_type;
       typedef _Tp*                      	pointer;
       typedef const _Tp*                	const_pointer;
       typedef _Tp&                      	reference;
@@ -705,7 +705,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Requests larger than _M_max_bytes are handled by operator
       // new/delete directly.
       __pool_type& __pool = __policy_type::_S_get_pool();
-      const size_t __bytes = __n * sizeof(_Tp);
+      const size_type __bytes = __n * sizeof(_Tp);
       if (__pool._M_check_threshold(__bytes))
 	{
 	  void* __ret = ::operator new(__bytes);
@@ -713,8 +713,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       
       // Round up to power of 2 and figure out which bin to use.
-      const size_t __which = __pool._M_get_binmap(__bytes);
-      const size_t __thread_id = __pool._M_get_thread_id();
+      const size_type __which = __pool._M_get_binmap(__bytes);
+      const size_type __thread_id = __pool._M_get_thread_id();
       
       // Find out if we have blocks on our freelist.  If so, go ahead
       // and use them directly without having to lock anything.
@@ -758,7 +758,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // Requests larger than _M_max_bytes are handled by
 	  // operators new/delete directly.
 	  __pool_type& __pool = __policy_type::_S_get_pool();
-	  const size_t __bytes = __n * sizeof(_Tp);
+	  const size_type __bytes = __n * sizeof(_Tp);
 	  if (__pool._M_check_threshold(__bytes))
 	    ::operator delete(__p);
 	  else

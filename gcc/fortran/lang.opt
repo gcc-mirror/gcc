@@ -428,6 +428,10 @@ fc-prototypes
 Fortran Var(flag_c_prototypes)
 Generate C prototypes from BIND(C) declarations.
 
+fc-prototypes-external
+Fortran Var(flag_c_prototypes_external)
+Generate C prototypes from non-BIND(C) external procedure definitions.
+
 fd-lines-as-code
 Fortran RejectNegative
 Ignore 'D' in column one in fixed form.
@@ -440,9 +444,17 @@ fdec
 Fortran Var(flag_dec)
 Enable all DEC language extensions.
 
+fdec-blank-format-item
+Fortran Var(flag_dec_blank_format_item)
+Enable the use of blank format items in format strings.
+
 fdec-include
 Fortran Var(flag_dec_include)
 Enable legacy parsing of INCLUDE as statement.
+
+fdec-format-defaults
+Fortran Var(flag_dec_format_defaults)
+Enable default widths for i, f and g format specifiers.
 
 fdec-intrinsic-ints
 Fortran Var(flag_dec_intrinsic_ints)
@@ -753,6 +765,13 @@ Fortran Var(flag_short_enums)
 fsign-zero
 Fortran Var(flag_sign_zero) Init(1)
 Apply negative sign to zero values.
+
+ftail-call-workaround
+Fortran Alias(ftail-call-workaround=,1,0)
+
+ftail-call-workaround=
+Fortran RejectNegative Joined UInteger IntegerRange(0, 2) Var(flag_tail_call_workaround) Init(1)
+Disallow tail call optimization when a calling routine may have omitted character lengths.
 
 funderscoring
 Fortran Var(flag_underscoring) Init(1)

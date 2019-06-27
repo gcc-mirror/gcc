@@ -1,6 +1,5 @@
 // { dg-do run { target c++11 } }
 // { dg-options "-g -O0" }
-// { dg-skip-if "" { *-*-* } { "-D_GLIBCXX_PROFILE" } }
 
 // Copyright (C) 2018-2019 Free Software Foundation, Inc.
 //
@@ -41,10 +40,10 @@ main()
   unique_ptr<vector<unique_ptr<set<int>*>>[]> p2;
   unique_ptr<set<unique_ptr<vector<int>*>>[10]> p3;
   unique_ptr<vector<unique_ptr<list<std::string>[]>>[99]> p4;
-  // { dg-final { whatis-test p1 "std::unique_ptr<std::vector<std::unique_ptr<std::vector<int>*>>>" } }
-  // { dg-final { whatis-test p2 "std::unique_ptr<std::vector<std::unique_ptr<std::set<int>*>>\[\]>" } }
-  // { dg-final { whatis-test p3 "std::unique_ptr<std::set<std::unique_ptr<std::vector<int>*>>\[10\]>" } }
-  // { dg-final { whatis-test p4 "std::unique_ptr<std::vector<std::unique_ptr<std::list<std::string>\[\]>>\[99\]>" } }
+  // { dg-final { whatis-regexp-test p1 "std::unique_ptr<std::(__debug::)?vector<std::unique_ptr<std::(__debug::)?vector<int>\\*>>>" } }
+  // { dg-final { whatis-regexp-test p2 "std::unique_ptr<std::(__debug::)?vector<std::unique_ptr<std::(__debug::)?set<int>\\*>>\\\[\\\]>" } }
+  // { dg-final { whatis-regexp-test p3 "std::unique_ptr<std::(__debug::)?set<std::unique_ptr<std::(__debug::)?vector<int>\\*>>\\\[10\\\]>" } }
+  // { dg-final { whatis-regexp-test p4 "std::unique_ptr<std::(__debug::)?vector<std::unique_ptr<std::(__debug::)?list<std::string>\\\[\\\]>>\\\[99\\\]>" } }
 
   placeholder(&p1);		// Mark SPOT
   placeholder(&p2);

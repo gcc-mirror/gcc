@@ -2641,6 +2641,16 @@ is_just_move (rtx x)
   return (GET_CODE (x) == SET && general_operand (SET_SRC (x), VOIDmode));
 }
 
+/* Callback function to count autoincs.  */
+
+static int
+count_auto_inc (rtx, rtx, rtx, rtx, rtx, void *arg)
+{
+  (*((int *) arg))++;
+
+  return 0;
+}
+
 /* Try to combine the insns I0, I1 and I2 into I3.
    Here I0, I1 and I2 appear earlier than I3.
    I0 and I1 can be zero; then we combine just I2 into I3, or I1 and I2 into
@@ -2706,6 +2716,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   int split_i2i3 = 0;
   int changed_i3_dest = 0;
   bool i2_was_move = false, i3_was_move = false;
+  int n_auto_inc = 0;
 
   int maxreg;
   rtx_insn *temp_insn;
@@ -3210,6 +3221,16 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       return 0;
     }
 
+  /* Count how many auto_inc expressions there were in the original insns;
+     we need to have the same number in the resulting patterns.  */
+
+  if (i0)
+    for_each_inc_dec (PATTERN (i0), count_auto_inc, &n_auto_inc);
+  if (i1)
+    for_each_inc_dec (PATTERN (i1), count_auto_inc, &n_auto_inc);
+  for_each_inc_dec (PATTERN (i2), count_auto_inc, &n_auto_inc);
+  for_each_inc_dec (PATTERN (i3), count_auto_inc, &n_auto_inc);
+
   /* If the set in I2 needs to be kept around, we must make a copy of
      PATTERN (I2), so that when we substitute I1SRC for I1DEST in
      PATTERN (I2), we are only substituting for the original I1DEST, not into
@@ -3411,18 +3432,11 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
   if (i1 && GET_CODE (newpat) != CLOBBER)
     {
-      /* Check that an autoincrement side-effect on I1 has not been lost.
-	 This happens if I1DEST is mentioned in I2 and dies there, and
-	 has disappeared from the new pattern.  */
-      if ((FIND_REG_INC_NOTE (i1, NULL_RTX) != 0
-	   && i1_feeds_i2_n
-	   && dead_or_set_p (i2, i1dest)
-	   && !reg_overlap_mentioned_p (i1dest, newpat))
-	   /* Before we can do this substitution, we must redo the test done
-	      above (see detailed comments there) that ensures I1DEST isn't
-	      mentioned in any SETs in NEWPAT that are field assignments.  */
-	  || !combinable_i3pat (NULL, &newpat, i1dest, NULL_RTX, NULL_RTX,
-				0, 0, 0))
+      /* Before we can do this substitution, we must redo the test done
+	 above (see detailed comments there) that ensures I1DEST isn't
+	 mentioned in any SETs in NEWPAT that are field assignments.  */
+      if (!combinable_i3pat (NULL, &newpat, i1dest, NULL_RTX, NULL_RTX,
+			     0, 0, 0))
 	{
 	  undo_all ();
 	  return 0;
@@ -3452,12 +3466,8 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
   if (i0 && GET_CODE (newpat) != CLOBBER)
     {
-      if ((FIND_REG_INC_NOTE (i0, NULL_RTX) != 0
-	   && ((i0_feeds_i2_n && dead_or_set_p (i2, i0dest))
-	       || (i0_feeds_i1_n && dead_or_set_p (i1, i0dest)))
-	   && !reg_overlap_mentioned_p (i0dest, newpat))
-	  || !combinable_i3pat (NULL, &newpat, i0dest, NULL_RTX, NULL_RTX,
-				0, 0, 0))
+      if (!combinable_i3pat (NULL, &newpat, i0dest, NULL_RTX, NULL_RTX,
+			     0, 0, 0))
 	{
 	  undo_all ();
 	  return 0;
@@ -3476,6 +3486,20 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       subst_low_luid = DF_INSN_LUID (i0);
       newpat = subst (newpat, i0dest, i0src, 0, 0, 0);
       substed_i0 = 1;
+    }
+
+  if (n_auto_inc)
+    {
+      int new_n_auto_inc = 0;
+      for_each_inc_dec (newpat, count_auto_inc, &new_n_auto_inc);
+
+      if (n_auto_inc != new_n_auto_inc)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "Number of auto_inc expressions changed\n");
+	  undo_all ();
+	  return 0;
+	}
     }
 
   /* Fail if an autoincrement side-effect has been duplicated.  Be careful
@@ -5885,14 +5909,6 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 								 mode, VOIDmode,
 								 cond, cop1),
 					mode);
-	      else
-		return gen_rtx_IF_THEN_ELSE (mode,
-					     simplify_gen_relational (cond_code,
-								      mode,
-								      VOIDmode,
-								      cond,
-								      cop1),
-					     true_rtx, false_rtx);
 
 	      code = GET_CODE (x);
 	      op0_mode = VOIDmode;
@@ -8922,7 +8938,7 @@ force_int_to_mode (rtx x, scalar_int_mode mode, scalar_int_mode xmode,
       /* If X is (minus C Y) where C's least set bit is larger than any bit
 	 in the mask, then we may replace with (neg Y).  */
       if (poly_int_rtx_p (XEXP (x, 0), &const_op0)
-	  && (unsigned HOST_WIDE_INT) known_alignment (const_op0) > mask)
+	  && known_alignment (poly_uint64 (const_op0)) > mask)
 	{
 	  x = simplify_gen_unary (NEG, xmode, XEXP (x, 1), xmode);
 	  return force_to_mode (x, mode, mask, next_select);

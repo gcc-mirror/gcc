@@ -38,6 +38,8 @@
  * Contains an implementation class for left_child_next_sibling_heap_.
  */
 
+#ifdef PB_DS_CLASS_C_DEC
+
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::iterator
 PB_DS_CLASS_C_DEC::
@@ -86,3 +88,4 @@ end() const
   return (const_iterator(0));
 }
 
+#endif

@@ -21,6 +21,9 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+/* %eax */
+#define bit_AVX512BF16	(1 << 5)
+
 /* %ecx */
 #define bit_SSE3	(1 << 0)
 #define bit_PCLMUL	(1 << 1)
@@ -110,11 +113,13 @@
 #define bit_RDPID	(1 << 22)
 #define bit_MOVDIRI	(1 << 27)
 #define bit_MOVDIR64B	(1 << 28)
+#define bit_ENQCMD	(1 << 29)
 #define bit_CLDEMOTE	(1 << 25)
 
 /* %edx */
 #define bit_AVX5124VNNIW (1 << 2)
 #define bit_AVX5124FMAPS (1 << 3)
+#define bit_AVX512VP2INTERSECT	(1 << 8)
 #define bit_IBT	(1 << 20)
 #define bit_PCONFIG	(1 << 18)
 /* XFEATURE_ENABLED_MASK register bits (%eax == 13, %ecx == 0) */
@@ -184,10 +189,27 @@
 #define signature_VORTEX_ecx	0x436f5320
 #define signature_VORTEX_edx	0x36387865
 
+#ifndef __x86_64__
+/* At least one cpu (Winchip 2) does not set %ebx and %ecx
+   for cpuid leaf 1. Forcibly zero the two registers before
+   calling cpuid as a precaution.  */
+#define __cpuid(level, a, b, c, d)			\
+  do {							\
+    if (__builtin_constant_p (level) && (level) != 1)	\
+      __asm__ ("cpuid\n\t"				\
+	      : "=a" (a), "=b" (b), "=c" (c), "=d" (d)	\
+	      : "0" (level));				\
+    else						\
+      __asm__ ("cpuid\n\t"				\
+	      : "=a" (a), "=b" (b), "=c" (c), "=d" (d)	\
+	      : "0" (level), "1" (0), "2" (0));		\
+  } while (0)
+#else
 #define __cpuid(level, a, b, c, d)			\
   __asm__ ("cpuid\n\t"					\
 	   : "=a" (a), "=b" (b), "=c" (c), "=d" (d)	\
 	   : "0" (level))
+#endif
 
 #define __cpuid_count(level, count, a, b, c, d)		\
   __asm__ ("cpuid\n\t"					\

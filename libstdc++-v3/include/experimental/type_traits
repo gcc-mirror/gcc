@@ -24,6 +24,7 @@
 
 /** @file experimental/type_traits
  *  This is a TS C++ Library header.
+ *  @ingroup libfund-ts
  */
 
 //
@@ -226,13 +227,16 @@ inline namespace fundamentals_v2
 
 template<typename...> using void_t = void;
 
-struct nonesuch
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
+struct __nonesuchbase {};
+struct nonesuch : private __nonesuchbase
 {
-  nonesuch() = delete;
   ~nonesuch() = delete;
   nonesuch(nonesuch const&) = delete;
   void operator=(nonesuch const&) = delete;
 };
+#pragma GCC diagnostic pop
 
 template<template<typename...> class _Op, typename... _Args>
   using is_detected
@@ -251,12 +255,12 @@ template<typename _Default, template<typename...> class _Op, typename... _Args>
 template<typename _Default, template<typename...> class _Op, typename... _Args>
   using detected_or_t = typename detected_or<_Default, _Op, _Args...>::type;
 
-template<typename Expected, template<typename...> class _Op, typename... _Args>
-  using is_detected_exact = is_same<Expected, detected_t<_Op, _Args...>>;
+template<typename _Expected, template<typename...> class _Op, typename... _Args>
+  using is_detected_exact = is_same<_Expected, detected_t<_Op, _Args...>>;
 
-template<typename Expected, template<typename...> class _Op, typename... _Args>
+template<typename _Expected, template<typename...> class _Op, typename... _Args>
   constexpr bool is_detected_exact_v
-    = is_detected_exact<Expected, _Op, _Args...>::value;
+    = is_detected_exact<_Expected, _Op, _Args...>::value;
 
 template<typename _To, template<typename...> class _Op, typename... _Args>
   using is_detected_convertible

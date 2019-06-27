@@ -49,3 +49,5 @@ test03()
   B * const b = nullptr;
   std::experimental::shared_ptr<A[]> p(b); // { dg-error "no match" }
 }
+
+// { dg-prune-output "enable_if" }

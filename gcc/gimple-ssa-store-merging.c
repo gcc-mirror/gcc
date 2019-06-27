@@ -1615,13 +1615,31 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
 		       unsigned int total_bytes)
 {
   unsigned int first_byte = bitpos / BITS_PER_UNIT;
-  tree tmp_int = expr;
   bool sub_byte_op_p = ((bitlen % BITS_PER_UNIT)
 			|| (bitpos % BITS_PER_UNIT)
 			|| !int_mode_for_size (bitlen, 0).exists ());
+  bool empty_ctor_p
+    = (TREE_CODE (expr) == CONSTRUCTOR
+       && CONSTRUCTOR_NELTS (expr) == 0
+       && TYPE_SIZE_UNIT (TREE_TYPE (expr))
+		       && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (expr))));
 
   if (!sub_byte_op_p)
-    return native_encode_expr (tmp_int, ptr + first_byte, total_bytes) != 0;
+    {
+      if (first_byte >= total_bytes)
+	return false;
+      total_bytes -= first_byte;
+      if (empty_ctor_p)
+	{
+	  unsigned HOST_WIDE_INT rhs_bytes
+	    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (expr)));
+	  if (rhs_bytes > total_bytes)
+	    return false;
+	  memset (ptr + first_byte, '\0', rhs_bytes);
+	  return true;
+	}
+      return native_encode_expr (expr, ptr + first_byte, total_bytes) != 0;
+    }
 
   /* LITTLE-ENDIAN
      We are writing a non byte-sized quantity or at a position that is not
@@ -1667,14 +1685,29 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
 
   /* We must be dealing with fixed-size data at this point, since the
      total size is also fixed.  */
-  fixed_size_mode mode = as_a <fixed_size_mode> (TYPE_MODE (TREE_TYPE (expr)));
+  unsigned int byte_size;
+  if (empty_ctor_p)
+    {
+      unsigned HOST_WIDE_INT rhs_bytes
+	= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (expr)));
+      if (rhs_bytes > total_bytes)
+	return false;
+      byte_size = rhs_bytes;
+    }
+  else
+    {
+      fixed_size_mode mode
+	= as_a <fixed_size_mode> (TYPE_MODE (TREE_TYPE (expr)));
+      byte_size = GET_MODE_SIZE (mode);
+    }
   /* Allocate an extra byte so that we have space to shift into.  */
-  unsigned int byte_size = GET_MODE_SIZE (mode) + 1;
+  byte_size++;
   unsigned char *tmpbuf = XALLOCAVEC (unsigned char, byte_size);
   memset (tmpbuf, '\0', byte_size);
   /* The store detection code should only have allowed constants that are
-     accepted by native_encode_expr.  */
-  if (native_encode_expr (expr, tmpbuf, byte_size - 1) == 0)
+     accepted by native_encode_expr or empty ctors.  */
+  if (!empty_ctor_p
+      && native_encode_expr (expr, tmpbuf, byte_size - 1) == 0)
     gcc_unreachable ();
 
   /* The native_encode_expr machinery uses TYPE_MODE to determine how many
@@ -2150,7 +2183,7 @@ pass_store_merging::terminate_and_process_all_chains ()
   bool ret = false;
   while (m_stores_head)
     ret |= terminate_and_release_chain (m_stores_head);
-  gcc_assert (m_stores.elements () == 0);
+  gcc_assert (m_stores.is_empty ());
   gcc_assert (m_stores_head == NULL);
 
   return ret;
@@ -2671,6 +2704,8 @@ imm_store_chain_info::coalesce_immediate_stores ()
 
   FOR_EACH_VEC_ELT (m_store_info, i, info)
     {
+      unsigned HOST_WIDE_INT new_bitregion_start, new_bitregion_end;
+
       if (i <= ignore)
 	goto done;
 
@@ -2702,7 +2737,14 @@ imm_store_chain_info::coalesce_immediate_stores ()
 	    }
 	}
 
-      if (info->order >= merged_store->first_nonmergeable_order)
+      new_bitregion_start
+	= MIN (merged_store->bitregion_start, info->bitregion_start);
+      new_bitregion_end
+	= MAX (merged_store->bitregion_end, info->bitregion_end);
+
+      if (info->order >= merged_store->first_nonmergeable_order
+	  || (((new_bitregion_end - new_bitregion_start + 1) / BITS_PER_UNIT)
+	      > (unsigned) PARAM_VALUE (PARAM_STORE_MERGING_MAX_SIZE)))
 	;
 
       /* |---store 1---|
@@ -3184,12 +3226,15 @@ count_multiple_uses (store_immediate_info *info)
    Return number of new stores.
    If ALLOW_UNALIGNED_STORE is false, then all stores must be aligned.
    If ALLOW_UNALIGNED_LOAD is false, then all loads must be aligned.
+   BZERO_FIRST may be true only when the first store covers the whole group
+   and clears it; if BZERO_FIRST is true, keep that first store in the set
+   unmodified and emit further stores for the overrides only.
    If SPLIT_STORES is NULL, it is just a dry run to count number of
    new stores.  */
 
 static unsigned int
 split_group (merged_store_group *group, bool allow_unaligned_store,
-	     bool allow_unaligned_load,
+	     bool allow_unaligned_load, bool bzero_first,
 	     vec<struct split_store *> *split_stores,
 	     unsigned *total_orig,
 	     unsigned *total_new)
@@ -3207,6 +3252,7 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
   if (group->stores[0]->rhs_code == LROTATE_EXPR
       || group->stores[0]->rhs_code == NOP_EXPR)
     {
+      gcc_assert (!bzero_first);
       /* For bswap framework using sets of stores, all the checking
 	 has been done earlier in try_coalesce_bswap and needs to be
 	 emitted as a single store.  */
@@ -3278,10 +3324,26 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
       if (group->load_align[i])
 	group_load_align = MIN (group_load_align, group->load_align[i]);
 
+  if (bzero_first)
+    {
+      first = 1;
+      ret = 1;
+      if (split_stores)
+	{
+	  struct split_store *store
+	    = new split_store (bytepos, group->stores[0]->bitsize, align_base);
+	  store->orig_stores.safe_push (group->stores[0]);
+	  store->orig = true;
+	  any_orig = true;
+	  split_stores->safe_push (store);
+	}
+    }
+
   while (size > 0)
     {
       if ((allow_unaligned_store || group_align <= BITS_PER_UNIT)
-	  && group->mask[try_pos - bytepos] == (unsigned char) ~0U)
+	  && (group->mask[try_pos - bytepos] == (unsigned char) ~0U
+	      || (bzero_first && group->val[try_pos - bytepos] == 0)))
 	{
 	  /* Skip padding bytes.  */
 	  ++try_pos;
@@ -3348,7 +3410,9 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
       /* Now look for whole padding bytes at the end of that bitsize.  */
       for (nonmasked = try_size / BITS_PER_UNIT; nonmasked > 0; --nonmasked)
 	if (group->mask[try_pos - bytepos + nonmasked - 1]
-	    != (unsigned char) ~0U)
+	    != (unsigned char) ~0U
+	    && (!bzero_first
+		|| group->val[try_pos - bytepos + nonmasked - 1] != 0))
 	  break;
       if (nonmasked == 0)
 	{
@@ -3367,7 +3431,9 @@ split_group (merged_store_group *group, bool allow_unaligned_store,
 	  /* Now look for whole padding bytes at the start of that bitsize.  */
 	  unsigned int try_bytesize = try_size / BITS_PER_UNIT, masked;
 	  for (masked = 0; masked < try_bytesize; ++masked)
-	    if (group->mask[try_pos - bytepos + masked] != (unsigned char) ~0U)
+	    if (group->mask[try_pos - bytepos + masked] != (unsigned char) ~0U
+		&& (!bzero_first
+		    || group->val[try_pos - bytepos + masked] != 0))
 	      break;
 	  masked *= BITS_PER_UNIT;
 	  gcc_assert (masked < try_size);
@@ -3583,20 +3649,44 @@ imm_store_chain_info::output_merged_store (merged_store_group *group)
   bool allow_unaligned_store
     = !STRICT_ALIGNMENT && PARAM_VALUE (PARAM_STORE_MERGING_ALLOW_UNALIGNED);
   bool allow_unaligned_load = allow_unaligned_store;
-  if (allow_unaligned_store)
+  bool bzero_first = false;
+  if (group->stores[0]->rhs_code == INTEGER_CST
+      && TREE_CODE (gimple_assign_rhs1 (group->stores[0]->stmt)) == CONSTRUCTOR
+      && CONSTRUCTOR_NELTS (gimple_assign_rhs1 (group->stores[0]->stmt)) == 0
+      && group->start == group->stores[0]->bitpos
+      && group->width == group->stores[0]->bitsize
+      && (group->start % BITS_PER_UNIT) == 0
+      && (group->width % BITS_PER_UNIT) == 0)
+    bzero_first = true;
+  if (allow_unaligned_store || bzero_first)
     {
       /* If unaligned stores are allowed, see how many stores we'd emit
 	 for unaligned and how many stores we'd emit for aligned stores.
-	 Only use unaligned stores if it allows fewer stores than aligned.  */
-      unsigned aligned_cnt
-	= split_group (group, false, allow_unaligned_load, NULL, NULL, NULL);
-      unsigned unaligned_cnt
-	= split_group (group, true, allow_unaligned_load, NULL, NULL, NULL);
-      if (aligned_cnt <= unaligned_cnt)
+	 Only use unaligned stores if it allows fewer stores than aligned.
+	 Similarly, if there is a whole region clear first, prefer expanding
+	 it together compared to expanding clear first followed by merged
+	 further stores.  */
+      unsigned cnt[4] = { ~0, ~0, ~0, ~0 };
+      int pass_min = 0;
+      for (int pass = 0; pass < 4; ++pass)
+	{
+	  if (!allow_unaligned_store && (pass & 1) != 0)
+	    continue;
+	  if (!bzero_first && (pass & 2) != 0)
+	    continue;
+	  cnt[pass] = split_group (group, (pass & 1) != 0,
+				   allow_unaligned_load, (pass & 2) != 0,
+				   NULL, NULL, NULL);
+	  if (cnt[pass] < cnt[pass_min])
+	    pass_min = pass;
+	}
+      if ((pass_min & 1) == 0)
 	allow_unaligned_store = false;
+      if ((pass_min & 2) == 0)
+	bzero_first = false;
     }
   unsigned total_orig, total_new;
-  split_group (group, allow_unaligned_store, allow_unaligned_load,
+  split_group (group, allow_unaligned_store, allow_unaligned_load, bzero_first,
 	       &split_stores, &total_orig, &total_new);
 
   if (split_stores.length () >= orig_num_stmts)
@@ -4164,7 +4254,8 @@ lhs_valid_for_store_merging_p (tree lhs)
   tree_code code = TREE_CODE (lhs);
 
   if (code == ARRAY_REF || code == ARRAY_RANGE_REF || code == MEM_REF
-      || code == COMPONENT_REF || code == BIT_FIELD_REF)
+      || code == COMPONENT_REF || code == BIT_FIELD_REF
+      || DECL_P (lhs))
     return true;
 
   return false;
@@ -4178,6 +4269,12 @@ static bool
 rhs_valid_for_store_merging_p (tree rhs)
 {
   unsigned HOST_WIDE_INT size;
+  if (TREE_CODE (rhs) == CONSTRUCTOR
+      && !TREE_CLOBBER_P (rhs)
+      && CONSTRUCTOR_NELTS (rhs) == 0
+      && TYPE_SIZE_UNIT (TREE_TYPE (rhs))
+      && tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (rhs))))
+    return true;
   return (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (rhs))).is_constant (&size)
 	  && native_encode_expr (rhs, NULL, size) != 0);
 }
@@ -4363,7 +4460,9 @@ pass_store_merging::process_store (gimple *stmt)
   bool invalid = (base_addr == NULL_TREE
 		  || (maybe_gt (bitsize,
 				(unsigned int) MAX_BITSIZE_MODE_ANY_INT)
-		      && (TREE_CODE (rhs) != INTEGER_CST)));
+		      && TREE_CODE (rhs) != INTEGER_CST
+		      && (TREE_CODE (rhs) != CONSTRUCTOR
+			  || CONSTRUCTOR_NELTS (rhs) != 0)));
   enum tree_code rhs_code = ERROR_MARK;
   bool bit_not_p = false;
   struct symbolic_number n;

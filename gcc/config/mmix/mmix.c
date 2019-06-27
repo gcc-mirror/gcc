@@ -916,7 +916,7 @@ mmix_target_asm_function_epilogue (FILE *stream)
 
 static void
 mmix_asm_output_mi_thunk (FILE *stream,
-			  tree fndecl ATTRIBUTE_UNUSED,
+			  tree thunk_fndecl ATTRIBUTE_UNUSED,
 			  HOST_WIDE_INT delta,
 			  HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
 			  tree func)
@@ -925,6 +925,9 @@ mmix_asm_output_mi_thunk (FILE *stream,
      location of structure to return as invisible first argument), you
      need to tweak this code too.  */
   const char *regname = reg_names[MMIX_FIRST_INCOMING_ARG_REGNUM];
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
+
+  assemble_start_function (thunk_fndecl, fnname);
 
   if (delta >= 0 && delta < 65536)
     fprintf (stream, "\tINCL %s,%d\n", regname, (int)delta);
@@ -939,6 +942,7 @@ mmix_asm_output_mi_thunk (FILE *stream,
   fprintf (stream, "\tJMP ");
   assemble_name (stream, XSTR (XEXP (DECL_RTL (func), 0), 0));
   fprintf (stream, "\n");
+  assemble_end_function (thunk_fndecl, fnname);
 }
 
 /* FUNCTION_PROFILER.  */

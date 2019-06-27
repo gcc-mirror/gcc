@@ -18,6 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <functional>
+#include <string>
 #include <testsuite_hooks.h>
 
 int main()
