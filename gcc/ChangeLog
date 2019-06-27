@@ -1,3 +1,21 @@
+2019-06-27  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/90974
+	PR rtl-optimization/90975
+	PR rtl-optimization/90976
+	PR target/91016
+	PR tree-optimization/91017
+	* config/i386/i386-expand.c (ix86_expand_rounddf_32): Remove
+	unused tmp.
+	* lra.c (lra_set_insn_recog_data): Remove a leftover from
+	initial commit of IRA.
+	* optabs.c (expand_twoval_binop): Use xop0 and xop1 instead
+	of op0 and op1.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction):
+	Remove unused mode1.
+	* tree-vect-stmts.c (vectorizable_call): Remove dead assignment
+	to new_stmt_info.
+
 2019-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/90991
