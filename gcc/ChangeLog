@@ -1,3 +1,14 @@
+2019-06-27  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-devirt.c (odr_type_d): Add tbaa_enabled flag.
+	(add_type_duplicate): When odr hash is not allocated, to nothing.
+	(odr_based_tbaa_p): New function.
+	(set_type_canonical_for_odr_type): New function.
+	* ipa-utils.h (enable_odr_based_tbaa, odr_based_tbaa_p,
+	set_type_canonical_for_odr_type): New.
+	* tree.c (gimple_canonical_types_compatible_p): ODR types with
+	ODR based TBAA are not equivalent to non-ODR types.
+
 2019-06-27  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/90974

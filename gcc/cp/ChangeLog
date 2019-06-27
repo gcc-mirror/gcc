@@ -1,3 +1,8 @@
+2019-06-27  Jan Hubicka  <jh@suse.cz>
+
+	* class.c (layout_class_type): Set TYPE_CXX_ODR_P for as-base
+	type copy.
+
 2019-06-27  Martin Liska  <mliska@suse.cz>
 
 	* class.c (adjust_clone_args): Remove obviously
