@@ -522,7 +522,7 @@ Objective-C and Objective-C++ Dialects}.
 -fpreprocessed  -ftabstop=@var{width}  -ftrack-macro-expansion  @gol
 -fwide-exec-charset=@var{charset}  -fworking-directory @gol
 -H  -imacros @var{file}  -include @var{file} @gol
--M  -MD  -MF  -MG  -MM  -MMD  -MP  -MQ  -MT @gol
+-M  -MD  -MF  -MG  -MM  -MMD  -MP  -Mno-modules -MQ  -MT @gol
 -no-integrated-cpp  -P  -pthread  -remap @gol
 -traditional  -traditional-cpp  -trigraphs @gol
 -U@var{macro}  -undef  @gol

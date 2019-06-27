@@ -139,6 +139,11 @@ this useless.
 
 This feature is used in automatic updating of makefiles.
 
+@item -Mno-modules
+@opindex Mno-modules
+Disable dependency generation for compiled module interfaces.  Some
+dependency parsers are not fully make-compatible.
+
 @item -MP
 @opindex MP
 This option instructs CPP to add a phony target for each dependency

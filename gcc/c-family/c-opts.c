@@ -231,6 +231,7 @@ c_common_init_options (unsigned int decoded_options_count,
   cpp_opts = cpp_get_options (parse_in);
   cpp_opts->dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
   cpp_opts->objc = c_dialect_objc ();
+  cpp_opts->deps.modules = true;
 
   /* Reset to avoid warnings on internal definitions.  We set it just
      before passing on command-line options to cpplib.  */
@@ -362,6 +363,18 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_MP:
       deps_seen = true;
       cpp_opts->deps.phony_targets = true;
+      break;
+
+    case OPT_Mmodules:
+      /* Do not set deps_seen, so the user can unconditionally turn
+	 this on or off.  */
+      cpp_opts->deps.modules = true;
+      break;
+
+    case OPT_Mno_modules:
+      /* Do not set deps_seen, so the user can unconditionally turn
+	 this on or off.  */
+      cpp_opts->deps.modules = false;
       break;
 
     case OPT_MQ:

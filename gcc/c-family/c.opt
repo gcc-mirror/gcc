@@ -236,17 +236,25 @@ MMD
 C ObjC C++ ObjC++ NoDriverArg Separate MissingArgError(missing filename after %qs)
 Like -MD but ignore system header files.
 
+Mmodules
+C++
+Generate C++ Module dependency information.
+
+Mno-modules
+C++
+; undocumented
+
 MP
 C ObjC C++ ObjC++
 Generate phony targets for all headers.
 
 MQ
 C ObjC C++ ObjC++ Joined Separate MissingArgError(missing makefile target after %qs)
--MQ <target>	Add a MAKE-quoted target.
+-MQ <target>	Add a target that may require quoting.
 
 MT
 C ObjC C++ ObjC++ Joined Separate MissingArgError(missing makefile target after %qs)
--MT <target>	Add an unquoted target.
+-MT <target>	Add a target that does not require quoting.
 
 P
 C ObjC C++ ObjC++

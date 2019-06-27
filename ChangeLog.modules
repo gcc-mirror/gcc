@@ -1,3 +1,25 @@
+2019-06-27  Nathan Sidwell  <nathan@acm.org>
+
+	Add -Mno-modules.
+	gcc/c-family/
+	* c-opts.c (c_common_init_options): Default module deps on.
+	(c_common_handle_option): Handle M{no-}modules.
+	* c.opt (Mmodules, Mno-modules): New options.
+	gcc/
+	* doc/cppopts.texi (Mno-modules): Document it.
+	* doc/invoke.texi: Likewise.
+	* gcc.c (cpp_unique_options): Add it.
+	gcc/testsuite/
+	* g++.dg/modules/dep-3.C: New.
+	libcpp/
+	* include/cpplib.h (struct cpp_options): Add dep.modules.
+	* include/mkdeps.h: Include cpplib.h
+	(deps_write): Take a cpp_reader.
+	* init.c (cpp_finish): Adjust deps_write call.
+	* mkdeps.c: Include internal.h
+	(make_write): Adjust.  Conditionally inhibit module output.
+	(deps_write): Adjust.
+
 2019-06-26  Nathan Sidwell  <nathan@acm.org>
 
 	Don't elide primary from partition names.
