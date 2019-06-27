@@ -6345,7 +6345,10 @@ scan_operand_equal_p (tree ref1, tree ref2)
     return false;
   if (maybe_ne (bitsize1, bitsize2))
     return false;
-  if (!operand_equal_p (offset1, offset2, 0))
+  if (offset1 != offset2
+      && (!offset1
+	  || !offset2
+	  || !operand_equal_p (offset1, offset2, 0)))
     return false;
   return true;
 }
