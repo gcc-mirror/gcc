@@ -7565,11 +7565,3 @@ determine_value_range (tree expr, wide_int *min, wide_int *max)
 
   return VR_VARYING;
 }
-
-#if USE_IRANGE
-/* Only for branch.  */
-value_range_base::value_range_base (const irange &ir)
-{
-  *this = irange_to_value_range (ir);
-}
-#endif // USE_IRANGE

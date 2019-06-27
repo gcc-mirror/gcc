@@ -39,7 +39,7 @@ public:
   value_range_base (tree type);
 #if USE_IRANGE
   /* Only for branch.  */
-  value_range_base (const irange &);
+  value_range_base (const irange &ir) { *this = irange_to_value_range (ir); }
 #endif
 
   void set (value_range_kind, tree, tree);
