@@ -3483,8 +3483,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			= gimple_build_call_internal_vec (ifn, vargs);
 		      gimple_call_set_lhs (call, half_res);
 		      gimple_call_set_nothrow (call, true);
-		      new_stmt_info
-			= vect_finish_stmt_generation (stmt_info, call, gsi);
+		      vect_finish_stmt_generation (stmt_info, call, gsi);
 		      if ((i & 1) == 0)
 			{
 			  prev_res = half_res;
@@ -3583,8 +3582,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      gcall *call = gimple_build_call_internal_vec (ifn, vargs);
 	      gimple_call_set_lhs (call, half_res);
 	      gimple_call_set_nothrow (call, true);
-	      new_stmt_info
-		= vect_finish_stmt_generation (stmt_info, call, gsi);
+	      vect_finish_stmt_generation (stmt_info, call, gsi);
 	      if ((j & 1) == 0)
 		{
 		  prev_res = half_res;

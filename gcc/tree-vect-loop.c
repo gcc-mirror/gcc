@@ -5427,7 +5427,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
             dump_printf_loc (MSG_NOTE, vect_location,
 			     "Reduce using vector shifts\n");
 
-	  mode1 = TYPE_MODE (vectype1);
           vec_dest = vect_create_destination_var (scalar_dest, vectype1);
           for (elt_offset = nelements / 2;
                elt_offset >= 1;

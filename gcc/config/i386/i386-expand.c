@@ -16052,14 +16052,13 @@ ix86_expand_rounddf_32 (rtx operand0, rtx operand1)
 			       0, OPTAB_DIRECT);
 
   /* Compensate.  */
-  tmp = gen_reg_rtx (mode);
   /* xa2 = xa2 - (dxa > 0.5 ? 1 : 0) */
   tmp = ix86_expand_sse_compare_mask (UNGT, dxa, half, false);
-  emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (mode, one, tmp)));
+  emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (mode, tmp, one)));
   xa2 = expand_simple_binop (mode, MINUS, xa2, tmp, NULL_RTX, 0, OPTAB_DIRECT);
   /* xa2 = xa2 + (dxa <= -0.5 ? 1 : 0) */
   tmp = ix86_expand_sse_compare_mask (UNGE, mhalf, dxa, false);
-  emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (mode, one, tmp)));
+  emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (mode, tmp, one)));
   xa2 = expand_simple_binop (mode, PLUS, xa2, tmp, NULL_RTX, 0, OPTAB_DIRECT);
 
   /* res = copysign (xa2, operand1) */
