@@ -1,3 +1,11 @@
+2019-06-27  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2019-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/90939
+	* ipa-cp.c (ipcp_bits_lattice::meet_with): Remove assert.
+
 2019-06-16  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR middle-end/64242
