@@ -31,6 +31,7 @@
 #include "ssa.h"
 #include "gimple-pretty-print.h"
 #include "ssa-range.h"
+#include "tree-vrp.h"
 #include "gimple-ssa-warn-restrict.h"
 #include "diagnostic-core.h"
 #include "fold-const.h"
@@ -301,7 +302,7 @@ ranger_get_range_info (gimple *stmt, tree ssa, wide_int *min, wide_int *max)
   if (r.undefined_p ())
     return VR_UNDEFINED;
 
-  value_range_base vr = irange_to_value_range (r);
+  value_range_base vr = r;
   *min = wi::to_wide (vr.min ());
   *max = wi::to_wide (vr.max ());
   return vr.kind ();

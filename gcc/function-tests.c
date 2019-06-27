@@ -579,7 +579,7 @@ test_iranges ()
   tree fndecl = build_trivial_high_gimple_function ();
   function *fun = DECL_STRUCT_FUNCTION (fndecl);
   push_cfun (fun);
-  irange_tests ();
+  range_tests ();
   pop_cfun ();
 }
 

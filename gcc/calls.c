@@ -1260,7 +1260,7 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */,
     {
       wide_int min, max;
       enum value_range_kind kind = get_range_info (exp, &min, &max);
-      r = value_range_to_irange (exptype, kind, min, max);
+      r = irange (kind, exptype, min, max);
     }
   else if (!call || TREE_CODE (exp) != SSA_NAME || !integral
 	   || !ranger.range_of_expr (r, exp, call)

@@ -2464,6 +2464,7 @@ range_ops_fold_binary_expr (value_range_base *vr,
     vr0.set_varying (expr_type);
   else if (vr1.undefined_p ())
     vr1.set_varying (expr_type);
+
   /* Handle symbolics.  Worth moving into range-ops?? */
   if ((code == PLUS_EXPR || code == MINUS_EXPR)
       && (vr0.symbolic_p () || vr1.symbolic_p ()))
@@ -2475,12 +2476,17 @@ range_ops_fold_binary_expr (value_range_base *vr,
     }
   if (handle_symbolics_in_pointer_plus_expr (vr, code, expr_type, &vr0, &vr1))
     return;
+
   /* Do the range-ops dance.  */
+  value_range_base n0 = normalize_for_range_ops (vr0);
+  value_range_base n1 = normalize_for_range_ops (vr1);
+#if USE_IRANGE
   irange ir;
-  irange ir0 = value_range_to_irange (normalize_for_range_ops (vr0));
-  irange ir1 = value_range_to_irange (normalize_for_range_ops (vr1));
-  op->fold_range (ir, ir0, ir1);
-  *vr = irange_to_value_range (ir);
+  op->fold_range (ir, n0, n1);
+  *vr = ir;
+#else
+  op->fold_range (*vr, n0, n1);
+#endif
 }
 
 /* Fold a unary expression of a value_range with range-ops.  */
@@ -2503,6 +2509,7 @@ range_ops_fold_unary_expr (value_range_base *vr,
       vr->set_undefined (expr_type);
       return;
     }
+
   /* Handle symbolics.  Worth moving into range-ops?? */
   if (code == NEGATE_EXPR && vr0->symbolic_p ())
     {
@@ -2532,12 +2539,18 @@ range_ops_fold_unary_expr (value_range_base *vr,
 	vr->set_varying (expr_type);
       return;
     }
+
+
   /* Do the range-ops dance.  */
+  value_range_base n0 = normalize_for_range_ops (*vr0);
+  value_range_base n1 (expr_type);
+#if USE_IRANGE
   irange ir;
-  irange ir0 = value_range_to_irange (normalize_for_range_ops (*vr0));
-  irange ir1 (expr_type);
-  op->fold_range (ir, ir0, ir1);
-  *vr = irange_to_value_range (ir);
+  op->fold_range (ir, n0, n1);
+  *vr = ir;
+#else
+  op->fold_range (*vr, n0, n1);
+#endif
 }
 
 /* Generic folding of a binary expression between two value_ranges.
@@ -7554,23 +7567,10 @@ determine_value_range (tree expr, wide_int *min, wide_int *max)
   return VR_VARYING;
 }
 
-#if IRANGE_WITH_VALUE_RANGE
-irange
-value_range_to_irange (const value_range_base &vr)
+#if USE_IRANGE
+/* Only for branch.  */
+value_range_base::value_range_base (const irange &ir)
 {
-  return vr;
+  *this = irange_to_value_range (ir);
 }
-
-irange
-value_range_to_irange (tree type, enum value_range_kind kind,
-		       const wide_int &min, const wide_int &max)
-{
-  return irange (kind, type, min, max);
-}
-
-value_range_base
-irange_to_value_range (const irange &ir)
-{
-  return ir;
-}
-#endif // IRANGE_TO_VALUE_RANGE
+#endif // USE_IRANGE

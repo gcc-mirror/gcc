@@ -22,12 +22,24 @@ along with GCC; see the file COPYING3.  If not see
 
 class value_range_storage;
 
+// Set to one if irange is a standalone class containing multiple
+// sub-ranges, or zero if irange is just value_range_base underneath.
+#define USE_IRANGE 1
+
+#if USE_IRANGE
+class irange;
+#else
+class value_range_base;
+typedef value_range_base irange;
+typedef value_range_storage irange_storage;
+#endif
+
 /* Range of values that can be associated with an SSA_NAME after VRP
    has executed.  */
 class GTY((for_user)) value_range_base
 {
   friend class value_range_storage;
-  friend void irange_tests ();
+  friend void range_tests ();
 public:
   value_range_base ();
   value_range_base (value_range_kind, tree, tree);
@@ -37,6 +49,10 @@ public:
   value_range_base (tree type, const wide_int &, const wide_int &);
   value_range_base (tree type, const value_range_storage *);
   value_range_base (tree type);
+#if USE_IRANGE
+  /* Only for branch.  */
+  value_range_base (const irange &);
+#endif
 
   void set (value_range_kind, tree, tree);
   void set (tree);
@@ -84,7 +100,6 @@ public:
   void invert ();
   void dump () const;
   value_range_base normalize_symbolics () const;
-  // FIXME: Perhaps rewrite the irange versions to use pointers instead.
   void union_ (const value_range_base &);
   void intersect (const value_range_base &);
 
@@ -287,6 +302,41 @@ struct assert_info
   /* Expression to compare.  */
   tree expr;
 };
+
+// Return true if TYPE is a valid type for value_range to operate on.
+// Otherwise return FALSE.
+
+inline bool
+value_range_base::supports_type_p (tree type)
+{
+  if (type && (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type)))
+    return type;
+  return NULL;
+}
+
+// Return true if SSA is a valid ssa_name for value_range to operate on.
+// Otherwise return FALSE.
+
+inline bool
+value_range_base::supports_ssa_p (tree ssa)
+{
+  if (!SSA_NAME_IS_VIRTUAL_OPERAND (ssa))
+    return supports_type_p (TREE_TYPE (ssa));
+ return false;
+}
+
+// Return true if EXPR is a valid tree expression for value_range to
+// operate on.  Otherwise return FALSE.
+
+inline bool
+value_range_base::supports_p (tree expr)
+{
+  if (TYPE_P (expr))
+    return supports_type_p (expr);
+  else if (TREE_CODE (expr) == SSA_NAME)
+    return supports_ssa_p (expr);
+  return supports_type_p (TREE_TYPE (expr));
+}
 
 extern void register_edge_assert_for (tree, edge, enum tree_code,
 				      tree, tree, vec<assert_info> &);

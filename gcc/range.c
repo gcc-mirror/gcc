@@ -52,9 +52,8 @@ range_compatible_p (tree t1, tree t2)
 bool
 irange::operator== (const irange &r) const
 {
-  /* Special case UNDEFINED, because the value_range_base
-     implementation may not have a type for a freshly initialized
-     UNDEFINED.  */
+  // Special case this because a freshly initialized range may be
+  // typeless.
   if (undefined_p ())
     return r.undefined_p ();
 
@@ -88,7 +87,7 @@ range_from_ssa (tree ssa)
     return irange (type);
   wide_int min, max;
   enum value_range_kind kind = get_range_info (ssa, &min, &max);
-  return value_range_to_irange (type, kind, min, max);
+  return irange (kind, type, min, max);
 }
 
 // This function returns a range for tree node EXPR in R.  Return
@@ -208,7 +207,7 @@ range_negatives (tree type)
   return r;
 }
 
-#if !IRANGE_WITH_VALUE_RANGE
+#if USE_IRANGE
 // Standalone irange implementation.
 
 // Subtract 1 from X and set OVERFLOW if the operation overflows.
@@ -231,10 +230,16 @@ void
 irange::init (tree type, const wide_int &lbound, const wide_int &ubound,
 	      value_range_kind rt)
 {
-  // Even though we accept a full value_range_kind, we *ONLY* use it to
-  // distinguish a plain range from an inverse range.
-  gcc_checking_assert (rt == VR_RANGE || rt == VR_ANTI_RANGE);
-
+  if (rt == VR_UNDEFINED)
+    {
+      set_undefined (type);
+      return;
+    }
+  if (rt == VR_VARYING)
+    {
+      set_varying (type);
+      return;
+    }
   gcc_checking_assert (irange::supports_type_p (type));
   gcc_checking_assert (TYPE_PRECISION (type) == lbound.get_precision ());
   gcc_checking_assert (lbound.get_precision () == ubound.get_precision ());
@@ -287,7 +292,6 @@ irange::irange (tree type)
 irange::irange (value_range_kind rt, tree type,
 		const wide_int &lbound, const wide_int &ubound)
 {
-  gcc_checking_assert (rt == VR_RANGE || rt == VR_ANTI_RANGE);
   init (type, lbound, ubound, rt);
 }
 
@@ -980,7 +984,7 @@ irange::singleton_p (tree *result) const
   return false;
 }
 
-// Convert irange  to a value_range_kind.
+// Convert irange to a value_range.
 
 value_range_base
 irange_to_value_range (const irange &r)
@@ -1041,24 +1045,9 @@ irange_to_value_range (const irange &r)
   return vr;
 }
 
-// Convert a value_range to an irange and store it in R.
+// Convert a value_range into an irange.
 
-irange
-value_range_to_irange (tree type, enum value_range_kind kind,
-		       const wide_int &min, const wide_int &max)
-{
-  gcc_checking_assert (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type));
-  irange r;
-  if (kind == VR_VARYING || kind == VR_UNDEFINED)
-    r.set_varying (type);
-  else
-    r = irange (kind, type, min, max);
-  return r;
-}
-
-// Same as above, but takes an entire value_range instead of piecemeal.
-
-irange
+static irange
 value_range_to_irange (const value_range_base &vr)
 {
   tree type = vr.type ();
@@ -1070,16 +1059,20 @@ value_range_to_irange (const value_range_base &vr)
       r.set_undefined (type);
       return r;
     }
-  return value_range_to_irange (type, vr.kind (),
-			        wi::to_wide (vr.min ()),
-			        wi::to_wide (vr.max ()));
+  return irange (vr.kind (), vr.min (), vr.max ());
 }
-#endif // !IRANGE_WITH_VALUE_RANGE
+
+irange::irange (const value_range_base &vr)
+{
+  *this = value_range_to_irange (vr);
+}
+
+#endif // USE_IRANGE
 
 #if CHECKING_P
 #include "stor-layout.h"
 
-// Ideally this should go in namespace selftest, but irange_tests
+// Ideally this should go in namespace selftest, but range_tests
 // needs to be a friend of class irange so it can access
 // irange::m_max_pairs.
 
@@ -1104,7 +1097,7 @@ value_range_to_irange (const value_range_base &vr)
 // Run all of the selftests within this file.
 
 void
-irange_tests ()
+range_tests ()
 {
   tree u128_type = build_nonstandard_integer_type (128, /*unsigned=*/1);
   irange i1, i2, i3;
@@ -1576,11 +1569,11 @@ irange_tests ()
 
   // Test irange / value_range conversion functions.
   r0 = irange (VR_ANTI_RANGE, INT (10), INT (20));
-  value_range_base vr = irange_to_value_range (r0);
+  value_range_base vr = r0;
   ASSERT_TRUE (vr.kind () == VR_ANTI_RANGE);
   ASSERT_TRUE (wi::eq_p (10, wi::to_wide (vr.min ()))
 	       && wi::eq_p (20, wi::to_wide (vr.max ())));
-  r1 = value_range_to_irange (vr);
+  r1 = vr;
   ASSERT_TRUE (r0 == r1);
 }
 

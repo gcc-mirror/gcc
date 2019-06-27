@@ -1,5 +1,5 @@
 /* Header file for range analysis.
-   Copyright (C) 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
@@ -21,13 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RANGE_H
 #define GCC_RANGE_H
 
-// Enable this to implement irange piggybacking on value_range.
-#define IRANGE_WITH_VALUE_RANGE 0
-
-#if IRANGE_WITH_VALUE_RANGE
-typedef value_range_base irange;
-typedef value_range_storage irange_storage;
-#else
+#if USE_IRANGE
 // This is the standalone irange implementation.
 
 class irange_storage;
@@ -57,7 +51,7 @@ class irange_storage;
 class irange
 {
   friend class irange_storage;
-  friend void irange_tests ();
+  friend void range_tests ();
 
  public:
   irange ();
@@ -67,6 +61,10 @@ class irange
   irange (value_range_kind, tree, tree);
   irange (tree, tree);
   irange (tree type, const irange_storage *);
+#if USE_IRANGE
+  /* Only for branch.  */
+  irange (const value_range_base &);
+#endif
 
   static bool supports_type_p (tree type);
   static bool supports_ssa_p (tree ssa);
@@ -298,26 +296,6 @@ irange_storage::empty_pair_p (unsigned i, unsigned j, tree type) const
 	  && trailing_bounds[j] == wi::zero (precision));
 }
 
-#endif // IRANGE_WITH_VALUE_RANGE
-
-// Common code between the alternate irange implementations.
-
-irange range_zero (tree type);
-irange range_nonzero (tree type);
-irange range_intersect (const irange &, const irange &);
-irange range_union (const irange &, const irange &);
-irange range_invert (const irange &);
-irange range_from_ssa (tree ssa);
-irange range_positives (tree type);
-irange range_negatives (tree type);
-irange value_range_to_irange (const value_range_base &);
-irange value_range_to_irange (tree type, enum value_range_kind kind,
-			      const wide_int &, const wide_int &);
-value_range_base irange_to_value_range (const irange &);
-
-// Extract a range from a tree node.
-bool get_tree_range (irange &r, tree expr);
-
 // Return true if TYPE is a valid type for irange to operate on.
 // Otherwise return FALSE.
 
@@ -353,4 +331,20 @@ irange::supports_p (tree expr)
   return supports_type_p (TREE_TYPE (expr));
 }
 
+value_range_base irange_to_value_range (const irange &);
+#endif // USE_IRANGE
+
+// Common code between the alternate irange implementations.
+
+irange range_zero (tree type);
+irange range_nonzero (tree type);
+irange range_intersect (const irange &, const irange &);
+irange range_union (const irange &, const irange &);
+irange range_invert (const irange &);
+irange range_from_ssa (tree ssa);
+irange range_positives (tree type);
+irange range_negatives (tree type);
+
+// Extract a range from a tree node.
+bool get_tree_range (irange &r, tree expr);
 #endif // GCC_RANGE_H

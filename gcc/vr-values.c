@@ -73,7 +73,7 @@ vr_values::get_irange (tree op, gimple *stmt ATTRIBUTE_UNUSED)
 	  && !vr->constant_p ()))
     return irange (TREE_TYPE (op));
 
-  return value_range_to_irange (*vr);
+  return *vr;
 }
 
 /* Set value range VR to a non-negative range of type TYPE.  */
@@ -1835,10 +1835,8 @@ range_misc::adjust_range_with_loop (irange &ir, struct loop *loop,
 	      /* Normalize the ranges for INIT and TEM to a constant
 		 range, and call the generic
 		 extract_range_from_binary_expr.  */
-	      irange ir0 = get_irange (init, stmt);
-	      irange ir1 = get_irange (tem, stmt);
-	      value_range_base vr0 = irange_to_value_range (ir0);
-	      value_range_base vr1 = irange_to_value_range (ir1);
+	      value_range_base vr0 = get_irange (init, stmt);
+	      value_range_base vr1 = get_irange (tem, stmt);
 	      value_range_base maxvr;
 	      range_fold_binary_expr (&maxvr, PLUS_EXPR,
 				      TREE_TYPE (init), &vr0, &vr1);
@@ -1947,9 +1945,9 @@ vr_values::adjust_range_with_scev (value_range_base *vr, struct loop *loop,
   /* Bail on anything remotely symbolic.  */
   if (!vr->varying_p () && !vr->undefined_p () && !vr->constant_p ())
     return;
-  irange ir = value_range_to_irange (*vr);
+  irange ir = *vr;
   adjust_range_with_loop (ir, loop, stmt, var);
-  *vr = irange_to_value_range (ir);
+  *vr = ir;
 }
 
 /* Dump value ranges of all SSA_NAMEs to FILE.  */
@@ -3632,7 +3630,7 @@ vr_values::simplify_cond_using_ranges_2 (gcond *stmt)
 	  irange ir;
 
 	  if (range_int_cst_p (vr))
-	    ir = value_range_to_irange (*vr);
+	    ir = *vr;
 
 	  if (!ir.undefined_p ()
 	      && range_fits_type_p (ir,
@@ -3675,8 +3673,7 @@ vr_values::simplify_switch_using_ranges (gswitch *stmt)
   if (TREE_CODE (op) == SSA_NAME)
     {
       // FIXME: We should convert this entire function to iranges.
-      irange ir = get_irange (op, stmt);
-      vr_obj = irange_to_value_range (ir);
+      vr_obj = get_irange (op, stmt);
       vr = &vr_obj;
 
       /* We can only handle integer ranges.  */
