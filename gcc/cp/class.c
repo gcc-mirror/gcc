@@ -4504,37 +4504,39 @@ check_methods (tree t)
 static tree
 build_clone (tree fn, tree name)
 {
-  tree parms;
-  tree clone;
-
   /* Copy the function.  */
-  clone = copy_decl (fn);
+  tree clone = copy_decl (fn);
   /* Reset the function name.  */
   DECL_NAME (clone) = name;
   /* Remember where this function came from.  */
   DECL_ABSTRACT_ORIGIN (clone) = fn;
-  /* Make it easy to find the CLONE given the FN.  */
+
+  /* Make it easy to find the CLONE given the FN.  Note the
+     template_result of a template will be chained this way too.  */
   DECL_CHAIN (clone) = DECL_CHAIN (fn);
   DECL_CHAIN (fn) = clone;
 
   /* If this is a template, do the rest on the DECL_TEMPLATE_RESULT.  */
   if (TREE_CODE (clone) == TEMPLATE_DECL)
     {
-      tree result = build_clone (DECL_TEMPLATE_RESULT (clone), name);
+      tree fn_result = DECL_TEMPLATE_RESULT (fn);
+      tree result = build_clone (fn_result, name);
       DECL_TEMPLATE_RESULT (clone) = result;
-      DECL_TEMPLATE_INFO (result) = copy_node (DECL_TEMPLATE_INFO (result));
-      DECL_TI_TEMPLATE (result) = clone;
+
+      tree fn_ti = DECL_TEMPLATE_INFO (result);
+      gcc_checking_assert (TI_TEMPLATE (fn_ti) == fn);
+      tree ti = copy_node (fn_ti);
+      TI_TEMPLATE (ti) = clone;
+      DECL_TEMPLATE_INFO (result) = ti;
+
       TREE_TYPE (clone) = TREE_TYPE (result);
       return clone;
     }
-  else
-    {
-      // Clone constraints.
-      if (flag_concepts)
-        if (tree ci = get_constraints (fn))
-          set_constraints (clone, copy_node (ci));
-    }
 
+  // Clone constraints.
+  if (flag_concepts)
+    if (tree ci = get_constraints (fn))
+      set_constraints (clone, copy_node (ci));
 
   SET_DECL_ASSEMBLER_NAME (clone, NULL_TREE);
   DECL_CLONED_FUNCTION (clone) = fn;
@@ -4546,8 +4548,7 @@ build_clone (tree fn, tree name)
   if (name == base_dtor_identifier)
     {
       DECL_VIRTUAL_P (clone) = 0;
-      if (TREE_CODE (clone) != TEMPLATE_DECL)
-	DECL_VINDEX (clone) = NULL_TREE;
+      DECL_VINDEX (clone) = NULL_TREE;
     }
 
   bool ctor_omit_inherited_parms_p = ctor_omit_inherited_parms (clone);
@@ -4612,7 +4613,7 @@ build_clone (tree fn, tree name)
   if (ctor_omit_inherited_parms_p)
     DECL_CHAIN (DECL_CHAIN (DECL_ARGUMENTS (clone))) = NULL_TREE;
 
-  for (parms = DECL_ARGUMENTS (clone); parms; parms = DECL_CHAIN (parms))
+  for (tree parms = DECL_ARGUMENTS (clone); parms; parms = DECL_CHAIN (parms))
     {
       DECL_CONTEXT (parms) = clone;
       cxx_dup_lang_specific_decl (parms);

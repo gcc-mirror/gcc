@@ -4348,7 +4348,7 @@ get_lookup_ident (tree ctx, tree name, unsigned mod, tree decl)
 	      binding = MAYBE_STAT_DECL (binding);
 
 	      res = 0;
-	      for (ovl_iterator iter (binding); ; ++iter, ++res)
+	      for (ovl_iterator iter (binding); iter; ++iter, ++res)
 		if (*iter == decl)
 		  {
 		    found = true;

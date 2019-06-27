@@ -2770,8 +2770,7 @@ struct GTY(()) lang_decl_fn {
 
   union lang_decl_u5
   {
-    /* In a non-thunk FUNCTION_DECL or TEMPLATE_DECL, this is
-       DECL_CLONED_FUNCTION.  */
+    /* In a non-thunk FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
     tree GTY ((tag ("0"))) cloned_function;
 
     /* In a FUNCTION_DECL for which THUNK_P holds this is the
