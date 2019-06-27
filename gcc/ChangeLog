@@ -1,3 +1,7 @@
+2019-06-27  Ilia Diachkov  <ilia.diachkov@optimitech.com>
+
+	* doc/install.texi: Document --disable-tm-clone-registry.
+
 2019-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91024

@@ -1,3 +1,10 @@
+2019-06-27  Ilia Diachkov  <ilia.diachkov@optimitech.com>
+
+	* Makefile.in (USE_TM_CLONE_REGISTRY): New.
+	(CRTSTUFF_CFLAGS): Use USE_TM_CLONE_REGISTRY.
+	* configure.ac: Add --disable-tm-clone-registry option.
+	* configure: Regenerate.
+
 2019-06-27  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-driver-system.c (gcov_exit_open_gcda_file): Remove obviously

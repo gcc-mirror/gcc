@@ -1284,6 +1284,11 @@ assumptions made by the configure test are incorrect.
 Specify that the target does not support TLS.
 This is an alias for @option{--enable-tls=no}.
 
+@item --disable-tm-clone-registry
+Disable TM clone registry in libgcc. It is enabled in libgcc by default.
+This option helps to reduce code size for embedded targets which do
+not use transactional memory.
+
 @item --with-cpu=@var{cpu}
 @itemx --with-cpu-32=@var{cpu}
 @itemx --with-cpu-64=@var{cpu}

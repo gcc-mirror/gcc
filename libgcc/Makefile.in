@@ -259,6 +259,8 @@ PICFLAG = @PICFLAG@
 
 CET_FLAGS = @CET_FLAGS@
 
+USE_TM_CLONE_REGISTRY = @use_tm_clone_registry@
+
 # Defined in libgcc2.c, included only in the static library.
 LIB2FUNCS_ST = _eprintf __gcc_bcmp
 
@@ -299,7 +301,7 @@ CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
   $(NO_PIE_CFLAGS) -finhibit-size-directive -fno-inline -fno-exceptions \
   -fno-zero-initialized-in-bss -fno-toplevel-reorder -fno-tree-vectorize \
   -fbuilding-libgcc -fno-stack-protector $(FORCE_EXPLICIT_EH_REGISTRY) \
-  $(INHIBIT_LIBC_CFLAGS)
+  $(INHIBIT_LIBC_CFLAGS) $(USE_TM_CLONE_REGISTRY)
 
 # Extra flags to use when compiling crt{begin,end}.o.
 CRTSTUFF_T_CFLAGS =
