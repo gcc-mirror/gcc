@@ -1,3 +1,8 @@
+2019-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/rs6000.c (darwin_rs6000_override_options): Do not
+	use longcall for 64b code.
+
 2019-06-27  Aaron Sawdey <acsawdey@linux.ibm.com>
 
 	* builtins.c (get_memory_rtx): Fix comment.
