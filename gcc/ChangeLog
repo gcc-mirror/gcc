@@ -1,5 +1,9 @@
 2019-06-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/91024
+	* gimplify.c (collect_fallthrough_labels): Ignore GIMPLE_PREDICT
+	statements.
+
 	PR tree-optimization/91010
 	* tree-vect-stmts.c (scan_operand_equal_p): If offset1 == offset2,
 	return true.  Otherwise, don't call operand_equal_p if offset1 or
