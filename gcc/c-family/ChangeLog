@@ -1,3 +1,8 @@
+2019-06-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55442 - memory-hog with highly recursive constexpr.
+	* c.opt (fconstexpr-loop-limit): New.
+
 2019-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/90954
