@@ -1,3 +1,13 @@
+2019-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91012
+	* src/c++17/fs_path.cc (filesystem_error::_Impl): Use a string_view
+	for the what_arg parameters.
+	(filesystem_error::filesystem_error): Pass system_error::what() to
+	the _Impl constructor.
+	* testsuite/27_io/filesystem/filesystem_error/cons.cc: Ensure that
+	filesystem_error::what() contains system_error::what().
+
 2019-06-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/charconv (chars_format): Define bitmask type.
