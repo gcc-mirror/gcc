@@ -1,5 +1,11 @@
 2019-06-27  Martin Liska  <mliska@suse.cz>
 
+	PR tree-optimization/91014
+	* tree-ssa-dse.c (initialize_ao_ref_for_dse): Bail out
+	when LHS is NULL_TREE.
+
+2019-06-27  Martin Liska  <mliska@suse.cz>
+
 	* symbol-summary.h (traverse): Pass
 	argument a to the call of callback.
 	(gt_ggc_mx): Mark arguments as unused.
