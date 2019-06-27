@@ -1,3 +1,13 @@
+2019-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90991
+	* config/i386/sse.md (avx_vec_concat<mode>): Use nonimmediate_operand
+	instead of register_operand for operands[1], add m to its constraints
+	if operands[2] uses "C" constraint.  Ensure in condition that if
+	operands[2] is not 0, then operands[1] is not a MEM.  For last two
+	alternatives, use unaligned loads instead of aligned if operands[1] is
+	misaligned_operand.
+
 2019-06-27  Martin Liska  <mliska@suse.cz>
 
 	* asan.c (asan_emit_allocas_unpoison): Remove obviously
