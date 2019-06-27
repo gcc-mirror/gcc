@@ -65,7 +65,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "stringpool.h"
 #include "attribs.h"
-#include "range.h"
 #include "vr-values.h"
 #include "builtins.h"
 #include "wide-int-range.h"

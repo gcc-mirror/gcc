@@ -21,6 +21,12 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RANGE_H
 #define GCC_RANGE_H
 
+// Set to one if irange is a standalone class, or zero if irange is
+// just value_range_base underneath.
+#define USE_IRANGE 1
+
+class value_range_base;
+
 #if USE_IRANGE
 // This is the standalone irange implementation.
 
@@ -329,6 +335,10 @@ irange::supports_p (tree expr)
 }
 
 value_range_base irange_to_value_range (const irange &);
+#else // USE_IRANGE
+class value_range_storage;
+typedef value_range_base irange;
+typedef value_range_storage irange_storage;
 #endif // USE_IRANGE
 
 // Common code between the alternate irange implementations.

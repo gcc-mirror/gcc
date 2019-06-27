@@ -22,18 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 
 class value_range_storage;
 
-// Set to one if irange is a standalone class, or zero if irange is
-// just value_range_base underneath.
-#define USE_IRANGE 1
-
-#if USE_IRANGE
-class irange;
-#else
-class value_range_base;
-typedef value_range_base irange;
-typedef value_range_storage irange_storage;
-#endif
-
 /* Range of values that can be associated with an SSA_NAME after VRP
    has executed.  */
 class GTY((for_user)) value_range_base
