@@ -76,8 +76,8 @@ along with GCC; see the file COPYING3.  If not see
    fact, they are the same transformation applied to different views of
    the CFG.  */
 
-static void delete_dead_or_redundant_assignment (gimple_stmt_iterator *, char []);
-static void delete_dead_or_redundant_call (gimple_stmt_iterator *, char []);
+static void delete_dead_or_redundant_assignment (gimple_stmt_iterator *, const char *);
+static void delete_dead_or_redundant_call (gimple_stmt_iterator *, const char *);
 
 /* Bitmap of blocks that have had EH statements cleaned.  We should
    remove their dead edges eventually.  */
@@ -868,7 +868,7 @@ private:
 
 /* Delete a dead call at GSI, which is mem* call of some kind.  */
 static void
-delete_dead_or_redundant_call (gimple_stmt_iterator *gsi, char *type)
+delete_dead_or_redundant_call (gimple_stmt_iterator *gsi, const char *type)
 {
   gimple *stmt = gsi_stmt (*gsi);
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -902,7 +902,7 @@ delete_dead_or_redundant_call (gimple_stmt_iterator *gsi, char *type)
 /* Delete a dead store at GSI, which is a gimple assignment. */
 
 static void
-delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi, char *type)
+delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi, const char *type)
 {
   gimple *stmt = gsi_stmt (*gsi);
   if (dump_file && (dump_flags & TDF_DETAILS))
