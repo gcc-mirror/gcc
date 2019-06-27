@@ -135,7 +135,7 @@ extern int darwin_emit_picsym_stub;
 /* The PPC regs save/restore functions are leaves and could, conceivably
    be used by the tm destructor.  */
 #undef ENDFILE_SPEC
-#define ENDFILE_SPEC TM_DESTRUCTOR "-lef_ppc"
+#define ENDFILE_SPEC TM_DESTRUCTOR " -lef_ppc"
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS			\
