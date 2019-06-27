@@ -73,7 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 int cse_not_expected;
 
 static bool block_move_libcall_safe_for_call_parm (void);
-static bool emit_block_move_via_movmem (rtx, rtx, rtx, unsigned, unsigned, HOST_WIDE_INT,
+static bool emit_block_move_via_cpymem (rtx, rtx, rtx, unsigned, unsigned, HOST_WIDE_INT,
 					unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
 					unsigned HOST_WIDE_INT);
 static void emit_block_move_via_loop (rtx, rtx, rtx, unsigned);
@@ -1624,7 +1624,7 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 
   if (CONST_INT_P (size) && can_move_by_pieces (INTVAL (size), align))
     move_by_pieces (x, y, INTVAL (size), align, RETURN_BEGIN);
-  else if (emit_block_move_via_movmem (x, y, size, align,
+  else if (emit_block_move_via_cpymem (x, y, size, align,
 				       expected_align, expected_size,
 				       min_size, max_size, probable_max_size))
     ;
@@ -1722,11 +1722,11 @@ block_move_libcall_safe_for_call_parm (void)
   return true;
 }
 
-/* A subroutine of emit_block_move.  Expand a movmem pattern;
+/* A subroutine of emit_block_move.  Expand a cpymem pattern;
    return true if successful.  */
 
 static bool
-emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
+emit_block_move_via_cpymem (rtx x, rtx y, rtx size, unsigned int align,
 			    unsigned int expected_align, HOST_WIDE_INT expected_size,
 			    unsigned HOST_WIDE_INT min_size,
 			    unsigned HOST_WIDE_INT max_size,
@@ -1755,7 +1755,7 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
   FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
     {
       scalar_int_mode mode = mode_iter.require ();
-      enum insn_code code = direct_optab_handler (movmem_optab, mode);
+      enum insn_code code = direct_optab_handler (cpymem_optab, mode);
 
       if (code != CODE_FOR_nothing
 	  /* We don't need MODE to be narrower than BITS_PER_HOST_WIDE_INT

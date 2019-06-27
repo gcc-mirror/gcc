@@ -1,4 +1,4 @@
-/* Auxiliary functions for expand movmem, setmem, cmpmem, load_multiple
+/* Auxiliary functions for expand cpymem, setmem, cmpmem, load_multiple
    and store_multiple pattern of Andes NDS32 cpu for GNU compiler
    Copyright (C) 2012-2019 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
@@ -120,14 +120,14 @@ nds32_emit_mem_move_block (int base_regno, int count,
 
 /* ------------------------------------------------------------------------ */
 
-/* Auxiliary function for expand movmem pattern.  */
+/* Auxiliary function for expand cpymem pattern.  */
 
 static bool
-nds32_expand_movmemsi_loop_unknown_size (rtx dstmem, rtx srcmem,
+nds32_expand_cpymemsi_loop_unknown_size (rtx dstmem, rtx srcmem,
 					 rtx size,
 					 rtx alignment)
 {
-  /* Emit loop version of movmem.
+  /* Emit loop version of cpymem.
 
        andi    $size_least_3_bit, $size, #~7
        add     $dst_end, $dst, $size
@@ -254,7 +254,7 @@ nds32_expand_movmemsi_loop_unknown_size (rtx dstmem, rtx srcmem,
 }
 
 static bool
-nds32_expand_movmemsi_loop_known_size (rtx dstmem, rtx srcmem,
+nds32_expand_cpymemsi_loop_known_size (rtx dstmem, rtx srcmem,
 				       rtx size, rtx alignment)
 {
   rtx dst_base_reg, src_base_reg;
@@ -288,7 +288,7 @@ nds32_expand_movmemsi_loop_known_size (rtx dstmem, rtx srcmem,
 
   if (total_bytes < 8)
     {
-      /* Emit total_bytes less than 8 loop version of movmem.
+      /* Emit total_bytes less than 8 loop version of cpymem.
 	add     $dst_end, $dst, $size
 	move    $dst_itr, $dst
 	.Lbyte_mode_loop:
@@ -321,7 +321,7 @@ nds32_expand_movmemsi_loop_known_size (rtx dstmem, rtx srcmem,
     }
   else if (total_bytes % 8 == 0)
     {
-      /* Emit multiple of 8 loop version of movmem.
+      /* Emit multiple of 8 loop version of cpymem.
 
 	 add     $dst_end, $dst, $size
 	 move    $dst_itr, $dst
@@ -370,7 +370,7 @@ nds32_expand_movmemsi_loop_known_size (rtx dstmem, rtx srcmem,
   else
     {
       /* Handle size greater than 8, and not a multiple of 8.  */
-      return nds32_expand_movmemsi_loop_unknown_size (dstmem, srcmem,
+      return nds32_expand_cpymemsi_loop_unknown_size (dstmem, srcmem,
 						      size, alignment);
     }
 
@@ -378,19 +378,19 @@ nds32_expand_movmemsi_loop_known_size (rtx dstmem, rtx srcmem,
 }
 
 static bool
-nds32_expand_movmemsi_loop (rtx dstmem, rtx srcmem,
+nds32_expand_cpymemsi_loop (rtx dstmem, rtx srcmem,
 			    rtx size, rtx alignment)
 {
   if (CONST_INT_P (size))
-    return nds32_expand_movmemsi_loop_known_size (dstmem, srcmem,
+    return nds32_expand_cpymemsi_loop_known_size (dstmem, srcmem,
 						  size, alignment);
   else
-    return nds32_expand_movmemsi_loop_unknown_size (dstmem, srcmem,
+    return nds32_expand_cpymemsi_loop_unknown_size (dstmem, srcmem,
 						    size, alignment);
 }
 
 static bool
-nds32_expand_movmemsi_unroll (rtx dstmem, rtx srcmem,
+nds32_expand_cpymemsi_unroll (rtx dstmem, rtx srcmem,
 			      rtx total_bytes, rtx alignment)
 {
   rtx dst_base_reg, src_base_reg;
@@ -533,13 +533,13 @@ nds32_expand_movmemsi_unroll (rtx dstmem, rtx srcmem,
    This is auxiliary extern function to help create rtx template.
    Check nds32-multiple.md file for the patterns.  */
 bool
-nds32_expand_movmemsi (rtx dstmem, rtx srcmem, rtx total_bytes, rtx alignment)
+nds32_expand_cpymemsi (rtx dstmem, rtx srcmem, rtx total_bytes, rtx alignment)
 {
-  if (nds32_expand_movmemsi_unroll (dstmem, srcmem, total_bytes, alignment))
+  if (nds32_expand_cpymemsi_unroll (dstmem, srcmem, total_bytes, alignment))
     return true;
 
   if (!optimize_size && optimize > 2)
-    return nds32_expand_movmemsi_loop (dstmem, srcmem, total_bytes, alignment);
+    return nds32_expand_cpymemsi_loop (dstmem, srcmem, total_bytes, alignment);
 
   return false;
 }

@@ -26,7 +26,7 @@
     UNSPECV_BLOCKAGE
     UNSPECV_SETD
     UNSPECV_SETI
-    UNSPECV_MOVMEM
+    UNSPECV_CPYMEM
   ])
 
 (define_constants
@@ -664,8 +664,8 @@
   [(set_attr "length" "2,2,4,4,2")])
 
 ;; Expand a block move.  We turn this into a move loop.
-(define_expand "movmemhi"
-  [(parallel [(unspec_volatile [(const_int 0)] UNSPECV_MOVMEM)
+(define_expand "cpymemhi"
+  [(parallel [(unspec_volatile [(const_int 0)] UNSPECV_CPYMEM)
 	      (match_operand:BLK 0 "general_operand" "=g")
 	      (match_operand:BLK 1 "general_operand" "g")
 	      (match_operand:HI 2 "immediate_operand" "i")
@@ -694,8 +694,8 @@
 }")
 
 ;; Expand a block move.  We turn this into a move loop.
-(define_insn_and_split "movmemhi1"
-  [(unspec_volatile [(const_int 0)] UNSPECV_MOVMEM)
+(define_insn_and_split "cpymemhi1"
+  [(unspec_volatile [(const_int 0)] UNSPECV_CPYMEM)
    (match_operand:HI 0 "register_operand" "+r")
    (match_operand:HI 1 "register_operand" "+r")
    (match_operand:HI 2 "register_operand" "+r")
@@ -707,7 +707,7 @@
   ""
   "#"
   "reload_completed"
-  [(parallel [(unspec_volatile [(const_int 0)] UNSPECV_MOVMEM)
+  [(parallel [(unspec_volatile [(const_int 0)] UNSPECV_CPYMEM)
 	      (match_dup 0)
 	      (match_dup 1)
 	      (match_dup 2)
@@ -719,8 +719,8 @@
 	      (clobber (reg:CC CC_REGNUM))])]
   "")
 
-(define_insn "movmemhi_nocc"
-  [(unspec_volatile [(const_int 0)] UNSPECV_MOVMEM)
+(define_insn "cpymemhi_nocc"
+  [(unspec_volatile [(const_int 0)] UNSPECV_CPYMEM)
    (match_operand:HI 0 "register_operand" "+r")
    (match_operand:HI 1 "register_operand" "+r")
    (match_operand:HI 2 "register_operand" "+r")

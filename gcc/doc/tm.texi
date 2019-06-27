@@ -6661,7 +6661,7 @@ two areas of memory, or to set, clear or store to memory, for example
 when copying a @code{struct}. The @code{by_pieces} infrastructure
 implements such memory operations as a sequence of load, store or move
 insns.  Alternate strategies are to expand the
-@code{movmem} or @code{setmem} optabs, to emit a library call, or to emit
+@code{cpymem} or @code{setmem} optabs, to emit a library call, or to emit
 unit-by-unit, loop-based operations.
 
 This target hook should return true if, for a memory operation with a
@@ -6680,7 +6680,7 @@ optimized for speed rather than size.
 
 Returning true for higher values of @var{size} can improve code generation
 for speed if the target does not provide an implementation of the
-@code{movmem} or @code{setmem} standard names, if the @code{movmem} or
+@code{cpymem} or @code{setmem} standard names, if the @code{cpymem} or
 @code{setmem} implementation would be more expensive than a sequence of
 insns, or if the overhead of a library call would dominate that of
 the body of the memory operation.

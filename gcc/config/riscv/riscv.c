@@ -3050,7 +3050,7 @@ riscv_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
     emit_insn(gen_nop ());
 }
 
-/* Expand a movmemsi instruction, which copies LENGTH bytes from
+/* Expand a cpymemsi instruction, which copies LENGTH bytes from
    memory reference SRC to memory reference DEST.  */
 
 bool

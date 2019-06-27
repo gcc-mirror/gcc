@@ -1423,7 +1423,7 @@ do { \
    in one reasonably fast instruction.  */
 #define MOVE_MAX 4
 
-/* Undo the effects of the movmem pattern presence on STORE_BY_PIECES_P .  */
+/* Undo the effects of the cpymem pattern presence on STORE_BY_PIECES_P .  */
 #define MOVE_RATIO(SPEED) ((SPEED) ? 15 : 3)
 
 /* Define this to be nonzero if shift instructions ignore all but the

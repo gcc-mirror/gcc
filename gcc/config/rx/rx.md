@@ -46,7 +46,7 @@
    (UNSPEC_CONST           13)
    
    (UNSPEC_MOVSTR          20)
-   (UNSPEC_MOVMEM          21)
+   (UNSPEC_CPYMEM          21)
    (UNSPEC_SETMEM          22)
    (UNSPEC_STRLEN          23)
    (UNSPEC_CMPSTRN         24)
@@ -2449,13 +2449,13 @@
    (set_attr "timings" "1111")] ;; The timing is a guesstimate.
 )
 
-(define_expand "movmemsi"
+(define_expand "cpymemsi"
   [(parallel
     [(set (match_operand:BLK 0 "memory_operand")    ;; Dest
 	  (match_operand:BLK 1 "memory_operand"))   ;; Source
      (use (match_operand:SI  2 "register_operand")) ;; Length in bytes
      (match_operand          3 "immediate_operand") ;; Align
-     (unspec_volatile:BLK [(reg:SI 1) (reg:SI 2) (reg:SI 3)] UNSPEC_MOVMEM)]
+     (unspec_volatile:BLK [(reg:SI 1) (reg:SI 2) (reg:SI 3)] UNSPEC_CPYMEM)]
     )]
   "rx_allow_string_insns"
   {
@@ -2486,16 +2486,16 @@
     emit_move_insn (len, force_operand (operands[2], NULL_RTX));
     operands[0] = replace_equiv_address_nv (operands[0], addr1);
     operands[1] = replace_equiv_address_nv (operands[1], addr2);
-    emit_insn (gen_rx_movmem ());
+    emit_insn (gen_rx_cpymem ());
     DONE;
   }
 )
 
-(define_insn "rx_movmem"
+(define_insn "rx_cpymem"
   [(set (mem:BLK (reg:SI 1))
 	(mem:BLK (reg:SI 2)))
    (use (reg:SI 3))
-   (unspec_volatile:BLK [(reg:SI 1) (reg:SI 2) (reg:SI 3)] UNSPEC_MOVMEM)
+   (unspec_volatile:BLK [(reg:SI 1) (reg:SI 2) (reg:SI 3)] UNSPEC_CPYMEM)
    (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (clobber (reg:SI 3))]

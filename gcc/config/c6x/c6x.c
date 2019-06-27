@@ -1686,10 +1686,10 @@ c6x_valid_mask_p (HOST_WIDE_INT val)
   return true;
 }
 
-/* Expand a block move for a movmemM pattern.  */
+/* Expand a block move for a cpymemM pattern.  */
 
 bool
-c6x_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
+c6x_expand_cpymem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 		   rtx expected_align_exp ATTRIBUTE_UNUSED,
 		   rtx expected_size_exp ATTRIBUTE_UNUSED)
 {
