@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "wide-int.h"
 #include "ssa-range.h"
+#include "fold-const.h"
 
 // Construct a range_def_chain
 
@@ -470,9 +471,81 @@ gori_map::dump(FILE *f)
     }
 }
 
+// Set range from an SSA_NAME's available range.  If there is no
+// available range, build a range for its entire domain.
 
-// Overloaded get_tree_range to perform substitution of NAME wth
-// RANGE_OF_NAME if expr happens to match it.
+irange
+range_from_ssa (tree ssa)
+{
+  tree type = TREE_TYPE (ssa);
+  gcc_checking_assert (irange::supports_type_p (type));
+  if (!SSA_NAME_RANGE_INFO (ssa) || POINTER_TYPE_P (type))
+    return irange (type);
+  wide_int min, max;
+  enum value_range_kind kind = get_range_info (ssa, &min, &max);
+  return irange (kind, type, min, max);
+}
+
+// This function returns a range for tree node EXPR in R.  Return
+// false if ranges are not supported.
+
+bool
+get_tree_range (irange &r, tree expr)
+{
+  tree type;
+  switch (TREE_CODE (expr))
+    {
+      case INTEGER_CST:
+        if (!TREE_OVERFLOW_P (expr))
+	  r = irange (expr, expr);
+	else
+	  // If we encounter an overflow, simply punt and drop to varying
+	  // since we hvae no idea how it will be used.
+	  r.set_varying (TREE_TYPE (expr));
+	return true;
+
+      case SSA_NAME:
+        if (irange::supports_ssa_p (expr))
+	  {
+	    r = range_from_ssa (expr);
+	    return true;
+	  }
+	break;
+
+      case ADDR_EXPR:
+        {
+	  // handle &var which can show up in phi arguments
+	  bool ov;
+	  type = TREE_TYPE (expr);
+	  if (irange::supports_type_p (type))
+	    {
+	      if (tree_single_nonzero_warnv_p (expr, &ov))
+		r = range_nonzero (type);
+	      else
+		r.set_varying (type);
+	      return true;
+	    }
+	  break;
+	}
+
+      default:
+	if (TYPE_P (expr))
+	  type = expr;
+	else
+	  type = TREE_TYPE (expr);
+	if (irange::supports_type_p (type))
+	  {
+	    // Set to range for this type.
+	    r.set_varying (type);
+	    return true;
+	  }
+	break;
+    }
+  return false;
+}
+
+// Same but perform substitution of NAME with RANGE_OF_NAME if expr
+// happens to match it.
 
 static bool
 get_tree_range (irange &r, tree expr, tree name, irange *range_of_name)

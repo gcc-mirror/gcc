@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 extern gimple_stmt_iterator gsi_outgoing_range_stmt (basic_block bb);
 extern gimple *gimple_outgoing_range_stmt_p (basic_block bb);
 extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
-extern bool get_tree_range (irange &r, tree expr);
 
 // This is the basic range generator interface. 
 //

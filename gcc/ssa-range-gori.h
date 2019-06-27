@@ -186,6 +186,7 @@ private:
   irange m_bool_one;            /* Boolean true cached.  */
 };
 
-
+bool get_tree_range (irange &r, tree expr);
+irange range_from_ssa (tree ssa);
 
 #endif // GCC_SSA_RANGE_GORI_H

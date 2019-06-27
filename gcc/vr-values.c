@@ -1754,8 +1754,7 @@ range_misc::adjust_range_with_loop (irange &ir, struct loop *loop,
   /* Like in PR19590, scev can return a constant function.  */
   if (is_gimple_min_invariant (chrec))
     {
-      extern bool get_tree_range (irange &r, tree expr);
-      get_tree_range (ir, chrec);
+      ir = irange (chrec, chrec);
       return;
     }
 

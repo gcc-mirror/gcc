@@ -22,8 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 
 class value_range_storage;
 
-// Set to one if irange is a standalone class containing multiple
-// sub-ranges, or zero if irange is just value_range_base underneath.
+// Set to one if irange is a standalone class, or zero if irange is
+// just value_range_base underneath.
 #define USE_IRANGE 1
 
 #if USE_IRANGE

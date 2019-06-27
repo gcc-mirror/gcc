@@ -61,10 +61,7 @@ class irange
   irange (value_range_kind, tree, tree);
   irange (tree, tree);
   irange (tree type, const irange_storage *);
-#if USE_IRANGE
-  /* Only for branch.  */
   irange (const value_range_base &);
-#endif
 
   static bool supports_type_p (tree type);
   static bool supports_ssa_p (tree ssa);
@@ -341,10 +338,6 @@ irange range_nonzero (tree type);
 irange range_intersect (const irange &, const irange &);
 irange range_union (const irange &, const irange &);
 irange range_invert (const irange &);
-irange range_from_ssa (tree ssa);
 irange range_positives (tree type);
 irange range_negatives (tree type);
-
-// Extract a range from a tree node.
-bool get_tree_range (irange &r, tree expr);
 #endif // GCC_RANGE_H
