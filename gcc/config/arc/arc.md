@@ -5126,13 +5126,13 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    (set_attr "type" "loop_end")
    (set_attr "length" "4,20")])
 
-(define_expand "movmemsi"
+(define_expand "cpymemsi"
   [(match_operand:BLK 0 "" "")
    (match_operand:BLK 1 "" "")
    (match_operand:SI 2 "nonmemory_operand" "")
    (match_operand 3 "immediate_operand" "")]
   ""
-  "if (arc_expand_movmem (operands)) DONE; else FAIL;")
+  "if (arc_expand_cpymem (operands)) DONE; else FAIL;")
 
 ;; Close http://gcc.gnu.org/bugzilla/show_bug.cgi?id=35803 if this works
 ;; to the point that we can generate cmove instructions.

@@ -70,7 +70,7 @@
 
 (define_c_enum "unspec"
   [UNSPEC_STRLEN
-   UNSPEC_MOVMEM
+   UNSPEC_CPYMEM
    UNSPEC_INDEX_JMP
    UNSPEC_FMUL
    UNSPEC_FMULS
@@ -158,7 +158,7 @@
    tsthi, tstpsi, tstsi, compare, compare64, call,
    mov8, mov16, mov24, mov32, reload_in16, reload_in24, reload_in32,
    ufract, sfract, round,
-   xload, movmem,
+   xload, cpymem,
    ashlqi, ashrqi, lshrqi,
    ashlhi, ashrhi, lshrhi,
    ashlsi, ashrsi, lshrsi,
@@ -992,20 +992,20 @@
 ;;=========================================================================
 ;; move string (like memcpy)
 
-(define_expand "movmemhi"
+(define_expand "cpymemhi"
   [(parallel [(set (match_operand:BLK 0 "memory_operand" "")
                    (match_operand:BLK 1 "memory_operand" ""))
               (use (match_operand:HI 2 "const_int_operand" ""))
               (use (match_operand:HI 3 "const_int_operand" ""))])]
   ""
   {
-    if (avr_emit_movmemhi (operands))
+    if (avr_emit_cpymemhi (operands))
       DONE;
 
     FAIL;
   })
 
-(define_mode_attr MOVMEM_r_d [(QI "r")
+(define_mode_attr CPYMEM_r_d [(QI "r")
                               (HI "wd")])
 
 ;; $0     : Address Space
@@ -1013,23 +1013,23 @@
 ;; R30    : source address
 ;; R26    : destination address
 
-;; "movmem_qi"
-;; "movmem_hi"
-(define_insn "movmem_<mode>"
+;; "cpymem_qi"
+;; "cpymem_hi"
+(define_insn "cpymem_<mode>"
   [(set (mem:BLK (reg:HI REG_X))
         (mem:BLK (reg:HI REG_Z)))
    (unspec [(match_operand:QI 0 "const_int_operand" "n")]
-           UNSPEC_MOVMEM)
-   (use (match_operand:QIHI 1 "register_operand" "<MOVMEM_r_d>"))
+           UNSPEC_CPYMEM)
+   (use (match_operand:QIHI 1 "register_operand" "<CPYMEM_r_d>"))
    (clobber (reg:HI REG_X))
    (clobber (reg:HI REG_Z))
    (clobber (reg:QI LPM_REGNO))
    (clobber (match_operand:QIHI 2 "register_operand" "=1"))]
   ""
   {
-    return avr_out_movmem (insn, operands, NULL);
+    return avr_out_cpymem (insn, operands, NULL);
   }
-  [(set_attr "adjust_len" "movmem")
+  [(set_attr "adjust_len" "cpymem")
    (set_attr "cc" "clobber")])
 
 
@@ -1039,14 +1039,14 @@
 ;; R23:Z : 24-bit source address
 ;; R26   : 16-bit destination address
 
-;; "movmemx_qi"
-;; "movmemx_hi"
-(define_insn "movmemx_<mode>"
+;; "cpymemx_qi"
+;; "cpymemx_hi"
+(define_insn "cpymemx_<mode>"
   [(set (mem:BLK (reg:HI REG_X))
         (mem:BLK (lo_sum:PSI (reg:QI 23)
                              (reg:HI REG_Z))))
    (unspec [(match_operand:QI 0 "const_int_operand" "n")]
-           UNSPEC_MOVMEM)
+           UNSPEC_CPYMEM)
    (use (reg:QIHI 24))
    (clobber (reg:HI REG_X))
    (clobber (reg:HI REG_Z))

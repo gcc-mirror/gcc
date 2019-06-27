@@ -1901,7 +1901,7 @@ typedef struct ix86_args {
    ? GET_MODE_SIZE (TImode) : UNITS_PER_WORD)
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
-   move-instruction pairs, we will do a movmem or libcall instead.
+   move-instruction pairs, we will do a cpymem or libcall instead.
    Increasing the value will always make code faster, but eventually
    incurs high cost in increased code size.
 

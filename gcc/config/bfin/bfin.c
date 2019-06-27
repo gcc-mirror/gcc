@@ -3208,7 +3208,7 @@ output_pop_multiple (rtx insn, rtx *operands)
 /* Adjust DST and SRC by OFFSET bytes, and generate one move in mode MODE.  */
 
 static void
-single_move_for_movmem (rtx dst, rtx src, machine_mode mode, HOST_WIDE_INT offset)
+single_move_for_cpymem (rtx dst, rtx src, machine_mode mode, HOST_WIDE_INT offset)
 {
   rtx scratch = gen_reg_rtx (mode);
   rtx srcmem, dstmem;
@@ -3224,7 +3224,7 @@ single_move_for_movmem (rtx dst, rtx src, machine_mode mode, HOST_WIDE_INT offse
    back on a different method.  */
 
 bool
-bfin_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
+bfin_expand_cpymem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 {
   rtx srcreg, destreg, countreg;
   HOST_WIDE_INT align = 0;
@@ -3269,7 +3269,7 @@ bfin_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 	{
 	  if ((count & ~3) == 4)
 	    {
-	      single_move_for_movmem (dst, src, SImode, offset);
+	      single_move_for_cpymem (dst, src, SImode, offset);
 	      offset = 4;
 	    }
 	  else if (count & ~3)
@@ -3282,7 +3282,7 @@ bfin_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 	    }
 	  if (count & 2)
 	    {
-	      single_move_for_movmem (dst, src, HImode, offset);
+	      single_move_for_cpymem (dst, src, HImode, offset);
 	      offset += 2;
 	    }
 	}
@@ -3290,7 +3290,7 @@ bfin_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 	{
 	  if ((count & ~1) == 2)
 	    {
-	      single_move_for_movmem (dst, src, HImode, offset);
+	      single_move_for_cpymem (dst, src, HImode, offset);
 	      offset = 2;
 	    }
 	  else if (count & ~1)
@@ -3304,7 +3304,7 @@ bfin_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp)
 	}
       if (count & 1)
 	{
-	  single_move_for_movmem (dst, src, QImode, offset);
+	  single_move_for_cpymem (dst, src, QImode, offset);
 	}
       return true;
     }

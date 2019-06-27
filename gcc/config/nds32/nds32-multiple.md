@@ -3751,14 +3751,14 @@
 ;; operands[3] is the known shared alignment.
 
 
-(define_expand "movmemsi"
+(define_expand "cpymemsi"
   [(match_operand:BLK 0 "general_operand" "")
    (match_operand:BLK 1 "general_operand" "")
    (match_operand:SI 2 "nds32_reg_constant_operand" "")
    (match_operand:SI 3 "const_int_operand" "")]
   ""
 {
-  if (nds32_expand_movmemsi (operands[0],
+  if (nds32_expand_cpymemsi (operands[0],
 			     operands[1],
 			     operands[2],
 			     operands[3]))

@@ -7250,7 +7250,7 @@
 ;; We could let this apply for blocks of less than this, but it clobbers so
 ;; many registers that there is then probably a better way.
 
-(define_expand "movmemqi"
+(define_expand "cpymemqi"
   [(match_operand:BLK 0 "general_operand" "")
    (match_operand:BLK 1 "general_operand" "")
    (match_operand:SI 2 "const_int_operand" "")
@@ -7262,12 +7262,12 @@
       if (TARGET_LDRD && current_tune->prefer_ldrd_strd
           && !optimize_function_for_size_p (cfun))
         {
-          if (gen_movmem_ldrd_strd (operands))
+          if (gen_cpymem_ldrd_strd (operands))
             DONE;
           FAIL;
         }
 
-      if (arm_gen_movmemqi (operands))
+      if (arm_gen_cpymemqi (operands))
         DONE;
       FAIL;
     }
@@ -7277,7 +7277,7 @@
           || INTVAL (operands[2]) > 48)
         FAIL;
 
-      thumb_expand_movmemqi (operands);
+      thumb_expand_cpymemqi (operands);
       DONE;
     }
   "

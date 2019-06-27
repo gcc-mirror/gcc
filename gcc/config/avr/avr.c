@@ -9404,7 +9404,7 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_MOV16: output_movhi (insn, op, &len); break;
     case ADJUST_LEN_MOV24: avr_out_movpsi (insn, op, &len); break;
     case ADJUST_LEN_MOV32: output_movsisf (insn, op, &len); break;
-    case ADJUST_LEN_MOVMEM: avr_out_movmem (insn, op, &len); break;
+    case ADJUST_LEN_CPYMEM: avr_out_cpymem (insn, op, &len); break;
     case ADJUST_LEN_XLOAD: avr_out_xload (insn, op, &len); break;
     case ADJUST_LEN_SEXT: avr_out_sign_extend (insn, op, &len); break;
 
@@ -13321,7 +13321,7 @@ avr_emit3_fix_outputs (rtx (*gen)(rtx,rtx,rtx), rtx *op,
 }
 
 
-/* Worker function for movmemhi expander.
+/* Worker function for cpymemhi expander.
    XOP[0]  Destination as MEM:BLK
    XOP[1]  Source      "     "
    XOP[2]  # Bytes to copy
@@ -13330,7 +13330,7 @@ avr_emit3_fix_outputs (rtx (*gen)(rtx,rtx,rtx), rtx *op,
    Return FALSE if the operand compination is not supported.  */
 
 bool
-avr_emit_movmemhi (rtx *xop)
+avr_emit_cpymemhi (rtx *xop)
 {
   HOST_WIDE_INT count;
   machine_mode loop_mode;
@@ -13407,14 +13407,14 @@ avr_emit_movmemhi (rtx *xop)
          Do the copy-loop inline.  */
 
       rtx (*fun) (rtx, rtx, rtx)
-        = QImode == loop_mode ? gen_movmem_qi : gen_movmem_hi;
+        = QImode == loop_mode ? gen_cpymem_qi : gen_cpymem_hi;
 
       insn = fun (xas, loop_reg, loop_reg);
     }
   else
     {
       rtx (*fun) (rtx, rtx)
-        = QImode == loop_mode ? gen_movmemx_qi : gen_movmemx_hi;
+        = QImode == loop_mode ? gen_cpymemx_qi : gen_cpymemx_hi;
 
       emit_move_insn (gen_rtx_REG (QImode, 23), a_hi8);
 
@@ -13428,7 +13428,7 @@ avr_emit_movmemhi (rtx *xop)
 }
 
 
-/* Print assembler for movmem_qi, movmem_hi insns...
+/* Print assembler for cpymem_qi, cpymem_hi insns...
        $0     : Address Space
        $1, $2 : Loop register
        Z      : Source address
@@ -13436,7 +13436,7 @@ avr_emit_movmemhi (rtx *xop)
 */
 
 const char*
-avr_out_movmem (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
+avr_out_cpymem (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
 {
   addr_space_t as = (addr_space_t) INTVAL (op[0]);
   machine_mode loop_mode = GET_MODE (op[1]);

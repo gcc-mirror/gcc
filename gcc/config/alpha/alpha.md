@@ -4673,7 +4673,7 @@
 ;; Argument 2 is the length
 ;; Argument 3 is the alignment
 
-(define_expand "movmemqi"
+(define_expand "cpymemqi"
   [(parallel [(set (match_operand:BLK 0 "memory_operand")
 		   (match_operand:BLK 1 "memory_operand"))
 	      (use (match_operand:DI 2 "immediate_operand"))
@@ -4686,7 +4686,7 @@
     FAIL;
 })
 
-(define_expand "movmemdi"
+(define_expand "cpymemdi"
   [(parallel [(set (match_operand:BLK 0 "memory_operand")
 		   (match_operand:BLK 1 "memory_operand"))
 	      (use (match_operand:DI 2 "immediate_operand"))
@@ -4703,7 +4703,7 @@
   "TARGET_ABI_OPEN_VMS"
   "operands[4] = gen_rtx_SYMBOL_REF (Pmode, \"OTS$MOVE\");")
 
-(define_insn "*movmemdi_1"
+(define_insn "*cpymemdi_1"
   [(set (match_operand:BLK 0 "memory_operand" "=m,m")
 	(match_operand:BLK 1 "memory_operand" "m,m"))
    (use (match_operand:DI 2 "nonmemory_operand" "r,i"))

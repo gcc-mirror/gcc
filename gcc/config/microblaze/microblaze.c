@@ -1250,7 +1250,7 @@ microblaze_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length)
     microblaze_block_move_straight (dest, src, leftover);
 }
 
-/* Expand a movmemsi instruction.  */
+/* Expand a cpymemsi instruction.  */
 
 bool
 microblaze_expand_block_move (rtx dest, rtx src, rtx length, rtx align_rtx)

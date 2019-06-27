@@ -928,7 +928,7 @@
 
 ;; Thumb block-move insns
 
-(define_insn "movmem12b"
+(define_insn "cpymem12b"
   [(set (mem:SI (match_operand:SI 2 "register_operand" "0"))
 	(mem:SI (match_operand:SI 3 "register_operand" "1")))
    (set (mem:SI (plus:SI (match_dup 2) (const_int 4)))
@@ -950,7 +950,7 @@
    (set_attr "type" "store_12")]
 )
 
-(define_insn "movmem8b"
+(define_insn "cpymem8b"
   [(set (mem:SI (match_operand:SI 2 "register_operand" "0"))
 	(mem:SI (match_operand:SI 3 "register_operand" "1")))
    (set (mem:SI (plus:SI (match_dup 2) (const_int 4)))

@@ -17386,11 +17386,11 @@ aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
   *dst = aarch64_progress_pointer (*dst);
 }
 
-/* Expand movmem, as if from a __builtin_memcpy.  Return true if
+/* Expand cpymem, as if from a __builtin_memcpy.  Return true if
    we succeed, otherwise return false.  */
 
 bool
-aarch64_expand_movmem (rtx *operands)
+aarch64_expand_cpymem (rtx *operands)
 {
   int n, mode_bits;
   rtx dst = operands[0];
