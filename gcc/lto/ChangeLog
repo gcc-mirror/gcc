@@ -1,3 +1,12 @@
+2019-06-27  Jan Hubicka  <jh@suse.cz>
+
+	* lto-common.c: tree-pretty-print.h
+	(type_streaming_finished): New static var.
+	(gimple_register_canonical_type_1): Return updated hash; handle ODR
+	types.
+	(iterative_hash_canonical_type): Update use of
+	gimple_register_canonical_type_1.
+
 2019-06-27  Martin Liska  <mliska@suse.cz>
 
 	* lto-dump.c (struct symbol_entry): Add default dtor.
