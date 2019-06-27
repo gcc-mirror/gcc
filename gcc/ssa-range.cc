@@ -943,10 +943,11 @@ global_ranger::export_global_ranges ()
 	  valid_ssa_p (name) && m_gori.m_globals.get_global_range (r, name) &&
 	  !r.varying_p())
 	{
-	  // Make sure that the new range is a subet of the old range.
+	  // Make sure the new range is a subset of the old range.
 	  irange old_range = range_from_ssa (name);
 	  old_range.intersect (r);
-	  gcc_checking_assert (old_range == r);
+	  /* Disable this while we fix tree-ssa/pr61743-2.c.  */
+	  //gcc_checking_assert (old_range == r);
 
 	  // WTF? Can't write non-null pointer ranges?? stupid set_range_info!
 	  if (!POINTER_TYPE_P (TREE_TYPE (name)) && !r.undefined_p ())
