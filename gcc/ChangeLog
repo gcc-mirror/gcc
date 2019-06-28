@@ -1,3 +1,16 @@
+2019-06-28  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/arm/arm.md: Remove redundant constraints from
+	define_expand but leave reload_inm and reload_outm patterns
+	untouched since they need special constraints to work.
+	* config/arm/arm-fixed.md: Remove redundant constraints from
+	define_expand.
+	* config/arm/iwmmxt.md: Likewise.
+	* config/arm/neon.md: Likewise.
+	* config/arm/sync.md: Likewise.
+	* config/arm/thumb1.md: Likewise.
+	* config/arm/vec-common.md: Likewise.
+
 2019-06-27  Ilia Diachkov  <ilia.diachkov@optimitech.com>
 
 	* doc/install.texi: Document --disable-tm-clone-registry.
