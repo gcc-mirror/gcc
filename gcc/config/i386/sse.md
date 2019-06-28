@@ -22110,56 +22110,53 @@
   "vpopcnt<ssemodesuffix>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}")
 
 (define_insn "vgf2p8affineinvqb_<mode><mask_name>"
-  [(set (match_operand:VI1_AVX512F 0 "register_operand" "=x,x,v")
+  [(set (match_operand:VI1_AVX512F 0 "register_operand" "=x,v")
 	(unspec:VI1_AVX512F
-	  [(match_operand:VI1_AVX512F 1 "register_operand" "0,x,v")
-	   (match_operand:VI1_AVX512F 2 "vector_operand" "xBm,xm,vm")
-	   (match_operand:QI 3 "const_0_to_255_operand" "n,n,n")]
+	  [(match_operand:VI1_AVX512F 1 "register_operand" "0,v")
+	   (match_operand:VI1_AVX512F 2 "vector_operand" "xBm,vm")
+	   (match_operand:QI 3 "const_0_to_255_operand" "n,n")]
 	  UNSPEC_GF2P8AFFINEINV))]
   "TARGET_GFNI"
   "@
    gf2p8affineinvqb\t{%3, %2, %0| %0, %2, %3}
-   vgf2p8affineinvqb\t{%3, %2, %1, %0<mask_operand4>| %0<mask_operand4>, %1, %2, %3}
    vgf2p8affineinvqb\t{%3, %2, %1, %0<mask_operand4>| %0<mask_operand4>, %1, %2, %3}"
-  [(set_attr "isa" "noavx,avx,avx512f")
-   (set_attr "prefix_data16" "1,*,*")
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "prefix_data16" "1,*")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,maybe_evex,evex")
+   (set_attr "prefix" "orig,maybe_evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vgf2p8affineqb_<mode><mask_name>"
-  [(set (match_operand:VI1_AVX512F 0 "register_operand" "=x,x,v")
+  [(set (match_operand:VI1_AVX512F 0 "register_operand" "=x,v")
 	(unspec:VI1_AVX512F
-	  [(match_operand:VI1_AVX512F 1 "register_operand" "0,x,v")
-	   (match_operand:VI1_AVX512F 2 "vector_operand" "xBm,xm,vm")
-	   (match_operand:QI 3 "const_0_to_255_operand" "n,n,n")]
+	  [(match_operand:VI1_AVX512F 1 "register_operand" "0,v")
+	   (match_operand:VI1_AVX512F 2 "vector_operand" "xBm,vm")
+	   (match_operand:QI 3 "const_0_to_255_operand" "n,n")]
 	  UNSPEC_GF2P8AFFINE))]
   "TARGET_GFNI"
   "@
    gf2p8affineqb\t{%3, %2, %0| %0, %2, %3}
-   vgf2p8affineqb\t{%3, %2, %1, %0<mask_operand4>| %0<mask_operand4>, %1, %2, %3}
    vgf2p8affineqb\t{%3, %2, %1, %0<mask_operand4>| %0<mask_operand4>, %1, %2, %3}"
-  [(set_attr "isa" "noavx,avx,avx512f")
-   (set_attr "prefix_data16" "1,*,*")
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "prefix_data16" "1,*")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,maybe_evex,evex")
+   (set_attr "prefix" "orig,maybe_evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vgf2p8mulb_<mode><mask_name>"
-  [(set (match_operand:VI1_AVX512F 0 "register_operand" "=x,x,v")
+  [(set (match_operand:VI1_AVX512F 0 "register_operand" "=x,v")
 	(unspec:VI1_AVX512F
-	  [(match_operand:VI1_AVX512F 1 "register_operand" "%0,x,v")
-	   (match_operand:VI1_AVX512F 2 "nonimmediate_operand" "xBm,xm,vm")]
+	  [(match_operand:VI1_AVX512F 1 "register_operand" "%0,v")
+	   (match_operand:VI1_AVX512F 2 "vector_operand" "xBm,vm")]
 	  UNSPEC_GF2P8MUL))]
   "TARGET_GFNI"
   "@
    gf2p8mulb\t{%2, %0| %0, %2}
-   vgf2p8mulb\t{%2, %1, %0<mask_operand3>| %0<mask_operand3>, %1, %2}
    vgf2p8mulb\t{%2, %1, %0<mask_operand3>| %0<mask_operand3>, %1, %2}"
-  [(set_attr "isa" "noavx,avx,avx512f")
-   (set_attr "prefix_data16" "1,*,*")
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "prefix_data16" "1,*")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,maybe_evex,evex")
+   (set_attr "prefix" "orig,maybe_evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "vpshrd_<mode><mask_name>"

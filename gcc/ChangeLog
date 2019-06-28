@@ -1,6 +1,12 @@
 2019-06-28  Jan Beulich  <jbeulich@suse.com>
 
 	* config/i386/sse.md (vgf2p8affineinvqb_<mode><mask_name>,
+	vgf2p8affineqb_<mode><mask_name>, vgf2p8mulb_<mode><mask_name>):
+	Eliminate redundant alternative.
+
+2019-06-28  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (vgf2p8affineinvqb_<mode><mask_name>,
 	vgf2p8affineqb_<mode><mask_name>): Drop % constraint modifier.
 	Use vector_operand.
 
