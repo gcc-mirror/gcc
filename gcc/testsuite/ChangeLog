@@ -1,5 +1,9 @@
 2019-06-28  Jan Beulich  <jbeulich@suse.com>
 
+	* gcc.target/i386/gfni-5.c: New.
+
+2019-06-28  Jan Beulich  <jbeulich@suse.com>
+
 	* gcc.target/i386/cvtpd2pi: New.
 
 2019-06-27  Jakub Jelinek  <jakub@redhat.com>
