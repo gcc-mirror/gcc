@@ -1,6 +1,14 @@
 2019-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90991
+	* config/i386/sse.md
+	(*<extract_type>_vinsert<shuffletype><extract_suf>_0): Use vmovupd,
+	vmovups, vmovdqu, vmovdqu32 or vmovdqu64 instead of the aligned
+	insns if operands[2] is misaligned_operand.
+
 	2019-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/90760

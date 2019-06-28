@@ -1,6 +1,11 @@
 2019-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90991
+	* gcc.target/i386/avx512dq-pr90991-1.c: New test.
+
 	2019-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/90954
