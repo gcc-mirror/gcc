@@ -1,3 +1,11 @@
+2019-06-21  Jeff Law  <law@redhat.com>
+
+	Backport fom mainline
+	2019-06-21  Jeff Law  <law@redhat.com>
+
+        PR tree-optimization/90949
+	* gcc.c-torture/execute/pr90949.c: New test.
+
 2019-06-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
