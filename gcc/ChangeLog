@@ -1,3 +1,12 @@
+2019-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/90760
+	* symtab.c (symtab_node::set_section): Allow being called on aliases
+	as long as they aren't analyzed yet.
+
 2019-06-28  Jeff Law  <law@redhat.com>
 
 	Backport from mainline
