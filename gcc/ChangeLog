@@ -1,5 +1,14 @@
 2019-06-28   Michael Meissner  <meissner@linux.ibm.com>
 
+	* config/rs6000/predicates.md (pcrel_address):  Use
+	SYMBOL_REF_LOCAL_P to determine if a label is local.
+	(pcrel_external_address): New predicate.
+	(non_prefixed_mem_operand): Delete, predicate not used.
+	* config/rs6000/rs6000.h (SYMBOL_FLAG_PCREL_P): Delete, we now use
+	SYMBOL_REF_LOCAL_P to determine if we can use pc-relative
+	addressing.
+	(SYMBOL_REF_PCREL_P): Likewise.
+
 	PR target/91009
 	* config/rs6000/rs6000.md (floatsi<mode>2_lfiwax): Add non-VSX
 	alternative.
