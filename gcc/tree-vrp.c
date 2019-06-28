@@ -429,8 +429,8 @@ void
 value_range_base::dump (FILE *file) const
 {
   tree ttype;
-  if (undefined_p () || varying_p ())
-    ttype = m_min;
+  if (undefined_p () && !m_min)
+    ttype = void_type_node;
   else ttype = TREE_TYPE (m_min);
 
   if (undefined_p ())
