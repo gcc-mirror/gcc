@@ -2369,7 +2369,8 @@ assert_compare_value_ranges (const value_range_base *old_vr,
 
   /* Sigh.  extract_range_from_binary_expr may refuse to work on
      varying ranges for some codes, but range-ops can sometimes derive
-     useful information.  */
+     useful information.  This is the same check we have in
+     extract_range_from_binary_expr.  */
   if (code != BIT_AND_EXPR
       && code != BIT_IOR_EXPR
       && code != TRUNC_DIV_EXPR
@@ -2384,9 +2385,15 @@ assert_compare_value_ranges (const value_range_base *old_vr,
       && code != MINUS_EXPR
       && code != RSHIFT_EXPR
       && code != POINTER_PLUS_EXPR
-      && (vr0->varying_p () || vr1->varying_p ())
-      && old_vr->varying_p ())
-    return;
+      && (vr0->varying_p ()
+	  || vr1->varying_p ()
+	  || vr0->symbolic_p ()
+	  || vr1->symbolic_p ()))
+    {
+      /* If VRP was varying, we know we did better.  */
+      if (old_vr->varying_p ())
+	return;
+    }
 
   /* There's an unaccounted difference.  This may be a real bug.  */
 
