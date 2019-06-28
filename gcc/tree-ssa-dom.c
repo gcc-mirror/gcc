@@ -48,7 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "alloc-pool.h"
 #include "tree-vrp.h"
-#include "range.h"
 #include "vr-values.h"
 #include "gimple-ssa-evrp-analyze.h"
 

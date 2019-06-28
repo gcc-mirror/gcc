@@ -1,4 +1,4 @@
-/* SSA range analysis implementation. -*- C++ -*-
+/* High resolution range class.
    Copyright (C) 2017 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 

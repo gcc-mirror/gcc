@@ -68,7 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "builtins.h"
 #include "wide-int-range.h"
-#include "grange.h"
+#include "range-op.h"
 
 static bool
 ranges_from_anti_range (const value_range_base *ar,
@@ -1311,7 +1311,7 @@ ranges_from_anti_range (const value_range_base *ar,
 			bool handle_pointers)
 {
   /* ?? This function is called multiple times from num_pairs,
-     lower_bound, and upper_bound.  We should either memoize this, or
+     lower_bound, and upper_bound.  We should probably memoize this, or
      rewrite the callers in such a way that we're not re-calculating
      this constantly.  */
 

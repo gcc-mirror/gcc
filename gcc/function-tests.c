@@ -570,11 +570,11 @@ test_conversion_to_ssa ()
   ASSERT_EQ (SSA_NAME, TREE_CODE (gimple_return_retval (return_stmt)));
 }
 
-/* Test the irange class.  We must start this here because we need
-   cfun set.  */
+/* Test range folding.  We must start this here because we need cfun
+   set.  */
 
 static void
-test_iranges ()
+test_ranges ()
 {
   tree fndecl = build_trivial_high_gimple_function ();
   function *fun = DECL_STRUCT_FUNCTION (fndecl);
@@ -687,7 +687,7 @@ function_tests_c_tests ()
   test_gimplification ();
   test_building_cfg ();
   test_conversion_to_ssa ();
-  test_iranges ();
+  test_ranges ();
   test_expansion_to_rtl ();
 }
 

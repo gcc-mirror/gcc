@@ -1,4 +1,4 @@
-/* Header file for range analysis.
+/* Header file for high resolution range class. -*- C++ -*-
    Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 

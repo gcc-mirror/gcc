@@ -84,7 +84,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "domwalk.h"
 #include "alloc-pool.h"
-#include "range.h"
 #include "vr-values.h"
 #include "gimple-ssa-evrp-analyze.h"
 #include "ssa-range.h"

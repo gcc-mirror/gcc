@@ -44,7 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-walk.h"
 #include "tree-cfg.h"
 #include "wide-int.h"
-#include "range.h"
 #include "range-op.h"
 #include "wide-int-range.h"
 

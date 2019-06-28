@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RANGE_OP_H
 #define GCC_RANGE_OP_H
 
-// This class is implmented for each kind of operator that is supported by 
+// This class is implemented for each kind of operator that is supported by 
 // the range generator.  It serves dual purposes. 
 //
 // 1 - Generates range information for the specific operation between
@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 //     each element of the range.
 //
 // 3 - Creates a range for an operand based on whether the result is 0 or
-//     non-zero.  Tihs is mostly for logical true false, but can serve other
+//     non-zero.  This is mostly for logical true false, but can serve other
 //     purposes.   
 //       ie   0 = op1 - op2 implies op2 has the same range as op1.
 
@@ -53,12 +53,13 @@ public:
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
 
-  // Set the range for op? in the general case. LHS is the range for the LHS
-  // of the expression, VAL is the range for the other operand, and
-  // the result is returned in R.
+  // Set the range for op? in the general case. LHS is the range for
+  // the LHS of the expression, VAL is the range for the other
+  // operand, and the result is returned in R.
   // ie   [range] = op1 + VAL
   // This is re-formed as  new_range = [range] - VAL.
-  // Return TRUE if the operation could be performed and the range is valid.  */
+  // Return TRUE if the operation could be performed and the range is
+  // valid.
   virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
   virtual bool op2_range (irange& r, const irange& lhs,

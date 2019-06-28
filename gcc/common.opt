@@ -1800,7 +1800,10 @@ Enum(rvrp_order) String(backward) Value(RVRP_ORDER_BACKWARD)
 EnumValue
 Enum(rvrp_order) String(conditionals) Value(RVRP_ORDER_CONDITIONALS)
 
-; Temporary testing construct.
+;; Perform VRP range folding with either range-ops or the traditional
+;; extract_range_from_{binary,unary}_expr functions.  This is meant to
+;; be a transitional testing construct to verify that both agree.
+
 franges=
 Common Joined RejectNegative Enum(ranges_mode) Var(flag_ranges_mode) Init(RANGES_CHECKING)
 -franges=[checking|vrp|range-ops]	Set the mode for calculating ranges.
