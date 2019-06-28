@@ -5590,7 +5590,7 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
 		break;
 	      }
 	  }
-	if (nolimm && !speed)
+	if (nolimm)
 	  {
 	    *total = 0;
 	    return true;
