@@ -744,7 +744,12 @@ reset_flow_sensitive_info (tree name)
     {
       /* points-to info is not flow-sensitive.  */
       if (SSA_NAME_PTR_INFO (name))
-	mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (name));
+	{
+	  /* [E]VRP can derive context sensitive alignment info and
+	     non-nullness properties.  We must reset both.  */
+	  mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (name));
+	  SSA_NAME_PTR_INFO (name)->pt.null = 1;
+	}
     }
   else
     SSA_NAME_RANGE_INFO (name) = NULL;
