@@ -5505,7 +5505,7 @@
 
 (define_insn "sse2_cvtpd2pi"
   [(set (match_operand:V2SI 0 "register_operand" "=v,?!y")
-	(unspec:V2SI [(match_operand:V2DF 1 "nonimmediate_operand" "vBm,xm")]
+	(unspec:V2SI [(match_operand:V2DF 1 "vector_operand" "vBm,xBm")]
 		     UNSPEC_FIX_NOTRUNC))]
   "TARGET_SSE2"
   "@
@@ -5523,7 +5523,7 @@
 
 (define_insn "sse2_cvttpd2pi"
   [(set (match_operand:V2SI 0 "register_operand" "=v,?!y")
-	(fix:V2SI (match_operand:V2DF 1 "nonimmediate_operand" "vBm,xm")))]
+	(fix:V2SI (match_operand:V2DF 1 "vector_operand" "vBm,xBm")))]
   "TARGET_SSE2"
   "@
    * return TARGET_AVX ? \"vcvttpd2dq{x}\t{%1, %0|%0, %1}\" : \"cvttpd2dq\t{%1, %0|%0, %1}\";
