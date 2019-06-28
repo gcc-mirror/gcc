@@ -1,3 +1,12 @@
+2019-06-28   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/91009
+	* config/rs6000/rs6000.md (floatsi<mode>2_lfiwax): Add non-VSX
+	alternative.
+	(floatsi<mode>2_lfiwax_mem): Add non-VSX alternative.
+	(floatunssi<mode>2_lfiwzx): Add non-VSX alternative.
+	(floatunssi<mode>2_lfiwzx_mem): Add non-VSX alternative.
+
 2019-06-28  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config.gcc (powerpc-*-darwin*, powerpc64-*-darwin*): Remove
