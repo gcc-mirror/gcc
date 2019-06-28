@@ -1,3 +1,10 @@
+2019-06-28  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2019-05-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_trampoline_init): Call "sorry" on GCN5.
+
 2019-06-26  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
