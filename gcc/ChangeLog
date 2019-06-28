@@ -1,3 +1,8 @@
+2019-06-28  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_rtx_costs): All short instructions are
+	having a lower cost regardless of the speed option.
+
 2019-06-28  Jan Beulich  <jbeulich@suse.com>
 
 	* config/i386/sse.md (sse2_cvtpd2pi, sse2_cvttpd2pi): Use
