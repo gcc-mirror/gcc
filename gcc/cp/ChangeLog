@@ -1,3 +1,12 @@
+2019-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90950
+	* semantics.c (finish_omp_clauses): Don't reject references to
+	incomplete types if processing_template_decl.
+
 2019-06-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90825 - endless recursion when evaluating sizeof.
