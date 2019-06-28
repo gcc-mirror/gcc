@@ -164,6 +164,7 @@ class vr_values : public range_misc
     tree vec;
   };
 
+  class type_range_cache *type_cache;
   vec<edge> to_remove_edges;
   vec<switch_update> to_update_switch_stmts;
 };

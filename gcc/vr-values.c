@@ -52,6 +52,67 @@ along with GCC; see the file COPYING3.  If not see
 #include "range-op.h"
 #include "wide-int-range.h"
 
+
+/* Cache VARYING value_ranges indexed by type.  */
+class type_range_cache
+{
+public:
+  type_range_cache ();
+  ~type_range_cache ();
+  value_range *varying_range (tree type);
+private:
+  value_range *new_varying (tree type);
+  hash_map<tree, value_range *> *m_type_table;
+  obstack m_range_obj;
+};
+
+/* Delete type cache.  */
+type_range_cache::~type_range_cache ()
+{
+  delete m_type_table;
+  obstack_free (&m_range_obj, NULL);
+}
+
+/* Create a new type cache.  */
+type_range_cache::type_range_cache ()
+{
+  /* Allocate a map and a local obstack.  */
+  m_type_table = new hash_map<tree, value_range *>;
+  gcc_obstack_init (&m_range_obj);
+}
+
+/* Allocate a new range from the obstack and set it to VARYING for TYPE.  */
+inline value_range *
+type_range_cache::new_varying (tree type)
+{
+  /* Allocate memory.  */
+  void *p = XOBNEW (&m_range_obj, value_range);
+  /* Invoke the constructors on the memory using placement new.  */
+  value_range *new_p = new (p) value_range ();
+  /* Initialize it to varying.  */
+  new_p->set_varying (type);
+  return new_p;
+}
+
+/* Return a varying object for TYPE.  If it already exists, return it.
+   Otherwise allocate a new one and register it in the table.  */
+value_range *
+type_range_cache::varying_range (tree type)
+{
+  bool existed;
+  value_range *&slot = m_type_table->get_or_insert (type, &existed);
+  if (!existed)
+    slot = new_varying (type);
+  else
+    {
+      /* Sanity check to ensure this varying hasn't been modified.  */
+      value_range v;
+      v.set_varying (type);
+      gcc_checking_assert (v.equal_p (*slot, true));
+    }
+  return slot;
+}
+
 /* Convert the value_range in this object to an irange.  This function
    will normalize non-constant ranges into constant ranges by
    degrading them to VARYING.  */
@@ -118,13 +179,7 @@ vr_values::get_value_range (const_tree var)
      We should get here at most from the substitute-and-fold stage which
      will never try to change values.  */
   if (ver >= num_vr_values)
-    {
-      /* ?? At some point we should find a way to cache varying ranges
-	 by type.  In the tree type itself?  */
-      vr = vrp_value_range_pool.allocate ();
-      vr->set_varying (type);
-      return vr;
-    }
+    return type_cache->varying_range (type);
 
   vr = vr_value[ver];
   if (vr)
@@ -1982,12 +2037,14 @@ vr_values::vr_values () : vrp_value_range_pool ("Tree VRP value ranges")
   bitmap_obstack_initialize (&vrp_equiv_obstack);
   to_remove_edges = vNULL;
   to_update_switch_stmts = vNULL;
+  type_cache = new type_range_cache;
 }
 
 /* Free VRP lattice.  */
 
 vr_values::~vr_values ()
 {
+  delete type_cache;
   /* Free allocated memory.  */
   free (vr_value);
   free (vr_phi_edge_counts);
