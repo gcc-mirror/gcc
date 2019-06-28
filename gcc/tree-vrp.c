@@ -1397,8 +1397,14 @@ extract_range_from_multiplicative_op (value_range_base *vr,
   /* Even if vr0 is VARYING or otherwise not usable, we can derive
      useful ranges just from the shift count.  E.g.
      x >> 63 for signed 64-bit x is always [-1, 0].  */
-  tree vr0_min = vr0->min (), vr0_max = vr0->max ();
-  if (vr0->kind () != VR_RANGE || vr0->symbolic_p ())
+  value_range_base tem = vr0->normalize_symbolics ();
+  tree vr0_min, vr0_max;
+  if (tem.kind () == VR_RANGE)
+    {
+      vr0_min = tem.min ();
+      vr0_max = tem.max ();
+    }
+  else
     {
       vr0_min = vrp_val_min (type);
       vr0_max = vrp_val_max (type);
