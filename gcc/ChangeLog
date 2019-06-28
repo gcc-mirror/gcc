@@ -1,6 +1,12 @@
 2019-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91024
+	* gimplify.c (collect_fallthrough_labels): Ignore GIMPLE_PREDICT
+	statements.
+
 	2019-06-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/90991
