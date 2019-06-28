@@ -1,3 +1,10 @@
+2019-06-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-c.c (pop_field_alignment): Quote #pragma options.
+	* config/darwin-driver.c (darwin_default_min_version): Remove newline
+	from warning.
+	(darwin_driver_init): Likewise.
+
 2019-06-28  Jan Beulich  <jbeulich@suse.com>
 
 	* config/i386/sse.md (vgf2p8affineinvqb_<mode><mask_name>,
