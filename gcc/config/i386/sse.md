@@ -22112,8 +22112,8 @@
 (define_insn "vgf2p8affineinvqb_<mode><mask_name>"
   [(set (match_operand:VI1_AVX512F 0 "register_operand" "=x,x,v")
 	(unspec:VI1_AVX512F
-	  [(match_operand:VI1_AVX512F 1 "register_operand" "%0,x,v")
-	   (match_operand:VI1_AVX512F 2 "nonimmediate_operand" "xBm,xm,vm")
+	  [(match_operand:VI1_AVX512F 1 "register_operand" "0,x,v")
+	   (match_operand:VI1_AVX512F 2 "vector_operand" "xBm,xm,vm")
 	   (match_operand:QI 3 "const_0_to_255_operand" "n,n,n")]
 	  UNSPEC_GF2P8AFFINEINV))]
   "TARGET_GFNI"
@@ -22130,8 +22130,8 @@
 (define_insn "vgf2p8affineqb_<mode><mask_name>"
   [(set (match_operand:VI1_AVX512F 0 "register_operand" "=x,x,v")
 	(unspec:VI1_AVX512F
-	  [(match_operand:VI1_AVX512F 1 "register_operand" "%0,x,v")
-	   (match_operand:VI1_AVX512F 2 "nonimmediate_operand" "xBm,xm,vm")
+	  [(match_operand:VI1_AVX512F 1 "register_operand" "0,x,v")
+	   (match_operand:VI1_AVX512F 2 "vector_operand" "xBm,xm,vm")
 	   (match_operand:QI 3 "const_0_to_255_operand" "n,n,n")]
 	  UNSPEC_GF2P8AFFINE))]
   "TARGET_GFNI"
