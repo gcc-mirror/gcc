@@ -1,6 +1,23 @@
 2019-06-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (depset::entity_kind): Add EK_CLONE.
+	(depset::hash::add_clone): New.
+	(enum walk_kind): Move to global scope.
+	(enum merge_kind): New.
+	(trees_{in,out}::tree_value): Use new enums.
+	(trees_{in,out}::tree_mergeable): Likewise.
+	(get_clone): New.
+	(member_owned_by_class): Clones are never owned.
+	(trees_out::mark_declaration): Walk clones.
+	(trees_in::read_definition): Likewise.
+	(trees_out::write_definition): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/builtin-1_b.C: Adjust dump scans.
+	* g++.dg/modules/inst-1_b.C: Adjust dump scans.
+	* g++.dg/modules/part-3_[cd].C: Adjust dump scans.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::core_vals): Stream abstract_origin.
 
 	gcc/cp/
