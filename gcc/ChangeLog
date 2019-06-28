@@ -1,5 +1,10 @@
 2019-06-28  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config.gcc (powerpc-*-darwin*, powerpc64-*-darwin*): Remove
+	override on extra_headers.
+
+2019-06-28  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* config/darwin-c.c (pop_field_alignment): Quote #pragma options.
 	* config/darwin-driver.c (darwin_default_min_version): Remove newline
 	from warning.
