@@ -1,3 +1,8 @@
+2019-06-28  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (sse2_cvtpd2pi, sse2_cvttpd2pi): Use
+	vector_operand plus, on both alternatives, "Bm" constraint.
+
 2019-06-28  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* config/arm/arm.md: Remove redundant constraints from
