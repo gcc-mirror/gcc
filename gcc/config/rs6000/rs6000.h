@@ -2539,10 +2539,3 @@ typedef struct GTY(()) machine_function
   IN_RANGE (VALUE,							\
 	    -(HOST_WIDE_INT_1 << 33),					\
 	    (HOST_WIDE_INT_1 << 33) - 1 - (EXTRA))
-
-/* Flag to mark SYMBOL_REF objects to say they are local addresses and are used
-   in pc-relative addresses.  */
-#define SYMBOL_FLAG_PCREL	SYMBOL_FLAG_MACH_DEP
-
-#define SYMBOL_REF_PCREL_P(X)						\
-  (SYMBOL_REF_P (X) && SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_PCREL)
