@@ -2081,6 +2081,8 @@ collect_fallthrough_labels (gimple_stmt_iterator *gsi_p,
 	}
       else if (gimple_call_internal_p (gsi_stmt (*gsi_p), IFN_ASAN_MARK))
 	;
+      else if (gimple_code (gsi_stmt (*gsi_p)) == GIMPLE_PREDICT)
+	;
       else if (!is_gimple_debug (gsi_stmt (*gsi_p)))
 	prev = gsi_stmt (*gsi_p);
       gsi_next (gsi_p);
