@@ -1,5 +1,16 @@
 2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Beep up comment on SAVED,
+	and tweak comment on the assertion about the scopes of Itypes.  Do not
+	skip the regular processing for Itypes that are E_Record_Subtype with
+	a Cloned_Subtype.  Get the Cloned_Subtype for every E_Record_Subtype
+	if the type is dummy and hasn't got its own freeze node.
+	<E_Record_Subtype>: Save again the DECL of the Cloned_Subtype, if any.
+	<E_Access_Subtype>: Save again the DECL of the equivalent type.
+	(Gigi_Equivalent_Type) <E_Access_Subtype>: New case.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (unchecked_convert): Tweak comment.  Only skip
 	dereferences when padding to have the same size on both sides.  Do it
 	for destination types with self-referential size too.
