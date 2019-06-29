@@ -96,7 +96,8 @@ struct nontriv {
   virtual int getA () { return a; }
 };
 
-struct coro1 f (nontriv t) noexcept
+struct coro1
+f (nontriv t) noexcept
 {
   if (t.a > 30)
     {

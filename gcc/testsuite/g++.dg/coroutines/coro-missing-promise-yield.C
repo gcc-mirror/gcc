@@ -22,7 +22,9 @@ template<> struct coro::coroutine_traits<MissingPromiseYield> {
     using promise_type = MissingPromiseYield::missing_yield;
 };
 
-MissingPromiseYield bar () {
+MissingPromiseYield
+bar ()
+{
   co_yield 22; // { dg-error {no member named 'yield_value' in} }
   co_return 0;
 }

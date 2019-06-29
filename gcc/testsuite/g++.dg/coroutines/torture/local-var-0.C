@@ -92,7 +92,8 @@ struct coro1 {
   };
 };
 
-struct coro1 f () noexcept
+struct coro1
+f () noexcept
 {
   const int answer = 42;
   PRINTF ("coro1: about to return %d\n", answer);

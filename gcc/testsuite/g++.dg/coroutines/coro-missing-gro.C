@@ -20,7 +20,9 @@ template<> struct coro::coroutine_traits<MissingGRO> {
     using promise_type = MissingGRO::missing_gro;
 };
 
-MissingGRO bar () { // { dg-error {no member named 'get_return_object' in} }
+MissingGRO
+bar () // { dg-error {no member named 'get_return_object' in} }
+{ 
   co_return;
 }
 

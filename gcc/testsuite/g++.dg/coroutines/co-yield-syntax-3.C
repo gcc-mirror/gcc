@@ -24,7 +24,9 @@ template<> struct coro::coroutine_traits<DummyYield> {
     using promise_type = DummyYield::dummy_yield;
 };
 
-DummyYield bar () {
+DummyYield
+bar ()
+{
   co_yield; // { dg-error {expected primary-expression before} }
   co_return 0;
 }

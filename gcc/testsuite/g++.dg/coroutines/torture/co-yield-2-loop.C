@@ -104,8 +104,9 @@ struct coro1 {
 };
 
 int gX ;
-//inline
-struct coro1 f () noexcept
+
+struct coro1
+f () noexcept
 {
   for (gX = 5; gX < 10 ; gX++)
     {

@@ -22,7 +22,9 @@ template<> struct coro::coroutine_traits<MissingRetVoid> {
     using promise_type = MissingRetVoid::missing_retvoid;
 };
 
-MissingRetVoid bar () {
+MissingRetVoid
+bar ()
+{
   co_return; // { dg-error "no member named .return_void. in" }
 }
 

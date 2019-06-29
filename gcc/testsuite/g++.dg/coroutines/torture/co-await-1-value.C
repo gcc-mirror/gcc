@@ -101,7 +101,9 @@ struct coro1 {
 
 /* The simplest valued co_await we can do.  */
 int gX = 1;
-coro1 f ()
+
+coro1
+f ()
 {
   gX = co_await coro1::suspend_always_intprt{};
   co_return gX + 10;

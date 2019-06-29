@@ -94,7 +94,8 @@ struct coro1 {
 };
 
 inline
-struct coro1 f (int x) noexcept
+struct coro1
+f (int x) noexcept
 {
   PRINT ("coro1: about to return");
   co_return 42;

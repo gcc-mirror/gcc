@@ -39,7 +39,8 @@ struct Coro {
 extern int x;
 
 // Diagnose disallowed "return" in coroutine.
-Coro bar () // { dg-error "return statement not allowed" }
+Coro
+bar () // { dg-error "return statement not allowed" }
 {
   if (x)
     return Coro(); 

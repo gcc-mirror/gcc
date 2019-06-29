@@ -88,7 +88,8 @@ __attribute__((__noinline__))
 int foo (void) { PRINT ("called the int fn foo");  return 2; }
 
 inline
-struct coro1 f () noexcept
+struct coro1
+f () noexcept
 {
   PRINT ("coro1: about to return");
   co_return (void)foo();

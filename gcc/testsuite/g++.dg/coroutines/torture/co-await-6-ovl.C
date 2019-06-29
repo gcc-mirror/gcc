@@ -111,7 +111,8 @@ struct coro1 {
 int gX = 1;
 coro1::empty e{};
 
-coro1 f ()
+coro1
+f ()
 {
   co_await (e); /* overload */
   co_return gX + 10;

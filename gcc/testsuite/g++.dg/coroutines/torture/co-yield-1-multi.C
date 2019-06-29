@@ -103,7 +103,8 @@ struct coro1 {
   };
 };
 
-struct coro1 f () noexcept
+struct coro1
+f () noexcept
 {
   PRINT ("f: about to yield 42");
   co_yield 42;

@@ -89,7 +89,8 @@ struct coro1 {
   };
 };
 
-struct coro1 f (int x) noexcept
+struct coro1
+f (int x) noexcept
 {
   if (x > 30)
     {

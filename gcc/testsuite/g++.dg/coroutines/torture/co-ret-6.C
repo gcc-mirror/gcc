@@ -96,7 +96,8 @@ struct coro1 {
   };
 };
 
-coro1<float> f () noexcept
+coro1<float>
+f () noexcept
 {
   PRINT ("coro1: about to return");
   co_return (float) 42;

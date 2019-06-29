@@ -108,7 +108,9 @@ struct coro1 {
 /* Valued with an await_transform.  */
 int gX = 1;
 int y = 30;
-coro1 f ()
+
+coro1
+f ()
 {
   if (gX < 12) {
     gX += y;

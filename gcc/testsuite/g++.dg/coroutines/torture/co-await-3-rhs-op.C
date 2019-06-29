@@ -107,7 +107,9 @@ struct coro1 {
 
 /* Valued with an await_transform.  */
 int gX = 1;
-coro1 f ()
+
+coro1
+f ()
 {
   gX = co_await 11 + 15;
   co_return gX + 31;

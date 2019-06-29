@@ -22,7 +22,9 @@ template<> struct coro::coroutine_traits<MissingRetValue> {
     using promise_type = MissingRetValue::missing_retvoid;
 };
 
-MissingRetValue bar () {
+MissingRetValue
+bar ()
+{
   co_return 6174; // { dg-error {no member named 'return_value' in} }
 }
 

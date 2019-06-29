@@ -94,7 +94,8 @@ struct coro1 {
   };
 };
 
-struct coro1 f (int start) noexcept
+struct coro1
+f (int start) noexcept
 {
   int value = start;
   PRINT ("f: about to yield start");

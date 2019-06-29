@@ -1,7 +1,9 @@
 //  { dg-additional-options "-fsyntax-only -w" }
 #include "coro.h"
 
-int bar (int x, ...) {
+int
+bar (int x, ...)
+{
   co_return 1; // { dg-error "cannot be used in a varargs function" }
 }
 

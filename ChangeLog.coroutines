@@ -1,3 +1,42 @@
+2019-06-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/testsuite/
+	* g++.dg/coroutines/co-yield-syntax-3.C: GNU-ify test function
+	declaration.
+	* g++.dg/coroutines/coro-bad-return.C: Likewise.
+	* g++.dg/coroutines/coro-context-vararg.C: Likewise.
+	* g++.dg/coroutines/coro-missing-gro.C: Likewise.
+	* g++.dg/coroutines/coro-missing-promise-yield.C: Likewise.
+	* g++.dg/coroutines/coro-missing-ret-value.C: Likewise.
+	* g++.dg/coroutines/coro-missing-ret-void.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-0-triv.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-1-value.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-2-xform.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-3-rhs-op.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-4-control-flow.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-5-loop.C: Likewise.
+	* g++.dg/coroutines/torture/co-await-6-ovl.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-3.C: Likewise.:
+	* g++.dg/coroutines/torture/co-ret-4.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-5.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-6.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-7.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-void-is-ready.C: Likewise.
+	* g++.dg/coroutines/torture/co-ret-void-is-suspend.C: Likewise.
+	* g++.dg/coroutines/torture/co-yield-0-triv.C: Likewise.
+	* g++.dg/coroutines/torture/co-yield-1-multi.C: Likewise.
+	* g++.dg/coroutines/torture/co-yield-2-loop.C: Likewise.
+	* g++.dg/coroutines/torture/func-params-0.C: Likewise.
+	* g++.dg/coroutines/torture/func-params-1.C: Likewise.
+	* g++.dg/coroutines/torture/func-params-2.C: Likewise.
+	* g++.dg/coroutines/torture/func-params-3.C: Likewise.
+	* g++.dg/coroutines/torture/func-params-4.C: Likewise.
+	* g++.dg/coroutines/torture/local-var-0.C: Likewise.
+	* g++.dg/coroutines/torture/local-var-1.C: Likewise.
+	* g++.dg/coroutines/torture/local-var-2.C: Likewise.
+	* g++.dg/coroutines/torture/local-var-3.C: Likewise.
+	* g++.dg/coroutines/torture/local-var-4.C: Likewise.
+
 2019-06-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Merge trunk r272613.
