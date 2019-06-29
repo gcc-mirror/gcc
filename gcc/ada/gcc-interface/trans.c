@@ -9003,8 +9003,9 @@ mark_visited_r (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
   else if (!TYPE_IS_DUMMY_P (t))
     TREE_VISITED (t) = 1;
 
+  /* The test in gimplify_type_sizes is on the main variant.  */
   if (TYPE_P (t))
-    TYPE_SIZES_GIMPLIFIED (t) = 1;
+    TYPE_SIZES_GIMPLIFIED (TYPE_MAIN_VARIANT (t)) = 1;
 
   return NULL_TREE;
 }
