@@ -686,7 +686,7 @@ finish_expr_stmt (tree expr)
 	  expr = convert_to_void (expr, ICV_STATEMENT, tf_warning_or_error);
 	}
       else if (!type_dependent_expression_p (expr))
-	convert_to_void (build_non_dependent_expr (expr), ICV_STATEMENT, 
+	convert_to_void (build_non_dependent_expr (expr), ICV_STATEMENT,
                          tf_warning_or_error);
 
       if (check_for_bare_parameter_packs (expr))
@@ -906,7 +906,7 @@ finish_return_stmt (tree expr)
     {
       if (warn_sequence_point)
 	verify_sequence_points (expr);
-      
+
       if (DECL_DESTRUCTOR_P (current_function_decl)
 	  || (DECL_CONSTRUCTOR_P (current_function_decl)
 	      && targetm.cxx.cdtor_returns_this ()))
@@ -1570,7 +1570,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 	{
 	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
 	  bool constraint_parsed
-	    = parse_input_constraint (&constraint, i, ninputs, noutputs, 0,   
+	    = parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
 				      oconstraints, &allows_mem, &allows_reg);
 	  /* If the operand is going to end up in memory, don't call
 	     decay_conversion.  */
@@ -2020,7 +2020,7 @@ check_accessibility_of_qualified_id (tree decl,
        its bases.  */
     qualifying_type = currently_open_derived_class (scope);
 
-  if (qualifying_type 
+  if (qualifying_type
       /* It is possible for qualifying type to be a TEMPLATE_TYPE_PARM
 	 or similar in a default argument value.  */
       && CLASS_TYPE_P (qualifying_type)
@@ -3004,7 +3004,7 @@ finish_template_template_parm (tree aggr, tree identifier)
 
   gcc_assert (DECL_TEMPLATE_PARMS (tmpl));
 
-  check_default_tmpl_args (decl, DECL_TEMPLATE_PARMS (tmpl), 
+  check_default_tmpl_args (decl, DECL_TEMPLATE_PARMS (tmpl),
 			   /*is_primary=*/true, /*is_partial=*/false,
 			   /*is_friend=*/0);
 
@@ -3379,7 +3379,7 @@ baselink_for_fns (tree fns)
   tree scope;
   tree cl;
 
-  if (BASELINK_P (fns) 
+  if (BASELINK_P (fns)
       || error_operand_p (fns))
     return fns;
 
@@ -3868,7 +3868,7 @@ finish_id_expression_1 (tree id_expression,
 	  if (DECL_P (decl) && DECL_NONLOCAL (decl)
 	      && DECL_CLASS_SCOPE_P (decl))
 	    {
-	      tree context = context_for_name_lookup (decl); 
+	      tree context = context_for_name_lookup (decl);
 	      if (context != current_class_type)
 		{
 		  tree path = currently_open_derived_class (context);
@@ -8032,7 +8032,7 @@ restore_omp_privatization_clauses (vec<tree> &save)
       save.release ();
       return;
     }
-    
+
   omp_private_member_map = new hash_map <tree, tree>;
   while (!save.is_empty ())
     {
@@ -9046,7 +9046,7 @@ finish_omp_atomic (location_t loc, enum tree_code code, enum tree_code opcode,
 	{
 	  if (opcode == NOP_EXPR)
 	    stmt = build2 (MODIFY_EXPR, void_type_node, orig_lhs, orig_rhs);
-	  else 
+	  else
 	    stmt = build2 (opcode, void_type_node, orig_lhs, orig_rhs);
 	  if (orig_rhs1)
 	    stmt = build_min_nt_loc (EXPR_LOCATION (orig_rhs1),
@@ -9317,8 +9317,8 @@ init_cp_semantics (void)
    CONDITION and the message text MESSAGE.  LOCATION is the location
    of the static assertion in the source code.  When MEMBER_P, this
    static assertion is a member of a class.  */
-void 
-finish_static_assert (tree condition, tree message, location_t location, 
+void
+finish_static_assert (tree condition, tree message, location_t location,
                       bool member_p)
 {
   tsubst_flags_t complain = tf_warning_or_error;
@@ -9344,7 +9344,7 @@ finish_static_assert (tree condition, tree message, location_t location,
       STATIC_ASSERT_SOURCE_LOCATION (assertion) = location;
 
       if (member_p)
-        maybe_add_class_template_decl_list (current_class_type, 
+        maybe_add_class_template_decl_list (current_class_type,
                                             assertion,
                                             /*friend_p=*/0);
       else
@@ -9362,12 +9362,12 @@ finish_static_assert (tree condition, tree message, location_t location,
   if (TREE_CODE (condition) == INTEGER_CST && !integer_zerop (condition))
     /* Do nothing; the condition is satisfied. */
     ;
-  else 
+  else
     {
       location_t saved_loc = input_location;
 
       input_location = location;
-      if (TREE_CODE (condition) == INTEGER_CST 
+      if (TREE_CODE (condition) == INTEGER_CST
           && integer_zerop (condition))
 	{
 	  int sz = TREE_INT_CST_LOW (TYPE_SIZE_UNIT
@@ -9582,7 +9582,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
   return type;
 }
 
-/* Called from trait_expr_value to evaluate either __has_nothrow_assign or 
+/* Called from trait_expr_value to evaluate either __has_nothrow_assign or
    __has_nothrow_copy, depending on assign_p.  Returns true iff all
    the copy {ctor,assign} fns are nothrow.  */
 
@@ -9643,7 +9643,7 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 
     case CPTK_HAS_NOTHROW_CONSTRUCTOR:
       type1 = strip_array_types (type1);
-      return (trait_expr_value (CPTK_HAS_TRIVIAL_CONSTRUCTOR, type1, type2) 
+      return (trait_expr_value (CPTK_HAS_TRIVIAL_CONSTRUCTOR, type1, type2)
 	      || (CLASS_TYPE_P (type1)
 		  && (t = locate_ctor (type1))
 		  && maybe_instantiate_noexcept (t)
