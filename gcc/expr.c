@@ -10893,12 +10893,12 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    if (MEM_P (op0) && REG_P (XEXP (op0, 0)))
 	      mark_reg_pointer (XEXP (op0, 0), MEM_ALIGN (op0));
 
-	    /* If the result has a record type and the extraction is done in
+	    /* If the result has aggregate type and the extraction is done in
 	       an integral mode, then the field may be not aligned on a byte
 	       boundary; in this case, if it has reverse storage order, it
 	       needs to be extracted as a scalar field with reverse storage
 	       order and put back into memory order afterwards.  */
-	    if (TREE_CODE (type) == RECORD_TYPE
+	    if (AGGREGATE_TYPE_P (type)
 		&& GET_MODE_CLASS (ext_mode) == MODE_INT)
 	      reversep = TYPE_REVERSE_STORAGE_ORDER (type);
 
@@ -10908,13 +10908,13 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 				      ? NULL_RTX : target),
 				     ext_mode, ext_mode, reversep, alt_rtl);
 
-	    /* If the result has a record type and the mode of OP0 is an
+	    /* If the result has aggregate type and the mode of OP0 is an
 	       integral mode then, if BITSIZE is narrower than this mode
 	       and this is for big-endian data, we must put the field
 	       into the high-order bits.  And we must also put it back
 	       into memory order if it has been previously reversed.  */
 	    scalar_int_mode op0_mode;
-	    if (TREE_CODE (type) == RECORD_TYPE
+	    if (AGGREGATE_TYPE_P (type)
 		&& is_int_mode (GET_MODE (op0), &op0_mode))
 	      {
 		HOST_WIDE_INT size = GET_MODE_BITSIZE (op0_mode);
