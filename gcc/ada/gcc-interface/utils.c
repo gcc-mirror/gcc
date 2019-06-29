@@ -984,10 +984,45 @@ make_aligning_type (tree type, unsigned int align, tree size,
   return record_type;
 }
 
+/* TYPE is an ARRAY_TYPE that is being used as the type of a field in a packed
+   record.  See if we can rewrite it as a type that has non-BLKmode, which we
+   can pack tighter in the packed record.  If so, return the new type; if not,
+   return the original type.  */
+
+static tree
+make_packable_array_type (tree type)
+{
+  const unsigned HOST_WIDE_INT size = tree_to_uhwi (TYPE_SIZE (type));
+  unsigned HOST_WIDE_INT new_size;
+  unsigned int new_align;
+
+  /* No point in doing anything if the size is either zero or too large for an
+     integral mode, or if the type already has non-BLKmode.  */
+  if (size == 0 || size > MAX_FIXED_MODE_SIZE || TYPE_MODE (type) != BLKmode)
+    return type;
+
+  /* Punt if the component type is an aggregate type for now.  */
+  if (AGGREGATE_TYPE_P (TREE_TYPE (type)))
+    return type;
+
+  tree new_type = copy_type (type);
+
+  new_size = ceil_pow2 (size);
+  new_align = MIN (new_size, BIGGEST_ALIGNMENT);
+  SET_TYPE_ALIGN (new_type, new_align);
+
+  TYPE_SIZE (new_type) = bitsize_int (new_size);
+  TYPE_SIZE_UNIT (new_type) = size_int (new_size / BITS_PER_UNIT);
+
+  SET_TYPE_MODE (new_type, mode_for_size (new_size, MODE_INT, 1).else_blk ());
+
+  return new_type;
+}
+
 /* TYPE is a RECORD_TYPE, UNION_TYPE or QUAL_UNION_TYPE that is being used
-   as the field type of a packed record if IN_RECORD is true, or as the
-   component type of a packed array if IN_RECORD is false.  See if we can
-   rewrite it either as a type that has non-BLKmode, which we can pack
+   as the type of a field in a packed record if IN_RECORD is true, or as
+   the component type of a packed array if IN_RECORD is false.  See if we
+   can rewrite it either as a type that has non-BLKmode, which we can pack
    tighter in the packed record case, or as a smaller type with at most
    MAX_ALIGN alignment if the value is non-zero.  If so, return the new
    type; if not, return the original type.  */
@@ -995,9 +1030,9 @@ make_aligning_type (tree type, unsigned int align, tree size,
 tree
 make_packable_type (tree type, bool in_record, unsigned int max_align)
 {
-  unsigned HOST_WIDE_INT size = tree_to_uhwi (TYPE_SIZE (type));
+  const unsigned HOST_WIDE_INT size = tree_to_uhwi (TYPE_SIZE (type));
+  const unsigned int align = TYPE_ALIGN (type);
   unsigned HOST_WIDE_INT new_size;
-  unsigned int align = TYPE_ALIGN (type);
   unsigned int new_align;
 
   /* No point in doing anything if the size is zero.  */
@@ -1058,10 +1093,19 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
       tree new_field_type = TREE_TYPE (field);
       tree new_field, new_field_size;
 
-      if (RECORD_OR_UNION_TYPE_P (new_field_type)
-	  && !TYPE_FAT_POINTER_P (new_field_type)
+      if (AGGREGATE_TYPE_P (new_field_type)
 	  && tree_fits_uhwi_p (TYPE_SIZE (new_field_type)))
-	new_field_type = make_packable_type (new_field_type, true, max_align);
+	{
+	  if (RECORD_OR_UNION_TYPE_P (new_field_type)
+	      && !TYPE_FAT_POINTER_P (new_field_type))
+	    new_field_type
+	      = make_packable_type (new_field_type, true, max_align);
+	  else if (in_record
+		   && max_align > 0
+		   && max_align < BITS_PER_UNIT
+		   && TREE_CODE (new_field_type) == ARRAY_TYPE)
+	    new_field_type = make_packable_array_type (new_field_type);
+	}
 
       /* However, for the last field in a not already packed record type
 	 that is of an aggregate type, we need to use the RM size in the
@@ -1411,7 +1455,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
      different modes, a VIEW_CONVERT_EXPR will be required for converting
      between them and it might be hard to overcome afterwards, including
      at the RTL level when the stand-alone object is accessed as a whole.  */
-  if (align != 0
+  if (align > 0
       && RECORD_OR_UNION_TYPE_P (type)
       && TYPE_MODE (type) == BLKmode
       && !TYPE_BY_REFERENCE_P (type)
@@ -1422,7 +1466,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 	  || (TREE_CODE (size) == INTEGER_CST
 	      && compare_tree_int (size, MAX_FIXED_MODE_SIZE) <= 0)))
     {
-      tree packable_type = make_packable_type (type, true);
+      tree packable_type = make_packable_type (type, true, align);
       if (TYPE_MODE (packable_type) != BLKmode
 	  && align >= TYPE_ALIGN (packable_type))
         type = packable_type;
@@ -2790,10 +2834,9 @@ create_field_decl (tree name, tree type, tree record_type, tree size, tree pos,
 	size = round_up (size, BITS_PER_UNIT);
     }
 
-  /* If we may, according to ADDRESSABLE, make a bitfield when the size is
-     specified for two reasons: first if the size differs from the natural
-     size; second, if the alignment is insufficient.  There are a number of
-     ways the latter can be true.
+  /* If we may, according to ADDRESSABLE, then make a bitfield when the size
+     is specified for two reasons: first, when it differs from the natural
+     size; second, when the alignment is insufficient.
 
      We never make a bitfield if the type of the field has a nonconstant size,
      because no such entity requiring bitfield operations should reach here.
@@ -2809,17 +2852,17 @@ create_field_decl (tree name, tree type, tree record_type, tree size, tree pos,
       && size
       && TREE_CODE (size) == INTEGER_CST
       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-      && (!tree_int_cst_equal (size, TYPE_SIZE (type))
+      && (packed
+	  || !tree_int_cst_equal (size, TYPE_SIZE (type))
 	  || (pos && !value_factor_p (pos, TYPE_ALIGN (type)))
-	  || packed
-	  || (TYPE_ALIGN (record_type) != 0
+	  || (TYPE_ALIGN (record_type)
 	      && TYPE_ALIGN (record_type) < TYPE_ALIGN (type))))
     {
       DECL_BIT_FIELD (field_decl) = 1;
       DECL_SIZE (field_decl) = size;
       if (!packed && !pos)
 	{
-	  if (TYPE_ALIGN (record_type) != 0
+	  if (TYPE_ALIGN (record_type)
 	      && TYPE_ALIGN (record_type) < TYPE_ALIGN (type))
 	    SET_DECL_ALIGN (field_decl, TYPE_ALIGN (record_type));
 	  else
@@ -3001,10 +3044,12 @@ process_attributes (tree *node, struct attrib **attr_list, bool in_place,
    a power of 2. */
 
 bool
-value_factor_p (tree value, HOST_WIDE_INT factor)
+value_factor_p (tree value, unsigned HOST_WIDE_INT factor)
 {
+  gcc_checking_assert (pow2p_hwi (factor));
+
   if (tree_fits_uhwi_p (value))
-    return tree_to_uhwi (value) % factor == 0;
+    return (tree_to_uhwi (value) & (factor - 1)) == 0;
 
   if (TREE_CODE (value) == MULT_EXPR)
     return (value_factor_p (TREE_OPERAND (value, 0), factor)

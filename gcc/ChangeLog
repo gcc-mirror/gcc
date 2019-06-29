@@ -1,3 +1,8 @@
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr_real_1) <BIT_FIELD_REF>: Apply the big-endian
+	adjustment for bit-fields to all aggregate types.
+
 2019-06-28   Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/predicates.md (pcrel_address):  Use

@@ -4481,6 +4481,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		}
 	    }
 
+      /* Now check if the type allows atomic access.  */
       if (Is_Atomic_Or_VFA (gnat_entity))
 	check_ok_for_atomic_type (gnu_type, gnat_entity, false);
 
@@ -5100,6 +5101,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 	}
     }
 
+  /* Now check if the type of the component allows atomic access.  */
   if (Has_Atomic_Components (gnat_array) || Is_Atomic_Or_VFA (gnat_type))
     check_ok_for_atomic_type (gnu_type, gnat_array, true);
 
@@ -6901,6 +6903,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
      boundaries, but that should be guaranteed by the GCC memory model.  */
   const bool needs_strict_alignment
     = (is_atomic || is_aliased || is_independent || is_strict_alignment);
+  bool is_bitfield;
   tree gnu_field_type = gnat_to_gnu_type (gnat_field_type);
   tree gnu_field_id = get_entity_name (gnat_field);
   tree gnu_field, gnu_size, gnu_pos;
@@ -6915,7 +6918,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   /* If a size is specified, use it.  Otherwise, if the record type is packed,
      use the official RM size.  See "Handling of Type'Size Values" in Einfo
      for further details.  */
-  if (Known_Esize (gnat_field) || Present (gnat_clause))
+  if (Present (gnat_clause) || Known_Esize (gnat_field))
     gnu_size = validate_size (Esize (gnat_field), gnu_field_type, gnat_field,
 			      FIELD_DECL, false, true);
   else if (packed == 1)
@@ -6927,12 +6930,36 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   else
     gnu_size = NULL_TREE;
 
-  /* If we have a specified size that is smaller than that of the field's type,
-     or a position is specified, and the field's type is a record that doesn't
-     require strict alignment, see if we can get either an integral mode form
-     of the type or a smaller form.  If we can, show a size was specified for
-     the field if there wasn't one already, so we know to make this a bitfield
-     and avoid making things wider.
+  /* Likewise for the position.  */
+  if (Present (gnat_clause))
+    {
+      gnu_pos = UI_To_gnu (Component_Bit_Offset (gnat_field), bitsizetype);
+      is_bitfield = !value_factor_p (gnu_pos, BITS_PER_UNIT);
+    }
+
+  /* If the record has rep clauses and this is the tag field, make a rep
+     clause for it as well.  */
+  else if (Has_Specified_Layout (gnat_record_type)
+	   && Chars (gnat_field) == Name_uTag)
+    {
+      gnu_pos = bitsize_zero_node;
+      gnu_size = TYPE_SIZE (gnu_field_type);
+      is_bitfield = false;
+    }
+
+  else
+    {
+      gnu_pos = NULL_TREE;
+      is_bitfield = false;
+    }
+
+  /* If the field's type is a fixed-size record that does not require strict
+     alignment, and the record is packed or we have a position specified for
+     the field that makes it a bitfield or we have a specified size that is
+     smaller than that of the field's type, then see if we can get either an
+     integral mode form of the field's type or a smaller form.  If we can,
+     consider that a size was specified for the field if there wasn't one
+     already, so we know to make it a bitfield and avoid making things wider.
 
      Changing to an integral mode form is useful when the record is packed as
      we can then place the field at a non-byte-aligned position and so achieve
@@ -6954,14 +6981,12 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
       && !TYPE_FAT_POINTER_P (gnu_field_type)
       && tree_fits_uhwi_p (TYPE_SIZE (gnu_field_type))
       && (packed == 1
+	  || is_bitfield
 	  || (gnu_size
-	      && (tree_int_cst_lt (gnu_size, TYPE_SIZE (gnu_field_type))
-		  || (Present (gnat_clause)
-		      && !(UI_To_Int (Component_Bit_Offset (gnat_field))
-			   % BITS_PER_UNIT == 0
-			   && value_factor_p (gnu_size, BITS_PER_UNIT)))))))
+	      && tree_int_cst_lt (gnu_size, TYPE_SIZE (gnu_field_type)))))
     {
-      tree gnu_packable_type = make_packable_type (gnu_field_type, true);
+      tree gnu_packable_type
+	= make_packable_type (gnu_field_type, true, is_bitfield ? 1 : 0);
       if (gnu_packable_type != gnu_field_type)
 	{
 	  gnu_field_type = gnu_packable_type;
@@ -6970,6 +6995,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	}
     }
 
+  /* Now check if the type of the field allows atomic access.  */
   if (Is_Atomic_Or_VFA (gnat_field))
     {
       const unsigned int align
@@ -6981,11 +7007,10 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
       check_ok_for_atomic_type (gnu_field_type, gnat_field, false);
     }
 
-  if (Present (gnat_clause))
+  /* If a position is specified, check that it is valid.  */
+  if (gnu_pos)
     {
       Entity_Id gnat_parent = Parent_Subtype (gnat_record_type);
-
-      gnu_pos = UI_To_gnu (Component_Bit_Offset (gnat_field), bitsizetype);
 
       /* Ensure the position does not overlap with the parent subtype, if there
 	 is one.  This test is omitted if the parent of the tagged type has a
@@ -7092,19 +7117,8 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	}
     }
 
-  /* If the record has rep clauses and this is the tag field, make a rep
-     clause for it as well.  */
-  else if (Has_Specified_Layout (gnat_record_type)
-	   && Chars (gnat_field) == Name_uTag)
-    {
-      gnu_pos = bitsize_zero_node;
-      gnu_size = TYPE_SIZE (gnu_field_type);
-    }
-
   else
     {
-      gnu_pos = NULL_TREE;
-
       /* If we are packing the record and the field is BLKmode, round the
 	 size up to a byte boundary.  */
       if (packed && TYPE_MODE (gnu_field_type) == BLKmode && gnu_size)
@@ -9681,7 +9695,7 @@ copy_and_substitute_in_layout (Entity_Id gnat_new_type,
 	    if (RECORD_OR_UNION_TYPE_P (gnu_field_type)
 		&& !TYPE_FAT_POINTER_P (gnu_field_type)
 		&& tree_fits_uhwi_p (TYPE_SIZE (gnu_field_type)))
-	      gnu_field_type = make_packable_type (gnu_field_type, true);
+	      gnu_field_type = make_packable_type (gnu_field_type, true, 0);
 	  }
 
 	else
