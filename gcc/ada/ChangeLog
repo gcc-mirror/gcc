@@ -1,5 +1,11 @@
 2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (unchecked_convert): Tweak comment.  Only skip
+	dereferences when padding to have the same size on both sides.  Do it
+	for destination types with self-referential size too.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: If the
 	type requires strict alignment, then set the RM size to the type size.
 	Rework handling of alignment and sizes of tagged types in ASIS mode.

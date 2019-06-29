@@ -1,5 +1,10 @@
 2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/unchecked_convert1.ads: New test.
+	* gnat.dg/specs/unchecked_convert2.ads: Likewise.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/specs/size_clause3.ads: Adjust error message.
 
 2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
