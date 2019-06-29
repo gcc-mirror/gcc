@@ -5265,8 +5265,8 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
   if (etype == type)
     return expr;
 
-  /* If both types are integral just do a normal conversion.
-     Likewise for a conversion to an unconstrained array.  */
+  /* If both types are integral or regular pointer, then just do a normal
+     conversion.  Likewise for a conversion to an unconstrained array.  */
   if (((INTEGRAL_TYPE_P (type)
 	|| (POINTER_TYPE_P (type) && !TYPE_IS_THIN_POINTER_P (type))
 	|| (code == RECORD_TYPE && TYPE_JUSTIFIED_MODULAR_P (type)))
@@ -5397,20 +5397,47 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
      we need to pad to have the same size on both sides.
 
      ??? We cannot do it unconditionally because unchecked conversions are
-     used liberally by the front-end to implement polymorphism, e.g. in:
+     used liberally by the front-end to implement interface thunks:
 
+       type ada__tags__addr_ptr is access system.address;
        S191s : constant ada__tags__addr_ptr := ada__tags__addr_ptr!(S190s);
        return p___size__4 (p__object!(S191s.all));
 
-     so we skip all expressions that are references.  */
-  else if (!REFERENCE_CLASS_P (expr)
+     so we need to skip dereferences.  */
+  else if (!INDIRECT_REF_P (expr)
 	   && !AGGREGATE_TYPE_P (etype)
+	   && ecode != UNCONSTRAINED_ARRAY_TYPE
 	   && TREE_CONSTANT (TYPE_SIZE (type))
 	   && (c = tree_int_cst_compare (TYPE_SIZE (etype), TYPE_SIZE (type))))
     {
       if (c < 0)
 	{
 	  expr = convert (maybe_pad_type (etype, TYPE_SIZE (type), 0, Empty,
+					  false, false, false, true),
+			  expr);
+	  expr = unchecked_convert (type, expr, notrunc_p);
+	}
+      else
+	{
+	  tree rec_type = maybe_pad_type (type, TYPE_SIZE (etype), 0, Empty,
+					  false, false, false, true);
+	  expr = unchecked_convert (rec_type, expr, notrunc_p);
+	  expr = build_component_ref (expr, TYPE_FIELDS (rec_type), false);
+	}
+    }
+
+  /* Likewise if we are converting from a scalar type to a type with self-
+     referential size.  We use the max size to do the padding in this case.  */
+  else if (!INDIRECT_REF_P (expr)
+	   && !AGGREGATE_TYPE_P (etype)
+	   && ecode != UNCONSTRAINED_ARRAY_TYPE
+	   && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (type)))
+    {
+      tree new_size = max_size (TYPE_SIZE (type), true);
+      c = tree_int_cst_compare (TYPE_SIZE (etype), new_size);
+      if (c < 0)
+	{
+	  expr = convert (maybe_pad_type (etype, new_size, 0, Empty,
 					  false, false, false, true),
 			  expr);
 	  expr = unchecked_convert (type, expr, notrunc_p);
