@@ -1,5 +1,9 @@
 2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/size_clause3.ads: Adjust error message.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/specs/atomic2.ads: Adjust error message.
 	* gnat.dg/specs/clause_on_volatile.ads: Likewise.
 	* gnat.dg/specs/size_clause3.ads: Likewise.

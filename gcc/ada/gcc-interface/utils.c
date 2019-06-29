@@ -1859,13 +1859,18 @@ void
 finish_record_type (tree record_type, tree field_list, int rep_level,
 		    bool debug_info_p)
 {
-  enum tree_code code = TREE_CODE (record_type);
+  const enum tree_code orig_code = TREE_CODE (record_type);
+  const bool had_size = TYPE_SIZE (record_type) != NULL_TREE;
+  const bool had_size_unit = TYPE_SIZE_UNIT (record_type) != NULL_TREE;
+  const bool had_align = TYPE_ALIGN (record_type) > 0;
+  /* For all-repped records with a size specified, lay the QUAL_UNION_TYPE
+     out just like a UNION_TYPE, since the size will be fixed.  */
+  const enum tree_code code
+    = (orig_code == QUAL_UNION_TYPE && rep_level > 0 && had_size
+       ? UNION_TYPE : orig_code);
   tree name = TYPE_IDENTIFIER (record_type);
   tree ada_size = bitsize_zero_node;
   tree size = bitsize_zero_node;
-  bool had_size = TYPE_SIZE (record_type) != 0;
-  bool had_size_unit = TYPE_SIZE_UNIT (record_type) != 0;
-  bool had_align = TYPE_ALIGN (record_type) != 0;
   tree field;
 
   TYPE_FIELDS (record_type) = field_list;
@@ -1878,26 +1883,21 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
      that just means some initializations; otherwise, layout the record.  */
   if (rep_level > 0)
     {
-      SET_TYPE_ALIGN (record_type, MAX (BITS_PER_UNIT,
-					TYPE_ALIGN (record_type)));
-
-      if (!had_size_unit)
-	TYPE_SIZE_UNIT (record_type) = size_zero_node;
+      if (TYPE_ALIGN (record_type) < BITS_PER_UNIT)
+	SET_TYPE_ALIGN (record_type, BITS_PER_UNIT);
 
       if (!had_size)
 	TYPE_SIZE (record_type) = bitsize_zero_node;
 
-      /* For all-repped records with a size specified, lay the QUAL_UNION_TYPE
-	 out just like a UNION_TYPE, since the size will be fixed.  */
-      else if (code == QUAL_UNION_TYPE)
-	code = UNION_TYPE;
+      if (!had_size_unit)
+	TYPE_SIZE_UNIT (record_type) = size_zero_node;
     }
   else
     {
       /* Ensure there isn't a size already set.  There can be in an error
 	 case where there is a rep clause but all fields have errors and
 	 no longer have a position.  */
-      TYPE_SIZE (record_type) = 0;
+      TYPE_SIZE (record_type) = NULL_TREE;
 
       /* Ensure we use the traditional GCC layout for bitfields when we need
 	 to pack the record type or have a representation clause.  The other

@@ -1,5 +1,15 @@
 2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: If the
+	type requires strict alignment, then set the RM size to the type size.
+	Rework handling of alignment and sizes of tagged types in ASIS mode.
+	(validate_size): Rename local variable and remove special handling for
+	strict-alignment types.
+	* gcc-interface/utils.c (finish_record_type): Constify local variables
+	and use properly typed constants.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_field): Rework error messages for
 	fields requiring strict alignment, add explicit test on Storage_Unit
 	for position and size, and mention type alignment for position.
