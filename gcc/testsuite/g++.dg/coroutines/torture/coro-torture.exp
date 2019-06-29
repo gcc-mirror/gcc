@@ -10,7 +10,7 @@ torture-init
 
 set-torture-options [concat $DG_TORTURE_OPTIONS $LTO_TORTURE_OPTIONS]
 
-gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] "" "-fcoroutines -fno-exceptions"
+gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] "" "-fcoroutines"
 
 torture-finish
 dg-finish

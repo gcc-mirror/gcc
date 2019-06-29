@@ -16142,12 +16142,10 @@ finish_function (bool inline_p)
 	  return fndecl;
         }
 
-#if NO_EH_YET
       if (use_eh_spec_block (fndecl))
 	finish_eh_spec_block (TYPE_RAISES_EXCEPTIONS
 			      (TREE_TYPE (fndecl)),
 			      current_eh_spec_block);
-#endif
     }
   else
   /* For a cloned function, we've already got all the code we need;

@@ -29,12 +29,12 @@ if ![info exists DEFAULT_CXXFLAGS] then {
 }
 
 set DEFAULT_COROFLAGS $DEFAULT_CXXFLAGS
-lappend DEFAULT_COROFLAGS "-std=c++17" "-fcoroutines" "-fno-exceptions"
+lappend DEFAULT_COROFLAGS "-std=c++17" "-fcoroutines"
 
 dg-init
 
 # Run the tests.
-#g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] \
+# g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] \
 #        "" $DEFAULT_COROFLAGS
 
 foreach test [lsort [find $srcdir/$subdir {*.[CH]}]] {

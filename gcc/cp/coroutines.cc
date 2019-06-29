@@ -2005,23 +2005,48 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   location_t fn_start = DECL_SOURCE_LOCATION (orig);
   gcc_rich_location fn_start_loc (fn_start);
 
+  /* Initial processing of the captured body.
+     If we have no expressions or just an error then punt.  */
+  tree body_start = expr_first (fnbody);
+  if (body_start == NULL_TREE || body_start == error_mark_node)
+    {
+      DECL_SAVED_TREE (orig) = push_stmt_list ();
+      append_to_statement_list (DECL_SAVED_TREE (orig), &fnbody);
+      return false;
+    }
+
   /* So, we've tied off the original body.  Now start the replacement.
      If we encounter a fatal error we might return a now-empty body.
      TODO: determine if it would help to restore the original.
 	   determine if looking for more errors in coro_function_valid_p()
 	   and stashing types is a better solution.
   */
+
   tree newbody = push_stmt_list ();
   DECL_SAVED_TREE (orig) = newbody;
 
-  /* Types we already know.  */
+  /* If our original body is noexcept, then that's what we apply to our
+     generated functions.  Remember that we're NOEXCEPT and fish out the
+     contained list (we tied off to the top level already).  */
+  bool is_noexcept = TREE_CODE (body_start) == MUST_NOT_THROW_EXPR;
+  if (is_noexcept)
+    {
+      /* Simplified abstract from begin_eh_spec_block, since we already
+         know the outcome.  */
+      fnbody = TREE_OPERAND (body_start, 0); /* Stash the original...  */
+      add_stmt (body_start);		     /* ... and start the new.  */
+      TREE_OPERAND (body_start, 0) = push_stmt_list ();
+    }
+
+  /* Create the coro frame type, as far as it can be known at this stage.
+     1. Types we already know.  */
 
   tree fn_return_type = TREE_TYPE (TREE_TYPE (orig));
   gcc_assert (! VOID_TYPE_P (fn_return_type));
   tree handle_type = DECL_COROUTINE_HANDLE_TYPE(orig);
   tree promise_type = DECL_COROUTINE_PROMISE_TYPE(orig);
 
-  /* Types we need to define or look up.  */
+  /* 2. Types we need to define or look up.  */
 
   suspend_points = hash_map<tree, struct suspend_point_info>::create_ggc (11);
 
@@ -2110,7 +2135,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   register_await_info (final_await, final_suspend_type,
 		       fin_susp_name, fin_hand_name);
 
-  /* Now add in fields for function params (if there are any) that are used
+  /* 3. Now add in fields for function params (if there are any) that are used
      within the function body.  This is conservative; we can't tell at this
      stage if such uses might be optimised away, or if they might turn out not
      to persist across any suspend points.  Of course, even if they don't
@@ -2151,8 +2176,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
         }
     }
 
-  /* Now make space for local vars, this is conservative again, and we would
-     expect to delete unused entries later.  */
+  /* 4. Now make space for local vars, this is conservative again, and we
+     would expect to delete unused entries later.  */
   hash_map<tree, __local_var_info_t> local_var_uses;
   struct __local_vars_frame_data local_vars_data =
     { &field_list, &local_var_uses, 0, 0, fn_start, false };

@@ -1,4 +1,17 @@
 2019-06-29  Iain Sandoe  <iain@sandoe.co.uk>
+ 
+	gcc/cp/
+	* coroutines.cc (morph_fn_to_coro): If the body is empty or an error
+	mark, then we can't determine any more so punt.  If the body is marked
+	noexcept, remember this and pass on to the ramp.  Some small comment
+	changes are included.
+	* decl.c (finish_function): Handle exception blocks from the ramp.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/coroutines.exp:
+	* g++.dg/coroutines/torture/coro-torture.exp:
+
+2019-06-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/testsuite/
 	* g++.dg/coroutines/torture/co-ret-3.C: Remove explicit "inline" from
