@@ -9,7 +9,7 @@ package Atomic2 is
   end record;
   for Rec1 use record
     C at 0 range 0 .. 7;
-    I at 1 range 0 .. 31; -- { dg-error "position of atomic field" }
+    I at 1 range 0 .. 31; -- { dg-error "position for atomic|alignment" }
   end record;
 
   type Rec2 is record
