@@ -1,3 +1,9 @@
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (set_nonaliased_component_on_array_type): Add
+	missing guard for the presence of TYPE_CANONICAL.
+	(set_reverse_storage_order_on_array_type): Likewise.
+
 2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (walk_nesting_tree): New static function.
