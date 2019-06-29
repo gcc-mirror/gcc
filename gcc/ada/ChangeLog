@@ -1,5 +1,11 @@
 2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_field): Rework error messages for
+	fields requiring strict alignment, add explicit test on Storage_Unit
+	for position and size, and mention type alignment for position.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (mark_visited_r): Set TYPE_SIZES_GIMPLIFIED on
 	the main variant of a type, if any.
 
