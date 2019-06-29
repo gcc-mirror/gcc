@@ -1,3 +1,10 @@
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/array5.ads: New test.
+	* gnat.dg/specs/array5_pkg1.ads: New helper.
+	* gnat.dg/specs/array5_pkg2.ads: Likewise.
+	* gnat.dg/specs/array5_pkg2-g.ads: Likewise.
+
 2019-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
