@@ -93,7 +93,6 @@ struct coro1 {
   };
 };
 
-inline
 struct coro1
 f (int x) noexcept
 {
