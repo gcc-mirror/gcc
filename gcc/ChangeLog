@@ -1,5 +1,14 @@
 2019-06-30  Uroš Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/sse.md (ssse3_abs<mode>2): Rename from abs<mode>2.
+	(abs<mode>2): New expander.
+	* config/i386/i386-builtin.def (__builtin_ia32_pabsb):
+	Use CODE_FOR_ssse3_absv8qi2.
+	(__builtin_ia32_pabsw): Use CODE_FOR_ssse3_absv4hi2.
+	(__builtin_ia32_pabsd): Use CODE_FOR_ssse3_absv2si2.
+
+2019-06-30  Uroš Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (mmx_isa): Rename x64, x64_noavx and x64_avx
 	to sse, sse_noavx and avx.  Update all uses.
 

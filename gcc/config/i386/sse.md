@@ -16584,7 +16584,7 @@
     }
 })
 
-(define_insn "abs<mode>2"
+(define_insn "ssse3_abs<mode>2"
   [(set (match_operand:MMXMODEI 0 "register_operand" "=y,Yv")
 	(abs:MMXMODEI
 	  (match_operand:MMXMODEI 1 "register_mmxmem_operand" "ym,Yv")))]
@@ -16598,6 +16598,12 @@
    (set_attr "prefix_extra" "1")
    (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
    (set_attr "mode" "DI,TI")])
+
+(define_insn "abs<mode>2"
+  [(set (match_operand:MMXMODEI 0 "register_operand")
+	(abs:MMXMODEI
+	  (match_operand:MMXMODEI 1 "register_operand")))]
+  "TARGET_MMX_WITH_SSE && TARGET_SSSE3")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
