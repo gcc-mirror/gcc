@@ -1,3 +1,37 @@
+2019-06-30  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (mmx_isa): Rename x64, x64_noavx and x64_avx
+	to sse, sse_noavx and avx.  Update all uses.
+
+2019-06-30  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (sse_movntq): Add "isa" attribute.
+	(*mmx_<plusminus_insn><mode>3): Ditto.
+	(*mmx_mulv4hi3"): Ditto.
+	(*mmx_smulv4hi3_highpart): Ditto.
+	(*mmx_umulv4hi3_highpart): Ditto.
+	(*mmx_pmaddwd): Ditto.
+	(*sse2_umulv1siv1di3): Ditto.
+	(*mmx_<code>v4hi3): Ditto.
+	(*mmx_<code>v8qi3): Ditto.
+	(mmx_ashr<mode>3): Ditto.
+	("mmx_<shift_insn><mode>3): Ditto.
+	(*mmx_eq<mode>3): Ditto.
+	(mmx_gt<mode>3): Ditto.
+	(mmx_andnot<mode>3): Ditto.
+	(*mmx_<code><mode>3): Ditto.
+	(*mmx_pinsrw): Ditto.
+	(*mmx_pextrw): Ditto.
+	(mmx_pshufw_1): Ditto.
+	(*mmx_uavgv8qi3): Ditto.
+	(*mmx_uavgv4hi3): Ditto.
+	("mmx_psadbw): Ditto.
+	* config/i386/sse.md (sse_cvtps2pi): Ditto.
+	(sse_cvttps2pi): Ditto.
+	(ssse3_pmaddubsw): Ditto.
+	(*ssse3_pmulhrswv4hi3): Ditto.
+	(ssse3_psign<mode>3): Ditto.
+
 2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (expand_expr_real_1) <BIT_FIELD_REF>: Apply the big-endian

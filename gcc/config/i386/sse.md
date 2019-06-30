@@ -5150,7 +5150,7 @@
     }
   DONE;
 }
-  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+  [(set_attr "mmx_isa" "native,sse_noavx,avx")
    (set_attr "type" "ssecvt")
    (set_attr "mode" "V4SF")])
 
@@ -5164,7 +5164,8 @@
   "@
    cvtps2pi\t{%1, %0|%0, %q1}
    %vcvtps2dq\t{%1, %0|%0, %1}"
-  [(set_attr "mmx_isa" "native,x64")
+  [(set_attr "isa" "*,sse2")
+   (set_attr "mmx_isa" "native,*")
    (set_attr "type" "ssecvt")
    (set_attr "unit" "mmx,*")
    (set_attr "mode" "DI")])
@@ -5178,7 +5179,8 @@
   "@
    cvttps2pi\t{%1, %0|%0, %q1}
    %vcvttps2dq\t{%1, %0|%0, %1}"
-  [(set_attr "mmx_isa" "native,x64")
+  [(set_attr "isa" "*,sse2")
+   (set_attr "mmx_isa" "native,*")
    (set_attr "type" "ssecvt")
    (set_attr "unit" "mmx,*")
    (set_attr "prefix_rep" "0")
@@ -15893,7 +15895,7 @@
   ix86_move_vector_high_sse_to_mmx (op0);
   DONE;
 }
-  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+  [(set_attr "mmx_isa" "native,sse_noavx,avx")
    (set_attr "type" "sseiadd")
    (set_attr "atom_unit" "complex")
    (set_attr "prefix_extra" "1")
@@ -16009,7 +16011,7 @@
   ix86_move_vector_high_sse_to_mmx (op0);
   DONE;
 }
-  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+  [(set_attr "mmx_isa" "native,sse_noavx,avx")
    (set_attr "type" "sseiadd")
    (set_attr "atom_unit" "complex")
    (set_attr "prefix_extra" "1")
@@ -16192,7 +16194,8 @@
    pmaddubsw\t{%2, %0|%0, %2}
    pmaddubsw\t{%2, %0|%0, %2}
    vpmaddubsw\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+  [(set_attr "isa" "*,noavx,avx")
+   (set_attr "mmx_isa" "native,*,*")
    (set_attr "type" "sseiadd")
    (set_attr "atom_unit" "simul")
    (set_attr "prefix_extra" "1")
@@ -16313,7 +16316,8 @@
    pmulhrsw\t{%2, %0|%0, %2}
    pmulhrsw\t{%2, %0|%0, %2}
    vpmulhrsw\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+  [(set_attr "isa" "*,noavx,avx")
+   (set_attr "mmx_isa" "native,*,*")
    (set_attr "type" "sseimul")
    (set_attr "prefix_extra" "1")
    (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
@@ -16373,7 +16377,7 @@
   rtx vec_const = gen_rtx_CONST_VECTOR (V4SImode, par);
   operands[5] = force_const_mem (V4SImode, vec_const);
 }
-  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+  [(set_attr "mmx_isa" "native,sse_noavx,avx")
    (set_attr "prefix_extra" "1")
    (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
    (set_attr "mode" "DI,TI,TI")])
@@ -16406,7 +16410,8 @@
    psign<mmxvecsize>\t{%2, %0|%0, %2}
    psign<mmxvecsize>\t{%2, %0|%0, %2}
    vpsign<mmxvecsize>\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+  [(set_attr "isa" "*,noavx,avx")
+   (set_attr "mmx_isa" "native,*,*")
    (set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
@@ -16510,7 +16515,7 @@
     }
   operands[0] = lowpart_subreg (V1TImode, op0, GET_MODE (op0));
 }
-  [(set_attr "mmx_isa" "native,x64_noavx,x64_avx")
+  [(set_attr "mmx_isa" "native,sse_noavx,avx")
    (set_attr "type" "sseishft")
    (set_attr "atom_unit" "sishuf")
    (set_attr "prefix_extra" "1")
@@ -16587,7 +16592,7 @@
   "@
    pabs<mmxvecsize>\t{%1, %0|%0, %1}
    %vpabs<mmxvecsize>\t{%1, %0|%0, %1}"
-  [(set_attr "mmx_isa" "native,x64")
+  [(set_attr "mmx_isa" "native,*")
    (set_attr "type" "sselog1")
    (set_attr "prefix_rep" "0")
    (set_attr "prefix_extra" "1")
