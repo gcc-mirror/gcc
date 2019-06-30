@@ -1,3 +1,11 @@
+2019-06-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gnatlink.adb (Link_Step): Remove duplicate -static-libgcc switches.
+	Push -shared-libgcc explicitly, when it is the target default (unless
+	overidden by the static flag).
+	When the user has put an instance of shared/static-libgcc do not push
+	a duplicate of this.
+
 2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Beep up comment on SAVED,
