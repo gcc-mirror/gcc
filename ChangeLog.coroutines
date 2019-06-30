@@ -1,3 +1,11 @@
+2019-06-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (coro_maybe_expand_co_return): New.
+	(co_return_expander): Handle statement lists and insert the expanded
+	co_return statements instead of nesting them.
+	(build_actor_fn): Update comment.
+
 2019-06-29  Iain Sandoe  <iain@sandoe.co.uk>
  
 	gcc/cp/

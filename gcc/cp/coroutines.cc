@@ -700,29 +700,21 @@ struct __coro_ret_data {
   tree fs_label;
 };
 
-/* Callback that rewrites co_return as per 9.6.3.1
-   - for co_return;
-   { p.return_void (); goto final_suspend; }
-   - for co_return [void expr];
-   { expr; p.return_void(); goto final_suspend;}
-   - for co_return [non void expr];
-   { p.return_value(expr); goto final_suspend; }
-*/
-   
+/* If this is a coreturn statement (or one wrapped in a cleanup) then
+   return the list of statements to replace it.  */
 static tree
-co_return_expander (tree *stmt, int *, void *d)
+coro_maybe_expand_co_return (tree co_ret_expr, __coro_ret_data *data)
 {
-  struct __coro_ret_data *data = (struct __coro_ret_data *) d;
-
   /* Look inside <(void) (expr)> cleanup */
-  tree co_ret_expr = *stmt;
   if (TREE_CODE (co_ret_expr) == CLEANUP_POINT_EXPR)
-    co_ret_expr = TREE_OPERAND (*stmt, 0);
+    co_ret_expr = TREE_OPERAND (co_ret_expr, 0);
 
   if (TREE_CODE (co_ret_expr) != CO_RETRN_EXPR)
     return NULL_TREE;
 
   location_t loc = EXPR_LOCATION (co_ret_expr);
+  /* If expr is present it will be void, and is placed immediately before
+     the call for return_{value, void};  */
   tree expr = TREE_OPERAND (co_ret_expr, 0);
   tree call = TREE_OPERAND (co_ret_expr, 1);
   tree stmt_list = NULL;
@@ -744,8 +736,59 @@ co_return_expander (tree *stmt, int *, void *d)
   append_to_statement_list (call, &stmt_list);
   tree r = build1_loc (loc, GOTO_EXPR, void_type_node, data->fs_label);
   append_to_statement_list (r, &stmt_list);
-  *stmt = stmt_list;
+  return stmt_list;
+}
 
+/* Callback that rewrites co_return as per 9.6.3.1
+   - for co_return;
+   { p.return_void (); goto final_suspend; }
+   - for co_return [void expr];
+   { expr; p.return_void(); goto final_suspend;}
+   - for co_return [non void expr];
+   { p.return_value(expr); goto final_suspend; }
+*/
+
+static tree
+co_return_expander (tree *stmt, int *do_subtree, void *d)
+{
+  struct __coro_ret_data *data = (struct __coro_ret_data *) d;
+
+  /* To avoid nesting statement lists, walk them and insert as needed.  */
+  if (TREE_CODE (*stmt) == STATEMENT_LIST)
+    {
+      tree_stmt_iterator i;
+      for (i = tsi_start (*stmt); ! tsi_end_p (i); tsi_next (&i))
+	{
+	  tree *new_stmt = tsi_stmt_ptr (i);
+	  tree replace = coro_maybe_expand_co_return (*new_stmt, data);
+	  /* If we got something, it will be list and we want to splice
+	     it in.  */
+	  if (replace != NULL_TREE)
+	    {
+	      /* Splice it in ... */
+	      tsi_link_before (&i, replace, TSI_SAME_STMT);
+	      /* ... and delete what we expanded.  */
+	      tsi_delink (&i);
+	      /* Maybe, even likely, we replaced the last in the list.  */
+	      if (tsi_end_p (i))
+	        break;
+	    }
+	  else /* Continue the walk.  */
+	    cp_walk_tree (new_stmt, co_return_expander, d, NULL);
+	}
+      *do_subtree = 0; /* Done subtrees.  */
+    }
+  else
+    {
+      /* We might have a single co_return statement, in which case, we do
+	 have to replace it with a list.  */
+      tree replace = coro_maybe_expand_co_return (*stmt, data);
+      if (replace != NULL_TREE)
+        {
+	  *stmt = replace;
+	  *do_subtree = 0; /* Done here.  */
+        }
+    }
   return NULL_TREE;
 }
 
@@ -1540,7 +1583,9 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   /* 9.6.3.1 (2.2 : 3) if p.return_void() is a valid expression, flowing
      off the end of a coroutine is equivalent to co_return; otherwise UB.
      We just inject the call to p.return_void() here, and fall through to
-     the final_suspend: label (eliding the goto).  */
+     the final_suspend: label (eliding the goto).  If the function body has
+     a co_return, then this statement will most likely be unreachable and
+     eliminated.  */
   if (return_void != NULL_TREE)
     add_stmt (return_void);
 
