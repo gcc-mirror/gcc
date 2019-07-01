@@ -45,107 +45,109 @@ package body GNAT.Graphs is
    -- Directed_Graph --
    --------------------
 
-   package body Directed_Graph is
+   package body Directed_Graphs is
 
       -----------------------
       -- Local subprograms --
       -----------------------
 
       procedure Add_Component
-        (G        : Instance;
+        (G        : Directed_Graph;
          Comp     : Component_Id;
-         Vertices : Vertex_List.Instance);
+         Vertices : Vertex_List.Doubly_Linked_List);
       pragma Inline (Add_Component);
       --  Add component Comp which houses vertices Vertices to graph G
 
-      procedure Ensure_Created (G : Instance);
+      procedure Ensure_Created (G : Directed_Graph);
       pragma Inline (Ensure_Created);
       --  Verify that graph G is created. Raise Not_Created if this is not the
       --  case.
 
       procedure Ensure_Not_Present
-        (G : Instance;
+        (G : Directed_Graph;
          E : Edge_Id);
       pragma Inline (Ensure_Not_Present);
       --  Verify that graph G lacks edge E. Raise Duplicate_Edge if this is not
       --  the case.
 
       procedure Ensure_Not_Present
-        (G : Instance;
+        (G : Directed_Graph;
          V : Vertex_Id);
       pragma Inline (Ensure_Not_Present);
       --  Verify that graph G lacks vertex V. Raise Duplicate_Vertex if this is
       --  not the case.
 
       procedure Ensure_Present
-        (G    : Instance;
+        (G    : Directed_Graph;
          Comp : Component_Id);
       pragma Inline (Ensure_Present);
       --  Verify that component Comp exists in graph G. Raise Missing_Component
       --  if this is not the case.
 
       procedure Ensure_Present
-        (G : Instance;
+        (G : Directed_Graph;
          E : Edge_Id);
       pragma Inline (Ensure_Present);
       --  Verify that edge E is present in graph G. Raise Missing_Edge if this
       --  is not the case.
 
       procedure Ensure_Present
-        (G : Instance;
+        (G : Directed_Graph;
          V : Vertex_Id);
       pragma Inline (Ensure_Present);
       --  Verify that vertex V is present in graph G. Raise Missing_Vertex if
       --  this is not the case.
 
-      procedure Free is new Ada.Unchecked_Deallocation (Graph, Instance);
+      procedure Free is
+        new Ada.Unchecked_Deallocation
+              (Directed_Graph_Attributes, Directed_Graph);
 
       function Get_Component_Attributes
-        (G    : Instance;
+        (G    : Directed_Graph;
          Comp : Component_Id) return Component_Attributes;
       pragma Inline (Get_Component_Attributes);
       --  Obtain the attributes of component Comp of graph G
 
       function Get_Edge_Attributes
-        (G : Instance;
+        (G : Directed_Graph;
          E : Edge_Id) return Edge_Attributes;
       pragma Inline (Get_Edge_Attributes);
       --  Obtain the attributes of edge E of graph G
 
       function Get_Vertex_Attributes
-        (G : Instance;
+        (G : Directed_Graph;
          V : Vertex_Id) return Vertex_Attributes;
       pragma Inline (Get_Vertex_Attributes);
       --  Obtain the attributes of vertex V of graph G
 
       function Get_Outgoing_Edges
-        (G : Instance;
-         V : Vertex_Id) return Edge_Set.Instance;
+        (G : Directed_Graph;
+         V : Vertex_Id) return Edge_Set.Membership_Set;
       pragma Inline (Get_Outgoing_Edges);
       --  Obtain the Outgoing_Edges attribute of vertex V of graph G
 
       function Get_Vertices
-        (G    : Instance;
-         Comp : Component_Id) return Vertex_List.Instance;
+        (G    : Directed_Graph;
+         Comp : Component_Id) return Vertex_List.Doubly_Linked_List;
       pragma Inline (Get_Vertices);
       --  Obtain the Vertices attribute of component Comp of graph G
 
       procedure Set_Component
-        (G   : Instance;
+        (G   : Directed_Graph;
          V   : Vertex_Id;
          Val : Component_Id);
       pragma Inline (Set_Component);
       --  Set attribute Component of vertex V of graph G to value Val
 
       procedure Set_Outgoing_Edges
-        (G   : Instance;
+        (G   : Directed_Graph;
          V   : Vertex_Id;
-         Val : Edge_Set.Instance);
+         Val : Edge_Set.Membership_Set);
       pragma Inline (Set_Outgoing_Edges);
       --  Set attribute Outgoing_Edges of vertex V of graph G to value Val
 
       procedure Set_Vertex_Attributes
-        (G   : Instance;
+        (G   : Directed_Graph;
          V   : Vertex_Id;
          Val : Vertex_Attributes);
       pragma Inline (Set_Vertex_Attributes);
@@ -156,9 +158,9 @@ package body GNAT.Graphs is
       -------------------
 
       procedure Add_Component
-        (G        : Instance;
+        (G        : Directed_Graph;
          Comp     : Component_Id;
-         Vertices : Vertex_List.Instance)
+         Vertices : Vertex_List.Doubly_Linked_List)
       is
       begin
          pragma Assert (Present (G));
@@ -176,7 +178,7 @@ package body GNAT.Graphs is
       --------------
 
       procedure Add_Edge
-        (G           : Instance;
+        (G           : Directed_Graph;
          E           : Edge_Id;
          Source      : Vertex_Id;
          Destination : Vertex_Id)
@@ -209,7 +211,7 @@ package body GNAT.Graphs is
       ----------------
 
       procedure Add_Vertex
-        (G : Instance;
+        (G : Directed_Graph;
          V : Vertex_Id)
       is
       begin
@@ -239,7 +241,7 @@ package body GNAT.Graphs is
       ---------------
 
       function Component
-        (G : Instance;
+        (G : Directed_Graph;
          V : Vertex_Id) return Component_Id
       is
       begin
@@ -254,7 +256,7 @@ package body GNAT.Graphs is
       ------------------------
 
       function Contains_Component
-        (G    : Instance;
+        (G    : Directed_Graph;
          Comp : Component_Id) return Boolean
       is
       begin
@@ -268,7 +270,7 @@ package body GNAT.Graphs is
       -------------------
 
       function Contains_Edge
-        (G : Instance;
+        (G : Directed_Graph;
          E : Edge_Id) return Boolean
       is
       begin
@@ -282,7 +284,7 @@ package body GNAT.Graphs is
       ---------------------
 
       function Contains_Vertex
-        (G : Instance;
+        (G : Directed_Graph;
          V : Vertex_Id) return Boolean
       is
       begin
@@ -297,9 +299,9 @@ package body GNAT.Graphs is
 
       function Create
         (Initial_Vertices : Positive;
-         Initial_Edges    : Positive) return Instance
+         Initial_Edges    : Positive) return Directed_Graph
       is
-         G : constant Instance := new Graph;
+         G : constant Directed_Graph := new Directed_Graph_Attributes;
 
       begin
          G.All_Edges    := Edge_Map.Create      (Initial_Edges);
@@ -314,7 +316,7 @@ package body GNAT.Graphs is
       -----------------
 
       procedure Delete_Edge
-        (G : Instance;
+        (G : Directed_Graph;
          E : Edge_Id)
       is
          Source : Vertex_Id;
@@ -341,7 +343,7 @@ package body GNAT.Graphs is
       ------------------------
 
       function Destination_Vertex
-        (G : Instance;
+        (G : Directed_Graph;
          E : Edge_Id) return Vertex_Id
       is
       begin
@@ -355,7 +357,7 @@ package body GNAT.Graphs is
       -- Destroy --
       -------------
 
-      procedure Destroy (G : in out Instance) is
+      procedure Destroy (G : in out Directed_Graph) is
       begin
          Ensure_Created (G);
 
@@ -410,7 +412,7 @@ package body GNAT.Graphs is
       -- Ensure_Created --
       --------------------
 
-      procedure Ensure_Created (G : Instance) is
+      procedure Ensure_Created (G : Directed_Graph) is
       begin
          if not Present (G) then
             raise Not_Created;
@@ -422,7 +424,7 @@ package body GNAT.Graphs is
       ------------------------
 
       procedure Ensure_Not_Present
-        (G : Instance;
+        (G : Directed_Graph;
          E : Edge_Id)
       is
       begin
@@ -436,7 +438,7 @@ package body GNAT.Graphs is
       ------------------------
 
       procedure Ensure_Not_Present
-        (G : Instance;
+        (G : Directed_Graph;
          V : Vertex_Id)
       is
       begin
@@ -450,7 +452,7 @@ package body GNAT.Graphs is
       --------------------
 
       procedure Ensure_Present
-        (G    : Instance;
+        (G    : Directed_Graph;
          Comp : Component_Id)
       is
       begin
@@ -464,7 +466,7 @@ package body GNAT.Graphs is
       --------------------
 
       procedure Ensure_Present
-        (G : Instance;
+        (G : Directed_Graph;
          E : Edge_Id)
       is
       begin
@@ -478,7 +480,7 @@ package body GNAT.Graphs is
       --------------------
 
       procedure Ensure_Present
-        (G : Instance;
+        (G : Directed_Graph;
          V : Vertex_Id)
       is
       begin
@@ -491,7 +493,7 @@ package body GNAT.Graphs is
       -- Find_Components --
       ---------------------
 
-      procedure Find_Components (G : Instance) is
+      procedure Find_Components (G : Directed_Graph) is
 
          --  The components of graph G are discovered using Tarjan's strongly
          --  connected component algorithm. Do not modify this code unless you
@@ -527,7 +529,7 @@ package body GNAT.Graphs is
            (Attrs : in out Tarjan_Attributes);
          --  Destroy the contents of attributes Attrs
 
-         package Tarjan_Map is new Dynamic_HTable
+         package Tarjan_Map is new Dynamic_Hash_Tables
            (Key_Type              => Vertex_Id,
             Value_Type            => Tarjan_Attributes,
             No_Value              => No_Tarjan_Attributes,
@@ -543,7 +545,7 @@ package body GNAT.Graphs is
          -- Tarjan_Stack --
          ------------------
 
-         package Tarjan_Stack is new Doubly_Linked_List
+         package Tarjan_Stack is new Doubly_Linked_Lists
            (Element_Type    => Vertex_Id,
             "="             => Same_Vertex,
             Destroy_Element => Destroy_Vertex);
@@ -552,8 +554,8 @@ package body GNAT.Graphs is
          -- Global data --
          -----------------
 
-         Attrs : Tarjan_Map.Instance   := Tarjan_Map.Nil;
-         Stack : Tarjan_Stack.Instance := Tarjan_Stack.Nil;
+         Attrs : Tarjan_Map.Dynamic_Hash_Table   := Tarjan_Map.Nil;
+         Stack : Tarjan_Stack.Doubly_Linked_List := Tarjan_Stack.Nil;
 
          -----------------------
          -- Local subprograms --
@@ -689,7 +691,7 @@ package body GNAT.Graphs is
 
          procedure Create_Component (V : Vertex_Id) is
             Curr_V   : Vertex_Id;
-            Vertices : Vertex_List.Instance;
+            Vertices : Vertex_List.Doubly_Linked_List;
 
          begin
             Vertices := Vertex_List.Create;
@@ -1047,7 +1049,7 @@ package body GNAT.Graphs is
       ------------------------------
 
       function Get_Component_Attributes
-        (G    : Instance;
+        (G    : Directed_Graph;
          Comp : Component_Id) return Component_Attributes
       is
       begin
@@ -1062,7 +1064,7 @@ package body GNAT.Graphs is
       -------------------------
 
       function Get_Edge_Attributes
-        (G : Instance;
+        (G : Directed_Graph;
          E : Edge_Id) return Edge_Attributes
       is
       begin
@@ -1077,7 +1079,7 @@ package body GNAT.Graphs is
       ---------------------------
 
       function Get_Vertex_Attributes
-        (G : Instance;
+        (G : Directed_Graph;
          V : Vertex_Id) return Vertex_Attributes
       is
       begin
@@ -1092,8 +1094,8 @@ package body GNAT.Graphs is
       ------------------------
 
       function Get_Outgoing_Edges
-        (G : Instance;
-         V : Vertex_Id) return Edge_Set.Instance
+        (G : Directed_Graph;
+         V : Vertex_Id) return Edge_Set.Membership_Set
       is
       begin
          pragma Assert (Present (G));
@@ -1107,8 +1109,8 @@ package body GNAT.Graphs is
       ------------------
 
       function Get_Vertices
-        (G    : Instance;
-         Comp : Component_Id) return Vertex_List.Instance
+        (G    : Directed_Graph;
+         Comp : Component_Id) return Vertex_List.Doubly_Linked_List
       is
       begin
          pragma Assert (Present (G));
@@ -1166,7 +1168,7 @@ package body GNAT.Graphs is
       -- Is_Empty --
       --------------
 
-      function Is_Empty (G : Instance) return Boolean is
+      function Is_Empty (G : Directed_Graph) return Boolean is
       begin
          Ensure_Created (G);
 
@@ -1179,7 +1181,9 @@ package body GNAT.Graphs is
       -- Iterate_All_Edges --
       -----------------------
 
-      function Iterate_All_Edges (G : Instance) return All_Edge_Iterator is
+      function Iterate_All_Edges
+        (G : Directed_Graph) return All_Edge_Iterator
+      is
       begin
          Ensure_Created (G);
 
@@ -1191,7 +1195,7 @@ package body GNAT.Graphs is
       --------------------------
 
       function Iterate_All_Vertices
-        (G : Instance) return All_Vertex_Iterator
+        (G : Directed_Graph) return All_Vertex_Iterator
       is
       begin
          Ensure_Created (G);
@@ -1203,7 +1207,9 @@ package body GNAT.Graphs is
       -- Iterate_Components --
       ------------------------
 
-      function Iterate_Components (G : Instance) return Component_Iterator is
+      function Iterate_Components
+        (G : Directed_Graph) return Component_Iterator
+      is
       begin
          Ensure_Created (G);
 
@@ -1215,7 +1221,7 @@ package body GNAT.Graphs is
       ----------------------------
 
       function Iterate_Outgoing_Edges
-        (G : Instance;
+        (G : Directed_Graph;
          V : Vertex_Id) return Outgoing_Edge_Iterator
       is
       begin
@@ -1232,7 +1238,7 @@ package body GNAT.Graphs is
       ----------------------
 
       function Iterate_Vertices
-        (G    : Instance;
+        (G    : Directed_Graph;
          Comp : Component_Id) return Vertex_Iterator
       is
       begin
@@ -1306,7 +1312,7 @@ package body GNAT.Graphs is
       -- Number_Of_Components --
       --------------------------
 
-      function Number_Of_Components (G : Instance) return Natural is
+      function Number_Of_Components (G : Directed_Graph) return Natural is
       begin
          Ensure_Created (G);
 
@@ -1317,7 +1323,7 @@ package body GNAT.Graphs is
       -- Number_Of_Edges --
       ---------------------
 
-      function Number_Of_Edges (G : Instance) return Natural is
+      function Number_Of_Edges (G : Directed_Graph) return Natural is
       begin
          Ensure_Created (G);
 
@@ -1328,7 +1334,7 @@ package body GNAT.Graphs is
       -- Number_Of_Vertices --
       ------------------------
 
-      function Number_Of_Vertices (G : Instance) return Natural is
+      function Number_Of_Vertices (G : Directed_Graph) return Natural is
       begin
          Ensure_Created (G);
 
@@ -1339,7 +1345,7 @@ package body GNAT.Graphs is
       -- Present --
       -------------
 
-      function Present (G : Instance) return Boolean is
+      function Present (G : Directed_Graph) return Boolean is
       begin
          return G /= Nil;
       end Present;
@@ -1349,7 +1355,7 @@ package body GNAT.Graphs is
       -------------------
 
       procedure Set_Component
-        (G   : Instance;
+        (G   : Directed_Graph;
          V   : Vertex_Id;
          Val : Component_Id)
       is
@@ -1369,9 +1375,9 @@ package body GNAT.Graphs is
       ------------------------
 
       procedure Set_Outgoing_Edges
-        (G   : Instance;
+        (G   : Directed_Graph;
          V   : Vertex_Id;
-         Val : Edge_Set.Instance)
+         Val : Edge_Set.Membership_Set)
       is
          VA : Vertex_Attributes;
 
@@ -1389,7 +1395,7 @@ package body GNAT.Graphs is
       ---------------------------
 
       procedure Set_Vertex_Attributes
-        (G   : Instance;
+        (G   : Directed_Graph;
          V   : Vertex_Id;
          Val : Vertex_Attributes)
       is
@@ -1405,7 +1411,7 @@ package body GNAT.Graphs is
       -------------------
 
       function Source_Vertex
-        (G : Instance;
+        (G : Directed_Graph;
          E : Edge_Id) return Vertex_Id
       is
       begin
@@ -1414,7 +1420,7 @@ package body GNAT.Graphs is
 
          return Get_Edge_Attributes (G, E).Source;
       end Source_Vertex;
-   end Directed_Graph;
+   end Directed_Graphs;
 
    --------------------
    -- Hash_Component --

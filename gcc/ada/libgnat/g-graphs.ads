@@ -53,9 +53,9 @@ package GNAT.Graphs is
    function Present (Comp : Component_Id) return Boolean;
    --  Determine whether component Comp exists
 
-   --------------------
-   -- Directed_Graph --
-   --------------------
+   ---------------------
+   -- Directed_Graphs --
+   ---------------------
 
    --  The following package offers a directed graph abstraction with the
    --  following characteristics:
@@ -67,7 +67,7 @@ package GNAT.Graphs is
    --
    --  The following use pattern must be employed when operating this graph:
    --
-   --    Graph : Instance := Create (<some size>, <some size>);
+   --    Graph : Directed_Graph := Create (<some size>, <some size>);
    --
    --    <various operations>
    --
@@ -113,7 +113,7 @@ package GNAT.Graphs is
               Right : Edge_Id) return Boolean;
       --  Compare edge Left to edge Right for identity
 
-   package Directed_Graph is
+   package Directed_Graphs is
 
       --  The following exceptions are raised when an attempt is made to add
       --  the same edge or vertex in a graph.
@@ -135,11 +135,11 @@ package GNAT.Graphs is
       --  The following type denotes a graph handle. Each instance must be
       --  created using routine Create.
 
-      type Instance is private;
-      Nil : constant Instance;
+      type Directed_Graph is private;
+      Nil : constant Directed_Graph;
 
       procedure Add_Edge
-        (G           : Instance;
+        (G           : Directed_Graph;
          E           : Edge_Id;
          Source      : Vertex_Id;
          Destination : Vertex_Id);
@@ -155,7 +155,7 @@ package GNAT.Graphs is
       --      present in the graph.
 
       procedure Add_Vertex
-        (G : Instance;
+        (G : Directed_Graph;
          V : Vertex_Id);
       --  Add vertex V to graph G. This action raises the following exceptions:
       --
@@ -164,7 +164,7 @@ package GNAT.Graphs is
       --    * Iterated, when the graph has an outstanding vertex iterator
 
       function Component
-        (G : Instance;
+        (G : Directed_Graph;
          V : Vertex_Id) return Component_Id;
       --  Obtain the component where vertex V of graph G resides. This action
       --  raises the following exceptions:
@@ -172,29 +172,29 @@ package GNAT.Graphs is
       --    * Missing_Vertex, when the vertex is not present in the graph
 
       function Contains_Component
-        (G    : Instance;
+        (G    : Directed_Graph;
          Comp : Component_Id) return Boolean;
       --  Determine whether graph G contains component Comp
 
       function Contains_Edge
-        (G : Instance;
+        (G : Directed_Graph;
          E : Edge_Id) return Boolean;
       --  Determine whether graph G contains edge E
 
       function Contains_Vertex
-        (G : Instance;
+        (G : Directed_Graph;
          V : Vertex_Id) return Boolean;
       --  Determine whether graph G contains vertex V
 
       function Create
         (Initial_Vertices : Positive;
-         Initial_Edges    : Positive) return Instance;
+         Initial_Edges    : Positive) return Directed_Graph;
       --  Create a new graph with vertex capacity Initial_Vertices and edge
       --  capacity Initial_Edges. This routine must be called at the start of
       --  a graph's lifetime.
 
       procedure Delete_Edge
-        (G : Instance;
+        (G : Directed_Graph;
          E : Edge_Id);
       --  Delete edge E from graph G. This action raises these exceptions:
       --
@@ -206,44 +206,44 @@ package GNAT.Graphs is
       --      not present in the graph.
 
       function Destination_Vertex
-        (G : Instance;
+        (G : Directed_Graph;
          E : Edge_Id) return Vertex_Id;
       --  Obtain the destination vertex of edge E of graph G. This action
       --  raises the following exceptions:
       --
       --    * Missing_Edge, when the edge is not present in the graph
 
-      procedure Destroy (G : in out Instance);
+      procedure Destroy (G : in out Directed_Graph);
       --  Destroy the contents of graph G, rendering it unusable. This routine
       --  must be called at the end of a graph's lifetime. This action raises
       --  the following exceptions:
       --
       --    * Iterated, if the graph has any outstanding iterator
 
-      procedure Find_Components (G : Instance);
+      procedure Find_Components (G : Directed_Graph);
       --  Find all components of graph G. This action raises the following
       --  exceptions:
       --
       --    * Iterated, when the components or vertices of the graph have an
       --      outstanding iterator.
 
-      function Is_Empty (G : Instance) return Boolean;
+      function Is_Empty (G : Directed_Graph) return Boolean;
       --  Determine whether graph G is empty
 
-      function Number_Of_Components (G : Instance) return Natural;
+      function Number_Of_Components (G : Directed_Graph) return Natural;
       --  Obtain the total number of components of graph G
 
-      function Number_Of_Edges (G : Instance) return Natural;
+      function Number_Of_Edges (G : Directed_Graph) return Natural;
       --  Obtain the total number of edges of graph G
 
-      function Number_Of_Vertices (G : Instance) return Natural;
+      function Number_Of_Vertices (G : Directed_Graph) return Natural;
       --  Obtain the total number of vertices of graph G
 
-      function Present (G : Instance) return Boolean;
+      function Present (G : Directed_Graph) return Boolean;
       --  Determine whether graph G exists
 
       function Source_Vertex
-        (G : Instance;
+        (G : Directed_Graph;
          E : Edge_Id) return Vertex_Id;
       --  Obtain the source vertex that "owns" edge E of graph G. This action
       --  raises the following exceptions:
@@ -274,7 +274,7 @@ package GNAT.Graphs is
       function Has_Next (Iter : All_Edge_Iterator) return Boolean;
       --  Determine whether iterator Iter has more edges to examine
 
-      function Iterate_All_Edges (G : Instance) return All_Edge_Iterator;
+      function Iterate_All_Edges (G : Directed_Graph) return All_Edge_Iterator;
       --  Obtain an iterator over all edges of graph G
 
       procedure Next
@@ -294,7 +294,8 @@ package GNAT.Graphs is
       function Has_Next (Iter : All_Vertex_Iterator) return Boolean;
       --  Determine whether iterator Iter has more vertices to examine
 
-      function Iterate_All_Vertices (G : Instance) return All_Vertex_Iterator;
+      function Iterate_All_Vertices
+        (G : Directed_Graph) return All_Vertex_Iterator;
       --  Obtain an iterator over all vertices of graph G
 
       procedure Next
@@ -315,7 +316,8 @@ package GNAT.Graphs is
       function Has_Next (Iter : Component_Iterator) return Boolean;
       --  Determine whether iterator Iter has more components to examine
 
-      function Iterate_Components (G : Instance) return Component_Iterator;
+      function Iterate_Components
+        (G : Directed_Graph) return Component_Iterator;
       --  Obtain an iterator over all components of graph G
 
       procedure Next
@@ -336,7 +338,7 @@ package GNAT.Graphs is
       --  Determine whether iterator Iter has more outgoing edges to examine
 
       function Iterate_Outgoing_Edges
-        (G : Instance;
+        (G : Directed_Graph;
          V : Vertex_Id) return Outgoing_Edge_Iterator;
       --  Obtain an iterator over all the outgoing edges "owned" by vertex V of
       --  graph G.
@@ -360,7 +362,7 @@ package GNAT.Graphs is
       --  Determine whether iterator Iter has more vertices to examine
 
       function Iterate_Vertices
-        (G    : Instance;
+        (G    : Directed_Graph;
          Comp : Component_Id) return Vertex_Iterator;
       --  Obtain an iterator over all vertices that comprise component Comp of
       --  graph G.
@@ -396,7 +398,7 @@ package GNAT.Graphs is
       procedure Destroy_Edge_Attributes (Attrs : in out Edge_Attributes);
       --  Destroy the contents of attributes Attrs
 
-      package Edge_Map is new Dynamic_HTable
+      package Edge_Map is new Dynamic_Hash_Tables
         (Key_Type              => Edge_Id,
          Value_Type            => Edge_Attributes,
          No_Value              => No_Edge_Attributes,
@@ -412,7 +414,7 @@ package GNAT.Graphs is
       -- Edge_Set --
       --------------
 
-      package Edge_Set is new Membership_Set
+      package Edge_Set is new Membership_Sets
         (Element_Type => Edge_Id,
          "="          => "=",
          Hash         => Hash_Edge);
@@ -424,7 +426,7 @@ package GNAT.Graphs is
       procedure Destroy_Vertex (V : in out Vertex_Id);
       --  Destroy the contents of a vertex
 
-      package Vertex_List is new Doubly_Linked_List
+      package Vertex_List is new Doubly_Linked_Lists
         (Element_Type    => Vertex_Id,
          "="             => Same_Vertex,
          Destroy_Element => Destroy_Vertex);
@@ -437,7 +439,7 @@ package GNAT.Graphs is
          Component : Component_Id := No_Component;
          --  The component where a vertex lives
 
-         Outgoing_Edges : Edge_Set.Instance := Edge_Set.Nil;
+         Outgoing_Edges : Edge_Set.Membership_Set := Edge_Set.Nil;
          --  The set of edges that extend out from a vertex
       end record;
 
@@ -448,7 +450,7 @@ package GNAT.Graphs is
       procedure Destroy_Vertex_Attributes (Attrs : in out Vertex_Attributes);
       --  Destroy the contents of attributes Attrs
 
-      package Vertex_Map is new Dynamic_HTable
+      package Vertex_Map is new Dynamic_Hash_Tables
         (Key_Type              => Vertex_Id,
          Value_Type            => Vertex_Attributes,
          No_Value              => No_Vertex_Attributes,
@@ -465,7 +467,7 @@ package GNAT.Graphs is
       -------------------
 
       type Component_Attributes is record
-         Vertices : Vertex_List.Instance := Vertex_List.Nil;
+         Vertices : Vertex_List.Doubly_Linked_List := Vertex_List.Nil;
       end record;
 
       No_Component_Attributes : constant Component_Attributes :=
@@ -475,7 +477,7 @@ package GNAT.Graphs is
         (Attrs : in out Component_Attributes);
       --  Destroy the contents of attributes Attrs
 
-      package Component_Map is new Dynamic_HTable
+      package Component_Map is new Dynamic_Hash_Tables
         (Key_Type              => Component_Id,
          Value_Type            => Component_Attributes,
          No_Value              => No_Component_Attributes,
@@ -491,25 +493,21 @@ package GNAT.Graphs is
       -- Graph --
       -----------
 
-      type Graph is record
-         All_Edges : Edge_Map.Instance := Edge_Map.Nil;
+      type Directed_Graph_Attributes is record
+         All_Edges : Edge_Map.Dynamic_Hash_Table := Edge_Map.Nil;
          --  The map of edge -> edge attributes for all edges in the graph
 
-         All_Vertices : Vertex_Map.Instance := Vertex_Map.Nil;
+         All_Vertices : Vertex_Map.Dynamic_Hash_Table := Vertex_Map.Nil;
          --  The map of vertex -> vertex attributes for all vertices in the
          --  graph.
 
-         Components : Component_Map.Instance := Component_Map.Nil;
+         Components : Component_Map.Dynamic_Hash_Table := Component_Map.Nil;
          --  The map of component -> component attributes for all components
          --  in the graph.
       end record;
 
-      --------------
-      -- Instance --
-      --------------
-
-      type Instance is access Graph;
-      Nil : constant Instance := null;
+      type Directed_Graph is access Directed_Graph_Attributes;
+      Nil : constant Directed_Graph := null;
 
       ---------------
       -- Iterators --
@@ -520,7 +518,7 @@ package GNAT.Graphs is
       type Component_Iterator     is new Component_Map.Iterator;
       type Outgoing_Edge_Iterator is new Edge_Set.Iterator;
       type Vertex_Iterator        is new Vertex_List.Iterator;
-   end Directed_Graph;
+   end Directed_Graphs;
 
 private
    No_Component    : constant Component_Id := Component_Id'First;

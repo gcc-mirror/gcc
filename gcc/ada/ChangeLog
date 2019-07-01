@@ -1,5 +1,12 @@
 2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* libgnat/g-graphs.adb: Use type Directed_Graph rather than
+	Instance in various routines.
+	* libgnat/g-graphs.ads: Change type Instance to Directed_Graph.
+	Update various routines that mention the type.
+
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* libgnat/g-sets.adb: Use type Membership_Set rathern than
 	Instance in various routines.
 	* libgnat/g-sets.ads: Change type Instance to Membership_Set.
