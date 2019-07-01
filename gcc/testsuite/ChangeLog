@@ -1,3 +1,7 @@
+2019-07-01  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	* g++.dg/cpp0x/gen-attrs-67.C: Add error for darwin.
+
 2019-07-01  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/pr77445-2.c: Adjust.

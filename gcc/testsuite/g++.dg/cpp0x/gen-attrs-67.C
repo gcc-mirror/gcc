@@ -8,4 +8,4 @@
 [[nodiscard()]] int f4(); // { dg-error ".nodiscard. attribute does not take any arguments" }
 [[gnu::noinline()]] int f5(); // { dg-error ".noinline. attribute does not take any arguments" }
 [[gnu::constructor]] int f6();
-[[gnu::constructor(101)]] int f7();
+[[gnu::constructor(101)]] int f7(); // { dg-error "constructor priorities are not supported" "" { target *-*-darwin* } }
