@@ -8700,9 +8700,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
      restoring the gp.  */
   emit_move_insn (pv, lab);
 
-  /* Restore the stack and frame pointers.  The virtual_stack_vars_rtx
-     is saved instead of the hard_frame_pointer_rtx in the save area.
-     We need to adjust for the offset between these two values.  */
+  /* Restore the stack and frame pointers.  */
   fp = copy_to_reg (fp);
   emit_stack_restore (SAVE_NONLOCAL, stack);
 
@@ -8710,7 +8708,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   emit_insn (gen_blockage ());
   emit_clobber (hard_frame_pointer_rtx);
   emit_clobber (frame_pointer_rtx);
-  emit_move_insn (hard_frame_pointer_rtx, plus_constant (Pmode, fp, -8));
+  emit_move_insn (hard_frame_pointer_rtx, fp);
 
   emit_use (hard_frame_pointer_rtx);
   emit_use (stack_pointer_rtx);
