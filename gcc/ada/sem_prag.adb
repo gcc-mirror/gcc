@@ -25608,6 +25608,12 @@ package body Sem_Prag is
                Ent := Underlying_Type (Ent);
             end if;
 
+            --  The pragma applies to entities with addresses.
+
+            if Is_Type (Ent) then
+               Error_Pragma ("pragma applies to objects and subprograms");
+            end if;
+
             --  The only processing required is to link this item on to the
             --  list of rep items for the given entity. This is accomplished
             --  by the call to Rep_Item_Too_Late (when no error is detected
