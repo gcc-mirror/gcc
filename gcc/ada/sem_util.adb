@@ -10737,7 +10737,7 @@ package body Sem_Util is
          --       Asynch_Writers         Effective_Writes
          --
          --  Note that both forms of External have higher precedence than
-         --  Synchronous (SPARK RM 7.1.4(10)).
+         --  Synchronous (SPARK RM 7.1.4(9)).
 
          elsif Has_Synchronous then
             return Nam_In (Property, Name_Async_Readers, Name_Async_Writers);
