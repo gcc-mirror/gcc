@@ -1,3 +1,10 @@
+2019-07-01  Wilco Dijkstra  <wdijkstr@arm.com>
+	    John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/90963
+	* config/pa/pa.md (builtin_longjmp): Restore hard_frame_pointer_rtx
+	using saved frame pointer.
+
 2019-07-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/64242
