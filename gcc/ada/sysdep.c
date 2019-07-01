@@ -1066,4 +1066,3 @@ __gnat_name_case_equivalence ()
   return 1;
 #endif
 }
-
