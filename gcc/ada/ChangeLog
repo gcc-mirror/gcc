@@ -1,3 +1,10 @@
+2019-07-01  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Expand_Min_Max_Attribute): Disable expansion of
+	'Min/'Max on integer, enumeration, fixed point and floating
+	point types since the CCG backend now provides in file
+	standard.h routines to support it.
+
 2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* impunit.adb: Add GNAT.Graphs to list Non_Imp_File_Names_95.
