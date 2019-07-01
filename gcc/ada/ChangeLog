@@ -1,3 +1,9 @@
+2019-07-01  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* gsocket.h (Has_Sockaddr_Len): Use the offset of sin_family offset in
+	the sockaddr_in structure to determine the existence of length field
+	before the sin_family.
+
 2019-07-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma, case Weak_External): Pragma only

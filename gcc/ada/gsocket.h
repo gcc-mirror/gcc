@@ -185,6 +185,7 @@
 
 #include <limits.h>
 #include <errno.h>
+#include <stddef.h>
 
 #if defined (__vxworks) && ! defined (__RTP__)
 #include <sys/times.h>
@@ -252,12 +253,7 @@
 # endif
 #endif
 
-#if defined (__FreeBSD__) || defined (__vxworks) || defined(__rtems__) \
- || defined (__DragonFly__) || defined (__NetBSD__) || defined (__OpenBSD__)
-# define Has_Sockaddr_Len 1
-#else
-# define Has_Sockaddr_Len 0
-#endif
+# define Has_Sockaddr_Len (offsetof(struct sockaddr_in, sin_family) != 0)
 
 #if !(defined (_WIN32) || defined (__hpux__) || defined (VMS))
 # define HAVE_INET_PTON
