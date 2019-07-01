@@ -1,3 +1,8 @@
+2019-07-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_force_indexed_or_indirect_mem):
+	Load both operands of a PLUS into registers separately.
+
 2019-07-01  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/vector.md: Fix shift count operand printing.

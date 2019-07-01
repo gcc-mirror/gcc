@@ -32100,7 +32100,16 @@ rs6000_force_indexed_or_indirect_mem (rtx x)
 	  addr = reg;
 	}
 
-      x = replace_equiv_address (x, force_reg (Pmode, addr));
+      if (GET_CODE (addr) == PLUS)
+	{
+	  rtx op0 = XEXP (addr, 0);
+	  rtx op1 = XEXP (addr, 1);
+	  op0 = force_reg (Pmode, op0);
+	  op1 = force_reg (Pmode, op1);
+	  x = replace_equiv_address (x, gen_rtx_PLUS (Pmode, op0, op1));
+	}
+      else
+	x = replace_equiv_address (x, force_reg (Pmode, addr));
     }
 
   return x;
