@@ -9151,7 +9151,7 @@ trees_in::read_function_def (tree decl, tree maybe_template)
 	SET_DECL_FRIEND_CONTEXT (decl, context);
       if (cexpr.decl)
 	register_constexpr_fundef (cexpr);
-      post_process (decl);
+      post_process (maybe_template);
     }
   else if (odr < 0)
     {
@@ -13255,15 +13255,19 @@ module_state::read_cluster (unsigned snum)
   struct function *old_cfun = cfun;
   while (tree decl = sec.post_process ())
     {
+      bool abstract = TREE_CODE (decl) == TEMPLATE_DECL;
+      if (abstract)
+	decl = DECL_TEMPLATE_RESULT (decl);
+
       current_function_decl = decl;
-      allocate_struct_function (decl, false);
+      allocate_struct_function (decl, abstract);
       cfun->language = ggc_cleared_alloc<language_function> ();
       cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
 
-      if (!DECL_TEMPLATE_INFO (decl) || DECL_USE_TEMPLATE (decl))
-	// FIXME: why when no decl_template_info?
+      if (!abstract)
 	{
-	  comdat_linkage (decl);
+	  if (DECL_COMDAT (decl))
+	    comdat_linkage (decl);
 	  note_vague_linkage_fn (decl);
 	  cgraph_node::finalize_function (decl, false);
 	}
