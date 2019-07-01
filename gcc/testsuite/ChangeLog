@@ -1,5 +1,9 @@
 2019-07-01  Ed Schonberg  <schonberg@adacore.com>
 
+	* gnat.dg/enum_rep.adb, gnat.dg/enum_rep.ads: New testcase.
+
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
 	* gnat.dg/derived_type6.adb, gnat.dg/derived_type6.ads: New
 	testcase.
 

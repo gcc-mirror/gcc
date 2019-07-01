@@ -1,3 +1,8 @@
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case Enum_Rep): Allow prefix
+	of attribute to be an attribute reference of a discrete type.
+
 2019-07-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch12.adb (Analyze_Subprogram_Instantiation): Move up
