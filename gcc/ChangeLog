@@ -1,5 +1,9 @@
 2019-07-01  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* ira-lives.c (process_bb_node_lives): Use ira_setup_alts.
+
+2019-07-01  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* ira.c (ira_get_dup_out_num): Don't punt for earlyclobbers.
 	Use recog_data to test for an output operand.
 
