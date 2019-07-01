@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Dec 05, 2018
+GNAT User's Guide for Native Platforms , Jun 21, 2019
 
 AdaCore
 
@@ -15143,8 +15143,8 @@ available in the specification of the Repinfo unit present in the
 compiler sources.
 
 If the switch is followed by an @code{s} (e.g., @code{-gnatR3s}), then
-the output is to a file with the name @code{file.rep} where file is
-the name of the corresponding source file, except if @cite{j`} is also
+the output is to a file with the name @code{file.rep} where @code{file} is
+the name of the corresponding source file, except if @code{j} is also
 specified, in which case the file name is @code{file.json}.
 
 Note that it is possible for record components to have zero size. In
@@ -23556,15 +23556,15 @@ the set of handlers
 Most programs should experience a substantial speed improvement by
 being compiled with a ZCX run-time.
 This is especially true for
-tasking applications or applications with many exception handlers.@}
+tasking applications or applications with many exception handlers.
+Note however that the ZCX run-time does not support asynchronous abort
+of tasks (@code{abort} and @code{select-then-abort} constructs) and will instead
+implement abort by polling points in the runtime. You can also add additional
+polling points explicitly if needed in your application via @code{pragma
+Abort_Defer}.
 
 This section summarizes which combinations of threads and exception support
 are supplied on various GNAT platforms.
-It then shows how to select a particular library either
-permanently or temporarily,
-explains the properties of (and tradeoffs among) the various threads
-libraries, and provides some additional
-information about several specific platforms.
 
 @menu
 * Summary of Run-Time Configurations:: 

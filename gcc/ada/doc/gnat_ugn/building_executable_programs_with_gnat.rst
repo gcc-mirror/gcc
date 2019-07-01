@@ -5889,8 +5889,8 @@ Debugging Control
   compiler sources.
 
   If the switch is followed by an ``s`` (e.g., :switch:`-gnatR3s`), then
-  the output is to a file with the name :file:`file.rep` where file is
-  the name of the corresponding source file, except if `j`` is also
+  the output is to a file with the name :file:`file.rep` where ``file`` is
+  the name of the corresponding source file, except if ``j`` is also
   specified, in which case the file name is :file:`file.json`.
 
   Note that it is possible for record components to have zero size. In
