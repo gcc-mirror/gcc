@@ -1,5 +1,9 @@
 2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* gnat.dg/linkedlist.adb: Update.
+
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* gnat.dg/dynhash.adb, gnat.dg/dynhash1.adb: Update.
 
 2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>

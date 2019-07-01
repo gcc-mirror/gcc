@@ -45,7 +45,7 @@ package GNAT.Lists is
    --
    --  The following use pattern must be employed with this list:
    --
-   --    List : Instance := Create;
+   --    List : Doubly_Linked_List := Create;
    --
    --    <various operations>
    --
@@ -63,60 +63,66 @@ package GNAT.Lists is
       with procedure Destroy_Element (Elem : in out Element_Type);
       --  Element destructor
 
-   package Doubly_Linked_List is
+   package Doubly_Linked_Lists is
 
       ---------------------
       -- List operations --
       ---------------------
 
-      type Instance is private;
-      Nil : constant Instance;
+      type Doubly_Linked_List is private;
+      Nil : constant Doubly_Linked_List;
 
       --  The following exception is raised when the list is empty, and an
       --  attempt is made to delete an element from it.
 
       List_Empty : exception;
 
-      procedure Append (L : Instance; Elem : Element_Type);
+      procedure Append
+        (L    : Doubly_Linked_List;
+         Elem : Element_Type);
       --  Insert element Elem at the end of list L. This action will raise
       --  Iterated if the list has outstanding iterators.
 
-      function Contains (L : Instance; Elem : Element_Type) return Boolean;
+      function Contains
+        (L    : Doubly_Linked_List;
+         Elem : Element_Type) return Boolean;
       --  Determine whether list L contains element Elem
 
-      function Create return Instance;
+      function Create return Doubly_Linked_List;
       --  Create a new list
 
-      procedure Delete (L : Instance; Elem : Element_Type);
+      procedure Delete
+        (L    : Doubly_Linked_List;
+         Elem : Element_Type);
       --  Delete element Elem from list L. The routine has no effect if Elem is
       --  not present. This action will raise
       --
       --    * List_Empty if the list is empty.
       --    * Iterated if the list has outstanding iterators.
 
-      procedure Delete_First (L : Instance);
+      procedure Delete_First (L : Doubly_Linked_List);
       --  Delete an element from the start of list L. This action will raise
       --
       --    * List_Empty if the list is empty.
       --    * Iterated if the list has outstanding iterators.
 
-      procedure Delete_Last (L : Instance);
+      procedure Delete_Last (L : Doubly_Linked_List);
       --  Delete an element from the end of list L. This action will raise
       --
       --    * List_Empty if the list is empty.
       --    * Iterated if the list has outstanding iterators.
 
-      procedure Destroy (L : in out Instance);
+      procedure Destroy (L : in out Doubly_Linked_List);
       --  Destroy the contents of list L. This routine must be called at the
       --  end of a list's lifetime. This action will raise Iterated if the
       --  list has outstanding iterators.
 
-      function First (L : Instance) return Element_Type;
+      function First (L : Doubly_Linked_List) return Element_Type;
       --  Obtain an element from the start of list L. This action will raise
       --  List_Empty if the list is empty.
 
       procedure Insert_After
-        (L     : Instance;
+        (L     : Doubly_Linked_List;
          After : Element_Type;
          Elem  : Element_Type);
       --  Insert new element Elem after element After in list L. The routine
@@ -124,36 +130,38 @@ package GNAT.Lists is
       --  Iterated if the list has outstanding iterators.
 
       procedure Insert_Before
-        (L      : Instance;
+        (L      : Doubly_Linked_List;
          Before : Element_Type;
          Elem   : Element_Type);
       --  Insert new element Elem before element Before in list L. The routine
       --  has no effect if After is not present. This action will raise
       --  Iterated if the list has outstanding iterators.
 
-      function Is_Empty (L : Instance) return Boolean;
+      function Is_Empty (L : Doubly_Linked_List) return Boolean;
       --  Determine whether list L is empty
 
-      function Last (L : Instance) return Element_Type;
+      function Last (L : Doubly_Linked_List) return Element_Type;
       --  Obtain an element from the end of list L. This action will raise
       --  List_Empty if the list is empty.
 
-      procedure Prepend (L : Instance; Elem : Element_Type);
+      procedure Prepend
+        (L    : Doubly_Linked_List;
+         Elem : Element_Type);
       --  Insert element Elem at the start of list L. This action will raise
       --  Iterated if the list has outstanding iterators.
 
-      function Present (L : Instance) return Boolean;
+      function Present (L : Doubly_Linked_List) return Boolean;
       --  Determine whether list L exists
 
       procedure Replace
-        (L        : Instance;
+        (L        : Doubly_Linked_List;
          Old_Elem : Element_Type;
          New_Elem : Element_Type);
       --  Replace old element Old_Elem with new element New_Elem in list L. The
       --  routine has no effect if Old_Elem is not present. This action will
       --  raise Iterated if the list has outstanding iterators.
 
-      function Size (L : Instance) return Natural;
+      function Size (L : Doubly_Linked_List) return Natural;
       --  Obtain the number of elements in list L
 
       -------------------------
@@ -179,11 +187,13 @@ package GNAT.Lists is
       --  iterator has been exhausted, restore all mutation functionality of
       --  the associated list.
 
-      function Iterate (L : Instance) return Iterator;
+      function Iterate (L : Doubly_Linked_List) return Iterator;
       --  Obtain an iterator over the elements of list L. This action locks all
       --  mutation functionality of the associated list.
 
-      procedure Next (Iter : in out Iterator; Elem : out Element_Type);
+      procedure Next
+        (Iter : in out Iterator;
+         Elem : out Element_Type);
       --  Return the current element referenced by iterator Iter and advance
       --  to the next available element. If the iterator has been exhausted
       --  and further attempts are made to advance it, this routine restores
@@ -204,7 +214,7 @@ package GNAT.Lists is
 
       --  The following type represents a list
 
-      type Linked_List is record
+      type Doubly_Linked_List_Attributes is record
          Elements : Natural := 0;
          --  The number of elements in the list
 
@@ -215,8 +225,8 @@ package GNAT.Lists is
          --  The dummy head of the list
       end record;
 
-      type Instance is access all Linked_List;
-      Nil : constant Instance := null;
+      type Doubly_Linked_List is access all Doubly_Linked_List_Attributes;
+      Nil : constant Doubly_Linked_List := null;
 
       --  The following type represents an element iterator
 
@@ -226,9 +236,9 @@ package GNAT.Lists is
          --  iterator requires that this field always points to a valid node. A
          --  value of null indicates that the iterator is exhausted.
 
-         List : Instance := null;
+         List : Doubly_Linked_List := null;
          --  Reference to the associated list
       end record;
-   end Doubly_Linked_List;
+   end Doubly_Linked_Lists;
 
 end GNAT.Lists;

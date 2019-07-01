@@ -33,8 +33,10 @@ with Ada.Unchecked_Deallocation;
 
 package body GNAT.Lists is
 
-   package body Doubly_Linked_List is
-      procedure Delete_Node (L : Instance; Nod : Node_Ptr);
+   package body Doubly_Linked_Lists is
+      procedure Delete_Node
+        (L   : Doubly_Linked_List;
+         Nod : Node_Ptr);
       pragma Inline (Delete_Node);
       --  Detach and delete node Nod from list L
 
@@ -42,17 +44,17 @@ package body GNAT.Lists is
       pragma Inline (Ensure_Circular);
       --  Ensure that dummy head Head is circular with respect to itself
 
-      procedure Ensure_Created (L : Instance);
+      procedure Ensure_Created (L : Doubly_Linked_List);
       pragma Inline (Ensure_Created);
       --  Verify that list L is created. Raise Not_Created if this is not the
       --  case.
 
-      procedure Ensure_Full (L : Instance);
+      procedure Ensure_Full (L : Doubly_Linked_List);
       pragma Inline (Ensure_Full);
       --  Verify that list L contains at least one element. Raise List_Empty if
       --  this is not the case.
 
-      procedure Ensure_Unlocked (L : Instance);
+      procedure Ensure_Unlocked (L : Doubly_Linked_List);
       pragma Inline (Ensure_Unlocked);
       --  Verify that list L is unlocked. Raise Iterated if this is not the
       --  case.
@@ -65,12 +67,14 @@ package body GNAT.Lists is
       --  exists a node with element Elem. If such a node exists, return it,
       --  otherwise return null;
 
-      procedure Free is new Ada.Unchecked_Deallocation (Linked_List, Instance);
+      procedure Free is
+        new Ada.Unchecked_Deallocation
+              (Doubly_Linked_List_Attributes, Doubly_Linked_List);
 
       procedure Free is new Ada.Unchecked_Deallocation (Node, Node_Ptr);
 
       procedure Insert_Between
-        (L     : Instance;
+        (L     : Doubly_Linked_List;
          Elem  : Element_Type;
          Left  : Node_Ptr;
          Right : Node_Ptr);
@@ -81,12 +85,14 @@ package body GNAT.Lists is
       pragma Inline (Is_Valid);
       --  Determine whether iterator Iter refers to a valid element
 
-      function Is_Valid (Nod : Node_Ptr; Head : Node_Ptr) return Boolean;
+      function Is_Valid
+        (Nod  : Node_Ptr;
+         Head : Node_Ptr) return Boolean;
       pragma Inline (Is_Valid);
       --  Determine whether node Nod is non-null and does not refer to dummy
       --  head Head, thus making it valid.
 
-      procedure Lock (L : Instance);
+      procedure Lock (L : Doubly_Linked_List);
       pragma Inline (Lock);
       --  Lock all mutation functionality of list L
 
@@ -94,7 +100,7 @@ package body GNAT.Lists is
       pragma Inline (Present);
       --  Determine whether node Nod exists
 
-      procedure Unlock (L : Instance);
+      procedure Unlock (L : Doubly_Linked_List);
       pragma Inline (Unlock);
       --  Unlock all mutation functionality of list L
 
@@ -102,7 +108,10 @@ package body GNAT.Lists is
       -- Append --
       ------------
 
-      procedure Append (L : Instance; Elem : Element_Type) is
+      procedure Append
+        (L    : Doubly_Linked_List;
+         Elem : Element_Type)
+      is
          Head : Node_Ptr;
 
       begin
@@ -129,16 +138,19 @@ package body GNAT.Lists is
       -- Create --
       ------------
 
-      function Create return Instance is
+      function Create return Doubly_Linked_List is
       begin
-         return new Linked_List;
+         return new Doubly_Linked_List_Attributes;
       end Create;
 
       --------------
       -- Contains --
       --------------
 
-      function Contains (L : Instance; Elem : Element_Type) return Boolean is
+      function Contains
+        (L    : Doubly_Linked_List;
+         Elem : Element_Type) return Boolean
+      is
          Head : Node_Ptr;
          Nod  : Node_Ptr;
 
@@ -155,7 +167,10 @@ package body GNAT.Lists is
       -- Delete --
       ------------
 
-      procedure Delete (L : Instance; Elem : Element_Type) is
+      procedure Delete
+        (L    : Doubly_Linked_List;
+         Elem : Element_Type)
+      is
          Head : Node_Ptr;
          Nod  : Node_Ptr;
 
@@ -176,7 +191,7 @@ package body GNAT.Lists is
       -- Delete_First --
       ------------------
 
-      procedure Delete_First (L : Instance) is
+      procedure Delete_First (L : Doubly_Linked_List) is
          Head : Node_Ptr;
          Nod  : Node_Ptr;
 
@@ -197,7 +212,7 @@ package body GNAT.Lists is
       -- Delete_Last --
       -----------------
 
-      procedure Delete_Last (L : Instance) is
+      procedure Delete_Last (L : Doubly_Linked_List) is
          Head : Node_Ptr;
          Nod  : Node_Ptr;
 
@@ -218,7 +233,10 @@ package body GNAT.Lists is
       -- Delete_Node --
       -----------------
 
-      procedure Delete_Node (L : Instance; Nod : Node_Ptr) is
+      procedure Delete_Node
+        (L   : Doubly_Linked_List;
+         Nod : Node_Ptr)
+      is
          Ref : Node_Ptr := Nod;
 
          pragma Assert (Present (Ref));
@@ -250,7 +268,7 @@ package body GNAT.Lists is
       -- Destroy --
       -------------
 
-      procedure Destroy (L : in out Instance) is
+      procedure Destroy (L : in out Doubly_Linked_List) is
          Head : Node_Ptr;
 
       begin
@@ -284,7 +302,7 @@ package body GNAT.Lists is
       -- Ensure_Created --
       --------------------
 
-      procedure Ensure_Created (L : Instance) is
+      procedure Ensure_Created (L : Doubly_Linked_List) is
       begin
          if not Present (L) then
             raise Not_Created;
@@ -295,7 +313,7 @@ package body GNAT.Lists is
       -- Ensure_Full --
       -----------------
 
-      procedure Ensure_Full (L : Instance) is
+      procedure Ensure_Full (L : Doubly_Linked_List) is
       begin
          pragma Assert (Present (L));
 
@@ -308,7 +326,7 @@ package body GNAT.Lists is
       -- Ensure_Unlocked --
       ---------------------
 
-      procedure Ensure_Unlocked (L : Instance) is
+      procedure Ensure_Unlocked (L : Doubly_Linked_List) is
       begin
          pragma Assert (Present (L));
 
@@ -350,7 +368,7 @@ package body GNAT.Lists is
       -- First --
       -----------
 
-      function First (L : Instance) return Element_Type is
+      function First (L : Doubly_Linked_List) return Element_Type is
       begin
          Ensure_Created (L);
          Ensure_Full    (L);
@@ -382,7 +400,7 @@ package body GNAT.Lists is
       ------------------
 
       procedure Insert_After
-        (L     : Instance;
+        (L     : Doubly_Linked_List;
          After : Element_Type;
          Elem  : Element_Type)
       is
@@ -410,7 +428,7 @@ package body GNAT.Lists is
       -------------------
 
       procedure Insert_Before
-        (L      : Instance;
+        (L      : Doubly_Linked_List;
          Before : Element_Type;
          Elem   : Element_Type)
       is
@@ -438,7 +456,7 @@ package body GNAT.Lists is
       --------------------
 
       procedure Insert_Between
-        (L     : Instance;
+        (L     : Doubly_Linked_List;
          Elem  : Element_Type;
          Left  : Node_Ptr;
          Right : Node_Ptr)
@@ -463,7 +481,7 @@ package body GNAT.Lists is
       -- Is_Empty --
       --------------
 
-      function Is_Empty (L : Instance) return Boolean is
+      function Is_Empty (L : Doubly_Linked_List) return Boolean is
       begin
          Ensure_Created (L);
 
@@ -486,7 +504,10 @@ package body GNAT.Lists is
       -- Is_Valid --
       --------------
 
-      function Is_Valid (Nod : Node_Ptr; Head : Node_Ptr) return Boolean is
+      function Is_Valid
+        (Nod  : Node_Ptr;
+         Head : Node_Ptr) return Boolean
+      is
       begin
          --  A node is valid if it is non-null, and does not refer to the dummy
          --  head of some list.
@@ -498,7 +519,7 @@ package body GNAT.Lists is
       -- Iterate --
       -------------
 
-      function Iterate (L : Instance) return Iterator is
+      function Iterate (L : Doubly_Linked_List) return Iterator is
       begin
          Ensure_Created (L);
 
@@ -514,7 +535,7 @@ package body GNAT.Lists is
       -- Last --
       ----------
 
-      function Last (L : Instance) return Element_Type is
+      function Last (L : Doubly_Linked_List) return Element_Type is
       begin
          Ensure_Created (L);
          Ensure_Full   (L);
@@ -526,7 +547,7 @@ package body GNAT.Lists is
       -- Lock --
       ----------
 
-      procedure Lock (L : Instance) is
+      procedure Lock (L : Doubly_Linked_List) is
       begin
          pragma Assert (Present (L));
 
@@ -540,7 +561,10 @@ package body GNAT.Lists is
       -- Next --
       ----------
 
-      procedure Next (Iter : in out Iterator; Elem : out Element_Type) is
+      procedure Next
+        (Iter : in out Iterator;
+         Elem : out Element_Type)
+      is
          Is_OK : constant Boolean  := Is_Valid (Iter);
          Saved : constant Node_Ptr := Iter.Curr_Nod;
 
@@ -565,7 +589,10 @@ package body GNAT.Lists is
       -- Prepend --
       -------------
 
-      procedure Prepend (L : Instance; Elem : Element_Type) is
+      procedure Prepend
+        (L    : Doubly_Linked_List;
+         Elem : Element_Type)
+      is
          Head : Node_Ptr;
 
       begin
@@ -592,7 +619,7 @@ package body GNAT.Lists is
       -- Present --
       -------------
 
-      function Present (L : Instance) return Boolean is
+      function Present (L : Doubly_Linked_List) return Boolean is
       begin
          return L /= Nil;
       end Present;
@@ -611,7 +638,7 @@ package body GNAT.Lists is
       -------------
 
       procedure Replace
-        (L        : Instance;
+        (L        : Doubly_Linked_List;
          Old_Elem : Element_Type;
          New_Elem : Element_Type)
       is
@@ -634,7 +661,7 @@ package body GNAT.Lists is
       -- Size --
       ----------
 
-      function Size (L : Instance) return Natural is
+      function Size (L : Doubly_Linked_List) return Natural is
       begin
          Ensure_Created (L);
 
@@ -645,7 +672,7 @@ package body GNAT.Lists is
       -- Unlock --
       ------------
 
-      procedure Unlock (L : Instance) is
+      procedure Unlock (L : Doubly_Linked_List) is
       begin
          pragma Assert (Present (L));
 
@@ -654,6 +681,6 @@ package body GNAT.Lists is
 
          L.Iterators := L.Iterators - 1;
       end Unlock;
-   end Doubly_Linked_List;
+   end Doubly_Linked_Lists;
 
 end GNAT.Lists;
