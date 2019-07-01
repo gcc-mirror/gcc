@@ -1,5 +1,12 @@
 2019-07-01  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* ira.c (ira_setup_alts): If any valid alternatives have zero cost,
+	exclude any others that are disparaged or that are bound to need
+	a reload or spill.
+	(ira_get_dup_out_num): Expand comment.
+
+2019-07-01  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* ira.c (ira_setup_alts): Use preprocess_constraints to get the
 	constraint string for each operand/alternative combo.  Only handle
 	'%' at the start of constraint strings, and look for it outside
