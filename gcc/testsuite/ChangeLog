@@ -1,5 +1,9 @@
 2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* gnat.dg/dynhash.adb, gnat.dg/dynhash1.adb: Update.
+
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* gnat.dg/freezing1.adb, gnat.dg/freezing1.ads,
 	gnat.dg/freezing1_pack.adb, gnat.dg/freezing1_pack.ads: New
 	testcase.
