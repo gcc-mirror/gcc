@@ -1,6 +1,11 @@
 2019-07-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::tree_decl): Fix dump typo.
+	(trees_in::tree_value): Likewise.
+	(module_state::read_cluster): Show end.
+
+	gcc/cp/
 	* module.cc (module_state::write): Don't stream env.
 
 	gcc/cp/

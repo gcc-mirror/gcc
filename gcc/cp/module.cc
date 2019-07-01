@@ -6955,7 +6955,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 		   TYPE_CONTEXT (type), DECL_NAME (decl));
       int type_tag = insert (type);
       if (streaming_p ())
-	dump (dumper::TREE) && dump ("Wrote:%d typename typ", type_tag);
+	dump (dumper::TREE) && dump ("Wrote:%d typename type", type_tag);
 
       return false;
     }
@@ -7652,7 +7652,7 @@ trees_in::tree_value (walk_kind walk)
 	  type_tag = insert (type);
 	  if (res)
 	    dump (dumper::TREE)
-	      && dump ("Reading%s:%d %C", walk_kind_name[walk], type_tag,
+	      && dump ("Reading %s:%d %C", walk_kind_name[walk], type_tag,
 		       TREE_CODE (type));
 	}
     }
@@ -13276,6 +13276,7 @@ module_state::read_cluster (unsigned snum)
   current_function_decl = old_cfd;
 
   dump.outdent ();
+  dump () && dump ("Read section:%u", snum);
 
   if (!sec.end (from ()))
     return false;
