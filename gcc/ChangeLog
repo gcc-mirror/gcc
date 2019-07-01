@@ -1,3 +1,10 @@
+2019-07-01  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	PR middle-end/66726
+	* tree-ssa-phiopt.c (factor_out_conditional_conversion):
+	Tune heuristic from PR71016 to allow MIN / MAX.
+	* testsuite/gcc.dg/tree-ssa/pr66726-4.c: New testcase.
+
 2019-07-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (ieee_128bit_vsx_abs<mode>2): Make this a
