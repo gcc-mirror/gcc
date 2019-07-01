@@ -639,7 +639,7 @@ package body Exp_Attr is
 
          Stmts := No_List;
 
-         --  Validate componants
+         --  Validate components
 
          Validate_Component_List
            (Obj_Id    => Obj_Id,

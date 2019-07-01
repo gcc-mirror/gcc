@@ -1,3 +1,8 @@
+2019-07-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb, libgnat/g-graphs.ads: Fix typos in comments:
+	componant -> component.
+
 2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* libgnat/g-graphs.adb: Use type Directed_Graph rather than
