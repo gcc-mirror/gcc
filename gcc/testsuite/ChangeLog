@@ -1,3 +1,11 @@
+2019-07-01  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_avx512vp2intersect): New proc.
+	* gcc.target/i386/avx512vp2intersect-2intersect-1b.c: Add
+	dg-require-effective-target avx512vp2intersect.
+	* gcc.target/i386/avx512vp2intersect-2intersectvl-1b.c: Ditto.
+
 2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/array5.ads: New test.

@@ -1,3 +1,8 @@
+2019-07-01  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords, Other
+	hardware attributes): Document avx512vp2intersect.
+
 2019-06-30  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (ssse3_abs<mode>2): Rename from abs<mode>2.
