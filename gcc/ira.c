@@ -1791,60 +1791,42 @@ setup_prohibited_mode_move_regs (void)
 alternative_mask
 ira_setup_alts (rtx_insn *insn)
 {
-  /* MAP nalt * nop -> start of constraints for given operand and
-     alternative.  */
-  static vec<const char *> insn_constraints;
   int nop, nalt;
   bool curr_swapped;
   const char *p;
   int commutative = -1;
 
   extract_insn (insn);
+  preprocess_constraints (insn);
   alternative_mask preferred = get_preferred_alternatives (insn);
   alternative_mask alts = 0;
-  insn_constraints.release ();
-  insn_constraints.safe_grow_cleared (recog_data.n_operands
-				      * recog_data.n_alternatives + 1);
   /* Check that the hard reg set is enough for holding all
      alternatives.  It is hard to imagine the situation when the
      assertion is wrong.  */
   ira_assert (recog_data.n_alternatives
 	      <= (int) MAX (sizeof (HARD_REG_ELT_TYPE) * CHAR_BIT,
 			    FIRST_PSEUDO_REGISTER));
+  for (nop = 0; nop < recog_data.n_operands; nop++)
+    if (recog_data.constraints[nop][0] == '%')
+      {
+	commutative = nop;
+	break;
+      }
   for (curr_swapped = false;; curr_swapped = true)
     {
-      /* Calculate some data common for all alternatives to speed up the
-	 function.  */
-      for (nop = 0; nop < recog_data.n_operands; nop++)
-	{
-	  for (nalt = 0, p = recog_data.constraints[nop];
-	       nalt < recog_data.n_alternatives;
-	       nalt++)
-	    {
-	      insn_constraints[nop * recog_data.n_alternatives + nalt] = p;
-	      while (*p && *p != ',')
-		{
-		  /* We only support one commutative marker, the first
-		     one.  We already set commutative above.  */
-		  if (*p == '%' && commutative < 0)
-		    commutative = nop;
-		  p++;
-		}
-	      if (*p)
-		p++;
-	    }
-	}
       for (nalt = 0; nalt < recog_data.n_alternatives; nalt++)
 	{
 	  if (!TEST_BIT (preferred, nalt) || TEST_BIT (alts, nalt))
 	    continue;
 
+	  const operand_alternative *op_alt
+	    = &recog_op_alt[nalt * recog_data.n_operands];
 	  for (nop = 0; nop < recog_data.n_operands; nop++)
 	    {
 	      int c, len;
 
 	      rtx op = recog_data.operand[nop];
-	      p = insn_constraints[nop * recog_data.n_alternatives + nalt];
+	      p = op_alt[nop].constraint;
 	      if (*p == 0 || *p == ',')
 		continue;
 	      
