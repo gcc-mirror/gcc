@@ -125,7 +125,7 @@ enum STATES FMS( u8 **in , u32 *transitions) {
    jump threading opportunities.  Skip the later tests on aarch64.  */
 /* { dg-final { scan-tree-dump "Jumps threaded: 1\[1-9\]" "thread1" } } */
 /* { dg-final { scan-tree-dump-times "Invalid sum" 3 "thread1" } } */
-/* { dg-final { scan-tree-dump-not "not considered" "thread1" } } */
-/* { dg-final { scan-tree-dump-not "not considered" "thread2" } } */
-/* { dg-final { scan-tree-dump-not "not considered" "thread3" { target { ! aarch64*-*-* } } } } */
-/* { dg-final { scan-tree-dump-not "not considered" "thread4" { target { ! aarch64*-*-* } } } } */ 
+/* { dg-final { scan-tree-dump-not "optimizing for size" "thread1" } } */
+/* { dg-final { scan-tree-dump-not "optimizing for size" "thread2" } } */
+/* { dg-final { scan-tree-dump-not "optimizing for size" "thread3" { target { ! aarch64*-*-* } } } } */
+/* { dg-final { scan-tree-dump-not "optimizing for size" "thread4" { target { ! aarch64*-*-* } } } } */ 

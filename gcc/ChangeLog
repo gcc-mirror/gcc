@@ -1,5 +1,13 @@
 2019-07-01  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-sccvn.c (class pass_fre): Add may_iterate
+	pass parameter.
+	(pass_fre::execute): Honor it.
+	* passes.def: Adjust pass_fre invocations to allow iterating,
+	add non-iterating pass_fre before late threading/dom.
+
+2019-07-01  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Adjust
 	TARGET_MEM_REF handling to also handle address-taken ones.
 
