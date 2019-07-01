@@ -7375,7 +7375,7 @@ package body Sem_Ch4 is
                                   Etype (Next_Formal (First_Formal (Op_Id))))
                            then
                               Error_Msg_N
-                                ("No legal interpretation for operator&", N);
+                                ("no legal interpretation for operator&", N);
                               Error_Msg_NE
                                 ("\use clause on& would make operation legal",
                                  N, Scope (Op_Id));
@@ -7392,6 +7392,26 @@ package body Sem_Ch4 is
                         if Nkind (N) /= N_Op_Concat then
                            Error_Msg_NE ("\left operand has}!",  N, Etype (L));
                            Error_Msg_NE ("\right operand has}!", N, Etype (R));
+
+                           --  For multiplication and division operators with
+                           --  a fixed-point operand and an integer operand,
+                           --  indicate that the integer operand should be of
+                           --  type Integer.
+
+                           if Nkind_In (N, N_Op_Multiply, N_Op_Divide)
+                             and then Is_Fixed_Point_Type (Etype (L))
+                             and then Is_Integer_Type (Etype (R))
+                           then
+                              Error_Msg_N ("\convert right operand to "
+                                           & "`Integer`", N);
+
+                           elsif Nkind (N) = N_Op_Multiply
+                             and then Is_Fixed_Point_Type (Etype (R))
+                             and then Is_Integer_Type (Etype (L))
+                           then
+                              Error_Msg_N ("\convert left operand to "
+                                           & "`Integer`", N);
+                           end if;
 
                         --  For concatenation operators it is more difficult to
                         --  determine which is the wrong operand. It is worth
