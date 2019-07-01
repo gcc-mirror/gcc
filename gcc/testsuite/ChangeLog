@@ -1,3 +1,7 @@
+2019-07-01  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-shift-2.c: New test.
+
 2019-07-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/generic_inst3.adb,

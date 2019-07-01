@@ -1,3 +1,7 @@
+2019-07-01  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/vector.md:
+
 2019-07-01  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* ira-lives.c (process_bb_node_lives): Use ira_setup_alts.
