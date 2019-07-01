@@ -1,3 +1,8 @@
+2019-07-01  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-sothco.adb (Get_Address): Fix the case when AF_INET6
+	is not defined.
+
 2019-07-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_attr.adb (Expand_Attribute_Reference, case Invalid_Value):
