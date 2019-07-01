@@ -1,3 +1,15 @@
+2019-07-01  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/90923
+	* hash-map.h (hash_map::put): On insertion invoke element ctor.
+	(hash_map::get_or_insert): Same.  Reformat comment.
+	* hash-set.h (hash_set::add): On insertion invoke element ctor.
+	* hash-map-tests.c (test_map_of_type_with_ctor_and_dtor): New.
+ 	* hash-set-tests.c (test_map_of_type_with_ctor_and_dtor): New.
+	* hash-table.h (hash_table::operator=): Prevent copy assignment.
+	 (hash_table::hash_table (const hash_table&)): Use copy ctor
+	 instead of assignment to copy elements.
+
 2019-07-01  Wilco Dijkstra  <wdijkstr@arm.com>
 	    John David Anglin  <danglin@gcc.gnu.org>
 
