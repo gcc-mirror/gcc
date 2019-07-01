@@ -7402,15 +7402,15 @@ package body Sem_Ch4 is
                              and then Is_Fixed_Point_Type (Etype (L))
                              and then Is_Integer_Type (Etype (R))
                            then
-                              Error_Msg_N ("\convert right operand to "
-                                           & "`Integer`", N);
+                              Error_Msg_N
+                                ("\convert right operand to `Integer`", N);
 
                            elsif Nkind (N) = N_Op_Multiply
                              and then Is_Fixed_Point_Type (Etype (R))
                              and then Is_Integer_Type (Etype (L))
                            then
-                              Error_Msg_N ("\convert left operand to "
-                                           & "`Integer`", N);
+                              Error_Msg_N
+                                ("\convert left operand to `Integer`", N);
                            end if;
 
                         --  For concatenation operators it is more difficult to

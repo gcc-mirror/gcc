@@ -25608,7 +25608,7 @@ package body Sem_Prag is
                Ent := Underlying_Type (Ent);
             end if;
 
-            --  The pragma applies to entities with addresses.
+            --  The pragma applies to entities with addresses
 
             if Is_Type (Ent) then
                Error_Pragma ("pragma applies to objects and subprograms");

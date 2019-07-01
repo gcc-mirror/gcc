@@ -463,9 +463,9 @@ package body Exp_Unst is
             Callee : Entity_Id;
 
             procedure Check_Static_Type
-              (T  : Entity_Id;
-               N  : Node_Id;
-               DT : in out Boolean;
+              (T                : Entity_Id;
+               N                : Node_Id;
+               DT               : in out Boolean;
                Check_Designated : Boolean := False);
             --  Given a type T, checks if it is a static type defined as a type
             --  with no dynamic bounds in sight. If so, the only action is to
@@ -497,9 +497,9 @@ package body Exp_Unst is
             -----------------------
 
             procedure Check_Static_Type
-              (T  : Entity_Id;
-               N  : Node_Id;
-               DT : in out Boolean;
+              (T                : Entity_Id;
+               N                : Node_Id;
+               DT               : in out Boolean;
                Check_Designated : Boolean := False)
             is
                procedure Note_Uplevel_Bound (N : Node_Id; Ref : Node_Id);
@@ -702,7 +702,7 @@ package body Exp_Unst is
                      Set_Is_Static_Type (T);
                   end if;
 
-               --  For access types, check designated type when required.
+               --  For access types, check designated type when required
 
                elsif Is_Access_Type (T) and then Check_Designated then
                   Check_Static_Type (Directly_Designated_Type (T), N, DT);

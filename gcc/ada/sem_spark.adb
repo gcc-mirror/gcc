@@ -47,7 +47,6 @@ package body Sem_SPARK is
    ---------------------------------------------------
 
    package Permissions is
-
       Elaboration_Context_Max : constant := 1009;
       --  The hash range
 
