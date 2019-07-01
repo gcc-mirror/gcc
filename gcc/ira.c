@@ -1999,26 +1999,8 @@ ira_get_dup_out_num (int op_num, alternative_mask alts)
 	}
       if (original == -1)
 	goto fail;
-      dup = -1;
-      for (ignore_p = false, str = recog_data.constraints[original - '0'];
-	   *str != 0;
-	   str++)
-	if (ignore_p)
-	  {
-	    if (*str == ',')
-	      ignore_p = false;
-	  }
-	else if (*str == '#')
-	  ignore_p = true;
-	else if (! ignore_p)
-	  {
-	    if (*str == '=')
-	      dup = original - '0';
-	    /* It is better ignore an alternative with early clobber.  */
-	    else if (*str == '&')
-	      goto fail;
-	  }
-      if (dup >= 0)
+      dup = original - '0';
+      if (recog_data.operand_type[dup] == OP_OUT)
 	return dup;
     fail:
       if (use_commut_op_p)

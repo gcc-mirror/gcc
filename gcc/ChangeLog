@@ -1,5 +1,10 @@
 2019-07-01  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* ira.c (ira_get_dup_out_num): Don't punt for earlyclobbers.
+	Use recog_data to test for an output operand.
+
+2019-07-01  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* ira.c (ira_setup_alts): If any valid alternatives have zero cost,
 	exclude any others that are disparaged or that are bound to need
 	a reload or spill.
