@@ -1,3 +1,7 @@
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/prot7.adb, gnat.dg/prot7.ads: New testcase.
+
 2019-07-01  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/gimplefe-42.c: New testcase.

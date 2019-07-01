@@ -1,3 +1,11 @@
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): Do not apply validity check
+	to variable declared within a protected object that uses the
+	Lock_Free implementation, to prevent unwarranted constant
+	folding, because entities within such an object msut be treated
+	as volatile.
+
 2019-07-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch9.adb (Check_Inlining): Deal with Has_Pragma_No_Inline.
