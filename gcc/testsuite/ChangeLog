@@ -1,3 +1,11 @@
+2019-07-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/91028
+	PR lto/90720
+	* g++.dg/lto/alias-1_0.C: Add loop to make inlining happen with
+	-fno-use-linker-plugin
+	* g++.dg/lto/alias-2_0.C: Likewise.
+
 2019-07-01  Dominique d'Humieres  <dominiq@gcc.gnu.org>
 
 	* g++.dg/cpp0x/gen-attrs-67.C: Add error for darwin.
