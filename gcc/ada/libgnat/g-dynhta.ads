@@ -265,9 +265,9 @@ package GNAT.Dynamic_HTables is
    --  The following package offers a hash table abstraction with the following
    --  characteristics:
    --
-   --    * Dynamic resizing based on load factor.
-   --    * Creation of multiple instances, of different sizes.
-   --    * Iterable keys.
+   --    * Dynamic resizing based on load factor
+   --    * Creation of multiple instances, of different sizes
+   --    * Iterable keys
    --
    --  This type of hash table is best used in scenarios where the size of the
    --  key set is not known. The dynamic resizing aspect allows for performance
@@ -327,6 +327,9 @@ package GNAT.Dynamic_HTables is
              (Left  : Key_Type;
               Right : Key_Type) return Boolean;
 
+      with procedure Destroy_Value (Val : in out Value_Type);
+      --  Value destructor
+
       with function Hash (Key : Key_Type) return Bucket_Range_Type;
       --  Map an arbitrary key into the range of buckets
 
@@ -366,6 +369,9 @@ package GNAT.Dynamic_HTables is
       function Is_Empty (T : Instance) return Boolean;
       --  Determine whether hash table T is empty
 
+      function Present (T : Instance) return Boolean;
+      --  Determine whether hash table T exists
+
       procedure Put (T : Instance; Key : Key_Type; Value : Value_Type);
       --  Associate value Value with key Key in hash table T. If the table
       --  already contains a mapping of the same key to a previous value, the
@@ -401,14 +407,14 @@ package GNAT.Dynamic_HTables is
 
       type Iterator is private;
 
-      function Iterate (T : Instance) return Iterator;
-      --  Obtain an iterator over the keys of hash table T. This action locks
-      --  all mutation functionality of the associated hash table.
-
       function Has_Next (Iter : Iterator) return Boolean;
       --  Determine whether iterator Iter has more keys to examine. If the
       --  iterator has been exhausted, restore all mutation functionality of
       --  the associated hash table.
+
+      function Iterate (T : Instance) return Iterator;
+      --  Obtain an iterator over the keys of hash table T. This action locks
+      --  all mutation functionality of the associated hash table.
 
       procedure Next (Iter : in out Iterator; Key : out Key_Type);
       --  Return the current key referenced by iterator Iter and advance to
@@ -475,11 +481,11 @@ package GNAT.Dynamic_HTables is
       --  The following type represents a key iterator
 
       type Iterator is record
-         Idx : Bucket_Range_Type := 0;
+         Curr_Idx : Bucket_Range_Type := 0;
          --  Index of the current bucket being examined. This index is always
          --  kept within the range of the buckets.
 
-         Nod : Node_Ptr := null;
+         Curr_Nod : Node_Ptr := null;
          --  Reference to the current node being examined within the current
          --  bucket. The invariant of the iterator requires that this field
          --  always point to a valid node. A value of null indicates that the

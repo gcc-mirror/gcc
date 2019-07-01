@@ -90,6 +90,10 @@ package body GNAT.Lists is
       pragma Inline (Lock);
       --  Lock all mutation functionality of list L
 
+      function Present (Nod : Node_Ptr) return Boolean;
+      pragma Inline (Present);
+      --  Determine whether node Nod exists
+
       procedure Unlock (L : Instance);
       pragma Inline (Unlock);
       --  Unlock all mutation functionality of list L
@@ -217,15 +221,15 @@ package body GNAT.Lists is
       procedure Delete_Node (L : Instance; Nod : Node_Ptr) is
          Ref : Node_Ptr := Nod;
 
-         pragma Assert (Ref /= null);
+         pragma Assert (Present (Ref));
 
          Next : constant Node_Ptr := Ref.Next;
          Prev : constant Node_Ptr := Ref.Prev;
 
       begin
-         pragma Assert (L    /= null);
-         pragma Assert (Next /= null);
-         pragma Assert (Prev /= null);
+         pragma Assert (Present (L));
+         pragma Assert (Present (Next));
+         pragma Assert (Present (Prev));
 
          Prev.Next := Next;  --  Prev ---> Next
          Next.Prev := Prev;  --  Prev <--> Next
@@ -234,6 +238,10 @@ package body GNAT.Lists is
          Ref.Prev := null;
 
          L.Elements := L.Elements - 1;
+
+         --  Invoke the element destructor before deallocating the node
+
+         Destroy_Element (Nod.Elem);
 
          Free (Ref);
       end Delete_Node;
@@ -263,10 +271,10 @@ package body GNAT.Lists is
       ---------------------
 
       procedure Ensure_Circular (Head : Node_Ptr) is
-         pragma Assert (Head /= null);
+         pragma Assert (Present (Head));
 
       begin
-         if Head.Next = null and then Head.Prev = null then
+         if not Present (Head.Next) and then not Present (Head.Prev) then
             Head.Next := Head;
             Head.Prev := Head;
          end if;
@@ -278,7 +286,7 @@ package body GNAT.Lists is
 
       procedure Ensure_Created (L : Instance) is
       begin
-         if L = null then
+         if not Present (L) then
             raise Not_Created;
          end if;
       end Ensure_Created;
@@ -289,7 +297,7 @@ package body GNAT.Lists is
 
       procedure Ensure_Full (L : Instance) is
       begin
-         pragma Assert (L /= null);
+         pragma Assert (Present (L));
 
          if L.Elements = 0 then
             raise List_Empty;
@@ -302,7 +310,7 @@ package body GNAT.Lists is
 
       procedure Ensure_Unlocked (L : Instance) is
       begin
-         pragma Assert (L /= null);
+         pragma Assert (Present (L));
 
          --  The list has at least one outstanding iterator
 
@@ -319,7 +327,7 @@ package body GNAT.Lists is
         (Head : Node_Ptr;
          Elem : Element_Type) return Node_Ptr
       is
-         pragma Assert (Head /= null);
+         pragma Assert (Present (Head));
 
          Nod : Node_Ptr;
 
@@ -435,9 +443,9 @@ package body GNAT.Lists is
          Left  : Node_Ptr;
          Right : Node_Ptr)
       is
-         pragma Assert (L     /= null);
-         pragma Assert (Left  /= null);
-         pragma Assert (Right /= null);
+         pragma Assert (Present (L));
+         pragma Assert (Present (Left));
+         pragma Assert (Present (Right));
 
          Nod : constant Node_Ptr :=
                  new Node'(Elem => Elem,
@@ -471,7 +479,7 @@ package body GNAT.Lists is
          --  The invariant of Iterate and Next ensures that the iterator always
          --  refers to a valid node if there exists one.
 
-         return Is_Valid (Iter.Nod, Iter.List.Nodes'Access);
+         return Is_Valid (Iter.Curr_Nod, Iter.List.Nodes'Access);
       end Is_Valid;
 
       --------------
@@ -483,7 +491,7 @@ package body GNAT.Lists is
          --  A node is valid if it is non-null, and does not refer to the dummy
          --  head of some list.
 
-         return Nod /= null and then Nod /= Head;
+         return Present (Nod) and then Nod /= Head;
       end Is_Valid;
 
       -------------
@@ -499,7 +507,7 @@ package body GNAT.Lists is
 
          Lock (L);
 
-         return (List => L, Nod => L.Nodes.Next);
+         return (List => L, Curr_Nod => L.Nodes.Next);
       end Iterate;
 
       ----------
@@ -520,7 +528,7 @@ package body GNAT.Lists is
 
       procedure Lock (L : Instance) is
       begin
-         pragma Assert (L /= null);
+         pragma Assert (Present (L));
 
          --  The list may be locked multiple times if multiple iterators are
          --  operating over it.
@@ -534,7 +542,7 @@ package body GNAT.Lists is
 
       procedure Next (Iter : in out Iterator; Elem : out Element_Type) is
          Is_OK : constant Boolean  := Is_Valid (Iter);
-         Saved : constant Node_Ptr := Iter.Nod;
+         Saved : constant Node_Ptr := Iter.Curr_Nod;
 
       begin
          --  The iterator is no linger valid which indicates that it has been
@@ -548,8 +556,9 @@ package body GNAT.Lists is
 
          --  Advance to the next node along the list
 
-         Iter.Nod := Iter.Nod.Next;
-         Elem     := Saved.Elem;
+         Iter.Curr_Nod := Iter.Curr_Nod.Next;
+
+         Elem := Saved.Elem;
       end Next;
 
       -------------
@@ -578,6 +587,24 @@ package body GNAT.Lists is
             Left  => Head,
             Right => Head.Next);
       end Prepend;
+
+      -------------
+      -- Present --
+      -------------
+
+      function Present (L : Instance) return Boolean is
+      begin
+         return L /= Nil;
+      end Present;
+
+      -------------
+      -- Present --
+      -------------
+
+      function Present (Nod : Node_Ptr) return Boolean is
+      begin
+         return Nod /= null;
+      end Present;
 
       -------------
       -- Replace --
@@ -620,7 +647,7 @@ package body GNAT.Lists is
 
       procedure Unlock (L : Instance) is
       begin
-         pragma Assert (L /= null);
+         pragma Assert (Present (L));
 
          --  The list may be locked multiple times if multiple iterators are
          --  operating over it.

@@ -68,6 +68,16 @@ package body GNAT.Sets is
       -- Destroy --
       -------------
 
+      procedure Destroy (B : in out Boolean) is
+         pragma Unreferenced (B);
+      begin
+         null;
+      end Destroy;
+
+      -------------
+      -- Destroy --
+      -------------
+
       procedure Destroy (S : in out Instance) is
       begin
          Hashed_Set.Destroy (Hashed_Set.Instance (S));
@@ -117,6 +127,24 @@ package body GNAT.Sets is
       begin
          Hashed_Set.Next (Hashed_Set.Iterator (Iter), Elem);
       end Next;
+
+      -------------
+      -- Present --
+      -------------
+
+      function Present (S : Instance) return Boolean is
+      begin
+         return Hashed_Set.Present (Hashed_Set.Instance (S));
+      end Present;
+
+      -----------
+      -- Reset --
+      -----------
+
+      procedure Reset (S : Instance) is
+      begin
+         Hashed_Set.Reset (Hashed_Set.Instance (S));
+      end Reset;
 
       ----------
       -- Size --

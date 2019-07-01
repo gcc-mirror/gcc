@@ -1,3 +1,27 @@
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* impunit.adb: Add GNAT.Graphs to list Non_Imp_File_Names_95.
+	* Makefile.rtl, gcc-interface/Make-lang.in: Register unit
+	GNAT.Graphs.
+	* libgnat/g-dynhta.adb: Various minor cleanups (use Present
+	rather than direct comparisons).
+	(Delete): Reimplement to use Delete_Node.
+	(Delete_Node): New routine.
+	(Destroy_Bucket): Invoke the provided destructor.
+	(Present): New routines.
+	* libgnat/g-dynhta.ads: Add new generic formal Destroy_Value.
+	Use better names for the components of iterators.
+	* libgnat/g-graphs.adb, libgnat/g-graphs.ads: New unit.
+	* libgnat/g-lists.adb: Various minor cleanups (use Present
+	rather than direct comparisons).
+	(Delete_Node): Invoke the provided destructor.
+	(Present): New routine.
+	* libgnat/g-lists.ads: Add new generic formal Destroy_Element.
+	Use better names for the components of iterators.
+	(Present): New routine.
+	* libgnat/g-sets.adb, libgnat/g-sets.ads (Destroy, Preset,
+	Reset): New routines.
+
 2019-07-01  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* libgnat/g-sothco.adb (Get_Address): Fix the case when AF_INET6
