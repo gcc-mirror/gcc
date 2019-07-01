@@ -1,5 +1,10 @@
 2019-07-01  Piotr Trojanek  <trojanek@adacore.com>
 
+	* libgnat/a-calend.ads: Revert "Global => null" contracts on
+	non-pure routines.
+
+2019-07-01  Piotr Trojanek  <trojanek@adacore.com>
+
 	* exp_attr.adb, libgnat/g-graphs.ads: Fix typos in comments:
 	componant -> component.
 
