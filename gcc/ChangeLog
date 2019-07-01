@@ -1,3 +1,12 @@
+2019-07-01  Martin Liska  <mliska@suse.cz>
+
+	* edit-context.c (test_applying_fixits_unreadable_file): Do not
+	use () for a constructor call.
+	(test_applying_fixits_line_out_of_range): Likewise.
+	* ggc-page.c (alloc_page): Use (void *) for %p printf format
+	argument.
+	(free_page): Likewise.
+
 2019-07-01  Vladislav Ivanishin <vlad@ispras.ru>
 
         * gdbhooks.py (GdbPrettyPrinters.add_printer_for_types): Reorder
