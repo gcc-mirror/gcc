@@ -1,3 +1,7 @@
+2019-07-01  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch4.adb (Operator_Check): Refine error message.
+
 2019-07-01  Piotr Trojanek  <trojanek@adacore.com>
 
 	* libgnat/a-calend.ads: Revert "Global => null" contracts on
