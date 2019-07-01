@@ -1,3 +1,51 @@
+2019-06-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55442 - memory-hog with highly recursive constexpr.
+	* constexpr.c (push_cx_call_context): Return depth.
+	(cxx_eval_call_expression): Don't cache past constexpr_cache_depth.
+
+2019-06-27  Jan Hubicka  <jh@suse.cz>
+
+	* class.c (layout_class_type): Set TYPE_CXX_ODR_P for as-base
+	type copy.
+
+2019-06-27  Martin Liska  <mliska@suse.cz>
+
+	* class.c (adjust_clone_args): Remove obviously
+	dead assignments.
+	(dump_class_hierarchy_r): Likewise.
+	* decl.c (check_initializer): Likewise.
+	* parser.c (cp_parser_lambda_expression): Likewise.
+	* pt.c (unify_bound_ttp_args): Likewise.
+	(convert_template_argument): Likewise.
+	* rtti.c (build_headof): Likewise.
+	* typeck.c (convert_for_initialization): Likewise.
+
+2019-06-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70462 - unnecessary base ctor variant with final.
+	* optimize.c (populate_clone_array): Skip base variant if
+	CLASSTYPE_FINAL.
+	(maybe_clone_body): We don't need an alias if we are only defining
+	one clone.
+
+	* class.c (resolves_to_fixed_type_p): Check CLASSTYPE_FINAL.
+
+2019-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90969
+	* constexpr.c (cxx_eval_array_reference): Don't look through VCE from
+	vector type if lval.
+
+2019-06-24  Jan Hubicka  <jh@suse.cz>
+
+	* lex.c (cxx_make_type): Set TYPE_CXX_ODR_P.
+
+2019-06-24  Jason Merrill  <jason@redhat.com>
+
+	* class.c (layout_class_type): Don't use a separate
+	CLASSTYPE_AS_BASE if it's the same size.
+
 2019-06-23  Marek Polacek  <polacek@redhat.com>
 
 	* call.c (convert_default_arg): Use DEFERRED_PARSE instead of

@@ -1,3 +1,226 @@
+2019-07-01  Hongtao Liu  <hongtao.liu@intel.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_avx512vp2intersect): New proc.
+	* gcc.target/i386/avx512vp2intersect-2intersect-1b.c: Add
+	dg-require-effective-target avx512vp2intersect.
+	* gcc.target/i386/avx512vp2intersect-2intersectvl-1b.c: Ditto.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/array5.ads: New test.
+	* gnat.dg/specs/array5_pkg1.ads: New helper.
+	* gnat.dg/specs/array5_pkg2.ads: Likewise.
+	* gnat.dg/specs/array5_pkg2-g.ads: Likewise.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/unchecked_convert1.ads: New test.
+	* gnat.dg/specs/unchecked_convert2.ads: Likewise.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/size_clause3.ads: Adjust error message.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/atomic2.ads: Adjust error message.
+	* gnat.dg/specs/clause_on_volatile.ads: Likewise.
+	* gnat.dg/specs/size_clause3.ads: Likewise.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array35.adb: New test.
+	* gnat.dg/array36.adb: Likewise.
+
+2019-06-28  Jan Beulich  <jbeulich@suse.com>
+
+	* gcc.target/i386/gfni-5.c: New.
+
+2019-06-28  Jan Beulich  <jbeulich@suse.com>
+
+	* gcc.target/i386/cvtpd2pi: New.
+
+2019-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91024
+	* g++.dg/warn/Wimplicit-fallthrough-4.C: New test.
+
+	PR tree-optimization/91010
+	* g++.dg/vect/simd-10.cc: New test.
+
+2019-06-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90987
+	* match.c (gfc_match_common): Adjust parsing of fixed and free form
+	source code containing, e.g., COMMONI.
+
+2019-06-27  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/lto/alias-2_0.C: New testcase.
+	* g++.dg/lto/alias-2_1.C: New testcase.
+
+2019-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90991
+	* gcc.target/i386/avx2-pr90991-1.c: New test.
+	* gcc.target/i386/avx512dq-pr90991-2.c: New test.
+
+2019-06-27  Jan Beulich  <jbeulich@suse.com>
+
+	* gcc.target/i386/gfni-4.c: Pass -msse2.
+
+2019-06-27  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-69.c: New testcase.
+
+2019-06-27  Jun Ma  <JunMa@linux.alibaba.com>
+
+	PR tree-optimization/89772
+	* gcc.dg/builtin-memchr-4.c: New test.
+
+2019-06-27  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/91014
+	* gcc.target/s390/pr91014.c: New test.
+
+2019-06-27  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/91004
+	* g++.dg/torture/pr34850.C: Fix overly reduced testcase.
+
+2019-06-27  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR target/62147
+	* gcc.target/powerpc/pr62147.c: New test.
+
+2019-06-26  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/90883
+	* g++.dg/tree-ssa/pr90883.C: New test.
+	* gcc.dg/tree-ssa/ssa-dse-36.c: New test.
+
+2019-06-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89021
+	* lib/target-supports.exp (available_vector_sizes)
+	<[istarget i?86-*-*] || [istarget x86_64-*-*]>: Add
+	64-bit vectors for !ia32.
+
+2019-06-26  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/execute/builtins/builtins.exp: Add -fno-tree-dse
+	as DSE compromises several of these tests.
+	* gcc.dg/builtin-stringop-chk-1.c: Similarly.
+	* gcc.dg/memcpy-2.c: Similarly.
+	* gcc.dg/pr40340-1.c: Similarly.
+	* gcc.dg/pr40340-2.c: Similarly.
+	* gcc.dg/pr40340-5.c: Similarly.
+
+2019-06-26  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR Fortran/90988
+	ChangeLog forgotten with revision 272667
+	* gfortran.dg/pr90988_1.f90: New test.
+	* gfortran.dg/pr90988_2.f90: Ditto.
+	* gfortran.dg/pr90988_3.f90: Ditto.
+
+2019-06-26  Nathan Sidwell  <nathan@acm.org>
+
+	* c-c++-common/pr90927.c: New.
+
+2019-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/90982
+	* g++.dg/torture/pr90982.C: New testcase.
+
+2019-06-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67184
+	PR c++/69445
+	* g++.dg/other/final3.C: New.
+	* g++.dg/other/final5.C: Likewise.
+
+2019-06-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/90991
+	* gcc.target/i386/avx512dq-pr90991-1.c: New test.
+
+2019-06-26  Li Jia He  <helijia@linux.ibm.com>
+
+	* gcc.target/powerpc/maddld-1.c: New testcase.
+
+2019-06-06  Hongtao Liu  <hongtao.liu@intel.com>
+	    Olga Makhotina  <olga.makhotina@intel.com>
+
+	* gcc.target/i386/avx512-check.h: Handle bit_AVX512VP2INTERSECT.
+	* gcc.target/i386/avx512vp2intersect-2intersect-1a.c: New test.
+	* gcc.target/i386/avx512vp2intersect-2intersect-1b.c: Likewise.
+	* gcc.target/i386/avx512vp2intersect-2intersectvl-1a.c: Likewise.
+	* gcc.target/i386/avx512vp2intersect-2intersectvl-1b.c: Likewise.
+	* gcc.target/i386/sse-12.c: Add -mavx512vp2intersect.
+	* gcc.target/i386/sse-13.c: Likewsie.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* gcc.target/i386/sse-22.c: Likewise.
+	* gcc.target/i386/sse-23.c: Likewise.
+	* g++.dg/other/i386-2.C: Likewise.
+	* g++.dg/other/i386-3.C: Likewise.
+
+2019-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90969
+	* g++.dg/ext/vector38.C: New test.
+
+2019-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/90939
+	* g++.dg/lto/pr90939_[01].C: New test.
+
+2019-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90930
+	* gcc.dg/tree-ssa/reassoc-24.c: Adjust.
+	* gcc.dg/tree-ssa/reassoc-25.c: Likewise.
+
+2019-06-25  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/pr89838.c: New file.
+
+2019-06-25  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/mlarge-pedwarns.c: New test.
+
+2019-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/90954
+	* c-c++-common/gomp/pr90954.c: New test.
+
+2019-06-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/powerpc/safe-indirect-jump-1.c: Skip for Darwin.
+	* gcc.target/powerpc/safe-indirect-jump-7.c: Likewise.
+
+2019-06-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/powerpc/spec-barr-1.c: Adjust scan assembler regex
+	to recognise Darwin's register names.
+
+2019-06-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/cpp/isysroot-1.c: Use <example.h> as the test header.
+	* gcc.dg/cpp/usr/include/stdio.h: Rename...
+	* gcc.dg/cpp/usr/include/example.h: ... to this.
+
+2019-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90972
+	* gcc.dg/torture/pr90972.c: New testcase.
+
+2019-06-24  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wfloat-equal-1.c: Adjust text of expected diagnostic.
+	* gcc.dg/misc-column.c: Ditto.
+
 2019-06-23  Ian Lance Taylor  <iant@golang.org>
 
 	* go.test/test/blank1.go: Update for diagnostic message changes.

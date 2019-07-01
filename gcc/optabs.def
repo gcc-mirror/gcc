@@ -256,7 +256,7 @@ OPTAB_D (umul_highpart_optab, "umul$a3_highpart")
 OPTAB_D (cmpmem_optab, "cmpmem$a")
 OPTAB_D (cmpstr_optab, "cmpstr$a")
 OPTAB_D (cmpstrn_optab, "cmpstrn$a")
-OPTAB_D (movmem_optab, "movmem$a")
+OPTAB_D (cpymem_optab, "cpymem$a")
 OPTAB_D (setmem_optab, "setmem$a")
 OPTAB_D (strlen_optab, "strlen$a")
 

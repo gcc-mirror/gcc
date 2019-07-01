@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "dumpfile.h"
 #include "rtl-iter.h"
+#include "tree-ssa-loop-niter.h"
 
 /* Possible return values of iv_get_reaching_def.  */
 
@@ -2995,6 +2996,19 @@ find_simple_exit (struct loop *loop, struct niter_desc *desc)
 	}
       else
 	fprintf (dump_file, "Loop %d is not simple.\n", loop->num);
+    }
+
+  /* Fix up the finiteness if possible.  We can only do it for single exit,
+     since the loop is finite, but it's possible that we predicate one loop
+     exit to be finite which can not be determined as finite in middle-end as
+     well.  It results in incorrect predicate information on the exit condition
+     expression.  For example, if says [(int) _1 + -8, + , -8] != 0 finite,
+     it means _1 can exactly divide -8.  */
+  if (desc->infinite && single_exit (loop) && finite_loop_p (loop))
+    {
+      desc->infinite = NULL_RTX;
+      if (dump_file)
+	fprintf (dump_file, "  infinite updated to finite.\n");
     }
 
   free (body);

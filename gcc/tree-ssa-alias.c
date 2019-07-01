@@ -1458,10 +1458,8 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   if (!flag_strict_aliasing || !tbaa_p)
     return true;
 
-  ptrtype1 = TREE_TYPE (TREE_OPERAND (base1, 1));
-
   /* If the alias set for a pointer access is zero all bets are off.  */
-  if (base1_alias_set == 0)
+  if (base1_alias_set == 0 || base2_alias_set == 0)
     return true;
 
   /* When we are trying to disambiguate an access with a pointer dereference
@@ -1479,6 +1477,9 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   if (base1_alias_set != base2_alias_set
       && !alias_sets_conflict_p (base1_alias_set, base2_alias_set))
     return false;
+
+  ptrtype1 = TREE_TYPE (TREE_OPERAND (base1, 1));
+
   /* If the size of the access relevant for TBAA through the pointer
      is bigger than the size of the decl we can't possibly access the
      decl via that pointer.  */
@@ -2848,13 +2849,36 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 	  case BUILT_IN_MEMSET_CHK:
 	  case BUILT_IN_STRNCPY:
 	  case BUILT_IN_STPNCPY:
+	  case BUILT_IN_CALLOC:
 	    {
 	      /* For a must-alias check we need to be able to constrain
 		 the access properly.  */
 	      if (!ref->max_size_known_p ())
 		return false;
-	      tree dest = gimple_call_arg (stmt, 0);
-	      tree len = gimple_call_arg (stmt, 2);
+	      tree dest;
+	      tree len;
+
+	      /* In execution order a calloc call will never kill
+		 anything.  However, DSE will (ab)use this interface
+		 to ask if a calloc call writes the same memory locations
+		 as a later assignment, memset, etc.  So handle calloc
+		 in the expected way.  */
+	      if (DECL_FUNCTION_CODE (callee) == BUILT_IN_CALLOC)
+		{
+		  tree arg0 = gimple_call_arg (stmt, 0);
+		  tree arg1 = gimple_call_arg (stmt, 1);
+		  if (TREE_CODE (arg0) != INTEGER_CST
+		      || TREE_CODE (arg1) != INTEGER_CST)
+		    return false;
+
+		  dest = gimple_call_lhs (stmt);
+		  len = fold_build2 (MULT_EXPR, TREE_TYPE (arg0), arg0, arg1);
+		}
+	      else
+		{
+		  dest = gimple_call_arg (stmt, 0);
+		  len = gimple_call_arg (stmt, 2);
+		}
 	      if (!poly_int_tree_p (len))
 		return false;
 	      tree rbase = ref->base;
@@ -3135,6 +3159,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
 	      res = NULL;
 	      break;
 	    }
+	  --limit;
 	  if (stmt_may_clobber_ref_p_1 (def_stmt, ref))
 	    {
 	      if (!translate)

@@ -2716,10 +2716,12 @@ initialize_sizetypes (void)
       for (i = 0; i < NUM_INT_N_ENTS; i++)
 	if (int_n_enabled_p[i])
 	  {
-	    char name[50];
+	    char name[50], altname[50];
 	    sprintf (name, "__int%d unsigned", int_n_data[i].bitsize);
+	    sprintf (altname, "__int%d__ unsigned", int_n_data[i].bitsize);
 
-	    if (strcmp (name, SIZETYPE) == 0)
+	    if (strcmp (name, SIZETYPE) == 0
+		|| strcmp (altname, SIZETYPE) == 0)
 	      {
 		precision = int_n_data[i].bitsize;
 	      }

@@ -1,3 +1,47 @@
+2019-06-27  Ilia Diachkov  <ilia.diachkov@optimitech.com>
+
+	* Makefile.in (USE_TM_CLONE_REGISTRY): New.
+	(CRTSTUFF_CFLAGS): Use USE_TM_CLONE_REGISTRY.
+	* configure.ac: Add --disable-tm-clone-registry option.
+	* configure: Regenerate.
+
+2019-06-27  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver-system.c (gcov_exit_open_gcda_file): Remove obviously
+	dead assignments.
+	* libgcov-util.c: Likewise.
+
+2019-06-27  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-util.c (gcov_profile_merge): Release allocated
+	memory.
+	(calculate_overlap): Likewise.
+
+2019-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.host: Add libef_ppc.a to the extra files for powerpc-darwin.
+	* config/rs6000/t-darwin: (PPC_ENDFILE_SRC, PPC_ENDFILE_OBJS): New.
+	Build objects for the out of line save/restore register functions
+	so that they can be used for any supported Darwin version.
+	* config/t-darwin: Default the build Darwin version to Darwin8
+	(MacOS 10.4).
+
+2019-06-25  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver-system.c (replace_filename_variables): Do not
+	call strlen with NULL argument.
+
+2019-06-25  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/t-amdgcn (LIB2ADD): Add unwind-gcn.c.
+	* config/gcn/unwind-gcn.c: New file.
+
+2019-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+            Andrew Stubbs  <ams@codesourcery.com>
+
+	* configure: Regenerate.
+	* config/gcn/gthr-gcn.h: New.
+
 2019-06-18  Tom de Vries  <tdevries@suse.de>
 
 	* config/nvptx/crt0.c (__main): Declare.

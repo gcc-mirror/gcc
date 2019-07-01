@@ -6199,7 +6199,8 @@ Binary_expression::lower_compare_to_memcmp(Gogo*, Statement_inserter* inserter)
 					       TYPE_INFO_SIZE);
 
   Expression* call = Runtime::make_call(Runtime::MEMCMP, loc, 3, a1, a2, len);
-  Expression* zero = Expression::make_integer_ul(0, NULL, loc);
+  Type* int32_type = Type::lookup_integer_type("int32");
+  Expression* zero = Expression::make_integer_ul(0, int32_type, loc);
   return Expression::make_binary(this->op_, call, zero, loc);
 }
 
@@ -6225,10 +6226,27 @@ Binary_expression::do_flatten(Gogo* gogo, Named_object*,
   bool is_idiv_op = ((this->op_ == OPERATOR_DIV &&
                       left_type->integer_type() != NULL)
                      || this->op_ == OPERATOR_MOD);
+  bool is_string_op = (left_type->is_string_type()
+                       && this->right_->type()->is_string_type());
+
+  if (is_string_op)
+    {
+      // Mark string([]byte) operands to reuse the backing store.
+      // String comparison does not keep the reference, so it is safe.
+      Type_conversion_expression* lce =
+        this->left_->conversion_expression();
+      if (lce != NULL && lce->expr()->type()->is_slice_type())
+        lce->set_no_copy(true);
+      Type_conversion_expression* rce =
+        this->right_->conversion_expression();
+      if (rce != NULL && rce->expr()->type()->is_slice_type())
+        rce->set_no_copy(true);
+    }
 
   if (is_shift_op
       || (is_idiv_op
-	  && (gogo->check_divide_by_zero() || gogo->check_divide_overflow())))
+	  && (gogo->check_divide_by_zero() || gogo->check_divide_overflow()))
+      || is_string_op)
     {
       if (!this->left_->is_variable() && !this->left_->is_constant())
         {
@@ -7216,19 +7234,42 @@ Expression::comparison(Translate_context* context, Type* result_type,
 
   if (left_type->is_string_type() && right_type->is_string_type())
     {
-      // Mark string([]byte) operands to reuse the backing store.
-      // String comparison does not keep the reference, so it is safe.
-      Type_conversion_expression* lce = left->conversion_expression();
-      if (lce != NULL && lce->expr()->type()->is_slice_type())
-        lce->set_no_copy(true);
-      Type_conversion_expression* rce = right->conversion_expression();
-      if (rce != NULL && rce->expr()->type()->is_slice_type())
-        rce->set_no_copy(true);
+      go_assert(left->is_variable() || left->is_constant());
+      go_assert(right->is_variable() || right->is_constant());
 
       if (op == OPERATOR_EQEQ || op == OPERATOR_NOTEQ)
 	{
-	  left = Runtime::make_call(Runtime::EQSTRING, location, 2,
-				    left, right);
+          // (l.len == r.len
+          //  ? (l.ptr == r.ptr ? true : memcmp(l.ptr, r.ptr, r.len) == 0)
+          //  : false)
+          Expression* llen = Expression::make_string_info(left,
+                                                          STRING_INFO_LENGTH,
+                                                          location);
+          Expression* rlen = Expression::make_string_info(right,
+                                                          STRING_INFO_LENGTH,
+                                                          location);
+          Expression* leneq = Expression::make_binary(OPERATOR_EQEQ, llen, rlen,
+                                                      location);
+          Expression* lptr = Expression::make_string_info(left->copy(),
+                                                          STRING_INFO_DATA,
+                                                          location);
+          Expression* rptr = Expression::make_string_info(right->copy(),
+                                                          STRING_INFO_DATA,
+                                                          location);
+          Expression* ptreq = Expression::make_binary(OPERATOR_EQEQ, lptr, rptr,
+                                                      location);
+          Expression* btrue = Expression::make_boolean(true, location);
+          Expression* call = Runtime::make_call(Runtime::MEMCMP, location, 3,
+                                                lptr->copy(), rptr->copy(),
+                                                rlen->copy());
+          Type* int32_type = Type::lookup_integer_type("int32");
+          Expression* zero = Expression::make_integer_ul(0, int32_type, location);
+          Expression* cmp = Expression::make_binary(OPERATOR_EQEQ, call, zero,
+                                                    location);
+          Expression* cond = Expression::make_conditional(ptreq, btrue, cmp,
+                                                          location);
+          Expression* bfalse = Expression::make_boolean(false, location);
+          left = Expression::make_conditional(leneq, cond, bfalse, location);
 	  right = Expression::make_boolean(true, location);
 	}
       else

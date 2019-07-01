@@ -6603,9 +6603,14 @@ proc available_vector_sizes { } {
     } elseif { [istarget arm*-*-*]
 		&& [check_effective_target_arm_neon_ok] } {
 	lappend result 128 64
-    } elseif { (([istarget i?86-*-*] || [istarget x86_64-*-*])
-		 && ([check_avx_available] && ![check_prefer_avx128])) } {
-	lappend result 256 128
+    } elseif { [istarget i?86-*-*] || [istarget x86_64-*-*] } {
+	if { [check_avx_available] && ![check_prefer_avx128] } {
+	    lappend result 256
+	}
+	lappend result 128
+	if { ![is-effective-target ia32] } {
+	    lappend result 64
+	}
     } elseif { [istarget sparc*-*-*] } {
 	lappend result 64
     } else {
@@ -7961,6 +7966,20 @@ proc check_effective_target_avx512bw { } {
 							    -1);
 	}
     } "-mavx512bw" ]
+}
+
+# Return 1 if avx512vp2intersect instructions can be compiled.
+proc check_effective_target_avx512vp2intersect { } {
+    return [check_no_compiler_messages avx512vp2intersect object {
+	typedef int __v16si __attribute__ ((__vector_size__ (64)));
+	typedef short __mmask16;
+	void
+	_mm512_2intersect_epi32 (__v16si __A, __v16si __B, __mmask16 *__U,
+				 __mmask16 *__M)
+	{
+	    __builtin_ia32_2intersectd512 (__U, __M, (__v16si) __A, (__v16si) __B);
+	}
+    } "-mavx512vp2intersect" ]
 }
 
 # Return 1 if avx512ifma instructions can be compiled.

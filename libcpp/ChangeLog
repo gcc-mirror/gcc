@@ -1,3 +1,9 @@
+2019-06-26  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/90927
+	* mkdeps.c (mkdeps::vec::operator[]): Add non-const variant.
+	(deps_add_target): Deal with out of order unquoted targets.
+
 2019-05-19  Andrew Pinski  <apinski@marvell.com>
 
 	PR pch/81721

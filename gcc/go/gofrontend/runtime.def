@@ -29,7 +29,7 @@
 // result types.
 
 // The standard C memcmp function, used for struct comparisons.
-DEF_GO_RUNTIME(MEMCMP, "__go_memcmp", P3(POINTER, POINTER, UINTPTR), R1(INT))
+DEF_GO_RUNTIME(MEMCMP, "__builtin_memcmp", P3(POINTER, POINTER, UINTPTR), R1(INT32))
 
 // Decode a non-ASCII rune from a string.
 DEF_GO_RUNTIME(DECODERUNE, "runtime.decoderune", P2(STRING, INT),
@@ -38,9 +38,6 @@ DEF_GO_RUNTIME(DECODERUNE, "runtime.decoderune", P2(STRING, INT),
 // Concatenate strings.
 DEF_GO_RUNTIME(CONCATSTRINGS, "runtime.concatstrings",
                P3(POINTER, POINTER, INT), R1(STRING))
-
-// Compare two strings for equality.
-DEF_GO_RUNTIME(EQSTRING, "runtime.eqstring", P2(STRING, STRING), R1(BOOL))
 
 // Compare two strings.
 DEF_GO_RUNTIME(CMPSTRING, "runtime.cmpstring", P2(STRING, STRING), R1(INT))

@@ -1574,6 +1574,8 @@ struct GTY(()) tree_type_common {
 
   ENUM_BITFIELD(machine_mode) mode : 8;
 
+  /* TYPE_STRING_FLAG for INTEGER_TYPE and ARRAY_TYPE.
+     TYPE_CXX_ODR_P for RECORD_TYPE and UNION_TYPE.  */
   unsigned string_flag : 1;
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;

@@ -1,3 +1,31 @@
+2019-06-27  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90987
+	* gfortran.dg/common_1.f: new test.
+	* gfortran.dg/common_26.f90: Ditto.
+
+2019-06-26  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR Fortran/90988
+	ChangeLog forgotten with revision 272667
+	* decl.c (access_attr_decl): Use temporary variable to reduce
+	unreadability of code.  Normalize jumping to return.
+	(gfc_match_protected): Fix parsing error.  Add comments to 
+	explain code.  Remove dead code.
+	(gfc_match_private): Use temporary variable to reduce unreadability 
+	of code. Fix parsing error.  Move code to test for blank PRIVATE.
+	Remove dead code.
+	(gfc_match_public): Move code to test for blank PUBLIC.  Fix
+	parsing error.  Remove dead code.
+
+2019-06-24  Jan Hubicka  <jh@suse.cz>
+
+	* trans-expr.c (gfc_conv_substring): Check that
+	type is array or integer prior checking string flag.
+	(gfc_conv_string_parameter): Likewise.
+	* trans-openmp.c (gfc_omp_scalar_p): Likewise.
+	* trans.c (gfc_build_array_ref): Likewise.
+
 2019-06-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/89782

@@ -1029,12 +1029,8 @@ lra_set_insn_recog_data (rtx_insn *insn)
 			       data->operand_loc,
 			       constraints, operand_mode, NULL);
 	  if (nop > 0)
-	    {
-	      const char *p =  recog_data.constraints[0];
-
-	      for (p =	constraints[0]; *p; p++)
-		nalt += *p == ',';
-	    }
+	    for (const char *p =constraints[0]; *p; p++)
+	      nalt += *p == ',';
 	  data->insn_static_data = insn_static_data
 	    = get_static_insn_data (-1, nop, 0, nalt);
 	  for (i = 0; i < nop; i++)

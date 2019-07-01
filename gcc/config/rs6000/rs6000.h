@@ -453,7 +453,7 @@ extern int rs6000_vector_align[];
 #define TARGET_FCTIWUZ	TARGET_POPCNTD
 #define TARGET_CTZ	TARGET_MODULO
 #define TARGET_EXTSWSLI	(TARGET_MODULO && TARGET_POWERPC64)
-#define TARGET_MADDLD	(TARGET_MODULO && TARGET_POWERPC64)
+#define TARGET_MADDLD	TARGET_MODULO
 
 #define TARGET_XSCVDPSPN	(TARGET_DIRECT_MOVE || TARGET_P8_VECTOR)
 #define TARGET_XSCVSPDPN	(TARGET_DIRECT_MOVE || TARGET_P8_VECTOR)
@@ -2486,6 +2486,40 @@ enum rs6000_builtin_type_index
 extern GTY(()) tree rs6000_builtin_types[RS6000_BTI_MAX];
 extern GTY(()) tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
 
+#ifndef USED_FOR_TARGET
+/* A C structure for machine-specific, per-function data.
+   This is added to the cfun structure.  */
+typedef struct GTY(()) machine_function
+{
+  /* Flags if __builtin_return_address (n) with n >= 1 was used.  */
+  int ra_needs_full_frame;
+  /* Flags if __builtin_return_address (0) was used.  */
+  int ra_need_lr;
+  /* Cache lr_save_p after expansion of builtin_eh_return.  */
+  int lr_save_state;
+  /* Whether we need to save the TOC to the reserved stack location in the
+     function prologue.  */
+  bool save_toc_in_prologue;
+  /* Offset from virtual_stack_vars_rtx to the start of the ABI_V4
+     varargs save area.  */
+  HOST_WIDE_INT varargs_save_offset;
+  /* Alternative internal arg pointer for -fsplit-stack.  */
+  rtx split_stack_arg_pointer;
+  bool split_stack_argp_used;
+  /* Flag if r2 setup is needed with ELFv2 ABI.  */
+  bool r2_setup_needed;
+  /* The number of components we use for separate shrink-wrapping.  */
+  int n_components;
+  /* The components already handled by separate shrink-wrapping, which should
+     not be considered by the prologue and epilogue.  */
+  bool gpr_is_wrapped_separately[32];
+  bool fpr_is_wrapped_separately[32];
+  bool lr_is_wrapped_separately;
+  bool toc_is_wrapped_separately;
+} machine_function;
+#endif
+
+
 #define TARGET_SUPPORTS_WIDE_INT 1
 
 #if (GCC_VERSION >= 3000)
@@ -2505,10 +2539,3 @@ extern GTY(()) tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
   IN_RANGE (VALUE,							\
 	    -(HOST_WIDE_INT_1 << 33),					\
 	    (HOST_WIDE_INT_1 << 33) - 1 - (EXTRA))
-
-/* Flag to mark SYMBOL_REF objects to say they are local addresses and are used
-   in pc-relative addresses.  */
-#define SYMBOL_FLAG_PCREL	SYMBOL_FLAG_MACH_DEP
-
-#define SYMBOL_REF_PCREL_P(X)						\
-  (SYMBOL_REF_P (X) && SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_PCREL)

@@ -1375,17 +1375,17 @@
 
 ;; 0 is dst
 ;; 1 is src
-;; 2 is size of move in bytes
+;; 2 is size of copy in bytes
 ;; 3 is alignment
 
-(define_expand "movmemdi"
+(define_expand "cpymemdi"
   [(match_operand:BLK 0 "memory_operand")
    (match_operand:BLK 1 "memory_operand")
    (match_operand:DI 2 "immediate_operand")
    (match_operand:DI 3 "immediate_operand")]
    "!STRICT_ALIGNMENT"
 {
-  if (aarch64_expand_movmem (operands))
+  if (aarch64_expand_cpymem (operands))
     DONE;
   FAIL;
 }

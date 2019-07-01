@@ -1481,20 +1481,19 @@ vect_init_vector (stmt_vec_info stmt_info, tree val, tree type,
 		  val = new_temp;
 		}
 	    }
-	  else if (CONSTANT_CLASS_P (val))
-	    val = fold_convert (TREE_TYPE (type), val);
 	  else
 	    {
-	      new_temp = make_ssa_name (TREE_TYPE (type));
+	      gimple_seq stmts = NULL;
 	      if (! INTEGRAL_TYPE_P (TREE_TYPE (val)))
-		init_stmt = gimple_build_assign (new_temp,
-						 fold_build1 (VIEW_CONVERT_EXPR,
-							      TREE_TYPE (type),
-							      val));
+		val = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+				    TREE_TYPE (type), val);
 	      else
-		init_stmt = gimple_build_assign (new_temp, NOP_EXPR, val);
-	      vect_init_vector_1 (stmt_info, init_stmt, gsi);
-	      val = new_temp;
+		/* ???  Condition vectorization expects us to do
+		   promotion of invariant/external defs.  */
+		val = gimple_convert (&stmts, TREE_TYPE (type), val);
+	      for (gimple_stmt_iterator gsi2 = gsi_start (stmts);
+		   !gsi_end_p (gsi2); gsi_next (&gsi2))
+		vect_init_vector_1 (stmt_info, gsi_stmt (gsi2), gsi);
 	    }
 	}
       val = build_vector_from_val (type, val);
@@ -3484,8 +3483,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			= gimple_build_call_internal_vec (ifn, vargs);
 		      gimple_call_set_lhs (call, half_res);
 		      gimple_call_set_nothrow (call, true);
-		      new_stmt_info
-			= vect_finish_stmt_generation (stmt_info, call, gsi);
+		      vect_finish_stmt_generation (stmt_info, call, gsi);
 		      if ((i & 1) == 0)
 			{
 			  prev_res = half_res;
@@ -3584,8 +3582,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      gcall *call = gimple_build_call_internal_vec (ifn, vargs);
 	      gimple_call_set_lhs (call, half_res);
 	      gimple_call_set_nothrow (call, true);
-	      new_stmt_info
-		= vect_finish_stmt_generation (stmt_info, call, gsi);
+	      vect_finish_stmt_generation (stmt_info, call, gsi);
 	      if ((j & 1) == 0)
 		{
 		  prev_res = half_res;
@@ -6348,7 +6345,10 @@ scan_operand_equal_p (tree ref1, tree ref2)
     return false;
   if (maybe_ne (bitsize1, bitsize2))
     return false;
-  if (!operand_equal_p (offset1, offset2, 0))
+  if (offset1 != offset2
+      && (!offset1
+	  || !offset2
+	  || !operand_equal_p (offset1, offset2, 0)))
     return false;
   return true;
 }

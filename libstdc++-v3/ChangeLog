@@ -1,3 +1,67 @@
+2019-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91012
+	* src/c++17/fs_path.cc (filesystem_error::_Impl): Use a string_view
+	for the what_arg parameters.
+	(filesystem_error::filesystem_error): Pass system_error::what() to
+	the _Impl constructor.
+	* testsuite/27_io/filesystem/filesystem_error/cons.cc: Ensure that
+	filesystem_error::what() contains system_error::what().
+
+2019-06-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (chars_format): Define bitmask type.
+	* testsuite/20_util/to_chars/chars_format.cc: New test.
+
+	* include/bits/fs_path.h (path::__is_encoded_char): Use __is_one_of.
+	* include/std/bit (_If_is_unsigned_integer_type): Remove.
+	(_If_is_unsigned_integer): Use __is_unsigned_integer.
+	(rotl(byte, unsigned), rotr(byte, unsigned), countl_zero(byte))
+	(countl_one(byte), countr_zero(byte), countr_one(byte))
+	(popcount(byte), ispow2(byte), ceil2(byte), floor2(byte))
+	(log2p1(byte)): Remove.
+	* include/std/charconv (__detail::__is_one_of): Move to <type_traits>.
+	(__detail::__is_int_to_chars_type): Remove.
+	(__detail::__integer_to_chars_result_type): Use __is_signed_integer
+	and __is_unsigned_integer.
+	* include/std/type_traits (__is_one_of): Move here from <charconv>.
+	(__is_signed_integer, __is_unsigned_integer): New helpers.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2.cc: Remove test for
+	std::byte overload.
+	* testsuite/26_numerics/bit/bit.pow.two/floor2.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/ispow2.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/log2p1.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.count/countl_one.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.count/countl_zero.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.count/countr_one.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.count/countr_zero.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.count/popcount.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.rot/rotl.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.rot/rotr.cc: Likewise.
+
+2019-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/numeric (midpoint(T, T)): Avoid std::abs in constexpr
+	function.
+
+2019-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/pstl/pstl_config.h (_PSTL_PRAGMA_SIMD_SCAN,
+	_PSTL_PRAGMA_SIMD_INCLUSIVE_SCAN, _PSTL_PRAGMA_SIMD_EXCLUSIVE_SCAN):
+	Define to OpenMP 5.0 pragmas even for GCC 10.0+.
+	(_PSTL_UDS_PRESENT): Define to 1 for GCC 10.0+.
+
+2019-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/numeric (midpoint(T, T)): Change implementation for
+	floating-point types to avoid incorrect rounding of denormals.
+	* testsuite/26_numerics/midpoint/floating.cc: Add check for correct
+	rounding with denormals.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: Adjust dg-error line numbers.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: Likewise.
+
+	* testsuite/18_support/headers/cfloat/values_c++17.cc: New test.
+
 2019-06-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_DEBUG): Only do debug build for final

@@ -1105,14 +1105,12 @@ assign_parameter_index_in_region (tree name, sese_info_p region)
   gcc_assert (TREE_CODE (name) == SSA_NAME
 	      && INTEGRAL_TYPE_P (TREE_TYPE (name))
 	      && ! defined_in_sese_p (name, region->region));
-
   int i;
   tree p;
   FOR_EACH_VEC_ELT (region->params, i, p)
     if (p == name)
       return;
 
-  i = region->params.length ();
   region->params.safe_push (name);
 }
 

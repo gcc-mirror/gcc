@@ -1295,7 +1295,7 @@ read_subst_mapping (htab_t subst_iters_table, htab_t subst_attrs_table,
       m = add_mapping (&substs, subst_iters_table, attr_operands[1]);
       end_ptr = &m->values;
       end_ptr = add_map_value (end_ptr, 1, "");
-      end_ptr = add_map_value (end_ptr, 2, "");
+      add_map_value (end_ptr, 2, "");
 
       add_define_attr_for_define_subst (attr_operands[1], queue);
     }
@@ -1303,7 +1303,7 @@ read_subst_mapping (htab_t subst_iters_table, htab_t subst_attrs_table,
   m = add_mapping (&substs, subst_attrs_table, attr_operands[0]);
   end_ptr = &m->values;
   end_ptr = add_map_value (end_ptr, 1, attr_operands[2]);
-  end_ptr = add_map_value (end_ptr, 2, attr_operands[3]);
+  add_map_value (end_ptr, 2, attr_operands[3]);
 }
 
 /* Check newly-created code iterator ITERATOR to see whether every code has the
