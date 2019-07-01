@@ -1,3 +1,8 @@
+2019-07-01  Justin Squirek  <squirek@adacore.com>
+
+	* libgnat/s-win32.ads: Add definition for ULONG, modify
+	OVERLAPPED type, and add appropriate pragmas.
+
 2019-07-01  Bob Duff  <duff@adacore.com>
 
 	* gnat1drv.adb (gnat1drv): Call Write_ALI if the main unit is
