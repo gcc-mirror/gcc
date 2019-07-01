@@ -1639,7 +1639,7 @@ static void
 test_applying_fixits_unreadable_file ()
 {
   const char *filename = "this-does-not-exist.txt";
-  line_table_test ltt ();
+  line_table_test ltt;
   linemap_add (line_table, LC_ENTER, false, filename, 1);
 
   location_t loc = linemap_position_for_column (line_table, 1);
@@ -1670,7 +1670,7 @@ test_applying_fixits_line_out_of_range ()
   const char *old_content = "One-liner file\n";
   temp_source_file tmp (SELFTEST_LOCATION, ".txt", old_content);
   const char *filename = tmp.get_filename ();
-  line_table_test ltt ();
+  line_table_test ltt;
   linemap_add (line_table, LC_ENTER, false, filename, 2);
 
   /* Try to insert a string in line 2.  */
