@@ -254,8 +254,7 @@ package body Exp_Unst is
             Typ := Full_View (Typ);
          end if;
 
-         return Is_Array_Type (Typ)
-           and then not Is_Constrained (Typ);
+         return Is_Array_Type (Typ) and then not Is_Constrained (Typ);
       else
          return False;
       end if;
@@ -2188,8 +2187,7 @@ package body Exp_Unst is
                  and then Present (Constant_Value (UPJ.Ent))
                  and then Is_Static_Expression (Constant_Value (UPJ.Ent))
                then
-                  Rewrite (UPJ.Ref,
-                    New_Copy_Tree (Constant_Value (UPJ.Ent)));
+                  Rewrite (UPJ.Ref, New_Copy_Tree (Constant_Value (UPJ.Ent)));
                   goto Continue;
                end if;
 

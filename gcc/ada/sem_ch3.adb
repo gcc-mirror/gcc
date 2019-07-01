@@ -10376,10 +10376,9 @@ package body Sem_Ch3 is
          --  build-in-place library function, child unit or not.
 
          if (Nkind (Nod) in N_Entity and then Is_Compilation_Unit (Nod))
-           or else
-             (Nkind_In (Nod,
-                N_Defining_Program_Unit_Name, N_Subprogram_Declaration)
-               and then Is_Compilation_Unit (Defining_Entity (Nod)))
+           or else (Nkind_In (Nod, N_Defining_Program_Unit_Name,
+                                   N_Subprogram_Declaration)
+                      and then Is_Compilation_Unit (Defining_Entity (Nod)))
          then
             Add_Global_Declaration (IR);
          else
