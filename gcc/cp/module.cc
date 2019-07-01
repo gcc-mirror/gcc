@@ -2505,8 +2505,8 @@ public:
     depset *add_dependency (tree decl, entity_kind, bool is_import = false);
     depset *add_redirect (depset *target);
     depset *add_clone (tree clone, tree target);
-    void add_binding (tree ns, tree value);
-    void add_writables (tree ns, bitmap partitions);
+    bool add_binding (tree ns, tree value);
+    bool add_writables (tree ns, bitmap partitions);
     void add_specializations (bool, bitmap partitions);
     void find_dependencies ();
     bool finalize_dependencies ();
@@ -9096,8 +9096,6 @@ trees_in::is_skippable_defn (tree defn, bool have_defn)
 void
 trees_out::write_function_def (tree decl)
 {
-  gcc_checking_assert (DECL_RESULT (decl));
-
   tree_node (DECL_RESULT (decl));
   tree_node (DECL_INITIAL (decl));
   tree_node (DECL_SAVED_TREE (decl));
@@ -10095,7 +10093,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
    the relevant depsets for the binding and its conents.  MAYBE_TYPE
    is used for struct stat hack behaviour.  */
 
-void
+bool
 depset::hash::add_binding (tree ns, tree value)
 {
   current = make_binding (ns, NULL_TREE);
@@ -10134,9 +10132,26 @@ depset::hash::add_binding (tree ns, tree value)
 	continue;
 
       bool using_p = iter.using_p ();
-      depset *dep = add_dependency (using_p ? iter.get_using () : decl,
-				    using_p ? depset::EK_USING
-				    : depset::EK_DECL);
+      depset::entity_kind ek = depset::EK_DECL;
+      tree maybe_using = decl;
+      if (using_p)
+	{
+	  maybe_using = iter.get_using ();
+	  ek = depset::EK_USING;
+	}
+      else if (CP_DECL_CONTEXT (decl) != ns
+	       && TREE_CODE (decl) != CONST_DECL)
+	{
+	  /* A using that lost its wrapper.  */
+	  // FIXME: name-lookup should preserve this, but we tend to
+	  // drop it for non-function decls :(
+	  using_p = true;
+	  maybe_using = ovl_make (decl, NULL_TREE);
+	  OVL_USING_P (maybe_using) = true;
+	  ek = depset::EK_USING;
+	}
+
+      depset *dep = add_dependency (maybe_using, ek);
       if (iter.hidden_p ())
 	{
 	  /* It is safe to mark the target decl with the hidden bit,
@@ -10149,7 +10164,8 @@ depset::hash::add_binding (tree ns, tree value)
 	}
     }
 
-  if (current->deps.length ())
+  bool added = current->deps.length () != 0;
+  if (added)
     {
       current->set_binding_name (name);
       depset **slot = binding_slot (ns, name, true);
@@ -10159,6 +10175,8 @@ depset::hash::add_binding (tree ns, tree value)
   else
     delete current;
   current = NULL;
+
+  return added;
 }
 
 /* Compare two writable bindings.  We don't particularly care on the
@@ -10184,12 +10202,13 @@ writable_cmp (const void *a_, const void *b_)
    on the binding depset.  Returns true if we contain something
    explicitly exported.  */
 
-void
+bool
 depset::hash::add_writables (tree ns, bitmap partitions)
 {
   dump () && dump ("Finding writables in %N", ns);
   dump.indent ();
 
+  unsigned count = 0;
   auto_vec<tree> bindings (DECL_NAMESPACE_BINDINGS (ns)->size ());
   hash_table<named_decl_hash>::iterator end
     (DECL_NAMESPACE_BINDINGS (ns)->end ());
@@ -10204,19 +10223,30 @@ depset::hash::add_writables (tree ns, bitmap partitions)
     {
       tree value = bindings.pop ();
       if (TREE_CODE (value) != NAMESPACE_DECL)
-	add_binding (ns, value);
+	{
+	  if (add_binding (ns, value))
+	    count++;
+	}
+      else if (DECL_NAMESPACE_ALIAS (value))
+	// FIXME: Not sure what to do with namespace aliases
+	gcc_unreachable ();
       else if (DECL_NAME (value))
 	{
 	  gcc_checking_assert (TREE_PUBLIC (value));
-	  add_writables (value, partitions);
-	  // FIXME: What about opening and closing it in the
-	  // purview, shouldn't that add the namespace too?
-	  if (DECL_MODULE_EXPORT_P (value))
-	    add_dependency (value, depset::EK_NAMESPACE);
+	  bool not_empty = add_writables (value, partitions);
+	  if (not_empty || DECL_MODULE_EXPORT_P (value))
+	    {
+	      add_dependency (value, depset::EK_NAMESPACE);
+	      count++;
+	    }
 	}
     }
 
+  if (count)
+    dump () && dump ("Found %u entries", count);
   dump.outdent ();
+
+  return count != 0;
 }
 
 typedef std::pair<bitmap, auto_vec<spec_entry *> > spec_tuple;

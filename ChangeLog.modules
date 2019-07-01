@@ -1,5 +1,12 @@
 2019-07-01  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (depset::hash::add_binding): Return added flag.  Deal
+	with orphaned using decls.
+	(depset::hash::add_writables): Return added flag.
+	gcc/testsuite/
+	* g++.dg/modules/using-5_[ab].C: New.
+
 	Clones
 	gcc/cp/
 	* module.cc (enum tree_tag): Add tt_clone_ref.
