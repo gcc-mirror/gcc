@@ -1,3 +1,8 @@
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb, exp_ch7.adb, exp_unst.adb, sem_ch3.adb,
+	sem_util.adb, uintp.adb, uintp.ads: Minor reformatting.
+
 2019-07-01  Javier Miranda  <miranda@adacore.com>
 
 	* exp_attr.adb (Expand_Min_Max_Attribute): Disable expansion of

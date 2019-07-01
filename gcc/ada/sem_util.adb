@@ -9201,12 +9201,12 @@ package body Sem_Util is
          Next_Entity (Func);
       end loop;
 
-      --  If not found, no way to resolve remaining primitives.
+      --  If not found, no way to resolve remaining primitives
 
       if Cursor = Any_Type then
          Error_Msg_N
-           ("primitive operation for Iterable type must appear "
-             & "in the same list of declarations as the type", Aspect);
+           ("primitive operation for Iterable type must appear in the same "
+            & "list of declarations as the type", Aspect);
       end if;
 
       return Cursor;
