@@ -7665,9 +7665,8 @@ package body Freeze is
         or else Ekind (Current_Scope) = E_Void
       then
          declare
-            N            : constant Node_Id := Current_Scope;
-            Freeze_Nodes : List_Id          := No_List;
-            Pos          : Int              := Scope_Stack.Last;
+            Freeze_Nodes : List_Id := No_List;
+            Pos          : Int     := Scope_Stack.Last;
 
          begin
             if Present (Desig_Typ) then
@@ -7700,7 +7699,19 @@ package body Freeze is
             end if;
 
             if Is_Non_Empty_List (Freeze_Nodes) then
-               if No (Scope_Stack.Table (Pos).Pending_Freeze_Actions) then
+
+               --  When the current scope is transient, insert the freeze nodes
+               --  prior to the expression that produced them. Transient scopes
+               --  may create additional declarations when finalizing objects
+               --  or managing the secondary stack. Inserting the freeze nodes
+               --  of those constructs prior to the scope would result in a
+               --  freeze-before-declaration, therefore the freeze node must
+               --  remain interleaved with their constructs.
+
+               if Scope_Is_Transient then
+                  Insert_Actions (N, Freeze_Nodes);
+
+               elsif No (Scope_Stack.Table (Pos).Pending_Freeze_Actions) then
                   Scope_Stack.Table (Pos).Pending_Freeze_Actions :=
                     Freeze_Nodes;
                else
