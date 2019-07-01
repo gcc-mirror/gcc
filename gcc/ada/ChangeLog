@@ -1,3 +1,7 @@
+2019-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch9.adb (Check_Inlining): Deal with Has_Pragma_No_Inline.
+
 2019-07-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.adb (Visit_Node, Check_Static_Type): Improve the
