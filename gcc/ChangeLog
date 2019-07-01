@@ -1,3 +1,8 @@
+2019-07-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Adjust
+	TARGET_MEM_REF handling to also handle address-taken ones.
+
 2019-07-01  Hongtao Liu  <hongtao.liu@intel.com>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords, Other
