@@ -1694,9 +1694,15 @@ package body Exp_Attr is
 
       Check_Restriction (No_Implicit_Conditionals, N);
 
-      --  In Modify_Tree_For_C mode, we rewrite as an if expression
+      --  In Modify_Tree_For_C mode, we rewrite as an if expression (unless it
+      --  is supported).
 
-      if Modify_Tree_For_C then
+      if Modify_Tree_For_C
+        and then not Is_Integer_Type (Etype (N))
+        and then not Is_Enumeration_Type (Etype (N))
+        and then not Is_Fixed_Point_Type (Etype (N))
+        and then not Is_Floating_Point_Type (Etype (N))
+      then
          declare
             Loc   : constant Source_Ptr := Sloc (N);
             Typ   : constant Entity_Id  := Etype (N);
