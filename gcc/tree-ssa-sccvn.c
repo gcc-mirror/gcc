@@ -6853,14 +6853,24 @@ class pass_fre : public gimple_opt_pass
 {
 public:
   pass_fre (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_fre, ctxt)
+    : gimple_opt_pass (pass_data_fre, ctxt), may_iterate (true)
   {}
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_fre (m_ctxt); }
-  virtual bool gate (function *) { return flag_tree_fre != 0; }
+  void set_pass_param (unsigned int n, bool param)
+    {
+      gcc_assert (n == 0);
+      may_iterate = param;
+    }
+  virtual bool gate (function *)
+    {
+      return flag_tree_fre != 0 && (may_iterate || optimize > 1);
+    }
   virtual unsigned int execute (function *);
 
+private:
+  bool may_iterate;
 }; // class pass_fre
 
 unsigned int
@@ -6869,15 +6879,16 @@ pass_fre::execute (function *fun)
   unsigned todo = 0;
 
   /* At -O[1g] use the cheap non-iterating mode.  */
+  bool iterate_p = may_iterate && (optimize > 1);
   calculate_dominance_info (CDI_DOMINATORS);
-  if (optimize > 1)
+  if (iterate_p)
     loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
   default_vn_walk_kind = VN_WALKREWRITE;
-  todo = do_rpo_vn (fun, NULL, NULL, optimize > 1, true);
+  todo = do_rpo_vn (fun, NULL, NULL, iterate_p, true);
   free_rpo_vn ();
 
-  if (optimize > 1)
+  if (iterate_p)
     loop_optimizer_finalize ();
 
   return todo;

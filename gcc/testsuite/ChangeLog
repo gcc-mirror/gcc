@@ -1,3 +1,7 @@
+2019-07-01  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/pr77445-2.c: Adjust.
+
 2019-07-01  Hongtao Liu  <hongtao.liu@intel.com>
 
 	* lib/target-supports.exp
