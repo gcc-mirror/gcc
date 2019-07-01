@@ -1,6 +1,6 @@
 2019-07-01  Andreas Krebbel  <krebbel@linux.ibm.com>
 
-	* config/s390/vector.md:
+	* config/s390/vector.md: Fix shift count operand printing.
 
 2019-07-01  Richard Sandiford  <richard.sandiford@arm.com>
 
