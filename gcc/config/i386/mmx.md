@@ -590,12 +590,16 @@
    punpckldq\t%0, %0
    #
    #"
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSE && reload_completed
+   && SSE_REGNO_P (REGNO (operands[0]))"
   [(set (match_dup 0)
 	(vec_duplicate:V4SF (match_dup 1)))]
-  "operands[0] = lowpart_subreg (V4SFmode, operands[0],
-				 GET_MODE (operands[0]));"
-  [(set_attr "mmx_isa" "native,sse_noavx,avx")
+{
+  operands[0] = lowpart_subreg (V4SFmode, operands[0],
+				GET_MODE (operands[0]));
+}
+  [(set_attr "isa" "*,sse_noavx,avx")
+   (set_attr "mmx_isa" "native,*,*")
    (set_attr "type" "mmxcvt,ssemov,ssemov")
    (set_attr "mode" "DI,TI,TI")])
 
@@ -1560,12 +1564,16 @@
    #
    #
    #"
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSE && reload_completed
+   && SSE_REGNO_P (REGNO (operands[0]))"
   [(set (match_dup 0)
 	(vec_duplicate:V4SI (match_dup 1)))]
-  "operands[0] = lowpart_subreg (V4SImode, operands[0],
-				 GET_MODE (operands[0]));"
-  [(set_attr "mmx_isa" "native,sse_noavx,avx,avx")
+{
+  operands[0] = lowpart_subreg (V4SImode, operands[0],
+				GET_MODE (operands[0]));
+}
+  [(set_attr "isa" "*,sse_noavx,avx,avx")
+   (set_attr "mmx_isa" "native,*,*,*")
    (set_attr "type" "mmxcvt,ssemov,ssemov,ssemov")
    (set_attr "mode" "DI,TI,TI,TI")])
 

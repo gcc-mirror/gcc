@@ -1,3 +1,11 @@
+2019-07-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md ("isa" attribute): Add sse_noavx.
+	("enabled" attribute): Handle sse_noavx isa attribute.
+	* config/i386/mmx.md (*vec_dupv2sf): Add "isa" attribute.
+	Use TARGET_SSE && SSE_REGNO_P in split condition.
+	(*vec_dupv2sf): Ditto.
+
 2019-07-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (extenddf<mode>2_fprs): Make this a
