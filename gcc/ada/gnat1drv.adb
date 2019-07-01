@@ -1453,9 +1453,13 @@ begin
 
          --  Generate ALI file if specially requested, or for missing subunits,
          --  subunits or predefined generic. For ignored ghost code, the object
-         --  file IS generated, so Object should be True.
+         --  file IS generated, so Object should be True, and since the object
+         --  file is generated, we need to generate the ALI file. We never want
+         --  an object file without an ALI file.
 
-         if Opt.Force_ALI_Tree_File then
+         if Is_Ignored_Ghost_Unit (Main_Unit_Node)
+           or else Opt.Force_ALI_Tree_File
+         then
             Write_ALI (Object => Is_Ignored_Ghost_Unit (Main_Unit_Node));
          end if;
 
