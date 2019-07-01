@@ -1,3 +1,11 @@
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): If the parent type is
+	declared as a subtype of a private type with an inherited
+	discriminant constraint, its generated full base appears as a
+	record subtype, so we need to retrieve its oen base type so that
+	the inherited constraint can be applied to it.
+
 2019-07-01  Yannick Moy  <moy@adacore.com>
 
 	* sem_spark.adb: Completely rework the algorithm for ownership
