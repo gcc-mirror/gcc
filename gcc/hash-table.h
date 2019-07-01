@@ -35,14 +35,17 @@ along with GCC; see the file COPYING3.  If not see
       several things.
 
          - A typedef named 'value_type' to the value type (from above).
+	 Provided a suitable Descriptor class it may be a user-defined,
+	 non-POD type.
 
          - A static member function named 'hash' that takes a value_type
          (or 'const value_type &') and returns a hashval_t value.
 
          - A typedef named 'compare_type' that is used to test when a value
-         is found.  This type is the comparison type.  Usually, it will be the
-         same as value_type.  If it is not the same type, you must generally
-         explicitly compute hash values and pass them to the hash table.
+	 is found.  This type is the comparison type.  Usually, it will be
+	 the same as value_type and may be a user-defined, non-POD type.
+	 If it is not the same type, you must generally explicitly compute
+	 hash values and pass them to the hash table.
 
          - A static member function named 'equal' that takes a value_type
          and a compare_type, and returns a bool.  Both arguments can be
@@ -505,6 +508,9 @@ public:
     }
 
 private:
+  /* FIXME: Make the class assignable.  See pr90959.  */
+  void operator= (hash_table&);
+
   template<typename T> friend void gt_ggc_mx (hash_table<T> *);
   template<typename T> friend void gt_pch_nx (hash_table<T> *);
   template<typename T> friend void
@@ -657,7 +663,7 @@ hash_table<Descriptor, Lazy, Allocator>::hash_table (const hash_table &h,
 	  if (is_deleted (entry))
 	    mark_deleted (nentries[i]);
 	  else if (!is_empty (entry))
-	    nentries[i] = entry;
+	    new ((void*) (nentries + i)) value_type (entry);
 	}
       m_entries = nentries;
     }
