@@ -1,5 +1,13 @@
 2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* libgnat/g-dynhta.adb: Use type Dynamic_Hash_Table rather than
+	Instance in various routines.
+	* libgnat/g-dynhta.ads: Change type Instance to
+	Dynamic_Hash_Table. Update various routines that mention the
+	type.
+
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_attr.adb, exp_ch7.adb, exp_unst.adb, sem_ch3.adb,
 	sem_util.adb, uintp.adb, uintp.ads: Minor reformatting.
 
