@@ -463,7 +463,10 @@ package body Exp_Unst is
             Callee : Entity_Id;
 
             procedure Check_Static_Type
-              (T : Entity_Id; N : Node_Id; DT : in out Boolean);
+              (T  : Entity_Id;
+               N  : Node_Id;
+               DT : in out Boolean;
+               Check_Designated : Boolean := False);
             --  Given a type T, checks if it is a static type defined as a type
             --  with no dynamic bounds in sight. If so, the only action is to
             --  set Is_Static_Type True for T. If T is not a static type, then
@@ -472,6 +475,9 @@ package body Exp_Unst is
             --  library level, and DT is set True. If N is specified, it's the
             --  node that will need to be replaced. If not specified, it means
             --  we can't do a replacement because the bound is implicit.
+
+            --  If Check_Designated is True and T or its full view is an access
+            --  type, check whether the designated type has dynamic bounds.
 
             procedure Note_Uplevel_Ref
               (E      : Entity_Id;
@@ -491,7 +497,10 @@ package body Exp_Unst is
             -----------------------
 
             procedure Check_Static_Type
-              (T : Entity_Id; N : Node_Id; DT : in out Boolean)
+              (T  : Entity_Id;
+               N  : Node_Id;
+               DT : in out Boolean;
+               Check_Designated : Boolean := False)
             is
                procedure Note_Uplevel_Bound (N : Node_Id; Ref : Node_Id);
                --  N is the bound of a dynamic type. This procedure notes that
@@ -601,7 +610,7 @@ package body Exp_Unst is
             begin
                --  If already marked static, immediate return
 
-               if Is_Static_Type (T) then
+               if Is_Static_Type (T) and then not Check_Designated then
                   return;
                end if;
 
@@ -684,12 +693,19 @@ package body Exp_Unst is
 
                --  For private type, examine whether full view is static
 
-               elsif Is_Private_Type (T) and then Present (Full_View (T)) then
-                  Check_Static_Type (Full_View (T), N, DT);
+               elsif Is_Incomplete_Or_Private_Type (T)
+                 and then Present (Full_View (T))
+               then
+                  Check_Static_Type (Full_View (T), N, DT, Check_Designated);
 
                   if Is_Static_Type (Full_View (T)) then
                      Set_Is_Static_Type (T);
                   end if;
+
+               --  For access types, check designated type when required.
+
+               elsif Is_Access_Type (T) and then Check_Designated then
+                  Check_Static_Type (Directly_Designated_Type (T), N, DT);
 
                --  For now, ignore other types
 
@@ -935,7 +951,11 @@ package body Exp_Unst is
                      declare
                         DT : Boolean := False;
                      begin
-                        Check_Static_Type (Etype (Expression (N)), Empty,  DT);
+                        Check_Static_Type
+                          (Etype (Expression (N)),
+                           Empty,
+                           DT,
+                           Check_Designated => Nkind (N) = N_Free_Statement);
                      end;
                   end if;
 
