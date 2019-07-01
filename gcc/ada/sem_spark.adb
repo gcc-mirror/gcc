@@ -42,26 +42,55 @@ with GNAT.Dynamic_HTables; use GNAT.Dynamic_HTables;
 
 package body Sem_SPARK is
 
-   -------------------------------------------------
-   -- Handling of Permissions Associated to Paths --
-   -------------------------------------------------
+   ---------------------------------------------------
+   -- Handling of Permissions Associated with Paths --
+   ---------------------------------------------------
 
    package Permissions is
+
       Elaboration_Context_Max : constant := 1009;
       --  The hash range
 
       type Elaboration_Context_Index is range 0 .. Elaboration_Context_Max - 1;
 
-      function Elaboration_Context_Hash (Key : Entity_Id)
-                                         return Elaboration_Context_Index;
-      --  Function to hash any node of the AST
+      function Elaboration_Context_Hash
+        (Key : Entity_Id) return Elaboration_Context_Index;
+      --  The hash function
 
-      type Perm_Kind is (Borrowed, Observed, Unrestricted, Moved);
-      --  Permission type associated with paths. The Moved permission is
-      --  equivalent to the Unrestricted one (same permissions). The Moved is
-      --  however used to mark the RHS after a move (which still unrestricted).
-      --  This way, we may generate warnings when manipulating the RHS
-      --  afterwads since it is set to Null after the assignment.
+      --  Permission type associated with paths. These are related to but not
+      --  the same as the states associated with names used in SPARK RM 3.10:
+      --  Unrestricted, Observed, Borrowed, Moved. When ownership rules lead to
+      --  a state change for a name, this may correspond to multiple permission
+      --  changes for the paths corresponding to the name, its prefixes, and
+      --  its extensions. For example, when an object is assigned to, the
+      --  corresponding name gets into state Moved, while the path for the name
+      --  gets permission Write_Only as well as every prefix of the name, and
+      --  every suffix gets permission No_Access.
+
+      type Perm_Kind_Option is
+        (None,
+         --  Special value used when no permission is passed around
+
+         No_Access,
+         --  The path cannot be accessed for reading or writing. This is the
+         --  case for the path of a name in the Borrowed state.
+
+         Read_Only,
+         --  The path can only be accessed for reading. This is the case for
+         --  the path of a name in the Observed state.
+
+         Read_Write,
+         --  The path can be accessed for both reading and writing. This is the
+         --  case for the path of a name in the Unrestricted state.
+
+         Write_Only
+         --  The path can only be accessed for writing. This is the case for
+         --  the path of a name in the Moved state.
+        );
+
+      subtype Perm_Kind is Perm_Kind_Option range No_Access .. Write_Only;
+      subtype Read_Perm is Perm_Kind range Read_Only .. Read_Write;
+      subtype Write_Perm is Perm_Kind range Read_Write .. Write_Only;
 
       type Perm_Tree_Wrapper;
 
@@ -83,34 +112,39 @@ package body Sem_SPARK is
 
       package Perm_Tree_Maps is new Simple_HTable
         (Header_Num => Elaboration_Context_Index,
-         Key        => Node_Id,
+         Key        => Entity_Id,
          Element    => Perm_Tree_Access,
          No_Element => null,
          Hash       => Elaboration_Context_Hash,
          Equal      => "=");
-      --  The instantation of a hash table, with keys being nodes and values
-      --  being pointers to trees. This is used to reference easily all
-      --  extensions of a Record_Component node (that can have name x, y, ...).
+      --  The instantation of a hash table, with keys being entities and values
+      --  being pointers to permission trees. This is used to define global
+      --  environment permissions (entities in that case are stand-alone
+      --  objects or formal parameters), as well as the permissions for the
+      --  extensions of a Record_Component node (entities in that case are
+      --  record components).
 
       --  The definition of permission trees. This is a tree, which has a
-      --  permission at each node, and depending on the type of the node,
-      --  can have zero, one, or more children pointed to by an access to tree.
+      --  permission at each node, and depending on the type of the node, can
+      --  have zero, one, or more children reached through an access to tree.
 
       type Perm_Tree (Kind : Path_Kind := Entire_Object) is record
          Permission : Perm_Kind;
          --  Permission at this level in the path
 
          Is_Node_Deep : Boolean;
-         --  Whether this node is of a deep type, to be used when moving the
-         --  path.
+         --  Whether this node is of a "deep" type, i.e. an access type or a
+         --  composite type containing access type subcomponents. This
+         --  corresponds to both "observing" and "owning" types in SPARK RM
+         --  3.10. To be used when moving the path.
 
          case Kind is
             --  An entire object is either a leaf (an object which cannot be
             --  extended further in a path) or a subtree in folded form (which
             --  could later be unfolded further in another kind of node). The
             --  field Children_Permission specifies a permission for every
-            --  extension of that node if that permission is different from
-            --  the node's permission.
+            --  extension of that node if that permission is different from the
+            --  node's permission.
 
             when Entire_Object =>
                Children_Permission : Perm_Kind;
@@ -121,20 +155,17 @@ package body Sem_SPARK is
             when Reference =>
                Get_All : Perm_Tree_Access;
 
-            --  Unfolded path of array type. The permission of the elements is
+            --  Unfolded path of array type. The permission of elements is
             --  given in Get_Elem.
 
             when Array_Component =>
                Get_Elem : Perm_Tree_Access;
 
-            --  Unfolded path of record type. The permission of the regular
-            --  components is given in Component. The permission of unknown
-            --  components (for objects of tagged type) is given in
-            --  Other_Components.
+            --  Unfolded path of record type. The permission of the components
+            --  is given in Component.
 
             when Record_Component =>
                Component : Perm_Tree_Maps.Instance;
-               Other_Components : Perm_Tree_Access;
          end case;
       end record;
 
@@ -144,9 +175,8 @@ package body Sem_SPARK is
       --  We use this wrapper in order to have unconstrained discriminants
 
       type Perm_Env is new Perm_Tree_Maps.Instance;
-      --  The definition of a permission environment for the analysis. This
-      --  is just a hash table of permission trees, each of them rooted with
-      --  an Identifier/Expanded_Name.
+      --  The definition of a permission environment for the analysis. This is
+      --  just a hash table from entities to permission trees.
 
       type Perm_Env_Access is access Perm_Env;
       --  Access to permission environments
@@ -166,21 +196,6 @@ package body Sem_SPARK is
       --  The type defining the hash table saving the environments at the entry
       --  of each loop.
 
-      package Boolean_Variables_Maps is new Simple_HTable
-        (Header_Num => Elaboration_Context_Index,
-         Key        => Entity_Id,
-         Element    => Boolean,
-         No_Element => False,
-         Hash       => Elaboration_Context_Hash,
-         Equal      => "=");
-      --  These maps allow tracking the variables that have been declared but
-      --  never used anywhere in the source code. Especially, we do not raise
-      --  an error if the variable stays write-only and is declared at package
-      --  level, because there is no risk that the variable has been moved,
-      --  because it has never been used.
-
-      type Initialization_Map is new Boolean_Variables_Maps.Instance;
-
       --------------------
       -- Simple Getters --
       --------------------
@@ -195,7 +210,6 @@ package body Sem_SPARK is
       function Get_Elem (T : Perm_Tree_Access) return Perm_Tree_Access;
       function Is_Node_Deep (T : Perm_Tree_Access) return Boolean;
       function Kind (T : Perm_Tree_Access) return Path_Kind;
-      function Other_Components (T : Perm_Tree_Access) return Perm_Tree_Access;
       function Permission (T : Perm_Tree_Access) return Perm_Kind;
 
       -----------------------
@@ -204,25 +218,24 @@ package body Sem_SPARK is
 
       procedure Copy_Env
         (From : Perm_Env;
-         To : in out Perm_Env);
+         To   : in out Perm_Env);
       --  Procedure to copy a permission environment
 
-      procedure Copy_Init_Map
-        (From : Initialization_Map;
-         To : in out Initialization_Map);
-      --  Procedure to copy an initialization map
+      procedure Move_Env
+        (From : in out Perm_Env;
+         To   : in out Perm_Env);
+      --  Procedure to move a permission environment. It frees To, moves From
+      --  in To and sets From to Nil.
 
       procedure Copy_Tree
         (From : Perm_Tree_Access;
-         To : Perm_Tree_Access);
+         To   : Perm_Tree_Access);
       --  Procedure to copy a permission tree
 
-      procedure Free_Env
-        (PE : in out Perm_Env);
+      procedure Free_Env (PE : in out Perm_Env);
       --  Procedure to free a permission environment
 
-      procedure Free_Perm_Tree
-        (PT : in out Perm_Tree_Access);
+      procedure Free_Tree (PT : in out Perm_Tree_Access);
       --  Procedure to free a permission tree
 
       --------------------
@@ -230,8 +243,10 @@ package body Sem_SPARK is
       --------------------
 
       procedure Perm_Mismatch
-        (Exp_Perm, Act_Perm : Perm_Kind;
-         N                  : Node_Id);
+        (N              : Node_Id;
+         Exp_Perm       : Perm_Kind;
+         Act_Perm       : Perm_Kind;
+         Forbidden_Perm : Boolean := False);
       --  Issues a continuation error message about a mismatch between a
       --  desired permission Exp_Perm and a permission obtained Act_Perm. N
       --  is the node on which the error is reported.
@@ -253,9 +268,7 @@ package body Sem_SPARK is
       -- Component --
       ---------------
 
-      function Component
-        (T : Perm_Tree_Access)
-         return Perm_Tree_Maps.Instance
+      function Component (T : Perm_Tree_Access) return Perm_Tree_Maps.Instance
       is
       begin
          return T.all.Tree.Component;
@@ -271,7 +284,7 @@ package body Sem_SPARK is
          Son       : Perm_Tree_Access;
 
       begin
-         Reset (To);
+         Free_Env (To);
          Key_From := Get_First_Key (From);
          while Key_From.Present loop
             Comp_From := Get (From, Key_From.K);
@@ -285,34 +298,18 @@ package body Sem_SPARK is
          end loop;
       end Copy_Env;
 
-      -------------------
-      -- Copy_Init_Map --
-      -------------------
-
-      procedure Copy_Init_Map
-        (From : Initialization_Map;
-         To   : in out Initialization_Map)
-      is
-         Comp_From : Boolean;
-         Key_From : Boolean_Variables_Maps.Key_Option;
-
-      begin
-         Reset (To);
-         Key_From := Get_First_Key (From);
-         while Key_From.Present loop
-            Comp_From := Get (From, Key_From.K);
-            Set (To, Key_From.K, Comp_From);
-            Key_From := Get_Next_Key (From);
-         end loop;
-      end Copy_Init_Map;
-
       ---------------
       -- Copy_Tree --
       ---------------
 
       procedure Copy_Tree (From : Perm_Tree_Access; To : Perm_Tree_Access) is
       begin
+         --  Copy the direct components of the tree
+
          To.all := From.all;
+
+         --  Now reallocate access components for a deep copy of the tree
+
          case Kind (From) is
             when Entire_Object =>
                null;
@@ -332,12 +329,9 @@ package body Sem_SPARK is
                   Son : Perm_Tree_Access;
                   Hash_Table : Perm_Tree_Maps.Instance;
                begin
-               --  We put a new hash table, so that it gets dealiased from the
-               --  Component (From) hash table.
+                  --  We put a new hash table, so that it gets dealiased from
+                  --  the Component (From) hash table.
                   To.all.Tree.Component := Hash_Table;
-                  To.all.Tree.Other_Components :=
-                    new Perm_Tree_Wrapper'(Other_Components (From).all);
-                  Copy_Tree (Other_Components (From), Other_Components (To));
                   Key_From := Perm_Tree_Maps.Get_First_Key
                     (Component (From));
 
@@ -354,7 +348,6 @@ package body Sem_SPARK is
                   end loop;
                end;
          end case;
-
       end Copy_Tree;
 
       ------------------------------
@@ -377,16 +370,18 @@ package body Sem_SPARK is
       begin
          CompO := Get_First (PE);
          while CompO /= null loop
-            Free_Perm_Tree (CompO);
+            Free_Tree (CompO);
             CompO := Get_Next (PE);
          end loop;
+
+         Reset (PE);
       end Free_Env;
 
-      --------------------
-      -- Free_Perm_Tree --
-      --------------------
+      ---------------
+      -- Free_Tree --
+      ---------------
 
-      procedure Free_Perm_Tree (PT : in out Perm_Tree_Access) is
+      procedure Free_Tree (PT : in out Perm_Tree_Access) is
          procedure Free_Perm_Tree_Dealloc is
            new Ada.Unchecked_Deallocation
              (Perm_Tree_Wrapper, Perm_Tree_Access);
@@ -395,33 +390,32 @@ package body Sem_SPARK is
       begin
          case Kind (PT) is
             when Entire_Object =>
-               Free_Perm_Tree_Dealloc (PT);
+               null;
 
             when Reference =>
-               Free_Perm_Tree (PT.all.Tree.Get_All);
-               Free_Perm_Tree_Dealloc (PT);
+               Free_Tree (PT.all.Tree.Get_All);
 
             when Array_Component =>
-               Free_Perm_Tree (PT.all.Tree.Get_Elem);
+               Free_Tree (PT.all.Tree.Get_Elem);
 
             when Record_Component =>
                declare
                   Comp : Perm_Tree_Access;
 
                begin
-                  Free_Perm_Tree (PT.all.Tree.Other_Components);
                   Comp := Perm_Tree_Maps.Get_First (Component (PT));
                   while Comp /= null loop
 
                      --  Free every Component subtree
 
-                     Free_Perm_Tree (Comp);
+                     Free_Tree (Comp);
                      Comp := Perm_Tree_Maps.Get_Next (Component (PT));
                   end loop;
                end;
-               Free_Perm_Tree_Dealloc (PT);
          end case;
-      end Free_Perm_Tree;
+
+         Free_Perm_Tree_Dealloc (PT);
+      end Free_Tree;
 
       -------------
       -- Get_All --
@@ -459,17 +453,16 @@ package body Sem_SPARK is
          return T.all.Tree.Kind;
       end Kind;
 
-      ----------------------
-      -- Other_Components --
-      ----------------------
+      --------------
+      -- Move_Env --
+      --------------
 
-      function Other_Components
-        (T : Perm_Tree_Access)
-         return Perm_Tree_Access
-      is
+      procedure Move_Env (From : in out Perm_Env; To : in out Perm_Env) is
       begin
-         return T.all.Tree.Other_Components;
-      end Other_Components;
+         Free_Env (To);
+         To   := From;
+         From := Perm_Env (Perm_Tree_Maps.Nil);
+      end Move_Env;
 
       ----------------
       -- Permission --
@@ -484,11 +477,27 @@ package body Sem_SPARK is
       -- Perm_Mismatch --
       -------------------
 
-      procedure Perm_Mismatch (Exp_Perm, Act_Perm : Perm_Kind; N : Node_Id) is
+      procedure Perm_Mismatch
+        (N              : Node_Id;
+         Exp_Perm       : Perm_Kind;
+         Act_Perm       : Perm_Kind;
+         Forbidden_Perm : Boolean := False)
+      is
       begin
-         Error_Msg_N ("\expected state `"
-                      & Perm_Kind'Image (Exp_Perm) & "` at least, got `"
-                      & Perm_Kind'Image (Act_Perm) & "`", N);
+         if Forbidden_Perm then
+            if Exp_Perm = Act_Perm then
+               Error_Msg_N ("\got forbidden state `"
+                            & Perm_Kind'Image (Exp_Perm), N);
+            else
+               Error_Msg_N ("\forbidden state `"
+                            & Perm_Kind'Image (Exp_Perm) & "`, got `"
+                            & Perm_Kind'Image (Act_Perm) & "`", N);
+            end if;
+         else
+            Error_Msg_N ("\expected state `"
+                         & Perm_Kind'Image (Exp_Perm) & "` at least, got `"
+                         & Perm_Kind'Image (Act_Perm) & "`", N);
+         end if;
       end Perm_Mismatch;
 
    end Permissions;
@@ -499,8 +508,9 @@ package body Sem_SPARK is
    -- Analysis modes for AST traversal --
    --------------------------------------
 
-   --  The different modes for analysis. This allows to checking whether a path
-   --  found in the code should be moved, borrowed, or observed.
+   --  The different modes for analysis. This allows checking whether a path
+   --  has the right permission, and also updating permissions when a path is
+   --  moved, borrowed, or observed.
 
    type Checking_Mode is
 
@@ -508,31 +518,32 @@ package body Sem_SPARK is
       --  Default mode
 
       Move,
-      --  Regular moving semantics. Checks that paths have Unrestricted
-      --  permission. After moving a path, the permission of both it and
-      --  its extensions are set to Unrestricted.
+      --  Move semantics. Checks that paths have Read_Write permission. After
+      --  moving a path, its permission and the permission of its prefixes are
+      --  set to Write_Only, while the permission of its extensions is set to
+      --  No_Access.
 
       Assign,
       --  Used for the target of an assignment, or an actual parameter with
-      --  mode OUT. Checks that paths have Unrestricted permission. After
-      --  assigning to a path, its permission is set to Unrestricted.
+      --  mode OUT. Checks that paths have Write_Perm permission. After
+      --  assigning to a path, its permission and the permission of its
+      --  extensions are set to Read_Write. The permission of its prefixes may
+      --  be normalized from Write_Only to Read_Write depending on other
+      --  permissions in the tree (a prefix gets permission Read_Write when all
+      --  its extensions become Read_Write).
 
       Borrow,
-      --  Used for the source of an assignement when initializes a stand alone
-      --  object of anonymous type, constant, or IN parameter and also OUT
-      --  or IN OUT composite object.
-      --  In the borrowed state, the access object is completely "dead".
+      --  Borrow semantics. Checks that paths have Read_Write permission. After
+      --  borrowing a path, its permission and the permission of its prefixes
+      --  and extensions are set to No_Access.
 
       Observe
-      --  Used for actual IN parameters of a scalar type. Checks that paths
-      --  have Read_Perm permission. After checking a path, its permission
-      --  is set to Observed.
-      --
-      --  Also used for formal IN parameters
-
+      --  Observe semantics. Checks that paths have Read_Perm permission. After
+      --  observing a path, its permission and the permission of its prefixes
+      --  and extensions are set to Read_Only.
      );
 
-   type Result_Kind is (Folded, Unfolded, Function_Call);
+   type Result_Kind is (Folded, Unfolded);
    --  The type declaration to discriminate in the Perm_Or_Tree type
 
    --  The result type of the function Get_Perm_Or_Tree. This returns either a
@@ -542,72 +553,112 @@ package body Sem_SPARK is
 
    type Perm_Or_Tree (R : Result_Kind) is record
       case R is
-         when Folded        => Found_Permission : Perm_Kind;
-         when Unfolded      => Tree_Access : Perm_Tree_Access;
-         when Function_Call => null;
+         when Folded   => Found_Permission : Perm_Kind;
+         when Unfolded => Tree_Access      : Perm_Tree_Access;
       end case;
    end record;
+
+   type Error_Status is (OK, Error);
 
    -----------------------
    -- Local subprograms --
    -----------------------
 
-   --  Checking proceduress for safe pointer usage. These procedures traverse
-   --  the AST, check nodes for correct permissions according to SPARK RM
-   --  6.4.2, and update permissions depending on the node kind.
+   function "<=" (P1, P2 : Perm_Kind) return Boolean;
+   function ">=" (P1, P2 : Perm_Kind) return Boolean;
+   function Glb  (P1, P2 : Perm_Kind) return Perm_Kind;
+   function Lub  (P1, P2 : Perm_Kind) return Perm_Kind;
+
+   procedure Check_Assignment (Target : Node_Or_Entity_Id; Expr : Node_Id);
+   --  Handle assignment as part of an assignment statement or an object
+   --  declaration.
 
    procedure Check_Call_Statement (Call : Node_Id);
 
    procedure Check_Callable_Body (Body_N : Node_Id);
-   --  We are not in End_Of_Callee mode, hence we will save the environment
-   --  and start from a new one. We will add in the environment all formal
-   --  parameters as well as global used during the subprogram, with the
-   --  appropriate permissions (unrestricted for borrowed and moved, observed
-   --  for observed names).
+   --  Entry point for the analysis of a subprogram or entry body
 
    procedure Check_Declaration (Decl : Node_Id);
 
-   procedure Check_Expression (Expr : Node_Id);
+   procedure Check_Expression (Expr : Node_Id; Mode : Checking_Mode);
+   pragma Precondition (Nkind_In (Expr, N_Index_Or_Discriminant_Constraint,
+                                        N_Range_Constraint,
+                                        N_Subtype_Indication)
+                        or else Nkind (Expr) in N_Subexpr);
 
-   procedure Check_Globals (N : Node_Id);
-   --  This procedure takes a global pragma and checks it
+   procedure Check_Globals (Subp : Entity_Id);
+   --  This procedure takes a subprogram called and checks the permission of
+   --  globals.
+
+   --  Checking proceduress for safe pointer usage. These procedures traverse
+   --  the AST, check nodes for correct permissions according to SPARK RM 3.10,
+   --  and update permissions depending on the node kind. The main procedure
+   --  Check_Node is mutually recursive with the specialized procedures that
+   --  follow.
 
    procedure Check_List (L : List_Id);
    --  Calls Check_Node on each element of the list
 
-   procedure Check_Loop_Statement (Loop_N : Node_Id);
+   procedure Check_Loop_Statement (Stmt : Node_Id);
 
    procedure Check_Node (N : Node_Id);
-   --  Main traversal procedure to check safe pointer usage. This procedure is
-   --  mutually recursive with the specialized procedures that follow.
+   --  Main traversal procedure to check safe pointer usage
 
    procedure Check_Package_Body (Pack : Node_Id);
 
-   procedure Check_Param_In (Formal : Entity_Id; Actual : Node_Id);
-   --  This procedure takes a formal and an actual parameter and checks the
-   --  permission of every in-mode parameter. This includes Observing and
-   --  Borrowing.
+   procedure Check_Package_Spec (Pack : Node_Id);
 
-   procedure Check_Param_Out (Formal : Entity_Id; Actual : Node_Id);
-   --  This procedure takes a formal and an actual parameter and checks the
-   --  state of every out-mode and in out-mode parameter. This includes
-   --  Moving and Borrowing.
+   procedure Check_Parameter_Or_Global
+     (Expr       : Node_Id;
+      Param_Mode : Formal_Kind;
+      Subp       : Entity_Id;
+      Global_Var : Boolean);
+   --  Check the permission of every actual parameter or global
+
+   procedure Check_Source_Of_Borrow_Or_Observe
+     (Expr   : Node_Id;
+      Status : out Error_Status);
 
    procedure Check_Statement (Stmt : Node_Id);
 
-   function Get_Perm (N : Node_Id) return Perm_Kind;
+   procedure Check_Type (Typ : Entity_Id);
+   --  Check that type Typ is either not deep, or that it is an observing or
+   --  owning type according to SPARK RM 3.10
+
+   function Get_Perm (N : Node_Or_Entity_Id) return Perm_Kind;
    --  The function that takes a name as input and returns a permission
-   --  associated to it.
+   --  associated with it.
 
    function Get_Perm_Or_Tree (N : Node_Id) return Perm_Or_Tree;
-   --  This function gets a Node_Id and looks recursively to find the
-   --  appropriate subtree for that Node_Id. If the tree is folded on
-   --  that node, then it returns the permission given at the right level.
+   pragma Precondition (Is_Path_Expression (N));
+   --  This function gets a node and looks recursively to find the appropriate
+   --  subtree for that node. If the tree is folded on that node, then it
+   --  returns the permission given at the right level.
 
    function Get_Perm_Tree (N : Node_Id) return Perm_Tree_Access;
-   --  This function gets a Node_Id and looks recursively to find the
-   --  appropriate subtree for that Node_Id. If the tree is folded, then
-   --  it unrolls the tree up to the appropriate level.
+   pragma Precondition (Is_Path_Expression (N));
+   --  This function gets a node and looks recursively to find the appropriate
+   --  subtree for that node. If the tree is folded, then it unrolls the tree
+   --  up to the appropriate level.
+
+   function Get_Root_Object (Expr : Node_Id) return Entity_Id;
+   pragma Precondition (Is_Path_Expression (Expr));
+   --  Return the root of the path expression Expr, or Empty for an allocator,
+   --  NULL, or a function call.
+
+   generic
+      with procedure Handle_Parameter_Or_Global
+        (Expr       : Node_Id;
+         Param_Mode : Formal_Kind;
+         Subp       : Entity_Id;
+         Global_Var : Boolean);
+   procedure Handle_Globals (Subp : Entity_Id);
+   --  Handling of globals is factored in a generic instantiated below
+
+   function Has_Array_Component (Expr : Node_Id) return Boolean;
+   pragma Precondition (Is_Path_Expression (Expr));
+   --  This function gets a node and looks recursively to determine whether the
+   --  given path has any array component.
 
    procedure Hp (P : Perm_Env);
    --  A procedure that outputs the hash table. This function is used only in
@@ -619,18 +670,31 @@ package body Sem_SPARK is
    --  A procedure that is called when deep globals or aliased globals are used
    --  without any global aspect.
 
-   function Is_Deep (E : Entity_Id) return Boolean;
+   function Is_Deep (Typ : Entity_Id) return Boolean;
    --  A function that can tell if a type is deep or not. Returns true if the
    --  type passed as argument is deep.
 
+   function Is_Path_Expression (Expr : Node_Id) return Boolean;
+   --  Return whether Expr corresponds to a path
+
+   function Is_Traversal_Function (E : Entity_Id) return Boolean;
+
+   function Loop_Of_Exit (N : Node_Id) return Entity_Id;
+   --  A function that takes an exit statement node and returns the entity of
+   --  the loop that this statement is exiting from.
+
+   procedure Merge_Env (Source : in out Perm_Env; Target : in out Perm_Env);
+   --  Merge Target and Source into Target, and then deallocate the Source
+
    procedure Perm_Error
-     (N          : Node_Id;
-      Perm       : Perm_Kind;
-      Found_Perm : Perm_Kind);
+     (N              : Node_Id;
+      Perm           : Perm_Kind;
+      Found_Perm     : Perm_Kind;
+      Forbidden_Perm : Boolean := False);
    --  A procedure that is called when the permissions found contradict the
-   --  rules established by the RM. This function is called with the node, its
-   --  entity and the permission that was expected, and adds an error message
-   --  with the appropriate values.
+   --  rules established by the RM. This function is called with the node and
+   --  the permission that was expected, and issues an error message with the
+   --  appropriate values.
 
    procedure Perm_Error_Subprogram_End
      (E          : Entity_Id;
@@ -638,50 +702,68 @@ package body Sem_SPARK is
       Perm       : Perm_Kind;
       Found_Perm : Perm_Kind);
    --  A procedure that is called when the permissions found contradict the
-   --  rules established by the RM at the end of subprograms. This function
-   --  is called with the node, its entity, the node of the returning function
-   --  and the permission that was expected, and adds an error message with the
+   --  rules established by the RM at the end of subprograms. This function is
+   --  called with the node, the node of the returning function, and the
+   --  permission that was expected, and adds an error message with the
    --  appropriate values.
 
-   procedure Process_Path (N : Node_Id);
-
-   procedure Return_Declarations (L : List_Id);
-   --  Check correct permissions on every declared object at the end of a
-   --  callee. Used at the end of the body of a callable entity. Checks that
-   --  paths of all borrowed formal parameters and global have Unrestricted
-   --  permission.
+   procedure Process_Path (Expr : Node_Id; Mode : Checking_Mode);
+   pragma Precondition (Is_Path_Expression (Expr));
+   --  Check correct permission for the path in the checking mode Mode, and
+   --  update permissions of the path and its prefixes/extensions.
 
    procedure Return_Globals (Subp : Entity_Id);
    --  Takes a subprogram as input, and checks that all borrowed global items
-   --  of the subprogram indeed have RW permission at the end of the subprogram
-   --  execution.
+   --  of the subprogram indeed have Read_Write permission at the end of the
+   --  subprogram execution.
 
-   procedure Return_The_Global
-     (Id   : Entity_Id;
-      Mode : Formal_Kind;
-      Subp : Entity_Id);
-   --  Auxiliary procedure to Return_Globals
-   --  There is no need to return parameters because they will be reassigned
-   --  their state once the subprogram returns. Local variables that have
-   --  borrowed, observed, or moved an actual parameter go out of the scope.
+   procedure Return_Parameter_Or_Global
+     (Id         : Entity_Id;
+      Mode       : Formal_Kind;
+      Subp       : Entity_Id;
+      Global_Var : Boolean);
+   --  Auxiliary procedure to Return_Parameters and Return_Globals
+
+   procedure Return_Parameters (Subp : Entity_Id);
+   --  Takes a subprogram as input, and checks that all out parameters of the
+   --  subprogram indeed have Read_Write permission at the end of the
+   --  subprogram execution.
 
    procedure Set_Perm_Extensions (T : Perm_Tree_Access; P : Perm_Kind);
    --  This procedure takes an access to a permission tree and modifies the
    --  tree so that any strict extensions of the given tree become of the
    --  access specified by parameter P.
 
-   function Set_Perm_Prefixes_Borrow (N : Node_Id) return Perm_Tree_Access;
-   --  This function modifies the permissions of a given node_id in the
-   --  permission environment as well as in all the prefixes of the path,
-   --  given that the path is borrowed with mode out.
+   procedure Set_Perm_Extensions_Move (T : Perm_Tree_Access; E : Entity_Id);
+   --  Set permissions to
+   --    No for any extension with more .all
+   --    W for any deep extension with same number of .all
+   --    RW for any shallow extension with same number of .all
 
    function Set_Perm_Prefixes
-     (N        : Node_Id;
-      New_Perm : Perm_Kind)
-      return Perm_Tree_Access;
-   --  This function sets the permissions of a given node_id in the
-   --  permission environment as well as in all the prefixes of the path
-   --  to the one given in parameter (P).
+     (N    : Node_Id;
+      Perm : Perm_Kind_Option) return Perm_Tree_Access;
+   pragma Precondition (Is_Path_Expression (N));
+   --  This function modifies the permissions of a given node in the permission
+   --  environment as well as all the prefixes of the path, to the new
+   --  permission Perm. The general rule here is that everybody updates the
+   --  permission of the subtree they are returning.
+
+   procedure Set_Perm_Prefixes_Assign (N : Node_Id);
+   pragma Precondition (Is_Path_Expression (N));
+   --  This procedure takes a name as an input and sets in the permission
+   --  tree the given permission to the given name. The general rule here is
+   --  that everybody updates the permission of the subtree it is returning.
+   --  The permission of the assigned path has been set to RW by the caller.
+   --
+   --  Case where we have to normalize a tree after the correct permissions
+   --  have been assigned already. We look for the right subtree at the given
+   --  path, actualize its permissions, and then call the normalization on its
+   --  parent.
+   --
+   --  Example: We assign x.y and x.z, and then Set_Perm_Prefixes_Assign will
+   --  change the permission of x to RW because all of its components have
+   --  permission RW.
 
    procedure Setup_Globals (Subp : Entity_Id);
    --  Takes a subprogram as input, and sets up the environment by adding
@@ -689,22 +771,14 @@ package body Sem_SPARK is
 
    procedure Setup_Parameter_Or_Global
      (Id         : Entity_Id;
-      Mode       : Formal_Kind;
+      Param_Mode : Formal_Kind;
+      Subp       : Entity_Id;
       Global_Var : Boolean);
    --  Auxiliary procedure to Setup_Parameters and Setup_Globals
 
    procedure Setup_Parameters (Subp : Entity_Id);
    --  Takes a subprogram as input, and sets up the environment by adding
    --  formal parameters with appropriate permissions.
-
-   function Has_Ownership_Aspect_True
-     (N   : Node_Id;
-      Msg : String)
-      return Boolean;
-   --  Takes a node as an input, and finds out whether it has ownership aspect
-   --  True or False. This function is recursive whenever the node has a
-   --  composite type. Access-to-objects have ownership aspect False if they
-   --  have a general access type.
 
    ----------------------
    -- Global Variables --
@@ -717,11 +791,13 @@ package body Sem_SPARK is
    --  scope. The analysis ensures at each point that this variables contains
    --  a valid permission environment with all bindings in scope.
 
-   Current_Checking_Mode : Checking_Mode := Read;
-   --  The current analysis mode. This global variable indicates at each point
-   --  of the analysis whether the node being analyzed is moved, borrowed,
-   --  assigned, read, ... The full list of possible values can be found in
-   --  the declaration of type Checking_Mode.
+   Inside_Procedure_Call : Boolean := False;
+   --  Set while checking the actual parameters of a procedure or entry call
+
+   Inside_Elaboration : Boolean := False;
+   --  Set during package spec/body elaboration, during which move and local
+   --  observe/borrow are not allowed. As a result, no other checking is needed
+   --  during elaboration.
 
    Current_Loops_Envs : Env_Backups;
    --  This variable contains saves of permission environments at each loop the
@@ -737,53 +813,283 @@ package body Sem_SPARK is
    --  restrictive than the saved environment at the beginning of the loop, and
    --  the permission environment after the loop is equal to the accumulator.
 
-   Current_Initialization_Map : Initialization_Map;
-   --  This variable contains a map that binds each variable of the analyzed
-   --  source code to a boolean that becomes true whenever the variable is used
-   --  after declaration. Hence we can exclude from analysis variables that
-   --  are just declared and never accessed, typically at package declaration.
+   --------------------
+   -- Handle_Globals --
+   --------------------
+
+   --  Generic procedure is defined first so that instantiations can be defined
+   --  anywhere afterwards.
+
+   procedure Handle_Globals (Subp : Entity_Id) is
+
+      --  Local subprograms
+
+      procedure Handle_Globals_From_List
+        (First_Item : Node_Id;
+         Kind       : Formal_Kind);
+      --  Handle global items from the list starting at Item
+
+      procedure Handle_Globals_Of_Mode (Global_Mode : Name_Id);
+      --  Handle global items for the mode Global_Mode
+
+      ------------------------------
+      -- Handle_Globals_From_List --
+      ------------------------------
+
+      procedure Handle_Globals_From_List
+        (First_Item : Node_Id;
+         Kind       : Formal_Kind)
+      is
+         Item : Node_Id := First_Item;
+         E    : Entity_Id;
+
+      begin
+         while Present (Item) loop
+            E := Entity (Item);
+
+            --  Ignore abstract states, which play no role in pointer aliasing
+
+            if Ekind (E) = E_Abstract_State then
+               null;
+            else
+               Handle_Parameter_Or_Global (Expr       => Item,
+                                           Param_Mode => Kind,
+                                           Subp       => Subp,
+                                           Global_Var => True);
+            end if;
+            Next_Global (Item);
+         end loop;
+      end Handle_Globals_From_List;
+
+      ----------------------------
+      -- Handle_Globals_Of_Mode --
+      ----------------------------
+
+      procedure Handle_Globals_Of_Mode (Global_Mode : Name_Id) is
+         Kind : Formal_Kind;
+
+      begin
+         case Global_Mode is
+            when Name_Input
+               | Name_Proof_In
+            =>
+               Kind := E_In_Parameter;
+
+            when Name_Output =>
+               Kind := E_Out_Parameter;
+
+            when Name_In_Out =>
+               Kind := E_In_Out_Parameter;
+
+            when others =>
+               raise Program_Error;
+         end case;
+
+         --  Check both global items from Global and Refined_Global pragmas
+
+         Handle_Globals_From_List (First_Global (Subp, Global_Mode), Kind);
+         Handle_Globals_From_List
+           (First_Global (Subp, Global_Mode, Refined => True), Kind);
+      end Handle_Globals_Of_Mode;
+
+   --  Start of processing for Handle_Globals
+
+   begin
+      Handle_Globals_Of_Mode (Name_Proof_In);
+      Handle_Globals_Of_Mode (Name_Input);
+      Handle_Globals_Of_Mode (Name_Output);
+      Handle_Globals_Of_Mode (Name_In_Out);
+   end Handle_Globals;
+
+   ----------
+   -- "<=" --
+   ----------
+
+   function "<=" (P1, P2 : Perm_Kind) return Boolean is
+   begin
+      return P2 >= P1;
+   end "<=";
+
+   ----------
+   -- ">=" --
+   ----------
+
+   function ">=" (P1, P2 : Perm_Kind) return Boolean is
+   begin
+      case P2 is
+         when No_Access  => return True;
+         when Read_Only  => return P1 in Read_Perm;
+         when Write_Only => return P1 in Write_Perm;
+         when Read_Write => return P1 = Read_Write;
+      end case;
+   end ">=";
+
+   ----------------------
+   -- Check_Assignment --
+   ----------------------
+
+   procedure Check_Assignment (Target : Node_Or_Entity_Id; Expr : Node_Id) is
+      Target_Typ  : constant Node_Id := Etype (Target);
+      Target_Root : Entity_Id;
+      Expr_Root   : Entity_Id;
+      Perm        : Perm_Kind;
+      Status      : Error_Status;
+
+   begin
+      Check_Type (Target_Typ);
+
+      if Is_Anonymous_Access_Type (Target_Typ) then
+         Check_Source_Of_Borrow_Or_Observe (Expr, Status);
+
+         if Status /= OK then
+            return;
+         end if;
+
+         if Nkind (Target) = N_Defining_Identifier then
+            Target_Root := Target;
+         else
+            Target_Root := Get_Root_Object (Target);
+         end if;
+
+         Expr_Root := Get_Root_Object (Expr);
+
+         --  SPARK RM 3.10(8): For an assignment statement where
+         --  the target is a stand-alone object of an anonymous
+         --  access-to-object type
+
+         pragma Assert
+           (Ekind_In (Target_Root, E_Variable, E_Constant));
+
+         --  If the type of the target is an anonymous
+         --  access-to-constant type (an observing access type), the
+         --  source shall be an owning access object denoted by a name
+         --  that is not in the Moved state, and whose root object
+         --  is not in the Moved state and is not declared at a
+         --  statically deeper accessibility level than that of
+         --  the target object.
+
+         if Is_Access_Constant (Target_Typ) then
+            Perm := Get_Perm (Expr);
+
+            if Perm = No_Access then
+               Perm_Error (Expr, No_Access, No_Access,
+                           Forbidden_Perm => True);
+               return;
+            end if;
+
+            Perm := Get_Perm (Expr_Root);
+
+            if Perm = No_Access then
+               Perm_Error (Expr, No_Access, No_Access,
+                           Forbidden_Perm => True);
+               return;
+            end if;
+
+            --  ??? check accessibility level
+
+            --  If the type of the target is an anonymous
+            --  access-to-variable type (an owning access type), the
+            --  source shall be an owning access object denoted by a
+            --  name that is in the Unrestricted state, and whose root
+            --  object is the target object itself.
+
+         else
+            Perm := Get_Perm (Expr);
+
+            if Perm /= Read_Write then
+               Perm_Error (Expr, Read_Write, Perm);
+               return;
+            end if;
+
+            if not Is_Entity_Name (Target) then
+               Error_Msg_N
+                 ("target of borrow must be stand-alone variable",
+                  Target);
+               return;
+
+            elsif Target_Root /= Expr_Root then
+               Error_Msg_NE
+                 ("source of borrow must be variable &",
+                  Expr, Target);
+               return;
+            end if;
+         end if;
+
+      elsif Is_Deep (Target_Typ) then
+
+         if Is_Path_Expression (Expr) then
+            Check_Expression (Expr, Move);
+
+         else
+            Error_Msg_N ("expression not allowed as source of move", Expr);
+            return;
+         end if;
+
+      else
+         Check_Expression (Expr, Read);
+      end if;
+   end Check_Assignment;
 
    --------------------------
    -- Check_Call_Statement --
    --------------------------
 
    procedure Check_Call_Statement (Call : Node_Id) is
-      Saved_Env : Perm_Env;
 
-      procedure Iterate_Call_In is new
-        Iterate_Call_Parameters (Check_Param_In);
-      procedure Iterate_Call_Out is new
-        Iterate_Call_Parameters (Check_Param_Out);
+      Subp : constant Entity_Id := Get_Called_Entity (Call);
+
+      --  Local subprograms
+
+      procedure Check_Param (Formal : Entity_Id; Actual : Node_Id);
+      --  Check the permission of every actual parameter
+
+      procedure Update_Param (Formal : Entity_Id; Actual : Node_Id);
+      --  Update the permission of OUT actual parameters
+
+      -----------------
+      -- Check_Param --
+      -----------------
+
+      procedure Check_Param (Formal : Entity_Id; Actual : Node_Id) is
+      begin
+         Check_Parameter_Or_Global (Expr       => Actual,
+                                    Param_Mode => Formal_Kind'(Ekind (Formal)),
+                                    Subp       => Subp,
+                                    Global_Var => False);
+      end Check_Param;
+
+      ------------------
+      -- Update_Param --
+      ------------------
+
+      procedure Update_Param (Formal : Entity_Id; Actual : Node_Id) is
+         Mode : constant Entity_Kind := Ekind (Formal);
+
+      begin
+         case Formal_Kind'(Mode) is
+            when E_Out_Parameter =>
+               Check_Expression (Actual, Assign);
+
+            when others =>
+               null;
+         end case;
+      end Update_Param;
+
+      procedure Check_Params is new
+        Iterate_Call_Parameters (Check_Param);
+
+      procedure Update_Params is new
+        Iterate_Call_Parameters (Update_Param);
+
+   --  Start of processing for Check_Call_Statement
 
    begin
-      --  Save environment, so that the modifications done by analyzing the
-      --  parameters are not kept at the end of the call.
+      Inside_Procedure_Call := True;
+      Check_Params (Call);
+      Check_Globals (Get_Called_Entity (Call));
 
-      Copy_Env (Current_Perm_Env, Saved_Env);
-
-      --  We first check the globals then parameters to handle the
-      --  No_Parameter_Aliasing Restriction. An out or in-out global is
-      --  considered as borrowing while a parameter with the same mode is
-      --  a move. This order disallow passing a part of a variable to a
-      --  subprogram if it is referenced as a global by the callable (when
-      --  writable).
-      --  For paremeters, we fisrt check in parameters and then the out ones.
-      --  This is to avoid Observing or Borrowing objects that are already
-      --  moved. This order is not mandatory but allows to catch runtime
-      --  errors like null pointer dereferencement at the analysis time.
-
-      Current_Checking_Mode := Read;
-      Check_Globals (Get_Pragma (Get_Called_Entity (Call), Pragma_Global));
-      Iterate_Call_In (Call);
-      Iterate_Call_Out (Call);
-
-      --  Restore environment, because after borrowing/observing actual
-      --  parameters, they get their permission reverted to the ones before
-      --  the call.
-
-      Free_Env (Current_Perm_Env);
-      Copy_Env (Saved_Env, Current_Perm_Env);
-      Free_Env (Saved_Env);
+      Inside_Procedure_Call := False;
+      Update_Params (Call);
    end Check_Call_Statement;
 
    -------------------------
@@ -791,36 +1097,26 @@ package body Sem_SPARK is
    -------------------------
 
    procedure Check_Callable_Body (Body_N : Node_Id) is
-
-      Mode_Before    : constant Checking_Mode := Current_Checking_Mode;
-      Saved_Env      : Perm_Env;
-      Saved_Init_Map : Initialization_Map;
-      New_Env        : Perm_Env;
-      Body_Id        : constant Entity_Id := Defining_Entity (Body_N);
-      Spec_Id        : constant Entity_Id := Unique_Entity (Body_Id);
+      Save_In_Elab : constant Boolean := Inside_Elaboration;
+      Body_Id      : constant Entity_Id := Defining_Entity (Body_N);
+      Spec_Id      : constant Entity_Id := Unique_Entity (Body_Id);
+      Prag         : constant Node_Id := SPARK_Pragma (Body_Id);
+      Saved_Env    : Perm_Env;
 
    begin
-      --  Check if SPARK pragma is not set to Off
+      --  Only SPARK bodies are analyzed
 
-      if Present (SPARK_Pragma (Defining_Entity (Body_N))) then
-         if Get_SPARK_Mode_From_Annotation
-           (SPARK_Pragma (Defining_Entity (Body_N, False))) /= Opt.On
-         then
-            return;
-         end if;
-      else
+      if No (Prag)
+        or else Get_SPARK_Mode_From_Annotation (Prag) /= Opt.On
+      then
          return;
       end if;
 
+      Inside_Elaboration := False;
+
       --  Save environment and put a new one in place
 
-      Copy_Env (Current_Perm_Env, Saved_Env);
-
-      --  Save initialization map
-
-      Copy_Init_Map (Current_Initialization_Map, Saved_Init_Map);
-      Current_Checking_Mode := Read;
-      Current_Perm_Env      := New_Env;
+      Move_Env (Current_Perm_Env, Saved_Env);
 
       --  Add formals and globals to the environment with adequate permissions
 
@@ -829,7 +1125,7 @@ package body Sem_SPARK is
          Setup_Globals (Spec_Id);
       end if;
 
-      --  Analyze the body of the function
+      --  Analyze the body of the subprogram
 
       Check_List (Declarations (Body_N));
       Check_Node (Handled_Statement_Sequence (Body_N));
@@ -839,23 +1135,15 @@ package body Sem_SPARK is
       if Ekind_In (Spec_Id, E_Procedure, E_Entry)
         and then not No_Return (Spec_Id)
       then
+         Return_Parameters (Spec_Id);
          Return_Globals (Spec_Id);
       end if;
 
-      --  Free the environments
+      --  Restore the saved environment and free the current one
 
-      Free_Env (Current_Perm_Env);
-      Copy_Env (Saved_Env, Current_Perm_Env);
-      Free_Env (Saved_Env);
+      Move_Env (Saved_Env, Current_Perm_Env);
 
-      --  Restore initialization map
-
-      Copy_Init_Map (Saved_Init_Map, Current_Initialization_Map);
-      Reset (Saved_Init_Map);
-
-      --  The assignment of all out parameters will be done by caller
-
-      Current_Checking_Mode := Mode_Before;
+      Inside_Elaboration := Save_In_Elab;
    end Check_Callable_Body;
 
    -----------------------
@@ -863,252 +1151,42 @@ package body Sem_SPARK is
    -----------------------
 
    procedure Check_Declaration (Decl : Node_Id) is
-      Target_Ent : constant Entity_Id := Defining_Identifier (Decl);
-      Target_Typ : Node_Id renames Etype (Target_Ent);
+      Target     : constant Entity_Id := Defining_Identifier (Decl);
+      Target_Typ : constant Node_Id := Etype (Target);
+      Expr       : Node_Id;
 
-      Target_View_Typ : Entity_Id;
-
-      Check : Boolean := True;
    begin
-      if Present (Full_View (Target_Typ)) then
-         Target_View_Typ := Full_View (Target_Typ);
-      else
-         Target_View_Typ := Target_Typ;
-      end if;
-
       case N_Declaration'(Nkind (Decl)) is
          when N_Full_Type_Declaration =>
-            if not Has_Ownership_Aspect_True (Target_Ent, "type declaration")
-            then
-               Check := False;
-            end if;
+            Check_Type (Target);
 
             --  ??? What about component declarations with defaults.
 
-         when N_Object_Declaration =>
-            if (Is_Access_Type (Target_View_Typ)
-                or else Is_Deep (Target_Typ))
-              and then not Has_Ownership_Aspect_True
-                (Target_Ent, "Object declaration ")
-            then
-               Check := False;
-            end if;
-
-            if Is_Anonymous_Access_Type (Target_View_Typ)
-              and then not Present (Expression (Decl))
-            then
-
-               --  ??? Check the case of default value (AI)
-               --  ??? How an anonymous access type can be with default exp?
-
-               Error_Msg_NE ("? object declaration & has OAF (Anonymous "
-                            & "access-to-object with no initialization)",
-                            Decl, Target_Ent);
-
-            --  If it it an initialization
-
-            elsif Present (Expression (Decl)) and Check then
-
-               --  Find out the operation to be done on the right-hand side
-
-               --  Initializing object, access type
-
-               if Is_Access_Type (Target_View_Typ) then
-
-                  --  Initializing object, constant access type
-
-                  if Is_Constant_Object (Target_Ent) then
-
-                     --  Initializing object, constant access to variable type
-
-                     if not Is_Access_Constant (Target_View_Typ) then
-                        Current_Checking_Mode := Borrow;
-
-                     --  Initializing object, constant access to constant type
-
-                     --  Initializing object,
-                     --  constant access to constant anonymous type.
-
-                     elsif Is_Anonymous_Access_Type (Target_View_Typ) then
-
-                        --  This is an object declaration so the target
-                        --  of the assignement is a stand-alone object.
-
-                        Current_Checking_Mode := Observe;
-
-                     --  Initializing object, constant access to constant
-                     --  named type.
-
-                     else
-                           --  If named then it is a general access type
-                           --  Hence, Has_Ownership_Aspec_True is False.
-
-                        raise Program_Error;
-                     end if;
-
-                  --  Initializing object, variable access type
-
-                  else
-                     --  Initializing object, variable access to variable type
-
-                     if not Is_Access_Constant (Target_View_Typ) then
-
-                        --  Initializing object, variable named access to
-                        --  variable type.
-
-                        if not Is_Anonymous_Access_Type (Target_View_Typ) then
-                           Current_Checking_Mode := Move;
-
-                        --  Initializing object, variable anonymous access to
-                        --  variable type.
-
-                        else
-                           --  This is an object declaration so the target
-                           --  object of the assignement is a stand-alone
-                           --  object.
-
-                           Current_Checking_Mode := Borrow;
-                        end if;
-
-                     --  Initializing object, variable access to constant type
-
-                     else
-                        --  Initializing object,
-                        --  variable named access to constant type.
-
-                        if not Is_Anonymous_Access_Type (Target_View_Typ) then
-                           Error_Msg_N ("assignment not allowed, Ownership "
-                                        & "Aspect False (Anonymous Access "
-                                        & "Object)", Decl);
-                           Check := False;
-
-                        --  Initializing object,
-                        --  variable anonymous access to constant type.
-
-                        else
-                           --  This is an object declaration so the target
-                           --  of the assignement is a stand-alone object.
-
-                           Current_Checking_Mode := Observe;
-                        end if;
-                     end if;
-                  end if;
-
-               --  Initializing object, composite (deep) type
-
-               elsif Is_Deep (Target_Typ) then
-
-                  --  Initializing object, constant composite type
-
-                  if Is_Constant_Object (Target_Ent) then
-                     Current_Checking_Mode := Observe;
-
-                  --  Initializing object, variable composite type
-
-                  else
-
-                     --  Initializing object, variable anonymous composite type
-
-                     if Nkind (Object_Definition (Decl)) =
-                       N_Constrained_Array_Definition
-
-                     --  An N_Constrained_Array_Definition is an anonymous
-                     --  array (to be checked). Record types are always
-                     --  named and are considered in the else part.
-
-                     then
-                        declare
-                           Com_Ty : constant Node_Id :=
-                             Component_Type (Etype (Target_Typ));
-                        begin
-
-                           if Is_Access_Type (Com_Ty) then
-
-                              --  If components are of anonymous type
-
-                              if Is_Anonymous_Access_Type (Com_Ty) then
-                                 if Is_Access_Constant (Com_Ty) then
-                                    Current_Checking_Mode := Observe;
-
-                                 else
-                                    Current_Checking_Mode := Borrow;
-                                 end if;
-
-                              else
-                                 Current_Checking_Mode := Move;
-                              end if;
-
-                           elsif Is_Deep (Com_Ty) then
-
-                              --  This is certainly named so it is a move
-
-                              Current_Checking_Mode := Move;
-                           end if;
-                        end;
-
-                     else
-                        Current_Checking_Mode := Move;
-                     end if;
-                  end if;
-
-               end if;
-            end if;
-
-            if Check then
-               Check_Node (Expression (Decl));
-            end if;
-
-            --  If lhs is not a pointer, we still give it the unrestricted
-            --  state which is useless but not harmful.
-
-            declare
-               Elem : Perm_Tree_Access;
-               Deep : constant Boolean := Is_Deep (Target_Typ);
-
-            begin
-               --  Note that all declared variables are set to the unrestricted
-               --  state.
-               --
-               --  If variables are not initialized:
-               --  unrestricted to every declared object.
-               --  Exp:
-               --    R : Rec
-               --    S : Rec := (...)
-               --    R := S
-               --  The assignement R := S is not allowed in the new rules
-               --  if R is not unrestricted.
-               --
-               --  If variables are initialized:
-               --    If it is a move, then the target is unrestricted
-               --    If it is a borrow, then the target is unrestricted
-               --    If it is an observe, then the target should be observed
-
-               if Current_Checking_Mode = Observe then
-                  Elem := new Perm_Tree_Wrapper'
-                    (Tree =>
-                       (Kind                => Entire_Object,
-                        Is_Node_Deep        => Deep,
-                        Permission          => Observed,
-                        Children_Permission => Observed));
-               else
-                  Elem := new Perm_Tree_Wrapper'
-                    (Tree =>
-                       (Kind                => Entire_Object,
-                        Is_Node_Deep        => Deep,
-                        Permission          => Unrestricted,
-                        Children_Permission => Unrestricted));
-               end if;
-
-               --  Create new tree for defining identifier
-
-               Set (Current_Perm_Env,
-                    Unique_Entity (Defining_Identifier (Decl)),
-                    Elem);
-               pragma Assert (Get_First (Current_Perm_Env) /= null);
-            end;
-
          when N_Subtype_Declaration =>
-            Check_Node (Subtype_Indication (Decl));
+            Check_Expression (Subtype_Indication (Decl), Read);
+
+         when N_Object_Declaration =>
+            Check_Type (Target_Typ);
+
+            Expr := Expression (Decl);
+            if Present (Expr) then
+               Check_Assignment (Target => Target,
+                                 Expr   => Expr);
+            end if;
+
+            if Is_Deep (Target_Typ) then
+               declare
+                  Tree : constant Perm_Tree_Access :=
+                    new Perm_Tree_Wrapper'
+                      (Tree =>
+                         (Kind                => Entire_Object,
+                          Is_Node_Deep        => True,
+                          Permission          => Read_Write,
+                          Children_Permission => Read_Write));
+               begin
+                  Set (Current_Perm_Env, Target, Tree);
+               end;
+            end if;
 
          when N_Iterator_Specification =>
             null;
@@ -1147,318 +1225,396 @@ package body Sem_SPARK is
    -- Check_Expression --
    ----------------------
 
-   procedure Check_Expression (Expr : Node_Id) is
-      Mode_Before : constant Checking_Mode := Current_Checking_Mode;
+   procedure Check_Expression (Expr : Node_Id; Mode : Checking_Mode) is
+
+      --  Local subprograms
+
+      function Is_Type_Name (Expr : Node_Id) return Boolean;
+      --  Detect when a path expression is in fact a type name
+
+      procedure Read_Expression (Expr : Node_Id);
+      --  Most subexpressions are only analyzed in Read mode. This is a
+      --  specialized version of Check_Expression for that case.
+
+      procedure Read_Expression_List (L : List_Id);
+      --  Call Read_Expression on every expression in the list L
+
+      procedure Read_Indexes (Expr : Node_Id);
+      pragma Precondition (Is_Path_Expression (Expr));
+      --  When processing a path, the index expressions and function call
+      --  arguments occurring on the path should be analyzed in Read mode.
+
+      ------------------
+      -- Is_Type_Name --
+      ------------------
+
+      function Is_Type_Name (Expr : Node_Id) return Boolean is
+      begin
+         return Nkind_In (Expr, N_Expanded_Name, N_Identifier)
+           and then Is_Type (Entity (Expr));
+      end Is_Type_Name;
+
+      ---------------------
+      -- Read_Expression --
+      ---------------------
+
+      procedure Read_Expression (Expr : Node_Id) is
+      begin
+         Check_Expression (Expr, Read);
+      end Read_Expression;
+
+      --------------------------
+      -- Read_Expression_List --
+      --------------------------
+
+      procedure Read_Expression_List (L : List_Id) is
+         N : Node_Id;
+      begin
+         N := First (L);
+         while Present (N) loop
+            Read_Expression (N);
+            Next (N);
+         end loop;
+      end Read_Expression_List;
+
+      ------------------
+      -- Read_Indexes --
+      ------------------
+
+      procedure Read_Indexes (Expr : Node_Id) is
+
+         --  Local subprograms
+
+         procedure Read_Param (Formal : Entity_Id; Actual : Node_Id);
+
+         ----------------
+         -- Read_Param --
+         ----------------
+
+         procedure Read_Param (Formal : Entity_Id; Actual : Node_Id) is
+            pragma Unreferenced (Formal);
+         begin
+            Read_Expression (Actual);
+         end Read_Param;
+
+         procedure Read_Params is new Iterate_Call_Parameters (Read_Param);
+
+      --  Start of processing for Read_Indexes
+
+      begin
+         case N_Subexpr'(Nkind (Expr)) is
+            when N_Identifier
+               | N_Expanded_Name
+               | N_Null
+            =>
+               null;
+
+            when N_Explicit_Dereference
+               | N_Selected_Component
+            =>
+               Read_Indexes (Prefix (Expr));
+
+            when N_Indexed_Component =>
+               Read_Indexes (Prefix (Expr));
+               Read_Expression_List (Expressions (Expr));
+
+            when N_Slice =>
+               Read_Indexes (Prefix (Expr));
+               Read_Expression (Discrete_Range (Expr));
+
+            when N_Allocator =>
+               Read_Expression (Expression (Expr));
+
+            when N_Function_Call =>
+               Read_Params (Expr);
+               Check_Globals (Get_Called_Entity (Expr));
+
+            when N_Qualified_Expression
+               | N_Type_Conversion
+               | N_Unchecked_Type_Conversion
+            =>
+               Read_Indexes (Expression (Expr));
+
+            when others =>
+               raise Program_Error;
+         end case;
+      end Read_Indexes;
+
+   --  Start of processing for Check_Expression
+
    begin
+      if Is_Type_Name (Expr) then
+         return;
+
+      elsif Is_Path_Expression (Expr) then
+         Read_Indexes (Expr);
+         Process_Path (Expr, Mode);
+         return;
+      end if;
+
+      --  Expressions that are not path expressions should only be analyzed in
+      --  Read mode.
+
+      pragma Assert (Mode = Read);
+
+      --  Special handling for nodes that may contain evaluated expressions in
+      --  the form of constraints.
+
+      case Nkind (Expr) is
+         when N_Index_Or_Discriminant_Constraint =>
+            declare
+               Assn : Node_Id := First (Constraints (Expr));
+            begin
+               while Present (Assn) loop
+                  case Nkind (Assn) is
+                     when N_Discriminant_Association =>
+                        Read_Expression (Expression (Assn));
+
+                     when others =>
+                        Read_Expression (Assn);
+                  end case;
+
+                  Next (Assn);
+               end loop;
+            end;
+            return;
+
+         when N_Range_Constraint =>
+            Read_Expression (Range_Expression (Expr));
+            return;
+
+         when N_Subtype_Indication =>
+            if Present (Constraint (Expr)) then
+               Read_Expression (Constraint (Expr));
+            end if;
+            return;
+
+         when others =>
+            null;
+      end case;
+
+      --  At this point Expr can only be a subexpression
+
       case N_Subexpr'(Nkind (Expr)) is
-         when N_Procedure_Call_Statement
-            | N_Function_Call
+
+         when N_Binary_Op
+            | N_Membership_Test
+            | N_Short_Circuit
          =>
-            Check_Call_Statement (Expr);
+            Read_Expression (Left_Opnd (Expr));
+            Read_Expression (Right_Opnd (Expr));
 
-         when N_Identifier
-            | N_Expanded_Name
-         =>
-            --  Check if identifier is pointing to nothing (On/Off/...)
-
-            if not Present (Entity (Expr)) then
-               return;
-            end if;
-
-            --  Do not analyze things that are not of object Kind
-
-            if Ekind (Entity (Expr)) not in Object_Kind then
-               return;
-            end if;
-
-            --  Consider as ident
-
-            Process_Path (Expr);
-
-         --  Switch to read mode and then check the readability of each operand
-
-         when N_Binary_Op =>
-            Current_Checking_Mode := Read;
-            Check_Node (Left_Opnd (Expr));
-            Check_Node (Right_Opnd (Expr));
-
-         --  Switch to read mode and then check the readability of each operand
-
-         when N_Op_Abs
-            | N_Op_Minus
-            | N_Op_Not
-            | N_Op_Plus
-         =>
-            Current_Checking_Mode := Read;
-            Check_Node (Right_Opnd (Expr));
-
-         --  Forbid all deep expressions for Attribute ???
-         --  What about generics? (formal parameters).
+         when N_Unary_Op =>
+            Read_Expression (Right_Opnd (Expr));
 
          when N_Attribute_Reference =>
-            case Attribute_Name (Expr) is
-               when Name_Access =>
-                  Error_Msg_N ("access attribute not allowed", Expr);
+            declare
+               Aname   : constant Name_Id := Attribute_Name (Expr);
+               Attr_Id : constant Attribute_Id := Get_Attribute_Id (Aname);
+               Pref    : constant Node_Id := Prefix (Expr);
+               Args    : constant List_Id := Expressions (Expr);
 
-               when Name_Last
-                  | Name_First
-               =>
-                  Current_Checking_Mode := Read;
-                  Check_Node (Prefix (Expr));
+            begin
+               case Attr_Id is
 
-               when Name_Min =>
-                  Current_Checking_Mode := Read;
-                  Check_Node (Prefix (Expr));
+                  --  The following attributes take either no arguments, or
+                  --  arguments that do not refer to evaluated expressions
+                  --  (like Length or Loop_Entry), hence only the prefix
+                  --  needs to be read.
 
-               when Name_Image =>
-                  Check_List (Expressions (Expr));
+                  when Attribute_Address
+                     | Attribute_Alignment
+                     | Attribute_Callable
+                     | Attribute_Component_Size
+                     | Attribute_Constrained
+                     | Attribute_First
+                     | Attribute_First_Bit
+                     | Attribute_Last
+                     | Attribute_Last_Bit
+                     | Attribute_Length
+                     | Attribute_Loop_Entry
+                     | Attribute_Object_Size
+                     | Attribute_Position
+                     | Attribute_Size
+                     | Attribute_Terminated
+                     | Attribute_Valid
+                     | Attribute_Value_Size
+                  =>
+                     Read_Expression (Pref);
 
-               when Name_Img =>
-                  Check_Node (Prefix (Expr));
+                  --  The following attributes take a type name as prefix,
+                  --  hence only the arguments need to be read.
 
-               when Name_SPARK_Mode =>
-                  null;
+                  when Attribute_Ceiling
+                     | Attribute_Floor
+                     | Attribute_Max
+                     | Attribute_Min
+                     | Attribute_Mod
+                     | Attribute_Pos
+                     | Attribute_Pred
+                     | Attribute_Remainder
+                     | Attribute_Rounding
+                     | Attribute_Succ
+                     | Attribute_Truncation
+                     | Attribute_Val
+                     | Attribute_Value
+                  =>
+                     Read_Expression_List (Args);
 
-               when Name_Value =>
-                  Current_Checking_Mode := Read;
-                  Check_Node (Prefix (Expr));
+                  --  Attributes Image and Img either take a type name as
+                  --  prefix with an expression in argument, or the expression
+                  --  directly as prefix. Adapt to each case.
 
-               when Name_Update =>
-                  Check_List (Expressions (Expr));
-                  Check_Node (Prefix (Expr));
+                  when Attribute_Image
+                     | Attribute_Img
+                  =>
+                     if No (Args) then
+                        Read_Expression (Pref);
+                     else
+                        Read_Expression_List (Args);
+                     end if;
 
-               when Name_Pred
-                  | Name_Succ
-               =>
-                  Check_List (Expressions (Expr));
-                  Check_Node (Prefix (Expr));
+                  --  Attribute Update takes expressions as both prefix and
+                  --  arguments, so both need to be read.
 
-               when Name_Length =>
-                  Current_Checking_Mode := Read;
-                  Check_Node (Prefix (Expr));
+                  when Attribute_Update =>
+                     Read_Expression (Pref);
+                     Read_Expression_List (Args);
 
-               --  Any Attribute referring to the underlying memory is ignored
-               --  in the analysis. This means that taking the address of a
-               --  variable makes a silent alias that is not rejected by the
-               --  analysis.
+                  --  Attribute Modulus does not reference the evaluated
+                  --  expression, so it can be ignored for this analysis.
 
-               when Name_Address
-                  | Name_Alignment
-                  | Name_Component_Size
-                  | Name_First_Bit
-                  | Name_Last_Bit
-                  | Name_Size
-                  | Name_Position
-               =>
-                  null;
+                  when Attribute_Modulus =>
+                     null;
 
-               --  Attributes referring to types (get values from types), hence
-               --  no need to check either for borrows or any loans.
+                  --  Postconditions should not be analyzed
 
-               when Name_Base
-                  | Name_Val
-               =>
-                  null;
-               --  Other attributes that fall out of the scope of the analysis
+                  when Attribute_Old
+                     | Attribute_Result
+                  =>
+                     raise Program_Error;
 
-               when others =>
-                  null;
-            end case;
+                  when others =>
+                     Error_Msg_Name_1 := Aname;
+                     Error_Msg_N ("attribute % not allowed in SPARK", Expr);
+               end case;
+            end;
 
-         when N_In =>
-            Current_Checking_Mode := Read;
-            Check_Node (Left_Opnd (Expr));
-            Check_Node (Right_Opnd (Expr));
-
-         when N_Not_In =>
-            Current_Checking_Mode := Read;
-            Check_Node (Left_Opnd (Expr));
-            Check_Node (Right_Opnd (Expr));
-
-         --  Switch to read mode and then check the readability of each operand
-
-         when N_And_Then
-            | N_Or_Else
-         =>
-            Current_Checking_Mode := Read;
-            Check_Node (Left_Opnd (Expr));
-            Check_Node (Right_Opnd (Expr));
-
-         --  Check the arguments of the call
-
-         when N_Explicit_Dereference =>
-            Process_Path (Expr);
-
-         --  Copy environment, run on each branch, and then merge
+         when N_Range =>
+            Read_Expression (Low_Bound (Expr));
+            Read_Expression (High_Bound (Expr));
 
          when N_If_Expression =>
-            declare
-               Saved_Env : Perm_Env;
-
-               --  Accumulator for the different branches
-
-               New_Env : Perm_Env;
-               Elmt    : Node_Id := First (Expressions (Expr));
-
-            begin
-               Current_Checking_Mode := Read;
-               Check_Node (Elmt);
-               Current_Checking_Mode := Mode_Before;
-
-               --  Save environment
-
-               Copy_Env (Current_Perm_Env, Saved_Env);
-
-               --  Here we have the original env in saved, current with a fresh
-               --  copy, and new aliased.
-
-               --  THEN PART
-
-               Next (Elmt);
-               Check_Node (Elmt);
-
-               --  Here the new_environment contains curr env after then block
-
-               --  ELSE part
-               --  Restore environment before if
-               Copy_Env (Current_Perm_Env, New_Env);
-               Free_Env (Current_Perm_Env);
-               Copy_Env (Saved_Env, Current_Perm_Env);
-
-               --  Here new environment contains the environment after then and
-               --  current the fresh copy of old one.
-
-               Next (Elmt);
-               Check_Node (Elmt);
-
-               --  CLEANUP
-
-               Copy_Env (New_Env, Current_Perm_Env);
-               Free_Env (New_Env);
-               Free_Env (Saved_Env);
-            end;
-
-         when N_Indexed_Component =>
-            Process_Path (Expr);
-
-         --  Analyze the expression that is getting qualified
-
-         when N_Qualified_Expression =>
-            Check_Node (Expression (Expr));
-
-         when N_Quantified_Expression =>
-            declare
-               Saved_Env : Perm_Env;
-
-            begin
-               Copy_Env (Current_Perm_Env, Saved_Env);
-               Current_Checking_Mode := Read;
-               Check_Node (Iterator_Specification (Expr));
-               Check_Node (Loop_Parameter_Specification (Expr));
-
-               Check_Node (Condition (Expr));
-               Free_Env (Current_Perm_Env);
-               Copy_Env (Saved_Env, Current_Perm_Env);
-               Free_Env (Saved_Env);
-            end;
-         --  Analyze the list of associations in the aggregate
-
-         when N_Aggregate =>
-            Check_List (Expressions (Expr));
-            Check_List (Component_Associations (Expr));
-
-         when N_Allocator =>
-            Check_Node (Expression (Expr));
+            Read_Expression_List (Expressions (Expr));
 
          when N_Case_Expression =>
             declare
-               Saved_Env : Perm_Env;
-
-               --  Accumulator for the different branches
-
-               New_Env : Perm_Env;
-               Elmt : Node_Id := First (Alternatives (Expr));
+               Cases    : constant List_Id := Alternatives (Expr);
+               Cur_Case : Node_Id := First (Cases);
 
             begin
-               Current_Checking_Mode := Read;
-               Check_Node (Expression (Expr));
-               Current_Checking_Mode := Mode_Before;
-
-               --  Save environment
-
-               Copy_Env (Current_Perm_Env, Saved_Env);
-
-               --  Here we have the original env in saved, current with a fresh
-               --  copy, and new aliased.
-
-               --  First alternative
-
-               Check_Node (Elmt);
-               Next (Elmt);
-               Copy_Env (Current_Perm_Env, New_Env);
-               Free_Env (Current_Perm_Env);
-
-               --  Other alternatives
-
-               while Present (Elmt) loop
-
-                  --  Restore environment
-
-                  Copy_Env (Saved_Env, Current_Perm_Env);
-                  Check_Node (Elmt);
-                  Next (Elmt);
+               while Present (Cur_Case) loop
+                  Read_Expression (Expression (Cur_Case));
+                  Next (Cur_Case);
                end loop;
-               --  CLEANUP
 
-               Copy_Env (Saved_Env, Current_Perm_Env);
-               Free_Env (New_Env);
-               Free_Env (Saved_Env);
+               Read_Expression (Expression (Expr));
             end;
-         --  Analyze the list of associates in the aggregate as well as the
-         --  ancestor part.
+
+         when N_Qualified_Expression
+            | N_Type_Conversion
+            | N_Unchecked_Type_Conversion
+         =>
+            Read_Expression (Expression (Expr));
+
+         when N_Quantified_Expression =>
+            declare
+               For_In_Spec : constant Node_Id :=
+                 Loop_Parameter_Specification (Expr);
+               For_Of_Spec : constant Node_Id :=
+                 Iterator_Specification (Expr);
+            begin
+               if Present (For_In_Spec) then
+                  Read_Expression (Discrete_Subtype_Definition (For_In_Spec));
+               else
+                  Read_Expression (Name (For_Of_Spec));
+                  Read_Expression (Subtype_Indication (For_Of_Spec));
+               end if;
+
+               Read_Expression (Condition (Expr));
+            end;
+
+         when N_Aggregate =>
+            declare
+               Assocs  : constant List_Id := Component_Associations (Expr);
+               Assoc   : Node_Id := First (Assocs);
+               CL      : List_Id;
+               Choice  : Node_Id;
+
+            begin
+               while Present (Assoc) loop
+
+                  --  An array aggregate with a single component association
+                  --  may have a nonstatic choice expression that needs to be
+                  --  analyzed. This can only occur for a single choice that
+                  --  is not the OTHERS one.
+
+                  if Is_Array_Type (Etype (Expr)) then
+                     CL := Choices (Assoc);
+                     if List_Length (CL) = 1 then
+                        Choice := First (CL);
+                        if Nkind (Choice) /= N_Others_Choice then
+                           Read_Expression (Choice);
+                        end if;
+                     end if;
+                  end if;
+
+                  --  The expression in the component association also needs to
+                  --  be analyzed.
+
+                  Read_Expression (Expression (Assoc));
+                  Next (Assoc);
+               end loop;
+
+               Read_Expression_List (Expressions (Expr));
+            end;
 
          when N_Extension_Aggregate =>
-            Check_Node (Ancestor_Part (Expr));
-            Check_List (Expressions (Expr));
-
-         when N_Range =>
-            Check_Node (Low_Bound (Expr));
-            Check_Node (High_Bound (Expr));
-
-         --  We arrived at a path. Process it.
-
-         when N_Selected_Component =>
-            Process_Path (Expr);
-
-         when N_Slice =>
-            Process_Path (Expr);
-
-         when N_Type_Conversion =>
-            Check_Node (Expression (Expr));
-
-         when N_Unchecked_Type_Conversion =>
-            Check_Node (Expression (Expr));
-
-         --  Checking should not be called directly on these nodes
-
-         when N_Target_Name =>
-            raise Program_Error;
-
-         --  Unsupported constructs in SPARK
-
-         when N_Delta_Aggregate =>
-            Error_Msg_N ("unsupported construct in SPARK", Expr);
-
-         --  Ignored constructs for pointer checking
+            Read_Expression (Ancestor_Part (Expr));
+            Read_Expression_List (Expressions (Expr));
 
          when N_Character_Literal
-            | N_Null
             | N_Numeric_Or_String_Literal
             | N_Operator_Symbol
             | N_Raise_Expression
             | N_Raise_xxx_Error
          =>
             null;
+
+         when N_Delta_Aggregate
+            | N_Target_Name
+         =>
+            Error_Msg_N ("unsupported construct in SPARK", Expr);
+
+         --  Procedure calls are handled in Check_Node
+
+         when N_Procedure_Call_Statement =>
+            raise Program_Error;
+
+         --  Path expressions are handled before this point
+
+         when N_Allocator
+            | N_Expanded_Name
+            | N_Explicit_Dereference
+            | N_Function_Call
+            | N_Identifier
+            | N_Indexed_Component
+            | N_Null
+            | N_Selected_Component
+            | N_Slice
+         =>
+            raise Program_Error;
+
          --  The following nodes are never generated in GNATprove mode
 
          when N_Expression_With_Actions
@@ -1468,147 +1624,6 @@ package body Sem_SPARK is
             raise Program_Error;
       end case;
    end Check_Expression;
-
-   -------------------
-   -- Check_Globals --
-   -------------------
-
-   procedure Check_Globals (N : Node_Id) is
-   begin
-      if Nkind (N) = N_Empty then
-         return;
-      end if;
-
-      declare
-         pragma Assert (List_Length (Pragma_Argument_Associations (N)) = 1);
-         PAA : constant Node_Id := First (Pragma_Argument_Associations (N));
-         pragma Assert (Nkind (PAA) = N_Pragma_Argument_Association);
-         Row      : Node_Id;
-         The_Mode : Name_Id;
-         RHS      : Node_Id;
-
-         procedure Process (Mode : Name_Id; The_Global : Entity_Id);
-         procedure Process (Mode : Name_Id; The_Global : Node_Id) is
-            Ident_Elt   : constant Entity_Id :=
-              Unique_Entity (Entity (The_Global));
-            Mode_Before : constant Checking_Mode := Current_Checking_Mode;
-
-         begin
-            if Ekind (Ident_Elt) = E_Abstract_State then
-               return;
-            end if;
-            case Mode is
-               when Name_Input
-                  | Name_Proof_In
-               =>
-                  Current_Checking_Mode := Observe;
-                  Check_Node (The_Global);
-
-               when Name_Output
-                  | Name_In_Out
-               =>
-               --  ??? Borrow not Move?
-                  Current_Checking_Mode := Borrow;
-                  Check_Node (The_Global);
-
-               when others =>
-                  raise Program_Error;
-            end case;
-            Current_Checking_Mode := Mode_Before;
-         end Process;
-
-      begin
-         if Nkind (Expression (PAA)) = N_Null then
-
-            --  global => null
-            --  No globals, nothing to do
-
-            return;
-
-         elsif Nkind_In (Expression (PAA), N_Identifier, N_Expanded_Name) then
-
-            --  global => foo
-            --  A single input
-
-            Process (Name_Input, Expression (PAA));
-
-         elsif Nkind (Expression (PAA)) = N_Aggregate
-           and then Expressions (Expression (PAA)) /= No_List
-         then
-            --  global => (foo, bar)
-            --  Inputs
-
-            RHS := First (Expressions (Expression (PAA)));
-            while Present (RHS) loop
-               case Nkind (RHS) is
-                  when N_Identifier
-                     | N_Expanded_Name
-                  =>
-                     Process (Name_Input, RHS);
-
-                  when N_Numeric_Or_String_Literal =>
-                     Process (Name_Input, Original_Node (RHS));
-
-                  when others =>
-                     raise Program_Error;
-               end case;
-               RHS := Next (RHS);
-            end loop;
-
-         elsif Nkind (Expression (PAA)) = N_Aggregate
-           and then Component_Associations (Expression (PAA)) /= No_List
-         then
-            --  global => (mode => foo,
-            --             mode => (bar, baz))
-            --  A mixture of things
-
-            declare
-               CA : constant List_Id :=
-                 Component_Associations (Expression (PAA));
-            begin
-               Row := First (CA);
-               while Present (Row) loop
-                  pragma Assert (List_Length (Choices (Row)) = 1);
-                  The_Mode := Chars (First (Choices (Row)));
-                  RHS := Expression (Row);
-
-                  case Nkind (RHS) is
-                     when N_Aggregate =>
-                        RHS := First (Expressions (RHS));
-                        while Present (RHS) loop
-                           case Nkind (RHS) is
-                              when N_Numeric_Or_String_Literal =>
-                                 Process (The_Mode, Original_Node (RHS));
-
-                              when others =>
-                                 Process (The_Mode, RHS);
-                           end case;
-                           RHS := Next (RHS);
-                        end loop;
-
-                     when N_Identifier
-                        | N_Expanded_Name
-                     =>
-                        Process (The_Mode, RHS);
-
-                     when N_Null =>
-                        null;
-
-                     when N_Numeric_Or_String_Literal =>
-                        Process (The_Mode, Original_Node (RHS));
-
-                     when others =>
-                        raise Program_Error;
-                  end case;
-                  Row := Next (Row);
-               end loop;
-            end;
-
-         else
-            raise Program_Error;
-         end if;
-      end;
-   end Check_Globals;
 
    ----------------
    -- Check_List --
@@ -1628,12 +1643,326 @@ package body Sem_SPARK is
    -- Check_Loop_Statement --
    --------------------------
 
-   procedure Check_Loop_Statement (Loop_N : Node_Id) is
+   procedure Check_Loop_Statement (Stmt : Node_Id) is
+
+      --  Local Subprograms
+
+      procedure Check_Is_Less_Restrictive_Env
+        (Exiting_Env : Perm_Env;
+         Entry_Env   : Perm_Env);
+      --  This procedure checks that the Exiting_Env environment is less
+      --  restrictive than the Entry_Env environment.
+
+      procedure Check_Is_Less_Restrictive_Tree
+        (New_Tree  : Perm_Tree_Access;
+         Orig_Tree : Perm_Tree_Access;
+         E         : Entity_Id);
+      --  Auxiliary procedure to check that the tree New_Tree is less
+      --  restrictive than the tree Orig_Tree for the entity E.
+
+      procedure Perm_Error_Loop_Exit
+        (E          : Entity_Id;
+         Loop_Id    : Node_Id;
+         Perm       : Perm_Kind;
+         Found_Perm : Perm_Kind);
+      --  A procedure that is called when the permissions found contradict
+      --  the rules established by the RM at the exit of loops. This function
+      --  is called with the entity, the node of the enclosing loop, the
+      --  permission that was expected, and the permission found, and issues
+      --  an appropriate error message.
+
+      -----------------------------------
+      -- Check_Is_Less_Restrictive_Env --
+      -----------------------------------
+
+      procedure Check_Is_Less_Restrictive_Env
+        (Exiting_Env : Perm_Env;
+         Entry_Env   : Perm_Env)
+      is
+         Comp_Entry : Perm_Tree_Maps.Key_Option;
+         Iter_Entry, Iter_Exit : Perm_Tree_Access;
+
+      begin
+         Comp_Entry := Get_First_Key (Entry_Env);
+         while Comp_Entry.Present loop
+            Iter_Entry := Get (Entry_Env, Comp_Entry.K);
+            pragma Assert (Iter_Entry /= null);
+            Iter_Exit := Get (Exiting_Env, Comp_Entry.K);
+            pragma Assert (Iter_Exit /= null);
+            Check_Is_Less_Restrictive_Tree
+              (New_Tree  => Iter_Exit,
+               Orig_Tree => Iter_Entry,
+               E         => Comp_Entry.K);
+            Comp_Entry := Get_Next_Key (Entry_Env);
+         end loop;
+      end Check_Is_Less_Restrictive_Env;
+
+      ------------------------------------
+      -- Check_Is_Less_Restrictive_Tree --
+      ------------------------------------
+
+      procedure Check_Is_Less_Restrictive_Tree
+        (New_Tree  : Perm_Tree_Access;
+         Orig_Tree : Perm_Tree_Access;
+         E         : Entity_Id)
+      is
+         --  Local subprograms
+
+         procedure Check_Is_Less_Restrictive_Tree_Than
+           (Tree : Perm_Tree_Access;
+            Perm : Perm_Kind;
+            E    : Entity_Id);
+         --  Auxiliary procedure to check that the tree N is less restrictive
+         --  than the given permission P.
+
+         procedure Check_Is_More_Restrictive_Tree_Than
+           (Tree : Perm_Tree_Access;
+            Perm : Perm_Kind;
+            E    : Entity_Id);
+         --  Auxiliary procedure to check that the tree N is more restrictive
+         --  than the given permission P.
+
+         -----------------------------------------
+         -- Check_Is_Less_Restrictive_Tree_Than --
+         -----------------------------------------
+
+         procedure Check_Is_Less_Restrictive_Tree_Than
+           (Tree : Perm_Tree_Access;
+            Perm : Perm_Kind;
+            E    : Entity_Id)
+         is
+         begin
+            if not (Permission (Tree) >= Perm) then
+               Perm_Error_Loop_Exit
+                 (E, Stmt, Permission (Tree), Perm);
+            end if;
+
+            case Kind (Tree) is
+               when Entire_Object =>
+                  if not (Children_Permission (Tree) >= Perm) then
+                     Perm_Error_Loop_Exit
+                       (E, Stmt, Children_Permission (Tree), Perm);
+
+                  end if;
+
+               when Reference =>
+                  Check_Is_Less_Restrictive_Tree_Than
+                    (Get_All (Tree), Perm, E);
+
+               when Array_Component =>
+                  Check_Is_Less_Restrictive_Tree_Than
+                    (Get_Elem (Tree), Perm, E);
+
+               when Record_Component =>
+                  declare
+                     Comp : Perm_Tree_Access;
+                  begin
+                     Comp := Perm_Tree_Maps.Get_First (Component (Tree));
+                     while Comp /= null loop
+                        Check_Is_Less_Restrictive_Tree_Than (Comp, Perm, E);
+                        Comp :=
+                          Perm_Tree_Maps.Get_Next (Component (Tree));
+                     end loop;
+                  end;
+            end case;
+         end Check_Is_Less_Restrictive_Tree_Than;
+
+         -----------------------------------------
+         -- Check_Is_More_Restrictive_Tree_Than --
+         -----------------------------------------
+
+         procedure Check_Is_More_Restrictive_Tree_Than
+           (Tree : Perm_Tree_Access;
+            Perm : Perm_Kind;
+            E    : Entity_Id)
+         is
+         begin
+            if not (Perm >= Permission (Tree)) then
+               Perm_Error_Loop_Exit
+                 (E, Stmt, Permission (Tree), Perm);
+            end if;
+
+            case Kind (Tree) is
+               when Entire_Object =>
+                  if not (Perm >= Children_Permission (Tree)) then
+                     Perm_Error_Loop_Exit
+                       (E, Stmt, Children_Permission (Tree), Perm);
+                  end if;
+
+               when Reference =>
+                  Check_Is_More_Restrictive_Tree_Than
+                    (Get_All (Tree), Perm, E);
+
+               when Array_Component =>
+                  Check_Is_More_Restrictive_Tree_Than
+                    (Get_Elem (Tree), Perm, E);
+
+               when Record_Component =>
+                  declare
+                     Comp : Perm_Tree_Access;
+                  begin
+                     Comp := Perm_Tree_Maps.Get_First (Component (Tree));
+                     while Comp /= null loop
+                        Check_Is_More_Restrictive_Tree_Than (Comp, Perm, E);
+                        Comp :=
+                          Perm_Tree_Maps.Get_Next (Component (Tree));
+                     end loop;
+                  end;
+            end case;
+         end Check_Is_More_Restrictive_Tree_Than;
+
+      --  Start of processing for Check_Is_Less_Restrictive_Tree
+
+      begin
+         if not (Permission (New_Tree) <= Permission (Orig_Tree)) then
+            Perm_Error_Loop_Exit
+              (E          => E,
+               Loop_Id    => Stmt,
+               Perm       => Permission (New_Tree),
+               Found_Perm => Permission (Orig_Tree));
+         end if;
+
+         case Kind (New_Tree) is
+
+            --  Potentially folded tree. We check the other tree Orig_Tree to
+            --  check whether it is folded or not. If folded we just compare
+            --  their Permission and Children_Permission, if not, then we
+            --  look at the Children_Permission of the folded tree against
+            --  the unfolded tree Orig_Tree.
+
+            when Entire_Object =>
+               case Kind (Orig_Tree) is
+               when Entire_Object =>
+                  if not (Children_Permission (New_Tree) <=
+                          Children_Permission (Orig_Tree))
+                  then
+                     Perm_Error_Loop_Exit
+                       (E, Stmt,
+                        Children_Permission (New_Tree),
+                        Children_Permission (Orig_Tree));
+                  end if;
+
+               when Reference =>
+                  Check_Is_More_Restrictive_Tree_Than
+                    (Get_All (Orig_Tree), Children_Permission (New_Tree), E);
+
+               when Array_Component =>
+                  Check_Is_More_Restrictive_Tree_Than
+                    (Get_Elem (Orig_Tree), Children_Permission (New_Tree), E);
+
+               when Record_Component =>
+                  declare
+                     Comp : Perm_Tree_Access;
+                  begin
+                     Comp := Perm_Tree_Maps.Get_First
+                       (Component (Orig_Tree));
+                     while Comp /= null loop
+                        Check_Is_More_Restrictive_Tree_Than
+                          (Comp, Children_Permission (New_Tree), E);
+                        Comp := Perm_Tree_Maps.Get_Next
+                          (Component (Orig_Tree));
+                     end loop;
+                  end;
+               end case;
+
+            when Reference =>
+               case Kind (Orig_Tree) is
+               when Entire_Object =>
+                  Check_Is_Less_Restrictive_Tree_Than
+                    (Get_All (New_Tree), Children_Permission (Orig_Tree), E);
+
+               when Reference =>
+                  Check_Is_Less_Restrictive_Tree
+                    (Get_All (New_Tree), Get_All (Orig_Tree), E);
+
+               when others =>
+                  raise Program_Error;
+               end case;
+
+            when Array_Component =>
+               case Kind (Orig_Tree) is
+               when Entire_Object =>
+                  Check_Is_Less_Restrictive_Tree_Than
+                    (Get_Elem (New_Tree), Children_Permission (Orig_Tree), E);
+
+               when Array_Component =>
+                  Check_Is_Less_Restrictive_Tree
+                    (Get_Elem (New_Tree), Get_Elem (Orig_Tree), E);
+
+               when others =>
+                  raise Program_Error;
+               end case;
+
+            when Record_Component =>
+               declare
+                  CompN : Perm_Tree_Access;
+               begin
+                  CompN :=
+                    Perm_Tree_Maps.Get_First (Component (New_Tree));
+                  case Kind (Orig_Tree) is
+                  when Entire_Object =>
+                     while CompN /= null loop
+                        Check_Is_Less_Restrictive_Tree_Than
+                          (CompN, Children_Permission (Orig_Tree), E);
+
+                        CompN :=
+                          Perm_Tree_Maps.Get_Next (Component (New_Tree));
+                     end loop;
+
+                  when Record_Component =>
+                     declare
+
+                        KeyO : Perm_Tree_Maps.Key_Option;
+                        CompO : Perm_Tree_Access;
+                     begin
+                        KeyO := Perm_Tree_Maps.Get_First_Key
+                          (Component (Orig_Tree));
+                        while KeyO.Present loop
+                           pragma Assert (CompO /= null);
+
+                           Check_Is_Less_Restrictive_Tree (CompN, CompO, E);
+
+                           KeyO := Perm_Tree_Maps.Get_Next_Key
+                             (Component (Orig_Tree));
+                           CompN := Perm_Tree_Maps.Get
+                             (Component (New_Tree), KeyO.K);
+                           CompO := Perm_Tree_Maps.Get
+                             (Component (Orig_Tree), KeyO.K);
+                        end loop;
+                     end;
+
+                  when others =>
+                     raise Program_Error;
+                  end case;
+               end;
+         end case;
+      end Check_Is_Less_Restrictive_Tree;
+
+      --------------------------
+      -- Perm_Error_Loop_Exit --
+      --------------------------
+
+      procedure Perm_Error_Loop_Exit
+        (E          : Entity_Id;
+         Loop_Id    : Node_Id;
+         Perm       : Perm_Kind;
+         Found_Perm : Perm_Kind)
+      is
+      begin
+         Error_Msg_Node_2 := Loop_Id;
+         Error_Msg_N ("insufficient permission for & when exiting loop &", E);
+         Perm_Mismatch (Exp_Perm => Perm,
+                        Act_Perm => Found_Perm,
+                        N        => Loop_Id);
+      end Perm_Error_Loop_Exit;
 
       --  Local variables
 
-      Loop_Name : constant Entity_Id := Entity (Identifier (Loop_N));
+      Loop_Name : constant Entity_Id := Entity (Identifier (Stmt));
       Loop_Env  : constant Perm_Env_Access := new Perm_Env;
+      Scheme    : constant Node_Id := Iteration_Scheme (Stmt);
+
+   --  Start of processing for Check_Loop_Statement
 
    begin
       --  Save environment prior to the loop
@@ -1650,7 +1979,7 @@ package body Sem_SPARK is
       --  Otherwise, the loop exit environment remains empty until it is
       --  populated by analyzing exit statements.
 
-      if Present (Iteration_Scheme (Loop_N)) then
+      if Present (Iteration_Scheme (Stmt)) then
          declare
             Exit_Env : constant Perm_Env_Access := new Perm_Env;
 
@@ -1662,8 +1991,41 @@ package body Sem_SPARK is
 
       --  Analyze loop
 
-      Check_Node (Iteration_Scheme (Loop_N));
-      Check_List (Statements (Loop_N));
+      if Present (Scheme) then
+
+         --  Case of a WHILE loop
+
+         if Present (Condition (Scheme)) then
+            Check_Expression (Condition (Scheme), Read);
+
+         --  Case of a FOR loop
+
+         else
+            declare
+               Param_Spec : constant Node_Id :=
+                 Loop_Parameter_Specification (Scheme);
+               Iter_Spec : constant Node_Id := Iterator_Specification (Scheme);
+            begin
+               if Present (Param_Spec) then
+                  Check_Expression
+                    (Discrete_Subtype_Definition (Param_Spec), Read);
+               else
+                  Check_Expression (Name (Iter_Spec), Read);
+                  if Present (Subtype_Indication (Iter_Spec)) then
+                     Check_Expression (Subtype_Indication (Iter_Spec), Read);
+                  end if;
+               end if;
+            end;
+         end if;
+      end if;
+
+      Check_List (Statements (Stmt));
+
+      --  Check that environment gets less restrictive at end of loop
+
+      Check_Is_Less_Restrictive_Env
+        (Exiting_Env => Current_Perm_Env,
+         Entry_Env   => Loop_Env.all);
 
       --  Set environment to the one for exiting the loop
 
@@ -1697,23 +2059,19 @@ package body Sem_SPARK is
    ----------------
 
    procedure Check_Node (N : Node_Id) is
-      Mode_Before : constant Checking_Mode := Current_Checking_Mode;
    begin
       case Nkind (N) is
          when N_Declaration =>
             Check_Declaration (N);
-
-         when N_Subexpr =>
-            Check_Expression (N);
-
-         when N_Subtype_Indication =>
-            Check_Node (Constraint (N));
 
          when N_Body_Stub =>
             Check_Node (Get_Body_From_Stub (N));
 
          when N_Statement_Other_Than_Procedure_Call =>
             Check_Statement (N);
+
+         when N_Procedure_Call_Statement =>
+            Check_Call_Statement (N);
 
          when N_Package_Body =>
             Check_Package_Body (N);
@@ -1728,124 +2086,10 @@ package body Sem_SPARK is
             Check_List (Declarations (N));
 
          when N_Package_Declaration =>
-            declare
-               Spec : constant Node_Id := Specification (N);
-
-            begin
-               Current_Checking_Mode := Read;
-               Check_List (Visible_Declarations (Spec));
-               Check_List (Private_Declarations (Spec));
-
-               Return_Declarations (Visible_Declarations (Spec));
-               Return_Declarations (Private_Declarations (Spec));
-            end;
-
-         when N_Iteration_Scheme =>
-            Current_Checking_Mode := Read;
-            Check_Node (Condition (N));
-            Check_Node (Iterator_Specification (N));
-            Check_Node (Loop_Parameter_Specification (N));
-
-         when N_Case_Expression_Alternative =>
-            Current_Checking_Mode := Read;
-            Check_List (Discrete_Choices (N));
-            Current_Checking_Mode := Mode_Before;
-            Check_Node (Expression (N));
-
-         when N_Case_Statement_Alternative =>
-            Current_Checking_Mode := Read;
-            Check_List (Discrete_Choices (N));
-            Current_Checking_Mode := Mode_Before;
-            Check_List (Statements (N));
-
-         when N_Component_Association =>
-            Check_Node (Expression (N));
+            Check_Package_Spec (N);
 
          when N_Handled_Sequence_Of_Statements =>
             Check_List (Statements (N));
-
-         when N_Parameter_Association =>
-            Check_Node (Explicit_Actual_Parameter (N));
-
-         when N_Range_Constraint =>
-            Check_Node (Range_Expression (N));
-
-         when N_Index_Or_Discriminant_Constraint =>
-            Check_List (Constraints (N));
-
-         --  Checking should not be called directly on these nodes
-
-         when N_Abortable_Part
-            | N_Accept_Alternative
-            | N_Access_Definition
-            | N_Access_Function_Definition
-            | N_Access_Procedure_Definition
-            | N_Access_To_Object_Definition
-            | N_Aspect_Specification
-            | N_Compilation_Unit
-            | N_Compilation_Unit_Aux
-            | N_Component_Clause
-            | N_Component_Definition
-            | N_Component_List
-            | N_Constrained_Array_Definition
-            | N_Contract
-            | N_Decimal_Fixed_Point_Definition
-            | N_Defining_Character_Literal
-            | N_Defining_Identifier
-            | N_Defining_Operator_Symbol
-            | N_Defining_Program_Unit_Name
-            | N_Delay_Alternative
-            | N_Derived_Type_Definition
-            | N_Designator
-            | N_Discriminant_Specification
-            | N_Elsif_Part
-            | N_Entry_Body_Formal_Part
-            | N_Enumeration_Type_Definition
-            | N_Entry_Call_Alternative
-            | N_Entry_Index_Specification
-            | N_Error
-            | N_Exception_Handler
-            | N_Floating_Point_Definition
-            | N_Formal_Decimal_Fixed_Point_Definition
-            | N_Formal_Derived_Type_Definition
-            | N_Formal_Discrete_Type_Definition
-            | N_Formal_Floating_Point_Definition
-            | N_Formal_Incomplete_Type_Definition
-            | N_Formal_Modular_Type_Definition
-            | N_Formal_Ordinary_Fixed_Point_Definition
-            | N_Formal_Private_Type_Definition
-            | N_Formal_Signed_Integer_Type_Definition
-            | N_Generic_Association
-            | N_Mod_Clause
-            | N_Modular_Type_Definition
-            | N_Ordinary_Fixed_Point_Definition
-            | N_Package_Specification
-            | N_Parameter_Specification
-            | N_Pragma_Argument_Association
-            | N_Protected_Definition
-            | N_Push_Pop_xxx_Label
-            | N_Real_Range_Specification
-            | N_Record_Definition
-            | N_SCIL_Dispatch_Table_Tag_Init
-            | N_SCIL_Dispatching_Call
-            | N_SCIL_Membership_Test
-            | N_Signed_Integer_Type_Definition
-            | N_Subunit
-            | N_Task_Definition
-            | N_Terminate_Alternative
-            | N_Triggering_Alternative
-            | N_Unconstrained_Array_Definition
-            | N_Unused_At_Start
-            | N_Unused_At_End
-            | N_Variant
-            | N_Variant_Part
-         =>
-            raise Program_Error;
-
-         --  Unsupported constructs in SPARK
-
-         when N_Iterated_Component_Association =>
-            Error_Msg_N ("unsupported construct in SPARK", N);
 
          --  Ignored constructs for pointer checking
 
@@ -1890,19 +2134,16 @@ package body Sem_SPARK is
             | N_Variable_Reference_Marker
             | N_Discriminant_Association
 
-            --  ??? check whether we should do sth special for
-            --  N_Discriminant_Association, or maybe raise a program error.
+            --  ??? check whether we should do something special for
+            --  N_Discriminant_Association, or maybe raise Program_Error.
          =>
             null;
-         --  The following nodes are rewritten by semantic analysis
 
-         when N_Single_Protected_Declaration
-            | N_Single_Task_Declaration
-         =>
+         --  Checking should not be called directly on these nodes
+
+         when others =>
             raise Program_Error;
       end case;
-
-      Current_Checking_Mode := Mode_Before;
    end Check_Node;
 
    ------------------------
@@ -1910,179 +2151,136 @@ package body Sem_SPARK is
    ------------------------
 
    procedure Check_Package_Body (Pack : Node_Id) is
-      Saved_Env : Perm_Env;
-      CorSp : Node_Id;
+      Save_In_Elab : constant Boolean := Inside_Elaboration;
+      Spec         : constant Node_Id :=
+        Package_Specification (Corresponding_Spec (Pack));
+      Prag         : constant Node_Id := SPARK_Pragma (Defining_Entity (Pack));
+      Saved_Env    : Perm_Env;
 
    begin
-      if Present (SPARK_Pragma (Defining_Entity (Pack, False))) then
-         if Get_SPARK_Mode_From_Annotation
-           (SPARK_Pragma (Defining_Entity (Pack))) /= Opt.On
-         then
-            return;
-         end if;
-      else
+      --  Only SPARK bodies are analyzed
+
+      if No (Prag)
+        or else Get_SPARK_Mode_From_Annotation (Prag) /= Opt.On
+      then
          return;
       end if;
 
-      CorSp := Parent (Corresponding_Spec (Pack));
-      while Nkind (CorSp) /= N_Package_Specification loop
-         CorSp := Parent (CorSp);
-      end loop;
+      Inside_Elaboration := True;
 
-      Check_List (Visible_Declarations (CorSp));
+      --  Save environment and put a new one in place
 
-      --  Save environment
+      Move_Env (Current_Perm_Env, Saved_Env);
 
-      Copy_Env (Current_Perm_Env, Saved_Env);
-      Check_List (Private_Declarations (CorSp));
+      --  Reanalyze package spec to have its variables in the environment
 
-      --  Set mode to Read, and then analyze declarations and statements
+      Check_List (Visible_Declarations (Spec));
+      Check_List (Private_Declarations (Spec));
 
-      Current_Checking_Mode := Read;
+      --  Check declarations and statements in the special mode for elaboration
+
       Check_List (Declarations (Pack));
       Check_Node (Handled_Statement_Sequence (Pack));
 
-      --  Check RW for every stateful variable (i.e. in declarations)
+      --  Restore the saved environment and free the current one
 
-      Return_Declarations (Private_Declarations (CorSp));
-      Return_Declarations (Visible_Declarations (CorSp));
-      Return_Declarations (Declarations (Pack));
+      Move_Env (Saved_Env, Current_Perm_Env);
 
-      --  Restore previous environment (i.e. delete every nonvisible
-      --  declaration) from environment.
-
-      Free_Env (Current_Perm_Env);
-      Copy_Env (Saved_Env, Current_Perm_Env);
+      Inside_Elaboration := Save_In_Elab;
    end Check_Package_Body;
 
-   --------------------
-   -- Check_Param_In --
-   --------------------
+   ------------------------
+   -- Check_Package_Spec --
+   ------------------------
 
-   procedure Check_Param_In (Formal : Entity_Id; Actual : Node_Id) is
-      Mode : constant Entity_Kind := Ekind (Formal);
-      Mode_Before : constant Checking_Mode := Current_Checking_Mode;
-   begin
-      case Formal_Kind'(Mode) is
-
-         --  Formal IN parameter
-
-         when E_In_Parameter =>
-
-            --  Formal IN parameter, access type
-
-            if Is_Access_Type (Etype (Formal)) then
-
-               --  Formal IN parameter, access to variable type
-
-               if not Is_Access_Constant (Etype (Formal)) then
-
-                  --  Formal IN parameter, named/anonymous access-to-variable
-                  --  type.
-                  --
-                  --  In SPARK, IN access-to-variable is an observe operation
-                  --  for a function, and a borrow operation for a procedure.
-
-                  if Ekind (Scope (Formal)) = E_Function then
-                     Current_Checking_Mode := Observe;
-                     Check_Node (Actual);
-                  else
-                     Current_Checking_Mode := Borrow;
-                     Check_Node (Actual);
-                  end if;
-
-               --  Formal IN parameter, access-to-constant type
-               --  Formal IN parameter, access-to-named-constant type
-
-               elsif not Is_Anonymous_Access_Type (Etype (Formal)) then
-                  Error_Msg_N ("assignment not allowed, Ownership Aspect"
-                               & " False (Named general access type)",
-                               Formal);
-
-               --  Formal IN parameter, access to anonymous constant type
-
-               else
-                  Current_Checking_Mode := Observe;
-                  Check_Node (Actual);
-               end if;
-
-            --  Formal IN parameter, composite type
-
-            elsif Is_Deep (Etype (Formal)) then
-
-               --  Composite formal types should be named
-               --  Formal IN parameter, composite named type
-
-               Current_Checking_Mode := Observe;
-               Check_Node (Actual);
-            end if;
-
-         when E_Out_Parameter
-            | E_In_Out_Parameter
-         =>
-            null;
-      end case;
-
-      Current_Checking_Mode := Mode_Before;
-   end Check_Param_In;
-
-   ----------------------
-   -- Check_Param_Out --
-   ----------------------
-
-   procedure Check_Param_Out (Formal : Entity_Id; Actual : Node_Id) is
-      Mode        : constant Entity_Kind := Ekind (Formal);
-      Mode_Before : constant Checking_Mode := Current_Checking_Mode;
+   procedure Check_Package_Spec (Pack : Node_Id) is
+      Save_In_Elab : constant Boolean := Inside_Elaboration;
+      Spec         : constant Node_Id := Specification (Pack);
+      Saved_Env    : Perm_Env;
 
    begin
-      case Formal_Kind'(Mode) is
+      Inside_Elaboration := True;
 
-         --  Formal OUT/IN OUT parameter
+      --  Save environment and put a new one in place
 
-         when E_Out_Parameter
-            | E_In_Out_Parameter
-         =>
+      Move_Env (Current_Perm_Env, Saved_Env);
 
-            --  Formal OUT/IN OUT parameter, access type
+      --  Check declarations in the special mode for elaboration
 
-            if Is_Access_Type (Etype (Formal)) then
+      Check_List (Visible_Declarations (Spec));
+      Check_List (Private_Declarations (Spec));
 
-               --  Formal OUT/IN OUT parameter, access to variable type
+      --  Restore the saved environment and free the current one
 
-               if not Is_Access_Constant (Etype (Formal)) then
+      Move_Env (Saved_Env, Current_Perm_Env);
 
-                  --  Cannot have anonymous out access parameter
-                  --  Formal out/in out parameter, access to named variable
-                  --  type.
+      Inside_Elaboration := Save_In_Elab;
+   end Check_Package_Spec;
 
-                  Current_Checking_Mode := Move;
-                  Check_Node (Actual);
+   -------------------------------
+   -- Check_Parameter_Or_Global --
+   -------------------------------
 
-               --  Formal out/in out parameter, access to constant type
+   procedure Check_Parameter_Or_Global
+     (Expr       : Node_Id;
+      Param_Mode : Formal_Kind;
+      Subp       : Entity_Id;
+      Global_Var : Boolean)
+   is
+      Typ  : constant Entity_Id := Underlying_Type (Etype (Expr));
+      Mode : Checking_Mode;
 
-               else
-                  Error_Msg_N ("assignment not allowed, Ownership Aspect False"
-                               & " (Named general access type)", Formal);
+   begin
+      case Param_Mode is
+         when E_In_Parameter =>
 
-               end if;
+            --  Inputs of functions have R permission only
 
-            --  Formal out/in out parameter, composite type
+            if Ekind (Subp) = E_Function then
+               Mode := Read;
 
-            elsif Is_Deep (Etype (Formal)) then
+            --  Input global variables have R permission only
 
-               --  Composite formal types should be named
-               --  Formal out/in out Parameter, Composite Named type.
+            elsif Global_Var then
+               Mode := Read;
 
-               Current_Checking_Mode := Borrow;
-               Check_Node (Actual);
+            --  Anonymous access to constant is an observe
+
+            elsif Is_Anonymous_Access_Type (Typ)
+              and then Is_Access_Constant (Typ)
+            then
+               Mode := Observe;
+
+            --  Other access types are a borrow
+
+            elsif Is_Access_Type (Typ) then
+               Mode := Borrow;
+
+            --  Deep types other than access types define an observe
+
+            elsif Is_Deep (Typ) then
+               Mode := Observe;
+
+            --  Otherwise the variable is read
+
+            else
+               Mode := Read;
             end if;
 
-         when E_In_Parameter =>
-            null;
+         when E_Out_Parameter =>
+            Mode := Assign;
+
+         when E_In_Out_Parameter =>
+            Mode := Move;
       end case;
 
-      Current_Checking_Mode := Mode_Before;
-   end Check_Param_Out;
+      Check_Expression (Expr, Mode);
+   end Check_Parameter_Or_Global;
+
+   procedure Check_Globals_Inst is
+     new Handle_Globals (Check_Parameter_Or_Global);
+
+   procedure Check_Globals (Subp : Entity_Id) renames Check_Globals_Inst;
 
    -------------------------
    -- Check_Safe_Pointers --
@@ -2121,19 +2319,18 @@ package body Sem_SPARK is
          Reset (Current_Loops_Envs);
          Reset (Current_Loops_Accumulators);
          Reset (Current_Perm_Env);
-         Reset (Current_Initialization_Map);
       end Initialize;
 
       --  Local variables
 
       Prag : Node_Id;
-
       --  SPARK_Mode pragma in application
 
    --  Start of processing for Check_Safe_Pointers
 
    begin
       Initialize;
+
       case Nkind (N) is
          when N_Compilation_Unit =>
             Check_Safe_Pointers (Unit (N));
@@ -2143,10 +2340,9 @@ package body Sem_SPARK is
             | N_Subprogram_Body
          =>
             Prag := SPARK_Pragma (Defining_Entity (N));
+
             if Present (Prag) then
-               if Get_SPARK_Mode_From_Annotation (Prag) = Opt.Off then
-                  return;
-               else
+               if Get_SPARK_Mode_From_Annotation (Prag) = Opt.On then
                   Check_Node (N);
                end if;
 
@@ -2163,242 +2359,84 @@ package body Sem_SPARK is
       end case;
    end Check_Safe_Pointers;
 
+   ---------------------------------------
+   -- Check_Source_Of_Borrow_Or_Observe --
+   ---------------------------------------
+
+   procedure Check_Source_Of_Borrow_Or_Observe
+     (Expr   : Node_Id;
+      Status : out Error_Status)
+   is
+      Root : constant Entity_Id := Get_Root_Object (Expr);
+   begin
+      Status := OK;
+
+      --  SPARK RM 3.10(3): If the target of an assignment operation is an
+      --  object of an anonymous access-to-object type (including copy-in for
+      --  a parameter), then the source shall be a name denoting a part of a
+      --  stand-alone object, a part of a parameter, or a call to a traversal
+      --  function.
+
+      if Present (Root) then
+         if not Ekind_In (Root, E_Variable, E_Constant)
+           and then Ekind (Root) not in Formal_Kind
+         then
+            Error_Msg_N
+              ("incorrect borrow or observe (SPARK RM 3.10(3))", Expr);
+            Error_Msg_N
+              ("\expression must be part of stand-alone object or parameter",
+               Expr);
+            Status := Error;
+         end if;
+
+      elsif Nkind (Expr) = N_Function_Call then
+         declare
+            Callee : constant Entity_Id := Get_Called_Entity (Expr);
+         begin
+            if No (Callee)
+              or else not Is_Traversal_Function (Callee)
+            then
+               Error_Msg_N
+                 ("incorrect borrow or observe (SPARK RM 3.10(3))", Expr);
+               Error_Msg_N
+                 ("\function called must be a traversal function", Expr);
+               Status := Error;
+            end if;
+         end;
+
+      else
+         Error_Msg_N ("incorrect borrow or observe (SPARK RM 3.10(3))", Expr);
+         Status := Error;
+      end if;
+   end Check_Source_Of_Borrow_Or_Observe;
+
    ---------------------
    -- Check_Statement --
    ---------------------
 
    procedure Check_Statement (Stmt : Node_Id) is
-      Mode_Before : constant Checking_Mode := Current_Checking_Mode;
-      State_N     : Perm_Kind;
-      Check       : Boolean := True;
-      St_Name     : Node_Id;
-      Ty_St_Name  : Node_Id;
-
-      function Get_Root (Comp_Stmt : Node_Id) return Node_Id;
-      --  Return the root of the name given as input
-
-      function Get_Root (Comp_Stmt : Node_Id) return Node_Id is
-      begin
-         case Nkind (Comp_Stmt) is
-            when N_Identifier
-               | N_Expanded_Name
-            => return Comp_Stmt;
-
-            when N_Type_Conversion
-               | N_Unchecked_Type_Conversion
-               | N_Qualified_Expression
-            =>
-               return Get_Root (Expression (Comp_Stmt));
-
-            when N_Parameter_Specification =>
-               return Get_Root (Defining_Identifier (Comp_Stmt));
-
-            when N_Selected_Component
-               | N_Indexed_Component
-               | N_Slice
-               | N_Explicit_Dereference
-            =>
-               return Get_Root (Prefix (Comp_Stmt));
-
-            when others =>
-               raise Program_Error;
-         end case;
-      end Get_Root;
-
    begin
       case N_Statement_Other_Than_Procedure_Call'(Nkind (Stmt)) is
+
+         --  An entry call is handled like other calls
+
          when N_Entry_Call_Statement =>
             Check_Call_Statement (Stmt);
 
-         --  Move right-hand side first, and then assign left-hand side
+         --  An assignment may correspond to a move, a borrow, or an observe
 
          when N_Assignment_Statement =>
+            declare
+               Target     : constant Node_Id := Name (Stmt);
+               Target_Typ : constant Entity_Id := Etype (Target);
+            begin
+               Check_Assignment (Target => Target,
+                                 Expr   => Expression (Stmt));
 
-            St_Name    := Name (Stmt);
-            Ty_St_Name := Etype (Name (Stmt));
-
-            --  Check that is not a *general* access type
-
-            if Has_Ownership_Aspect_True (St_Name, "assigning to") then
-
-            --  Assigning to access type
-
-               if Is_Access_Type (Ty_St_Name) then
-
-                  --  Assigning to access to variable type
-
-                  if not Is_Access_Constant (Ty_St_Name) then
-
-                     --  Assigning to named access to variable type
-
-                     if not Is_Anonymous_Access_Type (Ty_St_Name) then
-                        Current_Checking_Mode := Move;
-
-                     --  Assigning to anonymous access to variable type
-
-                     else
-                        --  Target /= source root
-
-                        if Nkind_In (Expression (Stmt), N_Allocator, N_Null)
-                          or else Entity (St_Name) /=
-                          Entity (Get_Root (Expression (Stmt)))
-                        then
-                           Error_Msg_N ("assignment not allowed, anonymous "
-                                        & "access Object with Different Root",
-                                        Stmt);
-                           Check := False;
-
-                        --  Target = source root
-
-                        else
-                           --  Here we do nothing on the source nor on the
-                           --  target. However, we check the the legality rule:
-                           --  "The source shall be an owning access object
-                           --  denoted by a name that is not in the observed
-                           --  state".
-
-                           State_N := Get_Perm (Expression (Stmt));
-                           if State_N = Observed then
-                              Error_Msg_N ("assignment not allowed, Anonymous "
-                                           & "access object with the same root"
-                                           & " but source Observed", Stmt);
-                              Check := False;
-                           end if;
-                        end if;
-                     end if;
-
-                  --  else access-to-constant
-
-                  --  Assigning to anonymous access-to-constant type
-
-                  elsif Is_Anonymous_Access_Type (Ty_St_Name) then
-
-                     --  ??? Check the follwing condition. We may have to
-                     --  add that the root is in the observed state too.
-
-                     State_N := Get_Perm (Expression (Stmt));
-                     if State_N /= Observed then
-                        Error_Msg_N ("assignment not allowed, anonymous "
-                                     & "access-to-constant object not in "
-                                     & "the observed state)", Stmt);
-                        Check := False;
-
-                     else
-                        Error_Msg_N ("?here check accessibility level cited in"
-                                     & " the second legality rule of assign",
-                                     Stmt);
-                        Check := False;
-                     end if;
-
-                  --  Assigning to named access-to-constant type:
-                  --  This case should have been detected when checking
-                  --  Has_Onwership_Aspect_True (Name (Stmt), "msg").
-
-                  else
-                     raise Program_Error;
-                  end if;
-
-               --  Assigning to composite (deep) type.
-
-               elsif Is_Deep (Ty_St_Name) then
-                  if Ekind_In (Ty_St_Name,
-                               E_Record_Type,
-                               E_Record_Subtype)
-                  then
-                     declare
-                        Elmt : Entity_Id :=
-                          First_Component_Or_Discriminant (Ty_St_Name);
-
-                     begin
-                        while Present (Elmt) loop
-                           if Is_Anonymous_Access_Type (Etype (Elmt)) or
-                             Ekind (Elmt) = E_General_Access_Type
-                           then
-                              Error_Msg_N ("assignment not allowed, Ownership "
-                                           & "Aspect False (Components have "
-                                           & "Ownership Aspect False)", Stmt);
-                              Check := False;
-                              exit;
-                           end if;
-
-                           Next_Component_Or_Discriminant (Elmt);
-                        end loop;
-                     end;
-
-                     --  Record types are always named so this is a move
-
-                     if Check then
-                        Current_Checking_Mode := Move;
-                     end if;
-
-                  elsif Ekind_In (Ty_St_Name,
-                                  E_Array_Type,
-                                  E_Array_Subtype)
-                    and then Check
-                  then
-                     Current_Checking_Mode := Move;
-                  end if;
-
-               --  Now handle legality rules of using a borrowed, observed,
-               --  or moved name as a prefix in an assignment.
-
-               else
-                  if Nkind_In (St_Name,
-                               N_Attribute_Reference,
-                               N_Expanded_Name,
-                               N_Explicit_Dereference,
-                               N_Indexed_Component,
-                               N_Reference,
-                               N_Selected_Component,
-                               N_Slice)
-                  then
-
-                     if Is_Access_Type (Etype (Prefix (St_Name))) or
-                       Is_Deep (Etype (Prefix (St_Name)))
-                     then
-
-                        --  We set the Check variable to True so that we can
-                        --  Check_Node of the expression and the name first
-                        --  under the assumption of Current_Checking_Mode =
-                        --  Read => nothing to be done for the RHS if the
-                        --  following check on the expression fails, and
-                        --  Current_Checking_Mode := Assign => the name should
-                        --  not be borrowed or observed so that we can use it
-                        --  as a prefix in the target of an assignement.
-                        --
-                        --  Note that we do not need to check the OA here
-                        --  because we are allowed to read and write "through"
-                        --  an object of OAF (example: traversing a DS).
-
-                        Check := True;
-                     end if;
-                  end if;
-
-                  if Nkind_In (Expression (Stmt),
-                            N_Attribute_Reference,
-                            N_Expanded_Name,
-                            N_Explicit_Dereference,
-                            N_Indexed_Component,
-                            N_Reference,
-                            N_Selected_Component,
-                            N_Slice)
-                  then
-
-                     if Is_Access_Type (Etype (Prefix (Expression (Stmt))))
-                       or else Is_Deep (Etype (Prefix (Expression (Stmt))))
-                     then
-                        Current_Checking_Mode := Observe;
-                        Check := True;
-                     end if;
-                  end if;
+               if Is_Deep (Target_Typ) then
+                  Check_Expression (Target, Assign);
                end if;
-
-               if Check then
-                  Check_Node (Expression (Stmt));
-                  Current_Checking_Mode := Assign;
-                  Check_Node (St_Name);
-               end if;
-            end if;
+            end;
 
          when N_Block_Statement =>
             declare
@@ -2410,7 +2448,6 @@ package body Sem_SPARK is
 
                --  Analyze declarations and Handled_Statement_Sequences
 
-               Current_Checking_Mode := Read;
                Check_List (Declarations (Stmt));
                Check_Node (Handled_Statement_Sequence (Stmt));
 
@@ -2422,168 +2459,248 @@ package body Sem_SPARK is
 
          when N_Case_Statement =>
             declare
+               Alt       : Node_Id;
                Saved_Env : Perm_Env;
-
-               --  Accumulator for the different branches
-
-               New_Env : Perm_Env;
-               Elmt : Node_Id := First (Alternatives (Stmt));
+               --  Copy of environment for analysis of the different cases
+               New_Env   : Perm_Env;
+               --  Accumulator for the different cases
 
             begin
-               Current_Checking_Mode := Read;
-               Check_Node (Expression (Stmt));
-               Current_Checking_Mode := Mode_Before;
+               Check_Expression (Expression (Stmt), Read);
 
                --  Save environment
 
                Copy_Env (Current_Perm_Env, Saved_Env);
 
-               --  Here we have the original env in saved, current with a fresh
-               --  copy, and new aliased.
-
                --  First alternative
 
-               Check_Node (Elmt);
-               Next (Elmt);
-               Copy_Env (Current_Perm_Env, New_Env);
-               Free_Env (Current_Perm_Env);
+               Alt := First (Alternatives (Stmt));
+               Check_List (Statements (Alt));
+               Next (Alt);
+
+               --  Cleanup
+
+               Move_Env (Current_Perm_Env, New_Env);
 
                --  Other alternatives
 
-               while Present (Elmt) loop
+               while Present (Alt) loop
 
                   --  Restore environment
 
                   Copy_Env (Saved_Env, Current_Perm_Env);
-                  Check_Node (Elmt);
-                  Next (Elmt);
+
+                  --  Next alternative
+
+                  Check_List (Statements (Alt));
+                  Next (Alt);
+
+                  --  Merge Current_Perm_Env into New_Env
+
+                  Merge_Env (Source => Current_Perm_Env, Target => New_Env);
                end loop;
 
-               Copy_Env (Saved_Env, Current_Perm_Env);
-               Free_Env (New_Env);
+               Move_Env (New_Env, Current_Perm_Env);
                Free_Env (Saved_Env);
             end;
 
-         when N_Delay_Relative_Statement =>
-            Check_Node (Expression (Stmt));
-
-         when N_Delay_Until_Statement =>
-            Check_Node (Expression (Stmt));
+         when N_Delay_Relative_Statement
+            | N_Delay_Until_Statement
+         =>
+            Check_Expression (Expression (Stmt), Read);
 
          when N_Loop_Statement =>
             Check_Loop_Statement (Stmt);
 
-            --  If deep type expression, then move, else read
-
          when N_Simple_Return_Statement =>
-            case Nkind (Expression (Stmt)) is
-               when N_Empty =>
-                  declare
-                     --  ??? This does not take into account the fact that
-                     --  a simple return inside an extended return statement
-                     --  applies to the extended return statement.
-                     Subp : constant Entity_Id :=
-                       Return_Applies_To (Return_Statement_Entity (Stmt));
-                  begin
-                     Return_Globals (Subp);
-                  end;
-
-               when others =>
-                  if Is_Deep (Etype (Expression (Stmt))) then
-                     Current_Checking_Mode := Move;
-                  else
-                     Check := False;
-                  end if;
-
-                  if Check then
-                     Check_Node (Expression (Stmt));
-                  end if;
-            end case;
-
-         when N_Extended_Return_Statement =>
-            Check_List (Return_Object_Declarations (Stmt));
-            Check_Node (Handled_Statement_Sequence (Stmt));
-            Return_Declarations (Return_Object_Declarations (Stmt));
             declare
-               --  ??? This does not take into account the fact that a simple
-               --  return inside an extended return statement applies to the
-               --  extended return statement.
                Subp : constant Entity_Id :=
                  Return_Applies_To (Return_Statement_Entity (Stmt));
+               Expr : constant Node_Id := Expression (Stmt);
+            begin
+               if Present (Expression (Stmt)) then
+                  declare
+                     Return_Typ : constant Entity_Id :=
+                       Etype (Expression (Stmt));
+
+                  begin
+                     --  SPARK RM 3.10(5): A return statement that applies
+                     --  to a traversal function that has an anonymous
+                     --  access-to-constant (respectively, access-to-variable)
+                     --  result type, shall return either the literal null
+                     --  or an access object denoted by a direct or indirect
+                     --  observer (respectively, borrower) of the traversed
+                     --  parameter.
+
+                     if Is_Anonymous_Access_Type (Return_Typ) then
+                        pragma Assert (Is_Traversal_Function (Subp));
+
+                        if Nkind (Expr) /= N_Null then
+                           declare
+                              Expr_Root : constant Entity_Id :=
+                                Get_Root_Object (Expr);
+                              Param     : constant Entity_Id :=
+                                First_Formal (Subp);
+                           begin
+                              if Param /= Expr_Root then
+                                 Error_Msg_NE
+                                   ("returned value must be rooted in "
+                                    & "traversed parameter & "
+                                    & "(SPARK RM 3.10(5))",
+                                    Stmt, Param);
+                              end if;
+                           end;
+                        end if;
+
+                     --  Move expression to caller
+
+                     elsif Is_Deep (Return_Typ) then
+
+                        if Is_Path_Expression (Expr) then
+                           Check_Expression (Expr, Move);
+
+                        else
+                           Error_Msg_N
+                             ("expression not allowed as source of move",
+                              Expr);
+                           return;
+                        end if;
+
+                     else
+                        Check_Expression (Expr, Read);
+                     end if;
+
+                     Return_Parameters (Subp);
+                     Return_Globals (Subp);
+                  end;
+               end if;
+            end;
+
+         when N_Extended_Return_Statement =>
+            declare
+               Subp  : constant Entity_Id :=
+                 Return_Applies_To (Return_Statement_Entity (Stmt));
+               Decls : constant List_Id := Return_Object_Declarations (Stmt);
+               Decl  : constant Node_Id := Last (Decls);
+               Obj   : constant Entity_Id := Defining_Identifier (Decl);
+               Perm  : Perm_Kind;
 
             begin
+               --  SPARK RM 3.10(5): return statement of traversal function
+
+               if Is_Traversal_Function (Subp) then
+                  Error_Msg_N
+                    ("extended return cannot apply to a traversal function",
+                     Stmt);
+               end if;
+
+               Check_List (Return_Object_Declarations (Stmt));
+               Check_Node (Handled_Statement_Sequence (Stmt));
+
+               Perm := Get_Perm (Obj);
+
+               if Perm /= Read_Write then
+                  Perm_Error (Decl, Read_Write, Perm);
+               end if;
+
+               Return_Parameters (Subp);
                Return_Globals (Subp);
             end;
 
-         --  Nothing to do when exiting a loop. No merge needed
+         --  On loop exit, merge the current permission environment with the
+         --  accumulator for the given loop.
 
          when N_Exit_Statement =>
-            null;
+            declare
+               Loop_Name         : constant Entity_Id := Loop_Of_Exit (Stmt);
+               Saved_Accumulator : constant Perm_Env_Access :=
+                 Get (Current_Loops_Accumulators, Loop_Name);
+               Environment_Copy  : constant Perm_Env_Access :=
+                 new Perm_Env;
+            begin
+               Copy_Env (Current_Perm_Env, Environment_Copy.all);
 
-         --  Copy environment, run on each branch
+               if Saved_Accumulator = null then
+                  Set (Current_Loops_Accumulators,
+                       Loop_Name, Environment_Copy);
+               else
+                  Merge_Env (Source => Environment_Copy.all,
+                             Target => Saved_Accumulator.all);
+                  --  ??? Either free Environment_Copy, or change the type
+                  --  of loop accumulators to directly store permission
+                  --  environments.
+               end if;
+            end;
+
+         --  On branches, analyze each branch independently on a fresh copy of
+         --  the permission environment, then merge the resulting permission
+         --  environments.
 
          when N_If_Statement =>
             declare
                Saved_Env : Perm_Env;
-
+               New_Env   : Perm_Env;
                --  Accumulator for the different branches
 
-               New_Env : Perm_Env;
-
             begin
-               Check_Node (Condition (Stmt));
+               Check_Expression (Condition (Stmt), Read);
 
                --  Save environment
 
                Copy_Env (Current_Perm_Env, Saved_Env);
 
-               --  Here we have the original env in saved, current with a fresh
-               --  copy.
-
-               --  THEN PART
+               --  THEN branch
 
                Check_List (Then_Statements (Stmt));
-               Copy_Env (Current_Perm_Env, New_Env);
-               Free_Env (Current_Perm_Env);
+               Move_Env (Current_Perm_Env, New_Env);
 
-               --  Here the new_environment contains curr env after then block
-
-               --  ELSIF part
+               --  ELSIF branches
 
                declare
-                  Elmt : Node_Id;
-
+                  Branch : Node_Id;
                begin
-                  Elmt := First (Elsif_Parts (Stmt));
-                  while Present (Elmt) loop
+                  Branch := First (Elsif_Parts (Stmt));
+                  while Present (Branch) loop
 
-                     --  Transfer into accumulator, and restore from save
+                     --  Restore current permission environment
 
                      Copy_Env (Saved_Env, Current_Perm_Env);
-                     Check_Node (Condition (Elmt));
-                     Check_List (Then_Statements (Stmt));
-                     Next (Elmt);
+                     Check_Expression (Condition (Branch), Read);
+                     Check_List (Then_Statements (Branch));
+
+                     --  Merge current permission environment
+
+                     Merge_Env (Source => Current_Perm_Env, Target => New_Env);
+                     Next (Branch);
                   end loop;
                end;
 
-               --  ELSE part
+               --  ELSE branch
 
-               --  Restore environment before if
+               --  Restore current permission environment
 
                Copy_Env (Saved_Env, Current_Perm_Env);
-
-               --  Here new environment contains the environment after then and
-               --  current the fresh copy of old one.
-
                Check_List (Else_Statements (Stmt));
 
-               --  CLEANUP
+               --  Merge current permission environment
 
-               Copy_Env (Saved_Env, Current_Perm_Env);
+               Merge_Env (Source => Current_Perm_Env, Target => New_Env);
 
-               Free_Env (New_Env);
+               --  Cleanup
+
+               Move_Env (New_Env, Current_Perm_Env);
                Free_Env (Saved_Env);
             end;
+
+         --  We should ideally ignore the branch after raising an exception,
+         --  so that it is not taken into account in merges. For now, just
+         --  propagate the current environment.
+
+         when N_Raise_Statement =>
+            null;
+
+         when N_Null_Statement =>
+            null;
 
          --  Unsupported constructs in SPARK
 
@@ -2599,13 +2716,6 @@ package body Sem_SPARK is
          =>
             Error_Msg_N ("unsupported construct in SPARK", Stmt);
 
-         --  Ignored constructs for pointer checking
-
-         when N_Null_Statement
-            | N_Raise_Statement
-         =>
-            null;
-
          --  The following nodes are never generated in GNATprove mode
 
          when N_Compound_Statement
@@ -2615,28 +2725,117 @@ package body Sem_SPARK is
       end case;
    end Check_Statement;
 
+   ----------------
+   -- Check_Type --
+   ----------------
+
+   procedure Check_Type (Typ : Entity_Id) is
+   begin
+      case Type_Kind'(Ekind (Underlying_Type (Typ))) is
+         when Access_Kind =>
+            case Access_Kind'(Ekind (Typ)) is
+               when E_Access_Type =>
+                  null;
+               when E_Access_Subtype =>
+                  Check_Type (Base_Type (Typ));
+               when E_Access_Attribute_Type =>
+                  Error_Msg_N ("access attribute not allowed in SPARK", Typ);
+               when E_Allocator_Type =>
+                  Error_Msg_N ("missing type resolution", Typ);
+               when E_General_Access_Type =>
+                  Error_Msg_NE
+                    ("general access type & not allowed in SPARK", Typ, Typ);
+               when Access_Subprogram_Kind =>
+                  Error_Msg_NE
+                    ("access to subprogram type & not allowed in SPARK",
+                     Typ, Typ);
+               when E_Anonymous_Access_Type =>
+                  Error_Msg_N ("anonymous access type not yet supported", Typ);
+            end case;
+
+         when E_Array_Type
+            | E_Array_Subtype
+         =>
+            Check_Type (Component_Type (Typ));
+
+         when Record_Kind =>
+            if Is_Deep (Typ)
+              and then (Is_Tagged_Type (Typ) or else Is_Class_Wide_Type (Typ))
+            then
+               Error_Msg_NE
+                 ("tagged type & cannot be owning in SPARK", Typ, Typ);
+
+            else
+               declare
+                  Comp : Entity_Id;
+               begin
+                  Comp := First_Component_Or_Discriminant (Typ);
+                  while Present (Comp) loop
+                     Check_Type (Etype (Comp));
+                     Next_Component_Or_Discriminant (Comp);
+                  end loop;
+               end;
+            end if;
+
+         when Scalar_Kind
+            | E_String_Literal_Subtype
+            | Protected_Kind
+            | Task_Kind
+            | Incomplete_Kind
+            | E_Exception_Type
+            | E_Subprogram_Type
+         =>
+            null;
+
+         --  The following should not arise as underlying types
+
+         when E_Private_Type
+            | E_Private_Subtype
+            | E_Limited_Private_Type
+            | E_Limited_Private_Subtype
+         =>
+            raise Program_Error;
+      end case;
+   end Check_Type;
+
    --------------
    -- Get_Perm --
    --------------
 
-   function Get_Perm (N : Node_Id) return Perm_Kind is
-      Tree_Or_Perm : constant Perm_Or_Tree := Get_Perm_Or_Tree (N);
-
+   function Get_Perm (N : Node_Or_Entity_Id) return Perm_Kind is
    begin
-      case Tree_Or_Perm.R is
-         when Folded =>
-            return Tree_Or_Perm.Found_Permission;
+      --  Special case for the object declared in an extended return statement
 
-         when Unfolded =>
-            pragma Assert (Tree_Or_Perm.Tree_Access /= null);
-            return Permission (Tree_Or_Perm.Tree_Access);
+      if Nkind (N) = N_Defining_Identifier then
+         declare
+            C : constant Perm_Tree_Access :=
+              Get (Current_Perm_Env, Unique_Entity (N));
+         begin
+            pragma Assert (C /= null);
+            return Permission (C);
+         end;
 
-         --  We encoutered a function call, hence the memory area is fresh,
-         --  which means that the association permission is RW.
+      --  The expression is rooted in an object
 
-         when Function_Call =>
-            return Unrestricted;
-      end case;
+      elsif Present (Get_Root_Object (N)) then
+         declare
+            Tree_Or_Perm : constant Perm_Or_Tree := Get_Perm_Or_Tree (N);
+         begin
+            case Tree_Or_Perm.R is
+               when Folded =>
+                  return Tree_Or_Perm.Found_Permission;
+
+               when Unfolded =>
+                  pragma Assert (Tree_Or_Perm.Tree_Access /= null);
+                  return Permission (Tree_Or_Perm.Tree_Access);
+            end case;
+         end;
+
+      --  The expression is a function call, an allocation, or null
+
+      else
+         return Read_Write;
+      end if;
    end Get_Perm;
 
    ----------------------
@@ -2647,191 +2846,84 @@ package body Sem_SPARK is
    begin
       case Nkind (N) is
 
-         --  Base identifier. Normally those are the roots of the trees stored
-         --  in the permission environment.
-
-         when N_Defining_Identifier =>
-            raise Program_Error;
-
-         when N_Identifier
-            | N_Expanded_Name
+         when N_Expanded_Name
+            | N_Identifier
          =>
             declare
-               P : constant Entity_Id := Entity (N);
                C : constant Perm_Tree_Access :=
-                 Get (Current_Perm_Env, Unique_Entity (P));
-
+                 Get (Current_Perm_Env, Unique_Entity (Entity (N)));
             begin
-               --  Setting the initialization map to True, so that this
-               --  variable cannot be ignored anymore when looking at end
-               --  of elaboration of package.
-
-               Set (Current_Initialization_Map, Unique_Entity (P), True);
-               if C = null then
-                  --  No null possible here, there are no parents for the path.
-                  --  This means we are using a global variable without adding
-                  --  it in environment with a global aspect.
-
-                  Illegal_Global_Usage (N);
-
-               else
-                  return (R => Unfolded, Tree_Access => C);
-               end if;
+               pragma Assert (C /= null);
+               return (R => Unfolded, Tree_Access => C);
             end;
 
-         when N_Type_Conversion
-            | N_Unchecked_Type_Conversion
-            | N_Qualified_Expression
-         =>
-            return Get_Perm_Or_Tree (Expression (N));
+         --  For a non-terminal path, we get the permission tree of its
+         --  prefix, and then get the subtree associated with the extension,
+         --  if unfolded. If folded, we return the permission associated with
+         --  children.
 
-         --  Happening when we try to get the permission of a variable that
-         --  is a formal parameter. We get instead the defining identifier
-         --  associated with the parameter (which is the one that has been
-         --  stored for indexing).
-
-         when N_Parameter_Specification =>
-            return Get_Perm_Or_Tree (Defining_Identifier (N));
-
-         --  We get the permission tree of its prefix, and then get either the
-         --  subtree associated with that specific selection, or if we have a
-         --  leaf that folds its children, we take the children's permission
-         --  and return it using the discriminant Folded.
-
-         when N_Selected_Component =>
-            declare
-               C : constant Perm_Or_Tree := Get_Perm_Or_Tree (Prefix (N));
-
-            begin
-               case C.R is
-                  when Folded
-                     | Function_Call
-                  =>
-                     return C;
-
-                  when Unfolded =>
-                     pragma Assert (C.Tree_Access /= null);
-                     pragma Assert (Kind (C.Tree_Access) = Entire_Object
-                                    or else
-                                    Kind (C.Tree_Access) = Record_Component);
-
-                     if Kind (C.Tree_Access) = Record_Component then
-                        declare
-                           Selected_Component : constant Entity_Id :=
-                             Entity (Selector_Name (N));
-                           Selected_C : constant Perm_Tree_Access :=
-                             Perm_Tree_Maps.Get
-                               (Component (C.Tree_Access), Selected_Component);
-
-                        begin
-                           if Selected_C = null then
-                              return (R           => Unfolded,
-                                      Tree_Access =>
-                                        Other_Components (C.Tree_Access));
-
-                           else
-                              return (R           => Unfolded,
-                                      Tree_Access => Selected_C);
-                           end if;
-                        end;
-
-                     elsif Kind (C.Tree_Access) = Entire_Object then
-                        return (R                => Folded,
-                                Found_Permission =>
-                                  Children_Permission (C.Tree_Access));
-
-                     else
-                        raise Program_Error;
-                     end if;
-               end case;
-            end;
-         --  We get the permission tree of its prefix, and then get either the
-         --  subtree associated with that specific selection, or if we have a
-         --  leaf that folds its children, we take the children's permission
-         --  and return it using the discriminant Folded.
-
-         when N_Indexed_Component
+         when N_Explicit_Dereference
+            | N_Indexed_Component
+            | N_Selected_Component
             | N_Slice
          =>
             declare
                C : constant Perm_Or_Tree := Get_Perm_Or_Tree (Prefix (N));
-
             begin
                case C.R is
-                  when Folded
-                     | Function_Call
-                  =>
+
+                  --  Some earlier prefix was already folded, return the
+                  --  permission found.
+
+                  when Folded =>
                      return C;
 
                   when Unfolded =>
-                     pragma Assert (C.Tree_Access /= null);
-                     pragma Assert (Kind (C.Tree_Access) = Entire_Object
-                                    or else
-                                    Kind (C.Tree_Access) = Array_Component);
+                     case Kind (C.Tree_Access) is
 
-                     if Kind (C.Tree_Access) = Array_Component then
-                        pragma Assert (Get_Elem (C.Tree_Access) /= null);
-                        return (R => Unfolded,
-                                Tree_Access => Get_Elem (C.Tree_Access));
+                        --  If the prefix tree is already folded, return the
+                        --  children permission.
 
-                     elsif Kind (C.Tree_Access) = Entire_Object then
-                        return (R => Folded, Found_Permission =>
-                                  Children_Permission (C.Tree_Access));
+                        when Entire_Object =>
+                           return (R                => Folded,
+                                   Found_Permission =>
+                                      Children_Permission (C.Tree_Access));
 
-                     else
-                        raise Program_Error;
-                     end if;
+                        when Reference =>
+                           pragma Assert (Nkind (N) = N_Explicit_Dereference);
+                           return (R           => Unfolded,
+                                   Tree_Access => Get_All (C.Tree_Access));
+
+                        when Record_Component =>
+                           pragma Assert (Nkind (N) = N_Selected_Component);
+                           declare
+                              Comp : constant Entity_Id :=
+                                Entity (Selector_Name (N));
+                              D : constant Perm_Tree_Access :=
+                                Perm_Tree_Maps.Get
+                                  (Component (C.Tree_Access), Comp);
+                           begin
+                              pragma Assert (D /= null);
+                              return (R           => Unfolded,
+                                      Tree_Access => D);
+                           end;
+
+                        when Array_Component =>
+                           pragma Assert (Nkind (N) = N_Indexed_Component
+                                            or else
+                                          Nkind (N) = N_Slice);
+                           pragma Assert (Get_Elem (C.Tree_Access) /= null);
+                           return (R => Unfolded,
+                                   Tree_Access => Get_Elem (C.Tree_Access));
+                     end case;
                end case;
             end;
-         --  We get the permission tree of its prefix, and then get either the
-         --  subtree associated with that specific selection, or if we have a
-         --  leaf that folds its children, we take the children's permission
-         --  and return it using the discriminant Folded.
 
-         when N_Explicit_Dereference =>
-            declare
-               C : constant Perm_Or_Tree := Get_Perm_Or_Tree (Prefix (N));
-
-            begin
-               case C.R is
-                  when Folded
-                     | Function_Call
-                  =>
-                     return C;
-
-                  when Unfolded =>
-                     pragma Assert (C.Tree_Access /= null);
-                     pragma Assert (Kind (C.Tree_Access) = Entire_Object
-                                    or else
-                                    Kind (C.Tree_Access) = Reference);
-
-                     if Kind (C.Tree_Access) = Reference then
-                        if Get_All (C.Tree_Access) = null then
-
-                           --  Hash_Table_Error
-
-                           raise Program_Error;
-
-                        else
-                           return
-                             (R => Unfolded,
-                              Tree_Access => Get_All (C.Tree_Access));
-                        end if;
-
-                     elsif Kind (C.Tree_Access) = Entire_Object then
-                        return (R => Folded, Found_Permission =>
-                                  Children_Permission (C.Tree_Access));
-
-                     else
-                        raise Program_Error;
-                     end if;
-               end case;
-            end;
-         --  The name contains a function call, hence the given path is always
-         --  new. We do not have to check for anything.
-
-         when N_Function_Call =>
-            return (R => Function_Call);
+         when N_Qualified_Expression
+            | N_Type_Conversion
+            | N_Unchecked_Type_Conversion
+         =>
+            return Get_Perm_Or_Tree (Expression (N));
 
          when others =>
             raise Program_Error;
@@ -2844,283 +2936,123 @@ package body Sem_SPARK is
 
    function Get_Perm_Tree (N : Node_Id) return Perm_Tree_Access is
    begin
-      case Nkind (N) is
+      return Set_Perm_Prefixes (N, None);
+   end Get_Perm_Tree;
 
-         --  Base identifier. Normally those are the roots of the trees stored
-         --  in the permission environment.
+   ---------------------
+   -- Get_Root_Object --
+   ---------------------
 
-         when N_Defining_Identifier =>
-            raise Program_Error;
-
-         when N_Identifier
-            | N_Expanded_Name
+   function Get_Root_Object (Expr : Node_Id) return Entity_Id is
+   begin
+      case Nkind (Expr) is
+         when N_Expanded_Name
+            | N_Identifier
          =>
-            declare
-               P : constant Node_Id := Entity (N);
-               C : constant Perm_Tree_Access :=
-                 Get (Current_Perm_Env, Unique_Entity (P));
+            return Entity (Expr);
 
-            begin
-               --  Setting the initialization map to True, so that this
-               --  variable cannot be ignored anymore when looking at end
-               --  of elaboration of package.
-
-               Set (Current_Initialization_Map, Unique_Entity (P), True);
-               if C = null then
-                  --  No null possible here, there are no parents for the path.
-                  --  This means we are using a global variable without adding
-                  --  it in environment with a global aspect.
-
-                  Illegal_Global_Usage (N);
-
-               else
-                  return C;
-               end if;
-            end;
-
-         when N_Type_Conversion
-            | N_Unchecked_Type_Conversion
-            | N_Qualified_Expression
-         =>
-            return Get_Perm_Tree (Expression (N));
-
-         when N_Parameter_Specification =>
-            return Get_Perm_Tree (Defining_Identifier (N));
-
-         --  We get the permission tree of its prefix, and then get either the
-         --  subtree associated with that specific selection, or if we have a
-         --  leaf that folds its children, we unroll it in one step.
-
-         when N_Selected_Component =>
-            declare
-               C : constant Perm_Tree_Access := Get_Perm_Tree (Prefix (N));
-
-            begin
-               if C = null then
-
-                  --  If null then it means we went through a function call
-
-                  return null;
-               end if;
-
-               pragma Assert (Kind (C) = Entire_Object
-                              or else Kind (C) = Record_Component);
-
-               if Kind (C) = Record_Component then
-
-                  --  The tree is unfolded. We just return the subtree.
-
-                  declare
-                     Selected_Component : constant Entity_Id :=
-                       Entity (Selector_Name (N));
-                     Selected_C : constant Perm_Tree_Access :=
-                       Perm_Tree_Maps.Get
-                         (Component (C), Selected_Component);
-
-                  begin
-                     if Selected_C = null then
-                        return Other_Components (C);
-                     end if;
-                     return Selected_C;
-                  end;
-
-               elsif Kind (C) = Entire_Object then
-                  declare
-                     --  Expand the tree. Replace the node with
-                     --  Record_Component.
-
-                     Elem : Node_Id;
-
-                     --  Create the unrolled nodes
-
-                     Son : Perm_Tree_Access;
-
-                     Child_Perm : constant Perm_Kind :=
-                       Children_Permission (C);
-
-                  begin
-                     --  We change the current node from Entire_Object to
-                     --  Record_Component with same permission and an empty
-                     --  hash table as component list.
-
-                     C.all.Tree :=
-                       (Kind             => Record_Component,
-                        Is_Node_Deep     => Is_Node_Deep (C),
-                        Permission       => Permission (C),
-                        Component        => Perm_Tree_Maps.Nil,
-                        Other_Components =>
-                           new Perm_Tree_Wrapper'
-                          (Tree =>
-                               (Kind                => Entire_Object,
-                                --  Is_Node_Deep is true, to be conservative
-                                Is_Node_Deep        => True,
-                                Permission          => Child_Perm,
-                                Children_Permission => Child_Perm)
-                          )
-                       );
-
-                     --  We fill the hash table with all sons of the record,
-                     --  with basic Entire_Objects nodes.
-
-                     Elem := First_Component_Or_Discriminant
-                       (Etype (Prefix (N)));
-
-                     while Present (Elem) loop
-                        Son := new Perm_Tree_Wrapper'
-                          (Tree =>
-                             (Kind                => Entire_Object,
-                              Is_Node_Deep        => Is_Deep (Etype (Elem)),
-                              Permission          => Child_Perm,
-                              Children_Permission => Child_Perm));
-
-                        Perm_Tree_Maps.Set
-                          (C.all.Tree.Component, Elem, Son);
-                        Next_Component_Or_Discriminant (Elem);
-                     end loop;
-                     --  we return the tree to the sons, so that the recursion
-                     --  can continue.
-
-                     declare
-                        Selected_Component : constant Entity_Id :=
-                          Entity (Selector_Name (N));
-
-                        Selected_C : constant Perm_Tree_Access :=
-                          Perm_Tree_Maps.Get
-                            (Component (C), Selected_Component);
-
-                     begin
-                        pragma Assert (Selected_C /= null);
-                        return Selected_C;
-                     end;
-                  end;
-               else
-                  raise Program_Error;
-               end if;
-            end;
-         --  We set the permission tree of its prefix, and then we extract from
-         --  the returned pointer the subtree. If folded, we unroll the tree at
-         --  one step.
-
-         when N_Indexed_Component
+         when N_Explicit_Dereference
+            | N_Indexed_Component
+            | N_Selected_Component
             | N_Slice
          =>
-            declare
-               C : constant Perm_Tree_Access := Get_Perm_Tree (Prefix (N));
+            return Get_Root_Object (Prefix (Expr));
 
-            begin
-               if C = null then
-                  --  If null then we went through a function call
+         --  There is no entity for an allocator, NULL or a function call
 
-                  return null;
-               end if;
-               pragma Assert (Kind (C) = Entire_Object
-                              or else Kind (C) = Array_Component);
+         when N_Allocator
+            | N_Null
+            | N_Function_Call
+         =>
+            return Empty;
 
-               if Kind (C) = Array_Component then
-
-                  --  The tree is unfolded. We just return the elem subtree
-
-                  pragma Assert (Get_Elem (C) = null);
-                  return Get_Elem (C);
-
-               elsif Kind (C) = Entire_Object then
-                  declare
-                     --  Expand the tree. Replace node with Array_Component.
-
-                     Son : Perm_Tree_Access;
-
-                  begin
-                     Son := new Perm_Tree_Wrapper'
-                       (Tree =>
-                          (Kind                => Entire_Object,
-                           Is_Node_Deep        => Is_Node_Deep (C),
-                           Permission          => Children_Permission (C),
-                           Children_Permission => Children_Permission (C)));
-
-                     --  We change the current node from Entire_Object
-                     --  to Array_Component with same permission and the
-                     --  previously defined son.
-
-                     C.all.Tree := (Kind         => Array_Component,
-                                    Is_Node_Deep => Is_Node_Deep (C),
-                                    Permission   => Permission (C),
-                                    Get_Elem     => Son);
-                     return Get_Elem (C);
-                  end;
-               else
-                  raise Program_Error;
-               end if;
-            end;
-         --  We get the permission tree of its prefix, and then get either the
-         --  subtree associated with that specific selection, or if we have a
-         --  leaf that folds its children, we unroll the tree.
-
-         when N_Explicit_Dereference =>
-            declare
-               C : Perm_Tree_Access;
-
-            begin
-               C := Get_Perm_Tree (Prefix (N));
-
-               if C = null then
-
-                  --  If null, we went through a function call
-
-                  return null;
-               end if;
-
-               pragma Assert (Kind (C) = Entire_Object
-                              or else Kind (C) = Reference);
-
-               if Kind (C) = Reference then
-
-                  --  The tree is unfolded. We return the elem subtree
-
-                  if Get_All (C) = null then
-
-                     --  Hash_Table_Error
-
-                     raise Program_Error;
-                  end if;
-                  return Get_All (C);
-
-               elsif Kind (C) = Entire_Object then
-                  declare
-                     --  Expand the tree. Replace the node with Reference.
-
-                     Son : Perm_Tree_Access;
-
-                  begin
-                     Son := new Perm_Tree_Wrapper'
-                       (Tree =>
-                          (Kind                => Entire_Object,
-                           Is_Node_Deep        => Is_Deep (Etype (N)),
-                           Permission          => Children_Permission (C),
-                           Children_Permission => Children_Permission (C)));
-
-                     --  We change the current node from Entire_Object to
-                     --  Reference with same permission and the previous son.
-
-                     pragma Assert (Is_Node_Deep (C));
-                     C.all.Tree := (Kind         => Reference,
-                                    Is_Node_Deep => Is_Node_Deep (C),
-                                    Permission   => Permission (C),
-                                    Get_All      => Son);
-                     return Get_All (C);
-                  end;
-               else
-                  raise Program_Error;
-               end if;
-            end;
-         --  No permission tree for function calls
-
-         when N_Function_Call =>
-            return null;
+         when N_Qualified_Expression
+            | N_Type_Conversion
+            | N_Unchecked_Type_Conversion
+         =>
+            return Get_Root_Object (Expression (Expr));
 
          when others =>
             raise Program_Error;
       end case;
-   end Get_Perm_Tree;
+   end Get_Root_Object;
+
+   ---------
+   -- Glb --
+   ---------
+
+   function Glb (P1, P2 : Perm_Kind) return Perm_Kind
+   is
+   begin
+      case P1 is
+         when No_Access =>
+            return No_Access;
+
+         when Read_Only =>
+            case P2 is
+               when No_Access
+                  | Write_Only
+               =>
+                  return No_Access;
+
+               when Read_Perm =>
+                  return Read_Only;
+            end case;
+
+         when Write_Only =>
+            case P2 is
+               when No_Access
+                  | Read_Only
+               =>
+                  return No_Access;
+
+               when Write_Perm =>
+                  return Write_Only;
+            end case;
+
+         when Read_Write =>
+            return P2;
+      end case;
+   end Glb;
+
+   -------------------------
+   -- Has_Array_Component --
+   -------------------------
+
+   function Has_Array_Component (Expr : Node_Id) return Boolean is
+   begin
+      case Nkind (Expr) is
+         when N_Expanded_Name
+            | N_Identifier
+         =>
+            return False;
+
+         when N_Explicit_Dereference
+            | N_Selected_Component
+         =>
+            return Has_Array_Component (Prefix (Expr));
+
+         when N_Indexed_Component
+            | N_Slice
+         =>
+            return True;
+
+         when N_Allocator
+            | N_Null
+            | N_Function_Call
+         =>
+            return False;
+
+         when N_Qualified_Expression
+            | N_Type_Conversion
+            | N_Unchecked_Type_Conversion
+         =>
+            return Has_Array_Component (Expression (Expr));
+
+         when others =>
+            raise Program_Error;
+      end case;
+   end Has_Array_Component;
 
    --------
    -- Hp --
@@ -3154,118 +3086,422 @@ package body Sem_SPARK is
    -- Is_Deep --
    -------------
 
-   function Is_Deep (E : Entity_Id) return Boolean is
-      function Is_Private_Entity_Mode_Off (E : Entity_Id) return Boolean;
-      function Is_Private_Entity_Mode_Off (E : Entity_Id) return Boolean is
-         Decl : Node_Id;
-         Pack_Decl : Node_Id;
-
-      begin
-         if Is_Itype (E) then
-            Decl := Associated_Node_For_Itype (E);
-         else
-            Decl := Parent (E);
-         end if;
-
-         Pack_Decl := Parent (Parent (Decl));
-
-         if Nkind (Pack_Decl) /= N_Package_Declaration then
-            return False;
-         end if;
-
-         return
-           Present (SPARK_Aux_Pragma (Defining_Entity (Pack_Decl)))
-           and then Get_SPARK_Mode_From_Annotation
-             (SPARK_Aux_Pragma (Defining_Entity (Pack_Decl))) = Off;
-      end Is_Private_Entity_Mode_Off;
-
+   function Is_Deep (Typ : Entity_Id) return Boolean is
    begin
-      pragma Assert (Is_Type (E));
-      case Ekind (E) is
-         when Scalar_Kind =>
-            return False;
-
+      case Type_Kind'(Ekind (Underlying_Type (Typ))) is
          when Access_Kind =>
             return True;
-
-         --  Just check the depth of its component type
 
          when E_Array_Type
             | E_Array_Subtype
          =>
-            return Is_Deep (Component_Type (E));
+            return Is_Deep (Component_Type (Typ));
 
-         when E_String_Literal_Subtype =>
-            return False;
-
-         --  Per RM 8.11 for class-wide types
-
-         when E_Class_Wide_Subtype
-            | E_Class_Wide_Type
-         =>
-            return True;
-
-         --  ??? What about hidden components
-
-         when E_Record_Type
-            | E_Record_Subtype
-         =>
+         when Record_Kind =>
             declare
-               Elmt : Entity_Id;
-
+               Comp : Entity_Id;
             begin
-               Elmt := First_Component_Or_Discriminant (E);
-               while Present (Elmt) loop
-                  if Is_Deep (Etype (Elmt)) then
+               Comp := First_Component_Or_Discriminant (Typ);
+               while Present (Comp) loop
+                  if Is_Deep (Etype (Comp)) then
                      return True;
-                  else
-                     Next_Component_Or_Discriminant (Elmt);
                   end if;
+                  Next_Component_Or_Discriminant (Comp);
                end loop;
-               return False;
             end;
+            return False;
 
-         when Private_Kind =>
-            if Is_Private_Entity_Mode_Off (E) then
-               return False;
-            else
-               if Present (Full_View (E)) then
-                  return Is_Deep (Full_View (E));
-               else
-                  return True;
-               end if;
-            end if;
-
-         when E_Incomplete_Type
-            | E_Incomplete_Subtype
+         when Scalar_Kind
+            | E_String_Literal_Subtype
+            | Protected_Kind
+            | Task_Kind
+            | Incomplete_Kind
+            | E_Exception_Type
+            | E_Subprogram_Type
          =>
-            return True;
-
-         --  No problem with synchronized types
-
-         when E_Protected_Type
-            | E_Protected_Subtype
-            | E_Task_Subtype
-            | E_Task_Type
-          =>
             return False;
 
-         when E_Exception_Type =>
-            return False;
+         --  The following should not arise as underlying types
 
-         when others =>
+         when E_Private_Type
+            | E_Private_Subtype
+            | E_Limited_Private_Type
+            | E_Limited_Private_Subtype
+         =>
             raise Program_Error;
       end case;
    end Is_Deep;
+
+   ------------------------
+   -- Is_Path_Expression --
+   ------------------------
+
+   function Is_Path_Expression (Expr : Node_Id) return Boolean is
+   begin
+      case Nkind (Expr) is
+         when N_Expanded_Name
+            | N_Explicit_Dereference
+            | N_Identifier
+            | N_Indexed_Component
+            | N_Selected_Component
+            | N_Slice
+         =>
+            return True;
+
+         --  Special value NULL corresponds to an empty path
+
+         when N_Null =>
+            return True;
+
+         --  Object returned by a allocator or function call corresponds to
+         --  a path.
+
+         when N_Allocator
+            | N_Function_Call
+         =>
+            return True;
+
+         when N_Qualified_Expression
+            | N_Type_Conversion
+            | N_Unchecked_Type_Conversion
+         =>
+            return Is_Path_Expression (Expression (Expr));
+
+         when others =>
+            return False;
+      end case;
+   end Is_Path_Expression;
+
+   ---------------------------
+   -- Is_Traversal_Function --
+   ---------------------------
+
+   function Is_Traversal_Function (E : Entity_Id) return Boolean is
+   begin
+      return Ekind (E) = E_Function
+
+        --  A function is said to be a traversal function if the result type of
+        --  the function is an anonymous access-to-object type,
+
+        and then Is_Anonymous_Access_Type (Etype (E))
+
+        --  the function has at least one formal parameter,
+
+        and then Present (First_Formal (E))
+
+        --  and the function's first parameter is of an access type.
+
+        and then Is_Access_Type (Etype (First_Formal (E)));
+   end Is_Traversal_Function;
+
+   ------------------
+   -- Loop_Of_Exit --
+   ------------------
+
+   function Loop_Of_Exit (N : Node_Id) return Entity_Id is
+      Nam : Node_Id := Name (N);
+      Stmt : Node_Id := N;
+   begin
+      if No (Nam) then
+         while Present (Stmt) loop
+            Stmt := Parent (Stmt);
+            if Nkind (Stmt) = N_Loop_Statement then
+               Nam := Identifier (Stmt);
+               exit;
+            end if;
+         end loop;
+      end if;
+      return Entity (Nam);
+   end Loop_Of_Exit;
+
+   ---------
+   -- Lub --
+   ---------
+
+   function Lub (P1, P2 : Perm_Kind) return Perm_Kind is
+   begin
+      case P1 is
+         when No_Access =>
+            return P2;
+
+         when Read_Only =>
+            case P2 is
+               when No_Access
+                  | Read_Only
+               =>
+                  return Read_Only;
+
+               when Write_Perm =>
+                  return Read_Write;
+            end case;
+
+         when Write_Only =>
+            case P2 is
+               when No_Access
+                  | Write_Only
+               =>
+                  return Write_Only;
+
+               when Read_Perm =>
+                  return Read_Write;
+            end case;
+
+         when Read_Write =>
+            return Read_Write;
+      end case;
+   end Lub;
+
+   ---------------
+   -- Merge_Env --
+   ---------------
+
+   procedure Merge_Env (Source : in out Perm_Env; Target : in out Perm_Env) is
+
+      --  Local subprograms
+
+      procedure Apply_Glb_Tree
+        (A : Perm_Tree_Access;
+         P : Perm_Kind);
+
+      procedure Merge_Trees
+        (Target : Perm_Tree_Access;
+         Source : Perm_Tree_Access);
+
+      --------------------
+      -- Apply_Glb_Tree --
+      --------------------
+
+      procedure Apply_Glb_Tree
+        (A : Perm_Tree_Access;
+         P : Perm_Kind)
+      is
+      begin
+         A.all.Tree.Permission := Glb (Permission (A), P);
+
+         case Kind (A) is
+            when Entire_Object =>
+               A.all.Tree.Children_Permission :=
+                 Glb (Children_Permission (A), P);
+
+            when Reference =>
+               Apply_Glb_Tree (Get_All (A), P);
+
+            when Array_Component =>
+               Apply_Glb_Tree (Get_Elem (A), P);
+
+            when Record_Component =>
+               declare
+                  Comp : Perm_Tree_Access;
+               begin
+                  Comp := Perm_Tree_Maps.Get_First (Component (A));
+                  while Comp /= null loop
+                     Apply_Glb_Tree (Comp, P);
+                     Comp := Perm_Tree_Maps.Get_Next (Component (A));
+                  end loop;
+               end;
+         end case;
+      end Apply_Glb_Tree;
+
+      -----------------
+      -- Merge_Trees --
+      -----------------
+
+      procedure Merge_Trees
+        (Target : Perm_Tree_Access;
+         Source : Perm_Tree_Access)
+      is
+         Perm : constant Perm_Kind :=
+           Glb (Permission (Target), Permission (Source));
+
+      begin
+         pragma Assert (Is_Node_Deep (Target) = Is_Node_Deep (Source));
+         Target.all.Tree.Permission := Perm;
+
+         case Kind (Target) is
+            when Entire_Object =>
+               declare
+                  Child_Perm : constant Perm_Kind :=
+                    Children_Permission (Target);
+
+               begin
+                  case Kind (Source) is
+                  when Entire_Object =>
+                     Target.all.Tree.Children_Permission :=
+                       Glb (Child_Perm, Children_Permission (Source));
+
+                  when Reference =>
+                     Copy_Tree (Source, Target);
+                     Target.all.Tree.Permission := Perm;
+                     Apply_Glb_Tree (Get_All (Target), Child_Perm);
+
+                  when Array_Component =>
+                     Copy_Tree (Source, Target);
+                     Target.all.Tree.Permission := Perm;
+                     Apply_Glb_Tree (Get_Elem (Target), Child_Perm);
+
+                  when Record_Component =>
+                     Copy_Tree (Source, Target);
+                     Target.all.Tree.Permission := Perm;
+                     declare
+                        Comp : Perm_Tree_Access;
+
+                     begin
+                        Comp :=
+                          Perm_Tree_Maps.Get_First (Component (Target));
+                        while Comp /= null loop
+                           --  Apply glb tree on every component subtree
+
+                           Apply_Glb_Tree (Comp, Child_Perm);
+                           Comp := Perm_Tree_Maps.Get_Next
+                             (Component (Target));
+                        end loop;
+                     end;
+                  end case;
+               end;
+
+            when Reference =>
+               case Kind (Source) is
+               when Entire_Object =>
+                  Apply_Glb_Tree (Get_All (Target),
+                                  Children_Permission (Source));
+
+               when Reference =>
+                  Merge_Trees (Get_All (Target), Get_All (Source));
+
+               when others =>
+                  raise Program_Error;
+
+               end case;
+
+            when Array_Component =>
+               case Kind (Source) is
+               when Entire_Object =>
+                  Apply_Glb_Tree (Get_Elem (Target),
+                                  Children_Permission (Source));
+
+               when Array_Component =>
+                  Merge_Trees (Get_Elem (Target), Get_Elem (Source));
+
+               when others =>
+                  raise Program_Error;
+
+               end case;
+
+            when Record_Component =>
+               case Kind (Source) is
+               when Entire_Object =>
+                  declare
+                     Child_Perm : constant Perm_Kind :=
+                       Children_Permission (Source);
+
+                     Comp : Perm_Tree_Access;
+
+                  begin
+                     Comp := Perm_Tree_Maps.Get_First
+                       (Component (Target));
+                     while Comp /= null loop
+                        --  Apply glb tree on every component subtree
+
+                        Apply_Glb_Tree (Comp, Child_Perm);
+                        Comp :=
+                          Perm_Tree_Maps.Get_Next (Component (Target));
+                     end loop;
+                  end;
+
+               when Record_Component =>
+                  declare
+                     Key_Source : Perm_Tree_Maps.Key_Option;
+                     CompTarget : Perm_Tree_Access;
+                     CompSource : Perm_Tree_Access;
+
+                  begin
+                     Key_Source := Perm_Tree_Maps.Get_First_Key
+                       (Component (Source));
+
+                     while Key_Source.Present loop
+                        CompSource := Perm_Tree_Maps.Get
+                          (Component (Source), Key_Source.K);
+                        CompTarget := Perm_Tree_Maps.Get
+                          (Component (Target), Key_Source.K);
+
+                        pragma Assert (CompSource /= null);
+                        Merge_Trees (CompTarget, CompSource);
+
+                        Key_Source := Perm_Tree_Maps.Get_Next_Key
+                          (Component (Source));
+                     end loop;
+                  end;
+
+               when others =>
+                  raise Program_Error;
+               end case;
+         end case;
+      end Merge_Trees;
+
+      --  Local variables
+
+      CompTarget : Perm_Tree_Access;
+      CompSource : Perm_Tree_Access;
+      KeyTarget : Perm_Tree_Maps.Key_Option;
+
+   --  Start of processing for Merge_Env
+
+   begin
+      KeyTarget := Get_First_Key (Target);
+      --  Iterate over every tree of the environment in the target, and merge
+      --  it with the source if there is such a similar one that exists. If
+      --  there is none, then skip.
+      while KeyTarget.Present loop
+
+         CompSource := Get (Source, KeyTarget.K);
+         CompTarget := Get (Target, KeyTarget.K);
+
+         pragma Assert (CompTarget /= null);
+
+         if CompSource /= null then
+            Merge_Trees (CompTarget, CompSource);
+            Remove (Source, KeyTarget.K);
+         end if;
+
+         KeyTarget := Get_Next_Key (Target);
+      end loop;
+
+      --  Iterate over every tree of the environment of the source. And merge
+      --  again. If there is not any tree of the target then just copy the tree
+      --  from source to target.
+      declare
+         KeySource : Perm_Tree_Maps.Key_Option;
+      begin
+         KeySource := Get_First_Key (Source);
+         while KeySource.Present loop
+
+            CompSource := Get (Source, KeySource.K);
+            CompTarget := Get (Target, KeySource.K);
+
+            if CompTarget = null then
+               CompTarget := new Perm_Tree_Wrapper'(CompSource.all);
+               Copy_Tree (CompSource, CompTarget);
+               Set (Target, KeySource.K, CompTarget);
+            else
+               Merge_Trees (CompTarget, CompSource);
+            end if;
+
+            KeySource := Get_Next_Key (Source);
+         end loop;
+      end;
+
+      Free_Env (Source);
+   end Merge_Env;
 
    ----------------
    -- Perm_Error --
    ----------------
 
    procedure Perm_Error
-     (N : Node_Id;
-      Perm : Perm_Kind;
-      Found_Perm : Perm_Kind)
+     (N              : Node_Id;
+      Perm           : Perm_Kind;
+      Found_Perm     : Perm_Kind;
+      Forbidden_Perm : Boolean := False)
    is
       procedure Set_Root_Object
         (Path  : Node_Id;
@@ -3328,7 +3564,7 @@ package body Sem_SPARK is
          Error_Msg_NE ("insufficient permission for &", N, Root);
       end if;
 
-      Perm_Mismatch (Perm, Found_Perm, N);
+      Perm_Mismatch (N, Perm, Found_Perm, Forbidden_Perm);
    end Perm_Error;
 
    -------------------------------
@@ -3345,364 +3581,341 @@ package body Sem_SPARK is
       Error_Msg_Node_2 := Subp;
       Error_Msg_NE ("insufficient permission for & when returning from &",
                     Subp, E);
-      Perm_Mismatch (Perm, Found_Perm, Subp);
+      Perm_Mismatch (Subp, Perm, Found_Perm);
    end Perm_Error_Subprogram_End;
 
    ------------------
    -- Process_Path --
    ------------------
 
-   procedure Process_Path (N : Node_Id) is
-      Root    : constant Entity_Id := Get_Enclosing_Object (N);
-      State_N : Perm_Kind;
-   begin
-      --  We ignore if yielding to synchronized
+   procedure Process_Path (Expr : Node_Id; Mode : Checking_Mode) is
+      Expr_Type : constant Entity_Id := Etype (Expr);
+      Root      : Entity_Id := Get_Root_Object (Expr);
+      Perm      : Perm_Kind;
 
-      if Present (Root)
-        and then Is_Synchronized_Object (Root)
+   begin
+      --  Nothing to do if the root type is not deep, or the path is not rooted
+      --  in an object.
+
+      if not Present (Root)
+        or else not Is_Deep (Etype (Root))
       then
          return;
       end if;
 
-      State_N := Get_Perm (N);
+      --  Identify the root type for the path
 
-      case Current_Checking_Mode is
+      Root := Unique_Entity (Root);
 
-         --  Check permission R, do nothing
+      --  The root object should have been declared and entered into the
+      --  current permission environment.
+
+      if Get (Current_Perm_Env, Root) = null then
+         Illegal_Global_Usage (Expr);
+      end if;
+
+      Perm := Get_Perm (Expr);
+
+      case Mode is
 
          when Read =>
 
-            --  This condition should be removed when removing the read
-            --  checking mode.
+            --  No checking needed during elaboration
 
-            return;
+            if Inside_Elaboration then
+               return;
+            end if;
+
+            --  Check path is readable
+
+            if Perm not in Read_Perm then
+               Perm_Error (Expr, Read_Only, Perm);
+               return;
+            end if;
 
          when Move =>
 
-            --  The rhs object in an assignment statement (including copy in
-            --  and copy back) should be in the Unrestricted or Moved state.
-            --  Otherwise the move is not allowed.
-            --  This applies to both stand-alone and composite objects.
-            --  If the state of the source is Moved, then a warning message
-            --  is prompt to make the user aware of reading a nullified
-            --  object.
+            --  Forbidden on deep path during elaboration, otherwise no
+            --  checking needed.
 
-            if State_N /= Unrestricted and State_N /= Moved then
-               Perm_Error (N, Unrestricted, State_N);
+            if Inside_Elaboration then
+               if Is_Deep (Expr_Type)
+                 and then not Inside_Procedure_Call
+                 and then Present (Get_Root_Object (Expr))
+               then
+                  Error_Msg_N ("illegal move during elaboration", Expr);
+               end if;
+
                return;
             end if;
 
-            --  In the AI, after moving a path nothing to do since the rhs
-            --  object was in the Unrestricted state and it shall be
-            --  refreshed to Unrestricted. The object should be nullified
-            --  however. To avoid moving again a name that has already been
-            --  moved, in this implementation we set the state of the moved
-            --  object to "Moved". This shall be used to prompt a warning
-            --  when manipulating a null pointer and also to implement
-            --  the no aliasing parameter restriction.
+            --  For deep path, check RW permission, otherwise R permission
 
-            if State_N = Moved then
-               Error_Msg_N ("?the source or one of its extensions has"
-                            & " already been moved", N);
+            if not Is_Deep (Expr_Type) then
+               if Perm not in Read_Perm then
+                  Perm_Error (Expr, Read_Only, Perm);
+               end if;
+               return;
             end if;
 
-            declare
-               --  Set state to Moved to the path and any of its prefixes
+            --  SPARK RM 3.10(1): At the point of a move operation the state of
+            --  the source object (if any) shall be Unrestricted.
 
-               Tree : constant Perm_Tree_Access :=
-                 Set_Perm_Prefixes (N, Moved);
+            if Perm /= Read_Write then
+               Perm_Error (Expr, Read_Write, Perm);
+               return;
+            end if;
 
-            begin
-               if Tree = null then
+            --  Do not update permission environment when handling calls
 
-                  --  We went through a function call, no permission to
-                  --  modify.
+            if Inside_Procedure_Call then
+               return;
+            end if;
 
-                  return;
-               end if;
+            --  SPARK RM 3.10(1): After a move operation, the state of the
+            --  source object (if any) becomes Moved.
 
-               --  Set state to Moved on any strict extension of the path
-
-               Set_Perm_Extensions (Tree, Moved);
-            end;
+            if Present (Get_Root_Object (Expr)) then
+               declare
+                  Tree : constant Perm_Tree_Access :=
+                    Set_Perm_Prefixes (Expr, Write_Only);
+               begin
+                  pragma Assert (Tree /= null);
+                  Set_Perm_Extensions_Move (Tree, Etype (Expr));
+               end;
+            end if;
 
          when Assign =>
 
-            --  The lhs object in an assignment statement (including copy in
-            --  and copy back) should be in the Unrestricted state.
-            --  Otherwise the move is not allowed.
-            --  This applies to both stand-alone and composite objects.
+            --  No checking needed during elaboration
 
-            if State_N /= Unrestricted and State_N /= Moved then
-               Perm_Error (N, Unrestricted, State_N);
+            if Inside_Elaboration then
                return;
             end if;
 
-            --  After assigning to a path nothing to do since it was in the
-            --  Unrestricted state and it would be refreshed to
-            --  Unrestricted.
+            --  For assignment, check W permission
+
+            if Perm not in Write_Perm then
+               Perm_Error (Expr, Write_Only, Perm);
+               return;
+            end if;
+
+            --  Do not update permission environment when handling calls
+
+            if Inside_Procedure_Call then
+               return;
+            end if;
+
+            --  If there is no root object, or the tree has an array component,
+            --  then the permissions do not get modified by the assignment.
+
+            if No (Get_Root_Object (Expr))
+              or else Has_Array_Component (Expr)
+            then
+               return;
+            end if;
+
+            --  Set permission RW for the path and its extensions
+
+            declare
+               Tree : constant Perm_Tree_Access := Get_Perm_Tree (Expr);
+            begin
+               Tree.all.Tree.Permission := Read_Write;
+               Set_Perm_Extensions (Tree, Read_Write);
+
+               --  Normalize the permission tree
+
+               Set_Perm_Prefixes_Assign (Expr);
+            end;
 
          when Borrow =>
 
-            --  Borrowing is only allowed on Unrestricted objects.
+            --  Forbidden during elaboration
 
-            if State_N /= Unrestricted and State_N /= Moved then
-               Perm_Error (N, Unrestricted, State_N);
-            end if;
-
-            if State_N = Moved then
-               Error_Msg_N ("?the source or one of its extensions has"
-                            & " already been moved", N);
-            end if;
-
-            declare
-               --  Set state to Borrowed to the path and any of its prefixes
-
-               Tree : constant Perm_Tree_Access :=
-                 Set_Perm_Prefixes (N, Borrowed);
-
-            begin
-               if Tree = null then
-
-                  --  We went through a function call, no permission to
-                  --  modify.
-
-                  return;
+            if Inside_Elaboration then
+               if not Inside_Procedure_Call then
+                  Error_Msg_N ("illegal borrow during elaboration", Expr);
                end if;
 
-               --  Set state to Borrowed on any strict extension of the path
-
-               Set_Perm_Extensions (Tree, Borrowed);
-            end;
-
-         when Observe =>
-            if State_N /= Unrestricted
-              and then State_N /= Observed
-            then
-               Perm_Error (N, Observed, State_N);
-            end if;
-
-            declare
-               --  Set permission to Observed on the path and any of its
-               --  prefixes if it is of a deep type. Actually, some operation
-               --  like reading from an object of access type is considered as
-               --  observe while it should not affect the permissions of
-               --  the considered tree.
-
-               Tree : Perm_Tree_Access;
-
-            begin
-               if Is_Deep (Etype (N)) then
-                  Tree := Set_Perm_Prefixes (N, Observed);
-               else
-                  Tree := null;
-               end if;
-
-               if Tree = null then
-
-                  --  We went through a function call, no permission to
-                  --  modify.
-
-                  return;
-               end if;
-
-               --  Set permissions to No on any strict extension of the path
-
-               Set_Perm_Extensions (Tree, Observed);
-            end;
-      end case;
-   end Process_Path;
-
-   -------------------------
-   -- Return_Declarations --
-   -------------------------
-
-   procedure Return_Declarations (L : List_Id) is
-      procedure Return_Declaration (Decl : Node_Id);
-      --  Check correct permissions for every declared object
-
-      ------------------------
-      -- Return_Declaration --
-      ------------------------
-
-      procedure Return_Declaration (Decl : Node_Id) is
-      begin
-         if Nkind (Decl) = N_Object_Declaration then
-
-            --  Check RW for object declared, unless the object has never been
-            --  initialized.
-
-            if Get (Current_Initialization_Map,
-                    Unique_Entity (Defining_Identifier (Decl))) = False
-            then
                return;
             end if;
 
+            --  For borrowing, check RW permission
+
+            if Perm /= Read_Write then
+               Perm_Error (Expr, Read_Write, Perm);
+               return;
+            end if;
+
+            --  Do not update permission environment when handling calls
+
+            if Inside_Procedure_Call then
+               return;
+            end if;
+
+            --  Set permission NO for the path and its extensions
+
             declare
-               Elem : constant Perm_Tree_Access :=
-                 Get (Current_Perm_Env,
-                      Unique_Entity (Defining_Identifier (Decl)));
-
+               Tree : constant Perm_Tree_Access :=
+                 Set_Perm_Prefixes (Expr, No_Access);
             begin
-               if Elem = null then
-
-                  --  Here we are on a declaration. Hence it should have been
-                  --  added in the environment when analyzing this node with
-                  --  mode Read. Hence it is not possible to find a null
-                  --  pointer here.
-
-                  --  Hash_Table_Error
-
-                  raise Program_Error;
-               end if;
-
-               if Permission (Elem) /= Unrestricted then
-                  Perm_Error (Decl, Unrestricted, Permission (Elem));
-               end if;
+               Set_Perm_Extensions (Tree, No_Access);
             end;
-         end if;
-      end Return_Declaration;
-      --  Local Variables
 
-      N : Node_Id;
+         when Observe =>
 
-   --  Start of processing for Return_Declarations
+            --  Forbidden during elaboration
 
-   begin
-      N := First (L);
-      while Present (N) loop
-         Return_Declaration (N);
-         Next (N);
-      end loop;
-   end Return_Declarations;
+            if Inside_Elaboration then
+               if not Inside_Procedure_Call then
+                  Error_Msg_N ("illegal observe during elaboration", Expr);
+               end if;
+
+               return;
+            end if;
+
+            --  For borrowing, check R permission
+
+            if Perm not in Read_Perm then
+               Perm_Error (Expr, Read_Only, Perm);
+               return;
+            end if;
+
+            --  Do not update permission environment when handling calls
+
+            if Inside_Procedure_Call then
+               return;
+            end if;
+
+            --  Set permission R for the path and its extensions
+
+            declare
+               Tree : constant Perm_Tree_Access :=
+                 Set_Perm_Prefixes (Expr, Read_Only);
+            begin
+               Set_Perm_Extensions (Tree, Read_Only);
+            end;
+      end case;
+   end Process_Path;
 
    --------------------
    -- Return_Globals --
    --------------------
 
    procedure Return_Globals (Subp : Entity_Id) is
-      procedure Return_Globals_From_List
-        (First_Item : Node_Id;
-         Kind       : Formal_Kind);
-      --  Return global items from the list starting at Item
 
-      procedure Return_Globals_Of_Mode (Global_Mode : Name_Id);
-      --  Return global items for the mode Global_Mode
+      procedure Return_Global
+        (Expr       : Node_Id;
+         Param_Mode : Formal_Kind;
+         Subp       : Entity_Id;
+         Global_Var : Boolean);
+      --  Proxy procedure to return globals, to adjust for the type of first
+      --  parameter expected by Return_Parameter_Or_Global.
 
-      ------------------------------
-      -- Return_Globals_From_List --
-      ------------------------------
+      -------------------
+      -- Return_Global --
+      -------------------
 
-      procedure Return_Globals_From_List
-        (First_Item : Node_Id;
-         Kind       : Formal_Kind)
+      procedure Return_Global
+        (Expr       : Node_Id;
+         Param_Mode : Formal_Kind;
+         Subp       : Entity_Id;
+         Global_Var : Boolean)
       is
-         Item : Node_Id := First_Item;
-         E    : Entity_Id;
-
       begin
-         while Present (Item) loop
-            E := Entity (Item);
+         Return_Parameter_Or_Global
+           (Entity (Expr), Param_Mode, Subp, Global_Var);
+      end Return_Global;
 
-            --  Ignore abstract states, which play no role in pointer aliasing
-
-            if Ekind (E) = E_Abstract_State then
-               null;
-            else
-               Return_The_Global (E, Kind, Subp);
-            end if;
-            Next_Global (Item);
-         end loop;
-      end Return_Globals_From_List;
-
-      ----------------------------
-      -- Return_Globals_Of_Mode --
-      ----------------------------
-
-      procedure Return_Globals_Of_Mode (Global_Mode : Name_Id) is
-         Kind : Formal_Kind;
-
-      begin
-         case Global_Mode is
-            when Name_Input
-               | Name_Proof_In
-             =>
-               Kind := E_In_Parameter;
-            when Name_Output =>
-               Kind := E_Out_Parameter;
-            when Name_In_Out =>
-               Kind := E_In_Out_Parameter;
-            when others =>
-               raise Program_Error;
-         end case;
-
-         --  Return both global items from Global and Refined_Global pragmas
-
-         Return_Globals_From_List (First_Global (Subp, Global_Mode), Kind);
-         Return_Globals_From_List
-           (First_Global (Subp, Global_Mode, Refined => True), Kind);
-      end Return_Globals_Of_Mode;
+      procedure Return_Globals_Inst is new Handle_Globals (Return_Global);
 
    --  Start of processing for Return_Globals
 
    begin
-      Return_Globals_Of_Mode (Name_Proof_In);
-      Return_Globals_Of_Mode (Name_Input);
-      Return_Globals_Of_Mode (Name_Output);
-      Return_Globals_Of_Mode (Name_In_Out);
+      Return_Globals_Inst (Subp);
    end Return_Globals;
 
    --------------------------------
    -- Return_Parameter_Or_Global --
    --------------------------------
 
-   procedure Return_The_Global
-     (Id   : Entity_Id;
-      Mode : Formal_Kind;
-      Subp : Entity_Id)
+   procedure Return_Parameter_Or_Global
+     (Id         : Entity_Id;
+      Mode       : Formal_Kind;
+      Subp       : Entity_Id;
+      Global_Var : Boolean)
    is
-      Elem : constant Perm_Tree_Access := Get (Current_Perm_Env, Id);
-      pragma Assert (Elem /= null);
-
+      Typ  : constant Entity_Id := Underlying_Type (Etype (Id));
    begin
-      --  Observed IN parameters and globals need not return a permission to
-      --  the caller.
+      --  Shallow parameters and globals need not be considered
 
-      if Mode = E_In_Parameter
+      if not Is_Deep (Typ) then
+         return;
 
-      --  Check this for read-only globals.
+      elsif Mode = E_In_Parameter then
 
-      then
-         if Permission (Elem) /= Unrestricted
-           and then Permission (Elem) /= Observed
+         --  Input global variables are observed only
+
+         if Global_Var then
+            return;
+
+         --  Anonymous access to constant is an observe
+
+         elsif Is_Anonymous_Access_Type (Typ)
+           and then Is_Access_Constant (Typ)
          then
-            Perm_Error_Subprogram_End
-              (E          => Id,
-               Subp       => Subp,
-               Perm       => Observed,
-               Found_Perm => Permission (Elem));
-         end if;
+            return;
 
-         --  All globals of mode out or in/out should return with mode
-         --  Unrestricted.
+         --  Deep types other than access types define an observe
 
-      else
-         if Permission (Elem) /= Unrestricted then
-            Perm_Error_Subprogram_End
-              (E          => Id,
-               Subp       => Subp,
-               Perm       => Unrestricted,
-               Found_Perm => Permission (Elem));
+         elsif not Is_Access_Type (Typ) then
+            return;
          end if;
       end if;
-   end Return_The_Global;
+
+      --  All other parameters and globals should return with mode RW to the
+      --  caller.
+
+      declare
+         Tree : constant Perm_Tree_Access := Get (Current_Perm_Env, Id);
+      begin
+         if Permission (Tree) /= Read_Write then
+            Perm_Error_Subprogram_End
+              (E          => Id,
+               Subp       => Subp,
+               Perm       => Read_Write,
+               Found_Perm => Permission (Tree));
+         end if;
+      end;
+   end Return_Parameter_Or_Global;
+
+   -----------------------
+   -- Return_Parameters --
+   -----------------------
+
+   procedure Return_Parameters (Subp : Entity_Id) is
+      Formal : Entity_Id;
+   begin
+      Formal := First_Formal (Subp);
+      while Present (Formal) loop
+         Return_Parameter_Or_Global (Formal, Ekind (Formal), Subp, False);
+         Next_Formal (Formal);
+      end loop;
+   end Return_Parameters;
 
    -------------------------
    -- Set_Perm_Extensions --
    -------------------------
 
    procedure Set_Perm_Extensions (T : Perm_Tree_Access; P : Perm_Kind) is
+
       procedure Free_Perm_Tree_Children (T : Perm_Tree_Access);
+      --  Free the permission tree of children if any, prio to replacing T
+
+      -----------------------------
+      -- Free_Perm_Tree_Children --
+      -----------------------------
+
       procedure Free_Perm_Tree_Children (T : Perm_Tree_Access) is
       begin
          case Kind (T) is
@@ -3710,357 +3923,353 @@ package body Sem_SPARK is
                null;
 
             when Reference =>
-               Free_Perm_Tree (T.all.Tree.Get_All);
+               Free_Tree (T.all.Tree.Get_All);
 
             when Array_Component =>
-               Free_Perm_Tree (T.all.Tree.Get_Elem);
-
-            --  Free every Component subtree
+               Free_Tree (T.all.Tree.Get_Elem);
 
             when Record_Component =>
                declare
-                  Comp : Perm_Tree_Access;
+                  Hashtbl : Perm_Tree_Maps.Instance := Component (T);
+                  Comp    : Perm_Tree_Access;
 
                begin
-                  Comp := Perm_Tree_Maps.Get_First (Component (T));
+                  Comp := Perm_Tree_Maps.Get_First (Hashtbl);
                   while Comp /= null loop
-                     Free_Perm_Tree (Comp);
-                     Comp := Perm_Tree_Maps.Get_Next (Component (T));
+                     Free_Tree (Comp);
+                     Comp := Perm_Tree_Maps.Get_Next (Hashtbl);
                   end loop;
 
-                  Free_Perm_Tree (T.all.Tree.Other_Components);
+                  Perm_Tree_Maps.Reset (Hashtbl);
                end;
          end case;
       end Free_Perm_Tree_Children;
 
-      Son : constant Perm_Tree :=
-        Perm_Tree'
-          (Kind                => Entire_Object,
-           Is_Node_Deep        => Is_Node_Deep (T),
-           Permission          => Permission (T),
-           Children_Permission => P);
+   --  Start of processing for Set_Perm_Extensions
 
    begin
       Free_Perm_Tree_Children (T);
-      T.all.Tree := Son;
+      T.all.Tree := Perm_Tree'(Kind                => Entire_Object,
+                               Is_Node_Deep        => Is_Node_Deep (T),
+                               Permission          => Permission (T),
+                               Children_Permission => P);
    end Set_Perm_Extensions;
 
    ------------------------------
-   -- Set_Perm_Prefixes --
+   -- Set_Perm_Extensions_Move --
    ------------------------------
 
-   function Set_Perm_Prefixes
-     (N        : Node_Id;
-      New_Perm : Perm_Kind)
-      return Perm_Tree_Access
+   procedure Set_Perm_Extensions_Move
+     (T : Perm_Tree_Access;
+      E : Entity_Id)
    is
    begin
+      --  Shallow extensions are set to RW
 
-      case Nkind (N) is
+      if not Is_Node_Deep (T) then
+         Set_Perm_Extensions (T, Read_Write);
+         return;
+      end if;
 
-         when N_Identifier
-            | N_Expanded_Name
-            | N_Defining_Identifier
-         =>
-            if Nkind (N) = N_Defining_Identifier
-              and then New_Perm = Borrowed
-            then
-               raise Program_Error;
-            end if;
+      --  Deep extensions are set to W before .all and NO afterwards
 
+      T.all.Tree.Permission := Write_Only;
+
+      case T.all.Tree.Kind is
+
+         --  For a folded tree of composite type, unfold the tree for better
+         --  precision.
+
+         when Entire_Object =>
+            case Ekind (E) is
+               when E_Array_Type
+                  | E_Array_Subtype
+               =>
+                  declare
+                     C : constant Perm_Tree_Access :=
+                       new Perm_Tree_Wrapper'
+                         (Tree =>
+                            (Kind                => Entire_Object,
+                             Is_Node_Deep        => Is_Node_Deep (T),
+                             Permission          => Read_Write,
+                             Children_Permission => Read_Write));
+                  begin
+                     Set_Perm_Extensions_Move (C, Component_Type (E));
+                     T.all.Tree := (Kind         => Array_Component,
+                                    Is_Node_Deep => Is_Node_Deep (T),
+                                    Permission   => Write_Only,
+                                    Get_Elem     => C);
+                  end;
+
+               when Record_Kind =>
+                  declare
+                     C       : Perm_Tree_Access;
+                     Comp    : Entity_Id;
+                     Hashtbl : Perm_Tree_Maps.Instance;
+
+                  begin
+                     Comp := First_Component_Or_Discriminant (E);
+                     while Present (Comp) loop
+                        C := new Perm_Tree_Wrapper'
+                          (Tree =>
+                             (Kind                => Entire_Object,
+                              Is_Node_Deep        => Is_Deep (Etype (Comp)),
+                              Permission          => Read_Write,
+                              Children_Permission => Read_Write));
+                        Set_Perm_Extensions_Move (C, Etype (Comp));
+                        Perm_Tree_Maps.Set (Hashtbl, Comp, C);
+                        Next_Component_Or_Discriminant (Comp);
+                     end loop;
+
+                     T.all.Tree :=
+                       (Kind             => Record_Component,
+                        Is_Node_Deep     => Is_Node_Deep (T),
+                        Permission       => Write_Only,
+                        Component        => Hashtbl);
+                  end;
+
+               --  Otherwise, extensions are set to NO
+
+               when others =>
+                  Set_Perm_Extensions (T, No_Access);
+            end case;
+
+         when Reference =>
+            Set_Perm_Extensions (T, No_Access);
+
+         when Array_Component =>
+            Set_Perm_Extensions_Move (Get_Elem (T), Component_Type (E));
+
+         when Record_Component =>
             declare
-               P : Node_Id;
-               C : Perm_Tree_Access;
+               C    : Perm_Tree_Access;
+               Comp : Entity_Id;
 
             begin
-               if Nkind (N) = N_Defining_Identifier then
-                  P := N;
-               else
-                  P := Entity (N);
-               end if;
+               Comp := First_Component_Or_Discriminant (E);
+               while Present (Comp) loop
+                  C := Perm_Tree_Maps.Get (Component (T), Comp);
+                  pragma Assert (C /= null);
+                  Set_Perm_Extensions_Move (C, Etype (Comp));
+                  Next_Component_Or_Discriminant (Comp);
+               end loop;
+            end;
+      end case;
+   end Set_Perm_Extensions_Move;
 
-               C := Get (Current_Perm_Env, Unique_Entity (P));
+   -----------------------
+   -- Set_Perm_Prefixes --
+   -----------------------
+
+   function Set_Perm_Prefixes
+     (N    : Node_Id;
+      Perm : Perm_Kind_Option) return Perm_Tree_Access
+   is
+   begin
+      case Nkind (N) is
+         when N_Expanded_Name
+            | N_Identifier
+         =>
+            declare
+               E : constant Entity_Id := Unique_Entity (Entity (N));
+               C : constant Perm_Tree_Access := Get (Current_Perm_Env, E);
                pragma Assert (C /= null);
 
-               --  Setting the initialization map to True, so that this
-               --  variable cannot be ignored anymore when looking at end
-               --  of elaboration of package.
-
-               Set (Current_Initialization_Map, Unique_Entity (P), True);
-               if New_Perm = Observed
-                 and then C = null
-               then
-
-                  --  No null possible here, there are no parents for the path.
-                  --  This means we are using a global variable without adding
-                  --  it in environment with a global aspect.
-
-                  Illegal_Global_Usage (N);
+            begin
+               if Perm /= None then
+                  C.all.Tree.Permission := Glb (Perm, Permission (C));
                end if;
 
-               C.all.Tree.Permission := New_Perm;
                return C;
             end;
 
-         when N_Type_Conversion
-            | N_Unchecked_Type_Conversion
-            | N_Qualified_Expression
-         =>
-            return Set_Perm_Prefixes (Expression (N), New_Perm);
+         --  For a non-terminal path, we set the permission tree of its prefix,
+         --  and then we extract from the returned pointer the subtree and
+         --  assign an adequate permission to it, if unfolded. If folded,
+         --  we unroll the tree one level.
 
-         when N_Parameter_Specification =>
-            raise Program_Error;
+         when N_Explicit_Dereference =>
+            declare
+               C : constant Perm_Tree_Access :=
+                 Set_Perm_Prefixes (Prefix (N), Perm);
+               pragma Assert (C /= null);
+               pragma Assert (Kind (C) = Entire_Object
+                              or else Kind (C) = Reference);
+            begin
+               --  The tree is already unfolded. Replace the permission of the
+               --  dereference.
 
-            --  We set the permission tree of its prefix, and then we extract
-            --  our subtree from the returned pointer and assign an adequate
-            --  permission to it, if unfolded. If folded, we unroll the tree
-            --  in one step.
+               if Kind (C) = Reference then
+                  declare
+                     D : constant Perm_Tree_Access := Get_All (C);
+                     pragma Assert (D /= null);
+
+                  begin
+                     if Perm /= None then
+                        D.all.Tree.Permission := Glb (Perm, Permission (D));
+                     end if;
+
+                     return D;
+                  end;
+
+               --  The tree is folded. Expand it.
+
+               else
+                  declare
+                     pragma Assert (Kind (C) = Entire_Object);
+
+                     Child_P : constant Perm_Kind := Children_Permission (C);
+                     D : constant Perm_Tree_Access :=
+                       new Perm_Tree_Wrapper'
+                         (Tree =>
+                            (Kind                => Entire_Object,
+                             Is_Node_Deep        => Is_Deep (Etype (N)),
+                             Permission          => Child_P,
+                             Children_Permission => Child_P));
+                  begin
+                     if Perm /= None then
+                        D.all.Tree.Permission := Perm;
+                     end if;
+
+                     C.all.Tree := (Kind         => Reference,
+                                    Is_Node_Deep => Is_Node_Deep (C),
+                                    Permission   => Permission (C),
+                                    Get_All      => D);
+                     return D;
+                  end;
+               end if;
+            end;
 
          when N_Selected_Component =>
             declare
                C : constant Perm_Tree_Access :=
-                 Set_Perm_Prefixes (Prefix (N), New_Perm);
-
-            begin
-               if C = null then
-
-                  --  We went through a function call, do nothing
-
-                  return null;
-               end if;
-
+                 Set_Perm_Prefixes (Prefix (N), Perm);
+               pragma Assert (C /= null);
                pragma Assert (Kind (C) = Entire_Object
                               or else Kind (C) = Record_Component);
+            begin
+               --  The tree is already unfolded. Replace the permission of the
+               --  component.
 
                if Kind (C) = Record_Component then
-                  --  The tree is unfolded. We just modify the permission and
-                  --  return the record subtree.
-
                   declare
-                     Selected_Component : constant Entity_Id :=
-                       Entity (Selector_Name (N));
-
-                     Selected_C : Perm_Tree_Access :=
-                       Perm_Tree_Maps.Get
-                         (Component (C), Selected_Component);
+                     Comp : constant Entity_Id := Entity (Selector_Name (N));
+                     D : constant Perm_Tree_Access :=
+                       Perm_Tree_Maps.Get (Component (C), Comp);
+                     pragma Assert (D /= null);
 
                   begin
-                     if Selected_C = null then
-                        Selected_C := Other_Components (C);
+                     if Perm /= None then
+                        D.all.Tree.Permission := Glb (Perm, Permission (D));
                      end if;
 
-                     pragma Assert (Selected_C /= null);
-                     Selected_C.all.Tree.Permission := New_Perm;
-                     return Selected_C;
+                     return D;
                   end;
 
-               elsif Kind (C) = Entire_Object then
+               --  The tree is folded. Expand it.
+
+               else
                   declare
-                     --  Expand the tree. Replace the node with
-                     --  Record_Component.
+                     pragma Assert (Kind (C) = Entire_Object);
 
-                     Elem : Node_Id;
-
+                     D       : Perm_Tree_Access;
+                     Comp    : Node_Id;
+                     P       : Perm_Kind;
+                     Child_P : constant Perm_Kind := Children_Permission (C);
+                     Hashtbl : Perm_Tree_Maps.Instance;
                      --  Create an empty hash table
 
-                     Hashtbl : Perm_Tree_Maps.Instance;
-
-                     --  We create the unrolled nodes, that will all have same
-                     --  permission than parent.
-
-                     Son           : Perm_Tree_Access;
-                     Children_Perm : constant Perm_Kind :=
-                       Children_Permission (C);
-
                   begin
-                     --  We change the current node from Entire_Object to
-                     --  Record_Component with same permission and an empty
-                     --  hash table as component list.
+                     Comp :=
+                       First_Component_Or_Discriminant (Etype (Prefix (N)));
 
-                     C.all.Tree :=
-                       (Kind         => Record_Component,
-                        Is_Node_Deep => Is_Node_Deep (C),
-                        Permission   => Permission (C),
-                        Component    => Hashtbl,
-                        Other_Components =>
-                           new Perm_Tree_Wrapper'
-                          (Tree =>
-                               (Kind                => Entire_Object,
-                                Is_Node_Deep        => True,
-                                Permission          => Children_Perm,
-                                Children_Permission => Children_Perm)
-                          ));
-
-                     --  We fill the hash table with all sons of the record,
-                     --  with basic Entire_Objects nodes.
-
-                     Elem := First_Component_Or_Discriminant
-                       (Etype (Prefix (N)));
-
-                     while Present (Elem) loop
-                        Son := new Perm_Tree_Wrapper'
-                          (Tree =>
-                             (Kind                => Entire_Object,
-                              Is_Node_Deep        => Is_Deep (Etype (Elem)),
-                              Permission          => Children_Perm,
-                              Children_Permission => Children_Perm));
-
-                        Perm_Tree_Maps.Set (C.all.Tree.Component, Elem, Son);
-                        Next_Component_Or_Discriminant (Elem);
-                     end loop;
-                     --  Now we set the right field to Borrowed, and then we
-                     --  return the tree to the sons, so that the recursion can
-                     --  continue.
-
-                     declare
-                        Selected_Component : constant Entity_Id :=
-                          Entity (Selector_Name (N));
-                        Selected_C : Perm_Tree_Access :=
-                          Perm_Tree_Maps.Get
-                            (Component (C), Selected_Component);
-
-                     begin
-                        if Selected_C = null then
-                           Selected_C := Other_Components (C);
+                     while Present (Comp) loop
+                        if Perm /= None
+                          and then Comp = Entity (Selector_Name (N))
+                        then
+                           P := Perm;
+                        else
+                           P := Child_P;
                         end if;
 
-                        pragma Assert (Selected_C /= null);
-                        Selected_C.all.Tree.Permission := New_Perm;
-                        return Selected_C;
-                     end;
+                        D := new Perm_Tree_Wrapper'
+                          (Tree =>
+                             (Kind                => Entire_Object,
+                              Is_Node_Deep        => Is_Deep (Etype (Comp)),
+                              Permission          => P,
+                              Children_Permission => Child_P));
+                        Perm_Tree_Maps.Set (Hashtbl, Comp, D);
+                        Next_Component_Or_Discriminant (Comp);
+                     end loop;
+
+                     C.all.Tree := (Kind         => Record_Component,
+                                    Is_Node_Deep => Is_Node_Deep (C),
+                                    Permission   => Permission (C),
+                                    Component    => Hashtbl);
+                     return D;
                   end;
-               else
-                  raise Program_Error;
                end if;
             end;
-
-            --  We set the permission tree of its prefix, and then we extract
-            --  from the returned pointer the subtree and assign an adequate
-            --  permission to it, if unfolded. If folded, we unroll the tree in
-            --  one step.
 
          when N_Indexed_Component
             | N_Slice
          =>
             declare
                C : constant Perm_Tree_Access :=
-                 Set_Perm_Prefixes (Prefix (N), New_Perm);
-
-            begin
-               if C = null then
-
-                  --  We went through a function call, do nothing
-
-                  return null;
-               end if;
-
+                 Set_Perm_Prefixes (Prefix (N), Perm);
+               pragma Assert (C /= null);
                pragma Assert (Kind (C) = Entire_Object
                               or else Kind (C) = Array_Component);
+            begin
+               --  The tree is already unfolded. Replace the permission of the
+               --  component.
 
                if Kind (C) = Array_Component then
-
-                  --  The tree is unfolded. We just modify the permission and
-                  --  return the elem subtree.
-
-                  pragma Assert (Get_Elem (C) /= null);
-                  C.all.Tree.Get_Elem.all.Tree.Permission := New_Perm;
-                  return Get_Elem (C);
-
-               elsif Kind (C) = Entire_Object then
                   declare
-                     --  Expand the tree. Replace node with Array_Component.
-
-                     Son : Perm_Tree_Access;
+                     D : constant Perm_Tree_Access := Get_Elem (C);
+                     pragma Assert (D /= null);
 
                   begin
-                     Son := new Perm_Tree_Wrapper'
-                       (Tree =>
-                          (Kind                => Entire_Object,
-                           Is_Node_Deep        => Is_Node_Deep (C),
-                           Permission          => New_Perm,
-                           Children_Permission => Children_Permission (C)));
+                     if Perm /= None then
+                        D.all.Tree.Permission := Glb (Perm, Permission (D));
+                     end if;
 
-                     --  Children_Permission => Children_Permission (C)
-                     --  this line should be checked maybe New_Perm
-                     --  instead of Children_Permission (C)
+                     return D;
+                  end;
 
-                     --  We change the current node from Entire_Object
-                     --  to Array_Component with same permission and the
-                     --  previously defined son.
+               --  The tree is folded. Expand it.
+
+               else
+                  declare
+                     pragma Assert (Kind (C) = Entire_Object);
+
+                     Child_P : constant Perm_Kind := Children_Permission (C);
+                     D : constant Perm_Tree_Access :=
+                       new Perm_Tree_Wrapper'
+                         (Tree =>
+                            (Kind                => Entire_Object,
+                             Is_Node_Deep        => Is_Node_Deep (C),
+                             Permission          => Child_P,
+                             Children_Permission => Child_P));
+                  begin
+                     if Perm /= None then
+                        D.all.Tree.Permission := Perm;
+                     end if;
 
                      C.all.Tree := (Kind         => Array_Component,
                                     Is_Node_Deep => Is_Node_Deep (C),
-                                    Permission   => New_Perm,
-                                    Get_Elem     => Son);
-                     return Get_Elem (C);
+                                    Permission   => Permission (C),
+                                    Get_Elem     => D);
+                     return D;
                   end;
-               else
-                  raise Program_Error;
                end if;
             end;
 
-            --  We set the permission tree of its prefix, and then we extract
-            --  from the returned pointer the subtree and assign an adequate
-            --  permission to it, if unfolded. If folded, we unroll the tree
-            --  at one step.
-
-         when N_Explicit_Dereference =>
-            declare
-               C : constant Perm_Tree_Access :=
-                Set_Perm_Prefixes (Prefix (N), New_Perm);
-
-            begin
-               if C = null then
-
-                  --  We went through a function call. Do nothing.
-
-                  return null;
-               end if;
-
-               pragma Assert (Kind (C) = Entire_Object
-                              or else Kind (C) = Reference);
-
-               if Kind (C) = Reference then
-
-                  --  The tree is unfolded. We just modify the permission and
-                  --  return the elem subtree.
-
-                  pragma Assert (Get_All (C) /= null);
-                  C.all.Tree.Get_All.all.Tree.Permission := New_Perm;
-                  return Get_All (C);
-
-               elsif Kind (C) = Entire_Object then
-                  declare
-                     --  Expand the tree. Replace the node with Reference.
-
-                     Son : Perm_Tree_Access;
-
-                  begin
-                     Son := new Perm_Tree_Wrapper'
-                       (Tree =>
-                          (Kind                => Entire_Object,
-                           Is_Node_Deep        => Is_Deep (Etype (N)),
-                           Permission          => New_Perm,
-                           Children_Permission => Children_Permission (C)));
-
-                     --  We change the current node from Entire_Object to
-                     --  Reference with Borrowed and the previous son.
-
-                     pragma Assert (Is_Node_Deep (C));
-                     C.all.Tree := (Kind         => Reference,
-                                    Is_Node_Deep => Is_Node_Deep (C),
-                                    Permission   => New_Perm,
-                                    Get_All      => Son);
-                     return Get_All (C);
-                  end;
-
-               else
-                  raise Program_Error;
-               end if;
-            end;
-
-         when N_Function_Call =>
-            return null;
+         when N_Qualified_Expression
+            | N_Type_Conversion
+            | N_Unchecked_Type_Conversion
+         =>
+            return Set_Perm_Prefixes (Expression (N), Perm);
 
          when others =>
             raise Program_Error;
@@ -4068,382 +4277,106 @@ package body Sem_SPARK is
    end Set_Perm_Prefixes;
 
    ------------------------------
-   -- Set_Perm_Prefixes_Borrow --
+   -- Set_Perm_Prefixes_Assign --
    ------------------------------
 
-   function Set_Perm_Prefixes_Borrow (N : Node_Id) return Perm_Tree_Access
-   is
+   procedure Set_Perm_Prefixes_Assign (N : Node_Id) is
+      C : constant Perm_Tree_Access := Get_Perm_Tree (N);
+
    begin
-      pragma Assert (Current_Checking_Mode = Borrow);
+      case Kind (C) is
+         when Entire_Object =>
+            pragma Assert (Children_Permission (C) = Read_Write);
+            C.all.Tree.Permission := Read_Write;
+
+         when Reference =>
+            C.all.Tree.Permission :=
+              Lub (Permission (C), Permission (Get_All (C)));
+
+         when Array_Component =>
+            null;
+
+         when Record_Component =>
+            declare
+               Comp : Perm_Tree_Access;
+               Perm : Perm_Kind := Read_Write;
+
+            begin
+               --  We take the Glb of all the descendants, and then update the
+               --  permission of the node with it.
+
+               Comp := Perm_Tree_Maps.Get_First (Component (C));
+               while Comp /= null loop
+                  Perm := Glb (Perm, Permission (Comp));
+                  Comp := Perm_Tree_Maps.Get_Next (Component (C));
+               end loop;
+
+               C.all.Tree.Permission := Lub (Permission (C), Perm);
+            end;
+      end case;
+
       case Nkind (N) is
 
-         when N_Identifier
-            | N_Expanded_Name
+         --  Base identifier end recursion
+
+         when N_Expanded_Name
+            | N_Identifier
          =>
-            declare
-               P : constant Node_Id := Entity (N);
-               C : constant Perm_Tree_Access :=
-                 Get (Current_Perm_Env, Unique_Entity (P));
-               pragma Assert (C /= null);
+            null;
 
-            begin
-               --  Setting the initialization map to True, so that this
-               --  variable cannot be ignored anymore when looking at end
-               --  of elaboration of package.
-
-               Set (Current_Initialization_Map, Unique_Entity (P), True);
-               C.all.Tree.Permission := Borrowed;
-               return C;
-            end;
-
-         when N_Type_Conversion
-            | N_Unchecked_Type_Conversion
-            | N_Qualified_Expression
-         =>
-            return Set_Perm_Prefixes_Borrow (Expression (N));
-
-         when N_Parameter_Specification
-            | N_Defining_Identifier
-         =>
-            raise Program_Error;
-
-            --  We set the permission tree of its prefix, and then we extract
-            --  our subtree from the returned pointer and assign an adequate
-            --  permission to it, if unfolded. If folded, we unroll the tree
-            --  in one step.
-
-         when N_Selected_Component =>
-            declare
-               C : constant Perm_Tree_Access :=
-                 Set_Perm_Prefixes_Borrow (Prefix (N));
-
-            begin
-               if C = null then
-
-                  --  We went through a function call, do nothing
-
-                  return null;
-               end if;
-
-               --  The permission of the returned node should be No
-
-               pragma Assert (Permission (C) = Borrowed);
-               pragma Assert (Kind (C) = Entire_Object
-                              or else Kind (C) = Record_Component);
-
-               if Kind (C) = Record_Component then
-
-                  --  The tree is unfolded. We just modify the permission and
-                  --  return the record subtree.
-
-                  declare
-                     Selected_Component : constant Entity_Id :=
-                       Entity (Selector_Name (N));
-                     Selected_C : Perm_Tree_Access :=
-                       Perm_Tree_Maps.Get
-                         (Component (C), Selected_Component);
-
-                  begin
-                     if Selected_C = null then
-                        Selected_C := Other_Components (C);
-                     end if;
-
-                     pragma Assert (Selected_C /= null);
-                     Selected_C.all.Tree.Permission := Borrowed;
-                     return Selected_C;
-                  end;
-
-               elsif Kind (C) = Entire_Object then
-                  declare
-                     --  Expand the tree. Replace the node with
-                     --  Record_Component.
-
-                     Elem : Node_Id;
-
-                     --  Create an empty hash table
-
-                     Hashtbl : Perm_Tree_Maps.Instance;
-
-                     --  We create the unrolled nodes, that will all have same
-                     --  permission than parent.
-
-                     Son : Perm_Tree_Access;
-                     ChildrenPerm : constant Perm_Kind :=
-                       Children_Permission (C);
-
-                  begin
-                     --  We change the current node from Entire_Object to
-                     --  Record_Component with same permission and an empty
-                     --  hash table as component list.
-
-                     C.all.Tree :=
-                       (Kind         => Record_Component,
-                        Is_Node_Deep => Is_Node_Deep (C),
-                        Permission   => Permission (C),
-                        Component    => Hashtbl,
-                        Other_Components =>
-                           new Perm_Tree_Wrapper'
-                          (Tree =>
-                               (Kind                => Entire_Object,
-                                Is_Node_Deep        => True,
-                                Permission          => ChildrenPerm,
-                                Children_Permission => ChildrenPerm)
-                          ));
-
-                     --  We fill the hash table with all sons of the record,
-                     --  with basic Entire_Objects nodes.
-
-                     Elem := First_Component_Or_Discriminant
-                       (Etype (Prefix (N)));
-
-                     while Present (Elem) loop
-                        Son := new Perm_Tree_Wrapper'
-                          (Tree =>
-                             (Kind                => Entire_Object,
-                              Is_Node_Deep        => Is_Deep (Etype (Elem)),
-                              Permission          => ChildrenPerm,
-                              Children_Permission => ChildrenPerm));
-                        Perm_Tree_Maps.Set (C.all.Tree.Component, Elem, Son);
-                        Next_Component_Or_Discriminant (Elem);
-                     end loop;
-
-                     --  Now we set the right field to Borrowed, and then we
-                     --  return the tree to the sons, so that the recursion can
-                     --  continue.
-
-                     declare
-                        Selected_Component : constant Entity_Id :=
-                          Entity (Selector_Name (N));
-                        Selected_C : Perm_Tree_Access := Perm_Tree_Maps.Get
-                          (Component (C), Selected_Component);
-
-                     begin
-                        if Selected_C = null then
-                           Selected_C := Other_Components (C);
-                        end if;
-
-                        pragma Assert (Selected_C /= null);
-                        Selected_C.all.Tree.Permission := Borrowed;
-                        return Selected_C;
-                     end;
-                  end;
-
-               else
-                  raise Program_Error;
-               end if;
-            end;
-
-            --  We set the permission tree of its prefix, and then we extract
-            --  from the returned pointer the subtree and assign an adequate
-            --  permission to it, if unfolded. If folded, we unroll the tree in
-            --  one step.
-
-         when N_Indexed_Component
+         when N_Explicit_Dereference
+            | N_Indexed_Component
+            | N_Selected_Component
             | N_Slice
          =>
-            declare
-               C : constant Perm_Tree_Access :=
-                 Set_Perm_Prefixes_Borrow (Prefix (N));
+            Set_Perm_Prefixes_Assign (Prefix (N));
 
-            begin
-               if C = null then
-
-                  --  We went through a function call, do nothing
-
-                  return null;
-               end if;
-
-               pragma Assert (Permission (C) = Borrowed);
-               pragma Assert (Kind (C) = Entire_Object
-                              or else Kind (C) = Array_Component);
-
-               if Kind (C) = Array_Component then
-
-                  --  The tree is unfolded. We just modify the permission and
-                  --  return the elem subtree.
-
-                  pragma Assert (Get_Elem (C) /= null);
-                  C.all.Tree.Get_Elem.all.Tree.Permission := Borrowed;
-                  return Get_Elem (C);
-
-               elsif Kind (C) = Entire_Object then
-                  declare
-                     --  Expand the tree. Replace node with Array_Component.
-
-                     Son : Perm_Tree_Access;
-
-                  begin
-                     Son := new Perm_Tree_Wrapper'
-                       (Tree =>
-                          (Kind                => Entire_Object,
-                           Is_Node_Deep        => Is_Node_Deep (C),
-                           Permission          => Borrowed,
-                           Children_Permission => Children_Permission (C)));
-
-                     --  We change the current node from Entire_Object
-                     --  to Array_Component with same permission and the
-                     --  previously defined son.
-
-                     C.all.Tree := (Kind         => Array_Component,
-                                    Is_Node_Deep => Is_Node_Deep (C),
-                                    Permission   => Borrowed,
-                                    Get_Elem     => Son);
-                     return Get_Elem (C);
-                  end;
-
-               else
-                  raise Program_Error;
-               end if;
-            end;
-
-            --  We set the permission tree of its prefix, and then we extract
-            --  from the returned pointer the subtree and assign an adequate
-            --  permission to it, if unfolded. If folded, we unroll the tree
-            --  at one step.
-
-         when N_Explicit_Dereference =>
-            declare
-               C : constant Perm_Tree_Access :=
-                 Set_Perm_Prefixes_Borrow (Prefix (N));
-
-            begin
-               if C = null then
-
-                  --  We went through a function call. Do nothing.
-
-                  return null;
-               end if;
-
-               --  The permission of the returned node should be No
-
-               pragma Assert (Permission (C) = Borrowed);
-               pragma Assert (Kind (C) = Entire_Object
-                              or else Kind (C) = Reference);
-
-               if Kind (C) = Reference then
-
-                  --  The tree is unfolded. We just modify the permission and
-                  --  return the elem subtree.
-
-                  pragma Assert (Get_All (C) /= null);
-                  C.all.Tree.Get_All.all.Tree.Permission := Borrowed;
-                  return Get_All (C);
-
-               elsif Kind (C) = Entire_Object then
-                  declare
-                     --  Expand the tree. Replace the node with Reference.
-
-                     Son : Perm_Tree_Access;
-
-                  begin
-                     Son := new Perm_Tree_Wrapper'
-                       (Tree =>
-                          (Kind                => Entire_Object,
-                           Is_Node_Deep        => Is_Deep (Etype (N)),
-                           Permission          => Borrowed,
-                           Children_Permission => Children_Permission (C)));
-
-                     --  We change the current node from Entire_Object to
-                     --  Reference with Borrowed and the previous son.
-
-                     pragma Assert (Is_Node_Deep (C));
-                     C.all.Tree := (Kind         => Reference,
-                                    Is_Node_Deep => Is_Node_Deep (C),
-                                    Permission   => Borrowed,
-                                    Get_All      => Son);
-                     return Get_All (C);
-                  end;
-
-               else
-                  raise Program_Error;
-               end if;
-            end;
-
-         when N_Function_Call =>
-            return null;
+         when N_Qualified_Expression
+            | N_Type_Conversion
+            | N_Unchecked_Type_Conversion
+         =>
+            Set_Perm_Prefixes_Assign (Expression (N));
 
          when others =>
             raise Program_Error;
       end case;
-   end Set_Perm_Prefixes_Borrow;
+   end Set_Perm_Prefixes_Assign;
 
    -------------------
    -- Setup_Globals --
    -------------------
 
    procedure Setup_Globals (Subp : Entity_Id) is
-      procedure Setup_Globals_From_List
-        (First_Item : Node_Id;
-         Kind       : Formal_Kind);
-      --  Set up global items from the list starting at Item
 
-      procedure Setup_Globals_Of_Mode (Global_Mode : Name_Id);
-      --  Set up global items for the mode Global_Mode
+      procedure Setup_Global
+        (Expr       : Node_Id;
+         Param_Mode : Formal_Kind;
+         Subp       : Entity_Id;
+         Global_Var : Boolean);
+      --  Proxy procedure to set up globals, to adjust for the type of first
+      --  parameter expected by Setup_Parameter_Or_Global.
 
-      -----------------------------
-      -- Setup_Globals_From_List --
-      -----------------------------
+      ------------------
+      -- Setup_Global --
+      ------------------
 
-      procedure Setup_Globals_From_List
-        (First_Item : Node_Id;
-         Kind       : Formal_Kind)
+      procedure Setup_Global
+        (Expr       : Node_Id;
+         Param_Mode : Formal_Kind;
+         Subp       : Entity_Id;
+         Global_Var : Boolean)
       is
-         Item : Node_Id := First_Item;
-         E    : Entity_Id;
-
       begin
-         while Present (Item) loop
-            E := Entity (Item);
+         Setup_Parameter_Or_Global
+           (Entity (Expr), Param_Mode, Subp, Global_Var);
+      end Setup_Global;
 
-            --  Ignore abstract states, which play no role in pointer aliasing
-
-            if Ekind (E) = E_Abstract_State then
-               null;
-            else
-               Setup_Parameter_Or_Global (E, Kind, Global_Var => True);
-            end if;
-            Next_Global (Item);
-         end loop;
-      end Setup_Globals_From_List;
-
-      ---------------------------
-      -- Setup_Globals_Of_Mode --
-      ---------------------------
-
-      procedure Setup_Globals_Of_Mode (Global_Mode : Name_Id) is
-         Kind : Formal_Kind;
-
-      begin
-         case Global_Mode is
-            when Name_Input
-               | Name_Proof_In
-            =>
-               Kind := E_In_Parameter;
-
-            when Name_Output =>
-               Kind := E_Out_Parameter;
-
-            when Name_In_Out =>
-               Kind := E_In_Out_Parameter;
-
-            when others =>
-               raise Program_Error;
-         end case;
-
-         --  Set up both global items from Global and Refined_Global pragmas
-
-         Setup_Globals_From_List (First_Global (Subp, Global_Mode), Kind);
-         Setup_Globals_From_List
-           (First_Global (Subp, Global_Mode, Refined => True), Kind);
-      end Setup_Globals_Of_Mode;
+      procedure Setup_Globals_Inst is new Handle_Globals (Setup_Global);
 
    --  Start of processing for Setup_Globals
 
    begin
-      Setup_Globals_Of_Mode (Name_Proof_In);
-      Setup_Globals_Of_Mode (Name_Input);
-      Setup_Globals_Of_Mode (Name_Output);
-      Setup_Globals_Of_Mode (Name_In_Out);
+      Setup_Globals_Inst (Subp);
    end Setup_Globals;
 
    -------------------------------
@@ -4452,178 +4385,106 @@ package body Sem_SPARK is
 
    procedure Setup_Parameter_Or_Global
      (Id         : Entity_Id;
-      Mode       : Formal_Kind;
+      Param_Mode : Formal_Kind;
+      Subp       : Entity_Id;
       Global_Var : Boolean)
    is
-      Elem     : Perm_Tree_Access;
-      View_Typ : Entity_Id;
+      Typ  : constant Entity_Id := Underlying_Type (Etype (Id));
+      Perm : Perm_Kind_Option;
 
    begin
-      if Present (Full_View (Etype (Id))) then
-         View_Typ := Full_View (Etype (Id));
-      else
-         View_Typ := Etype (Id);
-      end if;
-
-      Elem := new Perm_Tree_Wrapper'
-        (Tree =>
-           (Kind                => Entire_Object,
-            Is_Node_Deep        => Is_Deep (Etype (Id)),
-            Permission          => Unrestricted,
-            Children_Permission => Unrestricted));
-
-      case Mode is
-
-         --  All out and in out parameters are considered to be unrestricted.
-         --  They are whether borrowed or moved. Ada Rules would restrict
-         --  these permissions further. For example an in parameter cannot
-         --  be written.
-
-         --  In the following we deal with in parameters that can be observed.
-         --  We only consider the observing cases.
-
+      case Param_Mode is
          when E_In_Parameter =>
 
-            --  Handling global variables as IN parameters here.
-            --  Remove the following condition once it's decided how globals
-            --  should be considered. ???
-            --
-            --  In SPARK, IN access-to-variable is an observe operation for
-            --  a function, and a borrow operation for a procedure.
+            --  Shallow parameters and globals need not be considered
 
-            if not Global_Var then
-               if (Is_Access_Type (View_Typ)
-                    and then Is_Access_Constant (View_Typ)
-                    and then Is_Anonymous_Access_Type (View_Typ))
-                 or else
-                   (Is_Access_Type (View_Typ)
-                     and then Ekind (Scope (Id)) = E_Function)
-                 or else
-                   (not Is_Access_Type (View_Typ)
-                     and then Is_Deep (View_Typ)
-                     and then not Is_Anonymous_Access_Type (View_Typ))
-               then
-                  Elem.all.Tree.Permission := Observed;
-                  Elem.all.Tree.Children_Permission := Observed;
+            if not Is_Deep (Typ) then
+               Perm := None;
 
-               else
-                  Elem.all.Tree.Permission := Unrestricted;
-                  Elem.all.Tree.Children_Permission := Unrestricted;
-               end if;
+            --  Inputs of functions have R permission only
+
+            elsif Ekind (Subp) = E_Function then
+               Perm := Read_Only;
+
+            --  Input global variables have R permission only
+
+            elsif Global_Var then
+               Perm := Read_Only;
+
+            --  Anonymous access to constant is an observe
+
+            elsif Is_Anonymous_Access_Type (Typ)
+              and then Is_Access_Constant (Typ)
+            then
+               Perm := Read_Only;
+
+            --  Other access types are a borrow
+
+            elsif Is_Access_Type (Typ) then
+               Perm := Read_Write;
+
+            --  Deep types other than access types define an observe
 
             else
-               Elem.all.Tree.Permission := Observed;
-               Elem.all.Tree.Children_Permission := Observed;
+               Perm := Read_Only;
             end if;
 
-            --  When out or in/out formal or global parameters, we set them to
-            --  the Unrestricted state. "We want to be able to assume that all
-            --  relevant writable globals are unrestricted when a subprogram
-            --  starts executing". Formal parameters of mode out or in/out
-            --  are whether Borrowers or the targets of a move operation:
-            --  they start theirs lives in the subprogram as Unrestricted.
+         when E_Out_Parameter
+            | E_In_Out_Parameter
+         =>
+            --  Shallow parameters and globals need not be considered
 
-         when others =>
-            Elem.all.Tree.Permission := Unrestricted;
-            Elem.all.Tree.Children_Permission := Unrestricted;
+            if not Is_Deep (Typ) then
+               Perm := None;
+
+            --  Functions cannot have outputs in SPARK
+
+            elsif Ekind (Subp) = E_Function then
+               if Param_Mode = E_Out_Parameter then
+                  Error_Msg_N ("function with OUT parameter is not "
+                               & "allowed in SPARK", Id);
+               else
+                  Error_Msg_N ("function with `IN OUT` parameter is not "
+                               & "allowed in SPARK", Id);
+               end if;
+
+               return;
+
+            --  Deep types define a borrow or a move
+
+            else
+               Perm := Read_Write;
+            end if;
       end case;
 
-      Set (Current_Perm_Env, Id, Elem);
+      if Perm /= None then
+         declare
+            Tree : constant Perm_Tree_Access :=
+              new Perm_Tree_Wrapper'
+                (Tree =>
+                   (Kind                => Entire_Object,
+                    Is_Node_Deep        => Is_Deep (Etype (Id)),
+                    Permission          => Perm,
+                    Children_Permission => Perm));
+         begin
+            Set (Current_Perm_Env, Id, Tree);
+         end;
+      end if;
    end Setup_Parameter_Or_Global;
 
    ----------------------
    -- Setup_Parameters --
    ----------------------
 
-   procedure Setup_Parameters (Subp : Entity_Id) is Formal : Entity_Id;
+   procedure Setup_Parameters (Subp : Entity_Id) is
+      Formal : Entity_Id;
    begin
       Formal := First_Formal (Subp);
       while Present (Formal) loop
          Setup_Parameter_Or_Global
-           (Formal, Ekind (Formal), Global_Var => False);
+           (Formal, Ekind (Formal), Subp, Global_Var => False);
          Next_Formal (Formal);
       end loop;
    end Setup_Parameters;
 
-   -------------------------------
-   -- Has_Ownership_Aspect_True --
-   -------------------------------
-
-   function Has_Ownership_Aspect_True
-     (N   : Entity_Id;
-      Msg : String)
-      return Boolean
-   is
-   begin
-      case Ekind (Etype (N)) is
-         when Access_Kind =>
-            if Ekind (Etype (N)) = E_General_Access_Type then
-               Error_Msg_NE (Msg & " & not allowed " &
-                    "(Named General Access type)", N, N);
-               return False;
-
-            else
-               return True;
-            end if;
-
-         when E_Array_Type
-            | E_Array_Subtype
-         =>
-            declare
-               Com_Ty : constant Node_Id := Component_Type (Etype (N));
-               Ret    : Boolean :=  Has_Ownership_Aspect_True (Com_Ty, "");
-
-            begin
-               if Nkind (Parent (N)) = N_Full_Type_Declaration and
-                 Is_Anonymous_Access_Type (Com_Ty)
-               then
-                  Ret := False;
-               end if;
-
-               if not Ret then
-                  Error_Msg_NE (Msg & " & not allowed "
-                                & "(Components of Named General Access type or"
-                                & " Anonymous type)", N, N);
-               end if;
-               return Ret;
-            end;
-
-         --  ??? What about hidden components
-
-         when E_Record_Type
-            | E_Record_Subtype
-         =>
-            declare
-               Elmt        : Entity_Id;
-               Elmt_T_Perm : Boolean := True;
-               Elmt_Perm, Elmt_Anonym : Boolean;
-
-            begin
-               Elmt := First_Component_Or_Discriminant (Etype (N));
-               while Present (Elmt) loop
-                  Elmt_Perm := Has_Ownership_Aspect_True (Elmt,
-                                                      "type of component");
-                  Elmt_Anonym := Is_Anonymous_Access_Type (Etype (Elmt));
-                  if Elmt_Anonym then
-                     Error_Msg_NE
-                       ("type of component & not allowed"
-                        & " (Components of Anonymous type)", Elmt, Elmt);
-                  end if;
-                  Elmt_T_Perm := Elmt_T_Perm and Elmt_Perm and not Elmt_Anonym;
-                  Next_Component_Or_Discriminant (Elmt);
-               end loop;
-               if not Elmt_T_Perm then
-                     Error_Msg_NE
-                       (Msg & " & not allowed (One or "
-                        & "more components have Ownership Aspect False)",
-                        N, N);
-               end if;
-               return Elmt_T_Perm;
-            end;
-
-         when others =>
-            return True;
-      end case;
-
-   end Has_Ownership_Aspect_True;
 end Sem_SPARK;
