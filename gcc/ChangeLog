@@ -1,5 +1,11 @@
 2019-07-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (eh_set_lr_<mode>): Make this a parameterized
+	name.
+	(eh_return): Use that name.  Simplify.
+
+2019-07-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (ctr<mode>): Make this a parameterized name.
 	(doloop_end): Use that name.  Simplify.
 
