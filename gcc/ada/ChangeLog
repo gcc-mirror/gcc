@@ -1,3 +1,9 @@
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Is_Defaulted): New predicate in
+	Check_Formal_Package_Intance, to skip the conformance of checks
+	on parameters of a formal package that are defaulted,
+
 2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* checks.adb, exp_ch9.adb, exp_unst.adb, sem_ch4.adb,

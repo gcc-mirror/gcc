@@ -6195,6 +6195,12 @@ package body Sem_Ch12 is
       --  Common error routine for mismatch between the parameters of the
       --  actual instance and those of the formal package.
 
+      function Is_Defaulted (Param : Entity_Id) return Boolean;
+      --  If the formql package has partly box-initialized formals, skip
+      --  conformace check for these formals. Previously the code assumed
+      --  that boc initialization for a formal package applied to all
+      --  its formal parameters.
+
       function Same_Instantiated_Constant (E1, E2 : Entity_Id) return Boolean;
       --  The formal may come from a nested formal package, and the actual may
       --  have been constant-folded. To determine whether the two denote the
@@ -6244,6 +6250,32 @@ package body Sem_Ch12 is
                Parent (Actual_Pack), E1);
          end if;
       end Check_Mismatch;
+
+      ------------------
+      -- Is_Defaulted --
+      ------------------
+
+      function Is_Defaulted (Param : Entity_Id) return Boolean is
+         Assoc : Node_Id;
+      begin
+         Assoc := First (Generic_Associations
+                     (Parent (Associated_Formal_Package (Actual_Pack))));
+
+         while Present (Assoc) loop
+            if Nkind (Assoc) = N_Others_Choice then
+               return True;
+
+            elsif Nkind (Assoc) = N_Generic_Association
+              and then Chars (Selector_Name (Assoc)) = Chars (Param)
+            then
+               return Box_Present (Assoc);
+            end if;
+
+            Next (Assoc);
+         end loop;
+
+         return False;
+      end Is_Defaulted;
 
       --------------------------------
       -- Same_Instantiated_Constant --
@@ -6412,6 +6444,9 @@ package body Sem_Ch12 is
            and then Nkind (Unit_Declaration_Node (E2)) in
                       N_Formal_Subprogram_Declaration
          then
+            goto Next_E;
+
+         elsif Is_Defaulted (E1) then
             goto Next_E;
 
          elsif Is_Type (E1) then

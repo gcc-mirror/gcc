@@ -1,5 +1,14 @@
 2019-07-01  Ed Schonberg  <schonberg@adacore.com>
 
+	* gnat.dg/generic_inst3.adb,
+	gnat.dg/generic_inst3_kafka_lib-topic.ads,
+	gnat.dg/generic_inst3_kafka_lib.ads,
+	gnat.dg/generic_inst3_markets.ads,
+	gnat.dg/generic_inst3_traits-encodables.ads,
+	gnat.dg/generic_inst3_traits.ads: New testcase.
+
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
 	* gnat.dg/enum_rep.adb, gnat.dg/enum_rep.ads: New testcase.
 
 2019-07-01  Ed Schonberg  <schonberg@adacore.com>
