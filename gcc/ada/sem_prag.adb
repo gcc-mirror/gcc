@@ -12219,7 +12219,7 @@ package body Sem_Prag is
                            Check_Ghost_Synchronous;
 
                         --  Option Part_Of without an encapsulating state is
-                        --  illegal (SPARK RM 7.1.4(9)).
+                        --  illegal (SPARK RM 7.1.4(8)).
 
                         elsif Chars (Opt) = Name_Part_Of then
                            SPARK_Msg_N

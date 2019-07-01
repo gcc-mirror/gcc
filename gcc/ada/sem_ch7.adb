@@ -3253,7 +3253,7 @@ package body Sem_Ch7 is
 
       --  A [generic] package that defines at least one non-null abstract state
       --  requires a completion only when at least one other construct requires
-      --  a completion in a body (SPARK RM 7.1.4(4) and (6)). This check is not
+      --  a completion in a body (SPARK RM 7.1.4(4) and (5)). This check is not
       --  performed if the caller requests this behavior.
 
       if Do_Abstract_States

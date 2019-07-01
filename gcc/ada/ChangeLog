@@ -1,5 +1,10 @@
 2019-07-01  Piotr Trojanek  <trojanek@adacore.com>
 
+	* einfo.adb, sem_ch7.adb, sem_prag.adb, sem_util.adb: Update
+	references to the SPARK RM after the removal of Rule 7.1.4(5).
+
+2019-07-01  Piotr Trojanek  <trojanek@adacore.com>
+
 	* sysdep.c: Cleanup references to LynuxWorks in docs and
 	comments.
 

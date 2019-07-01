@@ -8141,7 +8141,7 @@ package body Einfo is
    function Is_External_State (Id : E) return B is
    begin
       --  To qualify, the abstract state must appear with option "external" or
-      --  "synchronous" (SPARK RM 7.1.4(8) and (10)).
+      --  "synchronous" (SPARK RM 7.1.4(7) and (9)).
 
       return
         Ekind (Id) = E_Abstract_State
@@ -8319,7 +8319,7 @@ package body Einfo is
    function Is_Synchronized_State (Id : E) return B is
    begin
       --  To qualify, the abstract state must appear with simple option
-      --  "synchronous" (SPARK RM 7.1.4(10)).
+      --  "synchronous" (SPARK RM 7.1.4(9)).
 
       return
         Ekind (Id) = E_Abstract_State
