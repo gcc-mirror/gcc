@@ -38,7 +38,7 @@ with GNAT.Sets;            use GNAT.Sets;
 package GNAT.Graphs is
 
    ---------------
-   -- Componant --
+   -- Component --
    ---------------
 
    --  The following type denotes a strongly connected component handle
