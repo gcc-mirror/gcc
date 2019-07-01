@@ -1,3 +1,8 @@
+2019-07-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (neg<mode>2): Make this a parameterized name.
+	(allocate_stack): Use that name.  Simplify.
+
 2019-07-01  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/90923
@@ -5,7 +10,7 @@
 	(hash_map::get_or_insert): Same.  Reformat comment.
 	* hash-set.h (hash_set::add): On insertion invoke element ctor.
 	* hash-map-tests.c (test_map_of_type_with_ctor_and_dtor): New.
- 	* hash-set-tests.c (test_map_of_type_with_ctor_and_dtor): New.
+	* hash-set-tests.c (test_map_of_type_with_ctor_and_dtor): New.
 	* hash-table.h (hash_table::operator=): Prevent copy assignment.
 	 (hash_table::hash_table (const hash_table&)): Use copy ctor
 	 instead of assignment to copy elements.
