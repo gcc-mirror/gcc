@@ -109,7 +109,6 @@
 ;;	and all SSE regs otherwise
 ;;  v	any EVEX encodable SSE register for AVX512VL target,
 ;;	otherwise any SSE register
-;;  h	EVEX encodable SSE register with number factor of four
 ;;  w	any EVEX encodable SSE register for AVX512BW with TARGET_AVX512VL
 ;;	target.
 
