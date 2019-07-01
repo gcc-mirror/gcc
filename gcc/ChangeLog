@@ -1,5 +1,11 @@
 2019-07-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (indirect_jump<mode>_nospec): Make this a
+	parameterized name.
+	(indirect_jump): Use that name.  Simplify.
+
+2019-07-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (abs<mode>2_internal): Make this a
 	parameterized name.
 	(abs<mode>2): Use that name.  Simplify.
