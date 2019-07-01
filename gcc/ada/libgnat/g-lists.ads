@@ -40,8 +40,8 @@ package GNAT.Lists is
    --  The following package offers a doubly linked list abstraction with the
    --  following characteristics:
    --
-   --    * Creation of multiple instances, of different sizes.
-   --    * Iterable elements.
+   --    * Creation of multiple instances, of different sizes
+   --    * Iterable elements
    --
    --  The following use pattern must be employed with this list:
    --
@@ -59,6 +59,9 @@ package GNAT.Lists is
       with function "="
         (Left  : Element_Type;
          Right : Element_Type) return Boolean;
+
+      with procedure Destroy_Element (Elem : in out Element_Type);
+      --  Element destructor
 
    package Doubly_Linked_List is
 
@@ -139,6 +142,9 @@ package GNAT.Lists is
       --  Insert element Elem at the start of list L. This action will raise
       --  Iterated if the list has outstanding iterators.
 
+      function Present (L : Instance) return Boolean;
+      --  Determine whether list L exists
+
       procedure Replace
         (L        : Instance;
          Old_Elem : Element_Type;
@@ -168,14 +174,14 @@ package GNAT.Lists is
 
       type Iterator is private;
 
-      function Iterate (L : Instance) return Iterator;
-      --  Obtain an iterator over the elements of list L. This action locks all
-      --  mutation functionality of the associated list.
-
       function Has_Next (Iter : Iterator) return Boolean;
       --  Determine whether iterator Iter has more elements to examine. If the
       --  iterator has been exhausted, restore all mutation functionality of
       --  the associated list.
+
+      function Iterate (L : Instance) return Iterator;
+      --  Obtain an iterator over the elements of list L. This action locks all
+      --  mutation functionality of the associated list.
 
       procedure Next (Iter : in out Iterator; Elem : out Element_Type);
       --  Return the current element referenced by iterator Iter and advance
@@ -215,13 +221,13 @@ package GNAT.Lists is
       --  The following type represents an element iterator
 
       type Iterator is record
-         List : Instance := null;
-         --  Reference to the associated list
-
-         Nod : Node_Ptr := null;
+         Curr_Nod : Node_Ptr := null;
          --  Reference to the current node being examined. The invariant of the
          --  iterator requires that this field always points to a valid node. A
          --  value of null indicates that the iterator is exhausted.
+
+         List : Instance := null;
+         --  Reference to the associated list
       end record;
    end Doubly_Linked_List;
 

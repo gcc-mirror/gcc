@@ -42,8 +42,8 @@ package GNAT.Sets is
    --  The following package offers a membership set abstraction with the
    --  following characteristics:
    --
-   --    * Creation of multiple instances, of different sizes.
-   --    * Iterable elements.
+   --    * Creation of multiple instances, of different sizes
+   --    * Iterable elements
    --
    --  The following use pattern must be employed with this set:
    --
@@ -103,6 +103,14 @@ package GNAT.Sets is
       function Is_Empty (S : Instance) return Boolean;
       --  Determine whether set S is empty
 
+      function Present (S : Instance) return Boolean;
+      --  Determine whether set S exists
+
+      procedure Reset (S : Instance);
+      --  Destroy the contents of membership set S, and reset it to its initial
+      --  created state. This action will raise Iterated if the membership set
+      --  has outstanding iterators.
+
       function Size (S : Instance) return Natural;
       --  Obtain the number of elements in membership set S
 
@@ -141,6 +149,9 @@ package GNAT.Sets is
       --  raises Iterator_Exhausted.
 
    private
+      procedure Destroy (B : in out Boolean);
+      --  Destroy boolean B
+
       package Hashed_Set is new Dynamic_HTable
         (Key_Type              => Element_Type,
          Value_Type            => Boolean,
@@ -150,6 +161,7 @@ package GNAT.Sets is
          Compression_Threshold => 0.3,
          Compression_Factor    => 2,
          "="                   => "=",
+         Destroy_Value         => Destroy,
          Hash                  => Hash);
 
       type Instance is new Hashed_Set.Instance;

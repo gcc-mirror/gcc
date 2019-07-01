@@ -317,6 +317,7 @@ GNAT_ADA_OBJS =	\
  ada/frontend.o	\
  ada/libgnat/g-byorma.o	\
  ada/libgnat/g-dynhta.o	\
+ ada/libgnat/g-graphs.o \
  ada/libgnat/g-hesora.o	\
  ada/libgnat/g-htable.o	\
  ada/libgnat/g-lists.o \
