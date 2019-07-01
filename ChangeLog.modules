@@ -1,6 +1,9 @@
 2019-07-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::write): Don't stream env.
+
+	gcc/cp/
 	* module.cc (trees_in:::read_function_def): Push the template for
 	post processing.
 	(module_state::read_cluster): Deal with abstract post processing.

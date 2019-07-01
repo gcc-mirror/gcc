@@ -15825,8 +15825,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Human-readable info.  */
   write_readme (to, config.opt_str, config.controlling_node);
-  // FIXME: Command line switch?
-  write_env (to);
+  // FIXME: Write ths info to the 'reproducer' file yet to be implemented
+  // write_env (to);
 
   trees_out::instrument ();
   dump () && dump ("Wrote %u sections", to->get_section_limit ());
