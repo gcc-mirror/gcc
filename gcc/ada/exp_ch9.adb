@@ -8950,6 +8950,7 @@ package body Exp_Ch9 is
             Set_Is_Inlined (Protected_Body_Subprogram (Subp));
             Set_Is_Inlined (Subp, False);
          end if;
+
          if Has_Pragma_No_Inline (Subp) then
             Set_Has_Pragma_No_Inline (Protected_Body_Subprogram (Subp));
          end if;

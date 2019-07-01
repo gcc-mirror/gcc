@@ -7429,15 +7429,15 @@ package body Checks is
          return;
       end if;
 
-      --  Entities declared in Lock_free protected types must be treated
-      --  as volatile, and we must inhibit validity checks to prevent
-      --  improper constant folding.
+      --  Entities declared in Lock_free protected types must be treated as
+      --  volatile, and we must inhibit validity checks to prevent improper
+      --  constant folding.
 
       if Is_Entity_Name (Expr)
         and then Is_Subprogram (Scope (Entity (Expr)))
         and then Present (Protected_Subprogram (Scope (Entity (Expr))))
         and then Uses_Lock_Free
-           (Scope (Protected_Subprogram (Scope (Entity (Expr)))))
+                   (Scope (Protected_Subprogram (Scope (Entity (Expr)))))
       then
          return;
       end if;

@@ -1,3 +1,8 @@
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb, exp_ch9.adb, exp_unst.adb, sem_ch4.adb,
+	sem_prag.adb, sem_spark.adb: Minor reformatting.
+
 2019-07-01  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute, case Enum_Rep): Allow prefix
