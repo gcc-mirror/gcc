@@ -1,3 +1,26 @@
+2019-07-01  Nathan Sidwell  <nathan@acm.org>
+
+	Clones
+	gcc/cp/
+	* module.cc (enum tree_tag): Add tt_clone_ref.
+	(get_clone_target): Replace get_clone_orig.
+	(FOR_EVERY_CLONE): New.
+	(trees_out::mark_mergeable): Add tag parm.  Adjust.
+	(trees_in::chained_decls): Cope with already-linked clones.
+	(trees_out::tree_decl): Support clone walking.
+	(trees_{in,out}::tree_value): Likewise.
+	(trees_in::tree_node): Support tt_clone_ref.
+	(trees_{in,out}::key_mergeable): Key clones.
+	(trees_out::{mark,write}_definition): No clones here.
+	(trees_in::read_definition): Likewise.
+	(depset::hash::add_clone): Reimplement.
+	(module_state::write_cluster): Deal with clones.
+	gcc/testsuite/
+	* g++.dg/modules/clone-1_[ab].C: New.
+	* g++.dg/modules/friend-1_a.C: Adjust scan.
+	* g++.dg/modules/indirect-[1234]_[bc].C: Likewise.
+	* g++.dg/modules/inst-3_a.C: Likewise.
+
 2019-06-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

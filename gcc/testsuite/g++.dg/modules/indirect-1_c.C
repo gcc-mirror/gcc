@@ -31,7 +31,6 @@ int main ()
 // { dg-final { scan-lang-dump {Lazily binding '::bar::quux'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {>Lazily binding '::foo::X'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Imported:-[0-9]* type_decl:'::foo::X@foo:2'@foo} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo::X@foo:2::__ct_comp '@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar::Z'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {>Lazily binding '::foo::Y'@'foo' section:} module } }

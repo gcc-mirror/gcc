@@ -24,7 +24,7 @@ namespace bar
 // { dg-final { scan-lang-dump {Lazily binding '::foo::X'@'foo' section:} module } }
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* template_decl:'::foo::X@foo:2'@foo} module } }
 
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo::X@bar:1<0x0>'\n  \[1\]=specialization declaration '::foo::X@bar:1<0x0>::__conv_op @bar:1<0x0>'\n  \[2\]=specialization declaration '::foo::X@bar:1<0x0>::X<0x0>'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::foo::X@bar:1<0x0>'\n(  \[.\]=clone (declaration|definition) '::hidey[^\n]* '\n)*  \[.*\]=specialization declaration '::foo::X@bar:1<0x0>::__conv_op @bar:1<0x0>'\n  \[.*\]=specialization declaration '::foo::X@bar:1<0x0>::X<0x0>'} module } }
 // { dg-final { scan-lang-dump {Writing key for mergeable specialization type_decl:'::foo::X@bar:1<0x0>'} module } }
 // { dg-final { scan-lang-dump {Depset:0 specialization type_decl:'::foo::X@bar:1<0x0>'} module } }
 // { dg-final { scan-lang-dump {Writing key for mergeable specialization type_decl:'::foo::X@bar:1<0x0>'} module } }

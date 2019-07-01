@@ -30,8 +30,8 @@ public:
   }
 };
 
-// hidey, peeker & secreat are all in different clusters
+// hidey, peeker & secret are all in different clusters
 
 // { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::peeker@bob:1'\n  \[1\]=binding '::peeker'} module } }
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::hidey@bob:1'\n  \[1\]=binding '::hidey'} module } }
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::secret@bob:1'\n  \[1\]=binding '::secret'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::hidey@bob:1'\n(  \[.\]=clone (declaration|definition) '::hidey[^\n]* '\n)*  \[.\]=binding '::hidey'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=decl definition '::secret@bob:1'\n(  \[.\]=clone (declaration|definition) '::secret[^\n]* '\n)*  \[.\]=binding '::secret'} module } }

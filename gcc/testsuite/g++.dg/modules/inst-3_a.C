@@ -16,7 +16,7 @@ export inline int user (int i)
   return x.m;
 }
 
-// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::TPL@foo:1<int>'\n  \[1\]=specialization declaration '::TPL@foo:1<int>::TPL<int>'} module } }
+// { dg-final { scan-lang-dump {Cluster members:\n  \[0\]=specialization definition '::TPL@foo:1<int>'\n(  \[.\]=clone (declaration|definition) '::hidey[^\n]* '\n)*  \[.*\]=specialization declaration '::TPL@foo:1<int>::TPL<int>'} module } }
 // { dg-final { scan-lang-dump {Writing key for mergeable specialization type_decl:'::TPL@foo:1<int>'} module } }
 // { dg-final { scan-lang-dump {Depset:0 specialization type_decl:'::TPL@foo:1<int>'} module } }
 // { dg-final { scan-lang-dump {Voldemort:0 '::TPL@foo:1<int>'} module } }

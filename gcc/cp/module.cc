@@ -2504,7 +2504,7 @@ public:
     void add_mergeable_horcrux (depset *);
     depset *add_dependency (tree decl, entity_kind, bool is_import = false);
     depset *add_redirect (depset *target);
-    depset *add_clone (depset *orig, tree clone);
+    depset *add_clone (tree clone, tree target);
     void add_binding (tree ns, tree value);
     void add_writables (tree ns, bitmap partitions);
     void add_specializations (bool, bitmap partitions);
@@ -2675,6 +2675,7 @@ enum tree_tag {
 
   /* These three tags match walk_kind body, mergeable, clone.  */
   tt_node,		/* New node.  */
+  // FIXME: Think about these being a sub-field?
   tt_mergeable,		/* Mergeable entity.  */
   tt_clone,		/* A clone.  */
 
@@ -2699,6 +2700,7 @@ enum tree_tag {
   tt_binfo,		/* A BINFO.  */
   tt_vtable,		/* A vtable.  */
   tt_thunk,		/* A thunk.  */
+  tt_clone_ref,
 
   tt_named, 	 	/* Named decl. */
   tt_anon,		/* Anonymous decl.  */
@@ -2951,7 +2953,7 @@ public:
   /* Mark a node for by-value walking.  */
   void mark_node (tree);
   /* Reset it for mergeableness.  */
-  void mark_mergeable (tree);
+  void mark_mergeable (tree, int);
   /* Reset it for having been merged.  */
   void mark_merged (tree, int);
 
@@ -2961,7 +2963,6 @@ public:
   void fn_parms (tree);
 
 public:
-  void key_mergeable (tree, tree, tree);
   void key_mergeable (depset *);
 
 public:
@@ -3783,7 +3784,7 @@ private:
 module_mapper *module_mapper::mapper;
 
 static tree
-get_clone_orig (tree decl)
+get_clone_target (tree decl)
 {
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
@@ -3793,6 +3794,14 @@ get_clone_orig (tree decl)
 
   return DECL_CLONED_FUNCTION (decl);
 }
+
+/* Like FOR_EACH_CLONE, but will walk cloned templates.  */
+#define FOR_EVERY_CLONE(CLONE, FN)			\
+  if (!DECL_MAYBE_IN_CHARGE_CDTOR_P (FN));		\
+  else							\
+    for (CLONE = DECL_CHAIN (FN);			\
+	 CLONE && DECL_CLONED_FUNCTION_P (CLONE);	\
+	 CLONE = DECL_CHAIN (CLONE))
 
 static tree
 node_template_info (tree decl, int &use)
@@ -4519,11 +4528,11 @@ trees_out::mark_node (tree decl)
 /* Mark DECL as a mergeable node.  */
 
 void
-trees_out::mark_mergeable (tree decl)
+trees_out::mark_mergeable (tree decl, int tag = tag_mergeable)
 {
   int *slot = tree_map.get (decl);
   gcc_assert (slot && *slot == tag_forced);
-  *slot = tag_mergeable;
+  *slot = tag;
 }
 
 /* Mark decl as a now-merged node.  */
@@ -4542,10 +4551,11 @@ int
 trees_out::insert (tree t, walk_kind walk)
 {
   gcc_checking_assert (walk == WK_normal || walk == WK_merging
-		       ? !TREE_VISITED (t) : walk == WK_mergeable
+		       ? !TREE_VISITED (t)
+		       : walk == WK_mergeable || walk == WK_clone
 		       ? TREE_VISITED (t) : walk == WK_body);
   int tag = --ref_num;
-  if (walk != WK_mergeable)
+  if (walk != WK_mergeable && walk != WK_clone)
     {
       bool existed;
       int &slot = tree_map.get_or_insert (t, &existed);
@@ -4592,13 +4602,19 @@ trees_in::chained_decls ()
 	  set_overrun ();
 	else
 	  {
-	    gcc_assert (!DECL_CHAIN (decl));
+	    if (*chain)
+	      gcc_checking_assert (*chain == decl
+				   && DECL_CLONED_FUNCTION_P (decl));
 	    *chain = decl;
 	    chain = &DECL_CHAIN (decl);
 	  }
       }
     else
-      chain = NULL;
+      {
+	gcc_checking_assert (!*chain);
+	chain = NULL;
+      }
+
   return decls;
 }
 
@@ -6852,13 +6868,25 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
   gcc_checking_assert (DECL_P (decl)
 		       && TREE_CODE (decl) != NAMESPACE_DECL);
 
-  if (ref == WK_body || ref == WK_mergeable)
+  if (ref == WK_body || ref == WK_mergeable || ref == WK_clone)
     {
       /* If we requested by-value, this better not be a cross-module
 	 import.  */
       gcc_checking_assert ((*modules)[MAYBE_DECL_MODULE_OWNER
 				      (get_module_owner (decl, true))]->remap
 			   < MODULE_IMPORT_BASE);
+
+      if (!streaming_p ()
+	  && DECL_MAYBE_IN_CHARGE_CDTOR_P (decl))
+	{
+	  // FIXME: check we're the template?
+
+	  /* Insert a dependency the clones of DECL.  */
+	  tree clone_decl;
+	  FOR_EVERY_CLONE (clone_decl, decl)
+	    dep_hash->add_clone (clone_decl, decl);
+	}
+
       return true;
     }
 
@@ -6953,6 +6981,21 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
       gcc_checking_assert (TREE_VISITED (decl));
       if (DECL_IMPLICIT_TYPEDEF_P (decl))
 	gcc_checking_assert (TREE_VISITED (TREE_TYPE (decl)));
+      return false;
+    }
+
+  if (DECL_CLONED_FUNCTION_P (decl))
+    {
+      tree target = get_clone_target (decl);
+      if (streaming_p ())
+	i (tt_clone_ref);
+
+      tree_node (target);
+      tree_node (DECL_NAME (decl));
+      int tag = insert (decl);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Wrote:%d clone %N of %N", tag, DECL_NAME (decl), target);
       return false;
     }
 
@@ -7417,7 +7460,7 @@ trees_out::tree_value (tree t, walk_kind walk)
 				     != t));
 	}
 
-      /* A new node -> tt_node or tt_mergeable.  */
+      /* A new node -> tt_node, tt_mergeable or tt_clone.  */
       unique++;
       i (walk - WK_body + tt_node);
       u (TREE_CODE (t));
@@ -7474,7 +7517,7 @@ trees_out::tree_value (tree t, walk_kind walk)
 
       bool ttp_parm = TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM;
 
-      gcc_assert (walk != WK_mergeable || !ttp_parm);
+      gcc_assert (walk == WK_body || !ttp_parm);
       if (ttp_parm || DECL_IMPLICIT_TYPEDEF_P (inner))
 	{
 	  gcc_checking_assert (TYPE_STUB_DECL (type) == (ttp_parm ? t : inner));
@@ -7647,6 +7690,8 @@ trees_in::tree_value (walk_kind walk)
 	  DECL_NAME (res) = DECL_NAME (container);
 	  DECL_CONTEXT (res) = DECL_CONTEXT (container);
 	}
+      else if (mk == MK_clone)
+	DECL_CONTEXT (res) = FROB_CONTEXT (container);
       else
 	{
 	  /* A named decl.  */
@@ -7692,12 +7737,26 @@ trees_in::tree_value (walk_kind walk)
 	  else
 	    existing = match_mergeable_specialization (res, container, key);
 	}
+      else if (mk == MK_clone)
+	{
+	  kind = "clone";
+	  /* Our merging is the same as that of the thing we cloned.  */
+	  // FIXME: do we need to check skip_decls too?
+	  if (is_existing_mergeable (container))
+	    /* The existing clone will be the one following KEY.  */
+	    existing = DECL_CHAIN (key);
+	  else
+	    {
+	      /* Chain us in.  */
+	      DECL_CHAIN (key) = res;
+	      if (inner != res)
+		DECL_CHAIN (DECL_TEMPLATE_RESULT (key)) = inner;
+	    }
+	}
       else if (is_mod && !(state->is_primary () || state->is_partition ()))
 	/* This is a module-purview entity, and we're not loading part
 	   of the current module, so it must be unique.  */
 	kind = "unique";
-      else if (mk == MK_clone)
-	;// FIXME: our merging follows that of container
       else
 	existing = match_mergeable_decl (res, container, key, is_mod,
 					 r_type, fn_args);
@@ -8484,6 +8543,30 @@ trees_in::tree_node ()
       }
       break;
 
+    case tt_clone_ref:
+      {
+	tree target = tree_node ();
+	tree name = tree_node ();
+	tree clone;
+
+	FOR_EVERY_CLONE (clone, target)
+	  if (DECL_NAME (clone) == name)
+	    {
+	      res = clone;
+	      break;
+	    }
+
+	if (!res)
+	  set_overrun ();
+	int tag = insert (res);
+	if (res)
+	  dump (dumper::TREE)
+	    && dump ("Read:%d clone %N of %N", tag, DECL_NAME (res), target);
+	else
+	  set_overrun ();
+       }
+      break;
+
     case tt_mergeable:
     case tt_node:
     case tt_clone:
@@ -8633,6 +8716,10 @@ trees_out::key_mergeable (depset *dep)
       mk = MK_spec;
       break;
 
+    case depset::EK_CLONE:
+      mk = MK_clone;
+      break;
+
     default:
       break;
     }
@@ -8645,7 +8732,7 @@ trees_out::key_mergeable (depset *dep)
       u (mk);
     }
 
-  if (decl != inner)
+  if (mk != MK_clone && decl != inner)
     /* A template needs its template parms for identification.  */
     // FIXME: Don't write the context of the tpl_tpl_parms!  We should
     // probably never write them out, and leave it to the owning
@@ -8674,9 +8761,27 @@ trees_out::key_mergeable (depset *dep)
       tree_ctx (tmpl, false, NULL_TREE);
       tree_node (args);
     }
+  else if (mk == MK_clone)
+    {
+      /* Clones are located by the thing they clone.  We also use their
+	 predecessor entity, to force their ordering.  */
+      tree target = get_clone_target (decl);
+      tree predecessor = target;
+      tree clone;
+      FOR_EVERY_CLONE (clone, target)
+	{
+	  if (clone == decl)
+	    break;
+	  predecessor = clone;
+	}
+
+      gcc_assert (clone);
+      tree_ctx (target, false, NULL_TREE);
+      tree_node (predecessor);
+    }
   else
     {
-      /* Non-templates are located by their context, name, and
+      /* Regular decls are located by their context, name, and
 	 additional disambiguating data.  */
       tree ctx = CP_DECL_CONTEXT (decl);
       gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
@@ -8714,7 +8819,7 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
     return MK_none;
   merge_kind mk = merge_kind (i);
 
-  if (decl != inner)
+  if (mk != MK_clone && decl != inner)
     /* A template needs its template parms for identification.  */
     if (!tpl_header (decl))
       return MK_none;
@@ -8991,6 +9096,8 @@ trees_in::is_skippable_defn (tree defn, bool have_defn)
 void
 trees_out::write_function_def (tree decl)
 {
+  gcc_checking_assert (DECL_RESULT (decl));
+
   tree_node (DECL_RESULT (decl));
   tree_node (DECL_INITIAL (decl));
   tree_node (DECL_SAVED_TREE (decl));
@@ -9391,6 +9498,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
       TYPE_VFIELD (type) = vfield;
       TYPE_BINFO (type) = binfo;
 
+      // FIXME: Do I need to rewire DECL_CHAIN on template clones?
       if (TYPE_LANG_SPECIFIC (type))
 	{
 	  CLASSTYPE_LAMBDA_EXPR (type) = lambda;
@@ -9599,10 +9707,6 @@ trees_out::write_definition (tree decl)
     dump (dumper::DEPEND)
       && dump ("Depending definition %C:%N", TREE_CODE (decl), decl);
 
-  tree clone;
-  FOR_EACH_CLONE (clone, decl)
-    write_definition (clone);
-
  again:
   switch (TREE_CODE (decl))
     {
@@ -9642,10 +9746,6 @@ void
 trees_out::mark_declaration (tree decl, bool do_defn)
 {
   mark_node (decl);
-
-  tree clone;
-  FOR_EACH_CLONE (clone, decl)
-    mark_declaration (clone, do_defn);
 
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
@@ -9699,10 +9799,6 @@ bool
 trees_in::read_definition (tree decl)
 {
   dump () && dump ("Reading definition %C %N", TREE_CODE (decl), decl);
-
-  tree clone;
-  FOR_EACH_CLONE (clone, decl)
-    read_definition (clone);
 
   tree maybe_template = decl;
 
@@ -10222,26 +10318,45 @@ depset::hash::add_redirect (depset *target)
   return redirect;
 }
 
-/* DECL is a clone of the entity TARGET.  Create a dependency for it.  */
+/* CLONE is a clone of TARGET.  Note that CURRENT might not be
+   TARGET, but a container of TARGET.  */
 
 depset *
-depset::hash::add_clone (depset *target, tree decl)
+depset::hash::add_clone (tree clone, tree target)
 {
-  depset *clone = make_entity (decl, EK_CLONE);
-  depset **slot = entity_slot (decl, true);
+  gcc_checking_assert (!is_for_mergeable ()
+		       && !current->is_import ());
 
-  if (target->is_import ())
-    clone->set_flag_bit<DB_IMPORTED_BIT> ();
-  if (target->is_mergeable ())
-    clone->set_flag_bit<DB_MERGEABLE_BIT> ();
+  if (TREE_CODE (clone) == FUNCTION_DECL)
+    /* If we're a template, we should be registering the template.  */
+    gcc_checking_assert (!DECL_TEMPLATE_INFO (clone)
+			 || (DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (clone))
+			     != clone));
+
+  depset *clone_dep = make_entity (clone, EK_CLONE);
+  depset **slot = entity_slot (clone, true);
+
+  dump (dumper::DEPEND)
+    && dump ("Adding clone %C:%N of %C:%N",
+	     TREE_CODE (clone), clone,
+	     TREE_CODE (target), target);
+
+  if (has_definition (clone))
+    clone_dep->set_flag_bit<DB_DEFN_BIT> ();
+
+  /* Clones are always mergeable, because we're keyed to the cloned
+     function.  */
+  // FIXME: We should probably separate mergeable from location
+  clone_dep->set_flag_bit<DB_MERGEABLE_BIT> ();
 
   gcc_checking_assert (!*slot);
-  *slot = clone;
+  *slot = clone_dep;
 
-  clone->deps.safe_push (target);
-  target->deps.safe_push (clone);
+  current->deps.safe_push (clone_dep);
 
-  return clone;
+  worklist.safe_push (clone_dep);
+
+  return clone_dep;
 }
 
 /* We add all kinds of specialializations.  Implicit specializations
@@ -10402,8 +10517,7 @@ depset::hash::find_dependencies ()
 		    /* We also want to make specializations of members
 		       depend on their container -- that might well be
 		       in the same SCC.  */
-		    walker.tree_ctx (CP_DECL_CONTEXT (decl),
-				     true, decl);
+		    walker.tree_ctx (CP_DECL_CONTEXT (decl), true, decl);
 		}
 	      else if (current->get_entity_kind () == EK_USING)
 		walker.tree_ctx (OVL_FUNCTION (decl), false, NULL_TREE);
@@ -10461,7 +10575,7 @@ depset::hash::add_mergeable (depset *mergeable)
   gcc_checking_assert (is_for_mergeable () && !mergeable->is_binding ());
   tree decl = mergeable->get_entity ();
 
-  /* All deps go into the dependency table.  */
+  /* All entities go into the table.  */
   depset **slot = entity_slot (decl, true);
   gcc_checking_assert (!*slot);
   depset *dep = make_entity (decl, mergeable->get_entity_kind ());
@@ -10648,7 +10762,6 @@ depset::tarjan::connect (depset *v)
   if (v->section == v->cluster)
     {
       /* Root of a new SCC.  Push all the members onto the result list. */
-
       unsigned num = v->cluster;
       depset *p;
       do
@@ -12740,7 +12853,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
 	  sec.mark_declaration (decl, b->has_defn ());
 	  if (b->is_mergeable ())
-	    sec.mark_mergeable (decl);
+	    // FIXME: Perhaps tree_value should interrogate the depset?
+	    sec.mark_mergeable (decl, b->get_entity_kind () == depset::EK_CLONE
+				? trees_out::tag_clone
+				: trees_out::tag_mergeable);
 	}
     }
 
@@ -12811,6 +12927,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
 	case depset::EK_DECL:
 	case depset::EK_UNNAMED:
+	case depset::EK_CLONE:
 	  {
 	    sec.u (ct_decl);
 	    sec.tree_ctx (decl, false, NULL_TREE);
@@ -13114,6 +13231,7 @@ module_state::read_cluster (unsigned snum)
       cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
 
       if (!DECL_TEMPLATE_INFO (decl) || DECL_USE_TEMPLATE (decl))
+	// FIXME: why when no decl_template_info?
 	{
 	  comdat_linkage (decl);
 	  note_vague_linkage_fn (decl);
