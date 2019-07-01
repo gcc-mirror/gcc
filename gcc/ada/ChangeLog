@@ -1,3 +1,9 @@
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Expand_Attribute_Reference, case Invalid_Value):
+	Resolve result of call to Get_Simple_Init_Val, which may be a
+	conversion of a literal.
+
 2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* freeze.adb (Freeze_Expression): Remove the horrible useless
