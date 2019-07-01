@@ -504,7 +504,24 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
 		  gsi = gsi_for_stmt (arg0_def_stmt);
 		  gsi_prev_nondebug (&gsi);
 		  if (!gsi_end_p (gsi))
-		    return NULL;
+		    {
+		      if (gassign *assign
+			    = dyn_cast <gassign *> (gsi_stmt (gsi)))
+			{
+			  tree lhs = gimple_assign_lhs (assign);
+			  enum tree_code ass_code
+			    = gimple_assign_rhs_code (assign);
+			  if (ass_code != MAX_EXPR && ass_code != MIN_EXPR)
+			    return NULL;
+			  if (lhs != gimple_assign_rhs1 (arg0_def_stmt))
+			    return NULL;
+			  gsi_prev_nondebug (&gsi);
+			  if (!gsi_end_p (gsi))
+			    return NULL;
+			}
+		      else
+			return NULL;
+		    }
 		  gsi = gsi_for_stmt (arg0_def_stmt);
 		  gsi_next_nondebug (&gsi);
 		  if (!gsi_end_p (gsi))
