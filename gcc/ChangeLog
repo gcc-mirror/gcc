@@ -1,3 +1,9 @@
+2019-07-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (neg<mode>2_hw): Make this a parameterized
+	name.
+	(neg<mode>2): Use that name.  Simplify.
+
 2019-07-01  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md ("isa" attribute): Add sse_noavx.
