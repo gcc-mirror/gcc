@@ -1,3 +1,11 @@
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Visit_Node, Check_Static_Type): Improve the
+	handling of private and incomplete types whose full view is an
+	access type, to detect additional uplevel references in dynamic
+	bounds. This is relevant to N_Free_Statement among others that
+	manipulate types whose full viww may be an access type.
+
 2019-07-01  Pat Rogers  <rogers@adacore.com>
 
 	* doc/gnat_rm/representation_clauses_and_pragmas.rst: Correct
