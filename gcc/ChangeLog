@@ -1,3 +1,8 @@
+2019-07-01  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Link Options): Further editorial changes to
+	-flinker-output docs.
+
 2019-07-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_force_indexed_or_indirect_mem):
