@@ -1,3 +1,11 @@
+2019-07-01  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* ira-int.h (ira_setup_alts, ira_get_dup_out_num): Use
+	alternative_mask instead of HARD_REG_SET to represent a
+	bitmask of alternatives.
+	* ira.c (ira_setup_alts, ira_get_dup_out_num): Likewise.
+	* ira-conflicts.c (add_insn_allocno_copies): Likewise.
+
 2019-07-01  Martin Liska  <mliska@suse.cz>
 
 	* edit-context.c (test_applying_fixits_unreadable_file): Do not

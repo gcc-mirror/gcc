@@ -1784,9 +1784,12 @@ setup_prohibited_mode_move_regs (void)
 
 
 
-/* Setup possible alternatives in ALTS for INSN.  */
-void
-ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
+/* Extract INSN and return the set of alternatives that we should consider.
+   This excludes any alternatives whose constraints are obviously impossible
+   to meet (e.g. because the constraint requires a constant and the operand
+   is nonconstant).  */
+alternative_mask
+ira_setup_alts (rtx_insn *insn)
 {
   /* MAP nalt * nop -> start of constraints for given operand and
      alternative.  */
@@ -1798,7 +1801,7 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 
   extract_insn (insn);
   alternative_mask preferred = get_preferred_alternatives (insn);
-  CLEAR_HARD_REG_SET (alts);
+  alternative_mask alts = 0;
   insn_constraints.release ();
   insn_constraints.safe_grow_cleared (recog_data.n_operands
 				      * recog_data.n_alternatives + 1);
@@ -1833,8 +1836,7 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 	}
       for (nalt = 0; nalt < recog_data.n_alternatives; nalt++)
 	{
-	  if (!TEST_BIT (preferred, nalt)
-	      || TEST_HARD_REG_BIT (alts, nalt))
+	  if (!TEST_BIT (preferred, nalt) || TEST_BIT (alts, nalt))
 	    continue;
 
 	  for (nop = 0; nop < recog_data.n_operands; nop++)
@@ -1906,7 +1908,7 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 	      ;
 	    }
 	  if (nop >= recog_data.n_operands)
-	    SET_HARD_REG_BIT (alts, nalt);
+	    alts |= ALTERNATIVE_BIT (nalt);
 	}
       if (commutative < 0)
 	break;
@@ -1916,6 +1918,7 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
       if (curr_swapped)
 	break;
     }
+  return alts;
 }
 
 /* Return the number of the output non-early clobber operand which
@@ -1923,7 +1926,7 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
    negative value if there is no such operand).  The function takes
    only really possible alternatives into consideration.  */
 int
-ira_get_dup_out_num (int op_num, HARD_REG_SET &alts)
+ira_get_dup_out_num (int op_num, alternative_mask alts)
 {
   int curr_alt, c, original, dup;
   bool ignore_p, use_commut_op_p;
@@ -1940,7 +1943,7 @@ ira_get_dup_out_num (int op_num, HARD_REG_SET &alts)
     {
       rtx op = recog_data.operand[op_num];
       
-      for (curr_alt = 0, ignore_p = !TEST_HARD_REG_BIT (alts, curr_alt),
+      for (curr_alt = 0, ignore_p = !TEST_BIT (alts, curr_alt),
 	   original = -1;;)
 	{
 	  c = *str;
@@ -1951,7 +1954,7 @@ ira_get_dup_out_num (int op_num, HARD_REG_SET &alts)
 	  else if (c == ',')
 	    {
 	      curr_alt++;
-	      ignore_p = !TEST_HARD_REG_BIT (alts, curr_alt);
+	      ignore_p = !TEST_BIT (alts, curr_alt);
 	    }
 	  else if (! ignore_p)
 	    switch (c)
