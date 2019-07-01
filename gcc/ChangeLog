@@ -1,5 +1,12 @@
 2019-07-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (extenddf<mode>2_fprs): Make this a
+	parameterized name.
+	(extenddf<mode>2_vsx): Make this a parameterized name.
+	(extenddf<mode>2): Use those names.  Simplify.
+
+2019-07-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (eh_set_lr_<mode>): Make this a parameterized
 	name.
 	(eh_return): Use that name.  Simplify.
