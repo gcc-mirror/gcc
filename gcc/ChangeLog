@@ -1,5 +1,11 @@
 2019-07-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (ieee_128bit_vsx_abs<mode>2): Make this a
+	parameterized name.
+	(abs<mode>2): Use that name.  Simplify.
+
+2019-07-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000.md (ieee_128bit_vsx_neg<mode>2): Make this a
 	parameterized name.
 	(neg<mode>2): Use that name.  Simplify.
