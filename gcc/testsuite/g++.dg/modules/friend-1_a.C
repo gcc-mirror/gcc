@@ -1,7 +1,7 @@
 // { dg-additional-options "-fmodules-ts -fdump-lang-module-blocks" }
 
 export module bob;
-// { dg-module-bmi bob }
+// { dg-module-cmi bob }
 
 export struct peeker
 {

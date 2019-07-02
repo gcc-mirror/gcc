@@ -1,7 +1,7 @@
 // { dg-require-weak "" } 
 // { dg-additional-options "-fmodules-ts" }
 export module bob;
-// { dg-module-bmi "bob" }
+// { dg-module-cmi "bob" }
 
 export inline int frob (int a)
 {

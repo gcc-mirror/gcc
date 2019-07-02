@@ -1,5 +1,5 @@
 // { dg-additional-options -fmodule-header }
-// { dg-module-bmi {} }
+// { dg-module-cmi {} }
 
 template<typename _CharT>
 static inline __attribute__((__always_inline__)) constexpr void

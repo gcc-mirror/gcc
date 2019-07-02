@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts" }
 export module Kevin;
-// { dg-module-bmi Kevin }
+// { dg-module-cmi Kevin }
 
 import Bob;
 

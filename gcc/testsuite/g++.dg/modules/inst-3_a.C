@@ -2,7 +2,7 @@
 // { dg-additional-options {-fmodules-ts -fdump-lang-module-graph-blocks-alias} }
 
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 export template<typename T> struct TPL
 {

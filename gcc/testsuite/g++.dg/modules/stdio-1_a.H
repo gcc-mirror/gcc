@@ -1,6 +1,6 @@
 // { dg-module-do run }
 // { dg-additional-options "-fmodule-header -fdump-lang-module" }
-// { dg-module-bmi {} }
+// { dg-module-cmi {} }
 
 #ifndef _PROXY_STDIO_H
 #define _PROXY_STDIO_H

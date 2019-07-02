@@ -1,5 +1,5 @@
 // { dg-additional-options -fmodule-header }
-// { dg-module-bmi {} }
+// { dg-module-cmi {} }
 
 #ifndef _STDARG_H
 #define _STDARG_H

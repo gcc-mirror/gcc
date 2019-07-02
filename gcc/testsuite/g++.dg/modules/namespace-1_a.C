@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts" }
 export module Frob;
-// { dg-module-bmi Frob }
+// { dg-module-cmi Frob }
 
 namespace impl
 {

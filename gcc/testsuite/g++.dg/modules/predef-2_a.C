@@ -4,4 +4,4 @@
 // test macro expansion inside forced header
 
 export module bob:part;
-// { dg-module-bmi bob:part }
+// { dg-module-cmi bob:part }

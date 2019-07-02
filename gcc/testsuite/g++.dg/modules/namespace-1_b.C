@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts" }
 export module Frink;
-// { dg-module-bmi Frink }
+// { dg-module-cmi Frink }
 
 import Frob;
 

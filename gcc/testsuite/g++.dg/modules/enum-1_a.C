@@ -1,7 +1,7 @@
 // { dg-module-do run }
 // { dg-additional-options "-fmodules-ts -fdump-lang-module-uid" }
 export module enUm;
-// { dg-module-bmi "enUm" }
+// { dg-module-cmi "enUm" }
 
 export enum Bill
 {

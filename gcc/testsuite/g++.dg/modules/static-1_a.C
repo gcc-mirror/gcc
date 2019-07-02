@@ -5,7 +5,7 @@ module;
 static void Bar () {}
 # 7 "" 2
 export module Foo;
-// { dg-module-bmi Foo }
+// { dg-module-cmi Foo }
 
 static void Baz () {}
 

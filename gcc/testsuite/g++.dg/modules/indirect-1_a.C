@@ -4,7 +4,7 @@
 // indirect references to import.  Non-template cases
 
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 namespace foo {
 

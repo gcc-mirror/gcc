@@ -1,7 +1,7 @@
 // { dg-additional-options -fmodules-ts }
 
 export module anon;
-// { dg-module-bmi anon }
+// { dg-module-cmi anon }
 
 export struct foo
 {

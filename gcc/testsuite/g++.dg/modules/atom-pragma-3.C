@@ -1,7 +1,7 @@
 // { dg-additional-options "-fmodules-ts -Wno-pedantic" }
 
 export module foo;
-// { dg-module-bmi !foo }
+// { dg-module-cmi !foo }
 ;
 
 #pragma pack(2)

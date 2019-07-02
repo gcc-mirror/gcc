@@ -3,7 +3,7 @@
 
 // Make sure the module hash table survives GC
 
-// { dg-module-bmi "=map-1_a.nms" }
+// { dg-module-cmi "=map-1_a.nms" }
 export module frob;
 
 int thing;

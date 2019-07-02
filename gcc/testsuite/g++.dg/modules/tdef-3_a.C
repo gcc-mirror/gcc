@@ -2,6 +2,6 @@
 
 // { dg-additional-options -fmodules-ts }
 export module frob;
-// { dg-module-bmi frob }
+// { dg-module-cmi frob }
 
 export typedef struct { int m; } frob;

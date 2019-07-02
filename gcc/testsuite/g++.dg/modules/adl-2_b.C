@@ -1,7 +1,7 @@
 // { dg-additional-options -fmodules-ts }
 
 export module hidden;
-// { dg-module-bmi hidden }
+// { dg-module-cmi hidden }
 
 export struct X 
 {

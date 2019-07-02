@@ -24,7 +24,7 @@
 # be optionally linked and optionally executed.  Grouping is indicated by
 # naming files '*_[a-z].[CH]'
 
-# { dg-module-bmi "[!]module-name" } # an interface file is (not) expected
+# { dg-module-cmi "[!]module-name" } # an interface file is (not) expected
 # { dg-module-do [link|run] [xfail] [options] } # link [and run]
 
 load_lib g++-dg.exp
@@ -40,12 +40,12 @@ setenv CXX_MODULE_PATH "$srcdir/$subdir"
 dg-init
 
 global module_do
-global module_bmis
+global module_cmis
 
 # Register the module name this produces.
-# dg-module-bmi !?=?NAME WHEN?
-# dg-module-bmi !?{} - header unit
-proc dg-module-bmi { args } {
+# dg-module-cmi !?=?NAME WHEN?
+# dg-module-cmi !?{} - header unit
+proc dg-module-cmi { args } {
     if { [llength $args] > 3 } {
 	error "[lindex $args 0]: too many arguments"
 	return
@@ -69,30 +69,30 @@ proc dg-module-bmi { args } {
 	# get the source file name.  ick!
 	upvar prog srcname
 	if { [lindex [file split $srcname] 0] == "/" } {
-	    set bmi ".$srcname.gchm"
+	    set cmi ".$srcname.gchm"
 	} else {
-	    set bmi "!/$srcname.gchm"
+	    set cmi "!/$srcname.gchm"
 	}
 	# subst /../ -> /!!/
-	set path [file split $bmi]
+	set path [file split $cmi]
 	set rplac [lmap elt $path {expr {$elt == ".." ? "!!" : $elt}}]
-	set bmi [file join {*}$rplac]
+	set cmi [file join {*}$rplac]
     } elseif { [string index $name 0] == "=" } {
-	set bmi [string range $name 1 end]
+	set cmi [string range $name 1 end]
     } else {
-	set bmi "$name.gcm"
+	set cmi "$name.gcm"
     }
 
     # delete file, so we don't get confused by a stale one.
-    file_on_host delete "$bmi"
+    file_on_host delete "$cmi"
 
-    global module_bmis
-    lappend module_bmis [list $spec $when $not $bmi]
+    global module_cmis
+    lappend module_cmis [list $spec $when $not $cmi]
 }
 
 # check the expected module files exist (or not)
 # return list to delete
-proc module_bmi_p { src ifs } {
+proc module_cmi_p { src ifs } {
     set res {}
     foreach if_arg $ifs {
 	set spec [lindex $if_arg 0]
@@ -106,15 +106,15 @@ proc module_bmi_p { src ifs } {
 	    }
 	}
 	set not [lindex $if_arg 2]
-	set bmi [lindex $if_arg 3]
-	if { $not != [file_on_host exists $bmi] } {
-	    pass "$src module-bmi $spec ($bmi)"
+	set cmi [lindex $if_arg 3]
+	if { $not != [file_on_host exists $cmi] } {
+	    pass "$src module-cmi $spec ($cmi)"
 	} else {
-	    fail "$src module-bmi $spec ($bmi)"
+	    fail "$src module-cmi $spec ($cmi)"
 	    set not [expr ! $not ]
 	}
 	if { ! $not } {
-	    lappend res $bmi
+	    lappend res $cmi
 	}
     }
     return $res
@@ -229,11 +229,11 @@ foreach test [prune [lsort [find $srcdir/$subdir {*.[CH]}]] \
     if [runtest_file_p $runtests $test] {
 	set nshort [file tail [file dirname $test]]/[file tail $test]
 
-	set module_bmis {}
+	set module_cmis {}
 	verbose "Testing $nshort" 1
 	dg-test $test "" $DEFAULT_MODFLAGS
 	set testcase [string range $test [string length "$srcdir/"] end]
-	cleanup_module_files [module_bmi_p $testcase $module_bmis]
+	cleanup_module_files [module_cmi_p $testcase $module_cmis]
     }
 }
 
@@ -256,7 +256,7 @@ foreach src [lsort [find $srcdir/$subdir {*_a.[CH}]] {
 	set asm_list {}
 	foreach test $tests {
 	    if { [lindex $module_do 1] != "N" } {
-		set module_bmis {}
+		set module_cmis {}
 		set nshort [file tail [file dirname $test]]/[file tail $test]
 		verbose "Testing $nshort" 1
 		if { [file extension $test] == ".C" } {
@@ -264,7 +264,7 @@ foreach src [lsort [find $srcdir/$subdir {*_a.[CH}]] {
 		}
 		dg-test -keep-output $test "" $DEFAULT_MODFLAGS
 		set testcase [string range $test [string length "$srcdir/"] end]
-		lappend mod_files [module_bmi_p $testcase $module_bmis]
+		lappend mod_files [module_cmi_p $testcase $module_cmis]
 	    }
 	}
 	set ok 1

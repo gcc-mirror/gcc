@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts" }
 export module sqrt;
-// { dg-module-bmi "sqrt" }
+// { dg-module-cmi "sqrt" }
 
 export constexpr unsigned sqrt (unsigned X, unsigned x = 1)
 {

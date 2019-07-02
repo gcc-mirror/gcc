@@ -4,6 +4,6 @@ module;
 int bar ();
 # 6 "" 2
 export module thing;
-// { dg-module-bmi "thing" }
+// { dg-module-cmi "thing" }
 
 export int baz ();

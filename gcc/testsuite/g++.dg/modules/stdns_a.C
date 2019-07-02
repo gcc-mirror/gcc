@@ -1,7 +1,7 @@
 // { dg-additional-options -fmodules-ts }
 
 export module std;
-// { dg-module-bmi std }
+// { dg-module-cmi std }
 
 namespace std
 {

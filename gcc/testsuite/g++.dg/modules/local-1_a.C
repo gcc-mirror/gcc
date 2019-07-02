@@ -2,7 +2,7 @@
 // { dg-additional-options "-fmodules-ts" }
 
 export module the.shop;
-// { dg-module-bmi the.shop }
+// { dg-module-cmi the.shop }
 
 export int for_local_people ()
 {

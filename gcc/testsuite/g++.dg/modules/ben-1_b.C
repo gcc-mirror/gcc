@@ -2,7 +2,7 @@
 // { dg-additional-files ben-1.map }
 
 export module module;
-// { dg-module-bmi =module.mod }
+// { dg-module-cmi =module.mod }
 export import :import;
 
 export int c ()

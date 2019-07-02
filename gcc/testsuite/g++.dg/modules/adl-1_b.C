@@ -1,6 +1,6 @@
 // { dg-additional-options -fmodules-ts }
 export module inter;
-// { dg-module-bmi inter }
+// { dg-module-cmi inter }
 
 import worker;
 

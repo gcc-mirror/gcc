@@ -2,7 +2,7 @@
 // injection followed by declaration
 
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 template <typename T> class TPL
 {

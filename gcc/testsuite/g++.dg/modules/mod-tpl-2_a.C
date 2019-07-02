@@ -2,7 +2,7 @@
 // { dg-additional-options "-fmodules-ts" }
 
 export module frob;
-// { dg-module-bmi "frob" }
+// { dg-module-cmi "frob" }
 
 export template <typename T>
 class X

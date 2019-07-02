@@ -2,7 +2,7 @@
 // { dg-additional-options "-fmodules-ts -fdump-lang-module-uid" }
 
 export module frob;
-// { dg-module-bmi frob }
+// { dg-module-cmi frob }
 
 class X 
 {

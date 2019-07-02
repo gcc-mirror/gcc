@@ -1,7 +1,7 @@
 // { dg-module-do run }
 // { dg-additional-options -fmodules-ts }
 export module worker;
-// { dg-module-bmi worker }
+// { dg-module-cmi worker }
 
 namespace details {
 

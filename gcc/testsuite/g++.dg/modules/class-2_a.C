@@ -2,7 +2,7 @@
 // This sequence is for errors
 
 export module One;
-// { dg-module-bmi "One" }
+// { dg-module-cmi "One" }
 
 namespace Bob 
 {

@@ -1,5 +1,5 @@
 // { dg-additional-options "-fmodules-ts" }
 export module Bob;
-// { dg-module-bmi Bob }
+// { dg-module-cmi Bob }
 
 export int bob ();

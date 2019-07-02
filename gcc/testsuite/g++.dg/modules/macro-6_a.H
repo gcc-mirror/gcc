@@ -1,5 +1,5 @@
 // { dg-additional-options "-fmodule-header" }
-// { dg-module-bmi {} }
+// { dg-module-cmi {} }
 
 #ifndef MACRO_6_H
 #define MACRO_6_H

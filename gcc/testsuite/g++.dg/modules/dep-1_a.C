@@ -1,7 +1,7 @@
 // { dg-additional-options "-fmodules-ts -MD" }
 
 export module m:part;
-// { dg-module-bmi m:part }
+// { dg-module-cmi m:part }
 
 // All The Backslashes!
 // { dg-final { scan-file dep-1_a.d {\nm\\:part\.c\+\+m: m\\:part\.gcm} } }

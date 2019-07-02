@@ -1,5 +1,5 @@
 // { dg-additional-options -fmodules-ts }
-// { dg-module-bmi foo:baz }
+// { dg-module-cmi foo:baz }
 
 export module foo:baz;
 

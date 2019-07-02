@@ -4,7 +4,7 @@
 // indirect references to import, template member of template case
 
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 namespace foo
 {

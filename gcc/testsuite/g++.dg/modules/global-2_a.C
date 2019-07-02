@@ -4,7 +4,7 @@ module;
 #include <stdio.h>
 #include <stdarg.h>
 export module logger;
-// { dg-module-bmi logger }
+// { dg-module-cmi logger }
 
 export void Log (char const *fmt, ...)
 {

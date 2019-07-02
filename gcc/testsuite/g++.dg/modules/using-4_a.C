@@ -1,7 +1,7 @@
 // { dg-additional-options "-fmodules-ts -fdump-lang-module-uid" }
 
 export module bob;
-// { dg-module-bmi bob }
+// { dg-module-cmi bob }
 
 namespace N {
 export int foo ();

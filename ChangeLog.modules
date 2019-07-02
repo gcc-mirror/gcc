@@ -1,5 +1,8 @@
 2019-07-02  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	Rename bmi->cmi everywhere.
+
 	gcc/cp/
 	* cp-tree.h (module_has_cmi_p): Renamed.
 	* name-lookup.c (do_nonmember_using_decl): Adjust.

@@ -2,7 +2,7 @@
 // { dg-additional-options "-fmodules-ts" }
 
 export module bob;
-// { dg-module-bmi bob }
+// { dg-module-cmi bob }
 
 export struct X
 {

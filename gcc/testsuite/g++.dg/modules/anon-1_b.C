@@ -1,7 +1,7 @@
 // { dg-additional-options -fmodules-ts }
 
 export module namer;
-// { dg-module-bmi namer }
+// { dg-module-cmi namer }
 
 import anon;
 

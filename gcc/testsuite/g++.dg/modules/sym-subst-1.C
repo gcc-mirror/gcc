@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts" }
 export module bob.stuart.kevin;
-// { dg-module-bmi bob.stuart.kevin }
+// { dg-module-cmi bob.stuart.kevin }
 
 class mytype 
 {

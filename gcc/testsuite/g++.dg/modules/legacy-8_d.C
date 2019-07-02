@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts" }
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 import "legacy-8_a.H";
 import "legacy-8_b.H";

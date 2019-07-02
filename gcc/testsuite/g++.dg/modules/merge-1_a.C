@@ -1,7 +1,7 @@
 // { dg-additional-options -fmodules-ts }
 
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 template<typename _Tp, _Tp __v>
 struct integral_constant

@@ -1,7 +1,7 @@
 // { dg-module-do run }
 // { dg-additional-options -fmodules-ts }
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 export template <typename T>
 int TPL (T const &t)

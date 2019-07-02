@@ -1,7 +1,7 @@
 // { dg-additional-options {-fmodules-ts -fdump-lang-module-graph-blocks} }
 
 export module TPL;
-// { dg-module-bmi TPL }
+// { dg-module-cmi TPL }
 
 export template <typename T>
 struct X

@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts -fdump-lang-module-blocks-uid-alias" }
 export module bar;
-// { dg-module-bmi bar }
+// { dg-module-cmi bar }
 
 import foo;
 

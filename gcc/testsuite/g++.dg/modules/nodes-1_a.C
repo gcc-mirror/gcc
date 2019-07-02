@@ -2,7 +2,7 @@
 // { dg-module-do run }
 
 export module node;
-// { dg-module-bmi node }
+// { dg-module-cmi node }
 
 export template <typename T> void assert (T t)
 {

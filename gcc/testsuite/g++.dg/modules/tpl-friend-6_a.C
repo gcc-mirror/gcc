@@ -2,7 +2,7 @@
 // befriending a specialization
 
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 namespace not_std {
 

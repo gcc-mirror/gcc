@@ -1,7 +1,7 @@
 // { dg-additional-options "-fmodules-ts -fdump-lang-module-alias" }
 // bogus errors until we properly dedup partition entities
 export module foo; // { dg-bogus "not writing" "" }
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 export import :bar;
 export import :baz;

@@ -1,5 +1,5 @@
 // { dg-additional-options "-fmodules-ts" }
-// { dg-module-bmi bob }
+// { dg-module-cmi bob }
 
 export module bob;
 export int massivelongnamethatcausesadhoclocationsokeepaddingcharsyourgettheidea (int);

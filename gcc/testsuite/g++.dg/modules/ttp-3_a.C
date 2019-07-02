@@ -1,7 +1,7 @@
 // { dg-additional-options -fmodules-ts }
 
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 template<typename Arg1, template<typename> typename Arg2>
 struct TPL

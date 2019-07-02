@@ -1,7 +1,7 @@
 // { dg-additional-options "-fmodules-ts" }
 
 export module frob; // { dg-error "failed to write" }
-// { dg-module-bmi !frob }
+// { dg-module-cmi !frob }
 
 namespace {
 class X 

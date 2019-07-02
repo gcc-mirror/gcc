@@ -1,7 +1,7 @@
 // { dg-additional-options -fmodules-ts }
 
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 export struct pthread_attr_t
 // guess where this came from?

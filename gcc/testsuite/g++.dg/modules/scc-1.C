@@ -2,7 +2,7 @@
 // { dg-additional-options "-fmodules-ts -fdump-lang-module-uid" }
 
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 export int bar (int);
 export int baz (int = bar (1));

@@ -2,7 +2,7 @@
 // { dg-additional-options "-fmodules-ts" }
 
 export module blinky;
-// { dg-module-bmi blinky }
+// { dg-module-cmi blinky }
 
 export struct X 
 {

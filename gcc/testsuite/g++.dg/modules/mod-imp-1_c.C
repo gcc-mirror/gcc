@@ -1,7 +1,7 @@
 // { dg-additional-options "-fmodules-ts -fdump-lang-module" }
 
 export module Baz;
-// { dg-module-bmi "Baz" }
+// { dg-module-cmi "Baz" }
 
 import Foo;
 

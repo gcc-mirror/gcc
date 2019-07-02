@@ -2,4 +2,4 @@
 
 #define EXPORT export
 EXPORT module bob;
-// { dg-module-bmi bob }
+// { dg-module-cmi bob }

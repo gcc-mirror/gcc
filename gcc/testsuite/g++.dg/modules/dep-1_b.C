@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts -MD" }
 export module m;
-// { dg-module-bmi m }
+// { dg-module-cmi m }
 
 export import :part;
 // { dg-final { scan-file dep-1_b.d {\ndep-1_b\.s m\.gcm: m\\:part\.c\+\+m} } }

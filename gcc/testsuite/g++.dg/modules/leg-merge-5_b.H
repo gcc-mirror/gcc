@@ -1,5 +1,5 @@
 // { dg-additional-options "-fmodule-header" }
-// { dg-module-bmi {} }
+// { dg-module-cmi {} }
 
 inline int bob (int x)
 {

@@ -2,7 +2,7 @@
 // { dg-additional-options {-fmodules-ts -fdump-lang-module-blocks-uid-alias} }
 
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 inline int baz (int i)
 {

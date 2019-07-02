@@ -5,7 +5,7 @@
 // { dg-additional-files map-1.map }
 
 export module frob;
-// { dg-module-bmi "=map-1_a.nms" }
+// { dg-module-cmi "=map-1_a.nms" }
 
 export int frob (int i)
 {

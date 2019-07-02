@@ -1,7 +1,7 @@
 // { dg-additional-options "-fmodules-ts" }
 
 export module agnes;
-// { dg-module-bmi agnes }
+// { dg-module-cmi agnes }
 
 int a;
 

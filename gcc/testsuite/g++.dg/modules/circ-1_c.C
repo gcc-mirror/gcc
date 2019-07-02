@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts" }
 export module Bob; // { dg-message "declared here" }
-// No need to dg-module-bmi
+// No need to dg-module-cmi
 
 import Kevin;
 // { dg-error "failed to read" "" { target *-*-* } 0 }

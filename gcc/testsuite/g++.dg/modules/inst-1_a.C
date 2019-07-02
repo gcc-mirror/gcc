@@ -2,7 +2,7 @@
 // { dg-additional-options {-fmodules-ts -fdump-lang-module-graph-blocks} }
 
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 int i_baz (int i)
 {

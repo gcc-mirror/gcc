@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts" }
 export module linkage;
-// { dg-module-bmi "linkage" }
+// { dg-module-cmi "linkage" }
 
 inline void Foo () {}
 

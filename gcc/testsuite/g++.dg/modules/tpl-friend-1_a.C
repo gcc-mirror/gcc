@@ -2,7 +2,7 @@
 // declarations followed by friend injection
 
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 void foo (int, void *);
 void foo (float, void *);

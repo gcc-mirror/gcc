@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts -fdump-lang-module-blocks" }
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 namespace One {
 class X;

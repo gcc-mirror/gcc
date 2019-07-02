@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts" }
 export module pop;
-// { dg-module-bmi "pop" }
+// { dg-module-cmi "pop" }
 export import thing;
 
 void bink ();

@@ -1,5 +1,5 @@
 // { dg-additional-options "-fmodule-header -fdump-lang-module" }
-// { dg-module-bmi {} }
+// { dg-module-cmi {} }
 
 #ifndef MACRO_2c_H
 #define MACRO_2c_H

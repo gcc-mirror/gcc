@@ -4,6 +4,6 @@
 // test macro expansion inside forced header
 
 export module bob;
-// { dg-module-bmi bob }
+// { dg-module-cmi bob }
 
 export import :part;

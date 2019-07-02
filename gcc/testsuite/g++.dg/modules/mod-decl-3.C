@@ -5,7 +5,7 @@ export void Foo (); // { dg-error "after a module interface" }
 
 # 7 "" 2
 export module bob;
-// { dg-module-bmi "!bob" }
+// { dg-module-cmi "!bob" }
 
 export
 export // { dg-error "occur once" }

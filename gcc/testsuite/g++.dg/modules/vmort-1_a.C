@@ -2,7 +2,7 @@
 // { dg-additional-options "-fmodules-ts" }
 
 export module tom.riddle;
-// { dg-module-bmi tom.riddle }
+// { dg-module-cmi tom.riddle }
 
 export inline auto One (int a)
 {

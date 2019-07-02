@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts -fdump-lang-module-blocks-alias-uid" }
 export module builtin;
-// { dg-module-bmi builtin }
+// { dg-module-cmi builtin }
 
 export inline void ary_del (int *ptr)
 {

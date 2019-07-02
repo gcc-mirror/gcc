@@ -1,6 +1,6 @@
 // { dg-additional-options -fmodules-ts }
 export module inter;
-// { dg-module-bmi inter }
+// { dg-module-cmi inter }
 
 export template <typename T>
 int TPL (T &t)

@@ -2,7 +2,7 @@
 // { dg-additional-options "-fmodules-ts" }
 
 export module baz;
-// { dg-module-bmi "baz" }
+// { dg-module-cmi "baz" }
 
 export int Square (int);
 

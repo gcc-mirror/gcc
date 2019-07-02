@@ -5,7 +5,7 @@
 module;
 #include <iostream>
 export module logger;
-// { dg-module-bmi logger { xfail *-*-* } }
+// { dg-module-cmi logger { xfail *-*-* } }
 
 export void Log (char const *msg)
 {

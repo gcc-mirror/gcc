@@ -1,7 +1,7 @@
 // { dg-additional-options "-fmodules-ts" }
 
 export module bob.stuart;
-// { dg-module-bmi bob.stuart }
+// { dg-module-cmi bob.stuart }
 
 template <typename T> void inner (T &)
 {

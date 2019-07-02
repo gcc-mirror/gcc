@@ -1,6 +1,6 @@
 // { dg-additional-options -fmodules-ts }
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 typedef float _IO_lock_t;
 

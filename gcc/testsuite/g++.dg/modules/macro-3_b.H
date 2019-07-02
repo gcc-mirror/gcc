@@ -1,6 +1,6 @@
 // { dg-module-do run }
 // { dg-additional-options "-fmodule-header -fdump-lang-module-vops" }
-// { dg-module-bmi {} }
+// { dg-module-cmi {} }
 
 import "macro-3_a.H";
 

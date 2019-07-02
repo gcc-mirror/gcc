@@ -4,7 +4,7 @@ module;
 inline void Foo () {}
 # 6 "" 2
 export module okely.dokely;
-// { dg-module-bmi "okely.dokely" }
+// { dg-module-cmi "okely.dokely" }
 
 namespace One {
   namespace Two {

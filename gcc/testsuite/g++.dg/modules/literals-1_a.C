@@ -4,7 +4,7 @@
 // Make sure e can serialize various literals.  */
 
 export module real2reel;
-// { dg-module-bmi real2reel }
+// { dg-module-cmi real2reel }
 
 export inline float assassing ()
 {

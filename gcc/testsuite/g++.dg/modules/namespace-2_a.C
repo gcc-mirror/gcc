@@ -8,7 +8,7 @@ namespace not_exported
 }
 # 10 "" 2
 export module foo;
-// { dg-module-bmi foo }
+// { dg-module-cmi foo }
 
 namespace explicit_export
 {

@@ -6,5 +6,5 @@ class X; // { dg-error "global module fragment contents" }
 class Y;
 
 export module frob;
-// { dg-module-bmi !frob }
+// { dg-module-cmi !frob }
 // { dg-prune-output "not writing module" }

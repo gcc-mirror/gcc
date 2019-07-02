@@ -1,6 +1,6 @@
 // { dg-additional-options -fmodules-ts }
 export module One;
-// { dg-module-bmi One }
+// { dg-module-cmi One }
 
 export int foo ();
 export char bax ();

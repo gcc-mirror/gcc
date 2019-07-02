@@ -1,7 +1,7 @@
 // { dg-module-do run }
 // { dg-additional-options "-fmodules-ts" }
 export module One;
-// { dg-module-bmi "One" }
+// { dg-module-cmi "One" }
 
 export struct X
 {

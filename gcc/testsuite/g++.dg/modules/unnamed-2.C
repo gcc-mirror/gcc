@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts -fdump-lang-module" }
 export module PiL;
-// { dg-module-bmi PiL }
+// { dg-module-cmi PiL }
 
 static int counter = 0;
 

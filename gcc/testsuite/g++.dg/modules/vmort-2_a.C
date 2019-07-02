@@ -2,7 +2,7 @@
 // { dg-additional-options "-fmodules-ts -fdump-lang-module-graph-blocks" }
 
 export module voldy;
-// { dg-module-bmi voldy }
+// { dg-module-cmi voldy }
 
 export auto frobber (int i)
 {

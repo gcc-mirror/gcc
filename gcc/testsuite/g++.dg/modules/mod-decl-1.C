@@ -2,7 +2,7 @@
 module;
 
 export module frist;
-// { dg-module-bmi "!frist" }
+// { dg-module-cmi "!frist" }
 
 import frist; // { dg-error {cannot import module.* in its own purview} }
 

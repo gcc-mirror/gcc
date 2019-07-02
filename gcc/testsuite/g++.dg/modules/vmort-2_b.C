@@ -1,7 +1,7 @@
 // { dg-additional-options "-fmodules-ts -fdump-lang-module-graph-blocks" }
 
 export module malfoy;
-// { dg-module-bmi malfoy }
+// { dg-module-cmi malfoy }
 
 import voldy;
 

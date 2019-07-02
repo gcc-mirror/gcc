@@ -1,7 +1,7 @@
 // { dg-additional-options -fmodules-ts }
 
 export module foo:inter2;
-// { dg-module-bmi foo:inter2 }
+// { dg-module-cmi foo:inter2 }
 
 import :imp; // ok
 

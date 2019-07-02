@@ -1,7 +1,7 @@
 // { dg-additional-options -fmodules-ts }
 
 export module bob;
-// { dg-module-bmi bob }
+// { dg-module-cmi bob }
 
 export template <typename T, typename U>
 struct same

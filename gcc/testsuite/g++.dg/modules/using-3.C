@@ -1,6 +1,6 @@
 // { dg-additional-options -fmodules-ts }
 export module bad;
-// { dg-module-bmi !bad }
+// { dg-module-cmi !bad }
 
 namespace N
 {
