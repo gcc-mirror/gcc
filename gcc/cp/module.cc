@@ -3608,10 +3608,10 @@ static const char *module_mapper_name;
 static vec<module_state *, va_heap, vl_embed> *pending_imports;
 
 /* CMI repository path and workspace.  */
-static char *bmi_repo;
-static size_t bmi_repo_length;
-static char *bmi_path;
-static size_t bmi_path_alloc;
+static char *cmi_repo;
+static size_t cmi_repo_length;
+static char *cmi_path;
+static size_t cmi_path_alloc;
 
 /* Global variables.  */
 unsigned module_kind;
@@ -3746,7 +3746,7 @@ public:
   void imex_query (const module_state *, bool exporting);
   char *imex_response (const module_state *state)
   {
-    return get_response (state->from_loc) > 0 ? bmi_response (state) : NULL;
+    return get_response (state->from_loc) > 0 ? cmi_response (state) : NULL;
   }
   bool translate_include (location_t, const char *);
 
@@ -3774,7 +3774,7 @@ private:
   }
   void response_unexpected (location_t);
   bool response_eol (location_t, bool ignore = false);
-  char *bmi_response (const module_state *);
+  char *cmi_response (const module_state *);
 
 private:
   static module_mapper *mapper;
@@ -4283,14 +4283,14 @@ noisy_p ()
 /* Set the bmi repo.  Strip trailing '/', '.' becomes NULL.  */
 
 static void
-set_bmi_repo (char *r)
+set_cmi_repo (char *r)
 {
-  XDELETEVEC (bmi_repo);
-  XDELETEVEC (bmi_path);
-  bmi_path_alloc = 0;
+  XDELETEVEC (cmi_repo);
+  XDELETEVEC (cmi_path);
+  cmi_path_alloc = 0;
 
-  bmi_repo = NULL;
-  bmi_repo_length = 0;
+  cmi_repo = NULL;
+  cmi_repo_length = 0;
   if (r)
     {
       size_t len = strlen (r);
@@ -4298,9 +4298,9 @@ set_bmi_repo (char *r)
 	r[--len] = 0;
       if (0 != strcmp (r, "."))
 	{
-	  bmi_repo = XNEWVEC (char, len + 1);
-	  memcpy (bmi_repo, r, len + 1);
-	  bmi_repo_length = len;
+	  cmi_repo = XNEWVEC (char, len + 1);
+	  memcpy (cmi_repo, r, len + 1);
+	  cmi_repo_length = len;
 	}
     }
 }
@@ -4309,25 +4309,25 @@ set_bmi_repo (char *r)
    we are.  */
 
 static const char *
-maybe_add_bmi_prefix (const char *to, size_t *len_p = NULL)
+maybe_add_cmi_prefix (const char *to, size_t *len_p = NULL)
 {
-  size_t len = len_p || bmi_repo_length ? strlen (to) : 0;
+  size_t len = len_p || cmi_repo_length ? strlen (to) : 0;
 
-  if (bmi_repo_length && !IS_ABSOLUTE_PATH (to))
+  if (cmi_repo_length && !IS_ABSOLUTE_PATH (to))
     {
-      if (bmi_path_alloc < bmi_repo_length + len + 2)
+      if (cmi_path_alloc < cmi_repo_length + len + 2)
 	{
-	  XDELETEVEC (bmi_path);
-	  bmi_path_alloc = bmi_repo_length + len * 2 + 2;
-	  bmi_path = XNEWVEC (char, bmi_path_alloc);
+	  XDELETEVEC (cmi_path);
+	  cmi_path_alloc = cmi_repo_length + len * 2 + 2;
+	  cmi_path = XNEWVEC (char, cmi_path_alloc);
 
-	  memcpy (bmi_path, bmi_repo, bmi_repo_length);
-	  bmi_path[bmi_repo_length] = DIR_SEPARATOR;
+	  memcpy (cmi_path, cmi_repo, cmi_repo_length);
+	  cmi_path[cmi_repo_length] = DIR_SEPARATOR;
 	}
 
-      memcpy (&bmi_path[bmi_repo_length + 1], to, len + 1);
-      len += bmi_repo_length + 1;
-      to = bmi_path;
+      memcpy (&cmi_path[cmi_repo_length + 1], to, len + 1);
+      len += cmi_repo_length + 1;
+      to = cmi_path;
     }
 
   if (len_p)
@@ -4361,14 +4361,14 @@ create_dirs (char *path)
    trailing suffix.  Otherwise return TO.  */
 
 static char *
-maybe_strip_bmi_prefix (char *to)
+maybe_strip_cmi_prefix (char *to)
 {
-  if (bmi_repo)
+  if (cmi_repo)
     {
-      if (0 == strncmp (to, bmi_repo, bmi_repo_length))
+      if (0 == strncmp (to, cmi_repo, cmi_repo_length))
 	{
 	  char *res = to;
-	  for (size_t probe = bmi_repo_length;
+	  for (size_t probe = cmi_repo_length;
 	       IS_DIR_SEPARATOR (to[probe]);)
 	    res = &to[++probe];
 	  to = res;
@@ -11673,12 +11673,12 @@ module_mapper::module_mapper (location_t loc, const char *option)
 
 	    if (starting && 0 == strcmp (mod, "$root"))
 	      {
-		set_bmi_repo (file);
+		set_cmi_repo (file);
 		continue;
 	      }
 	    
 	    starting = false;
-	    file = maybe_strip_bmi_prefix (file);
+	    file = maybe_strip_cmi_prefix (file);
 	    module_state *state = get_module (mod);
 	    if (!state)
 	      response_unexpected (loc);
@@ -12054,7 +12054,7 @@ module_mapper::handshake (location_t loc, const char *cookie)
 	if (response_eol (loc))
 	  {
 	    if (repo)
-	      set_bmi_repo (repo);
+	      set_cmi_repo (repo);
 	    ok = true;
 	  }
       }
@@ -12082,7 +12082,7 @@ module_mapper::imex_query (const module_state *state, bool exporting)
 /* Response to import/export query.  */
 
 char *
-module_mapper::bmi_response (const module_state *state)
+module_mapper::cmi_response (const module_state *state)
 {
   char *filename = NULL;
 
@@ -12093,7 +12093,7 @@ module_mapper::bmi_response (const module_state *state)
 
     case 0: /* OK $bmifile  */
       filename = response_token (state->from_loc, true);
-      filename = maybe_strip_bmi_prefix (filename);
+      filename = maybe_strip_cmi_prefix (filename);
       response_eol (state->from_loc);
       break;
 
@@ -12313,7 +12313,7 @@ module_state::write_readme (elf_out *to, const char *options,
       readme.printf ("cwd: %s", cwd);
       free (cwd);
     }
-  readme.printf ("repository: %s", bmi_repo ? bmi_repo : ".");
+  readme.printf ("repository: %s", cmi_repo ? cmi_repo : ".");
 #if NETWORKING
   {
     char hostname[64];
@@ -15440,7 +15440,7 @@ module_state::note_cmi_name ()
     {
       cmi_noted_p = true;
       inform (loc, "compiled module file is %qs",
-	      maybe_add_bmi_prefix (filename));
+	      maybe_add_cmi_prefix (filename));
     }
 }
 
@@ -16023,7 +16023,7 @@ module_state::maybe_defrost ()
       if (lazy_open >= lazy_limit)
 	freeze_an_elf ();
       dump () && dump ("Defrosting '%s'", filename);
-      from ()->defrost (maybe_add_bmi_prefix (filename));
+      from ()->defrost (maybe_add_cmi_prefix (filename));
       lazy_open++;
     }
 }
@@ -16451,7 +16451,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   int e = ENOENT;
   if (filename)
     {
-      fd = open (maybe_add_bmi_prefix (filename), O_RDONLY | O_CLOEXEC);
+      fd = open (maybe_add_cmi_prefix (filename), O_RDONLY | O_CLOEXEC);
       e = errno;
     }
 
@@ -16490,7 +16490,7 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
 	{
 	  /* Preserve the state of the line-map.  */
 	  pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-	  if (module_has_bmi_p ())
+	  if (module_has_cmi_p ())
 	    spans.close ();
 
 	  maybe_create_loc ();
@@ -16505,7 +16505,7 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
       if (!lazy)
 	{
 	  linemap_module_restore (line_table, pre_hwm);
-	  if (module_has_bmi_p ())
+	  if (module_has_cmi_p ())
 	    spans.open ();
 	}
     }
@@ -16976,7 +16976,7 @@ module_preprocess (mkdeps *deps, module_state *state, int is_module)
       path = state->filename;
       if (!path)
 	path = module_mapper::import_export (state, true);
-      path = path ? maybe_add_bmi_prefix (path) : "";
+      path = path ? maybe_add_cmi_prefix (path) : "";
     }
 
   deps_add_module (deps, state->get_flatname (),
@@ -17032,7 +17032,7 @@ process_deferred_imports (cpp_reader *reader)
 
   /* Preserve the state of the line-map.  */
   unsigned pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-  if (module_has_bmi_p ())
+  if (module_has_cmi_p ())
     spans.close ();
 
   module_state *imp = (*pending_imports)[0];
@@ -17095,7 +17095,7 @@ process_deferred_imports (cpp_reader *reader)
   vec_free (pending_imports);
 
   linemap_module_restore (line_table, pre_hwm);
-  if (module_has_bmi_p ())
+  if (module_has_cmi_p ())
     spans.open ();
 }
 
@@ -17350,7 +17350,7 @@ finish_module_processing (cpp_reader *reader)
       if (state->filename)
 	{
 	  size_t len = 0;
-	  path = maybe_add_bmi_prefix (state->filename, &len);
+	  path = maybe_add_cmi_prefix (state->filename, &len);
 	  tmp_name = XNEWVEC (char, len + 3);
 	  memcpy (tmp_name, path, len);
 	  strcpy (&tmp_name[len], "~");
@@ -17415,7 +17415,7 @@ finish_module_processing (cpp_reader *reader)
   headers = NULL;
 
   /* We're now done with everything but the module names.  */
-  set_bmi_repo (NULL);
+  set_cmi_repo (NULL);
   module_mapper::fini (input_location);
   module_state_config::release ();
 

@@ -5133,7 +5133,7 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
     }
 
   /* Only process exporting if we're going to be inserting.  */
-  bool revealing_p = insert_p && !fn_scope_p && module_has_bmi_p ();
+  bool revealing_p = insert_p && !fn_scope_p && module_has_cmi_p ();
 
   if (!lookup.value)
     /* Nothing.  */;
