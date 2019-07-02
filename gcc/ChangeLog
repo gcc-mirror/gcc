@@ -1,3 +1,9 @@
+2019-07-02  qing zhao  <qing.zhao@oracle.com>
+
+	PR preprocessor/90581
+	* doc/cppopts.texi: Add document for -fmax-include-depth.
+	* doc/invoke.texi (Preprocessor Options): List -fmax-include-depth.
+
 2019-07-02  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md (mmx_pack<s_trunsuffix>swb):

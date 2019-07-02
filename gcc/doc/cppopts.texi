@@ -261,6 +261,10 @@ enabled by default for C99 (and later C standard versions) and C++.
 @opindex fno-canonical-system-headers
 When preprocessing, do not shorten system header paths with canonicalization.
 
+@item -fmax-include-depth=@var{depth}
+@opindex fmax-include-depth
+Set the maximum depth of the nested #include. The default is 200. 
+
 @item -ftabstop=@var{width}
 @opindex ftabstop
 Set the distance between tab stops.  This helps the preprocessor report

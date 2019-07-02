@@ -1,3 +1,9 @@
+2019-07-02  qing zhao  <qing.zhao@oracle.com>
+
+	PR preprocessor/90581
+	* c-opts.c (c_common_handle_option): Handle -fmax-include-depth.
+	* c.opt: Add new option -fmax-include-depth.
+
 2019-06-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/55442 - memory-hog with highly recursive constexpr.

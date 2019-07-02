@@ -1,3 +1,10 @@
+2019-07-02  qing zhao  <qing.zhao@oracle.com>
+
+	PR preprocessor/90581
+	* c-c++-common/cpp/fmax-include-depth-1a.h: New test.
+	* c-c++-common/cpp/fmax-include-depth-1b.h: New test.
+	* c-c++-common/cpp/fmax-include-depth.c: New test.
+
 2019-07-02  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/alias-access-path-7.c: New testcase.
