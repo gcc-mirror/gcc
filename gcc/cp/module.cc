@@ -6894,6 +6894,46 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     /* If this is a fixed decl, we're done.  */
     return false;
 
+  if (TREE_CODE (decl) == VAR_DECL && DECL_TINFO_P (decl))
+    {
+      /* A typeinfo object -> tt_tinfo_var.  These need recreating by
+	 the loader.  The type it is for is stashed on the name's
+	 TREE_TYPE.  */
+      tree type = TREE_TYPE (DECL_NAME (decl));
+      if (streaming_p ())
+	i (tt_tinfo_var);
+      tree_node (type);
+      int tag = insert (decl);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Wrote typeinfo:%d %S for %N", tag, decl, type);
+      return false;
+    }
+
+  if (TREE_CODE (decl) == VAR_DECL && DECL_ARTIFICIAL (decl))
+    {
+      tree ctx = CP_DECL_CONTEXT (decl);
+      if (TREE_CODE (ctx) == RECORD_TYPE && TYPE_LANG_SPECIFIC (ctx))
+	{
+	  /* Try a VTABLE.  */
+	  unsigned ix = 0;
+	  for (tree vtables = CLASSTYPE_VTABLES (ctx);
+	       vtables; ix++, vtables = DECL_CHAIN (vtables))
+	    if (vtables == decl)
+	      {
+		if (streaming_p ())
+		  {
+		    u (tt_vtable);
+		    u (ix);
+		    dump (dumper::TREE)
+		      && dump ("Writing vtable %N[%u]", ctx, ix);
+		  }
+		tree_node (ctx);
+		return false;
+	      }
+	}
+    }
+
   if (TREE_CODE (decl) == TYPE_DECL && DECL_TINFO_P (decl))
     {
       /* A typeinfo pseudo type -> tt_tinfo_typedef.  */
@@ -7986,46 +8026,6 @@ trees_out::tree_node (tree t)
       if (streaming_p ())
 	dump (dumper::TREE) && dump ("Inserting binfo:%d %N", tag, t);
       goto done;
-    }
-
-  if (TREE_CODE (t) == VAR_DECL && DECL_TINFO_P (t))
-    {
-      /* A typeinfo object -> tt_tinfo_var.  These need recreating by
-	 the loader.  The type it is for is stashed on the name's
-	 TREE_TYPE.  */
-      tree type = TREE_TYPE (DECL_NAME (t));
-      if (streaming_p ())
-	i (tt_tinfo_var);
-      tree_node (type);
-      int tag = insert (t);
-      if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Wrote typeinfo:%d %S for %N", tag, t, type);
-      goto done;
-    }
-
-  if (TREE_CODE (t) == VAR_DECL && DECL_ARTIFICIAL (t))
-    {
-      tree ctx = CP_DECL_CONTEXT (t);
-      if (TREE_CODE (ctx) == RECORD_TYPE && TYPE_LANG_SPECIFIC (ctx))
-	{
-	  /* Try a VTABLE.  */
-	  unsigned ix = 0;
-	  for (tree vtables = CLASSTYPE_VTABLES (ctx);
-	       vtables; ix++, vtables = DECL_CHAIN (vtables))
-	    if (vtables == t)
-	      {
-		if (streaming_p ())
-		  {
-		    u (tt_vtable);
-		    u (ix);
-		    dump (dumper::TREE)
-		      && dump ("Writing vtable %N[%u]", ctx, ix);
-		  }
-		tree_node (ctx);
-		goto done;
-	      }
-	}
     }
 
   if (TREE_CODE (t) == INTEGER_CST

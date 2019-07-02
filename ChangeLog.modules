@@ -1,6 +1,11 @@
 2019-07-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::tree_decl): Deal with tinfo vars and
+	vtables here ...
+	(trees_out::tree_node): ... not here.
+
+	gcc/cp/
 	* module.cc (trees_out::tree_decl): Deal with tinfo type_decls
 	here.
 	(trees_out::tree_type): Dectect tinfo types here ...
