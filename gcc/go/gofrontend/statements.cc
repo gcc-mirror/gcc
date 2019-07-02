@@ -6882,12 +6882,18 @@ For_range_statement::lower_array_range_clear(Gogo* gogo,
   Temporary_statement* ts2 = Statement::make_temporary(NULL, e2, loc);
   b->add_statement(ts2);
 
-  Expression* arg1 = Expression::make_temporary_reference(ts1, loc);
-  Expression* arg2 = Expression::make_temporary_reference(ts2, loc);
-  Runtime::Function code = (elem_type->has_pointer()
-                            ? Runtime::MEMCLRHASPTR
-                            : Runtime::MEMCLRNOPTR);
-  Expression* call = Runtime::make_call(code, loc, 2, arg1, arg2);
+  Expression* ptr_arg = Expression::make_temporary_reference(ts1, loc);
+  Expression* sz_arg = Expression::make_temporary_reference(ts2, loc);
+  Expression* call;
+  if (elem_type->has_pointer())
+    call = Runtime::make_call(Runtime::MEMCLRHASPTR, loc, 2, ptr_arg, sz_arg);
+  else
+    {
+      Type* int32_type = Type::lookup_integer_type("int32");
+      Expression* zero = Expression::make_integer_ul(0, int32_type, loc);
+      call = Runtime::make_call(Runtime::BUILTIN_MEMSET, loc, 3, ptr_arg,
+                                zero, sz_arg);
+    }
   Statement* cs3 = Statement::make_statement(call, true);
   b->add_statement(cs3);
 
