@@ -1,5 +1,10 @@
 2019-06-27  Jan Hubicka  <jh@suse.cz>
 
+	* lto-common.c (lto_register_canonical_types_for_odr_types):
+	Copy CXX_ODR_P from the main variant.
+
+2019-06-27  Jan Hubicka  <jh@suse.cz>
+
 	* lto-common.c: tree-pretty-print.h
 	(type_streaming_finished): New static var.
 	(gimple_register_canonical_type_1): Return updated hash; handle ODR

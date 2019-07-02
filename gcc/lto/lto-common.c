@@ -568,8 +568,17 @@ lto_register_canonical_types_for_odr_types ()
 
   /* Register all remaining types.  */
   FOR_EACH_VEC_ELT (*types_to_register, i, t)
-    if (!TYPE_CANONICAL (t))
-      gimple_register_canonical_type (t);
+    {
+      /* For pre-streamed types like va-arg it is possible that main variant
+	 is !CXX_ODR_P while the variant (which is streamed) is.
+	 Copy CXX_ODR_P to make type verifier happy.  This is safe because
+	 in canonical type calculation we only consider main variants.
+	 However we can not change this flag before streaming is finished
+	 to not affect tree merging.  */
+      TYPE_CXX_ODR_P (t) = TYPE_CXX_ODR_P (TYPE_MAIN_VARIANT (t));
+      if (!TYPE_CANONICAL (t))
+        gimple_register_canonical_type (t);
+    }
 }
 
 
