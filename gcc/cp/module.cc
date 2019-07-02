@@ -7436,12 +7436,14 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
       // FIXME: Hook other C++-specific types for reconstruction?
       break;
 
+    case VECTOR_TYPE:
     case ARRAY_TYPE:
     case OFFSET_TYPE:
     case FUNCTION_TYPE:
     case METHOD_TYPE:
     case REFERENCE_TYPE:
     case POINTER_TYPE:
+    case COMPLEX_TYPE:
       {
 	if (streaming_p ())
 	  {
@@ -7453,6 +7455,19 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 	  {
 	  default:
 	    gcc_unreachable ();
+
+	  case VECTOR_TYPE:
+	    if (streaming_p ())
+	      {
+		gcc_checking_assert(NUM_POLY_INT_COEFFS == 1);
+		poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (type);
+		wu (static_cast<unsigned HOST_WIDE_INT> (nunits.to_constant ()));
+	      }
+	    break;
+
+	  case COMPLEX_TYPE:
+	    /* No additional data.  */
+	    break;
 
 	  case ARRAY_TYPE:
 	    tree_node (TYPE_DOMAIN (type));
@@ -8162,6 +8177,17 @@ trees_in::tree_node ()
 	  {
 	  default:
 	    set_overrun ();
+	    break;
+
+	  case VECTOR_TYPE:
+	    {
+	      unsigned HOST_WIDE_INT nunits = wu ();
+	      res = build_vector_type (res, static_cast<poly_int64> (nunits));
+	    }
+	    break;
+
+	  case COMPLEX_TYPE:
+	    res = build_complex_type (res);
 	    break;
 
 	  case ARRAY_TYPE:
