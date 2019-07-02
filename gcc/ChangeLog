@@ -1,5 +1,28 @@
 2019-07-02  Jan Hubicka  <jh@suse.cz>
 
+	* tree-ssa-alias.c (nonoverlapping_component_refs_for_decl_p): Rename
+	to ..
+	(nonoverlapping_component_refs_since_match_p): ... this one;
+	handle also non-decl bases; return -1 if search gave up.
+	(alias_stats): Rename nonoverlapping_component_refs_of_decl_p_may_alias,
+	nonoverlapping_component_refs_of_decl_p_no_alias to
+	nonoverlapping_component_refs_since_match_p_may_alias,
+	nonoverlapping_component_refs_since_match_p_no_alias.
+	(dump_alias_stats): Update dumping.
+	(aliasing_matching_component_refs_p):  Break out from ...;
+	dispatch to nonoverlapping_component_refs_for_decl_p
+	and nonoverlapping_component_refs_since_match_p.
+	(aliasing_component_refs_p): ... here; call
+	nonoverlapping_component_refs_p in scenarios where we can not
+	precisely determine base match.
+	(decl_refs_may_alias_p): Use
+	nonoverlapping_component_refs_since_match_p.
+	(indirect_ref_may_alias_decl_p): Do not call
+	nonoverlapping_component_refs_p.
+	(indirect_refs_may_alias_p): Likewise.
+
+2019-07-02  Jan Hubicka  <jh@suse.cz>
+
 	* tree-inline.c (remap_gimple_stmt): Do not subtitute handled components
 	to clobber of return value.
 
