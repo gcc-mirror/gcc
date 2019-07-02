@@ -1,3 +1,25 @@
+2019-07-02  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (mmx_pack<s_trunsuffix>swb):
+	Use TARGET_SSE2 && SSE_REGNO_P in split condition.
+	(mmx_packssdw): Ditto.
+	(mmx_punpckhbw): Ditto.
+	(mmx_punpcklbw): Ditto.
+	(mmx_punpckhwd): Ditto.
+	(mmx_punpcklwd): Ditto.
+	(mmx_punpckhdq): Ditto.
+	(mmx_punpckldq): Ditto.
+	(*vec_dupv4hi): Ditto.
+	(*vec_dupv2si): Ditto.
+	(mmx_pmovmskb): Ditto.
+	* config/i386/sse.md (sse_cvtpi2ps): Use
+	TARGET_SSE2 && SSE_REG_P in split condition.
+	(ssse3_ph<plusminus_mnemonic>wv4hi3): Use
+	TARGET_SSSE3 && SSE_REGNO_P in split condition.
+	(ssse3_ph<plusminus_mnemonic>dv2si3): Ditto.
+	(ssse3_pshufbv8qi3): Ditto.
+	(ssse3_palignrdi): Ditto.
+
 2019-07-02  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn.md (movdi_symbol_save_scc): Convert to define_insn
