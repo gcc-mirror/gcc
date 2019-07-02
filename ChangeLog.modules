@@ -1,6 +1,12 @@
 2019-07-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::tree_decl): Write types for typedefs.
+	(trees_in::tree_node): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/tdef-5_[ab].C: New.
+
+	gcc/cp/
 	* module.cc (trees_out::tree_type): Add pack types.
 	(trees_{in,out}::tree_value): Tweak type streaming flags
 	(trees_in::tree_node): Add pack types.

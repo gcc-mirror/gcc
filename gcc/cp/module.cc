@@ -7273,7 +7273,9 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 		   tag, TREE_CODE (proxy), proxy);
     }
 
-  if (DECL_IMPLICIT_TYPEDEF_P (proxy))
+  if (TREE_CODE (proxy) == TYPE_DECL
+      && (DECL_ORIGINAL_TYPE (proxy)
+	  || TYPE_STUB_DECL (TREE_TYPE (proxy)) == proxy))
     {
       /* Make sure the type is in the map too.  Otherwise we get
 	 different RECORD_TYPEs for the same type, and things go
@@ -8520,7 +8522,9 @@ trees_in::tree_node ()
 			   TREE_CODE (proxy), proxy);
 	      }
 
-	    if (DECL_IMPLICIT_TYPEDEF_P (proxy))
+	    if (TREE_CODE (proxy) == TYPE_DECL
+		&& (DECL_ORIGINAL_TYPE (proxy)
+		    || TYPE_STUB_DECL (TREE_TYPE (proxy)) == proxy))
 	      {
 		tree proxy_type = TREE_TYPE (proxy);
 		tag = insert (proxy_type);
