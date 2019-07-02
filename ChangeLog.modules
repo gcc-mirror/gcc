@@ -1,6 +1,11 @@
 2019-07-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::tree_type): Add pack types.
+	(trees_{in,out}::tree_value): Tweak type streaming flags
+	(trees_in::tree_node): Add pack types.
+
+	gcc/cp/
 	* module.cc (trees_out::tree_type): Detect bound template template
 	parm.
 	(trees_{in,out}::tree_value): Stream type on any TYPE_DECL that

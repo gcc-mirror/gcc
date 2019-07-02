@@ -7445,6 +7445,8 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
     case REFERENCE_TYPE:
     case POINTER_TYPE:
     case COMPLEX_TYPE:
+    case TYPE_ARGUMENT_PACK:
+    case TYPE_PACK_EXPANSION:
       {
 	if (streaming_p ())
 	  {
@@ -7456,6 +7458,16 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 	  {
 	  default:
 	    gcc_unreachable ();
+
+	  case TYPE_PACK_EXPANSION:
+	    if (streaming_p ())
+	      u (PACK_EXPANSION_LOCAL_P (type));
+	    tree_node (PACK_EXPANSION_PARAMETER_PACKS (type));
+	    break;
+
+	  case TYPE_ARGUMENT_PACK:
+	    /* No additional data.  */
+	    break;
 
 	  case VECTOR_TYPE:
 	    if (streaming_p ())
@@ -7602,7 +7614,7 @@ trees_out::tree_value (tree t, walk_kind walk)
 		      == TYPE_STUB_DECL (type));
 
       if (streaming_p ())
-	u ((TREE_CODE (type) << 1) | is_stub);
+	u (is_stub ? TREE_CODE (type) : 0);
 
       if (is_stub)
 	{
@@ -7717,11 +7729,9 @@ trees_in::tree_value (walk_kind walk)
   int type_tag = 0;
   if (res && TREE_CODE (inner) == TYPE_DECL)
     {
-      unsigned c = u ();
-
-      if (c & 1)
+      if (unsigned type_code = u ())
 	{
-	  type = start (c >> 1);
+	  type = start (type_code);
 	  if (type)
 	    {
 	      TREE_TYPE (res) = TREE_TYPE (inner) = type;
@@ -8175,6 +8185,28 @@ trees_in::tree_node ()
 	  {
 	  default:
 	    set_overrun ();
+	    break;
+
+	  case TYPE_PACK_EXPANSION:
+	    {
+	      bool local = u ();
+	      tree param_packs = tree_node ();
+	      tree expn = cxx_make_type (TYPE_PACK_EXPANSION);
+	      SET_TYPE_STRUCTURAL_EQUALITY (expn);
+	      SET_PACK_EXPANSION_PATTERN (expn, res);
+	      PACK_EXPANSION_PARAMETER_PACKS (expn) = param_packs;
+	      PACK_EXPANSION_LOCAL_P (expn) = local;
+	      res = expn;
+	    }
+	    break;
+
+	  case TYPE_ARGUMENT_PACK:
+	    {
+	      tree pack = cxx_make_type (TYPE_ARGUMENT_PACK);
+	      SET_TYPE_STRUCTURAL_EQUALITY (pack);
+	      SET_ARGUMENT_PACK_ARGS (pack, res);
+	      res = pack;
+	    }
 	    break;
 
 	  case VECTOR_TYPE:
