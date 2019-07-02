@@ -1,5 +1,11 @@
 2019-07-02  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (trees_in::core_vals): Protect binfo base reading.
+	(module_state::{read,write}_cluster): Insert types for horcrucifexes.
+	gcc/testsuite/
+	* g++.dg/modules/horcrux-1_[ab].C: New.
+
 	gcc/testsuite/
 	Rename bmi->cmi everywhere.
 

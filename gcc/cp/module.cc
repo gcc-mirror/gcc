@@ -6217,9 +6217,12 @@ trees_in::core_vals (tree t)
       RT (t->binfo.vtt_vptr);
 
       BINFO_BASE_ACCESSES (t) = tree_vec ();
-      unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (t));
-      for (unsigned ix = 0; ix != num; ix++)
-	BINFO_BASE_APPEND (t, tree_node ());
+      if (!get_overrun ())
+	{
+	  unsigned num = vec_safe_length (BINFO_BASE_ACCESSES (t));
+	  for (unsigned ix = 0; ix != num; ix++)
+	    BINFO_BASE_APPEND (t, tree_node ());
+	}
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_STATEMENT_LIST))
@@ -12917,7 +12920,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 			    && dump ("Inserted:%d template result %C:%N",
 				     tag, TREE_CODE (proxy), proxy);
 			}
-		      if (DECL_IMPLICIT_TYPEDEF_P (proxy))
+		      if (TREE_CODE (proxy) == TYPE_DECL
+			  && (DECL_ORIGINAL_TYPE (proxy)
+			      || TYPE_STUB_DECL (TREE_TYPE (proxy)) == proxy))
 			{
 			  proxy = TREE_TYPE (proxy);
 			  tag = sec.insert (proxy);
@@ -13265,7 +13270,9 @@ module_state::read_cluster (unsigned snum)
 			  && dump ("Inserted:%d template result %C:%N",
 				   tag, TREE_CODE (proxy), proxy);
 		      }
-		    if (DECL_IMPLICIT_TYPEDEF_P (proxy))
+		    if (TREE_CODE (proxy) == TYPE_DECL
+			&& (DECL_ORIGINAL_TYPE (proxy)
+			    || TYPE_STUB_DECL (TREE_TYPE (proxy)) == proxy))
 		      {
 			proxy = TREE_TYPE (proxy);
 			tag = sec.insert (proxy);
@@ -16451,7 +16458,9 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   int e = ENOENT;
   if (filename)
     {
-      fd = open (maybe_add_cmi_prefix (filename), O_RDONLY | O_CLOEXEC);
+      const char *file = maybe_add_cmi_prefix (filename);
+      dump () && dump ("CMI is %s", file);
+      fd = open (file, O_RDONLY | O_CLOEXEC);
       e = errno;
     }
 
@@ -17372,6 +17381,7 @@ finish_module_processing (cpp_reader *reader)
 	}
       unsigned n = dump.push (state);
       state->announce ("creating");
+      dump () && dump ("CMI is %s", path);
 
       if (errorcount)
 	warning_at (state->from_loc, 0,
