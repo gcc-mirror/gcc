@@ -41,14 +41,6 @@ const char Export::v2_magic[Export::magic_len] =
 
 const int Export::checksum_len;
 
-// Constructor.
-
-Export::Export(Stream* stream)
-  : stream_(stream), type_index_(1), packages_()
-{
-  go_assert(Export::checksum_len == Go_sha1_helper::checksum_len);
-}
-
 // Type hash table operations, treating aliases as distinct.
 
 class Type_hash_alias_identical
@@ -80,14 +72,31 @@ class Type_alias_identical
   }
 };
 
-// Mapping from Type objects to a constant index.  This would be nicer
-// as a field in Export, but then export.h would have to #include
-// types.h.
-
+// Mapping from Type objects to a constant index.
 typedef Unordered_map_hash(const Type*, int, Type_hash_alias_identical,
-			   Type_alias_identical) Type_refs;
+                           Type_alias_identical) Type_refs;
 
-static Type_refs type_refs;
+// Implementation object for class Export.  Hidden implementation avoids
+// having to #include types.h in export.h, or use a static map.
+
+struct Export_impl {
+  Type_refs type_refs;
+};
+
+// Constructor.
+
+Export::Export(Stream* stream)
+    : stream_(stream), type_index_(1), packages_(), impl_(new Export_impl)
+{
+  go_assert(Export::checksum_len == Go_sha1_helper::checksum_len);
+}
+
+// Destructor.
+
+Export::~Export()
+{
+  delete this->impl_;
+}
 
 // A traversal class to collect functions and global variables
 // referenced by inlined functions.
@@ -635,7 +644,7 @@ Export::set_type_index(Type* type)
   type = type->forwarded();
 
   std::pair<Type_refs::iterator, bool> ins =
-    type_refs.insert(std::make_pair(type, 0));
+    this->impl_->type_refs.insert(std::make_pair(type, 0));
   if (!ins.second)
     {
       // We've already seen this type.
@@ -1011,8 +1020,8 @@ Export::write_types(int unexported_type_index)
 {
   // Map from type index to type.
   std::vector<const Type*> types(static_cast<size_t>(this->type_index_));
-  for (Type_refs::const_iterator p = type_refs.begin();
-       p != type_refs.end();
+  for (Type_refs::const_iterator p = this->impl_->type_refs.begin();
+       p != this->impl_->type_refs.end();
        ++p)
     {
       if (p->second >= 0)
@@ -1152,8 +1161,8 @@ int
 Export::type_index(const Type* type)
 {
   type = type->forwarded();
-  Type_refs::const_iterator p = type_refs.find(type);
-  go_assert(p != type_refs.end());
+  Type_refs::const_iterator p = this->impl_->type_refs.find(type);
+  go_assert(p != this->impl_->type_refs.end());
   int index = p->second;
   go_assert(index != 0);
   return index;
@@ -1231,7 +1240,7 @@ Export::register_builtin_type(Gogo* gogo, const char* name, Builtin_code code)
   Named_object* named_object = gogo->lookup_global(name);
   go_assert(named_object != NULL && named_object->is_type());
   std::pair<Type_refs::iterator, bool> ins =
-    type_refs.insert(std::make_pair(named_object->type_value(), code));
+    this->impl_->type_refs.insert(std::make_pair(named_object->type_value(), code));
   go_assert(ins.second);
 
   // We also insert the underlying type.  We can see the underlying
@@ -1239,7 +1248,7 @@ Export::register_builtin_type(Gogo* gogo, const char* name, Builtin_code code)
   // fails--we expect duplications here, and it doesn't matter when
   // they occur.
   Type* real_type = named_object->type_value()->real_type();
-  type_refs.insert(std::make_pair(real_type, code));
+  this->impl_->type_refs.insert(std::make_pair(real_type, code));
 }
 
 // Class Export::Stream.
