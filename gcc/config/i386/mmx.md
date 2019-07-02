@@ -1228,7 +1228,8 @@
    pack<s_trunsuffix>swb\t{%2, %0|%0, %2}
    #
    #"
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSE2 && reload_completed
+   && SSE_REGNO_P (REGNO (operands[0]))"
   [(const_int 0)]
   "ix86_split_mmx_pack (operands, <any_s_truncate:CODE>); DONE;"
   [(set_attr "mmx_isa" "native,sse_noavx,avx")
@@ -1247,7 +1248,8 @@
    packssdw\t{%2, %0|%0, %2}
    #
    #"
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSE2 && reload_completed
+   && SSE_REGNO_P (REGNO (operands[0]))"
   [(const_int 0)]
   "ix86_split_mmx_pack (operands, SS_TRUNCATE); DONE;"
   [(set_attr "mmx_isa" "native,sse_noavx,avx")
@@ -1269,7 +1271,8 @@
    punpckhbw\t{%2, %0|%0, %2}
    #
    #"
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSE2 && reload_completed
+   && SSE_REGNO_P (REGNO (operands[0]))"
   [(const_int 0)]
   "ix86_split_mmx_punpck (operands, true); DONE;"
   [(set_attr "mmx_isa" "native,sse_noavx,avx")
@@ -1291,7 +1294,8 @@
    punpcklbw\t{%2, %0|%0, %k2}
    #
    #"
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSE2 && reload_completed
+   && SSE_REGNO_P (REGNO (operands[0]))"
   [(const_int 0)]
   "ix86_split_mmx_punpck (operands, false); DONE;"
   [(set_attr "mmx_isa" "native,sse_noavx,avx")
@@ -1311,7 +1315,8 @@
    punpckhwd\t{%2, %0|%0, %2}
    #
    #"
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSE2 && reload_completed
+   && SSE_REGNO_P (REGNO (operands[0]))"
   [(const_int 0)]
   "ix86_split_mmx_punpck (operands, true); DONE;"
   [(set_attr "mmx_isa" "native,sse_noavx,avx")
@@ -1331,7 +1336,8 @@
    punpcklwd\t{%2, %0|%0, %k2}
    #
    #"
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSE2 && reload_completed
+   && SSE_REGNO_P (REGNO (operands[0]))"
   [(const_int 0)]
   "ix86_split_mmx_punpck (operands, false); DONE;"
   [(set_attr "mmx_isa" "native,sse_noavx,avx")
@@ -1351,7 +1357,8 @@
    punpckhdq\t{%2, %0|%0, %2}
    #
    #"
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSE2 && reload_completed
+   && SSE_REGNO_P (REGNO (operands[0]))"
   [(const_int 0)]
   "ix86_split_mmx_punpck (operands, true); DONE;"
   [(set_attr "mmx_isa" "native,sse_noavx,avx")
@@ -1371,7 +1378,8 @@
    punpckldq\t{%2, %0|%0, %k2}
    #
    #"
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSE2 && reload_completed
+   && SSE_REGNO_P (REGNO (operands[0]))"
   [(const_int 0)]
   "ix86_split_mmx_punpck (operands, false); DONE;"
   [(set_attr "mmx_isa" "native,sse_noavx,avx")
@@ -1517,7 +1525,8 @@
    pshufw\t{$0, %0, %0|%0, %0, 0}
    #
    #"
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSE2 && reload_completed
+   && SSE_REGNO_P (REGNO (operands[0]))"
   [(const_int 0)]
 {
   rtx op;
@@ -1889,7 +1898,8 @@
   "@
    pmovmskb\t{%1, %0|%0, %1}
    #"
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSE2 && reload_completed
+   && SSE_REGNO_P (REGNO (operands[1]))"
   [(set (match_dup 0)
         (unspec:SI [(match_dup 1)] UNSPEC_MOVMSK))
    (set (match_dup 0)

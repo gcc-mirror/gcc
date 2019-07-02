@@ -5110,7 +5110,8 @@
    cvtpi2ps\t{%2, %0|%0, %2}
    #
    #"
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSE2 && reload_completed
+   && SSE_REG_P (operands[2])"
   [(const_int 0)]
 {
   rtx op2 = lowpart_subreg (V4SImode, operands[2],
@@ -15881,7 +15882,8 @@
    ph<plusminus_mnemonic>w\t{%2, %0|%0, %2}
    #
    #"
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSSE3 && reload_completed
+   && SSE_REGNO_P (REGNO (operands[0]))"
   [(const_int 0)]
 {
   /* Generate SSE version of the operation.  */
@@ -15997,7 +15999,8 @@
    ph<plusminus_mnemonic>d\t{%2, %0|%0, %2}
    #
    #"
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSSE3 && reload_completed
+   && SSE_REGNO_P (REGNO (operands[0]))"
   [(const_int 0)]
 {
   /* Generate SSE version of the operation.  */
@@ -16353,7 +16356,8 @@
    pshufb\t{%2, %0|%0, %2}
    #
    #"
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSSE3 && reload_completed
+   && SSE_REGNO_P (REGNO (operands[0]))"
   [(set (match_dup 3) (match_dup 5))
    (set (match_dup 3)
 	(and:V4SI (match_dup 3) (match_dup 2)))
@@ -16490,7 +16494,8 @@
       gcc_unreachable ();
     }
 }
-  "TARGET_MMX_WITH_SSE && reload_completed"
+  "TARGET_SSSE3 && reload_completed
+   && SSE_REGNO_P (REGNO (operands[0]))"
   [(set (match_dup 0)
 	(lshiftrt:V1TI (match_dup 0) (match_dup 3)))]
 {
