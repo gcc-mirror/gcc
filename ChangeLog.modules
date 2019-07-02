@@ -1,6 +1,12 @@
 2019-07-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::tree_type): Detect bound template template
+	parm.
+	(trees_{in,out}::tree_value): Stream type on any TYPE_DECL that
+	its TYPE_STUB_DECL.
+
+	gcc/cp/
 	* module.cc (trees_out::tree_type): Add COMPLEX and VECTOR types.
 	(trees_in::tree_node): ... and here.
 

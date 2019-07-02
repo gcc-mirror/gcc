@@ -7325,7 +7325,8 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 	/* A tinfo type.  */;
       else if (type == TYPE_MAIN_VARIANT (type)
 	       && (TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
-		   || TREE_CODE (type) == TEMPLATE_TYPE_PARM))
+		   || TREE_CODE (type) == TEMPLATE_TYPE_PARM
+		   || TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM))
 	/* A template parameter.  */;
       else
 	{
@@ -7597,16 +7598,14 @@ trees_out::tree_value (tree t, walk_kind walk)
     {
       // FIXME: anon-structured type with typedef name?
       type = TREE_TYPE (inner);
+      bool is_stub = ((TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM ? t : inner)
+		      == TYPE_STUB_DECL (type));
 
       if (streaming_p ())
-	u (TREE_CODE (type));
+	u ((TREE_CODE (type) << 1) | is_stub);
 
-      bool ttp_parm = TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM;
-
-      gcc_assert (walk == WK_body || !ttp_parm);
-      if (ttp_parm || DECL_IMPLICIT_TYPEDEF_P (inner))
+      if (is_stub)
 	{
-	  gcc_checking_assert (TYPE_STUB_DECL (type) == (ttp_parm ? t : inner));
 	  if (streaming_p ())
 	    {
 	      start (type);
@@ -7718,12 +7717,11 @@ trees_in::tree_value (walk_kind walk)
   int type_tag = 0;
   if (res && TREE_CODE (inner) == TYPE_DECL)
     {
-      unsigned type_code = u ();
-      bool ttp_parm = type_code == TEMPLATE_TEMPLATE_PARM;
+      unsigned c = u ();
 
-      if (ttp_parm || DECL_IMPLICIT_TYPEDEF_P (inner))
+      if (c & 1)
 	{
-	  type = start (type_code);
+	  type = start (c >> 1);
 	  if (type)
 	    {
 	      TREE_TYPE (res) = TREE_TYPE (inner) = type;
