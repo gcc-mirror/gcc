@@ -22,6 +22,7 @@ class Import_init_set;
 class Backend;
 class Temporary_statement;
 class Unnamed_label;
+struct Export_impl;
 
 // Codes used for the builtin types.  These are all negative to make
 // them easily distinct from the codes assigned by Export::write_type.
@@ -121,6 +122,7 @@ class Export : public String_dump
   };
 
   Export(Stream*);
+  ~Export();
 
   // Size of export data magic string (which includes version number).
   static const int magic_len = 4;
@@ -262,6 +264,8 @@ class Export : public String_dump
   int type_index_;
   // Packages we have written out.
   Unordered_map(const Package*, int) packages_;
+  // Hidden implementation-specific state.
+  Export_impl* impl_;
 };
 
 // An export streamer that puts the export stream in a named section.
