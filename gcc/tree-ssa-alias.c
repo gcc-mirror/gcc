@@ -1105,7 +1105,6 @@ aliasing_component_refs_p (tree ref1,
       && (base1_alias_set == ref2_alias_set
           || alias_set_subset_of (base1_alias_set, ref2_alias_set)))
     {
-      gcc_checking_assert (!nonoverlapping_component_refs_p (ref1, ref2));
       ++alias_stats.aliasing_component_refs_p_may_alias;
       return true;
     }
@@ -1118,7 +1117,6 @@ aliasing_component_refs_p (tree ref1,
       && (base2_alias_set == ref1_alias_set
 	  || alias_set_subset_of (base2_alias_set, ref1_alias_set)))
     {
-      gcc_checking_assert (!nonoverlapping_component_refs_p (ref1, ref2));
       ++alias_stats.aliasing_component_refs_p_may_alias;
       return true;
     }

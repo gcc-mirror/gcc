@@ -1,5 +1,10 @@
 2019-07-02  Jan Hubicka  <jh@suse.cz>
 
+	* tree-ssa-alias.c (aliasing_component_refs_p): Remove forgotten
+	sanity check.
+
+2019-07-02  Jan Hubicka  <jh@suse.cz>
+
 	* tree-ssa-alias.c (nonoverlapping_component_refs_for_decl_p): Rename
 	to ..
 	(nonoverlapping_component_refs_since_match_p): ... this one;
