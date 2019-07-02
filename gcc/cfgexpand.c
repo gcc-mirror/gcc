@@ -6576,36 +6576,26 @@ pass_expand::execute (function *fun)
      split edges which edge insertions might do.  */
   rebuild_jump_labels (get_insns ());
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (fun),
-		  EXIT_BLOCK_PTR_FOR_FN (fun), next_bb)
+  /* If we have a single successor to the entry block, put the pending insns
+     after parm birth, but before NOTE_INSNS_FUNCTION_BEG.  */
+  if (single_succ_p (ENTRY_BLOCK_PTR_FOR_FN (fun)))
     {
-      edge e;
-      edge_iterator ei;
-      for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
+      edge e = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (fun));
+      if (e->insns.r)
 	{
-	  if (e->insns.r)
-	    {
-	      rebuild_jump_labels_chain (e->insns.r);
-	      /* Put insns after parm birth, but before
-		 NOTE_INSNS_FUNCTION_BEG.  */
-	      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (fun)
-		  && single_succ_p (ENTRY_BLOCK_PTR_FOR_FN (fun)))
-		{
-		  rtx_insn *insns = e->insns.r;
-		  e->insns.r = NULL;
-		  if (NOTE_P (parm_birth_insn)
-		      && NOTE_KIND (parm_birth_insn) == NOTE_INSN_FUNCTION_BEG)
-		    emit_insn_before_noloc (insns, parm_birth_insn, e->dest);
-		  else
-		    emit_insn_after_noloc (insns, parm_birth_insn, e->dest);
-		}
-	      else
-		commit_one_edge_insertion (e);
-	    }
+	  rtx_insn *insns = e->insns.r;
+	  e->insns.r = NULL;
+	  rebuild_jump_labels_chain (insns);
+	  if (NOTE_P (parm_birth_insn)
+	      && NOTE_KIND (parm_birth_insn) == NOTE_INSN_FUNCTION_BEG)
+	    emit_insn_before_noloc (insns, parm_birth_insn, e->dest);
 	  else
-	    ei_next (&ei);
+	    emit_insn_after_noloc (insns, parm_birth_insn, e->dest);
 	}
     }
+
+  /* Otherwise, as well as for other edges, take the usual way.  */
+  commit_edge_insertions ();
 
   /* We're done expanding trees to RTL.  */
   currently_expanding_to_rtl = 0;
