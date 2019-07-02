@@ -6237,6 +6237,42 @@ to the possibility that the source and destination strings might
 overlap. These patterns are used to do inline expansion of
 @code{__builtin_memcpy}.
 
+@cindex @code{movmem@var{m}} instruction pattern
+@item @samp{movmem@var{m}}
+Block move instruction.  The destination and source blocks of memory
+are the first two operands, and both are @code{mem:BLK}s with an
+address in mode @code{Pmode}.
+
+The number of bytes to copy is the third operand, in mode @var{m}.
+Usually, you specify @code{Pmode} for @var{m}.  However, if you can
+generate better code knowing the range of valid lengths is smaller than
+those representable in a full Pmode pointer, you should provide
+a pattern with a
+mode corresponding to the range of values you can handle efficiently
+(e.g., @code{QImode} for values in the range 0--127; note we avoid numbers
+that appear negative) and also a pattern with @code{Pmode}.
+
+The fourth operand is the known shared alignment of the source and
+destination, in the form of a @code{const_int} rtx.  Thus, if the
+compiler knows that both source and destination are word-aligned,
+it may provide the value 4 for this operand.
+
+Optional operands 5 and 6 specify expected alignment and size of block
+respectively.  The expected alignment differs from alignment in operand 4
+in a way that the blocks are not required to be aligned according to it in
+all cases. This expected alignment is also in bytes, just like operand 4.
+Expected size, when unknown, is set to @code{(const_int -1)}.
+
+Descriptions of multiple @code{movmem@var{m}} patterns can only be
+beneficial if the patterns for smaller modes have fewer restrictions
+on their first, second and fourth operands.  Note that the mode @var{m}
+in @code{movmem@var{m}} does not impose any restriction on the mode of
+individually copied data units in the block.
+
+The @code{movmem@var{m}} patterns must correctly handle the case where
+the source and destination strings overlap. These patterns are used to
+do inline expansion of @code{__builtin_memmove}.
+
 @cindex @code{movstr} instruction pattern
 @item @samp{movstr}
 String copy instruction, with @code{stpcpy} semantics.  Operand 0 is
