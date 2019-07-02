@@ -1,5 +1,9 @@
 2019-07-02  Jan Hubicka  <jh@suse.cz>
 
+	* gcc.dg/tree-ssa/alias-access-path-7.c: New testcase.
+
+2019-07-02  Jan Hubicka  <jh@suse.cz>
+
 	* g++.dg/lto/pr90990_0.C: New testcase.
 
 2019-07-02  Richard Biener  <rguenther@suse.de>
