@@ -1,3 +1,10 @@
+2019-07-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58483
+	* tree-ssa-scopedtables.c (avail_expr_hash): Use OEP_ADDRESS_OF
+	for MEM_REF base hashing.
+	(equal_mem_array_ref_p): Likewise for base comparison.
+
 2019-07-01  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (signbit<mode>2_dm): Make this a

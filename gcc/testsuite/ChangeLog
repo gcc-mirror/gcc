@@ -1,3 +1,8 @@
+2019-07-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58483
+	* gcc.dg/tree-ssa/ssa-dom-cse-8.c: New testcase.
+
 2019-07-01  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* gcc.target/s390/vector/vec-shift-2.c: New test.
