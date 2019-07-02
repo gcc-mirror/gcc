@@ -6890,20 +6890,30 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
       return true;
     }
 
-  if (TREE_CODE (decl) == PARM_DECL
-      || !DECL_CONTEXT (decl)
-      || (TREE_CODE (decl) == TEMPLATE_DECL &&
-	  TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM))
-    {
-      /* If we cannot name this, it better be the inner-most decl we
-	 asked about.  */
-      gcc_assert (!looking_inside);
-      return true;
-    }
-
   if (ref_node (decl) == WK_none)
     /* If this is a fixed decl, we're done.  */
     return false;
+
+  if (TREE_CODE (decl) == TYPE_DECL && DECL_TINFO_P (decl))
+    {
+      /* A typeinfo pseudo type -> tt_tinfo_typedef.  */
+      unsigned ix = get_pseudo_tinfo_index (TREE_TYPE (decl));
+
+      if (streaming_p ())
+	{
+	  i (tt_tinfo_typedef);
+	  u (ix);
+	}
+      int tag = insert (decl);
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Wrote:%d typeinfo decl %u %N", tag, ix, decl);
+      tag = insert (TREE_TYPE (decl));
+      if (streaming_p ())
+	dump (dumper::TREE)
+	  && dump ("Wrote:%d typeinfo type %u %N", tag, ix, decl);
+      return false;
+    }
 
   if (DECL_THUNK_P (decl))
     {
@@ -6958,6 +6968,17 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	dump (dumper::TREE) && dump ("Wrote:%d typename type", type_tag);
 
       return false;
+    }
+
+  if (TREE_CODE (decl) == PARM_DECL
+      || !DECL_CONTEXT (decl)
+      || (TREE_CODE (decl) == TEMPLATE_DECL &&
+	  TREE_CODE (TREE_TYPE (decl)) == TEMPLATE_TEMPLATE_PARM))
+    {
+      /* If we cannot name this, it better be the inner-most decl we
+	 asked about.  */
+      gcc_assert (!looking_inside);
+      return true;
     }
 
   int use_tpl = -1;
@@ -7260,6 +7281,8 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 	/* Implicit typedef.  */;
       else if (name && TREE_CODE (type) == TYPENAME_TYPE)
 	/* A typename type.  */;
+      else if (name && TREE_CODE (name) == TYPE_DECL && DECL_TINFO_P (name))
+	/* A tinfo type.  */;
       else if (type == TYPE_MAIN_VARIANT (type)
 	       && (TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
 		   || TREE_CODE (type) == TEMPLATE_TYPE_PARM))
@@ -7278,7 +7301,8 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
     {
       /* Make sure this is not a named builtin. We should find
 	 those some other way to be canonically correct.  */
-      gcc_assert (DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
+      gcc_assert (DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION
+		  || DECL_TINFO_P (name));
 
       if (streaming_p ())
 	{
@@ -7370,7 +7394,7 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
     default:
       // FIXME: Hm, does this have NULL TREE_TYPE?
       // FIXME: Hook other C++-specific types for reconstruction?
-      return true;
+      break;
 
     case ARRAY_TYPE:
     case OFFSET_TYPE:
@@ -7444,6 +7468,13 @@ trees_out::tree_value (tree t, walk_kind walk)
 {
   /* We should never walk into a thunk by accident.  */
   gcc_assert (walk == WK_body || !DECL_THUNK_P (t));
+#if 0
+  // FIXME: Remove all the get-outs for this assert.
+  gcc_assert (!TYPE_P (t)
+	      /* Restricted range integer type.  */
+	      || TREE_CODE (t) == INTEGER_TYPE);
+#endif
+
   if (walk == WK_normal)
     walk = WK_body;
   gcc_checking_assert (unsigned (walk - WK_body) <= (WK_clone - WK_body));
@@ -7973,23 +8004,6 @@ trees_out::tree_node (tree t)
       goto done;
     }
 
-  if (TREE_CODE (t) == TYPE_DECL && DECL_TINFO_P (t))
-    {
-      /* A typeinfo pseudo type -> tt_tinfo_typedef.  */
-      unsigned ix = get_pseudo_tinfo_index (TREE_TYPE (t));
-
-      if (streaming_p ())
-	{
-	  i (tt_tinfo_typedef);
-	  u (ix);
-	}
-      int tag = insert (t);
-      if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Wrote:%d typeinfo pseudo %u %N", tag, ix, t);
-      goto done;
-    }
-
   if (TREE_CODE (t) == VAR_DECL && DECL_ARTIFICIAL (t))
     {
       tree ctx = CP_DECL_CONTEXT (t);
@@ -8321,7 +8335,10 @@ trees_in::tree_node ()
 	res = TYPE_NAME (get_pseudo_tinfo_type (ix));
 	int tag = insert (res);
 	dump (dumper::TREE)
-	  && dump ("Created tinfo_typedef:%d %u %N", tag, ix, res);
+	  && dump ("Created tinfo_decl:%d %u %N", tag, ix, res);
+	tag = insert (TREE_TYPE (res));
+	dump (dumper::TREE)
+	  && dump ("Created tinfo_type:%d %u %N", tag, ix, TREE_TYPE (res));
       }
       break;
 
