@@ -15418,6 +15418,7 @@ $as_echo "$target_thread_file" >&6; }
 case $target_thread_file in
     aix)	thread_header=config/rs6000/gthr-aix.h ;;
     dce)	thread_header=config/pa/gthr-dce.h ;;
+    gcn)	thread_header=config/gcn/gthr-gcn.h ;;
     lynx)	thread_header=config/gthr-lynx.h ;;
     mipssde)	thread_header=config/mips/gthr-mipssde.h ;;
     posix)	thread_header=gthr-posix.h ;;
@@ -15637,7 +15638,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15640 "configure"
+#line 15641 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15672,7 +15673,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15675 "configure"
+#line 15676 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15707,7 +15708,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15710 "configure"
+#line 15711 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15743,7 +15744,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15746 "configure"
+#line 15747 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15896,7 +15897,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15899 "configure"
+#line 15900 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15938,7 +15939,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15941 "configure"
+#line 15942 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15972,7 +15973,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15975 "configure"
+#line 15976 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -81880,7 +81881,11 @@ $as_echo "no" >&6; }
 fi
 
 
- if test $ac_cv_prog_DBLATEX = "yes" &&
+ if test $ac_cv_prog_DOXYGEN = "yes" &&
+	       test $ac_cv_prog_DOT = "yes" &&
+	       test $ac_cv_prog_XSLTPROC = "yes" &&
+	       test $ac_cv_prog_XMLLINT = "yes" &&
+	       test $ac_cv_prog_DBLATEX = "yes" &&
 	       test $ac_cv_prog_PDFLATEX = "yes"; then
   BUILD_PDF_TRUE=
   BUILD_PDF_FALSE='#'
