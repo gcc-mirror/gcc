@@ -1,6 +1,12 @@
 2019-07-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::fn_parms): Don't use canonical type any
+	more.
+	gcc/testsuite/
+	* g++.dg/modules/merge-1_[ab].C: New.
+
+	gcc/cp/
 	* module.cc (trees_out::tree_decl): Write types for typedefs.
 	(trees_in::tree_node): Adjust.
 	gcc/testsuite/

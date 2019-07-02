@@ -8752,16 +8752,7 @@ void
 trees_out::fn_parms (tree parms)
 {
   for (; parms; parms = TREE_CHAIN (parms))
-    {
-      tree ptype = TREE_VALUE (parms);
-      // FIXME: If there is no canonical, perhaps this isn't a
-      // mergeable decl?  But need to think about streaming defn
-      // separate from decl.
-      if (tree canon = TYPE_CANONICAL (ptype))
-	ptype = canon;
-
-      tree_node (ptype);
-    }
+    tree_node (TREE_VALUE (parms));
   tree_node (NULL_TREE);
 }
 
