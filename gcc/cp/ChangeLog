@@ -6,6 +6,13 @@
 	PR c++/60223 - ICE with T{} in non-deduced context.
 	* pt.c (unify): Allow COMPOUND_LITERAL_P in a non-deduced context.
 
+	PR c++/90490 - fix decltype issues in noexcept-specifier.
+	* except.c (build_noexcept_spec): Call
+	instantiate_non_dependent_expr_sfinae before
+	build_converted_constant_expr instead of calling
+	instantiate_non_dependent_expr after it.  Add
+	processing_template_decl_sentinel.
+
 2019-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
