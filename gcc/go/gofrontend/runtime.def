@@ -351,10 +351,6 @@ DEF_GO_RUNTIME(GCWRITEBARRIER, "runtime.gcWriteBarrier",
 DEF_GO_RUNTIME(TYPEDMEMMOVE, "runtime.typedmemmove",
 	       P3(TYPE, POINTER, POINTER), R0())
 
-// Clear memory that contains no pointer.
-DEF_GO_RUNTIME(MEMCLRNOPTR, "runtime.memclrNoHeapPointers",
-               P2(POINTER, UINTPTR), R0())
-
 // Clear memory that contains pointer.
 DEF_GO_RUNTIME(MEMCLRHASPTR, "runtime.memclrHasPointers",
                P2(POINTER, UINTPTR), R0())
@@ -413,6 +409,10 @@ DEF_GO_RUNTIME(UNREACHABLE, "__builtin_unreachable", P0(), R0())
 // Memmove.
 DEF_GO_RUNTIME(BUILTIN_MEMMOVE, "__builtin_memmove",
                P3(POINTER, POINTER, UINTPTR), R0())
+
+// Memset, used for zeroing memory.
+DEF_GO_RUNTIME(BUILTIN_MEMSET, "__builtin_memset",
+               P3(POINTER, INT32, UINTPTR), R0())
 
 // Various intrinsics.
 
