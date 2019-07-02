@@ -1,8 +1,12 @@
+2019-07-02  Jan Hubicka  <jh@suse.cz>
+
+	* tree-inline.c (remap_gimple_stmt): Do not subtitute handled components
+	to clobber of return value.
+
 2019-07-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/cortex-a57.md (cortex_a57_neon_type): Use neon_arith_basic
 	for is_neon_type instructions that have not already been categorized.
-
 
 2019-07-02  Richard Biener  <rguenther@suse.de>
 
