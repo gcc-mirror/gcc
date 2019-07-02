@@ -4083,6 +4083,11 @@ tree_strip_any_location_wrapper (tree exp)
 #define current_target_pragma		global_trees[TI_CURRENT_TARGET_PRAGMA]
 #define current_optimize_pragma		global_trees[TI_CURRENT_OPTIMIZE_PRAGMA]
 
+/* SCEV analyzer global shared trees.  */
+#define chrec_not_analyzed_yet		NULL_TREE
+#define chrec_dont_know			global_trees[TI_CHREC_DONT_KNOW]
+#define chrec_known			global_trees[TI_CHREC_KNOWN]
+
 #define char_type_node			integer_types[itk_char]
 #define signed_char_type_node		integer_types[itk_signed_char]
 #define unsigned_char_type_node		integer_types[itk_unsigned_char]

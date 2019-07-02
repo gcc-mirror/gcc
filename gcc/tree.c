@@ -10641,6 +10641,12 @@ build_common_tree_nodes (bool signed_char)
 
     va_list_type_node = t;
   }
+
+  /* SCEV analyzer global shared trees.  */
+  chrec_dont_know = make_node (SCEV_NOT_KNOWN);
+  TREE_TYPE (chrec_dont_know) = void_type_node;
+  chrec_known = make_node (SCEV_KNOWN);
+  TREE_TYPE (chrec_known) = void_type_node;
 }
 
 /* Modify DECL for given flags.

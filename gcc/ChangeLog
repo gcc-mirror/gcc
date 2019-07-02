@@ -1,3 +1,19 @@
+2019-07-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-core.h (enum tree_index): Add TI_CHREC_DONT_KNOW and
+	TI_CHREC_KNOWN.
+	* tree.h (chrec_not_analyzed_yet, chrec_dont_know, chrec_known):
+	Define here.
+	* tree.c (build_common_tree_nodes): Initialize them.
+	* tree-chrec.h (chrec_not_analyzed_yet, chrec_dont_know, chrec_known):
+	Make declarations comments.
+	* tree-scalar-evolution.c (chrec_not_analyzed_yet, chrec_dont_know,
+	chrec_known): Remove definitions.
+	(initialize_scalar_evolutions_analyzer): Remove.
+	(scev_initialize): Do not call initialize_scalar_evolutions_analyzer.
+	* tree-streamer.c (preload_common_nodes): Do not preload
+	TI_CHREC_DONT_KNOW or TI_CHREC_KNOWN.
+
 2019-07-02  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-alias.c (aliasing_component_refs_p): Remove forgotten
