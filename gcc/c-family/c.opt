@@ -1575,6 +1575,10 @@ flax-vector-conversions
 C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
 
+fmax-include-depth=
+C ObjC C++ ObjC++ Joined RejectNegative UInteger
+fmax-include-depth=<number> Set the maximum depth of the nested #include.
+
 fms-extensions
 C ObjC C++ ObjC++ Var(flag_ms_extensions)
 Don't warn about uses of Microsoft extensions.

@@ -460,6 +460,10 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       cpp_opts->extended_identifiers = value;
       break;
 
+    case OPT_fmax_include_depth_:
+	cpp_opts->max_include_depth = value;
+      break;
+
     case OPT_foperator_names:
       cpp_opts->operator_names = value;
       break;
