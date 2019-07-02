@@ -1,3 +1,11 @@
+2019-07-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2019-07-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.md (movdi_symbol_save_scc): Convert to define_insn
+	with inlined save and restore.
+
 2019-07-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/64242
