@@ -1,3 +1,11 @@
+2019-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgexpand.c (pass_expand::execute): Deal specially with instructions
+	to be inserted on single successor edge of the entry block.  Then call
+	commit_edge_insertions instead of inserting the instructions manually.
+	* cfgrtl.c (commit_edge_insertions): Do not verify flow info during
+	RTL expansion.
+
 2019-07-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-core.h (enum tree_index): Add TI_CHREC_DONT_KNOW and
