@@ -4,7 +4,7 @@
 	to be inserted on single successor edge of the entry block.  Then call
 	commit_edge_insertions instead of inserting the instructions manually.
 	* cfgrtl.c (commit_edge_insertions): Do not verify flow info during
-	RTL expansion.
+	RTL expansion and rebuild jump labels chain.
 
 2019-07-02  Richard Biener  <rguenther@suse.de>
 

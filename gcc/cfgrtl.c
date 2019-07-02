@@ -2116,7 +2116,11 @@ commit_edge_insertions (void)
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	if (e->insns.r)
-	  commit_one_edge_insertion (e);
+	  {
+	    if (currently_expanding_to_rtl)
+	      rebuild_jump_labels_chain (e->insns.r);
+	    commit_one_edge_insertion (e);
+	  }
     }
 }
 
