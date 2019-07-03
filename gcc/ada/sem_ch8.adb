@@ -7418,10 +7418,28 @@ package body Sem_Ch8 is
 
             --  It is not an error if the prefix is the current instance of
             --  type name, e.g. the expression of a type aspect, when it is
-            --  analyzed for ASIS use.
+            --  analyzed for ASIS use, or within a generic unit. We still
+            --  have to verify that a component of that name exists, and
+            --  decorate the node accordingly.
 
             elsif Is_Entity_Name (P) and then Is_Current_Instance (P) then
-               null;
+               declare
+                  Comp : Entity_Id;
+
+               begin
+                  Comp := First_Entity (Entity (P));
+                  while Present (Comp) loop
+                     if Chars (Comp) = Chars (Selector_Name (N)) then
+                        Set_Entity (N, Comp);
+                        Set_Etype  (N, Etype (Comp));
+                        Set_Entity (Selector_Name (N), Comp);
+                        Set_Etype  (Selector_Name (N), Etype (Comp));
+                        return;
+                     end if;
+
+                     Next_Entity (Comp);
+                  end loop;
+               end;
 
             elsif Ekind (P_Name) = E_Void then
                Premature_Usage (P);

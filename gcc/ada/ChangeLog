@@ -1,3 +1,10 @@
+2019-07-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Selected_Component): If the prefix is the
+	current instance of a type or subtype, complete the resolution
+	of the name by finding the component of the type denoted by the
+	selector name.
+
 2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/gnat_rm/interfacing_to_other_languages.rst (Interfacing to C):
