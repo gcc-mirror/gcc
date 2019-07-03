@@ -1,3 +1,10 @@
+2019-07-03  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch6.adb (Check_Conformance): Add expression checking for
+	constant modifiers in anonymous access types (in addition to
+	"non-null" types) so that they are considered "matching" for
+	subsequent conformance tests.
+
 2019-07-03  Arnaud Charlet  <charlet@adacore.com>
 
 	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:
