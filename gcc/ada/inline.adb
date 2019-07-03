@@ -2381,15 +2381,15 @@ package body Inline is
       --  When generating C code, declare _Result, which may be used in the
       --  inlined _Postconditions procedure to verify the return value.
 
-      procedure Make_Loop_Labels_Unique (Stats : Node_Id);
-      --  When compiling for CCG and performing front-end inlining, replace
-      --  loop names and references to them so that they do not conflict
-      --  with homographs in the current subprogram.
-
       procedure Make_Exit_Label;
       --  Build declaration for exit label to be used in Return statements,
       --  sets Exit_Lab (the label node) and Lab_Decl (corresponding implicit
       --  declaration). Does nothing if Exit_Lab already set.
+
+      procedure Make_Loop_Labels_Unique (HSS : Node_Id);
+      --  When compiling for CCG and performing front-end inlining, replace
+      --  loop names and references to them so that they do not conflict with
+      --  homographs in the current subprogram.
 
       function Process_Formals (N : Node_Id) return Traverse_Result;
       --  Replace occurrence of a formal with the corresponding actual, or the
@@ -2483,9 +2483,7 @@ package body Inline is
       -- Make_Loop_Labels_Unique --
       -----------------------------
 
-      procedure Make_Loop_Labels_Unique (Stats : Node_Id) is
-         S : Node_Id;
-
+      procedure Make_Loop_Labels_Unique (HSS : Node_Id) is
          function Process_Loop (N : Node_Id) return Traverse_Result;
 
          ------------------
@@ -2499,8 +2497,7 @@ package body Inline is
             if Nkind (N) = N_Loop_Statement
               and then Present (Identifier (N))
             then
-
-               --  Create new external name for loop. and update the
+               --  Create new external name for loop and update the
                --  corresponding entity.
 
                Id := Entity (Identifier (N));
@@ -2510,9 +2507,8 @@ package body Inline is
             elsif Nkind (N) = N_Exit_Statement
               and then Present (Name (N))
             then
-
-               --  The exit statement must name an enclosing loop, whose
-               --  name has already been updated.
+               --  The exit statement must name an enclosing loop, whose name
+               --  has already been updated.
 
                Set_Chars (Name (N), Chars (Entity (Name (N))));
             end if;
@@ -2522,12 +2518,18 @@ package body Inline is
 
          procedure Update_Loop_Names is new Traverse_Proc (Process_Loop);
 
+         --  Local variables
+
+         Stmt : Node_Id;
+
+      --  Start of processing for Make_Loop_Labels_Unique
+
       begin
          if Modify_Tree_For_C then
-            S := First (Statements (Stats));
-            while Present (S) loop
-               Update_Loop_Names (S);
-               Next (S);
+            Stmt := First (Statements (HSS));
+            while Present (Stmt) loop
+               Update_Loop_Names (Stmt);
+               Next (Stmt);
             end loop;
          end if;
       end Make_Loop_Labels_Unique;

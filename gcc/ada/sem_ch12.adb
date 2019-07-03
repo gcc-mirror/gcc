@@ -6198,8 +6198,8 @@ package body Sem_Ch12 is
       function Is_Defaulted (Param : Entity_Id) return Boolean;
       --  If the formql package has partly box-initialized formals, skip
       --  conformace check for these formals. Previously the code assumed
-      --  that boc initialization for a formal package applied to all
-      --  its formal parameters.
+      --  that boc initialization for a formal package applied to all its
+      --  formal parameters.
 
       function Same_Instantiated_Constant (E1, E2 : Entity_Id) return Boolean;
       --  The formal may come from a nested formal package, and the actual may
@@ -6257,9 +6257,11 @@ package body Sem_Ch12 is
 
       function Is_Defaulted (Param : Entity_Id) return Boolean is
          Assoc : Node_Id;
+
       begin
-         Assoc := First (Generic_Associations
-                     (Parent (Associated_Formal_Package (Actual_Pack))));
+         Assoc :=
+            First (Generic_Associations (Parent
+              (Associated_Formal_Package (Actual_Pack))));
 
          while Present (Assoc) loop
             if Nkind (Assoc) = N_Others_Choice then

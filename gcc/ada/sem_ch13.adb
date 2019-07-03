@@ -9328,8 +9328,8 @@ package body Sem_Ch13 is
          Analyze (End_Decl_Expr);
          Set_Is_Frozen (Ent, True);
 
-         --  If the end of declarations comes before any other freeze
-         --  point, the Freeze_Expr is not analyzed: no check needed.
+         --  If the end of declarations comes before any other freeze point,
+         --  the Freeze_Expr is not analyzed: no check needed.
 
          if Analyzed (Freeze_Expr) and then not In_Instance then
             Check_Overloaded_Name;
@@ -9340,13 +9340,10 @@ package body Sem_Ch13 is
       --  All other cases
 
       else
+         --  In a generic context freeze nodes are not always generated, so
+         --  analyze the expression now.
 
-         --  In a generic context freeze nodes are not always generated,
-         --  so analyze the expression now.
-
-         if not Analyzed (Freeze_Expr)
-           and then Inside_A_Generic
-         then
+         if not Analyzed (Freeze_Expr) and then Inside_A_Generic then
             Preanalyze (Freeze_Expr);
          end if;
 
