@@ -9125,7 +9125,10 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			  " or private in outer context", DECL_NAME (decl));
 	    }
 	do_notice:
-	  if ((region_type & ORT_TASKLOOP) == ORT_TASKLOOP
+	  if (((region_type & ORT_TASKLOOP) == ORT_TASKLOOP
+	       || (region_type == ORT_WORKSHARE
+		   && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+		   && OMP_CLAUSE_REDUCTION_INSCAN (c)))
 	      && outer_ctx
 	      && outer_ctx->region_type == ORT_COMBINED_PARALLEL
 	      && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION

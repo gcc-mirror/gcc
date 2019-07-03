@@ -1634,7 +1634,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	  break;
 	/* Reduction is allowed on simd, for, parallel, sections, taskloop
 	   and teams.  Duplicate it on all of them, but omit on for or
-	   sections if parallel is present.  If taskloop is combined with
+	   sections if parallel is present (unless inscan, in that case
+	   omit on parallel).  If taskloop is combined with
 	   parallel, omit it on parallel.  */
 	case OMP_CLAUSE_REDUCTION:
 	  if (OMP_CLAUSE_REDUCTION_TASK (clauses))
@@ -1708,7 +1709,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		  s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 		}
 	      else if ((mask & (OMP_CLAUSE_MASK_1
-				<< PRAGMA_OMP_CLAUSE_NUM_THREADS)) != 0)
+				<< PRAGMA_OMP_CLAUSE_NUM_THREADS)) != 0
+		       && !OMP_CLAUSE_REDUCTION_INSCAN (clauses))
 		s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 	      else
 		s = C_OMP_CLAUSE_SPLIT_FOR;
