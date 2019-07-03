@@ -1,3 +1,9 @@
+2019-07-03  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* config/aarch64/aarch64.md (FP_REGNUM): New constant.
+	(tlsdesc_small_advsimd_<mode>): Add use of FP_REGNUM.
+	(tlsdesc_small_sve_<mode>): Likewise.
+
 2019-07-03  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.in: Define ZSTD_LIB.

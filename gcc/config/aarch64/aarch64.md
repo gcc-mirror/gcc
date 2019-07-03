@@ -120,6 +120,7 @@
     ;; Scratch registers used in frame layout.
     (IP0_REGNUM         16)
     (IP1_REGNUM         17)
+    (FP_REGNUM		29)
     (LR_REGNUM          30)
   ]
 )
@@ -6731,7 +6732,8 @@
 		    UNSPEC_TLSDESC))
    (clobber (reg:DI LR_REGNUM))
    (clobber (reg:CC CC_REGNUM))
-   (clobber (match_scratch:DI 1 "=r"))]
+   (clobber (match_scratch:DI 1 "=r"))
+   (use (reg:DI FP_REGNUM))]
   "TARGET_TLS_DESC && !TARGET_SVE"
   "adrp\\tx0, %A0\;ldr\\t%<w>1, [x0, #%L0]\;add\\t<w>0, <w>0, %L0\;.tlsdesccall\\t%0\;blr\\t%1"
   [(set_attr "type" "call")
@@ -6794,7 +6796,8 @@
    (clobber (reg:VNx2BI P13_REGNUM))
    (clobber (reg:VNx2BI P14_REGNUM))
    (clobber (reg:VNx2BI P15_REGNUM))
-   (clobber (match_scratch:DI 1 "=r"))]
+   (clobber (match_scratch:DI 1 "=r"))
+   (use (reg:DI FP_REGNUM))]
   "TARGET_TLS_DESC && TARGET_SVE"
   "adrp\\tx0, %A0\;ldr\\t%<w>1, [x0, #%L0]\;add\\t<w>0, <w>0, %L0\;.tlsdesccall\\t%0\;blr\\t%1"
   [(set_attr "type" "call")
