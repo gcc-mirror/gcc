@@ -1,3 +1,10 @@
+2019-07-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* inline.adb (Build_Return_Object_Formal): New routine.
+	(Can_Split_Unconstrained_Function): Code clean up.
+	(Copy_Formals,Copy_Return_Object): New routines.
+	(Split_Unconstrained_Function): Code clean up and refactoring.
+
 2019-07-03  Gary Dismukes  <dismukes@adacore.com>
 
 	* bindo-augmentors.adb, bindo-augmentors.ads,

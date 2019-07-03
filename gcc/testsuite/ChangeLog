@@ -1,3 +1,9 @@
+2019-07-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/inline15.adb, gnat.dg/inline15_gen.adb,
+	gnat.dg/inline15_gen.ads, gnat.dg/inline15_types.ads: New
+	testcase.
+
 2019-07-03  Bob Duff  <duff@adacore.com>
 
 	* gnat.dg/warn20.adb, gnat.dg/warn20_pkg.adb,
