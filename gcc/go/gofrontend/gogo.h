@@ -914,7 +914,7 @@ class Gogo
 
   // Return the name for a type descriptor symbol.
   std::string
-  type_descriptor_name(Type*, Named_type*);
+  type_descriptor_name(const Type*, Named_type*);
 
   // Return the name of the type descriptor list symbol of a package.
   std::string

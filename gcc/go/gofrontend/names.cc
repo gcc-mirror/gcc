@@ -936,7 +936,7 @@ Named_type::append_mangled_type_name(Gogo* gogo, bool use_alias,
 // it is the name to use.
 
 std::string
-Gogo::type_descriptor_name(Type* type, Named_type* nt)
+Gogo::type_descriptor_name(const Type* type, Named_type* nt)
 {
   // The type descriptor symbol for the unsafe.Pointer type is defined
   // in libgo/runtime/go-unsafe-pointer.c, so just use a reference to
