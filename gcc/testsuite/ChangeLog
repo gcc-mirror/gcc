@@ -1,3 +1,10 @@
+2019-07-03  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.dg/store_merging_27.c: Fix test for Arm.
+	* gcc.dg/store_merging_28.c: Likewise.
+	* gcc.dg/store_merging_29.c: Likewise.
+	* gcc.dg/tree-ssa/dump-6.c: Likewise.
+
 2019-07-03  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/91069
