@@ -124,30 +124,25 @@ extern GTY(()) int darwin_ms_struct;
   "%{fapple-kext|mkernel:-static}",				\
   "%{shared:-Zdynamiclib} %<shared",                            \
   "%{gsplit-dwarf:%ngsplit-dwarf is not supported on this platform} \
-     %<gsplit-dwarf",						\
-  DARWIN_PIE_SPEC,						\
-  DARWIN_NOPIE_SPEC,						\
-  RDYNAMIC
+     %<gsplit-dwarf"
 
 #if LD64_HAS_EXPORT_DYNAMIC
-#define RDYNAMIC "%{rdynamic:-Xlinker -export_dynamic} %<rdynamic"
+#define DARWIN_RDYNAMIC "%{rdynamic:-export_dynamic}"
 #else
-#define RDYNAMIC "%{rdynamic:%nrdynamic is not supported} %<rdynamic"
+#define DARWIN_RDYNAMIC "%{rdynamic:%nrdynamic is not supported}"
 #endif
 
 /* FIXME: we should check that the linker supports the -pie and -no_pie.
    options.  */
 #define DARWIN_PIE_SPEC \
-"%{pie|fpie|fPIE: \
+"%{pie|fpie|fPIE:\
    %{mdynamic-no-pic: \
-       %n'-mdynamic-no-pic' overrides '-pie', '-fpie' or '-fPIE'; \
-     : %:version-compare(>= 10.5 mmacosx-version-min= -Xlinker) \
-       %:version-compare(>= 10.5 mmacosx-version-min= -pie) }} %<pie "
+     %n'-mdynamic-no-pic' overrides '-pie', '-fpie' or '-fPIE'; \
+     :%:version-compare(>= 10.5 mmacosx-version-min= -pie) }} "
 
 #define DARWIN_NOPIE_SPEC \
 "%{no-pie|fno-pie|fno-PIE: \
-   %:version-compare(>= 10.7 mmacosx-version-min= -Xlinker ) \
-   %:version-compare(>= 10.7 mmacosx-version-min= -no_pie) } %<no-pie "
+   %:version-compare(>= 10.7 mmacosx-version-min= -no_pie) }"
 
 #define DARWIN_CC1_SPEC							\
   "%{findirect-virtual-calls: -fapple-kext} %<findirect-virtual-calls " \
@@ -227,8 +222,11 @@ extern GTY(()) int darwin_ms_struct;
       %(link_gcc_c_sequence) \
     }}}\
     %{!nostdlib:%{!r:%{!nostartfiles:%E}}} %{T*} %{F*} "\
+    DARWIN_PIE_SPEC \
+    DARWIN_NOPIE_SPEC \
+    DARWIN_RDYNAMIC \
     DARWIN_NOCOMPACT_UNWIND \
-    "}}}}}}}"
+    "}}}}}}} %<pie %<no-pie %<rdynamic "
 
 #define DSYMUTIL "\ndsymutil"
 
