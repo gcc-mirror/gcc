@@ -5,7 +5,7 @@
    { dg-require-effective-target store_merge } */
 
 
-extern char a2[2];
+extern __attribute__((aligned(2))) char a2[2];
 
 void f2 (void)
 {
@@ -13,7 +13,7 @@ void f2 (void)
   a2[1] = 0;
 }
 
-extern char a4[4];
+extern __attribute__((aligned(4))) char a4[4];
 
 void f4 (void)
 {
@@ -23,7 +23,7 @@ void f4 (void)
   a4[3] = 0;
 }
 
-extern char a8[8];
+extern __attribute__((aligned(8))) char a8[8];
 
 void f8 (void)
 {
