@@ -1,5 +1,42 @@
 2019-07-03  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE__SCANTEMP_
+	clause.
+	* tree.h (OMP_CLAUSE_DECL): Use OMP_CLAUSE__SCANTEMP_ instead of
+	OMP_CLAUSE__CONDTEMP_ as range's upper bound.
+	(OMP_CLAUSE__SCANTEMP__ALLOC, OMP_CLAUSE__SCANTEMP__CONTROL): Define.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name): Add
+	OMP_CLAUSE__SCANTEMP_ entry.
+	(walk_tree_1): Handle OMP_CLAUSE__SCANTEMP_.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Likewise.
+	* omp-general.h (struct omp_for_data): Add have_scantemp and
+	have_nonctrl_scantemp members.
+	* omp-general.c (omp_extract_for_data): Initialize them.
+	* omp-low.c (struct omp_context): Add scan_exclusive member.
+	(scan_omp_1_stmt): Don't unnecessarily mask gimple_omp_for_kind
+	result again with GF_OMP_FOR_KIND_MASK.  Initialize also
+	ctx->scan_exclusive.
+	(lower_rec_simd_input_clauses): Use ctx->scan_exclusive instead
+	of !ctx->scan_inclusive.
+	(lower_rec_input_clauses): Simplify gimplification of dtors using
+	gimplify_and_add.  For non-is_simd test OMP_CLAUSE_REDUCTION_INSCAN
+	rather than rvarp.  Handle OMP_CLAUSE_REDUCTION_INSCAN in worksharing
+	loops.  Don't add barrier for reduction_omp_orig_ref if
+	ctx->scan_??xclusive.
+	(lower_reduction_clauses): Don't do anything for ctx->scan_??xclusive.
+	(lower_omp_scan): Use ctx->scan_exclusive instead
+	of !ctx->scan_inclusive.  Handle worksharing loops with inscan
+	reductions.  Use new_vard != new_var instead of repeated
+	omp_is_reference calls.
+	(omp_find_scan, lower_omp_for_scan): New functions.
+	(lower_omp_for): Call lower_omp_for_scan for worksharing loops with
+	inscan reductions.
+	* omp-expand.c (expand_omp_scantemp_alloc): New function.
+	(expand_omp_for_static_nochunk): Handle fd->have_nonctrl_scantemp
+	and fd->have_scantemp.
+
 	* gimplify.c (gimplify_scan_omp_clauses): For inscan reductions
 	on worksharing loop propagate it as shared clause to containing
 	combined parallel.
