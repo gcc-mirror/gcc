@@ -1,3 +1,30 @@
+2019-07-03  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_mov<mode>, VM2 iterator):
+	Change the RTL attribute "length" from "4" to "*" to allow the
+	length attribute to be adjusted automatically for prefixed load,
+	store, and add immediate instructions.
+	* config/rs6000/rs6000.md (extendhi<mode>2, EXTHI iterator):
+	Likewise.
+	(extendsi<mode>2, EXTSI iterator): Likewise.
+	(movsi_internal1): Likewise.
+	(movsi_from_sf): Likewise.
+	(movdi_from_sf_zero_ext): Likewise.
+	(mov<mode>_internal): Likewise.
+	(movcc_internal1, QHI iterator): Likewise.
+	(mov<mode>_softfloat, FMOVE32 iterator): Likewise.
+	(movsf_from_si): Likewise.
+	(mov<mode>_hardfloat32, FMOVE64 iterator): Likewise.
+	(mov<mode>_softfloat64, FMOVE64 iterator): Likewise.
+	(mov<mode>, FMOVE128 iterator): Likewise.
+	(movdi_internal64): Likewise.
+	* config/rs6000/vsx.md (vsx_le_permute_<mode>, VSX_TI iterator):
+	Likewise.
+	(vsx_le_undo_permute_<mode>, VSX_TI iterator): Likewise.
+	(vsx_mov<mode>_64bit, VSX_M iterator): Likewise.
+	(vsx_mov<mode>_32bit, VSX_M iterator): Likewise.
+	(vsx_splat_v4sf): Likewise.
+
 2019-07-03  Mark Wielaard  <mark@klomp.org>
 
 	PR debug/90981
