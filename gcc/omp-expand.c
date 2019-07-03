@@ -4039,6 +4039,12 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       else
 	gsi_insert_after (&gsi, omp_build_barrier (t), GSI_SAME_STMT);
     }
+  else if (fd->have_pointer_condtemp)
+    {
+      tree fn = builtin_decl_explicit (BUILT_IN_GOMP_LOOP_END_NOWAIT);
+      gcall *g = gimple_build_call (fn, 0);
+      gsi_insert_after (&gsi, g, GSI_SAME_STMT);
+    }
   gsi_remove (&gsi, true);
 
   /* Connect all the blocks.  */
@@ -4695,6 +4701,12 @@ expand_omp_for_static_chunk (struct omp_region *region,
 	}
       else
 	gsi_insert_after (&gsi, omp_build_barrier (t), GSI_SAME_STMT);
+    }
+  else if (fd->have_pointer_condtemp)
+    {
+      tree fn = builtin_decl_explicit (BUILT_IN_GOMP_LOOP_END_NOWAIT);
+      gcall *g = gimple_build_call (fn, 0);
+      gsi_insert_after (&gsi, g, GSI_SAME_STMT);
     }
   gsi_remove (&gsi, true);
 
