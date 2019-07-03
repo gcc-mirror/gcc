@@ -7462,6 +7462,8 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
     case TYPE_ARGUMENT_PACK:
     case TYPE_PACK_EXPANSION:
     case DECLTYPE_TYPE:
+    case TYPEOF_TYPE:
+    case UNDERLYING_TYPE:
       {
 	if (streaming_p ())
 	  {
@@ -7474,12 +7476,15 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 	  default:
 	    gcc_unreachable ();
 
+	  case TYPEOF_TYPE:
 	  case DECLTYPE_TYPE:
-	    tree_node (DECLTYPE_TYPE_EXPR (type));
-	    if (streaming_p ())
+	  case UNDERLYING_TYPE:
+	    tree_node (TYPE_VALUES_RAW (type));
+	    if (TREE_CODE (type) == DECLTYPE_TYPE)
 	      /* We stash a whole bunch of things into decltype's
 		 flags.  */
-	      tree_node_bools (type);
+	      if (streaming_p ())
+		tree_node_bools (type);
 	    break;
 
 	  case TYPE_PACK_EXPANSION:
@@ -8223,15 +8228,17 @@ trees_in::tree_node ()
 	    set_overrun ();
 	    break;
 
+	  case TYPEOF_TYPE:
 	  case DECLTYPE_TYPE:
+	  case UNDERLYING_TYPE:
 	    {
 	      tree expr = tree_node ();
-	      res = cxx_make_type (DECLTYPE_TYPE);
-	      DECLTYPE_TYPE_EXPR (res) = expr;
-	      if (!tree_node_bools (res))
-		res = NULL_TREE;
-	      else
-		SET_TYPE_STRUCTURAL_EQUALITY (res);
+	      res = cxx_make_type (code);
+	      TYPE_VALUES_RAW (res) = expr;
+	      if (code == DECLTYPE_TYPE)
+		tree_node_bools (res);
+	      SET_TYPE_STRUCTURAL_EQUALITY (res);
+	      
 	    }
 	    break;
 

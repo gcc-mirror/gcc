@@ -1,6 +1,10 @@
 2019-07-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::tree_type): Add TYPEOF_TYPE, UNDERLYING_TYPE.
+	(trees_in::tree_node): Likewise.
+
+	gcc/cp/
 	* module.cc (struct unnamed_entity): GTY it.
 	(unnamed_map): Not a GTY object.
 
