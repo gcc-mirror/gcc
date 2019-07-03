@@ -1,3 +1,10 @@
+2019-07-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* bindo-augmentors.adb, bindo-augmentors.ads,
+	bindo-builders.ads, bindo-elaborators.adb, sem_ch12.adb,
+	sem_ch13.adb, sem_spark.adb, sinfo.ads: Minor editorial
+	corrections and reformatting.
+
 2019-07-03  Bob Duff  <duff@adacore.com>
 
 	* sem_warn.adb (Check_Infinite_Loop_Warning): Avoid the warning

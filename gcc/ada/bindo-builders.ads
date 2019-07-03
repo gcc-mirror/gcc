@@ -43,10 +43,10 @@ package Bindo.Builders is
    package Invocation_Graph_Builders is
       function Build_Invocation_Graph
         (Lib_G : Library_Graph) return Invocation_Graph;
-      --  Return a new invocation graph which reflects the activations of
+      --  Return a new invocation graph that reflects the activations of
       --  tasks, calls, and instantiations in all units of the bind. Each
       --  invocation graph vertex is linked with the corresponding vertex
-      --  of library graph Lib_G which contains the body of the activated
+      --  of library graph Lib_G, which contains the body of the activated
       --  task, invoked subprogram, or instantiated generic.
 
    end Invocation_Graph_Builders;
@@ -57,7 +57,7 @@ package Bindo.Builders is
 
    package Library_Graph_Builders is
       function Build_Library_Graph return Library_Graph;
-      --  Return a new library graph which reflects the dependencies between
+      --  Return a new library graph that reflects the dependencies between
       --  all units of the bind.
 
    end Library_Graph_Builders;

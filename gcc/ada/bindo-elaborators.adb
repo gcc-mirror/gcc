@@ -112,9 +112,9 @@ package body Bindo.Elaborators is
          Indent : Indentation_Level);
       pragma Inline (Add_Vertex);
       --  Add vertex LGV_Id of library graph G to membership set Set. Msg is
-      --  a message emitted for traching purposes. Step is the current step
-      --  in the elaboration order. Indent is the desired indentation level
-      --  for tracing.
+      --  a message emitted for tracing purposes. Step is the current step in
+      --  the elaboration order. Indent is the desired indentation level for
+      --  tracing.
 
       procedure Add_Vertex_If_Elaborable
         (G      : Library_Graph;
@@ -125,8 +125,8 @@ package body Bindo.Elaborators is
          Indent : Indentation_Level);
       pragma Inline (Add_Vertex_If_Elaborable);
       --  Add vertex LGV_Id of library graph G to membership set Set if it can
-      --  be elaborated. Msg is a message emitted for traching purposes. Step
-      --  is the current step in the elaboration order. Indent is the desired
+      --  be elaborated. Msg is a message emitted for tracing purposes. Step is
+      --  the current step in the elaboration order. Indent is the desired
       --  indentation level for tracing.
 
       function Create_All_Candidates_Set
@@ -153,7 +153,7 @@ package body Bindo.Elaborators is
          Order              : in out Unit_Id_Table;
          Step               : Elaboration_Order_Step);
       pragma Inline (Elaborate_Component);
-      --  Elaborate as many vertices as possible which appear in component
+      --  Elaborate as many vertices as possible that appear in component
       --  Comp of library graph G. All_Candidates is the set of all elaborable
       --  vertices across the whole library graph. Remaining_Vertices is the
       --  number of vertices that remain to be elaborated. Order denotes the
@@ -679,14 +679,14 @@ package body Bindo.Elaborators is
          Status        : out Elaboration_Order_Status)
       is
       begin
-         --  Create, validate, and output the library graph which captures the
+         --  Create, validate, and output the library graph that captures the
          --  dependencies between library items.
 
          Lib_Graph := Build_Library_Graph;
          Validate_Library_Graph (Lib_Graph);
          Write_Library_Graph    (Lib_Graph);
 
-         --  Create, validate, output, and use the invocation graph which
+         --  Create, validate, output, and use the invocation graph that
          --  represents the flow of execusion only when requested by the
          --  caller.
 
@@ -707,7 +707,7 @@ package body Bindo.Elaborators is
 
          --  Traverse the invocation graph starting from elaboration code in
          --  order to discover transitions of the execution flow from a unit
-         --  to a unit which result in extra edges within the library graph.
+         --  to a unit that result in extra edges within the library graph.
 
          Augment_Library_Graph (Inv_Graph, Lib_Graph);
 

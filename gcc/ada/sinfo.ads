@@ -3226,8 +3226,8 @@ package Sinfo is
       --  in package Einfo.
 
       --  Note: N_Defining_Character_Literal is an extended node whose fields
-      --  are deliberate laid out to match the layout of fields in an ordinary
-      --  N_Character_Literal node allowing for easy alteration of a character
+      --  are deliberately laid out to match layout of fields in an ordinary
+      --  N_Character_Literal node, allowing for easy alteration of a character
       --  literal node into a defining character literal node. For details, see
       --  Sinfo.CN.Change_Character_Literal_To_Defining_Character_Literal.
 
