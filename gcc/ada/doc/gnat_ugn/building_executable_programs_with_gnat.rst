@@ -4690,6 +4690,16 @@ checks to be performed. The following checks are defined:
   allowed).
 
 
+.. index:: -gnatyD (gcc)
+
+:switch:`-gnatyD`
+  *Check declared identifiers in mixed case.*
+
+  Declared identifiers must be in mixed case, as in
+  This_Is_An_Identifier. Use -gnatyr in addition to ensure
+  that references match declarations.
+
+
 .. index:: -gnatye (gcc)
 
 :switch:`-gnatye`

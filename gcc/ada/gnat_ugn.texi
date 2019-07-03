@@ -13515,6 +13515,20 @@ character (in particular the DOS line terminator sequence CR/LF is not
 allowed).
 @end table
 
+@geindex -gnatyD (gcc)
+
+
+@table @asis
+
+@item @code{-gnatyD}
+
+@emph{Check declared identifiers in mixed case.}
+
+Declared identifiers must be in mixed case, as in
+This_Is_An_Identifier. Use -gnatyr in addition to ensure
+that references match declarations.
+@end table
+
 @geindex -gnatye (gcc)
 
 
