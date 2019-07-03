@@ -1,3 +1,7 @@
+2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/alignment14.adb: New testcase.
+
 2019-07-03  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/predicate4.adb, gnat.dg/predicate4_pkg.ads: New
