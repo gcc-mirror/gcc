@@ -1,3 +1,9 @@
+2019-07-03  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Expand_Min_Max_Attribute): Code cleanup:
+	removing code that it is now never executed in the CCG compiler
+	(dead code).
+
 2019-07-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* libgnat/system-darwin-ppc.ads: Set Stack_Check_Probes True for
