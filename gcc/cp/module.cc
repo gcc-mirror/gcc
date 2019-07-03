@@ -7452,6 +7452,7 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
     case COMPLEX_TYPE:
     case TYPE_ARGUMENT_PACK:
     case TYPE_PACK_EXPANSION:
+    case DECLTYPE_TYPE:
       {
 	if (streaming_p ())
 	  {
@@ -7463,6 +7464,14 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 	  {
 	  default:
 	    gcc_unreachable ();
+
+	  case DECLTYPE_TYPE:
+	    tree_node (DECLTYPE_TYPE_EXPR (type));
+	    if (streaming_p ())
+	      /* We stash a whole bunch of things into decltype's
+		 flags.  */
+	      tree_node_bools (type);
+	    break;
 
 	  case TYPE_PACK_EXPANSION:
 	    if (streaming_p ())
@@ -8190,6 +8199,18 @@ trees_in::tree_node ()
 	  {
 	  default:
 	    set_overrun ();
+	    break;
+
+	  case DECLTYPE_TYPE:
+	    {
+	      tree expr = tree_node ();
+	      res = cxx_make_type (DECLTYPE_TYPE);
+	      DECLTYPE_TYPE_EXPR (res) = expr;
+	      if (!tree_node_bools (res))
+		res = NULL_TREE;
+	      else
+		SET_TYPE_STRUCTURAL_EQUALITY (res);
+	    }
 	    break;
 
 	  case TYPE_PACK_EXPANSION:
