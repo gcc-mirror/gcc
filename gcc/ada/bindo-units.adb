@@ -233,6 +233,32 @@ package body Bindo.Units is
       return U_Rec.Dynamic_Elab;
    end Is_Dynamically_Elaborated;
 
+   ----------------------
+   -- Is_Internal_Unit --
+   ----------------------
+
+   function Is_Internal_Unit (U_Id : Unit_Id) return Boolean is
+      pragma Assert (Present (U_Id));
+
+      U_Rec : Unit_Record renames ALI.Units.Table (U_Id);
+
+   begin
+      return U_Rec.Internal;
+   end Is_Internal_Unit;
+
+   ------------------------
+   -- Is_Predefined_Unit --
+   ------------------------
+
+   function Is_Predefined_Unit (U_Id : Unit_Id) return Boolean is
+      pragma Assert (Present (U_Id));
+
+      U_Rec : Unit_Record renames ALI.Units.Table (U_Id);
+
+   begin
+      return U_Rec.Predefined;
+   end Is_Predefined_Unit;
+
    ---------------------------------
    -- Is_Stand_Alone_Library_Unit --
    ---------------------------------

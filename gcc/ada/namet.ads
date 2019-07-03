@@ -658,6 +658,10 @@ package Namet is
    No_Unit_Name : constant Unit_Name_Type := Unit_Name_Type (No_Name);
    --  Constant used to indicate no file name present
 
+   function Present (Nam : Unit_Name_Type) return Boolean;
+   pragma Inline (Present);
+   --  Determine whether unit name Nam exists
+
    Error_Unit_Name : constant Unit_Name_Type := Unit_Name_Type (Error_Name);
    --  The special Unit_Name_Type value Error_Unit_Name is used to indicate
    --  a unit name where some previous processing has found an error.

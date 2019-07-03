@@ -2069,10 +2069,8 @@ package body Bindo.Graphs is
 
          pragma Assert (Present (U_Id));
 
-         U_Rec : Unit_Record renames ALI.Units.Table (U_Id);
-
       begin
-         return U_Rec.Internal;
+         return Is_Internal_Unit (U_Id);
       end Is_Internal_Unit;
 
       ------------------------
@@ -2090,10 +2088,8 @@ package body Bindo.Graphs is
 
          pragma Assert (Present (U_Id));
 
-         U_Rec : Unit_Record renames ALI.Units.Table (U_Id);
-
       begin
-         return U_Rec.Predefined;
+         return Is_Predefined_Unit (U_Id);
       end Is_Predefined_Unit;
 
       ---------------------------

@@ -1,3 +1,34 @@
+2019-07-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* binde.adb: Remove with clause for System.OS_Lib.
+	(Force_Elab_Order): Refactor the majority of the code in Butil.
+	Use the new forced units iterator to obtain unit names.
+	* bindo-builders.adb: Add with and use clauses for Binderr,
+	Butil, Opt, Output, Types, GNAT, and GNAT.Dynamic_HTables.  Add
+	a hash table which maps units to line number in the forced
+	elaboration order file.
+	(Add_Unit): New routine.
+	(Build_Library_Graph): Create forced edges between pairs of
+	units listed in the forced elaboration order file.
+	(Create_Forced_Edge, Create_Forced_Edges, Destroy_Line_Number,
+	Duplicate_Unit_Error, Hash_Unit, Internal_Unit_Info,
+	Is_Duplicate_Unit, Missing_Unit_Info): New routines.
+	* bindo-graphs.adb (Is_Internal_Unit, Is_Predefined_Unit):
+	Refactor some of the behavior to Bindo-Units.
+	* bindo-graphs.ads: Enable the enumeration literal for forced
+	edges.
+	* bindo-units.adb, bindo-units.ads (Is_Internal_Unit,
+	Is_Predefined_Unit): New routines.
+	* butil.adb: Add with and use clauses for Opt, GNAT, and
+	System.OS_Lib.  Add with clause for Unchecked_Deallocation.
+	(Has_Next, Iterate_Forced_Units, Next, Parse_Next_Unit_Name,
+	Read_Forced_Elab_Order_File): New routines.
+	* butil.ads: Add with and use clauses for Types.  Add new
+	iterator over the units listed in the forced elaboration order
+	file.
+	(Has_Next, Iterate_Forced_Units, Next): New routine.
+	* namet.adb, namet.ads (Present): New routine.
+
 2019-07-03  Bob Duff  <duff@adacore.com>
 
 	* sem_ch3.adb (Access_Definition): The code was creating a

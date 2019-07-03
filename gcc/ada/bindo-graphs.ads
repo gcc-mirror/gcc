@@ -573,7 +573,7 @@ package Bindo.Graphs is
          Elaborate_All_Edge,
          --  Successor withs Predecessor, and has pragma Elaborate_All for it
 
---       Forced_Edge,
+         Forced_Edge,
          --  Successor is forced to with Predecessor by virtue of an existing
          --  elaboration order provided in a file.
 
