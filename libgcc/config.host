@@ -1084,18 +1084,20 @@ powerpc-*-darwin*)
 	case ${host} in
 	*-*-darwin9* | *-*-darwin[12][0-9]*)
 	  # libSystem contains unwind information for signal frames since
-	  # Darwin 9.
+	  # Darwin 9.  We don't need longcall either.
 	  ;;
 	*)
+	  # prepend the fragment forcing darwin8 codegen.
+	  tmake_file="rs6000/t-darwin8 $tmake_file"
 	  md_unwind_header=rs6000/darwin-unwind.h
 	  ;;
 	esac
-	tmake_file="$tmake_file rs6000/t-ibm-ldouble"
-	extra_parts="$extra_parts crt2.o libef_ppc.a"
+	tmake_file="$tmake_file rs6000/t-ppc64-fp rs6000/t-ibm-ldouble"
+	extra_parts="$extra_parts crt2.o crt3_2.o libef_ppc.a dw_ppc.o"
 	;;
 powerpc64-*-darwin*)
 	tmake_file="$tmake_file rs6000/t-darwin64 rs6000/t-ibm-ldouble"
-	extra_parts="$extra_parts crt2.o libef_ppc.a"
+	extra_parts="$extra_parts crt2.o crt3_2.o libef_ppc.a dw_ppc.o"
 	;;
 powerpc*-*-freebsd*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-savresfgpr rs6000/t-crtstuff rs6000/t-freebsd t-softfp-sfdf t-softfp-excl t-softfp"
