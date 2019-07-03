@@ -1,5 +1,25 @@
 2019-07-03  Martin Liska  <mliska@suse.cz>
 
+	* lto-section-in.c (lto_get_section_data): Add "lto" section.
+	* lto-section-out.c (lto_destroy_simple_output_block): Never
+	compress LTO_section_lto section.
+	* lto-streamer-out.c (produce_asm): Do not set major_version
+	and minor_version.
+	(lto_output_toplevel_asms): Likewise.
+	(produce_lto_section): New function.
+	(lto_output): Call produce_lto_section.
+	(lto_write_mode_table): Do not set major_version and
+	minor_version.
+	(produce_asm_for_decls): Likewise.
+	* lto-streamer.h (enum lto_section_type): Add LTO_section_lto
+	type.
+	(struct lto_header): Remove.
+	(struct lto_section): New struct.
+	(struct lto_simple_header): Do not inherit from lto_header.
+	(struct lto_file_decl_data): Add lto_section_header field.
+
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
 	* lra-eliminations.c (eliminate_regs_in_insn): Remove
 	dead assignemts.
 	* reg-stack.c (check_asm_stack_operands): Likewise.

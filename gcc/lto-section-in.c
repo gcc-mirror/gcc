@@ -52,9 +52,9 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
   "icf",
   "offload_table",
   "mode_table",
-  "hsa"
+  "hsa",
+  "lto"
 };
-
 
 /* Hooks so that the ipa passes can call into the lto front end to get
    sections.  */
@@ -146,7 +146,7 @@ lto_get_section_data (struct lto_file_decl_data *file_data,
   /* WPA->ltrans streams are not compressed with exception of function bodies
      and variable initializers that has been verbatim copied from earlier
      compilations.  */
-  if (!flag_ltrans || decompress)
+  if ((!flag_ltrans || decompress) && section_type != LTO_section_lto)
     {
       /* Create a mapping header containing the underlying data and length,
 	 and prepend this to the uncompression buffer.  The uncompressed data
@@ -167,9 +167,6 @@ lto_get_section_data (struct lto_file_decl_data *file_data,
       data = buffer.data + header_length;
     }
 
-  lto_check_version (((const lto_header *)data)->major_version,
-		     ((const lto_header *)data)->minor_version,
-		     file_data->file_name);
   return data;
 }
 

@@ -2189,6 +2189,21 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
 #else
   file_data->mode_table = lto_mode_identity_table;
 #endif
+
+  /* Read and verify LTO section.  */
+  data = lto_get_section_data (file_data, LTO_section_lto, NULL, &len, false);
+  if (data == NULL)
+    {
+      fatal_error (input_location, "bytecode stream in file %qs generated "
+		   "with GCC compiler older than 10.0", file_data->file_name);
+      return;
+    }
+
+  file_data->lto_section_header = *(const lto_section *)data;
+  lto_check_version (file_data->lto_section_header.major_version,
+		     file_data->lto_section_header.minor_version,
+		     file_data->file_name);
+
   data = lto_get_section_data (file_data, LTO_section_decls, NULL, &len);
   if (data == NULL)
     {

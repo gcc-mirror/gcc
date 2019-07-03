@@ -1,3 +1,7 @@
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	* lto-common.c: Read LTO section and verify header.
+
 2019-06-27  Jan Hubicka  <jh@suse.cz>
 
 	* lto-common.c (lto_register_canonical_types_for_odr_types):
