@@ -3122,7 +3122,7 @@ static loc_spans spans;
 /********************************************************************/
 /* Unnamed declarations.  (a) voldemort types, (b) instantiations.  */
 
-struct unnamed_entity
+struct GTY(()) unnamed_entity
 {
   mc_slot slot;  /* The decl, or section number. */
   tree ns;	 /* If a specialization, the ns::id it specializes.  */
@@ -17506,7 +17506,7 @@ init_module_processing (cpp_reader *reader)
 
   if (!flag_preprocess_only)
     {
-      unnamed_map = unnamed_map_t::create_ggc (31);
+      unnamed_map = new unnamed_map_t (31);
       specset::table = new specset::hash (400);
     }
 
@@ -17665,6 +17665,7 @@ finish_module_processing (cpp_reader *reader)
   modules_hash = NULL;
 
   /* Or unnamed entitites.  */
+  delete unnamed_map;
   unnamed_map = NULL;
   unnamed_ary = NULL;
 

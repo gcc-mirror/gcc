@@ -1,6 +1,10 @@
 2019-07-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (struct unnamed_entity): GTY it.
+	(unnamed_map): Not a GTY object.
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::fn_parms): Rename to ...
 	(trees_{in,out}::fn_arg_types): ... this.
 	(trees_{in,out}::fn_parms_{init,fini}): New.
