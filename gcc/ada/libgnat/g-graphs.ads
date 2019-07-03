@@ -45,7 +45,7 @@ package GNAT.Graphs is
    --  (referred to as simply "component") in a graph.
 
    type Component_Id is new Natural;
-   No_Component : constant Component_Id;
+   No_Component : constant Component_Id := Component_Id'First;
 
    function Hash_Component (Comp : Component_Id) return Bucket_Range_Type;
    --  Map component Comp into the range of buckets
@@ -230,11 +230,21 @@ package GNAT.Graphs is
       function Is_Empty (G : Directed_Graph) return Boolean;
       --  Determine whether graph G is empty
 
+      function Number_Of_Component_Vertices
+        (G    : Directed_Graph;
+         Comp : Component_Id) return Natural;
+      --  Obtain the total number of vertices of component Comp of graph G
+
       function Number_Of_Components (G : Directed_Graph) return Natural;
       --  Obtain the total number of components of graph G
 
       function Number_Of_Edges (G : Directed_Graph) return Natural;
       --  Obtain the total number of edges of graph G
+
+      function Number_Of_Outgoing_Edges
+        (G : Directed_Graph;
+         V : Vertex_Id) return Natural;
+      --  Obtain the total number of outgoing edges of vertex V of graph G
 
       function Number_Of_Vertices (G : Directed_Graph) return Natural;
       --  Obtain the total number of vertices of graph G
@@ -329,6 +339,29 @@ package GNAT.Graphs is
       --    * Iterator_Exhausted, when the iterator has been exhausted and
       --      further attempts are made to advance it.
 
+      --  The following type prepresents an iterator over all vertices of a
+      --  component.
+
+      type Component_Vertex_Iterator is private;
+
+      function Has_Next (Iter : Component_Vertex_Iterator) return Boolean;
+      --  Determine whether iterator Iter has more vertices to examine
+
+      function Iterate_Component_Vertices
+        (G    : Directed_Graph;
+         Comp : Component_Id) return Component_Vertex_Iterator;
+      --  Obtain an iterator over all vertices that comprise component Comp of
+      --  graph G.
+
+      procedure Next
+        (Iter : in out Component_Vertex_Iterator;
+         V    : out Vertex_Id);
+      --  Return the current vertex referenced by iterator Iter and advance to
+      --  the next vertex. This action raises the following exceptions:
+      --
+      --    * Iterator_Exhausted, when the iterator has been exhausted and
+      --      further attempts are made to advance it.
+
       --  The following type represents an iterator over all outgoing edges of
       --  a vertex.
 
@@ -349,29 +382,6 @@ package GNAT.Graphs is
       --  Return the current outgoing edge referenced by iterator Iter and
       --  advance to the next available outgoing edge. This action raises the
       --  following exceptions:
-      --
-      --    * Iterator_Exhausted, when the iterator has been exhausted and
-      --      further attempts are made to advance it.
-
-      --  The following type prepresents an iterator over all vertices of a
-      --  component.
-
-      type Vertex_Iterator is private;
-
-      function Has_Next (Iter : Vertex_Iterator) return Boolean;
-      --  Determine whether iterator Iter has more vertices to examine
-
-      function Iterate_Vertices
-        (G    : Directed_Graph;
-         Comp : Component_Id) return Vertex_Iterator;
-      --  Obtain an iterator over all vertices that comprise component Comp of
-      --  graph G.
-
-      procedure Next
-        (Iter : in out Vertex_Iterator;
-         V    : out Vertex_Id);
-      --  Return the current vertex referenced by iterator Iter and advance to
-      --  the next vertex. This action raises the following exceptions:
       --
       --    * Iterator_Exhausted, when the iterator has been exhausted and
       --      further attempts are made to advance it.
@@ -513,15 +523,14 @@ package GNAT.Graphs is
       -- Iterators --
       ---------------
 
-      type All_Edge_Iterator      is new Edge_Map.Iterator;
-      type All_Vertex_Iterator    is new Vertex_Map.Iterator;
-      type Component_Iterator     is new Component_Map.Iterator;
-      type Outgoing_Edge_Iterator is new Edge_Set.Iterator;
-      type Vertex_Iterator        is new Vertex_List.Iterator;
+      type All_Edge_Iterator         is new Edge_Map.Iterator;
+      type All_Vertex_Iterator       is new Vertex_Map.Iterator;
+      type Component_Iterator        is new Component_Map.Iterator;
+      type Component_Vertex_Iterator is new Vertex_List.Iterator;
+      type Outgoing_Edge_Iterator    is new Edge_Set.Iterator;
    end Directed_Graphs;
 
 private
-   No_Component    : constant Component_Id := Component_Id'First;
    First_Component : constant Component_Id := No_Component + 1;
 
 end GNAT.Graphs;

@@ -708,6 +708,10 @@ package Sem_Util is
    --  If no suitable entity is available, return Empty. This routine carries
    --  out actions that are tied to SPARK semantics.
 
+   function Exceptions_OK return Boolean;
+   --  Determine whether exceptions are allowed to be caught, propagated, or
+   --  raised.
+
    procedure Explain_Limited_Type (T : Entity_Id; N : Node_Id);
    --  This procedure is called after issuing a message complaining about an
    --  inappropriate use of limited type T. If useful, it adds additional
@@ -2181,6 +2185,10 @@ package Sem_Util is
    --    Level    - Save the declaration level of N_Id (if appicable)
    --    Modes    - Save the Ghost and SPARK modes in effect (if applicable)
    --    Warnings - Save the status of Elab_Warnings
+
+   procedure Mark_Save_Invocation_Graph_Of_Body;
+   --  Notify the body of the main unit that the invocation constructs and
+   --  relations expressed within it must be recorded by the ABE mechanism.
 
    function Matching_Static_Array_Bounds
      (L_Typ : Node_Id;

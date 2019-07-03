@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              B I N D G E N                               --
+--                     B I N D O . D I A G N O S T I C S                    --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--             Copyright (C) 2019, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,25 +23,39 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines to output the binder file. This is
---  an Ada program which contains the following:
+--  For full architecture, see unit Bindo.
 
---     Initialization for main program case
---     Sequence of calls to elaboration routines in appropriate order
---     Call to main program for main program case
+--  The following unit contains facilities to diagnose various issues with the
+--  elaboration order.
 
---  See the body for exact details of the file that is generated
+with Bindo.Graphs;
+use  Bindo.Graphs;
+use  Bindo.Graphs.Library_Graphs;
 
-with ALI; use ALI;
+package Bindo.Diagnostics is
 
-package Bindgen is
-   procedure Gen_Output_File
-     (Filename   : String;
-      Elab_Order : Unit_Id_Array);
-   --  Filename is the full path name of the binder output file
+   -----------
+   -- Types --
+   -----------
 
-   procedure Set_Bind_Env (Key, Value : String);
-   --  Add (Key, Value) pair to bind environment. These associations
-   --  are made available at run time using System.Bind_Environment.
+   --  The following type enumerates all possible statuses of the elaboration
+   --  order.
 
-end Bindgen;
+   type Elaboration_Order_Status is
+     (Order_Has_Circularity,
+      Order_Has_Elaborate_All_Circularity,
+      Order_OK);
+
+   -----------------------
+   -- Cycle_Diagnostics --
+   -----------------------
+
+   package Cycle_Diagnostics is
+      function Has_Elaborate_All_Cycle (G : Library_Graph) return Boolean;
+      pragma Inline (Has_Elaborate_All_Cycle);
+      --  Determine whether library graph G contains a cycle where pragma
+      --  Elaborate_All appears within a component.
+
+   end Cycle_Diagnostics;
+
+end Bindo.Diagnostics;

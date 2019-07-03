@@ -9861,6 +9861,17 @@ package body Sem_Prag is
       --  Start of processing for Process_Inline
 
       begin
+         --  An inlined subprogram may grant access to its private enclosing
+         --  context depending on the placement of its body. From elaboration
+         --  point of view, the flow of execution may enter this private
+         --  context, and then reach an external unit, thus producing a
+         --  dependency on that external unit. For such a path to be properly
+         --  discovered and encoded in the ALI file of the main unit, let the
+         --  ABE mechanism process the body of the main unit, and encode all
+         --  relevant invocation constructs and the relations between them.
+
+         Mark_Save_Invocation_Graph_Of_Body;
+
          Check_No_Identifiers;
          Check_At_Least_N_Arguments (1);
 

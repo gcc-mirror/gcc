@@ -34,6 +34,34 @@ with Ada.Unchecked_Deallocation;
 package body GNAT.Dynamic_HTables is
 
    -------------------
+   -- Hash_Two_Keys --
+   -------------------
+
+   function Hash_Two_Keys
+     (Left  : Bucket_Range_Type;
+      Right : Bucket_Range_Type) return Bucket_Range_Type
+   is
+      Half : constant := 2 ** (Bucket_Range_Type'Size / 2);
+      Mask : constant := Half - 1;
+
+   begin
+      --  The hash is obtained in the following manner:
+      --
+      --    1) The low bits of Left are obtained, then shifted over to the high
+      --       bits position.
+      --
+      --    2) The low bits of Right are obtained
+      --
+      --  The results from 1) and 2) are or-ed to produce a value within the
+      --  range of Bucket_Range_Type.
+
+      return
+        ((Left  and Mask) * Half)
+            or
+         (Right and Mask);
+   end Hash_Two_Keys;
+
+   -------------------
    -- Static_HTable --
    -------------------
 
@@ -484,6 +512,32 @@ package body GNAT.Dynamic_HTables is
       procedure Unlock (T : Dynamic_Hash_Table);
       pragma Inline (Unlock);
       --  Unlock all mutation functionality of hash table T
+
+      --------------
+      -- Contains --
+      --------------
+
+      function Contains
+        (T   : Dynamic_Hash_Table;
+         Key : Key_Type) return Boolean
+      is
+         Head : Node_Ptr;
+         Nod  : Node_Ptr;
+
+      begin
+         Ensure_Created (T);
+
+         --  Obtain the dummy head of the bucket which should house the
+         --  key-value pair.
+
+         Head := Find_Bucket (T.Buckets, Key);
+
+         --  Try to find a node in the bucket which matches the key
+
+         Nod := Find_Node (Head, Key);
+
+         return Is_Valid (Nod, Head);
+      end Contains;
 
       ------------
       -- Create --

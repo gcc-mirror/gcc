@@ -50,6 +50,12 @@ pragma Compiler_Unit_Warning;
 
 package GNAT.Dynamic_HTables is
 
+   function Hash_Two_Keys
+     (Left  : Bucket_Range_Type;
+      Right : Bucket_Range_Type) return Bucket_Range_Type;
+   pragma Inline (Hash_Two_Keys);
+   --  Obtain the hash value of keys Left and Right
+
    -------------------
    -- Static_HTable --
    -------------------
@@ -344,6 +350,11 @@ package GNAT.Dynamic_HTables is
 
       type Dynamic_Hash_Table is private;
       Nil : constant Dynamic_Hash_Table;
+
+      function Contains
+        (T   : Dynamic_Hash_Table;
+         Key : Key_Type) return Boolean;
+      --  Determine whether key Key exists in hash table T
 
       function Create (Initial_Size : Positive) return Dynamic_Hash_Table;
       --  Create a new table with bucket capacity Initial_Size. This routine

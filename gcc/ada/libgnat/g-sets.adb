@@ -46,7 +46,7 @@ package body GNAT.Sets is
          Elem : Element_Type) return Boolean
       is
       begin
-         return Hashed_Set.Get (Hashed_Set.Dynamic_Hash_Table (S), Elem);
+         return Hashed_Set.Contains (Hashed_Set.Dynamic_Hash_Table (S), Elem);
       end Contains;
 
       ------------

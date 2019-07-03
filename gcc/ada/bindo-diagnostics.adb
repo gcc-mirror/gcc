@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              B I N D G E N                               --
+--                     B I N D O . D I A G N O S T I C S                    --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--             Copyright (C) 2019, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,25 +23,50 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines to output the binder file. This is
---  an Ada program which contains the following:
+package body Bindo.Diagnostics is
 
---     Initialization for main program case
---     Sequence of calls to elaboration routines in appropriate order
---     Call to main program for main program case
+   -----------------------
+   -- Cycle_Diagnostics --
+   -----------------------
 
---  See the body for exact details of the file that is generated
+   package body Cycle_Diagnostics is
 
-with ALI; use ALI;
+      -----------------------------
+      -- Has_Elaborate_All_Cycle --
+      -----------------------------
 
-package Bindgen is
-   procedure Gen_Output_File
-     (Filename   : String;
-      Elab_Order : Unit_Id_Array);
-   --  Filename is the full path name of the binder output file
+      function Has_Elaborate_All_Cycle (G : Library_Graph) return Boolean is
+         Has_Cycle : Boolean;
+         Iter      : All_Edge_Iterator;
+         LGE_Id    : Library_Graph_Edge_Id;
 
-   procedure Set_Bind_Env (Key, Value : String);
-   --  Add (Key, Value) pair to bind environment. These associations
-   --  are made available at run time using System.Bind_Environment.
+      begin
+         pragma Assert (Present (G));
 
-end Bindgen;
+         --  Assume that the graph lacks a cycle
+
+         Has_Cycle := False;
+
+         --  The library graph has an Elaborate_All cycle when one of its edges
+         --  represents a with clause for a unit with pragma Elaborate_All, and
+         --  both the predecessor and successor reside in the same component.
+         --  Note that the iteration must run to completion in order to unlock
+         --  the graph.
+
+         Iter := Iterate_All_Edges (G);
+         while Has_Next (Iter) loop
+            Next (Iter, LGE_Id);
+            pragma Assert (Present (LGE_Id));
+
+            if Kind (G, LGE_Id) = Elaborate_All_Edge
+              and then Links_Vertices_In_Same_Component (G, LGE_Id)
+            then
+               Has_Cycle := True;
+            end if;
+         end loop;
+
+         return Has_Cycle;
+      end Has_Elaborate_All_Cycle;
+   end Cycle_Diagnostics;
+
+end Bindo.Diagnostics;
