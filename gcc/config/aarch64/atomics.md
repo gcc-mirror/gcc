@@ -21,11 +21,11 @@
 ;; Instruction patterns.
 
 (define_expand "@atomic_compare_and_swap<mode>"
-  [(match_operand:SI 0 "register_operand" "")			;; bool out
-   (match_operand:ALLI 1 "register_operand" "")			;; val out
-   (match_operand:ALLI 2 "aarch64_sync_memory_operand" "")	;; memory
-   (match_operand:ALLI 3 "nonmemory_operand" "")		;; expected
-   (match_operand:ALLI 4 "aarch64_reg_or_zero" "")		;; desired
+  [(match_operand:SI 0 "register_operand")			;; bool out
+   (match_operand:ALLI 1 "register_operand")			;; val out
+   (match_operand:ALLI 2 "aarch64_sync_memory_operand")		;; memory
+   (match_operand:ALLI 3 "nonmemory_operand")			;; expected
+   (match_operand:ALLI 4 "aarch64_reg_or_zero")			;; desired
    (match_operand:SI 5 "const_int_operand")			;; is_weak
    (match_operand:SI 6 "const_int_operand")			;; mod_s
    (match_operand:SI 7 "const_int_operand")]			;; mod_f
@@ -134,10 +134,10 @@
 })
 
 (define_expand "atomic_exchange<mode>"
- [(match_operand:ALLI 0 "register_operand" "")
-  (match_operand:ALLI 1 "aarch64_sync_memory_operand" "")
-  (match_operand:ALLI 2 "aarch64_reg_or_zero" "")
-  (match_operand:SI 3 "const_int_operand" "")]
+ [(match_operand:ALLI 0 "register_operand")
+  (match_operand:ALLI 1 "aarch64_sync_memory_operand")
+  (match_operand:ALLI 2 "aarch64_reg_or_zero")
+  (match_operand:SI 3 "const_int_operand")]
   ""
   {
     rtx (*gen) (rtx, rtx, rtx, rtx);
@@ -198,9 +198,9 @@
 )
 
 (define_expand "atomic_<atomic_optab><mode>"
- [(match_operand:ALLI 0 "aarch64_sync_memory_operand" "")
+ [(match_operand:ALLI 0 "aarch64_sync_memory_operand")
   (atomic_op:ALLI
-   (match_operand:ALLI 1 "<atomic_op_operand>" "")
+   (match_operand:ALLI 1 "<atomic_op_operand>")
    (match_operand:SI 2 "const_int_operand"))]
   ""
   {
@@ -322,10 +322,10 @@
 ;; Load-operate-store, returning the original memory data.
 
 (define_expand "atomic_fetch_<atomic_optab><mode>"
- [(match_operand:ALLI 0 "register_operand" "")
-  (match_operand:ALLI 1 "aarch64_sync_memory_operand" "")
+ [(match_operand:ALLI 0 "register_operand")
+  (match_operand:ALLI 1 "aarch64_sync_memory_operand")
   (atomic_op:ALLI
-   (match_operand:ALLI 2 "<atomic_op_operand>" "")
+   (match_operand:ALLI 2 "<atomic_op_operand>")
    (match_operand:SI 3 "const_int_operand"))]
  ""
 {
@@ -439,10 +439,10 @@
 ;; Load-operate-store, returning the updated memory data.
 
 (define_expand "atomic_<atomic_optab>_fetch<mode>"
- [(match_operand:ALLI 0 "register_operand" "")
+ [(match_operand:ALLI 0 "register_operand")
   (atomic_op:ALLI
-   (match_operand:ALLI 1 "aarch64_sync_memory_operand" "")
-   (match_operand:ALLI 2 "<atomic_op_operand>" ""))
+   (match_operand:ALLI 1 "aarch64_sync_memory_operand")
+   (match_operand:ALLI 2 "<atomic_op_operand>"))
   (match_operand:SI 3 "const_int_operand")]
  ""
 {
@@ -600,7 +600,7 @@
 )
 
 (define_expand "mem_thread_fence"
-  [(match_operand:SI 0 "const_int_operand" "")]
+  [(match_operand:SI 0 "const_int_operand")]
   ""
   {
     enum memmodel model = memmodel_from_int (INTVAL (operands[0]));
