@@ -909,6 +909,8 @@ Export::populate_init_graph(Init_graph* init_graph,
        ++p)
     {
       const Import_init* ii = *p;
+      if (ii->is_dummy())
+        continue;
       std::map<std::string, unsigned>::const_iterator srcit =
           init_idx.find(ii->init_name());
       go_assert(srcit != init_idx.end());
@@ -1007,7 +1009,7 @@ Export::write_imported_init_fns(const std::string& package_name,
 
   // Now add edges from the local init function to each of the
   // imported fcns.
-  if (!import_init_fn.empty())
+  if (!import_init_fn.empty() && import_init_fn[0] != '~')
     {
       unsigned src = 0;
       go_assert(init_idx[import_init_fn] == 0);
@@ -1016,6 +1018,8 @@ Export::write_imported_init_fns(const std::string& package_name,
            ++p)
 	{
           const Import_init* ii = *p;
+          if (ii->is_dummy())
+            continue;
 	  unsigned sink = init_idx[ii->init_name()];
 	  add_init_graph_edge(&init_graph, src, sink);
 	}

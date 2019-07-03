@@ -724,6 +724,9 @@ Gogo::init_imports(std::vector<Bstatement*>& init_stmts, Bfunction *bfunction)
        p != this->imported_init_fns_.end();
        ++p)
     {
+      // Don't include dummy inits. They are not real functions.
+      if ((*p)->is_dummy())
+        continue;
       if ((*p)->priority() < 0)
 	go_error_at(Linemap::unknown_location(),
 		    "internal error: failed to set init priority for %s",
@@ -941,7 +944,7 @@ Gogo::build_type_descriptor_list()
   Btype* bat = list_type->field(1)->type()->get_backend(this);
 
   // Create the variable
-  std::string name = this->type_descriptor_list_symbol(this->package_);
+  std::string name = this->type_descriptor_list_symbol(this->pkgpath_symbol());
   Bvariable* bv = this->backend()->implicit_variable(name, name, bt,
                                                      false, true, false,
                                                      0);
@@ -986,20 +989,29 @@ Gogo::register_type_descriptors(std::vector<Bstatement*>& init_stmts,
   Struct_type* list_type = type_descriptor_list_type(1);
   Btype* bt = list_type->get_backend(this);
 
+  // Collect type lists from transitive imports.
+  std::vector<std::string> list_names;
+  for (Import_init_set::iterator it = this->imported_init_fns_.begin();
+       it != this->imported_init_fns_.end();
+       ++it)
+    {
+      std::string pkgpath =
+        this->pkgpath_from_init_fn_name((*it)->init_name());
+      list_names.push_back(this->type_descriptor_list_symbol(pkgpath));
+    }
+  // Add the main package itself.
+  list_names.push_back(this->type_descriptor_list_symbol("main"));
+
   // Build a list of lists.
   std::vector<unsigned long> indexes;
   std::vector<Bexpression*> vals;
   unsigned long i = 0;
-  for (Packages::iterator it = this->packages_.begin();
-       it != this->packages_.end();
-       ++it)
+  for (std::vector<std::string>::iterator p = list_names.begin();
+       p != list_names.end();
+       ++p)
     {
-      if (it->second->pkgpath() == "unsafe")
-        continue;
-
-      std::string name = this->type_descriptor_list_symbol(it->second);
       Bvariable* bv =
-        this->backend()->implicit_variable_reference(name, name, bt);
+        this->backend()->implicit_variable_reference(*p, *p, bt);
       Bexpression* bexpr = this->backend()->var_expression(bv, builtin_loc);
       bexpr = this->backend()->address_expression(bexpr, builtin_loc);
 
@@ -5158,6 +5170,14 @@ Gogo::do_exports()
   else
     prefix = "go";
 
+  std::string init_fn_name;
+  if (this->is_main_package())
+    init_fn_name = "";
+  else if (this->need_init_fn_)
+    init_fn_name = this->get_init_fn_name();
+  else
+    init_fn_name = this->dummy_init_fn_name();
+
   Export exp(&stream);
   exp.register_builtin_types(this);
   exp.export_globals(this->package_name(),
@@ -5165,9 +5185,7 @@ Gogo::do_exports()
 		     pkgpath,
 		     this->packages_,
 		     this->imports_,
-		     (this->need_init_fn_ && !this->is_main_package()
-		      ? this->get_init_fn_name()
-		      : ""),
+		     init_fn_name,
 		     this->imported_init_fns_,
 		     this->package_->bindings());
 
