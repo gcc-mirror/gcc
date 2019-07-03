@@ -18338,6 +18338,7 @@ Expression::import_expression(Import_expression* imp, Location loc)
 	    }
 	  imp->require_c_string(")");
 	  expr = Expression::make_call(expr, args, is_varargs, loc);
+          expr->call_expression()->set_varargs_are_lowered();
 	}
       else if (imp->match_c_string("["))
 	{
@@ -19389,4 +19390,3 @@ Numeric_constant::hash(unsigned int seed) const
 
   return (static_cast<unsigned int>(val) + seed) * PRIME;
 }
-
