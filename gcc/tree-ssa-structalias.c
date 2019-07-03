@@ -5955,7 +5955,6 @@ create_function_info_for (tree decl, const char *name, bool add_id,
 
       gcc_assert (prev_vi->offset < argvi->offset);
       prev_vi->next = argvi->id;
-      prev_vi = argvi;
     }
 
   return vi;

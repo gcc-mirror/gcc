@@ -6573,7 +6573,6 @@ resolve_typebound_function (gfc_expr* e)
     }
 
   c = gfc_find_component (declared, "_data", true, true, NULL);
-  declared = c->ts.u.derived;
 
   /* Treat the call as if it is a typebound procedure, in order to roll
      out the correct name for the specific function.  */

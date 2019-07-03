@@ -1160,8 +1160,7 @@ linemap_get_expansion_filename (struct line_maps *set,
   if (location < RESERVED_LOCATION_COUNT)
     return NULL;
 
-  location =
-    linemap_macro_loc_to_exp_point (set, location, &map);
+  linemap_macro_loc_to_exp_point (set, location, &map);
 
   return LINEMAP_FILE (map);
 }

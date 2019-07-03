@@ -1,3 +1,9 @@
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	* call.c (build_new_op_1): Remove
+	dead assignemts.
+	* typeck.c (cp_build_binary_op): Likewise.
+
 2019-06-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/55442 - memory-hog with highly recursive constexpr.

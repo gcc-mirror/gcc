@@ -1,5 +1,15 @@
 2019-07-03  Martin Liska  <mliska@suse.cz>
 
+	* lra-eliminations.c (eliminate_regs_in_insn): Remove
+	dead assignemts.
+	* reg-stack.c (check_asm_stack_operands): Likewise.
+	* tree-ssa-structalias.c (create_function_info_for): Likewise.
+	* tree-vect-generic.c (expand_vector_operations_1): Likewise.
+	* config/i386/i386-expand.c (ix86_expand_sse2_mulvxdi3): Use
+	force_expand_binop.
+
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
 	PR tree-optimization/90892
 	* builtins.c (inline_expand_builtin_string_cmp): Handle '\0'
 	in string constants.

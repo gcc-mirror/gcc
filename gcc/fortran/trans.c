@@ -1014,9 +1014,6 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
 	  gfc_add_block_to_block (&block, &se.pre);
 	  gcc_assert (se.post.head == NULL_TREE);
 	  array = se.expr;
-	  if (TREE_CODE (array) == ADDR_EXPR
-	      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (array, 0))))
-	    tmp = TREE_OPERAND (array, 0);
 
 	  if (!gfc_is_coarray (array_expr))
 	    {

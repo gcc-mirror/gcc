@@ -1981,7 +1981,6 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       || code == VEC_UNPACK_FLOAT_LO_EXPR
       || code == VEC_PACK_FLOAT_EXPR)
     {
-      type = TREE_TYPE (rhs1);
       /* We do not know how to scalarize those.  */
       return;
     }
@@ -2004,7 +2003,6 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       || code == VEC_WIDEN_LSHIFT_HI_EXPR
       || code == VEC_WIDEN_LSHIFT_LO_EXPR)
     {
-      type = TREE_TYPE (rhs1);
       /* We do not know how to scalarize those.  */
       return;
     }

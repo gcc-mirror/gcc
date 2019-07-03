@@ -1,3 +1,9 @@
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	* line-map.c (linemap_get_expansion_filename): Remove
+	dead assignemts.
+	* mkdeps.c (make_write): Likewise.
+
 2019-07-02  qing zhao  <qing.zhao@oracle.com>
 
 	PR preprocessor/90581
