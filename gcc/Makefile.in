@@ -1065,7 +1065,7 @@ BUILD_LIBDEPS= $(BUILD_LIBIBERTY)
 LIBS = @LIBS@ libcommon.a $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBBACKTRACE) \
 	$(LIBIBERTY) $(LIBDECNUMBER) $(HOST_LIBS)
 BACKENDLIBS = $(ISLLIBS) $(GMPLIBS) $(PLUGINLIBS) $(HOST_LIBS) \
-	$(ZLIB)
+	$(ZLIB) $(ZSTD_LIB)
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
 
@@ -1075,6 +1075,8 @@ GNATMAKE = @GNATMAKE@
 
 # Libs needed (at present) just for jcf-dump.
 LDEXP_LIB = @LDEXP_LIB@
+
+ZSTD_LIB = @ZSTD_LIB@
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.

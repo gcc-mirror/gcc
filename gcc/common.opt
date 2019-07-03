@@ -1888,8 +1888,8 @@ Specify the algorithm to partition symbols and vars at linktime.
 
 ; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.
 flto-compression-level=
-Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1) IntegerRange(0, 9)
--flto-compression-level=<number>	Use zlib compression level <number> for IL.
+Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1) IntegerRange(0, 19)
+-flto-compression-level=<number>	Use zlib/zstd compression level <number> for IL.
 
 flto-odr-type-merging
 Common Ignore

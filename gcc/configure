@@ -782,6 +782,8 @@ manext
 LIBICONV_DEP
 LTLIBICONV
 LIBICONV
+ZSTD_LIB
+ZSTD_INCLUDE
 DL_LIB
 LDEXP_LIB
 EXTRA_GCC_LIBS
@@ -959,6 +961,9 @@ with_pkgversion
 with_bugurl
 enable_languages
 with_multilib_list
+with_zstd
+with_zstd_include
+with_zstd_lib
 enable_rpath
 with_libiconv_prefix
 enable_sjlj_exceptions
@@ -1783,6 +1788,12 @@ Optional Packages:
   --with-pkgversion=PKG   Use PKG in the version string in place of "GCC"
   --with-bugurl=URL       Direct users to URL to report a bug
   --with-multilib-list    select multilibs (AArch64, SH and x86-64 only)
+  --with-zstd=PATH        specify prefix directory for installed zstd library.
+                          Equivalent to --with-zstd-include=PATH/include plus
+                          --with-zstd-lib=PATH/lib
+  --with-zstd-include=PATH
+                          specify directory for installed zstd include files
+  --with-zstd-lib=PATH    specify directory for the installed zstd library
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
@@ -9837,6 +9848,154 @@ if test $gcc_cv_header_inttypes_h = yes; then
 $as_echo "#define HAVE_INTTYPES_H 1" >>confdefs.h
 
 fi
+
+# Look for the ZSTD package.
+ZSTD_INCLUDE=
+ZSTD_LIB=
+
+
+ZSTD_CPPFLAGS=
+ZSTD_LDFLAGS=
+
+# Check whether --with-zstd was given.
+if test "${with_zstd+set}" = set; then :
+  withval=$with_zstd;
+fi
+
+
+# Check whether --with-zstd-include was given.
+if test "${with_zstd_include+set}" = set; then :
+  withval=$with_zstd_include;
+fi
+
+
+# Check whether --with-zstd-lib was given.
+if test "${with_zstd_lib+set}" = set; then :
+  withval=$with_zstd_lib;
+fi
+
+case "x$with_zstd" in
+  x) ;;
+  xno)
+    ZSTD_INCLUDE=no
+    ZSTD_LIB=no
+    ;;
+  *) ZSTD_INCLUDE=$with_zstd/include
+     ZSTD_LIB=$with_zstd/lib
+     ;;
+esac
+if test "x$with_zstd_include" != x; then
+  ZSTD_INCLUDE=$with_zstd_include
+fi
+if test "x$with_zstd_lib" != x; then
+  ZSTD_LIB=$with_zstd_lib
+fi
+if test "x$ZSTD_INCLUDE" != x \
+   && test "x$ZSTD_INCLUDE" != xno; then
+  ZSTD_CPPFLAGS=-I$ZSTD_INCLUDE
+fi
+if test "x$ZSTD_LIB" != x \
+   && test "x$ZSTD_LIB" != xno; then
+  ZSTD_LDFLAGS=-L$ZSTD_LIB
+fi
+
+CXXFLAGS="$CXXFLAGS $ZSTD_CPPFLAGS"
+LDFLAGS="$LDFLAGS $ZSTD_LDFLAGS"
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for zstd.h" >&5
+$as_echo_n "checking for zstd.h... " >&6; }
+if ${gcc_cv_header_zstd_h+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <zstd.h>
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  gcc_cv_header_zstd_h=yes
+else
+  gcc_cv_header_zstd_h=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_zstd_h" >&5
+$as_echo "$gcc_cv_header_zstd_h" >&6; }
+if test $gcc_cv_header_zstd_h = yes; then
+
+$as_echo "#define HAVE_ZSTD_H 1" >>confdefs.h
+
+fi
+
+# LTO can use zstd compression algorithm
+save_LIBS="$LIBS"
+LIBS=
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing ZSTD_compress" >&5
+$as_echo_n "checking for library containing ZSTD_compress... " >&6; }
+if ${ac_cv_search_ZSTD_compress+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char ZSTD_compress ();
+int
+main ()
+{
+return ZSTD_compress ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' zstd; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_ZSTD_compress=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_ZSTD_compress+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_ZSTD_compress+:} false; then :
+
+else
+  ac_cv_search_ZSTD_compress=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_ZSTD_compress" >&5
+$as_echo "$ac_cv_search_ZSTD_compress" >&6; }
+ac_res=$ac_cv_search_ZSTD_compress
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+fi
+
+ZSTD_LIB="$LIBS"
+LIBS="$save_LIBS"
+
 
 
 
@@ -18655,7 +18814,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18658 "configure"
+#line 18817 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18761,7 +18920,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18764 "configure"
+#line 18923 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

@@ -396,6 +396,12 @@ built together with GCC.  Alternatively, the @option{--with-isl} configure
 option should be used if isl is not installed in your default library
 search path.
 
+@item zstd Library.
+
+Necessary to build GCC with zstd compression used for LTO bytecode.
+The library is searched in your default library patch search.
+Alternatively, the @option{--with-zstd} configure option should be used.
+
 @end table
 
 @heading Tools/packages necessary for modifying GCC
