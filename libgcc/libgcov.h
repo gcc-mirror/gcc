@@ -126,7 +126,7 @@ typedef unsigned gcov_position_t;
 
 #define L_gcov 1
 #define L_gcov_merge_add 1
-#define L_gcov_merge_single 1
+#define L_gcov_merge_topn 1
 #define L_gcov_merge_ior 1
 #define L_gcov_merge_time_profile 1
 
@@ -259,8 +259,8 @@ extern void __gcov_merge_add (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 /* The merge function to select the minimum valid counter value.  */
 extern void __gcov_merge_time_profile (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 
-/* The merge function to choose the most common value.  */
-extern void __gcov_merge_single (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
+/* The merge function to choose the most common N values.  */
+extern void __gcov_merge_topn (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 
 /* The merge function that just ors the counters together.  */
 extern void __gcov_merge_ior (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
@@ -271,8 +271,8 @@ extern void __gcov_interval_profiler_atomic (gcov_type *, gcov_type, int,
 					     unsigned);
 extern void __gcov_pow2_profiler (gcov_type *, gcov_type);
 extern void __gcov_pow2_profiler_atomic (gcov_type *, gcov_type);
-extern void __gcov_one_value_profiler_v2 (gcov_type *, gcov_type);
-extern void __gcov_one_value_profiler_v2_atomic (gcov_type *, gcov_type);
+extern void __gcov_topn_values_profiler (gcov_type *, gcov_type);
+extern void __gcov_topn_values_profiler_atomic (gcov_type *, gcov_type);
 extern void __gcov_indirect_call_profiler_v4 (gcov_type, void *);
 extern void __gcov_time_profiler (gcov_type *);
 extern void __gcov_time_profiler_atomic (gcov_type *);

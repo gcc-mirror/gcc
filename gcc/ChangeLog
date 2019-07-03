@@ -1,3 +1,32 @@
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	* gcov-counter.def (GCOV_COUNTER_V_SINGLE): Remove.
+	(GCOV_COUNTER_V_TOPN): New.
+	(GCOV_COUNTER_V_INDIR): Use _topn.
+	* gcov-io.h (GCOV_DISK_SINGLE_VALUES): Remove.
+	(GCOV_TOPN_VALUES): New.
+	(GCOV_SINGLE_VALUE_COUNTERS): Remove.
+	(GCOV_TOPN_VALUES_COUNTERS): New.
+	* profile.c (instrument_values): Use HIST_TYPE_TOPN_VALUES.
+	* tree-profile.c:
+	(gimple_init_gcov_profiler): Rename variables from one_value
+	to topn_values.
+	(gimple_gen_one_value_profiler): Remove.
+	(gimple_gen_topn_values_profiler): New function.
+	* value-prof.c (dump_histogram_value): Use TOPN_VALUES
+	names instead of SINGLE_VALUE.
+	(stream_out_histogram_value): Likewise.
+	(stream_in_histogram_value): Likewise.
+	(get_most_common_single_value): Likewise.
+	(gimple_divmod_fixed_value_transform): Likewise.
+	(gimple_stringops_transform): Likewise.
+	(gimple_divmod_values_to_profile): Likewise.
+	(gimple_stringops_values_to_profile): Likewise.
+	(gimple_find_values_to_profile): Likewise.
+	* value-prof.h (enum hist_type): Rename to TOPN.
+	(gimple_gen_one_value_profiler): Remove.
+	(gimple_gen_topn_values_profiler): New.
+
 2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (add_scalar_info): Add back refererence to existing DIE

@@ -33,9 +33,9 @@ void __gcov_merge_add (gcov_type *counters  __attribute__ ((unused)),
                        unsigned n_counters __attribute__ ((unused))) {}
 #endif
 
-#ifdef L_gcov_merge_single
-void __gcov_merge_single (gcov_type *counters  __attribute__ ((unused)),
-			  unsigned n_counters __attribute__ ((unused))) {}
+#ifdef L_gcov_merge_topn
+void __gcov_merge_topn (gcov_type *counters  __attribute__ ((unused)),
+			unsigned n_counters __attribute__ ((unused))) {}
 #endif
 
 #else
@@ -84,10 +84,10 @@ __gcov_merge_time_profile (gcov_type *counters, unsigned n_counters)
 }
 #endif /* L_gcov_merge_time_profile */
 
-#ifdef L_gcov_merge_single
+#ifdef L_gcov_merge_topn
 
 static void
-merge_single_value_set (gcov_type *counters)
+merge_topn_values_set (gcov_type *counters)
 {
   /* First value is number of total executions of the profiler.  */
   gcov_type all = gcov_get_counter_ignore_scaling (-1);
@@ -95,9 +95,9 @@ merge_single_value_set (gcov_type *counters)
   ++counters;
 
   /* Read all part values.  */
-  gcov_type read_counters[2 * GCOV_DISK_SINGLE_VALUES];
+  gcov_type read_counters[2 * GCOV_TOPN_VALUES];
 
-  for (unsigned i = 0; i < GCOV_DISK_SINGLE_VALUES; i++)
+  for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
     {
       read_counters[2 * i] = gcov_get_counter_target ();
       read_counters[2 * i + 1] = gcov_get_counter_ignore_scaling (-1);
@@ -109,13 +109,13 @@ merge_single_value_set (gcov_type *counters)
       return;
     }
 
-  for (unsigned i = 0; i < GCOV_DISK_SINGLE_VALUES; i++)
+  for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
     {
       if (read_counters[2 * i + 1] == 0)
 	return;
 
       unsigned j;
-      for (j = 0; j < GCOV_DISK_SINGLE_VALUES; j++)
+      for (j = 0; j < GCOV_TOPN_VALUES; j++)
 	{
 	  if (counters[2 * j] == read_counters[2 * i])
 	    {
@@ -131,7 +131,7 @@ merge_single_value_set (gcov_type *counters)
 	}
 
       /* We haven't found a slot, bail out.  */
-      if (j == GCOV_DISK_SINGLE_VALUES)
+      if (j == GCOV_TOPN_VALUES)
 	{
 	  counters[1] = -1;
 	  return;
@@ -149,13 +149,13 @@ merge_single_value_set (gcov_type *counters)
    -- counter
    */
 void
-__gcov_merge_single (gcov_type *counters, unsigned n_counters)
+__gcov_merge_topn (gcov_type *counters, unsigned n_counters)
 {
-  gcc_assert (!(n_counters % GCOV_SINGLE_VALUE_COUNTERS));
+  gcc_assert (!(n_counters % GCOV_TOPN_VALUES_COUNTERS));
 
-  for (unsigned i = 0; i < (n_counters / GCOV_SINGLE_VALUE_COUNTERS); i++)
-    merge_single_value_set (counters + (i * GCOV_SINGLE_VALUE_COUNTERS));
+  for (unsigned i = 0; i < (n_counters / GCOV_TOPN_VALUES_COUNTERS); i++)
+    merge_topn_values_set (counters + (i * GCOV_TOPN_VALUES_COUNTERS));
 }
-#endif /* L_gcov_merge_single */
+#endif /* L_gcov_merge_topn */
 
 #endif /* inhibit_libc */

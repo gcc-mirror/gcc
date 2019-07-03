@@ -257,23 +257,23 @@ dump_histogram_value (FILE *dump_file, histogram_value hist)
 		 (int64_t) hist->hvalue.counters[0]);
       break;
 
-    case HIST_TYPE_SINGLE_VALUE:
+    case HIST_TYPE_TOPN_VALUES:
     case HIST_TYPE_INDIR_CALL:
       if (hist->hvalue.counters)
 	{
 	  fprintf (dump_file,
-		   (hist->type == HIST_TYPE_SINGLE_VALUE
-		    ? "Single value counter " : "Indirect call counter"));
+		   (hist->type == HIST_TYPE_TOPN_VALUES
+		    ? "Top N value counter " : "Indirect call counter"));
 	  if (hist->hvalue.counters)
 	    {
 	      fprintf (dump_file, "all: %" PRId64 ", values: ",
 		       (int64_t) hist->hvalue.counters[0]);
-	      for (unsigned i = 0; i < GCOV_DISK_SINGLE_VALUES; i++)
+	      for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
 		{
 		  fprintf (dump_file, "[%" PRId64 ":%" PRId64 "]",
 			   (int64_t) hist->hvalue.counters[2 * i + 1],
 			   (int64_t) hist->hvalue.counters[2 * i + 2]);
-		  if (i != GCOV_DISK_SINGLE_VALUES - 1)
+		  if (i != GCOV_TOPN_VALUES - 1)
 		    fprintf (dump_file, ", ");
 		}
 	      fprintf (dump_file, ".\n");
@@ -331,7 +331,7 @@ stream_out_histogram_value (struct output_block *ob, histogram_value hist)
       /* When user uses an unsigned type with a big value, constant converted
 	 to gcov_type (a signed type) can be negative.  */
       gcov_type value = hist->hvalue.counters[i];
-      if (hist->type == HIST_TYPE_SINGLE_VALUE && i > 0)
+      if (hist->type == HIST_TYPE_TOPN_VALUES && i > 0)
 	;
       else
 	gcc_assert (value >= 0);
@@ -374,9 +374,9 @@ stream_in_histogram_value (struct lto_input_block *ib, gimple *stmt)
 	  ncounters = 2;
 	  break;
 
-	case HIST_TYPE_SINGLE_VALUE:
+	case HIST_TYPE_TOPN_VALUES:
 	case HIST_TYPE_INDIR_CALL:
-	  ncounters = GCOV_SINGLE_VALUE_COUNTERS;
+	  ncounters = GCOV_TOPN_VALUES_COUNTERS;
 	  break;
 
 	case HIST_TYPE_IOR:
@@ -713,7 +713,7 @@ gimple_divmod_fixed_value (gassign *stmt, tree value, profile_probability prob,
   return tmp2;
 }
 
-/* Return most common value of SINGLE_VALUE histogram.  If
+/* Return most common value of TOPN_VALUE histogram.  If
    there's a unique value, return true and set VALUE and COUNT
    arguments.  */
 
@@ -731,7 +731,7 @@ get_most_common_single_value (gimple *stmt, const char *counter_type,
 
   gcov_type read_all = hist->hvalue.counters[0];
 
-  for (unsigned i = 0; i < GCOV_DISK_SINGLE_VALUES; i++)
+  for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
     {
       gcov_type v = hist->hvalue.counters[2 * i + 1];
       gcov_type c = hist->hvalue.counters[2 * i + 2];
@@ -780,7 +780,7 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
     return false;
 
   histogram = gimple_histogram_value_of_type (cfun, stmt,
-					      HIST_TYPE_SINGLE_VALUE);
+					      HIST_TYPE_TOPN_VALUES);
   if (!histogram)
     return false;
 
@@ -1654,7 +1654,7 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
     return false;
 
   histogram = gimple_histogram_value_of_type (cfun, stmt,
-					      HIST_TYPE_SINGLE_VALUE);
+					      HIST_TYPE_TOPN_VALUES);
   if (!histogram)
     return false;
 
@@ -1808,7 +1808,7 @@ gimple_divmod_values_to_profile (gimple *stmt, histogram_values *values)
 	/* Check for the case where the divisor is the same value most
 	   of the time.  */
 	values->quick_push (gimple_alloc_histogram_value (cfun,
-						      HIST_TYPE_SINGLE_VALUE,
+						      HIST_TYPE_TOPN_VALUES,
 						      stmt, divisor));
 
       /* For mod, check whether it is not often a noop (or replaceable by
@@ -1887,7 +1887,7 @@ gimple_stringops_values_to_profile (gimple *gs, histogram_values *values)
   if (TREE_CODE (blck_size) != INTEGER_CST)
     {
       values->safe_push (gimple_alloc_histogram_value (cfun,
-						       HIST_TYPE_SINGLE_VALUE,
+						       HIST_TYPE_TOPN_VALUES,
 						       stmt, blck_size));
       values->safe_push (gimple_alloc_histogram_value (cfun, HIST_TYPE_AVERAGE,
 						       stmt, blck_size));
@@ -1936,12 +1936,9 @@ gimple_find_values_to_profile (histogram_values *values)
 	  hist->n_counters = 2;
 	  break;
 
-	case HIST_TYPE_SINGLE_VALUE:
-	  hist->n_counters = GCOV_SINGLE_VALUE_COUNTERS;
-	  break;
-
+	case HIST_TYPE_TOPN_VALUES:
 	case HIST_TYPE_INDIR_CALL:
-	  hist->n_counters = GCOV_SINGLE_VALUE_COUNTERS;
+	  hist->n_counters = GCOV_TOPN_VALUES_COUNTERS;
 	  break;
 
         case HIST_TYPE_TIME_PROFILE:

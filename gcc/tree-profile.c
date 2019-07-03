@@ -60,7 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 static GTY(()) tree gcov_type_node;
 static GTY(()) tree tree_interval_profiler_fn;
 static GTY(()) tree tree_pow2_profiler_fn;
-static GTY(()) tree tree_one_value_profiler_fn;
+static GTY(()) tree tree_topn_values_profiler_fn;
 static GTY(()) tree tree_indirect_call_profiler_fn;
 static GTY(()) tree tree_average_profiler_fn;
 static GTY(()) tree tree_ior_profiler_fn;
@@ -117,7 +117,7 @@ gimple_init_gcov_profiler (void)
 {
   tree interval_profiler_fn_type;
   tree pow2_profiler_fn_type;
-  tree one_value_profiler_fn_type;
+  tree topn_values_profiler_fn_type;
   tree gcov_type_ptr;
   tree ic_profiler_fn_type;
   tree average_profiler_fn_type;
@@ -161,18 +161,18 @@ gimple_init_gcov_profiler (void)
 		     DECL_ATTRIBUTES (tree_pow2_profiler_fn));
 
       /* void (*) (gcov_type *, gcov_type)  */
-      one_value_profiler_fn_type
+      topn_values_profiler_fn_type
 	      = build_function_type_list (void_type_node,
 					  gcov_type_ptr, gcov_type_node,
 					  NULL_TREE);
-      fn_name = concat ("__gcov_one_value_profiler_v2", fn_suffix, NULL);
-      tree_one_value_profiler_fn = build_fn_decl (fn_name,
-						  one_value_profiler_fn_type);
+      fn_name = concat ("__gcov_topn_values_profiler", fn_suffix, NULL);
+      tree_topn_values_profiler_fn
+	= build_fn_decl (fn_name, topn_values_profiler_fn_type);
 
-      TREE_NOTHROW (tree_one_value_profiler_fn) = 1;
-      DECL_ATTRIBUTES (tree_one_value_profiler_fn)
+      TREE_NOTHROW (tree_topn_values_profiler_fn) = 1;
+      DECL_ATTRIBUTES (tree_topn_values_profiler_fn)
 	= tree_cons (get_identifier ("leaf"), NULL,
-		     DECL_ATTRIBUTES (tree_one_value_profiler_fn));
+		     DECL_ATTRIBUTES (tree_topn_values_profiler_fn));
 
       init_ic_make_global_vars ();
 
@@ -226,7 +226,7 @@ gimple_init_gcov_profiler (void)
          late, we need to initialize them by hand.  */
       DECL_ASSEMBLER_NAME (tree_interval_profiler_fn);
       DECL_ASSEMBLER_NAME (tree_pow2_profiler_fn);
-      DECL_ASSEMBLER_NAME (tree_one_value_profiler_fn);
+      DECL_ASSEMBLER_NAME (tree_topn_values_profiler_fn);
       DECL_ASSEMBLER_NAME (tree_indirect_call_profiler_fn);
       DECL_ASSEMBLER_NAME (tree_average_profiler_fn);
       DECL_ASSEMBLER_NAME (tree_ior_profiler_fn);
@@ -334,12 +334,13 @@ gimple_gen_pow2_profiler (histogram_value value, unsigned tag, unsigned base)
   gsi_insert_before (&gsi, call, GSI_NEW_STMT);
 }
 
-/* Output instructions as GIMPLE trees for code to find the most common value.
-   VALUE is the expression whose value is profiled.  TAG is the tag of the
-   section for counters, BASE is offset of the counter position.  */
+/* Output instructions as GIMPLE trees for code to find the most N common
+   values.  VALUE is the expression whose value is profiled.  TAG is the tag
+   of the section for counters, BASE is offset of the counter position.  */
 
 void
-gimple_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned base)
+gimple_gen_topn_values_profiler (histogram_value value, unsigned tag,
+				 unsigned base)
 {
   gimple *stmt = value->hvalue.stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
@@ -350,7 +351,7 @@ gimple_gen_one_value_profiler (histogram_value value, unsigned tag, unsigned bas
   ref_ptr = force_gimple_operand_gsi (&gsi, ref_ptr,
 				      true, NULL_TREE, true, GSI_SAME_STMT);
   val = prepare_instrumented_value (&gsi, value);
-  call = gimple_build_call (tree_one_value_profiler_fn, 2, ref_ptr, val);
+  call = gimple_build_call (tree_topn_values_profiler_fn, 2, ref_ptr, val);
   gsi_insert_before (&gsi, call, GSI_NEW_STMT);
 }
 
