@@ -923,7 +923,7 @@
    mr %0,%L1\;mr %L0,%1
    ld%U1%X1 %0,%L1\;ld%U1%X1 %L0,%1
    std%U0%X0 %L1,%0\;std%U0%X0 %1,%L0"
-  [(set_attr "length" "4,4,4,8,8,8")
+  [(set_attr "length" "*,*,*,8,8,8")
    (set_attr "type" "vecperm,vecload,vecstore,*,load,store")])
 
 (define_insn_and_split "*vsx_le_undo_permute_<mode>"
@@ -1150,9 +1150,9 @@
                 store,     load,      store,     *,         vecsimple, vecsimple,
                 vecsimple, *,         *,         vecstore,  vecload")
    (set_attr "length"
-               "4,         4,         4,         8,         4,         8,
-                8,         8,         8,         8,         4,         4,
-                4,         20,        8,         4,         4")
+               "*,         *,         *,         8,         *,         8,
+                8,         8,         8,         8,         *,         *,
+                *,         20,        8,         *,         *")
    (set_attr "isa"
                "<VSisa>,   <VSisa>,   <VSisa>,   *,         *,         *,
                 *,         *,         *,         *,         p9v,       *,
@@ -1183,9 +1183,9 @@
                 vecsimple, vecsimple, vecsimple, *,         *,
                 vecstore,  vecload")
    (set_attr "length"
-               "4,         4,         4,         16,        16,        16,
-                4,         4,         4,         20,        16,
-                4,         4")
+               "*,         *,         *,         16,        16,        16,
+                *,         *,         *,         20,        16,
+                *,         *")
    (set_attr "isa"
                "<VSisa>,   <VSisa>,   <VSisa>,   *,         *,         *,
                 p9v,       *,         <VSisa>,   *,         *,
@@ -4112,7 +4112,7 @@
 		      (const_int 0)] UNSPEC_VSX_XXSPLTW))]
   ""
   [(set_attr "type" "vecload,vecperm,mftgpr")
-   (set_attr "length" "4,8,4")
+   (set_attr "length" "*,8,*")
    (set_attr "isa" "*,p8v,*")])
 
 ;; V4SF/V4SI splat from a vector element
