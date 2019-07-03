@@ -5444,10 +5444,14 @@ package body Sem_Ch6 is
                and then Directly_Designated_Type (Old_Formal_Base) =
                                     Directly_Designated_Type (New_Formal_Base)
            and then ((Is_Itype (Old_Formal_Base)
-                       and then Can_Never_Be_Null (Old_Formal_Base))
+                       and then (Can_Never_Be_Null (Old_Formal_Base)
+                                  or else Is_Access_Constant
+                                            (Old_Formal_Base)))
                      or else
                       (Is_Itype (New_Formal_Base)
-                        and then Can_Never_Be_Null (New_Formal_Base)));
+                        and then (Can_Never_Be_Null (New_Formal_Base)
+                                   or else Is_Access_Constant
+                                             (New_Formal_Base))));
 
          --  Types must always match. In the visible part of an instance,
          --  usual overloading rules for dispatching operations apply, and
