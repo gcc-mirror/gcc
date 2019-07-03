@@ -1,3 +1,8 @@
+2019-07-03  Richard Biener  <rguenther@suse.de>
+
+	* gimple-pretty-print.c (dump_ternary_rhs): Fix BIT_INSERT_EXPR
+	dumping.
+
 2019-07-03  Sylvia Taylor  <sylvia.taylor@arm.com>
 
 	* config/aarch64/aarch64.md (FP_REGNUM): New constant.

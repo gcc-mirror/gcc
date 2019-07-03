@@ -604,10 +604,14 @@ dump_ternary_rhs (pretty_printer *buffer, gassign *gs, int spc,
 	  pp_string (buffer, ", ");
 	  dump_generic_node (buffer, gimple_assign_rhs3 (gs),
 			     spc, flags, false);
-	  pp_string (buffer, " (");
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_rhs2 (gs))))
-	    pp_decimal_int (buffer, TYPE_PRECISION
-				      (TREE_TYPE (gimple_assign_rhs2 (gs))));
+	    {
+	      pp_string (buffer, " (");
+	      pp_decimal_int (buffer, TYPE_PRECISION
+			      (TREE_TYPE (gimple_assign_rhs2 (gs))));
+	      pp_string (buffer, " bits)");
+	    }
+	  pp_greater (buffer);
 	}
       break;
 
