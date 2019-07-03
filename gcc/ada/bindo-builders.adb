@@ -23,7 +23,16 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Binderr; use Binderr;
+with Butil;   use Butil;
+with Opt;     use Opt;
+with Output;  use Output;
+with Types;   use Types;
+
 with Bindo.Units; use Bindo.Units;
+
+with GNAT;                 use GNAT;
+with GNAT.Dynamic_HTables; use GNAT.Dynamic_HTables;
 
 package body Bindo.Builders is
 
@@ -214,15 +223,62 @@ package body Bindo.Builders is
 
    package body Library_Graph_Builders is
 
+      ---------------------
+      -- Data structures --
+      ---------------------
+
+      procedure Destroy_Line_Number (Line : in out Logical_Line_Number);
+      pragma Inline (Destroy_Line_Number);
+      --  Destroy line number Line
+
+      function Hash_Unit (U_Id : Unit_Id) return Bucket_Range_Type;
+      pragma Inline (Hash_Unit);
+      --  Obtain the hash value of key U_Id
+
+      package UL is new Dynamic_Hash_Tables
+        (Key_Type              => Unit_Id,
+         Value_Type            => Logical_Line_Number,
+         No_Value              => No_Line_Number,
+         Expansion_Threshold   => 1.5,
+         Expansion_Factor      => 2,
+         Compression_Threshold => 0.3,
+         Compression_Factor    => 2,
+         "="                   => "=",
+         Destroy_Value         => Destroy_Line_Number,
+         Hash                  => Hash_Unit);
+
       -----------------
       -- Global data --
       -----------------
 
       Lib_Graph : Library_Graph := Library_Graphs.Nil;
 
+      Unit_To_Line : UL.Dynamic_Hash_Table := UL.Nil;
+      --  The map of unit name -> line number, used to detect duplicate unit
+      --  names and report errors.
+
       -----------------------
       -- Local subprograms --
       -----------------------
+
+      procedure Add_Unit
+        (U_Id : Unit_Id;
+         Line : Logical_Line_Number);
+      pragma Inline (Add_Unit);
+      --  Create a relationship between unit U_Id and its declaration line in
+      --  map Unit_To_Line.
+
+      procedure Create_Forced_Edge
+        (Pred : Unit_Id;
+         Succ : Unit_Id);
+      pragma Inline (Create_Forced_Edge);
+      --  Create a new forced edge between predecessor unit Pred and successor
+      --  unit Succ.
+
+      procedure Create_Forced_Edges;
+      pragma Inline (Create_Forced_Edges);
+      --  Inspect the contents of the forced-elaboration-order file, and create
+      --  specialized edges for each valid pair of units listed within.
 
       procedure Create_Spec_And_Body_Edge (U_Id : Unit_Id);
       pragma Inline (Create_Spec_And_Body_Edge);
@@ -255,9 +311,45 @@ package body Bindo.Builders is
       --  some withed unit, and the successor is Succ. The edges are added to
       --  library graph Lib_Graph.
 
+      procedure Duplicate_Unit_Error
+        (U_Id : Unit_Id;
+         Nam  : Unit_Name_Type;
+         Line : Logical_Line_Number);
+      pragma Inline (Duplicate_Unit_Error);
+      --  Emit an error concerning the duplication of unit U_Id with name Nam
+      --  that is redeclared in the forced-elaboration-order file at line Line.
+
+      procedure Internal_Unit_Info (Nam : Unit_Name_Type);
+      pragma Inline (Internal_Unit_Info);
+      --  Emit an information message concerning the omission of an internal
+      --  unit with name Nam from the creation of forced edges.
+
+      function Is_Duplicate_Unit (U_Id : Unit_Id) return Boolean;
+      pragma Inline (Is_Duplicate_Unit);
+      --  Determine whether unit U_Id is already recorded in map Unit_To_Line
+
       function Is_Significant_With (W_Id : With_Id) return Boolean;
       pragma Inline (Is_Significant_With);
       --  Determine whether with W_Id plays a significant role in elaboration
+
+      procedure Missing_Unit_Info (Nam : Unit_Name_Type);
+      pragma Inline (Missing_Unit_Info);
+      --  Emit an information message concerning the omission of an undefined
+      --  unit found in the forced-elaboration-order file.
+
+      --------------
+      -- Add_Unit --
+      --------------
+
+      procedure Add_Unit
+        (U_Id : Unit_Id;
+         Line : Logical_Line_Number)
+      is
+      begin
+         pragma Assert (Present (U_Id));
+
+         UL.Put (Unit_To_Line, U_Id, Line);
+      end Add_Unit;
 
       -------------------------
       -- Build_Library_Graph --
@@ -275,8 +367,95 @@ package body Bindo.Builders is
          For_Each_Elaborable_Unit (Create_Spec_And_Body_Edge'Access);
          For_Each_Elaborable_Unit (Create_With_Edges'Access);
 
+         Create_Forced_Edges;
+
          return Lib_Graph;
       end Build_Library_Graph;
+
+      ------------------------
+      -- Create_Forced_Edge --
+      ------------------------
+
+      procedure Create_Forced_Edge
+        (Pred : Unit_Id;
+         Succ : Unit_Id)
+      is
+         pragma Assert (Present (Pred));
+         pragma Assert (Present (Succ));
+
+         Pred_LGV_Id : constant Library_Graph_Vertex_Id :=
+                         Corresponding_Vertex (Lib_Graph, Pred);
+         Succ_LGV_Id : constant Library_Graph_Vertex_Id :=
+                         Corresponding_Vertex (Lib_Graph, Succ);
+
+         pragma Assert (Present (Pred_LGV_Id));
+         pragma Assert (Present (Succ_LGV_Id));
+
+      begin
+         Write_Unit_Name (Name (Pred));
+         Write_Str (" <-- ");
+         Write_Unit_Name (Name (Succ));
+         Write_Eol;
+
+         Add_Edge
+           (G    => Lib_Graph,
+            Pred => Pred_LGV_Id,
+            Succ => Succ_LGV_Id,
+            Kind => Forced_Edge);
+      end Create_Forced_Edge;
+
+      -------------------------
+      -- Create_Forced_Edges --
+      -------------------------
+
+      procedure Create_Forced_Edges is
+         Curr_Unit : Unit_Id;
+         Iter      : Forced_Units_Iterator;
+         Prev_Unit : Unit_Id;
+         Unit_Line : Logical_Line_Number;
+         Unit_Name : Unit_Name_Type;
+
+      begin
+         Prev_Unit    := No_Unit_Id;
+         Unit_To_Line := UL.Create (20);
+
+         --  Inspect the contents of the forced-elaboration-order file supplied
+         --  to the binder using switch -f, and diagnose each unit accordingly.
+
+         Iter := Iterate_Forced_Units;
+         while Has_Next (Iter) loop
+            Next (Iter, Unit_Name, Unit_Line);
+            pragma Assert (Present (Unit_Name));
+
+            Curr_Unit := Corresponding_Unit (Unit_Name);
+
+            if not Present (Curr_Unit) then
+               Missing_Unit_Info (Unit_Name);
+
+            elsif Is_Internal_Unit (Curr_Unit) then
+               Internal_Unit_Info (Unit_Name);
+
+            elsif Is_Duplicate_Unit (Curr_Unit) then
+               Duplicate_Unit_Error (Curr_Unit, Unit_Name, Unit_Line);
+
+            --  Otherwise the unit is a valid candidate for a vertex. Create a
+            --  forced edge between each pair of units.
+
+            else
+               Add_Unit (Curr_Unit, Unit_Line);
+
+               if Present (Prev_Unit) then
+                  Create_Forced_Edge
+                    (Pred => Prev_Unit,
+                     Succ => Curr_Unit);
+               end if;
+
+               Prev_Unit := Curr_Unit;
+            end if;
+         end loop;
+
+         UL.Destroy (Unit_To_Line);
+      end Create_Forced_Edges;
 
       -------------------------------
       -- Create_Spec_And_Body_Edge --
@@ -453,6 +632,75 @@ package body Bindo.Builders is
          end loop;
       end Create_With_Edges;
 
+      ------------------
+      -- Destroy_Unit --
+      ------------------
+
+      procedure Destroy_Line_Number (Line : in out Logical_Line_Number) is
+         pragma Unreferenced (Line);
+      begin
+         null;
+      end Destroy_Line_Number;
+
+      --------------------------
+      -- Duplicate_Unit_Error --
+      --------------------------
+
+      procedure Duplicate_Unit_Error
+        (U_Id : Unit_Id;
+         Nam  : Unit_Name_Type;
+         Line : Logical_Line_Number)
+      is
+         pragma Assert (Present (U_Id));
+         pragma Assert (Present (Nam));
+
+         Prev_Line : constant Logical_Line_Number :=
+                       UL.Get (Unit_To_Line, U_Id);
+
+      begin
+         Error_Msg_Nat_1  := Nat (Line);
+         Error_Msg_Nat_2  := Nat (Prev_Line);
+         Error_Msg_Unit_1 := Nam;
+
+         Error_Msg
+           (Force_Elab_Order_File.all
+            & ":#: duplicate unit name $ from line #");
+      end Duplicate_Unit_Error;
+
+      ---------------
+      -- Hash_Unit --
+      ---------------
+
+      function Hash_Unit (U_Id : Unit_Id) return Bucket_Range_Type is
+      begin
+         pragma Assert (Present (U_Id));
+
+         return Bucket_Range_Type (U_Id);
+      end Hash_Unit;
+
+      ------------------------
+      -- Internal_Unit_Info --
+      ------------------------
+
+      procedure Internal_Unit_Info (Nam : Unit_Name_Type) is
+      begin
+         pragma Assert (Present (Nam));
+
+         Write_Line
+           ("""" & Get_Name_String (Nam) & """: predefined unit ignored");
+      end Internal_Unit_Info;
+
+      -----------------------
+      -- Is_Duplicate_Unit --
+      -----------------------
+
+      function Is_Duplicate_Unit (U_Id : Unit_Id) return Boolean is
+      begin
+         pragma Assert (Present (U_Id));
+
+         return UL.Contains (Unit_To_Line, U_Id);
+      end Is_Duplicate_Unit;
+
       -------------------------
       -- Is_Significant_With --
       -------------------------
@@ -483,6 +731,18 @@ package body Bindo.Builders is
 
          return True;
       end Is_Significant_With;
+
+      -----------------------
+      -- Missing_Unit_Info --
+      -----------------------
+
+      procedure Missing_Unit_Info (Nam : Unit_Name_Type) is
+      begin
+         pragma Assert (Present (Nam));
+
+         Write_Line
+           ("""" & Get_Name_String (Nam) & """: not present; ignored");
+      end Missing_Unit_Info;
    end Library_Graph_Builders;
 
 end Bindo.Builders;

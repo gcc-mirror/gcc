@@ -78,6 +78,14 @@ package Bindo.Units is
    --  Determine whether unit U_Id was compiled using the dynamic elaboration
    --  model.
 
+   function Is_Internal_Unit (U_Id : Unit_Id) return Boolean;
+   pragma Inline (Is_Internal_Unit);
+   --  Determine whether unit U_Id is internal
+
+   function Is_Predefined_Unit (U_Id : Unit_Id) return Boolean;
+   pragma Inline (Is_Predefined_Unit);
+   --  Determine whether unit U_Id is predefined
+
    function Name (U_Id : Unit_Id) return Unit_Name_Type;
    pragma Inline (Name);
    --  Obtain the name of unit U_Id

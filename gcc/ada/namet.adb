@@ -1515,6 +1515,15 @@ package body Namet is
       return Nam /= No_Name;
    end Present;
 
+   -------------
+   -- Present --
+   -------------
+
+   function Present (Nam : Unit_Name_Type) return Boolean is
+   begin
+      return Nam /= No_Unit_Name;
+   end Present;
+
    ------------------
    -- Reinitialize --
    ------------------
