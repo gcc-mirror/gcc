@@ -1,5 +1,11 @@
 2019-07-03  Martin Liska  <mliska@suse.cz>
 
+	PR middle-end/90899
+	* multiple_target.c (create_dispatcher_calls): Add to comdat
+	group only if set for ifunc.
+
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
 	PR target/88056
 	* config/i386/host-mingw32.c (mingw32_gt_pch_use_address):
 	Define local_object_name in outer scope in order to handle
