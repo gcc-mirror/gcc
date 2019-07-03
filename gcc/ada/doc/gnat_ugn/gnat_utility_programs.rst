@@ -3458,6 +3458,8 @@ Alternatively, you may run the script using the following command line:
      * *unix* - UNIX style, lines end with LF character*
      * *lf* -  the same as *unix*
 
+     The default is to use the same end-of-line convention as the input.
+
    .. index:: --wide-character-encoding (gnatpp)
 
    :switch:`--wide-character-encoding={e}`
