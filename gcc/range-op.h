@@ -21,11 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RANGE_OP_H
 #define GCC_RANGE_OP_H
 
-// This class is implemented for each kind of operator that is supported by 
-// the range generator.  It serves dual purposes. 
+// This class is implemented for each kind of operator that is supported by
+// the range generator.  It serves dual purposes.
 //
 // 1 - Generates range information for the specific operation between
-//     the 4 possible combinations of integers and ranges. 
+//     the 4 possible combinations of integers and ranges.
 //     This provides the ability to fold ranges for an expression.
 //
 // 2 - Performs range algebra on the expression such that a range can be
@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 //
 // 3 - Creates a range for an operand based on whether the result is 0 or
 //     non-zero.  This is mostly for logical true false, but can serve other
-//     purposes.   
+//     purposes.
 //       ie   0 = op1 - op2 implies op2 has the same range as op1.
 
 

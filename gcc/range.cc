@@ -1,5 +1,5 @@
 /* High resolution range class.
-   Copyright (C) 2017 Free Software Foundation, Inc.
+   Copyright (C) 2017-2019 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
@@ -1117,7 +1117,7 @@ irange::union_ (const irange &r)
 
 	}
     }
-  
+
   // At this point, the vector should have i ranges, none
   // overlapping. Now it simply needs to be copied, and if there are
   // too many ranges, merge some.  We wont do any analysis as to what

@@ -75,11 +75,11 @@ range_operator::op2_range (irange &r ATTRIBUTE_UNUSED,
   return false;
 }
 
-// This class is used to create a range_operator for a tree code
-// and automatically register it with the operator table.
-// Simply inherit from this class and overload whatever routines are required.
-// This provides registration as well as default debug dumping for the 
-// tree code and calling op_binary() to resolve fold_range.
+// This class is used to create a range_operator for a tree code and
+// automatically register it with the operator table.  Simply inherit
+// from this class and overload whatever routines are required.  This
+// provides registration as well as default debug dumping for the tree
+// code and calling op_binary() to resolve fold_range.
 
 class trange_operator : public range_operator
 {
@@ -104,7 +104,7 @@ private:
   range_operator *m_range_tree[MAX_TREE_CODES];
 } range_tree;
 
-// Return a pointer tto the range_operator instance, if there is one, 
+// Return a pointer tto the range_operator instance, if there is one,
 // associated with tree_code CODE.
 
 range_operator *
@@ -724,7 +724,7 @@ trange_operator::trange_operator (enum tree_code c)
 
 // Dump the name of this operation.
 
-void 
+void
 trange_operator::dump (FILE *f) const
 {
   fprintf (f," %s ", get_tree_code_name (code));
@@ -763,10 +763,10 @@ range_false ()
 
 enum bool_range_state { BRS_FALSE, BRS_TRUE, BRS_EMPTY, BRS_FULL };
 
-/* Return the summary information about boolean range LHS.
-   Return an "interesting" range in R.  
-   for EMPTY or FULL, return the equivilent range for TYPE,
-   for BRS_TRUE and BRS false, return the negatiuon of the bool range.  */
+/* Return the summary information about boolean range LHS.  Return an
+   "interesting" range in R.  for EMPTY or FULL, return the equivilent
+   range for TYPE, for BRS_TRUE and BRS false, return the negatiuon of
+   the bool range.  */
 static bool_range_state
 get_bool_state (irange &r, const irange &lhs, tree val_type)
 {
@@ -1021,7 +1021,7 @@ operator_lt::fold_range (irange &r, const irange &op1, const irange &op2) const
   else
     if (!wi::lt_p (op1.lower_bound (), op2.upper_bound (), sign))
       r = range_false ();
-    else 
+    else
       r.set_varying (boolean_type_node);
   return true;
 }
@@ -1093,7 +1093,7 @@ operator_le::fold_range (irange &r, const irange &op1, const irange &op2) const
   else
     if (!wi::le_p (op1.lower_bound (), op2.upper_bound (), sign))
       r = range_false ();
-    else 
+    else
       r.set_varying (boolean_type_node);
   return true;
 }
@@ -1165,7 +1165,7 @@ operator_gt::fold_range (irange &r, const irange &op1, const irange &op2) const
   else
     if (!wi::gt_p (op1.upper_bound (), op2.lower_bound (), sign))
       r = range_false ();
-    else 
+    else
       r.set_varying (boolean_type_node);
 
   return true;
@@ -1238,11 +1238,11 @@ operator_ge::fold_range (irange &r, const irange &op1, const irange &op2) const
   else
     if (!wi::ge_p (op1.upper_bound (), op2.lower_bound (), sign))
       r = range_false ();
-    else 
+    else
       r.set_varying (boolean_type_node);
 
   return true;
-} 
+}
 
 bool
 operator_ge::op1_range (irange &r, const irange &lhs, const irange &op2) const
@@ -1296,7 +1296,7 @@ public:
 
 } op_plus;
 
-/* Adjust irange to be in terms of op1. 
+/* Adjust irange to be in terms of op1.
    Given [range] = op1 + val,  op1 = [range] - val.  */
 bool
 operator_plus::op1_range (irange &r, const irange &lhs,
@@ -1323,7 +1323,7 @@ public:
 			   const irange &op1) const;
 } op_minus;
 
-/* Adjust irange to be in terms of op1. 
+/* Adjust irange to be in terms of op1.
    Given lhs = op1 - op2,  op1 = lhs + op2.  */
 bool
 operator_minus::op1_range (irange &r, const irange &lhs,
@@ -1332,7 +1332,7 @@ operator_minus::op1_range (irange &r, const irange &lhs,
   return op_binary (PLUS_EXPR, r, lhs, op2);
 }
 
-/* Adjust irange to be in terms of op2. 
+/* Adjust irange to be in terms of op2.
    Given lhs = op1 - op2,  -op2 = lhs - op1, therefore op2 = op1 - lhs.  */
 bool
 operator_minus::op2_range (irange &r, const irange &lhs,
@@ -1361,7 +1361,7 @@ public:
 } op_exact_div;
 
 
-// Adjust irange to be in terms of op1. 
+// Adjust irange to be in terms of op1.
 bool
 operator_exact_divide::op1_range (irange &r,
 				   const irange &lhs,
@@ -1372,7 +1372,7 @@ operator_exact_divide::op1_range (irange &r,
   // remainders in the endpoints, so op1 = [2,4] * [3,3] = [6,12].
   // We wont bother trying to enumerate all the in between stuff :-P
   // TRUE accuraacy is [6,6][9,9][12,12].  This is unlikely to matter most of
-  // the time however.  
+  // the time however.
   // If op2 is a multiple of 2, we would be able to set some non-zero bits.
   if (op2.singleton_p (&offset) && op_binary (MULT_EXPR, r, lhs, op2)
       && !integer_zerop (offset))
@@ -1483,7 +1483,6 @@ operator_cast::op1_range (irange &r, const irange &lhs,
   tree op2_type = op2.type ();
   irange op_type;
 
- 
   /* If the precision of the LHS is smaller than the precision of the RHS,
      then there would be truncation of the value on the RHS, and so we can tell
      nothing about it.  */
@@ -1554,7 +1553,7 @@ operator_cast::op1_range (irange &r, const irange &lhs,
 
 /*  ----------------------------------------------------------------------  */
 
-// Bitwise and logical ops. 
+// Bitwise and logical ops.
 
 class operator_logical_and : public trange_operator
 {
@@ -1591,7 +1590,7 @@ operator_logical_and::fold_range (irange &r, const irange &lh,
     r.set_varying (boolean_type_node);
   else
     r = range_true ();
-  
+
   return true;
 }
 
@@ -1607,7 +1606,6 @@ operator_logical_and::op1_range (irange &r, const irange &lhs,
        case BRS_TRUE:
          r = range_true ();
 	 break;
-     
        /* Any other result means only one side has to be false, the other
 	  side can be anything. SO we cant be sure of any result here.  */
       default:
@@ -1688,7 +1686,6 @@ operator_logical_or::op1_range (irange &r, const irange &lhs,
        case BRS_FALSE:
          r = range_false ();
 	 break;
-     
        /* Any other result means only one side has to be true, the other
 	  side can be anything. SO we cant be sure of any result here.  */
       default:
@@ -1772,8 +1769,8 @@ public:
          if (b_3)		if ([1,1])
          b_3 = !b_2		[1,1] = ![0,0]
 	 b_2 = x_1 < 20		[0,0] = x_1 < 20,   false, so x_1 == [20, 255]
-     which is te result we are looking for.. so.. pass it thru.  */
-      
+     which is the result we are looking for.. so.. pass it thru.  */
+
 bool
 operator_logical_not::fold_range (irange &r, const irange &lh,
 				  const irange &rh ATTRIBUTE_UNUSED) const
@@ -1999,7 +1996,7 @@ operator_min_max::fold_range (irange &r, const irange &lh,
   if (empty_range_check (r, lh, rh, type))
     return true;
 
-  // Start with the union of both ranges  
+  // Start with the union of both ranges.
   r = range_union (lh, rh);
 
   // For pointer types we are concerned with NULL and NON-NULL.
@@ -2027,7 +2024,7 @@ operator_min_max::op1_range (irange &r, const irange &lhs,
 
   if (POINTER_TYPE_P (lhs.type ()))
     return false;
-  
+
   // Until this can be examined closer...  Im not convinces this is right
   return false;
 
