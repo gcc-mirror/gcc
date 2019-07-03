@@ -1,3 +1,7 @@
+2019-07-03  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/renaming13.adb, gnat.dg/renaming14.adb: New testcases.
+
 2019-07-03  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/inline15.adb, gnat.dg/inline15_gen.adb,
