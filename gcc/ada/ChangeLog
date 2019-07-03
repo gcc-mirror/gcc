@@ -1,3 +1,8 @@
+2019-07-03  Johannes Kanig  <kanig@adacore.com>
+
+	* osint.ads, osint.adb (Get_First_Main_File_Name): New routine
+	to access the first file provided on the command line.
+
 2019-07-03  Ed Schonberg  <schonberg@adacore.com>
 
 	* inline.adb (Process_Formals_In_Aspects): New procedure within
