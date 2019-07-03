@@ -1,3 +1,9 @@
+2019-07-03  Yannick Moy  <moy@adacore.com>
+
+	* erroutc.adb (Sloc_In_Range): New function to determine whether
+	the range of a pragma Warnings covers a location, taking
+	instantiations into account.
+
 2019-07-03  Johannes Kanig  <kanig@adacore.com>
 
 	* osint.ads, osint.adb (Get_First_Main_File_Name): New routine
