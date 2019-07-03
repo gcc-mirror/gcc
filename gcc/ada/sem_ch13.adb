@@ -4934,8 +4934,12 @@ package body Sem_Ch13 is
         and then Present (Renamed_Object (Ent))
       then
          --  Case of renamed object from source, this is an error
+         --  unless the pbject is an aggregate and the renaming is
+         --  created for an object declaration.
 
-         if Comes_From_Source (Renamed_Object (Ent)) then
+         if Comes_From_Source (Renamed_Object (Ent))
+           and then Nkind (Renamed_Object (Ent)) /= N_Aggregate
+         then
             Get_Name_String (Chars (N));
             Error_Msg_Strlen := Name_Len;
             Error_Msg_String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
@@ -9336,6 +9340,16 @@ package body Sem_Ch13 is
       --  All other cases
 
       else
+
+         --  In a generic context freeze nodes are not always generated,
+         --  so analyze the expression now.
+
+         if not Analyzed (Freeze_Expr)
+           and then Inside_A_Generic
+         then
+            Preanalyze (Freeze_Expr);
+         end if;
+
          --  Indicate that the expression comes from an aspect specification,
          --  which is used in subsequent analysis even if expansion is off.
 

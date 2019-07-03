@@ -1,3 +1,14 @@
+2019-07-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): No error
+	message on attribute applied to a renaming when the renamed
+	object is an aggregate (from code reading).
+	(Check_Aspect_At_End_Of_Declarations): In a generic context
+	where freeze nodes are not generated, the original expression
+	for an aspect may need to be analyzed to precent spurious
+	conformance errors when compared with the expression that is
+	anakyzed at the end of the current declarative list.
+
 2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* layout.adb (Layout_Type): Do not set the component size of an
