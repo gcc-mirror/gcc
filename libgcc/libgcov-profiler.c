@@ -106,17 +106,11 @@ __gcov_pow2_profiler_atomic (gcov_type *counters, gcov_type value)
 #endif
 
 
-/* Tries to determine the most common value among its inputs.  Checks if the
-   value stored in COUNTERS[0] matches VALUE.  If this is the case, COUNTERS[1]
-   is incremented.  If this is not the case and COUNTERS[1] is not zero,
-   COUNTERS[1] is decremented.  Otherwise COUNTERS[1] is set to one and
-   VALUE is stored to COUNTERS[0].  This algorithm guarantees that if this
-   function is called more than 50% of the time with one value, this value
-   will be in COUNTERS[0] in the end.  */
+/* Tries to determine N most commons value among its inputs.  */
 
 static inline void
-__gcov_one_value_profiler_body (gcov_type *counters, gcov_type value,
-				int use_atomic)
+__gcov_topn_values_profiler_body (gcov_type *counters, gcov_type value,
+				  int use_atomic)
 {
   if (use_atomic)
     __atomic_fetch_add (&counters[0], 1, __ATOMIC_RELAXED);
@@ -125,11 +119,11 @@ __gcov_one_value_profiler_body (gcov_type *counters, gcov_type value,
 
   ++counters;
 
-  /* We have GCOV_DISK_SINGLE_VALUES as we can keep multiple values
+  /* We have GCOV_TOPN_VALUES as we can keep multiple values
      next to each other.  */
   unsigned sindex = 0;
 
-  for (unsigned i = 0; i < GCOV_DISK_SINGLE_VALUES; i++)
+  for (unsigned i = 0; i < GCOV_TOPN_VALUES; i++)
     {
       if (value == counters[2 * i])
 	{
@@ -158,15 +152,15 @@ __gcov_one_value_profiler_body (gcov_type *counters, gcov_type value,
     counters[2 * sindex + 1]--;
 }
 
-#ifdef L_gcov_one_value_profiler_v2
+#ifdef L_gcov_topn_values_profiler
 void
-__gcov_one_value_profiler_v2 (gcov_type *counters, gcov_type value)
+__gcov_topn_values_profiler (gcov_type *counters, gcov_type value)
 {
-  __gcov_one_value_profiler_body (counters, value, 0);
+  __gcov_topn_values_profiler_body (counters, value, 0);
 }
 #endif
 
-#if defined(L_gcov_one_value_profiler_v2_atomic) && GCOV_SUPPORTS_ATOMIC
+#if defined(L_gcov_topn_values_profiler_atomic) && GCOV_SUPPORTS_ATOMIC
 
 /* Update one value profilers (COUNTERS) for a given VALUE.
 
@@ -178,9 +172,9 @@ __gcov_one_value_profiler_v2 (gcov_type *counters, gcov_type value)
    https://gcc.gnu.org/ml/gcc-patches/2016-08/msg00024.html.  */
 
 void
-__gcov_one_value_profiler_v2_atomic (gcov_type *counters, gcov_type value)
+__gcov_topn_values_profiler_atomic (gcov_type *counters, gcov_type value)
 {
-  __gcov_one_value_profiler_body (counters, value, 1);
+  __gcov_topn_values_profiler_body (counters, value, 1);
 }
 #endif
 
@@ -214,7 +208,7 @@ __gcov_indirect_call_profiler_v4 (gcov_type value, void* cur_func)
   if (cur_func == __gcov_indirect_call.callee
       || (__LIBGCC_VTABLE_USES_DESCRIPTORS__
 	  && *(void **) cur_func == *(void **) __gcov_indirect_call.callee))
-    __gcov_one_value_profiler_body (__gcov_indirect_call.counters, value, 0);
+    __gcov_topn_values_profiler_body (__gcov_indirect_call.counters, value, 0);
 
   __gcov_indirect_call.callee = NULL;
 }

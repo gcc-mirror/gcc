@@ -1,5 +1,31 @@
 2019-07-03  Martin Liska  <mliska@suse.cz>
 
+	* Makefile.in: Use topn_values instead of one_value names.
+	* libgcov-merge.c (__gcov_merge_single): Move to ...
+	(__gcov_merge_topn): ... this.
+	(merge_single_value_set): Move to ...
+	(merge_topn_values_set): ... this.
+	* libgcov-profiler.c (__gcov_one_value_profiler_body): Move to
+	...
+	(__gcov_topn_values_profiler_body): ... this.
+	(__gcov_one_value_profiler_v2): Move to ...
+	(__gcov_topn_values_profiler): ... this.
+	(__gcov_one_value_profiler_v2_atomic): Move to ...
+	(__gcov_topn_values_profiler_atomic): ... this.
+	(__gcov_indirect_call_profiler_v4): Remove.
+	* libgcov-util.c (__gcov_single_counter_op): Move to ...
+	(__gcov_topn_counter_op): ... this.
+	* libgcov.h (L_gcov_merge_single): Remove.
+	(L_gcov_merge_topn): New.
+	(__gcov_merge_single): Remove.
+	(__gcov_merge_topn): New.
+	(__gcov_one_value_profiler_v2): Move to ..
+	(__gcov_topn_values_profiler): ... this.
+	(__gcov_one_value_profiler_v2_atomic): Move to ...
+	(__gcov_topn_values_profiler_atomic): ... this.
+
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
 	* libgcov-merge.c (merge_single_value_set): Support N values.
 	* libgcov-profiler.c (__gcov_one_value_profiler_body): Likewise.
 
