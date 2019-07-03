@@ -157,10 +157,10 @@ mingw32_gt_pch_use_address (void *addr, size_t size, int fd,
   /* Determine the version of Windows we are running on and use a
      uniquely-named local object if running > 4.  */
   GetVersionEx (&version_info);
+
+  char local_object_name[sizeof (OBJECT_NAME_FMT) + sizeof (DWORD) * 2];
   if (version_info.dwMajorVersion > 4)
     {
-      char local_object_name [sizeof (OBJECT_NAME_FMT)
-			      + sizeof (DWORD) * 2];
       snprintf (local_object_name, sizeof (local_object_name),
 		OBJECT_NAME_FMT "%lx", GetCurrentProcessId());
       object_name = local_object_name;
