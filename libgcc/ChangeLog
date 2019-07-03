@@ -1,3 +1,8 @@
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-merge.c (merge_single_value_set): Support N values.
+	* libgcov-profiler.c (__gcov_one_value_profiler_body): Likewise.
+
 2019-06-27  Ilia Diachkov  <ilia.diachkov@optimitech.com>
 
 	* Makefile.in (USE_TM_CLONE_REGISTRY): New.

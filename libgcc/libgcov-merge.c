@@ -89,49 +89,53 @@ __gcov_merge_time_profile (gcov_type *counters, unsigned n_counters)
 static void
 merge_single_value_set (gcov_type *counters)
 {
-  unsigned j;
-  gcov_type value, counter;
-
   /* First value is number of total executions of the profiler.  */
   gcov_type all = gcov_get_counter_ignore_scaling (-1);
   counters[0] += all;
   ++counters;
 
+  /* Read all part values.  */
+  gcov_type read_counters[2 * GCOV_DISK_SINGLE_VALUES];
+
   for (unsigned i = 0; i < GCOV_DISK_SINGLE_VALUES; i++)
     {
-      value = gcov_get_counter_target ();
-      counter = gcov_get_counter_ignore_scaling (-1);
+      read_counters[2 * i] = gcov_get_counter_target ();
+      read_counters[2 * i + 1] = gcov_get_counter_ignore_scaling (-1);
+    }
 
-      if (counter == -1)
-	{
-	  counters[1] = -1;
-	  /* We can't return as we need to read all counters.  */
-	  continue;
-	}
-      else if (counter == 0 || counters[1] == -1)
-	{
-	  /* We can't return as we need to read all counters.  */
-	  continue;
-	}
+  if (read_counters[1] == -1)
+    {
+      counters[1] = -1;
+      return;
+    }
 
+  for (unsigned i = 0; i < GCOV_DISK_SINGLE_VALUES; i++)
+    {
+      if (read_counters[2 * i + 1] == 0)
+	return;
+
+      unsigned j;
       for (j = 0; j < GCOV_DISK_SINGLE_VALUES; j++)
 	{
-	  if (counters[2 * j] == value)
+	  if (counters[2 * j] == read_counters[2 * i])
 	    {
-	      counters[2 * j + 1] += counter;
+	      counters[2 * j + 1] += read_counters[2 * i + 1];
 	      break;
 	    }
 	  else if (counters[2 * j + 1] == 0)
 	    {
-	      counters[2 * j] = value;
-	      counters[2 * j + 1] = counter;
+	      counters[2 * j] += read_counters[2 * i];
+	      counters[2 * j + 1] += read_counters[2 * i + 1];
 	      break;
 	    }
 	}
 
-      /* We haven't found a free slot for the value, mark overflow.  */
+      /* We haven't found a slot, bail out.  */
       if (j == GCOV_DISK_SINGLE_VALUES)
-	counters[1] = -1;
+	{
+	  counters[1] = -1;
+	  return;
+	}
     }
 }
 
