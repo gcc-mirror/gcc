@@ -1,3 +1,155 @@
+2019-07-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* ali.adb: Add with and use clauses for GNAT,
+	GNAT.Dynamic_HTables, and Snames.  Add a map from invocation
+	signature records to invocation signature ids.  Add various
+	encodings of invocation-related attributes.  Sort and update
+	table Known_ALI_Lines.
+	(Add_Invocation_Construct, Add_Invocation_Relation,
+	Body_Placement_Kind_To_Code, Code_To_Body_Placement_Kind,
+	Code_To_Invocation_Construct_Kind, Code_To_Invocation_Kind,
+	Code_To_Invocation_Graph_Line_Kind, Destroy, Hash): New
+	routines.
+	(Initialize_ALI): Sort the initialization sequence. Add
+	initialization for all invocation-related tables.
+	(Invocation_Construct_Kind_To_Code,
+	Invocation_Graph_Line_Kind_To_Code, Invocation_Kind_To_Code,
+	Invocation_Signature_Of, Present): New routines.
+	(Scan_ALI): Add the default values for invocation-related ids.
+	Scan invocation graph lines.
+	(Scan_Invocation_Graph_Line): New routine.
+	* ali.ads: Add with clause for GNAT.Dynamic_Tables.  Add types
+	for invocation constructs, relations, and signatures.  Add
+	tables for invocation constructs, relations, and signatures.
+	Update Unit_Record to capture invocation-related ids.  Relocate
+	table Unit_Id_Tables and subtypes Unit_Id_Table, Unit_Id_Array
+	from Binde.
+	(Add_Invocation_Construct, Add_Invocation_Relation,
+	Body_Placement_Kind_To_Code, Code_To_Body_Placement_Kind,
+	Code_To_Invocation_Construct_Kind, Code_To_Invocation_Kind,
+	Code_To_Invocation_Graph_Line_Kind,
+	Invocation_Construct_Kind_To_Code,
+	Invocation_Graph_Line_Kind_To_Code, Invocation_Kind_To_Code,
+	Invocation_Signature_Of, Present): New routines.
+	* binde.adb: Add with and use clause for Types.  Add use clause
+	for ALI.Unit_Id_Tables;
+	* binde.ads: Relocate table Unit_Id_Tables and subtypes
+	Unit_Id_Table, Unit_Id_Array to ALI.
+	* bindgen.adb: Remove with and use clause for ALI.
+	* bindgen.ads: Remove with and use clause for Binde.  Add with
+	and use clause for ALI.
+	* bindo.adb,  bindo.ads, bindo-augmentors.adb,
+	bindo-augmentors.ads, bindo-builders.adb, bindo-builders.ads,
+	bindo-diagnostics.adb, bindo-diagnostics.ads,
+	bindo-elaborators.adb, bindo-elaborators.ads, bindo-graphs.adb,
+	bindo-graphs.ads, bindo-units.adb, bindo-units.ads,
+	bindo-validators.adb, bindo-validators.ads, bindo-writers.adb,
+	bindo-writers.ads: New units.
+	* debug.adb: Use and describe GNAT debug switches -gnatd_F and
+	-gnatd_G.  Add GNATbind debug switches in the ranges dA .. dZ,
+	d.a .. d.z, d.A .. d.Z, d.1 .. d.9, d_a .. d_z, d_A .. d_Z, and
+	d_1 .. d_9.  Use and describe GNATbind debug switches -d_A,
+	-d_I, -d_L, -d_N, -d_O, -d_T, and -d_V.
+	* exp_util.adb, exp_util.ads (Exceptions_OK): Relocate to
+	Sem_Util.
+	* gnatbind.adb: Add with and use clause for Bindo.  Use the new
+	Bindo elaboration order only when -d_N is in effect.
+	* lib-writ.adb
+	(Column, Extra, Invoker, Kind, Line, Locations, Name, Placement,
+	Scope, Signature, Target): New routines.
+	(Write_ALI): Output all invocation-related data.
+	(Write_Invocation_Graph): New routine.
+	* lib-writ.ads: Document the invocation graph ALI line.
+	* namet.adb, namet.ads (Present): New routines.
+	* sem_ch8.adb (Find_Direct_Name): Capture the status of
+	elaboration checks and warnings of an identifier.
+	(Find_Expanded_Name): Capture the status of elaboration checks
+	and warnings of an expanded name.
+	* sem_ch12.adb (Analyze_Generic_Package_Declaration): Ensure
+	that invocation graph-related data within the body of the main
+	unit is encoded in the ALI file.
+	(Analyze_Generic_Subprogram_Declaration): Ensure that invocation
+	graph-related data within the body of the main unit is encoded
+	in the ALI file.
+	(Analyze_Package_Instantiation): Perform minimal decoration of
+	the instance entity.
+	(Analyze_Subprogram_Instantiation): Perform minimal decoration
+	of the instance entity.
+	* sem_elab.adb: Perform heavy refactoring of all code. The unit
+	is now split into "services" which specialize in one area of ABE
+	checks.  Add processing in order to capture invocation-graph
+	related attributes of the main unit, and encode them in the ALI
+	file.  The Processing phase can now operate in multiple modes,
+	all described by type Processing_Kind.  Scenarios and targets
+	are now distinct at the higher level, and carry their own
+	representations. This eliminates the need to constantly
+	recompute their attributes, and offers the various processors a
+	uniform interface.  The various initial states of the Processing
+	phase are now encoded using type Processing_In_State, and
+	xxx_State constants.
+	* sem_elab.ads: Update the literals of type
+	Enclosing_Level_Kind.  Add Inline pragmas on several routines.
+	* sem_prag.adb (Process_Inline): Ensure that invocation
+	graph-related data within the body of the main unit is encoded
+	in the ALI file.
+	* sem_util.adb (Enclosing_Generic_Body, Enclosing_Generic_Unit):
+	Code clean up.
+	(Exceptions_OK): Relocated from Sem_Util.
+	(Mark_Save_Invocation_Graph_Of_Body): New routine.
+	* sem_util.ads (Exceptions_OK): Relocated from Sem_Util.
+	(Mark_Save_Invocation_Graph_Of_Body): New routine.
+	* sinfo.adb (Is_Elaboration_Checks_OK_Node): Now applicable to
+	N_Variable_Reference_Marker.
+	(Is_Elaboration_Warnings_OK_Node): Now applicable to
+	N_Expanded_Name, N_Identifier, N_Variable_Reference_Marker.
+	(Is_Read): Use Flag4.
+	(Is_SPARK_Mode_On_Node): New applicable to
+	N_Variable_Reference_Marker.
+	(Is_Write): Use Flag5.
+	(Save_Invocation_Graph_Of_Body): New routine.
+	(Set_Is_Elaboration_Checks_OK_Node): Now applicable to
+	N_Variable_Reference_Marker.
+	(Set_Is_Elaboration_Warnings_OK_Node): Now applicable to
+	N_Expanded_Name, N_Identifier, N_Variable_Reference_Marker.
+	(Set_Is_SPARK_Mode_On_Node): New applicable to
+	N_Variable_Reference_Marker.
+	(Set_Save_Invocation_Graph_Of_Body): New routine.
+	* sinfo.ads: Update the documentation of attributes
+	Is_Elaboration_Checks_OK_Node, Is_Elaboration_Warnings_OK_Node,
+	Is_SPARK_Mode_On_Node.  Update the flag usage of attributes
+	Is_Read, Is_Write.  Add attribute Save_Invocation_Graph_Of_Body
+	and update its occurrence in nodes.
+	(Save_Invocation_Graph_Of_Body): New routine along with pragma
+	Inline.
+	(Set_Save_Invocation_Graph_Of_Body): New routine along with
+	pragma Inline.
+	* switch-b.adb (Scan_Binder_Switches): Refactor the scanning of
+	debug switches.
+	(Scan_Debug_Switches): New routine.
+	* libgnat/g-dynhta.adb, libgnat/g-dynhta.ads (Contains): New routine.
+	* libgnat/g-graphs.adb (Associate_Vertices): Update the use of
+	Component_Vertex_Iterator.
+	(Contains_Component, Contains_Edge, Contains_Vertex, Has_Next):
+	Reimplemented.
+	(Iterate_Component_Vertices): New routine.
+	(Iterate_Vertices): Removed.
+	(Next): Update the parameter profile.
+	(Number_Of_Component_Vertices, Number_Of_Outgoing_Edges): New
+	routines.
+	* libgnat/g-graphs.ads: Update the initialization of
+	No_Component.  Add type Component_Vertex_Iterator.  Remove type
+	Vertex_Iterator.
+	(Has_Next): Add new versions and remove old ones.
+	(Iterate_Component_Vertices): New routine.
+	(Iterate_Vertices): Removed.
+	(Next): Add new versions and remove old ones.
+	(Number_Of_Component_Vertices, Number_Of_Outgoing_Edges): New
+	routines.
+	* libgnat/g-sets.adb (Contains): Reimplemented.
+	* gcc-interface/Make-lang.in (GNATBIND_OBJS): Add
+	GNAT.Dynamic_HTables, GNAT.Graphs and Bindo units.
+	* rtsfind.ads: Remove extra space.
+
 2019-07-03  Yannick Moy  <moy@adacore.com>
 
 	* sem_spark.adb: Add support for locally borrowing and observing

@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              B I N D G E N                               --
+--                      B I N D O . A U G M E N T O R S                     --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--             Copyright (C) 2019, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,25 +23,40 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines to output the binder file. This is
---  an Ada program which contains the following:
+--  For full architecture, see unit Bindo.
 
---     Initialization for main program case
---     Sequence of calls to elaboration routines in appropriate order
---     Call to main program for main program case
+--  The following unit contains facilities to enhance the library graph which
+--  reflects source dependencies between units with information obtained from
+--  the invocation graph which reflects all activations of tasks, calls, and
+--  instantiations within units.
 
---  See the body for exact details of the file that is generated
+with Bindo.Graphs;
+use  Bindo.Graphs;
+use  Bindo.Graphs.Invocation_Graphs;
+use  Bindo.Graphs.Library_Graphs;
 
-with ALI; use ALI;
+package Bindo.Augmentors is
 
-package Bindgen is
-   procedure Gen_Output_File
-     (Filename   : String;
-      Elab_Order : Unit_Id_Array);
-   --  Filename is the full path name of the binder output file
+   ------------------------------
+   -- Library_Graph_Augmentors --
+   ------------------------------
 
-   procedure Set_Bind_Env (Key, Value : String);
-   --  Add (Key, Value) pair to bind environment. These associations
-   --  are made available at run time using System.Bind_Environment.
+   package Library_Graph_Augmentors is
+      procedure Augment_Library_Graph
+        (Inv_G : Invocation_Graph;
+         Lib_G : Library_Graph);
+      --  Augment library graph Lib_G with information from invocation graph
+      --  Inv_G as follows:
+      --
+      --    1) Traverse the invocation graph starting from each elaboration
+      --       procedure of unit Root.
+      --
+      --    2) Each time the traversal transitions from one unit into another
+      --       unit Curr, add an invocation edge between predecessor Curr and
+      --       successor Root in the library graph.
+      --
+      --    3) Do the above steps for all units with an elaboration procedure.
 
-end Bindgen;
+   end Library_Graph_Augmentors;
+
+end Bindo.Augmentors;

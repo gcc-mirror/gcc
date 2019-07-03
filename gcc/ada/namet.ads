@@ -204,6 +204,10 @@ package Namet is
    subtype Valid_Name_Id is Name_Id range First_Name_Id .. Name_Id'Last;
    --  All but No_Name and Error_Name
 
+   function Present (Nam : Name_Id) return Boolean;
+   pragma Inline (Present);
+   --  Determine whether name Nam exists
+
    ------------------------------
    -- Name_Id Membership Tests --
    ------------------------------
@@ -625,6 +629,10 @@ package Namet is
    No_File : constant File_Name_Type := File_Name_Type (No_Name);
    --  Constant used to indicate no file is present (this is used for example
    --  when a search for a file indicates that no file of the name exists).
+
+   function Present (Nam : File_Name_Type) return Boolean;
+   pragma Inline (Present);
+   --  Determine whether file name Nam exists
 
    Error_File_Name : constant File_Name_Type := File_Name_Type (Error_Name);
    --  The special File_Name_Type value Error_File_Name is used to indicate

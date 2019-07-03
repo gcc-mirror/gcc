@@ -29,6 +29,7 @@ with Bcheck;   use Bcheck;
 with Binde;    use Binde;
 with Binderr;  use Binderr;
 with Bindgen;  use Bindgen;
+with Bindo;    use Bindo;
 with Bindusg;
 with Casing;   use Casing;
 with Csets;
@@ -878,11 +879,18 @@ begin
 
       if Errors_Detected = 0 then
          declare
-            Elab_Order : Unit_Id_Table;
             use Unit_Id_Tables;
+            Elab_Order : Unit_Id_Table;
 
          begin
-            Find_Elab_Order (Elab_Order, First_Main_Lib_File);
+            --  Use the invocation and library graph-based elaboration order
+            --  when switch -d_N (new bindo order) is in effect.
+
+            if Debug_Flag_Underscore_NN then
+               Find_Elaboration_Order (Elab_Order, First_Main_Lib_File);
+            else
+               Find_Elab_Order (Elab_Order, First_Main_Lib_File);
+            end if;
 
             if Errors_Detected = 0 and then not Check_Only then
                Gen_Output_File
@@ -892,12 +900,12 @@ begin
          end;
       end if;
 
-      Total_Errors := Total_Errors + Errors_Detected;
+      Total_Errors   := Total_Errors   + Errors_Detected;
       Total_Warnings := Total_Warnings + Warnings_Detected;
 
    exception
       when Unrecoverable_Error =>
-         Total_Errors := Total_Errors + Errors_Detected;
+         Total_Errors   := Total_Errors   + Errors_Detected;
          Total_Warnings := Total_Warnings + Warnings_Detected;
    end;
 

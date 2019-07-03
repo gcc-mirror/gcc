@@ -1913,7 +1913,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Package_Instantiation
         or else NT (N).Nkind = N_Procedure_Call_Statement
         or else NT (N).Nkind = N_Procedure_Instantiation
-        or else NT (N).Nkind = N_Requeue_Statement);
+        or else NT (N).Nkind = N_Requeue_Statement
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
       return Flag1 (N);
    end Is_Elaboration_Checks_OK_Node;
 
@@ -1932,12 +1933,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Attribute_Reference
         or else NT (N).Nkind = N_Call_Marker
         or else NT (N).Nkind = N_Entry_Call_Statement
+        or else NT (N).Nkind = N_Expanded_Name
         or else NT (N).Nkind = N_Function_Call
         or else NT (N).Nkind = N_Function_Instantiation
+        or else NT (N).Nkind = N_Identifier
         or else NT (N).Nkind = N_Package_Instantiation
         or else NT (N).Nkind = N_Procedure_Call_Statement
         or else NT (N).Nkind = N_Procedure_Instantiation
-        or else NT (N).Nkind = N_Requeue_Statement);
+        or else NT (N).Nkind = N_Requeue_Statement
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
       return Flag3 (N);
    end Is_Elaboration_Warnings_OK_Node;
 
@@ -2130,7 +2134,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Variable_Reference_Marker);
-      return Flag1 (N);
+      return Flag4 (N);
    end Is_Read;
 
    function Is_Source_Call
@@ -2156,7 +2160,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Package_Instantiation
         or else NT (N).Nkind = N_Procedure_Call_Statement
         or else NT (N).Nkind = N_Procedure_Instantiation
-        or else NT (N).Nkind = N_Requeue_Statement);
+        or else NT (N).Nkind = N_Requeue_Statement
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
       return Flag2 (N);
    end Is_SPARK_Mode_On_Node;
 
@@ -2216,7 +2221,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Variable_Reference_Marker);
-      return Flag2 (N);
+      return Flag5 (N);
    end Is_Write;
 
    function Iteration_Scheme
@@ -3090,6 +3095,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Type_Conversion);
       return Flag18 (N);
    end Rounded_Result;
+
+   function Save_Invocation_Graph_Of_Body
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Compilation_Unit);
+      return Flag1 (N);
+   end Save_Invocation_Graph_Of_Body;
 
    function SCIL_Controlling_Tag
       (N : Node_Id) return Node_Id is
@@ -5387,7 +5400,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Package_Instantiation
         or else NT (N).Nkind = N_Procedure_Call_Statement
         or else NT (N).Nkind = N_Procedure_Instantiation
-        or else NT (N).Nkind = N_Requeue_Statement);
+        or else NT (N).Nkind = N_Requeue_Statement
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
       Set_Flag1 (N, Val);
    end Set_Is_Elaboration_Checks_OK_Node;
 
@@ -5406,12 +5420,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Attribute_Reference
         or else NT (N).Nkind = N_Call_Marker
         or else NT (N).Nkind = N_Entry_Call_Statement
+        or else NT (N).Nkind = N_Expanded_Name
         or else NT (N).Nkind = N_Function_Call
         or else NT (N).Nkind = N_Function_Instantiation
+        or else NT (N).Nkind = N_Identifier
         or else NT (N).Nkind = N_Package_Instantiation
         or else NT (N).Nkind = N_Procedure_Call_Statement
         or else NT (N).Nkind = N_Procedure_Instantiation
-        or else NT (N).Nkind = N_Requeue_Statement);
+        or else NT (N).Nkind = N_Requeue_Statement
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
       Set_Flag3 (N, Val);
    end Set_Is_Elaboration_Warnings_OK_Node;
 
@@ -5604,7 +5621,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Variable_Reference_Marker);
-      Set_Flag1 (N, Val);
+      Set_Flag4 (N, Val);
    end Set_Is_Read;
 
    procedure Set_Is_Source_Call
@@ -5630,7 +5647,8 @@ package body Sinfo is
         or else NT (N).Nkind = N_Package_Instantiation
         or else NT (N).Nkind = N_Procedure_Call_Statement
         or else NT (N).Nkind = N_Procedure_Instantiation
-        or else NT (N).Nkind = N_Requeue_Statement);
+        or else NT (N).Nkind = N_Requeue_Statement
+        or else NT (N).Nkind = N_Variable_Reference_Marker);
       Set_Flag2 (N, Val);
    end Set_Is_SPARK_Mode_On_Node;
 
@@ -5692,7 +5710,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Variable_Reference_Marker);
-      Set_Flag2 (N, Val);
+      Set_Flag5 (N, Val);
    end Set_Is_Write;
 
    procedure Set_Iteration_Scheme
@@ -6566,6 +6584,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Type_Conversion);
       Set_Flag18 (N, Val);
    end Set_Rounded_Result;
+
+   procedure Set_Save_Invocation_Graph_Of_Body
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Compilation_Unit);
+      Set_Flag1 (N, Val);
+   end Set_Save_Invocation_Graph_Of_Body;
 
    procedure Set_SCIL_Controlling_Tag
       (N : Node_Id; Val : Node_Id) is

@@ -4940,18 +4940,6 @@ package body Exp_Util is
       end if;
    end Evolve_Or_Else;
 
-   -------------------
-   -- Exceptions_OK --
-   -------------------
-
-   function Exceptions_OK return Boolean is
-   begin
-      return
-        not (Restriction_Active (No_Exception_Handlers)    or else
-             Restriction_Active (No_Exception_Propagation) or else
-             Restriction_Active (No_Exceptions));
-   end Exceptions_OK;
-
    -----------------------------------------
    -- Expand_Static_Predicates_In_Choices --
    -----------------------------------------

@@ -3155,7 +3155,7 @@ package Rtsfind is
    --  immediately, since obviously Ent cannot be the entity in question if the
    --  corresponding unit has not been loaded.
 
-   function Is_RTU (Ent : Entity_Id;  U : RTU_Id) return Boolean;
+   function Is_RTU (Ent : Entity_Id; U : RTU_Id) return Boolean;
    pragma Inline (Is_RTU);
    --  This function determines if the given entity corresponds to the entity
    --  for the unit referenced by U. If this unit has not been loaded, the

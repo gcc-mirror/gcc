@@ -5489,8 +5489,10 @@ package body Sem_Ch8 is
 
       if Nkind (N) = N_Identifier then
          Mark_Elaboration_Attributes
-           (N_Id  => N,
-            Modes => True);
+           (N_Id     => N,
+            Checks   => True,
+            Modes    => True,
+            Warnings => True);
       end if;
 
       --  Here if Entity pointer was not set, we need full visibility analysis
@@ -6514,8 +6516,10 @@ package body Sem_Ch8 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id  => N,
-         Modes => True);
+        (N_Id     => N,
+         Checks   => True,
+         Modes    => True,
+         Warnings => True);
 
       --  Set appropriate type
 

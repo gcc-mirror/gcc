@@ -262,7 +262,7 @@ package body GNAT.Graphs is
       begin
          Ensure_Created (G);
 
-         return Get_Component_Attributes (G, Comp) /= No_Component_Attributes;
+         return Component_Map.Contains (G.Components, Comp);
       end Contains_Component;
 
       -------------------
@@ -276,7 +276,7 @@ package body GNAT.Graphs is
       begin
          Ensure_Created (G);
 
-         return Get_Edge_Attributes (G, E) /= No_Edge_Attributes;
+         return Edge_Map.Contains (G.All_Edges, E);
       end Contains_Edge;
 
       ---------------------
@@ -290,7 +290,7 @@ package body GNAT.Graphs is
       begin
          Ensure_Created (G);
 
-         return Get_Vertex_Attributes (G, V) /= No_Vertex_Attributes;
+         return Vertex_Map.Contains (G.All_Vertices, V);
       end Contains_Vertex;
 
       ------------
@@ -517,7 +517,7 @@ package body GNAT.Graphs is
             --  Lowest visitation number
 
             On_Stack : Boolean := False;
-            --  Set when the library item appears in Stack
+            --  Set when the corresponding vertex appears on the Stack
          end record;
 
          No_Tarjan_Attributes : constant Tarjan_Attributes :=
@@ -673,11 +673,11 @@ package body GNAT.Graphs is
          ------------------------
 
          procedure Associate_Vertices (Comp : Component_Id) is
-            Iter : Vertex_Iterator;
+            Iter : Component_Vertex_Iterator;
             V    : Vertex_Id;
 
          begin
-            Iter := Iterate_Vertices (G, Comp);
+            Iter := Iterate_Component_Vertices (G, Comp);
             while Has_Next (Iter) loop
                Next (Iter, V);
 
@@ -1150,18 +1150,18 @@ package body GNAT.Graphs is
       -- Has_Next --
       --------------
 
-      function Has_Next (Iter : Outgoing_Edge_Iterator) return Boolean is
+      function Has_Next (Iter : Component_Vertex_Iterator) return Boolean is
       begin
-         return Edge_Set.Has_Next (Edge_Set.Iterator (Iter));
+         return Vertex_List.Has_Next (Vertex_List.Iterator (Iter));
       end Has_Next;
 
       --------------
       -- Has_Next --
       --------------
 
-      function Has_Next (Iter : Vertex_Iterator) return Boolean is
+      function Has_Next (Iter : Outgoing_Edge_Iterator) return Boolean is
       begin
-         return Vertex_List.Has_Next (Vertex_List.Iterator (Iter));
+         return Edge_Set.Has_Next (Edge_Set.Iterator (Iter));
       end Has_Next;
 
       --------------
@@ -1216,6 +1216,23 @@ package body GNAT.Graphs is
          return Component_Iterator (Component_Map.Iterate (G.Components));
       end Iterate_Components;
 
+      --------------------------------
+      -- Iterate_Component_Vertices --
+      --------------------------------
+
+      function Iterate_Component_Vertices
+        (G    : Directed_Graph;
+         Comp : Component_Id) return Component_Vertex_Iterator
+      is
+      begin
+         Ensure_Created (G);
+         Ensure_Present (G, Comp);
+
+         return
+           Component_Vertex_Iterator
+             (Vertex_List.Iterate (Get_Vertices (G, Comp)));
+      end Iterate_Component_Vertices;
+
       ----------------------------
       -- Iterate_Outgoing_Edges --
       ----------------------------
@@ -1232,21 +1249,6 @@ package body GNAT.Graphs is
            Outgoing_Edge_Iterator
              (Edge_Set.Iterate (Get_Outgoing_Edges (G, V)));
       end Iterate_Outgoing_Edges;
-
-      ----------------------
-      -- Iterate_Vertices --
-      ----------------------
-
-      function Iterate_Vertices
-        (G    : Directed_Graph;
-         Comp : Component_Id) return Vertex_Iterator
-      is
-      begin
-         Ensure_Created (G);
-         Ensure_Present (G, Comp);
-
-         return Vertex_Iterator (Vertex_List.Iterate (Get_Vertices (G, Comp)));
-      end Iterate_Vertices;
 
       ----------
       -- Next --
@@ -1289,11 +1291,11 @@ package body GNAT.Graphs is
       ----------
 
       procedure Next
-        (Iter : in out Outgoing_Edge_Iterator;
-         E    : out Edge_Id)
+        (Iter : in out Component_Vertex_Iterator;
+         V    : out Vertex_Id)
       is
       begin
-         Edge_Set.Next (Edge_Set.Iterator (Iter), E);
+         Vertex_List.Next (Vertex_List.Iterator (Iter), V);
       end Next;
 
       ----------
@@ -1301,12 +1303,27 @@ package body GNAT.Graphs is
       ----------
 
       procedure Next
-        (Iter : in out Vertex_Iterator;
-         V    : out Vertex_Id)
+        (Iter : in out Outgoing_Edge_Iterator;
+         E    : out Edge_Id)
       is
       begin
-         Vertex_List.Next (Vertex_List.Iterator (Iter), V);
+         Edge_Set.Next (Edge_Set.Iterator (Iter), E);
       end Next;
+
+      ----------------------------------
+      -- Number_Of_Component_Vertices --
+      ----------------------------------
+
+      function Number_Of_Component_Vertices
+        (G    : Directed_Graph;
+         Comp : Component_Id) return Natural
+      is
+      begin
+         Ensure_Created (G);
+         Ensure_Present (G, Comp);
+
+         return Vertex_List.Size (Get_Vertices (G, Comp));
+      end Number_Of_Component_Vertices;
 
       --------------------------
       -- Number_Of_Components --
@@ -1329,6 +1346,21 @@ package body GNAT.Graphs is
 
          return Edge_Map.Size (G.All_Edges);
       end Number_Of_Edges;
+
+      ------------------------------
+      -- Number_Of_Outgoing_Edges --
+      ------------------------------
+
+      function Number_Of_Outgoing_Edges
+        (G : Directed_Graph;
+         V : Vertex_Id) return Natural
+      is
+      begin
+         Ensure_Created (G);
+         Ensure_Present (G, V);
+
+         return Edge_Set.Size (Get_Outgoing_Edges (G, V));
+      end Number_Of_Outgoing_Edges;
 
       ------------------------
       -- Number_Of_Vertices --

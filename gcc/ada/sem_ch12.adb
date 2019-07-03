@@ -3473,6 +3473,17 @@ package body Sem_Ch12 is
    begin
       Check_SPARK_05_Restriction ("generic is not allowed", N);
 
+      --  A generic may grant access to its private enclosing context depending
+      --  on the placement of its corresponding body. From elaboration point of
+      --  view, the flow of execution may enter this private context, and then
+      --  reach an external unit, thus producing a dependency on that external
+      --  unit. For such a path to be properly discovered and encoded in the
+      --  ALI file of the main unit, let the ABE mechanism process the body of
+      --  the main unit, and encode all relevant invocation constructs and the
+      --  relations between them.
+
+      Mark_Save_Invocation_Graph_Of_Body;
+
       --  We introduce a renaming of the enclosing package, to have a usable
       --  entity as the prefix of an expanded name for a local entity of the
       --  form Par.P.Q, where P is the generic package. This is because a local
@@ -3667,6 +3678,17 @@ package body Sem_Ch12 is
 
    begin
       Check_SPARK_05_Restriction ("generic is not allowed", N);
+
+      --  A generic may grant access to its private enclosing context depending
+      --  on the placement of its corresponding body. From elaboration point of
+      --  view, the flow of execution may enter this private context, and then
+      --  reach an external unit, thus producing a dependency on that external
+      --  unit. For such a path to be properly discovered and encoded in the
+      --  ALI file of the main unit, let the ABE mechanism process the body of
+      --  the main unit, and encode all relevant invocation constructs and the
+      --  relations between them.
+
+      Mark_Save_Invocation_Graph_Of_Body;
 
       --  Create copy of generic unit, and save for instantiation. If the unit
       --  is a child unit, do not copy the specifications for the parent, which
@@ -3899,8 +3921,8 @@ package body Sem_Ch12 is
       --  Local declarations
 
       Gen_Id         : constant Node_Id    := Name (N);
-      Is_Actual_Pack : constant Boolean    :=
-                         Is_Internal (Defining_Entity (N));
+      Inst_Id        : constant Entity_Id  := Defining_Entity (N);
+      Is_Actual_Pack : constant Boolean    := Is_Internal (Inst_Id);
       Loc            : constant Source_Ptr := Sloc (N);
 
       Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
@@ -4109,6 +4131,9 @@ package body Sem_Ch12 is
          goto Leave;
 
       else
+         Set_Ekind (Inst_Id, E_Package);
+         Set_Scope (Inst_Id, Current_Scope);
+
          --  If the context of the instance is subject to SPARK_Mode "off" or
          --  the annotation is altogether missing, set the global flag which
          --  signals Analyze_Pragma to ignore all SPARK_Mode pragmas within
@@ -5156,14 +5181,13 @@ package body Sem_Ch12 is
      (N : Node_Id;
       K : Entity_Kind)
    is
-      Loc    : constant Source_Ptr := Sloc (N);
-      Gen_Id : constant Node_Id    := Name (N);
-      Errs   : constant Nat        := Serious_Errors_Detected;
-
-      Anon_Id : constant Entity_Id :=
-                  Make_Defining_Identifier (Sloc (Defining_Entity (N)),
-                    Chars => New_External_Name
-                               (Chars (Defining_Entity (N)), 'R'));
+      Errs    : constant Nat        := Serious_Errors_Detected;
+      Gen_Id  : constant Node_Id    := Name (N);
+      Inst_Id : constant Entity_Id  := Defining_Entity (N);
+      Anon_Id : constant Entity_Id  :=
+                  Make_Defining_Identifier (Sloc (Inst_Id),
+                    Chars => New_External_Name (Chars (Inst_Id), 'R'));
+      Loc     : constant Source_Ptr := Sloc (N);
 
       Act_Decl_Id : Entity_Id := Empty; -- init to avoid warning
       Act_Decl    : Node_Id;
@@ -5489,6 +5513,9 @@ package body Sem_Ch12 is
          Error_Msg_NE ("instantiation of & within itself", N, Gen_Unit);
 
       else
+         Set_Ekind (Inst_Id, K);
+         Set_Scope (Inst_Id, Current_Scope);
+
          Set_Entity (Gen_Id, Gen_Unit);
          Set_Is_Instantiated (Gen_Unit);
 

@@ -23,20 +23,22 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Binderr;  use Binderr;
-with Butil;    use Butil;
-with Debug;    use Debug;
-with Fname;    use Fname;
-with Opt;      use Opt;
+with Binderr; use Binderr;
+with Butil;   use Butil;
+with Debug;   use Debug;
+with Fname;   use Fname;
+with Opt;     use Opt;
 with Osint;
-with Output;   use Output;
+with Output;  use Output;
 with Table;
+with Types;   use Types;
 
 with System.Case_Util; use System.Case_Util;
 with System.HTable;
 with System.OS_Lib;
 
 package body Binde is
+   use Unit_Id_Tables;
 
    --  We now have Elab_New, a new elaboration-order algorithm.
    --

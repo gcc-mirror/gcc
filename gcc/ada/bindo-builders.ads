@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              B I N D G E N                               --
+--                        B I N D O . B U I L D E R S                       --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--             Copyright (C) 2019, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,25 +23,43 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines to output the binder file. This is
---  an Ada program which contains the following:
+--  For full architecture, see unit Bindo.
 
---     Initialization for main program case
---     Sequence of calls to elaboration routines in appropriate order
---     Call to main program for main program case
+--  The following unit contains facilities to create various graphs that
+--  reflect dependencies between units, as well as activations of tasks,
+--  calls, and instantiations within them.
 
---  See the body for exact details of the file that is generated
+with Bindo.Graphs;
+use  Bindo.Graphs;
+use  Bindo.Graphs.Invocation_Graphs;
+use  Bindo.Graphs.Library_Graphs;
 
-with ALI; use ALI;
+package Bindo.Builders is
 
-package Bindgen is
-   procedure Gen_Output_File
-     (Filename   : String;
-      Elab_Order : Unit_Id_Array);
-   --  Filename is the full path name of the binder output file
+   -------------------------------
+   -- Invocation_Graph_Builders --
+   -------------------------------
 
-   procedure Set_Bind_Env (Key, Value : String);
-   --  Add (Key, Value) pair to bind environment. These associations
-   --  are made available at run time using System.Bind_Environment.
+   package Invocation_Graph_Builders is
+      function Build_Invocation_Graph
+        (Lib_G : Library_Graph) return Invocation_Graph;
+      --  Return a new invocation graph which reflects the activations of
+      --  tasks, calls, and instantiations in all units of the bind. Each
+      --  invocation graph vertex is linked with the corresponding vertex
+      --  of library graph Lib_G which contains the body of the activated
+      --  task, invoked subprogram, or instantiated generic.
 
-end Bindgen;
+   end Invocation_Graph_Builders;
+
+   ----------------------------
+   -- Library_Graph_Builders --
+   ----------------------------
+
+   package Library_Graph_Builders is
+      function Build_Library_Graph return Library_Graph;
+      --  Return a new library graph which reflects the dependencies between
+      --  all units of the bind.
+
+   end Library_Graph_Builders;
+
+end Bindo.Builders;

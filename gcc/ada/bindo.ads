@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              B I N D G E N                               --
+--                                B I N D O                                 --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--             Copyright (C) 2019, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,25 +23,22 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines to output the binder file. This is
---  an Ada program which contains the following:
+--  The following unit contains the main entry point into the elaboration order
+--  mechanism. See the body for details.
 
---     Initialization for main program case
---     Sequence of calls to elaboration routines in appropriate order
---     Call to main program for main program case
+with ALI;   use ALI;
+with Namet; use Namet;
 
---  See the body for exact details of the file that is generated
+package Bindo is
 
-with ALI; use ALI;
+   procedure Find_Elaboration_Order
+     (Order         : out Unit_Id_Table;
+      Main_Lib_File : File_Name_Type);
+   --  Find an order of all units in the bind that need to be elaborated
+   --  such that elaboration code flow, pragmas Elaborate, Elaborate_All,
+   --  and Elaborate_Body, and with clause dependencies are all honoured.
+   --  Main_Lib_File is the argument of the bind. If a satisfactory order
+   --  exists, it is returned in Order, otherwise Unrecoverable_Error is
+   --  raised.
 
-package Bindgen is
-   procedure Gen_Output_File
-     (Filename   : String;
-      Elab_Order : Unit_Id_Array);
-   --  Filename is the full path name of the binder output file
-
-   procedure Set_Bind_Env (Key, Value : String);
-   --  Add (Key, Value) pair to bind environment. These associations
-   --  are made available at run time using System.Bind_Environment.
-
-end Bindgen;
+end Bindo;

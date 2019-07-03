@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              B I N D G E N                               --
+--                     B I N D O . E L A B O R A T O R S                    --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2019, Free Software Foundation, Inc.         --
+--             Copyright (C) 2019, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,25 +23,33 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the routines to output the binder file. This is
---  an Ada program which contains the following:
+--  For full architecture, see unit Bindo.
 
---     Initialization for main program case
---     Sequence of calls to elaboration routines in appropriate order
---     Call to main program for main program case
+--  The following unit contains facilities to find the elaboration order of
+--  units based on various graphs.
 
---  See the body for exact details of the file that is generated
+with Bindo.Graphs;
+use  Bindo.Graphs;
+use  Bindo.Graphs.Invocation_Graphs;
+use  Bindo.Graphs.Library_Graphs;
 
-with ALI; use ALI;
+package Bindo.Elaborators is
 
-package Bindgen is
-   procedure Gen_Output_File
-     (Filename   : String;
-      Elab_Order : Unit_Id_Array);
-   --  Filename is the full path name of the binder output file
+   ----------------------------------------------
+   -- Invocation_And_Library_Graph_Elaborators --
+   ----------------------------------------------
 
-   procedure Set_Bind_Env (Key, Value : String);
-   --  Add (Key, Value) pair to bind environment. These associations
-   --  are made available at run time using System.Bind_Environment.
+   package Invocation_And_Library_Graph_Elaborators is
+      procedure Elaborate_Units
+        (Order         : out Unit_Id_Table;
+         Main_Lib_File : File_Name_Type);
+      --  Find an order of all units in the bind that need to be elaborated
+      --  such that elaboration code flow, pragmas Elaborate, Elaborate_All,
+      --  and Elaborate_Body, and with clause dependencies are all honoured.
+      --  Main_Lib_File is the argument of the bind. If a satisfactory order
+      --  exists, it is returned in Order, otherwise Unrecoverable_Error is
+      --  raised.
 
-end Bindgen;
+   end Invocation_And_Library_Graph_Elaborators;
+
+end Bindo.Elaborators;

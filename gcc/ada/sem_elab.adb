@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with ALI;      use ALI;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -59,7 +60,10 @@ with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Uname;    use Uname;
 
-with GNAT.HTable; use GNAT.HTable;
+with GNAT;                 use GNAT;
+with GNAT.Dynamic_HTables; use GNAT.Dynamic_HTables;
+with GNAT.Lists;           use GNAT.Lists;
+with GNAT.Sets;            use GNAT.Sets;
 
 package body Sem_Elab is
 
@@ -80,30 +84,41 @@ package body Sem_Elab is
    --      Due to control and data flow, the ABE mechanism cannot accurately
    --      determine whether a particular scenario will be elaborated or not.
    --      Conditional ABE checks are therefore used to verify the elaboration
-   --      status of a local and external target at run time.
+   --      status of local and external targets at run time.
    --
-   --    * Supply elaboration dependencies for a unit to binde
+   --    * Supply implicit elaboration dependencies for a unit to binde
    --
-   --      The ABE mechanism registers each outgoing elaboration edge for the
-   --      main unit in its ALI file. GNATbind and binde can then reconstruct
-   --      the full elaboration graph and determine the proper elaboration
-   --      order for all units in the compilation.
+   --      The ABE mechanism creates implicit dependencies in the form of with
+   --      clauses subject to pragma Elaborate[_All] when the elaboration graph
+   --      reaches into an external unit. The implicit dependencies are encoded
+   --      in the ALI file of the main unit. GNATbind and binde then use these
+   --      dependencies to augment the library item graph and determine the
+   --      elaboration order of all units in the compilation.
+   --
+   --    * Supply pieces of the invocation graph for a unit to bindo
+   --
+   --      The ABE mechanism captures paths starting from elaboration code or
+   --      top level constructs that reach into an external unit. The paths are
+   --      encoded in the ALI file of the main unit in the form of declarations
+   --      which represent nodes, and relations which represent edges. GNATbind
+   --      and bindo then build the full invocation graph in order to augment
+   --      the library item graph and determine the elaboration order of all
+   --      units in the compilation.
    --
    --  The ABE mechanism supports three models of elaboration:
    --
    --    * Dynamic model - This is the most permissive of the three models.
-   --      When the dynamic model is in effect, the mechanism performs very
-   --      little diagnostics and generates run-time checks to detect ABE
-   --      issues. The behaviour of this model is identical to that specified
-   --      by the Ada RM. This model is enabled with switch -gnatE.
+   --      When the dynamic model is in effect, the mechanism diagnoses and
+   --      installs run-time checks to detect ABE issues in the main unit.
+   --      The behaviour of this model is identical to that specified by the
+   --      Ada RM. This model is enabled with switch -gnatE.
    --
-   --    * Static model - This is the middle ground of the three models. When
+   --    Static model - This is the middle ground of the three models. When
    --      the static model is in effect, the mechanism diagnoses and installs
    --      run-time checks to detect ABE issues in the main unit. In addition,
-   --      the mechanism generates implicit Elaborate or Elaborate_All pragmas
-   --      to ensure the prior elaboration of withed units. The model employs
-   --      textual order, with clause context, and elaboration-related source
-   --      pragmas. This is the default model.
+   --      the mechanism generates implicit dependencies between units in the
+   --      form of with clauses subject to pragma Elaborate[_All] to ensure
+   --      the prior elaboration of withed units. This is the default model.
    --
    --    * SPARK model - This is the most conservative of the three models and
    --      impelements the semantics defined in SPARK RM 7.7. The SPARK model
@@ -117,8 +132,8 @@ package body Sem_Elab is
    -- Terminology --
    -----------------
 
-   --  * ABE - An attempt to activate, call, or instantiate a scenario which
-   --    has not been fully elaborated.
+   --  * ABE - An attempt to invoke a scenario which has not been elaborated
+   --    yet.
    --
    --  * Bridge target - A type of target. A bridge target is a link between
    --    scenarios. It is usually a byproduct of expansion and does not have
@@ -129,9 +144,9 @@ package body Sem_Elab is
    --    call. N_Call_Marker nodes do not have static and run-time semantics.
    --
    --  * Conditional ABE - A type of ABE. A conditional ABE occurs when the
-   --    elaboration or invocation of a target by a scenario within the main
-   --    unit causes an ABE, but does not cause an ABE for another scenarios
-   --    within the main unit.
+   --    invocation of a target by a scenario within the main unit causes an
+   --    ABE, but does not cause an ABE for another scenarios within the main
+   --    unit.
    --
    --  * Declaration level - A type of enclosing level. A scenario or target is
    --    at the declaration level when it appears within the declarations of a
@@ -148,12 +163,25 @@ package body Sem_Elab is
    --    package library unit, ignoring enclosing packages.
    --
    --  * Guaranteed ABE - A type of ABE. A guaranteed ABE occurs when the
-   --    elaboration or invocation of a target by all scenarios within the
-   --    main unit causes an ABE.
+   --    invocation of a target by all scenarios within the main unit causes
+   --    an ABE.
    --
    --  * Instantiation library level - A type of enclosing level. A scenario
    --    or target is at the instantiation library level if it appears in an
    --    instantiation library unit, ignoring enclosing packages.
+   --
+   --  * Invocation - The act of activating a task, calling a subprogram, or
+   --    instantiating a generic.
+   --
+   --  * Invocation construct - An entry declaration, [single] protected type,
+   --    subprogram declaration, subprogram instantiation, or a [single] task
+   --    type declared in the visible, private, or body declarations of the
+   --    main unit.
+   --
+   --  * Invocation relation - A flow link between two invocation constructs
+   --
+   --  * Invocation signature - A set of attributes that uniquely identify an
+   --    invocation construct within the namespace of all ALI files.
    --
    --  * Library level - A type of enclosing level. A scenario or target is at
    --    the library level if it appears in a package library unit, ignoring
@@ -162,9 +190,9 @@ package body Sem_Elab is
    --  * Non-library-level encapsulator - A construct that cannot be elaborated
    --    on its own and requires elaboration by a top-level scenario.
    --
-   --  * Scenario - A construct or context which may be elaborated or executed
-   --    by elaboration code. The scenarios recognized by the ABE mechanism are
-   --    as follows:
+   --  * Scenario - A construct or context which is invoked by elaboration code
+   --    or invocation construct. The scenarios recognized by the ABE mechanism
+   --    are as follows:
    --
    --      - '[Unrestricted_]Access of entries, operators, and subprograms
    --
@@ -182,8 +210,8 @@ package body Sem_Elab is
    --
    --      - Task activation
    --
-   --  * Target - A construct referenced by a scenario. The targets recognized
-   --    by the ABE mechanism are as follows:
+   --  * Target - A construct invoked by a scenario. The targets recognized by
+   --    the ABE mechanism are as follows:
    --
    --      - For '[Unrestricted_]Access of entries, operators, and subprograms,
    --        the target is the entry, operator, or subprogram.
@@ -201,88 +229,6 @@ package body Sem_Elab is
    --      - For reads of variables, the target is the variable
    --
    --      - For task activation, the target is the task body
-   --
-   --  * Top-level scenario - A scenario which appears in a non-generic main
-   --    unit. Depending on the elaboration model is in effect, the following
-   --    addotional restrictions apply:
-   --
-   --      - Dynamic model - No restrictions
-   --
-   --      - SPARK model - Falls back to either the dynamic or static model
-   --
-   --      - Static model - The scenario must be at the library level
-
-   ---------------------
-   -- Recording phase --
-   ---------------------
-
-   --  The Recording phase coincides with the analysis/resolution phase of the
-   --  compiler. It has the following objectives:
-   --
-   --    * Record all top-level scenarios for examination by the Processing
-   --      phase.
-   --
-   --      Saving only a certain number of nodes improves the performance of
-   --      the ABE mechanism. This eliminates the need to examine the whole
-   --      tree in a separate pass.
-   --
-   --    * Record certain SPARK scenarios which are not necessarily executable
-   --      during elaboration, but still require elaboration-related checks.
-   --
-   --      Saving only a certain number of nodes improves the performance of
-   --      the ABE mechanism. This eliminates the need to examine the whole
-   --      tree in a separate pass.
-   --
-   --    * Detect and diagnose calls in preelaborable or pure units, including
-   --      generic bodies.
-   --
-   --      This diagnostic is carried out during the Recording phase because it
-   --      does not need the heavy recursive traversal done by the Processing
-   --      phase.
-   --
-   --    * Detect and diagnose guaranteed ABEs caused by instantiations,
-   --      calls, and task activation.
-   --
-   --      The issues detected by the ABE mechanism are reported as warnings
-   --      because they do not violate Ada semantics. Forward instantiations
-   --      may thus reach gigi, however gigi cannot handle certain kinds of
-   --      premature instantiations and may crash. To avoid this limitation,
-   --      the ABE mechanism must identify forward instantiations as early as
-   --      possible and suppress their bodies. Calls and task activations are
-   --      included in this category for completeness.
-
-   ----------------------
-   -- Processing phase --
-   ----------------------
-
-   --  The Processing phase is a separate pass which starts after instantiating
-   --  and/or inlining of bodies, but before the removal of Ghost code. It has
-   --  the following objectives:
-   --
-   --    * Examine all top-level scenarios saved during the Recording phase
-   --
-   --      The top-level scenarios act as roots for depth-first traversal of
-   --      the call/instantiation/task activation graph. The traversal stops
-   --      when an outgoing edge leaves the main unit.
-   --
-   --    * Examine all SPARK scenarios saved during the Recording phase
-   --
-   --    * Depending on the elaboration model in effect, perform the following
-   --      actions:
-   --
-   --        - Dynamic model - Install run-time conditional ABE checks.
-   --
-   --        - SPARK model - Enforce the SPARK elaboration rules
-   --
-   --        - Static model - Diagnose conditional ABEs, install run-time
-   --          conditional ABE checks, and guarantee the elaboration of
-   --          external units.
-   --
-   --    * Examine nested scenarios
-   --
-   --      Nested scenarios discovered during the depth-first traversal are
-   --      in turn subjected to the same actions outlined above and examined
-   --      for the next level of nested scenarios.
 
    ------------------
    -- Architecture --
@@ -303,23 +249,15 @@ package body Sem_Elab is
    --  |  +--> Process_Guaranteed_ABE                                       |
    --  |  |    |                                                            |
    --  |  |    +--> Process_Guaranteed_ABE_Activation                       |
-   --  |  |    |                                                            |
    --  |  |    +--> Process_Guaranteed_ABE_Call                             |
-   --  |  |    |                                                            |
    --  |  |    +--> Process_Guaranteed_ABE_Instantiation                    |
    --  |  |                                                                 |
    --  +- | ----------------------------------------------------------------+
    --     |
    --     |
-   --     +--> SPARK_Scenarios
-   --     |    +-----------+-----------+ .. +-----------+
-   --     |    | Scenario1 | Scenario2 | .. | ScenarioN |
-   --     |    +-----------+-----------+ .. +-----------+
+   --     +--> Internal_Representation
    --     |
-   --     +--> Top_Level_Scenarios
-   --     |    +-----------+-----------+ .. +-----------+
-   --     |    | Scenario1 | Scenario2 | .. | ScenarioN |
-   --     |    +-----------+-----------+ .. +-----------+
+   --     +--> Scenario_Storage
    --     |
    --     End of Compilation
    --     |
@@ -327,33 +265,124 @@ package body Sem_Elab is
    --  |  v                                                                 |
    --  |  Check_Elaboration_Scenarios                                       |
    --  |  |                                                                 |
+   --  |  +--> Check_Conditional_ABE_Scenarios                              |
+   --  |  |    |                                                            |
+   --  |  |    +--> Process_Conditional_ABE <----------------------+        |
+   --  |  |         |                                              |        |
+   --  |  |         +--> Process_Conditional_ABE_Activation        |        |
+   --  |  |         |    |                                         |        |
+   --  |  |         |    +-----------------------------+           |        |
+   --  |  |         |                                  |           |        |
+   --  |  |         +--> Process_Conditional_ABE_Call  +---> Traverse_Body  |
+   --  |  |         |    |                             |                    |
+   --  |  |         |    +-----------------------------+                    |
+   --  |  |         |                                                       |
+   --  |  |         +--> Process_Conditional_ABE_Access_Taken               |
+   --  |  |         +--> Process_Conditional_ABE_Instantiation              |
+   --  |  |         +--> Process_Conditional_ABE_Variable_Assignment        |
+   --  |  |         +--> Process_Conditional_ABE_Variable_Reference         |
+   --  |  |                                                                 |
    --  |  +--> Check_SPARK_Scenario                                         |
    --  |  |    |                                                            |
-   --  |  |    +--> Check_SPARK_Derived_Type                                |
-   --  |  |    |                                                            |
-   --  |  |    +--> Check_SPARK_Instantiation                               |
-   --  |  |    |                                                            |
-   --  |  |    +--> Check_SPARK_Refined_State_Pragma                        |
+   --  |  |    +--> Process_SPARK_Scenario                                  |
+   --  |  |         |                                                       |
+   --  |  |         +--> Process_SPARK_Derived_Type                         |
+   --  |  |         +--> Process_SPARK_Instantiation                        |
+   --  |  |         +--> Process_SPARK_Refined_State_Pragma                 |
    --  |  |                                                                 |
-   --  |  +--> Process_Conditional_ABE <---------------------------+        |
-   --  |       |                                                   |        |
-   --  |       +--> Process_Conditional_ABE_Access    Is_Suitable_Scenario  |
-   --  |       |                                                   ^        |
-   --  |       +--> Process_Conditional_ABE_Activation             |        |
-   --  |       |    |                                              |        |
-   --  |       |    +-----------------------------+                |        |
-   --  |       |                                  |                |        |
-   --  |       +--> Process_Conditional_ABE_Call  +--------> Traverse_Body  |
-   --  |       |    |                             |                         |
-   --  |       |    +-----------------------------+                         |
+   --  |  +--> Record_Invocation_Graph                                      |
    --  |       |                                                            |
-   --  |       +--> Process_Conditional_ABE_Instantiation                   |
-   --  |       |                                                            |
-   --  |       +--> Process_Conditional_ABE_Variable_Assignment             |
-   --  |       |                                                            |
-   --  |       +--> Process_Conditional_ABE_Variable_Reference              |
+   --  |       +--> Process_Invocation_Body_Scenarios                       |
+   --  |       +--> Process_Invocation_Spec_Scenarios                       |
+   --  |       +--> Process_Main_Unit                                       |
+   --  |            |                                                       |
+   --  |            +--> Process_Invocation_Scenario <-------------+        |
+   --  |                 |                                         |        |
+   --  |                 +--> Process_Invocation_Activation        |        |
+   --  |                 |    |                                    |        |
+   --  |                 |    +------------------------+           |        |
+   --  |                 |                             |           |        |
+   --  |                 +--> Process_Invocation_Call  +---> Traverse_Body  |
+   --  |                      |                        |                    |
+   --  |                      +------------------------+                    |
    --  |                                                                    |
    --  +--------------------------------------------------------------------+
+
+   ---------------------
+   -- Recording phase --
+   ---------------------
+
+   --  The Recording phase coincides with the analysis/resolution phase of the
+   --  compiler. It has the following objectives:
+   --
+   --    * Record all suitable scenarios for examination by the Processing
+   --      phase.
+   --
+   --      Saving only a certain number of nodes improves the performance of
+   --      the ABE mechanism. This eliminates the need to examine the whole
+   --      tree in a separate pass.
+   --
+   --    * Record certain SPARK scenarios which are not necessarily invoked
+   --      during elaboration, but still require elaboration-related checks.
+   --
+   --      Saving only a certain number of nodes improves the performance of
+   --      the ABE mechanism. This eliminates the need to examine the whole
+   --      tree in a separate pass.
+   --
+   --    * Detect and diagnose calls in preelaborable or pure units, including
+   --      generic bodies.
+   --
+   --      This diagnostic is carried out during the Recording phase because it
+   --      does not need the heavy recursive traversal done by the Processing
+   --      phase.
+   --
+   --    * Detect and diagnose guaranteed ABEs caused by instantiations, calls,
+   --      and task activation.
+   --
+   --      The issues detected by the ABE mechanism are reported as warnings
+   --      because they do not violate Ada semantics. Forward instantiations
+   --      may thus reach gigi, however gigi cannot handle certain kinds of
+   --      premature instantiations and may crash. To avoid this limitation,
+   --      the ABE mechanism must identify forward instantiations as early as
+   --      possible and suppress their bodies. Calls and task activations are
+   --      included in this category for completeness.
+
+   ----------------------
+   -- Processing phase --
+   ----------------------
+
+   --  The Processing phase is a separate pass which starts after instantiating
+   --  and/or inlining of bodies, but before the removal of Ghost code. It has
+   --  the following objectives:
+   --
+   --    * Examine all scenarios saved during the Recording phase, and perform
+   --      the following actions:
+   --
+   --        - Dynamic model
+   --
+   --          Diagnose conditional ABEs, and install run-time conditional ABE
+   --          checks for all scenarios.
+   --
+   --        - SPARK model
+   --
+   --          Enforce the SPARK elaboration rules
+   --
+   --        - Static model
+   --
+   --          Diagnose conditional ABEs, install run-time conditional ABE
+   --          checks only for scenarios are reachable from elaboration code,
+   --          and guarantee the elaboration of external units by creating
+   --          implicit with clauses subject to pragma Elaborate[_All].
+   --
+   --    * Examine library-level scenarios and invocation constructs, and
+   --      perform the following actions:
+   --
+   --        - Determine whether the flow of execution reaches into an external
+   --          unit. If this is the case, encode the path in the ALI file of
+   --          the main unit.
+   --
+   --        - Create declarations for invocation constructs in the ALI file of
+   --          the main unit.
 
    ----------------------
    -- Important points --
@@ -364,11 +393,11 @@ package body Sem_Elab is
    --  available. The scope stack is empty, global flags such as In_Instance
    --  or Inside_A_Generic become useless. To remedy this, the ABE mechanism
    --  must either save or recompute semantic information.
-
+   --
    --  Expansion heavily transforms calls and to some extent instantiations. To
    --  remedy this, the ABE mechanism generates N_Call_Marker nodes in order to
    --  capture the target and relevant attributes of the original call.
-
+   --
    --  The diagnostics of the ABE mechanism depend on accurate source locations
    --  to determine the spacial relation of nodes.
 
@@ -453,12 +482,25 @@ package body Sem_Elab is
    --           The ABE mechanism considers scenarios which appear in internal
    --           units (Ada, GNAT, Interfaces, System).
    --
+   --  -gnatd_F encode full invocation paths in ALI files
+   --
+   --           The ABE mechanism encodes the full path from an elaboration
+   --           procedure or invocable construct to an external target. The
+   --           path contains all intermediate activations, instantiations,
+   --           and calls.
+   --
    --  -gnatd.G ignore calls through generic formal parameters for elaboration
    --
    --           The ABE mechanism does not generate N_Call_Marker nodes for
    --           calls which occur in expanded instances, and invoke generic
    --           actual subprograms through generic formal subprograms. As a
    --           result, the calls are not recorded or processed.
+   --
+   --  -gnatd_G encode invocation graph in ALI files
+   --
+   --           The ABE mechanism encodes the invocation graph of the main
+   --           unit. This includes elaboration code, as well as invocation
+   --           constructs.
    --
    --  -gnatd_i ignore activations and calls to instances for elaboration
    --
@@ -507,6 +549,11 @@ package body Sem_Elab is
    --
    --             Ada.Synchronous_Barriers.Wait_For_Release
    --             Ada.Synchronous_Task_Control.Suspend_Until_True
+   --
+   --  -gnatd_T output trace information on invocation relation construction
+   --
+   --           The ABE mechanism outputs text information concerning relation
+   --           construction to standard output.
    --
    --  -gnatd.U ignore indirect calls for static elaboration
    --
@@ -589,66 +636,6 @@ package body Sem_Elab is
    --
    --           The complementary switch for -gnatwl.
 
-   ---------------------------
-   -- Adding a new scenario --
-   ---------------------------
-
-   --  The following steps describe how to add a new elaboration scenario and
-   --  preserve the existing architecture. Note that not all of the steps may
-   --  need to be carried out.
-   --
-   --    1) Update predicate Is_Scenario
-   --
-   --    2) Add predicate Is_Suitable_xxx. Include a call to it in predicate
-   --       Is_Suitable_Scenario.
-   --
-   --    3) Update routine Record_Elaboration_Scenario
-   --
-   --    4) Add routine Process_Conditional_ABE_xxx. Include a call to it in
-   --       routine Process_Conditional_ABE.
-   --
-   --    5) Add routine Process_Guaranteed_ABE_xxx. Include a call to it in
-   --       routine Process_Guaranteed_ABE.
-   --
-   --    6) Add routine Check_SPARK_xxx. Include a call to it in routine
-   --       Check_SPARK_Scenario.
-   --
-   --    7) Add routine Info_xxx. Include a call to it in routine
-   --       Process_Conditional_ABE_xxx.
-   --
-   --    8) Add routine Output_xxx. Include a call to it in routine
-   --       Output_Active_Scenarios.
-   --
-   --    9) Add routine Extract_xxx_Attributes
-   --
-   --   10) Update routine Is_Potential_Scenario
-
-   -------------------------
-   -- Adding a new target --
-   -------------------------
-
-   --  The following steps describe how to add a new elaboration target and
-   --  preserve the existing architecture. Note that not all of the steps may
-   --  need to be carried out.
-   --
-   --    1) Add predicate Is_xxx.
-   --
-   --    2) Update the following predicates
-   --
-   --         Is_Ada_Semantic_Target
-   --         Is_Assertion_Pragma_Target
-   --         Is_Bridge_Target
-   --         Is_SPARK_Semantic_Target
-   --
-   --       If necessary, create a new category.
-   --
-   --    3) Update the appropriate Info_xxx routine.
-   --
-   --    4) Update the appropriate Output_xxx routine.
-   --
-   --    5) Update routine Extract_Target_Attributes. If necessary, create a
-   --       new Extract_xxx routine.
-
    --------------------------
    -- Debugging ABE issues --
    --------------------------
@@ -659,7 +646,7 @@ package body Sem_Elab is
    --
    --      Build_Call_Marker
    --      Record_Elaboration_Scenario
-
+   --
    --  * If the issue involves an arbitrary scenario, ensure that the scenario
    --    is either recorded, or is successfully recognized while traversing a
    --    body. The routines of interest are
@@ -668,7 +655,7 @@ package body Sem_Elab is
    --      Process_Conditional_ABE
    --      Process_Guaranteed_ABE
    --      Traverse_Body
-
+   --
    --  * If the issue involves a circularity in the elaboration order, examine
    --    the ALI files and look for the following encodings next to units:
    --
@@ -685,600 +672,1271 @@ package body Sem_Elab is
    --
    --      Ensure_Prior_Elaboration
 
-   ----------------
-   -- Attributes --
-   ----------------
+   -----------
+   -- Kinds --
+   -----------
 
-   --  To minimize the amount of code within routines, the ABE mechanism relies
-   --  on "attribute" records to capture relevant information for a scenario or
-   --  a target.
+   --  The following type enumerates all subprogram body traversal modes
 
-   --  The following type captures relevant attributes which pertain to a call
+   type Body_Traversal_Kind is
+     (Deep_Traversal,
+      --  The traversal examines the internals of a subprogram
 
-   type Call_Attributes is record
-      Elab_Checks_OK : Boolean;
-      --  This flag is set when the call has elaboration checks enabled
+      No_Traversal);
 
-      Elab_Warnings_OK : Boolean;
-      --  This flag is set when the call has elaboration warnings elabled
+   --  The following type enumerates all operation modes
 
-      From_Source : Boolean;
-      --  This flag is set when the call comes from source
+   type Processing_Kind is
+     (Conditional_ABE_Processing,
+      --  The ABE mechanism detects and diagnoses conditional ABEs for library
+      --  and declaration-level scenarios.
 
-      Ghost_Mode_Ignore : Boolean;
-      --  This flag is set when the call appears in a region subject to pragma
-      --  Ghost with policy Ignore.
+      Dynamic_Model_Processing,
+      --  The ABE mechanism installs conditional ABE checks for all eligible
+      --  scenarios when the dynamic model is in effect.
 
-      In_Declarations : Boolean;
-      --  This flag is set when the call appears at the declaration level
+      Guaranteed_ABE_Processing,
+      --  The ABE mechanism detects and diagnoses guaranteed ABEs caused by
+      --  calls, instantiations, and task activations.
 
-      Is_Dispatching : Boolean;
-      --  This flag is set when the call is dispatching
+      Invocation_Construct_Processing,
+      --  The ABE mechanism locates all invocation constructs within the main
+      --  unit and utilizes them as roots of miltiple DFS traversals aimed at
+      --  detecting transitions from the main unit to an external unit.
 
-      SPARK_Mode_On : Boolean;
-      --  This flag is set when the call appears in a region subject to pragma
-      --  SPARK_Mode with value On.
-   end record;
+      Invocation_Body_Processing,
+      --  The ABE mechanism utilizes all library-level body scenarios as roots
+      --  of miltiple DFS traversals aimed at detecting transitions from the
+      --  main unit to an external unit.
+
+      Invocation_Spec_Processing,
+      --  The ABE mechanism utilizes all library-level spec scenarios as roots
+      --  of miltiple DFS traversals aimed at detecting transitions from the
+      --  main unit to an external unit.
+
+      SPARK_Processing,
+      --  The ABE mechanism detects and diagnoses violations of the SPARK
+      --  elaboration rules for SPARK-specific scenarios.
+
+      No_Processing);
+
+   --  The following type enumerates all possible scenario kinds
+
+   type Scenario_Kind is
+     (Access_Taken_Scenario,
+      --  An attribute reference which takes 'Access or 'Unrestricted_Access of
+      --  an entry, operator, or subprogram.
+
+      Call_Scenario,
+      --  A call which invokes an entry, operator, or subprogram
+
+      Derived_Type_Scenario,
+      --  A declaration of a derived type. This is a SPARK-specific scenario.
+
+      Instantiation_Scenario,
+      --  An instantiation which instantiates a generic package or subprogram.
+      --  This scenario is also subject to SPARK-specific rules.
+
+      Refined_State_Pragma_Scenario,
+      --  A Refined_State pragma. This is a SPARK-specific scenario.
+
+      Task_Activation_Scenario,
+      --  A call which activates objects of various task types
+
+      Variable_Assignment_Scenario,
+      --  An assignment statement which modifies the value of some variable
+
+      Variable_Reference_Scenario,
+      --  A reference to a variable. This is a SPARK-specific scenario.
+
+      No_Scenario);
+
+   --  The following type enumerates all possible consistency models of target
+   --  and scenario representations.
+
+   type Representation_Kind is
+     (Inconsistent_Representation,
+      --  A representation is said to be "inconsistent" when it is created from
+      --  a partially analyzed tree. In such an environment, certain attributes
+      --  such as a completing body may not be available yet.
+
+      Consistent_Representation,
+      --  A representation is said to be "consistent" when it is created from a
+      --  fully analyzed tree, where all attributes are available.
+
+      No_Representation);
+
+   --  The following type enumerates all possible target kinds
+
+   type Target_Kind is
+     (Generic_Target,
+      --  A generic unit being instantiated
+
+      Subprogram_Target,
+      --  An entry, operator, or subprogram being invoked, or aliased through
+      --  'Access or 'Unrestricted_Access.
+
+      Task_Target,
+      --  A task being activated by an activation call
+
+      Variable_Target,
+      --  A variable being updated through an assignment statement, or read
+      --  through a variable reference.
+
+      No_Target);
+
+   -----------
+   -- Types --
+   -----------
+
+   procedure Destroy (NE : in out Node_Or_Entity_Id);
+   pragma Inline (Destroy);
+   --  Destroy node or entity NE
+
+   function Hash (NE : Node_Or_Entity_Id) return Bucket_Range_Type;
+   pragma Inline (Hash);
+   --  Obtain the hash value of key NE
+
+   --  The following is a general purpose list for nodes and entities
+
+   package NE_List is new Doubly_Linked_Lists
+     (Element_Type    => Node_Or_Entity_Id,
+      "="             => "=",
+      Destroy_Element => Destroy);
+
+   --  The following is a general purpose map which relates nodes and entities
+   --  to lists of nodes and entities.
+
+   package NE_List_Map is new Dynamic_Hash_Tables
+     (Key_Type              => Node_Or_Entity_Id,
+      Value_Type            => NE_List.Doubly_Linked_List,
+      No_Value              => NE_List.Nil,
+      Expansion_Threshold   => 1.5,
+      Expansion_Factor      => 2,
+      Compression_Threshold => 0.3,
+      Compression_Factor    => 2,
+      "="                   => "=",
+      Destroy_Value         => NE_List.Destroy,
+      Hash                  => Hash);
+
+   --  The following is a general purpose membership set for nodes and entities
+
+   package NE_Set is new Membership_Sets
+     (Element_Type => Node_Or_Entity_Id,
+      "="          => "=",
+      Hash         => Hash);
 
    --  The following type captures relevant attributes which pertain to the
-   --  prior elaboration of a unit. This type is coupled together with a unit
-   --  to form a key -> value relationship.
+   --  in state of the Processing phase.
 
-   type Elaboration_Attributes is record
-      Source_Pragma : Node_Id;
-      --  This attribute denotes a source Elaborate or Elaborate_All pragma
-      --  which guarantees the prior elaboration of some unit with respect
-      --  to the main unit. The pragma may come from the following contexts:
+   type Processing_In_State is record
+      Processing : Processing_Kind := No_Processing;
+      --  Operation mode of the Processing phase. Once set, this value should
+      --  not be changed.
 
-      --    * The main unit
-      --    * The spec of the main unit (if applicable)
-      --    * Any parent spec of the main unit (if applicable)
-      --    * Any parent subunit of the main unit (if applicable)
+      Representation : Representation_Kind := No_Representation;
+      --  Required level of scenario and target representation. Once set, this
+      --  value should not be changed.
 
-      --  The attribute remains Empty if no such pragma is available. Source
-      --  pragmas play a role in satisfying SPARK elaboration requirements.
+      Suppress_Checks : Boolean := False;
+      --  This flag is set when the Processing phase must not generate any ABE
+      --  checks.
 
-      With_Clause : Node_Id;
-      --  This attribute denotes an internally generated or source with clause
-      --  for some unit withed by the main unit. With clauses carry flags which
-      --  represent implicit Elaborate or Elaborate_All pragmas. These clauses
-      --  play a role in supplying the elaboration dependencies to binde.
-   end record;
-
-   No_Elaboration_Attributes : constant Elaboration_Attributes :=
-     (Source_Pragma => Empty,
-      With_Clause   => Empty);
-
-   --  The following type captures relevant attributes which pertain to an
-   --  instantiation.
-
-   type Instantiation_Attributes is record
-      Elab_Checks_OK : Boolean;
-      --  This flag is set when the instantiation has elaboration checks
-      --  enabled.
-
-      Elab_Warnings_OK : Boolean;
-      --  This flag is set when the instantiation has elaboration warnings
-      --  enabled.
-
-      Ghost_Mode_Ignore : Boolean;
-      --  This flag is set when the instantiation appears in a region subject
-      --  to pragma Ghost with policy ignore, or starts one such region.
-
-      In_Declarations : Boolean;
-      --  This flag is set when the instantiation appears at the declaration
-      --  level.
-
-      SPARK_Mode_On : Boolean;
-      --  This flag is set when the instantiation appears in a region subject
-      --  to pragma SPARK_Mode with value On, or starts one such region.
-   end record;
-
-   --  The following type captures relevant attributes which pertain to the
-   --  state of the Processing phase.
-
-   type Processing_Attributes is record
-      Suppress_Implicit_Pragmas : Boolean;
+      Suppress_Implicit_Pragmas : Boolean := False;
       --  This flag is set when the Processing phase must not generate any
       --  implicit Elaborate[_All] pragmas.
 
-      Suppress_Warnings : Boolean;
+      Suppress_Info_Messages : Boolean := False;
+      --  This flag is set when the Processing phase must not emit any info
+      --  messages.
+
+      Suppress_Up_Level_Targets : Boolean := False;
+      --  This flag is set when the Processing phase must ignore up-level
+      --  targets.
+
+      Suppress_Warnings : Boolean := False;
       --  This flag is set when the Processing phase must not emit any warnings
       --  on elaboration problems.
 
-      Within_Initial_Condition : Boolean;
+      Traversal : Body_Traversal_Kind := No_Traversal;
+      --  The subprogram body traversal mode. Once set, this value should not
+      --  be changed.
+
+      Within_Generic : Boolean := False;
+      --  This flag is set when the Processing phase is currently within a
+      --  generic unit.
+
+      Within_Initial_Condition : Boolean := False;
       --  This flag is set when the Processing phase is currently examining a
       --  scenario which was reached from an initial condition procedure.
 
-      Within_Instance : Boolean;
-      --  This flag is set when the Processing phase is currently examining a
-      --  scenario which was reached from a scenario defined in an instance.
-
-      Within_Partial_Finalization : Boolean;
+      Within_Partial_Finalization : Boolean := False;
       --  This flag is set when the Processing phase is currently examining a
       --  scenario which was reached from a partial finalization procedure.
 
-      Within_Task_Body : Boolean;
+      Within_Task_Body : Boolean := False;
       --  This flag is set when the Processing phase is currently examining a
       --  scenario which was reached from a task body.
    end record;
 
-   Initial_State : constant Processing_Attributes :=
-     (Suppress_Implicit_Pragmas   => False,
-      Suppress_Warnings           => False,
-      Within_Initial_Condition    => False,
-      Within_Instance             => False,
-      Within_Partial_Finalization => False,
-      Within_Task_Body            => False);
+   --  The following constants define the various operational states of the
+   --  Processing phase.
 
-   --  The following type captures relevant attributes which pertain to a
-   --  target.
+   --  The conditional ABE state is used when processing scenarios that appear
+   --  at the declaration, instantiation, and library levels to detect errors
+   --  and install conditional ABE checks.
 
-   type Target_Attributes is record
-      Elab_Checks_OK : Boolean;
-      --  This flag is set when the target has elaboration checks enabled
+   Conditional_ABE_State : constant Processing_In_State :=
+     (Processing                => Conditional_ABE_Processing,
+      Representation            => Consistent_Representation,
+      Traversal                 => Deep_Traversal,
+      others                    => False);
 
-      Elab_Warnings_OK : Boolean;
-      --  This flag is set when the target has elaboration warnings enabled
+   --  The dynamic model state is used to install conditional ABE checks when
+   --  switch -gnatE (dynamic elaboration checking mode enabled) is in effect.
 
-      From_Source : Boolean;
-      --  This flag is set when the target comes from source
+   Dynamic_Model_State : constant Processing_In_State :=
+     (Processing                => Dynamic_Model_Processing,
+      Representation            => Consistent_Representation,
+      Suppress_Implicit_Pragmas => True,
+      Suppress_Info_Messages    => True,
+      Suppress_Up_Level_Targets => True,
+      Suppress_Warnings         => True,
+      Traversal                 => No_Traversal,
+      others                    => False);
 
-      Ghost_Mode_Ignore : Boolean;
-      --  This flag is set when the target appears in a region subject to
-      --  pragma Ghost with policy ignore, or starts one such region.
+   --  The guaranteed ABE state is used when processing scenarios that appear
+   --  at the declaration, instantiation, and library levels to detect errors
+   --  and install guarateed ABE failures.
 
-      SPARK_Mode_On : Boolean;
-      --  This flag is set when the target appears in a region subject to
-      --  pragma SPARK_Mode with value On, or starts one such region.
+   Guaranteed_ABE_State : constant Processing_In_State :=
+     (Processing                => Guaranteed_ABE_Processing,
+      Representation            => Inconsistent_Representation,
+      Suppress_Implicit_Pragmas => True,
+      Traversal                 => No_Traversal,
+      others                    => False);
 
-      Spec_Decl : Node_Id;
-      --  This attribute denotes the declaration of Spec_Id
+   --  The invocation body state is used when processing scenarios that appear
+   --  at the body library level to encode paths that start from elaboration
+   --  code and ultimately reach into external units.
 
-      Unit_Id : Entity_Id;
-      --  This attribute denotes the top unit where Spec_Id resides
+   Invocation_Body_State : constant Processing_In_State :=
+     (Processing                => Invocation_Body_Processing,
+      Representation            => Consistent_Representation,
+      Suppress_Checks           => True,
+      Suppress_Implicit_Pragmas => True,
+      Suppress_Info_Messages    => True,
+      Suppress_Up_Level_Targets => True,
+      Suppress_Warnings         => True,
+      Traversal                 => Deep_Traversal,
+      others                    => False);
 
-      --  The semantics of the following attributes depend on the target
+   --  The invocation construct state is used when processing constructs that
+   --  appear within the spec and body of the main unit and eventually reach
+   --  into external units.
 
-      Body_Barf : Node_Id;
-      Body_Decl : Node_Id;
-      Spec_Id   : Entity_Id;
+   Invocation_Construct_State : constant Processing_In_State :=
+     (Processing                => Invocation_Construct_Processing,
+      Representation            => Consistent_Representation,
+      Suppress_Checks           => True,
+      Suppress_Implicit_Pragmas => True,
+      Suppress_Info_Messages    => True,
+      Suppress_Up_Level_Targets => True,
+      Suppress_Warnings         => True,
+      Traversal                 => Deep_Traversal,
+      others                    => False);
 
-      --  The target is a generic package or a subprogram
+   --  The invocation spec state is used when processing scenarios that appear
+   --  at the spec library level to encode paths that start from elaboration
+   --  code and ultimately reach into external units.
+
+   Invocation_Spec_State : constant Processing_In_State :=
+     (Processing                => Invocation_Spec_Processing,
+      Representation            => Consistent_Representation,
+      Suppress_Checks           => True,
+      Suppress_Implicit_Pragmas => True,
+      Suppress_Info_Messages    => True,
+      Suppress_Up_Level_Targets => True,
+      Suppress_Warnings         => True,
+      Traversal                 => Deep_Traversal,
+      others                    => False);
+
+   --  The SPARK state is used when verying SPARK-specific semantics of certain
+   --  scenarios.
+
+   SPARK_State : constant Processing_In_State :=
+     (Processing                => SPARK_Processing,
+      Representation            => Consistent_Representation,
+      Traversal                 => No_Traversal,
+      others                    => False);
+
+   --  The following type identifies a scenario representation
+
+   type Scenario_Rep_Id is new Natural;
+
+   No_Scenario_Rep    : constant Scenario_Rep_Id := Scenario_Rep_Id'First;
+   First_Scenario_Rep : constant Scenario_Rep_Id := No_Scenario_Rep + 1;
+
+   --  The following type identifies a target representation
+
+   type Target_Rep_Id is new Natural;
+
+   No_Target_Rep    : constant Target_Rep_Id := Target_Rep_Id'First;
+   First_Target_Rep : constant Target_Rep_Id := No_Target_Rep + 1;
+
+   --------------
+   -- Services --
+   --------------
+
+   --  The following package keeps track of all active scenarios during a DFS
+   --  traversal.
+
+   package Active_Scenarios is
+
+      -----------
+      -- Types --
+      -----------
+
+      --  The following type defines the position within the active scenario
+      --  stack.
+
+      type Active_Scenario_Pos is new Natural;
+
+      ---------------------
+      -- Data structures --
+      ---------------------
+
+      --  The following table stores all active scenarios in a DFS traversal.
+      --  This table must be maintained in a FIFO fashion.
+
+      package Active_Scenario_Stack is new Table.Table
+        (Table_Index_Type     => Active_Scenario_Pos,
+         Table_Component_Type => Node_Id,
+         Table_Low_Bound      => 1,
+         Table_Initial        => 50,
+         Table_Increment      => 200,
+         Table_Name           => "Active_Scenario_Stack");
+
+      ---------
+      -- API --
+      ---------
+
+      procedure Output_Active_Scenarios
+        (Error_Nod : Node_Id;
+         In_State  : Processing_In_State);
+      pragma Inline (Output_Active_Scenarios);
+      --  Output the contents of the active scenario stack from earliest to
+      --  latest to supplement an earlier error emitted for node Error_Nod.
+      --  In_State denotes the current state of the Processing phase.
+
+      procedure Pop_Active_Scenario (N : Node_Id);
+      pragma Inline (Pop_Active_Scenario);
+      --  Pop the top of the scenario stack. A check is made to ensure that the
+      --  scenario being removed is the same as N.
+
+      procedure Push_Active_Scenario (N : Node_Id);
+      pragma Inline (Push_Active_Scenario);
+      --  Push scenario N on top of the scenario stack
+
+      function Root_Scenario return Node_Id;
+      pragma Inline (Root_Scenario);
+      --  Return the scenario which started a DFS traversal
+
+   end Active_Scenarios;
+   use Active_Scenarios;
+
+   --  The following package provides the main entry point for task activation
+   --  processing.
+
+   package Activation_Processor is
+
+      -----------
+      -- Types --
+      -----------
+
+      type Activation_Processor_Ptr is access procedure
+        (Call     : Node_Id;
+         Call_Rep : Scenario_Rep_Id;
+         Obj_Id   : Entity_Id;
+         Obj_Rep  : Target_Rep_Id;
+         Task_Typ : Entity_Id;
+         Task_Rep : Target_Rep_Id;
+         In_State : Processing_In_State);
+      --  Reference to a procedure that takes all attributes of an activation
+      --  and performs a desired action. Call is the activation call. Call_Rep
+      --  is the representation of the call. Obj_Id is the task object being
+      --  activated. Obj_Rep is the representation of the object. Task_Typ is
+      --  the task type whose body is being activated. Task_Rep denotes the
+      --  representation of the task type. In_State is the current state of
+      --  the Processing phase.
+
+      ---------
+      -- API --
+      ---------
+
+      procedure Process_Activation
+        (Call      : Node_Id;
+         Call_Rep  : Scenario_Rep_Id;
+         Processor : Activation_Processor_Ptr;
+         In_State  : Processing_In_State);
+      --  Find all task objects activated by activation call Call and invoke
+      --  Processor on them. Call_Rep denotes the representation of the call.
+      --  In_State is the current state of the Processing phase.
+
+   end Activation_Processor;
+   use Activation_Processor;
+
+   --  The following package profides functionality for traversing subprogram
+   --  bodies in DFS manner and processing of eligible scenarios within.
+
+   package Body_Processor is
+
+      -----------
+      -- Types --
+      -----------
+
+      type Scenario_Predicate_Ptr is access function
+        (N : Node_Id) return Boolean;
+      --  Reference to a function which determines whether arbitrary node N
+      --  denotes a suitable scenario for processing.
+
+      type Scenario_Processor_Ptr is access procedure
+        (N : Node_Id; In_State : Processing_In_State);
+      --  Reference to a procedure which processes scenario N. In_State is the
+      --  current state of the Processing phase.
+
+      ---------
+      -- API --
+      ---------
+
+      procedure Traverse_Body
+        (N                   : Node_Id;
+         Requires_Processing : Scenario_Predicate_Ptr;
+         Processor           : Scenario_Processor_Ptr;
+         In_State            : Processing_In_State);
+      pragma Inline (Traverse_Body);
+      --  Traverse the declarations and handled statements of subprogram body
+      --  N, looking for scenarios that satisfy predicate Requires_Processing.
+      --  Routine Processor is invoked for each such scenario.
+
+      procedure Reset_Traversed_Bodies;
+      pragma Inline (Reset_Traversed_Bodies);
+      --  Reset the visited status of all subprogram bodies that have already
+      --  been processed by routine Traverse_Body.
+
+      -----------------
+      -- Maintenance --
+      -----------------
+
+      procedure Finalize_Body_Processor;
+      pragma Inline (Finalize_Body_Processor);
+      --  Finalize all internal data structures
+
+      procedure Initialize_Body_Processor;
+      pragma Inline (Initialize_Body_Processor);
+      --  Initialize all internal data structures
+
+   end Body_Processor;
+   use Body_Processor;
+
+   --  The following package provides functionality for installing ABE-related
+   --  checks and failures.
+
+   package Check_Installer is
+
+      ---------
+      -- API --
+      ---------
+
+      function Check_Or_Failure_Generation_OK return Boolean;
+      pragma Inline (Check_Or_Failure_Generation_OK);
+      --  Determine whether a conditional ABE check or guaranteed ABE failure
+      --  can be generated.
+
+      procedure Install_Dynamic_ABE_Checks;
+      pragma Inline (Install_Dynamic_ABE_Checks);
+      --  Install conditional ABE checks for all saved scenarios when the
+      --  dynamic model is in effect.
+
+      procedure Install_Scenario_ABE_Check
+        (N        : Node_Id;
+         Targ_Id  : Entity_Id;
+         Targ_Rep : Target_Rep_Id;
+         Disable  : Scenario_Rep_Id);
+      pragma Inline (Install_Scenario_ABE_Check);
+      --  Install a conditional ABE check for scenario N to ensure that target
+      --  Targ_Id is properly elaborated. Targ_Rep is the representation of the
+      --  target. If the check is installed, disable the elaboration checks of
+      --  scenario Disable.
+
+      procedure Install_Scenario_ABE_Check
+        (N        : Node_Id;
+         Targ_Id  : Entity_Id;
+         Targ_Rep : Target_Rep_Id;
+         Disable  : Target_Rep_Id);
+      pragma Inline (Install_Scenario_ABE_Check);
+      --  Install a conditional ABE check for scenario N to ensure that target
+      --  Targ_Id is properly elaborated. Targ_Rep is the representation of the
+      --  target. If the check is installed, disable the elaboration checks of
+      --  target Disable.
+
+      procedure Install_Scenario_ABE_Failure
+        (N        : Node_Id;
+         Targ_Id  : Entity_Id;
+         Targ_Rep : Target_Rep_Id;
+         Disable  : Scenario_Rep_Id);
+      pragma Inline (Install_Scenario_ABE_Failure);
+      --  Install a guaranteed ABE failure for scenario N with target Targ_Id.
+      --  Targ_Rep denotes the representation of the target. If the failure is
+      --  installed, disable the elaboration checks of scenario Disable.
+
+      procedure Install_Scenario_ABE_Failure
+        (N        : Node_Id;
+         Targ_Id  : Entity_Id;
+         Targ_Rep : Target_Rep_Id;
+         Disable  : Target_Rep_Id);
+      pragma Inline (Install_Scenario_ABE_Failure);
+      --  Install a guaranteed ABE failure for scenario N with target Targ_Id.
+      --  Targ_Rep denotes the representation of the target. If the failure is
+      --  installed, disable the elaboration checks of target Disable.
+
+      procedure Install_Unit_ABE_Check
+        (N       : Node_Id;
+         Unit_Id : Entity_Id;
+         Disable : Scenario_Rep_Id);
+      pragma Inline (Install_Unit_ABE_Check);
+      --  Install a conditional ABE check for scenario N to ensure that unit
+      --  Unit_Id is properly elaborated. If the check is installed, disable
+      --  the elaboration checks of scenario Disable.
+
+      procedure Install_Unit_ABE_Check
+        (N       : Node_Id;
+         Unit_Id : Entity_Id;
+         Disable : Target_Rep_Id);
+      pragma Inline (Install_Unit_ABE_Check);
+      --  Install a conditional ABE check for scenario N to ensure that unit
+      --  Unit_Id is properly elaborated. If the check is installed, disable
+      --  the elaboration checks of target Disable.
+
+   end Check_Installer;
+   use Check_Installer;
+
+   --  The following package provides the main entry point for conditional ABE
+   --  checks and diagnostics.
+
+   package Conditional_ABE_Processor is
+
+      ---------
+      -- API --
+      ---------
+
+      procedure Check_Conditional_ABE_Scenarios
+        (Iter : in out NE_Set.Iterator);
+      pragma Inline (Check_Conditional_ABE_Scenarios);
+      --  Perform conditional ABE checks and diagnostics for all scenarios
+      --  available through iterator Iter.
+
+      procedure Process_Conditional_ABE
+        (N        : Node_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Conditional_ABE);
+      --  Perform conditional ABE checks and diagnostics for scenario N.
+      --  In_State denotes the current state of the Processing phase.
+
+   end Conditional_ABE_Processor;
+   use Conditional_ABE_Processor;
+
+   --  The following package provides functionality to emit errors, information
+   --  messages, and warnings.
+
+   package Diagnostics is
+
+      ---------
+      -- API --
+      ---------
+
+      procedure Elab_Msg_NE
+        (Msg      : String;
+         N        : Node_Id;
+         Id       : Entity_Id;
+         Info_Msg : Boolean;
+         In_SPARK : Boolean);
+      pragma Inline (Elab_Msg_NE);
+      --  Wrapper around Error_Msg_NE. Emit message Msg concerning arbitrary
+      --  node N and entity. If flag Info_Msg is set, the routine emits an
+      --  information message, otherwise it emits an error. If flag In_SPARK
+      --  is set, then string " in SPARK" is added to the end of the message.
+
+      procedure Info_Call
+        (Call     : Node_Id;
+         Subp_Id  : Entity_Id;
+         Info_Msg : Boolean;
+         In_SPARK : Boolean);
+      pragma Inline (Info_Call);
+      --  Output information concerning call Call that invokes subprogram
+      --  Subp_Id. When flag Info_Msg is set, the routine emits an information
+      --  message, otherwise it emits an error. When flag In_SPARK is set, " in
+      --  SPARK" is added to the end of the message.
+
+      procedure Info_Instantiation
+        (Inst     : Node_Id;
+         Gen_Id   : Entity_Id;
+         Info_Msg : Boolean;
+         In_SPARK : Boolean);
+      pragma Inline (Info_Instantiation);
+      --  Output information concerning instantiation Inst which instantiates
+      --  generic unit Gen_Id. If flag Info_Msg is set, the routine emits an
+      --  information message, otherwise it emits an error. If flag In_SPARK
+      --  is set, then string " in SPARK" is added to the end of the message.
+
+      procedure Info_Variable_Reference
+        (Ref      : Node_Id;
+         Var_Id   : Entity_Id;
+         Info_Msg : Boolean;
+         In_SPARK : Boolean);
+      pragma Inline (Info_Variable_Reference);
+      --  Output information concerning reference Ref which mentions variable
+      --  Var_Id. If flag Info_Msg is set, the routine emits an information
+      --  message, otherwise it emits an error. If flag In_SPARK is set, then
+      --  string " in SPARK" is added to the end of the message.
+
+   end Diagnostics;
+   use Diagnostics;
+
+   --  The following package provides functionality to locate the early call
+   --  region of a subprogram body.
+
+   package Early_Call_Region_Processor is
+
+      ---------
+      -- API --
+      ---------
+
+      function Find_Early_Call_Region
+        (Body_Decl        : Node_Id;
+         Assume_Elab_Body : Boolean := False;
+         Skip_Memoization : Boolean := False) return Node_Id;
+      pragma Inline (Find_Early_Call_Region);
+      --  Find the start of the early call region that belongs to subprogram
+      --  body Body_Decl as defined in SPARK RM 7.7. This routine finds the
+      --  early call region, memoizes it, and returns it, but this behavior
+      --  can be altered. Flag Assume_Elab_Body should be set when a package
+      --  spec may lack pragma Elaborate_Body, but the routine must still
+      --  examine that spec. Flag Skip_Memoization should be set when the
+      --  routine must avoid memoizing the region.
+
+      -----------------
+      -- Maintenance --
+      -----------------
+
+      procedure Finalize_Early_Call_Region_Processor;
+      pragma Inline (Finalize_Early_Call_Region_Processor);
+      --  Finalize all internal data structures
+
+      procedure Initialize_Early_Call_Region_Processor;
+      pragma Inline (Initialize_Early_Call_Region_Processor);
+      --  Initialize all internal data structures
+
+   end Early_Call_Region_Processor;
+   use Early_Call_Region_Processor;
+
+   --  The following package provides access to the elaboration statuses of all
+   --  units withed by the main unit.
+
+   package Elaborated_Units is
+
+      ---------
+      -- API --
+      ---------
+
+      procedure Collect_Elaborated_Units;
+      pragma Inline (Collect_Elaborated_Units);
+      --  Save the elaboration statuses of all units withed by the main unit
+
+      procedure Ensure_Prior_Elaboration
+        (N        : Node_Id;
+         Unit_Id  : Entity_Id;
+         Prag_Nam : Name_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Ensure_Prior_Elaboration);
+      --  Guarantee the elaboration of unit Unit_Id with respect to the main
+      --  unit by either suggesting or installing an Elaborate[_All] pragma
+      --  denoted by Prag_Nam. N denotes the related scenario. In_State is the
+      --  current state of the Processing phase.
+
+      function Has_Prior_Elaboration
+        (Unit_Id      : Entity_Id;
+         Context_OK   : Boolean := False;
+         Elab_Body_OK : Boolean := False;
+         Same_Unit_OK : Boolean := False) return Boolean;
+      pragma Inline (Has_Prior_Elaboration);
+      --  Determine whether unit Unit_Id is elaborated prior to the main unit.
+      --  If flag Context_OK is set, the routine considers the following case
+      --  as valid prior elaboration:
       --
-      --    * Body_Barf - Empty
+      --    * Unit_Id is in the elaboration context of the main unit
       --
-      --    * Body_Decl - This attribute denotes the generic or subprogram
-      --      body.
+      --  If flag Elab_Body_OK is set, the routine considers the following case
+      --  as valid prior elaboration:
       --
-      --    * Spec_Id - This attribute denotes the entity of the generic
-      --      package or subprogram.
-
-      --  The target is a protected entry
+      --    * Unit_Id has pragma Elaborate_Body and is not the main unit
       --
-      --    * Body_Barf - This attribute denotes the body of the barrier
-      --      function if expansion took place, otherwise it is Empty.
+      --  If flag Same_Unit_OK is set, the routine considers the following
+      --  cases as valid prior elaboration:
       --
-      --    * Body_Decl - This attribute denotes the body of the procedure
-      --      which emulates the entry if expansion took place, otherwise it
-      --      denotes the body of the protected entry.
+      --    * Unit_Id is the main unit
       --
-      --    * Spec_Id - This attribute denotes the entity of the procedure
-      --      which emulates the entry if expansion took place, otherwise it
-      --      denotes the protected entry.
+      --    * Unit_Id denotes the spec of the main unit body
 
-      --  The target is a protected subprogram
+      procedure Meet_Elaboration_Requirement
+        (N        : Node_Id;
+         Targ_Id  : Entity_Id;
+         Req_Nam  : Name_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Meet_Elaboration_Requirement);
+      --  Determine whether elaboration requirement Req_Nam for scenario N with
+      --  target Targ_Id is met by the context of the main unit using the SPARK
+      --  rules. Req_Nam must denote either Elaborate or Elaborate_All. Emit an
+      --  error if this is not the case. In_State denotes the current state of
+      --  the Processing phase.
+
+      -----------------
+      -- Maintenance --
+      -----------------
+
+      procedure Finalize_Elaborated_Units;
+      pragma Inline (Finalize_Elaborated_Units);
+      --  Finalize all internal data structures
+
+      procedure Initialize_Elaborated_Units;
+      pragma Inline (Initialize_Elaborated_Units);
+      --  Initialize all internal data structures
+
+   end Elaborated_Units;
+   use Elaborated_Units;
+
+   --  The following package provides the main entry point for guaranteed ABE
+   --  checks and diagnostics.
+
+   package Guaranteed_ABE_Processor is
+
+      ---------
+      -- API --
+      ---------
+
+      procedure Process_Guaranteed_ABE
+        (N        : Node_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Guaranteed_ABE);
+      --  Perform guaranteed ABE checks and diagnostics for scenario N.
+      --  In_State is the current state of the Processing phase.
+
+   end Guaranteed_ABE_Processor;
+   use Guaranteed_ABE_Processor;
+
+   --  The following package provides access to the internal representation of
+   --  scenarios and targets.
+
+   package Internal_Representation is
+
+      -----------
+      -- Types --
+      -----------
+
+      --  The following type enumerates all possible Ghost mode mode kinds
+
+      type Extended_Ghost_Mode is
+        (Is_Ignored,
+         Is_Checked_Or_Not_Specified);
+
+      --  The following type enumerates all possible SPARK mode kinds
+
+      type Extended_SPARK_Mode is
+        (Is_On,
+         Is_Off_Or_Not_Specified);
+
+      --------------
+      -- Builders --
+      --------------
+
+      function Scenario_Representation_Of
+        (N        : Node_Id;
+         In_State : Processing_In_State) return Scenario_Rep_Id;
+      pragma Inline (Scenario_Representation_Of);
+      --  Obtain the id of elaboration scenario N's representation. The routine
+      --  constructs the representation if it is not available. In_State is the
+      --  current state of the Processing phase.
+
+      function Target_Representation_Of
+        (Id       : Entity_Id;
+         In_State : Processing_In_State) return Target_Rep_Id;
+      pragma Inline (Target_Representation_Of);
+      --  Obtain the id of elaboration target Id's representation. The routine
+      --  constructs the representation if it is not available. In_State is the
+      --  current state of the Processing phase.
+
+      -------------------------
+      -- Scenario attributes --
+      -------------------------
+
+      function Activated_Task_Objects
+        (S_Id : Scenario_Rep_Id) return NE_List.Doubly_Linked_List;
+      pragma Inline (Activated_Task_Objects);
+      --  For Task_Activation_Scenario S_Id, obtain the list of task objects
+      --  the scenario is activating.
+
+      function Activated_Task_Type (S_Id : Scenario_Rep_Id) return Entity_Id;
+      pragma Inline (Activated_Task_Type);
+      --  For Task_Activation_Scenario S_Id, obtain the currently activated
+      --  task type.
+
+      procedure Disable_Elaboration_Checks (S_Id : Scenario_Rep_Id);
+      pragma Inline (Disable_Elaboration_Checks);
+      --  Disable elaboration checks of scenario S_Id
+
+      function Elaboration_Checks_OK (S_Id : Scenario_Rep_Id) return Boolean;
+      pragma Inline (Elaboration_Checks_OK);
+      --  Determine whether scenario S_Id may be subjected to elaboration
+      --  checks.
+
+      function Elaboration_Warnings_OK (S_Id : Scenario_Rep_Id) return Boolean;
+      pragma Inline (Elaboration_Warnings_OK);
+      --  Determine whether scenario S_Id may be subjected to elaboration
+      --  warnings.
+
+      function Ghost_Mode_Of
+        (S_Id : Scenario_Rep_Id) return Extended_Ghost_Mode;
+      pragma Inline (Ghost_Mode_Of);
+      --  Obtain the Ghost mode of scenario S_Id
+
+      function Is_Dispatching_Call (S_Id : Scenario_Rep_Id) return Boolean;
+      pragma Inline (Is_Dispatching_Call);
+      --  For Call_Scenario S_Id, determine whether the call is dispatching
+
+      function Is_Read_Reference (S_Id : Scenario_Rep_Id) return Boolean;
+      pragma Inline (Is_Read_Reference);
+      --  For Variable_Reference_Scenario S_Id, determine whether the reference
+      --  is a read.
+
+      function Kind (S_Id : Scenario_Rep_Id) return Scenario_Kind;
+      pragma Inline (Kind);
+      --  Obtain the nature of scenario S_Id
+
+      function Level (S_Id : Scenario_Rep_Id) return Enclosing_Level_Kind;
+      pragma Inline (Level);
+      --  Obtain the enclosing level of scenario S_Id
+
+      procedure Set_Activated_Task_Objects
+        (S_Id      : Scenario_Rep_Id;
+         Task_Objs : NE_List.Doubly_Linked_List);
+      pragma Inline (Set_Activated_Task_Objects);
+      --  For Task_Activation_Scenario S_Id, set the list of task objects
+      --  activated by the scenario to Task_Objs.
+
+      procedure Set_Activated_Task_Type
+        (S_Id     : Scenario_Rep_Id;
+         Task_Typ : Entity_Id);
+      pragma Inline (Set_Activated_Task_Type);
+      --  For Task_Activation_Scenario S_Id, set the currently activated task
+      --  type to Task_Typ.
+
+      function SPARK_Mode_Of
+        (S_Id : Scenario_Rep_Id) return Extended_SPARK_Mode;
+      pragma Inline (SPARK_Mode_Of);
+      --  Obtain the SPARK mode of scenario S_Id
+
+      function Target (S_Id : Scenario_Rep_Id) return Entity_Id;
+      pragma Inline (Target);
+      --  Obtain the target of scenario S_Id
+
+      -----------------------
+      -- Target attributes --
+      -----------------------
+
+      function Barrier_Body_Declaration (T_Id : Target_Rep_Id) return Node_Id;
+      pragma Inline (Barrier_Body_Declaration);
+      --  For Subprogram_Target T_Id, obtain the declaration of the barrier
+      --  function's body.
+
+      function Body_Declaration (T_Id : Target_Rep_Id) return Node_Id;
+      pragma Inline (Body_Declaration);
+      --  Obtain the declaration of the body which belongs to target T_Id
+
+      procedure Disable_Elaboration_Checks (T_Id : Target_Rep_Id);
+      pragma Inline (Disable_Elaboration_Checks);
+      --  Disable elaboration checks of target T_Id
+
+      function Elaboration_Checks_OK (T_Id : Target_Rep_Id) return Boolean;
+      pragma Inline (Elaboration_Checks_OK);
+      --  Determine whether target T_Id may be subjected to elaboration checks
+
+      function Elaboration_Warnings_OK (T_Id : Target_Rep_Id) return Boolean;
+      pragma Inline (Elaboration_Warnings_OK);
+      --  Determine whether target T_Id may be subjected to elaboration
+      --  warnings.
+
+      function Ghost_Mode_Of (T_Id : Target_Rep_Id) return Extended_Ghost_Mode;
+      pragma Inline (Ghost_Mode_Of);
+      --  Obtain the Ghost mode of target T_Id
+
+      function Kind (T_Id : Target_Rep_Id) return Target_Kind;
+      pragma Inline (Kind);
+      --  Obtain the nature of target T_Id
+
+      function SPARK_Mode_Of (T_Id : Target_Rep_Id) return Extended_SPARK_Mode;
+      pragma Inline (SPARK_Mode_Of);
+      --  Obtain the SPARK mode of target T_Id
+
+      function Spec_Declaration (T_Id : Target_Rep_Id) return Node_Id;
+      pragma Inline (Spec_Declaration);
+      --  Obtain the declaration of the spec which belongs to target T_Id
+
+      function Unit (T_Id : Target_Rep_Id) return Entity_Id;
+      pragma Inline (Unit);
+      --  Obtain the unit where the target is defined
+
+      function Variable_Declaration (T_Id : Target_Rep_Id) return Node_Id;
+      pragma Inline (Variable_Declaration);
+      --  For Variable_Target T_Id, obtain the declaration of the variable
+
+      -----------------
+      -- Maintenance --
+      -----------------
+
+      procedure Finalize_Internal_Representation;
+      pragma Inline (Finalize_Internal_Representation);
+      --  Finalize all internal data structures
+
+      procedure Initialize_Internal_Representation;
+      pragma Inline (Initialize_Internal_Representation);
+      --  Initialize all internal data structures
+
+   end Internal_Representation;
+   use Internal_Representation;
+
+   --  The following package provides functionality for recording pieces of the
+   --  invocation graph in the ALI file of the main unit.
+
+   package Invocation_Graph is
+
+      ---------
+      -- API --
+      ---------
+
+      procedure Record_Invocation_Graph;
+      pragma Inline (Record_Invocation_Graph);
+      --  Process all declaration, instantiation, and library level scenarios,
+      --  along with invocation construct within the spec and body of the main
+      --  unit to determine whether any of these reach into an external unit.
+      --  If such a path exists, encode in the ALI file of the main unit.
+
+      -----------------
+      -- Maintenance --
+      -----------------
+
+      procedure Finalize_Invocation_Graph;
+      pragma Inline (Finalize_Invocation_Graph);
+      --  Finalize all internal data structures
+
+      procedure Initialize_Invocation_Graph;
+      pragma Inline (Initialize_Invocation_Graph);
+      --  Initialize all internal data structures
+
+   end Invocation_Graph;
+   use Invocation_Graph;
+
+   --  The following package stores scenarios
+
+   package Scenario_Storage is
+
+      ---------
+      -- API --
+      ---------
+
+      procedure Add_Declaration_Scenario (N : Node_Id);
+      pragma Inline (Add_Declaration_Scenario);
+      --  Save declaration level scenario N
+
+      procedure Add_Dynamic_ABE_Check_Scenario (N : Node_Id);
+      pragma Inline (Add_Dynamic_ABE_Check_Scenario);
+      --  Save scenario N for conditional ABE check installation purposes when
+      --  the dynamic model is in effect.
+
+      procedure Add_Library_Body_Scenario (N : Node_Id);
+      pragma Inline (Add_Library_Body_Scenario);
+      --  Save library-level body scenario N
+
+      procedure Add_Library_Spec_Scenario (N : Node_Id);
+      pragma Inline (Add_Library_Spec_Scenario);
+      --  Save library-level spec scenario N
+
+      procedure Add_SPARK_Scenario (N : Node_Id);
+      pragma Inline (Add_SPARK_Scenario);
+      --  Save SPARK scenario N
+
+      procedure Delete_Scenario (N : Node_Id);
+      pragma Inline (Delete_Scenario);
+      --  Delete arbitrary scenario N
+
+      function Iterate_Declaration_Scenarios return NE_Set.Iterator;
+      pragma Inline (Iterate_Declaration_Scenarios);
+      --  Obtain an iterator over all declaration level scenarios
+
+      function Iterate_Dynamic_ABE_Check_Scenarios return NE_Set.Iterator;
+      pragma Inline (Iterate_Dynamic_ABE_Check_Scenarios);
+      --  Obtain an iterator over all scenarios that require a conditional ABE
+      --  check when the dynamic model is in effect.
+
+      function Iterate_Library_Body_Scenarios return NE_Set.Iterator;
+      pragma Inline (Iterate_Library_Body_Scenarios);
+      --  Obtain an iterator over all library level body scenarios
+
+      function Iterate_Library_Spec_Scenarios return NE_Set.Iterator;
+      pragma Inline (Iterate_Library_Spec_Scenarios);
+      --  Obtain an iterator over all library level spec scenarios
+
+      function Iterate_SPARK_Scenarios return NE_Set.Iterator;
+      pragma Inline (Iterate_SPARK_Scenarios);
+      --  Obtain an iterator over all SPARK scenarios
+
+      procedure Replace_Scenario (Old_N : Node_Id; New_N : Node_Id);
+      pragma Inline (Replace_Scenario);
+      --  Replace scenario Old_N with scenario New_N
+
+      -----------------
+      -- Maintenance --
+      -----------------
+
+      procedure Finalize_Scenario_Storage;
+      pragma Inline (Finalize_Scenario_Storage);
+      --  Finalize all internal data structures
+
+      procedure Initialize_Scenario_Storage;
+      pragma Inline (Initialize_Scenario_Storage);
+      --  Initialize all internal data structures
+
+   end Scenario_Storage;
+   use Scenario_Storage;
+
+   --  The following package provides various semantic predicates
+
+   package Semantics is
+
+      ---------
+      -- API --
+      ---------
+
+      function Is_Accept_Alternative_Proc (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Accept_Alternative_Proc);
+      --  Determine whether arbitrary entity Id denotes an internally generated
+      --  procedure which encapsulates the statements of an accept alternative.
+
+      function Is_Activation_Proc (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Activation_Proc);
+      --  Determine whether arbitrary entity Id denotes a runtime procedure in
+      --  charge with activating tasks.
+
+      function Is_Ada_Semantic_Target (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Ada_Semantic_Target);
+      --  Determine whether arbitrary entity Id denodes a source or internally
+      --  generated subprogram which emulates Ada semantics.
+
+      function Is_Assertion_Pragma_Target (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Assertion_Pragma_Target);
+      --  Determine whether arbitrary entity Id denotes a procedure which
+      --  varifies the run-time semantics of an assertion pragma.
+
+      function Is_Bodiless_Subprogram (Subp_Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Bodiless_Subprogram);
+      --  Determine whether subprogram Subp_Id will never have a body
+
+      function Is_Bridge_Target (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Bridge_Target);
+      --  Determine whether arbitrary entity Id denotes a bridge target
+
+      function Is_Controlled_Proc
+        (Subp_Id  : Entity_Id;
+         Subp_Nam : Name_Id) return Boolean;
+      pragma Inline (Is_Controlled_Proc);
+      --  Determine whether subprogram Subp_Id denotes controlled type
+      --  primitives Adjust, Finalize, or Initialize as denoted by name
+      --  Subp_Nam.
+
+      function Is_Default_Initial_Condition_Proc
+        (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Default_Initial_Condition_Proc);
+      --  Determine whether arbitrary entity Id denotes internally generated
+      --  routine Default_Initial_Condition.
+
+      function Is_Finalizer_Proc (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Finalizer_Proc);
+      --  Determine whether arbitrary entity Id denotes internally generated
+      --  routine _Finalizer.
+
+      function Is_Initial_Condition_Proc (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Initial_Condition_Proc);
+      --  Determine whether arbitrary entity Id denotes internally generated
+      --  routine Initial_Condition.
+
+      function Is_Initialized (Obj_Decl : Node_Id) return Boolean;
+      pragma Inline (Is_Initialized);
+      --  Determine whether object declaration Obj_Decl is initialized
+
+      function Is_Invariant_Proc (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Invariant_Proc);
+      --  Determine whether arbitrary entity Id denotes an invariant procedure
+
+      function Is_Non_Library_Level_Encapsulator (N : Node_Id) return Boolean;
+      pragma Inline (Is_Non_Library_Level_Encapsulator);
+      --  Determine whether arbitrary node N is a non-library encapsulator
+
+      function Is_Partial_Invariant_Proc (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Partial_Invariant_Proc);
+      --  Determine whether arbitrary entity Id denotes a partial invariant
+      --  procedure.
+
+      function Is_Postconditions_Proc (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Postconditions_Proc);
+      --  Determine whether arbitrary entity Id denotes internally generated
+      --  routine _Postconditions.
+
+      function Is_Preelaborated_Unit (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Preelaborated_Unit);
+      --  Determine whether arbitrary entity Id denotes a unit which is subject
+      --  to one of the following pragmas:
       --
-      --    * Body_Barf - Empty
-      --
-      --    * Body_Decl - This attribute denotes the body of the protected or
-      --      unprotected version of the protected subprogram if expansion took
-      --      place, otherwise it denotes the body of the protected subprogram.
-      --
-      --    * Spec_Id - This attribute denotes the entity of the protected or
-      --      unprotected version of the protected subprogram if expansion took
-      --      place, otherwise it is the entity of the protected subprogram.
+      --    * Preelaborable
+      --    * Pure
+      --    * Remote_Call_Interface
+      --    * Remote_Types
+      --    * Shared_Passive
 
-      --  The target is a task entry
-      --
-      --    * Body_Barf - Empty
-      --
-      --    * Body_Decl - This attribute denotes the body of the procedure
-      --      which emulates the task body if expansion took place, otherwise
-      --      it denotes the body of the task type.
-      --
-      --    * Spec_Id - This attribute denotes the entity of the procedure
-      --      which emulates the task body if expansion took place, otherwise
-      --      it denotes the entity of the task type.
-   end record;
+      function Is_Protected_Entry (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Protected_Entry);
+      --  Determine whether arbitrary entity Id denotes a protected entry
 
-   --  The following type captures relevant attributes which pertain to a task
-   --  type.
+      function Is_Protected_Subp (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Protected_Subp);
+      --  Determine whether entity Id denotes a protected subprogram
 
-   type Task_Attributes is record
-      Body_Decl : Node_Id;
-      --  This attribute denotes the declaration of the procedure body which
-      --  emulates the behaviour of the task body.
+      function Is_Protected_Body_Subp (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Protected_Body_Subp);
+      --  Determine whether entity Id denotes the protected or unprotected
+      --  version of a protected subprogram.
 
-      Elab_Checks_OK : Boolean;
-      --  This flag is set when the task type has elaboration checks enabled
+      function Is_Scenario (N : Node_Id) return Boolean;
+      pragma Inline (Is_Scenario);
+      --  Determine whether attribute node N denotes a scenario. The scenario
+      --  may not necessarily be eligible for ABE processing.
 
-      Elab_Warnings_OK : Boolean;
-      --  This flag is set when the task type has elaboration warnings enabled
+      function Is_SPARK_Semantic_Target (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_SPARK_Semantic_Target);
+      --  Determine whether arbitrary entity Id nodes a source or internally
+      --  generated subprogram which emulates SPARK semantics.
 
-      Ghost_Mode_Ignore : Boolean;
-      --  This flag is set when the task type appears in a region subject to
-      --  pragma Ghost with policy ignore, or starts one such region.
+      function Is_Subprogram_Inst (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Subprogram_Inst);
+      --  Determine whether arbitrary entity Id denotes a subprogram instance
 
-      SPARK_Mode_On : Boolean;
-      --  This flag is set when the task type appears in a region subject to
-      --  pragma SPARK_Mode with value On, or starts one such region.
+      function Is_Suitable_Access_Taken (N : Node_Id) return Boolean;
+      pragma Inline (Is_Suitable_Access_Taken);
+      --  Determine whether arbitrary node N denotes a suitable attribute for
+      --  ABE processing.
 
-      Spec_Id : Entity_Id;
-      --  This attribute denotes the entity of the initial declaration of the
-      --  procedure body which emulates the behaviour of the task body.
+      function Is_Suitable_Call (N : Node_Id) return Boolean;
+      pragma Inline (Is_Suitable_Call);
+      --  Determine whether arbitrary node N denotes a suitable call for ABE
+      --  processing.
 
-      Task_Decl : Node_Id;
-      --  This attribute denotes the declaration of the task type
+      function Is_Suitable_Instantiation (N : Node_Id) return Boolean;
+      pragma Inline (Is_Suitable_Instantiation);
+      --  Determine whether arbitrary node N is a suitable instantiation for
+      --  ABE processing.
 
-      Unit_Id : Entity_Id;
-      --  This attribute denotes the entity of the compilation unit where the
-      --  task type resides.
-   end record;
+      function Is_Suitable_SPARK_Derived_Type (N : Node_Id) return Boolean;
+      pragma Inline (Is_Suitable_SPARK_Derived_Type);
+      --  Determine whether arbitrary node N denotes a suitable derived type
+      --  declaration for ABE processing using the SPARK rules.
 
-   --  The following type captures relevant attributes which pertain to a
-   --  variable.
+      function Is_Suitable_SPARK_Instantiation (N : Node_Id) return Boolean;
+      pragma Inline (Is_Suitable_SPARK_Instantiation);
+      --  Determine whether arbitrary node N denotes a suitable instantiation
+      --  for ABE processing using the SPARK rules.
 
-   type Variable_Attributes is record
-      Unit_Id : Entity_Id;
-      --  This attribute denotes the entity of the compilation unit where the
-      --  variable resides.
-   end record;
+      function Is_Suitable_SPARK_Refined_State_Pragma
+        (N : Node_Id) return Boolean;
+      pragma Inline (Is_Suitable_SPARK_Refined_State_Pragma);
+      --  Determine whether arbitrary node N denotes a suitable Refined_State
+      --  pragma for ABE processing using the SPARK rules.
 
-   ---------------------
-   -- Data structures --
-   ---------------------
+      function Is_Suitable_Variable_Assignment (N : Node_Id) return Boolean;
+      pragma Inline (Is_Suitable_Variable_Assignment);
+      --  Determine whether arbitrary node N denotes a suitable assignment for
+      --  ABE processing.
 
-   --  The ABE mechanism employs lists and hash tables to store information
-   --  pertaining to scenarios and targets, as well as the Processing phase.
-   --  The need for data structures comes partly from the size limitation of
-   --  nodes. Note that the use of hash tables is conservative and operations
-   --  are carried out only when a particular hash table has at least one key
-   --  value pair (see xxx_In_Use flags).
+      function Is_Suitable_Variable_Reference (N : Node_Id) return Boolean;
+      pragma Inline (Is_Suitable_Variable_Reference);
+      --  Determine whether arbitrary node N is a suitable variable reference
+      --  for ABE processing.
 
-   --  The following table stores the early call regions of subprogram bodies
+      function Is_Task_Entry (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Task_Entry);
+      --  Determine whether arbitrary entity Id denotes a task entry
 
-   Early_Call_Regions_Max : constant := 101;
+      function Is_Up_Level_Target
+        (Targ_Decl : Node_Id;
+         In_State  : Processing_In_State) return Boolean;
+      pragma Inline (Is_Up_Level_Target);
+      --  Determine whether the current root resides at the declaration level.
+      --  If this is the case, determine whether a target with by declaration
+      --  Target_Decl is within a context which encloses the current root or is
+      --  in a different unit. In_State is the current state of the Processing
+      --  phase.
 
-   type Early_Call_Regions_Index is range 0 .. Early_Call_Regions_Max - 1;
+   end Semantics;
+   use Semantics;
 
-   function Early_Call_Regions_Hash
-     (Key : Entity_Id) return Early_Call_Regions_Index;
-   --  Obtain the hash value of entity Key
+   --  The following package provides the main entry point for SPARK-related
+   --  checks and diagnostics.
 
-   Early_Call_Regions_In_Use : Boolean := False;
-   --  This flag determines whether table Early_Call_Regions contains at least
-   --  least one key/value pair.
+   package SPARK_Processor is
 
-   Early_Call_Regions_No_Element : constant Node_Id := Empty;
+      ---------
+      -- API --
+      ---------
 
-   package Early_Call_Regions is new Simple_HTable
-     (Header_Num => Early_Call_Regions_Index,
-      Element    => Node_Id,
-      No_Element => Early_Call_Regions_No_Element,
-      Key        => Entity_Id,
-      Hash       => Early_Call_Regions_Hash,
-      Equal      => "=");
+      procedure Check_SPARK_Model_In_Effect;
+      pragma Inline (Check_SPARK_Model_In_Effect);
+      --  Determine whether a suitable elaboration model is currently in effect
+      --  for verifying SPARK rules. Emit a warning if this is not the case.
 
-   --  The following table stores the elaboration status of all units withed by
-   --  the main unit.
+      procedure Check_SPARK_Scenarios;
+      pragma Inline (Check_SPARK_Scenarios);
+      --  Examine SPARK scenarios which are not necessarily executable during
+      --  elaboration, but still requires elaboration-related checks.
 
-   Elaboration_Statuses_Max : constant := 1009;
-
-   type Elaboration_Statuses_Index is range 0 .. Elaboration_Statuses_Max - 1;
-
-   function Elaboration_Statuses_Hash
-     (Key : Entity_Id) return Elaboration_Statuses_Index;
-   --  Obtain the hash value of entity Key
-
-   Elaboration_Statuses_In_Use : Boolean := False;
-   --  This flag flag determines whether table Elaboration_Statuses contains at
-   --  least one key/value pair.
-
-   Elaboration_Statuses_No_Element : constant Elaboration_Attributes :=
-                                       No_Elaboration_Attributes;
-
-   package Elaboration_Statuses is new Simple_HTable
-     (Header_Num => Elaboration_Statuses_Index,
-      Element    => Elaboration_Attributes,
-      No_Element => Elaboration_Statuses_No_Element,
-      Key        => Entity_Id,
-      Hash       => Elaboration_Statuses_Hash,
-      Equal      => "=");
-
-   --  The following table stores a status flag for each SPARK scenario saved
-   --  in table SPARK_Scenarios.
-
-   Recorded_SPARK_Scenarios_Max : constant := 127;
-
-   type Recorded_SPARK_Scenarios_Index is
-     range 0 .. Recorded_SPARK_Scenarios_Max - 1;
-
-   function Recorded_SPARK_Scenarios_Hash
-     (Key : Node_Id) return Recorded_SPARK_Scenarios_Index;
-   --  Obtain the hash value of Key
-
-   Recorded_SPARK_Scenarios_In_Use : Boolean := False;
-   --  This flag flag determines whether table Recorded_SPARK_Scenarios
-   --  contains at least one key/value pair.
-
-   Recorded_SPARK_Scenarios_No_Element : constant Boolean := False;
-
-   package Recorded_SPARK_Scenarios is new Simple_HTable
-     (Header_Num => Recorded_SPARK_Scenarios_Index,
-      Element    => Boolean,
-      No_Element => Recorded_SPARK_Scenarios_No_Element,
-      Key        => Node_Id,
-      Hash       => Recorded_SPARK_Scenarios_Hash,
-      Equal      => "=");
-
-   --  The following table stores a status flag for each top-level scenario
-   --  recorded in table Top_Level_Scenarios.
-
-   Recorded_Top_Level_Scenarios_Max : constant := 503;
-
-   type Recorded_Top_Level_Scenarios_Index is
-     range 0 .. Recorded_Top_Level_Scenarios_Max - 1;
-
-   function Recorded_Top_Level_Scenarios_Hash
-     (Key : Node_Id) return Recorded_Top_Level_Scenarios_Index;
-   --  Obtain the hash value of entity Key
-
-   Recorded_Top_Level_Scenarios_In_Use : Boolean := False;
-   --  This flag flag determines whether table Recorded_Top_Level_Scenarios
-   --  contains at least one key/value pair.
-
-   Recorded_Top_Level_Scenarios_No_Element : constant Boolean := False;
-
-   package Recorded_Top_Level_Scenarios is new Simple_HTable
-     (Header_Num => Recorded_Top_Level_Scenarios_Index,
-      Element    => Boolean,
-      No_Element => Recorded_Top_Level_Scenarios_No_Element,
-      Key        => Node_Id,
-      Hash       => Recorded_Top_Level_Scenarios_Hash,
-      Equal      => "=");
-
-   --  The following table stores all active scenarios in a recursive traversal
-   --  starting from a top-level scenario. This table must be maintained in a
-   --  FIFO fashion.
-
-   package Scenario_Stack is new Table.Table
-     (Table_Component_Type => Node_Id,
-      Table_Index_Type     => Int,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 50,
-      Table_Increment      => 100,
-      Table_Name           => "Scenario_Stack");
-
-   --  The following table stores SPARK scenarios which are not necessarily
-   --  executable during elaboration, but still require elaboration-related
-   --  checks.
-
-   package SPARK_Scenarios is new Table.Table
-     (Table_Component_Type => Node_Id,
-      Table_Index_Type     => Int,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 50,
-      Table_Increment      => 100,
-      Table_Name           => "SPARK_Scenarios");
-
-   --  The following table stores all top-level scenario saved during the
-   --  Recording phase. The contents of this table act as traversal roots
-   --  later in the Processing phase. This table must be maintained in a
-   --  LIFO fashion.
-
-   package Top_Level_Scenarios is new Table.Table
-     (Table_Component_Type => Node_Id,
-      Table_Index_Type     => Int,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 1000,
-      Table_Increment      => 100,
-      Table_Name           => "Top_Level_Scenarios");
-
-   --  The following table stores the bodies of all eligible scenarios visited
-   --  during a traversal starting from a top-level scenario. The contents of
-   --  this table must be reset upon each new traversal.
-
-   Visited_Bodies_Max : constant := 511;
-
-   type Visited_Bodies_Index is range 0 .. Visited_Bodies_Max - 1;
-
-   function Visited_Bodies_Hash (Key : Node_Id) return Visited_Bodies_Index;
-   --  Obtain the hash value of node Key
-
-   Visited_Bodies_In_Use : Boolean := False;
-   --  This flag determines whether table Visited_Bodies contains at least one
-   --  key/value pair.
-
-   Visited_Bodies_No_Element : constant Boolean := False;
-
-   package Visited_Bodies is new Simple_HTable
-     (Header_Num => Visited_Bodies_Index,
-      Element    => Boolean,
-      No_Element => Visited_Bodies_No_Element,
-      Key        => Node_Id,
-      Hash       => Visited_Bodies_Hash,
-      Equal      => "=");
+   end SPARK_Processor;
+   use SPARK_Processor;
 
    -----------------------
    -- Local subprograms --
    -----------------------
 
-   --  Multiple local subprograms are utilized to lower the semantic complexity
-   --  of the Recording and Processing phase.
+   function Assignment_Target (Asmt : Node_Id) return Node_Id;
+   pragma Inline (Assignment_Target);
+   --  Obtain the target of assignment statement Asmt
 
-   procedure Check_Preelaborated_Call (Call : Node_Id);
-   pragma Inline (Check_Preelaborated_Call);
-   --  Verify that entry, operator, or subprogram call Call does not appear at
-   --  the library level of a preelaborated unit.
+   function Call_Name (Call : Node_Id) return Node_Id;
+   pragma Inline (Call_Name);
+   --  Obtain the name of an entry, operator, or subprogram call Call
 
-   procedure Check_SPARK_Derived_Type (Typ_Decl : Node_Id);
-   pragma Inline (Check_SPARK_Derived_Type);
-   --  Verify that the freeze node of a derived type denoted by declaration
-   --  Typ_Decl is within the early call region of each overriding primitive
-   --  body that belongs to the derived type (SPARK RM 7.7(8)).
-
-   procedure Check_SPARK_Instantiation (Exp_Inst : Node_Id);
-   pragma Inline (Check_SPARK_Instantiation);
-   --  Verify that expanded instance Exp_Inst does not precede the generic body
-   --  it instantiates (SPARK RM 7.7(6)).
-
-   procedure Check_SPARK_Model_In_Effect (N : Node_Id);
-   pragma Inline (Check_SPARK_Model_In_Effect);
-   --  Determine whether a suitable elaboration model is currently in effect
-   --  for verifying the SPARK rules of scenario N. Emit a warning if this is
-   --  not the case.
-
-   procedure Check_SPARK_Scenario (N : Node_Id);
-   pragma Inline (Check_SPARK_Scenario);
-   --  Top-level dispatcher for verifying SPARK scenarios which are not always
-   --  executable during elaboration but still need elaboration-related checks.
-
-   procedure Check_SPARK_Refined_State_Pragma (N : Node_Id);
-   pragma Inline (Check_SPARK_Refined_State_Pragma);
-   --  Verify that each constituent of Refined_State pragma N which belongs to
-   --  an abstract state mentioned in pragma Initializes has prior elaboration
-   --  with respect to the main unit (SPARK RM 7.7.1(7)).
+   function Canonical_Subprogram (Subp_Id : Entity_Id) return Entity_Id;
+   pragma Inline (Canonical_Subprogram);
+   --  Obtain the uniform canonical entity of subprogram Subp_Id
 
    function Compilation_Unit (Unit_Id : Entity_Id) return Node_Id;
    pragma Inline (Compilation_Unit);
    --  Return the N_Compilation_Unit node of unit Unit_Id
-
-   function Early_Call_Region (Body_Id : Entity_Id) return Node_Id;
-   pragma Inline (Early_Call_Region);
-   --  Return the early call region associated with entry or subprogram body
-   --  Body_Id. IMPORTANT: This routine does not find the early call region.
-   --  To compute it, use routine Find_Early_Call_Region.
-
-   procedure Elab_Msg_NE
-     (Msg      : String;
-      N        : Node_Id;
-      Id       : Entity_Id;
-      Info_Msg : Boolean;
-      In_SPARK : Boolean);
-   pragma Inline (Elab_Msg_NE);
-   --  Wrapper around Error_Msg_NE. Emit message Msg concerning arbitrary node
-   --  N and entity. If flag Info_Msg is set, the routine emits an information
-   --  message, otherwise it emits an error. If flag In_SPARK is set, then
-   --  string " in SPARK" is added to the end of the message.
-
-   function Elaboration_Status
-     (Unit_Id : Entity_Id) return Elaboration_Attributes;
-   pragma Inline (Elaboration_Status);
-   --  Return the set of elaboration attributes associated with unit Unit_Id
-
-   procedure Ensure_Prior_Elaboration
-     (N        : Node_Id;
-      Unit_Id  : Entity_Id;
-      Prag_Nam : Name_Id;
-      State    : Processing_Attributes);
-   --  Guarantee the elaboration of unit Unit_Id with respect to the main unit
-   --  by installing pragma Elaborate or Elaborate_All denoted by Prag_Nam. N
-   --  denotes the related scenario. State denotes the current state of the
-   --  Processing phase.
-
-   procedure Ensure_Prior_Elaboration_Dynamic
-     (N        : Node_Id;
-      Unit_Id  : Entity_Id;
-      Prag_Nam : Name_Id);
-   --  Guarantee the elaboration of unit Unit_Id with respect to the main unit
-   --  by suggesting the use of Elaborate[_All] with name Prag_Nam. N denotes
-   --  the related scenario.
-
-   procedure Ensure_Prior_Elaboration_Static
-     (N        : Node_Id;
-      Unit_Id  : Entity_Id;
-      Prag_Nam : Name_Id);
-   --  Guarantee the elaboration of unit Unit_Id with respect to the main unit
-   --  by installing an implicit Elaborate[_All] pragma with name Prag_Nam. N
-   --  denotes the related scenario.
-
-   function Extract_Assignment_Name (Asmt : Node_Id) return Node_Id;
-   pragma Inline (Extract_Assignment_Name);
-   --  Obtain the Name attribute of assignment statement Asmt
-
-   procedure Extract_Call_Attributes
-     (Call      : Node_Id;
-      Target_Id : out Entity_Id;
-      Attrs     : out Call_Attributes);
-   pragma Inline (Extract_Call_Attributes);
-   --  Obtain attributes Attrs associated with call Call. Target_Id is the
-   --  entity of the call target.
-
-   function Extract_Call_Name (Call : Node_Id) return Node_Id;
-   pragma Inline (Extract_Call_Name);
-   --  Obtain the Name attribute of entry or subprogram call Call
-
-   procedure Extract_Instance_Attributes
-     (Exp_Inst  : Node_Id;
-      Inst_Body : out Node_Id;
-      Inst_Decl : out Node_Id);
-   pragma Inline (Extract_Instance_Attributes);
-   --  Obtain body Inst_Body and spec Inst_Decl of expanded instance Exp_Inst
-
-   procedure Extract_Instantiation_Attributes
-     (Exp_Inst : Node_Id;
-      Inst     : out Node_Id;
-      Inst_Id  : out Entity_Id;
-      Gen_Id   : out Entity_Id;
-      Attrs    : out Instantiation_Attributes);
-   pragma Inline (Extract_Instantiation_Attributes);
-   --  Obtain attributes Attrs associated with expanded instantiation Exp_Inst.
-   --  Inst is the instantiation. Inst_Id is the entity of the instance. Gen_Id
-   --  is the entity of the generic unit being instantiated.
-
-   procedure Extract_Target_Attributes
-     (Target_Id : Entity_Id;
-      Attrs     : out Target_Attributes);
-   --  Obtain attributes Attrs associated with an entry, package, or subprogram
-   --  denoted by Target_Id.
-
-   procedure Extract_Task_Attributes
-     (Typ   : Entity_Id;
-      Attrs : out Task_Attributes);
-   pragma Inline (Extract_Task_Attributes);
-   --  Obtain attributes Attrs associated with task type Typ
-
-   procedure Extract_Variable_Reference_Attributes
-     (Ref    : Node_Id;
-      Var_Id : out Entity_Id;
-      Attrs  : out Variable_Attributes);
-   pragma Inline (Extract_Variable_Reference_Attributes);
-   --  Obtain attributes Attrs associated with reference Ref that mentions
-   --  variable Var_Id.
-
-   function Find_Code_Unit (N : Node_Or_Entity_Id) return Entity_Id;
-   pragma Inline (Find_Code_Unit);
-   --  Return the code unit which contains arbitrary node or entity N. This
-   --  is the unit of the file which physically contains the related construct
-   --  denoted by N except when N is within an instantiation. In that case the
-   --  unit is that of the top-level instantiation.
-
-   function Find_Early_Call_Region
-     (Body_Decl        : Node_Id;
-      Assume_Elab_Body : Boolean := False;
-      Skip_Memoization : Boolean := False) return Node_Id;
-   --  Find the start of the early call region which belongs to subprogram body
-   --  Body_Decl as defined in SPARK RM 7.7. The behavior of the routine is to
-   --  find the early call region, memoize it, and return it, but this behavior
-   --  can be altered. Flag Assume_Elab_Body should be set when a package spec
-   --  may lack pragma Elaborate_Body, but the routine must still examine that
-   --  spec. Flag Skip_Memoization should be set when the routine must avoid
-   --  memoizing the region.
-
-   procedure Find_Elaborated_Units;
-   --  Populate table Elaboration_Statuses with all units which have prior
-   --  elaboration with respect to the main unit.
 
    function Find_Enclosing_Instance (N : Node_Id) return Node_Id;
    pragma Inline (Find_Enclosing_Instance);
@@ -1301,32 +1959,9 @@ package body Sem_Elab is
    --  subprogram lacks formal parameters, return Empty.
 
    function Has_Body (Pack_Decl : Node_Id) return Boolean;
+   pragma Inline (Has_Body);
    --  Determine whether package declaration Pack_Decl has a corresponding body
    --  or would eventually have one.
-
-   function Has_Prior_Elaboration
-     (Unit_Id      : Entity_Id;
-      Context_OK   : Boolean := False;
-      Elab_Body_OK : Boolean := False;
-      Same_Unit_OK : Boolean := False) return Boolean;
-   pragma Inline (Has_Prior_Elaboration);
-   --  Determine whether unit Unit_Id is elaborated prior to the main unit.
-   --  If flag Context_OK is set, the routine considers the following case
-   --  as valid prior elaboration:
-   --
-   --    * Unit_Id is in the elaboration context of the main unit
-   --
-   --  If flag Elab_Body_OK is set, the routine considers the following case
-   --  as valid prior elaboration:
-   --
-   --    * Unit_Id has pragma Elaborate_Body and is not the main unit
-   --
-   --  If flag Same_Unit_OK is set, the routine considers the following cases
-   --  as valid prior elaboration:
-   --
-   --    * Unit_Id is the main unit
-   --
-   --    * Unit_Id denotes the spec of the main unit body
 
    function In_External_Instance
      (N           : Node_Id;
@@ -1344,204 +1979,38 @@ package body Sem_Elab is
      (N1        : Node_Id;
       N2        : Node_Id;
       Nested_OK : Boolean := False) return Boolean;
+   pragma Inline (In_Same_Context);
    --  Determine whether two arbitrary nodes N1 and N2 appear within the same
    --  context ignoring enclosing library levels. Nested_OK should be set when
    --  the context of N1 can enclose that of N2.
 
-   function In_Task_Body (N : Node_Id) return Boolean;
-   pragma Inline (In_Task_Body);
-   --  Determine whether arbitrary node N appears within a task body
-
-   procedure Info_Call
-     (Call      : Node_Id;
-      Target_Id : Entity_Id;
-      Info_Msg  : Boolean;
-      In_SPARK  : Boolean);
-   --  Output information concerning call Call which invokes target Target_Id.
-   --  If flag Info_Msg is set, the routine emits an information message,
-   --  otherwise it emits an error. If flag In_SPARK is set, then the string
-   --  " in SPARK" is added to the end of the message.
-
-   procedure Info_Instantiation
-     (Inst     : Node_Id;
-      Gen_Id   : Entity_Id;
-      Info_Msg : Boolean;
-      In_SPARK : Boolean);
-   pragma Inline (Info_Instantiation);
-   --  Output information concerning instantiation Inst which instantiates
-   --  generic unit Gen_Id. If flag Info_Msg is set, the routine emits an
-   --  information message, otherwise it emits an error. If flag In_SPARK
-   --  is set, then string " in SPARK" is added to the end of the message.
-
-   procedure Info_Variable_Reference
-     (Ref      : Node_Id;
-      Var_Id   : Entity_Id;
-      Info_Msg : Boolean;
-      In_SPARK : Boolean);
-   pragma Inline (Info_Variable_Reference);
-   --  Output information concerning reference Ref which mentions variable
-   --  Var_Id. If flag Info_Msg is set, the routine emits an information
-   --  message, otherwise it emits an error. If flag In_SPARK is set, then
-   --  string " in SPARK" is added to the end of the message.
-
-   function Insertion_Node (N : Node_Id; Ins_Nod : Node_Id) return Node_Id;
-   pragma Inline (Insertion_Node);
-   --  Obtain the proper insertion node of an ABE check or failure for scenario
-   --  N and candidate insertion node Ins_Nod.
-
-   procedure Install_ABE_Check
-     (N       : Node_Id;
-      Id      : Entity_Id;
-      Ins_Nod : Node_Id);
-   --  Insert a run-time ABE check for elaboration scenario N which verifies
-   --  whether arbitrary entity Id is elaborated. The check in inserted prior
-   --  to node Ins_Nod.
-
-   procedure Install_ABE_Check
-     (N           : Node_Id;
-      Target_Id   : Entity_Id;
-      Target_Decl : Node_Id;
-      Target_Body : Node_Id;
-      Ins_Nod     : Node_Id);
-   --  Insert a run-time ABE check for elaboration scenario N which verifies
-   --  whether target Target_Id with initial declaration Target_Decl and body
-   --  Target_Body is elaborated. The check is inserted prior to node Ins_Nod.
-
-   procedure Install_ABE_Failure (N : Node_Id; Ins_Nod : Node_Id);
-   --  Insert a Program_Error concerning a guaranteed ABE for elaboration
-   --  scenario N. The failure is inserted prior to node Node_Id.
-
-   function Is_Accept_Alternative_Proc (Id : Entity_Id) return Boolean;
-   pragma Inline (Is_Accept_Alternative_Proc);
-   --  Determine whether arbitrary entity Id denotes an internally generated
-   --  procedure which encapsulates the statements of an accept alternative.
-
-   function Is_Activation_Proc (Id : Entity_Id) return Boolean;
-   pragma Inline (Is_Activation_Proc);
-   --  Determine whether arbitrary entity Id denotes a runtime procedure in
-   --  charge with activating tasks.
-
-   function Is_Ada_Semantic_Target (Id : Entity_Id) return Boolean;
-   pragma Inline (Is_Ada_Semantic_Target);
-   --  Determine whether arbitrary entity Id denodes a source or internally
-   --  generated subprogram which emulates Ada semantics.
-
-   function Is_Assertion_Pragma_Target (Id : Entity_Id) return Boolean;
-   pragma Inline (Is_Assertion_Pragma_Target);
-   --  Determine whether arbitrary entity Id denotes a procedure which varifies
-   --  the run-time semantics of an assertion pragma.
-
-   function Is_Bodiless_Subprogram (Subp_Id : Entity_Id) return Boolean;
-   pragma Inline (Is_Bodiless_Subprogram);
-   --  Determine whether subprogram Subp_Id will never have a body
-
-   function Is_Controlled_Proc
-     (Subp_Id  : Entity_Id;
-      Subp_Nam : Name_Id) return Boolean;
-   pragma Inline (Is_Controlled_Proc);
-   --  Determine whether subprogram Subp_Id denotes controlled type primitives
-   --  Adjust, Finalize, or Initialize as denoted by name Subp_Nam.
-
-   function Is_Default_Initial_Condition_Proc (Id : Entity_Id) return Boolean;
-   pragma Inline (Is_Default_Initial_Condition_Proc);
-   --  Determine whether arbitrary entity Id denotes internally generated
-   --  routine Default_Initial_Condition.
-
-   function Is_Finalizer_Proc (Id : Entity_Id) return Boolean;
-   pragma Inline (Is_Finalizer_Proc);
-   --  Determine whether arbitrary entity Id denotes internally generated
-   --  routine _Finalizer.
-
-   function Is_Guaranteed_ABE
-     (N           : Node_Id;
-      Target_Decl : Node_Id;
-      Target_Body : Node_Id) return Boolean;
-   pragma Inline (Is_Guaranteed_ABE);
-   --  Determine whether scenario N with a target described by its initial
-   --  declaration Target_Decl and body Target_Decl results in a guaranteed
-   --  ABE.
-
-   function Is_Initial_Condition_Proc (Id : Entity_Id) return Boolean;
-   pragma Inline (Is_Initial_Condition_Proc);
-   --  Determine whether arbitrary entity Id denotes internally generated
-   --  routine Initial_Condition.
-
-   function Is_Initialized (Obj_Decl : Node_Id) return Boolean;
-   pragma Inline (Is_Initialized);
-   --  Determine whether object declaration Obj_Decl is initialized
-
-   function Is_Invariant_Proc (Id : Entity_Id) return Boolean;
-   pragma Inline (Is_Invariant_Proc);
-   --  Determine whether arbitrary entity Id denotes an invariant procedure
-
-   function Is_Non_Library_Level_Encapsulator (N : Node_Id) return Boolean;
-   pragma Inline (Is_Non_Library_Level_Encapsulator);
-   --  Determine whether arbitrary node N is a non-library encapsulator
-
-   function Is_Partial_Invariant_Proc (Id : Entity_Id) return Boolean;
-   pragma Inline (Is_Partial_Invariant_Proc);
-   --  Determine whether arbitrary entity Id denotes a partial invariant
-   --  procedure.
-
-   function Is_Postconditions_Proc (Id : Entity_Id) return Boolean;
-   pragma Inline (Is_Postconditions_Proc);
-   --  Determine whether arbitrary entity Id denotes internally generated
-   --  routine _Postconditions.
-
-   function Is_Preelaborated_Unit (Id : Entity_Id) return Boolean;
-   pragma Inline (Is_Preelaborated_Unit);
-   --  Determine whether arbitrary entity Id denotes a unit which is subject to
-   --  one of the following pragmas:
-   --
-   --    * Preelaborable
-   --    * Pure
-   --    * Remote_Call_Interface
-   --    * Remote_Types
-   --    * Shared_Passive
-
-   function Is_Protected_Entry (Id : Entity_Id) return Boolean;
-   pragma Inline (Is_Protected_Entry);
-   --  Determine whether arbitrary entity Id denotes a protected entry
-
-   function Is_Protected_Subp (Id : Entity_Id) return Boolean;
-   pragma Inline (Is_Protected_Subp);
-   --  Determine whether entity Id denotes a protected subprogram
-
-   function Is_Protected_Body_Subp (Id : Entity_Id) return Boolean;
-   pragma Inline (Is_Protected_Body_Subp);
-   --  Determine whether entity Id denotes the protected or unprotected version
-   --  of a protected subprogram.
-
-   function Is_Recorded_SPARK_Scenario (N : Node_Id) return Boolean;
-   pragma Inline (Is_Recorded_SPARK_Scenario);
-   --  Determine whether arbitrary node N is a recorded SPARK scenario which
-   --  appears in table SPARK_Scenarios.
-
-   function Is_Recorded_Top_Level_Scenario (N : Node_Id) return Boolean;
-   pragma Inline (Is_Recorded_Top_Level_Scenario);
-   --  Determine whether arbitrary node N is a recorded top-level scenario
-   --  which appears in table Top_Level_Scenarios.
+   function Instantiated_Generic (Inst : Node_Id) return Entity_Id;
+   pragma Inline (Instantiated_Generic);
+   --  Obtain the generic instantiated by instance Inst
 
    function Is_Safe_Activation
-     (Call      : Node_Id;
-      Task_Decl : Node_Id) return Boolean;
+     (Call     : Node_Id;
+      Task_Rep : Target_Rep_Id) return Boolean;
    pragma Inline (Is_Safe_Activation);
-   --  Determine whether call Call which activates a task object described by
-   --  declaration Task_Decl is always ABE-safe.
+   --  Determine whether activation call Call which activates an object of a
+   --  task type described by representation Task_Rep is always ABE-safe.
 
    function Is_Safe_Call
-     (Call         : Node_Id;
-      Target_Attrs : Target_Attributes) return Boolean;
+     (Call     : Node_Id;
+      Subp_Id  : Entity_Id;
+      Subp_Rep : Target_Rep_Id) return Boolean;
    pragma Inline (Is_Safe_Call);
-   --  Determine whether call Call which invokes a target described by
-   --  attributes Target_Attrs is always ABE-safe.
+   --  Determine whether call Call which invokes entry, operator, or subprogram
+   --  Subp_Id is always ABE-safe. Subp_Rep is the representation of the entry,
+   --  operator, or subprogram.
 
    function Is_Safe_Instantiation
-     (Inst      : Node_Id;
-      Gen_Attrs : Target_Attributes) return Boolean;
+     (Inst    : Node_Id;
+      Gen_Id  : Entity_Id;
+      Gen_Rep : Target_Rep_Id) return Boolean;
    pragma Inline (Is_Safe_Instantiation);
-   --  Determine whether instance Inst which instantiates a generic unit
-   --  described by attributes Gen_Attrs is always ABE-safe.
+   --  Determine whether instantiation Inst which instantiates generic Gen_Id
+   --  is always ABE-safe. Gen_Rep is the representation of the generic.
 
    function Is_Same_Unit
      (Unit_1 : Entity_Id;
@@ -1549,323 +2018,36 @@ package body Sem_Elab is
    pragma Inline (Is_Same_Unit);
    --  Determine whether entities Unit_1 and Unit_2 denote the same unit
 
-   function Is_Scenario (N : Node_Id) return Boolean;
-   pragma Inline (Is_Scenario);
-   --  Determine whether attribute node N denotes a scenario. The scenario may
-   --  not necessarily be eligible for ABE processing.
-
-   function Is_SPARK_Semantic_Target (Id : Entity_Id) return Boolean;
-   pragma Inline (Is_SPARK_Semantic_Target);
-   --  Determine whether arbitrary entity Id nodes a source or internally
-   --  generated subprogram which emulates SPARK semantics.
-
-   function Is_Suitable_Access (N : Node_Id) return Boolean;
-   pragma Inline (Is_Suitable_Access);
-   --  Determine whether arbitrary node N denotes a suitable attribute for ABE
-   --  processing.
-
-   function Is_Suitable_Call (N : Node_Id) return Boolean;
-   pragma Inline (Is_Suitable_Call);
-   --  Determine whether arbitrary node N denotes a suitable call for ABE
-   --  processing.
-
-   function Is_Suitable_Instantiation (N : Node_Id) return Boolean;
-   pragma Inline (Is_Suitable_Instantiation);
-   --  Determine whether arbitrary node N is a suitable instantiation for ABE
-   --  processing.
-
-   function Is_Suitable_Scenario (N : Node_Id) return Boolean;
-   pragma Inline (Is_Suitable_Scenario);
-   --  Determine whether arbitrary node N is a suitable scenario for ABE
-   --  processing.
-
-   function Is_Suitable_SPARK_Derived_Type (N : Node_Id) return Boolean;
-   pragma Inline (Is_Suitable_SPARK_Derived_Type);
-   --  Determine whether arbitrary node N denotes a suitable derived type
-   --  declaration for ABE processing using the SPARK rules.
-
-   function Is_Suitable_SPARK_Instantiation (N : Node_Id) return Boolean;
-   pragma Inline (Is_Suitable_SPARK_Instantiation);
-   --  Determine whether arbitrary node N denotes a suitable instantiation for
-   --  ABE processing using the SPARK rules.
-
-   function Is_Suitable_SPARK_Refined_State_Pragma
-     (N : Node_Id) return Boolean;
-   pragma Inline (Is_Suitable_SPARK_Refined_State_Pragma);
-   --  Determine whether arbitrary node N denotes a suitable Refined_State
-   --  pragma for ABE processing using the SPARK rules.
-
-   function Is_Suitable_Variable_Assignment (N : Node_Id) return Boolean;
-   pragma Inline (Is_Suitable_Variable_Assignment);
-   --  Determine whether arbitrary node N denotes a suitable assignment for ABE
-   --  processing.
-
-   function Is_Suitable_Variable_Reference (N : Node_Id) return Boolean;
-   pragma Inline (Is_Suitable_Variable_Reference);
-   --  Determine whether arbitrary node N is a suitable variable reference for
-   --  ABE processing.
-
-   function Is_Synchronous_Suspension_Call (N : Node_Id) return Boolean;
-   pragma Inline (Is_Synchronous_Suspension_Call);
-   --  Determine whether arbitrary node N denotes a call to one the following
-   --  routines:
-   --
-   --    Ada.Synchronous_Barriers.Wait_For_Release
-   --    Ada.Synchronous_Task_Control.Suspend_Until_True
-
-   function Is_Task_Entry (Id : Entity_Id) return Boolean;
-   pragma Inline (Is_Task_Entry);
-   --  Determine whether arbitrary entity Id denotes a task entry
-
-   function Is_Up_Level_Target (Target_Decl : Node_Id) return Boolean;
-   pragma Inline (Is_Up_Level_Target);
-   --  Determine whether the current root resides at the declaration level. If
-   --  this is the case, determine whether a target described by declaration
-   --  Target_Decl is within a context which encloses the current root or is in
-   --  a different unit.
-
-   function Is_Visited_Body (Body_Decl : Node_Id) return Boolean;
-   pragma Inline (Is_Visited_Body);
-   --  Determine whether subprogram body Body_Decl is already visited during a
-   --  recursive traversal started from a top-level scenario.
-
-   procedure Meet_Elaboration_Requirement
-     (N         : Node_Id;
-      Target_Id : Entity_Id;
-      Req_Nam   : Name_Id);
-   --  Determine whether elaboration requirement Req_Nam for scenario N with
-   --  target Target_Id is met by the context of the main unit using the SPARK
-   --  rules. Req_Nam must denote either Elaborate or Elaborate_All. Emit an
-   --  error if this is not the case.
-
    function Non_Private_View (Typ : Entity_Id) return Entity_Id;
    pragma Inline (Non_Private_View);
    --  Return the full view of private type Typ if available, otherwise return
    --  type Typ.
 
-   procedure Output_Active_Scenarios (Error_Nod : Node_Id);
-   --  Output the contents of the active scenario stack from earliest to latest
-   --  to supplement an earlier error emitted for node Error_Nod.
+   function Scenario (N : Node_Id) return Node_Id;
+   pragma Inline (Scenario);
+   --  Return the appropriate scenario node for scenario N
 
-   procedure Pop_Active_Scenario (N : Node_Id);
-   pragma Inline (Pop_Active_Scenario);
-   --  Pop the top of the scenario stack. A check is made to ensure that the
-   --  scenario being removed is the same as N.
+   procedure Spec_And_Body_From_Entity
+     (Id        : Node_Id;
+      Spec_Decl : out Node_Id;
+      Body_Decl : out Node_Id);
+   pragma Inline (Spec_And_Body_From_Entity);
+   --  Given arbitrary entity Id representing a construct with a spec and body,
+   --  retrieve declaration of the spec in Spec_Decl and the declaration of the
+   --  body in Body_Decl.
 
-   generic
-      with procedure Process_Single_Activation
-        (Call       : Node_Id;
-         Call_Attrs : Call_Attributes;
-         Obj_Id     : Entity_Id;
-         Task_Attrs : Task_Attributes;
-         State      : Processing_Attributes);
-      --  Perform ABE checks and diagnostics for task activation call Call
-      --  which activates task Obj_Id. Call_Attrs are the attributes of the
-      --  activation call. Task_Attrs are the attributes of the task type.
-      --  State is the current state of the Processing phase.
-
-   procedure Process_Activation_Generic
-     (Call       : Node_Id;
-      Call_Attrs : Call_Attributes;
-      State      : Processing_Attributes);
-   --  Perform ABE checks and diagnostics for activation call Call by invoking
-   --  routine Process_Single_Activation on each task object being activated.
-   --  Call_Attrs are the attributes of the activation call. State is the
-   --  current state of the Processing phase.
-
-   procedure Process_Conditional_ABE
-     (N     : Node_Id;
-      State : Processing_Attributes := Initial_State);
-   --  Top-level dispatcher for processing of various elaboration scenarios.
-   --  Perform conditional ABE checks and diagnostics for scenario N. State
-   --  is the current state of the Processing phase.
-
-   procedure Process_Conditional_ABE_Access
-     (Attr  : Node_Id;
-      State : Processing_Attributes);
-   --  Perform ABE checks and diagnostics for 'Access to entry, operator, or
-   --  subprogram denoted by Attr. State is the current state of the Processing
-   --  phase.
-
-   procedure Process_Conditional_ABE_Activation_Impl
-     (Call       : Node_Id;
-      Call_Attrs : Call_Attributes;
-      Obj_Id     : Entity_Id;
-      Task_Attrs : Task_Attributes;
-      State      : Processing_Attributes);
-   --  Perform common conditional ABE checks and diagnostics for call Call
-   --  which activates task Obj_Id ignoring the Ada or SPARK rules. Call_Attrs
-   --  are the attributes of the activation call. Task_Attrs are the attributes
-   --  of the task type. State is the current state of the Processing phase.
-
-   procedure Process_Conditional_ABE_Call
-     (Call       : Node_Id;
-      Call_Attrs : Call_Attributes;
-      Target_Id  : Entity_Id;
-      State      : Processing_Attributes);
-   --  Top-level dispatcher for processing of calls. Perform ABE checks and
-   --  diagnostics for call Call which invokes target Target_Id. Call_Attrs
-   --  are the attributes of the call. State is the current state of the
-   --  Processing phase.
-
-   procedure Process_Conditional_ABE_Call_Ada
-     (Call         : Node_Id;
-      Call_Attrs   : Call_Attributes;
-      Target_Id    : Entity_Id;
-      Target_Attrs : Target_Attributes;
-      State        : Processing_Attributes);
-   --  Perform ABE checks and diagnostics for call Call which invokes target
-   --  Target_Id using the Ada rules. Call_Attrs are the attributes of the
-   --  call. Target_Attrs are attributes of the target. State is the current
-   --  state of the Processing phase.
-
-   procedure Process_Conditional_ABE_Call_SPARK
-     (Call         : Node_Id;
-      Target_Id    : Entity_Id;
-      Target_Attrs : Target_Attributes;
-      State        : Processing_Attributes);
-   --  Perform ABE checks and diagnostics for call Call which invokes target
-   --  Target_Id using the SPARK rules. Target_Attrs denotes the attributes of
-   --  the target. State is the current state of the Processing phase.
-
-   procedure Process_Conditional_ABE_Instantiation
-     (Exp_Inst : Node_Id;
-      State    : Processing_Attributes);
-   --  Top-level dispatcher for processing of instantiations. Perform ABE
-   --  checks and diagnostics for expanded instantiation Exp_Inst. State is
-   --  the current state of the Processing phase.
-
-   procedure Process_Conditional_ABE_Instantiation_Ada
-     (Exp_Inst   : Node_Id;
-      Inst       : Node_Id;
-      Inst_Attrs : Instantiation_Attributes;
-      Gen_Id     : Entity_Id;
-      Gen_Attrs  : Target_Attributes;
-      State      : Processing_Attributes);
-   --  Perform ABE checks and diagnostics for expanded instantiation Exp_Inst
-   --  of generic Gen_Id using the Ada rules. Inst is the instantiation node.
-   --  Inst_Attrs are the attributes of the instance. Gen_Attrs denotes the
-   --  attributes of the generic. State is the current state of the Processing
-   --  phase.
-
-   procedure Process_Conditional_ABE_Instantiation_SPARK
-     (Inst      : Node_Id;
-      Gen_Id    : Entity_Id;
-      Gen_Attrs : Target_Attributes;
-      State     : Processing_Attributes);
-   --  Perform ABE checks and diagnostics for instantiation Inst of generic
-   --  Gen_Id using the SPARK rules. Gen_Attrs denotes the attributes of the
-   --  generic. State is the current state of the Processing phase.
-
-   procedure Process_Conditional_ABE_Variable_Assignment (Asmt : Node_Id);
-   --  Top-level dispatcher for processing of variable assignments. Perform ABE
-   --  checks and diagnostics for assignment statement Asmt.
-
-   procedure Process_Conditional_ABE_Variable_Assignment_Ada
-     (Asmt   : Node_Id;
-      Var_Id : Entity_Id);
-   --  Perform ABE checks and diagnostics for assignment statement Asmt that
-   --  updates the value of variable Var_Id using the Ada rules.
-
-   procedure Process_Conditional_ABE_Variable_Assignment_SPARK
-     (Asmt   : Node_Id;
-      Var_Id : Entity_Id);
-   --  Perform ABE checks and diagnostics for assignment statement Asmt that
-   --  updates the value of variable Var_Id using the SPARK rules.
-
-   procedure Process_Conditional_ABE_Variable_Reference (Ref : Node_Id);
-   --  Top-level dispatcher for processing of variable references. Perform ABE
-   --  checks and diagnostics for variable reference Ref.
-
-   procedure Process_Conditional_ABE_Variable_Reference_Read
-     (Ref    : Node_Id;
-      Var_Id : Entity_Id;
-      Attrs  : Variable_Attributes);
-   --  Perform ABE checks and diagnostics for reference Ref described by its
-   --  attributes Attrs, that reads variable Var_Id.
-
-   procedure Process_Guaranteed_ABE (N : Node_Id);
-   --  Top-level dispatcher for processing of scenarios which result in a
-   --  guaranteed ABE.
-
-   procedure Process_Guaranteed_ABE_Activation_Impl
-     (Call       : Node_Id;
-      Call_Attrs : Call_Attributes;
-      Obj_Id     : Entity_Id;
-      Task_Attrs : Task_Attributes;
-      State      : Processing_Attributes);
-   --  Perform common guaranteed ABE checks and diagnostics for call Call which
-   --  activates task Obj_Id ignoring the Ada or SPARK rules. Call_Attrs are
-   --  the attributes of the activation call. Task_Attrs are the attributes of
-   --  the task type. State is provided for compatibility and is not used.
-
-   procedure Process_Guaranteed_ABE_Call
-     (Call       : Node_Id;
-      Call_Attrs : Call_Attributes;
-      Target_Id  : Entity_Id);
-   --  Perform common guaranteed ABE checks and diagnostics for call Call which
-   --  invokes target Target_Id ignoring the Ada or SPARK rules. Call_Attrs are
-   --  the attributes of the call.
-
-   procedure Process_Guaranteed_ABE_Instantiation (Exp_Inst : Node_Id);
-   --  Perform common guaranteed ABE checks and diagnostics for expanded
-   --  instantiation Exp_Inst of generic Gen_Id ignoring the Ada or SPARK
-   --  rules.
-
-   procedure Push_Active_Scenario (N : Node_Id);
-   pragma Inline (Push_Active_Scenario);
-   --  Push scenario N on top of the scenario stack
-
-   procedure Record_SPARK_Elaboration_Scenario (N : Node_Id);
-   pragma Inline (Record_SPARK_Elaboration_Scenario);
-   --  Save SPARK scenario N in table SPARK_Scenarios for later processing
-
-   procedure Reset_Visited_Bodies;
-   pragma Inline (Reset_Visited_Bodies);
-   --  Clear the contents of table Visited_Bodies
-
-   function Root_Scenario return Node_Id;
-   pragma Inline (Root_Scenario);
-   --  Return the top-level scenario which started a recursive search for other
-   --  scenarios. It is assumed that there is a valid top-level scenario on the
-   --  active scenario stack.
-
-   procedure Set_Early_Call_Region (Body_Id : Entity_Id; Start : Node_Id);
-   pragma Inline (Set_Early_Call_Region);
-   --  Associate an early call region with begins at construct Start with entry
-   --  or subprogram body Body_Id.
-
-   procedure Set_Elaboration_Status
-     (Unit_Id : Entity_Id;
-      Val     : Elaboration_Attributes);
-   pragma Inline (Set_Elaboration_Status);
-   --  Associate an set of elaboration attributes with unit Unit_Id
-
-   procedure Set_Is_Recorded_SPARK_Scenario
-     (N   : Node_Id;
-      Val : Boolean := True);
-   pragma Inline (Set_Is_Recorded_SPARK_Scenario);
-   --  Mark scenario N as being recorded in table SPARK_Scenarios
-
-   procedure Set_Is_Recorded_Top_Level_Scenario
-     (N   : Node_Id;
-      Val : Boolean := True);
-   pragma Inline (Set_Is_Recorded_Top_Level_Scenario);
-   --  Mark scenario N as being recorded in table Top_Level_Scenarios
-
-   procedure Set_Is_Visited_Body (Subp_Body : Node_Id);
-   pragma Inline (Set_Is_Visited_Body);
-   --  Mark subprogram body Subp_Body as being visited during a recursive
-   --  traversal started from a top-level scenario.
+   procedure Spec_And_Body_From_Node
+     (N         : Node_Id;
+      Spec_Decl : out Node_Id;
+      Body_Decl : out Node_Id);
+   pragma Inline (Spec_And_Body_From_Node);
+   --  Given arbitrary node N representing a construct with a spec and body,
+   --  retrieve declaration of the spec in Spec_Decl and the declaration of
+   --  the body in Body_Decl.
 
    function Static_Elaboration_Checks return Boolean;
    pragma Inline (Static_Elaboration_Checks);
    --  Determine whether the static model is in effect
-
-   procedure Traverse_Body (N : Node_Id; State : Processing_Attributes);
-   --  Inspect the declarative and statement lists of subprogram body N for
-   --  suitable elaboration scenarios and process them. State is the current
-   --  state of the Processing phase.
 
    function Unit_Entity (Unit_Id : Entity_Id) return Entity_Id;
    pragma Inline (Unit_Entity);
@@ -1876,24 +2058,1350 @@ package body Sem_Elab is
    --  Update all relevant internal data structures when scenario Old_N is
    --  transformed into scenario New_N by Atree.Rewrite.
 
+   ----------------------
+   -- Active_Scenarios --
+   ----------------------
+
+   package body Active_Scenarios is
+
+      -----------------------
+      -- Local subprograms --
+      -----------------------
+
+      procedure Output_Access_Taken
+        (Attr      : Node_Id;
+         Attr_Rep  : Scenario_Rep_Id;
+         Error_Nod : Node_Id);
+      pragma Inline (Output_Access_Taken);
+      --  Emit a specific diagnostic message for 'Access attribute reference
+      --  Attr with representation Attr_Rep. The message is associated with
+      --  node Error_Nod.
+
+      procedure Output_Active_Scenario
+        (N         : Node_Id;
+         Error_Nod : Node_Id;
+         In_State  : Processing_In_State);
+      pragma Inline (Output_Active_Scenario);
+      --  Top level dispatcher for outputting a scenario. Emit a specific
+      --  diagnostic message for scenario N. The message is associated with
+      --  node Error_Nod. In_State is the current state of the Processing
+      --  phase.
+
+      procedure Output_Call
+        (Call      : Node_Id;
+         Call_Rep  : Scenario_Rep_Id;
+         Error_Nod : Node_Id);
+      pragma Inline (Output_Call);
+      --  Emit a diagnostic message for call Call with representation Call_Rep.
+      --  The message is associated with node Error_Nod.
+
+      procedure Output_Header (Error_Nod : Node_Id);
+      pragma Inline (Output_Header);
+      --  Emit a specific diagnostic message for the unit of the root scenario.
+      --  The message is associated with node Error_Nod.
+
+      procedure Output_Instantiation
+        (Inst      : Node_Id;
+         Inst_Rep  : Scenario_Rep_Id;
+         Error_Nod : Node_Id);
+      pragma Inline (Output_Instantiation);
+      --  Emit a specific diagnostic message for instantiation Inst with
+      --  representation Inst_Rep. The message is associated with node
+      --  Error_Nod.
+
+      procedure Output_Refined_State_Pragma
+        (Prag      : Node_Id;
+         Prag_Rep  : Scenario_Rep_Id;
+         Error_Nod : Node_Id);
+      pragma Inline (Output_Refined_State_Pragma);
+      --  Emit a specific diagnostic message for Refined_State pragma Prag
+      --  with representation Prag_Rep. The message is associated with node
+      --  Error_Nod.
+
+      procedure Output_Task_Activation
+        (Call      : Node_Id;
+         Call_Rep  : Scenario_Rep_Id;
+         Error_Nod : Node_Id);
+      pragma Inline (Output_Task_Activation);
+      --  Emit a specific diagnostic message for activation call Call
+      --  with representation Call_Rep. The message is associated with
+      --  node Error_Nod.
+
+      procedure Output_Variable_Assignment
+        (Asmt      : Node_Id;
+         Asmt_Rep  : Scenario_Rep_Id;
+         Error_Nod : Node_Id);
+      pragma Inline (Output_Variable_Assignment);
+      --  Emit a specific diagnostic message for assignment statement Asmt
+      --  with representation Asmt_Rep. The message is associated with node
+      --  Error_Nod.
+
+      procedure Output_Variable_Reference
+        (Ref      : Node_Id;
+         Ref_Rep  : Scenario_Rep_Id;
+         Error_Nod : Node_Id);
+      pragma Inline (Output_Variable_Reference);
+      --  Emit a specific diagnostic message for read reference Ref with
+      --  representation Ref_Rep. The message is associated with node
+      --  Error_Nod.
+
+      -------------------
+      -- Output_Access --
+      -------------------
+
+      procedure Output_Access_Taken
+        (Attr      : Node_Id;
+         Attr_Rep  : Scenario_Rep_Id;
+         Error_Nod : Node_Id)
+      is
+         Subp_Id : constant Entity_Id := Target (Attr_Rep);
+
+      begin
+         Error_Msg_Name_1 := Attribute_Name (Attr);
+         Error_Msg_Sloc   := Sloc (Attr);
+         Error_Msg_NE ("\\  % of & taken #", Error_Nod, Subp_Id);
+      end Output_Access_Taken;
+
+      ----------------------------
+      -- Output_Active_Scenario --
+      ----------------------------
+
+      procedure Output_Active_Scenario
+        (N         : Node_Id;
+         Error_Nod : Node_Id;
+         In_State  : Processing_In_State)
+      is
+         Scen     : constant Node_Id := Scenario (N);
+         Scen_Rep : Scenario_Rep_Id;
+
+      begin
+         --  'Access
+
+         if Is_Suitable_Access_Taken (Scen) then
+            Output_Access_Taken
+              (Attr      => Scen,
+               Attr_Rep  => Scenario_Representation_Of (Scen, In_State),
+               Error_Nod => Error_Nod);
+
+         --  Call or task activation
+
+         elsif Is_Suitable_Call (Scen) then
+            Scen_Rep := Scenario_Representation_Of (Scen, In_State);
+
+            if Kind (Scen_Rep) = Call_Scenario then
+               Output_Call
+                 (Call      => Scen,
+                  Call_Rep  => Scen_Rep,
+                  Error_Nod => Error_Nod);
+
+            else
+               pragma Assert (Kind (Scen_Rep) = Task_Activation_Scenario);
+
+               Output_Task_Activation
+                 (Call      => Scen,
+                  Call_Rep  => Scen_Rep,
+                  Error_Nod => Error_Nod);
+            end if;
+
+         --  Instantiation
+
+         elsif Is_Suitable_Instantiation (Scen) then
+            Output_Instantiation
+              (Inst      => Scen,
+               Inst_Rep  => Scenario_Representation_Of (Scen, In_State),
+               Error_Nod => Error_Nod);
+
+         --  Pragma Refined_State
+
+         elsif Is_Suitable_SPARK_Refined_State_Pragma (Scen) then
+            Output_Refined_State_Pragma
+              (Prag      => Scen,
+               Prag_Rep  => Scenario_Representation_Of (Scen, In_State),
+               Error_Nod => Error_Nod);
+
+         --  Variable assignment
+
+         elsif Is_Suitable_Variable_Assignment (Scen) then
+            Output_Variable_Assignment
+              (Asmt      => Scen,
+               Asmt_Rep  => Scenario_Representation_Of (Scen, In_State),
+               Error_Nod => Error_Nod);
+
+         --  Variable reference
+
+         elsif Is_Suitable_Variable_Reference (Scen) then
+            Output_Variable_Reference
+              (Ref       => Scen,
+               Ref_Rep   => Scenario_Representation_Of (Scen, In_State),
+               Error_Nod => Error_Nod);
+         end if;
+      end Output_Active_Scenario;
+
+      -----------------------------
+      -- Output_Active_Scenarios --
+      -----------------------------
+
+      procedure Output_Active_Scenarios
+        (Error_Nod : Node_Id;
+         In_State  : Processing_In_State)
+      is
+         package Scenarios renames Active_Scenario_Stack;
+
+         Header_Posted : Boolean := False;
+
+      begin
+         --  Output the contents of the active scenario stack starting from the
+         --  bottom, or the least recent scenario.
+
+         for Index in Scenarios.First .. Scenarios.Last loop
+            if not Header_Posted then
+               Output_Header (Error_Nod);
+               Header_Posted := True;
+            end if;
+
+            Output_Active_Scenario
+              (N         => Scenarios.Table (Index),
+               Error_Nod => Error_Nod,
+               In_State  => In_State);
+         end loop;
+      end Output_Active_Scenarios;
+
+      -----------------
+      -- Output_Call --
+      -----------------
+
+      procedure Output_Call
+        (Call      : Node_Id;
+         Call_Rep  : Scenario_Rep_Id;
+         Error_Nod : Node_Id)
+      is
+         procedure Output_Accept_Alternative (Alt_Id : Entity_Id);
+         pragma Inline (Output_Accept_Alternative);
+         --  Emit a specific diagnostic message concerning accept alternative
+         --  with entity Alt_Id.
+
+         procedure Output_Call (Subp_Id : Entity_Id; Kind : String);
+         pragma Inline (Output_Call);
+         --  Emit a specific diagnostic message concerning a call of kind Kind
+         --  which invokes subprogram Subp_Id.
+
+         procedure Output_Type_Actions (Subp_Id : Entity_Id; Action : String);
+         pragma Inline (Output_Type_Actions);
+         --  Emit a specific diagnostic message concerning action Action of a
+         --  type performed by subprogram Subp_Id.
+
+         procedure Output_Verification_Call
+           (Pred    : String;
+            Id      : Entity_Id;
+            Id_Kind : String);
+         pragma Inline (Output_Verification_Call);
+         --  Emit a specific diagnostic message concerning the verification of
+         --  predicate Pred applied to related entity Id with kind Id_Kind.
+
+         -------------------------------
+         -- Output_Accept_Alternative --
+         -------------------------------
+
+         procedure Output_Accept_Alternative (Alt_Id : Entity_Id) is
+            Entry_Id : constant Entity_Id := Receiving_Entry (Alt_Id);
+
+         begin
+            pragma Assert (Present (Entry_Id));
+
+            Error_Msg_NE ("\\  entry & selected #", Error_Nod, Entry_Id);
+         end Output_Accept_Alternative;
+
+         -----------------
+         -- Output_Call --
+         -----------------
+
+         procedure Output_Call (Subp_Id : Entity_Id; Kind : String) is
+         begin
+            Error_Msg_NE ("\\  " & Kind & " & called #", Error_Nod, Subp_Id);
+         end Output_Call;
+
+         -------------------------
+         -- Output_Type_Actions --
+         -------------------------
+
+         procedure Output_Type_Actions
+           (Subp_Id : Entity_Id;
+            Action  : String)
+         is
+            Typ : constant Entity_Id := First_Formal_Type (Subp_Id);
+
+         begin
+            pragma Assert (Present (Typ));
+
+            Error_Msg_NE
+              ("\\  " & Action & " actions for type & #", Error_Nod, Typ);
+         end Output_Type_Actions;
+
+         ------------------------------
+         -- Output_Verification_Call --
+         ------------------------------
+
+         procedure Output_Verification_Call
+           (Pred    : String;
+            Id      : Entity_Id;
+            Id_Kind : String)
+         is
+         begin
+            pragma Assert (Present (Id));
+
+            Error_Msg_NE
+              ("\\  " & Pred & " of " & Id_Kind & " & verified #",
+               Error_Nod, Id);
+         end Output_Verification_Call;
+
+         --  Local variables
+
+         Subp_Id : constant Entity_Id := Target (Call_Rep);
+
+      --  Start of processing for Output_Call
+
+      begin
+         Error_Msg_Sloc := Sloc (Call);
+
+         --  Accept alternative
+
+         if Is_Accept_Alternative_Proc (Subp_Id) then
+            Output_Accept_Alternative (Subp_Id);
+
+         --  Adjustment
+
+         elsif Is_TSS (Subp_Id, TSS_Deep_Adjust) then
+            Output_Type_Actions (Subp_Id, "adjustment");
+
+         --  Default_Initial_Condition
+
+         elsif Is_Default_Initial_Condition_Proc (Subp_Id) then
+            Output_Verification_Call
+              (Pred    => "Default_Initial_Condition",
+               Id      => First_Formal_Type (Subp_Id),
+               Id_Kind => "type");
+
+         --  Entries
+
+         elsif Is_Protected_Entry (Subp_Id) then
+            Output_Call (Subp_Id, "entry");
+
+         --  Task entry calls are never processed because the entry being
+         --  invoked does not have a corresponding "body", it has a select. A
+         --  task entry call appears in the stack of active scenarios for the
+         --  sole purpose of checking No_Entry_Calls_In_Elaboration_Code and
+         --  nothing more.
+
+         elsif Is_Task_Entry (Subp_Id) then
+            null;
+
+         --  Finalization
+
+         elsif Is_TSS (Subp_Id, TSS_Deep_Finalize) then
+            Output_Type_Actions (Subp_Id, "finalization");
+
+         --  Calls to _Finalizer procedures must not appear in the output
+         --  because this creates confusing noise.
+
+         elsif Is_Finalizer_Proc (Subp_Id) then
+            null;
+
+         --  Initial_Condition
+
+         elsif Is_Initial_Condition_Proc (Subp_Id) then
+            Output_Verification_Call
+              (Pred    => "Initial_Condition",
+               Id      => Find_Enclosing_Scope (Call),
+               Id_Kind => "package");
+
+         --  Initialization
+
+         elsif Is_Init_Proc (Subp_Id)
+           or else Is_TSS (Subp_Id, TSS_Deep_Initialize)
+         then
+            Output_Type_Actions (Subp_Id, "initialization");
+
+         --  Invariant
+
+         elsif Is_Invariant_Proc (Subp_Id) then
+            Output_Verification_Call
+              (Pred    => "invariants",
+               Id      => First_Formal_Type (Subp_Id),
+               Id_Kind => "type");
+
+         --  Partial invariant calls must not appear in the output because this
+         --  creates confusing noise. Note that a partial invariant is always
+         --  invoked by the "full" invariant which is already placed on the
+         --  stack.
+
+         elsif Is_Partial_Invariant_Proc (Subp_Id) then
+            null;
+
+         --  _Postconditions
+
+         elsif Is_Postconditions_Proc (Subp_Id) then
+            Output_Verification_Call
+              (Pred    => "postconditions",
+               Id      => Find_Enclosing_Scope (Call),
+               Id_Kind => "subprogram");
+
+         --  Subprograms must come last because some of the previous cases fall
+         --  under this category.
+
+         elsif Ekind (Subp_Id) = E_Function then
+            Output_Call (Subp_Id, "function");
+
+         elsif Ekind (Subp_Id) = E_Procedure then
+            Output_Call (Subp_Id, "procedure");
+
+         else
+            pragma Assert (False);
+            return;
+         end if;
+      end Output_Call;
+
+      -------------------
+      -- Output_Header --
+      -------------------
+
+      procedure Output_Header (Error_Nod : Node_Id) is
+         Unit_Id : constant Entity_Id := Find_Top_Unit (Root_Scenario);
+
+      begin
+         if Ekind (Unit_Id) = E_Package then
+            Error_Msg_NE ("\\  spec of unit & elaborated", Error_Nod, Unit_Id);
+
+         elsif Ekind (Unit_Id) = E_Package_Body then
+            Error_Msg_NE ("\\  body of unit & elaborated", Error_Nod, Unit_Id);
+
+         else
+            Error_Msg_NE ("\\  in body of unit &", Error_Nod, Unit_Id);
+         end if;
+      end Output_Header;
+
+      --------------------------
+      -- Output_Instantiation --
+      --------------------------
+
+      procedure Output_Instantiation
+        (Inst      : Node_Id;
+         Inst_Rep  : Scenario_Rep_Id;
+         Error_Nod : Node_Id)
+      is
+         procedure Output_Instantiation (Gen_Id : Entity_Id; Kind : String);
+         pragma Inline (Output_Instantiation);
+         --  Emit a specific diagnostic message concerning an instantiation of
+         --  generic unit Gen_Id. Kind denotes the kind of the instantiation.
+
+         --------------------------
+         -- Output_Instantiation --
+         --------------------------
+
+         procedure Output_Instantiation (Gen_Id : Entity_Id; Kind : String) is
+         begin
+            Error_Msg_NE
+              ("\\  " & Kind & " & instantiated as & #", Error_Nod, Gen_Id);
+         end Output_Instantiation;
+
+         --  Local variables
+
+         Gen_Id : constant Entity_Id := Target (Inst_Rep);
+
+      --  Start of processing for Output_Instantiation
+
+      begin
+         Error_Msg_Node_2 := Defining_Entity (Inst);
+         Error_Msg_Sloc   := Sloc (Inst);
+
+         if Nkind (Inst) = N_Function_Instantiation then
+            Output_Instantiation (Gen_Id, "function");
+
+         elsif Nkind (Inst) = N_Package_Instantiation then
+            Output_Instantiation (Gen_Id, "package");
+
+         elsif Nkind (Inst) = N_Procedure_Instantiation then
+            Output_Instantiation (Gen_Id, "procedure");
+
+         else
+            pragma Assert (False);
+            return;
+         end if;
+      end Output_Instantiation;
+
+      ---------------------------------
+      -- Output_Refined_State_Pragma --
+      ---------------------------------
+
+      procedure Output_Refined_State_Pragma
+        (Prag      : Node_Id;
+         Prag_Rep  : Scenario_Rep_Id;
+         Error_Nod : Node_Id)
+      is
+         pragma Unreferenced (Prag_Rep);
+
+      begin
+         Error_Msg_Sloc := Sloc (Prag);
+         Error_Msg_N ("\\  refinement constituents read #", Error_Nod);
+      end Output_Refined_State_Pragma;
+
+      ----------------------------
+      -- Output_Task_Activation --
+      ----------------------------
+
+      procedure Output_Task_Activation
+        (Call      : Node_Id;
+         Call_Rep  : Scenario_Rep_Id;
+         Error_Nod : Node_Id)
+      is
+         pragma Unreferenced (Call_Rep);
+
+         function Find_Activator return Entity_Id;
+         --  Find the nearest enclosing construct which houses call Call
+
+         --------------------
+         -- Find_Activator --
+         --------------------
+
+         function Find_Activator return Entity_Id is
+            Par : Node_Id;
+
+         begin
+            --  Climb the parent chain looking for a package [body] or a
+            --  construct with a statement sequence.
+
+            Par := Parent (Call);
+            while Present (Par) loop
+               if Nkind_In (Par, N_Package_Body, N_Package_Declaration) then
+                  return Defining_Entity (Par);
+
+               elsif Nkind (Par) = N_Handled_Sequence_Of_Statements then
+                  return Defining_Entity (Parent (Par));
+               end if;
+
+               Par := Parent (Par);
+            end loop;
+
+            return Empty;
+         end Find_Activator;
+
+         --  Local variables
+
+         Activator : constant Entity_Id := Find_Activator;
+
+      --  Start of processing for Output_Task_Activation
+
+      begin
+         pragma Assert (Present (Activator));
+
+         Error_Msg_NE ("\\  local tasks of & activated", Error_Nod, Activator);
+      end Output_Task_Activation;
+
+      --------------------------------
+      -- Output_Variable_Assignment --
+      --------------------------------
+
+      procedure Output_Variable_Assignment
+        (Asmt      : Node_Id;
+         Asmt_Rep  : Scenario_Rep_Id;
+         Error_Nod : Node_Id)
+      is
+         Var_Id : constant Entity_Id := Target (Asmt_Rep);
+
+      begin
+         Error_Msg_Sloc := Sloc (Asmt);
+         Error_Msg_NE ("\\  variable & assigned #", Error_Nod, Var_Id);
+      end Output_Variable_Assignment;
+
+      -------------------------------
+      -- Output_Variable_Reference --
+      -------------------------------
+
+      procedure Output_Variable_Reference
+        (Ref       : Node_Id;
+         Ref_Rep   : Scenario_Rep_Id;
+         Error_Nod : Node_Id)
+      is
+         Var_Id : constant Entity_Id := Target (Ref_Rep);
+
+      begin
+         Error_Msg_Sloc := Sloc (Ref);
+         Error_Msg_NE ("\\  variable & read #", Error_Nod, Var_Id);
+      end Output_Variable_Reference;
+
+      -------------------------
+      -- Pop_Active_Scenario --
+      -------------------------
+
+      procedure Pop_Active_Scenario (N : Node_Id) is
+         package Scenarios renames Active_Scenario_Stack;
+         Top : Node_Id renames Scenarios.Table (Scenarios.Last);
+
+      begin
+         pragma Assert (Top = N);
+         Scenarios.Decrement_Last;
+      end Pop_Active_Scenario;
+
+      --------------------------
+      -- Push_Active_Scenario --
+      --------------------------
+
+      procedure Push_Active_Scenario (N : Node_Id) is
+      begin
+         Active_Scenario_Stack.Append (N);
+      end Push_Active_Scenario;
+
+      -------------------
+      -- Root_Scenario --
+      -------------------
+
+      function Root_Scenario return Node_Id is
+         package Scenarios renames Active_Scenario_Stack;
+
+      begin
+         --  Ensure that the scenario stack has at least one active scenario in
+         --  it. The one at the bottom (index First) is the root scenario.
+
+         pragma Assert (Scenarios.Last >= Scenarios.First);
+         return Scenarios.Table (Scenarios.First);
+      end Root_Scenario;
+   end Active_Scenarios;
+
+   --------------------------
+   -- Activation_Processor --
+   --------------------------
+
+   package body Activation_Processor is
+
+      ------------------------
+      -- Process_Activation --
+      ------------------------
+
+      procedure Process_Activation
+        (Call      : Node_Id;
+         Call_Rep  : Scenario_Rep_Id;
+         Processor : Activation_Processor_Ptr;
+         In_State  : Processing_In_State)
+      is
+         procedure Process_Task_Object (Obj_Id : Entity_Id; Typ : Entity_Id);
+         pragma Inline (Process_Task_Object);
+         --  Invoke Processor for task object Obj_Id of type Typ
+
+         procedure Process_Task_Objects
+           (Task_Objs : NE_List.Doubly_Linked_List);
+         pragma Inline (Process_Task_Objects);
+         --  Invoke Processor for all task objects found in list Task_Objs
+
+         procedure Traverse_List
+           (List      : List_Id;
+            Task_Objs : NE_List.Doubly_Linked_List);
+         pragma Inline (Traverse_List);
+         --  Traverse declarative or statement list List while searching for
+         --  objects of a task type, or containing task components. If such an
+         --  object is found, first save it in list Task_Objs and then invoke
+         --  Processor on it.
+
+         -------------------------
+         -- Process_Task_Object --
+         -------------------------
+
+         procedure Process_Task_Object (Obj_Id : Entity_Id; Typ : Entity_Id) is
+            Root_Typ : constant Entity_Id :=
+                         Non_Private_View (Root_Type (Typ));
+            Comp_Id  : Entity_Id;
+            Obj_Rep  : Target_Rep_Id;
+            Root_Rep : Target_Rep_Id;
+
+            New_In_State : Processing_In_State := In_State;
+            --  Each step of the Processing phase constitutes a new state
+
+         begin
+            if Is_Task_Type (Typ) then
+               Obj_Rep  := Target_Representation_Of (Obj_Id,   New_In_State);
+               Root_Rep := Target_Representation_Of (Root_Typ, New_In_State);
+
+               --  Warnings are suppressed when a prior scenario is already in
+               --  that mode, or when the object, activation call, or task type
+               --  have warnings suppressed. Update the state of the Processing
+               --  phase to reflect this.
+
+               New_In_State.Suppress_Warnings :=
+                 New_In_State.Suppress_Warnings
+                   or else not Elaboration_Warnings_OK (Call_Rep)
+                   or else not Elaboration_Warnings_OK (Obj_Rep)
+                   or else not Elaboration_Warnings_OK (Root_Rep);
+
+               --  Update the state of the Processing phase to indicate that
+               --  any further traversal is now within a task body.
+
+               New_In_State.Within_Task_Body := True;
+
+               --  Associate the current task type with the activation call
+
+               Set_Activated_Task_Type (Call_Rep, Root_Typ);
+
+               --  Process the activation of the current task object by calling
+               --  the supplied processor.
+
+               Processor.all
+                 (Call     => Call,
+                  Call_Rep => Call_Rep,
+                  Obj_Id   => Obj_Id,
+                  Obj_Rep  => Obj_Rep,
+                  Task_Typ => Root_Typ,
+                  Task_Rep => Root_Rep,
+                  In_State => New_In_State);
+
+               --  Reset the association between the current task and the
+               --  activtion call.
+
+               Set_Activated_Task_Type (Call_Rep, Empty);
+
+            --  Examine the component type when the object is an array
+
+            elsif Is_Array_Type (Typ) and then Has_Task (Root_Typ) then
+               Process_Task_Object
+                 (Obj_Id => Obj_Id,
+                  Typ    => Component_Type (Typ));
+
+            --  Examine individual component types when the object is a record
+
+            elsif Is_Record_Type (Typ) and then Has_Task (Root_Typ) then
+               Comp_Id := First_Component (Typ);
+               while Present (Comp_Id) loop
+                  Process_Task_Object
+                    (Obj_Id => Obj_Id,
+                     Typ    => Etype (Comp_Id));
+
+                  Next_Component (Comp_Id);
+               end loop;
+            end if;
+         end Process_Task_Object;
+
+         --------------------------
+         -- Process_Task_Objects --
+         --------------------------
+
+         procedure Process_Task_Objects
+           (Task_Objs : NE_List.Doubly_Linked_List)
+         is
+            Iter   : NE_List.Iterator;
+            Obj_Id : Entity_Id;
+
+         begin
+            Iter := NE_List.Iterate (Task_Objs);
+            while NE_List.Has_Next (Iter) loop
+               NE_List.Next (Iter, Obj_Id);
+
+               Process_Task_Object
+                 (Obj_Id => Obj_Id,
+                  Typ    => Etype (Obj_Id));
+            end loop;
+         end Process_Task_Objects;
+
+         -------------------
+         -- Traverse_List --
+         -------------------
+
+         procedure Traverse_List
+           (List      : List_Id;
+            Task_Objs : NE_List.Doubly_Linked_List)
+         is
+            Item     : Node_Id;
+            Item_Id  : Entity_Id;
+            Item_Typ : Entity_Id;
+
+         begin
+            --  Examine the contents of the list looking for an object
+            --  declaration of a task type or one that contains a task
+            --  within.
+
+            Item := First (List);
+            while Present (Item) loop
+               if Nkind (Item) = N_Object_Declaration then
+                  Item_Id  := Defining_Entity (Item);
+                  Item_Typ := Etype (Item_Id);
+
+                  if Has_Task (Item_Typ) then
+
+                     --  The object is either of a task type, or contains a
+                     --  task component. Save it in the list of task objects
+                     --  associated with the activation call.
+
+                     NE_List.Append (Task_Objs, Item_Id);
+
+                     Process_Task_Object
+                       (Obj_Id => Item_Id,
+                        Typ    => Item_Typ);
+                  end if;
+               end if;
+
+               Next (Item);
+            end loop;
+         end Traverse_List;
+
+         --  Local variables
+
+         Context   : Node_Id;
+         Spec      : Node_Id;
+         Task_Objs : NE_List.Doubly_Linked_List;
+
+      --  Start of processing for Process_Activation
+
+      begin
+         --  Nothing to do when the activation is a guaranteed ABE
+
+         if Is_Known_Guaranteed_ABE (Call) then
+            return;
+         end if;
+
+         Task_Objs := Activated_Task_Objects (Call_Rep);
+
+         --  The activation call has been processed at least once, and all
+         --  task objects have already been collected. Directly process the
+         --  objects without having to reexamine the context of the call.
+
+         if NE_List.Present (Task_Objs) then
+            Process_Task_Objects (Task_Objs);
+
+         --  Otherwise the activation call is being processed for the first
+         --  time. Collect all task objects in case the call is reprocessed
+         --  multiple times.
+
+         else
+            Task_Objs := NE_List.Create;
+            Set_Activated_Task_Objects (Call_Rep, Task_Objs);
+
+            --  Find the context of the activation call where all task objects
+            --  being activated are declared. This is usually the parent of the
+            --  call.
+
+            Context := Parent (Call);
+
+            --  Handle the case where the activation call appears within the
+            --  handled statements of a block or a body.
+
+            if Nkind (Context) = N_Handled_Sequence_Of_Statements then
+               Context := Parent (Context);
+            end if;
+
+            --  Process all task objects in both the spec and body when the
+            --  activation call appears in a package body.
+
+            if Nkind (Context) = N_Package_Body then
+               Spec :=
+                 Specification
+                   (Unit_Declaration_Node (Corresponding_Spec (Context)));
+
+               Traverse_List
+                 (List      => Visible_Declarations (Spec),
+                  Task_Objs => Task_Objs);
+
+               Traverse_List
+                 (List      => Private_Declarations (Spec),
+                  Task_Objs => Task_Objs);
+
+               Traverse_List
+                 (List      => Declarations (Context),
+                  Task_Objs => Task_Objs);
+
+            --  Process all task objects in the spec when the activation call
+            --  appears in a package spec.
+
+            elsif Nkind (Context) = N_Package_Specification then
+               Traverse_List
+                 (List      => Visible_Declarations (Context),
+                  Task_Objs => Task_Objs);
+
+               Traverse_List
+                 (List      => Private_Declarations (Context),
+                  Task_Objs => Task_Objs);
+
+            --  Otherwise the context must be a block or a body. Process all
+            --  task objects found in the declarations.
+
+            else
+               pragma Assert (Nkind_In (Context, N_Block_Statement,
+                                                 N_Entry_Body,
+                                                 N_Protected_Body,
+                                                 N_Subprogram_Body,
+                                                 N_Task_Body));
+
+               Traverse_List
+                 (List      => Declarations (Context),
+                  Task_Objs => Task_Objs);
+            end if;
+         end if;
+      end Process_Activation;
+   end Activation_Processor;
+
+   -----------------------
+   -- Assignment_Target --
+   -----------------------
+
+   function Assignment_Target (Asmt : Node_Id) return Node_Id is
+      Nam : Node_Id;
+
+   begin
+      Nam := Name (Asmt);
+
+      --  When the name denotes an array or record component, find the whole
+      --  object.
+
+      while Nkind_In (Nam, N_Explicit_Dereference,
+                           N_Indexed_Component,
+                           N_Selected_Component,
+                           N_Slice)
+      loop
+         Nam := Prefix (Nam);
+      end loop;
+
+      return Nam;
+   end Assignment_Target;
+
+   --------------------
+   -- Body_Processor --
+   --------------------
+
+   package body Body_Processor is
+
+      ---------------------
+      -- Data structures --
+      ---------------------
+
+      --  The following map relates scenario lists to subprogram bodies
+
+      Nested_Scenarios_Map : NE_List_Map.Dynamic_Hash_Table := NE_List_Map.Nil;
+
+      --  The following set contains all subprogram bodies that have been
+      --  processed by routine Traverse_Body.
+
+      Traversed_Bodies_Set : NE_Set.Membership_Set := NE_Set.Nil;
+
+      -----------------------
+      -- Local subprograms --
+      -----------------------
+
+      function Is_Traversed_Body (N : Node_Id) return Boolean;
+      pragma Inline (Is_Traversed_Body);
+      --  Determine whether subprogram body N has already been traversed
+
+      function Nested_Scenarios
+        (N : Node_Id) return NE_List.Doubly_Linked_List;
+      pragma Inline (Nested_Scenarios);
+      --  Obtain the list of scenarios associated with subprogram body N
+
+      procedure Set_Is_Traversed_Body
+        (N   : Node_Id;
+         Val : Boolean := True);
+      pragma Inline (Set_Is_Traversed_Body);
+      --  Mark subprogram body N as traversed depending on value Val
+
+      procedure Set_Nested_Scenarios
+        (N         : Node_Id;
+         Scenarios : NE_List.Doubly_Linked_List);
+      pragma Inline (Set_Nested_Scenarios);
+      --  Associate scenario list Scenarios with subprogram body N
+
+      -----------------------------
+      -- Finalize_Body_Processor --
+      -----------------------------
+
+      procedure Finalize_Body_Processor is
+      begin
+         NE_List_Map.Destroy (Nested_Scenarios_Map);
+         NE_Set.Destroy      (Traversed_Bodies_Set);
+      end Finalize_Body_Processor;
+
+      -------------------------------
+      -- Initialize_Body_Processor --
+      -------------------------------
+
+      procedure Initialize_Body_Processor is
+      begin
+         Nested_Scenarios_Map := NE_List_Map.Create (250);
+         Traversed_Bodies_Set := NE_Set.Create      (250);
+      end Initialize_Body_Processor;
+
+      -----------------------
+      -- Is_Traversed_Body --
+      -----------------------
+
+      function Is_Traversed_Body (N : Node_Id) return Boolean is
+         pragma Assert (Present (N));
+      begin
+         return NE_Set.Contains (Traversed_Bodies_Set, N);
+      end Is_Traversed_Body;
+
+      ----------------------
+      -- Nested_Scenarios --
+      ----------------------
+
+      function Nested_Scenarios
+        (N : Node_Id) return NE_List.Doubly_Linked_List
+      is
+         pragma Assert (Present (N));
+         pragma Assert (Nkind (N) = N_Subprogram_Body);
+
+      begin
+         return NE_List_Map.Get (Nested_Scenarios_Map, N);
+      end Nested_Scenarios;
+
+      ----------------------------
+      -- Reset_Traversed_Bodies --
+      ----------------------------
+
+      procedure Reset_Traversed_Bodies is
+      begin
+         NE_Set.Reset (Traversed_Bodies_Set);
+      end Reset_Traversed_Bodies;
+
+      ---------------------------
+      -- Set_Is_Traversed_Body --
+      ---------------------------
+
+      procedure Set_Is_Traversed_Body
+        (N   : Node_Id;
+         Val : Boolean := True)
+      is
+         pragma Assert (Present (N));
+
+      begin
+         if Val then
+            NE_Set.Insert (Traversed_Bodies_Set, N);
+         else
+            NE_Set.Delete (Traversed_Bodies_Set, N);
+         end if;
+      end Set_Is_Traversed_Body;
+
+      --------------------------
+      -- Set_Nested_Scenarios --
+      --------------------------
+
+      procedure Set_Nested_Scenarios
+        (N         : Node_Id;
+         Scenarios : NE_List.Doubly_Linked_List)
+      is
+         pragma Assert (Present (N));
+      begin
+         NE_List_Map.Put (Nested_Scenarios_Map, N, Scenarios);
+      end Set_Nested_Scenarios;
+
+      -------------------
+      -- Traverse_Body --
+      -------------------
+
+      procedure Traverse_Body
+        (N                   : Node_Id;
+         Requires_Processing : Scenario_Predicate_Ptr;
+         Processor           : Scenario_Processor_Ptr;
+         In_State            : Processing_In_State)
+      is
+         Scenarios : NE_List.Doubly_Linked_List := NE_List.Nil;
+         --  The list of scenarios that appear within the declarations and
+         --  statement of subprogram body N. The variable is intentionally
+         --  global because Is_Potential_Scenario needs to populate it.
+
+         function In_Task_Body (Nod : Node_Id) return Boolean;
+         pragma Inline (In_Task_Body);
+         --  Determine whether arbitrary node Nod appears within a task body
+
+         function Is_Synchronous_Suspension_Call
+           (Nod : Node_Id) return Boolean;
+         pragma Inline (Is_Synchronous_Suspension_Call);
+         --  Determine whether arbitrary node Nod denotes a call to one of
+         --  these routines:
+         --
+         --    Ada.Synchronous_Barriers.Wait_For_Release
+         --    Ada.Synchronous_Task_Control.Suspend_Until_True
+
+         procedure Traverse_Collected_Scenarios;
+         pragma Inline (Traverse_Collected_Scenarios);
+         --  Traverse the already collected scenarios in list Scenarios by
+         --  invoking Processor on each individual one.
+
+         procedure Traverse_List (List : List_Id);
+         pragma Inline (Traverse_List);
+         --  Invoke Traverse_Potential_Scenarios on each node in list List
+
+         function Traverse_Potential_Scenario
+           (Scen : Node_Id) return Traverse_Result;
+         pragma Inline (Traverse_Potential_Scenario);
+         --  Determine whether arbitrary node Scen is a suitable scenario using
+         --  predicate Is_Scenario and traverse it by invoking Processor on it.
+
+         procedure Traverse_Potential_Scenarios is
+           new Traverse_Proc (Traverse_Potential_Scenario);
+
+         ------------------
+         -- In_Task_Body --
+         ------------------
+
+         function In_Task_Body (Nod : Node_Id) return Boolean is
+            Par : Node_Id;
+
+         begin
+            --  Climb the parent chain looking for a task body [procedure]
+
+            Par := Nod;
+            while Present (Par) loop
+               if Nkind (Par) = N_Task_Body then
+                  return True;
+
+               elsif Nkind (Par) = N_Subprogram_Body
+                 and then Is_Task_Body_Procedure (Par)
+               then
+                  return True;
+
+               --  Prevent the search from going too far. Note that this test
+               --  shares nodes with the two cases above, and must come last.
+
+               elsif Is_Body_Or_Package_Declaration (Par) then
+                  return False;
+               end if;
+
+               Par := Parent (Par);
+            end loop;
+
+            return False;
+         end In_Task_Body;
+
+         ------------------------------------
+         -- Is_Synchronous_Suspension_Call --
+         ------------------------------------
+
+         function Is_Synchronous_Suspension_Call
+           (Nod : Node_Id) return Boolean
+         is
+            Subp_Id : Entity_Id;
+
+         begin
+            --  To qualify, the call must invoke one of the runtime routines
+            --  which perform synchronous suspension.
+
+            if Is_Suitable_Call (Nod) then
+               Subp_Id := Target (Nod);
+
+               return
+                 Is_RTE (Subp_Id, RE_Suspend_Until_True)
+                   or else
+                 Is_RTE (Subp_Id, RE_Wait_For_Release);
+            end if;
+
+            return False;
+         end Is_Synchronous_Suspension_Call;
+
+         ----------------------------------
+         -- Traverse_Collected_Scenarios --
+         ----------------------------------
+
+         procedure Traverse_Collected_Scenarios is
+            Iter : NE_List.Iterator;
+            Scen : Node_Id;
+
+         begin
+            Iter := NE_List.Iterate (Scenarios);
+            while NE_List.Has_Next (Iter) loop
+               NE_List.Next (Iter, Scen);
+
+               --  The current scenario satisfies the input predicate, process
+               --  it.
+
+               if Requires_Processing.all (Scen) then
+                  Processor.all (Scen, In_State);
+               end if;
+            end loop;
+         end Traverse_Collected_Scenarios;
+
+         -------------------
+         -- Traverse_List --
+         -------------------
+
+         procedure Traverse_List (List : List_Id) is
+            Scen : Node_Id;
+
+         begin
+            Scen := First (List);
+            while Present (Scen) loop
+               Traverse_Potential_Scenarios (Scen);
+               Next (Scen);
+            end loop;
+         end Traverse_List;
+
+         ---------------------------------
+         -- Traverse_Potential_Scenario --
+         ---------------------------------
+
+         function Traverse_Potential_Scenario
+           (Scen : Node_Id) return Traverse_Result
+         is
+         begin
+            --  Special cases
+
+            --  Skip constructs which do not have elaboration of their own and
+            --  need to be elaborated by other means such as invocation, task
+            --  activation, etc.
+
+            if Is_Non_Library_Level_Encapsulator (Scen) then
+               return Skip;
+
+            --  Terminate the traversal of a task body when encountering an
+            --  accept or select statement, and
+            --
+            --    * Entry calls during elaboration are not allowed. In this
+            --      case the accept or select statement will cause the task
+            --      to block at elaboration time because there are no entry
+            --      calls to unblock it.
+            --
+            --  or
+            --
+            --    * Switch -gnatd_a (stop elaboration checks on accept or
+            --      select statement) is in effect.
+
+            elsif (Debug_Flag_Underscore_A
+                    or else Restriction_Active
+                              (No_Entry_Calls_In_Elaboration_Code))
+              and then Nkind_In (Original_Node (Scen), N_Accept_Statement,
+                                                       N_Selective_Accept)
+            then
+               return Abandon;
+
+            --  Terminate the traversal of a task body when encountering a
+            --  suspension call, and
+            --
+            --    * Entry calls during elaboration are not allowed. In this
+            --      case the suspension call emulates an entry call and will
+            --      cause the task to block at elaboration time.
+            --
+            --  or
+            --
+            --    * Switch -gnatd_s (stop elaboration checks on synchronous
+            --      suspension) is in effect.
+            --
+            --  Note that the guard should not be checking the state of flag
+            --  Within_Task_Body because only suspension calls which appear
+            --  immediately within the statements of the task are supported.
+            --  Flag Within_Task_Body carries over to deeper levels of the
+            --  traversal.
+
+            elsif (Debug_Flag_Underscore_S
+                    or else Restriction_Active
+                              (No_Entry_Calls_In_Elaboration_Code))
+              and then Is_Synchronous_Suspension_Call (Scen)
+              and then In_Task_Body (Scen)
+            then
+               return Abandon;
+
+            --  Certain nodes carry semantic lists which act as repositories
+            --  until expansion transforms the node and relocates the contents.
+            --  Examine these lists in case expansion is disabled.
+
+            elsif Nkind_In (Scen, N_And_Then, N_Or_Else) then
+               Traverse_List (Actions (Scen));
+
+            elsif Nkind_In (Scen, N_Elsif_Part, N_Iteration_Scheme) then
+               Traverse_List (Condition_Actions (Scen));
+
+            elsif Nkind (Scen) = N_If_Expression then
+               Traverse_List (Then_Actions (Scen));
+               Traverse_List (Else_Actions (Scen));
+
+            elsif Nkind_In (Scen, N_Component_Association,
+                                  N_Iterated_Component_Association)
+            then
+               Traverse_List (Loop_Actions (Scen));
+
+            --  General case
+
+            --  The current node satisfies the input predicate, process it
+
+            elsif Requires_Processing.all (Scen) then
+               Processor.all (Scen, In_State);
+            end if;
+
+            --  Save a general scenario regardless of whether it satisfies the
+            --  input predicate. This allows for quick subsequent traversals of
+            --  general scenarios, even with different predicates.
+
+            if Is_Suitable_Access_Taken (Scen)
+              or else Is_Suitable_Call (Scen)
+              or else Is_Suitable_Instantiation (Scen)
+              or else Is_Suitable_Variable_Assignment (Scen)
+              or else Is_Suitable_Variable_Reference (Scen)
+            then
+               NE_List.Append (Scenarios, Scen);
+            end if;
+
+            return OK;
+         end Traverse_Potential_Scenario;
+
+      --  Start of processing for Traverse_Body
+
+      begin
+         --  Nothing to do when the traversal is suppressed
+
+         if In_State.Traversal = No_Traversal then
+            return;
+
+         --  Nothing to do when there is no input
+
+         elsif No (N) then
+            return;
+
+         --  Nothing to do when the input is not a subprogram body
+
+         elsif Nkind (N) /= N_Subprogram_Body then
+            return;
+
+         --  Nothing to do if the subprogram body was already traversed
+
+         elsif Is_Traversed_Body (N) then
+            return;
+         end if;
+
+         --  Mark the subprogram body as traversed
+
+         Set_Is_Traversed_Body (N);
+
+         Scenarios := Nested_Scenarios (N);
+
+         --  The subprogram body has been traversed at least once, and all
+         --  scenarios that appear within its declarations and statements
+         --  have already been collected. Directly retraverse the scenarios
+         --  without having to retraverse the subprogram body subtree.
+
+         if NE_List.Present (Scenarios) then
+            Traverse_Collected_Scenarios;
+
+         --  Otherwise the subprogram body is being traversed for the first
+         --  time. Collect all scenarios that appear within its declarations
+         --  and statements in case the subprogram body has to be retraversed
+         --  multiple times.
+
+         else
+            Scenarios := NE_List.Create;
+            Set_Nested_Scenarios (N, Scenarios);
+
+            Traverse_List (Declarations (N));
+            Traverse_Potential_Scenarios (Handled_Statement_Sequence (N));
+         end if;
+      end Traverse_Body;
+   end Body_Processor;
+
    -----------------------
    -- Build_Call_Marker --
    -----------------------
 
    procedure Build_Call_Marker (N : Node_Id) is
       function In_External_Context
-        (Call         : Node_Id;
-         Target_Attrs : Target_Attributes) return Boolean;
+        (Call    : Node_Id;
+         Subp_Id : Entity_Id) return Boolean;
       pragma Inline (In_External_Context);
-      --  Determine whether a target described by attributes Target_Attrs is
-      --  external to call Call which must reside within an instance.
+      --  Determine whether entry, operator, or subprogram Subp_Id is external
+      --  to call Call which must reside within an instance.
 
       function In_Premature_Context (Call : Node_Id) return Boolean;
+      pragma Inline (In_Premature_Context);
       --  Determine whether call Call appears within a premature context
-
-      function Is_Bridge_Target (Id : Entity_Id) return Boolean;
-      pragma Inline (Is_Bridge_Target);
-      --  Determine whether arbitrary entity Id denotes a bridge target
 
       function Is_Default_Expression (Call : Node_Id) return Boolean;
       pragma Inline (Is_Default_Expression);
@@ -1910,16 +3418,16 @@ package body Sem_Elab is
       -------------------------
 
       function In_External_Context
-        (Call         : Node_Id;
-         Target_Attrs : Target_Attributes) return Boolean
+        (Call    : Node_Id;
+         Subp_Id : Entity_Id) return Boolean
       is
+         Spec_Decl : constant Entity_Id := Unit_Declaration_Node (Subp_Id);
+
          Inst      : Node_Id;
          Inst_Body : Node_Id;
-         Inst_Decl : Node_Id;
+         Inst_Spec : Node_Id;
 
       begin
-         --  Performance note: parent traversal
-
          Inst := Find_Enclosing_Instance (Call);
 
          --  The call appears within an instance
@@ -1929,7 +3437,7 @@ package body Sem_Elab is
             --  The call comes from the main unit and the target does not
 
             if In_Extended_Main_Code_Unit (Call)
-              and then not In_Extended_Main_Code_Unit (Target_Attrs.Spec_Decl)
+              and then not In_Extended_Main_Code_Unit (Spec_Decl)
             then
                return True;
 
@@ -1937,16 +3445,14 @@ package body Sem_Elab is
             --  instance spec or body.
 
             else
-               Extract_Instance_Attributes
-                 (Exp_Inst  => Inst,
-                  Inst_Decl => Inst_Decl,
-                  Inst_Body => Inst_Body);
-
-               --  Performance note: parent traversal
+               Spec_And_Body_From_Node
+                 (N         => Inst,
+                  Spec_Decl => Inst_Spec,
+                  Body_Decl => Inst_Body);
 
                return not In_Subtree
-                            (N     => Target_Attrs.Spec_Decl,
-                             Root1 => Inst_Decl,
+                            (N     => Spec_Decl,
+                             Root1 => Inst_Spec,
                              Root2 => Inst_Body);
             end if;
          end if;
@@ -1988,22 +3494,6 @@ package body Sem_Elab is
          return False;
       end In_Premature_Context;
 
-      ----------------------
-      -- Is_Bridge_Target --
-      ----------------------
-
-      function Is_Bridge_Target (Id : Entity_Id) return Boolean is
-      begin
-         return
-           Is_Accept_Alternative_Proc (Id)
-             or else Is_Finalizer_Proc (Id)
-             or else Is_Partial_Invariant_Proc (Id)
-             or else Is_Postconditions_Proc (Id)
-             or else Is_TSS (Id, TSS_Deep_Adjust)
-             or else Is_TSS (Id, TSS_Deep_Finalize)
-             or else Is_TSS (Id, TSS_Deep_Initialize);
-      end Is_Bridge_Target;
-
       ---------------------------
       -- Is_Default_Expression --
       ---------------------------
@@ -2021,7 +3511,7 @@ package body Sem_Elab is
                                   N_Procedure_Call_Statement)
            and then Comes_From_Source (Outer_Call)
          then
-            Outer_Nam := Extract_Call_Name (Outer_Call);
+            Outer_Nam := Call_Name (Outer_Call);
 
             return
               Is_Entity_Name (Outer_Nam)
@@ -2056,11 +3546,9 @@ package body Sem_Elab is
 
       --  Local variables
 
-      Call_Attrs   : Call_Attributes;
-      Call_Nam     : Node_Id;
-      Marker       : Node_Id;
-      Target_Attrs : Target_Attributes;
-      Target_Id    : Entity_Id;
+      Call_Nam : Node_Id;
+      Marker   : Node_Id;
+      Subp_Id  : Entity_Id;
 
    --  Start of processing for Build_Call_Marker
 
@@ -2101,9 +3589,16 @@ package body Sem_Elab is
         and then Nkind_In (N, N_Entry_Call_Statement, N_Requeue_Statement)
       then
          return;
+
+      --  Nothing to do when the call is analyzed/resolved too early within an
+      --  intermediate context. This check is saved for last because it incurs
+      --  a performance penalty.
+
+      elsif In_Premature_Context (N) then
+         return;
       end if;
 
-      Call_Nam := Extract_Call_Name (N);
+      Call_Nam := Call_Name (N);
 
       --  Nothing to do when the call is erroneous or left in a bad state
 
@@ -2112,6 +3607,9 @@ package body Sem_Elab is
                and then Is_Subprogram_Or_Entry (Entity (Call_Nam)))
       then
          return;
+      end if;
+
+      Subp_Id := Canonical_Subprogram (Entity (Call_Nam));
 
       --  Nothing to do when the call invokes a generic formal subprogram and
       --  switch -gnatd.G (ignore calls through generic formal parameters for
@@ -2119,44 +3617,24 @@ package body Sem_Elab is
       --  direct target of the call to avoid the side effects of mapping
       --  actuals to formals using renamings.
 
-      elsif Debug_Flag_Dot_GG
+      if Debug_Flag_Dot_GG
         and then Is_Generic_Formal_Subp (Entity (Call_Nam))
       then
          return;
-
-      --  Nothing to do when the call is analyzed/resolved too early within an
-      --  intermediate context. This check is saved for last because it incurs
-      --  a performance penalty.
-
-      --  Performance note: parent traversal
-
-      elsif In_Premature_Context (N) then
-         return;
-      end if;
-
-      Extract_Call_Attributes
-        (Call      => N,
-         Target_Id => Target_Id,
-         Attrs     => Call_Attrs);
-
-      Extract_Target_Attributes
-        (Target_Id => Target_Id,
-         Attrs     => Target_Attrs);
 
       --  Nothing to do when the call appears within the expanded spec or
       --  body of an instantiated generic, the call does not invoke a generic
       --  formal subprogram, the target is external to the instance, and switch
       --  -gnatdL (ignore external calls from instances for elaboration) is in
-      --  effect.
+      --  effect. This check must be performed with the direct target of the
+      --  call to avoid the side effects of mapping actuals to formals using
+      --  renamings.
 
-      if Debug_Flag_LL
+      elsif Debug_Flag_LL
         and then not Is_Generic_Formal_Subp (Entity (Call_Nam))
-
-        --  Performance note: parent traversal
-
         and then In_External_Context
-                   (Call         => N,
-                    Target_Attrs => Target_Attrs)
+                   (Call    => N,
+                    Subp_Id => Subp_Id)
       then
          return;
 
@@ -2165,20 +3643,20 @@ package body Sem_Elab is
       --  in effect.
 
       elsif Debug_Flag_Underscore_P
-        and then Is_Assertion_Pragma_Target (Target_Id)
+        and then Is_Assertion_Pragma_Target (Subp_Id)
       then
          return;
 
       --  Source calls to source targets are always considered because they
       --  reflect the original call graph.
 
-      elsif Target_Attrs.From_Source and then Call_Attrs.From_Source then
+      elsif Comes_From_Source (N) and then Comes_From_Source (Subp_Id) then
          null;
 
       --  A call to a source function which acts as the default expression in
       --  another call requires special detection.
 
-      elsif Target_Attrs.From_Source
+      elsif Comes_From_Source (Subp_Id)
         and then Nkind (N) = N_Function_Call
         and then Is_Default_Expression (N)
       then
@@ -2186,17 +3664,17 @@ package body Sem_Elab is
 
       --  The target emulates Ada semantics
 
-      elsif Is_Ada_Semantic_Target (Target_Id) then
+      elsif Is_Ada_Semantic_Target (Subp_Id) then
          null;
 
       --  The target acts as a link between scenarios
 
-      elsif Is_Bridge_Target (Target_Id) then
+      elsif Is_Bridge_Target (Subp_Id) then
          null;
 
       --  The target emulates SPARK semantics
 
-      elsif Is_SPARK_Semantic_Target (Target_Id) then
+      elsif Is_SPARK_Semantic_Target (Subp_Id) then
          null;
 
       --  Otherwise the call is not suitable for ABE processing. This prevents
@@ -2215,16 +3693,23 @@ package body Sem_Elab is
 
       --  Inherit the attributes of the original call
 
-      Set_Target                    (Marker, Target_Id);
-      Set_Is_Declaration_Level_Node (Marker, Call_Attrs.In_Declarations);
-      Set_Is_Dispatching_Call       (Marker, Call_Attrs.Is_Dispatching);
+      Set_Is_Declaration_Level_Node
+        (Marker, Find_Enclosing_Level (N) = Declaration_Level);
+
+      Set_Is_Dispatching_Call
+        (Marker, Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement)
+                   and then Present (Controlling_Argument (N)));
+
       Set_Is_Elaboration_Checks_OK_Node
-                                    (Marker, Call_Attrs.Elab_Checks_OK);
+        (Marker, Is_Elaboration_Checks_OK_Node (N));
+
       Set_Is_Elaboration_Warnings_OK_Node
-                                    (Marker, Call_Attrs.Elab_Warnings_OK);
-      Set_Is_Ignored_Ghost_Node     (Marker, Call_Attrs.Ghost_Mode_Ignore);
-      Set_Is_Source_Call            (Marker, Call_Attrs.From_Source);
-      Set_Is_SPARK_Mode_On_Node     (Marker, Call_Attrs.SPARK_Mode_On);
+        (Marker, Is_Elaboration_Warnings_OK_Node (N));
+
+      Set_Is_Ignored_Ghost_Node (Marker, Is_Ignored_Ghost_Node (N));
+      Set_Is_Source_Call        (Marker, Comes_From_Source (N));
+      Set_Is_SPARK_Mode_On_Node (Marker, Is_SPARK_Mode_On_Node (N));
+      Set_Target                (Marker, Subp_Id);
 
       --  The marker is inserted prior to the original call. This placement has
       --  several desirable effects:
@@ -2274,23 +3759,50 @@ package body Sem_Elab is
       Read  : Boolean;
       Write : Boolean)
    is
-      Marker    : Node_Id;
-      Var_Attrs : Variable_Attributes;
-      Var_Id    : Entity_Id;
+      function Ultimate_Variable (Var_Id : Entity_Id) return Entity_Id;
+      pragma Inline (Ultimate_Variable);
+      --  Obtain the ultimate renamed variable of variable Var_Id
+
+      -----------------------
+      -- Ultimate_Variable --
+      -----------------------
+
+      function Ultimate_Variable (Var_Id : Entity_Id) return Entity_Id is
+         Ren_Id : Entity_Id;
+
+      begin
+         Ren_Id := Var_Id;
+         while Present (Renamed_Entity (Ren_Id))
+           and then Nkind (Renamed_Entity (Ren_Id)) in N_Entity
+         loop
+            Ren_Id := Renamed_Entity (Ren_Id);
+         end loop;
+
+         return Ren_Id;
+      end Ultimate_Variable;
+
+      --  Local variables
+
+      Var_Id : constant Entity_Id := Ultimate_Variable (Entity (N));
+      Marker : Node_Id;
+
+   --  Start of processing for Build_Variable_Reference_Marker
 
    begin
-      Extract_Variable_Reference_Attributes
-        (Ref    => N,
-         Var_Id => Var_Id,
-         Attrs  => Var_Attrs);
-
       Marker := Make_Variable_Reference_Marker (Sloc (N));
 
       --  Inherit the attributes of the original variable reference
 
-      Set_Target   (Marker, Var_Id);
-      Set_Is_Read  (Marker, Read);
-      Set_Is_Write (Marker, Write);
+      Set_Is_Elaboration_Checks_OK_Node
+        (Marker, Is_Elaboration_Checks_OK_Node (N));
+
+      Set_Is_Elaboration_Warnings_OK_Node
+        (Marker, Is_Elaboration_Warnings_OK_Node (N));
+
+      Set_Is_Read               (Marker, Read);
+      Set_Is_SPARK_Mode_On_Node (Marker, Is_SPARK_Mode_On_Node (N));
+      Set_Is_Write              (Marker, Write);
+      Set_Target                (Marker, Var_Id);
 
       --  The marker is inserted prior to the original variable reference. The
       --  insertion must take place even when the reference does not occur in
@@ -2306,11 +3818,69 @@ package body Sem_Elab is
       Record_Elaboration_Scenario (Marker);
    end Build_Variable_Reference_Marker;
 
+   ---------------
+   -- Call_Name --
+   ---------------
+
+   function Call_Name (Call : Node_Id) return Node_Id is
+      Nam : Node_Id;
+
+   begin
+      Nam := Name (Call);
+
+      --  When the call invokes an entry family, the name appears as an indexed
+      --  component.
+
+      if Nkind (Nam) = N_Indexed_Component then
+         Nam := Prefix (Nam);
+      end if;
+
+      --  When the call employs the object.operation form, the name appears as
+      --  a selected component.
+
+      if Nkind (Nam) = N_Selected_Component then
+         Nam := Selector_Name (Nam);
+      end if;
+
+      return Nam;
+   end Call_Name;
+
+   --------------------------
+   -- Canonical_Subprogram --
+   --------------------------
+
+   function Canonical_Subprogram (Subp_Id : Entity_Id) return Entity_Id is
+      Canon_Id : Entity_Id;
+
+   begin
+      Canon_Id := Subp_Id;
+
+      --  Use the original protected subprogram when dealing with one of the
+      --  specialized lock-manipulating versions.
+
+      if Is_Protected_Body_Subp (Canon_Id) then
+         Canon_Id := Protected_Subprogram (Canon_Id);
+      end if;
+
+      --  Obtain the original subprogram except when the subprogram is also
+      --  an instantiation. In this case the alias is the internally generated
+      --  subprogram which appears within the anonymous package created for the
+      --  instantiation, making it unuitable.
+
+      if not Is_Generic_Instance (Canon_Id) then
+         Canon_Id := Get_Renamed_Entity (Canon_Id);
+      end if;
+
+      return Canon_Id;
+   end Canonical_Subprogram;
+
    ---------------------------------
    -- Check_Elaboration_Scenarios --
    ---------------------------------
 
    procedure Check_Elaboration_Scenarios is
+      Iter : NE_Set.Iterator;
+
    begin
       --  Nothing to do when switch -gnatH (legacy elaboration checking mode
       --  enabled) is in effect because the legacy ABE mechanism does not need
@@ -2326,6 +3896,15 @@ package body Sem_Elab is
          return;
       end if;
 
+      --  Create all internal data structures
+
+      Initialize_Body_Processor;
+      Initialize_Early_Call_Region_Processor;
+      Initialize_Elaborated_Units;
+      Initialize_Internal_Representation;
+      Initialize_Invocation_Graph;
+      Initialize_Scenario_Storage;
+
       --  Restore the original elaboration model which was in effect when the
       --  scenarios were first recorded. The model may be specified by pragma
       --  Elaboration_Checks which appears on the initial declaration of the
@@ -2336,741 +3915,564 @@ package body Sem_Elab is
       --  Examine the context of the main unit and record all units with prior
       --  elaboration with respect to it.
 
-      Find_Elaborated_Units;
+      Collect_Elaborated_Units;
 
-      --  Examine each top-level scenario saved during the Recording phase for
-      --  conditional ABEs and perform various actions depending on the model
-      --  in effect. The table of visited bodies is created for each new top-
-      --  level scenario.
+      --  Examine all scenarios saved during the Recording phase applying the
+      --  Ada or SPARK elaboration rules in order to detect and diagnose ABE
+      --  issues, install conditional ABE checks, and ensure the elaboration
+      --  of units.
 
-      for Index in Top_Level_Scenarios.First .. Top_Level_Scenarios.Last loop
-         Reset_Visited_Bodies;
+      Iter := Iterate_Declaration_Scenarios;
+      Check_Conditional_ABE_Scenarios (Iter);
 
-         Process_Conditional_ABE (Top_Level_Scenarios.Table (Index));
-      end loop;
+      Iter := Iterate_Library_Body_Scenarios;
+      Check_Conditional_ABE_Scenarios (Iter);
+
+      Iter := Iterate_Library_Spec_Scenarios;
+      Check_Conditional_ABE_Scenarios (Iter);
 
       --  Examine each SPARK scenario saved during the Recording phase which
       --  is not necessarily executable during elaboration, but still requires
       --  elaboration-related checks.
 
-      for Index in SPARK_Scenarios.First .. SPARK_Scenarios.Last loop
-         Check_SPARK_Scenario (SPARK_Scenarios.Table (Index));
-      end loop;
+      Check_SPARK_Scenarios;
+
+      --  Add conditional ABE checks for all scenarios that require one when
+      --  the dynamic model is in effect.
+
+      Install_Dynamic_ABE_Checks;
+
+      --  Examine all scenarios saved during the Recording phase along with
+      --  invocation constructs within the spec and body of the main unit.
+      --  Record the declarations and paths that reach into an external unit
+      --  in the ALI file of the main unit.
+
+      Record_Invocation_Graph;
+
+      --  Destroy all internal data structures
+
+      Finalize_Body_Processor;
+      Finalize_Early_Call_Region_Processor;
+      Finalize_Elaborated_Units;
+      Finalize_Internal_Representation;
+      Finalize_Invocation_Graph;
+      Finalize_Scenario_Storage;
    end Check_Elaboration_Scenarios;
 
-   ------------------------------
-   -- Check_Preelaborated_Call --
-   ------------------------------
+   ---------------------
+   -- Check_Installer --
+   ---------------------
 
-   procedure Check_Preelaborated_Call (Call : Node_Id) is
-      function In_Preelaborated_Context (N : Node_Id) return Boolean;
-      --  Determine whether arbitrary node appears in a preelaborated context
+   package body Check_Installer is
 
-      ------------------------------
-      -- In_Preelaborated_Context --
-      ------------------------------
+      -----------------------
+      -- Local subprograms --
+      -----------------------
 
-      function In_Preelaborated_Context (N : Node_Id) return Boolean is
-         Body_Id : constant Entity_Id := Find_Code_Unit (N);
-         Spec_Id : constant Entity_Id := Unique_Entity (Body_Id);
+      function ABE_Check_Or_Failure_OK
+        (N       : Node_Id;
+         Targ_Id : Entity_Id;
+         Unit_Id : Entity_Id) return Boolean;
+      pragma Inline (ABE_Check_Or_Failure_OK);
+      --  Determine whether a conditional ABE check or guaranteed ABE failure
+      --  can be installed for scenario N with target Targ_Id which resides in
+      --  unit Unit_Id.
+
+      function Insertion_Node (N : Node_Id) return Node_Id;
+      pragma Inline (Insertion_Node);
+      --  Obtain the proper insertion node of an ABE check or failure for
+      --  scenario N.
+
+      procedure Insert_ABE_Check_Or_Failure (N : Node_Id; Check : Node_Id);
+      pragma Inline (Insert_ABE_Check_Or_Failure);
+      --  Insert conditional ABE check or guaranteed ABE failure Check prior to
+      --  scenario N.
+
+      procedure Install_Scenario_ABE_Check_Common
+        (N        : Node_Id;
+         Targ_Id  : Entity_Id;
+         Targ_Rep : Target_Rep_Id);
+      pragma Inline (Install_Scenario_ABE_Check_Common);
+      --  Install a conditional ABE check for scenario N to ensure that target
+      --  Targ_Id is properly elaborated. Targ_Rep is the representation of the
+      --  target.
+
+      procedure Install_Scenario_ABE_Failure_Common (N : Node_Id);
+      pragma Inline (Install_Scenario_ABE_Failure_Common);
+      --  Install a guaranteed ABE failure for scenario N
+
+      procedure Install_Unit_ABE_Check_Common
+        (N       : Node_Id;
+         Unit_Id : Entity_Id);
+      pragma Inline (Install_Unit_ABE_Check_Common);
+      --  Install a conditional ABE check for scenario N to ensure that unit
+      --  Unit_Id is properly elaborated.
+
+      -----------------------------
+      -- ABE_Check_Or_Failure_OK --
+      -----------------------------
+
+      function ABE_Check_Or_Failure_OK
+        (N       : Node_Id;
+         Targ_Id : Entity_Id;
+         Unit_Id : Entity_Id) return Boolean
+      is
+         pragma Unreferenced (Targ_Id);
+
+         Ins_Node : constant Node_Id := Insertion_Node (N);
 
       begin
-         --  The node appears within a package body whose corresponding spec is
-         --  subject to pragma Remote_Call_Interface or Remote_Types. This does
-         --  not result in a preelaborated context because the package body may
-         --  be on another machine.
-
-         if Ekind (Body_Id) = E_Package_Body
-           and then Ekind_In (Spec_Id, E_Generic_Package, E_Package)
-           and then (Is_Remote_Call_Interface (Spec_Id)
-                      or else Is_Remote_Types (Spec_Id))
-         then
+         if not Check_Or_Failure_Generation_OK then
             return False;
 
-         --  Otherwise the node appears within a preelaborated context when the
-         --  associated unit is preelaborated.
+         --  Nothing to do when the scenario denots a compilation unit because
+         --  there is no executable environment at that level.
+
+         elsif Nkind (Parent (Ins_Node)) = N_Compilation_Unit then
+            return False;
+
+         --  An ABE check or failure is not needed when the target is defined
+         --  in a unit which is elaborated prior to the main unit. This check
+         --  must also consider the following cases:
+         --
+         --  * The unit of the target appears in the context of the main unit
+         --
+         --  * The unit of the target is subject to pragma Elaborate_Body. An
+         --    ABE check MUST NOT be generated because the unit is always
+         --    elaborated prior to the main unit.
+         --
+         --  * The unit of the target is the main unit. An ABE check MUST be
+         --    added in this case because a conditional ABE may be raised
+         --    depending on the flow of execution within the main unit (flag
+         --    Same_Unit_OK is False).
+
+         elsif Has_Prior_Elaboration
+                 (Unit_Id      => Unit_Id,
+                  Context_OK   => True,
+                  Elab_Body_OK => True)
+         then
+            return False;
+         end if;
+
+         return True;
+      end ABE_Check_Or_Failure_OK;
+
+      ------------------------------------
+      -- Check_Or_Failure_Generation_OK --
+      ------------------------------------
+
+      function Check_Or_Failure_Generation_OK return Boolean is
+      begin
+         --  An ABE check or failure is not needed when the compilation will
+         --  not produce an executable.
+
+         if Serious_Errors_Detected > 0 then
+            return False;
+
+         --  An ABE check or failure must not be installed when compiling for
+         --  GNATprove because raise statements are not supported.
+
+         elsif GNATprove_Mode then
+            return False;
+         end if;
+
+         return True;
+      end Check_Or_Failure_Generation_OK;
+
+      --------------------
+      -- Insertion_Node --
+      --------------------
+
+      function Insertion_Node (N : Node_Id) return Node_Id is
+      begin
+         --  When the scenario denotes an instantiation, the proper insertion
+         --  node is the instance spec. This ensures that the generic actuals
+         --  will not be evaluated prior to a potential ABE.
+
+         if Nkind (N) in N_Generic_Instantiation
+           and then Present (Instance_Spec (N))
+         then
+            return Instance_Spec (N);
+
+         --  Otherwise the proper insertion node is the scenario itself
 
          else
-            return Is_Preelaborated_Unit (Spec_Id);
+            return N;
          end if;
-      end In_Preelaborated_Context;
+      end Insertion_Node;
 
-      --  Local variables
+      ---------------------------------
+      -- Insert_ABE_Check_Or_Failure --
+      ---------------------------------
 
-      Call_Attrs : Call_Attributes;
-      Level      : Enclosing_Level_Kind;
-      Target_Id  : Entity_Id;
-
-   --  Start of processing for Check_Preelaborated_Call
-
-   begin
-      Extract_Call_Attributes
-        (Call      => Call,
-         Target_Id => Target_Id,
-         Attrs     => Call_Attrs);
-
-      --  Nothing to do when the call is internally generated because it is
-      --  assumed that it will never violate preelaboration.
-
-      if not Call_Attrs.From_Source then
-         return;
-      end if;
-
-      --  Performance note: parent traversal
-
-      Level := Find_Enclosing_Level (Call);
-
-      --  Library-level calls are always considered because they are part of
-      --  the associated unit's elaboration actions.
-
-      if Level in Library_Level then
-         null;
-
-      --  Calls at the library level of a generic package body must be checked
-      --  because they would render an instantiation illegal if the template is
-      --  marked as preelaborated. Note that this does not apply to calls at
-      --  the library level of a generic package spec.
-
-      elsif Level = Generic_Package_Body then
-         null;
-
-      --  Otherwise the call does not appear at the proper level and must not
-      --  be considered for this check.
-
-      else
-         return;
-      end if;
-
-      --  The call appears within a preelaborated unit. Emit a warning only for
-      --  internal uses, otherwise this is an error.
-
-      if In_Preelaborated_Context (Call) then
-         Error_Msg_Warn := GNAT_Mode;
-         Error_Msg_N
-           ("<<non-static call not allowed in preelaborated unit", Call);
-      end if;
-   end Check_Preelaborated_Call;
-
-   ------------------------------
-   -- Check_SPARK_Derived_Type --
-   ------------------------------
-
-   procedure Check_SPARK_Derived_Type (Typ_Decl : Node_Id) is
-      Typ : constant Entity_Id := Defining_Entity (Typ_Decl);
-
-      --  NOTE: The routines within Check_SPARK_Derived_Type are intentionally
-      --  unnested to avoid deep indentation of code.
-
-      Stop_Check : exception;
-      --  This exception is raised when the freeze node violates the placement
-      --  rules.
-
-      procedure Check_Overriding_Primitive
-        (Prim  : Entity_Id;
-         FNode : Node_Id);
-      pragma Inline (Check_Overriding_Primitive);
-      --  Verify that freeze node FNode is within the early call region of
-      --  overriding primitive Prim's body.
-
-      function Freeze_Node_Location (FNode : Node_Id) return Source_Ptr;
-      pragma Inline (Freeze_Node_Location);
-      --  Return a more accurate source location associated with freeze node
-      --  FNode.
-
-      function Precedes_Source_Construct (N : Node_Id) return Boolean;
-      pragma Inline (Precedes_Source_Construct);
-      --  Determine whether arbitrary node N appears prior to some source
-      --  construct.
-
-      procedure Suggest_Elaborate_Body
-        (N         : Node_Id;
-         Body_Decl : Node_Id;
-         Error_Nod : Node_Id);
-      pragma Inline (Suggest_Elaborate_Body);
-      --  Suggest the use of pragma Elaborate_Body when the pragma will allow
-      --  for node N to appear within the early call region of subprogram body
-      --  Body_Decl. The suggestion is attached to Error_Nod as a continuation
-      --  error.
-
-      --------------------------------
-      -- Check_Overriding_Primitive --
-      --------------------------------
-
-      procedure Check_Overriding_Primitive
-        (Prim  : Entity_Id;
-         FNode : Node_Id)
-      is
-         Prim_Decl : constant Node_Id := Unit_Declaration_Node (Prim);
-         Body_Decl : Node_Id;
-         Body_Id   : Entity_Id;
-         Region    : Node_Id;
+      procedure Insert_ABE_Check_Or_Failure (N : Node_Id; Check : Node_Id) is
+         Ins_Nod : constant Node_Id   := Insertion_Node (N);
+         Scop_Id : constant Entity_Id := Find_Enclosing_Scope (Ins_Nod);
 
       begin
-         --  Nothing to do for predefined primitives because they are artifacts
-         --  of tagged type expansion and cannot override source primitives.
+         --  Install the nearest enclosing scope of the scenario as there must
+         --  be something on the scope stack.
 
-         if Is_Predefined_Dispatching_Operation (Prim) then
+         Push_Scope (Scop_Id);
+
+         Insert_Action (Ins_Nod, Check);
+
+         Pop_Scope;
+      end Insert_ABE_Check_Or_Failure;
+
+      --------------------------------
+      -- Install_Dynamic_ABE_Checks --
+      --------------------------------
+
+      procedure Install_Dynamic_ABE_Checks is
+         Iter : NE_Set.Iterator;
+         N    : Node_Id;
+
+      begin
+         if not Check_Or_Failure_Generation_OK then
+            return;
+
+         --  Nothing to do if the dynamic model is not in effect
+
+         elsif not Dynamic_Elaboration_Checks then
             return;
          end if;
 
-         Body_Id := Corresponding_Body (Prim_Decl);
+         --  Install a conditional ABE check for each saved scenario
 
-         --  Nothing to do when the primitive does not have a corresponding
-         --  body. This can happen when the unit with the bodies is not the
-         --  main unit subjected to ABE checks.
+         Iter := Iterate_Dynamic_ABE_Check_Scenarios;
+         while NE_Set.Has_Next (Iter) loop
+            NE_Set.Next (Iter, N);
 
-         if No (Body_Id) then
+            Process_Conditional_ABE
+              (N        => N,
+               In_State => Dynamic_Model_State);
+         end loop;
+      end Install_Dynamic_ABE_Checks;
+
+      --------------------------------
+      -- Install_Scenario_ABE_Check --
+      --------------------------------
+
+      procedure Install_Scenario_ABE_Check
+        (N        : Node_Id;
+         Targ_Id  : Entity_Id;
+         Targ_Rep : Target_Rep_Id;
+         Disable  : Scenario_Rep_Id)
+      is
+      begin
+         --  Nothing to do when the scenario does not need an ABE check
+
+         if not ABE_Check_Or_Failure_OK
+                  (N       => N,
+                   Targ_Id => Targ_Id,
+                   Unit_Id => Unit (Targ_Rep))
+         then
             return;
+         end if;
 
-         --  The primitive overrides a parent or progenitor primitive
+         --  Prevent multiple attempts to install the same ABE check
 
-         elsif Present (Overridden_Operation (Prim)) then
+         Disable_Elaboration_Checks (Disable);
 
-            --  Nothing to do when overriding an interface primitive happens by
-            --  inheriting a non-interface primitive as the check would be done
-            --  on the parent primitive.
+         Install_Scenario_ABE_Check_Common
+           (N        => N,
+            Targ_Id  => Targ_Id,
+            Targ_Rep => Targ_Rep);
+      end Install_Scenario_ABE_Check;
 
-            if Present (Alias (Prim)) then
+      --------------------------------
+      -- Install_Scenario_ABE_Check --
+      --------------------------------
+
+      procedure Install_Scenario_ABE_Check
+        (N        : Node_Id;
+         Targ_Id  : Entity_Id;
+         Targ_Rep : Target_Rep_Id;
+         Disable  : Target_Rep_Id)
+      is
+      begin
+         --  Nothing to do when the scenario does not need an ABE check
+
+         if not ABE_Check_Or_Failure_OK
+                  (N       => N,
+                   Targ_Id => Targ_Id,
+                   Unit_Id => Unit (Targ_Rep))
+         then
+            return;
+         end if;
+
+         --  Prevent multiple attempts to install the same ABE check
+
+         Disable_Elaboration_Checks (Disable);
+
+         Install_Scenario_ABE_Check_Common
+           (N        => N,
+            Targ_Id  => Targ_Id,
+            Targ_Rep => Targ_Rep);
+      end Install_Scenario_ABE_Check;
+
+      ---------------------------------------
+      -- Install_Scenario_ABE_Check_Common --
+      ---------------------------------------
+
+      procedure Install_Scenario_ABE_Check_Common
+        (N        : Node_Id;
+         Targ_Id  : Entity_Id;
+         Targ_Rep : Target_Rep_Id)
+      is
+         Targ_Body : constant Node_Id := Body_Declaration (Targ_Rep);
+         Targ_Decl : constant Node_Id := Spec_Declaration (Targ_Rep);
+
+         pragma Assert (Present (Targ_Body));
+         pragma Assert (Present (Targ_Decl));
+
+         procedure Build_Elaboration_Entity;
+         pragma Inline (Build_Elaboration_Entity);
+         --  Create a new elaboration flag for Targ_Id, insert it prior to
+         --  Targ_Decl, and set it after Targ_Body.
+
+         ------------------------------
+         -- Build_Elaboration_Entity --
+         ------------------------------
+
+         procedure Build_Elaboration_Entity is
+            Loc     : constant Source_Ptr := Sloc (Targ_Id);
+            Flag_Id : Entity_Id;
+
+         begin
+            --  Nothing to do if the target has an elaboration flag
+
+            if Present (Elaboration_Entity (Targ_Id)) then
                return;
             end if;
 
-         --  Nothing to do when the primitive is not overriding. The body of
-         --  such a primitive cannot be targeted by a dispatching call which
-         --  is executable during elaboration, and cannot cause an ABE.
+            --  Create the declaration of the elaboration flag. The name
+            --  carries a unique counter in case the name is overloaded.
 
-         else
-            return;
-         end if;
+            Flag_Id :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_External_Name (Chars (Targ_Id), 'E', -1));
 
-         Body_Decl := Unit_Declaration_Node (Body_Id);
-         Region    := Find_Early_Call_Region (Body_Decl);
+            Set_Elaboration_Entity          (Targ_Id, Flag_Id);
+            Set_Elaboration_Entity_Required (Targ_Id);
 
-         --  The freeze node appears prior to the early call region of the
-         --  primitive body.
+            Push_Scope (Scope (Targ_Id));
 
-         --  IMPORTANT: This check must always be performed even when -gnatd.v
-         --  (enforce SPARK elaboration rules in SPARK code) is not specified
-         --  because the static model cannot guarantee the absence of ABEs in
-         --  in the presence of dispatching calls.
+            --  Generate:
+            --    Enn : Short_Integer := 0;
 
-         if Earlier_In_Extended_Unit (FNode, Region) then
-            Error_Msg_Node_2 := Prim;
-            Error_Msg_NE
-              ("first freezing point of type & must appear within early call "
-               & "region of primitive body & (SPARK RM 7.7(8))",
-               Typ_Decl, Typ);
+            Insert_Action (Targ_Decl,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Flag_Id,
+                Object_Definition   =>
+                  New_Occurrence_Of (Standard_Short_Integer, Loc),
+                Expression          => Make_Integer_Literal (Loc, Uint_0)));
 
-            Error_Msg_Sloc := Sloc (Region);
-            Error_Msg_N ("\region starts #", Typ_Decl);
+            --  Generate:
+            --    Enn := 1;
 
-            Error_Msg_Sloc := Sloc (Body_Decl);
-            Error_Msg_N ("\region ends #", Typ_Decl);
+            Set_Elaboration_Flag (Targ_Body, Targ_Id);
 
-            Error_Msg_Sloc := Freeze_Node_Location (FNode);
-            Error_Msg_N ("\first freezing point #", Typ_Decl);
+            Pop_Scope;
+         end Build_Elaboration_Entity;
 
-            --  If applicable, suggest the use of pragma Elaborate_Body in the
-            --  associated package spec.
+         --  Local variables
 
-            Suggest_Elaborate_Body
-              (N         => FNode,
-               Body_Decl => Body_Decl,
-               Error_Nod => Typ_Decl);
+         Loc  : constant Source_Ptr := Sloc (N);
 
-            raise Stop_Check;
-         end if;
-      end Check_Overriding_Primitive;
-
-      --------------------------
-      -- Freeze_Node_Location --
-      --------------------------
-
-      function Freeze_Node_Location (FNode : Node_Id) return Source_Ptr is
-         Context : constant Node_Id    := Parent (FNode);
-         Loc     : constant Source_Ptr := Sloc (FNode);
-
-         Prv_Decls : List_Id;
-         Vis_Decls : List_Id;
+      --  Start for processing for Install_Scenario_ABE_Check_Common
 
       begin
-         --  In general, the source location of the freeze node is as close as
-         --  possible to the real freeze point, except when the freeze node is
-         --  at the "bottom" of a package spec.
+         --  Create an elaboration flag for the target when it does not have
+         --  one.
 
-         if Nkind (Context) = N_Package_Specification then
-            Prv_Decls := Private_Declarations (Context);
-            Vis_Decls := Visible_Declarations (Context);
+         Build_Elaboration_Entity;
 
-            --  The freeze node appears in the private declarations of the
-            --  package.
+         --  Generate:
+         --    if not Targ_Id'Elaborated then
+         --       raise Program_Error with "access before elaboration";
+         --    end if;
 
-            if Present (Prv_Decls)
-              and then List_Containing (FNode) = Prv_Decls
-            then
-               null;
+         Insert_ABE_Check_Or_Failure
+           (N     => N,
+            Check =>
+              Make_Raise_Program_Error (Loc,
+                Condition =>
+                  Make_Op_Not (Loc,
+                    Right_Opnd =>
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => New_Occurrence_Of (Targ_Id, Loc),
+                        Attribute_Name => Name_Elaborated)),
+                Reason    => PE_Access_Before_Elaboration));
+      end Install_Scenario_ABE_Check_Common;
 
-            --  The freeze node appears in the visible declarations of the
-            --  package and there are no private declarations.
+      ----------------------------------
+      -- Install_Scenario_ABE_Failure --
+      ----------------------------------
 
-            elsif Present (Vis_Decls)
-              and then List_Containing (FNode) = Vis_Decls
-              and then (No (Prv_Decls) or else Is_Empty_List (Prv_Decls))
-            then
-               null;
-
-            --  Otherwise the freeze node is not in the "last" declarative list
-            --  of the package. Use the existing source location of the freeze
-            --  node.
-
-            else
-               return Loc;
-            end if;
-
-            --  The freeze node appears at the "bottom" of the package when it
-            --  is in the "last" declarative list and is either the last in the
-            --  list or is followed by internal constructs only. In that case
-            --  the more appropriate source location is that of the package end
-            --  label.
-
-            if not Precedes_Source_Construct (FNode) then
-               return Sloc (End_Label (Context));
-            end if;
-         end if;
-
-         return Loc;
-      end Freeze_Node_Location;
-
-      -------------------------------
-      -- Precedes_Source_Construct --
-      -------------------------------
-
-      function Precedes_Source_Construct (N : Node_Id) return Boolean is
-         Decl : Node_Id;
-
-      begin
-         Decl := Next (N);
-         while Present (Decl) loop
-            if Comes_From_Source (Decl) then
-               return True;
-
-            --  A generated body for a source expression function is treated as
-            --  a source construct.
-
-            elsif Nkind (Decl) = N_Subprogram_Body
-              and then Was_Expression_Function (Decl)
-              and then Comes_From_Source (Original_Node (Decl))
-            then
-               return True;
-            end if;
-
-            Next (Decl);
-         end loop;
-
-         return False;
-      end Precedes_Source_Construct;
-
-      ----------------------------
-      -- Suggest_Elaborate_Body --
-      ----------------------------
-
-      procedure Suggest_Elaborate_Body
-        (N         : Node_Id;
-         Body_Decl : Node_Id;
-         Error_Nod : Node_Id)
+      procedure Install_Scenario_ABE_Failure
+        (N        : Node_Id;
+         Targ_Id  : Entity_Id;
+         Targ_Rep : Target_Rep_Id;
+         Disable  : Scenario_Rep_Id)
       is
-         Unt    : constant Node_Id := Unit (Cunit (Main_Unit));
-         Region : Node_Id;
-
       begin
-         --  The suggestion applies only when the subprogram body resides in a
-         --  compilation package body, and a pragma Elaborate_Body would allow
-         --  for the node to appear in the early call region of the subprogram
-         --  body. This implies that all code from the subprogram body up to
-         --  the node is preelaborable.
+         --  Nothing to do when the scenario does not require an ABE failure
 
-         if Nkind (Unt) = N_Package_Body then
-
-            --  Find the start of the early call region again assuming that the
-            --  package spec has pragma Elaborate_Body. Note that the internal
-            --  data structures are intentionally not updated because this is a
-            --  speculative search.
-
-            Region :=
-              Find_Early_Call_Region
-                (Body_Decl        => Body_Decl,
-                 Assume_Elab_Body => True,
-                 Skip_Memoization => True);
-
-            --  If the node appears within the early call region, assuming that
-            --  the package spec carries pragma Elaborate_Body, then it is safe
-            --  to suggest the pragma.
-
-            if Earlier_In_Extended_Unit (Region, N) then
-               Error_Msg_Name_1 := Name_Elaborate_Body;
-               Error_Msg_NE
-                 ("\consider adding pragma % in spec of unit &",
-                  Error_Nod, Defining_Entity (Unt));
-            end if;
-         end if;
-      end Suggest_Elaborate_Body;
-
-      --  Local variables
-
-      FNode : constant Node_Id  := Freeze_Node (Typ);
-      Prims : constant Elist_Id := Direct_Primitive_Operations (Typ);
-
-      Prim_Elmt : Elmt_Id;
-
-   --  Start of processing for Check_SPARK_Derived_Type
-
-   begin
-      --  A type should have its freeze node set by the time SPARK scenarios
-      --  are being verified.
-
-      pragma Assert (Present (FNode));
-
-      --  Verify that the freeze node of the derived type is within the early
-      --  call region of each overriding primitive body (SPARK RM 7.7(8)).
-
-      if Present (Prims) then
-         Prim_Elmt := First_Elmt (Prims);
-         while Present (Prim_Elmt) loop
-            Check_Overriding_Primitive
-              (Prim  => Node (Prim_Elmt),
-               FNode => FNode);
-
-            Next_Elmt (Prim_Elmt);
-         end loop;
-      end if;
-
-   exception
-      when Stop_Check =>
-         null;
-   end Check_SPARK_Derived_Type;
-
-   -------------------------------
-   -- Check_SPARK_Instantiation --
-   -------------------------------
-
-   procedure Check_SPARK_Instantiation (Exp_Inst : Node_Id) is
-      Gen_Attrs  : Target_Attributes;
-      Gen_Id     : Entity_Id;
-      Inst       : Node_Id;
-      Inst_Attrs : Instantiation_Attributes;
-      Inst_Id    : Entity_Id;
-
-   begin
-      Extract_Instantiation_Attributes
-        (Exp_Inst => Exp_Inst,
-         Inst     => Inst,
-         Inst_Id  => Inst_Id,
-         Gen_Id   => Gen_Id,
-         Attrs    => Inst_Attrs);
-
-      Extract_Target_Attributes (Gen_Id, Gen_Attrs);
-
-      --  The instantiation and the generic body are both in the main unit
-
-      if Present (Gen_Attrs.Body_Decl)
-        and then In_Extended_Main_Code_Unit (Gen_Attrs.Body_Decl)
-
-        --  If the instantiation appears prior to the generic body, then the
-        --  instantiation is illegal (SPARK RM 7.7(6)).
-
-        --  IMPORTANT: This check must always be performed even when -gnatd.v
-        --  (enforce SPARK elaboration rules in SPARK code) is not specified
-        --  because the rule prevents use-before-declaration of objects that
-        --  may precede the generic body.
-
-        and then Earlier_In_Extended_Unit (Inst, Gen_Attrs.Body_Decl)
-      then
-         Error_Msg_NE ("cannot instantiate & before body seen", Inst, Gen_Id);
-      end if;
-   end Check_SPARK_Instantiation;
-
-   ---------------------------------
-   -- Check_SPARK_Model_In_Effect --
-   ---------------------------------
-
-   SPARK_Model_Warning_Posted : Boolean := False;
-   --  This flag prevents the same SPARK model-related warning from being
-   --  emitted multiple times.
-
-   procedure Check_SPARK_Model_In_Effect (N : Node_Id) is
-   begin
-      --  Do not emit the warning multiple times as this creates useless noise
-
-      if SPARK_Model_Warning_Posted then
-         null;
-
-      --  SPARK rule verification requires the "strict" static model
-
-      elsif Static_Elaboration_Checks and not Relaxed_Elaboration_Checks then
-         null;
-
-      --  Any other combination of models does not guarantee the absence of ABE
-      --  problems for SPARK rule verification purposes. Note that there is no
-      --  need to check for the legacy ABE mechanism because the legacy code
-      --  has its own orthogonal processing for SPARK rules.
-
-      else
-         SPARK_Model_Warning_Posted := True;
-
-         Error_Msg_N
-           ("??SPARK elaboration checks require static elaboration model", N);
-
-         if Dynamic_Elaboration_Checks then
-            Error_Msg_N ("\dynamic elaboration model is in effect", N);
-         else
-            pragma Assert (Relaxed_Elaboration_Checks);
-            Error_Msg_N ("\relaxed elaboration model is in effect", N);
-         end if;
-      end if;
-   end Check_SPARK_Model_In_Effect;
-
-   --------------------------
-   -- Check_SPARK_Scenario --
-   --------------------------
-
-   procedure Check_SPARK_Scenario (N : Node_Id) is
-   begin
-      --  Ensure that a suitable elaboration model is in effect for SPARK rule
-      --  verification.
-
-      Check_SPARK_Model_In_Effect (N);
-
-      --  Add the current scenario to the stack of active scenarios
-
-      Push_Active_Scenario (N);
-
-      if Is_Suitable_SPARK_Derived_Type (N) then
-         Check_SPARK_Derived_Type (N);
-
-      elsif Is_Suitable_SPARK_Instantiation (N) then
-         Check_SPARK_Instantiation (N);
-
-      elsif Is_Suitable_SPARK_Refined_State_Pragma (N) then
-         Check_SPARK_Refined_State_Pragma (N);
-      end if;
-
-      --  Remove the current scenario from the stack of active scenarios once
-      --  all ABE diagnostics and checks have been performed.
-
-      Pop_Active_Scenario (N);
-   end Check_SPARK_Scenario;
-
-   --------------------------------------
-   -- Check_SPARK_Refined_State_Pragma --
-   --------------------------------------
-
-   procedure Check_SPARK_Refined_State_Pragma (N : Node_Id) is
-
-      --  NOTE: The routines within Check_SPARK_Refined_State_Pragma are
-      --  intentionally unnested to avoid deep indentation of code.
-
-      procedure Check_SPARK_Constituent (Constit_Id : Entity_Id);
-      pragma Inline (Check_SPARK_Constituent);
-      --  Ensure that a single constituent Constit_Id is elaborated prior to
-      --  the main unit.
-
-      procedure Check_SPARK_Constituents (Constits : Elist_Id);
-      pragma Inline (Check_SPARK_Constituents);
-      --  Ensure that all constituents found in list Constits are elaborated
-      --  prior to the main unit.
-
-      procedure Check_SPARK_Initialized_State (State : Node_Id);
-      pragma Inline (Check_SPARK_Initialized_State);
-      --  Ensure that the constituents of single abstract state State are
-      --  elaborated prior to the main unit.
-
-      procedure Check_SPARK_Initialized_States (Pack_Id : Entity_Id);
-      pragma Inline (Check_SPARK_Initialized_States);
-      --  Ensure that the constituents of all abstract states which appear in
-      --  the Initializes pragma of package Pack_Id are elaborated prior to the
-      --  main unit.
-
-      -----------------------------
-      -- Check_SPARK_Constituent --
-      -----------------------------
-
-      procedure Check_SPARK_Constituent (Constit_Id : Entity_Id) is
-         Prag : Node_Id;
-
-      begin
-         --  Nothing to do for "null" constituents
-
-         if Nkind (Constit_Id) = N_Null then
-            return;
-
-         --  Nothing to do for illegal constituents
-
-         elsif Error_Posted (Constit_Id) then
-            return;
-         end if;
-
-         Prag := SPARK_Pragma (Constit_Id);
-
-         --  The check applies only when the constituent is subject to pragma
-         --  SPARK_Mode On.
-
-         if Present (Prag)
-           and then Get_SPARK_Mode_From_Annotation (Prag) = On
+         if not ABE_Check_Or_Failure_OK
+                  (N       => N,
+                   Targ_Id => Targ_Id,
+                   Unit_Id => Unit (Targ_Rep))
          then
-            --  An external constituent of an abstract state which appears in
-            --  the Initializes pragma of a package spec imposes an Elaborate
-            --  requirement on the context of the main unit. Determine whether
-            --  the context has a pragma strong enough to meet the requirement.
-
-            --  IMPORTANT: This check is performed only when -gnatd.v (enforce
-            --  SPARK elaboration rules in SPARK code) is in effect because the
-            --  static model can ensure the prior elaboration of the unit which
-            --  contains a constituent by installing implicit Elaborate pragma.
-
-            if Debug_Flag_Dot_V then
-               Meet_Elaboration_Requirement
-                 (N         => N,
-                  Target_Id => Constit_Id,
-                  Req_Nam   => Name_Elaborate);
-
-            --  Otherwise ensure that the unit with the external constituent is
-            --  elaborated prior to the main unit.
-
-            else
-               Ensure_Prior_Elaboration
-                 (N        => N,
-                  Unit_Id  => Find_Top_Unit (Constit_Id),
-                  Prag_Nam => Name_Elaborate,
-                  State    => Initial_State);
-            end if;
+            return;
          end if;
-      end Check_SPARK_Constituent;
 
-      ------------------------------
-      -- Check_SPARK_Constituents --
-      ------------------------------
+         --  Prevent multiple attempts to install the same ABE check
 
-      procedure Check_SPARK_Constituents (Constits : Elist_Id) is
-         Constit_Elmt : Elmt_Id;
+         Disable_Elaboration_Checks (Disable);
+
+         Install_Scenario_ABE_Failure_Common (N);
+      end Install_Scenario_ABE_Failure;
+
+      ----------------------------------
+      -- Install_Scenario_ABE_Failure --
+      ----------------------------------
+
+      procedure Install_Scenario_ABE_Failure
+        (N        : Node_Id;
+         Targ_Id  : Entity_Id;
+         Targ_Rep : Target_Rep_Id;
+         Disable  : Target_Rep_Id)
+      is
+      begin
+         --  Nothing to do when the scenario does not require an ABE failure
+
+         if not ABE_Check_Or_Failure_OK
+                  (N       => N,
+                   Targ_Id => Targ_Id,
+                   Unit_Id => Unit (Targ_Rep))
+         then
+            return;
+         end if;
+
+         --  Prevent multiple attempts to install the same ABE check
+
+         Disable_Elaboration_Checks (Disable);
+
+         Install_Scenario_ABE_Failure_Common (N);
+      end Install_Scenario_ABE_Failure;
+
+      -----------------------------------------
+      -- Install_Scenario_ABE_Failure_Common --
+      -----------------------------------------
+
+      procedure Install_Scenario_ABE_Failure_Common (N : Node_Id) is
+         Loc : constant Source_Ptr := Sloc (N);
 
       begin
-         if Present (Constits) then
-            Constit_Elmt := First_Elmt (Constits);
-            while Present (Constit_Elmt) loop
-               Check_SPARK_Constituent (Node (Constit_Elmt));
-               Next_Elmt (Constit_Elmt);
-            end loop;
+         --  Generate:
+         --    raise Program_Error with "access before elaboration";
+
+         Insert_ABE_Check_Or_Failure
+           (N     => N,
+            Check =>
+              Make_Raise_Program_Error (Loc,
+                Reason => PE_Access_Before_Elaboration));
+      end Install_Scenario_ABE_Failure_Common;
+
+      ----------------------------
+      -- Install_Unit_ABE_Check --
+      ----------------------------
+
+      procedure Install_Unit_ABE_Check
+        (N       : Node_Id;
+         Unit_Id : Entity_Id;
+         Disable : Scenario_Rep_Id)
+      is
+         Spec_Id : constant Entity_Id  := Unique_Entity (Unit_Id);
+
+      begin
+         --  Nothing to do when the scenario does not require an ABE check
+
+         if not ABE_Check_Or_Failure_OK
+                  (N       => N,
+                   Targ_Id => Empty,
+                   Unit_Id => Spec_Id)
+         then
+            return;
          end if;
-      end Check_SPARK_Constituents;
+
+         --  Prevent multiple attempts to install the same ABE check
+
+         Disable_Elaboration_Checks (Disable);
+
+         Install_Unit_ABE_Check_Common
+           (N       => N,
+            Unit_Id => Unit_Id);
+      end Install_Unit_ABE_Check;
+
+      ----------------------------
+      -- Install_Unit_ABE_Check --
+      ----------------------------
+
+      procedure Install_Unit_ABE_Check
+        (N       : Node_Id;
+         Unit_Id : Entity_Id;
+         Disable : Target_Rep_Id)
+      is
+         Spec_Id : constant Entity_Id  := Unique_Entity (Unit_Id);
+
+      begin
+         --  Nothing to do when the scenario does not require an ABE check
+
+         if not ABE_Check_Or_Failure_OK
+                  (N       => N,
+                   Targ_Id => Empty,
+                   Unit_Id => Spec_Id)
+         then
+            return;
+         end if;
+
+         --  Prevent multiple attempts to install the same ABE check
+
+         Disable_Elaboration_Checks (Disable);
+
+         Install_Unit_ABE_Check_Common
+           (N       => N,
+            Unit_Id => Unit_Id);
+      end Install_Unit_ABE_Check;
 
       -----------------------------------
-      -- Check_SPARK_Initialized_State --
+      -- Install_Unit_ABE_Check_Common --
       -----------------------------------
 
-      procedure Check_SPARK_Initialized_State (State : Node_Id) is
-         Prag     : Node_Id;
-         State_Id : Entity_Id;
+      procedure Install_Unit_ABE_Check_Common
+        (N       : Node_Id;
+         Unit_Id : Entity_Id)
+      is
+         Loc     : constant Source_Ptr := Sloc (N);
+         Spec_Id : constant Entity_Id  := Unique_Entity (Unit_Id);
 
       begin
-         --  Nothing to do for "null" initialization items
+         --  Generate:
+         --    if not Spec_Id'Elaborated then
+         --       raise Program_Error with "access before elaboration";
+         --    end if;
 
-         if Nkind (State) = N_Null then
-            return;
-
-         --  Nothing to do for illegal states
-
-         elsif Error_Posted (State) then
-            return;
-         end if;
-
-         State_Id := Entity_Of (State);
-
-         --  Sanitize the state
-
-         if No (State_Id) then
-            return;
-
-         elsif Error_Posted (State_Id) then
-            return;
-
-         elsif Ekind (State_Id) /= E_Abstract_State then
-            return;
-         end if;
-
-         --  The check is performed only when the abstract state is subject to
-         --  SPARK_Mode On.
-
-         Prag := SPARK_Pragma (State_Id);
-
-         if Present (Prag)
-           and then Get_SPARK_Mode_From_Annotation (Prag) = On
-         then
-            Check_SPARK_Constituents (Refinement_Constituents (State_Id));
-         end if;
-      end Check_SPARK_Initialized_State;
-
-      ------------------------------------
-      -- Check_SPARK_Initialized_States --
-      ------------------------------------
-
-      procedure Check_SPARK_Initialized_States (Pack_Id : Entity_Id) is
-         Prag  : constant Node_Id := Get_Pragma (Pack_Id, Pragma_Initializes);
-         Init  : Node_Id;
-         Inits : Node_Id;
-
-      begin
-         if Present (Prag) then
-            Inits := Expression (Get_Argument (Prag, Pack_Id));
-
-            --  Avoid processing a "null" initialization list. The only other
-            --  alternative is an aggregate.
-
-            if Nkind (Inits) = N_Aggregate then
-
-               --  The initialization items appear in list form:
-               --
-               --    (state1, state2)
-
-               if Present (Expressions (Inits)) then
-                  Init := First (Expressions (Inits));
-                  while Present (Init) loop
-                     Check_SPARK_Initialized_State (Init);
-                     Next (Init);
-                  end loop;
-               end if;
-
-               --  The initialization items appear in associated form:
-               --
-               --    (state1 => item1,
-               --     state2 => (item2, item3))
-
-               if Present (Component_Associations (Inits)) then
-                  Init := First (Component_Associations (Inits));
-                  while Present (Init) loop
-                     Check_SPARK_Initialized_State (Init);
-                     Next (Init);
-                  end loop;
-               end if;
-            end if;
-         end if;
-      end Check_SPARK_Initialized_States;
-
-      --  Local variables
-
-      Pack_Body : constant Node_Id := Find_Related_Package_Or_Body (N);
-
-   --  Start of processing for Check_SPARK_Refined_State_Pragma
-
-   begin
-      --  Pragma Refined_State must be associated with a package body
-
-      pragma Assert
-        (Present (Pack_Body) and then Nkind (Pack_Body) = N_Package_Body);
-
-      --  Verify that each external contitunent of an abstract state mentioned
-      --  in pragma Initializes is properly elaborated.
-
-      Check_SPARK_Initialized_States (Unique_Defining_Entity (Pack_Body));
-   end Check_SPARK_Refined_State_Pragma;
+         Insert_ABE_Check_Or_Failure
+           (N     => N,
+            Check =>
+              Make_Raise_Program_Error (Loc,
+                Condition =>
+                  Make_Op_Not (Loc,
+                    Right_Opnd =>
+                      Make_Attribute_Reference (Loc,
+                        Prefix         => New_Occurrence_Of (Spec_Id, Loc),
+                        Attribute_Name => Name_Elaborated)),
+                Reason    => PE_Access_Before_Elaboration));
+      end Install_Unit_ABE_Check_Common;
+   end Check_Installer;
 
    ----------------------
    -- Compilation_Unit --
@@ -3120,2212 +4522,4303 @@ package body Sem_Elab is
       return Comp_Unit;
    end Compilation_Unit;
 
-   -----------------------
-   -- Early_Call_Region --
-   -----------------------
-
-   function Early_Call_Region (Body_Id : Entity_Id) return Node_Id is
-   begin
-      pragma Assert (Ekind_In (Body_Id, E_Entry,
-                                        E_Entry_Family,
-                                        E_Function,
-                                        E_Procedure,
-                                        E_Subprogram_Body));
-
-      if Early_Call_Regions_In_Use then
-         return Early_Call_Regions.Get (Body_Id);
-      end if;
-
-      return Early_Call_Regions_No_Element;
-   end Early_Call_Region;
-
-   -----------------------------
-   -- Early_Call_Regions_Hash --
-   -----------------------------
-
-   function Early_Call_Regions_Hash
-     (Key : Entity_Id) return Early_Call_Regions_Index
-   is
-   begin
-      return Early_Call_Regions_Index (Key mod Early_Call_Regions_Max);
-   end Early_Call_Regions_Hash;
-
-   -----------------
-   -- Elab_Msg_NE --
-   -----------------
-
-   procedure Elab_Msg_NE
-     (Msg      : String;
-      N        : Node_Id;
-      Id       : Entity_Id;
-      Info_Msg : Boolean;
-      In_SPARK : Boolean)
-   is
-      function Prefix return String;
-      --  Obtain the prefix of the message
-
-      function Suffix return String;
-      --  Obtain the suffix of the message
-
-      ------------
-      -- Prefix --
-      ------------
-
-      function Prefix return String is
-      begin
-         if Info_Msg then
-            return "info: ";
-         else
-            return "";
-         end if;
-      end Prefix;
-
-      ------------
-      -- Suffix --
-      ------------
-
-      function Suffix return String is
-      begin
-         if In_SPARK then
-            return " in SPARK";
-         else
-            return "";
-         end if;
-      end Suffix;
-
-   --  Start of processing for Elab_Msg_NE
-
-   begin
-      Error_Msg_NE (Prefix & Msg & Suffix, N, Id);
-   end Elab_Msg_NE;
-
-   ------------------------
-   -- Elaboration_Status --
-   ------------------------
-
-   function Elaboration_Status
-     (Unit_Id : Entity_Id) return Elaboration_Attributes
-   is
-   begin
-      if Elaboration_Statuses_In_Use then
-         return Elaboration_Statuses.Get (Unit_Id);
-      end if;
-
-      return Elaboration_Statuses_No_Element;
-   end Elaboration_Status;
-
    -------------------------------
-   -- Elaboration_Statuses_Hash --
+   -- Conditional_ABE_Processor --
    -------------------------------
 
-   function Elaboration_Statuses_Hash
-     (Key : Entity_Id) return Elaboration_Statuses_Index
-   is
-   begin
-      return Elaboration_Statuses_Index (Key mod Elaboration_Statuses_Max);
-   end Elaboration_Statuses_Hash;
+   package body Conditional_ABE_Processor is
 
-   ------------------------------
-   -- Ensure_Prior_Elaboration --
-   ------------------------------
+      -----------------------
+      -- Local subprograms --
+      -----------------------
 
-   procedure Ensure_Prior_Elaboration
-     (N        : Node_Id;
-      Unit_Id  : Entity_Id;
-      Prag_Nam : Name_Id;
-      State    : Processing_Attributes)
-   is
-   begin
-      pragma Assert (Nam_In (Prag_Nam, Name_Elaborate, Name_Elaborate_All));
+      function Is_Conditional_ABE_Scenario (N : Node_Id) return Boolean;
+      pragma Inline (Is_Conditional_ABE_Scenario);
+      --  Determine whether node N is a suitable scenario for conditional ABE
+      --  checks and diagnostics.
 
-      --  Nothing to do when the caller has suppressed the generation of
-      --  implicit Elaborate[_All] pragmas.
+      procedure Process_Conditional_ABE_Access_Taken
+        (Attr     : Node_Id;
+         Attr_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Conditional_ABE_Access_Taken);
+      --  Perform ABE checks and diagnostics for attribute reference Attr with
+      --  representation Attr_Rep which takes 'Access of an entry, operator, or
+      --  subprogram. In_State is the current state of the Processing phase.
 
-      if State.Suppress_Implicit_Pragmas then
-         return;
+      procedure Process_Conditional_ABE_Activation
+        (Call     : Node_Id;
+         Call_Rep : Scenario_Rep_Id;
+         Obj_Id   : Entity_Id;
+         Obj_Rep  : Target_Rep_Id;
+         Task_Typ : Entity_Id;
+         Task_Rep : Target_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Conditional_ABE_Activation);
+      --  Perform common conditional ABE checks and diagnostics for activation
+      --  call Call which activates object Obj_Id of task type Task_Typ. Formal
+      --  Call_Rep denotes the representation of the call. Obj_Rep denotes the
+      --  representation of the object. Task_Rep denotes the representation of
+      --  the task type. In_State is the current state of the Processing phase.
 
-      --  Nothing to do when the need for prior elaboration came from a partial
-      --  finalization routine which occurs in an initialization context. This
-      --  behaviour parallels that of the old ABE mechanism.
+      procedure Process_Conditional_ABE_Call
+        (Call     : Node_Id;
+         Call_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Conditional_ABE_Call);
+      --  Top-level dispatcher for processing of calls. Perform ABE checks and
+      --  diagnostics for call Call with representation Call_Rep. In_State is
+      --  the current state of the Processing phase.
 
-      elsif State.Within_Partial_Finalization then
-         return;
+      procedure Process_Conditional_ABE_Call_Ada
+        (Call     : Node_Id;
+         Call_Rep : Scenario_Rep_Id;
+         Subp_Id  : Entity_Id;
+         Subp_Rep : Target_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Conditional_ABE_Call_Ada);
+      --  Perform ABE checks and diagnostics for call Call which invokes entry,
+      --  operator, or subprogram Subp_Id using the Ada rules. Call_Rep denotes
+      --  the representation of the call. Subp_Rep denotes the representation
+      --  of the subprogram. In_State is the current state of the Processing
+      --  phase.
 
-      --  Nothing to do when the need for prior elaboration came from a task
-      --  body and switch -gnatd.y (disable implicit pragma Elaborate_All on
-      --  task bodies) is in effect.
+      procedure Process_Conditional_ABE_Call_SPARK
+        (Call     : Node_Id;
+         Call_Rep : Scenario_Rep_Id;
+         Subp_Id  : Entity_Id;
+         Subp_Rep : Target_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Conditional_ABE_Call_SPARK);
+      --  Perform ABE checks and diagnostics for call Call which invokes entry,
+      --  operator, or subprogram Subp_Id using the SPARK rules. Call_Rep is
+      --  the representation of the call. Subp_Rep denotes the representation
+      --  of the subprogram. In_State is the current state of the Processing
+      --  phase.
 
-      elsif Debug_Flag_Dot_Y and then State.Within_Task_Body then
-         return;
+      procedure Process_Conditional_ABE_Instantiation
+        (Inst     : Node_Id;
+         Inst_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Conditional_ABE_Instantiation);
+      --  Top-level dispatcher for processing of instantiations. Perform ABE
+      --  checks and diagnostics for instantiation Inst with representation
+      --  Inst_Rep. In_State is the current state of the Processing phase.
 
-      --  Nothing to do when the unit is elaborated prior to the main unit.
-      --  This check must also consider the following cases:
+      procedure Process_Conditional_ABE_Instantiation_Ada
+        (Inst     : Node_Id;
+         Inst_Rep : Scenario_Rep_Id;
+         Gen_Id   : Entity_Id;
+         Gen_Rep  : Target_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Conditional_ABE_Instantiation_Ada);
+      --  Perform ABE checks and diagnostics for instantiation Inst of generic
+      --  Gen_Id using the Ada rules. Inst_Rep denotes the representation of
+      --  the instnace. Gen_Rep is the representation of the generic. In_State
+      --  is the current state of the Processing phase.
 
-      --  * No check is made against the context of the main unit because this
-      --    is specific to the elaboration model in effect and requires custom
-      --    handling (see Ensure_xxx_Prior_Elaboration).
+      procedure Process_Conditional_ABE_Instantiation_SPARK
+        (Inst     : Node_Id;
+         Inst_Rep : Scenario_Rep_Id;
+         Gen_Id   : Entity_Id;
+         Gen_Rep  : Target_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Conditional_ABE_Instantiation_SPARK);
+      --  Perform ABE checks and diagnostics for instantiation Inst of generic
+      --  Gen_Id using the SPARK rules. Inst_Rep denotes the representation of
+      --  the instnace. Gen_Rep is the representation of the generic. In_State
+      --  is the current state of the Processing phase.
 
-      --  * Unit_Id is subject to pragma Elaborate_Body. An implicit pragma
-      --    Elaborate[_All] MUST be generated even though Unit_Id is always
-      --    elaborated prior to the main unit. This is a conservative strategy
-      --    which ensures that other units withed by Unit_Id will not lead to
-      --    an ABE.
+      procedure Process_Conditional_ABE_Variable_Assignment
+        (Asmt     : Node_Id;
+         Asmt_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Conditional_ABE_Variable_Assignment);
+      --  Top-level dispatcher for processing of variable assignments. Perform
+      --  ABE checks and diagnostics for assignment Asmt with representation
+      --  Asmt_Rep. In_State denotes the current state of the Processing phase.
 
-      --      package A is               package body A is
-      --         procedure ABE;             procedure ABE is ... end ABE;
-      --      end A;                     end A;
+      procedure Process_Conditional_ABE_Variable_Assignment_Ada
+        (Asmt     : Node_Id;
+         Asmt_Rep : Scenario_Rep_Id;
+         Var_Id   : Entity_Id;
+         Var_Rep  : Target_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Conditional_ABE_Variable_Assignment_Ada);
+      --  Perform ABE checks and diagnostics for assignment statement Asmt that
+      --  modifies the value of variable Var_Id using the Ada rules. Asmt_Rep
+      --  denotes the representation of the assignment. Var_Rep denotes the
+      --  representation of the variable. In_State is the current state of the
+      --  Processing phase.
 
-      --      with A;
-      --      package B is               package body B is
-      --         pragma Elaborate_Body;     procedure Proc is
-      --                                    begin
-      --         procedure Proc;               A.ABE;
-      --      package B;                    end Proc;
-      --                                 end B;
+      procedure Process_Conditional_ABE_Variable_Assignment_SPARK
+        (Asmt     : Node_Id;
+         Asmt_Rep : Scenario_Rep_Id;
+         Var_Id   : Entity_Id;
+         Var_Rep  : Target_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Conditional_ABE_Variable_Assignment_SPARK);
+      --  Perform ABE checks and diagnostics for assignment statement Asmt that
+      --  modifies the value of variable Var_Id using the SPARK rules. Asmt_Rep
+      --  denotes the representation of the assignment. Var_Rep denotes the
+      --  representation of the variable. In_State is the current state of the
+      --  Processing phase.
 
-      --      with B;
-      --      package C is               package body C is
-      --         ...                        ...
-      --      end C;                     begin
-      --                                    B.Proc;
-      --                                 end C;
+      procedure Process_Conditional_ABE_Variable_Reference
+        (Ref      : Node_Id;
+         Ref_Rep  : Scenario_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Conditional_ABE_Variable_Reference);
+      --  Perform ABE checks and diagnostics for variable reference Ref with
+      --  representation Ref_Rep. In_State denotes the current state of the
+      --  Processing phase.
 
-      --    In the example above, the elaboration of C invokes B.Proc. B is
-      --    subject to pragma Elaborate_Body. If no pragma Elaborate[_All] is
-      --    generated for B in C, then the following elaboratio order will lead
-      --    to an ABE:
+      procedure Traverse_Conditional_ABE_Body
+        (N        : Node_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Traverse_Conditional_ABE_Body);
+      --  Traverse subprogram body N looking for suitable scenarios that need
+      --  to be processed for conditional ABE checks and diagnostics. In_State
+      --  is the current state of the Processing phase.
 
-      --       spec of A elaborated
-      --       spec of B elaborated
-      --       body of B elaborated
-      --       spec of C elaborated
-      --       body of C elaborated  <--  calls B.Proc which calls A.ABE
-      --       body of A elaborated  <--  problem
+      -------------------------------------
+      -- Check_Conditional_ABE_Scenarios --
+      -------------------------------------
 
-      --    The generation of an implicit pragma Elaborate_All (B) ensures that
-      --    the elaboration order mechanism will not pick the above order.
+      procedure Check_Conditional_ABE_Scenarios
+        (Iter : in out NE_Set.Iterator)
+      is
+         N : Node_Id;
 
-      --    An implicit Elaborate is NOT generated when the unit is subject to
-      --    Elaborate_Body because both pragmas have the exact same effect.
-
-      --  * Unit_Id is the main unit. An implicit pragma Elaborate[_All] MUST
-      --    NOT be generated in this case because a unit cannot depend on its
-      --    own elaboration. This case is therefore treated as valid prior
-      --    elaboration.
-
-      elsif Has_Prior_Elaboration
-              (Unit_Id      => Unit_Id,
-               Same_Unit_OK => True,
-               Elab_Body_OK => Prag_Nam = Name_Elaborate)
-      then
-         return;
-
-      --  Suggest the use of pragma Prag_Nam when the dynamic model is in
-      --  effect.
-
-      elsif Dynamic_Elaboration_Checks then
-         Ensure_Prior_Elaboration_Dynamic
-           (N        => N,
-            Unit_Id  => Unit_Id,
-            Prag_Nam => Prag_Nam);
-
-      --  Install an implicit pragma Prag_Nam when the static model is in
-      --  effect.
-
-      else
-         pragma Assert (Static_Elaboration_Checks);
-
-         Ensure_Prior_Elaboration_Static
-           (N        => N,
-            Unit_Id  => Unit_Id,
-            Prag_Nam => Prag_Nam);
-      end if;
-   end Ensure_Prior_Elaboration;
-
-   --------------------------------------
-   -- Ensure_Prior_Elaboration_Dynamic --
-   --------------------------------------
-
-   procedure Ensure_Prior_Elaboration_Dynamic
-     (N        : Node_Id;
-      Unit_Id  : Entity_Id;
-      Prag_Nam : Name_Id)
-   is
-      procedure Info_Missing_Pragma;
-      pragma Inline (Info_Missing_Pragma);
-      --  Output information concerning missing Elaborate or Elaborate_All
-      --  pragma with name Prag_Nam for scenario N, which would ensure the
-      --  prior elaboration of Unit_Id.
-
-      -------------------------
-      -- Info_Missing_Pragma --
-      -------------------------
-
-      procedure Info_Missing_Pragma is
       begin
-         --  Internal units are ignored as they cause unnecessary noise
+         while NE_Set.Has_Next (Iter) loop
+            NE_Set.Next (Iter, N);
 
-         if not In_Internal_Unit (Unit_Id) then
+            --  Reset the traversed status of all subprogram bodies because the
+            --  current conditional scenario acts as a new DFS traversal root.
 
-            --  The name of the unit subjected to the elaboration pragma is
-            --  fully qualified to improve the clarity of the info message.
+            Reset_Traversed_Bodies;
 
-            Error_Msg_Name_1     := Prag_Nam;
-            Error_Msg_Qual_Level := Nat'Last;
+            Process_Conditional_ABE
+              (N        => N,
+               In_State => Conditional_ABE_State);
+         end loop;
+      end Check_Conditional_ABE_Scenarios;
 
-            Error_Msg_NE ("info: missing pragma % for unit &", N, Unit_Id);
-            Error_Msg_Qual_Level := 0;
+      ---------------------------------
+      -- Is_Conditional_ABE_Scenario --
+      ---------------------------------
+
+      function Is_Conditional_ABE_Scenario (N : Node_Id) return Boolean is
+      begin
+         return
+           Is_Suitable_Access_Taken (N)
+             or else Is_Suitable_Call (N)
+             or else Is_Suitable_Instantiation (N)
+             or else Is_Suitable_Variable_Assignment (N)
+             or else Is_Suitable_Variable_Reference (N);
+      end Is_Conditional_ABE_Scenario;
+
+      -----------------------------
+      -- Process_Conditional_ABE --
+      -----------------------------
+
+      procedure Process_Conditional_ABE
+        (N        : Node_Id;
+         In_State : Processing_In_State)
+      is
+         Scen     : constant Node_Id := Scenario (N);
+         Scen_Rep : Scenario_Rep_Id;
+
+      begin
+         --  Add the current scenario to the stack of active scenarios
+
+         Push_Active_Scenario (Scen);
+
+         --  'Access
+
+         if Is_Suitable_Access_Taken (Scen) then
+            Process_Conditional_ABE_Access_Taken
+              (Attr     => Scen,
+               Attr_Rep => Scenario_Representation_Of (Scen, In_State),
+               In_State => In_State);
+
+         --  Call or task activation
+
+         elsif Is_Suitable_Call (Scen) then
+            Scen_Rep := Scenario_Representation_Of (Scen, In_State);
+
+            --  Routine Build_Call_Marker creates call markers regardless of
+            --  whether the call occurs within the main unit or not. This way
+            --  the serialization of internal names is kept consistent. Only
+            --  call markers found within the main unit must be processed.
+
+            if In_Main_Context (Scen) then
+               Scen_Rep := Scenario_Representation_Of (Scen, In_State);
+
+               if Kind (Scen_Rep) = Call_Scenario then
+                  Process_Conditional_ABE_Call
+                    (Call     => Scen,
+                     Call_Rep => Scen_Rep,
+                     In_State => In_State);
+
+               else
+                  pragma Assert (Kind (Scen_Rep) = Task_Activation_Scenario);
+
+                  Process_Activation
+                    (Call      => Scen,
+                     Call_Rep  => Scen_Rep,
+                     Processor => Process_Conditional_ABE_Activation'Access,
+                     In_State  => In_State);
+               end if;
+            end if;
+
+         --  Instantiation
+
+         elsif Is_Suitable_Instantiation (Scen) then
+            Process_Conditional_ABE_Instantiation
+              (Inst     => Scen,
+               Inst_Rep => Scenario_Representation_Of (Scen, In_State),
+               In_State => In_State);
+
+         --  Variable assignments
+
+         elsif Is_Suitable_Variable_Assignment (Scen) then
+            Process_Conditional_ABE_Variable_Assignment
+              (Asmt     => Scen,
+               Asmt_Rep => Scenario_Representation_Of (Scen, In_State),
+               In_State => In_State);
+
+         --  Variable references
+
+         elsif Is_Suitable_Variable_Reference (Scen) then
+
+            --  Routine Build_Variable_Reference_Marker makes variable markers
+            --  regardless of whether the reference occurs within the main unit
+            --  or not. This way the serialization of internal names is kept
+            --  consistent. Only variable markers within the main unit must be
+            --  processed.
+
+            if In_Main_Context (Scen) then
+               Process_Conditional_ABE_Variable_Reference
+                 (Ref      => Scen,
+                  Ref_Rep  => Scenario_Representation_Of (Scen, In_State),
+                  In_State => In_State);
+            end if;
          end if;
-      end Info_Missing_Pragma;
 
-      --  Local variables
+         --  Remove the current scenario from the stack of active scenarios
+         --  once all ABE diagnostics and checks have been performed.
 
-      Elab_Attrs : Elaboration_Attributes;
-      Level      : Enclosing_Level_Kind;
+         Pop_Active_Scenario (Scen);
+      end Process_Conditional_ABE;
 
-   --  Start of processing for Ensure_Prior_Elaboration_Dynamic
+      ------------------------------------------
+      -- Process_Conditional_ABE_Access_Taken --
+      ------------------------------------------
 
-   begin
-      Elab_Attrs := Elaboration_Status (Unit_Id);
+      procedure Process_Conditional_ABE_Access_Taken
+        (Attr     : Node_Id;
+         Attr_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         function Build_Access_Marker (Subp_Id : Entity_Id) return Node_Id;
+         pragma Inline (Build_Access_Marker);
+         --  Create a suitable call marker which invokes subprogram Subp_Id
 
-      --  Nothing to do when the unit is guaranteed prior elaboration by means
-      --  of a source Elaborate[_All] pragma.
+         -------------------------
+         -- Build_Access_Marker --
+         -------------------------
 
-      if Present (Elab_Attrs.Source_Pragma) then
-         return;
-      end if;
+         function Build_Access_Marker (Subp_Id : Entity_Id) return Node_Id is
+            Marker : Node_Id;
 
-      --  Output extra information on a missing Elaborate[_All] pragma when
-      --  switch -gnatel (info messages on implicit Elaborate[_All] pragmas
-      --  is in effect.
+         begin
+            Marker := Make_Call_Marker (Sloc (Attr));
 
-      if Elab_Info_Messages then
+            --  Inherit relevant attributes from the attribute
 
-         --  Performance note: parent traversal
+            Set_Target (Marker, Subp_Id);
+            Set_Is_Declaration_Level_Node
+                       (Marker, Level (Attr_Rep) = Declaration_Level);
+            Set_Is_Dispatching_Call
+                       (Marker, False);
+            Set_Is_Elaboration_Checks_OK_Node
+                       (Marker, Elaboration_Checks_OK (Attr_Rep));
+            Set_Is_Elaboration_Warnings_OK_Node
+                       (Marker, Elaboration_Warnings_OK (Attr_Rep));
+            Set_Is_Source_Call
+                       (Marker, Comes_From_Source (Attr));
+            Set_Is_SPARK_Mode_On_Node
+                       (Marker, SPARK_Mode_Of (Attr_Rep) = Is_On);
 
-         Level := Find_Enclosing_Level (N);
+            --  Partially insert the call marker into the tree by setting its
+            --  parent pointer.
 
-         --  Declaration-level scenario
+            Set_Parent (Marker, Attr);
 
-         if (Is_Suitable_Call (N) or else Is_Suitable_Instantiation (N))
-           and then Level = Declaration_Level
+            return Marker;
+         end Build_Access_Marker;
+
+         --  Local variables
+
+         Root      : constant Node_Id       := Root_Scenario;
+         Subp_Id   : constant Entity_Id     := Target (Attr_Rep);
+         Subp_Rep  : constant Target_Rep_Id :=
+                                Target_Representation_Of (Subp_Id, In_State);
+         Body_Decl : constant Node_Id       := Body_Declaration (Subp_Rep);
+
+         New_In_State : Processing_In_State := In_State;
+         --  Each step of the Processing phase constitutes a new state
+
+      --  Start of processing for Process_Conditional_ABE_Access
+
+      begin
+         --  Output relevant information when switch -gnatel (info messages on
+         --  implicit Elaborate[_All] pragmas) is in effect.
+
+         if Elab_Info_Messages
+           and then not New_In_State.Suppress_Info_Messages
+         then
+            Error_Msg_NE
+              ("info: access to & during elaboration", Attr, Subp_Id);
+         end if;
+
+         --  Warnings are suppressed when a prior scenario is already in that
+         --  mode or when the attribute or the target have warnings suppressed.
+         --  Update the state of the Processing phase to reflect this.
+
+         New_In_State.Suppress_Warnings :=
+           New_In_State.Suppress_Warnings
+             or else not Elaboration_Warnings_OK (Attr_Rep)
+             or else not Elaboration_Warnings_OK (Subp_Rep);
+
+         --  Do not emit any ABE diagnostics when the current or previous
+         --  scenario in this traversal has suppressed elaboration warnings.
+
+         if New_In_State.Suppress_Warnings then
+            null;
+
+         --  Both the attribute and the corresponding subprogram body are in
+         --  the same unit. The body must appear prior to the root scenario
+         --  which started the recursive search. If this is not the case, then
+         --  there is a potential ABE if the access value is used to call the
+         --  subprogram. Emit a warning only when switch -gnatw.f (warnings on
+         --  suspucious 'Access) is in effect.
+
+         elsif Warn_On_Elab_Access
+           and then Present (Body_Decl)
+           and then In_Extended_Main_Code_Unit (Body_Decl)
+           and then Earlier_In_Extended_Unit (Root, Body_Decl)
+         then
+            Error_Msg_Name_1 := Attribute_Name (Attr);
+            Error_Msg_NE
+              ("??% attribute of & before body seen", Attr, Subp_Id);
+            Error_Msg_N ("\possible Program_Error on later references", Attr);
+
+            Output_Active_Scenarios (Attr, New_In_State);
+         end if;
+
+         --  Treat the attribute an an immediate invocation of the target when
+         --  switch -gnatd.o (conservative elaboration order for indirect
+         --  calls) is in effect. This has the following desirable effects:
+         --
+         --    * Ensure that the unit with the corresponding body is elaborated
+         --      prior to the main unit.
+         --
+         --    * Perform conditional ABE checks and diagnostics
+         --
+         --    * Traverse the body of the target (if available)
+
+         if Debug_Flag_Dot_O then
+            Process_Conditional_ABE
+              (N        => Build_Access_Marker (Subp_Id),
+               In_State => New_In_State);
+
+         --  Otherwise ensure that the unit with the corresponding body is
+         --  elaborated prior to the main unit.
+
+         else
+            Ensure_Prior_Elaboration
+              (N        => Attr,
+               Unit_Id  => Unit (Subp_Rep),
+               Prag_Nam => Name_Elaborate_All,
+               In_State => New_In_State);
+         end if;
+      end Process_Conditional_ABE_Access_Taken;
+
+      ----------------------------------------
+      -- Process_Conditional_ABE_Activation --
+      ----------------------------------------
+
+      procedure Process_Conditional_ABE_Activation
+        (Call     : Node_Id;
+         Call_Rep : Scenario_Rep_Id;
+         Obj_Id   : Entity_Id;
+         Obj_Rep  : Target_Rep_Id;
+         Task_Typ : Entity_Id;
+         Task_Rep : Target_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         pragma Unreferenced (Task_Typ);
+
+         Body_Decl : constant Node_Id := Body_Declaration (Task_Rep);
+         Spec_Decl : constant Node_Id := Spec_Declaration (Task_Rep);
+         Root      : constant Node_Id := Root_Scenario;
+         Unit_Id   : constant Node_Id := Unit (Task_Rep);
+
+         Check_OK : constant Boolean :=
+                      not In_State.Suppress_Checks
+                        and then Ghost_Mode_Of (Obj_Rep)  /= Is_Ignored
+                        and then Ghost_Mode_Of (Task_Rep) /= Is_Ignored
+                        and then Elaboration_Checks_OK (Obj_Rep)
+                        and then Elaboration_Checks_OK (Task_Rep);
+         --  A run-time ABE check may be installed only when the object and the
+         --  task type have active elaboration checks, and both are not ignored
+         --  Ghost constructs.
+
+         New_In_State : Processing_In_State := In_State;
+         --  Each step of the Processing phase constitutes a new state
+
+      begin
+         --  Output relevant information when switch -gnatel (info messages on
+         --  implicit Elaborate[_All] pragmas) is in effect.
+
+         if Elab_Info_Messages
+           and then not New_In_State.Suppress_Info_Messages
+         then
+            Error_Msg_NE
+              ("info: activation of & during elaboration", Call, Obj_Id);
+         end if;
+
+         --  Nothing to do when the call activates a task whose type is defined
+         --  within an instance and switch -gnatd_i (ignore activations and
+         --  calls to instances for elaboration) is in effect.
+
+         if Debug_Flag_Underscore_I
+           and then In_External_Instance
+                      (N           => Call,
+                       Target_Decl => Spec_Decl)
+         then
+            return;
+
+         --  Nothing to do when the activation is a guaranteed ABE
+
+         elsif Is_Known_Guaranteed_ABE (Call) then
+            return;
+
+         --  Nothing to do when the root scenario appears at the declaration
+         --  level and the task is in the same unit, but outside this context.
+         --
+         --    task type Task_Typ;                  --  task declaration
+         --
+         --    procedure Proc is
+         --       function A ... is
+         --       begin
+         --          if Some_Condition then
+         --             declare
+         --                T : Task_Typ;
+         --             begin
+         --                <activation call>        --  activation site
+         --             end;
+         --          ...
+         --       end A;
+         --
+         --       X : ... := A;                     --  root scenario
+         --    ...
+         --
+         --    task body Task_Typ is
+         --       ...
+         --    end Task_Typ;
+         --
+         --  In the example above, the context of X is the declarative list of
+         --  Proc. The "elaboration" of X may reach the activation of T whose
+         --  body is defined outside of X's context. The task body is relevant
+         --  only when Proc is invoked, but this happens only during "normal"
+         --  elaboration, therefore the task body must not be considered if
+         --  this is not the case.
+
+         elsif Is_Up_Level_Target
+                 (Targ_Decl => Spec_Decl,
+                  In_State  => New_In_State)
+         then
+            return;
+
+         --  Nothing to do when the activation is ABE-safe
+         --
+         --    generic
+         --    package Gen is
+         --       task type Task_Typ;
+         --    end Gen;
+         --
+         --    package body Gen is
+         --       task body Task_Typ is
+         --       begin
+         --          ...
+         --       end Task_Typ;
+         --    end Gen;
+         --
+         --    with Gen;
+         --    procedure Main is
+         --       package Nested is
+         --          package Inst is new Gen;
+         --          T : Inst.Task_Typ;
+         --          <activation call>              --  safe activation
+         --       end Nested;
+         --    ...
+
+         elsif Is_Safe_Activation (Call, Task_Rep) then
+
+            --  Note that the task body must still be examined for any nested
+            --  scenarios.
+
+            null;
+
+         --  The activation call and the task body are both in the main unit
+         --
+         --  If the root scenario appears prior to the task body, then this is
+         --  a possible ABE with respect to the root scenario.
+         --
+         --    task type Task_Typ;
+         --
+         --    function A ... is
+         --    begin
+         --       if Some_Condition then
+         --          declare
+         --             package Pack is
+         --                T : Task_Typ;
+         --             end Pack;                --  activation of T
+         --       ...
+         --    end A;
+         --
+         --    X : ... := A;                     --  root scenario
+         --
+         --    task body Task_Typ is             --  task body
+         --       ...
+         --    end Task_Typ;
+         --
+         --    Y : ... := A;                     --  root scenario
+         --
+         --  IMPORTANT: The activation of T is a possible ABE for X, but
+         --  not for Y. Intalling an unconditional ABE raise prior to the
+         --  activation call would be wrong as it will fail for Y as well
+         --  but in Y's case the activation of T is never an ABE.
+
+         elsif Present (Body_Decl)
+           and then In_Extended_Main_Code_Unit (Body_Decl)
+         then
+            if Earlier_In_Extended_Unit (Root, Body_Decl) then
+
+               --  Do not emit any ABE diagnostics when a previous scenario in
+               --  this traversal has suppressed elaboration warnings.
+
+               if New_In_State.Suppress_Warnings then
+                  null;
+
+               --  Do not emit any ABE diagnostics when the activation occurs
+               --  in a partial finalization context because this action leads
+               --  to confusing noise.
+
+               elsif New_In_State.Within_Partial_Finalization then
+                  null;
+
+               --  Otherwise emit the ABE disgnostic
+
+               else
+                  Error_Msg_Sloc := Sloc (Call);
+                  Error_Msg_N
+                    ("??task & will be activated # before elaboration of its "
+                     & "body", Obj_Id);
+                  Error_Msg_N
+                    ("\Program_Error may be raised at run time", Obj_Id);
+
+                  Output_Active_Scenarios (Obj_Id, New_In_State);
+               end if;
+
+               --  Install a conditional run-time ABE check to verify that the
+               --  task body has been elaborated prior to the activation call.
+
+               if Check_OK then
+                  Install_Scenario_ABE_Check
+                    (N        => Call,
+                     Targ_Id  => Defining_Entity (Spec_Decl),
+                     Targ_Rep => Task_Rep,
+                     Disable  => Obj_Rep);
+
+                  --  Update the state of the Processing phase to indicate that
+                  --  no implicit Elaborate[_All] pragma must be generated from
+                  --  this point on.
+                  --
+                  --    task type Task_Typ;
+                  --
+                  --    function A ... is
+                  --    begin
+                  --       if Some_Condition then
+                  --          declare
+                  --             package Pack is
+                  --                <ABE check>
+                  --                T : Task_Typ;
+                  --             end Pack;          --  activation of T
+                  --       ...
+                  --    end A;
+                  --
+                  --    X : ... := A;
+                  --
+                  --    task body Task_Typ is
+                  --    begin
+                  --       External.Subp;           --  imparts Elaborate_All
+                  --    end Task_Typ;
+                  --
+                  --  If Some_Condition is True, then the ABE check will fail
+                  --  at runtime and the call to External.Subp will never take
+                  --  place, rendering the implicit Elaborate_All useless.
+                  --
+                  --  If the value of Some_Condition is False, then the call
+                  --  to External.Subp will never take place, rendering the
+                  --  implicit Elaborate_All useless.
+
+                  New_In_State.Suppress_Implicit_Pragmas := True;
+               end if;
+            end if;
+
+         --  Otherwise the task body is not available in this compilation or
+         --  it resides in an external unit. Install a run-time ABE check to
+         --  verify that the task body has been elaborated prior to the
+         --  activation call when the dynamic model is in effect.
+
+         elsif Check_OK
+           and then New_In_State.Processing = Dynamic_Model_Processing
+         then
+            Install_Unit_ABE_Check
+              (N       => Call,
+               Unit_Id => Unit_Id,
+               Disable => Obj_Rep);
+         end if;
+
+         --  Both the activation call and task type are subject to SPARK_Mode
+         --  On, this triggers the SPARK rules for task activation. Compared
+         --  to calls and instantiations, task activation in SPARK does not
+         --  require the presence of Elaborate[_All] pragmas in case the task
+         --  type is defined outside the main unit. This is because SPARK uses
+         --  a special policy which activates all tasks after the main unit has
+         --  finished its elaboration.
+
+         if SPARK_Mode_Of (Call_Rep) = Is_On
+           and then SPARK_Mode_Of (Task_Rep) = Is_On
          then
             null;
 
-         --  Library-level scenario
-
-         elsif Level in Library_Level then
-            null;
-
-         --  Instantiation library-level scenario
-
-         elsif Level = Instantiation then
-            null;
-
-         --  Otherwise the scenario does not appear at the proper level and
-         --  cannot possibly act as a top-level scenario.
+         --  Otherwise the Ada rules are in effect. Ensure that the unit with
+         --  the task body is elaborated prior to the main unit.
 
          else
+            Ensure_Prior_Elaboration
+              (N        => Call,
+               Unit_Id  => Unit_Id,
+               Prag_Nam => Name_Elaborate_All,
+               In_State => New_In_State);
+         end if;
+
+         Traverse_Conditional_ABE_Body
+           (N        => Body_Decl,
+            In_State => New_In_State);
+      end Process_Conditional_ABE_Activation;
+
+      ----------------------------------
+      -- Process_Conditional_ABE_Call --
+      ----------------------------------
+
+      procedure Process_Conditional_ABE_Call
+        (Call     : Node_Id;
+         Call_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         function In_Initialization_Context (N : Node_Id) return Boolean;
+         pragma Inline (In_Initialization_Context);
+         --  Determine whether arbitrary node N appears within a type init
+         --  proc, primitive [Deep_]Initialize, or a block created for
+         --  initialization purposes.
+
+         function Is_Partial_Finalization_Proc
+           (Subp_Id : Entity_Id) return Boolean;
+         pragma Inline (Is_Partial_Finalization_Proc);
+         --  Determine whether subprogram Subp_Id is a partial finalization
+         --  procedure.
+
+         -------------------------------
+         -- In_Initialization_Context --
+         -------------------------------
+
+         function In_Initialization_Context (N : Node_Id) return Boolean is
+            Par     : Node_Id;
+            Spec_Id : Entity_Id;
+
+         begin
+            --  Climb the parent chain looking for initialization actions
+
+            Par := Parent (N);
+            while Present (Par) loop
+
+               --  A block may be part of the initialization actions of a
+               --  default initialized object.
+
+               if Nkind (Par) = N_Block_Statement
+                 and then Is_Initialization_Block (Par)
+               then
+                  return True;
+
+               --  A subprogram body may denote an initialization routine
+
+               elsif Nkind (Par) = N_Subprogram_Body then
+                  Spec_Id := Unique_Defining_Entity (Par);
+
+                  --  The current subprogram body denotes a type init proc or
+                  --  primitive [Deep_]Initialize.
+
+                  if Is_Init_Proc (Spec_Id)
+                    or else Is_Controlled_Proc (Spec_Id, Name_Initialize)
+                    or else Is_TSS (Spec_Id, TSS_Deep_Initialize)
+                  then
+                     return True;
+                  end if;
+
+               --  Prevent the search from going too far
+
+               elsif Is_Body_Or_Package_Declaration (Par) then
+                  exit;
+               end if;
+
+               Par := Parent (Par);
+            end loop;
+
+            return False;
+         end In_Initialization_Context;
+
+         ----------------------------------
+         -- Is_Partial_Finalization_Proc --
+         ----------------------------------
+
+         function Is_Partial_Finalization_Proc
+           (Subp_Id : Entity_Id) return Boolean
+         is
+         begin
+            --  To qualify, the subprogram must denote a finalizer procedure
+            --  or primitive [Deep_]Finalize, and the call must appear within
+            --  an initialization context.
+
+            return
+              (Is_Controlled_Proc (Subp_Id, Name_Finalize)
+                 or else Is_Finalizer_Proc (Subp_Id)
+                 or else Is_TSS (Subp_Id, TSS_Deep_Finalize))
+               and then In_Initialization_Context (Call);
+         end Is_Partial_Finalization_Proc;
+
+         --  Local variables
+
+         Subp_Id   : constant Entity_Id     := Target (Call_Rep);
+         Subp_Rep  : constant Target_Rep_Id :=
+                       Target_Representation_Of (Subp_Id, In_State);
+         Subp_Decl : constant Node_Id       := Spec_Declaration (Subp_Rep);
+
+         SPARK_Rules_On : constant Boolean :=
+                            SPARK_Mode_Of (Call_Rep) = Is_On
+                              and then SPARK_Mode_Of (Subp_Rep) = Is_On;
+
+         New_In_State : Processing_In_State := In_State;
+         --  Each step of the Processing phase constitutes a new state
+
+      --  Start of processing for Process_Conditional_ABE_Call
+
+      begin
+         --  Output relevant information when switch -gnatel (info messages on
+         --  implicit Elaborate[_All] pragmas) is in effect.
+
+         if Elab_Info_Messages
+           and then not New_In_State.Suppress_Info_Messages
+         then
+            Info_Call
+              (Call     => Call,
+               Subp_Id  => Subp_Id,
+               Info_Msg => True,
+               In_SPARK => SPARK_Rules_On);
+         end if;
+
+         --  Check whether the invocation of an entry clashes with an existing
+         --  restriction. This check is relevant only when the processing was
+         --  started from some library-level scenario.
+
+         if Is_Protected_Entry (Subp_Id) then
+            Check_Restriction (No_Entry_Calls_In_Elaboration_Code, Call);
+
+         elsif Is_Task_Entry (Subp_Id) then
+            Check_Restriction (No_Entry_Calls_In_Elaboration_Code, Call);
+
+            --  Task entry calls are never processed because the entry being
+            --  invoked does not have a corresponding "body", it has a select.
+
             return;
          end if;
 
-         Info_Missing_Pragma;
-      end if;
-   end Ensure_Prior_Elaboration_Dynamic;
+         --  Nothing to do when the call invokes a target defined within an
+         --  instance and switch -gnatd_i (ignore activations and calls to
+         --  instances for elaboration) is in effect.
 
-   -------------------------------------
-   -- Ensure_Prior_Elaboration_Static --
-   -------------------------------------
+         if Debug_Flag_Underscore_I
+           and then In_External_Instance
+                      (N           => Call,
+                       Target_Decl => Subp_Decl)
+         then
+            return;
 
-   procedure Ensure_Prior_Elaboration_Static
-     (N        : Node_Id;
-      Unit_Id  : Entity_Id;
-      Prag_Nam : Name_Id)
-   is
-      function Find_With_Clause
-        (Items     : List_Id;
-         Withed_Id : Entity_Id) return Node_Id;
-      pragma Inline (Find_With_Clause);
-      --  Find a nonlimited with clause in the list of context items Items
-      --  that withs unit Withed_Id. Return Empty if no such clause is found.
+         --  Nothing to do when the call is a guaranteed ABE
 
-      procedure Info_Implicit_Pragma;
-      pragma Inline (Info_Implicit_Pragma);
-      --  Output information concerning an implicitly generated Elaborate or
-      --  Elaborate_All pragma with name Prag_Nam for scenario N which ensures
-      --  the prior elaboration of unit Unit_Id.
+         elsif Is_Known_Guaranteed_ABE (Call) then
+            return;
 
-      ----------------------
-      -- Find_With_Clause --
-      ----------------------
+         --  Nothing to do when the root scenario appears at the declaration
+         --  level and the target is in the same unit but outside this context.
+         --
+         --    function B ...;                      --  target declaration
+         --
+         --    procedure Proc is
+         --       function A ... is
+         --       begin
+         --          if Some_Condition then
+         --             return B;                   --  call site
+         --          ...
+         --       end A;
+         --
+         --       X : ... := A;                     --  root scenario
+         --    ...
+         --
+         --    function B ... is
+         --       ...
+         --    end B;
+         --
+         --  In the example above, the context of X is the declarative region
+         --  of Proc. The "elaboration" of X may eventually reach B which is
+         --  defined outside of X's context. B is relevant only when Proc is
+         --  invoked, but this happens only by means of "normal" elaboration,
+         --  therefore B must not be considered if this is not the case.
 
-      function Find_With_Clause
-        (Items     : List_Id;
-         Withed_Id : Entity_Id) return Node_Id
+         elsif Is_Up_Level_Target
+                 (Targ_Decl => Subp_Decl,
+                  In_State  => New_In_State)
+         then
+            return;
+         end if;
+
+         --  Warnings are suppressed when a prior scenario is already in that
+         --  mode, or the call or target have warnings suppressed. Update the
+         --  state of the Processing phase to reflect this.
+
+         New_In_State.Suppress_Warnings :=
+           New_In_State.Suppress_Warnings
+             or else not Elaboration_Warnings_OK (Call_Rep)
+             or else not Elaboration_Warnings_OK (Subp_Rep);
+
+         --  The call occurs in an initial condition context when a prior
+         --  scenario is already in that mode, or when the target is an
+         --  Initial_Condition procedure. Update the state of the Processing
+         --  phase to reflect this.
+
+         New_In_State.Within_Initial_Condition :=
+           New_In_State.Within_Initial_Condition
+             or else Is_Initial_Condition_Proc (Subp_Id);
+
+         --  The call occurs in a partial finalization context when a prior
+         --  scenario is already in that mode, or when the target denotes a
+         --  [Deep_]Finalize primitive or a finalizer within an initialization
+         --  context. Update the state of the Processing phase to reflect this.
+
+         New_In_State.Within_Partial_Finalization :=
+           New_In_State.Within_Partial_Finalization
+             or else Is_Partial_Finalization_Proc (Subp_Id);
+
+         --  The SPARK rules are in effect. Note that -gnatd.v (enforce SPARK
+         --  elaboration rules in SPARK code) is intentionally not taken into
+         --  account here because Process_Conditional_ABE_Call_SPARK has two
+         --  separate modes of operation.
+
+         if SPARK_Rules_On then
+            Process_Conditional_ABE_Call_SPARK
+              (Call     => Call,
+               Call_Rep => Call_Rep,
+               Subp_Id  => Subp_Id,
+               Subp_Rep => Subp_Rep,
+               In_State => New_In_State);
+
+         --  Otherwise the Ada rules are in effect
+
+         else
+            Process_Conditional_ABE_Call_Ada
+              (Call     => Call,
+               Call_Rep => Call_Rep,
+               Subp_Id  => Subp_Id,
+               Subp_Rep => Subp_Rep,
+               In_State => New_In_State);
+         end if;
+
+         --  Inspect the target body (and barried function) for other suitable
+         --  elaboration scenarios.
+
+         Traverse_Conditional_ABE_Body
+           (N        => Barrier_Body_Declaration (Subp_Rep),
+            In_State => New_In_State);
+
+         Traverse_Conditional_ABE_Body
+           (N        => Body_Declaration (Subp_Rep),
+            In_State => New_In_State);
+      end Process_Conditional_ABE_Call;
+
+      --------------------------------------
+      -- Process_Conditional_ABE_Call_Ada --
+      --------------------------------------
+
+      procedure Process_Conditional_ABE_Call_Ada
+        (Call     : Node_Id;
+         Call_Rep : Scenario_Rep_Id;
+         Subp_Id  : Entity_Id;
+         Subp_Rep : Target_Rep_Id;
+         In_State : Processing_In_State)
       is
-         Item : Node_Id;
+         Body_Decl : constant Node_Id := Body_Declaration (Subp_Rep);
+         Root      : constant Node_Id := Root_Scenario;
+         Unit_Id   : constant Node_Id := Unit (Subp_Rep);
+
+         Check_OK : constant Boolean :=
+                      not In_State.Suppress_Checks
+                        and then Ghost_Mode_Of (Call_Rep) /= Is_Ignored
+                        and then Ghost_Mode_Of (Subp_Rep) /= Is_Ignored
+                        and then Elaboration_Checks_OK (Call_Rep)
+                        and then Elaboration_Checks_OK (Subp_Rep);
+         --  A run-time ABE check may be installed only when both the call
+         --  and the target have active elaboration checks, and both are not
+         --  ignored Ghost constructs.
+
+         New_In_State : Processing_In_State := In_State;
+         --  Each step of the Processing phase constitutes a new state
 
       begin
-         --  Examine the context clauses looking for a suitable with. Note that
-         --  limited clauses do not affect the elaboration order.
+         --  Nothing to do for an Ada dispatching call because there are no
+         --  ABE diagnostics for either models. ABE checks for the dynamic
+         --  model are handled by Install_Primitive_Elaboration_Check.
 
-         Item := First (Items);
-         while Present (Item) loop
-            if Nkind (Item) = N_With_Clause
-              and then not Error_Posted (Item)
-              and then not Limited_Present (Item)
-              and then Entity (Name (Item)) = Withed_Id
-            then
-               return Item;
+         if Is_Dispatching_Call (Call_Rep) then
+            return;
+
+         --  Nothing to do when the call is ABE-safe
+         --
+         --    generic
+         --    function Gen ...;
+         --
+         --    function Gen ... is
+         --    begin
+         --       ...
+         --    end Gen;
+         --
+         --    with Gen;
+         --    procedure Main is
+         --       function Inst is new Gen;
+         --       X : ... := Inst;                  --  safe call
+         --    ...
+
+         elsif Is_Safe_Call (Call, Subp_Id, Subp_Rep) then
+            return;
+
+         --  The call and the target body are both in the main unit
+         --
+         --  If the root scenario appears prior to the target body, then this
+         --  is a possible ABE with respect to the root scenario.
+         --
+         --    function B ...;
+         --
+         --    function A ... is
+         --    begin
+         --       if Some_Condition then
+         --          return B;                      --  call site
+         --       ...
+         --    end A;
+         --
+         --    X : ... := A;                        --  root scenario
+         --
+         --    function B ... is                    --  target body
+         --       ...
+         --    end B;
+         --
+         --    Y : ... := A;                        --  root scenario
+         --
+         --  IMPORTANT: The call to B from A is a possible ABE for X, but
+         --  not for Y. Installing an unconditional ABE raise prior to the
+         --  call to B would be wrong as it will fail for Y as well, but in
+         --  Y's case the call to B is never an ABE.
+
+         elsif Present (Body_Decl)
+           and then In_Extended_Main_Code_Unit (Body_Decl)
+         then
+            if Earlier_In_Extended_Unit (Root, Body_Decl) then
+
+               --  Do not emit any ABE diagnostics when a previous scenario in
+               --  this traversal has suppressed elaboration warnings.
+
+               if New_In_State.Suppress_Warnings then
+                  null;
+
+               --  Do not emit any ABE diagnostics when the call occurs in a
+               --  partial finalization context because this leads to confusing
+               --  noise.
+
+               elsif New_In_State.Within_Partial_Finalization then
+                  null;
+
+               --  Otherwise emit the ABE diagnostic
+
+               else
+                  Error_Msg_NE
+                    ("??cannot call & before body seen", Call, Subp_Id);
+                  Error_Msg_N
+                    ("\Program_Error may be raised at run time", Call);
+
+                  Output_Active_Scenarios (Call, New_In_State);
+               end if;
+
+               --  Install a conditional run-time ABE check to verify that the
+               --  target body has been elaborated prior to the call.
+
+               if Check_OK then
+                  Install_Scenario_ABE_Check
+                    (N        => Call,
+                     Targ_Id  => Subp_Id,
+                     Targ_Rep => Subp_Rep,
+                     Disable  => Call_Rep);
+
+                  --  Update the state of the Processing phase to indicate that
+                  --  no implicit Elaborate[_All] pragma must be generated from
+                  --  this point on.
+                  --
+                  --    function B ...;
+                  --
+                  --    function A ... is
+                  --    begin
+                  --       if Some_Condition then
+                  --          <ABE check>
+                  --          return B;
+                  --       ...
+                  --    end A;
+                  --
+                  --    X : ... := A;
+                  --
+                  --    function B ... is
+                  --       External.Subp;           --  imparts Elaborate_All
+                  --    end B;
+                  --
+                  --  If Some_Condition is True, then the ABE check will fail
+                  --  at runtime and the call to External.Subp will never take
+                  --  place, rendering the implicit Elaborate_All useless.
+                  --
+                  --  If the value of Some_Condition is False, then the call
+                  --  to External.Subp will never take place, rendering the
+                  --  implicit Elaborate_All useless.
+
+                  New_In_State.Suppress_Implicit_Pragmas := True;
+               end if;
             end if;
 
-            Next (Item);
-         end loop;
+         --  Otherwise the target body is not available in this compilation or
+         --  it resides in an external unit. Install a run-time ABE check to
+         --  verify that the target body has been elaborated prior to the call
+         --  site when the dynamic model is in effect.
 
-         return Empty;
-      end Find_With_Clause;
+         elsif Check_OK
+           and then New_In_State.Processing = Dynamic_Model_Processing
+         then
+            Install_Unit_ABE_Check
+              (N       => Call,
+               Unit_Id => Unit_Id,
+               Disable => Call_Rep);
+         end if;
 
-      --------------------------
-      -- Info_Implicit_Pragma --
-      --------------------------
+         --  Ensure that the unit with the target body is elaborated prior to
+         --  the main unit. The implicit Elaborate[_All] is generated only when
+         --  the call has elaboration checks enabled. This behaviour parallels
+         --  that of the old ABE mechanism.
 
-      procedure Info_Implicit_Pragma is
+         if Elaboration_Checks_OK (Call_Rep) then
+            Ensure_Prior_Elaboration
+              (N        => Call,
+               Unit_Id  => Unit_Id,
+               Prag_Nam => Name_Elaborate_All,
+               In_State => New_In_State);
+         end if;
+      end Process_Conditional_ABE_Call_Ada;
+
+      ----------------------------------------
+      -- Process_Conditional_ABE_Call_SPARK --
+      ----------------------------------------
+
+      procedure Process_Conditional_ABE_Call_SPARK
+        (Call     : Node_Id;
+         Call_Rep : Scenario_Rep_Id;
+         Subp_Id  : Entity_Id;
+         Subp_Rep : Target_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         pragma Unreferenced (Call_Rep);
+
+         Body_Decl : constant Node_Id := Body_Declaration (Subp_Rep);
+         Region    : Node_Id;
+
       begin
-         --  Internal units are ignored as they cause unnecessary noise
+         --  Ensure that a suitable elaboration model is in effect for SPARK
+         --  rule verification.
 
-         if not In_Internal_Unit (Unit_Id) then
+         Check_SPARK_Model_In_Effect;
 
-            --  The name of the unit subjected to the elaboration pragma is
-            --  fully qualified to improve the clarity of the info message.
+         --  The call and the target body are both in the main unit
 
-            Error_Msg_Name_1     := Prag_Nam;
-            Error_Msg_Qual_Level := Nat'Last;
+         if Present (Body_Decl)
+           and then In_Extended_Main_Code_Unit (Body_Decl)
+           and then Earlier_In_Extended_Unit (Call, Body_Decl)
+         then
+            --  Do not emit any ABE diagnostics when a previous scenario in
+            --  this traversal has suppressed elaboration warnings.
+
+            if In_State.Suppress_Warnings then
+               null;
+
+            --  Do not emit any ABE diagnostics when the call occurs in an
+            --  initial condition context because this leads to incorrect
+            --  diagnostics.
+
+            elsif In_State.Within_Initial_Condition then
+               null;
+
+            --  Do not emit any ABE diagnostics when the call occurs in a
+            --  partial finalization context because this leads to confusing
+            --  noise.
+
+            elsif In_State.Within_Partial_Finalization then
+               null;
+
+            --  Ensure that a call that textually precedes the subprogram body
+            --  it invokes appears within the early call region of the body.
+            --
+            --  IMPORTANT: This check must always be performed even when switch
+            --  -gnatd.v (enforce SPARK elaboration rules in SPARK code) is not
+            --  specified because the static model cannot guarantee the absence
+            --  of elaboration issues when dispatching calls are involved.
+
+            else
+               Region := Find_Early_Call_Region (Body_Decl);
+
+               if Earlier_In_Extended_Unit (Call, Region) then
+                  Error_Msg_NE
+                    ("call must appear within early call region of subprogram "
+                     & "body & (SPARK RM 7.7(3))",
+                     Call, Subp_Id);
+
+                  Error_Msg_Sloc := Sloc (Region);
+                  Error_Msg_N ("\region starts #", Call);
+
+                  Error_Msg_Sloc := Sloc (Body_Decl);
+                  Error_Msg_N ("\region ends #", Call);
+
+                  Output_Active_Scenarios (Call, In_State);
+               end if;
+            end if;
+         end if;
+
+         --  A call to a source target or to a target which emulates Ada
+         --  or SPARK semantics imposes an Elaborate_All requirement on the
+         --  context of the main unit. Determine whether the context has a
+         --  pragma strong enough to meet the requirement.
+         --
+         --  IMPORTANT: This check must be performed only when switch -gnatd.v
+         --  (enforce SPARK elaboration rules in SPARK code) is active because
+         --  the static model can ensure the prior elaboration of the unit
+         --  which contains a body by installing an implicit Elaborate[_All]
+         --  pragma.
+
+         if Debug_Flag_Dot_V then
+            if Comes_From_Source (Subp_Id)
+              or else Is_Ada_Semantic_Target (Subp_Id)
+              or else Is_SPARK_Semantic_Target (Subp_Id)
+            then
+               Meet_Elaboration_Requirement
+                 (N        => Call,
+                  Targ_Id  => Subp_Id,
+                  Req_Nam  => Name_Elaborate_All,
+                  In_State => In_State);
+            end if;
+
+         --  Otherwise ensure that the unit with the target body is elaborated
+         --  prior to the main unit.
+
+         else
+            Ensure_Prior_Elaboration
+              (N        => Call,
+               Unit_Id  => Unit (Subp_Rep),
+               Prag_Nam => Name_Elaborate_All,
+               In_State => In_State);
+         end if;
+      end Process_Conditional_ABE_Call_SPARK;
+
+      -------------------------------------------
+      -- Process_Conditional_ABE_Instantiation --
+      -------------------------------------------
+
+      procedure Process_Conditional_ABE_Instantiation
+        (Inst     : Node_Id;
+         Inst_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         Gen_Id  : constant Entity_Id     := Target (Inst_Rep);
+         Gen_Rep : constant Target_Rep_Id :=
+                     Target_Representation_Of (Gen_Id, In_State);
+
+         SPARK_Rules_On : constant Boolean :=
+                            SPARK_Mode_Of (Inst_Rep) = Is_On
+                              and then SPARK_Mode_Of (Gen_Rep) = Is_On;
+
+         New_In_State : Processing_In_State := In_State;
+         --  Each step of the Processing phase constitutes a new state
+
+      begin
+         --  Output relevant information when switch -gnatel (info messages on
+         --  implicit Elaborate[_All] pragmas) is in effect.
+
+         if Elab_Info_Messages
+           and then not New_In_State.Suppress_Info_Messages
+         then
+            Info_Instantiation
+              (Inst     => Inst,
+               Gen_Id   => Gen_Id,
+               Info_Msg => True,
+               In_SPARK => SPARK_Rules_On);
+         end if;
+
+         --  Nothing to do when the instantiation is a guaranteed ABE
+
+         if Is_Known_Guaranteed_ABE (Inst) then
+            return;
+
+         --  Nothing to do when the root scenario appears at the declaration
+         --  level and the generic is in the same unit, but outside this
+         --  context.
+         --
+         --    generic
+         --    procedure Gen is ...;                --  generic declaration
+         --
+         --    procedure Proc is
+         --       function A ... is
+         --       begin
+         --          if Some_Condition then
+         --             declare
+         --                procedure I is new Gen;  --  instantiation site
+         --             ...
+         --          ...
+         --       end A;
+         --
+         --       X : ... := A;                     --  root scenario
+         --    ...
+         --
+         --    procedure Gen is
+         --       ...
+         --    end Gen;
+         --
+         --  In the example above, the context of X is the declarative region
+         --  of Proc. The "elaboration" of X may eventually reach Gen which
+         --  appears outside of X's context. Gen is relevant only when Proc is
+         --  invoked, but this happens only by means of "normal" elaboration,
+         --  therefore Gen must not be considered if this is not the case.
+
+         elsif Is_Up_Level_Target
+                 (Targ_Decl => Spec_Declaration (Gen_Rep),
+                  In_State  => New_In_State)
+         then
+            return;
+         end if;
+
+         --  Warnings are suppressed when a prior scenario is already in that
+         --  mode, or when the instantiation has warnings suppressed. Update
+         --  the state of the processing phase to reflect this.
+
+         New_In_State.Suppress_Warnings :=
+           New_In_State.Suppress_Warnings
+             or else not Elaboration_Warnings_OK (Inst_Rep);
+
+         --  The SPARK rules are in effect
+
+         if SPARK_Rules_On then
+            Process_Conditional_ABE_Instantiation_SPARK
+              (Inst     => Inst,
+               Inst_Rep => Inst_Rep,
+               Gen_Id   => Gen_Id,
+               Gen_Rep  => Gen_Rep,
+               In_State => New_In_State);
+
+         --  Otherwise the Ada rules are in effect, or SPARK code is allowed to
+         --  violate the SPARK rules.
+
+         else
+            Process_Conditional_ABE_Instantiation_Ada
+              (Inst     => Inst,
+               Inst_Rep => Inst_Rep,
+               Gen_Id   => Gen_Id,
+               Gen_Rep  => Gen_Rep,
+               In_State => New_In_State);
+         end if;
+      end Process_Conditional_ABE_Instantiation;
+
+      -----------------------------------------------
+      -- Process_Conditional_ABE_Instantiation_Ada --
+      -----------------------------------------------
+
+      procedure Process_Conditional_ABE_Instantiation_Ada
+        (Inst     : Node_Id;
+         Inst_Rep : Scenario_Rep_Id;
+         Gen_Id   : Entity_Id;
+         Gen_Rep  : Target_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         Body_Decl : constant Node_Id   := Body_Declaration (Gen_Rep);
+         Root      : constant Node_Id   := Root_Scenario;
+         Unit_Id   : constant Entity_Id := Unit (Gen_Rep);
+
+         Check_OK : constant Boolean :=
+                      not In_State.Suppress_Checks
+                        and then Ghost_Mode_Of (Inst_Rep) /= Is_Ignored
+                        and then Ghost_Mode_Of (Gen_Rep)  /= Is_Ignored
+                        and then Elaboration_Checks_OK (Inst_Rep)
+                        and then Elaboration_Checks_OK (Gen_Rep);
+         --  A run-time ABE check may be installed only when both the instance
+         --  and the generic have active elaboration checks and both are not
+         --  ignored Ghost constructs.
+
+         New_In_State : Processing_In_State := In_State;
+         --  Each step of the Processing phase constitutes a new state
+
+      begin
+         --  Nothing to do when the instantiation is ABE-safe
+         --
+         --    generic
+         --    package Gen is
+         --       ...
+         --    end Gen;
+         --
+         --    package body Gen is
+         --       ...
+         --    end Gen;
+         --
+         --    with Gen;
+         --    procedure Main is
+         --       package Inst is new Gen (ABE);    --  safe instantiation
+         --    ...
+
+         if Is_Safe_Instantiation (Inst, Gen_Id, Gen_Rep) then
+            return;
+
+         --  The instantiation and the generic body are both in the main unit
+         --
+         --  If the root scenario appears prior to the generic body, then this
+         --  is a possible ABE with respect to the root scenario.
+         --
+         --    generic
+         --    package Gen is
+         --       ...
+         --    end Gen;
+         --
+         --    function A ... is
+         --    begin
+         --       if Some_Condition then
+         --          declare
+         --             package Inst is new Gen;    --  instantiation site
+         --       ...
+         --    end A;
+         --
+         --    X : ... := A;                        --  root scenario
+         --
+         --    package body Gen is                  --  generic body
+         --       ...
+         --    end Gen;
+         --
+         --    Y : ... := A;                        --  root scenario
+         --
+         --  IMPORTANT: The instantiation of Gen is a possible ABE for X,
+         --  but not for Y. Installing an unconditional ABE raise prior to
+         --  the instance site would be wrong as it will fail for Y as well,
+         --  but in Y's case the instantiation of Gen is never an ABE.
+
+         elsif Present (Body_Decl)
+           and then In_Extended_Main_Code_Unit (Body_Decl)
+         then
+            if Earlier_In_Extended_Unit (Root, Body_Decl) then
+
+               --  Do not emit any ABE diagnostics when a previous scenario in
+               --  this traversal has suppressed elaboration warnings.
+
+               if New_In_State.Suppress_Warnings then
+                  null;
+
+               --  Do not emit any ABE diagnostics when the instantiation
+               --  occurs in partial finalization context because this leads
+               --  to unwanted noise.
+
+               elsif New_In_State.Within_Partial_Finalization then
+                  null;
+
+               --  Otherwise output the diagnostic
+
+               else
+                  Error_Msg_NE
+                    ("??cannot instantiate & before body seen", Inst, Gen_Id);
+                  Error_Msg_N
+                    ("\Program_Error may be raised at run time", Inst);
+
+                  Output_Active_Scenarios (Inst, New_In_State);
+               end if;
+
+               --  Install a conditional run-time ABE check to verify that the
+               --  generic body has been elaborated prior to the instantiation.
+
+               if Check_OK then
+                  Install_Scenario_ABE_Check
+                    (N        => Inst,
+                     Targ_Id  => Gen_Id,
+                     Targ_Rep => Gen_Rep,
+                     Disable  => Inst_Rep);
+
+                  --  Update the state of the Processing phase to indicate that
+                  --  no implicit Elaborate[_All] pragma must be generated from
+                  --  this point on.
+                  --
+                  --    generic
+                  --    package Gen is
+                  --       ...
+                  --    end Gen;
+                  --
+                  --    function A ... is
+                  --    begin
+                  --       if Some_Condition then
+                  --          <ABE check>
+                  --          declare Inst is new Gen;
+                  --       ...
+                  --    end A;
+                  --
+                  --    X : ... := A;
+                  --
+                  --    package body Gen is
+                  --    begin
+                  --       External.Subp;           --  imparts Elaborate_All
+                  --    end Gen;
+                  --
+                  --  If Some_Condition is True, then the ABE check will fail
+                  --  at runtime and the call to External.Subp will never take
+                  --  place, rendering the implicit Elaborate_All useless.
+                  --
+                  --  If the value of Some_Condition is False, then the call
+                  --  to External.Subp will never take place, rendering the
+                  --  implicit Elaborate_All useless.
+
+                  New_In_State.Suppress_Implicit_Pragmas := True;
+               end if;
+            end if;
+
+         --  Otherwise the generic body is not available in this compilation
+         --  or it resides in an external unit. Install a run-time ABE check
+         --  to verify that the generic body has been elaborated prior to the
+         --  instantiation when the dynamic model is in effect.
+
+         elsif Check_OK
+           and then New_In_State.Processing = Dynamic_Model_Processing
+         then
+            Install_Unit_ABE_Check
+              (N       => Inst,
+               Unit_Id => Unit_Id,
+               Disable => Inst_Rep);
+         end if;
+
+         --  Ensure that the unit with the generic body is elaborated prior
+         --  to the main unit. No implicit pragma has to be generated if the
+         --  instantiation has elaboration checks suppressed. This behaviour
+         --  parallels that of the old ABE mechanism.
+
+         if Elaboration_Checks_OK (Inst_Rep) then
+            Ensure_Prior_Elaboration
+              (N        => Inst,
+               Unit_Id  => Unit_Id,
+               Prag_Nam => Name_Elaborate,
+               In_State => New_In_State);
+         end if;
+      end Process_Conditional_ABE_Instantiation_Ada;
+
+      -------------------------------------------------
+      -- Process_Conditional_ABE_Instantiation_SPARK --
+      -------------------------------------------------
+
+      procedure Process_Conditional_ABE_Instantiation_SPARK
+        (Inst     : Node_Id;
+         Inst_Rep : Scenario_Rep_Id;
+         Gen_Id   : Entity_Id;
+         Gen_Rep  : Target_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         pragma Unreferenced (Inst_Rep);
+
+         Req_Nam : Name_Id;
+
+      begin
+         --  Ensure that a suitable elaboration model is in effect for SPARK
+         --  rule verification.
+
+         Check_SPARK_Model_In_Effect;
+
+         --  A source instantiation imposes an Elaborate[_All] requirement
+         --  on the context of the main unit. Determine whether the context
+         --  has a pragma strong enough to meet the requirement. The check
+         --  is orthogonal to the ABE ramifications of the instantiation.
+         --
+         --  IMPORTANT: This check must be performed only when switch -gnatd.v
+         --  (enforce SPARK elaboration rules in SPARK code) is active because
+         --  the static model can ensure the prior elaboration of the unit
+         --  which contains a body by installing an implicit Elaborate[_All]
+         --  pragma.
+
+         if Debug_Flag_Dot_V then
+            if Nkind (Inst) = N_Package_Instantiation then
+               Req_Nam := Name_Elaborate_All;
+            else
+               Req_Nam := Name_Elaborate;
+            end if;
+
+            Meet_Elaboration_Requirement
+              (N        => Inst,
+               Targ_Id  => Gen_Id,
+               Req_Nam  => Req_Nam,
+               In_State => In_State);
+
+         --  Otherwise ensure that the unit with the target body is elaborated
+         --  prior to the main unit.
+
+         else
+            Ensure_Prior_Elaboration
+              (N        => Inst,
+               Unit_Id  => Unit (Gen_Rep),
+               Prag_Nam => Name_Elaborate,
+               In_State => In_State);
+         end if;
+      end Process_Conditional_ABE_Instantiation_SPARK;
+
+      -------------------------------------------------
+      -- Process_Conditional_ABE_Variable_Assignment --
+      -------------------------------------------------
+
+      procedure Process_Conditional_ABE_Variable_Assignment
+        (Asmt     : Node_Id;
+         Asmt_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State)
+      is
+
+         Var_Id  : constant Entity_Id     := Target (Asmt_Rep);
+         Var_Rep : constant Target_Rep_Id :=
+                     Target_Representation_Of (Var_Id, In_State);
+
+         SPARK_Rules_On : constant Boolean :=
+                            SPARK_Mode_Of (Asmt_Rep) = Is_On
+                              and then SPARK_Mode_Of (Var_Rep) = Is_On;
+
+      begin
+         --  Output relevant information when switch -gnatel (info messages on
+         --  implicit Elaborate[_All] pragmas) is in effect.
+
+         if Elab_Info_Messages
+           and then not In_State.Suppress_Info_Messages
+         then
+            Elab_Msg_NE
+              (Msg      => "assignment to & during elaboration",
+               N        => Asmt,
+               Id       => Var_Id,
+               Info_Msg => True,
+               In_SPARK => SPARK_Rules_On);
+         end if;
+
+         --  The SPARK rules are in effect. These rules are applied regardless
+         --  of whether switch -gnatd.v (enforce SPARK elaboration rules in
+         --  SPARK code) is in effect because the static model cannot ensure
+         --  safe assignment of variables.
+
+         if SPARK_Rules_On then
+            Process_Conditional_ABE_Variable_Assignment_SPARK
+              (Asmt     => Asmt,
+               Asmt_Rep => Asmt_Rep,
+               Var_Id   => Var_Id,
+               Var_Rep  => Var_Rep,
+               In_State => In_State);
+
+         --  Otherwise the Ada rules are in effect
+
+         else
+            Process_Conditional_ABE_Variable_Assignment_Ada
+              (Asmt     => Asmt,
+               Asmt_Rep => Asmt_Rep,
+               Var_Id   => Var_Id,
+               Var_Rep  => Var_Rep,
+               In_State => In_State);
+         end if;
+      end Process_Conditional_ABE_Variable_Assignment;
+
+      -----------------------------------------------------
+      -- Process_Conditional_ABE_Variable_Assignment_Ada --
+      -----------------------------------------------------
+
+      procedure Process_Conditional_ABE_Variable_Assignment_Ada
+        (Asmt     : Node_Id;
+         Asmt_Rep : Scenario_Rep_Id;
+         Var_Id   : Entity_Id;
+         Var_Rep  : Target_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         pragma Unreferenced (Asmt_Rep);
+
+         Var_Decl : constant Node_Id   := Variable_Declaration (Var_Rep);
+         Unit_Id  : constant Entity_Id := Unit (Var_Rep);
+
+      begin
+         --  Emit a warning when an uninitialized variable declared in a
+         --  package spec without a pragma Elaborate_Body is initialized
+         --  by elaboration code within the corresponding body.
+
+         if Is_Elaboration_Warnings_OK_Id (Var_Id)
+           and then not Is_Initialized (Var_Decl)
+           and then not Has_Pragma_Elaborate_Body (Unit_Id)
+         then
+            --  Do not emit any ABE diagnostics when a previous scenario in
+            --  this traversal has suppressed elaboration warnings.
+
+            if not In_State.Suppress_Warnings then
+               Error_Msg_NE
+                 ("??variable & can be accessed by clients before this "
+                  & "initialization", Asmt, Var_Id);
+
+               Error_Msg_NE
+                 ("\add pragma ""Elaborate_Body"" to spec & to ensure proper "
+                  & "initialization", Asmt, Unit_Id);
+
+               Output_Active_Scenarios (Asmt, In_State);
+            end if;
+
+            --  Generate an implicit Elaborate_Body in the spec
+
+            Set_Elaborate_Body_Desirable (Unit_Id);
+         end if;
+      end Process_Conditional_ABE_Variable_Assignment_Ada;
+
+      -------------------------------------------------------
+      -- Process_Conditional_ABE_Variable_Assignment_SPARK --
+      -------------------------------------------------------
+
+      procedure Process_Conditional_ABE_Variable_Assignment_SPARK
+        (Asmt     : Node_Id;
+         Asmt_Rep : Scenario_Rep_Id;
+         Var_Id   : Entity_Id;
+         Var_Rep  : Target_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         pragma Unreferenced (Asmt_Rep);
+
+         Var_Decl : constant Node_Id   := Variable_Declaration (Var_Rep);
+         Unit_Id  : constant Entity_Id := Unit (Var_Rep);
+
+      begin
+         --  Ensure that a suitable elaboration model is in effect for SPARK
+         --  rule verification.
+
+         Check_SPARK_Model_In_Effect;
+
+         --  Do not emit any ABE diagnostics when a previous scenario in this
+         --  traversal has suppressed elaboration warnings.
+
+         if In_State.Suppress_Warnings then
+            null;
+
+         --  Emit an error when an initialized variable declared in a package
+         --  spec that is missing pragma Elaborate_Body is further modified by
+         --  elaboration code within the corresponding body.
+
+         elsif Is_Elaboration_Warnings_OK_Id (Var_Id)
+           and then Is_Initialized (Var_Decl)
+           and then not Has_Pragma_Elaborate_Body (Unit_Id)
+         then
+            Error_Msg_NE
+              ("variable & modified by elaboration code in package body",
+               Asmt, Var_Id);
 
             Error_Msg_NE
-              ("info: implicit pragma % generated for unit &", N, Unit_Id);
+              ("\add pragma ""Elaborate_Body"" to spec & to ensure full "
+               & "initialization", Asmt, Unit_Id);
 
-            Error_Msg_Qual_Level := 0;
-            Output_Active_Scenarios (N);
+            Output_Active_Scenarios (Asmt, In_State);
          end if;
-      end Info_Implicit_Pragma;
-
-      --  Local variables
-
-      Main_Cunit : constant Node_Id    := Cunit (Main_Unit);
-      Loc        : constant Source_Ptr := Sloc (Main_Cunit);
-      Unit_Cunit : constant Node_Id    := Compilation_Unit (Unit_Id);
-
-      Clause     : Node_Id;
-      Elab_Attrs : Elaboration_Attributes;
-      Items      : List_Id;
-
-   --  Start of processing for Ensure_Prior_Elaboration_Static
-
-   begin
-      Elab_Attrs := Elaboration_Status (Unit_Id);
-
-      --  Nothing to do when the unit is guaranteed prior elaboration by means
-      --  of a source Elaborate[_All] pragma.
-
-      if Present (Elab_Attrs.Source_Pragma) then
-         return;
-
-      --  Nothing to do when the unit has an existing implicit Elaborate[_All]
-      --  pragma installed by a previous scenario.
-
-      elsif Present (Elab_Attrs.With_Clause) then
-
-         --  The unit is already guaranteed prior elaboration by means of an
-         --  implicit Elaborate pragma, however the current scenario imposes
-         --  a stronger requirement of Elaborate_All. "Upgrade" the existing
-         --  pragma to match this new requirement.
-
-         if Elaborate_Desirable (Elab_Attrs.With_Clause)
-           and then Prag_Nam = Name_Elaborate_All
-         then
-            Set_Elaborate_All_Desirable (Elab_Attrs.With_Clause);
-            Set_Elaborate_Desirable     (Elab_Attrs.With_Clause, False);
-         end if;
-
-         return;
-      end if;
-
-      --  At this point it is known that the unit has no prior elaboration
-      --  according to pragmas and hierarchical relationships.
-
-      Items := Context_Items (Main_Cunit);
-
-      if No (Items) then
-         Items := New_List;
-         Set_Context_Items (Main_Cunit, Items);
-      end if;
-
-      --  Locate the with clause for the unit. Note that there may not be a
-      --  clause if the unit is visible through a subunit-body, body-spec, or
-      --  spec-parent relationship.
-
-      Clause :=
-        Find_With_Clause
-          (Items     => Items,
-           Withed_Id => Unit_Id);
-
-      --  Generate:
-      --    with Id;
-
-      --  Note that adding implicit with clauses is safe because analysis,
-      --  resolution, and expansion have already taken place and it is not
-      --  possible to interfere with visibility.
-
-      if No (Clause) then
-         Clause :=
-           Make_With_Clause (Loc,
-             Name => New_Occurrence_Of (Unit_Id, Loc));
-
-         Set_Implicit_With (Clause);
-         Set_Library_Unit  (Clause, Unit_Cunit);
-
-         Append_To (Items, Clause);
-      end if;
-
-      --  Mark the with clause depending on the pragma required
-
-      if Prag_Nam = Name_Elaborate then
-         Set_Elaborate_Desirable (Clause);
-      else
-         Set_Elaborate_All_Desirable (Clause);
-      end if;
-
-      --  The implicit Elaborate[_All] ensures the prior elaboration of the
-      --  unit. Include the unit in the elaboration context of the main unit.
-
-      Set_Elaboration_Status
-        (Unit_Id => Unit_Id,
-         Val     => Elaboration_Attributes'(Source_Pragma => Empty,
-                                            With_Clause   => Clause));
-
-      --  Output extra information on an implicit Elaborate[_All] pragma when
-      --  switch -gnatel (info messages on implicit Elaborate[_All] pragmas is
-      --  in effect.
-
-      if Elab_Info_Messages then
-         Info_Implicit_Pragma;
-      end if;
-   end Ensure_Prior_Elaboration_Static;
-
-   -----------------------------
-   -- Extract_Assignment_Name --
-   -----------------------------
-
-   function Extract_Assignment_Name (Asmt : Node_Id) return Node_Id is
-      Nam : Node_Id;
-
-   begin
-      Nam := Name (Asmt);
-
-      --  When the name denotes an array or record component, find the whole
-      --  object.
-
-      while Nkind_In (Nam, N_Explicit_Dereference,
-                           N_Indexed_Component,
-                           N_Selected_Component,
-                           N_Slice)
-      loop
-         Nam := Prefix (Nam);
-      end loop;
-
-      return Nam;
-   end Extract_Assignment_Name;
-
-   -----------------------------
-   -- Extract_Call_Attributes --
-   -----------------------------
-
-   procedure Extract_Call_Attributes
-     (Call      : Node_Id;
-      Target_Id : out Entity_Id;
-      Attrs     : out Call_Attributes)
-   is
-      From_Source     : Boolean;
-      In_Declarations : Boolean;
-      Is_Dispatching  : Boolean;
-
-   begin
-      --  Extraction for call markers
-
-      if Nkind (Call) = N_Call_Marker then
-         Target_Id       := Target (Call);
-         From_Source     := Is_Source_Call (Call);
-         In_Declarations := Is_Declaration_Level_Node (Call);
-         Is_Dispatching  := Is_Dispatching_Call (Call);
-
-      --  Extraction for entry calls, requeue, and subprogram calls
-
-      else
-         pragma Assert (Nkind_In (Call, N_Entry_Call_Statement,
-                                        N_Function_Call,
-                                        N_Procedure_Call_Statement,
-                                        N_Requeue_Statement));
-
-         Target_Id   := Entity (Extract_Call_Name (Call));
-         From_Source := Comes_From_Source (Call);
-
-         --  Performance note: parent traversal
-
-         In_Declarations := Find_Enclosing_Level (Call) = Declaration_Level;
-         Is_Dispatching  :=
-           Nkind_In (Call, N_Function_Call, N_Procedure_Call_Statement)
-             and then Present (Controlling_Argument (Call));
-      end if;
-
-      --  Obtain the original entry or subprogram which the target may rename
-      --  except when the target is an instantiation. In this case the alias
-      --  is the internally generated subprogram which appears within the the
-      --  anonymous package created for the instantiation. Such an alias is not
-      --  a suitable target.
-
-      if not (Is_Subprogram (Target_Id)
-               and then Is_Generic_Instance (Target_Id))
-      then
-         Target_Id := Get_Renamed_Entity (Target_Id);
-      end if;
-
-      --  Set all attributes
-
-      Attrs.Elab_Checks_OK    := Is_Elaboration_Checks_OK_Node (Call);
-      Attrs.Elab_Warnings_OK  := Is_Elaboration_Warnings_OK_Node (Call);
-      Attrs.From_Source       := From_Source;
-      Attrs.Ghost_Mode_Ignore := Is_Ignored_Ghost_Node (Call);
-      Attrs.In_Declarations   := In_Declarations;
-      Attrs.Is_Dispatching    := Is_Dispatching;
-      Attrs.SPARK_Mode_On     := Is_SPARK_Mode_On_Node (Call);
-   end Extract_Call_Attributes;
-
-   -----------------------
-   -- Extract_Call_Name --
-   -----------------------
-
-   function Extract_Call_Name (Call : Node_Id) return Node_Id is
-      Nam : Node_Id;
-
-   begin
-      Nam := Name (Call);
-
-      --  When the call invokes an entry family, the name appears as an indexed
-      --  component.
-
-      if Nkind (Nam) = N_Indexed_Component then
-         Nam := Prefix (Nam);
-      end if;
-
-      --  When the call employs the object.operation form, the name appears as
-      --  a selected component.
-
-      if Nkind (Nam) = N_Selected_Component then
-         Nam := Selector_Name (Nam);
-      end if;
-
-      return Nam;
-   end Extract_Call_Name;
-
-   ---------------------------------
-   -- Extract_Instance_Attributes --
-   ---------------------------------
-
-   procedure Extract_Instance_Attributes
-     (Exp_Inst  : Node_Id;
-      Inst_Body : out Node_Id;
-      Inst_Decl : out Node_Id)
-   is
-      Body_Id : Entity_Id;
-
-   begin
-      --  Assume that the attributes are unavailable
-
-      Inst_Body := Empty;
-      Inst_Decl := Empty;
-
-      --  Generic package or subprogram spec
-
-      if Nkind_In (Exp_Inst, N_Package_Declaration,
-                             N_Subprogram_Declaration)
-      then
-         Inst_Decl := Exp_Inst;
-         Body_Id   := Corresponding_Body (Inst_Decl);
-
-         if Present (Body_Id) then
-            Inst_Body := Unit_Declaration_Node (Body_Id);
-         end if;
-
-      --  Generic package or subprogram body
-
-      else
-         pragma Assert
-           (Nkind_In (Exp_Inst, N_Package_Body, N_Subprogram_Body));
-
-         Inst_Body := Exp_Inst;
-         Inst_Decl := Unit_Declaration_Node (Corresponding_Spec (Inst_Body));
-      end if;
-   end Extract_Instance_Attributes;
-
-   --------------------------------------
-   -- Extract_Instantiation_Attributes --
-   --------------------------------------
-
-   procedure Extract_Instantiation_Attributes
-     (Exp_Inst : Node_Id;
-      Inst     : out Node_Id;
-      Inst_Id  : out Entity_Id;
-      Gen_Id   : out Entity_Id;
-      Attrs    : out Instantiation_Attributes)
-   is
-   begin
-      Inst    := Original_Node (Exp_Inst);
-      Inst_Id := Defining_Entity (Inst);
-
-      --  Traverse a possible chain of renamings to obtain the original generic
-      --  being instantiatied.
-
-      Gen_Id := Get_Renamed_Entity (Entity (Name (Inst)));
-
-      --  Set all attributes
-
-      Attrs.Elab_Checks_OK    := Is_Elaboration_Checks_OK_Node (Inst);
-      Attrs.Elab_Warnings_OK  := Is_Elaboration_Warnings_OK_Node (Inst);
-      Attrs.Ghost_Mode_Ignore := Is_Ignored_Ghost_Node (Inst);
-      Attrs.In_Declarations   := Is_Declaration_Level_Node (Inst);
-      Attrs.SPARK_Mode_On     := Is_SPARK_Mode_On_Node (Inst);
-   end Extract_Instantiation_Attributes;
-
-   -------------------------------
-   -- Extract_Target_Attributes --
-   -------------------------------
-
-   procedure Extract_Target_Attributes
-     (Target_Id : Entity_Id;
-      Attrs     : out Target_Attributes)
-   is
-      procedure Extract_Package_Or_Subprogram_Attributes
-        (Spec_Id   : out Entity_Id;
-         Body_Decl : out Node_Id);
-      --  Obtain the attributes associated with a package or a subprogram.
-      --  Spec_Id is the package or subprogram. Body_Decl is the declaration
-      --  of the corresponding package or subprogram body.
-
-      procedure Extract_Protected_Entry_Attributes
-        (Spec_Id   : out Entity_Id;
-         Body_Decl : out Node_Id;
-         Body_Barf : out Node_Id);
-      --  Obtain the attributes associated with a protected entry [family].
-      --  Spec_Id is the entity of the protected body subprogram. Body_Decl
-      --  is the declaration of Spec_Id's corresponding body. Body_Barf is
-      --  the declaration of the barrier function body.
-
-      procedure Extract_Protected_Subprogram_Attributes
-        (Spec_Id   : out Entity_Id;
-         Body_Decl : out Node_Id);
-      --  Obtain the attributes associated with a protected subprogram. Formal
-      --  Spec_Id is the entity of the protected body subprogram. Body_Decl is
-      --  the declaration of Spec_Id's corresponding body.
-
-      procedure Extract_Task_Entry_Attributes
-        (Spec_Id   : out Entity_Id;
-         Body_Decl : out Node_Id);
-      --  Obtain the attributes associated with a task entry [family]. Formal
-      --  Spec_Id is the entity of the task body procedure. Body_Decl is the
-      --  declaration of Spec_Id's corresponding body.
-
-      ----------------------------------------------
-      -- Extract_Package_Or_Subprogram_Attributes --
-      ----------------------------------------------
-
-      procedure Extract_Package_Or_Subprogram_Attributes
-        (Spec_Id   : out Entity_Id;
-         Body_Decl : out Node_Id)
+      end Process_Conditional_ABE_Variable_Assignment_SPARK;
+
+      ------------------------------------------------
+      -- Process_Conditional_ABE_Variable_Reference --
+      ------------------------------------------------
+
+      procedure Process_Conditional_ABE_Variable_Reference
+        (Ref      : Node_Id;
+         Ref_Rep  : Scenario_Rep_Id;
+         In_State : Processing_In_State)
       is
-         Body_Id   : Entity_Id;
-         Init_Id   : Entity_Id;
-         Spec_Decl : Node_Id;
+         Var_Id  : constant Entity_Id := Target (Ref);
+         Var_Rep : Target_Rep_Id;
+         Unit_Id : Entity_Id;
 
       begin
-         --  Assume that the body is not available
+         --  Nothing to do when the variable reference is not a read
 
-         Body_Decl := Empty;
-         Spec_Id   := Target_Id;
-
-         --  For body retrieval purposes, the entity of the initial declaration
-         --  is that of the spec.
-
-         Init_Id := Spec_Id;
-
-         --  The only exception to the above is a function which returns a
-         --  constrained array type in a SPARK-to-C compilation. In this case
-         --  the function receives a corresponding procedure which has an out
-         --  parameter. The proper body for ABE checks and diagnostics is that
-         --  of the procedure.
-
-         if Ekind (Init_Id) = E_Function
-           and then Rewritten_For_C (Init_Id)
-         then
-            Init_Id := Corresponding_Procedure (Init_Id);
+         if not Is_Read_Reference (Ref_Rep) then
+            return;
          end if;
 
-         --  Extract the attributes of the body
+         Var_Rep := Target_Representation_Of (Var_Id, In_State);
+         Unit_Id := Unit (Var_Rep);
 
-         Spec_Decl := Unit_Declaration_Node (Init_Id);
+         --  Output relevant information when switch -gnatel (info messages on
+         --  implicit Elaborate[_All] pragmas) is in effect.
 
-         --  The initial declaration is a stand alone subprogram body
-
-         if Nkind (Spec_Decl) = N_Subprogram_Body then
-            Body_Decl := Spec_Decl;
-
-         --  Otherwise the package or subprogram has a spec and a completing
-         --  body.
-
-         elsif Nkind_In (Spec_Decl, N_Generic_Package_Declaration,
-                                    N_Generic_Subprogram_Declaration,
-                                    N_Package_Declaration,
-                                    N_Subprogram_Body_Stub,
-                                    N_Subprogram_Declaration)
+         if Elab_Info_Messages
+           and then not In_State.Suppress_Info_Messages
          then
-            Body_Id := Corresponding_Body (Spec_Decl);
-
-            if Present (Body_Id) then
-               Body_Decl := Unit_Declaration_Node (Body_Id);
-            end if;
+            Elab_Msg_NE
+              (Msg      => "read of variable & during elaboration",
+               N        => Ref,
+               Id       => Var_Id,
+               Info_Msg => True,
+               In_SPARK => True);
          end if;
-      end Extract_Package_Or_Subprogram_Attributes;
 
-      ----------------------------------------
-      -- Extract_Protected_Entry_Attributes --
-      ----------------------------------------
+         --  Nothing to do when the variable appears within the main unit
+         --  because diagnostics on reads are relevant only for external
+         --  variables.
 
-      procedure Extract_Protected_Entry_Attributes
-        (Spec_Id   : out Entity_Id;
-         Body_Decl : out Node_Id;
-         Body_Barf : out Node_Id)
-      is
-         Barf_Id : Entity_Id;
-         Body_Id : Entity_Id;
+         if Is_Same_Unit (Unit_Id, Cunit_Entity (Main_Unit)) then
+            null;
 
-      begin
-         --  Assume that the bodies are not available
+         --  Nothing to do when the variable is already initialized. Note that
+         --  the variable may be further modified by the external unit.
 
-         Body_Barf := Empty;
-         Body_Decl := Empty;
+         elsif Is_Initialized (Variable_Declaration (Var_Rep)) then
+            null;
 
-         --  When the entry [family] has already been expanded, it carries both
-         --  the procedure which emulates the behavior of the entry [family] as
-         --  well as the barrier function.
+         --  Nothing to do when the external unit guarantees the initialization
+         --  of the variable by means of pragma Elaborate_Body.
 
-         if Present (Protected_Body_Subprogram (Target_Id)) then
-            Spec_Id := Protected_Body_Subprogram (Target_Id);
+         elsif Has_Pragma_Elaborate_Body (Unit_Id) then
+            null;
 
-            --  Extract the attributes of the barrier function
-
-            Barf_Id :=
-              Corresponding_Body
-                (Unit_Declaration_Node (Barrier_Function (Target_Id)));
-
-            if Present (Barf_Id) then
-               Body_Barf := Unit_Declaration_Node (Barf_Id);
-            end if;
-
-         --  Otherwise no expansion took place
+         --  A variable read imposes an Elaborate requirement on the context of
+         --  the main unit. Determine whether the context has a pragma strong
+         --  enough to meet the requirement.
 
          else
-            Spec_Id := Target_Id;
+            Meet_Elaboration_Requirement
+              (N        => Ref,
+               Targ_Id  => Var_Id,
+               Req_Nam  => Name_Elaborate,
+               In_State => In_State);
          end if;
-
-         --  Extract the attributes of the entry body
-
-         Body_Id := Corresponding_Body (Unit_Declaration_Node (Spec_Id));
-
-         if Present (Body_Id) then
-            Body_Decl := Unit_Declaration_Node (Body_Id);
-         end if;
-      end Extract_Protected_Entry_Attributes;
-
-      ---------------------------------------------
-      -- Extract_Protected_Subprogram_Attributes --
-      ---------------------------------------------
-
-      procedure Extract_Protected_Subprogram_Attributes
-        (Spec_Id   : out Entity_Id;
-         Body_Decl : out Node_Id)
-      is
-         Body_Id : Entity_Id;
-
-      begin
-         --  Assume that the body is not available
-
-         Body_Decl := Empty;
-
-         --  When the protected subprogram has already been expanded, it
-         --  carries the subprogram which seizes the lock and invokes the
-         --  original statements.
-
-         if Present (Protected_Subprogram (Target_Id)) then
-            Spec_Id :=
-              Protected_Body_Subprogram (Protected_Subprogram (Target_Id));
-
-         --  Otherwise no expansion took place
-
-         else
-            Spec_Id := Target_Id;
-         end if;
-
-         --  Extract the attributes of the body
-
-         Body_Id := Corresponding_Body (Unit_Declaration_Node (Spec_Id));
-
-         if Present (Body_Id) then
-            Body_Decl := Unit_Declaration_Node (Body_Id);
-         end if;
-      end Extract_Protected_Subprogram_Attributes;
+      end Process_Conditional_ABE_Variable_Reference;
 
       -----------------------------------
-      -- Extract_Task_Entry_Attributes --
+      -- Traverse_Conditional_ABE_Body --
       -----------------------------------
 
-      procedure Extract_Task_Entry_Attributes
-        (Spec_Id   : out Entity_Id;
-         Body_Decl : out Node_Id)
+      procedure Traverse_Conditional_ABE_Body
+        (N        : Node_Id;
+         In_State : Processing_In_State)
       is
-         Task_Typ : constant Entity_Id := Non_Private_View (Scope (Target_Id));
-         Body_Id  : Entity_Id;
+      begin
+         Traverse_Body
+           (N                   => N,
+            Requires_Processing => Is_Conditional_ABE_Scenario'Access,
+            Processor           => Process_Conditional_ABE'Access,
+            In_State            => In_State);
+      end Traverse_Conditional_ABE_Body;
+   end Conditional_ABE_Processor;
+
+   -------------
+   -- Destroy --
+   -------------
+
+   procedure Destroy (NE : in out Node_Or_Entity_Id) is
+      pragma Unreferenced (NE);
+   begin
+      null;
+   end Destroy;
+
+   -----------------
+   -- Diagnostics --
+   -----------------
+
+   package body Diagnostics is
+
+      -----------------
+      -- Elab_Msg_NE --
+      -----------------
+
+      procedure Elab_Msg_NE
+        (Msg      : String;
+         N        : Node_Id;
+         Id       : Entity_Id;
+         Info_Msg : Boolean;
+         In_SPARK : Boolean)
+      is
+         function Prefix return String;
+         pragma Inline (Prefix);
+         --  Obtain the prefix of the message
+
+         function Suffix return String;
+         pragma Inline (Suffix);
+         --  Obtain the suffix of the message
+
+         ------------
+         -- Prefix --
+         ------------
+
+         function Prefix return String is
+         begin
+            if Info_Msg then
+               return "info: ";
+            else
+               return "";
+            end if;
+         end Prefix;
+
+         ------------
+         -- Suffix --
+         ------------
+
+         function Suffix return String is
+         begin
+            if In_SPARK then
+               return " in SPARK";
+            else
+               return "";
+            end if;
+         end Suffix;
+
+      --  Start of processing for Elab_Msg_NE
 
       begin
-         --  Assume that the body is not available
+         Error_Msg_NE (Prefix & Msg & Suffix, N, Id);
+      end Elab_Msg_NE;
 
-         Body_Decl := Empty;
+      ---------------
+      -- Info_Call --
+      ---------------
 
-         --  The the task type has already been expanded, it carries the
-         --  procedure which emulates the behavior of the task body.
+      procedure Info_Call
+        (Call     : Node_Id;
+         Subp_Id  : Entity_Id;
+         Info_Msg : Boolean;
+         In_SPARK : Boolean)
+      is
+         procedure Info_Accept_Alternative;
+         pragma Inline (Info_Accept_Alternative);
+         --  Output information concerning an accept alternative
 
-         if Present (Task_Body_Procedure (Task_Typ)) then
-            Spec_Id := Task_Body_Procedure (Task_Typ);
+         procedure Info_Simple_Call;
+         pragma Inline (Info_Simple_Call);
+         --  Output information concerning the call
 
-         --  Otherwise no expansion took place
+         procedure Info_Type_Actions (Action : String);
+         pragma Inline (Info_Type_Actions);
+         --  Output information concerning action Action of a type
 
-         else
-            Spec_Id := Task_Typ;
-         end if;
+         procedure Info_Verification_Call
+           (Pred    : String;
+            Id      : Entity_Id;
+            Id_Kind : String);
+         pragma Inline (Info_Verification_Call);
+         --  Output information concerning the verification of predicate Pred
+         --  applied to related entity Id with kind Id_Kind.
 
-         --  Extract the attributes of the body
+         -----------------------------
+         -- Info_Accept_Alternative --
+         -----------------------------
 
-         Body_Id := Corresponding_Body (Unit_Declaration_Node (Spec_Id));
+         procedure Info_Accept_Alternative is
+            Entry_Id : constant Entity_Id := Receiving_Entry (Subp_Id);
+            pragma Assert (Present (Entry_Id));
 
-         if Present (Body_Id) then
-            Body_Decl := Unit_Declaration_Node (Body_Id);
-         end if;
-      end Extract_Task_Entry_Attributes;
+         begin
+            Elab_Msg_NE
+              (Msg      => "accept for entry & during elaboration",
+               N        => Call,
+               Id       => Entry_Id,
+               Info_Msg => Info_Msg,
+               In_SPARK => In_SPARK);
+         end Info_Accept_Alternative;
 
-      --  Local variables
+         ----------------------
+         -- Info_Simple_Call --
+         ----------------------
 
-      Prag      : constant Node_Id := SPARK_Pragma (Target_Id);
-      Body_Barf : Node_Id;
-      Body_Decl : Node_Id;
-      Spec_Id   : Entity_Id;
+         procedure Info_Simple_Call is
+         begin
+            Elab_Msg_NE
+              (Msg      => "call to & during elaboration",
+               N        => Call,
+               Id       => Subp_Id,
+               Info_Msg => Info_Msg,
+               In_SPARK => In_SPARK);
+         end Info_Simple_Call;
 
-   --  Start of processing for Extract_Target_Attributes
+         -----------------------
+         -- Info_Type_Actions --
+         -----------------------
 
-   begin
-      --  Assume that the body of the barrier function is not available
+         procedure Info_Type_Actions (Action : String) is
+            Typ : constant Entity_Id := First_Formal_Type (Subp_Id);
+            pragma Assert (Present (Typ));
 
-      Body_Barf := Empty;
+         begin
+            Elab_Msg_NE
+              (Msg      => Action & " actions for type & during elaboration",
+               N        => Call,
+               Id       => Typ,
+               Info_Msg => Info_Msg,
+               In_SPARK => In_SPARK);
+         end Info_Type_Actions;
 
-      --  The target is a protected entry [family]
+         ----------------------------
+         -- Info_Verification_Call --
+         ----------------------------
 
-      if Is_Protected_Entry (Target_Id) then
-         Extract_Protected_Entry_Attributes
-           (Spec_Id   => Spec_Id,
-            Body_Decl => Body_Decl,
-            Body_Barf => Body_Barf);
+         procedure Info_Verification_Call
+           (Pred    : String;
+            Id      : Entity_Id;
+            Id_Kind : String)
+         is
+            pragma Assert (Present (Id));
 
-      --  The target is a protected subprogram
+         begin
+            Elab_Msg_NE
+              (Msg      =>
+                 "verification of " & Pred & " of " & Id_Kind & " & during "
+                 & "elaboration",
+               N        => Call,
+               Id       => Id,
+               Info_Msg => Info_Msg,
+               In_SPARK => In_SPARK);
+         end Info_Verification_Call;
 
-      elsif Is_Protected_Subp (Target_Id)
-        or else Is_Protected_Body_Subp (Target_Id)
-      then
-         Extract_Protected_Subprogram_Attributes
-           (Spec_Id   => Spec_Id,
-            Body_Decl => Body_Decl);
-
-      --  The target is a task entry [family]
-
-      elsif Is_Task_Entry (Target_Id) then
-         Extract_Task_Entry_Attributes
-           (Spec_Id   => Spec_Id,
-            Body_Decl => Body_Decl);
-
-      --  Otherwise the target is a package or a subprogram
-
-      else
-         Extract_Package_Or_Subprogram_Attributes
-           (Spec_Id   => Spec_Id,
-            Body_Decl => Body_Decl);
-      end if;
-
-      --  Set all attributes
-
-      Attrs.Body_Barf         := Body_Barf;
-      Attrs.Body_Decl         := Body_Decl;
-      Attrs.Elab_Checks_OK    := Is_Elaboration_Checks_OK_Id (Target_Id);
-      Attrs.Elab_Warnings_OK  := Is_Elaboration_Warnings_OK_Id (Target_Id);
-      Attrs.From_Source       := Comes_From_Source (Target_Id);
-      Attrs.Ghost_Mode_Ignore := Is_Ignored_Ghost_Entity (Target_Id);
-      Attrs.SPARK_Mode_On     :=
-        Present (Prag) and then Get_SPARK_Mode_From_Annotation (Prag) = On;
-      Attrs.Spec_Decl         := Unit_Declaration_Node (Spec_Id);
-      Attrs.Spec_Id           := Spec_Id;
-      Attrs.Unit_Id           := Find_Top_Unit (Target_Id);
-
-      --  At this point certain attributes should always be available
-
-      pragma Assert (Present (Attrs.Spec_Decl));
-      pragma Assert (Present (Attrs.Spec_Id));
-      pragma Assert (Present (Attrs.Unit_Id));
-   end Extract_Target_Attributes;
-
-   -----------------------------
-   -- Extract_Task_Attributes --
-   -----------------------------
-
-   procedure Extract_Task_Attributes
-     (Typ   : Entity_Id;
-      Attrs : out Task_Attributes)
-   is
-      Task_Typ : constant Entity_Id := Non_Private_View (Typ);
-
-      Body_Decl : Node_Id;
-      Body_Id   : Entity_Id;
-      Prag      : Node_Id;
-      Spec_Id   : Entity_Id;
-
-   begin
-      --  Assume that the body of the task procedure is not available
-
-      Body_Decl := Empty;
-
-      --  The initial declaration is that of the task body procedure
-
-      Spec_Id := Get_Task_Body_Procedure (Task_Typ);
-      Body_Id := Corresponding_Body (Unit_Declaration_Node (Spec_Id));
-
-      if Present (Body_Id) then
-         Body_Decl := Unit_Declaration_Node (Body_Id);
-      end if;
-
-      Prag := SPARK_Pragma (Task_Typ);
-
-      --  Set all attributes
-
-      Attrs.Body_Decl         := Body_Decl;
-      Attrs.Elab_Checks_OK    := Is_Elaboration_Checks_OK_Id (Task_Typ);
-      Attrs.Elab_Warnings_OK  := Is_Elaboration_Warnings_OK_Id (Task_Typ);
-      Attrs.Ghost_Mode_Ignore := Is_Ignored_Ghost_Entity (Task_Typ);
-      Attrs.SPARK_Mode_On     :=
-        Present (Prag) and then Get_SPARK_Mode_From_Annotation (Prag) = On;
-      Attrs.Spec_Id           := Spec_Id;
-      Attrs.Task_Decl         := Declaration_Node (Task_Typ);
-      Attrs.Unit_Id           := Find_Top_Unit (Task_Typ);
-
-      --  At this point certain attributes should always be available
-
-      pragma Assert (Present (Attrs.Spec_Id));
-      pragma Assert (Present (Attrs.Task_Decl));
-      pragma Assert (Present (Attrs.Unit_Id));
-   end Extract_Task_Attributes;
-
-   -------------------------------------------
-   -- Extract_Variable_Reference_Attributes --
-   -------------------------------------------
-
-   procedure Extract_Variable_Reference_Attributes
-     (Ref    : Node_Id;
-      Var_Id : out Entity_Id;
-      Attrs  : out Variable_Attributes)
-   is
-      function Get_Renamed_Variable (Id : Entity_Id) return Entity_Id;
-      --  Obtain the ultimate renamed variable of variable Id
-
-      --------------------------
-      -- Get_Renamed_Variable --
-      --------------------------
-
-      function Get_Renamed_Variable (Id : Entity_Id) return Entity_Id is
-         Ren_Id : Entity_Id;
+      --  Start of processing for Info_Call
 
       begin
-         Ren_Id := Id;
-         while Present (Renamed_Entity (Ren_Id))
-           and then Nkind (Renamed_Entity (Ren_Id)) in N_Entity
-         loop
-            Ren_Id := Renamed_Entity (Ren_Id);
-         end loop;
+         --  Do not output anything for targets defined in internal units
+         --  because this creates noise.
 
-         return Ren_Id;
-      end Get_Renamed_Variable;
+         if not In_Internal_Unit (Subp_Id) then
 
-   --  Start of processing for Extract_Variable_Reference_Attributes
+            --  Accept alternative
 
-   begin
-      --  Extraction for variable reference markers
+            if Is_Accept_Alternative_Proc (Subp_Id) then
+               Info_Accept_Alternative;
 
-      if Nkind (Ref) = N_Variable_Reference_Marker then
-         Var_Id := Target (Ref);
+            --  Adjustment
 
-      --  Extraction for expanded names and identifiers
+            elsif Is_TSS (Subp_Id, TSS_Deep_Adjust) then
+               Info_Type_Actions ("adjustment");
 
-      else
-         Var_Id := Entity (Ref);
-      end if;
+            --  Default_Initial_Condition
 
-      --  Obtain the original variable which the reference mentions
+            elsif Is_Default_Initial_Condition_Proc (Subp_Id) then
+               Info_Verification_Call
+                 (Pred    => "Default_Initial_Condition",
+                  Id      => First_Formal_Type (Subp_Id),
+                  Id_Kind => "type");
 
-      Var_Id        := Get_Renamed_Variable (Var_Id);
-      Attrs.Unit_Id := Find_Top_Unit (Var_Id);
+            --  Entries
 
-      --  At this point certain attributes should always be available
+            elsif Is_Protected_Entry (Subp_Id) then
+               Info_Simple_Call;
 
-      pragma Assert (Present (Attrs.Unit_Id));
-   end Extract_Variable_Reference_Attributes;
+            --  Task entry calls are never processed because the entry being
+            --  invoked does not have a corresponding "body", it has a select.
 
-   --------------------
-   -- Find_Code_Unit --
-   --------------------
+            elsif Is_Task_Entry (Subp_Id) then
+               null;
 
-   function Find_Code_Unit (N : Node_Or_Entity_Id) return Entity_Id is
-   begin
-      return Find_Unit_Entity (Unit (Cunit (Get_Code_Unit (N))));
-   end Find_Code_Unit;
+            --  Finalization
 
-   ----------------------------
-   -- Find_Early_Call_Region --
-   ----------------------------
+            elsif Is_TSS (Subp_Id, TSS_Deep_Finalize) then
+               Info_Type_Actions ("finalization");
 
-   function Find_Early_Call_Region
-     (Body_Decl        : Node_Id;
-      Assume_Elab_Body : Boolean := False;
-      Skip_Memoization : Boolean := False) return Node_Id
-   is
-      --  NOTE: The routines within Find_Early_Call_Region are intentionally
-      --  unnested to avoid deep indentation of code.
+            --  Calls to _Finalizer procedures must not appear in the output
+            --  because this creates confusing noise.
 
-      ECR_Found : exception;
-      --  This exception is raised when the early call region has been found
+            elsif Is_Finalizer_Proc (Subp_Id) then
+               null;
 
-      Start : Node_Id := Empty;
-      --  The start of the early call region. This variable is updated by the
-      --  various nested routines. Due to the use of exceptions, the variable
-      --  must be global to the nested routines.
+            --  Initial_Condition
 
-      --  The algorithm implemented in this routine attempts to find the early
-      --  call region of a subprogram body by inspecting constructs in reverse
-      --  declarative order, while navigating the tree. The algorithm consists
-      --  of an Inspection phase and an Advancement phase. The pseudocode is as
-      --  follows:
-      --
-      --    loop
-      --       inspection phase
-      --       advancement phase
-      --    end loop
-      --
-      --  The infinite loop is terminated by raising exception ECR_Found. The
-      --  algorithm utilizes two pointers, Curr and Start, to represent the
-      --  current construct to inspect and the start of the early call region.
-      --
-      --  IMPORTANT: The algorithm must maintain the following invariant at all
-      --  time for it to function properly - a nested construct is entered only
-      --  when it contains suitable constructs. This guarantees that leaving a
-      --  nested or encapsulating construct functions properly.
-      --
-      --  The Inspection phase determines whether the current construct is non-
-      --  preelaborable, and if it is, the algorithm terminates.
-      --
-      --  The Advancement phase walks the tree in reverse declarative order,
-      --  while entering and leaving nested and encapsulating constructs. It
-      --  may also terminate the elaborithm. There are several special cases
-      --  of advancement.
-      --
-      --  1) General case:
-      --
-      --    <construct 1>
-      --     ...
-      --    <construct N-1>                      <- Curr
-      --    <construct N>                        <- Start
-      --    <subprogram body>
-      --
-      --  In the general case, a declarative or statement list is traversed in
-      --  reverse order where Curr is the lead pointer, and Start indicates the
-      --  last preelaborable construct.
-      --
-      --  2) Entering handled bodies
-      --
-      --    package body Nested is               <- Curr (2.3)
-      --       <declarations>                    <- Curr (2.2)
-      --    begin
-      --       <statements>                      <- Curr (2.1)
-      --    end Nested;
-      --    <construct>                          <- Start
-      --
-      --  In this case, the algorithm enters a handled body by starting from
-      --  the last statement (2.1), or the last declaration (2.2), or the body
-      --  is consumed (2.3) because it is empty and thus preelaborable.
-      --
-      --  3) Entering package declarations
-      --
-      --    package Nested is                    <- Curr (2.3)
-      --       <visible declarations>            <- Curr (2.2)
-      --    private
-      --       <private declarations>            <- Curr (2.1)
-      --    end Nested;
-      --    <construct>                          <- Start
-      --
-      --  In this case, the algorithm enters a package declaration by starting
-      --  from the last private declaration (2.1), the last visible declaration
-      --  (2.2), or the package is consumed (2.3) because it is empty and thus
-      --  preelaborable.
-      --
-      --  4) Transitioning from list to list of the same construct
-      --
-      --  Certain constructs have two eligible lists. The algorithm must thus
-      --  transition from the second to the first list when the second list is
-      --  exhausted.
-      --
-      --    declare                              <- Curr (4.2)
-      --       <declarations>                    <- Curr (4.1)
-      --    begin
-      --       <statements>                      <- Start
-      --    end;
-      --
-      --  In this case, the algorithm has exhausted the second list (statements
-      --  in the example), and continues with the last declaration (4.1) or the
-      --  construct is consumed (4.2) because it contains only preelaborable
-      --  code.
-      --
-      --  5) Transitioning from list to construct
-      --
-      --    tack body Task is                    <- Curr (5.1)
-      --                                         <- Curr (Empty)
-      --       <construct 1>                     <- Start
-      --
-      --  In this case, the algorithm has exhausted a list, Curr is Empty, and
-      --  the owner of the list is consumed (5.1).
-      --
-      --  6) Transitioning from unit to unit
-      --
-      --  A package body with a spec subject to pragma Elaborate_Body extends
-      --  the possible range of the early call region to the package spec.
-      --
-      --    package Pack is                      <- Curr (6.3)
-      --       pragma Elaborate_Body;            <- Curr (6.2)
-      --       <visible declarations>            <- Curr (6.2)
-      --    private
-      --       <private declarations>            <- Curr (6.1)
-      --    end Pack;
-      --
-      --    package body Pack is                 <- Curr, Start
-      --
-      --  In this case, the algorithm has reached a package body compilation
-      --  unit whose spec is subject to pragma Elaborate_Body, or the caller
-      --  of the algorithm has specified this behavior. This transition is
-      --  equivalent to 3).
-      --
-      --  7) Transitioning from unit to termination
-      --
-      --  Reaching a compilation unit always terminates the algorithm as there
-      --  are no more lists to examine. This must take 6) into account.
-      --
-      --  8) Transitioning from subunit to stub
-      --
-      --    package body Pack is separate;       <- Curr (8.1)
-      --
-      --    separate (...)
-      --    package body Pack is                 <- Curr, Start
-      --
-      --  Reaching a subunit continues the search from the corresponding stub
-      --  (8.1).
+            elsif Is_Initial_Condition_Proc (Subp_Id) then
+               Info_Verification_Call
+                 (Pred    => "Initial_Condition",
+                  Id      => Find_Enclosing_Scope (Call),
+                  Id_Kind => "package");
 
-      procedure Advance (Curr : in out Node_Id);
-      pragma Inline (Advance);
-      --  Update the Curr and Start pointers depending on their location in the
-      --  tree to the next eligible construct. This routine raises ECR_Found.
+            --  Initialization
 
-      procedure Enter_Handled_Body (Curr : in out Node_Id);
-      pragma Inline (Enter_Handled_Body);
-      --  Update the Curr and Start pointers to enter a nested handled body if
-      --  applicable. This routine raises ECR_Found.
+            elsif Is_Init_Proc (Subp_Id)
+              or else Is_TSS (Subp_Id, TSS_Deep_Initialize)
+            then
+               Info_Type_Actions ("initialization");
 
-      procedure Enter_Package_Declaration (Curr : in out Node_Id);
-      pragma Inline (Enter_Package_Declaration);
-      --  Update the Curr and Start pointers to enter a nested package spec if
-      --  applicable. This routine raises ECR_Found.
+            --  Invariant
 
-      function Find_ECR (N : Node_Id) return Node_Id;
-      pragma Inline (Find_ECR);
-      --  Find an early call region starting from arbitrary node N
+            elsif Is_Invariant_Proc (Subp_Id) then
+               Info_Verification_Call
+                 (Pred    => "invariants",
+                  Id      => First_Formal_Type (Subp_Id),
+                  Id_Kind => "type");
 
-      function Has_Suitable_Construct (List : List_Id) return Boolean;
-      pragma Inline (Has_Suitable_Construct);
-      --  Determine whether list List contains at least one suitable construct
-      --  for inclusion into an early call region.
+            --  Partial invariant calls must not appear in the output because
+            --  this creates confusing noise.
 
-      procedure Include (N : Node_Id; Curr : out Node_Id);
-      pragma Inline (Include);
-      --  Update the Curr and Start pointers to include arbitrary construct N
-      --  in the early call region. This routine raises ECR_Found.
+            elsif Is_Partial_Invariant_Proc (Subp_Id) then
+               null;
 
-      function Is_OK_Preelaborable_Construct (N : Node_Id) return Boolean;
-      pragma Inline (Is_OK_Preelaborable_Construct);
-      --  Determine whether arbitrary node N denotes a preelaboration-safe
-      --  construct.
+            --  _Postconditions
 
-      function Is_Suitable_Construct (N : Node_Id) return Boolean;
-      pragma Inline (Is_Suitable_Construct);
-      --  Determine whether arbitrary node N denotes a suitable construct for
-      --  inclusion into the early call region.
+            elsif Is_Postconditions_Proc (Subp_Id) then
+               Info_Verification_Call
+                 (Pred    => "postconditions",
+                  Id      => Find_Enclosing_Scope (Call),
+                  Id_Kind => "subprogram");
 
-      procedure Transition_Body_Declarations
-        (Bod  : Node_Id;
-         Curr : out Node_Id);
-      pragma Inline (Transition_Body_Declarations);
-      --  Update the Curr and Start pointers when construct Bod denotes a block
-      --  statement or a suitable body. This routine raises ECR_Found.
+            --  Subprograms must come last because some of the previous cases
+            --  fall under this category.
 
-      procedure Transition_Handled_Statements
-        (HSS  : Node_Id;
-         Curr : out Node_Id);
-      pragma Inline (Transition_Handled_Statements);
-      --  Update the Curr and Start pointers when node HSS denotes a handled
-      --  sequence of statements. This routine raises ECR_Found.
+            elsif Ekind (Subp_Id) = E_Function then
+               Info_Simple_Call;
 
-      procedure Transition_Spec_Declarations
-        (Spec : Node_Id;
-         Curr : out Node_Id);
-      pragma Inline (Transition_Spec_Declarations);
-      --  Update the Curr and Start pointers when construct Spec denotes
-      --  a concurrent definition or a package spec. This routine raises
-      --  ECR_Found.
+            elsif Ekind (Subp_Id) = E_Procedure then
+               Info_Simple_Call;
 
-      procedure Transition_Unit (Unit : Node_Id; Curr : out Node_Id);
-      pragma Inline (Transition_Unit);
-      --  Update the Curr and Start pointers when node Unit denotes a potential
-      --  compilation unit. This routine raises ECR_Found.
+            else
+               pragma Assert (False);
+               return;
+            end if;
+         end if;
+      end Info_Call;
+
+      ------------------------
+      -- Info_Instantiation --
+      ------------------------
+
+      procedure Info_Instantiation
+        (Inst     : Node_Id;
+         Gen_Id   : Entity_Id;
+         Info_Msg : Boolean;
+         In_SPARK : Boolean)
+      is
+      begin
+         Elab_Msg_NE
+           (Msg      => "instantiation of & during elaboration",
+            N        => Inst,
+            Id       => Gen_Id,
+            Info_Msg => Info_Msg,
+            In_SPARK => In_SPARK);
+      end Info_Instantiation;
+
+      -----------------------------
+      -- Info_Variable_Reference --
+      -----------------------------
+
+      procedure Info_Variable_Reference
+        (Ref      : Node_Id;
+         Var_Id   : Entity_Id;
+         Info_Msg : Boolean;
+         In_SPARK : Boolean)
+      is
+      begin
+         if Is_Read (Ref) then
+            Elab_Msg_NE
+              (Msg      => "read of variable & during elaboration",
+               N        => Ref,
+               Id       => Var_Id,
+               Info_Msg => Info_Msg,
+               In_SPARK => In_SPARK);
+         end if;
+      end Info_Variable_Reference;
+   end Diagnostics;
+
+   ---------------------------------
+   -- Early_Call_Region_Processor --
+   ---------------------------------
+
+   package body Early_Call_Region_Processor is
+
+      ---------------------
+      -- Data structures --
+      ---------------------
+
+      --  The following map relates early call regions to subprogram bodies
+
+      procedure Destroy (N : in out Node_Id);
+      --  Destroy node N
+
+      package ECR_Map is new Dynamic_Hash_Tables
+        (Key_Type              => Entity_Id,
+         Value_Type            => Node_Id,
+         No_Value              => Empty,
+         Expansion_Threshold   => 1.5,
+         Expansion_Factor      => 2,
+         Compression_Threshold => 0.3,
+         Compression_Factor    => 2,
+         "="                   => "=",
+         Destroy_Value         => Destroy,
+         Hash                  => Hash);
+
+      Early_Call_Regions_Map : ECR_Map.Dynamic_Hash_Table := ECR_Map.Nil;
+
+      -----------------------
+      -- Local subprograms --
+      -----------------------
+
+      function Early_Call_Region (Body_Id : Entity_Id) return Node_Id;
+      pragma Inline (Early_Call_Region);
+      --  Obtain the early call region associated with entry or subprogram body
+      --  Body_Id.
+
+      procedure Set_Early_Call_Region (Body_Id : Entity_Id; Start : Node_Id);
+      pragma Inline (Set_Early_Call_Region);
+      --  Associate an early call region with begins at construct Start with
+      --  entry or subprogram body Body_Id.
 
       -------------
-      -- Advance --
+      -- Destroy --
       -------------
 
-      procedure Advance (Curr : in out Node_Id) is
-         Context : Node_Id;
-
+      procedure Destroy (N : in out Node_Id) is
+         pragma Unreferenced (N);
       begin
-         --  Curr denotes one of the following cases upon entry into this
-         --  routine:
+         null;
+      end Destroy;
+
+      -----------------------
+      -- Early_Call_Region --
+      -----------------------
+
+      function Early_Call_Region (Body_Id : Entity_Id) return Node_Id is
+         pragma Assert (Present (Body_Id));
+      begin
+         return ECR_Map.Get (Early_Call_Regions_Map, Body_Id);
+      end Early_Call_Region;
+
+      ------------------------------------------
+      -- Finalize_Early_Call_Region_Processor --
+      ------------------------------------------
+
+      procedure Finalize_Early_Call_Region_Processor is
+      begin
+         ECR_Map.Destroy (Early_Call_Regions_Map);
+      end Finalize_Early_Call_Region_Processor;
+
+      ----------------------------
+      -- Find_Early_Call_Region --
+      ----------------------------
+
+      function Find_Early_Call_Region
+        (Body_Decl        : Node_Id;
+         Assume_Elab_Body : Boolean := False;
+         Skip_Memoization : Boolean := False) return Node_Id
+      is
+         --  NOTE: The routines within Find_Early_Call_Region are intentionally
+         --  unnested to avoid deep indentation of code.
+
+         ECR_Found : exception;
+         --  This exception is raised when the early call region has been found
+
+         Start : Node_Id := Empty;
+         --  The start of the early call region. This variable is updated by
+         --  the various nested routines. Due to the use of exceptions, the
+         --  variable must be global to the nested routines.
+
+         --  The algorithm implemented in this routine attempts to find the
+         --  early call region of a subprogram body by inspecting constructs
+         --  in reverse declarative order, while navigating the tree. The
+         --  algorithm consists of an Inspection phase and Advancement phase.
+         --  The pseudocode is as follows:
          --
-         --    * Empty - There is no current construct when a declarative or a
-         --      statement list has been exhausted. This does not necessarily
-         --      indicate that the early call region has been computed as it
-         --      may still be possible to transition to another list.
+         --    loop
+         --       inspection phase
+         --       advancement phase
+         --    end loop
          --
-         --    * Encapsulator - The current construct encapsulates declarations
-         --      and/or statements. This indicates that the early call region
-         --      may extend within the nested construct.
+         --  The infinite loop is terminated by raising exception ECR_Found.
+         --  The algorithm utilizes two pointers, Curr and Start, to represent
+         --  the current construct to inspect and the start of the early call
+         --  region.
          --
-         --    * Preelaborable - The current construct is always preelaborable
-         --      because Find_ECR would not invoke Advance if this was not the
-         --      case.
+         --  IMPORTANT: The algorithm must maintain the following invariant at
+         --  all time for it to function properly:
+         --
+         --    A nested construct is entered only when it contains suitable
+         --    constructs.
+         --
+         --  This guarantees that leaving a nested or encapsulating construct
+         --  functions properly.
+         --
+         --  The Inspection phase determines whether the current construct is
+         --  non-preelaborable, and if it is, the algorithm terminates.
+         --
+         --  The Advancement phase walks the tree in reverse declarative order,
+         --  while entering and leaving nested and encapsulating constructs. It
+         --  may also terminate the elaborithm. There are several special cases
+         --  of advancement.
+         --
+         --  1) General case:
+         --
+         --    <construct 1>
+         --     ...
+         --    <construct N-1>                      <- Curr
+         --    <construct N>                        <- Start
+         --    <subprogram body>
+         --
+         --  In the general case, a declarative or statement list is traversed
+         --  in reverse order where Curr is the lead pointer, and Start is the
+         --  last preelaborable construct.
+         --
+         --  2) Entering handled bodies
+         --
+         --    package body Nested is               <- Curr (2.3)
+         --       <declarations>                    <- Curr (2.2)
+         --    begin
+         --       <statements>                      <- Curr (2.1)
+         --    end Nested;
+         --    <construct>                          <- Start
+         --
+         --  In this case, the algorithm enters a handled body by starting from
+         --  the last statement (2.1), or the last declaration (2.2), or the
+         --  body is consumed (2.3) because it is empty and thus preelaborable.
+         --
+         --  3) Entering package declarations
+         --
+         --    package Nested is                    <- Curr (2.3)
+         --       <visible declarations>            <- Curr (2.2)
+         --    private
+         --       <private declarations>            <- Curr (2.1)
+         --    end Nested;
+         --    <construct>                          <- Start
+         --
+         --  In this case, the algorithm enters a package declaration by
+         --  starting from the last private declaration (2.1), the last visible
+         --  declaration (2.2), or the package is consumed (2.3) because it is
+         --  empty and thus preelaborable.
+         --
+         --  4) Transitioning from list to list of the same construct
+         --
+         --  Certain constructs have two eligible lists. The algorithm must
+         --  thus transition from the second to the first list when the second
+         --  list is exhausted.
+         --
+         --    declare                              <- Curr (4.2)
+         --       <declarations>                    <- Curr (4.1)
+         --    begin
+         --       <statements>                      <- Start
+         --    end;
+         --
+         --  In this case, the algorithm has exhausted the second list (the
+         --  statements in the example above), and continues with the last
+         --  declaration (4.1) or the construct is consumed (4.2) because it
+         --  contains only preelaborable code.
+         --
+         --  5) Transitioning from list to construct
+         --
+         --    tack body Task is                    <- Curr (5.1)
+         --                                         <- Curr (Empty)
+         --       <construct 1>                     <- Start
+         --
+         --  In this case, the algorithm has exhausted a list, Curr is Empty,
+         --  and the owner of the list is consumed (5.1).
+         --
+         --  6) Transitioning from unit to unit
+         --
+         --  A package body with a spec subject to pragma Elaborate_Body
+         --  extends the possible range of the early call region to the package
+         --  spec.
+         --
+         --    package Pack is                      <- Curr (6.3)
+         --       pragma Elaborate_Body;            <- Curr (6.2)
+         --       <visible declarations>            <- Curr (6.2)
+         --    private
+         --       <private declarations>            <- Curr (6.1)
+         --    end Pack;
+         --
+         --    package body Pack is                 <- Curr, Start
+         --
+         --  In this case, the algorithm has reached a package body compilation
+         --  unit whose spec is subject to pragma Elaborate_Body, or the caller
+         --  of the algorithm has specified this behavior. This transition is
+         --  equivalent to 3).
+         --
+         --  7) Transitioning from unit to termination
+         --
+         --  Reaching a compilation unit always terminates the algorithm as
+         --  there are no more lists to examine. This must take case 6) into
+         --  account.
+         --
+         --  8) Transitioning from subunit to stub
+         --
+         --    package body Pack is separate;       <- Curr (8.1)
+         --
+         --    separate (...)
+         --    package body Pack is                 <- Curr, Start
+         --
+         --  Reaching a subunit continues the search from the corresponding
+         --  stub (8.1).
 
-         --  The current construct is an encapsulator or is preelaborable
+         procedure Advance (Curr : in out Node_Id);
+         pragma Inline (Advance);
+         --  Update the Curr and Start pointers depending on their location
+         --  in the tree to the next eligible construct. This routine raises
+         --  ECR_Found.
 
-         if Present (Curr) then
+         procedure Enter_Handled_Body (Curr : in out Node_Id);
+         pragma Inline (Enter_Handled_Body);
+         --  Update the Curr and Start pointers to enter a nested handled body
+         --  if applicable. This routine raises ECR_Found.
 
-            --  Enter encapsulators by inspecting their declarations and/or
-            --  statements.
+         procedure Enter_Package_Declaration (Curr : in out Node_Id);
+         pragma Inline (Enter_Package_Declaration);
+         --  Update the Curr and Start pointers to enter a nested package spec
+         --  if applicable. This routine raises ECR_Found.
 
-            if Nkind_In (Curr, N_Block_Statement, N_Package_Body) then
-               Enter_Handled_Body (Curr);
+         function Find_ECR (N : Node_Id) return Node_Id;
+         pragma Inline (Find_ECR);
+         --  Find an early call region starting from arbitrary node N
 
-            elsif Nkind (Curr) = N_Package_Declaration then
-               Enter_Package_Declaration (Curr);
+         function Has_Suitable_Construct (List : List_Id) return Boolean;
+         pragma Inline (Has_Suitable_Construct);
+         --  Determine whether list List contains a suitable construct for
+         --  inclusion into an early call region.
 
-            --  Early call regions have a property which can be exploited to
-            --  optimize the algorithm.
+         procedure Include (N : Node_Id; Curr : out Node_Id);
+         pragma Inline (Include);
+         --  Update the Curr and Start pointers to include arbitrary construct
+         --  N in the early call region. This routine raises ECR_Found.
+
+         function Is_OK_Preelaborable_Construct (N : Node_Id) return Boolean;
+         pragma Inline (Is_OK_Preelaborable_Construct);
+         --  Determine whether arbitrary node N denotes a preelaboration-safe
+         --  construct.
+
+         function Is_Suitable_Construct (N : Node_Id) return Boolean;
+         pragma Inline (Is_Suitable_Construct);
+         --  Determine whether arbitrary node N denotes a suitable construct
+         --  for inclusion into the early call region.
+
+         procedure Transition_Body_Declarations
+           (Bod  : Node_Id;
+            Curr : out Node_Id);
+         pragma Inline (Transition_Body_Declarations);
+         --  Update the Curr and Start pointers when construct Bod denotes a
+         --  block statement or a suitable body. This routine raises ECR_Found.
+
+         procedure Transition_Handled_Statements
+           (HSS  : Node_Id;
+            Curr : out Node_Id);
+         pragma Inline (Transition_Handled_Statements);
+         --  Update the Curr and Start pointers when node HSS denotes a handled
+         --  sequence of statements. This routine raises ECR_Found.
+
+         procedure Transition_Spec_Declarations
+           (Spec : Node_Id;
+            Curr : out Node_Id);
+         pragma Inline (Transition_Spec_Declarations);
+         --  Update the Curr and Start pointers when construct Spec denotes
+         --  a concurrent definition or a package spec. This routine raises
+         --  ECR_Found.
+
+         procedure Transition_Unit (Unit : Node_Id; Curr : out Node_Id);
+         pragma Inline (Transition_Unit);
+         --  Update the Curr and Start pointers when node Unit denotes a
+         --  potential compilation unit. This routine raises ECR_Found.
+
+         -------------
+         -- Advance --
+         -------------
+
+         procedure Advance (Curr : in out Node_Id) is
+            Context : Node_Id;
+
+         begin
+            --  Curr denotes one of the following cases upon entry into this
+            --  routine:
             --
-            --    <preceding subprogram body>
-            --    <preelaborable construct 1>
-            --     ...
-            --    <preelaborable construct N>
-            --    <initiating subprogram body>
+            --    * Empty - There is no current construct when a declarative or
+            --      a statement list has been exhausted. This does not indicate
+            --      that the early call region has been computed as it is still
+            --      possible to transition to another list.
             --
-            --  If a traversal initiated from a subprogram body reaches a
-            --  preceding subprogram body, then both bodies share the same
-            --  early call region.
+            --    * Encapsulator - The current construct wraps declarations
+            --      and/or statements. This indicates that the early call
+            --      region may extend within the nested construct.
             --
-            --  The property results in the following desirable effects:
-            --
-            --  * If the preceding body already has an early call region, then
-            --    the initiating body can reuse it. This minimizes the amount
-            --    of processing performed by the algorithm.
-            --
-            --  * If the preceding body lack an early call region, then the
-            --    algorithm can compute the early call region, and reuse it
-            --    for the initiating body. This processing performs the same
-            --    amount of work, but has the beneficial effect of computing
-            --    the early call regions of all preceding bodies.
+            --    * Preelaborable - The current construct is preelaborable
+            --      because Find_ECR would not invoke Advance if this was not
+            --      the case.
 
-            elsif Nkind_In (Curr, N_Entry_Body, N_Subprogram_Body) then
-               Start :=
-                 Find_Early_Call_Region
-                   (Body_Decl        => Curr,
-                    Assume_Elab_Body => Assume_Elab_Body,
-                    Skip_Memoization => Skip_Memoization);
+            --  The current construct is an encapsulator or is preelaborable
 
-               raise ECR_Found;
+            if Present (Curr) then
 
-            --  Otherwise current construct is preelaborable. Unpdate the early
-            --  call region to include it.
+               --  Enter encapsulators by inspecting their declarations and/or
+               --  statements.
+
+               if Nkind_In (Curr, N_Block_Statement, N_Package_Body) then
+                  Enter_Handled_Body (Curr);
+
+               elsif Nkind (Curr) = N_Package_Declaration then
+                  Enter_Package_Declaration (Curr);
+
+               --  Early call regions have a property which can be exploited to
+               --  optimize the algorithm.
+               --
+               --    <preceding subprogram body>
+               --    <preelaborable construct 1>
+               --     ...
+               --    <preelaborable construct N>
+               --    <initiating subprogram body>
+               --
+               --  If a traversal initiated from a subprogram body reaches a
+               --  preceding subprogram body, then both bodies share the same
+               --  early call region.
+               --
+               --  The property results in the following desirable effects:
+               --
+               --  * If the preceding body already has an early call region,
+               --    then the initiating body can reuse it. This minimizes the
+               --    amount of processing performed by the algorithm.
+               --
+               --  * If the preceding body lack an early call region, then the
+               --    algorithm can compute the early call region, and reuse it
+               --    for the initiating body. This processing performs the same
+               --    amount of work, but has the beneficial effect of computing
+               --    the early call regions of all preceding bodies.
+
+               elsif Nkind_In (Curr, N_Entry_Body, N_Subprogram_Body) then
+                  Start :=
+                    Find_Early_Call_Region
+                      (Body_Decl        => Curr,
+                       Assume_Elab_Body => Assume_Elab_Body,
+                       Skip_Memoization => Skip_Memoization);
+
+                  raise ECR_Found;
+
+               --  Otherwise current construct is preelaborable. Unpdate the
+               --  early call region to include it.
+
+               else
+                  Include (Curr, Curr);
+               end if;
+
+            --  Otherwise the current construct is missing, indicating that the
+            --  current list has been exhausted. Depending on the context of
+            --  the list, several transitions are possible.
+
+            else
+               --  The invariant of the algorithm ensures that Curr and Start
+               --  are at the same level of nesting at the point of transition.
+               --  The algorithm can determine which list the traversal came
+               --  from by examining Start.
+
+               Context := Parent (Start);
+
+               --  Attempt the following transitions:
+               --
+               --    private declarations -> visible declarations
+               --    private declarations -> upper level
+               --    private declarations -> terminate
+               --    visible declarations -> upper level
+               --    visible declarations -> terminate
+
+               if Nkind_In (Context, N_Package_Specification,
+                                     N_Protected_Definition,
+                                     N_Task_Definition)
+               then
+                  Transition_Spec_Declarations (Context, Curr);
+
+               --  Attempt the following transitions:
+               --
+               --    statements -> declarations
+               --    statements -> upper level
+               --    statements -> corresponding package spec (Elab_Body)
+               --    statements -> terminate
+
+               elsif Nkind (Context) = N_Handled_Sequence_Of_Statements then
+                  Transition_Handled_Statements (Context, Curr);
+
+               --  Attempt the following transitions:
+               --
+               --    declarations -> upper level
+               --    declarations -> corresponding package spec (Elab_Body)
+               --    declarations -> terminate
+
+               elsif Nkind_In (Context, N_Block_Statement,
+                                        N_Entry_Body,
+                                        N_Package_Body,
+                                        N_Protected_Body,
+                                        N_Subprogram_Body,
+                                        N_Task_Body)
+               then
+                  Transition_Body_Declarations (Context, Curr);
+
+               --  Otherwise it is not possible to transition. Stop the search
+               --  because there are no more declarations or statements to
+               --  check.
+
+               else
+                  raise ECR_Found;
+               end if;
+            end if;
+         end Advance;
+
+         --------------------------
+         -- Enter_Handled_Body --
+         --------------------------
+
+         procedure Enter_Handled_Body (Curr : in out Node_Id) is
+            Decls : constant List_Id := Declarations (Curr);
+            HSS   : constant Node_Id := Handled_Statement_Sequence (Curr);
+            Stmts : List_Id := No_List;
+
+         begin
+            if Present (HSS) then
+               Stmts := Statements (HSS);
+            end if;
+
+            --  The handled body has a non-empty statement sequence. The
+            --  construct to inspect is the last statement.
+
+            if Has_Suitable_Construct (Stmts) then
+               Curr := Last (Stmts);
+
+            --  The handled body lacks statements, but has non-empty
+            --  declarations. The construct to inspect is the last declaration.
+
+            elsif Has_Suitable_Construct (Decls) then
+               Curr := Last (Decls);
+
+            --  Otherwise the handled body lacks both declarations and
+            --  statements. The construct to inspect is the node which precedes
+            --  the handled body. Update the early call region to include the
+            --  handled body.
 
             else
                Include (Curr, Curr);
             end if;
+         end Enter_Handled_Body;
 
-         --  Otherwise the current construct is missing, indicating that the
-         --  current list has been exhausted. Depending on the context of the
-         --  list, several transitions are possible.
+         -------------------------------
+         -- Enter_Package_Declaration --
+         -------------------------------
 
-         else
-            --  The invariant of the algorithm ensures that Curr and Start are
-            --  at the same level of nesting at the point of a transition. The
-            --  algorithm can determine which list the traversal came from by
-            --  examining Start.
+         procedure Enter_Package_Declaration (Curr : in out Node_Id) is
+            Pack_Spec : constant Node_Id := Specification (Curr);
+            Prv_Decls : constant List_Id := Private_Declarations (Pack_Spec);
+            Vis_Decls : constant List_Id := Visible_Declarations (Pack_Spec);
 
-            Context := Parent (Start);
+         begin
+            --  The package has a non-empty private declarations. The construct
+            --  to inspect is the last private declaration.
 
-            --  Attempt the following transitions:
-            --
-            --    private declarations -> visible declarations
-            --    private declarations -> upper level
-            --    private declarations -> terminate
-            --    visible declarations -> upper level
-            --    visible declarations -> terminate
+            if Has_Suitable_Construct (Prv_Decls) then
+               Curr := Last (Prv_Decls);
 
-            if Nkind_In (Context, N_Package_Specification,
-                                  N_Protected_Definition,
-                                  N_Task_Definition)
-            then
-               Transition_Spec_Declarations (Context, Curr);
+            --  The package lacks private declarations, but has non-empty
+            --  visible declarations. In this case the construct to inspect
+            --  is the last visible declaration.
 
-            --  Attempt the following transitions:
-            --
-            --    statements -> declarations
-            --    statements -> upper level
-            --    statements -> corresponding package spec (Elab_Body)
-            --    statements -> terminate
-
-            elsif Nkind (Context) = N_Handled_Sequence_Of_Statements then
-               Transition_Handled_Statements (Context, Curr);
-
-            --  Attempt the following transitions:
-            --
-            --    declarations -> upper level
-            --    declarations -> corresponding package spec (Elab_Body)
-            --    declarations -> terminate
-
-            elsif Nkind_In (Context, N_Block_Statement,
-                                     N_Entry_Body,
-                                     N_Package_Body,
-                                     N_Protected_Body,
-                                     N_Subprogram_Body,
-                                     N_Task_Body)
-            then
-               Transition_Body_Declarations (Context, Curr);
-
-            --  Otherwise it is not possible to transition. Stop the search
-            --  because there are no more declarations or statements to check.
-
-            else
-               raise ECR_Found;
-            end if;
-         end if;
-      end Advance;
-
-      --------------------------
-      -- Enter_Handled_Body --
-      --------------------------
-
-      procedure Enter_Handled_Body (Curr : in out Node_Id) is
-         Decls : constant List_Id := Declarations (Curr);
-         HSS   : constant Node_Id := Handled_Statement_Sequence (Curr);
-         Stmts : List_Id := No_List;
-
-      begin
-         if Present (HSS) then
-            Stmts := Statements (HSS);
-         end if;
-
-         --  The handled body has a non-empty statement sequence. The construct
-         --  to inspect is the last statement.
-
-         if Has_Suitable_Construct (Stmts) then
-            Curr := Last (Stmts);
-
-         --  The handled body lacks statements, but has non-empty declarations.
-         --  The construct to inspect is the last declaration.
-
-         elsif Has_Suitable_Construct (Decls) then
-            Curr := Last (Decls);
-
-         --  Otherwise the handled body lacks both declarations and statements.
-         --  The construct to inspect is the node which precedes the handled
-         --  body. Update the early call region to include the handled body.
-
-         else
-            Include (Curr, Curr);
-         end if;
-      end Enter_Handled_Body;
-
-      -------------------------------
-      -- Enter_Package_Declaration --
-      -------------------------------
-
-      procedure Enter_Package_Declaration (Curr : in out Node_Id) is
-         Pack_Spec : constant Node_Id := Specification (Curr);
-         Prv_Decls : constant List_Id := Private_Declarations (Pack_Spec);
-         Vis_Decls : constant List_Id := Visible_Declarations (Pack_Spec);
-
-      begin
-         --  The package has a non-empty private declarations. The construct to
-         --  inspect is the last private declaration.
-
-         if Has_Suitable_Construct (Prv_Decls) then
-            Curr := Last (Prv_Decls);
-
-         --  The package lacks private declarations, but has non-empty visible
-         --  declarations. In this case the construct to inspect is the last
-         --  visible declaration.
-
-         elsif Has_Suitable_Construct (Vis_Decls) then
-            Curr := Last (Vis_Decls);
-
-         --  Otherwise the package lacks any declarations. The construct to
-         --  inspect is the node which precedes the package. Update the early
-         --  call region to include the package declaration.
-
-         else
-            Include (Curr, Curr);
-         end if;
-      end Enter_Package_Declaration;
-
-      --------------
-      -- Find_ECR --
-      --------------
-
-      function Find_ECR (N : Node_Id) return Node_Id is
-         Curr : Node_Id;
-
-      begin
-         --  The early call region starts at N
-
-         Curr  := Prev (N);
-         Start := N;
-
-         --  Inspect each node in reverse declarative order while going in and
-         --  out of nested and enclosing constructs. Note that the only way to
-         --  terminate this infinite loop is to raise exception ECR_Found.
-
-         loop
-            --  The current construct is not preelaboration-safe. Terminate the
-            --  traversal.
-
-            if Present (Curr)
-              and then not Is_OK_Preelaborable_Construct (Curr)
-            then
-               raise ECR_Found;
-            end if;
-
-            --  Advance to the next suitable construct. This may terminate the
-            --  traversal by raising ECR_Found.
-
-            Advance (Curr);
-         end loop;
-
-      exception
-         when ECR_Found =>
-            return Start;
-      end Find_ECR;
-
-      ----------------------------
-      -- Has_Suitable_Construct --
-      ----------------------------
-
-      function Has_Suitable_Construct (List : List_Id) return Boolean is
-         Item : Node_Id;
-
-      begin
-         --  Examine the list in reverse declarative order, looking for a
-         --  suitable construct.
-
-         if Present (List) then
-            Item := Last (List);
-            while Present (Item) loop
-               if Is_Suitable_Construct (Item) then
-                  return True;
-               end if;
-
-               Prev (Item);
-            end loop;
-         end if;
-
-         return False;
-      end Has_Suitable_Construct;
-
-      -------------
-      -- Include --
-      -------------
-
-      procedure Include (N : Node_Id; Curr : out Node_Id) is
-      begin
-         Start := N;
-
-         --  The input node is a compilation unit. This terminates the search
-         --  because there are no more lists to inspect and there are no more
-         --  enclosing constructs to climb up to. The transitions are:
-         --
-         --    private declarations -> terminate
-         --    visible declarations -> terminate
-         --    statements           -> terminate
-         --    declarations         -> terminate
-
-         if Nkind (Parent (Start)) = N_Compilation_Unit then
-            raise ECR_Found;
-
-         --  Otherwise the input node is still within some list
-
-         else
-            Curr := Prev (Start);
-         end if;
-      end Include;
-
-      -----------------------------------
-      -- Is_OK_Preelaborable_Construct --
-      -----------------------------------
-
-      function Is_OK_Preelaborable_Construct (N : Node_Id) return Boolean is
-      begin
-         --  Assignment statements are acceptable as long as they were produced
-         --  by the ABE mechanism to update elaboration flags.
-
-         if Nkind (N) = N_Assignment_Statement then
-            return Is_Elaboration_Code (N);
-
-         --  Block statements are acceptable even though they directly violate
-         --  preelaborability. The intention is not to penalize the early call
-         --  region when a block contains only preelaborable constructs.
-         --
-         --    declare
-         --       Val : constant Integer := 1;
-         --    begin
-         --       pragma Assert (Val = 1);
-         --       null;
-         --    end;
-         --
-         --  Note that the Advancement phase does enter blocks, and will detect
-         --  any non-preelaborable declarations or statements within.
-
-         elsif Nkind (N) = N_Block_Statement then
-            return True;
-         end if;
-
-         --  Otherwise the construct must be preelaborable. The check must take
-         --  the syntactic and semantic structure of the construct. DO NOT use
-         --  Is_Preelaborable_Construct here.
-
-         return not Is_Non_Preelaborable_Construct (N);
-      end Is_OK_Preelaborable_Construct;
-
-      ---------------------------
-      -- Is_Suitable_Construct --
-      ---------------------------
-
-      function Is_Suitable_Construct (N : Node_Id) return Boolean is
-         Context : constant Node_Id := Parent (N);
-
-      begin
-         --  An internally-generated statement sequence which contains only a
-         --  single null statement is not a suitable construct because it is a
-         --  byproduct of the parser. Such a null statement should be excluded
-         --  from the early call region because it carries the source location
-         --  of the "end" keyword, and may lead to confusing diagnistics.
-
-         if Nkind (N) = N_Null_Statement
-           and then not Comes_From_Source (N)
-           and then Present (Context)
-           and then Nkind (Context) = N_Handled_Sequence_Of_Statements
-         then
-            return False;
-         end if;
-
-         --  Otherwise only constructs which correspond to pure Ada constructs
-         --  are considered suitable.
-
-         case Nkind (N) is
-            when N_Call_Marker
-               | N_Freeze_Entity
-               | N_Freeze_Generic_Entity
-               | N_Implicit_Label_Declaration
-               | N_Itype_Reference
-               | N_Pop_Constraint_Error_Label
-               | N_Pop_Program_Error_Label
-               | N_Pop_Storage_Error_Label
-               | N_Push_Constraint_Error_Label
-               | N_Push_Program_Error_Label
-               | N_Push_Storage_Error_Label
-               | N_SCIL_Dispatch_Table_Tag_Init
-               | N_SCIL_Dispatching_Call
-               | N_SCIL_Membership_Test
-               | N_Variable_Reference_Marker
-            =>
-               return False;
-
-            when others =>
-               return True;
-         end case;
-      end Is_Suitable_Construct;
-
-      ----------------------------------
-      -- Transition_Body_Declarations --
-      ----------------------------------
-
-      procedure Transition_Body_Declarations
-        (Bod  : Node_Id;
-         Curr : out Node_Id)
-      is
-         Decls : constant List_Id := Declarations (Bod);
-
-      begin
-         --  The search must come from the declarations of the body
-
-         pragma Assert
-           (Is_Non_Empty_List (Decls)
-             and then List_Containing (Start) = Decls);
-
-         --  The search finished inspecting the declarations. The construct
-         --  to inspect is the node which precedes the handled body, unless
-         --  the body is a compilation unit. The transitions are:
-         --
-         --    declarations -> upper level
-         --    declarations -> corresponding package spec (Elab_Body)
-         --    declarations -> terminate
-
-         Transition_Unit (Bod, Curr);
-      end Transition_Body_Declarations;
-
-      -----------------------------------
-      -- Transition_Handled_Statements --
-      -----------------------------------
-
-      procedure Transition_Handled_Statements
-        (HSS  : Node_Id;
-         Curr : out Node_Id)
-      is
-         Bod   : constant Node_Id := Parent (HSS);
-         Decls : constant List_Id := Declarations (Bod);
-         Stmts : constant List_Id := Statements (HSS);
-
-      begin
-         --  The search must come from the statements of certain bodies or
-         --  statements.
-
-         pragma Assert (Nkind_In (Bod, N_Block_Statement,
-                                       N_Entry_Body,
-                                       N_Package_Body,
-                                       N_Protected_Body,
-                                       N_Subprogram_Body,
-                                       N_Task_Body));
-
-         --  The search must come from the statements of the handled sequence
-
-         pragma Assert
-           (Is_Non_Empty_List (Stmts)
-             and then List_Containing (Start) = Stmts);
-
-         --  The search finished inspecting the statements. The handled body
-         --  has non-empty declarations. The construct to inspect is the last
-         --  declaration. The transitions are:
-         --
-         --    statements -> declarations
-
-         if Has_Suitable_Construct (Decls) then
-            Curr := Last (Decls);
-
-         --  Otherwise the handled body lacks declarations. The construct to
-         --  inspect is the node which precedes the handled body, unless the
-         --  body is a compilation unit. The transitions are:
-         --
-         --    statements -> upper level
-         --    statements -> corresponding package spec (Elab_Body)
-         --    statements -> terminate
-
-         else
-            Transition_Unit (Bod, Curr);
-         end if;
-      end Transition_Handled_Statements;
-
-      ----------------------------------
-      -- Transition_Spec_Declarations --
-      ----------------------------------
-
-      procedure Transition_Spec_Declarations
-        (Spec : Node_Id;
-         Curr : out Node_Id)
-      is
-         Prv_Decls : constant List_Id := Private_Declarations (Spec);
-         Vis_Decls : constant List_Id := Visible_Declarations (Spec);
-
-      begin
-         pragma Assert (Present (Start) and then Is_List_Member (Start));
-
-         --  The search came from the private declarations and finished their
-         --  inspection.
-
-         if Has_Suitable_Construct (Prv_Decls)
-           and then List_Containing (Start) = Prv_Decls
-         then
-            --  The context has non-empty visible declarations. The node to
-            --  inspect is the last visible declaration. The transitions are:
-            --
-            --    private declarations -> visible declarations
-
-            if Has_Suitable_Construct (Vis_Decls) then
+            elsif Has_Suitable_Construct (Vis_Decls) then
                Curr := Last (Vis_Decls);
 
-            --  Otherwise the context lacks visible declarations. The construct
-            --  to inspect is the node which precedes the context unless the
-            --  context is a compilation unit. The transitions are:
-            --
-            --    private declarations -> upper level
-            --    private declarations -> terminate
+            --  Otherwise the package lacks any declarations. The construct
+            --  to inspect is the node which precedes the package. Update the
+            --  early call region to include the package declaration.
 
             else
-               Transition_Unit (Parent (Spec), Curr);
+               Include (Curr, Curr);
+            end if;
+         end Enter_Package_Declaration;
+
+         --------------
+         -- Find_ECR --
+         --------------
+
+         function Find_ECR (N : Node_Id) return Node_Id is
+            Curr : Node_Id;
+
+         begin
+            --  The early call region starts at N
+
+            Curr  := Prev (N);
+            Start := N;
+
+            --  Inspect each node in reverse declarative order while going in
+            --  and out of nested and enclosing constructs. Note that the only
+            --  way to terminate this infinite loop is to raise ECR_Found.
+
+            loop
+               --  The current construct is not preelaboration-safe. Terminate
+               --  the traversal.
+
+               if Present (Curr)
+                 and then not Is_OK_Preelaborable_Construct (Curr)
+               then
+                  raise ECR_Found;
+               end if;
+
+               --  Advance to the next suitable construct. This may terminate
+               --  the traversal by raising ECR_Found.
+
+               Advance (Curr);
+            end loop;
+
+         exception
+            when ECR_Found =>
+               return Start;
+         end Find_ECR;
+
+         ----------------------------
+         -- Has_Suitable_Construct --
+         ----------------------------
+
+         function Has_Suitable_Construct (List : List_Id) return Boolean is
+            Item : Node_Id;
+
+         begin
+            --  Examine the list in reverse declarative order, looking for a
+            --  suitable construct.
+
+            if Present (List) then
+               Item := Last (List);
+               while Present (Item) loop
+                  if Is_Suitable_Construct (Item) then
+                     return True;
+                  end if;
+
+                  Prev (Item);
+               end loop;
             end if;
 
-         --  The search came from the visible declarations and finished their
-         --  inspections. The construct to inspect is the node which precedes
-         --  the context, unless the context is a compilaton unit. The
-         --  transitions are:
-         --
-         --    visible declarations -> upper level
-         --    visible declarations -> terminate
+            return False;
+         end Has_Suitable_Construct;
 
-         elsif Has_Suitable_Construct (Vis_Decls)
-           and then List_Containing (Start) = Vis_Decls
-         then
-            Transition_Unit (Parent (Spec), Curr);
+         -------------
+         -- Include --
+         -------------
 
-         --  At this point both declarative lists are empty, but the traversal
-         --  still came from within the spec. This indicates that the invariant
-         --  of the algorithm has been violated.
+         procedure Include (N : Node_Id; Curr : out Node_Id) is
+         begin
+            Start := N;
 
-         else
-            pragma Assert (False);
-            raise ECR_Found;
-         end if;
-      end Transition_Spec_Declarations;
-
-      ---------------------
-      -- Transition_Unit --
-      ---------------------
-
-      procedure Transition_Unit
-        (Unit : Node_Id;
-         Curr : out Node_Id)
-      is
-         Context : constant Node_Id := Parent (Unit);
-
-      begin
-         --  The unit is a compilation unit. This terminates the search because
-         --  there are no more lists to inspect and there are no more enclosing
-         --  constructs to climb up to.
-
-         if Nkind (Context) = N_Compilation_Unit then
-
-            --  A package body with a corresponding spec subject to pragma
-            --  Elaborate_Body is an exception to the above. The annotation
-            --  allows the search to continue into the package declaration.
-            --  The transitions are:
-            --
-            --    statements   -> corresponding package spec (Elab_Body)
-            --    declarations -> corresponding package spec (Elab_Body)
-
-            if Nkind (Unit) = N_Package_Body
-              and then (Assume_Elab_Body
-                         or else Has_Pragma_Elaborate_Body
-                                   (Corresponding_Spec (Unit)))
-            then
-               Curr := Unit_Declaration_Node (Corresponding_Spec (Unit));
-               Enter_Package_Declaration (Curr);
-
-            --  Otherwise terminate the search. The transitions are:
+            --  The input node is a compilation unit. This terminates the
+            --  search because there are no more lists to inspect and there are
+            --  no more enclosing constructs to climb up to. The transitions
+            --  are:
             --
             --    private declarations -> terminate
             --    visible declarations -> terminate
             --    statements           -> terminate
             --    declarations         -> terminate
 
-            else
+            if Nkind (Parent (Start)) = N_Compilation_Unit then
                raise ECR_Found;
+
+            --  Otherwise the input node is still within some list
+
+            else
+               Curr := Prev (Start);
+            end if;
+         end Include;
+
+         -----------------------------------
+         -- Is_OK_Preelaborable_Construct --
+         -----------------------------------
+
+         function Is_OK_Preelaborable_Construct (N : Node_Id) return Boolean is
+         begin
+            --  Assignment statements are acceptable as long as they were
+            --  produced by the ABE mechanism to update elaboration flags.
+
+            if Nkind (N) = N_Assignment_Statement then
+               return Is_Elaboration_Code (N);
+
+            --  Block statements are acceptable even though they directly
+            --  violate preelaborability. The intention is not to penalize
+            --  the early call region when a block contains only preelaborable
+            --  constructs.
+            --
+            --    declare
+            --       Val : constant Integer := 1;
+            --    begin
+            --       pragma Assert (Val = 1);
+            --       null;
+            --    end;
+            --
+            --  Note that the Advancement phase does enter blocks, and will
+            --  detect any non-preelaborable declarations or statements within.
+
+            elsif Nkind (N) = N_Block_Statement then
+               return True;
             end if;
 
-         --  The unit is a subunit. The construct to inspect is the node which
-         --  precedes the corresponding stub. Update the early call region to
-         --  include the unit.
+            --  Otherwise the construct must be preelaborable. The check must
+            --  take the syntactic and semantic structure of the construct. DO
+            --  NOT use Is_Preelaborable_Construct here.
 
-         elsif Nkind (Context) = N_Subunit then
-            Start := Unit;
-            Curr  := Corresponding_Stub (Context);
+            return not Is_Non_Preelaborable_Construct (N);
+         end Is_OK_Preelaborable_Construct;
 
-         --  Otherwise the unit is nested. The construct to inspect is the node
-         --  which precedes the unit. Update the early call region to include
-         --  the unit.
+         ---------------------------
+         -- Is_Suitable_Construct --
+         ---------------------------
 
-         else
-            Include (Unit, Curr);
-         end if;
-      end Transition_Unit;
+         function Is_Suitable_Construct (N : Node_Id) return Boolean is
+            Context : constant Node_Id := Parent (N);
 
-      --  Local variables
+         begin
+            --  An internally-generated statement sequence which contains only
+            --  a single null statement is not a suitable construct because it
+            --  is a byproduct of the parser. Such a null statement should be
+            --  excluded from the early call region because it carries the
+            --  source location of the "end" keyword, and may lead to confusing
+            --  diagnistics.
 
-      Body_Id : constant Entity_Id := Defining_Entity (Body_Decl);
-      Region  : Node_Id;
+            if Nkind (N) = N_Null_Statement
+              and then not Comes_From_Source (N)
+              and then Present (Context)
+              and then Nkind (Context) = N_Handled_Sequence_Of_Statements
+            then
+               return False;
+            end if;
 
-   --  Start of processing for Find_Early_Call_Region
+            --  Otherwise only constructs which correspond to pure Ada
+            --  constructs are considered suitable.
 
-   begin
-      --  The caller demands the start of the early call region without saving
-      --  or retrieving it to/from internal data structures.
+            case Nkind (N) is
+               when N_Call_Marker
+                  | N_Freeze_Entity
+                  | N_Freeze_Generic_Entity
+                  | N_Implicit_Label_Declaration
+                  | N_Itype_Reference
+                  | N_Pop_Constraint_Error_Label
+                  | N_Pop_Program_Error_Label
+                  | N_Pop_Storage_Error_Label
+                  | N_Push_Constraint_Error_Label
+                  | N_Push_Program_Error_Label
+                  | N_Push_Storage_Error_Label
+                  | N_SCIL_Dispatch_Table_Tag_Init
+                  | N_SCIL_Dispatching_Call
+                  | N_SCIL_Membership_Test
+                  | N_Variable_Reference_Marker
+               =>
+                  return False;
 
-      if Skip_Memoization then
-         Region := Find_ECR (Body_Decl);
+               when others =>
+                  return True;
+            end case;
+         end Is_Suitable_Construct;
 
-      --  Default behavior
+         ----------------------------------
+         -- Transition_Body_Declarations --
+         ----------------------------------
 
-      else
-         --  Check whether the early call region of the subprogram body is
-         --  available.
+         procedure Transition_Body_Declarations
+           (Bod  : Node_Id;
+            Curr : out Node_Id)
+         is
+            Decls : constant List_Id := Declarations (Bod);
 
-         Region := Early_Call_Region (Body_Id);
+         begin
+            --  The search must come from the declarations of the body
 
-         if No (Region) then
+            pragma Assert
+              (Is_Non_Empty_List (Decls)
+                and then List_Containing (Start) = Decls);
 
-            --  Traverse the declarations in reverse order, starting from the
-            --  subprogram body, searching for the nearest non-preelaborable
-            --  construct. The early call region starts after this construct
-            --  and ends at the subprogram body.
+            --  The search finished inspecting the declarations. The construct
+            --  to inspect is the node which precedes the handled body, unless
+            --  the body is a compilation unit. The transitions are:
+            --
+            --    declarations -> upper level
+            --    declarations -> corresponding package spec (Elab_Body)
+            --    declarations -> terminate
 
+            Transition_Unit (Bod, Curr);
+         end Transition_Body_Declarations;
+
+         -----------------------------------
+         -- Transition_Handled_Statements --
+         -----------------------------------
+
+         procedure Transition_Handled_Statements
+           (HSS  : Node_Id;
+            Curr : out Node_Id)
+         is
+            Bod   : constant Node_Id := Parent (HSS);
+            Decls : constant List_Id := Declarations (Bod);
+            Stmts : constant List_Id := Statements (HSS);
+
+         begin
+            --  The search must come from the statements of certain bodies or
+            --  statements.
+
+            pragma Assert (Nkind_In (Bod, N_Block_Statement,
+                                          N_Entry_Body,
+                                          N_Package_Body,
+                                          N_Protected_Body,
+                                          N_Subprogram_Body,
+                                          N_Task_Body));
+
+            --  The search must come from the statements of the handled
+            --  sequence.
+
+            pragma Assert
+              (Is_Non_Empty_List (Stmts)
+                and then List_Containing (Start) = Stmts);
+
+            --  The search finished inspecting the statements. The handled body
+            --  has non-empty declarations. The construct to inspect is the
+            --  last declaration. The transitions are:
+            --
+            --    statements -> declarations
+
+            if Has_Suitable_Construct (Decls) then
+               Curr := Last (Decls);
+
+            --  Otherwise the handled body lacks declarations. The construct to
+            --  inspect is the node which precedes the handled body, unless the
+            --  body is a compilation unit. The transitions are:
+            --
+            --    statements -> upper level
+            --    statements -> corresponding package spec (Elab_Body)
+            --    statements -> terminate
+
+            else
+               Transition_Unit (Bod, Curr);
+            end if;
+         end Transition_Handled_Statements;
+
+         ----------------------------------
+         -- Transition_Spec_Declarations --
+         ----------------------------------
+
+         procedure Transition_Spec_Declarations
+           (Spec : Node_Id;
+            Curr : out Node_Id)
+         is
+            Prv_Decls : constant List_Id := Private_Declarations (Spec);
+            Vis_Decls : constant List_Id := Visible_Declarations (Spec);
+
+         begin
+            pragma Assert (Present (Start) and then Is_List_Member (Start));
+
+            --  The search came from the private declarations and finished
+            --  their inspection.
+
+            if Has_Suitable_Construct (Prv_Decls)
+              and then List_Containing (Start) = Prv_Decls
+            then
+               --  The context has non-empty visible declarations. The node to
+               --  inspect is the last visible declaration. The transitions
+               --  are:
+               --
+               --    private declarations -> visible declarations
+
+               if Has_Suitable_Construct (Vis_Decls) then
+                  Curr := Last (Vis_Decls);
+
+               --  Otherwise the context lacks visible declarations. The
+               --  construct to inspect is the node which precedes the context
+               --  unless the context is a compilation unit. The transitions
+               --  are:
+               --
+               --    private declarations -> upper level
+               --    private declarations -> terminate
+
+               else
+                  Transition_Unit (Parent (Spec), Curr);
+               end if;
+
+            --  The search came from the visible declarations and finished
+            --  their inspections. The construct to inspect is the node which
+            --  precedes the context, unless the context is a compilaton unit.
+            --  The transitions are:
+            --
+            --    visible declarations -> upper level
+            --    visible declarations -> terminate
+
+            elsif Has_Suitable_Construct (Vis_Decls)
+              and then List_Containing (Start) = Vis_Decls
+            then
+               Transition_Unit (Parent (Spec), Curr);
+
+            --  At this point both declarative lists are empty, but the
+            --  traversal still came from within the spec. This indicates
+            --  that the invariant of the algorithm has been violated.
+
+            else
+               pragma Assert (False);
+               raise ECR_Found;
+            end if;
+         end Transition_Spec_Declarations;
+
+         ---------------------
+         -- Transition_Unit --
+         ---------------------
+
+         procedure Transition_Unit
+           (Unit : Node_Id;
+            Curr : out Node_Id)
+         is
+            Context : constant Node_Id := Parent (Unit);
+
+         begin
+            --  The unit is a compilation unit. This terminates the search
+            --  because there are no more lists to inspect and there are no
+            --  more enclosing constructs to climb up to.
+
+            if Nkind (Context) = N_Compilation_Unit then
+
+               --  A package body with a corresponding spec subject to pragma
+               --  Elaborate_Body is an exception to the above. The annotation
+               --  allows the search to continue into the package declaration.
+               --  The transitions are:
+               --
+               --    statements   -> corresponding package spec (Elab_Body)
+               --    declarations -> corresponding package spec (Elab_Body)
+
+               if Nkind (Unit) = N_Package_Body
+                 and then (Assume_Elab_Body
+                            or else Has_Pragma_Elaborate_Body
+                                      (Corresponding_Spec (Unit)))
+               then
+                  Curr := Unit_Declaration_Node (Corresponding_Spec (Unit));
+                  Enter_Package_Declaration (Curr);
+
+               --  Otherwise terminate the search. The transitions are:
+               --
+               --    private declarations -> terminate
+               --    visible declarations -> terminate
+               --    statements           -> terminate
+               --    declarations         -> terminate
+
+               else
+                  raise ECR_Found;
+               end if;
+
+            --  The unit is a subunit. The construct to inspect is the node
+            --  which precedes the corresponding stub. Update the early call
+            --  region to include the unit.
+
+            elsif Nkind (Context) = N_Subunit then
+               Start := Unit;
+               Curr  := Corresponding_Stub (Context);
+
+            --  Otherwise the unit is nested. The construct to inspect is the
+            --  node which precedes the unit. Update the early call region to
+            --  include the unit.
+
+            else
+               Include (Unit, Curr);
+            end if;
+         end Transition_Unit;
+
+         --  Local variables
+
+         Body_Id : constant Entity_Id := Unique_Defining_Entity (Body_Decl);
+         Region  : Node_Id;
+
+      --  Start of processing for Find_Early_Call_Region
+
+      begin
+         --  The caller demands the start of the early call region without
+         --  saving or retrieving it to/from internal data structures.
+
+         if Skip_Memoization then
             Region := Find_ECR (Body_Decl);
 
-            --  Associate the early call region with the subprogram body in
-            --  case other scenarios need it.
+         --  Default behavior
 
-            Set_Early_Call_Region (Body_Id, Region);
+         else
+            --  Check whether the early call region of the subprogram body is
+            --  available.
+
+            Region := Early_Call_Region (Body_Id);
+
+            if No (Region) then
+               Region := Find_ECR (Body_Decl);
+
+               --  Associate the early call region with the subprogram body in
+               --  case other scenarios need it.
+
+               Set_Early_Call_Region (Body_Id, Region);
+            end if;
          end if;
-      end if;
 
-      --  A subprogram body must always have an early call region
+         --  A subprogram body must always have an early call region
 
-      pragma Assert (Present (Region));
+         pragma Assert (Present (Region));
 
-      return Region;
-   end Find_Early_Call_Region;
+         return Region;
+      end Find_Early_Call_Region;
 
-   ---------------------------
-   -- Find_Elaborated_Units --
-   ---------------------------
+      --------------------------------------------
+      -- Initialize_Early_Call_Region_Processor --
+      --------------------------------------------
 
-   procedure Find_Elaborated_Units is
-      procedure Add_Pragma (Prag : Node_Id);
-      --  Determine whether pragma Prag denotes a legal Elaborate[_All] pragma.
-      --  If this is the case, add the related unit to the elaboration context.
-      --  For pragma Elaborate_All, include recursively all units withed by the
-      --  related unit.
+      procedure Initialize_Early_Call_Region_Processor is
+      begin
+         Early_Call_Regions_Map := ECR_Map.Create (100);
+      end Initialize_Early_Call_Region_Processor;
 
-      procedure Add_Unit
-        (Unit_Id      : Entity_Id;
-         Prag         : Node_Id;
-         Full_Context : Boolean);
-      --  Add unit Unit_Id to the elaboration context. Prag denotes the pragma
-      --  which prompted the inclusion of the unit to the elaboration context.
-      --  If flag Full_Context is set, examine the nonlimited clauses of unit
-      --  Unit_Id and add each withed unit to the context.
+      ---------------------------
+      -- Set_Early_Call_Region --
+      ---------------------------
 
-      procedure Find_Elaboration_Context (Comp_Unit : Node_Id);
-      --  Examine the context items of compilation unit Comp_Unit for suitable
-      --  elaboration-related pragmas and add all related units to the context.
-
-      ----------------
-      -- Add_Pragma --
-      ----------------
-
-      procedure Add_Pragma (Prag : Node_Id) is
-         Prag_Args : constant List_Id := Pragma_Argument_Associations (Prag);
-         Prag_Nam  : constant Name_Id := Pragma_Name (Prag);
-         Unit_Arg  : Node_Id;
+      procedure Set_Early_Call_Region (Body_Id : Entity_Id; Start : Node_Id) is
+         pragma Assert (Present (Body_Id));
+         pragma Assert (Present (Start));
 
       begin
-         --  Nothing to do if the pragma is not related to elaboration
+         ECR_Map.Put (Early_Call_Regions_Map, Body_Id, Start);
+      end Set_Early_Call_Region;
+   end Early_Call_Region_Processor;
 
-         if not Nam_In (Prag_Nam, Name_Elaborate, Name_Elaborate_All) then
-            return;
+   ----------------------
+   -- Elaborated_Units --
+   ----------------------
 
-         --  Nothing to do when the pragma is illegal
+   package body Elaborated_Units is
 
-         elsif Error_Posted (Prag) then
-            return;
+      -----------
+      -- Types --
+      -----------
+
+      --  The following type idenfities the elaboration attributes of a unit
+
+      type Elaboration_Attributes_Id is new Natural;
+
+      No_Elaboration_Attributes    : constant Elaboration_Attributes_Id :=
+                                       Elaboration_Attributes_Id'First;
+      First_Elaboration_Attributes : constant Elaboration_Attributes_Id :=
+                                       No_Elaboration_Attributes + 1;
+
+      --  The following type represents the elaboration attributes of a unit
+
+      type Elaboration_Attributes_Record is record
+         Elab_Pragma : Node_Id := Empty;
+         --  This attribute denotes a source Elaborate or Elaborate_All pragma
+         --  which guarantees the prior elaboration of some unit with respect
+         --  to the main unit. The pragma may come from the following contexts:
+         --
+         --    * The main unit
+         --    * The spec of the main unit (if applicable)
+         --    * Any parent spec of the main unit (if applicable)
+         --    * Any parent subunit of the main unit (if applicable)
+         --
+         --  The attribute remains Empty if no such pragma is available. Source
+         --  pragmas play a role in satisfying SPARK elaboration requirements.
+
+         With_Clause : Node_Id := Empty;
+         --  This attribute denotes an internally-generated or a source with
+         --  clause for some unit withed by the main unit. With clauses carry
+         --  flags which represent implicit Elaborate or Elaborate_All pragmas.
+         --  These clauses play a role in supplying elaboration dependencies to
+         --  binde.
+      end record;
+
+      ---------------------
+      -- Data structures --
+      ---------------------
+
+      --  The following table stores all elaboration attributes
+
+      package Elaboration_Attributes is new Table.Table
+        (Table_Index_Type     => Elaboration_Attributes_Id,
+         Table_Component_Type => Elaboration_Attributes_Record,
+         Table_Low_Bound      => First_Elaboration_Attributes,
+         Table_Initial        => 250,
+         Table_Increment      => 200,
+         Table_Name           => "Elaboration_Attributes");
+
+      procedure Destroy (EA_Id : in out Elaboration_Attributes_Id);
+      --  Destroy elaboration attributes EA_Id
+
+      package UA_Map is new Dynamic_Hash_Tables
+        (Key_Type              => Entity_Id,
+         Value_Type            => Elaboration_Attributes_Id,
+         No_Value              => No_Elaboration_Attributes,
+         Expansion_Threshold   => 1.5,
+         Expansion_Factor      => 2,
+         Compression_Threshold => 0.3,
+         Compression_Factor    => 2,
+         "="                   => "=",
+         Destroy_Value         => Destroy,
+         Hash                  => Hash);
+
+      --  The following map relates an elaboration attributes of a unit to the
+      --  unit.
+
+      Unit_To_Attributes_Map : UA_Map.Dynamic_Hash_Table :=
+                                 UA_Map.Create (250);
+
+      ------------------
+      -- Constructors --
+      ------------------
+
+      function Elaboration_Attributes_Of
+        (Unit_Id : Entity_Id) return Elaboration_Attributes_Id;
+      pragma Inline (Elaboration_Attributes_Of);
+      --  Obtain the elaboration attributes of unit Unit_Id
+
+      -----------------------
+      -- Local subprograms --
+      -----------------------
+
+      function Elab_Pragma (EA_Id : Elaboration_Attributes_Id) return Node_Id;
+      pragma Inline (Elab_Pragma);
+      --  Obtain the Elaborate[_All] pragma of elaboration attributes EA_Id
+
+      procedure Ensure_Prior_Elaboration_Dynamic
+        (N        : Node_Id;
+         Unit_Id  : Entity_Id;
+         Prag_Nam : Name_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Ensure_Prior_Elaboration_Dynamic);
+      --  Guarantee the elaboration of unit Unit_Id with respect to the main
+      --  unit by suggesting the use of Elaborate[_All] with name Prag_Nam. N
+      --  denotes the related scenario. In_State is the current state of the
+      --  Processing phase.
+
+      procedure Ensure_Prior_Elaboration_Static
+        (N        : Node_Id;
+         Unit_Id  : Entity_Id;
+         Prag_Nam : Name_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Ensure_Prior_Elaboration_Static);
+      --  Guarantee the elaboration of unit Unit_Id with respect to the main
+      --  unit by installing an implicit Elaborate[_All] pragma with name
+      --  Prag_Nam. N denotes the related scenario. In_State is the current
+      --  state of the Processing phase.
+
+      function Present (EA_Id : Elaboration_Attributes_Id) return Boolean;
+      pragma Inline (Present);
+      --  Determine whether elaboration attributes UA_Id exist
+
+      procedure Set_Elab_Pragma
+        (EA_Id : Elaboration_Attributes_Id;
+         Prag  : Node_Id);
+      pragma Inline (Set_Elab_Pragma);
+      --  Set the Elaborate[_All] pragma of elaboration attributes EA_Id to
+      --  Prag.
+
+      procedure Set_With_Clause
+        (EA_Id  : Elaboration_Attributes_Id;
+         Clause : Node_Id);
+      pragma Inline (Set_With_Clause);
+      --  Set the with clause of elaboration attributes EA_Id to Clause
+
+      function With_Clause (EA_Id : Elaboration_Attributes_Id) return Node_Id;
+      pragma Inline (With_Clause);
+      --  Obtain the implicit or source with clause of elaboration attributes
+      --  EA_Id.
+
+      ------------------------------
+      -- Collect_Elaborated_Units --
+      ------------------------------
+
+      procedure Collect_Elaborated_Units is
+         procedure Add_Pragma (Prag : Node_Id);
+         pragma Inline (Add_Pragma);
+         --  Determine whether pragma Prag denotes a legal Elaborate[_All]
+         --  pragma. If this is the case, add the related unit to the context.
+         --  For pragma Elaborate_All, include recursively all units withed by
+         --  the related unit.
+
+         procedure Add_Unit
+           (Unit_Id      : Entity_Id;
+            Prag         : Node_Id;
+            Full_Context : Boolean);
+         pragma Inline (Add_Unit);
+         --  Add unit Unit_Id to the elaboration context. Prag denotes the
+         --  pragma which prompted the inclusion of the unit to the context.
+         --  If flag Full_Context is set, examine the nonlimited clauses of
+         --  unit Unit_Id and add each withed unit to the context.
+
+         procedure Find_Elaboration_Context (Comp_Unit : Node_Id);
+         pragma Inline (Find_Elaboration_Context);
+         --  Examine the context items of compilation unit Comp_Unit for
+         --  suitable elaboration-related pragmas and add all related units
+         --  to the context.
+
+         ----------------
+         -- Add_Pragma --
+         ----------------
+
+         procedure Add_Pragma (Prag : Node_Id) is
+            Prag_Args : constant List_Id :=
+                          Pragma_Argument_Associations (Prag);
+            Prag_Nam  : constant Name_Id := Pragma_Name (Prag);
+            Unit_Arg  : Node_Id;
+
+         begin
+            --  Nothing to do if the pragma is not related to elaboration
+
+            if not Nam_In (Prag_Nam, Name_Elaborate, Name_Elaborate_All) then
+               return;
+
+            --  Nothing to do when the pragma is illegal
+
+            elsif Error_Posted (Prag) then
+               return;
+            end if;
+
+            Unit_Arg := Get_Pragma_Arg (First (Prag_Args));
+
+            --  The argument of the pragma may appear in package.package form
+
+            if Nkind (Unit_Arg) = N_Selected_Component then
+               Unit_Arg := Selector_Name (Unit_Arg);
+            end if;
+
+            Add_Unit
+              (Unit_Id      => Entity (Unit_Arg),
+               Prag         => Prag,
+               Full_Context => Prag_Nam = Name_Elaborate_All);
+         end Add_Pragma;
+
+         --------------
+         -- Add_Unit --
+         --------------
+
+         procedure Add_Unit
+           (Unit_Id      : Entity_Id;
+            Prag         : Node_Id;
+            Full_Context : Boolean)
+         is
+            Clause    : Node_Id;
+            EA_Id     : Elaboration_Attributes_Id;
+            Unit_Prag : Node_Id;
+
+         begin
+            --  Nothing to do when some previous error left a with clause or a
+            --  pragma in a bad state.
+
+            if No (Unit_Id) then
+               return;
+            end if;
+
+            EA_Id     := Elaboration_Attributes_Of (Unit_Id);
+            Unit_Prag := Elab_Pragma (EA_Id);
+
+            --  The unit is already included in the context by means of pragma
+            --  Elaborate[_All].
+
+            if Present (Unit_Prag) then
+
+               --  Upgrade an existing pragma Elaborate when the unit is
+               --  subject to Elaborate_All because the new pragma covers a
+               --  larger set of units.
+
+               if Pragma_Name (Unit_Prag) = Name_Elaborate
+                 and then Pragma_Name (Prag) = Name_Elaborate_All
+               then
+                  Set_Elab_Pragma (EA_Id, Prag);
+
+               --  Otherwise the unit retains its existing pragma and does not
+               --  need to be included in the context again.
+
+               else
+                  return;
+               end if;
+
+            --  Otherwise the current unit is not included in the context
+
+            else
+               Set_Elab_Pragma (EA_Id, Prag);
+            end if;
+
+            --  Includes all units withed by the current one when computing the
+            --  full context.
+
+            if Full_Context then
+
+               --  Process all nonlimited with clauses found in the context of
+               --  the current unit. Note that limited clauses do not impose an
+               --  elaboration order.
+
+               Clause := First (Context_Items (Compilation_Unit (Unit_Id)));
+               while Present (Clause) loop
+                  if Nkind (Clause) = N_With_Clause
+                    and then not Error_Posted (Clause)
+                    and then not Limited_Present (Clause)
+                  then
+                     Add_Unit
+                       (Unit_Id      => Entity (Name (Clause)),
+                        Prag         => Prag,
+                        Full_Context => Full_Context);
+                  end if;
+
+                  Next (Clause);
+               end loop;
+            end if;
+         end Add_Unit;
+
+         ------------------------------
+         -- Find_Elaboration_Context --
+         ------------------------------
+
+         procedure Find_Elaboration_Context (Comp_Unit : Node_Id) is
+            pragma Assert (Nkind (Comp_Unit) = N_Compilation_Unit);
+
+            Prag : Node_Id;
+
+         begin
+            --  Process all elaboration-related pragmas found in the context of
+            --  the compilation unit.
+
+            Prag := First (Context_Items (Comp_Unit));
+            while Present (Prag) loop
+               if Nkind (Prag) = N_Pragma then
+                  Add_Pragma (Prag);
+               end if;
+
+               Next (Prag);
+            end loop;
+         end Find_Elaboration_Context;
+
+         --  Local variables
+
+         Par_Id  : Entity_Id;
+         Unit_Id : Node_Id;
+
+      --  Start of processing for Collect_Elaborated_Units
+
+      begin
+         --  Perform a traversal to examines the context of the main unit. The
+         --  traversal performs the following jumps:
+         --
+         --    subunit        -> parent subunit
+         --    parent subunit -> body
+         --    body           -> spec
+         --    spec           -> parent spec
+         --    parent spec    -> grandparent spec and so on
+         --
+         --  The traversal relies on units rather than scopes because the scope
+         --  of a subunit is some spec, while this traversal must process the
+         --  body as well. Given that protected and task bodies can also be
+         --  subunits, this complicates the scope approach even further.
+
+         Unit_Id := Unit (Cunit (Main_Unit));
+
+         --  Perform the following traversals when the main unit is a subunit
+         --
+         --    subunit        -> parent subunit
+         --    parent subunit -> body
+
+         while Present (Unit_Id) and then Nkind (Unit_Id) = N_Subunit loop
+            Find_Elaboration_Context (Parent (Unit_Id));
+
+            --  Continue the traversal by going to the unit which contains the
+            --  corresponding stub.
+
+            if Present (Corresponding_Stub (Unit_Id)) then
+               Unit_Id :=
+                 Unit (Cunit (Get_Source_Unit (Corresponding_Stub (Unit_Id))));
+
+            --  Otherwise the subunit may be erroneous or left in a bad state
+
+            else
+               exit;
+            end if;
+         end loop;
+
+         --  Perform the following traversal now that subunits have been taken
+         --  care of, or the main unit is a body.
+         --
+         --    body -> spec
+
+         if Present (Unit_Id)
+           and then Nkind_In (Unit_Id, N_Package_Body, N_Subprogram_Body)
+         then
+            Find_Elaboration_Context (Parent (Unit_Id));
+
+            --  Continue the traversal by going to the unit which contains the
+            --  corresponding spec.
+
+            if Present (Corresponding_Spec (Unit_Id)) then
+               Unit_Id :=
+                 Unit (Cunit (Get_Source_Unit (Corresponding_Spec (Unit_Id))));
+            end if;
          end if;
 
-         Unit_Arg := Get_Pragma_Arg (First (Prag_Args));
+         --  Perform the following traversals now that the body has been taken
+         --  care of, or the main unit is a spec.
+         --
+         --    spec        -> parent spec
+         --    parent spec -> grandparent spec and so on
 
-         --  The argument of the pragma may appear in package.package form
+         if Present (Unit_Id)
+           and then Nkind_In (Unit_Id, N_Generic_Package_Declaration,
+                                   N_Generic_Subprogram_Declaration,
+                                   N_Package_Declaration,
+                                   N_Subprogram_Declaration)
+         then
+            Find_Elaboration_Context (Parent (Unit_Id));
 
-         if Nkind (Unit_Arg) = N_Selected_Component then
-            Unit_Arg := Selector_Name (Unit_Arg);
+            --  Process a potential chain of parent units which ends with the
+            --  main unit spec. The traversal can now safely rely on the scope
+            --  chain.
+
+            Par_Id := Scope (Defining_Entity (Unit_Id));
+            while Present (Par_Id) and then Par_Id /= Standard_Standard loop
+               Find_Elaboration_Context (Compilation_Unit (Par_Id));
+
+               Par_Id := Scope (Par_Id);
+            end loop;
          end if;
+      end Collect_Elaborated_Units;
 
-         Add_Unit
-           (Unit_Id      => Entity (Unit_Arg),
-            Prag         => Prag,
-            Full_Context => Prag_Nam = Name_Elaborate_All);
-      end Add_Pragma;
+      -------------
+      -- Destroy --
+      -------------
 
-      --------------
-      -- Add_Unit --
-      --------------
+      procedure Destroy (EA_Id : in out Elaboration_Attributes_Id) is
+         pragma Unreferenced (EA_Id);
+      begin
+         null;
+      end Destroy;
 
-      procedure Add_Unit
-        (Unit_Id      : Entity_Id;
-         Prag         : Node_Id;
-         Full_Context : Boolean)
+      -----------------
+      -- Elab_Pragma --
+      -----------------
+
+      function Elab_Pragma
+        (EA_Id : Elaboration_Attributes_Id) return Node_Id
       is
-         Clause     : Node_Id;
-         Elab_Attrs : Elaboration_Attributes;
+         pragma Assert (Present (EA_Id));
+      begin
+         return Elaboration_Attributes.Table (EA_Id).Elab_Pragma;
+      end Elab_Pragma;
+
+      -------------------------------
+      -- Elaboration_Attributes_Of --
+      -------------------------------
+
+      function Elaboration_Attributes_Of
+        (Unit_Id : Entity_Id) return Elaboration_Attributes_Id
+      is
+         EA_Id : Elaboration_Attributes_Id;
 
       begin
-         --  Nothing to do when some previous error left a with clause or a
-         --  pragma in a bad state.
+         EA_Id := UA_Map.Get (Unit_To_Attributes_Map, Unit_Id);
 
-         if No (Unit_Id) then
+         --  The unit lacks elaboration attributes. This indicates that the
+         --  unit is encountered for the first time. Create the elaboration
+         --  attributes for it.
+
+         if not Present (EA_Id) then
+            Elaboration_Attributes.Append
+              ((Elab_Pragma => Empty,
+                With_Clause => Empty));
+            EA_Id := Elaboration_Attributes.Last;
+
+            --  Associate the elaboration attributes with the unit
+
+            UA_Map.Put (Unit_To_Attributes_Map, Unit_Id, EA_Id);
+         end if;
+
+         pragma Assert (Present (EA_Id));
+
+         return EA_Id;
+      end Elaboration_Attributes_Of;
+
+      ------------------------------
+      -- Ensure_Prior_Elaboration --
+      ------------------------------
+
+      procedure Ensure_Prior_Elaboration
+        (N        : Node_Id;
+         Unit_Id  : Entity_Id;
+         Prag_Nam : Name_Id;
+         In_State : Processing_In_State)
+      is
+         pragma Assert (Nam_In (Prag_Nam, Name_Elaborate, Name_Elaborate_All));
+
+      begin
+         --  Nothing to do when the need for prior elaboration came from a
+         --  partial finalization routine which occurs in an initialization
+         --  context. This behaviour parallels that of the old ABE mechanism.
+
+         if In_State.Within_Partial_Finalization then
+            return;
+
+         --  Nothing to do when the need for prior elaboration came from a task
+         --  body and switch -gnatd.y (disable implicit pragma Elaborate_All on
+         --  task bodies) is in effect.
+
+         elsif Debug_Flag_Dot_Y and then In_State.Within_Task_Body then
+            return;
+
+         --  Nothing to do when the unit is elaborated prior to the main unit.
+         --  This check must also consider the following cases:
+         --
+         --  * No check is made against the context of the main unit because
+         --    this is specific to the elaboration model in effect and requires
+         --    custom handling (see Ensure_xxx_Prior_Elaboration).
+         --
+         --  * Unit_Id is subject to pragma Elaborate_Body. An implicit pragma
+         --    Elaborate[_All] MUST be generated even though Unit_Id is always
+         --    elaborated prior to the main unit. This conservative strategy
+         --    ensures that other units withed by Unit_Id will not lead to an
+         --  ABE.
+         --
+         --      package A is               package body A is
+         --         procedure ABE;             procedure ABE is ... end ABE;
+         --      end A;                     end A;
+         --
+         --      with A;
+         --      package B is               package body B is
+         --         pragma Elaborate_Body;     procedure Proc is
+         --                                    begin
+         --         procedure Proc;               A.ABE;
+         --      package B;                    end Proc;
+         --                                 end B;
+         --
+         --      with B;
+         --      package C is               package body C is
+         --         ...                        ...
+         --      end C;                     begin
+         --                                    B.Proc;
+         --                                 end C;
+         --
+         --    In the example above, the elaboration of C invokes B.Proc. B is
+         --    subject to pragma Elaborate_Body. If no pragma Elaborate[_All]
+         --    is gnerated for B in C, then the following elaboratio order will
+         --    lead to an ABE:
+         --
+         --       spec of A elaborated
+         --       spec of B elaborated
+         --       body of B elaborated
+         --       spec of C elaborated
+         --       body of C elaborated  <--  calls B.Proc which calls A.ABE
+         --       body of A elaborated  <--  problem
+         --
+         --    The generation of an implicit pragma Elaborate_All (B) ensures
+         --    that the elaboration order mechanism will not pick the above
+         --    order.
+         --
+         --    An implicit Elaborate is NOT generated when the unit is subject
+         --    to Elaborate_Body because both pragmas have the same effect.
+         --
+         --  * Unit_Id is the main unit. An implicit pragma Elaborate[_All]
+         --    MUST NOT be generated in this case because a unit cannot depend
+         --    on its own elaboration. This case is therefore treated as valid
+         --    prior elaboration.
+
+         elsif Has_Prior_Elaboration
+                 (Unit_Id      => Unit_Id,
+                  Same_Unit_OK => True,
+                  Elab_Body_OK => Prag_Nam = Name_Elaborate)
+         then
             return;
          end if;
 
-         Elab_Attrs := Elaboration_Status (Unit_Id);
+         --  Suggest the use of pragma Prag_Nam when the dynamic model is in
+         --  effect.
 
-         --  The unit is already included in the context by means of pragma
-         --  Elaborate[_All].
+         if Dynamic_Elaboration_Checks then
+            Ensure_Prior_Elaboration_Dynamic
+              (N        => N,
+               Unit_Id  => Unit_Id,
+               Prag_Nam => Prag_Nam,
+               In_State => In_State);
 
-         if Present (Elab_Attrs.Source_Pragma) then
+         --  Install an implicit pragma Prag_Nam when the static model is in
+         --  effect.
 
-            --  Upgrade an existing pragma Elaborate when the unit is subject
-            --  to Elaborate_All because the new pragma covers a larger set of
-            --  units.
+         else
+            pragma Assert (Static_Elaboration_Checks);
 
-            if Pragma_Name (Elab_Attrs.Source_Pragma) = Name_Elaborate
-              and then Pragma_Name (Prag) = Name_Elaborate_All
+            Ensure_Prior_Elaboration_Static
+              (N        => N,
+               Unit_Id  => Unit_Id,
+               Prag_Nam => Prag_Nam,
+               In_State => In_State);
+         end if;
+      end Ensure_Prior_Elaboration;
+
+      --------------------------------------
+      -- Ensure_Prior_Elaboration_Dynamic --
+      --------------------------------------
+
+      procedure Ensure_Prior_Elaboration_Dynamic
+        (N        : Node_Id;
+         Unit_Id  : Entity_Id;
+         Prag_Nam : Name_Id;
+         In_State : Processing_In_State)
+      is
+         procedure Info_Missing_Pragma;
+         pragma Inline (Info_Missing_Pragma);
+         --  Output information concerning missing Elaborate or Elaborate_All
+         --  pragma with name Prag_Nam for scenario N, which would ensure the
+         --  prior elaboration of Unit_Id.
+
+         -------------------------
+         -- Info_Missing_Pragma --
+         -------------------------
+
+         procedure Info_Missing_Pragma is
+         begin
+            --  Internal units are ignored as they cause unnecessary noise
+
+            if not In_Internal_Unit (Unit_Id) then
+
+               --  The name of the unit subjected to the elaboration pragma is
+               --  fully qualified to improve the clarity of the info message.
+
+               Error_Msg_Name_1     := Prag_Nam;
+               Error_Msg_Qual_Level := Nat'Last;
+
+               Error_Msg_NE ("info: missing pragma % for unit &", N, Unit_Id);
+               Error_Msg_Qual_Level := 0;
+            end if;
+         end Info_Missing_Pragma;
+
+         --  Local variables
+
+         EA_Id : constant Elaboration_Attributes_Id :=
+                   Elaboration_Attributes_Of (Unit_Id);
+         N_Lvl : Enclosing_Level_Kind;
+         N_Rep : Scenario_Rep_Id;
+
+      --  Start of processing for Ensure_Prior_Elaboration_Dynamic
+
+      begin
+         --  Nothing to do when the unit is guaranteed prior elaboration by
+         --  means of a source Elaborate[_All] pragma.
+
+         if Present (Elab_Pragma (EA_Id)) then
+            return;
+         end if;
+
+         --  Output extra information on a missing Elaborate[_All] pragma when
+         --  switch -gnatel (info messages on implicit Elaborate[_All] pragmas
+         --  is in effect.
+
+         if Elab_Info_Messages
+           and then not In_State.Suppress_Info_Messages
+         then
+            N_Rep := Scenario_Representation_Of (N, In_State);
+            N_Lvl := Level (N_Rep);
+
+            --  Declaration-level scenario
+
+            if (Is_Suitable_Call (N) or else Is_Suitable_Instantiation (N))
+              and then N_Lvl = Declaration_Level
             then
-               Elab_Attrs.Source_Pragma := Prag;
+               null;
 
-            --  Otherwise the unit retains its existing pragma and does not
-            --  need to be included in the context again.
+            --  Library-level scenario
+
+            elsif N_Lvl in Library_Level then
+               null;
+
+            --  Instantiation library-level scenario
+
+            elsif N_Lvl = Instantiation_Level then
+               null;
+
+            --  Otherwise the scenario does not appear at the proper level
 
             else
                return;
             end if;
 
-         --  The current unit is not part of the context. Prepare a new set of
-         --  attributes.
-
-         else
-            Elab_Attrs :=
-              Elaboration_Attributes'(Source_Pragma => Prag,
-                                      With_Clause   => Empty);
+            Info_Missing_Pragma;
          end if;
+      end Ensure_Prior_Elaboration_Dynamic;
 
-         --  Add or update the attributes of the unit
+      -------------------------------------
+      -- Ensure_Prior_Elaboration_Static --
+      -------------------------------------
 
-         Set_Elaboration_Status (Unit_Id, Elab_Attrs);
+      procedure Ensure_Prior_Elaboration_Static
+        (N        : Node_Id;
+         Unit_Id  : Entity_Id;
+         Prag_Nam : Name_Id;
+         In_State : Processing_In_State)
+      is
+         function Find_With_Clause
+           (Items     : List_Id;
+            Withed_Id : Entity_Id) return Node_Id;
+         pragma Inline (Find_With_Clause);
+         --  Find a nonlimited with clause in the list of context items Items
+         --  that withs unit Withed_Id. Return Empty if no such clause exists.
 
-         --  Includes all units withed by the current one when computing the
-         --  full context.
+         procedure Info_Implicit_Pragma;
+         pragma Inline (Info_Implicit_Pragma);
+         --  Output information concerning an implicitly generated Elaborate
+         --  or Elaborate_All pragma with name Prag_Nam for scenario N which
+         --  ensures the prior elaboration of unit Unit_Id.
 
-         if Full_Context then
+         ----------------------
+         -- Find_With_Clause --
+         ----------------------
 
-            --  Process all nonlimited with clauses found in the context of
-            --  the current unit. Note that limited clauses do not impose an
-            --  elaboration order.
+         function Find_With_Clause
+           (Items     : List_Id;
+            Withed_Id : Entity_Id) return Node_Id
+         is
+            Item : Node_Id;
 
-            Clause := First (Context_Items (Compilation_Unit (Unit_Id)));
-            while Present (Clause) loop
-               if Nkind (Clause) = N_With_Clause
-                 and then not Error_Posted (Clause)
-                 and then not Limited_Present (Clause)
+         begin
+            --  Examine the context clauses looking for a suitable with. Note
+            --  that limited clauses do not affect the elaboration order.
+
+            Item := First (Items);
+            while Present (Item) loop
+               if Nkind (Item) = N_With_Clause
+                 and then not Error_Posted (Item)
+                 and then not Limited_Present (Item)
+                 and then Entity (Name (Item)) = Withed_Id
                then
-                  Add_Unit
-                    (Unit_Id      => Entity (Name (Clause)),
-                     Prag         => Prag,
-                     Full_Context => Full_Context);
+                  return Item;
                end if;
 
-               Next (Clause);
+               Next (Item);
             end loop;
-         end if;
-      end Add_Unit;
 
-      ------------------------------
-      -- Find_Elaboration_Context --
-      ------------------------------
+            return Empty;
+         end Find_With_Clause;
 
-      procedure Find_Elaboration_Context (Comp_Unit : Node_Id) is
-         Prag : Node_Id;
+         --------------------------
+         -- Info_Implicit_Pragma --
+         --------------------------
+
+         procedure Info_Implicit_Pragma is
+         begin
+            --  Internal units are ignored as they cause unnecessary noise
+
+            if not In_Internal_Unit (Unit_Id) then
+
+               --  The name of the unit subjected to the elaboration pragma is
+               --  fully qualified to improve the clarity of the info message.
+
+               Error_Msg_Name_1     := Prag_Nam;
+               Error_Msg_Qual_Level := Nat'Last;
+
+               Error_Msg_NE
+                 ("info: implicit pragma % generated for unit &", N, Unit_Id);
+
+               Error_Msg_Qual_Level := 0;
+               Output_Active_Scenarios (N, In_State);
+            end if;
+         end Info_Implicit_Pragma;
+
+         --  Local variables
+
+         EA_Id : constant Elaboration_Attributes_Id :=
+                   Elaboration_Attributes_Of (Unit_Id);
+
+         Main_Cunit : constant Node_Id    := Cunit (Main_Unit);
+         Loc        : constant Source_Ptr := Sloc (Main_Cunit);
+         Unit_Cunit : constant Node_Id    := Compilation_Unit (Unit_Id);
+         Unit_Prag  : constant Node_Id    := Elab_Pragma (EA_Id);
+         Unit_With  : constant Node_Id    := With_Clause (EA_Id);
+
+         Clause : Node_Id;
+         Items  : List_Id;
+
+      --  Start of processing for Ensure_Prior_Elaboration_Static
 
       begin
-         pragma Assert (Nkind (Comp_Unit) = N_Compilation_Unit);
+         --  Nothing to do when the caller has suppressed the generation of
+         --  implicit Elaborate[_All] pragmas.
 
-         --  Process all elaboration-related pragmas found in the context of
-         --  the compilation unit.
+         if In_State.Suppress_Implicit_Pragmas then
+            return;
 
-         Prag := First (Context_Items (Comp_Unit));
-         while Present (Prag) loop
-            if Nkind (Prag) = N_Pragma then
-               Add_Pragma (Prag);
+         --  Nothing to do when the unit is guaranteed prior elaboration by
+         --  means of a source Elaborate[_All] pragma.
+
+         elsif Present (Unit_Prag) then
+            return;
+
+         --  Nothing to do when the unit has an existing implicit Elaborate or
+         --  Elaborate_All pragma installed by a previous scenario.
+
+         elsif Present (Unit_With) then
+
+            --  The unit is already guaranteed prior elaboration by means of an
+            --  implicit Elaborate pragma, however the current scenario imposes
+            --  a stronger requirement of Elaborate_All. "Upgrade" the existing
+            --  pragma to match this new requirement.
+
+            if Elaborate_Desirable (Unit_With)
+              and then Prag_Nam = Name_Elaborate_All
+            then
+               Set_Elaborate_All_Desirable (Unit_With);
+               Set_Elaborate_Desirable     (Unit_With, False);
             end if;
 
-            Next (Prag);
-         end loop;
-      end Find_Elaboration_Context;
+            return;
+         end if;
 
-      --  Local variables
+         --  At this point it is known that the unit has no prior elaboration
+         --  according to pragmas and hierarchical relationships.
 
-      Par_Id : Entity_Id;
-      Unt    : Node_Id;
+         Items := Context_Items (Main_Cunit);
 
-   --  Start of processing for Find_Elaborated_Units
+         if No (Items) then
+            Items := New_List;
+            Set_Context_Items (Main_Cunit, Items);
+         end if;
 
-   begin
-      --  Perform a traversal which examines the context of the main unit and
-      --  populates the Elaboration_Context table with all units elaborated
-      --  prior to the main unit. The traversal performs the following jumps:
+         --  Locate the with clause for the unit. Note that there may not be a
+         --  clause if the unit is visible through a subunit-body, body-spec,
+         --  or spec-parent relationship.
 
-      --    subunit        -> parent subunit
-      --    parent subunit -> body
-      --    body           -> spec
-      --    spec           -> parent spec
-      --    parent spec    -> grandparent spec and so on
+         Clause :=
+           Find_With_Clause
+             (Items     => Items,
+              Withed_Id => Unit_Id);
 
-      --  The traversal relies on units rather than scopes because the scope of
-      --  a subunit is some spec, while this traversal must process the body as
-      --  well. Given that protected and task bodies can also be subunits, this
-      --  complicates the scope approach even further.
+         --  Generate:
+         --    with Id;
 
-      Unt := Unit (Cunit (Main_Unit));
+         --  Note that adding implicit with clauses is safe because analysis,
+         --  resolution, and expansion have already taken place and it is not
+         --  possible to interfere with visibility.
 
-      --  Perform the following traversals when the main unit is a subunit
+         if No (Clause) then
+            Clause :=
+              Make_With_Clause (Loc,
+                Name => New_Occurrence_Of (Unit_Id, Loc));
 
-      --    subunit        -> parent subunit
-      --    parent subunit -> body
+            Set_Implicit_With (Clause);
+            Set_Library_Unit  (Clause, Unit_Cunit);
 
-      while Present (Unt) and then Nkind (Unt) = N_Subunit loop
-         Find_Elaboration_Context (Parent (Unt));
+            Append_To (Items, Clause);
+         end if;
 
-         --  Continue the traversal by going to the unit which contains the
-         --  corresponding stub.
+         --  Mark the with clause depending on the pragma required
 
-         if Present (Corresponding_Stub (Unt)) then
-            Unt := Unit (Cunit (Get_Source_Unit (Corresponding_Stub (Unt))));
+         if Prag_Nam = Name_Elaborate then
+            Set_Elaborate_Desirable (Clause);
+         else
+            Set_Elaborate_All_Desirable (Clause);
+         end if;
 
-         --  Otherwise the subunit may be erroneous or left in a bad state
+         --  The implicit Elaborate[_All] ensures the prior elaboration of
+         --  the unit. Include the unit in the elaboration context of the
+         --  main unit.
+
+         Set_With_Clause (EA_Id, Clause);
+
+         --  Output extra information on an implicit Elaborate[_All] pragma
+         --  when switch -gnatel (info messages on implicit Elaborate[_All]
+         --  pragmas is in effect.
+
+         if Elab_Info_Messages then
+            Info_Implicit_Pragma;
+         end if;
+      end Ensure_Prior_Elaboration_Static;
+
+      -------------------------------
+      -- Finalize_Elaborated_Units --
+      -------------------------------
+
+      procedure Finalize_Elaborated_Units is
+      begin
+         UA_Map.Destroy (Unit_To_Attributes_Map);
+      end Finalize_Elaborated_Units;
+
+      ---------------------------
+      -- Has_Prior_Elaboration --
+      ---------------------------
+
+      function Has_Prior_Elaboration
+        (Unit_Id      : Entity_Id;
+         Context_OK   : Boolean := False;
+         Elab_Body_OK : Boolean := False;
+         Same_Unit_OK : Boolean := False) return Boolean
+      is
+         EA_Id : constant Elaboration_Attributes_Id :=
+                   Elaboration_Attributes_Of (Unit_Id);
+
+         Main_Id   : constant Entity_Id := Cunit_Entity (Main_Unit);
+         Unit_Prag : constant Node_Id   := Elab_Pragma (EA_Id);
+         Unit_With : constant Node_Id   := With_Clause (EA_Id);
+
+      begin
+         --  A preelaborated unit is always elaborated prior to the main unit
+
+         if Is_Preelaborated_Unit (Unit_Id) then
+            return True;
+
+         --  An internal unit is always elaborated prior to a non-internal main
+         --  unit.
+
+         elsif In_Internal_Unit (Unit_Id)
+           and then not In_Internal_Unit (Main_Id)
+         then
+            return True;
+
+         --  A unit has prior elaboration if it appears within the context
+         --  of the main unit. Consider this case only when requested by the
+         --  caller.
+
+         elsif Context_OK
+           and then (Present (Unit_Prag) or else Present (Unit_With))
+         then
+            return True;
+
+         --  A unit whose body is elaborated together with its spec has prior
+         --  elaboration except with respect to itself. Consider this case only
+         --  when requested by the caller.
+
+         elsif Elab_Body_OK
+           and then Has_Pragma_Elaborate_Body (Unit_Id)
+           and then not Is_Same_Unit (Unit_Id, Main_Id)
+         then
+            return True;
+
+         --  A unit has no prior elaboration with respect to itself, but does
+         --  not require any means of ensuring its own elaboration either.
+         --  Treat this case as valid prior elaboration only when requested by
+         --  the caller.
+
+         elsif Same_Unit_OK and then Is_Same_Unit (Unit_Id, Main_Id) then
+            return True;
+         end if;
+
+         return False;
+      end Has_Prior_Elaboration;
+
+      ---------------------------------
+      -- Initialize_Elaborated_Units --
+      ---------------------------------
+
+      procedure Initialize_Elaborated_Units is
+      begin
+         null;
+      end Initialize_Elaborated_Units;
+
+      ----------------------------------
+      -- Meet_Elaboration_Requirement --
+      ----------------------------------
+
+      procedure Meet_Elaboration_Requirement
+        (N        : Node_Id;
+         Targ_Id  : Entity_Id;
+         Req_Nam  : Name_Id;
+         In_State : Processing_In_State)
+      is
+         pragma Assert (Nam_In (Req_Nam, Name_Elaborate, Name_Elaborate_All));
+
+         Main_Id : constant Entity_Id := Cunit_Entity (Main_Unit);
+         Unit_Id : constant Entity_Id := Find_Top_Unit (Targ_Id);
+
+         procedure Elaboration_Requirement_Error;
+         pragma Inline (Elaboration_Requirement_Error);
+         --  Emit an error concerning scenario N which has failed to meet the
+         --  elaboration requirement.
+
+         function Find_Preelaboration_Pragma
+           (Prag_Nam : Name_Id) return Node_Id;
+         pragma Inline (Find_Preelaboration_Pragma);
+         --  Traverse the visible declarations of unit Unit_Id and locate a
+         --  source preelaboration-related pragma with name Prag_Nam.
+
+         procedure Info_Requirement_Met (Prag : Node_Id);
+         pragma Inline (Info_Requirement_Met);
+         --  Output information concerning pragma Prag which meets requirement
+         --  Req_Nam.
+
+         -----------------------------------
+         -- Elaboration_Requirement_Error --
+         -----------------------------------
+
+         procedure Elaboration_Requirement_Error is
+         begin
+            if Is_Suitable_Call (N) then
+               Info_Call
+                 (Call     => N,
+                  Subp_Id  => Targ_Id,
+                  Info_Msg => False,
+                  In_SPARK => True);
+
+            elsif Is_Suitable_Instantiation (N) then
+               Info_Instantiation
+                 (Inst     => N,
+                  Gen_Id   => Targ_Id,
+                  Info_Msg => False,
+                  In_SPARK => True);
+
+            elsif Is_Suitable_SPARK_Refined_State_Pragma (N) then
+               Error_Msg_N
+                 ("read of refinement constituents during elaboration in "
+                  & "SPARK", N);
+
+            elsif Is_Suitable_Variable_Reference (N) then
+               Info_Variable_Reference
+                 (Ref      => N,
+                  Var_Id   => Targ_Id,
+                  Info_Msg => False,
+                  In_SPARK => True);
+
+            --  No other scenario may impose a requirement on the context of
+            --  the main unit.
+
+            else
+               pragma Assert (False);
+               return;
+            end if;
+
+            Error_Msg_Name_1 := Req_Nam;
+            Error_Msg_Node_2 := Unit_Id;
+            Error_Msg_NE ("\\unit & requires pragma % for &", N, Main_Id);
+
+            Output_Active_Scenarios (N, In_State);
+         end Elaboration_Requirement_Error;
+
+         --------------------------------
+         -- Find_Preelaboration_Pragma --
+         --------------------------------
+
+         function Find_Preelaboration_Pragma
+           (Prag_Nam : Name_Id) return Node_Id
+         is
+            Spec : constant Node_Id := Parent (Unit_Id);
+            Decl : Node_Id;
+
+         begin
+            --  A preelaboration-related pragma comes from source and appears
+            --  at the top of the visible declarations of a package.
+
+            if Nkind (Spec) = N_Package_Specification then
+               Decl := First (Visible_Declarations (Spec));
+               while Present (Decl) loop
+                  if Comes_From_Source (Decl) then
+                     if Nkind (Decl) = N_Pragma
+                       and then Pragma_Name (Decl) = Prag_Nam
+                     then
+                        return Decl;
+
+                     --  Otherwise the construct terminates the region where
+                     --  the preelaboration-related pragma may appear.
+
+                     else
+                        exit;
+                     end if;
+                  end if;
+
+                  Next (Decl);
+               end loop;
+            end if;
+
+            return Empty;
+         end Find_Preelaboration_Pragma;
+
+         --------------------------
+         -- Info_Requirement_Met --
+         --------------------------
+
+         procedure Info_Requirement_Met (Prag : Node_Id) is
+            pragma Assert (Present (Prag));
+
+         begin
+            Error_Msg_Name_1 := Req_Nam;
+            Error_Msg_Sloc   := Sloc (Prag);
+            Error_Msg_NE
+              ("\\% requirement for unit & met by pragma #", N, Unit_Id);
+         end Info_Requirement_Met;
+
+         --  Local variables
+
+         EA_Id     : Elaboration_Attributes_Id;
+         Elab_Nam  : Name_Id;
+         Req_Met   : Boolean;
+         Unit_Prag : Node_Id;
+
+      --  Start of processing for Meet_Elaboration_Requirement
+
+      begin
+         --  Assume that the requirement has not been met
+
+         Req_Met := False;
+
+         --  If the target is within the main unit, either at the source level
+         --  or through an instantiation, then there is no real requirement to
+         --  meet because the main unit cannot force its own elaboration by
+         --  means of an Elaborate[_All] pragma. Treat this case as valid
+         --  coverage.
+
+         if In_Extended_Main_Code_Unit (Targ_Id) then
+            Req_Met := True;
+
+         --  Otherwise the target resides in an external unit
+
+         --  The requirement is met when the target comes from an internal unit
+         --  because such a unit is elaborated prior to a non-internal unit.
+
+         elsif In_Internal_Unit (Unit_Id)
+           and then not In_Internal_Unit (Main_Id)
+         then
+            Req_Met := True;
+
+         --  The requirement is met when the target comes from a preelaborated
+         --  unit. This portion must parallel predicate Is_Preelaborated_Unit.
+
+         elsif Is_Preelaborated_Unit (Unit_Id) then
+            Req_Met := True;
+
+            --  Output extra information when switch -gnatel (info messages on
+            --  implicit Elaborate[_All] pragmas.
+
+            if Elab_Info_Messages
+              and then not In_State.Suppress_Info_Messages
+            then
+               if Is_Preelaborated (Unit_Id) then
+                  Elab_Nam := Name_Preelaborate;
+
+               elsif Is_Pure (Unit_Id) then
+                  Elab_Nam := Name_Pure;
+
+               elsif Is_Remote_Call_Interface (Unit_Id) then
+                  Elab_Nam := Name_Remote_Call_Interface;
+
+               elsif Is_Remote_Types (Unit_Id) then
+                  Elab_Nam := Name_Remote_Types;
+
+               else
+                  pragma Assert (Is_Shared_Passive (Unit_Id));
+                  Elab_Nam := Name_Shared_Passive;
+               end if;
+
+               Info_Requirement_Met (Find_Preelaboration_Pragma (Elab_Nam));
+            end if;
+
+         --  Determine whether the context of the main unit has a pragma strong
+         --  enough to meet the requirement.
 
          else
-            exit;
+            EA_Id     := Elaboration_Attributes_Of (Unit_Id);
+            Unit_Prag := Elab_Pragma (EA_Id);
+
+            --  The pragma must be either Elaborate_All or be as strong as the
+            --  requirement.
+
+            if Present (Unit_Prag)
+              and then Nam_In (Pragma_Name (Unit_Prag), Name_Elaborate_All,
+                                                        Req_Nam)
+            then
+               Req_Met := True;
+
+               --  Output extra information when switch -gnatel (info messages
+               --  on implicit Elaborate[_All] pragmas.
+
+               if Elab_Info_Messages
+                 and then not In_State.Suppress_Info_Messages
+               then
+                  Info_Requirement_Met (Unit_Prag);
+               end if;
+            end if;
          end if;
-      end loop;
 
-      --  Perform the following traversal now that subunits have been taken
-      --  care of, or the main unit is a body.
+         --  The requirement was not met by the context of the main unit, issue
+         --  an error.
 
-      --    body -> spec
-
-      if Present (Unt)
-        and then Nkind_In (Unt, N_Package_Body, N_Subprogram_Body)
-      then
-         Find_Elaboration_Context (Parent (Unt));
-
-         --  Continue the traversal by going to the unit which contains the
-         --  corresponding spec.
-
-         if Present (Corresponding_Spec (Unt)) then
-            Unt := Unit (Cunit (Get_Source_Unit (Corresponding_Spec (Unt))));
+         if not Req_Met then
+            Elaboration_Requirement_Error;
          end if;
-      end if;
+      end Meet_Elaboration_Requirement;
 
-      --  Perform the following traversals now that the body has been taken
-      --  care of, or the main unit is a spec.
+      -------------
+      -- Present --
+      -------------
 
-      --    spec        -> parent spec
-      --    parent spec -> grandparent spec and so on
+      function Present (EA_Id : Elaboration_Attributes_Id) return Boolean is
+      begin
+         return EA_Id /= No_Elaboration_Attributes;
+      end Present;
 
-      if Present (Unt)
-        and then Nkind_In (Unt, N_Generic_Package_Declaration,
-                                N_Generic_Subprogram_Declaration,
-                                N_Package_Declaration,
-                                N_Subprogram_Declaration)
-      then
-         Find_Elaboration_Context (Parent (Unt));
+      ---------------------
+      -- Set_Elab_Pragma --
+      ---------------------
 
-         --  Process a potential chain of parent units which ends with the
-         --  main unit spec. The traversal can now safely rely on the scope
-         --  chain.
+      procedure Set_Elab_Pragma
+        (EA_Id : Elaboration_Attributes_Id;
+         Prag  : Node_Id)
+      is
+         pragma Assert (Present (EA_Id));
+      begin
+         Elaboration_Attributes.Table (EA_Id).Elab_Pragma := Prag;
+      end Set_Elab_Pragma;
 
-         Par_Id := Scope (Defining_Entity (Unt));
-         while Present (Par_Id) and then Par_Id /= Standard_Standard loop
-            Find_Elaboration_Context (Compilation_Unit (Par_Id));
+      ---------------------
+      -- Set_With_Clause --
+      ---------------------
 
-            Par_Id := Scope (Par_Id);
-         end loop;
-      end if;
-   end Find_Elaborated_Units;
+      procedure Set_With_Clause
+        (EA_Id  : Elaboration_Attributes_Id;
+         Clause : Node_Id)
+      is
+         pragma Assert (Present (EA_Id));
+      begin
+         Elaboration_Attributes.Table (EA_Id).With_Clause := Clause;
+      end Set_With_Clause;
+
+      -----------------
+      -- With_Clause --
+      -----------------
+
+      function With_Clause
+        (EA_Id : Elaboration_Attributes_Id) return Node_Id
+      is
+         pragma Assert (Present (EA_Id));
+      begin
+         return Elaboration_Attributes.Table (EA_Id).With_Clause;
+      end With_Clause;
+   end Elaborated_Units;
 
    -----------------------------
    -- Find_Enclosing_Instance --
    -----------------------------
 
    function Find_Enclosing_Instance (N : Node_Id) return Node_Id is
-      Par     : Node_Id;
-      Spec_Id : Entity_Id;
+      Par : Node_Id;
 
    begin
       --  Climb the parent chain looking for an enclosing instance spec or body
 
       Par := N;
       while Present (Par) loop
-
-         --  Generic package or subprogram spec
-
-         if Nkind_In (Par, N_Package_Declaration,
+         if Nkind_In (Par, N_Package_Body,
+                           N_Package_Declaration,
+                           N_Subprogram_Body,
                            N_Subprogram_Declaration)
-           and then Is_Generic_Instance (Defining_Entity (Par))
+           and then Is_Generic_Instance (Unique_Defining_Entity (Par))
          then
             return Par;
-
-         --  Generic package or subprogram body
-
-         elsif Nkind_In (Par, N_Package_Body, N_Subprogram_Body) then
-            Spec_Id := Corresponding_Spec (Par);
-
-            if Present (Spec_Id) and then Is_Generic_Instance (Spec_Id) then
-               return Par;
-            end if;
          end if;
 
          Par := Parent (Par);
@@ -5340,6 +8833,7 @@ package body Sem_Elab is
 
    function Find_Enclosing_Level (N : Node_Id) return Enclosing_Level_Kind is
       function Level_Of (Unit : Node_Id) return Enclosing_Level_Kind;
+      pragma Inline (Level_Of);
       --  Obtain the corresponding level of unit Unit
 
       --------------
@@ -5351,13 +8845,13 @@ package body Sem_Elab is
 
       begin
          if Nkind (Unit) in N_Generic_Instantiation then
-            return Instantiation;
+            return Instantiation_Level;
 
          elsif Nkind (Unit) = N_Generic_Package_Declaration then
-            return Generic_Package_Spec;
+            return Generic_Spec_Level;
 
          elsif Nkind (Unit) = N_Package_Declaration then
-            return Package_Spec;
+            return Library_Spec_Level;
 
          elsif Nkind (Unit) = N_Package_Body then
             Spec_Id := Corresponding_Spec (Unit);
@@ -5367,14 +8861,14 @@ package body Sem_Elab is
             if Present (Spec_Id)
               and then Ekind (Spec_Id) = E_Generic_Package
             then
-               return Generic_Package_Body;
+               return Generic_Body_Level;
 
             --  Otherwise the body belongs to a non-generic package. This also
             --  treats an illegal package body without a corresponding spec as
             --  a non-generic package body.
 
             else
-               return Package_Body;
+               return Library_Body_Level;
             end if;
          end if;
 
@@ -5472,9 +8966,9 @@ package body Sem_Elab is
             end if;
 
          --  The current construct is a non-library-level encapsulator which
-         --  indicates that the node cannot possibly appear at any level.
-         --  Note that this check must come after the declaration-level check
-         --  because both predicates share certain nodes.
+         --  indicates that the node cannot possibly appear at any level. Note
+         --  that the check must come after the declaration-level check because
+         --  both predicates share certain nodes.
 
          elsif Is_Non_Library_Level_Encapsulator (Curr) then
             Context := Parent (Curr);
@@ -5591,22 +9085,554 @@ package body Sem_Elab is
       return Empty;
    end First_Formal_Type;
 
+   ------------------------------
+   -- Guaranteed_ABE_Processor --
+   ------------------------------
+
+   package body Guaranteed_ABE_Processor is
+      function Is_Guaranteed_ABE
+        (N           : Node_Id;
+         Target_Decl : Node_Id;
+         Target_Body : Node_Id) return Boolean;
+      pragma Inline (Is_Guaranteed_ABE);
+      --  Determine whether scenario N with a target described by its initial
+      --  declaration Target_Decl and body Target_Decl results in a guaranteed
+      --  ABE.
+
+      procedure Process_Guaranteed_ABE_Activation
+        (Call     : Node_Id;
+         Call_Rep : Scenario_Rep_Id;
+         Obj_Id   : Entity_Id;
+         Obj_Rep  : Target_Rep_Id;
+         Task_Typ : Entity_Id;
+         Task_Rep : Target_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Guaranteed_ABE_Activation);
+      --  Perform common guaranteed ABE checks and diagnostics for activation
+      --  call Call which activates object Obj_Id of task type Task_Typ. Formal
+      --  Call_Rep denotes the representation of the call. Obj_Rep denotes the
+      --  representation of the object. Task_Rep denotes the representation of
+      --  the task type. In_State is the current state of the Processing phase.
+
+      procedure Process_Guaranteed_ABE_Call
+        (Call     : Node_Id;
+         Call_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Guaranteed_ABE_Call);
+      --  Perform common guaranteed ABE checks and diagnostics for call Call
+      --  with representation Call_Rep. In_State denotes the current state of
+      --  the Processing phase.
+
+      procedure Process_Guaranteed_ABE_Instantiation
+        (Inst     : Node_Id;
+         Inst_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Guaranteed_ABE_Instantiation);
+      --  Perform common guaranteed ABE checks and diagnostics for instance
+      --  Inst with representation Inst_Rep. In_State is the current state of
+      --  the Processing phase.
+
+      -----------------------
+      -- Is_Guaranteed_ABE --
+      -----------------------
+
+      function Is_Guaranteed_ABE
+        (N           : Node_Id;
+         Target_Decl : Node_Id;
+         Target_Body : Node_Id) return Boolean
+      is
+      begin
+         --  Avoid cascaded errors if there were previous serious infractions.
+         --  As a result the scenario will not be treated as a guaranteed ABE.
+         --  This behaviour parallels that of the old ABE mechanism.
+
+         if Serious_Errors_Detected > 0 then
+            return False;
+
+         --  The scenario and the target appear in the same context ignoring
+         --  enclosing library levels.
+
+         elsif In_Same_Context (N, Target_Decl) then
+
+            --  The target body has already been encountered. The scenario
+            --  results in a guaranteed ABE if it appears prior to the body.
+
+            if Present (Target_Body) then
+               return Earlier_In_Extended_Unit (N, Target_Body);
+
+            --  Otherwise the body has not been encountered yet. The scenario
+            --  is a guaranteed ABE since the body will appear later. It is
+            --  assumed that the caller has already ensured that the scenario
+            --  is ABE-safe because optional bodies are not considered here.
+
+            else
+               return True;
+            end if;
+         end if;
+
+         return False;
+      end Is_Guaranteed_ABE;
+
+      ----------------------------
+      -- Process_Guaranteed_ABE --
+      ----------------------------
+
+      procedure Process_Guaranteed_ABE
+        (N        : Node_Id;
+         In_State : Processing_In_State)
+      is
+         Scen     : constant Node_Id := Scenario (N);
+         Scen_Rep : Scenario_Rep_Id;
+
+      begin
+         --  Add the current scenario to the stack of active scenarios
+
+         Push_Active_Scenario (Scen);
+
+         --  Only calls, instantiations, and task activations may result in a
+         --  guaranteed ABE.
+
+         --  Call or task activation
+
+         if Is_Suitable_Call (Scen) then
+            Scen_Rep := Scenario_Representation_Of (Scen, In_State);
+
+            if Kind (Scen_Rep) = Call_Scenario then
+               Process_Guaranteed_ABE_Call
+                 (Call     => Scen,
+                  Call_Rep => Scen_Rep,
+                  In_State => In_State);
+
+            else
+               pragma Assert (Kind (Scen_Rep) = Task_Activation_Scenario);
+
+               Process_Activation
+                 (Call      => Scen,
+                  Call_Rep  => Scenario_Representation_Of (Scen, In_State),
+                  Processor => Process_Guaranteed_ABE_Activation'Access,
+                  In_State  => In_State);
+            end if;
+
+         --  Instantiation
+
+         elsif Is_Suitable_Instantiation (Scen) then
+            Process_Guaranteed_ABE_Instantiation
+              (Inst     => Scen,
+               Inst_Rep => Scenario_Representation_Of (Scen, In_State),
+               In_State => In_State);
+         end if;
+
+         --  Remove the current scenario from the stack of active scenarios
+         --  once all ABE diagnostics and checks have been performed.
+
+         Pop_Active_Scenario (Scen);
+      end Process_Guaranteed_ABE;
+
+      ---------------------------------------
+      -- Process_Guaranteed_ABE_Activation --
+      ---------------------------------------
+
+      procedure Process_Guaranteed_ABE_Activation
+        (Call     : Node_Id;
+         Call_Rep : Scenario_Rep_Id;
+         Obj_Id   : Entity_Id;
+         Obj_Rep  : Target_Rep_Id;
+         Task_Typ : Entity_Id;
+         Task_Rep : Target_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         Spec_Decl : constant Node_Id := Spec_Declaration (Task_Rep);
+
+         Check_OK : constant Boolean :=
+                      not In_State.Suppress_Checks
+                        and then Ghost_Mode_Of (Obj_Rep)  /= Is_Ignored
+                        and then Ghost_Mode_Of (Task_Rep) /= Is_Ignored
+                        and then Elaboration_Checks_OK (Obj_Rep)
+                        and then Elaboration_Checks_OK (Task_Rep);
+         --  A run-time ABE check may be installed only when the object and the
+         --  task type have active elaboration checks, and both are not ignored
+         --  Ghost constructs.
+
+      begin
+         --  Nothing to do when the root scenario appears at the declaration
+         --  level and the task is in the same unit, but outside this context.
+         --
+         --    task type Task_Typ;                  --  task declaration
+         --
+         --    procedure Proc is
+         --       function A ... is
+         --       begin
+         --          if Some_Condition then
+         --             declare
+         --                T : Task_Typ;
+         --             begin
+         --                <activation call>        --  activation site
+         --             end;
+         --          ...
+         --       end A;
+         --
+         --       X : ... := A;                     --  root scenario
+         --    ...
+         --
+         --    task body Task_Typ is
+         --       ...
+         --    end Task_Typ;
+         --
+         --  In the example above, the context of X is the declarative list
+         --  of Proc. The "elaboration" of X may reach the activation of T
+         --  whose body is defined outside of X's context. The task body is
+         --  relevant only when Proc is invoked, but this happens only in
+         --  "normal" elaboration, therefore the task body must not be
+         --  considered if this is not the case.
+
+         if Is_Up_Level_Target
+              (Targ_Decl => Spec_Decl,
+               In_State  => In_State)
+         then
+            return;
+
+         --  Nothing to do when the activation is ABE-safe
+         --
+         --    generic
+         --    package Gen is
+         --       task type Task_Typ;
+         --    end Gen;
+         --
+         --    package body Gen is
+         --       task body Task_Typ is
+         --       begin
+         --          ...
+         --       end Task_Typ;
+         --    end Gen;
+         --
+         --    with Gen;
+         --    procedure Main is
+         --       package Nested is
+         --          package Inst is new Gen;
+         --          T : Inst.Task_Typ;
+         --       end Nested;                       --  safe activation
+         --    ...
+
+         elsif Is_Safe_Activation (Call, Task_Rep) then
+            return;
+
+         --  An activation call leads to a guaranteed ABE when the activation
+         --  call and the task appear within the same context ignoring library
+         --  levels, and the body of the task has not been seen yet or appears
+         --  after the activation call.
+         --
+         --    procedure Guaranteed_ABE is
+         --       task type Task_Typ;
+         --
+         --       package Nested is
+         --          T : Task_Typ;
+         --          <activation call>              --  guaranteed ABE
+         --       end Nested;
+         --
+         --       task body Task_Typ is
+         --          ...
+         --       end Task_Typ;
+         --    ...
+
+         elsif Is_Guaranteed_ABE
+                 (N           => Call,
+                  Target_Decl => Spec_Decl,
+                  Target_Body => Body_Declaration (Task_Rep))
+         then
+            if Elaboration_Warnings_OK (Call_Rep) then
+               Error_Msg_Sloc := Sloc (Call);
+               Error_Msg_N
+                 ("??task & will be activated # before elaboration of its "
+                  & "body", Obj_Id);
+               Error_Msg_N
+                 ("\Program_Error will be raised at run time", Obj_Id);
+            end if;
+
+            --  Mark the activation call as a guaranteed ABE
+
+            Set_Is_Known_Guaranteed_ABE (Call);
+
+            --  Install a run-time ABE failue because this activation call will
+            --  always result in an ABE.
+
+            if Check_OK then
+               Install_Scenario_ABE_Failure
+                 (N        => Call,
+                  Targ_Id  => Task_Typ,
+                  Targ_Rep => Task_Rep,
+                  Disable  => Obj_Rep);
+            end if;
+         end if;
+      end Process_Guaranteed_ABE_Activation;
+
+      ---------------------------------
+      -- Process_Guaranteed_ABE_Call --
+      ---------------------------------
+
+      procedure Process_Guaranteed_ABE_Call
+        (Call      : Node_Id;
+         Call_Rep  : Scenario_Rep_Id;
+         In_State  : Processing_In_State)
+      is
+         Subp_Id   : constant Entity_Id     := Target (Call_Rep);
+         Subp_Rep  : constant Target_Rep_Id :=
+                       Target_Representation_Of (Subp_Id, In_State);
+         Spec_Decl : constant Node_Id       := Spec_Declaration (Subp_Rep);
+
+         Check_OK : constant Boolean :=
+                      not In_State.Suppress_Checks
+                        and then Ghost_Mode_Of (Call_Rep) /= Is_Ignored
+                        and then Ghost_Mode_Of (Subp_Rep) /= Is_Ignored
+                        and then Elaboration_Checks_OK (Call_Rep)
+                        and then Elaboration_Checks_OK (Subp_Rep);
+         --  A run-time ABE check may be installed only when both the call
+         --  and the target have active elaboration checks, and both are not
+         --  ignored Ghost constructs.
+
+      begin
+         --  Nothing to do when the root scenario appears at the declaration
+         --  level and the target is in the same unit but outside this context.
+         --
+         --    function B ...;                      --  target declaration
+         --
+         --    procedure Proc is
+         --       function A ... is
+         --       begin
+         --          if Some_Condition then
+         --             return B;                   --  call site
+         --          ...
+         --       end A;
+         --
+         --       X : ... := A;                     --  root scenario
+         --    ...
+         --
+         --    function B ... is
+         --       ...
+         --    end B;
+         --
+         --  In the example above, the context of X is the declarative region
+         --  of Proc. The "elaboration" of X may eventually reach B which is
+         --  defined outside of X's context. B is relevant only when Proc is
+         --  invoked, but this happens only by means of "normal" elaboration,
+         --  therefore B must not be considered if this is not the case.
+
+         if Is_Up_Level_Target
+              (Targ_Decl => Spec_Decl,
+               In_State  => In_State)
+         then
+            return;
+
+         --  Nothing to do when the call is ABE-safe
+         --
+         --    generic
+         --    function Gen ...;
+         --
+         --    function Gen ... is
+         --    begin
+         --       ...
+         --    end Gen;
+         --
+         --    with Gen;
+         --    procedure Main is
+         --       function Inst is new Gen;
+         --       X : ... := Inst;                  --  safe call
+         --    ...
+
+         elsif Is_Safe_Call (Call, Subp_Id, Subp_Rep) then
+            return;
+
+         --  A call leads to a guaranteed ABE when the call and the target
+         --  appear within the same context ignoring library levels, and the
+         --  body of the target has not been seen yet or appears after the
+         --  call.
+         --
+         --    procedure Guaranteed_ABE is
+         --       function Func ...;
+         --
+         --       package Nested is
+         --          Obj : ... := Func;             --  guaranteed ABE
+         --       end Nested;
+         --
+         --       function Func ... is
+         --          ...
+         --       end Func;
+         --    ...
+
+         elsif Is_Guaranteed_ABE
+                 (N           => Call,
+                  Target_Decl => Spec_Decl,
+                  Target_Body => Body_Declaration (Subp_Rep))
+         then
+            if Elaboration_Warnings_OK (Call_Rep) then
+               Error_Msg_NE
+                 ("??cannot call & before body seen", Call, Subp_Id);
+               Error_Msg_N ("\Program_Error will be raised at run time", Call);
+            end if;
+
+            --  Mark the call as a guarnateed ABE
+
+            Set_Is_Known_Guaranteed_ABE (Call);
+
+            --  Install a run-time ABE failure because the call will always
+            --  result in an ABE.
+
+            if Check_OK then
+               Install_Scenario_ABE_Failure
+                 (N        => Call,
+                  Targ_Id  => Subp_Id,
+                  Targ_Rep => Subp_Rep,
+                  Disable  => Call_Rep);
+            end if;
+         end if;
+      end Process_Guaranteed_ABE_Call;
+
+      ------------------------------------------
+      -- Process_Guaranteed_ABE_Instantiation --
+      ------------------------------------------
+
+      procedure Process_Guaranteed_ABE_Instantiation
+        (Inst     : Node_Id;
+         Inst_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         Gen_Id    : constant Entity_Id     := Target (Inst_Rep);
+         Gen_Rep   : constant Target_Rep_Id :=
+                       Target_Representation_Of (Gen_Id, In_State);
+         Spec_Decl : constant Node_Id       := Spec_Declaration (Gen_Rep);
+
+         Check_OK : constant Boolean :=
+                      not In_State.Suppress_Checks
+                        and then Ghost_Mode_Of (Inst_Rep) /= Is_Ignored
+                        and then Ghost_Mode_Of (Gen_Rep)  /= Is_Ignored
+                        and then Elaboration_Checks_OK (Inst_Rep)
+                        and then Elaboration_Checks_OK (Gen_Rep);
+         --  A run-time ABE check may be installed only when both the instance
+         --  and the generic have active elaboration checks and both are not
+         --  ignored Ghost constructs.
+
+      begin
+         --  Nothing to do when the root scenario appears at the declaration
+         --  level and the generic is in the same unit, but outside this
+         --  context.
+         --
+         --    generic
+         --    procedure Gen is ...;                --  generic declaration
+         --
+         --    procedure Proc is
+         --       function A ... is
+         --       begin
+         --          if Some_Condition then
+         --             declare
+         --                procedure I is new Gen;  --  instantiation site
+         --             ...
+         --          ...
+         --       end A;
+         --
+         --       X : ... := A;                     --  root scenario
+         --    ...
+         --
+         --    procedure Gen is
+         --       ...
+         --    end Gen;
+         --
+         --  In the example above, the context of X is the declarative region
+         --  of Proc. The "elaboration" of X may eventually reach Gen which
+         --  appears outside of X's context. Gen is relevant only when Proc is
+         --  invoked, but this happens only by means of "normal" elaboration,
+         --  therefore Gen must not be considered if this is not the case.
+
+         if Is_Up_Level_Target
+              (Targ_Decl => Spec_Decl,
+               In_State  => In_State)
+         then
+            return;
+
+         --  Nothing to do when the instantiation is ABE-safe
+         --
+         --    generic
+         --    package Gen is
+         --       ...
+         --    end Gen;
+         --
+         --    package body Gen is
+         --       ...
+         --    end Gen;
+         --
+         --    with Gen;
+         --    procedure Main is
+         --       package Inst is new Gen (ABE);    --  safe instantiation
+         --    ...
+
+         elsif Is_Safe_Instantiation (Inst, Gen_Id, Gen_Rep) then
+            return;
+
+         --  An instantiation leads to a guaranteed ABE when the instantiation
+         --  and the generic appear within the same context ignoring library
+         --  levels, and the body of the generic has not been seen yet or
+         --  appears after the instantiation.
+         --
+         --    procedure Guaranteed_ABE is
+         --       generic
+         --       procedure Gen;
+         --
+         --       package Nested is
+         --          procedure Inst is new Gen;     --  guaranteed ABE
+         --       end Nested;
+         --
+         --       procedure Gen is
+         --          ...
+         --       end Gen;
+         --    ...
+
+         elsif Is_Guaranteed_ABE
+                 (N           => Inst,
+                  Target_Decl => Spec_Decl,
+                  Target_Body => Body_Declaration (Gen_Rep))
+         then
+            if Elaboration_Warnings_OK (Inst_Rep) then
+               Error_Msg_NE
+                 ("??cannot instantiate & before body seen", Inst, Gen_Id);
+               Error_Msg_N ("\Program_Error will be raised at run time", Inst);
+            end if;
+
+            --  Mark the instantiation as a guarantee ABE. This automatically
+            --  suppresses the instantiation of the generic body.
+
+            Set_Is_Known_Guaranteed_ABE (Inst);
+
+            --  Install a run-time ABE failure because the instantiation will
+            --  always result in an ABE.
+
+            if Check_OK then
+               Install_Scenario_ABE_Failure
+                 (N        => Inst,
+                  Targ_Id  => Gen_Id,
+                  Targ_Rep => Gen_Rep,
+                  Disable  => Inst_Rep);
+            end if;
+         end if;
+      end Process_Guaranteed_ABE_Instantiation;
+   end Guaranteed_ABE_Processor;
+
    --------------
    -- Has_Body --
    --------------
 
    function Has_Body (Pack_Decl : Node_Id) return Boolean is
       function Find_Corresponding_Body (Spec_Id : Entity_Id) return Node_Id;
+      pragma Inline (Find_Corresponding_Body);
       --  Try to locate the corresponding body of spec Spec_Id. If no body is
       --  found, return Empty.
 
       function Find_Body
         (Spec_Id : Entity_Id;
          From    : Node_Id) return Node_Id;
+      pragma Inline (Find_Body);
       --  Try to locate the corresponding body of spec Spec_Id in the node list
       --  which follows arbitrary node From. If no body is found, return Empty.
 
       function Load_Package_Body (Unit_Nam : Unit_Name_Type) return Node_Id;
+      pragma Inline (Load_Package_Body);
       --  Attempt to load the body of unit Unit_Nam. If the load failed, return
       --  Empty. If the compilation will not generate code, return Empty.
 
@@ -5823,60 +9849,15 @@ package body Sem_Elab is
       end if;
    end Has_Body;
 
-   ---------------------------
-   -- Has_Prior_Elaboration --
-   ---------------------------
+   ----------
+   -- Hash --
+   ----------
 
-   function Has_Prior_Elaboration
-     (Unit_Id      : Entity_Id;
-      Context_OK   : Boolean := False;
-      Elab_Body_OK : Boolean := False;
-      Same_Unit_OK : Boolean := False) return Boolean
-   is
-      Main_Id : constant Entity_Id := Cunit_Entity (Main_Unit);
-
+   function Hash (NE : Node_Or_Entity_Id) return Bucket_Range_Type is
+      pragma Assert (Present (NE));
    begin
-      --  A preelaborated unit is always elaborated prior to the main unit
-
-      if Is_Preelaborated_Unit (Unit_Id) then
-         return True;
-
-      --  An internal unit is always elaborated prior to a non-internal main
-      --  unit.
-
-      elsif In_Internal_Unit (Unit_Id)
-        and then not In_Internal_Unit (Main_Id)
-      then
-         return True;
-
-      --  A unit has prior elaboration if it appears within the context of the
-      --  main unit. Consider this case only when requested by the caller.
-
-      elsif Context_OK
-        and then Elaboration_Status (Unit_Id) /= No_Elaboration_Attributes
-      then
-         return True;
-
-      --  A unit whose body is elaborated together with its spec has prior
-      --  elaboration except with respect to itself. Consider this case only
-      --  when requested by the caller.
-
-      elsif Elab_Body_OK
-        and then Has_Pragma_Elaborate_Body (Unit_Id)
-        and then not Is_Same_Unit (Unit_Id, Main_Id)
-      then
-         return True;
-
-      --  A unit has no prior elaboration with respect to itself, but does not
-      --  require any means of ensuring its own elaboration either. Treat this
-      --  case as valid prior elaboration only when requested by the caller.
-
-      elsif Same_Unit_OK and then Is_Same_Unit (Unit_Id, Main_Id) then
-         return True;
-      end if;
-
-      return False;
-   end Has_Prior_Elaboration;
+      return Bucket_Range_Type (NE);
+   end Hash;
 
    --------------------------
    -- In_External_Instance --
@@ -5886,26 +9867,23 @@ package body Sem_Elab is
      (N           : Node_Id;
       Target_Decl : Node_Id) return Boolean
    is
-      Dummy     : Node_Id;
+      Inst      : Node_Id;
       Inst_Body : Node_Id;
-      Inst_Decl : Node_Id;
+      Inst_Spec : Node_Id;
 
    begin
-      --  Performance note: parent traversal
-
-      Inst_Decl := Find_Enclosing_Instance (Target_Decl);
+      Inst := Find_Enclosing_Instance (Target_Decl);
 
       --  The target declaration appears within an instance spec. Visibility is
       --  ignored because internally generated primitives for private types may
       --  reside in the private declarations and still be invoked from outside.
 
-      if Present (Inst_Decl)
-        and then Nkind (Inst_Decl) = N_Package_Declaration
-      then
+      if Present (Inst) and then Nkind (Inst) = N_Package_Declaration then
+
          --  The scenario comes from the main unit and the instance does not
 
          if In_Extended_Main_Code_Unit (N)
-           and then not In_Extended_Main_Code_Unit (Inst_Decl)
+           and then not In_Extended_Main_Code_Unit (Inst)
          then
             return True;
 
@@ -5913,16 +9891,14 @@ package body Sem_Elab is
          --  body.
 
          else
-            Extract_Instance_Attributes
-              (Exp_Inst  => Inst_Decl,
-               Inst_Body => Inst_Body,
-               Inst_Decl => Dummy);
-
-            --  Performance note: parent traversal
+            Spec_And_Body_From_Node
+              (N         => Inst,
+               Spec_Decl => Inst_Spec,
+               Body_Decl => Inst_Body);
 
             return not In_Subtree
                          (N     => N,
-                          Root1 => Inst_Decl,
+                          Root1 => Inst_Spec,
                           Root2 => Inst_Body);
          end if;
       end if;
@@ -5962,6 +9938,7 @@ package body Sem_Elab is
       Nested_OK : Boolean := False) return Boolean
    is
       function Find_Enclosing_Context (N : Node_Id) return Node_Id;
+      pragma Inline (Find_Enclosing_Context);
       --  Return the nearest enclosing non-library-level or compilation unit
       --  node which which encapsulates arbitrary node N. Return Empty is no
       --  such context is available.
@@ -5969,6 +9946,7 @@ package body Sem_Elab is
       function In_Nested_Context
         (Outer : Node_Id;
          Inner : Node_Id) return Boolean;
+      pragma Inline (In_Nested_Context);
       --  Determine whether arbitrary node Outer encapsulates arbitrary node
       --  Inner.
 
@@ -6084,953 +10062,3221 @@ package body Sem_Elab is
       return False;
    end In_Same_Context;
 
-   ------------------
-   -- In_Task_Body --
-   ------------------
-
-   function In_Task_Body (N : Node_Id) return Boolean is
-      Par : Node_Id;
-
-   begin
-      --  Climb the parent chain looking for a task body [procedure]
-
-      Par := N;
-      while Present (Par) loop
-         if Nkind (Par) = N_Task_Body then
-            return True;
-
-         elsif Nkind (Par) = N_Subprogram_Body
-           and then Is_Task_Body_Procedure (Par)
-         then
-            return True;
-
-         --  Prevent the search from going too far. Note that this predicate
-         --  shares nodes with the two cases above, and must come last.
-
-         elsif Is_Body_Or_Package_Declaration (Par) then
-            return False;
-         end if;
-
-         Par := Parent (Par);
-      end loop;
-
-      return False;
-   end In_Task_Body;
-
    ----------------
    -- Initialize --
    ----------------
 
    procedure Initialize is
    begin
-      --  Set the soft link which enables Atree.Rewrite to update a top-level
-      --  scenario each time it is transformed into another node.
+      --  Set the soft link which enables Atree.Rewrite to update a scenario
+      --  each time it is transformed into another node.
 
       Set_Rewriting_Proc (Update_Elaboration_Scenario'Access);
    end Initialize;
 
-   ---------------
-   -- Info_Call --
-   ---------------
+   --------------------------
+   -- Instantiated_Generic --
+   --------------------------
 
-   procedure Info_Call
-     (Call      : Node_Id;
-      Target_Id : Entity_Id;
-      Info_Msg  : Boolean;
-      In_SPARK  : Boolean)
-   is
-      procedure Info_Accept_Alternative;
-      pragma Inline (Info_Accept_Alternative);
-      --  Output information concerning an accept alternative
-
-      procedure Info_Simple_Call;
-      pragma Inline (Info_Simple_Call);
-      --  Output information concerning the call
-
-      procedure Info_Type_Actions (Action : String);
-      pragma Inline (Info_Type_Actions);
-      --  Output information concerning action Action of a type
-
-      procedure Info_Verification_Call
-        (Pred    : String;
-         Id      : Entity_Id;
-         Id_Kind : String);
-      pragma Inline (Info_Verification_Call);
-      --  Output information concerning the verification of predicate Pred
-      --  applied to related entity Id with kind Id_Kind.
-
-      -----------------------------
-      -- Info_Accept_Alternative --
-      -----------------------------
-
-      procedure Info_Accept_Alternative is
-         Entry_Id : constant Entity_Id := Receiving_Entry (Target_Id);
-
-      begin
-         pragma Assert (Present (Entry_Id));
-
-         Elab_Msg_NE
-           (Msg      => "accept for entry & during elaboration",
-            N        => Call,
-            Id       => Entry_Id,
-            Info_Msg => Info_Msg,
-            In_SPARK => In_SPARK);
-      end Info_Accept_Alternative;
-
-      ----------------------
-      -- Info_Simple_Call --
-      ----------------------
-
-      procedure Info_Simple_Call is
-      begin
-         Elab_Msg_NE
-           (Msg      => "call to & during elaboration",
-            N        => Call,
-            Id       => Target_Id,
-            Info_Msg => Info_Msg,
-            In_SPARK => In_SPARK);
-      end Info_Simple_Call;
-
-      -----------------------
-      -- Info_Type_Actions --
-      -----------------------
-
-      procedure Info_Type_Actions (Action : String) is
-         Typ : constant Entity_Id := First_Formal_Type (Target_Id);
-
-      begin
-         pragma Assert (Present (Typ));
-
-         Elab_Msg_NE
-           (Msg      => Action & " actions for type & during elaboration",
-            N        => Call,
-            Id       => Typ,
-            Info_Msg => Info_Msg,
-            In_SPARK => In_SPARK);
-      end Info_Type_Actions;
-
-      ----------------------------
-      -- Info_Verification_Call --
-      ----------------------------
-
-      procedure Info_Verification_Call
-        (Pred    : String;
-         Id      : Entity_Id;
-         Id_Kind : String)
-      is
-      begin
-         pragma Assert (Present (Id));
-
-         Elab_Msg_NE
-           (Msg      =>
-              "verification of " & Pred & " of " & Id_Kind & " & during "
-              & "elaboration",
-            N        => Call,
-            Id       => Id,
-            Info_Msg => Info_Msg,
-            In_SPARK => In_SPARK);
-      end Info_Verification_Call;
-
-   --  Start of processing for Info_Call
-
+   function Instantiated_Generic (Inst : Node_Id) return Entity_Id is
    begin
-      --  Do not output anything for targets defined in internal units because
-      --  this creates noise.
+      --  Traverse a possible chain of renamings to obtain the original generic
+      --  being instantiatied.
 
-      if not In_Internal_Unit (Target_Id) then
+      return Get_Renamed_Entity (Entity (Name (Inst)));
+   end Instantiated_Generic;
 
-         --  Accept alternative
+   -----------------------------
+   -- Internal_Representation --
+   -----------------------------
 
-         if Is_Accept_Alternative_Proc (Target_Id) then
-            Info_Accept_Alternative;
+   package body Internal_Representation is
 
-         --  Adjustment
+      -----------
+      -- Types --
+      -----------
 
-         elsif Is_TSS (Target_Id, TSS_Deep_Adjust) then
-            Info_Type_Actions ("adjustment");
+      --  The following type represents the contents of a scenario
 
-         --  Default_Initial_Condition
+      type Scenario_Rep_Record is record
+         Elab_Checks_OK : Boolean := False;
+         --  The status of elaboration checks for the scenario
 
-         elsif Is_Default_Initial_Condition_Proc (Target_Id) then
-            Info_Verification_Call
-              (Pred    => "Default_Initial_Condition",
-               Id      => First_Formal_Type (Target_Id),
-               Id_Kind => "type");
+         Elab_Warnings_OK : Boolean := False;
+         --  The status of elaboration warnings for the scenario
 
-         --  Entries
+         GM : Extended_Ghost_Mode := Is_Checked_Or_Not_Specified;
+         --  The Ghost mode of the scenario
 
-         elsif Is_Protected_Entry (Target_Id) then
-            Info_Simple_Call;
+         Kind : Scenario_Kind := No_Scenario;
+         --  The nature of the scenario
 
-         --  Task entry calls are never processed because the entry being
-         --  invoked does not have a corresponding "body", it has a select.
+         Level : Enclosing_Level_Kind := No_Level;
+         --  The enclosing level where the scenario resides
 
-         elsif Is_Task_Entry (Target_Id) then
-            null;
+         SM : Extended_SPARK_Mode := Is_Off_Or_Not_Specified;
+         --  The SPARK mode of the scenario
 
-         --  Finalization
+         Target : Entity_Id := Empty;
+         --  The target of the scenario
 
-         elsif Is_TSS (Target_Id, TSS_Deep_Finalize) then
-            Info_Type_Actions ("finalization");
+         --  The following attributes are multiplexed and depend on the Kind of
+         --  the scenario. They are mapped as follows:
+         --
+         --    Call_Scenario
+         --      Is_Dispatching_Call (Flag_1)
+         --
+         --    Task_Activation_Scenario
+         --      Activated_Task_Objects (List_1)
+         --      Activated_Task_Type (Field_1)
+         --
+         --    Variable_Reference
+         --      Is_Read_Reference (Flag_1)
 
-         --  Calls to _Finalizer procedures must not appear in the output
-         --  because this creates confusing noise.
+         Flag_1  : Boolean                    := False;
+         Field_1 : Node_Or_Entity_Id          := Empty;
+         List_1  : NE_List.Doubly_Linked_List := NE_List.Nil;
+      end record;
 
-         elsif Is_Finalizer_Proc (Target_Id) then
-            null;
+      --  The following type represents the contents of a target
 
-         --  Initial_Condition
+      type Target_Rep_Record is record
+         Body_Decl : Node_Id := Empty;
+         --  The declaration of the target body
 
-         elsif Is_Initial_Condition_Proc (Target_Id) then
-            Info_Verification_Call
-              (Pred    => "Initial_Condition",
-               Id      => Find_Enclosing_Scope (Call),
-               Id_Kind => "package");
+         Elab_Checks_OK : Boolean := False;
+         --  The status of elaboration checks for the target
 
-         --  Initialization
+         Elab_Warnings_OK : Boolean := False;
+         --  The status of elaboration warnings for the target
 
-         elsif Is_Init_Proc (Target_Id)
-           or else Is_TSS (Target_Id, TSS_Deep_Initialize)
-         then
-            Info_Type_Actions ("initialization");
+         GM : Extended_Ghost_Mode := Is_Checked_Or_Not_Specified;
+         --  The Ghost mode of the target
 
-         --  Invariant
+         Kind : Target_Kind := No_Target;
+         --  The nature of the target
 
-         elsif Is_Invariant_Proc (Target_Id) then
-            Info_Verification_Call
-              (Pred    => "invariants",
-               Id      => First_Formal_Type (Target_Id),
-               Id_Kind => "type");
+         SM : Extended_SPARK_Mode := Is_Off_Or_Not_Specified;
+         --  The SPARK mode of the target
 
-         --  Partial invariant calls must not appear in the output because this
-         --  creates confusing noise.
+         Spec_Decl : Node_Id := Empty;
+         --  The declaration of the target spec
 
-         elsif Is_Partial_Invariant_Proc (Target_Id) then
-            null;
+         Unit : Entity_Id := Empty;
+         --  The top unit where the target is declared
 
-         --  _Postconditions
+         Version : Representation_Kind := No_Representation;
+         --  The version of the target representation
 
-         elsif Is_Postconditions_Proc (Target_Id) then
-            Info_Verification_Call
-              (Pred    => "postconditions",
-               Id      => Find_Enclosing_Scope (Call),
-               Id_Kind => "subprogram");
+         --  The following attributes are multiplexed and depend on the Kind of
+         --  the target. They are mapped as follows:
+         --
+         --    Subprogram_Target
+         --      Barrier_Body_Declaration (Field_1)
+         --
+         --    Variable_Target
+         --      Variable_Declaration (Field_1)
 
-         --  Subprograms must come last because some of the previous cases fall
-         --  under this category.
+         Field_1 : Node_Or_Entity_Id := Empty;
+      end record;
 
-         elsif Ekind (Target_Id) = E_Function then
-            Info_Simple_Call;
+      ---------------------
+      -- Data structures --
+      ---------------------
 
-         elsif Ekind (Target_Id) = E_Procedure then
-            Info_Simple_Call;
+      procedure Destroy (T_Id : in out Target_Rep_Id);
+      --  Destroy a target representation T_Id
+
+      package ETT_Map is new Dynamic_Hash_Tables
+        (Key_Type              => Entity_Id,
+         Value_Type            => Target_Rep_Id,
+         No_Value              => No_Target_Rep,
+         Expansion_Threshold   => 1.5,
+         Expansion_Factor      => 2,
+         Compression_Threshold => 0.3,
+         Compression_Factor    => 2,
+         "="                   => "=",
+         Destroy_Value         => Destroy,
+         Hash                  => Hash);
+
+      --  The following map relates target representations to entities
+
+      Entity_To_Target_Map : ETT_Map.Dynamic_Hash_Table :=
+                               ETT_Map.Create (500);
+
+      procedure Destroy (S_Id : in out Scenario_Rep_Id);
+      --  Destroy a scenario representation S_Id
+
+      package NTS_Map is new Dynamic_Hash_Tables
+        (Key_Type              => Node_Id,
+         Value_Type            => Scenario_Rep_Id,
+         No_Value              => No_Scenario_Rep,
+         Expansion_Threshold   => 1.5,
+         Expansion_Factor      => 2,
+         Compression_Threshold => 0.3,
+         Compression_Factor    => 2,
+         "="                   => "=",
+         Destroy_Value         => Destroy,
+         Hash                  => Hash);
+
+      --  The following map relates scenario representations to nodes
+
+      Node_To_Scenario_Map : NTS_Map.Dynamic_Hash_Table :=
+                               NTS_Map.Create (500);
+
+      --  The following table stores all scenario representations
+
+      package Scenario_Reps is new Table.Table
+        (Table_Index_Type     => Scenario_Rep_Id,
+         Table_Component_Type => Scenario_Rep_Record,
+         Table_Low_Bound      => First_Scenario_Rep,
+         Table_Initial        => 1000,
+         Table_Increment      => 200,
+         Table_Name           => "Scenario_Reps");
+
+      --  The following table stores all target representations
+
+      package Target_Reps is new Table.Table
+        (Table_Index_Type     => Target_Rep_Id,
+         Table_Component_Type => Target_Rep_Record,
+         Table_Low_Bound      => First_Target_Rep,
+         Table_Initial        => 1000,
+         Table_Increment      => 200,
+         Table_Name           => "Target_Reps");
+
+      --------------
+      -- Builders --
+      --------------
+
+      function Create_Access_Taken_Rep
+        (Attr : Node_Id) return Scenario_Rep_Record;
+      pragma Inline (Create_Access_Taken_Rep);
+      --  Create the representation of 'Access attribute Attr
+
+      function Create_Call_Or_Task_Activation_Rep
+        (Call : Node_Id) return Scenario_Rep_Record;
+      pragma Inline (Create_Call_Or_Task_Activation_Rep);
+      --  Create the representation of call or task activation Call
+
+      function Create_Derived_Type_Rep
+        (Typ_Decl : Node_Id) return Scenario_Rep_Record;
+      pragma Inline (Create_Derived_Type_Rep);
+      --  Create the representation of a derived type described by declaration
+      --  Typ_Decl.
+
+      function Create_Generic_Rep
+        (Gen_Id : Entity_Id) return Target_Rep_Record;
+      pragma Inline (Create_Generic_Rep);
+      --  Create the representation of generic Gen_Id
+
+      function Create_Instantiation_Rep
+        (Inst : Node_Id) return Scenario_Rep_Record;
+      pragma Inline (Create_Instantiation_Rep);
+      --  Create the representation of instantiation Inst
+
+      function Create_Protected_Entry_Rep
+        (PE_Id : Entity_Id) return Target_Rep_Record;
+      pragma Inline (Create_Protected_Entry_Rep);
+      --  Create the representation of protected entry PE_Id
+
+      function Create_Protected_Subprogram_Rep
+        (PS_Id : Entity_Id) return Target_Rep_Record;
+      pragma Inline (Create_Protected_Subprogram_Rep);
+      --  Create the representation of protected subprogram PS_Id
+
+      function Create_Refined_State_Pragma_Rep
+        (Prag : Node_Id) return Scenario_Rep_Record;
+      pragma Inline (Create_Refined_State_Pragma_Rep);
+      --  Create the representation of Refined_State pragma Prag
+
+      function Create_Scenario_Rep
+        (N        : Node_Id;
+         In_State : Processing_In_State) return Scenario_Rep_Record;
+      pragma Inline (Create_Scenario_Rep);
+      --  Top level dispatcher. Create the representation of elaboration
+      --  scenario N. In_State is the current state of the Processing phase.
+
+      function Create_Subprogram_Rep
+        (Subp_Id : Entity_Id) return Target_Rep_Record;
+      pragma Inline (Create_Subprogram_Rep);
+      --  Create the representation of entry, operator, or subprogram Subp_Id
+
+      function Create_Target_Rep
+        (Id       : Entity_Id;
+         In_State : Processing_In_State) return Target_Rep_Record;
+      pragma Inline (Create_Target_Rep);
+      --  Top level dispatcher. Create the representation of elaboration target
+      --  Id. In_State is the current state of the Processing phase.
+
+      function Create_Task_Entry_Rep
+        (TE_Id : Entity_Id) return Target_Rep_Record;
+      pragma Inline (Create_Task_Entry_Rep);
+      --  Create the representation of task entry TE_Id
+
+      function Create_Task_Rep (Task_Typ : Entity_Id) return Target_Rep_Record;
+      pragma Inline (Create_Task_Rep);
+      --  Create the representation of task type Typ
+
+      function Create_Variable_Assignment_Rep
+        (Asmt : Node_Id) return Scenario_Rep_Record;
+      pragma Inline (Create_Variable_Assignment_Rep);
+      --  Create the representation of variable assignment Asmt
+
+      function Create_Variable_Reference_Rep
+        (Ref : Node_Id) return Scenario_Rep_Record;
+      pragma Inline (Create_Variable_Reference_Rep);
+      --  Create the representation of variable reference Ref
+
+      function Create_Variable_Rep
+        (Var_Id : Entity_Id) return Target_Rep_Record;
+      pragma Inline (Create_Variable_Rep);
+      --  Create the representation of variable Var_Id
+
+      -----------------------
+      -- Local subprograms --
+      -----------------------
+
+      function Ghost_Mode_Of_Entity
+        (Id : Entity_Id) return Extended_Ghost_Mode;
+      pragma Inline (Ghost_Mode_Of_Entity);
+      --  Obtain the extended Ghost mode of arbitrary entity Id
+
+      function Ghost_Mode_Of_Node (N : Node_Id) return Extended_Ghost_Mode;
+      pragma Inline (Ghost_Mode_Of_Node);
+      --  Obtain the extended Ghost mode of arbitrary node N
+
+      function Present (S_Id : Scenario_Rep_Id) return Boolean;
+      pragma Inline (Present);
+      --  Determine whether scenario representation S_Id exists
+
+      function Present (T_Id : Target_Rep_Id) return Boolean;
+      pragma Inline (Present);
+      --  Determine whether target representation T_Id exists
+
+      function SPARK_Mode_Of_Entity
+        (Id : Entity_Id) return Extended_SPARK_Mode;
+      pragma Inline (SPARK_Mode_Of_Entity);
+      --  Obtain the extended SPARK mode of arbitrary entity Id
+
+      function SPARK_Mode_Of_Node (N : Node_Id) return Extended_SPARK_Mode;
+      pragma Inline (SPARK_Mode_Of_Node);
+      --  Obtain the extended SPARK mode of arbitrary node N
+
+      function To_Ghost_Mode
+        (Ignored_Status : Boolean) return Extended_Ghost_Mode;
+      pragma Inline (To_Ghost_Mode);
+      --  Convert a Ghost mode indicated by Ignored_Status into its extended
+      --  equivalent.
+
+      function To_SPARK_Mode (On_Status : Boolean) return Extended_SPARK_Mode;
+      pragma Inline (To_SPARK_Mode);
+      --  Convert a SPARK mode indicated by On_Status into its extended
+      --  equivalent.
+
+      function Version (T_Id : Target_Rep_Id) return Representation_Kind;
+      pragma Inline (Version);
+      --  Obtain the version of target representation T_Id
+
+      ----------------------------
+      -- Activated_Task_Objects --
+      ----------------------------
+
+      function Activated_Task_Objects
+        (S_Id : Scenario_Rep_Id) return NE_List.Doubly_Linked_List
+      is
+         pragma Assert (Present (S_Id));
+         pragma Assert (Kind (S_Id) = Task_Activation_Scenario);
+
+      begin
+         return Scenario_Reps.Table (S_Id).List_1;
+      end Activated_Task_Objects;
+
+      -------------------------
+      -- Activated_Task_Type --
+      -------------------------
+
+      function Activated_Task_Type
+        (S_Id : Scenario_Rep_Id) return Entity_Id
+      is
+         pragma Assert (Present (S_Id));
+         pragma Assert (Kind (S_Id) = Task_Activation_Scenario);
+
+      begin
+         return Scenario_Reps.Table (S_Id).Field_1;
+      end Activated_Task_Type;
+
+      ------------------------------
+      -- Barrier_Body_Declaration --
+      ------------------------------
+
+      function Barrier_Body_Declaration
+        (T_Id : Target_Rep_Id) return Node_Id
+      is
+         pragma Assert (Present (T_Id));
+         pragma Assert (Kind (T_Id) = Subprogram_Target);
+
+      begin
+         return Target_Reps.Table (T_Id).Field_1;
+      end Barrier_Body_Declaration;
+
+      ----------------------
+      -- Body_Declaration --
+      ----------------------
+
+      function Body_Declaration (T_Id : Target_Rep_Id) return Node_Id is
+         pragma Assert (Present (T_Id));
+      begin
+         return Target_Reps.Table (T_Id).Body_Decl;
+      end Body_Declaration;
+
+      -----------------------------
+      -- Create_Access_Taken_Rep --
+      -----------------------------
+
+      function Create_Access_Taken_Rep
+        (Attr : Node_Id) return Scenario_Rep_Record
+      is
+         Rec : Scenario_Rep_Record;
+
+      begin
+         Rec.Elab_Checks_OK   := Is_Elaboration_Checks_OK_Node (Attr);
+         Rec.Elab_Warnings_OK := Is_Elaboration_Warnings_OK_Node (Attr);
+         Rec.GM               := Is_Checked_Or_Not_Specified;
+         Rec.SM               := SPARK_Mode_Of_Node (Attr);
+         Rec.Kind             := Access_Taken_Scenario;
+         Rec.Target           := Canonical_Subprogram (Entity (Prefix (Attr)));
+
+         return Rec;
+      end Create_Access_Taken_Rep;
+
+      ----------------------------------------
+      -- Create_Call_Or_Task_Activation_Rep --
+      ----------------------------------------
+
+      function Create_Call_Or_Task_Activation_Rep
+        (Call : Node_Id) return Scenario_Rep_Record
+      is
+         Subp_Id : constant Entity_Id := Canonical_Subprogram (Target (Call));
+         Kind    : Scenario_Kind;
+         Rec     : Scenario_Rep_Record;
+
+      begin
+         if Is_Activation_Proc (Subp_Id) then
+            Kind := Task_Activation_Scenario;
+         else
+            Kind := Call_Scenario;
+         end if;
+
+         Rec.Elab_Checks_OK   := Is_Elaboration_Checks_OK_Node (Call);
+         Rec.Elab_Warnings_OK := Is_Elaboration_Warnings_OK_Node (Call);
+         Rec.GM               := Ghost_Mode_Of_Node (Call);
+         Rec.SM               := SPARK_Mode_Of_Node (Call);
+         Rec.Kind             := Kind;
+         Rec.Target           := Subp_Id;
+
+         --  Scenario-specific attributes
+
+         Rec.Flag_1 := Is_Dispatching_Call (Call);  --  Dispatching_Call
+
+         return Rec;
+      end Create_Call_Or_Task_Activation_Rep;
+
+      -----------------------------
+      -- Create_Derived_Type_Rep --
+      -----------------------------
+
+      function Create_Derived_Type_Rep
+        (Typ_Decl : Node_Id) return Scenario_Rep_Record
+      is
+         Typ : constant Entity_Id := Defining_Entity (Typ_Decl);
+         Rec : Scenario_Rep_Record;
+
+      begin
+         Rec.Elab_Checks_OK   := False;  --  not relevant
+         Rec.Elab_Warnings_OK := False;  --  not relevant
+         Rec.GM               := Ghost_Mode_Of_Entity (Typ);
+         Rec.SM               := SPARK_Mode_Of_Entity (Typ);
+         Rec.Kind             := Derived_Type_Scenario;
+         Rec.Target           := Typ;
+
+         return Rec;
+      end Create_Derived_Type_Rep;
+
+      ------------------------
+      -- Create_Generic_Rep --
+      ------------------------
+
+      function Create_Generic_Rep
+        (Gen_Id : Entity_Id) return Target_Rep_Record
+      is
+         Rec : Target_Rep_Record;
+
+      begin
+         Rec.Kind := Generic_Target;
+
+         Spec_And_Body_From_Entity
+           (Id        => Gen_Id,
+            Body_Decl => Rec.Body_Decl,
+            Spec_Decl => Rec.Spec_Decl);
+
+         return Rec;
+      end Create_Generic_Rep;
+
+      ------------------------------
+      -- Create_Instantiation_Rep --
+      ------------------------------
+
+      function Create_Instantiation_Rep
+        (Inst : Node_Id) return Scenario_Rep_Record
+      is
+         Rec : Scenario_Rep_Record;
+
+      begin
+         Rec.Elab_Checks_OK   := Is_Elaboration_Checks_OK_Node (Inst);
+         Rec.Elab_Warnings_OK := Is_Elaboration_Warnings_OK_Node (Inst);
+         Rec.GM               := Ghost_Mode_Of_Node (Inst);
+         Rec.SM               := SPARK_Mode_Of_Node (Inst);
+         Rec.Kind             := Instantiation_Scenario;
+         Rec.Target           := Instantiated_Generic (Inst);
+
+         return Rec;
+      end Create_Instantiation_Rep;
+
+      --------------------------------
+      -- Create_Protected_Entry_Rep --
+      --------------------------------
+
+      function Create_Protected_Entry_Rep
+        (PE_Id : Entity_Id) return Target_Rep_Record
+      is
+         Prot_Id : constant Entity_Id := Protected_Body_Subprogram (PE_Id);
+
+         Barf_Id : Entity_Id;
+         Dummy   : Node_Id;
+         Rec     : Target_Rep_Record;
+         Spec_Id : Entity_Id;
+
+      begin
+         --  When the entry [family] has already been expanded, it carries both
+         --  the procedure which emulates the behavior of the entry [family] as
+         --  well as the barrier function.
+
+         if Present (Prot_Id) then
+            Barf_Id := Barrier_Function (PE_Id);
+            Spec_Id := Prot_Id;
+
+         --  Otherwise no expansion took place
+
+         else
+            Barf_Id := Empty;
+            Spec_Id := PE_Id;
+         end if;
+
+         Rec.Kind := Subprogram_Target;
+
+         Spec_And_Body_From_Entity
+           (Id        => Spec_Id,
+            Body_Decl => Rec.Body_Decl,
+            Spec_Decl => Rec.Spec_Decl);
+
+         --  Target-specific attributes
+
+         if Present (Barf_Id) then
+            Spec_And_Body_From_Entity
+              (Id        => Barf_Id,
+               Body_Decl => Rec.Field_1,  --  Barrier_Body_Declaration
+               Spec_Decl => Dummy);
+         end if;
+
+         return Rec;
+      end Create_Protected_Entry_Rep;
+
+      -------------------------------------
+      -- Create_Protected_Subprogram_Rep --
+      -------------------------------------
+
+      function Create_Protected_Subprogram_Rep
+        (PS_Id : Entity_Id) return Target_Rep_Record
+      is
+         Prot_Id : constant Entity_Id := Protected_Body_Subprogram (PS_Id);
+         Rec     : Target_Rep_Record;
+         Spec_Id : Entity_Id;
+
+      begin
+         --  When the protected subprogram has already been expanded, it
+         --  carries the subprogram which seizes the lock and invokes the
+         --  original statements.
+
+         if Present (Prot_Id) then
+            Spec_Id := Prot_Id;
+
+         --  Otherwise no expansion took place
+
+         else
+            Spec_Id := PS_Id;
+         end if;
+
+         Rec.Kind := Subprogram_Target;
+
+         Spec_And_Body_From_Entity
+           (Id        => Spec_Id,
+            Body_Decl => Rec.Body_Decl,
+            Spec_Decl => Rec.Spec_Decl);
+
+         return Rec;
+      end Create_Protected_Subprogram_Rep;
+
+      -------------------------------------
+      -- Create_Refined_State_Pragma_Rep --
+      -------------------------------------
+
+      function Create_Refined_State_Pragma_Rep
+        (Prag : Node_Id) return Scenario_Rep_Record
+      is
+         Rec : Scenario_Rep_Record;
+
+      begin
+         Rec.Elab_Checks_OK   := False;  --  not relevant
+         Rec.Elab_Warnings_OK := False;  --  not relevant
+         Rec.GM               :=
+           To_Ghost_Mode (Is_Ignored_Ghost_Pragma (Prag));
+         Rec.SM               := Is_Off_Or_Not_Specified;
+         Rec.Kind             := Refined_State_Pragma_Scenario;
+         Rec.Target           := Empty;
+
+         return Rec;
+      end Create_Refined_State_Pragma_Rep;
+
+      -------------------------
+      -- Create_Scenario_Rep --
+      -------------------------
+
+      function Create_Scenario_Rep
+        (N        : Node_Id;
+         In_State : Processing_In_State) return Scenario_Rep_Record
+      is
+         pragma Unreferenced (In_State);
+
+         Rec : Scenario_Rep_Record;
+
+      begin
+         if Is_Suitable_Access_Taken (N) then
+            Rec := Create_Access_Taken_Rep (N);
+
+         elsif Is_Suitable_Call (N) then
+            Rec := Create_Call_Or_Task_Activation_Rep (N);
+
+         elsif Is_Suitable_Instantiation (N) then
+            Rec := Create_Instantiation_Rep (N);
+
+         elsif Is_Suitable_SPARK_Derived_Type (N) then
+            Rec := Create_Derived_Type_Rep (N);
+
+         elsif Is_Suitable_SPARK_Refined_State_Pragma (N) then
+            Rec := Create_Refined_State_Pragma_Rep (N);
+
+         elsif Is_Suitable_Variable_Assignment (N) then
+            Rec := Create_Variable_Assignment_Rep (N);
+
+         elsif Is_Suitable_Variable_Reference (N) then
+            Rec := Create_Variable_Reference_Rep (N);
 
          else
             pragma Assert (False);
-            null;
+            return Rec;
          end if;
-      end if;
-   end Info_Call;
 
-   ------------------------
-   -- Info_Instantiation --
-   ------------------------
+         --  Common scenario attributes
 
-   procedure Info_Instantiation
-     (Inst     : Node_Id;
-      Gen_Id   : Entity_Id;
-      Info_Msg : Boolean;
-      In_SPARK : Boolean)
-   is
-   begin
-      Elab_Msg_NE
-        (Msg      => "instantiation of & during elaboration",
-         N        => Inst,
-         Id       => Gen_Id,
-         Info_Msg => Info_Msg,
-         In_SPARK => In_SPARK);
-   end Info_Instantiation;
+         Rec.Level := Find_Enclosing_Level (N);
 
-   -----------------------------
-   -- Info_Variable_Reference --
-   -----------------------------
+         return Rec;
+      end Create_Scenario_Rep;
 
-   procedure Info_Variable_Reference
-     (Ref      : Node_Id;
-      Var_Id   : Entity_Id;
-      Info_Msg : Boolean;
-      In_SPARK : Boolean)
-   is
-   begin
-      if Is_Read (Ref) then
-         Elab_Msg_NE
-           (Msg      => "read of variable & during elaboration",
-            N        => Ref,
-            Id       => Var_Id,
-            Info_Msg => Info_Msg,
-            In_SPARK => In_SPARK);
-      end if;
-   end Info_Variable_Reference;
+      ---------------------------
+      -- Create_Subprogram_Rep --
+      ---------------------------
 
-   --------------------
-   -- Insertion_Node --
-   --------------------
-
-   function Insertion_Node (N : Node_Id; Ins_Nod : Node_Id) return Node_Id is
-   begin
-      --  When the scenario denotes an instantiation, the proper insertion node
-      --  is the instance spec. This ensures that the generic actuals will not
-      --  be evaluated prior to a potential ABE.
-
-      if Nkind (N) in N_Generic_Instantiation
-        and then Present (Instance_Spec (N))
-      then
-         return Instance_Spec (N);
-
-      --  Otherwise the proper insertion node is the candidate insertion node
-
-      else
-         return Ins_Nod;
-      end if;
-   end Insertion_Node;
-
-   -----------------------
-   -- Install_ABE_Check --
-   -----------------------
-
-   procedure Install_ABE_Check
-     (N       : Node_Id;
-      Id      : Entity_Id;
-      Ins_Nod : Node_Id)
-   is
-      Check_Ins_Nod : constant Node_Id := Insertion_Node (N, Ins_Nod);
-      --  Insert the check prior to this node
-
-      Loc     : constant Source_Ptr := Sloc (N);
-      Spec_Id : constant Entity_Id  := Unique_Entity (Id);
-      Unit_Id : constant Entity_Id  := Find_Top_Unit (Id);
-      Scop_Id : Entity_Id;
-
-   begin
-      --  Nothing to do when compiling for GNATprove because raise statements
-      --  are not supported.
-
-      if GNATprove_Mode then
-         return;
-
-      --  Nothing to do when the compilation will not produce an executable
-
-      elsif Serious_Errors_Detected > 0 then
-         return;
-
-      --  Nothing to do for a compilation unit because there is no executable
-      --  environment at that level.
-
-      elsif Nkind (Parent (Check_Ins_Nod)) = N_Compilation_Unit then
-         return;
-
-      --  Nothing to do when the unit is elaborated prior to the main unit.
-      --  This check must also consider the following cases:
-
-      --  * Id's unit appears in the context of the main unit
-
-      --  * Id's unit is subject to pragma Elaborate_Body. An ABE check MUST
-      --    NOT be generated because Id's unit is always elaborated prior to
-      --    the main unit.
-
-      --  * Id's unit is the main unit. An ABE check MUST be generated in this
-      --    case because a conditional ABE may be raised depending on the flow
-      --    of execution within the main unit (flag Same_Unit_OK is False).
-
-      elsif Has_Prior_Elaboration
-              (Unit_Id      => Unit_Id,
-               Context_OK   => True,
-               Elab_Body_OK => True)
-      then
-         return;
-      end if;
-
-      --  Prevent multiple scenarios from installing the same ABE check
-
-      Set_Is_Elaboration_Checks_OK_Node (N, False);
-
-      --  Install the nearest enclosing scope of the scenario as there must be
-      --  something on the scope stack.
-
-      --  Performance note: parent traversal
-
-      Scop_Id := Find_Enclosing_Scope (Check_Ins_Nod);
-      pragma Assert (Present (Scop_Id));
-
-      Push_Scope (Scop_Id);
-
-      --  Generate:
-      --    if not Spec_Id'Elaborated then
-      --       raise Program_Error with "access before elaboration";
-      --    end if;
-
-      Insert_Action (Check_Ins_Nod,
-        Make_Raise_Program_Error (Loc,
-          Condition =>
-            Make_Op_Not (Loc,
-              Right_Opnd =>
-                Make_Attribute_Reference (Loc,
-                  Prefix         => New_Occurrence_Of (Spec_Id, Loc),
-                  Attribute_Name => Name_Elaborated)),
-          Reason    => PE_Access_Before_Elaboration));
-
-      Pop_Scope;
-   end Install_ABE_Check;
-
-   -----------------------
-   -- Install_ABE_Check --
-   -----------------------
-
-   procedure Install_ABE_Check
-     (N           : Node_Id;
-      Target_Id   : Entity_Id;
-      Target_Decl : Node_Id;
-      Target_Body : Node_Id;
-      Ins_Nod     : Node_Id)
-   is
-      procedure Build_Elaboration_Entity;
-      pragma Inline (Build_Elaboration_Entity);
-      --  Create a new elaboration flag for Target_Id, insert it prior to
-      --  Target_Decl, and set it after Body_Decl.
-
-      ------------------------------
-      -- Build_Elaboration_Entity --
-      ------------------------------
-
-      procedure Build_Elaboration_Entity is
-         Loc     : constant Source_Ptr := Sloc (Target_Id);
-         Flag_Id : Entity_Id;
+      function Create_Subprogram_Rep
+        (Subp_Id : Entity_Id) return Target_Rep_Record
+      is
+         Rec     : Target_Rep_Record;
+         Spec_Id : Entity_Id;
 
       begin
-         --  Create the declaration of the elaboration flag. The name carries a
-         --  unique counter in case of name overloading.
+         Spec_Id := Subp_Id;
 
-         Flag_Id :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_External_Name (Chars (Target_Id), 'E', -1));
+         --  The elaboration target denotes an internal function that returns a
+         --  constrained array type in a SPARK-to-C compilation. In this case
+         --  the function receives a corresponding procedure which has an out
+         --  parameter. The proper body for ABE checks and diagnostics is that
+         --  of the procedure.
 
-         Set_Elaboration_Entity          (Target_Id, Flag_Id);
-         Set_Elaboration_Entity_Required (Target_Id);
-
-         Push_Scope (Scope (Target_Id));
-
-         --  Generate:
-         --    Enn : Short_Integer := 0;
-
-         Insert_Action (Target_Decl,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Flag_Id,
-             Object_Definition   =>
-               New_Occurrence_Of (Standard_Short_Integer, Loc),
-             Expression          => Make_Integer_Literal (Loc, Uint_0)));
-
-         --  Generate:
-         --    Enn := 1;
-
-         Set_Elaboration_Flag (Target_Body, Target_Id);
-
-         Pop_Scope;
-      end Build_Elaboration_Entity;
-
-      --  Local variables
-
-      Target_Unit_Id : constant Entity_Id := Find_Top_Unit (Target_Id);
-
-   --  Start for processing for Install_ABE_Check
-
-   begin
-      --  Nothing to do when compiling for GNATprove because raise statements
-      --  are not supported.
-
-      if GNATprove_Mode then
-         return;
-
-      --  Nothing to do when the compilation will not produce an executable
-
-      elsif Serious_Errors_Detected > 0 then
-         return;
-
-      --  Nothing to do when the target is a protected subprogram because the
-      --  check is associated with the protected body subprogram.
-
-      elsif Is_Protected_Subp (Target_Id) then
-         return;
-
-      --  Nothing to do when the target is elaborated prior to the main unit.
-      --  This check must also consider the following cases:
-
-      --  * The unit of the target appears in the context of the main unit
-
-      --  * The unit of the target is subject to pragma Elaborate_Body. An ABE
-      --    check MUST NOT be generated because the unit is always elaborated
-      --    prior to the main unit.
-
-      --  * The unit of the target is the main unit. An ABE check MUST be added
-      --    in this case because a conditional ABE may be raised depending on
-      --    the flow of execution within the main unit (flag Same_Unit_OK is
-      --    False).
-
-      elsif Has_Prior_Elaboration
-              (Unit_Id      => Target_Unit_Id,
-               Context_OK   => True,
-               Elab_Body_OK => True)
-      then
-         return;
-
-      --  Create an elaboration flag for the target when it does not have one
-
-      elsif No (Elaboration_Entity (Target_Id)) then
-         Build_Elaboration_Entity;
-      end if;
-
-      Install_ABE_Check
-        (N       => N,
-         Ins_Nod => Ins_Nod,
-         Id      => Target_Id);
-   end Install_ABE_Check;
-
-   -------------------------
-   -- Install_ABE_Failure --
-   -------------------------
-
-   procedure Install_ABE_Failure (N : Node_Id; Ins_Nod : Node_Id) is
-      Fail_Ins_Nod : constant Node_Id := Insertion_Node (N, Ins_Nod);
-      --  Insert the failure prior to this node
-
-      Loc     : constant Source_Ptr := Sloc (N);
-      Scop_Id : Entity_Id;
-
-   begin
-      --  Nothing to do when compiling for GNATprove because raise statements
-      --  are not supported.
-
-      if GNATprove_Mode then
-         return;
-
-      --  Nothing to do when the compilation will not produce an executable
-
-      elsif Serious_Errors_Detected > 0 then
-         return;
-
-      --  Do not install an ABE check for a compilation unit because there is
-      --  no executable environment at that level.
-
-      elsif Nkind (Parent (Fail_Ins_Nod)) = N_Compilation_Unit then
-         return;
-      end if;
-
-      --  Prevent multiple scenarios from installing the same ABE failure
-
-      Set_Is_Elaboration_Checks_OK_Node (N, False);
-
-      --  Install the nearest enclosing scope of the scenario as there must be
-      --  something on the scope stack.
-
-      --  Performance note: parent traversal
-
-      Scop_Id := Find_Enclosing_Scope (Fail_Ins_Nod);
-      pragma Assert (Present (Scop_Id));
-
-      Push_Scope (Scop_Id);
-
-      --  Generate:
-      --    raise Program_Error with "access before elaboration";
-
-      Insert_Action (Fail_Ins_Nod,
-        Make_Raise_Program_Error (Loc,
-          Reason => PE_Access_Before_Elaboration));
-
-      Pop_Scope;
-   end Install_ABE_Failure;
-
-   --------------------------------
-   -- Is_Accept_Alternative_Proc --
-   --------------------------------
-
-   function Is_Accept_Alternative_Proc (Id : Entity_Id) return Boolean is
-   begin
-      --  To qualify, the entity must denote a procedure with a receiving entry
-
-      return Ekind (Id) = E_Procedure and then Present (Receiving_Entry (Id));
-   end Is_Accept_Alternative_Proc;
-
-   ------------------------
-   -- Is_Activation_Proc --
-   ------------------------
-
-   function Is_Activation_Proc (Id : Entity_Id) return Boolean is
-   begin
-      --  To qualify, the entity must denote one of the runtime procedures in
-      --  charge of task activation.
-
-      if Ekind (Id) = E_Procedure then
-         if Restricted_Profile then
-            return Is_RTE (Id, RE_Activate_Restricted_Tasks);
-         else
-            return Is_RTE (Id, RE_Activate_Tasks);
+         if Ekind (Spec_Id) = E_Function
+           and then Rewritten_For_C (Spec_Id)
+         then
+            Spec_Id := Corresponding_Procedure (Spec_Id);
          end if;
-      end if;
 
-      return False;
-   end Is_Activation_Proc;
+         Rec.Kind := Subprogram_Target;
 
-   ----------------------------
-   -- Is_Ada_Semantic_Target --
-   ----------------------------
+         Spec_And_Body_From_Entity
+           (Id        => Spec_Id,
+            Body_Decl => Rec.Body_Decl,
+            Spec_Decl => Rec.Spec_Decl);
 
-   function Is_Ada_Semantic_Target (Id : Entity_Id) return Boolean is
-   begin
-      return
-        Is_Activation_Proc (Id)
-          or else Is_Controlled_Proc (Id, Name_Adjust)
-          or else Is_Controlled_Proc (Id, Name_Finalize)
-          or else Is_Controlled_Proc (Id, Name_Initialize)
-          or else Is_Init_Proc (Id)
-          or else Is_Invariant_Proc (Id)
-          or else Is_Protected_Entry (Id)
-          or else Is_Protected_Subp (Id)
-          or else Is_Protected_Body_Subp (Id)
-          or else Is_Task_Entry (Id);
-   end Is_Ada_Semantic_Target;
+         return Rec;
+      end Create_Subprogram_Rep;
 
-   --------------------------------
-   -- Is_Assertion_Pragma_Target --
-   --------------------------------
+      -----------------------
+      -- Create_Target_Rep --
+      -----------------------
 
-   function Is_Assertion_Pragma_Target (Id : Entity_Id) return Boolean is
-   begin
-      return
-        Is_Default_Initial_Condition_Proc (Id)
-          or else Is_Initial_Condition_Proc (Id)
-          or else Is_Invariant_Proc (Id)
-          or else Is_Partial_Invariant_Proc (Id)
-          or else Is_Postconditions_Proc (Id);
-   end Is_Assertion_Pragma_Target;
+      function Create_Target_Rep
+        (Id       : Entity_Id;
+         In_State : Processing_In_State) return Target_Rep_Record
+      is
+         Rec : Target_Rep_Record;
 
-   ----------------------------
-   -- Is_Bodiless_Subprogram --
-   ----------------------------
+      begin
+         if Is_Generic_Unit (Id) then
+            Rec := Create_Generic_Rep (Id);
 
-   function Is_Bodiless_Subprogram (Subp_Id : Entity_Id) return Boolean is
-   begin
-      --  An abstract subprogram does not have a body
+         elsif Is_Protected_Entry (Id) then
+            Rec := Create_Protected_Entry_Rep (Id);
 
-      if Ekind_In (Subp_Id, E_Function,
-                            E_Operator,
-                            E_Procedure)
-        and then Is_Abstract_Subprogram (Subp_Id)
-      then
+         elsif Is_Protected_Subp (Id) then
+            Rec := Create_Protected_Subprogram_Rep (Id);
+
+         elsif Is_Task_Entry (Id) then
+            Rec := Create_Task_Entry_Rep (Id);
+
+         elsif Is_Task_Type (Id) then
+            Rec := Create_Task_Rep (Id);
+
+         elsif Ekind_In (Id, E_Constant, E_Variable) then
+            Rec := Create_Variable_Rep (Id);
+
+         elsif Ekind_In (Id, E_Entry,
+                             E_Function,
+                             E_Operator,
+                             E_Procedure)
+         then
+            Rec := Create_Subprogram_Rep (Id);
+
+         else
+            pragma Assert (False);
+            return Rec;
+         end if;
+
+         --  Common target attributes
+
+         Rec.Elab_Checks_OK   := Is_Elaboration_Checks_OK_Id (Id);
+         Rec.Elab_Warnings_OK := Is_Elaboration_Warnings_OK_Id (Id);
+         Rec.GM               := Ghost_Mode_Of_Entity (Id);
+         Rec.SM               := SPARK_Mode_Of_Entity (Id);
+         Rec.Unit             := Find_Top_Unit (Id);
+         Rec.Version          := In_State.Representation;
+
+         return Rec;
+      end Create_Target_Rep;
+
+      ---------------------------
+      -- Create_Task_Entry_Rep --
+      ---------------------------
+
+      function Create_Task_Entry_Rep
+        (TE_Id : Entity_Id) return Target_Rep_Record
+      is
+         Task_Typ     : constant Entity_Id := Non_Private_View (Scope (TE_Id));
+         Task_Body_Id : constant Entity_Id := Task_Body_Procedure (Task_Typ);
+
+         Rec     : Target_Rep_Record;
+         Spec_Id : Entity_Id;
+
+      begin
+         --  The the task type has already been expanded, it carries the
+         --  procedure which emulates the behavior of the task body.
+
+         if Present (Task_Body_Id) then
+            Spec_Id := Task_Body_Id;
+
+         --  Otherwise no expansion took place
+
+         else
+            Spec_Id := TE_Id;
+         end if;
+
+         Rec.Kind := Subprogram_Target;
+
+         Spec_And_Body_From_Entity
+           (Id        => Spec_Id,
+            Body_Decl => Rec.Body_Decl,
+            Spec_Decl => Rec.Spec_Decl);
+
+         return Rec;
+      end Create_Task_Entry_Rep;
+
+      ---------------------
+      -- Create_Task_Rep --
+      ---------------------
+
+      function Create_Task_Rep
+        (Task_Typ : Entity_Id) return Target_Rep_Record
+      is
+         Task_Body_Id : constant Entity_Id := Task_Body_Procedure (Task_Typ);
+
+         Rec     : Target_Rep_Record;
+         Spec_Id : Entity_Id;
+
+      begin
+         --  The the task type has already been expanded, it carries the
+         --  procedure which emulates the behavior of the task body.
+
+         if Present (Task_Body_Id) then
+            Spec_Id := Task_Body_Id;
+
+         --  Otherwise no expansion took place
+
+         else
+            Spec_Id := Task_Typ;
+         end if;
+
+         Rec.Kind := Task_Target;
+
+         Spec_And_Body_From_Entity
+           (Id        => Spec_Id,
+            Body_Decl => Rec.Body_Decl,
+            Spec_Decl => Rec.Spec_Decl);
+
+         return Rec;
+      end Create_Task_Rep;
+
+      ------------------------------------
+      -- Create_Variable_Assignment_Rep --
+      ------------------------------------
+
+      function Create_Variable_Assignment_Rep
+        (Asmt : Node_Id) return Scenario_Rep_Record
+      is
+         Var_Id : constant Entity_Id := Entity (Assignment_Target (Asmt));
+         Rec    : Scenario_Rep_Record;
+
+      begin
+         Rec.Elab_Checks_OK   := Is_Elaboration_Checks_OK_Node (Asmt);
+         Rec.Elab_Warnings_OK := Is_Elaboration_Warnings_OK_Id (Var_Id);
+         Rec.GM               := Ghost_Mode_Of_Node (Asmt);
+         Rec.SM               := SPARK_Mode_Of_Node (Asmt);
+         Rec.Kind             := Variable_Assignment_Scenario;
+         Rec.Target           := Var_Id;
+
+         return Rec;
+      end Create_Variable_Assignment_Rep;
+
+      -----------------------------------
+      -- Create_Variable_Reference_Rep --
+      -----------------------------------
+
+      function Create_Variable_Reference_Rep
+        (Ref : Node_Id) return Scenario_Rep_Record
+      is
+         Rec : Scenario_Rep_Record;
+
+      begin
+         Rec.Elab_Checks_OK   := Is_Elaboration_Checks_OK_Node (Ref);
+         Rec.Elab_Warnings_OK := Is_Elaboration_Warnings_OK_Node (Ref);
+         Rec.GM               := Ghost_Mode_Of_Node (Ref);
+         Rec.SM               := SPARK_Mode_Of_Node (Ref);
+         Rec.Kind             := Variable_Reference_Scenario;
+         Rec.Target           := Target (Ref);
+
+         --  Scenario-specific attributes
+
+         Rec.Flag_1 := Is_Read (Ref);  --  Is_Read_Reference
+
+         return Rec;
+      end Create_Variable_Reference_Rep;
+
+      -------------------------
+      -- Create_Variable_Rep --
+      -------------------------
+
+      function Create_Variable_Rep
+        (Var_Id : Entity_Id) return Target_Rep_Record
+      is
+         Rec : Target_Rep_Record;
+
+      begin
+         Rec.Kind := Variable_Target;
+
+         --  Target-specific attributes
+
+         Rec.Field_1 := Declaration_Node (Var_Id);  --  Variable_Declaration
+
+         return Rec;
+      end Create_Variable_Rep;
+
+      -------------
+      -- Destroy --
+      -------------
+
+      procedure Destroy (S_Id : in out Scenario_Rep_Id) is
+         pragma Unreferenced (S_Id);
+      begin
+         null;
+      end Destroy;
+
+      -------------
+      -- Destroy --
+      -------------
+
+      procedure Destroy (T_Id : in out Target_Rep_Id) is
+         pragma Unreferenced (T_Id);
+      begin
+         null;
+      end Destroy;
+
+      --------------------------------
+      -- Disable_Elaboration_Checks --
+      --------------------------------
+
+      procedure Disable_Elaboration_Checks (S_Id : Scenario_Rep_Id) is
+         pragma Assert (Present (S_Id));
+      begin
+         Scenario_Reps.Table (S_Id).Elab_Checks_OK := False;
+      end Disable_Elaboration_Checks;
+
+      --------------------------------
+      -- Disable_Elaboration_Checks --
+      --------------------------------
+
+      procedure Disable_Elaboration_Checks (T_Id : Target_Rep_Id) is
+         pragma Assert (Present (T_Id));
+      begin
+         Target_Reps.Table (T_Id).Elab_Checks_OK := False;
+      end Disable_Elaboration_Checks;
+
+      ---------------------------
+      -- Elaboration_Checks_OK --
+      ---------------------------
+
+      function Elaboration_Checks_OK (S_Id : Scenario_Rep_Id) return Boolean is
+         pragma Assert (Present (S_Id));
+      begin
+         return Scenario_Reps.Table (S_Id).Elab_Checks_OK;
+      end Elaboration_Checks_OK;
+
+      ---------------------------
+      -- Elaboration_Checks_OK --
+      ---------------------------
+
+      function Elaboration_Checks_OK (T_Id : Target_Rep_Id) return Boolean is
+         pragma Assert (Present (T_Id));
+      begin
+         return Target_Reps.Table (T_Id).Elab_Checks_OK;
+      end Elaboration_Checks_OK;
+
+      -----------------------------
+      -- Elaboration_Warnings_OK --
+      -----------------------------
+
+      function Elaboration_Warnings_OK
+        (S_Id : Scenario_Rep_Id) return Boolean
+      is
+         pragma Assert (Present (S_Id));
+      begin
+         return Scenario_Reps.Table (S_Id).Elab_Warnings_OK;
+      end Elaboration_Warnings_OK;
+
+      -----------------------------
+      -- Elaboration_Warnings_OK --
+      -----------------------------
+
+      function Elaboration_Warnings_OK (T_Id : Target_Rep_Id) return Boolean is
+         pragma Assert (Present (T_Id));
+      begin
+         return Target_Reps.Table (T_Id).Elab_Warnings_OK;
+      end Elaboration_Warnings_OK;
+
+      --------------------------------------
+      -- Finalize_Internal_Representation --
+      --------------------------------------
+
+      procedure Finalize_Internal_Representation is
+      begin
+         ETT_Map.Destroy (Entity_To_Target_Map);
+         NTS_Map.Destroy (Node_To_Scenario_Map);
+      end Finalize_Internal_Representation;
+
+      -------------------
+      -- Ghost_Mode_Of --
+      -------------------
+
+      function Ghost_Mode_Of
+        (S_Id : Scenario_Rep_Id) return Extended_Ghost_Mode
+      is
+         pragma Assert (Present (S_Id));
+      begin
+         return Scenario_Reps.Table (S_Id).GM;
+      end Ghost_Mode_Of;
+
+      -------------------
+      -- Ghost_Mode_Of --
+      -------------------
+
+      function Ghost_Mode_Of
+        (T_Id : Target_Rep_Id) return Extended_Ghost_Mode
+      is
+         pragma Assert (Present (T_Id));
+      begin
+         return Target_Reps.Table (T_Id).GM;
+      end Ghost_Mode_Of;
+
+      --------------------------
+      -- Ghost_Mode_Of_Entity --
+      --------------------------
+
+      function Ghost_Mode_Of_Entity
+        (Id : Entity_Id) return Extended_Ghost_Mode
+      is
+      begin
+         return To_Ghost_Mode (Is_Ignored_Ghost_Entity (Id));
+      end Ghost_Mode_Of_Entity;
+
+      ------------------------
+      -- Ghost_Mode_Of_Node --
+      ------------------------
+
+      function Ghost_Mode_Of_Node (N : Node_Id) return Extended_Ghost_Mode is
+      begin
+         return To_Ghost_Mode (Is_Ignored_Ghost_Node (N));
+      end Ghost_Mode_Of_Node;
+
+      ----------------------------------------
+      -- Initialize_Internal_Representation --
+      ----------------------------------------
+
+      procedure Initialize_Internal_Representation is
+      begin
+         null;
+      end Initialize_Internal_Representation;
+
+      -------------------------
+      -- Is_Dispatching_Call --
+      -------------------------
+
+      function Is_Dispatching_Call (S_Id : Scenario_Rep_Id) return Boolean is
+         pragma Assert (Present (S_Id));
+         pragma Assert (Kind (S_Id) = Call_Scenario);
+
+      begin
+         return Scenario_Reps.Table (S_Id).Flag_1;
+      end Is_Dispatching_Call;
+
+      -----------------------
+      -- Is_Read_Reference --
+      -----------------------
+
+      function Is_Read_Reference (S_Id : Scenario_Rep_Id) return Boolean is
+         pragma Assert (Present (S_Id));
+         pragma Assert (Kind (S_Id) = Variable_Reference_Scenario);
+
+      begin
+         return Scenario_Reps.Table (S_Id).Flag_1;
+      end Is_Read_Reference;
+
+      ----------
+      -- Kind --
+      ----------
+
+      function Kind (S_Id : Scenario_Rep_Id) return Scenario_Kind is
+         pragma Assert (Present (S_Id));
+      begin
+         return Scenario_Reps.Table (S_Id).Kind;
+      end Kind;
+
+      ----------
+      -- Kind --
+      ----------
+
+      function Kind (T_Id : Target_Rep_Id) return Target_Kind is
+         pragma Assert (Present (T_Id));
+      begin
+         return Target_Reps.Table (T_Id).Kind;
+      end Kind;
+
+      -----------
+      -- Level --
+      -----------
+
+      function Level (S_Id : Scenario_Rep_Id) return Enclosing_Level_Kind is
+         pragma Assert (Present (S_Id));
+      begin
+         return Scenario_Reps.Table (S_Id).Level;
+      end Level;
+
+      -------------
+      -- Present --
+      -------------
+
+      function Present (S_Id : Scenario_Rep_Id) return Boolean is
+      begin
+         return S_Id /= No_Scenario_Rep;
+      end Present;
+
+      -------------
+      -- Present --
+      -------------
+
+      function Present (T_Id : Target_Rep_Id) return Boolean is
+      begin
+         return T_Id /= No_Target_Rep;
+      end Present;
+
+      --------------------------------
+      -- Scenario_Representation_Of --
+      --------------------------------
+
+      function Scenario_Representation_Of
+        (N        : Node_Id;
+         In_State : Processing_In_State) return Scenario_Rep_Id
+      is
+         S_Id : Scenario_Rep_Id;
+
+      begin
+         S_Id := NTS_Map.Get (Node_To_Scenario_Map, N);
+
+         --  The elaboration scenario lacks a representation. This indicates
+         --  that the scenario is encountered for the first time. Create the
+         --  representation of it.
+
+         if not Present (S_Id) then
+            Scenario_Reps.Append (Create_Scenario_Rep (N, In_State));
+            S_Id := Scenario_Reps.Last;
+
+            --  Associate the internal representation with the elaboration
+            --  scenario.
+
+            NTS_Map.Put (Node_To_Scenario_Map, N, S_Id);
+         end if;
+
+         pragma Assert (Present (S_Id));
+
+         return S_Id;
+      end Scenario_Representation_Of;
+
+      --------------------------------
+      -- Set_Activated_Task_Objects --
+      --------------------------------
+
+      procedure Set_Activated_Task_Objects
+        (S_Id      : Scenario_Rep_Id;
+         Task_Objs : NE_List.Doubly_Linked_List)
+      is
+         pragma Assert (Present (S_Id));
+         pragma Assert (Kind (S_Id) = Task_Activation_Scenario);
+
+      begin
+         Scenario_Reps.Table (S_Id).List_1 := Task_Objs;
+      end Set_Activated_Task_Objects;
+
+      -----------------------------
+      -- Set_Activated_Task_Type --
+      -----------------------------
+
+      procedure Set_Activated_Task_Type
+        (S_Id     : Scenario_Rep_Id;
+         Task_Typ : Entity_Id)
+      is
+         pragma Assert (Present (S_Id));
+         pragma Assert (Kind (S_Id) = Task_Activation_Scenario);
+
+      begin
+         Scenario_Reps.Table (S_Id).Field_1 := Task_Typ;
+      end Set_Activated_Task_Type;
+
+      -------------------
+      -- SPARK_Mode_Of --
+      -------------------
+
+      function SPARK_Mode_Of
+        (S_Id : Scenario_Rep_Id) return Extended_SPARK_Mode
+      is
+         pragma Assert (Present (S_Id));
+      begin
+         return Scenario_Reps.Table (S_Id).SM;
+      end SPARK_Mode_Of;
+
+      -------------------
+      -- SPARK_Mode_Of --
+      -------------------
+
+      function SPARK_Mode_Of
+        (T_Id : Target_Rep_Id) return Extended_SPARK_Mode
+      is
+         pragma Assert (Present (T_Id));
+      begin
+         return Target_Reps.Table (T_Id).SM;
+      end SPARK_Mode_Of;
+
+      --------------------------
+      -- SPARK_Mode_Of_Entity --
+      --------------------------
+
+      function SPARK_Mode_Of_Entity
+        (Id : Entity_Id) return Extended_SPARK_Mode
+      is
+         Prag : constant Node_Id := SPARK_Pragma (Id);
+
+      begin
+         return
+           To_SPARK_Mode
+             (Present (Prag)
+               and then Get_SPARK_Mode_From_Annotation (Prag) = On);
+      end SPARK_Mode_Of_Entity;
+
+      ------------------------
+      -- SPARK_Mode_Of_Node --
+      ------------------------
+
+      function SPARK_Mode_Of_Node (N : Node_Id) return Extended_SPARK_Mode is
+      begin
+         return To_SPARK_Mode (Is_SPARK_Mode_On_Node (N));
+      end SPARK_Mode_Of_Node;
+
+      ----------------------
+      -- Spec_Declaration --
+      ----------------------
+
+      function Spec_Declaration (T_Id : Target_Rep_Id) return Node_Id is
+         pragma Assert (Present (T_Id));
+      begin
+         return Target_Reps.Table (T_Id).Spec_Decl;
+      end Spec_Declaration;
+
+      ------------
+      -- Target --
+      ------------
+
+      function Target (S_Id : Scenario_Rep_Id) return Entity_Id is
+         pragma Assert (Present (S_Id));
+      begin
+         return Scenario_Reps.Table (S_Id).Target;
+      end Target;
+
+      ------------------------------
+      -- Target_Representation_Of --
+      ------------------------------
+
+      function Target_Representation_Of
+        (Id       : Entity_Id;
+         In_State : Processing_In_State) return Target_Rep_Id
+      is
+         T_Id : Target_Rep_Id;
+
+      begin
+         T_Id := ETT_Map.Get (Entity_To_Target_Map, Id);
+
+         --  The elaboration target lacks an internal representation. This
+         --  indicates that the target is encountered for the first time.
+         --  Create the internal representation of it.
+
+         if not Present (T_Id) then
+            Target_Reps.Append (Create_Target_Rep (Id, In_State));
+            T_Id := Target_Reps.Last;
+
+            --  Associate the internal representation with the elaboration
+            --  target.
+
+            ETT_Map.Put (Entity_To_Target_Map, Id, T_Id);
+
+         --  The Processing phase is working with a partially analyzed tree,
+         --  where various attributes become available as analysis continues.
+         --  This case arrises in the context of guaranteed ABE processing.
+         --  Update the existing representation by including new attributes.
+
+         elsif In_State.Representation = Inconsistent_Representation then
+            Target_Reps.Table (T_Id) := Create_Target_Rep (Id, In_State);
+
+         --  Otherwise the Processing phase imposes a particular representation
+         --  version which is not satisfied by the target. This case arrises
+         --  when the Processing phase switches from guaranteed ABE checks and
+         --  diagnostics to some other mode of operation. Update the existing
+         --  representation to include all attributes.
+
+         elsif In_State.Representation /= Version (T_Id) then
+            Target_Reps.Table (T_Id) := Create_Target_Rep (Id, In_State);
+         end if;
+
+         pragma Assert (Present (T_Id));
+
+         return T_Id;
+      end Target_Representation_Of;
+
+      -------------------
+      -- To_Ghost_Mode --
+      -------------------
+
+      function To_Ghost_Mode
+        (Ignored_Status : Boolean) return Extended_Ghost_Mode
+      is
+      begin
+         if Ignored_Status then
+            return Is_Ignored;
+         else
+            return Is_Checked_Or_Not_Specified;
+         end if;
+      end To_Ghost_Mode;
+
+      -------------------
+      -- To_SPARK_Mode --
+      -------------------
+
+      function To_SPARK_Mode
+        (On_Status : Boolean) return Extended_SPARK_Mode
+      is
+      begin
+         if On_Status then
+            return Is_On;
+         else
+            return Is_Off_Or_Not_Specified;
+         end if;
+      end To_SPARK_Mode;
+
+      ----------
+      -- Unit --
+      ----------
+
+      function Unit (T_Id : Target_Rep_Id) return Entity_Id is
+         pragma Assert (Present (T_Id));
+      begin
+         return Target_Reps.Table (T_Id).Unit;
+      end Unit;
+
+      --------------------------
+      -- Variable_Declaration --
+      --------------------------
+
+      function Variable_Declaration (T_Id : Target_Rep_Id) return Node_Id is
+         pragma Assert (Present (T_Id));
+         pragma Assert (Kind (T_Id) = Variable_Target);
+
+      begin
+         return Target_Reps.Table (T_Id).Field_1;
+      end Variable_Declaration;
+
+      -------------
+      -- Version --
+      -------------
+
+      function Version (T_Id : Target_Rep_Id) return Representation_Kind is
+         pragma Assert (Present (T_Id));
+      begin
+         return Target_Reps.Table (T_Id).Version;
+      end Version;
+   end Internal_Representation;
+
+   ----------------------
+   -- Invocation_Graph --
+   ----------------------
+
+   package body Invocation_Graph is
+
+      -----------
+      -- Types --
+      -----------
+
+      --  The following type represents simplified version of an invocation
+      --  relation.
+
+      type Invoker_Target_Relation is record
+         Invoker : Entity_Id := Empty;
+         Target  : Entity_Id := Empty;
+      end record;
+
+      --  The following variables define the entities of the dummy elaboration
+      --  procedures used as origins of library level paths.
+
+      Elab_Body_Id : Entity_Id := Empty;
+      Elab_Spec_Id : Entity_Id := Empty;
+
+      ---------------------
+      -- Data structures --
+      ---------------------
+
+      --  The following set contains all declared invocation constructs. It
+      --  ensures that the same construct is not declared multiple times in
+      --  the ALI file of the main unit.
+
+      Saved_Constructs_Set : NE_Set.Membership_Set := NE_Set.Nil;
+
+      function Hash (Key : Invoker_Target_Relation) return Bucket_Range_Type;
+      --  Obtain the hash value of pair Key
+
+      package IR_Set is new Membership_Sets
+        (Element_Type => Invoker_Target_Relation,
+         "="          => "=",
+         Hash         => Hash);
+
+      --  The following set contains all recorded simple invocation relations.
+      --  It ensures that multiple relations involving the same invoker and
+      --  target do not appear in the ALI file of the main unit.
+
+      Saved_Relations_Set : IR_Set.Membership_Set := IR_Set.Nil;
+
+      --------------
+      -- Builders --
+      --------------
+
+      function Signature_Of (Id : Entity_Id) return Invocation_Signature_Id;
+      pragma Inline (Signature_Of);
+      --  Obtain the invication signature id of arbitrary entity Id
+
+      -----------------------
+      -- Local subprograms --
+      -----------------------
+
+      procedure Build_Elaborate_Body_Procedure;
+      pragma Inline (Build_Elaborate_Body_Procedure);
+      --  Create a dummy elaborate body procedure and store its entity in
+      --  Elab_Body_Id.
+
+      procedure Build_Elaborate_Procedure
+        (Proc_Id  : out Entity_Id;
+         Proc_Nam : Name_Id;
+         Loc      : Source_Ptr);
+      pragma Inline (Build_Elaborate_Procedure);
+      --  Create a dummy elaborate procedure with name Proc_Nam and source
+      --  location Loc. The entity is returned in Proc_Id.
+
+      procedure Build_Elaborate_Spec_Procedure;
+      pragma Inline (Build_Elaborate_Spec_Procedure);
+      --  Create a dummy elaborate spec procedure and store its entity in
+      --  Elab_Spec_Id.
+
+      function Build_Subprogram_Invocation
+        (Subp_Id : Entity_Id) return Node_Id;
+      pragma Inline (Build_Subprogram_Invocation);
+      --  Create a dummy call marker that invokes subprogram Subp_Id
+
+      function Build_Task_Activation
+        (Task_Typ : Entity_Id;
+         In_State : Processing_In_State) return Node_Id;
+      pragma Inline (Build_Task_Activation);
+      --  Create a dummy call marker that activates an anonymous task object of
+      --  type Task_Typ.
+
+      procedure Declare_Invocation_Construct
+        (Constr_Id : Entity_Id;
+         In_State  : Processing_In_State);
+      pragma Inline (Declare_Invocation_Construct);
+      --  Declare invocation construct Constr_Id by creating a declaration for
+      --  it in the ALI file of the main unit. In_State is the current state of
+      --  the Processing phase.
+
+      function Invocation_Graph_Recording_OK return Boolean;
+      pragma Inline (Invocation_Graph_Recording_OK);
+      --  Determine whether the invocation graph can be recorded
+
+      function Is_Invocation_Scenario (N : Node_Id) return Boolean;
+      pragma Inline (Is_Invocation_Scenario);
+      --  Determine whether node N is a suitable scenario for invocation graph
+      --  recording purposes.
+
+      function Is_Invocation_Target (Id : Entity_Id) return Boolean;
+      pragma Inline (Is_Invocation_Target);
+      --  Determine whether arbitrary entity Id denotes an invocation target
+
+      function Is_Saved_Construct (Constr : Entity_Id) return Boolean;
+      pragma Inline (Is_Saved_Construct);
+      --  Determine whether invocation construct Constr has already been
+      --  declared in the ALI file of the main unit.
+
+      function Is_Saved_Relation
+        (Rel : Invoker_Target_Relation) return Boolean;
+      pragma Inline (Is_Saved_Relation);
+      --  Determine whether simple invocation relation Rel has already been
+      --  recorded in the ALI file of the main unit.
+
+      procedure Process_Declarations
+        (Decls    : List_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Declarations);
+      --  Process declaration list Decls by processing all invocation scenarios
+      --  within it.
+
+      procedure Process_Freeze_Node
+        (Fnode    : Node_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Freeze_Node);
+      --  Process freeze node Fnode by processing all invocation scenarios in
+      --  its Actions list.
+
+      procedure Process_Invocation_Activation
+        (Call     : Node_Id;
+         Call_Rep : Scenario_Rep_Id;
+         Obj_Id   : Entity_Id;
+         Obj_Rep  : Target_Rep_Id;
+         Task_Typ : Entity_Id;
+         Task_Rep : Target_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Invocation_Activation);
+      --  Process activation call Call which activates object Obj_Id of task
+      --  type Task_Typ by processing all invocation scenarios within the task
+      --  body. Call_Rep is the representation of the call. Obj_Rep denotes the
+      --  representation of the object. Task_Rep is the representation of the
+      --  task type. In_State is the current state of the Processing phase.
+
+      procedure Process_Invocation_Body_Scenarios;
+      pragma Inline (Process_Invocation_Body_Scenarios);
+      --  Process all library level body scenarios
+
+      procedure Process_Invocation_Call
+        (Call     : Node_Id;
+         Call_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Invocation_Call);
+      --  Process invocation call scenario Call with representation Call_Rep.
+      --  In_State is the current state of the Processing phase.
+
+      procedure Process_Invocation_Scenario
+        (N        : Node_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Invocation_Scenario);
+      --  Process single invocation scenario N. In_State is the current state
+      --  of the Processing phase.
+
+      procedure Process_Invocation_Scenarios
+        (Iter     : in out NE_Set.Iterator;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Invocation_Scenarios);
+      --  Process all invocation scenarios obtained via iterator Iter. In_State
+      --  is the current state of the Processing phase.
+
+      procedure Process_Invocation_Spec_Scenarios;
+      pragma Inline (Process_Invocation_Spec_Scenarios);
+      --  Process all library level spec scenarios
+
+      procedure Process_Main_Unit;
+      pragma Inline (Process_Main_Unit);
+      --  Process all invocation scenarios within the main unit
+
+      procedure Process_Package_Declaration
+        (Pack_Decl : Node_Id;
+         In_State  : Processing_In_State);
+      pragma Inline (Process_Package_Declaration);
+      --  Process package declaration Pack_Decl by processing all invocation
+      --  scenarios in its visible and private declarations. If the main unit
+      --  contains a generic, the declarations of the body are also examined.
+      --  In_State is the current state of the Processing phase.
+
+      procedure Process_Protected_Type_Declaration
+        (Prot_Decl : Node_Id;
+         In_State  : Processing_In_State);
+      pragma Inline (Process_Protected_Type_Declaration);
+      --  Process the declarations of protected type Prot_Decl. In_State is the
+      --  current state of the Processing phase.
+
+      procedure Process_Subprogram_Declaration
+        (Subp_Decl : Node_Id;
+         In_State  : Processing_In_State);
+      pragma Inline (Process_Subprogram_Declaration);
+      --  Process subprogram declaration Subp_Decl by processing all invocation
+      --  scenarios within its body. In_State denotes the current state of the
+      --  Processing phase.
+
+      procedure Process_Subprogram_Instantiation
+        (Inst     : Node_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Subprogram_Instantiation);
+      --  Process subprogram instantiation Inst. In_State is the current state
+      --  of the Processing phase.
+
+      procedure Process_Task_Type_Declaration
+        (Task_Decl : Node_Id;
+         In_State  : Processing_In_State);
+      pragma Inline (Process_Task_Type_Declaration);
+      --  Process task declaration Task_Decl by processing all invocation
+      --  scenarios within its body. In_State is the current state of the
+      --  Processing phase.
+
+      procedure Record_Full_Invocation_Path (In_State : Processing_In_State);
+      pragma Inline (Record_Full_Invocation_Path);
+      --  Record all relations between scenario pairs found in the stack of
+      --  active scenarios. In_State is the current state of the Processing
+      --  phase.
+
+      procedure Record_Invocation_Path (In_State : Processing_In_State);
+      pragma Inline (Record_Invocation_Path);
+      --  Record the invocation relations found within the path represented in
+      --  the active scenario stack. In_State denotes the current state of the
+      --  Processing phase.
+
+      procedure Record_Simple_Invocation_Path (In_State : Processing_In_State);
+      pragma Inline (Record_Simple_Invocation_Path);
+      --  Record a single relation from the start to the end of the stack of
+      --  active scenarios. In_State is the current state of the Processing
+      --  phase.
+
+      procedure Record_Invocation_Relation
+        (Invk_Id  : Entity_Id;
+         Targ_Id  : Entity_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Record_Invocation_Relation);
+      --  Record an invocation relation with invoker Invk_Id and target Targ_Id
+      --  by creating an entry for it in the ALI file of the main unit. Formal
+      --  In_State denotes the current state of the Processing phase.
+
+      procedure Set_Is_Saved_Construct
+        (Constr : Entity_Id;
+         Val    : Boolean := True);
+      pragma Inline (Set_Is_Saved_Construct);
+      --  Mark invocation construct Constr as declared in the ALI file of the
+      --  main unit depending on value Val.
+
+      procedure Set_Is_Saved_Relation
+        (Rel : Invoker_Target_Relation;
+         Val : Boolean := True);
+      pragma Inline (Set_Is_Saved_Relation);
+      --  Mark simple invocation relation Rel as recorded in the ALI file of
+      --  the main unit depending on value Val.
+
+      function Target_Of
+        (Pos      : Active_Scenario_Pos;
+         In_State : Processing_In_State) return Entity_Id;
+      pragma Inline (Target_Of);
+      --  Given position within the active scenario stack Pos, obtain the
+      --  target of the indicated scenario. In_State is the current state
+      --  of the Processing phase.
+
+      procedure Traverse_Invocation_Body
+        (N        : Node_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Traverse_Invocation_Body);
+      --  Traverse subprogram body N looking for suitable invocation scenarios
+      --  that need to be processed for invocation graph recording purposes.
+      --  In_State is the current state of the Processing phase.
+
+      procedure Write_Invocation_Path (In_State : Processing_In_State);
+      pragma Inline (Write_Invocation_Path);
+      --  Write out a path represented by the active scenario on the stack to
+      --  standard output. In_State denotes the current state of the Processing
+      --  phase.
+
+      ------------------------------------
+      -- Build_Elaborate_Body_Procedure --
+      ------------------------------------
+
+      procedure Build_Elaborate_Body_Procedure is
+         Body_Decl : Node_Id;
+         Spec_Decl : Node_Id;
+
+      begin
+         --  Nothing to do when a previous call already created the procedure
+
+         if Present (Elab_Body_Id) then
+            return;
+         end if;
+
+         Spec_And_Body_From_Entity
+           (Id        => Cunit_Entity (Main_Unit),
+            Body_Decl => Body_Decl,
+            Spec_Decl => Spec_Decl);
+
+         pragma Assert (Present (Body_Decl));
+
+         Build_Elaborate_Procedure
+           (Proc_Id  => Elab_Body_Id,
+            Proc_Nam => Name_B,
+            Loc      => Sloc (Body_Decl));
+      end Build_Elaborate_Body_Procedure;
+
+      -------------------------------
+      -- Build_Elaborate_Procedure --
+      -------------------------------
+
+      procedure Build_Elaborate_Procedure
+        (Proc_Id  : out Entity_Id;
+         Proc_Nam : Name_Id;
+         Loc      : Source_Ptr)
+      is
+         Proc_Decl : Node_Id;
+         pragma Unreferenced (Proc_Decl);
+
+      begin
+         Proc_Id := Make_Defining_Identifier (Loc, Proc_Nam);
+
+         --  Partially decorate the elaboration procedure because it will not
+         --  be insertred into the tree and analyzed.
+
+         Set_Ekind (Proc_Id, E_Procedure);
+         Set_Etype (Proc_Id, Standard_Void_Type);
+         Set_Scope (Proc_Id, Unique_Entity (Cunit_Entity (Main_Unit)));
+
+         --  Create a dummy declaration for the elaboration procedure. The
+         --  declaration does not need to be syntactically legal, but must
+         --  carry an accurate source location.
+
+         Proc_Decl :=
+           Make_Subprogram_Body (Loc,
+             Specification              =>
+               Make_Procedure_Specification (Loc,
+                 Defining_Unit_Name => Proc_Id),
+             Declarations               => No_List,
+             Handled_Statement_Sequence => Empty);
+      end Build_Elaborate_Procedure;
+
+      ------------------------------------
+      -- Build_Elaborate_Spec_Procedure --
+      ------------------------------------
+
+      procedure Build_Elaborate_Spec_Procedure is
+         Body_Decl : Node_Id;
+         Spec_Decl : Node_Id;
+
+      begin
+         --  Nothing to do when a previous call already created the procedure
+
+         if Present (Elab_Spec_Id) then
+            return;
+         end if;
+
+         Spec_And_Body_From_Entity
+           (Id        => Cunit_Entity (Main_Unit),
+            Body_Decl => Body_Decl,
+            Spec_Decl => Spec_Decl);
+
+         pragma Assert (Present (Spec_Decl));
+
+         Build_Elaborate_Procedure
+           (Proc_Id  => Elab_Spec_Id,
+            Proc_Nam => Name_S,
+            Loc      => Sloc (Spec_Decl));
+      end Build_Elaborate_Spec_Procedure;
+
+      ---------------------------------
+      -- Build_Subprogram_Invocation --
+      ---------------------------------
+
+      function Build_Subprogram_Invocation
+        (Subp_Id : Entity_Id) return Node_Id
+      is
+         Marker    : constant Node_Id := Make_Call_Marker (Sloc (Subp_Id));
+         Subp_Decl : constant Node_Id := Unit_Declaration_Node (Subp_Id);
+
+      begin
+         --  Create a dummy call marker which invokes the subprogram
+
+         Set_Is_Declaration_Level_Node       (Marker, False);
+         Set_Is_Dispatching_Call             (Marker, False);
+         Set_Is_Elaboration_Checks_OK_Node   (Marker, False);
+         Set_Is_Elaboration_Warnings_OK_Node (Marker, False);
+         Set_Is_Ignored_Ghost_Node           (Marker, False);
+         Set_Is_Source_Call                  (Marker, False);
+         Set_Is_SPARK_Mode_On_Node           (Marker, False);
+
+         --  Invoke the uniform canonical entity of the subprogram
+
+         Set_Target (Marker, Canonical_Subprogram (Subp_Id));
+
+         --  Partially insert the marker into the tree
+
+         Set_Parent (Marker, Parent (Subp_Decl));
+
+         return Marker;
+      end Build_Subprogram_Invocation;
+
+      ---------------------------
+      -- Build_Task_Activation --
+      ---------------------------
+
+      function Build_Task_Activation
+        (Task_Typ : Entity_Id;
+         In_State : Processing_In_State) return Node_Id
+      is
+         Loc       : constant Source_Ptr := Sloc (Task_Typ);
+         Marker    : constant Node_Id    := Make_Call_Marker (Loc);
+         Task_Decl : constant Node_Id    := Unit_Declaration_Node (Task_Typ);
+
+         Activ_Id      : Entity_Id;
+         Marker_Rep_Id : Scenario_Rep_Id;
+         Task_Obj      : Entity_Id;
+         Task_Objs     : NE_List.Doubly_Linked_List;
+
+      begin
+         --  Create a dummy call marker which activates some tasks
+
+         Set_Is_Declaration_Level_Node       (Marker, False);
+         Set_Is_Dispatching_Call             (Marker, False);
+         Set_Is_Elaboration_Checks_OK_Node   (Marker, False);
+         Set_Is_Elaboration_Warnings_OK_Node (Marker, False);
+         Set_Is_Ignored_Ghost_Node           (Marker, False);
+         Set_Is_Source_Call                  (Marker, False);
+         Set_Is_SPARK_Mode_On_Node           (Marker, False);
+
+         --  Invoke the appropriate version of Activate_Tasks
+
+         if Restricted_Profile then
+            Activ_Id := RTE (RE_Activate_Restricted_Tasks);
+         else
+            Activ_Id := RTE (RE_Activate_Tasks);
+         end if;
+
+         Set_Target (Marker, Activ_Id);
+
+         --  Partially insert the marker into the tree
+
+         Set_Parent (Marker, Parent (Task_Decl));
+
+         --  Create a dummy task object. Partially decorate the object because
+         --  it will not be inserted into the tree and analyzed.
+
+         Task_Obj := Make_Temporary (Loc, 'T');
+         Set_Ekind (Task_Obj, E_Variable);
+         Set_Etype (Task_Obj, Task_Typ);
+
+         --  Associate the dummy task object with the activation call
+
+         Task_Objs := NE_List.Create;
+         NE_List.Append (Task_Objs, Task_Obj);
+
+         Marker_Rep_Id := Scenario_Representation_Of (Marker, In_State);
+         Set_Activated_Task_Objects (Marker_Rep_Id, Task_Objs);
+         Set_Activated_Task_Type    (Marker_Rep_Id, Task_Typ);
+
+         return Marker;
+      end Build_Task_Activation;
+
+      ----------------------------------
+      -- Declare_Invocation_Construct --
+      ----------------------------------
+
+      procedure Declare_Invocation_Construct
+        (Constr_Id : Entity_Id;
+         In_State  : Processing_In_State)
+      is
+         function Kind_Of (Id : Entity_Id) return Invocation_Construct_Kind;
+         pragma Inline (Kind_Of);
+         --  Obtain the invocation construct kind of arbitrary entity Id
+
+         function Placement_Of (Id : Entity_Id) return Body_Placement_Kind;
+         pragma Inline (Placement_Of);
+         --  Obtain the body placement of arbitrary entity Id
+
+         function Placement_Of_Node (N : Node_Id) return Body_Placement_Kind;
+         pragma Inline (Placement_Of_Node);
+         --  Obtain the body placement of arbitrary node N
+
+         -------------
+         -- Kind_Of --
+         -------------
+
+         function Kind_Of (Id : Entity_Id) return Invocation_Construct_Kind is
+         begin
+            if Id = Elab_Body_Id then
+               return Elaborate_Body_Procedure;
+
+            elsif Id = Elab_Spec_Id then
+               return Elaborate_Spec_Procedure;
+
+            else
+               return Regular_Construct;
+            end if;
+         end Kind_Of;
+
+         ------------------
+         -- Placement_Of --
+         ------------------
+
+         function Placement_Of (Id : Entity_Id) return Body_Placement_Kind is
+            Id_Rep    : constant Target_Rep_Id :=
+                          Target_Representation_Of (Id, In_State);
+            Body_Decl : constant Node_Id := Body_Declaration (Id_Rep);
+            Spec_Decl : constant Node_Id := Spec_Declaration (Id_Rep);
+
+         begin
+            --  The entity has a body
+
+            if Present (Body_Decl) then
+               return Placement_Of_Node (Body_Decl);
+
+            --  Otherwise the entity must have a spec
+
+            else
+               pragma Assert (Present (Spec_Decl));
+               return Placement_Of_Node (Spec_Decl);
+            end if;
+         end Placement_Of;
+
+         -----------------------
+         -- Placement_Of_Node --
+         -----------------------
+
+         function Placement_Of_Node (N : Node_Id) return Body_Placement_Kind is
+            Main_Unit_Id : constant Entity_Id := Cunit_Entity (Main_Unit);
+            N_Unit_Id    : constant Entity_Id := Find_Top_Unit (N);
+
+         begin
+            --  The node is in the main unit, its placement depends on the main
+            --  unit kind.
+
+            if N_Unit_Id = Main_Unit_Id then
+
+               --  The main unit is a body
+
+               if Ekind_In (Main_Unit_Id, E_Package_Body,
+                                          E_Subprogram_Body)
+               then
+                  return In_Body;
+
+               --  The main unit is a stand-alone subprogram body
+
+               elsif Ekind_In (Main_Unit_Id, E_Function, E_Procedure)
+                 and then Nkind (Unit_Declaration_Node (Main_Unit_Id)) =
+                            N_Subprogram_Body
+               then
+                  return In_Body;
+
+               --  Otherwise the main unit is a spec
+
+               else
+                  return In_Spec;
+               end if;
+
+            --  Otherwise the node is in the complementary unit of the main
+            --  unit. The main unit is a body, the node is in the spec.
+
+            elsif Ekind_In (Main_Unit_Id, E_Package_Body,
+                                          E_Subprogram_Body)
+            then
+               return In_Spec;
+
+            --  The main unit is a spec, the node is in the body
+
+            else
+               return In_Body;
+            end if;
+         end Placement_Of_Node;
+
+         --  Local variables
+
+         IC_Rec : Invocation_Construct_Record;
+
+      --  Start of processing for Declare_Invocation_Construct
+
+      begin
+         --  Nothing to do when the construct has already been declared in the
+         --  ALI file.
+
+         if Is_Saved_Construct (Constr_Id) then
+            return;
+         end if;
+
+         --  Mark the construct as declared in the ALI file
+
+         Set_Is_Saved_Construct (Constr_Id);
+
+         IC_Rec.Kind      := Kind_Of      (Constr_Id);
+         IC_Rec.Placement := Placement_Of (Constr_Id);
+         IC_Rec.Signature := Signature_Of (Constr_Id);
+
+         --  Add the construct in the ALI file
+
+         Add_Invocation_Construct
+           (IC_Rec       => IC_Rec,
+            Update_Units => False);
+      end Declare_Invocation_Construct;
+
+      -------------------------------
+      -- Finalize_Invocation_Graph --
+      -------------------------------
+
+      procedure Finalize_Invocation_Graph is
+      begin
+         NE_Set.Destroy (Saved_Constructs_Set);
+         IR_Set.Destroy (Saved_Relations_Set);
+      end Finalize_Invocation_Graph;
+
+      ----------
+      -- Hash --
+      ----------
+
+      function Hash (Key : Invoker_Target_Relation) return Bucket_Range_Type is
+         pragma Assert (Present (Key.Invoker));
+         pragma Assert (Present (Key.Target));
+
+      begin
+         return
+           Hash_Two_Keys
+             (Bucket_Range_Type (Key.Invoker),
+              Bucket_Range_Type (Key.Target));
+      end Hash;
+
+      ---------------------------------
+      -- Initialize_Invocation_Graph --
+      ---------------------------------
+
+      procedure Initialize_Invocation_Graph is
+      begin
+         Saved_Constructs_Set := NE_Set.Create (100);
+         Saved_Relations_Set  := IR_Set.Create (200);
+      end Initialize_Invocation_Graph;
+
+      -----------------------------------
+      -- Invocation_Graph_Recording_OK --
+      -----------------------------------
+
+      function Invocation_Graph_Recording_OK return Boolean is
+         Main_Cunit : constant Node_Id := Cunit (Main_Unit);
+
+      begin
+         --  Nothing to do when switch -gnatd_G (encode invocation graph in ALI
+         --  files) is not in effect.
+
+         if not Debug_Flag_Underscore_GG then
+            return False;
+
+         --  Nothing to do when compiling for GNATprove because the invocation
+         --  graph is not needed.
+
+         elsif GNATprove_Mode then
+            return False;
+
+         --  Nothing to do when the compilation will not produce an ALI file
+
+         elsif Serious_Errors_Detected > 0 then
+            return False;
+
+         --  Nothing to do when the main unit requires a body. Processing the
+         --  completing body will create the ALI file for the unit and record
+         --  the invocation graph.
+
+         elsif Body_Required (Main_Cunit) then
+            return False;
+         end if;
+
          return True;
+      end Invocation_Graph_Recording_OK;
 
-      --  A formal subprogram does not have a body
+      ----------------------------
+      -- Is_Invocation_Scenario --
+      ----------------------------
 
-      elsif Is_Formal_Subprogram (Subp_Id) then
-         return True;
+      function Is_Invocation_Scenario (N : Node_Id) return Boolean is
+      begin
+         return
+           Is_Suitable_Access_Taken (N)
+             or else Is_Suitable_Call (N)
+             or else Is_Suitable_Instantiation (N);
+      end Is_Invocation_Scenario;
 
-      --  An imported subprogram may have a body, however it is not known at
-      --  compile or bind time where the body resides and whether it will be
-      --  elaborated on time.
+      --------------------------
+      -- Is_Invocation_Target --
+      --------------------------
 
-      elsif Is_Imported (Subp_Id) then
-         return True;
-      end if;
-
-      return False;
-   end Is_Bodiless_Subprogram;
-
-   ------------------------
-   -- Is_Controlled_Proc --
-   ------------------------
-
-   function Is_Controlled_Proc
-     (Subp_Id  : Entity_Id;
-      Subp_Nam : Name_Id) return Boolean
-   is
-      Formal_Id : Entity_Id;
-
-   begin
-      pragma Assert (Nam_In (Subp_Nam, Name_Adjust,
-                                       Name_Finalize,
-                                       Name_Initialize));
-
-      --  To qualify, the subprogram must denote a source procedure with name
-      --  Adjust, Finalize, or Initialize where the sole formal is controlled.
-
-      if Comes_From_Source (Subp_Id)
-        and then Ekind (Subp_Id) = E_Procedure
-        and then Chars (Subp_Id) = Subp_Nam
-      then
-         Formal_Id := First_Formal (Subp_Id);
+      function Is_Invocation_Target (Id : Entity_Id) return Boolean is
+      begin
+         --  To qualify, the entity must either come from source, or denote an
+         --  Ada, bridge, or SPARK target.
 
          return
-           Present (Formal_Id)
-             and then Is_Controlled (Etype (Formal_Id))
-             and then No (Next_Formal (Formal_Id));
-      end if;
+           Comes_From_Source (Id)
+             or else Is_Ada_Semantic_Target (Id)
+             or else Is_Bridge_Target (Id)
+             or else Is_SPARK_Semantic_Target (Id);
+      end Is_Invocation_Target;
 
-      return False;
-   end Is_Controlled_Proc;
+      ------------------------
+      -- Is_Saved_Construct --
+      ------------------------
 
-   ---------------------------------------
-   -- Is_Default_Initial_Condition_Proc --
-   ---------------------------------------
+      function Is_Saved_Construct (Constr : Entity_Id) return Boolean is
+         pragma Assert (Present (Constr));
+      begin
+         return NE_Set.Contains (Saved_Constructs_Set, Constr);
+      end Is_Saved_Construct;
 
-   function Is_Default_Initial_Condition_Proc
-     (Id : Entity_Id) return Boolean
-   is
-   begin
-      --  To qualify, the entity must denote a Default_Initial_Condition
-      --  procedure.
+      -----------------------
+      -- Is_Saved_Relation --
+      -----------------------
 
-      return Ekind (Id) = E_Procedure and then Is_DIC_Procedure (Id);
-   end Is_Default_Initial_Condition_Proc;
+      function Is_Saved_Relation
+        (Rel : Invoker_Target_Relation) return Boolean
+      is
+         pragma Assert (Present (Rel.Invoker));
+         pragma Assert (Present (Rel.Target));
 
-   -----------------------
-   -- Is_Finalizer_Proc --
-   -----------------------
+      begin
+         return IR_Set.Contains (Saved_Relations_Set, Rel);
+      end Is_Saved_Relation;
 
-   function Is_Finalizer_Proc (Id : Entity_Id) return Boolean is
-   begin
-      --  To qualify, the entity must denote a _Finalizer procedure
+      --------------------------
+      -- Process_Declarations --
+      --------------------------
 
-      return Ekind (Id) = E_Procedure and then Chars (Id) = Name_uFinalizer;
-   end Is_Finalizer_Proc;
+      procedure Process_Declarations
+        (Decls    : List_Id;
+         In_State : Processing_In_State)
+      is
+         Decl : Node_Id;
 
-   -----------------------
-   -- Is_Guaranteed_ABE --
-   -----------------------
+      begin
+         Decl := First (Decls);
+         while Present (Decl) loop
 
-   function Is_Guaranteed_ABE
-     (N           : Node_Id;
-      Target_Decl : Node_Id;
-      Target_Body : Node_Id) return Boolean
-   is
-   begin
-      --  Avoid cascaded errors if there were previous serious infractions.
-      --  As a result the scenario will not be treated as a guaranteed ABE.
-      --  This behaviour parallels that of the old ABE mechanism.
+            --  Freeze node
 
-      if Serious_Errors_Detected > 0 then
-         return False;
+            if Nkind (Decl) = N_Freeze_Entity then
+               Process_Freeze_Node
+                 (Fnode    => Decl,
+                  In_State => In_State);
 
-      --  The scenario and the target appear within the same context ignoring
-      --  enclosing library levels.
+            --  Package (nested)
 
-      --  Performance note: parent traversal
+            elsif Nkind (Decl) = N_Package_Declaration then
+               Process_Package_Declaration
+                 (Pack_Decl => Decl,
+                  In_State  => In_State);
 
-      elsif In_Same_Context (N, Target_Decl) then
+            --  Protected type
 
-         --  The target body has already been encountered. The scenario results
-         --  in a guaranteed ABE if it appears prior to the body.
+            elsif Nkind_In (Decl, N_Protected_Type_Declaration,
+                                  N_Single_Protected_Declaration)
+            then
+               Process_Protected_Type_Declaration
+                 (Prot_Decl => Decl,
+                  In_State  => In_State);
 
-         if Present (Target_Body) then
-            return Earlier_In_Extended_Unit (N, Target_Body);
+            --  Subprogram or entry
 
-         --  Otherwise the body has not been encountered yet. The scenario is
-         --  a guaranteed ABE since the body will appear later. It is assumed
-         --  that the caller has already checked whether the scenario is ABE-
-         --  safe as optional bodies are not considered here.
+            elsif Nkind_In (Decl, N_Entry_Declaration,
+                                  N_Subprogram_Declaration)
+            then
+               Process_Subprogram_Declaration
+                 (Subp_Decl => Decl,
+                  In_State  => In_State);
+
+            --  Subprogram body (stand alone)
+
+            elsif Nkind (Decl) = N_Subprogram_Body
+              and then No (Corresponding_Spec (Decl))
+            then
+               Process_Subprogram_Declaration
+                 (Subp_Decl => Decl,
+                  In_State  => In_State);
+
+            --  Subprogram instantiation
+
+            elsif Nkind (Decl) in N_Subprogram_Instantiation then
+               Process_Subprogram_Instantiation
+                 (Inst     => Decl,
+                  In_State => In_State);
+
+            --  Task type
+
+            elsif Nkind_In (Decl, N_Single_Task_Declaration,
+                                  N_Task_Type_Declaration)
+            then
+               Process_Task_Type_Declaration
+                 (Task_Decl => Decl,
+                  In_State  => In_State);
+
+            --  Task type (derived)
+
+            elsif Nkind (Decl) = N_Full_Type_Declaration
+              and then Is_Task_Type (Defining_Entity (Decl))
+            then
+               Process_Task_Type_Declaration
+                 (Task_Decl => Decl,
+                  In_State  => In_State);
+            end if;
+
+            Next (Decl);
+         end loop;
+      end Process_Declarations;
+
+      -------------------------
+      -- Process_Freeze_Node --
+      -------------------------
+
+      procedure Process_Freeze_Node
+        (Fnode    : Node_Id;
+         In_State : Processing_In_State)
+      is
+      begin
+         Process_Declarations
+           (Decls    => Actions (Fnode),
+            In_State => In_State);
+      end Process_Freeze_Node;
+
+      -----------------------------------
+      -- Process_Invocation_Activation --
+      -----------------------------------
+
+      procedure Process_Invocation_Activation
+        (Call     : Node_Id;
+         Call_Rep : Scenario_Rep_Id;
+         Obj_Id   : Entity_Id;
+         Obj_Rep  : Target_Rep_Id;
+         Task_Typ : Entity_Id;
+         Task_Rep : Target_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         pragma Unreferenced (Call);
+         pragma Unreferenced (Call_Rep);
+         pragma Unreferenced (Obj_Id);
+         pragma Unreferenced (Obj_Rep);
+
+      begin
+         --  Nothing to do when the task type appears within an internal unit
+
+         if In_Internal_Unit (Task_Typ) then
+            return;
+         end if;
+
+         --  The task type being activated is within the main unit. Extend the
+         --  DFS traversal into its body.
+
+         if In_Extended_Main_Code_Unit (Task_Typ) then
+            Traverse_Invocation_Body
+              (N        => Body_Declaration (Task_Rep),
+               In_State => In_State);
+
+         --  The task type being activated resides within an external unit
+         --
+         --      Main unit         External unit
+         --    +-----------+      +-------------+
+         --    |           |      |             |
+         --    |  Start ------------> Task_Typ  |
+         --    |           |      |             |
+         --    +-----------+      +-------------+
+         --
+         --  Record the invocation path which originates from Start and reaches
+         --  the task type.
 
          else
-            return True;
+            Record_Invocation_Path (In_State);
          end if;
-      end if;
+      end Process_Invocation_Activation;
 
-      return False;
-   end Is_Guaranteed_ABE;
+      ---------------------------------------
+      -- Process_Invocation_Body_Scenarios --
+      ---------------------------------------
 
-   -------------------------------
-   -- Is_Initial_Condition_Proc --
-   -------------------------------
+      procedure Process_Invocation_Body_Scenarios is
+         Iter : NE_Set.Iterator := Iterate_Library_Body_Scenarios;
+      begin
+         Process_Invocation_Scenarios
+           (Iter     => Iter,
+            In_State => Invocation_Body_State);
+      end Process_Invocation_Body_Scenarios;
 
-   function Is_Initial_Condition_Proc (Id : Entity_Id) return Boolean is
-   begin
-      --  To qualify, the entity must denote an Initial_Condition procedure
+      -----------------------------
+      -- Process_Invocation_Call --
+      -----------------------------
 
-      return
-        Ekind (Id) = E_Procedure and then Is_Initial_Condition_Procedure (Id);
-   end Is_Initial_Condition_Proc;
+      procedure Process_Invocation_Call
+        (Call     : Node_Id;
+         Call_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         pragma Unreferenced (Call);
 
-   --------------------
-   -- Is_Initialized --
-   --------------------
+         Subp_Id  : constant Entity_Id     := Target (Call_Rep);
+         Subp_Rep : constant Target_Rep_Id :=
+                      Target_Representation_Of (Subp_Id, In_State);
 
-   function Is_Initialized (Obj_Decl : Node_Id) return Boolean is
-   begin
-      --  To qualify, the object declaration must have an expression
+      begin
+         --  Nothing to do when the subprogram appears within an internal unit
 
-      return
-        Present (Expression (Obj_Decl)) or else Has_Init_Expression (Obj_Decl);
-   end Is_Initialized;
+         if In_Internal_Unit (Subp_Id) then
+            return;
 
-   -----------------------
-   -- Is_Invariant_Proc --
-   -----------------------
+         --  Nothing to do for an abstract subprogram because it has no body to
+         --  examine.
 
-   function Is_Invariant_Proc (Id : Entity_Id) return Boolean is
-   begin
-      --  To qualify, the entity must denote the "full" invariant procedure
+         elsif Ekind_In (Subp_Id, E_Function, E_Procedure)
+           and then Is_Abstract_Subprogram (Subp_Id)
+         then
+            return;
 
-      return Ekind (Id) = E_Procedure and then Is_Invariant_Procedure (Id);
-   end Is_Invariant_Proc;
+         --  Nothin to do for a formal subprogram because it has no body to
+         --  examine.
 
-   ---------------------------------------
-   -- Is_Non_Library_Level_Encapsulator --
-   ---------------------------------------
+         elsif Is_Formal_Subprogram (Subp_Id) then
+            return;
+         end if;
 
-   function Is_Non_Library_Level_Encapsulator (N : Node_Id) return Boolean is
-   begin
-      case Nkind (N) is
-         when N_Abstract_Subprogram_Declaration
-            | N_Aspect_Specification
-            | N_Component_Declaration
-            | N_Entry_Body
-            | N_Entry_Declaration
-            | N_Expression_Function
-            | N_Formal_Abstract_Subprogram_Declaration
-            | N_Formal_Concrete_Subprogram_Declaration
-            | N_Formal_Object_Declaration
-            | N_Formal_Package_Declaration
-            | N_Formal_Type_Declaration
-            | N_Generic_Association
-            | N_Implicit_Label_Declaration
-            | N_Incomplete_Type_Declaration
-            | N_Private_Extension_Declaration
-            | N_Private_Type_Declaration
-            | N_Protected_Body
-            | N_Protected_Type_Declaration
-            | N_Single_Protected_Declaration
-            | N_Single_Task_Declaration
-            | N_Subprogram_Body
-            | N_Subprogram_Declaration
-            | N_Task_Body
-            | N_Task_Type_Declaration
-         =>
-            return True;
+         --  The subprogram being called is within the main unit. Extend the
+         --  DFS traversal into its barrier function and body.
 
-         when others =>
-            return Is_Generic_Declaration_Or_Body (N);
-      end case;
-   end Is_Non_Library_Level_Encapsulator;
+         if In_Extended_Main_Code_Unit (Subp_Id) then
+            if Ekind_In (Subp_Id, E_Entry, E_Entry_Family, E_Procedure) then
+               Traverse_Invocation_Body
+                 (N        => Barrier_Body_Declaration (Subp_Rep),
+                  In_State => In_State);
+            end if;
 
-   -------------------------------
-   -- Is_Partial_Invariant_Proc --
-   -------------------------------
+            Traverse_Invocation_Body
+              (N        => Body_Declaration (Subp_Rep),
+               In_State => In_State);
 
-   function Is_Partial_Invariant_Proc (Id : Entity_Id) return Boolean is
-   begin
-      --  To qualify, the entity must denote the "partial" invariant procedure
+         --  The subprogram being called resides within an external unit
+         --
+         --      Main unit         External unit
+         --    +-----------+      +-------------+
+         --    |           |      |             |
+         --    |  Start ------------> Subp_Id   |
+         --    |           |      |             |
+         --    +-----------+      +-------------+
+         --
+         --  Record the invocation path which originates from Start and reaches
+         --  the subprogram.
 
-      return
-        Ekind (Id) = E_Procedure and then Is_Partial_Invariant_Procedure (Id);
-   end Is_Partial_Invariant_Proc;
+         else
+            Record_Invocation_Path (In_State);
+         end if;
+      end Process_Invocation_Call;
 
-   ----------------------------
-   -- Is_Postconditions_Proc --
-   ----------------------------
+      ---------------------------------
+      -- Process_Invocation_Scenario --
+      ---------------------------------
 
-   function Is_Postconditions_Proc (Id : Entity_Id) return Boolean is
-   begin
-      --  To qualify, the entity must denote a _Postconditions procedure
+      procedure Process_Invocation_Scenario
+        (N        : Node_Id;
+         In_State : Processing_In_State)
+      is
+         Scen     : constant Node_Id := Scenario (N);
+         Scen_Rep : Scenario_Rep_Id;
 
-      return
-        Ekind (Id) = E_Procedure and then Chars (Id) = Name_uPostconditions;
-   end Is_Postconditions_Proc;
+      begin
+         --  Add the current scenario to the stack of active scenarios
 
-   ---------------------------
-   -- Is_Preelaborated_Unit --
-   ---------------------------
+         Push_Active_Scenario (Scen);
 
-   function Is_Preelaborated_Unit (Id : Entity_Id) return Boolean is
-   begin
-      return
-        Is_Preelaborated (Id)
-          or else Is_Pure (Id)
-          or else Is_Remote_Call_Interface (Id)
-          or else Is_Remote_Types (Id)
-          or else Is_Shared_Passive (Id);
-   end Is_Preelaborated_Unit;
+         --  Call or task activation
 
-   ------------------------
-   -- Is_Protected_Entry --
-   ------------------------
+         if Is_Suitable_Call (Scen) then
+            Scen_Rep := Scenario_Representation_Of (Scen, In_State);
 
-   function Is_Protected_Entry (Id : Entity_Id) return Boolean is
-   begin
-      --  To qualify, the entity must denote an entry defined in a protected
-      --  type.
+            --  Routine Build_Call_Marker creates call markers regardless of
+            --  whether the call occurs within the main unit or not. This way
+            --  the serialization of internal names is kept consistent. Only
+            --  call markers found within the main unit must be processed.
 
-      return
-        Is_Entry (Id)
-          and then Is_Protected_Type (Non_Private_View (Scope (Id)));
-   end Is_Protected_Entry;
+            if In_Main_Context (Scen) then
+               Scen_Rep := Scenario_Representation_Of (Scen, In_State);
 
-   -----------------------
-   -- Is_Protected_Subp --
-   -----------------------
+               if Kind (Scen_Rep) = Call_Scenario then
+                  Process_Invocation_Call
+                    (Call     => Scen,
+                     Call_Rep => Scen_Rep,
+                     In_State => In_State);
 
-   function Is_Protected_Subp (Id : Entity_Id) return Boolean is
-   begin
-      --  To qualify, the entity must denote a subprogram defined within a
-      --  protected type.
+               else
+                  pragma Assert (Kind (Scen_Rep) = Task_Activation_Scenario);
 
-      return
-        Ekind_In (Id, E_Function, E_Procedure)
-          and then Is_Protected_Type (Non_Private_View (Scope (Id)));
-   end Is_Protected_Subp;
+                  Process_Activation
+                    (Call      => Scen,
+                     Call_Rep  => Scen_Rep,
+                     Processor => Process_Invocation_Activation'Access,
+                     In_State  => In_State);
+               end if;
+            end if;
+         end if;
 
-   ----------------------------
-   -- Is_Protected_Body_Subp --
-   ----------------------------
+         --  Remove the current scenario from the stack of active scenarios
+         --  once all invocation constructs and paths have been saved.
 
-   function Is_Protected_Body_Subp (Id : Entity_Id) return Boolean is
-   begin
-      --  To qualify, the entity must denote a subprogram with attribute
-      --  Protected_Subprogram set.
+         Pop_Active_Scenario (Scen);
+      end Process_Invocation_Scenario;
 
-      return
-        Ekind_In (Id, E_Function, E_Procedure)
-          and then Present (Protected_Subprogram (Id));
-   end Is_Protected_Body_Subp;
+      ----------------------------------
+      -- Process_Invocation_Scenarios --
+      ----------------------------------
 
-   --------------------------------
-   -- Is_Recorded_SPARK_Scenario --
-   --------------------------------
+      procedure Process_Invocation_Scenarios
+        (Iter     : in out NE_Set.Iterator;
+         In_State : Processing_In_State)
+      is
+         N : Node_Id;
 
-   function Is_Recorded_SPARK_Scenario (N : Node_Id) return Boolean is
-   begin
-      if Recorded_SPARK_Scenarios_In_Use then
-         return Recorded_SPARK_Scenarios.Get (N);
-      end if;
+      begin
+         while NE_Set.Has_Next (Iter) loop
+            NE_Set.Next (Iter, N);
 
-      return Recorded_SPARK_Scenarios_No_Element;
-   end Is_Recorded_SPARK_Scenario;
+            --  Reset the traversed status of all subprogram bodies because the
+            --  current invocation scenario acts as a new DFS traversal root.
 
-   ------------------------------------
-   -- Is_Recorded_Top_Level_Scenario --
-   ------------------------------------
+            Reset_Traversed_Bodies;
 
-   function Is_Recorded_Top_Level_Scenario (N : Node_Id) return Boolean is
-   begin
-      if Recorded_Top_Level_Scenarios_In_Use then
-         return Recorded_Top_Level_Scenarios.Get (N);
-      end if;
+            Process_Invocation_Scenario (N, In_State);
+         end loop;
+      end Process_Invocation_Scenarios;
 
-      return Recorded_Top_Level_Scenarios_No_Element;
-   end Is_Recorded_Top_Level_Scenario;
+      ---------------------------------------
+      -- Process_Invocation_Spec_Scenarios --
+      ---------------------------------------
+
+      procedure Process_Invocation_Spec_Scenarios is
+         Iter : NE_Set.Iterator := Iterate_Library_Spec_Scenarios;
+      begin
+         Process_Invocation_Scenarios
+           (Iter     => Iter,
+            In_State => Invocation_Spec_State);
+      end Process_Invocation_Spec_Scenarios;
+
+      -----------------------
+      -- Process_Main_Unit --
+      -----------------------
+
+      procedure Process_Main_Unit is
+         Unit_Decl : constant Node_Id := Unit (Cunit (Main_Unit));
+         Spec_Id   : Entity_Id;
+
+      begin
+         --  The main unit is a [generic] package body
+
+         if Nkind (Unit_Decl) = N_Package_Body then
+            Spec_Id := Corresponding_Spec (Unit_Decl);
+            pragma Assert (Present (Spec_Id));
+
+            Process_Package_Declaration
+              (Pack_Decl => Unit_Declaration_Node (Spec_Id),
+               In_State  => Invocation_Construct_State);
+
+         --  The main unit is a [generic] package declaration
+
+         elsif Nkind (Unit_Decl) = N_Package_Declaration then
+            Process_Package_Declaration
+              (Pack_Decl => Unit_Decl,
+               In_State  => Invocation_Construct_State);
+
+         --  The main unit is a [generic] subprogram body
+
+         elsif Nkind (Unit_Decl) = N_Subprogram_Body then
+            Spec_Id := Corresponding_Spec (Unit_Decl);
+
+            --  The body completes a previous declaration
+
+            if Present (Spec_Id) then
+               Process_Subprogram_Declaration
+                 (Subp_Decl => Unit_Declaration_Node (Spec_Id),
+                  In_State  => Invocation_Construct_State);
+
+            --  Otherwise the body is stand-alone
+
+            else
+               Process_Subprogram_Declaration
+                 (Subp_Decl => Unit_Decl,
+                  In_State  => Invocation_Construct_State);
+            end if;
+
+         --  The main unit is a subprogram instantiation
+
+         elsif Nkind (Unit_Decl) in N_Subprogram_Instantiation then
+            Process_Subprogram_Instantiation
+              (Inst     => Unit_Decl,
+               In_State => Invocation_Construct_State);
+
+         --  The main unit is an imported subprogram declaration
+
+         elsif Nkind (Unit_Decl) = N_Subprogram_Declaration then
+            Process_Subprogram_Declaration
+              (Subp_Decl => Unit_Decl,
+               In_State  => Invocation_Construct_State);
+         end if;
+      end Process_Main_Unit;
+
+      ---------------------------------
+      -- Process_Package_Declaration --
+      ---------------------------------
+
+      procedure Process_Package_Declaration
+        (Pack_Decl : Node_Id;
+         In_State  : Processing_In_State)
+      is
+         Body_Id : constant Entity_Id := Corresponding_Body (Pack_Decl);
+         Spec    : constant Node_Id   := Specification (Pack_Decl);
+         Spec_Id : constant Entity_Id := Defining_Entity (Pack_Decl);
+
+      begin
+         --  Add a declaration for the generic package in the ALI of the main
+         --  unit in case a client unit instantiates it.
+
+         if Ekind (Spec_Id) = E_Generic_Package then
+            Declare_Invocation_Construct
+              (Constr_Id => Spec_Id,
+               In_State  => In_State);
+
+         --  Otherwise inspect the visible and private declarations of the
+         --  package for invocation constructs.
+
+         else
+            Process_Declarations
+              (Decls    => Visible_Declarations (Spec),
+               In_State => In_State);
+
+            Process_Declarations
+              (Decls    => Private_Declarations (Spec),
+               In_State => In_State);
+
+            --  The package body containst at least one generic unit or an
+            --  inlinable subprogram. Such constructs may grant clients of
+            --  the main unit access to the private enclosing contexts of
+            --  the constructs. Process the main unit body to discover and
+            --  encode relevant invocation constructs and relations that
+            --  may ultimately reach an external unit.
+
+            if Present (Body_Id)
+              and then Save_Invocation_Graph_Of_Body (Cunit (Main_Unit))
+            then
+               Process_Declarations
+                 (Decls    => Declarations (Unit_Declaration_Node (Body_Id)),
+                  In_State => In_State);
+            end if;
+         end if;
+      end Process_Package_Declaration;
+
+      ----------------------------------------
+      -- Process_Protected_Type_Declaration --
+      ----------------------------------------
+
+      procedure Process_Protected_Type_Declaration
+        (Prot_Decl : Node_Id;
+         In_State  : Processing_In_State)
+      is
+         Prot_Def : constant Node_Id := Protected_Definition (Prot_Decl);
+
+      begin
+         if Present (Prot_Def) then
+            Process_Declarations
+              (Decls    => Visible_Declarations (Prot_Def),
+               In_State => In_State);
+         end if;
+      end Process_Protected_Type_Declaration;
+
+      ------------------------------------
+      -- Process_Subprogram_Declaration --
+      ------------------------------------
+
+      procedure Process_Subprogram_Declaration
+        (Subp_Decl : Node_Id;
+         In_State  : Processing_In_State)
+      is
+         Subp_Id : constant Entity_Id := Defining_Entity (Subp_Decl);
+
+      begin
+         --  Nothing to do when the subprogram is not an invocation target
+
+         if not Is_Invocation_Target (Subp_Id) then
+            return;
+         end if;
+
+         --  Add a declaration for the subprogram in the ALI file of the main
+         --  unit in case a client unit calls or instantiates it.
+
+         Declare_Invocation_Construct
+           (Constr_Id => Subp_Id,
+            In_State  => In_State);
+
+         --  Do not process subprograms without a body because they do not
+         --  contain any invocation scenarios.
+
+         if Is_Bodiless_Subprogram (Subp_Id) then
+            null;
+
+         --  Do not process generic subprograms because generics must not be
+         --  examined.
+
+         elsif Is_Generic_Subprogram (Subp_Id) then
+            null;
+
+         --  Otherwise create a dummy scenario which calls the subprogram to
+         --  act as a root for a DFS traversal.
+
+         else
+            --  Reset the traversed status of all subprogram bodies because the
+            --  subprogram acts as a new DFS traversal root.
+
+            Reset_Traversed_Bodies;
+
+            Process_Invocation_Scenario
+              (N        => Build_Subprogram_Invocation (Subp_Id),
+               In_State => In_State);
+         end if;
+      end Process_Subprogram_Declaration;
+
+      --------------------------------------
+      -- Process_Subprogram_Instantiation --
+      --------------------------------------
+
+      procedure Process_Subprogram_Instantiation
+        (Inst     : Node_Id;
+         In_State : Processing_In_State)
+      is
+      begin
+         --  Add a declaration for the instantiation in the ALI file of the
+         --  main unit in case a client unit calls it.
+
+         Declare_Invocation_Construct
+           (Constr_Id => Defining_Entity (Inst),
+            In_State  => In_State);
+      end Process_Subprogram_Instantiation;
+
+      -----------------------------------
+      -- Process_Task_Type_Declaration --
+      -----------------------------------
+
+      procedure Process_Task_Type_Declaration
+        (Task_Decl : Node_Id;
+         In_State  : Processing_In_State)
+      is
+         Task_Typ : constant Entity_Id := Defining_Entity (Task_Decl);
+         Task_Def : Node_Id;
+
+      begin
+         --  Add a declaration for the task type the ALI file of the main unit
+         --  in case a client unit creates a task object and activates it.
+
+         Declare_Invocation_Construct
+           (Constr_Id => Task_Typ,
+            In_State  => In_State);
+
+         --  Process the entries of the task type because they represent valid
+         --  entry points into the task body.
+
+         if Nkind_In (Task_Decl, N_Single_Task_Declaration,
+                                 N_Task_Type_Declaration)
+         then
+            Task_Def := Task_Definition (Task_Decl);
+
+            if Present (Task_Def) then
+               Process_Declarations
+                 (Decls    => Visible_Declarations (Task_Def),
+                  In_State => In_State);
+            end if;
+         end if;
+
+         --  Reset the traversed status of all subprogram bodies because the
+         --  task type acts as a new DFS traversal root.
+
+         Reset_Traversed_Bodies;
+
+         --  Create a dummy scenario which activates an anonymous object of the
+         --  task type to acts as a root of a DFS traversal.
+
+         Process_Invocation_Scenario
+           (N        => Build_Task_Activation (Task_Typ, In_State),
+            In_State => In_State);
+      end Process_Task_Type_Declaration;
+
+      ---------------------------------
+      -- Record_Full_Invocation_Path --
+      ---------------------------------
+
+      procedure Record_Full_Invocation_Path (In_State : Processing_In_State) is
+         package Scenarios renames Active_Scenario_Stack;
+
+      begin
+         --  The path originates from the elaboration of the body. Add an extra
+         --  relation from the elaboration body procedure to the first active
+         --  scenario.
+
+         if In_State.Processing = Invocation_Body_Processing then
+            Build_Elaborate_Body_Procedure;
+
+            Record_Invocation_Relation
+              (Invk_Id  => Elab_Body_Id,
+               Targ_Id  => Target_Of (Scenarios.First, In_State),
+               In_State => In_State);
+
+         --  The path originates from the elaboration of the spec. Add an extra
+         --  relation from the elaboration spec procedure to the first active
+         --  scenario.
+
+         elsif In_State.Processing = Invocation_Spec_Processing then
+            Build_Elaborate_Spec_Procedure;
+
+            Record_Invocation_Relation
+              (Invk_Id  => Elab_Spec_Id,
+               Targ_Id  => Target_Of (Scenarios.First, In_State),
+               In_State => In_State);
+         end if;
+
+         --  Record individual relations formed by pairs of scenarios
+
+         for Index in Scenarios.First .. Scenarios.Last - 1 loop
+            Record_Invocation_Relation
+              (Invk_Id  => Target_Of (Index,     In_State),
+               Targ_Id  => Target_Of (Index + 1, In_State),
+               In_State => In_State);
+         end loop;
+      end Record_Full_Invocation_Path;
+
+      -----------------------------
+      -- Record_Invocation_Graph --
+      -----------------------------
+
+      procedure Record_Invocation_Graph is
+      begin
+         --  Nothing to do when the invocation graph is not recorded
+
+         if not Invocation_Graph_Recording_OK then
+            return;
+         end if;
+
+         --  Examine all library level invocation scenarios and perform DFS
+         --  traversals from each one. Encode a path in the ALI file of the
+         --  main unit if it reaches into an external unit.
+
+         Process_Invocation_Body_Scenarios;
+         Process_Invocation_Spec_Scenarios;
+
+         --  Examine all invocation constructs within the spec and body of the
+         --  main unit and perform DFS traversals from each one. Encode a path
+         --  in the ALI file of the main unit if it reaches into an external
+         --  unit.
+
+         Process_Main_Unit;
+      end Record_Invocation_Graph;
+
+      ----------------------------
+      -- Record_Invocation_Path --
+      ----------------------------
+
+      procedure Record_Invocation_Path (In_State : Processing_In_State) is
+         package Scenarios renames Active_Scenario_Stack;
+
+      begin
+         --  Save a path when the active scenario stack contains at least one
+         --  invocation scenario.
+
+         if Scenarios.Last - Scenarios.First < 0 then
+            return;
+         end if;
+
+         --  Register all relations in the path when switch -gnatd_F (encode
+         --  full invocation paths in ALI files) is in effect.
+
+         if Debug_Flag_Underscore_FF then
+            Record_Full_Invocation_Path (In_State);
+
+         --  Otherwise register a single relation
+
+         else
+            Record_Simple_Invocation_Path (In_State);
+         end if;
+
+         Write_Invocation_Path (In_State);
+      end Record_Invocation_Path;
+
+      --------------------------------
+      -- Record_Invocation_Relation --
+      --------------------------------
+
+      procedure Record_Invocation_Relation
+        (Invk_Id  : Entity_Id;
+         Targ_Id  : Entity_Id;
+         In_State : Processing_In_State)
+      is
+         pragma Assert (Present (Invk_Id));
+         pragma Assert (Present (Targ_Id));
+
+         procedure Get_Invocation_Attributes
+           (Extra : out Entity_Id;
+            Kind  : out Invocation_Kind);
+         pragma Inline (Get_Invocation_Attributes);
+         --  Return the additional entity used in error diagnostics in Extra
+         --  and the invocation kind in Kind which pertain to the invocation
+         --  relation with invoker Invk_Id and target Targ_Id.
+
+         -------------------------------
+         -- Get_Invocation_Attributes --
+         -------------------------------
+
+         procedure Get_Invocation_Attributes
+           (Extra : out Entity_Id;
+            Kind  : out Invocation_Kind)
+         is
+         begin
+            --  Accept within a task body
+
+            if Is_Accept_Alternative_Proc (Targ_Id) then
+               Extra := Receiving_Entry (Targ_Id);
+               Kind  := Accept_Alternative;
+
+            --  Activation of a task object
+
+            elsif Is_Activation_Proc (Targ_Id)
+              or else Is_Task_Type (Targ_Id)
+            then
+               Extra := Empty;
+               Kind  := Task_Activation;
+
+            --  Controlled adjustment actions
+
+            elsif Is_Controlled_Proc (Targ_Id, Name_Adjust) then
+               Extra := First_Formal_Type (Targ_Id);
+               Kind  := Controlled_Adjustment;
+
+            --  Controlled finalization actions
+
+            elsif Is_Controlled_Proc (Targ_Id, Name_Finalize)
+              or else Is_Finalizer_Proc (Targ_Id)
+            then
+               Extra := First_Formal_Type (Targ_Id);
+               Kind  := Controlled_Finalization;
+
+            --  Controlled initialization actions
+
+            elsif Is_Controlled_Proc (Targ_Id, Name_Initialize) then
+               Extra := First_Formal_Type (Targ_Id);
+               Kind  := Controlled_Initialization;
+
+            --  Default_Initial_Condition verification
+
+            elsif Is_Default_Initial_Condition_Proc (Targ_Id) then
+               Extra := First_Formal_Type (Targ_Id);
+               Kind  := Default_Initial_Condition_Verification;
+
+            --  Initialization of object
+
+            elsif Is_Init_Proc (Targ_Id) then
+               Extra := First_Formal_Type (Targ_Id);
+               Kind  := Type_Initialization;
+
+            --  Initial_Condition verification
+
+            elsif Is_Initial_Condition_Proc (Targ_Id) then
+               Extra := First_Formal_Type (Targ_Id);
+               Kind  := Initial_Condition_Verification;
+
+            --  Instantiation
+
+            elsif Is_Generic_Unit (Targ_Id) then
+               Extra := Empty;
+               Kind  := Instantiation;
+
+            --  Internal controlled adjustment actions
+
+            elsif Is_TSS (Targ_Id, TSS_Deep_Adjust) then
+               Extra := First_Formal_Type (Targ_Id);
+               Kind  := Internal_Controlled_Adjustment;
+
+            --  Internal controlled finalization actions
+
+            elsif Is_TSS (Targ_Id, TSS_Deep_Finalize) then
+               Extra := First_Formal_Type (Targ_Id);
+               Kind  := Internal_Controlled_Finalization;
+
+            --  Internal controlled initialization actions
+
+            elsif Is_TSS (Targ_Id, TSS_Deep_Initialize) then
+               Extra := First_Formal_Type (Targ_Id);
+               Kind  := Internal_Controlled_Initialization;
+
+            --  Invariant verification
+
+            elsif Is_Invariant_Proc (Targ_Id)
+              or else Is_Partial_Invariant_Proc (Targ_Id)
+            then
+               Extra := First_Formal_Type (Targ_Id);
+               Kind  := Invariant_Verification;
+
+            --  Postcondition verification
+
+            elsif Is_Postconditions_Proc (Targ_Id) then
+               Extra := Find_Enclosing_Scope (Targ_Id);
+               Kind  := Postcondition_Verification;
+
+            --  Protected entry call
+
+            elsif Is_Protected_Entry (Targ_Id) then
+               Extra := Empty;
+               Kind  := Protected_Entry_Call;
+
+            --  Protected subprogram call
+
+            elsif Is_Protected_Subp (Targ_Id) then
+               Extra := Empty;
+               Kind  := Protected_Subprogram_Call;
+
+            --  Task entry call
+
+            elsif Is_Task_Entry (Targ_Id) then
+               Extra := Empty;
+               Kind  := Task_Entry_Call;
+
+            --  Entry, operator, or subprogram call. This case must come last
+            --  because most invocations above are variations of this case.
+
+            elsif Ekind_In (Targ_Id, E_Entry,
+                                     E_Function,
+                                     E_Operator,
+                                     E_Procedure)
+            then
+               Extra := Empty;
+               Kind  := Call;
+
+            else
+               pragma Assert (False);
+               Extra := Empty;
+               Kind  := No_Invocation;
+            end if;
+         end Get_Invocation_Attributes;
+
+         --  Local variables
+
+         Extra     : Entity_Id;
+         Extra_Nam : Name_Id;
+         IR_Rec    : Invocation_Relation_Record;
+         Kind      : Invocation_Kind;
+         Rel       : Invoker_Target_Relation;
+
+      --  Start of processing for Record_Invocation_Relation
+
+      begin
+         Rel.Invoker := Invk_Id;
+         Rel.Target  := Targ_Id;
+
+         --  Nothing to do when the invocation relation has already been
+         --  recorded in ALI file of the main unit.
+
+         if Is_Saved_Relation (Rel) then
+            return;
+         end if;
+
+         --  Mark the relation as recorded in the ALI file
+
+         Set_Is_Saved_Relation (Rel);
+
+         --  Declare the invoker in the ALI file
+
+         Declare_Invocation_Construct
+           (Constr_Id => Invk_Id,
+            In_State  => In_State);
+
+         --  Obtain the invocation-specific attributes of the relation
+
+         Get_Invocation_Attributes (Extra, Kind);
+
+         --  Certain invocations lack an extra entity used in error diagnostics
+
+         if Present (Extra) then
+            Extra_Nam := Chars (Extra);
+         else
+            Extra_Nam := No_Name;
+         end if;
+
+         IR_Rec.Extra   := Extra_Nam;
+         IR_Rec.Invoker := Signature_Of (Invk_Id);
+         IR_Rec.Kind    := Kind;
+         IR_Rec.Target  := Signature_Of (Targ_Id);
+
+         --  Add the relation in the ALI file
+
+         Add_Invocation_Relation
+           (IR_Rec       => IR_Rec,
+            Update_Units => False);
+      end Record_Invocation_Relation;
+
+      -----------------------------------
+      -- Record_Simple_Invocation_Path --
+      -----------------------------------
+
+      procedure Record_Simple_Invocation_Path
+        (In_State : Processing_In_State)
+      is
+         package Scenarios renames Active_Scenario_Stack;
+
+         Last_Targ  : constant Entity_Id :=
+                        Target_Of (Scenarios.Last, In_State);
+         First_Targ : Entity_Id;
+
+      begin
+         --  The path originates from the elaboration of the body. Add an extra
+         --  relation from the elaboration body procedure to the first active
+         --  scenario.
+
+         if In_State.Processing = Invocation_Body_Processing then
+            Build_Elaborate_Body_Procedure;
+            First_Targ := Elab_Body_Id;
+
+         --  The path originates from the elaboration of the spec. Add an extra
+         --  relation from the elaboration spec procedure to the first active
+         --  scenario.
+
+         elsif In_State.Processing = Invocation_Spec_Processing then
+            Build_Elaborate_Spec_Procedure;
+            First_Targ := Elab_Spec_Id;
+
+         else
+            First_Targ := Target_Of (Scenarios.First, In_State);
+         end if;
+
+         --  Record a single relation from the first to the last scenario
+
+         if First_Targ /= Last_Targ then
+            Record_Invocation_Relation
+              (Invk_Id  => First_Targ,
+               Targ_Id  => Last_Targ,
+               In_State => In_State);
+         end if;
+      end Record_Simple_Invocation_Path;
+
+      ----------------------------
+      -- Set_Is_Saved_Construct --
+      ----------------------------
+
+      procedure Set_Is_Saved_Construct
+        (Constr : Entity_Id;
+         Val    : Boolean := True)
+      is
+         pragma Assert (Present (Constr));
+
+      begin
+         if Val then
+            NE_Set.Insert (Saved_Constructs_Set, Constr);
+         else
+            NE_Set.Delete (Saved_Constructs_Set, Constr);
+         end if;
+      end Set_Is_Saved_Construct;
+
+      ---------------------------
+      -- Set_Is_Saved_Relation --
+      ---------------------------
+
+      procedure Set_Is_Saved_Relation
+        (Rel : Invoker_Target_Relation;
+         Val : Boolean := True)
+      is
+      begin
+         if Val then
+            IR_Set.Insert (Saved_Relations_Set, Rel);
+         else
+            IR_Set.Delete (Saved_Relations_Set, Rel);
+         end if;
+      end Set_Is_Saved_Relation;
+
+      ------------------
+      -- Signature_Of --
+      ------------------
+
+      function Signature_Of (Id : Entity_Id) return Invocation_Signature_Id is
+         Loc : constant Source_Ptr := Sloc (Id);
+
+         function Instantiation_Locations return Name_Id;
+         pragma Inline (Instantiation_Locations);
+         --  Create a concatenation of all lines and colums of each instance
+         --  where source location Loc appears. Return No_Name if no instances
+         --  exist.
+
+         function Qualified_Scope return Name_Id;
+         pragma Inline (Qualified_Scope);
+         --  Obtain the qualified name of Id's scope
+
+         -----------------------------
+         -- Instantiation_Locations --
+         -----------------------------
+
+         function Instantiation_Locations return Name_Id is
+            Buffer  : Bounded_String (2052);
+            Inst    : Source_Ptr;
+            Loc_Nam : Name_Id;
+            SFI     : Source_File_Index;
+
+         begin
+            SFI  := Get_Source_File_Index (Loc);
+            Inst := Instantiation (SFI);
+
+            --  The location is within an instance. Construct a concatenation
+            --  of all lines and colums of each individual instance using the
+            --  following format:
+            --
+            --    line1_column1_line2_column2_ ... _lineN_columnN
+
+            if Inst /= No_Location then
+               loop
+                  Append (Buffer, Nat (Get_Logical_Line_Number (Inst)));
+                  Append (Buffer, '_');
+                  Append (Buffer, Nat (Get_Column_Number (Inst)));
+
+                  SFI  := Get_Source_File_Index (Inst);
+                  Inst := Instantiation (SFI);
+
+                  exit when Inst = No_Location;
+
+                  Append (Buffer, '_');
+               end loop;
+
+               Loc_Nam := Name_Find (Buffer);
+               return Loc_Nam;
+
+            --  Otherwise there no instances are involved
+
+            else
+               return No_Name;
+            end if;
+         end Instantiation_Locations;
+
+         ---------------------
+         -- Qualified_Scope --
+         ---------------------
+
+         function Qualified_Scope return Name_Id is
+            Scop : Entity_Id;
+
+         begin
+            Scop := Scope (Id);
+
+            --  The entity appears within an anonymous concurrent type created
+            --  for a single protected or task type declaration. Use the entity
+            --  of the anonymous object as it represents the original scope.
+
+            if Is_Concurrent_Type (Scop)
+              and then Present (Anonymous_Object (Scop))
+            then
+               Scop := Anonymous_Object (Scop);
+            end if;
+
+            return Get_Qualified_Name (Scop);
+         end Qualified_Scope;
+
+      --  Start of processing for Signature_Of
+
+      begin
+         return
+           Invocation_Signature_Of
+             (Column    => Nat (Get_Column_Number (Loc)),
+              Line      => Nat (Get_Logical_Line_Number (Loc)),
+              Locations => Instantiation_Locations,
+              Name      => Chars (Id),
+              Scope     => Qualified_Scope);
+      end Signature_Of;
+
+      ---------------
+      -- Target_Of --
+      ---------------
+
+      function Target_Of
+        (Pos      : Active_Scenario_Pos;
+         In_State : Processing_In_State) return Entity_Id
+      is
+         package Scenarios renames Active_Scenario_Stack;
+
+         --  Ensure that the position is within the bounds of the active
+         --  scenario stack.
+
+         pragma Assert (Scenarios.First <= Pos);
+         pragma Assert (Pos <= Scenarios.Last);
+
+         Scen_Rep : constant Scenario_Rep_Id :=
+                      Scenario_Representation_Of
+                        (Scenarios.Table (Pos), In_State);
+
+      begin
+         --  The true target of an activation call is the current task type
+         --  rather than routine Activate_Tasks.
+
+         if Kind (Scen_Rep) = Task_Activation_Scenario then
+            return Activated_Task_Type (Scen_Rep);
+         else
+            return Target (Scen_Rep);
+         end if;
+      end Target_Of;
+
+      ------------------------------
+      -- Traverse_Invocation_Body --
+      ------------------------------
+
+      procedure Traverse_Invocation_Body
+        (N        : Node_Id;
+         In_State : Processing_In_State)
+      is
+      begin
+         Traverse_Body
+           (N                   => N,
+            Requires_Processing => Is_Invocation_Scenario'Access,
+            Processor           => Process_Invocation_Scenario'Access,
+            In_State            => In_State);
+      end Traverse_Invocation_Body;
+
+      ---------------------------
+      -- Write_Invocation_Path --
+      ---------------------------
+
+      procedure Write_Invocation_Path (In_State : Processing_In_State) is
+         procedure Write_Target (Targ_Id : Entity_Id; Is_First : Boolean);
+         pragma Inline (Write_Target);
+         --  Write out invocation target Targ_Id to standard output. Flag
+         --  Is_First should be set when the target is first in a path.
+
+         -------------
+         -- Targ_Id --
+         -------------
+
+         procedure Write_Target (Targ_Id : Entity_Id; Is_First : Boolean) is
+         begin
+            if not Is_First then
+               Write_Str ("  --> ");
+            end if;
+
+            Write_Name (Get_Qualified_Name (Targ_Id));
+            Write_Eol;
+         end Write_Target;
+
+         --  Local variables
+
+         package Scenarios renames Active_Scenario_Stack;
+
+         First_Seen : Boolean := False;
+
+      --  Start of processing for Write_Invocation_Path
+
+      begin
+         --  Nothing to do when flag -gnatd_T (output trace information on
+         --  invocation path recording) is not in effect.
+
+         if not Debug_Flag_Underscore_TT then
+            return;
+         end if;
+
+         --  The path originates from the elaboration of the body. Write the
+         --  elaboration body procedure.
+
+         if In_State.Processing = Invocation_Body_Processing then
+            Write_Target (Elab_Body_Id, True);
+            First_Seen := True;
+
+         --  The path originates from the elaboration of the spec. Write the
+         --  elaboration spec procedure.
+
+         elsif In_State.Processing = Invocation_Spec_Processing then
+            Write_Target (Elab_Spec_Id, True);
+            First_Seen := True;
+         end if;
+
+         --  Write each individual target invoked by its corresponding scenario
+         --  on the active scenario stack.
+
+         for Index in Scenarios.First .. Scenarios.Last loop
+            Write_Target
+              (Targ_Id  => Target_Of (Index, In_State),
+               Is_First => Index = Scenarios.First and then not First_Seen);
+         end loop;
+
+         Write_Eol;
+      end Write_Invocation_Path;
+   end Invocation_Graph;
 
    ------------------------
    -- Is_Safe_Activation --
    ------------------------
 
    function Is_Safe_Activation
-     (Call      : Node_Id;
-      Task_Decl : Node_Id) return Boolean
+     (Call     : Node_Id;
+      Task_Rep : Target_Rep_Id) return Boolean
    is
    begin
       --  The activation of a task coming from an external instance cannot
@@ -7040,7 +13286,7 @@ package body Sem_Elab is
       return
         In_External_Instance
           (N           => Call,
-           Target_Decl => Task_Decl);
+           Target_Decl => Spec_Declaration (Task_Rep));
    end Is_Safe_Activation;
 
    ------------------
@@ -7048,22 +13294,26 @@ package body Sem_Elab is
    ------------------
 
    function Is_Safe_Call
-     (Call         : Node_Id;
-      Target_Attrs : Target_Attributes) return Boolean
+     (Call     : Node_Id;
+      Subp_Id  : Entity_Id;
+      Subp_Rep : Target_Rep_Id) return Boolean
    is
+      Body_Decl : constant Node_Id := Body_Declaration (Subp_Rep);
+      Spec_Decl : constant Node_Id := Spec_Declaration (Subp_Rep);
+
    begin
       --  The target is either an abstract subprogram, formal subprogram, or
       --  imported, in which case it does not have a body at compile or bind
       --  time. Assume that the call is ABE-safe.
 
-      if Is_Bodiless_Subprogram (Target_Attrs.Spec_Id) then
+      if Is_Bodiless_Subprogram (Subp_Id) then
          return True;
 
       --  The target is an instantiation of a generic subprogram. The call
       --  cannot cause an ABE because the generic was already instantiated.
       --  Note that the instantiation itself may lead to an ABE.
 
-      elsif Is_Generic_Instance (Target_Attrs.Spec_Id) then
+      elsif Is_Generic_Instance (Subp_Id) then
          return True;
 
       --  The invocation of a target coming from an external instance cannot
@@ -7072,15 +13322,15 @@ package body Sem_Elab is
 
       elsif In_External_Instance
               (N           => Call,
-               Target_Decl => Target_Attrs.Spec_Decl)
+               Target_Decl => Spec_Decl)
       then
          return True;
 
       --  The target is a subprogram body without a previous declaration. The
       --  call cannot cause an ABE because the body has already been seen.
 
-      elsif Nkind (Target_Attrs.Spec_Decl) = N_Subprogram_Body
-        and then No (Corresponding_Spec (Target_Attrs.Spec_Decl))
+      elsif Nkind (Spec_Decl) = N_Subprogram_Body
+        and then No (Corresponding_Spec (Spec_Decl))
       then
          return True;
 
@@ -7088,8 +13338,8 @@ package body Sem_Elab is
       --  The call cannot cause an ABE because the proper body substitutes
       --  the stub.
 
-      elsif Nkind (Target_Attrs.Spec_Decl) = N_Subprogram_Body_Stub
-        and then No (Corresponding_Spec_Of_Stub (Target_Attrs.Spec_Decl))
+      elsif Nkind (Spec_Decl) = N_Subprogram_Body_Stub
+        and then No (Corresponding_Spec_Of_Stub (Spec_Decl))
       then
          return True;
 
@@ -7097,9 +13347,9 @@ package body Sem_Elab is
       --  in instantiations are always ABE-safe. These bodies are artifacts
       --  of expansion.
 
-      elsif Present (Target_Attrs.Body_Decl)
-        and then Nkind (Target_Attrs.Body_Decl) = N_Subprogram_Body
-        and then Was_Attribute_Reference (Target_Attrs.Body_Decl)
+      elsif Present (Body_Decl)
+        and then Nkind (Body_Decl) = N_Subprogram_Body
+        and then Was_Attribute_Reference (Body_Decl)
       then
          return True;
       end if;
@@ -7112,15 +13362,18 @@ package body Sem_Elab is
    ---------------------------
 
    function Is_Safe_Instantiation
-     (Inst      : Node_Id;
-      Gen_Attrs : Target_Attributes) return Boolean
+     (Inst    : Node_Id;
+      Gen_Id  : Entity_Id;
+      Gen_Rep : Target_Rep_Id) return Boolean
    is
+      Spec_Decl : constant Node_Id := Spec_Declaration (Gen_Rep);
+
    begin
       --  The generic is an intrinsic subprogram in which case it does not
       --  have a body at compile or bind time. Assume that the instantiation
       --  is ABE-safe.
 
-      if Is_Bodiless_Subprogram (Gen_Attrs.Spec_Id) then
+      if Is_Bodiless_Subprogram (Gen_Id) then
          return True;
 
       --  The instantiation of an external nested generic cannot cause an ABE
@@ -7129,15 +13382,15 @@ package body Sem_Elab is
 
       elsif In_External_Instance
               (N           => Inst,
-               Target_Decl => Gen_Attrs.Spec_Decl)
+               Target_Decl => Spec_Decl)
       then
          return True;
 
       --  The generic is a package. The instantiation cannot cause an ABE when
       --  the package has no body.
 
-      elsif Ekind (Gen_Attrs.Spec_Id) = E_Generic_Package
-        and then not Has_Body (Gen_Attrs.Spec_Decl)
+      elsif Ekind (Gen_Id) = E_Generic_Package
+        and then not Has_Body (Spec_Decl)
       then
          return True;
       end if;
@@ -7157,524 +13410,11 @@ package body Sem_Elab is
       return Unit_Entity (Unit_1) = Unit_Entity (Unit_2);
    end Is_Same_Unit;
 
-   -----------------
-   -- Is_Scenario --
-   -----------------
-
-   function Is_Scenario (N : Node_Id) return Boolean is
-   begin
-      case Nkind (N) is
-         when N_Assignment_Statement
-            | N_Attribute_Reference
-            | N_Call_Marker
-            | N_Entry_Call_Statement
-            | N_Expanded_Name
-            | N_Function_Call
-            | N_Function_Instantiation
-            | N_Identifier
-            | N_Package_Instantiation
-            | N_Procedure_Call_Statement
-            | N_Procedure_Instantiation
-            | N_Requeue_Statement
-         =>
-            return True;
-
-         when others =>
-            return False;
-      end case;
-   end Is_Scenario;
-
-   ------------------------------
-   -- Is_SPARK_Semantic_Target --
-   ------------------------------
-
-   function Is_SPARK_Semantic_Target (Id : Entity_Id) return Boolean is
-   begin
-      return
-        Is_Default_Initial_Condition_Proc (Id)
-          or else Is_Initial_Condition_Proc (Id);
-   end Is_SPARK_Semantic_Target;
-
-   ------------------------
-   -- Is_Suitable_Access --
-   ------------------------
-
-   function Is_Suitable_Access (N : Node_Id) return Boolean is
-      Nam     : Name_Id;
-      Pref    : Node_Id;
-      Subp_Id : Entity_Id;
-
-   begin
-      --  This scenario is relevant only when the static model is in effect
-      --  because it is graph-dependent and does not involve any run-time
-      --  checks. Allowing it in the dynamic model would create confusing
-      --  noise.
-
-      if not Static_Elaboration_Checks then
-         return False;
-
-      --  Nothing to do when switch -gnatd.U (ignore 'Access) is in effect
-
-      elsif Debug_Flag_Dot_UU then
-         return False;
-
-      --  Nothing to do when the scenario is not an attribute reference
-
-      elsif Nkind (N) /= N_Attribute_Reference then
-         return False;
-
-      --  Nothing to do for internally-generated attributes because they are
-      --  assumed to be ABE safe.
-
-      elsif not Comes_From_Source (N) then
-         return False;
-      end if;
-
-      Nam  := Attribute_Name (N);
-      Pref := Prefix (N);
-
-      --  Sanitize the prefix of the attribute
-
-      if not Is_Entity_Name (Pref) then
-         return False;
-
-      elsif No (Entity (Pref)) then
-         return False;
-      end if;
-
-      Subp_Id := Entity (Pref);
-
-      if not Is_Subprogram_Or_Entry (Subp_Id) then
-         return False;
-      end if;
-
-      --  Traverse a possible chain of renamings to obtain the original entry
-      --  or subprogram which the prefix may rename.
-
-      Subp_Id := Get_Renamed_Entity (Subp_Id);
-
-      --  To qualify, the attribute must meet the following prerequisites:
-
-      return
-
-        --  The prefix must denote a source entry, operator, or subprogram
-        --  which is not imported.
-
-        Comes_From_Source (Subp_Id)
-          and then Is_Subprogram_Or_Entry (Subp_Id)
-          and then not Is_Bodiless_Subprogram (Subp_Id)
-
-          --  The attribute name must be one of the 'Access forms. Note that
-          --  'Unchecked_Access cannot apply to a subprogram.
-
-          and then Nam_In (Nam, Name_Access, Name_Unrestricted_Access);
-   end Is_Suitable_Access;
-
-   ----------------------
-   -- Is_Suitable_Call --
-   ----------------------
-
-   function Is_Suitable_Call (N : Node_Id) return Boolean is
-   begin
-      --  Entry and subprogram calls are intentionally ignored because they
-      --  may undergo expansion depending on the compilation mode, previous
-      --  errors, generic context, etc. Call markers play the role of calls
-      --  and provide a uniform foundation for ABE processing.
-
-      return Nkind (N) = N_Call_Marker;
-   end Is_Suitable_Call;
-
-   -------------------------------
-   -- Is_Suitable_Instantiation --
-   -------------------------------
-
-   function Is_Suitable_Instantiation (N : Node_Id) return Boolean is
-      Orig_N : constant Node_Id := Original_Node (N);
-      --  Use the original node in case an instantiation library unit is
-      --  rewritten as a package or subprogram.
-
-   begin
-      --  To qualify, the instantiation must come from source
-
-      return
-        Comes_From_Source (Orig_N)
-          and then Nkind (Orig_N) in N_Generic_Instantiation;
-   end Is_Suitable_Instantiation;
-
-   --------------------------
-   -- Is_Suitable_Scenario --
-   --------------------------
-
-   function Is_Suitable_Scenario (N : Node_Id) return Boolean is
-   begin
-      --  NOTE: Derived types and pragma Refined_State are intentionally left
-      --  out because they are not executable during elaboration.
-
-      return
-        Is_Suitable_Access (N)
-          or else Is_Suitable_Call (N)
-          or else Is_Suitable_Instantiation (N)
-          or else Is_Suitable_Variable_Assignment (N)
-          or else Is_Suitable_Variable_Reference (N);
-   end Is_Suitable_Scenario;
-
-   ------------------------------------
-   -- Is_Suitable_SPARK_Derived_Type --
-   ------------------------------------
-
-   function Is_Suitable_SPARK_Derived_Type (N : Node_Id) return Boolean is
-      Prag : Node_Id;
-      Typ  : Entity_Id;
-
-   begin
-      --  To qualify, the type declaration must denote a derived tagged type
-      --  with primitive operations, subject to pragma SPARK_Mode On.
-
-      if Nkind (N) = N_Full_Type_Declaration
-        and then Nkind (Type_Definition (N)) = N_Derived_Type_Definition
-      then
-         Typ  := Defining_Entity (N);
-         Prag := SPARK_Pragma (Typ);
-
-         return
-           Is_Tagged_Type (Typ)
-             and then Has_Primitive_Operations (Typ)
-             and then Present (Prag)
-             and then Get_SPARK_Mode_From_Annotation (Prag) = On;
-      end if;
-
-      return False;
-   end Is_Suitable_SPARK_Derived_Type;
-
-   -------------------------------------
-   -- Is_Suitable_SPARK_Instantiation --
-   -------------------------------------
-
-   function Is_Suitable_SPARK_Instantiation (N : Node_Id) return Boolean is
-      Gen_Attrs  : Target_Attributes;
-      Gen_Id     : Entity_Id;
-      Inst       : Node_Id;
-      Inst_Attrs : Instantiation_Attributes;
-      Inst_Id    : Entity_Id;
-
-   begin
-      --  To qualify, both the instantiation and the generic must be subject to
-      --  SPARK_Mode On.
-
-      if Is_Suitable_Instantiation (N) then
-         Extract_Instantiation_Attributes
-           (Exp_Inst => N,
-            Inst     => Inst,
-            Inst_Id  => Inst_Id,
-            Gen_Id   => Gen_Id,
-            Attrs    => Inst_Attrs);
-
-         Extract_Target_Attributes (Gen_Id, Gen_Attrs);
-
-         return Inst_Attrs.SPARK_Mode_On and Gen_Attrs.SPARK_Mode_On;
-      end if;
-
-      return False;
-   end Is_Suitable_SPARK_Instantiation;
-
-   --------------------------------------------
-   -- Is_Suitable_SPARK_Refined_State_Pragma --
-   --------------------------------------------
-
-   function Is_Suitable_SPARK_Refined_State_Pragma
-     (N : Node_Id) return Boolean
-   is
-   begin
-      --  To qualfy, the pragma must denote Refined_State
-
-      return
-        Nkind (N) = N_Pragma
-          and then Pragma_Name (N) = Name_Refined_State;
-   end Is_Suitable_SPARK_Refined_State_Pragma;
-
-   -------------------------------------
-   -- Is_Suitable_Variable_Assignment --
-   -------------------------------------
-
-   function Is_Suitable_Variable_Assignment (N : Node_Id) return Boolean is
-      N_Unit      : Node_Id;
-      N_Unit_Id   : Entity_Id;
-      Nam         : Node_Id;
-      Var_Decl    : Node_Id;
-      Var_Id      : Entity_Id;
-      Var_Unit    : Node_Id;
-      Var_Unit_Id : Entity_Id;
-
-   begin
-      --  This scenario is relevant only when the static model is in effect
-      --  because it is graph-dependent and does not involve any run-time
-      --  checks. Allowing it in the dynamic model would create confusing
-      --  noise.
-
-      if not Static_Elaboration_Checks then
-         return False;
-
-      --  Nothing to do when the scenario is not an assignment
-
-      elsif Nkind (N) /= N_Assignment_Statement then
-         return False;
-
-      --  Nothing to do for internally-generated assignments because they are
-      --  assumed to be ABE safe.
-
-      elsif not Comes_From_Source (N) then
-         return False;
-
-      --  Assignments are ignored in GNAT mode on the assumption that they are
-      --  ABE-safe. This behaviour parallels that of the old ABE mechanism.
-
-      elsif GNAT_Mode then
-         return False;
-      end if;
-
-      Nam := Extract_Assignment_Name (N);
-
-      --  Sanitize the left hand side of the assignment
-
-      if not Is_Entity_Name (Nam) then
-         return False;
-
-      elsif No (Entity (Nam)) then
-         return False;
-      end if;
-
-      Var_Id := Entity (Nam);
-
-      --  Sanitize the variable
-
-      if Var_Id = Any_Id then
-         return False;
-
-      elsif Ekind (Var_Id) /= E_Variable then
-         return False;
-      end if;
-
-      Var_Decl := Declaration_Node (Var_Id);
-
-      if Nkind (Var_Decl) /= N_Object_Declaration then
-         return False;
-      end if;
-
-      N_Unit_Id := Find_Top_Unit (N);
-      N_Unit    := Unit_Declaration_Node (N_Unit_Id);
-
-      Var_Unit_Id := Find_Top_Unit (Var_Decl);
-      Var_Unit    := Unit_Declaration_Node (Var_Unit_Id);
-
-      --  To qualify, the assignment must meet the following prerequisites:
-
-      return
-        Comes_From_Source (Var_Id)
-
-          --  The variable must be declared in the spec of compilation unit U
-
-          and then Nkind (Var_Unit) = N_Package_Declaration
-
-          --  Performance note: parent traversal
-
-          and then Find_Enclosing_Level (Var_Decl) = Package_Spec
-
-          --  The assignment must occur in the body of compilation unit U
-
-          and then Nkind (N_Unit) = N_Package_Body
-          and then Present (Corresponding_Body (Var_Unit))
-          and then Corresponding_Body (Var_Unit) = N_Unit_Id;
-   end Is_Suitable_Variable_Assignment;
-
-   ------------------------------------
-   -- Is_Suitable_Variable_Reference --
-   ------------------------------------
-
-   function Is_Suitable_Variable_Reference (N : Node_Id) return Boolean is
-   begin
-      --  Expanded names and identifiers are intentionally ignored because they
-      --  be folded, optimized away, etc. Variable references markers play the
-      --  role of variable references and provide a uniform foundation for ABE
-      --  processing.
-
-      return Nkind (N) = N_Variable_Reference_Marker;
-   end Is_Suitable_Variable_Reference;
-
-   ------------------------------------
-   -- Is_Synchronous_Suspension_Call --
-   ------------------------------------
-
-   function Is_Synchronous_Suspension_Call (N : Node_Id) return Boolean is
-      Call_Attrs : Call_Attributes;
-      Target_Id  : Entity_Id;
-
-   begin
-      --  To qualify, the call must invoke one of the runtime routines which
-      --  perform synchronous suspension.
-
-      if Is_Suitable_Call (N) then
-         Extract_Call_Attributes
-           (Call      => N,
-            Target_Id => Target_Id,
-            Attrs     => Call_Attrs);
-
-         return
-           Is_RTE (Target_Id, RE_Suspend_Until_True)
-             or else
-           Is_RTE (Target_Id, RE_Wait_For_Release);
-      end if;
-
-      return False;
-   end Is_Synchronous_Suspension_Call;
-
-   -------------------
-   -- Is_Task_Entry --
-   -------------------
-
-   function Is_Task_Entry (Id : Entity_Id) return Boolean is
-   begin
-      --  To qualify, the entity must denote an entry defined in a task type
-
-      return
-        Is_Entry (Id) and then Is_Task_Type (Non_Private_View (Scope (Id)));
-   end Is_Task_Entry;
-
-   ------------------------
-   -- Is_Up_Level_Target --
-   ------------------------
-
-   function Is_Up_Level_Target (Target_Decl : Node_Id) return Boolean is
-      Root : constant Node_Id := Root_Scenario;
-
-   begin
-      --  The root appears within the declaratons of a block statement, entry
-      --  body, subprogram body, or task body ignoring enclosing packages. The
-      --  root is always within the main unit. An up-level target is a notion
-      --  applicable only to the static model because scenarios are reached by
-      --  means of graph traversal started from a fixed declarative or library
-      --  level.
-
-      --  Performance note: parent traversal
-
-      if Static_Elaboration_Checks
-        and then Find_Enclosing_Level (Root) = Declaration_Level
-      then
-         --  The target is within the main unit. It acts as an up-level target
-         --  when it appears within a context which encloses the root.
-
-         --    package body Main_Unit is
-         --       function Func ...;             --  target
-
-         --       procedure Proc is
-         --          X : ... := Func;            --  root scenario
-
-         if In_Extended_Main_Code_Unit (Target_Decl) then
-
-            --  Performance note: parent traversal
-
-            return not In_Same_Context (Root, Target_Decl, Nested_OK => True);
-
-         --  Otherwise the target is external to the main unit which makes it
-         --  an up-level target.
-
-         else
-            return True;
-         end if;
-      end if;
-
-      return False;
-   end Is_Up_Level_Target;
-
-   ---------------------
-   -- Is_Visited_Body --
-   ---------------------
-
-   function Is_Visited_Body (Body_Decl : Node_Id) return Boolean is
-   begin
-      if Visited_Bodies_In_Use then
-         return Visited_Bodies.Get (Body_Decl);
-      end if;
-
-      return Visited_Bodies_No_Element;
-   end Is_Visited_Body;
-
    -------------------------------
    -- Kill_Elaboration_Scenario --
    -------------------------------
 
    procedure Kill_Elaboration_Scenario (N : Node_Id) is
-      procedure Kill_SPARK_Scenario;
-      pragma Inline (Kill_SPARK_Scenario);
-      --  Eliminate scenario N from table SPARK_Scenarios if it is recorded
-      --  there.
-
-      procedure Kill_Top_Level_Scenario;
-      pragma Inline (Kill_Top_Level_Scenario);
-      --  Eliminate scenario N from table Top_Level_Scenarios if it is recorded
-      --  there.
-
-      -------------------------
-      -- Kill_SPARK_Scenario --
-      -------------------------
-
-      procedure Kill_SPARK_Scenario is
-         package Scenarios renames SPARK_Scenarios;
-
-      begin
-         if Is_Recorded_SPARK_Scenario (N) then
-
-            --  Performance note: list traversal
-
-            for Index in Scenarios.First .. Scenarios.Last loop
-               if Scenarios.Table (Index) = N then
-                  Scenarios.Table (Index) := Empty;
-
-                  --  The SPARK scenario is no longer recorded
-
-                  Set_Is_Recorded_SPARK_Scenario (N, False);
-                  return;
-               end if;
-            end loop;
-
-            --  A recorded SPARK scenario must be in the table of recorded
-            --  SPARK scenarios.
-
-            pragma Assert (False);
-         end if;
-      end Kill_SPARK_Scenario;
-
-      -----------------------------
-      -- Kill_Top_Level_Scenario --
-      -----------------------------
-
-      procedure Kill_Top_Level_Scenario is
-         package Scenarios renames Top_Level_Scenarios;
-
-      begin
-         if Is_Recorded_Top_Level_Scenario (N) then
-
-            --  Performance node: list traversal
-
-            for Index in Scenarios.First .. Scenarios.Last loop
-               if Scenarios.Table (Index) = N then
-                  Scenarios.Table (Index) := Empty;
-
-                  --  The top-level scenario is no longer recorded
-
-                  Set_Is_Recorded_Top_Level_Scenario (N, False);
-                  return;
-               end if;
-            end loop;
-
-            --  A recorded top-level scenario must be in the table of recorded
-            --  top-level scenarios.
-
-            pragma Assert (False);
-         end if;
-      end Kill_Top_Level_Scenario;
-
-   --  Start of processing for Kill_Elaboration_Scenario
-
    begin
       --  Nothing to do when switch -gnatH (legacy elaboration checking mode
       --  enabled) is in effect because the legacy ABE lechanism does not need
@@ -7688,238 +13428,9 @@ package body Sem_Elab is
       --  because it will not be executed at elaboration time.
 
       if Is_Scenario (N) then
-         Kill_SPARK_Scenario;
-         Kill_Top_Level_Scenario;
+         Delete_Scenario (N);
       end if;
    end Kill_Elaboration_Scenario;
-
-   ----------------------------------
-   -- Meet_Elaboration_Requirement --
-   ----------------------------------
-
-   procedure Meet_Elaboration_Requirement
-     (N         : Node_Id;
-      Target_Id : Entity_Id;
-      Req_Nam   : Name_Id)
-   is
-      Main_Id : constant Entity_Id := Cunit_Entity (Main_Unit);
-      Unit_Id : constant Entity_Id := Find_Top_Unit (Target_Id);
-
-      function Find_Preelaboration_Pragma
-        (Prag_Nam : Name_Id) return Node_Id;
-      pragma Inline (Find_Preelaboration_Pragma);
-      --  Traverse the visible declarations of unit Unit_Id and locate a source
-      --  preelaboration-related pragma with name Prag_Nam.
-
-      procedure Info_Requirement_Met (Prag : Node_Id);
-      pragma Inline (Info_Requirement_Met);
-      --  Output information concerning pragma Prag which meets requirement
-      --  Req_Nam.
-
-      procedure Info_Scenario;
-      pragma Inline (Info_Scenario);
-      --  Output information concerning scenario N
-
-      --------------------------------
-      -- Find_Preelaboration_Pragma --
-      --------------------------------
-
-      function Find_Preelaboration_Pragma
-        (Prag_Nam : Name_Id) return Node_Id
-      is
-         Spec : constant Node_Id := Parent (Unit_Id);
-         Decl : Node_Id;
-
-      begin
-         --  A preelaboration-related pragma comes from source and appears at
-         --  the top of the visible declarations of a package.
-
-         if Nkind (Spec) = N_Package_Specification then
-            Decl := First (Visible_Declarations (Spec));
-            while Present (Decl) loop
-               if Comes_From_Source (Decl) then
-                  if Nkind (Decl) = N_Pragma
-                    and then Pragma_Name (Decl) = Prag_Nam
-                  then
-                     return Decl;
-
-                  --  Otherwise the construct terminates the region where the
-                  --  preelaboration-related pragma may appear.
-
-                  else
-                     exit;
-                  end if;
-               end if;
-
-               Next (Decl);
-            end loop;
-         end if;
-
-         return Empty;
-      end Find_Preelaboration_Pragma;
-
-      --------------------------
-      -- Info_Requirement_Met --
-      --------------------------
-
-      procedure Info_Requirement_Met (Prag : Node_Id) is
-      begin
-         pragma Assert (Present (Prag));
-
-         Error_Msg_Name_1 := Req_Nam;
-         Error_Msg_Sloc   := Sloc (Prag);
-         Error_Msg_NE
-           ("\\% requirement for unit & met by pragma #", N, Unit_Id);
-      end Info_Requirement_Met;
-
-      -------------------
-      -- Info_Scenario --
-      -------------------
-
-      procedure Info_Scenario is
-      begin
-         if Is_Suitable_Call (N) then
-            Info_Call
-              (Call      => N,
-               Target_Id => Target_Id,
-               Info_Msg  => False,
-               In_SPARK  => True);
-
-         elsif Is_Suitable_Instantiation (N) then
-            Info_Instantiation
-              (Inst     => N,
-               Gen_Id   => Target_Id,
-               Info_Msg => False,
-               In_SPARK => True);
-
-         elsif Is_Suitable_SPARK_Refined_State_Pragma (N) then
-            Error_Msg_N
-              ("read of refinement constituents during elaboration in SPARK",
-               N);
-
-         elsif Is_Suitable_Variable_Reference (N) then
-            Info_Variable_Reference
-              (Ref      => N,
-               Var_Id   => Target_Id,
-               Info_Msg => False,
-               In_SPARK => True);
-
-         --  No other scenario may impose a requirement on the context of the
-         --  main unit.
-
-         else
-            pragma Assert (False);
-            null;
-         end if;
-      end Info_Scenario;
-
-      --  Local variables
-
-      Elab_Attrs : Elaboration_Attributes;
-      Elab_Nam   : Name_Id;
-      Req_Met    : Boolean;
-
-   --  Start of processing for Meet_Elaboration_Requirement
-
-   begin
-      pragma Assert (Nam_In (Req_Nam, Name_Elaborate, Name_Elaborate_All));
-
-      --  Assume that the requirement has not been met
-
-      Req_Met := False;
-
-      --  Elaboration requirements are verified only when the static model is
-      --  in effect because this diagnostic is graph-dependent.
-
-      if not Static_Elaboration_Checks then
-         return;
-
-      --  If the target is within the main unit, either at the source level or
-      --  through an instantiation, then there is no real requirement to meet
-      --  because the main unit cannot force its own elaboration by means of an
-      --  Elaborate[_All] pragma. Treat this case as valid coverage.
-
-      elsif In_Extended_Main_Code_Unit (Target_Id) then
-         Req_Met := True;
-
-      --  Otherwise the target resides in an external unit
-
-      --  The requirement is met when the target comes from an internal unit
-      --  because such a unit is elaborated prior to a non-internal unit.
-
-      elsif In_Internal_Unit (Unit_Id)
-        and then not In_Internal_Unit (Main_Id)
-      then
-         Req_Met := True;
-
-      --  The requirement is met when the target comes from a preelaborated
-      --  unit. This portion must parallel predicate Is_Preelaborated_Unit.
-
-      elsif Is_Preelaborated_Unit (Unit_Id) then
-         Req_Met := True;
-
-         --  Output extra information when switch -gnatel (info messages on
-         --  implicit Elaborate[_All] pragmas.
-
-         if Elab_Info_Messages then
-            if Is_Preelaborated (Unit_Id) then
-               Elab_Nam := Name_Preelaborate;
-
-            elsif Is_Pure (Unit_Id) then
-               Elab_Nam := Name_Pure;
-
-            elsif Is_Remote_Call_Interface (Unit_Id) then
-               Elab_Nam := Name_Remote_Call_Interface;
-
-            elsif Is_Remote_Types (Unit_Id) then
-               Elab_Nam := Name_Remote_Types;
-
-            else
-               pragma Assert (Is_Shared_Passive (Unit_Id));
-               Elab_Nam := Name_Shared_Passive;
-            end if;
-
-            Info_Requirement_Met (Find_Preelaboration_Pragma (Elab_Nam));
-         end if;
-
-      --  Determine whether the context of the main unit has a pragma strong
-      --  enough to meet the requirement.
-
-      else
-         Elab_Attrs := Elaboration_Status (Unit_Id);
-
-         --  The pragma must be either Elaborate_All or be as strong as the
-         --  requirement.
-
-         if Present (Elab_Attrs.Source_Pragma)
-           and then Nam_In (Pragma_Name (Elab_Attrs.Source_Pragma),
-                            Name_Elaborate_All,
-                            Req_Nam)
-         then
-            Req_Met := True;
-
-            --  Output extra information when switch -gnatel (info messages on
-            --  implicit Elaborate[_All] pragmas.
-
-            if Elab_Info_Messages then
-               Info_Requirement_Met (Elab_Attrs.Source_Pragma);
-            end if;
-         end if;
-      end if;
-
-      --  The requirement was not met by the context of the main unit, issue an
-      --  error.
-
-      if not Req_Met then
-         Info_Scenario;
-
-         Error_Msg_Name_1 := Req_Nam;
-         Error_Msg_Node_2 := Unit_Id;
-         Error_Msg_NE ("\\unit & requires pragma % for &", N, Main_Id);
-
-         Output_Active_Scenarios (N);
-      end if;
-   end Meet_Elaboration_Requirement;
 
    ----------------------
    -- Non_Private_View --
@@ -7934,2774 +13445,329 @@ package body Sem_Elab is
       end if;
    end Non_Private_View;
 
-   -----------------------------
-   -- Output_Active_Scenarios --
-   -----------------------------
-
-   procedure Output_Active_Scenarios (Error_Nod : Node_Id) is
-      procedure Output_Access (N : Node_Id);
-      --  Emit a specific diagnostic message for 'Access denote by N
-
-      procedure Output_Activation_Call (N : Node_Id);
-      --  Emit a specific diagnostic message for task activation N
-
-      procedure Output_Call (N : Node_Id; Target_Id : Entity_Id);
-      --  Emit a specific diagnostic message for call N which invokes target
-      --  Target_Id.
-
-      procedure Output_Header;
-      --  Emit a specific diagnostic message for the unit of the root scenario
-
-      procedure Output_Instantiation (N : Node_Id);
-      --  Emit a specific diagnostic message for instantiation N
-
-      procedure Output_SPARK_Refined_State_Pragma (N : Node_Id);
-      --  Emit a specific diagnostic message for Refined_State pragma N
-
-      procedure Output_Variable_Assignment (N : Node_Id);
-      --  Emit a specific diagnostic message for assignment statement N
-
-      procedure Output_Variable_Reference (N : Node_Id);
-      --  Emit a specific diagnostic message for reference N which mentions a
-      --  variable.
-
-      -------------------
-      -- Output_Access --
-      -------------------
-
-      procedure Output_Access (N : Node_Id) is
-         Subp_Id : constant Entity_Id := Entity (Prefix (N));
-
-      begin
-         Error_Msg_Name_1 := Attribute_Name (N);
-         Error_Msg_Sloc   := Sloc (N);
-         Error_Msg_NE ("\\  % of & taken #", Error_Nod, Subp_Id);
-      end Output_Access;
-
-      ----------------------------
-      -- Output_Activation_Call --
-      ----------------------------
-
-      procedure Output_Activation_Call (N : Node_Id) is
-         function Find_Activator (Call : Node_Id) return Entity_Id;
-         --  Find the nearest enclosing construct which houses call Call
-
-         --------------------
-         -- Find_Activator --
-         --------------------
-
-         function Find_Activator (Call : Node_Id) return Entity_Id is
-            Par : Node_Id;
-
-         begin
-            --  Climb the parent chain looking for a package [body] or a
-            --  construct with a statement sequence.
-
-            Par := Parent (Call);
-            while Present (Par) loop
-               if Nkind_In (Par, N_Package_Body, N_Package_Declaration) then
-                  return Defining_Entity (Par);
-
-               elsif Nkind (Par) = N_Handled_Sequence_Of_Statements then
-                  return Defining_Entity (Parent (Par));
-               end if;
-
-               Par := Parent (Par);
-            end loop;
-
-            return Empty;
-         end Find_Activator;
-
-         --  Local variables
-
-         Activator : constant Entity_Id := Find_Activator (N);
-
-      --  Start of processing for Output_Activation_Call
-
-      begin
-         pragma Assert (Present (Activator));
-
-         Error_Msg_NE ("\\  local tasks of & activated", Error_Nod, Activator);
-      end Output_Activation_Call;
-
-      -----------------
-      -- Output_Call --
-      -----------------
-
-      procedure Output_Call (N : Node_Id; Target_Id : Entity_Id) is
-         procedure Output_Accept_Alternative;
-         pragma Inline (Output_Accept_Alternative);
-         --  Emit a specific diagnostic message concerning an accept
-         --  alternative.
-
-         procedure Output_Call (Kind : String);
-         pragma Inline (Output_Call);
-         --  Emit a specific diagnostic message concerning a call of kind Kind
-
-         procedure Output_Type_Actions (Action : String);
-         pragma Inline (Output_Type_Actions);
-         --  Emit a specific diagnostic message concerning action Action of a
-         --  type.
-
-         procedure Output_Verification_Call
-           (Pred    : String;
-            Id      : Entity_Id;
-            Id_Kind : String);
-         pragma Inline (Output_Verification_Call);
-         --  Emit a specific diagnostic message concerning the verification of
-         --  predicate Pred applied to related entity Id with kind Id_Kind.
-
-         -------------------------------
-         -- Output_Accept_Alternative --
-         -------------------------------
-
-         procedure Output_Accept_Alternative is
-            Entry_Id : constant Entity_Id := Receiving_Entry (Target_Id);
-
-         begin
-            pragma Assert (Present (Entry_Id));
-
-            Error_Msg_NE ("\\  entry & selected #", Error_Nod, Entry_Id);
-         end Output_Accept_Alternative;
-
-         -----------------
-         -- Output_Call --
-         -----------------
-
-         procedure Output_Call (Kind : String) is
-         begin
-            Error_Msg_NE ("\\  " & Kind & " & called #", Error_Nod, Target_Id);
-         end Output_Call;
-
-         -------------------------
-         -- Output_Type_Actions --
-         -------------------------
-
-         procedure Output_Type_Actions (Action : String) is
-            Typ : constant Entity_Id := First_Formal_Type (Target_Id);
-
-         begin
-            pragma Assert (Present (Typ));
-
-            Error_Msg_NE
-              ("\\  " & Action & " actions for type & #", Error_Nod, Typ);
-         end Output_Type_Actions;
-
-         ------------------------------
-         -- Output_Verification_Call --
-         ------------------------------
-
-         procedure Output_Verification_Call
-           (Pred    : String;
-            Id      : Entity_Id;
-            Id_Kind : String)
-         is
-         begin
-            pragma Assert (Present (Id));
-
-            Error_Msg_NE
-              ("\\  " & Pred & " of " & Id_Kind & " & verified #",
-               Error_Nod, Id);
-         end Output_Verification_Call;
-
-      --  Start of processing for Output_Call
-
-      begin
-         Error_Msg_Sloc := Sloc (N);
-
-         --  Accept alternative
-
-         if Is_Accept_Alternative_Proc (Target_Id) then
-            Output_Accept_Alternative;
-
-         --  Adjustment
-
-         elsif Is_TSS (Target_Id, TSS_Deep_Adjust) then
-            Output_Type_Actions ("adjustment");
-
-         --  Default_Initial_Condition
-
-         elsif Is_Default_Initial_Condition_Proc (Target_Id) then
-            Output_Verification_Call
-              (Pred    => "Default_Initial_Condition",
-               Id      => First_Formal_Type (Target_Id),
-               Id_Kind => "type");
-
-         --  Entries
-
-         elsif Is_Protected_Entry (Target_Id) then
-            Output_Call ("entry");
-
-         --  Task entry calls are never processed because the entry being
-         --  invoked does not have a corresponding "body", it has a select. A
-         --  task entry call appears in the stack of active scenarios for the
-         --  sole purpose of checking No_Entry_Calls_In_Elaboration_Code and
-         --  nothing more.
-
-         elsif Is_Task_Entry (Target_Id) then
-            null;
-
-         --  Finalization
-
-         elsif Is_TSS (Target_Id, TSS_Deep_Finalize) then
-            Output_Type_Actions ("finalization");
-
-         --  Calls to _Finalizer procedures must not appear in the output
-         --  because this creates confusing noise.
-
-         elsif Is_Finalizer_Proc (Target_Id) then
-            null;
-
-         --  Initial_Condition
-
-         elsif Is_Initial_Condition_Proc (Target_Id) then
-            Output_Verification_Call
-              (Pred    => "Initial_Condition",
-               Id      => Find_Enclosing_Scope (N),
-               Id_Kind => "package");
-
-         --  Initialization
-
-         elsif Is_Init_Proc (Target_Id)
-           or else Is_TSS (Target_Id, TSS_Deep_Initialize)
-         then
-            Output_Type_Actions ("initialization");
-
-         --  Invariant
-
-         elsif Is_Invariant_Proc (Target_Id) then
-            Output_Verification_Call
-              (Pred    => "invariants",
-               Id      => First_Formal_Type (Target_Id),
-               Id_Kind => "type");
-
-         --  Partial invariant calls must not appear in the output because this
-         --  creates confusing noise. Note that a partial invariant is always
-         --  invoked by the "full" invariant which is already placed on the
-         --  stack.
-
-         elsif Is_Partial_Invariant_Proc (Target_Id) then
-            null;
-
-         --  _Postconditions
-
-         elsif Is_Postconditions_Proc (Target_Id) then
-            Output_Verification_Call
-              (Pred    => "postconditions",
-               Id      => Find_Enclosing_Scope (N),
-               Id_Kind => "subprogram");
-
-         --  Subprograms must come last because some of the previous cases fall
-         --  under this category.
-
-         elsif Ekind (Target_Id) = E_Function then
-            Output_Call ("function");
-
-         elsif Ekind (Target_Id) = E_Procedure then
-            Output_Call ("procedure");
-
-         else
-            pragma Assert (False);
-            null;
-         end if;
-      end Output_Call;
-
-      -------------------
-      -- Output_Header --
-      -------------------
-
-      procedure Output_Header is
-         Unit_Id : constant Entity_Id := Find_Top_Unit (Root_Scenario);
-
-      begin
-         if Ekind (Unit_Id) = E_Package then
-            Error_Msg_NE ("\\  spec of unit & elaborated", Error_Nod, Unit_Id);
-
-         elsif Ekind (Unit_Id) = E_Package_Body then
-            Error_Msg_NE ("\\  body of unit & elaborated", Error_Nod, Unit_Id);
-
-         else
-            Error_Msg_NE ("\\  in body of unit &", Error_Nod, Unit_Id);
-         end if;
-      end Output_Header;
-
-      --------------------------
-      -- Output_Instantiation --
-      --------------------------
-
-      procedure Output_Instantiation (N : Node_Id) is
-         procedure Output_Instantiation (Gen_Id : Entity_Id; Kind : String);
-         pragma Inline (Output_Instantiation);
-         --  Emit a specific diagnostic message concerning an instantiation of
-         --  generic unit Gen_Id. Kind denotes the kind of the instantiation.
-
-         --------------------------
-         -- Output_Instantiation --
-         --------------------------
-
-         procedure Output_Instantiation (Gen_Id : Entity_Id; Kind : String) is
-         begin
-            Error_Msg_NE
-              ("\\  " & Kind & " & instantiated as & #", Error_Nod, Gen_Id);
-         end Output_Instantiation;
-
-         --  Local variables
-
-         Inst       : Node_Id;
-         Inst_Attrs : Instantiation_Attributes;
-         Inst_Id    : Entity_Id;
-         Gen_Id     : Entity_Id;
-
-      --  Start of processing for Output_Instantiation
-
-      begin
-         Extract_Instantiation_Attributes
-           (Exp_Inst => N,
-            Inst     => Inst,
-            Inst_Id  => Inst_Id,
-            Gen_Id   => Gen_Id,
-            Attrs    => Inst_Attrs);
-
-         Error_Msg_Node_2 := Inst_Id;
-         Error_Msg_Sloc   := Sloc (Inst);
-
-         if Nkind (Inst) = N_Function_Instantiation then
-            Output_Instantiation (Gen_Id, "function");
-
-         elsif Nkind (Inst) = N_Package_Instantiation then
-            Output_Instantiation (Gen_Id, "package");
-
-         elsif Nkind (Inst) = N_Procedure_Instantiation then
-            Output_Instantiation (Gen_Id, "procedure");
-
-         else
-            pragma Assert (False);
-            null;
-         end if;
-      end Output_Instantiation;
-
-      ---------------------------------------
-      -- Output_SPARK_Refined_State_Pragma --
-      ---------------------------------------
-
-      procedure Output_SPARK_Refined_State_Pragma (N : Node_Id) is
-      begin
-         Error_Msg_Sloc := Sloc (N);
-         Error_Msg_N ("\\  refinement constituents read #", Error_Nod);
-      end Output_SPARK_Refined_State_Pragma;
-
-      --------------------------------
-      -- Output_Variable_Assignment --
-      --------------------------------
-
-      procedure Output_Variable_Assignment (N : Node_Id) is
-         Var_Id : constant Entity_Id := Entity (Extract_Assignment_Name (N));
-
-      begin
-         Error_Msg_Sloc := Sloc (N);
-         Error_Msg_NE ("\\  variable & assigned #", Error_Nod, Var_Id);
-      end Output_Variable_Assignment;
-
-      -------------------------------
-      -- Output_Variable_Reference --
-      -------------------------------
-
-      procedure Output_Variable_Reference (N : Node_Id) is
-         Dummy  : Variable_Attributes;
-         Var_Id : Entity_Id;
-
-      begin
-         Extract_Variable_Reference_Attributes
-           (Ref    => N,
-            Var_Id => Var_Id,
-            Attrs  => Dummy);
-
-         Error_Msg_Sloc := Sloc (N);
-
-         if Is_Read (N) then
-            Error_Msg_NE ("\\  variable & read #", Error_Nod, Var_Id);
-
-         else
-            pragma Assert (False);
-            null;
-         end if;
-      end Output_Variable_Reference;
-
-      --  Local variables
-
-      package Stack renames Scenario_Stack;
-
-      Dummy     : Call_Attributes;
-      N         : Node_Id;
-      Posted    : Boolean;
-      Target_Id : Entity_Id;
-
-   --  Start of processing for Output_Active_Scenarios
-
-   begin
-      --  Active scenarios are emitted only when the static model is in effect
-      --  because there is an inherent order by which all these scenarios were
-      --  reached from the declaration or library level.
-
-      if not Static_Elaboration_Checks then
-         return;
-      end if;
-
-      Posted := False;
-
-      for Index in Stack.First .. Stack.Last loop
-         N := Stack.Table (Index);
-
-         if not Posted then
-            Posted := True;
-            Output_Header;
-         end if;
-
-         --  'Access
-
-         if Nkind (N) = N_Attribute_Reference then
-            Output_Access (N);
-
-         --  Calls
-
-         elsif Is_Suitable_Call (N) then
-            Extract_Call_Attributes
-              (Call      => N,
-               Target_Id => Target_Id,
-               Attrs     => Dummy);
-
-            if Is_Activation_Proc (Target_Id) then
-               Output_Activation_Call (N);
-            else
-               Output_Call (N, Target_Id);
-            end if;
-
-         --  Instantiations
-
-         elsif Is_Suitable_Instantiation (N) then
-            Output_Instantiation (N);
-
-         --  Pragma Refined_State
-
-         elsif Is_Suitable_SPARK_Refined_State_Pragma (N) then
-            Output_SPARK_Refined_State_Pragma (N);
-
-         --  Variable assignments
-
-         elsif Nkind (N) = N_Assignment_Statement then
-            Output_Variable_Assignment (N);
-
-         --  Variable references
-
-         elsif Is_Suitable_Variable_Reference (N) then
-            Output_Variable_Reference (N);
-
-         else
-            pragma Assert (False);
-            null;
-         end if;
-      end loop;
-   end Output_Active_Scenarios;
-
-   -------------------------
-   -- Pop_Active_Scenario --
-   -------------------------
-
-   procedure Pop_Active_Scenario (N : Node_Id) is
-      Top : Node_Id renames Scenario_Stack.Table (Scenario_Stack.Last);
-
-   begin
-      pragma Assert (Top = N);
-      Scenario_Stack.Decrement_Last;
-   end Pop_Active_Scenario;
-
-   --------------------------------
-   -- Process_Activation_Generic --
-   --------------------------------
-
-   procedure Process_Activation_Generic
-     (Call       : Node_Id;
-      Call_Attrs : Call_Attributes;
-      State      : Processing_Attributes)
-   is
-      procedure Process_Task_Object (Obj_Id : Entity_Id; Typ : Entity_Id);
-      --  Perform ABE checks and diagnostics for object Obj_Id with type Typ.
-      --  Typ may be a task type or a composite type with at least one task
-      --  component.
-
-      procedure Process_Task_Objects (List : List_Id);
-      --  Perform ABE checks and diagnostics for all task objects found in the
-      --  list List.
-
-      -------------------------
-      -- Process_Task_Object --
-      -------------------------
-
-      procedure Process_Task_Object (Obj_Id : Entity_Id; Typ : Entity_Id) is
-         Base_Typ : constant Entity_Id := Base_Type (Typ);
-
-         Comp_Id    : Entity_Id;
-         Task_Attrs : Task_Attributes;
-
-         New_State : Processing_Attributes := State;
-         --  Each step of the Processing phase constitutes a new state
-
-      begin
-         if Is_Task_Type (Typ) then
-            Extract_Task_Attributes
-              (Typ   => Base_Typ,
-               Attrs => Task_Attrs);
-
-            --  Warnings are suppressed when a prior scenario is already in
-            --  that mode, or when the object, activation call, or task type
-            --  have warnings suppressed. Update the state of the Processing
-            --  phase to reflect this.
-
-            New_State.Suppress_Warnings :=
-              New_State.Suppress_Warnings
-                or else not Is_Elaboration_Warnings_OK_Id (Obj_Id)
-                or else not Call_Attrs.Elab_Warnings_OK
-                or else not Task_Attrs.Elab_Warnings_OK;
-
-            --  Update the state of the Processing phase to indicate that any
-            --  further traversal is now within a task body.
-
-            New_State.Within_Task_Body := True;
-
-            Process_Single_Activation
-              (Call       => Call,
-               Call_Attrs => Call_Attrs,
-               Obj_Id     => Obj_Id,
-               Task_Attrs => Task_Attrs,
-               State      => New_State);
-
-         --  Examine the component type when the object is an array
-
-         elsif Is_Array_Type (Typ) and then Has_Task (Base_Typ) then
-            Process_Task_Object
-              (Obj_Id => Obj_Id,
-               Typ    => Component_Type (Typ));
-
-         --  Examine individual component types when the object is a record
-
-         elsif Is_Record_Type (Typ) and then Has_Task (Base_Typ) then
-            Comp_Id := First_Component (Typ);
-            while Present (Comp_Id) loop
-               Process_Task_Object
-                 (Obj_Id => Obj_Id,
-                  Typ    => Etype (Comp_Id));
-
-               Next_Component (Comp_Id);
-            end loop;
-         end if;
-      end Process_Task_Object;
-
-      --------------------------
-      -- Process_Task_Objects --
-      --------------------------
-
-      procedure Process_Task_Objects (List : List_Id) is
-         Item     : Node_Id;
-         Item_Id  : Entity_Id;
-         Item_Typ : Entity_Id;
-
-      begin
-         --  Examine the contents of the list looking for an object declaration
-         --  of a task type or one that contains a task within.
-
-         Item := First (List);
-         while Present (Item) loop
-            if Nkind (Item) = N_Object_Declaration then
-               Item_Id  := Defining_Entity (Item);
-               Item_Typ := Etype (Item_Id);
-
-               if Has_Task (Item_Typ) then
-                  Process_Task_Object
-                    (Obj_Id => Item_Id,
-                     Typ    => Item_Typ);
-               end if;
-            end if;
-
-            Next (Item);
-         end loop;
-      end Process_Task_Objects;
-
-      --  Local variables
-
-      Context : Node_Id;
-      Spec    : Node_Id;
-
-   --  Start of processing for Process_Activation_Generic
-
-   begin
-      --  Nothing to do when the activation is a guaranteed ABE
-
-      if Is_Known_Guaranteed_ABE (Call) then
-         return;
-      end if;
-
-      --  Find the proper context of the activation call where all task objects
-      --  being activated are declared. This is usually the immediate parent of
-      --  the call.
-
-      Context := Parent (Call);
-
-      --  In the case of package bodies, the activation call is in the handled
-      --  sequence of statements, but the task objects are in the declaration
-      --  list of the body.
-
-      if Nkind (Context) = N_Handled_Sequence_Of_Statements
-        and then Nkind (Parent (Context)) = N_Package_Body
-      then
-         Context := Parent (Context);
-      end if;
-
-      --  Process all task objects defined in both the spec and body when the
-      --  activation call precedes the "begin" of a package body.
-
-      if Nkind (Context) = N_Package_Body then
-         Spec :=
-           Specification
-             (Unit_Declaration_Node (Corresponding_Spec (Context)));
-
-         Process_Task_Objects (Visible_Declarations (Spec));
-         Process_Task_Objects (Private_Declarations (Spec));
-         Process_Task_Objects (Declarations (Context));
-
-      --  Process all task objects defined in the spec when the activation call
-      --  appears at the end of a package spec.
-
-      elsif Nkind (Context) = N_Package_Specification then
-         Process_Task_Objects (Visible_Declarations (Context));
-         Process_Task_Objects (Private_Declarations (Context));
-
-      --  Otherwise the context of the activation is some construct with a
-      --  declarative part. Note that the corresponding record type of a task
-      --  type is controlled. Because of this, the finalization machinery must
-      --  relocate the task object to the handled statements of the construct
-      --  to perform proper finalization in case of an exception. Examine the
-      --  statements of the construct rather than the declarations.
-
-      else
-         pragma Assert (Nkind (Context) = N_Handled_Sequence_Of_Statements);
-
-         Process_Task_Objects (Statements (Context));
-      end if;
-   end Process_Activation_Generic;
-
-   ------------------------------------
-   -- Process_Conditional_ABE_Access --
-   ------------------------------------
-
-   procedure Process_Conditional_ABE_Access
-     (Attr  : Node_Id;
-      State : Processing_Attributes)
-   is
-      function Build_Access_Marker (Target_Id : Entity_Id) return Node_Id;
-      pragma Inline (Build_Access_Marker);
-      --  Create a suitable call marker which invokes target Target_Id
-
-      -------------------------
-      -- Build_Access_Marker --
-      -------------------------
-
-      function Build_Access_Marker (Target_Id : Entity_Id) return Node_Id is
-         Marker : Node_Id;
-
-      begin
-         Marker := Make_Call_Marker (Sloc (Attr));
-
-         --  Inherit relevant attributes from the attribute
-
-         --  Performance note: parent traversal
-
-         Set_Target (Marker, Target_Id);
-         Set_Is_Declaration_Level_Node
-                    (Marker, Find_Enclosing_Level (Attr) = Declaration_Level);
-         Set_Is_Dispatching_Call
-                    (Marker, False);
-         Set_Is_Elaboration_Checks_OK_Node
-                    (Marker, Is_Elaboration_Checks_OK_Node (Attr));
-         Set_Is_Elaboration_Warnings_OK_Node
-                    (Marker, Is_Elaboration_Warnings_OK_Node (Attr));
-         Set_Is_Source_Call
-                    (Marker, Comes_From_Source (Attr));
-         Set_Is_SPARK_Mode_On_Node
-                    (Marker, Is_SPARK_Mode_On_Node (Attr));
-
-         --  Partially insert the call marker into the tree by setting its
-         --  parent pointer.
-
-         Set_Parent (Marker, Attr);
-
-         return Marker;
-      end Build_Access_Marker;
-
-      --  Local variables
-
-      Root      : constant Node_Id   := Root_Scenario;
-      Target_Id : constant Entity_Id := Entity (Prefix (Attr));
-
-      Target_Attrs : Target_Attributes;
-
-      New_State : Processing_Attributes := State;
-      --  Each step of the Processing phase constitutes a new state
-
-   --  Start of processing for Process_Conditional_ABE_Access
-
-   begin
-      --  Output relevant information when switch -gnatel (info messages on
-      --  implicit Elaborate[_All] pragmas) is in effect.
-
-      if Elab_Info_Messages then
-         Error_Msg_NE
-           ("info: access to & during elaboration", Attr, Target_Id);
-      end if;
-
-      Extract_Target_Attributes
-        (Target_Id => Target_Id,
-         Attrs     => Target_Attrs);
-
-      --  Warnings are suppressed when a prior scenario is already in that
-      --  mode, or when the attribute or the target have warnings suppressed.
-      --  Update the state of the Processing phase to reflect this.
-
-      New_State.Suppress_Warnings :=
-        New_State.Suppress_Warnings
-          or else not Is_Elaboration_Warnings_OK_Node (Attr)
-          or else not Target_Attrs.Elab_Warnings_OK;
-
-      --  Do not emit any ABE diagnostics when the current or previous scenario
-      --  in this traversal has suppressed elaboration warnings.
-
-      if New_State.Suppress_Warnings then
-         null;
-
-      --  Both the attribute and the corresponding body are in the same unit.
-      --  The corresponding body must appear prior to the root scenario which
-      --  started the recursive search. If this is not the case, then there is
-      --  a potential ABE if the access value is used to call the subprogram.
-      --  Emit a warning only when switch -gnatw.f (warnings on suspucious
-      --  'Access) is in effect.
-
-      elsif Warn_On_Elab_Access
-        and then Present (Target_Attrs.Body_Decl)
-        and then In_Extended_Main_Code_Unit (Target_Attrs.Body_Decl)
-        and then Earlier_In_Extended_Unit (Root, Target_Attrs.Body_Decl)
-      then
-         Error_Msg_Name_1 := Attribute_Name (Attr);
-         Error_Msg_NE ("??% attribute of & before body seen", Attr, Target_Id);
-         Error_Msg_N ("\possible Program_Error on later references", Attr);
-
-         Output_Active_Scenarios (Attr);
-      end if;
-
-      --  Treat the attribute as an immediate invocation of the target when
-      --  switch -gnatd.o (conservative elaboration order for indirect calls)
-      --  is in effect. Note that the prior elaboration of the unit containing
-      --  the target is ensured processing the corresponding call marker.
-
-      if Debug_Flag_Dot_O then
-         Process_Conditional_ABE
-           (N     => Build_Access_Marker (Target_Id),
-            State => New_State);
-
-      --  Otherwise ensure that the unit with the corresponding body is
-      --  elaborated prior to the main unit.
-
-      else
-         Ensure_Prior_Elaboration
-           (N        => Attr,
-            Unit_Id  => Target_Attrs.Unit_Id,
-            Prag_Nam => Name_Elaborate_All,
-            State    => New_State);
-      end if;
-   end Process_Conditional_ABE_Access;
-
-   ---------------------------------------------
-   -- Process_Conditional_ABE_Activation_Impl --
-   ---------------------------------------------
-
-   procedure Process_Conditional_ABE_Activation_Impl
-     (Call       : Node_Id;
-      Call_Attrs : Call_Attributes;
-      Obj_Id     : Entity_Id;
-      Task_Attrs : Task_Attributes;
-      State      : Processing_Attributes)
-   is
-      Check_OK : constant Boolean :=
-                   not Is_Ignored_Ghost_Entity (Obj_Id)
-                     and then not Task_Attrs.Ghost_Mode_Ignore
-                     and then Is_Elaboration_Checks_OK_Id (Obj_Id)
-                     and then Task_Attrs.Elab_Checks_OK;
-      --  A run-time ABE check may be installed only when the object and the
-      --  task type have active elaboration checks, and both are not ignored
-      --  Ghost constructs.
-
-      Root : constant Node_Id := Root_Scenario;
-
-      New_State : Processing_Attributes := State;
-      --  Each step of the Processing phase constitutes a new state
-
-   begin
-      --  Output relevant information when switch -gnatel (info messages on
-      --  implicit Elaborate[_All] pragmas) is in effect.
-
-      if Elab_Info_Messages then
-         Error_Msg_NE
-           ("info: activation of & during elaboration", Call, Obj_Id);
-      end if;
-
-      --  Nothing to do when the call activates a task whose type is defined
-      --  within an instance and switch -gnatd_i (ignore activations and calls
-      --  to instances for elaboration) is in effect.
-
-      if Debug_Flag_Underscore_I
-        and then In_External_Instance
-                   (N           => Call,
-                    Target_Decl => Task_Attrs.Task_Decl)
-      then
-         return;
-
-      --  Nothing to do when the activation is a guaranteed ABE
-
-      elsif Is_Known_Guaranteed_ABE (Call) then
-         return;
-
-      --  Nothing to do when the root scenario appears at the declaration
-      --  level and the task is in the same unit, but outside this context.
-      --
-      --    task type Task_Typ;                  --  task declaration
-      --
-      --    procedure Proc is
-      --       function A ... is
-      --       begin
-      --          if Some_Condition then
-      --             declare
-      --                T : Task_Typ;
-      --             begin
-      --                <activation call>        --  activation site
-      --             end;
-      --          ...
-      --       end A;
-      --
-      --       X : ... := A;                     --  root scenario
-      --    ...
-      --
-      --    task body Task_Typ is
-      --       ...
-      --    end Task_Typ;
-      --
-      --  In the example above, the context of X is the declarative list of
-      --  Proc. The "elaboration" of X may reach the activation of T whose body
-      --  is defined outside of X's context. The task body is relevant only
-      --  when Proc is invoked, but this happens only in "normal" elaboration,
-      --  therefore the task body must not be considered if this is not the
-      --  case.
-
-      --  Performance note: parent traversal
-
-      elsif Is_Up_Level_Target (Task_Attrs.Task_Decl) then
-         return;
-
-      --  Nothing to do when the activation is ABE-safe
-      --
-      --    generic
-      --    package Gen is
-      --       task type Task_Typ;
-      --    end Gen;
-      --
-      --    package body Gen is
-      --       task body Task_Typ is
-      --       begin
-      --          ...
-      --       end Task_Typ;
-      --    end Gen;
-      --
-      --    with Gen;
-      --    procedure Main is
-      --       package Nested is
-      --          package Inst is new Gen;
-      --          T : Inst.Task_Typ;
-      --          <activation call>              --  safe activation
-      --       end Nested;
-      --    ...
-
-      elsif Is_Safe_Activation (Call, Task_Attrs.Task_Decl) then
-
-         --  Note that the task body must still be examined for any nested
-         --  scenarios.
-
-         null;
-
-      --  The activation call and the task body are both in the main unit
-
-      elsif Present (Task_Attrs.Body_Decl)
-        and then In_Extended_Main_Code_Unit (Task_Attrs.Body_Decl)
-      then
-         --  If the root scenario appears prior to the task body, then this is
-         --  a possible ABE with respect to the root scenario.
-         --
-         --    task type Task_Typ;
-         --
-         --    function A ... is
-         --    begin
-         --       if Some_Condition then
-         --          declare
-         --             package Pack is
-         --                T : Task_Typ;
-         --             end Pack;                --  activation of T
-         --       ...
-         --    end A;
-         --
-         --    X : ... := A;                     --  root scenario
-         --
-         --    task body Task_Typ is             --  task body
-         --       ...
-         --    end Task_Typ;
-         --
-         --    Y : ... := A;                     --  root scenario
-         --
-         --  IMPORTANT: The activation of T is a possible ABE for X, but
-         --  not for Y. Intalling an unconditional ABE raise prior to the
-         --  activation call would be wrong as it will fail for Y as well
-         --  but in Y's case the activation of T is never an ABE.
-
-         if Earlier_In_Extended_Unit (Root, Task_Attrs.Body_Decl) then
-
-            --  Do not emit any ABE diagnostics when a previous scenario in
-            --  this traversal has suppressed elaboration warnings.
-
-            if State.Suppress_Warnings then
-               null;
-
-            --  Do not emit any ABE diagnostics when the activation occurs in
-            --  a partial finalization context because this leads to confusing
-            --  noise.
-
-            elsif State.Within_Partial_Finalization then
-               null;
-
-            --  ABE diagnostics are emitted only in the static model because
-            --  there is a well-defined order to visiting scenarios. Without
-            --  this order diagnostics appear jumbled and result in unwanted
-            --  noise.
-
-            elsif Static_Elaboration_Checks then
-               Error_Msg_Sloc := Sloc (Call);
-               Error_Msg_N
-                 ("??task & will be activated # before elaboration of its "
-                  & "body", Obj_Id);
-               Error_Msg_N
-                 ("\Program_Error may be raised at run time", Obj_Id);
-
-               Output_Active_Scenarios (Obj_Id);
-            end if;
-
-            --  Install a conditional run-time ABE check to verify that the
-            --  task body has been elaborated prior to the activation call.
-
-            if Check_OK then
-               Install_ABE_Check
-                 (N           => Call,
-                  Ins_Nod     => Call,
-                  Target_Id   => Task_Attrs.Spec_Id,
-                  Target_Decl => Task_Attrs.Task_Decl,
-                  Target_Body => Task_Attrs.Body_Decl);
-
-               --  Update the state of the Processing phase to indicate that
-               --  no implicit Elaborate[_All] pragmas must be generated from
-               --  this point on.
-               --
-               --    task type Task_Typ;
-               --
-               --    function A ... is
-               --    begin
-               --       if Some_Condition then
-               --          declare
-               --             package Pack is
-               --                <ABE check>
-               --                T : Task_Typ;
-               --             end Pack;          --  activation of T
-               --       ...
-               --    end A;
-               --
-               --    X : ... := A;
-               --
-               --    task body Task_Typ is
-               --    begin
-               --       External.Subp;           --  imparts Elaborate_All
-               --    end Task_Typ;
-               --
-               --  If Some_Condition is True, then the ABE check will fail at
-               --  runtime and the call to External.Subp will never take place,
-               --  rendering the implicit Elaborate_All useless.
-               --
-               --  If Some_Condition is False, then the call to External.Subp
-               --  will never take place, rendering the implicit Elaborate_All
-               --  useless.
-
-               New_State.Suppress_Implicit_Pragmas := True;
-            end if;
-         end if;
-
-      --  Otherwise the task body is not available in this compilation or it
-      --  resides in an external unit. Install a run-time ABE check to verify
-      --  that the task body has been elaborated prior to the activation call
-      --  when the dynamic model is in effect.
-
-      elsif Dynamic_Elaboration_Checks and then Check_OK then
-         Install_ABE_Check
-           (N       => Call,
-            Ins_Nod => Call,
-            Id      => Task_Attrs.Unit_Id);
-      end if;
-
-      --  Both the activation call and task type are subject to SPARK_Mode
-      --  On, this triggers the SPARK rules for task activation. Compared to
-      --  calls and instantiations, task activation in SPARK does not require
-      --  the presence of Elaborate[_All] pragmas in case the task type is
-      --  defined outside the main unit. This is because SPARK utilizes a
-      --  special policy which activates all tasks after the main unit has
-      --  finished its elaboration.
-
-      if Call_Attrs.SPARK_Mode_On and Task_Attrs.SPARK_Mode_On then
-         null;
-
-      --  Otherwise the Ada rules are in effect. Ensure that the unit with the
-      --  task body is elaborated prior to the main unit.
-
-      else
-         Ensure_Prior_Elaboration
-           (N        => Call,
-            Unit_Id  => Task_Attrs.Unit_Id,
-            Prag_Nam => Name_Elaborate_All,
-            State    => New_State);
-      end if;
-
-      Traverse_Body
-        (N     => Task_Attrs.Body_Decl,
-         State => New_State);
-   end Process_Conditional_ABE_Activation_Impl;
-
-   procedure Process_Conditional_ABE_Activation is
-     new Process_Activation_Generic (Process_Conditional_ABE_Activation_Impl);
-
-   ----------------------------------
-   -- Process_Conditional_ABE_Call --
-   ----------------------------------
-
-   procedure Process_Conditional_ABE_Call
-     (Call       : Node_Id;
-      Call_Attrs : Call_Attributes;
-      Target_Id  : Entity_Id;
-      State      : Processing_Attributes)
-   is
-      function In_Initialization_Context (N : Node_Id) return Boolean;
-      --  Determine whether arbitrary node N appears within a type init proc,
-      --  primitive [Deep_]Initialize, or a block created for initialization
-      --  purposes.
-
-      function Is_Partial_Finalization_Proc return Boolean;
-      pragma Inline (Is_Partial_Finalization_Proc);
-      --  Determine whether call Call with target Target_Id invokes a partial
-      --  finalization procedure.
-
-      -------------------------------
-      -- In_Initialization_Context --
-      -------------------------------
-
-      function In_Initialization_Context (N : Node_Id) return Boolean is
-         Par     : Node_Id;
-         Spec_Id : Entity_Id;
-
-      begin
-         --  Climb the parent chain looking for initialization actions
-
-         Par := Parent (N);
-         while Present (Par) loop
-
-            --  A block may be part of the initialization actions of a default
-            --  initialized object.
-
-            if Nkind (Par) = N_Block_Statement
-              and then Is_Initialization_Block (Par)
-            then
-               return True;
-
-            --  A subprogram body may denote an initialization routine
-
-            elsif Nkind (Par) = N_Subprogram_Body then
-               Spec_Id := Unique_Defining_Entity (Par);
-
-               --  The current subprogram body denotes a type init proc or
-               --  primitive [Deep_]Initialize.
-
-               if Is_Init_Proc (Spec_Id)
-                 or else Is_Controlled_Proc (Spec_Id, Name_Initialize)
-                 or else Is_TSS (Spec_Id, TSS_Deep_Initialize)
-               then
-                  return True;
-               end if;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Par) then
-               exit;
-            end if;
-
-            Par := Parent (Par);
-         end loop;
-
-         return False;
-      end In_Initialization_Context;
-
-      ----------------------------------
-      -- Is_Partial_Finalization_Proc --
-      ----------------------------------
-
-      function Is_Partial_Finalization_Proc return Boolean is
-      begin
-         --  To qualify, the target must denote primitive [Deep_]Finalize or a
-         --  finalizer procedure, and the call must appear in an initialization
-         --  context.
-
-         return
-           (Is_Controlled_Proc (Target_Id, Name_Finalize)
-              or else Is_Finalizer_Proc (Target_Id)
-              or else Is_TSS (Target_Id, TSS_Deep_Finalize))
-            and then In_Initialization_Context (Call);
-      end Is_Partial_Finalization_Proc;
-
-      --  Local variables
-
-      SPARK_Rules_On : Boolean;
-      Target_Attrs   : Target_Attributes;
-
-      New_State : Processing_Attributes := State;
-      --  Each step of the Processing phase constitutes a new state
-
-   --  Start of processing for Process_Conditional_ABE_Call
-
-   begin
-      Extract_Target_Attributes
-        (Target_Id => Target_Id,
-         Attrs     => Target_Attrs);
-
-      --  The SPARK rules are in effect when both the call and target are
-      --  subject to SPARK_Mode On.
-
-      SPARK_Rules_On :=
-        Call_Attrs.SPARK_Mode_On and Target_Attrs.SPARK_Mode_On;
-
-      --  Output relevant information when switch -gnatel (info messages on
-      --  implicit Elaborate[_All] pragmas) is in effect.
-
-      if Elab_Info_Messages then
-         Info_Call
-           (Call      => Call,
-            Target_Id => Target_Id,
-            Info_Msg  => True,
-            In_SPARK  => SPARK_Rules_On);
-      end if;
-
-      --  Check whether the invocation of an entry clashes with an existing
-      --  restriction.
-
-      if Is_Protected_Entry (Target_Id) then
-         Check_Restriction (No_Entry_Calls_In_Elaboration_Code, Call);
-
-      elsif Is_Task_Entry (Target_Id) then
-         Check_Restriction (No_Entry_Calls_In_Elaboration_Code, Call);
-
-         --  Task entry calls are never processed because the entry being
-         --  invoked does not have a corresponding "body", it has a select.
-
-         return;
-      end if;
-
-      --  Nothing to do when the call invokes a target defined within an
-      --  instance and switch -gnatd_i (ignore activations and calls to
-      --  instances for elaboration) is in effect.
-
-      if Debug_Flag_Underscore_I
-        and then In_External_Instance
-                   (N           => Call,
-                    Target_Decl => Target_Attrs.Spec_Decl)
-      then
-         return;
-
-      --  Nothing to do when the call is a guaranteed ABE
-
-      elsif Is_Known_Guaranteed_ABE (Call) then
-         return;
-
-      --  Nothing to do when the root scenario appears at the declaration level
-      --  and the target is in the same unit, but outside this context.
-      --
-      --    function B ...;                      --  target declaration
-      --
-      --    procedure Proc is
-      --       function A ... is
-      --       begin
-      --          if Some_Condition then
-      --             return B;                   --  call site
-      --          ...
-      --       end A;
-      --
-      --       X : ... := A;                     --  root scenario
-      --    ...
-      --
-      --    function B ... is
-      --       ...
-      --    end B;
-      --
-      --  In the example above, the context of X is the declarative region of
-      --  Proc. The "elaboration" of X may eventually reach B which is defined
-      --  outside of X's context. B is relevant only when Proc is invoked, but
-      --  this happens only by means of "normal" elaboration, therefore B must
-      --  not be considered if this is not the case.
-
-      --  Performance note: parent traversal
-
-      elsif Is_Up_Level_Target (Target_Attrs.Spec_Decl) then
-         return;
-      end if;
-
-      --  Warnings are suppressed when a prior scenario is already in that
-      --  mode, or the call or target have warnings suppressed. Update the
-      --  state of the Processing phase to reflect this.
-
-      New_State.Suppress_Warnings :=
-        New_State.Suppress_Warnings
-          or else not Call_Attrs.Elab_Warnings_OK
-          or else not Target_Attrs.Elab_Warnings_OK;
-
-      --  The call occurs in an initial condition context when a prior scenario
-      --  is already in that mode, or when the target is an Initial_Condition
-      --  procedure. Update the state of the Processing phase to reflect this.
-
-      New_State.Within_Initial_Condition :=
-        New_State.Within_Initial_Condition
-          or else Is_Initial_Condition_Proc (Target_Id);
-
-      --  The call occurs in a partial finalization context when a prior
-      --  scenario is already in that mode, or when the target denotes a
-      --  [Deep_]Finalize primitive or a finalizer within an initialization
-      --  context. Update the state of the Processing phase to reflect this.
-
-      New_State.Within_Partial_Finalization :=
-        New_State.Within_Partial_Finalization
-          or else Is_Partial_Finalization_Proc;
-
-      --  The SPARK rules are in effect. Note that -gnatd.v (enforce SPARK
-      --  elaboration rules in SPARK code) is intentionally not taken into
-      --  account here because Process_Conditional_ABE_Call_SPARK has two
-      --  separate modes of operation.
-
-      if SPARK_Rules_On then
-         Process_Conditional_ABE_Call_SPARK
-           (Call         => Call,
-            Target_Id    => Target_Id,
-            Target_Attrs => Target_Attrs,
-            State        => New_State);
-
-      --  Otherwise the Ada rules are in effect
-
-      else
-         Process_Conditional_ABE_Call_Ada
-           (Call         => Call,
-            Call_Attrs   => Call_Attrs,
-            Target_Id    => Target_Id,
-            Target_Attrs => Target_Attrs,
-            State        => New_State);
-      end if;
-
-      --  Inspect the target body (and barried function) for other suitable
-      --  elaboration scenarios.
-
-      Traverse_Body
-        (N     => Target_Attrs.Body_Barf,
-         State => New_State);
-
-      Traverse_Body
-        (N     => Target_Attrs.Body_Decl,
-         State => New_State);
-   end Process_Conditional_ABE_Call;
-
-   --------------------------------------
-   -- Process_Conditional_ABE_Call_Ada --
-   --------------------------------------
-
-   procedure Process_Conditional_ABE_Call_Ada
-     (Call         : Node_Id;
-      Call_Attrs   : Call_Attributes;
-      Target_Id    : Entity_Id;
-      Target_Attrs : Target_Attributes;
-      State        : Processing_Attributes)
-   is
-      Check_OK : constant Boolean :=
-                   not Call_Attrs.Ghost_Mode_Ignore
-                     and then not Target_Attrs.Ghost_Mode_Ignore
-                     and then Call_Attrs.Elab_Checks_OK
-                     and then Target_Attrs.Elab_Checks_OK;
-      --  A run-time ABE check may be installed only when both the call and the
-      --  target have active elaboration checks, and both are not ignored Ghost
-      --  constructs.
-
-      Root : constant Node_Id := Root_Scenario;
-
-      New_State : Processing_Attributes := State;
-      --  Each step of the Processing phase constitutes a new state
-
-   begin
-      --  Nothing to do for an Ada dispatching call because there are no ABE
-      --  diagnostics for either models. ABE checks for the dynamic model are
-      --  handled by Install_Primitive_Elaboration_Check.
-
-      if Call_Attrs.Is_Dispatching then
-         return;
-
-      --  Nothing to do when the call is ABE-safe
-      --
-      --    generic
-      --    function Gen ...;
-      --
-      --    function Gen ... is
-      --    begin
-      --       ...
-      --    end Gen;
-      --
-      --    with Gen;
-      --    procedure Main is
-      --       function Inst is new Gen;
-      --       X : ... := Inst;                  --  safe call
-      --    ...
-
-      elsif Is_Safe_Call (Call, Target_Attrs) then
-         return;
-
-      --  The call and the target body are both in the main unit
-
-      elsif Present (Target_Attrs.Body_Decl)
-        and then In_Extended_Main_Code_Unit (Target_Attrs.Body_Decl)
-      then
-         --  If the root scenario appears prior to the target body, then this
-         --  is a possible ABE with respect to the root scenario.
-         --
-         --    function B ...;
-         --
-         --    function A ... is
-         --    begin
-         --       if Some_Condition then
-         --          return B;                      --  call site
-         --       ...
-         --    end A;
-         --
-         --    X : ... := A;                        --  root scenario
-         --
-         --    function B ... is                    --  target body
-         --       ...
-         --    end B;
-         --
-         --    Y : ... := A;                        --  root scenario
-         --
-         --  IMPORTANT: The call to B from A is a possible ABE for X, but not
-         --  for Y. Installing an unconditional ABE raise prior to the call to
-         --  B would be wrong as it will fail for Y as well, but in Y's case
-         --  the call to B is never an ABE.
-
-         if Earlier_In_Extended_Unit (Root, Target_Attrs.Body_Decl) then
-
-            --  Do not emit any ABE diagnostics when a previous scenario in
-            --  this traversal has suppressed elaboration warnings.
-
-            if State.Suppress_Warnings then
-               null;
-
-            --  Do not emit any ABE diagnostics when the call occurs in a
-            --  partial finalization context because this leads to confusing
-            --  noise.
-
-            elsif State.Within_Partial_Finalization then
-               null;
-
-            --  ABE diagnostics are emitted only in the static model because
-            --  there is a well-defined order to visiting scenarios. Without
-            --  this order diagnostics appear jumbled and result in unwanted
-            --  noise.
-
-            elsif Static_Elaboration_Checks then
-               Error_Msg_NE
-                 ("??cannot call & before body seen", Call, Target_Id);
-               Error_Msg_N ("\Program_Error may be raised at run time", Call);
-
-               Output_Active_Scenarios (Call);
-            end if;
-
-            --  Install a conditional run-time ABE check to verify that the
-            --  target body has been elaborated prior to the call.
-
-            if Check_OK then
-               Install_ABE_Check
-                 (N           => Call,
-                  Ins_Nod     => Call,
-                  Target_Id   => Target_Attrs.Spec_Id,
-                  Target_Decl => Target_Attrs.Spec_Decl,
-                  Target_Body => Target_Attrs.Body_Decl);
-
-               --  Update the state of the Processing phase to indicate that
-               --  no implicit Elaborate[_All] pragmas must be generated from
-               --  this point on.
-               --
-               --    function B ...;
-               --
-               --    function A ... is
-               --    begin
-               --       if Some_Condition then
-               --          <ABE check>
-               --          return B;
-               --       ...
-               --    end A;
-               --
-               --    X : ... := A;
-               --
-               --    function B ... is
-               --       External.Subp;           --  imparts Elaborate_All
-               --    end B;
-               --
-               --  If Some_Condition is True, then the ABE check will fail at
-               --  runtime and the call to External.Subp will never take place,
-               --  rendering the implicit Elaborate_All useless.
-               --
-               --  If Some_Condition is False, then the call to External.Subp
-               --  will never take place, rendering the implicit Elaborate_All
-               --  useless.
-
-               New_State.Suppress_Implicit_Pragmas := True;
-            end if;
-         end if;
-
-      --  Otherwise the target body is not available in this compilation or it
-      --  resides in an external unit. Install a run-time ABE check to verify
-      --  that the target body has been elaborated prior to the call site when
-      --  the dynamic model is in effect.
-
-      elsif Dynamic_Elaboration_Checks and then Check_OK then
-         Install_ABE_Check
-           (N       => Call,
-            Ins_Nod => Call,
-            Id      => Target_Attrs.Unit_Id);
-      end if;
-
-      --  Ensure that the unit with the target body is elaborated prior to the
-      --  main unit. The implicit Elaborate[_All] is generated only when the
-      --  call has elaboration checks enabled. This behaviour parallels that of
-      --  the old ABE mechanism.
-
-      if Call_Attrs.Elab_Checks_OK then
-         Ensure_Prior_Elaboration
-           (N        => Call,
-            Unit_Id  => Target_Attrs.Unit_Id,
-            Prag_Nam => Name_Elaborate_All,
-            State    => New_State);
-      end if;
-   end Process_Conditional_ABE_Call_Ada;
-
-   ----------------------------------------
-   -- Process_Conditional_ABE_Call_SPARK --
-   ----------------------------------------
-
-   procedure Process_Conditional_ABE_Call_SPARK
-     (Call         : Node_Id;
-      Target_Id    : Entity_Id;
-      Target_Attrs : Target_Attributes;
-      State        : Processing_Attributes)
-   is
-      Region : Node_Id;
-
-   begin
-      --  Ensure that a suitable elaboration model is in effect for SPARK rule
-      --  verification.
-
-      Check_SPARK_Model_In_Effect (Call);
-
-      --  The call and the target body are both in the main unit
-
-      if Present (Target_Attrs.Body_Decl)
-        and then In_Extended_Main_Code_Unit (Target_Attrs.Body_Decl)
-      then
-         --  If the call appears prior to the target body, then the call must
-         --  appear within the early call region of the target body.
-         --
-         --    function B ...;
-         --
-         --    X : ... := B;                     --  call site
-         --
-         --    <preelaborable construct 1>       --+
-         --               ...                      | early call region
-         --    <preelaborable construct N>       --+
-         --
-         --    function B ... is                 --  target body
-         --       ...
-         --    end B;
-         --
-         --  When the call to B is not nested within some other scenario, the
-         --  call is automatically illegal because it can never appear in the
-         --  early call region of B's body. This is equivalent to a guaranteed
-         --  ABE.
-         --
-         --    <preelaborable construct 1>       --+
-         --                                        |
-         --    function B ...;                     |
-         --                                        |
-         --    function A ... is                   |
-         --    begin                               | early call region
-         --       if Some_Condition then
-         --          return B;                   --  call site
-         --       ...
-         --    end A;                              |
-         --                                        |
-         --    <preelaborable construct N>       --+
-         --
-         --    function B ... is                 --  target body
-         --       ...
-         --    end B;
-         --
-         --  When the call to B is nested within some other scenario, the call
-         --  is always ABE-safe. It is not immediately obvious why this is the
-         --  case. The elaboration safety follows from the early call region
-         --  rule being applied to ALL calls preceding their associated bodies.
-         --
-         --  In the example above, the call to B is safe as long as the call to
-         --  A is safe. There are several cases to consider:
-         --
-         --    <call 1 to A>
-         --    function B ...;
-         --
-         --    <call 2 to A>
-         --    function A ... is
-         --    begin
-         --       if Some_Condition then
-         --          return B;
-         --       ...
-         --    end A;
-         --
-         --    <call 3 to A>
-         --    function B ... is
-         --       ...
-         --    end B;
-         --
-         --  * Call 1 - This call is either nested within some scenario or not,
-         --    which falls under the two general cases outlined above.
-         --
-         --  * Call 2 - This is the same case as Call 1.
-         --
-         --  * Call 3 - The placement of this call limits the range of B's
-         --    early call region unto call 3, therefore the call to B is no
-         --    longer within the early call region of B's body, making it ABE-
-         --    unsafe and therefore illegal.
-
-         if Earlier_In_Extended_Unit (Call, Target_Attrs.Body_Decl) then
-
-            --  Do not emit any ABE diagnostics when a previous scenario in
-            --  this traversal has suppressed elaboration warnings.
-
-            if State.Suppress_Warnings then
-               null;
-
-            --  Do not emit any ABE diagnostics when the call occurs in an
-            --  initial condition context because this leads to incorrect
-            --  diagnostics.
-
-            elsif State.Within_Initial_Condition then
-               null;
-
-            --  Do not emit any ABE diagnostics when the call occurs in a
-            --  partial finalization context because this leads to confusing
-            --  noise.
-
-            elsif State.Within_Partial_Finalization then
-               null;
-
-            --  ABE diagnostics are emitted only in the static model because
-            --  there is a well-defined order to visiting scenarios. Without
-            --  this order diagnostics appear jumbled and result in unwanted
-            --  noise.
-
-            elsif Static_Elaboration_Checks then
-
-               --  Ensure that a call which textually precedes the subprogram
-               --  body it invokes appears within the early call region of the
-               --  subprogram body.
-
-               --  IMPORTANT: This check must always be performed even when
-               --  -gnatd.v (enforce SPARK elaboration rules in SPARK code) is
-               --  not specified because the static model cannot guarantee the
-               --  absence of elaboration issues in the presence of dispatching
-               --  calls.
-
-               Region := Find_Early_Call_Region (Target_Attrs.Body_Decl);
-
-               if Earlier_In_Extended_Unit (Call, Region) then
-                  Error_Msg_NE
-                    ("call must appear within early call region of subprogram "
-                     & "body & (SPARK RM 7.7(3))", Call, Target_Id);
-
-                  Error_Msg_Sloc := Sloc (Region);
-                  Error_Msg_N ("\region starts #", Call);
-
-                  Error_Msg_Sloc := Sloc (Target_Attrs.Body_Decl);
-                  Error_Msg_N ("\region ends #", Call);
-
-                  Output_Active_Scenarios (Call);
-               end if;
-            end if;
-
-         --  Otherwise the call appears after the target body. The call is
-         --  ABE-safe as a consequence of applying the early call region rule
-         --  to ALL calls preceding their associated bodies.
-
-         else
-            null;
-         end if;
-      end if;
-
-      --  A call to a source target or to a target which emulates Ada or SPARK
-      --  semantics imposes an Elaborate_All requirement on the context of the
-      --  main unit. Determine whether the context has a pragma strong enough
-      --  to meet the requirement.
-
-      --  IMPORTANT: This check must be performed only when -gnatd.v (enforce
-      --  SPARK elaboration rules in SPARK code) is active because the static
-      --  model can ensure the prior elaboration of the unit which contains a
-      --  body by installing an implicit Elaborate[_All] pragma.
-
-      if Debug_Flag_Dot_V then
-         if Target_Attrs.From_Source
-           or else Is_Ada_Semantic_Target (Target_Id)
-           or else Is_SPARK_Semantic_Target (Target_Id)
-         then
-            Meet_Elaboration_Requirement
-              (N         => Call,
-               Target_Id => Target_Id,
-               Req_Nam   => Name_Elaborate_All);
-         end if;
-
-      --  Otherwise ensure that the unit with the target body is elaborated
-      --  prior to the main unit.
-
-      else
-         Ensure_Prior_Elaboration
-           (N        => Call,
-            Unit_Id  => Target_Attrs.Unit_Id,
-            Prag_Nam => Name_Elaborate_All,
-            State    => State);
-      end if;
-   end Process_Conditional_ABE_Call_SPARK;
-
-   -------------------------------------------
-   -- Process_Conditional_ABE_Instantiation --
-   -------------------------------------------
-
-   procedure Process_Conditional_ABE_Instantiation
-     (Exp_Inst : Node_Id;
-      State    : Processing_Attributes)
-   is
-      Gen_Attrs  : Target_Attributes;
-      Gen_Id     : Entity_Id;
-      Inst       : Node_Id;
-      Inst_Attrs : Instantiation_Attributes;
-      Inst_Id    : Entity_Id;
-
-      SPARK_Rules_On : Boolean;
-      --  This flag is set when the SPARK rules are in effect
-
-      New_State : Processing_Attributes := State;
-      --  Each step of the Processing phase constitutes a new state
-
-   begin
-      Extract_Instantiation_Attributes
-        (Exp_Inst => Exp_Inst,
-         Inst     => Inst,
-         Inst_Id  => Inst_Id,
-         Gen_Id   => Gen_Id,
-         Attrs    => Inst_Attrs);
-
-      Extract_Target_Attributes (Gen_Id, Gen_Attrs);
-
-      --  The SPARK rules are in effect when both the instantiation and generic
-      --  are subject to SPARK_Mode On.
-
-      SPARK_Rules_On := Inst_Attrs.SPARK_Mode_On and Gen_Attrs.SPARK_Mode_On;
-
-      --  Output relevant information when switch -gnatel (info messages on
-      --  implicit Elaborate[_All] pragmas) is in effect.
-
-      if Elab_Info_Messages then
-         Info_Instantiation
-           (Inst     => Inst,
-            Gen_Id   => Gen_Id,
-            Info_Msg => True,
-            In_SPARK => SPARK_Rules_On);
-      end if;
-
-      --  Nothing to do when the instantiation is a guaranteed ABE
-
-      if Is_Known_Guaranteed_ABE (Inst) then
-         return;
-
-      --  Nothing to do when the root scenario appears at the declaration level
-      --  and the generic is in the same unit, but outside this context.
-      --
-      --    generic
-      --    procedure Gen is ...;                --  generic declaration
-      --
-      --    procedure Proc is
-      --       function A ... is
-      --       begin
-      --          if Some_Condition then
-      --             declare
-      --                procedure I is new Gen;  --  instantiation site
-      --             ...
-      --          ...
-      --       end A;
-      --
-      --       X : ... := A;                     --  root scenario
-      --    ...
-      --
-      --    procedure Gen is
-      --       ...
-      --    end Gen;
-      --
-      --  In the example above, the context of X is the declarative region of
-      --  Proc. The "elaboration" of X may eventually reach Gen which appears
-      --  outside of X's context. Gen is relevant only when Proc is invoked,
-      --  but this happens only by means of "normal" elaboration, therefore
-      --  Gen must not be considered if this is not the case.
-
-      --  Performance note: parent traversal
-
-      elsif Is_Up_Level_Target (Gen_Attrs.Spec_Decl) then
-         return;
-      end if;
-
-      --  Warnings are suppressed when a prior scenario is already in that
-      --  mode, or when the instantiation has warnings suppressed. Update
-      --  the state of the processing phase to reflect this.
-
-      New_State.Suppress_Warnings :=
-        New_State.Suppress_Warnings or else not Inst_Attrs.Elab_Warnings_OK;
-
-      --  The SPARK rules are in effect
-
-      if SPARK_Rules_On then
-         Process_Conditional_ABE_Instantiation_SPARK
-           (Inst      => Inst,
-            Gen_Id    => Gen_Id,
-            Gen_Attrs => Gen_Attrs,
-            State     => New_State);
-
-      --  Otherwise the Ada rules are in effect, or SPARK code is allowed to
-      --  violate the SPARK rules.
-
-      else
-         Process_Conditional_ABE_Instantiation_Ada
-           (Exp_Inst   => Exp_Inst,
-            Inst       => Inst,
-            Inst_Attrs => Inst_Attrs,
-            Gen_Id     => Gen_Id,
-            Gen_Attrs  => Gen_Attrs,
-            State      => New_State);
-      end if;
-   end Process_Conditional_ABE_Instantiation;
-
-   -----------------------------------------------
-   -- Process_Conditional_ABE_Instantiation_Ada --
-   -----------------------------------------------
-
-   procedure Process_Conditional_ABE_Instantiation_Ada
-     (Exp_Inst   : Node_Id;
-      Inst       : Node_Id;
-      Inst_Attrs : Instantiation_Attributes;
-      Gen_Id     : Entity_Id;
-      Gen_Attrs  : Target_Attributes;
-      State      : Processing_Attributes)
-   is
-      Check_OK : constant Boolean :=
-                   not Inst_Attrs.Ghost_Mode_Ignore
-                     and then not Gen_Attrs.Ghost_Mode_Ignore
-                     and then Inst_Attrs.Elab_Checks_OK
-                     and then Gen_Attrs.Elab_Checks_OK;
-      --  A run-time ABE check may be installed only when both the instance and
-      --  the generic have active elaboration checks and both are not ignored
-      --  Ghost constructs.
-
-      Root : constant Node_Id := Root_Scenario;
-
-      New_State : Processing_Attributes := State;
-      --  Each step of the Processing phase constitutes a new state
-
-   begin
-      --  Nothing to do when the instantiation is ABE-safe
-      --
-      --    generic
-      --    package Gen is
-      --       ...
-      --    end Gen;
-      --
-      --    package body Gen is
-      --       ...
-      --    end Gen;
-      --
-      --    with Gen;
-      --    procedure Main is
-      --       package Inst is new Gen (ABE);    --  safe instantiation
-      --    ...
-
-      if Is_Safe_Instantiation (Inst, Gen_Attrs) then
-         return;
-
-      --  The instantiation and the generic body are both in the main unit
-
-      elsif Present (Gen_Attrs.Body_Decl)
-        and then In_Extended_Main_Code_Unit (Gen_Attrs.Body_Decl)
-      then
-         --  If the root scenario appears prior to the generic body, then this
-         --  is a possible ABE with respect to the root scenario.
-         --
-         --    generic
-         --    package Gen is
-         --       ...
-         --    end Gen;
-         --
-         --    function A ... is
-         --    begin
-         --       if Some_Condition then
-         --          declare
-         --             package Inst is new Gen;    --  instantiation site
-         --       ...
-         --    end A;
-         --
-         --    X : ... := A;                        --  root scenario
-         --
-         --    package body Gen is                  --  generic body
-         --       ...
-         --    end Gen;
-         --
-         --    Y : ... := A;                        --  root scenario
-         --
-         --  IMPORTANT: The instantiation of Gen is a possible ABE for X, but
-         --  not for Y. Installing an unconditional ABE raise prior to the
-         --  instance site would be wrong as it will fail for Y as well, but in
-         --  Y's case the instantiation of Gen is never an ABE.
-
-         if Earlier_In_Extended_Unit (Root, Gen_Attrs.Body_Decl) then
-
-            --  Do not emit any ABE diagnostics when a previous scenario in
-            --  this traversal has suppressed elaboration warnings.
-
-            if State.Suppress_Warnings then
-               null;
-
-            --  Do not emit any ABE diagnostics when the instantiation occurs
-            --  in partial finalization context because this leads to unwanted
-            --  noise.
-
-            elsif State.Within_Partial_Finalization then
-               null;
-
-            --  ABE diagnostics are emitted only in the static model because
-            --  there is a well-defined order to visiting scenarios. Without
-            --  this order diagnostics appear jumbled and result in unwanted
-            --  noise.
-
-            elsif Static_Elaboration_Checks then
-               Error_Msg_NE
-                 ("??cannot instantiate & before body seen", Inst, Gen_Id);
-               Error_Msg_N ("\Program_Error may be raised at run time", Inst);
-
-               Output_Active_Scenarios (Inst);
-            end if;
-
-            --  Install a conditional run-time ABE check to verify that the
-            --  generic body has been elaborated prior to the instantiation.
-
-            if Check_OK then
-               Install_ABE_Check
-                 (N           => Inst,
-                  Ins_Nod     => Exp_Inst,
-                  Target_Id   => Gen_Attrs.Spec_Id,
-                  Target_Decl => Gen_Attrs.Spec_Decl,
-                  Target_Body => Gen_Attrs.Body_Decl);
-
-               --  Update the state of the Processing phase to indicate that
-               --  no implicit Elaborate[_All] pragmas must be generated from
-               --  this point on.
-               --
-               --    generic
-               --    package Gen is
-               --       ...
-               --    end Gen;
-               --
-               --    function A ... is
-               --    begin
-               --       if Some_Condition then
-               --          <ABE check>
-               --          declare Inst is new Gen;
-               --       ...
-               --    end A;
-               --
-               --    X : ... := A;
-               --
-               --    package body Gen is
-               --    begin
-               --       External.Subp;           --  imparts Elaborate_All
-               --    end Gen;
-               --
-               --  If Some_Condition is True, then the ABE check will fail at
-               --  runtime and the call to External.Subp will never take place,
-               --  rendering the implicit Elaborate_All useless.
-               --
-               --  If Some_Condition is False, then the call to External.Subp
-               --  will never take place, rendering the implicit Elaborate_All
-               --  useless.
-
-               New_State.Suppress_Implicit_Pragmas := True;
-            end if;
-         end if;
-
-      --  Otherwise the generic body is not available in this compilation or it
-      --  resides in an external unit. Install a run-time ABE check to verify
-      --  that the generic body has been elaborated prior to the instantiation
-      --  when the dynamic model is in effect.
-
-      elsif Dynamic_Elaboration_Checks and then Check_OK then
-         Install_ABE_Check
-           (N       => Inst,
-            Ins_Nod => Exp_Inst,
-            Id      => Gen_Attrs.Unit_Id);
-      end if;
-
-      --  Ensure that the unit with the generic body is elaborated prior to
-      --  the main unit. No implicit pragma is generated if the instantiation
-      --  has elaboration checks suppressed. This behaviour parallels that of
-      --  the old ABE mechanism.
-
-      if Inst_Attrs.Elab_Checks_OK then
-         Ensure_Prior_Elaboration
-           (N        => Inst,
-            Unit_Id  => Gen_Attrs.Unit_Id,
-            Prag_Nam => Name_Elaborate,
-            State    => New_State);
-      end if;
-   end Process_Conditional_ABE_Instantiation_Ada;
-
-   -------------------------------------------------
-   -- Process_Conditional_ABE_Instantiation_SPARK --
-   -------------------------------------------------
-
-   procedure Process_Conditional_ABE_Instantiation_SPARK
-     (Inst      : Node_Id;
-      Gen_Id    : Entity_Id;
-      Gen_Attrs : Target_Attributes;
-      State     : Processing_Attributes)
-   is
-      Req_Nam : Name_Id;
-
-   begin
-      --  Ensure that a suitable elaboration model is in effect for SPARK rule
-      --  verification.
-
-      Check_SPARK_Model_In_Effect (Inst);
-
-      --  A source instantiation imposes an Elaborate[_All] requirement on the
-      --  context of the main unit. Determine whether the context has a pragma
-      --  strong enough to meet the requirement. The check is orthogonal to the
-      --  ABE ramifications of the instantiation.
-
-      --  IMPORTANT: This check must be performed only when -gnatd.v (enforce
-      --  SPARK elaboration rules in SPARK code) is active because the static
-      --  model can ensure the prior elaboration of the unit which contains a
-      --  body by installing an implicit Elaborate[_All] pragma.
-
-      if Debug_Flag_Dot_V then
-         if Nkind (Inst) = N_Package_Instantiation then
-            Req_Nam := Name_Elaborate_All;
-         else
-            Req_Nam := Name_Elaborate;
-         end if;
-
-         Meet_Elaboration_Requirement
-           (N         => Inst,
-            Target_Id => Gen_Id,
-            Req_Nam   => Req_Nam);
-
-      --  Otherwise ensure that the unit with the target body is elaborated
-      --  prior to the main unit.
-
-      else
-         Ensure_Prior_Elaboration
-           (N        => Inst,
-            Unit_Id  => Gen_Attrs.Unit_Id,
-            Prag_Nam => Name_Elaborate,
-            State    => State);
-      end if;
-   end Process_Conditional_ABE_Instantiation_SPARK;
-
-   -------------------------------------------------
-   -- Process_Conditional_ABE_Variable_Assignment --
-   -------------------------------------------------
-
-   procedure Process_Conditional_ABE_Variable_Assignment (Asmt : Node_Id) is
-      Var_Id : constant Entity_Id := Entity (Extract_Assignment_Name (Asmt));
-      Prag   : constant Node_Id   := SPARK_Pragma (Var_Id);
-
-      SPARK_Rules_On : Boolean;
-      --  This flag is set when the SPARK rules are in effect
-
-   begin
-      --  The SPARK rules are in effect when both the assignment and the
-      --  variable are subject to SPARK_Mode On.
-
-      SPARK_Rules_On :=
-        Present (Prag)
-          and then Get_SPARK_Mode_From_Annotation (Prag) = On
-          and then Is_SPARK_Mode_On_Node (Asmt);
-
-      --  Output relevant information when switch -gnatel (info messages on
-      --  implicit Elaborate[_All] pragmas) is in effect.
-
-      if Elab_Info_Messages then
-         Elab_Msg_NE
-           (Msg      => "assignment to & during elaboration",
-            N        => Asmt,
-            Id       => Var_Id,
-            Info_Msg => True,
-            In_SPARK => SPARK_Rules_On);
-      end if;
-
-      --  The SPARK rules are in effect. These rules are applied regardless of
-      --  whether -gnatd.v (enforce SPARK elaboration rules in SPARK code) is
-      --  in effect because the static model cannot ensure safe assignment of
-      --  variables.
-
-      if SPARK_Rules_On then
-         Process_Conditional_ABE_Variable_Assignment_SPARK
-           (Asmt   => Asmt,
-            Var_Id => Var_Id);
-
-      --  Otherwise the Ada rules are in effect
-
-      else
-         Process_Conditional_ABE_Variable_Assignment_Ada
-           (Asmt   => Asmt,
-            Var_Id => Var_Id);
-      end if;
-   end Process_Conditional_ABE_Variable_Assignment;
-
-   -----------------------------------------------------
-   -- Process_Conditional_ABE_Variable_Assignment_Ada --
-   -----------------------------------------------------
-
-   procedure Process_Conditional_ABE_Variable_Assignment_Ada
-     (Asmt   : Node_Id;
-      Var_Id : Entity_Id)
-   is
-      Var_Decl : constant Node_Id   := Declaration_Node (Var_Id);
-      Spec_Id  : constant Entity_Id := Find_Top_Unit (Var_Decl);
-
-   begin
-      --  Emit a warning when an uninitialized variable declared in a package
-      --  spec without a pragma Elaborate_Body is initialized by elaboration
-      --  code within the corresponding body.
-
-      if Is_Elaboration_Warnings_OK_Id (Var_Id)
-        and then not Is_Initialized (Var_Decl)
-        and then not Has_Pragma_Elaborate_Body (Spec_Id)
-      then
-         Error_Msg_NE
-           ("??variable & can be accessed by clients before this "
-            & "initialization", Asmt, Var_Id);
-
-         Error_Msg_NE
-           ("\add pragma ""Elaborate_Body"" to spec & to ensure proper "
-            & "initialization", Asmt, Spec_Id);
-
-         Output_Active_Scenarios (Asmt);
-
-         --  Generate an implicit Elaborate_Body in the spec
-
-         Set_Elaborate_Body_Desirable (Spec_Id);
-      end if;
-   end Process_Conditional_ABE_Variable_Assignment_Ada;
-
-   -------------------------------------------------------
-   -- Process_Conditional_ABE_Variable_Assignment_SPARK --
-   -------------------------------------------------------
-
-   procedure Process_Conditional_ABE_Variable_Assignment_SPARK
-     (Asmt   : Node_Id;
-      Var_Id : Entity_Id)
-   is
-      Var_Decl : constant Node_Id   := Declaration_Node (Var_Id);
-      Spec_Id  : constant Entity_Id := Find_Top_Unit (Var_Decl);
-
-   begin
-      --  Ensure that a suitable elaboration model is in effect for SPARK rule
-      --  verification.
-
-      Check_SPARK_Model_In_Effect (Asmt);
-
-      --  Emit an error when an initialized variable declared in a package spec
-      --  without pragma Elaborate_Body is further modified by elaboration code
-      --  within the corresponding body.
-
-      if Is_Elaboration_Warnings_OK_Id (Var_Id)
-        and then Is_Initialized (Var_Decl)
-        and then not Has_Pragma_Elaborate_Body (Spec_Id)
-      then
-         Error_Msg_NE
-           ("variable & modified by elaboration code in package body",
-            Asmt, Var_Id);
-
-         Error_Msg_NE
-           ("\add pragma ""Elaborate_Body"" to spec & to ensure full "
-            & "initialization", Asmt, Spec_Id);
-
-         Output_Active_Scenarios (Asmt);
-      end if;
-   end Process_Conditional_ABE_Variable_Assignment_SPARK;
-
-   ------------------------------------------------
-   -- Process_Conditional_ABE_Variable_Reference --
-   ------------------------------------------------
-
-   procedure Process_Conditional_ABE_Variable_Reference (Ref : Node_Id) is
-      Var_Attrs : Variable_Attributes;
-      Var_Id    : Entity_Id;
-
-   begin
-      Extract_Variable_Reference_Attributes
-        (Ref    => Ref,
-         Var_Id => Var_Id,
-         Attrs  => Var_Attrs);
-
-      if Is_Read (Ref) then
-         Process_Conditional_ABE_Variable_Reference_Read
-           (Ref    => Ref,
-            Var_Id => Var_Id,
-            Attrs  => Var_Attrs);
-      end if;
-   end Process_Conditional_ABE_Variable_Reference;
-
-   -----------------------------------------------------
-   -- Process_Conditional_ABE_Variable_Reference_Read --
-   -----------------------------------------------------
-
-   procedure Process_Conditional_ABE_Variable_Reference_Read
-     (Ref    : Node_Id;
-      Var_Id : Entity_Id;
-      Attrs  : Variable_Attributes)
-   is
-   begin
-      --  Output relevant information when switch -gnatel (info messages on
-      --  implicit Elaborate[_All] pragmas) is in effect.
-
-      if Elab_Info_Messages then
-         Elab_Msg_NE
-           (Msg      => "read of variable & during elaboration",
-            N        => Ref,
-            Id       => Var_Id,
-            Info_Msg => True,
-            In_SPARK => True);
-      end if;
-
-      --  Nothing to do when the variable appears within the main unit because
-      --  diagnostics on reads are relevant only for external variables.
-
-      if Is_Same_Unit (Attrs.Unit_Id, Cunit_Entity (Main_Unit)) then
-         null;
-
-      --  Nothing to do when the variable is already initialized. Note that the
-      --  variable may be further modified by the external unit.
-
-      elsif Is_Initialized (Declaration_Node (Var_Id)) then
-         null;
-
-      --  Nothing to do when the external unit guarantees the initialization of
-      --  the variable by means of pragma Elaborate_Body.
-
-      elsif Has_Pragma_Elaborate_Body (Attrs.Unit_Id) then
-         null;
-
-      --  A variable read imposes an Elaborate requirement on the context of
-      --  the main unit. Determine whether the context has a pragma strong
-      --  enough to meet the requirement.
-
-      else
-         Meet_Elaboration_Requirement
-           (N         => Ref,
-            Target_Id => Var_Id,
-            Req_Nam   => Name_Elaborate);
-      end if;
-   end Process_Conditional_ABE_Variable_Reference_Read;
-
-   -----------------------------
-   -- Process_Conditional_ABE --
-   -----------------------------
-
-   --  NOTE: The body of this routine is intentionally out of order because it
-   --  invokes an instantiated subprogram (Process_Conditional_ABE_Activation).
-   --  Placing the body in alphabetical order will result in a guaranteed ABE.
-
-   procedure Process_Conditional_ABE
-     (N     : Node_Id;
-      State : Processing_Attributes := Initial_State)
-   is
-      Call_Attrs : Call_Attributes;
-      Target_Id  : Entity_Id;
-
-   begin
-      --  Add the current scenario to the stack of active scenarios
-
-      Push_Active_Scenario (N);
-
-      --  'Access
-
-      if Is_Suitable_Access (N) then
-         Process_Conditional_ABE_Access
-           (Attr  => N,
-            State => State);
-
-      --  Activations and calls
-
-      elsif Is_Suitable_Call (N) then
-
-         --  In general, only calls found within the main unit are processed
-         --  because the ALI information supplied to binde is for the main
-         --  unit only. However, to preserve the consistency of the tree and
-         --  ensure proper serialization of internal names, external calls
-         --  also receive corresponding call markers (see Build_Call_Marker).
-         --  Regardless of the reason, external calls must not be processed.
-
-         if In_Main_Context (N) then
-            Extract_Call_Attributes
-              (Call      => N,
-               Target_Id => Target_Id,
-               Attrs     => Call_Attrs);
-
-            if Is_Activation_Proc (Target_Id) then
-               Process_Conditional_ABE_Activation
-                 (Call       => N,
-                  Call_Attrs => Call_Attrs,
-                  State      => State);
-
-            else
-               Process_Conditional_ABE_Call
-                 (Call       => N,
-                  Call_Attrs => Call_Attrs,
-                  Target_Id  => Target_Id,
-                  State      => State);
-            end if;
-         end if;
-
-      --  Instantiations
-
-      elsif Is_Suitable_Instantiation (N) then
-         Process_Conditional_ABE_Instantiation
-           (Exp_Inst => N,
-            State    => State);
-
-      --  Variable assignments
-
-      elsif Is_Suitable_Variable_Assignment (N) then
-         Process_Conditional_ABE_Variable_Assignment (N);
-
-      --  Variable references
-
-      elsif Is_Suitable_Variable_Reference (N) then
-
-         --  In general, only variable references found within the main unit
-         --  are processed because the ALI information supplied to binde is for
-         --  the main unit only. However, to preserve the consistency of the
-         --  tree and ensure proper serialization of internal names, external
-         --  variable references also receive corresponding variable reference
-         --  markers (see Build_Varaible_Reference_Marker). Regardless of the
-         --  reason, external variable references must not be processed.
-
-         if In_Main_Context (N) then
-            Process_Conditional_ABE_Variable_Reference (N);
-         end if;
-      end if;
-
-      --  Remove the current scenario from the stack of active scenarios once
-      --  all ABE diagnostics and checks have been performed.
-
-      Pop_Active_Scenario (N);
-   end Process_Conditional_ABE;
-
-   --------------------------------------------
-   -- Process_Guaranteed_ABE_Activation_Impl --
-   --------------------------------------------
-
-   procedure Process_Guaranteed_ABE_Activation_Impl
-     (Call       : Node_Id;
-      Call_Attrs : Call_Attributes;
-      Obj_Id     : Entity_Id;
-      Task_Attrs : Task_Attributes;
-      State      : Processing_Attributes)
-   is
-      pragma Unreferenced (State);
-
-      Check_OK : constant Boolean :=
-                   not Is_Ignored_Ghost_Entity (Obj_Id)
-                     and then not Task_Attrs.Ghost_Mode_Ignore
-                     and then Is_Elaboration_Checks_OK_Id (Obj_Id)
-                     and then Task_Attrs.Elab_Checks_OK;
-      --  A run-time ABE check may be installed only when the object and the
-      --  task type have active elaboration checks, and both are not ignored
-      --  Ghost constructs.
-
-   begin
-      --  Nothing to do when the root scenario appears at the declaration
-      --  level and the task is in the same unit, but outside this context.
-      --
-      --    task type Task_Typ;                  --  task declaration
-      --
-      --    procedure Proc is
-      --       function A ... is
-      --       begin
-      --          if Some_Condition then
-      --             declare
-      --                T : Task_Typ;
-      --             begin
-      --                <activation call>        --  activation site
-      --             end;
-      --          ...
-      --       end A;
-      --
-      --       X : ... := A;                     --  root scenario
-      --    ...
-      --
-      --    task body Task_Typ is
-      --       ...
-      --    end Task_Typ;
-      --
-      --  In the example above, the context of X is the declarative list of
-      --  Proc. The "elaboration" of X may reach the activation of T whose body
-      --  is defined outside of X's context. The task body is relevant only
-      --  when Proc is invoked, but this happens only in "normal" elaboration,
-      --  therefore the task body must not be considered if this is not the
-      --  case.
-
-      --  Performance note: parent traversal
-
-      if Is_Up_Level_Target (Task_Attrs.Task_Decl) then
-         return;
-
-      --  Nothing to do when the activation is ABE-safe
-      --
-      --    generic
-      --    package Gen is
-      --       task type Task_Typ;
-      --    end Gen;
-      --
-      --    package body Gen is
-      --       task body Task_Typ is
-      --       begin
-      --          ...
-      --       end Task_Typ;
-      --    end Gen;
-      --
-      --    with Gen;
-      --    procedure Main is
-      --       package Nested is
-      --          package Inst is new Gen;
-      --          T : Inst.Task_Typ;
-      --       end Nested;                       --  safe activation
-      --    ...
-
-      elsif Is_Safe_Activation (Call, Task_Attrs.Task_Decl) then
-         return;
-
-      --  An activation call leads to a guaranteed ABE when the activation
-      --  call and the task appear within the same context ignoring library
-      --  levels, and the body of the task has not been seen yet or appears
-      --  after the activation call.
-      --
-      --    procedure Guaranteed_ABE is
-      --       task type Task_Typ;
-      --
-      --       package Nested is
-      --          T : Task_Typ;
-      --          <activation call>              --  guaranteed ABE
-      --       end Nested;
-      --
-      --       task body Task_Typ is
-      --          ...
-      --       end Task_Typ;
-      --    ...
-
-      --  Performance note: parent traversal
-
-      elsif Is_Guaranteed_ABE
-              (N           => Call,
-               Target_Decl => Task_Attrs.Task_Decl,
-               Target_Body => Task_Attrs.Body_Decl)
-      then
-         if Call_Attrs.Elab_Warnings_OK then
-            Error_Msg_Sloc := Sloc (Call);
-            Error_Msg_N
-              ("??task & will be activated # before elaboration of its body",
-               Obj_Id);
-            Error_Msg_N ("\Program_Error will be raised at run time", Obj_Id);
-         end if;
-
-         --  Mark the activation call as a guaranteed ABE
-
-         Set_Is_Known_Guaranteed_ABE (Call);
-
-         --  Install a run-time ABE failue because this activation call will
-         --  always result in an ABE.
-
-         if Check_OK then
-            Install_ABE_Failure
-              (N       => Call,
-               Ins_Nod => Call);
-         end if;
-      end if;
-   end Process_Guaranteed_ABE_Activation_Impl;
-
-   procedure Process_Guaranteed_ABE_Activation is
-     new Process_Activation_Generic (Process_Guaranteed_ABE_Activation_Impl);
-
-   ---------------------------------
-   -- Process_Guaranteed_ABE_Call --
-   ---------------------------------
-
-   procedure Process_Guaranteed_ABE_Call
-     (Call       : Node_Id;
-      Call_Attrs : Call_Attributes;
-      Target_Id  : Entity_Id)
-   is
-      Target_Attrs : Target_Attributes;
-
-   begin
-      Extract_Target_Attributes
-        (Target_Id => Target_Id,
-         Attrs     => Target_Attrs);
-
-      --  Nothing to do when the root scenario appears at the declaration level
-      --  and the target is in the same unit, but outside this context.
-      --
-      --    function B ...;                      --  target declaration
-      --
-      --    procedure Proc is
-      --       function A ... is
-      --       begin
-      --          if Some_Condition then
-      --             return B;                   --  call site
-      --          ...
-      --       end A;
-      --
-      --       X : ... := A;                     --  root scenario
-      --    ...
-      --
-      --    function B ... is
-      --       ...
-      --    end B;
-      --
-      --  In the example above, the context of X is the declarative region of
-      --  Proc. The "elaboration" of X may eventually reach B which is defined
-      --  outside of X's context. B is relevant only when Proc is invoked, but
-      --  this happens only by means of "normal" elaboration, therefore B must
-      --  not be considered if this is not the case.
-
-      --  Performance note: parent traversal
-
-      if Is_Up_Level_Target (Target_Attrs.Spec_Decl) then
-         return;
-
-      --  Nothing to do when the call is ABE-safe
-      --
-      --    generic
-      --    function Gen ...;
-      --
-      --    function Gen ... is
-      --    begin
-      --       ...
-      --    end Gen;
-      --
-      --    with Gen;
-      --    procedure Main is
-      --       function Inst is new Gen;
-      --       X : ... := Inst;                  --  safe call
-      --    ...
-
-      elsif Is_Safe_Call (Call, Target_Attrs) then
-         return;
-
-      --  A call leads to a guaranteed ABE when the call and the target appear
-      --  within the same context ignoring library levels, and the body of the
-      --  target has not been seen yet or appears after the call.
-      --
-      --    procedure Guaranteed_ABE is
-      --       function Func ...;
-      --
-      --       package Nested is
-      --          Obj : ... := Func;             --  guaranteed ABE
-      --       end Nested;
-      --
-      --       function Func ... is
-      --          ...
-      --       end Func;
-      --    ...
-
-      --  Performance note: parent traversal
-
-      elsif Is_Guaranteed_ABE
-              (N           => Call,
-               Target_Decl => Target_Attrs.Spec_Decl,
-               Target_Body => Target_Attrs.Body_Decl)
-      then
-         if Call_Attrs.Elab_Warnings_OK then
-            Error_Msg_NE ("??cannot call & before body seen", Call, Target_Id);
-            Error_Msg_N ("\Program_Error will be raised at run time", Call);
-         end if;
-
-         --  Mark the call as a guarnateed ABE
-
-         Set_Is_Known_Guaranteed_ABE (Call);
-
-         --  Install a run-time ABE failure because the call will always result
-         --  in an ABE. The failure is installed when both the call and target
-         --  have enabled elaboration checks, and both are not ignored Ghost
-         --  constructs.
-
-         if Call_Attrs.Elab_Checks_OK
-           and then Target_Attrs.Elab_Checks_OK
-           and then not Call_Attrs.Ghost_Mode_Ignore
-           and then not Target_Attrs.Ghost_Mode_Ignore
-         then
-            Install_ABE_Failure
-              (N       => Call,
-               Ins_Nod => Call);
-         end if;
-      end if;
-   end Process_Guaranteed_ABE_Call;
-
-   ------------------------------------------
-   -- Process_Guaranteed_ABE_Instantiation --
-   ------------------------------------------
-
-   procedure Process_Guaranteed_ABE_Instantiation (Exp_Inst : Node_Id) is
-      Gen_Attrs  : Target_Attributes;
-      Gen_Id     : Entity_Id;
-      Inst       : Node_Id;
-      Inst_Attrs : Instantiation_Attributes;
-      Inst_Id    : Entity_Id;
-
-   begin
-      Extract_Instantiation_Attributes
-        (Exp_Inst => Exp_Inst,
-         Inst     => Inst,
-         Inst_Id  => Inst_Id,
-         Gen_Id   => Gen_Id,
-         Attrs    => Inst_Attrs);
-
-      Extract_Target_Attributes (Gen_Id, Gen_Attrs);
-
-      --  Nothing to do when the root scenario appears at the declaration level
-      --  and the generic is in the same unit, but outside this context.
-      --
-      --    generic
-      --    procedure Gen is ...;                --  generic declaration
-      --
-      --    procedure Proc is
-      --       function A ... is
-      --       begin
-      --          if Some_Condition then
-      --             declare
-      --                procedure I is new Gen;  --  instantiation site
-      --             ...
-      --          ...
-      --       end A;
-      --
-      --       X : ... := A;                     --  root scenario
-      --    ...
-      --
-      --    procedure Gen is
-      --       ...
-      --    end Gen;
-      --
-      --  In the example above, the context of X is the declarative region of
-      --  Proc. The "elaboration" of X may eventually reach Gen which appears
-      --  outside of X's context. Gen is relevant only when Proc is invoked,
-      --  but this happens only by means of "normal" elaboration, therefore
-      --  Gen must not be considered if this is not the case.
-
-      --  Performance note: parent traversal
-
-      if Is_Up_Level_Target (Gen_Attrs.Spec_Decl) then
-         return;
-
-      --  Nothing to do when the instantiation is ABE-safe
-      --
-      --    generic
-      --    package Gen is
-      --       ...
-      --    end Gen;
-      --
-      --    package body Gen is
-      --       ...
-      --    end Gen;
-      --
-      --    with Gen;
-      --    procedure Main is
-      --       package Inst is new Gen (ABE);    --  safe instantiation
-      --    ...
-
-      elsif Is_Safe_Instantiation (Inst, Gen_Attrs) then
-         return;
-
-      --  An instantiation leads to a guaranteed ABE when the instantiation and
-      --  the generic appear within the same context ignoring library levels,
-      --  and the body of the generic has not been seen yet or appears after
-      --  the instantiation.
-      --
-      --    procedure Guaranteed_ABE is
-      --       generic
-      --       procedure Gen;
-      --
-      --       package Nested is
-      --          procedure Inst is new Gen;     --  guaranteed ABE
-      --       end Nested;
-      --
-      --       procedure Gen is
-      --          ...
-      --       end Gen;
-      --    ...
-
-      --  Performance note: parent traversal
-
-      elsif Is_Guaranteed_ABE
-              (N           => Inst,
-               Target_Decl => Gen_Attrs.Spec_Decl,
-               Target_Body => Gen_Attrs.Body_Decl)
-      then
-         if Inst_Attrs.Elab_Warnings_OK then
-            Error_Msg_NE
-              ("??cannot instantiate & before body seen", Inst, Gen_Id);
-            Error_Msg_N ("\Program_Error will be raised at run time", Inst);
-         end if;
-
-         --  Mark the instantiation as a guarantee ABE. This automatically
-         --  suppresses the instantiation of the generic body.
-
-         Set_Is_Known_Guaranteed_ABE (Inst);
-
-         --  Install a run-time ABE failure because the instantiation will
-         --  always result in an ABE. The failure is installed when both the
-         --  instance and the generic have enabled elaboration checks, and both
-         --  are not ignored Ghost constructs.
-
-         if Inst_Attrs.Elab_Checks_OK
-           and then Gen_Attrs.Elab_Checks_OK
-           and then not Inst_Attrs.Ghost_Mode_Ignore
-           and then not Gen_Attrs.Ghost_Mode_Ignore
-         then
-            Install_ABE_Failure
-              (N       => Inst,
-               Ins_Nod => Exp_Inst);
-         end if;
-      end if;
-   end Process_Guaranteed_ABE_Instantiation;
-
-   ----------------------------
-   -- Process_Guaranteed_ABE --
-   ----------------------------
-
-   --  NOTE: The body of this routine is intentionally out of order because it
-   --  invokes an instantiated subprogram (Process_Guaranteed_ABE_Activation).
-   --  Placing the body in alphabetical order will result in a guaranteed ABE.
-
-   procedure Process_Guaranteed_ABE (N : Node_Id) is
-      Call_Attrs : Call_Attributes;
-      Target_Id  : Entity_Id;
-
-   begin
-      --  Add the current scenario to the stack of active scenarios
-
-      Push_Active_Scenario (N);
-
-      --  Only calls, instantiations, and task activations may result in a
-      --  guaranteed ABE.
-
-      if Is_Suitable_Call (N) then
-         Extract_Call_Attributes
-           (Call      => N,
-            Target_Id => Target_Id,
-            Attrs     => Call_Attrs);
-
-         if Is_Activation_Proc (Target_Id) then
-            Process_Guaranteed_ABE_Activation
-              (Call       => N,
-               Call_Attrs => Call_Attrs,
-               State      => Initial_State);
-
-         else
-            Process_Guaranteed_ABE_Call
-              (Call       => N,
-               Call_Attrs => Call_Attrs,
-               Target_Id  => Target_Id);
-         end if;
-
-      elsif Is_Suitable_Instantiation (N) then
-         Process_Guaranteed_ABE_Instantiation (N);
-      end if;
-
-      --  Remove the current scenario from the stack of active scenarios once
-      --  all ABE diagnostics and checks have been performed.
-
-      Pop_Active_Scenario (N);
-   end Process_Guaranteed_ABE;
-
-   --------------------------
-   -- Push_Active_Scenario --
-   --------------------------
-
-   procedure Push_Active_Scenario (N : Node_Id) is
-   begin
-      Scenario_Stack.Append (N);
-   end Push_Active_Scenario;
-
    ---------------------------------
    -- Record_Elaboration_Scenario --
    ---------------------------------
 
    procedure Record_Elaboration_Scenario (N : Node_Id) is
-      Level : Enclosing_Level_Kind;
+      procedure Check_Preelaborated_Call
+        (Call     : Node_Id;
+         Call_Lvl : Enclosing_Level_Kind);
+      pragma Inline (Check_Preelaborated_Call);
+      --  Verify that entry, operator, or subprogram call Call with enclosing
+      --  level Call_Lvl does not appear at the library level of preelaborated
+      --  unit.
 
-      Any_Level_OK : Boolean;
-      --  This flag is set when a particular scenario is allowed to appear at
-      --  any level.
+      function Find_Code_Unit (Nod : Node_Or_Entity_Id) return Entity_Id;
+      pragma Inline (Find_Code_Unit);
+      --  Return the code unit which contains arbitrary node or entity Nod.
+      --  This is the unit of the file which physically contains the related
+      --  construct denoted by Nod except when Nod is within an instantiation.
+      --  In that case the unit is that of the top-level instantiation.
 
-      Declaration_Level_OK : Boolean;
-      --  This flag is set when a particular scenario is allowed to appear at
-      --  the declaration level.
+      function In_Preelaborated_Context (Nod : Node_Id) return Boolean;
+      pragma Inline (In_Preelaborated_Context);
+      --  Determine whether arbitrary node Nod appears within a preelaborated
+      --  context.
 
-      Library_Level_OK : Boolean;
-      --  This flag is set when a particular scenario is allowed to appear at
-      --  the library level.
+      procedure Record_Access_Taken
+        (Attr     : Node_Id;
+         Attr_Lvl : Enclosing_Level_Kind);
+      pragma Inline (Record_Access_Taken);
+      --  Record 'Access scenario Attr with enclosing level Attr_Lvl
+
+      procedure Record_Call_Or_Task_Activation
+        (Call     : Node_Id;
+         Call_Lvl : Enclosing_Level_Kind);
+      pragma Inline (Record_Call_Or_Task_Activation);
+      --  Record call scenario Call with enclosing level Call_Lvl
+
+      procedure Record_Instantiation
+        (Inst     : Node_Id;
+         Inst_Lvl : Enclosing_Level_Kind);
+      pragma Inline (Record_Instantiation);
+      --  Record instantiation scenario Inst with enclosing level Inst_Lvl
+
+      procedure Record_Variable_Assignment
+        (Asmt     : Node_Id;
+         Asmt_Lvl : Enclosing_Level_Kind);
+      pragma Inline (Record_Variable_Assignment);
+      --  Record variable assignment scenario Asmt with enclosing level
+      --  Asmt_Lvl.
+
+      procedure Record_Variable_Reference
+        (Ref     : Node_Id;
+         Ref_Lvl : Enclosing_Level_Kind);
+      pragma Inline (Record_Variable_Reference);
+      --  Record variable reference scenario Ref with enclosing level Ref_Lvl
+
+      ------------------------------
+      -- Check_Preelaborated_Call --
+      ------------------------------
+
+      procedure Check_Preelaborated_Call
+        (Call     : Node_Id;
+         Call_Lvl : Enclosing_Level_Kind)
+      is
+      begin
+         --  Nothing to do when the call is internally generated because it is
+         --  assumed that it will never violate preelaboration.
+
+         if not Is_Source_Call (Call) then
+            return;
+
+         --  Library-level calls are always considered because they are part of
+         --  the associated unit's elaboration actions.
+
+         elsif Call_Lvl in Library_Level then
+            null;
+
+         --  Calls at the library level of a generic package body have to be
+         --  checked because they would render an instantiation illegal if the
+         --  template is marked as preelaborated. Note that this does not apply
+         --  to calls at the library level of a generic package spec.
+
+         elsif Call_Lvl = Generic_Body_Level then
+            null;
+
+         --  Otherwise the call does not appear at the proper level and must
+         --  not be considered for this check.
+
+         else
+            return;
+         end if;
+
+         --  The call appears within a preelaborated unit. Emit a warning only
+         --  for internal uses, otherwise this is an error.
+
+         if In_Preelaborated_Context (Call) then
+            Error_Msg_Warn := GNAT_Mode;
+            Error_Msg_N
+              ("<<non-static call not allowed in preelaborated unit", Call);
+         end if;
+      end Check_Preelaborated_Call;
+
+      --------------------
+      -- Find_Code_Unit --
+      --------------------
+
+      function Find_Code_Unit (Nod : Node_Or_Entity_Id) return Entity_Id is
+      begin
+         return Find_Unit_Entity (Unit (Cunit (Get_Code_Unit (Nod))));
+      end Find_Code_Unit;
+
+      ------------------------------
+      -- In_Preelaborated_Context --
+      ------------------------------
+
+      function In_Preelaborated_Context (Nod : Node_Id) return Boolean is
+         Body_Id : constant Entity_Id := Find_Code_Unit (Nod);
+         Spec_Id : constant Entity_Id := Unique_Entity (Body_Id);
+
+      begin
+         --  The node appears within a package body whose corresponding spec is
+         --  subject to pragma Remote_Call_Interface or Remote_Types. This does
+         --  not result in a preelaborated context because the package body may
+         --  be on another machine.
+
+         if Ekind (Body_Id) = E_Package_Body
+           and then Ekind_In (Spec_Id, E_Generic_Package, E_Package)
+           and then (Is_Remote_Call_Interface (Spec_Id)
+                      or else Is_Remote_Types (Spec_Id))
+         then
+            return False;
+
+         --  Otherwise the node appears within a preelaborated context when the
+         --  associated unit is preelaborated.
+
+         else
+            return Is_Preelaborated_Unit (Spec_Id);
+         end if;
+      end In_Preelaborated_Context;
+
+      -------------------------
+      -- Record_Access_Taken --
+      -------------------------
+
+      procedure Record_Access_Taken
+        (Attr     : Node_Id;
+         Attr_Lvl : Enclosing_Level_Kind)
+      is
+      begin
+         --  Signal any enclosing local exception handlers that the 'Access may
+         --  raise Program_Error due to a failed ABE check when switch -gnatd.o
+         --  (conservative elaboration order for indirect calls) is in effect.
+         --  Marking the exception handlers ensures proper expansion by both
+         --  the front and back end restriction when No_Exception_Propagation
+         --  is in effect.
+
+         if Debug_Flag_Dot_O then
+            Possible_Local_Raise (Attr, Standard_Program_Error);
+         end if;
+
+         --  Add 'Access to the appropriate set
+
+         if Attr_Lvl = Library_Body_Level then
+            Add_Library_Body_Scenario (Attr);
+
+         elsif Attr_Lvl = Library_Spec_Level
+           or else Attr_Lvl = Instantiation_Level
+         then
+            Add_Library_Spec_Scenario (Attr);
+         end if;
+
+         --  'Access requires a conditional ABE check when the dynamic model is
+         --  in effect.
+
+         Add_Dynamic_ABE_Check_Scenario (Attr);
+      end Record_Access_Taken;
+
+      ------------------------------------
+      -- Record_Call_Or_Task_Activation --
+      ------------------------------------
+
+      procedure Record_Call_Or_Task_Activation
+        (Call     : Node_Id;
+         Call_Lvl : Enclosing_Level_Kind)
+      is
+      begin
+         --  Signal any enclosing local exception handlers that the call may
+         --  raise Program_Error due to failed ABE check. Marking the exception
+         --  handlers ensures proper expansion by both the front and back end
+         --  restriction when No_Exception_Propagation is in effect.
+
+         Possible_Local_Raise (Call, Standard_Program_Error);
+
+         --  Perform early detection of guaranteed ABEs in order to suppress
+         --  the instantiation of generic bodies because gigi cannot handle
+         --  certain types of premature instantiations.
+
+         Process_Guaranteed_ABE
+           (N        => Call,
+            In_State => Guaranteed_ABE_State);
+
+         --  Add the call or task activation to the appropriate set
+
+         if Call_Lvl = Declaration_Level then
+            Add_Declaration_Scenario (Call);
+
+         elsif Call_Lvl = Library_Body_Level then
+            Add_Library_Body_Scenario (Call);
+
+         elsif Call_Lvl = Library_Spec_Level
+           or else Call_Lvl = Instantiation_Level
+         then
+            Add_Library_Spec_Scenario (Call);
+         end if;
+
+         --  A call or a task activation requires a conditional ABE check when
+         --  the dynamic model is in effect.
+
+         Add_Dynamic_ABE_Check_Scenario (Call);
+      end Record_Call_Or_Task_Activation;
+
+      --------------------------
+      -- Record_Instantiation --
+      --------------------------
+
+      procedure Record_Instantiation
+        (Inst     : Node_Id;
+         Inst_Lvl : Enclosing_Level_Kind)
+      is
+      begin
+         --  Signal enclosing local exception handlers that instantiation may
+         --  raise Program_Error due to failed ABE check. Marking the exception
+         --  handlers ensures proper expansion by both the front and back end
+         --  restriction when No_Exception_Propagation is in effect.
+
+         Possible_Local_Raise (Inst, Standard_Program_Error);
+
+         --  Perform early detection of guaranteed ABEs in order to suppress
+         --  the instantiation of generic bodies because gigi cannot handle
+         --  certain types of premature instantiations.
+
+         Process_Guaranteed_ABE
+           (N        => Inst,
+            In_State => Guaranteed_ABE_State);
+
+         --  Add the instantiation to the appropriate set
+
+         if Inst_Lvl = Declaration_Level then
+            Add_Declaration_Scenario (Inst);
+
+         elsif Inst_Lvl = Library_Body_Level then
+            Add_Library_Body_Scenario (Inst);
+
+         elsif Inst_Lvl = Library_Spec_Level
+           or else Inst_Lvl = Instantiation_Level
+         then
+            Add_Library_Spec_Scenario (Inst);
+         end if;
+
+         --  Instantiations of generics subject to SPARK_Mode On require
+         --  elaboration-related checks even though the instantiations may
+         --  not appear within elaboration code.
+
+         if Is_Suitable_SPARK_Instantiation (Inst) then
+            Add_SPARK_Scenario (Inst);
+         end if;
+
+         --  An instantiation requires a conditional ABE check when the dynamic
+         --  model is in effect.
+
+         Add_Dynamic_ABE_Check_Scenario (Inst);
+      end Record_Instantiation;
+
+      --------------------------------
+      -- Record_Variable_Assignment --
+      --------------------------------
+
+      procedure Record_Variable_Assignment
+        (Asmt     : Node_Id;
+         Asmt_Lvl : Enclosing_Level_Kind)
+      is
+      begin
+         --  Add the variable assignment to the appropriate set
+
+         if Asmt_Lvl = Library_Body_Level then
+            Add_Library_Body_Scenario (Asmt);
+
+         elsif Asmt_Lvl = Library_Spec_Level
+           or else Asmt_Lvl = Instantiation_Level
+         then
+            Add_Library_Spec_Scenario (Asmt);
+         end if;
+      end Record_Variable_Assignment;
+
+      -------------------------------
+      -- Record_Variable_Reference --
+      -------------------------------
+
+      procedure Record_Variable_Reference
+        (Ref     : Node_Id;
+         Ref_Lvl : Enclosing_Level_Kind)
+      is
+      begin
+         --  Add the variable reference to the appropriate set
+
+         if Ref_Lvl = Library_Body_Level then
+            Add_Library_Body_Scenario (Ref);
+
+         elsif Ref_Lvl = Library_Spec_Level
+           or else Ref_Lvl = Instantiation_Level
+         then
+            Add_Library_Spec_Scenario (Ref);
+         end if;
+      end Record_Variable_Reference;
+
+      --  Local variables
+
+      Scen     : constant Node_Id := Scenario (N);
+      Scen_Lvl : Enclosing_Level_Kind;
+
+   --  Start of processing for Record_Elaboration_Scenario
 
    begin
-      --  Assume that the scenario cannot appear on any level
-
-      Any_Level_OK         := False;
-      Declaration_Level_OK := False;
-      Library_Level_OK     := False;
-
       --  Nothing to do when switch -gnatH (legacy elaboration checking mode
       --  enabled) is in effect because the legacy ABE mechanism does not need
       --  to carry out this action.
@@ -10721,297 +13787,1854 @@ package body Sem_Elab is
          return;
       end if;
 
+      Scen_Lvl := Find_Enclosing_Level (Scen);
+
       --  Ensure that a library-level call does not appear in a preelaborated
       --  unit. The check must come before ignoring scenarios within external
       --  units or inside generics because calls in those context must also be
       --  verified.
 
-      if Is_Suitable_Call (N) then
-         Check_Preelaborated_Call (N);
+      if Is_Suitable_Call (Scen) then
+         Check_Preelaborated_Call (Scen, Scen_Lvl);
       end if;
 
       --  Nothing to do when the scenario does not appear within the main unit
 
-      if not In_Main_Context (N) then
+      if not In_Main_Context (Scen) then
          return;
 
-      --  Scenarios within a generic unit are never considered because generics
-      --  cannot be elaborated.
+      --  Nothing to do when the scenario appears within a generic
 
       elsif Inside_A_Generic then
          return;
 
-      --  Scenarios which do not fall in one of the elaboration categories
-      --  listed below are not considered. The categories are:
+      --  'Access
 
-      --   'Access for entries, operators, and subprograms
-      --    Assignments to variables
-      --    Calls (includes task activation)
-      --    Derived types
-      --    Instantiations
-      --    Pragma Refined_State
-      --    Reads of variables
+      elsif Is_Suitable_Access_Taken (Scen) then
+         Record_Access_Taken
+           (Attr     => Scen,
+            Attr_Lvl => Scen_Lvl);
 
-      elsif Is_Suitable_Access (N) then
-         Library_Level_OK := True;
+      --  Call or task activation
 
-         --  Signal any enclosing local exception handlers that the 'Access may
-         --  raise Program_Error due to a failed ABE check when switch -gnatd.o
-         --  (conservative elaboration order for indirect calls) is in effect.
-         --  Marking the exception handlers ensures proper expansion by both
-         --  the front and back end restriction when No_Exception_Propagation
-         --  is in effect.
+      elsif Is_Suitable_Call (Scen) then
+         Record_Call_Or_Task_Activation
+           (Call     => Scen,
+            Call_Lvl => Scen_Lvl);
 
-         if Debug_Flag_Dot_O then
-            Possible_Local_Raise (N, Standard_Program_Error);
-         end if;
+      --  Derived type declaration
 
-      elsif Is_Suitable_Call (N) or else Is_Suitable_Instantiation (N) then
-         Declaration_Level_OK := True;
-         Library_Level_OK     := True;
+      elsif Is_Suitable_SPARK_Derived_Type (Scen) then
+         Add_SPARK_Scenario (Scen);
 
-         --  Signal any enclosing local exception handlers that the call or
-         --  instantiation may raise Program_Error due to a failed ABE check.
-         --  Marking the exception handlers ensures proper expansion by both
-         --  the front and back end restriction when No_Exception_Propagation
-         --  is in effect.
+      --  Instantiation
 
-         Possible_Local_Raise (N, Standard_Program_Error);
+      elsif Is_Suitable_Instantiation (Scen) then
+         Record_Instantiation
+           (Inst     => Scen,
+            Inst_Lvl => Scen_Lvl);
 
-      elsif Is_Suitable_SPARK_Derived_Type (N) then
-         Any_Level_OK := True;
+      --  Refined_State pragma
 
-      elsif Is_Suitable_SPARK_Refined_State_Pragma (N) then
-         Library_Level_OK := True;
+      elsif Is_Suitable_SPARK_Refined_State_Pragma (Scen) then
+         Add_SPARK_Scenario (Scen);
 
-      elsif Is_Suitable_Variable_Assignment (N)
-        or else Is_Suitable_Variable_Reference (N)
-      then
-         Library_Level_OK := True;
+      --  Variable assignment
 
-      --  Otherwise the input does not denote a suitable scenario
+      elsif Is_Suitable_Variable_Assignment (Scen) then
+         Record_Variable_Assignment
+           (Asmt     => Scen,
+            Asmt_Lvl => Scen_Lvl);
+
+      --  Variable reference
+
+      elsif Is_Suitable_Variable_Reference (Scen) then
+         Record_Variable_Reference
+           (Ref     => Scen,
+            Ref_Lvl => Scen_Lvl);
+      end if;
+   end Record_Elaboration_Scenario;
+
+   --------------
+   -- Scenario --
+   --------------
+
+   function Scenario (N : Node_Id) return Node_Id is
+      Orig_N : constant Node_Id := Original_Node (N);
+
+   begin
+      --  An expanded instantiation is rewritten into a spec-body pair where
+      --  N denotes the spec. In this case the original instantiation is the
+      --  proper elaboration scenario.
+
+      if Nkind (Orig_N) in N_Generic_Instantiation then
+         return Orig_N;
+
+      --  Otherwise the scenario is already in its proper form
 
       else
-         return;
+         return N;
       end if;
+   end Scenario;
 
-      --  The static model imposes additional restrictions on the placement of
-      --  scenarios. In contrast, the dynamic model assumes that every scenario
-      --  will be elaborated or invoked at some point.
+   ----------------------
+   -- Scenario_Storage --
+   ----------------------
 
-      if Static_Elaboration_Checks then
+   package body Scenario_Storage is
 
-         --  Certain scenarios are allowed to appear at any level. This check
-         --  is performed here in order to save on a parent traversal.
+      ---------------------
+      -- Data structures --
+      ---------------------
 
-         if Any_Level_OK then
+      --  The following sets store all scenarios
+
+      Declaration_Scenarios       : NE_Set.Membership_Set :=
+                                      NE_Set.Create (1000);
+      Dynamic_ABE_Check_Scenarios : NE_Set.Membership_Set :=
+                                      NE_Set.Create (500);
+      Library_Body_Scenarios      : NE_Set.Membership_Set :=
+                                      NE_Set.Create (1000);
+      Library_Spec_Scenarios      : NE_Set.Membership_Set :=
+                                      NE_Set.Create (1000);
+      SPARK_Scenarios             : NE_Set.Membership_Set :=
+                                      NE_Set.Create (100);
+
+      -------------------------------
+      -- Finalize_Scenario_Storage --
+      -------------------------------
+
+      procedure Finalize_Scenario_Storage is
+      begin
+         NE_Set.Destroy (Declaration_Scenarios);
+         NE_Set.Destroy (Dynamic_ABE_Check_Scenarios);
+         NE_Set.Destroy (Library_Body_Scenarios);
+         NE_Set.Destroy (Library_Spec_Scenarios);
+         NE_Set.Destroy (SPARK_Scenarios);
+      end Finalize_Scenario_Storage;
+
+      ---------------------------------
+      -- Initialize_Scenario_Storage --
+      ---------------------------------
+
+      procedure Initialize_Scenario_Storage is
+      begin
+         null;
+      end Initialize_Scenario_Storage;
+
+      ------------------------------
+      -- Add_Declaration_Scenario --
+      ------------------------------
+
+      procedure Add_Declaration_Scenario (N : Node_Id) is
+         pragma Assert (Present (N));
+      begin
+         NE_Set.Insert (Declaration_Scenarios, N);
+      end Add_Declaration_Scenario;
+
+      ------------------------------------
+      -- Add_Dynamic_ABE_Check_Scenario --
+      ------------------------------------
+
+      procedure Add_Dynamic_ABE_Check_Scenario (N : Node_Id) is
+         pragma Assert (Present (N));
+
+      begin
+         if not Check_Or_Failure_Generation_OK then
+            return;
+
+         --  Nothing to do if the dynamic model is not in effect
+
+         elsif not Dynamic_Elaboration_Checks then
+            return;
+         end if;
+
+         NE_Set.Insert (Dynamic_ABE_Check_Scenarios, N);
+      end Add_Dynamic_ABE_Check_Scenario;
+
+      -------------------------------
+      -- Add_Library_Body_Scenario --
+      -------------------------------
+
+      procedure Add_Library_Body_Scenario (N : Node_Id) is
+         pragma Assert (Present (N));
+      begin
+         NE_Set.Insert (Library_Body_Scenarios, N);
+      end Add_Library_Body_Scenario;
+
+      -------------------------------
+      -- Add_Library_Spec_Scenario --
+      -------------------------------
+
+      procedure Add_Library_Spec_Scenario (N : Node_Id) is
+         pragma Assert (Present (N));
+      begin
+         NE_Set.Insert (Library_Spec_Scenarios, N);
+      end Add_Library_Spec_Scenario;
+
+      ------------------------
+      -- Add_SPARK_Scenario --
+      ------------------------
+
+      procedure Add_SPARK_Scenario (N : Node_Id) is
+         pragma Assert (Present (N));
+      begin
+         NE_Set.Insert (SPARK_Scenarios, N);
+      end Add_SPARK_Scenario;
+
+      ---------------------
+      -- Delete_Scenario --
+      ---------------------
+
+      procedure Delete_Scenario (N : Node_Id) is
+         pragma Assert (Present (N));
+
+      begin
+         --  Delete the scenario from whichever set it belongs to
+
+         NE_Set.Delete (Declaration_Scenarios,       N);
+         NE_Set.Delete (Dynamic_ABE_Check_Scenarios, N);
+         NE_Set.Delete (Library_Body_Scenarios,      N);
+         NE_Set.Delete (Library_Spec_Scenarios,      N);
+         NE_Set.Delete (SPARK_Scenarios,             N);
+      end Delete_Scenario;
+
+      -----------------------------------
+      -- Iterate_Declaration_Scenarios --
+      -----------------------------------
+
+      function Iterate_Declaration_Scenarios return NE_Set.Iterator is
+      begin
+         return NE_Set.Iterate (Declaration_Scenarios);
+      end Iterate_Declaration_Scenarios;
+
+      -----------------------------------------
+      -- Iterate_Dynamic_ABE_Check_Scenarios --
+      -----------------------------------------
+
+      function Iterate_Dynamic_ABE_Check_Scenarios return NE_Set.Iterator is
+      begin
+         return NE_Set.Iterate (Dynamic_ABE_Check_Scenarios);
+      end Iterate_Dynamic_ABE_Check_Scenarios;
+
+      ------------------------------------
+      -- Iterate_Library_Body_Scenarios --
+      ------------------------------------
+
+      function Iterate_Library_Body_Scenarios return NE_Set.Iterator is
+      begin
+         return NE_Set.Iterate (Library_Body_Scenarios);
+      end Iterate_Library_Body_Scenarios;
+
+      ------------------------------------
+      -- Iterate_Library_Spec_Scenarios --
+      ------------------------------------
+
+      function Iterate_Library_Spec_Scenarios return NE_Set.Iterator is
+      begin
+         return NE_Set.Iterate (Library_Spec_Scenarios);
+      end Iterate_Library_Spec_Scenarios;
+
+      -----------------------------
+      -- Iterate_SPARK_Scenarios --
+      -----------------------------
+
+      function Iterate_SPARK_Scenarios return NE_Set.Iterator is
+      begin
+         return NE_Set.Iterate (SPARK_Scenarios);
+      end Iterate_SPARK_Scenarios;
+
+      ----------------------
+      -- Replace_Scenario --
+      ----------------------
+
+      procedure Replace_Scenario (Old_N : Node_Id; New_N : Node_Id) is
+         procedure Replace_Scenario_In (Scenarios : NE_Set.Membership_Set);
+         --  Determine whether scenario Old_N is present in set Scenarios, and
+         --  if this is the case it, replace it with New_N.
+
+         -------------------------
+         -- Replace_Scenario_In --
+         -------------------------
+
+         procedure Replace_Scenario_In (Scenarios : NE_Set.Membership_Set) is
+         begin
+            --  The set is intentionally checked for existance because node
+            --  rewriting may occur after Sem_Elab has verified all scenarios
+            --  and data structures have been destroyed.
+
+            if NE_Set.Present (Scenarios)
+              and then NE_Set.Contains (Scenarios, Old_N)
+            then
+               NE_Set.Delete (Scenarios, Old_N);
+               NE_Set.Insert (Scenarios, New_N);
+            end if;
+         end Replace_Scenario_In;
+
+      --  Start of processing for Replace_Scenario
+
+      begin
+         Replace_Scenario_In (Declaration_Scenarios);
+         Replace_Scenario_In (Dynamic_ABE_Check_Scenarios);
+         Replace_Scenario_In (Library_Body_Scenarios);
+         Replace_Scenario_In (Library_Spec_Scenarios);
+         Replace_Scenario_In (SPARK_Scenarios);
+      end Replace_Scenario;
+   end Scenario_Storage;
+
+   ---------------
+   -- Semantics --
+   ---------------
+
+   package body Semantics is
+
+      --------------------------------
+      -- Is_Accept_Alternative_Proc --
+      --------------------------------
+
+      function Is_Accept_Alternative_Proc (Id : Entity_Id) return Boolean is
+      begin
+         --  To qualify, the entity must denote a procedure with a receiving
+         --  entry.
+
+         return
+           Ekind (Id) = E_Procedure and then Present (Receiving_Entry (Id));
+      end Is_Accept_Alternative_Proc;
+
+      ------------------------
+      -- Is_Activation_Proc --
+      ------------------------
+
+      function Is_Activation_Proc (Id : Entity_Id) return Boolean is
+      begin
+         --  To qualify, the entity must denote one of the runtime procedures
+         --  in charge of task activation.
+
+         if Ekind (Id) = E_Procedure then
+            if Restricted_Profile then
+               return Is_RTE (Id, RE_Activate_Restricted_Tasks);
+            else
+               return Is_RTE (Id, RE_Activate_Tasks);
+            end if;
+         end if;
+
+         return False;
+      end Is_Activation_Proc;
+
+      ----------------------------
+      -- Is_Ada_Semantic_Target --
+      ----------------------------
+
+      function Is_Ada_Semantic_Target (Id : Entity_Id) return Boolean is
+      begin
+         return
+           Is_Activation_Proc (Id)
+             or else Is_Controlled_Proc (Id, Name_Adjust)
+             or else Is_Controlled_Proc (Id, Name_Finalize)
+             or else Is_Controlled_Proc (Id, Name_Initialize)
+             or else Is_Init_Proc (Id)
+             or else Is_Invariant_Proc (Id)
+             or else Is_Protected_Entry (Id)
+             or else Is_Protected_Subp (Id)
+             or else Is_Protected_Body_Subp (Id)
+             or else Is_Subprogram_Inst (Id)
+             or else Is_Task_Entry (Id);
+      end Is_Ada_Semantic_Target;
+
+      --------------------------------
+      -- Is_Assertion_Pragma_Target --
+      --------------------------------
+
+      function Is_Assertion_Pragma_Target (Id : Entity_Id) return Boolean is
+      begin
+         return
+           Is_Default_Initial_Condition_Proc (Id)
+             or else Is_Initial_Condition_Proc (Id)
+             or else Is_Invariant_Proc (Id)
+             or else Is_Partial_Invariant_Proc (Id)
+             or else Is_Postconditions_Proc (Id);
+      end Is_Assertion_Pragma_Target;
+
+      ----------------------------
+      -- Is_Bodiless_Subprogram --
+      ----------------------------
+
+      function Is_Bodiless_Subprogram (Subp_Id : Entity_Id) return Boolean is
+      begin
+         --  An abstract subprogram does not have a body
+
+         if Ekind_In (Subp_Id, E_Function,
+                               E_Operator,
+                               E_Procedure)
+           and then Is_Abstract_Subprogram (Subp_Id)
+         then
+            return True;
+
+         --  A formal subprogram does not have a body
+
+         elsif Is_Formal_Subprogram (Subp_Id) then
+            return True;
+
+         --  An imported subprogram may have a body, however it is not known at
+         --  compile or bind time where the body resides and whether it will be
+         --  elaborated on time.
+
+         elsif Is_Imported (Subp_Id) then
+            return True;
+         end if;
+
+         return False;
+      end Is_Bodiless_Subprogram;
+
+      ----------------------
+      -- Is_Bridge_Target --
+      ----------------------
+
+      function Is_Bridge_Target (Id : Entity_Id) return Boolean is
+      begin
+         return
+           Is_Accept_Alternative_Proc (Id)
+             or else Is_Finalizer_Proc (Id)
+             or else Is_Partial_Invariant_Proc (Id)
+             or else Is_Postconditions_Proc (Id)
+             or else Is_TSS (Id, TSS_Deep_Adjust)
+             or else Is_TSS (Id, TSS_Deep_Finalize)
+             or else Is_TSS (Id, TSS_Deep_Initialize);
+      end Is_Bridge_Target;
+
+      ------------------------
+      -- Is_Controlled_Proc --
+      ------------------------
+
+      function Is_Controlled_Proc
+        (Subp_Id  : Entity_Id;
+         Subp_Nam : Name_Id) return Boolean
+      is
+         Formal_Id : Entity_Id;
+
+      begin
+         pragma Assert (Nam_In (Subp_Nam, Name_Adjust,
+                                          Name_Finalize,
+                                          Name_Initialize));
+
+         --  To qualify, the subprogram must denote a source procedure with
+         --  name Adjust, Finalize, or Initialize where the sole formal is
+         --  controlled.
+
+         if Comes_From_Source (Subp_Id)
+           and then Ekind (Subp_Id) = E_Procedure
+           and then Chars (Subp_Id) = Subp_Nam
+         then
+            Formal_Id := First_Formal (Subp_Id);
+
+            return
+              Present (Formal_Id)
+                and then Is_Controlled (Etype (Formal_Id))
+                and then No (Next_Formal (Formal_Id));
+         end if;
+
+         return False;
+      end Is_Controlled_Proc;
+
+      ---------------------------------------
+      -- Is_Default_Initial_Condition_Proc --
+      ---------------------------------------
+
+      function Is_Default_Initial_Condition_Proc
+        (Id : Entity_Id) return Boolean
+      is
+      begin
+         --  To qualify, the entity must denote a Default_Initial_Condition
+         --  procedure.
+
+         return Ekind (Id) = E_Procedure and then Is_DIC_Procedure (Id);
+      end Is_Default_Initial_Condition_Proc;
+
+      -----------------------
+      -- Is_Finalizer_Proc --
+      -----------------------
+
+      function Is_Finalizer_Proc (Id : Entity_Id) return Boolean is
+      begin
+         --  To qualify, the entity must denote a _Finalizer procedure
+
+         return Ekind (Id) = E_Procedure and then Chars (Id) = Name_uFinalizer;
+      end Is_Finalizer_Proc;
+
+      -------------------------------
+      -- Is_Initial_Condition_Proc --
+      -------------------------------
+
+      function Is_Initial_Condition_Proc (Id : Entity_Id) return Boolean is
+      begin
+         --  To qualify, the entity must denote an Initial_Condition procedure
+
+         return
+           Ekind (Id) = E_Procedure
+             and then Is_Initial_Condition_Procedure (Id);
+      end Is_Initial_Condition_Proc;
+
+      --------------------
+      -- Is_Initialized --
+      --------------------
+
+      function Is_Initialized (Obj_Decl : Node_Id) return Boolean is
+      begin
+         --  To qualify, the object declaration must have an expression
+
+         return
+           Present (Expression (Obj_Decl))
+             or else Has_Init_Expression (Obj_Decl);
+      end Is_Initialized;
+
+      -----------------------
+      -- Is_Invariant_Proc --
+      -----------------------
+
+      function Is_Invariant_Proc (Id : Entity_Id) return Boolean is
+      begin
+         --  To qualify, the entity must denote the "full" invariant procedure
+
+         return Ekind (Id) = E_Procedure and then Is_Invariant_Procedure (Id);
+      end Is_Invariant_Proc;
+
+      ---------------------------------------
+      -- Is_Non_Library_Level_Encapsulator --
+      ---------------------------------------
+
+      function Is_Non_Library_Level_Encapsulator
+        (N : Node_Id) return Boolean
+      is
+      begin
+         case Nkind (N) is
+            when N_Abstract_Subprogram_Declaration
+               | N_Aspect_Specification
+               | N_Component_Declaration
+               | N_Entry_Body
+               | N_Entry_Declaration
+               | N_Expression_Function
+               | N_Formal_Abstract_Subprogram_Declaration
+               | N_Formal_Concrete_Subprogram_Declaration
+               | N_Formal_Object_Declaration
+               | N_Formal_Package_Declaration
+               | N_Formal_Type_Declaration
+               | N_Generic_Association
+               | N_Implicit_Label_Declaration
+               | N_Incomplete_Type_Declaration
+               | N_Private_Extension_Declaration
+               | N_Private_Type_Declaration
+               | N_Protected_Body
+               | N_Protected_Type_Declaration
+               | N_Single_Protected_Declaration
+               | N_Single_Task_Declaration
+               | N_Subprogram_Body
+               | N_Subprogram_Declaration
+               | N_Task_Body
+               | N_Task_Type_Declaration
+            =>
+               return True;
+
+            when others =>
+               return Is_Generic_Declaration_Or_Body (N);
+         end case;
+      end Is_Non_Library_Level_Encapsulator;
+
+      -------------------------------
+      -- Is_Partial_Invariant_Proc --
+      -------------------------------
+
+      function Is_Partial_Invariant_Proc (Id : Entity_Id) return Boolean is
+      begin
+         --  To qualify, the entity must denote the "partial" invariant
+         --  procedure.
+
+         return
+           Ekind (Id) = E_Procedure
+             and then Is_Partial_Invariant_Procedure (Id);
+      end Is_Partial_Invariant_Proc;
+
+      ----------------------------
+      -- Is_Postconditions_Proc --
+      ----------------------------
+
+      function Is_Postconditions_Proc (Id : Entity_Id) return Boolean is
+      begin
+         --  To qualify, the entity must denote a _Postconditions procedure
+
+         return
+           Ekind (Id) = E_Procedure and then Chars (Id) = Name_uPostconditions;
+      end Is_Postconditions_Proc;
+
+      ---------------------------
+      -- Is_Preelaborated_Unit --
+      ---------------------------
+
+      function Is_Preelaborated_Unit (Id : Entity_Id) return Boolean is
+      begin
+         return
+           Is_Preelaborated (Id)
+             or else Is_Pure (Id)
+             or else Is_Remote_Call_Interface (Id)
+             or else Is_Remote_Types (Id)
+             or else Is_Shared_Passive (Id);
+      end Is_Preelaborated_Unit;
+
+      ------------------------
+      -- Is_Protected_Entry --
+      ------------------------
+
+      function Is_Protected_Entry (Id : Entity_Id) return Boolean is
+      begin
+         --  To qualify, the entity must denote an entry defined in a protected
+         --  type.
+
+         return
+           Is_Entry (Id)
+             and then Is_Protected_Type (Non_Private_View (Scope (Id)));
+      end Is_Protected_Entry;
+
+      -----------------------
+      -- Is_Protected_Subp --
+      -----------------------
+
+      function Is_Protected_Subp (Id : Entity_Id) return Boolean is
+      begin
+         --  To qualify, the entity must denote a subprogram defined within a
+         --  protected type.
+
+         return
+           Ekind_In (Id, E_Function, E_Procedure)
+             and then Is_Protected_Type (Non_Private_View (Scope (Id)));
+      end Is_Protected_Subp;
+
+      ----------------------------
+      -- Is_Protected_Body_Subp --
+      ----------------------------
+
+      function Is_Protected_Body_Subp (Id : Entity_Id) return Boolean is
+      begin
+         --  To qualify, the entity must denote a subprogram with attribute
+         --  Protected_Subprogram set.
+
+         return
+           Ekind_In (Id, E_Function, E_Procedure)
+             and then Present (Protected_Subprogram (Id));
+      end Is_Protected_Body_Subp;
+
+      -----------------
+      -- Is_Scenario --
+      -----------------
+
+      function Is_Scenario (N : Node_Id) return Boolean is
+      begin
+         case Nkind (N) is
+            when N_Assignment_Statement
+               | N_Attribute_Reference
+               | N_Call_Marker
+               | N_Entry_Call_Statement
+               | N_Expanded_Name
+               | N_Function_Call
+               | N_Function_Instantiation
+               | N_Identifier
+               | N_Package_Instantiation
+               | N_Procedure_Call_Statement
+               | N_Procedure_Instantiation
+               | N_Requeue_Statement
+            =>
+               return True;
+
+            when others =>
+               return False;
+         end case;
+      end Is_Scenario;
+
+      ------------------------------
+      -- Is_SPARK_Semantic_Target --
+      ------------------------------
+
+      function Is_SPARK_Semantic_Target (Id : Entity_Id) return Boolean is
+      begin
+         return
+           Is_Default_Initial_Condition_Proc (Id)
+             or else Is_Initial_Condition_Proc (Id);
+      end Is_SPARK_Semantic_Target;
+
+      ------------------------
+      -- Is_Subprogram_Inst --
+      ------------------------
+
+      function Is_Subprogram_Inst (Id : Entity_Id) return Boolean is
+      begin
+         --  To qualify, the entity must denote a function or a procedure which
+         --  is hidden within an anonymous package, and is a generic instance.
+
+         return
+           Ekind_In (Id, E_Function, E_Procedure)
+             and then Is_Hidden (Id)
+             and then Is_Generic_Instance (Id);
+      end Is_Subprogram_Inst;
+
+      ------------------------------
+      -- Is_Suitable_Access_Taken --
+      ------------------------------
+
+      function Is_Suitable_Access_Taken (N : Node_Id) return Boolean is
+         Nam     : Name_Id;
+         Pref    : Node_Id;
+         Subp_Id : Entity_Id;
+
+      begin
+         --  Nothing to do when switch -gnatd.U (ignore 'Access) is in effect
+
+         if Debug_Flag_Dot_UU then
+            return False;
+
+         --  Nothing to do when the scenario is not an attribute reference
+
+         elsif Nkind (N) /= N_Attribute_Reference then
+            return False;
+
+         --  Nothing to do for internally-generated attributes because they are
+         --  assumed to be ABE safe.
+
+         elsif not Comes_From_Source (N) then
+            return False;
+         end if;
+
+         Nam  := Attribute_Name (N);
+         Pref := Prefix (N);
+
+         --  Sanitize the prefix of the attribute
+
+         if not Is_Entity_Name (Pref) then
+            return False;
+
+         elsif No (Entity (Pref)) then
+            return False;
+         end if;
+
+         Subp_Id := Entity (Pref);
+
+         if not Is_Subprogram_Or_Entry (Subp_Id) then
+            return False;
+         end if;
+
+         --  Traverse a possible chain of renamings to obtain the original
+         --  entry or subprogram which the prefix may rename.
+
+         Subp_Id := Get_Renamed_Entity (Subp_Id);
+
+         --  To qualify, the attribute must meet the following prerequisites:
+
+         return
+
+           --  The prefix must denote a source entry, operator, or subprogram
+           --  which is not imported.
+
+           Comes_From_Source (Subp_Id)
+             and then Is_Subprogram_Or_Entry (Subp_Id)
+             and then not Is_Bodiless_Subprogram (Subp_Id)
+
+             --  The attribute name must be one of the 'Access forms. Note that
+             --  'Unchecked_Access cannot apply to a subprogram.
+
+             and then Nam_In (Nam, Name_Access, Name_Unrestricted_Access);
+      end Is_Suitable_Access_Taken;
+
+      ----------------------
+      -- Is_Suitable_Call --
+      ----------------------
+
+      function Is_Suitable_Call (N : Node_Id) return Boolean is
+      begin
+         --  Entry and subprogram calls are intentionally ignored because they
+         --  may undergo expansion depending on the compilation mode, previous
+         --  errors, generic context, etc. Call markers play the role of calls
+         --  and provide a uniform foundation for ABE processing.
+
+         return Nkind (N) = N_Call_Marker;
+      end Is_Suitable_Call;
+
+      -------------------------------
+      -- Is_Suitable_Instantiation --
+      -------------------------------
+
+      function Is_Suitable_Instantiation (N : Node_Id) return Boolean is
+         Inst : constant Node_Id := Scenario (N);
+
+      begin
+         --  To qualify, the instantiation must come from source
+
+         return
+           Comes_From_Source (Inst)
+             and then Nkind (Inst) in N_Generic_Instantiation;
+      end Is_Suitable_Instantiation;
+
+      ------------------------------------
+      -- Is_Suitable_SPARK_Derived_Type --
+      ------------------------------------
+
+      function Is_Suitable_SPARK_Derived_Type (N : Node_Id) return Boolean is
+         Prag : Node_Id;
+         Typ  : Entity_Id;
+
+      begin
+         --  To qualify, the type declaration must denote a derived tagged type
+         --  with primitive operations, subject to pragma SPARK_Mode On.
+
+         if Nkind (N) = N_Full_Type_Declaration
+           and then Nkind (Type_Definition (N)) = N_Derived_Type_Definition
+         then
+            Typ  := Defining_Entity (N);
+            Prag := SPARK_Pragma (Typ);
+
+            return
+              Is_Tagged_Type (Typ)
+                and then Has_Primitive_Operations (Typ)
+                and then Present (Prag)
+                and then Get_SPARK_Mode_From_Annotation (Prag) = On;
+         end if;
+
+         return False;
+      end Is_Suitable_SPARK_Derived_Type;
+
+      -------------------------------------
+      -- Is_Suitable_SPARK_Instantiation --
+      -------------------------------------
+
+      function Is_Suitable_SPARK_Instantiation (N : Node_Id) return Boolean is
+         Inst : constant Node_Id := Scenario (N);
+
+         Gen_Id : Entity_Id;
+         Prag   : Node_Id;
+
+      begin
+         --  To qualify, both the instantiation and the generic must be subject
+         --  to SPARK_Mode On.
+
+         if Is_Suitable_Instantiation (N) then
+            Gen_Id := Instantiated_Generic (Inst);
+            Prag   := SPARK_Pragma (Gen_Id);
+
+            return
+              Is_SPARK_Mode_On_Node (Inst)
+                and then Present (Prag)
+                and then Get_SPARK_Mode_From_Annotation (Prag) = On;
+         end if;
+
+         return False;
+      end Is_Suitable_SPARK_Instantiation;
+
+      --------------------------------------------
+      -- Is_Suitable_SPARK_Refined_State_Pragma --
+      --------------------------------------------
+
+      function Is_Suitable_SPARK_Refined_State_Pragma
+        (N : Node_Id) return Boolean
+      is
+      begin
+         --  To qualfy, the pragma must denote Refined_State
+
+         return
+           Nkind (N) = N_Pragma
+             and then Pragma_Name (N) = Name_Refined_State;
+      end Is_Suitable_SPARK_Refined_State_Pragma;
+
+      -------------------------------------
+      -- Is_Suitable_Variable_Assignment --
+      -------------------------------------
+
+      function Is_Suitable_Variable_Assignment (N : Node_Id) return Boolean is
+         N_Unit      : Node_Id;
+         N_Unit_Id   : Entity_Id;
+         Nam         : Node_Id;
+         Var_Decl    : Node_Id;
+         Var_Id      : Entity_Id;
+         Var_Unit    : Node_Id;
+         Var_Unit_Id : Entity_Id;
+
+      begin
+         --  Nothing to do when the scenario is not an assignment
+
+         if Nkind (N) /= N_Assignment_Statement then
+            return False;
+
+         --  Nothing to do for internally-generated assignments because they
+         --  are assumed to be ABE safe.
+
+         elsif not Comes_From_Source (N) then
+            return False;
+
+         --  Assignments are ignored in GNAT mode on the assumption that
+         --  they are ABE-safe. This behaviour parallels that of the old
+         --  ABE mechanism.
+
+         elsif GNAT_Mode then
+            return False;
+         end if;
+
+         Nam := Assignment_Target (N);
+
+         --  Sanitize the left hand side of the assignment
+
+         if not Is_Entity_Name (Nam) then
+            return False;
+
+         elsif No (Entity (Nam)) then
+            return False;
+         end if;
+
+         Var_Id := Entity (Nam);
+
+         --  Sanitize the variable
+
+         if Var_Id = Any_Id then
+            return False;
+
+         elsif Ekind (Var_Id) /= E_Variable then
+            return False;
+         end if;
+
+         Var_Decl := Declaration_Node (Var_Id);
+
+         if Nkind (Var_Decl) /= N_Object_Declaration then
+            return False;
+         end if;
+
+         N_Unit_Id := Find_Top_Unit (N);
+         N_Unit    := Unit_Declaration_Node (N_Unit_Id);
+
+         Var_Unit_Id := Find_Top_Unit (Var_Decl);
+         Var_Unit    := Unit_Declaration_Node (Var_Unit_Id);
+
+         --  To qualify, the assignment must meet the following prerequisites:
+
+         return
+           Comes_From_Source (Var_Id)
+
+             --  The variable must be declared in the spec of compilation unit
+             --  U.
+
+             and then Nkind (Var_Unit) = N_Package_Declaration
+             and then Find_Enclosing_Level (Var_Decl) = Library_Spec_Level
+
+             --  The assignment must occur in the body of compilation unit U
+
+             and then Nkind (N_Unit) = N_Package_Body
+             and then Present (Corresponding_Body (Var_Unit))
+             and then Corresponding_Body (Var_Unit) = N_Unit_Id;
+      end Is_Suitable_Variable_Assignment;
+
+      ------------------------------------
+      -- Is_Suitable_Variable_Reference --
+      ------------------------------------
+
+      function Is_Suitable_Variable_Reference (N : Node_Id) return Boolean is
+      begin
+         --  Expanded names and identifiers are intentionally ignored because
+         --  they be folded, optimized away, etc. Variable references markers
+         --  play the role of variable references and provide a uniform
+         --  foundation for ABE processing.
+
+         return Nkind (N) = N_Variable_Reference_Marker;
+      end Is_Suitable_Variable_Reference;
+
+      -------------------
+      -- Is_Task_Entry --
+      -------------------
+
+      function Is_Task_Entry (Id : Entity_Id) return Boolean is
+      begin
+         --  To qualify, the entity must denote an entry defined in a task type
+
+         return
+           Is_Entry (Id) and then Is_Task_Type (Non_Private_View (Scope (Id)));
+      end Is_Task_Entry;
+
+      ------------------------
+      -- Is_Up_Level_Target --
+      ------------------------
+
+      function Is_Up_Level_Target
+        (Targ_Decl : Node_Id;
+         In_State  : Processing_In_State) return Boolean
+      is
+         Root     : constant Node_Id         := Root_Scenario;
+         Root_Rep : constant Scenario_Rep_Id :=
+                      Scenario_Representation_Of (Root, In_State);
+
+      begin
+         --  The root appears within the declaratons of a block statement,
+         --  entry body, subprogram body, or task body ignoring enclosing
+         --  packages. The root is always within the main unit.
+
+         if not In_State.Suppress_Up_Level_Targets
+           and then Level (Root_Rep) = Declaration_Level
+         then
+            --  The target is within the main unit. It acts as an up-level
+            --  target when it appears within a context which encloses the
+            --  root.
+            --
+            --    package body Main_Unit is
+            --       function Func ...;             --  target
+            --
+            --       procedure Proc is
+            --          X : ... := Func;            --  root scenario
+
+            if In_Extended_Main_Code_Unit (Targ_Decl) then
+               return not In_Same_Context (Root, Targ_Decl, Nested_OK => True);
+
+            --  Otherwise the target is external to the main unit which makes
+            --  it an up-level target.
+
+            else
+               return True;
+            end if;
+         end if;
+
+         return False;
+      end Is_Up_Level_Target;
+   end Semantics;
+
+   ---------------------
+   -- SPARK_Processor --
+   ---------------------
+
+   package body SPARK_Processor is
+
+      -----------------------
+      -- Local subprograms --
+      -----------------------
+
+      procedure Process_SPARK_Derived_Type
+        (Typ_Decl : Node_Id;
+         Typ_Rep  : Scenario_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_SPARK_Derived_Type);
+      --  Verify that the freeze node of a derived type denoted by declaration
+      --  Typ_Decl is within the early call region of each overriding primitive
+      --  body that belongs to the derived type (SPARK RM 7.7(8)). Typ_Rep is
+      --  the representation of the type. In_State denotes the current state of
+      --  the Processing phase.
+
+      procedure Process_SPARK_Instantiation
+        (Inst     : Node_Id;
+         Inst_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_SPARK_Instantiation);
+      --  Verify that instanciation Inst does not precede the generic body it
+      --  instantiates (SPARK RM 7.7(6)). Inst_Rep is the representation of the
+      --  instantiation. In_State is the current state of the Processing phase.
+
+      procedure Process_SPARK_Refined_State_Pragma
+        (Prag     : Node_Id;
+         Prag_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_SPARK_Refined_State_Pragma);
+      --  Verify that each constituent of Refined_State pragma Prag which
+      --  belongs to abstract state mentioned in pragma Initializes has prior
+      --  elaboration with respect to the main unit (SPARK RM 7.7.1(7)).
+      --  Prag_Rep is the representation of the pragma. In_State denotes the
+      --  current state of the Processing phase.
+
+      procedure Process_SPARK_Scenario
+        (N        : Node_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_SPARK_Scenario);
+      --  Top-level dispatcher for verifying SPARK scenarios which are not
+      --  always executable during elaboration but still need elaboration-
+      --  related checks. In_State is the current state of the Processing
+      --  phase.
+
+      ---------------------------------
+      -- Check_SPARK_Model_In_Effect --
+      ---------------------------------
+
+      SPARK_Model_Warning_Posted : Boolean := False;
+      --  This flag prevents the same SPARK model-related warning from being
+      --  emitted multiple times.
+
+      procedure Check_SPARK_Model_In_Effect is
+         Spec_Id : constant Entity_Id :=
+                     Unique_Entity (Cunit_Entity (Main_Unit));
+
+      begin
+         --  Do not emit the warning multiple times as this creates useless
+         --  noise.
+
+         if SPARK_Model_Warning_Posted then
             null;
 
-         --  Otherwise the scenario must appear at a specific level
+         --  SPARK rule verification requires the "strict" static model
+
+         elsif Static_Elaboration_Checks
+           and not Relaxed_Elaboration_Checks
+         then
+            null;
+
+         --  Any other combination of models does not guarantee the absence of
+         --  ABE problems for SPARK rule verification purposes. Note that there
+         --  is no need to check for the presence of the legacy ABE mechanism
+         --  because the legacy code has its own dedicated processing for SPARK
+         --  rules.
 
          else
-            --  Performance note: parent traversal
+            SPARK_Model_Warning_Posted := True;
 
-            Level := Find_Enclosing_Level (N);
+            Error_Msg_N
+              ("??SPARK elaboration checks require static elaboration model",
+               Spec_Id);
 
-            --  Declaration-level scenario
+            if Dynamic_Elaboration_Checks then
+               Error_Msg_N
+                 ("\dynamic elaboration model is in effect", Spec_Id);
 
-            if Declaration_Level_OK and then Level = Declaration_Level then
-               null;
+            else
+               pragma Assert (Relaxed_Elaboration_Checks);
+               Error_Msg_N
+                 ("\relaxed elaboration model is in effect", Spec_Id);
+            end if;
+         end if;
+      end Check_SPARK_Model_In_Effect;
 
-            --  Library-level or instantiation scenario
+      ---------------------------
+      -- Check_SPARK_Scenarios --
+      ---------------------------
 
-            elsif Library_Level_OK
-              and then Level in Library_Or_Instantiation_Level
-            then
-               null;
+      procedure Check_SPARK_Scenarios is
+         Iter : NE_Set.Iterator;
+         N    : Node_Id;
 
-            --  Otherwise the scenario does not appear at the proper level and
-            --  cannot possibly act as a top-level scenario.
+      begin
+         Iter := Iterate_SPARK_Scenarios;
+         while NE_Set.Has_Next (Iter) loop
+            NE_Set.Next (Iter, N);
+
+            Process_SPARK_Scenario
+              (N        => N,
+               In_State => SPARK_State);
+         end loop;
+      end Check_SPARK_Scenarios;
+
+      --------------------------------
+      -- Process_SPARK_Derived_Type --
+      --------------------------------
+
+      procedure Process_SPARK_Derived_Type
+        (Typ_Decl : Node_Id;
+         Typ_Rep  : Scenario_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         pragma Unreferenced (In_State);
+
+         Typ : constant Entity_Id := Target (Typ_Rep);
+
+         Stop_Check : exception;
+         --  This exception is raised when the freeze node violates the
+         --  placement rules.
+
+         procedure Check_Overriding_Primitive
+           (Prim  : Entity_Id;
+            FNode : Node_Id);
+         pragma Inline (Check_Overriding_Primitive);
+         --  Verify that freeze node FNode is within the early call region of
+         --  overriding primitive Prim's body.
+
+         function Freeze_Node_Location (FNode : Node_Id) return Source_Ptr;
+         pragma Inline (Freeze_Node_Location);
+         --  Return a more accurate source location associated with freeze node
+         --  FNode.
+
+         function Precedes_Source_Construct (N : Node_Id) return Boolean;
+         pragma Inline (Precedes_Source_Construct);
+         --  Determine whether arbitrary node N appears prior to some source
+         --  construct.
+
+         procedure Suggest_Elaborate_Body
+           (N         : Node_Id;
+            Body_Decl : Node_Id;
+            Error_Nod : Node_Id);
+         pragma Inline (Suggest_Elaborate_Body);
+         --  Suggest the use of pragma Elaborate_Body when the pragma will
+         --  allow for node N to appear within the early call region of
+         --  subprogram body Body_Decl. The suggestion is attached to
+         --  Error_Nod as a continuation error.
+
+         --------------------------------
+         -- Check_Overriding_Primitive --
+         --------------------------------
+
+         procedure Check_Overriding_Primitive
+           (Prim  : Entity_Id;
+            FNode : Node_Id)
+         is
+            Prim_Decl : constant Node_Id := Unit_Declaration_Node (Prim);
+            Body_Decl : Node_Id;
+            Body_Id   : Entity_Id;
+            Region    : Node_Id;
+
+         begin
+            --  Nothing to do for predefined primitives because they are
+            --  artifacts of tagged type expansion and cannot override source
+            --  primitives.
+
+            if Is_Predefined_Dispatching_Operation (Prim) then
+               return;
+            end if;
+
+            Body_Id := Corresponding_Body (Prim_Decl);
+
+            --  Nothing to do when the primitive does not have a corresponding
+            --  body. This can happen when the unit with the bodies is not the
+            --  main unit subjected to ABE checks.
+
+            if No (Body_Id) then
+               return;
+
+            --  The primitive overrides a parent or progenitor primitive
+
+            elsif Present (Overridden_Operation (Prim)) then
+
+               --  Nothing to do when overriding an interface primitive happens
+               --  by inheriting a non-interface primitive as the check would
+               --  be done on the parent primitive.
+
+               if Present (Alias (Prim)) then
+                  return;
+               end if;
+
+            --  Nothing to do when the primitive is not overriding. The body of
+            --  such a primitive cannot be targeted by a dispatching call which
+            --  is executable during elaboration, and cannot cause an ABE.
 
             else
                return;
             end if;
+
+            Body_Decl := Unit_Declaration_Node (Body_Id);
+            Region    := Find_Early_Call_Region (Body_Decl);
+
+            --  The freeze node appears prior to the early call region of the
+            --  primitive body.
+
+            --  IMPORTANT: This check must always be performed even when
+            --  -gnatd.v (enforce SPARK elaboration rules in SPARK code) is not
+            --  specified because the static model cannot guarantee the absence
+            --  of ABEs in the presence of dispatching calls.
+
+            if Earlier_In_Extended_Unit (FNode, Region) then
+               Error_Msg_Node_2 := Prim;
+               Error_Msg_NE
+                 ("first freezing point of type & must appear within early "
+                  & "call region of primitive body & (SPARK RM 7.7(8))",
+                  Typ_Decl, Typ);
+
+               Error_Msg_Sloc := Sloc (Region);
+               Error_Msg_N ("\region starts #", Typ_Decl);
+
+               Error_Msg_Sloc := Sloc (Body_Decl);
+               Error_Msg_N ("\region ends #", Typ_Decl);
+
+               Error_Msg_Sloc := Freeze_Node_Location (FNode);
+               Error_Msg_N ("\first freezing point #", Typ_Decl);
+
+               --  If applicable, suggest the use of pragma Elaborate_Body in
+               --  the associated package spec.
+
+               Suggest_Elaborate_Body
+                 (N         => FNode,
+                  Body_Decl => Body_Decl,
+                  Error_Nod => Typ_Decl);
+
+               raise Stop_Check;
+            end if;
+         end Check_Overriding_Primitive;
+
+         --------------------------
+         -- Freeze_Node_Location --
+         --------------------------
+
+         function Freeze_Node_Location (FNode : Node_Id) return Source_Ptr is
+            Context : constant Node_Id    := Parent (FNode);
+            Loc     : constant Source_Ptr := Sloc (FNode);
+
+            Prv_Decls : List_Id;
+            Vis_Decls : List_Id;
+
+         begin
+            --  In general, the source location of the freeze node is as close
+            --  as possible to the real freeze point, except when the freeze
+            --  node is at the "bottom" of a package spec.
+
+            if Nkind (Context) = N_Package_Specification then
+               Prv_Decls := Private_Declarations (Context);
+               Vis_Decls := Visible_Declarations (Context);
+
+               --  The freeze node appears in the private declarations of the
+               --  package.
+
+               if Present (Prv_Decls)
+                 and then List_Containing (FNode) = Prv_Decls
+               then
+                  null;
+
+               --  The freeze node appears in the visible declarations of the
+               --  package and there are no private declarations.
+
+               elsif Present (Vis_Decls)
+                 and then List_Containing (FNode) = Vis_Decls
+                 and then (No (Prv_Decls) or else Is_Empty_List (Prv_Decls))
+               then
+                  null;
+
+               --  Otherwise the freeze node is not in the "last" declarative
+               --  list of the package. Use the existing source location of the
+               --  freeze node.
+
+               else
+                  return Loc;
+               end if;
+
+               --  The freeze node appears at the "bottom" of the package when
+               --  it is in the "last" declarative list and is either the last
+               --  in the list or is followed by internal constructs only. In
+               --  that case the more appropriate source location is that of
+               --  the package end label.
+
+               if not Precedes_Source_Construct (FNode) then
+                  return Sloc (End_Label (Context));
+               end if;
+            end if;
+
+            return Loc;
+         end Freeze_Node_Location;
+
+         -------------------------------
+         -- Precedes_Source_Construct --
+         -------------------------------
+
+         function Precedes_Source_Construct (N : Node_Id) return Boolean is
+            Decl : Node_Id;
+
+         begin
+            Decl := Next (N);
+            while Present (Decl) loop
+               if Comes_From_Source (Decl) then
+                  return True;
+
+               --  A generated body for a source expression function is treated
+               --  as a source construct.
+
+               elsif Nkind (Decl) = N_Subprogram_Body
+                 and then Was_Expression_Function (Decl)
+                 and then Comes_From_Source (Original_Node (Decl))
+               then
+                  return True;
+               end if;
+
+               Next (Decl);
+            end loop;
+
+            return False;
+         end Precedes_Source_Construct;
+
+         ----------------------------
+         -- Suggest_Elaborate_Body --
+         ----------------------------
+
+         procedure Suggest_Elaborate_Body
+           (N         : Node_Id;
+            Body_Decl : Node_Id;
+            Error_Nod : Node_Id)
+         is
+            Unit_Id : constant Node_Id := Unit (Cunit (Main_Unit));
+            Region  : Node_Id;
+
+         begin
+            --  The suggestion applies only when the subprogram body resides in
+            --  a compilation package body, and a pragma Elaborate_Body would
+            --  allow for the node to appear in the early call region of the
+            --  subprogram body. This implies that all code from the subprogram
+            --  body up to the node is preelaborable.
+
+            if Nkind (Unit_Id) = N_Package_Body then
+
+               --  Find the start of the early call region again assuming that
+               --  the package spec has pragma Elaborate_Body. Note that the
+               --  internal data structures are intentionally not updated
+               --  because this is a speculative search.
+
+               Region :=
+                 Find_Early_Call_Region
+                   (Body_Decl        => Body_Decl,
+                    Assume_Elab_Body => True,
+                    Skip_Memoization => True);
+
+               --  If the node appears within the early call region, assuming
+               --  that the package spec carries pragma Elaborate_Body, then it
+               --  is safe to suggest the pragma.
+
+               if Earlier_In_Extended_Unit (Region, N) then
+                  Error_Msg_Name_1 := Name_Elaborate_Body;
+                  Error_Msg_NE
+                    ("\consider adding pragma % in spec of unit &",
+                     Error_Nod, Defining_Entity (Unit_Id));
+               end if;
+            end if;
+         end Suggest_Elaborate_Body;
+
+         --  Local variables
+
+         FNode : constant Node_Id  := Freeze_Node (Typ);
+         Prims : constant Elist_Id := Direct_Primitive_Operations (Typ);
+
+         Prim_Elmt : Elmt_Id;
+
+      --  Start of processing for Process_SPARK_Derived_Type
+
+      begin
+         --  A type should have its freeze node set by the time SPARK scenarios
+         --  are being verified.
+
+         pragma Assert (Present (FNode));
+
+         --  Verify that the freeze node of the derived type is within the
+         --  early call region of each overriding primitive body
+         --  (SPARK RM 7.7(8)).
+
+         if Present (Prims) then
+            Prim_Elmt := First_Elmt (Prims);
+            while Present (Prim_Elmt) loop
+               Check_Overriding_Primitive
+                 (Prim  => Node (Prim_Elmt),
+                  FNode => FNode);
+
+               Next_Elmt (Prim_Elmt);
+            end loop;
+         end if;
+
+      exception
+         when Stop_Check =>
+            null;
+      end Process_SPARK_Derived_Type;
+
+      ---------------------------------
+      -- Process_SPARK_Instantiation --
+      ---------------------------------
+
+      procedure Process_SPARK_Instantiation
+        (Inst     : Node_Id;
+         Inst_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         Gen_Id    : constant Entity_Id     := Target (Inst_Rep);
+         Gen_Rep   : constant Target_Rep_Id :=
+                       Target_Representation_Of (Gen_Id, In_State);
+         Body_Decl : constant Node_Id       := Body_Declaration (Gen_Rep);
+
+      begin
+         --  The instantiation and the generic body are both in the main unit
+
+         if Present (Body_Decl)
+           and then In_Extended_Main_Code_Unit (Body_Decl)
+
+           --  If the instantiation appears prior to the generic body, then the
+           --  instantiation is illegal (SPARK RM 7.7(6)).
+
+           --  IMPORTANT: This check must always be performed even when
+           --  -gnatd.v (enforce SPARK elaboration rules in SPARK code) is not
+           --  specified because the rule prevents use-before-declaration of
+           --  objects that may precede the generic body.
+
+           and then Earlier_In_Extended_Unit (Inst, Body_Decl)
+         then
+            Error_Msg_NE
+              ("cannot instantiate & before body seen", Inst, Gen_Id);
+         end if;
+      end Process_SPARK_Instantiation;
+
+      ----------------------------
+      -- Process_SPARK_Scenario --
+      ----------------------------
+
+      procedure Process_SPARK_Scenario
+        (N        : Node_Id;
+         In_State : Processing_In_State)
+      is
+         Scen : constant Node_Id := Scenario (N);
+
+      begin
+         --  Ensure that a suitable elaboration model is in effect for SPARK
+         --  rule verification.
+
+         Check_SPARK_Model_In_Effect;
+
+         --  Add the current scenario to the stack of active scenarios
+
+         Push_Active_Scenario (Scen);
+
+         --  Derived type
+
+         if Is_Suitable_SPARK_Derived_Type (Scen) then
+            Process_SPARK_Derived_Type
+              (Typ_Decl => Scen,
+               Typ_Rep  => Scenario_Representation_Of (Scen, In_State),
+               In_State => In_State);
+
+         --  Instantiation
+
+         elsif Is_Suitable_SPARK_Instantiation (Scen) then
+            Process_SPARK_Instantiation
+              (Inst     => Scen,
+               Inst_Rep => Scenario_Representation_Of (Scen, In_State),
+               In_State => In_State);
+
+         --  Refined_State pragma
+
+         elsif Is_Suitable_SPARK_Refined_State_Pragma (Scen) then
+            Process_SPARK_Refined_State_Pragma
+              (Prag     => Scen,
+               Prag_Rep => Scenario_Representation_Of (Scen, In_State),
+               In_State => In_State);
+         end if;
+
+         --  Remove the current scenario from the stack of active scenarios
+         --  once all ABE diagnostics and checks have been performed.
+
+         Pop_Active_Scenario (Scen);
+      end Process_SPARK_Scenario;
+
+      ----------------------------------------
+      -- Process_SPARK_Refined_State_Pragma --
+      ----------------------------------------
+
+      procedure Process_SPARK_Refined_State_Pragma
+        (Prag     : Node_Id;
+         Prag_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         pragma Unreferenced (Prag_Rep);
+
+         procedure Check_SPARK_Constituent (Constit_Id : Entity_Id);
+         pragma Inline (Check_SPARK_Constituent);
+         --  Ensure that a single constituent Constit_Id is elaborated prior to
+         --  the main unit.
+
+         procedure Check_SPARK_Constituents (Constits : Elist_Id);
+         pragma Inline (Check_SPARK_Constituents);
+         --  Ensure that all constituents found in list Constits are elaborated
+         --  prior to the main unit.
+
+         procedure Check_SPARK_Initialized_State (State : Node_Id);
+         pragma Inline (Check_SPARK_Initialized_State);
+         --  Ensure that the constituents of single abstract state State are
+         --  elaborated prior to the main unit.
+
+         procedure Check_SPARK_Initialized_States (Pack_Id : Entity_Id);
+         pragma Inline (Check_SPARK_Initialized_States);
+         --  Ensure that the constituents of all abstract states which appear
+         --  in the Initializes pragma of package Pack_Id are elaborated prior
+         --  to the main unit.
+
+         -----------------------------
+         -- Check_SPARK_Constituent --
+         -----------------------------
+
+         procedure Check_SPARK_Constituent (Constit_Id : Entity_Id) is
+            SM_Prag : Node_Id;
+
+         begin
+            --  Nothing to do for "null" constituents
+
+            if Nkind (Constit_Id) = N_Null then
+               return;
+
+            --  Nothing to do for illegal constituents
+
+            elsif Error_Posted (Constit_Id) then
+               return;
+            end if;
+
+            SM_Prag := SPARK_Pragma (Constit_Id);
+
+            --  The check applies only when the constituent is subject to
+            --  pragma SPARK_Mode On.
+
+            if Present (SM_Prag)
+              and then Get_SPARK_Mode_From_Annotation (SM_Prag) = On
+            then
+               --  An external constituent of an abstract state which appears
+               --  in the Initializes pragma of a package spec imposes an
+               --  Elaborate requirement on the context of the main unit.
+               --  Determine whether the context has a pragma strong enough to
+               --  meet the requirement.
+
+               --  IMPORTANT: This check is performed only when -gnatd.v
+               --  (enforce SPARK elaboration rules in SPARK code) is in effect
+               --  because the static model can ensure the prior elaboration of
+               --  the unit which contains a constituent by installing implicit
+               --  Elaborate pragma.
+
+               if Debug_Flag_Dot_V then
+                  Meet_Elaboration_Requirement
+                    (N        => Prag,
+                     Targ_Id  => Constit_Id,
+                     Req_Nam  => Name_Elaborate,
+                     In_State => In_State);
+
+               --  Otherwise ensure that the unit with the external constituent
+               --  is elaborated prior to the main unit.
+
+               else
+                  Ensure_Prior_Elaboration
+                    (N        => Prag,
+                     Unit_Id  => Find_Top_Unit (Constit_Id),
+                     Prag_Nam => Name_Elaborate,
+                     In_State => In_State);
+               end if;
+            end if;
+         end Check_SPARK_Constituent;
+
+         ------------------------------
+         -- Check_SPARK_Constituents --
+         ------------------------------
+
+         procedure Check_SPARK_Constituents (Constits : Elist_Id) is
+            Constit_Elmt : Elmt_Id;
+
+         begin
+            if Present (Constits) then
+               Constit_Elmt := First_Elmt (Constits);
+               while Present (Constit_Elmt) loop
+                  Check_SPARK_Constituent (Node (Constit_Elmt));
+                  Next_Elmt (Constit_Elmt);
+               end loop;
+            end if;
+         end Check_SPARK_Constituents;
+
+         -----------------------------------
+         -- Check_SPARK_Initialized_State --
+         -----------------------------------
+
+         procedure Check_SPARK_Initialized_State (State : Node_Id) is
+            SM_Prag  : Node_Id;
+            State_Id : Entity_Id;
+
+         begin
+            --  Nothing to do for "null" initialization items
+
+            if Nkind (State) = N_Null then
+               return;
+
+            --  Nothing to do for illegal states
+
+            elsif Error_Posted (State) then
+               return;
+            end if;
+
+            State_Id := Entity_Of (State);
+
+            --  Sanitize the state
+
+            if No (State_Id) then
+               return;
+
+            elsif Error_Posted (State_Id) then
+               return;
+
+            elsif Ekind (State_Id) /= E_Abstract_State then
+               return;
+            end if;
+
+            --  The check is performed only when the abstract state is subject
+            --  to SPARK_Mode On.
+
+            SM_Prag := SPARK_Pragma (State_Id);
+
+            if Present (SM_Prag)
+              and then Get_SPARK_Mode_From_Annotation (SM_Prag) = On
+            then
+               Check_SPARK_Constituents (Refinement_Constituents (State_Id));
+            end if;
+         end Check_SPARK_Initialized_State;
+
+         ------------------------------------
+         -- Check_SPARK_Initialized_States --
+         ------------------------------------
+
+         procedure Check_SPARK_Initialized_States (Pack_Id : Entity_Id) is
+            Init_Prag : constant Node_Id :=
+                          Get_Pragma (Pack_Id, Pragma_Initializes);
+
+            Init  : Node_Id;
+            Inits : Node_Id;
+
+         begin
+            if Present (Init_Prag) then
+               Inits := Expression (Get_Argument (Init_Prag, Pack_Id));
+
+               --  Avoid processing a "null" initialization list. The only
+               --  other alternative is an aggregate.
+
+               if Nkind (Inits) = N_Aggregate then
+
+                  --  The initialization items appear in list form:
+                  --
+                  --    (state1, state2)
+
+                  if Present (Expressions (Inits)) then
+                     Init := First (Expressions (Inits));
+                     while Present (Init) loop
+                        Check_SPARK_Initialized_State (Init);
+                        Next (Init);
+                     end loop;
+                  end if;
+
+                  --  The initialization items appear in associated form:
+                  --
+                  --    (state1 => item1,
+                  --     state2 => (item2, item3))
+
+                  if Present (Component_Associations (Inits)) then
+                     Init := First (Component_Associations (Inits));
+                     while Present (Init) loop
+                        Check_SPARK_Initialized_State (Init);
+                        Next (Init);
+                     end loop;
+                  end if;
+               end if;
+            end if;
+         end Check_SPARK_Initialized_States;
+
+         --  Local variables
+
+         Pack_Body : constant Node_Id := Find_Related_Package_Or_Body (Prag);
+
+      --  Start of processing for Process_SPARK_Refined_State_Pragma
+
+      begin
+         --  Pragma Refined_State must be associated with a package body
+
+         pragma Assert
+           (Present (Pack_Body) and then Nkind (Pack_Body) = N_Package_Body);
+
+         --  Verify that each external contitunent of an abstract state
+         --  mentioned in pragma Initializes is properly elaborated.
+
+         Check_SPARK_Initialized_States (Unique_Defining_Entity (Pack_Body));
+      end Process_SPARK_Refined_State_Pragma;
+   end SPARK_Processor;
+
+   -------------------------------
+   -- Spec_And_Body_From_Entity --
+   -------------------------------
+
+   procedure Spec_And_Body_From_Entity
+     (Id        : Node_Id;
+      Spec_Decl : out Node_Id;
+      Body_Decl : out Node_Id)
+   is
+   begin
+      Spec_And_Body_From_Node
+        (N         => Unit_Declaration_Node (Id),
+         Spec_Decl => Spec_Decl,
+         Body_Decl => Body_Decl);
+   end Spec_And_Body_From_Entity;
+
+   -----------------------------
+   -- Spec_And_Body_From_Node --
+   -----------------------------
+
+   procedure Spec_And_Body_From_Node
+     (N         : Node_Id;
+      Spec_Decl : out Node_Id;
+      Body_Decl : out Node_Id)
+   is
+      Body_Id : Entity_Id;
+      Spec_Id : Entity_Id;
+
+   begin
+      --  Assume that the construct lacks spec and body
+
+      Body_Decl := Empty;
+      Spec_Decl := Empty;
+
+      --  Bodies
+
+      if Nkind_In (N, N_Package_Body,
+                      N_Protected_Body,
+                      N_Subprogram_Body,
+                      N_Task_Body)
+      then
+         Spec_Id := Corresponding_Spec (N);
+
+         --  The body completes a previous declaration
+
+         if Present (Spec_Id) then
+            Spec_Decl := Unit_Declaration_Node (Spec_Id);
+
+         --  Otherwise the body acts as the initial declaration, and is both a
+         --  spec and body. There is no need to look for an optional body.
+
+         else
+            Body_Decl := N;
+            Spec_Decl := N;
+            return;
+         end if;
+
+      --  Declarations
+
+      elsif Nkind_In (N, N_Entry_Declaration,
+                         N_Generic_Package_Declaration,
+                         N_Generic_Subprogram_Declaration,
+                         N_Package_Declaration,
+                         N_Protected_Type_Declaration,
+                         N_Subprogram_Declaration,
+                         N_Task_Type_Declaration)
+      then
+         Spec_Decl := N;
+
+      --  Expression function
+
+      elsif Nkind (N) = N_Expression_Function then
+         Spec_Id := Corresponding_Spec (N);
+         pragma Assert (Present (Spec_Id));
+
+         Spec_Decl := Unit_Declaration_Node (Spec_Id);
+
+      --  Instantiations
+
+      elsif Nkind (N) in N_Generic_Instantiation then
+         Spec_Decl := Instance_Spec (N);
+         pragma Assert (Present (Spec_Decl));
+
+      --  Stubs
+
+      elsif Nkind (N) in N_Body_Stub then
+         Spec_Id := Corresponding_Spec_Of_Stub (N);
+
+         --  The stub completes a previous declaration
+
+         if Present (Spec_Id) then
+            Spec_Decl := Unit_Declaration_Node (Spec_Id);
+
+         --  Otherwise the stub acts as a spec
+
+         else
+            Spec_Decl := N;
          end if;
       end if;
 
-      --  Derived types subject to SPARK_Mode On require elaboration-related
-      --  checks even though the type may not be declared within elaboration
-      --  code. The types are recorded in a separate table which is examined
-      --  during the Processing phase. Note that the checks must be delayed
-      --  because the bodies of overriding primitives are not available yet.
+      --  Obtain an optional or mandatory body
 
-      if Is_Suitable_SPARK_Derived_Type (N) then
-         Record_SPARK_Elaboration_Scenario (N);
+      if Present (Spec_Decl) then
+         Body_Id := Corresponding_Body (Spec_Decl);
 
-         --  Nothing left to do for derived types
-
-         return;
-
-      --  Instantiations of generics both subject to SPARK_Mode On require
-      --  elaboration-related checks even though the instantiations may not
-      --  appear within elaboration code. The instantiations are recored in
-      --  a separate table which is examined during the Procesing phase. Note
-      --  that the checks must be delayed because it is not known yet whether
-      --  the generic unit has a body or not.
-
-      --  IMPORTANT: A SPARK instantiation is also a normal instantiation which
-      --  is subject to common conditional and guaranteed ABE checks.
-
-      elsif Is_Suitable_SPARK_Instantiation (N) then
-         Record_SPARK_Elaboration_Scenario (N);
-
-      --  External constituents that refine abstract states which appear in
-      --  pragma Initializes require elaboration-related checks even though
-      --  a Refined_State pragma lacks any elaboration semantic.
-
-      elsif Is_Suitable_SPARK_Refined_State_Pragma (N) then
-         Record_SPARK_Elaboration_Scenario (N);
-
-         --  Nothing left to do for pragma Refined_State
-
-         return;
+         if Present (Body_Id) then
+            Body_Decl := Unit_Declaration_Node (Body_Id);
+         end if;
       end if;
-
-      --  Perform early detection of guaranteed ABEs in order to suppress the
-      --  instantiation of generic bodies as gigi cannot handle certain types
-      --  of premature instantiations.
-
-      Process_Guaranteed_ABE (N);
-
-      --  At this point all checks have been performed. Record the scenario for
-      --  later processing by the ABE phase.
-
-      Top_Level_Scenarios.Append (N);
-      Set_Is_Recorded_Top_Level_Scenario (N);
-   end Record_Elaboration_Scenario;
-
-   ---------------------------------------
-   -- Record_SPARK_Elaboration_Scenario --
-   ---------------------------------------
-
-   procedure Record_SPARK_Elaboration_Scenario (N : Node_Id) is
-   begin
-      SPARK_Scenarios.Append (N);
-      Set_Is_Recorded_SPARK_Scenario (N);
-   end Record_SPARK_Elaboration_Scenario;
-
-   -----------------------------------
-   -- Recorded_SPARK_Scenarios_Hash --
-   -----------------------------------
-
-   function Recorded_SPARK_Scenarios_Hash
-     (Key : Node_Id) return Recorded_SPARK_Scenarios_Index
-   is
-   begin
-      return
-        Recorded_SPARK_Scenarios_Index (Key mod Recorded_SPARK_Scenarios_Max);
-   end Recorded_SPARK_Scenarios_Hash;
-
-   ---------------------------------------
-   -- Recorded_Top_Level_Scenarios_Hash --
-   ---------------------------------------
-
-   function Recorded_Top_Level_Scenarios_Hash
-     (Key : Node_Id) return Recorded_Top_Level_Scenarios_Index
-   is
-   begin
-      return
-        Recorded_Top_Level_Scenarios_Index
-          (Key mod Recorded_Top_Level_Scenarios_Max);
-   end Recorded_Top_Level_Scenarios_Hash;
-
-   --------------------------
-   -- Reset_Visited_Bodies --
-   --------------------------
-
-   procedure Reset_Visited_Bodies is
-   begin
-      if Visited_Bodies_In_Use then
-         Visited_Bodies_In_Use := False;
-         Visited_Bodies.Reset;
-      end if;
-   end Reset_Visited_Bodies;
-
-   -------------------
-   -- Root_Scenario --
-   -------------------
-
-   function Root_Scenario return Node_Id is
-      package Stack renames Scenario_Stack;
-
-   begin
-      --  Ensure that the scenario stack has at least one active scenario in
-      --  it. The one at the bottom (index First) is the root scenario.
-
-      pragma Assert (Stack.Last >= Stack.First);
-      return Stack.Table (Stack.First);
-   end Root_Scenario;
-
-   ---------------------------
-   -- Set_Early_Call_Region --
-   ---------------------------
-
-   procedure Set_Early_Call_Region (Body_Id : Entity_Id; Start : Node_Id) is
-   begin
-      pragma Assert (Ekind_In (Body_Id, E_Entry,
-                                        E_Entry_Family,
-                                        E_Function,
-                                        E_Procedure,
-                                        E_Subprogram_Body));
-
-      Early_Call_Regions_In_Use := True;
-      Early_Call_Regions.Set (Body_Id, Start);
-   end Set_Early_Call_Region;
-
-   ----------------------------
-   -- Set_Elaboration_Status --
-   ----------------------------
-
-   procedure Set_Elaboration_Status
-     (Unit_Id : Entity_Id;
-      Val     : Elaboration_Attributes)
-   is
-   begin
-      Elaboration_Statuses_In_Use := True;
-      Elaboration_Statuses.Set (Unit_Id, Val);
-   end Set_Elaboration_Status;
-
-   ------------------------------------
-   -- Set_Is_Recorded_SPARK_Scenario --
-   ------------------------------------
-
-   procedure Set_Is_Recorded_SPARK_Scenario
-     (N   : Node_Id;
-      Val : Boolean := True)
-   is
-   begin
-      Recorded_SPARK_Scenarios_In_Use := True;
-      Recorded_SPARK_Scenarios.Set (N, Val);
-   end Set_Is_Recorded_SPARK_Scenario;
-
-   ----------------------------------------
-   -- Set_Is_Recorded_Top_Level_Scenario --
-   ----------------------------------------
-
-   procedure Set_Is_Recorded_Top_Level_Scenario
-     (N   : Node_Id;
-      Val : Boolean := True)
-   is
-   begin
-      Recorded_Top_Level_Scenarios_In_Use := True;
-      Recorded_Top_Level_Scenarios.Set (N, Val);
-   end Set_Is_Recorded_Top_Level_Scenario;
-
-   -------------------------
-   -- Set_Is_Visited_Body --
-   -------------------------
-
-   procedure Set_Is_Visited_Body (Subp_Body : Node_Id) is
-   begin
-      Visited_Bodies_In_Use := True;
-      Visited_Bodies.Set (Subp_Body, True);
-   end Set_Is_Visited_Body;
+   end Spec_And_Body_From_Node;
 
    -------------------------------
    -- Static_Elaboration_Checks --
@@ -11021,186 +15644,6 @@ package body Sem_Elab is
    begin
       return not Dynamic_Elaboration_Checks;
    end Static_Elaboration_Checks;
-
-   -------------------
-   -- Traverse_Body --
-   -------------------
-
-   procedure Traverse_Body (N : Node_Id; State : Processing_Attributes) is
-      procedure Find_And_Process_Nested_Scenarios;
-      pragma Inline (Find_And_Process_Nested_Scenarios);
-      --  Examine the declarations and statements of subprogram body N for
-      --  suitable scenarios.
-
-      ---------------------------------------
-      -- Find_And_Process_Nested_Scenarios --
-      ---------------------------------------
-
-      procedure Find_And_Process_Nested_Scenarios is
-         function Is_Potential_Scenario
-           (Nod : Node_Id) return Traverse_Result;
-         --  Determine whether arbitrary node Nod denotes a suitable scenario.
-         --  If it does, save it in the Nested_Scenarios list of the subprogram
-         --  body, and process it.
-
-         procedure Traverse_List (List : List_Id);
-         pragma Inline (Traverse_List);
-         --  Invoke Traverse_Potential_Scenarios on each node in list List
-
-         procedure Traverse_Potential_Scenarios is
-           new Traverse_Proc (Is_Potential_Scenario);
-
-         ---------------------------
-         -- Is_Potential_Scenario --
-         ---------------------------
-
-         function Is_Potential_Scenario
-           (Nod : Node_Id) return Traverse_Result
-         is
-         begin
-            --  Special cases
-
-            --  Skip constructs which do not have elaboration of their own and
-            --  need to be elaborated by other means such as invocation, task
-            --  activation, etc.
-
-            if Is_Non_Library_Level_Encapsulator (Nod) then
-               return Skip;
-
-            --  Terminate the traversal of a task body when encountering an
-            --  accept or select statement, and
-            --
-            --    * Entry calls during elaboration are not allowed. In this
-            --      case the accept or select statement will cause the task
-            --      to block at elaboration time because there are no entry
-            --      calls to unblock it.
-            --
-            --  or
-            --
-            --    * Switch -gnatd_a (stop elaboration checks on accept or
-            --      select statement) is in effect.
-
-            elsif (Debug_Flag_Underscore_A
-                    or else Restriction_Active
-                              (No_Entry_Calls_In_Elaboration_Code))
-              and then Nkind_In (Original_Node (Nod), N_Accept_Statement,
-                                                      N_Selective_Accept)
-            then
-               return Abandon;
-
-            --  Terminate the traversal of a task body when encountering a
-            --  suspension call, and
-            --
-            --    * Entry calls during elaboration are not allowed. In this
-            --      case the suspension call emulates an entry call and will
-            --      cause the task to block at elaboration time.
-            --
-            --  or
-            --
-            --    * Switch -gnatd_s (stop elaboration checks on synchronous
-            --      suspension) is in effect.
-            --
-            --  Note that the guard should not be checking the state of flag
-            --  Within_Task_Body because only suspension calls which appear
-            --  immediately within the statements of the task are supported.
-            --  Flag Within_Task_Body carries over to deeper levels of the
-            --  traversal.
-
-            elsif (Debug_Flag_Underscore_S
-                    or else Restriction_Active
-                              (No_Entry_Calls_In_Elaboration_Code))
-              and then Is_Synchronous_Suspension_Call (Nod)
-              and then In_Task_Body (Nod)
-            then
-               return Abandon;
-
-            --  Certain nodes carry semantic lists which act as repositories
-            --  until expansion transforms the node and relocates the contents.
-            --  Examine these lists in case expansion is disabled.
-
-            elsif Nkind_In (Nod, N_And_Then, N_Or_Else) then
-               Traverse_List (Actions (Nod));
-
-            elsif Nkind_In (Nod, N_Elsif_Part, N_Iteration_Scheme) then
-               Traverse_List (Condition_Actions (Nod));
-
-            elsif Nkind (Nod) = N_If_Expression then
-               Traverse_List (Then_Actions (Nod));
-               Traverse_List (Else_Actions (Nod));
-
-            elsif Nkind_In (Nod, N_Component_Association,
-                                 N_Iterated_Component_Association)
-            then
-               Traverse_List (Loop_Actions (Nod));
-
-            --  General case
-
-            elsif Is_Suitable_Scenario (Nod) then
-               Process_Conditional_ABE
-                 (N     => Nod,
-                  State => State);
-            end if;
-
-            return OK;
-         end Is_Potential_Scenario;
-
-         -------------------
-         -- Traverse_List --
-         -------------------
-
-         procedure Traverse_List (List : List_Id) is
-            Item : Node_Id;
-
-         begin
-            Item := First (List);
-            while Present (Item) loop
-               Traverse_Potential_Scenarios (Item);
-               Next (Item);
-            end loop;
-         end Traverse_List;
-
-      --  Start of processing for Find_And_Process_Nested_Scenarios
-
-      begin
-         --  Examine the declarations for suitable scenarios
-
-         Traverse_List (Declarations (N));
-
-         --  Examine the handled sequence of statements. This also includes any
-         --  exceptions handlers.
-
-         Traverse_Potential_Scenarios (Handled_Statement_Sequence (N));
-      end Find_And_Process_Nested_Scenarios;
-
-   --  Start of processing for Traverse_Body
-
-   begin
-      --  Nothing to do when there is no body
-
-      if No (N) then
-         return;
-
-      elsif Nkind (N) /= N_Subprogram_Body then
-         return;
-      end if;
-
-      --  Nothing to do if the body was already traversed during the processing
-      --  of the same top-level scenario.
-
-      if Is_Visited_Body (N) then
-         return;
-
-      --  Otherwise mark the body as traversed
-
-      else
-         Set_Is_Visited_Body (N);
-      end if;
-
-      --  Examine the declarations and statements of the subprogram body for
-      --  suitable scenarios, save and process them accordingly.
-
-      Find_And_Process_Nested_Scenarios;
-   end Traverse_Body;
 
    -----------------
    -- Unit_Entity --
@@ -11256,82 +15699,6 @@ package body Sem_Elab is
    ---------------------------------
 
    procedure Update_Elaboration_Scenario (New_N : Node_Id; Old_N : Node_Id) is
-      procedure Update_SPARK_Scenario;
-      pragma Inline (Update_SPARK_Scenario);
-      --  Update the contents of table SPARK_Scenarios if Old_N is recorded
-      --  there.
-
-      procedure Update_Top_Level_Scenario;
-      pragma Inline (Update_Top_Level_Scenario);
-      --  Update the contexts of table Top_Level_Scenarios if Old_N is recorded
-      --  there.
-
-      ---------------------------
-      -- Update_SPARK_Scenario --
-      ---------------------------
-
-      procedure Update_SPARK_Scenario is
-         package Scenarios renames SPARK_Scenarios;
-
-      begin
-         if Is_Recorded_SPARK_Scenario (Old_N) then
-
-            --  Performance note: list traversal
-
-            for Index in Scenarios.First .. Scenarios.Last loop
-               if Scenarios.Table (Index) = Old_N then
-                  Scenarios.Table (Index) := New_N;
-
-                  --  The old SPARK scenario is no longer recorded, but the new
-                  --  one is.
-
-                  Set_Is_Recorded_Top_Level_Scenario (Old_N, False);
-                  Set_Is_Recorded_Top_Level_Scenario (New_N);
-                  return;
-               end if;
-            end loop;
-
-            --  A recorded SPARK scenario must be in the table of recorded
-            --  SPARK scenarios.
-
-            pragma Assert (False);
-         end if;
-      end Update_SPARK_Scenario;
-
-      -------------------------------
-      -- Update_Top_Level_Scenario --
-      -------------------------------
-
-      procedure Update_Top_Level_Scenario is
-         package Scenarios renames Top_Level_Scenarios;
-
-      begin
-         if Is_Recorded_Top_Level_Scenario (Old_N) then
-
-            --  Performance note: list traversal
-
-            for Index in Scenarios.First .. Scenarios.Last loop
-               if Scenarios.Table (Index) = Old_N then
-                  Scenarios.Table (Index) := New_N;
-
-                  --  The old top-level scenario is no longer recorded, but the
-                  --  new one is.
-
-                  Set_Is_Recorded_Top_Level_Scenario (Old_N, False);
-                  Set_Is_Recorded_Top_Level_Scenario (New_N);
-                  return;
-               end if;
-            end loop;
-
-            --  A recorded top-level scenario must be in the table of recorded
-            --  top-level scenarios.
-
-            pragma Assert (False);
-         end if;
-      end Update_Top_Level_Scenario;
-
-   --  Start of processing for Update_Elaboration_Requirement
-
    begin
       --  Nothing to do when the old and new scenarios are one and the same
 
@@ -11344,19 +15711,9 @@ package body Sem_Elab is
       --  is inserted at the proper place in the tree.
 
       elsif Is_Scenario (Old_N) then
-         Update_SPARK_Scenario;
-         Update_Top_Level_Scenario;
+         Replace_Scenario (Old_N, New_N);
       end if;
    end Update_Elaboration_Scenario;
-
-   -------------------------
-   -- Visited_Bodies_Hash --
-   -------------------------
-
-   function Visited_Bodies_Hash (Key : Node_Id) return Visited_Bodies_Index is
-   begin
-      return Visited_Bodies_Index (Key mod Visited_Bodies_Max);
-   end Visited_Bodies_Hash;
 
    ---------------------------------------------------------------------------
    --                                                                       --
