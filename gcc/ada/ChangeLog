@@ -1,3 +1,8 @@
+2019-07-03  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Document default
+	new-line behavior.
+
 2019-07-03  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* ali.adb: Add with and use clauses for GNAT,
