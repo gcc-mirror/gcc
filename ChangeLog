@@ -1,3 +1,7 @@
+2019-07-02  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2019-06-25  Martin Liska  <mliska@suse.cz>
 
 	contrib/filter-clang-warnings.py: Transform from
