@@ -608,7 +608,7 @@ process_use (stmt_vec_info stmt_vinfo, tree use, loop_vec_info loop_vinfo,
    This pass detects such stmts.  */
 
 opt_result
-vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
+vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo, bool *fatal)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
@@ -778,7 +778,11 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	    = process_use (stmt_vinfo, gs_info.offset, loop_vinfo, relevant,
 			   &worklist, true);
 	  if (!res)
-	    return res;
+	    {
+	      if (fatal)
+		*fatal = false;
+	      return res;
+	    }
 	}
     } /* while worklist */
 

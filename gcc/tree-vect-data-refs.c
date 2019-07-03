@@ -4160,7 +4160,7 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
 */
 
 opt_result
-vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
+vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf, bool *fatal)
 {
   struct loop *loop = NULL;
   unsigned int i;
@@ -4386,12 +4386,16 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 					  as_a <loop_vec_info> (vinfo),
 					  &gs_info)
 	      || !get_vectype_for_scalar_type (TREE_TYPE (gs_info.offset)))
-	    return opt_result::failure_at
-	      (stmt_info->stmt,
-	       (gatherscatter == GATHER) ?
-	       "not vectorized: not suitable for gather load %G" :
-	       "not vectorized: not suitable for scatter store %G",
-	       stmt_info->stmt);
+	    {
+	      if (fatal)
+		*fatal = false;
+	      return opt_result::failure_at
+			(stmt_info->stmt,
+			 (gatherscatter == GATHER)
+			 ? "not vectorized: not suitable for gather load %G"
+			 : "not vectorized: not suitable for scatter store %G",
+			 stmt_info->stmt);
+	    }
 	  STMT_VINFO_GATHER_SCATTER_P (stmt_info) = gatherscatter;
 	}
     }

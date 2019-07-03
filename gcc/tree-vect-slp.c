@@ -2861,7 +2861,7 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
 
   /* Analyze the data references.  */
 
-  if (!vect_analyze_data_refs (bb_vinfo, &min_vf))
+  if (!vect_analyze_data_refs (bb_vinfo, &min_vf, NULL))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
