@@ -63,7 +63,7 @@ struct omp_for_data
   int collapse;  /* Collapsed loops, 1 for a non-collapsed loop.  */
   int ordered;
   bool have_nowait, have_ordered, simd_schedule, have_reductemp;
-  bool have_pointer_condtemp;
+  bool have_pointer_condtemp, have_scantemp, have_nonctrl_scantemp;
   int lastprivate_conditional;
   unsigned char sched_modifiers;
   enum omp_clause_schedule_kind sched_kind;
