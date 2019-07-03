@@ -20845,6 +20845,7 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
 	  if (decl_die != NULL)
 	    {
 	      if (get_AT (decl_die, DW_AT_location)
+		  || get_AT (decl_die, DW_AT_data_member_location)
 		  || get_AT (decl_die, DW_AT_const_value))
 		{
 		  add_AT_die_ref (die, attr, decl_die);
