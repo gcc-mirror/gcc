@@ -1497,6 +1497,33 @@ package body Namet is
       return N1 = N2 or else Get_Name_String (N1) = Get_Name_String (N2);
    end Name_Equals;
 
+   -------------
+   -- Present --
+   -------------
+
+   function Present (Nam : File_Name_Type) return Boolean is
+   begin
+      return Nam /= No_File;
+   end Present;
+
+   -------------
+   -- Present --
+   -------------
+
+   function Present (Nam : Name_Id) return Boolean is
+   begin
+      return Nam /= No_Name;
+   end Present;
+
+   -------------
+   -- Present --
+   -------------
+
+   function Present (Nam : Unit_Name_Type) return Boolean is
+   begin
+      return Nam /= No_Unit_Name;
+   end Present;
+
    ------------------
    -- Reinitialize --
    ------------------

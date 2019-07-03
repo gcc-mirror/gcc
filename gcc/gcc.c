@@ -3068,7 +3068,8 @@ execute (void)
   if (!wrapper_string)
     {
       string = find_a_file (&exec_prefixes, commands[0].prog, X_OK, false);
-      commands[0].argv[0] = (string) ? string : commands[0].argv[0];
+      if (string)
+	commands[0].argv[0] = string;
     }
 
   for (n_commands = 1, i = 0; argbuf.iterate (i, &arg); i++)
@@ -3077,8 +3078,7 @@ execute (void)
 #if defined (__MSDOS__) || defined (OS2) || defined (VMS)
 	fatal_error (input_location, "%<-pipe%> not supported");
 #endif
-	argbuf[i] = 0; /* Termination of
-						     command args.  */
+	argbuf[i] = 0; /* Termination of command args.  */
 	commands[n_commands].prog = argbuf[i + 1];
 	commands[n_commands].argv
 	  = &(argbuf.address ())[i + 1];
@@ -3198,7 +3198,7 @@ execute (void)
 				   ? PEX_RECORD_TIMES : 0),
 		  progname, temp_filename);
   if (pex == NULL)
-    fatal_error (input_location, "pex_init failed: %m");
+    fatal_error (input_location, "%<pex_init%> failed: %m");
 
   for (i = 0; i < n_commands; i++)
     {
@@ -3769,7 +3769,7 @@ driver_wrong_lang_callback (const struct cl_decoded_option *decoded,
   const struct cl_option *option = &cl_options[decoded->opt_index];
 
   if (option->cl_reject_driver)
-    error ("unrecognized command line option %qs",
+    error ("unrecognized command-line option %qs",
 	   decoded->orig_option_with_args_text);
   else
     save_switch (decoded->canonical_option[0],
@@ -6138,7 +6138,8 @@ eval_spec_function (const char *func, const char *args,
 
   alloc_args ();
   if (do_spec_2 (args, soft_matched_part) < 0)
-    fatal_error (input_location, "error in args to spec function %qs", func);
+    fatal_error (input_location, "error in arguments to spec function %qs",
+		 func);
 
   /* argbuf_index is an index for the next argument to be inserted, and
      so contains the count of the args already inserted.  */
@@ -6790,6 +6791,11 @@ print_configuration (FILE *file)
 #endif
 
   fnotice (file, "Thread model: %s\n", thrmod);
+  fnotice (file, "Supported LTO compression algorithms: zlib");
+#ifdef HAVE_ZSTD_H
+  fnotice (file, " zstd");
+#endif
+  fnotice (file, "\n");
 
   /* compiler_version is truncated at the first space when initialized
   from version string, so truncate version_string at the first space
@@ -6923,11 +6929,11 @@ run_attempt (const char **new_argv, const char *out_temp,
 
   pex = pex_init (PEX_USE_PIPES, new_argv[0], NULL);
   if (!pex)
-    fatal_error (input_location, "pex_init failed: %m");
+    fatal_error (input_location, "%<pex_init%> failed: %m");
 
   errmsg = pex_run (pex, pex_flags, new_argv[0],
-		    CONST_CAST2 (char *const *, const char **, &new_argv[1]), out_temp,
-		    err_temp, &err);
+		    CONST_CAST2 (char *const *, const char **, &new_argv[1]),
+		    out_temp, err_temp, &err);
   if (errmsg != NULL)
     {
       errno = err;
@@ -7614,7 +7620,8 @@ driver::set_up_specs () const
       && do_spec_2 (sysroot_suffix_spec, NULL) == 0)
     {
       if (argbuf.length () > 1)
-        error ("spec failure: more than one arg to SYSROOT_SUFFIX_SPEC");
+	error ("spec failure: more than one argument to "
+	       "%<SYSROOT_SUFFIX_SPEC%>");
       else if (argbuf.length () == 1)
         target_sysroot_suffix = xstrdup (argbuf.last ());
     }
@@ -7638,7 +7645,8 @@ driver::set_up_specs () const
       && do_spec_2 (sysroot_hdrs_suffix_spec, NULL) == 0)
     {
       if (argbuf.length () > 1)
-        error ("spec failure: more than one arg to SYSROOT_HEADERS_SUFFIX_SPEC");
+	error ("spec failure: more than one argument "
+	       "to %<SYSROOT_HEADERS_SUFFIX_SPEC%>");
       else if (argbuf.length () == 1)
         target_sysroot_hdrs_suffix = xstrdup (argbuf.last ());
     }
@@ -7843,11 +7851,11 @@ driver::handle_unrecognized_options ()
       {
 	const char *hint = m_option_proposer.suggest_option (switches[i].part1);
 	if (hint)
-	  error ("unrecognized command line option %<-%s%>;"
+	  error ("unrecognized command-line option %<-%s%>;"
 		 " did you mean %<-%s%>?",
 		 switches[i].part1, hint);
 	else
-	  error ("unrecognized command line option %<-%s%>",
+	  error ("unrecognized command-line option %<-%s%>",
 		 switches[i].part1);
       }
 }
@@ -9797,7 +9805,7 @@ compare_debug_auxbase_opt_spec_function (int arg,
   len = strlen (argv[0]);
   if (len < 3 || strcmp (argv[0] + len - 3, ".gk") != 0)
     fatal_error (input_location, "argument to %%:compare-debug-auxbase-opt "
-		 "does not end in .gk");
+		 "does not end in %<.gk%>");
 
   if (debug_auxbase_opt)
     return debug_auxbase_opt;

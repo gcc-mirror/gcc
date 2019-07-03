@@ -48,12 +48,12 @@ main (int argc, char **argv)
     setIsCgo ();
 
   __go_end = (uintptr)_end;
+  runtime_ginit ();
   runtime_cpuinit ();
   runtime_check ();
   runtime_args (argc, (byte **) argv);
   setncpu (getproccount ());
   setpagesize (getpagesize ());
-  runtime_sched = runtime_getsched();
   runtime_schedinit ();
   __go_go ((uintptr)(runtime_main), NULL);
   runtime_mstart (runtime_m ());

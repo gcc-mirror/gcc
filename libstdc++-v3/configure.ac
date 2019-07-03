@@ -417,6 +417,8 @@ GCC_CHECK_ASSEMBLER_HWCAP
 
 # Check if assembler supports rdrand opcode.
 GLIBCXX_CHECK_X86_RDRAND
+# Check if assembler supports rdseed opcode.
+GLIBCXX_CHECK_X86_RDSEED
 
 # This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE.
 GLIBCXX_CONFIGURE_TESTSUITE
@@ -481,6 +483,10 @@ AM_CONDITIONAL(BUILD_MAN,
 AC_CHECK_PROG([DBLATEX], dblatex, yes, no)
 AC_CHECK_PROG([PDFLATEX], pdflatex, yes, no)
 AM_CONDITIONAL(BUILD_PDF,
+	       test $ac_cv_prog_DOXYGEN = "yes" &&
+	       test $ac_cv_prog_DOT = "yes" &&
+	       test $ac_cv_prog_XSLTPROC = "yes" &&
+	       test $ac_cv_prog_XMLLINT = "yes" &&
 	       test $ac_cv_prog_DBLATEX = "yes" &&
 	       test $ac_cv_prog_PDFLATEX = "yes")
 

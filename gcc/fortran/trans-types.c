@@ -1817,11 +1817,11 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
   TYPE_NAMELESS (fat_type) = 1;
 
   /* Add the data member as the first element of the descriptor.  */
-  decl = gfc_add_field_to_struct_1 (fat_type,
-				    get_identifier ("data"),
-				    (restricted
-				     ? prvoid_type_node
-				     : ptr_type_node), &chain);
+  gfc_add_field_to_struct_1 (fat_type,
+			     get_identifier ("data"),
+			     (restricted
+			      ? prvoid_type_node
+			      : ptr_type_node), &chain);
 
   /* Add the base component.  */
   decl = gfc_add_field_to_struct_1 (fat_type,
@@ -2997,7 +2997,7 @@ get_formal_from_actual_arglist (gfc_symbol *sym, gfc_actual_arglist *actual_args
       if (a->expr)
 	{
 	  snprintf (name, GFC_MAX_SYMBOL_LEN, "_formal_%d", var_num ++);
-	  gfc_get_symbol (name, NULL, &s);
+	  gfc_get_symbol (name, gfc_current_ns, &s);
 	  if (a->expr->ts.type == BT_PROCEDURE)
 	    {
 	      s->attr.flavor = FL_PROCEDURE;
@@ -3005,11 +3005,22 @@ get_formal_from_actual_arglist (gfc_symbol *sym, gfc_actual_arglist *actual_args
 	  else
 	    {
 	      s->ts = a->expr->ts;
+
+	      if (s->ts.type == BT_CHARACTER)
+		  s->ts.u.cl = gfc_get_charlen ();
+
+	      s->ts.deferred = 0;
+	      s->ts.is_iso_c = 0;
+	      s->ts.is_c_interop = 0;
 	      s->attr.flavor = FL_VARIABLE;
 	      if (a->expr->rank > 0)
 		{
 		  s->attr.dimension = 1;
 		  s->as = gfc_get_array_spec ();
+		  s->as->rank = 1;
+		  s->as->lower[0] = gfc_get_int_expr (gfc_index_integer_kind,
+						      &a->expr->where, 1);
+		  s->as->upper[0] = NULL;
 		  s->as->type = AS_ASSUMED_SIZE;
 		}
 	    }

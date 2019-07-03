@@ -113,6 +113,9 @@ struct copy_body_data
   /* True if trees may not be unshared.  */
   bool do_not_unshare;
 
+  /* True if trees should not be folded during the copying.  */
+  bool do_not_fold;
+
   /* True if new declarations may not be created during type remapping.  */
   bool prevent_decl_creation_for_types;
 

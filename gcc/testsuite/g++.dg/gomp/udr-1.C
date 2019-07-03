@@ -86,11 +86,11 @@ namespace N5
 namespace N6
 {
   struct A { int a; A () : a (0) {} };
-  #pragma omp declare reduction (| : const A : omp_out.a |= omp_in.a)	// { dg-error "const, volatile or __restrict" }
-  #pragma omp declare reduction (+ : __const A : omp_out.a += omp_in.a)	// { dg-error "const, volatile or __restrict" }
+  #pragma omp declare reduction (| : const A : omp_out.a |= omp_in.a)	// { dg-error "'const', 'volatile' or '__restrict'" }
+  #pragma omp declare reduction (+ : __const A : omp_out.a += omp_in.a)	// { dg-error "'const', 'volatile' or '__restrict'" }
   typedef volatile A T;
-  #pragma omp declare reduction (min : T : omp_out.a += omp_in.a)	// { dg-error "const, volatile or __restrict" }
-  #pragma omp declare reduction (* : A *__restrict : omp_out->a *= omp_in->a)// { dg-error "const, volatile or __restrict" }
+  #pragma omp declare reduction (min : T : omp_out.a += omp_in.a)	// { dg-error "'const', 'volatile' or '__restrict'" }
+  #pragma omp declare reduction (* : A *__restrict : omp_out->a *= omp_in->a)// { dg-error "'const', 'volatile' or '__restrict'" }
 }
 namespace N7
 {
@@ -98,21 +98,21 @@ namespace N7
   template <typename T1, typename T2, typename T3, typename T4>
   struct S
   {
-    #pragma omp declare reduction (| : T1 : omp_out |= omp_in)		// { dg-error "const, volatile or __restrict" }
-    #pragma omp declare reduction (+ : T2 : omp_out += omp_in)		// { dg-error "const, volatile or __restrict" }
+    #pragma omp declare reduction (| : T1 : omp_out |= omp_in)		// { dg-error "'const', 'volatile' or '__restrict'" }
+    #pragma omp declare reduction (+ : T2 : omp_out += omp_in)		// { dg-error "'const', 'volatile' or '__restrict'" }
     typedef T3 T;
-    #pragma omp declare reduction (min : T : omp_out += omp_in)		// { dg-error "const, volatile or __restrict" }
-    #pragma omp declare reduction (* : T4 : omp_out *= omp_in)		// { dg-error "const, volatile or __restrict" }
+    #pragma omp declare reduction (min : T : omp_out += omp_in)		// { dg-error "'const', 'volatile' or '__restrict'" }
+    #pragma omp declare reduction (* : T4 : omp_out *= omp_in)		// { dg-error "'const', 'volatile' or '__restrict'" }
   };
   S<const A, __const A, volatile A, A *__restrict> s;
   template <typename T1, typename T2, typename T3, typename T4>
   int foo ()
   {
-    #pragma omp declare reduction (| : T1 : omp_out |= omp_in)		// { dg-error "const, volatile or __restrict" }
-    #pragma omp declare reduction (+ : T2 : omp_out += omp_in)		// { dg-error "const, volatile or __restrict" }
+    #pragma omp declare reduction (| : T1 : omp_out |= omp_in)		// { dg-error "'const', 'volatile' or '__restrict'" }
+    #pragma omp declare reduction (+ : T2 : omp_out += omp_in)		// { dg-error "'const', 'volatile' or '__restrict'" }
     typedef T3 T;
-    #pragma omp declare reduction (min : T : omp_out += omp_in)		// { dg-error "const, volatile or __restrict" }
-    #pragma omp declare reduction (* : T4 : omp_out *= omp_in)		// { dg-error "const, volatile or __restrict" }
+    #pragma omp declare reduction (min : T : omp_out += omp_in)		// { dg-error "'const', 'volatile' or '__restrict'" }
+    #pragma omp declare reduction (* : T4 : omp_out *= omp_in)		// { dg-error "'const', 'volatile' or '__restrict'" }
     return 0;
   }
   int x = foo <const A, __const A, volatile A, A *__restrict> ();

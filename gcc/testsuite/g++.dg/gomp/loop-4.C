@@ -81,28 +81,28 @@ f0 ()
   for (i = 64; i != 0; i += k)
     ;
   #pragma omp for
-  for (i = 0; i != 64; i += m)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = 0; i != 64; i += m)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = 64; i != 0; i -= m)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = 64; i != 0; i -= m)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = 0; i != 64; i -= n)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = 0; i != 64; i -= n)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = 64; i != 0; i += n)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = 64; i != 0; i += n)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = 0; i != 64; i += o)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = 0; i != 64; i += o)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = 64; i != 0; i -= o)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = 64; i != 0; i -= o)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = 0; i != 64; i -= p)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = 0; i != 64; i -= p)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = 64; i != 0; i += p)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = 64; i != 0; i += p)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
 }
 
@@ -165,63 +165,63 @@ f1 (I<int> &x, I<int> &y, I<int> &u, I<int> &v)
   for (i = y; i != x; i = l + i)
     ;
   #pragma omp for
-  for (i = x; i != y; i = i + 2)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = x; i != y; i = i + 2)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = x; i != y; i = 7 + i)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = x; i != y; i = 7 + i)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = y; i != x; i = i - 2)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = y; i != x; i = i - 2)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = y; i != x; i = -7 + i)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = y; i != x; i = -7 + i)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = x; i != y; i = i + m)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = x; i != y; i = i + m)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = x; i != y; i = m + i)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = x; i != y; i = m + i)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = y; i != x; i = i - m)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = y; i != x; i = i - m)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = y; i != x; i = -m + i)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = y; i != x; i = -m + i)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = x; i != y; i = i - n)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = x; i != y; i = i - n)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = x; i != y; i = -n + i)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = x; i != y; i = -n + i)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = y; i != x; i = i + n)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = y; i != x; i = i + n)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = y; i != x; i = n + i)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = y; i != x; i = n + i)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = x; i != y; i = i + o)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = x; i != y; i = i + o)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = x; i != y; i = o + i)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = x; i != y; i = o + i)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = y; i != x; i = i - o)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = y; i != x; i = i - o)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = y; i != x; i = -o + i)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = y; i != x; i = -o + i)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = x; i != y; i = i - p)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = x; i != y; i = i - p)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = x; i != y; i = -p + i)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = x; i != y; i = -p + i)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = y; i != x; i = i + p)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = y; i != x; i = i + p)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
   #pragma omp for
-  for (i = y; i != x; i = p + i)	// { dg-error "increment is not constant 1 or -1 for != condition" }
+  for (i = y; i != x; i = p + i)	// { dg-error "increment is not constant 1 or -1 for '!=' condition" }
     ;
 }

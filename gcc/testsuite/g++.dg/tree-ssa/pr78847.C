@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target c++14 } */
-/* { dg-options "-O3 -fdump-tree-ldist" } */
+/* { dg-options "-O3 -fdump-tree-ldist-optimized" } */
 
 #include <stddef.h>
 #include <cstring>
@@ -23,4 +23,4 @@ void testWithLoopValue(const Foo foo, size_t ptr, char *buf_) {
       buf_[ptr++] = c;
 }
 
-/* { dg-final { scan-tree-dump "memcpy\[^\n\r\]*, 9\\);" "ldist" } } */
+/* { dg-final { scan-tree-dump "split to 0 loops and 1 library calls" "ldist" } } */

@@ -286,7 +286,7 @@ loop optimizer		Zdenek Dvorak		<ook@ucw.cz>
 LTO			Richard Biener		<rguenther@suse.de>
 LTO plugin		Cary Coutant		<ccoutant@gmail.com>
 Plugin			Le-Chun Wu		<lcwu@google.com>
-register allocation	Peter Bergner		<bergner@vnet.ibm.com>
+register allocation	Peter Bergner		<bergner@linux.ibm.com>
 register allocation	Kenneth Zadeck		<zadeck@naturalbridge.com>
 register allocation	Seongbae Park		<seongbae.park@gmail.com>
 RTL optimizers		Steven Bosscher		<steven@gcc.gnu.org>
@@ -316,6 +316,7 @@ Wolfgang Bangerth				<bangerth@dealii.org>
 Gergö Barany					<gergo@codesourcery.com>
 Charles Baylis					<charles.baylis@linaro.org>
 Tejas Belagod					<tejas.belagod@arm.com>
+Matthew Beliveau				<mbelivea@redhat.com>
 Jon Beniston					<jon@beniston.com>
 Andrew Bennett					<andrew.bennett@imgtec.com>
 Andrew Benson					<abensonca@gmail.com>
@@ -352,6 +353,7 @@ William Cohen					<wcohen@redhat.com>
 Michael Collison				<michael.collison@arm.com>
 Josh Conner					<joshconner@google.com>
 R. Kelley Cook					<kcook@gcc.gnu.org>
+Andrea Corallo					<andrea.corallo@arm.com>
 Christian Cornelssen				<ccorn@cs.tu-berlin.de>
 Ludovic Courtès					<ludo@gnu.org>
 Lawrence Crowl					<crowl@google.com>
@@ -364,6 +366,7 @@ Bud Davis					<jmdavis@link.com>
 Chris Demetriou					<cgd@google.com>
 Sameera Deshpande				<sameera.deshpande@linaro.org>
 Wilco Dijkstra					<wdijkstr@arm.com>
+Dimitar Dimitrov				<dimitar@dinux.eu>
 Benoit Dupont de Dinechin			<benoit.dupont-de-dinechin@st.com>
 Jason Eckhardt					<jle@rice.edu>
 Bernd Edlinger					<bernd.edlinger@hotmail.de>
@@ -429,6 +432,7 @@ Naveen H.S					<naveenh@marvell.com>
 Roland Illig					<roland.illig@gmx.de>
 Meador Inge					<meadori@codesourcery.com>
 Bernardo Innocenti				<bernie@develer.com>
+Vladislav Ivanishin				<vlad@ispras.ru>
 Alexander Ivchenko				<aivchenk@gmail.com>
 Balaji V. Iyer					<bviyer@gmail.com>
 Daniel Jacobowitz				<drow@false.org>
@@ -514,6 +518,7 @@ Brooks Moses					<bmoses@google.com>
 Dirk Mueller					<dmueller@suse.de>
 Phil Muldoon					<pmuldoon@redhat.com>
 Steven Munroe					<munroesj52@gmail.com>
+Jun Ma						<junma@linux.alibaba.com>
 Szabolcs Nagy					<szabolcs.nagy@arm.com>
 Quentin Neill					<quentin.neill.gnu@gmail.com>
 Adam Nemet					<adambnemet@gmail.com>
@@ -553,6 +558,7 @@ Fritz Reese					<fritzoreese@gmail.com>
 Volker Reichelt					<v.reichelt@netcologne.de>
 Bernhard Reutner-Fischer			<rep.dot.nop@gmail.com>
 Tom Rix						<trix@redhat.com>
+Thomas Rodgers					<trodgers@redhat.com>
 Craig Rodrigues					<rodrigc@gcc.gnu.org>
 Erven Rohou					<erven.rohou@inria.fr>
 Ira Rosen					<irar@il.ibm.com>

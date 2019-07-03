@@ -1426,10 +1426,9 @@ scan_rtx (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions action,
 {
   const char *fmt;
   rtx x = *loc;
-  enum rtx_code code = GET_CODE (x);
   int i, j;
 
-  code = GET_CODE (x);
+  enum rtx_code code = GET_CODE (x);
   switch (code)
     {
     case CONST:

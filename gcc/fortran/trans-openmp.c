@@ -1199,7 +1199,6 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p)
     {
       OMP_CLAUSE_CHAIN (c4) = OMP_CLAUSE_CHAIN (last);
       OMP_CLAUSE_CHAIN (last) = c4;
-      last = c4;
     }
 }
 
@@ -1222,7 +1221,8 @@ gfc_omp_scalar_p (tree decl)
 	  || GFC_CLASS_TYPE_P (type))
 	return false;
     }
-  if (TYPE_STRING_FLAG (type))
+  if ((TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == INTEGER_TYPE)
+      && TYPE_STRING_FLAG (type))
     return false;
   if (INTEGRAL_TYPE_P (type)
       || SCALAR_FLOAT_TYPE_P (type)

@@ -1,3 +1,819 @@
+2019-07-03  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Document new flags in
+	GNATpp.
+
+2019-07-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* binde.adb: Remove with clause for System.OS_Lib.
+	(Force_Elab_Order): Refactor the majority of the code in Butil.
+	Use the new forced units iterator to obtain unit names.
+	* bindo-builders.adb: Add with and use clauses for Binderr,
+	Butil, Opt, Output, Types, GNAT, and GNAT.Dynamic_HTables.  Add
+	a hash table which maps units to line number in the forced
+	elaboration order file.
+	(Add_Unit): New routine.
+	(Build_Library_Graph): Create forced edges between pairs of
+	units listed in the forced elaboration order file.
+	(Create_Forced_Edge, Create_Forced_Edges, Destroy_Line_Number,
+	Duplicate_Unit_Error, Hash_Unit, Internal_Unit_Info,
+	Is_Duplicate_Unit, Missing_Unit_Info): New routines.
+	* bindo-graphs.adb (Is_Internal_Unit, Is_Predefined_Unit):
+	Refactor some of the behavior to Bindo-Units.
+	* bindo-graphs.ads: Enable the enumeration literal for forced
+	edges.
+	* bindo-units.adb, bindo-units.ads (Is_Internal_Unit,
+	Is_Predefined_Unit): New routines.
+	* butil.adb: Add with and use clauses for Opt, GNAT, and
+	System.OS_Lib.  Add with clause for Unchecked_Deallocation.
+	(Has_Next, Iterate_Forced_Units, Next, Parse_Next_Unit_Name,
+	Read_Forced_Elab_Order_File): New routines.
+	* butil.ads: Add with and use clauses for Types.  Add new
+	iterator over the units listed in the forced elaboration order
+	file.
+	(Has_Next, Iterate_Forced_Units, Next): New routine.
+	* namet.adb, namet.ads (Present): New routine.
+
+2019-07-03  Bob Duff  <duff@adacore.com>
+
+	* sem_ch3.adb (Access_Definition): The code was creating a
+	master in the case where the designated type is a class-wide
+	interface type. Create a master in the noninterface case as
+	well. That is, create a master for all limited class-wide types.
+
+2019-07-03  Yannick Moy  <moy@adacore.com>
+
+	* erroutc.adb (Sloc_In_Range): New function to determine whether
+	the range of a pragma Warnings covers a location, taking
+	instantiations into account.
+
+2019-07-03  Johannes Kanig  <kanig@adacore.com>
+
+	* osint.ads, osint.adb (Get_First_Main_File_Name): New routine
+	to access the first file provided on the command line.
+
+2019-07-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* inline.adb (Process_Formals_In_Aspects): New procedure within
+	Expand_Inlined_Call, to perform a replacement of references to
+	formals that appear in aspect specifications within the body
+	being inlined.
+
+2019-07-03  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Add call to search for
+	the appropriate actual subtype of the object renaming being
+	analyzed.
+	(Check_Constrained_Object): Minor cleanup.
+
+2019-07-03  Yannick Moy  <moy@adacore.com>
+
+	* sem_spark.adb (Get_Observed_Or_Borrowed_Expr): New function to
+	return go through traversal function call.
+	(Check_Type): Consistently use underlying type.
+	(Get_Perm): Adapt for case of elaboration code where variables
+	are not declared in the environment. Remove incorrect handling
+	of borrow and observe.
+
+2019-07-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* inline.adb (Build_Return_Object_Formal): New routine.
+	(Can_Split_Unconstrained_Function): Code clean up.
+	(Copy_Formals,Copy_Return_Object): New routines.
+	(Split_Unconstrained_Function): Code clean up and refactoring.
+
+2019-07-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* bindo-augmentors.adb, bindo-augmentors.ads,
+	bindo-builders.ads, bindo-elaborators.adb, sem_ch12.adb,
+	sem_ch13.adb, sem_spark.adb, sinfo.ads: Minor editorial
+	corrections and reformatting.
+
+2019-07-03  Bob Duff  <duff@adacore.com>
+
+	* sem_warn.adb (Check_Infinite_Loop_Warning): Avoid the warning
+	if an Iterator_Specification is present.
+
+2019-07-03  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Document default
+	new-line behavior.
+
+2019-07-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* ali.adb: Add with and use clauses for GNAT,
+	GNAT.Dynamic_HTables, and Snames.  Add a map from invocation
+	signature records to invocation signature ids.  Add various
+	encodings of invocation-related attributes.  Sort and update
+	table Known_ALI_Lines.
+	(Add_Invocation_Construct, Add_Invocation_Relation,
+	Body_Placement_Kind_To_Code, Code_To_Body_Placement_Kind,
+	Code_To_Invocation_Construct_Kind, Code_To_Invocation_Kind,
+	Code_To_Invocation_Graph_Line_Kind, Destroy, Hash): New
+	routines.
+	(Initialize_ALI): Sort the initialization sequence. Add
+	initialization for all invocation-related tables.
+	(Invocation_Construct_Kind_To_Code,
+	Invocation_Graph_Line_Kind_To_Code, Invocation_Kind_To_Code,
+	Invocation_Signature_Of, Present): New routines.
+	(Scan_ALI): Add the default values for invocation-related ids.
+	Scan invocation graph lines.
+	(Scan_Invocation_Graph_Line): New routine.
+	* ali.ads: Add with clause for GNAT.Dynamic_Tables.  Add types
+	for invocation constructs, relations, and signatures.  Add
+	tables for invocation constructs, relations, and signatures.
+	Update Unit_Record to capture invocation-related ids.  Relocate
+	table Unit_Id_Tables and subtypes Unit_Id_Table, Unit_Id_Array
+	from Binde.
+	(Add_Invocation_Construct, Add_Invocation_Relation,
+	Body_Placement_Kind_To_Code, Code_To_Body_Placement_Kind,
+	Code_To_Invocation_Construct_Kind, Code_To_Invocation_Kind,
+	Code_To_Invocation_Graph_Line_Kind,
+	Invocation_Construct_Kind_To_Code,
+	Invocation_Graph_Line_Kind_To_Code, Invocation_Kind_To_Code,
+	Invocation_Signature_Of, Present): New routines.
+	* binde.adb: Add with and use clause for Types.  Add use clause
+	for ALI.Unit_Id_Tables;
+	* binde.ads: Relocate table Unit_Id_Tables and subtypes
+	Unit_Id_Table, Unit_Id_Array to ALI.
+	* bindgen.adb: Remove with and use clause for ALI.
+	* bindgen.ads: Remove with and use clause for Binde.  Add with
+	and use clause for ALI.
+	* bindo.adb,  bindo.ads, bindo-augmentors.adb,
+	bindo-augmentors.ads, bindo-builders.adb, bindo-builders.ads,
+	bindo-diagnostics.adb, bindo-diagnostics.ads,
+	bindo-elaborators.adb, bindo-elaborators.ads, bindo-graphs.adb,
+	bindo-graphs.ads, bindo-units.adb, bindo-units.ads,
+	bindo-validators.adb, bindo-validators.ads, bindo-writers.adb,
+	bindo-writers.ads: New units.
+	* debug.adb: Use and describe GNAT debug switches -gnatd_F and
+	-gnatd_G.  Add GNATbind debug switches in the ranges dA .. dZ,
+	d.a .. d.z, d.A .. d.Z, d.1 .. d.9, d_a .. d_z, d_A .. d_Z, and
+	d_1 .. d_9.  Use and describe GNATbind debug switches -d_A,
+	-d_I, -d_L, -d_N, -d_O, -d_T, and -d_V.
+	* exp_util.adb, exp_util.ads (Exceptions_OK): Relocate to
+	Sem_Util.
+	* gnatbind.adb: Add with and use clause for Bindo.  Use the new
+	Bindo elaboration order only when -d_N is in effect.
+	* lib-writ.adb
+	(Column, Extra, Invoker, Kind, Line, Locations, Name, Placement,
+	Scope, Signature, Target): New routines.
+	(Write_ALI): Output all invocation-related data.
+	(Write_Invocation_Graph): New routine.
+	* lib-writ.ads: Document the invocation graph ALI line.
+	* namet.adb, namet.ads (Present): New routines.
+	* sem_ch8.adb (Find_Direct_Name): Capture the status of
+	elaboration checks and warnings of an identifier.
+	(Find_Expanded_Name): Capture the status of elaboration checks
+	and warnings of an expanded name.
+	* sem_ch12.adb (Analyze_Generic_Package_Declaration): Ensure
+	that invocation graph-related data within the body of the main
+	unit is encoded in the ALI file.
+	(Analyze_Generic_Subprogram_Declaration): Ensure that invocation
+	graph-related data within the body of the main unit is encoded
+	in the ALI file.
+	(Analyze_Package_Instantiation): Perform minimal decoration of
+	the instance entity.
+	(Analyze_Subprogram_Instantiation): Perform minimal decoration
+	of the instance entity.
+	* sem_elab.adb: Perform heavy refactoring of all code. The unit
+	is now split into "services" which specialize in one area of ABE
+	checks.  Add processing in order to capture invocation-graph
+	related attributes of the main unit, and encode them in the ALI
+	file.  The Processing phase can now operate in multiple modes,
+	all described by type Processing_Kind.  Scenarios and targets
+	are now distinct at the higher level, and carry their own
+	representations. This eliminates the need to constantly
+	recompute their attributes, and offers the various processors a
+	uniform interface.  The various initial states of the Processing
+	phase are now encoded using type Processing_In_State, and
+	xxx_State constants.
+	* sem_elab.ads: Update the literals of type
+	Enclosing_Level_Kind.  Add Inline pragmas on several routines.
+	* sem_prag.adb (Process_Inline): Ensure that invocation
+	graph-related data within the body of the main unit is encoded
+	in the ALI file.
+	* sem_util.adb (Enclosing_Generic_Body, Enclosing_Generic_Unit):
+	Code clean up.
+	(Exceptions_OK): Relocated from Sem_Util.
+	(Mark_Save_Invocation_Graph_Of_Body): New routine.
+	* sem_util.ads (Exceptions_OK): Relocated from Sem_Util.
+	(Mark_Save_Invocation_Graph_Of_Body): New routine.
+	* sinfo.adb (Is_Elaboration_Checks_OK_Node): Now applicable to
+	N_Variable_Reference_Marker.
+	(Is_Elaboration_Warnings_OK_Node): Now applicable to
+	N_Expanded_Name, N_Identifier, N_Variable_Reference_Marker.
+	(Is_Read): Use Flag4.
+	(Is_SPARK_Mode_On_Node): New applicable to
+	N_Variable_Reference_Marker.
+	(Is_Write): Use Flag5.
+	(Save_Invocation_Graph_Of_Body): New routine.
+	(Set_Is_Elaboration_Checks_OK_Node): Now applicable to
+	N_Variable_Reference_Marker.
+	(Set_Is_Elaboration_Warnings_OK_Node): Now applicable to
+	N_Expanded_Name, N_Identifier, N_Variable_Reference_Marker.
+	(Set_Is_SPARK_Mode_On_Node): New applicable to
+	N_Variable_Reference_Marker.
+	(Set_Save_Invocation_Graph_Of_Body): New routine.
+	* sinfo.ads: Update the documentation of attributes
+	Is_Elaboration_Checks_OK_Node, Is_Elaboration_Warnings_OK_Node,
+	Is_SPARK_Mode_On_Node.  Update the flag usage of attributes
+	Is_Read, Is_Write.  Add attribute Save_Invocation_Graph_Of_Body
+	and update its occurrence in nodes.
+	(Save_Invocation_Graph_Of_Body): New routine along with pragma
+	Inline.
+	(Set_Save_Invocation_Graph_Of_Body): New routine along with
+	pragma Inline.
+	* switch-b.adb (Scan_Binder_Switches): Refactor the scanning of
+	debug switches.
+	(Scan_Debug_Switches): New routine.
+	* libgnat/g-dynhta.adb, libgnat/g-dynhta.ads (Contains): New routine.
+	* libgnat/g-graphs.adb (Associate_Vertices): Update the use of
+	Component_Vertex_Iterator.
+	(Contains_Component, Contains_Edge, Contains_Vertex, Has_Next):
+	Reimplemented.
+	(Iterate_Component_Vertices): New routine.
+	(Iterate_Vertices): Removed.
+	(Next): Update the parameter profile.
+	(Number_Of_Component_Vertices, Number_Of_Outgoing_Edges): New
+	routines.
+	* libgnat/g-graphs.ads: Update the initialization of
+	No_Component.  Add type Component_Vertex_Iterator.  Remove type
+	Vertex_Iterator.
+	(Has_Next): Add new versions and remove old ones.
+	(Iterate_Component_Vertices): New routine.
+	(Iterate_Vertices): Removed.
+	(Next): Add new versions and remove old ones.
+	(Number_Of_Component_Vertices, Number_Of_Outgoing_Edges): New
+	routines.
+	* libgnat/g-sets.adb (Contains): Reimplemented.
+	* gcc-interface/Make-lang.in (GNATBIND_OBJS): Add
+	GNAT.Dynamic_HTables, GNAT.Graphs and Bindo units.
+	* rtsfind.ads: Remove extra space.
+
+2019-07-03  Yannick Moy  <moy@adacore.com>
+
+	* sem_spark.adb: Add support for locally borrowing and observing
+	a path.
+	(Get_Root_Object): Add parameter Through_Traversal to denote
+	when we are interesting in getting to the traversed parameter.
+	(Is_Prefix_Or_Almost): New function to support detection of
+	illegal access to borrowed or observed paths.
+	(Check_Pragma): Add analysis of assertion pragmas.
+
+2019-07-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Functions): In a generic context
+	we do not build the bodies of predicate fuctions, but the
+	expression in a static predicate must be elaborated to allow
+	case coverage checking within the generic unit.
+	(Build_Discrete_Static_Predicate): In a generic context, return
+	without building function body once the
+	Static_Discrete_Predicate expression for the type has been
+	constructed.
+
+2019-07-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* bindgen.adb, inline.adb, layout.adb, sem_ch12.adb,
+	sem_ch13.adb, sem_ch7.adb, styleg.adb: Minor reformatting.
+
+2019-07-03  Bob Duff  <duff@adacore.com>
+
+	* par-ch3.adb (P_Defining_Identifier): Call
+	Check_Defining_Identifier_Casing.
+	* style.ads, styleg.ads, styleg.adb
+	(Check_Defining_Identifier_Casing): New procedure to check for
+	mixed-case defining identifiers.
+	* stylesw.ads, stylesw.adb (Style_Check_Mixed_Case_Decls): New
+	flag for checking for mixed-case defining identifiers.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Document new feature.
+	* gnat_ugn.texi: Regenerate.
+
+2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(Warning message control): Document that -gnatw.z/Z apply to
+	array types.
+	* freeze.adb (Freeze_Entity): Give -gnatw.z warning for array
+	types as well, but not if the specified alignment is the minimum
+	one.
+	* gnat_ugn.texi: Regenerate.
+
+2019-07-03  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads, exp_util.adb, layout.ads, sinfo.ads: Spell "laid"
+	correctly.
+
+2019-07-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): No error
+	message on attribute applied to a renaming when the renamed
+	object is an aggregate (from code reading).
+	(Check_Aspect_At_End_Of_Declarations): In a generic context
+	where freeze nodes are not generated, the original expression
+	for an aspect may need to be analyzed to precent spurious
+	conformance errors when compared with the expression that is
+	anakyzed at the end of the current declarative list.
+
+2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* layout.adb (Layout_Type): Do not set the component size of an
+	array with a scalar component if the component type is
+	overaligned.
+
+2019-07-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* inline.adb (Make_Loop_Labels_Unique):  New procedure to modify
+	the source code of subprograms that are inlined by the
+	front-end, to prevent accidental duplication between loop labels
+	in the inlined code and the code surrounding the inlined call.
+
+2019-07-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* doc/gnat_ugn/elaboration_order_handling_in_gnat.rst: Update
+	the section on resolving elaboration circularities to eliminate
+	certain combinations of switches which together do not produce
+	the desired effect and confuse users.
+	* gnat_ugn.texi: Regenerate.
+
+2019-07-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* bindgen.adb (Gen_Main): Disable generation of reference to
+	Ada_Main_Program_Name for CCG.
+	* bindusg.adb (Display): Add -G to the command-line usage for
+	gnatbind.
+	* opt.ads (Generate_C_Code): Update comment.
+	* switch-b.adb (Scan_Binder_Switches): Add handling for -G.
+
+2019-07-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch7.adb (Has_Referencer): Do not consider inlined
+	subprograms when generating C code, which allows us to generate
+	static inline subprograms.
+
+2019-07-03  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch6.adb (Check_Conformance): Add expression checking for
+	constant modifiers in anonymous access types (in addition to
+	"non-null" types) so that they are considered "matching" for
+	subsequent conformance tests.
+
+2019-07-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:
+	Clarify wording on No_Multiple_Elaboration.
+	* gnat_rm.texi: Regenerate.
+
+2019-07-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Selected_Component): If the prefix is the
+	current instance of a type or subtype, complete the resolution
+	of the name by finding the component of the type denoted by the
+	selector name.
+
+2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/interfacing_to_other_languages.rst (Interfacing to C):
+	Document that boolean types with convention C now map to C99 bool.
+	* gnat_rm.texi: Regenerate.
+
+2019-07-03  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Expand_Min_Max_Attribute): Code cleanup:
+	removing code that it is now never executed in the CCG compiler
+	(dead code).
+
+2019-07-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* libgnat/system-darwin-ppc.ads: Set Stack_Check_Probes True for
+	PPC Darwin.
+
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Is_Defaulted): New predicate in
+	Check_Formal_Package_Intance, to skip the conformance of checks
+	on parameters of a formal package that are defaulted,
+
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb, exp_ch9.adb, exp_unst.adb, sem_ch4.adb,
+	sem_prag.adb, sem_spark.adb: Minor reformatting.
+
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case Enum_Rep): Allow prefix
+	of attribute to be an attribute reference of a discrete type.
+
+2019-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Analyze_Subprogram_Instantiation): Move up
+	handling of Has_Pragma_Inline_Always and deal with
+	Has_Pragma_No_Inline.
+
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): If the parent type is
+	declared as a subtype of a private type with an inherited
+	discriminant constraint, its generated full base appears as a
+	record subtype, so we need to retrieve its oen base type so that
+	the inherited constraint can be applied to it.
+
+2019-07-01  Yannick Moy  <moy@adacore.com>
+
+	* sem_spark.adb: Completely rework the algorithm for ownership
+	checking, as the rules in SPARK RM have changed a lot.
+	* sem_spark.ads: Update comments.
+
+2019-07-01  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* gsocket.h (Has_Sockaddr_Len): Use the offset of sin_family offset in
+	the sockaddr_in structure to determine the existence of length field
+	before the sin_family.
+
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Weak_External): Pragma only
+	applies to entities with run-time addresses, not to types.
+
+2019-07-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.adb, sem_ch7.adb, sem_prag.adb, sem_util.adb: Update
+	references to the SPARK RM after the removal of Rule 7.1.4(5).
+
+2019-07-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sysdep.c: Cleanup references to LynuxWorks in docs and
+	comments.
+
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): Do not apply validity check
+	to variable declared within a protected object that uses the
+	Lock_Free implementation, to prevent unwarranted constant
+	folding, because entities within such an object msut be treated
+	as volatile.
+
+2019-07-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch9.adb (Check_Inlining): Deal with Has_Pragma_No_Inline.
+
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Visit_Node, Check_Static_Type): Improve the
+	handling of private and incomplete types whose full view is an
+	access type, to detect additional uplevel references in dynamic
+	bounds. This is relevant to N_Free_Statement among others that
+	manipulate types whose full viww may be an access type.
+
+2019-07-01  Pat Rogers  <rogers@adacore.com>
+
+	* doc/gnat_rm/representation_clauses_and_pragmas.rst: Correct
+	size indicated for R as a component of an array.
+	* gnat_rm.texi: Regenerate.
+
+2019-07-01  Justin Squirek  <squirek@adacore.com>
+
+	* libgnat/s-win32.ads: Add definition for ULONG, modify
+	OVERLAPPED type, and add appropriate pragmas.
+
+2019-07-01  Bob Duff  <duff@adacore.com>
+
+	* gnat1drv.adb (gnat1drv): Call Write_ALI if the main unit is
+	ignored-ghost.
+
+2019-07-01  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch4.adb (Operator_Check): Refine error message.
+
+2019-07-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/a-calend.ads: Revert "Global => null" contracts on
+	non-pure routines.
+
+2019-07-01  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb, libgnat/g-graphs.ads: Fix typos in comments:
+	componant -> component.
+
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* libgnat/g-graphs.adb: Use type Directed_Graph rather than
+	Instance in various routines.
+	* libgnat/g-graphs.ads: Change type Instance to Directed_Graph.
+	Update various routines that mention the type.
+
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* libgnat/g-sets.adb: Use type Membership_Set rathern than
+	Instance in various routines.
+	* libgnat/g-sets.ads: Change type Instance to Membership_Set.
+	Update various routines that mention the type.
+
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* libgnat/g-lists.adb: Use type Doubly_Linked_List rather than
+	Instance in various routines.
+	* libgnat/g-lists.ads: Change type Instance to
+	Doubly_Linked_List. Update various routines that mention the
+	type.
+
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* libgnat/g-dynhta.adb: Use type Dynamic_Hash_Table rather than
+	Instance in various routines.
+	* libgnat/g-dynhta.ads: Change type Instance to
+	Dynamic_Hash_Table. Update various routines that mention the
+	type.
+
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb, exp_ch7.adb, exp_unst.adb, sem_ch3.adb,
+	sem_util.adb, uintp.adb, uintp.ads: Minor reformatting.
+
+2019-07-01  Javier Miranda  <miranda@adacore.com>
+
+	* exp_attr.adb (Expand_Min_Max_Attribute): Disable expansion of
+	'Min/'Max on integer, enumeration, fixed point and floating
+	point types since the CCG backend now provides in file
+	standard.h routines to support it.
+
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* impunit.adb: Add GNAT.Graphs to list Non_Imp_File_Names_95.
+	* Makefile.rtl, gcc-interface/Make-lang.in: Register unit
+	GNAT.Graphs.
+	* libgnat/g-dynhta.adb: Various minor cleanups (use Present
+	rather than direct comparisons).
+	(Delete): Reimplement to use Delete_Node.
+	(Delete_Node): New routine.
+	(Destroy_Bucket): Invoke the provided destructor.
+	(Present): New routines.
+	* libgnat/g-dynhta.ads: Add new generic formal Destroy_Value.
+	Use better names for the components of iterators.
+	* libgnat/g-graphs.adb, libgnat/g-graphs.ads: New unit.
+	* libgnat/g-lists.adb: Various minor cleanups (use Present
+	rather than direct comparisons).
+	(Delete_Node): Invoke the provided destructor.
+	(Present): New routine.
+	* libgnat/g-lists.ads: Add new generic formal Destroy_Element.
+	Use better names for the components of iterators.
+	(Present): New routine.
+	* libgnat/g-sets.adb, libgnat/g-sets.ads (Destroy, Preset,
+	Reset): New routines.
+
+2019-07-01  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-sothco.adb (Get_Address): Fix the case when AF_INET6
+	is not defined.
+
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Expand_Attribute_Reference, case Invalid_Value):
+	Resolve result of call to Get_Simple_Init_Val, which may be a
+	conversion of a literal.
+
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Freeze_Expression): Remove the horrible useless
+	name hiding of N. Insert the freeze nodes generated by the
+	expression prior to the expression when the nearest enclosing
+	scope is transient.
+
+2019-07-01  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Fix
+	formatting issues in the -gnatR section.
+	* gnat_ugn.texi: Regenerate.
+
+2019-06-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gnatlink.adb (Link_Step): Remove duplicate -static-libgcc switches.
+	Push -shared-libgcc explicitly, when it is the target default (unless
+	overidden by the static flag).
+	When the user has put an instance of shared/static-libgcc do not push
+	a duplicate of this.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Beep up comment on SAVED,
+	and tweak comment on the assertion about the scopes of Itypes.  Do not
+	skip the regular processing for Itypes that are E_Record_Subtype with
+	a Cloned_Subtype.  Get the Cloned_Subtype for every E_Record_Subtype
+	if the type is dummy and hasn't got its own freeze node.
+	<E_Record_Subtype>: Save again the DECL of the Cloned_Subtype, if any.
+	<E_Access_Subtype>: Save again the DECL of the equivalent type.
+	(Gigi_Equivalent_Type) <E_Access_Subtype>: New case.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (unchecked_convert): Tweak comment.  Only skip
+	dereferences when padding to have the same size on both sides.  Do it
+	for destination types with self-referential size too.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: If the
+	type requires strict alignment, then set the RM size to the type size.
+	Rework handling of alignment and sizes of tagged types in ASIS mode.
+	(validate_size): Rename local variable and remove special handling for
+	strict-alignment types.
+	* gcc-interface/utils.c (finish_record_type): Constify local variables
+	and use properly typed constants.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_field): Rework error messages for
+	fields requiring strict alignment, add explicit test on Storage_Unit
+	for position and size, and mention type alignment for position.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (mark_visited_r): Set TYPE_SIZES_GIMPLIFIED on
+	the main variant of a type, if any.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (set_nonaliased_component_on_array_type): Add
+	missing guard for the presence of TYPE_CANONICAL.
+	(set_reverse_storage_order_on_array_type): Likewise.
+
+2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (make_packable_type): Remove default value.
+	(value_factor_p): Tweak prototype.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Add comment.
+	(gnat_to_gnu_component_type): Likewise.
+	(gnat_to_gnu_field): Likewise.  Fetch the position of the field earlier
+	and simplify the condition under which the type is packed.  Declare
+ 	local variable is_bitfield.  Pass 1 as max_align to make_packable_type
+	if it is set to true.
+	(copy_and_substitute_in_layout): Pass 0 to make_packable_type.
+	* gcc-interface/utils.c (make_packable_array_type): New function.
+	(make_packable_type): Use it to rewrite the type of array field.
+	(maybe_pad_type): Pass align parameter to make_packable_type.
+	(create_field_decl): Minor tweaks.
+	(value_factor_p): Assert that FACTOR is a power of 2 and replace the
+	modulo computation by a masking operation.
+
+2019-06-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Remove superfluous test
+	in previous change.
+	* gcc-interface/gigi.h (maybe_character_type): Fix formatting.
+	(maybe_character_value): Likewise.
+
+2019-06-24  Jan Hubicka  <jh@suse.cz>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Check that
+	type is array or integer prior checking string flag.
+	* gcc-interface/gigi.h (maybe_character_type): Likewise.
+	(maybe_character_value): Likewise.
+
+2019-06-24  Martin Sebor  <msebor@redhat.com>
+
+	* gcc-interface/utils.c (handle_nonnull_attribute): Quote attribute
+	name.
+
+2019-06-18  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/80590
+	* sem_ch5.adb (Analyze_Loop_Statement): Avoid exception propagation
+	during normal processing.
+
+2019-06-17  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/80590
+	* exp_ch9.adb (Expand_N_Delay_Relative_Statement): Swap the two
+	conditions to avoid a unnecessary exception propagation in the default
+	case.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (handle_stack_protect_attribute): Move around.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst (Machine_Attribute):
+	Document additional optional parameters.
+	* sem_prag.adb (Analyze_Pragma) <Pragma_Machine_Attribute>: Accept
+	more than one optional parameter.
+	* gcc-interface/decl.c (prepend_one_attribute_pragma): Alphabetize
+	the list of supported pragmas.  Simplify the handling of parameters
+	and add support for more than one optional parameter.
+	* gcc-interface/utils.c (attr_cold_hot_exclusions): New constant.
+	(gnat_internal_attribute_table): Add entry for no_icf, noipa, flatten,
+	used, cold, hot, target and target_clones.
+	(begin_subprog_body): Do not create the RTL for the subprogram here.
+	(handle_noicf_attribute): New static function.
+	(handle_noipa_attribute): Likewise.
+	(handle_flatten_attribute): Likewise.
+	(handle_used_attribute): Likewise.
+	(handle_cold_attribute): Likewise.
+	(handle_hot_attribute): Likewise.
+	(handle_target_attribute): Likewise.
+	(handle_target_clones_attribute): Likewise.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (lvalue_required_for_attribute_p): Return 0
+	for 'Size too.
+	(Identifier_to_gnu): Use the actual subtype for a reference to a
+	packed array in a return statement.
+	(Attribute_to_gnu) <Attr_Size>: Do not strip VIEW_CONVERT_EXPRs from
+	the prefix in every case.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu): Remove superfluous tests on
+	Backend_Overflow_Checks_On_Target and rework comments.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (walk_nesting_tree): New static function.
+	(finalize_nrv): Use it to walk the entire nesting tree.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: Remove
+	obsolete test on Is_For_Access_Subtype.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (components_to_record): Set a name on the type
+	created for the REP part, if any.
+	* gcc-interface/utils.c (finish_record_type): Only take the maximum
+	when merging sizes for a variant part at offset 0.
+	(merge_sizes): Rename has_rep parameter into max.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (gnat_internal_attribute_table): Add support
+	for stack_protect attribute.
+	(handle_stack_protect_attribute): New static function.
+
+2019-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (intrin_arglists_compatible_p): Do not return
+	false if the internal builtin uses a variable list.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): Do not initialize the temporary
+	created out of addressability concerns if it's for the _Init parameter
+	of an initialization procedure.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-builtin-types.def: New file.
+	* gcc-interface/ada-builtins.def: Likewise.
+	* gcc-interface/ada-tree.h (BUILT_IN_LIKELY): New macro.
+	(BUILT_IN_UNLIKELY): Likewise.
+	* gcc-interface/trans.c (independent_iterations_p): Initialize the
+	auto-vector to 16 elements.
+	(Call_to_gnu): Remove local variable and change the vector of actual
+	parameters to an auto-vector.  Do not convert actual parameters to
+	the argument type for front-end built-in functions.  Add support for
+	front-end built-in functions.
+	(build_noreturn_cond): Use internal instead of built-in function.
+	* gcc-interface/utils.c (c_builtin_type): Include ada-builtin-types.def
+	(install_builtin_function_types): Likewise.
+	(install_builtin_functions): Include ada-builtins.def first.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (maybe_pad_type): Issue the warning for the
+	specific case of component types preferably.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Identifier_to_gnu): Minor tweaks.
+	(gnat_to_gnu): Do not convert the result if it is a reference to an
+	unconstrained array used as the prefix of an attribute reference that
+	requires an lvalue.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Gigi_Types_Compatible): New predicate.
+	(Identifier_to_gnu): Use it to assert that the type of the identifier
+	and that of its entity are compatible for gigi.  Rename a couple of
+	local variables and separate the processing of the result type.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): Use the unpadded type when
+	putting back an intermediate conversion the type of the actuals.
+
+2019-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <Shift operations>: Convert the
+	count to the unsigned version of its base type before proceeding.
+
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+	* gcc-interface/trans.c (check_inlining_for_nested_subprog): Quote
+	reserved names.
+
 2019-05-08  Arnaud Charlet  <charlet@adacore.com>
 
 	* standard.ads.h: New file.

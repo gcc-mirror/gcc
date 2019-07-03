@@ -3063,14 +3063,16 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
 	    case GE_EXPR:
 	      if (warn)
 		warning_at (loc, OPT_Wtype_limits,
-			    "comparison of unsigned expression >= 0 is always true");
+			    "comparison of unsigned expression in %<>= 0%> "
+			    "is always true");
 	      value = truthvalue_true_node;
 	      break;
 
 	    case LT_EXPR:
 	      if (warn)
 		warning_at (loc, OPT_Wtype_limits,
-			    "comparison of unsigned expression < 0 is always false");
+			    "comparison of unsigned expression in %<< 0%> "
+			    "is always false");
 	      value = truthvalue_false_node;
 	      break;
 
@@ -3379,7 +3381,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
       if (TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
 	  && !TYPE_UNSIGNED (TREE_TYPE (expr)))
 	warning_at (EXPR_LOCATION (expr), OPT_Wint_in_bool_context,
-		    "%<<<%> in boolean context, did you mean %<<%> ?");
+		    "%<<<%> in boolean context, did you mean %<<%>?");
       break;
 
     case COND_EXPR:
@@ -3395,7 +3397,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 	      && (!integer_onep (val1)
 		  || !integer_onep (val2)))
 	    warning_at (EXPR_LOCATION (expr), OPT_Wint_in_bool_context,
-			"?: using integer constants in boolean context, "
+			"%<?:%> using integer constants in boolean context, "
 			"the expression will always evaluate to %<true%>");
 	  else if ((TREE_CODE (val1) == INTEGER_CST
 		    && !integer_zerop (val1)
@@ -3404,7 +3406,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 		       && !integer_zerop (val2)
 		       && !integer_onep (val2)))
 	    warning_at (EXPR_LOCATION (expr), OPT_Wint_in_bool_context,
-			"?: using integer constants in boolean context");
+			"%<?:%> using integer constants in boolean context");
 	}
       /* Distribute the conversion into the arms of a COND_EXPR.  */
       if (c_dialect_cxx ())
@@ -4022,7 +4024,13 @@ c_common_nodes_and_builtins (void)
       sprintf (name, "__int%d", int_n_data[i].bitsize);
       record_builtin_type ((enum rid)(RID_FIRST_INT_N + i), name,
 			   int_n_trees[i].signed_type);
+      sprintf (name, "__int%d__", int_n_data[i].bitsize);
+      record_builtin_type ((enum rid)(RID_FIRST_INT_N + i), name,
+			   int_n_trees[i].signed_type);
+
       sprintf (name, "__int%d unsigned", int_n_data[i].bitsize);
+      record_builtin_type (RID_MAX, name, int_n_trees[i].unsigned_type);
+      sprintf (name, "__int%d__ unsigned", int_n_data[i].bitsize);
       record_builtin_type (RID_MAX, name, int_n_trees[i].unsigned_type);
     }
 
@@ -5751,7 +5759,7 @@ check_function_arguments_recurse (void (*callback)
       for (attrs = TYPE_ATTRIBUTES (type);
 	   attrs;
 	   attrs = TREE_CHAIN (attrs))
-	if (is_attribute_p ("format_arg", TREE_PURPOSE (attrs)))
+	if (is_attribute_p ("format_arg", get_attribute_name (attrs)))
 	  {
 	    tree inner_arg;
 	    tree format_num_expr;
@@ -5991,6 +5999,13 @@ check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 	    {
 	      error_at (ARG_LOCATION (2), "argument 3 in call to function %qE "
 			"has pointer to boolean type", fndecl);
+	      return false;
+	    }
+	  else if (TYPE_READONLY (TREE_TYPE (TREE_TYPE (args[2]))))
+	    {
+	      error_at (ARG_LOCATION (2), "argument 3 in call to function %qE "
+			"has pointer to %<const%> type (%qT)", fndecl,
+			TREE_TYPE (args[2]));
 	      return false;
 	    }
 	  return true;
@@ -6554,6 +6569,8 @@ c_common_mark_addressable_vec (tree t)
     return;
   if (!VAR_P (t) || !DECL_HARD_REGISTER (t))
     TREE_ADDRESSABLE (t) = 1;
+  if (TREE_CODE (t) == COMPOUND_LITERAL_EXPR)
+    TREE_ADDRESSABLE (COMPOUND_LITERAL_EXPR_DECL (t)) = 1;
 }
 
 
@@ -7590,13 +7607,13 @@ check_missing_format_attribute (tree ltype, tree rtype)
   tree ra;
 
   for (ra = TYPE_ATTRIBUTES (ttr); ra; ra = TREE_CHAIN (ra))
-    if (is_attribute_p ("format", TREE_PURPOSE (ra)))
+    if (is_attribute_p ("format", get_attribute_name (ra)))
       break;
   if (ra)
     {
       tree la;
       for (la = TYPE_ATTRIBUTES (ttl); la; la = TREE_CHAIN (la))
-	if (is_attribute_p ("format", TREE_PURPOSE (la)))
+	if (is_attribute_p ("format", get_attribute_name (la)))
 	  break;
       return !la;
     }
@@ -8257,9 +8274,9 @@ cb_get_source_date_epoch (cpp_reader *pfile ATTRIBUTE_UNUSED)
   if (errno != 0 || endptr == source_date_epoch || *endptr != '\0'
       || epoch < 0 || epoch > MAX_SOURCE_DATE_EPOCH)
     {
-      error_at (input_location, "environment variable SOURCE_DATE_EPOCH must "
+      error_at (input_location, "environment variable %qs must "
 	        "expand to a non-negative integer less than or equal to %wd",
-		MAX_SOURCE_DATE_EPOCH);
+		"SOURCE_DATE_EPOCH", MAX_SOURCE_DATE_EPOCH);
       return (time_t) -1;
     }
 
@@ -8584,8 +8601,8 @@ try_to_locate_new_include_insertion_point (const char *file, location_t loc)
 
   /*  Get ordinary map containing LOC (or its expansion).  */
   const line_map_ordinary *ord_map_for_loc = NULL;
-  loc = linemap_resolve_location (line_table, loc, LRK_MACRO_EXPANSION_POINT,
-				  &ord_map_for_loc);
+  linemap_resolve_location (line_table, loc, LRK_MACRO_EXPANSION_POINT,
+			    &ord_map_for_loc);
   gcc_assert (ord_map_for_loc);
 
   for (unsigned int i = 0; i < LINEMAPS_ORDINARY_USED (line_table); i++)
@@ -8836,7 +8853,8 @@ braced_lists_to_strings (tree type, tree ctor)
   else
     return ctor;
 
-  if (TYPE_STRING_FLAG (ttp))
+  if ((TREE_CODE (ttp) == ARRAY_TYPE || TREE_CODE (ttp) == INTEGER_TYPE)
+      && TYPE_STRING_FLAG (ttp))
     return braced_list_to_string (type, ctor);
 
   code = TREE_CODE (ttp);

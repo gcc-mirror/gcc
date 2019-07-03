@@ -1085,7 +1085,7 @@ func scanstackblockwithmap(pc, b0, n0 uintptr, ptrmask *uint8, gcw *gcWork) {
 						span != nil && span.state != mSpanManual &&
 							(obj < span.base() || obj >= span.limit || span.state != mSpanInUse) {
 						print("runtime: found in object at *(", hex(b), "+", hex(i), ") = ", hex(obj), ", pc=", hex(pc), "\n")
-						name, file, line := funcfileline(pc, -1)
+						name, file, line, _ := funcfileline(pc, -1)
 						print(name, "\n", file, ":", line, "\n")
 						//gcDumpObject("object", b, i)
 						throw("found bad pointer in Go stack (incorrect use of unsafe or cgo?)")

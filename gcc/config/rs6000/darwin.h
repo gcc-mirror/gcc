@@ -54,15 +54,17 @@
   do							\
     {							\
       if (!TARGET_64BIT) builtin_define ("__ppc__");	\
+      if (!TARGET_64BIT) builtin_define ("__PPC__");	\
       if (TARGET_64BIT) builtin_define ("__ppc64__");	\
+      if (TARGET_64BIT) builtin_define ("__PPC64__");	\
       builtin_define ("__POWERPC__");			\
       builtin_define ("__NATURAL_ALIGNMENT__");		\
       darwin_cpp_builtins (pfile);			\
     }							\
   while (0)
 
-/* Generate branch islands stubs if this is true.  */
-extern int darwin_emit_branch_islands;
+/* Generate pic symbol stubs if this is true.  */
+extern int darwin_emit_picsym_stub;
 
 #define SUBTARGET_OVERRIDE_OPTIONS darwin_rs6000_override_options ()
 
@@ -126,9 +128,30 @@ extern int darwin_emit_branch_islands;
    %:version-compare(>< 10.5 10.7 mmacosx-version-min= -lcrt1.10.5.o)	\
    %{fgnu-tm: -lcrttms.o}"
 
-/* crt2.o is at least partially required for 10.3.x and earlier.  */
+/* crt2.o is at least partially required for 10.3.x and earlier.
+   It deals with registration of the unwind frames, where this is not
+   automatically provided by the system.  So we need it for any case that
+   might use exceptions.  */
+#undef DARWIN_CRT2_SPEC
 #define DARWIN_CRT2_SPEC \
-  "%{!m64:%:version-compare(!> 10.4 mmacosx-version-min= crt2.o%s)}"
+"%{!m64:%{shared-libgcc|static-libstdc++|fexceptions|fobjc-exceptions|fgnu-runtime: \
+   %:version-compare(!> 10.4 mmacosx-version-min= crt2.o%s) \
+  }}"
+
+/* crt3 deals with providing cxa_atexit on earlier systems (or fixing it up,
+   for broken versions).  It's only needed for c++ code, so we can make it
+   conditional on shared-libgcc since that's forced on for c++.  */
+#undef DARWIN_CRT3_SPEC
+#define DARWIN_CRT3_SPEC \
+"%{!m64:%{shared-libgcc|static-libstdc++:							\
+   %:version-compare(>< 10.4 10.5 mmacosx-version-min= crt3.o%s) \
+   %:version-compare(!> 10.4 mmacosx-version-min= crt3_2.o%s) \
+  }}"
+
+/* The PPC regs save/restore functions are leaves and could, conceivably
+   be used by the tm destructor.  */
+#undef ENDFILE_SPEC
+#define ENDFILE_SPEC TM_DESTRUCTOR " -lef_ppc"
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS			\
@@ -398,6 +421,7 @@ extern int darwin_emit_branch_islands;
   do \
     { \
       DARWIN_REGISTER_TARGET_PRAGMAS(); \
+      targetm.target_option.pragma_parse = rs6000_pragma_target_parse; \
       targetm.resolve_overloaded_builtin = altivec_resolve_overloaded_builtin; \
     } \
   while (0)

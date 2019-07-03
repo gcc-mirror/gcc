@@ -667,7 +667,8 @@ Dsymbol *AlignDeclaration::syntaxCopy(Dsymbol *s)
 {
     assert(!s);
     return new AlignDeclaration(loc,
-        ealign->syntaxCopy(), Dsymbol::arraySyntaxCopy(decl));
+        ealign ? ealign->syntaxCopy() : NULL,
+        Dsymbol::arraySyntaxCopy(decl));
 }
 
 Scope *AlignDeclaration::newScope(Scope *sc)

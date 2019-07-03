@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -mavx512f -mavx512er -mavx512cd -mavx512pf -msha -mprefetchwt1 -mxsavec -mxsaves -mclflushopt -mavx512vl -mavx512dq -mavx512bw -mavx512vbmi -mavx512ifma -mavx5124fmaps -mavx5124vnniw -mavx512vpopcntdq -mclwb -mmwaitx -mclzero -mpku -msgx -mrdpid -mgfni -mavx512bitalg -mpconfig -mwbnoinvd -mavx512bf16" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -mavx512f -mavx512er -mavx512cd -mavx512pf -msha -mprefetchwt1 -mxsavec -mxsaves -mclflushopt -mavx512vl -mavx512dq -mavx512bw -mavx512vbmi -mavx512ifma -mavx5124fmaps -mavx5124vnniw -mavx512vpopcntdq -mavx512vp2intersect -mclwb -mmwaitx -mclzero -mpku -msgx -mrdpid -mgfni -mavx512bitalg -mpconfig -mwbnoinvd -mavx512bf16 -menqcmd" } */
 /* { dg-add-options bind_pic_locally } */
 
 #include <mm_malloc.h>
@@ -461,8 +461,8 @@
 #define __builtin_ia32_inserti32x8_mask(A, B, F, D, E) __builtin_ia32_inserti32x8_mask(A, B, 1, D, E)
 #define __builtin_ia32_insertf64x2_512_mask(A, B, F, D, E) __builtin_ia32_insertf64x2_512_mask(A, B, 1, D, E)
 #define __builtin_ia32_insertf32x8_mask(A, B, F, D, E) __builtin_ia32_insertf32x8_mask(A, B, 1, D, E)
-#define __builtin_ia32_fpclassss(A, D) __builtin_ia32_fpclassss(A, 1)
-#define __builtin_ia32_fpclasssd(A, D) __builtin_ia32_fpclasssd(A, 1)
+#define __builtin_ia32_fpclassss_mask(A, D, U) __builtin_ia32_fpclassss_mask(A, 1, U)
+#define __builtin_ia32_fpclasssd_mask(A, D, U) __builtin_ia32_fpclasssd_mask(A, 1, U)
 #define __builtin_ia32_fpclassps512_mask(A, D, C) __builtin_ia32_fpclassps512_mask(A, 1, C)
 #define __builtin_ia32_fpclasspd512_mask(A, D, C) __builtin_ia32_fpclasspd512_mask(A, 1, C)
 #define __builtin_ia32_extracti64x2_512_mask(A, E, C, D) __builtin_ia32_extracti64x2_512_mask(A, 1, C, D)

@@ -21,6 +21,7 @@
 #include <utility>
 #include <deque>
 #include <iterator>
+#include <istream>
 
 template <class T>
 struct MyAllocator

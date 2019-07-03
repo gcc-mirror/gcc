@@ -200,7 +200,8 @@ Ast_dump_context::dump(Gogo* gogo, const char* basename)
   if (out.fail())
     {
       go_error_at(Linemap::unknown_location(),
-		  "cannot open %s:%m, -fgo-dump-ast ignored", dumpname.c_str());
+		  "cannot open %s:%m; %<-fgo-dump-ast%> ignored",
+		  dumpname.c_str());
       return;
     }
 

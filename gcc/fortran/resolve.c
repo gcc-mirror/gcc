@@ -583,6 +583,9 @@ resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
       || sym->attr.entry_master)
     return;
 
+  if (!sym->result)
+    return;
+
   /* Try to find out of what the return type is.  */
   if (sym->result->ts.type == BT_UNKNOWN && sym->result->ts.interface == NULL)
     {
@@ -1862,6 +1865,25 @@ resolve_procedure_expression (gfc_expr* expr)
 }
 
 
+/* Check that name is not a derived type.  */
+ 
+static bool
+is_dt_name (const char *name)
+{
+  gfc_symbol *dt_list, *dt_first;
+
+  dt_list = dt_first = gfc_derived_types;
+  for (; dt_list; dt_list = dt_list->dt_next)
+    {
+      if (strcmp(dt_list->name, name) == 0)
+	return true;
+      if (dt_first == dt_list->dt_next)
+	break;
+    }
+  return false;
+}
+
+
 /* Resolve an actual argument list.  Most of the time, this is just
    resolving the expressions in the list.
    The exception is that we sometimes have to decide whether arguments
@@ -1922,6 +1944,13 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
       /* See if the expression node should really be a variable reference.  */
 
       sym = e->symtree->n.sym;
+
+      if (sym->attr.flavor == FL_PROCEDURE && is_dt_name (sym->name))
+	{
+	  gfc_error ("Derived type %qs is used as an actual "
+		     "argument at %L", sym->name, &e->where);
+	  goto cleanup;
+	}
 
       if (sym->attr.flavor == FL_PROCEDURE
 	  || sym->attr.intrinsic
@@ -6544,7 +6573,6 @@ resolve_typebound_function (gfc_expr* e)
     }
 
   c = gfc_find_component (declared, "_data", true, true, NULL);
-  declared = c->ts.u.derived;
 
   /* Treat the call as if it is a typebound procedure, in order to roll
      out the correct name for the specific function.  */
@@ -12359,6 +12387,10 @@ deferred_requirements (gfc_symbol *sym)
 	   || sym->attr.associate_var
 	   || sym->attr.omp_udr_artificial_var))
     {
+      /* If a function has a result variable, only check the variable.  */
+      if (sym->result && sym->name != sym->result->name)
+	return true;
+
       gfc_error ("Entity %qs at %L has a deferred type parameter and "
 		 "requires either the POINTER or ALLOCATABLE attribute",
 		 sym->name, &sym->declared_at);
@@ -12567,6 +12599,10 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 
   if (sym->attr.function
       && !resolve_fl_var_and_proc (sym, mp_flag))
+    return false;
+
+  /* Constraints on deferred type parameter.  */
+  if (!deferred_requirements (sym))
     return false;
 
   if (sym->ts.type == BT_CHARACTER)

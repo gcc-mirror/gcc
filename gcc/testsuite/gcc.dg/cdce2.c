@@ -1,7 +1,8 @@
-/* { dg-do  run  } */
+/* { dg-do run } */
 /* { dg-skip-if "doubles are floats" { "avr-*-*" } } */
-/* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details  -lm" } */
-/* { dg-final { scan-tree-dump  "cdce2.c:15: .* function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-options "-O2 -fmath-errno -fdump-tree-cdce-details -fdump-tree-optimized -lm" } */
+/* { dg-final { scan-tree-dump "cdce2.c:16: \[^\n\r]* function call is shrink-wrapped into error conditions\." "cdce" } } */
+/* { dg-final { scan-tree-dump "log \\(\[^\n\r]*\\); \\\[tail call\\\]" "optimized" } } */
  
 #include <stdlib.h>
 #include <math.h>

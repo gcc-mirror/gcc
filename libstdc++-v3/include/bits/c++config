@@ -207,7 +207,6 @@
   {
     namespace __debug { }
     namespace __parallel { }
-    namespace __profile { }
     namespace __cxx1998 { }
 
     namespace __detail {
@@ -325,9 +324,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 # define _GLIBCXX_END_NAMESPACE_VERSION
 #endif
 
-// Inline namespaces for special modes: debug, parallel, profile.
-#if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PARALLEL) \
-    || defined(_GLIBCXX_PROFILE)
+// Inline namespaces for special modes: debug, parallel.
+#if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PARALLEL)
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -351,21 +349,10 @@ _GLIBCXX_END_NAMESPACE_VERSION
 # ifdef _GLIBCXX_PARALLEL
   inline namespace __parallel { }
 # endif
-
-  // Inline namespaces for profile mode
-# ifdef _GLIBCXX_PROFILE
-  inline namespace __profile { }
-# endif
 }
 
 // Check for invalid usage and unsupported mixed-mode use.
 # if defined(_GLIBCXX_DEBUG) && defined(_GLIBCXX_PARALLEL)
-#  error illegal use of multiple inlined namespaces
-# endif
-# if defined(_GLIBCXX_PROFILE) && defined(_GLIBCXX_DEBUG)
-#  error illegal use of multiple inlined namespaces
-# endif
-# if defined(_GLIBCXX_PROFILE) && defined(_GLIBCXX_PARALLEL)
 #  error illegal use of multiple inlined namespaces
 # endif
 
@@ -386,7 +373,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 // _GLIBCXX_END_NAMESPACE_ALGO
 // _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 // _GLIBCXX_END_NAMESPACE_CONTAINER
-#if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PROFILE)
+#if defined(_GLIBCXX_DEBUG)
 # define _GLIBCXX_STD_C __cxx1998
 # define _GLIBCXX_BEGIN_NAMESPACE_CONTAINER \
 	 namespace _GLIBCXX_STD_C {
@@ -649,7 +636,7 @@ namespace std
 # if __GNUC__ >= 9
 #  define _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
 # endif
-#elif defined(__is_identifier)
+#elif defined(__is_identifier) && defined(__has_builtin)
 // For non-GNU compilers:
 # if ! __is_identifier(__has_unique_object_representations)
 #  define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
@@ -657,10 +644,10 @@ namespace std
 # if ! __is_identifier(__is_aggregate)
 #  define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
 # endif
-# if ! __is_identifier(__builtin_launder)
+# if __has_builtin(__builtin_launder)
 #  define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
 # endif
-# if ! __is_identifier(__builtin_is_constant_evaluated)
+# if __has_builtin(__builtin_is_constant_evaluated)
 #  define _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
 # endif
 #endif // GCC
@@ -669,9 +656,7 @@ namespace std
 
 #if __cplusplus >= 201703L
 // Preserved here so we have some idea which version of upstream we've pulled in
-// #define PSTL_VERSION 104
-// #define PSTL_VERSION_MAJOR (PSTL_VERSION/100)
-// #define PSTL_VERSION_MINOR (PSTL_VERSION - PSTL_VERSION_MAJOR * 100)
+// #define PSTL_VERSION 9000
 
 // For now this defaults to being based on the presence of Thread Building Blocks
 # ifndef _GLIBCXX_USE_TBB_PAR_BACKEND
@@ -679,11 +664,13 @@ namespace std
 # endif
 // This section will need some rework when a new (default) backend type is added
 # if _GLIBCXX_USE_TBB_PAR_BACKEND
-#  define __PSTL_USE_PAR_POLICIES 1
+#  define _PSTL_PAR_BACKEND_TBB
+# else
+#  define _PSTL_PAR_BACKEND_SERIAL
 # endif
 
-# define __PSTL_ASSERT(_Condition) __glibcxx_assert(_Condition)
-# define __PSTL_ASSERT_MSG(_Condition, _Message) __glibcxx_assert(_Condition)
+# define _PSTL_ASSERT(_Condition) __glibcxx_assert(_Condition)
+# define _PSTL_ASSERT_MSG(_Condition, _Message) __glibcxx_assert(_Condition)
 
 #include <pstl/pstl_config.h>
 

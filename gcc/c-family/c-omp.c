@@ -305,7 +305,7 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
   if (TREE_CODE (x) == COMPOUND_EXPR)
     {
       pre = TREE_OPERAND (x, 0);
-      gcc_assert (TREE_CODE (pre) == SAVE_EXPR);
+      gcc_assert (TREE_CODE (pre) == SAVE_EXPR || tree_invariant_p (pre));
       x = TREE_OPERAND (x, 1);
     }
   gcc_assert (TREE_CODE (x) == MODIFY_EXPR);
@@ -974,7 +974,7 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 				{
 				  error_at (elocus,
 					    "increment is not constant 1 or "
-					    "-1 for != condition");
+					    "-1 for %<!=%> condition");
 				  fail = true;
 				}
 			    }
@@ -992,7 +992,7 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 			{
 			  error_at (elocus,
 				    "increment is not constant 1 or -1 for"
-				    " != condition");
+				    " %<!=%> condition");
 			  fail = true;
 			}
 		    }
@@ -1634,7 +1634,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	  break;
 	/* Reduction is allowed on simd, for, parallel, sections, taskloop
 	   and teams.  Duplicate it on all of them, but omit on for or
-	   sections if parallel is present.  If taskloop is combined with
+	   sections if parallel is present (unless inscan, in that case
+	   omit on parallel).  If taskloop is combined with
 	   parallel, omit it on parallel.  */
 	case OMP_CLAUSE_REDUCTION:
 	  if (OMP_CLAUSE_REDUCTION_TASK (clauses))
@@ -1659,6 +1660,18 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		  OMP_CLAUSE_REDUCTION_TASK (clauses) = 0;
 		}
 	    }
+	  if (OMP_CLAUSE_REDUCTION_INSCAN (clauses)
+	      && ((mask & ((OMP_CLAUSE_MASK_1
+			    << PRAGMA_OMP_CLAUSE_DIST_SCHEDULE)
+			   | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP)))
+		  != 0))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (clauses),
+			"%<inscan%> %<reduction%> clause on construct other "
+			"than %<for%>, %<simd%>, %<for simd%>, "
+			"%<parallel for%>, %<parallel for simd%>");
+	      OMP_CLAUSE_REDUCTION_INSCAN (clauses) = 0;
+	    }
 	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SCHEDULE)) != 0)
 	    {
 	      if (code == OMP_SIMD)
@@ -1672,6 +1685,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		    = OMP_CLAUSE_REDUCTION_PLACEHOLDER (clauses);
 		  OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c)
 		    = OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (clauses);
+		  OMP_CLAUSE_REDUCTION_INSCAN (c)
+		    = OMP_CLAUSE_REDUCTION_INSCAN (clauses);
 		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_SIMD];
 		  cclauses[C_OMP_CLAUSE_SPLIT_SIMD] = c;
 		}
@@ -1687,12 +1702,15 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		    = OMP_CLAUSE_REDUCTION_PLACEHOLDER (clauses);
 		  OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c)
 		    = OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (clauses);
+		  OMP_CLAUSE_REDUCTION_INSCAN (c)
+		    = OMP_CLAUSE_REDUCTION_INSCAN (clauses);
 		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_TEAMS];
 		  cclauses[C_OMP_CLAUSE_SPLIT_TEAMS] = c;
 		  s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 		}
 	      else if ((mask & (OMP_CLAUSE_MASK_1
-				<< PRAGMA_OMP_CLAUSE_NUM_THREADS)) != 0)
+				<< PRAGMA_OMP_CLAUSE_NUM_THREADS)) != 0
+		       && !OMP_CLAUSE_REDUCTION_INSCAN (clauses))
 		s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 	      else
 		s = C_OMP_CLAUSE_SPLIT_FOR;
@@ -1717,6 +1735,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		    = OMP_CLAUSE_REDUCTION_PLACEHOLDER (clauses);
 		  OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c)
 		    = OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (clauses);
+		  OMP_CLAUSE_REDUCTION_INSCAN (c)
+		    = OMP_CLAUSE_REDUCTION_INSCAN (clauses);
 		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_TASKLOOP];
 		  cclauses[C_OMP_CLAUSE_SPLIT_TASKLOOP] = c;
 		}

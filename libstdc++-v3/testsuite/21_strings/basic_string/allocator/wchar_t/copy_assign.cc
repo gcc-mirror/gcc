@@ -133,10 +133,46 @@ void test03()
   VERIFY( v1.get_allocator() == a2 );
 }
 
+void test04()
+{
+  // LWG2579
+  typedef propagating_allocator<C, true> alloc_type;
+
+  typedef std::basic_string<C, traits, alloc_type> test_type;
+
+  test_type v1(L"tralalala",alloc_type(1));
+  test_type v2(L"content", alloc_type(2));
+  test_type v3(L"content2", alloc_type(3));
+
+  v1.assign(v2);
+  v3 = v2;
+  VERIFY(2 == v1.get_allocator().get_personality());
+  VERIFY(2 == v3.get_allocator().get_personality());
+
+}
+
+void test05()
+{
+  // LWG2579
+  typedef propagating_allocator<C, false> alloc_type;
+
+  typedef std::basic_string<C, traits, alloc_type> test_type;
+
+  test_type v1(L"tralalala",alloc_type(1));
+  test_type v2(L"content", alloc_type(2));
+  test_type v3(L"content2", alloc_type(3));
+
+  v1.assign(v2);
+  v3 = v2;
+  VERIFY(1 == v1.get_allocator().get_personality());
+  VERIFY(3 == v3.get_allocator().get_personality());
+}
 int main()
 {
   test01();
   test02();
   test03();
+  test04();
+  test05();
   return 0;
 }

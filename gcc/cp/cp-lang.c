@@ -109,8 +109,7 @@ cxx_dwarf_name (tree t, int verbosity)
 {
   gcc_assert (DECL_P (t));
 
-  if (DECL_NAME (t)
-      && (anon_aggrname_p (DECL_NAME (t)) || LAMBDA_TYPE_P (t)))
+  if (DECL_NAME (t) && IDENTIFIER_ANON_P (DECL_NAME (t)))
     return NULL;
   if (verbosity >= 2)
     return decl_as_dwarf_string (t,

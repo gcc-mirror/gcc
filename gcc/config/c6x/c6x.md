@@ -2844,7 +2844,7 @@
 ;; Block moves
 ;; -------------------------------------------------------------------------
 
-(define_expand "movmemsi"
+(define_expand "cpymemsi"
   [(use (match_operand:BLK 0 "memory_operand" ""))
    (use (match_operand:BLK 1 "memory_operand" ""))
    (use (match_operand:SI 2 "nonmemory_operand" ""))
@@ -2853,7 +2853,7 @@
    (use (match_operand:SI 5 "const_int_operand" ""))]
   ""
 {
- if (c6x_expand_movmem (operands[0], operands[1], operands[2], operands[3],
+ if (c6x_expand_cpymem (operands[0], operands[1], operands[2], operands[3],
 			operands[4], operands[5]))
    DONE;
  else

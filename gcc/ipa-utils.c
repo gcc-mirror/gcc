@@ -103,8 +103,7 @@ searchc (struct searchc_env* env, struct cgraph_node *v,
         continue;
 
       if (w->aux
-	  && (avail > AVAIL_INTERPOSABLE
-	      || avail == AVAIL_INTERPOSABLE))
+	  && (avail >= AVAIL_INTERPOSABLE))
 	{
 	  w_info = (struct ipa_dfs_info *) w->aux;
 	  if (w_info->new_node)

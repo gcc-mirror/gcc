@@ -101,6 +101,12 @@ VECTOR_MODE (INT, SI, 64);    /* 		  V64SI */
 INT_MODE (OI, 32);
 INT_MODE (XI, 64);
 
+/* Modes needs a consecutive register pair.
+   Note that Using PARTIAL_INT_MODE but not INT_MODE is to avoid mode promotion
+   issues.  */
+PARTIAL_INT_MODE (HI, 16, P2QI);
+PARTIAL_INT_MODE (SI, 32, P2HI);
+
 /* Keep the OI and XI modes from confusing the compiler into thinking
    that these modes could actually be used for computation.  They are
    only holders for vectors during data movement.  */

@@ -1,6 +1,6 @@
 // PR c++/41769
 
-void f(void operator+()); // { dg-error "declaration" }
+void f(void operator+()); // { dg-error "13:declaration" }
 
 void g()
 {
@@ -8,7 +8,7 @@ void g()
     {
 
     }
-  catch(void operator+()) // { dg-error "declaration" }
+  catch(void operator+()) // { dg-error "14:declaration" }
     {
     }
 }

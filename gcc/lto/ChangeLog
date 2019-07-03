@@ -1,3 +1,50 @@
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	* lto-common.c: Read LTO section and verify header.
+
+2019-06-27  Jan Hubicka  <jh@suse.cz>
+
+	* lto-common.c (lto_register_canonical_types_for_odr_types):
+	Copy CXX_ODR_P from the main variant.
+
+2019-06-27  Jan Hubicka  <jh@suse.cz>
+
+	* lto-common.c: tree-pretty-print.h
+	(type_streaming_finished): New static var.
+	(gimple_register_canonical_type_1): Return updated hash; handle ODR
+	types.
+	(iterative_hash_canonical_type): Update use of
+	gimple_register_canonical_type_1.
+
+2019-06-27  Martin Liska  <mliska@suse.cz>
+
+	* lto-dump.c (struct symbol_entry): Add default dtor.
+	(struct variable_entry): Likewise.
+	(struct function_entry): Likewise.
+	(dump_list_functions): Release memory.
+	(dump_list_variables): Likewise.
+
+2019-06-24  Jan Hubicka  <jh@suse.cz>
+
+	* lto-common.c (compare_tree_sccs_1): Compare CXX_ODR_P;
+	compare STRING_FLAG only for arrays and integers.
+
+2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	* lto-common.c (lto_file_finalize): Adjust quoting and hyphenation.
+
+2019-05-16  Martin Sebor  <msebor@redhat.com>
+
+        * lto-dump.c (lto_main): Same.
+        * lto.c (stream_out): Same.
+
+2019-05-10  Martin Liska  <mliska@suse.cz>
+
+	* Make-lang.in: Use program_transform_name for lto-dump.
+	* config-lang.in: Do not mark lto-dump compiler as we don't
+	want to have it installed at
+	lib/gcc/x86_64-pc-linux-gnu/10.0.0/lto-dump.
+
 2019-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lto-common.c (lto_file_read): Print section->start as int64_t,

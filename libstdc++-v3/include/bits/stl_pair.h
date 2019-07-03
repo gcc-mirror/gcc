@@ -180,13 +180,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return false;
       }
   };
-
-  // PR libstdc++/79141, a utility type for preventing
-  // initialization of an argument of a disabled assignment
-  // operator from a pair of empty braces.
-  struct __nonesuch_no_braces : std::__nonesuch {
-    explicit __nonesuch_no_braces(const __nonesuch&) = delete;
-  };
 #endif // C++11
 
   template<typename _U1, typename _U2> class __pair_base
@@ -393,7 +386,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator=(typename conditional<
 		__and_<is_copy_assignable<_T1>,
 		       is_copy_assignable<_T2>>::value,
-		const pair&, const __nonesuch_no_braces&>::type __p)
+		const pair&, const __nonesuch&>::type __p)
       {
 	first = __p.first;
 	second = __p.second;
@@ -404,7 +397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator=(typename conditional<
 		__and_<is_move_assignable<_T1>,
 		       is_move_assignable<_T2>>::value,
-		pair&&, __nonesuch_no_braces&&>::type __p)
+		pair&&, __nonesuch&&>::type __p)
       noexcept(__and_<is_nothrow_move_assignable<_T1>,
 		      is_nothrow_move_assignable<_T2>>::value)
       {

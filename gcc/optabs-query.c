@@ -415,8 +415,9 @@ can_vec_perm_var_p (machine_mode mode)
    permute (if the target supports that).
 
    Note that additional permutations representing whole-vector shifts may
-   also be handled via the vec_shr optab, but only where the second input
-   vector is entirely constant zeroes; this case is not dealt with here.  */
+   also be handled via the vec_shr or vec_shl optab, but only where the
+   second input vector is entirely constant zeroes; this case is not dealt
+   with here.  */
 
 bool
 can_vec_perm_const_p (machine_mode mode, const vec_perm_indices &sel,
@@ -593,7 +594,7 @@ can_vec_mask_load_store_p (machine_mode mode,
     return true;
 
   auto_vector_sizes vector_sizes;
-  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
+  targetm.vectorize.autovectorize_vector_sizes (&vector_sizes, true);
   for (unsigned int i = 0; i < vector_sizes.length (); ++i)
     {
       poly_uint64 cur = vector_sizes[i];

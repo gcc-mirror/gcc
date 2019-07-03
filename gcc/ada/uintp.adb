@@ -1492,6 +1492,49 @@ package body Uintp is
       end;
    end UI_From_Int;
 
+   ----------------------
+   -- UI_From_Integral --
+   ----------------------
+
+   function UI_From_Integral (Input : In_T) return Uint is
+   begin
+      --  If in range of our normal conversion function, use it so we can use
+      --  direct access and our cache.
+
+      if In_T'Size <= Int'Size
+        or else Input in In_T (Int'First) .. In_T (Int'Last)
+      then
+         return UI_From_Int (Int (Input));
+
+      else
+         --  For values of larger magnitude, compute digits into a vector and
+         --  call Vector_To_Uint.
+
+         declare
+            Max_For_In_T : constant Int  := 3 * In_T'Size / Int'Size;
+            Our_Base     : constant In_T := In_T (Base);
+            Temp_Integer : In_T := Input;
+            --  Base is defined so that 3 Uint digits is sufficient to hold the
+            --  largest possible Int value.
+
+            U : Uint;
+            V : UI_Vector (1 .. Max_For_In_T);
+
+         begin
+            for J in reverse V'Range loop
+               V (J) := Int (abs (Temp_Integer rem Our_Base));
+               Temp_Integer := Temp_Integer / Our_Base;
+            end loop;
+
+            U := Vector_To_Uint (V, Input < 0);
+            Uints_Min := Uints.Last;
+            Udigits_Min := Udigits.Last;
+
+            return U;
+         end;
+      end if;
+   end UI_From_Integral;
+
    ------------
    -- UI_GCD --
    ------------
@@ -2324,50 +2367,4 @@ package body Uintp is
       return Uint_0;
    end Vector_To_Uint;
 
-   ----------------------
-   -- UI_From_Integral --
-   ----------------------
-
-   function UI_From_Integral (Input : In_T) return Uint is
-      U : Uint;
-
-   begin
-      --  If in range of our normal conversion function, use it so we can
-      --  use direct access and our cache.
-
-      if In_T'Size <= Int'Size
-        or else Input in In_T (Int'First) .. In_T (Int'Last)
-      then
-         return UI_From_Int (Int (Input));
-
-      else
-         --  pragma Warnings (Off);
-
-         --  For values of larger magnitude, compute digits into a vector
-         --  and call Vector_To_Uint.
-
-         declare
-            Max_For_In_T : constant Int  := 3 * In_T'Size / Int'Size;
-            Our_Base     : constant In_T := In_T (Base);
-            Temp_Integer : In_T := Input;
-            --  Base is defined so that 3 Uint digits is sufficient to hold the
-            --  largest possible Int value.
-
-            V : UI_Vector (1 .. Max_For_In_T);
-
-         begin
-            for J in reverse V'Range loop
-               V (J) := Int (abs (Temp_Integer rem Our_Base));
-               Temp_Integer := Temp_Integer / Our_Base;
-            end loop;
-
-            U := Vector_To_Uint (V, Input < 0);
-            Uints_Min := Uints.Last;
-            Udigits_Min := Udigits.Last;
-            return U;
-         end;
-
-         --  pragma Warnings (On);
-      end if;
-   end UI_From_Integral;
 end Uintp;

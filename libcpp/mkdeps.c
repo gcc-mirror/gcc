@@ -59,6 +59,10 @@ public:
     {
       return ary[ix];
     }
+    T &operator[] (unsigned ix)
+    {
+      return ary[ix];
+    }
     void push (const T &elt)
     {
       if (num == alloc)
@@ -235,14 +239,22 @@ deps_free (struct mkdeps *d)
 void
 deps_add_target (struct mkdeps *d, const char *t, int quote)
 {
-  t = apply_vpath (d, t);
+  t = xstrdup (apply_vpath (d, t));
+
   if (!quote)
     {
-      gcc_assert (d->quote_lwm == d->targets.size ());
+      /* Sometimes unquoted items are added after quoted ones.
+	 Swap out the lowest quoted.  */
+      if (d->quote_lwm != d->targets.size ())
+	{
+	  const char *lowest = d->targets[d->quote_lwm];
+	  d->targets[d->quote_lwm] = t;
+	  t = lowest;
+	}
       d->quote_lwm++;
     }
 
-  d->targets.push (xstrdup (t));
+  d->targets.push (t);
 }
 
 /* Sets the default target if none has been given already.  An empty
@@ -366,7 +378,7 @@ make_write (const struct mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
       column = make_write_vec (d->targets, fp, 0, colmax, d->quote_lwm);
       fputs (":", fp);
       column++;
-      column = make_write_vec (d->deps, fp, column, colmax);
+      make_write_vec (d->deps, fp, column, colmax);
       fputs ("\n", fp);
       if (phony)
 	for (unsigned i = 1; i < d->deps.size (); i++)

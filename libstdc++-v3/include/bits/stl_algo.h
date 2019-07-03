@@ -1251,6 +1251,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     _ForwardIterator __last,
 	     forward_iterator_tag)
     {
+      if (__first == __middle)
+	return __last;
+      else if (__last == __middle)
+	return __first;
+
       _ForwardIterator __first2 = __middle;
       do
 	{
@@ -1291,6 +1296,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_Mutable_BidirectionalIteratorConcept<
 				  _BidirectionalIterator>)
 
+      if (__first == __middle)
+	return __last;
+      else if (__last == __middle)
+	return __first;
+
       std::__reverse(__first,  __middle, bidirectional_iterator_tag());
       std::__reverse(__middle, __last,   bidirectional_iterator_tag());
 
@@ -1323,6 +1333,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 				  _RandomAccessIterator>)
+
+      if (__first == __middle)
+	return __last;
+      else if (__last == __middle)
+	return __first;
 
       typedef typename iterator_traits<_RandomAccessIterator>::difference_type
 	_Distance;
@@ -1424,11 +1439,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				  _ForwardIterator>)
       __glibcxx_requires_valid_range(__first, __middle);
       __glibcxx_requires_valid_range(__middle, __last);
-
-      if (__first == __middle)
-	return __last;
-      else if (__last  == __middle)
-	return __first;
 
       return std::__rotate(__first, __middle, __last,
 			   std::__iterator_category(__first));
@@ -3866,6 +3876,39 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	__f(*__first);
       return __f; // N.B. [alg.foreach] says std::move(f) but it's redundant.
     }
+
+#if __cplusplus >= 201703L
+  /**
+   *  @brief Apply a function to every element of a sequence.
+   *  @ingroup non_mutating_algorithms
+   *  @param  __first  An input iterator.
+   *  @param  __n      A value convertible to an integer.
+   *  @param  __f      A unary function object.
+   *  @return   `__first+__n`
+   *
+   *  Applies the function object `__f` to each element in the range
+   *  `[first, first+n)`.  `__f` must not modify the order of the sequence.
+   *  If `__f` has a return value it is ignored.
+  */
+  template<typename _InputIterator, typename _Size, typename _Function>
+    _InputIterator
+    for_each_n(_InputIterator __first, _Size __n, _Function __f)
+    {
+      auto __n2 = std::__size_to_integer(__n);
+      using _Cat = typename iterator_traits<_InputIterator>::iterator_category;
+      if constexpr (is_base_of_v<random_access_iterator_tag, _Cat>)
+	return std::for_each(__first, __first + __n2, __f);
+      else
+	{
+	  while (__n2-->0)
+	    {
+	      __f(*__first);
+	      ++__first;
+	    }
+	  return __first;
+	}
+    }
+#endif // C++17
 
   /**
    *  @brief Find the first occurrence of a value in a sequence.

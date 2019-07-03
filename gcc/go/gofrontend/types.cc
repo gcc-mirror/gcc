@@ -12,6 +12,7 @@
 #include "gogo.h"
 #include "go-diagnostics.h"
 #include "go-encode-id.h"
+#include "go-sha1.h"
 #include "operator.h"
 #include "expressions.h"
 #include "statements.h"
@@ -1412,6 +1413,23 @@ Type::make_type_descriptor_var(Gogo* gogo)
 					     var_name, false, is_common,
 					     initializer_btype, loc,
 					     binitializer);
+
+  // For types that may be created by reflection, add it to the
+  // list of which we will register the type descriptor to the
+  // runtime.
+  // Do not add generated incomparable array/struct types, see
+  // issue #22605.
+  if (is_common
+      && (this->points_to() != NULL
+          || this->channel_type() != NULL
+          || this->map_type() != NULL
+          || this->function_type() != NULL
+          || this->is_slice_type()
+          || (this->struct_type() != NULL
+              && !this->struct_type()->is_struct_incomparable())
+          || (this->array_type() != NULL
+              && !this->array_type()->is_array_incomparable())))
+  gogo->add_type_descriptor(this);
 }
 
 // Return true if this type descriptor is defined in a different
@@ -2776,22 +2794,48 @@ Ptrmask::set_from(Gogo* gogo, Type* type, int64_t ptrsize, int64_t offset)
     }
 }
 
-// Return a symbol name for this ptrmask.  This is used to coalesce
-// identical ptrmasks, which are common.  The symbol name must use
-// only characters that are valid in symbols.  It's nice if it's
-// short.  We convert it to a string that uses only 32 characters,
-// avoiding digits and u and U.
-
+// Return a symbol name for this ptrmask. This is used to coalesce identical
+// ptrmasks, which are common. The symbol name must use only characters that are
+// valid in symbols. It's nice if it's short. For smaller ptrmasks, we convert
+// it to a string that uses only 32 characters, avoiding digits and u and U. For
+// longer pointer masks, apply the same process to the SHA1 digest of the bits,
+// so as to avoid pathologically long symbol names (see related Go issues #32083
+// and #11583 for more on this). To avoid collisions between the two encoding
+// schemes, use a prefix ("X") for the SHA form to disambiguate.
 std::string
 Ptrmask::symname() const
 {
+  const std::vector<unsigned char>* bits(&this->bits_);
+  std::vector<unsigned char> shabits;
+  std::string prefix;
+
+  if (this->bits_.size() > 128)
+    {
+      // Produce a SHA1 digest of the data.
+      Go_sha1_helper* sha1_helper = go_create_sha1_helper();
+      sha1_helper->process_bytes(&this->bits_[0], this->bits_.size());
+      std::string digest = sha1_helper->finish();
+      delete sha1_helper;
+
+      // Redirect the bits vector to the digest, and update the prefix.
+      prefix = "X";
+      for (std::string::const_iterator p = digest.begin();
+           p != digest.end();
+           ++p)
+        {
+          unsigned char c = *p;
+          shabits.push_back(c);
+        }
+      bits = &shabits;
+    }
+
   const char chars[33] = "abcdefghijklmnopqrstvwxyzABCDEFG";
   go_assert(chars[32] == '\0');
-  std::string ret;
+  std::string ret(prefix);
   unsigned int b = 0;
   int remaining = 0;
-  for (std::vector<unsigned char>::const_iterator p = this->bits_.begin();
-       p != this->bits_.end();
+  for (std::vector<unsigned char>::const_iterator p = bits->begin();
+       p != bits->end();
        ++p)
     {
       b |= *p << remaining;
@@ -4760,10 +4804,15 @@ Function_type::get_backend_fntype(Gogo* gogo)
           // We always pass the address of the receiver parameter, in
           // order to make interface calls work with unknown types,
           // except for direct interface types where the interface call
-          // actually passes value.
+          // actually passes the underlying pointer of the value.
           Type* rtype = this->receiver_->type();
-          if (!rtype->is_direct_iface_type())
-            rtype = Type::make_pointer_type(rtype);
+          if (rtype->points_to() == NULL)
+            {
+              if (rtype->is_direct_iface_type())
+                rtype = Type::make_pointer_type(Type::make_void_type());
+              else
+                rtype = Type::make_pointer_type(rtype);
+            }
           breceiver.btype = rtype->get_backend(gogo);
           breceiver.location = this->receiver_->location();
         }
@@ -7841,7 +7890,7 @@ int64_t Map_type::zero_value_align;
 // pass as the zero value to those functions.  Otherwise, in the
 // normal case, return NULL.  The map requires the "fat" functions if
 // the value size is larger than max_zero_size bytes.  max_zero_size
-// must match maxZero in libgo/go/runtime/hashmap.go.
+// must match maxZero in libgo/go/runtime/map.go.
 
 Expression*
 Map_type::fat_zero_value(Gogo* gogo)
@@ -7887,6 +7936,43 @@ Map_type::fat_zero_value(Gogo* gogo)
   Type* unsafe_ptr_type = Type::make_pointer_type(Type::make_void_type());
   z = Expression::make_cast(unsafe_ptr_type, z, bloc);
   return z;
+}
+
+// Map algorithm to use for this map type.
+
+Map_type::Map_alg
+Map_type::algorithm(Gogo* gogo)
+{
+  int64_t size;
+  bool ok = this->val_type_->backend_type_size(gogo, &size);
+  if (!ok || size > Map_type::max_val_size)
+    return MAP_ALG_SLOW;
+
+  Type* key_type = this->key_type_;
+  if (key_type->is_string_type())
+    return MAP_ALG_FASTSTR;
+  if (!key_type->compare_is_identity(gogo))
+    return MAP_ALG_SLOW;
+
+  ok = key_type->backend_type_size(gogo, &size);
+  if (!ok)
+    return MAP_ALG_SLOW;
+  if (size == 4)
+    return (key_type->has_pointer()
+            ? MAP_ALG_FAST32PTR
+            : MAP_ALG_FAST32);
+  if (size == 8)
+    {
+      if (!key_type->has_pointer())
+        return MAP_ALG_FAST64;
+      Type* ptr_type = Type::make_pointer_type(Type::make_void_type());
+      ok = ptr_type->backend_type_size(gogo, &size);
+      if (ok && size == 8)
+        return MAP_ALG_FAST64PTR;
+      // Key contains pointer but is not a single pointer.
+      // Use slow version.
+    }
+  return MAP_ALG_SLOW;
 }
 
 // Return whether VAR is the map zero value.
@@ -7978,7 +8064,7 @@ Map_type::do_hash_for_method(Gogo* gogo, int flags) const
 
 // Get the backend representation for a map type.  A map type is
 // represented as a pointer to a struct.  The struct is hmap in
-// runtime/hashmap.go.
+// runtime/map.go.
 
 Btype*
 Map_type::do_get_backend(Gogo* gogo)
@@ -8184,7 +8270,7 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 }
 
 // Return the bucket type to use for a map type.  This must correspond
-// to libgo/go/runtime/hashmap.go.
+// to libgo/go/runtime/map.go.
 
 Type*
 Map_type::bucket_type(Gogo* gogo, int64_t keysize, int64_t valsize)
@@ -8216,7 +8302,7 @@ Map_type::bucket_type(Gogo* gogo, int64_t keysize, int64_t valsize)
   // be marked as having no pointers.  Arrange for the bucket to have
   // no pointers by changing the type of the overflow field to uintptr
   // in this case.  See comment on the hmap.overflow field in
-  // libgo/go/runtime/hashmap.go.
+  // libgo/go/runtime/map.go.
   Type* overflow_type;
   if (!key_type->has_pointer() && !val_type->has_pointer())
     overflow_type = Type::lookup_integer_type("uintptr");

@@ -7,7 +7,8 @@
 #include "runtime.h"
 
 void memclrNoHeapPointers(void *, uintptr)
-  __asm__ (GOSYM_PREFIX "runtime.memclrNoHeapPointers");
+  __asm__ (GOSYM_PREFIX "runtime.memclrNoHeapPointers")
+  __attribute__ ((no_split_stack));
 
 void
 memclrNoHeapPointers (void *p1, uintptr len)

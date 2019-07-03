@@ -494,7 +494,9 @@ avail_expr_hash (class expr_hash_elt *p)
 	    {
 	      enum tree_code code = MEM_REF;
 	      hstate.add_object (code);
-	      inchash::add_expr (base, hstate);
+	      inchash::add_expr (base, hstate,
+				 TREE_CODE (base) == MEM_REF 
+				 ? OEP_ADDRESS_OF : 0);
 	      hstate.add_object (offset);
 	      hstate.add_object (size);
 	      return hstate.end ();
@@ -537,13 +539,15 @@ equal_mem_array_ref_p (tree t0, tree t1)
       || maybe_ne (sz1, max1))
     return false;
 
-  if (rev0 != rev1)
+  if (rev0 != rev1 || maybe_ne (sz0, sz1) || maybe_ne (off0, off1))
     return false;
 
-  /* Types were compatible, so this is a sanity check.  */
-  gcc_assert (known_eq (sz0, sz1));
-
-  return known_eq (off0, off1) && operand_equal_p (base0, base1, 0);
+  return operand_equal_p (base0, base1,
+			  (TREE_CODE (base0) == MEM_REF
+			   || TREE_CODE (base0) == TARGET_MEM_REF)
+			  && (TREE_CODE (base1) == MEM_REF
+			      || TREE_CODE (base1) == TARGET_MEM_REF)
+			  ? OEP_ADDRESS_OF : 0);
 }
 
 /* Compare two hashable_expr structures for equivalence.  They are

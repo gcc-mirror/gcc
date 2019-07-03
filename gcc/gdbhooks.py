@@ -222,6 +222,9 @@ class TreePrinter:
         # extern const enum tree_code_class tree_code_type[];
         # #define TREE_CODE_CLASS(CODE)	tree_code_type[(int) (CODE)]
 
+        if val_TREE_CODE == 0xa5a5:
+            return '<ggc_freed 0x%x>' % intptr(self.gdbval)
+
         val_tree_code_type = gdb.parse_and_eval('tree_code_type')
         val_tclass = val_tree_code_type[val_TREE_CODE]
 
@@ -521,11 +524,11 @@ class GdbPrettyPrinters(gdb.printing.PrettyPrinter):
     def __init__(self, name):
         super(GdbPrettyPrinters, self).__init__(name, [])
 
-    def add_printer_for_types(self, name, class_, types):
-        self.subprinters.append(GdbSubprinterTypeList(name, class_, types))
+    def add_printer_for_types(self, types, name, class_):
+        self.subprinters.append(GdbSubprinterTypeList(types, name, class_))
 
-    def add_printer_for_regex(self, name, class_, regex):
-        self.subprinters.append(GdbSubprinterRegex(name, class_, regex))
+    def add_printer_for_regex(self, regex, name, class_):
+        self.subprinters.append(GdbSubprinterRegex(regex, name, class_))
 
     def __call__(self, gdbval):
         type_ = gdbval.type.unqualified()
@@ -540,7 +543,7 @@ class GdbPrettyPrinters(gdb.printing.PrettyPrinter):
 
 def build_pretty_printer():
     pp = GdbPrettyPrinters('gcc')
-    pp.add_printer_for_types(['tree'],
+    pp.add_printer_for_types(['tree', 'const_tree'],
                              'tree', TreePrinter)
     pp.add_printer_for_types(['cgraph_node *', 'varpool_node *', 'symtab_node *'],
                              'symtab_node', SymtabNodePrinter)

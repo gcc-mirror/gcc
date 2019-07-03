@@ -724,14 +724,8 @@ c_parser_gimple_statement (gimple_parser &parser, gimple_seq *seq)
 	  && rhs.value != error_mark_node)
 	{
 	  enum tree_code code = NOP_EXPR;
-	  if (VECTOR_TYPE_P (TREE_TYPE (lhs.value)))
-	    {
-	      code = VIEW_CONVERT_EXPR;
-	      rhs.value = build1 (VIEW_CONVERT_EXPR,
-				  TREE_TYPE (lhs.value), rhs.value);
-	    }
-	  else if (FLOAT_TYPE_P (TREE_TYPE (lhs.value))
-		   && ! FLOAT_TYPE_P (TREE_TYPE (rhs.value)))
+	  if (FLOAT_TYPE_P (TREE_TYPE (lhs.value))
+	      && ! FLOAT_TYPE_P (TREE_TYPE (rhs.value)))
 	    code = FLOAT_EXPR;
 	  else if (! FLOAT_TYPE_P (TREE_TYPE (lhs.value))
 		   && FLOAT_TYPE_P (TREE_TYPE (rhs.value)))
@@ -752,7 +746,9 @@ c_parser_gimple_statement (gimple_parser &parser, gimple_seq *seq)
 	if (strcmp (IDENTIFIER_POINTER (id), "__ABS") == 0
 	    || strcmp (IDENTIFIER_POINTER (id), "__ABSU") == 0
 	    || strcmp (IDENTIFIER_POINTER (id), "__MIN") == 0
-	    || strcmp (IDENTIFIER_POINTER (id), "__MAX") == 0)
+	    || strcmp (IDENTIFIER_POINTER (id), "__MAX") == 0
+	    || strcmp (IDENTIFIER_POINTER (id), "__BIT_INSERT") == 0
+	    || strcmp (IDENTIFIER_POINTER (id), "__VEC_PERM") == 0)
 	  goto build_unary_expr;
 	break;
       }
@@ -1017,6 +1013,38 @@ c_parser_gimple_parentized_binary_expression (gimple_parser &parser,
   return ret;
 }
 
+/* Parse a gimple parentized binary expression.  */
+
+static c_expr
+c_parser_gimple_parentized_ternary_expression (gimple_parser &parser,
+					       location_t op_loc,
+					       tree_code code)
+{
+  struct c_expr ret;
+  ret.set_error ();
+
+  c_parser_consume_token (parser);
+  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+    return ret;
+  c_expr op1 = c_parser_gimple_postfix_expression (parser);
+  if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
+    return ret;
+  c_expr op2 = c_parser_gimple_postfix_expression (parser);
+  if (!c_parser_require (parser, CPP_COMMA, "expected %<)%>"))
+    return ret;
+  c_expr op3 = c_parser_gimple_postfix_expression (parser);
+  if (!c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))
+    return ret;
+
+  if (op1.value != error_mark_node
+      && op2.value != error_mark_node
+      && op3.value != error_mark_node)
+    ret.value = build3_loc (op_loc,
+			    code, TREE_TYPE (op1.value),
+			    op1.value, op2.value, op3.value);
+  return ret;
+}
+
 /* Parse gimple unary expression.
 
    gimple-unary-expression:
@@ -1114,6 +1142,40 @@ c_parser_gimple_unary_expression (gimple_parser &parser)
 	    return c_parser_gimple_parentized_binary_expression (parser,
 								 op_loc,
 								 MAX_EXPR);
+	  else if (strcmp (IDENTIFIER_POINTER (id), "__VEC_PERM") == 0)
+	    return c_parser_gimple_parentized_ternary_expression
+			(parser, op_loc, VEC_PERM_EXPR);
+	  else if (strcmp (IDENTIFIER_POINTER (id), "__BIT_INSERT") == 0)
+	    {
+	      /* __BIT_INSERT '(' postfix-expression, postfix-expression,
+			          integer ')'  */
+	      location_t loc = c_parser_peek_token (parser)->location;
+	      c_parser_consume_token (parser);
+	      if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+		{
+		  c_expr op0 = c_parser_gimple_postfix_expression (parser);
+		  c_parser_skip_until_found (parser, CPP_COMMA,
+					     "expected %<,%>");
+		  c_expr op1 = c_parser_gimple_postfix_expression (parser);
+		  c_parser_skip_until_found (parser, CPP_COMMA,
+					     "expected %<,%>");
+		  c_expr op2 = c_parser_gimple_postfix_expression (parser);
+		  if (TREE_CODE (op2.value) != INTEGER_CST
+		      || !int_fits_type_p (op2.value, bitsizetype))
+		    c_parser_error (parser, "expected constant offset");
+		  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+					     "expected %<)%>");
+		  if (op0.value != error_mark_node
+		      && op1.value != error_mark_node
+		      && TREE_CODE (op2.value) == INTEGER_CST)
+		    ret.value = build3_loc (loc, BIT_INSERT_EXPR,
+					    TREE_TYPE (op0.value),
+					    op0.value, op1.value,
+					    fold_convert (bitsizetype,
+							  op2.value));
+		}
+	      return ret;
+	    }
 	  else
 	    return c_parser_gimple_postfix_expression (parser);
 	}
@@ -1247,6 +1309,36 @@ c_parser_gimple_call_internal (gimple_parser &parser)
   return expr;
 }
 
+/* Parse '<' type [',' alignment] '>' and return a type on success
+   and NULL_TREE on error.  */
+
+static tree
+c_parser_gimple_typespec (gimple_parser &parser)
+{
+  struct c_type_name *type_name = NULL;
+  tree alignment = NULL_TREE;
+  if (c_parser_require (parser, CPP_LESS, "expected %<<%>"))
+    {
+      type_name = c_parser_type_name (parser);
+      /* Optional alignment.  */
+      if (c_parser_next_token_is (parser, CPP_COMMA))
+	{
+	  c_parser_consume_token (parser);
+	  alignment
+	      = c_parser_gimple_postfix_expression (parser).value;
+	}
+      c_parser_skip_until_found (parser,
+				 CPP_GREATER, "expected %<>%>");
+    }
+  if (!type_name)
+    return NULL_TREE;
+  tree tem;
+  tree type = groktypename (type_name, &tem, NULL);
+  if (alignment)
+    type = build_aligned_type (type, tree_to_uhwi (alignment));
+  return type;
+}
+
 /* Parse gimple postfix expression.
 
    gimple-postfix-expression:
@@ -1316,21 +1408,7 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
 		           [ '+' number ] ')'  */
 	      location_t loc = c_parser_peek_token (parser)->location;
 	      c_parser_consume_token (parser);
-	      struct c_type_name *type_name = NULL;
-	      tree alignment = NULL_TREE;
-	      if (c_parser_require (parser, CPP_LESS, "expected %<<%>"))
-	        {
-		  type_name = c_parser_type_name (parser);
-		  /* Optional alignment.  */
-		  if (c_parser_next_token_is (parser, CPP_COMMA))
-		    {
-		      c_parser_consume_token (parser);
-		      alignment
-			= c_parser_gimple_postfix_expression (parser).value;
-		    }
-		  c_parser_skip_until_found (parser,
-					     CPP_GREATER, "expected %<>%>");
-		}
+	      tree type = c_parser_gimple_typespec (parser);
 	      struct c_expr ptr;
 	      ptr.value = error_mark_node;
 	      tree alias_off = NULL_TREE;
@@ -1378,17 +1456,68 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
 		  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 					     "expected %<)%>");
 		}
-	      if (! type_name || c_parser_error (parser))
+	      if (! type || c_parser_error (parser))
 		{
 		  c_parser_set_error (parser, false);
 		  return expr;
 		}
-	      tree tem = NULL_TREE;
-	      tree type = groktypename (type_name, &tem, NULL);
-	      if (alignment)
-		type = build_aligned_type (type, tree_to_uhwi (alignment));
 	      expr.value = build2_loc (loc, MEM_REF,
 				       type, ptr.value, alias_off);
+	      break;
+	    }
+	  else if (strcmp (IDENTIFIER_POINTER (id), "__VIEW_CONVERT") == 0)
+	    {
+	      /* __VIEW_CONVERT '<' type-name [ ',' number ] '>'
+	                        '(' postfix-expression ')'  */
+	      location_t loc = c_parser_peek_token (parser)->location;
+	      c_parser_consume_token (parser);
+	      tree type = c_parser_gimple_typespec (parser);
+	      if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+		{
+		  c_expr op = c_parser_gimple_postfix_expression (parser);
+		  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+					     "expected %<)%>");
+		  if (type && op.value != error_mark_node)
+		    expr.value = build1_loc (loc, VIEW_CONVERT_EXPR,
+					     type, op.value);
+		}
+	      break;
+	    }
+	  else if (strcmp (IDENTIFIER_POINTER (id), "__BIT_FIELD_REF") == 0)
+	    {
+	      /* __BIT_FIELD_REF '<' type-name [ ',' number ] '>'
+	                        '(' postfix-expression, integer, integer ')'  */
+	      location_t loc = c_parser_peek_token (parser)->location;
+	      c_parser_consume_token (parser);
+	      tree type = c_parser_gimple_typespec (parser);
+	      if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+		{
+		  c_expr op0 = c_parser_gimple_postfix_expression (parser);
+		  c_parser_skip_until_found (parser, CPP_COMMA,
+					     "expected %<,%>");
+		  c_expr op1 = c_parser_gimple_postfix_expression (parser);
+		  if (TREE_CODE (op1.value) != INTEGER_CST
+		      || !int_fits_type_p (op1.value, bitsizetype))
+		    c_parser_error (parser, "expected constant size");
+		  c_parser_skip_until_found (parser, CPP_COMMA,
+					     "expected %<,%>");
+		  c_expr op2 = c_parser_gimple_postfix_expression (parser);
+		  if (TREE_CODE (op2.value) != INTEGER_CST
+		      || !int_fits_type_p (op2.value, bitsizetype))
+		    c_parser_error (parser, "expected constant offset");
+		  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+					     "expected %<)%>");
+		  if (type
+		      && op0.value != error_mark_node
+		      && TREE_CODE (op1.value) == INTEGER_CST
+		      && TREE_CODE (op2.value) == INTEGER_CST)
+		    expr.value = build3_loc (loc, BIT_FIELD_REF, type,
+					     op0.value,
+					     fold_convert (bitsizetype,
+							   op1.value),
+					     fold_convert (bitsizetype,
+							   op2.value));
+		}
 	      break;
 	    }
 	  else if (strcmp (IDENTIFIER_POINTER (id), "_Literal") == 0)
@@ -1467,17 +1596,22 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
 		}
 	      else
 		{
-		  bool neg_p;
+		  bool neg_p, addr_p;
 		  if ((neg_p = c_parser_next_token_is (parser, CPP_MINUS)))
+		    c_parser_consume_token (parser);
+		  if ((addr_p = c_parser_next_token_is (parser, CPP_AND)))
 		    c_parser_consume_token (parser);
 		  tree val = c_parser_gimple_postfix_expression (parser).value;
 		  if (! val
 		      || val == error_mark_node
-		      || ! CONSTANT_CLASS_P (val))
+		      || ! CONSTANT_CLASS_P (val)
+		      || (addr_p && TREE_CODE (val) != STRING_CST))
 		    {
 		      c_parser_error (parser, "invalid _Literal");
 		      return expr;
 		    }
+		  if (addr_p)
+		    val = build1 (ADDR_EXPR, type, val);
 		  if (neg_p)
 		    {
 		      val = const_unop (NEGATE_EXPR, TREE_TYPE (val), val);

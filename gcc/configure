@@ -782,6 +782,8 @@ manext
 LIBICONV_DEP
 LTLIBICONV
 LIBICONV
+ZSTD_LIB
+ZSTD_INCLUDE
 DL_LIB
 LDEXP_LIB
 EXTRA_GCC_LIBS
@@ -959,6 +961,9 @@ with_pkgversion
 with_bugurl
 enable_languages
 with_multilib_list
+with_zstd
+with_zstd_include
+with_zstd_lib
 enable_rpath
 with_libiconv_prefix
 enable_sjlj_exceptions
@@ -1783,6 +1788,12 @@ Optional Packages:
   --with-pkgversion=PKG   Use PKG in the version string in place of "GCC"
   --with-bugurl=URL       Direct users to URL to report a bug
   --with-multilib-list    select multilibs (AArch64, SH and x86-64 only)
+  --with-zstd=PATH        specify prefix directory for installed zstd library.
+                          Equivalent to --with-zstd-include=PATH/include plus
+                          --with-zstd-lib=PATH/lib
+  --with-zstd-include=PATH
+                          specify directory for installed zstd include files
+  --with-zstd-lib=PATH    specify directory for the installed zstd library
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
@@ -6739,7 +6750,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
 loose_warn=
 save_CXXFLAGS="$CXXFLAGS"
-for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual $wf_opt; do
+for real_option in -W -Wall -Wno-narrowing -Wwrite-strings -Wcast-qual -Wno-error=format-diag $wf_opt; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
@@ -6797,7 +6808,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 c_loose_warn=
 save_CFLAGS="$CFLAGS"
-for real_option in -Wstrict-prototypes -Wmissing-prototypes; do
+for real_option in -Wstrict-prototypes -Wmissing-prototypes -Wno-error=format-diag; do
   # Do the check with the no- prefix removed since gcc silently
   # accepts any -Wno-* option on purpose
   case $real_option in
@@ -9838,6 +9849,154 @@ $as_echo "#define HAVE_INTTYPES_H 1" >>confdefs.h
 
 fi
 
+# Look for the ZSTD package.
+ZSTD_INCLUDE=
+ZSTD_LIB=
+
+
+ZSTD_CPPFLAGS=
+ZSTD_LDFLAGS=
+
+# Check whether --with-zstd was given.
+if test "${with_zstd+set}" = set; then :
+  withval=$with_zstd;
+fi
+
+
+# Check whether --with-zstd-include was given.
+if test "${with_zstd_include+set}" = set; then :
+  withval=$with_zstd_include;
+fi
+
+
+# Check whether --with-zstd-lib was given.
+if test "${with_zstd_lib+set}" = set; then :
+  withval=$with_zstd_lib;
+fi
+
+case "x$with_zstd" in
+  x) ;;
+  xno)
+    ZSTD_INCLUDE=no
+    ZSTD_LIB=no
+    ;;
+  *) ZSTD_INCLUDE=$with_zstd/include
+     ZSTD_LIB=$with_zstd/lib
+     ;;
+esac
+if test "x$with_zstd_include" != x; then
+  ZSTD_INCLUDE=$with_zstd_include
+fi
+if test "x$with_zstd_lib" != x; then
+  ZSTD_LIB=$with_zstd_lib
+fi
+if test "x$ZSTD_INCLUDE" != x \
+   && test "x$ZSTD_INCLUDE" != xno; then
+  ZSTD_CPPFLAGS=-I$ZSTD_INCLUDE
+fi
+if test "x$ZSTD_LIB" != x \
+   && test "x$ZSTD_LIB" != xno; then
+  ZSTD_LDFLAGS=-L$ZSTD_LIB
+fi
+
+CXXFLAGS="$CXXFLAGS $ZSTD_CPPFLAGS"
+LDFLAGS="$LDFLAGS $ZSTD_LDFLAGS"
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for zstd.h" >&5
+$as_echo_n "checking for zstd.h... " >&6; }
+if ${gcc_cv_header_zstd_h+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <zstd.h>
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  gcc_cv_header_zstd_h=yes
+else
+  gcc_cv_header_zstd_h=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_zstd_h" >&5
+$as_echo "$gcc_cv_header_zstd_h" >&6; }
+if test $gcc_cv_header_zstd_h = yes; then
+
+$as_echo "#define HAVE_ZSTD_H 1" >>confdefs.h
+
+fi
+
+# LTO can use zstd compression algorithm
+save_LIBS="$LIBS"
+LIBS=
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing ZSTD_compress" >&5
+$as_echo_n "checking for library containing ZSTD_compress... " >&6; }
+if ${ac_cv_search_ZSTD_compress+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char ZSTD_compress ();
+int
+main ()
+{
+return ZSTD_compress ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' zstd; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_ZSTD_compress=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_ZSTD_compress+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_ZSTD_compress+:} false; then :
+
+else
+  ac_cv_search_ZSTD_compress=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_ZSTD_compress" >&5
+$as_echo "$ac_cv_search_ZSTD_compress" >&6; }
+ac_res=$ac_cv_search_ZSTD_compress
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+
+fi
+
+ZSTD_LIB="$LIBS"
+LIBS="$save_LIBS"
+
+
 
 
 for ac_func in times clock kill getrlimit setrlimit atoq \
@@ -12197,7 +12356,7 @@ if test "${enable_frame_pointer+set}" = set; then :
 else
 
 case $target_os in
-linux* | gnu* | darwin[8912]*)
+linux* | gnu* | darwin[8912]* | cygwin* | mingw*)
   # Enable -fomit-frame-pointer by default for these systems with DWARF2.
   enable_frame_pointer=no
   ;;
@@ -18655,7 +18814,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18658 "configure"
+#line 18817 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18761,7 +18920,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18764 "configure"
+#line 18923 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23069,17 +23228,13 @@ if test $in_tree_ld != yes ; then
 	#
 	# ld: Software Generation Utilities - Solaris Link Editors: 5.11-1.1701:onnv-ab196087-6931056-03/25/10
 	#
-	# In Solaris 11.4, this was changed to
-	#
-	# ld: Solaris ELF Utilities: 11.4-1.3123
-	#
 	# ld and ld.so.1 are guaranteed to be updated in lockstep, so ld version
 	# numbers can be used in ld.so.1 feature checks even if a different
 	# linker is configured.
 	ld_ver=`$gcc_cv_ld -V 2>&1`
-	if echo "$ld_ver" | $EGREP 'Solaris Link Editors|Solaris ELF Utilities' > /dev/null; then
+	if echo "$ld_ver" | grep 'Solaris Link Editors' > /dev/null; then
 	  ld_vers=`echo $ld_ver | sed -n \
-	    -e 's,^.*: \(5\|1[0-9]\)\.[0-9][0-9]*-\([0-9]\.[0-9][0-9]*\).*$,\2,p'`
+	    -e 's,^.*: 5\.[0-9][0-9]*-\([0-9]\.[0-9][0-9]*\).*$,\1,p'`
 	  ld_vers_major=`expr "$ld_vers" : '\([0-9]*\)'`
 	  ld_vers_minor=`expr "$ld_vers" : '[0-9]*\.\([0-9]*\)'`
 	fi
@@ -23140,7 +23295,7 @@ else
       hppa64*-*-hpux* | ia64*-*-hpux*)
 	gcc_cv_ld_hidden=yes
 	;;
-      *-*-solaris2.1[0-9]*)
+      *-*-solaris2*)
 	# Support for .hidden in Sun ld appeared in Solaris 9 FCS, but
 	# .symbolic was only added in Solaris 9 12/02.
         gcc_cv_ld_hidden=yes
@@ -23931,14 +24086,6 @@ $as_echo "$gcc_cv_as_shf_merge" >&6; }
 
 
 fi
-case "$target" in
-  i?86-*-solaris2.10* | x86_64-*-solaris2.10*)
-    # SHF_MERGE support in Solaris 10/x86 ld is broken.
-    if test x"$gnu_ld" = xno; then
-      gcc_cv_as_shf_merge=no
-    fi
-    ;;
-esac
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_GAS_SHF_MERGE `if test $gcc_cv_as_shf_merge = yes; then echo 1; else echo 0; fi`
@@ -23947,13 +24094,6 @@ _ACEOF
 
 gcc_cv_ld_aligned_shf_merge=yes
 case "$target" in
-  # While Solaris 10/SPARC ld isn't affected, disable to avoid problems
-  # relinking on Solaris 11 < 11.4.
-  sparc*-*-solaris2.10*)
-    if test x"$gnu_ld" = xno; then
-      gcc_cv_ld_aligned_shf_merge=no
-    fi
-    ;;
   # SHF_MERGE support is broken in Solaris ld up to Solaris 11.3/SPARC for
   # alignment > 1.
   sparc*-*-solaris2.11*)
@@ -24084,7 +24224,7 @@ $as_echo "$gcc_cv_as_comdat_group_percent" >&6; }
              foo:
 	     '
            ;;
-         i?86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
+         i?86-*-solaris2* | x86_64-*-solaris2*)
 	   conftest_s='
                .group foo,.text%foo,#comdat
                .section .text%foo, "ax", @progbits
@@ -24394,7 +24534,7 @@ foo:	.long	25
 	;;
   i[34567]86-*-* | x86_64-*-*)
     case "$target" in
-      i[34567]86-*-solaris2.* | x86_64-*-solaris2.1[0-9]*)
+      i[34567]86-*-solaris2.* | x86_64-*-solaris2.*)
 	on_solaris=yes
         ;;
       *)
@@ -29447,11 +29587,7 @@ fi
 $as_echo_n "checking dl_iterate_phdr in target C library... " >&6; }
 gcc_cv_target_dl_iterate_phdr=unknown
 case "$target" in
-  # Restrict to Solaris 11+.  While most of the Solaris 11 linker changes
-  # were backported to Solaris 10 Update 10, dl_iterate_phdr only lives in
-  # libdl there, both complicating its use and breaking compatibility
-  # between Solaris 10 updates.
-  *-*-solaris2.1[1-9]*)
+  *-*-solaris2*)
     # <link.h> needs both a dl_iterate_phdr declaration and support for
     # compilation with largefile support.
     if grep dl_iterate_phdr $target_header_dir/link.h > /dev/null 2>&1 \

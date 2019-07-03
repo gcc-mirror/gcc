@@ -177,8 +177,8 @@ package body Debug is
    --  d_C
    --  d_D
    --  d_E
-   --  d_F
-   --  d_G
+   --  d_F  Encode full invocation paths in ALI files
+   --  d_G  Encode invocation graph in ALI files
    --  d_H
    --  d_I
    --  d_J
@@ -191,7 +191,7 @@ package body Debug is
    --  d_Q
    --  d_R
    --  d_S
-   --  d_T
+   --  d_T  Output trace information on invocation path recording
    --  d_U
    --  d_V
    --  d_W
@@ -257,6 +257,160 @@ package body Debug is
    --  dx  Force binder to read xref information from ali files
    --  dy
    --  dz
+
+   --  dA
+   --  dB
+   --  dC
+   --  dD
+   --  dE
+   --  dF
+   --  dG
+   --  dH
+   --  dI
+   --  dJ
+   --  dK
+   --  dL
+   --  dM
+   --  dN
+   --  dO
+   --  dP
+   --  dQ
+   --  dR
+   --  dS
+   --  dT
+   --  dU
+   --  dV
+   --  dW
+   --  dX
+   --  dY
+   --  dZ
+
+   --  d.a
+   --  d.b
+   --  d.c
+   --  d.d
+   --  d.e
+   --  d.f
+   --  d.g
+   --  d.h
+   --  d.i
+   --  d.j
+   --  d.k
+   --  d.l
+   --  d.m
+   --  d.n
+   --  d.o
+   --  d.p
+   --  d.q
+   --  d.r
+   --  d.s
+   --  d.t
+   --  d.u
+   --  d.v
+   --  d.w
+   --  d.x
+   --  d.y
+   --  d.z
+
+   --  d.A
+   --  d.B
+   --  d.C
+   --  d.D
+   --  d.E
+   --  d.F
+   --  d.G
+   --  d.H
+   --  d.I
+   --  d.J
+   --  d.K
+   --  d.L
+   --  d.M
+   --  d.N
+   --  d.O
+   --  d.P
+   --  d.Q
+   --  d.R
+   --  d.S
+   --  d.T
+   --  d.U
+   --  d.V
+   --  d.W
+   --  d.X
+   --  d.Y
+   --  d.Z
+
+   --  d.1
+   --  d.2
+   --  d.3
+   --  d.4
+   --  d.5
+   --  d.6
+   --  d.7
+   --  d.8
+   --  d.9
+
+   --  d_a
+   --  d_b
+   --  d_c
+   --  d_d
+   --  d_e
+   --  d_f
+   --  d_g
+   --  d_h
+   --  d_i
+   --  d_j
+   --  d_k
+   --  d_l
+   --  d_m
+   --  d_n
+   --  d_o
+   --  d_p
+   --  d_q
+   --  d_r
+   --  d_s
+   --  d_t
+   --  d_u
+   --  d_v
+   --  d_w
+   --  d_x
+   --  d_y
+   --  d_z
+
+   --  d_A  Output ALI invocation tables
+   --  d_B
+   --  d_C
+   --  d_D
+   --  d_F
+   --  d_G
+   --  d_H
+   --  d_I  Output invocation graph
+   --  d_J
+   --  d_K
+   --  d_L  Output library graph
+   --  d_M
+   --  d_N  New bindo order
+   --  d_O  Output elaboration order
+   --  d_P
+   --  d_Q
+   --  d_R
+   --  d_S
+   --  d_T  Output elaboration order trace information
+   --  d_U
+   --  d_V  Validate bindo graphs and order
+   --  d_W
+   --  d_X
+   --  d_Y
+   --  d_Z
+
+   --  d_1
+   --  d_2
+   --  d_3
+   --  d_4
+   --  d_5
+   --  d_6
+   --  d_7
+   --  d_8
+   --  d_9
 
    --  Debug flags used in package Make and its clients (e.g. GNATMAKE)
 
@@ -850,10 +1004,20 @@ package body Debug is
 
    --  d_A  Do not generate ALI files by setting Opt.Disable_ALI_File.
 
+   --  d_F  The compiler encodes the full path from an invocation construct to
+   --       an external target, offering additional information to GNATBIND for
+   --       purposes of error diagnostics.
+
+   --  d_G  The compiler encodes the invocation graph of a unit in its ALI
+   --       file.
+
    --  d_L  Output trace information on elaboration checking. This debug switch
    --       causes output to be generated showing each call or instantiation as
    --       it is checked, and the progress of the recursive trace through
    --       elaboration calls at compile time.
+
+   --  d_T  The compiler outputs trance information to standard output whenever
+   --       an invocation path is recorded.
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when
@@ -954,11 +1118,10 @@ package body Debug is
    --      dependencies) except that internal units are included in the
    --      listing.
 
-   --  di  Normally gnatbind calls Read_Ali with Ignore_Errors set to
-   --      False, since the binder really needs correct version ALI
-   --      files to do its job. This debug flag causes Ignore_Errors
-   --      mode to be set for the binder (and is particularly useful
-   --      for testing ignore errors mode).
+   --  di  Normally GNATBIND calls Read_Ali with Ignore_Errors set to False,
+   --      since the binder really needs correct version ALI files to do its
+   --      job. This debug flag causes Ignore_Errors mode to be set for the
+   --      binder (and is particularly useful for testing ignore errors mode).
 
    --  dn  List details of manipulation of Num_Pred values during execution of
    --      the algorithm used to determine a correct order of elaboration. This
@@ -984,6 +1147,25 @@ package body Debug is
 
    --  dx  Force the binder to read (and then ignore) the xref information
    --      in ali files (used to check that read circuit is working OK).
+
+   --  d_A  GNATBIND output the contents of all ALI invocation-related tables
+   --       in textual format to standard output.
+   --
+   --  d_I  GNATBIND outputs the contents of the invocation graph in textual
+   --       format to standard output.
+   --
+   --  d_L  GNATBIND outputs the contents of the library graph in textual
+   --       format to standard output.
+   --
+   --  d_N  GNATBIND utilizes the elaboration order provided by bindo
+   --
+   --  d_O  GNATBIND outputs the elaboration order of units to standard output
+   --
+   --  d_T  GNATBIND outputs trace information of elaboration order activities
+   --       to standard output.
+   --
+   --  d_V  GNATBIND validates the invocation graph, library graph, SCC graph
+   --       and elaboration order.
 
    --------------------------------------------
    -- Documentation for gnatmake Debug Flags --

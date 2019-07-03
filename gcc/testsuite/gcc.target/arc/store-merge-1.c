@@ -14,4 +14,4 @@ int sigemptyset2 (sigset_t *set)
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "st 0,\\\[r" 2 } } */
+/* { dg-final { scan-assembler-times "std\\s*0,\\\[r" 1 } } */

@@ -586,11 +586,22 @@ class UniquePtrGetWorker(gdb.xmethod.XMethodWorker):
 
     def __call__(self, obj):
         impl_type = obj.dereference().type.fields()[0].type.tag
-        if re.match('^std::(__\d+::)?__uniq_ptr_impl<.*>$', impl_type): # New implementation
-            return obj['_M_t']['_M_t']['_M_head_impl']
+        # Check for new implementations first:
+        if re.match('^std::(__\d+::)?__uniq_ptr_(data|impl)<.*>$', impl_type):
+            tuple_member = obj['_M_t']['_M_t']
         elif re.match('^std::(__\d+::)?tuple<.*>$', impl_type):
-            return obj['_M_t']['_M_head_impl']
-        return None
+            tuple_member = obj['_M_t']
+        else:
+            return None
+        tuple_impl_type = tuple_member.type.fields()[0].type # _Tuple_impl
+        tuple_head_type = tuple_impl_type.fields()[1].type   # _Head_base
+        head_field = tuple_head_type.fields()[0]
+        if head_field.name == '_M_head_impl':
+            return tuple_member['_M_head_impl']
+        elif head_field.is_base_class:
+            return tuple_member.cast(head_field.type)
+        else:
+            return None
 
 class UniquePtrDerefWorker(UniquePtrGetWorker):
     "Implements std::unique_ptr<T>::operator*()"

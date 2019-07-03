@@ -8,5 +8,5 @@ extern void fn (void *) __attribute__((interrupt));
 void
 foo (void)
 {
-  fn (&error); /* { dg-error "interrupt service routine can't be called directly" } */
+  fn (&error); /* { dg-error "interrupt service routine cannot be called directly" } */
 }

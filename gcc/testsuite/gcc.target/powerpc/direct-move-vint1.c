@@ -9,6 +9,5 @@
 /* Check code generation for direct move for vector types.  */
 
 #define TYPE vector int
-#define VSX_REG_ATTR "wa"
 
 #include "direct-move.h"

@@ -2,6 +2,7 @@
 // test in libstdc++-v3).  Author: Loren J. Rittle <ljrittle@acm.org>.
 // { dg-options "-Wall -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wshadow" }
 // { dg-do compile }
+/* { dg-xfail-if "PR90709" { *-*-darwin1[4-9]* } { "-fnext-runtime" } { "" } } */
 
 #ifdef __NEXT_RUNTIME__
 #include <Foundation/NSString.h>

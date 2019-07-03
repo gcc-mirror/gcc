@@ -6721,33 +6721,26 @@ package body Sem_Util is
    -- Enclosing_Generic_Body --
    ----------------------------
 
-   function Enclosing_Generic_Body
-     (N : Node_Id) return Node_Id
-   is
-      P    : Node_Id;
-      Decl : Node_Id;
-      Spec : Node_Id;
+   function Enclosing_Generic_Body (N : Node_Id) return Node_Id is
+      Par     : Node_Id;
+      Spec_Id : Entity_Id;
 
    begin
-      P := Parent (N);
-      while Present (P) loop
-         if Nkind (P) = N_Package_Body
-           or else Nkind (P) = N_Subprogram_Body
-         then
-            Spec := Corresponding_Spec (P);
+      Par := Parent (N);
+      while Present (Par) loop
+         if Nkind_In (Par, N_Package_Body, N_Subprogram_Body) then
+            Spec_Id := Corresponding_Spec (Par);
 
-            if Present (Spec) then
-               Decl := Unit_Declaration_Node (Spec);
-
-               if Nkind (Decl) = N_Generic_Package_Declaration
-                 or else Nkind (Decl) = N_Generic_Subprogram_Declaration
-               then
-                  return P;
-               end if;
+            if Present (Spec_Id)
+              and then Nkind_In (Unit_Declaration_Node (Spec_Id),
+                                 N_Generic_Package_Declaration,
+                                 N_Generic_Subprogram_Declaration)
+            then
+               return Par;
             end if;
          end if;
 
-         P := Parent (P);
+         Par := Parent (Par);
       end loop;
 
       return Empty;
@@ -6757,38 +6750,34 @@ package body Sem_Util is
    -- Enclosing_Generic_Unit --
    ----------------------------
 
-   function Enclosing_Generic_Unit
-     (N : Node_Id) return Node_Id
-   is
-      P    : Node_Id;
-      Decl : Node_Id;
-      Spec : Node_Id;
+   function Enclosing_Generic_Unit (N : Node_Id) return Node_Id is
+      Par       : Node_Id;
+      Spec_Decl : Node_Id;
+      Spec_Id   : Entity_Id;
 
    begin
-      P := Parent (N);
-      while Present (P) loop
-         if Nkind (P) = N_Generic_Package_Declaration
-           or else Nkind (P) = N_Generic_Subprogram_Declaration
+      Par := Parent (N);
+      while Present (Par) loop
+         if Nkind_In (Par, N_Generic_Package_Declaration,
+                           N_Generic_Subprogram_Declaration)
          then
-            return P;
+            return Par;
 
-         elsif Nkind (P) = N_Package_Body
-           or else Nkind (P) = N_Subprogram_Body
-         then
-            Spec := Corresponding_Spec (P);
+         elsif Nkind_In (Par, N_Package_Body, N_Subprogram_Body) then
+            Spec_Id := Corresponding_Spec (Par);
 
-            if Present (Spec) then
-               Decl := Unit_Declaration_Node (Spec);
+            if Present (Spec_Id) then
+               Spec_Decl := Unit_Declaration_Node (Spec_Id);
 
-               if Nkind (Decl) = N_Generic_Package_Declaration
-                 or else Nkind (Decl) = N_Generic_Subprogram_Declaration
+               if Nkind_In (Spec_Decl, N_Generic_Package_Declaration,
+                                       N_Generic_Subprogram_Declaration)
                then
-                  return Decl;
+                  return Spec_Decl;
                end if;
             end if;
          end if;
 
-         P := Parent (P);
+         Par := Parent (Par);
       end loop;
 
       return Empty;
@@ -7578,6 +7567,18 @@ package body Sem_Util is
          Next_Index (Index);
       end loop;
    end Examine_Array_Bounds;
+
+   -------------------
+   -- Exceptions_OK --
+   -------------------
+
+   function Exceptions_OK return Boolean is
+   begin
+      return
+        not (Restriction_Active (No_Exception_Handlers)    or else
+             Restriction_Active (No_Exception_Propagation) or else
+             Restriction_Active (No_Exceptions));
+   end Exceptions_OK;
 
    --------------------------
    -- Explain_Limited_Type --
@@ -9201,12 +9202,12 @@ package body Sem_Util is
          Next_Entity (Func);
       end loop;
 
-      --  If not found, no way to resolve remaining primitives.
+      --  If not found, no way to resolve remaining primitives
 
       if Cursor = Any_Type then
          Error_Msg_N
-           ("primitive operation for Iterable type must appear "
-             & "in the same list of declarations as the type", Aspect);
+           ("primitive operation for Iterable type must appear in the same "
+            & "list of declarations as the type", Aspect);
       end if;
 
       return Cursor;
@@ -10737,7 +10738,7 @@ package body Sem_Util is
          --       Asynch_Writers         Effective_Writes
          --
          --  Note that both forms of External have higher precedence than
-         --  Synchronous (SPARK RM 7.1.4(10)).
+         --  Synchronous (SPARK RM 7.1.4(9)).
 
          elsif Has_Synchronous then
             return Nam_In (Property, Name_Async_Readers, Name_Async_Writers);
@@ -18899,6 +18900,44 @@ package body Sem_Util is
          Mark_Elaboration_Attributes_Node (N_Id);
       end if;
    end Mark_Elaboration_Attributes;
+
+   ----------------------------------------
+   -- Mark_Save_Invocation_Graph_Of_Body --
+   ----------------------------------------
+
+   procedure Mark_Save_Invocation_Graph_Of_Body is
+      Main      : constant Node_Id := Cunit (Main_Unit);
+      Main_Unit : constant Node_Id := Unit (Main);
+      Aux_Id    : Entity_Id;
+
+   begin
+      Set_Save_Invocation_Graph_Of_Body (Main);
+
+      --  Assume that the main unit does not have a complimentary unit
+
+      Aux_Id := Empty;
+
+      --  Obtain the complimentary unit of the main unit
+
+      if Nkind_In (Main_Unit, N_Generic_Package_Declaration,
+                              N_Generic_Subprogram_Declaration,
+                              N_Package_Declaration,
+                              N_Subprogram_Declaration)
+      then
+         Aux_Id := Corresponding_Body (Main_Unit);
+
+      elsif Nkind_In (Main_Unit, N_Package_Body,
+                                 N_Subprogram_Body,
+                                 N_Subprogram_Renaming_Declaration)
+      then
+         Aux_Id := Corresponding_Spec (Main_Unit);
+      end if;
+
+      if Present (Aux_Id) then
+         Set_Save_Invocation_Graph_Of_Body
+           (Parent (Unit_Declaration_Node (Aux_Id)));
+      end if;
+   end Mark_Save_Invocation_Graph_Of_Body;
 
    ----------------------------------
    -- Matching_Static_Array_Bounds --

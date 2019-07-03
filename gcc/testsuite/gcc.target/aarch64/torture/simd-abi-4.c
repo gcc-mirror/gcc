@@ -1,4 +1,5 @@
-/* dg-do run */
+/* { dg-do run } */
+/* { dg-require-effective-target aarch64_variant_pcs } */
 /* { dg-additional-options "-std=c99" }  */
 
 

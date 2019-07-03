@@ -1361,12 +1361,14 @@ ignore_edge_for_nothrow (struct cgraph_edge *e)
     return true;
 
   enum availability avail;
-  cgraph_node *n = e->callee->function_or_virtual_thunk_symbol (&avail,
-							        e->caller);
-  if (avail <= AVAIL_INTERPOSABLE || TREE_NOTHROW (n->decl))
+  cgraph_node *ultimate_target
+    = e->callee->function_or_virtual_thunk_symbol (&avail, e->caller);
+  if (avail <= AVAIL_INTERPOSABLE || TREE_NOTHROW (ultimate_target->decl))
     return true;
-  return opt_for_fn (e->callee->decl, flag_non_call_exceptions)
-	 && !e->callee->binds_to_current_def_p (e->caller);
+  return ((opt_for_fn (e->callee->decl, flag_non_call_exceptions)
+	   && !e->callee->binds_to_current_def_p (e->caller))
+	  || !opt_for_fn (e->caller->decl, flag_ipa_pure_const)
+	  || !opt_for_fn (ultimate_target->decl, flag_ipa_pure_const));
 }
 
 /* Return true if NODE is self recursive function.
@@ -1396,16 +1398,21 @@ cdtor_p (cgraph_node *n, void *)
   return false;
 }
 
-/* We only propagate across edges with non-interposable callee.  */
+/* Skip edges from and to nodes without ipa_pure_const enabled.
+   Ignore not available symbols.  */
 
 static bool
 ignore_edge_for_pure_const (struct cgraph_edge *e)
 {
   enum availability avail;
-  e->callee->function_or_virtual_thunk_symbol (&avail, e->caller);
-  return (avail <= AVAIL_INTERPOSABLE);
-}
+  cgraph_node *ultimate_target
+    = e->callee->function_or_virtual_thunk_symbol (&avail, e->caller);
 
+  return (avail <= AVAIL_INTERPOSABLE
+	  || !opt_for_fn (e->caller->decl, flag_ipa_pure_const)
+	  || !opt_for_fn (ultimate_target->decl,
+			  flag_ipa_pure_const));
+}
 
 /* Produce transitive closure over the callgraph and compute pure/const
    attributes.  */

@@ -1458,7 +1458,7 @@ get_ssa_def_if_simple_copy (tree rhs)
   return rhs;
 }
 
-/* Simple linked list, describing known contents of an aggregate beforere
+/* Simple linked list, describing known contents of an aggregate before
    call.  */
 
 struct ipa_known_agg_contents_list
@@ -1471,41 +1471,48 @@ struct ipa_known_agg_contents_list
   struct ipa_known_agg_contents_list *next;
 };
 
-/* Find the proper place in linked list of ipa_known_agg_contents_list
-   structures where to put a new one with the given LHS_OFFSET and LHS_SIZE,
-   unless there is a partial overlap, in which case return NULL, or such
-   element is already there, in which case set *ALREADY_THERE to true.  */
+/* Add a known content item into a linked list of ipa_known_agg_contents_list
+   structure, in which all elements are sorted ascendingly by offset.  */
 
-static struct ipa_known_agg_contents_list **
-get_place_in_agg_contents_list (struct ipa_known_agg_contents_list **list,
-				HOST_WIDE_INT lhs_offset,
-				HOST_WIDE_INT lhs_size,
-				bool *already_there)
+static inline void
+add_to_agg_contents_list (struct ipa_known_agg_contents_list **plist,
+			  struct ipa_known_agg_contents_list *item)
 {
-  struct ipa_known_agg_contents_list **p = list;
-  while (*p && (*p)->offset < lhs_offset)
+  struct ipa_known_agg_contents_list *list = *plist;
+
+  for (; list; list = list->next)
     {
-      if ((*p)->offset + (*p)->size > lhs_offset)
-	return NULL;
-      p = &(*p)->next;
+      if (list->offset >= item->offset)
+	break;
+
+      plist = &list->next;
     }
 
-  if (*p && (*p)->offset < lhs_offset + lhs_size)
+  item->next = list;
+  *plist = item;
+}
+
+/* Check whether a given known content is clobbered by certain element in
+   a linked list of ipa_known_agg_contents_list.  */
+
+static inline bool
+clobber_by_agg_contents_list_p (struct ipa_known_agg_contents_list *list,
+				struct ipa_known_agg_contents_list *item)
+{
+  for (; list; list = list->next)
     {
-      if ((*p)->offset == lhs_offset && (*p)->size == lhs_size)
-	/* We already know this value is subsequently overwritten with
-	   something else.  */
-	*already_there = true;
-      else
-	/* Otherwise this is a partial overlap which we cannot
-	   represent.  */
-	return NULL;
+      if (list->offset >= item->offset)
+	return list->offset < item->offset + item->size;
+
+      if (list->offset + list->size > item->offset)
+	return true;
     }
-  return p;
+
+  return false;
 }
 
 /* Build aggregate jump function from LIST, assuming there are exactly
-   CONST_COUNT constant entries there and that th offset of the passed argument
+   CONST_COUNT constant entries there and that offset of the passed argument
    is ARG_OFFSET and store it into JFUNC.  */
 
 static void
@@ -1528,26 +1535,79 @@ build_agg_jump_func_from_list (struct ipa_known_agg_contents_list *list,
     }
 }
 
+/* If STMT is a memory store to the object whose address is BASE, extract
+   information (offset, size, and value) into CONTENT, and return true,
+   otherwise we conservatively assume the whole object is modified with
+   unknown content, and return false.  CHECK_REF means that access to object
+   is expected to be in form of MEM_REF expression.  */
+
+static bool
+extract_mem_content (gimple *stmt, tree base, bool check_ref,
+		     struct ipa_known_agg_contents_list *content)
+{
+  HOST_WIDE_INT lhs_offset, lhs_size;
+  tree lhs, rhs, lhs_base;
+  bool reverse;
+
+  if (!gimple_assign_single_p (stmt))
+    return false;
+
+  lhs = gimple_assign_lhs (stmt);
+  rhs = gimple_assign_rhs1 (stmt);
+
+  if (!is_gimple_reg_type (TREE_TYPE (rhs))
+      || TREE_CODE (lhs) == BIT_FIELD_REF
+      || contains_bitfld_component_ref_p (lhs))
+    return false;
+
+  lhs_base = get_ref_base_and_extent_hwi (lhs, &lhs_offset,
+					  &lhs_size, &reverse);
+  if (!lhs_base)
+    return false;
+
+  if (check_ref)
+    {
+      if (TREE_CODE (lhs_base) != MEM_REF
+	  || TREE_OPERAND (lhs_base, 0) != base
+	  || !integer_zerop (TREE_OPERAND (lhs_base, 1)))
+	return false;
+    }
+  else if (lhs_base != base)
+    return false;
+
+  rhs = get_ssa_def_if_simple_copy (rhs);
+
+  content->size = lhs_size;
+  content->offset = lhs_offset;
+  content->constant = is_gimple_ip_invariant (rhs) ? rhs : NULL_TREE;
+  content->next = NULL;
+
+  return true;
+}
+
 /* Traverse statements from CALL backwards, scanning whether an aggregate given
    in ARG is filled in with constant values.  ARG can either be an aggregate
    expression or a pointer to an aggregate.  ARG_TYPE is the type of the
    aggregate.  JFUNC is the jump function into which the constants are
-   subsequently stored.  */
+   subsequently stored.  AA_WALK_BUDGET_P points to limit on number of
+   statements we allow get_continuation_for_phi to examine.  */
 
 static void
-determine_locally_known_aggregate_parts (gcall *call, tree arg,
-					 tree arg_type,
-					 struct ipa_jump_func *jfunc)
+determine_known_aggregate_parts (gcall *call, tree arg,
+				 tree arg_type,
+				 struct ipa_jump_func *jfunc,
+				 unsigned *aa_walk_budget_p)
 {
-  struct ipa_known_agg_contents_list *list = NULL;
+  struct ipa_known_agg_contents_list *list = NULL, *all_list = NULL;
+  bitmap visited = NULL;
   int item_count = 0, const_count = 0;
+  int ipa_max_agg_items = PARAM_VALUE (PARAM_IPA_MAX_AGG_ITEMS);
   HOST_WIDE_INT arg_offset, arg_size;
-  gimple_stmt_iterator gsi;
   tree arg_base;
   bool check_ref, by_ref;
   ao_ref r;
 
-  if (PARAM_VALUE (PARAM_IPA_MAX_AGG_ITEMS) == 0)
+  if (ipa_max_agg_items == 0)
     return;
 
   /* The function operates in three stages.  First, we prepare check_ref, r,
@@ -1606,82 +1666,61 @@ determine_locally_known_aggregate_parts (gcall *call, tree arg,
       ao_ref_init (&r, arg);
     }
 
-  /* Second stage walks back the BB, looks at individual statements and as long
-     as it is confident of how the statements affect contents of the
-     aggregates, it builds a sorted linked list of ipa_agg_jf_list structures
-     describing it.  */
-  gsi = gsi_for_stmt (call);
-  gsi_prev (&gsi);
-  for (; !gsi_end_p (gsi); gsi_prev (&gsi))
+  /* Second stage traverses virtual SSA web backwards starting from the call
+     statement, only looks at individual dominating virtual operand (its
+     definition dominates the call), as long as it is confident that content
+     of the aggregate is affected by definition of the virtual operand, it
+     builds a sorted linked list of ipa_agg_jf_list describing that.  */
+
+  for (tree dom_vuse = gimple_vuse (call); dom_vuse;)
     {
-      struct ipa_known_agg_contents_list *n, **p;
-      gimple *stmt = gsi_stmt (gsi);
-      HOST_WIDE_INT lhs_offset, lhs_size;
-      tree lhs, rhs, lhs_base;
-      bool reverse;
+      gimple *stmt = SSA_NAME_DEF_STMT (dom_vuse);
 
-      if (!stmt_may_clobber_ref_p_1 (stmt, &r))
-	continue;
-      if (!gimple_assign_single_p (stmt))
-	break;
-
-      lhs = gimple_assign_lhs (stmt);
-      rhs = gimple_assign_rhs1 (stmt);
-      if (!is_gimple_reg_type (TREE_TYPE (rhs))
-	  || TREE_CODE (lhs) == BIT_FIELD_REF
-	  || contains_bitfld_component_ref_p (lhs))
-	break;
-
-      lhs_base = get_ref_base_and_extent_hwi (lhs, &lhs_offset,
-					      &lhs_size, &reverse);
-      if (!lhs_base)
-	break;
-
-      if (check_ref)
+      if (gimple_code (stmt) == GIMPLE_PHI)
 	{
-	  if (TREE_CODE (lhs_base) != MEM_REF
-	      || TREE_OPERAND (lhs_base, 0) != arg_base
-	      || !integer_zerop (TREE_OPERAND (lhs_base, 1)))
+	  dom_vuse = get_continuation_for_phi (stmt, &r, *aa_walk_budget_p,
+					       &visited, false, NULL, NULL);
+	  continue;
+	}
+
+      if (stmt_may_clobber_ref_p_1 (stmt, &r))
+	{
+	  struct ipa_known_agg_contents_list *content
+			= XALLOCA (struct ipa_known_agg_contents_list);
+
+	  if (!extract_mem_content (stmt, arg_base, check_ref, content))
+	    break;
+
+	  /* Now we get a dominating virtual operand, and need to check
+	     whether its value is clobbered any other dominating one.  */
+	  if (content->constant
+	      && !clobber_by_agg_contents_list_p (all_list, content))
+	    {
+	      struct ipa_known_agg_contents_list *copy
+			= XALLOCA (struct ipa_known_agg_contents_list);
+
+	      /* Add to the list consisting of only dominating virtual
+		 operands, whose definitions can finally reach the call.  */
+	      add_to_agg_contents_list (&list, (*copy = *content, copy));
+
+	      if (++const_count == ipa_max_agg_items)
+		break;
+	    }
+
+	  /* Add to the list consisting of all dominating virtual operands.  */
+	  add_to_agg_contents_list (&all_list, content);
+
+	  if (++item_count == 2 * ipa_max_agg_items)
 	    break;
 	}
-      else if (lhs_base != arg_base)
-	{
-	  if (DECL_P (lhs_base))
-	    continue;
-	  else
-	    break;
-	}
+      dom_vuse = gimple_vuse (stmt);
+   }
 
-      bool already_there = false;
-      p = get_place_in_agg_contents_list (&list, lhs_offset, lhs_size,
-					  &already_there);
-      if (!p)
-	break;
-      if (already_there)
-	continue;
-
-      rhs = get_ssa_def_if_simple_copy (rhs);
-      n = XALLOCA (struct ipa_known_agg_contents_list);
-      n->size = lhs_size;
-      n->offset = lhs_offset;
-      if (is_gimple_ip_invariant (rhs))
-	{
-	  n->constant = rhs;
-	  const_count++;
-	}
-      else
-	n->constant = NULL_TREE;
-      n->next = *p;
-      *p = n;
-
-      item_count++;
-      if (const_count == PARAM_VALUE (PARAM_IPA_MAX_AGG_ITEMS)
-	  || item_count == 2 * PARAM_VALUE (PARAM_IPA_MAX_AGG_ITEMS))
-	break;
-    }
+  if (visited)
+    BITMAP_FREE (visited);
 
   /* Third stage just goes over the list and creates an appropriate vector of
-     ipa_agg_jf_item structures out of it, of sourse only if there are
+     ipa_agg_jf_item structures out of it, of course only if there are
      any known constants to begin with.  */
 
   if (const_count)
@@ -1690,6 +1729,7 @@ determine_locally_known_aggregate_parts (gcall *call, tree arg,
       build_agg_jump_func_from_list (list, const_count, arg_offset, jfunc);
     }
 }
+
 
 /* Return the Ith param type of callee associated with call graph
    edge E.  */
@@ -1797,7 +1837,7 @@ ipa_set_jfunc_vr (ipa_jump_func *jf, enum value_range_kind type,
   jf->m_vr = ipa_get_value_range (type, min, max);
 }
 
-/* Assign to JF a pointer to a value_range just liek TMP but either fetch a
+/* Assign to JF a pointer to a value_range just like TMP but either fetch a
    copy from ipa_vr_hash_table or allocate a new on in GC memory.  */
 
 static void
@@ -1978,7 +2018,8 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	      || !ipa_get_jf_ancestor_agg_preserved (jfunc))
 	  && (AGGREGATE_TYPE_P (TREE_TYPE (arg))
 	      || POINTER_TYPE_P (param_type)))
-	determine_locally_known_aggregate_parts (call, arg, param_type, jfunc);
+	determine_known_aggregate_parts (call, arg, param_type, jfunc,
+					 &fbi->aa_walk_budget);
     }
   if (!useful_context)
     vec_free (args->polymorphic_call_contexts);

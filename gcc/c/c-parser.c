@@ -157,6 +157,11 @@ c_parse_init (void)
       id = get_identifier (name);
       C_SET_RID_CODE (id, RID_FIRST_INT_N + i);
       C_IS_RESERVED_WORD (id) = 1;
+
+      sprintf (name, "__int%d__", int_n_data[i].bitsize);
+      id = get_identifier (name);
+      C_SET_RID_CODE (id, RID_FIRST_INT_N + i);
+      C_IS_RESERVED_WORD (id) = 1;
     }
 }
 
@@ -6401,7 +6406,7 @@ c_parser_asm_statement (c_parser *parser)
 	case RID_VOLATILE:
 	  if (volatile_loc)
 	    {
-	      error_at (loc, "duplicate asm qualifier %qE", token->value);
+	      error_at (loc, "duplicate %<asm%> qualifier %qE", token->value);
 	      inform (volatile_loc, "first seen here");
 	    }
 	  else
@@ -6412,7 +6417,7 @@ c_parser_asm_statement (c_parser *parser)
 	case RID_INLINE:
 	  if (inline_loc)
 	    {
-	      error_at (loc, "duplicate asm qualifier %qE", token->value);
+	      error_at (loc, "duplicate %<asm%> qualifier %qE", token->value);
 	      inform (inline_loc, "first seen here");
 	    }
 	  else
@@ -6423,7 +6428,7 @@ c_parser_asm_statement (c_parser *parser)
 	case RID_GOTO:
 	  if (goto_loc)
 	    {
-	      error_at (loc, "duplicate asm qualifier %qE", token->value);
+	      error_at (loc, "duplicate %<asm%> qualifier %qE", token->value);
 	      inform (goto_loc, "first seen here");
 	    }
 	  else
@@ -6433,7 +6438,7 @@ c_parser_asm_statement (c_parser *parser)
 
 	case RID_CONST:
 	case RID_RESTRICT:
-	  error_at (loc, "%qE is not an asm qualifier", token->value);
+	  error_at (loc, "%qE is not a valid %<asm%> qualifier", token->value);
 	  c_parser_consume_token (parser);
 	  continue;
 
@@ -6791,7 +6796,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
 
       location_t middle_loc = c_parser_peek_token (parser)->location;
       pedwarn (middle_loc, OPT_Wpedantic,
-	       "ISO C forbids omitting the middle term of a ?: expression");
+	       "ISO C forbids omitting the middle term of a %<?:%> expression");
       if (TREE_CODE (cond.value) == EXCESS_PRECISION_EXPR)
 	{
 	  eptype = TREE_TYPE (cond.value);
@@ -9420,7 +9425,7 @@ warn_for_abs (location_t loc, tree fndecl, tree arg)
 	  if (SCALAR_FLOAT_TYPE_P (atype))
 	    warning_at (loc, OPT_Wabsolute_value,
 			"using integer absolute value function %qD when "
-			"argument is of floating point type %qT",
+			"argument is of floating-point type %qT",
 			fndecl, atype);
 	  else if (TREE_CODE (atype) == COMPLEX_TYPE)
 	    warning_at (loc, OPT_Wabsolute_value,
@@ -9443,16 +9448,16 @@ warn_for_abs (location_t loc, tree fndecl, tree arg)
 	{
 	  if (INTEGRAL_TYPE_P (atype))
 	    warning_at (loc, OPT_Wabsolute_value,
-			"using floating point absolute value function %qD "
+			"using floating-point absolute value function %qD "
 			"when argument is of integer type %qT", fndecl, atype);
 	  else if (DECIMAL_FLOAT_TYPE_P (atype))
 	    warning_at (loc, OPT_Wabsolute_value,
-			"using floating point absolute value function %qD "
-			"when argument is of decimal floating point type %qT",
+			"using floating-point absolute value function %qD "
+			"when argument is of decimal floating-point type %qT",
 			fndecl, atype);
 	  else if (TREE_CODE (atype) == COMPLEX_TYPE)
 	    warning_at (loc, OPT_Wabsolute_value,
-			"using floating point absolute value function %qD when "
+			"using floating-point absolute value function %qD when "
 			"argument is of complex type %qT", fndecl, atype);
 	  else
 	    gcc_unreachable ();
@@ -9470,7 +9475,7 @@ warn_for_abs (location_t loc, tree fndecl, tree arg)
 	  else if (SCALAR_FLOAT_TYPE_P (atype))
 	    warning_at (loc, OPT_Wabsolute_value,
 			"using complex absolute value function %qD when "
-			"argument is of floating point type %qT",
+			"argument is of floating-point type %qT",
 			fndecl, atype);
 	  else
 	    gcc_unreachable ();
@@ -9486,17 +9491,17 @@ warn_for_abs (location_t loc, tree fndecl, tree arg)
 	{
 	  if (INTEGRAL_TYPE_P (atype))
 	    warning_at (loc, OPT_Wabsolute_value,
-			"using decimal floating point absolute value "
+			"using decimal floating-point absolute value "
 			"function %qD when argument is of integer type %qT",
 			fndecl, atype);
 	  else if (SCALAR_FLOAT_TYPE_P (atype))
 	    warning_at (loc, OPT_Wabsolute_value,
-			"using decimal floating point absolute value "
-			"function %qD when argument is of floating point "
+			"using decimal floating-point absolute value "
+			"function %qD when argument is of floating-point "
 			"type %qT", fndecl, atype);
 	  else if (TREE_CODE (atype) == COMPLEX_TYPE)
 	    warning_at (loc, OPT_Wabsolute_value,
-			"using decimal floating point absolute value "
+			"using decimal floating-point absolute value "
 			"function %qD when argument is of complex type %qT",
 			fndecl, atype);
 	  else
@@ -11492,6 +11497,13 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
 
     case PRAGMA_OMP_END_DECLARE_TARGET:
       c_parser_omp_end_declare_target (parser);
+      return false;
+
+    case PRAGMA_OMP_SCAN:
+      error_at (c_parser_peek_token (parser)->location,
+		"%<#pragma omp scan%> may only be used in "
+		"a loop construct with %<inscan%> %<reduction%> clause");
+      c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);
       return false;
 
     case PRAGMA_OMP_SECTION:
@@ -13558,11 +13570,7 @@ c_parser_omp_clause_reduction (c_parser *parser, enum omp_clause_code kind,
 	      if (strcmp (p, "task") == 0)
 		task = true;
 	      else if (strcmp (p, "inscan") == 0)
-		{
-		  inscan = true;
-		  sorry ("%<inscan%> modifier on %<reduction%> clause "
-			 "not supported yet");
-		}
+		inscan = true;
 	      if (task || inscan)
 		{
 		  c_parser_consume_token (parser);
@@ -15801,6 +15809,9 @@ c_parser_oacc_routine (c_parser *parser, enum pragma_context context)
       data.clauses
 	= c_parser_oacc_all_clauses (parser, OACC_ROUTINE_CLAUSE_MASK,
 				     "#pragma acc routine");
+      /* The clauses are in reverse order; fix that to make later diagnostic
+	 emission easier.  */
+      data.clauses = nreverse (data.clauses);
 
       if (TREE_CODE (decl) != FUNCTION_DECL)
 	{
@@ -15815,6 +15826,9 @@ c_parser_oacc_routine (c_parser *parser, enum pragma_context context)
       data.clauses
 	= c_parser_oacc_all_clauses (parser, OACC_ROUTINE_CLAUSE_MASK,
 				     "#pragma acc routine");
+      /* The clauses are in reverse order; fix that to make later diagnostic
+	 emission easier.  */
+      data.clauses = nreverse (data.clauses);
 
       /* Emit a helpful diagnostic if there's another pragma following this
 	 one.  Also don't allow a static assertion declaration, as in the
@@ -15878,33 +15892,39 @@ c_finish_oacc_routine (struct oacc_routine_data *data, tree fndecl,
       return;
     }
 
-  if (oacc_get_fn_attrib (fndecl))
+  int compatible
+    = oacc_verify_routine_clauses (fndecl, &data->clauses, data->loc,
+				   "#pragma acc routine");
+  if (compatible < 0)
     {
-      error_at (data->loc,
-		"%<#pragma acc routine%> already applied to %qD", fndecl);
       data->error_seen = true;
       return;
     }
-
-  if (TREE_USED (fndecl) || (!is_defn && DECL_SAVED_TREE (fndecl)))
+  if (compatible > 0)
     {
-      error_at (data->loc,
-		TREE_USED (fndecl)
-		? G_("%<#pragma acc routine%> must be applied before use")
-		: G_("%<#pragma acc routine%> must be applied before "
-		     "definition"));
-      data->error_seen = true;
-      return;
     }
+  else
+    {
+      if (TREE_USED (fndecl) || (!is_defn && DECL_SAVED_TREE (fndecl)))
+	{
+	  error_at (data->loc,
+		    TREE_USED (fndecl)
+		    ? G_("%<#pragma acc routine%> must be applied before use")
+		    : G_("%<#pragma acc routine%> must be applied before"
+			 " definition"));
+	  data->error_seen = true;
+	  return;
+	}
 
-  /* Process the routine's dimension clauses.  */
-  tree dims = oacc_build_routine_dims (data->clauses);
-  oacc_replace_fn_attrib (fndecl, dims);
+      /* Set the routine's level of parallelism.  */
+      tree dims = oacc_build_routine_dims (data->clauses);
+      oacc_replace_fn_attrib (fndecl, dims);
 
-  /* Add an "omp declare target" attribute.  */
-  DECL_ATTRIBUTES (fndecl)
-    = tree_cons (get_identifier ("omp declare target"),
-		 NULL_TREE, DECL_ATTRIBUTES (fndecl));
+      /* Add an "omp declare target" attribute.  */
+      DECL_ATTRIBUTES (fndecl)
+	= tree_cons (get_identifier ("omp declare target"),
+		     data->clauses, DECL_ATTRIBUTES (fndecl));
+    }
 
   /* Remember that we've used this "#pragma acc routine".  */
   data->fndecl_seen = true;
@@ -16726,6 +16746,71 @@ c_parser_omp_flush (c_parser *parser)
   c_finish_omp_flush (loc, mo);
 }
 
+/* OpenMP 5.0:
+
+   scan-loop-body:
+     { structured-block scan-directive structured-block }  */
+
+static void
+c_parser_omp_scan_loop_body (c_parser *parser, bool open_brace_parsed)
+{
+  tree substmt;
+  location_t loc;
+  tree clauses = NULL_TREE;
+
+  loc = c_parser_peek_token (parser)->location;
+  if (!open_brace_parsed
+      && !c_parser_require (parser, CPP_OPEN_BRACE, "expected %<{%>"))
+    {
+      /* Avoid skipping until the end of the block.  */
+      parser->error = false;
+      return;
+    }
+
+  substmt = c_parser_omp_structured_block (parser, NULL);
+  substmt = build2 (OMP_SCAN, void_type_node, substmt, NULL_TREE);
+  SET_EXPR_LOCATION (substmt, loc);
+  add_stmt (substmt);
+
+  loc = c_parser_peek_token (parser)->location;
+  if (c_parser_peek_token (parser)->pragma_kind == PRAGMA_OMP_SCAN)
+    {
+      enum omp_clause_code clause = OMP_CLAUSE_ERROR;
+
+      c_parser_consume_pragma (parser);
+
+      if (c_parser_next_token_is (parser, CPP_NAME))
+	{
+	  const char *p
+	    = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+	  if (strcmp (p, "inclusive") == 0)
+	    clause = OMP_CLAUSE_INCLUSIVE;
+	  else if (strcmp (p, "exclusive") == 0)
+	    clause = OMP_CLAUSE_EXCLUSIVE;
+	}
+      if (clause != OMP_CLAUSE_ERROR)
+	{
+	  c_parser_consume_token (parser);
+	  clauses = c_parser_omp_var_list_parens (parser, clause, NULL_TREE);
+	}
+      else
+	c_parser_error (parser, "expected %<inclusive%> or "
+				"%<exclusive%> clause");
+      c_parser_skip_to_pragma_eol (parser);
+    }
+  else
+    error ("expected %<#pragma omp scan%>");
+
+  clauses = c_finish_omp_clauses (clauses, C_ORT_OMP);
+  substmt = c_parser_omp_structured_block (parser, NULL);
+  substmt = build2 (OMP_SCAN, void_type_node, substmt, clauses);
+  SET_EXPR_LOCATION (substmt, loc);
+  add_stmt (substmt);
+
+  c_parser_skip_until_found (parser, CPP_CLOSE_BRACE,
+			     "expected %<}%>");
+}
+
 /* Parse the restricted form of loop statements allowed by OpenACC and OpenMP.
    The real trick here is to determine the loop control variable early
    so that we can push a new decl if necessary to make it private.
@@ -16744,6 +16829,7 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
   int i, collapse = 1, ordered = 0, count, nbraces = 0;
   location_t for_loc;
   bool tiling = false;
+  bool inscan = false;
   vec<tree, va_gc> *for_block = make_tree_vector ();
 
   for (cl = clauses; cl; cl = OMP_CLAUSE_CHAIN (cl))
@@ -16760,6 +16846,10 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
 	ordered_cl = cl;
 	ordered = tree_to_shwi (OMP_CLAUSE_ORDERED_EXPR (cl));
       }
+    else if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_REDUCTION
+	     && OMP_CLAUSE_REDUCTION_INSCAN (cl)
+	     && (code == OMP_SIMD || code == OMP_FOR))
+      inscan = true;
 
   if (ordered && ordered < collapse)
     {
@@ -16980,7 +17070,9 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
   c_cont_label = NULL_TREE;
   body = push_stmt_list ();
 
-  if (open_brace_parsed)
+  if (inscan)
+    c_parser_omp_scan_loop_body (parser, open_brace_parsed);
+  else if (open_brace_parsed)
     {
       location_t here = c_parser_peek_token (parser)->location;
       stmt = c_begin_compound_stmt (true);
@@ -19825,8 +19917,8 @@ c_parser_transaction_cancel (c_parser *parser)
 	  && !is_tm_may_cancel_outer (current_function_decl))
 	{
 	  error_at (loc, "outer %<__transaction_cancel%> not "
-		    "within outer %<__transaction_atomic%>");
-	  error_at (loc, "  or a %<transaction_may_cancel_outer%> function");
+		    "within outer %<__transaction_atomic%> or "
+		    "a %<transaction_may_cancel_outer%> function");
 	  goto ret_error;
 	}
     }

@@ -439,6 +439,8 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   TREE_CHECK3 (T, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE)
 #define NOT_RECORD_OR_UNION_CHECK(T) \
   TREE_NOT_CHECK3 (T, RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE)
+#define ARRAY_OR_INTEGER_TYPE_CHECK(T)	\
+  TREE_CHECK2 (T, ARRAY_TYPE, INTEGER_TYPE)
 
 #define NUMERICAL_TYPE_CHECK(T)					\
   TREE_CHECK5 (T, INTEGER_TYPE, ENUMERAL_TYPE, BOOLEAN_TYPE, REAL_TYPE,	\
@@ -904,6 +906,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (TREE_CHECK2 (NODE, VAR_DECL, \
 		RESULT_DECL)->decl_common.decl_nonshareable_flag)
 
+/* In a PARM_DECL, set for Fortran hidden string length arguments that some
+   buggy callers don't pass to the callee.  */
+#define DECL_HIDDEN_STRING_LENGTH(NODE) \
+  (TREE_CHECK (NODE, PARM_DECL)->decl_common.decl_nonshareable_flag)
+
 /* In a CALL_EXPR, means that the call is the jump from a thunk to the
    thunked-to function.  */
 #define CALL_FROM_THUNK_P(NODE) (CALL_EXPR_CHECK (NODE)->base.protected_flag)
@@ -926,6 +933,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    deprecated feature by __attribute__((deprecated)).  */
 #define TREE_DEPRECATED(NODE) \
   ((NODE)->base.deprecated_flag)
+
+/* Nonzero indicates an IDENTIFIER_NODE that names an anonymous
+   aggregate, (as created by anon_aggr_name_format).  */
+#define IDENTIFIER_ANON_P(NODE) \
+  (IDENTIFIER_NODE_CHECK (NODE)->base.private_flag)
 
 /* Nonzero in an IDENTIFIER_NODE if the name is a local alias, whose
    uses are to be substituted for uses of the TREE_CHAINed identifier.  */
@@ -1334,7 +1346,7 @@ class auto_suppress_location_wrappers
 #define OMP_BODY(NODE) \
   TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_MASTER), 0)
 #define OMP_CLAUSES(NODE) \
-  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_TASKGROUP), 1)
+  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_SCAN), 1)
 
 /* Generic accessors for OMP nodes that keep clauses as operand 0.  */
 #define OMP_STANDALONE_CLAUSES(NODE) \
@@ -1425,6 +1437,9 @@ class auto_suppress_location_wrappers
 #define OMP_TARGET_EXIT_DATA_CLAUSES(NODE)\
   TREE_OPERAND (OMP_TARGET_EXIT_DATA_CHECK (NODE), 0)
 
+#define OMP_SCAN_BODY(NODE)	TREE_OPERAND (OMP_SCAN_CHECK (NODE), 0)
+#define OMP_SCAN_CLAUSES(NODE)	TREE_OPERAND (OMP_SCAN_CHECK (NODE), 1)
+
 #define OMP_CLAUSE_SIZE(NODE)						\
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
 					      OMP_CLAUSE_FROM,		\
@@ -1434,7 +1449,7 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_DECL(NODE)      					\
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
 					      OMP_CLAUSE_PRIVATE,	\
-					      OMP_CLAUSE__REDUCTEMP_), 0)
+					      OMP_CLAUSE__SCANTEMP_), 0)
 #define OMP_CLAUSE_HAS_LOCATION(NODE) \
   (LOCATION_LOCUS ((OMP_CLAUSE_CHECK (NODE))->omp_clause.locus)		\
   != UNKNOWN_LOCATION)
@@ -1741,6 +1756,21 @@ class auto_suppress_location_wrappers
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__GRIDDIM_), 0)
 #define OMP_CLAUSE__GRIDDIM__GROUP(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__GRIDDIM_), 1)
+
+/* _CONDTEMP_ holding temporary with iteration count.  */
+#define OMP_CLAUSE__CONDTEMP__ITER(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__CONDTEMP_)->base.public_flag)
+
+/* _SCANTEMP_ holding temporary with pointer to thread's local array;
+   allocation.  */
+#define OMP_CLAUSE__SCANTEMP__ALLOC(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__SCANTEMP_)->base.public_flag)
+
+/* _SCANTEMP_ holding temporary with a control variable for deallocation;
+   one boolean_type_node for test whether alloca was used, another one
+   to pass to __builtin_stack_restore or free.  */
+#define OMP_CLAUSE__SCANTEMP__CONTROL(NODE) \
+  TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__SCANTEMP_))
 
 /* SSA_NAME accessors.  */
 
@@ -2101,7 +2131,14 @@ extern machine_mode vector_type_mode (const_tree);
 /* If set in an ARRAY_TYPE, indicates a string type (for languages
    that distinguish string from array of char).
    If set in a INTEGER_TYPE, indicates a character type.  */
-#define TYPE_STRING_FLAG(NODE) (TYPE_CHECK (NODE)->type_common.string_flag)
+#define TYPE_STRING_FLAG(NODE) \
+	(ARRAY_OR_INTEGER_TYPE_CHECK (NODE)->type_common.string_flag)
+
+/* If set for RECORD_TYPE or UNION_TYPE it indicates that the type conforms
+   to the C++ one definition rule.  This is used for LTO canonical type
+   computation.  */
+#define TYPE_CXX_ODR_P(NODE) \
+	(RECORD_OR_UNION_CHECK (NODE)->type_common.string_flag)
 
 /* Nonzero in a VECTOR_TYPE if the frontends should not emit warnings
    about missing conversions to other vector types of the same size.  */
@@ -4057,6 +4094,11 @@ tree_strip_any_location_wrapper (tree exp)
 #define current_target_pragma		global_trees[TI_CURRENT_TARGET_PRAGMA]
 #define current_optimize_pragma		global_trees[TI_CURRENT_OPTIMIZE_PRAGMA]
 
+/* SCEV analyzer global shared trees.  */
+#define chrec_not_analyzed_yet		NULL_TREE
+#define chrec_dont_know			global_trees[TI_CHREC_DONT_KNOW]
+#define chrec_known			global_trees[TI_CHREC_KNOWN]
+
 #define char_type_node			integer_types[itk_char]
 #define signed_char_type_node		integer_types[itk_signed_char]
 #define unsigned_char_type_node		integer_types[itk_unsigned_char]
@@ -4230,7 +4272,7 @@ extern tree build_vec_series (tree, tree, tree);
 extern tree build_index_vector (tree, poly_uint64, poly_uint64);
 extern void recompute_constructor_flags (tree);
 extern void verify_constructor_flags (tree);
-extern tree build_constructor (tree, vec<constructor_elt, va_gc> *);
+extern tree build_constructor (tree, vec<constructor_elt, va_gc> * CXX_MEM_STAT_INFO);
 extern tree build_constructor_single (tree, tree, tree);
 extern tree build_constructor_from_list (tree, tree);
 extern tree build_constructor_va (tree, int, ...);
@@ -5436,9 +5478,9 @@ target_opts_for_fn (const_tree fndecl)
 
 /* For anonymous aggregate types, we need some sort of name to
    hold on to.  In practice, this should not appear, but it should
-   not be harmful if it does.  */
-extern const char *anon_aggrname_format();
-extern bool anon_aggrname_p (const_tree);
+   not be harmful if it does.  Identifiers returned will be
+   IDENTIFIER_ANON_P.  */
+extern tree make_anon_name ();
 
 /* The tree and const_tree overload templates.   */
 namespace wi

@@ -2832,14 +2832,23 @@ static void
 gfc_conv_intrinsic_is_contiguous (gfc_se * se, gfc_expr * expr)
 {
   gfc_expr *arg;
+  arg = expr->value.function.actual->expr;
+  gfc_conv_is_contiguous_expr (se, arg);
+  se->expr = fold_convert (gfc_typenode_for_spec (&expr->ts), se->expr);
+}
+
+/* This function does the work for gfc_conv_intrinsic_is_contiguous,
+   plus it can be called directly.  */
+
+void
+gfc_conv_is_contiguous_expr (gfc_se *se, gfc_expr *arg)
+{
   gfc_ss *ss;
   gfc_se argse;
   tree desc, tmp, stride, extent, cond;
   int i;
   tree fncall0;
   gfc_array_spec *as;
-
-  arg = expr->value.function.actual->expr;
 
   if (arg->ts.type == BT_CLASS)
     gfc_add_class_array_ref (arg);
@@ -2878,7 +2887,7 @@ gfc_conv_intrinsic_is_contiguous (gfc_se * se, gfc_expr * expr)
       cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
 			      stride, build_int_cst (TREE_TYPE (stride), 1));
 
-      for (i = 0; i < expr->value.function.actual->expr->rank - 1; i++)
+      for (i = 0; i < arg->rank - 1; i++)
 	{
 	  tmp = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[i]);
 	  extent = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[i]);
@@ -2896,7 +2905,7 @@ gfc_conv_intrinsic_is_contiguous (gfc_se * se, gfc_expr * expr)
 	  cond = fold_build2_loc (input_location, TRUTH_AND_EXPR,
 				  boolean_type_node, cond, tmp);
 	}
-      se->expr = convert (gfc_typenode_for_spec (&expr->ts), cond);
+      se->expr = cond;
     }
 }
 
@@ -6337,6 +6346,7 @@ gfc_conv_intrinsic_shift (gfc_se * se, gfc_expr * expr, bool right_shift,
 			  bool arithmetic)
 {
   tree args[2], type, num_bits, cond;
+  tree bigshift;
 
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
 
@@ -6356,6 +6366,18 @@ gfc_conv_intrinsic_shift (gfc_se * se, gfc_expr * expr, bool right_shift,
   if (!arithmetic)
     se->expr = fold_convert (type, se->expr);
 
+  if (!arithmetic)
+    bigshift = build_int_cst (type, 0);
+  else
+    {
+      tree nonneg = fold_build2_loc (input_location, GE_EXPR,
+				     logical_type_node, args[0],
+				     build_int_cst (TREE_TYPE (args[0]), 0));
+      bigshift = fold_build3_loc (input_location, COND_EXPR, type, nonneg,
+				  build_int_cst (type, 0),
+				  build_int_cst (type, -1));
+    }
+
   /* The Fortran standard allows shift widths <= BIT_SIZE(I), whereas
      gcc requires a shift width < BIT_SIZE(I), so we have to catch this
      special case.  */
@@ -6364,7 +6386,7 @@ gfc_conv_intrinsic_shift (gfc_se * se, gfc_expr * expr, bool right_shift,
 			  args[1], num_bits);
 
   se->expr = fold_build3_loc (input_location, COND_EXPR, type, cond,
-			      build_int_cst (type, 0), se->expr);
+			      bigshift, se->expr);
 }
 
 /* ISHFT (I, SHIFT) = (abs (shift) >= BIT_SIZE (i))
@@ -10949,7 +10971,6 @@ conv_intrinsic_atomic_op (gfc_code *code)
   fn = (built_in_function) ((int) fn
 			    + exact_log2 (tree_to_uhwi (TYPE_SIZE_UNIT (tmp)))
 			    + 1);
-  tmp = builtin_decl_explicit (fn);
   tree itype = TREE_TYPE (TREE_TYPE (atom));
   tmp = builtin_decl_explicit (fn);
 

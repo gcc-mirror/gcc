@@ -1746,7 +1746,7 @@ tail_merge_optimize (unsigned int todo)
     {
       cleanup_tree_cfg ();
       todo &= ~TODO_cleanup_cfg;
-      split_critical_edges ();
+      split_edges_for_insertion ();
     }
 
   if (!dom_info_available_p (CDI_DOMINATORS))

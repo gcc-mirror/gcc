@@ -83,7 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 	  /* pass_build_ealias is a dummy pass that ensures that we
 	     execute TODO_rebuild_alias at this point.  */
 	  NEXT_PASS (pass_build_ealias);
-	  NEXT_PASS (pass_fre);
+	  NEXT_PASS (pass_fre, true /* may_iterate */);
 	  NEXT_PASS (pass_early_vrp);
 	  NEXT_PASS (pass_merge_phi);
           NEXT_PASS (pass_dse);
@@ -117,7 +117,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_oacc_kernels);
 	  PUSH_INSERT_PASSES_WITHIN (pass_oacc_kernels)
 	      NEXT_PASS (pass_ch);
-	      NEXT_PASS (pass_fre);
+	      NEXT_PASS (pass_fre, true /* may_iterate */);
 	      /* We use pass_lim to rewrite in-memory iteration and reduction
 		 variable accesses in loops into local variables accesses.  */
 	      NEXT_PASS (pass_lim);
@@ -199,7 +199,7 @@ along with GCC; see the file COPYING3.  If not see
 	 execute TODO_rebuild_alias at this point.  */
       NEXT_PASS (pass_build_alias);
       NEXT_PASS (pass_return_slot);
-      NEXT_PASS (pass_fre);
+      NEXT_PASS (pass_fre, true /* may_iterate */);
       NEXT_PASS (pass_merge_phi);
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_vrp, true /* warn_array_bounds_p */);
@@ -312,6 +312,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_strength_reduction);
       NEXT_PASS (pass_split_paths);
       NEXT_PASS (pass_tracer);
+      NEXT_PASS (pass_fre, false /* may_iterate */);
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_dominator, false /* may_peel_loop_headers_p */);
       NEXT_PASS (pass_strlen);

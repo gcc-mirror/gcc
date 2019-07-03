@@ -87,8 +87,8 @@ opt_pass::clone ()
 void
 opt_pass::set_pass_param (unsigned int, bool)
 {
-  internal_error ("pass %s needs a set_pass_param implementation to handle the"
-		  " extra argument in NEXT_PASS", name);
+  internal_error ("pass %s needs a %<set_pass_param%> implementation "
+		  "to handle the extra argument in %<NEXT_PASS%>", name);
 }
 
 bool

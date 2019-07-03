@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -fopenmp-simd -msve-vector-bits=512" } */
+/* { dg-options "-O2 -ftree-vectorize -fopenmp-simd -msve-vector-bits=512 -fno-tree-loop-distribute-patterns" } */
 
 #define N 64
 #include "single_1.c"

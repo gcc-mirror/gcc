@@ -1,6 +1,6 @@
 /* PR middle-end/40340 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wall -Wno-system-headers" } */
+/* { dg-options "-O2 -Wall -Wno-system-headers -fno-tree-dse" } */
 
 #include "pr40340.h"
 

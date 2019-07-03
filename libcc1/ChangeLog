@@ -1,3 +1,13 @@
+2019-05-21  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_add_using_decl): Use
+	finish_nonmember_using_decl.
+
+2019-05-20  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_add_using_namespace): Call renamed
+	finish_using_directive.
+
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Update copyright years.

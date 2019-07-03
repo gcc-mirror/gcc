@@ -26,15 +26,12 @@ enum hist_type
   HIST_TYPE_INTERVAL,	/* Measures histogram of values inside a specified
 			   interval.  */
   HIST_TYPE_POW2,	/* Histogram of power of 2 values.  */
-  HIST_TYPE_SINGLE_VALUE, /* Tries to identify the value that is (almost)
-			   always constant.  */
+  HIST_TYPE_TOPN_VALUES, /* Tries to identify the N most common values.  */
   HIST_TYPE_INDIR_CALL,   /* Tries to identify the function that is (almost)
 			    called in indirect call */
   HIST_TYPE_AVERAGE,	/* Compute average value (sum of all values).  */
   HIST_TYPE_IOR,	/* Used to compute expected alignment.  */
   HIST_TYPE_TIME_PROFILE, /* Used for time profile */
-  HIST_TYPE_INDIR_CALL_TOPN, /* Tries to identify the top N most frequently
-                                called functions in indirect call.  */
   HIST_TYPE_MAX
 };
 
@@ -92,6 +89,10 @@ void free_histograms (function *);
 void stringop_block_profile (gimple *, unsigned int *, HOST_WIDE_INT *);
 gcall *gimple_ic (gcall *, struct cgraph_node *, profile_probability);
 bool check_ic_target (gcall *, struct cgraph_node *);
+bool get_most_common_single_value (gimple *stmt, const char *counter_type,
+				   histogram_value hist,
+				   gcov_type *value, gcov_type *count,
+				   gcov_type *all);
 
 
 /* In tree-profile.c.  */
@@ -99,7 +100,8 @@ extern void gimple_init_gcov_profiler (void);
 extern void gimple_gen_edge_profiler (int, edge);
 extern void gimple_gen_interval_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_pow2_profiler (histogram_value, unsigned, unsigned);
-extern void gimple_gen_one_value_profiler (histogram_value, unsigned, unsigned);
+extern void gimple_gen_topn_values_profiler (histogram_value, unsigned,
+					     unsigned);
 extern void gimple_gen_ic_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_ic_func_profiler (void);
 extern void gimple_gen_time_profiler (unsigned, unsigned);

@@ -430,7 +430,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define MOVE_MAX 8
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
-   move-instruction pairs, we will do a movmem or libcall instead.  */
+   move-instruction pairs, we will do a cpymem or libcall instead.  */
 #define MOVE_RATIO(speed) ((speed) ? 6 : 3)
 #define CLEAR_RATIO(speed) ((speed) ? 6 : 2)
 

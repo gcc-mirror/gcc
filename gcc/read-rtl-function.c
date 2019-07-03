@@ -707,7 +707,7 @@ parse_edge_flag_token (const char *tok)
   } while (0);
 #include "cfg-flags.def"
 #undef DEF_EDGE_FLAG
-  error ("unrecognized edge flag: '%s'", tok);
+  error ("unrecognized edge flag: %qs", tok);
   return 0;
 }
 
@@ -978,7 +978,7 @@ function_reader::parse_enum_value (int num_values, const char *const *strings)
       if (strcmp (name.string, strings[i]) == 0)
 	return i;
     }
-  error ("unrecognized enum value: '%s'", name.string);
+  error ("unrecognized enum value: %qs", name.string);
   return 0;
 }
 

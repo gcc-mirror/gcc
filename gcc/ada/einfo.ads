@@ -3779,7 +3779,7 @@ package Einfo is
 
 --    Optimize_Alignment_Space (Flag241)
 --       Defined in type, subtype, variable, and constant entities. This
---       flag records that the type or object is to be layed out in a manner
+--       flag records that the type or object is to be laid out in a manner
 --       consistent with Optimize_Alignment (Space) mode. The compiler and
 --       binder ensure a consistent view of any given type or object. If pragma
 --       Optimize_Alignment (Off) mode applies to the type/object, then neither
@@ -3787,7 +3787,7 @@ package Einfo is
 
 --    Optimize_Alignment_Time (Flag242)
 --       Defined in type, subtype, variable, and constant entities. This
---       flag records that the type or object is to be layed out in a manner
+--       flag records that the type or object is to be laid out in a manner
 --       consistent with Optimize_Alignment (Time) mode. The compiler and
 --       binder ensure a consistent view of any given type or object. If pragma
 --       Optimize_Alignment (Off) mode applies to the type/object, then neither

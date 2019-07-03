@@ -1379,7 +1379,7 @@ Common Report Var(flag_ipa_sra) Init(0) Optimization
 Perform interprocedural reduction of aggregates.
 
 feliminate-unused-debug-symbols
-Common Report Var(flag_debug_only_used_symbols)
+Common Report Var(flag_debug_only_used_symbols) Init(1)
 Perform unused symbol elimination in debug info.
 
 feliminate-unused-debug-types
@@ -1436,6 +1436,10 @@ Output lto objects containing both the intermediate language and binary output.
 ffinite-math-only
 Common Report Var(flag_finite_math_only) Optimization SetByCombined
 Assume no NaNs or infinities are generated.
+
+ffinite-loops
+Common Report Var(flag_finite_loops) Optimization
+Assume that loops with an exit will terminate and not loop indefinitely.
 
 ffixed-
 Common Joined RejectNegative Var(common_deferred_options) Defer
@@ -1884,12 +1888,12 @@ Specify the algorithm to partition symbols and vars at linktime.
 
 ; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.
 flto-compression-level=
-Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1) IntegerRange(0, 9)
--flto-compression-level=<number>	Use zlib compression level <number> for IL.
+Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1) IntegerRange(0, 19)
+-flto-compression-level=<number>	Use zlib/zstd compression level <number> for IL.
 
 flto-odr-type-merging
-Common Report Var(flag_lto_odr_type_mering) Init(1)
-Merge C++ types using One Definition Rule.
+Common Ignore
+Does nothing.  Preserved for backward compatibility.
 
 flto-report
 Common Report Var(flag_lto_report) Init(0)
@@ -2091,6 +2095,10 @@ fprofile-dir=
 Common Joined RejectNegative Var(profile_data_prefix)
 Set the top-level directory for storing the profile data.
 The default is 'pwd'.
+
+fprofile-note=
+Common Joined RejectNegative Var(profile_note_location)
+Select the name for storing the profile note file.
 
 fprofile-correction
 Common Report Var(flag_profile_correction)

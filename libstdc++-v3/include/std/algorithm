@@ -63,17 +63,17 @@
 
 #if __cplusplus > 201402L
 // Parallel STL algorithms
-# if __PSTL_EXECUTION_POLICIES_DEFINED
+# if _PSTL_EXECUTION_POLICIES_DEFINED
 // If <execution> has already been included, pull in implementations
 #  include <pstl/glue_algorithm_impl.h>
 #  else
 // Otherwise just pull in forward declarations
 #    include <pstl/glue_algorithm_defs.h>
-#    define __PSTL_ALGORITHM_FORWARD_DECLARED 1
+#    define _PSTL_ALGORITHM_FORWARD_DECLARED 1
 #  endif
 
 // Feature test macro for parallel algorithms
-# define __cpp_lib_parallel_algorithm 201703L
+# define __cpp_lib_parallel_algorithm 201603L
 #endif // C++17
 
 #ifdef _GLIBCXX_PARALLEL

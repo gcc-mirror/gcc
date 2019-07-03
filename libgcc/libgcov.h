@@ -102,7 +102,6 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 #define gcov_read_unsigned __gcov_read_unsigned
 #define gcov_read_counter __gcov_read_counter
 #define gcov_read_summary __gcov_read_summary
-#define gcov_sort_n_vals __gcov_sort_n_vals
 
 #else /* IN_GCOV_TOOL */
 /* About the host.  */
@@ -127,10 +126,9 @@ typedef unsigned gcov_position_t;
 
 #define L_gcov 1
 #define L_gcov_merge_add 1
-#define L_gcov_merge_single 1
+#define L_gcov_merge_topn 1
 #define L_gcov_merge_ior 1
 #define L_gcov_merge_time_profile 1
-#define L_gcov_merge_icall_topn 1
 
 extern gcov_type gcov_read_counter_mem ();
 extern unsigned gcov_get_merge_weight ();
@@ -261,14 +259,11 @@ extern void __gcov_merge_add (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 /* The merge function to select the minimum valid counter value.  */
 extern void __gcov_merge_time_profile (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 
-/* The merge function to choose the most common value.  */
-extern void __gcov_merge_single (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
+/* The merge function to choose the most common N values.  */
+extern void __gcov_merge_topn (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 
 /* The merge function that just ors the counters together.  */
 extern void __gcov_merge_ior (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
-
-/* The merge function is used for topn indirect call counters.  */
-extern void __gcov_merge_icall_topn (gcov_type *, unsigned) ATTRIBUTE_HIDDEN;
 
 /* The profiler functions.  */
 extern void __gcov_interval_profiler (gcov_type *, gcov_type, int, unsigned);
@@ -276,17 +271,15 @@ extern void __gcov_interval_profiler_atomic (gcov_type *, gcov_type, int,
 					     unsigned);
 extern void __gcov_pow2_profiler (gcov_type *, gcov_type);
 extern void __gcov_pow2_profiler_atomic (gcov_type *, gcov_type);
-extern void __gcov_one_value_profiler (gcov_type *, gcov_type);
-extern void __gcov_one_value_profiler_atomic (gcov_type *, gcov_type);
-extern void __gcov_indirect_call_profiler_v3 (gcov_type, void *);
+extern void __gcov_topn_values_profiler (gcov_type *, gcov_type);
+extern void __gcov_topn_values_profiler_atomic (gcov_type *, gcov_type);
+extern void __gcov_indirect_call_profiler_v4 (gcov_type, void *);
 extern void __gcov_time_profiler (gcov_type *);
 extern void __gcov_time_profiler_atomic (gcov_type *);
 extern void __gcov_average_profiler (gcov_type *, gcov_type);
 extern void __gcov_average_profiler_atomic (gcov_type *, gcov_type);
 extern void __gcov_ior_profiler (gcov_type *, gcov_type);
 extern void __gcov_ior_profiler_atomic (gcov_type *, gcov_type);
-extern void __gcov_indirect_call_topn_profiler (gcov_type, void *);
-extern void gcov_sort_n_vals (gcov_type *, int);
 
 #ifndef inhibit_libc
 /* The wrappers around some library functions..  */
@@ -328,6 +321,29 @@ gcov_get_counter (void)
      multiply it by the merge weight.  */
 
   return gcov_read_counter_mem () * gcov_get_merge_weight ();
+#endif
+}
+
+/* Similar function as gcov_get_counter(), but do not scale
+   when read value is equal to IGNORE_SCALING.  */
+
+static inline gcov_type
+gcov_get_counter_ignore_scaling (gcov_type ignore_scaling ATTRIBUTE_UNUSED)
+{
+#ifndef IN_GCOV_TOOL
+  /* This version is for reading count values in libgcov runtime:
+     we read from gcda files.  */
+
+  return gcov_read_counter ();
+#else
+  /* This version is for gcov-tool. We read the value from memory and
+     multiply it by the merge weight.  */
+
+  gcov_type v = gcov_read_counter_mem ();
+  if (v != ignore_scaling)
+    v *= gcov_get_merge_weight ();
+
+  return v;
 #endif
 }
 

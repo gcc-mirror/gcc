@@ -1367,6 +1367,32 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
 	      return;
 	    }
 	}
+      /* And similarly vec_shl pattern.  */
+      if (optab_handler (vec_shl_optab, TYPE_MODE (vect_type))
+	  != CODE_FOR_nothing
+	  && TREE_CODE (vec0) == VECTOR_CST
+	  && initializer_zerop (vec0))
+	{
+	  unsigned int first = 0;
+	  for (i = 0; i < elements; ++i)
+	    if (known_eq (poly_uint64 (indices[i]), elements))
+	      {
+		if (i == 0 || first)
+		  break;
+		first = i;
+	      }
+	    else if (first
+		     ? maybe_ne (poly_uint64 (indices[i]),
+					      elements + i - first)
+		     : maybe_ge (poly_uint64 (indices[i]), elements))
+	      break;
+	  if (i == elements)
+	    {
+	      gimple_assign_set_rhs3 (stmt, mask);
+	      update_stmt (stmt);
+	      return;
+	    }
+	}
     }
   else if (can_vec_perm_var_p (TYPE_MODE (vect_type)))
     return;
@@ -1955,7 +1981,6 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       || code == VEC_UNPACK_FLOAT_LO_EXPR
       || code == VEC_PACK_FLOAT_EXPR)
     {
-      type = TREE_TYPE (rhs1);
       /* We do not know how to scalarize those.  */
       return;
     }
@@ -1978,7 +2003,6 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       || code == VEC_WIDEN_LSHIFT_HI_EXPR
       || code == VEC_WIDEN_LSHIFT_LO_EXPR)
     {
-      type = TREE_TYPE (rhs1);
       /* We do not know how to scalarize those.  */
       return;
     }

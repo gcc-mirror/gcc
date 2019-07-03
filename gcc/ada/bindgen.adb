@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with ALI;      use ALI;
 with Casing;   use Casing;
 with Fname;    use Fname;
 with Gnatvsn;  use Gnatvsn;
@@ -1805,13 +1804,18 @@ package body Bindgen is
       --  referenced elsewhere in the generated program, but is needed by
       --  the debugger (that's why it is generated in the first place). The
       --  reference stops Ada_Main_Program_Name from being optimized away by
-      --  smart linkers, such as the AiX linker.
+      --  smart linkers.
 
       --  Because this variable is unused, we make this variable "aliased"
       --  with a pragma Volatile in order to tell the compiler to preserve
       --  this variable at any level of optimization.
 
-      if Bind_Main_Program and not CodePeer_Mode then
+      --  CodePeer and CCG do not need this extra code on the other hand
+
+      if Bind_Main_Program
+        and then not CodePeer_Mode
+        and then not Generate_C_Code
+      then
          WBI ("      Ensure_Reference : aliased System.Address := " &
               "Ada_Main_Program_Name'Address;");
          WBI ("      pragma Volatile (Ensure_Reference);");

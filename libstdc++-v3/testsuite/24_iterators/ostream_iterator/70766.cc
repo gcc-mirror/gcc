@@ -33,4 +33,5 @@ test01()
 {
   std::basic_ostream<char, adl::traits> os(nullptr);
   std::ostream_iterator<int, char, adl::traits> oi(os);
+  std::ostream_iterator<int, char, adl::traits> oi2(os, "");
 }

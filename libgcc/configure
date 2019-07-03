@@ -604,6 +604,7 @@ vis_hide
 solaris_ld_v2_maps
 real_host_noncanonical
 accel_dir_suffix
+use_tm_clone_registry
 force_explicit_eh_registry
 CET_FLAGS
 fixed_point
@@ -712,6 +713,7 @@ enable_decimal_float
 with_system_libunwind
 enable_cet
 enable_explicit_exception_frame_registration
+enable_tm_clone_registry
 with_glibc_version
 enable_tls
 with_gcc_major_version_only
@@ -1355,6 +1357,7 @@ Optional Features:
                           register exception tables explicitly at module
                           start, for use e.g. for compatibility with
                           installations without PT_GNU_EH_FRAME support
+  --disable-tm-clone-registry    disable TM clone registry
   --enable-tls            Use thread-local storage [default=yes]
 
 Optional Packages:
@@ -4953,6 +4956,18 @@ fi
 
 
 
+# Check whether --enable-tm-clone-registry was given.
+if test "${enable_tm_clone_registry+set}" = set; then :
+  enableval=$enable_tm_clone_registry;
+use_tm_clone_registry=
+if test "$enable_tm_clone_registry" = no; then
+  use_tm_clone_registry=-DUSE_TM_CLONE_REGISTRY=0
+fi
+
+fi
+
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking if the linker ($LD) is GNU ld" >&5
 $as_echo_n "checking if the linker ($LD) is GNU ld... " >&6; }
 if ${acl_cv_prog_gnu_ld+:} false; then :
@@ -5225,7 +5240,7 @@ fi
 # Link with -nostartfiles -nodefaultlibs since neither are present while
 # building libgcc.
 case ${host} in
-i?86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
+i?86-*-solaris2* | x86_64-*-solaris2*)
   cat > conftest.s <<EOF
 	.section	.eh_frame,"a",@unwind
 	.zero	4
@@ -5542,6 +5557,7 @@ tm_file="${tm_file_}"
 case $target_thread_file in
     aix)	thread_header=config/rs6000/gthr-aix.h ;;
     dce)	thread_header=config/pa/gthr-dce.h ;;
+    gcn)	thread_header=config/gcn/gthr-gcn.h ;;
     lynx)	thread_header=config/gthr-lynx.h ;;
     mipssde)	thread_header=config/mips/gthr-mipssde.h ;;
     posix)	thread_header=gthr-posix.h ;;

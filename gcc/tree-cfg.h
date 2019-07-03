@@ -105,7 +105,7 @@ extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);
 extern tree find_case_label_for_value (const gswitch *switch_stmt, tree val);
 extern edge find_taken_edge_switch_expr (const gswitch *switch_stmt, tree val);
 extern unsigned int execute_fixup_cfg (void);
-extern unsigned int split_critical_edges (void);
+extern unsigned int split_critical_edges (bool for_edge_insertion_p = false);
 extern basic_block insert_cond_bb (basic_block, gimple *, gimple *,
 				   profile_probability);
 extern bool gimple_find_sub_bbs (gimple_seq, gimple_stmt_iterator *);
@@ -126,6 +126,13 @@ should_remove_lhs_p (tree lhs)
   return (lhs
 	  && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (lhs))) == INTEGER_CST
 	  && !TREE_ADDRESSABLE (TREE_TYPE (lhs)));
+}
+
+
+inline unsigned int
+split_edges_for_insertion ()
+{
+  return split_critical_edges (/*for_edge_insertion_p=*/true);
 }
 
 #endif /* _TREE_CFG_H  */

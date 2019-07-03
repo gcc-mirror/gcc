@@ -56,8 +56,8 @@ foo (void *p, char *s)
   __builtin_strspn (s, NULL);  /* { dg-warning "null" "null pointer check" } */
   __builtin_strchr (NULL, 16);  /* { dg-warning "null" "null pointer check" } */
   __builtin_strrchr (NULL, 16);  /* { dg-warning "null" "null pointer check" } */
-  __builtin_strdup (NULL);  /* { dg-warning "null" "null pointer check" } */
-  __builtin_strndup (NULL, 16);  /* { dg-warning "null" "null pointer check" } */
+  void *p1 = __builtin_strdup (NULL);  /* { dg-warning "null" "null pointer check" } */
+  void *p2 = __builtin_strndup (NULL, 16);  /* { dg-warning "null" "null pointer check" } */
 
   __builtin_nan (NULL);  /* { dg-warning "null" "null pointer check" } */
   __builtin_nanf (NULL);  /* { dg-warning "null" "null pointer check" } */

@@ -668,8 +668,6 @@ do_jump_by_parts_greater_rtx (scalar_int_mode mode, int unsignedp, rtx op0,
       code = LE;
       if_true_label = if_false_label;
       if_false_label = drop_through_label;
-      drop_through_if_true = false;
-      drop_through_if_false = true;
       prob = prob.invert ();
     }
 

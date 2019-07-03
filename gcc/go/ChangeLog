@@ -1,3 +1,21 @@
+2019-07-02  Cherry Zhang  <cherryyz@google.com>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Define __builtin_memset.
+
+2019-06-21  Cherry Zhang  <cherryyz@google.com>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Define math/bits
+	builtins.
+
+2019-05-30  Jim Wilson  <jimw@sifive.com>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Add BUILT_IN_ATOMIC_FETCH_AND_1
+	and BUILT_IN_ATOMIC_FETCH_OR_1.
+
+2019-05-16  Cherry Zhang  <cherryyz@google.com>
+
+	* go-gcc.cc (Gcc_backend::Gcc_backend): Define atomic builtins.
+
 2019-05-08  Cherry Zhang  <cherryyz@google.com>
 
 	* go-gcc.cc (Gcc_backend::Gcc_backend): Define memmove builtin.

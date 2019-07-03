@@ -1305,3 +1305,6 @@ do {									     \
 
 /* Target CPU versions for D.  */
 #define TARGET_D_CPU_VERSIONS pa_d_target_versions
+
+/* Output default function prologue for hpux.  */
+#define TARGET_ASM_FUNCTION_PROLOGUE pa_output_function_prologue

@@ -9,9 +9,9 @@ extern C* c;
 
 void pointers(C* c, A2* a2, B1* b1)
 {
-  (void) static_cast<A1*>(c);	// { dg-error "invalid static_cast" }
-  (void) static_cast<C*>(a2);	// { dg-error "invalid static_cast" }
-  (void) static_cast<B2*>(b1);	// { dg-error "invalid static_cast" }
+  (void) static_cast<A1*>(c);	// { dg-error "invalid 'static_cast'" }
+  (void) static_cast<C*>(a2);	// { dg-error "invalid 'static_cast'" }
+  (void) static_cast<B2*>(b1);	// { dg-error "invalid 'static_cast'" }
 }
 
 struct D1; // { dg-message "note: class type 'D1' is incomplete" }
@@ -21,7 +21,7 @@ struct E2; // { dg-message "note: class type 'E2' is incomplete" }
 
 void references(C& c, D2& d2, E1& e1)
 {
-  (void) static_cast<D1&>(c);	// { dg-error "invalid static_cast" }
-  (void) static_cast<C&>(d2);	// { dg-error "invalid static_cast" }
-  (void) static_cast<E2&>(e1);	// { dg-error "invalid static_cast" }
+  (void) static_cast<D1&>(c);	// { dg-error "invalid 'static_cast'" }
+  (void) static_cast<C&>(d2);	// { dg-error "invalid 'static_cast'" }
+  (void) static_cast<E2&>(e1);	// { dg-error "invalid 'static_cast'" }
 }

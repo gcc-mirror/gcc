@@ -679,7 +679,6 @@ static void sparc_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static void sparc_file_end (void);
 static bool sparc_frame_pointer_required (void);
 static bool sparc_can_eliminate (const int, const int);
-static rtx sparc_builtin_setjmp_frame_value (void);
 static void sparc_conditional_register_usage (void);
 static bool sparc_use_pseudo_pic_reg (void);
 static void sparc_init_pic_reg (void);
@@ -877,9 +876,6 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED sparc_frame_pointer_required
-
-#undef TARGET_BUILTIN_SETJMP_FRAME_VALUE
-#define TARGET_BUILTIN_SETJMP_FRAME_VALUE sparc_builtin_setjmp_frame_value
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE sparc_can_eliminate
@@ -12277,6 +12273,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 		       HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		       tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
   rtx this_rtx, funexp;
   rtx_insn *insn;
   unsigned int int_arg_first;
@@ -12461,13 +12458,14 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   /* Run just enough of rest_of_compilation to get the insns emitted.
      There's not really enough bulk here to make other passes such as
-     instruction scheduling worth while.  Note that use_thunk calls
-     assemble_start_function and assemble_end_function.  */
+     instruction scheduling worth while.  */
   insn = get_insns ();
   shorten_branches (insn);
+  assemble_start_function (thunk_fndecl, fnname);
   final_start_function (insn, file, 1);
   final (insn, file, 1);
   final_end_function ();
+  assemble_end_function (thunk_fndecl, fnname);
 
   reload_completed = 0;
   epilogue_completed = 0;
@@ -12999,14 +12997,6 @@ static bool
 sparc_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 {
   return to == HARD_FRAME_POINTER_REGNUM || !sparc_frame_pointer_required ();
-}
-
-/* Return the hard frame pointer directly to bypass the stack bias.  */
-
-static rtx
-sparc_builtin_setjmp_frame_value (void)
-{
-  return hard_frame_pointer_rtx;
 }
 
 /* If !TARGET_FPU, then make the fp registers and fp cc regs fixed so that

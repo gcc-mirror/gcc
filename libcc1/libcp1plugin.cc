@@ -941,7 +941,7 @@ plugin_add_using_namespace (cc1_plugin::connection *,
 
   gcc_assert (TREE_CODE (used_ns) == NAMESPACE_DECL);
 
-  finish_namespace_using_directive (used_ns, NULL_TREE);
+  finish_using_directive (used_ns, NULL_TREE);
 
   return 1;
 }
@@ -1019,7 +1019,7 @@ plugin_add_using_decl (cc1_plugin::connection *,
     {
       /* We can't be at local scope.  */
       gcc_assert (at_namespace_scope_p ());
-      finish_namespace_using_decl (target, tcontext, identifier);
+      finish_nonmember_using_decl (tcontext, identifier);
     }
 
   return 1;

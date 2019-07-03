@@ -5909,14 +5909,6 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 								 mode, VOIDmode,
 								 cond, cop1),
 					mode);
-	      else
-		return gen_rtx_IF_THEN_ELSE (mode,
-					     simplify_gen_relational (cond_code,
-								      mode,
-								      VOIDmode,
-								      cond,
-								      cop1),
-					     true_rtx, false_rtx);
 
 	      code = GET_CODE (x);
 	      op0_mode = VOIDmode;
@@ -6600,7 +6592,6 @@ simplify_if_then_else (rtx x)
 	  || reg_mentioned_p (true_rtx, false_rtx)
 	  || rtx_equal_p (false_rtx, XEXP (cond, 0))))
     {
-      true_code = reversed_comparison_code (cond, NULL);
       SUBST (XEXP (x, 0), reversed_comparison (cond, GET_MODE (cond)));
       SUBST (XEXP (x, 1), false_rtx);
       SUBST (XEXP (x, 2), true_rtx);

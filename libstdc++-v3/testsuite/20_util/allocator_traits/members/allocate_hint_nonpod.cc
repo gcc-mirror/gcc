@@ -45,7 +45,7 @@ struct Alloc
   { return pointer(std::allocator<T>().allocate(n)); }
 
   void deallocate(pointer p, std::size_t n)
-  { std::allocator<T>().deallocate(p.value, n); }
+  { std::allocator<T>().deallocate(p.operator->(), n); }
 };
 
 template<typename T>

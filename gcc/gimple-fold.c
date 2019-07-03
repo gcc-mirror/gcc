@@ -684,10 +684,10 @@ size_must_be_zero_p (tree size)
   /* Compute the value of SSIZE_MAX, the largest positive value that
      can be stored in ssize_t, the signed counterpart of size_t.  */
   wide_int ssize_max = wi::lshift (wi::one (prec), prec - 1) - 1;
-  value_range valid_range (VR_RANGE,
-			   build_int_cst (type, 0),
-			   wide_int_to_tree (type, ssize_max));
-  value_range vr;
+  value_range_base valid_range (VR_RANGE,
+				build_int_cst (type, 0),
+				wide_int_to_tree (type, ssize_max));
+  value_range_base vr;
   get_range_info (size, vr);
   vr.intersect (&valid_range);
   return vr.zero_p ();
@@ -1672,30 +1672,16 @@ get_range_strlen (tree arg, bitmap *visited,
     }
 }
 
-/* Determine the minimum and maximum value or string length that ARG
-   refers to and store each in the first two elements of MINMAXLEN.
-   For expressions that point to strings of unknown lengths that are
-   character arrays, use the upper bound of the array as the maximum
-   length.  For example, given an expression like 'x ? array : "xyz"'
-   and array declared as 'char array[8]', MINMAXLEN[0] will be set
-   to 0 and MINMAXLEN[1] to 7, the longest string that could be
-   stored in array.
-   Return true if the range of the string lengths has been obtained
-   from the upper bound of an array at the end of a struct.  Such
-   an array may hold a string that's longer than its upper bound
-   due to it being used as a poor-man's flexible array member.
-
-   STRICT is true if it will handle PHIs and COND_EXPRs conservatively
-   and false if PHIs and COND_EXPRs are to be handled optimistically,
-   if we can determine string length minimum and maximum; it will use
-   the minimum from the ones where it can be determined.
-   STRICT false should be only used for warning code.
-   When non-null, clear *NONSTR if ARG refers to a constant array
-   that is known not be nul-terminated.  Otherwise set it to
-   the declaration of the constant non-terminated array.
-
-   ELTSIZE is 1 for normal single byte character strings, and 2 or
-   4 for wide characer strings.  ELTSIZE is by default 1.  */
+/* Try to obtain the range of the lengths of the string(s) referenced
+   by ARG, or the size of the largest array ARG refers to if the range
+   of lengths cannot be determined, and store all in *PDATA.  ELTSIZE
+   is the expected size of the string element in bytes: 1 for char and
+   some power of 2 for wide characters.
+   Return true if the range [PDATA->MINLEN, PDATA->MAXLEN] is suitable
+   for optimization.  Returning false means that a nonzero PDATA->MINLEN
+   doesn't reflect the true lower bound of the range when PDATA->MAXLEN
+   is -1 (in that case, the actual range is indeterminate, i.e.,
+   [0, PTRDIFF_MAX - 2].  */
 
 bool
 get_range_strlen (tree arg, c_strlen_data *pdata, unsigned eltsize)
@@ -2557,7 +2543,15 @@ gimple_fold_builtin_memchr (gimple_stmt_iterator *gsi)
       const char *r = (const char *)memchr (p1, c, MIN (length, string_length));
       if (r == NULL)
 	{
-	  if (length <= string_length)
+	  tree mem_size, offset_node;
+	  string_constant (arg1, &offset_node, &mem_size, NULL);
+	  unsigned HOST_WIDE_INT offset = (offset_node == NULL_TREE)
+					  ? 0 : tree_to_uhwi (offset_node);
+	  /* MEM_SIZE is the size of the array the string literal
+	     is stored in.  */
+	  unsigned HOST_WIDE_INT string_size = tree_to_uhwi (mem_size) - offset;
+	  gcc_checking_assert (string_length <= string_size);
+	  if (length <= string_size)
 	    {
 	      replace_call_with_value (gsi, build_int_cst (ptr_type_node, 0));
 	      return true;
@@ -7329,6 +7323,7 @@ arith_code_with_undefined_signed_overflow (tree_code code)
 {
   switch (code)
     {
+    case ABS_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:
@@ -7361,12 +7356,15 @@ rewrite_to_defined_overflow (gimple *stmt)
   tree lhs = gimple_assign_lhs (stmt);
   tree type = unsigned_type_for (TREE_TYPE (lhs));
   gimple_seq stmts = NULL;
-  for (unsigned i = 1; i < gimple_num_ops (stmt); ++i)
-    {
-      tree op = gimple_op (stmt, i);
-      op = gimple_convert (&stmts, type, op);
-      gimple_set_op (stmt, i, op);
-    }
+  if (gimple_assign_rhs_code (stmt) == ABS_EXPR)
+    gimple_assign_set_rhs_code (stmt, ABSU_EXPR);
+  else
+    for (unsigned i = 1; i < gimple_num_ops (stmt); ++i)
+      {
+	tree op = gimple_op (stmt, i);
+	op = gimple_convert (&stmts, type, op);
+	gimple_set_op (stmt, i, op);
+      }
   gimple_assign_set_lhs (stmt, make_ssa_name (type, stmt));
   if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
     gimple_assign_set_rhs_code (stmt, PLUS_EXPR);

@@ -300,13 +300,22 @@ oacc_xform_loop (gcall *call)
   tree chunk_size = NULL_TREE;
   unsigned mask = (unsigned) TREE_INT_CST_LOW (gimple_call_arg (call, 5));
   tree lhs = gimple_call_lhs (call);
-  tree type = TREE_TYPE (lhs);
+  tree type = NULL_TREE;
   tree diff_type = TREE_TYPE (range);
   tree r = NULL_TREE;
   gimple_seq seq = NULL;
   bool chunking = false, striding = true;
   unsigned outer_mask = mask & (~mask + 1); // Outermost partitioning
   unsigned inner_mask = mask & ~outer_mask; // Inner partitioning (if any)
+
+  /* Skip lowering if return value of IFN_GOACC_LOOP call is not used.  */
+  if (!lhs)
+    {
+      gsi_replace_with_seq (&gsi, seq, true);
+      return;
+    }
+
+  type = TREE_TYPE (lhs);
 
 #ifdef ACCEL_COMPILER
   chunk_size = gimple_call_arg (call, 4);

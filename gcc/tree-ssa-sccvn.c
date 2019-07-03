@@ -791,39 +791,6 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
 static void
 copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 {
-  if (TREE_CODE (ref) == TARGET_MEM_REF)
-    {
-      vn_reference_op_s temp;
-
-      result->reserve (3);
-
-      memset (&temp, 0, sizeof (temp));
-      temp.type = TREE_TYPE (ref);
-      temp.opcode = TREE_CODE (ref);
-      temp.op0 = TMR_INDEX (ref);
-      temp.op1 = TMR_STEP (ref);
-      temp.op2 = TMR_OFFSET (ref);
-      temp.off = -1;
-      temp.clique = MR_DEPENDENCE_CLIQUE (ref);
-      temp.base = MR_DEPENDENCE_BASE (ref);
-      result->quick_push (temp);
-
-      memset (&temp, 0, sizeof (temp));
-      temp.type = NULL_TREE;
-      temp.opcode = ERROR_MARK;
-      temp.op0 = TMR_INDEX2 (ref);
-      temp.off = -1;
-      result->quick_push (temp);
-
-      memset (&temp, 0, sizeof (temp));
-      temp.type = NULL_TREE;
-      temp.opcode = TREE_CODE (TMR_BASE (ref));
-      temp.op0 = TMR_BASE (ref);
-      temp.off = -1;
-      result->quick_push (temp);
-      return;
-    }
-
   /* For non-calls, store the information that makes up the address.  */
   tree orig = ref;
   while (ref)
@@ -852,6 +819,20 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	  temp.clique = MR_DEPENDENCE_CLIQUE (ref);
 	  temp.base = MR_DEPENDENCE_BASE (ref);
 	  temp.reverse = REF_REVERSE_STORAGE_ORDER (ref);
+	  break;
+	case TARGET_MEM_REF:
+	  /* The base address gets its own vn_reference_op_s structure.  */
+	  temp.op0 = TMR_INDEX (ref);
+	  temp.op1 = TMR_STEP (ref);
+	  temp.op2 = TMR_OFFSET (ref);
+	  temp.clique = MR_DEPENDENCE_CLIQUE (ref);
+	  temp.base = MR_DEPENDENCE_BASE (ref);
+	  result->safe_push (temp);
+	  memset (&temp, 0, sizeof (temp));
+	  temp.type = NULL_TREE;
+	  temp.opcode = ERROR_MARK;
+	  temp.op0 = TMR_INDEX2 (ref);
+	  temp.off = -1;
 	  break;
 	case BIT_FIELD_REF:
 	  /* Record bits, position and storage order.  */
@@ -2242,7 +2223,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  tree rhs = gimple_assign_rhs1 (def_stmt);
 	  if (TREE_CODE (rhs) == SSA_NAME)
 	    rhs = SSA_VAL (rhs);
-	  len = native_encode_expr (gimple_assign_rhs1 (def_stmt),
+	  len = native_encode_expr (rhs,
 				    buffer, sizeof (buffer),
 				    (offseti - offset2) / BITS_PER_UNIT);
 	  if (len > 0 && len * BITS_PER_UNIT >= maxsizei)
@@ -4059,6 +4040,7 @@ visit_reference_op_call (tree lhs, gcall *stmt)
       vr2->hashcode = vr1.hashcode;
       vr2->result = lhs;
       vr2->result_vdef = vdef_val;
+      vr2->value_id = 0;
       slot = valid_info->references->find_slot_with_hash (vr2, vr2->hashcode,
 							  INSERT);
       gcc_assert (!*slot);
@@ -5978,7 +5960,7 @@ insert_related_predicates_on_edge (enum tree_code code, tree *ops, edge pred_e)
 static unsigned
 process_bb (rpo_elim &avail, basic_block bb,
 	    bool bb_visited, bool iterate_phis, bool iterate, bool eliminate,
-	    bool do_region, bitmap exit_bbs)
+	    bool do_region, bitmap exit_bbs, bool skip_phis)
 {
   unsigned todo = 0;
   edge_iterator ei;
@@ -5989,7 +5971,8 @@ process_bb (rpo_elim &avail, basic_block bb,
   /* If we are in loop-closed SSA preserve this state.  This is
      relevant when called on regions from outside of FRE/PRE.  */
   bool lc_phi_nodes = false;
-  if (loops_state_satisfies_p (LOOP_CLOSED_SSA))
+  if (!skip_phis
+      && loops_state_satisfies_p (LOOP_CLOSED_SSA))
     FOR_EACH_EDGE (e, ei, bb->preds)
       if (e->src->loop_father != e->dest->loop_father
 	  && flow_loop_nested_p (e->dest->loop_father,
@@ -6010,67 +5993,68 @@ process_bb (rpo_elim &avail, basic_block bb,
     }
 
   /* Value-number all defs in the basic-block.  */
-  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
-       gsi_next (&gsi))
-    {
-      gphi *phi = gsi.phi ();
-      tree res = PHI_RESULT (phi);
-      vn_ssa_aux_t res_info = VN_INFO (res);
-      if (!bb_visited)
-	{
-	  gcc_assert (!res_info->visited);
-	  res_info->valnum = VN_TOP;
-	  res_info->visited = true;
-	}
+  if (!skip_phis)
+    for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	 gsi_next (&gsi))
+      {
+	gphi *phi = gsi.phi ();
+	tree res = PHI_RESULT (phi);
+	vn_ssa_aux_t res_info = VN_INFO (res);
+	if (!bb_visited)
+	  {
+	    gcc_assert (!res_info->visited);
+	    res_info->valnum = VN_TOP;
+	    res_info->visited = true;
+	  }
 
-      /* When not iterating force backedge values to varying.  */
-      visit_stmt (phi, !iterate_phis);
-      if (virtual_operand_p (res))
-	continue;
+	/* When not iterating force backedge values to varying.  */
+	visit_stmt (phi, !iterate_phis);
+	if (virtual_operand_p (res))
+	  continue;
 
-      /* Eliminate */
-      /* The interesting case is gcc.dg/tree-ssa/pr22230.c for correctness
-	 how we handle backedges and availability.
-	 And gcc.dg/tree-ssa/ssa-sccvn-2.c for optimization.  */
-      tree val = res_info->valnum;
-      if (res != val && !iterate && eliminate)
-	{
-	  if (tree leader = avail.eliminate_avail (bb, res))
-	    {
-	      if (leader != res
-		  /* Preserve loop-closed SSA form.  */
-		  && (! lc_phi_nodes
-		      || is_gimple_min_invariant (leader)))
-		{
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    {
-		      fprintf (dump_file, "Replaced redundant PHI node "
-			       "defining ");
-		      print_generic_expr (dump_file, res);
-		      fprintf (dump_file, " with ");
-		      print_generic_expr (dump_file, leader);
-		      fprintf (dump_file, "\n");
-		    }
-		  avail.eliminations++;
+	/* Eliminate */
+	/* The interesting case is gcc.dg/tree-ssa/pr22230.c for correctness
+	   how we handle backedges and availability.
+	   And gcc.dg/tree-ssa/ssa-sccvn-2.c for optimization.  */
+	tree val = res_info->valnum;
+	if (res != val && !iterate && eliminate)
+	  {
+	    if (tree leader = avail.eliminate_avail (bb, res))
+	      {
+		if (leader != res
+		    /* Preserve loop-closed SSA form.  */
+		    && (! lc_phi_nodes
+			|| is_gimple_min_invariant (leader)))
+		  {
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		      {
+			fprintf (dump_file, "Replaced redundant PHI node "
+				 "defining ");
+			print_generic_expr (dump_file, res);
+			fprintf (dump_file, " with ");
+			print_generic_expr (dump_file, leader);
+			fprintf (dump_file, "\n");
+		      }
+		    avail.eliminations++;
 
-		  if (may_propagate_copy (res, leader))
-		    {
-		      /* Schedule for removal.  */
-		      avail.to_remove.safe_push (phi);
-		      continue;
-		    }
-		  /* ???  Else generate a copy stmt.  */
-		}
-	    }
-	}
-      /* Only make defs available that not already are.  But make
-	 sure loop-closed SSA PHI node defs are picked up for
-	 downstream uses.  */
-      if (lc_phi_nodes
-	  || res == val
-	  || ! avail.eliminate_avail (bb, res))
-	avail.eliminate_push_avail (bb, res);
-    }
+		    if (may_propagate_copy (res, leader))
+		      {
+			/* Schedule for removal.  */
+			avail.to_remove.safe_push (phi);
+			continue;
+		      }
+		    /* ???  Else generate a copy stmt.  */
+		  }
+	      }
+	  }
+	/* Only make defs available that not already are.  But make
+	   sure loop-closed SSA PHI node defs are picked up for
+	   downstream uses.  */
+	if (lc_phi_nodes
+	    || res == val
+	    || ! avail.eliminate_avail (bb, res))
+	  avail.eliminate_push_avail (bb, res);
+      }
 
   /* For empty BBs mark outgoing edges executable.  For non-empty BBs
      we do this when processing the last stmt as we have to do this
@@ -6414,6 +6398,13 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
       bitmap_set_bit (exit_bbs, EXIT_BLOCK);
     }
 
+  /* Clear EDGE_DFS_BACK on "all" entry edges, RPO order compute will
+     re-mark those that are contained in the region.  */
+  edge_iterator ei;
+  edge e;
+  FOR_EACH_EDGE (e, ei, entry->dest->preds)
+    e->flags &= ~EDGE_DFS_BACK;
+
   int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (fn) - NUM_FIXED_BLOCKS);
   int n = rev_post_order_and_mark_dfs_back_seme
     (fn, entry, exit_bbs, !loops_state_satisfies_p (LOOPS_NEED_FIXUP), rpo);
@@ -6423,6 +6414,18 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 
   if (!do_region)
     BITMAP_FREE (exit_bbs);
+
+  /* If there are any non-DFS_BACK edges into entry->dest skip
+     processing PHI nodes for that block.  This supports
+     value-numbering loop bodies w/o the actual loop.  */
+  FOR_EACH_EDGE (e, ei, entry->dest->preds)
+    if (e != entry
+	&& !(e->flags & EDGE_DFS_BACK))
+      break;
+  bool skip_entry_phis = e != NULL;
+  if (skip_entry_phis && dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Region does not contain all edges into "
+	     "the entry block, skipping its PHIs.\n");
 
   int *bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (fn));
   for (int i = 0; i < n; ++i)
@@ -6453,7 +6456,9 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 	  edge e;
 	  edge_iterator ei;
 	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    gcc_assert (e == entry || (e->src->flags & bb_in_region));
+	    gcc_assert (e == entry
+			|| (skip_entry_phis && bb == entry->dest)
+			|| (e->src->flags & bb_in_region));
 	}
       for (int i = 0; i < n; ++i)
 	{
@@ -6467,6 +6472,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
   unsigned region_size = (((unsigned HOST_WIDE_INT)n * num_ssa_names)
 			  / (n_basic_blocks_for_fn (fn) - NUM_FIXED_BLOCKS));
   VN_TOP = create_tmp_var_raw (void_type_node, "vn_top");
+  next_value_id = 1;
 
   vn_ssa_aux_hash = new hash_table <vn_ssa_aux_hasher> (region_size * 2);
   gcc_obstack_init (&vn_ssa_aux_obstack);
@@ -6497,7 +6503,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 	  if (e->flags & EDGE_DFS_BACK)
 	    has_backedges = true;
 	  e->flags &= ~EDGE_EXECUTABLE;
-	  if (iterate || e == entry)
+	  if (iterate || e == entry || (skip_entry_phis && bb == entry->dest))
 	    continue;
 	  if (bb_to_rpo[e->src->index] > i)
 	    {
@@ -6530,7 +6536,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 	  edge_iterator ei;
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    {
-	      if (e == entry)
+	      if (e == entry || (skip_entry_phis && bb == entry->dest))
 		continue;
 	      int max_rpo = MAX (rpo_state[i].max_rpo,
 				 rpo_state[bb_to_rpo[e->src->index]].max_rpo);
@@ -6619,7 +6625,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 	todo |= process_bb (avail, bb,
 			    rpo_state[idx].visited != 0,
 			    rpo_state[idx].iterate,
-			    iterate, eliminate, do_region, exit_bbs);
+			    iterate, eliminate, do_region, exit_bbs, false);
 	rpo_state[idx].visited++;
 
 	/* Verify if changed values flow over executable outgoing backedges
@@ -6717,8 +6723,10 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 	  edge e;
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    if (!(e->flags & EDGE_EXECUTABLE)
-		&& !rpo_state[bb_to_rpo[e->src->index]].visited
-		&& rpo_state[bb_to_rpo[e->src->index]].max_rpo >= (int)idx)
+		&& (bb == entry->dest
+		    || (!rpo_state[bb_to_rpo[e->src->index]].visited
+			&& (rpo_state[bb_to_rpo[e->src->index]].max_rpo
+			    >= (int)idx))))
 	      {
 		if (dump_file && (dump_flags & TDF_DETAILS))
 		  fprintf (dump_file, "Cannot trust state of predecessor "
@@ -6729,7 +6737,8 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 
 	  nblk++;
 	  todo |= process_bb (avail, bb, false, false, false, eliminate,
-			      do_region, exit_bbs);
+			      do_region, exit_bbs,
+			      skip_entry_phis && bb == entry->dest);
 	  rpo_state[idx].visited++;
 
 	  FOR_EACH_EDGE (e, ei, bb->succs)
@@ -6811,7 +6820,9 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 }
 
 /* Region-based entry for RPO VN.  Performs value-numbering and elimination
-   on the SEME region specified by ENTRY and EXIT_BBS.  */
+   on the SEME region specified by ENTRY and EXIT_BBS.  If ENTRY is not
+   the only edge into the region at ENTRY->dest PHI nodes in ENTRY->dest
+   are not considered.  */
 
 unsigned
 do_rpo_vn (function *fn, edge entry, bitmap exit_bbs)
@@ -6842,14 +6853,24 @@ class pass_fre : public gimple_opt_pass
 {
 public:
   pass_fre (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_fre, ctxt)
+    : gimple_opt_pass (pass_data_fre, ctxt), may_iterate (true)
   {}
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_fre (m_ctxt); }
-  virtual bool gate (function *) { return flag_tree_fre != 0; }
+  void set_pass_param (unsigned int n, bool param)
+    {
+      gcc_assert (n == 0);
+      may_iterate = param;
+    }
+  virtual bool gate (function *)
+    {
+      return flag_tree_fre != 0 && (may_iterate || optimize > 1);
+    }
   virtual unsigned int execute (function *);
 
+private:
+  bool may_iterate;
 }; // class pass_fre
 
 unsigned int
@@ -6858,15 +6879,16 @@ pass_fre::execute (function *fun)
   unsigned todo = 0;
 
   /* At -O[1g] use the cheap non-iterating mode.  */
+  bool iterate_p = may_iterate && (optimize > 1);
   calculate_dominance_info (CDI_DOMINATORS);
-  if (optimize > 1)
+  if (iterate_p)
     loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
   default_vn_walk_kind = VN_WALKREWRITE;
-  todo = do_rpo_vn (fun, NULL, NULL, optimize > 1, true);
+  todo = do_rpo_vn (fun, NULL, NULL, iterate_p, true);
   free_rpo_vn ();
 
-  if (optimize > 1)
+  if (iterate_p)
     loop_optimizer_finalize ();
 
   return todo;

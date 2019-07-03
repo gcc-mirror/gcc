@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Sep 24, 2018
+GNAT Reference Manual , Jun 21, 2019
 
 AdaCore
 
@@ -5220,18 +5220,19 @@ Syntax:
 pragma Machine_Attribute (
      [Entity         =>] LOCAL_NAME,
      [Attribute_Name =>] static_string_EXPRESSION
-  [, [Info           =>] static_EXPRESSION] );
+  [, [Info           =>] static_EXPRESSION @{, static_EXPRESSION@}] );
 @end example
 
 Machine-dependent attributes can be specified for types and/or
 declarations.  This pragma is semantically equivalent to
 @code{__attribute__((@emph{attribute_name}))} (if @code{info} is not
 specified) or @code{__attribute__((@emph{attribute_name(info})))}
-in GNU C, where @emph{attribute_name} is recognized by the
-compiler middle-end or the @code{TARGET_ATTRIBUTE_TABLE} machine
-specific macro.  A string literal for the optional parameter @code{info}
-is transformed into an identifier, which may make this pragma unusable
-for some attributes.
+or @code{__attribute__((@emph{attribute_name(info,...})))} in GNU C,
+where @emph{attribute_name} is recognized by the compiler middle-end
+or the @code{TARGET_ATTRIBUTE_TABLE} machine specific macro.  Note
+that a string literal for the optional parameter @code{info} or the
+following ones is transformed by default into an identifier,
+which may make this pragma unusable for some attributes.
 For further information see @cite{GNU Compiler Collection (GCC) Internals}.
 
 @node Pragma Main,Pragma Main_Storage,Pragma Machine_Attribute,Implementation Defined Pragmas
@@ -12673,15 +12674,14 @@ Long_Integer'Size.
 
 @geindex No_Multiple_Elaboration
 
-[GNAT] When this restriction is active, we are not requesting control-flow
-preservation with -fpreserve-control-flow, and the static elaboration model is
-used, the compiler is allowed to suppress the elaboration counter normally
-associated with the unit, even if the unit has elaboration code. This counter
-is typically used to check for access before elaboration and to control
-multiple elaboration attempts. If the restriction is used, then the
-situations in which multiple elaboration is possible, including non-Ada main
-programs and Stand Alone libraries, are not permitted and will be diagnosed
-by the binder.
+[GNAT] When this restriction is active and the static elaboration model is
+used, and -fpreserve-control-flow is not used, the compiler is allowed to
+suppress the elaboration counter normally associated with the unit, even if
+the unit has elaboration code. This counter is typically used to check for
+access before elaboration and to control multiple elaboration attempts. If the
+restriction is used, then the situations in which multiple elaboration is
+possible, including non-Ada main programs and Stand Alone libraries, are not
+permitted and will be diagnosed by the binder.
 
 @node No_Nested_Finalization,No_Protected_Type_Allocators,No_Multiple_Elaboration,Partition-Wide Restrictions
 @anchor{gnat_rm/standard_and_implementation_defined_restrictions no-nested-finalization}@anchor{1e1}
@@ -18982,14 +18982,23 @@ type R is record
 end record;
 @end example
 
-On a typical 32-bit architecture, the X component will be four bytes, and
-require four-byte alignment, and the Y component will be one byte. In this
-case @code{R'Value_Size} will be 40 (bits) since this is the minimum size
-required to store a value of this type, and for example, it is permissible
-to have a component of type R in an outer array whose component size is
-specified to be 48 bits. However, @code{R'Object_Size} will be 64 (bits),
-since it must be rounded up so that this value is a multiple of the
-alignment (4 bytes = 32 bits).
+On a typical 32-bit architecture, the X component will occupy four bytes
+and the Y component will occupy one byte, for a total of 5 bytes. As a
+result @code{R'Value_Size} will be 40 (bits) since this is the minimum size
+required to store a value of this type. For example, it is permissible
+to have a component of type R in an array whose component size is
+specified to be 40 bits.
+
+However, @code{R'Object_Size} will be 64 (bits). The difference is due to
+the alignment requirement for objects of the record type. The X
+component will require four-byte alignment because that is what type
+Integer requires, whereas the Y component, a Character, will only
+require 1-byte alignment. Since the alignment required for X is the
+greatest of all the components' alignments, that is the alignment
+required for the enclosing record type, i.e., 4 bytes or 32 bits. As
+indicated above, the actual object size must be rounded up so that it is
+a multiple of the alignment value. Therefore, 40 bits rounded up to the
+next multiple of 32 yields 64 bits.
 
 For all other types, the @code{Object_Size}
 and @code{Value_Size} are the same (and equivalent to the RM attribute @code{Size}).
@@ -25531,8 +25540,10 @@ and C types:
 
 @item 
 Ada enumeration types map to C enumeration types directly if pragma
-@code{Convention C} is specified, which causes them to have int
-length.  Without pragma @code{Convention C}, Ada enumeration types map to
+@code{Convention C} is specified, which causes them to have a length of
+32 bits, except for boolean types which map to C99 @code{bool} and for
+which the length is 8 bits.
+Without pragma @code{Convention C}, Ada enumeration types map to
 8, 16, or 32 bits (i.e., C types @code{signed char}, @code{short},
 @code{int}, respectively) depending on the number of values passed.
 This is the only case in which pragma @code{Convention C} affects the

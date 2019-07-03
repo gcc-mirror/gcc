@@ -46,8 +46,10 @@ and C types:
 
 *
   Ada enumeration types map to C enumeration types directly if pragma
-  ``Convention C`` is specified, which causes them to have int
-  length.  Without pragma ``Convention C``, Ada enumeration types map to
+  ``Convention C`` is specified, which causes them to have a length of
+  32 bits, except for boolean types which map to C99 ``bool`` and for
+  which the length is 8 bits.
+  Without pragma ``Convention C``, Ada enumeration types map to
   8, 16, or 32 bits (i.e., C types ``signed char``, ``short``,
   ``int``, respectively) depending on the number of values passed.
   This is the only case in which pragma ``Convention C`` affects the

@@ -1,3 +1,65 @@
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	* line-map.c (linemap_get_expansion_filename): Remove
+	dead assignemts.
+	* mkdeps.c (make_write): Likewise.
+
+2019-07-02  qing zhao  <qing.zhao@oracle.com>
+
+	PR preprocessor/90581
+	* directives.c (do_include_common): Replace CPP_STACK_MAX with
+	CPP_OPTION (pfile, max_include_depth).
+	* include/cpplib.h (struct cpp_options): Add new field
+	max_include_depth.
+	* init.c (cpp_create_reader): Initiate new field max_include_depth.
+	* internal.h: Delete CPP_STACK_MAX.
+
+2019-06-26  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/90927
+	* mkdeps.c (mkdeps::vec::operator[]): Add non-const variant.
+	(deps_add_target): Deal with out of order unquoted targets.
+
+2019-05-19  Andrew Pinski  <apinski@marvell.com>
+
+	PR pch/81721
+	* lex.c (cpp_token_val_index <case SPELL_OPERATOR>): If tok->flags
+	has NAMED_OP set, then return CPP_TOKEN_FLD_NODE.
+
+2019-05-14  Martin Liska  <mliska@suse.cz>
+
+	PR preprocessor/90382
+	* line-map.c (first_map_in_common_1): Handle ADHOC
+	locations.
+
+2019-05-14  Martin Liska  <mliska@suse.cz>
+
+	PR preprocessor/90382
+	* include/line-map.h (get_data_from_adhoc_loc): Add const to
+	the first argument.
+	(get_location_from_adhoc_loc): Likewise.
+	* line-map.c(get_data_from_adhoc_loc):  Add const to
+	the first argument.
+	(get_location_from_adhoc_loc): Likewise.
+	(get_combined_adhoc_loc): Use get_location_from_adhoc_loc
+	(or get_data_from_adhoc_loc).
+	(get_range_from_adhoc_loc): Likewise.
+	(get_pure_location): Likewise.
+	(linemap_position_for_loc_and_offset): Likewise.
+	(linemap_lookup): Likewise.
+	(linemap_ordinary_map_lookup): Likewise.
+	(linemap_macro_map_lookup): Likewise.
+	(linemap_get_expansion_line): Likewise.
+	(linemap_get_expansion_filename): Likewise.
+	(linemap_location_in_system_header_p): Likewise.
+	(linemap_location_from_macro_expansion_p): Likewise.
+	(linemap_macro_loc_to_exp_point): Likewise.
+	(linemap_resolve_location): Likewise.
+	(linemap_unwind_toward_expansion): Likewise.
+	(linemap_unwind_to_first_non_reserved_loc): Likewise.
+	(linemap_expand_location): Likewise.
+	(linemap_dump_location): Likewise.
+
 2019-05-07  Nathan Sidwell  <nathan@acm.org>
 
 	* files.c (_cpp_stack_file): Empty filenames aren't dependencies.

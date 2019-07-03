@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 
 #define pp_unsupported_tree(PP, T)                         \
-  pp_verbatim (PP, "#%qs not supported by %s#", \
+  pp_verbatim (PP, "%qs not supported by %s", \
 	       get_tree_code_name (TREE_CODE (T)), __FUNCTION__)
 
 #define pp_ti_abstract_origin(TI) ((tree *) (TI)->x_data)

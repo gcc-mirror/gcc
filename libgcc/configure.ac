@@ -261,6 +261,16 @@ fi
 ])
 AC_SUBST([force_explicit_eh_registry])
 
+AC_ARG_ENABLE([tm-clone-registry],
+[  --disable-tm-clone-registry    disable TM clone registry],
+[
+use_tm_clone_registry=
+if test "$enable_tm_clone_registry" = no; then
+  use_tm_clone_registry=-DUSE_TM_CLONE_REGISTRY=0
+fi
+])
+AC_SUBST([use_tm_clone_registry])
+
 AC_LIB_PROG_LD_GNU
 
 AC_MSG_CHECKING([for thread model used by GCC])
@@ -447,7 +457,7 @@ fi
 # Link with -nostartfiles -nodefaultlibs since neither are present while
 # building libgcc.
 case ${host} in
-i?86-*-solaris2* | x86_64-*-solaris2.1[[0-9]]*)
+i?86-*-solaris2* | x86_64-*-solaris2*)
   cat > conftest.s <<EOF
 	.section	.eh_frame,"a",@unwind
 	.zero	4

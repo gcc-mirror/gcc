@@ -2714,8 +2714,6 @@ bool
 cgraph_node::set_pure_flag (bool pure, bool looping)
 {
   struct set_pure_flag_info info = {pure, looping, false};
-  if (!pure)
-    looping = false;
   call_for_symbol_thunks_and_aliases (set_pure_flag_1, &info, !pure, true);
   return info.changed;
 }
@@ -3095,6 +3093,15 @@ cgraph_edge::verify_corresponds_to_fndecl (tree decl)
     return false;
 }
 
+/* Disable warnings about missing quoting in GCC diagnostics for
+   the verification errors.  Their format strings don't follow GCC
+   diagnostic conventions and the calls are ultimately followed by
+   one to internal_error.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* Verify cgraph nodes of given cgraph node.  */
 DEBUG_FUNCTION void
 cgraph_node::verify_node (void)
@@ -3469,6 +3476,10 @@ cgraph_node::verify_cgraph_nodes (void)
   FOR_EACH_FUNCTION (node)
     node->verify ();
 }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
 
 /* Walk the alias chain to return the function cgraph_node is alias of.
    Walk through thunks, too.

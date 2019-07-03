@@ -419,7 +419,8 @@ extern bool target_handle_option (struct gcc_options *opts,
 extern void finish_options (struct gcc_options *opts,
 			    struct gcc_options *opts_set,
 			    location_t loc);
-extern void print_help (struct gcc_options *opts, unsigned int lang_mask);
+extern void print_help (struct gcc_options *opts, unsigned int lang_mask, const
+			char *help_option_argument);
 extern void default_options_optimization (struct gcc_options *opts,
 					  struct gcc_options *opts_set,
 					  struct cl_decoded_option *decoded_options,
@@ -443,7 +444,7 @@ extern const struct sanitizer_opts_s
   bool can_recover;
 } sanitizer_opts[];
 
-extern const char *help_option_argument;
+extern vec<const char *> help_option_arguments;
 
 extern void add_misspelling_candidates (auto_vec<char *> *candidates,
 					const struct cl_option *option,

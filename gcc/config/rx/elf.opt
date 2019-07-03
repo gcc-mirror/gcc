@@ -1,0 +1,44 @@
+; Command line options for the Renesas RX port of GCC.
+; Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
+; Contributed by Red Hat.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+;---------------------------------------------------
+
+; elf target extra options
+
+msim
+Target
+Use the simulator runtime.
+
+;---------------------------------------------------
+
+mas100-syntax
+Target Mask(AS100_SYNTAX) Report
+Generate assembler output that is compatible with the Renesas AS100 assembler.  This may restrict some of the compiler's capabilities.  The default is to generate GAS compatable syntax.
+
+;---------------------------------------------------
+
+mint-register=
+Target RejectNegative Joined UInteger Var(rx_interrupt_registers) Init(0)
+Specifies the number of registers to reserve for interrupt handlers.
+
+;---------------------------------------------------
+
+msave-acc-in-interrupts
+Target Mask(SAVE_ACC_REGISTER)
+Specifies whether interrupt functions should save and restore the accumulator register.

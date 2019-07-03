@@ -89,14 +89,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
-/* Generate branch islands stubs if this is true.  */
-extern int darwin_emit_branch_islands;
-
-#undef TARGET_MACHO_BRANCH_ISLANDS
-#define TARGET_MACHO_BRANCH_ISLANDS darwin_emit_branch_islands
+/* Generate pic symbol indirection stubs if this is true.  */
+#undef TARGET_MACHO_PICSYM_STUBS
+#define TARGET_MACHO_PICSYM_STUBS (darwin_picsymbol_stubs)
 
 /* For compatibility with OSX system tools, use the new style of pic stub
-   if this is set.  */
+   if this is set (default).  */
 #undef  MACHOPIC_ATT_STUB
 #define MACHOPIC_ATT_STUB (darwin_macho_att_stub)
 
@@ -131,7 +129,9 @@ extern int darwin_emit_branch_islands;
 #undef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) \
   %{!mkernel:%{!static:%{!mdynamic-no-pic:-fPIC}}} \
-  %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }} " \
+  %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }} \
+  %{mx32:%eDarwin is not an mx32 platform} \
+  %{mfentry*:%eDarwin does not support -mfentry or associated options}" \
   DARWIN_CC1_SPEC
 
 #undef ASM_SPEC
@@ -221,6 +221,18 @@ extern int darwin_emit_branch_islands;
       }								   \
   } while (0)
 
+#ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
+#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP)                    \
+  do {                                                                  \
+    if ((LOG) != 0) {                                                   \
+      if ((MAX_SKIP) == 0 || (MAX_SKIP) >= (1 << (LOG)) - 1)            \
+        fprintf ((FILE), "\t.p2align %d\n", (LOG));                     \
+      else                                                              \
+        fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));     \
+    }                                                                   \
+  } while (0)
+#endif
+
 /* Darwin x86 assemblers support the .ident directive.  */
 
 #undef TARGET_ASM_OUTPUT_IDENT
@@ -230,7 +242,7 @@ extern int darwin_emit_branch_islands;
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)				\
   do {									\
-    if (TARGET_MACHO_BRANCH_ISLANDS 					\
+    if (TARGET_MACHO_PICSYM_STUBS 					\
 	&& MACHOPIC_INDIRECT && !TARGET_64BIT)				\
       {									\
 	const char *name = machopic_mcount_stub_name ();		\

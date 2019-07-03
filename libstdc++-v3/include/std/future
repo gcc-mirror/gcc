@@ -1417,8 +1417,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual void
       _M_run(_Args&&... __args)
       {
-	auto __boundfn = [&] () -> typename result_of<_Fn&(_Args&&...)>::type {
-	    return std::__invoke(_M_impl._M_fn, std::forward<_Args>(__args)...);
+	auto __boundfn = [&] () -> _Res {
+	    return std::__invoke_r<_Res>(_M_impl._M_fn,
+					 std::forward<_Args>(__args)...);
 	};
 	this->_M_set_result(_S_task_setter(this->_M_result, __boundfn));
       }
@@ -1426,8 +1427,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual void
       _M_run_delayed(_Args&&... __args, weak_ptr<_State_base> __self)
       {
-	auto __boundfn = [&] () -> typename result_of<_Fn&(_Args&&...)>::type {
-	    return std::__invoke(_M_impl._M_fn, std::forward<_Args>(__args)...);
+	auto __boundfn = [&] () -> _Res {
+	    return std::__invoke_r<_Res>(_M_impl._M_fn,
+					 std::forward<_Args>(__args)...);
 	};
 	this->_M_set_delayed_result(_S_task_setter(this->_M_result, __boundfn),
 				    std::move(__self));
@@ -1445,9 +1447,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       } _M_impl;
     };
 
-  template<typename _Signature, typename _Fn, typename _Alloc>
+  template<typename _Signature, typename _Fn,
+	   typename _Alloc = std::allocator<int>>
     static shared_ptr<__future_base::_Task_state_base<_Signature>>
-    __create_task_state(_Fn&& __fn, const _Alloc& __a)
+    __create_task_state(_Fn&& __fn, const _Alloc& __a = _Alloc())
     {
       typedef typename decay<_Fn>::type _Fn2;
       typedef __future_base::_Task_state<_Fn2, _Alloc, _Signature> _State;
@@ -1479,27 +1482,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Construction and destruction
       packaged_task() noexcept { }
 
+      template<typename _Fn, typename = __not_same<_Fn>>
+	explicit
+	packaged_task(_Fn&& __fn)
+	: _M_state(
+	    __create_task_state<_Res(_ArgTypes...)>(std::forward<_Fn>(__fn)))
+	{ }
+
+#if __cplusplus < 201703L
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2097. packaged_task constructors should be constrained
+      // 2407. [this constructor should not be] explicit
+      // 2921. packaged_task and type-erased allocators
+      template<typename _Fn, typename _Alloc, typename = __not_same<_Fn>>
+	packaged_task(allocator_arg_t, const _Alloc& __a, _Fn&& __fn)
+	: _M_state(__create_task_state<_Res(_ArgTypes...)>(
+		   std::forward<_Fn>(__fn), __a))
+	{ }
+
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2095.  missing constructors needed for uses-allocator construction
       template<typename _Allocator>
 	packaged_task(allocator_arg_t, const _Allocator& __a) noexcept
 	{ }
 
-      template<typename _Fn, typename = __not_same<_Fn>>
-	explicit
-	packaged_task(_Fn&& __fn)
-	: packaged_task(allocator_arg, std::allocator<int>(),
-			std::forward<_Fn>(__fn))
-	{ }
+      template<typename _Allocator>
+	packaged_task(allocator_arg_t, const _Allocator&,
+		      const packaged_task&) = delete;
 
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 2097.  packaged_task constructors should be constrained
-      // 2407. [this constructor should not be] explicit
-      template<typename _Fn, typename _Alloc, typename = __not_same<_Fn>>
-	packaged_task(allocator_arg_t, const _Alloc& __a, _Fn&& __fn)
-	: _M_state(__create_task_state<_Res(_ArgTypes...)>(
-		   std::forward<_Fn>(__fn), __a))
-	{ }
+      template<typename _Allocator>
+	packaged_task(allocator_arg_t, const _Allocator&,
+		      packaged_task&& __other) noexcept
+	{ this->swap(__other); }
+#endif
 
       ~packaged_task()
       {
@@ -1511,18 +1526,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       packaged_task(const packaged_task&) = delete;
       packaged_task& operator=(const packaged_task&) = delete;
 
-      template<typename _Allocator>
-	packaged_task(allocator_arg_t, const _Allocator&,
-		      const packaged_task&) = delete;
-
       // Move support
       packaged_task(packaged_task&& __other) noexcept
       { this->swap(__other); }
-
-      template<typename _Allocator>
-	packaged_task(allocator_arg_t, const _Allocator&,
-		      packaged_task&& __other) noexcept
-	{ this->swap(__other); }
 
       packaged_task& operator=(packaged_task&& __other) noexcept
       {
@@ -1575,10 +1581,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 packaged_task<_Res(_ArgTypes...)>& __y) noexcept
     { __x.swap(__y); }
 
+#if __cplusplus < 201703L
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2976. Dangling uses_allocator specialization for packaged_task
   template<typename _Res, typename _Alloc>
     struct uses_allocator<packaged_task<_Res>, _Alloc>
     : public true_type { };
-
+#endif
 
   // Shared state created by std::async().
   // Holds a deferred function and storage for its result.

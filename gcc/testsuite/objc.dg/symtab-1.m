@@ -4,7 +4,7 @@
 /* { dg-do compile { target { *-*-darwin* } } } */
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 
-#include <Foundation/NSObject.h>
+#include "../objc-obj-c++-shared/F-NSObject.h"
 
 @interface Base: NSObject 
 - (void)setValues;

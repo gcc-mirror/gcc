@@ -92,7 +92,7 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
 		   p != linknames->end();
 		   ++p)
 		go_error_at(p->second.loc,
-			    ("//go:linkname only allowed in Go files that "
+			    ("%<//go:linkname%> only allowed in Go files that "
 			     "import \"unsafe\""));
 	    }
 	  all_linknames.insert(linknames->begin(), linknames->end());
@@ -142,6 +142,13 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   if (only_check_syntax)
     return;
 
+  // Do simple deadcode elimination.
+  ::gogo->remove_deadcode();
+
+  // Make implicit type conversions explicit.
+  ::gogo->add_conversions();
+
+  // Analyze the program flow for escape information.
   ::gogo->analyze_escape();
 
   // Export global identifiers as appropriate.

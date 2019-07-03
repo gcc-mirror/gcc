@@ -332,7 +332,7 @@ read_gcda_file (const char *filename)
         {
           if (((mask & 0xff) != 0xff))
             {
-              warning (0, "%s:tag `%x' is invalid\n", filename, tag);
+	      warning (0, "%s:tag %qx is invalid", filename, tag);
               break;
             }
           tag_depth--;
@@ -347,7 +347,7 @@ read_gcda_file (const char *filename)
           if (depth && depth < tag_depth)
             {
               if (!GCOV_TAG_IS_SUBTAG (tags[depth - 1], tag))
-                warning (0, "%s:tag `%x' is incorrectly nested\n",
+	        warning (0, "%s:tag %qx is incorrectly nested",
                          filename, tag);
             }
           depth = tag_depth;
@@ -362,18 +362,18 @@ read_gcda_file (const char *filename)
 
           actual_length = gcov_position () - base;
           if (actual_length > length)
-            warning (0, "%s:record size mismatch %lu bytes overread\n",
+	    warning (0, "%s:record size mismatch %lu bytes overread",
                      filename, actual_length - length);
           else if (length > actual_length)
-            warning (0, "%s:record size mismatch %lu bytes unread\n",
+	    warning (0, "%s:record size mismatch %lu bytes unread",
                      filename, length - actual_length);
        }
 
       gcov_sync (base, length);
       if ((error = gcov_is_error ()))
         {
-          warning (0, error < 0 ? "%s:counter overflow at %lu\n" :
-                                  "%s:read error at %lu\n", filename,
+	  warning (0, error < 0 ? "%s:counter overflow at %lu" :
+	                          "%s:read error at %lu", filename,
                    (long unsigned) gcov_position ());
           break;
         }
@@ -461,9 +461,8 @@ gcov_read_profile_dir (const char* dir_name, int recompute_summary ATTRIBUTE_UNU
 #ifdef HAVE_FTW_H
   ftw (".", ftw_read_file, 50);
 #endif
-  ret = chdir (pwd);
+  chdir (pwd);
   free (pwd);
-
 
   return gcov_info_head;;
 }
@@ -681,6 +680,9 @@ gcov_profile_merge (struct gcov_info *tgt_profile, struct gcov_info *src_profile
       tgt_tail = gi_ptr;
     }
 
+  free (in_src_not_tgt);
+  free (tgt_infos);
+
   return 0;
 }
 
@@ -723,11 +725,11 @@ __gcov_time_profile_counter_op (gcov_type *counters ATTRIBUTE_UNUSED,
   /* Do nothing.  */
 }
 
-/* Performing FN upon single counters.  */
+/* Performing FN upon TOP N counters.  */
 
 static void
-__gcov_single_counter_op (gcov_type *counters, unsigned n_counters,
-                          counter_op_fn fn, void *data1, void *data2)
+__gcov_topn_counter_op (gcov_type *counters, unsigned n_counters,
+			counter_op_fn fn, void *data1, void *data2)
 {
   unsigned i, n_measures;
 
@@ -737,25 +739,6 @@ __gcov_single_counter_op (gcov_type *counters, unsigned n_counters,
     {
       counters[1] = fn (counters[1], data1, data2);
       counters[2] = fn (counters[2], data1, data2);
-    }
-}
-
-/* Performing FN upon indirect-call profile counters.  */
-
-static void
-__gcov_icall_topn_counter_op (gcov_type *counters, unsigned n_counters,
-                              counter_op_fn fn, void *data1, void *data2)
-{
-  unsigned i;
-
-  gcc_assert (!(n_counters % GCOV_ICALL_TOPN_NCOUNTS));
-  for (i = 0; i < n_counters; i += GCOV_ICALL_TOPN_NCOUNTS)
-    {
-      unsigned j;
-      gcov_type *value_array = &counters[i + 1];
-
-      for (j = 0; j < GCOV_ICALL_TOPN_NCOUNTS - 1; j += 2)
-        value_array[j + 1] = fn (value_array[j + 1], data1, data2);
     }
 }
 
@@ -1298,6 +1281,8 @@ calculate_overlap (struct gcov_info *gcov_list1,
       prg_val += val;
 
     }
+
+  free (all_infos);
 
   if (overlap_obj_level)
     printf("   SUM:%36s  overlap = %6.2f%% (%5.2f%% %5.2f%%)\n",

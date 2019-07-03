@@ -2518,13 +2518,12 @@ cselib_record_sets (rtx_insn *insn)
   int n_sets = 0;
   int i;
   struct cselib_set sets[MAX_SETS];
-  rtx body = PATTERN (insn);
   rtx cond = 0;
   int n_sets_before_autoinc;
   int n_strict_low_parts = 0;
   struct cselib_record_autoinc_data data;
 
-  body = PATTERN (insn);
+  rtx body = PATTERN (insn);
   if (GET_CODE (body) == COND_EXEC)
     {
       cond = COND_EXEC_TEST (body);
@@ -2858,9 +2857,14 @@ cselib_init (int record_what)
     }
   used_regs = XNEWVEC (unsigned int, cselib_nregs);
   n_used_regs = 0;
-  cselib_hash_table = new hash_table<cselib_hasher> (31);
+  /* FIXME: enable sanitization (PR87845) */
+  cselib_hash_table
+    = new hash_table<cselib_hasher> (31, /* ggc */ false,
+				     /* sanitize_eq_and_hash */ false);
   if (cselib_preserve_constants)
-    cselib_preserved_hash_table = new hash_table<cselib_hasher> (31);
+    cselib_preserved_hash_table
+      = new hash_table<cselib_hasher> (31, /* ggc */ false,
+				       /* sanitize_eq_and_hash */ false);
   next_uid = 1;
 }
 

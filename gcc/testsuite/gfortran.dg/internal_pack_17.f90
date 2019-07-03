@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-additional-options "-fdump-tree-original" }
+! { dg-additional-options "-O0 -fdump-tree-original" }
 ! PR 59345 - pack/unpack was not needed here.
 ! Original test case by Joost VandeVondele 
 SUBROUTINE S1(A)

@@ -510,15 +510,14 @@ No_Multiple_Elaboration
 -----------------------
 .. index:: No_Multiple_Elaboration
 
-[GNAT] When this restriction is active, we are not requesting control-flow
-preservation with -fpreserve-control-flow, and the static elaboration model is
-used, the compiler is allowed to suppress the elaboration counter normally
-associated with the unit, even if the unit has elaboration code. This counter
-is typically used to check for access before elaboration and to control
-multiple elaboration attempts. If the restriction is used, then the
-situations in which multiple elaboration is possible, including non-Ada main
-programs and Stand Alone libraries, are not permitted and will be diagnosed
-by the binder.
+[GNAT] When this restriction is active and the static elaboration model is
+used, and -fpreserve-control-flow is not used, the compiler is allowed to
+suppress the elaboration counter normally associated with the unit, even if
+the unit has elaboration code. This counter is typically used to check for
+access before elaboration and to control multiple elaboration attempts. If the
+restriction is used, then the situations in which multiple elaboration is
+possible, including non-Ada main programs and Stand Alone libraries, are not
+permitted and will be diagnosed by the binder.
 
 No_Nested_Finalization
 ----------------------

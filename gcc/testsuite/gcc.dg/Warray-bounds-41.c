@@ -1,5 +1,6 @@
 /* PR tree-optimization/89662- -Warray-bounds ICE on void* arithmetic
    { dg-do compile }
+   { dg-require-effective-target alloca }
    { dg-options "-O2 -Wall" } */
 
 void* vptr (void *c)

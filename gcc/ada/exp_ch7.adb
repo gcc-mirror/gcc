@@ -379,10 +379,6 @@ package body Exp_Ch7 is
    --  references within these nested subprograms (typically generated
    --  subprograms to handle finalization actions).
 
-   function Contains_Subprogram (Blk : Entity_Id) return Boolean;
-   --  Check recursively whether a loop or block contains a subprogram that
-   --  may need an activation record.
-
    procedure Check_Visibly_Controlled
      (Prim : Final_Primitives;
       Typ  : Entity_Id;
@@ -399,6 +395,10 @@ package body Exp_Ch7 is
    --  If it is not then we must retrieve the hidden operation of the parent
    --  and use it instead.  This is one case that might be solved more cleanly
    --  once Overriding pragmas or declarations are in place.
+
+   function Contains_Subprogram (Blk : Entity_Id) return Boolean;
+   --  Check recursively whether a loop or block contains a subprogram that
+   --  may need an activation record.
 
    function Convert_View
      (Proc : Entity_Id;
@@ -5187,6 +5187,7 @@ package body Exp_Ch7 is
 
          Set_Finalizer (Id, Fin_Id);
       end if;
+
       Check_Unnesting_In_Declarations (Visible_Declarations (Spec));
       Check_Unnesting_In_Declarations (Private_Declarations (Spec));
    end Expand_N_Package_Declaration;

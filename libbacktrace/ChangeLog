@@ -1,3 +1,15 @@
+2019-05-24  Clement Chigot  <clement.chigot@atos.net>
+
+	* Makefile.am (BUILDTESTS): Remove test_elf, add test_elf_32 and
+	test_elf_64.
+	* Makefile.in: Regenerate.
+
+2019-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (have_dl_iterate_phdr): Remove *-*-solaris2.10*
+	handling.
+	* configure: Regenerate.
+
 2019-03-11  Ian Lance Taylor  <iant@golang.org>
 
 	PR libbacktrace/89669

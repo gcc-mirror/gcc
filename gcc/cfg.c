@@ -546,9 +546,10 @@ dump_edge_info (FILE *file, edge e, dump_flags_t flags, int do_succ)
 DEBUG_FUNCTION void
 debug (edge_def &ref)
 {
-  /* FIXME (crowl): Is this desireable?  */
-  dump_edge_info (stderr, &ref, TDF_NONE, false);
-  dump_edge_info (stderr, &ref, TDF_NONE, true);
+  fprintf (stderr, "<edge (%d -> %d)>\n",
+	   ref.src->index, ref.dest->index);
+  dump_edge_info (stderr, &ref, TDF_DETAILS, false);
+  fprintf (stderr, "\n");
 }
 
 DEBUG_FUNCTION void

@@ -5394,7 +5394,7 @@ legitimize_reload_address (rtx ad, machine_mode mode ATTRIBUTE_UNUSED,
 /* Emit code to move LEN bytes from DST to SRC.  */
 
 bool
-s390_expand_movmem (rtx dst, rtx src, rtx len)
+s390_expand_cpymem (rtx dst, rtx src, rtx len)
 {
   /* When tuning for z10 or higher we rely on the Glibc functions to
      do the right thing. Only for constant lengths below 64k we will
@@ -5419,14 +5419,14 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
 	{
 	  rtx newdst = adjust_address (dst, BLKmode, o);
 	  rtx newsrc = adjust_address (src, BLKmode, o);
-	  emit_insn (gen_movmem_short (newdst, newsrc,
+	  emit_insn (gen_cpymem_short (newdst, newsrc,
 				       GEN_INT (l > 256 ? 255 : l - 1)));
 	}
     }
 
   else if (TARGET_MVCLE)
     {
-      emit_insn (gen_movmem_long (dst, src, convert_to_mode (Pmode, len, 1)));
+      emit_insn (gen_cpymem_long (dst, src, convert_to_mode (Pmode, len, 1)));
     }
 
   else
@@ -5488,7 +5488,7 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
 	  emit_insn (prefetch);
 	}
 
-      emit_insn (gen_movmem_short (dst, src, GEN_INT (255)));
+      emit_insn (gen_cpymem_short (dst, src, GEN_INT (255)));
       s390_load_address (dst_addr,
 			 gen_rtx_PLUS (Pmode, dst_addr, GEN_INT (256)));
       s390_load_address (src_addr,
@@ -5505,7 +5505,7 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
       emit_jump (loop_start_label);
       emit_label (loop_end_label);
 
-      emit_insn (gen_movmem_short (dst, src,
+      emit_insn (gen_cpymem_short (dst, src,
 				   convert_to_mode (Pmode, count, 1)));
       emit_label (end_label);
     }
@@ -5557,7 +5557,7 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
 	    if (l > 1)
 	      {
 		rtx newdstp1 = adjust_address (dst, BLKmode, o + 1);
-		emit_insn (gen_movmem_short (newdstp1, newdst,
+		emit_insn (gen_cpymem_short (newdstp1, newdst,
 					     GEN_INT (l > 257 ? 255 : l - 2)));
 	      }
 	  }
@@ -5664,7 +5664,7 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
 	  /* Set the first byte in the block to the value and use an
 	     overlapping mvc for the block.  */
 	  emit_move_insn (adjust_address (dst, QImode, 0), val);
-	  emit_insn (gen_movmem_short (dstp1, dst, GEN_INT (254)));
+	  emit_insn (gen_cpymem_short (dstp1, dst, GEN_INT (254)));
 	}
       s390_load_address (dst_addr,
 			 gen_rtx_PLUS (Pmode, dst_addr, GEN_INT (256)));
@@ -5688,7 +5688,7 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
 	  emit_move_insn (adjust_address (dst, QImode, 0), val);
 	  /* execute only uses the lowest 8 bits of count that's
 	     exactly what we need here.  */
-	  emit_insn (gen_movmem_short (dstp1, dst,
+	  emit_insn (gen_cpymem_short (dstp1, dst,
 				       convert_to_mode (Pmode, count, 1)));
 	}
 
@@ -6330,7 +6330,7 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
 
 	  dest = adjust_address (dest, BLKmode, 0);
 	  set_mem_size (dest, size);
-	  s390_expand_movmem (dest, src_mem, GEN_INT (size));
+	  s390_expand_cpymem (dest, src_mem, GEN_INT (size));
 	  return true;
 	}
 
@@ -12864,9 +12864,11 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 		      HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 		      tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
   rtx op[10];
   int nonlocal = 0;
 
+  assemble_start_function (thunk, fnname);
   /* Make sure unwind info is emitted for the thunk if needed.  */
   final_start_function (emit_barrier (), file, 1);
 
@@ -13120,6 +13122,7 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 	}
     }
   final_end_function ();
+  assemble_end_function (thunk, fnname);
 }
 
 /* Output either an indirect jump or a an indirect call

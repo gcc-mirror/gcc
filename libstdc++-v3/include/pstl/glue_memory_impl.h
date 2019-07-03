@@ -7,8 +7,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef __PSTL_glue_memory_impl_H
-#define __PSTL_glue_memory_impl_H
+#ifndef _PSTL_GLUE_MEMORY_IMPL_H
+#define _PSTL_GLUE_MEMORY_IMPL_H
 
 #include "utils.h"
 #include "algorithm_fwd.h"
@@ -355,4 +355,4 @@ uninitialized_value_construct_n(_ExecutionPolicy&& __exec, _ForwardIterator __fi
 
 } // namespace std
 
-#endif /* __PSTL_glue_memory_imple_H */
+#endif /* _PSTL_GLUE_MEMORY_IMPL_H */

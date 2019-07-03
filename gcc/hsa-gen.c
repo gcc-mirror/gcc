@@ -2264,7 +2264,7 @@ gen_hsa_addr_insns (tree val, hsa_op_reg *dest, hsa_bb *hbb)
     {
       HSA_SORRY_ATV (EXPR_LOCATION (val), "support for HSA does "
 		     "not implement taking addresses of complex "
-		     "CONST_DECLs such as %E", val);
+		     "%<CONST_DECL%> such as %E", val);
       return;
     }
 
@@ -2449,7 +2449,7 @@ gen_hsa_insns_for_load (hsa_op_reg *dest, tree rhs, tree type, hsa_bb *hbb)
 	    {
 	      HSA_SORRY_ATV (EXPR_LOCATION (rhs),
 			     "support for HSA does not implement conversion "
-			     "of %E to the requested non-pointer type.", rhs);
+			     "of %E to the requested non-pointer type", rhs);
 	      return;
 	    }
 
@@ -3012,7 +3012,7 @@ gen_hsa_cmp_insn_from_gimple (enum tree_code code, tree lhs, tree rhs,
     default:
       HSA_SORRY_ATV (EXPR_LOCATION (lhs),
 		     "support for HSA does not implement comparison tree "
-		     "code %s\n", get_tree_code_name (code));
+		     "code %s", get_tree_code_name (code));
       return;
     }
 
@@ -3162,8 +3162,8 @@ gen_hsa_insns_for_operation_assignment (gimple *assign, hsa_bb *hbb)
     case FLOOR_DIV_EXPR:
     case ROUND_DIV_EXPR:
       HSA_SORRY_AT (gimple_location (assign),
-		    "support for HSA does not implement CEIL_DIV_EXPR, "
-		    "FLOOR_DIV_EXPR or ROUND_DIV_EXPR");
+		    "support for HSA does not implement %<CEIL_DIV_EXPR%>, "
+		    "%<FLOOR_DIV_EXPR%> or %<ROUND_DIV_EXPR%>");
       return;
     case TRUNC_MOD_EXPR:
       opcode = BRIG_OPCODE_REM;
@@ -3172,8 +3172,8 @@ gen_hsa_insns_for_operation_assignment (gimple *assign, hsa_bb *hbb)
     case FLOOR_MOD_EXPR:
     case ROUND_MOD_EXPR:
       HSA_SORRY_AT (gimple_location (assign),
-		    "support for HSA does not implement CEIL_MOD_EXPR, "
-		    "FLOOR_MOD_EXPR or ROUND_MOD_EXPR");
+		    "support for HSA does not implement %<CEIL_MOD_EXPR%>, "
+		    "%<FLOOR_MOD_EXPR%> or %<ROUND_MOD_EXPR%>");
       return;
     case NEGATE_EXPR:
       opcode = BRIG_OPCODE_NEG;
@@ -4188,8 +4188,8 @@ gen_get_level (gimple *stmt, hsa_bb *hbb)
   if (shadow_reg_ptr == NULL)
     {
       HSA_SORRY_AT (gimple_location (stmt),
-		    "support for HSA does not implement omp_get_level called "
-		    "from a function not being inlined within a kernel");
+		    "support for HSA does not implement %<omp_get_level%> "
+		    "called from a function not being inlined within a kernel");
       return;
     }
 
@@ -4230,7 +4230,8 @@ gen_hsa_alloca (gcall *call, hsa_bb *hbb)
   if (lhs == NULL_TREE)
     return;
 
-  built_in_function fn = DECL_FUNCTION_CODE (gimple_call_fndecl (call));
+  tree fndecl = gimple_call_fndecl (call);
+  built_in_function fn = DECL_FUNCTION_CODE (fndecl);
 
   gcc_checking_assert (ALLOCA_FUNCTION_CODE_P (fn));
 
@@ -4243,8 +4244,8 @@ gen_hsa_alloca (gcall *call, hsa_bb *hbb)
 	{
 	  HSA_SORRY_ATV (gimple_location (call),
 			 "support for HSA does not implement "
-			 "__builtin_alloca_with_align with a non-constant "
-			 "alignment: %E", alignment_tree);
+			 "%qD with a non-constant alignment %E",
+			 fndecl, alignment_tree);
 	}
 
       bit_alignment = tree_to_uhwi (alignment_tree);
@@ -4548,7 +4549,7 @@ omp_simple_builtin::generate (gimple *stmt, hsa_bb *hbb)
 	HSA_SORRY_AT (gimple_location (stmt), m_warning_message);
       else
 	HSA_SORRY_ATV (gimple_location (stmt),
-		       "Support for HSA does not implement calls to %s\n",
+		       "support for HSA does not implement calls to %qs",
 		       m_name);
     }
   else if (m_warning_message != NULL)
@@ -5049,7 +5050,7 @@ gen_hsa_atomic_for_builtin (bool ret_orig, enum BrigAtomicOperation acode,
 	{
 	  HSA_SORRY_ATV (gimple_location (stmt),
 			 "support for HSA does not implement memory model for "
-			 "ATOMIC_ST: %s", mmname);
+			 "%<ATOMIC_ST%>: %s", mmname);
 	  return;
 	}
     }
@@ -5314,8 +5315,8 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
 	gen_hsa_insns_for_direct_call (stmt, hbb);
       else if (!gen_hsa_insns_for_known_library_call (stmt, hbb))
 	HSA_SORRY_AT (gimple_location (stmt),
-		      "HSA supports only calls of functions marked with pragma "
-		      "omp declare target");
+		      "HSA supports only calls of functions marked with "
+		      "%<#pragma omp declare target%>");
       return;
     }
 
@@ -5625,7 +5626,7 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
     case BUILT_IN_GOMP_PARALLEL:
       HSA_SORRY_AT (gimple_location (stmt),
 		    "support for HSA does not implement non-gridified "
-		    "OpenMP parallel constructs.");
+		    "OpenMP parallel constructs");
       break;
 
     case BUILT_IN_OMP_GET_THREAD_NUM:

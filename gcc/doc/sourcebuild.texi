@@ -1357,6 +1357,9 @@ Target has @code{int} that is at 32 bits or longer.
 @item int16
 Target has @code{int} that is 16 bits or shorter.
 
+@item longlong64
+Target has 64-bit @code{long long}.
+
 @item long_neq_int
 Target has @code{int} and @code{long} with different sizes.
 
@@ -2043,6 +2046,9 @@ Target supports compiling @code{avx512f} instructions.
 @item avx512f_runtime
 Target supports the execution of @code{avx512f} instructions.
 
+@item avx512vp2intersect
+Target supports the execution of @code{avx512vp2intersect} instructions.
+
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
 
@@ -2381,6 +2387,10 @@ Target supports compiling @code{aes} instructions.
 
 @item fma4
 Target supports compiling @code{fma4} instructions.
+
+@item mfentry
+Target supports the @code{-mfentry} option that alters the
+position of profiling calls such that they precede the prologue.
 
 @item ms_hook_prologue
 Target supports attribute @code{ms_hook_prologue}.

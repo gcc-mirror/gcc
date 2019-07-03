@@ -120,7 +120,7 @@ along with GCC; see the file COPYING3.  If not see
      String are represented in the table as pairs, a length in ULEB128
      form followed by the data for the string.  */
 
-#define LTO_major_version 8
+#define LTO_major_version 9
 #define LTO_minor_version 0
 
 typedef unsigned char	lto_decl_flags_t;
@@ -234,6 +234,7 @@ enum lto_section_type
   LTO_section_offload_table,
   LTO_section_mode_table,
   LTO_section_ipa_hsa,
+  LTO_section_lto,
   LTO_N_SECTION_TYPES		/* Must be last.  */
 };
 
@@ -378,18 +379,31 @@ public:
   unsigned int len;
 };
 
+/* Compression algorithm used for compression of LTO bytecode.  */
 
-/* The is the first part of the record for a function or constructor
-   in the .o file.  */
-struct lto_header
+enum lto_compression
+{
+  ZLIB,
+  ZSTD
+};
+
+/* Structure that represents LTO ELF section with information
+   about the format.  */
+
+struct lto_section
 {
   int16_t major_version;
   int16_t minor_version;
+  unsigned char slim_object: 1;
+  lto_compression compression: 4;
+  int32_t reserved0: 27;
 };
+
+STATIC_ASSERT (sizeof (lto_section) == 8);
 
 /* The is the first part of the record in an LTO file for many of the
    IPA passes.  */
-struct lto_simple_header : lto_header
+struct lto_simple_header
 {
   /* Size of main gimple body of function.  */
   int32_t main_size;
@@ -589,6 +603,9 @@ struct GTY(()) lto_file_decl_data
 
   /* Mode translation table.  */
   const unsigned char *mode_table;
+
+  /* Read LTO section.  */
+  lto_section lto_section_header;
 };
 
 typedef struct lto_file_decl_data *lto_file_decl_data_ptr;
@@ -822,8 +839,6 @@ extern void lto_append_block (struct lto_output_stream *);
 extern bool lto_stream_offload_p;
 
 extern const char *lto_tag_name (enum LTO_tags);
-extern bitmap lto_bitmap_alloc (void);
-extern void lto_bitmap_free (bitmap);
 extern char *lto_get_section_name (int, const char *, struct lto_file_decl_data *);
 extern void print_lto_report (const char *);
 extern void lto_streamer_init (void);

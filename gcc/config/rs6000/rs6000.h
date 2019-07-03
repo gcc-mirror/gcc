@@ -70,6 +70,12 @@
 #define PPC405_ERRATUM77 0
 #endif
 
+#if CHECKING_P
+#define ASM_OPT_ANY ""
+#else
+#define ASM_OPT_ANY " -many"
+#endif
+
 /* Common ASM definitions used by ASM_SPEC among the various targets for
    handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.c to
    provide the default assembler options if the user uses -mcpu=native, so if
@@ -132,13 +138,14 @@
   mcpu=e5500: -me5500; \
   mcpu=e6500: -me6500; \
   mcpu=titan: -mtitan; \
+  mcpu=future: -mfuture; \
   !mcpu*: %{mpower9-vector: -mpower9; \
 	    mpower8-vector|mcrypto|mdirect-move|mhtm: -mpower8; \
 	    mvsx: -mpower7; \
 	    mpowerpc64: -mppc64;: %(asm_default)}; \
   :%eMissing -mcpu option in ASM_CPU_SPEC?\n} \
-%{mvsx: -mvsx -maltivec; maltivec: -maltivec} \
--many"
+%{mvsx: -mvsx -maltivec; maltivec: -maltivec}" \
+ASM_OPT_ANY
 
 #define CPP_DEFAULT_SPEC ""
 
@@ -446,7 +453,7 @@ extern int rs6000_vector_align[];
 #define TARGET_FCTIWUZ	TARGET_POPCNTD
 #define TARGET_CTZ	TARGET_MODULO
 #define TARGET_EXTSWSLI	(TARGET_MODULO && TARGET_POWERPC64)
-#define TARGET_MADDLD	(TARGET_MODULO && TARGET_POWERPC64)
+#define TARGET_MADDLD	TARGET_MODULO
 
 #define TARGET_XSCVDPSPN	(TARGET_DIRECT_MOVE || TARGET_P8_VECTOR)
 #define TARGET_XSCVSPDPN	(TARGET_DIRECT_MOVE || TARGET_P8_VECTOR)
@@ -502,7 +509,6 @@ extern int rs6000_vector_align[];
 #define MASK_HTM			OPTION_MASK_HTM
 #define MASK_ISEL			OPTION_MASK_ISEL
 #define MASK_MFCRF			OPTION_MASK_MFCRF
-#define MASK_MFPGPR			OPTION_MASK_MFPGPR
 #define MASK_MULHW			OPTION_MASK_MULHW
 #define MASK_MULTIPLE			OPTION_MASK_MULTIPLE
 #define MASK_NO_UPDATE			OPTION_MASK_NO_UPDATE
@@ -518,6 +524,7 @@ extern int rs6000_vector_align[];
 #define MASK_STRICT_ALIGN		OPTION_MASK_STRICT_ALIGN
 #define MASK_UPDATE			OPTION_MASK_UPDATE
 #define MASK_VSX			OPTION_MASK_VSX
+#define MASK_FUTURE			OPTION_MASK_FUTURE
 
 #ifndef IN_LIBGCC2
 #define MASK_POWERPC64			OPTION_MASK_POWERPC64
@@ -1249,34 +1256,10 @@ enum r6000_reg_class_enum {
   RS6000_CONSTRAINT_f,		/* fpr registers for single values */
   RS6000_CONSTRAINT_v,		/* Altivec registers */
   RS6000_CONSTRAINT_wa,		/* Any VSX register */
-  RS6000_CONSTRAINT_wb,		/* Altivec register if ISA 3.0 vector. */
-  RS6000_CONSTRAINT_wd,		/* VSX register for V2DF */
   RS6000_CONSTRAINT_we,		/* VSX register if ISA 3.0 vector. */
-  RS6000_CONSTRAINT_wf,		/* VSX register for V4SF */
-  RS6000_CONSTRAINT_wg,		/* FPR register for -mmfpgpr */
-  RS6000_CONSTRAINT_wh,		/* FPR register for direct moves.  */
-  RS6000_CONSTRAINT_wi,		/* FPR/VSX register to hold DImode */
-  RS6000_CONSTRAINT_wj,		/* FPR/VSX register for DImode direct moves. */
-  RS6000_CONSTRAINT_wk,		/* FPR/VSX register for DFmode direct moves. */
-  RS6000_CONSTRAINT_wl,		/* FPR register for LFIWAX */
-  RS6000_CONSTRAINT_wm,		/* VSX register for direct move */
-  RS6000_CONSTRAINT_wo,		/* VSX register for power9 vector.  */
-  RS6000_CONSTRAINT_wp,		/* VSX reg for IEEE 128-bit fp TFmode. */
-  RS6000_CONSTRAINT_wq,		/* VSX reg for IEEE 128-bit fp KFmode.  */
   RS6000_CONSTRAINT_wr,		/* GPR register if 64-bit  */
-  RS6000_CONSTRAINT_ws,		/* VSX register for DF */
-  RS6000_CONSTRAINT_wt,		/* VSX register for TImode */
-  RS6000_CONSTRAINT_wu,		/* Altivec register for float load/stores.  */
-  RS6000_CONSTRAINT_wv,		/* Altivec register for double load/stores.  */
-  RS6000_CONSTRAINT_ww,		/* FP or VSX register for vsx float ops.  */
   RS6000_CONSTRAINT_wx,		/* FPR register for STFIWX */
-  RS6000_CONSTRAINT_wy,		/* VSX register for SF */
-  RS6000_CONSTRAINT_wz,		/* FPR register for LFIWZX */
   RS6000_CONSTRAINT_wA,		/* BASE_REGS if 64-bit.  */
-  RS6000_CONSTRAINT_wH,		/* Altivec register for 32-bit integers.  */
-  RS6000_CONSTRAINT_wI,		/* VSX register for 32-bit integers.  */
-  RS6000_CONSTRAINT_wJ,		/* VSX register for 8/16-bit integers.  */
-  RS6000_CONSTRAINT_wK,		/* Altivec register for 16/32-bit integers.  */
   RS6000_CONSTRAINT_MAX
 };
 
@@ -1495,6 +1478,15 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 #define CALL_V4_SET_FP_ARGS	0x00000004	/* V.4, FP args were passed */
 #define CALL_LONG		0x00000008	/* always call indirect */
 #define CALL_LIBCALL		0x00000010	/* libcall */
+
+/* Identify PLT sequence for rs6000_pltseq_template.  */
+enum rs6000_pltseq_enum {
+  RS6000_PLTSEQ_TOCSAVE,
+  RS6000_PLTSEQ_PLT16_HA,
+  RS6000_PLTSEQ_PLT16_LO,
+  RS6000_PLTSEQ_MTCTR,
+  RS6000_PLTSEQ_PLT_PCREL34
+};
 
 #define IS_V4_FP_ARGS(OP) \
   ((INTVAL (OP) & (CALL_V4_CLEAR_FP_ARGS | CALL_V4_SET_FP_ARGS)) != 0)
@@ -2494,8 +2486,56 @@ enum rs6000_builtin_type_index
 extern GTY(()) tree rs6000_builtin_types[RS6000_BTI_MAX];
 extern GTY(()) tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
 
+#ifndef USED_FOR_TARGET
+/* A C structure for machine-specific, per-function data.
+   This is added to the cfun structure.  */
+typedef struct GTY(()) machine_function
+{
+  /* Flags if __builtin_return_address (n) with n >= 1 was used.  */
+  int ra_needs_full_frame;
+  /* Flags if __builtin_return_address (0) was used.  */
+  int ra_need_lr;
+  /* Cache lr_save_p after expansion of builtin_eh_return.  */
+  int lr_save_state;
+  /* Whether we need to save the TOC to the reserved stack location in the
+     function prologue.  */
+  bool save_toc_in_prologue;
+  /* Offset from virtual_stack_vars_rtx to the start of the ABI_V4
+     varargs save area.  */
+  HOST_WIDE_INT varargs_save_offset;
+  /* Alternative internal arg pointer for -fsplit-stack.  */
+  rtx split_stack_arg_pointer;
+  bool split_stack_argp_used;
+  /* Flag if r2 setup is needed with ELFv2 ABI.  */
+  bool r2_setup_needed;
+  /* The number of components we use for separate shrink-wrapping.  */
+  int n_components;
+  /* The components already handled by separate shrink-wrapping, which should
+     not be considered by the prologue and epilogue.  */
+  bool gpr_is_wrapped_separately[32];
+  bool fpr_is_wrapped_separately[32];
+  bool lr_is_wrapped_separately;
+  bool toc_is_wrapped_separately;
+} machine_function;
+#endif
+
+
 #define TARGET_SUPPORTS_WIDE_INT 1
 
 #if (GCC_VERSION >= 3000)
 #pragma GCC poison TARGET_FLOAT128 OPTION_MASK_FLOAT128 MASK_FLOAT128
 #endif
+
+/* Whether a given VALUE is a valid 16- or 34-bit signed offset.  EXTRA is the
+   amount that we can't touch at the high end of the range (typically if the
+   address is split into smaller addresses, the extra covers the addresses
+   which might be generated when the insn is split).  */
+#define SIGNED_16BIT_OFFSET_P(VALUE, EXTRA)				\
+  IN_RANGE (VALUE,							\
+	    -(HOST_WIDE_INT_1 << 15),					\
+	    (HOST_WIDE_INT_1 << 15) - 1 - (EXTRA))
+
+#define SIGNED_34BIT_OFFSET_P(VALUE, EXTRA)				\
+  IN_RANGE (VALUE,							\
+	    -(HOST_WIDE_INT_1 << 33),					\
+	    (HOST_WIDE_INT_1 << 33) - 1 - (EXTRA))

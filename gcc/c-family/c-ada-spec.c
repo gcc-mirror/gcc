@@ -679,8 +679,10 @@ compare_node (const void *lp, const void *rp)
 {
   const_tree lhs = *((const tree *) lp);
   const_tree rhs = *((const tree *) rp);
+  const int ret
+    = compare_location (decl_sloc (lhs, true), decl_sloc (rhs, true));
 
-  return compare_location (decl_sloc (lhs, true), decl_sloc (rhs, true));
+  return ret ? ret : DECL_UID (lhs) - DECL_UID (rhs);
 }
 
 /* Compare two comments (LP and RP) by their source location.  */
@@ -2681,6 +2683,17 @@ print_destructor (pretty_printer *buffer, tree t, tree type)
   pp_ada_tree_identifier (buffer, decl_name, t, false);
 }
 
+/* Dump in BUFFER assignment operator spec corresponding to T.  */
+
+static void
+print_assignment_operator (pretty_printer *buffer, tree t, tree type)
+{
+  tree decl_name = DECL_NAME (TYPE_NAME (type));
+
+  pp_string (buffer, "Assign_");
+  pp_ada_tree_identifier (buffer, decl_name, t, false);
+}
+
 /* Return the name of type T.  */
 
 static const char *
@@ -2920,6 +2933,7 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       bool is_method = TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE;
       tree decl_name = DECL_NAME (t);
       bool is_abstract = false;
+      bool is_assignment_operator = false;
       bool is_constructor = false;
       bool is_destructor = false;
       bool is_copy_constructor = false;
@@ -2931,6 +2945,7 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       if (cpp_check)
 	{
 	  is_abstract = cpp_check (t, IS_ABSTRACT);
+	  is_assignment_operator = cpp_check (t, IS_ASSIGNMENT_OPERATOR);
 	  is_constructor = cpp_check (t, IS_CONSTRUCTOR);
 	  is_destructor = cpp_check (t, IS_DESTRUCTOR);
 	  is_copy_constructor = cpp_check (t, IS_COPY_CONSTRUCTOR);
@@ -2952,6 +2967,13 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	  if (strncmp (IDENTIFIER_POINTER (decl_name), "__ct_comp", 9) != 0
 	      && strncmp (IDENTIFIER_POINTER (decl_name), "__dt_comp", 9) != 0
 	      && strncmp (IDENTIFIER_POINTER (decl_name), "__dt_del", 8) != 0)
+	    return 0;
+	}
+
+      else if (is_assignment_operator)
+	{
+	  /* ??? Skip implicit or non-method assignment operators for now.  */
+	  if (DECL_ARTIFICIAL (t) || !is_method)
 	    return 0;
 	}
 
@@ -2977,6 +2999,8 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	print_constructor (buffer, t, type);
       else if (is_destructor)
 	print_destructor (buffer, t, type);
+      else if (is_assignment_operator)
+	print_assignment_operator (buffer, t, type);
       else
 	dump_ada_decl_name (buffer, t, false);
 

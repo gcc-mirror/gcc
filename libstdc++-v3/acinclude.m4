@@ -2899,8 +2899,20 @@ dnl       Where DEFAULT is either `yes' or `no'.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_DEBUG], [
   AC_MSG_CHECKING([for additional debug build])
+  skip_debug_build=
   GLIBCXX_ENABLE(libstdcxx-debug,$1,,[build extra debug library])
-  AC_MSG_RESULT($enable_libstdcxx_debug)
+  if test x$enable_libstdcxx_debug = xyes; then
+    if test -f $toplevel_builddir/../stage_final \
+      && test -f $toplevel_builddir/../stage_current; then
+      stage_final=`cat $toplevel_builddir/../stage_final`
+      stage_current=`cat $toplevel_builddir/../stage_current`
+      if test x$stage_current != x$stage_final ; then
+	skip_debug_build=" (skipped for bootstrap stage $stage_current)"
+	enable_libstdcxx_debug=no
+      fi
+    fi
+  fi
+  AC_MSG_RESULT($enable_libstdcxx_debug$skip_debug_build)
   GLIBCXX_CONDITIONAL(GLIBCXX_BUILD_DEBUG, test $enable_libstdcxx_debug = yes)
 ])
 
@@ -3820,7 +3832,7 @@ changequote([,])dnl
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:26:0
+libtool_VERSION=6:27:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in
@@ -4051,6 +4063,26 @@ AC_DEFUN([GLIBCXX_CHECK_X86_RDRAND], [
 		[ Defined if as can handle rdrand. ])
   fi
   AC_MSG_RESULT($ac_cv_x86_rdrand)
+])
+
+dnl
+dnl Check whether rdseed is supported in the assembler.
+AC_DEFUN([GLIBCXX_CHECK_X86_RDSEED], [
+  AC_MSG_CHECKING([for rdseed support in assembler])
+  AC_CACHE_VAL(ac_cv_x86_rdseed, [
+  ac_cv_x86_rdseed=no
+  case "$target" in
+    i?86-*-* | \
+    x86_64-*-*)
+    AC_TRY_COMPILE(, [asm("rdseed %eax");],
+		[ac_cv_x86_rdseed=yes], [ac_cv_x86_rdseed=no])
+  esac
+  ])
+  if test $ac_cv_x86_rdseed = yes; then
+    AC_DEFINE(_GLIBCXX_X86_RDSEED, 1,
+		[ Defined if as can handle rdseed. ])
+  fi
+  AC_MSG_RESULT($ac_cv_x86_rdseed)
 ])
 
 dnl

@@ -460,6 +460,10 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       cpp_opts->extended_identifiers = value;
       break;
 
+    case OPT_fmax_include_depth_:
+	cpp_opts->max_include_depth = value;
+      break;
+
     case OPT_foperator_names:
       cpp_opts->operator_names = value;
       break;
@@ -1022,8 +1026,8 @@ c_common_post_options (const char **pfilename)
     warn_return_type = 1;
 
   if (num_in_fnames > 1)
-    error ("too many filenames given.  Type %s --help for usage",
-	   progname);
+    error ("too many filenames given; type %<%s %s%> for usage",
+	   progname, "--help");
 
   if (flag_preprocess_only)
     {
@@ -1057,7 +1061,7 @@ c_common_post_options (const char **pfilename)
 	     debug formats we warn here and refuse to load any PCH files.  */
 	  if (write_symbols != NO_DEBUG && write_symbols != DWARF2_DEBUG)
 	    warning (OPT_Wdeprecated,
-		     "the \"%s\" debug format cannot be used with "
+		     "the %qs debug format cannot be used with "
 		     "pre-compiled headers", debug_type_names[write_symbols]);
 	}
       else if (write_symbols != NO_DEBUG && write_symbols != DWARF2_DEBUG)

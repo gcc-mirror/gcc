@@ -177,7 +177,7 @@ unsigned aarch64_architecture_version;
 enum aarch64_processor aarch64_tune = cortexa53;
 
 /* Mask to specify which instruction scheduling options should be used.  */
-unsigned long aarch64_tune_flags = 0;
+uint64_t aarch64_tune_flags = 0;
 
 /* Global flag for PC relative loads.  */
 bool aarch64_pcrelative_literal_loads;
@@ -1139,7 +1139,7 @@ struct processor
   enum aarch64_processor sched_core;
   enum aarch64_arch arch;
   unsigned architecture_version;
-  const unsigned long flags;
+  const uint64_t flags;
   const struct tune_params *const tune;
 };
 
@@ -1171,6 +1171,8 @@ static const struct processor all_cores[] =
 static const struct processor *selected_arch;
 static const struct processor *selected_cpu;
 static const struct processor *selected_tune;
+
+enum aarch64_key_type aarch64_ra_sign_key = AARCH64_KEY_A;
 
 /* The current tuning set.  */
 struct tune_params aarch64_tune_params = generic_tunings;
@@ -1241,6 +1243,7 @@ static enum aarch64_parse_opt_result
 aarch64_handle_standard_branch_protection (char* str, char* rest)
 {
   aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
+  aarch64_ra_sign_key = AARCH64_KEY_A;
   aarch64_enable_bti = 1;
   if (rest)
     {
@@ -1255,6 +1258,7 @@ aarch64_handle_pac_ret_protection (char* str ATTRIBUTE_UNUSED,
 				    char* rest ATTRIBUTE_UNUSED)
 {
   aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
+  aarch64_ra_sign_key = AARCH64_KEY_A;
   return AARCH64_PARSE_OK;
 }
 
@@ -1263,6 +1267,14 @@ aarch64_handle_pac_ret_leaf (char* str ATTRIBUTE_UNUSED,
 			      char* rest ATTRIBUTE_UNUSED)
 {
   aarch64_ra_sign_scope = AARCH64_FUNCTION_ALL;
+  return AARCH64_PARSE_OK;
+}
+
+static enum aarch64_parse_opt_result
+aarch64_handle_pac_ret_b_key (char* str ATTRIBUTE_UNUSED,
+			      char* rest ATTRIBUTE_UNUSED)
+{
+  aarch64_ra_sign_key = AARCH64_KEY_B;
   return AARCH64_PARSE_OK;
 }
 
@@ -1276,6 +1288,7 @@ aarch64_handle_bti_protection (char* str ATTRIBUTE_UNUSED,
 
 static const struct aarch64_branch_protect_type aarch64_pac_ret_subtypes[] = {
   { "leaf", aarch64_handle_pac_ret_leaf, NULL, 0 },
+  { "b-key", aarch64_handle_pac_ret_b_key, NULL, 0 },
   { NULL, NULL, NULL, 0 }
 };
 
@@ -1293,6 +1306,13 @@ static const char * const aarch64_condition_codes[] =
 {
   "eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc",
   "hi", "ls", "ge", "lt", "gt", "le", "al", "nv"
+};
+
+/* The preferred condition codes for SVE conditions.  */
+static const char *const aarch64_sve_condition_codes[] =
+{
+  "none", "any", "nlast", "last", "first", "nfrst", "vs", "vc",
+  "pmore", "plast", "tcont", "tstop", "gt", "le", "al", "nv"
 };
 
 /* Generate code to enable conditional branches in functions over 1 MiB.  */
@@ -2445,6 +2465,24 @@ aarch64_force_temporary (machine_mode mode, rtx x, rtx value)
     }
 }
 
+/* Return an all-true predicate register of mode MODE.  */
+
+rtx
+aarch64_ptrue_reg (machine_mode mode)
+{
+  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL);
+  return force_reg (mode, CONSTM1_RTX (mode));
+}
+
+/* Return an all-false predicate register of mode MODE.  */
+
+rtx
+aarch64_pfalse_reg (machine_mode mode)
+{
+  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL);
+  return force_reg (mode, CONST0_RTX (mode));
+}
+
 /* Return true if we can move VALUE into a register using a single
    CNT[BHWD] instruction.  */
 
@@ -3174,7 +3212,7 @@ aarch64_expand_sve_widened_duplicate (rtx dest, scalar_int_mode src_mode,
   machine_mode mode = GET_MODE (dest);
   unsigned int elem_bytes = GET_MODE_UNIT_SIZE (mode);
   machine_mode pred_mode = aarch64_sve_pred_mode (elem_bytes).require ();
-  rtx ptrue = force_reg (pred_mode, CONSTM1_RTX (pred_mode));
+  rtx ptrue = aarch64_ptrue_reg (pred_mode);
   src = gen_rtx_UNSPEC (mode, gen_rtvec (2, ptrue, src), UNSPEC_LD1RQ);
   emit_insn (gen_rtx_SET (dest, src));
   return true;
@@ -3435,7 +3473,7 @@ void
 aarch64_expand_sve_mem_move (rtx dest, rtx src, machine_mode pred_mode)
 {
   machine_mode mode = GET_MODE (dest);
-  rtx ptrue = force_reg (pred_mode, CONSTM1_RTX (pred_mode));
+  rtx ptrue = aarch64_ptrue_reg (pred_mode);
   if (!register_operand (src, mode)
       && !register_operand (dest, mode))
     {
@@ -3499,7 +3537,7 @@ aarch64_maybe_expand_sve_subreg_move (rtx dest, rtx src)
     return false;
 
   /* Generate *aarch64_sve_mov<mode>_subreg_be.  */
-  rtx ptrue = force_reg (VNx16BImode, CONSTM1_RTX (VNx16BImode));
+  rtx ptrue = aarch64_ptrue_reg (VNx16BImode);
   rtx unspec = gen_rtx_UNSPEC (GET_MODE (dest), gen_rtvec (2, ptrue, src),
 			       UNSPEC_REV_SUBREG);
   emit_insn (gen_rtx_SET (dest, unspec));
@@ -4852,7 +4890,7 @@ aarch64_return_address_signing_enabled (void)
   gcc_assert (cfun->machine->frame.laid_out);
 
   /* If signing scope is AARCH64_FUNCTION_NON_LEAF, we only sign a leaf function
-     if it's LR is pushed onto stack.  */
+     if its LR is pushed onto stack.  */
   return (aarch64_ra_sign_scope == AARCH64_FUNCTION_ALL
 	  || (aarch64_ra_sign_scope == AARCH64_FUNCTION_NON_LEAF
 	      && cfun->machine->frame.reg_offset[LR_REGNUM] >= 0));
@@ -5651,7 +5689,17 @@ aarch64_expand_prologue (void)
   /* Sign return address for functions.  */
   if (aarch64_return_address_signing_enabled ())
     {
-      insn = emit_insn (gen_pacisp ());
+      switch (aarch64_ra_sign_key)
+	{
+	  case AARCH64_KEY_A:
+	    insn = emit_insn (gen_paciasp ());
+	    break;
+	  case AARCH64_KEY_B:
+	    insn = emit_insn (gen_pacibsp ());
+	    break;
+	  default:
+	    gcc_unreachable ();
+	}
       add_reg_note (insn, REG_CFA_TOGGLE_RA_MANGLE, const0_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
@@ -5907,13 +5955,23 @@ aarch64_expand_epilogue (bool for_sibcall)
   if (aarch64_return_address_signing_enabled ()
       && (for_sibcall || !TARGET_ARMV8_3 || crtl->calls_eh_return))
     {
-      insn = emit_insn (gen_autisp ());
+      switch (aarch64_ra_sign_key)
+	{
+	  case AARCH64_KEY_A:
+	    insn = emit_insn (gen_autiasp ());
+	    break;
+	  case AARCH64_KEY_B:
+	    insn = emit_insn (gen_autibsp ());
+	    break;
+	  default:
+	    gcc_unreachable ();
+	}
       add_reg_note (insn, REG_CFA_TOGGLE_RA_MANGLE, const0_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
   /* Stack adjustment for exception handler.  */
-  if (crtl->calls_eh_return)
+  if (crtl->calls_eh_return && !for_sibcall)
     {
       /* We need to unwind the stack by the offset computed by
 	 EH_RETURN_STACKADJ_RTX.  We have already reset the CFA
@@ -5979,6 +6037,7 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   int this_regno = R0_REGNUM;
   rtx this_rtx, temp0, temp1, addr, funexp;
   rtx_insn *insn;
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
 
   if (aarch64_bti_enabled ())
     emit_insn (gen_bti_c());
@@ -6046,9 +6105,12 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 
   insn = get_insns ();
   shorten_branches (insn);
+
+  assemble_start_function (thunk, fnname);
   final_start_function (insn, file, 1);
   final (insn, file, 1);
   final_end_function ();
+  assemble_end_function (thunk, fnname);
 
   /* Stop pretending to be a post-reload pass.  */
   reload_completed = 0;
@@ -6592,7 +6654,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
   bool allow_reg_index_p = (!load_store_pair_p
 			    && (known_lt (GET_MODE_SIZE (mode), 16)
 				|| vec_flags == VEC_ADVSIMD
-				|| vec_flags == VEC_SVE_DATA));
+				|| vec_flags & VEC_SVE_DATA));
 
   /* For SVE, only accept [Rn], [Rn, Rm, LSL #shift] and
      [Rn, #offset, MUL VL].  */
@@ -7346,6 +7408,21 @@ aarch64_get_condition_code_1 (machine_mode mode, enum rtx_code comp_code)
 	}
       break;
 
+    case E_CC_NZCmode:
+      switch (comp_code)
+	{
+	case NE: return AARCH64_NE; /* = any */
+	case EQ: return AARCH64_EQ; /* = none */
+	case GE: return AARCH64_PL; /* = nfrst */
+	case LT: return AARCH64_MI; /* = first */
+	case GEU: return AARCH64_CS; /* = nlast */
+	case GTU: return AARCH64_HI; /* = pmore */
+	case LEU: return AARCH64_LS; /* = plast */
+	case LTU: return AARCH64_CC; /* = last */
+	default: return -1;
+	}
+      break;
+
     case E_CC_NZmode:
       switch (comp_code)
 	{
@@ -7679,7 +7756,10 @@ aarch64_print_operand (FILE *f, rtx x, int code)
         gcc_assert (cond_code >= 0);
 	if (code == 'M')
 	  cond_code = AARCH64_INVERSE_CONDITION_CODE (cond_code);
-	fputs (aarch64_condition_codes[cond_code], f);
+	if (GET_MODE (XEXP (x, 0)) == CC_NZCmode)
+	  fputs (aarch64_sve_condition_codes[cond_code], f);
+	else
+	  fputs (aarch64_condition_codes[cond_code], f);
       }
       break;
 
@@ -11039,7 +11119,7 @@ static void initialize_aarch64_code_model (struct gcc_options *);
 
 static enum aarch64_parse_opt_result
 aarch64_parse_arch (const char *to_parse, const struct processor **res,
-		    unsigned long *isa_flags, std::string *invalid_extension)
+		    uint64_t *isa_flags, std::string *invalid_extension)
 {
   const char *ext;
   const struct processor *arch;
@@ -11062,7 +11142,7 @@ aarch64_parse_arch (const char *to_parse, const struct processor **res,
       if (strlen (arch->name) == len
 	  && strncmp (arch->name, to_parse, len) == 0)
 	{
-	  unsigned long isa_temp = arch->flags;
+	  uint64_t isa_temp = arch->flags;
 
 	  if (ext != NULL)
 	    {
@@ -11094,7 +11174,7 @@ aarch64_parse_arch (const char *to_parse, const struct processor **res,
 
 static enum aarch64_parse_opt_result
 aarch64_parse_cpu (const char *to_parse, const struct processor **res,
-		   unsigned long *isa_flags, std::string *invalid_extension)
+		   uint64_t *isa_flags, std::string *invalid_extension)
 {
   const char *ext;
   const struct processor *cpu;
@@ -11116,7 +11196,7 @@ aarch64_parse_cpu (const char *to_parse, const struct processor **res,
     {
       if (strlen (cpu->name) == len && strncmp (cpu->name, to_parse, len) == 0)
 	{
-	  unsigned long isa_temp = cpu->flags;
+	  uint64_t isa_temp = cpu->flags;
 
 
 	  if (ext != NULL)
@@ -11701,7 +11781,7 @@ aarch64_print_hint_for_extensions (const std::string &str)
 
 static bool
 aarch64_validate_mcpu (const char *str, const struct processor **res,
-		       unsigned long *isa_flags)
+		       uint64_t *isa_flags)
 {
   std::string invalid_extension;
   enum aarch64_parse_opt_result parse_res
@@ -11828,9 +11908,9 @@ aarch64_validate_mbranch_protection (const char *const_str)
   enum aarch64_parse_opt_result res =
     aarch64_parse_branch_protection (const_str, &str);
   if (res == AARCH64_PARSE_INVALID_ARG)
-    error ("invalid arg %<%s%> for %<-mbranch-protection=%>", str);
+    error ("invalid argument %<%s%> for %<-mbranch-protection=%>", str);
   else if (res == AARCH64_PARSE_MISSING_ARG)
-    error ("missing arg for %<-mbranch-protection=%>");
+    error ("missing argument for %<-mbranch-protection=%>");
   free (str);
   return res == AARCH64_PARSE_OK;
 }
@@ -11842,7 +11922,7 @@ aarch64_validate_mbranch_protection (const char *const_str)
 
 static bool
 aarch64_validate_march (const char *str, const struct processor **res,
-			 unsigned long *isa_flags)
+			 uint64_t *isa_flags)
 {
   std::string invalid_extension;
   enum aarch64_parse_opt_result parse_res
@@ -11957,8 +12037,8 @@ aarch64_convert_sve_vector_bits (aarch64_sve_vector_bits_enum value)
 static void
 aarch64_override_options (void)
 {
-  unsigned long cpu_isa = 0;
-  unsigned long arch_isa = 0;
+  uint64_t cpu_isa = 0;
+  uint64_t arch_isa = 0;
   aarch64_isa_flags = 0;
 
   bool valid_cpu = true;
@@ -12198,7 +12278,7 @@ aarch64_option_print (FILE *file, int indent, struct cl_target_option *ptr)
 {
   const struct processor *cpu
     = aarch64_get_tune_cpu (ptr->x_explicit_tune_core);
-  unsigned long isa_flags = ptr->x_aarch64_isa_flags;
+  uint64_t isa_flags = ptr->x_aarch64_isa_flags;
   const struct processor *arch = aarch64_get_arch (ptr->x_explicit_arch);
   std::string extension
     = aarch64_get_extension_string_for_isa_flags (isa_flags, arch->flags);
@@ -12451,7 +12531,7 @@ static bool
 aarch64_handle_attr_isa_flags (char *str)
 {
   enum aarch64_parse_opt_result parse_res;
-  unsigned long isa_flags = aarch64_isa_flags;
+  uint64_t isa_flags = aarch64_isa_flags;
 
   /* We allow "+nothing" in the beginning to clear out all architectural
      features if the user wants to handpick specific features.  */
@@ -14105,7 +14185,7 @@ aarch64_preferred_simd_mode (scalar_mode mode)
 /* Return a list of possible vector sizes for the vectorizer
    to iterate over.  */
 static void
-aarch64_autovectorize_vector_sizes (vector_sizes *sizes)
+aarch64_autovectorize_vector_sizes (vector_sizes *sizes, bool)
 {
   if (TARGET_SVE)
     sizes->safe_push (BYTES_PER_SVE_VECTOR);
@@ -15069,6 +15149,45 @@ aarch64_expand_vector_init (rtx target, rtx vals)
   rtx v0 = XVECEXP (vals, 0, 0);
   bool all_same = true;
 
+  /* This is a special vec_init<M><N> where N is not an element mode but a
+     vector mode with half the elements of M.  We expect to find two entries
+     of mode N in VALS and we must put their concatentation into TARGET.  */
+  if (XVECLEN (vals, 0) == 2 && VECTOR_MODE_P (GET_MODE (XVECEXP (vals, 0, 0))))
+    {
+      gcc_assert (known_eq (GET_MODE_SIZE (mode),
+		  2 * GET_MODE_SIZE (GET_MODE (XVECEXP (vals, 0, 0)))));
+      rtx lo = XVECEXP (vals, 0, 0);
+      rtx hi = XVECEXP (vals, 0, 1);
+      machine_mode narrow_mode = GET_MODE (lo);
+      gcc_assert (GET_MODE_INNER (narrow_mode) == inner_mode);
+      gcc_assert (narrow_mode == GET_MODE (hi));
+
+      /* When we want to concatenate a half-width vector with zeroes we can
+	 use the aarch64_combinez[_be] patterns.  Just make sure that the
+	 zeroes are in the right half.  */
+      if (BYTES_BIG_ENDIAN
+	  && aarch64_simd_imm_zero (lo, narrow_mode)
+	  && general_operand (hi, narrow_mode))
+	emit_insn (gen_aarch64_combinez_be (narrow_mode, target, hi, lo));
+      else if (!BYTES_BIG_ENDIAN
+	       && aarch64_simd_imm_zero (hi, narrow_mode)
+	       && general_operand (lo, narrow_mode))
+	emit_insn (gen_aarch64_combinez (narrow_mode, target, lo, hi));
+      else
+	{
+	  /* Else create the two half-width registers and combine them.  */
+	  if (!REG_P (lo))
+	    lo = force_reg (GET_MODE (lo), lo);
+	  if (!REG_P (hi))
+	    hi = force_reg (GET_MODE (hi), hi);
+
+	  if (BYTES_BIG_ENDIAN)
+	    std::swap (lo, hi);
+	  emit_insn (gen_aarch64_simd_combine (narrow_mode, target, lo, hi));
+	}
+     return;
+   }
+
   /* Count the number of variable elements to initialise.  */
   for (int i = 0; i < n_elts; ++i)
     {
@@ -15240,6 +15359,263 @@ aarch64_expand_vector_init (rtx target, rtx vals)
     }
 }
 
+/* Emit RTL corresponding to:
+   insr TARGET, ELEM.  */
+
+static void
+emit_insr (rtx target, rtx elem)
+{
+  machine_mode mode = GET_MODE (target);
+  scalar_mode elem_mode = GET_MODE_INNER (mode);
+  elem = force_reg (elem_mode, elem);
+
+  insn_code icode = optab_handler (vec_shl_insert_optab, mode);
+  gcc_assert (icode != CODE_FOR_nothing);
+  emit_insn (GEN_FCN (icode) (target, target, elem));
+}
+
+/* Subroutine of aarch64_sve_expand_vector_init for handling
+   trailing constants.
+   This function works as follows:
+   (a) Create a new vector consisting of trailing constants.
+   (b) Initialize TARGET with the constant vector using emit_move_insn.
+   (c) Insert remaining elements in TARGET using insr.
+   NELTS is the total number of elements in original vector while
+   while NELTS_REQD is the number of elements that are actually
+   significant.
+
+   ??? The heuristic used is to do above only if number of constants
+   is at least half the total number of elements.  May need fine tuning.  */
+
+static bool
+aarch64_sve_expand_vector_init_handle_trailing_constants
+ (rtx target, const rtx_vector_builder &builder, int nelts, int nelts_reqd)
+{
+  machine_mode mode = GET_MODE (target);
+  scalar_mode elem_mode = GET_MODE_INNER (mode);
+  int n_trailing_constants = 0;
+
+  for (int i = nelts_reqd - 1;
+       i >= 0 && aarch64_legitimate_constant_p (elem_mode, builder.elt (i));
+       i--)
+    n_trailing_constants++;
+
+  if (n_trailing_constants >= nelts_reqd / 2)
+    {
+      rtx_vector_builder v (mode, 1, nelts);
+      for (int i = 0; i < nelts; i++)
+	v.quick_push (builder.elt (i + nelts_reqd - n_trailing_constants));
+      rtx const_vec = v.build ();
+      emit_move_insn (target, const_vec);
+
+      for (int i = nelts_reqd - n_trailing_constants - 1; i >= 0; i--)
+	emit_insr (target, builder.elt (i));
+
+      return true;
+    }
+
+  return false;
+}
+
+/* Subroutine of aarch64_sve_expand_vector_init.
+   Works as follows:
+   (a) Initialize TARGET by broadcasting element NELTS_REQD - 1 of BUILDER.
+   (b) Skip trailing elements from BUILDER, which are the same as
+       element NELTS_REQD - 1.
+   (c) Insert earlier elements in reverse order in TARGET using insr.  */
+
+static void
+aarch64_sve_expand_vector_init_insert_elems (rtx target,
+					     const rtx_vector_builder &builder,
+					     int nelts_reqd)
+{
+  machine_mode mode = GET_MODE (target);
+  scalar_mode elem_mode = GET_MODE_INNER (mode);
+
+  struct expand_operand ops[2];
+  enum insn_code icode = optab_handler (vec_duplicate_optab, mode);
+  gcc_assert (icode != CODE_FOR_nothing);
+
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], builder.elt (nelts_reqd - 1), elem_mode);
+  expand_insn (icode, 2, ops);
+
+  int ndups = builder.count_dups (nelts_reqd - 1, -1, -1);
+  for (int i = nelts_reqd - ndups - 1; i >= 0; i--)
+    emit_insr (target, builder.elt (i));
+}
+
+/* Subroutine of aarch64_sve_expand_vector_init to handle case
+   when all trailing elements of builder are same.
+   This works as follows:
+   (a) Use expand_insn interface to broadcast last vector element in TARGET.
+   (b) Insert remaining elements in TARGET using insr.
+
+   ??? The heuristic used is to do above if number of same trailing elements
+   is at least 3/4 of total number of elements, loosely based on
+   heuristic from mostly_zeros_p.  May need fine-tuning.  */
+
+static bool
+aarch64_sve_expand_vector_init_handle_trailing_same_elem
+ (rtx target, const rtx_vector_builder &builder, int nelts_reqd)
+{
+  int ndups = builder.count_dups (nelts_reqd - 1, -1, -1);
+  if (ndups >= (3 * nelts_reqd) / 4)
+    {
+      aarch64_sve_expand_vector_init_insert_elems (target, builder,
+						   nelts_reqd - ndups + 1);
+      return true;
+    }
+
+  return false;
+}
+
+/* Initialize register TARGET from BUILDER. NELTS is the constant number
+   of elements in BUILDER.
+
+   The function tries to initialize TARGET from BUILDER if it fits one
+   of the special cases outlined below.
+
+   Failing that, the function divides BUILDER into two sub-vectors:
+   v_even = even elements of BUILDER;
+   v_odd = odd elements of BUILDER;
+
+   and recursively calls itself with v_even and v_odd.
+
+   if (recursive call succeeded for v_even or v_odd)
+     TARGET = zip (v_even, v_odd)
+
+   The function returns true if it managed to build TARGET from BUILDER
+   with one of the special cases, false otherwise.
+
+   Example: {a, 1, b, 2, c, 3, d, 4}
+
+   The vector gets divided into:
+   v_even = {a, b, c, d}
+   v_odd = {1, 2, 3, 4}
+
+   aarch64_sve_expand_vector_init(v_odd) hits case 1 and
+   initialize tmp2 from constant vector v_odd using emit_move_insn.
+
+   aarch64_sve_expand_vector_init(v_even) fails since v_even contains
+   4 elements, so we construct tmp1 from v_even using insr:
+   tmp1 = dup(d)
+   insr tmp1, c
+   insr tmp1, b
+   insr tmp1, a
+
+   And finally:
+   TARGET = zip (tmp1, tmp2)
+   which sets TARGET to {a, 1, b, 2, c, 3, d, 4}.  */
+
+static bool
+aarch64_sve_expand_vector_init (rtx target, const rtx_vector_builder &builder,
+				int nelts, int nelts_reqd)
+{
+  machine_mode mode = GET_MODE (target);
+
+  /* Case 1: Vector contains trailing constants.  */
+
+  if (aarch64_sve_expand_vector_init_handle_trailing_constants
+       (target, builder, nelts, nelts_reqd))
+    return true;
+
+  /* Case 2: Vector contains leading constants.  */
+
+  rtx_vector_builder rev_builder (mode, 1, nelts_reqd);
+  for (int i = 0; i < nelts_reqd; i++)
+    rev_builder.quick_push (builder.elt (nelts_reqd - i - 1));
+  rev_builder.finalize ();
+
+  if (aarch64_sve_expand_vector_init_handle_trailing_constants
+       (target, rev_builder, nelts, nelts_reqd))
+    {
+      emit_insn (gen_aarch64_sve_rev (mode, target, target));
+      return true;
+    }
+
+  /* Case 3: Vector contains trailing same element.  */
+
+  if (aarch64_sve_expand_vector_init_handle_trailing_same_elem
+       (target, builder, nelts_reqd))
+    return true;
+
+  /* Case 4: Vector contains leading same element.  */
+
+  if (aarch64_sve_expand_vector_init_handle_trailing_same_elem
+       (target, rev_builder, nelts_reqd) && nelts_reqd == nelts)
+    {
+      emit_insn (gen_aarch64_sve_rev (mode, target, target));
+      return true;
+    }
+
+  /* Avoid recursing below 4-elements.
+     ??? The threshold 4 may need fine-tuning.  */
+
+  if (nelts_reqd <= 4)
+    return false;
+
+  rtx_vector_builder v_even (mode, 1, nelts);
+  rtx_vector_builder v_odd (mode, 1, nelts);
+
+  for (int i = 0; i < nelts * 2; i += 2)
+    {
+      v_even.quick_push (builder.elt (i));
+      v_odd.quick_push (builder.elt (i + 1));
+    }
+
+  v_even.finalize ();
+  v_odd.finalize ();
+
+  rtx tmp1 = gen_reg_rtx (mode);
+  bool did_even_p = aarch64_sve_expand_vector_init (tmp1, v_even,
+						    nelts, nelts_reqd / 2);
+
+  rtx tmp2 = gen_reg_rtx (mode);
+  bool did_odd_p = aarch64_sve_expand_vector_init (tmp2, v_odd,
+						   nelts, nelts_reqd / 2);
+
+  if (!did_even_p && !did_odd_p)
+    return false;
+
+  /* Initialize v_even and v_odd using INSR if it didn't match any of the
+     special cases and zip v_even, v_odd.  */
+
+  if (!did_even_p)
+    aarch64_sve_expand_vector_init_insert_elems (tmp1, v_even, nelts_reqd / 2);
+
+  if (!did_odd_p)
+    aarch64_sve_expand_vector_init_insert_elems (tmp2, v_odd, nelts_reqd / 2);
+
+  rtvec v = gen_rtvec (2, tmp1, tmp2);
+  emit_set_insn (target, gen_rtx_UNSPEC (mode, v, UNSPEC_ZIP1));
+  return true;
+}
+
+/* Initialize register TARGET from the elements in PARALLEL rtx VALS.  */
+
+void
+aarch64_sve_expand_vector_init (rtx target, rtx vals)
+{
+  machine_mode mode = GET_MODE (target);
+  int nelts = XVECLEN (vals, 0);
+
+  rtx_vector_builder v (mode, 1, nelts);
+  for (int i = 0; i < nelts; i++)
+    v.quick_push (XVECEXP (vals, 0, i));
+  v.finalize ();
+
+  /* If neither sub-vectors of v could be initialized specially,
+     then use INSR to insert all elements from v into TARGET.
+     ??? This might not be optimal for vectors with large
+     initializers like 16-element or above.
+     For nelts < 4, it probably isn't useful to handle specially.  */
+
+  if (nelts < 4
+      || !aarch64_sve_expand_vector_init (target, v, nelts, nelts))
+    aarch64_sve_expand_vector_init_insert_elems (target, v, nelts);
+}
+
 static unsigned HOST_WIDE_INT
 aarch64_shift_truncation_mask (machine_mode mode)
 {
@@ -15272,6 +15648,19 @@ aarch64_asm_preferred_eh_data_format (int code ATTRIBUTE_UNUSED, int global)
    return (global ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | type;
 }
 
+/* Output .variant_pcs for aarch64_vector_pcs function symbols.  */
+
+static void
+aarch64_asm_output_variant_pcs (FILE *stream, const tree decl, const char* name)
+{
+  if (aarch64_simd_decl_p (decl))
+    {
+      fprintf (stream, "\t.variant_pcs\t");
+      assemble_name (stream, name);
+      fprintf (stream, "\n");
+    }
+}
+
 /* The last .arch and .tune assembly strings that we printed.  */
 static std::string aarch64_last_printed_arch_string;
 static std::string aarch64_last_printed_tune_string;
@@ -15295,7 +15684,7 @@ aarch64_declare_function_name (FILE *stream, const char* name,
   const struct processor *this_arch
     = aarch64_get_arch (targ_options->x_explicit_arch);
 
-  unsigned long isa_flags = targ_options->x_aarch64_isa_flags;
+  uint64_t isa_flags = targ_options->x_aarch64_isa_flags;
   std::string extension
     = aarch64_get_extension_string_for_isa_flags (isa_flags,
 						  this_arch->flags);
@@ -15321,9 +15710,44 @@ aarch64_declare_function_name (FILE *stream, const char* name,
       aarch64_last_printed_tune_string = this_tune->name;
     }
 
+  aarch64_asm_output_variant_pcs (stream, fndecl, name);
+
   /* Don't forget the type directive for ELF.  */
   ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "function");
   ASM_OUTPUT_LABEL (stream, name);
+}
+
+/* Implement ASM_OUTPUT_DEF_FROM_DECLS.  Output .variant_pcs for aliases.  */
+
+void
+aarch64_asm_output_alias (FILE *stream, const tree decl, const tree target)
+{
+  const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  const char *value = IDENTIFIER_POINTER (target);
+  aarch64_asm_output_variant_pcs (stream, decl, name);
+  ASM_OUTPUT_DEF (stream, name, value);
+}
+
+/* Implement ASM_OUTPUT_EXTERNAL.  Output .variant_pcs for undefined
+   function symbol references.  */
+
+void
+aarch64_asm_output_external (FILE *stream, tree decl, const char* name)
+{
+  default_elf_asm_output_external (stream, decl, name);
+  aarch64_asm_output_variant_pcs (stream, decl, name);
+}
+
+/* Triggered after a .cfi_startproc directive is emitted into the assembly file.
+   Used to output the .cfi_b_key_frame directive when signing the current
+   function with the B key.  */
+
+void
+aarch64_post_cfi_startproc (FILE *f, tree ignored ATTRIBUTE_UNUSED)
+{
+  if (!cfun->is_thunk && aarch64_return_address_signing_enabled ()
+      && aarch64_ra_sign_key == AARCH64_KEY_B)
+	asm_fprintf (f, "\t.cfi_b_key_frame\n");
 }
 
 /* Implements TARGET_ASM_FILE_START.  Output the assembly header.  */
@@ -15336,7 +15760,7 @@ aarch64_start_file (void)
 
   const struct processor *default_arch
     = aarch64_get_arch (default_options->x_explicit_arch);
-  unsigned long default_isa_flags = default_options->x_aarch64_isa_flags;
+  uint64_t default_isa_flags = default_options->x_aarch64_isa_flags;
   std::string extension
     = aarch64_get_extension_string_for_isa_flags (default_isa_flags,
 						  default_arch->flags);
@@ -16372,7 +16796,7 @@ aarch64_evpc_rev_local (struct expand_vec_perm_d *d)
   rtx src = gen_rtx_UNSPEC (d->vmode, gen_rtvec (1, d->op0), unspec);
   if (d->vec_flags == VEC_SVE_DATA)
     {
-      rtx pred = force_reg (pred_mode, CONSTM1_RTX (pred_mode));
+      rtx pred = aarch64_ptrue_reg (pred_mode);
       src = gen_rtx_UNSPEC (d->vmode, gen_rtvec (2, pred, src),
 			    UNSPEC_MERGE_PTRUE);
     }
@@ -16660,7 +17084,7 @@ aarch64_emit_sve_ptrue_op_cc (rtx target, rtx ptrue, rtx op)
   rtx unspec = gen_rtx_UNSPEC (GET_MODE (target),
 			       gen_rtvec (2, ptrue, op),
 			       UNSPEC_MERGE_PTRUE);
-  rtx_insn *insn = emit_insn (gen_set_clobber_cc (target, unspec));
+  rtx_insn *insn = emit_insn (gen_set_clobber_cc_nzc (target, unspec));
   set_unique_reg_note (insn, REG_EQUAL, copy_rtx (op));
 }
 
@@ -16720,7 +17144,7 @@ aarch64_expand_sve_vec_cmp_int (rtx target, rtx_code code, rtx op0, rtx op1)
   if (!aarch64_sve_cmp_operand_p (code, op1))
     op1 = force_reg (data_mode, op1);
 
-  rtx ptrue = force_reg (pred_mode, CONSTM1_RTX (pred_mode));
+  rtx ptrue = aarch64_ptrue_reg (pred_mode);
   rtx cond = gen_rtx_fmt_ee (code, pred_mode, op0, op1);
   aarch64_emit_sve_ptrue_op_cc (target, ptrue, cond);
 }
@@ -16779,7 +17203,7 @@ aarch64_expand_sve_vec_cmp_float (rtx target, rtx_code code,
   machine_mode pred_mode = GET_MODE (target);
   machine_mode data_mode = GET_MODE (op0);
 
-  rtx ptrue = force_reg (pred_mode, CONSTM1_RTX (pred_mode));
+  rtx ptrue = aarch64_ptrue_reg (pred_mode);
   switch (code)
     {
     case UNORDERED:
@@ -16962,11 +17386,11 @@ aarch64_copy_one_block_and_progress_pointers (rtx *src, rtx *dst,
   *dst = aarch64_progress_pointer (*dst);
 }
 
-/* Expand movmem, as if from a __builtin_memcpy.  Return true if
+/* Expand cpymem, as if from a __builtin_memcpy.  Return true if
    we succeed, otherwise return false.  */
 
 bool
-aarch64_expand_movmem (rtx *operands)
+aarch64_expand_cpymem (rtx *operands)
 {
   int n, mode_bits;
   rtx dst = operands[0];
@@ -17232,7 +17656,10 @@ aarch64_expand_subvti (rtx op0, rtx low_dest, rtx low_in1,
 static unsigned HOST_WIDE_INT
 aarch64_asan_shadow_offset (void)
 {
-  return (HOST_WIDE_INT_1 << 36);
+  if (TARGET_ILP32)
+    return (HOST_WIDE_INT_1 << 29);
+  else
+    return (HOST_WIDE_INT_1 << 36);
 }
 
 static rtx
@@ -19336,6 +19763,9 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_RUN_TARGET_SELFTESTS
 #define TARGET_RUN_TARGET_SELFTESTS selftest::aarch64_run_selftests
 #endif /* #if CHECKING_P */
+
+#undef TARGET_ASM_POST_CFI_STARTPROC
+#define TARGET_ASM_POST_CFI_STARTPROC aarch64_post_cfi_startproc
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -126,6 +126,8 @@ namespace __gnu_test
 
   union UnionType { };
 
+  union IncompleteUnion;
+
   class IncompleteClass;
 
   struct ExplicitClass

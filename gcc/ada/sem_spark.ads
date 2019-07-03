@@ -23,9 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package implements an anti-aliasing analysis for access types. The
---  rules that are enforced are defined in the anti-aliasing section of the
---  SPARK RM 6.4.2
+--  This package implements an ownership analysis for access types. The rules
+--  that are enforced are defined in section 3.10 of the SPARK Reference
+--  Manual.
 --
 --  Check_Safe_Pointers is called by Gnat1drv, when GNATprove mode is
 --  activated. It does an analysis of the source code, looking for code that is
@@ -138,6 +138,6 @@ package Sem_SPARK is
 
    procedure Check_Safe_Pointers (N : Node_Id);
    --  The entry point of this package. It analyzes a node and reports errors
-   --  when there are violations of aliasing rules.
+   --  when there are violations of ownership rules.
 
 end Sem_SPARK;

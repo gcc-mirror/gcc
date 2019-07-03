@@ -15418,6 +15418,7 @@ $as_echo "$target_thread_file" >&6; }
 case $target_thread_file in
     aix)	thread_header=config/rs6000/gthr-aix.h ;;
     dce)	thread_header=config/pa/gthr-dce.h ;;
+    gcn)	thread_header=config/gcn/gthr-gcn.h ;;
     lynx)	thread_header=config/gthr-lynx.h ;;
     mipssde)	thread_header=config/mips/gthr-mipssde.h ;;
     posix)	thread_header=gthr-posix.h ;;
@@ -15637,7 +15638,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15640 "configure"
+#line 15641 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15672,7 +15673,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15675 "configure"
+#line 15676 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15707,7 +15708,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15710 "configure"
+#line 15711 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15743,7 +15744,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15746 "configure"
+#line 15747 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15896,7 +15897,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15899 "configure"
+#line 15900 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15938,7 +15939,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15941 "configure"
+#line 15942 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15972,7 +15973,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15975 "configure"
+#line 15976 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -18257,6 +18258,7 @@ $as_echo "$as_me: Debug build flags set to $DEBUG_FLAGS" >&6;}
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for additional debug build" >&5
 $as_echo_n "checking for additional debug build... " >&6; }
+  skip_debug_build=
    # Check whether --enable-libstdcxx-debug was given.
 if test "${enable_libstdcxx_debug+set}" = set; then :
   enableval=$enable_libstdcxx_debug;
@@ -18270,8 +18272,19 @@ else
 fi
 
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libstdcxx_debug" >&5
-$as_echo "$enable_libstdcxx_debug" >&6; }
+  if test x$enable_libstdcxx_debug = xyes; then
+    if test -f $toplevel_builddir/../stage_final \
+      && test -f $toplevel_builddir/../stage_current; then
+      stage_final=`cat $toplevel_builddir/../stage_final`
+      stage_current=`cat $toplevel_builddir/../stage_current`
+      if test x$stage_current != x$stage_final ; then
+	skip_debug_build=" (skipped for bootstrap stage $stage_current)"
+	enable_libstdcxx_debug=no
+      fi
+    fi
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libstdcxx_debug$skip_debug_build" >&5
+$as_echo "$enable_libstdcxx_debug$skip_debug_build" >&6; }
 
 
 
@@ -79469,7 +79482,7 @@ $as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:26:0
+libtool_VERSION=6:27:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in
@@ -79869,6 +79882,47 @@ $as_echo "#define _GLIBCXX_X86_RDRAND 1" >>confdefs.h
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_x86_rdrand" >&5
 $as_echo "$ac_cv_x86_rdrand" >&6; }
+
+# Check if assembler supports rdseed opcode.
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for rdseed support in assembler" >&5
+$as_echo_n "checking for rdseed support in assembler... " >&6; }
+  if ${ac_cv_x86_rdseed+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  ac_cv_x86_rdseed=no
+  case "$target" in
+    i?86-*-* | \
+    x86_64-*-*)
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm("rdseed %eax");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_cv_x86_rdseed=yes
+else
+  ac_cv_x86_rdseed=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  esac
+
+fi
+
+  if test $ac_cv_x86_rdseed = yes; then
+
+$as_echo "#define _GLIBCXX_X86_RDSEED 1" >>confdefs.h
+
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_x86_rdseed" >&5
+$as_echo "$ac_cv_x86_rdseed" >&6; }
 
 
 # This depends on GLIBCXX_ENABLE_SYMVERS and GLIBCXX_IS_NATIVE.
@@ -81827,7 +81881,11 @@ $as_echo "no" >&6; }
 fi
 
 
- if test $ac_cv_prog_DBLATEX = "yes" &&
+ if test $ac_cv_prog_DOXYGEN = "yes" &&
+	       test $ac_cv_prog_DOT = "yes" &&
+	       test $ac_cv_prog_XSLTPROC = "yes" &&
+	       test $ac_cv_prog_XMLLINT = "yes" &&
+	       test $ac_cv_prog_DBLATEX = "yes" &&
 	       test $ac_cv_prog_PDFLATEX = "yes"; then
   BUILD_PDF_TRUE=
   BUILD_PDF_FALSE='#'

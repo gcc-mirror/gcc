@@ -25,6 +25,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <type_traits>
+#include <thread>
 
 // C++11 only.
 namespace __gnu_test
@@ -39,7 +40,12 @@ namespace __gnu_test
 
       // Remove possible pointer type.
       typedef typename test_type::native_handle_type native_handle;
-      typedef typename std::remove_pointer<native_handle>::type native_type;
+      // For std::thread native_handle_type is the type of its data member,
+      // for other types it's a pointer to the type of the data member.
+      typedef typename std::conditional<
+	std::is_same<test_type, std::thread>::value,
+	native_handle,
+	typename std::remove_pointer<native_handle>::type>::type native_type;
 
       int st = sizeof(test_type);
       int snt = sizeof(native_type);

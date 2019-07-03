@@ -170,9 +170,9 @@ aarch64_handle_option (struct gcc_options *opts,
 struct aarch64_option_extension
 {
   const char *const name;
-  const unsigned long flag_canonical;
-  const unsigned long flags_on;
-  const unsigned long flags_off;
+  const uint64_t flag_canonical;
+  const uint64_t flags_on;
+  const uint64_t flags_off;
   const bool is_synthetic;
 };
 
@@ -201,14 +201,14 @@ struct processor_name_to_arch
 {
   const std::string processor_name;
   const enum aarch64_arch arch;
-  const unsigned long flags;
+  const uint64_t flags;
 };
 
 struct arch_to_arch_name
 {
   const enum aarch64_arch arch;
   const std::string arch_name;
-  const unsigned long flags;
+  const uint64_t flags;
 };
 
 /* Map processor names to the architecture revision they implement and
@@ -238,7 +238,7 @@ static const struct arch_to_arch_name all_architectures[] =
    a copy of the string is created and stored to INVALID_EXTENSION.  */
 
 enum aarch64_parse_opt_result
-aarch64_parse_extension (const char *str, unsigned long *isa_flags,
+aarch64_parse_extension (const char *str, uint64_t *isa_flags,
 			 std::string *invalid_extension)
 {
   /* The extension string is parsed left to right.  */
@@ -326,18 +326,21 @@ int opt_ext_cmp (const void* a, const void* b)
      turns on as a dependency.  As an example +dotprod turns on FL_DOTPROD and
      FL_SIMD.  As such the set of bits represented by this option is
      {FL_DOTPROD, FL_SIMD}. */
-  unsigned long total_flags_a = opt_a->flag_canonical & opt_a->flags_on;
-  unsigned long total_flags_b = opt_b->flag_canonical & opt_b->flags_on;
+  uint64_t total_flags_a = opt_a->flag_canonical & opt_a->flags_on;
+  uint64_t total_flags_b = opt_b->flag_canonical & opt_b->flags_on;
   int popcnt_a = popcount_hwi ((HOST_WIDE_INT)total_flags_a);
   int popcnt_b = popcount_hwi ((HOST_WIDE_INT)total_flags_b);
   int order = popcnt_b - popcnt_a;
 
   /* If they have the same amount of bits set, give it a more
      deterministic ordering by using the value of the bits themselves.  */
-  if (order == 0)
-    return total_flags_b - total_flags_a;
+  if (order != 0)
+    return order;
 
-  return order;
+  if (total_flags_a != total_flags_b)
+    return total_flags_a < total_flags_b ? 1 : -1;
+
+  return 0;
 }
 
 /* Implement TARGET_OPTION_INIT_STRUCT.  */
@@ -373,9 +376,9 @@ aarch64_option_init_struct (struct gcc_options *opts ATTRIBUTE_UNUSED)
 */
 
 static bool
-aarch64_contains_opt (unsigned long isa_flag_bits, opt_ext *opt)
+aarch64_contains_opt (uint64_t isa_flag_bits, opt_ext *opt)
 {
-  unsigned long flags_check
+  uint64_t flags_check
     = opt->is_synthetic ? opt->flags_on : opt->flag_canonical;
 
   return (isa_flag_bits & flags_check) == flags_check;
@@ -388,13 +391,13 @@ aarch64_contains_opt (unsigned long isa_flag_bits, opt_ext *opt)
    that all the "+" flags come before the "+no" flags.  */
 
 std::string
-aarch64_get_extension_string_for_isa_flags (unsigned long isa_flags,
-					    unsigned long default_arch_flags)
+aarch64_get_extension_string_for_isa_flags (uint64_t isa_flags,
+					    uint64_t default_arch_flags)
 {
   const struct aarch64_option_extension *opt = NULL;
   std::string outstr = "";
 
-  unsigned long isa_flag_bits = isa_flags;
+  uint64_t isa_flag_bits = isa_flags;
 
   /* Pass one: Minimize the search space by reducing the set of options
      to the smallest set that still turns on the same features as before in
@@ -538,7 +541,7 @@ aarch64_rewrite_selected_cpu (const char *name)
       || a_to_an->arch == aarch64_no_arch)
     fatal_error (input_location, "unknown value %qs for %<-mcpu%>", name);
 
-  unsigned long extensions = p_to_a->flags;
+  uint64_t extensions = p_to_a->flags;
   aarch64_parse_extension (extension_str.c_str (), &extensions, NULL);
 
   std::string outstr = a_to_an->arch_name

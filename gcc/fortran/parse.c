@@ -6331,6 +6331,24 @@ done:
       }
 
   /* Dump C prototypes.  */
+  if (flag_c_prototypes || flag_c_prototypes_external)
+    {
+      fprintf (stdout,
+	       "#include <stddef.h>\n"
+	       "#ifdef __cplusplus\n"
+	       "#include <complex>\n"
+	       "#define __GFORTRAN_FLOAT_COMPLEX std::complex<float>\n"
+	       "#define __GFORTRAN_DOUBLE_COMPLEX std::complex<double>\n"
+	       "#define __GFORTRAN_LONG_DOUBLE_COMPLEX std::complex<long double>\n"
+	       "extern \"C\" {\n"
+	       "#else\n"
+	       "#define __GFORTRAN_FLOAT_COMPLEX float _Complex\n"
+	       "#define __GFORTRAN_DOUBLE_COMPLEX double _Complex\n"
+	       "#define __GFORTRAN_LONG_DOUBLE_COMPLEX long double _Complex\n"
+	       "#endif\n\n");
+    }
+
+  /* First dump BIND(C) prototypes.  */
   if (flag_c_prototypes)
     {
       for (gfc_current_ns = gfc_global_ns_list; gfc_current_ns;
@@ -6341,6 +6359,9 @@ done:
   /* Dump external prototypes.  */
   if (flag_c_prototypes_external)
     gfc_dump_external_c_prototypes (stdout);
+
+  if (flag_c_prototypes || flag_c_prototypes_external)
+    fprintf (stdout, "\n#ifdef __cplusplus\n}\n#endif\n");
 
   /* Do the translation.  */
   translate_all_program_units (gfc_global_ns_list);

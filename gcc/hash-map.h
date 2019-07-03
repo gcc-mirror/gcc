@@ -21,8 +21,20 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef hash_map_h
 #define hash_map_h
 
+/* Class hash_map is a hash-value based container mapping objects of
+   KeyId type to those of the Value type.
+   Both KeyId and Value may be non-trivial (non-POD) types provided
+   a suitabe Traits class.  A few default Traits specializations are
+   provided for basic types such as integers, pointers, and std::pair.
+   Inserted elements are value-initialized either to zero for POD types
+   or by invoking their default ctor.  Removed elements are destroyed
+   by invoking their dtor.   On hash_map destruction all elements are
+   removed.  Objects of hash_map type are copy-constructible but not
+   assignable.  */
+
 template<typename KeyId, typename Value,
-	 typename Traits>
+	 typename Traits /* = simple_hashmap_traits<default_hash_traits<Key>,
+			                            Value> */>
 class GTY((user)) hash_map
 {
   typedef typename Traits::key_type Key;
@@ -118,14 +130,19 @@ class GTY((user)) hash_map
 
 public:
   explicit hash_map (size_t n = 13, bool ggc = false,
+		     bool sanitize_eq_and_hash = true,
 		     bool gather_mem_stats = GATHER_STATISTICS
 		     CXX_MEM_STAT_INFO)
-    : m_table (n, ggc, gather_mem_stats, HASH_MAP_ORIGIN PASS_MEM_STAT) {}
+    : m_table (n, ggc, sanitize_eq_and_hash, gather_mem_stats,
+	       HASH_MAP_ORIGIN PASS_MEM_STAT)
+  {
+  }
 
   explicit hash_map (const hash_map &h, bool ggc = false,
+		     bool sanitize_eq_and_hash = true,
 		     bool gather_mem_stats = GATHER_STATISTICS
 		     CXX_MEM_STAT_INFO)
-    : m_table (h.m_table, ggc, gather_mem_stats,
+    : m_table (h.m_table, ggc, sanitize_eq_and_hash, gather_mem_stats,
 	       HASH_MAP_ORIGIN PASS_MEM_STAT) {}
 
   /* Create a hash_map in ggc memory.  */
@@ -134,7 +151,7 @@ public:
 			       CXX_MEM_STAT_INFO)
     {
       hash_map *map = ggc_alloc<hash_map> ();
-      new (map) hash_map (size, true, gather_mem_stats PASS_MEM_STAT);
+      new (map) hash_map (size, true, true, gather_mem_stats PASS_MEM_STAT);
       return map;
     }
 
@@ -146,12 +163,16 @@ public:
     {
       hash_entry *e = m_table.find_slot_with_hash (k, Traits::hash (k),
 						   INSERT);
-      bool existed = !hash_entry::is_empty (*e);
-      if (!existed)
-	e->m_key = k;
+      bool ins = hash_entry::is_empty (*e);
+      if (ins)
+	{
+	  e->m_key = k;
+	  new ((void *) &e->m_value) Value (v);
+	}
+      else
+	e->m_value = v;
 
-      e->m_value = v;
-      return existed;
+      return !ins;
     }
 
   /* if the passed in key is in the map return its value otherwise NULL.  */
@@ -163,8 +184,8 @@ public:
     }
 
   /* Return a reference to the value for the passed in key, creating the entry
-     if it doesn't already exist.  If existed is not NULL then it is set to false
-     if the key was not previously in the map, and true otherwise.  */
+     if it doesn't already exist.  If existed is not NULL then it is set to
+     false if the key was not previously in the map, and true otherwise.  */
 
   Value &get_or_insert (const Key &k, bool *existed = NULL)
     {
@@ -172,7 +193,10 @@ public:
 						   INSERT);
       bool ins = Traits::is_empty (*e);
       if (ins)
-	e->m_key = k;
+	{
+	  e->m_key = k;
+	  new ((void *)&e->m_value) Value ();
+	}
 
       if (existed != NULL)
 	*existed = !ins;

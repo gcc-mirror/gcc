@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "ssa.h"
 #include "cgraph.h"
+#include "vec-perm-indices.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "tree-dfa.h"
@@ -34,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "case-cfn-macros.h"
 #include "gimplify.h"
 #include "optabs-tree.h"
-
+#include "dbgcnt.h"
 
 /* Routine to determine if the types T1 and T2 are effectively
    the same for GENERIC.  If T1 or T2 is not a type, the test

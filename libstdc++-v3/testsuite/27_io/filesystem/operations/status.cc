@@ -93,10 +93,20 @@ test03()
   fs::permissions(dir, fs::perms::owner_all, ec);
 }
 
+void
+test04()
+{
+  // PR libstdc++/88881
+  fs::path p = "./";
+  auto st = status(p);
+  VERIFY( is_directory(st) );
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }

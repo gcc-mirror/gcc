@@ -303,14 +303,8 @@ case "${host_os}" in
     # Use libatomic if necessary and avoid libstdc++ specific atomicity support
     atomicity_dir="cpu/generic/atomicity_builtins"
     ;;
-  solaris2)
-    # This too-vague configuration does not provide enough information
-    # to select a ctype include, and thus os_include_dir is a crap shoot.
-    echo "Please specify the full version of Solaris, ie. solaris2.10 " 1>&2
-    exit 1
-    ;;
-  solaris2.1[0-9])
-    os_include_dir="os/solaris/solaris2.10"
+  solaris2*)
+    os_include_dir="os/solaris"
     ;;
   tpf)
     os_include_dir="os/tpf"
@@ -372,19 +366,8 @@ case "${host}" in
   powerpc*-*-darwin*)
     port_specific_symbol_files="\$(srcdir)/../config/os/bsd/darwin/ppc-extra.ver"
     ;;
-  *-*-solaris2.1[0-9])
-    # On Solaris 10 with Solaris ld, there's no COMDAT support.  GNU ld always
-    # provides it, as does Solaris ld since Solaris 11, leading to different
-    # baselines.
-    case "${host_os}:${with_gnu_ld}" in
-      # with_gnu_ld may either be unset (default) or no (with --without-gnu-ld).
-      solaris2.10: | solaris2.10:no)
-        abi_baseline_pair=solaris2.10
-	;;
-      *)
-        abi_baseline_pair=solaris2.11
-	;;
-    esac
+  *-*-solaris2*)
+    abi_baseline_pair=solaris
     case "${host_cpu}" in
 	i?86 | x86_64)
 	    abi_baseline_pair=i386-${abi_baseline_pair}

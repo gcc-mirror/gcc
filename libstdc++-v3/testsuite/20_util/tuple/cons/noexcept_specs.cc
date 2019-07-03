@@ -56,7 +56,9 @@ namespace test_trait{
       using type = decltype(test<From, To>(0));
     };
 
-  /// is_nothrow_convertible
+  // Similar to std::is_nothrow_convertible, but only considers whether the
+  // actual conversion can throw (and not any potential copies of From).
+  // This means the result is not affected by copy elision of From in C++17.
   template<typename From, typename To>
     struct is_nothrow_convertible
     : public is_nt_convertible_helper<From, To>::type

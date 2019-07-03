@@ -8,20 +8,20 @@
 #include <altivec.h>
 
 vector float
-test1d (float x)
+test1f (float x)
 {
   return vec_splats (x);
 }
 
 vector double
-test1f (double x)
+test1d (double x)
 {
   return vec_splats (x);
 }
 
-// float test generates the permute instruction.
+// double test generates the permute instruction.
 /* { dg-final { scan-assembler-times "xxpermdi" 1 } } */
 
-// double test generates a convert (double to single non-signalling) followed by a splat.
+// float test generates a convert (double to single non-signalling) followed by a splat.
 /* { dg-final { scan-assembler-times {\mxscvdpspn?\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mvspltw\M|\mxxspltw\M} 1 } } */

@@ -1706,10 +1706,28 @@ package body Inline is
       --  Use generic machinery to build an unexpanded body for the subprogram.
       --  This body is subsequently used for inline expansions at call sites.
 
+      procedure Build_Return_Object_Formal
+        (Loc      : Source_Ptr;
+         Obj_Decl : Node_Id;
+         Formals  : List_Id);
+      --  Create a formal parameter for return object declaration Obj_Decl of
+      --  an extended return statement and add it to list Formals.
+
       function Can_Split_Unconstrained_Function (N : Node_Id) return Boolean;
       --  Return true if we generate code for the function body N, the function
       --  body N has no local declarations and its unique statement is a single
       --  extended return statement with a handled statements sequence.
+
+      procedure Copy_Formals
+        (Loc     : Source_Ptr;
+         Subp_Id : Entity_Id;
+         Formals : List_Id);
+      --  Create new formal parameters from the formal parameters of subprogram
+      --  Subp_Id and add them to list Formals.
+
+      function Copy_Return_Object (Obj_Decl : Node_Id) return Node_Id;
+      --  Create a copy of return object declaration Obj_Decl of an extended
+      --  return statement.
 
       procedure Split_Unconstrained_Function
         (N       : Node_Id;
@@ -1757,6 +1775,9 @@ package body Inline is
                Body_To_Inline :=
                  Copy_Generic_Node (N, Empty, Instantiating => True);
             else
+               --  ??? Shouldn't this use New_Copy_Tree? What about global
+               --  references captured in the body to inline?
+
                Body_To_Inline := Copy_Separate_Tree (N);
             end if;
 
@@ -1845,30 +1866,70 @@ package body Inline is
          Set_Ekind (Defining_Entity (Original_Body), Ekind (Spec_Id));
       end Build_Body_To_Inline;
 
+      --------------------------------
+      -- Build_Return_Object_Formal --
+      --------------------------------
+
+      procedure Build_Return_Object_Formal
+        (Loc      : Source_Ptr;
+         Obj_Decl : Node_Id;
+         Formals  : List_Id)
+      is
+         Obj_Def : constant Node_Id   := Object_Definition (Obj_Decl);
+         Obj_Id  : constant Entity_Id := Defining_Entity   (Obj_Decl);
+         Typ_Def : Node_Id;
+
+      begin
+         --  Build the type definition of the formal parameter. The use of
+         --  New_Copy_Tree ensures that global references preserved in the
+         --  case of generics.
+
+         if Is_Entity_Name (Obj_Def) then
+            Typ_Def := New_Copy_Tree (Obj_Def);
+         else
+            Typ_Def := New_Copy_Tree (Subtype_Mark (Obj_Def));
+         end if;
+
+         --  Generate:
+         --
+         --    Obj_Id : [out] Typ_Def
+
+         --  Mode OUT should not be used when the return object is declared as
+         --  a constant. Check the definition of the object declaration because
+         --  the object has not been analyzed yet.
+
+         Append_To (Formals,
+           Make_Parameter_Specification (Loc,
+             Defining_Identifier    =>
+               Make_Defining_Identifier (Loc, Chars (Obj_Id)),
+             In_Present             => False,
+             Out_Present            => not Constant_Present (Obj_Decl),
+             Null_Exclusion_Present => False,
+             Parameter_Type         => Typ_Def));
+      end Build_Return_Object_Formal;
+
       --------------------------------------
       -- Can_Split_Unconstrained_Function --
       --------------------------------------
 
       function Can_Split_Unconstrained_Function (N : Node_Id) return Boolean is
-         Ret_Node : constant Node_Id :=
-                      First (Statements (Handled_Statement_Sequence (N)));
-         D : Node_Id;
+         Stmt : constant Node_Id :=
+                  First (Statements (Handled_Statement_Sequence (N)));
+         Decl : Node_Id;
 
       begin
          --  No user defined declarations allowed in the function except inside
          --  the unique return statement; implicit labels are the only allowed
          --  declarations.
 
-         if not Is_Empty_List (Declarations (N)) then
-            D := First (Declarations (N));
-            while Present (D) loop
-               if Nkind (D) /= N_Implicit_Label_Declaration then
-                  return False;
-               end if;
+         Decl := First (Declarations (N));
+         while Present (Decl) loop
+            if Nkind (Decl) /= N_Implicit_Label_Declaration then
+               return False;
+            end if;
 
-               Next (D);
-            end loop;
-         end if;
+            Next (Decl);
+         end loop;
 
          --  We only split the inlined function when we are generating the code
          --  of its body; otherwise we leave duplicated split subprograms in
@@ -1876,11 +1937,70 @@ package body Inline is
          --  time.
 
          return In_Extended_Main_Code_Unit (N)
-           and then Present (Ret_Node)
-           and then Nkind (Ret_Node) = N_Extended_Return_Statement
-           and then No (Next (Ret_Node))
-           and then Present (Handled_Statement_Sequence (Ret_Node));
+           and then Present (Stmt)
+           and then Nkind (Stmt) = N_Extended_Return_Statement
+           and then No (Next (Stmt))
+           and then Present (Handled_Statement_Sequence (Stmt));
       end Can_Split_Unconstrained_Function;
+
+      ------------------
+      -- Copy_Formals --
+      ------------------
+
+      procedure Copy_Formals
+        (Loc     : Source_Ptr;
+         Subp_Id : Entity_Id;
+         Formals : List_Id)
+      is
+         Formal : Entity_Id;
+         Spec   : Node_Id;
+
+      begin
+         Formal := First_Formal (Subp_Id);
+         while Present (Formal) loop
+            Spec := Parent (Formal);
+
+            --  Create an exact copy of the formal parameter. The use of
+            --  New_Copy_Tree ensures that global references are preserved
+            --  in case of generics.
+
+            Append_To (Formals,
+              Make_Parameter_Specification (Loc,
+                Defining_Identifier    =>
+                  Make_Defining_Identifier (Sloc (Formal), Chars (Formal)),
+                In_Present             => In_Present  (Spec),
+                Out_Present            => Out_Present (Spec),
+                Null_Exclusion_Present => Null_Exclusion_Present (Spec),
+                Parameter_Type         =>
+                  New_Copy_Tree (Parameter_Type (Spec)),
+                Expression             => New_Copy_Tree (Expression (Spec))));
+
+            Next_Formal (Formal);
+         end loop;
+      end Copy_Formals;
+
+      ------------------------
+      -- Copy_Return_Object --
+      ------------------------
+
+      function Copy_Return_Object (Obj_Decl : Node_Id) return Node_Id is
+         Obj_Id  : constant Entity_Id := Defining_Entity (Obj_Decl);
+
+      begin
+         --  The use of New_Copy_Tree ensures that global references are
+         --  preserved in case of generics.
+
+         return
+           Make_Object_Declaration (Sloc (Obj_Decl),
+             Defining_Identifier    =>
+               Make_Defining_Identifier (Sloc (Obj_Id), Chars (Obj_Id)),
+             Aliased_Present        => Aliased_Present  (Obj_Decl),
+             Constant_Present       => Constant_Present (Obj_Decl),
+             Null_Exclusion_Present => Null_Exclusion_Present (Obj_Decl),
+             Object_Definition      =>
+               New_Copy_Tree (Object_Definition (Obj_Decl)),
+             Expression             => New_Copy_Tree (Expression (Obj_Decl)));
+      end Copy_Return_Object;
 
       ----------------------------------
       -- Split_Unconstrained_Function --
@@ -1891,10 +2011,10 @@ package body Inline is
          Spec_Id  : Entity_Id)
       is
          Loc      : constant Source_Ptr := Sloc (N);
-         Ret_Node : constant Node_Id :=
+         Ret_Stmt : constant Node_Id :=
                       First (Statements (Handled_Statement_Sequence (N)));
          Ret_Obj  : constant Node_Id :=
-                      First (Return_Object_Declarations (Ret_Node));
+                      First (Return_Object_Declarations (Ret_Stmt));
 
          procedure Build_Procedure
            (Proc_Id   : out Entity_Id;
@@ -1910,63 +2030,35 @@ package body Inline is
            (Proc_Id   : out Entity_Id;
             Decl_List : out List_Id)
          is
-            Formal         : Entity_Id;
-            Formal_List    : constant List_Id := New_List;
-            Proc_Spec      : Node_Id;
-            Proc_Body      : Node_Id;
-            Subp_Name      : constant Name_Id := New_Internal_Name ('F');
-            Body_Decl_List : List_Id := No_List;
-            Param_Type     : Node_Id;
+            Formals   : constant List_Id   := New_List;
+            Subp_Name : constant Name_Id   := New_Internal_Name ('F');
+
+            Body_Decls : List_Id := No_List;
+            Decl       : Node_Id;
+            Proc_Body  : Node_Id;
+            Proc_Spec  : Node_Id;
 
          begin
-            if Nkind (Object_Definition (Ret_Obj)) = N_Identifier then
-               Param_Type :=
-                 New_Copy (Object_Definition (Ret_Obj));
-            else
-               Param_Type :=
-                 New_Copy (Subtype_Mark (Object_Definition (Ret_Obj)));
-            end if;
+            --  Create formal parameters for the return object and all formals
+            --  of the unconstrained function in order to pass their values to
+            --  the procedure.
 
-            Append_To (Formal_List,
-              Make_Parameter_Specification (Loc,
-                Defining_Identifier    =>
-                  Make_Defining_Identifier (Loc,
-                    Chars => Chars (Defining_Identifier (Ret_Obj))),
-                In_Present             => False,
-                Out_Present            => True,
-                Null_Exclusion_Present => False,
-                Parameter_Type         => Param_Type));
+            Build_Return_Object_Formal
+              (Loc      => Loc,
+               Obj_Decl => Ret_Obj,
+               Formals  => Formals);
 
-            Formal := First_Formal (Spec_Id);
-
-            --  Note that we copy the parameter type rather than creating
-            --  a reference to it, because it may be a class-wide entity
-            --  that will not be retrieved by name.
-
-            while Present (Formal) loop
-               Append_To (Formal_List,
-                 Make_Parameter_Specification (Loc,
-                   Defining_Identifier    =>
-                     Make_Defining_Identifier (Sloc (Formal),
-                       Chars => Chars (Formal)),
-                   In_Present             => In_Present (Parent (Formal)),
-                   Out_Present            => Out_Present (Parent (Formal)),
-                   Null_Exclusion_Present =>
-                     Null_Exclusion_Present (Parent (Formal)),
-                   Parameter_Type         =>
-                     New_Copy_Tree (Parameter_Type (Parent (Formal))),
-                   Expression             =>
-                     Copy_Separate_Tree (Expression (Parent (Formal)))));
-
-               Next_Formal (Formal);
-            end loop;
+            Copy_Formals
+              (Loc     => Loc,
+               Subp_Id => Spec_Id,
+               Formals => Formals);
 
             Proc_Id := Make_Defining_Identifier (Loc, Chars => Subp_Name);
 
             Proc_Spec :=
               Make_Procedure_Specification (Loc,
                 Defining_Unit_Name       => Proc_Id,
-                Parameter_Specifications => Formal_List);
+                Parameter_Specifications => Formals);
 
             Decl_List := New_List;
 
@@ -1978,37 +2070,30 @@ package body Inline is
             --  Copy these declarations to the built procedure.
 
             if Present (Declarations (N)) then
-               Body_Decl_List := New_List;
+               Body_Decls := New_List;
 
-               declare
-                  D     : Node_Id;
-                  New_D : Node_Id;
+               Decl := First (Declarations (N));
+               while Present (Decl) loop
+                  pragma Assert (Nkind (Decl) = N_Implicit_Label_Declaration);
 
-               begin
-                  D := First (Declarations (N));
-                  while Present (D) loop
-                     pragma Assert (Nkind (D) = N_Implicit_Label_Declaration);
+                  Append_To (Body_Decls,
+                    Make_Implicit_Label_Declaration (Loc,
+                      Make_Defining_Identifier (Loc,
+                        Chars => Chars (Defining_Identifier (Decl))),
+                      Label_Construct => Empty));
 
-                     New_D :=
-                       Make_Implicit_Label_Declaration (Loc,
-                         Make_Defining_Identifier (Loc,
-                           Chars => Chars (Defining_Identifier (D))),
-                         Label_Construct => Empty);
-                     Append_To (Body_Decl_List, New_D);
-
-                     Next (D);
-                  end loop;
-               end;
+                  Next (Decl);
+               end loop;
             end if;
 
-            pragma Assert (Present (Handled_Statement_Sequence (Ret_Node)));
+            pragma Assert (Present (Handled_Statement_Sequence (Ret_Stmt)));
 
             Proc_Body :=
               Make_Subprogram_Body (Loc,
-                Specification => Copy_Separate_Tree (Proc_Spec),
-                Declarations  => Body_Decl_List,
+                Specification              => Copy_Subprogram_Spec (Proc_Spec),
+                Declarations               => Body_Decls,
                 Handled_Statement_Sequence =>
-                  Copy_Separate_Tree (Handled_Statement_Sequence (Ret_Node)));
+                  New_Copy_Tree (Handled_Statement_Sequence (Ret_Stmt)));
 
             Set_Defining_Unit_Name (Specification (Proc_Body),
                Make_Defining_Identifier (Loc, Subp_Name));
@@ -2018,10 +2103,10 @@ package body Inline is
 
          --  Local variables
 
-         New_Obj   : constant Node_Id := Copy_Separate_Tree (Ret_Obj);
+         New_Obj   : constant Node_Id := Copy_Return_Object (Ret_Obj);
          Blk_Stmt  : Node_Id;
-         Proc_Id   : Entity_Id;
          Proc_Call : Node_Id;
+         Proc_Id   : Entity_Id;
 
       --  Start of processing for Split_Unconstrained_Function
 
@@ -2089,7 +2174,7 @@ package body Inline is
                        New_Occurrence_Of
                          (Defining_Identifier (New_Obj), Loc)))));
 
-         Rewrite (Ret_Node, Blk_Stmt);
+         Rewrite (Ret_Stmt, Blk_Stmt);
       end Split_Unconstrained_Function;
 
       --  Local variables
@@ -2386,10 +2471,22 @@ package body Inline is
       --  sets Exit_Lab (the label node) and Lab_Decl (corresponding implicit
       --  declaration). Does nothing if Exit_Lab already set.
 
+      procedure Make_Loop_Labels_Unique (HSS : Node_Id);
+      --  When compiling for CCG and performing front-end inlining, replace
+      --  loop names and references to them so that they do not conflict with
+      --  homographs in the current subprogram.
+
       function Process_Formals (N : Node_Id) return Traverse_Result;
       --  Replace occurrence of a formal with the corresponding actual, or the
       --  thunk generated for it. Replace a return statement with an assignment
       --  to the target of the call, with appropriate conversions if needed.
+
+      function Process_Formals_In_Aspects (N : Node_Id)
+        return Traverse_Result;
+      --  Because aspects are linked indirectly to the rest of the tree,
+      --  replacement of formals appearing in aspect specifications must
+      --  be performed in a separate pass, using an instantiation of the
+      --  previous subprogram over aspect specifications reachable from N.
 
       function Process_Sloc (Nod : Node_Id) return Traverse_Result;
       --  If the call being expanded is that of an internal subprogram, set the
@@ -2473,6 +2570,61 @@ package body Inline is
                 Label_Construct     => Exit_Lab);
          end if;
       end Make_Exit_Label;
+
+      -----------------------------
+      -- Make_Loop_Labels_Unique --
+      -----------------------------
+
+      procedure Make_Loop_Labels_Unique (HSS : Node_Id) is
+         function Process_Loop (N : Node_Id) return Traverse_Result;
+
+         ------------------
+         -- Process_Loop --
+         ------------------
+
+         function Process_Loop (N : Node_Id) return Traverse_Result is
+            Id  : Entity_Id;
+
+         begin
+            if Nkind (N) = N_Loop_Statement
+              and then Present (Identifier (N))
+            then
+               --  Create new external name for loop and update the
+               --  corresponding entity.
+
+               Id := Entity (Identifier (N));
+               Set_Chars (Id, New_External_Name (Chars (Id), 'L', -1));
+               Set_Chars (Identifier (N), Chars (Id));
+
+            elsif Nkind (N) = N_Exit_Statement
+              and then Present (Name (N))
+            then
+               --  The exit statement must name an enclosing loop, whose name
+               --  has already been updated.
+
+               Set_Chars (Name (N), Chars (Entity (Name (N))));
+            end if;
+
+            return OK;
+         end Process_Loop;
+
+         procedure Update_Loop_Names is new Traverse_Proc (Process_Loop);
+
+         --  Local variables
+
+         Stmt : Node_Id;
+
+      --  Start of processing for Make_Loop_Labels_Unique
+
+      begin
+         if Modify_Tree_For_C then
+            Stmt := First (Statements (HSS));
+            while Present (Stmt) loop
+               Update_Loop_Names (Stmt);
+               Next (Stmt);
+            end loop;
+         end if;
+      end Make_Loop_Labels_Unique;
 
       ---------------------
       -- Process_Formals --
@@ -2676,6 +2828,29 @@ package body Inline is
 
       procedure Replace_Formals is new Traverse_Proc (Process_Formals);
 
+      --------------------------------
+      -- Process_Formals_In_Aspects --
+      --------------------------------
+
+      function Process_Formals_In_Aspects (N : Node_Id)
+        return Traverse_Result
+      is
+         A : Node_Id;
+      begin
+         if Has_Aspects (N) then
+            A := First (Aspect_Specifications (N));
+            while Present (A) loop
+               Replace_Formals (Expression (A));
+
+               Next (A);
+            end loop;
+         end if;
+         return OK;
+      end Process_Formals_In_Aspects;
+
+      procedure Replace_Formals_In_Aspects is
+         new Traverse_Proc (Process_Formals_In_Aspects);
+
       ------------------
       -- Process_Sloc --
       ------------------
@@ -2742,6 +2917,8 @@ package body Inline is
          Fst : constant Node_Id := First (Statements (HSS));
 
       begin
+         Make_Loop_Labels_Unique (HSS);
+
          --  Optimize simple case: function body is a single return statement,
          --  which has been expanded into an assignment.
 
@@ -2829,6 +3006,8 @@ package body Inline is
          HSS  : constant Node_Id := Handled_Statement_Sequence (Blk);
 
       begin
+         Make_Loop_Labels_Unique (HSS);
+
          --  If there is a transient scope for N, this will be the scope of the
          --  actions for N, and the statements in Blk need to be within this
          --  scope. For example, they need to have visibility on the constant
@@ -3484,6 +3663,7 @@ package body Inline is
       --  Attach block to tree before analysis and rewriting.
 
       Replace_Formals (Blk);
+      Replace_Formals_In_Aspects (Blk);
       Set_Parent (Blk, N);
 
       if GNATprove_Mode then

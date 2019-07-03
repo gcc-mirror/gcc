@@ -1866,6 +1866,9 @@ typedef struct gfc_namespace
 
   /* Set to 1 for !$ACC ROUTINE namespaces.  */
   unsigned oacc_routine:1;
+
+  /* Set to 1 if there are any calls to procedures with implicit interface.  */
+  unsigned implicit_interface_calls:1;
 }
 gfc_namespace;
 
@@ -3114,8 +3117,6 @@ void gfc_traverse_user_op (gfc_namespace *, void (*)(gfc_user_op *));
 void gfc_save_all (gfc_namespace *);
 
 void gfc_enforce_clean_symbol_state (void);
-void gfc_free_dt_list (void);
-
 
 gfc_gsymbol *gfc_get_gsymbol (const char *, bool bind_c);
 gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, const char *);
@@ -3532,6 +3533,7 @@ typedef int (*walk_expr_fn_t) (gfc_expr **, int *, void *);
 int gfc_dummy_code_callback (gfc_code **, int *, void *);
 int gfc_expr_walker (gfc_expr **, walk_expr_fn_t, void *);
 int gfc_code_walker (gfc_code **, walk_code_fn_t, walk_expr_fn_t, void *);
+bool gfc_has_dimen_vector_ref (gfc_expr *e);
 
 /* simplify.c */
 

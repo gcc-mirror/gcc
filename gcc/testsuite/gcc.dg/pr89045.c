@@ -1,5 +1,6 @@
 /* PR c/89045 */
 /* { dg-do compile } */
+/* { dg-require-effective-target alloca } */
 /* { dg-options "" } */
 
 int

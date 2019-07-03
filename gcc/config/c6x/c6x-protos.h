@@ -35,7 +35,7 @@ extern bool c6x_long_call_p (rtx);
 extern void c6x_expand_call (rtx, rtx, bool);
 extern rtx c6x_expand_compare (rtx, machine_mode);
 extern bool c6x_force_op_for_comparison_p (enum rtx_code, rtx);
-extern bool c6x_expand_movmem (rtx, rtx, rtx, rtx, rtx, rtx);
+extern bool c6x_expand_cpymem (rtx, rtx, rtx, rtx, rtx, rtx);
 
 extern rtx c6x_subword (rtx, bool);
 extern void split_di (rtx *, int, rtx *, rtx *);

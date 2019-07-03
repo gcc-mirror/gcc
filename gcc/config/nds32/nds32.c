@@ -2227,8 +2227,10 @@ nds32_asm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 			   HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
 			   tree function)
 {
+  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
   int this_regno;
 
+  assemble_start_function (thunk, fnname);
   /* Make sure unwind info is emitted for the thunk if needed.  */
   final_start_function (emit_barrier (), file, 1);
 
@@ -2299,6 +2301,7 @@ nds32_asm_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
     }
 
   final_end_function ();
+  assemble_end_function (thunk, fnname);
 }
 
 /* -- Permitting tail calls.  */

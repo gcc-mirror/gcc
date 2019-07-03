@@ -643,6 +643,19 @@ default_has_ifunc_p (void)
   return HAVE_GNU_INDIRECT_FUNCTION;
 }
 
+/* Return true if we predict the loop LOOP will be transformed to a
+   low-overhead loop, otherwise return false.
+
+   By default, false is returned, as this hook's applicability should be
+   verified for each target.  Target maintainers should re-define the hook
+   if the target can take advantage of it.  */
+
+bool
+default_predict_doloop_p (struct loop *loop ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
 /* NULL if INSN insn is valid within a low-overhead loop, otherwise returns
    an error message.
 
@@ -1316,7 +1329,7 @@ default_split_reduction (machine_mode mode)
    is tried.  */
 
 void
-default_autovectorize_vector_sizes (vector_sizes *)
+default_autovectorize_vector_sizes (vector_sizes *, bool)
 {
 }
 
@@ -1600,7 +1613,7 @@ default_target_option_pragma_parse (tree ARG_UNUSED (args),
      do not have the "target" pragma.  */
   if (args)
     warning (OPT_Wpragmas,
-	     "#pragma GCC target is not supported for this machine");
+	     "%<#pragma GCC target%> is not supported for this machine");
 
   return false;
 }
@@ -1648,6 +1661,14 @@ default_libc_has_function (enum function_class fn_class)
       || fn_class == function_c99_math_complex)
     return true;
 
+  return false;
+}
+
+/* By default assume that libc has not a fast implementation.  */
+
+bool
+default_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
+{
   return false;
 }
 
@@ -1725,9 +1746,9 @@ get_move_ratio (bool speed_p ATTRIBUTE_UNUSED)
 #ifdef MOVE_RATIO
   move_ratio = (unsigned int) MOVE_RATIO (speed_p);
 #else
-#if defined (HAVE_movmemqi) || defined (HAVE_movmemhi) || defined (HAVE_movmemsi) || defined (HAVE_movmemdi) || defined (HAVE_movmemti)
+#if defined (HAVE_cpymemqi) || defined (HAVE_cpymemhi) || defined (HAVE_cpymemsi) || defined (HAVE_cpymemdi) || defined (HAVE_cpymemti)
   move_ratio = 2;
-#else /* No movmem patterns, pick a default.  */
+#else /* No cpymem patterns, pick a default.  */
   move_ratio = ((speed_p) ? 15 : 3);
 #endif
 #endif
@@ -1735,7 +1756,7 @@ get_move_ratio (bool speed_p ATTRIBUTE_UNUSED)
 }
 
 /* Return TRUE if the move_by_pieces/set_by_pieces infrastructure should be
-   used; return FALSE if the movmem/setmem optab should be expanded, or
+   used; return FALSE if the cpymem/setmem optab should be expanded, or
    a call to memcpy emitted.  */
 
 bool

@@ -562,6 +562,10 @@ Wformat-contains-nul
 C ObjC C++ ObjC++ Var(warn_format_contains_nul) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
 Warn about format strings that contain NUL bytes.
 
+Wformat-diag
+C ObjC C++ ObjC++ Var(warn_format_diag) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
+Warn about GCC format strings with strings unsuitable for diagnostics.
+
 Wformat-extra-args
 C ObjC C++ ObjC++ Var(warn_format_extra_args) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0)
 Warn if passing too many arguments to a function for its format string.
@@ -620,6 +624,10 @@ Warn whenever type qualifiers are ignored.
 Wignored-attributes
 C C++ Var(warn_ignored_attributes) Init(1) Warning
 Warn whenever attributes are ignored.
+
+Winaccessible-base
+C++ ObjC++ Var(warn_inaccessible_base) Init(1) Warning
+Warn when a base is inaccessible in derived due to ambiguity.
 
 Wincompatible-pointer-types
 C ObjC Var(warn_incompatible_pointer_types) Init(1) Warning
@@ -810,6 +818,10 @@ Warn about all enumerated switches missing a specific case.
 Wswitch-bool
 C ObjC C++ ObjC++ Var(warn_switch_bool) Warning Init(1)
 Warn about switches with boolean controlling expression.
+
+Wswitch-outside-range
+C ObjC C++ ObjC++ Var(warn_switch_outside_range) Warning Init(1)
+Warn about switch values that are outside of the switch's type range.
 
 Wtemplates
 C++ ObjC++ Var(warn_templates) Warning
@@ -1412,6 +1424,10 @@ fconstexpr-depth=
 C++ ObjC++ Joined RejectNegative UInteger Var(max_constexpr_depth) Init(512)
 -fconstexpr-depth=<number>	Specify maximum constexpr recursion depth.
 
+fconstexpr-cache-depth=
+C++ ObjC++ Joined RejectNegative UInteger Var(constexpr_cache_depth) Init(8)
+-fconstexpr-cache-depth=<number>	Specify maximum constexpr recursion cache depth.
+
 fconstexpr-loop-limit=
 C++ ObjC++ Joined RejectNegative UInteger Var(constexpr_loop_limit) Init(262144)
 -fconstexpr-loop-limit=<number>	Specify maximum constexpr loop iteration count.
@@ -1558,6 +1574,10 @@ C++ ObjC++ Deprecated
 flax-vector-conversions
 C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
+
+fmax-include-depth=
+C ObjC C++ ObjC++ Joined RejectNegative UInteger
+fmax-include-depth=<number> Set the maximum depth of the nested #include.
 
 fms-extensions
 C ObjC C++ ObjC++ Var(flag_ms_extensions)

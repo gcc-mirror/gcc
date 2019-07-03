@@ -67,7 +67,7 @@ cp_tree_size (enum tree_code code)
     case PTRMEM_CST:		return sizeof (ptrmem_cst);
     case BASELINK:		return sizeof (tree_baselink);
     case TEMPLATE_PARM_INDEX:	return sizeof (template_parm_index);
-    case DEFAULT_ARG:		return sizeof (tree_default_arg);
+    case DEFERRED_PARSE:	return sizeof (tree_deferred_parse);
     case DEFERRED_NOEXCEPT:	return sizeof (tree_deferred_noexcept);
     case OVERLOAD:		return sizeof (tree_overload);
     case STATIC_ASSERT:         return sizeof (tree_static_assert);
@@ -248,16 +248,14 @@ cp_type_dwarf_attribute (const_tree type, int attr)
   switch (attr)
     {
     case DW_AT_reference:
-      if ((TREE_CODE (type) == FUNCTION_TYPE
-	   || TREE_CODE (type) == METHOD_TYPE)
+      if (FUNC_OR_METHOD_TYPE_P (type)
 	  && FUNCTION_REF_QUALIFIED (type)
 	  && !FUNCTION_RVALUE_QUALIFIED (type))
 	return 1;
       break;
 
     case DW_AT_rvalue_reference:
-      if ((TREE_CODE (type) == FUNCTION_TYPE
-	   || TREE_CODE (type) == METHOD_TYPE)
+      if (FUNC_OR_METHOD_TYPE_P (type)
 	  && FUNCTION_REF_QUALIFIED (type)
 	  && FUNCTION_RVALUE_QUALIFIED (type))
 	return 1;

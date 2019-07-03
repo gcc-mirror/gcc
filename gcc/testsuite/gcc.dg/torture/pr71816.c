@@ -11,7 +11,7 @@ void *realloc();
 int ext2fs_resize_mem(void *p1) {
     int size = 0;
     memcpy(&ext2fs_resize_mem_p, p1, sizeof(ext2fs_resize_mem_p));
-    realloc(&ext2fs_resize_mem_p, size);
+    void *p = realloc(&ext2fs_resize_mem_p, size);
     return 0;
 }
 struct ext2_icount_el *insert_icount_el() {

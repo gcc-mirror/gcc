@@ -8,8 +8,8 @@ template <int N>
 void
 bar (char **p)
 {
-  foo (p[0], p[0]);	// { dg-warning "to restrict-qualified parameter aliases with" }
-  foo (p[0], p[N]);	// { dg-warning "to restrict-qualified parameter aliases with" }
+  foo (p[0], p[0]);	// { dg-warning "to 'restrict'-qualified parameter aliases with" }
+  foo (p[0], p[N]);	// { dg-warning "to 'restrict'-qualified parameter aliases with" }
   foo (p[0]);
 }
 
@@ -17,8 +17,8 @@ template <int N>
 void
 bar2 (char **p)
 {
-  foo (p[0], p[0]);	// { dg-warning "to restrict-qualified parameter aliases with" }
-  foo (p[0], p[N]);	// { dg-bogus "to restrict-qualified parameter aliases with" }
+  foo (p[0], p[0]);	// { dg-warning "to 'restrict'-qualified parameter aliases with" }
+  foo (p[0], p[N]);	// { dg-bogus "to 'restrict'-qualified parameter aliases with" }
   foo (p[0]);
 }
 

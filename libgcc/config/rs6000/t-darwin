@@ -1,23 +1,58 @@
-DARWIN_EXTRA_CRT_BUILD_CFLAGS = -mlongcall -mmacosx-version-min=10.4
 
 crt2.o: $(srcdir)/config/rs6000/darwin-crt2.c
-	$(crt_compile) $(DARWIN_EXTRA_CRT_BUILD_CFLAGS) -c $<
+	$(crt_compile) -mmacosx-version-min=10.1 -c $<
+
+# The sources for this indicate that there are some parts that
+# don't apply >= 10.4
+crt3_2.o: $(srcdir)/config/darwin-crt3.c
+	$(crt_compile) -mmacosx-version-min=10.1 -c $<
+
+# The outlined register save/restore functions need to run anywhere, and
+# they must be leaf functions suitable for use in an endfile.
+
+PPC_ENDFILE_SRC = \
+  $(srcdir)/config/rs6000/darwin-gpsave.S \
+  $(srcdir)/config/rs6000/darwin-fpsave.S \
+  $(srcdir)/config/rs6000/darwin-vecsave.S
+
+PPC_ENDFILE_OBJS = \
+ darwin-gpsave.o \
+ darwin-fpsave.o \
+ darwin-vecsave.o
+
+darwin-gpsave.o: $(srcdir)/config/rs6000/darwin-gpsave.S
+	$(crt_compile) -mmacosx-version-min=10.1 -c $<
+
+darwin-fpsave.o: $(srcdir)/config/rs6000/darwin-fpsave.S
+	$(crt_compile) -mmacosx-version-min=10.1 -c $<
+
+darwin-vecsave.o: $(srcdir)/config/rs6000/darwin-vecsave.S
+	$(crt_compile) -mmacosx-version-min=10.1 -c $<
+
+# We build these into a library, so that they are only linked as needed and not
+# forced into every object.
+
+libef_ppc.a: $(PPC_ENDFILE_OBJS)
+	$(AR_CREATE_FOR_TARGET) $@ $(PPC_ENDFILE_OBJS)
+	$(RANLIB_FOR_TARGET) $@
+
+dw_ppc.o: $(srcdir)/config/rs6000/darwin-world.S
+	$(crt_compile) -mmacosx-version-min=10.1 -c $<
 
 LIB2ADD = $(srcdir)/config/rs6000/darwin-tramp.S \
 	  $(srcdir)/config/darwin-64.c \
-	  $(srcdir)/config/rs6000/darwin-fpsave.S  \
-	  $(srcdir)/config/rs6000/darwin-gpsave.S  \
-	  $(srcdir)/config/rs6000/darwin-world.S \
-	  $(srcdir)/config/rs6000/ppc64-fp.c
-
-LIB2ADD_ST = \
-	  $(srcdir)/config/rs6000/darwin-vecsave.S
+	  $(srcdir)/config/rs6000/darwin-world.S
 
 # The .S files above are designed to run on all processors, even though
 # they use AltiVec instructions.
 # -Wa is used because -force_cpusubtype_ALL doesn't work with -dynamiclib.
-# -mmacosx-version-min=10.4 is used to provide compatibility for code from
-# earlier OSX versions.
-HOST_LIBGCC2_CFLAGS += -Wa,-force_cpusubtype_ALL -mmacosx-version-min=10.4
+
+HOST_LIBGCC2_CFLAGS += -Wa,-force_cpusubtype_ALL
+
+# Although the default for 10.4 is G3, we need the unwinder to be built
+# with vector support so that the "save/rest_world" outlined functions are
+# correctly invoked.
+unwind-dw2_s.o: HOST_LIBGCC2_CFLAGS += -maltivec
+unwind-dw2.o: HOST_LIBGCC2_CFLAGS += -maltivec
 
 LIB2ADDEH += $(srcdir)/config/rs6000/darwin-fallback.c

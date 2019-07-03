@@ -513,7 +513,8 @@ proc check_effective_target_trampolines { } {
 	 || [istarget msp430-*-*]
 	 || [istarget nvptx-*-*]
 	 || [istarget hppa2.0w-hp-hpux11.23]
-	 || [istarget hppa64-hp-hpux11.23] } {
+	 || [istarget hppa64-hp-hpux11.23]
+	 || [istarget pru-*-*] } {
 	return 0;
     }
     return 1
@@ -687,6 +688,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget nvptx-*-*]
 	     || [istarget powerpc-*-eabi*]
 	     || [istarget powerpc-*-elf]
+	     || [istarget pru-*-*]
 	     || [istarget rx-*-*]	
 	     || [istarget tic6x-*-elf]
 	     || [istarget visium-*-*]
@@ -1590,16 +1592,6 @@ proc check_sse_os_support_available { } {
 	# If this is not the right target then we can skip the test.
 	if { !([istarget i?86-*-*] || [istarget x86_64-*-*]) } {
 	    expr 0
-	} elseif { [istarget i?86-*-solaris2*] } {
-	    # The Solaris 2 kernel doesn't save and restore SSE registers
-	    # before Solaris 9 4/04.  Before that, executables die with SIGILL.
-	    check_runtime_nocache sse_os_support_available {
-		int main ()
-		{
-		  asm volatile ("movaps %xmm0,%xmm0");
-		  return 0;
-		}
-	    } "-msse"
 	} else {
 	    expr 1
 	}
@@ -2150,6 +2142,25 @@ proc check_p9modulo_hw_available { } {
     }]
 }
 
+
+# Return 1 if the target supports executing FUTURE instructions, 0 otherwise.
+# Cache the result.  It is assumed that if a simulator does not support the
+# FUTURE instructions, that it will generate an error and this test will fail.
+
+proc check_powerpc_future_hw_available { } {
+    return [check_cached_effective_target powerpc_future_hw_available {
+	check_runtime_nocache powerpc_future_hw_available {
+	    int main()
+	    {
+		/* Set e first and use +r to check if pli actually works.  */
+		long e = -1;
+		asm ("pli %0,%1" : "+r" (e) : "n" (0x12345));
+		return (e == 0x12345);
+	    }
+	} "-mfuture"
+    }]
+}
+
 # Return 1 if the target supports executing __float128 on PowerPC via software
 # emulation, 0 otherwise.  Cache the result.
 
@@ -2606,6 +2617,15 @@ proc check_effective_target_int32plus { } {
     }]
 }
 
+# Return 1 if we're generating 64-bit long long using default options,
+# 0 otherwise.
+
+proc check_effective_target_longlong64 { } {
+    return [check_no_compiler_messages longlong64 object {
+	int dummy[sizeof (long long) == 8 ? 1 : -1];
+    }]
+}
+
 # Return 1 if we're generating 32-bit or larger pointers using default
 # options, 0 otherwise.
 
@@ -2631,6 +2651,32 @@ proc check_effective_target_size20plus { } {
     return [check_no_compiler_messages size20plus object {
 	char dummy[65537L];
     }]
+}
+
+# Return 1 if target supports function pointers, 0 otherwise.
+
+proc check_effective_target_function_pointers { } {
+    if { [istarget pru-*-*] } {
+	return [check_no_compiler_messages func_ptr_avail assembly {
+	    #ifdef __PRU_EABI_GNU__
+	    #error unsupported
+	    #endif
+	}]
+    }
+    return 1
+}
+
+# Return 1 if target supports arbitrarily large return values, 0 otherwise.
+
+proc check_effective_target_large_return_values { } {
+    if { [istarget pru-*-*] } {
+	return [check_no_compiler_messages large_return_values assembly {
+	    #ifdef __PRU_EABI_GNU__
+	    #error unsupported
+	    #endif
+	}]
+    }
+    return 1
 }
 
 # Return 1 if we support 24-bit or larger array and structure sizes
@@ -3316,6 +3362,24 @@ proc check_effective_target_aarch64_sve { } {
     }]
 }
 
+# Return 1 if this is an AArch64 target supporting SVE2.
+proc check_effective_target_aarch64_sve2 { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages aarch64_sve2 assembly {
+	#if !defined (__ARM_FEATURE_SVE2)
+	#error FOO
+	#endif
+    }]
+}
+
+# Return 1 if this is an AArch64 target only supporting SVE (not SVE2).
+proc check_effective_target_aarch64_sve1_only { } {
+    return [expr { [check_effective_target_aarch64_sve]
+		   && ![check_effective_target_aarch64_sve2] }]
+}
+
 # Return the size in bits of an SVE vector, or 0 if the size is variable.
 proc aarch64_sve_bits { } {
     return [check_cached_effective_target aarch64_sve_bits {
@@ -3856,6 +3920,13 @@ proc add_options_for_arm_neon_softfp_fp16 { flags } {
     return "$flags $et_arm_neon_softfp_fp16_flags"
 }
 
+proc add_options_for_aarch64_sve { flags } {
+    if { ![istarget aarch64*-*-*] || [check_effective_target_aarch64_sve] } {
+        return "$flags"
+    }
+    return "$flags -march=armv8.2-a+sve"
+}
+
 # Return 1 if this is an ARM target supporting the FP16 alternative
 # format.  Some multilibs may be incompatible with the options needed.  Also
 # set et_arm_neon_fp16_flags to the best options to add.
@@ -4333,6 +4404,22 @@ proc check_effective_target_aarch64_sve_hw { } {
 	  asm volatile ("ptrue p0.b");
 	  return 0;
 	}
+    } [add_options_for_aarch64_sve ""]]
+}
+
+# Return true if this is an AArch64 target that can run SVE2 code.
+
+proc check_effective_target_aarch64_sve2_hw { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_runtime aarch64_sve2_hw_available {
+	int
+	main (void)
+	{
+	  asm volatile ("addp z0.b, p0/m, z0.b, z1.b");
+	  return 0;
+	}
     }]
 }
 
@@ -4353,7 +4440,7 @@ proc aarch64_sve_hw_bits { bits } {
 	    __builtin_abort ();
 	  return 0;
 	}
-    }]]
+    }] [add_options_for_aarch64_sve ""]]
 }
 
 # Return true if this is an AArch64 target that can run SVE code and
@@ -5065,13 +5152,13 @@ proc check_effective_target_powerpc_p8vector_ok { } {
 	     || [istarget powerpc*-*-aix5.2*] } {
 	    return 0
 	}
+	# Darwin doesn't run on power8, so far.
+	if { [istarget *-*-darwin*] } {
+	    return 0
+	}
 	return [check_no_compiler_messages powerpc_p8vector_ok object {
 	    int main (void) {
-#ifdef __MACH__
-		asm volatile ("xxlorc vs0,vs0,vs0");
-#else
 		asm volatile ("xxlorc 0,0,0");
-#endif
 		return 0;
 	    }
 	} "-mpower8-vector"]
@@ -5090,6 +5177,10 @@ proc check_effective_target_powerpc_p9vector_ok { } {
 	if { [istarget powerpc*-*-aix4*]
 	     || [istarget powerpc*-*-aix5.1*] 
 	     || [istarget powerpc*-*-aix5.2*] } {
+	    return 0
+	}
+	# Darwin doesn't run on power9, so far.
+	if { [istarget *-*-darwin*] } {
 	    return 0
 	}
 	return [check_no_compiler_messages powerpc_p9vector_ok object {
@@ -5129,6 +5220,24 @@ proc check_effective_target_powerpc_p9modulo_ok { } {
     }
 }
 
+# Return 1 if this is a PowerPC target supporting -mfuture.
+# Limit this to 64-bit linux systems for now until other
+# targets support FUTURE.
+
+proc check_effective_target_powerpc_future_ok { } {
+    if { ([istarget powerpc64*-*-linux*]) } {
+	return [check_no_compiler_messages powerpc_future_ok object {
+	    int main (void) {
+		long e;
+		asm ("pli %0,%1" : "=r" (e) : "n" (0x12345));
+		return e;
+	    }
+	} "-mfuture"]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if this is a PowerPC target supporting -mfloat128 via either
 # software emulation on power7/power8 systems or hardware support on power9.
 
@@ -5140,6 +5249,10 @@ proc check_effective_target_powerpc_float128_sw_ok { } {
 	if { [istarget powerpc*-*-aix4*]
 	     || [istarget powerpc*-*-aix5.1*] 
 	     || [istarget powerpc*-*-aix5.2*] } {
+	    return 0
+	}
+	# Darwin doesn't have VSX, so no soft support for float128.
+	if { [istarget *-*-darwin*] } {
 	    return 0
 	}
 	return [check_no_compiler_messages powerpc_float128_sw_ok object {
@@ -5166,6 +5279,10 @@ proc check_effective_target_powerpc_float128_hw_ok { } {
 	if { [istarget powerpc*-*-aix4*]
 	     || [istarget powerpc*-*-aix5.1*] 
 	     || [istarget powerpc*-*-aix5.2*] } {
+	    return 0
+	}
+	# Darwin doesn't run on any machine with float128 h/w so far.
+	if { [istarget *-*-darwin*] } {
 	    return 0
 	}
 	return [check_no_compiler_messages powerpc_float128_hw_ok object {
@@ -5224,13 +5341,14 @@ proc check_effective_target_powerpc_vsx_ok { } {
 	     || [istarget powerpc*-*-aix6*] } {
 	    return 0
 	}
+	# Darwin doesn't have VSX, even if it's used with an assembler
+	# which recognises the insns.
+	if { [istarget *-*-darwin*] } {
+	    return 0
+	}
 	return [check_no_compiler_messages powerpc_vsx_ok object {
 	    int main (void) {
-#ifdef __MACH__
-		asm volatile ("xxlor vs0,vs0,vs0");
-#else
 		asm volatile ("xxlor 0,0,0");
-#endif
 		return 0;
 	    }
 	} "-mvsx"]
@@ -6060,7 +6178,7 @@ proc check_effective_target_vect_usad_char { } {
 
 proc check_effective_target_vect_avg_qi {} {
     return [expr { [istarget aarch64*-*-*]
-		   && ![check_effective_target_aarch64_sve] }]
+		   && ![check_effective_target_aarch64_sve1_only] }]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -6485,9 +6603,14 @@ proc available_vector_sizes { } {
     } elseif { [istarget arm*-*-*]
 		&& [check_effective_target_arm_neon_ok] } {
 	lappend result 128 64
-    } elseif { (([istarget i?86-*-*] || [istarget x86_64-*-*])
-		 && ([check_avx_available] && ![check_prefer_avx128])) } {
-	lappend result 256 128
+    } elseif { [istarget i?86-*-*] || [istarget x86_64-*-*] } {
+	if { [check_avx_available] && ![check_prefer_avx128] } {
+	    lappend result 256
+	}
+	lappend result 128
+	if { ![is-effective-target ia32] } {
+	    lappend result 64
+	}
     } elseif { [istarget sparc*-*-*] } {
 	lappend result 64
     } else {
@@ -7845,6 +7968,20 @@ proc check_effective_target_avx512bw { } {
     } "-mavx512bw" ]
 }
 
+# Return 1 if avx512vp2intersect instructions can be compiled.
+proc check_effective_target_avx512vp2intersect { } {
+    return [check_no_compiler_messages avx512vp2intersect object {
+	typedef int __v16si __attribute__ ((__vector_size__ (64)));
+	typedef short __mmask16;
+	void
+	_mm512_2intersect_epi32 (__v16si __A, __v16si __B, __mmask16 *__U,
+				 __mmask16 *__M)
+	{
+	    __builtin_ia32_2intersectd512 (__U, __M, (__v16si) __A, (__v16si) __B);
+	}
+    } "-mavx512vp2intersect" ]
+}
+
 # Return 1 if avx512ifma instructions can be compiled.
 proc check_effective_target_avx512ifma { } {
     return [check_no_compiler_messages avx512ifma object {
@@ -8588,6 +8725,17 @@ proc check_effective_target_aarch64_large { } {
     }
 }
 
+# Return 1 if the assembler accepts the aarch64 .variant_pcs directive.
+
+proc check_effective_target_aarch64_variant_pcs { } {
+    if { [istarget aarch64*-*-*] } {
+	return [check_no_compiler_messages aarch64_variant_pcs object {
+	    __asm__ (".variant_pcs foo");
+	}]
+    } else {
+	return 0
+    }
+}
 
 # Return 1 if this is a reduced AVR Tiny core.  Such cores have different
 # register set, instruction set, addressing capabilities and ABI.
@@ -8669,6 +8817,11 @@ proc check_effective_target_tiny {} {
       }
       if { [istarget avr-*-*]
 	    && [check_effective_target_avr_tiny] } {
+	   return 1
+      }
+      # PRU Program Counter is 16-bits, and trampolines are not supported.
+      # Hence directly declare as a tiny target.
+      if [istarget pru-*-*] {
 	   return 1
       }
       return 0
@@ -9222,7 +9375,7 @@ proc check_effective_target_cet { } {
 	{
 	  asm ("setssbsy");
 	}
-    } "-O2" ]
+    } "-O2 -fcf-protection" ]
 }
 
 # Return 1 if target supports floating point "infinite"
@@ -9310,6 +9463,17 @@ proc check_effective_target_arm_v8_3a_complex_neon_hw { } {
     } [add_options_for_arm_v8_3a_complex_neon ""]]
 }
 
+# Returns 1 if the target is using glibc, 0 otherwise.
+
+proc check_effective_target_glibc { } {
+    return [check_no_compiler_messages glibc_object assembly {
+  #include <stdlib.h>
+	#if !defined(__GLIBC__)
+	#error undefined
+	#endif
+    }]
+}
+
 # Return 1 if the target plus current options supports a vector
 # complex addition with rotate of half and single float modes, 0 otherwise.
 #
@@ -9344,4 +9508,15 @@ proc check_effective_target_llvm_binutils { } {
     return [check_cached_effective_target llvm_binutils {
 	      expr { [istarget amdgcn*-*-*]
 		     || [check_effective_target_offload_gcn] }}]
+}
+
+# Return 1 if the compiler supports '-mfentry'.
+
+proc check_effective_target_mfentry { } {
+    if { !([istarget i?86-*-*] || [istarget x86_64-*-*]) } {
+        return 0
+    }
+    return [check_no_compiler_messages mfentry object {
+	        void foo (void) { }
+    } "-mfentry"]
 }

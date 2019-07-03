@@ -1,3 +1,67 @@
+2019-07-03  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-06-25  Martin Liska  <mliska@suse.cz>
+
+	contrib/filter-clang-warnings.py: Transform from
+	filter-rtags-warnings.py.
+
+2019-06-15  Tom Tromey  <tom@tromey.com>
+
+	* configure.ac (host_libs): Add gnulib.
+	* configure: Rebuild.
+	* Makefile.def (host_modules, dependencies): Add gnulib.
+	* Makefile.in: Rebuild.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-06-12  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* configure: Regenerate.
+	* configure.ac: Add PRU target.
+
+2019-06-11  Matthew Beliveau  <mbelivea@redhat.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-06-11  Nick Clifton  <nickc@redhat.com>
+
+	Import these changes from the binutils/gdb repository:
+
+	2019-05-28  Nick Alcock  <nick.alcock@oracle.com>
+
+	* Makefile.def (dependencies): configure-libctf depends on all-bfd
+	and all its deps.
+	* Makefile.in: Regenerated.
+
+	2019-05-28  Nick Alcock  <nick.alcock@oracle.com>
+
+	* Makefile.def (host_modules): Add libctf.
+	* Makefile.def (dependencies): Likewise.
+	libctf depends on zlib, libiberty, and bfd.
+	* Makefile.in: Regenerated.
+	* configure.ac (host_libs): Add libctf.
+	* configure: Regenerated.
+
+2019-05-20  Vladislav Ivanishin  <vlad@ispras.ru>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-05-19  Peter Bergner  <bergner@linux.ibm.com>
+
+	* MAINTAINERS: Update my email address.
+
+2019-05-17  Thomas Rodgers  <trodgers@redhat.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2019-05-16  Jun Ma  <junma@linux.alibaba.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2019-05-07  Jim Wilson  <jimw@sifive.com>
 
 	* MAINTAINERS: Remove myself as IA-64 maintainer.

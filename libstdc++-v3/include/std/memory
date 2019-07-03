@@ -398,7 +398,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #if __cplusplus > 201402L
 // Parallel STL algorithms
-# if __PSTL_EXECUTION_POLICIES_DEFINED
+# if _PSTL_EXECUTION_POLICIES_DEFINED
 // If <execution> has already been included, pull in implementations
 #  include <pstl/glue_memory_impl.h>
 # else
@@ -407,7 +407,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 # endif
 
 // Feature test macro for parallel algorithms
-# define __cpp_lib_parallel_algorithm 201703L
+# define __cpp_lib_parallel_algorithm 201603L
 #endif // C++17
 
 #endif /* _GLIBCXX_MEMORY */

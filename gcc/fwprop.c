@@ -680,7 +680,7 @@ propagate_rtx (rtx x, machine_mode mode, rtx old_rtx, rtx new_rtx,
       || CONSTANT_P (new_rtx)
       || (GET_CODE (new_rtx) == SUBREG
 	  && REG_P (SUBREG_REG (new_rtx))
-	  && !paradoxical_subreg_p (mode, GET_MODE (SUBREG_REG (new_rtx)))))
+	  && !paradoxical_subreg_p (new_rtx)))
     flags |= PR_CAN_APPEAR;
   if (!varying_mem_p (new_rtx))
     flags |= PR_HANDLE_MEM;

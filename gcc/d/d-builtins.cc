@@ -1117,7 +1117,7 @@ d_init_builtins (void)
   Type::tvalist = build_frontend_type (va_list_type_node);
   if (!Type::tvalist)
     {
-      error ("cannot represent built-in va_list type in D");
+      error ("cannot represent built-in %<va_list%> type in D");
       gcc_unreachable ();
     }
 

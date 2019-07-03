@@ -287,18 +287,7 @@ value_range::set_varying ()
 bool
 value_range_base::may_contain_p (tree val) const
 {
-  if (varying_p ())
-    return true;
-
-  if (undefined_p ())
-    return true;
-
-  if (m_kind == VR_ANTI_RANGE)
-    {
-      int res = value_inside_range (val, min (), max ());
-      return res == 0 || res == -2;
-    }
-  return value_inside_range (val, min (), max ()) != 0;
+  return value_inside_range (val) != 0;
 }
 
 void
@@ -776,32 +765,19 @@ value_range::set (tree val)
   set (VR_RANGE, val, val, NULL);
 }
 
-/* Set value range VR to a non-NULL range of type TYPE.  */
+/* Set value range VR to a nonzero range of type TYPE.  */
 
 void
-value_range_base::set_nonnull (tree type)
+value_range_base::set_nonzero (tree type)
 {
   tree zero = build_int_cst (type, 0);
   set (VR_ANTI_RANGE, zero, zero);
 }
 
-void
-value_range::set_nonnull (tree type)
-{
-  tree zero = build_int_cst (type, 0);
-  set (VR_ANTI_RANGE, zero, zero, NULL);
-}
-
-/* Set value range VR to a NULL range of type TYPE.  */
+/* Set value range VR to a ZERO range of type TYPE.  */
 
 void
-value_range_base::set_null (tree type)
-{
-  set (build_int_cst (type, 0));
-}
-
-void
-value_range::set_null (tree type)
+value_range_base::set_zero (tree type)
 {
   set (build_int_cst (type, 0));
 }
@@ -828,22 +804,6 @@ vrp_bitmap_equal_p (const_bitmap b1, const_bitmap b2)
 	      && (!b2 || bitmap_empty_p (b2)))
 	  || (b1 && b2
 	      && bitmap_equal_p (b1, b2)));
-}
-
-/* Return true if VR is [0, 0].  */
-
-static inline bool
-range_is_null (const value_range_base *vr)
-{
-  return vr->zero_p ();
-}
-
-static inline bool
-range_is_nonnull (const value_range_base *vr)
-{
-  return (vr->kind () == VR_ANTI_RANGE
-	  && vr->min () == vr->max ()
-	  && integer_zerop (vr->min ()));
 }
 
 /* Return true if max and min of VR are INTEGER_CST.  It's not necessary
@@ -1147,55 +1107,38 @@ compare_values (tree val1, tree val2)
 }
 
 
-/* Return 1 if VAL is inside value range MIN <= VAL <= MAX,
-          0 if VAL is not inside [MIN, MAX],
+/* Return 1 if VAL is inside value range.
+          0 if VAL is not inside value range.
 	 -2 if we cannot tell either way.
 
    Benchmark compile/20001226-1.c compilation time after changing this
    function.  */
 
 int
-value_inside_range (tree val, tree min, tree max)
+value_range_base::value_inside_range (tree val) const
 {
   int cmp1, cmp2;
 
-  cmp1 = operand_less_p (val, min);
+  if (varying_p ())
+    return 1;
+
+  if (undefined_p ())
+    return 0;
+
+  cmp1 = operand_less_p (val, m_min);
   if (cmp1 == -2)
     return -2;
   if (cmp1 == 1)
-    return 0;
+    return m_kind != VR_RANGE;
 
-  cmp2 = operand_less_p (max, val);
+  cmp2 = operand_less_p (m_max, val);
   if (cmp2 == -2)
     return -2;
 
-  return !cmp2;
-}
-
-
-/* Return TRUE if *VR includes the value X.  */
-
-bool
-range_includes_p (const value_range_base *vr, HOST_WIDE_INT x)
-{
-  if (vr->varying_p () || vr->undefined_p ())
-    return true;
-  return vr->may_contain_p (build_int_cst (vr->type (), x));
-}
-
-/* If *VR has a value range that is a single constant value return that,
-   otherwise return NULL_TREE.
-
-   ?? This actually returns TRUE for [&x, &x], so perhaps "constant"
-   is not the best name.  */
-
-tree
-value_range_constant_singleton (const value_range_base *vr)
-{
-  tree result = NULL;
-  if (vr->singleton_p (&result))
-    return result;
-  return NULL;
+  if (m_kind == VR_RANGE)
+    return !cmp2;
+  else
+    return !!cmp2;
 }
 
 /* Value range wrapper for wide_int_range_set_zero_nonzero_bits.
@@ -1583,9 +1526,9 @@ extract_range_from_binary_expr (value_range_base *vr,
      code is EXACT_DIV_EXPR.  We could mask out bits in the resulting
      range, but then we also need to hack up vrp_union.  It's just
      easier to special case when vr0 is ~[0,0] for EXACT_DIV_EXPR.  */
-  if (code == EXACT_DIV_EXPR && range_is_nonnull (&vr0))
+  if (code == EXACT_DIV_EXPR && vr0.nonzero_p ())
     {
-      vr->set_nonnull (expr_type);
+      vr->set_nonzero (expr_type);
       return;
     }
 
@@ -1663,9 +1606,9 @@ extract_range_from_binary_expr (value_range_base *vr,
 	     If both are null, then the result is null. Otherwise they
 	     are varying.  */
 	  if (!range_includes_zero_p (&vr0) && !range_includes_zero_p (&vr1))
-	    vr->set_nonnull (expr_type);
-	  else if (range_is_null (&vr0) && range_is_null (&vr1))
-	    vr->set_null (expr_type);
+	    vr->set_nonzero (expr_type);
+	  else if (vr0.zero_p () && vr1.zero_p ())
+	    vr->set_zero (expr_type);
 	  else
 	    vr->set_varying ();
 	}
@@ -1692,9 +1635,9 @@ extract_range_from_binary_expr (value_range_base *vr,
 	      && (flag_delete_null_pointer_checks
 		  || (range_int_cst_p (&vr1)
 		      && !tree_int_cst_sign_bit (vr1.max ()))))
-	    vr->set_nonnull (expr_type);
-	  else if (range_is_null (&vr0) && range_is_null (&vr1))
-	    vr->set_null (expr_type);
+	    vr->set_nonzero (expr_type);
+	  else if (vr0.zero_p () && vr1.zero_p ())
+	    vr->set_zero (expr_type);
 	  else
 	    vr->set_varying ();
 	}
@@ -1703,9 +1646,9 @@ extract_range_from_binary_expr (value_range_base *vr,
 	  /* For pointer types, we are really only interested in asserting
 	     whether the expression evaluates to non-NULL.  */
 	  if (!range_includes_zero_p (&vr0) && !range_includes_zero_p (&vr1))
-	    vr->set_nonnull (expr_type);
-	  else if (range_is_null (&vr0) || range_is_null (&vr1))
-	    vr->set_null (expr_type);
+	    vr->set_nonzero (expr_type);
+	  else if (vr0.zero_p () || vr1.zero_p ())
+	    vr->set_zero (expr_type);
 	  else
 	    vr->set_varying ();
 	}
@@ -1898,7 +1841,7 @@ extract_range_from_binary_expr (value_range_base *vr,
       bool extra_range_p;
 
       /* Special case explicit division by zero as undefined.  */
-      if (range_is_null (&vr1))
+      if (vr1.zero_p ())
 	{
 	  vr->set_undefined ();
 	  return;
@@ -1937,7 +1880,7 @@ extract_range_from_binary_expr (value_range_base *vr,
     }
   else if (code == TRUNC_MOD_EXPR)
     {
-      if (range_is_null (&vr1))
+      if (vr1.zero_p ())
 	{
 	  vr->set_undefined ();
 	  return;
@@ -2141,9 +2084,9 @@ extract_range_from_unary_expr (value_range_base *vr,
       if (POINTER_TYPE_P (type) || POINTER_TYPE_P (op0_type))
 	{
 	  if (!range_includes_zero_p (&vr0))
-	    vr->set_nonnull (type);
-	  else if (range_is_null (&vr0))
-	    vr->set_null (type);
+	    vr->set_nonzero (type);
+	  else if (vr0.zero_p ())
+	    vr->set_zero (type);
 	  else
 	    vr->set_varying ();
 	  return;
@@ -6049,30 +5992,26 @@ intersect_ranges (enum value_range_kind *vr0type,
 }
 
 
-/* Intersect the two value-ranges *VR0 and *VR1 and store the result
-   in *VR0.  This may not be the smallest possible such range.  */
+/* Helper for the intersection operation for value ranges.  Given two
+   value ranges VR0 and VR1, return the intersection of the two
+   ranges.  This may not be the smallest possible such range.  */
 
-void
-value_range::intersect_helper (value_range *vr0, const value_range *vr1)
+value_range_base
+value_range_base::intersect_helper (const value_range_base *vr0,
+				    const value_range_base *vr1)
 {
   /* If either range is VR_VARYING the other one wins.  */
   if (vr1->varying_p ())
-    return;
+    return *vr0;
   if (vr0->varying_p ())
-    {
-      vr0->deep_copy (vr1);
-      return;
-    }
+    return *vr1;
 
   /* When either range is VR_UNDEFINED the resulting range is
      VR_UNDEFINED, too.  */
   if (vr0->undefined_p ())
-    return;
+    return *vr0;
   if (vr1->undefined_p ())
-    {
-      vr0->set_undefined ();
-      return;
-    }
+    return *vr1;
 
   value_range_kind vr0type = vr0->kind ();
   tree vr0min = vr0->min ();
@@ -6082,28 +6021,34 @@ value_range::intersect_helper (value_range *vr0, const value_range *vr1)
   /* Make sure to canonicalize the result though as the inversion of a
      VR_RANGE can still be a VR_RANGE.  Work on a temporary so we can
      fall back to vr0 when this turns things to varying.  */
-  value_range tem;
+  value_range_base tem;
   tem.set_and_canonicalize (vr0type, vr0min, vr0max);
   /* If that failed, use the saved original VR0.  */
   if (tem.varying_p ())
-    return;
-  vr0->update (tem.kind (), tem.min (), tem.max ());
+    return *vr0;
 
-  /* If the result is VR_UNDEFINED there is no need to mess with
-     the equivalencies.  */
-  if (vr0->undefined_p ())
-    return;
+  return tem;
+}
 
-  /* The resulting set of equivalences for range intersection is the union of
-     the two sets.  */
-  if (vr0->m_equiv && vr1->m_equiv && vr0->m_equiv != vr1->m_equiv)
-    bitmap_ior_into (vr0->m_equiv, vr1->m_equiv);
-  else if (vr1->m_equiv && !vr0->m_equiv)
+void
+value_range_base::intersect (const value_range_base *other)
+{
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      /* All equivalence bitmaps are allocated from the same obstack.  So
-	 we can use the obstack associated with VR to allocate vr0->equiv.  */
-      vr0->m_equiv = BITMAP_ALLOC (vr1->m_equiv->obstack);
-      bitmap_copy (m_equiv, vr1->m_equiv);
+      fprintf (dump_file, "Intersecting\n  ");
+      dump_value_range (dump_file, this);
+      fprintf (dump_file, "\nand\n  ");
+      dump_value_range (dump_file, other);
+      fprintf (dump_file, "\n");
+    }
+
+  *this = intersect_helper (this, other);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "to\n  ");
+      dump_value_range (dump_file, this);
+      fprintf (dump_file, "\n");
     }
 }
 
@@ -6118,7 +6063,36 @@ value_range::intersect (const value_range *other)
       dump_value_range (dump_file, other);
       fprintf (dump_file, "\n");
     }
-  intersect_helper (this, other);
+
+  /* If THIS is varying we want to pick up equivalences from OTHER.
+     Just special-case this here rather than trying to fixup after the
+     fact.  */
+  if (this->varying_p ())
+    this->deep_copy (other);
+  else
+    {
+      value_range_base tem = intersect_helper (this, other);
+      this->update (tem.kind (), tem.min (), tem.max ());
+
+      /* If the result is VR_UNDEFINED there is no need to mess with
+	 equivalencies.  */
+      if (!undefined_p ())
+	{
+	  /* The resulting set of equivalences for range intersection
+	     is the union of the two sets.  */
+	  if (m_equiv && other->m_equiv && m_equiv != other->m_equiv)
+	    bitmap_ior_into (m_equiv, other->m_equiv);
+	  else if (other->m_equiv && !m_equiv)
+	    {
+	      /* All equivalence bitmaps are allocated from the same
+		 obstack.  So we can use the obstack associated with
+		 VR to allocate this->m_equiv.  */
+	      m_equiv = BITMAP_ALLOC (other->m_equiv->obstack);
+	      bitmap_copy (m_equiv, other->m_equiv);
+	    }
+	}
+    }
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "to\n  ");
@@ -6152,7 +6126,7 @@ value_range_base::union_helper (const value_range_base *vr0,
 		vr1->kind (), vr1->min (), vr1->max ());
 
   /* Work on a temporary so we can still use vr0 when union returns varying.  */
-  value_range tem;
+  value_range_base tem;
   tem.set_and_canonicalize (vr0type, vr0min, vr0max);
 
   /* Failed to find an efficient meet.  Before giving up and setting
@@ -6162,7 +6136,7 @@ value_range_base::union_helper (const value_range_base *vr0,
       && range_includes_zero_p (vr0) == 0
       && range_includes_zero_p (vr1) == 0)
     {
-      tem.set_nonnull (vr0->type ());
+      tem.set_nonzero (vr0->type ());
       return tem;
     }
 

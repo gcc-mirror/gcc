@@ -259,6 +259,11 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  struct ptr_info_def *new_pi = get_ptr_info (new_tree);
 	  new_pi->pt = pi->pt;
 	}
+      /* So can range-info.  */
+      if (!POINTER_TYPE_P (TREE_TYPE (name))
+	  && SSA_NAME_RANGE_INFO (name))
+	duplicate_ssa_name_range_info (new_tree, SSA_NAME_RANGE_TYPE (name),
+				       SSA_NAME_RANGE_INFO (name));
       return new_tree;
     }
 
@@ -292,6 +297,11 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  struct ptr_info_def *new_pi = get_ptr_info (new_tree);
 	  new_pi->pt = pi->pt;
 	}
+      /* So can range-info.  */
+      if (!POINTER_TYPE_P (TREE_TYPE (name))
+	  && SSA_NAME_RANGE_INFO (name))
+	duplicate_ssa_name_range_info (new_tree, SSA_NAME_RANGE_TYPE (name),
+				       SSA_NAME_RANGE_INFO (name));
       if (SSA_NAME_IS_DEFAULT_DEF (name))
 	{
 	  /* By inlining function having uninitialized variable, we might
@@ -1101,7 +1111,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
       /* Otherwise, just copy the node.  Note that copy_tree_r already
 	 knows not to copy VAR_DECLs, etc., so this is safe.  */
 
-      if (TREE_CODE (*tp) == MEM_REF)
+      if (TREE_CODE (*tp) == MEM_REF && !id->do_not_fold)
 	{
 	  /* We need to re-canonicalize MEM_REFs from inline substitutions
 	     that can happen when a pointer argument is an ADDR_EXPR.
@@ -1327,11 +1337,11 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	      tree type = TREE_TYPE (*tp);
 	      tree ptr = id->do_not_unshare ? *n : unshare_expr (*n);
 	      tree old = *tp;
-	      *tp = gimple_fold_indirect_ref (ptr);
+	      *tp = id->do_not_fold ? NULL : gimple_fold_indirect_ref (ptr);
 	      if (! *tp)
 	        {
 		  type = remap_type (type, id);
-		  if (TREE_CODE (ptr) == ADDR_EXPR)
+		  if (TREE_CODE (ptr) == ADDR_EXPR && !id->do_not_fold)
 		    {
 		      *tp
 		        = fold_indirect_ref_1 (EXPR_LOCATION (ptr), type, ptr);
@@ -1360,7 +1370,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	      return NULL;
 	    }
 	}
-      else if (TREE_CODE (*tp) == MEM_REF)
+      else if (TREE_CODE (*tp) == MEM_REF && !id->do_not_fold)
 	{
 	  /* We need to re-canonicalize MEM_REFs from inline substitutions
 	     that can happen when a pointer argument is an ADDR_EXPR.
@@ -1432,7 +1442,8 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 
 	  /* Handle the case where we substituted an INDIRECT_REF
 	     into the operand of the ADDR_EXPR.  */
-	  if (TREE_CODE (TREE_OPERAND (*tp, 0)) == INDIRECT_REF)
+	  if (TREE_CODE (TREE_OPERAND (*tp, 0)) == INDIRECT_REF
+	      && !id->do_not_fold)
 	    {
 	      tree t = TREE_OPERAND (TREE_OPERAND (*tp, 0), 0);
 	      if (TREE_TYPE (t) != TREE_TYPE (*tp))
@@ -1637,6 +1648,12 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 		    gimple_omp_ordered_clauses (as_a <gomp_ordered *> (stmt)));
 	  break;
 
+	case GIMPLE_OMP_SCAN:
+	  s1 = remap_gimple_seq (gimple_omp_body (stmt), id);
+	  copy = gimple_build_omp_scan
+		   (s1, gimple_omp_scan_clauses (as_a <gomp_scan *> (stmt)));
+	  break;
+
 	case GIMPLE_OMP_SECTION:
 	  s1 = remap_gimple_seq (gimple_omp_body (stmt), id);
 	  copy = gimple_build_omp_section (s1);
@@ -1739,6 +1756,18 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 				    gimple_bb (def_stmt)->index))
 		return NULL;
 	    }
+	}
+     
+      /* We do not allow CLOBBERs of handled components.  In case
+	 returned value is stored via such handled component, remove
+	 the clobber so stmt verifier is happy.  */
+      if (gimple_clobber_p (stmt)
+	  && TREE_CODE (gimple_assign_lhs (stmt)) == RESULT_DECL)
+	{
+	  tree remapped = remap_decl (gimple_assign_lhs (stmt), id);
+	  if (!DECL_P (remapped)
+	      && TREE_CODE (remapped) != MEM_REF)
+	    return NULL;
 	}
 
       if (gimple_debug_bind_p (stmt))
@@ -2661,6 +2690,7 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, profile_count count)
   cfun->va_list_gpr_size = src_cfun->va_list_gpr_size;
   cfun->va_list_fpr_size = src_cfun->va_list_fpr_size;
   cfun->has_nonlocal_label = src_cfun->has_nonlocal_label;
+  cfun->calls_eh_return = src_cfun->calls_eh_return;
   cfun->stdarg = src_cfun->stdarg;
   cfun->after_inlining = src_cfun->after_inlining;
   cfun->can_throw_non_call_exceptions
@@ -3891,7 +3921,7 @@ function_attribute_inlinable_p (const_tree fndecl)
 
       for (a = DECL_ATTRIBUTES (fndecl); a; a = TREE_CHAIN (a))
 	{
-	  const_tree name = TREE_PURPOSE (a);
+	  const_tree name = get_attribute_name (a);
 	  int i;
 
 	  for (i = 0; targetm.attribute_table[i].name != NULL; i++)
@@ -4363,6 +4393,7 @@ estimate_num_insns (gimple *stmt, eni_weights *weights)
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_ORDERED:
+    case GIMPLE_OMP_SCAN:
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
@@ -4614,7 +4645,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	  /* PR 20090218-1_0.c. Body can be provided by another module. */
 	  && (reason != CIF_BODY_NOT_AVAILABLE || !flag_generate_lto))
 	{
-	  error ("inlining failed in call to always_inline %q+F: %s", fn,
+	  error ("inlining failed in call to %<always_inline%> %q+F: %s", fn,
 		 cgraph_inline_failed_string (reason));
 	  if (gimple_location (stmt) != UNKNOWN_LOCATION)
 	    inform (gimple_location (stmt), "called from here");
@@ -4777,6 +4808,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   src_properties = id->src_cfun->curr_properties & prop_mask;
   if (src_properties != prop_mask)
     dst_cfun->curr_properties &= src_properties | ~prop_mask;
+  dst_cfun->calls_eh_return |= id->src_cfun->calls_eh_return;
 
   gcc_assert (!id->src_cfun->after_inlining);
 
@@ -6221,11 +6253,11 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	     in the debug info that var (whole DECL_ORIGIN is the parm
 	     PARM_DECL) is optimized away, but could be looked up at the
 	     call site as value of D#X there.  */
-	  tree var = vars, vexpr;
+	  tree vexpr;
 	  gimple_stmt_iterator cgsi
 	    = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 	  gimple *def_temp;
-	  var = vars;
+	  tree var = vars;
 	  i = vec_safe_length (*debug_args);
 	  do
 	    {
@@ -6370,6 +6402,7 @@ copy_fn (tree fn, tree& parms, tree& result)
      since front-end specific mechanisms may rely on sharing.  */
   id.regimplify = false;
   id.do_not_unshare = true;
+  id.do_not_fold = true;
 
   /* We're not inside any EH region.  */
   id.eh_lp_nr = 0;

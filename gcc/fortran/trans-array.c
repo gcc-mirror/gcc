@@ -1239,6 +1239,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
   tree nelem;
   tree cond;
   tree or_expr;
+  tree elemsize;
   tree class_expr = NULL_TREE;
   int n, dim, tmp_dim;
   int total_dim = 0;
@@ -1333,15 +1334,6 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
   tmp = gfc_conv_descriptor_dtype (desc);
   gfc_add_modify (pre, tmp, gfc_get_dtype (TREE_TYPE (desc)));
 
-  /* Also set the span for derived types, since they can be used in
-     component references to arrays of this type.  */
-  if (TREE_CODE (eltype) == RECORD_TYPE)
-    {
-      tmp = TYPE_SIZE_UNIT (eltype);
-      tmp = fold_convert (gfc_array_index_type, tmp);
-      gfc_conv_descriptor_span_set (pre, desc, tmp);
-    }
-
   /*
      Fill in the bounds and stride.  This is a packed array, so:
 
@@ -1413,22 +1405,21 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
 	}
     }
 
+  if (class_expr == NULL_TREE)
+    elemsize = fold_convert (gfc_array_index_type,
+			     TYPE_SIZE_UNIT (gfc_get_element_type (type)));
+  else
+    elemsize = gfc_class_vtab_size_get (class_expr);
+
   /* Get the size of the array.  */
   if (size && !callee_alloc)
     {
-      tree elemsize;
       /* If or_expr is true, then the extent in at least one
 	 dimension is zero and the size is set to zero.  */
       size = fold_build3_loc (input_location, COND_EXPR, gfc_array_index_type,
 			      or_expr, gfc_index_zero_node, size);
 
       nelem = size;
-      if (class_expr == NULL_TREE)
-	elemsize = fold_convert (gfc_array_index_type,
-			TYPE_SIZE_UNIT (gfc_get_element_type (type)));
-      else
-	elemsize = gfc_class_vtab_size_get (class_expr);
-
       size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
 			      size, elemsize);
     }
@@ -1437,6 +1428,10 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post, gfc_ss * ss,
       nelem = size;
       size = NULL_TREE;
     }
+
+  /* Set the span.  */
+  tmp = fold_convert (gfc_array_index_type, elemsize);
+  gfc_conv_descriptor_span_set (pre, desc, tmp);
 
   gfc_trans_allocate_array_storage (pre, post, info, size, nelem, initial,
 				    dynamic, dealloc);
@@ -4799,8 +4794,6 @@ gfc_could_be_alias (gfc_ss * lss, gfc_ss * rss)
 
   lsym_pointer = lsym->attr.pointer;
   lsym_target = lsym->attr.target;
-  lsym_pointer = lsym->attr.pointer;
-  lsym_target = lsym->attr.target;
 
   for (rref = rexpr->ref; rref != rss->info->data.array.ref; rref = rref->next)
     {
@@ -7248,6 +7241,8 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 
       if (se->force_tmp)
 	need_tmp = 1;
+      else if (se->force_no_tmp)
+	need_tmp = 0;
 
       if (need_tmp)
 	full = 0;
@@ -7869,6 +7864,23 @@ array_parameter_size (tree desc, gfc_expr *expr, tree *size)
 			   *size, fold_convert (gfc_array_index_type, elem));
 }
 
+/* Helper function - return true if the argument is a pointer.  */
+ 
+static bool
+is_pointer (gfc_expr *e)
+{
+  gfc_symbol *sym;
+
+  if (e->expr_type != EXPR_VARIABLE ||  e->symtree == NULL)
+    return false;
+
+  sym = e->symtree->n.sym;
+  if (sym == NULL)
+    return false;
+
+  return sym->attr.pointer || sym->attr.proc_pointer;
+}
+
 /* Convert an array for passing as an actual parameter.  */
 
 void
@@ -8118,6 +8130,20 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 	  else
 	    gfc_warning (OPT_Warray_temporaries,
 			 "Creating array temporary at %L", &expr->where);
+	}
+
+      /* When optmizing, we can use gfc_conv_subref_array_arg for
+	 making the packing and unpacking operation visible to the
+	 optimizers.  */
+
+      if (g77 && optimize && !optimize_size && expr->expr_type == EXPR_VARIABLE
+	  && !is_pointer (expr) && ! gfc_has_dimen_vector_ref (expr)
+	  && (fsym == NULL || fsym->ts.type != BT_ASSUMED))
+	{
+	  gfc_conv_subref_array_arg (se, expr, g77,
+				     fsym ? fsym->attr.intent : INTENT_INOUT,
+				     false, fsym, proc_name, sym, true);
+	  return;
 	}
 
       ptr = build_call_expr_loc (input_location,

@@ -2,8 +2,8 @@
 /* { dg-do run { target int32 } } */
 /* { dg-require-effective-target store_merge } */
 /* { dg-options "-O2 -fdump-tree-store-merging-details" } */
-/* { dg-final { scan-tree-dump "New sequence of 3 stores to replace old one of 6 stores" "store-merging" { target le } } } */
-/* { dg-final { scan-tree-dump "New sequence of \[34] stores to replace old one of 6 stores" "store-merging" { target be } } } */
+/* { dg-final { scan-tree-dump "New sequence of 3 stores to replace old one of 6 stores" "store-merging" { target { le && { ! arm*-*-* } } } } } */
+/* { dg-final { scan-tree-dump "New sequence of \[34] stores to replace old one of 6 stores" "store-merging" { target { be && { ! arm*-*-* } } } } } */
 
 struct T { char a[1024]; };
 

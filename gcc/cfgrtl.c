@@ -62,6 +62,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "print-rtl.h"
 
+/* Disable warnings about missing quoting in GCC diagnostics.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* Holds the interesting leading and trailing notes for the function.
    Only applicable if the CFG is in cfglayout mode.  */
 static GTY(()) rtx_insn *cfg_layout_function_footer;
@@ -2099,7 +2105,8 @@ commit_edge_insertions (void)
      which will be done by fixup_partitions.  */
   fixup_partitions ();
 
-  checking_verify_flow_info ();
+  if (!currently_expanding_to_rtl)
+    checking_verify_flow_info ();
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
 		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
@@ -2109,7 +2116,11 @@ commit_edge_insertions (void)
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	if (e->insns.r)
-	  commit_one_edge_insertion (e);
+	  {
+	    if (currently_expanding_to_rtl)
+	      rebuild_jump_labels_chain (e->insns.r);
+	    commit_one_edge_insertion (e);
+	  }
     }
 }
 
@@ -2962,7 +2973,6 @@ rtl_verify_bb_layout (void)
   basic_block last_bb_seen = ENTRY_BLOCK_PTR_FOR_FN (cfun), curr_bb = NULL;
 
   num_bb_notes = 0;
-  last_bb_seen = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
   for (x = rtx_first; x; x = NEXT_INSN (x))
     {
@@ -5191,3 +5201,7 @@ struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
 };
 
 #include "gt-cfgrtl.h"
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif

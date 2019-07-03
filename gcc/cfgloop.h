@@ -174,6 +174,9 @@ struct GTY ((chain_next ("%h.next"))) loop {
      of the loop can be safely evaluated concurrently.  */
   int safelen;
 
+  /* Preferred vectorization factor for the loop if non-zero.  */
+  int simdlen;
+
   /* Constraints are generally set by consumers and affect certain
      semantics of niter analyzer APIs.  Currently the APIs affected are
      number_of_iterations_exit* functions and their callers.  One typical

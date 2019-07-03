@@ -66,6 +66,19 @@ void debug (symbol_attribute *attr)
   dumpfile = tmp;
 }
 
+void debug (gfc_formal_arglist *formal)
+{
+  FILE *tmp = dumpfile;
+  dumpfile = stderr;
+  for (; formal; formal = formal->next)
+    {
+      fputc ('\n', dumpfile);
+      show_symbol (formal->sym);
+    }
+  fputc ('\n', dumpfile);
+  dumpfile = tmp;
+}
+
 void debug (symbol_attribute attr)
 {
   debug (&attr);
@@ -75,9 +88,15 @@ void debug (gfc_expr *e)
 {
   FILE *tmp = dumpfile;
   dumpfile = stderr;
-  show_expr (e);
-  fputc (' ', dumpfile);
-  show_typespec (&e->ts);
+  if (e != NULL)
+    {
+      show_expr (e);
+      fputc (' ', dumpfile);
+      show_typespec (&e->ts);
+    }
+  else
+    fputs ("() ", dumpfile);
+
   fputc ('\n', dumpfile);
   dumpfile = tmp;
 }
@@ -3143,11 +3162,11 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
 	  else if (strcmp (*type_name, "size_t") == 0)
 	    *type_name = "ssize_t";
 	  else if (strcmp (*type_name, "float_complex") == 0)
-	    *type_name = "float complex";
+	    *type_name = "__GFORTRAN_FLOAT_COMPLEX";
 	  else if (strcmp (*type_name, "double_complex") == 0)
-	    *type_name = "double complex";
+	    *type_name = "__GFORTRAN_DOUBLE_COMPLEX";
 	  else if (strcmp (*type_name, "long_double_complex") == 0)
-	    *type_name = "long double complex";
+	    *type_name = "__GFORTRAN_LONG_DOUBLE_COMPLEX";
 
 	  ret = T_OK;
 	}
@@ -3166,11 +3185,11 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
 		  else if (strcmp (*type_name, "size_t") == 0)
 		    *type_name = "ssize_t";
 		  else if (strcmp (*type_name, "float_complex") == 0)
-		    *type_name = "float complex";
+		    *type_name = "__GFORTRAN_FLOAT_COMPLEX";
 		  else if (strcmp (*type_name, "double_complex") == 0)
-		    *type_name = "double complex";
+		    *type_name = "__GFORTRAN_DOUBLE_COMPLEX";
 		  else if (strcmp (*type_name, "long_double_complex") == 0)
-		    *type_name = "long double complex";
+		    *type_name = "__GFORTRAN_LONG_DOUBLE_COMPLEX";
 
 		  ret = T_WARN;
 		  break;

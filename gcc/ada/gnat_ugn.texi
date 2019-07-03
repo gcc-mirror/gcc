@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Dec 05, 2018
+GNAT User's Guide for Native Platforms , Jun 21, 2019
 
 AdaCore
 
@@ -12683,8 +12683,8 @@ sizes or conventions.
 
 @emph{Activate warnings for size not a multiple of alignment.}
 
-This switch activates warnings for cases of record types with
-specified @code{Size} and @code{Alignment} attributes where the
+This switch activates warnings for cases of array and record types
+with specified @code{Size} and @code{Alignment} attributes where the
 size is not a multiple of the alignment, resulting in an object
 size that is greater than the specified size. The default
 is that such warnings are generated.
@@ -12701,12 +12701,11 @@ is that such warnings are generated.
 
 @emph{Suppress warnings for size not a multiple of alignment.}
 
-This switch suppresses warnings for cases of record types with
-specified @code{Size} and @code{Alignment} attributes where the
+This switch suppresses warnings for cases of array and record types
+with specified @code{Size} and @code{Alignment} attributes where the
 size is not a multiple of the alignment, resulting in an object
-size that is greater than the specified size.
-The warning can also be
-suppressed by giving an explicit @code{Object_Size} value.
+size that is greater than the specified size. The warning can also
+be suppressed by giving an explicit @code{Object_Size} value.
 @end table
 
 @geindex -Wunused (gcc)
@@ -13514,6 +13513,20 @@ is required following the @code{--} of a comment instead of two.
 All lines must be terminated by a single ASCII.LF
 character (in particular the DOS line terminator sequence CR/LF is not
 allowed).
+@end table
+
+@geindex -gnatyD (gcc)
+
+
+@table @asis
+
+@item @code{-gnatyD}
+
+@emph{Check declared identifiers in mixed case.}
+
+Declared identifiers must be in mixed case, as in
+This_Is_An_Identifier. Use -gnatyr in addition to ensure
+that references match declarations.
 @end table
 
 @geindex -gnatye (gcc)
@@ -15143,8 +15156,8 @@ available in the specification of the Repinfo unit present in the
 compiler sources.
 
 If the switch is followed by an @code{s} (e.g., @code{-gnatR3s}), then
-the output is to a file with the name @code{file.rep} where file is
-the name of the corresponding source file, except if @cite{j`} is also
+the output is to a file with the name @code{file.rep} where @code{file} is
+the name of the corresponding source file, except if @code{j} is also
 specified, in which case the file name is @code{file.json}.
 
 Note that it is possible for record components to have zero size. In
@@ -23556,15 +23569,15 @@ the set of handlers
 Most programs should experience a substantial speed improvement by
 being compiled with a ZCX run-time.
 This is especially true for
-tasking applications or applications with many exception handlers.@}
+tasking applications or applications with many exception handlers.
+Note however that the ZCX run-time does not support asynchronous abort
+of tasks (@code{abort} and @code{select-then-abort} constructs) and will instead
+implement abort by polling points in the runtime. You can also add additional
+polling points explicitly if needed in your application via @code{pragma
+Abort_Defer}.
 
 This section summarizes which combinations of threads and exception support
 are supplied on various GNAT platforms.
-It then shows how to select a particular library either
-permanently or temporarily,
-explains the properties of (and tradeoffs among) the various threads
-libraries, and provides some additional
-information about several specific platforms.
 
 @menu
 * Summary of Run-Time Configurations:: 
@@ -28348,20 +28361,20 @@ using the legacy elaboration model, in the following order:
 @itemize -
 
 @item 
+Use the relaxed static elaboration model, with compiler switch
+@code{-gnatJ}.
+
+@item 
+Use the relaxed dynamic elaboration model, with compiler switches
+@code{-gnatE} @code{-gnatJ}.
+
+@item 
 Use the legacy static elaboration model, with compiler switch
 @code{-gnatH}.
 
 @item 
 Use the legacy dynamic elaboration model, with compiler switches
-@code{-gnatH} @code{-gnatE}.
-
-@item 
-Use the relaxed legacy static elaboration model, with compiler switches
-@code{-gnatH} @code{-gnatJ}.
-
-@item 
-Use the relaxed legacy dynamic elaboration model, with compiler switches
-@code{-gnatH} @code{-gnatJ} @code{-gnatE}.
+@code{-gnatE} @code{-gnatH}.
 @end itemize
 
 @item 

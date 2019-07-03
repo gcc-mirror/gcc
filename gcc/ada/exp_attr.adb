@@ -639,7 +639,7 @@ package body Exp_Attr is
 
          Stmts := No_List;
 
-         --  Validate componants
+         --  Validate components
 
          Validate_Component_List
            (Obj_Id    => Obj_Id,
@@ -1693,103 +1693,6 @@ package body Exp_Attr is
       --  generate conditionals in the code, so check the relevant restriction.
 
       Check_Restriction (No_Implicit_Conditionals, N);
-
-      --  In Modify_Tree_For_C mode, we rewrite as an if expression
-
-      if Modify_Tree_For_C then
-         declare
-            Loc   : constant Source_Ptr := Sloc (N);
-            Typ   : constant Entity_Id  := Etype (N);
-            Expr  : constant Node_Id    := First (Expressions (N));
-            Left  : constant Node_Id    := Relocate_Node (Expr);
-            Right : constant Node_Id    := Relocate_Node (Next (Expr));
-
-            function Make_Compare (Left, Right : Node_Id) return Node_Id;
-            --  Returns Left >= Right for Max, Left <= Right for Min
-
-            ------------------
-            -- Make_Compare --
-            ------------------
-
-            function Make_Compare (Left, Right : Node_Id) return Node_Id is
-            begin
-               if Attribute_Name (N) = Name_Max then
-                  return
-                    Make_Op_Ge (Loc,
-                      Left_Opnd  => Left,
-                      Right_Opnd => Right);
-               else
-                  return
-                    Make_Op_Le (Loc,
-                      Left_Opnd  => Left,
-                      Right_Opnd => Right);
-               end if;
-            end Make_Compare;
-
-         --  Start of processing for Min_Max
-
-         begin
-            --  If both Left and Right are side effect free, then we can just
-            --  use Duplicate_Expr to duplicate the references and return
-
-            --    (if Left >=|<= Right then Left else Right)
-
-            if Side_Effect_Free (Left) and then Side_Effect_Free (Right) then
-               Rewrite (N,
-                 Make_If_Expression (Loc,
-                   Expressions => New_List (
-                     Make_Compare (Left, Right),
-                     Duplicate_Subexpr_No_Checks (Left),
-                     Duplicate_Subexpr_No_Checks (Right))));
-
-            --  Otherwise we generate declarations to capture the values.
-
-            --  The translation is
-
-            --    do
-            --      T1 : constant typ := Left;
-            --      T2 : constant typ := Right;
-            --    in
-            --      (if T1 >=|<= T2 then T1 else T2)
-            --    end;
-
-            else
-               declare
-                  T1 : constant Entity_Id := Make_Temporary (Loc, 'T', Left);
-                  T2 : constant Entity_Id := Make_Temporary (Loc, 'T', Right);
-
-               begin
-                  Rewrite (N,
-                    Make_Expression_With_Actions (Loc,
-                      Actions    => New_List (
-                        Make_Object_Declaration (Loc,
-                          Defining_Identifier => T1,
-                          Constant_Present    => True,
-                          Object_Definition   =>
-                            New_Occurrence_Of (Etype (Left), Loc),
-                          Expression          => Relocate_Node (Left)),
-
-                        Make_Object_Declaration (Loc,
-                          Defining_Identifier => T2,
-                          Constant_Present    => True,
-                          Object_Definition   =>
-                            New_Occurrence_Of (Etype (Right), Loc),
-                          Expression          => Relocate_Node (Right))),
-
-                      Expression =>
-                        Make_If_Expression (Loc,
-                          Expressions => New_List (
-                            Make_Compare
-                              (New_Occurrence_Of (T1, Loc),
-                               New_Occurrence_Of (T2, Loc)),
-                               New_Occurrence_Of (T1, Loc),
-                               New_Occurrence_Of (T2, Loc)))));
-               end;
-            end if;
-
-            Analyze_And_Resolve (N, Typ);
-         end;
-      end if;
    end Expand_Min_Max_Attribute;
 
    ----------------------------------
@@ -4241,6 +4144,11 @@ package body Exp_Attr is
 
       when Attribute_Invalid_Value =>
          Rewrite (N, Get_Simple_Init_Val (Ptyp, N));
+
+         --  The value produced may be a conversion of a literal, which must be
+         --  resolved to establish its proper type.
+
+         Analyze_And_Resolve (N);
 
       ----------
       -- Last --

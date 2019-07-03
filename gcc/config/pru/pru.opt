@@ -1,0 +1,54 @@
+; Options for the TI PRU port of the compiler.
+; Copyright (C) 2018-2019 Free Software Foundation, Inc.
+; Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
+; the Free Software Foundation; either version 3, or (at your option)
+; any later version.
+;
+; GCC is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU General Public License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+HeaderInclude
+config/pru/pru-opts.h
+
+minrt
+Target Report Mask(MINRT) RejectNegative
+Use a minimum runtime (no static initializers or ctors) for memory-constrained
+devices.
+
+mmcu=
+Target RejectNegative Joined
+-mmcu=MCU	Select the target System-On-Chip variant that embeds this PRU.
+
+mno-relax
+Target Report RejectNegative
+Make GCC pass the --no-relax command-line option to the linker instead of
+the --relax option.
+
+mloop
+Target Mask(OPT_LOOP)
+Allow (or do not allow) gcc to use the LOOP instruction.
+
+mabi=
+Target RejectNegative Report Joined Enum(pru_abi_t) Var(pru_current_abi) Init(PRU_ABI_GNU) Save
+Select target ABI variant.
+
+Enum
+Name(pru_abi_t) Type(enum pru_abi)
+ABI variant code generation (for use with -mabi= option):
+
+EnumValue
+Enum(pru_abi_t) String(gnu) Value(PRU_ABI_GNU)
+
+EnumValue
+Enum(pru_abi_t) String(ti) Value(PRU_ABI_TI)

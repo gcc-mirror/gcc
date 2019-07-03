@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "ssa.h"
 #include "cgraph.h"
+#include "vec-perm-indices.h"
 #include "fold-const.h"
 #include "fold-const-call.h"
 #include "stor-layout.h"
@@ -41,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "optabs-tree.h"
 #include "tree-eh.h"
-
+#include "dbgcnt.h"
 
 /* Forward declarations of the private auto-generated matchers.
    They expect valueized operands in canonical order and do not

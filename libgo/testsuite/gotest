@@ -501,6 +501,13 @@ localname() {
 symtogo() {
   result=""
   for tp in $*; do
+    # Discard symbols with a leading dot.
+    # On AIX, this will remove function text symbols (with a leading dot).
+    # Therefore, only function descriptor symbols (without this leading dot)
+    # will be used to retrieve the go symbols, avoiding duplication.
+    if expr "$tp" : '^\.' >/dev/null 2>&1; then
+      continue
+    fi
     s=$(echo "$tp" | sed -e 's/\.\.z2f/%/g' | sed -e 's/.*%//')
     # Screen out methods (X.Y.Z).
     if ! expr "$s" : '^[^.]*\.[^.]*$' >/dev/null 2>&1; then

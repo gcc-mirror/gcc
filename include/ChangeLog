@@ -1,3 +1,28 @@
+2019-06-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gomp-constants.h (enum gomp_map_kind): Fix description of
+	'GOMP_MAP_FIRSTPRIVATE'.
+
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
+	* ansidecl.h (ATTRIBUTE_WARN_UNUSED_RESULT): New macro.
+	* libiberty.h (xmalloc): Use it.
+	(xrealloc): Likewise.
+	(xcalloc): Likewise.
+	(xstrdup): Likewise.
+	(xstrndup): Likewise.
+	(xmemdup): Likewise.
+
+2019-06-10  Martin Liska  <mliska@suse.cz>
+
+	* ansidecl.h:
+	(ATTRIBUTE_RESULT_SIZE_1): Define new macro.
+	(ATTRIBUTE_RESULT_SIZE_2): Likewise.
+	(ATTRIBUTE_RESULT_SIZE_1_2): Likewise.
+	* libiberty.h (xmalloc): Add RESULT_SIZE attribute.
+	(xrealloc): Likewise.
+	(xcalloc): Likewise.
+
 2019-04-26  Michael Forney  <mforney@mforney.org>
 
 	* libiberty.h (vasprintf): Don't declare if HAVE_DECL_VASPRINTF

@@ -113,18 +113,15 @@ namespace __gnu_test
   // For 26 numeric algorithms requirements, need addable,
   // subtractable, multiplicable.
   inline NonDefaultConstructible
-  operator+(const NonDefaultConstructible& lhs,
-	    const NonDefaultConstructible& rhs)
+  operator+(const NonDefaultConstructible&, const NonDefaultConstructible&)
   { return NonDefaultConstructible(1); }
 
   inline NonDefaultConstructible
-  operator-(const NonDefaultConstructible& lhs,
-	    const NonDefaultConstructible& rhs)
+  operator-(const NonDefaultConstructible&, const NonDefaultConstructible&)
   { return NonDefaultConstructible(1); }
 
   inline NonDefaultConstructible
-  operator*(const NonDefaultConstructible& lhs,
-	    const NonDefaultConstructible& rhs)
+  operator*(const NonDefaultConstructible&, const NonDefaultConstructible&)
   { return NonDefaultConstructible(1); }
 
   // Like unary_function, but takes no argument. (ie, void).

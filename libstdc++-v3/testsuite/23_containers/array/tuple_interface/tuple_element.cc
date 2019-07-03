@@ -29,7 +29,7 @@ test01()
   // This relies on the fact that <utility> includes <type_traits>:
   using std::is_same;
 
-  const size_t len = 3;
+  const std::size_t len = 3;
   typedef array<int, len> array_type;
 
   static_assert(is_same<tuple_element<0, array_type>::type, int>::value, "" );

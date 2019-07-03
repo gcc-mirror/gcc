@@ -5594,6 +5594,11 @@ This hook determines whether a function from a class of functions
 @var{fn_class} is present at the runtime.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_LIBC_HAS_FAST_FUNCTION (int @var{fcode})
+This hook determines whether a function from a class of functions
+@var{fn_class} has a fast implementation.
+@end deftypefn
+
 @defmac NEXT_OBJC_RUNTIME
 Set this macro to 1 to use the "NeXT" Objective-C message sending conventions
 by default.  This calling convention involves passing the object, the selector
@@ -6016,11 +6021,13 @@ against lower halves of vectors recursively until the specified mode is
 reached.  The default is @var{mode} which means no splitting.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES (vector_sizes *@var{sizes})
+@deftypefn {Target Hook} void TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_SIZES (vector_sizes *@var{sizes}, bool @var{all})
 If the mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is not
 the only one that is worth considering, this hook should add all suitable
 vector sizes to @var{sizes}, in order of decreasing preference.  The first
 one should be the size of @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.
+If @var{all} is true, add suitable vector sizes even when they are generally
+not expected to be worthwhile.
 
 The hook does not need to do anything if the vector returned by
 @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE} is the only one relevant
@@ -6654,7 +6661,7 @@ two areas of memory, or to set, clear or store to memory, for example
 when copying a @code{struct}. The @code{by_pieces} infrastructure
 implements such memory operations as a sequence of load, store or move
 insns.  Alternate strategies are to expand the
-@code{movmem} or @code{setmem} optabs, to emit a library call, or to emit
+@code{cpymem} or @code{setmem} optabs, to emit a library call, or to emit
 unit-by-unit, loop-based operations.
 
 This target hook should return true if, for a memory operation with a
@@ -6673,7 +6680,7 @@ optimized for speed rather than size.
 
 Returning true for higher values of @var{size} can improve code generation
 for speed if the target does not provide an implementation of the
-@code{movmem} or @code{setmem} standard names, if the @code{movmem} or
+@code{cpymem} or @code{setmem} standard names, if the @code{cpymem} or
 @code{setmem} implementation would be more expensive than a sequence of
 insns, or if the overhead of a library call would dominate that of
 the body of the memory operation.
@@ -11601,6 +11608,14 @@ This hook is used to generate the dispatcher logic to invoke the right
 function version at run-time for a given set of function versions.
 @var{arg} points to the callgraph node of the dispatcher function whose
 body must be generated.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_PREDICT_DOLOOP_P (struct loop *@var{loop})
+Return true if we can predict it is possible to use a low-overhead loop
+for a particular loop.  The parameter @var{loop} is a pointer to the loop.
+This target hook is required only when the target supports low-overhead
+loops, and will help ivopts to make some decisions.
+The default version of this hook returns false.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_CAN_USE_DOLOOP_P (const widest_int @var{&iterations}, const widest_int @var{&iterations_max}, unsigned int @var{loop_depth}, bool @var{entered_at_top})

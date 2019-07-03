@@ -186,13 +186,14 @@ replace_filename_variables (char *filename)
 	  /* Concat beginning of the path, replacement and
 	     ending of the path.  */
 	  unsigned end = length - (p - filename);
-	  unsigned repl_length = strlen (replacement);
+	  unsigned repl_length = replacement != NULL ? strlen (replacement) : 0;
 
 	  char *buffer = (char *)xmalloc (start + end + repl_length + 1);
 	  char *buffer_ptr = buffer;
 	  buffer_ptr = (char *)memcpy (buffer_ptr, filename, start);
 	  buffer_ptr += start;
-	  buffer_ptr = (char *)memcpy (buffer_ptr, replacement, repl_length);
+	  if (replacement != NULL)
+	    buffer_ptr = (char *)memcpy (buffer_ptr, replacement, repl_length);
 	  buffer_ptr += repl_length;
 	  buffer_ptr = (char *)memcpy (buffer_ptr, p, end);
 	  buffer_ptr += end;
@@ -262,10 +263,8 @@ static int
 gcov_exit_open_gcda_file (struct gcov_info *gi_ptr,
 			  struct gcov_filename *gf)
 {
-  const char *fname = gi_ptr->filename;
   int append_slash = 0;
-
-  fname = gi_ptr->filename;
+  const char *fname = gi_ptr->filename;
 
   /* Build relocated filename, stripping off leading
      directories from the initial filename if requested. */

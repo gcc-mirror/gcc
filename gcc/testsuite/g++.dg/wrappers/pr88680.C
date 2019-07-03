@@ -27,9 +27,9 @@ void test(unsigned n)
     return;
   if (N >= FOO)
     return;
-  if (n >= 0) // { dg-warning ">= 0 is always true" }
+  if (n >= 0) // { dg-warning "'>= 0' is always true" }
     return;
-  if (n < 0) // { dg-warning "< 0 is always false" }
+  if (n < 0) // { dg-warning "'< 0' is always false" }
     return;
   if (n >= FOO)
     return;
@@ -45,9 +45,9 @@ void test(unsigned n)
     return;
   if (0 <= FOO)
     return;
-  if (0 <= n) // { dg-warning ">= 0 is always true" }
+  if (0 <= n) // { dg-warning "'>= 0' is always true" }
     return;
-  if (0 > n) // { dg-warning "< 0 is always false" }
+  if (0 > n) // { dg-warning "'< 0' is always false" }
     return;
   if (N <= FOO)
     return;

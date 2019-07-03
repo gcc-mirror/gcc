@@ -1780,15 +1780,16 @@ diagnose_arglist_conflict (tree newdecl, tree olddecl,
       if (TREE_CHAIN (t) == NULL_TREE
 	  && TYPE_MAIN_VARIANT (type) != void_type_node)
 	{
-	  inform (input_location, "a parameter list with an ellipsis can%'t match "
-		  "an empty parameter name list declaration");
+	  inform (input_location, "a parameter list with an ellipsis "
+		  "cannot match an empty parameter name list declaration");
 	  break;
 	}
 
       if (c_type_promotes_to (type) != type)
 	{
-	  inform (input_location, "an argument type that has a default promotion can%'t match "
-		  "an empty parameter name list declaration");
+	  inform (input_location, "an argument type that has a default "
+		  "promotion cannot match an empty parameter name list "
+		  "declaration");
 	  break;
 	}
     }
@@ -4887,7 +4888,7 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
     switch (TREE_CODE (decl))
       {
       case TYPE_DECL:
-	error ("typedef %qD is initialized (use __typeof__ instead)", decl);
+	error ("typedef %qD is initialized (use %<__typeof__%> instead)", decl);
 	initialized = false;
 	break;
 
@@ -5012,8 +5013,8 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
       && DECL_DECLARED_INLINE_P (decl)
       && DECL_UNINLINABLE (decl)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
-    warning (OPT_Wattributes, "inline function %q+D given attribute noinline",
-	     decl);
+    warning (OPT_Wattributes, "inline function %q+D given attribute %qs",
+	     decl, "noinline");
 
   /* C99 6.7.4p3: An inline definition of a function with external
      linkage shall not contain a definition of a modifiable object
@@ -5282,7 +5283,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	      && VAR_P (decl)
 	      && !C_DECL_REGISTER (decl)
 	      && !TREE_STATIC (decl))
-	    warning (0, "ignoring asm-specifier for non-static local "
+	    warning (0, "ignoring %<asm%> specifier for non-static local "
 		     "variable %q+D", decl);
 	  else
 	    set_user_assembler_name (decl, asmspec);
@@ -5398,7 +5399,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
       type = strip_array_types (type);
       if (TREE_READONLY (decl))
 	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc___compat,
-		    "uninitialized const %qD is invalid in C++", decl);
+		    "uninitialized %<const %D%> is invalid in C++", decl);
       else if (RECORD_OR_UNION_TYPE_P (type)
 	       && C_TYPE_FIELDS_READONLY (type))
 	diagnose_uninitialized_cst_member (decl, type);
@@ -5725,10 +5726,10 @@ warn_variable_length_array (tree name, tree size)
       if (name)
 	pedwarn_c90 (input_location, OPT_Wvla,
 		     "ISO C90 forbids array %qE whose size "
-		     "can%'t be evaluated", name);
+		     "cannot be evaluated", name);
       else
 	pedwarn_c90 (input_location, OPT_Wvla, "ISO C90 forbids array "
-		     "whose size can%'t be evaluated");
+		     "whose size cannot be evaluated");
     }
   else
     {
@@ -8673,7 +8674,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
       if (precision > TYPE_PRECISION (enumtype))
 	{
 	  TYPE_PRECISION (enumtype) = 0;
-	  error ("specified mode too small for enumeral values");
+	  error ("specified mode too small for enumerated values");
 	}
       else
 	precision = TYPE_PRECISION (enumtype);
@@ -8934,8 +8935,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
       && DECL_UNINLINABLE (decl1)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl1)))
     warning_at (loc, OPT_Wattributes,
-		"inline function %qD given attribute noinline",
-		decl1);
+		"inline function %qD given attribute %qs",
+		decl1, "noinline");
 
   /* Handle gnu_inline attribute.  */
   if (declspecs->inline_p
@@ -10636,7 +10637,11 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    case RID_INT_N_2:
 	    case RID_INT_N_3:
 	      specs->int_n_idx = i - RID_INT_N_0;
-	      if (!in_system_header_at (input_location))
+	      if (!in_system_header_at (input_location)
+		  /* If the INT_N type ends in "__", and so is of the format
+		     "__intN__", don't pedwarn.  */
+		  && (strncmp (IDENTIFIER_POINTER (type)
+			       + (IDENTIFIER_LENGTH (type) - 2), "__", 2) != 0))
 		pedwarn (loc, OPT_Wpedantic,
 			 "ISO C does not support %<__int%d%> types",
 			 int_n_data[specs->int_n_idx].bitsize);
@@ -10940,10 +10945,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	      }
 	      if (!targetm.decimal_float_supported_p ())
 		error_at (loc,
-			  ("decimal floating point not supported "
+			  ("decimal floating-point not supported "
 			   "for this target"));
 	      pedwarn (loc, OPT_Wpedantic,
-		       "ISO C does not support decimal floating point");
+		       "ISO C does not support decimal floating-point");
 	      return specs;
 	    case RID_FRACT:
 	    case RID_ACCUM:

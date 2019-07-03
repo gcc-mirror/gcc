@@ -746,9 +746,9 @@ package Opt is
    --  file name with extension stripped.
 
    Generate_C_Code : Boolean := False;
-   --  GNAT
+   --  GNAT, GNATBIND
    --  If True, the Cprint circuitry to generate C code output is activated.
-   --  Set True by use of -gnateg or -gnatd.V.
+   --  Set True by use of -gnateg or -gnatd.V for GNAT, and -G for GNATBIND.
 
    Generate_CodePeer_Messages : Boolean := False;
    --  GNAT

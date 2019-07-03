@@ -1,7 +1,7 @@
 /* PR target/50749: Verify that pre-decrement addressing is generated
    inside a loop.  */
 /* { dg-do compile }  */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fno-tree-loop-distribute-patterns" } */
 /* { dg-final { scan-assembler-times "mov.b\tr\[0-9]\+,@-r\[0-9]\+" 1 } } */
 /* { dg-final { scan-assembler-times "mov.w\tr\[0-9]\+,@-r\[0-9]\+" 1 } } */
 /* { dg-final { scan-assembler-times "mov.l\tr\[0-9]\+,@-r\[0-9]\+" 1 } } */

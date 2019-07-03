@@ -73,7 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 int cse_not_expected;
 
 static bool block_move_libcall_safe_for_call_parm (void);
-static bool emit_block_move_via_movmem (rtx, rtx, rtx, unsigned, unsigned, HOST_WIDE_INT,
+static bool emit_block_move_via_cpymem (rtx, rtx, rtx, unsigned, unsigned, HOST_WIDE_INT,
 					unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
 					unsigned HOST_WIDE_INT);
 static void emit_block_move_via_loop (rtx, rtx, rtx, unsigned);
@@ -1561,11 +1561,15 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 		       unsigned int expected_align, HOST_WIDE_INT expected_size,
 		       unsigned HOST_WIDE_INT min_size,
 		       unsigned HOST_WIDE_INT max_size,
-		       unsigned HOST_WIDE_INT probable_max_size)
+		       unsigned HOST_WIDE_INT probable_max_size,
+		       bool bail_out_libcall, bool *is_move_done)
 {
   int may_use_call;
   rtx retval = 0;
   unsigned int align;
+
+  if (is_move_done)
+    *is_move_done = true;
 
   gcc_assert (size);
   if (CONST_INT_P (size) && INTVAL (size) == 0)
@@ -1620,7 +1624,7 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 
   if (CONST_INT_P (size) && can_move_by_pieces (INTVAL (size), align))
     move_by_pieces (x, y, INTVAL (size), align, RETURN_BEGIN);
-  else if (emit_block_move_via_movmem (x, y, size, align,
+  else if (emit_block_move_via_cpymem (x, y, size, align,
 				       expected_align, expected_size,
 				       min_size, max_size, probable_max_size))
     ;
@@ -1628,6 +1632,13 @@ emit_block_move_hints (rtx x, rtx y, rtx size, enum block_op_methods method,
 	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (x))
 	   && ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (y)))
     {
+      if (bail_out_libcall)
+	{
+	  if (is_move_done)
+	    *is_move_done = false;
+	  return retval;
+	}
+
       if (may_use_call < 0)
 	return pc_rtx;
 
@@ -1711,11 +1722,11 @@ block_move_libcall_safe_for_call_parm (void)
   return true;
 }
 
-/* A subroutine of emit_block_move.  Expand a movmem pattern;
+/* A subroutine of emit_block_move.  Expand a cpymem pattern;
    return true if successful.  */
 
 static bool
-emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
+emit_block_move_via_cpymem (rtx x, rtx y, rtx size, unsigned int align,
 			    unsigned int expected_align, HOST_WIDE_INT expected_size,
 			    unsigned HOST_WIDE_INT min_size,
 			    unsigned HOST_WIDE_INT max_size,
@@ -1744,7 +1755,7 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
   FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
     {
       scalar_int_mode mode = mode_iter.require ();
-      enum insn_code code = direct_optab_handler (movmem_optab, mode);
+      enum insn_code code = direct_optab_handler (cpymem_optab, mode);
 
       if (code != CODE_FOR_nothing
 	  /* We don't need MODE to be narrower than BITS_PER_HOST_WIDE_INT
@@ -10882,12 +10893,12 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    if (MEM_P (op0) && REG_P (XEXP (op0, 0)))
 	      mark_reg_pointer (XEXP (op0, 0), MEM_ALIGN (op0));
 
-	    /* If the result has a record type and the extraction is done in
+	    /* If the result has aggregate type and the extraction is done in
 	       an integral mode, then the field may be not aligned on a byte
 	       boundary; in this case, if it has reverse storage order, it
 	       needs to be extracted as a scalar field with reverse storage
 	       order and put back into memory order afterwards.  */
-	    if (TREE_CODE (type) == RECORD_TYPE
+	    if (AGGREGATE_TYPE_P (type)
 		&& GET_MODE_CLASS (ext_mode) == MODE_INT)
 	      reversep = TYPE_REVERSE_STORAGE_ORDER (type);
 
@@ -10897,13 +10908,13 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 				      ? NULL_RTX : target),
 				     ext_mode, ext_mode, reversep, alt_rtl);
 
-	    /* If the result has a record type and the mode of OP0 is an
+	    /* If the result has aggregate type and the mode of OP0 is an
 	       integral mode then, if BITSIZE is narrower than this mode
 	       and this is for big-endian data, we must put the field
 	       into the high-order bits.  And we must also put it back
 	       into memory order if it has been previously reversed.  */
 	    scalar_int_mode op0_mode;
-	    if (TREE_CODE (type) == RECORD_TYPE
+	    if (AGGREGATE_TYPE_P (type)
 		&& is_int_mode (GET_MODE (op0), &op0_mode))
 	      {
 		HOST_WIDE_INT size = GET_MODE_BITSIZE (op0_mode);

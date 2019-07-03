@@ -306,12 +306,18 @@ enum omp_clause_code {
      OpenMP clause: map ({alloc:,to:,from:,tofrom:,}variable-list).  */
   OMP_CLAUSE_MAP,
 
-  /* OpenACC clause: use_device (variable_list).
+  /* OpenACC clause: use_device (variable-list).
      OpenMP clause: use_device_ptr (variable-list).  */
   OMP_CLAUSE_USE_DEVICE_PTR,
 
   /* OpenMP clause: is_device_ptr (variable-list).  */
   OMP_CLAUSE_IS_DEVICE_PTR,
+
+  /* OpenMP clause: inclusive (variable-list).  */
+  OMP_CLAUSE_INCLUSIVE,
+
+  /* OpenMP clause: exclusive (variable-list).  */
+  OMP_CLAUSE_EXCLUSIVE,
 
   /* Internal structure to hold OpenACC cache directive's variable-list.
      #pragma acc cache (variable-list).  */
@@ -342,6 +348,12 @@ enum omp_clause_code {
 
   /* Internal clause: temporary for task reductions.  */
   OMP_CLAUSE__REDUCTEMP_,
+
+  /* Internal clause: temporary for lastprivate(conditional:).  */
+  OMP_CLAUSE__CONDTEMP_,
+
+  /* Internal clause: temporary for inscan reductions.  */
+  OMP_CLAUSE__SCANTEMP_,
 
   /* OpenACC/OpenMP clause: if (scalar-expression).  */
   OMP_CLAUSE_IF,
@@ -748,6 +760,9 @@ enum tree_index {
   TI_TARGET_OPTION_CURRENT,
   TI_CURRENT_TARGET_PRAGMA,
   TI_CURRENT_OPTIMIZE_PRAGMA,
+
+  TI_CHREC_DONT_KNOW,
+  TI_CHREC_KNOWN,
 
   TI_MAX
 };
@@ -1565,6 +1580,8 @@ struct GTY(()) tree_type_common {
 
   ENUM_BITFIELD(machine_mode) mode : 8;
 
+  /* TYPE_STRING_FLAG for INTEGER_TYPE and ARRAY_TYPE.
+     TYPE_CXX_ODR_P for RECORD_TYPE and UNION_TYPE.  */
   unsigned string_flag : 1;
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
@@ -1683,6 +1700,7 @@ struct GTY(()) tree_decl_common {
   /* In a VAR_DECL and PARM_DECL, this is DECL_READ_P.  */
   unsigned decl_read_flag : 1;
   /* In a VAR_DECL or RESULT_DECL, this is DECL_NONSHAREABLE.  */
+  /* In a PARM_DECL, this is DECL_HIDDEN_STRING_LENGTH.  */
   unsigned decl_nonshareable_flag : 1;
 
   /* DECL_OFFSET_ALIGN, used only for FIELD_DECLs.  */

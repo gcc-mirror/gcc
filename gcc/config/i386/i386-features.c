@@ -554,7 +554,7 @@ dimode_scalar_chain::compute_convert_gain ()
     fprintf (dump_file, "  Instruction conversion gain: %d\n", gain);
 
   EXECUTE_IF_SET_IN_BITMAP (defs_conv, 0, insn_uid, bi)
-    cost += DF_REG_DEF_COUNT (insn_uid) * ix86_cost->mmxsse_to_integer;
+    cost += DF_REG_DEF_COUNT (insn_uid) * ix86_cost->sse_to_integer;
 
   if (dump_file)
     fprintf (dump_file, "  Registers conversion cost: %d\n", cost);
@@ -1911,10 +1911,7 @@ rest_of_insert_endbranch (void)
 	      continue;
 	    }
 
-	  if ((LABEL_P (insn) && LABEL_PRESERVE_P (insn))
-	      || (NOTE_P (insn)
-		  && NOTE_KIND (insn) == NOTE_INSN_DELETED_LABEL))
-	    /* TODO.  Check /s bit also.  */
+	  if (LABEL_P (insn) && LABEL_PRESERVE_P (insn))
 	    {
 	      cet_eb = gen_nop_endbr ();
 	      emit_insn_after (cet_eb, insn);
@@ -2447,7 +2444,7 @@ ix86_mangle_function_version_assembler_name (tree decl, tree id)
       && lookup_attribute ("gnu_inline",
 			   DECL_ATTRIBUTES (decl)))
     error_at (DECL_SOURCE_LOCATION (decl),
-	      "function versions cannot be marked as gnu_inline,"
+	      "function versions cannot be marked as %<gnu_inline%>,"
 	      " bodies have to be generated");
 
   if (DECL_VIRTUAL_P (decl)
@@ -2584,7 +2581,7 @@ ix86_get_function_versions_dispatcher (void *decl)
 #endif
     {
       error_at (DECL_SOURCE_LOCATION (default_node->decl),
-		"multiversioning needs ifunc which is not supported "
+		"multiversioning needs %<ifunc%> which is not supported "
 		"on this target");
     }
 

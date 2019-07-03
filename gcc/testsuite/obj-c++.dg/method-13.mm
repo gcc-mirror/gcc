@@ -16,10 +16,9 @@ id foo(void) {
   TestsuiteObject *obj = [[TestsuiteObject alloc] init];
   id obj2 = obj;
   [obj setWindow:nil];  /* { dg-warning ".TestsuiteObject. may not respond to .\\-setWindow:." } */
-       /* { dg-warning "Messages without a matching method signature" "" { target *-*-* } .-1 } */
-       /* { dg-warning "will be assumed to return .id. and accept" "" { target *-*-* } .-2 } */
-       /* { dg-warning ".\.\.\.. as arguments" "" { target *-*-* } .-3 } */
-  [obj2 setWindow:nil]; /* { dg-warning "multiple methods named .\\-setWindow:. found" } */
+       /* { dg-warning "messages without a matching method signature will be assumed to return .id. and accept .\.\.\.. as arguments" "" { target *-*-* } 0 } */
+
+[obj2 setWindow:nil]; /* { dg-warning "multiple methods named .\\-setWindow:. found" } */
        /* { dg-message "using .\\-\\(void\\)setWindow:\\(TestsuiteObject \\*\\)wdw." "" { target *-*-* } Class1_setWindow } */
        /* { dg-message "also found .\\-\\(void\\)setWindow:\\(Class1 \\*\\)window." "" { target *-*-* } Class2_setWindow } */
 

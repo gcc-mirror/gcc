@@ -511,6 +511,9 @@ package Osint is
    procedure Dump_Command_Line_Source_File_Names;
    --  Prints out the names of all source files on the command-line
 
+   function Get_First_Main_File_Name return String;
+   --  Return the file name of the first main file
+
    -------------------------------------------
    -- Representation of Library Information --
    -------------------------------------------

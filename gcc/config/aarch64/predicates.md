@@ -323,12 +323,6 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "const_scalar_int_operand")))
 
-(define_predicate "aarch64_smin"
-  (match_code "smin"))
-
-(define_predicate "aarch64_umin"
-  (match_code "umin"))
-
 ;; True for integer comparisons and for FP comparisons other than LTGT or UNEQ.
 (define_special_predicate "aarch64_comparison_operator"
   (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,unordered,
