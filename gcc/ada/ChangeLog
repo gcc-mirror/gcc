@@ -1,3 +1,16 @@
+2019-07-03  Bob Duff  <duff@adacore.com>
+
+	* par-ch3.adb (P_Defining_Identifier): Call
+	Check_Defining_Identifier_Casing.
+	* style.ads, styleg.ads, styleg.adb
+	(Check_Defining_Identifier_Casing): New procedure to check for
+	mixed-case defining identifiers.
+	* stylesw.ads, stylesw.adb (Style_Check_Mixed_Case_Decls): New
+	flag for checking for mixed-case defining identifiers.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Document new feature.
+	* gnat_ugn.texi: Regenerate.
+
 2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
