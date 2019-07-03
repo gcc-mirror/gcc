@@ -1,3 +1,10 @@
+2019-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-expand.c (expand_omp_for_static_nochunk,
+	expand_omp_for_static_chunk): For nowait worksharing loop with
+	conditional lastprivate clause(s), emit GOMP_loop_end_nowait call
+	at the end.
+
 2019-07-02  Joern Rennecke  <joern.rennecke@riscy-ip.com>
 
 	PR testsuite/91065
