@@ -784,9 +784,9 @@ package body Sem_Ch8 is
 
       begin
          if Nkind_In (Nam, N_Function_Call, N_Explicit_Dereference)
-           and then Is_Composite_Type (Etype (Nam))
-           and then not Is_Constrained (Etype (Nam))
-           and then not Has_Unknown_Discriminants (Etype (Nam))
+           and then Is_Composite_Type (Typ)
+           and then not Is_Constrained (Typ)
+           and then not Has_Unknown_Discriminants (Typ)
            and then Expander_Active
          then
             --  If Actual_Subtype is already set, nothing to do
@@ -1122,7 +1122,11 @@ package body Sem_Ch8 is
          Wrong_Type (Nam, T);
       end if;
 
-      T2 := Etype (Nam);
+      --  We must search for an actual subtype here so that the bounds of
+      --  objects of unconstrained types don't get dropped on the floor - such
+      --  as with renamings of formal parameters.
+
+      T2 := Get_Actual_Subtype_If_Available (Nam);
 
       --  Ada 2005 (AI-326): Handle wrong use of incomplete type
 

@@ -1,3 +1,10 @@
+2019-07-03  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Add call to search for
+	the appropriate actual subtype of the object renaming being
+	analyzed.
+	(Check_Constrained_Object): Minor cleanup.
+
 2019-07-03  Yannick Moy  <moy@adacore.com>
 
 	* sem_spark.adb (Get_Observed_Or_Borrowed_Expr): New function to
