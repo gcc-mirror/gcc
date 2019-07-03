@@ -144,7 +144,8 @@
 //
 // The import function for the main package is referenced by C code,
 // and is named __go_init_main.  For other packages it is
-// PKGPATH..import.
+// PKGPATH..import.  If a package doesn't need an init function, it
+// will have a dummy one, named ~PKGPATH.
 //
 // In each pacakge there is a list of all the type descriptors defined
 // in this package.  The name of the list is PKGPATH..types.
@@ -529,6 +530,30 @@ Gogo::get_init_fn_name()
     }
 
   return this->init_fn_name_;
+}
+
+// Return the name for a dummy init function, which is not a real
+// function but only for tracking transitive import.
+
+std::string
+Gogo::dummy_init_fn_name()
+{
+  return "~" + this->pkgpath_symbol();
+}
+
+// Return the package path symbol from an init function name, which
+// can be a real init function or a dummy one.
+
+std::string
+Gogo::pkgpath_from_init_fn_name(std::string name)
+{
+  go_assert(!name.empty());
+  if (name[0] == '~')
+    return name.substr(1);
+  size_t pos = name.find("..import");
+  if (pos != std::string::npos)
+    return name.substr(0, pos);
+  go_unreachable();
 }
 
 // Return a mangled name for a type.  These names appear in symbol
@@ -994,9 +1019,9 @@ Gogo::type_descriptor_name(const Type* type, Named_type* nt)
 // Return the name of the type descriptor list symbol of a package.
 
 std::string
-Gogo::type_descriptor_list_symbol(Package* pkg)
+Gogo::type_descriptor_list_symbol(std::string pkgpath)
 {
-  return pkg->pkgpath_symbol() + "..types";
+  return pkgpath + "..types";
 }
 
 // Return the name of the list of all type descriptor lists.  This is

@@ -103,6 +103,11 @@ class Import_init
   precursors() const
   { return this->precursor_functions_; }
 
+  // Whether this is a dummy init, which is used only to record transitive import.
+  bool
+  is_dummy() const
+  { return this->init_name_[0] == '~'; }
+
  private:
   // The name of the package being imported.
   std::string package_name_;
@@ -912,13 +917,23 @@ class Gogo
   const std::string&
   get_init_fn_name();
 
+  // Return the name for a dummy init function, which is not a real
+  // function but only for tracking transitive import.
+  std::string
+  dummy_init_fn_name();
+
+  // Return the package path symbol from an init function name, which
+  // can be a real init function or a dummy one.
+  std::string
+  pkgpath_from_init_fn_name(std::string);
+
   // Return the name for a type descriptor symbol.
   std::string
   type_descriptor_name(const Type*, Named_type*);
 
   // Return the name of the type descriptor list symbol of a package.
   std::string
-  type_descriptor_list_symbol(Package*);
+  type_descriptor_list_symbol(std::string);
 
   // Return the name of the list of all type descriptor lists.
   std::string
