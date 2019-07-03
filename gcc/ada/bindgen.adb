@@ -1811,7 +1811,7 @@ package body Bindgen is
       --  with a pragma Volatile in order to tell the compiler to preserve
       --  this variable at any level of optimization.
 
-      --  CodePeer and CCG do not need this extra code on the other hand.
+      --  CodePeer and CCG do not need this extra code on the other hand
 
       if Bind_Main_Program
         and then not CodePeer_Mode

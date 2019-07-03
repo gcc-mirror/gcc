@@ -401,7 +401,7 @@ package body Sem_Ch7 is
 
                      if not Generate_C_Code
                        and then (Is_Inlined (Decl_Id)
-                                 or else Has_Pragma_Inline (Decl_Id))
+                                  or else Has_Pragma_Inline (Decl_Id))
                      then
                         Has_Referencer_Of_Non_Subprograms := True;
 
@@ -423,7 +423,7 @@ package body Sem_Ch7 is
 
                      if not Generate_C_Code
                        and then (Is_Inlined (Decl_Id)
-                                 or else Has_Pragma_Inline (Decl_Id))
+                                  or else Has_Pragma_Inline (Decl_Id))
                      then
                         Has_Referencer_Of_Non_Subprograms := True;
 

@@ -1,3 +1,8 @@
+2019-07-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* bindgen.adb, inline.adb, layout.adb, sem_ch12.adb,
+	sem_ch13.adb, sem_ch7.adb, styleg.adb: Minor reformatting.
+
 2019-07-03  Bob Duff  <duff@adacore.com>
 
 	* par-ch3.adb (P_Defining_Identifier): Call

@@ -463,7 +463,7 @@ package body Layout is
                  and then Known_Static_Esize (CT)
                  and then not (Known_Alignment (CT)
                                 and then Alignment_In_Bits (CT) >
-                                              Standard_Long_Long_Integer_Size)
+                                           Standard_Long_Long_Integer_Size)
                then
                   declare
                      S : constant Uint := Esize (CT);
