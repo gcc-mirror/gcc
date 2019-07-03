@@ -5520,7 +5520,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		   first vector we only can insert the first elt from
 		   the first vector.  */
 	        at = 0;
-		if ((ins = fold_read_from_vector (cop0, 0)))
+		if ((ins = fold_read_from_vector (cop0, sel[0])))
 		  op0 = op1;
 	      }
 	    else
