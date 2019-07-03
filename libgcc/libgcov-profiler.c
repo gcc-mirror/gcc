@@ -118,20 +118,44 @@ static inline void
 __gcov_one_value_profiler_body (gcov_type *counters, gcov_type value,
 				int use_atomic)
 {
-  if (value == counters[1])
-    counters[2]++;
-  else if (counters[2] == 0)
-    {
-      counters[2] = 1;
-      counters[1] = value;
-    }
-  else
-    counters[2]--;
-
   if (use_atomic)
     __atomic_fetch_add (&counters[0], 1, __ATOMIC_RELAXED);
   else
     counters[0]++;
+
+  ++counters;
+
+  /* We have GCOV_DISK_SINGLE_VALUES as we can keep multiple values
+     next to each other.  */
+  unsigned sindex = 0;
+
+  for (unsigned i = 0; i < GCOV_DISK_SINGLE_VALUES; i++)
+    {
+      if (value == counters[2 * i])
+	{
+	  if (use_atomic)
+	    __atomic_fetch_add (&counters[2 * i + 1], 1, __ATOMIC_RELAXED);
+	  else
+	    counters[2 * i + 1]++;
+	  return;
+	}
+      else if (counters[2 * i + 1] == 0)
+	{
+	  /* We found an empty slot.  */
+	  counters[2 * i] = value;
+	  counters[2 * i + 1] = 1;
+	  return;
+	}
+
+      if (counters[2 * i + 1] < counters[2 * sindex + 1])
+	sindex = i;
+    }
+
+  /* We haven't found an empty slot, then decrement the smallest.  */
+  if (use_atomic)
+    __atomic_fetch_sub (&counters[2 * sindex + 1], 1, __ATOMIC_RELAXED);
+  else
+    counters[2 * sindex + 1]--;
 }
 
 #ifdef L_gcov_one_value_profiler_v2
