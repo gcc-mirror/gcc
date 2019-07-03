@@ -1,3 +1,8 @@
+2019-07-03  Bob Duff  <duff@adacore.com>
+
+	* gnat.dg/warn20.adb, gnat.dg/warn20_pkg.adb,
+	gnat.dg/warn20_pkg.ads: New testcase.
+
 2019-07-03  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/predicate6.adb, gnat.dg/predicate6.ads: New testcase.
