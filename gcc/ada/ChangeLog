@@ -1,3 +1,12 @@
+2019-07-03  Yannick Moy  <moy@adacore.com>
+
+	* sem_spark.adb (Get_Observed_Or_Borrowed_Expr): New function to
+	return go through traversal function call.
+	(Check_Type): Consistently use underlying type.
+	(Get_Perm): Adapt for case of elaboration code where variables
+	are not declared in the environment. Remove incorrect handling
+	of borrow and observe.
+
 2019-07-03  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* inline.adb (Build_Return_Object_Formal): New routine.

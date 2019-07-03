@@ -650,6 +650,12 @@ package body Sem_SPARK is
    --  Check that type Typ is either not deep, or that it is an observing or
    --  owning type according to SPARK RM 3.10
 
+   function Get_Observed_Or_Borrowed_Expr (Expr : Node_Id) return Node_Id;
+   pragma Precondition (Is_Path_Expression (Expr));
+   --  Return the expression being borrowed/observed when borrowing or
+   --  observing Expr. If Expr is a call to a traversal function, this is
+   --  the first actual, otherwise it is Expr.
+
    function Get_Perm (N : Node_Or_Entity_Id) return Perm_Kind;
    --  The function that takes a name as input and returns a permission
    --  associated with it.
@@ -999,15 +1005,9 @@ package body Sem_SPARK is
          Expr    : Node_Id;
          Is_Decl : Boolean)
       is
-         Borrowed : Node_Id;
+         Borrowed : constant Node_Id := Get_Observed_Or_Borrowed_Expr (Expr);
 
       begin
-         if Is_Traversal_Function_Call (Expr) then
-            Borrowed := First_Actual (Expr);
-         else
-            Borrowed := Expr;
-         end if;
-
          --  SPARK RM 3.10(8): If the type of the target is an anonymous
          --  access-to-variable type (an owning access type), the source shall
          --  be an owning access object [..] whose root object is the target
@@ -1038,14 +1038,9 @@ package body Sem_SPARK is
          Expr    : Node_Id;
          Is_Decl : Boolean)
       is
-         Observed : Node_Id;
-      begin
-         if Is_Traversal_Function_Call (Expr) then
-            Observed := First_Actual (Expr);
-         else
-            Observed := Expr;
-         end if;
+         Observed : constant Node_Id := Get_Observed_Or_Borrowed_Expr (Expr);
 
+      begin
          --  ??? We are currently using the same restriction for observers
          --  as for borrowers. To be seen if the SPARK RM current rule really
          --  allows more uses.
@@ -1131,6 +1126,7 @@ package body Sem_SPARK is
             --  name that is in the Unrestricted state, and whose root
             --  object is the target object itself.
 
+            Check_Expression (Expr, Observe);
             Handle_Observe (Target_Root, Expr, Is_Decl);
 
          else
@@ -1156,6 +1152,7 @@ package body Sem_SPARK is
                end if;
             end if;
 
+            Check_Expression (Expr, Borrow);
             Handle_Borrow (Target_Root, Expr, Is_Decl);
          end if;
 
@@ -2973,46 +2970,52 @@ package body Sem_SPARK is
    ----------------
 
    procedure Check_Type (Typ : Entity_Id) is
+      Check_Typ : constant Entity_Id := Underlying_Type (Typ);
+
    begin
-      case Type_Kind'(Ekind (Underlying_Type (Typ))) is
+      case Type_Kind'(Ekind (Check_Typ)) is
          when Access_Kind =>
-            case Access_Kind'(Ekind (Typ)) is
+            case Access_Kind'(Ekind (Underlying_Type (Check_Typ))) is
                when E_Access_Type
                   | E_Anonymous_Access_Type
                =>
                   null;
                when E_Access_Subtype =>
-                  Check_Type (Base_Type (Typ));
+                  Check_Type (Base_Type (Check_Typ));
                when E_Access_Attribute_Type =>
-                  Error_Msg_N ("access attribute not allowed in SPARK", Typ);
+                  Error_Msg_N ("access attribute not allowed in SPARK",
+                               Check_Typ);
                when E_Allocator_Type =>
-                  Error_Msg_N ("missing type resolution", Typ);
+                  Error_Msg_N ("missing type resolution", Check_Typ);
                when E_General_Access_Type =>
                   Error_Msg_NE
-                    ("general access type & not allowed in SPARK", Typ, Typ);
+                    ("general access type & not allowed in SPARK",
+                     Check_Typ, Check_Typ);
                when Access_Subprogram_Kind =>
                   Error_Msg_NE
                     ("access to subprogram type & not allowed in SPARK",
-                     Typ, Typ);
+                     Check_Typ, Check_Typ);
             end case;
 
          when E_Array_Type
             | E_Array_Subtype
          =>
-            Check_Type (Component_Type (Typ));
+            Check_Type (Component_Type (Check_Typ));
 
          when Record_Kind =>
-            if Is_Deep (Typ)
-              and then (Is_Tagged_Type (Typ) or else Is_Class_Wide_Type (Typ))
+            if Is_Deep (Check_Typ)
+              and then (Is_Tagged_Type (Check_Typ)
+                        or else Is_Class_Wide_Type (Check_Typ))
             then
                Error_Msg_NE
-                 ("tagged type & cannot be owning in SPARK", Typ, Typ);
+                 ("tagged type & cannot be owning in SPARK",
+                  Check_Typ, Check_Typ);
 
             else
                declare
                   Comp : Entity_Id;
                begin
-                  Comp := First_Component_Or_Discriminant (Typ);
+                  Comp := First_Component_Or_Discriminant (Check_Typ);
                   while Present (Comp) loop
                      Check_Type (Etype (Comp));
                      Next_Component_Or_Discriminant (Comp);
@@ -3040,6 +3043,19 @@ package body Sem_SPARK is
             raise Program_Error;
       end case;
    end Check_Type;
+
+   -----------------------------------
+   -- Get_Observed_Or_Borrowed_Expr --
+   -----------------------------------
+
+   function Get_Observed_Or_Borrowed_Expr (Expr : Node_Id) return Node_Id is
+   begin
+      if Is_Traversal_Function_Call (Expr) then
+         return First_Actual (Expr);
+      else
+         return Expr;
+      end if;
+   end Get_Observed_Or_Borrowed_Expr;
 
    --------------
    -- Get_Perm --
@@ -4067,7 +4083,7 @@ package body Sem_SPARK is
 
       Expr_Type : constant Entity_Id := Etype (Expr);
       Root      : Entity_Id := Get_Root_Object (Expr);
-      Perm      : Perm_Kind;
+      Perm      : Perm_Kind_Option;
 
    --  Start of processing for Process_Path
 
@@ -4085,14 +4101,23 @@ package body Sem_SPARK is
 
       Root := Unique_Entity (Root);
 
-      --  The root object should have been declared and entered into the
-      --  current permission environment.
+      --  Except during elaboration, the root object should have been declared
+      --  and entered into the current permission environment.
 
-      if Get (Current_Perm_Env, Root) = null then
+      if not Inside_Elaboration
+        and then Get (Current_Perm_Env, Root) = null
+      then
          Illegal_Global_Usage (Expr);
       end if;
 
-      Perm := Get_Perm (Expr);
+      --  During elaboration, only the validity of operations is checked, no
+      --  need to compute the permission of Expr.
+
+      if Inside_Elaboration then
+         Perm := None;
+      else
+         Perm := Get_Perm (Expr);
+      end if;
 
       --  Check permissions
 
@@ -4265,27 +4290,11 @@ package body Sem_SPARK is
                Set_Perm_Prefixes_Assign (Expr);
             end;
 
-         when Borrow =>
+         --  Borrowing and observing of paths is handled by the variables
+         --  Current_Borrowers and Current_Observers.
 
-            --  Set permission NO for the path and its extensions
-
-            declare
-               Tree : constant Perm_Tree_Access :=
-                 Set_Perm_Prefixes (Expr, No_Access);
-            begin
-               Set_Perm_Extensions (Tree, No_Access);
-            end;
-
-         when Observe =>
-
-            --  Set permission R for the path and its extensions
-
-            declare
-               Tree : constant Perm_Tree_Access :=
-                 Set_Perm_Prefixes (Expr, Read_Only);
-            begin
-               Set_Perm_Extensions (Tree, Read_Only);
-            end;
+         when Borrow | Observe =>
+            null;
       end case;
    end Process_Path;
 
