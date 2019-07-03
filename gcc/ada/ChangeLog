@@ -1,3 +1,8 @@
+2019-07-03  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads, exp_util.adb, layout.ads, sinfo.ads: Spell "laid"
+	correctly.
+
 2019-07-03  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): No error

@@ -2857,7 +2857,7 @@ package Sinfo is
       --  Einfo.
 
       --  Note: N_Defining_Identifier is an extended node whose fields are
-      --  deliberately layed out to match the layout of fields in an ordinary
+      --  deliberately laid out to match the layout of fields in an ordinary
       --  N_Identifier node allowing for easy alteration of an identifier
       --  node into a defining identifier node. For details, see procedure
       --  Sinfo.CN.Change_Identifier_To_Defining_Identifier.
@@ -3204,7 +3204,7 @@ package Sinfo is
       --  in package Einfo.
 
       --  Note: N_Defining_Character_Literal is an extended node whose fields
-      --  are deliberate layed out to match the layout of fields in an ordinary
+      --  are deliberate laid out to match the layout of fields in an ordinary
       --  N_Character_Literal node allowing for easy alteration of a character
       --  literal node into a defining character literal node. For details, see
       --  Sinfo.CN.Change_Character_Literal_To_Defining_Character_Literal.
@@ -5429,7 +5429,7 @@ package Sinfo is
       --  in package Einfo.
 
       --  Note: N_Defining_Operator_Symbol is an extended node whose fields
-      --  are deliberately layed out to match the layout of fields in an
+      --  are deliberately laid out to match the layout of fields in an
       --  ordinary N_Operator_Symbol node allowing for easy alteration of
       --  an operator symbol node into a defining operator symbol node.
       --  See Sinfo.CN.Change_Operator_Symbol_To_Defining_Operator_Symbol
@@ -8035,7 +8035,7 @@ package Sinfo is
       --  of this node, leaving the N_Selected_Component node used only when
       --  the prefix is a record or protected type.
 
-      --  The fields of the N_Expanded_Name node are layed out identically
+      --  The fields of the N_Expanded_Name node are laid out identically
       --  to those of the N_Selected_Component node, allowing conversion of
       --  an expanded name node to a selected component node to be done
       --  easily, see Sinfo.CN.Change_Selected_Component_To_Expanded_Name.

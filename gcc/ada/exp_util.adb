@@ -8258,8 +8258,8 @@ package body Exp_Util is
          return False;
       end if;
 
-      --  Here we have a tagged type, see if it has any unlayed out fields
-      --  other than a possible tag and parent fields. If so, we return False.
+      --  Here we have a tagged type, see if it has any component (other than
+      --  tag and parent) with no component_clause. If so, we return False.
 
       Comp := First_Component (U);
       while Present (Comp) loop
@@ -8273,7 +8273,7 @@ package body Exp_Util is
          end if;
       end loop;
 
-      --  All components are layed out
+      --  All components have clauses
 
       return True;
    end Is_Fully_Repped_Tagged_Type;
