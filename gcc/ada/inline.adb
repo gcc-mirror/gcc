@@ -2481,6 +2481,13 @@ package body Inline is
       --  thunk generated for it. Replace a return statement with an assignment
       --  to the target of the call, with appropriate conversions if needed.
 
+      function Process_Formals_In_Aspects (N : Node_Id)
+        return Traverse_Result;
+      --  Because aspects are linked indirectly to the rest of the tree,
+      --  replacement of formals appearing in aspect specifications must
+      --  be performed in a separate pass, using an instantiation of the
+      --  previous subprogram over aspect specifications reachable from N.
+
       function Process_Sloc (Nod : Node_Id) return Traverse_Result;
       --  If the call being expanded is that of an internal subprogram, set the
       --  sloc of the generated block to that of the call itself, so that the
@@ -2820,6 +2827,29 @@ package body Inline is
       end Process_Formals;
 
       procedure Replace_Formals is new Traverse_Proc (Process_Formals);
+
+      --------------------------------
+      -- Process_Formals_In_Aspects --
+      --------------------------------
+
+      function Process_Formals_In_Aspects (N : Node_Id)
+        return Traverse_Result
+      is
+         A : Node_Id;
+      begin
+         if Has_Aspects (N) then
+            A := First (Aspect_Specifications (N));
+            while Present (A) loop
+               Replace_Formals (Expression (A));
+
+               Next (A);
+            end loop;
+         end if;
+         return OK;
+      end Process_Formals_In_Aspects;
+
+      procedure Replace_Formals_In_Aspects is
+         new Traverse_Proc (Process_Formals_In_Aspects);
 
       ------------------
       -- Process_Sloc --
@@ -3633,6 +3663,7 @@ package body Inline is
       --  Attach block to tree before analysis and rewriting.
 
       Replace_Formals (Blk);
+      Replace_Formals_In_Aspects (Blk);
       Set_Parent (Blk, N);
 
       if GNATprove_Mode then

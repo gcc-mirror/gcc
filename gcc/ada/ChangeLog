@@ -1,3 +1,10 @@
+2019-07-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* inline.adb (Process_Formals_In_Aspects): New procedure within
+	Expand_Inlined_Call, to perform a replacement of references to
+	formals that appear in aspect specifications within the body
+	being inlined.
+
 2019-07-03  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch8.adb (Analyze_Object_Renaming): Add call to search for
