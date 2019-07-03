@@ -25,9 +25,9 @@
 
 --  For full architecture, see unit Bindo.
 
---  The following unit contains facilities to enhance the library graph which
---  reflects source dependencies between units with information obtained from
---  the invocation graph which reflects all activations of tasks, calls, and
+--  The following unit contains facilities to enhance the library graph, which
+--  reflects source dependencies between units, with information obtained from
+--  the invocation graph, which reflects all activations of tasks, calls, and
 --  instantiations within units.
 
 with Bindo.Graphs;

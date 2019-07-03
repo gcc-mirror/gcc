@@ -6223,9 +6223,9 @@ package body Sem_Ch12 is
       --  actual instance and those of the formal package.
 
       function Is_Defaulted (Param : Entity_Id) return Boolean;
-      --  If the formql package has partly box-initialized formals, skip
-      --  conformace check for these formals. Previously the code assumed
-      --  that boc initialization for a formal package applied to all its
+      --  If the formal package has partly box-initialized formals, skip
+      --  conformance check for these formals. Previously the code assumed
+      --  that box initialization for a formal package applied to all its
       --  formal parameters.
 
       function Same_Instantiated_Constant (E1, E2 : Entity_Id) return Boolean;

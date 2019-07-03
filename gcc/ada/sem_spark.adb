@@ -671,7 +671,7 @@ package body Sem_SPARK is
       Through_Traversal : Boolean := True) return Entity_Id;
    pragma Precondition (Is_Path_Expression (Expr));
    --  Return the root of the path expression Expr, or Empty for an allocator,
-   --  NULL, or a function call. Through_Traversal is True if it should fo
+   --  NULL, or a function call. Through_Traversal is True if it should follow
    --  through calls to traversal functions.
 
    generic

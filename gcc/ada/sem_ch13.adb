@@ -4933,9 +4933,9 @@ package body Sem_Ch13 is
       elsif Is_Object (Ent)
         and then Present (Renamed_Object (Ent))
       then
-         --  Case of renamed object from source, this is an error
-         --  unless the pbject is an aggregate and the renaming is
-         --  created for an object declaration.
+         --  In the case of a renamed object from source, this is an error
+         --  unless the object is an aggregate and the renaming is created
+         --  for an object declaration.
 
          if Comes_From_Source (Renamed_Object (Ent))
            and then Nkind (Renamed_Object (Ent)) /= N_Aggregate

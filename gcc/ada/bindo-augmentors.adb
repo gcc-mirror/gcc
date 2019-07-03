@@ -124,8 +124,8 @@ package body Bindo.Augmentors is
       --    * Visit the neighbours of Curr_IGV_Id.
       --
       --  Flag Internal_Ctrl should be set when the DFS traversal visited an
-      --  internal controlled invocation edge. Path denotes is the length of
-      --  the path.
+      --  internal controlled invocation edge. Path denotes the length of the
+      --  path.
 
       procedure Write_Statistics;
       pragma Inline (Write_Statistics);
@@ -277,7 +277,7 @@ package body Bindo.Augmentors is
 
          Set_Is_Visited (Curr_IGV_Id);
 
-         --  Update the statictics
+         --  Update the statistics
 
          Longest_Path  := Natural'Max (Longest_Path, New_Path);
          Total_Visited := Total_Visited + 1;
@@ -343,7 +343,7 @@ package body Bindo.Augmentors is
 
       procedure Write_Statistics is
       begin
-         --  Nothing to do when switch -d_L (output library item graph) is no
+         --  Nothing to do when switch -d_L (output library item graph) is not
          --  in effect.
 
          if not Debug_Flag_Underscore_LL then
