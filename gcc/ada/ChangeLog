@@ -1,3 +1,11 @@
+2019-07-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* doc/gnat_ugn/elaboration_order_handling_in_gnat.rst: Update
+	the section on resolving elaboration circularities to eliminate
+	certain combinations of switches which together do not produce
+	the desired effect and confuse users.
+	* gnat_ugn.texi: Regenerate.
+
 2019-07-03  Arnaud Charlet  <charlet@adacore.com>
 
 	* bindgen.adb (Gen_Main): Disable generation of reference to

@@ -28348,20 +28348,20 @@ using the legacy elaboration model, in the following order:
 @itemize -
 
 @item 
+Use the relaxed static elaboration model, with compiler switch
+@code{-gnatJ}.
+
+@item 
+Use the relaxed dynamic elaboration model, with compiler switches
+@code{-gnatE} @code{-gnatJ}.
+
+@item 
 Use the legacy static elaboration model, with compiler switch
 @code{-gnatH}.
 
 @item 
 Use the legacy dynamic elaboration model, with compiler switches
-@code{-gnatH} @code{-gnatE}.
-
-@item 
-Use the relaxed legacy static elaboration model, with compiler switches
-@code{-gnatH} @code{-gnatJ}.
-
-@item 
-Use the relaxed legacy dynamic elaboration model, with compiler switches
-@code{-gnatH} @code{-gnatJ} @code{-gnatE}.
+@code{-gnatE} @code{-gnatH}.
 @end itemize
 
 @item 
