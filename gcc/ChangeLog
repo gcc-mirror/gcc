@@ -1,3 +1,13 @@
+2019-07-03  Dennis Zhang  <dennis.zhang@arm.com>
+
+	* config/aarch64/aarch64.md: Remove redundant constraints from
+	define_expand but keep some patterns untouched if they are
+	specially selected by TARGET_SECONDARY_RELOAD hook.
+	* config/aarch64/aarch64-sve.md: Likewise.
+	* config/aarch64/atomics.md: Remove redundant constraints from
+	define_expand.
+	* config/aarch64/aarch64-simd.md: Likewise.
+
 2019-07-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.h (DRIVER_SELF_SPECS): Remove the linker cases.
