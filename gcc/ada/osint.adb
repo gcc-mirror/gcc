@@ -1422,6 +1422,15 @@ package body Osint is
       return Name_Find;
    end Get_Directory;
 
+   ------------------------------
+   -- Get_First_Main_File_Name --
+   ------------------------------
+
+   function Get_First_Main_File_Name return String is
+   begin
+      return File_Names (1).all;
+   end Get_First_Main_File_Name;
+
    --------------------------
    -- Get_Next_Dir_In_Path --
    --------------------------
