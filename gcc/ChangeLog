@@ -1,5 +1,13 @@
 2019-07-03  Martin Liska  <mliska@suse.cz>
 
+	* dbgcnt.def (DEBUG_COUNTER): Add match debug counter.
+	* genmatch.c (dt_simplify::gen_1): Generate dbgcnt
+	condition.
+	* generic-match-head.c: Include dbgcnt.h.
+	* gimple-match-head.c: Likewise.
+
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
 	* gcov-counter.def (GCOV_COUNTER_V_SINGLE): Remove.
 	(GCOV_COUNTER_V_TOPN): New.
 	(GCOV_COUNTER_V_INDIR): Use _topn.
