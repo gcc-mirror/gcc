@@ -1,5 +1,14 @@
 2019-07-03  Arnaud Charlet  <charlet@adacore.com>
 
+	* bindgen.adb (Gen_Main): Disable generation of reference to
+	Ada_Main_Program_Name for CCG.
+	* bindusg.adb (Display): Add -G to the command-line usage for
+	gnatbind.
+	* opt.ads (Generate_C_Code): Update comment.
+	* switch-b.adb (Scan_Binder_Switches): Add handling for -G.
+
+2019-07-03  Arnaud Charlet  <charlet@adacore.com>
+
 	* sem_ch7.adb (Has_Referencer): Do not consider inlined
 	subprograms when generating C code, which allows us to generate
 	static inline subprograms.
