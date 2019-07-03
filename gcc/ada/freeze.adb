@@ -5943,16 +5943,28 @@ package body Freeze is
             Inherit_Aspects_At_Freeze_Point (E);
          end if;
 
-         --  Check for incompatible size and alignment for record type
+         --  Case of array type
+
+         if Is_Array_Type (E) then
+            Freeze_Array_Type (E);
+         end if;
+
+         --  Check for incompatible size and alignment for array/record type
 
          if Warn_On_Size_Alignment
-           and then Is_Record_Type (E)
-           and then Has_Size_Clause (E) and then Has_Alignment_Clause (E)
+           and then (Is_Array_Type (E) or else Is_Record_Type (E))
+           and then Has_Size_Clause (E)
+           and then Has_Alignment_Clause (E)
 
            --  If explicit Object_Size clause given assume that the programmer
            --  knows what he is doing, and expects the compiler behavior.
 
            and then not Has_Object_Size_Clause (E)
+
+           --  It does not really make sense to warn for the minimum alignment
+           --  since the programmer could not get rid of the warning.
+
+           and then Alignment (E) > 1
 
            --  Check for size not a multiple of alignment
 
@@ -5994,15 +6006,10 @@ package body Freeze is
             end;
          end if;
 
-         --  Array type
-
-         if Is_Array_Type (E) then
-            Freeze_Array_Type (E);
-
          --  For a class-wide type, the corresponding specific type is
          --  frozen as well (RM 13.14(15))
 
-         elsif Is_Class_Wide_Type (E) then
+         if Is_Class_Wide_Type (E) then
             Freeze_And_Append (Root_Type (E), N, Result);
 
             --  If the base type of the class-wide type is still incomplete,

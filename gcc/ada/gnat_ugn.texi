@@ -12683,8 +12683,8 @@ sizes or conventions.
 
 @emph{Activate warnings for size not a multiple of alignment.}
 
-This switch activates warnings for cases of record types with
-specified @code{Size} and @code{Alignment} attributes where the
+This switch activates warnings for cases of array and record types
+with specified @code{Size} and @code{Alignment} attributes where the
 size is not a multiple of the alignment, resulting in an object
 size that is greater than the specified size. The default
 is that such warnings are generated.
@@ -12701,12 +12701,11 @@ is that such warnings are generated.
 
 @emph{Suppress warnings for size not a multiple of alignment.}
 
-This switch suppresses warnings for cases of record types with
-specified @code{Size} and @code{Alignment} attributes where the
+This switch suppresses warnings for cases of array and record types
+with specified @code{Size} and @code{Alignment} attributes where the
 size is not a multiple of the alignment, resulting in an object
-size that is greater than the specified size.
-The warning can also be
-suppressed by giving an explicit @code{Object_Size} value.
+size that is greater than the specified size. The warning can also
+be suppressed by giving an explicit @code{Object_Size} value.
 @end table
 
 @geindex -Wunused (gcc)

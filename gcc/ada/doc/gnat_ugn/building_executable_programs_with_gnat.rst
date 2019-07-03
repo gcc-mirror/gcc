@@ -4045,8 +4045,8 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 :switch:`-gnatw.z`
   *Activate warnings for size not a multiple of alignment.*
 
-  This switch activates warnings for cases of record types with
-  specified ``Size`` and ``Alignment`` attributes where the
+  This switch activates warnings for cases of array and record types
+  with specified ``Size`` and ``Alignment`` attributes where the
   size is not a multiple of the alignment, resulting in an object
   size that is greater than the specified size. The default
   is that such warnings are generated.
@@ -4058,12 +4058,11 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 :switch:`-gnatw.Z`
   *Suppress warnings for size not a multiple of alignment.*
 
-  This switch suppresses warnings for cases of record types with
-  specified ``Size`` and ``Alignment`` attributes where the
+  This switch suppresses warnings for cases of array and record types
+  with specified ``Size`` and ``Alignment`` attributes where the
   size is not a multiple of the alignment, resulting in an object
-  size that is greater than the specified size.
-  The warning can also be
-  suppressed by giving an explicit ``Object_Size`` value.
+  size that is greater than the specified size. The warning can also
+  be suppressed by giving an explicit ``Object_Size`` value.
 
 
 .. index:: -Wunused (gcc)

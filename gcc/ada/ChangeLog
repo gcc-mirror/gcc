@@ -1,3 +1,13 @@
+2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(Warning message control): Document that -gnatw.z/Z apply to
+	array types.
+	* freeze.adb (Freeze_Entity): Give -gnatw.z warning for array
+	types as well, but not if the specified alignment is the minimum
+	one.
+	* gnat_ugn.texi: Regenerate.
+
 2019-07-03  Bob Duff  <duff@adacore.com>
 
 	* einfo.ads, exp_util.adb, layout.ads, sinfo.ads: Spell "laid"
