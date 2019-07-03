@@ -1,5 +1,10 @@
 2019-07-03  Ed Schonberg  <schonberg@adacore.com>
 
+	* gnat.dg/predicate6.adb, gnat.dg/predicate6.ads: New testcase.
+	* gnat.dg/static_pred1.adb: Remove expected error.
+
+2019-07-03  Ed Schonberg  <schonberg@adacore.com>
+
 	* gnat.dg/predicate5.adb, gnat.dg/predicate5.ads: New testcase.
 
 2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>

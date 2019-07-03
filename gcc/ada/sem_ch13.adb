@@ -8201,6 +8201,13 @@ package body Sem_Ch13 is
 
          Set_Static_Discrete_Predicate (Typ, Plist);
 
+         --  Within a generic the predicate functions themselves need not
+         --  be constructed.
+
+         if Inside_A_Generic then
+            return;
+         end if;
+
          --  The processing for static predicates put the expression into
          --  canonical form as a series of ranges. It also eliminated
          --  duplicates and collapsed and combined ranges. We might as well
@@ -8733,9 +8740,13 @@ package body Sem_Ch13 is
 
         --  Do not generate predicate bodies within a generic unit. The
         --  expressions have been analyzed already, and the bodies play
-        --  no role if not within an executable unit.
+        --  no role if not within an executable unit. However, if a statc
+        --  predicate is present it must be processed for legality checks
+        --  such as case coverage in an expression.
 
-      elsif Inside_A_Generic then
+      elsif Inside_A_Generic
+        and then not Has_Static_Predicate_Aspect (Typ)
+      then
          return;
       end if;
 
