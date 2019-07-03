@@ -195,6 +195,18 @@ package body Sem_SPARK is
       --  The type defining the hash table saving the environments at the entry
       --  of each loop.
 
+      package Variable_Maps is new Simple_HTable
+        (Header_Num => Elaboration_Context_Index,
+         Key        => Entity_Id,
+         Element    => Node_Id,
+         No_Element => Empty,
+         Hash       => Elaboration_Context_Hash,
+         Equal      => "=");
+
+      type Variable_Mapping is new Variable_Maps.Instance;
+      --  Mapping from variables to nodes denoting paths that are observed or
+      --  borrowed by the variable.
+
       --------------------
       -- Simple Getters --
       --------------------
@@ -220,15 +232,15 @@ package body Sem_SPARK is
          To   : in out Perm_Env);
       --  Procedure to copy a permission environment
 
-      procedure Move_Env
-        (From : in out Perm_Env;
-         To   : in out Perm_Env);
+      procedure Move_Env (From, To : in out Perm_Env);
       --  Procedure to move a permission environment. It frees To, moves From
       --  in To and sets From to Nil.
 
-      procedure Copy_Tree
-        (From : Perm_Tree_Access;
-         To   : Perm_Tree_Access);
+      procedure Move_Variable_Mapping (From, To : in out Variable_Mapping);
+      --  Move a variable mapping, freeing memory as needed and resetting the
+      --  source mapping.
+
+      procedure Copy_Tree (From, To : Perm_Tree_Access);
       --  Procedure to copy a permission tree
 
       procedure Free_Env (PE : in out Perm_Env);
@@ -301,7 +313,7 @@ package body Sem_SPARK is
       -- Copy_Tree --
       ---------------
 
-      procedure Copy_Tree (From : Perm_Tree_Access; To : Perm_Tree_Access) is
+      procedure Copy_Tree (From, To : Perm_Tree_Access) is
       begin
          --  Copy the direct components of the tree
 
@@ -456,12 +468,23 @@ package body Sem_SPARK is
       -- Move_Env --
       --------------
 
-      procedure Move_Env (From : in out Perm_Env; To : in out Perm_Env) is
+      procedure Move_Env (From, To : in out Perm_Env) is
       begin
          Free_Env (To);
          To   := From;
          From := Perm_Env (Perm_Tree_Maps.Nil);
       end Move_Env;
+
+      ---------------------------
+      -- Move_Variable_Mapping --
+      ---------------------------
+
+      procedure Move_Variable_Mapping (From, To : in out Variable_Mapping) is
+      begin
+         Reset (To);
+         To   := From;
+         From := Variable_Mapping (Variable_Maps.Nil);
+      end Move_Variable_Mapping;
 
       ----------------
       -- Permission --
@@ -609,10 +632,13 @@ package body Sem_SPARK is
 
    procedure Check_Parameter_Or_Global
      (Expr       : Node_Id;
-      Param_Mode : Formal_Kind;
+      Typ        : Entity_Id;
+      Kind       : Formal_Kind;
       Subp       : Entity_Id;
       Global_Var : Boolean);
    --  Check the permission of every actual parameter or global
+
+   procedure Check_Pragma (Prag : Node_Id);
 
    procedure Check_Source_Of_Borrow_Or_Observe
      (Expr   : Node_Id;
@@ -640,14 +666,18 @@ package body Sem_SPARK is
    --  subtree for that node. If the tree is folded, then it unrolls the tree
    --  up to the appropriate level.
 
-   function Get_Root_Object (Expr : Node_Id) return Entity_Id;
+   function Get_Root_Object
+     (Expr              : Node_Id;
+      Through_Traversal : Boolean := True) return Entity_Id;
    pragma Precondition (Is_Path_Expression (Expr));
    --  Return the root of the path expression Expr, or Empty for an allocator,
-   --  NULL, or a function call.
+   --  NULL, or a function call. Through_Traversal is True if it should fo
+   --  through calls to traversal functions.
 
    generic
       with procedure Handle_Parameter_Or_Global
         (Expr       : Node_Id;
+         Formal_Typ : Entity_Id;
          Param_Mode : Formal_Kind;
          Subp       : Entity_Id;
          Global_Var : Boolean);
@@ -676,7 +706,14 @@ package body Sem_SPARK is
    function Is_Path_Expression (Expr : Node_Id) return Boolean;
    --  Return whether Expr corresponds to a path
 
+   function Is_Prefix_Or_Almost (Pref, Expr : Node_Id) return Boolean;
+   --  Determine if the candidate Prefix is indeed a prefix of Expr, or almost
+   --  a prefix, in the sense that they could still refer to overlapping memory
+   --  locations.
+
    function Is_Traversal_Function (E : Entity_Id) return Boolean;
+
+   function Is_Traversal_Function_Call (Expr : Node_Id) return Boolean;
 
    function Loop_Of_Exit (N : Node_Id) return Entity_Id;
    --  A function that takes an exit statement node and returns the entity of
@@ -718,7 +755,8 @@ package body Sem_SPARK is
 
    procedure Return_Parameter_Or_Global
      (Id         : Entity_Id;
-      Mode       : Formal_Kind;
+      Typ        : Entity_Id;
+      Kind       : Formal_Kind;
       Subp       : Entity_Id;
       Global_Var : Boolean);
    --  Auxiliary procedure to Return_Parameters and Return_Globals
@@ -770,7 +808,8 @@ package body Sem_SPARK is
 
    procedure Setup_Parameter_Or_Global
      (Id         : Entity_Id;
-      Param_Mode : Formal_Kind;
+      Typ        : Entity_Id;
+      Kind       : Formal_Kind;
       Subp       : Entity_Id;
       Global_Var : Boolean);
    --  Auxiliary procedure to Setup_Parameters and Setup_Globals
@@ -812,6 +851,12 @@ package body Sem_SPARK is
    --  restrictive than the saved environment at the beginning of the loop, and
    --  the permission environment after the loop is equal to the accumulator.
 
+   Current_Borrowers : Variable_Mapping;
+   --  Mapping from borrowers to the path borrowed
+
+   Current_Observers : Variable_Mapping;
+   --  Mapping from observers to the path observed
+
    --------------------
    -- Handle_Globals --
    --------------------
@@ -852,10 +897,12 @@ package body Sem_SPARK is
                null;
             else
                Handle_Parameter_Or_Global (Expr       => Item,
+                                           Formal_Typ => Etype (Item),
                                            Param_Mode => Kind,
                                            Subp       => Subp,
                                            Global_Var => True);
             end if;
+
             Next_Global (Item);
          end loop;
       end Handle_Globals_From_List;
@@ -928,11 +975,104 @@ package body Sem_SPARK is
    ----------------------
 
    procedure Check_Assignment (Target : Node_Or_Entity_Id; Expr : Node_Id) is
+
+      --  Local subprograms
+
+      procedure Handle_Borrow
+        (Var     : Entity_Id;
+         Expr    : Node_Id;
+         Is_Decl : Boolean);
+      --  Update map of current borrowers
+
+      procedure Handle_Observe
+        (Var     : Entity_Id;
+         Expr    : Node_Id;
+         Is_Decl : Boolean);
+      --  Update map of current observers
+
+      -------------------
+      -- Handle_Borrow --
+      -------------------
+
+      procedure Handle_Borrow
+        (Var     : Entity_Id;
+         Expr    : Node_Id;
+         Is_Decl : Boolean)
+      is
+         Borrowed : Node_Id;
+
+      begin
+         if Is_Traversal_Function_Call (Expr) then
+            Borrowed := First_Actual (Expr);
+         else
+            Borrowed := Expr;
+         end if;
+
+         --  SPARK RM 3.10(8): If the type of the target is an anonymous
+         --  access-to-variable type (an owning access type), the source shall
+         --  be an owning access object [..] whose root object is the target
+         --  object itself.
+
+         --  ??? In fact we could be slightly more permissive in allowing even
+         --  a call to a traversal function of the right form.
+
+         if not Is_Decl
+           and then (Is_Traversal_Function_Call (Expr)
+                      or else Get_Root_Object (Borrowed) /= Var)
+         then
+            Error_Msg_NE
+              ("source of assignment must have & as root (SPARK RM 3.10(8)))",
+               Expr, Var);
+            return;
+         end if;
+
+         Set (Current_Borrowers, Var, Borrowed);
+      end Handle_Borrow;
+
+      --------------------
+      -- Handle_Observe --
+      --------------------
+
+      procedure Handle_Observe
+        (Var     : Entity_Id;
+         Expr    : Node_Id;
+         Is_Decl : Boolean)
+      is
+         Observed : Node_Id;
+      begin
+         if Is_Traversal_Function_Call (Expr) then
+            Observed := First_Actual (Expr);
+         else
+            Observed := Expr;
+         end if;
+
+         --  ??? We are currently using the same restriction for observers
+         --  as for borrowers. To be seen if the SPARK RM current rule really
+         --  allows more uses.
+
+         if not Is_Decl
+           and then (Is_Traversal_Function_Call (Expr)
+                      or else Get_Root_Object (Observed) /= Var)
+         then
+            Error_Msg_NE
+              ("source of assignment must have & as root (SPARK RM 3.10(8)))",
+               Expr, Var);
+            return;
+         end if;
+
+         Set (Current_Observers, Var, Observed);
+      end Handle_Observe;
+
+      --  Local variables
+
       Target_Typ  : constant Node_Id := Etype (Target);
+      Is_Decl     : constant Boolean := Nkind (Target) = N_Defining_Identifier;
       Target_Root : Entity_Id;
       Expr_Root   : Entity_Id;
       Perm        : Perm_Kind;
       Status      : Error_Status;
+
+   --  Start of processing for Check_Assignment
 
    begin
       Check_Type (Target_Typ);
@@ -944,7 +1084,7 @@ package body Sem_SPARK is
             return;
          end if;
 
-         if Nkind (Target) = N_Defining_Identifier then
+         if Is_Decl then
             Target_Root := Target;
          else
             Target_Root := Get_Root_Object (Target);
@@ -956,8 +1096,7 @@ package body Sem_SPARK is
          --  the target is a stand-alone object of an anonymous
          --  access-to-object type
 
-         pragma Assert
-           (Ekind_In (Target_Root, E_Variable, E_Constant));
+         pragma Assert (Present (Target_Root));
 
          --  If the type of the target is an anonymous
          --  access-to-constant type (an observing access type), the
@@ -992,6 +1131,8 @@ package body Sem_SPARK is
             --  name that is in the Unrestricted state, and whose root
             --  object is the target object itself.
 
+            Handle_Observe (Target_Root, Expr, Is_Decl);
+
          else
             Perm := Get_Perm (Expr);
 
@@ -1000,18 +1141,22 @@ package body Sem_SPARK is
                return;
             end if;
 
-            if not Is_Entity_Name (Target) then
-               Error_Msg_N
-                 ("target of borrow must be stand-alone variable",
-                  Target);
-               return;
+            if not Is_Decl then
+               if not Is_Entity_Name (Target) then
+                  Error_Msg_N
+                    ("target of borrow must be stand-alone variable",
+                     Target);
+                  return;
 
-            elsif Target_Root /= Expr_Root then
-               Error_Msg_NE
-                 ("source of borrow must be variable &",
-                  Expr, Target);
-               return;
+               elsif Target_Root /= Expr_Root then
+                  Error_Msg_NE
+                    ("source of borrow must be variable &",
+                     Expr, Target);
+                  return;
+               end if;
             end if;
+
+            Handle_Borrow (Target_Root, Expr, Is_Decl);
          end if;
 
       elsif Is_Deep (Target_Typ) then
@@ -1051,10 +1196,12 @@ package body Sem_SPARK is
 
       procedure Check_Param (Formal : Entity_Id; Actual : Node_Id) is
       begin
-         Check_Parameter_Or_Global (Expr       => Actual,
-                                    Param_Mode => Formal_Kind'(Ekind (Formal)),
-                                    Subp       => Subp,
-                                    Global_Var => False);
+         Check_Parameter_Or_Global
+           (Expr       => Actual,
+            Typ        => Underlying_Type (Etype (Formal)),
+            Kind       => Ekind (Formal),
+            Subp       => Subp,
+            Global_Var => False);
       end Check_Param;
 
       ------------------
@@ -1096,11 +1243,14 @@ package body Sem_SPARK is
    -------------------------
 
    procedure Check_Callable_Body (Body_N : Node_Id) is
-      Save_In_Elab : constant Boolean := Inside_Elaboration;
-      Body_Id      : constant Entity_Id := Defining_Entity (Body_N);
-      Spec_Id      : constant Entity_Id := Unique_Entity (Body_Id);
-      Prag         : constant Node_Id := SPARK_Pragma (Body_Id);
-      Saved_Env    : Perm_Env;
+      Save_In_Elab    : constant Boolean := Inside_Elaboration;
+      Body_Id         : constant Entity_Id := Defining_Entity (Body_N);
+      Spec_Id         : constant Entity_Id := Unique_Entity (Body_Id);
+      Prag            : constant Node_Id := SPARK_Pragma (Body_Id);
+
+      Saved_Env       : Perm_Env;
+      Saved_Borrowers : Variable_Mapping;
+      Saved_Observers : Variable_Mapping;
 
    begin
       --  Only SPARK bodies are analyzed
@@ -1116,6 +1266,8 @@ package body Sem_SPARK is
       --  Save environment and put a new one in place
 
       Move_Env (Current_Perm_Env, Saved_Env);
+      Move_Variable_Mapping (Current_Borrowers, Saved_Borrowers);
+      Move_Variable_Mapping (Current_Observers, Saved_Observers);
 
       --  Add formals and globals to the environment with adequate permissions
 
@@ -1141,6 +1293,8 @@ package body Sem_SPARK is
       --  Restore the saved environment and free the current one
 
       Move_Env (Saved_Env, Current_Perm_Env);
+      Move_Variable_Mapping (Saved_Borrowers, Current_Borrowers);
+      Move_Variable_Mapping (Saved_Observers, Current_Observers);
 
       Inside_Elaboration := Save_In_Elab;
    end Check_Callable_Body;
@@ -1532,12 +1686,17 @@ package body Sem_SPARK is
                  Loop_Parameter_Specification (Expr);
                For_Of_Spec : constant Node_Id :=
                  Iterator_Specification (Expr);
+               For_Of_Spec_Typ : Node_Id;
+
             begin
                if Present (For_In_Spec) then
                   Read_Expression (Discrete_Subtype_Definition (For_In_Spec));
                else
                   Read_Expression (Name (For_Of_Spec));
-                  Read_Expression (Subtype_Indication (For_Of_Spec));
+                  For_Of_Spec_Typ := Subtype_Indication (For_Of_Spec);
+                  if Present (For_Of_Spec_Typ) then
+                     Read_Expression (For_Of_Spec_Typ);
+                  end if;
                end if;
 
                Read_Expression (Condition (Expr));
@@ -2090,6 +2249,9 @@ package body Sem_SPARK is
          when N_Handled_Sequence_Of_Statements =>
             Check_List (Statements (N));
 
+         when N_Pragma =>
+            Check_Pragma (N);
+
          --  Ignored constructs for pointer checking
 
          when N_Abstract_Subprogram_Declaration
@@ -2120,7 +2282,6 @@ package body Sem_SPARK is
             | N_Others_Choice
             | N_Package_Instantiation
             | N_Package_Renaming_Declaration
-            | N_Pragma
             | N_Procedure_Instantiation
             | N_Record_Representation_Clause
             | N_Subprogram_Declaration
@@ -2222,15 +2383,26 @@ package body Sem_SPARK is
 
    procedure Check_Parameter_Or_Global
      (Expr       : Node_Id;
-      Param_Mode : Formal_Kind;
+      Typ        : Entity_Id;
+      Kind       : Formal_Kind;
       Subp       : Entity_Id;
       Global_Var : Boolean)
    is
-      Typ  : constant Entity_Id := Underlying_Type (Etype (Expr));
-      Mode : Checking_Mode;
+      Mode   : Checking_Mode;
+      Status : Error_Status;
 
    begin
-      case Param_Mode is
+      if not Global_Var
+        and then Is_Anonymous_Access_Type (Typ)
+      then
+         Check_Source_Of_Borrow_Or_Observe (Expr, Status);
+
+         if Status /= OK then
+            return;
+         end if;
+      end if;
+
+      case Kind is
          when E_In_Parameter =>
 
             --  Inputs of functions have R permission only
@@ -2280,6 +2452,66 @@ package body Sem_SPARK is
      new Handle_Globals (Check_Parameter_Or_Global);
 
    procedure Check_Globals (Subp : Entity_Id) renames Check_Globals_Inst;
+
+   ------------------
+   -- Check_Pragma --
+   ------------------
+
+   procedure Check_Pragma (Prag : Node_Id) is
+      Prag_Id : constant Pragma_Id := Get_Pragma_Id (Prag);
+      Arg1    : constant Node_Id :=
+        First (Pragma_Argument_Associations (Prag));
+      Arg2    : Node_Id;
+
+   begin
+      if Present (Arg1) then
+         Arg2 := Next (Arg1);
+      end if;
+
+      case Prag_Id is
+         when Pragma_Check =>
+            declare
+               Expr : constant Node_Id := Expression (Arg2);
+            begin
+               Check_Expression (Expr, Read);
+            end;
+
+         --  There is no need to check contracts, as these can only access
+         --  inputs and outputs of the subprogram. Inputs are checked
+         --  independently for R permission. Outputs are checked
+         --  independently to have RW permission on exit.
+
+         when Pragma_Contract_Cases
+            | Pragma_Postcondition
+            | Pragma_Precondition
+            | Pragma_Refined_Post
+         =>
+            null;
+
+         --  The same holds for the initial condition after package
+         --  elaboration, for the different reason that library-level
+         --  variables can only be left in RW state after elaboration.
+
+         when Pragma_Initial_Condition =>
+            null;
+
+         --  These pragmas should have been rewritten and/or removed in
+         --  GNATprove mode.
+
+         when Pragma_Assert
+            | Pragma_Assert_And_Cut
+            | Pragma_Assume
+            | Pragma_Compile_Time_Error
+            | Pragma_Compile_Time_Warning
+            | Pragma_Debug
+            | Pragma_Loop_Invariant
+         =>
+            raise Program_Error;
+
+         when others =>
+            null;
+      end case;
+   end Check_Pragma;
 
    -------------------------
    -- Check_Safe_Pointers --
@@ -2366,8 +2598,15 @@ package body Sem_SPARK is
      (Expr   : Node_Id;
       Status : out Error_Status)
    is
-      Root : constant Entity_Id := Get_Root_Object (Expr);
+      Root : Entity_Id;
+
    begin
+      if Is_Path_Expression (Expr) then
+         Root := Get_Root_Object (Expr);
+      else
+         Root := Empty;
+      end if;
+
       Status := OK;
 
       --  SPARK RM 3.10(3): If the target of an assignment operation is an
@@ -2376,35 +2615,20 @@ package body Sem_SPARK is
       --  stand-alone object, a part of a parameter, or a call to a traversal
       --  function.
 
-      if Present (Root) then
-         if not Ekind_In (Root, E_Variable, E_Constant)
-           and then Ekind (Root) not in Formal_Kind
-         then
+      if No (Root) then
+         if Nkind (Expr) = N_Function_Call then
+            Error_Msg_N
+              ("incorrect borrow or observe (SPARK RM 3.10(3))", Expr);
+            Error_Msg_N
+              ("\function called must be a traversal function", Expr);
+         else
             Error_Msg_N
               ("incorrect borrow or observe (SPARK RM 3.10(3))", Expr);
             Error_Msg_N
               ("\expression must be part of stand-alone object or parameter",
                Expr);
-            Status := Error;
          end if;
 
-      elsif Nkind (Expr) = N_Function_Call then
-         declare
-            Callee : constant Entity_Id := Get_Called_Entity (Expr);
-         begin
-            if No (Callee)
-              or else not Is_Traversal_Function (Callee)
-            then
-               Error_Msg_N
-                 ("incorrect borrow or observe (SPARK RM 3.10(3))", Expr);
-               Error_Msg_N
-                 ("\function called must be a traversal function", Expr);
-               Status := Error;
-            end if;
-         end;
-
-      else
-         Error_Msg_N ("incorrect borrow or observe (SPARK RM 3.10(3))", Expr);
          Status := Error;
       end if;
    end Check_Source_Of_Borrow_Or_Observe;
@@ -2426,34 +2650,46 @@ package body Sem_SPARK is
 
          when N_Assignment_Statement =>
             declare
-               Target     : constant Node_Id := Name (Stmt);
-               Target_Typ : constant Entity_Id := Etype (Target);
+               Target : constant Node_Id := Name (Stmt);
             begin
                Check_Assignment (Target => Target,
                                  Expr   => Expression (Stmt));
 
-               if Is_Deep (Target_Typ) then
-                  Check_Expression (Target, Assign);
+               --  ??? We need a rule that forbids targets of assignment for
+               --  which the path is not known, for example when there is a
+               --  function call involved (which includes calls to traversal
+               --  functions). Otherwise there is no way to update the
+               --  corresponding path permission.
+
+               if No (Get_Root_Object
+                       (Target, Through_Traversal => False))
+               then
+                  Error_Msg_N ("illegal target for assignment", Target);
+                  return;
                end if;
+
+               Check_Expression (Target, Assign);
             end;
 
          when N_Block_Statement =>
+            Check_List (Declarations (Stmt));
+            Check_Node (Handled_Statement_Sequence (Stmt));
+
+            --  Remove local borrowers and observers
+
             declare
-               Saved_Env : Perm_Env;
+               Decl : Node_Id := First (Declarations (Stmt));
+               Var  : Entity_Id;
             begin
-               --  Save environment
+               while Present (Decl) loop
+                  if Nkind (Decl) = N_Object_Declaration then
+                     Var := Defining_Identifier (Decl);
+                     Remove (Current_Borrowers, Var);
+                     Remove (Current_Observers, Var);
+                  end if;
 
-               Copy_Env (Current_Perm_Env, Saved_Env);
-
-               --  Analyze declarations and Handled_Statement_Sequences
-
-               Check_List (Declarations (Stmt));
-               Check_Node (Handled_Statement_Sequence (Stmt));
-
-               --  Restore environment
-
-               Free_Env (Current_Perm_Env);
-               Copy_Env (Saved_Env, Current_Perm_Env);
+                  Next (Decl);
+               end loop;
             end;
 
          when N_Case_Statement =>
@@ -2569,8 +2805,12 @@ package body Sem_SPARK is
                         Check_Expression (Expr, Read);
                      end if;
 
-                     Return_Parameters (Subp);
-                     Return_Globals (Subp);
+                     if Ekind_In (Subp, E_Procedure, E_Entry)
+                       and then not No_Return (Subp)
+                     then
+                        Return_Parameters (Subp);
+                        Return_Globals (Subp);
+                     end if;
                   end;
                end if;
             end;
@@ -2602,8 +2842,12 @@ package body Sem_SPARK is
                   Perm_Error (Decl, Read_Write, Perm);
                end if;
 
-               Return_Parameters (Subp);
-               Return_Globals (Subp);
+               if Ekind_In (Subp, E_Procedure, E_Entry)
+                 and then not No_Return (Subp)
+               then
+                  Return_Parameters (Subp);
+                  Return_Globals (Subp);
+               end if;
             end;
 
          --  On loop exit, merge the current permission environment with the
@@ -2733,7 +2977,9 @@ package body Sem_SPARK is
       case Type_Kind'(Ekind (Underlying_Type (Typ))) is
          when Access_Kind =>
             case Access_Kind'(Ekind (Typ)) is
-               when E_Access_Type =>
+               when E_Access_Type
+                  | E_Anonymous_Access_Type
+               =>
                   null;
                when E_Access_Subtype =>
                   Check_Type (Base_Type (Typ));
@@ -2748,8 +2994,6 @@ package body Sem_SPARK is
                   Error_Msg_NE
                     ("access to subprogram type & not allowed in SPARK",
                      Typ, Typ);
-               when E_Anonymous_Access_Type =>
-                  Error_Msg_N ("anonymous access type not yet supported", Typ);
             end case;
 
          when E_Array_Type
@@ -2814,9 +3058,22 @@ package body Sem_SPARK is
             return Permission (C);
          end;
 
-      --  The expression is rooted in an object
+      --  The expression is a call to a traversal function
 
-      elsif Present (Get_Root_Object (N)) then
+      elsif Is_Traversal_Function_Call (N) then
+         declare
+            Callee : constant Entity_Id := Get_Called_Entity (N);
+         begin
+            if Is_Access_Constant (Etype (Callee)) then
+               return Read_Only;
+            else
+               return Read_Write;
+            end if;
+         end;
+
+      --  The expression is directly rooted in an object
+
+      elsif Present (Get_Root_Object (N, Through_Traversal => False)) then
          declare
             Tree_Or_Perm : constant Perm_Or_Tree := Get_Perm_Or_Tree (N);
          begin
@@ -2942,7 +3199,10 @@ package body Sem_SPARK is
    -- Get_Root_Object --
    ---------------------
 
-   function Get_Root_Object (Expr : Node_Id) return Entity_Id is
+   function Get_Root_Object
+     (Expr              : Node_Id;
+      Through_Traversal : Boolean := True) return Entity_Id
+   is
    begin
       case Nkind (Expr) is
          when N_Expanded_Name
@@ -2955,21 +3215,33 @@ package body Sem_SPARK is
             | N_Selected_Component
             | N_Slice
          =>
-            return Get_Root_Object (Prefix (Expr));
+            return Get_Root_Object (Prefix (Expr), Through_Traversal);
 
-         --  There is no entity for an allocator, NULL or a function call
+         --  There is no root object for an allocator or NULL
 
          when N_Allocator
             | N_Null
-            | N_Function_Call
          =>
             return Empty;
+
+         --  In the case of a call to a traversal function, the root object is
+         --  the root of the traversed parameter. Otherwise there is no root
+         --  object.
+
+         when N_Function_Call =>
+            if Through_Traversal
+              and then Is_Traversal_Function_Call (Expr)
+            then
+               return Get_Root_Object (First_Actual (Expr), Through_Traversal);
+            else
+               return Empty;
+            end if;
 
          when N_Qualified_Expression
             | N_Type_Conversion
             | N_Unchecked_Type_Conversion
          =>
-            return Get_Root_Object (Expression (Expr));
+            return Get_Root_Object (Expression (Expr), Through_Traversal);
 
          when others =>
             raise Program_Error;
@@ -3171,6 +3443,119 @@ package body Sem_SPARK is
       end case;
    end Is_Path_Expression;
 
+   -------------------------
+   -- Is_Prefix_Or_Almost --
+   -------------------------
+
+   function Is_Prefix_Or_Almost (Pref, Expr : Node_Id) return Boolean is
+
+      type Expr_Array is array (Positive range <>) of Node_Id;
+      --  Sequence of expressions that make up a path
+
+      function Get_Expr_Array (Expr : Node_Id) return Expr_Array;
+      pragma Precondition (Is_Path_Expression (Expr));
+      --  Return the sequence of expressions that make up a path
+
+      --------------------
+      -- Get_Expr_Array --
+      --------------------
+
+      function Get_Expr_Array (Expr : Node_Id) return Expr_Array is
+      begin
+         case Nkind (Expr) is
+            when N_Expanded_Name
+               | N_Identifier
+            =>
+               return Expr_Array'(1 => Expr);
+
+            when N_Explicit_Dereference
+               | N_Indexed_Component
+               | N_Selected_Component
+               | N_Slice
+            =>
+               return Get_Expr_Array (Prefix (Expr)) & Expr;
+
+            when N_Qualified_Expression
+               | N_Type_Conversion
+               | N_Unchecked_Type_Conversion
+            =>
+               return Get_Expr_Array (Expression (Expr));
+
+            when others =>
+               raise Program_Error;
+         end case;
+      end Get_Expr_Array;
+
+      --  Local variables
+
+      Prefix_Path : constant Expr_Array := Get_Expr_Array (Pref);
+      Expr_Path   : constant Expr_Array := Get_Expr_Array (Expr);
+
+      Prefix_Root : constant Node_Id := Prefix_Path (1);
+      Expr_Root   : constant Node_Id := Expr_Path (1);
+
+      Common_Len  : constant Positive :=
+        Positive'Min (Prefix_Path'Length, Expr_Path'Length);
+
+   --  Start of processing for Is_Prefix_Or_Almost
+
+   begin
+      if Entity (Prefix_Root) /= Entity (Expr_Root) then
+         return False;
+      end if;
+
+      for J in 2 .. Common_Len loop
+         declare
+            Prefix_Elt : constant Node_Id := Prefix_Path (J);
+            Expr_Elt   : constant Node_Id := Expr_Path (J);
+         begin
+            case Nkind (Prefix_Elt) is
+               when N_Explicit_Dereference =>
+                  if Nkind (Expr_Elt) /= N_Explicit_Dereference then
+                     return False;
+                  end if;
+
+               when N_Selected_Component =>
+                  if Nkind (Expr_Elt) /= N_Selected_Component
+                    or else Entity (Selector_Name (Prefix_Elt))
+                         /= Entity (Selector_Name (Expr_Elt))
+                  then
+                     return False;
+                  end if;
+
+               when N_Indexed_Component
+                  | N_Slice
+               =>
+                  if not Nkind_In (Expr_Elt, N_Indexed_Component, N_Slice) then
+                     return False;
+                  end if;
+
+               when others =>
+                  raise Program_Error;
+            end case;
+         end;
+      end loop;
+
+      --  If the expression path is longer than the prefix one, then at this
+      --  point the prefix property holds.
+
+      if Expr_Path'Length > Prefix_Path'Length then
+         return True;
+
+      --  Otherwise check if none of the remaining path elements in the
+      --  candidate prefix involve a dereference.
+
+      else
+         for J in Common_Len + 1 .. Prefix_Path'Length loop
+            if Nkind (Prefix_Path (J)) = N_Explicit_Dereference then
+               return False;
+            end if;
+         end loop;
+
+         return True;
+      end if;
+   end Is_Prefix_Or_Almost;
+
    ---------------------------
    -- Is_Traversal_Function --
    ---------------------------
@@ -3192,6 +3577,17 @@ package body Sem_SPARK is
 
         and then Is_Access_Type (Etype (First_Formal (E)));
    end Is_Traversal_Function;
+
+   --------------------------------
+   -- Is_Traversal_Function_Call --
+   --------------------------------
+
+   function Is_Traversal_Function_Call (Expr : Node_Id) return Boolean is
+   begin
+      return Nkind (Expr) = N_Function_Call
+        and then Present (Get_Called_Entity (Expr))
+        and then Is_Traversal_Function (Get_Called_Entity (Expr));
+   end Is_Traversal_Function_Call;
 
    ------------------
    -- Loop_Of_Exit --
@@ -3588,9 +3984,92 @@ package body Sem_SPARK is
    ------------------
 
    procedure Process_Path (Expr : Node_Id; Mode : Checking_Mode) is
+
+      procedure Check_Not_Borrowed (Expr : Node_Id; Root : Entity_Id);
+      --  Check expression Expr originating in Root was not borrowed
+
+      procedure Check_Not_Observed (Expr : Node_Id; Root : Entity_Id);
+      --  Check expression Expr originating in Root was not observed
+
+      ------------------------
+      -- Check_Not_Borrowed --
+      ------------------------
+
+      procedure Check_Not_Borrowed (Expr : Node_Id; Root : Entity_Id) is
+      begin
+         --  An expression without root object cannot be borrowed
+
+         if No (Root) then
+            return;
+         end if;
+
+         --  Otherwise, try to match the expression with one of the borrowed
+         --  expressions.
+
+         declare
+            Key      : Variable_Maps.Key_Option :=
+              Get_First_Key (Current_Borrowers);
+            Var      : Entity_Id;
+            Borrowed : Node_Id;
+
+         begin
+            while Key.Present loop
+               Var := Key.K;
+               Borrowed := Get (Current_Borrowers, Var);
+
+               if Is_Prefix_Or_Almost (Pref => Borrowed, Expr => Expr) then
+                  Error_Msg_Sloc := Sloc (Borrowed);
+                  Error_Msg_N ("expression was borrowed #", Expr);
+               end if;
+
+               Key := Get_Next_Key (Current_Borrowers);
+            end loop;
+         end;
+      end Check_Not_Borrowed;
+
+      ------------------------
+      -- Check_Not_Observed --
+      ------------------------
+
+      procedure Check_Not_Observed (Expr : Node_Id; Root : Entity_Id) is
+      begin
+         --  An expression without root object cannot be observed
+
+         if No (Root) then
+            return;
+         end if;
+
+         --  Otherwise, try to match the expression with one of the observed
+         --  expressions.
+
+         declare
+            Key      : Variable_Maps.Key_Option :=
+              Get_First_Key (Current_Observers);
+            Var      : Entity_Id;
+            Observed : Node_Id;
+
+         begin
+            while Key.Present loop
+               Var := Key.K;
+               Observed := Get (Current_Observers, Var);
+
+               if Is_Prefix_Or_Almost (Pref => Observed, Expr => Expr) then
+                  Error_Msg_Sloc := Sloc (Observed);
+                  Error_Msg_N ("expression was observed #", Expr);
+               end if;
+
+               Key := Get_Next_Key (Current_Observers);
+            end loop;
+         end;
+      end Check_Not_Observed;
+
+      --  Local variables
+
       Expr_Type : constant Entity_Id := Etype (Expr);
       Root      : Entity_Id := Get_Root_Object (Expr);
       Perm      : Perm_Kind;
+
+   --  Start of processing for Process_Path
 
    begin
       --  Nothing to do if the root type is not deep, or the path is not rooted
@@ -3614,6 +4093,8 @@ package body Sem_SPARK is
       end if;
 
       Perm := Get_Perm (Expr);
+
+      --  Check permissions
 
       case Mode is
 
@@ -3665,25 +4146,6 @@ package body Sem_SPARK is
                return;
             end if;
 
-            --  Do not update permission environment when handling calls
-
-            if Inside_Procedure_Call then
-               return;
-            end if;
-
-            --  SPARK RM 3.10(1): After a move operation, the state of the
-            --  source object (if any) becomes Moved.
-
-            if Present (Get_Root_Object (Expr)) then
-               declare
-                  Tree : constant Perm_Tree_Access :=
-                    Set_Perm_Prefixes (Expr, Write_Only);
-               begin
-                  pragma Assert (Tree /= null);
-                  Set_Perm_Extensions_Move (Tree, Etype (Expr));
-               end;
-            end if;
-
          when Assign =>
 
             --  No checking needed during elaboration
@@ -3699,11 +4161,87 @@ package body Sem_SPARK is
                return;
             end if;
 
-            --  Do not update permission environment when handling calls
+         when Borrow =>
 
-            if Inside_Procedure_Call then
+            --  Forbidden during elaboration
+
+            if Inside_Elaboration then
+               if not Inside_Procedure_Call then
+                  Error_Msg_N ("illegal borrow during elaboration", Expr);
+               end if;
+
                return;
             end if;
+
+            --  For borrowing, check RW permission
+
+            if Perm /= Read_Write then
+               Perm_Error (Expr, Read_Write, Perm);
+               return;
+            end if;
+
+         when Observe =>
+
+            --  Forbidden during elaboration
+
+            if Inside_Elaboration then
+               if not Inside_Procedure_Call then
+                  Error_Msg_N ("illegal observe during elaboration", Expr);
+               end if;
+
+               return;
+            end if;
+
+            --  For borrowing, check R permission
+
+            if Perm not in Read_Perm then
+               Perm_Error (Expr, Read_Only, Perm);
+               return;
+            end if;
+      end case;
+
+      --  Check path was not borrowed
+
+      Check_Not_Borrowed (Expr, Root);
+
+      --  For modes that require W permission, check path was not observed
+
+      case Mode is
+         when Read | Observe =>
+            null;
+         when Assign | Move | Borrow =>
+            Check_Not_Observed (Expr, Root);
+      end case;
+
+      --  Do not update permission environment when handling calls
+
+      if Inside_Procedure_Call then
+         return;
+      end if;
+
+      --  Update the permissions
+
+      case Mode is
+
+         when Read =>
+            null;
+
+         when Move =>
+
+            --  SPARK RM 3.10(1): After a move operation, the state of the
+            --  source object (if any) becomes Moved.
+
+            if Present (Get_Root_Object (Expr)) then
+               declare
+                  Tree : constant Perm_Tree_Access :=
+                    Set_Perm_Prefixes (Expr, Write_Only);
+               begin
+                  pragma Assert (Tree /= null);
+                  Set_Perm_Extensions_Move (Tree, Etype (Expr));
+               end;
+            end if;
+
+         when Assign =>
 
             --  If there is no root object, or the tree has an array component,
             --  then the permissions do not get modified by the assignment.
@@ -3729,29 +4267,6 @@ package body Sem_SPARK is
 
          when Borrow =>
 
-            --  Forbidden during elaboration
-
-            if Inside_Elaboration then
-               if not Inside_Procedure_Call then
-                  Error_Msg_N ("illegal borrow during elaboration", Expr);
-               end if;
-
-               return;
-            end if;
-
-            --  For borrowing, check RW permission
-
-            if Perm /= Read_Write then
-               Perm_Error (Expr, Read_Write, Perm);
-               return;
-            end if;
-
-            --  Do not update permission environment when handling calls
-
-            if Inside_Procedure_Call then
-               return;
-            end if;
-
             --  Set permission NO for the path and its extensions
 
             declare
@@ -3762,29 +4277,6 @@ package body Sem_SPARK is
             end;
 
          when Observe =>
-
-            --  Forbidden during elaboration
-
-            if Inside_Elaboration then
-               if not Inside_Procedure_Call then
-                  Error_Msg_N ("illegal observe during elaboration", Expr);
-               end if;
-
-               return;
-            end if;
-
-            --  For borrowing, check R permission
-
-            if Perm not in Read_Perm then
-               Perm_Error (Expr, Read_Only, Perm);
-               return;
-            end if;
-
-            --  Do not update permission environment when handling calls
-
-            if Inside_Procedure_Call then
-               return;
-            end if;
 
             --  Set permission R for the path and its extensions
 
@@ -3805,7 +4297,8 @@ package body Sem_SPARK is
 
       procedure Return_Global
         (Expr       : Node_Id;
-         Param_Mode : Formal_Kind;
+         Typ        : Entity_Id;
+         Kind       : Formal_Kind;
          Subp       : Entity_Id;
          Global_Var : Boolean);
       --  Proxy procedure to return globals, to adjust for the type of first
@@ -3817,13 +4310,18 @@ package body Sem_SPARK is
 
       procedure Return_Global
         (Expr       : Node_Id;
-         Param_Mode : Formal_Kind;
+         Typ        : Entity_Id;
+         Kind       : Formal_Kind;
          Subp       : Entity_Id;
          Global_Var : Boolean)
       is
       begin
          Return_Parameter_Or_Global
-           (Entity (Expr), Param_Mode, Subp, Global_Var);
+           (Id         => Entity (Expr),
+            Typ        => Typ,
+            Kind       => Kind,
+            Subp       => Subp,
+            Global_Var => Global_Var);
       end Return_Global;
 
       procedure Return_Globals_Inst is new Handle_Globals (Return_Global);
@@ -3840,18 +4338,18 @@ package body Sem_SPARK is
 
    procedure Return_Parameter_Or_Global
      (Id         : Entity_Id;
-      Mode       : Formal_Kind;
+      Typ        : Entity_Id;
+      Kind       : Formal_Kind;
       Subp       : Entity_Id;
       Global_Var : Boolean)
    is
-      Typ  : constant Entity_Id := Underlying_Type (Etype (Id));
    begin
       --  Shallow parameters and globals need not be considered
 
       if not Is_Deep (Typ) then
          return;
 
-      elsif Mode = E_In_Parameter then
+      elsif Kind = E_In_Parameter then
 
          --  Input global variables are observed only
 
@@ -3897,7 +4395,12 @@ package body Sem_SPARK is
    begin
       Formal := First_Formal (Subp);
       while Present (Formal) loop
-         Return_Parameter_Or_Global (Formal, Ekind (Formal), Subp, False);
+         Return_Parameter_Or_Global
+           (Id         => Formal,
+            Typ        => Underlying_Type (Etype (Formal)),
+            Kind       => Ekind (Formal),
+            Subp       => Subp,
+            Global_Var => False);
          Next_Formal (Formal);
       end loop;
    end Return_Parameters;
@@ -4172,6 +4675,7 @@ package body Sem_SPARK is
                      pragma Assert (Kind (C) = Entire_Object);
 
                      D       : Perm_Tree_Access;
+                     D_This  : Perm_Tree_Access;
                      Comp    : Node_Id;
                      P       : Perm_Kind;
                      Child_P : constant Perm_Kind := Children_Permission (C);
@@ -4198,6 +4702,13 @@ package body Sem_SPARK is
                               Permission          => P,
                               Children_Permission => Child_P));
                         Perm_Tree_Maps.Set (Hashtbl, Comp, D);
+
+                        --  Store the tree to return for this component
+
+                        if Comp = Entity (Selector_Name (N)) then
+                           D_This := D;
+                        end if;
+
                         Next_Component_Or_Discriminant (Comp);
                      end loop;
 
@@ -4205,7 +4716,7 @@ package body Sem_SPARK is
                                     Is_Node_Deep => Is_Node_Deep (C),
                                     Permission   => Permission (C),
                                     Component    => Hashtbl);
-                     return D;
+                     return D_This;
                   end;
                end if;
             end;
@@ -4349,7 +4860,8 @@ package body Sem_SPARK is
 
       procedure Setup_Global
         (Expr       : Node_Id;
-         Param_Mode : Formal_Kind;
+         Typ        : Entity_Id;
+         Kind       : Formal_Kind;
          Subp       : Entity_Id;
          Global_Var : Boolean);
       --  Proxy procedure to set up globals, to adjust for the type of first
@@ -4361,13 +4873,18 @@ package body Sem_SPARK is
 
       procedure Setup_Global
         (Expr       : Node_Id;
-         Param_Mode : Formal_Kind;
+         Typ        : Entity_Id;
+         Kind       : Formal_Kind;
          Subp       : Entity_Id;
          Global_Var : Boolean)
       is
       begin
          Setup_Parameter_Or_Global
-           (Entity (Expr), Param_Mode, Subp, Global_Var);
+           (Id         => Entity (Expr),
+            Typ        => Typ,
+            Kind       => Kind,
+            Subp       => Subp,
+            Global_Var => Global_Var);
       end Setup_Global;
 
       procedure Setup_Globals_Inst is new Handle_Globals (Setup_Global);
@@ -4384,15 +4901,15 @@ package body Sem_SPARK is
 
    procedure Setup_Parameter_Or_Global
      (Id         : Entity_Id;
-      Param_Mode : Formal_Kind;
+      Typ        : Entity_Id;
+      Kind       : Formal_Kind;
       Subp       : Entity_Id;
       Global_Var : Boolean)
    is
-      Typ  : constant Entity_Id := Underlying_Type (Etype (Id));
       Perm : Perm_Kind_Option;
 
    begin
-      case Param_Mode is
+      case Kind is
          when E_In_Parameter =>
 
             --  Shallow parameters and globals need not be considered
@@ -4439,7 +4956,7 @@ package body Sem_SPARK is
             --  Functions cannot have outputs in SPARK
 
             elsif Ekind (Subp) = E_Function then
-               if Param_Mode = E_Out_Parameter then
+               if Kind = E_Out_Parameter then
                   Error_Msg_N ("function with OUT parameter is not "
                                & "allowed in SPARK", Id);
                else
@@ -4481,7 +4998,11 @@ package body Sem_SPARK is
       Formal := First_Formal (Subp);
       while Present (Formal) loop
          Setup_Parameter_Or_Global
-           (Formal, Ekind (Formal), Subp, Global_Var => False);
+           (Id         => Formal,
+            Typ        => Underlying_Type (Etype (Formal)),
+            Kind       => Ekind (Formal),
+            Subp       => Subp,
+            Global_Var => False);
          Next_Formal (Formal);
       end loop;
    end Setup_Parameters;

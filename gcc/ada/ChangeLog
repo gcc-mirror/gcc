@@ -1,3 +1,13 @@
+2019-07-03  Yannick Moy  <moy@adacore.com>
+
+	* sem_spark.adb: Add support for locally borrowing and observing
+	a path.
+	(Get_Root_Object): Add parameter Through_Traversal to denote
+	when we are interesting in getting to the traversed parameter.
+	(Is_Prefix_Or_Almost): New function to support detection of
+	illegal access to borrowed or observed paths.
+	(Check_Pragma): Add analysis of assertion pragmas.
+
 2019-07-03  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Build_Predicate_Functions): In a generic context
