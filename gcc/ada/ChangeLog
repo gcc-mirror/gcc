@@ -1,3 +1,9 @@
+2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/interfacing_to_other_languages.rst (Interfacing to C):
+	Document that boolean types with convention C now map to C99 bool.
+	* gnat_rm.texi: Regenerate.
+
 2019-07-03  Javier Miranda  <miranda@adacore.com>
 
 	* exp_attr.adb (Expand_Min_Max_Attribute): Code cleanup:

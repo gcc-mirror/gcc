@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , May 27, 2019
+GNAT Reference Manual , Jun 21, 2019
 
 AdaCore
 
@@ -5220,18 +5220,19 @@ Syntax:
 pragma Machine_Attribute (
      [Entity         =>] LOCAL_NAME,
      [Attribute_Name =>] static_string_EXPRESSION
-  [, [Info           =>] static_EXPRESSION] );
+  [, [Info           =>] static_EXPRESSION @{, static_EXPRESSION@}] );
 @end example
 
 Machine-dependent attributes can be specified for types and/or
 declarations.  This pragma is semantically equivalent to
 @code{__attribute__((@emph{attribute_name}))} (if @code{info} is not
 specified) or @code{__attribute__((@emph{attribute_name(info})))}
-in GNU C, where @emph{attribute_name} is recognized by the
-compiler middle-end or the @code{TARGET_ATTRIBUTE_TABLE} machine
-specific macro.  A string literal for the optional parameter @code{info}
-is transformed into an identifier, which may make this pragma unusable
-for some attributes.
+or @code{__attribute__((@emph{attribute_name(info,...})))} in GNU C,
+where @emph{attribute_name} is recognized by the compiler middle-end
+or the @code{TARGET_ATTRIBUTE_TABLE} machine specific macro.  Note
+that a string literal for the optional parameter @code{info} or the
+following ones is transformed by default into an identifier,
+which may make this pragma unusable for some attributes.
 For further information see @cite{GNU Compiler Collection (GCC) Internals}.
 
 @node Pragma Main,Pragma Main_Storage,Pragma Machine_Attribute,Implementation Defined Pragmas
@@ -25540,8 +25541,10 @@ and C types:
 
 @item 
 Ada enumeration types map to C enumeration types directly if pragma
-@code{Convention C} is specified, which causes them to have int
-length.  Without pragma @code{Convention C}, Ada enumeration types map to
+@code{Convention C} is specified, which causes them to have a length of
+32 bits, except for boolean types which map to C99 @code{bool} and for
+which the length is 8 bits.
+Without pragma @code{Convention C}, Ada enumeration types map to
 8, 16, or 32 bits (i.e., C types @code{signed char}, @code{short},
 @code{int}, respectively) depending on the number of values passed.
 This is the only case in which pragma @code{Convention C} affects the
