@@ -493,8 +493,8 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-p  -pg  -fprofile-arcs  --coverage  -ftest-coverage @gol
 -fprofile-abs-path @gol
 -fprofile-dir=@var{path}  -fprofile-generate  -fprofile-generate=@var{path} @gol
--fprofile-update=@var{method}  -fprofile-filter-files=@var{regex} @gol
--fprofile-exclude-files=@var{regex} @gol
+-fprofile-note=@var{path}  -fprofile-update=@var{method} @gol
+-fprofile-filter-files=@var{regex}  -fprofile-exclude-files=@var{regex} @gol
 -fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style} @gol
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},... @gol
 -fsanitize-undefined-trap-on-error  -fbounds-check @gol
@@ -12403,6 +12403,11 @@ the profile feedback data files. See @option{-fprofile-dir}.
 
 To optimize the program based on the collected profile information, use
 @option{-fprofile-use}.  @xref{Optimize Options}, for more information.
+
+@item -fprofile-note=@var{path}
+@opindex fprofile-note
+
+If @var{path} is specified, GCC saves gcno filename into @var{path} location.
 
 @item -fprofile-update=@var{method}
 @opindex fprofile-update

@@ -2096,6 +2096,10 @@ Common Joined RejectNegative Var(profile_data_prefix)
 Set the top-level directory for storing the profile data.
 The default is 'pwd'.
 
+fprofile-note=
+Common Joined RejectNegative Var(profile_note_location)
+Select the name for storing the profile note file.
+
 fprofile-correction
 Common Report Var(flag_profile_correction)
 Enable correction of flow inconsistent profile data input.
