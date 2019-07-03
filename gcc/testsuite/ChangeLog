@@ -1,3 +1,7 @@
+2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/debug1.ads: New test.
+
 2019-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/array5.ads: New test.
