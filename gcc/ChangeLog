@@ -1,3 +1,14 @@
+2019-07-03  Mark Wielaard  <mark@klomp.org>
+
+	PR debug/90981
+	* dwarf2out.c (add_top_level_skeleton_die_attrs): Only add
+	DW_AT_addr_base if there is actually a .debug_addr section with
+	addresses.
+	(output_addr_table): Add DWARF5 table header generation here after
+	checking there are actually any addresses from...
+	(dwarf2out_finish): ...here.
+	* testsuite/g++.dg/pr90981.C: New test.
+
 2019-07-03  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/91069
