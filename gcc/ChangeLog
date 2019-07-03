@@ -1,5 +1,14 @@
 2019-07-03  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/darwin.h (DRIVER_SELF_SPECS): Remove the linker cases.
+	(RDYNAMIC): Rename to, DARWIN_RDYNAMIC.
+	(DARWIN_PIE_SPEC, DARWIN_NOPIE_SPEC): Adjust to remove the Xlinker
+	clauses.
+	(LINK_COMMAND_SPEC_A): Add DARWIN_RDYNAMIC, DARWIN_PIE_SPEC and
+	DARWIN_NOPIE_SPEC.
+
+2019-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* config/darwin.h (REAL_LIBGCC_SPEC): Adjust for earlier Darwin.
 	(STARTFILE_SPEC): Split crt3 into a separate spec.
 	(DARWIN_EXTRA_SPECS): Add crt2 and crt3 spec.
