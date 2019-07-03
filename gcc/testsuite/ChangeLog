@@ -1,3 +1,8 @@
+2019-07-03  Bob Duff  <duff@adacore.com>
+
+	* gnat.dg/task2.adb, gnat.dg/task2_pkg.adb,
+	gnat.dg/task2_pkg.ads: New testcase.
+
 2019-07-03  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/inline16.adb, gnat.dg/inline16_gen.adb,

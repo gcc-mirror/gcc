@@ -1,3 +1,10 @@
+2019-07-03  Bob Duff  <duff@adacore.com>
+
+	* sem_ch3.adb (Access_Definition): The code was creating a
+	master in the case where the designated type is a class-wide
+	interface type. Create a master in the noninterface case as
+	well. That is, create a master for all limited class-wide types.
+
 2019-07-03  Yannick Moy  <moy@adacore.com>
 
 	* erroutc.adb (Sloc_In_Range): New function to determine whether
