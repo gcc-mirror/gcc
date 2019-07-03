@@ -1,3 +1,8 @@
+2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (add_scalar_info): Add back refererence to existing DIE
+	if it has the DW_AT_data_member_location attribute.
+
 2019-07-03  Richard Biener  <rguenther@suse.de>
 
 	* gimple-pretty-print.c (dump_ternary_rhs): Fix BIT_INSERT_EXPR
