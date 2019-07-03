@@ -128,9 +128,25 @@ extern int darwin_emit_picsym_stub;
    %:version-compare(>< 10.5 10.7 mmacosx-version-min= -lcrt1.10.5.o)	\
    %{fgnu-tm: -lcrttms.o}"
 
-/* crt2.o is at least partially required for 10.3.x and earlier.  */
+/* crt2.o is at least partially required for 10.3.x and earlier.
+   It deals with registration of the unwind frames, where this is not
+   automatically provided by the system.  So we need it for any case that
+   might use exceptions.  */
+#undef DARWIN_CRT2_SPEC
 #define DARWIN_CRT2_SPEC \
-  "%{!m64:%:version-compare(!> 10.4 mmacosx-version-min= crt2.o%s)}"
+"%{!m64:%{shared-libgcc|static-libstdc++|fexceptions|fobjc-exceptions|fgnu-runtime: \
+   %:version-compare(!> 10.4 mmacosx-version-min= crt2.o%s) \
+  }}"
+
+/* crt3 deals with providing cxa_atexit on earlier systems (or fixing it up,
+   for broken versions).  It's only needed for c++ code, so we can make it
+   conditional on shared-libgcc since that's forced on for c++.  */
+#undef DARWIN_CRT3_SPEC
+#define DARWIN_CRT3_SPEC \
+"%{!m64:%{shared-libgcc|static-libstdc++:							\
+   %:version-compare(>< 10.4 10.5 mmacosx-version-min= crt3.o%s) \
+   %:version-compare(!> 10.4 mmacosx-version-min= crt3_2.o%s) \
+  }}"
 
 /* The PPC regs save/restore functions are leaves and could, conceivably
    be used by the tm destructor.  */
