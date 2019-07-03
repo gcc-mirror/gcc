@@ -37,6 +37,7 @@ extern struct lto_compression_stream
 			    void *opaque);
 extern void lto_uncompress_block (struct lto_compression_stream *stream,
 				  const char *base, size_t num_chars);
-extern void lto_end_uncompression (struct lto_compression_stream *stream);
+extern void lto_end_uncompression (struct lto_compression_stream *stream,
+				  lto_compression compression);
 
 #endif /* GCC_LTO_COMPRESS_H  */

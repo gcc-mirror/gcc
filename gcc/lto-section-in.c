@@ -161,7 +161,7 @@ lto_get_section_data (struct lto_file_decl_data *file_data,
 
       stream = lto_start_uncompression (lto_append_data, &buffer);
       lto_uncompress_block (stream, data, *len);
-      lto_end_uncompression (stream);
+      lto_end_uncompression (stream, file_data->lto_section_header.compression);
 
       *len = buffer.length - header_length;
       data = buffer.data + header_length;

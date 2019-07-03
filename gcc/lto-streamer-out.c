@@ -2395,7 +2395,11 @@ produce_lto_section ()
   lto_begin_section (section_name, false);
   free (section_name);
 
+#ifdef HAVE_ZSTD_H
+  lto_compression compression = ZSTD;
+#else
   lto_compression compression = ZLIB;
+#endif
 
   bool slim_object = flag_generate_lto && !flag_fat_lto_objects;
   lto_section s

@@ -1,5 +1,29 @@
 2019-07-03  Martin Liska  <mliska@suse.cz>
 
+	* Makefile.in: Define ZSTD_LIB.
+	* common.opt: Adjust compression level
+	to support also zstd levels.
+	* config.in: Regenerate.
+	* configure: Likewise.
+	* configure.ac: Add --with-zstd and --with-zstd-include options
+	and detect ZSTD.
+	* doc/install.texi: Mention zstd dependency.
+	* gcc.c: Print supported LTO compression algorithms.
+	* lto-compress.c (lto_normalized_zstd_level): Likewise.
+	(lto_compression_zstd): Likewise.
+	(lto_uncompression_zstd): Likewise.
+	(lto_end_compression): Dispatch in between zlib and zstd.
+	(lto_compression_zlib): Mark with ATTRIBUTE_UNUSED.
+	(lto_uncompression_zlib): Make it static.
+	* lto-compress.h (lto_end_uncompression): Fix GNU coding style.
+	* lto-section-in.c (lto_get_section_data): Pass info
+	about used compression.
+	* lto-streamer-out.c: By default use zstd when possible.
+	* timevar.def (TV_IPA_LTO_DECOMPRESS): Rename to decompression
+	(TV_IPA_LTO_COMPRESS): Likewise for compression.
+
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
 	* lto-section-in.c (lto_get_section_data): Add "lto" section.
 	* lto-section-out.c (lto_destroy_simple_output_block): Never
 	compress LTO_section_lto section.
