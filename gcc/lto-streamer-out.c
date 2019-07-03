@@ -1974,10 +1974,6 @@ produce_asm (struct output_block *ob, tree fn)
   /* The entire header is stream computed here.  */
   memset (&header, 0, sizeof (struct lto_function_header));
 
-  /* Write the header.  */
-  header.major_version = LTO_major_version;
-  header.minor_version = LTO_minor_version;
-
   if (section_type == LTO_section_function_body)
     header.cfg_size = ob->cfg_stream->total_size;
   header.main_size = ob->main_stream->total_size;
@@ -2270,10 +2266,6 @@ lto_output_toplevel_asms (void)
   /* The entire header stream is computed here.  */
   memset (&header, 0, sizeof (header));
 
-  /* Write the header.  */
-  header.major_version = LTO_major_version;
-  header.minor_version = LTO_minor_version;
-
   header.main_size = ob->main_stream->total_size;
   header.string_size = ob->string_stream->total_size;
   lto_write_data (&header, sizeof header);
@@ -2390,6 +2382,29 @@ prune_offload_funcs (void)
     DECL_PRESERVE_P (fn_decl) = 1;
 }
 
+/* Produce LTO section that contains global information
+   about LTO bytecode.  */
+
+static void
+produce_lto_section ()
+{
+  /* Stream LTO meta section.  */
+  output_block *ob = create_output_block (LTO_section_lto);
+
+  char * section_name = lto_get_section_name (LTO_section_lto, NULL, NULL);
+  lto_begin_section (section_name, false);
+  free (section_name);
+
+  lto_compression compression = ZLIB;
+
+  bool slim_object = flag_generate_lto && !flag_fat_lto_objects;
+  lto_section s
+    = { LTO_major_version, LTO_minor_version, slim_object, compression, 0 };
+  lto_write_data (&s, sizeof s);
+  lto_end_section ();
+  destroy_output_block (ob);
+}
+
 /* Main entry point from the pass manager.  */
 
 void
@@ -2411,6 +2426,8 @@ lto_output (void)
 
   /* Initialize the streamer.  */
   lto_streamer_init ();
+
+  produce_lto_section ();
 
   n_nodes = lto_symtab_encoder_size (encoder);
   /* Process only the functions with bodies.  */
@@ -2827,10 +2844,6 @@ lto_write_mode_table (void)
   struct lto_simple_header_with_strings header;
   memset (&header, 0, sizeof (header));
 
-  /* Write the header.  */
-  header.major_version = LTO_major_version;
-  header.minor_version = LTO_minor_version;
-
   header.main_size = ob->main_stream->total_size;
   header.string_size = ob->string_stream->total_size;
   lto_write_data (&header, sizeof header);
@@ -2900,9 +2913,6 @@ produce_asm_for_decls (void)
 		    (DECL_ASSEMBLER_NAME (fn_out_state->fn_decl)));
       lto_output_decl_state_streams (ob, fn_out_state);
     }
-
-  header.major_version = LTO_major_version;
-  header.minor_version = LTO_minor_version;
 
   /* Currently not used.  This field would allow us to preallocate
      the globals vector, so that it need not be resized as it is extended.  */
