@@ -1,3 +1,9 @@
+2019-07-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch7.adb (Has_Referencer): Do not consider inlined
+	subprograms when generating C code, which allows us to generate
+	static inline subprograms.
+
 2019-07-03  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch6.adb (Check_Conformance): Add expression checking for
