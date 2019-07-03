@@ -1,6 +1,16 @@
 2019-07-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_{in,out}::fn_parms): Rename to ...
+	(trees_{in,out}::fn_arg_types): ... this.
+	(trees_{in,out}::fn_parms_{init,fini}): New.
+	(trees_{in,out}::tree_value): Call fn_parms_fini.
+	(trees_{in,out}::key_mergeable): Call fn_parms_init.
+	gcc/testsuite/
+	* g++.dg/modules/late-ret-1.H: New.
+	* g++.dg/modules/scc-1.C: Adjust scan.
+
+	gcc/cp/
 	* module.cc (trees_out::tree_type): Add DECLTYPE_TYPE.
 	(trees_in::tree_node): Likewise.
 

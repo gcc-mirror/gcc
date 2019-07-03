@@ -12,5 +12,5 @@ export int bar (int = baz (1));
 
 // { dg-final { scan-lang-dump { Writing:-[0-9]* function_decl:'::bar@foo:1' .exported.} "module" } }
 // { dg-final { scan-lang-dump { Writing:-[0-9]* function_decl:'::baz@foo:1' .exported.} "module" } }
-// { dg-final { scan-lang-dump {  \.[0-9]\.  Wrote backref:-[0-9]* function_decl:'::ba[rz]@foo:1'} "module" } }
+// { dg-final { scan-lang-dump {  \.[0-9]*\.  Wrote backref:-[0-9]* function_decl:'::ba[rz]@foo:1'} "module" } }
 // { dg-final { scan-lang-dump { Wrote backref:-[0-9]* function_decl:'::ba[rz]@foo:1'} "module" } }
