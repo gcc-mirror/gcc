@@ -8601,8 +8601,8 @@ try_to_locate_new_include_insertion_point (const char *file, location_t loc)
 
   /*  Get ordinary map containing LOC (or its expansion).  */
   const line_map_ordinary *ord_map_for_loc = NULL;
-  loc = linemap_resolve_location (line_table, loc, LRK_MACRO_EXPANSION_POINT,
-				  &ord_map_for_loc);
+  linemap_resolve_location (line_table, loc, LRK_MACRO_EXPANSION_POINT,
+			    &ord_map_for_loc);
   gcc_assert (ord_map_for_loc);
 
   for (unsigned int i = 0; i < LINEMAPS_ORDINARY_USED (line_table); i++)

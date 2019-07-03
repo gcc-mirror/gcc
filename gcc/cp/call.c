@@ -6167,7 +6167,7 @@ build_new_op_1 (const op_location_t &loc, enum tree_code code, int flags,
 	      conv = cand->convs[2];
 	      if (conv->kind == ck_ref_bind)
 		conv = next_conversion (conv);
-	      arg3 = convert_like (conv, arg3, complain);
+	      convert_like (conv, arg3, complain);
 	    }
 
 	}

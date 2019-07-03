@@ -2455,7 +2455,6 @@ variable_decl (int elem)
 
       /* %FILL components are given invalid fortran names.  */
       snprintf (name, GFC_MAX_SYMBOL_LEN + 1, "%%FILL%u", fill_id++);
-      m = MATCH_YES;
     }
 
   var_locus = gfc_current_locus;
