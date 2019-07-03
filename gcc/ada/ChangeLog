@@ -1,3 +1,14 @@
+2019-07-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Functions): In a generic context
+	we do not build the bodies of predicate fuctions, but the
+	expression in a static predicate must be elaborated to allow
+	case coverage checking within the generic unit.
+	(Build_Discrete_Static_Predicate): In a generic context, return
+	without building function body once the
+	Static_Discrete_Predicate expression for the type has been
+	constructed.
+
 2019-07-03  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* bindgen.adb, inline.adb, layout.adb, sem_ch12.adb,
