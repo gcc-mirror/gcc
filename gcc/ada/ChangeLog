@@ -1,5 +1,11 @@
 2019-07-04  Arnaud Charlet  <charlet@adacore.com>
 
+	* exp_ch4.adb (Expand_Short_Circuit_Operator): Strip
+	N_Variable_Reference_Marker when checking for the presence of
+	actions.
+
+2019-07-04  Arnaud Charlet  <charlet@adacore.com>
+
 	* exp_aggr.adb (Check_Component): Take into account type
 	conversions.
 
