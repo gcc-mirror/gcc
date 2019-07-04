@@ -1,3 +1,7 @@
+2019-07-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.dg/tree-ssa/cunroll-15.c: Remove XFAIL on arm.
+
 2019-07-04  Andrea Corallo <andrea.corallo@arm.com>
 
 	* jit.dg/all-non-failing-tests.h: Add test-accessing-bitfield.c.
