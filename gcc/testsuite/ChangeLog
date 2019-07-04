@@ -1,5 +1,11 @@
 2019-07-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/91069
+	* gcc.dg/pr91069.c (v2df): Use 2 * sizeof (double) instead of
+	hardcoded 16 for better portability.
+	(v2di): Change from long vector to long long vector.  Use
+	2 * sizeof (long long) instead of hardcoded 16.
+
 	PR rtl-optimization/90756
 	* gcc.dg/pr90756.c: New test.
 
