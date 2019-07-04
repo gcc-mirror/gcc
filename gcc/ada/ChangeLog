@@ -1,3 +1,8 @@
+2019-07-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_spark.adb (Check_Package_Spec, Check_Package_Body): Only
+	analyze parts of the code marked in SPARK.
+
 2019-07-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* erroutc.adb, exp_aggr.adb, inline.adb, opt.adb, sem_ch3.adb:
