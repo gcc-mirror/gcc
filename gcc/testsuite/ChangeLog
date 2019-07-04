@@ -1,3 +1,8 @@
+2019-07-04  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/cpp_constructor.adb, gnat.dg/cpp_constructor_fp.ads,
+	gnat.dg/cpp_constructor_useit.ads: New testcase.
+
 2019-07-04  Gary Dismukes  <dismukes@adacore.com>
 
 	* gnat.dg/ghost5.adb, gnat.dg/ghost5.ads,
