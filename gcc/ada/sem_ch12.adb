@@ -14103,6 +14103,29 @@ package body Sem_Ch12 is
    ------------------------
 
    procedure Preanalyze_Actuals (N : Node_Id; Inst : Entity_Id := Empty) is
+
+      procedure Perform_Appropriate_Analysis (N : Node_Id);
+      --  Determine if the actuals we are analyzing come from a generic
+      --  instantiation that is a library unit and dispatch accordingly.
+
+      ----------------------------------
+      -- Perform_Appropriate_Analysis --
+      ----------------------------------
+
+      procedure Perform_Appropriate_Analysis (N : Node_Id) is
+      begin
+         --  When we have a library instantiation we cannot allow any expansion
+         --  to occur, since there may be no place to put it. Instead, in that
+         --  case we perform a preanalysis of the actual.
+
+         if Present (Inst) and then Is_Compilation_Unit (Inst) then
+            Preanalyze (N);
+
+         else
+            Analyze (N);
+         end if;
+      end Perform_Appropriate_Analysis;
+
       Assoc : Node_Id;
       Act   : Node_Id;
       Errs  : constant Nat := Serious_Errors_Detected;
@@ -14112,6 +14135,8 @@ package body Sem_Ch12 is
 
       Vis : Boolean := False;
       --  Saved visibility status of the current homograph
+
+   --  Start of processing for Preanalyze_Actuals
 
    begin
       Assoc := First (Generic_Associations (N));
@@ -14154,10 +14179,10 @@ package body Sem_Ch12 is
                null;
 
             elsif Nkind (Act) = N_Attribute_Reference then
-               Analyze (Prefix (Act));
+               Perform_Appropriate_Analysis (Prefix (Act));
 
             elsif Nkind (Act) = N_Explicit_Dereference then
-               Analyze (Prefix (Act));
+               Perform_Appropriate_Analysis (Prefix (Act));
 
             elsif Nkind (Act) = N_Allocator then
                declare
@@ -14165,7 +14190,7 @@ package body Sem_Ch12 is
 
                begin
                   if Nkind (Expr) = N_Subtype_Indication then
-                     Analyze (Subtype_Mark (Expr));
+                     Perform_Appropriate_Analysis (Subtype_Mark (Expr));
 
                      --  Analyze separately each discriminant constraint, when
                      --  given with a named association.
@@ -14177,9 +14202,10 @@ package body Sem_Ch12 is
                         Constr := First (Constraints (Constraint (Expr)));
                         while Present (Constr) loop
                            if Nkind (Constr) = N_Discriminant_Association then
-                              Analyze (Expression (Constr));
+                              Perform_Appropriate_Analysis
+                                (Expression (Constr));
                            else
-                              Analyze (Constr);
+                              Perform_Appropriate_Analysis (Constr);
                            end if;
 
                            Next (Constr);
@@ -14187,12 +14213,12 @@ package body Sem_Ch12 is
                      end;
 
                   else
-                     Analyze (Expr);
+                     Perform_Appropriate_Analysis (Expr);
                   end if;
                end;
 
             elsif Nkind (Act) /= N_Operator_Symbol then
-               Analyze (Act);
+               Perform_Appropriate_Analysis (Act);
 
                --  Within a package instance, mark actuals that are limited
                --  views, so their use can be moved to the body of the
@@ -14213,7 +14239,7 @@ package body Sem_Ch12 is
                --  warnings complaining about the generic being unreferenced,
                --  before abandoning the instantiation.
 
-               Analyze (Name (N));
+               Perform_Appropriate_Analysis (Name (N));
 
                if Is_Entity_Name (Name (N))
                  and then Etype (Name (N)) /= Any_Type
