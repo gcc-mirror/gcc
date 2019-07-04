@@ -3,6 +3,15 @@
 	Backport from mainline
 	2019-07-03  Martin Liska  <mliska@suse.cz>
 
+	PR tree-optimization/90892
+	* builtins.c (inline_expand_builtin_string_cmp): Handle '\0'
+	in string constants.
+
+2019-07-04  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-07-03  Martin Liska  <mliska@suse.cz>
+
 	PR middle-end/90899
 	* multiple_target.c (create_dispatcher_calls): Add to comdat
 	group only if set for ifunc.

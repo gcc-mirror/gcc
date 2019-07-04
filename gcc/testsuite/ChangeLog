@@ -3,6 +3,14 @@
 	Backport from mainline
 	2019-07-03  Martin Liska  <mliska@suse.cz>
 
+	PR tree-optimization/90892
+	* gcc.dg/pr90892.c: New test.
+
+2019-07-04  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-07-03  Martin Liska  <mliska@suse.cz>
+
 	PR middle-end/90899
 	* gcc.target/i386/pr90899.c: New test.
 
