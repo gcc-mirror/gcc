@@ -676,6 +676,22 @@ package body Sem_Elab is
    -- Kinds --
    -----------
 
+   --  The following type enumerates all possible elaboration phase statutes
+
+   type Elaboration_Phase_Status is
+     (Inactive,
+      --  The elaboration phase of the compiler has not started yet
+
+      Active,
+      --  The elaboration phase of the compiler is currently in progress
+
+      Completed);
+      --  The elaboration phase of the compiler has finished
+
+   Elaboration_Phase : Elaboration_Phase_Status := Inactive;
+   --  The status of the elaboration phase. Use routine Set_Elaboration_Phase
+   --  to alter its value.
+
    --  The following type enumerates all subprogram body traversal modes
 
    type Body_Traversal_Kind is
@@ -1958,6 +1974,14 @@ package body Sem_Elab is
    --  Return the type of subprogram Subp_Id's first formal parameter. If the
    --  subprogram lacks formal parameters, return Empty.
 
+   function Elaboration_Phase_Active return Boolean;
+   pragma Inline (Elaboration_Phase_Active);
+   --  Determine whether the elaboration phase of the compilation has started
+
+   procedure Finalize_All_Data_Structures;
+   pragma Inline (Finalize_All_Data_Structures);
+   --  Destroy all internal data structures
+
    function Has_Body (Pack_Decl : Node_Id) return Boolean;
    pragma Inline (Has_Body);
    --  Determine whether package declaration Pack_Decl has a corresponding body
@@ -1983,6 +2007,10 @@ package body Sem_Elab is
    --  Determine whether two arbitrary nodes N1 and N2 appear within the same
    --  context ignoring enclosing library levels. Nested_OK should be set when
    --  the context of N1 can enclose that of N2.
+
+   procedure Initialize_All_Data_Structures;
+   pragma Inline (Initialize_All_Data_Structures);
+   --  Create all internal data structures
 
    function Instantiated_Generic (Inst : Node_Id) return Entity_Id;
    pragma Inline (Instantiated_Generic);
@@ -2026,6 +2054,10 @@ package body Sem_Elab is
    function Scenario (N : Node_Id) return Node_Id;
    pragma Inline (Scenario);
    --  Return the appropriate scenario node for scenario N
+
+   procedure Set_Elaboration_Phase (Status : Elaboration_Phase_Status);
+   pragma Inline (Set_Elaboration_Phase);
+   --  Change the status of the elaboration phase of the compiler to Status
 
    procedure Spec_And_Body_From_Entity
      (Id        : Node_Id;
@@ -3572,6 +3604,12 @@ package body Sem_Elab is
       elsif Preanalysis_Active then
          return;
 
+      --  Nothing to do when the elaboration phase of the compiler is not
+      --  active.
+
+      elsif not Elaboration_Phase_Active then
+         return;
+
       --  Nothing to do when the input does not denote a call or a requeue
 
       elsif not Nkind_In (N, N_Entry_Call_Statement,
@@ -3789,6 +3827,13 @@ package body Sem_Elab is
    --  Start of processing for Build_Variable_Reference_Marker
 
    begin
+      --  Nothing to do when the elaboration phase of the compiler is not
+      --  active.
+
+      if not Elaboration_Phase_Active then
+         return;
+      end if;
+
       Marker := Make_Variable_Reference_Marker (Sloc (N));
 
       --  Inherit the attributes of the original variable reference
@@ -3887,23 +3932,23 @@ package body Sem_Elab is
       --  to carry out this action.
 
       if Legacy_Elaboration_Checks then
+         Finalize_All_Data_Structures;
          return;
 
       --  Nothing to do for ASIS because ABE checks and diagnostics are not
       --  performed in this mode.
 
       elsif ASIS_Mode then
+         Finalize_All_Data_Structures;
+         return;
+
+      --  Nothing to do when the elaboration phase of the compiler is not
+      --  active.
+
+      elsif not Elaboration_Phase_Active then
+         Finalize_All_Data_Structures;
          return;
       end if;
-
-      --  Create all internal data structures
-
-      Initialize_Body_Processor;
-      Initialize_Early_Call_Region_Processor;
-      Initialize_Elaborated_Units;
-      Initialize_Internal_Representation;
-      Initialize_Invocation_Graph;
-      Initialize_Scenario_Storage;
 
       --  Restore the original elaboration model which was in effect when the
       --  scenarios were first recorded. The model may be specified by pragma
@@ -3949,14 +3994,11 @@ package body Sem_Elab is
 
       Record_Invocation_Graph;
 
-      --  Destroy all internal data structures
+      --  Destroy all internal data structures and complete the elaboration
+      --  phase of the compiler.
 
-      Finalize_Body_Processor;
-      Finalize_Early_Call_Region_Processor;
-      Finalize_Elaborated_Units;
-      Finalize_Internal_Representation;
-      Finalize_Invocation_Graph;
-      Finalize_Scenario_Storage;
+      Finalize_All_Data_Structures;
+      Set_Elaboration_Phase (Completed);
    end Check_Elaboration_Scenarios;
 
    ---------------------
@@ -7676,8 +7718,7 @@ package body Sem_Elab is
       --  The following map relates an elaboration attributes of a unit to the
       --  unit.
 
-      Unit_To_Attributes_Map : UA_Map.Dynamic_Hash_Table :=
-                                 UA_Map.Create (250);
+      Unit_To_Attributes_Map : UA_Map.Dynamic_Hash_Table := UA_Map.Nil;
 
       ------------------
       -- Constructors --
@@ -8519,7 +8560,7 @@ package body Sem_Elab is
 
       procedure Initialize_Elaborated_Units is
       begin
-         null;
+         Unit_To_Attributes_Map := UA_Map.Create (250);
       end Initialize_Elaborated_Units;
 
       ----------------------------------
@@ -8799,6 +8840,29 @@ package body Sem_Elab is
          return Elaboration_Attributes.Table (EA_Id).With_Clause;
       end With_Clause;
    end Elaborated_Units;
+
+   ------------------------------
+   -- Elaboration_Phase_Active --
+   ------------------------------
+
+   function Elaboration_Phase_Active return Boolean is
+   begin
+      return Elaboration_Phase = Active;
+   end Elaboration_Phase_Active;
+
+   ----------------------------------
+   -- Finalize_All_Data_Structures --
+   ----------------------------------
+
+   procedure Finalize_All_Data_Structures is
+   begin
+      Finalize_Body_Processor;
+      Finalize_Early_Call_Region_Processor;
+      Finalize_Elaborated_Units;
+      Finalize_Internal_Representation;
+      Finalize_Invocation_Graph;
+      Finalize_Scenario_Storage;
+   end Finalize_All_Data_Structures;
 
    -----------------------------
    -- Find_Enclosing_Instance --
@@ -10072,7 +10136,27 @@ package body Sem_Elab is
       --  each time it is transformed into another node.
 
       Set_Rewriting_Proc (Update_Elaboration_Scenario'Access);
+
+      --  Create all internal data structures and activate the elaboration
+      --  phase of the compiler.
+
+      Initialize_All_Data_Structures;
+      Set_Elaboration_Phase (Active);
    end Initialize;
+
+   ------------------------------------
+   -- Initialize_All_Data_Structures --
+   ------------------------------------
+
+   procedure Initialize_All_Data_Structures is
+   begin
+      Initialize_Body_Processor;
+      Initialize_Early_Call_Region_Processor;
+      Initialize_Elaborated_Units;
+      Initialize_Internal_Representation;
+      Initialize_Invocation_Graph;
+      Initialize_Scenario_Storage;
+   end Initialize_All_Data_Structures;
 
    --------------------------
    -- Instantiated_Generic --
@@ -10201,8 +10285,7 @@ package body Sem_Elab is
 
       --  The following map relates target representations to entities
 
-      Entity_To_Target_Map : ETT_Map.Dynamic_Hash_Table :=
-                               ETT_Map.Create (500);
+      Entity_To_Target_Map : ETT_Map.Dynamic_Hash_Table := ETT_Map.Nil;
 
       procedure Destroy (S_Id : in out Scenario_Rep_Id);
       --  Destroy a scenario representation S_Id
@@ -10221,8 +10304,7 @@ package body Sem_Elab is
 
       --  The following map relates scenario representations to nodes
 
-      Node_To_Scenario_Map : NTS_Map.Dynamic_Hash_Table :=
-                               NTS_Map.Create (500);
+      Node_To_Scenario_Map : NTS_Map.Dynamic_Hash_Table := NTS_Map.Nil;
 
       --  The following table stores all scenario representations
 
@@ -11058,7 +11140,8 @@ package body Sem_Elab is
 
       procedure Initialize_Internal_Representation is
       begin
-         null;
+         Entity_To_Target_Map := ETT_Map.Create (500);
+         Node_To_Scenario_Map := NTS_Map.Create (500);
       end Initialize_Internal_Representation;
 
       -------------------------
@@ -13422,6 +13505,12 @@ package body Sem_Elab is
 
       if Legacy_Elaboration_Checks then
          return;
+
+      --  Nothing to do when the elaboration phase of the compiler is not
+      --  active.
+
+      elsif not Elaboration_Phase_Active then
+         return;
       end if;
 
       --  Eliminate a recorded scenario when it appears within dead code
@@ -13785,6 +13874,12 @@ package body Sem_Elab is
 
       elsif Preanalysis_Active then
          return;
+
+      --  Nothing to do when the elaboration phase of the compiler is not
+      --  active.
+
+      elsif not Elaboration_Phase_Active then
+         return;
       end if;
 
       Scen_Lvl := Find_Enclosing_Level (Scen);
@@ -13889,16 +13984,11 @@ package body Sem_Elab is
 
       --  The following sets store all scenarios
 
-      Declaration_Scenarios       : NE_Set.Membership_Set :=
-                                      NE_Set.Create (1000);
-      Dynamic_ABE_Check_Scenarios : NE_Set.Membership_Set :=
-                                      NE_Set.Create (500);
-      Library_Body_Scenarios      : NE_Set.Membership_Set :=
-                                      NE_Set.Create (1000);
-      Library_Spec_Scenarios      : NE_Set.Membership_Set :=
-                                      NE_Set.Create (1000);
-      SPARK_Scenarios             : NE_Set.Membership_Set :=
-                                      NE_Set.Create (100);
+      Declaration_Scenarios       : NE_Set.Membership_Set := NE_Set.Nil;
+      Dynamic_ABE_Check_Scenarios : NE_Set.Membership_Set := NE_Set.Nil;
+      Library_Body_Scenarios      : NE_Set.Membership_Set := NE_Set.Nil;
+      Library_Spec_Scenarios      : NE_Set.Membership_Set := NE_Set.Nil;
+      SPARK_Scenarios             : NE_Set.Membership_Set := NE_Set.Nil;
 
       -------------------------------
       -- Finalize_Scenario_Storage --
@@ -13919,7 +14009,11 @@ package body Sem_Elab is
 
       procedure Initialize_Scenario_Storage is
       begin
-         null;
+         Declaration_Scenarios       := NE_Set.Create (1000);
+         Dynamic_ABE_Check_Scenarios := NE_Set.Create (500);
+         Library_Body_Scenarios      := NE_Set.Create (1000);
+         Library_Spec_Scenarios      := NE_Set.Create (1000);
+         SPARK_Scenarios             := NE_Set.Create (100);
       end Initialize_Scenario_Storage;
 
       ------------------------------
@@ -14795,6 +14889,15 @@ package body Sem_Elab is
          return False;
       end Is_Up_Level_Target;
    end Semantics;
+
+   ---------------------------
+   -- Set_Elaboration_Phase --
+   ---------------------------
+
+   procedure Set_Elaboration_Phase (Status : Elaboration_Phase_Status) is
+   begin
+      Elaboration_Phase := Status;
+   end Set_Elaboration_Phase;
 
    ---------------------
    -- SPARK_Processor --
@@ -15700,17 +15803,24 @@ package body Sem_Elab is
 
    procedure Update_Elaboration_Scenario (New_N : Node_Id; Old_N : Node_Id) is
    begin
+      --  Nothing to do when the elaboration phase of the compiler is not
+      --  active.
+
+      if not Elaboration_Phase_Active then
+         return;
+
       --  Nothing to do when the old and new scenarios are one and the same
 
-      if Old_N = New_N then
+      elsif Old_N = New_N then
          return;
+      end if;
 
       --  A scenario is being transformed by Atree.Rewrite. Update all relevant
       --  internal data structures to reflect this change. This ensures that a
       --  potential run-time conditional ABE check or a guaranteed ABE failure
       --  is inserted at the proper place in the tree.
 
-      elsif Is_Scenario (Old_N) then
+      if Is_Scenario (Old_N) then
          Replace_Scenario (Old_N, New_N);
       end if;
    end Update_Elaboration_Scenario;

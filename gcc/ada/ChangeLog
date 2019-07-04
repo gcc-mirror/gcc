@@ -1,3 +1,33 @@
+2019-07-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb: Add new type Elaboration_Phase_Status along with
+	a global to keep track of the elaboration phase status.
+	Initialize all internal data structures to Nil for services
+	Elaborated_Units, Internal_Representation, and Scenario_Storage.
+	(Build_Call_Marker): Do not create a call marker when the
+	elaboration phase is not active.
+	(Build_Variable_Reference_Marker): Do not create a call marker
+	when the elaboration phase is not active.
+	(Check_Elaboration_Scenarios): Destroy all internal structures
+	when the elaboration phase does not have to run. Do not execute
+	when the elaboration phase is not active.
+	(Elaboration_Phase_Active): New routine.
+	(Finalize_All_Data_Structures): New routine.
+	(Initialize): Initialize all internal data structures and signal
+	that the elaboration phase has started.
+	(Initialize_All_Data_Structures): New routine.
+	(Initialize_Elaborated_Units): Initialize all internal data
+	structures.
+	(Initialize_Internal_Representation): Initialize all internal
+	data structures.
+	(Initialize_Scenario_Storage): Initialize all internal data
+	structures.
+	(Kill_Elaboration_Scenario): Do not execute when the elaboration
+	phase is not active.
+	(Set_Elaboration_Phase): New routine.
+	(Update_Elaboration_Scenario): Do not execute when the
+	elaboration phase is not active.
+
 2019-07-04  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): The special
