@@ -1,3 +1,7 @@
+2019-07-04  Thomas Quinot  <quinot@adacore.com>
+
+	* get_scos.adb: Remove bogus, dead code.
+
 2019-07-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_dim.adb (Analyze_Dimension_Array_Aggregate): If the
