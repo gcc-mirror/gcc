@@ -1,3 +1,8 @@
+2019-07-04  Andrea Corallo <andrea.corallo@arm.com>
+
+	* jit.dg/test-error-gcc_jit_context_new_binary_op-bad-res-type.c:
+	New testcase.
+
 2019-07-04  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.dg/tree-ssa/cunroll-15.c: Remove XFAIL on arm.

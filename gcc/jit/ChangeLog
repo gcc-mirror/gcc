@@ -1,5 +1,10 @@
 2019-07-04  Andrea Corallo <andrea.corallo@arm.com>
 
+	* libgccjit.c (gcc_jit_context_new_binary_op): Check result_type to be a
+	numeric type.
+
+2019-07-04  Andrea Corallo <andrea.corallo@arm.com>
+
 	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_12): New ABI tag.
 	* docs/topics/types.rst: Add gcc_jit_context_new_bitfield.
 	* jit-common.h (namespace recording): Add class bitfield.
