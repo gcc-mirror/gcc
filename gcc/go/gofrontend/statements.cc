@@ -5766,6 +5766,7 @@ Select_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
     {
       ast_dump_context->ostream() << " {" << dsuffix(location()) << std::endl;
       this->clauses_->dump_clauses(ast_dump_context);
+      ast_dump_context->print_indent();
       ast_dump_context->ostream() << "}";
     }
   ast_dump_context->ostream() << std::endl;
