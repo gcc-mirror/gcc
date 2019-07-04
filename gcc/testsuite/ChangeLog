@@ -1,3 +1,8 @@
+2019-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/78884
+	* gcc.dg/gomp/pr78884.c: New test.
+
 2019-07-04  Andrea Corallo <andrea.corallo@arm.com>
 
 	* jit.dg/test-error-gcc_jit_context_new_binary_op-bad-res-type.c:
