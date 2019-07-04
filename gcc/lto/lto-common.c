@@ -2199,7 +2199,7 @@ lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
       return;
     }
 
-  file_data->lto_section_header = *(const lto_section *)data;
+  memcpy (&file_data->lto_section_header, data, sizeof (lto_section));
   lto_check_version (file_data->lto_section_header.major_version,
 		     file_data->lto_section_header.minor_version,
 		     file_data->file_name);
