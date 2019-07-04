@@ -1,3 +1,9 @@
+2019-07-04  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	* gcc.target/mips/mips-fmadd.c: Rename to ...
+	* gcc.target/mips/mips-fmadd-o32.c: ... Here; add abi=32.
+	* gcc.target/mips/mips-fmadd-n64.c: New.
+
 2019-07-03  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.dg/store_merging_27.c: Fix test for Arm.
