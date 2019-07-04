@@ -8779,11 +8779,10 @@ $ gcc -c -gnatVim ...
 @end itemize
 
 The form ALL_CHECKS activates all standard checks (its use is equivalent
-to the use of the @code{gnatva} switch.
+to the use of the @code{gnatVa} switch).
 
-The forms with @code{Off} and @code{On}
-can be used to temporarily disable validity checks
-as shown in the following example:
+The forms with @code{Off} and @code{On} can be used to temporarily disable
+validity checks as shown in the following example:
 
 @example
 pragma Validity_Checks ("c"); -- validity checks for copies
