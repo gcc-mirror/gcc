@@ -1,6 +1,10 @@
 2019-07-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::read_cluster): finalize_function may
+	not GC.
+
+	gcc/cp/
 	* module.cc (enum cluster_tag): Add ct_defn.
 	(enum ct_decl_flags): Rmove cdf_has_definition.
 	(module_state::{read,write}_cluster): Stream definitions after

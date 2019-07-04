@@ -13637,7 +13637,7 @@ module_state::read_cluster (unsigned snum)
 	  if (DECL_COMDAT (decl))
 	    comdat_linkage (decl);
 	  note_vague_linkage_fn (decl);
-	  cgraph_node::finalize_function (decl, false);
+	  cgraph_node::finalize_function (decl, true);
 	}
     }
   set_cfun (old_cfun);
