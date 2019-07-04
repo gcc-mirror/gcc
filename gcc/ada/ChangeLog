@@ -1,3 +1,15 @@
+2019-07-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb (In_Place_Assign_OK): Moved to top level and add
+	support for record aggregates.
+	(Component_Check): Use Is_CCG_Supported_Aggregate instead of a
+	similar local predicate.
+	(Convert_To_Assignments): Take advantage of In_Place_Assign_OK
+	predicate when possible.
+	(Is_CCG_Supported_Aggregate): Return False for records with
+	representation clauses and fix the logic for dealing with nested
+	aggregates.
+
 2019-07-04  Piotr Trojanek  <trojanek@adacore.com>
 
 	* opt.adb (Set_Config_Switches): Keep assertions policy as
