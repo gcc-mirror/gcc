@@ -1,5 +1,8 @@
 2019-07-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp-low.c (lower_omp_scan): Call lower_omp on stmt's body
+	in worksharing loop scans.
+
 	PR tree-optimization/91074
 	* omp-low.c (lower_omp_for_scan): Set DECL_GIMPLE_REG_P on cplx
 	temporary.
