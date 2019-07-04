@@ -379,8 +379,7 @@ procedure Gnat1drv is
          --  enough useful info.
 
          Reset_Validity_Check_Options;
-         Validity_Check_Default       := True;
-         Validity_Check_Copies        := True;
+         Set_Validity_Check_Options ("dc");
          Check_Validity_Of_Parameters := False;
 
          --  Turn off style check options and ignore any style check pragmas
