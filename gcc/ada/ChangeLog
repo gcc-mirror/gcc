@@ -1,3 +1,8 @@
+2019-07-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_aggr.adb (Check_Component): Take into account type
+	conversions.
+
 2019-07-04  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* doc/gnat_ugn/platform_specific_information.rst: Document
