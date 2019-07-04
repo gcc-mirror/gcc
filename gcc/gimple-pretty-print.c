@@ -1232,6 +1232,8 @@ dump_gimple_try (pretty_printer *buffer, gtry *gs, int spc,
       newline_and_indent (buffer, spc + 2);
       pp_right_brace (buffer);
 
+      gimple_seq seq = gimple_try_cleanup (gs);
+
       if (gimple_try_kind (gs) == GIMPLE_TRY_CATCH)
 	{
 	  newline_and_indent (buffer, spc);
@@ -1245,12 +1247,28 @@ dump_gimple_try (pretty_printer *buffer, gtry *gs, int spc,
 	  pp_string (buffer, "finally");
 	  newline_and_indent (buffer, spc + 2);
 	  pp_left_brace (buffer);
+
+	  if (seq && is_a <geh_else *> (gimple_seq_first_stmt (seq))
+	      && gimple_seq_nondebug_singleton_p (seq))
+	    {
+	      geh_else *stmt = as_a <geh_else *> (gimple_seq_first_stmt (seq));
+	      seq = gimple_eh_else_n_body (stmt);
+	      pp_newline (buffer);
+	      dump_gimple_seq (buffer, seq, spc + 4, flags);
+	      newline_and_indent (buffer, spc + 2);
+	      pp_right_brace (buffer);
+	      seq = gimple_eh_else_e_body (stmt);
+	      newline_and_indent (buffer, spc);
+	      pp_string (buffer, "else");
+	      newline_and_indent (buffer, spc + 2);
+	      pp_left_brace (buffer);
+	    }
 	}
       else
 	pp_string (buffer, " <UNKNOWN GIMPLE_TRY> {");
 
       pp_newline (buffer);
-      dump_gimple_seq (buffer, gimple_try_cleanup (gs), spc + 4, flags);
+      dump_gimple_seq (buffer, seq, spc + 4, flags);
       newline_and_indent (buffer, spc + 2);
       pp_right_brace (buffer);
     }

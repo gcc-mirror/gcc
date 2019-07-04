@@ -27,14 +27,14 @@ along with GCC; see the file COPYING3.  If not see
    the compilation process:
 
    In the beginning, in the front end, we have the GENERIC trees
-   TRY_CATCH_EXPR, TRY_FINALLY_EXPR, WITH_CLEANUP_EXPR,
+   TRY_CATCH_EXPR, TRY_FINALLY_EXPR, EH_ELSE_EXPR, WITH_CLEANUP_EXPR,
    CLEANUP_POINT_EXPR, CATCH_EXPR, and EH_FILTER_EXPR.
 
-   During initial gimplification (gimplify.c) these are lowered
-   to the GIMPLE_TRY, GIMPLE_CATCH, and GIMPLE_EH_FILTER nodes.
-   The WITH_CLEANUP_EXPR and CLEANUP_POINT_EXPR nodes are converted
-   into GIMPLE_TRY_FINALLY nodes; the others are a more direct 1-1
-   conversion.
+   During initial gimplification (gimplify.c) these are lowered to the
+   GIMPLE_TRY, GIMPLE_CATCH, GIMPLE_EH_ELSE, and GIMPLE_EH_FILTER
+   nodes.  The WITH_CLEANUP_EXPR and CLEANUP_POINT_EXPR nodes are
+   converted into GIMPLE_TRY_FINALLY nodes; the others are a more
+   direct 1-1 conversion.
 
    During pass_lower_eh (tree-eh.c) we record the nested structure
    of the TRY nodes in EH_REGION nodes in CFUN->EH->REGION_TREE.

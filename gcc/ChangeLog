@@ -1,3 +1,17 @@
+2019-07-04  Alexandre Oliva <oliva@adacore.com>
+
+	* doc/generic.texi (Cleanups): Document EH_ELSE_EXPR.
+	* except.c: Likewise.
+	* expr.c (expand_expr_real_1): Reject it.
+	* gimplify.c (gimplify_expr): Gimplify it, within
+	TRY_FINALLY_EXPR.
+	* tree-dump.c (dequeue_and_dump): Dump it.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree.c (block_may_fallthru): Handle it.
+	* tree.def (EH_ELSE_EXPR): Introduce it.
+	* gimple-pretty-print.c (dump_gimple_try): Dump TRY_FINALLY
+	with GIMPLE_EH_ELSE as try/finally/else.
+
 2019-07-04  Richard Biener  <rguenther@suse.de>
 
 	PR ipa/91062
