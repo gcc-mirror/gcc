@@ -1,5 +1,10 @@
 2019-07-04  Yannick Moy  <moy@adacore.com>
 
+	* sem_util.adb (Yields_Synchronized_Object): Adapt to new SPARK
+	rule.
+
+2019-07-04  Yannick Moy  <moy@adacore.com>
+
 	* sem_spark.adb (Check_Statement): Only check permission of
 	object in extended return when it is of a deep type.
 

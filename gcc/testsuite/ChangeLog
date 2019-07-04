@@ -1,3 +1,8 @@
+2019-07-04  Yannick Moy  <moy@adacore.com>
+
+	* gnat.dg/synchronized2.adb, gnat.dg/synchronized2.ads,
+	gnat.dg/synchronized2_pkg.ads: New testcase.
+
 2019-07-04  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/generic_inst4.adb, gnat.dg/generic_inst4_gen.ads,
