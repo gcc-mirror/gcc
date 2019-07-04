@@ -1,3 +1,11 @@
+2019-07-04  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-loop-niter.c (get_upper_bound_based_on_builtin_expr_with_prob):
+	New function.
+	(estimate_numbers_of_iterations):
+	Support __builtin_expect_with_probability for analysis
+	of # of loop iterations.
+
 2019-07-04  Alexandre Oliva <oliva@adacore.com>
 
 	* doc/generic.texi (Cleanups): Document EH_ELSE_EXPR.
