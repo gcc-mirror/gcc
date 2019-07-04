@@ -2902,10 +2902,13 @@ package body Sem_SPARK is
                Check_List (Return_Object_Declarations (Stmt));
                Check_Node (Handled_Statement_Sequence (Stmt));
 
-               Perm := Get_Perm (Obj);
+               if Is_Deep (Etype (Obj)) then
+                  Perm := Get_Perm (Obj);
 
-               if Perm /= Read_Write then
-                  Perm_Error (Decl, Read_Write, Perm, Expl => Get_Expl (Obj));
+                  if Perm /= Read_Write then
+                     Perm_Error (Decl, Read_Write, Perm,
+                                 Expl => Get_Expl (Obj));
+                  end if;
                end if;
 
                if Ekind_In (Subp, E_Procedure, E_Entry)

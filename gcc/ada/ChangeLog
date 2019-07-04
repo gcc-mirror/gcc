@@ -1,3 +1,8 @@
+2019-07-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_spark.adb (Check_Statement): Only check permission of
+	object in extended return when it is of a deep type.
+
 2019-07-04  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch12.adb (Perform_Appropriate_Analysis): Added for
