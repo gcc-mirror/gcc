@@ -1,3 +1,8 @@
+2019-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91063
+	* gcc.dg/gomp/pr91063.c: New test.
+
 2019-07-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR target/88833
