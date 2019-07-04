@@ -1,3 +1,8 @@
+2019-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/dimensions2.adb, gnat.dg/dimensions2_phys.ads,
+	gnat.dg/dimensions2_real_numbers.ads: New testcase.
+
 2019-07-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91063

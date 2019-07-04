@@ -1233,8 +1233,9 @@ package body Sem_Dim is
       Dims_Of_Comp_Typ : constant Dimension_Type := Dimensions_Of (Comp_Typ);
       Exps             : constant List_Id        := Expressions (N);
 
-      Comp : Node_Id;
-      Expr : Node_Id;
+      Comp         : Node_Id;
+      Dims_Of_Expr : Dimension_Type;
+      Expr         : Node_Id;
 
       Error_Detected : Boolean := False;
       --  This flag is used in order to indicate if an error has been detected
@@ -1281,11 +1282,19 @@ package body Sem_Dim is
          --  (may happen when an aggregate is converted into a positional
          --  aggregate). We also must verify that this is a scalar component,
          --  and not a subaggregate of a multidimensional aggregate.
+         --  The expression may be an identifier that has been copied several
+         --  times during expansion, its dimensions are those of its type.
+
+         if Is_Entity_Name (Expr) then
+            Dims_Of_Expr := Dimensions_Of (Etype (Expr));
+         else
+            Dims_Of_Expr := Dimensions_Of (Expr);
+         end if;
 
          if Comes_From_Source (Original_Node (Expr))
            and then Present (Etype (Expr))
            and then Is_Numeric_Type (Etype (Expr))
-           and then Dimensions_Of (Expr) /= Dims_Of_Comp_Typ
+           and then Dims_Of_Expr /= Dims_Of_Comp_Typ
            and then Sloc (Comp) /= Sloc (Prev (Comp))
          then
             --  Check if an error has already been encountered so far
