@@ -1,3 +1,11 @@
+2019-07-04  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/90899
+	* gcc.target/i386/pr90899.c: New test.
+
 2019-07-04  Chenghua Xu  <paul.hua.gm@gmail.com>
 
 	* gcc.target/mips/mips-fmadd.c: Rename to ...

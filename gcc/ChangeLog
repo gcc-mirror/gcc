@@ -1,3 +1,12 @@
+2019-07-04  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/90899
+	* multiple_target.c (create_dispatcher_calls): Add to comdat
+	group only if set for ifunc.
+
 2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (add_scalar_info): Add back refererence to existing DIE
