@@ -20,4 +20,4 @@ int Test(void)
 /* When SLP vectorization is enabled the following will fail because DOM
    doesn't know how to deal with the vectorized initializer of in.  */
 /* DOM also doesn't know to CSE in[1] with in = *.LC0 thus the list of targets this fails.  */
-/* { dg-final { scan-tree-dump "return 1;" "optimized" { xfail { arm*-*-* powerpc-*-* } } } } */
+/* { dg-final { scan-tree-dump "return 1;" "optimized" { xfail { powerpc-*-* } } } } */
