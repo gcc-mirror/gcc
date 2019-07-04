@@ -1,3 +1,14 @@
+2019-07-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Use proper interface to
+	set the validity settings in CodePeer mode.
+	* par-load.adb (Load): Remove all code dealing with validity
+	settings.
+	* validsw.ads (Validity_Check_Copies): Alphabetize.
+	* validsw.adb (Reset_Validity_Check_Options): Set all options to
+	off.
+	(Save_Validity_Check_Options): Save all options.
+
 2019-07-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch3.adb, exp_ch4.adb, exp_ch4.ads, exp_ch5.adb,
