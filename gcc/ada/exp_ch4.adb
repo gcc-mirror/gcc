@@ -12391,6 +12391,10 @@ package body Exp_Ch4 is
       --  For Opnd a boolean expression, return a Boolean expression equivalent
       --  to Opnd /= Shortcut_Value.
 
+      function Useful (Actions : List_Id) return Boolean;
+      --  Return True if Actions is not empty and contains useful nodes to
+      --  process.
+
       --------------------
       -- Make_Test_Expr --
       --------------------
@@ -12403,6 +12407,31 @@ package body Exp_Ch4 is
             return Opnd;
          end if;
       end Make_Test_Expr;
+
+      ------------
+      -- Useful --
+      ------------
+
+      function Useful (Actions : List_Id) return Boolean is
+         L : Node_Id;
+      begin
+         if Present (Actions) then
+            L := First (Actions);
+
+            --  For now "useful" means not N_Variable_Reference_Marker.
+            --  Consider stripping other nodes in the future.
+
+            while Present (L) loop
+               if Nkind (L) /= N_Variable_Reference_Marker then
+                  return True;
+               end if;
+
+               Next (L);
+            end loop;
+         end if;
+
+         return False;
+      end Useful;
 
       --  Local variables
 
@@ -12463,7 +12492,7 @@ package body Exp_Ch4 is
       --  must only be executed if the right operand of the short circuit is
       --  executed and not otherwise.
 
-      if Present (Actions (N)) then
+      if Useful (Actions (N)) then
          Actlist := Actions (N);
 
          --  The old approach is to expand:
