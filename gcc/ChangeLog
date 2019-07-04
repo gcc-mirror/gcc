@@ -1,3 +1,16 @@
+2019-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90911
+	* tree-vectorizer.h (_loop_vec_info::scalar_loop_scaling): New field.
+	(LOOP_VINFO_SCALAR_LOOP_SCALING): new.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Initialize
+	scalar_loop_scaling.
+	(vect_transform_loop): Scale scalar loop profile if needed.
+	* tree-vect-loop-manip.c (vect_loop_versioning): When re-using
+	the loop copy from if-conversion adjust edge probabilities
+	and scale the vectorized loop body profile, queue the scalar
+	profile for updating after peeling.
+
 2019-07-04  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-alias.c (decl_refs_may_alias_p): Add size1 and size2

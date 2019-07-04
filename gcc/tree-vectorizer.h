@@ -548,6 +548,9 @@ typedef struct _loop_vec_info : public vec_info {
   /* Mark loops having masked stores.  */
   bool has_mask_store;
 
+  /* Queued scaling factor for the scalar loop.  */
+  profile_probability scalar_loop_scaling;
+
   /* If if-conversion versioned this loop before conversion, this is the
      loop version without if-conversion.  */
   struct loop *scalar_loop;
@@ -603,6 +606,7 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_PEELING_FOR_NITER(L)    (L)->peeling_for_niter
 #define LOOP_VINFO_NO_DATA_DEPENDENCIES(L) (L)->no_data_dependencies
 #define LOOP_VINFO_SCALAR_LOOP(L)	   (L)->scalar_loop
+#define LOOP_VINFO_SCALAR_LOOP_SCALING(L)  (L)->scalar_loop_scaling
 #define LOOP_VINFO_HAS_MASK_STORE(L)       (L)->has_mask_store
 #define LOOP_VINFO_SCALAR_ITERATION_COST(L) (L)->scalar_cost_vec
 #define LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST(L) (L)->single_scalar_iteration_cost
