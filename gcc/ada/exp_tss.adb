@@ -32,6 +32,7 @@ with Lib;      use Lib;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Sem_Aux;  use Sem_Aux;
+with Sem_Ch6;  use Sem_Ch6;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 
@@ -275,8 +276,8 @@ package body Exp_Tss is
                   then
                      exit;
 
-                  elsif Ekind (Etype (E1)) /= E_Anonymous_Access_Type
-                    and then Ekind (Etype (E2)) /= E_Anonymous_Access_Type
+                  elsif not Is_Anonymous_Access_Type (Etype (E1))
+                    and then not Is_Anonymous_Access_Type (Etype (E2))
                     and then Etype (E1) /= Etype (E2)
                   then
                      exit;
@@ -285,6 +286,17 @@ package body Exp_Tss is
                     and then Ekind (Etype (E2)) = E_Anonymous_Access_Type
                     and then Directly_Designated_Type (Etype (E1))
                                /= Directly_Designated_Type (Etype (E2))
+                  then
+                     exit;
+
+                  elsif Ekind_In (Etype (E1),
+                          E_Anonymous_Access_Subprogram_Type,
+                          E_Anonymous_Access_Protected_Subprogram_Type)
+                    and then Ekind_In (Etype (E2),
+                               E_Anonymous_Access_Subprogram_Type,
+                               E_Anonymous_Access_Protected_Subprogram_Type)
+                    and then not Conforming_Types
+                                   (Etype (E1), Etype (E2), Fully_Conformant)
                   then
                      exit;
                   end if;

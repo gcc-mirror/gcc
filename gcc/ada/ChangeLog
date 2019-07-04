@@ -1,3 +1,9 @@
+2019-07-04  Javier Miranda  <miranda@adacore.com>
+
+	* exp_tss.adb (Init_Proc): Adding missing support for access to
+	subprograms and access to protected subprograms of non-default
+	C++ constructors.
+
 2019-07-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat1drv.adb (Adjust_Global_Switches): Use proper interface to
