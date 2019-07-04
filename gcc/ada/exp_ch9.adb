@@ -869,7 +869,7 @@ package body Exp_Ch9 is
           Make_Implicit_Exception_Handler (Loc,
             Exception_Choices => New_List (Ohandle),
 
-            Statements =>  New_List (
+            Statements => New_List (
               Make_Procedure_Call_Statement (Sloc (Stats),
                 Name                   => New_Occurrence_Of (
                   RTE (RE_Exceptional_Complete_Rendezvous), Sloc (Stats)),
@@ -3792,7 +3792,7 @@ package body Exp_Ch9 is
                    Make_Implicit_Exception_Handler (EH_Loc,
                      Exception_Choices => New_List (Ohandle),
 
-                     Statements        =>  New_List (
+                     Statements        => New_List (
                        Make_Procedure_Call_Statement (EH_Loc,
                          Name                   => Complete,
                          Parameter_Associations => New_List (
@@ -10639,7 +10639,7 @@ package body Exp_Ch9 is
 
              Statements       => New_List (
                Make_Implicit_If_Statement (N,
-                 Condition       =>  Cond,
+                 Condition       => Cond,
                  Then_Statements => New_List (
                    Make_Select_Call (
                      New_Occurrence_Of (RTE (RE_Simple_Mode), Loc)),

@@ -11421,7 +11421,7 @@ package body Sem_Attr is
                   if Present (Lo) then
                      Rewrite (P,
                         Make_Indexed_Component (Loc,
-                           Prefix =>  Relocate_Node (Prefix (P)),
+                           Prefix => Relocate_Node (Prefix (P)),
                            Expressions => New_List (Lo)));
 
                      Analyze_And_Resolve (P);

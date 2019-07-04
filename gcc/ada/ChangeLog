@@ -1,3 +1,11 @@
+2019-07-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb, exp_ch4.adb, exp_ch4.ads, exp_ch5.adb,
+	exp_ch7.adb, exp_ch9.adb, exp_ch11.adb, exp_unst.adb,
+	rtsfind.ads, sem_attr.adb, sem_ch10.adb, sem_ch12.adb,
+	sem_ch13.adb, sem_dim.adb, sem_disp.adb, xref_lib.adb: Minor
+	reformatting.
+
 2019-07-04  Joffrey Huguet  <huguet@adacore.com>
 
 	* libgnarl/a-taside.ads: Add assertion policy to ignore

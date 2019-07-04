@@ -598,7 +598,7 @@ package body Exp_Unst is
                   then
                      Note_Uplevel_Bound (Prefix (N), Ref);
 
-                  --  Conditional expressions.
+                  --  Conditional expressions
 
                   elsif Nkind (N) = N_If_Expression then
                      declare

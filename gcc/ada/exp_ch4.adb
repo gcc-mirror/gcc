@@ -415,6 +415,52 @@ package body Exp_Ch4 is
          return;
    end Build_Boolean_Array_Proc_Call;
 
+   -----------------------
+   -- Build_Eq_Call --
+   -----------------------
+
+   function Build_Eq_Call
+     (Typ : Entity_Id;
+      Loc : Source_Ptr;
+      Lhs : Node_Id;
+      Rhs : Node_Id) return Node_Id
+   is
+      Prim   : Node_Id;
+      Prim_E : Elmt_Id;
+
+   begin
+      Prim_E := First_Elmt (Collect_Primitive_Operations (Typ));
+      while Present (Prim_E) loop
+         Prim := Node (Prim_E);
+
+         --  Locate primitive equality with the right signature
+
+         if Chars (Prim) = Name_Op_Eq
+           and then Etype (First_Formal (Prim)) =
+                    Etype (Next_Formal (First_Formal (Prim)))
+           and then Etype (Prim) = Standard_Boolean
+         then
+            if Is_Abstract_Subprogram (Prim) then
+               return
+                 Make_Raise_Program_Error (Loc,
+                   Reason => PE_Explicit_Raise);
+
+            else
+               return
+                 Make_Function_Call (Loc,
+                   Name                   => New_Occurrence_Of (Prim, Loc),
+                   Parameter_Associations => New_List (Lhs, Rhs));
+            end if;
+         end if;
+
+         Next_Elmt (Prim_E);
+      end loop;
+
+      --  If not found, predefined operation will be used
+
+      return Empty;
+   end Build_Eq_Call;
+
    --------------------------------
    -- Displace_Allocator_Pointer --
    --------------------------------
@@ -1938,7 +1984,7 @@ package body Exp_Ch4 is
               Parameter_Specifications => Formals,
               Result_Definition => New_Occurrence_Of (Standard_Boolean, Loc)),
 
-          Declarations =>  Decls,
+          Declarations => Decls,
 
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
@@ -12552,52 +12598,6 @@ package body Exp_Ch4 is
 
       Adjust_Result_Type (N, Typ);
    end Expand_Short_Circuit_Operator;
-
-   -----------------------
-   -- Build_Eq_Call --
-   -----------------------
-
-   function Build_Eq_Call
-     (Typ : Entity_Id;
-      Loc : Source_Ptr;
-      Lhs : Node_Id;
-      Rhs : Node_Id) return Node_Id
-   is
-      Prim_E : Elmt_Id;
-      Prim   : Node_Id;
-
-   begin
-      Prim_E := First_Elmt (Collect_Primitive_Operations (Typ));
-      while Present (Prim_E) loop
-         Prim := Node (Prim_E);
-
-         --  Locate primitive equality with the right signature
-
-         if Chars (Prim) = Name_Op_Eq
-           and then Etype (First_Formal (Prim)) =
-                    Etype (Next_Formal (First_Formal (Prim)))
-           and then Etype (Prim) = Standard_Boolean
-         then
-            if Is_Abstract_Subprogram (Prim) then
-               return
-                 Make_Raise_Program_Error (Loc,
-                   Reason => PE_Explicit_Raise);
-
-            else
-               return
-                 Make_Function_Call (Loc,
-                   Name                   => New_Occurrence_Of (Prim, Loc),
-                   Parameter_Associations => New_List (Lhs, Rhs));
-            end if;
-         end if;
-
-         Next_Elmt (Prim_E);
-      end loop;
-
-      --  If not found, predefined operation will be used
-
-      return Empty;
-   end Build_Eq_Call;
 
    ------------------------------------
    -- Fixup_Universal_Fixed_Operation --

@@ -6002,7 +6002,7 @@ package body Sem_Ch12 is
             Make_Parameter_Specification (Loc,
                Defining_Identifier => F1,
                Parameter_Type      => New_Occurrence_Of (Op_Type, Loc))),
-          Result_Definition        =>  New_Occurrence_Of (Ret_Type, Loc));
+          Result_Definition        => New_Occurrence_Of (Ret_Type, Loc));
 
       if Is_Binary then
          Append_To (Parameter_Specifications (Spec),
@@ -14103,7 +14103,6 @@ package body Sem_Ch12 is
    ------------------------
 
    procedure Preanalyze_Actuals (N : Node_Id; Inst : Entity_Id := Empty) is
-
       procedure Perform_Appropriate_Analysis (N : Node_Id);
       --  Determine if the actuals we are analyzing come from a generic
       --  instantiation that is a library unit and dispatch accordingly.
@@ -14120,15 +14119,17 @@ package body Sem_Ch12 is
 
          if Present (Inst) and then Is_Compilation_Unit (Inst) then
             Preanalyze (N);
-
          else
             Analyze (N);
          end if;
       end Perform_Appropriate_Analysis;
 
+      --  Local variables
+
+      Errs : constant Nat := Serious_Errors_Detected;
+
       Assoc : Node_Id;
       Act   : Node_Id;
-      Errs  : constant Nat := Serious_Errors_Detected;
 
       Cur : Entity_Id := Empty;
       --  Current homograph of the instance name

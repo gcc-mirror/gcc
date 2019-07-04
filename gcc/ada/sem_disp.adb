@@ -210,6 +210,7 @@ package body Sem_Disp is
          Ctrl_Type := Check_Controlling_Type (Etype (Formal), Subp);
 
          if Present (Ctrl_Type) then
+
             --  Obtain the full type in case we are looking at an incomplete
             --  view.
 
