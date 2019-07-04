@@ -1385,6 +1385,12 @@ gcc_jit_context_new_binary_op (gcc_jit_context *ctxt,
     a->get_type ()->get_debug_string (),
     b->get_debug_string (),
     b->get_type ()->get_debug_string ());
+  RETURN_NULL_IF_FAIL_PRINTF4 (
+    result_type->is_numeric (), ctxt, loc,
+    "gcc_jit_binary_op %i with operands a: %s b: %s "
+    "has non numeric result_type: %s",
+    op, a->get_debug_string (), b->get_debug_string (),
+    result_type->get_debug_string ());
 
   return (gcc_jit_rvalue *)ctxt->new_binary_op (loc, op, result_type, a, b);
 }
