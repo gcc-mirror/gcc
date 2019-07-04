@@ -6262,7 +6262,8 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no)
 
 	  if (this->asm_name_ == "runtime.gopanic"
 	      || this->asm_name_ == "__go_runtime_error"
-              || this->asm_name_ == "runtime.panicdottype")
+              || this->asm_name_ == "runtime.panicdottype"
+              || this->asm_name_ == "runtime.block")
 	    flags |= Backend::function_does_not_return;
 	}
 
