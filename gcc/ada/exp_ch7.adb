@@ -3873,7 +3873,7 @@ package body Exp_Ch7 is
                             Attribute_Name  => Name_Range,
                             Expressions     => New_List (
                               Make_Integer_Literal (Loc, Dim))))),
-                Statements       =>  Free_One_Dimension (Dim + 1)));
+                Statements       => Free_One_Dimension (Dim + 1)));
          end if;
       end Free_One_Dimension;
 

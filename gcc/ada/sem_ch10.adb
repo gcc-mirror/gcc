@@ -6395,8 +6395,8 @@ package body Sem_Ch10 is
             if Limited_View_Installed (Item) then
                Remove_Limited_With_Clause (Item);
 
-            --  An unusual case: If the library unit of the Main_Unit has
-            --  a limited with_clause on some unit P and the context somewhere
+            --  An unusual case: If the library unit of the Main_Unit has a
+            --  limited with_clause on some unit P and the context somewhere
             --  includes a with_clause on P, P has been analyzed. The entity
             --  for P is still visible, which in general is harmless because
             --  this is the end of the compilation, but it can affect pending
@@ -6409,7 +6409,7 @@ package body Sem_Ch10 is
               and then not Implicit_With (Item)
             then
                Set_Is_Immediately_Visible
-                 (Defining_Entity  (Unit (Library_Unit (Item))), False);
+                 (Defining_Entity (Unit (Library_Unit (Item))), False);
             end if;
          end if;
 

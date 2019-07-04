@@ -4848,7 +4848,7 @@ package body Exp_Ch3 is
                Make_Range (Sloc (Enumeration_Rep_Expr (Ent)),
                  Low_Bound =>
                    Make_Integer_Literal (Loc,
-                    Intval =>  Enumeration_Rep (Ent)),
+                    Intval => Enumeration_Rep (Ent)),
                  High_Bound =>
                    Make_Integer_Literal (Loc, Intval => Last_Repval))),
 
@@ -9486,10 +9486,11 @@ package body Exp_Ch3 is
      (E : Entity_Id;
       L : List_Id) return Node_Id
    is
-      Loc        : constant Source_Ptr := Sloc (E);
+      Loc : constant Source_Ptr := Sloc (E);
+
       C          : Node_Id;
-      Field_Name : Name_Id;
       Cond       : Node_Id;
+      Field_Name : Name_Id;
       Next_Test  : Node_Id;
       Typ        : Entity_Id;
 
@@ -9534,11 +9535,11 @@ package body Exp_Ch3 is
 
                begin
                   --  Build equality code with a user-defined operator, if
-                  --  available, and with the predefined "=" otherwise.
-                  --  For compatibility with older Ada versions, and preserve
-                  --  the workings of some ASIS tools, we also use the
-                  --  predefined operation if the component-type equality
-                  --  is abstract, rather than raising Program_Error.
+                  --  available, and with the predefined "=" otherwise. For
+                  --  compatibility with older Ada versions, and preserve the
+                  --  workings of some ASIS tools, we also use the predefined
+                  --  operation if the component-type equality is abstract,
+                  --  rather than raising Program_Error.
 
                   if Ada_Version < Ada_2012 then
                      Next_Test := Make_Op_Ne (Loc, Lhs, Rhs);

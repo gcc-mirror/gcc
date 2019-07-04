@@ -399,9 +399,9 @@ package body Sem_Dim is
 
    function "+" (Left, Right : Rational) return Rational is
       R : constant Rational :=
-            Rational'(Numerator   =>  Left.Numerator   * Right.Denominator +
-                                      Left.Denominator * Right.Numerator,
-                      Denominator => Left.Denominator  * Right.Denominator);
+            Rational'(Numerator   => Left.Numerator   * Right.Denominator +
+                                     Left.Denominator * Right.Numerator,
+                      Denominator => Left.Denominator * Right.Denominator);
    begin
       return Reduce (R);
    end "+";

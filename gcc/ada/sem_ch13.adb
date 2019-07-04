@@ -5511,7 +5511,7 @@ package body Sem_Ch13 is
          -- Default_Iterator --
          ----------------------
 
-         when Attribute_Default_Iterator =>  Default_Iterator : declare
+         when Attribute_Default_Iterator => Default_Iterator : declare
             Func : Entity_Id;
             Typ  : Entity_Id;
 
