@@ -488,6 +488,49 @@ and::
    Ada.Command_Line.Argument (1) -> "'*.txt'"
 
 
+Windows Socket Timeouts
+-----------------------
+
+Microsoft Windows desktops older than ``8.0`` and Microsoft Windows Servers
+older than ``2019`` set a socket timeout 500 milliseconds longer than the value
+set by setsockopt with ``SO_RCVTIMEO`` and ``SO_SNDTIMEO`` options. The GNAT
+runtime makes a correction for the difference in the corresponding Windows
+versions. For Windows Server starting with version ``2019``, the user must
+provide a manifest file for the GNAT runtime to be able to recognize that
+the Windows version does not need the timeout correction. The manifest file
+should be located in the same directory as the executable file, and its file
+name must match the executable name suffixed by ``.manifest``. For example,
+if the executable name is :file:`sock_wto.exe`, then the manifest file name
+has to be :file:`sock_wto.exe.manifest`. The manifest file must contain at
+least the following data::
+
+   <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+   <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+   <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+   <application>
+      <!-- Windows Vista -->
+      <supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}"/>
+      <!-- Windows 7 -->
+      <supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}"/>
+      <!-- Windows 8 -->
+      <supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}"/>
+      <!-- Windows 8.1 -->
+      <supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}"/>
+      <!-- Windows 10 -->
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/>
+   </application>
+   </compatibility>
+   </assembly>
+
+Without the manifest file, the socket timeout is going to be overcorrected on
+these Windows Server versions and the actual time is going to be 500
+milliseconds shorter than what was set with GNAT.Sockets.Set_Socket_Option.
+Note that on Microsoft Windows versions where correction is necessary, there
+is no way to set a socket timeout shorter than 500 ms. If a socket timeout
+shorter than 500 ms is needed on these Windows versions, a call to
+Check_Selector should be added before any socket read or write operations.
+
+
 .. _Mixed-Language_Programming_on_Windows:
 
 Mixed-Language Programming on Windows
