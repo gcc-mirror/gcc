@@ -930,7 +930,8 @@ package body Sem_Ch3 is
       --  declaration may include an expression that is an allocator, whose
       --  expansion needs the proper Master for the created tasks.
 
-      if Nkind (Related_Nod) = N_Object_Declaration and then Expander_Active
+      if Expander_Active
+        and then Nkind (Related_Nod) = N_Object_Declaration
       then
          if Is_Limited_Record (Desig_Type)
            and then Is_Class_Wide_Type (Desig_Type)
@@ -940,7 +941,8 @@ package body Sem_Ch3 is
          --  Similarly, if the type is an anonymous access that designates
          --  tasks, create a master entity for it in the current context.
 
-         elsif Has_Task (Desig_Type) and then Comes_From_Source (Related_Nod)
+         elsif Has_Task (Desig_Type)
+           and then Comes_From_Source (Related_Nod)
          then
             Build_Master_Entity (Defining_Identifier (Related_Nod));
             Build_Master_Renaming (Anon_Type);

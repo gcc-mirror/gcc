@@ -1343,11 +1343,11 @@ package body Exp_Aggr is
             --  transient scope, which leads to premature finalization.
 
             --  This in-place expansion is not performed for limited transient
-            --  objects because the initialization is already done in-place.
+            --  objects, because the initialization is already done in place.
 
             if In_Place_Expansion then
 
-               --  Suppress the removal of side effects by general analysis
+               --  Suppress the removal of side effects by general analysis,
                --  because this behavior is emulated here. This avoids the
                --  generation of a transient scope, which leads to out-of-order
                --  adjustment and finalization.
@@ -4181,8 +4181,8 @@ package body Exp_Aggr is
                      return False;
                   end if;
 
-               --  If association has a box, no way to determine yet
-               --  whether default can be assigned in place.
+               --  If association has a box, no way to determine yet whether
+               --  default can be assigned in place.
 
                elsif Box_Present (Expr) then
                   return False;
@@ -4239,8 +4239,8 @@ package body Exp_Aggr is
                         and then Is_Array
                         and then Check_Component (Prefix (Comp)))
 
-              or else (Nkind_In (Comp, N_Unchecked_Type_Conversion,
-                                 N_Type_Conversion)
+              or else (Nkind_In (Comp, N_Type_Conversion,
+                                       N_Unchecked_Type_Conversion)
                         and then Check_Component (Expression (Comp)));
          end Check_Component;
 
@@ -4269,12 +4269,10 @@ package body Exp_Aggr is
 
                return False;
 
-            elsif Nkind (Parent (Expr)) =
-                    N_Iterated_Component_Association
-            then
-               --  Ditto for iterated component associations, which in
-               --  general require an enclosing loop and involve nonstatic
-               --  expressions.
+            elsif Nkind (Parent (Expr)) = N_Iterated_Component_Association then
+
+               --  Ditto for iterated component associations, which in general
+               --  require an enclosing loop and involve nonstatic expressions.
 
                return False;
             end if;
@@ -4469,8 +4467,8 @@ package body Exp_Aggr is
          Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
 
-      --  If the aggregate is nonlimited, create a temporary since aggregates
-      --  have "by copy" semantic. If it is limited and context is an
+      --  If the aggregate is nonlimited, create a temporary, since aggregates
+      --  have "by copy" semantics. If it is limited and context is an
       --  assignment, this is a subaggregate for an enclosing aggregate being
       --  expanded. It must be built in place, so use target of the current
       --  assignment.
@@ -4484,7 +4482,7 @@ package body Exp_Aggr is
          Rewrite (Parent (N), Make_Null_Statement (Loc));
 
       --  Do not declare a temporary to initialize an aggregate assigned to an
-      --  identifier when in place assignment is possible preserving the
+      --  identifier when in-place assignment is possible, preserving the
       --  by-copy semantic of aggregates. This avoids large stack usage and
       --  generates more efficient code.
 
@@ -5122,7 +5120,7 @@ package body Exp_Aggr is
    --     case pass it as is to Gigi. Note that a necessary condition for
    --     static processing is that the aggregate be fully positional.
 
-   --  5. If in place aggregate expansion is possible (i.e. no need to create
+   --  5. If in-place aggregate expansion is possible (i.e. no need to create
    --     a temporary) then mark the aggregate as such and return. Otherwise
    --     create a new temporary and generate the appropriate initialization
    --     code.
@@ -5146,7 +5144,7 @@ package body Exp_Aggr is
       --  The type of each index
 
       In_Place_Assign_OK_For_Declaration : Boolean := False;
-      --  True if we are to generate an in place assignment for a declaration
+      --  True if we are to generate an in-place assignment for a declaration
 
       Maybe_In_Place_OK : Boolean;
       --  If the type is neither controlled nor packed and the aggregate
@@ -6214,7 +6212,7 @@ package body Exp_Aggr is
 
       --  STEP 4
 
-      --  Look if in place aggregate expansion is possible
+      --  Check whether in-place aggregate expansion is possible
 
       --  For object declarations we build the aggregate in place, unless
       --  the array is bit-packed.
@@ -6366,7 +6364,7 @@ package body Exp_Aggr is
 
       --  Step 5
 
-      --  In place aggregate expansion is not possible
+      --  In-place aggregate expansion is not possible
 
       else
          Maybe_In_Place_OK := False;
@@ -6418,11 +6416,11 @@ package body Exp_Aggr is
             Target := New_Copy (Tmp);
          end if;
 
-         --  If we are to generate an in place assignment for a declaration or
+         --  If we are to generate an in-place assignment for a declaration or
          --  an assignment statement, and the assignment can be done directly
          --  by the back end, then do not expand further.
 
-         --  ??? We can also do that if in place expansion is not possible but
+         --  ??? We can also do that if in-place expansion is not possible but
          --  then we could go into an infinite recursion.
 
          if (In_Place_Assign_OK_For_Declaration or else Maybe_In_Place_OK)
@@ -7683,8 +7681,8 @@ package body Exp_Aggr is
       P : Node_Id := Parent (N);
 
    begin
-      --  Aggregates are not supported for non standard rep clauses since
-      --  they may lead to extra padding fields in CCG.
+      --  Aggregates are not supported for nonstandard rep clauses, since they
+      --  may lead to extra padding fields in CCG.
 
       if Ekind (Etype (N)) in Record_Kind
         and then Has_Non_Standard_Rep (Etype (N))

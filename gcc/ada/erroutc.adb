@@ -1606,6 +1606,7 @@ package body Erroutc is
          if Start <= Cur_Loc and then Cur_Loc <= Stop then
             return True;
          end if;
+
          Cur_Loc := Instantiation_Location (Cur_Loc);
       end loop;
 

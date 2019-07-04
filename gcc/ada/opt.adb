@@ -254,6 +254,7 @@ package body Opt is
             if GNATprove_Mode then
                pragma Assert (Assertions_Enabled);
                null;
+
             elsif GNAT_Mode_Config then
                Assertions_Enabled    := Assertions_Enabled_Config;
             else
