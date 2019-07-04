@@ -152,6 +152,9 @@ namespace gccjit
     field new_field (type type_, const std::string &name,
 		     location loc = location ());
 
+    field new_bitfield (type type_, int width, const std::string &name,
+			location loc = location ());
+
     struct_ new_struct_type (const std::string &name,
 			     std::vector<field> &fields,
 			     location loc = location ());
@@ -755,6 +758,17 @@ context::new_field (type type_, const std::string &name, location loc)
 					   loc.get_inner_location (),
 					   type_.get_inner_type (),
 					   name.c_str ()));
+}
+
+inline field
+context::new_bitfield (type type_, int width, const std::string &name,
+		       location loc)
+{
+  return field (gcc_jit_context_new_bitfield (m_inner_ctxt,
+					      loc.get_inner_location (),
+					      type_.get_inner_type (),
+					      width,
+					      name.c_str ()));
 }
 
 inline struct_

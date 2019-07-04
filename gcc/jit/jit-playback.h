@@ -75,6 +75,12 @@ public:
 	     type *type,
 	     const char *name);
 
+  field *
+  new_bitfield (location *loc,
+		type *type,
+		int width,
+		const char *name);
+
   compound_type *
   new_compound_type (location *loc,
 		     const char *name,
@@ -426,6 +432,8 @@ private:
   tree m_inner;
 };
 
+class bitfield : public field {};
+
 class function : public wrapper
 {
 public:
@@ -614,6 +622,8 @@ public:
   rvalue *
   get_address (location *loc);
 
+private:
+  bool mark_addressable (location *loc);
 };
 
 class param : public lvalue
@@ -703,4 +713,3 @@ extern playback::context *active_playback_ctxt;
 } // namespace gcc
 
 #endif /* JIT_PLAYBACK_H */
-

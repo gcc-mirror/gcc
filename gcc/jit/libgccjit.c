@@ -62,6 +62,10 @@ struct gcc_jit_field : public gcc::jit::recording::field
 {
 };
 
+struct gcc_jit_bitfield : public gcc::jit::recording::bitfield
+{
+};
+
 struct gcc_jit_function : public gcc::jit::recording::function
 {
 };
@@ -552,6 +556,42 @@ gcc_jit_context_new_field (gcc_jit_context *ctxt,
     type->get_debug_string ());
 
   return (gcc_jit_field *)ctxt->new_field (loc, type, name);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::context::new_bitfield method, in
+   jit-recording.c.  */
+
+gcc_jit_field *
+gcc_jit_context_new_bitfield (gcc_jit_context *ctxt,
+			      gcc_jit_location *loc,
+			      gcc_jit_type *type,
+			      int width,
+			      const char *name)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
+  RETURN_NULL_IF_FAIL (name, ctxt, loc, "NULL name");
+  RETURN_NULL_IF_FAIL (type, ctxt, loc, "NULL type");
+  RETURN_NULL_IF_FAIL_PRINTF2 (type->is_int () || type->is_bool (),
+			       ctxt, loc,
+			       "bit-field %s has non integral type %s",
+			       name, type->get_debug_string ());
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    width > 0, ctxt, loc,
+    "invalid width %d for bitfield \"%s\" (must be > 0)",
+    width, name);
+  RETURN_NULL_IF_FAIL_PRINTF2 (
+    type->has_known_size (),
+    ctxt, loc,
+    "unknown size for field \"%s\" (type: %s)",
+    name,
+    type->get_debug_string ());
+
+  return (gcc_jit_field *)ctxt->new_bitfield (loc, type, width, name);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.

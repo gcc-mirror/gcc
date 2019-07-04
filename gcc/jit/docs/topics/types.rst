@@ -247,6 +247,30 @@ You can model C `struct` types by creating :c:type:`gcc_jit_struct *` and
    underlying string, so it is valid to pass in a pointer to an on-stack
    buffer.
 
+.. function:: gcc_jit_field *\
+              gcc_jit_context_new_bitfield (gcc_jit_context *ctxt,\
+                                            gcc_jit_location *loc,\
+                                            gcc_jit_type *type,\
+                                            int width,\
+                                            const char *name)
+
+   Construct a new bit field, with the given type width and name.
+
+   The parameter ``name`` must be non-NULL.  The call takes a copy of the
+   underlying string, so it is valid to pass in a pointer to an on-stack
+   buffer.
+
+   The parameter ``type`` must be an integer type.
+
+   The parameter ``width`` must be a positive integer that does not exceed the
+   size of ``type``.
+
+   This API entrypoint was added in :ref:`LIBGCCJIT_ABI_12`; you can test
+   for its presence using
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_new_bitfield
+
 .. function:: gcc_jit_object *\
               gcc_jit_field_as_object (gcc_jit_field *field)
 

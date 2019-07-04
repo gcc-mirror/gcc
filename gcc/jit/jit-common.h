@@ -119,6 +119,7 @@ namespace recording {
 	class union_;
       class vector_type;
     class field;
+      class bitfield;
     class fields;
     class function;
     class block;
