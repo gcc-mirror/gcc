@@ -23327,6 +23327,13 @@ package body Sem_Util is
 
          if From_Typ = Typ then
             return;
+
+         --  Nothing to do when the destination denotes an incomplete type
+         --  because the DIC is associated with the current instance of a
+         --  private type, thus it can never apply to an incomplete type.
+
+         elsif Is_Incomplete_Type (Typ) then
+            return;
          end if;
 
          DIC_Proc := DIC_Procedure (From_Typ);

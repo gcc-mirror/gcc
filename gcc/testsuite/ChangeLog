@@ -1,3 +1,9 @@
+2019-07-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/default_initial_condition.adb,
+	gnat.dg/default_initial_condition_pack.adb,
+	gnat.dg/default_initial_condition_pack.ads: New testcase.
+
 2019-07-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/aspect2.adb, gnat.dg/aspect2.ads: New testcase.
