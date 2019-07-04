@@ -1,3 +1,7 @@
+2019-07-04  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/tagged2.adb, gnat.dg/tagged2.ads: New testcase.
+
 2019-07-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/equal6.adb, gnat.dg/equal6_types.adb,

@@ -1,3 +1,8 @@
+2019-07-04  Justin Squirek  <squirek@adacore.com>
+
+	* sem_disp.adb (Check_Controlling_Formals): Obtain the full view
+	before type comparison.
+
 2019-07-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch4.ads, exp_ch4.adb (Build_Eq_Call): New visible
