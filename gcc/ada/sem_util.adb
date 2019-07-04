@@ -26442,6 +26442,7 @@ package body Sem_Util is
          --  synchronized object.
 
          if Etype (Typ) /= Typ
+           and then not Is_Private_Type (Etype (Typ))
            and then not Yields_Synchronized_Object (Etype (Typ))
          then
             return False;
@@ -26457,10 +26458,18 @@ package body Sem_Util is
       elsif Is_Synchronized_Interface (Typ) then
          return True;
 
-      --  A task type yelds a synchronized object by default
+      --  A task type yields a synchronized object by default
 
       elsif Is_Task_Type (Typ) then
          return True;
+
+      --  A private type yields a synchronized object if its underlying type
+      --  does.
+
+      elsif Is_Private_Type (Typ)
+        and then Present (Underlying_Type (Typ))
+      then
+         return Yields_Synchronized_Object (Underlying_Type (Typ));
 
       --  Otherwise the type does not yield a synchronized object
 
