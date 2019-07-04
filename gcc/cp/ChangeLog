@@ -1,3 +1,13 @@
+2019-07-04  Andrew Stubbs  <ams@codesourcery.com>
+
+	* cp-tree.h (cp_omp_emit_unmappable_type_notes): New prototype.
+	* decl.c (cp_finish_decl): Call cp_omp_emit_unmappable_type_notes.
+	* decl2.c (cp_omp_mappable_type): Move contents to ...
+	(cp_omp_mappable_type_1):  ... here and add note output.
+	(cp_omp_emit_unmappable_type_notes): New function.
+	* semantics.c (finish_omp_clauses): Call
+	cp_omp_emit_unmappable_type_notes in four places.
+
 2019-07-03  Martin Liska  <mliska@suse.cz>
 
 	* call.c (build_new_op_1): Remove
