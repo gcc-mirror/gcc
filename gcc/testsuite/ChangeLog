@@ -1,3 +1,10 @@
+2019-07-04  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	Backported from mainline.
+	* gcc.target/mips/mips-fmadd.c: Rename to ...
+	* gcc.target/mips/mips-fmadd-o32.c: ... Here; add abi=32.
+	* gcc.target/mips/mips-fmadd-n64.c: New.
+
 2019-07-04  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
