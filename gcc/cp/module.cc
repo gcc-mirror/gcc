@@ -7926,7 +7926,8 @@ trees_in::tree_value (walk_kind walk)
       tree parms = tree_node ();
       DECL_TEMPLATE_PARMS (res) = parms;
 
-      // FIXME: From push_template_decl_real
+      // FIXME: From push_template_decl_real, not sure how correct
+      // this is?
       /* Give template template parms a DECL_CONTEXT of the template
 	 for which they are a parameter.  */
       tree innermost = INNERMOST_TEMPLATE_PARMS (parms);
@@ -9029,6 +9030,12 @@ trees_out::key_mergeable (depset *dep)
       u (mk);
     }
 
+  /* Always stream the context, even though it's only used to locate
+     named decls -- other decls will still refer to it, and we want it
+     correctly canonicalized before we start emitting keys for this
+     decl.  */
+  tree_ctx (CP_DECL_CONTEXT (decl), true, decl);
+
   if (mk != MK_clone && decl != inner)
     /* A template needs its template parms for identification.  */
     // FIXME: Don't write the context of the tpl_tpl_parms!  We should
@@ -9083,9 +9090,6 @@ trees_out::key_mergeable (depset *dep)
     {
       /* Regular decls are located by their context, name, and
 	 additional disambiguating data.  */
-      tree ctx = CP_DECL_CONTEXT (decl);
-      gcc_checking_assert (TREE_CODE (ctx) == NAMESPACE_DECL);
-      tree_ctx (ctx, true, decl);
       tree_node (DECL_NAME (decl));
 
       if (TREE_CODE (inner) == FUNCTION_DECL)
@@ -9122,6 +9126,8 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
     return MK_none;
   merge_kind mk = merge_kind (i);
 
+  tree ctx = tree_node ();
+
   if (mk != MK_clone && decl != inner)
     /* A template needs its template parms for identification.  */
     if (!tpl_header (decl))
@@ -9131,15 +9137,23 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
     *parm_tag = fn_parms_init (inner);
 
   /* Now read the locating information. */
-  *container = tree_node ();
-  *key = tree_node ();
-
-  if (mk == MK_named && TREE_CODE (inner) == FUNCTION_DECL)
+  if (mk == MK_named)
     {
-      *fn_args = fn_arg_types ();
-      if (decl != inner)
-	*r_type = tree_node ();
+      *container = ctx;
+      *key = tree_node ();
+
+      if (TREE_CODE (inner) == FUNCTION_DECL)
+	{
+	  *fn_args = fn_arg_types ();
+	  if (decl != inner)
+	    *r_type = tree_node ();
+	}
     }
+  else
+    {
+      *container = tree_node ();
+      *key = tree_node ();
+      }
 
   return get_overrun () ? MK_none : mk;
 }
