@@ -1452,8 +1452,10 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
 static bool
 decl_refs_may_alias_p (tree ref1, tree base1,
 		       poly_int64 offset1, poly_int64 max_size1,
+		       poly_int64 size1,
 		       tree ref2, tree base2,
-		       poly_int64 offset2, poly_int64 max_size2)
+		       poly_int64 offset2, poly_int64 max_size2,
+		       poly_int64 size2)
 {
   gcc_checking_assert (DECL_P (base1) && DECL_P (base2));
 
@@ -1465,6 +1467,10 @@ decl_refs_may_alias_p (tree ref1, tree base1,
      the accesses do not overlap.  */
   if (!ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2))
     return false;
+
+  /* If there is must alias, there is no use disambiguating further.  */
+  if (known_eq (size1, max_size1) && known_eq (size2, max_size2))
+    return true;
 
   /* For components with variable position, the above test isn't sufficient,
      so we disambiguate component references manually.  */
@@ -1487,10 +1493,12 @@ decl_refs_may_alias_p (tree ref1, tree base1,
 static bool
 indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 			       poly_int64 offset1, poly_int64 max_size1,
+			       poly_int64 size1,
 			       alias_set_type ref1_alias_set,
 			       alias_set_type base1_alias_set,
 			       tree ref2 ATTRIBUTE_UNUSED, tree base2,
 			       poly_int64 offset2, poly_int64 max_size2,
+			       poly_int64 size2,
 			       alias_set_type ref2_alias_set,
 			       alias_set_type base2_alias_set, bool tbaa_p)
 {
@@ -1598,7 +1606,19 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       && (TREE_CODE (TREE_TYPE (base1)) != ARRAY_TYPE
 	  || (TYPE_SIZE (TREE_TYPE (base1))
 	      && TREE_CODE (TYPE_SIZE (TREE_TYPE (base1))) == INTEGER_CST)))
-    return ranges_maybe_overlap_p (doffset1, max_size1, doffset2, max_size2);
+    {
+      if (!ranges_maybe_overlap_p (doffset1, max_size1, doffset2, max_size2))
+	return false;
+      if (!ref1 || !ref2
+	  /* If there is must alias, there is no use disambiguating further.  */
+	  || (known_eq (size1, max_size1) && known_eq (size2, max_size2)))
+	return true;
+      int res = nonoverlapping_component_refs_since_match_p (base1, ref1,
+							     base2, ref2);
+      if (res == -1)
+	return !nonoverlapping_component_refs_p (ref1, ref2);
+      return !res;
+    }
 
   /* Do access-path based disambiguation.  */
   if (ref1 && ref2
@@ -1623,10 +1643,12 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 static bool
 indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 			   poly_int64 offset1, poly_int64 max_size1,
+			   poly_int64 size1,
 			   alias_set_type ref1_alias_set,
 			   alias_set_type base1_alias_set,
 			   tree ref2 ATTRIBUTE_UNUSED, tree base2,
 			   poly_int64 offset2, poly_int64 max_size2,
+			   poly_int64 size2,
 			   alias_set_type ref2_alias_set,
 			   alias_set_type base2_alias_set, bool tbaa_p)
 {
@@ -1671,6 +1693,9 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       if (!ranges_maybe_overlap_p (offset1 + moff1, max_size1,
 				   offset2 + moff2, max_size2))
 	return false;
+      /* If there is must alias, there is no use disambiguating further.  */
+      if (known_eq (size1, max_size1) && known_eq (size2, max_size2))
+	return true;
       if (ref1 && ref2)
 	{
 	  int res = nonoverlapping_component_refs_since_match_p (NULL, ref1,
@@ -1717,7 +1742,18 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
          can overlap by an exact multiple of their element size.
          See gcc.dg/torture/alias-2.c.  */
       && TREE_CODE (TREE_TYPE (ptrtype1)) != ARRAY_TYPE)
-    return ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2);
+    {
+      if (!ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2))
+	return false;
+      if (!ref1 || !ref2
+	  || (known_eq (size1, max_size1) && known_eq (size2, max_size2)))
+	return true;
+      int res = nonoverlapping_component_refs_since_match_p (base1, ref1,
+							     base2, ref2);
+      if (res == -1)
+	return !nonoverlapping_component_refs_p (ref1, ref2);
+      return !res;
+    }
 
   /* Do access-path based disambiguation.  */
   if (ref1 && ref2
@@ -1802,7 +1838,9 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   var2_p = DECL_P (base2);
   if (var1_p && var2_p)
     return decl_refs_may_alias_p (ref1->ref, base1, offset1, max_size1,
-				  ref2->ref, base2, offset2, max_size2);
+				  ref1->size,
+				  ref2->ref, base2, offset2, max_size2,
+				  ref2->size);
 
   /* Handle restrict based accesses.
      ???  ao_ref_base strips inner MEM_REF [&decl], recover from that
@@ -1870,21 +1908,21 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   /* Dispatch to the pointer-vs-decl or pointer-vs-pointer disambiguators.  */
   if (var1_p && ind2_p)
     return indirect_ref_may_alias_decl_p (ref2->ref, base2,
-					  offset2, max_size2,
+					  offset2, max_size2, ref2->size,
 					  ao_ref_alias_set (ref2),
 					  ao_ref_base_alias_set (ref2),
 					  ref1->ref, base1,
-					  offset1, max_size1,
+					  offset1, max_size1, ref1->size,
 					  ao_ref_alias_set (ref1),
 					  ao_ref_base_alias_set (ref1),
 					  tbaa_p);
   else if (ind1_p && ind2_p)
     return indirect_refs_may_alias_p (ref1->ref, base1,
-				      offset1, max_size1,
+				      offset1, max_size1, ref1->size,
 				      ao_ref_alias_set (ref1),
 				      ao_ref_base_alias_set (ref1),
 				      ref2->ref, base2,
-				      offset2, max_size2,
+				      offset2, max_size2, ref2->size,
 				      ao_ref_alias_set (ref2),
 				      ao_ref_base_alias_set (ref2),
 				      tbaa_p);
