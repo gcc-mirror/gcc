@@ -1,3 +1,8 @@
+2019-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/90756
+	* gcc.dg/pr90756.c: New test.
+
 2019-07-04  Chenghua Xu  <paul.hua.gm@gmail.com>
 
 	* gcc.target/mips/mips-fmadd.c: Rename to ...

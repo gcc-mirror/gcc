@@ -1,3 +1,9 @@
+2019-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/90756
+	* explow.c (promote_ssa_mode): Always use TYPE_MODE, don't bypass it
+	for VECTOR_TYPE_P.
+
 2019-07-03  Dennis Zhang  <dennis.zhang@arm.com>
 
 	* config/aarch64/aarch64.md: Remove redundant constraints from
