@@ -1,5 +1,12 @@
 2019-07-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/78884
+	* gimplify.c (struct gimplify_omp_ctx): Add add_safelen1 member.
+	(gimplify_bind_expr): If seeing TREE_ADDRESSABLE VLA inside of simd
+	loop body, set ctx->add_safelen1 instead of making it GOVD_PRIVATE.
+	(gimplify_adjust_omp_clauses): Add safelen (1) clause if
+	ctx->add_safelen1 is set.
+
 	* omp-expand.c (expand_omp_for_static_nochunk): Don't emit
 	GOMP_loop_start at the start of second worksharing loop in a scan.
 	For nowait, don't emit GOMP_loop_end_nowait at the end of first
