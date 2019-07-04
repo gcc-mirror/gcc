@@ -3689,7 +3689,7 @@ package body Sem_Ch6 is
          --  generated. Freeze nodes, if any, are inserted before the current
          --  body. These freeze actions are also needed in ASIS mode and in
          --  Compile_Only mode to enable the proper back-end type annotations.
-         --  They are necessary in any case to insure order of elaboration
+         --  They are necessary in any case to ensure proper elaboration order
          --  in gigi.
 
          if Nkind (N) = N_Subprogram_Body
@@ -3698,13 +3698,16 @@ package body Sem_Ch6 is
            and then Serious_Errors_Detected = 0
            and then (Expander_Active
                       or else ASIS_Mode
-                      or else Operating_Mode = Check_Semantics)
+                      or else Operating_Mode = Check_Semantics
+                      or else Is_Ignored_Ghost_Entity (Spec_Id))
          then
             --  The body generated for an expression function that is not a
             --  completion is a freeze point neither for the profile nor for
             --  anything else. That's why, in order to prevent any freezing
             --  during analysis, we need to mask types declared outside the
             --  expression (and in an outer scope) that are not yet frozen.
+            --  This also needs to be done in the case of an ignored Ghost
+            --  expression function, where the expander isn't active.
 
             Set_Is_Frozen (Spec_Id);
             Mask_Types := Mask_Unfrozen_Types (Spec_Id);

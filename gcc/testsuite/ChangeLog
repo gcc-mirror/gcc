@@ -1,3 +1,8 @@
+2019-07-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat.dg/ghost5.adb, gnat.dg/ghost5.ads,
+	gnat.dg/ghost5_parent.ads: New testcase.
+
 2019-07-04  Yannick Moy  <moy@adacore.com>
 
 	* gnat.dg/spark3.adb: New testcase.
