@@ -13079,7 +13079,22 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    input_location = UNKNOWN_LOCATION;
 	    eval = cleanup = NULL;
 	    gimplify_and_add (TREE_OPERAND (*expr_p, 0), &eval);
-	    gimplify_and_add (TREE_OPERAND (*expr_p, 1), &cleanup);
+	    if (TREE_CODE (*expr_p) == TRY_FINALLY_EXPR
+		&& TREE_CODE (TREE_OPERAND (*expr_p, 1)) == EH_ELSE_EXPR)
+	      {
+		gimple_seq n = NULL, e = NULL;
+		gimplify_and_add (TREE_OPERAND (TREE_OPERAND (*expr_p, 1),
+						0), &n);
+		gimplify_and_add (TREE_OPERAND (TREE_OPERAND (*expr_p, 1),
+						1), &e);
+		if (!gimple_seq_empty_p (n) && !gimple_seq_empty_p (e))
+		  {
+		    geh_else *stmt = gimple_build_eh_else (n, e);
+		    gimple_seq_add_stmt (&cleanup, stmt);
+		  }
+	      }
+	    else
+	      gimplify_and_add (TREE_OPERAND (*expr_p, 1), &cleanup);
 	    /* Don't create bogus GIMPLE_TRY with empty cleanup.  */
 	    if (gimple_seq_empty_p (cleanup))
 	      {
@@ -13637,6 +13652,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 		  && code != LOOP_EXPR
 		  && code != SWITCH_EXPR
 		  && code != TRY_FINALLY_EXPR
+		  && code != EH_ELSE_EXPR
 		  && code != OACC_PARALLEL
 		  && code != OACC_KERNELS
 		  && code != OACC_DATA

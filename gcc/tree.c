@@ -13415,6 +13415,9 @@ block_may_fallthru (const_tree block)
       return (block_may_fallthru (TREE_OPERAND (stmt, 0))
 	      && block_may_fallthru (TREE_OPERAND (stmt, 1)));
 
+    case EH_ELSE_EXPR:
+      return block_may_fallthru (TREE_OPERAND (stmt, 0));
+
     case MODIFY_EXPR:
       if (TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR)
 	stmt = TREE_OPERAND (stmt, 1);

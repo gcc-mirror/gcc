@@ -604,6 +604,7 @@ dequeue_and_dump (dump_info_p di)
       break;
 
     case TRY_FINALLY_EXPR:
+    case EH_ELSE_EXPR:
       dump_child ("op 0", TREE_OPERAND (t, 0));
       dump_child ("op 1", TREE_OPERAND (t, 1));
       break;

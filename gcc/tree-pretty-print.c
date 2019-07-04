@@ -2815,12 +2815,34 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       newline_and_indent (pp, spc+2);
       pp_right_brace (pp);
       newline_and_indent (pp, spc);
-      pp_string (pp,
-			 (TREE_CODE (node) == TRY_CATCH_EXPR) ? "catch" : "finally");
+      if (TREE_CODE (node) == TRY_CATCH_EXPR)
+	{
+	  node = TREE_OPERAND (node, 1);
+	  pp_string (pp, "catch");
+	}
+      else
+	{
+	  gcc_assert (TREE_CODE (node) == TRY_FINALLY_EXPR);
+	  node = TREE_OPERAND (node, 1);
+	  pp_string (pp, "finally");
+	  if (TREE_CODE (node) == EH_ELSE_EXPR)
+	    {
+	      newline_and_indent (pp, spc+2);
+	      pp_left_brace (pp);
+	      newline_and_indent (pp, spc+4);
+	      dump_generic_node (pp, TREE_OPERAND (node, 0), spc+4,
+				 flags, true);
+	      newline_and_indent (pp, spc+2);
+	      pp_right_brace (pp);
+	      newline_and_indent (pp, spc);
+	      node = TREE_OPERAND (node, 1);
+	      pp_string (pp, "else");
+	    }
+	}
       newline_and_indent (pp, spc+2);
       pp_left_brace (pp);
       newline_and_indent (pp, spc+4);
-      dump_generic_node (pp, TREE_OPERAND (node, 1), spc+4, flags, true);
+      dump_generic_node (pp, node, spc+4, flags, true);
       newline_and_indent (pp, spc+2);
       pp_right_brace (pp);
       is_expr = false;
