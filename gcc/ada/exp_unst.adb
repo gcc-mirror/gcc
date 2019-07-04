@@ -598,6 +598,33 @@ package body Exp_Unst is
                   then
                      Note_Uplevel_Bound (Prefix (N), Ref);
 
+                  --  Conditional expressions.
+
+                  elsif Nkind (N) = N_If_Expression then
+                     declare
+                        Expr : Node_Id;
+
+                     begin
+                        Expr := First (Expressions (N));
+                        while Present (Expr) loop
+                           Note_Uplevel_Bound (Expr, Ref);
+                           Next (Expr);
+                        end loop;
+                     end;
+
+                  elsif Nkind (N) = N_Case_Expression then
+                     declare
+                        Alternative : Node_Id;
+
+                     begin
+                        Note_Uplevel_Bound (Expression (N), Ref);
+
+                        Alternative := First (Alternatives (N));
+                        while Present (Alternative) loop
+                           Note_Uplevel_Bound (Expression (Alternative), Ref);
+                        end loop;
+                     end;
+
                   --  Conversion case
 
                   elsif Nkind (N) = N_Type_Conversion then

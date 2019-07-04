@@ -1,3 +1,7 @@
+2019-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb: Handle conditional expressions.
+
 2019-07-04  Yannick Moy  <moy@adacore.com>
 
 	* sem_spark.adb (Check_Package_Spec, Check_Package_Body): Only
