@@ -1,3 +1,12 @@
+2019-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Remove_Context_Clauses): Handle properly the
+	removal of a limited_with_clause which appears in the library
+	unit oF the main unit, when some other unit in the context has a
+	regular with_clause on the same unit, to prevent spurious
+	visibility errors in the subsequent analysis of pending instance
+	bodies.
+
 2019-07-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_elab.adb: Add new type Elaboration_Phase_Status along with
