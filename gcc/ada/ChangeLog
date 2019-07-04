@@ -1,3 +1,9 @@
+2019-07-04  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnarl/a-taside.ads: Add assertion policy to ignore
+	preconditions.
+	(Abort_Task, Is_Terminated, Is_Callable): Add preconditions.
+
 2019-07-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_pragmas.rst: Fix
