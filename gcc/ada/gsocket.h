@@ -82,6 +82,7 @@
 #ifdef __MINGW32__
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <versionhelpers.h>
 
 #undef  EACCES
 #define EACCES          WSAEACCES
