@@ -3744,7 +3744,9 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       cond_var = OMP_CLAUSE_DECL (c);
     }
   if (fd->have_reductemp
-      || fd->have_pointer_condtemp
+      /* For scan, we don't want to reinitialize condtemp before the
+	 second loop.  */
+      || (fd->have_pointer_condtemp && !fd->have_scantemp)
       || fd->have_nonctrl_scantemp)
     {
       tree t1 = build_int_cst (long_integer_type_node, 0);
@@ -4235,7 +4237,8 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       else
 	gsi_insert_after (&gsi, omp_build_barrier (t), GSI_SAME_STMT);
     }
-  else if (fd->have_pointer_condtemp)
+  else if ((fd->have_pointer_condtemp || fd->have_scantemp)
+	   && !fd->have_nonctrl_scantemp)
     {
       tree fn = builtin_decl_explicit (BUILT_IN_GOMP_LOOP_END_NOWAIT);
       gcall *g = gimple_build_call (fn, 0);
