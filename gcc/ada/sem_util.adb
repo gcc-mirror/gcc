@@ -26407,12 +26407,12 @@ package body Sem_Util is
 
       --  A record type or type extension yields a synchronized object when its
       --  discriminants (if any) lack default values and all components are of
-      --  a type that yelds a synchronized object.
+      --  a type that yields a synchronized object.
 
       elsif Is_Record_Type (Typ) then
 
          --  Inspect all entities defined in the scope of the type, looking for
-         --  components of a type that does not yeld a synchronized object or
+         --  components of a type that does not yield a synchronized object or
          --  for discriminants with default values.
 
          Id := First_Entity (Typ);
