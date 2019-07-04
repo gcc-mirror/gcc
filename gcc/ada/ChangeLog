@@ -1,3 +1,12 @@
+2019-07-04  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch12.adb (Perform_Appropriate_Analysis): Added for
+	selecting which type of analysis based on wheither the
+	instantiation is a generic at the library-level. In which case
+	expansion during analysis.
+	(Preanalyze_Actuals): Modify calls to Analyze to use the new
+	routine.
+
 2019-07-04  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.adb: Handle conditional expressions.
