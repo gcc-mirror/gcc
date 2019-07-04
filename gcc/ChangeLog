@@ -1,3 +1,13 @@
+2019-07-04  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-alias.c (decl_refs_may_alias_p): Add size1 and size2
+	parameters; return early for must-alias.
+	(indirect_ref_may_alias_decl_p): Likewise; when establishing
+	outer types match, try nonoverlapping_component_refs
+	if must-alias is not obvious.
+	(indirect_refs_may_alias_p): Likewise.
+	(refs_may_alias_p_2): Likewise.
+
 2019-07-04  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.h (vn_reference_lookup): Add last_vuse_ptr
