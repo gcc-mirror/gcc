@@ -1,3 +1,14 @@
+2019-07-04  Andrea Corallo <andrea.corallo@arm.com>
+
+	* jit.dg/all-non-failing-tests.h: Add test-accessing-bitfield.c.
+	* jit.dg/test-accessing-bitfield.c: New testcase.
+	* jit.dg/test-error-gcc_jit_context_new_bitfield-invalid-type.c:
+	Likewise.
+	* jit.dg/test-error-gcc_jit_context_new_bitfield-invalid-width.c:
+	Likewise.
+	* jit.dg/test-error-gcc_jit_lvalue_get_address-bitfield.c:
+	Likewise.
+
 2019-07-04  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/alias-access-path-3.c: New testcase.
@@ -122,7 +133,7 @@
 
 	PR tree-optimization/91033
 	* gcc.target/i386/pr91033.c: New test.
-	
+
 2019-07-03  Bob Duff  <duff@adacore.com>
 
 	* gnat.dg/task2.adb, gnat.dg/task2_pkg.adb,

@@ -602,6 +602,21 @@ gcc_jit_context_new_field (gcc_jit_context *ctxt,
 			   gcc_jit_type *type,
 			   const char *name);
 
+#define LIBGCCJIT_HAVE_gcc_jit_context_new_bitfield
+
+/* Create a bit field, for use within a struct or union.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_12; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_context_new_bitfield
+*/
+extern gcc_jit_field *
+gcc_jit_context_new_bitfield (gcc_jit_context *ctxt,
+			      gcc_jit_location *loc,
+			      gcc_jit_type *type,
+			      int width,
+			      const char *name);
+
 /* Upcasting from field to object.  */
 extern gcc_jit_object *
 gcc_jit_field_as_object (gcc_jit_field *field);
