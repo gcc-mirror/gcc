@@ -1,5 +1,9 @@
 2019-07-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/91074
+	* omp-low.c (lower_omp_for_scan): Set DECL_GIMPLE_REG_P on cplx
+	temporary.
+
 	PR rtl-optimization/90756
 	* explow.c (promote_ssa_mode): Always use TYPE_MODE, don't bypass it
 	for VECTOR_TYPE_P.
