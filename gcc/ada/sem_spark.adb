@@ -2364,39 +2364,43 @@ package body Sem_SPARK is
       Save_In_Elab : constant Boolean := Inside_Elaboration;
       Spec         : constant Node_Id :=
         Package_Specification (Corresponding_Spec (Pack));
-      Prag         : constant Node_Id := SPARK_Pragma (Defining_Entity (Pack));
+      Id           : constant Entity_Id := Defining_Entity (Pack);
+      Prag         : constant Node_Id := SPARK_Pragma (Id);
+      Aux_Prag     : constant Node_Id := SPARK_Aux_Pragma (Id);
       Saved_Env    : Perm_Env;
 
    begin
-      --  Only SPARK bodies are analyzed
-
-      if No (Prag)
-        or else Get_SPARK_Mode_From_Annotation (Prag) /= Opt.On
+      if Present (Prag)
+        and then Get_SPARK_Mode_From_Annotation (Prag) = Opt.On
       then
-         return;
+         Inside_Elaboration := True;
+
+         --  Save environment and put a new one in place
+
+         Move_Env (Current_Perm_Env, Saved_Env);
+
+         --  Reanalyze package spec to have its variables in the environment
+
+         Check_List (Visible_Declarations (Spec));
+         Check_List (Private_Declarations (Spec));
+
+         --  Check declarations and statements in the special mode for
+         --  elaboration.
+
+         Check_List (Declarations (Pack));
+
+         if Present (Aux_Prag)
+           and then Get_SPARK_Mode_From_Annotation (Aux_Prag) = Opt.On
+         then
+            Check_Node (Handled_Statement_Sequence (Pack));
+         end if;
+
+         --  Restore the saved environment and free the current one
+
+         Move_Env (Saved_Env, Current_Perm_Env);
+
+         Inside_Elaboration := Save_In_Elab;
       end if;
-
-      Inside_Elaboration := True;
-
-      --  Save environment and put a new one in place
-
-      Move_Env (Current_Perm_Env, Saved_Env);
-
-      --  Reanalyze package spec to have its variables in the environment
-
-      Check_List (Visible_Declarations (Spec));
-      Check_List (Private_Declarations (Spec));
-
-      --  Check declarations and statements in the special mode for elaboration
-
-      Check_List (Declarations (Pack));
-      Check_Node (Handled_Statement_Sequence (Pack));
-
-      --  Restore the saved environment and free the current one
-
-      Move_Env (Saved_Env, Current_Perm_Env);
-
-      Inside_Elaboration := Save_In_Elab;
    end Check_Package_Body;
 
    ------------------------
@@ -2406,25 +2410,37 @@ package body Sem_SPARK is
    procedure Check_Package_Spec (Pack : Node_Id) is
       Save_In_Elab : constant Boolean := Inside_Elaboration;
       Spec         : constant Node_Id := Specification (Pack);
+      Id           : constant Entity_Id := Defining_Entity (Pack);
+      Prag         : constant Node_Id := SPARK_Pragma (Id);
+      Aux_Prag     : constant Node_Id := SPARK_Aux_Pragma (Id);
       Saved_Env    : Perm_Env;
 
    begin
-      Inside_Elaboration := True;
+      if Present (Prag)
+        and then Get_SPARK_Mode_From_Annotation (Prag) = Opt.On
+      then
+         Inside_Elaboration := True;
 
-      --  Save environment and put a new one in place
+         --  Save environment and put a new one in place
 
-      Move_Env (Current_Perm_Env, Saved_Env);
+         Move_Env (Current_Perm_Env, Saved_Env);
 
-      --  Check declarations in the special mode for elaboration
+         --  Check declarations in the special mode for elaboration
 
-      Check_List (Visible_Declarations (Spec));
-      Check_List (Private_Declarations (Spec));
+         Check_List (Visible_Declarations (Spec));
 
-      --  Restore the saved environment and free the current one
+         if Present (Aux_Prag)
+           and then Get_SPARK_Mode_From_Annotation (Aux_Prag) = Opt.On
+         then
+            Check_List (Private_Declarations (Spec));
+         end if;
 
-      Move_Env (Saved_Env, Current_Perm_Env);
+         --  Restore the saved environment and free the current one
 
-      Inside_Elaboration := Save_In_Elab;
+         Move_Env (Saved_Env, Current_Perm_Env);
+
+         Inside_Elaboration := Save_In_Elab;
+      end if;
    end Check_Package_Spec;
 
    -------------------------------
