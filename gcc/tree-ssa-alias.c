@@ -1153,15 +1153,13 @@ nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
   auto_vec<tree, 16> component_refs2;
 
   /* Create the stack of handled components for REF1.  */
-  while (handled_component_p (ref1))
+  while (handled_component_p (ref1) && ref1 != match1)
     {
       if (TREE_CODE (ref1) == VIEW_CONVERT_EXPR
 	  || TREE_CODE (ref1) == BIT_FIELD_REF)
 	component_refs1.truncate (0);
       else
         component_refs1.safe_push (ref1);
-      if (ref1 == match1)
-	break;
       ref1 = TREE_OPERAND (ref1, 0);
     }
   if (TREE_CODE (ref1) == MEM_REF && ref1 != match1)
@@ -1180,15 +1178,13 @@ nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
     }
 
   /* Create the stack of handled components for REF2.  */
-  while (handled_component_p (ref2))
+  while (handled_component_p (ref2) && ref2 != match2)
     {
       if (TREE_CODE (ref2) == VIEW_CONVERT_EXPR
 	  || TREE_CODE (ref2) == BIT_FIELD_REF)
 	component_refs2.truncate (0);
       else
         component_refs2.safe_push (ref2);
-      if (ref2 == match2)
-	break;
       ref2 = TREE_OPERAND (ref2, 0);
     }
   if (TREE_CODE (ref2) == MEM_REF && ref2 != match2)
