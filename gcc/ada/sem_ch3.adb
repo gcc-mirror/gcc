@@ -935,6 +935,7 @@ package body Sem_Ch3 is
       then
          if Is_Limited_Record (Desig_Type)
            and then Is_Class_Wide_Type (Desig_Type)
+           and then Tasking_Allowed
          then
             Build_Class_Wide_Master (Anon_Type);
 
