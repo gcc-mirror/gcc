@@ -23189,7 +23189,16 @@ package body Sem_Prag is
             --  Start of processing for Check_Library_Level_Entity
 
             begin
-               if not Is_Library_Level_Entity (E) then
+               --  A SPARK_Mode of On shall only apply to library-level
+               --  entities, except for those in generic instances, which are
+               --  ignored (even if the entity gets SPARK_Mode pragma attached
+               --  in the AST, its effect is not taken into account unless the
+               --  context already provides SPARK_Mode of On in GNATprove).
+
+               if Get_SPARK_Mode_From_Annotation (N) = On
+                 and then not Is_Library_Level_Entity (E)
+                 and then Instantiation_Location (Sloc (N)) = No_Location
+               then
                   Error_Msg_Name_1 := Pname;
                   Error_Msg_N (Fix_Error (Msg_1), N);
 
