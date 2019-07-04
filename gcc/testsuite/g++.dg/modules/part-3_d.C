@@ -7,5 +7,5 @@ int main ()
   return !(r == -75);
 }
 
-// { dg-final { scan-lang-dump { Read:-[0-9] unique mergeable named function_decl:'::frob@foo:2'} module } }
-// { dg-final { scan-lang-dump {>  Read:-[0-9] unique mergeable named function_decl:'::foo@foo:2'} module } }
+// { dg-final { scan-lang-dump { Read:-[0-9]'s named merge key \(unique\) function_decl:'::frob@foo:2'} module } }
+// { dg-final { scan-lang-dump {>  Read:-[0-9]'s named merge key \(unique\) function_decl:'::foo@foo:2'} module } }

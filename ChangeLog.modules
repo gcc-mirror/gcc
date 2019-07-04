@@ -1,3 +1,14 @@
+2019-07-04  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (trees_out::key_mergeable): Return merge kind.
+	(trees_out::tree_value): Note key writing.
+	(trees_in::tree_value): Adjust key dump.
+	gcc/testsuite/
+`	* g++.dg/modules/builtin-1_b.C: Adjust scans.
+	* g++.dg/modules/inst-[1234]_b.C: Likewise.
+	* g++.dg/modules/part-3_[cd].C: Likewise.
+
 2019-07-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

@@ -2967,7 +2967,7 @@ public:
   void fn_parms_fini (tree fn, tree maybe_template);
 
 public:
-  void key_mergeable (depset *);
+  merge_kind key_mergeable (depset *);
 
 public:
   bool is_for_mergeable () const
@@ -7668,7 +7668,11 @@ trees_out::tree_value (tree t, walk_kind walk)
     {
       /* Now write out the merging information, and then really
 	 install the tag values.  */
-      key_mergeable (dep_hash->find_entity (t));
+      merge_kind mk = key_mergeable (dep_hash->find_entity (t));
+
+      dump (dumper::MERGE)
+	&& dump ("Wrote:%d's %s merge key %C:%N", tag,
+		 merge_kind_name[mk], TREE_CODE (t), t);
 
       /* This is the point where the importer determines whether it
 	 really has a new decl or not.  So it is safe to refer to
@@ -7912,8 +7916,8 @@ trees_in::tree_value (walk_kind walk)
 	parms = fn_parms_fini (parm_tag, inner, existing);
 
       dump (dumper::MERGE)
-	&& dump ("Read:%d %s mergeable %s %C:%N", tag, kind,
-		 merge_kind_name[mk], TREE_CODE (res), res);
+	&& dump ("Read:%d's %s merge key (%s) %C:%N", tag,
+		 merge_kind_name[mk], kind, TREE_CODE (res), res);
     }
 
   if (inner_tag != 0)
@@ -7925,10 +7929,10 @@ trees_in::tree_value (walk_kind walk)
       // FIXME: From push_template_decl_real
       /* Give template template parms a DECL_CONTEXT of the template
 	 for which they are a parameter.  */
-      parms = INNERMOST_TEMPLATE_PARMS (parms);
-      for (int i = TREE_VEC_LENGTH (parms) - 1; i >= 0; --i)
+      tree innermost = INNERMOST_TEMPLATE_PARMS (parms);
+      for (int i = TREE_VEC_LENGTH (innermost) - 1; i >= 0; --i)
 	{
-	  tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
+	  tree parm = TREE_VALUE (TREE_VEC_ELT (innermost, i));
 	  if (TREE_CODE (parm) == TEMPLATE_DECL)
 	    DECL_CONTEXT (parm) = res;
 	}
@@ -8996,7 +9000,7 @@ trees_in::fn_parms_fini (int tag, tree fn, tree existing)
    the contents of DEP itself.  */
 // FIXME: constraints probably need streaming too?
 
-void
+merge_kind
 trees_out::key_mergeable (depset *dep)
 {
   tree decl = dep->get_entity ();
@@ -9097,6 +9101,8 @@ trees_out::key_mergeable (depset *dep)
 	    tree_node (TREE_TYPE (fn_type));
 	}
     }
+
+  return mk;
 }
 
 /* DECL, INNER & TYPE are a skeleton set of nodes for a decl.  Only
