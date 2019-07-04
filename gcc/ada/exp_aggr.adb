@@ -5549,7 +5549,8 @@ package body Exp_Aggr is
                  or else (Nkind (Comp) = N_Selected_Component
                            and then Check_Component (Prefix (Comp)))
 
-                 or else (Nkind (Comp) = N_Unchecked_Type_Conversion
+                 or else (Nkind_In (Comp, N_Unchecked_Type_Conversion,
+                                    N_Type_Conversion)
                            and then Check_Component (Expression (Comp)));
             end Check_Component;
 
