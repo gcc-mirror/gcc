@@ -1,3 +1,12 @@
+2019-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Check_Array_Type): An array type attribute such
+	as 'First can be applied to an unconstrained array tyope when
+	the attribute reference appears within an aspect specification
+	and the prefix is a current instance, given that the prefix of
+	the attribute will become a formal of the subprogram that
+	implements the aspect (typically a predicate check).
+
 2019-07-04  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_util.adb (Yields_Synchronized_Object): Fix typos in

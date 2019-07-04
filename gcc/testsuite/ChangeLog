@@ -1,3 +1,7 @@
+2019-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/aspect2.adb, gnat.dg/aspect2.ads: New testcase.
+
 2019-07-04  Yannick Moy  <moy@adacore.com>
 
 	* gnat.dg/synchronized2.adb, gnat.dg/synchronized2.ads,
