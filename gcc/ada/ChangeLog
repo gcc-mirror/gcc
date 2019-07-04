@@ -1,3 +1,9 @@
+2019-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension_Array_Aggregate): If the
+	component is an entity name, its dimensions are those of its
+	type.
+
 2019-07-03  Bob Duff  <duff@adacore.com>
 
 	* doc/gnat_ugn/gnat_utility_programs.rst: Document new flags in
