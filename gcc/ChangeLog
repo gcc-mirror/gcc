@@ -1,5 +1,18 @@
 2019-07-04  Richard Biener  <rguenther@suse.de>
 
+	PR ipa/91062
+	* tree-pass.h (execute_all_ipa_transforms): Add a flag
+	parameter whether to disable GC collection.
+	* passes.c (execute_one_ipa_transform_pass): Likewise, and
+	honor it.
+	(execute_all_ipa_transforms): Likewise and pass it down.
+	* cgraph.c (cgraph_node::get_body): Do not invoke garbage
+	collection from applying IPA transforms.
+	* cgraphunit.c (cgraph_node::expand): Allow garbage collection
+	from applying IPA transforms.
+
+2019-07-04  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/90911
 	* tree-vectorizer.h (_loop_vec_info::scalar_loop_scaling): New field.
 	(LOOP_VINFO_SCALAR_LOOP_SCALING): new.
