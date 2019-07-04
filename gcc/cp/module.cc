@@ -2230,12 +2230,12 @@ public:
   enum entity_kind
   {
     EK_DECL,		/* A decl.  */
-    EK_USING,		/* A using declaration.  */
     EK_UNNAMED,		/* An unnameable entity.  */
+    EK_CLONE,		/* A clone.  */
     EK_SPECIALIZATION,  /* A specialization.  */
+    EK_USING,		/* A using declaration.  */
     EK_NAMESPACE,	/* A namespace.  */
     EK_REDIRECT,	/* Redirect to a template_decl.  */
-    EK_CLONE,		/* A clone.  */
     EK_EXPLICIT_HWM,  
     EK_BINDING = EK_EXPLICIT_HWM, /* Implicitly encoded.  */
     EK_MAYBE_SPEC,	/* Potentially a specialization, else a DECL,
@@ -2554,8 +2554,9 @@ depset::entity_kind_name () const
 {
   /* Same order as entity_kind.  */
   static const char *const names[] = 
-    {"decl", "using", "unnamed", "specialization", "namespace", "redirect",
-     "clone", "binding"};
+    {"decl", "unnamed", "clone", "specialization",
+     "using", "namespace", "redirect",
+     "binding"};
   entity_kind kind = get_entity_kind ();
   gcc_checking_assert (kind < sizeof (names) / sizeof(names[0]));
   return names[get_entity_kind ()];
@@ -12940,6 +12941,7 @@ module_state::read_partitions (unsigned count)
 /* Contents of a cluster.  */
 enum cluster_tag {
   ct_decl,	/* A decl.  */
+  ct_defn,	/* A definition.  */
   ct_bind,	/* A binding.  */
   ct_horcrux,	/* Preseed reference to unnamed decl.  */
   ct_hwm
@@ -12948,7 +12950,7 @@ enum cluster_tag {
 /* Declaration modifiers.  */
 enum ct_decl_flags 
 {
-  cdf_has_definition = 0x1,	/* There is a definition (to read)  */
+  cdf_is_voldemort = 0x1,	/* Is a voldemort.  */
   cdf_is_specialization = 0x2,  /* Some kind of specialization.  */
   cdf_is_partial = 0x4,		/* A partial specialization.  */
 };
@@ -13214,23 +13216,67 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   depset *namer = NULL;
 
-  /* Now write every member.  */
+  /* Every declaration.  */
+  for (unsigned ix = 0; ix != size; ix++)
+    {
+      depset *b = scc[ix];
+      if (b->is_binding ())
+	continue;
+
+      tree decl = b->get_entity ();
+      dump () && dump ("Depset:%u %s %C:%N", ix, b->entity_kind_name (),
+		       TREE_CODE (decl), decl);
+
+      unsigned flags = 0;
+      switch (b->get_entity_kind ())
+	{
+	case depset::EK_SPECIALIZATION:
+	  flags |= cdf_is_specialization;
+	  if (b->is_partial ())
+	    flags |= cdf_is_partial;
+	  /* FALLTHROUGH.  */
+
+	case depset::EK_DECL:
+	case depset::EK_UNNAMED:
+	case depset::EK_CLONE:
+	  sec.u (ct_decl);
+	  sec.tree_ctx (decl, false, NULL_TREE);
+	  dump () && dump ("Wrote declaration of %N", decl);
+
+	  if (b->cluster)
+	    flags |= cdf_is_voldemort;
+	  sec.u (flags);
+
+	  if (flags & cdf_is_voldemort)
+	    {
+	      dump () && dump ("Voldemort:%u %N", b->cluster - 1, decl);
+	      sec.u (b->cluster - 1);
+	    }
+
+	  /* Is this a good enough human name?  */
+	  if (b->get_entity_kind () != depset::EK_UNNAMED)
+	    if (!namer)
+	      namer = b;
+	  break;
+
+	default:;
+	}
+    }
+
+  /* Now every definition and the bindings.  Bindings have been
+     sorted last.  This is an assumption of the lazy specialization
+     machinery.  */
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
       tree decl = b->get_entity ();
-      if (b->is_binding ())
-	dump () && dump ("Depset:%u binding %C:%P", ix, TREE_CODE (decl),
-			 decl, b->get_name ());
-      else
-	dump () && dump ("Depset:%u %s %C:%N", ix, b->entity_kind_name (),
-			 TREE_CODE (decl), decl);
-      unsigned flags = 0;
       switch (b->get_entity_kind ())
 	{
 	case depset::EK_BINDING:
 	  {
 	    gcc_assert (TREE_CODE (decl) == NAMESPACE_DECL);
+	    dump () && dump ("Depset:%u binding %C:%P", ix, TREE_CODE (decl),
+			     decl, b->get_name ());
 	    sec.u (ct_bind);
 	    sec.tree_ctx (decl, false, decl);
 	    sec.tree_node (b->get_name ());
@@ -13272,32 +13318,22 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  break;
 
 	case depset::EK_SPECIALIZATION:
-	  flags |= cdf_is_specialization;
-	  if (b->is_partial ())
-	    flags |= cdf_is_partial;
-	  /* FALLTHROUGH.  */
-
 	case depset::EK_DECL:
 	case depset::EK_UNNAMED:
 	case depset::EK_CLONE:
-	  {
-	    sec.u (ct_decl);
-	    sec.tree_ctx (decl, false, NULL_TREE);
-
-	    if (b->cluster)
-	      dump () && dump ("Voldemort:%u %N", b->cluster - 1, decl);
-	    sec.u (b->cluster);
-	    if (b->has_defn ())
-	      flags |= cdf_has_definition;
-	    sec.u (flags);
-	    if (flags & cdf_has_definition)
+	  if (b->has_defn ())
+	    {
+	      tree decl = b->get_entity ();
+	      sec.u (ct_defn);
+	      sec.tree_node (decl);
+	      dump () && dump ("Writing definition of %N", decl);
 	      sec.write_definition (decl);
-	  }
 
-	  /* Is this a good enough human name?  */
-	  if (b->get_entity_kind () != depset::EK_UNNAMED)
-	    if (!namer || !namer->has_defn () || b->has_defn ())
-	      namer = b;
+	      /* Is this a good enough human name?  */
+	      if (b->get_entity_kind () != depset::EK_UNNAMED)
+		if (!namer || !namer->has_defn ())
+		  namer = b;
+	    }
 	  break;
 
 	default:;
@@ -13539,35 +13575,43 @@ module_state::read_cluster (unsigned snum)
 	  break;
 
 	case ct_decl:
-	  /* A decl or defn.  */
+	  /* A decl.  */
 	  {
 	    tree decl = sec.tree_node ();
+	    dump () && dump ("Read declaration of %N", decl);
 
-	    if (unsigned unnamed = sec.u ())
+	    unsigned flags = sec.u ();
+	    if (sec.get_overrun ())
+	      break;
+
+	    if (flags & cdf_is_voldemort)
 	      {
 		/* An unnamed node, register it.  */
-		if (decl && unnamed - 1 < unnamed_num)
+		unsigned unnamed = sec.u ();
+		if (decl && unnamed < unnamed_num)
 		  {
-		    unsigned index = unnamed_lwm + unnamed - 1;
+		    unsigned index = unnamed_lwm + unnamed;
 		    unnamed_entity *uent = &(*unnamed_ary)[index];
 		    uent->slot = decl;
 		    bool present = unnamed_map->put (DECL_UID (decl), index);
 		    gcc_checking_assert (!present);
 		    dump () && dump ("Voldemort decl:%u [%u] %N",
-				     unnamed - 1, index, decl);
+				     unnamed, index, decl);
 		  }
 		else
 		  sec.set_overrun ();
 	      }
 
-	    unsigned flags = sec.u ();
-	    if (sec.get_overrun ())
-	      break;
 	    if (flags & cdf_is_specialization)
 	      install_specialization (decl, flags & cdf_is_partial);
-	    if (flags & cdf_has_definition)
-	      /* A definition.  */
-	      sec.read_definition (decl);
+	  }
+	  break;
+
+	case ct_defn:
+	  {
+	    tree decl = sec.tree_node ();
+	    dump () && dump ("Reading definition of %N", decl);
+	    sec.read_definition (decl);
 	  }
 	  break;
 	}

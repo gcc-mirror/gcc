@@ -1,6 +1,12 @@
 2019-07-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (enum cluster_tag): Add ct_defn.
+	(enum ct_decl_flags): Rmove cdf_has_definition.
+	(module_state::{read,write}_cluster): Stream definitions after
+	declarations..
+
+	gcc/cp/
 	* module.cc (trees_{in,out}::key_mergeable): Always stream context.
 	gcc/testsuite/
 	* g++.dg/modules/merge-1_[ab].[HC]: New.
