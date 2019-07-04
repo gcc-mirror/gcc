@@ -2338,52 +2338,6 @@ package body Exp_Ch4 is
       Full_Type : Entity_Id;
       Eq_Op     : Entity_Id;
 
-      function Find_Primitive_Eq return Node_Id;
-      --  AI05-0123: Locate primitive equality for type if it exists, and
-      --  build the corresponding call. If operation is abstract, replace
-      --  call with an explicit raise. Return Empty if there is no primitive.
-
-      -----------------------
-      -- Find_Primitive_Eq --
-      -----------------------
-
-      function Find_Primitive_Eq return Node_Id is
-         Prim_E : Elmt_Id;
-         Prim   : Node_Id;
-
-      begin
-         Prim_E := First_Elmt (Collect_Primitive_Operations (Typ));
-         while Present (Prim_E) loop
-            Prim := Node (Prim_E);
-
-            --  Locate primitive equality with the right signature
-
-            if Chars (Prim) = Name_Op_Eq
-              and then Etype (First_Formal (Prim)) =
-                       Etype (Next_Formal (First_Formal (Prim)))
-              and then Etype (Prim) = Standard_Boolean
-            then
-               if Is_Abstract_Subprogram (Prim) then
-                  return
-                    Make_Raise_Program_Error (Loc,
-                      Reason => PE_Explicit_Raise);
-
-               else
-                  return
-                    Make_Function_Call (Loc,
-                      Name                   => New_Occurrence_Of (Prim, Loc),
-                      Parameter_Associations => New_List (Lhs, Rhs));
-               end if;
-            end if;
-
-            Next_Elmt (Prim_E);
-         end loop;
-
-         --  If not found, predefined operation will be used
-
-         return Empty;
-      end Find_Primitive_Eq;
-
    --  Start of processing for Expand_Composite_Equality
 
    begin
@@ -2654,7 +2608,7 @@ package body Exp_Ch4 is
             --  a primitive equality declared for it.
 
             declare
-               Op : constant Node_Id := Find_Primitive_Eq;
+               Op : constant Node_Id := Build_Eq_Call (Typ, Loc, Lhs, Rhs);
 
             begin
                --  Use user-defined primitive if it exists, otherwise use
@@ -12599,7 +12553,53 @@ package body Exp_Ch4 is
       Adjust_Result_Type (N, Typ);
    end Expand_Short_Circuit_Operator;
 
-   -------------------------------------
+   -----------------------
+   -- Build_Eq_Call --
+   -----------------------
+
+   function Build_Eq_Call
+     (Typ : Entity_Id;
+      Loc : Source_Ptr;
+      Lhs : Node_Id;
+      Rhs : Node_Id) return Node_Id
+   is
+      Prim_E : Elmt_Id;
+      Prim   : Node_Id;
+
+   begin
+      Prim_E := First_Elmt (Collect_Primitive_Operations (Typ));
+      while Present (Prim_E) loop
+         Prim := Node (Prim_E);
+
+         --  Locate primitive equality with the right signature
+
+         if Chars (Prim) = Name_Op_Eq
+           and then Etype (First_Formal (Prim)) =
+                    Etype (Next_Formal (First_Formal (Prim)))
+           and then Etype (Prim) = Standard_Boolean
+         then
+            if Is_Abstract_Subprogram (Prim) then
+               return
+                 Make_Raise_Program_Error (Loc,
+                   Reason => PE_Explicit_Raise);
+
+            else
+               return
+                 Make_Function_Call (Loc,
+                   Name                   => New_Occurrence_Of (Prim, Loc),
+                   Parameter_Associations => New_List (Lhs, Rhs));
+            end if;
+         end if;
+
+         Next_Elmt (Prim_E);
+      end loop;
+
+      --  If not found, predefined operation will be used
+
+      return Empty;
+   end Build_Eq_Call;
+
+   ------------------------------------
    -- Fixup_Universal_Fixed_Operation --
    -------------------------------------
 

@@ -1,3 +1,8 @@
+2019-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/equal6.adb, gnat.dg/equal6_types.adb,
+	gnat.dg/equal6_types.ads: New testcase.
+
 2019-07-04  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/allocator.adb: New testcase.

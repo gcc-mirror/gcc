@@ -29,6 +29,20 @@ with Types; use Types;
 
 package Exp_Ch4 is
 
+   function Build_Eq_Call
+     (Typ : Entity_Id;
+      Loc : Source_Ptr;
+      Lhs : Node_Id;
+      Rhs : Node_Id) return Node_Id;
+   --  AI05-0123: Locate primitive equality for type if it exists, and build
+   --  the corresponding call. If operation is abstract, replace call with
+   --  an explicit raise. Return Empty if there is no primitive.
+   --  Used in the construction of record-equality routines for records here
+   --  and for variant records in exp_ch3.adb. These two paths are distinct
+   --  for historical but also technical reasons: for variant records the
+   --  constructed function includes a case statement with nested returns,
+   --  while for records without variants only a simple expression is needed.
+
    procedure Expand_N_Allocator                   (N : Node_Id);
    procedure Expand_N_And_Then                    (N : Node_Id);
    procedure Expand_N_Case_Expression             (N : Node_Id);

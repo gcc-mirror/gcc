@@ -1,3 +1,14 @@
+2019-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.ads, exp_ch4.adb (Build_Eq_Call): New visible
+	subprogram, extracted from Expand_Composite_Equality, to handle
+	properly the composition of equality for variant record types.
+	* exp_ch3.adb (MAke_Eq_If): Use Build_Eq_Call for each
+	component, to handle properly the case of a component with a
+	user-defined equality. Revert to predefined equality if the
+	user-defined operation is abstract, to maintain compatibility
+	with older versions,
+
 2019-07-04  Justin Squirek  <squirek@adacore.com>
 
 	* exp_ch3.adb (Build_Initialization_Call): Fixup

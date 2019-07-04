@@ -9477,6 +9477,11 @@ package body Exp_Ch3 is
 
    --  or a null statement if the list L is empty
 
+   --  Equality may be user-defined for a given component type, in which case
+   --  a function call is constructed instead of an operator node. This is an
+   --  Ada 2012 change in the composability of equality for untagged composite
+   --  types.
+
    function Make_Eq_If
      (E : Entity_Id;
       L : List_Id) return Node_Id
@@ -9485,6 +9490,8 @@ package body Exp_Ch3 is
       C          : Node_Id;
       Field_Name : Name_Id;
       Cond       : Node_Id;
+      Next_Test  : Node_Id;
+      Typ        : Entity_Id;
 
    begin
       if No (L) then
@@ -9495,6 +9502,7 @@ package body Exp_Ch3 is
 
          C := First_Non_Pragma (L);
          while Present (C) loop
+            Typ        := Etype (Defining_Identifier (C));
             Field_Name := Chars (Defining_Identifier (C));
 
             --  The tags must not be compared: they are not part of the value.
@@ -9507,22 +9515,55 @@ package body Exp_Ch3 is
             --  discriminants could be picked up in the private type case.
 
             if Field_Name = Name_uParent
-              and then Is_Interface (Etype (Defining_Identifier (C)))
+              and then Is_Interface (Typ)
             then
                null;
 
             elsif Field_Name /= Name_uTag then
-               Evolve_Or_Else (Cond,
-                 Make_Op_Ne (Loc,
-                   Left_Opnd =>
-                     Make_Selected_Component (Loc,
-                       Prefix        => Make_Identifier (Loc, Name_X),
-                       Selector_Name => Make_Identifier (Loc, Field_Name)),
+               declare
+                  Lhs : constant Node_Id :=
+                    Make_Selected_Component (Loc,
+                      Prefix        => Make_Identifier (Loc, Name_X),
+                      Selector_Name => Make_Identifier (Loc, Field_Name));
 
-                   Right_Opnd =>
-                     Make_Selected_Component (Loc,
-                       Prefix        => Make_Identifier (Loc, Name_Y),
-                       Selector_Name => Make_Identifier (Loc, Field_Name))));
+                  Rhs : constant Node_Id :=
+                    Make_Selected_Component (Loc,
+                      Prefix        => Make_Identifier (Loc, Name_Y),
+                      Selector_Name => Make_Identifier (Loc, Field_Name));
+                  Eq_Call : Node_Id;
+
+               begin
+                  --  Build equality code with a user-defined operator, if
+                  --  available, and with the predefined "=" otherwise.
+                  --  For compatibility with older Ada versions, and preserve
+                  --  the workings of some ASIS tools, we also use the
+                  --  predefined operation if the component-type equality
+                  --  is abstract, rather than raising Program_Error.
+
+                  if Ada_Version < Ada_2012 then
+                     Next_Test := Make_Op_Ne (Loc, Lhs, Rhs);
+
+                  else
+                     Eq_Call := Build_Eq_Call (Typ, Loc, Lhs, Rhs);
+
+                     if No (Eq_Call) then
+                        Next_Test := Make_Op_Ne (Loc, Lhs, Rhs);
+
+                     --  If a component has a defined abstract equality,
+                     --  its application raises Program_Error on that
+                     --  component and therefore on the current variant.
+
+                     elsif Nkind (Eq_Call) = N_Raise_Program_Error then
+                        Set_Etype (Eq_Call, Standard_Boolean);
+                        Next_Test := Make_Op_Not (Loc, Eq_Call);
+
+                     else
+                        Next_Test := Make_Op_Not (Loc, Eq_Call);
+                     end if;
+                  end if;
+               end;
+
+               Evolve_Or_Else (Cond, Next_Test);
             end if;
 
             Next_Non_Pragma (C);
