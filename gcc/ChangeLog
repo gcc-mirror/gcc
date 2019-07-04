@@ -1,3 +1,22 @@
+2019-07-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/88833
+	* fwprop.c (reg_single_def_p): New function.
+	(propagate_rtx_1): Add unconditional else inside RTX_EXTRA case.
+	(forward_propagate_into): New parameter reg_prop_only
+	with default value false.
+	Propagate def's src into loop only if SET_SRC and SET_DEST
+	of def_set have single definitions.
+	Likewise if reg_prop_only is set to true.
+	(fwprop): New param fwprop_addr_p.
+	Integrate fwprop_addr into fwprop.
+	(fwprop_addr): Remove.
+	(pass_rtl_fwprop_addr::execute): Call fwprop with arg set
+	to true.
+	(pass_rtl_fwprop::execute): Call fwprop with arg set to false.
+	* simplify-rtx.c (simplify_subreg): Add case for vector comparison.
+	* config/i386/sse.md (UNSPEC_BLENDV): Adjust pattern.
+
 2019-07-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (lower_omp_scan): Call lower_omp on stmt's body

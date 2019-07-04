@@ -16784,10 +16784,9 @@
 	(unspec:VF_128_256
 	  [(match_operand:VF_128_256 1 "register_operand" "0,0,x")
 	   (match_operand:VF_128_256 2 "vector_operand" "YrBm,*xBm,xm")
-	   (subreg:VF_128_256
-	     (lt:<sseintvecmode>
-	       (match_operand:<sseintvecmode> 3 "register_operand" "Yz,Yz,x")
-	       (match_operand:<sseintvecmode> 4 "const0_operand" "C,C,C")) 0)]
+	   (lt:VF_128_256
+	     (match_operand:<sseintvecmode> 3 "register_operand" "Yz,Yz,x")
+	     (match_operand:<sseintvecmode> 4 "const0_operand" "C,C,C"))]
 	  UNSPEC_BLENDV))]
   "TARGET_SSE4_1"
   "#"
