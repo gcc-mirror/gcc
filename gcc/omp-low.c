@@ -8874,8 +8874,10 @@ lower_omp_scan (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       gsi_insert_seq_after (gsi_p, gimple_omp_body (stmt), GSI_SAME_STMT);
       gsi_insert_seq_after (gsi_p, before, GSI_SAME_STMT);
       gsi_replace (gsi_p, gimple_build_nop (), true);
+      return;
     }
-  else if (before)
+  lower_omp (gimple_omp_body_ptr (stmt), octx);
+  if (before)
     {
       gimple_stmt_iterator gsi = gsi_start_1 (gimple_omp_body_ptr (stmt));
       gsi_insert_seq_before (&gsi, before, GSI_SAME_STMT);
