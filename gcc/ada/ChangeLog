@@ -1,3 +1,10 @@
+2019-07-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): The special
+	treatment of calling Mask_Unfrozen_Types must also be done in
+	the case of an Ignored_Ghost_Entity, because Expander_Active is
+	False in that case.
+
 2019-07-04  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Check_Library_Level_Entity): Update for new rule
