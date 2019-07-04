@@ -1,3 +1,14 @@
+2019-07-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_spark.adb (Explanation, Get_Expl): New functions to get
+	the explanation for a permission mismatch.
+	(Perm_Error, Perm_Mismatch, Perm_Error_Loop_Exit): Take
+	explanation into account for issuing a more precise error
+	message.
+	(Set_Perm_Prefixes, Set_Perm_Extensions,
+	Set_Perm_Extensions_Move): Pass suitable argument for the
+	explanation node.
+
 2019-07-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_aggr.adb (In_Place_Assign_OK): Moved to top level and add

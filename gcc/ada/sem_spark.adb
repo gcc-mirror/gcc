@@ -137,6 +137,9 @@ package body Sem_SPARK is
          --  corresponds to both "observing" and "owning" types in SPARK RM
          --  3.10. To be used when moving the path.
 
+         Explanation : Node_Id;
+         --  Node that can be used in an explanation for a permission mismatch
+
          case Kind is
             --  An entire object is either a leaf (an object which cannot be
             --  extended further in a path) or a subtree in folded form (which
@@ -217,6 +220,7 @@ package body Sem_SPARK is
 
       function Children_Permission (T : Perm_Tree_Access) return Perm_Kind;
       function Component (T : Perm_Tree_Access) return Perm_Tree_Maps.Instance;
+      function Explanation (T : Perm_Tree_Access) return Node_Id;
       function Get_All (T : Perm_Tree_Access) return Perm_Tree_Access;
       function Get_Elem (T : Perm_Tree_Access) return Perm_Tree_Access;
       function Is_Node_Deep (T : Perm_Tree_Access) return Boolean;
@@ -257,6 +261,7 @@ package body Sem_SPARK is
         (N              : Node_Id;
          Exp_Perm       : Perm_Kind;
          Act_Perm       : Perm_Kind;
+         Expl           : Node_Id;
          Forbidden_Perm : Boolean := False);
       --  Issues a continuation error message about a mismatch between a
       --  desired permission Exp_Perm and a permission obtained Act_Perm. N
@@ -428,6 +433,15 @@ package body Sem_SPARK is
          Free_Perm_Tree_Dealloc (PT);
       end Free_Tree;
 
+      -----------------
+      -- Explanation --
+      -----------------
+
+      function Explanation (T : Perm_Tree_Access) return Node_Id is
+      begin
+         return T.all.Tree.Explanation;
+      end Explanation;
+
       -------------
       -- Get_All --
       -------------
@@ -503,22 +517,34 @@ package body Sem_SPARK is
         (N              : Node_Id;
          Exp_Perm       : Perm_Kind;
          Act_Perm       : Perm_Kind;
+         Expl           : Node_Id;
          Forbidden_Perm : Boolean := False)
       is
       begin
+         Error_Msg_Sloc := Sloc (Expl);
+
          if Forbidden_Perm then
-            if Exp_Perm = Act_Perm then
-               Error_Msg_N ("\got forbidden state `"
-                            & Perm_Kind'Image (Exp_Perm), N);
+            if Exp_Perm = No_Access then
+               Error_Msg_N ("\object was moved #", N);
             else
-               Error_Msg_N ("\forbidden state `"
-                            & Perm_Kind'Image (Exp_Perm) & "`, got `"
-                            & Perm_Kind'Image (Act_Perm) & "`", N);
+               raise Program_Error;
             end if;
          else
-            Error_Msg_N ("\expected state `"
-                         & Perm_Kind'Image (Exp_Perm) & "` at least, got `"
-                         & Perm_Kind'Image (Act_Perm) & "`", N);
+            case Exp_Perm is
+               when Write_Perm =>
+                  if Act_Perm = Read_Only then
+                     Error_Msg_N
+                       ("\object was declared as not writeable #", N);
+                  else
+                     Error_Msg_N ("\object was moved #", N);
+                  end if;
+
+               when Read_Only =>
+                  Error_Msg_N ("\object was moved #", N);
+
+               when No_Access =>
+                  raise Program_Error;
+            end case;
          end if;
       end Perm_Mismatch;
 
@@ -575,8 +601,11 @@ package body Sem_SPARK is
 
    type Perm_Or_Tree (R : Result_Kind) is record
       case R is
-         when Folded   => Found_Permission : Perm_Kind;
-         when Unfolded => Tree_Access      : Perm_Tree_Access;
+         when Folded   =>
+            Found_Permission : Perm_Kind;
+            Explanation      : Node_Id;
+         when Unfolded =>
+            Tree_Access      : Perm_Tree_Access;
       end case;
    end record;
 
@@ -649,6 +678,10 @@ package body Sem_SPARK is
    procedure Check_Type (Typ : Entity_Id);
    --  Check that type Typ is either not deep, or that it is an observing or
    --  owning type according to SPARK RM 3.10
+
+   function Get_Expl (N : Node_Or_Entity_Id) return Node_Id;
+   --  The function that takes a name as input and returns an explanation node
+   --  for the permission associated with it.
 
    function Get_Observed_Or_Borrowed_Expr (Expr : Node_Id) return Node_Id;
    pragma Precondition (Is_Path_Expression (Expr));
@@ -732,6 +765,7 @@ package body Sem_SPARK is
      (N              : Node_Id;
       Perm           : Perm_Kind;
       Found_Perm     : Perm_Kind;
+      Expl           : Node_Id;
       Forbidden_Perm : Boolean := False);
    --  A procedure that is called when the permissions found contradict the
    --  rules established by the RM. This function is called with the node and
@@ -742,7 +776,8 @@ package body Sem_SPARK is
      (E          : Entity_Id;
       Subp       : Entity_Id;
       Perm       : Perm_Kind;
-      Found_Perm : Perm_Kind);
+      Found_Perm : Perm_Kind;
+      Expl       : Node_Id);
    --  A procedure that is called when the permissions found contradict the
    --  rules established by the RM at the end of subprograms. This function is
    --  called with the node, the node of the returning function, and the
@@ -772,12 +807,18 @@ package body Sem_SPARK is
    --  subprogram indeed have Read_Write permission at the end of the
    --  subprogram execution.
 
-   procedure Set_Perm_Extensions (T : Perm_Tree_Access; P : Perm_Kind);
+   procedure Set_Perm_Extensions
+     (T    : Perm_Tree_Access;
+      P    : Perm_Kind;
+      Expl : Node_Id);
    --  This procedure takes an access to a permission tree and modifies the
    --  tree so that any strict extensions of the given tree become of the
    --  access specified by parameter P.
 
-   procedure Set_Perm_Extensions_Move (T : Perm_Tree_Access; E : Entity_Id);
+   procedure Set_Perm_Extensions_Move
+     (T    : Perm_Tree_Access;
+      E    : Entity_Id;
+      Expl : Node_Id);
    --  Set permissions to
    --    No for any extension with more .all
    --    W for any deep extension with same number of .all
@@ -785,7 +826,8 @@ package body Sem_SPARK is
 
    function Set_Perm_Prefixes
      (N    : Node_Id;
-      Perm : Perm_Kind_Option) return Perm_Tree_Access;
+      Perm : Perm_Kind_Option;
+      Expl : Node_Id) return Perm_Tree_Access;
    pragma Precondition (Is_Path_Expression (N));
    --  This function modifies the permissions of a given node in the permission
    --  environment as well as all the prefixes of the path, to the new
@@ -817,7 +859,8 @@ package body Sem_SPARK is
       Typ        : Entity_Id;
       Kind       : Formal_Kind;
       Subp       : Entity_Id;
-      Global_Var : Boolean);
+      Global_Var : Boolean;
+      Expl       : Node_Id);
    --  Auxiliary procedure to Setup_Parameters and Setup_Globals
 
    procedure Setup_Parameters (Subp : Entity_Id);
@@ -1106,6 +1149,7 @@ package body Sem_SPARK is
 
             if Perm = No_Access then
                Perm_Error (Expr, No_Access, No_Access,
+                           Expl => Get_Expl (Expr),
                            Forbidden_Perm => True);
                return;
             end if;
@@ -1114,6 +1158,7 @@ package body Sem_SPARK is
 
             if Perm = No_Access then
                Perm_Error (Expr, No_Access, No_Access,
+                           Expl => Get_Expl (Expr_Root),
                            Forbidden_Perm => True);
                return;
             end if;
@@ -1133,7 +1178,7 @@ package body Sem_SPARK is
             Perm := Get_Perm (Expr);
 
             if Perm /= Read_Write then
-               Perm_Error (Expr, Read_Write, Perm);
+               Perm_Error (Expr, Read_Write, Perm, Expl => Get_Expl (Expr));
                return;
             end if;
 
@@ -1331,6 +1376,7 @@ package body Sem_SPARK is
                       (Tree =>
                          (Kind                => Entire_Object,
                           Is_Node_Deep        => True,
+                          Explanation         => Decl,
                           Permission          => Read_Write,
                           Children_Permission => Read_Write));
                begin
@@ -1819,7 +1865,8 @@ package body Sem_SPARK is
         (E          : Entity_Id;
          Loop_Id    : Node_Id;
          Perm       : Perm_Kind;
-         Found_Perm : Perm_Kind);
+         Found_Perm : Perm_Kind;
+         Expl       : Node_Id);
       --  A procedure that is called when the permissions found contradict
       --  the rules established by the RM at the exit of loops. This function
       --  is called with the entity, the node of the enclosing loop, the
@@ -1889,14 +1936,15 @@ package body Sem_SPARK is
          begin
             if not (Permission (Tree) >= Perm) then
                Perm_Error_Loop_Exit
-                 (E, Stmt, Permission (Tree), Perm);
+                 (E, Stmt, Permission (Tree), Perm, Explanation (Tree));
             end if;
 
             case Kind (Tree) is
                when Entire_Object =>
                   if not (Children_Permission (Tree) >= Perm) then
                      Perm_Error_Loop_Exit
-                       (E, Stmt, Children_Permission (Tree), Perm);
+                       (E, Stmt, Children_Permission (Tree), Perm,
+                        Explanation (Tree));
 
                   end if;
 
@@ -1934,14 +1982,15 @@ package body Sem_SPARK is
          begin
             if not (Perm >= Permission (Tree)) then
                Perm_Error_Loop_Exit
-                 (E, Stmt, Permission (Tree), Perm);
+                 (E, Stmt, Permission (Tree), Perm, Explanation (Tree));
             end if;
 
             case Kind (Tree) is
                when Entire_Object =>
                   if not (Perm >= Children_Permission (Tree)) then
                      Perm_Error_Loop_Exit
-                       (E, Stmt, Children_Permission (Tree), Perm);
+                       (E, Stmt, Children_Permission (Tree), Perm,
+                        Explanation (Tree));
                   end if;
 
                when Reference =>
@@ -1974,7 +2023,8 @@ package body Sem_SPARK is
               (E          => E,
                Loop_Id    => Stmt,
                Perm       => Permission (New_Tree),
-               Found_Perm => Permission (Orig_Tree));
+               Found_Perm => Permission (Orig_Tree),
+               Expl       => Explanation (New_Tree));
          end if;
 
          case Kind (New_Tree) is
@@ -1994,7 +2044,8 @@ package body Sem_SPARK is
                      Perm_Error_Loop_Exit
                        (E, Stmt,
                         Children_Permission (New_Tree),
-                        Children_Permission (Orig_Tree));
+                        Children_Permission (Orig_Tree),
+                        Explanation (New_Tree));
                   end if;
 
                when Reference =>
@@ -2101,14 +2152,16 @@ package body Sem_SPARK is
         (E          : Entity_Id;
          Loop_Id    : Node_Id;
          Perm       : Perm_Kind;
-         Found_Perm : Perm_Kind)
+         Found_Perm : Perm_Kind;
+         Expl       : Node_Id)
       is
       begin
          Error_Msg_Node_2 := Loop_Id;
          Error_Msg_N ("insufficient permission for & when exiting loop &", E);
          Perm_Mismatch (Exp_Perm => Perm,
                         Act_Perm => Found_Perm,
-                        N        => Loop_Id);
+                        N        => Loop_Id,
+                        Expl     => Expl);
       end Perm_Error_Loop_Exit;
 
       --  Local variables
@@ -2836,7 +2889,7 @@ package body Sem_SPARK is
                Perm := Get_Perm (Obj);
 
                if Perm /= Read_Write then
-                  Perm_Error (Decl, Read_Write, Perm);
+                  Perm_Error (Decl, Read_Write, Perm, Expl => Get_Expl (Obj));
                end if;
 
                if Ekind_In (Subp, E_Procedure, E_Entry)
@@ -3044,6 +3097,51 @@ package body Sem_SPARK is
       end case;
    end Check_Type;
 
+   --------------
+   -- Get_Expl --
+   --------------
+
+   function Get_Expl (N : Node_Or_Entity_Id) return Node_Id is
+   begin
+      --  Special case for the object declared in an extended return statement
+
+      if Nkind (N) = N_Defining_Identifier then
+         declare
+            C : constant Perm_Tree_Access :=
+              Get (Current_Perm_Env, Unique_Entity (N));
+         begin
+            pragma Assert (C /= null);
+            return Explanation (C);
+         end;
+
+      --  The expression is a call to a traversal function
+
+      elsif Is_Traversal_Function_Call (N) then
+         return N;
+
+      --  The expression is directly rooted in an object
+
+      elsif Present (Get_Root_Object (N, Through_Traversal => False)) then
+         declare
+            Tree_Or_Perm : constant Perm_Or_Tree := Get_Perm_Or_Tree (N);
+         begin
+            case Tree_Or_Perm.R is
+               when Folded =>
+                  return Tree_Or_Perm.Explanation;
+
+               when Unfolded =>
+                  pragma Assert (Tree_Or_Perm.Tree_Access /= null);
+                  return Explanation (Tree_Or_Perm.Tree_Access);
+            end case;
+         end;
+
+      --  The expression is a function call, an allocation, or null
+
+      else
+         return N;
+      end if;
+   end Get_Expl;
+
    -----------------------------------
    -- Get_Observed_Or_Borrowed_Expr --
    -----------------------------------
@@ -3159,7 +3257,9 @@ package body Sem_SPARK is
                         when Entire_Object =>
                            return (R                => Folded,
                                    Found_Permission =>
-                                      Children_Permission (C.Tree_Access));
+                                      Children_Permission (C.Tree_Access),
+                                   Explanation      =>
+                                      Explanation (C.Tree_Access));
 
                         when Reference =>
                            pragma Assert (Nkind (N) = N_Explicit_Dereference);
@@ -3208,7 +3308,7 @@ package body Sem_SPARK is
 
    function Get_Perm_Tree (N : Node_Id) return Perm_Tree_Access is
    begin
-      return Set_Perm_Prefixes (N, None);
+      return Set_Perm_Prefixes (N, None, Empty);
    end Get_Perm_Tree;
 
    ---------------------
@@ -3912,6 +4012,7 @@ package body Sem_SPARK is
      (N              : Node_Id;
       Perm           : Perm_Kind;
       Found_Perm     : Perm_Kind;
+      Expl           : Node_Id;
       Forbidden_Perm : Boolean := False)
    is
       procedure Set_Root_Object
@@ -3975,7 +4076,7 @@ package body Sem_SPARK is
          Error_Msg_NE ("insufficient permission for &", N, Root);
       end if;
 
-      Perm_Mismatch (N, Perm, Found_Perm, Forbidden_Perm);
+      Perm_Mismatch (N, Perm, Found_Perm, Expl, Forbidden_Perm);
    end Perm_Error;
 
    -------------------------------
@@ -3986,13 +4087,14 @@ package body Sem_SPARK is
      (E          : Entity_Id;
       Subp       : Entity_Id;
       Perm       : Perm_Kind;
-      Found_Perm : Perm_Kind)
+      Found_Perm : Perm_Kind;
+      Expl       : Node_Id)
    is
    begin
       Error_Msg_Node_2 := Subp;
       Error_Msg_NE ("insufficient permission for & when returning from &",
                     Subp, E);
-      Perm_Mismatch (Subp, Perm, Found_Perm);
+      Perm_Mismatch (Subp, Perm, Found_Perm, Expl);
    end Perm_Error_Subprogram_End;
 
    ------------------
@@ -4035,7 +4137,7 @@ package body Sem_SPARK is
 
                if Is_Prefix_Or_Almost (Pref => Borrowed, Expr => Expr) then
                   Error_Msg_Sloc := Sloc (Borrowed);
-                  Error_Msg_N ("expression was borrowed #", Expr);
+                  Error_Msg_N ("object was borrowed #", Expr);
                end if;
 
                Key := Get_Next_Key (Current_Borrowers);
@@ -4071,7 +4173,7 @@ package body Sem_SPARK is
 
                if Is_Prefix_Or_Almost (Pref => Observed, Expr => Expr) then
                   Error_Msg_Sloc := Sloc (Observed);
-                  Error_Msg_N ("expression was observed #", Expr);
+                  Error_Msg_N ("object was observed #", Expr);
                end if;
 
                Key := Get_Next_Key (Current_Observers);
@@ -4134,7 +4236,7 @@ package body Sem_SPARK is
             --  Check path is readable
 
             if Perm not in Read_Perm then
-               Perm_Error (Expr, Read_Only, Perm);
+               Perm_Error (Expr, Read_Only, Perm, Expl => Get_Expl (Expr));
                return;
             end if;
 
@@ -4158,7 +4260,7 @@ package body Sem_SPARK is
 
             if not Is_Deep (Expr_Type) then
                if Perm not in Read_Perm then
-                  Perm_Error (Expr, Read_Only, Perm);
+                  Perm_Error (Expr, Read_Only, Perm, Expl => Get_Expl (Expr));
                end if;
                return;
             end if;
@@ -4167,7 +4269,7 @@ package body Sem_SPARK is
             --  the source object (if any) shall be Unrestricted.
 
             if Perm /= Read_Write then
-               Perm_Error (Expr, Read_Write, Perm);
+               Perm_Error (Expr, Read_Write, Perm, Expl => Get_Expl (Expr));
                return;
             end if;
 
@@ -4182,7 +4284,7 @@ package body Sem_SPARK is
             --  For assignment, check W permission
 
             if Perm not in Write_Perm then
-               Perm_Error (Expr, Write_Only, Perm);
+               Perm_Error (Expr, Write_Only, Perm, Expl => Get_Expl (Expr));
                return;
             end if;
 
@@ -4201,7 +4303,7 @@ package body Sem_SPARK is
             --  For borrowing, check RW permission
 
             if Perm /= Read_Write then
-               Perm_Error (Expr, Read_Write, Perm);
+               Perm_Error (Expr, Read_Write, Perm, Expl => Get_Expl (Expr));
                return;
             end if;
 
@@ -4220,7 +4322,7 @@ package body Sem_SPARK is
             --  For borrowing, check R permission
 
             if Perm not in Read_Perm then
-               Perm_Error (Expr, Read_Only, Perm);
+               Perm_Error (Expr, Read_Only, Perm, Expl => Get_Expl (Expr));
                return;
             end if;
       end case;
@@ -4259,10 +4361,10 @@ package body Sem_SPARK is
             if Present (Get_Root_Object (Expr)) then
                declare
                   Tree : constant Perm_Tree_Access :=
-                    Set_Perm_Prefixes (Expr, Write_Only);
+                    Set_Perm_Prefixes (Expr, Write_Only, Expl => Expr);
                begin
                   pragma Assert (Tree /= null);
-                  Set_Perm_Extensions_Move (Tree, Etype (Expr));
+                  Set_Perm_Extensions_Move (Tree, Etype (Expr), Expl => Expr);
                end;
             end if;
 
@@ -4283,7 +4385,7 @@ package body Sem_SPARK is
                Tree : constant Perm_Tree_Access := Get_Perm_Tree (Expr);
             begin
                Tree.all.Tree.Permission := Read_Write;
-               Set_Perm_Extensions (Tree, Read_Write);
+               Set_Perm_Extensions (Tree, Read_Write, Expl => Expr);
 
                --  Normalize the permission tree
 
@@ -4390,7 +4492,8 @@ package body Sem_SPARK is
               (E          => Id,
                Subp       => Subp,
                Perm       => Read_Write,
-               Found_Perm => Permission (Tree));
+               Found_Perm => Permission (Tree),
+               Expl       => Explanation (Tree));
          end if;
       end;
    end Return_Parameter_Or_Global;
@@ -4418,7 +4521,10 @@ package body Sem_SPARK is
    -- Set_Perm_Extensions --
    -------------------------
 
-   procedure Set_Perm_Extensions (T : Perm_Tree_Access; P : Perm_Kind) is
+   procedure Set_Perm_Extensions
+     (T    : Perm_Tree_Access;
+      P    : Perm_Kind;
+      Expl : Node_Id) is
 
       procedure Free_Perm_Tree_Children (T : Perm_Tree_Access);
       --  Free the permission tree of children if any, prio to replacing T
@@ -4462,6 +4568,7 @@ package body Sem_SPARK is
       Free_Perm_Tree_Children (T);
       T.all.Tree := Perm_Tree'(Kind                => Entire_Object,
                                Is_Node_Deep        => Is_Node_Deep (T),
+                               Explanation         => Expl,
                                Permission          => Permission (T),
                                Children_Permission => P);
    end Set_Perm_Extensions;
@@ -4471,14 +4578,15 @@ package body Sem_SPARK is
    ------------------------------
 
    procedure Set_Perm_Extensions_Move
-     (T : Perm_Tree_Access;
-      E : Entity_Id)
+     (T    : Perm_Tree_Access;
+      E    : Entity_Id;
+      Expl : Node_Id)
    is
    begin
       --  Shallow extensions are set to RW
 
       if not Is_Node_Deep (T) then
-         Set_Perm_Extensions (T, Read_Write);
+         Set_Perm_Extensions (T, Read_Write, Expl => Expl);
          return;
       end if;
 
@@ -4502,12 +4610,14 @@ package body Sem_SPARK is
                          (Tree =>
                             (Kind                => Entire_Object,
                              Is_Node_Deep        => Is_Node_Deep (T),
+                             Explanation         => Expl,
                              Permission          => Read_Write,
                              Children_Permission => Read_Write));
                   begin
-                     Set_Perm_Extensions_Move (C, Component_Type (E));
+                     Set_Perm_Extensions_Move (C, Component_Type (E), Expl);
                      T.all.Tree := (Kind         => Array_Component,
                                     Is_Node_Deep => Is_Node_Deep (T),
+                                    Explanation  => Expl,
                                     Permission   => Write_Only,
                                     Get_Elem     => C);
                   end;
@@ -4525,9 +4635,10 @@ package body Sem_SPARK is
                           (Tree =>
                              (Kind                => Entire_Object,
                               Is_Node_Deep        => Is_Deep (Etype (Comp)),
+                              Explanation         => Expl,
                               Permission          => Read_Write,
                               Children_Permission => Read_Write));
-                        Set_Perm_Extensions_Move (C, Etype (Comp));
+                        Set_Perm_Extensions_Move (C, Etype (Comp), Expl);
                         Perm_Tree_Maps.Set (Hashtbl, Comp, C);
                         Next_Component_Or_Discriminant (Comp);
                      end loop;
@@ -4535,6 +4646,7 @@ package body Sem_SPARK is
                      T.all.Tree :=
                        (Kind             => Record_Component,
                         Is_Node_Deep     => Is_Node_Deep (T),
+                        Explanation      => Expl,
                         Permission       => Write_Only,
                         Component        => Hashtbl);
                   end;
@@ -4542,14 +4654,14 @@ package body Sem_SPARK is
                --  Otherwise, extensions are set to NO
 
                when others =>
-                  Set_Perm_Extensions (T, No_Access);
+                  Set_Perm_Extensions (T, No_Access, Expl);
             end case;
 
          when Reference =>
-            Set_Perm_Extensions (T, No_Access);
+            Set_Perm_Extensions (T, No_Access, Expl);
 
          when Array_Component =>
-            Set_Perm_Extensions_Move (Get_Elem (T), Component_Type (E));
+            Set_Perm_Extensions_Move (Get_Elem (T), Component_Type (E), Expl);
 
          when Record_Component =>
             declare
@@ -4561,7 +4673,7 @@ package body Sem_SPARK is
                while Present (Comp) loop
                   C := Perm_Tree_Maps.Get (Component (T), Comp);
                   pragma Assert (C /= null);
-                  Set_Perm_Extensions_Move (C, Etype (Comp));
+                  Set_Perm_Extensions_Move (C, Etype (Comp), Expl);
                   Next_Component_Or_Discriminant (Comp);
                end loop;
             end;
@@ -4574,7 +4686,8 @@ package body Sem_SPARK is
 
    function Set_Perm_Prefixes
      (N    : Node_Id;
-      Perm : Perm_Kind_Option) return Perm_Tree_Access
+      Perm : Perm_Kind_Option;
+      Expl : Node_Id) return Perm_Tree_Access
    is
    begin
       case Nkind (N) is
@@ -4602,7 +4715,7 @@ package body Sem_SPARK is
          when N_Explicit_Dereference =>
             declare
                C : constant Perm_Tree_Access :=
-                 Set_Perm_Prefixes (Prefix (N), Perm);
+                 Set_Perm_Prefixes (Prefix (N), Perm, Expl);
                pragma Assert (C /= null);
                pragma Assert (Kind (C) = Entire_Object
                               or else Kind (C) = Reference);
@@ -4635,6 +4748,7 @@ package body Sem_SPARK is
                          (Tree =>
                             (Kind                => Entire_Object,
                              Is_Node_Deep        => Is_Deep (Etype (N)),
+                             Explanation         => Expl,
                              Permission          => Child_P,
                              Children_Permission => Child_P));
                   begin
@@ -4644,6 +4758,7 @@ package body Sem_SPARK is
 
                      C.all.Tree := (Kind         => Reference,
                                     Is_Node_Deep => Is_Node_Deep (C),
+                                    Explanation  => Expl,
                                     Permission   => Permission (C),
                                     Get_All      => D);
                      return D;
@@ -4654,7 +4769,7 @@ package body Sem_SPARK is
          when N_Selected_Component =>
             declare
                C : constant Perm_Tree_Access :=
-                 Set_Perm_Prefixes (Prefix (N), Perm);
+                 Set_Perm_Prefixes (Prefix (N), Perm, Expl);
                pragma Assert (C /= null);
                pragma Assert (Kind (C) = Entire_Object
                               or else Kind (C) = Record_Component);
@@ -4708,6 +4823,7 @@ package body Sem_SPARK is
                           (Tree =>
                              (Kind                => Entire_Object,
                               Is_Node_Deep        => Is_Deep (Etype (Comp)),
+                              Explanation         => Expl,
                               Permission          => P,
                               Children_Permission => Child_P));
                         Perm_Tree_Maps.Set (Hashtbl, Comp, D);
@@ -4723,6 +4839,7 @@ package body Sem_SPARK is
 
                      C.all.Tree := (Kind         => Record_Component,
                                     Is_Node_Deep => Is_Node_Deep (C),
+                                    Explanation  => Expl,
                                     Permission   => Permission (C),
                                     Component    => Hashtbl);
                      return D_This;
@@ -4735,7 +4852,7 @@ package body Sem_SPARK is
          =>
             declare
                C : constant Perm_Tree_Access :=
-                 Set_Perm_Prefixes (Prefix (N), Perm);
+                 Set_Perm_Prefixes (Prefix (N), Perm, Expl);
                pragma Assert (C /= null);
                pragma Assert (Kind (C) = Entire_Object
                               or else Kind (C) = Array_Component);
@@ -4768,6 +4885,7 @@ package body Sem_SPARK is
                          (Tree =>
                             (Kind                => Entire_Object,
                              Is_Node_Deep        => Is_Node_Deep (C),
+                             Explanation         => Expl,
                              Permission          => Child_P,
                              Children_Permission => Child_P));
                   begin
@@ -4777,6 +4895,7 @@ package body Sem_SPARK is
 
                      C.all.Tree := (Kind         => Array_Component,
                                     Is_Node_Deep => Is_Node_Deep (C),
+                                    Explanation  => Expl,
                                     Permission   => Permission (C),
                                     Get_Elem     => D);
                      return D;
@@ -4788,7 +4907,7 @@ package body Sem_SPARK is
             | N_Type_Conversion
             | N_Unchecked_Type_Conversion
          =>
-            return Set_Perm_Prefixes (Expression (N), Perm);
+            return Set_Perm_Prefixes (Expression (N), Perm, Expl);
 
          when others =>
             raise Program_Error;
@@ -4893,7 +5012,8 @@ package body Sem_SPARK is
             Typ        => Typ,
             Kind       => Kind,
             Subp       => Subp,
-            Global_Var => Global_Var);
+            Global_Var => Global_Var,
+            Expl       => Expr);
       end Setup_Global;
 
       procedure Setup_Globals_Inst is new Handle_Globals (Setup_Global);
@@ -4913,7 +5033,8 @@ package body Sem_SPARK is
       Typ        : Entity_Id;
       Kind       : Formal_Kind;
       Subp       : Entity_Id;
-      Global_Var : Boolean)
+      Global_Var : Boolean;
+      Expl       : Node_Id)
    is
       Perm : Perm_Kind_Option;
 
@@ -4989,6 +5110,7 @@ package body Sem_SPARK is
                 (Tree =>
                    (Kind                => Entire_Object,
                     Is_Node_Deep        => Is_Deep (Etype (Id)),
+                    Explanation         => Expl,
                     Permission          => Perm,
                     Children_Permission => Perm));
          begin
@@ -5011,7 +5133,8 @@ package body Sem_SPARK is
             Typ        => Underlying_Type (Etype (Formal)),
             Kind       => Ekind (Formal),
             Subp       => Subp,
-            Global_Var => False);
+            Global_Var => False,
+            Expl       => Formal);
          Next_Formal (Formal);
       end loop;
    end Setup_Parameters;
