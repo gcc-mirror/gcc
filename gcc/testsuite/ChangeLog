@@ -1,3 +1,7 @@
+2019-07-04  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/allocator.adb: New testcase.
+
 2019-07-04  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/default_initial_condition.adb,

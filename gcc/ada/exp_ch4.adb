@@ -4751,6 +4751,9 @@ package body Exp_Ch4 is
 
          --  Case of initialization procedure present, must be called
 
+         --  NOTE: There is a *huge* amount of code duplication here from
+         --  Build_Initialization_Call. We should probably refactor???
+
          else
             Check_Restriction (No_Default_Initialization, N);
 

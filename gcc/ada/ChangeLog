@@ -1,3 +1,12 @@
+2019-07-04  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch3.adb (Build_Initialization_Call): Fixup
+	*_skip_null_excluding_check argument to handle new default.
+	(Init_Formals): Make *_skip_null_excluding_check formal default
+	to False
+	* exp_ch4.adb (Expand_N_Allocator): Add comment to note heavy
+	code duplication
+
 2019-07-04  Bob Duff  <duff@adacore.com>
 
 	* sem_ch3.adb (Access_Definition): Do not create a master unless
