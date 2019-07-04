@@ -1,3 +1,7 @@
+2019-07-04  Yannick Moy  <moy@adacore.com>
+
+	* gnat.dg/spark3.adb: New testcase.
+
 2019-07-04  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/tagged2.adb, gnat.dg/tagged2.ads: New testcase.
