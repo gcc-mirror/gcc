@@ -1,3 +1,19 @@
+2019-07-05  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnat/a-textio.adb: Add abstract state refinment.
+	* libgnat/a-textio.ads: Add File_System abstract state.  Add
+	global contracts, contract cases, preconditions and
+	postconditions to procedures and functions.
+	(Set_Input, Set_Output, Set_Error, Standard_Input,
+	Standard_Output, Standard_Error, Current_Input, Current_Output,
+	Current_Error): Turn SPARK_Mode off.
+	(Get_Line): Turn SPARK_Mode off on Get_Line functions.
+	* libgnat/a-tideio.ads, libgnat/a-tienio.ads,
+	libgnat/a-tifiio.ads, libgnat/a-tiflio.ads,
+	libgnat/a-tiinio.ads, libgnat/a-timoio.ads: Add global
+	contracts, contract cases, preconditions and postconditions to
+	procedures and functions.
+
 2019-07-05  Arnaud Charlet  <charlet@adacore.com>
 
 	* doc/gnat_ugn/platform_specific_information.rst: Refresh doc on

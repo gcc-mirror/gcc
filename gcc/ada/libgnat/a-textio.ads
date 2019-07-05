@@ -33,6 +33,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  Preconditions in this unit are meant for analysis only, not for run-time
+--  checking, so that the expected exceptions are raised. This is enforced by
+--  setting the corresponding assertion policy to Ignore. These preconditions
+--  are partial and protect against Status_Error, Mode_Error, and Layout_Error,
+--  but not against other types of errors.
+
+pragma Assertion_Policy (Pre => Ignore);
+
 --  Note: the generic subpackages of Text_IO (Integer_IO, Float_IO, Fixed_IO,
 --  Modular_IO, Decimal_IO and Enumeration_IO) appear as private children in
 --  GNAT. These children are with'ed automatically if they are referenced, so
@@ -46,10 +54,15 @@ with System;
 with System.File_Control_Block;
 with System.WCh_Con;
 
-package Ada.Text_IO is
+package Ada.Text_IO with
+  Abstract_State    => (File_System),
+  Initializes       => (File_System),
+  Initial_Condition => Line_Length = 0 and Page_Length = 0
+is
    pragma Elaborate_Body;
 
-   type File_Type is limited private with Default_Initial_Condition;
+   type File_Type is limited private with
+     Default_Initial_Condition => (not Is_Open (File_Type));
    type File_Mode is (In_File, Out_File, Append_File);
 
    --  The following representation clause allows the use of unchecked
@@ -87,50 +100,97 @@ package Ada.Text_IO is
      (File : in out File_Type;
       Mode : File_Mode := Out_File;
       Name : String := "";
-      Form : String := "");
+      Form : String := "")
+   with
+     Pre    => not Is_Open (File),
+     Post   =>
+       Is_Open (File)
+       and then Ada.Text_IO.Mode (File) = Mode
+       and then (if Mode /= In_File
+                   then (Line_Length (File) = 0
+                         and then Page_Length (File) = 0)),
+     Global => (In_Out => File_System);
 
    procedure Open
      (File : in out File_Type;
       Mode : File_Mode;
       Name : String;
-      Form : String := "");
+      Form : String := "")
+   with
+     Pre    => not Is_Open (File),
+     Post   =>
+      Is_Open (File)
+      and then Ada.Text_IO.Mode (File) = Mode
+      and then (if Mode /= In_File
+                  then (Line_Length (File) = 0
+                        and then Page_Length (File) = 0)),
+     Global => (In_Out => File_System);
 
-   procedure Close  (File : in out File_Type);
-   procedure Delete (File : in out File_Type);
-   procedure Reset  (File : in out File_Type; Mode : File_Mode);
-   procedure Reset  (File : in out File_Type);
+   procedure Close  (File : in out File_Type) with
+     Pre    => Is_Open (File),
+     Post   => not Is_Open (File),
+     Global => (In_Out => File_System);
+   procedure Delete (File : in out File_Type) with
+     Pre    => Is_Open (File),
+     Post   => not Is_Open (File),
+     Global => (In_Out => File_System);
+   procedure Reset  (File : in out File_Type; Mode : File_Mode) with
+     Pre    => Is_Open (File),
+     Post   =>
+       Is_Open (File)
+       and then Ada.Text_IO.Mode (File) = Mode
+       and then (if Mode /= In_File
+                   then (Line_Length (File) = 0
+                         and then Page_Length (File) = 0)),
+     Global => (In_Out => File_System);
+   procedure Reset  (File : in out File_Type) with
+     Pre    => Is_Open (File),
+     Post   =>
+       Is_Open (File)
+       and Mode (File)'Old = Mode (File)
+       and (if Mode (File) /= In_File
+                then (Line_Length (File) = 0
+                      and then Page_Length (File) = 0)),
+     Global => (In_Out => File_System);
 
-   function Mode (File : File_Type) return File_Mode;
-   function Name (File : File_Type) return String;
-   function Form (File : File_Type) return String;
+   function Mode (File : File_Type) return File_Mode with
+     Pre    => Is_Open (File),
+     Global => null;
+   function Name (File : File_Type) return String with
+     Pre    => Is_Open (File),
+     Global => null;
+   function Form (File : File_Type) return String with
+     Pre    => Is_Open (File),
+     Global => null;
 
-   function Is_Open (File : File_Type) return Boolean;
+   function Is_Open (File : File_Type) return Boolean with
+     Global => null;
 
    ------------------------------------------------------
    -- Control of default input, output and error files --
    ------------------------------------------------------
 
-   procedure Set_Input  (File : File_Type);
-   procedure Set_Output (File : File_Type);
-   procedure Set_Error  (File : File_Type);
+   procedure Set_Input  (File : File_Type) with SPARK_Mode => Off;
+   procedure Set_Output (File : File_Type) with SPARK_Mode => Off;
+   procedure Set_Error  (File : File_Type) with SPARK_Mode => Off;
 
-   function Standard_Input  return File_Type;
-   function Standard_Output return File_Type;
-   function Standard_Error  return File_Type;
+   function Standard_Input  return File_Type with SPARK_Mode => Off;
+   function Standard_Output return File_Type with SPARK_Mode => Off;
+   function Standard_Error  return File_Type with SPARK_Mode => Off;
 
-   function Current_Input  return File_Type;
-   function Current_Output return File_Type;
-   function Current_Error  return File_Type;
+   function Current_Input  return File_Type with SPARK_Mode => Off;
+   function Current_Output return File_Type with SPARK_Mode => Off;
+   function Current_Error  return File_Type with SPARK_Mode => Off;
 
    type File_Access is access constant File_Type;
 
-   function Standard_Input  return File_Access;
-   function Standard_Output return File_Access;
-   function Standard_Error  return File_Access;
+   function Standard_Input  return File_Access with SPARK_Mode => Off;
+   function Standard_Output return File_Access with SPARK_Mode => Off;
+   function Standard_Error  return File_Access with SPARK_Mode => Off;
 
-   function Current_Input  return File_Access;
-   function Current_Output return File_Access;
-   function Current_Error  return File_Access;
+   function Current_Input  return File_Access with SPARK_Mode => Off;
+   function Current_Output return File_Access with SPARK_Mode => Off;
+   function Current_Error  return File_Access with SPARK_Mode => Off;
 
    --------------------
    -- Buffer control --
@@ -139,129 +199,319 @@ package Ada.Text_IO is
    --  Note: The parameter file is IN OUT in the RM, but this is clearly
    --  an oversight, and was intended to be IN, see AI95-00057.
 
-   procedure Flush (File : File_Type);
-   procedure Flush;
+   procedure Flush (File : File_Type) with
+     Pre    => Is_Open (File) and then Mode (File) /= In_File,
+     Post   =>
+       Line_Length (File)'Old = Line_Length (File)
+       and Page_Length (File)'Old = Page_Length (File),
+     Global => (In_Out => File_System);
+   procedure Flush with
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
 
    --------------------------------------------
    -- Specification of line and page lengths --
    --------------------------------------------
 
-   procedure Set_Line_Length (File : File_Type; To : Count);
-   procedure Set_Line_Length (To : Count);
+   procedure Set_Line_Length (File : File_Type; To : Count) with
+     Pre    => Is_Open (File)  and then Mode (File) /= In_File,
+     Post   =>
+       Line_Length (File) = To
+       and Page_Length (File)'Old = Page_Length (File),
+     Global => (In_Out => File_System);
+   procedure Set_Line_Length (To : Count) with
+     Post   =>
+       Line_Length = To
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
 
-   procedure Set_Page_Length (File : File_Type; To : Count);
-   procedure Set_Page_Length (To : Count);
+   procedure Set_Page_Length (File : File_Type; To : Count) with
+     Pre    => Is_Open (File) and then Mode (File) /= In_File,
+     Post   =>
+       Page_Length (File) = To
+       and Line_Length (File)'Old = Line_Length (File),
+     Global => (In_Out => File_System);
+   procedure Set_Page_Length (To : Count) with
+     Post   =>
+       Page_Length = To
+       and Line_Length'Old = Line_Length,
+     Global => (In_Out => File_System);
 
-   function Line_Length (File : File_Type) return Count;
-   function Line_Length return Count;
+   function Line_Length (File : File_Type) return Count with
+     Pre    => Is_Open (File) and then Mode (File) /= In_File,
+     Global => (Input => File_System);
+   function Line_Length return Count with
+     Global => (Input => File_System);
 
-   function Page_Length (File : File_Type) return Count;
-   function Page_Length return Count;
+   function Page_Length (File : File_Type) return Count with
+     Pre    => Is_Open (File) and then Mode (File) /= In_File,
+     Global => (Input => File_System);
+   function Page_Length return Count with
+     Global => (Input => File_System);
 
    ------------------------------------
    -- Column, Line, and Page Control --
    ------------------------------------
 
-   procedure New_Line (File : File_Type; Spacing : Positive_Count := 1);
-   procedure New_Line (Spacing : Positive_Count := 1);
+   procedure New_Line (File : File_Type; Spacing : Positive_Count := 1) with
+     Pre    => Is_Open (File) and then Mode (File) /= In_File,
+     Post   =>
+       Line_Length (File)'Old = Line_Length (File)
+       and Page_Length (File)'Old = Page_Length (File),
+     Global => (In_Out => File_System);
+   procedure New_Line (Spacing : Positive_Count := 1) with
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
 
-   procedure Skip_Line (File : File_Type; Spacing : Positive_Count := 1);
-   procedure Skip_Line (Spacing : Positive_Count := 1);
+   procedure Skip_Line (File : File_Type; Spacing : Positive_Count := 1) with
+     Pre    => Is_Open (File) and then Mode (File) = In_File,
+     Global => (In_Out => File_System);
+   procedure Skip_Line (Spacing : Positive_Count := 1) with
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
 
-   function End_Of_Line (File : File_Type) return Boolean;
-   function End_Of_Line return Boolean;
+   function End_Of_Line (File : File_Type) return Boolean with
+     Pre    => Is_Open (File) and then Mode (File) = In_File,
+     Global => (Input => File_System);
+   function End_Of_Line return Boolean with
+     Global => (Input => File_System);
 
-   procedure New_Page (File : File_Type);
-   procedure New_Page;
+   procedure New_Page (File : File_Type) with
+     Pre    => Is_Open (File) and then Mode (File) /= In_File,
+     Post   =>
+       Line_Length (File)'Old = Line_Length (File)
+       and Page_Length (File)'Old = Page_Length (File),
+     Global => (In_Out => File_System);
+   procedure New_Page with
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
 
-   procedure Skip_Page (File : File_Type);
-   procedure Skip_Page;
+   procedure Skip_Page (File : File_Type) with
+     Pre    => Is_Open (File) and then Mode (File) = In_File,
+     Global => (In_Out => File_System);
+   procedure Skip_Page with
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
 
-   function End_Of_Page (File : File_Type) return Boolean;
-   function End_Of_Page return Boolean;
+   function End_Of_Page (File : File_Type) return Boolean with
+     Pre    => Is_Open (File) and then Mode (File) = In_File,
+     Global => (Input => File_System);
+   function End_Of_Page return Boolean with
+     Global => (Input => File_System);
 
-   function End_Of_File (File : File_Type) return Boolean;
-   function End_Of_File return Boolean;
+   function End_Of_File (File : File_Type) return Boolean with
+     Pre    => Is_Open (File) and then Mode (File) = In_File,
+     Global => (Input => File_System);
+   function End_Of_File return Boolean with
+     Global => (Input => File_System);
 
-   procedure Set_Col (File : File_Type;  To : Positive_Count);
-   procedure Set_Col (To : Positive_Count);
+   procedure Set_Col (File : File_Type;  To : Positive_Count) with
+     Pre            =>
+       Is_Open (File)
+       and then (if Mode (File) /= In_File
+                     then (Line_Length (File) = 0
+                           or else To <= Line_Length (File))),
+     Contract_Cases =>
+       (Mode (File) /= In_File =>
+              Line_Length (File)'Old = Line_Length (File)
+              and Page_Length (File)'Old = Page_Length (File),
+        others                 => True),
+     Global         => (In_Out => File_System);
+   procedure Set_Col (To : Positive_Count) with
+     Pre    => Line_Length = 0 or To <= Line_Length,
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
 
-   procedure Set_Line (File : File_Type; To : Positive_Count);
-   procedure Set_Line (To : Positive_Count);
+   procedure Set_Line (File : File_Type; To : Positive_Count) with
+     Pre            =>
+       Is_Open (File)
+       and then (if Mode (File) /= In_File
+                     then (Page_Length (File) = 0
+                           or else To <= Page_Length (File))),
+     Contract_Cases =>
+       (Mode (File) /= In_File =>
+              Line_Length (File)'Old = Line_Length (File)
+              and Page_Length (File)'Old = Page_Length (File),
+        others                 => True),
+     Global         => (In_Out => File_System);
+   procedure Set_Line (To : Positive_Count) with
+     Pre    => Page_Length = 0 or To <= Page_Length,
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
 
-   function Col (File : File_Type) return Positive_Count;
-   function Col return Positive_Count;
+   function Col (File : File_Type) return Positive_Count with
+     Pre    => Is_Open (File),
+     Global => (Input => File_System);
+   function Col return Positive_Count with
+     Global => (Input => File_System);
 
-   function Line (File : File_Type) return Positive_Count;
-   function Line return Positive_Count;
+   function Line (File : File_Type) return Positive_Count with
+     Pre    => Is_Open (File),
+     Global => (Input => File_System);
+   function Line return Positive_Count with
+     Global => (Input => File_System);
 
-   function Page (File : File_Type) return Positive_Count;
-   function Page return Positive_Count;
+   function Page (File : File_Type) return Positive_Count with
+     Pre => Is_Open (File),
+     Global => (Input => File_System);
+   function Page return Positive_Count with
+     Global => (Input => File_System);
 
    ----------------------------
    -- Character Input-Output --
    ----------------------------
 
-   procedure Get (File : File_Type; Item : out Character);
-   procedure Get (Item : out Character);
-   procedure Put (File : File_Type; Item : Character);
-   procedure Put (Item : Character);
+   procedure Get (File : File_Type; Item : out Character) with
+     Pre    => Is_Open (File) and then Mode (File) = In_File,
+     Global => (In_Out => File_System);
+   procedure Get (Item : out Character) with
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
+   procedure Put (File : File_Type; Item : Character) with
+     Pre    => Is_Open (File) and then Mode (File) /= In_File,
+     Post   =>
+       Line_Length (File)'Old = Line_Length (File)
+       and Page_Length (File)'Old = Page_Length (File),
+     Global => (In_Out => File_System);
+   procedure Put (Item : Character) with
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
 
    procedure Look_Ahead
      (File        : File_Type;
       Item        : out Character;
-      End_Of_Line : out Boolean);
+      End_Of_Line : out Boolean)
+   with
+     Pre    => Is_Open (File) and then Mode (File) = In_File,
+     Global => (Input => File_System);
 
    procedure Look_Ahead
      (Item        : out Character;
-      End_Of_Line : out Boolean);
+      End_Of_Line : out Boolean)
+   with
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (Input => File_System);
 
    procedure Get_Immediate
      (File : File_Type;
-      Item : out Character);
+      Item : out Character)
+   with
+     Pre    => Is_Open (File) and then Mode (File) = In_File,
+     Global => (In_Out => File_System);
 
    procedure Get_Immediate
-     (Item : out Character);
+     (Item : out Character)
+   with
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
 
    procedure Get_Immediate
      (File      : File_Type;
       Item      : out Character;
-      Available : out Boolean);
+      Available : out Boolean)
+   with
+     Pre    => Is_Open (File) and then Mode (File) = In_File,
+     Global => (In_Out => File_System);
 
    procedure Get_Immediate
      (Item      : out Character;
-      Available : out Boolean);
+      Available : out Boolean)
+   with
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
 
    -------------------------
    -- String Input-Output --
    -------------------------
 
-   procedure Get (File : File_Type; Item : out String);
-   procedure Get (Item : out String);
-   procedure Put (File : File_Type; Item : String);
-   procedure Put (Item : String);
+   procedure Get (File : File_Type; Item : out String) with
+     Pre    => Is_Open (File) and then Mode (File) = In_File,
+     Global => (In_Out => File_System);
+   procedure Get (Item : out String) with
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
+   procedure Put (File : File_Type; Item : String) with
+     Pre    => Is_Open (File) and then Mode (File) /= In_File,
+     Post   =>
+       Line_Length (File)'Old = Line_Length (File)
+       and Page_Length (File)'Old = Page_Length (File),
+     Global => (In_Out => File_System);
+   procedure Put (Item : String) with
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
 
    procedure Get_Line
      (File : File_Type;
       Item : out String;
-      Last : out Natural);
+      Last : out Natural)
+   with
+     Pre    => Is_Open (File) and then Mode (File) = In_File,
+     Post   => (if Item'Length > 0 then Last in Item'First - 1 .. Item'Last
+               else Last = Item'First - 1),
+     Global => (In_Out => File_System);
 
    procedure Get_Line
      (Item : out String;
-      Last : out Natural);
+      Last : out Natural)
+   with
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length
+       and (if Item'Length > 0 then Last in Item'First - 1 .. Item'Last
+            else Last = Item'First - 1),
+     Global => (In_Out => File_System);
 
-   function Get_Line (File : File_Type) return String;
+   function Get_Line (File : File_Type) return String with SPARK_Mode => Off;
    pragma Ada_05 (Get_Line);
 
-   function Get_Line return String;
+   function Get_Line return String with SPARK_Mode => Off;
    pragma Ada_05 (Get_Line);
 
    procedure Put_Line
      (File : File_Type;
-      Item : String);
+      Item : String)
+   with
+     Pre    => Is_Open (File) and then Mode (File) /= In_File,
+     Post   =>
+       Line_Length (File)'Old = Line_Length (File)
+       and Page_Length (File)'Old = Page_Length (File),
+     Global => (In_Out => File_System);
 
    procedure Put_Line
-     (Item : String);
+     (Item : String)
+   with
+     Post   =>
+       Line_Length'Old = Line_Length
+       and Page_Length'Old = Page_Length,
+     Global => (In_Out => File_System);
 
    ---------------------------------------
    -- Generic packages for Input-Output --
@@ -447,14 +697,20 @@ private
    Standard_Out_AFCB : aliased Text_AFCB;
    Standard_Err_AFCB : aliased Text_AFCB;
 
-   Standard_In  : aliased File_Type := Standard_In_AFCB'Access;
-   Standard_Out : aliased File_Type := Standard_Out_AFCB'Access;
-   Standard_Err : aliased File_Type := Standard_Err_AFCB'Access;
+   Standard_In  : aliased File_Type := Standard_In_AFCB'Access with
+     Part_Of => File_System;
+   Standard_Out : aliased File_Type := Standard_Out_AFCB'Access with
+     Part_Of => File_System;
+   Standard_Err : aliased File_Type := Standard_Err_AFCB'Access with
+     Part_Of => File_System;
    --  Standard files
 
-   Current_In   : aliased File_Type := Standard_In;
-   Current_Out  : aliased File_Type := Standard_Out;
-   Current_Err  : aliased File_Type := Standard_Err;
+   Current_In   : aliased File_Type := Standard_In with
+     Part_Of => File_System;
+   Current_Out  : aliased File_Type := Standard_Out with
+     Part_Of => File_System;
+   Current_Err  : aliased File_Type := Standard_Err with
+     Part_Of => File_System;
    --  Current files
 
    function EOF_Char return Integer;
