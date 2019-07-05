@@ -1,3 +1,10 @@
+2019-07-04  Marek Polacek  <polacek@redhat.com>
+
+	DR 1813
+	PR c++/83374 - __is_standard_layout wrong for a class with repeated bases.
+	* g++.dg/ext/is_std_layout3.C: New test.
+	* g++.dg/ext/is_std_layout4.C: New test.
+
 2019-07-05  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-fre-77.c: New testcase.
