@@ -1,3 +1,11 @@
+2019-07-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (alias_stats): Add
+	nonoverlapping_component_refs_since_match_p_must_overlap.
+	(dump_alias_stats): Print it.
+	(nonoverlapping_component_refs_since_match_p): Add early exit.
+	(nonoverlapping_component_refs_p): Do not account early exit.
+
 2019-07-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* except.c (emit_to_new_bb_before): Make sure to put a location on SEQ.

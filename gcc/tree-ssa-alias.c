@@ -105,6 +105,7 @@ static struct {
   unsigned HOST_WIDE_INT nonoverlapping_component_refs_p_may_alias;
   unsigned HOST_WIDE_INT nonoverlapping_component_refs_p_no_alias;
   unsigned HOST_WIDE_INT nonoverlapping_component_refs_since_match_p_may_alias;
+  unsigned HOST_WIDE_INT nonoverlapping_component_refs_since_match_p_must_overlap;
   unsigned HOST_WIDE_INT nonoverlapping_component_refs_since_match_p_no_alias;
 } alias_stats;
 
@@ -138,10 +139,13 @@ dump_alias_stats (FILE *s)
 	   + alias_stats.nonoverlapping_component_refs_p_may_alias);
   fprintf (s, "  nonoverlapping_component_refs_since_match_p: "
 	   HOST_WIDE_INT_PRINT_DEC" disambiguations, "
+	   HOST_WIDE_INT_PRINT_DEC" must overlaps, "
 	   HOST_WIDE_INT_PRINT_DEC" queries\n",
 	   alias_stats.nonoverlapping_component_refs_since_match_p_no_alias,
+	   alias_stats.nonoverlapping_component_refs_since_match_p_must_overlap,
 	   alias_stats.nonoverlapping_component_refs_since_match_p_no_alias
-	   + alias_stats.nonoverlapping_component_refs_since_match_p_may_alias);
+	   + alias_stats.nonoverlapping_component_refs_since_match_p_may_alias
+	   + alias_stats.nonoverlapping_component_refs_since_match_p_must_overlap);
   fprintf (s, "  aliasing_component_refs_p: "
 	   HOST_WIDE_INT_PRINT_DEC" disambiguations, "
 	   HOST_WIDE_INT_PRINT_DEC" queries\n",
@@ -1149,6 +1153,17 @@ static int
 nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
 					     tree match2, tree ref2)
 {
+  /* Early return if there are no references to match, we do not need
+     to walk the access paths.
+
+     Do not consider this as may-alias for stats - it is more useful
+     to have information how many disambiguations happened provided that
+     the query was meaningful.  */
+
+  if (match1 == ref1 || !handled_component_p (ref1)
+      || match2 == ref2 || !handled_component_p (ref2))
+    return -1;
+
   auto_vec<tree, 16> component_refs1;
   auto_vec<tree, 16> component_refs2;
 
@@ -1214,7 +1229,7 @@ nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
 	  if (component_refs1.is_empty ())
 	    {
 	      ++alias_stats
-		.nonoverlapping_component_refs_since_match_p_may_alias;
+		.nonoverlapping_component_refs_since_match_p_must_overlap;
 	      return 0;
 	    }
 	  ref1 = component_refs1.pop ();
@@ -1226,7 +1241,7 @@ nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
 	  if (component_refs2.is_empty ())
 	    {
 	      ++alias_stats
-		.nonoverlapping_component_refs_since_match_p_may_alias;
+		.nonoverlapping_component_refs_since_match_p_must_overlap;
 	      return 0;
 	    }
 	  ref2 = component_refs2.pop ();
@@ -1266,7 +1281,7 @@ nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
 	      || DECL_BIT_FIELD_REPRESENTATIVE (field2) == field1)
 	    {
 	      ++alias_stats
-		.nonoverlapping_component_refs_since_match_p_may_alias;
+		.nonoverlapping_component_refs_since_match_p_must_overlap;
 	      return 0;
 	    }
 	  /* Different fields of the same record type cannot overlap.
@@ -1274,7 +1289,7 @@ nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
 	  if (DECL_BIT_FIELD (field1) && DECL_BIT_FIELD (field2))
 	    {
 	      ++alias_stats
-		.nonoverlapping_component_refs_since_match_p_may_alias;
+		.nonoverlapping_component_refs_since_match_p_must_overlap;
 	      return 0;
 	    }
 	  ++alias_stats.nonoverlapping_component_refs_since_match_p_no_alias;
@@ -1282,7 +1297,7 @@ nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
 	}
     }
 
-  ++alias_stats.nonoverlapping_component_refs_since_match_p_may_alias;
+  ++alias_stats.nonoverlapping_component_refs_since_match_p_must_overlap;
   return 0;
 }
 
@@ -1309,14 +1324,16 @@ ncr_compar (const void *field1_, const void *field2_)
 static bool
 nonoverlapping_component_refs_p (const_tree x, const_tree y)
 {
+  /* Early return if we have nothing to do.
+
+     Do not consider this as may-alias for stats - it is more useful
+     to have information how many disambiguations happened provided that
+     the query was meaningful.  */
   if (!flag_strict_aliasing
       || !x || !y
       || !handled_component_p (x)
       || !handled_component_p (y))
-    {
-      ++alias_stats.nonoverlapping_component_refs_p_may_alias;
-      return false;
-    }
+    return false;
 
   auto_vec<const_tree, 16> fieldsx;
   while (handled_component_p (x))
