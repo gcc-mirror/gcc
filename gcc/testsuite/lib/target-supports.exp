@@ -8588,6 +8588,17 @@ proc check_effective_target_aarch64_large { } {
     }
 }
 
+# Return 1 if the assembler accepts the aarch64 .variant_pcs directive.
+
+proc check_effective_target_aarch64_variant_pcs { } {
+    if { [istarget aarch64*-*-*] } {
+	return [check_no_compiler_messages aarch64_variant_pcs object {
+	    __asm__ (".variant_pcs foo");
+	}]
+    } else {
+	return 0
+    }
+}
 
 # Return 1 if this is a reduced AVR Tiny core.  Such cores have different
 # register set, instruction set, addressing capabilities and ABI.
