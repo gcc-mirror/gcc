@@ -1,5 +1,9 @@
 2019-07-05  Pierre-Marie de Rodat  <derodat@adacore.com>
 
+	* libgnat/a-strunb.ads: Import documentation from the RM
+
+2019-07-05  Pierre-Marie de Rodat  <derodat@adacore.com>
+
 	* libgnat/a-strfix.ads: Import documentation from the RM
 
 2019-07-05  Yannick Moy  <moy@adacore.com>
