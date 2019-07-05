@@ -15745,7 +15745,7 @@ aarch64_asm_output_external (FILE *stream, tree decl, const char* name)
 void
 aarch64_post_cfi_startproc (FILE *f, tree ignored ATTRIBUTE_UNUSED)
 {
-  if (!cfun->is_thunk && aarch64_return_address_signing_enabled ()
+  if (cfun->machine->frame.laid_out && aarch64_return_address_signing_enabled ()
       && aarch64_ra_sign_key == AARCH64_KEY_B)
 	asm_fprintf (f, "\t.cfi_b_key_frame\n");
 }
