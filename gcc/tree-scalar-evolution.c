@@ -3680,6 +3680,8 @@ final_value_replacement_loop (struct loop *loop)
 					true, GSI_SAME_STMT);
 
       gassign *ass = gimple_build_assign (rslt, def);
+      gimple_set_location (ass,
+			   gimple_phi_arg_location (phi, exit->dest_idx));
       gsi_insert_before (&gsi, ass, GSI_SAME_STMT);
       if (dump_file)
 	{
