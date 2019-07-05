@@ -1,3 +1,10 @@
+2019-07-04  Marek Polacek  <polacek@redhat.com>
+
+	DR 1813
+	PR c++/83374 - __is_standard_layout wrong for a class with repeated bases.
+	* class.c (check_bases): Set CLASSTYPE_NON_STD_LAYOUT for a class if
+	CLASSTYPE_REPEATED_BASE_P is true.
+
 2019-07-04  Andrew Stubbs  <ams@codesourcery.com>
 
 	* cp-tree.h (cp_omp_emit_unmappable_type_notes): New prototype.

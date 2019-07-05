@@ -1715,11 +1715,15 @@ check_bases (tree t,
 	      && (same_type_ignoring_top_level_qualifiers_p
 		  (TREE_TYPE (field), basetype)))
 	    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
+	  /* DR 1813:
+	     ...has at most one base class subobject of any given type...  */
+	  else if (CLASSTYPE_REPEATED_BASE_P (t))
+	    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
 	  else
 	    /* ...either has no non-static data members in the most-derived
 	       class and at most one base class with non-static data
 	       members, or has no base classes with non-static data
-	       members */
+	       members.  FIXME This was reworded in DR 1813.  */
 	    for (basefield = TYPE_FIELDS (basetype); basefield;
 		 basefield = DECL_CHAIN (basefield))
 	      if (TREE_CODE (basefield) == FIELD_DECL
