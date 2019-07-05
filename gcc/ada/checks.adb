@@ -2707,6 +2707,41 @@ package body Checks is
          --  Here for normal case of predicate active
 
          else
+            --  If the expression is an IN parameter, the predicate will have
+            --  been applied at the point of call. An additional check would
+            --  be redundant, or will lead to out-of-scope references if the
+            --  call appears within an aspect specification for a precondition.
+
+            --  However, if the reference is within the body of the subprogram
+            --  that declares the formal, the predicate can safely be applied,
+            --  which may be necessary for a nested call whose formal has a
+            --  different predicate.
+
+            if Is_Entity_Name (N)
+              and then Ekind (Entity (N)) = E_In_Parameter
+            then
+               declare
+                  In_Body : Boolean := False;
+                  P : Node_Id := Parent (N);
+
+               begin
+                  while Present (P) loop
+                     if Nkind (P) = N_Subprogram_Body
+                       and then Corresponding_Spec (P) = Scope (Entity (N))
+                     then
+                        In_Body := True;
+                        exit;
+                     end if;
+
+                     P := Parent (P);
+                  end loop;
+
+                  if not In_Body then
+                     return;
+                  end if;
+               end;
+            end if;
+
             --  If the type has a static predicate and the expression is known
             --  at compile time, see if the expression satisfies the predicate.
 
