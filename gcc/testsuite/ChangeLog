@@ -1,3 +1,8 @@
+2019-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/task3.adb, gnat.dg/task3.ads, gnat.dg/task3_pkg1.ads,
+	gnat.dg/task3_pkg2.ads: New testcase.
+
 2019-07-05  Javier Miranda  <miranda@adacore.com>
 
 	* gnat.dg/access6.adb: New testcase.
