@@ -1996,7 +1996,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	     activation of a union member via a store makes the
 	     values of untouched bytes unspecified.  */
 	  && (known_eq (ref->size, BITS_PER_UNIT)
-	      || (get_alias_set (lhs) != 0
+	      || (flag_strict_aliasing
+		  && get_alias_set (lhs) != 0
 		  && ao_ref_alias_set (ref) != 0)))
 	{
 	  tree *saved_last_vuse_ptr = data->last_vuse_ptr;

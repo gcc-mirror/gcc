@@ -1,5 +1,5 @@
 /* { dg-do link } */
-/* { dg-options "-O -fdump-tree-fre1-details" } */
+/* { dg-options "-O -fstrict-aliasing -fdump-tree-fre1-details" } */
 
 void link_error (void);
 
