@@ -417,9 +417,6 @@ tinfo_name (tree type, bool mark_private)
 tree
 get_tinfo_decl (tree type)
 {
-  tree name;
-  tree d;
-
   if (variably_modified_type_p (type, /*fn=*/NULL_TREE))
     {
       error ("cannot create type information for type %qT because "
@@ -432,25 +429,41 @@ get_tinfo_decl (tree type)
     type = build_function_type (TREE_TYPE (type),
 				TREE_CHAIN (TYPE_ARG_TYPES (type)));
 
-  type = complete_type (type);
+  return get_tinfo_decl_direct (type, NULL, -1);
+}
 
+/* Get or create a tinfo VAR_DECL directly from the provided information.
+   The caller must have already checked it is valid to do so.  */
+
+tree
+get_tinfo_decl_direct (tree type, tree name, int pseudo_ix)
+{
   /* For a class type, the variable is cached in the type node
      itself.  */
+  tree d;
+
+  gcc_checking_assert (TREE_CODE (type) != METHOD_TYPE);
+
+  if (pseudo_ix < 0)
+    type = complete_type (type);
+
   if (CLASS_TYPE_P (type))
-    {
-      d = CLASSTYPE_TYPEINFO_VAR (TYPE_MAIN_VARIANT (type));
-      if (d)
-	return d;
-    }
+    d = CLASSTYPE_TYPEINFO_VAR (TYPE_MAIN_VARIANT (type));
 
-  name = mangle_typeinfo_for_type (type);
+  if (!name)
+    name = mangle_typeinfo_for_type (type);
 
-  d = get_global_binding (name);
+  if (!CLASS_TYPE_P (type))
+    d = get_global_binding (name);
+
   if (!d)
     {
-      int ix = get_pseudo_ti_index (type);
-      const tinfo_s *ti = get_tinfo_desc (ix);
-      
+      /* Create it.  */
+      if (pseudo_ix < 0)
+	pseudo_ix = get_pseudo_ti_index (type);
+
+      const tinfo_s *ti = get_tinfo_desc (pseudo_ix);
+
       d = build_lang_decl (VAR_DECL, name, ti->type);
       SET_DECL_ASSEMBLER_NAME (d, name);
       /* Remember the type it is for.  */
@@ -460,6 +473,7 @@ get_tinfo_decl (tree type)
       DECL_IGNORED_P (d) = 1;
       TREE_READONLY (d) = 1;
       TREE_STATIC (d) = 1;
+
       /* Mark the variable as undefined -- but remember that we can
 	 define it later if we need to do so.  */
       DECL_EXTERNAL (d) = 1;

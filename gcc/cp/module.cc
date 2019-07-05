@@ -6911,15 +6911,22 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
     {
       /* A typeinfo object -> tt_tinfo_var.  These need recreating by
 	 the loader.  The type it is for is stashed on the name's
-	 TREE_TYPE.  */
+	 TREE_TYPE.  But we also need the mangled name and pseudo
+	 index, so the reader doesn't need to complete the type
+	 (which would break section ordering).  */
       tree type = TREE_TYPE (DECL_NAME (decl));
+      unsigned ix = get_pseudo_tinfo_index (TREE_TYPE (decl));
       if (streaming_p ())
-	i (tt_tinfo_var);
+	{
+	  i (tt_tinfo_var);
+	  u (ix);
+	}
       tree_node (type);
+      tree_node (DECL_NAME (decl));
       int tag = insert (decl);
       if (streaming_p ())
 	dump (dumper::TREE)
-	  && dump ("Wrote typeinfo:%d %S for %N", tag, decl, type);
+	  && dump ("Wrote tinfo_var:%d %S:%u for %N", tag, decl, ix, type);
       return false;
     }
 
@@ -8425,22 +8432,35 @@ trees_in::tree_node ()
       break;
 
     case tt_tinfo_var:
-    case tt_conv_id:
       /* A typeinfo var or conversion operator.  Get the type and
 	 recreate the var decl or identifier.  */
       {
-	bool is_tinfo = tag == tt_tinfo_var;
+	unsigned ix = u ();
 	tree type = tree_node ();
-	if (type && TYPE_P (type))
+	tree name = tree_node ();
+
+	if (!get_overrun ())
 	  {
-	    res = is_tinfo ? get_tinfo_decl (type) : make_conv_op_name (type);
+	    res = get_tinfo_decl_direct (type, name, int (ix));
 	    int tag = insert (res);
 	    dump (dumper::TREE)
-	      && dump ("Created %s:%d %S for %N",
-		       is_tinfo ? "tinfo_var" : "conv_op", tag, res, type);
+	      && dump ("Created tinfo_var:%d %S:%u for %N", tag, res, ix, type);
 	  }
-	else
-	  set_overrun ();
+      }
+      break;
+
+    case tt_conv_id:
+      /* A conversion operator.  Get the type and recreate the
+	 identifier.  */
+      {
+	tree type = tree_node ();
+	if (!get_overrun ())
+	  {
+	    res = make_conv_op_name (type);
+	    int tag = insert (res);
+	    dump (dumper::TREE)
+	      && dump ("Created conv_op:%d %S for %N", tag, res, type);
+	  }
       }
       break;
 

@@ -1,3 +1,12 @@
+2019-07-05  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (get_tinfo_decl_direct): Declare.
+	* module.cc (trees_out::tree_decl): Stream more tinfo_var info.
+	(trees_in::tree_value): Use get_tinfo_decl_direct for tinfo vars.
+	* rtti.c (get_tinfo_decl_direct): Break out of ...
+	(get_tinfo_decl): ... here.  Call it.
+
 2019-07-04  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
