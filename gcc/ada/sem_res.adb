@@ -6768,6 +6768,15 @@ package body Sem_Res is
                Cannot_Inline
                  ("cannot inline & (in default expression)?", N, Nam_UA);
 
+            --  Calls cannot be inlined inside quantified expressions, which
+            --  are left in expression form for GNATprove. Since these
+            --  expressions are only preanalyzed, we need to detect the failure
+            --  to inline outside of the case for Full_Analysis below.
+
+            elsif In_Quantified_Expression (N) then
+               Cannot_Inline
+                 ("cannot inline & (in quantified expression)?", N, Nam_UA);
+
             --  Inlining should not be performed during preanalysis
 
             elsif Full_Analysis then

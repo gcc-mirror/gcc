@@ -12305,6 +12305,25 @@ package body Sem_Util is
       end if;
    end In_Pre_Post_Condition;
 
+   ------------------------------
+   -- In_Quantified_Expression --
+   ------------------------------
+
+   function In_Quantified_Expression (N : Node_Id) return Boolean is
+      P : Node_Id;
+   begin
+      P := Parent (N);
+      loop
+         if No (P) then
+            return False;
+         elsif Nkind (P) = N_Quantified_Expression then
+            return True;
+         else
+            P := Parent (P);
+         end if;
+      end loop;
+   end In_Quantified_Expression;
+
    -------------------------------------
    -- In_Reverse_Storage_Order_Object --
    -------------------------------------
