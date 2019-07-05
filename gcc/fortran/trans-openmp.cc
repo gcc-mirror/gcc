@@ -1531,10 +1531,18 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
   tree decl = OMP_CLAUSE_DECL (c);
 
   /* Assumed-size arrays can't be mapped implicitly, they have to be mapped
-     explicitly using array sections.  An exception is if the array is
-     mapped explicitly in an enclosing data construct for OpenACC, in which
-     case we see GOMP_MAP_FORCE_PRESENT here and do not need to raise an
-     error.  */
+     explicitly using array sections.  For OpenACC this restriction is lifted
+     if the array has already been mapped:
+
+       - Using a lexically-enclosing data region: in that case we see the
+         GOMP_MAP_FORCE_PRESENT mapping kind here.
+
+       - Using a non-lexical data mapping ("acc enter data").
+
+     In the latter case we change the mapping type to GOMP_MAP_FORCE_PRESENT.
+     This raises an error for OpenMP in the caller
+     (gimplify.c:gimplify_adjust_omp_clauses_1).  OpenACC will raise a runtime
+     error if the implicitly-referenced assumed-size array is not mapped.  */
   if (OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_FORCE_PRESENT
       && TREE_CODE (decl) == PARM_DECL
       && GFC_ARRAY_TYPE_P (TREE_TYPE (decl))
@@ -1542,11 +1550,7 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
       && GFC_TYPE_ARRAY_UBOUND (TREE_TYPE (decl),
 				GFC_TYPE_ARRAY_RANK (TREE_TYPE (decl)) - 1)
 	 == NULL)
-    {
-      error_at (OMP_CLAUSE_LOCATION (c),
-		"implicit mapping of assumed size array %qD", decl);
-      return;
-    }
+    OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_FORCE_PRESENT);
 
   if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FORCE_DEVICEPTR)
     return;

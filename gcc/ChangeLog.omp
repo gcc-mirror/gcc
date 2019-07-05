@@ -1,3 +1,11 @@
+2019-07-10  Cesar Philippidis  <cesar@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (gimplify_adjust_omp_clauses_1): Raise error for
+	assumed-size arrays in map clauses for Fortran/OpenMP.
+	* omp-low.cc (lower_omp_target): Set the size of assumed-size Fortran
+	arrays to one to allow use of data already mapped on the offload device.
+
 2019-05-20  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.cc (gimplify_adjust_omp_clauses_1): Support implied no_alloc

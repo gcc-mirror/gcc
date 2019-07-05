@@ -13777,6 +13777,11 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      s = OMP_CLAUSE_SIZE (c);
 	    if (s == NULL_TREE)
 	      s = TYPE_SIZE_UNIT (TREE_TYPE (ovar));
+	    /* Fortran assumed-size arrays have zero size because the type is
+	       incomplete.  Set the size to one to allow the runtime to remap
+	       any existing data that is already present on the accelerator.  */
+	    if (s == NULL_TREE && is_gimple_omp_oacc (ctx->stmt))
+	      s = integer_one_node;
 	    s = fold_convert (size_type_node, s);
 	    purpose = size_int (map_idx++);
 	    CONSTRUCTOR_APPEND_ELT (vsize, purpose, s);
