@@ -1410,6 +1410,9 @@ package Sem_Util is
    --  Returns True if node N appears within a pre/postcondition pragma. Note
    --  the pragma Check equivalents are NOT considered.
 
+   function In_Quantified_Expression (N : Node_Id) return Boolean;
+   --  Returns true if the expression N occurs within a quantified expression
+
    function In_Reverse_Storage_Order_Object (N : Node_Id) return Boolean;
    --  Returns True if N denotes a component or subcomponent in a record or
    --  array that has Reverse_Storage_Order.

@@ -1,3 +1,10 @@
+2019-07-05  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Cannot inline in quantified
+	expressions.
+	* sem_util.adb, sem_util.ads (In_Quantified_Expression): New
+	function.
+
 2019-07-05  Bob Duff  <duff@adacore.com>
 
 	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:
