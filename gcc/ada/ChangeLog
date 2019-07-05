@@ -1,3 +1,10 @@
+2019-07-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnarl/s-linux.ads, libgnarl/s-linux__alpha.ads,
+	libgnarl/s-linux__android.ads, libgnarl/s-linux__hppa.ads,
+	libgnarl/s-linux__mips.ads, libgnarl/s-linux__riscv.ads,
+	libgnarl/s-linux__sparc.ads: Fix typos in comments.
+
 2019-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_res.adb (Check_Infinite_Recursion): Reimplemented.
