@@ -1,3 +1,9 @@
+2019-07-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_pakd.adb (Expand_Bit_Packed_Element_Set): Add explicit
+	range checks when the index type of the bit-packed array is an
+	enumeration type with a non-standard representation,
+
 2019-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_res.adb (Is_Control_Flow_Statement): Delay statements
