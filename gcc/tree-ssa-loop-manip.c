@@ -139,7 +139,8 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
     }
   else
     {
-      gimple_set_location (stmt, gimple_location (gsi_stmt (*incr_pos)));
+      if (!gsi_end_p (*incr_pos))
+	gimple_set_location (stmt, gimple_location (gsi_stmt (*incr_pos)));
       gsi_insert_before (incr_pos, stmt, GSI_NEW_STMT);
     }
 
