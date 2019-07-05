@@ -1,3 +1,7 @@
+2019-07-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads, sem_res.adb: Typo fixes in comments.
+
 2019-07-05  Bob Duff  <duff@adacore.com>
 
 	* exp_ch6.adb (Is_Build_In_Place_Function): Narrow the check for

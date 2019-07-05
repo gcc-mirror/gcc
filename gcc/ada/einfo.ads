@@ -4490,7 +4490,7 @@ package Einfo is
 --    Suppress_Initialization (Flag105)
 --       Defined in all variable, type and subtype entities. If set for a base
 --       type, then the generation of initialization procedures is suppressed
---       for the type. Any other implicit initialiation (e.g. from the use of
+--       for the type. Any other implicit initialization (e.g. from the use of
 --       pragma Initialize_Scalars) is also suppressed if this flag is set for
 --       either the subtype in question, or for the base type. For variables,
 --       this flag suppresses all implicit initialization for the object, even
