@@ -23,11 +23,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Binderr; use Binderr;
-with Butil;   use Butil;
-with Debug;   use Debug;
-with Output;  use Output;
-with Types;   use Types;
+with Butil;  use Butil;
+with Debug;  use Debug;
+with Output; use Output;
+with Types;  use Types;
 
 with Bindo.Augmentors;
 use  Bindo.Augmentors;
@@ -40,7 +39,6 @@ use  Bindo.Builders.Library_Graph_Builders;
 
 with Bindo.Diagnostics;
 use  Bindo.Diagnostics;
-use  Bindo.Diagnostics.Cycle_Diagnostics;
 
 with Bindo.Units;
 use  Bindo.Units;
@@ -61,7 +59,6 @@ use  Bindo.Writers.Unit_Closure_Writers;
 
 with GNAT;        use GNAT;
 with GNAT.Graphs; use GNAT.Graphs;
-with GNAT.Sets;   use GNAT.Sets;
 
 package body Bindo.Elaborators is
 
@@ -89,49 +86,39 @@ package body Bindo.Elaborators is
 
       type String_Ptr is access all String;
 
-      -----------------
-      -- Visited set --
-      -----------------
-
-      package VS is new Membership_Sets
-        (Element_Type => Library_Graph_Vertex_Id,
-         "="          => "=",
-         Hash         => Hash_Library_Graph_Vertex);
-      use VS;
-
       -----------------------
       -- Local subprograms --
       -----------------------
 
       procedure Add_Vertex
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id;
-         Set    : Membership_Set;
+         Vertex : Library_Graph_Vertex_Id;
+         Set    : LGV_Sets.Membership_Set;
          Msg    : String;
          Step   : Elaboration_Order_Step;
          Indent : Indentation_Level);
       pragma Inline (Add_Vertex);
-      --  Add vertex LGV_Id of library graph G to membership set Set. Msg is
+      --  Add vertex Vertex of library graph G to membership set Set. Msg is
       --  a message emitted for tracing purposes. Step is the current step in
       --  the elaboration order. Indent is the desired indentation level for
       --  tracing.
 
       procedure Add_Vertex_If_Elaborable
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id;
-         Set    : Membership_Set;
+         Vertex : Library_Graph_Vertex_Id;
+         Set    : LGV_Sets.Membership_Set;
          Msg    : String;
          Step   : Elaboration_Order_Step;
          Indent : Indentation_Level);
       pragma Inline (Add_Vertex_If_Elaborable);
-      --  Add vertex LGV_Id of library graph G to membership set Set if it can
+      --  Add vertex Vertex of library graph G to membership set Set if it can
       --  be elaborated. Msg is a message emitted for tracing purposes. Step is
       --  the current step in the elaboration order. Indent is the desired
       --  indentation level for tracing.
 
       function Create_All_Candidates_Set
         (G    : Library_Graph;
-         Step : Elaboration_Order_Step) return Membership_Set;
+         Step : Elaboration_Order_Step) return LGV_Sets.Membership_Set;
       pragma Inline (Create_All_Candidates_Set);
       --  Collect all elaborable candidate vertices of library graph G in a
       --  set. Step is the current step in the elaboration order.
@@ -139,7 +126,7 @@ package body Bindo.Elaborators is
       function Create_Component_Candidates_Set
         (G    : Library_Graph;
          Comp : Component_Id;
-         Step : Elaboration_Order_Step) return Membership_Set;
+         Step : Elaboration_Order_Step) return LGV_Sets.Membership_Set;
       pragma Inline (Create_Component_Candidates_Set);
       --  Collect all elaborable candidate vertices that appear in component
       --  Comp of library graph G in a set. Step is the current step in the
@@ -148,7 +135,7 @@ package body Bindo.Elaborators is
       procedure Elaborate_Component
         (G                  : Library_Graph;
          Comp               : Component_Id;
-         All_Candidates     : Membership_Set;
+         All_Candidates     : LGV_Sets.Membership_Set;
          Remaining_Vertices : in out Natural;
          Order              : in out Unit_Id_Table;
          Step               : Elaboration_Order_Step);
@@ -170,6 +157,7 @@ package body Bindo.Elaborators is
 
       procedure Elaborate_Units_Common
         (Use_Inv_Graph : Boolean;
+         Is_Dyn_Elab   : Boolean;
          Inv_Graph     : out Invocation_Graph;
          Lib_Graph     : out Library_Graph;
          Order         : out Unit_Id_Table;
@@ -177,8 +165,10 @@ package body Bindo.Elaborators is
       pragma Inline (Elaborate_Units_Common);
       --  Find the elaboration order of all units in the bind. Use_Inv_Graph
       --  should be set when library graph Lib_Graph is to be augmented with
-      --  information from invocation graph Inv_Graph. Order is the elaboration
-      --  order. Status is the condition of the elaboration order.
+      --  information from invocation graph Inv_Graph. Is_Dyn_Elab should be
+      --  set when the main library unit was compiled using the dynamic model.
+      --  Order is the elaboration order. Status is the condition of the
+      --  elaboration order.
 
       procedure Elaborate_Units_Dynamic (Order : out Unit_Id_Table);
       pragma Inline (Elaborate_Units_Dynamic);
@@ -196,26 +186,26 @@ package body Bindo.Elaborators is
 
       procedure Elaborate_Vertex
         (G                  : Library_Graph;
-         LGV_Id             : Library_Graph_Vertex_Id;
-         All_Candidates     : Membership_Set;
-         Comp_Candidates    : Membership_Set;
+         Vertex             : Library_Graph_Vertex_Id;
+         All_Candidates     : LGV_Sets.Membership_Set;
+         Comp_Candidates    : LGV_Sets.Membership_Set;
          Remaining_Vertices : in out Natural;
          Order              : in out Unit_Id_Table;
          Step               : Elaboration_Order_Step;
          Indent             : Indentation_Level);
       pragma Inline (Elaborate_Vertex);
-      --  Elaborate vertex LGV_Id of library graph G by adding its unit to
+      --  Elaborate vertex Vertex of library graph G by adding its unit to
       --  elaboration order Order. The routine updates awaiting successors
       --  where applicable. All_Candidates denotes the set of all elaborable
       --  vertices across the whole library graph. Comp_Candidates is the set
-      --  of all elaborable vertices in the component of LGV_Id. Parameter
+      --  of all elaborable vertices in the component of Vertex. Parameter
       --  Remaining_Vertices denotes the number of vertices that remain to
       --  be elaborated. Step is the current step in the elaboration order.
       --  Indent is the desired indentation level for tracing.
 
       function Find_Best_Candidate
         (G      : Library_Graph;
-         Set    : Membership_Set;
+         Set    : LGV_Sets.Membership_Set;
          Step   : Elaboration_Order_Step;
          Indent : Indentation_Level) return Library_Graph_Vertex_Id;
       pragma Inline (Find_Best_Candidate);
@@ -224,17 +214,17 @@ package body Bindo.Elaborators is
       --  order. Indent is the desired indentation level for tracing.
 
       function Is_Better_Candidate
-        (G           : Library_Graph;
-         Best_Candid : Library_Graph_Vertex_Id;
-         New_Candid  : Library_Graph_Vertex_Id) return Boolean;
+        (G              : Library_Graph;
+         Best_Candidate : Library_Graph_Vertex_Id;
+         New_Candidate  : Library_Graph_Vertex_Id) return Boolean;
       pragma Inline (Is_Better_Candidate);
-      --  Determine whether new candidate vertex New_Candid of library graph
+      --  Determine whether new candidate vertex New_Candidate of library graph
       --  G is a more suitable choice for elaboration compared to the current
-      --  best candidate Best_Candid.
+      --  best candidate Best_Candidate.
 
       procedure Trace_Candidate_Vertices
         (G    : Library_Graph;
-         Set  : Membership_Set;
+         Set  : LGV_Sets.Membership_Set;
          Step : Elaboration_Order_Step);
       pragma Inline (Trace_Candidate_Vertices);
       --  Write the candidate vertices of library graph G present in membership
@@ -266,12 +256,12 @@ package body Bindo.Elaborators is
 
       procedure Trace_Vertex
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id;
+         Vertex : Library_Graph_Vertex_Id;
          Msg    : String;
          Step   : Elaboration_Order_Step;
          Indent : Indentation_Level);
       pragma Inline (Trace_Vertex);
-      --  Write elaboration-related information for vertex LGV_Id of library
+      --  Write elaboration-related information for vertex Vertex of library
       --  graph G to standard output, starting with message Msg. Step is the
       --  current step in the elaboration order. Indent denotes the desired
       --  indentation level for tracing.
@@ -280,8 +270,8 @@ package body Bindo.Elaborators is
         (G               : Library_Graph;
          Pred            : Library_Graph_Vertex_Id;
          Succ            : Library_Graph_Vertex_Id;
-         All_Candidates  : Membership_Set;
-         Comp_Candidates : Membership_Set;
+         All_Candidates  : LGV_Sets.Membership_Set;
+         Comp_Candidates : LGV_Sets.Membership_Set;
          Step            : Elaboration_Order_Step;
          Indent          : Indentation_Level);
       pragma Inline (Update_Successor);
@@ -297,8 +287,8 @@ package body Bindo.Elaborators is
       procedure Update_Successors
         (G               : Library_Graph;
          Pred            : Library_Graph_Vertex_Id;
-         All_Candidates  : Membership_Set;
-         Comp_Candidates : Membership_Set;
+         All_Candidates  : LGV_Sets.Membership_Set;
+         Comp_Candidates : LGV_Sets.Membership_Set;
          Step            : Elaboration_Order_Step;
          Indent          : Indentation_Level);
       pragma Inline (Update_Successors);
@@ -317,30 +307,30 @@ package body Bindo.Elaborators is
 
       procedure Add_Vertex
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id;
-         Set    : Membership_Set;
+         Vertex : Library_Graph_Vertex_Id;
+         Set    : LGV_Sets.Membership_Set;
          Msg    : String;
          Step   : Elaboration_Order_Step;
          Indent : Indentation_Level)
       is
       begin
-         pragma Assert (Present (LGV_Id));
-         pragma Assert (Needs_Elaboration (G, LGV_Id));
-         pragma Assert (Present (Set));
+         pragma Assert (Present (Vertex));
+         pragma Assert (Needs_Elaboration (G, Vertex));
+         pragma Assert (LGV_Sets.Present (Set));
 
          --  Add vertex only when it is not present in the set. This is not
          --  strictly necessary because the set implementation handles this
          --  case, however the check eliminates spurious traces.
 
-         if not Contains (Set, LGV_Id) then
+         if not LGV_Sets.Contains (Set, Vertex) then
             Trace_Vertex
               (G      => G,
-               LGV_Id => LGV_Id,
+               Vertex => Vertex,
                Msg    => Msg,
                Step   => Step,
                Indent => Indent);
 
-            Insert (Set, LGV_Id);
+            LGV_Sets.Insert (Set, Vertex);
          end if;
       end Add_Vertex;
 
@@ -350,24 +340,24 @@ package body Bindo.Elaborators is
 
       procedure Add_Vertex_If_Elaborable
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id;
-         Set    : Membership_Set;
+         Vertex : Library_Graph_Vertex_Id;
+         Set    : LGV_Sets.Membership_Set;
          Msg    : String;
          Step   : Elaboration_Order_Step;
          Indent : Indentation_Level)
       is
-         Aux_LGV_Id : Library_Graph_Vertex_Id;
+         Extra_Vertex : Library_Graph_Vertex_Id;
 
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
-         pragma Assert (Needs_Elaboration (G, LGV_Id));
-         pragma Assert (Present (Set));
+         pragma Assert (Present (Vertex));
+         pragma Assert (Needs_Elaboration (G, Vertex));
+         pragma Assert (LGV_Sets.Present (Set));
 
-         if Is_Elaborable_Vertex (G, LGV_Id) then
+         if Is_Elaborable_Vertex (G, Vertex) then
             Add_Vertex
               (G      => G,
-               LGV_Id => LGV_Id,
+               Vertex => Vertex,
                Set    => Set,
                Msg    => Msg,
                Step   => Step,
@@ -375,28 +365,28 @@ package body Bindo.Elaborators is
 
             --  Assume that there is no extra vertex that needs to be added
 
-            Aux_LGV_Id := No_Library_Graph_Vertex;
+            Extra_Vertex := No_Library_Graph_Vertex;
 
             --  A spec-body pair where the spec carries pragma Elaborate_Body
             --  must be treated as one vertex for elaboration purposes. If one
             --  of them is elaborable, then the other is also elaborable. This
             --  property is guaranteed by predicate Is_Elaborable_Vertex.
 
-            if Is_Body_Of_Spec_With_Elaborate_Body (G, LGV_Id) then
-               Aux_LGV_Id := Proper_Spec (G, LGV_Id);
-               pragma Assert (Present (Aux_LGV_Id));
+            if Is_Body_Of_Spec_With_Elaborate_Body (G, Vertex) then
+               Extra_Vertex := Proper_Spec (G, Vertex);
+               pragma Assert (Present (Extra_Vertex));
 
-            elsif Is_Spec_With_Elaborate_Body (G, LGV_Id) then
-               Aux_LGV_Id := Proper_Body (G, LGV_Id);
-               pragma Assert (Present (Aux_LGV_Id));
+            elsif Is_Spec_With_Elaborate_Body (G, Vertex) then
+               Extra_Vertex := Proper_Body (G, Vertex);
+               pragma Assert (Present (Extra_Vertex));
             end if;
 
-            if Present (Aux_LGV_Id) then
-               pragma Assert (Needs_Elaboration (G, Aux_LGV_Id));
+            if Present (Extra_Vertex) then
+               pragma Assert (Needs_Elaboration (G, Extra_Vertex));
 
                Add_Vertex
                  (G      => G,
-                  LGV_Id => Aux_LGV_Id,
+                  Vertex => Extra_Vertex,
                   Set    => Set,
                   Msg    => Msg,
                   Step   => Step,
@@ -411,24 +401,23 @@ package body Bindo.Elaborators is
 
       function Create_All_Candidates_Set
         (G    : Library_Graph;
-         Step : Elaboration_Order_Step) return Membership_Set
+         Step : Elaboration_Order_Step) return LGV_Sets.Membership_Set
       is
          Iter   : Library_Graphs.All_Vertex_Iterator;
-         LGV_Id : Library_Graph_Vertex_Id;
-         Set    : Membership_Set;
+         Set    : LGV_Sets.Membership_Set;
+         Vertex : Library_Graph_Vertex_Id;
 
       begin
          pragma Assert (Present (G));
 
-         Set  := Create (Number_Of_Vertices (G));
+         Set  := LGV_Sets.Create (Number_Of_Vertices (G));
          Iter := Iterate_All_Vertices (G);
          while Has_Next (Iter) loop
-            Next (Iter, LGV_Id);
-            pragma Assert (Present (LGV_Id));
+            Next (Iter, Vertex);
 
             Add_Vertex_If_Elaborable
               (G      => G,
-               LGV_Id => LGV_Id,
+               Vertex => Vertex,
                Set    => Set,
                Msg    => Add_To_All_Candidates_Msg,
                Step   => Step,
@@ -445,25 +434,24 @@ package body Bindo.Elaborators is
       function Create_Component_Candidates_Set
         (G    : Library_Graph;
          Comp : Component_Id;
-         Step : Elaboration_Order_Step) return Membership_Set
+         Step : Elaboration_Order_Step) return LGV_Sets.Membership_Set
       is
          Iter   : Component_Vertex_Iterator;
-         LGV_Id : Library_Graph_Vertex_Id;
-         Set    : Membership_Set;
+         Set    : LGV_Sets.Membership_Set;
+         Vertex : Library_Graph_Vertex_Id;
 
       begin
          pragma Assert (Present (G));
          pragma Assert (Present (Comp));
 
-         Set  := Create (Number_Of_Component_Vertices (G, Comp));
+         Set  := LGV_Sets.Create (Number_Of_Component_Vertices (G, Comp));
          Iter := Iterate_Component_Vertices (G, Comp);
          while Has_Next (Iter) loop
-            Next (Iter, LGV_Id);
-            pragma Assert (Present (LGV_Id));
+            Next (Iter, Vertex);
 
             Add_Vertex_If_Elaborable
               (G      => G,
-               LGV_Id => LGV_Id,
+               Vertex => Vertex,
                Set    => Set,
                Msg    => Add_To_Comp_Candidates_Msg,
                Step   => Step,
@@ -480,18 +468,18 @@ package body Bindo.Elaborators is
       procedure Elaborate_Component
         (G                  : Library_Graph;
          Comp               : Component_Id;
-         All_Candidates     : Membership_Set;
+         All_Candidates     : LGV_Sets.Membership_Set;
          Remaining_Vertices : in out Natural;
          Order              : in out Unit_Id_Table;
          Step               : Elaboration_Order_Step)
       is
          Candidate       : Library_Graph_Vertex_Id;
-         Comp_Candidates : Membership_Set;
+         Comp_Candidates : LGV_Sets.Membership_Set;
 
       begin
          pragma Assert (Present (G));
          pragma Assert (Present (Comp));
-         pragma Assert (Present (All_Candidates));
+         pragma Assert (LGV_Sets.Present (All_Candidates));
 
          Trace_Component
            (G    => G,
@@ -518,7 +506,7 @@ package body Bindo.Elaborators is
 
             Elaborate_Vertex
               (G                  => G,
-               LGV_Id             => Candidate,
+               Vertex             => Candidate,
                All_Candidates     => All_Candidates,
                Comp_Candidates    => Comp_Candidates,
                Remaining_Vertices => Remaining_Vertices,
@@ -527,7 +515,7 @@ package body Bindo.Elaborators is
                Indent             => Nested_Indentation);
          end loop;
 
-         Destroy (Comp_Candidates);
+         LGV_Sets.Destroy (Comp_Candidates);
       end Elaborate_Component;
 
       -----------------------------
@@ -539,9 +527,8 @@ package body Bindo.Elaborators is
          Order  : out Unit_Id_Table;
          Status : out Elaboration_Order_Status)
       is
-         All_Candidates     : Membership_Set;
+         All_Candidates     : LGV_Sets.Membership_Set;
          Candidate          : Library_Graph_Vertex_Id;
-         Comp               : Component_Id;
          Remaining_Vertices : Natural;
          Step               : Elaboration_Order_Step;
 
@@ -585,19 +572,16 @@ package body Bindo.Elaborators is
             --  and their components that they have one less predecessor to
             --  wait on. This may add new candidates to set All_Candidates.
 
-            Comp := Component (G, Candidate);
-            pragma Assert (Present (Comp));
-
             Elaborate_Component
               (G                  => G,
-               Comp               => Comp,
+               Comp               => Component (G, Candidate),
                All_Candidates     => All_Candidates,
                Remaining_Vertices => Remaining_Vertices,
                Order              => Order,
                Step               => Step);
          end loop;
 
-         Destroy (All_Candidates);
+         LGV_Sets.Destroy (All_Candidates);
 
          --  The library graph contains an Elaborate_All circularity when
          --  at least one edge subject to the related pragma appears in a
@@ -642,7 +626,7 @@ package body Bindo.Elaborators is
          Write_ALI_Tables;
 
          --  Choose the proper elaboration strategy based on whether the main
-         --  library unit was compiled with dynamic elaboration checks.
+         --  library unit was compiled using the dynamic model.
 
          if Is_Dynamically_Elaborated (Main_Lib_Unit) then
             Elaborate_Units_Dynamic (Order);
@@ -673,6 +657,7 @@ package body Bindo.Elaborators is
 
       procedure Elaborate_Units_Common
         (Use_Inv_Graph : Boolean;
+         Is_Dyn_Elab   : Boolean;
          Inv_Graph     : out Invocation_Graph;
          Lib_Graph     : out Library_Graph;
          Order         : out Unit_Id_Table;
@@ -682,7 +667,7 @@ package body Bindo.Elaborators is
          --  Create, validate, and output the library graph that captures the
          --  dependencies between library items.
 
-         Lib_Graph := Build_Library_Graph;
+         Lib_Graph := Build_Library_Graph (Is_Dyn_Elab);
          Validate_Library_Graph (Lib_Graph);
          Write_Library_Graph    (Lib_Graph);
 
@@ -746,6 +731,7 @@ package body Bindo.Elaborators is
 
          Elaborate_Units_Common
            (Use_Inv_Graph => True,
+            Is_Dyn_Elab   => True,
             Inv_Graph     => Mix_Inv_Graph,
             Lib_Graph     => Mix_Lib_Graph,
             Order         => Mix_Order,
@@ -761,9 +747,9 @@ package body Bindo.Elaborators is
          --  the invocation graph because the circularity will persist.
 
          elsif Status = Order_Has_Elaborate_All_Circularity then
-            Error_Msg ("elaboration circularity detected");
-
-            --  Report error here
+            Diagnose_Circularities
+              (Inv_Graph => Mix_Inv_Graph,
+               Lib_Graph => Mix_Lib_Graph);
 
          --  Otherwise the library graph contains a circularity, or the extra
          --  information provided by the invocation graph caused a circularity.
@@ -776,6 +762,7 @@ package body Bindo.Elaborators is
 
             Elaborate_Units_Common
               (Use_Inv_Graph => False,
+               Is_Dyn_Elab   => True,
                Inv_Graph     => Dyn_Inv_Graph,
                Lib_Graph     => Dyn_Lib_Graph,
                Order         => Dyn_Order,
@@ -792,9 +779,9 @@ package body Bindo.Elaborators is
             --  the circularity.
 
             else
-               Error_Msg ("elaboration circularity detected");
-
-               --  Report error here
+               Diagnose_Circularities
+                 (Inv_Graph => Dyn_Inv_Graph,
+                  Lib_Graph => Dyn_Lib_Graph);
             end if;
 
             Destroy (Dyn_Inv_Graph);
@@ -827,6 +814,7 @@ package body Bindo.Elaborators is
 
          Elaborate_Units_Common
            (Use_Inv_Graph => True,
+            Is_Dyn_Elab   => False,
             Inv_Graph     => Inv_Graph,
             Lib_Graph     => Lib_Graph,
             Order         => Order,
@@ -835,9 +823,9 @@ package body Bindo.Elaborators is
          --  The augmented library graph contains a circularity
 
          if Status /= Order_OK then
-            Error_Msg ("elaboration circularity detected");
-
-            --  Report error here
+            Diagnose_Circularities
+              (Inv_Graph => Inv_Graph,
+               Lib_Graph => Lib_Graph);
          end if;
 
          Destroy (Inv_Graph);
@@ -856,27 +844,24 @@ package body Bindo.Elaborators is
 
       procedure Elaborate_Vertex
         (G                  : Library_Graph;
-         LGV_Id             : Library_Graph_Vertex_Id;
-         All_Candidates     : Membership_Set;
-         Comp_Candidates    : Membership_Set;
+         Vertex             : Library_Graph_Vertex_Id;
+         All_Candidates     : LGV_Sets.Membership_Set;
+         Comp_Candidates    : LGV_Sets.Membership_Set;
          Remaining_Vertices : in out Natural;
          Order              : in out Unit_Id_Table;
          Step               : Elaboration_Order_Step;
          Indent             : Indentation_Level)
       is
-         Body_LGV_Id : Library_Graph_Vertex_Id;
-         U_Id        : Unit_Id;
-
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
-         pragma Assert (Needs_Elaboration (G, LGV_Id));
-         pragma Assert (Present (All_Candidates));
-         pragma Assert (Present (Comp_Candidates));
+         pragma Assert (Present (Vertex));
+         pragma Assert (Needs_Elaboration (G, Vertex));
+         pragma Assert (LGV_Sets.Present (All_Candidates));
+         pragma Assert (LGV_Sets.Present (Comp_Candidates));
 
          Trace_Vertex
            (G      => G,
-            LGV_Id => LGV_Id,
+            Vertex => Vertex,
             Msg    => "elaborating vertex",
             Step   => Step,
             Indent => Indent);
@@ -887,20 +872,17 @@ package body Bindo.Elaborators is
          --  check that the vertex is present in either set because the set
          --  implementation handles this case.
 
-         Delete (All_Candidates,  LGV_Id);
-         Delete (Comp_Candidates, LGV_Id);
+         LGV_Sets.Delete (All_Candidates,  Vertex);
+         LGV_Sets.Delete (Comp_Candidates, Vertex);
 
          --  Mark the vertex as elaborated in order to prevent further attempts
          --  to re-elaborate it.
 
-         Set_In_Elaboration_Order (G, LGV_Id);
+         Set_In_Elaboration_Order (G, Vertex);
 
          --  Add the unit represented by the vertex to the elaboration order
 
-         U_Id := Unit (G, LGV_Id);
-         pragma Assert (Present (U_Id));
-
-         Unit_Id_Tables.Append (Order, U_Id);
+         Unit_Id_Tables.Append (Order, Unit (G, Vertex));
 
          --  There is now one fewer vertex to elaborate
 
@@ -912,7 +894,7 @@ package body Bindo.Elaborators is
 
          Update_Successors
            (G               => G,
-            Pred            => LGV_Id,
+            Pred            => Vertex,
             All_Candidates  => All_Candidates,
             Comp_Candidates => Comp_Candidates,
             Step            => Step,
@@ -922,13 +904,10 @@ package body Bindo.Elaborators is
          --  to pragma Elaborate_Body. Elaborate the body in order to satisfy
          --  the semantics of the pragma.
 
-         if Is_Spec_With_Elaborate_Body (G, LGV_Id) then
-            Body_LGV_Id := Proper_Body (G, LGV_Id);
-            pragma Assert (Present (Body_LGV_Id));
-
+         if Is_Spec_With_Elaborate_Body (G, Vertex) then
             Elaborate_Vertex
               (G                  => G,
-               LGV_Id             => Body_LGV_Id,
+               Vertex             => Proper_Body (G, Vertex),
                All_Candidates     => All_Candidates,
                Comp_Candidates    => Comp_Candidates,
                Remaining_Vertices => Remaining_Vertices,
@@ -944,17 +923,17 @@ package body Bindo.Elaborators is
 
       function Find_Best_Candidate
         (G      : Library_Graph;
-         Set    : Membership_Set;
+         Set    : LGV_Sets.Membership_Set;
          Step   : Elaboration_Order_Step;
          Indent : Indentation_Level) return Library_Graph_Vertex_Id
       is
-         Best : Library_Graph_Vertex_Id;
-         Curr : Library_Graph_Vertex_Id;
-         Iter : Iterator;
+         Best    : Library_Graph_Vertex_Id;
+         Current : Library_Graph_Vertex_Id;
+         Iter    : LGV_Sets.Iterator;
 
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (Set));
+         pragma Assert (LGV_Sets.Present (Set));
 
          --  Assume that there is no candidate
 
@@ -963,21 +942,19 @@ package body Bindo.Elaborators is
          --  Inspect all vertices in the set, looking for the best candidate to
          --  elaborate.
 
-         Iter := Iterate (Set);
-         while Has_Next (Iter) loop
-            Next (Iter, Curr);
-
-            pragma Assert (Present (Curr));
-            pragma Assert (Needs_Elaboration (G, Curr));
+         Iter := LGV_Sets.Iterate (Set);
+         while LGV_Sets.Has_Next (Iter) loop
+            LGV_Sets.Next (Iter, Current);
+            pragma Assert (Needs_Elaboration (G, Current));
 
             --  Update the best candidate when there is no such candidate
 
             if not Present (Best) then
-               Best := Curr;
+               Best := Current;
 
                Trace_Vertex
                  (G      => G,
-                  LGV_Id => Best,
+                  Vertex => Best,
                   Msg    => "initial best candidate vertex",
                   Step   => Step,
                   Indent => Indent);
@@ -987,14 +964,14 @@ package body Bindo.Elaborators is
 
             elsif Is_Better_Candidate
                     (G           => G,
-                     Best_Candid => Best,
-                     New_Candid  => Curr)
+                     Best_Candidate => Best,
+                     New_Candidate  => Current)
             then
-               Best := Curr;
+               Best := Current;
 
                Trace_Vertex
                  (G      => G,
-                  LGV_Id => Best,
+                  Vertex => Best,
                   Msg    => "best candidate vertex",
                   Step   => Step,
                   Indent => Indent);
@@ -1009,48 +986,48 @@ package body Bindo.Elaborators is
       -------------------------
 
       function Is_Better_Candidate
-        (G           : Library_Graph;
-         Best_Candid : Library_Graph_Vertex_Id;
-         New_Candid  : Library_Graph_Vertex_Id) return Boolean
+        (G              : Library_Graph;
+         Best_Candidate : Library_Graph_Vertex_Id;
+         New_Candidate  : Library_Graph_Vertex_Id) return Boolean
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (Best_Candid));
-         pragma Assert (Present (New_Candid));
+         pragma Assert (Present (Best_Candidate));
+         pragma Assert (Present (New_Candidate));
 
          --  Prefer a predefined unit over a non-predefined unit
 
-         if Is_Predefined_Unit (G, Best_Candid)
-           and then not Is_Predefined_Unit (G, New_Candid)
+         if Is_Predefined_Unit (G, Best_Candidate)
+           and then not Is_Predefined_Unit (G, New_Candidate)
          then
             return False;
 
-         elsif not Is_Predefined_Unit (G, Best_Candid)
-           and then Is_Predefined_Unit (G, New_Candid)
+         elsif not Is_Predefined_Unit (G, Best_Candidate)
+           and then Is_Predefined_Unit (G, New_Candidate)
          then
             return True;
 
          --  Prefer an internal unit over a non-iternal unit
 
-         elsif Is_Internal_Unit (G, Best_Candid)
-           and then not Is_Internal_Unit (G, New_Candid)
+         elsif Is_Internal_Unit (G, Best_Candidate)
+           and then not Is_Internal_Unit (G, New_Candidate)
          then
             return False;
 
-         elsif not Is_Internal_Unit (G, Best_Candid)
-           and then Is_Internal_Unit (G, New_Candid)
+         elsif not Is_Internal_Unit (G, Best_Candidate)
+           and then Is_Internal_Unit (G, New_Candidate)
          then
             return True;
 
          --  Prefer a preelaborated unit over a non-preelaborated unit
 
-         elsif Is_Preelaborated_Unit (G, Best_Candid)
-           and then not Is_Preelaborated_Unit (G, New_Candid)
+         elsif Is_Preelaborated_Unit (G, Best_Candidate)
+           and then not Is_Preelaborated_Unit (G, New_Candidate)
          then
             return False;
 
-         elsif not Is_Preelaborated_Unit (G, Best_Candid)
-           and then Is_Preelaborated_Unit (G, New_Candid)
+         elsif not Is_Preelaborated_Unit (G, Best_Candidate)
+           and then Is_Preelaborated_Unit (G, New_Candidate)
          then
             return True;
 
@@ -1058,7 +1035,8 @@ package body Bindo.Elaborators is
          --  behavior.
 
          else
-            return Uname_Less (Name (G, Best_Candid), Name (G, New_Candid));
+            return
+              Uname_Less (Name (G, Best_Candidate), Name (G, New_Candidate));
          end if;
       end Is_Better_Candidate;
 
@@ -1068,18 +1046,18 @@ package body Bindo.Elaborators is
 
       procedure Trace_Candidate_Vertices
         (G    : Library_Graph;
-         Set  : Membership_Set;
+         Set  : LGV_Sets.Membership_Set;
          Step : Elaboration_Order_Step)
       is
-         Iter   : Iterator;
-         LGV_Id : Library_Graph_Vertex_Id;
+         Iter   : LGV_Sets.Iterator;
+         Vertex : Library_Graph_Vertex_Id;
 
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (Set));
+         pragma Assert (LGV_Sets.Present (Set));
 
-         --  Nothing to do when switch -d_T (output elaboration order trace
-         --  information) is not in effect.
+         --  Nothing to do when switch -d_T (output elaboration order and cycle
+         --  detection trace information) is not in effect.
 
          if not Debug_Flag_Underscore_TT then
             return;
@@ -1087,17 +1065,16 @@ package body Bindo.Elaborators is
 
          Trace_Step (Step);
          Write_Str  ("candidate vertices: ");
-         Write_Int  (Int (Size (Set)));
+         Write_Int  (Int (LGV_Sets.Size (Set)));
          Write_Eol;
 
-         Iter := Iterate (Set);
-         while Has_Next (Iter) loop
-            Next (Iter, LGV_Id);
-            pragma Assert (Present (LGV_Id));
+         Iter := LGV_Sets.Iterate (Set);
+         while LGV_Sets.Has_Next (Iter) loop
+            LGV_Sets.Next (Iter, Vertex);
 
             Trace_Vertex
               (G      => G,
-               LGV_Id => LGV_Id,
+               Vertex => Vertex,
                Msg    => "candidate vertex",
                Step   => Step,
                Indent => Nested_Indentation);
@@ -1118,8 +1095,8 @@ package body Bindo.Elaborators is
          pragma Assert (Present (G));
          pragma Assert (Present (Comp));
 
-         --  Nothing to do when switch -d_T (output elaboration order trace
-         --  information) is not in effect.
+         --  Nothing to do when switch -d_T (output elaboration order and cycle
+         --  detection trace information) is not in effect.
 
          if not Debug_Flag_Underscore_TT then
             return;
@@ -1145,8 +1122,8 @@ package body Bindo.Elaborators is
 
       procedure Trace_Step (Step : Elaboration_Order_Step) is
       begin
-         --  Nothing to do when switch -d_T (output elaboration order trace
-         --  information) is not in effect.
+         --  Nothing to do when switch -d_T (output elaboration order and cycle
+         --  detection trace information) is not in effect.
 
          if not Debug_Flag_Underscore_TT then
             return;
@@ -1168,13 +1145,13 @@ package body Bindo.Elaborators is
          Step  : Elaboration_Order_Step)
       is
          Iter   : Library_Graphs.All_Vertex_Iterator;
-         LGV_Id : Library_Graph_Vertex_Id;
+         Vertex : Library_Graph_Vertex_Id;
 
       begin
          pragma Assert (Present (G));
 
-         --  Nothing to do when switch -d_T (output elaboration order trace
-         --  information) is not in effect.
+         --  Nothing to do when switch -d_T (output elaboration order and cycle
+         --  detection trace information) is not in effect.
 
          if not Debug_Flag_Underscore_TT then
             return;
@@ -1187,15 +1164,14 @@ package body Bindo.Elaborators is
 
          Iter := Iterate_All_Vertices (G);
          while Has_Next (Iter) loop
-            Next (Iter, LGV_Id);
-            pragma Assert (Present (LGV_Id));
+            Next (Iter, Vertex);
 
-            if Needs_Elaboration (G, LGV_Id)
-              and then not In_Elaboration_Order (G, LGV_Id)
+            if Needs_Elaboration (G, Vertex)
+              and then not In_Elaboration_Order (G, Vertex)
             then
                Trace_Vertex
                  (G      => G,
-                  LGV_Id => LGV_Id,
+                  Vertex => Vertex,
                   Msg    => "remaining vertex",
                   Step   => Step,
                   Indent => Nested_Indentation);
@@ -1209,21 +1185,21 @@ package body Bindo.Elaborators is
 
       procedure Trace_Vertex
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id;
+         Vertex : Library_Graph_Vertex_Id;
          Msg    : String;
          Step   : Elaboration_Order_Step;
          Indent : Indentation_Level)
       is
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         Comp : constant Component_Id := Component (G, LGV_Id);
-
-         pragma Assert (Present (Comp));
+         Attr_Indent : constant Indentation_Level :=
+                         Indent + Nested_Indentation;
+         Comp        : constant Component_Id := Component (G, Vertex);
 
       begin
-         --  Nothing to do when switch -d_T (output elaboration order trace
-         --  information) is not in effect.
+         --  Nothing to do when switch -d_T (output elaboration order and cycle
+         --  detection trace information) is not in effect.
 
          if not Debug_Flag_Underscore_TT then
             return;
@@ -1233,31 +1209,31 @@ package body Bindo.Elaborators is
          Indent_By  (Indent);
          Write_Str  (Msg);
          Write_Str  (" (LGV_Id_");
-         Write_Int  (Int (LGV_Id));
+         Write_Int  (Int (Vertex));
          Write_Str  (")");
          Write_Eol;
 
          Trace_Step (Step);
-         Indent_By  (Indent + Nested_Indentation);
+         Indent_By  (Attr_Indent);
          Write_Str  ("name = ");
-         Write_Name (Name (G, LGV_Id));
+         Write_Name (Name (G, Vertex));
          Write_Eol;
 
          Trace_Step (Step);
-         Indent_By  (Indent + Nested_Indentation);
+         Indent_By  (Attr_Indent);
          Write_Str  ("Component (Comp_Id_");
          Write_Int  (Int (Comp));
          Write_Str  (")");
          Write_Eol;
 
          Trace_Step (Step);
-         Indent_By  (Indent + Nested_Indentation);
+         Indent_By  (Attr_Indent);
          Write_Str  ("pending predecessors: ");
-         Write_Num  (Int (Pending_Predecessors (G, LGV_Id)));
+         Write_Num  (Int (Pending_Predecessors (G, Vertex)));
          Write_Eol;
 
          Trace_Step (Step);
-         Indent_By  (Indent + Nested_Indentation);
+         Indent_By  (Attr_Indent);
          Write_Str  ("pending components  : ");
          Write_Num  (Int (Pending_Predecessors (G, Comp)));
          Write_Eol;
@@ -1271,8 +1247,8 @@ package body Bindo.Elaborators is
         (G               : Library_Graph;
          Pred            : Library_Graph_Vertex_Id;
          Succ            : Library_Graph_Vertex_Id;
-         All_Candidates  : Membership_Set;
-         Comp_Candidates : Membership_Set;
+         All_Candidates  : LGV_Sets.Membership_Set;
+         Comp_Candidates : LGV_Sets.Membership_Set;
          Step            : Elaboration_Order_Step;
          Indent          : Indentation_Level)
       is
@@ -1281,26 +1257,28 @@ package body Bindo.Elaborators is
          pragma Assert (Needs_Elaboration (G, Pred));
          pragma Assert (Present (Succ));
          pragma Assert (Needs_Elaboration (G, Succ));
-         pragma Assert (Present (All_Candidates));
-         pragma Assert (Present (Comp_Candidates));
+         pragma Assert (LGV_Sets.Present (All_Candidates));
+         pragma Assert (LGV_Sets.Present (Comp_Candidates));
 
-         Pred_Comp : constant Component_Id := Component (G, Pred);
-         Succ_Comp : constant Component_Id := Component (G, Succ);
+         In_Different_Components : constant Boolean :=
+                                     not In_Same_Component
+                                           (G     => G,
+                                            Left  => Pred,
+                                            Right => Succ);
 
-         pragma Assert (Present (Pred_Comp));
-         pragma Assert (Present (Succ_Comp));
-
-         In_Different_Components : constant Boolean := Pred_Comp /= Succ_Comp;
+         Succ_Comp     : constant Component_Id      := Component (G, Succ);
+         Vertex_Indent : constant Indentation_Level :=
+                           Indent + Nested_Indentation;
 
          Candidate : Library_Graph_Vertex_Id;
          Iter      : Component_Vertex_Iterator;
          Msg       : String_Ptr;
-         Set       : Membership_Set;
+         Set       : LGV_Sets.Membership_Set;
 
       begin
          Trace_Vertex
            (G      => G,
-            LGV_Id => Succ,
+            Vertex => Succ,
             Msg    => "updating successor",
             Step   => Step,
             Indent => Indent);
@@ -1341,11 +1319,11 @@ package body Bindo.Elaborators is
 
          Add_Vertex_If_Elaborable
            (G      => G,
-            LGV_Id => Succ,
+            Vertex => Succ,
             Set    => Set,
             Msg    => Msg.all,
             Step   => Step,
-            Indent => Indent + Nested_Indentation);
+            Indent => Vertex_Indent);
 
          --  At this point the successor component may become elaborable when
          --  its final predecessor component is elaborated. This in turn may
@@ -1357,15 +1335,14 @@ package body Bindo.Elaborators is
             Iter := Iterate_Component_Vertices (G, Succ_Comp);
             while Has_Next (Iter) loop
                Next (Iter, Candidate);
-               pragma Assert (Present (Candidate));
 
                Add_Vertex_If_Elaborable
                  (G      => G,
-                  LGV_Id => Candidate,
+                  Vertex => Candidate,
                   Set    => All_Candidates,
                   Msg    => Add_To_All_Candidates_Msg,
                   Step   => Step,
-                  Indent => Indent + Nested_Indentation);
+                  Indent => Vertex_Indent);
             end loop;
          end if;
       end Update_Successor;
@@ -1377,36 +1354,30 @@ package body Bindo.Elaborators is
       procedure Update_Successors
         (G               : Library_Graph;
          Pred            : Library_Graph_Vertex_Id;
-         All_Candidates  : Membership_Set;
-         Comp_Candidates : Membership_Set;
+         All_Candidates  : LGV_Sets.Membership_Set;
+         Comp_Candidates : LGV_Sets.Membership_Set;
          Step            : Elaboration_Order_Step;
          Indent          : Indentation_Level)
       is
-         Iter   : Edges_To_Successors_Iterator;
-         LGE_Id : Library_Graph_Edge_Id;
-         Succ   : Library_Graph_Vertex_Id;
+         Edge : Library_Graph_Edge_Id;
+         Iter : Edges_To_Successors_Iterator;
 
       begin
          pragma Assert (Present (G));
          pragma Assert (Present (Pred));
          pragma Assert (Needs_Elaboration (G, Pred));
-         pragma Assert (Present (All_Candidates));
-         pragma Assert (Present (Comp_Candidates));
+         pragma Assert (LGV_Sets.Present (All_Candidates));
+         pragma Assert (LGV_Sets.Present (Comp_Candidates));
 
          Iter := Iterate_Edges_To_Successors (G, Pred);
          while Has_Next (Iter) loop
-            Next (Iter, LGE_Id);
-
-            pragma Assert (Present (LGE_Id));
-            pragma Assert (Predecessor (G, LGE_Id) = Pred);
-
-            Succ := Successor (G, LGE_Id);
-            pragma Assert (Present (Succ));
+            Next (Iter, Edge);
+            pragma Assert (Predecessor (G, Edge) = Pred);
 
             Update_Successor
               (G               => G,
                Pred            => Pred,
-               Succ            => Succ,
+               Succ            => Successor (G, Edge),
                All_Candidates  => All_Candidates,
                Comp_Candidates => Comp_Candidates,
                Step            => Step,

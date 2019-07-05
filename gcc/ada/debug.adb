@@ -378,7 +378,7 @@ package body Debug is
 
    --  d_A  Output ALI invocation tables
    --  d_B
-   --  d_C
+   --  d_C  Diagnose all cycles
    --  d_D
    --  d_F
    --  d_G
@@ -390,13 +390,13 @@ package body Debug is
    --  d_M
    --  d_N  New bindo order
    --  d_O  Output elaboration order
-   --  d_P
+   --  d_P  Output cycle paths
    --  d_Q
    --  d_R
    --  d_S
-   --  d_T  Output elaboration order trace information
+   --  d_T  Output elaboration order and cycle detection trace information
    --  d_U
-   --  d_V  Validate bindo graphs and order
+   --  d_V  Validate bindo cycles, graphs, and order
    --  d_W
    --  d_X
    --  d_Y
@@ -1150,22 +1150,27 @@ package body Debug is
 
    --  d_A  GNATBIND output the contents of all ALI invocation-related tables
    --       in textual format to standard output.
-   --
+
+   --  d_C  GNATBIND diagnoses all unique cycles within the bind, rather than
+   --       just the most important one.
+
    --  d_I  GNATBIND outputs the contents of the invocation graph in textual
    --       format to standard output.
-   --
+
    --  d_L  GNATBIND outputs the contents of the library graph in textual
    --       format to standard output.
-   --
+
    --  d_N  GNATBIND utilizes the elaboration order provided by bindo
-   --
+
    --  d_O  GNATBIND outputs the elaboration order of units to standard output
-   --
-   --  d_T  GNATBIND outputs trace information of elaboration order activities
-   --       to standard output.
-   --
-   --  d_V  GNATBIND validates the invocation graph, library graph, SCC graph
-   --       and elaboration order.
+
+   --  d_P  GNATBIND outputs the cycle paths to standard output
+
+   --  d_T  GNATBIND outputs trace information of elaboration order and cycle
+   --       detection activities to standard output.
+
+   --  d_V  GNATBIND validates the invocation graph, library graph along with
+   --       its cycles, and the elaboration order.
 
    --------------------------------------------
    -- Documentation for gnatmake Debug Flags --

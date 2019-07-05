@@ -880,18 +880,32 @@ package Lib.Writ is
    --      locations of all instances where the initial declaration of the
    --      construct appears.
    --
+   --  When the line-kind denotes invocation graph attributes, line-attributes
+   --  are set as follows:
+   --
+   --      encoding-kind
+   --
+   --      Attribute encoding-kind is a Character which specifies the encoding
+   --      kind used when collecting invocation constructs and relations. Table
+   --      ALI.Invocation_Graph_Encoding_Codes lists all legal values.
+   --
    --  When the line-kind denotes an invocation construct, line-attributes are
    --  set as follows:
    --
-   --      construct-kind construct-body-placement construct-signature
+   --      construct-kind construct-spec-placement construct-body-placement
+   --        construct-signature
    --
    --      Attribute construct-kind is a Character which denotes the nature of
    --      the construct. Table ALI.Invocation_Construct_Codes lists all legal
    --      values.
    --
+   --      Attribute construct-spec-placement is a Character which denotes the
+   --      placement of the construct's spec within the unit. All legal values
+   --      are listed in table ALI.Spec_And_Body_Placement_Codes.
+   --
    --      Attribute construct-body-placement is a Character which denotes the
    --      placement of the construct's body within the unit. All legal values
-   --      are listed in table ALI.Body_Placement_Codes.
+   --      are listed in table ALI.Spec_And_Body_Placement_Codes.
    --
    --      Attribute construct-signature is the invocation signature of the
    --      construct.
@@ -925,7 +939,7 @@ package Lib.Writ is
    --        Postcondition_Verification             - related routine
    --        Protected_Entry_Call                   - not present
    --        Protected_Subprogram_Call              - not present
-   --        Task_Activation                        - related task object
+   --        Task_Activation                        - not present
    --        Task_Entry_Call                        - not present
    --        Type_Initialization                    - related type
    --

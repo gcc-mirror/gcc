@@ -25,7 +25,12 @@
 
 with Ada.Unchecked_Deallocation;
 
-with GNAT.Lists; use GNAT.Lists;
+with Butil;  use Butil;
+with Debug;  use Debug;
+with Output; use Output;
+
+with Bindo.Writers;
+use  Bindo.Writers;
 
 package body Bindo.Graphs is
 
@@ -33,33 +38,73 @@ package body Bindo.Graphs is
    -- Local subprograms --
    -----------------------
 
-   function Sequence_Next_IGE_Id return Invocation_Graph_Edge_Id;
-   pragma Inline (Sequence_Next_IGE_Id);
+   function Sequence_Next_Cycle return Library_Graph_Cycle_Id;
+   pragma Inline (Sequence_Next_Cycle);
+   --  Generate a new unique library graph cycle handle
+
+   function Sequence_Next_Edge return Invocation_Graph_Edge_Id;
+   pragma Inline (Sequence_Next_Edge);
    --  Generate a new unique invocation graph edge handle
 
-   function Sequence_Next_IGV_Id return Invocation_Graph_Vertex_Id;
-   pragma Inline (Sequence_Next_IGV_Id);
-   --  Generate a new unique invocation graph vertex handle
-
-   function Sequence_Next_LGE_Id return Library_Graph_Edge_Id;
-   pragma Inline (Sequence_Next_LGE_Id);
+   function Sequence_Next_Edge return Library_Graph_Edge_Id;
+   pragma Inline (Sequence_Next_Edge);
    --  Generate a new unique library graph edge handle
 
-   function Sequence_Next_LGV_Id return Library_Graph_Vertex_Id;
-   pragma Inline (Sequence_Next_LGV_Id);
+   function Sequence_Next_Vertex return Invocation_Graph_Vertex_Id;
+   pragma Inline (Sequence_Next_Vertex);
+   --  Generate a new unique invocation graph vertex handle
+
+   function Sequence_Next_Vertex return Library_Graph_Vertex_Id;
+   pragma Inline (Sequence_Next_Vertex);
    --  Generate a new unique library graph vertex handle
+
+   -----------------------------------
+   -- Destroy_Invocation_Graph_Edge --
+   -----------------------------------
+
+   procedure Destroy_Invocation_Graph_Edge
+     (Edge : in out Invocation_Graph_Edge_Id)
+   is
+      pragma Unreferenced (Edge);
+   begin
+      null;
+   end Destroy_Invocation_Graph_Edge;
+
+   ---------------------------------
+   -- Destroy_Library_Graph_Cycle --
+   ---------------------------------
+
+   procedure Destroy_Library_Graph_Cycle
+     (Cycle : in out Library_Graph_Cycle_Id)
+   is
+      pragma Unreferenced (Cycle);
+   begin
+      null;
+   end Destroy_Library_Graph_Cycle;
+
+   --------------------------------
+   -- Destroy_Library_Graph_Edge --
+   --------------------------------
+
+   procedure Destroy_Library_Graph_Edge
+     (Edge : in out Library_Graph_Edge_Id)
+   is
+      pragma Unreferenced (Edge);
+   begin
+      null;
+   end Destroy_Library_Graph_Edge;
 
    --------------------------------
    -- Hash_Invocation_Graph_Edge --
    --------------------------------
 
    function Hash_Invocation_Graph_Edge
-     (IGE_Id : Invocation_Graph_Edge_Id) return Bucket_Range_Type
+     (Edge : Invocation_Graph_Edge_Id) return Bucket_Range_Type
    is
    begin
-      pragma Assert (Present (IGE_Id));
+      pragma Assert (Present (Edge));
 
-      return Bucket_Range_Type (IGE_Id);
+      return Bucket_Range_Type (Edge);
    end Hash_Invocation_Graph_Edge;
 
    ----------------------------------
@@ -67,25 +112,38 @@ package body Bindo.Graphs is
    ----------------------------------
 
    function Hash_Invocation_Graph_Vertex
-     (IGV_Id : Invocation_Graph_Vertex_Id) return Bucket_Range_Type
+     (Vertex : Invocation_Graph_Vertex_Id) return Bucket_Range_Type
    is
    begin
-      pragma Assert (Present (IGV_Id));
+      pragma Assert (Present (Vertex));
 
-      return Bucket_Range_Type (IGV_Id);
+      return Bucket_Range_Type (Vertex);
    end Hash_Invocation_Graph_Vertex;
+
+   ------------------------------
+   -- Hash_Library_Graph_Cycle --
+   ------------------------------
+
+   function Hash_Library_Graph_Cycle
+     (Cycle : Library_Graph_Cycle_Id) return Bucket_Range_Type
+   is
+   begin
+      pragma Assert (Present (Cycle));
+
+      return Bucket_Range_Type (Cycle);
+   end Hash_Library_Graph_Cycle;
 
    -----------------------------
    -- Hash_Library_Graph_Edge --
    -----------------------------
 
    function Hash_Library_Graph_Edge
-     (LGE_Id : Library_Graph_Edge_Id) return Bucket_Range_Type
+     (Edge : Library_Graph_Edge_Id) return Bucket_Range_Type
    is
    begin
-      pragma Assert (Present (LGE_Id));
+      pragma Assert (Present (Edge));
 
-      return Bucket_Range_Type (LGE_Id);
+      return Bucket_Range_Type (Edge);
    end Hash_Library_Graph_Edge;
 
    -------------------------------
@@ -93,12 +151,12 @@ package body Bindo.Graphs is
    -------------------------------
 
    function Hash_Library_Graph_Vertex
-     (LGV_Id : Library_Graph_Vertex_Id) return Bucket_Range_Type
+     (Vertex : Library_Graph_Vertex_Id) return Bucket_Range_Type
    is
    begin
-      pragma Assert (Present (LGV_Id));
+      pragma Assert (Present (Vertex));
 
-      return Bucket_Range_Type (LGV_Id);
+      return Bucket_Range_Type (Vertex);
    end Hash_Library_Graph_Vertex;
 
    -----------------------
@@ -116,18 +174,18 @@ package body Bindo.Graphs is
               (Invocation_Graph_Attributes, Invocation_Graph);
 
       function Get_IGE_Attributes
-        (G      : Invocation_Graph;
-         IGE_Id : Invocation_Graph_Edge_Id)
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id)
          return Invocation_Graph_Edge_Attributes;
       pragma Inline (Get_IGE_Attributes);
-      --  Obtain the attributes of edge IGE_Id of invocation graph G
+      --  Obtain the attributes of edge Edge of invocation graph G
 
       function Get_IGV_Attributes
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id)
+         Vertex : Invocation_Graph_Vertex_Id)
          return Invocation_Graph_Vertex_Attributes;
       pragma Inline (Get_IGV_Attributes);
-      --  Obtain the attributes of vertex IGV_Id of invocation graph G
+      --  Obtain the attributes of vertex Vertex of invocation graph G
 
       procedure Increment_Invocation_Graph_Edge_Count
         (G    : Invocation_Graph;
@@ -138,9 +196,9 @@ package body Bindo.Graphs is
 
       function Is_Elaboration_Root
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id) return Boolean;
+         Vertex : Invocation_Graph_Vertex_Id) return Boolean;
       pragma Inline (Is_Elaboration_Root);
-      --  Determine whether vertex IGV_Id of invocation graph denotes the
+      --  Determine whether vertex Vertex of invocation graph denotes the
       --  elaboration procedure of a spec or a body.
 
       function Is_Existing_Source_Target_Relation
@@ -159,9 +217,9 @@ package body Bindo.Graphs is
       procedure Set_Corresponding_Vertex
         (G      : Invocation_Graph;
          IS_Id  : Invocation_Signature_Id;
-         IGV_Id : Invocation_Graph_Vertex_Id);
+         Vertex : Invocation_Graph_Vertex_Id);
       pragma Inline (Set_Corresponding_Vertex);
-      --  Associate vertex IGV_Id of invocation graph G with signature IS_Id
+      --  Associate vertex Vertex of invocation graph G with signature IS_Id
 
       procedure Set_Is_Existing_Source_Target_Relation
         (G   : Invocation_Graph;
@@ -172,18 +230,18 @@ package body Bindo.Graphs is
       --  already related in invocation graph G depending on value Val.
 
       procedure Set_IGE_Attributes
-        (G      : Invocation_Graph;
-         IGE_Id : Invocation_Graph_Edge_Id;
-         Val    : Invocation_Graph_Edge_Attributes);
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id;
+         Val  : Invocation_Graph_Edge_Attributes);
       pragma Inline (Set_IGE_Attributes);
-      --  Set the attributes of edge IGE_Id of invocation graph G to value Val
+      --  Set the attributes of edge Edge of invocation graph G to value Val
 
       procedure Set_IGV_Attributes
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id;
+         Vertex : Invocation_Graph_Vertex_Id;
          Val    : Invocation_Graph_Vertex_Attributes);
       pragma Inline (Set_IGV_Attributes);
-      --  Set the attributes of vertex IGV_Id of invocation graph G to value
+      --  Set the attributes of vertex Vertex of invocation graph G to value
       --  Val.
 
       --------------
@@ -205,10 +263,7 @@ package body Bindo.Graphs is
                  (Source => Source,
                   Target => Target);
 
-         IR_Rec : Invocation_Relation_Record renames
-                    Invocation_Relations.Table (IR_Id);
-
-         IGE_Id : Invocation_Graph_Edge_Id;
+         Edge : Invocation_Graph_Edge_Id;
 
       begin
          --  Nothing to do when the source and target are already related by an
@@ -218,22 +273,22 @@ package body Bindo.Graphs is
             return;
          end if;
 
-         IGE_Id := Sequence_Next_IGE_Id;
+         Edge := Sequence_Next_Edge;
 
          --  Add the edge to the underlying graph
 
          DG.Add_Edge
            (G           => G.Graph,
-            E           => IGE_Id,
+            E           => Edge,
             Source      => Source,
             Destination => Target);
 
          --  Build and save the attributes of the edge
 
          Set_IGE_Attributes
-           (G      => G,
-            IGE_Id => IGE_Id,
-            Val    => (Relation => IR_Id));
+           (G    => G,
+            Edge => Edge,
+            Val  => (Relation => IR_Id));
 
          --  Mark the source and target as related by the new edge. This
          --  prevents all further attempts to link the same source and target.
@@ -242,7 +297,7 @@ package body Bindo.Graphs is
 
          --  Update the edge statistics
 
-         Increment_Invocation_Graph_Edge_Count (G, IR_Rec.Kind);
+         Increment_Invocation_Graph_Edge_Count (G, Kind (IR_Id));
       end Add_Edge;
 
       ----------------
@@ -250,53 +305,83 @@ package body Bindo.Graphs is
       ----------------
 
       procedure Add_Vertex
-        (G      : Invocation_Graph;
-         IC_Id  : Invocation_Construct_Id;
-         LGV_Id : Library_Graph_Vertex_Id)
+        (G           : Invocation_Graph;
+         IC_Id       : Invocation_Construct_Id;
+         Body_Vertex : Library_Graph_Vertex_Id;
+         Spec_Vertex : Library_Graph_Vertex_Id)
       is
          pragma Assert (Present (G));
          pragma Assert (Present (IC_Id));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Body_Vertex));
+         pragma Assert (Present (Spec_Vertex));
 
-         IC_Rec : Invocation_Construct_Record renames
-                    Invocation_Constructs.Table (IC_Id);
-
-         pragma Assert (Present (IC_Rec.Signature));
-
-         IGV_Id : Invocation_Graph_Vertex_Id;
+         Construct_Signature : constant Invocation_Signature_Id :=
+                                 Signature (IC_Id);
+         Vertex : Invocation_Graph_Vertex_Id;
 
       begin
          --  Nothing to do when the construct already has a vertex
 
-         if Present (Corresponding_Vertex (G, IC_Rec.Signature)) then
+         if Present (Corresponding_Vertex (G, Construct_Signature)) then
             return;
          end if;
 
-         IGV_Id := Sequence_Next_IGV_Id;
+         Vertex := Sequence_Next_Vertex;
 
          --  Add the vertex to the underlying graph
 
-         DG.Add_Vertex (G.Graph, IGV_Id);
+         DG.Add_Vertex (G.Graph, Vertex);
 
          --  Build and save the attributes of the vertex
 
          Set_IGV_Attributes
            (G      => G,
-            IGV_Id => IGV_Id,
-            Val    => (Construct  => IC_Id,
-                       Lib_Vertex => LGV_Id));
+            Vertex => Vertex,
+            Val    => (Body_Vertex => Body_Vertex,
+                       Construct   => IC_Id,
+                       Spec_Vertex => Spec_Vertex));
 
          --  Associate the construct with its corresponding vertex
 
-         Set_Corresponding_Vertex (G, IC_Rec.Signature, IGV_Id);
+         Set_Corresponding_Vertex (G, Construct_Signature, Vertex);
 
          --  Save the vertex for later processing when it denotes a spec or
          --  body elaboration procedure.
 
-         if Is_Elaboration_Root (G, IGV_Id) then
-            Save_Elaboration_Root (G, IGV_Id);
+         if Is_Elaboration_Root (G, Vertex) then
+            Save_Elaboration_Root (G, Vertex);
          end if;
       end Add_Vertex;
+
+      -----------------
+      -- Body_Vertex --
+      -----------------
+
+      function Body_Vertex
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Library_Graph_Vertex_Id
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Get_IGV_Attributes (G, Vertex).Body_Vertex;
+      end Body_Vertex;
+
+      ------------
+      -- Column --
+      ------------
+
+      function Column
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Nat
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Column (Signature (Construct (G, Vertex)));
+      end Column;
 
       ---------------
       -- Construct --
@@ -304,13 +389,13 @@ package body Bindo.Graphs is
 
       function Construct
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id) return Invocation_Construct_Id
+         Vertex : Invocation_Graph_Vertex_Id) return Invocation_Construct_Id
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (IGV_Id));
+         pragma Assert (Present (Vertex));
 
-         return Get_IGV_Attributes (G, IGV_Id).Construct;
+         return Get_IGV_Attributes (G, Vertex).Construct;
       end Construct;
 
       --------------------------
@@ -325,7 +410,7 @@ package body Bindo.Graphs is
          pragma Assert (Present (G));
          pragma Assert (Present (IS_Id));
 
-         return SV.Get (G.Signature_To_Vertex, IS_Id);
+         return Signature_Tables.Get (G.Signature_To_Vertex, IS_Id);
       end Corresponding_Vertex;
 
       ------------
@@ -339,15 +424,15 @@ package body Bindo.Graphs is
          G : constant Invocation_Graph := new Invocation_Graph_Attributes;
 
       begin
-         G.Edge_Attributes     := EA.Create (Initial_Edges);
+         G.Edge_Attributes     := IGE_Tables.Create       (Initial_Edges);
          G.Graph               :=
            DG.Create
              (Initial_Vertices => Initial_Vertices,
               Initial_Edges    => Initial_Edges);
-         G.Relations           := ST.Create (Initial_Edges);
-         G.Roots               := ER.Create (Initial_Vertices);
-         G.Signature_To_Vertex := SV.Create (Initial_Vertices);
-         G.Vertex_Attributes   := VA.Create (Initial_Vertices);
+         G.Relations           := Relation_Sets.Create    (Initial_Edges);
+         G.Roots               := IGV_Sets.Create         (Initial_Vertices);
+         G.Signature_To_Vertex := Signature_Tables.Create (Initial_Vertices);
+         G.Vertex_Attributes   := IGV_Tables.Create       (Initial_Vertices);
 
          return G;
       end Create;
@@ -360,12 +445,12 @@ package body Bindo.Graphs is
       begin
          pragma Assert (Present (G));
 
-         EA.Destroy (G.Edge_Attributes);
-         DG.Destroy (G.Graph);
-         ST.Destroy (G.Relations);
-         ER.Destroy (G.Roots);
-         SV.Destroy (G.Signature_To_Vertex);
-         VA.Destroy (G.Vertex_Attributes);
+         IGE_Tables.Destroy       (G.Edge_Attributes);
+         DG.Destroy               (G.Graph);
+         Relation_Sets.Destroy    (G.Relations);
+         IGV_Sets.Destroy         (G.Roots);
+         Signature_Tables.Destroy (G.Signature_To_Vertex);
+         IGV_Tables.Destroy       (G.Vertex_Attributes);
 
          Free (G);
       end Destroy;
@@ -375,9 +460,9 @@ package body Bindo.Graphs is
       -----------------------------------
 
       procedure Destroy_Invocation_Graph_Edge
-        (IGE_Id : in out Invocation_Graph_Edge_Id)
+        (Edge : in out Invocation_Graph_Edge_Id)
       is
-         pragma Unreferenced (IGE_Id);
+         pragma Unreferenced (Edge);
       begin
          null;
       end Destroy_Invocation_Graph_Edge;
@@ -399,9 +484,9 @@ package body Bindo.Graphs is
       -------------------------------------
 
       procedure Destroy_Invocation_Graph_Vertex
-        (IGV_Id : in out Invocation_Graph_Vertex_Id)
+        (Vertex : in out Invocation_Graph_Vertex_Id)
       is
-         pragma Unreferenced (IGV_Id);
+         pragma Unreferenced (Vertex);
       begin
          null;
       end Destroy_Invocation_Graph_Vertex;
@@ -418,20 +503,35 @@ package body Bindo.Graphs is
          null;
       end Destroy_Invocation_Graph_Vertex_Attributes;
 
+      -----------
+      -- Extra --
+      -----------
+
+      function Extra
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id) return Name_Id
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return Extra (Relation (G, Edge));
+      end Extra;
+
       ------------------------
       -- Get_IGE_Attributes --
       ------------------------
 
       function Get_IGE_Attributes
-        (G      : Invocation_Graph;
-         IGE_Id : Invocation_Graph_Edge_Id)
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id)
          return Invocation_Graph_Edge_Attributes
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (IGE_Id));
+         pragma Assert (Present (Edge));
 
-         return EA.Get (G.Edge_Attributes, IGE_Id);
+         return IGE_Tables.Get (G.Edge_Attributes, Edge);
       end Get_IGE_Attributes;
 
       ------------------------
@@ -440,14 +540,14 @@ package body Bindo.Graphs is
 
       function Get_IGV_Attributes
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id)
+         Vertex : Invocation_Graph_Vertex_Id)
          return Invocation_Graph_Vertex_Attributes
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (IGV_Id));
+         pragma Assert (Present (Vertex));
 
-         return VA.Get (G.Vertex_Attributes, IGV_Id);
+         return IGV_Tables.Get (G.Vertex_Attributes, Vertex);
       end Get_IGV_Attributes;
 
       --------------
@@ -483,7 +583,7 @@ package body Bindo.Graphs is
 
       function Has_Next (Iter : Elaboration_Root_Iterator) return Boolean is
       begin
-         return ER.Has_Next (ER.Iterator (Iter));
+         return IGV_Sets.Has_Next (IGV_Sets.Iterator (Iter));
       end Has_Next;
 
       -------------------------------
@@ -552,23 +652,19 @@ package body Bindo.Graphs is
 
       function Is_Elaboration_Root
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id) return Boolean
+         Vertex : Invocation_Graph_Vertex_Id) return Boolean
       is
          pragma Assert (Present (G));
-         pragma Assert (Present (IGV_Id));
+         pragma Assert (Present (Vertex));
 
-         IC_Id : constant Invocation_Construct_Id := Construct (G, IGV_Id);
-
-         pragma Assert (Present (IC_Id));
-
-         IC_Rec : Invocation_Construct_Record renames
-                    Invocation_Constructs.Table (IC_Id);
+         Vertex_Kind : constant Invocation_Construct_Kind :=
+                         Kind (Construct (G, Vertex));
 
       begin
          return
-           IC_Rec.Kind = Elaborate_Body_Procedure
+           Vertex_Kind = Elaborate_Body_Procedure
              or else
-           IC_Rec.Kind = Elaborate_Spec_Procedure;
+           Vertex_Kind = Elaborate_Spec_Procedure;
       end Is_Elaboration_Root;
 
       ----------------------------------------
@@ -582,7 +678,7 @@ package body Bindo.Graphs is
       begin
          pragma Assert (Present (G));
 
-         return ST.Contains (G.Relations, Rel);
+         return Relation_Sets.Contains (G.Relations, Rel);
       end Is_Existing_Source_Target_Relation;
 
       -----------------------
@@ -617,15 +713,15 @@ package body Bindo.Graphs is
 
       function Iterate_Edges_To_Targets
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id) return Edges_To_Targets_Iterator
+         Vertex : Invocation_Graph_Vertex_Id) return Edges_To_Targets_Iterator
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (IGV_Id));
+         pragma Assert (Present (Vertex));
 
          return
            Edges_To_Targets_Iterator
-             (DG.Iterate_Outgoing_Edges (G.Graph, IGV_Id));
+             (DG.Iterate_Outgoing_Edges (G.Graph, Vertex));
       end Iterate_Edges_To_Targets;
 
       -------------------------------
@@ -638,7 +734,7 @@ package body Bindo.Graphs is
       begin
          pragma Assert (Present (G));
 
-         return Elaboration_Root_Iterator (ER.Iterate (G.Roots));
+         return Elaboration_Root_Iterator (IGV_Sets.Iterate (G.Roots));
       end Iterate_Elaboration_Roots;
 
       ----------
@@ -646,37 +742,30 @@ package body Bindo.Graphs is
       ----------
 
       function Kind
-        (G      : Invocation_Graph;
-         IGE_Id : Invocation_Graph_Edge_Id) return Invocation_Kind
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id) return Invocation_Kind
       is
-         pragma Assert (Present (G));
-         pragma Assert (Present (IGE_Id));
-
-         IR_Id : constant Invocation_Relation_Id := Relation (G, IGE_Id);
-
-         pragma Assert (Present (IR_Id));
-
-         IR_Rec : Invocation_Relation_Record renames
-                    Invocation_Relations.Table (IR_Id);
-
       begin
-         return IR_Rec.Kind;
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return Kind (Relation (G, Edge));
       end Kind;
 
-      ----------------
-      -- Lib_Vertex --
-      ----------------
+      ----------
+      -- Line --
+      ----------
 
-      function Lib_Vertex
+      function Line
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id) return Library_Graph_Vertex_Id
+         Vertex : Invocation_Graph_Vertex_Id) return Nat
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (IGV_Id));
+         pragma Assert (Present (Vertex));
 
-         return Get_IGV_Attributes (G, IGV_Id).Lib_Vertex;
-      end Lib_Vertex;
+         return Line (Signature (Construct (G, Vertex)));
+      end Line;
 
       ----------
       -- Name --
@@ -684,25 +773,13 @@ package body Bindo.Graphs is
 
       function Name
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id) return Name_Id
+         Vertex : Invocation_Graph_Vertex_Id) return Name_Id
       is
-         pragma Assert (Present (G));
-         pragma Assert (Present (IGV_Id));
-
-         IC_Id : constant Invocation_Construct_Id := Construct (G, IGV_Id);
-
-         pragma Assert (Present (IC_Id));
-
-         IC_Rec : Invocation_Construct_Record renames
-                    Invocation_Constructs.Table (IC_Id);
-
-         pragma Assert (Present (IC_Rec.Signature));
-
-         IS_Rec : Invocation_Signature_Record renames
-                    Invocation_Signatures.Table (IC_Rec.Signature);
-
       begin
-         return IS_Rec.Name;
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Name (Signature (Construct (G, Vertex)));
       end Name;
 
       ----------
@@ -710,11 +787,11 @@ package body Bindo.Graphs is
       ----------
 
       procedure Next
-        (Iter   : in out All_Edge_Iterator;
-         IGE_Id : out Invocation_Graph_Edge_Id)
+        (Iter : in out All_Edge_Iterator;
+         Edge : out Invocation_Graph_Edge_Id)
       is
       begin
-         DG.Next (DG.All_Edge_Iterator (Iter), IGE_Id);
+         DG.Next (DG.All_Edge_Iterator (Iter), Edge);
       end Next;
 
       ----------
@@ -723,10 +800,10 @@ package body Bindo.Graphs is
 
       procedure Next
         (Iter   : in out All_Vertex_Iterator;
-         IGV_Id : out Invocation_Graph_Vertex_Id)
+         Vertex : out Invocation_Graph_Vertex_Id)
       is
       begin
-         DG.Next (DG.All_Vertex_Iterator (Iter), IGV_Id);
+         DG.Next (DG.All_Vertex_Iterator (Iter), Vertex);
       end Next;
 
       ----------
@@ -734,11 +811,11 @@ package body Bindo.Graphs is
       ----------
 
       procedure Next
-        (Iter   : in out Edges_To_Targets_Iterator;
-         IGE_Id : out Invocation_Graph_Edge_Id)
+        (Iter : in out Edges_To_Targets_Iterator;
+         Edge : out Invocation_Graph_Edge_Id)
       is
       begin
-         DG.Next (DG.Outgoing_Edge_Iterator (Iter), IGE_Id);
+         DG.Next (DG.Outgoing_Edge_Iterator (Iter), Edge);
       end Next;
 
       ----------
@@ -750,7 +827,7 @@ package body Bindo.Graphs is
          Root : out Invocation_Graph_Vertex_Id)
       is
       begin
-         ER.Next (ER.Iterator (Iter), Root);
+         IGV_Sets.Next (IGV_Sets.Iterator (Iter), Root);
       end Next;
 
       ---------------------
@@ -770,13 +847,13 @@ package body Bindo.Graphs is
 
       function Number_Of_Edges_To_Targets
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id) return Natural
+         Vertex : Invocation_Graph_Vertex_Id) return Natural
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (IGV_Id));
+         pragma Assert (Present (Vertex));
 
-         return DG.Number_Of_Outgoing_Edges (G.Graph, IGV_Id);
+         return DG.Number_Of_Outgoing_Edges (G.Graph, Vertex);
       end Number_Of_Edges_To_Targets;
 
       ---------------------------------
@@ -789,7 +866,7 @@ package body Bindo.Graphs is
       begin
          pragma Assert (Present (G));
 
-         return ER.Size (G.Roots);
+         return IGV_Sets.Size (G.Roots);
       end Number_Of_Elaboration_Roots;
 
       ------------------------
@@ -817,14 +894,14 @@ package body Bindo.Graphs is
       --------------
 
       function Relation
-        (G      : Invocation_Graph;
-         IGE_Id : Invocation_Graph_Edge_Id) return Invocation_Relation_Id
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id) return Invocation_Relation_Id
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (IGE_Id));
+         pragma Assert (Present (Edge));
 
-         return Get_IGE_Attributes (G, IGE_Id).Relation;
+         return Get_IGE_Attributes (G, Edge).Relation;
       end Relation;
 
       ---------------------------
@@ -839,7 +916,7 @@ package body Bindo.Graphs is
          pragma Assert (Present (G));
          pragma Assert (Present (Root));
 
-         ER.Insert (G.Roots, Root);
+         IGV_Sets.Insert (G.Roots, Root);
       end Save_Elaboration_Root;
 
       ------------------------------
@@ -849,14 +926,14 @@ package body Bindo.Graphs is
       procedure Set_Corresponding_Vertex
         (G      : Invocation_Graph;
          IS_Id  : Invocation_Signature_Id;
-         IGV_Id : Invocation_Graph_Vertex_Id)
+         Vertex : Invocation_Graph_Vertex_Id)
       is
       begin
          pragma Assert (Present (G));
          pragma Assert (Present (IS_Id));
-         pragma Assert (Present (IGV_Id));
+         pragma Assert (Present (Vertex));
 
-         SV.Put (G.Signature_To_Vertex, IS_Id, IGV_Id);
+         Signature_Tables.Put (G.Signature_To_Vertex, IS_Id, Vertex);
       end Set_Corresponding_Vertex;
 
       --------------------------------------------
@@ -874,9 +951,9 @@ package body Bindo.Graphs is
          pragma Assert (Present (Rel.Target));
 
          if Val then
-            ST.Insert (G.Relations, Rel);
+            Relation_Sets.Insert (G.Relations, Rel);
          else
-            ST.Delete (G.Relations, Rel);
+            Relation_Sets.Delete (G.Relations, Rel);
          end if;
       end Set_Is_Existing_Source_Target_Relation;
 
@@ -885,15 +962,15 @@ package body Bindo.Graphs is
       ------------------------
 
       procedure Set_IGE_Attributes
-        (G      : Invocation_Graph;
-         IGE_Id : Invocation_Graph_Edge_Id;
-         Val    : Invocation_Graph_Edge_Attributes)
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id;
+         Val  : Invocation_Graph_Edge_Attributes)
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (IGE_Id));
+         pragma Assert (Present (Edge));
 
-         EA.Put (G.Edge_Attributes, IGE_Id, Val);
+         IGE_Tables.Put (G.Edge_Attributes, Edge, Val);
       end Set_IGE_Attributes;
 
       ------------------------
@@ -902,15 +979,30 @@ package body Bindo.Graphs is
 
       procedure Set_IGV_Attributes
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id;
+         Vertex : Invocation_Graph_Vertex_Id;
          Val    : Invocation_Graph_Vertex_Attributes)
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (IGV_Id));
+         pragma Assert (Present (Vertex));
 
-         VA.Put (G.Vertex_Attributes, IGV_Id, Val);
+         IGV_Tables.Put (G.Vertex_Attributes, Vertex, Val);
       end Set_IGV_Attributes;
+
+      -----------------
+      -- Spec_Vertex --
+      -----------------
+
+      function Spec_Vertex
+        (G      : Invocation_Graph;
+         Vertex : Invocation_Graph_Vertex_Id) return Library_Graph_Vertex_Id
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Get_IGV_Attributes (G, Vertex).Spec_Vertex;
+      end Spec_Vertex;
 
       ------------
       -- Target --
@@ -918,13 +1010,13 @@ package body Bindo.Graphs is
 
       function Target
         (G      : Invocation_Graph;
-         IGE_Id : Invocation_Graph_Edge_Id) return Invocation_Graph_Vertex_Id
+         Edge : Invocation_Graph_Edge_Id) return Invocation_Graph_Vertex_Id
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (IGE_Id));
+         pragma Assert (Present (Edge));
 
-         return DG.Destination_Vertex (G.Graph, IGE_Id);
+         return DG.Destination_Vertex (G.Graph, Edge);
       end Target;
    end Invocation_Graphs;
 
@@ -934,14 +1026,17 @@ package body Bindo.Graphs is
 
    package body Library_Graphs is
 
-      ---------------
-      -- Edge list --
-      ---------------
+      -----------
+      -- Types --
+      -----------
 
-      package EL is new Doubly_Linked_Lists
-        (Element_Type    => Library_Graph_Edge_Id,
-         "="             => "=",
-         Destroy_Element => Destroy_Library_Graph_Edge);
+      --  The following type represents the various kinds of precedence between
+      --  two items.
+
+      type Precedence_Kind is
+        (Lower_Precedence,
+         Equal_Precedence,
+         Higher_Precedence);
 
       -----------------------
       -- Local subprograms --
@@ -949,20 +1044,30 @@ package body Bindo.Graphs is
 
       procedure Add_Body_Before_Spec_Edge
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id;
-         Edges  : EL.Doubly_Linked_List);
+         Vertex : Library_Graph_Vertex_Id;
+         Edges  : LGE_Lists.Doubly_Linked_List);
       pragma Inline (Add_Body_Before_Spec_Edge);
-      --  Create a new edge in library graph G between vertex LGV_Id and its
+      --  Create a new edge in library graph G between vertex Vertex and its
       --  corresponding spec or body, where the body is a predecessor and the
       --  spec a successor. Add the edge to list Edges.
 
       procedure Add_Body_Before_Spec_Edges
         (G     : Library_Graph;
-         Edges : EL.Doubly_Linked_List);
+         Edges : LGE_Lists.Doubly_Linked_List);
       pragma Inline (Add_Body_Before_Spec_Edges);
       --  Create new edges in library graph G for all vertices and their
       --  corresponding specs or bodies, where the body is a predecessor
       --  and the spec is a successor. Add all edges to list Edges.
+
+      procedure Add_Cycle
+        (G      : Library_Graph;
+         Attrs  : Library_Graph_Cycle_Attributes;
+         Indent : Indentation_Level);
+      pragma Inline (Add_Cycle);
+      --  Store a cycle described by attribytes Attrs in library graph G,
+      --  unless a prior rotation of it already exists. The edges of the cycle
+      --  must be in normalized form. Indent is the desired indentation level
+      --  for tracing.
 
       function Add_Edge_With_Return
         (G    : Library_Graph;
@@ -975,6 +1080,38 @@ package body Bindo.Graphs is
       --  nature of the edge. If Pred and Succ are already related, no edge
       --  is created and No_Library_Graph_Edge is returned.
 
+      procedure Add_Vertex_And_Complement
+        (G             : Library_Graph;
+         Vertex        : Library_Graph_Vertex_Id;
+         Set           : LGV_Sets.Membership_Set;
+         Do_Complement : Boolean);
+      pragma Inline (Add_Vertex_And_Complement);
+      --  Add vertex Vertex of library graph G to set Set. If the vertex is
+      --  part of an Elaborate_Body pair, or flag Do_Complement is set, add
+      --  the complementary vertex to the set.
+
+      function Complementary_Vertex
+        (G             : Library_Graph;
+         Vertex        : Library_Graph_Vertex_Id;
+         Do_Complement : Boolean) return Library_Graph_Vertex_Id;
+      pragma Inline (Complementary_Vertex);
+      --  If vertex Vertex of library graph G is part of an Elaborate_Body
+      --  pair, or flag Do_Complement is set, return the spec when Vertex is
+      --  a body, the body when Vertex is a spec, or No_Library_Graph_Vertex.
+
+      function Copy_Cycle_Path
+        (Cycle_Path : LGE_Lists.Doubly_Linked_List)
+         return LGE_Lists.Doubly_Linked_List;
+      pragma Inline (Copy_Cycle_Path);
+      --  Create a deep copy of list Cycle_Path
+
+      function Cycle_Kind_Of
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Library_Graph_Cycle_Kind;
+      pragma Inline (Cycle_Kind_Of);
+      --  Determine the cycle kind of edge Edge of library graph G if the edge
+      --  participated in a circuit.
+
       procedure Decrement_Library_Graph_Edge_Count
         (G    : Library_Graph;
          Kind : Library_Graph_Edge_Kind);
@@ -983,7 +1120,7 @@ package body Bindo.Graphs is
 
       procedure Delete_Body_Before_Spec_Edges
         (G     : Library_Graph;
-         Edges : EL.Doubly_Linked_List);
+         Edges : LGE_Lists.Doubly_Linked_List);
       pragma Inline (Delete_Body_Before_Spec_Edges);
       --  Delete all edges in list Edges from library graph G, that link spec
       --  and bodies, where the body acts as the predecessor and the spec as a
@@ -991,9 +1128,52 @@ package body Bindo.Graphs is
 
       procedure Delete_Edge
         (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id);
+         Edge : Library_Graph_Edge_Id);
       pragma Inline (Delete_Edge);
-      --  Delete edge LGE_Id from library graph G
+      --  Delete edge Edge from library graph G
+
+      procedure Find_All_Cycles_Through_Vertex
+        (G                      : Library_Graph;
+         Vertex                 : Library_Graph_Vertex_Id;
+         End_Vertices           : LGV_Sets.Membership_Set;
+         Most_Significant_Edge  : Library_Graph_Edge_Id;
+         Invocation_Edge_Count  : Natural;
+         Spec_And_Body_Together : Boolean;
+         Cycle_Path             : LGE_Lists.Doubly_Linked_List;
+         Visited_Vertices       : LGV_Sets.Membership_Set;
+         Indent                 : Indentation_Level);
+      pragma Inline (Find_All_Cycles_Through_Vertex);
+      --  Explore all edges to successors of vertex Vertex of library graph G
+      --  in an attempt to find a cycle. A cycle is considered closed when the
+      --  Vertex appears in set End_Vertices. Most_Significant_Edge denotes the
+      --  edge with the highest significance along the candidate cycle path.
+      --  Invocation_Edge_Count denotes the number of invocation edges along
+      --  the candidate cycle path. Spec_And_Body_Together should be set when
+      --  spec and body vertices must be treated as one vertex. Cycle_Path is
+      --  the candidate cycle path. Visited_Vertices denotes the set of visited
+      --  vertices so far. Indent is the desired indentation level for tracing.
+
+      procedure Find_All_Cycles_With_Edge
+        (G                      : Library_Graph;
+         Initial_Edge           : Library_Graph_Edge_Id;
+         Spec_And_Body_Together : Boolean;
+         Cycle_Path             : LGE_Lists.Doubly_Linked_List;
+         Visited_Vertices       : LGV_Sets.Membership_Set;
+         Indent                 : Indentation_Level);
+      pragma Inline (Find_All_Cycles_With_Edge);
+      --  Find all cycles which contain edge Initial_Edge of library graph G.
+      --  Spec_And_Body_Together should be set when spec and body vertices must
+      --  be treated as one vertex. Cycle_Path is the candidate cycle path.
+      --  Visited_Vertices is the set of visited vertices so far. Indent is
+      --  the desired indentation level for tracing.
+
+      function Find_First_Lower_Precedence_Cycle
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) return Library_Graph_Cycle_Id;
+      pragma Inline (Find_First_Lower_Precedence_Cycle);
+      --  Inspect the list of cycles of library graph G and return the first
+      --  cycle whose precedence is lower than that of cycle Cycle. If there
+      --  is no such cycle, return No_Library_Graph_Cycle.
 
       procedure Free is
         new Ada.Unchecked_Deallocation
@@ -1005,26 +1185,40 @@ package body Bindo.Graphs is
       pragma Inline (Get_Component_Attributes);
       --  Obtain the attributes of component Comp of library graph G
 
+      function Get_LGC_Attributes
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) return Library_Graph_Cycle_Attributes;
+      pragma Inline (Get_LGC_Attributes);
+      --  Obtain the attributes of cycle Cycle of library graph G
+
       function Get_LGE_Attributes
-        (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id)
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id)
          return Library_Graph_Edge_Attributes;
       pragma Inline (Get_LGE_Attributes);
-      --  Obtain the attributes of edge LGE_Id of library graph G
+      --  Obtain the attributes of edge Edge of library graph G
 
       function Get_LGV_Attributes
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id)
+         Vertex : Library_Graph_Vertex_Id)
          return Library_Graph_Vertex_Attributes;
       pragma Inline (Get_LGV_Attributes);
-      --  Obtain the attributes of vertex LGE_Id of library graph G
+      --  Obtain the attributes of vertex Edge of library graph G
 
       function Has_Elaborate_Body
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Boolean;
+         Vertex : Library_Graph_Vertex_Id) return Boolean;
       pragma Inline (Has_Elaborate_Body);
-      --  Determine whether vertex LGV_Id of library graph G is subject to
+      --  Determine whether vertex Vertex of library graph G is subject to
       --  pragma Elaborate_Body.
+
+      function Highest_Precedence_Edge
+        (G     : Library_Graph;
+         Left  : Library_Graph_Edge_Id;
+         Right : Library_Graph_Edge_Id) return Library_Graph_Edge_Id;
+      pragma Inline (Highest_Precedence_Edge);
+      --  Return the edge with highest precedence among edges Left and Right of
+      --  library graph G.
 
       procedure Increment_Library_Graph_Edge_Count
         (G    : Library_Graph;
@@ -1041,9 +1235,9 @@ package body Bindo.Graphs is
 
       procedure Increment_Pending_Predecessors
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id);
+         Vertex : Library_Graph_Vertex_Id);
       pragma Inline (Increment_Pending_Predecessors);
-      --  Increment the number of pending precedessors vertex LGV_Id of library
+      --  Increment the number of pending precedessors vertex Vertex of library
       --  graph G must wait on before it can be elaborated by one.
 
       procedure Initialize_Components (G : Library_Graph);
@@ -1051,20 +1245,174 @@ package body Bindo.Graphs is
       --  Initialize on the initial call or re-initialize on subsequent calls
       --  all components of library graph G.
 
+      procedure Insert_And_Sort
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id);
+      pragma Inline (Insert_And_Sort);
+      --  Insert cycle Cycle in library graph G and sort it based on its
+      --  precedence relative to all recorded cycles.
+
+      function Is_Cycle_Initiating_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean;
+      pragma Inline (Is_Cycle_Initiating_Edge);
+      --  Determine whether edge Edge of library graph G starts a cycle
+
+      function Is_Cyclic_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean;
+      pragma Inline (Is_Cyclic_Edge);
+      --  Determine whether edge Edge of library graph G participates in a
+      --  cycle.
+
+      function Is_Cyclic_Elaborate_All_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean;
+      pragma Inline (Is_Cyclic_Elaborate_All_Edge);
+      --  Determine whether edge Edge of library graph G participates in a
+      --  cycle and has a predecessor that is subject to pragma Elaborate_All.
+
+      function Is_Cyclic_Elaborate_Body_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean;
+      pragma Inline (Is_Cyclic_Elaborate_Body_Edge);
+      --  Determine whether edge Edge of library graph G participates in a
+      --  cycle and has a successor that is either a spec subject to pragma
+      --  Elaborate_Body, or a body that completes such a spec.
+
+      function Is_Cyclic_Elaborate_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean;
+      pragma Inline (Is_Cyclic_Elaborate_Edge);
+      --  Determine whether edge Edge of library graph G participates in a
+      --  cycle and has a predecessor that is subject to pragma Elaborate.
+
+      function Is_Cyclic_Forced_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean;
+      pragma Inline (Is_Cyclic_Forced_Edge);
+      --  Determine whether edge Edge of library graph G participates in a
+      --  cycle and came from the forced-elaboration-order file.
+
+      function Is_Cyclic_Invocation_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean;
+      pragma Inline (Is_Cyclic_Invocation_Edge);
+      --  Determine whether edge Edge of library graph G participates in a
+      --  cycle and came from the traversal of the invocation graph.
+
+      function Is_Cyclic_With_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean;
+      pragma Inline (Is_Cyclic_With_Edge);
+      --  Determine whether edge Edge of library graph G participates in a
+      --  cycle and is the result of awith dependency between its successor
+      --  and predecessor.
+
       function Is_Elaborable_Vertex
         (G            : Library_Graph;
-         LGV_Id       : Library_Graph_Vertex_Id;
+         Vertex       : Library_Graph_Vertex_Id;
          Predecessors : Natural) return Boolean;
       pragma Inline (Is_Elaborable_Vertex);
-      --  Determine whether vertex LGV_Id of library graph G can be elaborated
+      --  Determine whether vertex Vertex of library graph G can be elaborated
       --  given that it meets number of predecessors Predecessors.
 
-      function Is_Existing_Predecessor_Successor_Relation
+      function Is_Recorded_Cycle
+        (G     : Library_Graph;
+         Attrs : Library_Graph_Cycle_Attributes) return Boolean;
+      pragma Inline (Is_Recorded_Cycle);
+      --  Determine whether a cycle desctibed by its attributes Attrs has
+      --  has already been recorded in library graph G.
+
+      function Is_Recorded_Edge
         (G   : Library_Graph;
          Rel : Predecessor_Successor_Relation) return Boolean;
-      pragma Inline (Is_Existing_Predecessor_Successor_Relation);
+      pragma Inline (Is_Recorded_Edge);
       --  Determine whether a predecessor vertex and a successor vertex
-      --  desctibed by relation Rel are already related in library graph G.
+      --  desctibed by relation Rel are already linked in library graph G.
+
+      function Links_Vertices_In_Same_Component
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean;
+      pragma Inline (Links_Vertices_In_Same_Component);
+      --  Determine whether edge Edge of library graph G links a predecessor
+      --  and successor that reside in the same component.
+
+      function Maximum_Invocation_Edge_Count
+        (G     : Library_Graph;
+         Edge  : Library_Graph_Edge_Id;
+         Count : Natural) return Natural;
+      pragma Inline (Maximum_Invocation_Edge_Count);
+      --  Determine whether edge Edge of library graph G is an invocation edge,
+      --  and if it is return Count + 1, otherwise return Count.
+
+      procedure Normalize_And_Add_Cycle
+        (G                     : Library_Graph;
+         Most_Significant_Edge : Library_Graph_Edge_Id;
+         Invocation_Edge_Count : Natural;
+         Cycle_Path            : LGE_Lists.Doubly_Linked_List;
+         Indent                : Indentation_Level);
+      pragma Inline (Normalize_And_Add_Cycle);
+      --  Normalize a cycle described by its path Cycle_Path and add it to
+      --  library graph G. Most_Significant_Edge denotes the edge with the
+      --  highest significance along the cycle path. Invocation_Edge_Count
+      --  denotes the number of invocation edges along the cycle path. Indent
+      --  is the desired indentation level for tracing.
+
+      procedure Normalize_Cycle_Path
+        (Cycle_Path            : LGE_Lists.Doubly_Linked_List;
+         Most_Significant_Edge : Library_Graph_Edge_Id);
+      pragma Inline (Normalize_Cycle_Path);
+      --  Normalize cycle path Path by rotating it until its starting edge is
+      --  Sig_Edge.
+
+      function Path
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) return LGE_Lists.Doubly_Linked_List;
+      pragma Inline (Path);
+      --  Obtain the path of edges which comprises cycle Cycle of library
+      --  graph G.
+
+      function Precedence
+        (G           : Library_Graph;
+         Cycle       : Library_Graph_Cycle_Id;
+         Compared_To : Library_Graph_Cycle_Id) return Precedence_Kind;
+      pragma Inline (Precedence);
+      --  Determine the precedence of cycle Cycle of library graph G compared
+      --  to cycle Compared_To.
+
+      function Precedence
+        (Kind        : Library_Graph_Cycle_Kind;
+         Compared_To : Library_Graph_Cycle_Kind) return Precedence_Kind;
+      pragma Inline (Precedence);
+      --  Determine the precedence of cycle kind Kind compared to cycle kind
+      --  Compared_To.
+
+      function Precedence
+        (G           : Library_Graph;
+         Edge        : Library_Graph_Edge_Id;
+         Compared_To : Library_Graph_Edge_Id) return Precedence_Kind;
+      pragma Inline (Precedence);
+      --  Determine the precedence of edge Edge of library graph G compared to
+      --  edge Compared_To.
+
+      function Precedence
+        (G           : Library_Graph;
+         Vertex      : Library_Graph_Vertex_Id;
+         Compared_To : Library_Graph_Vertex_Id) return Precedence_Kind;
+      pragma Inline (Precedence);
+      --  Determine the precedence of vertex Vertex of library graph G compared
+      --  to vertex Compared_To.
+
+      procedure Remove_Vertex_And_Complement
+        (G             : Library_Graph;
+         Vertex        : Library_Graph_Vertex_Id;
+         Set           : LGV_Sets.Membership_Set;
+         Do_Complement : Boolean);
+      pragma Inline (Remove_Vertex_And_Complement);
+      --  Remove vertex Vertex of library graph G from set Set. If the vertex
+      --  is part of an Elaborate_Body pair, or Do_Complement is set, remove
+      --  the complementary vertex from the set.
 
       procedure Set_Component_Attributes
         (G    : Library_Graph;
@@ -1080,27 +1428,70 @@ package body Bindo.Graphs is
       pragma Inline (Set_Corresponding_Vertex);
       --  Associate vertex Val of library graph G with unit U_Id
 
-      procedure Set_Is_Existing_Predecessor_Successor_Relation
+      procedure Set_Is_Recorded_Cycle
+        (G     : Library_Graph;
+         Attrs : Library_Graph_Cycle_Attributes;
+         Val   : Boolean := True);
+      pragma Inline (Set_Is_Recorded_Cycle);
+      --  Mark a cycle described by its attributes Attrs as recorded in library
+      --  graph G depending on value Val.
+
+      procedure Set_Is_Recorded_Edge
         (G   : Library_Graph;
          Rel : Predecessor_Successor_Relation;
          Val : Boolean := True);
-      pragma Inline (Set_Is_Existing_Predecessor_Successor_Relation);
-      --  Mark a a predecessor vertex and a successor vertex desctibed by
-      --  relation Rel as already related depending on value Val.
+      pragma Inline (Set_Is_Recorded_Edge);
+      --  Mark a predecessor vertex and a successor vertex desctibed by
+      --  relation Rel as already linked depending on value Val.
+
+      procedure Set_LGC_Attributes
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id;
+         Val   : Library_Graph_Cycle_Attributes);
+      pragma Inline (Set_LGC_Attributes);
+      --  Set the attributes of cycle Cycle of library graph G to value Val
 
       procedure Set_LGE_Attributes
-        (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id;
-         Val    : Library_Graph_Edge_Attributes);
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id;
+         Val  : Library_Graph_Edge_Attributes);
       pragma Inline (Set_LGE_Attributes);
-      --  Set the attributes of edge LGE_Id of library graph G to value Val
+      --  Set the attributes of edge Edge of library graph G to value Val
 
       procedure Set_LGV_Attributes
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id;
+         Vertex : Library_Graph_Vertex_Id;
          Val    : Library_Graph_Vertex_Attributes);
       pragma Inline (Set_LGV_Attributes);
-      --  Set the attributes of vertex LGV_Id of library graph G to value Val
+      --  Set the attributes of vertex Vertex of library graph G to value Val
+
+      procedure Trace_Cycle
+        (G      : Library_Graph;
+         Cycle  : Library_Graph_Cycle_Id;
+         Indent : Indentation_Level);
+      pragma Inline (Trace_Cycle);
+      --  Write the contents of cycle Cycle of library graph G to standard
+      --  output. Indent is the desired indentation level for tracing.
+
+      procedure Trace_Edge
+        (G      : Library_Graph;
+         Edge   : Library_Graph_Edge_Id;
+         Indent : Indentation_Level);
+      pragma Inline (Trace_Edge);
+      --  Write the contents of edge Edge of library graph G to standard
+      --  output. Indent is the desired indentation level for tracing.
+
+      procedure Trace_Eol;
+      pragma Inline (Trace_Eol);
+      --  Write an end-of-line to standard output
+
+      procedure Trace_Vertex
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id;
+         Indent : Indentation_Level);
+      pragma Inline (Trace_Vertex);
+      --  Write the contents of vertex Vertex of library graph G to standard
+      --  output. Indent is the desired indentation level for tracing.
 
       procedure Update_Pending_Predecessors_Of_Components (G : Library_Graph);
       pragma Inline (Update_Pending_Predecessors_Of_Components);
@@ -1108,8 +1499,8 @@ package body Bindo.Graphs is
       --  graph G must wait on before they can be elaborated.
 
       procedure Update_Pending_Predecessors_Of_Components
-        (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id);
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id);
       pragma Inline (Update_Pending_Predecessors_Of_Components);
       --  Update the number of pending predecessors the component of edge
       --  LGE_Is's successor vertex of library graph G must wait on before
@@ -1121,15 +1512,15 @@ package body Bindo.Graphs is
 
       procedure Add_Body_Before_Spec_Edge
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id;
-         Edges  : EL.Doubly_Linked_List)
+         Vertex : Library_Graph_Vertex_Id;
+         Edges  : LGE_Lists.Doubly_Linked_List)
       is
-         LGE_Id : Library_Graph_Edge_Id;
+         Edge : Library_Graph_Edge_Id;
 
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
-         pragma Assert (EL.Present (Edges));
+         pragma Assert (Present (Vertex));
+         pragma Assert (LGE_Lists.Present (Edges));
 
          --  A vertex requires a special Body_Before_Spec edge to its
          --  Corresponging_Item when it either denotes a
@@ -1150,31 +1541,31 @@ package body Bindo.Graphs is
 
          --  Assume that that no Body_Before_Spec is necessary
 
-         LGE_Id := No_Library_Graph_Edge;
+         Edge := No_Library_Graph_Edge;
 
          --  A body that completes a previous spec
 
-         if Is_Body_With_Spec (G, LGV_Id) then
-            LGE_Id :=
+         if Is_Body_With_Spec (G, Vertex) then
+            Edge :=
               Add_Edge_With_Return
                 (G    => G,
-                 Pred => LGV_Id,                           --  body
-                 Succ => Corresponding_Item (G, LGV_Id),   --  spec
+                 Pred => Vertex,                           --  body
+                 Succ => Corresponding_Item (G, Vertex),   --  spec
                  Kind => Body_Before_Spec_Edge);
 
          --  A spec with a completing body
 
-         elsif Is_Spec_With_Body (G, LGV_Id) then
-            LGE_Id :=
+         elsif Is_Spec_With_Body (G, Vertex) then
+            Edge :=
               Add_Edge_With_Return
                 (G    => G,
-                 Pred => Corresponding_Item (G, LGV_Id),   --  body
-                 Succ => LGV_Id,                           --  spec
+                 Pred => Corresponding_Item (G, Vertex),   --  body
+                 Succ => Vertex,                           --  spec
                  Kind => Body_Before_Spec_Edge);
          end if;
 
-         if Present (LGE_Id) then
-            EL.Append (Edges, LGE_Id);
+         if Present (Edge) then
+            LGE_Lists.Append (Edges, Edge);
          end if;
       end Add_Body_Before_Spec_Edge;
 
@@ -1184,26 +1575,63 @@ package body Bindo.Graphs is
 
       procedure Add_Body_Before_Spec_Edges
         (G     : Library_Graph;
-         Edges : EL.Doubly_Linked_List)
+         Edges : LGE_Lists.Doubly_Linked_List)
       is
-         Iter   : Elaborable_Units_Iterator;
-         LGV_Id : Library_Graph_Vertex_Id;
-         U_Id   : Unit_Id;
+         Iter : Elaborable_Units_Iterator;
+         U_Id : Unit_Id;
 
       begin
          pragma Assert (Present (G));
-         pragma Assert (EL.Present (Edges));
+         pragma Assert (LGE_Lists.Present (Edges));
 
          Iter := Iterate_Elaborable_Units;
          while Has_Next (Iter) loop
             Next (Iter, U_Id);
 
-            LGV_Id := Corresponding_Vertex (G, U_Id);
-            pragma Assert (Present (LGV_Id));
-
-            Add_Body_Before_Spec_Edge (G, LGV_Id, Edges);
+            Add_Body_Before_Spec_Edge
+              (G      => G,
+               Vertex => Corresponding_Vertex (G, U_Id),
+               Edges  => Edges);
          end loop;
       end Add_Body_Before_Spec_Edges;
+
+      ---------------
+      -- Add_Cycle --
+      ---------------
+
+      procedure Add_Cycle
+        (G      : Library_Graph;
+         Attrs  : Library_Graph_Cycle_Attributes;
+         Indent : Indentation_Level)
+      is
+         Cycle : Library_Graph_Cycle_Id;
+
+      begin
+         pragma Assert (Present (G));
+
+         --  Nothing to do when the cycle has already been recorded, possibly
+         --  in a rotated form.
+
+         if Is_Recorded_Cycle (G, Attrs) then
+            return;
+         end if;
+
+         --  Mark the cycle as recorded. This prevents further attempts to add
+         --  rotations of the same cycle.
+
+         Set_Is_Recorded_Cycle (G, Attrs);
+
+         --  Save the attributes of the cycle
+
+         Cycle := Sequence_Next_Cycle;
+         Set_LGC_Attributes (G, Cycle, Attrs);
+
+         Trace_Cycle (G, Cycle, Indent);
+
+         --  Insert the cycle in the list of all cycle based on its precedence
+
+         Insert_And_Sort (G, Cycle);
+      end Add_Cycle;
 
       --------------
       -- Add_Edge --
@@ -1215,8 +1643,8 @@ package body Bindo.Graphs is
          Succ : Library_Graph_Vertex_Id;
          Kind : Library_Graph_Edge_Kind)
       is
-         LGE_Id : Library_Graph_Edge_Id;
-         pragma Unreferenced (LGE_Id);
+         Edge : Library_Graph_Edge_Id;
+         pragma Unreferenced (Edge);
 
       begin
          pragma Assert (Present (G));
@@ -1224,7 +1652,7 @@ package body Bindo.Graphs is
          pragma Assert (Present (Succ));
          pragma Assert (Kind /= No_Edge);
 
-         LGE_Id :=
+         Edge :=
            Add_Edge_With_Return
              (G    => G,
               Pred => Pred,
@@ -1251,17 +1679,17 @@ package body Bindo.Graphs is
                  (Predecessor => Pred,
                   Successor   => Succ);
 
-         LGE_Id : Library_Graph_Edge_Id;
+         Edge : Library_Graph_Edge_Id;
 
       begin
          --  Nothing to do when the predecessor and successor are already
          --  related by an edge.
 
-         if Is_Existing_Predecessor_Successor_Relation (G, Rel) then
+         if Is_Recorded_Edge (G, Rel) then
             return No_Library_Graph_Edge;
          end if;
 
-         LGE_Id := Sequence_Next_LGE_Id;
+         Edge := Sequence_Next_Edge;
 
          --  Add the edge to the underlying graph. Note that the predecessor
          --  is the source of the edge because it will later need to notify
@@ -1269,22 +1697,22 @@ package body Bindo.Graphs is
 
          DG.Add_Edge
            (G           => G.Graph,
-            E           => LGE_Id,
+            E           => Edge,
             Source      => Pred,
             Destination => Succ);
 
          --  Construct and save the attributes of the edge
 
          Set_LGE_Attributes
-           (G      => G,
-            LGE_Id => LGE_Id,
-            Val    => (Kind => Kind));
+           (G    => G,
+            Edge => Edge,
+            Val  => (Kind => Kind));
 
          --  Mark the predecessor and successor as related by the new edge.
          --  This prevents all further attempts to link the same predecessor
          --  and successor.
 
-         Set_Is_Existing_Predecessor_Successor_Relation (G, Rel);
+         Set_Is_Recorded_Edge (G, Rel);
 
          --  Update the number of pending predecessors the successor must wait
          --  on before it is elaborated.
@@ -1295,7 +1723,7 @@ package body Bindo.Graphs is
 
          Increment_Library_Graph_Edge_Count (G, Kind);
 
-         return LGE_Id;
+         return Edge;
       end Add_Edge_With_Return;
 
       ----------------
@@ -1306,7 +1734,7 @@ package body Bindo.Graphs is
         (G    : Library_Graph;
          U_Id : Unit_Id)
       is
-         LGV_Id : Library_Graph_Vertex_Id;
+         Vertex : Library_Graph_Vertex_Id;
 
       begin
          pragma Assert (Present (G));
@@ -1318,17 +1746,17 @@ package body Bindo.Graphs is
             return;
          end if;
 
-         LGV_Id := Sequence_Next_LGV_Id;
+         Vertex := Sequence_Next_Vertex;
 
          --  Add the vertex to the underlying graph
 
-         DG.Add_Vertex (G.Graph, LGV_Id);
+         DG.Add_Vertex (G.Graph, Vertex);
 
          --  Construct and save the attributes of the vertex
 
          Set_LGV_Attributes
            (G      => G,
-            LGV_Id => LGV_Id,
+            Vertex => Vertex,
             Val    => (Corresponding_Item   => No_Library_Graph_Vertex,
                        In_Elaboration_Order => False,
                        Pending_Predecessors => 0,
@@ -1336,8 +1764,76 @@ package body Bindo.Graphs is
 
          --  Associate the unit with its corresponding vertex
 
-         Set_Corresponding_Vertex (G, U_Id, LGV_Id);
+         Set_Corresponding_Vertex (G, U_Id, Vertex);
       end Add_Vertex;
+
+      -------------------------------
+      -- Add_Vertex_And_Complement --
+      -------------------------------
+
+      procedure Add_Vertex_And_Complement
+        (G             : Library_Graph;
+         Vertex        : Library_Graph_Vertex_Id;
+         Set           : LGV_Sets.Membership_Set;
+         Do_Complement : Boolean)
+      is
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+         pragma Assert (LGV_Sets.Present (Set));
+
+         Complement : constant Library_Graph_Vertex_Id :=
+                        Complementary_Vertex
+                          (G             => G,
+                           Vertex        => Vertex,
+                           Do_Complement => Do_Complement);
+
+      begin
+         LGV_Sets.Insert (Set, Vertex);
+
+         if Present (Complement) then
+            LGV_Sets.Insert (Set, Complement);
+         end if;
+      end Add_Vertex_And_Complement;
+
+      --------------------------
+      -- Complementary_Vertex --
+      --------------------------
+
+      function Complementary_Vertex
+        (G             : Library_Graph;
+         Vertex        : Library_Graph_Vertex_Id;
+         Do_Complement : Boolean) return Library_Graph_Vertex_Id
+      is
+         Complement : Library_Graph_Vertex_Id;
+
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         --  Assume that there is no complementary vertex
+
+         Complement := No_Library_Graph_Vertex;
+
+         --  The caller requests the complement explicitly
+
+         if Do_Complement then
+            Complement := Corresponding_Item (G, Vertex);
+
+         --  The vertex is a completing body of a spec subject to pragma
+         --  Elaborate_Body. The complementary vertex is the spec.
+
+         elsif Is_Body_Of_Spec_With_Elaborate_Body (G, Vertex) then
+            Complement := Proper_Spec (G, Vertex);
+
+         --  The vertex is a spec subject to pragma Elaborate_Body. The
+         --  complementary vertex is the body.
+
+         elsif Is_Spec_With_Elaborate_Body (G, Vertex) then
+            Complement := Proper_Body (G, Vertex);
+         end if;
+
+         return Complement;
+      end Complementary_Vertex;
 
       ---------------
       -- Component --
@@ -1345,14 +1841,40 @@ package body Bindo.Graphs is
 
       function Component
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Component_Id
+         Vertex : Library_Graph_Vertex_Id) return Component_Id
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         return DG.Component (G.Graph, LGV_Id);
+         return DG.Component (G.Graph, Vertex);
       end Component;
+
+      ---------------------
+      -- Copy_Cycle_Path --
+      ---------------------
+
+      function Copy_Cycle_Path
+        (Cycle_Path : LGE_Lists.Doubly_Linked_List)
+         return LGE_Lists.Doubly_Linked_List
+      is
+         Edge : Library_Graph_Edge_Id;
+         Iter : LGE_Lists.Iterator;
+         Path : LGE_Lists.Doubly_Linked_List;
+
+      begin
+         pragma Assert (LGE_Lists.Present (Cycle_Path));
+
+         Path := LGE_Lists.Create;
+         Iter := LGE_Lists.Iterate (Cycle_Path);
+         while LGE_Lists.Has_Next (Iter) loop
+            LGE_Lists.Next (Iter, Edge);
+
+            LGE_Lists.Append (Path, Edge);
+         end loop;
+
+         return Path;
+      end Copy_Cycle_Path;
 
       ------------------------
       -- Corresponding_Item --
@@ -1360,13 +1882,13 @@ package body Bindo.Graphs is
 
       function Corresponding_Item
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Library_Graph_Vertex_Id
+         Vertex : Library_Graph_Vertex_Id) return Library_Graph_Vertex_Id
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         return Get_LGV_Attributes (G, LGV_Id).Corresponding_Item;
+         return Get_LGV_Attributes (G, Vertex).Corresponding_Item;
       end Corresponding_Item;
 
       --------------------------
@@ -1381,7 +1903,7 @@ package body Bindo.Graphs is
          pragma Assert (Present (G));
          pragma Assert (Present (U_Id));
 
-         return UV.Get (G.Unit_To_Vertex, U_Id);
+         return Unit_Tables.Get (G.Unit_To_Vertex, U_Id);
       end Corresponding_Vertex;
 
       ------------
@@ -1389,24 +1911,62 @@ package body Bindo.Graphs is
       ------------
 
       function Create
-        (Initial_Vertices : Positive;
-         Initial_Edges    : Positive) return Library_Graph
+        (Initial_Vertices       : Positive;
+         Initial_Edges          : Positive;
+         Dynamically_Elaborated : Boolean) return Library_Graph
       is
          G : constant Library_Graph := new Library_Graph_Attributes;
 
       begin
-         G.Component_Attributes := CA.Create (Initial_Vertices);
-         G.Edge_Attributes      := EA.Create (Initial_Edges);
+         G.Dynamically_Elaborated := Dynamically_Elaborated;
+
+         G.Component_Attributes := Component_Tables.Create (Initial_Vertices);
+         G.Cycle_Attributes     := LGC_Tables.Create       (Initial_Vertices);
+         G.Cycles               := LGC_Lists.Create;
+         G.Edge_Attributes      := LGE_Tables.Create       (Initial_Edges);
          G.Graph                :=
            DG.Create
              (Initial_Vertices => Initial_Vertices,
               Initial_Edges    => Initial_Edges);
-         G.Relations            := PS.Create (Initial_Edges);
-         G.Unit_To_Vertex       := UV.Create (Initial_Vertices);
-         G.Vertex_Attributes    := VA.Create (Initial_Vertices);
+         G.Recorded_Cycles      := RC_Sets.Create          (Initial_Vertices);
+         G.Recorded_Edges       := RE_Sets.Create          (Initial_Edges);
+         G.Unit_To_Vertex       := Unit_Tables.Create      (Initial_Vertices);
+         G.Vertex_Attributes    := LGV_Tables.Create       (Initial_Vertices);
 
          return G;
       end Create;
+
+      -------------------
+      -- Cycle_Kind_Of --
+      -------------------
+
+      function Cycle_Kind_Of
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Library_Graph_Cycle_Kind
+      is
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+      begin
+         if Is_Cyclic_Elaborate_All_Edge (G, Edge) then
+            return Elaborate_All_Cycle;
+
+         elsif Is_Cyclic_Elaborate_Body_Edge (G, Edge) then
+            return Elaborate_Body_Cycle;
+
+         elsif Is_Cyclic_Elaborate_Edge (G, Edge) then
+            return Elaborate_Cycle;
+
+         elsif Is_Cyclic_Forced_Edge (G, Edge) then
+            return Forced_Cycle;
+
+         elsif Is_Cyclic_Invocation_Edge (G, Edge) then
+            return Invocation_Cycle;
+
+         else
+            return No_Cycle_Kind;
+         end if;
+      end Cycle_Kind_Of;
 
       ----------------------------------------
       -- Decrement_Library_Graph_Edge_Count --
@@ -1449,17 +2009,17 @@ package body Bindo.Graphs is
 
       procedure Decrement_Pending_Predecessors
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id)
+         Vertex : Library_Graph_Vertex_Id)
       is
          Attrs : Library_Graph_Vertex_Attributes;
 
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         Attrs := Get_LGV_Attributes (G, LGV_Id);
+         Attrs := Get_LGV_Attributes (G, Vertex);
          Attrs.Pending_Predecessors := Attrs.Pending_Predecessors - 1;
-         Set_LGV_Attributes (G, LGV_Id, Attrs);
+         Set_LGV_Attributes (G, Vertex, Attrs);
       end Decrement_Pending_Predecessors;
 
       -----------------------------------
@@ -1468,22 +2028,21 @@ package body Bindo.Graphs is
 
       procedure Delete_Body_Before_Spec_Edges
         (G     : Library_Graph;
-         Edges : EL.Doubly_Linked_List)
+         Edges : LGE_Lists.Doubly_Linked_List)
       is
-         Iter   : EL.Iterator;
-         LGE_Id : Library_Graph_Edge_Id;
+         Edge : Library_Graph_Edge_Id;
+         Iter : LGE_Lists.Iterator;
 
       begin
          pragma Assert (Present (G));
-         pragma Assert (EL.Present (Edges));
+         pragma Assert (LGE_Lists.Present (Edges));
 
-         Iter := EL.Iterate (Edges);
-         while EL.Has_Next (Iter) loop
-            EL.Next (Iter, LGE_Id);
-            pragma Assert (Present (LGE_Id));
-            pragma Assert (Kind (G, LGE_Id) = Body_Before_Spec_Edge);
+         Iter := LGE_Lists.Iterate (Edges);
+         while LGE_Lists.Has_Next (Iter) loop
+            LGE_Lists.Next (Iter, Edge);
+            pragma Assert (Kind (G, Edge) = Body_Before_Spec_Edge);
 
-            Delete_Edge (G, LGE_Id);
+            Delete_Edge (G, Edge);
          end loop;
       end Delete_Body_Before_Spec_Edges;
 
@@ -1492,26 +2051,22 @@ package body Bindo.Graphs is
       -----------------
 
       procedure Delete_Edge
-        (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id)
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id)
       is
          pragma Assert (Present (G));
-         pragma Assert (Present (LGE_Id));
+         pragma Assert (Present (Edge));
 
-         Pred : constant Library_Graph_Vertex_Id := Predecessor (G, LGE_Id);
-         Succ : constant Library_Graph_Vertex_Id := Successor   (G, LGE_Id);
-
-         pragma Assert (Present (Pred));
-         pragma Assert (Present (Succ));
-
-         Rel : constant Predecessor_Successor_Relation :=
-                 (Predecessor => Pred,
-                  Successor   => Succ);
+         Pred : constant Library_Graph_Vertex_Id := Predecessor (G, Edge);
+         Succ : constant Library_Graph_Vertex_Id := Successor   (G, Edge);
+         Rel  : constant Predecessor_Successor_Relation :=
+                  (Predecessor => Pred,
+                   Successor   => Succ);
 
       begin
          --  Update the edge statistics
 
-         Decrement_Library_Graph_Edge_Count (G, Kind (G, LGE_Id));
+         Decrement_Library_Graph_Edge_Count (G, Kind (G, Edge));
 
          --  Update the number of pending predecessors the successor must wait
          --  on before it is elaborated.
@@ -1521,15 +2076,15 @@ package body Bindo.Graphs is
          --  Delete the link between the predecessor and successor. This allows
          --  for further attempts to link the same predecessor and successor.
 
-         PS.Delete (G.Relations, Rel);
+         RE_Sets.Delete (G.Recorded_Edges, Rel);
 
          --  Delete the attributes of the edge
 
-         EA.Delete (G.Edge_Attributes, LGE_Id);
+         LGE_Tables.Delete (G.Edge_Attributes, Edge);
 
          --  Delete the edge from the underlying graph
 
-         DG.Delete_Edge (G.Graph, LGE_Id);
+         DG.Delete_Edge (G.Graph, Edge);
       end Delete_Edge;
 
       -------------
@@ -1540,12 +2095,15 @@ package body Bindo.Graphs is
       begin
          pragma Assert (Present (G));
 
-         CA.Destroy (G.Component_Attributes);
-         EA.Destroy (G.Edge_Attributes);
-         DG.Destroy (G.Graph);
-         PS.Destroy (G.Relations);
-         UV.Destroy (G.Unit_To_Vertex);
-         VA.Destroy (G.Vertex_Attributes);
+         Component_Tables.Destroy (G.Component_Attributes);
+         LGC_Tables.Destroy       (G.Cycle_Attributes);
+         LGC_Lists.Destroy        (G.Cycles);
+         LGE_Tables.Destroy       (G.Edge_Attributes);
+         DG.Destroy               (G.Graph);
+         RC_Sets.Destroy          (G.Recorded_Cycles);
+         RE_Sets.Destroy          (G.Recorded_Edges);
+         Unit_Tables.Destroy      (G.Unit_To_Vertex);
+         LGV_Tables.Destroy       (G.Vertex_Attributes);
 
          Free (G);
       end Destroy;
@@ -1562,17 +2120,16 @@ package body Bindo.Graphs is
          null;
       end Destroy_Component_Attributes;
 
-      --------------------------------
-      -- Destroy_Library_Graph_Edge --
-      --------------------------------
+      --------------------------------------------
+      -- Destroy_Library_Graph_Cycle_Attributes --
+      --------------------------------------------
 
-      procedure Destroy_Library_Graph_Edge
-        (LGE_Id : in out Library_Graph_Edge_Id)
+      procedure Destroy_Library_Graph_Cycle_Attributes
+        (Attrs : in out Library_Graph_Cycle_Attributes)
       is
-         pragma Unreferenced (LGE_Id);
       begin
-         null;
-      end Destroy_Library_Graph_Edge;
+         LGE_Lists.Destroy (Attrs.Path);
+      end Destroy_Library_Graph_Cycle_Attributes;
 
       -------------------------------------------
       -- Destroy_Library_Graph_Edge_Attributes --
@@ -1591,9 +2148,9 @@ package body Bindo.Graphs is
       ----------------------------------
 
       procedure Destroy_Library_Graph_Vertex
-        (LGV_Id : in out Library_Graph_Vertex_Id)
+        (Vertex : in out Library_Graph_Vertex_Id)
       is
-         pragma Unreferenced (LGV_Id);
+         pragma Unreferenced (Vertex);
       begin
          null;
       end Destroy_Library_Graph_Vertex;
@@ -1610,12 +2167,256 @@ package body Bindo.Graphs is
          null;
       end Destroy_Library_Graph_Vertex_Attributes;
 
+      ---------------
+      -- File_Name --
+      ---------------
+
+      function File_Name
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id) return File_Name_Type
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return File_Name (Unit (G, Vertex));
+      end File_Name;
+
+      ------------------------------------
+      -- Find_All_Cycles_Through_Vertex --
+      ------------------------------------
+
+      procedure Find_All_Cycles_Through_Vertex
+        (G                      : Library_Graph;
+         Vertex                 : Library_Graph_Vertex_Id;
+         End_Vertices           : LGV_Sets.Membership_Set;
+         Most_Significant_Edge  : Library_Graph_Edge_Id;
+         Invocation_Edge_Count  : Natural;
+         Spec_And_Body_Together : Boolean;
+         Cycle_Path             : LGE_Lists.Doubly_Linked_List;
+         Visited_Vertices       : LGV_Sets.Membership_Set;
+         Indent                 : Indentation_Level)
+      is
+         Edge_Indent : constant Indentation_Level :=
+                         Indent + Nested_Indentation;
+
+         Iter      : Edges_To_Successors_Iterator;
+         Next_Edge : Library_Graph_Edge_Id;
+
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (LGV_Sets.Present (End_Vertices));
+         pragma Assert (Present (Most_Significant_Edge));
+         pragma Assert (LGE_Lists.Present (Cycle_Path));
+         pragma Assert (LGV_Sets.Present (Visited_Vertices));
+
+         --  Nothing to do when there is no vertex
+
+         if not Present (Vertex) then
+            return;
+         end if;
+
+         Trace_Vertex (G, Vertex, Indent);
+
+         --  The current vertex denotes the end vertex of the cycle and closes
+         --  the circuit. Normalize the cycle such that it is rotated with its
+         --  most significant edge first, and record it for diagnostics.
+
+         if LGV_Sets.Contains (End_Vertices, Vertex) then
+            Normalize_And_Add_Cycle
+              (G                     => G,
+               Most_Significant_Edge => Most_Significant_Edge,
+               Invocation_Edge_Count => Invocation_Edge_Count,
+               Cycle_Path            => Cycle_Path,
+               Indent                => Indent + Nested_Indentation);
+
+         --  Otherwise extend the search for a cycle only when the vertex has
+         --  not been visited yet.
+
+         elsif not LGV_Sets.Contains (Visited_Vertices, Vertex) then
+
+            --  Prepare for vertex backtracking
+
+            LGV_Sets.Insert (Visited_Vertices, Vertex);
+
+            --  Extend the search via all edges to successors of the vertex
+
+            Iter := Iterate_Edges_To_Successors (G, Vertex);
+            while Has_Next (Iter) loop
+               Next (Iter, Next_Edge);
+
+               if Is_Cyclic_Edge (G, Next_Edge) then
+                  Trace_Edge (G, Next_Edge, Edge_Indent);
+
+                  --  Prepare for edge backtracking. Prepending ensures that
+                  --  final ordering of edges can be traversed from successor
+                  --  to predecessor.
+
+                  LGE_Lists.Prepend (Cycle_Path, Next_Edge);
+
+                  --  Extend the search via the successor of the next edge
+
+                  Find_All_Cycles_Through_Vertex
+                    (G                      => G,
+                     Vertex                 => Successor (G, Next_Edge),
+                     End_Vertices           => End_Vertices,
+
+                     --  The next edge may be more important than the current
+                     --  most important edge, thus "upgrading" the nature of
+                     --  the cycle, and shifting its point of normalization.
+
+                     Most_Significant_Edge  =>
+                       Highest_Precedence_Edge
+                         (G     => G,
+                          Left  => Next_Edge,
+                          Right => Most_Significant_Edge),
+
+                     --  The next edge may be an invocation edge, in which case
+                     --  the count of invocation edges increases by one.
+
+                     Invocation_Edge_Count  =>
+                       Maximum_Invocation_Edge_Count
+                         (G     => G,
+                          Edge  => Next_Edge,
+                          Count => Invocation_Edge_Count),
+                     Spec_And_Body_Together => Spec_And_Body_Together,
+                     Cycle_Path             => Cycle_Path,
+                     Visited_Vertices       => Visited_Vertices,
+                     Indent                 => Indent);
+
+                  --  Backtrack the edge
+
+                  LGE_Lists.Delete_First (Cycle_Path);
+               end if;
+            end loop;
+
+            --  Extend the search via the complementary vertex when the current
+            --  vertex is part of an Elaborate_Body pair, or the initial edge
+            --  is an Elaborate_All edge.
+
+            Find_All_Cycles_Through_Vertex
+              (G                      => G,
+               Vertex                 =>
+                 Complementary_Vertex
+                   (G             => G,
+                    Vertex        => Vertex,
+                    Do_Complement => Spec_And_Body_Together),
+               End_Vertices           => End_Vertices,
+               Most_Significant_Edge  => Most_Significant_Edge,
+               Invocation_Edge_Count  => Invocation_Edge_Count,
+               Spec_And_Body_Together => Spec_And_Body_Together,
+               Cycle_Path             => Cycle_Path,
+               Visited_Vertices       => Visited_Vertices,
+               Indent                 => Indent);
+
+            --  Backtrack the vertex
+
+            LGV_Sets.Delete (Visited_Vertices, Vertex);
+         end if;
+      end Find_All_Cycles_Through_Vertex;
+
+      -------------------------------
+      -- Find_All_Cycles_With_Edge --
+      -------------------------------
+
+      procedure Find_All_Cycles_With_Edge
+        (G                      : Library_Graph;
+         Initial_Edge           : Library_Graph_Edge_Id;
+         Spec_And_Body_Together : Boolean;
+         Cycle_Path             : LGE_Lists.Doubly_Linked_List;
+         Visited_Vertices       : LGV_Sets.Membership_Set;
+         Indent                 : Indentation_Level)
+      is
+         pragma Assert (Present (G));
+         pragma Assert (Present (Initial_Edge));
+         pragma Assert (LGE_Lists.Present (Cycle_Path));
+         pragma Assert (LGV_Sets.Present (Visited_Vertices));
+
+         Pred : constant Library_Graph_Vertex_Id :=
+                           Predecessor (G, Initial_Edge);
+         Succ : constant Library_Graph_Vertex_Id :=
+                           Successor   (G, Initial_Edge);
+
+         End_Vertices : LGV_Sets.Membership_Set;
+
+      begin
+         Trace_Edge (G, Initial_Edge, Indent);
+
+         --  Use a set to represent the end vertices of the cycle. The set is
+         --  needed to accomodate the Elaborate_All and Elaborate_Body cases
+         --  where a cycle may terminate on either a spec or a body vertex.
+
+         End_Vertices := LGV_Sets.Create (2);
+         Add_Vertex_And_Complement
+           (G             => G,
+            Vertex        => Pred,
+            Set           => End_Vertices,
+            Do_Complement => Spec_And_Body_Together);
+
+         --  Prepare for edge backtracking
+         --
+         --  The initial edge starts the path. During the traversal, edges with
+         --  higher precedence may be discovered, in which case they supersede
+         --  the initial edge in terms of significance. Prepending to the cycle
+         --  path ensures that the vertices can be visited in the proper order
+         --  for diagnostics.
+
+         LGE_Lists.Prepend (Cycle_Path, Initial_Edge);
+
+         --  Prepare for vertex backtracking
+         --
+         --  The predecessor is considered the terminator of the path. Add it
+         --  to the set of visited vertices along with its complement vertex
+         --  in the Elaborate_All and Elaborate_Body cases to prevent infinite
+         --  recursion.
+
+         Add_Vertex_And_Complement
+           (G             => G,
+            Vertex        => Pred,
+            Set           => Visited_Vertices,
+            Do_Complement => Spec_And_Body_Together);
+
+         --  Traverse a potential cycle by continuously visiting successors
+         --  until either the predecessor of the initial edge is reached, or
+         --  no more successors are available.
+
+         Find_All_Cycles_Through_Vertex
+           (G                      => G,
+            Vertex                 => Succ,
+            End_Vertices           => End_Vertices,
+            Most_Significant_Edge  => Initial_Edge,
+            Invocation_Edge_Count  =>
+              Maximum_Invocation_Edge_Count
+                (G     => G,
+                 Edge  => Initial_Edge,
+                 Count => 0),
+            Spec_And_Body_Together => Spec_And_Body_Together,
+            Cycle_Path             => Cycle_Path,
+            Visited_Vertices       => Visited_Vertices,
+            Indent                 => Indent + Nested_Indentation);
+
+         --  Backtrack the edge
+
+         LGE_Lists.Delete_First (Cycle_Path);
+
+         --  Backtrack the predecessor, along with the complement vertex in the
+         --  Elaborate_All and Elaborate_Body cases.
+
+         Remove_Vertex_And_Complement
+           (G             => G,
+            Vertex        => Pred,
+            Set           => Visited_Vertices,
+            Do_Complement => Spec_And_Body_Together);
+
+         LGV_Sets.Destroy (End_Vertices);
+      end Find_All_Cycles_With_Edge;
+
       ---------------------
       -- Find_Components --
       ---------------------
 
       procedure Find_Components (G : Library_Graph) is
-         Edges : EL.Doubly_Linked_List;
+         Edges : LGE_Lists.Doubly_Linked_List;
 
       begin
          pragma Assert (Present (G));
@@ -1629,7 +2430,7 @@ package body Bindo.Graphs is
          --  edges eliminates the need to create yet another graph, where both
          --  spec and body are collapsed into a single vertex.
 
-         Edges := EL.Create;
+         Edges := LGE_Lists.Create;
          Add_Body_Before_Spec_Edges (G, Edges);
 
          DG.Find_Components (G.Graph);
@@ -1638,13 +2439,107 @@ package body Bindo.Graphs is
          --  successor spec because they cause unresolvable circularities.
 
          Delete_Body_Before_Spec_Edges (G, Edges);
-         EL.Destroy (Edges);
+         LGE_Lists.Destroy (Edges);
 
          --  Update the number of predecessors various components must wait on
          --  before they can be elaborated.
 
          Update_Pending_Predecessors_Of_Components (G);
       end Find_Components;
+
+      -----------------
+      -- Find_Cycles --
+      -----------------
+
+      procedure Find_Cycles (G : Library_Graph) is
+         Cycle_Path       : LGE_Lists.Doubly_Linked_List;
+         Edge             : Library_Graph_Edge_Id;
+         Iter             : All_Edge_Iterator;
+         Visited_Vertices : LGV_Sets.Membership_Set;
+
+      begin
+         pragma Assert (Present (G));
+
+         --  Use a list of edges to describe the path of a cycle
+
+         Cycle_Path := LGE_Lists.Create;
+
+         --  Use a set of visited vertices to prevent infinite traversal of the
+         --  graph.
+
+         Visited_Vertices := LGV_Sets.Create (Number_Of_Vertices (G));
+
+         --  Inspect all edges, trying to find an edge that links two vertices
+         --  in the same component.
+
+         Iter := Iterate_All_Edges (G);
+         while Has_Next (Iter) loop
+            Next (Iter, Edge);
+
+            --  Find all cycles involving the current edge. Duplicate cycles in
+            --  the forms of rotations are not saved for diagnostic purposes.
+
+            if Is_Cycle_Initiating_Edge (G, Edge) then
+               Find_All_Cycles_With_Edge
+                 (G                      => G,
+                  Initial_Edge           => Edge,
+                  Spec_And_Body_Together => Is_Elaborate_All_Edge (G, Edge),
+                  Cycle_Path             => Cycle_Path,
+                  Visited_Vertices       => Visited_Vertices,
+                  Indent                 => No_Indentation);
+
+               Trace_Eol;
+            end if;
+         end loop;
+
+         LGE_Lists.Destroy (Cycle_Path);
+         LGV_Sets.Destroy  (Visited_Vertices);
+      end Find_Cycles;
+
+      ---------------------------------------
+      -- Find_First_Lower_Precedence_Cycle --
+      ---------------------------------------
+
+      function Find_First_Lower_Precedence_Cycle
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) return Library_Graph_Cycle_Id
+      is
+         Current_Cycle : Library_Graph_Cycle_Id;
+         Iter          : All_Cycle_Iterator;
+         Lesser_Cycle  : Library_Graph_Cycle_Id;
+
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Cycle));
+
+         --  Assume that there is no lesser cycle
+
+         Lesser_Cycle := No_Library_Graph_Cycle;
+
+         --  Find a cycle with a slightly lower precedence than the input
+         --  cycle.
+         --
+         --  IMPORTANT:
+         --
+         --    * The iterator must run to completion in order to unlock the
+         --      list of all cycles.
+
+         Iter := Iterate_All_Cycles (G);
+         while Has_Next (Iter) loop
+            Next (Iter, Current_Cycle);
+
+            if not Present (Lesser_Cycle)
+              and then Precedence
+                         (G           => G,
+                          Cycle       => Cycle,
+                          Compared_To => Current_Cycle) = Higher_Precedence
+            then
+               Lesser_Cycle := Current_Cycle;
+            end if;
+         end loop;
+
+         return Lesser_Cycle;
+      end Find_First_Lower_Precedence_Cycle;
 
       ------------------------------
       -- Get_Component_Attributes --
@@ -1658,23 +2553,37 @@ package body Bindo.Graphs is
          pragma Assert (Present (G));
          pragma Assert (Present (Comp));
 
-         return CA.Get (G.Component_Attributes, Comp);
+         return Component_Tables.Get (G.Component_Attributes, Comp);
       end Get_Component_Attributes;
+
+      ------------------------
+      -- Get_LGC_Attributes --
+      ------------------------
+
+      function Get_LGC_Attributes
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) return Library_Graph_Cycle_Attributes
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Cycle));
+
+         return LGC_Tables.Get (G.Cycle_Attributes, Cycle);
+      end Get_LGC_Attributes;
 
       ------------------------
       -- Get_LGE_Attributes --
       ------------------------
 
       function Get_LGE_Attributes
-        (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id)
-         return Library_Graph_Edge_Attributes
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Library_Graph_Edge_Attributes
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGE_Id));
+         pragma Assert (Present (Edge));
 
-         return EA.Get (G.Edge_Attributes, LGE_Id);
+         return LGE_Tables.Get (G.Edge_Attributes, Edge);
       end Get_LGE_Attributes;
 
       ------------------------
@@ -1683,15 +2592,48 @@ package body Bindo.Graphs is
 
       function Get_LGV_Attributes
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id)
+         Vertex : Library_Graph_Vertex_Id)
          return Library_Graph_Vertex_Attributes
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         return VA.Get (G.Vertex_Attributes, LGV_Id);
+         return LGV_Tables.Get (G.Vertex_Attributes, Vertex);
       end Get_LGV_Attributes;
+
+      -----------------------------
+      -- Has_Elaborate_All_Cycle --
+      -----------------------------
+
+      function Has_Elaborate_All_Cycle (G : Library_Graph) return Boolean is
+         Edge : Library_Graph_Edge_Id;
+         Iter : All_Edge_Iterator;
+         Seen : Boolean;
+
+      begin
+         pragma Assert (Present (G));
+
+         --  Assume that no cyclic Elaborate_All edge has been seen
+
+         Seen := False;
+
+         --  IMPORTANT:
+         --
+         --    * The iteration must run to completion in order to unlock the
+         --      graph.
+
+         Iter := Iterate_All_Edges (G);
+         while Has_Next (Iter) loop
+            Next (Iter, Edge);
+
+            if not Seen and then Is_Cyclic_Elaborate_All_Edge (G, Edge) then
+               Seen := True;
+            end if;
+         end loop;
+
+         return Seen;
+      end Has_Elaborate_All_Cycle;
 
       ------------------------
       -- Has_Elaborate_Body --
@@ -1699,20 +2641,26 @@ package body Bindo.Graphs is
 
       function Has_Elaborate_Body
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Boolean
+         Vertex : Library_Graph_Vertex_Id) return Boolean
       is
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         U_Id : constant Unit_Id := Unit (G, LGV_Id);
-
-         pragma Assert (Present (U_Id));
-
+         U_Id  : constant Unit_Id := Unit (G, Vertex);
          U_Rec : Unit_Record renames ALI.Units.Table (U_Id);
 
       begin
          return U_Rec.Elaborate_Body;
       end Has_Elaborate_Body;
+
+      --------------
+      -- Has_Next --
+      --------------
+
+      function Has_Next (Iter : All_Cycle_Iterator) return Boolean is
+      begin
+         return LGC_Lists.Has_Next (LGC_Lists.Iterator (Iter));
+      end Has_Next;
 
       --------------
       -- Has_Next --
@@ -1754,10 +2702,48 @@ package body Bindo.Graphs is
       -- Has_Next --
       --------------
 
+      function Has_Next (Iter : Edges_Of_Cycle_Iterator) return Boolean is
+      begin
+         return LGE_Lists.Has_Next (LGE_Lists.Iterator (Iter));
+      end Has_Next;
+
+      --------------
+      -- Has_Next --
+      --------------
+
       function Has_Next (Iter : Edges_To_Successors_Iterator) return Boolean is
       begin
          return DG.Has_Next (DG.Outgoing_Edge_Iterator (Iter));
       end Has_Next;
+
+      -----------------------------------------
+      -- Hash_Library_Graph_Cycle_Attributes --
+      -----------------------------------------
+
+      function Hash_Library_Graph_Cycle_Attributes
+        (Attrs : Library_Graph_Cycle_Attributes) return Bucket_Range_Type
+      is
+         Edge : Library_Graph_Edge_Id;
+         Hash : Bucket_Range_Type;
+         Iter : LGE_Lists.Iterator;
+
+      begin
+         pragma Assert (LGE_Lists.Present (Attrs.Path));
+
+         --  The hash is obtained in the following manner:
+         --
+         --    (((edge1 * 31) + edge2) * 31) + edgeN
+
+         Hash := 0;
+         Iter := LGE_Lists.Iterate (Attrs.Path);
+         while LGE_Lists.Has_Next (Iter) loop
+            LGE_Lists.Next (Iter, Edge);
+
+            Hash := (Hash * 31) + Bucket_Range_Type (Edge);
+         end loop;
+
+         return Hash;
+      end Hash_Library_Graph_Cycle_Attributes;
 
       -----------------------------------------
       -- Hash_Predecessor_Successor_Relation --
@@ -1776,20 +2762,105 @@ package body Bindo.Graphs is
               Bucket_Range_Type (Rel.Successor));
       end Hash_Predecessor_Successor_Relation;
 
+      ------------------------------
+      -- Highest_Precedence_Cycle --
+      ------------------------------
+
+      function Highest_Precedence_Cycle
+        (G : Library_Graph) return Library_Graph_Cycle_Id
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (LGC_Lists.Present (G.Cycles));
+
+         if LGC_Lists.Is_Empty (G.Cycles) then
+            return No_Library_Graph_Cycle;
+
+         --  The highest precedence cycle is always the first in the list of
+         --  all cycles.
+
+         else
+            return LGC_Lists.First (G.Cycles);
+         end if;
+      end Highest_Precedence_Cycle;
+
+      -----------------------------
+      -- Highest_Precedence_Edge --
+      -----------------------------
+
+      function Highest_Precedence_Edge
+        (G     : Library_Graph;
+         Left  : Library_Graph_Edge_Id;
+         Right : Library_Graph_Edge_Id) return Library_Graph_Edge_Id
+      is
+         Edge_Prec : Precedence_Kind;
+
+      begin
+         pragma Assert (Present (G));
+
+         --  Both edges are available, pick the one with highest precedence
+
+         if Present (Left) and then Present (Right) then
+            Edge_Prec :=
+              Precedence
+                (G           => G,
+                 Edge        => Left,
+                 Compared_To => Right);
+
+            if Edge_Prec = Higher_Precedence then
+               return Left;
+
+            --  The precedence rules for edges are such that no two edges can
+            --  ever have the same precedence.
+
+            else
+               pragma Assert (Edge_Prec = Lower_Precedence);
+               return Right;
+            end if;
+
+         --  Otherwise at least one edge must be present
+
+         elsif Present (Left) then
+            return Left;
+
+         else
+            pragma Assert (Present (Right));
+
+            return Right;
+         end if;
+      end Highest_Precedence_Edge;
+
       --------------------------
       -- In_Elaboration_Order --
       --------------------------
 
       function In_Elaboration_Order
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Boolean
+         Vertex : Library_Graph_Vertex_Id) return Boolean
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         return Get_LGV_Attributes (G, LGV_Id).In_Elaboration_Order;
+         return Get_LGV_Attributes (G, Vertex).In_Elaboration_Order;
       end In_Elaboration_Order;
+
+      -----------------------
+      -- In_Same_Component --
+      -----------------------
+
+      function In_Same_Component
+        (G     : Library_Graph;
+         Left  : Library_Graph_Vertex_Id;
+         Right : Library_Graph_Vertex_Id) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Left));
+         pragma Assert (Present (Right));
+
+         return Component (G, Left) = Component (G, Right);
+      end In_Same_Component;
 
       ----------------------------------------
       -- Increment_Library_Graph_Edge_Count --
@@ -1832,17 +2903,17 @@ package body Bindo.Graphs is
 
       procedure Increment_Pending_Predecessors
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id)
+         Vertex : Library_Graph_Vertex_Id)
       is
          Attrs : Library_Graph_Vertex_Attributes;
 
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         Attrs := Get_LGV_Attributes (G, LGV_Id);
+         Attrs := Get_LGV_Attributes (G, Vertex);
          Attrs.Pending_Predecessors := Attrs.Pending_Predecessors + 1;
-         Set_LGV_Attributes (G, LGV_Id, Attrs);
+         Set_LGV_Attributes (G, Vertex, Attrs);
       end Increment_Pending_Predecessors;
 
       ---------------------------
@@ -1858,10 +2929,87 @@ package body Bindo.Graphs is
          --  be computed.
 
          if Number_Of_Components (G) > 0 then
-            CA.Destroy (G.Component_Attributes);
-            G.Component_Attributes := CA.Create (Number_Of_Vertices (G));
+            Component_Tables.Destroy (G.Component_Attributes);
+
+            G.Component_Attributes :=
+              Component_Tables.Create (Number_Of_Vertices (G));
          end if;
       end Initialize_Components;
+
+      ---------------------
+      -- Insert_And_Sort --
+      ---------------------
+
+      procedure Insert_And_Sort
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id)
+      is
+         Lesser_Cycle : Library_Graph_Cycle_Id;
+
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Cycle));
+         pragma Assert (LGC_Lists.Present (G.Cycles));
+
+         --  The input cycle is the first to be inserted
+
+         if LGC_Lists.Is_Empty (G.Cycles) then
+            LGC_Lists.Prepend (G.Cycles, Cycle);
+
+         --  Otherwise the list of all cycles contains at least one cycle.
+         --  Insert the input cycle based on its precedence.
+
+         else
+            Lesser_Cycle := Find_First_Lower_Precedence_Cycle (G, Cycle);
+
+            --  The list contains at least one cycle, and the input cycle has a
+            --  higher precedence compared to some cycle in the list.
+
+            if Present (Lesser_Cycle) then
+               LGC_Lists.Insert_Before
+                 (L      => G.Cycles,
+                  Before => Lesser_Cycle,
+                  Elem   => Cycle);
+
+            --  Otherwise the input cycle has the lowest precedence among all
+            --  cycles.
+
+            else
+               LGC_Lists.Append (G.Cycles, Cycle);
+            end if;
+         end if;
+      end Insert_And_Sort;
+
+      ---------------------------
+      -- Invocation_Edge_Count --
+      ---------------------------
+
+      function Invocation_Edge_Count
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) return Natural
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Cycle));
+
+         return Get_LGC_Attributes (G, Cycle).Invocation_Edge_Count;
+      end Invocation_Edge_Count;
+
+      -------------------------------
+      -- Invocation_Graph_Encoding --
+      -------------------------------
+
+      function Invocation_Graph_Encoding
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id)
+         return Invocation_Graph_Encoding_Kind
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Invocation_Graph_Encoding (Unit (G, Vertex));
+      end Invocation_Graph_Encoding;
 
       -------------
       -- Is_Body --
@@ -1869,15 +3017,12 @@ package body Bindo.Graphs is
 
       function Is_Body
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Boolean
+         Vertex : Library_Graph_Vertex_Id) return Boolean
       is
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         U_Id : constant Unit_Id := Unit (G, LGV_Id);
-
-         pragma Assert (Present (U_Id));
-
+         U_Id  : constant Unit_Id := Unit (G, Vertex);
          U_Rec : Unit_Record renames ALI.Units.Table (U_Id);
 
       begin
@@ -1890,19 +3035,17 @@ package body Bindo.Graphs is
 
       function Is_Body_Of_Spec_With_Elaborate_Body
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Boolean
+         Vertex : Library_Graph_Vertex_Id) return Boolean
       is
-         Spec_LGV_Id : Library_Graph_Vertex_Id;
-
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         if Is_Body_With_Spec (G, LGV_Id) then
-            Spec_LGV_Id := Proper_Spec (G, LGV_Id);
-            pragma Assert (Present (Spec_LGV_Id));
-
-            return Is_Spec_With_Elaborate_Body (G, Spec_LGV_Id);
+         if Is_Body_With_Spec (G, Vertex) then
+            return
+              Is_Spec_With_Elaborate_Body
+                (G      => G,
+                 Vertex => Proper_Spec (G, Vertex));
          end if;
 
          return False;
@@ -1914,20 +3057,171 @@ package body Bindo.Graphs is
 
       function Is_Body_With_Spec
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Boolean
+         Vertex : Library_Graph_Vertex_Id) return Boolean
       is
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         U_Id : constant Unit_Id := Unit (G, LGV_Id);
-
-         pragma Assert (Present (U_Id));
-
+         U_Id  : constant Unit_Id := Unit (G, Vertex);
          U_Rec : Unit_Record renames ALI.Units.Table (U_Id);
 
       begin
          return U_Rec.Utype = Is_Body;
       end Is_Body_With_Spec;
+
+      ------------------------------
+      -- Is_Cycle_Initiating_Edge --
+      ------------------------------
+
+      function Is_Cycle_Initiating_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return
+           Is_Cyclic_Elaborate_All_Edge (G, Edge)
+             or else Is_Cyclic_Elaborate_Body_Edge (G, Edge)
+             or else Is_Cyclic_Elaborate_Edge (G, Edge)
+             or else Is_Cyclic_Forced_Edge (G, Edge)
+             or else Is_Cyclic_Invocation_Edge (G, Edge);
+      end Is_Cycle_Initiating_Edge;
+
+      --------------------
+      -- Is_Cyclic_Edge --
+      --------------------
+
+      function Is_Cyclic_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return
+           Is_Cycle_Initiating_Edge (G, Edge)
+             or else Is_Cyclic_With_Edge (G, Edge);
+      end Is_Cyclic_Edge;
+
+      ----------------------------------
+      -- Is_Cyclic_Elaborate_All_Edge --
+      ----------------------------------
+
+      function Is_Cyclic_Elaborate_All_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return
+           Is_Elaborate_All_Edge (G, Edge)
+             and then Links_Vertices_In_Same_Component (G, Edge);
+      end Is_Cyclic_Elaborate_All_Edge;
+
+      -----------------------------------
+      -- Is_Cyclic_Elaborate_Body_Edge --
+      -----------------------------------
+
+      function Is_Cyclic_Elaborate_Body_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return
+           Is_Elaborate_Body_Edge (G, Edge)
+             and then Links_Vertices_In_Same_Component (G, Edge);
+      end Is_Cyclic_Elaborate_Body_Edge;
+
+      ------------------------------
+      -- Is_Cyclic_Elaborate_Edge --
+      ------------------------------
+
+      function Is_Cyclic_Elaborate_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return
+           Is_Elaborate_Edge (G, Edge)
+             and then Links_Vertices_In_Same_Component (G, Edge);
+      end Is_Cyclic_Elaborate_Edge;
+
+      ---------------------------
+      -- Is_Cyclic_Forced_Edge --
+      ---------------------------
+
+      function Is_Cyclic_Forced_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return
+           Is_Forced_Edge (G, Edge)
+             and then Links_Vertices_In_Same_Component (G, Edge);
+      end Is_Cyclic_Forced_Edge;
+
+      -------------------------------
+      -- Is_Cyclic_Invocation_Edge --
+      -------------------------------
+
+      function Is_Cyclic_Invocation_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return
+           Is_Invocation_Edge (G, Edge)
+             and then Links_Vertices_In_Same_Component (G, Edge);
+      end Is_Cyclic_Invocation_Edge;
+
+      -------------------------
+      -- Is_Cyclic_With_Edge --
+      -------------------------
+
+      function Is_Cyclic_With_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         --  Ignore Elaborate_Body edges because they also appear as with
+         --  edges, but have special successors.
+
+         return
+           Is_With_Edge (G, Edge)
+             and then Links_Vertices_In_Same_Component (G, Edge)
+             and then not Is_Elaborate_Body_Edge (G, Edge);
+      end Is_Cyclic_With_Edge;
+
+      -------------------------------
+      -- Is_Dynamically_Elaborated --
+      -------------------------------
+
+      function Is_Dynamically_Elaborated (G : Library_Graph) return Boolean is
+      begin
+         pragma Assert (Present (G));
+
+         return G.Dynamically_Elaborated;
+      end Is_Dynamically_Elaborated;
 
       -----------------------------
       -- Is_Elaborable_Component --
@@ -1955,29 +3249,28 @@ package body Bindo.Graphs is
 
       function Is_Elaborable_Vertex
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Boolean
+         Vertex : Library_Graph_Vertex_Id) return Boolean
       is
-         Check_LGV_Id : Library_Graph_Vertex_Id;
+         Check_Vertex : Library_Graph_Vertex_Id;
 
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         Check_LGV_Id := LGV_Id;
+         Check_Vertex := Vertex;
 
          --  A spec-body pair where the spec carries pragma Elaborate_Body must
          --  be treated as one vertex for elaboration purposes. Use the spec as
          --  the point of reference for the composite vertex.
 
-         if Is_Body_Of_Spec_With_Elaborate_Body (G, Check_LGV_Id) then
-            Check_LGV_Id := Proper_Spec (G, Check_LGV_Id);
-            pragma Assert (Present (Check_LGV_Id));
+         if Is_Body_Of_Spec_With_Elaborate_Body (G, Check_Vertex) then
+            Check_Vertex := Proper_Spec (G, Check_Vertex);
          end if;
 
          return
            Is_Elaborable_Vertex
              (G            => G,
-              LGV_Id       => Check_LGV_Id,
+              Vertex       => Check_Vertex,
               Predecessors => 0);
       end Is_Elaborable_Vertex;
 
@@ -1987,34 +3280,30 @@ package body Bindo.Graphs is
 
       function Is_Elaborable_Vertex
         (G            : Library_Graph;
-         LGV_Id       : Library_Graph_Vertex_Id;
+         Vertex       : Library_Graph_Vertex_Id;
          Predecessors : Natural) return Boolean
       is
-         pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
-
-         Comp : constant Component_Id := Component (G, LGV_Id);
-
-         pragma Assert (Present (Comp));
-
-         Body_LGV_Id : Library_Graph_Vertex_Id;
+         Body_Vertex : Library_Graph_Vertex_Id;
 
       begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
          --  The vertex must not be re-elaborated once it has been elaborated
 
-         if In_Elaboration_Order (G, LGV_Id) then
+         if In_Elaboration_Order (G, Vertex) then
             return False;
 
          --  The vertex must not be waiting on more precedessors than requested
          --  to be elaborated.
 
-         elsif Pending_Predecessors (G, LGV_Id) /= Predecessors then
+         elsif Pending_Predecessors (G, Vertex) /= Predecessors then
             return False;
 
          --  The component where the vertex resides must not be waiting on any
          --  of its precedessors to be elaborated.
 
-         elsif not Is_Elaborable_Component (G, Comp) then
+         elsif not Is_Elaborable_Component (G, Component (G, Vertex)) then
             return False;
 
          --  The vertex denotes a spec with a completing body, and is subject
@@ -2022,14 +3311,14 @@ package body Bindo.Graphs is
          --  vertex to be elaborated. Account for the sole predecessor of the
          --  body which is the vertex itself.
 
-         elsif Is_Spec_With_Elaborate_Body (G, LGV_Id) then
-            Body_LGV_Id := Proper_Body (G, LGV_Id);
-            pragma Assert (Present (Body_LGV_Id));
+         elsif Is_Spec_With_Elaborate_Body (G, Vertex) then
+            Body_Vertex := Proper_Body (G, Vertex);
+            pragma Assert (Present (Body_Vertex));
 
             return
               Is_Elaborable_Vertex
                 (G            => G,
-                 LGV_Id       => Body_LGV_Id,
+                 Vertex       => Body_Vertex,
                  Predecessors => 1);
          end if;
 
@@ -2038,21 +3327,71 @@ package body Bindo.Graphs is
          return True;
       end Is_Elaborable_Vertex;
 
-      ------------------------------------------------
-      -- Is_Existing_Predecessor_Successor_Relation --
-      ------------------------------------------------
+      ---------------------------
+      -- Is_Elaborate_All_Edge --
+      ---------------------------
 
-      function Is_Existing_Predecessor_Successor_Relation
-        (G   : Library_Graph;
-         Rel : Predecessor_Successor_Relation) return Boolean
+      function Is_Elaborate_All_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (Rel.Predecessor));
-         pragma Assert (Present (Rel.Successor));
+         pragma Assert (Present (Edge));
 
-         return PS.Contains (G.Relations, Rel);
-      end Is_Existing_Predecessor_Successor_Relation;
+         return Kind (G, Edge) = Elaborate_All_Edge;
+      end Is_Elaborate_All_Edge;
+
+      ----------------------------
+      -- Is_Elaborate_Body_Edge --
+      ----------------------------
+
+      function Is_Elaborate_Body_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean
+      is
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         Succ : constant Library_Graph_Vertex_Id := Successor (G, Edge);
+
+      begin
+         return
+           Kind (G, Edge) = With_Edge
+             and then
+               (Is_Spec_With_Elaborate_Body (G, Succ)
+                 or else Is_Body_Of_Spec_With_Elaborate_Body (G, Succ));
+      end Is_Elaborate_Body_Edge;
+
+      -----------------------
+      -- Is_Elaborate_Edge --
+      -----------------------
+
+      function Is_Elaborate_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return Kind (G, Edge) = Elaborate_Edge;
+      end Is_Elaborate_Edge;
+
+      --------------------
+      -- Is_Forced_Edge --
+      --------------------
+
+      function Is_Forced_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return Kind (G, Edge) = Forced_Edge;
+      end Is_Forced_Edge;
 
       ----------------------
       -- Is_Internal_Unit --
@@ -2060,18 +3399,29 @@ package body Bindo.Graphs is
 
       function Is_Internal_Unit
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Boolean
+         Vertex : Library_Graph_Vertex_Id) return Boolean
       is
-         pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
-
-         U_Id : constant Unit_Id := Unit (G, LGV_Id);
-
-         pragma Assert (Present (U_Id));
-
       begin
-         return Is_Internal_Unit (U_Id);
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Is_Internal_Unit (Unit (G, Vertex));
       end Is_Internal_Unit;
+
+      ------------------------
+      -- Is_Invocation_Edge --
+      ------------------------
+
+      function Is_Invocation_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return Kind (G, Edge) = Invocation_Edge;
+      end Is_Invocation_Edge;
 
       ------------------------
       -- Is_Predefined_Unit --
@@ -2079,17 +3429,13 @@ package body Bindo.Graphs is
 
       function Is_Predefined_Unit
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Boolean
+         Vertex : Library_Graph_Vertex_Id) return Boolean
       is
-         pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
-
-         U_Id : constant Unit_Id := Unit (G, LGV_Id);
-
-         pragma Assert (Present (U_Id));
-
       begin
-         return Is_Predefined_Unit (U_Id);
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Is_Predefined_Unit (Unit (G, Vertex));
       end Is_Predefined_Unit;
 
       ---------------------------
@@ -2098,20 +3444,47 @@ package body Bindo.Graphs is
 
       function Is_Preelaborated_Unit
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Boolean
+         Vertex : Library_Graph_Vertex_Id) return Boolean
       is
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         U_Id : constant Unit_Id := Unit (G, LGV_Id);
-
-         pragma Assert (Present (U_Id));
-
+         U_Id  : constant Unit_Id := Unit (G, Vertex);
          U_Rec : Unit_Record renames ALI.Units.Table (U_Id);
 
       begin
          return U_Rec.Preelab or else U_Rec.Pure;
       end Is_Preelaborated_Unit;
+
+      -----------------------
+      -- Is_Recorded_Cycle --
+      -----------------------
+
+      function Is_Recorded_Cycle
+        (G     : Library_Graph;
+         Attrs : Library_Graph_Cycle_Attributes) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+
+         return RC_Sets.Contains (G.Recorded_Cycles, Attrs);
+      end Is_Recorded_Cycle;
+
+      ----------------------
+      -- Is_Recorded_Edge --
+      ----------------------
+
+      function Is_Recorded_Edge
+        (G   : Library_Graph;
+         Rel : Predecessor_Successor_Relation) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Rel.Predecessor));
+         pragma Assert (Present (Rel.Successor));
+
+         return RE_Sets.Contains (G.Recorded_Edges, Rel);
+      end Is_Recorded_Edge;
 
       -------------
       -- Is_Spec --
@@ -2119,15 +3492,12 @@ package body Bindo.Graphs is
 
       function Is_Spec
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Boolean
+         Vertex : Library_Graph_Vertex_Id) return Boolean
       is
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         U_Id : constant Unit_Id := Unit (G, LGV_Id);
-
-         pragma Assert (Present (U_Id));
-
+         U_Id  : constant Unit_Id := Unit (G, Vertex);
          U_Rec : Unit_Record renames ALI.Units.Table (U_Id);
 
       begin
@@ -2140,15 +3510,12 @@ package body Bindo.Graphs is
 
       function Is_Spec_With_Body
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Boolean
+         Vertex : Library_Graph_Vertex_Id) return Boolean
       is
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         U_Id : constant Unit_Id := Unit (G, LGV_Id);
-
-         pragma Assert (Present (U_Id));
-
+         U_Id  : constant Unit_Id := Unit (G, Vertex);
          U_Rec : Unit_Record renames ALI.Units.Table (U_Id);
 
       begin
@@ -2161,16 +3528,44 @@ package body Bindo.Graphs is
 
       function Is_Spec_With_Elaborate_Body
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Boolean
+         Vertex : Library_Graph_Vertex_Id) return Boolean
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
          return
-           Is_Spec_With_Body (G, LGV_Id)
-             and then Has_Elaborate_Body (G, LGV_Id);
+           Is_Spec_With_Body (G, Vertex)
+             and then Has_Elaborate_Body (G, Vertex);
       end Is_Spec_With_Elaborate_Body;
+
+      ------------------
+      -- Is_With_Edge --
+      ------------------
+
+      function Is_With_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return Kind (G, Edge) = With_Edge;
+      end Is_With_Edge;
+
+      ------------------------
+      -- Iterate_All_Cycles --
+      ------------------------
+
+      function Iterate_All_Cycles
+        (G : Library_Graph) return All_Cycle_Iterator
+      is
+      begin
+         pragma Assert (Present (G));
+
+         return All_Cycle_Iterator (LGC_Lists.Iterate (G.Cycles));
+      end Iterate_All_Cycles;
 
       -----------------------
       -- Iterate_All_Edges --
@@ -2228,22 +3623,36 @@ package body Bindo.Graphs is
              (DG.Iterate_Component_Vertices (G.Graph, Comp));
       end Iterate_Component_Vertices;
 
+      ----------------------------
+      -- Iterate_Edges_Of_Cycle --
+      ----------------------------
+
+      function Iterate_Edges_Of_Cycle
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) return Edges_Of_Cycle_Iterator
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Cycle));
+
+         return Edges_Of_Cycle_Iterator (LGE_Lists.Iterate (Path (G, Cycle)));
+      end Iterate_Edges_Of_Cycle;
+
       ---------------------------------
       -- Iterate_Edges_To_Successors --
       ---------------------------------
 
       function Iterate_Edges_To_Successors
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id)
-         return Edges_To_Successors_Iterator
+         Vertex : Library_Graph_Vertex_Id) return Edges_To_Successors_Iterator
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
          return
            Edges_To_Successors_Iterator
-             (DG.Iterate_Outgoing_Edges (G.Graph, LGV_Id));
+             (DG.Iterate_Outgoing_Edges (G.Graph, Vertex));
       end Iterate_Edges_To_Successors;
 
       ----------
@@ -2252,14 +3661,44 @@ package body Bindo.Graphs is
 
       function Kind
         (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id) return Library_Graph_Edge_Kind
+         Cycle : Library_Graph_Cycle_Id) return Library_Graph_Cycle_Kind
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGE_Id));
+         pragma Assert (Present (Cycle));
 
-         return Get_LGE_Attributes (G, LGE_Id).Kind;
+         return Get_LGC_Attributes (G, Cycle).Kind;
       end Kind;
+
+      ----------
+      -- Kind --
+      ----------
+
+      function Kind
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Library_Graph_Edge_Kind
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return Get_LGE_Attributes (G, Edge).Kind;
+      end Kind;
+
+      ------------
+      -- Length --
+      ------------
+
+      function Length
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) return Natural
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Cycle));
+
+         return LGE_Lists.Size (Path (G, Cycle));
+      end Length;
 
       ------------------------------
       -- Library_Graph_Edge_Count --
@@ -2280,27 +3719,45 @@ package body Bindo.Graphs is
       --------------------------------------
 
       function Links_Vertices_In_Same_Component
-        (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id) return Boolean
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean
       is
+      begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGE_Id));
+         pragma Assert (Present (Edge));
 
-         Pred : constant Library_Graph_Vertex_Id := Predecessor (G, LGE_Id);
-         Succ : constant Library_Graph_Vertex_Id := Successor   (G, LGE_Id);
+         --  An edge is part of a cycle when both the successor and predecessor
+         --  reside in the same component.
 
-         pragma Assert (Present (Pred));
-         pragma Assert (Present (Succ));
+         return
+           In_Same_Component
+             (G     => G,
+              Left  => Predecessor (G, Edge),
+              Right => Successor   (G, Edge));
+      end Links_Vertices_In_Same_Component;
 
-         Pred_Comp : constant Component_Id := Component (G, Pred);
-         Succ_Comp : constant Component_Id := Component (G, Succ);
+      -----------------------------------
+      -- Maximum_Invocation_Edge_Count --
+      -----------------------------------
 
-         pragma Assert (Present (Pred_Comp));
-         pragma Assert (Present (Succ_Comp));
+      function Maximum_Invocation_Edge_Count
+        (G     : Library_Graph;
+         Edge  : Library_Graph_Edge_Id;
+         Count : Natural) return Natural
+      is
+         New_Count : Natural;
 
       begin
-         return Pred_Comp = Succ_Comp;
-      end Links_Vertices_In_Same_Component;
+         pragma Assert (Present (G));
+
+         New_Count := Count;
+
+         if Present (Edge) and then Is_Invocation_Edge (G, Edge) then
+            New_Count := New_Count + 1;
+         end if;
+
+         return New_Count;
+      end Maximum_Invocation_Edge_Count;
 
       ----------
       -- Name --
@@ -2308,17 +3765,13 @@ package body Bindo.Graphs is
 
       function Name
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Unit_Name_Type
+         Vertex : Library_Graph_Vertex_Id) return Unit_Name_Type
       is
-         pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
-
-         U_Id : constant Unit_Id := Unit (G, LGV_Id);
-
-         pragma Assert (Present (U_Id));
-
       begin
-         return Name (U_Id);
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Name (Unit (G, Vertex));
       end Name;
 
       -----------------------
@@ -2327,17 +3780,13 @@ package body Bindo.Graphs is
 
       function Needs_Elaboration
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Boolean
+         Vertex : Library_Graph_Vertex_Id) return Boolean
       is
-         pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
-
-         U_Id : constant Unit_Id := Unit (G, LGV_Id);
-
-         pragma Assert (Present (U_Id));
-
       begin
-         return Needs_Elaboration (U_Id);
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Needs_Elaboration (Unit (G, Vertex));
       end Needs_Elaboration;
 
       ----------
@@ -2345,11 +3794,23 @@ package body Bindo.Graphs is
       ----------
 
       procedure Next
-        (Iter   : in out All_Edge_Iterator;
-         LGE_Id : out Library_Graph_Edge_Id)
+        (Iter  : in out All_Cycle_Iterator;
+         Cycle : out Library_Graph_Cycle_Id)
       is
       begin
-         DG.Next (DG.All_Edge_Iterator (Iter), LGE_Id);
+         LGC_Lists.Next (LGC_Lists.Iterator (Iter), Cycle);
+      end Next;
+
+      ----------
+      -- Next --
+      ----------
+
+      procedure Next
+        (Iter : in out All_Edge_Iterator;
+         Edge : out Library_Graph_Edge_Id)
+      is
+      begin
+         DG.Next (DG.All_Edge_Iterator (Iter), Edge);
       end Next;
 
       ----------
@@ -2358,10 +3819,22 @@ package body Bindo.Graphs is
 
       procedure Next
         (Iter   : in out All_Vertex_Iterator;
-         LGV_Id : out Library_Graph_Vertex_Id)
+         Vertex : out Library_Graph_Vertex_Id)
       is
       begin
-         DG.Next (DG.All_Vertex_Iterator (Iter), LGV_Id);
+         DG.Next (DG.All_Vertex_Iterator (Iter), Vertex);
+      end Next;
+
+      ----------
+      -- Next --
+      ----------
+
+      procedure Next
+        (Iter : in out Edges_Of_Cycle_Iterator;
+         Edge : out Library_Graph_Edge_Id)
+      is
+      begin
+         LGE_Lists.Next (LGE_Lists.Iterator (Iter), Edge);
       end Next;
 
       ----------
@@ -2381,11 +3854,11 @@ package body Bindo.Graphs is
       ----------
 
       procedure Next
-        (Iter   : in out Edges_To_Successors_Iterator;
-         LGE_Id : out Library_Graph_Edge_Id)
+        (Iter : in out Edges_To_Successors_Iterator;
+         Edge : out Library_Graph_Edge_Id)
       is
       begin
-         DG.Next (DG.Outgoing_Edge_Iterator (Iter), LGE_Id);
+         DG.Next (DG.Outgoing_Edge_Iterator (Iter), Edge);
       end Next;
 
       ----------
@@ -2394,11 +3867,94 @@ package body Bindo.Graphs is
 
       procedure Next
         (Iter   : in out Component_Vertex_Iterator;
-         LGV_Id : out Library_Graph_Vertex_Id)
+         Vertex : out Library_Graph_Vertex_Id)
       is
       begin
-         DG.Next (DG.Component_Vertex_Iterator (Iter), LGV_Id);
+         DG.Next (DG.Component_Vertex_Iterator (Iter), Vertex);
       end Next;
+
+      -----------------------------
+      -- Normalize_And_Add_Cycle --
+      -----------------------------
+
+      procedure Normalize_And_Add_Cycle
+        (G                     : Library_Graph;
+         Most_Significant_Edge : Library_Graph_Edge_Id;
+         Invocation_Edge_Count : Natural;
+         Cycle_Path            : LGE_Lists.Doubly_Linked_List;
+         Indent                : Indentation_Level)
+      is
+         Path : LGE_Lists.Doubly_Linked_List;
+
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Most_Significant_Edge));
+         pragma Assert (LGE_Lists.Present (Cycle_Path));
+
+         --  Replicate the path of the cycle in order to avoid sharing lists
+
+         Path := Copy_Cycle_Path (Cycle_Path);
+
+         --  Normalize the path of the cycle such that its most significant
+         --  edge is the first in the list of edges.
+
+         Normalize_Cycle_Path
+           (Cycle_Path            => Path,
+            Most_Significant_Edge => Most_Significant_Edge);
+
+         --  Save the cycle for diagnostic purposes. Its kind is determined by
+         --  its most significant edge.
+
+         Add_Cycle
+           (G      => G,
+            Attrs  =>
+             (Invocation_Edge_Count => Invocation_Edge_Count,
+              Kind                  =>
+                Cycle_Kind_Of
+                  (G    => G,
+                   Edge => Most_Significant_Edge),
+              Path                  => Path),
+            Indent => Indent);
+      end Normalize_And_Add_Cycle;
+
+      --------------------------
+      -- Normalize_Cycle_Path --
+      --------------------------
+
+      procedure Normalize_Cycle_Path
+        (Cycle_Path            : LGE_Lists.Doubly_Linked_List;
+         Most_Significant_Edge : Library_Graph_Edge_Id)
+      is
+         Edge : Library_Graph_Edge_Id;
+
+      begin
+         pragma Assert (LGE_Lists.Present (Cycle_Path));
+         pragma Assert (Present (Most_Significant_Edge));
+
+         --  Perform at most |Cycle_Path| rotations in case the cycle is
+         --  malformed and the significant edge does not appear within.
+
+         for Rotation in 1 .. LGE_Lists.Size (Cycle_Path) loop
+            Edge := LGE_Lists.First (Cycle_Path);
+
+            --  The cycle is already rotated such that the most significant
+            --  edge is first.
+
+            if Edge = Most_Significant_Edge then
+               return;
+
+            --  Otherwise rotate the cycle by relocating the current edge from
+            --  the start to the end of the path. This preserves the order of
+            --  the path.
+
+            else
+               LGE_Lists.Delete_First (Cycle_Path);
+               LGE_Lists.Append (Cycle_Path, Edge);
+            end if;
+         end loop;
+
+         pragma Assert (False);
+      end Normalize_Cycle_Path;
 
       ----------------------------------
       -- Number_Of_Component_Vertices --
@@ -2426,6 +3982,17 @@ package body Bindo.Graphs is
          return DG.Number_Of_Components (G.Graph);
       end Number_Of_Components;
 
+      ----------------------
+      -- Number_Of_Cycles --
+      ----------------------
+
+      function Number_Of_Cycles (G : Library_Graph) return Natural is
+      begin
+         pragma Assert (Present (G));
+
+         return LGC_Lists.Size (G.Cycles);
+      end Number_Of_Cycles;
+
       ---------------------
       -- Number_Of_Edges --
       ---------------------
@@ -2443,12 +4010,12 @@ package body Bindo.Graphs is
 
       function Number_Of_Edges_To_Successors
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Natural
+         Vertex : Library_Graph_Vertex_Id) return Natural
       is
       begin
          pragma Assert (Present (G));
 
-         return DG.Number_Of_Outgoing_Edges (G.Graph, LGV_Id);
+         return DG.Number_Of_Outgoing_Edges (G.Graph, Vertex);
       end Number_Of_Edges_To_Successors;
 
       ------------------------
@@ -2461,6 +4028,21 @@ package body Bindo.Graphs is
 
          return DG.Number_Of_Vertices (G.Graph);
       end Number_Of_Vertices;
+
+      ----------
+      -- Path --
+      ----------
+
+      function Path
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) return LGE_Lists.Doubly_Linked_List
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Cycle));
+
+         return Get_LGC_Attributes (G, Cycle).Path;
+      end Path;
 
       --------------------------
       -- Pending_Predecessors --
@@ -2483,28 +4065,168 @@ package body Bindo.Graphs is
 
       function Pending_Predecessors
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Natural
+         Vertex : Library_Graph_Vertex_Id) return Natural
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         return Get_LGV_Attributes (G, LGV_Id).Pending_Predecessors;
+         return Get_LGV_Attributes (G, Vertex).Pending_Predecessors;
       end Pending_Predecessors;
+
+      ----------------
+      -- Precedence --
+      ----------------
+
+      function Precedence
+        (G           : Library_Graph;
+         Cycle       : Library_Graph_Cycle_Id;
+         Compared_To : Library_Graph_Cycle_Id) return Precedence_Kind
+      is
+         pragma Assert (Present (G));
+         pragma Assert (Present (Cycle));
+         pragma Assert (Present (Compared_To));
+
+         Comp_Invs  : constant Natural :=
+                        Invocation_Edge_Count (G, Compared_To);
+         Comp_Len   : constant Natural := Length (G, Compared_To);
+         Cycle_Invs : constant Natural := Invocation_Edge_Count (G, Cycle);
+         Cycle_Len  : constant Natural := Length (G, Cycle);
+         Kind_Prec  : constant Precedence_Kind :=
+                        Precedence
+                          (Kind        => Kind (G, Cycle),
+                           Compared_To => Kind (G, Compared_To));
+
+      begin
+         if Kind_Prec = Higher_Precedence
+              or else
+            Kind_Prec = Lower_Precedence
+         then
+            return Kind_Prec;
+
+         --  Otherwise both cycles have the same precedence based on their
+         --  kind. Prefer a cycle with fewer invocation edges.
+
+         elsif Cycle_Invs < Comp_Invs then
+            return Higher_Precedence;
+
+         elsif Cycle_Invs > Comp_Invs then
+            return Lower_Precedence;
+
+         --  Otherwise both cycles have the same number of invocation edges.
+         --  Prefer a cycle with a smaller length.
+
+         elsif Cycle_Len < Comp_Len then
+            return Higher_Precedence;
+
+         elsif Cycle_Len > Comp_Len then
+            return Lower_Precedence;
+
+         else
+            return Equal_Precedence;
+         end if;
+      end Precedence;
+
+      ----------------
+      -- Precedence --
+      ----------------
+
+      function Precedence
+        (Kind        : Library_Graph_Cycle_Kind;
+         Compared_To : Library_Graph_Cycle_Kind) return Precedence_Kind
+      is
+         Comp_Pos : constant Integer :=
+                      Library_Graph_Cycle_Kind'Pos (Compared_To);
+         Kind_Pos : constant Integer := Library_Graph_Cycle_Kind'Pos (Kind);
+
+      begin
+         --  A lower ordinal indicates higher precedence
+
+         if Kind_Pos < Comp_Pos then
+            return Higher_Precedence;
+
+         elsif Kind_Pos > Comp_Pos then
+            return Lower_Precedence;
+
+         else
+            return Equal_Precedence;
+         end if;
+      end Precedence;
+
+      ----------------
+      -- Precedence --
+      ----------------
+
+      function Precedence
+        (G           : Library_Graph;
+         Edge        : Library_Graph_Edge_Id;
+         Compared_To : Library_Graph_Edge_Id) return Precedence_Kind
+      is
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+         pragma Assert (Present (Compared_To));
+
+         Kind_Prec : constant Precedence_Kind :=
+                       Precedence
+                         (Kind        => Cycle_Kind_Of (G, Edge),
+                          Compared_To => Cycle_Kind_Of (G, Compared_To));
+
+      begin
+         if Kind_Prec = Higher_Precedence
+              or else
+            Kind_Prec = Lower_Precedence
+         then
+            return Kind_Prec;
+
+         --  Otherwise both edges have the same precedence based on their cycle
+         --  kinds. Prefer an edge whose successor has higher precedence.
+
+         else
+            return
+              Precedence
+                (G           => G,
+                 Vertex      => Successor (G, Edge),
+                 Compared_To => Successor (G, Compared_To));
+         end if;
+      end Precedence;
+
+      ----------------
+      -- Precedence --
+      ----------------
+
+      function Precedence
+        (G           : Library_Graph;
+         Vertex      : Library_Graph_Vertex_Id;
+         Compared_To : Library_Graph_Vertex_Id) return Precedence_Kind
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+         pragma Assert (Present (Compared_To));
+
+         --  Use lexicographical order to determine precedence and ensure
+         --  deterministic behavior.
+
+         if Uname_Less (Name (G, Vertex), Name (G, Compared_To)) then
+            return Higher_Precedence;
+         else
+            return Lower_Precedence;
+         end if;
+      end Precedence;
 
       -----------------
       -- Predecessor --
       -----------------
 
       function Predecessor
-        (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id) return Library_Graph_Vertex_Id
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Library_Graph_Vertex_Id
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGE_Id));
+         pragma Assert (Present (Edge));
 
-         return DG.Source_Vertex (G.Graph, LGE_Id);
+         return DG.Source_Vertex (G.Graph, Edge);
       end Predecessor;
 
       -------------
@@ -2522,23 +4244,23 @@ package body Bindo.Graphs is
 
       function Proper_Body
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Library_Graph_Vertex_Id
+         Vertex : Library_Graph_Vertex_Id) return Library_Graph_Vertex_Id
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
          --  When the vertex denotes a spec with a completing body, return the
          --  body.
 
-         if Is_Spec_With_Body (G, LGV_Id) then
-            return Corresponding_Item (G, LGV_Id);
+         if Is_Spec_With_Body (G, Vertex) then
+            return Corresponding_Item (G, Vertex);
 
          --  Otherwise the vertex must be a body
 
          else
-            pragma Assert (Is_Body (G, LGV_Id));
-            return LGV_Id;
+            pragma Assert (Is_Body (G, Vertex));
+            return Vertex;
          end if;
       end Proper_Body;
 
@@ -2548,25 +4270,75 @@ package body Bindo.Graphs is
 
       function Proper_Spec
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Library_Graph_Vertex_Id
+         Vertex : Library_Graph_Vertex_Id) return Library_Graph_Vertex_Id
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
          --  When the vertex denotes a body that completes a spec, return the
          --  spec.
 
-         if Is_Body_With_Spec (G, LGV_Id) then
-            return Corresponding_Item (G, LGV_Id);
+         if Is_Body_With_Spec (G, Vertex) then
+            return Corresponding_Item (G, Vertex);
 
          --  Otherwise the vertex must denote a spec
 
          else
-            pragma Assert (Is_Spec (G, LGV_Id));
-            return LGV_Id;
+            pragma Assert (Is_Spec (G, Vertex));
+            return Vertex;
          end if;
       end Proper_Spec;
+
+      ----------------------------------
+      -- Remove_Vertex_And_Complement --
+      ----------------------------------
+
+      procedure Remove_Vertex_And_Complement
+        (G             : Library_Graph;
+         Vertex        : Library_Graph_Vertex_Id;
+         Set           : LGV_Sets.Membership_Set;
+         Do_Complement : Boolean)
+      is
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+         pragma Assert (LGV_Sets.Present (Set));
+
+         Complement : constant Library_Graph_Vertex_Id :=
+                        Complementary_Vertex
+                          (G             => G,
+                           Vertex        => Vertex,
+                           Do_Complement => Do_Complement);
+
+      begin
+         LGV_Sets.Delete (Set, Vertex);
+
+         if Present (Complement) then
+            LGV_Sets.Delete (Set, Complement);
+         end if;
+      end Remove_Vertex_And_Complement;
+
+      -----------------------------------------
+      -- Same_Library_Graph_Cycle_Attributes --
+      -----------------------------------------
+
+      function Same_Library_Graph_Cycle_Attributes
+        (Left  : Library_Graph_Cycle_Attributes;
+         Right : Library_Graph_Cycle_Attributes) return Boolean
+      is
+      begin
+         --  Two cycles are the same when
+         --
+         --    * They are of the same kind
+         --    * They have the same number of invocation edges in their paths
+         --    * Their paths are the same length
+         --    * The edges comprising their paths are the same
+
+         return
+            Left.Invocation_Edge_Count = Right.Invocation_Edge_Count
+              and then Left.Kind = Right.Kind
+              and then LGE_Lists.Equal (Left.Path, Right.Path);
+      end Same_Library_Graph_Cycle_Attributes;
 
       ------------------------------
       -- Set_Component_Attributes --
@@ -2581,7 +4353,7 @@ package body Bindo.Graphs is
          pragma Assert (Present (G));
          pragma Assert (Present (Comp));
 
-         CA.Put (G.Component_Attributes, Comp, Val);
+         Component_Tables.Put (G.Component_Attributes, Comp, Val);
       end Set_Component_Attributes;
 
       ----------------------------
@@ -2590,18 +4362,18 @@ package body Bindo.Graphs is
 
       procedure Set_Corresponding_Item
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id;
+         Vertex : Library_Graph_Vertex_Id;
          Val    : Library_Graph_Vertex_Id)
       is
          Attrs : Library_Graph_Vertex_Attributes;
 
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         Attrs := Get_LGV_Attributes (G, LGV_Id);
+         Attrs := Get_LGV_Attributes (G, Vertex);
          Attrs.Corresponding_Item := Val;
-         Set_LGV_Attributes (G, LGV_Id, Attrs);
+         Set_LGV_Attributes (G, Vertex, Attrs);
       end Set_Corresponding_Item;
 
       ------------------------------
@@ -2617,7 +4389,7 @@ package body Bindo.Graphs is
          pragma Assert (Present (G));
          pragma Assert (Present (U_Id));
 
-         UV.Put (G.Unit_To_Vertex, U_Id, Val);
+         Unit_Tables.Put (G.Unit_To_Vertex, U_Id, Val);
       end Set_Corresponding_Vertex;
 
       ------------------------------
@@ -2626,25 +4398,44 @@ package body Bindo.Graphs is
 
       procedure Set_In_Elaboration_Order
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id;
+         Vertex : Library_Graph_Vertex_Id;
          Val    : Boolean := True)
       is
          Attrs : Library_Graph_Vertex_Attributes;
 
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         Attrs := Get_LGV_Attributes (G, LGV_Id);
+         Attrs := Get_LGV_Attributes (G, Vertex);
          Attrs.In_Elaboration_Order := Val;
-         Set_LGV_Attributes (G, LGV_Id, Attrs);
+         Set_LGV_Attributes (G, Vertex, Attrs);
       end Set_In_Elaboration_Order;
 
-      ----------------------------------------------------
-      -- Set_Is_Existing_Predecessor_Successor_Relation --
-      ----------------------------------------------------
+      ---------------------------
+      -- Set_Is_Recorded_Cycle --
+      ---------------------------
 
-      procedure Set_Is_Existing_Predecessor_Successor_Relation
+      procedure Set_Is_Recorded_Cycle
+        (G     : Library_Graph;
+         Attrs : Library_Graph_Cycle_Attributes;
+         Val   : Boolean := True)
+      is
+      begin
+         pragma Assert (Present (G));
+
+         if Val then
+            RC_Sets.Insert (G.Recorded_Cycles, Attrs);
+         else
+            RC_Sets.Delete (G.Recorded_Cycles, Attrs);
+         end if;
+      end Set_Is_Recorded_Cycle;
+
+      --------------------------
+      -- Set_Is_Recorded_Edge --
+      --------------------------
+
+      procedure Set_Is_Recorded_Edge
         (G   : Library_Graph;
          Rel : Predecessor_Successor_Relation;
          Val : Boolean := True)
@@ -2655,11 +4446,27 @@ package body Bindo.Graphs is
          pragma Assert (Present (Rel.Successor));
 
          if Val then
-            PS.Insert (G.Relations, Rel);
+            RE_Sets.Insert (G.Recorded_Edges, Rel);
          else
-            PS.Delete (G.Relations, Rel);
+            RE_Sets.Delete (G.Recorded_Edges, Rel);
          end if;
-      end Set_Is_Existing_Predecessor_Successor_Relation;
+      end Set_Is_Recorded_Edge;
+
+      ------------------------
+      -- Set_LGC_Attributes --
+      ------------------------
+
+      procedure Set_LGC_Attributes
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id;
+         Val   : Library_Graph_Cycle_Attributes)
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Cycle));
+
+         LGC_Tables.Put (G.Cycle_Attributes, Cycle, Val);
+      end Set_LGC_Attributes;
 
       ------------------------
       -- Set_LGE_Attributes --
@@ -2667,14 +4474,14 @@ package body Bindo.Graphs is
 
       procedure Set_LGE_Attributes
         (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id;
+         Edge : Library_Graph_Edge_Id;
          Val    : Library_Graph_Edge_Attributes)
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGE_Id));
+         pragma Assert (Present (Edge));
 
-         EA.Put (G.Edge_Attributes, LGE_Id, Val);
+         LGE_Tables.Put (G.Edge_Attributes, Edge, Val);
       end Set_LGE_Attributes;
 
       ------------------------
@@ -2683,14 +4490,14 @@ package body Bindo.Graphs is
 
       procedure Set_LGV_Attributes
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id;
+         Vertex : Library_Graph_Vertex_Id;
          Val    : Library_Graph_Vertex_Attributes)
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         VA.Put (G.Vertex_Attributes, LGV_Id, Val);
+         LGV_Tables.Put (G.Vertex_Attributes, Vertex, Val);
       end Set_LGV_Attributes;
 
       ---------------
@@ -2698,15 +4505,187 @@ package body Bindo.Graphs is
       ---------------
 
       function Successor
-        (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id) return Library_Graph_Vertex_Id
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Library_Graph_Vertex_Id
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGE_Id));
+         pragma Assert (Present (Edge));
 
-         return DG.Destination_Vertex (G.Graph, LGE_Id);
+         return DG.Destination_Vertex (G.Graph, Edge);
       end Successor;
+
+      -----------------
+      -- Trace_Cycle --
+      -----------------
+
+      procedure Trace_Cycle
+        (G      : Library_Graph;
+         Cycle  : Library_Graph_Cycle_Id;
+         Indent : Indentation_Level)
+      is
+         Attr_Indent : constant Indentation_Level :=
+                         Indent + Nested_Indentation;
+         Edge_Indent : constant Indentation_Level :=
+                         Attr_Indent + Nested_Indentation;
+
+         Edge : Library_Graph_Edge_Id;
+         Iter : Edges_Of_Cycle_Iterator;
+
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Cycle));
+
+         --  Nothing to do when switch -d_T (output elaboration order and cycle
+         --  detection trace information) is not in effect.
+
+         if not Debug_Flag_Underscore_TT then
+            return;
+         end if;
+
+         Indent_By (Indent);
+         Write_Str ("cycle (Cycle_Id_");
+         Write_Int (Int (Cycle));
+         Write_Str (")");
+         Write_Eol;
+
+         Indent_By (Attr_Indent);
+         Write_Str ("kind = ");
+         Write_Str (Kind (G, Cycle)'Img);
+         Write_Eol;
+
+         Indent_By (Attr_Indent);
+         Write_Str ("invocation edges = ");
+         Write_Int (Int (Invocation_Edge_Count (G, Cycle)));
+         Write_Eol;
+
+         Indent_By (Attr_Indent);
+         Write_Str ("length: ");
+         Write_Int (Int (Length (G, Cycle)));
+         Write_Eol;
+
+         Iter := Iterate_Edges_Of_Cycle (G, Cycle);
+         while Has_Next (Iter) loop
+            Next (Iter, Edge);
+
+            Indent_By (Edge_Indent);
+            Write_Str ("library graph edge (Edge_");
+            Write_Int (Int (Edge));
+            Write_Str (")");
+            Write_Eol;
+         end loop;
+      end Trace_Cycle;
+
+      ----------------
+      -- Trace_Edge --
+      ----------------
+
+      procedure Trace_Edge
+        (G      : Library_Graph;
+         Edge   : Library_Graph_Edge_Id;
+         Indent : Indentation_Level)
+      is
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         Attr_Indent : constant Indentation_Level :=
+                         Indent + Nested_Indentation;
+
+         Pred : constant Library_Graph_Vertex_Id := Predecessor (G, Edge);
+         Succ : constant Library_Graph_Vertex_Id := Successor   (G, Edge);
+
+      begin
+         --  Nothing to do when switch -d_T (output elaboration order and cycle
+         --  detection trace information) is not in effect.
+
+         if not Debug_Flag_Underscore_TT then
+            return;
+         end if;
+
+         Indent_By (Indent);
+         Write_Str ("library graph edge (Edge_");
+         Write_Int (Int (Edge));
+         Write_Str (")");
+         Write_Eol;
+
+         Indent_By (Attr_Indent);
+         Write_Str ("kind = ");
+         Write_Str (Kind (G, Edge)'Img);
+         Write_Eol;
+
+         Indent_By  (Attr_Indent);
+         Write_Str  ("Predecessor (Vertex_");
+         Write_Int  (Int (Pred));
+         Write_Str  (") name = ");
+         Write_Name (Name (G, Pred));
+         Write_Eol;
+
+         Indent_By  (Attr_Indent);
+         Write_Str  ("Successor   (Vertex_");
+         Write_Int  (Int (Succ));
+         Write_Str  (") name = ");
+         Write_Name (Name (G, Succ));
+         Write_Eol;
+      end Trace_Edge;
+
+      ---------------
+      -- Trace_Eol --
+      ---------------
+
+      procedure Trace_Eol is
+      begin
+         --  Nothing to do when switch -d_T (output elaboration order and cycle
+         --  detection trace information) is not in effect.
+
+         if not Debug_Flag_Underscore_TT then
+            return;
+         end if;
+
+         Write_Eol;
+      end Trace_Eol;
+
+      ------------------
+      -- Trace_Vertex --
+      ------------------
+
+      procedure Trace_Vertex
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id;
+         Indent : Indentation_Level)
+      is
+         Attr_Indent : constant Indentation_Level :=
+                         Indent + Nested_Indentation;
+
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         --  Nothing to do when switch -d_T (output elaboration order and cycle
+         --  detection trace information) is not in effect.
+
+         if not Debug_Flag_Underscore_TT then
+            return;
+         end if;
+
+         Indent_By (Indent);
+         Write_Str ("library graph vertex (Vertex_");
+         Write_Int (Int (Vertex));
+         Write_Str (")");
+         Write_Eol;
+
+         Indent_By (Attr_Indent);
+         Write_Str ("Component (Comp_Id_");
+         Write_Int (Int (Component (G, Vertex)));
+         Write_Str (")");
+         Write_Eol;
+
+         Indent_By  (Attr_Indent);
+         Write_Str  ("Unit (U_Id_");
+         Write_Int  (Int (Unit (G, Vertex)));
+         Write_Str  (") name = ");
+         Write_Name (Name (G, Vertex));
+         Write_Eol;
+      end Trace_Vertex;
 
       ----------
       -- Unit --
@@ -2714,13 +4693,13 @@ package body Bindo.Graphs is
 
       function Unit
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) return Unit_Id
+         Vertex : Library_Graph_Vertex_Id) return Unit_Id
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
-         return Get_LGV_Attributes (G, LGV_Id).Unit;
+         return Get_LGV_Attributes (G, Vertex).Unit;
       end Unit;
 
       -----------------------------------------------
@@ -2730,18 +4709,17 @@ package body Bindo.Graphs is
       procedure Update_Pending_Predecessors_Of_Components
         (G : Library_Graph)
       is
-         Iter   : All_Edge_Iterator;
-         LGE_Id : Library_Graph_Edge_Id;
+         Edge : Library_Graph_Edge_Id;
+         Iter : All_Edge_Iterator;
 
       begin
          pragma Assert (Present (G));
 
          Iter := Iterate_All_Edges (G);
          while Has_Next (Iter) loop
-            Next (Iter, LGE_Id);
-            pragma Assert (Present (LGE_Id));
+            Next (Iter, Edge);
 
-            Update_Pending_Predecessors_Of_Components (G, LGE_Id);
+            Update_Pending_Predecessors_Of_Components (G, Edge);
          end loop;
       end Update_Pending_Predecessors_Of_Components;
 
@@ -2750,20 +4728,16 @@ package body Bindo.Graphs is
       -----------------------------------------------
 
       procedure Update_Pending_Predecessors_Of_Components
-        (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id)
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id)
       is
          pragma Assert (Present (G));
-         pragma Assert (Present (LGE_Id));
+         pragma Assert (Present (Edge));
 
-         Pred : constant Library_Graph_Vertex_Id := Predecessor (G, LGE_Id);
-         Succ : constant Library_Graph_Vertex_Id := Successor   (G, LGE_Id);
-
-         pragma Assert (Present (Pred));
-         pragma Assert (Present (Succ));
-
-         Pred_Comp : constant Component_Id := Component (G, Pred);
-         Succ_Comp : constant Component_Id := Component (G, Succ);
+         Pred_Comp : constant Component_Id :=
+                       Component (G, Predecessor (G, Edge));
+         Succ_Comp : constant Component_Id :=
+                       Component (G, Successor   (G, Edge));
 
          pragma Assert (Present (Pred_Comp));
          pragma Assert (Present (Succ_Comp));
@@ -2783,104 +4757,125 @@ package body Bindo.Graphs is
    -- Present --
    -------------
 
-   function Present (IGE_Id : Invocation_Graph_Edge_Id) return Boolean is
+   function Present (Edge : Invocation_Graph_Edge_Id) return Boolean is
    begin
-      return IGE_Id /= No_Invocation_Graph_Edge;
+      return Edge /= No_Invocation_Graph_Edge;
    end Present;
 
    -------------
    -- Present --
    -------------
 
-   function Present (IGV_Id : Invocation_Graph_Vertex_Id) return Boolean is
+   function Present (Vertex : Invocation_Graph_Vertex_Id) return Boolean is
    begin
-      return IGV_Id /= No_Invocation_Graph_Vertex;
+      return Vertex /= No_Invocation_Graph_Vertex;
    end Present;
 
    -------------
    -- Present --
    -------------
 
-   function Present (LGE_Id : Library_Graph_Edge_Id) return Boolean is
+   function Present (Cycle : Library_Graph_Cycle_Id) return Boolean is
    begin
-      return LGE_Id /= No_Library_Graph_Edge;
+      return Cycle /= No_Library_Graph_Cycle;
    end Present;
 
    -------------
    -- Present --
    -------------
 
-   function Present (LGV_Id : Library_Graph_Vertex_Id) return Boolean is
+   function Present (Edge : Library_Graph_Edge_Id) return Boolean is
    begin
-      return LGV_Id /= No_Library_Graph_Vertex;
+      return Edge /= No_Library_Graph_Edge;
+   end Present;
+
+   -------------
+   -- Present --
+   -------------
+
+   function Present (Vertex : Library_Graph_Vertex_Id) return Boolean is
+   begin
+      return Vertex /= No_Library_Graph_Vertex;
    end Present;
 
    --------------------------
-   -- Sequence_Next_IGE_Id --
+   -- Sequence_Next_Edge --
    --------------------------
 
    IGE_Sequencer : Invocation_Graph_Edge_Id := First_Invocation_Graph_Edge;
    --  The counter for invocation graph edges. Do not directly manipulate its
    --  value.
 
-   function Sequence_Next_IGE_Id return Invocation_Graph_Edge_Id is
-      IGE_Id : constant Invocation_Graph_Edge_Id := IGE_Sequencer;
+   function Sequence_Next_Edge return Invocation_Graph_Edge_Id is
+      Edge : constant Invocation_Graph_Edge_Id := IGE_Sequencer;
 
    begin
       IGE_Sequencer := IGE_Sequencer + 1;
-      return IGE_Id;
-   end Sequence_Next_IGE_Id;
+      return Edge;
+   end Sequence_Next_Edge;
 
    --------------------------
-   -- Sequence_Next_IGV_Id --
+   -- Sequence_Next_Vertex --
    --------------------------
 
    IGV_Sequencer : Invocation_Graph_Vertex_Id := First_Invocation_Graph_Vertex;
    --  The counter for invocation graph vertices. Do not directly manipulate
    --  its value.
 
-   --------------------------
-   -- Sequence_Next_IGV_Id --
-   --------------------------
-
-   function Sequence_Next_IGV_Id return Invocation_Graph_Vertex_Id is
-      IGV_Id : constant Invocation_Graph_Vertex_Id := IGV_Sequencer;
+   function Sequence_Next_Vertex return Invocation_Graph_Vertex_Id is
+      Vertex : constant Invocation_Graph_Vertex_Id := IGV_Sequencer;
 
    begin
       IGV_Sequencer := IGV_Sequencer + 1;
-      return IGV_Id;
-   end Sequence_Next_IGV_Id;
+      return Vertex;
+   end Sequence_Next_Vertex;
 
    --------------------------
-   -- Sequence_Next_LGE_Id --
+   -- Sequence_Next_Cycle --
+   --------------------------
+
+   LGC_Sequencer : Library_Graph_Cycle_Id := First_Library_Graph_Cycle;
+   --  The couhnter for library graph cycles. Do not directly manipulate its
+   --  value.
+
+   function Sequence_Next_Cycle return Library_Graph_Cycle_Id is
+      Cycle : constant Library_Graph_Cycle_Id := LGC_Sequencer;
+
+   begin
+      LGC_Sequencer := LGC_Sequencer + 1;
+      return Cycle;
+   end Sequence_Next_Cycle;
+
+   --------------------------
+   -- Sequence_Next_Edge --
    --------------------------
 
    LGE_Sequencer : Library_Graph_Edge_Id := First_Library_Graph_Edge;
    --  The counter for library graph edges. Do not directly manipulate its
    --  value.
 
-   function Sequence_Next_LGE_Id return Library_Graph_Edge_Id is
-      LGE_Id : constant Library_Graph_Edge_Id := LGE_Sequencer;
+   function Sequence_Next_Edge return Library_Graph_Edge_Id is
+      Edge : constant Library_Graph_Edge_Id := LGE_Sequencer;
 
    begin
       LGE_Sequencer := LGE_Sequencer + 1;
-      return LGE_Id;
-   end Sequence_Next_LGE_Id;
+      return Edge;
+   end Sequence_Next_Edge;
 
    --------------------------
-   -- Sequence_Next_LGV_Id --
+   -- Sequence_Next_Vertex --
    --------------------------
 
    LGV_Sequencer : Library_Graph_Vertex_Id := First_Library_Graph_Vertex;
    --  The counter for library graph vertices. Do not directly manipulate its
    --  value.
 
-   function Sequence_Next_LGV_Id return Library_Graph_Vertex_Id is
-      LGV_Id : constant Library_Graph_Vertex_Id := LGV_Sequencer;
+   function Sequence_Next_Vertex return Library_Graph_Vertex_Id is
+      Vertex : constant Library_Graph_Vertex_Id := LGV_Sequencer;
 
    begin
       LGV_Sequencer := LGV_Sequencer + 1;
-      return LGV_Id;
-   end Sequence_Next_LGV_Id;
+      return Vertex;
+   end Sequence_Next_Vertex;
 
 end Bindo.Graphs;

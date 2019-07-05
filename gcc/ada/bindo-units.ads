@@ -33,6 +33,19 @@ with GNAT.Sets; use GNAT.Sets;
 
 package Bindo.Units is
 
+   ---------------
+   -- Unit sets --
+   ---------------
+
+   function Hash_Unit (U_Id : Unit_Id) return Bucket_Range_Type;
+   pragma Inline (Hash_Unit);
+   --  Obtain the hash value of key U_Id
+
+   package Unit_Sets is new Membership_Sets
+     (Element_Type => Unit_Id,
+      "="          => "=",
+      Hash         => Hash_Unit);
+
    procedure Collect_Elaborable_Units;
    pragma Inline (Collect_Elaborable_Units);
    --  Gather all units in the bind that require elaboration. The units are
@@ -54,6 +67,10 @@ package Bindo.Units is
    pragma Inline (Corresponding_Unit);
    --  Obtain the unit which corresponds to name FNam
 
+   function File_Name (U_Id : Unit_Id) return File_Name_Type;
+   pragma Inline (File_Name);
+   --  Obtain the file name of unit U_Id
+
    type Unit_Processor_Ptr is access procedure (U_Id : Unit_Id);
 
    procedure For_Each_Elaborable_Unit (Processor : Unit_Processor_Ptr);
@@ -69,9 +86,11 @@ package Bindo.Units is
    pragma Inline (Hash_Invocation_Signature);
    --  Obtain the hash value of key IS_Id
 
-   function Hash_Unit (U_Id : Unit_Id) return Bucket_Range_Type;
-   pragma Inline (Hash_Unit);
-   --  Obtain the hash value of key U_Id
+   function Invocation_Graph_Encoding
+     (U_Id : Unit_Id) return Invocation_Graph_Encoding_Kind;
+   pragma Inline (Invocation_Graph_Encoding);
+   --  Obtain the encoding format used to capture invocation constructs and
+   --  relations in the ALI file of unit U_Id.
 
    function Is_Dynamically_Elaborated (U_Id : Unit_Id) return Boolean;
    pragma Inline (Is_Dynamically_Elaborated);
@@ -144,11 +163,6 @@ package Bindo.Units is
    --  Initialize the internal structures of this unit
 
 private
-   package US is new Membership_Sets
-     (Element_Type => Unit_Id,
-      "="          => "=",
-      Hash         => Hash_Unit);
-
-   type Elaborable_Units_Iterator is new US.Iterator;
+   type Elaborable_Units_Iterator is new Unit_Sets.Iterator;
 
 end Bindo.Units;

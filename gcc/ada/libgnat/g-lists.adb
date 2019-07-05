@@ -337,6 +337,57 @@ package body GNAT.Lists is
          end if;
       end Ensure_Unlocked;
 
+      -----------
+      -- Equal --
+      -----------
+
+      function Equal
+        (Left  : Doubly_Linked_List;
+         Right : Doubly_Linked_List) return Boolean
+      is
+         Left_Head  : Node_Ptr;
+         Left_Nod   : Node_Ptr;
+         Right_Head : Node_Ptr;
+         Right_Nod  : Node_Ptr;
+
+      begin
+         --  Two non-existent lists are considered equal
+
+         if Left = Nil and then Right = Nil then
+            return True;
+
+         --  A non-existent list is never equal to an already created list
+
+         elsif Left = Nil or else Right = Nil then
+            return False;
+
+         --  The two lists must contain the same number of elements to be equal
+
+         elsif Size (Left) /= Size (Right) then
+            return False;
+         end if;
+
+         --  Compare the two lists element by element
+
+         Left_Head  := Left.Nodes'Access;
+         Left_Nod   := Left_Head.Next;
+         Right_Head := Right.Nodes'Access;
+         Right_Nod  := Right_Head.Next;
+         while Is_Valid (Left_Nod,  Left_Head)
+                 and then
+               Is_Valid (Right_Nod, Right_Head)
+         loop
+            if Left_Nod.Elem /= Right_Nod.Elem then
+               return False;
+            end if;
+
+            Left_Nod  := Left_Nod.Next;
+            Right_Nod := Right_Nod.Next;
+         end loop;
+
+         return True;
+      end Equal;
+
       ---------------
       -- Find_Node --
       ---------------
