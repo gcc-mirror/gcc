@@ -6895,7 +6895,7 @@ package body Sem_Util is
       elsif Ekind (Dyn_Scop) = E_Subprogram_Body then
          return Corresponding_Spec (Parent (Parent (Dyn_Scop)));
 
-      elsif Ekind_In (Dyn_Scop, E_Block, E_Return_Statement) then
+      elsif Ekind_In (Dyn_Scop, E_Block, E_Return_Statement, E_Loop) then
          return Enclosing_Subprogram (Dyn_Scop);
 
       elsif Ekind (Dyn_Scop) = E_Entry then
@@ -8939,6 +8939,12 @@ package body Sem_Util is
 
       begin
          Find_Discrete_Value : while Present (Variant) loop
+
+            --  If a choice is a subtype with a static predicate, it must
+            --  be rewritten as an explicit list of non-predicated choices.
+
+            Expand_Static_Predicates_In_Choices (Variant);
+
             Discrete_Choice := First (Discrete_Choices (Variant));
             while Present (Discrete_Choice) loop
                exit Find_Discrete_Value when

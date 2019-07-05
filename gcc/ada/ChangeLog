@@ -1,3 +1,11 @@
+2019-07-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Encloing_Subprogram): If Enclosing_Dynamic_Scope
+	is a loop, continue climbing the scope stack to find the
+	enclosing subprogram.
+	(Gather_Components): Handle properly a choice in a record
+	aggregate that is given by a subtype with a static predicate.
+
 2019-07-05  Javier Miranda  <miranda@adacore.com>
 
 	* debug.adb (-gnatd.K): Leave available this switch.
