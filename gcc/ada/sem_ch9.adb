@@ -883,7 +883,13 @@ package body Sem_Ch9 is
          exit when Task_Nam = Scope_Stack.Table (J).Entity;
 
          if Entry_Nam = Scope_Stack.Table (J).Entity then
-            Error_Msg_N ("duplicate accept statement for same entry", N);
+            Error_Msg_N
+              ("duplicate accept statement for same entry (RM 9.5.2 (15))", N);
+
+            --  Do not continue analysis of accept statement, to prevent
+            --  cascaded errors.
+
+            return;
          end if;
       end loop;
 

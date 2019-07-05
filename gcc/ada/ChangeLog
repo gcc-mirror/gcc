@@ -1,3 +1,10 @@
+2019-07-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch9.adb (Analyze_Accept_Statement): If this is an illegal
+	accept statement for an enclosing entry abandon analysis to
+	prevent scope mismatches and potential infinite loops in
+	compiler.
+
 2019-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* ali.adb (For_Each_Invocation_Construct,
