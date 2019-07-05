@@ -1,3 +1,88 @@
+2019-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* ali.adb (For_Each_Invocation_Construct,
+	For_Each_Invocation_Relation): New version.
+	(Scan_ALI): Initialize field Invocation_Graph_Encoding.
+	(Set_Invocation_Graph_Encoding): Update the setting of the
+	invocation graph encoding.
+	* ali.ads: Move field Invocation_Graph_Encoding from Unit_Record
+	to ALI_Record because the encoding applies to the whole ALI,
+	rather than one of the units (spec or body) for which the ALI
+	file was created.
+	(For_Each_Invocation_Construct, For_Each_Invocation_Relation):
+	New version.
+	* bindo.adb: Update the section on switches.  Complete the
+	section of debugging elaboration order issues.
+	(Find_Elaboration_Order): Prepare the routine for the switch
+	from the old to the new elaboration order mechanism.
+	* bindo-diagnostics.adb (Find_And_Output_Invocation_Paths):
+	Manage a visited set used by Visit_Vertex.
+	(Output_All_Cycles_Suggestions,
+	Output_Dynamic_Model_Suggestions): Clarify the nature of the
+	suggested switch.
+	(Output_Elaborate_Body_Transition): Update the diagnostic to
+	emit a better message.
+	(Output_Forced_Suggestions, Output_Full_Encoding_Suggestions):
+	Clarify the nature of the suggested switch.
+	(Visit_Vertex): Update the parameter profile to add a set of
+	invokers visited during the transition. This set prevents
+	infinite exploration of the graph in case the invocations are
+	recursive.
+	* bindo-elaborators.adb: Add a use clause for
+	Bindo.Writers.Dependency_Writers.
+	(Elaborate_Units_Common): Output the library graph after it has
+	been augmented with invocation edges. Output just the components
+	instead of outputting the whole library graph again.
+	(Elaborate_Units_Dynamic, Elaborate_Units_Static): Output the
+	dependencies as expressed in the library graph.
+	* bindo-units.adb (Invocation_Graph_Encoding): Update the
+	extraction of the invocation graph encoding.
+	* bindo-writers.adb: Add with and use clauses for Binderr and
+	Butil.
+	(palgc, plgc): New debug routine.
+	(Write_Components): Moved to the spec. Add a header for the
+	output.
+	(Write_Dependencies, Write_Dependencies_Of_Vertex,
+	Write_Dependency_Edge): New routine.
+	(Write_Elaboration_Order): Update the logic to follow the format
+	of Binde's order output.
+	(Write_Library_Graph): Do not output the components every time
+	the graph is written.
+	(Write_Unit): Output the invocation graph encoding of the unit.
+	Output the invocation constructs and relations for the unit
+	only.
+	* bindo-writers.ads (Write_Components): Moved from the body.
+	(Write_Dependencies): New routine.
+	* bindusg.adb: Prepare the routine for the switch from the old
+	to the new elaboration order mechanism.
+	* debug.adb: Binder switch -d_O is now not associated with any
+	functionality.
+	* einfo.adb (Is_Elaboration_Target): The attribute applies to
+	packages, as specified by the comment on the attribute usage.
+	* opt.ads: Add a global flag which controls the choice between
+	the new and the legacy elaboration order mechanism.
+	* sem_elab.adb: Add Package_Target to type Target_Kind.
+	(Build_Elaborate_Body_Procedure, Build_Elaborate_Procedure,
+	Build_Elaborate_Spec_Procedure, Check_Elaboration_Scenarios,
+	Check_SPARK_Model_In_Effect): Use Main_Unit_Entity to obtain the
+	entity of the main unit.
+	(Create_Package_Rep): New routine.
+	(Create_Target_Rep): Add processing for packages.
+	(Declaration_Placement_Of_Node, Has_Prior_Elaboration): Use
+	Main_Unit_Entity to obtain the entity of the main
+	 unit.
+	(Invocation_Graph_Recording_OK): Prepare the routine for the
+	switch from the old to the new elaboration order mechanism.
+	(Main_Unit_Entity): New routine.
+	(Meet_Elaboration_Requirement,
+	Process_Conditional_ABE_Variable_Reference): Use
+	Main_Unit_Entity to obtain the entity of the main unit.
+	(Process_Invocation_Instantiation): New routine.
+	(Process_Invocation_Scenario): Add processing for
+	instantiations.
+	* switch-b.adb (Scan_Binder_Switches): Prepare the routine for
+	the switch from the old to the new elaboration order mechanism.
+
 2019-07-05  Joffrey Huguet  <huguet@adacore.com>
 
 	* libgnat/a-textio.adb: Add abstract state refinment.

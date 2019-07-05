@@ -23,10 +23,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Debug;  use Debug;
-with Fname;  use Fname;
-with Opt;    use Opt;
-with Output; use Output;
+with Binderr; use Binderr;
+with Butil;   use Butil;
+with Debug;   use Debug;
+with Fname;   use Fname;
+with Opt;     use Opt;
+with Output;  use Output;
 
 with Bindo.Units;
 use  Bindo.Units;
@@ -271,10 +273,19 @@ package body Bindo.Writers is
          Write_Int (Int (U_Rec.Last_Invocation_Relation));
          Write_Str (")");
          Write_Eol;
+
+         Write_Str ("  Invocation_Graph_Encoding = ");
+         Write_Str (Invocation_Graph_Encoding (U_Id)'Img);
+         Write_Eol;
          Write_Eol;
 
-         For_Each_Invocation_Construct (Write_Invocation_Construct'Access);
-         For_Each_Invocation_Relation  (Write_Invocation_Relation'Access);
+         For_Each_Invocation_Construct
+           (U_Id      => U_Id,
+            Processor => Write_Invocation_Construct'Access);
+
+         For_Each_Invocation_Relation
+           (U_Id      => U_Id,
+            Processor => Write_Invocation_Relation'Access);
       end Write_Unit;
 
       -----------------------
@@ -322,6 +333,18 @@ package body Bindo.Writers is
          Edge : Library_Graph_Edge_Id);
       pragma Inline (Write_Cyclic_Edge);
       --  Write cyclic edge Edge of library graph G to standard
+
+      -----------
+      -- Debug --
+      -----------
+
+      procedure palgc (G : Library_Graph) renames Write_Cycles;
+      pragma Unreferenced (palgc);
+
+      procedure plgc
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) renames Write_Cycle;
+      pragma Unreferenced (plgc);
 
       -----------------
       -- Write_Cycle --
@@ -425,6 +448,178 @@ package body Bindo.Writers is
       end Write_Cyclic_Edge;
    end Cycle_Writers;
 
+   ------------------------
+   -- Dependency_Writers --
+   ------------------------
+
+   package body Dependency_Writers is
+
+      -----------------------
+      -- Local subprograms --
+      -----------------------
+
+      procedure Write_Dependencies_Of_Vertex
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id);
+      pragma Inline (Write_Dependencies_Of_Vertex);
+      --  Write the dependencies of vertex Vertex of library graph G to
+      --  standard output.
+
+      procedure Write_Dependency_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id);
+      pragma Inline (Write_Dependency_Edge);
+      --  Write the dependency described by edge Edge of library graph G to
+      --  standard output.
+
+      ------------------------
+      -- Write_Dependencies --
+      ------------------------
+
+      procedure Write_Dependencies (G : Library_Graph) is
+         Use_Formatting : constant Boolean := not Zero_Formatting;
+
+         Iter   : Library_Graphs.All_Vertex_Iterator;
+         Vertex : Library_Graph_Vertex_Id;
+
+      begin
+         pragma Assert (Present (G));
+
+         --  Nothing to do when switch -e (output complete list of elaboration
+         --  order dependencies) is not in effect.
+
+         if not Elab_Dependency_Output then
+            return;
+         end if;
+
+         if Use_Formatting then
+            Write_Eol;
+            Write_Line ("ELABORATION ORDER DEPENDENCIES");
+            Write_Eol;
+         end if;
+
+         Info_Prefix_Suppress := True;
+
+         Iter := Iterate_All_Vertices (G);
+         while Has_Next (Iter) loop
+            Next (Iter, Vertex);
+
+            Write_Dependencies_Of_Vertex (G, Vertex);
+         end loop;
+
+         Info_Prefix_Suppress := False;
+
+         if Use_Formatting then
+            Write_Eol;
+         end if;
+      end Write_Dependencies;
+
+      ----------------------------------
+      -- Write_Dependencies_Of_Vertex --
+      ----------------------------------
+
+      procedure Write_Dependencies_Of_Vertex
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id)
+      is
+         Edge : Library_Graph_Edge_Id;
+         Iter : Edges_To_Successors_Iterator;
+
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         --  Nothing to do for internal and predefined units
+
+         if Is_Internal_Unit (G, Vertex)
+           or else Is_Predefined_Unit (G, Vertex)
+         then
+            return;
+         end if;
+
+         Iter := Iterate_Edges_To_Successors (G, Vertex);
+         while Has_Next (Iter) loop
+            Next (Iter, Edge);
+
+            Write_Dependency_Edge (G, Edge);
+         end loop;
+      end Write_Dependencies_Of_Vertex;
+
+      ---------------------------
+      -- Write_Dependency_Edge --
+      ---------------------------
+
+      procedure Write_Dependency_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id)
+      is
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         Pred : constant Library_Graph_Vertex_Id := Predecessor (G, Edge);
+         Succ : constant Library_Graph_Vertex_Id := Successor   (G, Edge);
+
+      begin
+         --  Nothing to do for internal and predefined units
+
+         if Is_Internal_Unit (G, Succ)
+           or else Is_Predefined_Unit (G, Succ)
+         then
+            return;
+         end if;
+
+         Error_Msg_Unit_1 := Name (G, Pred);
+         Error_Msg_Unit_2 := Name (G, Succ);
+         Error_Msg_Output
+           (Msg  => "   unit $ must be elaborated before unit $",
+            Info => True);
+
+         Error_Msg_Unit_1 := Name (G, Succ);
+         Error_Msg_Unit_2 := Name (G, Pred);
+
+         if Is_Elaborate_All_Edge (G, Edge) then
+            Error_Msg_Output
+              (Msg  =>
+                 "     reason: unit $ has with clause and pragma "
+                 & "Elaborate_All for unit $",
+               Info => True);
+
+         elsif Is_Elaborate_Body_Edge (G, Edge) then
+            Error_Msg_Output
+              (Msg  => "     reason: unit $ has with clause for unit $",
+               Info => True);
+
+         elsif Is_Elaborate_Edge (G, Edge) then
+            Error_Msg_Output
+              (Msg  =>
+                 "     reason: unit $ has with clause and pragma Elaborate "
+                 & "for unit $",
+               Info => True);
+
+         elsif Is_Forced_Edge (G, Edge) then
+            Error_Msg_Output
+              (Msg  =>
+                 "     reason: unit $ has a dependency on unit $ forced by -f "
+                 & "switch",
+               Info => True);
+
+         elsif Is_Invocation_Edge (G, Edge) then
+            Error_Msg_Output
+              (Msg  =>
+                 "     reason: unit $ invokes a construct of unit $ at "
+                 & "elaboration time",
+               Info => True);
+
+         else
+            pragma Assert (Is_With_Edge (G, Edge));
+
+            Error_Msg_Output
+              (Msg  => "     reason: unit $ has with clause for unit $",
+               Info => True);
+         end if;
+      end Write_Dependency_Edge;
+   end Dependency_Writers;
+
    -------------------------------
    -- Elaboration_Order_Writers --
    -------------------------------
@@ -448,25 +643,27 @@ package body Bindo.Writers is
       -----------------------------
 
       procedure Write_Elaboration_Order (Order : Unit_Id_Table) is
-      begin
-         --  Nothing to do when switch -d_O (output elaboration order) is not
-         --  in effect.
+         Use_Formatting : constant Boolean := not Zero_Formatting;
 
-         if not Debug_Flag_Underscore_OO then
+      begin
+         --  Nothing to do when switch -l (output chosen elaboration order) is
+         --  not in effect.
+
+         if not Elab_Order_Output then
             return;
          end if;
 
-         Write_Str ("Elaboration Order");
-         Write_Eol;
-         Write_Eol;
+         if Use_Formatting then
+            Write_Eol;
+            Write_Str ("ELABORATION ORDER");
+            Write_Eol;
+         end if;
 
          Write_Units (Order);
 
-         Write_Eol;
-         Write_Str ("Elaboration Order end");
-         Write_Eol;
-
-         Write_Eol;
+         if Use_Formatting then
+            Write_Eol;
+         end if;
       end Write_Elaboration_Order;
 
       ----------------
@@ -474,13 +671,16 @@ package body Bindo.Writers is
       ----------------
 
       procedure Write_Unit (U_Id : Unit_Id) is
+         Use_Formatting : constant Boolean := not Zero_Formatting;
+
       begin
          pragma Assert (Present (U_Id));
 
-         Write_Str  ("unit (U_Id_");
-         Write_Int  (Int (U_Id));
-         Write_Str  (") name = ");
-         Write_Name (Name (U_Id));
+         if Use_Formatting then
+            Write_Str ("   ");
+         end if;
+
+         Write_Unit_Name (Name (U_Id));
          Write_Eol;
       end Write_Unit;
 
@@ -825,10 +1025,6 @@ package body Bindo.Writers is
       --  Write all vertices of component Comp of library graph G to standard
       --  output.
 
-      procedure Write_Components (G : Library_Graph);
-      pragma Inline (Write_Components);
-      --  Write all components of library graph G to standard output
-
       procedure Write_Edges_To_Successors
         (G      : Library_Graph;
          Vertex : Library_Graph_Vertex_Id);
@@ -942,7 +1138,22 @@ package body Bindo.Writers is
          Iter : Component_Iterator;
 
       begin
+         --  Nothing to do when switch -d_L (output library item graph) is not
+         --  in effect.
+
+         if not Debug_Flag_Underscore_LL then
+            return;
+         end if;
+
+         Write_Str ("Library Graph components");
+         Write_Eol;
+         Write_Eol;
+
          if Num_Of_Comps > 0 then
+            Write_Str ("Components: ");
+            Write_Num (Int (Num_Of_Comps));
+            Write_Eol;
+
             Iter := Iterate_Components (G);
             while Has_Next (Iter) loop
                Next (Iter, Comp);
@@ -952,6 +1163,11 @@ package body Bindo.Writers is
          else
             Write_Eol;
          end if;
+
+         Write_Str ("Library Graph components end");
+         Write_Eol;
+
+         Write_Eol;
       end Write_Components;
 
       -------------------------------
@@ -1009,7 +1225,6 @@ package body Bindo.Writers is
 
          Write_Statistics (G);
          Write_Library_Graph_Vertices (G);
-         Write_Components (G);
 
          Write_Str ("Library Graph end");
          Write_Eol;
@@ -1231,10 +1446,12 @@ package body Bindo.Writers is
       ---------------------
 
       procedure Write_File_Name (Nam : File_Name_Type) is
+         Use_Formatting : constant Boolean := not Zero_Formatting;
+
       begin
          pragma Assert (Present (Nam));
 
-         if not Zero_Formatting then
+         if Use_Formatting then
             Write_Str ("   ");
          end if;
 
@@ -1296,6 +1513,8 @@ package body Bindo.Writers is
       ------------------------
 
       procedure Write_Unit_Closure (Order : Unit_Id_Table) is
+         Use_Formatting : constant Boolean := not Zero_Formatting;
+
          Set : Membership_Set;
 
       begin
@@ -1306,7 +1525,7 @@ package body Bindo.Writers is
             return;
          end if;
 
-         if not Zero_Formatting then
+         if Use_Formatting then
             Write_Eol;
             Write_Line ("REFERENCED SOURCES");
          end if;
@@ -1320,7 +1539,7 @@ package body Bindo.Writers is
 
          Destroy (Set);
 
-         if not Zero_Formatting then
+         if Use_Formatting then
             Write_Eol;
          end if;
       end Write_Unit_Closure;

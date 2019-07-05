@@ -247,6 +247,7 @@ package body Bindo.Diagnostics is
       Last_Vertex       : Library_Graph_Vertex_Id;
       Elaborated_Vertex : Library_Graph_Vertex_Id;
       End_Vertex        : Library_Graph_Vertex_Id;
+      Visited_Invokers  : IGV_Sets.Membership_Set;
       Path              : IGE_Lists.Doubly_Linked_List;
       Path_Id           : in out Nat);
    pragma Inline (Visit_Vertex);
@@ -254,8 +255,9 @@ package body Bindo.Diagnostics is
    --  vertex Invoker_Vertex as part of a DFS traversal. Last_Vertex denotes
    --  the previous vertex in the traversal. Elaborated_Vertex is the vertex
    --  whose elaboration started the traversal. End_Vertex is the vertex that
-   --  terminates the traversal. All edges along the path are recorded in Path.
-   --  Path_Id is the id of the path.
+   --  terminates the traversal. Visited_Invoker is the set of all invokers
+   --  visited so far. All edges along the path are recorded in Path. Path_Id
+   --  is the id of the path.
 
    -------------------------
    -- Diagnose_All_Cycles --
@@ -411,6 +413,7 @@ package body Bindo.Diagnostics is
    is
       Path    : IGE_Lists.Doubly_Linked_List;
       Path_Id : Nat;
+      Visited : IGV_Sets.Membership_Set;
 
    begin
       pragma Assert (Present (Inv_Graph));
@@ -429,6 +432,7 @@ package body Bindo.Diagnostics is
 
       Path    := IGE_Lists.Create;
       Path_Id := 1;
+      Visited := IGV_Sets.Create (Number_Of_Vertices (Inv_Graph));
 
       --  Start a DFS traversal over the invocation graph, in an attempt to
       --  reach Destination from Source. The actual start of the path is the
@@ -447,10 +451,12 @@ package body Bindo.Diagnostics is
          Last_Vertex       => Source,
          Elaborated_Vertex => Source,
          End_Vertex        => Destination,
+         Visited_Invokers  => Visited,
          Path              => Path,
          Path_Id           => Path_Id);
 
       IGE_Lists.Destroy (Path);
+      IGV_Sets.Destroy  (Visited);
    end Find_And_Output_Invocation_Paths;
 
    ---------------------------
@@ -511,7 +517,7 @@ package body Bindo.Diagnostics is
 
       if Number_Of_Cycles (G) > 1 and then not Debug_Flag_Underscore_CC then
          Error_Msg_Info
-           ("    diagnose all circularities (-d_C)");
+           ("    diagnose all circularities (binder switch -d_C)");
       end if;
    end Output_All_Cycles_Suggestions;
 
@@ -535,7 +541,7 @@ package body Bindo.Diagnostics is
         and then not Is_Dynamically_Elaborated (G)
       then
          Error_Msg_Info
-           ("    use the dynamic elaboration model (-gnatE)");
+           ("    use the dynamic elaboration model (compiler switch -gnatE)");
       end if;
    end Output_Dynamic_Model_Suggestions;
 
@@ -665,17 +671,21 @@ package body Bindo.Diagnostics is
       pragma Assert (Present (Expected_Destination));
 
       --  The actual and expected destination vertices match, and denote the
-      --  spec of a unit subject to pragma Elaborate_Body. There is no need to
-      --  mention the pragma because it does not affect the path of the cycle.
-      --  Treat the edge as a regular with edge.
+      --  spec or body of a unit subject to pragma Elaborate_Body. There is no
+      --  need to mention the pragma because it does not affect the path of the
+      --  cycle. Treat the edge as a regular with edge.
       --
       --               Actual_Destination
       --    Source --> spec Elaborate_Body -->
       --               Expected_Destination
+      --
+      --               spec Elaborate_Body
+      --
+      --               Actual_Destination
+      --    Source --> body -->
+      --               Expected_Destination
 
       if Actual_Destination = Expected_Destination then
-         pragma Assert (Is_Spec (G, Actual_Destination));
-
          Error_Msg_Unit_1 := Name (G, Source);
          Error_Msg_Unit_2 := Name (G, Actual_Destination);
          Error_Msg_Info
@@ -698,14 +708,18 @@ package body Bindo.Diagnostics is
          pragma Assert
            (Proper_Body (G, Actual_Destination) = Expected_Destination);
 
+         Error_Msg_Unit_1 := Name (G, Source);
+         Error_Msg_Unit_2 := Name (G, Actual_Destination);
+         Error_Msg_Info
+           ("    unit $ has with clause for unit $");
+
          Error_Msg_Unit_1 := Name (G, Actual_Destination);
          Error_Msg_Info
            ("    unit $ is subject to pragma Elaborate_Body");
 
-         Error_Msg_Unit_1 := Name (G, Source);
-         Error_Msg_Unit_2 := Name (G, Expected_Destination);
+         Error_Msg_Unit_1 := Name (G, Expected_Destination);
          Error_Msg_Info
-           ("    unit $ has with clause for unit $");
+           ("    unit $ is in the closure of pragma Elaborate_Body");
       end if;
    end Output_Elaborate_Body_Transition;
 
@@ -832,8 +846,10 @@ package body Bindo.Diagnostics is
       Error_Msg_Unit_1 := Name (G, Succ);
       Error_Msg_Unit_2 := Name (G, Pred);
       Error_Msg_Info
-        ("    remove the dependency of unit $ on unit $ from argument of -f "
-         & "switch");
+        ("    remove the dependency of unit $ on unit $ from the argument of "
+         & "switch -f");
+      Error_Msg_Info
+        ("    remove switch -f");
    end Output_Forced_Suggestions;
 
    ------------------------------
@@ -950,7 +966,8 @@ package body Bindo.Diagnostics is
 
          if Invocation_Graph_Encoding (G, Succ) /= Full_Path_Encoding then
             Error_Msg_Info
-              ("    use detailed invocation information (-gnatd_F)");
+              ("    use detailed invocation information (compiler switch "
+               & "-gnatd_F)");
          end if;
       end if;
    end Output_Full_Encoding_Suggestions;
@@ -1410,6 +1427,7 @@ package body Bindo.Diagnostics is
       Last_Vertex       : Library_Graph_Vertex_Id;
       Elaborated_Vertex : Library_Graph_Vertex_Id;
       End_Vertex        : Library_Graph_Vertex_Id;
+      Visited_Invokers  : IGV_Sets.Membership_Set;
       Path              : IGE_Lists.Doubly_Linked_List;
       Path_Id           : in out Nat)
    is
@@ -1425,6 +1443,7 @@ package body Bindo.Diagnostics is
       pragma Assert (Present (Last_Vertex));
       pragma Assert (Present (Elaborated_Vertex));
       pragma Assert (Present (End_Vertex));
+      pragma Assert (IGV_Sets.Present (Visited_Invokers));
       pragma Assert (IGE_Lists.Present (Path));
 
       --  The current invocation vertex resides within the end library vertex.
@@ -1444,7 +1463,14 @@ package body Bindo.Diagnostics is
       --  Otherwise extend the search for the end library vertex via all edges
       --  to targets.
 
-      else
+      elsif not IGV_Sets.Contains (Visited_Invokers, Invoker) then
+
+         --  Prepare for invoker backtracking
+
+         IGV_Sets.Insert (Visited_Invokers, Invoker);
+
+         --  Extend the search via all edges to targets
+
          Iter := Iterate_Edges_To_Targets (Inv_Graph, Invoker);
          while Has_Next (Iter) loop
             Next (Iter, Edge);
@@ -1466,6 +1492,7 @@ package body Bindo.Diagnostics is
                Last_Vertex       => Invoker_Vertex,
                Elaborated_Vertex => Elaborated_Vertex,
                End_Vertex        => End_Vertex,
+               Visited_Invokers  => Visited_Invokers,
                Path              => Path,
                Path_Id           => Path_Id);
 
@@ -1473,6 +1500,10 @@ package body Bindo.Diagnostics is
 
             IGE_Lists.Delete_Last (Path);
          end loop;
+
+         --  Backtrack the invoker
+
+         IGV_Sets.Delete (Visited_Invokers, Invoker);
       end if;
    end Visit_Vertex;
 
