@@ -1,3 +1,9 @@
+2019-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91091
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Overlap of
+	accesses can happen with -fno-strict-aliasing.
+
 2019-07-05  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-alias.c (alias_stats): Add
