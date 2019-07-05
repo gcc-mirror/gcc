@@ -1,5 +1,8 @@
 2019-07-05  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/iostream-1_[ab].[HC]: New.
+
 	gcc/cp/
 	* module.cc (module_state_config::get_opts): Drop -g* switches.
 
