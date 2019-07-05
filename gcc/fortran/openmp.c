@@ -4279,8 +4279,21 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		  continue;
 	      }
 	  }
-	gfc_error ("Object %qs is not a variable at %L", n->sym->name,
-		   &n->where);
+	if (list == OMP_LIST_MAP
+	    && n->sym->attr.flavor == FL_PARAMETER)
+	  {
+	    if (openacc)
+	      gfc_error ("Object %qs is not a variable at %L; parameters"
+			 " cannot be and need not be copied", n->sym->name,
+			 &n->where);
+	    else
+	      gfc_error ("Object %qs is not a variable at %L; parameters"
+			 " cannot be and need not be mapped", n->sym->name,
+			 &n->where);
+	  }
+	else
+	  gfc_error ("Object %qs is not a variable at %L", n->sym->name,
+		     &n->where);
       }
 
   for (list = 0; list < OMP_LIST_NUM; list++)
