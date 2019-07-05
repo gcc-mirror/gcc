@@ -12838,7 +12838,7 @@ user-defined storage pool.
 [GNAT] This restriction affects the performance of stream operations on types
 @code{String}, @code{Wide_String} and @code{Wide_Wide_String}. By default, the
 compiler uses block reads and writes when manipulating @code{String} objects
-due to their supperior performance. When this restriction is in effect, the
+due to their superior performance. When this restriction is in effect, the
 compiler performs all IO operations on a per-character basis.
 
 @node No_Streams,No_Task_Allocators,No_Stream_Optimizations,Partition-Wide Restrictions
