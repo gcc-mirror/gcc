@@ -816,19 +816,11 @@ package body Sem_Res is
 
       function Is_Control_Flow_Statement (N : Node_Id) return Boolean is
       begin
-         --  Delay statements do not affect the control flow because they
-         --  simply postpone the execution of all subsequent statements.
+         --  It is assumed that all statements may affect the control flow in
+         --  some way. A raise statement may be expanded into a non-statement
+         --  node.
 
-         if Nkind (N) in N_Delay_Statement then
-            return False;
-
-         --  Otherwise it is assumed that all other statements may affect the
-         --  control flow in some way. A raise statement may be expanded into
-         --  a non-statement node.
-
-         else
-            return Is_Statement (N) or else Is_Raise_Statement (N);
-         end if;
+         return Is_Statement (N) or else Is_Raise_Statement (N);
       end Is_Control_Flow_Statement;
 
       --------------------------------
