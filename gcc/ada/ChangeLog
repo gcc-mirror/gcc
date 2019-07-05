@@ -1,3 +1,7 @@
+2019-07-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnarl/s-osinte__linux.ads: Link with -lrt before -lpthread.
+
 2019-07-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_pakd.adb (Expand_Bit_Packed_Element_Set): Add explicit
