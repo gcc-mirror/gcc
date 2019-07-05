@@ -23901,9 +23901,6 @@ This section describes topics that are specific to the Microsoft Windows
 platforms.
 
 
-
-
-
 @menu
 * Using GNAT on Windows:: 
 * Using a network installation of GNAT:: 

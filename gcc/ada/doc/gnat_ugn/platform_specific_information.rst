@@ -260,7 +260,7 @@ This section describes topics that are specific to the Microsoft Windows
 platforms.
 
 
-.. only:: PRO or GPL
+.. only:: PRO
 
   .. rubric:: Installing from the Command Line
 
@@ -273,38 +273,20 @@ platforms.
   line you should pass parameter :switch:`/S` (and, optionally,
   :switch:`/D=<directory>`) as command-line arguments.
 
-.. only:: PRO
-
    For example, for an unattended installation of
-   GNAT 7.0.2 into the default directory
-   ``C:\\GNATPRO\\7.0.2`` you would run:
+   GNAT 19.2 into the default directory :file:`C:\\GNATPRO\\19.2` you
+   would run::
 
-     ::
+        gnatpro-19.2-x86-windows-bin /S
 
-        gnatpro-7.0.2-i686-pc-mingw32-bin.exe /S
+   To install into a custom directory, say, :file:`C:\\TOOLS\\GNATPRO\\19.2`::
 
-   To install into a custom directory, say, ``C:\\TOOLS\\GNATPRO\\7.0.2``:
-
-     ::
-
-        gnatpro-7.0.2-i686-pc-mingw32-bin /S /D=C:\TOOLS\GNATPRO\7.0.2
-
-.. only:: GPL
-
-   For example, for an unattended installation of
-   GNAT 2012 into ``C:\\GNAT\\2012``:
-
-     ::
-
-        gnat-gpl-2012-i686-pc-mingw32-bin /S /D=C:\GNAT\2012
-
-.. only:: PRO or GPL
+        gnatpro-19.2-x86-windows-bin /S /D=C:\TOOLS\GNATPRO\19.2
 
    You can use the same syntax for all installers.
 
    Note that unattended installations don't modify system path, nor create file
    associations, so such activities need to be done by hand.
-
 
 
 .. _Using_GNAT_on_Windows:
