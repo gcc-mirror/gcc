@@ -1,3 +1,10 @@
+2019-07-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_ugn/platform_specific_information.rst: Refresh doc on
+	installing from the command line on Windows.  Remove obsolete
+	part.
+	* gnat_ugn.texi: Regenerate.
+
 2019-07-05  Vasiliy Fofanov  <fofanov@adacore.com>
 
 	* libgnat/a-wichha.ads (Is_Alphanumeric): Replace comment with
