@@ -6070,7 +6070,7 @@ package body Sem_Res is
       --  is frozen in the usual fashion, by the appearance of a real body,
       --  or at the end of a declarative part. However an implicit call to
       --  an expression function may appear when it is part of a default
-      --  expression in a call to an initialiation procedure, and must be
+      --  expression in a call to an initialization procedure, and must be
       --  frozen now, even if the body is inserted at a later point.
 
       if Is_Entity_Name (Subp)
