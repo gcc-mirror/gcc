@@ -1,6 +1,9 @@
 2019-07-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state_config::get_opts): Drop -g* switches.
+
+	gcc/cp/
 	* cp-tree.h (get_tinfo_decl_direct): Declare.
 	* module.cc (trees_out::tree_decl): Stream more tinfo_var info.
 	(trees_in::tree_value): Use get_tinfo_decl_direct for tinfo vars.

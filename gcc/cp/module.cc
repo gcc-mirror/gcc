@@ -15610,12 +15610,12 @@ module_state_config::get_opts ()
       if (opt->opt_index >= N_OPTS)
 	continue;
 
-      /* Not an option (a filename or somesuch).  */
+      /* Drop non-options (filename or somesuch).  */
       if (text[0] != '-')
 	continue;
 
-      /* Not -f* -g* -m* -O* -std=* */
-      if (!strchr ("fgmO", text[1])
+      /* Drop anything not -f* -m* -O* -std=* */
+      if (!strchr ("fmO", text[1])
 	  && 0 != strncmp (&text[1], "std=", 4))
 	continue;
 
