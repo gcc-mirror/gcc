@@ -1,3 +1,12 @@
+2019-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/atomicity.h [_GLIBCXX_ATOMIC_BUILTINS] (__atomic_add)
+	(__exchange_and_add): Replace static specifier with always_inline
+	attribute.
+	(__exchange_and_add_single, __atomic_add_single): Likewise.
+	(__exchange_and_add_dispatch, __atomic_add_dispatch): Likewise. Also
+	combine !__gthread_active_p() and !__GTHREADS branches.
+
 2019-07-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91067
