@@ -1,5 +1,9 @@
 2019-07-05  Ed Schonberg  <schonberg@adacore.com>
 
+	* gnat.dg/aggr25.adb, gnat.dg/aggr25.ads: New testcase.
+
+2019-07-05  Ed Schonberg  <schonberg@adacore.com>
+
 	* gnat.dg/predicate7.adb, gnat.dg/predicate7.ads,
 	gnat.dg/predicate7_pkg.ads: New testcase.
 
