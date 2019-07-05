@@ -389,7 +389,7 @@ package body Debug is
    --  d_L  Output library graph
    --  d_M
    --  d_N  New bindo order
-   --  d_O  Output elaboration order
+   --  d_O
    --  d_P  Output cycle paths
    --  d_Q
    --  d_R
@@ -1154,8 +1154,6 @@ package body Debug is
    --       format to standard output.
 
    --  d_N  GNATBIND utilizes the elaboration order provided by bindo
-
-   --  d_O  GNATBIND outputs the elaboration order of units to standard output
 
    --  d_P  GNATBIND outputs the cycle paths to standard output
 

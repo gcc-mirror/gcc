@@ -52,6 +52,7 @@ use  Bindo.Validators.Library_Graph_Validators;
 with Bindo.Writers;
 use  Bindo.Writers;
 use  Bindo.Writers.ALI_Writers;
+use  Bindo.Writers.Dependency_Writers;
 use  Bindo.Writers.Elaboration_Order_Writers;
 use  Bindo.Writers.Invocation_Graph_Writers;
 use  Bindo.Writers.Library_Graph_Writers;
@@ -695,12 +696,13 @@ package body Bindo.Elaborators is
          --  to a unit that result in extra edges within the library graph.
 
          Augment_Library_Graph (Inv_Graph, Lib_Graph);
+         Write_Library_Graph (Lib_Graph);
 
          --  Create and output the component graph by collapsing all library
          --  items into library units and traversing the library graph.
 
-         Find_Components     (Lib_Graph);
-         Write_Library_Graph (Lib_Graph);
+         Find_Components  (Lib_Graph);
+         Write_Components (Lib_Graph);
 
          --  Traverse the library graph to determine the elaboration order of
          --  units.
@@ -742,6 +744,11 @@ package body Bindo.Elaborators is
          if Status = Order_OK then
             Order := Mix_Order;
 
+            --  Output the dependencies of vertices when switch -e (output
+            --  complete list of elaboration order dependencies) is active.
+
+            Write_Dependencies (Mix_Lib_Graph);
+
          --  The library graph contains an Elaborate_All circularity. There is
          --  no point in re-elaborating the units without the information from
          --  the invocation graph because the circularity will persist.
@@ -773,6 +780,11 @@ package body Bindo.Elaborators is
 
             if Status = Order_OK then
                Order := Dyn_Order;
+
+               --  Output the dependencies of vertices when switch -e (output
+               --  complete list of elaboration order dependencies) is active.
+
+               Write_Dependencies (Dyn_Lib_Graph);
 
             --  Otherwise the library graph contains a circularity without the
             --  extra information provided by the invocation graph. Diagnose
@@ -820,9 +832,16 @@ package body Bindo.Elaborators is
             Order         => Order,
             Status        => Status);
 
-         --  The augmented library graph contains a circularity
+         --  The elaboration order is satisfactory. Output the dependencies of
+         --  vertices when switch -e (output complete list of elaboration order
+         --  dependencies) is active.
 
-         if Status /= Order_OK then
+         if Status = Order_OK then
+            Write_Dependencies (Lib_Graph);
+
+         --  Otherwise the augmented library graph contains a circularity
+
+         else
             Diagnose_Circularities
               (Inv_Graph => Inv_Graph,
                Lib_Graph => Lib_Graph);

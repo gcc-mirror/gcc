@@ -91,6 +91,17 @@ package Bindo.Writers is
 
    end Cycle_Writers;
 
+   ------------------------
+   -- Dependency_Writers --
+   ------------------------
+
+   package Dependency_Writers is
+      procedure Write_Dependencies (G : Library_Graph);
+      --  Write all elaboration dependencies of the units represented by
+      --  vertices of library graph G.
+
+   end Dependency_Writers;
+
    -------------------------------
    -- Elaboration_Order_Writers --
    -------------------------------
@@ -116,6 +127,9 @@ package Bindo.Writers is
    ---------------------------
 
    package Library_Graph_Writers is
+      procedure Write_Components (G : Library_Graph);
+      --  Write all components of library graph G to standard output
+
       procedure Write_Library_Graph (G : Library_Graph);
       --  Write library graph G to standard output
 

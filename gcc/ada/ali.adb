@@ -510,6 +510,27 @@ package body ALI is
       end loop;
    end For_Each_Invocation_Construct;
 
+   -----------------------------------
+   -- For_Each_Invocation_Construct --
+   -----------------------------------
+
+   procedure For_Each_Invocation_Construct
+     (U_Id      : Unit_Id;
+      Processor : Invocation_Construct_Processor_Ptr)
+   is
+      pragma Assert (Present (U_Id));
+      pragma Assert (Processor /= null);
+
+      U_Rec : Unit_Record renames Units.Table (U_Id);
+
+   begin
+      for IC_Id in U_Rec.First_Invocation_Construct ..
+                   U_Rec.Last_Invocation_Construct
+      loop
+         Processor.all (IC_Id);
+      end loop;
+   end For_Each_Invocation_Construct;
+
    ----------------------------------
    -- For_Each_Invocation_Relation --
    ----------------------------------
@@ -522,6 +543,27 @@ package body ALI is
 
       for IR_Id in Invocation_Relations.First ..
                    Invocation_Relations.Last
+      loop
+         Processor.all (IR_Id);
+      end loop;
+   end For_Each_Invocation_Relation;
+
+   ----------------------------------
+   -- For_Each_Invocation_Relation --
+   ----------------------------------
+
+   procedure For_Each_Invocation_Relation
+     (U_Id      : Unit_Id;
+      Processor : Invocation_Relation_Processor_Ptr)
+   is
+      pragma Assert (Present (U_Id));
+      pragma Assert (Processor /= null);
+
+      U_Rec : Unit_Record renames Units.Table (U_Id);
+
+   begin
+      for IR_Id in U_Rec.First_Invocation_Relation ..
+                   U_Rec.Last_Invocation_Relation
       loop
          Processor.all (IR_Id);
       end loop;
@@ -1831,6 +1873,7 @@ package body ALI is
         First_Specific_Dispatching   => Specific_Dispatching.Last + 1,
         First_Unit                   => No_Unit_Id,
         GNATprove_Mode               => False,
+        Invocation_Graph_Encoding    => No_Encoding,
         Last_Interrupt_State         => Interrupt_States.Last,
         Last_Sdep                    => No_Sdep_Id,
         Last_Specific_Dispatching    => Specific_Dispatching.Last,
@@ -3807,9 +3850,10 @@ package body ALI is
       if Update_Units then
          declare
             Curr_Unit : Unit_Record renames Units.Table (Units.Last);
+            Curr_ALI  : ALIs_Record renames ALIs.Table  (Curr_Unit.My_ALI);
 
          begin
-            Curr_Unit.Invocation_Graph_Encoding := Kind;
+            Curr_ALI.Invocation_Graph_Encoding := Kind;
          end;
       end if;
    end Set_Invocation_Graph_Encoding;

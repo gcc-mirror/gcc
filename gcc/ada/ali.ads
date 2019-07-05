@@ -273,6 +273,11 @@ package ALI is
       --  Last_Specific_Dispatching = First_Specific_Dispatching - 1. That
       --  is why the 'Base reference is there, it can be one less than the
       --  lower bound of the subtype. Not set if 'S' appears in Ignore_Lines.
+
+      Invocation_Graph_Encoding : Invocation_Graph_Encoding_Kind;
+      --  The encoding format used to capture information about the invocation
+      --  constructs and relations within the corresponding ALI file of this
+      --  unit.
    end record;
 
    No_Main_Priority : constant Int := -1;
@@ -381,11 +386,6 @@ package ALI is
 
       Last_Arg : Arg_Id;
       --  Id of last args table entry for this file
-
-      Invocation_Graph_Encoding : Invocation_Graph_Encoding_Kind;
-      --  The encoding format used to capture information about the invocation
-      --  constructs and relations within the corresponding ALI file of this
-      --  unit.
 
       First_Invocation_Construct : Invocation_Construct_Id;
       --  Id of the first invocation construct for this unit
@@ -1271,13 +1271,25 @@ package ALI is
    pragma Inline (For_Each_Invocation_Construct);
    --  Invoke Processor on each invocation construct
 
+   procedure For_Each_Invocation_Construct
+     (U_Id      : Unit_Id;
+      Processor : Invocation_Construct_Processor_Ptr);
+   pragma Inline (For_Each_Invocation_Construct);
+   --  Invoke Processor on each invocation construct of unit U_Id
+
    type Invocation_Relation_Processor_Ptr is
      access procedure (IR_Id : Invocation_Relation_Id);
 
    procedure For_Each_Invocation_Relation
      (Processor : Invocation_Relation_Processor_Ptr);
    pragma Inline (For_Each_Invocation_Relation);
-   --  Invoker Processor on each invocation relation
+   --  Invoke Processor on each invocation relation
+
+   procedure For_Each_Invocation_Relation
+     (U_Id      : Unit_Id;
+      Processor : Invocation_Relation_Processor_Ptr);
+   pragma Inline (For_Each_Invocation_Relation);
+   --  Invoke Processor on each invocation relation of unit U_Id
 
    function Invocation_Construct_Kind_To_Code
      (Kind : Invocation_Construct_Kind) return Character;

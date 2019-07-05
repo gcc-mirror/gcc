@@ -788,6 +788,9 @@ package body Sem_Elab is
      (Generic_Target,
       --  A generic unit being instantiated
 
+      Package_Target,
+      --  The package form of an instantiation
+
       Subprogram_Target,
       --  An entry, operator, or subprogram being invoked, or aliased through
       --  'Access or 'Unrestricted_Access.
@@ -2045,6 +2048,10 @@ package body Sem_Elab is
       Unit_2 : Entity_Id) return Boolean;
    pragma Inline (Is_Same_Unit);
    --  Determine whether entities Unit_1 and Unit_2 denote the same unit
+
+   function Main_Unit_Entity return Entity_Id;
+   pragma Inline (Main_Unit_Entity);
+   --  Return the entity of the main unit
 
    function Non_Private_View (Typ : Entity_Id) return Entity_Id;
    pragma Inline (Non_Private_View);
@@ -3955,7 +3962,7 @@ package body Sem_Elab is
       --  Elaboration_Checks which appears on the initial declaration of the
       --  main unit.
 
-      Install_Elaboration_Model (Unit_Entity (Cunit_Entity (Main_Unit)));
+      Install_Elaboration_Model (Unit_Entity (Main_Unit_Entity));
 
       --  Examine the context of the main unit and record all units with prior
       --  elaboration with respect to it.
@@ -6344,7 +6351,7 @@ package body Sem_Elab is
          --  because diagnostics on reads are relevant only for external
          --  variables.
 
-         if Is_Same_Unit (Unit_Id, Cunit_Entity (Main_Unit)) then
+         if Is_Same_Unit (Unit_Id, Main_Unit_Entity) then
             null;
 
          --  Nothing to do when the variable is already initialized. Note that
@@ -8163,7 +8170,7 @@ package body Sem_Elab is
          --       body of A elaborated  <--  problem
          --
          --    The generation of an implicit pragma Elaborate_All (B) ensures
-         --    that the elaboration order mechanism will not pick the above
+         --    that the elaboration-order mechanism will not pick the above
          --    order.
          --
          --    An implicit Elaborate is NOT generated when the unit is subject
@@ -8502,10 +8509,9 @@ package body Sem_Elab is
          Elab_Body_OK : Boolean := False;
          Same_Unit_OK : Boolean := False) return Boolean
       is
-         EA_Id : constant Elaboration_Attributes_Id :=
-                   Elaboration_Attributes_Of (Unit_Id);
-
-         Main_Id   : constant Entity_Id := Cunit_Entity (Main_Unit);
+         EA_Id     : constant Elaboration_Attributes_Id :=
+                       Elaboration_Attributes_Of (Unit_Id);
+         Main_Id   : constant Entity_Id := Main_Unit_Entity;
          Unit_Prag : constant Node_Id   := Elab_Pragma (EA_Id);
          Unit_With : constant Node_Id   := With_Clause (EA_Id);
 
@@ -8575,7 +8581,7 @@ package body Sem_Elab is
       is
          pragma Assert (Nam_In (Req_Nam, Name_Elaborate, Name_Elaborate_All));
 
-         Main_Id : constant Entity_Id := Cunit_Entity (Main_Unit);
+         Main_Id : constant Entity_Id := Main_Unit_Entity;
          Unit_Id : constant Entity_Id := Find_Top_Unit (Targ_Id);
 
          procedure Elaboration_Requirement_Error;
@@ -10356,6 +10362,11 @@ package body Sem_Elab is
       pragma Inline (Create_Instantiation_Rep);
       --  Create the representation of instantiation Inst
 
+      function Create_Package_Rep
+        (Pack_Id : Entity_Id) return Target_Rep_Record;
+      pragma Inline (Create_Package_Rep);
+      --  Create the representation of package Pack_Id
+
       function Create_Protected_Entry_Rep
         (PE_Id : Entity_Id) return Target_Rep_Record;
       pragma Inline (Create_Protected_Entry_Rep);
@@ -10624,6 +10635,26 @@ package body Sem_Elab is
          return Rec;
       end Create_Instantiation_Rep;
 
+      ------------------------
+      -- Create_Package_Rep --
+      ------------------------
+
+      function Create_Package_Rep
+        (Pack_Id : Entity_Id) return Target_Rep_Record
+      is
+         Rec : Target_Rep_Record;
+
+      begin
+         Rec.Kind := Package_Target;
+
+         Spec_And_Body_From_Entity
+           (Id        => Pack_Id,
+            Body_Decl => Rec.Body_Decl,
+            Spec_Decl => Rec.Spec_Decl);
+
+         return Rec;
+      end Create_Package_Rep;
+
       --------------------------------
       -- Create_Protected_Entry_Rep --
       --------------------------------
@@ -10845,6 +10876,9 @@ package body Sem_Elab is
                              E_Procedure)
          then
             Rec := Create_Subprogram_Rep (Id);
+
+         elsif Ekind (Id) = E_Package then
+            Rec := Create_Package_Rep (Id);
 
          else
             pragma Assert (False);
@@ -11622,6 +11656,14 @@ package body Sem_Elab is
       --  Process invocation call scenario Call with representation Call_Rep.
       --  In_State is the current state of the Processing phase.
 
+      procedure Process_Invocation_Instantiation
+        (Inst     : Node_Id;
+         Inst_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Invocation_Instantiation);
+      --  Process invocation instantiation scenario Inst with representation
+      --  Inst_Rep. In_State is the current state of the Processing phase.
+
       procedure Process_Invocation_Scenario
         (N        : Node_Id;
          In_State : Processing_In_State);
@@ -11767,7 +11809,7 @@ package body Sem_Elab is
          end if;
 
          Spec_And_Body_From_Entity
-           (Id        => Cunit_Entity (Main_Unit),
+           (Id        => Main_Unit_Entity,
             Body_Decl => Body_Decl,
             Spec_Decl => Spec_Decl);
 
@@ -11799,7 +11841,7 @@ package body Sem_Elab is
 
          Set_Ekind (Proc_Id, E_Procedure);
          Set_Etype (Proc_Id, Standard_Void_Type);
-         Set_Scope (Proc_Id, Unique_Entity (Cunit_Entity (Main_Unit)));
+         Set_Scope (Proc_Id, Unique_Entity (Main_Unit_Entity));
 
          --  Create a dummy declaration for the elaboration procedure. The
          --  declaration does not need to be syntactically legal, but must
@@ -11830,7 +11872,7 @@ package body Sem_Elab is
          end if;
 
          Spec_And_Body_From_Entity
-           (Id        => Cunit_Entity (Main_Unit),
+           (Id        => Main_Unit_Entity,
             Body_Decl => Body_Decl,
             Spec_Decl => Spec_Decl);
 
@@ -11995,7 +12037,7 @@ package body Sem_Elab is
          function Declaration_Placement_Of_Node
            (N : Node_Id) return Declaration_Placement_Kind
          is
-            Main_Unit_Id : constant Entity_Id := Cunit_Entity (Main_Unit);
+            Main_Unit_Id : constant Entity_Id := Main_Unit_Entity;
             N_Unit_Id    : constant Entity_Id := Find_Top_Unit (N);
 
          begin
@@ -12150,6 +12192,9 @@ package body Sem_Elab is
          Main_Cunit : constant Node_Id := Cunit (Main_Unit);
 
       begin
+         --  ??? Remove the following use of the debug flag when switching from
+         --  the old to the new elaboration-order mechanism.
+
          --  Nothing to do when switch -gnatd_G (encode invocation graph in ALI
          --  files) is not in effect.
 
@@ -12458,6 +12503,43 @@ package body Sem_Elab is
          end if;
       end Process_Invocation_Call;
 
+      --------------------------------------
+      -- Process_Invocation_Instantiation --
+      --------------------------------------
+
+      procedure Process_Invocation_Instantiation
+        (Inst     : Node_Id;
+         Inst_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         pragma Unreferenced (Inst);
+
+         Gen_Id : constant Entity_Id := Target (Inst_Rep);
+
+      begin
+         --  Nothing to do when the generic appears within an internal unit
+
+         if In_Internal_Unit (Gen_Id) then
+            return;
+         end if;
+
+         --  The generic being instantiated resides within an external unit
+         --
+         --      Main unit         External unit
+         --    +-----------+      +-------------+
+         --    |           |      |             |
+         --    |  Start ------------> Generic   |
+         --    |           |      |             |
+         --    +-----------+      +-------------+
+         --
+         --  Record the invocation path which originates from Start and reaches
+         --  the generic.
+
+         if not In_Extended_Main_Code_Unit (Gen_Id) then
+            Record_Invocation_Path (In_State);
+         end if;
+      end Process_Invocation_Instantiation;
+
       ---------------------------------
       -- Process_Invocation_Scenario --
       ---------------------------------
@@ -12503,6 +12585,14 @@ package body Sem_Elab is
                      In_State  => In_State);
                end if;
             end if;
+
+         --  Instantiation
+
+         elsif Is_Suitable_Instantiation (Scen) then
+            Process_Invocation_Instantiation
+              (Inst     => Scen,
+               Inst_Rep => Scenario_Representation_Of (Scen, In_State),
+               In_State => In_State);
          end if;
 
          --  Remove the current scenario from the stack of active scenarios
@@ -13588,6 +13678,18 @@ package body Sem_Elab is
          Delete_Scenario (N);
       end if;
    end Kill_Elaboration_Scenario;
+
+   ----------------------
+   -- Main_Unit_Entity --
+   ----------------------
+
+   function Main_Unit_Entity return Entity_Id is
+   begin
+      --  Note that Cunit_Entity (Main_Unit) is not reliable in the presence of
+      --  generic bodies and may return an outdated entity.
+
+      return Defining_Entity (Unit (Cunit (Main_Unit)));
+   end Main_Unit_Entity;
 
    ----------------------
    -- Non_Private_View --
@@ -15026,8 +15128,7 @@ package body Sem_Elab is
       --  emitted multiple times.
 
       procedure Check_SPARK_Model_In_Effect is
-         Spec_Id : constant Entity_Id :=
-                     Unique_Entity (Cunit_Entity (Main_Unit));
+         Spec_Id : constant Entity_Id := Unique_Entity (Main_Unit_Entity);
 
       begin
          --  Do not emit the warning multiple times as this creates useless

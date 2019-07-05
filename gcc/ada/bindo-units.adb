@@ -243,9 +243,10 @@ package body Bindo.Units is
       pragma Assert (Present (U_Id));
 
       U_Rec : Unit_Record renames ALI.Units.Table (U_Id);
+      U_ALI : ALIs_Record renames ALI.ALIs.Table  (U_Rec.My_ALI);
 
    begin
-      return U_Rec.Invocation_Graph_Encoding;
+      return U_ALI.Invocation_Graph_Encoding;
    end Invocation_Graph_Encoding;
 
    -------------------------------
