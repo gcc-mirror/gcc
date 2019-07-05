@@ -617,8 +617,23 @@ package body Checks is
          Param_Level :=
            New_Occurrence_Of (Extra_Accessibility (Param_Ent), Loc);
 
-         Type_Level :=
-           Make_Integer_Literal (Loc, Deepest_Type_Access_Level (Typ));
+         --  Use the dynamic accessibility parameter for the function's result
+         --  when one has been created instead of statically referring to the
+         --  deepest type level so as to appropriatly handle the rules for
+         --  RM 3.10.2 (10.1/3).
+
+         if Ekind_In (Scope (Param_Ent), E_Function,
+                                         E_Operator,
+                                         E_Subprogram_Type)
+           and then Present (Extra_Accessibility_Of_Result (Scope (Param_Ent)))
+         then
+            Type_Level :=
+              New_Occurrence_Of
+                (Extra_Accessibility_Of_Result (Scope (Param_Ent)), Loc);
+         else
+            Type_Level :=
+              Make_Integer_Literal (Loc, Deepest_Type_Access_Level (Typ));
+         end if;
 
          --  Raise Program_Error if the accessibility level of the access
          --  parameter is deeper than the level of the target access type.
