@@ -1150,8 +1150,9 @@ package body Exp_Pakd is
       Expr := First (Expressions (Lhs));
       while Present (Expr) loop
          declare
-            Loc       : constant Source_Ptr := Sloc (Expr);
-            Expr_Typ  : constant Entity_Id := Etype (Expr);
+            Expr_Typ : constant Entity_Id  := Etype (Expr);
+            Loc      : constant Source_Ptr := Sloc  (Expr);
+
             Expr_Copy : Node_Id;
 
          begin

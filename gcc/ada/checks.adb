@@ -2722,7 +2722,7 @@ package body Checks is
             then
                declare
                   In_Body : Boolean := False;
-                  P : Node_Id := Parent (N);
+                  P       : Node_Id := Parent (N);
 
                begin
                   while Present (P) loop

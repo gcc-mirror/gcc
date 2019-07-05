@@ -3997,8 +3997,9 @@ package body Exp_Attr is
 
                declare
                   Rtyp : constant Entity_Id := Root_Type (P_Type);
+
+                  Expr    : Node_Id; -- call to Descendant_Tag
                   Get_Tag : Node_Id; -- expression to read the 'Tag
-                  Expr : Node_Id; -- call to Descendant_Tag
 
                begin
                   --  Read the internal tag (RM 13.13.2(34)) and use it to

@@ -87,7 +87,7 @@ package Sem_Aux is
    -----------------
 
    function Ancestor_Subtype (Typ : Entity_Id) return Entity_Id;
-   --  The argument Id is a type or subtype entity. If the argument is a
+   --  The argument Typ is a type or subtype entity. If the argument is a
    --  subtype then it returns the subtype or type from which the subtype was
    --  obtained, otherwise it returns Empty.
 

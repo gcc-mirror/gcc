@@ -1081,7 +1081,7 @@ package body Lib.Writ is
 
    begin
       --  We never write an ALI file if the original operating mode was
-      --  syntax-only (-gnats switch used in compiler invocation line)
+      --  syntax-only (-gnats switch used in compiler invocation line).
 
       if Original_Operating_Mode = Check_Syntax then
          return;

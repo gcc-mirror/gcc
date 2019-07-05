@@ -6576,13 +6576,15 @@ package body Sem_Util is
                   --  the accessibility level is that of the declaration of the
                   --  stand-alone object.
 
-                  return Make_Level_Literal
-                           (Object_Access_Level
-                              (Defining_Identifier (Parent (N))));
+                  return
+                    Make_Level_Literal
+                      (Object_Access_Level
+                         (Defining_Identifier (Parent (N))));
 
                when N_Assignment_Statement =>
-                  return Make_Level_Literal
-                           (Object_Access_Level (Name (Parent (N))));
+                  return
+                    Make_Level_Literal
+                      (Object_Access_Level (Name (Parent (N))));
 
                when others =>
                   declare
@@ -6591,8 +6593,9 @@ package body Sem_Util is
                   begin
                      Error_Msg_Strlen := S'Length;
                      Error_Msg_String (1 .. Error_Msg_Strlen) := S;
-                     Error_Msg_N ("unsupported context for anonymous " &
-                                  "allocator (~)", Parent (N));
+                     Error_Msg_N
+                       ("unsupported context for anonymous allocator (~)",
+                        Parent (N));
                   end;
             end case;
 
@@ -6899,8 +6902,9 @@ package body Sem_Util is
       elsif Dynamic_Scope = Empty then
          return Empty;
 
-      elsif Ekind_In (Dynamic_Scope, E_Package, E_Package_Body,
-                      E_Generic_Package)
+      elsif Ekind_In (Dynamic_Scope, E_Generic_Package,
+                                     E_Package,
+                                     E_Package_Body)
       then
          return Dynamic_Scope;
 
@@ -6954,7 +6958,7 @@ package body Sem_Util is
       elsif Ekind (Dyn_Scop) = E_Subprogram_Body then
          return Corresponding_Spec (Parent (Parent (Dyn_Scop)));
 
-      elsif Ekind_In (Dyn_Scop, E_Block, E_Return_Statement, E_Loop) then
+      elsif Ekind_In (Dyn_Scop, E_Block, E_Loop, E_Return_Statement) then
          return Enclosing_Subprogram (Dyn_Scop);
 
       elsif Ekind (Dyn_Scop) = E_Entry then

@@ -1,3 +1,10 @@
+2019-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* bindo-units.adb, checks.adb, exp_attr.adb, exp_ch3.adb,
+	exp_ch4.adb, exp_pakd.adb, lib-writ.adb, libgnat/g-traceb.adb,
+	libgnat/g-traceb.ads, libgnat/s-stratt.ads, sem_aux.ads,
+	sem_util.adb: Minor reformatting.
+
 2019-07-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Build_Predicate_Functions): If a subtype that

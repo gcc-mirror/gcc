@@ -45,8 +45,6 @@ package body Bindo.Units is
 
    --  The following set stores all units the need to be elaborated
 
-   --  Kirchev
-
    Elaborable_Units : Unit_Sets.Membership_Set := Unit_Sets.Nil;
 
    -----------------------
