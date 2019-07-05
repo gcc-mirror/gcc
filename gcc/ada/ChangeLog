@@ -1,3 +1,12 @@
+2019-07-05  Justin Squirek  <squirek@adacore.com>
+
+	* checks.adb (Apply_Accessibility_Check): Add logic to fetch the
+	function result accessibility level if one is required within
+	the generated check.
+	* exp_ch6.adb (Needs_Result_Accessibility_Level): Modify
+	controlling elsif block to handle more cases such as anonymous
+	access results and disable checking for coextensions.
+
 2019-07-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch9.adb (Analyze_Accept_Statement): If this is an illegal
