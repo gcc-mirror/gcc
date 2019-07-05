@@ -1,3 +1,7 @@
+2019-07-05  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/access6.adb: New testcase.
+
 2019-07-05  Bob Duff  <duff@adacore.com>
 
 	* gnat.dg/bip_export.adb, gnat.dg/bip_export.ads: New testcase.

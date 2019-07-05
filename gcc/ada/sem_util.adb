@@ -6452,8 +6452,8 @@ package body Sem_Util is
    -- Dynamic_Accessibility_Level --
    ---------------------------------
 
-   function Dynamic_Accessibility_Level (Expr : Node_Id) return Node_Id is
-      Loc : constant Source_Ptr := Sloc (Expr);
+   function Dynamic_Accessibility_Level (N : Node_Id) return Node_Id is
+      Loc : constant Source_Ptr := Sloc (N);
 
       function Make_Level_Literal (Level : Uint) return Node_Id;
       --  Construct an integer literal representing an accessibility level
@@ -6473,7 +6473,12 @@ package body Sem_Util is
 
       --  Local variables
 
-      E : Entity_Id;
+      Expr : constant Node_Id := Original_Node (N);
+      --  Expr references the original node because at this stage N may be the
+      --  reference to a variable internally created by the frontend to remove
+      --  side effects of an expression.
+
+      E    : Entity_Id;
 
    --  Start of processing for Dynamic_Accessibility_Level
 
@@ -6530,12 +6535,66 @@ package body Sem_Util is
 
          when N_Allocator =>
 
-            --  Unimplemented: depends on context. As an actual parameter where
-            --  formal type is anonymous, use
-            --    Scope_Depth (Current_Scope) + 1.
-            --  For other cases, see 3.10.2(14/3) and following. ???
+            --  This is not fully implemented since it depends on context (see
+            --  3.10.2(14/3-14.2/3). More work is needed in the following cases
+            --
+            --  1) For an anonymous allocator defining the value of an access
+            --     parameter, the accessibility level is that of the innermost
+            --     master of the call; however currently we pass the level of
+            --     execution of the called subprogram, which is one greater
+            --     than the current scope level (see Expand_Call_Helper).
+            --
+            --     For example, a statement is a master and a declaration is
+            --     not a master; so we should not pass in the same level for
+            --     the following cases:
+            --
+            --         function F (X : access Integer) return T is ... ;
+            --         Decl : T := F (new Integer); -- level is off by one
+            --      begin
+            --         Decl := F (new Integer); -- we get this case right
+            --
+            --  2) For an anonymous allocator that defines the result of a
+            --     function with an access result, the accessibility level is
+            --     determined as though the allocator were in place of the call
+            --     of the function. In the special case of a call that is the
+            --     operand of a type conversion the level is that of the target
+            --     access type of the conversion.
+            --
+            --  3) For an anonymous allocator defining an access discriminant
+            --     the accessibility level is determined as follows:
+            --       * for an allocator used to define the discriminant of an
+            --         object, the level of the object
+            --       * for an allocator used to define the constraint in a
+            --         subtype_indication in any other context, the level of
+            --         the master that elaborates the subtype_indication.
 
-            null;
+            case Nkind (Parent (N)) is
+               when N_Object_Declaration =>
+
+                  --  For an anonymous allocator whose type is that of a
+                  --  stand-alone object of an anonymous access-to-object type,
+                  --  the accessibility level is that of the declaration of the
+                  --  stand-alone object.
+
+                  return Make_Level_Literal
+                           (Object_Access_Level
+                              (Defining_Identifier (Parent (N))));
+
+               when N_Assignment_Statement =>
+                  return Make_Level_Literal
+                           (Object_Access_Level (Name (Parent (N))));
+
+               when others =>
+                  declare
+                     S : constant String :=
+                           Node_Kind'Image (Nkind (Parent (N)));
+                  begin
+                     Error_Msg_Strlen := S'Length;
+                     Error_Msg_String (1 .. Error_Msg_Strlen) := S;
+                     Error_Msg_N ("unsupported context for anonymous " &
+                                  "allocator (~)", Parent (N));
+                  end;
+            end case;
 
          when N_Type_Conversion =>
             if not Is_Local_Anonymous_Access (Etype (Expr)) then

@@ -1,3 +1,15 @@
+2019-07-05  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Do not apply an
+	accessibility check when the conversion is an access to
+	class-wide interface type and it is an actual parameter.
+	* exp_ch6.adb (Expand_Call_Helper): Add documentation on the
+	accessibility level of an anonymous allocator defining the value
+	of an access parameter.
+	* sem_util.ads, sem_util.adb (Dynamic_Accessibility_Level): Add
+	support for an anonymous allocator whose type is that of a
+	stand-alone object of an anonymous access to object type.
+
 2019-07-05  Piotr Trojanek  <trojanek@adacore.com>
 
 	* einfo.ads, sem_res.adb: Typo fixes in comments.

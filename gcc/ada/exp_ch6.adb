@@ -3271,7 +3271,10 @@ package body Exp_Ch6 is
 
                   --  For allocators we pass the level of the execution of the
                   --  called subprogram, which is one greater than the current
-                  --  scope level.
+                  --  scope level. However, according to RM 3.10.2(14/3) this
+                  --  is wrong since for an anonymous allocator defining the
+                  --  value of an access parameter, the accessibility level is
+                  --  that of the innermost master of the call???
 
                   when N_Allocator =>
                      Add_Extra_Actual
