@@ -1,3 +1,7 @@
+2019-07-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pack23.adb, gnat.dg/pack23_pkg.ads: New testcase.
+
 2019-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/task3.adb, gnat.dg/task3.ads, gnat.dg/task3_pkg1.ads,
