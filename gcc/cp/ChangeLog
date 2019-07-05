@@ -1,3 +1,10 @@
+2019-07-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/67184
+	PR c++/69445
+	* call.c (build_new_method_call_1): Remove set but not used variable
+	binfo.
+
 2019-07-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67184 (again)
