@@ -1,6 +1,27 @@
 2019-07-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91091
+	* tree-ssa-alias.h (get_continuation_for_phi): Add tbaa_p parameter.
+	(walk_non_aliased_vuses): Likewise.
+	* tree-ssa-alias.c (maybe_skip_until): Pass down tbaa_p.
+	(get_continuation_for_phi): New tbaa_p parameter and pass
+	it down.
+	(walk_non_aliased_vuses): Likewise.
+	* ipa-prop.c (determine_known_aggregate_parts): Adjust.
+	* tree-ssa-pre.c (translate_vuse_through_block): Likewise.
+	* tree-ssa-scopedtables.c (avail_exprs_stack::lookup_avail_expr):
+	Likewise.
+	* tree-ssa-sccvn.c (struct vn_walk_cb_data): Add tbaa_p flag.
+	(adjust_offsets_for_equal_base_address): New function.
+	(vn_reference_lookup_3): Use it to catch more base equivalences.
+	Handle and pass down tbaa_p flag.
+	(vn_reference_lookup_pieces): Adjust.
+	(vn_reference_lookup): Remove alias-set altering, instead pass
+	down false as tbaa_p.
+
+2019-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91091
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Overlap of
 	accesses can happen with -fno-strict-aliasing.
 
