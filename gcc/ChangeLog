@@ -1,5 +1,10 @@
 2019-07-05  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Valueize RHS
+	when comparing against a store with possibly the same value.
+
+2019-07-05  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/91091
 	* tree-ssa-alias.h (get_continuation_for_phi): Add tbaa_p parameter.
 	(walk_non_aliased_vuses): Likewise.
