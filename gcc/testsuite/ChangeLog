@@ -1,7 +1,14 @@
+2019-07-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67184 (again)
+	PR c++/69445
+	* g++.dg/other/final4.C: New.
+
 2019-07-04  Marek Polacek  <polacek@redhat.com>
 
 	DR 1813
-	PR c++/83374 - __is_standard_layout wrong for a class with repeated bases.
+	PR c++/83374 - __is_standard_layout wrong for a class with repeated
+	bases.
 	* g++.dg/ext/is_std_layout3.C: New test.
 	* g++.dg/ext/is_std_layout4.C: New test.
 
