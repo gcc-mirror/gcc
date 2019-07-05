@@ -2047,9 +2047,11 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  if (res && res != (void *)-1)
 	    {
 	      vn_reference_t vnresult = (vn_reference_t) res;
+	      tree rhs = gimple_assign_rhs1 (def_stmt);
+	      if (TREE_CODE (rhs) == SSA_NAME)
+		rhs = SSA_VAL (rhs);
 	      if (vnresult->result
-		  && operand_equal_p (vnresult->result,
-				      gimple_assign_rhs1 (def_stmt), 0))
+		  && operand_equal_p (vnresult->result, rhs, 0))
 		return res;
 	    }
 	}
