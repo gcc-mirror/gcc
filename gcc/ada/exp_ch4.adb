@@ -11471,8 +11471,8 @@ package body Exp_Ch4 is
          then
             if not Comes_From_Source (N)
               and then Nkind_In (Parent (N), N_Function_Call,
-                                             N_Procedure_Call_Statement,
-                                             N_Parameter_Association)
+                                             N_Parameter_Association,
+                                             N_Procedure_Call_Statement)
               and then Is_Interface (Designated_Type (Target_Type))
               and then Is_Class_Wide_Type (Designated_Type (Target_Type))
             then

@@ -99,7 +99,8 @@ package GNAT.Traceback is
    --  are undefined on return.
 
    function Call_Chain
-     (Max_Len : Positive; Skip_Frames : Natural := 1) return Tracebacks_Array;
+     (Max_Len     : Positive;
+      Skip_Frames : Natural := 1) return Tracebacks_Array;
    --  Returns up to Max_Len tracebacks corresponding to the current call
    --  chain. Result array order is the same as in above procedure Call_Chain
    --  except that Skip_Frames says how many of the most recent calls should be

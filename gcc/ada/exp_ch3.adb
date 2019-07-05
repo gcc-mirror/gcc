@@ -9550,9 +9550,9 @@ package body Exp_Ch3 is
                      if No (Eq_Call) then
                         Next_Test := Make_Op_Ne (Loc, Lhs, Rhs);
 
-                     --  If a component has a defined abstract equality,
-                     --  its application raises Program_Error on that
-                     --  component and therefore on the current variant.
+                     --  If a component has a defined abstract equality, its
+                     --  application raises Program_Error on that component
+                     --  and therefore on the current variant.
 
                      elsif Nkind (Eq_Call) = N_Raise_Program_Error then
                         Set_Etype (Eq_Call, Standard_Boolean);
