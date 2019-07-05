@@ -1,5 +1,17 @@
 2019-07-05  Nathan Sidwell  <nathan@acm.org>
 
+	Victory!
+	gcc/cp/
+	* decl2.c (c_parse_final_cleanups): Don't do static init things
+	for a header module.
+	* module.cc (trees_in::start): Drop unused second parm.
+	(module_state::{read,write}_inits): New.
+	(trees_out::core_bools): Restrict static->extern hack.
+	(module_state::{read,write}_config): Note inits.
+	(module_state::{read,write}): Stream inits.
+	gcc/testsuite/
+	* g++.dg/modules/iostream-1_b.C: Remove ioinit workaround.
+
 	gcc/testsuite/
 	* g++.dg/modules/iostream-1_[ab].[HC]: New.
 

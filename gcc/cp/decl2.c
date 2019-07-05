@@ -4818,6 +4818,9 @@ c_parse_final_cleanups (void)
       instantiate_pending_templates (retries);
       ggc_collect ();
 
+      if (header_module_p ())
+	goto skip;
+
       /* Write out virtual tables as required.  Writing out the
 	 virtual table for a template class may cause the
 	 instantiation of members of that class.  If we write out
@@ -5015,7 +5018,7 @@ c_parse_final_cleanups (void)
 	  && wrapup_global_declarations (pending_statics->address (),
 					 pending_statics->length ()))
 	reconsider = true;
-
+    skip:;
       retries++;
     }
   while (reconsider);

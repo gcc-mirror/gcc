@@ -2761,7 +2761,7 @@ private:
   tree finish_type (tree);
 
 private:
-  tree start (unsigned, int = -1);
+  tree start (unsigned);
   tree finish (tree);
 
 public:
@@ -3445,6 +3445,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void write_cluster (elf_out *to, depset *depsets[], unsigned size,
 		      depset::hash &, unsigned &unnamed, unsigned *crc_ptr);
   bool read_cluster (unsigned snum);
+
+ private:
+  unsigned write_inits (elf_out *to, depset::hash &, unsigned *crc_ptr);
+  bool read_inits (unsigned count);
 
  private:
   void write_unnamed (elf_out *to, vec<depset *> depsets,
@@ -4745,12 +4749,11 @@ trees_out::start (tree t)
 /* Start tree read.  Allocate the receiving node.  */
 
 tree
-trees_in::start (unsigned code, int klass)
+trees_in::start (unsigned code)
 {
   tree t = NULL_TREE;
 
-  if (code >= MAX_TREE_CODES ||
-      (klass >= 0 && TREE_CODE_CLASS (code) != klass))
+  if (code >= MAX_TREE_CODES)
     {
     fail:
       set_overrun ();
@@ -4969,10 +4972,15 @@ trees_out::core_bools (tree t)
       WB (t->decl_common.lang_flag_7);
       WB (t->decl_common.lang_flag_8);
       WB (t->decl_common.decl_flag_0);
+
+      // FIXME: This heuristic is not correct.  We should be fiddling
+      // with this during the dependency walk
       /* static variables become external.  */
       WB (t->decl_common.decl_flag_1
 	  || (code == VAR_DECL && TREE_STATIC (t)
+	      && !header_module_p ()
 	      && !DECL_WEAK (t) && !DECL_VTABLE_OR_VTT_P (t)));
+
       WB (t->decl_common.decl_flag_2);
       WB (t->decl_common.decl_flag_3);
       WB (t->decl_common.gimple_reg_flag);
@@ -15505,6 +15513,68 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
   return def;
 }
 
+/* Stream the static aggregates.  Sadly some headers (ahem:
+   iostream) contain static vars, and rely on them to run global
+   ctors.  */
+// FIXME: What about tls inits?
+// FIXME: Do I need to walk to add to dependency table?
+unsigned
+module_state::write_inits (elf_out *to, depset::hash &table, unsigned *crc_ptr)
+{
+  if (!static_aggregates)
+    return 0;
+
+  dump () && dump ("Writing initializers");
+  dump.indent ();
+
+  static_aggregates = nreverse (static_aggregates);
+
+  unsigned count = 0;
+  trees_out sec (to, this, table, ~0u);
+  sec.begin ();
+  for (tree init = static_aggregates; init; init = TREE_CHAIN (init), count++)
+    {
+      tree decl = TREE_VALUE (init);
+
+      dump ("Initializer:%u for %N", count, decl);
+      sec.tree_node (decl);
+      sec.tree_node (TREE_PURPOSE (init));
+    }
+
+  sec.end (to, to->name (MOD_SNAME_PFX ".ini"), crc_ptr);
+  dump.outdent ();
+
+  return count;
+}
+
+bool
+module_state::read_inits (unsigned count)
+{
+  if (!count)
+    return true;
+
+  trees_in sec (this);
+  if (!sec.begin (loc, from (), from ()->find (MOD_SNAME_PFX ".ini")))
+    return false;
+  dump () && dump ("Reading %u initializers", count);
+  dump.indent ();
+  for (unsigned ix = 0; ix != count; ix++)
+    {
+      tree decl = sec.tree_node ();
+      tree init = sec.tree_node ();
+
+      if (sec.get_overrun ())
+	break;
+      dump ("Initializer:%u for %N", count, decl);
+      static_aggregates = tree_cons (init, decl, static_aggregates);
+    }
+
+  dump.outdent ();
+  if (!sec.end (from ()))
+    return false;  
+  return true;
+}
+
 /* Compare bindings for two namespaces.  Those closer to :: are
    less.  */
 
@@ -15561,6 +15631,7 @@ struct module_state_config {
   unsigned num_partitions;
   unsigned num_bindings;
   unsigned num_macros;
+  unsigned num_inits;
   const cpp_hashnode *controlling_node;
   module_state *alias;
 
@@ -15568,7 +15639,7 @@ public:
   module_state_config ()
     :opt_str (get_opts ()), sec_range (0,0), num_unnamed (0),
      num_imports (0), num_partitions (0),
-     num_bindings (0), num_macros (0),
+     num_bindings (0), num_macros (0), num_inits (0),
      controlling_node (NULL), alias (NULL)
   {
   }
@@ -15746,6 +15817,8 @@ module_state::write_config (elf_out *to, module_state_config &config,
   dump () && dump ("Unnamed %u", config.num_unnamed);
   cfg.u (config.num_macros);
   dump () && dump ("Macros %u", config.num_macros);
+  cfg.u (config.num_inits);
+  dump () && dump ("Initializers %u", config.num_inits);
 
   /* Now generate CRC, we'll have incorporated the inner CRC because
      of its serialization above.  */
@@ -15968,6 +16041,9 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
   config.num_macros = cfg.u ();
   dump () && dump ("Macros %u", config.num_macros);
 
+  config.num_inits = cfg.u ();
+  dump () && dump ("Initializers %u", config.num_inits);
+
   if (config.sec_range.first > config.sec_range.second
       || config.sec_range.second > from ()->get_section_limit ())
     {
@@ -15993,6 +16069,7 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
      MOD_SNAME_PFX.loc      : locations
      MOD_SNAME_PFX.def      : macro definitions
      MOD_SNAME_PFX.mac      : macro index
+     MOD_SNAME_PFX.ini      : inits
      MOD_SNAME_PFX.cfg      : config data
 */
 
@@ -16207,6 +16284,10 @@ module_state::write (elf_out *to, cpp_reader *reader)
   config.num_macros = header_module_p () ? write_macros (to, reader, &crc) : 0;
   config.controlling_node = cpp_main_controlling_macro (reader);
 
+  /* Write initializers that header units might contain.  */
+  if (is_header ())
+    config.num_inits = write_inits (to, table, &crc);
+
   /* And finish up.  */
   write_config (to, config, crc);
 
@@ -16312,25 +16393,28 @@ module_state::read (int fd, int e, cpp_reader *reader)
       if (config.num_unnamed
 	  && !read_unnamed (config.num_unnamed, config.sec_range))
 	return NULL;
+
+      if (!flag_module_lazy)
+	{
+	  /* Read the sections in forward order, so that dependencies are read
+	     first.  See note about tarjan_connect.  */
+	  unsigned hwm = config.sec_range.second;
+	  for (unsigned ix = config.sec_range.first; ix != hwm; ix++)
+	    {
+	      load_section (ix);
+	      if (from ()->get_error ())
+		break;
+	    }
+	}
+
+      if (!read_inits (config.num_inits))
+	return NULL;
     }
 
   /* We're done with the string and non-decl sections now.  */
   from ()->release ();
   slurp ()->remaining = config.sec_range.second - config.sec_range.first;
   slurp ()->lru = ++lazy_lru;
-
-  if (!flag_preprocess_only && !flag_module_lazy)
-    {
-      /* Read the sections in forward order, so that dependencies are read
-	 first.  See note about tarjan_connect.  */
-      unsigned hwm = config.sec_range.second;
-      for (unsigned ix = config.sec_range.first; ix != hwm; ix++)
-	{
-	  load_section (ix);
-	  if (from ()->get_error ())
-	    break;
-	}
-    }
 
   return NULL;
 }
