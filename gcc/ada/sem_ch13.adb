@@ -8902,9 +8902,15 @@ package body Sem_Ch13 is
                         Expression => Expr))));
 
             --  The declaration has been analyzed when created, and placed
-            --  after type declaration. Insert body itself after freeze node.
+            --  after type declaration. Insert body itself after freeze node,
+            --  unless subprogram declaration is already there, in which case
+            --  body better be placed afterwards.
 
-            Insert_After_And_Analyze (N, FBody);
+            if FDecl = Next (N) then
+               Insert_After_And_Analyze (FDecl, FBody);
+            else
+               Insert_After_And_Analyze (N, FBody);
+            end if;
 
             --  The defining identifier of a quantified expression carries the
             --  scope in which the type appears, but when unnesting we need

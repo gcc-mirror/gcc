@@ -1,3 +1,12 @@
+2019-07-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Functions): If a subtype that
+	carries a static predicate aspect is frozen immediately after
+	its declaration, ensure that the generated function body created
+	for predicate checking is inserted after the corresponding
+	subprogram declaration, which is created at the point the
+	declaration is elaborated.
+
 2019-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Cleanup_Record): Use the underlying type when
