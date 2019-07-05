@@ -1678,7 +1678,8 @@ determine_known_aggregate_parts (gcall *call, tree arg,
 
       if (gimple_code (stmt) == GIMPLE_PHI)
 	{
-	  dom_vuse = get_continuation_for_phi (stmt, &r, *aa_walk_budget_p,
+	  dom_vuse = get_continuation_for_phi (stmt, &r, true,
+					       *aa_walk_budget_p,
 					       &visited, false, NULL, NULL);
 	  continue;
 	}

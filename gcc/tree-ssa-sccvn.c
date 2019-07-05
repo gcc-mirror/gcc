@@ -1648,9 +1648,16 @@ vn_reference_lookup_1 (vn_reference_t vr, vn_reference_t *vnresult)
 
 struct vn_walk_cb_data
 {
+  vn_walk_cb_data (vn_reference_t vr_, tree *last_vuse_ptr_,
+                   vn_lookup_kind vn_walk_kind_, bool tbaa_p_)
+    : vr (vr_), last_vuse_ptr (last_vuse_ptr_), vn_walk_kind (vn_walk_kind_),
+      tbaa_p (tbaa_p_)
+    {}
+
   vn_reference_t vr;
   tree *last_vuse_ptr;
   vn_lookup_kind vn_walk_kind;
+  bool tbaa_p;
 };
 
 /* Callback for walk_non_aliased_vuses.  Adjusts the vn_reference_t VR_
@@ -1927,6 +1934,33 @@ public:
 static rpo_elim *rpo_avail;
 basic_block vn_context_bb;
 
+/* Return true if BASE1 and BASE2 can be adjusted so they have the
+   same address and adjust *OFFSET1 and *OFFSET2 accordingly.
+   Otherwise return false.  */
+
+static bool
+adjust_offsets_for_equal_base_address (tree base1, poly_int64 *offset1,
+				       tree base2, poly_int64 *offset2)
+{
+  poly_int64 soff;
+  if (TREE_CODE (base1) == MEM_REF
+      && TREE_CODE (base2) == MEM_REF)
+    {
+      if (mem_ref_offset (base1).to_shwi (&soff))
+	{
+	  base1 = TREE_OPERAND (base1, 0);
+	  *offset1 += soff * BITS_PER_UNIT;
+	}
+      if (mem_ref_offset (base2).to_shwi (&soff))
+	{
+	  base2 = TREE_OPERAND (base2, 0);
+	  *offset2 += soff * BITS_PER_UNIT;
+	}
+      return operand_equal_p (base1, base2, 0);
+    }
+  return operand_equal_p (base1, base2, OEP_ADDRESS_OF);
+}
+
 /* Callback for walk_non_aliased_vuses.  Tries to perform a lookup
    from the statement defining VUSE and if not successful tries to
    translate *REFP and VR_ through an aggregate copy at the definition
@@ -1966,7 +2000,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 						      get_alias_set (lhs),
 						      TREE_TYPE (lhs), lhs_ops);
 	  if (lhs_ref_ok
-	      && !refs_may_alias_p_1 (ref, &lhs_ref, true))
+	      && !refs_may_alias_p_1 (ref, &lhs_ref, data->tbaa_p))
 	    {
 	      *disambiguate_only = true;
 	      return NULL;
@@ -2055,7 +2089,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	}
     }
 
-  if (*disambiguate_only)
+  /* If we are looking for redundant stores do not create new hashtable
+     entries from aliasing defs with made up alias-sets.  */
+  if (*disambiguate_only || !data->tbaa_p)
     return (void *)-1;
 
   /* If we cannot constrain the size of the reference we cannot
@@ -2186,7 +2222,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 				       &offset2, &size2, &maxsize2, &reverse);
       if (known_size_p (maxsize2)
 	  && known_eq (maxsize2, size2)
-	  && operand_equal_p (base, base2, 0)
+	  && adjust_offsets_for_equal_base_address (base, &offset,
+						    base2, &offset2)
 	  && known_subrange_p (offset, maxsize, offset2, size2))
 	{
 	  tree val = build_zero_cst (vr->type);
@@ -2213,15 +2250,20 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		   && is_gimple_min_invariant (SSA_VAL (gimple_assign_rhs1 (def_stmt))))))
     {
       tree base2;
-      HOST_WIDE_INT offset2, size2;
+      poly_int64 offset2, size2, maxsize2;
+      HOST_WIDE_INT offset2i;
       bool reverse;
-      base2 = get_ref_base_and_extent_hwi (gimple_assign_lhs (def_stmt),
-					   &offset2, &size2, &reverse);
+      base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
+				       &offset2, &size2, &maxsize2, &reverse);
       if (base2
 	  && !reverse
-	  && size2 % BITS_PER_UNIT == 0
-	  && offset2 % BITS_PER_UNIT == 0
-	  && operand_equal_p (base, base2, 0)
+	  && known_eq (maxsize2, size2)
+	  && multiple_p (size2, BITS_PER_UNIT)
+	  && multiple_p (offset2, BITS_PER_UNIT)
+	  && adjust_offsets_for_equal_base_address (base, &offset,
+						    base2, &offset2)
+	  && offset.is_constant (&offseti)
+	  && offset2.is_constant (&offset2i)
 	  && known_subrange_p (offseti, maxsizei, offset2, size2))
 	{
 	  /* We support up to 512-bit values (for V8DFmode).  */
@@ -2233,12 +2275,12 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	    rhs = SSA_VAL (rhs);
 	  len = native_encode_expr (rhs,
 				    buffer, sizeof (buffer),
-				    (offseti - offset2) / BITS_PER_UNIT);
+				    (offseti - offset2i) / BITS_PER_UNIT);
 	  if (len > 0 && len * BITS_PER_UNIT >= maxsizei)
 	    {
 	      tree type = vr->type;
 	      /* Make sure to interpret in a type that has a range
-	         covering the whole access size.  */
+		 covering the whole access size.  */
 	      if (INTEGRAL_TYPE_P (vr->type)
 		  && maxsizei != TYPE_PRECISION (vr->type))
 		type = build_nonstandard_integer_type (maxsizei,
@@ -2283,7 +2325,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       if (!reverse
 	  && known_size_p (maxsize2)
 	  && known_eq (maxsize2, size2)
-	  && operand_equal_p (base, base2, 0)
+	  && adjust_offsets_for_equal_base_address (base, &offset,
+						    base2, &offset2)
 	  && known_subrange_p (offset, maxsize, offset2, size2)
 	  /* ???  We can't handle bitfield precision extracts without
 	     either using an alternate type for the BIT_FIELD_REF and
@@ -2653,10 +2696,10 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
     {
       ao_ref r;
       unsigned limit = PARAM_VALUE (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS);
-      vn_walk_cb_data data = { &vr1, NULL, kind };
+      vn_walk_cb_data data (&vr1, NULL, kind, true);
       if (ao_ref_init_from_vn_reference (&r, set, type, vr1.operands))
 	*vnresult =
-	  (vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,
+	  (vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse, true,
 						  vn_reference_lookup_2,
 						  vn_reference_lookup_3,
 						  vuse_valueize, limit, &data);
@@ -2693,7 +2736,7 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
   vr1.operands = operands
     = valueize_shared_reference_ops_from_ref (op, &valuezied_anything);
   vr1.type = TREE_TYPE (op);
-  vr1.set = tbaa_p ? get_alias_set (op) : 0;
+  vr1.set = get_alias_set (op);
   vr1.hashcode = vn_reference_compute_hash (&vr1);
   if ((cst = fully_constant_vn_reference_p (&vr1)))
     return cst;
@@ -2710,11 +2753,9 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
 	  || !ao_ref_init_from_vn_reference (&r, vr1.set, vr1.type,
 					     vr1.operands))
 	ao_ref_init (&r, op);
-      if (! tbaa_p)
-	r.ref_alias_set = r.base_alias_set = 0;
-      vn_walk_cb_data data = { &vr1, last_vuse_ptr, kind };
+      vn_walk_cb_data data (&vr1, last_vuse_ptr, kind, tbaa_p);
       wvnresult =
-	(vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,
+	(vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse, tbaa_p,
 						vn_reference_lookup_2,
 						vn_reference_lookup_3,
 						vuse_valueize, limit, &data);
