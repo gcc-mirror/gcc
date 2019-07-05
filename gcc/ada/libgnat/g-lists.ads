@@ -117,6 +117,12 @@ package GNAT.Lists is
       --  end of a list's lifetime. This action will raise Iterated if the
       --  list has outstanding iterators.
 
+      function Equal
+        (Left  : Doubly_Linked_List;
+         Right : Doubly_Linked_List) return Boolean;
+      --  Determine whether lists Left and Right have the same characteristics
+      --  and contain the same elements.
+
       function First (L : Doubly_Linked_List) return Element_Type;
       --  Obtain an element from the start of list L. This action will raise
       --  List_Empty if the list is empty.

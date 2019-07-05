@@ -64,16 +64,24 @@ package body Bindo.Builders is
 
       procedure Create_Vertex
         (IC_Id  : Invocation_Construct_Id;
-         LGV_Id : Library_Graph_Vertex_Id);
+         Vertex : Library_Graph_Vertex_Id);
       pragma Inline (Create_Vertex);
       --  Create a new vertex for invocation construct IC_Id in invocation
-      --  graph Inv_Graph. The vertex is linked to vertex LGV_Id of library
+      --  graph Inv_Graph. The vertex is linked to vertex Vertex of library
       --  graph Lib_Graph.
 
       procedure Create_Vertices (U_Id : Unit_Id);
       pragma Inline (Create_Vertices);
       --  Create new vertices for all invocation constructs of unit U_Id in
       --  invocation graph Inv_Graph.
+
+      function Declaration_Placement_Vertex
+        (Vertex    : Library_Graph_Vertex_Id;
+         Placement : Declaration_Placement_Kind)
+         return Library_Graph_Vertex_Id;
+      pragma Inline (Declaration_Placement_Vertex);
+      --  Obtain the spec or body of vertex Vertex depending on the requested
+      --  placement in Placement.
 
       ----------------------------
       -- Build_Invocation_Graph --
@@ -88,8 +96,9 @@ package body Bindo.Builders is
          --  Prepare the global data
 
          Inv_Graph :=
-           Create (Initial_Vertices => Number_Of_Elaborable_Units,
-                   Initial_Edges    => Number_Of_Elaborable_Units);
+           Create
+             (Initial_Vertices => Number_Of_Elaborable_Units,
+              Initial_Edges    => Number_Of_Elaborable_Units);
          Lib_Graph := Lib_G;
 
          For_Each_Elaborable_Unit (Create_Vertices'Access);
@@ -107,33 +116,24 @@ package body Bindo.Builders is
          pragma Assert (Present (Lib_Graph));
          pragma Assert (Present (IR_Id));
 
-         IR_Rec : Invocation_Relation_Record renames
-                    Invocation_Relations.Table (IR_Id);
+         Invoker_Sig : constant Invocation_Signature_Id := Invoker (IR_Id);
+         Target_Sig  : constant Invocation_Signature_Id := Target  (IR_Id);
 
-         pragma Assert (Present (IR_Rec.Invoker));
-         pragma Assert (Present (IR_Rec.Target));
-
-         Invoker : Invocation_Graph_Vertex_Id;
-         Target  : Invocation_Graph_Vertex_Id;
+         pragma Assert (Present (Invoker_Sig));
+         pragma Assert (Present (Target_Sig));
 
       begin
          --  Nothing to do when the target denotes an invocation construct that
          --  resides in a unit which will never be elaborated.
 
-         if not Needs_Elaboration (IR_Rec.Target) then
+         if not Needs_Elaboration (Target_Sig) then
             return;
          end if;
 
-         Invoker := Corresponding_Vertex (Inv_Graph, IR_Rec.Invoker);
-         Target  := Corresponding_Vertex (Inv_Graph, IR_Rec.Target);
-
-         pragma Assert (Present (Invoker));
-         pragma Assert (Present (Target));
-
          Add_Edge
            (G      => Inv_Graph,
-            Source => Invoker,
-            Target => Target,
+            Source => Corresponding_Vertex (Inv_Graph, Invoker_Sig),
+            Target => Corresponding_Vertex (Inv_Graph, Target_Sig),
             IR_Id  => IR_Id);
       end Create_Edge;
 
@@ -162,35 +162,25 @@ package body Bindo.Builders is
 
       procedure Create_Vertex
         (IC_Id  : Invocation_Construct_Id;
-         LGV_Id : Library_Graph_Vertex_Id)
+         Vertex : Library_Graph_Vertex_Id)
       is
+      begin
          pragma Assert (Present (Inv_Graph));
          pragma Assert (Present (Lib_Graph));
          pragma Assert (Present (IC_Id));
-         pragma Assert (Present (LGV_Id));
-
-         IC_Rec : Invocation_Construct_Record renames
-                    Invocation_Constructs.Table (IC_Id);
-
-         Body_LGV_Id : Library_Graph_Vertex_Id;
-
-      begin
-         --  Determine the proper library graph vertex which holds the body of
-         --  the invocation construct.
-
-         if IC_Rec.Placement = In_Body then
-            Body_LGV_Id := Proper_Body (Lib_Graph, LGV_Id);
-         else
-            pragma Assert (IC_Rec.Placement = In_Spec);
-            Body_LGV_Id := Proper_Spec (Lib_Graph, LGV_Id);
-         end if;
-
-         pragma Assert (Present (Body_LGV_Id));
+         pragma Assert (Present (Vertex));
 
          Add_Vertex
-           (G      => Inv_Graph,
-            IC_Id  => IC_Id,
-            LGV_Id => Body_LGV_Id);
+           (G           => Inv_Graph,
+            IC_Id       => IC_Id,
+            Body_Vertex =>
+              Declaration_Placement_Vertex
+                (Vertex    => Vertex,
+                 Placement => Body_Placement (IC_Id)),
+            Spec_Vertex =>
+              Declaration_Placement_Vertex
+                (Vertex    => Vertex,
+                 Placement => Spec_Placement (IC_Id)));
       end Create_Vertex;
 
       ---------------------
@@ -203,18 +193,37 @@ package body Bindo.Builders is
          pragma Assert (Present (U_Id));
 
          U_Rec  : Unit_Record renames ALI.Units.Table (U_Id);
-         LGV_Id : constant Library_Graph_Vertex_Id :=
+         Vertex : constant Library_Graph_Vertex_Id :=
                     Corresponding_Vertex (Lib_Graph, U_Id);
-
-         pragma Assert (Present (LGV_Id));
 
       begin
          for IC_Id in U_Rec.First_Invocation_Construct ..
                       U_Rec.Last_Invocation_Construct
          loop
-            Create_Vertex (IC_Id, LGV_Id);
+            Create_Vertex (IC_Id, Vertex);
          end loop;
       end Create_Vertices;
+
+      ----------------------------------
+      -- Declaration_Placement_Vertex --
+      ----------------------------------
+
+      function Declaration_Placement_Vertex
+        (Vertex    : Library_Graph_Vertex_Id;
+         Placement : Declaration_Placement_Kind)
+         return Library_Graph_Vertex_Id
+      is
+      begin
+         pragma Assert (Present (Lib_Graph));
+         pragma Assert (Present (Vertex));
+
+         if Placement = In_Body then
+            return Proper_Body (Lib_Graph, Vertex);
+         else
+            pragma Assert (Placement = In_Spec);
+            return Proper_Spec (Lib_Graph, Vertex);
+         end if;
+      end Declaration_Placement_Vertex;
    end Invocation_Graph_Builders;
 
    ----------------------------
@@ -235,7 +244,7 @@ package body Bindo.Builders is
       pragma Inline (Hash_Unit);
       --  Obtain the hash value of key U_Id
 
-      package UL is new Dynamic_Hash_Tables
+      package Unit_Line_Tables is new Dynamic_Hash_Tables
         (Key_Type              => Unit_Id,
          Value_Type            => Logical_Line_Number,
          No_Value              => No_Line_Number,
@@ -253,9 +262,10 @@ package body Bindo.Builders is
 
       Lib_Graph : Library_Graph := Library_Graphs.Nil;
 
-      Unit_To_Line : UL.Dynamic_Hash_Table := UL.Nil;
+      Unit_To_Line : Unit_Line_Tables.Dynamic_Hash_Table :=
+                       Unit_Line_Tables.Nil;
       --  The map of unit name -> line number, used to detect duplicate unit
-      --  names and report errors.
+      --  names in the forced-elaboration-order file and report errors.
 
       -----------------------
       -- Local subprograms --
@@ -348,20 +358,24 @@ package body Bindo.Builders is
       begin
          pragma Assert (Present (U_Id));
 
-         UL.Put (Unit_To_Line, U_Id, Line);
+         Unit_Line_Tables.Put (Unit_To_Line, U_Id, Line);
       end Add_Unit;
 
       -------------------------
       -- Build_Library_Graph --
       -------------------------
 
-      function Build_Library_Graph return Library_Graph is
+      function Build_Library_Graph
+        (Dynamically_Elaborated : Boolean) return Library_Graph
+      is
       begin
          --  Prepare the global data
 
          Lib_Graph :=
-           Create (Initial_Vertices => Number_Of_Elaborable_Units,
-                   Initial_Edges    => Number_Of_Elaborable_Units);
+           Create
+             (Initial_Vertices       => Number_Of_Elaborable_Units,
+              Initial_Edges          => Number_Of_Elaborable_Units,
+              Dynamically_Elaborated => Dynamically_Elaborated);
 
          For_Each_Elaborable_Unit (Create_Vertex'Access);
          For_Each_Elaborable_Unit (Create_Spec_And_Body_Edge'Access);
@@ -383,13 +397,10 @@ package body Bindo.Builders is
          pragma Assert (Present (Pred));
          pragma Assert (Present (Succ));
 
-         Pred_LGV_Id : constant Library_Graph_Vertex_Id :=
+         Pred_Vertex : constant Library_Graph_Vertex_Id :=
                          Corresponding_Vertex (Lib_Graph, Pred);
-         Succ_LGV_Id : constant Library_Graph_Vertex_Id :=
+         Succ_Vertex : constant Library_Graph_Vertex_Id :=
                          Corresponding_Vertex (Lib_Graph, Succ);
-
-         pragma Assert (Present (Pred_LGV_Id));
-         pragma Assert (Present (Succ_LGV_Id));
 
       begin
          Write_Unit_Name (Name (Pred));
@@ -399,8 +410,8 @@ package body Bindo.Builders is
 
          Add_Edge
            (G    => Lib_Graph,
-            Pred => Pred_LGV_Id,
-            Succ => Succ_LGV_Id,
+            Pred => Pred_Vertex,
+            Succ => Succ_Vertex,
             Kind => Forced_Edge);
       end Create_Forced_Edge;
 
@@ -409,15 +420,15 @@ package body Bindo.Builders is
       -------------------------
 
       procedure Create_Forced_Edges is
-         Curr_Unit : Unit_Id;
-         Iter      : Forced_Units_Iterator;
-         Prev_Unit : Unit_Id;
-         Unit_Line : Logical_Line_Number;
-         Unit_Name : Unit_Name_Type;
+         Current_Unit  : Unit_Id;
+         Iter          : Forced_Units_Iterator;
+         Previous_Unit : Unit_Id;
+         Unit_Line     : Logical_Line_Number;
+         Unit_Name     : Unit_Name_Type;
 
       begin
-         Prev_Unit    := No_Unit_Id;
-         Unit_To_Line := UL.Create (20);
+         Previous_Unit := No_Unit_Id;
+         Unit_To_Line  := Unit_Line_Tables.Create (20);
 
          --  Inspect the contents of the forced-elaboration-order file supplied
          --  to the binder using switch -f, and diagnose each unit accordingly.
@@ -425,36 +436,35 @@ package body Bindo.Builders is
          Iter := Iterate_Forced_Units;
          while Has_Next (Iter) loop
             Next (Iter, Unit_Name, Unit_Line);
-            pragma Assert (Present (Unit_Name));
 
-            Curr_Unit := Corresponding_Unit (Unit_Name);
+            Current_Unit := Corresponding_Unit (Unit_Name);
 
-            if not Present (Curr_Unit) then
+            if not Present (Current_Unit) then
                Missing_Unit_Info (Unit_Name);
 
-            elsif Is_Internal_Unit (Curr_Unit) then
+            elsif Is_Internal_Unit (Current_Unit) then
                Internal_Unit_Info (Unit_Name);
 
-            elsif Is_Duplicate_Unit (Curr_Unit) then
-               Duplicate_Unit_Error (Curr_Unit, Unit_Name, Unit_Line);
+            elsif Is_Duplicate_Unit (Current_Unit) then
+               Duplicate_Unit_Error (Current_Unit, Unit_Name, Unit_Line);
 
             --  Otherwise the unit is a valid candidate for a vertex. Create a
             --  forced edge between each pair of units.
 
             else
-               Add_Unit (Curr_Unit, Unit_Line);
+               Add_Unit (Current_Unit, Unit_Line);
 
-               if Present (Prev_Unit) then
+               if Present (Previous_Unit) then
                   Create_Forced_Edge
-                    (Pred => Prev_Unit,
-                     Succ => Curr_Unit);
+                    (Pred => Previous_Unit,
+                     Succ => Current_Unit);
                end if;
 
-               Prev_Unit := Curr_Unit;
+               Previous_Unit := Current_Unit;
             end if;
          end loop;
 
-         UL.Destroy (Unit_To_Line);
+         Unit_Line_Tables.Destroy (Unit_To_Line);
       end Create_Forced_Edges;
 
       -------------------------------
@@ -462,42 +472,37 @@ package body Bindo.Builders is
       -------------------------------
 
       procedure Create_Spec_And_Body_Edge (U_Id : Unit_Id) is
-         Aux_LGV_Id : Library_Graph_Vertex_Id;
-         LGV_Id     : Library_Graph_Vertex_Id;
+         Extra_Vertex : Library_Graph_Vertex_Id;
+         Vertex       : Library_Graph_Vertex_Id;
 
       begin
          pragma Assert (Present (Lib_Graph));
          pragma Assert (Present (U_Id));
 
-         LGV_Id := Corresponding_Vertex (Lib_Graph, U_Id);
-         pragma Assert (Present (LGV_Id));
+         Vertex := Corresponding_Vertex (Lib_Graph, U_Id);
 
          --  The unit denotes a body that completes a previous spec. Link the
          --  spec and body. Add an edge between the predecessor spec and the
          --  successor body.
 
-         if Is_Body_With_Spec (Lib_Graph, LGV_Id) then
-            Aux_LGV_Id :=
+         if Is_Body_With_Spec (Lib_Graph, Vertex) then
+            Extra_Vertex :=
               Corresponding_Vertex (Lib_Graph, Corresponding_Spec (U_Id));
-            pragma Assert (Present (Aux_LGV_Id));
-
-            Set_Corresponding_Item (Lib_Graph, LGV_Id, Aux_LGV_Id);
+            Set_Corresponding_Item (Lib_Graph, Vertex, Extra_Vertex);
 
             Add_Edge
               (G    => Lib_Graph,
-               Pred => Aux_LGV_Id,
-               Succ => LGV_Id,
+               Pred => Extra_Vertex,
+               Succ => Vertex,
                Kind => Spec_Before_Body_Edge);
 
          --  The unit denotes a spec with a completing body. Link the spec and
          --  body.
 
-         elsif Is_Spec_With_Body (Lib_Graph, LGV_Id) then
-            Aux_LGV_Id :=
+         elsif Is_Spec_With_Body (Lib_Graph, Vertex) then
+            Extra_Vertex :=
               Corresponding_Vertex (Lib_Graph, Corresponding_Body (U_Id));
-            pragma Assert (Present (Aux_LGV_Id));
-
-            Set_Corresponding_Item (Lib_Graph, LGV_Id, Aux_LGV_Id);
+            Set_Corresponding_Item (Lib_Graph, Vertex, Extra_Vertex);
          end if;
       end Create_Spec_And_Body_Edge;
 
@@ -531,11 +536,8 @@ package body Bindo.Builders is
          Withed_U_Id : constant Unit_Id :=
                          Corresponding_Unit (Withed_Rec.Uname);
 
-         pragma Assert (Present (Withed_U_Id));
-
-         Aux_LGV_Id    : Library_Graph_Vertex_Id;
          Kind          : Library_Graph_Edge_Kind;
-         Withed_LGV_Id : Library_Graph_Vertex_Id;
+         Withed_Vertex : Library_Graph_Vertex_Id;
 
       begin
          --  Nothing to do when the withed unit does not need to be elaborated.
@@ -545,8 +547,7 @@ package body Bindo.Builders is
             return;
          end if;
 
-         Withed_LGV_Id := Corresponding_Vertex (Lib_Graph, Withed_U_Id);
-         pragma Assert (Present (Withed_LGV_Id));
+         Withed_Vertex := Corresponding_Vertex (Lib_Graph, Withed_U_Id);
 
          --  The with comes with pragma Elaborate
 
@@ -557,15 +558,12 @@ package body Bindo.Builders is
             --  between the body of the withed predecessor and the withing
             --  successor.
 
-            if Is_Spec_With_Body (Lib_Graph, Withed_LGV_Id) then
-               Aux_LGV_Id :=
-                 Corresponding_Vertex
-                   (Lib_Graph, Corresponding_Body (Withed_U_Id));
-               pragma Assert (Present (Aux_LGV_Id));
-
+            if Is_Spec_With_Body (Lib_Graph, Withed_Vertex) then
                Add_Edge
                  (G    => Lib_Graph,
-                  Pred => Aux_LGV_Id,
+                  Pred =>
+                    Corresponding_Vertex
+                      (Lib_Graph, Corresponding_Body (Withed_U_Id)),
                   Succ => Succ,
                   Kind => Kind);
             end if;
@@ -586,7 +584,7 @@ package body Bindo.Builders is
 
          Add_Edge
            (G    => Lib_Graph,
-            Pred => Withed_LGV_Id,
+            Pred => Withed_Vertex,
             Succ => Succ,
             Kind => Kind);
       end Create_With_Edge;
@@ -596,18 +594,13 @@ package body Bindo.Builders is
       -----------------------
 
       procedure Create_With_Edges (U_Id : Unit_Id) is
-         LGV_Id : Library_Graph_Vertex_Id;
-
       begin
          pragma Assert (Present (Lib_Graph));
          pragma Assert (Present (U_Id));
 
-         LGV_Id := Corresponding_Vertex (Lib_Graph, U_Id);
-         pragma Assert (Present (LGV_Id));
-
          Create_With_Edges
            (U_Id => U_Id,
-            Succ => LGV_Id);
+            Succ => Corresponding_Vertex (Lib_Graph, U_Id));
       end Create_With_Edges;
 
       -----------------------
@@ -655,7 +648,7 @@ package body Bindo.Builders is
          pragma Assert (Present (Nam));
 
          Prev_Line : constant Logical_Line_Number :=
-                       UL.Get (Unit_To_Line, U_Id);
+                       Unit_Line_Tables.Get (Unit_To_Line, U_Id);
 
       begin
          Error_Msg_Nat_1  := Nat (Line);
@@ -698,7 +691,7 @@ package body Bindo.Builders is
       begin
          pragma Assert (Present (U_Id));
 
-         return UL.Contains (Unit_To_Line, U_Id);
+         return Unit_Line_Tables.Contains (Unit_To_Line, U_Id);
       end Is_Duplicate_Unit;
 
       -------------------------

@@ -11689,6 +11689,11 @@ package body Sem_Elab is
       --  active scenarios. In_State is the current state of the Processing
       --  phase.
 
+      procedure Record_Invocation_Graph_Encoding;
+      pragma Inline (Record_Invocation_Graph_Encoding);
+      --  Record the encoding format used to capture information related to
+      --  invocation constructs and relations.
+
       procedure Record_Invocation_Path (In_State : Processing_In_State);
       pragma Inline (Record_Invocation_Path);
       --  Record the invocation relations found within the path represented in
@@ -11938,40 +11943,32 @@ package body Sem_Elab is
         (Constr_Id : Entity_Id;
          In_State  : Processing_In_State)
       is
+         function Body_Placement_Of
+           (Id : Entity_Id) return Declaration_Placement_Kind;
+         pragma Inline (Body_Placement_Of);
+         --  Obtain the placement of arbitrary entity Id's body
+
+         function Declaration_Placement_Of_Node
+           (N : Node_Id) return Declaration_Placement_Kind;
+         pragma Inline (Declaration_Placement_Of_Node);
+         --  Obtain the placement of arbitrary node N
+
          function Kind_Of (Id : Entity_Id) return Invocation_Construct_Kind;
          pragma Inline (Kind_Of);
          --  Obtain the invocation construct kind of arbitrary entity Id
 
-         function Placement_Of (Id : Entity_Id) return Body_Placement_Kind;
-         pragma Inline (Placement_Of);
-         --  Obtain the body placement of arbitrary entity Id
+         function Spec_Placement_Of
+           (Id : Entity_Id) return Declaration_Placement_Kind;
+         pragma Inline (Spec_Placement_Of);
+         --  Obtain the placement of arbitrary entity Id's spec
 
-         function Placement_Of_Node (N : Node_Id) return Body_Placement_Kind;
-         pragma Inline (Placement_Of_Node);
-         --  Obtain the body placement of arbitrary node N
+         -----------------------
+         -- Body_Placement_Of --
+         -----------------------
 
-         -------------
-         -- Kind_Of --
-         -------------
-
-         function Kind_Of (Id : Entity_Id) return Invocation_Construct_Kind is
-         begin
-            if Id = Elab_Body_Id then
-               return Elaborate_Body_Procedure;
-
-            elsif Id = Elab_Spec_Id then
-               return Elaborate_Spec_Procedure;
-
-            else
-               return Regular_Construct;
-            end if;
-         end Kind_Of;
-
-         ------------------
-         -- Placement_Of --
-         ------------------
-
-         function Placement_Of (Id : Entity_Id) return Body_Placement_Kind is
+         function Body_Placement_Of
+           (Id : Entity_Id) return Declaration_Placement_Kind
+         is
             Id_Rep    : constant Target_Rep_Id :=
                           Target_Representation_Of (Id, In_State);
             Body_Decl : constant Node_Id := Body_Declaration (Id_Rep);
@@ -11981,21 +11978,23 @@ package body Sem_Elab is
             --  The entity has a body
 
             if Present (Body_Decl) then
-               return Placement_Of_Node (Body_Decl);
+               return Declaration_Placement_Of_Node (Body_Decl);
 
             --  Otherwise the entity must have a spec
 
             else
                pragma Assert (Present (Spec_Decl));
-               return Placement_Of_Node (Spec_Decl);
+               return Declaration_Placement_Of_Node (Spec_Decl);
             end if;
-         end Placement_Of;
+         end Body_Placement_Of;
 
-         -----------------------
-         -- Placement_Of_Node --
-         -----------------------
+         -----------------------------------
+         -- Declaration_Placement_Of_Node --
+         -----------------------------------
 
-         function Placement_Of_Node (N : Node_Id) return Body_Placement_Kind is
+         function Declaration_Placement_Of_Node
+           (N : Node_Id) return Declaration_Placement_Kind
+         is
             Main_Unit_Id : constant Entity_Id := Cunit_Entity (Main_Unit);
             N_Unit_Id    : constant Entity_Id := Find_Top_Unit (N);
 
@@ -12039,11 +12038,50 @@ package body Sem_Elab is
             else
                return In_Body;
             end if;
-         end Placement_Of_Node;
+         end Declaration_Placement_Of_Node;
 
-         --  Local variables
+         -------------
+         -- Kind_Of --
+         -------------
 
-         IC_Rec : Invocation_Construct_Record;
+         function Kind_Of (Id : Entity_Id) return Invocation_Construct_Kind is
+         begin
+            if Id = Elab_Body_Id then
+               return Elaborate_Body_Procedure;
+
+            elsif Id = Elab_Spec_Id then
+               return Elaborate_Spec_Procedure;
+
+            else
+               return Regular_Construct;
+            end if;
+         end Kind_Of;
+
+         -----------------------
+         -- Spec_Placement_Of --
+         -----------------------
+
+         function Spec_Placement_Of
+           (Id : Entity_Id) return Declaration_Placement_Kind
+         is
+            Id_Rep    : constant Target_Rep_Id :=
+                          Target_Representation_Of (Id, In_State);
+            Body_Decl : constant Node_Id := Body_Declaration (Id_Rep);
+            Spec_Decl : constant Node_Id := Spec_Declaration (Id_Rep);
+
+         begin
+            --  The entity has a spec
+
+            if Present (Spec_Decl) then
+               return Declaration_Placement_Of_Node (Spec_Decl);
+
+            --  Otherwise the entity must have a body
+
+            else
+               pragma Assert (Present (Body_Decl));
+               return Declaration_Placement_Of_Node (Body_Decl);
+            end if;
+         end Spec_Placement_Of;
 
       --  Start of processing for Declare_Invocation_Construct
 
@@ -12059,15 +12097,14 @@ package body Sem_Elab is
 
          Set_Is_Saved_Construct (Constr_Id);
 
-         IC_Rec.Kind      := Kind_Of      (Constr_Id);
-         IC_Rec.Placement := Placement_Of (Constr_Id);
-         IC_Rec.Signature := Signature_Of (Constr_Id);
-
          --  Add the construct in the ALI file
 
          Add_Invocation_Construct
-           (IC_Rec       => IC_Rec,
-            Update_Units => False);
+           (Body_Placement => Body_Placement_Of (Constr_Id),
+            Kind           => Kind_Of           (Constr_Id),
+            Signature      => Signature_Of      (Constr_Id),
+            Spec_Placement => Spec_Placement_Of (Constr_Id),
+            Update_Units   => False);
       end Declare_Invocation_Construct;
 
       -------------------------------
@@ -12809,6 +12846,12 @@ package body Sem_Elab is
             return;
          end if;
 
+         --  Save the encoding format used to capture information about the
+         --  invocation constructs and relations in the ALI file of the main
+         --  unit.
+
+         Record_Invocation_Graph_Encoding;
+
          --  Examine all library level invocation scenarios and perform DFS
          --  traversals from each one. Encode a path in the ALI file of the
          --  main unit if it reaches into an external unit.
@@ -12823,6 +12866,30 @@ package body Sem_Elab is
 
          Process_Main_Unit;
       end Record_Invocation_Graph;
+
+      --------------------------------------
+      -- Record_Invocation_Graph_Encoding --
+      --------------------------------------
+
+      procedure Record_Invocation_Graph_Encoding is
+         Kind : Invocation_Graph_Encoding_Kind := No_Encoding;
+
+      begin
+         --  Switch -gnatd_F (encode full invocation paths in ALI files) is in
+         --  effect.
+
+         if Debug_Flag_Underscore_FF then
+            Kind := Full_Path_Encoding;
+         else
+            Kind := Endpoints_Encoding;
+         end if;
+
+         --  Save the encoding format in the ALI file of the main unit
+
+         Set_Invocation_Graph_Encoding
+           (Kind         => Kind,
+            Update_Units => False);
+      end Record_Invocation_Graph_Encoding;
 
       ----------------------------
       -- Record_Invocation_Path --
@@ -12882,6 +12949,10 @@ package body Sem_Elab is
            (Extra : out Entity_Id;
             Kind  : out Invocation_Kind)
          is
+            Targ_Rep  : constant Target_Rep_Id :=
+                          Target_Representation_Of (Targ_Id, In_State);
+            Spec_Decl : constant Node_Id := Spec_Declaration (Targ_Rep);
+
          begin
             --  Accept within a task body
 
@@ -12970,7 +13041,7 @@ package body Sem_Elab is
             --  Postcondition verification
 
             elsif Is_Postconditions_Proc (Targ_Id) then
-               Extra := Find_Enclosing_Scope (Targ_Id);
+               Extra := Find_Enclosing_Scope (Spec_Decl);
                Kind  := Postcondition_Verification;
 
             --  Protected entry call
@@ -13013,7 +13084,6 @@ package body Sem_Elab is
 
          Extra     : Entity_Id;
          Extra_Nam : Name_Id;
-         IR_Rec    : Invocation_Relation_Record;
          Kind      : Invocation_Kind;
          Rel       : Invoker_Target_Relation;
 
@@ -13052,15 +13122,13 @@ package body Sem_Elab is
             Extra_Nam := No_Name;
          end if;
 
-         IR_Rec.Extra   := Extra_Nam;
-         IR_Rec.Invoker := Signature_Of (Invk_Id);
-         IR_Rec.Kind    := Kind;
-         IR_Rec.Target  := Signature_Of (Targ_Id);
-
          --  Add the relation in the ALI file
 
          Add_Invocation_Relation
-           (IR_Rec       => IR_Rec,
+           (Extra        => Extra_Nam,
+            Invoker      => Signature_Of (Invk_Id),
+            Kind         => Kind,
+            Target       => Signature_Of (Targ_Id),
             Update_Units => False);
       end Record_Invocation_Relation;
 

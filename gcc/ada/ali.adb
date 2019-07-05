@@ -39,9 +39,114 @@ package body ALI is
    use ASCII;
    --  Make control characters visible
 
+   -----------
+   -- Types --
+   -----------
+
+   --  The following type represents an invocation construct
+
+   type Invocation_Construct_Record is record
+      Body_Placement : Declaration_Placement_Kind := No_Declaration_Placement;
+      --  The location of the invocation construct's body with respect to the
+      --  unit where it is declared.
+
+      Kind : Invocation_Construct_Kind := Regular_Construct;
+      --  The nature of the invocation construct
+
+      Signature : Invocation_Signature_Id := No_Invocation_Signature;
+      --  The invocation signature that uniquely identifies the invocation
+      --  construct in the ALI space.
+
+      Spec_Placement : Declaration_Placement_Kind := No_Declaration_Placement;
+      --  The location of the invocation construct's spec with respect to the
+      --  unit where it is declared.
+   end record;
+
+   --  The following type represents an invocation relation. It associates an
+   --  invoker that activates/calls/instantiates with a target.
+
+   type Invocation_Relation_Record is record
+      Extra : Name_Id := No_Name;
+      --  The name of an additional entity used in error diagnostics
+
+      Invoker : Invocation_Signature_Id := No_Invocation_Signature;
+      --  The invocation signature that uniquely identifies the invoker within
+      --  the ALI space.
+
+      Kind : Invocation_Kind := No_Invocation;
+      --  The nature of the invocation
+
+      Target : Invocation_Signature_Id := No_Invocation_Signature;
+      --  The invocation signature that uniquely identifies the target within
+      --  the ALI space.
+   end record;
+
+   --  The following type represents an invocation signature. Its purpose is
+   --  to uniquely identify an invocation construct within the ALI space. The
+   --  signature comprises several pieces, some of which are used in error
+   --  diagnostics by the binder. Identification issues are resolved as
+   --  follows:
+   --
+   --    * The Column, Line, and Locations attributes together differentiate
+   --      between homonyms. In most cases, the Column and Line are sufficient
+   --      except when generic instantiations are involved. Together, the three
+   --      attributes offer a sequence of column-line pairs that eventually
+   --      reflect the location within the generic template.
+   --
+   --    * The Name attribute differentiates between invocation constructs at
+   --      the scope level. Since it is illegal for two entities with the same
+   --      name to coexist in the same scope, the Name attribute is sufficient
+   --      to distinguish them. Overloaded entities are already handled by the
+   --      Column, Line, and Locations attributes.
+   --
+   --    * The Scope attribute differentiates between invocation constructs at
+   --      various levels of nesting.
+
+   type Invocation_Signature_Record is record
+      Column : Nat := 0;
+      --  The column number where the invocation construct is declared
+
+      Line : Nat := 0;
+      --  The line number where the invocation construct is declared
+
+      Locations : Name_Id := No_Name;
+      --  Sequence of column and line numbers within nested instantiations
+
+      Name : Name_Id := No_Name;
+      --  The name of the invocation construct
+
+      Scope : Name_Id := No_Name;
+      --  The qualified name of the scope where the invocation construct is
+      --  declared.
+   end record;
+
    ---------------------
    -- Data structures --
    ---------------------
+
+   package Invocation_Constructs is new Table.Table
+     (Table_Index_Type     => Invocation_Construct_Id,
+      Table_Component_Type => Invocation_Construct_Record,
+      Table_Low_Bound      => First_Invocation_Construct,
+      Table_Initial        => 2500,
+      Table_Increment      => 200,
+      Table_Name           => "Invocation_Constructs");
+
+   package Invocation_Relations is new Table.Table
+     (Table_Index_Type     => Invocation_Relation_Id,
+      Table_Component_Type => Invocation_Relation_Record,
+      Table_Low_Bound      => First_Invocation_Relation,
+      Table_Initial        => 2500,
+      Table_Increment      => 200,
+      Table_Name           => "Invocation_Relation");
+
+   package Invocation_Signatures is new Table.Table
+     (Table_Index_Type     => Invocation_Signature_Id,
+      Table_Component_Type => Invocation_Signature_Record,
+      Table_Low_Bound      => First_Invocation_Signature,
+      Table_Initial        => 2500,
+      Table_Increment      => 200,
+      Table_Name           => "Invocation_Signatures");
 
    procedure Destroy (IS_Id : in out Invocation_Signature_Id);
    --  Destroy an invocation signature with id IS_Id
@@ -68,14 +173,19 @@ package body ALI is
    Sig_To_Sig_Map : constant Sig_Map.Dynamic_Hash_Table :=
                       Sig_Map.Create (500);
 
-   --  The folowing table maps body placement kinds to character codes for
-   --  invocation construct encoding in ALI files.
+   --  The folowing table maps declaration placement kinds to character codes
+   --  for invocation construct encoding in ALI files.
 
-   Body_Placement_Codes :
-     constant array (Body_Placement_Kind) of Character :=
-       (In_Body           => 'b',
-        In_Spec           => 's',
-        No_Body_Placement => 'Z');
+   Declaration_Placement_Codes :
+     constant array (Declaration_Placement_Kind) of Character :=
+       (In_Body                  => 'b',
+        In_Spec                  => 's',
+        No_Declaration_Placement => 'Z');
+
+   Compile_Time_Invocation_Graph_Encoding : Invocation_Graph_Encoding_Kind :=
+                                              No_Encoding;
+   --  The invocation-graph encoding format as specified at compile time. Do
+   --  not manipulate this value directly.
 
    --  The following table maps invocation kinds to character codes for
    --  invocation relation encoding in ALI files.
@@ -112,13 +222,23 @@ package body ALI is
         Elaborate_Spec_Procedure => 's',
         Regular_Construct        => 'Z');
 
-   --  The following table maps invocation graph line kinds to character codes
+   --  The following table maps invocation-graph encoding kinds to character
+   --  codes for invocation-graph encoding in ALI files.
+
+   Invocation_Graph_Encoding_Codes :
+     constant array (Invocation_Graph_Encoding_Kind) of Character :=
+       (Full_Path_Encoding => 'f',
+        Endpoints_Encoding => 'e',
+        No_Encoding        => 'Z');
+
+   --  The following table maps invocation-graph line kinds to character codes
    --  used in ALI files.
 
    Invocation_Graph_Line_Codes :
      constant array (Invocation_Graph_Line_Kind) of Character :=
-       (Invocation_Construct_Line => 'c',
-        Invocation_Relation_Line  => 'r');
+       (Invocation_Construct_Line        => 'c',
+        Invocation_Graph_Attributes_Line => 'a',
+        Invocation_Relation_Line         => 'r');
 
    --  The following variable records which characters currently are used as
    --  line type markers in the ALI file. This is used in Scan_ALI to detect
@@ -153,18 +273,22 @@ package body ALI is
    ------------------------------
 
    procedure Add_Invocation_Construct
-     (IC_Rec       : Invocation_Construct_Record;
-      Update_Units : Boolean := True)
+     (Body_Placement : Declaration_Placement_Kind;
+      Kind           : Invocation_Construct_Kind;
+      Signature      : Invocation_Signature_Id;
+      Spec_Placement : Declaration_Placement_Kind;
+      Update_Units   : Boolean := True)
    is
-      IC_Id : Invocation_Construct_Id;
-
    begin
-      pragma Assert (Present (IC_Rec.Signature));
+      pragma Assert (Present (Signature));
 
       --  Create a invocation construct from the scanned attributes
 
-      Invocation_Constructs.Append (IC_Rec);
-      IC_Id := Invocation_Constructs.Last;
+      Invocation_Constructs.Append
+        ((Body_Placement => Body_Placement,
+          Kind           => Kind,
+          Signature      => Signature,
+          Spec_Placement => Spec_Placement));
 
       --  Update the invocation construct counter of the current unit only when
       --  requested by the caller.
@@ -174,7 +298,7 @@ package body ALI is
             Curr_Unit : Unit_Record renames Units.Table (Units.Last);
 
          begin
-            Curr_Unit.Last_Invocation_Construct := IC_Id;
+            Curr_Unit.Last_Invocation_Construct := Invocation_Constructs.Last;
          end;
       end if;
    end Add_Invocation_Construct;
@@ -184,20 +308,24 @@ package body ALI is
    -----------------------------
 
    procedure Add_Invocation_Relation
-     (IR_Rec       : Invocation_Relation_Record;
+     (Extra        : Name_Id;
+      Invoker      : Invocation_Signature_Id;
+      Kind         : Invocation_Kind;
+      Target       : Invocation_Signature_Id;
       Update_Units : Boolean := True)
    is
-      IR_Id : Invocation_Relation_Id;
-
    begin
-      pragma Assert (Present (IR_Rec.Invoker));
-      pragma Assert (Present (IR_Rec.Target));
-      pragma Assert (IR_Rec.Kind /= No_Invocation);
+      pragma Assert (Present (Invoker));
+      pragma Assert (Kind /= No_Invocation);
+      pragma Assert (Present (Target));
 
       --  Create an invocation relation from the scanned attributes
 
-      Invocation_Relations.Append (IR_Rec);
-      IR_Id := Invocation_Relations.Last;
+      Invocation_Relations.Append
+        ((Extra   => Extra,
+          Invoker => Invoker,
+          Kind    => Kind,
+          Target  => Target));
 
       --  Update the invocation relation counter of the current unit only when
       --  requested by the caller.
@@ -207,41 +335,42 @@ package body ALI is
             Curr_Unit : Unit_Record renames Units.Table (Units.Last);
 
          begin
-            Curr_Unit.Last_Invocation_Relation := IR_Id;
+            Curr_Unit.Last_Invocation_Relation := Invocation_Relations.Last;
          end;
       end if;
    end Add_Invocation_Relation;
 
-   ---------------------------------
-   -- Body_Placement_Kind_To_Code --
-   ---------------------------------
+   --------------------
+   -- Body_Placement --
+   --------------------
 
-   function Body_Placement_Kind_To_Code
-     (Kind : Body_Placement_Kind) return Character
+   function Body_Placement
+     (IC_Id : Invocation_Construct_Id) return Declaration_Placement_Kind
    is
    begin
-      return Body_Placement_Codes (Kind);
-   end Body_Placement_Kind_To_Code;
+      pragma Assert (Present (IC_Id));
+      return Invocation_Constructs.Table (IC_Id).Body_Placement;
+   end Body_Placement;
 
-   ---------------------------------
-   -- Code_To_Body_Placement_Kind --
-   ---------------------------------
+   ----------------------------------------
+   -- Code_To_Declaration_Placement_Kind --
+   ----------------------------------------
 
-   function Code_To_Body_Placement_Kind
-     (Code : Character) return Body_Placement_Kind
+   function Code_To_Declaration_Placement_Kind
+     (Code : Character) return Declaration_Placement_Kind
    is
    begin
-      --  Determine which body placement kind corresponds to the character code
-      --  by traversing the contents of the mapping table.
+      --  Determine which placement kind corresponds to the character code by
+      --  traversing the contents of the mapping table.
 
-      for Kind in Body_Placement_Kind loop
-         if Body_Placement_Codes (Kind) = Code then
+      for Kind in Declaration_Placement_Kind loop
+         if Declaration_Placement_Codes (Kind) = Code then
             return Kind;
          end if;
       end loop;
 
       raise Program_Error;
-   end Code_To_Body_Placement_Kind;
+   end Code_To_Declaration_Placement_Kind;
 
    ---------------------------------------
    -- Code_To_Invocation_Construct_Kind --
@@ -262,6 +391,26 @@ package body ALI is
 
       raise Program_Error;
    end Code_To_Invocation_Construct_Kind;
+
+   --------------------------------------------
+   -- Code_To_Invocation_Graph_Encoding_Kind --
+   --------------------------------------------
+
+   function Code_To_Invocation_Graph_Encoding_Kind
+     (Code : Character) return Invocation_Graph_Encoding_Kind
+   is
+   begin
+      --  Determine which invocation-graph encoding kind matches the character
+      --  code by traversing the contents of the mapping table.
+
+      for Kind in Invocation_Graph_Encoding_Kind loop
+         if Invocation_Graph_Encoding_Codes (Kind) = Code then
+            return Kind;
+         end if;
+      end loop;
+
+      raise Program_Error;
+   end Code_To_Invocation_Graph_Encoding_Kind;
 
    -----------------------------
    -- Code_To_Invocation_Kind --
@@ -291,7 +440,7 @@ package body ALI is
      (Code : Character) return Invocation_Graph_Line_Kind
    is
    begin
-      --  Determine which invocation graph line kind matches the character
+      --  Determine which invocation-graph line kind matches the character
       --  code by traversing the contents of the mapping table.
 
       for Kind in Invocation_Graph_Line_Kind loop
@@ -303,6 +452,27 @@ package body ALI is
       raise Program_Error;
    end Code_To_Invocation_Graph_Line_Kind;
 
+   ------------
+   -- Column --
+   ------------
+
+   function Column (IS_Id : Invocation_Signature_Id) return Nat is
+   begin
+      pragma Assert (Present (IS_Id));
+      return Invocation_Signatures.Table (IS_Id).Column;
+   end Column;
+
+   ----------------------------------------
+   -- Declaration_Placement_Kind_To_Code --
+   ----------------------------------------
+
+   function Declaration_Placement_Kind_To_Code
+     (Kind : Declaration_Placement_Kind) return Character
+   is
+   begin
+      return Declaration_Placement_Codes (Kind);
+   end Declaration_Placement_Kind_To_Code;
+
    -------------
    -- Destroy --
    -------------
@@ -312,6 +482,50 @@ package body ALI is
    begin
       null;
    end Destroy;
+
+   -----------
+   -- Extra --
+   -----------
+
+   function Extra (IR_Id : Invocation_Relation_Id) return Name_Id is
+   begin
+      pragma Assert (Present (IR_Id));
+      return Invocation_Relations.Table (IR_Id).Extra;
+   end Extra;
+
+   -----------------------------------
+   -- For_Each_Invocation_Construct --
+   -----------------------------------
+
+   procedure For_Each_Invocation_Construct
+     (Processor : Invocation_Construct_Processor_Ptr)
+   is
+   begin
+      pragma Assert (Processor /= null);
+
+      for IC_Id in Invocation_Constructs.First ..
+                   Invocation_Constructs.Last
+      loop
+         Processor.all (IC_Id);
+      end loop;
+   end For_Each_Invocation_Construct;
+
+   ----------------------------------
+   -- For_Each_Invocation_Relation --
+   ----------------------------------
+
+   procedure For_Each_Invocation_Relation
+     (Processor : Invocation_Relation_Processor_Ptr)
+   is
+   begin
+      pragma Assert (Processor /= null);
+
+      for IR_Id in Invocation_Relations.First ..
+                   Invocation_Relations.Last
+      loop
+         Processor.all (IR_Id);
+      end loop;
+   end For_Each_Invocation_Relation;
 
    ----------
    -- Hash --
@@ -428,6 +642,26 @@ package body ALI is
       return Invocation_Construct_Codes (Kind);
    end Invocation_Construct_Kind_To_Code;
 
+   -------------------------------
+   -- Invocation_Graph_Encoding --
+   -------------------------------
+
+   function Invocation_Graph_Encoding return Invocation_Graph_Encoding_Kind is
+   begin
+      return Compile_Time_Invocation_Graph_Encoding;
+   end Invocation_Graph_Encoding;
+
+   --------------------------------------------
+   -- Invocation_Graph_Encoding_Kind_To_Code --
+   --------------------------------------------
+
+   function Invocation_Graph_Encoding_Kind_To_Code
+     (Kind : Invocation_Graph_Encoding_Kind) return Character
+   is
+   begin
+      return Invocation_Graph_Encoding_Codes (Kind);
+   end Invocation_Graph_Encoding_Kind_To_Code;
+
    ----------------------------------------
    -- Invocation_Graph_Line_Kind_To_Code --
    ----------------------------------------
@@ -487,6 +721,70 @@ package body ALI is
 
       return IS_Id;
    end Invocation_Signature_Of;
+
+   -------------
+   -- Invoker --
+   -------------
+
+   function Invoker
+     (IR_Id : Invocation_Relation_Id) return Invocation_Signature_Id
+   is
+   begin
+      pragma Assert (Present (IR_Id));
+      return Invocation_Relations.Table (IR_Id).Invoker;
+   end Invoker;
+
+   ----------
+   -- Kind --
+   ----------
+
+   function Kind
+     (IC_Id : Invocation_Construct_Id) return Invocation_Construct_Kind
+   is
+   begin
+      pragma Assert (Present (IC_Id));
+      return Invocation_Constructs.Table (IC_Id).Kind;
+   end Kind;
+
+   ----------
+   -- Kind --
+   ----------
+
+   function Kind (IR_Id : Invocation_Relation_Id) return Invocation_Kind is
+   begin
+      pragma Assert (Present (IR_Id));
+      return Invocation_Relations.Table (IR_Id).Kind;
+   end Kind;
+
+   ----------
+   -- Line --
+   ----------
+
+   function Line (IS_Id : Invocation_Signature_Id) return Nat is
+   begin
+      pragma Assert (Present (IS_Id));
+      return Invocation_Signatures.Table (IS_Id).Line;
+   end Line;
+
+   ---------------
+   -- Locations --
+   ---------------
+
+   function Locations (IS_Id : Invocation_Signature_Id) return Name_Id is
+   begin
+      pragma Assert (Present (IS_Id));
+      return Invocation_Signatures.Table (IS_Id).Locations;
+   end Locations;
+
+   ----------
+   -- Name --
+   ----------
+
+   function Name (IS_Id : Invocation_Signature_Id) return Name_Id is
+   begin
+      pragma Assert (Present (IS_Id));
+      return Invocation_Signatures.Table (IS_Id).Name;
+   end Name;
 
    -------------
    -- Present --
@@ -638,7 +936,7 @@ package body ALI is
       --
       --    If Ignore_Special is False (normal case), the scan is terminated by
       --    a typeref bracket or an equal sign except for the special case of
-      --    an operator name starting with a double quote which is terminated
+      --    an operator name starting with a double quote that is terminated
       --    by another double quote.
       --
       --    If May_Be_Quoted is True and the first non blank character is '"'
@@ -674,7 +972,7 @@ package body ALI is
       --  Parse the definition of a typeref (<...>, {...} or (...))
 
       procedure Scan_Invocation_Graph_Line;
-      --  Parse a single line which encodes a piece of the invocation graph
+      --  Parse a single line that encodes a piece of the invocation graph
 
       procedure Skip_Eol;
       --  Skip past spaces, then skip past end of line (fatal error if not
@@ -1204,6 +1502,13 @@ package body ALI is
          --    * Invocation_Constructs
          --    * Units
 
+         procedure Scan_Invocation_Graph_Attributes_Line;
+         pragma Inline (Scan_Invocation_Graph_Attributes_Line);
+         --  Parse an invocation-graph attributes line. The following data
+         --  structures are updated:
+         --
+         --    * Units
+
          procedure Scan_Invocation_Relation_Line;
          pragma Inline (Scan_Invocation_Relation_Line);
          --  Parse an invocation relation line and construct the corresponding
@@ -1225,51 +1530,78 @@ package body ALI is
          ------------------------------------
 
          procedure Scan_Invocation_Construct_Line is
-            IC_Rec : Invocation_Construct_Record;
+            Body_Placement : Declaration_Placement_Kind;
+            Kind           : Invocation_Construct_Kind;
+            Signature      : Invocation_Signature_Id;
+            Spec_Placement : Declaration_Placement_Kind;
 
          begin
             --  construct-kind
 
-            IC_Rec.Kind := Code_To_Invocation_Construct_Kind (Getc);
+            Kind := Code_To_Invocation_Construct_Kind (Getc);
+            Checkc (' ');
+            Skip_Space;
+
+            --  construct-spec-placement
+
+            Spec_Placement := Code_To_Declaration_Placement_Kind (Getc);
             Checkc (' ');
             Skip_Space;
 
             --  construct-body-placement
 
-            IC_Rec.Placement := Code_To_Body_Placement_Kind (Getc);
+            Body_Placement := Code_To_Declaration_Placement_Kind (Getc);
             Checkc (' ');
             Skip_Space;
 
             --  construct-signature
 
-            IC_Rec.Signature := Scan_Invocation_Signature;
-            pragma Assert (Present (IC_Rec.Signature));
-
+            Signature := Scan_Invocation_Signature;
             Skip_Eol;
 
-            Add_Invocation_Construct (IC_Rec);
+            Add_Invocation_Construct
+              (Body_Placement => Body_Placement,
+               Kind           => Kind,
+               Signature      => Signature,
+               Spec_Placement => Spec_Placement);
          end Scan_Invocation_Construct_Line;
+
+         -------------------------------------------
+         -- Scan_Invocation_Graph_Attributes_Line --
+         -------------------------------------------
+
+         procedure Scan_Invocation_Graph_Attributes_Line is
+         begin
+            --  encoding-kind
+
+            Set_Invocation_Graph_Encoding
+              (Code_To_Invocation_Graph_Encoding_Kind (Getc));
+            Skip_Eol;
+         end Scan_Invocation_Graph_Attributes_Line;
 
          -----------------------------------
          -- Scan_Invocation_Relation_Line --
          -----------------------------------
 
          procedure Scan_Invocation_Relation_Line is
-            IR_Rec : Invocation_Relation_Record;
+            Extra   : Name_Id;
+            Invoker : Invocation_Signature_Id;
+            Kind    : Invocation_Kind;
+            Target  : Invocation_Signature_Id;
 
          begin
             --  relation-kind
 
-            IR_Rec.Kind := Code_To_Invocation_Kind (Getc);
+            Kind := Code_To_Invocation_Kind (Getc);
             Checkc (' ');
             Skip_Space;
 
             --  (extra-name | "none")
 
-            IR_Rec.Extra := Get_Name;
+            Extra := Get_Name;
 
-            if IR_Rec.Extra = Name_None then
-               IR_Rec.Extra := No_Name;
+            if Extra = Name_None then
+               Extra := No_Name;
             end if;
 
             Checkc (' ');
@@ -1277,20 +1609,20 @@ package body ALI is
 
             --  invoker-signature
 
-            IR_Rec.Invoker := Scan_Invocation_Signature;
-            pragma Assert (Present (IR_Rec.Invoker));
-
+            Invoker := Scan_Invocation_Signature;
             Checkc (' ');
             Skip_Space;
 
             --  target-signature
 
-            IR_Rec.Target := Scan_Invocation_Signature;
-            pragma Assert (Present (IR_Rec.Target));
-
+            Target := Scan_Invocation_Signature;
             Skip_Eol;
 
-            Add_Invocation_Relation (IR_Rec);
+            Add_Invocation_Relation
+              (Extra   => Extra,
+               Invoker => Invoker,
+               Kind    => Kind,
+               Target  => Target);
          end Scan_Invocation_Relation_Line;
 
          -------------------------------
@@ -1378,13 +1710,16 @@ package body ALI is
 
          --  line-attributes
 
-         if Line = Invocation_Construct_Line then
-            Scan_Invocation_Construct_Line;
+         case Line is
+            when Invocation_Construct_Line =>
+               Scan_Invocation_Construct_Line;
 
-         else
-            pragma Assert (Line = Invocation_Relation_Line);
-            Scan_Invocation_Relation_Line;
-         end if;
+            when Invocation_Graph_Attributes_Line =>
+               Scan_Invocation_Graph_Attributes_Line;
+
+            when Invocation_Relation_Line =>
+               Scan_Invocation_Relation_Line;
+         end case;
       end Scan_Invocation_Graph_Line;
 
       --------------
@@ -3064,7 +3399,7 @@ package body ALI is
 
       ALIs.Table (Id).Last_Sdep := Sdep.Last;
 
-      --  Loop through invocation graph lines
+      --  Loop through invocation-graph lines
 
       G_Loop : loop
          Check_Unknown_Line;
@@ -3436,6 +3771,16 @@ package body ALI is
          return No_ALI_Id;
    end Scan_ALI;
 
+   -----------
+   -- Scope --
+   -----------
+
+   function Scope (IS_Id : Invocation_Signature_Id) return Name_Id is
+   begin
+      pragma Assert (Present (IS_Id));
+      return Invocation_Signatures.Table (IS_Id).Scope;
+   end Scope;
+
    ---------
    -- SEq --
    ---------
@@ -3444,6 +3789,30 @@ package body ALI is
    begin
       return F1.all = F2.all;
    end SEq;
+
+   -----------------------------------
+   -- Set_Invocation_Graph_Encoding --
+   -----------------------------------
+
+   procedure Set_Invocation_Graph_Encoding
+     (Kind         : Invocation_Graph_Encoding_Kind;
+      Update_Units : Boolean := True)
+   is
+   begin
+      Compile_Time_Invocation_Graph_Encoding := Kind;
+
+      --  Update the invocation-graph encoding of the current unit only when
+      --  requested by the caller.
+
+      if Update_Units then
+         declare
+            Curr_Unit : Unit_Record renames Units.Table (Units.Last);
+
+         begin
+            Curr_Unit.Invocation_Graph_Encoding := Kind;
+         end;
+      end if;
+   end Set_Invocation_Graph_Encoding;
 
    -----------
    -- SHash --
@@ -3460,5 +3829,41 @@ package body ALI is
 
       return Vindex (Vindex'First + Vindex (H mod Vindex'Range_Length));
    end SHash;
+
+   ---------------
+   -- Signature --
+   ---------------
+
+   function Signature
+     (IC_Id : Invocation_Construct_Id) return Invocation_Signature_Id
+   is
+   begin
+      pragma Assert (Present (IC_Id));
+      return Invocation_Constructs.Table (IC_Id).Signature;
+   end Signature;
+
+   --------------------
+   -- Spec_Placement --
+   --------------------
+
+   function Spec_Placement
+     (IC_Id : Invocation_Construct_Id) return Declaration_Placement_Kind
+   is
+   begin
+      pragma Assert (Present (IC_Id));
+      return Invocation_Constructs.Table (IC_Id).Spec_Placement;
+   end Spec_Placement;
+
+   ------------
+   -- Target --
+   ------------
+
+   function Target
+     (IR_Id : Invocation_Relation_Id) return Invocation_Signature_Id
+   is
+   begin
+      pragma Assert (Present (IR_Id));
+      return Invocation_Relations.Table (IR_Id).Target;
+   end Target;
 
 end ALI;

@@ -112,6 +112,20 @@ package ALI is
    First_ALI_Entry : constant ALI_Id := No_ALI_Id + 1;
    --  Id of first actual entry in table
 
+   --  The following type enumerates all possible invocation-graph encoding
+   --  kinds.
+
+   type Invocation_Graph_Encoding_Kind is
+     (Endpoints_Encoding,
+      --  The invocation construct and relation lines contain information for
+      --  the start construct and end target found on an invocation-graph path.
+
+      Full_Path_Encoding,
+      --  The invocation construct and relation lines contain information for
+      --  all constructs and targets found on a invocation-graph path.
+
+      No_Encoding);
+
    type Main_Program_Type is (None, Proc, Func);
    --  Indicator of whether unit can be used as main program
 
@@ -367,6 +381,11 @@ package ALI is
 
       Last_Arg : Arg_Id;
       --  Id of last args table entry for this file
+
+      Invocation_Graph_Encoding : Invocation_Graph_Encoding_Kind;
+      --  The encoding format used to capture information about the invocation
+      --  constructs and relations within the corresponding ALI file of this
+      --  unit.
 
       First_Invocation_Construct : Invocation_Construct_Id;
       --  Id of the first invocation construct for this unit
@@ -1087,6 +1106,20 @@ package ALI is
    -- Invocation Graph Types --
    ----------------------------
 
+   --  The following type identifies an invocation construct
+
+   No_Invocation_Construct    : constant Invocation_Construct_Id :=
+                                  Invocation_Construct_Id'First;
+   First_Invocation_Construct : constant Invocation_Construct_Id :=
+                                  No_Invocation_Construct + 1;
+
+   --  The following type identifies an invocation relation
+
+   No_Invocation_Relation    : constant Invocation_Relation_Id :=
+                                 Invocation_Relation_Id'First;
+   First_Invocation_Relation : constant Invocation_Relation_Id :=
+                                 No_Invocation_Relation + 1;
+
    --  The following type identifies an invocation signature
 
    No_Invocation_Signature    : constant Invocation_Signature_Id :=
@@ -1094,59 +1127,20 @@ package ALI is
    First_Invocation_Signature : constant Invocation_Signature_Id :=
                                   No_Invocation_Signature + 1;
 
-   --  The following type represents an invocation signature. Its purpose is
-   --  to uniquely identify an invocation construct within the ALI space. The
-   --  signature is comprised out of several pieces, some of which are used in
-   --  error diagnostics by the binder. Identification issues are resolved as
-   --  follows:
-   --
-   --    * The Column, Line, and Locations attributes together differentiate
-   --      between homonyms. In most cases, the Column and Line are sufficient
-   --      except when generic instantiations are involved. Together, the three
-   --      attributes offer a sequence of column-line pairs which eventually
-   --      reflect the location within the generic template.
-   --
-   --    * The Name attribute differentiates between invocation constructs at
-   --      the scope level. Since it is illegal for two entities with the same
-   --      name to coexist in the same scope, the Name attribute is sufficient
-   --      to distinguish them. Overloaded entities are already handled by the
-   --      Column, Line, and Locations attributes.
-   --
-   --    * The Scope attribute differentiates between invocation constructs at
-   --      various levels of nesting.
-
-   type Invocation_Signature_Record is record
-      Column : Nat := 0;
-      --  The column number where the invocation construct is declared
-
-      Line : Nat := 0;
-      --  The line number where the invocation construct is declared
-
-      Locations : Name_Id := No_Name;
-      --  Sequence of column and line numbers within nested instantiations
-
-      Name : Name_Id := No_Name;
-      --  The name of the invocation construct
-
-      Scope : Name_Id := No_Name;
-      --  The qualified name of the scope where the invocation construct is
-      --  declared.
-   end record;
-
    --  The following type enumerates all possible placements of an invocation
-   --  construct's body body with respect to the unit it is declared in.
+   --  construct's spec and body with respect to the unit it is declared in.
 
-   type Body_Placement_Kind is
+   type Declaration_Placement_Kind is
      (In_Body,
-      --  The body of the invocation construct is within the body of the unit
-      --  it is declared in.
+      --  The declaration of the invocation construct is within the body of the
+      --  unit it is declared in.
 
       In_Spec,
-      --  The body of the invocation construct is within the spec of the unit
-      --  it is declared in.
+      --  The declaration of the invocation construct is within the spec of the
+      --  unit it is declared in.
 
-      No_Body_Placement);
-      --  The invocation construct does not have a body
+      No_Declaration_Placement);
+      --  The invocation construct does not have a declaration
 
    --  The following type enumerates all possible invocation construct kinds
 
@@ -1161,35 +1155,6 @@ package ALI is
 
       Regular_Construct);
       --  The invocation construct is a normal invocation construct
-
-   --  The following type identifies an invocation construct
-
-   No_Invocation_Construct    : constant Invocation_Construct_Id :=
-                                  Invocation_Construct_Id'First;
-   First_Invocation_Construct : constant Invocation_Construct_Id :=
-                                  No_Invocation_Construct + 1;
-
-   --  The following type represents an invocation construct
-
-   type Invocation_Construct_Record is record
-      Kind : Invocation_Construct_Kind := Regular_Construct;
-      --  The nature of the invocation construct
-
-      Placement : Body_Placement_Kind := No_Body_Placement;
-      --  The location of the invocation construct's body with respect to the
-      --  body of the unit it is declared in.
-
-      Signature : Invocation_Signature_Id := No_Invocation_Signature;
-      --  The invocation signature which uniquely identifies the invocation
-      --  construct in the ALI space.
-   end record;
-
-   --  The following type identifies an invocation relation
-
-   No_Invocation_Relation    : constant Invocation_Relation_Id :=
-                                 Invocation_Relation_Id'First;
-   First_Invocation_Relation : constant Invocation_Relation_Id :=
-                                 No_Invocation_Relation + 1;
 
    --  The following type enumerates all possible invocation kinds
 
@@ -1220,93 +1185,59 @@ package ALI is
    --  Internal_Controlled_Finalization
        Internal_Controlled_Initialization;
 
-   --  The following type represents an invocation relation. It associates an
-   --  invoker which activates/calls/instantiates with a target.
-
-   type Invocation_Relation_Record is record
-      Extra : Name_Id := No_Name;
-      --  The name of an additional entity used in error diagnostics
-
-      Invoker : Invocation_Signature_Id := No_Invocation_Signature;
-      --  The invocation signature which uniquely identifies the invoker within
-      --  the ALI space.
-
-      Kind : Invocation_Kind := No_Invocation;
-      --  The nature of the invocation
-
-      Target : Invocation_Signature_Id := No_Invocation_Signature;
-      --  The invocation signature which uniquely identifies the target within
-      --  the ALI space.
-   end record;
-
-   --  The following type enumerates all possible invocation graph ALI lines
+   --  The following type enumerates all possible invocation-graph ALI lines
 
    type Invocation_Graph_Line_Kind is
      (Invocation_Construct_Line,
+      Invocation_Graph_Attributes_Line,
       Invocation_Relation_Line);
-
-   --------------------------------------
-   -- Invocation Graph Data Structures --
-   --------------------------------------
-
-   package Invocation_Constructs is new Table.Table
-     (Table_Index_Type     => Invocation_Construct_Id,
-      Table_Component_Type => Invocation_Construct_Record,
-      Table_Low_Bound      => First_Invocation_Construct,
-      Table_Initial        => 2500,
-      Table_Increment      => 200,
-      Table_Name           => "Invocation_Constructs");
-
-   package Invocation_Relations is new Table.Table
-     (Table_Index_Type     => Invocation_Relation_Id,
-      Table_Component_Type => Invocation_Relation_Record,
-      Table_Low_Bound      => First_Invocation_Relation,
-      Table_Initial        => 2500,
-      Table_Increment      => 200,
-      Table_Name           => "Invocation_Relation");
-
-   package Invocation_Signatures is new Table.Table
-     (Table_Index_Type     => Invocation_Signature_Id,
-      Table_Component_Type => Invocation_Signature_Record,
-      Table_Low_Bound      => First_Invocation_Signature,
-      Table_Initial        => 2500,
-      Table_Increment      => 200,
-      Table_Name           => "Invocation_Signatures");
 
    ----------------------------------
    -- Invocation Graph Subprograms --
    ----------------------------------
 
    procedure Add_Invocation_Construct
-     (IC_Rec       : Invocation_Construct_Record;
-      Update_Units : Boolean := True);
+     (Body_Placement : Declaration_Placement_Kind;
+      Kind           : Invocation_Construct_Kind;
+      Signature      : Invocation_Signature_Id;
+      Spec_Placement : Declaration_Placement_Kind;
+      Update_Units   : Boolean := True);
    pragma Inline (Add_Invocation_Construct);
-   --  Add invocation construct attributes IC_Rec to internal data structures.
-   --  Flag Undate_Units should be set when this addition must be reflected in
-   --  the attributes of the current unit.
+   --  Add a new invocation construct described by its attributes. Update_Units
+   --  should be set when this addition must be reflected in the attributes of
+   --  the current unit.
 
    procedure Add_Invocation_Relation
-     (IR_Rec       : Invocation_Relation_Record;
+     (Extra        : Name_Id;
+      Invoker      : Invocation_Signature_Id;
+      Kind         : Invocation_Kind;
+      Target       : Invocation_Signature_Id;
       Update_Units : Boolean := True);
    pragma Inline (Add_Invocation_Relation);
-   --  Add invocation relation attributes IR_Rec to internal data structures.
-   --  Flag Undate_Units should be set when this addition must be reflected in
-   --  the attributes of the current unit.
+   --  Add a new invocation relation described by its attributes. Update_Units
+   --  should be set when this addition must be reflected in the attributes of
+   --  the current unit.
 
-   function Body_Placement_Kind_To_Code
-     (Kind : Body_Placement_Kind) return Character;
-   pragma Inline (Body_Placement_Kind_To_Code);
-   --  Obtain the character encoding of body placement kind Kind
+   function Body_Placement
+     (IC_Id : Invocation_Construct_Id) return Declaration_Placement_Kind;
+   pragma Inline (Body_Placement);
+   --  Obtain the location of invocation construct IC_Id's body with respect to
+   --  the unit where it is declared.
 
-   function Code_To_Body_Placement_Kind
-     (Code : Character) return Body_Placement_Kind;
-   pragma Inline (Code_To_Body_Placement_Kind);
-   --  Obtain the body placement kind of character encoding Code
+   function Code_To_Declaration_Placement_Kind
+     (Code : Character) return Declaration_Placement_Kind;
+   pragma Inline (Code_To_Declaration_Placement_Kind);
+   --  Obtain the declaration placement kind of character encoding Code
 
    function Code_To_Invocation_Construct_Kind
      (Code : Character) return Invocation_Construct_Kind;
    pragma Inline (Code_To_Invocation_Construct_Kind);
    --  Obtain the invocation construct kind of character encoding Code
+
+   function Code_To_Invocation_Graph_Encoding_Kind
+     (Code : Character) return Invocation_Graph_Encoding_Kind;
+   pragma Inline (Code_To_Invocation_Graph_Encoding_Kind);
+   --  Obtain the invocation-graph encoding kind of character encoding Code
 
    function Code_To_Invocation_Kind
      (Code : Character) return Invocation_Kind;
@@ -1316,17 +1247,58 @@ package ALI is
    function Code_To_Invocation_Graph_Line_Kind
      (Code : Character) return Invocation_Graph_Line_Kind;
    pragma Inline (Code_To_Invocation_Graph_Line_Kind);
-   --  Obtain the invocation graph line kind of character encoding Code
+   --  Obtain the invocation-graph line kind of character encoding Code
+
+   function Column (IS_Id : Invocation_Signature_Id) return Nat;
+   pragma Inline (Column);
+   --  Obtain the column number of invocation signature IS_Id
+
+   function Declaration_Placement_Kind_To_Code
+     (Kind : Declaration_Placement_Kind) return Character;
+   pragma Inline (Declaration_Placement_Kind_To_Code);
+   --  Obtain the character encoding of declaration placement kind Kind
+
+   function Extra (IR_Id : Invocation_Relation_Id) return Name_Id;
+   pragma Inline (Extra);
+   --  Obtain the name of the additional entity used in error diagnostics for
+   --  invocation relation IR_Id.
+
+   type Invocation_Construct_Processor_Ptr is
+     access procedure (IC_Id : Invocation_Construct_Id);
+
+   procedure For_Each_Invocation_Construct
+     (Processor : Invocation_Construct_Processor_Ptr);
+   pragma Inline (For_Each_Invocation_Construct);
+   --  Invoke Processor on each invocation construct
+
+   type Invocation_Relation_Processor_Ptr is
+     access procedure (IR_Id : Invocation_Relation_Id);
+
+   procedure For_Each_Invocation_Relation
+     (Processor : Invocation_Relation_Processor_Ptr);
+   pragma Inline (For_Each_Invocation_Relation);
+   --  Invoker Processor on each invocation relation
 
    function Invocation_Construct_Kind_To_Code
      (Kind : Invocation_Construct_Kind) return Character;
    pragma Inline (Invocation_Construct_Kind_To_Code);
    --  Obtain the character encoding of invocation kind Kind
 
+   function Invocation_Graph_Encoding return Invocation_Graph_Encoding_Kind;
+   pragma Inline (Invocation_Graph_Encoding);
+   --  Obtain the encoding format used to capture information about the
+   --  invocation constructs and relations within the ALI file of the main
+   --  unit.
+
+   function Invocation_Graph_Encoding_Kind_To_Code
+     (Kind : Invocation_Graph_Encoding_Kind) return Character;
+   pragma Inline (Invocation_Graph_Encoding_Kind_To_Code);
+   --  Obtain the character encoding for invocation-graph encoding kind Kind
+
    function Invocation_Graph_Line_Kind_To_Code
      (Kind : Invocation_Graph_Line_Kind) return Character;
    pragma Inline (Invocation_Graph_Line_Kind_To_Code);
-   --  Obtain the character encoding for invocation like kind Kind
+   --  Obtain the character encoding for invocation line kind Kind
 
    function Invocation_Kind_To_Code
      (Kind : Invocation_Kind) return Character;
@@ -1341,6 +1313,63 @@ package ALI is
       Scope     : Name_Id) return Invocation_Signature_Id;
    pragma Inline (Invocation_Signature_Of);
    --  Obtain the invocation signature that corresponds to the input attributes
+
+   function Invoker
+     (IR_Id : Invocation_Relation_Id) return Invocation_Signature_Id;
+   pragma Inline (Invoker);
+   --  Obtain the signature of the invocation relation IR_Id's invoker
+
+   function Kind
+     (IC_Id : Invocation_Construct_Id) return Invocation_Construct_Kind;
+   pragma Inline (Kind);
+   --  Obtain the nature of invocation construct IC_Id
+
+   function Kind
+     (IR_Id : Invocation_Relation_Id) return Invocation_Kind;
+   pragma Inline (Kind);
+   --  Obtain the nature of invocation relation IR_Id
+
+   function Line (IS_Id : Invocation_Signature_Id) return Nat;
+   pragma Inline (Line);
+   --  Obtain the line number of invocation signature IS_Id
+
+   function Locations (IS_Id : Invocation_Signature_Id) return Name_Id;
+   pragma Inline (Locations);
+   --  Obtain the sequence of column and line numbers within nested instances
+   --  of invocation signature IS_Id
+
+   function Name (IS_Id : Invocation_Signature_Id) return Name_Id;
+   pragma Inline (Name);
+   --  Obtain the name of invocation signature IS_Id
+
+   function Scope (IS_Id : Invocation_Signature_Id) return Name_Id;
+   pragma Inline (Scope);
+   --  Obtain the scope of invocation signature IS_Id
+
+   procedure Set_Invocation_Graph_Encoding
+     (Kind         : Invocation_Graph_Encoding_Kind;
+      Update_Units : Boolean := True);
+   pragma Inline (Set_Invocation_Graph_Encoding);
+   --  Set the encoding format used to capture information about the invocation
+   --  constructs and relations within the ALI file of the main unit to Kind.
+   --  Update_Units should be set when this action must be reflected in the
+   --  attributes of the current unit.
+
+   function Signature
+     (IC_Id : Invocation_Construct_Id) return Invocation_Signature_Id;
+   pragma Inline (Signature);
+   --  Obtain the signature of invocation construct IC_Id
+
+   function Spec_Placement
+     (IC_Id : Invocation_Construct_Id) return Declaration_Placement_Kind;
+   pragma Inline (Spec_Placement);
+   --  Obtain the location of invocation construct IC_Id's spec with respect to
+   --  the unit where it is declared.
+
+   function Target
+     (IR_Id : Invocation_Relation_Id) return Invocation_Signature_Id;
+   pragma Inline (Target);
+   --  Obtain the signature of the invocation relation IR_Id's target
 
    --------------------------------------
    -- Subprograms for Reading ALI File --

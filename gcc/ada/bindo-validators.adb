@@ -29,22 +29,183 @@ with Types;  use Types;
 
 with Bindo.Units; use Bindo.Units;
 
-with GNAT;      use GNAT;
-with GNAT.Sets; use GNAT.Sets;
-
 package body Bindo.Validators is
+
+   -----------------------
+   -- Local subprograms --
+   -----------------------
+
+   procedure Write_Error
+     (Msg  : String;
+      Flag : out Boolean);
+   pragma Inline (Write_Error);
+   --  Write error message Msg to standard output and set flag Flag to True
+
+   ----------------------
+   -- Cycle_Validators --
+   ----------------------
+
+   package body Cycle_Validators is
+      Has_Invalid_Cycle : Boolean := False;
+      --  Flag set when the library graph contains an invalid cycle
+
+      -----------------------
+      -- Local subprograms --
+      -----------------------
+
+      procedure Validate_Cycle
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id);
+      pragma Inline (Validate_Cycle);
+      --  Ensure that a cycle meets the following requirements:
+      --
+      --    * Is of proper kind
+      --    * Has enough edges to form a circuit
+      --    * No edge is repeated
+
+      procedure Validate_Cycle_Path
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id);
+      pragma Inline (Validate_Cycle_Path);
+      --  Ensure that the path of a cycle meets the following requirements:
+      --
+      --    * No edge is repeated
+
+      --------------------
+      -- Validate_Cycle --
+      --------------------
+
+      procedure Validate_Cycle
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id)
+      is
+         Msg : constant String := "Validate_Cycle";
+
+      begin
+         pragma Assert (Present (G));
+
+         if not Present (Cycle) then
+            Write_Error (Msg, Has_Invalid_Cycle);
+
+            Write_Str ("  empty cycle");
+            Write_Eol;
+            Write_Eol;
+            return;
+         end if;
+
+         if Kind (G, Cycle) = No_Cycle_Kind then
+            Write_Error (Msg, Has_Invalid_Cycle);
+
+            Write_Str ("  cycle (LGC_Id_");
+            Write_Int (Int (Cycle));
+            Write_Str (") is a No_Cycle");
+            Write_Eol;
+            Write_Eol;
+         end if;
+
+         --  A cycle requires at least one edge (self cycle) to form a circuit
+
+         if Length (G, Cycle) < 1 then
+            Write_Error (Msg, Has_Invalid_Cycle);
+
+            Write_Str ("  cycle (LGC_Id_");
+            Write_Int (Int (Cycle));
+            Write_Str (") does not contain enough edges");
+            Write_Eol;
+            Write_Eol;
+         end if;
+
+         Validate_Cycle_Path (G, Cycle);
+      end Validate_Cycle;
+
+      -------------------------
+      -- Validate_Cycle_Path --
+      -------------------------
+
+      procedure Validate_Cycle_Path
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id)
+      is
+         Msg : constant String := "Validate_Cycle_Path";
+
+         Edge  : Library_Graph_Edge_Id;
+         Edges : LGE_Sets.Membership_Set;
+         Iter  : Edges_Of_Cycle_Iterator;
+
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Cycle));
+
+         --  Use a set to detect duplicate edges while traversing the cycle
+
+         Edges := LGE_Sets.Create (Length (G, Cycle));
+
+         --  Inspect the edges of the cucle, trying to catch duplicates
+
+         Iter := Iterate_Edges_Of_Cycle (G, Cycle);
+         while Has_Next (Iter) loop
+            Next (Iter, Edge);
+
+            --  The current edge has already been encountered while traversing
+            --  the cycle. This indicates that the cycle is malformed as edges
+            --  are not repeated in the circuit.
+
+            if LGE_Sets.Contains (Edges, Edge) then
+               Write_Error (Msg, Has_Invalid_Cycle);
+
+               Write_Str ("  library graph edge (LGE_Id_");
+               Write_Int (Int (Edge));
+               Write_Str (") is repeaded in cycle (LGC_Id_");
+               Write_Int (Int (Cycle));
+               Write_Str (")");
+               Write_Eol;
+
+            --  Otherwise add the current edge to the set of encountered edges
+
+            else
+               LGE_Sets.Insert (Edges, Edge);
+            end if;
+         end loop;
+
+         LGE_Sets.Destroy (Edges);
+      end Validate_Cycle_Path;
+
+      ---------------------
+      -- Validate_Cycles --
+      ---------------------
+
+      procedure Validate_Cycles (G : Library_Graph) is
+         Cycle : Library_Graph_Cycle_Id;
+         Iter  : All_Cycle_Iterator;
+
+      begin
+         pragma Assert (Present (G));
+
+         --  Nothing to do when switch -d_V (validate bindo cycles, graphs, and
+         --  order) is not in effect.
+
+         if not Debug_Flag_Underscore_VV then
+            return;
+         end if;
+
+         Iter := Iterate_All_Cycles (G);
+         while Has_Next (Iter) loop
+            Next (Iter, Cycle);
+
+            Validate_Cycle (G, Cycle);
+         end loop;
+
+         if Has_Invalid_Cycle then
+            raise Invalid_Cycle;
+         end if;
+      end Validate_Cycles;
+   end Cycle_Validators;
 
    ----------------------------------
    -- Elaboration_Order_Validators --
    ----------------------------------
 
    package body Elaboration_Order_Validators is
-      package US is new Membership_Sets
-        (Element_Type => Unit_Id,
-         "="          => "=",
-         Hash         => Hash_Unit);
-      use US;
-
       Has_Invalid_Data : Boolean := False;
       --  Flag set when the elaboration order contains invalid data
 
@@ -52,7 +213,7 @@ package body Bindo.Validators is
       -- Local subprograms --
       -----------------------
 
-      function Build_Elaborable_Unit_Set return Membership_Set;
+      function Build_Elaborable_Unit_Set return Unit_Sets.Membership_Set;
       pragma Inline (Build_Elaborable_Unit_Set);
       --  Create a set from all units that need to be elaborated
 
@@ -61,7 +222,7 @@ package body Bindo.Validators is
       --  Emit an error concerning unit U_Id that must be elaborated, but was
       --  not.
 
-      procedure Report_Missing_Elaborations (Set : Membership_Set);
+      procedure Report_Missing_Elaborations (Set : Unit_Sets.Membership_Set);
       pragma Inline (Report_Missing_Elaborations);
       --  Emit errors on all units in set Set that must be elaborated, but were
       --  not.
@@ -70,7 +231,9 @@ package body Bindo.Validators is
       pragma Inline (Report_Spurious_Elaboration);
       --  Emit an error concerning unit U_Id that is incorrectly elaborated
 
-      procedure Validate_Unit (U_Id : Unit_Id; Elab_Set : Membership_Set);
+      procedure Validate_Unit
+        (U_Id     : Unit_Id;
+         Elab_Set : Unit_Sets.Membership_Set);
       pragma Inline (Validate_Unit);
       --  Validate the elaboration status of unit U_Id. Elab_Set is the set of
       --  all units that need to be elaborated.
@@ -79,28 +242,22 @@ package body Bindo.Validators is
       pragma Inline (Validate_Units);
       --  Validate all units in elaboration order Order
 
-      procedure Write_Error (Msg : String);
-      pragma Inline (Write_Error);
-      --  Write error message Msg to standard output and signal that the
-      --  elaboration order is incorrect.
-
       -------------------------------
       -- Build_Elaborable_Unit_Set --
       -------------------------------
 
-      function Build_Elaborable_Unit_Set return Membership_Set is
+      function Build_Elaborable_Unit_Set return Unit_Sets.Membership_Set is
          Iter : Elaborable_Units_Iterator;
-         Set  : Membership_Set;
+         Set  : Unit_Sets.Membership_Set;
          U_Id : Unit_Id;
 
       begin
-         Set  := Create (Number_Of_Elaborable_Units);
+         Set  := Unit_Sets.Create (Number_Of_Elaborable_Units);
          Iter := Iterate_Elaborable_Units;
          while Has_Next (Iter) loop
             Next (Iter, U_Id);
-            pragma Assert (Present (U_Id));
 
-            Insert (Set, U_Id);
+            Unit_Sets.Insert (Set, U_Id);
          end loop;
 
          return Set;
@@ -115,7 +272,7 @@ package body Bindo.Validators is
 
       begin
          pragma Assert (Present (U_Id));
-         Write_Error (Msg);
+         Write_Error (Msg, Has_Invalid_Data);
 
          Write_Str  ("unit (U_Id_");
          Write_Int  (Int (U_Id));
@@ -129,15 +286,14 @@ package body Bindo.Validators is
       -- Report_Missing_Elaborations --
       ---------------------------------
 
-      procedure Report_Missing_Elaborations (Set : Membership_Set) is
-         Iter : Iterator;
+      procedure Report_Missing_Elaborations (Set : Unit_Sets.Membership_Set) is
+         Iter : Unit_Sets.Iterator;
          U_Id : Unit_Id;
 
       begin
-         Iter := Iterate (Set);
-         while Has_Next (Iter) loop
-            Next (Iter, U_Id);
-            pragma Assert (Present (U_Id));
+         Iter := Unit_Sets.Iterate (Set);
+         while Unit_Sets.Has_Next (Iter) loop
+            Unit_Sets.Next (Iter, U_Id);
 
             Report_Missing_Elaboration (U_Id);
          end loop;
@@ -152,7 +308,7 @@ package body Bindo.Validators is
 
       begin
          pragma Assert (Present (U_Id));
-         Write_Error (Msg);
+         Write_Error (Msg, Has_Invalid_Data);
 
          Write_Str  ("unit (U_Id_");
          Write_Int  (Int (U_Id));
@@ -167,8 +323,8 @@ package body Bindo.Validators is
 
       procedure Validate_Elaboration_Order (Order : Unit_Id_Table) is
       begin
-         --  Nothing to do when switch -d_V (validate bindo graphs and order)
-         --  is not in effect.
+         --  Nothing to do when switch -d_V (validate bindo cycles, graphs, and
+         --  order) is not in effect.
 
          if not Debug_Flag_Underscore_VV then
             return;
@@ -185,15 +341,18 @@ package body Bindo.Validators is
       -- Validate_Unit --
       -------------------
 
-      procedure Validate_Unit (U_Id : Unit_Id; Elab_Set : Membership_Set) is
+      procedure Validate_Unit
+        (U_Id     : Unit_Id;
+         Elab_Set : Unit_Sets.Membership_Set)
+      is
       begin
          pragma Assert (Present (U_Id));
 
          --  The current unit in the elaboration order appears within the set
          --  of units that require elaboration. Remove it from the set.
 
-         if Contains (Elab_Set, U_Id) then
-            Delete (Elab_Set, U_Id);
+         if Unit_Sets.Contains (Elab_Set, U_Id) then
+            Unit_Sets.Delete (Elab_Set, U_Id);
 
          --  Otherwise the current unit in the elaboration order must not be
          --  elaborated.
@@ -208,7 +367,7 @@ package body Bindo.Validators is
       --------------------
 
       procedure Validate_Units (Order : Unit_Id_Table) is
-         Elab_Set : Membership_Set;
+         Elab_Set : Unit_Sets.Membership_Set;
 
       begin
          --  Collect all units in the compilation that need to be elaborated
@@ -230,21 +389,8 @@ package body Bindo.Validators is
          --  their elaboration.
 
          Report_Missing_Elaborations (Elab_Set);
-         Destroy (Elab_Set);
+         Unit_Sets.Destroy (Elab_Set);
       end Validate_Units;
-
-      -----------------
-      -- Write_Error --
-      -----------------
-
-      procedure Write_Error (Msg : String) is
-      begin
-         Has_Invalid_Data := True;
-
-         Write_Str ("ERROR: ");
-         Write_Str (Msg);
-         Write_Eol;
-      end Write_Error;
    end Elaboration_Order_Validators;
 
    ---------------------------------
@@ -260,10 +406,10 @@ package body Bindo.Validators is
       -----------------------
 
       procedure Validate_Invocation_Graph_Edge
-        (G      : Invocation_Graph;
-         IGE_Id : Invocation_Graph_Edge_Id);
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id);
       pragma Inline (Validate_Invocation_Graph_Edge);
-      --  Verify that the attributes of edge IGE_Id of invocation graph G are
+      --  Verify that the attributes of edge Edge of invocation graph G are
       --  properly set.
 
       procedure Validate_Invocation_Graph_Edges (G : Invocation_Graph);
@@ -273,20 +419,15 @@ package body Bindo.Validators is
 
       procedure Validate_Invocation_Graph_Vertex
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id);
+         Vertex : Invocation_Graph_Vertex_Id);
       pragma Inline (Validate_Invocation_Graph_Vertex);
-      --  Verify that the attributes of vertex IGV_Id of inbocation graph G are
+      --  Verify that the attributes of vertex Vertex of inbocation graph G are
       --  properly set.
 
       procedure Validate_Invocation_Graph_Vertices (G : Invocation_Graph);
       pragma Inline (Validate_Invocation_Graph_Vertices);
       --  Verify that the attributes of all vertices of invocation graph G are
       --  properly set.
-
-      procedure Write_Error (Msg : String);
-      pragma Inline (Write_Error);
-      --  Write error message Msg to standard output and signal that the
-      --  invocation graph is incorrect.
 
       -------------------------------
       -- Validate_Invocation_Graph --
@@ -296,8 +437,8 @@ package body Bindo.Validators is
       begin
          pragma Assert (Present (G));
 
-         --  Nothing to do when switch -d_V (validate bindo graphs and order)
-         --  is not in effect.
+         --  Nothing to do when switch -d_V (validate bindo cycles, graphs, and
+         --  order) is not in effect.
 
          if not Debug_Flag_Underscore_VV then
             return;
@@ -316,16 +457,16 @@ package body Bindo.Validators is
       ------------------------------------
 
       procedure Validate_Invocation_Graph_Edge
-        (G      : Invocation_Graph;
-         IGE_Id : Invocation_Graph_Edge_Id)
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id)
       is
          Msg : constant String := "Validate_Invocation_Graph_Edge";
 
       begin
          pragma Assert (Present (G));
 
-         if not Present (IGE_Id) then
-            Write_Error (Msg);
+         if not Present (Edge) then
+            Write_Error (Msg, Has_Invalid_Data);
 
             Write_Str ("  emply invocation graph edge");
             Write_Eol;
@@ -333,21 +474,21 @@ package body Bindo.Validators is
             return;
          end if;
 
-         if not Present (Relation (G, IGE_Id)) then
-            Write_Error (Msg);
+         if not Present (Relation (G, Edge)) then
+            Write_Error (Msg, Has_Invalid_Data);
 
             Write_Str ("  invocation graph edge (IGE_Id_");
-            Write_Int (Int (IGE_Id));
+            Write_Int (Int (Edge));
             Write_Str (") lacks Relation");
             Write_Eol;
             Write_Eol;
          end if;
 
-         if not Present (Target (G, IGE_Id)) then
-            Write_Error (Msg);
+         if not Present (Target (G, Edge)) then
+            Write_Error (Msg, Has_Invalid_Data);
 
             Write_Str ("  invocation graph edge (IGE_Id_");
-            Write_Int (Int (IGE_Id));
+            Write_Int (Int (Edge));
             Write_Str (") lacks Target");
             Write_Eol;
             Write_Eol;
@@ -359,17 +500,17 @@ package body Bindo.Validators is
       -------------------------------------
 
       procedure Validate_Invocation_Graph_Edges (G : Invocation_Graph) is
-         IGE_Id : Invocation_Graph_Edge_Id;
-         Iter   : Invocation_Graphs.All_Edge_Iterator;
+         Edge : Invocation_Graph_Edge_Id;
+         Iter : Invocation_Graphs.All_Edge_Iterator;
 
       begin
          pragma Assert (Present (G));
 
          Iter := Iterate_All_Edges (G);
          while Has_Next (Iter) loop
-            Next (Iter, IGE_Id);
+            Next (Iter, Edge);
 
-            Validate_Invocation_Graph_Edge (G, IGE_Id);
+            Validate_Invocation_Graph_Edge (G, Edge);
          end loop;
       end Validate_Invocation_Graph_Edges;
 
@@ -379,15 +520,15 @@ package body Bindo.Validators is
 
       procedure Validate_Invocation_Graph_Vertex
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id)
+         Vertex : Invocation_Graph_Vertex_Id)
       is
          Msg : constant String := "Validate_Invocation_Graph_Vertex";
 
       begin
          pragma Assert (Present (G));
 
-         if not Present (IGV_Id) then
-            Write_Error (Msg);
+         if not Present (Vertex) then
+            Write_Error (Msg, Has_Invalid_Data);
 
             Write_Str ("  emply invocation graph vertex");
             Write_Eol;
@@ -395,22 +536,32 @@ package body Bindo.Validators is
             return;
          end if;
 
-         if not Present (Construct (G, IGV_Id)) then
-            Write_Error (Msg);
+         if not Present (Body_Vertex (G, Vertex)) then
+            Write_Error (Msg, Has_Invalid_Data);
 
             Write_Str ("  invocation graph vertex (IGV_Id_");
-            Write_Int (Int (IGV_Id));
+            Write_Int (Int (Vertex));
+            Write_Str (") lacks Body_Vertex");
+            Write_Eol;
+            Write_Eol;
+         end if;
+
+         if not Present (Construct (G, Vertex)) then
+            Write_Error (Msg, Has_Invalid_Data);
+
+            Write_Str ("  invocation graph vertex (IGV_Id_");
+            Write_Int (Int (Vertex));
             Write_Str (") lacks Construct");
             Write_Eol;
             Write_Eol;
          end if;
 
-         if not Present (Lib_Vertex (G, IGV_Id)) then
-            Write_Error (Msg);
+         if not Present (Spec_Vertex (G, Vertex)) then
+            Write_Error (Msg, Has_Invalid_Data);
 
             Write_Str ("  invocation graph vertex (IGV_Id_");
-            Write_Int (Int (IGV_Id));
-            Write_Str (") lacks Lib_Vertex");
+            Write_Int (Int (Vertex));
+            Write_Str (") lacks Spec_Vertex");
             Write_Eol;
             Write_Eol;
          end if;
@@ -421,32 +572,19 @@ package body Bindo.Validators is
       ----------------------------------------
 
       procedure Validate_Invocation_Graph_Vertices (G : Invocation_Graph) is
-         IGV_Id : Invocation_Graph_Vertex_Id;
          Iter   : Invocation_Graphs.All_Vertex_Iterator;
+         Vertex : Invocation_Graph_Vertex_Id;
 
       begin
          pragma Assert (Present (G));
 
          Iter := Iterate_All_Vertices (G);
          while Has_Next (Iter) loop
-            Next (Iter, IGV_Id);
+            Next (Iter, Vertex);
 
-            Validate_Invocation_Graph_Vertex (G, IGV_Id);
+            Validate_Invocation_Graph_Vertex (G, Vertex);
          end loop;
       end Validate_Invocation_Graph_Vertices;
-
-      -----------------
-      -- Write_Error --
-      -----------------
-
-      procedure Write_Error (Msg : String) is
-      begin
-         Has_Invalid_Data := True;
-
-         Write_Str ("ERROR: ");
-         Write_Str (Msg);
-         Write_Eol;
-      end Write_Error;
    end Invocation_Graph_Validators;
 
    ------------------------------
@@ -462,10 +600,10 @@ package body Bindo.Validators is
       -----------------------
 
       procedure Validate_Library_Graph_Edge
-        (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id);
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id);
       pragma Inline (Validate_Library_Graph_Edge);
-      --  Verify that the attributes of edge LGE_Id of library graph G are
+      --  Verify that the attributes of edge Edge of library graph G are
       --  properly set.
 
       procedure Validate_Library_Graph_Edges (G : Library_Graph);
@@ -475,20 +613,15 @@ package body Bindo.Validators is
 
       procedure Validate_Library_Graph_Vertex
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id);
+         Vertex : Library_Graph_Vertex_Id);
       pragma Inline (Validate_Library_Graph_Vertex);
-      --  Verify that the attributes of vertex LGV_Id of library graph G are
+      --  Verify that the attributes of vertex Vertex of library graph G are
       --  properly set.
 
       procedure Validate_Library_Graph_Vertices (G : Library_Graph);
       pragma Inline (Validate_Library_Graph_Vertices);
       --  Verify that the attributes of all vertices of library graph G are
       --  properly set.
-
-      procedure Write_Error (Msg : String);
-      pragma Inline (Write_Error);
-      --  Write error message Msg to standard output and signal that the
-      --  library graph is incorrect.
 
       ----------------------------
       -- Validate_Library_Graph --
@@ -498,8 +631,8 @@ package body Bindo.Validators is
       begin
          pragma Assert (Present (G));
 
-         --  Nothing to do when switch -d_V (validate bindo graphs and order)
-         --  is not in effect.
+         --  Nothing to do when switch -d_V (validate bindo cycles, graphs, and
+         --  order) is not in effect.
 
          if not Debug_Flag_Underscore_VV then
             return;
@@ -518,16 +651,16 @@ package body Bindo.Validators is
       ---------------------------------
 
       procedure Validate_Library_Graph_Edge
-        (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id)
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id)
       is
          Msg : constant String := "Validate_Library_Graph_Edge";
 
       begin
          pragma Assert (Present (G));
 
-         if not Present (LGE_Id) then
-            Write_Error (Msg);
+         if not Present (Edge) then
+            Write_Error (Msg, Has_Invalid_Data);
 
             Write_Str ("  emply library graph edge");
             Write_Eol;
@@ -535,40 +668,40 @@ package body Bindo.Validators is
             return;
          end if;
 
-         if Kind (G, LGE_Id) = No_Edge then
-            Write_Error (Msg);
+         if Kind (G, Edge) = No_Edge then
+            Write_Error (Msg, Has_Invalid_Data);
 
             Write_Str ("  library graph edge (LGE_Id_");
-            Write_Int (Int (LGE_Id));
+            Write_Int (Int (Edge));
             Write_Str (") is not a valid edge");
             Write_Eol;
             Write_Eol;
 
-         elsif Kind (G, LGE_Id) = Body_Before_Spec_Edge then
-            Write_Error (Msg);
+         elsif Kind (G, Edge) = Body_Before_Spec_Edge then
+            Write_Error (Msg, Has_Invalid_Data);
 
             Write_Str ("  library graph edge (LGE_Id_");
-            Write_Int (Int (LGE_Id));
+            Write_Int (Int (Edge));
             Write_Str (") is a Body_Before_Spec edge");
             Write_Eol;
             Write_Eol;
          end if;
 
-         if not Present (Predecessor (G, LGE_Id)) then
-            Write_Error (Msg);
+         if not Present (Predecessor (G, Edge)) then
+            Write_Error (Msg, Has_Invalid_Data);
 
             Write_Str ("  library graph edge (LGE_Id_");
-            Write_Int (Int (LGE_Id));
+            Write_Int (Int (Edge));
             Write_Str (") lacks Predecessor");
             Write_Eol;
             Write_Eol;
          end if;
 
-         if not Present (Successor (G, LGE_Id)) then
-            Write_Error (Msg);
+         if not Present (Successor (G, Edge)) then
+            Write_Error (Msg, Has_Invalid_Data);
 
             Write_Str ("  library graph edge (LGE_Id_");
-            Write_Int (Int (LGE_Id));
+            Write_Int (Int (Edge));
             Write_Str (") lacks Successor");
             Write_Eol;
             Write_Eol;
@@ -580,18 +713,17 @@ package body Bindo.Validators is
       ----------------------------------
 
       procedure Validate_Library_Graph_Edges (G : Library_Graph) is
-         Iter   : Library_Graphs.All_Edge_Iterator;
-         LGE_Id : Library_Graph_Edge_Id;
+         Edge : Library_Graph_Edge_Id;
+         Iter : Library_Graphs.All_Edge_Iterator;
 
       begin
          pragma Assert (Present (G));
 
          Iter := Iterate_All_Edges (G);
          while Has_Next (Iter) loop
-            Next (Iter, LGE_Id);
-            pragma Assert (Present (LGE_Id));
+            Next (Iter, Edge);
 
-            Validate_Library_Graph_Edge (G, LGE_Id);
+            Validate_Library_Graph_Edge (G, Edge);
          end loop;
       end Validate_Library_Graph_Edges;
 
@@ -601,15 +733,15 @@ package body Bindo.Validators is
 
       procedure Validate_Library_Graph_Vertex
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id)
+         Vertex : Library_Graph_Vertex_Id)
       is
          Msg : constant String := "Validate_Library_Graph_Vertex";
 
       begin
          pragma Assert (Present (G));
 
-         if not Present (LGV_Id) then
-            Write_Error (Msg);
+         if not Present (Vertex) then
+            Write_Error (Msg, Has_Invalid_Data);
 
             Write_Str ("  empty library graph vertex");
             Write_Eol;
@@ -617,25 +749,25 @@ package body Bindo.Validators is
             return;
          end if;
 
-         if (Is_Body_With_Spec (G, LGV_Id)
+         if (Is_Body_With_Spec (G, Vertex)
                or else
-             Is_Spec_With_Body (G, LGV_Id))
-           and then not Present (Corresponding_Item (G, LGV_Id))
+             Is_Spec_With_Body (G, Vertex))
+           and then not Present (Corresponding_Item (G, Vertex))
          then
-            Write_Error (Msg);
+            Write_Error (Msg, Has_Invalid_Data);
 
             Write_Str ("  library graph vertex (LGV_Id_");
-            Write_Int (Int (LGV_Id));
+            Write_Int (Int (Vertex));
             Write_Str (") lacks Corresponding_Item");
             Write_Eol;
             Write_Eol;
          end if;
 
-         if not Present (Unit (G, LGV_Id)) then
-            Write_Error (Msg);
+         if not Present (Unit (G, Vertex)) then
+            Write_Error (Msg, Has_Invalid_Data);
 
             Write_Str ("  library graph vertex (LGV_Id_");
-            Write_Int (Int (LGV_Id));
+            Write_Int (Int (Vertex));
             Write_Str (") lacks Unit");
             Write_Eol;
             Write_Eol;
@@ -648,32 +780,34 @@ package body Bindo.Validators is
 
       procedure Validate_Library_Graph_Vertices (G : Library_Graph) is
          Iter   : Library_Graphs.All_Vertex_Iterator;
-         LGV_Id : Library_Graph_Vertex_Id;
+         Vertex : Library_Graph_Vertex_Id;
 
       begin
          pragma Assert (Present (G));
 
          Iter := Iterate_All_Vertices (G);
          while Has_Next (Iter) loop
-            Next (Iter, LGV_Id);
-            pragma Assert (Present (LGV_Id));
+            Next (Iter, Vertex);
 
-            Validate_Library_Graph_Vertex (G, LGV_Id);
+            Validate_Library_Graph_Vertex (G, Vertex);
          end loop;
       end Validate_Library_Graph_Vertices;
-
-      -----------------
-      -- Write_Error --
-      -----------------
-
-      procedure Write_Error (Msg : String) is
-      begin
-         Has_Invalid_Data := True;
-
-         Write_Str ("ERROR: ");
-         Write_Str (Msg);
-         Write_Eol;
-      end Write_Error;
    end Library_Graph_Validators;
+
+   -----------------
+   -- Write_Error --
+   -----------------
+
+   procedure Write_Error
+     (Msg  : String;
+      Flag : out Boolean)
+   is
+   begin
+      Write_Str ("ERROR: ");
+      Write_Str (Msg);
+      Write_Eol;
+
+      Flag := True;
+   end Write_Error;
 
 end Bindo.Validators;

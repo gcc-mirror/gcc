@@ -28,7 +28,8 @@ with Fname;  use Fname;
 with Opt;    use Opt;
 with Output; use Output;
 
-with Bindo.Units; use Bindo.Units;
+with Bindo.Units;
+use  Bindo.Units;
 
 with GNAT;        use GNAT;
 with GNAT.Graphs; use GNAT.Graphs;
@@ -124,26 +125,27 @@ package body Bindo.Writers is
       --------------------------------
 
       procedure Write_Invocation_Construct (IC_Id : Invocation_Construct_Id) is
+      begin
          pragma Assert (Present (IC_Id));
 
-         IC_Rec : Invocation_Construct_Record renames
-                    Invocation_Constructs.Table (IC_Id);
-
-      begin
          Write_Str ("  invocation construct (IC_Id_");
          Write_Int (Int (IC_Id));
          Write_Str (")");
          Write_Eol;
 
+         Write_Str ("    Body_Placement = ");
+         Write_Str (Body_Placement (IC_Id)'Img);
+         Write_Eol;
+
          Write_Str ("    Kind = ");
-         Write_Str (IC_Rec.Kind'Img);
+         Write_Str (Kind (IC_Id)'Img);
          Write_Eol;
 
-         Write_Str ("    Placement = ");
-         Write_Str (IC_Rec.Placement'Img);
+         Write_Str ("    Spec_Placement = ");
+         Write_Str (Spec_Placement (IC_Id)'Img);
          Write_Eol;
 
-         Write_Invocation_Signature (IC_Rec.Signature);
+         Write_Invocation_Signature (Signature (IC_Id));
          Write_Eol;
       end Write_Invocation_Construct;
 
@@ -152,20 +154,17 @@ package body Bindo.Writers is
       -------------------------------
 
       procedure Write_Invocation_Relation (IR_Id : Invocation_Relation_Id) is
+      begin
          pragma Assert (Present (IR_Id));
 
-         IR_Rec : Invocation_Relation_Record renames
-                    Invocation_Relations.Table (IR_Id);
-
-      begin
          Write_Str ("  invocation relation (IR_Id_");
          Write_Int (Int (IR_Id));
          Write_Str (")");
          Write_Eol;
 
-         if Present (IR_Rec.Extra) then
+         if Present (Extra (IR_Id)) then
             Write_Str  ("    Extra = ");
-            Write_Name (IR_Rec.Extra);
+            Write_Name (Extra (IR_Id));
          else
             Write_Str ("    Extra = none");
          end if;
@@ -174,16 +173,16 @@ package body Bindo.Writers is
          Write_Str ("    Invoker");
          Write_Eol;
 
-         Write_Invocation_Signature (IR_Rec.Invoker);
+         Write_Invocation_Signature (Invoker (IR_Id));
 
          Write_Str ("    Kind = ");
-         Write_Str (IR_Rec.Kind'Img);
+         Write_Str (Kind (IR_Id)'Img);
          Write_Eol;
 
          Write_Str ("    Target");
          Write_Eol;
 
-         Write_Invocation_Signature (IR_Rec.Target);
+         Write_Invocation_Signature (Target (IR_Id));
          Write_Eol;
       end Write_Invocation_Relation;
 
@@ -192,39 +191,36 @@ package body Bindo.Writers is
       --------------------------------
 
       procedure Write_Invocation_Signature (IS_Id : Invocation_Signature_Id) is
+      begin
          pragma Assert (Present (IS_Id));
 
-         IS_Rec : Invocation_Signature_Record renames
-                    Invocation_Signatures.Table (IS_Id);
-
-      begin
          Write_Str ("    Signature (IS_Id_");
          Write_Int (Int (IS_Id));
          Write_Str (")");
          Write_Eol;
 
          Write_Str ("      Column = ");
-         Write_Int (Int (IS_Rec.Column));
+         Write_Int (Int (Column (IS_Id)));
          Write_Eol;
 
          Write_Str ("      Line = ");
-         Write_Int (Int (IS_Rec.Line));
+         Write_Int (Int (Line (IS_Id)));
          Write_Eol;
 
-         if Present (IS_Rec.Locations) then
+         if Present (Locations (IS_Id)) then
             Write_Str  ("      Locations = ");
-            Write_Name (IS_Rec.Locations);
+            Write_Name (Locations (IS_Id));
          else
             Write_Str ("      Locations = none");
          end if;
 
          Write_Eol;
          Write_Str  ("      Name = ");
-         Write_Name (IS_Rec.Name);
+         Write_Name (Name (IS_Id));
          Write_Eol;
 
          Write_Str  ("      Scope = ");
-         Write_Name (IS_Rec.Scope);
+         Write_Name (Scope (IS_Id));
          Write_Eol;
       end Write_Invocation_Signature;
 
@@ -277,17 +273,8 @@ package body Bindo.Writers is
          Write_Eol;
          Write_Eol;
 
-         for IC_Id in U_Rec.First_Invocation_Construct ..
-                      U_Rec.Last_Invocation_Construct
-         loop
-            Write_Invocation_Construct (IC_Id);
-         end loop;
-
-         for IR_Id in U_Rec.First_Invocation_Relation ..
-                      U_Rec.Last_Invocation_Relation
-         loop
-            Write_Invocation_Relation (IR_Id);
-         end loop;
+         For_Each_Invocation_Construct (Write_Invocation_Construct'Access);
+         For_Each_Invocation_Relation  (Write_Invocation_Relation'Access);
       end Write_Unit;
 
       -----------------------
@@ -312,6 +299,131 @@ package body Bindo.Writers is
          end if;
       end Write_Unit_Common;
    end ALI_Writers;
+
+   -------------------
+   -- Cycle_Writers --
+   -------------------
+
+   package body Cycle_Writers is
+
+      -----------------------
+      -- Local subprograms --
+      -----------------------
+
+      procedure Write_Cycle
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id);
+      pragma Inline (Write_Cycle);
+      --  Write the path of cycle Cycle found in library graph G to standard
+      --  output.
+
+      procedure Write_Cyclic_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id);
+      pragma Inline (Write_Cyclic_Edge);
+      --  Write cyclic edge Edge of library graph G to standard
+
+      -----------------
+      -- Write_Cycle --
+      -----------------
+
+      procedure Write_Cycle
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id)
+      is
+         Edge : Library_Graph_Edge_Id;
+         Iter : Edges_Of_Cycle_Iterator;
+
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Cycle));
+
+         --  Nothing to do when switch -d_P (output cycle paths) is not in
+         --  effect.
+
+         if not Debug_Flag_Underscore_PP then
+            return;
+         end if;
+
+         Write_Str ("cycle (LGC_Id_");
+         Write_Int (Int (Cycle));
+         Write_Str (")");
+         Write_Eol;
+
+         Iter := Iterate_Edges_Of_Cycle (G, Cycle);
+         while Has_Next (Iter) loop
+            Next (Iter, Edge);
+
+            Write_Cyclic_Edge (G, Edge);
+         end loop;
+
+         Write_Eol;
+      end Write_Cycle;
+
+      ------------------
+      -- Write_Cycles --
+      ------------------
+
+      procedure Write_Cycles (G : Library_Graph) is
+         Cycle : Library_Graph_Cycle_Id;
+         Iter  : All_Cycle_Iterator;
+
+      begin
+         pragma Assert (Present (G));
+
+         Iter := Iterate_All_Cycles (G);
+         while Has_Next (Iter) loop
+            Next (Iter, Cycle);
+
+            Write_Cycle (G, Cycle);
+         end loop;
+      end Write_Cycles;
+
+      -----------------------
+      -- Write_Cyclic_Edge --
+      -----------------------
+
+      procedure Write_Cyclic_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id)
+      is
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         Pred : constant Library_Graph_Vertex_Id := Predecessor (G, Edge);
+         Succ : constant Library_Graph_Vertex_Id := Successor   (G, Edge);
+
+      begin
+         Indent_By (Nested_Indentation);
+         Write_Name (Name (G, Succ));
+         Write_Str  (" --> ");
+         Write_Name (Name (G, Pred));
+         Write_Str  ("   ");
+
+         if Is_Elaborate_All_Edge (G, Edge) then
+            Write_Str ("Elaborate_All edge");
+
+         elsif Is_Elaborate_Body_Edge (G, Edge) then
+            Write_Str ("Elaborate_Body edge");
+
+         elsif Is_Elaborate_Edge (G, Edge) then
+            Write_Str ("Elaborate edge");
+
+         elsif Is_Forced_Edge (G, Edge) then
+            Write_Str ("forced edge");
+
+         elsif Is_Invocation_Edge (G, Edge) then
+            Write_Str ("invocation edge");
+
+         else
+            pragma Assert (Is_With_Edge (G, Edge));
+
+            Write_Str ("with edge");
+         end if;
+
+         Write_Eol;
+      end Write_Cyclic_Edge;
+   end Cycle_Writers;
 
    -------------------------------
    -- Elaboration_Order_Writers --
@@ -416,22 +528,23 @@ package body Bindo.Writers is
       --  Write all elaboration roots of invocation graph G to standard output
 
       procedure Write_Invocation_Graph_Edge
-        (G      : Invocation_Graph;
-         IGE_Id : Invocation_Graph_Edge_Id);
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id);
       pragma Inline (Write_Invocation_Graph_Edge);
-      --  Write edge IGE_Id of invocation graph G to standard output
+      --  Write edge Edge of invocation graph G to standard output
 
       procedure Write_Invocation_Graph_Edges
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id);
+         Vertex : Invocation_Graph_Vertex_Id);
       pragma Inline (Write_Invocation_Graph_Edges);
-      --  Write all edges of invocation graph G to standard output
+      --  Write all edges to targets of vertex Vertex of invocation graph G to
+      --  standard output.
 
       procedure Write_Invocation_Graph_Vertex
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id);
+         Vertex : Invocation_Graph_Vertex_Id);
       pragma Inline (Write_Invocation_Graph_Vertex);
-      --  Write vertex IGV_Id of invocation graph G to standard output
+      --  Write vertex Vertex of invocation graph G to standard output
 
       procedure Write_Invocation_Graph_Vertices (G : Invocation_Graph);
       pragma Inline (Write_Invocation_Graph_Vertices);
@@ -447,14 +560,13 @@ package body Bindo.Writers is
       -----------
 
       procedure pige
-        (G      : Invocation_Graph;
-         IGE_Id : Invocation_Graph_Edge_Id)
-         renames Write_Invocation_Graph_Edge;
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id) renames Write_Invocation_Graph_Edge;
       pragma Unreferenced (pige);
 
       procedure pigv
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id)
+         Vertex : Invocation_Graph_Vertex_Id)
          renames Write_Invocation_Graph_Vertex;
       pragma Unreferenced (pigv);
 
@@ -498,7 +610,6 @@ package body Bindo.Writers is
             Iter := Iterate_Elaboration_Roots (G);
             while Has_Next (Iter) loop
                Next (Iter, Root);
-               pragma Assert (Present (Root));
 
                Write_Elaboration_Root (G, Root);
             end loop;
@@ -541,24 +652,22 @@ package body Bindo.Writers is
       ---------------------------------
 
       procedure Write_Invocation_Graph_Edge
-        (G      : Invocation_Graph;
-         IGE_Id : Invocation_Graph_Edge_Id)
+        (G    : Invocation_Graph;
+         Edge : Invocation_Graph_Edge_Id)
       is
          pragma Assert (Present (G));
-         pragma Assert (Present (IGE_Id));
+         pragma Assert (Present (Edge));
 
-         Targ : constant Invocation_Graph_Vertex_Id := Target (G, IGE_Id);
-
-         pragma Assert (Present (Targ));
+         Targ : constant Invocation_Graph_Vertex_Id := Target (G, Edge);
 
       begin
          Write_Str ("    invocation graph edge (IGE_Id_");
-         Write_Int (Int (IGE_Id));
+         Write_Int (Int (Edge));
          Write_Str (")");
          Write_Eol;
 
          Write_Str ("      Relation (IR_Id_");
-         Write_Int (Int (Relation (G, IGE_Id)));
+         Write_Int (Int (Relation (G, Edge)));
          Write_Str (")");
          Write_Eol;
 
@@ -577,16 +686,16 @@ package body Bindo.Writers is
 
       procedure Write_Invocation_Graph_Edges
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id)
+         Vertex : Invocation_Graph_Vertex_Id)
       is
          pragma Assert (Present (G));
-         pragma Assert (Present (IGV_Id));
+         pragma Assert (Present (Vertex));
 
          Num_Of_Edges : constant Natural :=
-                          Number_Of_Edges_To_Targets (G, IGV_Id);
+                          Number_Of_Edges_To_Targets (G, Vertex);
 
-         IGE_Id : Invocation_Graph_Edge_Id;
-         Iter   : Invocation_Graphs.Edges_To_Targets_Iterator;
+         Edge : Invocation_Graph_Edge_Id;
+         Iter : Invocation_Graphs.Edges_To_Targets_Iterator;
 
       begin
          Write_Str ("  Edges to targets: ");
@@ -594,12 +703,11 @@ package body Bindo.Writers is
          Write_Eol;
 
          if Num_Of_Edges > 0 then
-            Iter := Iterate_Edges_To_Targets (G, IGV_Id);
+            Iter := Iterate_Edges_To_Targets (G, Vertex);
             while Has_Next (Iter) loop
-               Next (Iter, IGE_Id);
-               pragma Assert (Present (IGE_Id));
+               Next (Iter, Edge);
 
-               Write_Invocation_Graph_Edge (G, IGE_Id);
+               Write_Invocation_Graph_Edge (G, Edge);
             end loop;
          else
             Write_Eol;
@@ -612,29 +720,34 @@ package body Bindo.Writers is
 
       procedure Write_Invocation_Graph_Vertex
         (G      : Invocation_Graph;
-         IGV_Id : Invocation_Graph_Vertex_Id)
+         Vertex : Invocation_Graph_Vertex_Id)
       is
       begin
          pragma Assert (Present (G));
-         pragma Assert (Present (IGV_Id));
+         pragma Assert (Present (Vertex));
 
          Write_Str  ("invocation graph vertex (IGV_Id_");
-         Write_Int  (Int (IGV_Id));
+         Write_Int  (Int (Vertex));
          Write_Str  (") name = ");
-         Write_Name (Name (G, IGV_Id));
+         Write_Name (Name (G, Vertex));
+         Write_Eol;
+
+         Write_Str ("  Body_Vertex (LGV_Id_");
+         Write_Int (Int (Body_Vertex (G, Vertex)));
+         Write_Str (")");
          Write_Eol;
 
          Write_Str ("  Construct (IC_Id_");
-         Write_Int (Int (Construct (G, IGV_Id)));
+         Write_Int (Int (Construct (G, Vertex)));
          Write_Str (")");
          Write_Eol;
 
-         Write_Str ("  Lib_Vertex (LGV_Id_");
-         Write_Int (Int (Lib_Vertex (G, IGV_Id)));
+         Write_Str ("  Spec_Vertex (LGV_Id_");
+         Write_Int (Int (Spec_Vertex (G, Vertex)));
          Write_Str (")");
          Write_Eol;
 
-         Write_Invocation_Graph_Edges (G, IGV_Id);
+         Write_Invocation_Graph_Edges (G, Vertex);
       end Write_Invocation_Graph_Vertex;
 
       -------------------------------------
@@ -642,18 +755,17 @@ package body Bindo.Writers is
       -------------------------------------
 
       procedure Write_Invocation_Graph_Vertices (G : Invocation_Graph) is
-         IGV_Id : Invocation_Graph_Vertex_Id;
          Iter   : Invocation_Graphs.All_Vertex_Iterator;
+         Vertex : Invocation_Graph_Vertex_Id;
 
       begin
          pragma Assert (Present (G));
 
          Iter := Iterate_All_Vertices (G);
          while Has_Next (Iter) loop
-            Next (Iter, IGV_Id);
-            pragma Assert (Present (IGV_Id));
+            Next (Iter, Vertex);
 
-            Write_Invocation_Graph_Vertex (G, IGV_Id);
+            Write_Invocation_Graph_Vertex (G, Vertex);
          end loop;
       end Write_Invocation_Graph_Vertices;
 
@@ -719,22 +831,22 @@ package body Bindo.Writers is
 
       procedure Write_Edges_To_Successors
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id);
+         Vertex : Library_Graph_Vertex_Id);
       pragma Inline (Write_Edges_To_Successors);
-      --  Write all edges to successors of predecessor LGV_Id of library graph
+      --  Write all edges to successors of predecessor Vertex of library graph
       --  G to standard output.
 
       procedure Write_Library_Graph_Edge
-        (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id);
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id);
       pragma Inline (Write_Library_Graph_Edge);
-      --  Write edge LGE_Id of library graph G to standard output
+      --  Write edge Edge of library graph G to standard output
 
       procedure Write_Library_Graph_Vertex
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id);
+         Vertex : Library_Graph_Vertex_Id);
       pragma Inline (Write_Library_Graph_Vertex);
-      --  Write vertex LGV_Id of library graph G to standard output
+      --  Write vertex Vertex of library graph G to standard output
 
       procedure Write_Library_Graph_Vertices (G : Library_Graph);
       pragma Inline (Write_Library_Graph_Vertices);
@@ -755,13 +867,13 @@ package body Bindo.Writers is
       pragma Unreferenced (pc);
 
       procedure plge
-        (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id) renames Write_Library_Graph_Edge;
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) renames Write_Library_Graph_Edge;
       pragma Unreferenced (plge);
 
       procedure plgv
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id) renames Write_Library_Graph_Vertex;
+         Vertex : Library_Graph_Vertex_Id) renames Write_Library_Graph_Vertex;
       pragma Unreferenced (plgv);
 
       ---------------------
@@ -797,7 +909,7 @@ package body Bindo.Writers is
          Comp : Component_Id)
       is
          Iter   : Component_Vertex_Iterator;
-         LGV_Id : Library_Graph_Vertex_Id;
+         Vertex : Library_Graph_Vertex_Id;
 
       begin
          pragma Assert (Present (G));
@@ -805,13 +917,12 @@ package body Bindo.Writers is
 
          Iter := Iterate_Component_Vertices (G, Comp);
          while Has_Next (Iter) loop
-            Next (Iter, LGV_Id);
-            pragma Assert (Present (LGV_Id));
+            Next (Iter, Vertex);
 
             Write_Str  ("    library graph vertex (LGV_Id_");
-            Write_Int  (Int (LGV_Id));
+            Write_Int  (Int (Vertex));
             Write_Str  (") name = ");
-            Write_Name (Name (G, LGV_Id));
+            Write_Name (Name (G, Vertex));
             Write_Eol;
          end loop;
 
@@ -835,7 +946,6 @@ package body Bindo.Writers is
             Iter := Iterate_Components (G);
             while Has_Next (Iter) loop
                Next (Iter, Comp);
-               pragma Assert (Present (Comp));
 
                Write_Component (G, Comp);
             end loop;
@@ -850,16 +960,16 @@ package body Bindo.Writers is
 
       procedure Write_Edges_To_Successors
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id)
+         Vertex : Library_Graph_Vertex_Id)
       is
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
          Num_Of_Edges : constant Natural :=
-                          Number_Of_Edges_To_Successors (G, LGV_Id);
+                          Number_Of_Edges_To_Successors (G, Vertex);
 
-         Iter   : Edges_To_Successors_Iterator;
-         LGE_Id : Library_Graph_Edge_Id;
+         Edge : Library_Graph_Edge_Id;
+         Iter : Edges_To_Successors_Iterator;
 
       begin
          Write_Str ("  Edges to successors: ");
@@ -867,12 +977,11 @@ package body Bindo.Writers is
          Write_Eol;
 
          if Num_Of_Edges > 0 then
-            Iter := Iterate_Edges_To_Successors (G, LGV_Id);
+            Iter := Iterate_Edges_To_Successors (G, Vertex);
             while Has_Next (Iter) loop
-               Next (Iter, LGE_Id);
-               pragma Assert (Present (LGE_Id));
+               Next (Iter, Edge);
 
-               Write_Library_Graph_Edge (G, LGE_Id);
+               Write_Library_Graph_Edge (G, Edge);
             end loop;
          else
             Write_Eol;
@@ -913,26 +1022,23 @@ package body Bindo.Writers is
       ------------------------------
 
       procedure Write_Library_Graph_Edge
-        (G      : Library_Graph;
-         LGE_Id : Library_Graph_Edge_Id)
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id)
       is
          pragma Assert (Present (G));
-         pragma Assert (Present (LGE_Id));
+         pragma Assert (Present (Edge));
 
-         Pred : constant Library_Graph_Vertex_Id := Predecessor (G, LGE_Id);
-         Succ : constant Library_Graph_Vertex_Id := Successor   (G, LGE_Id);
-
-         pragma Assert (Present (Pred));
-         pragma Assert (Present (Succ));
+         Pred : constant Library_Graph_Vertex_Id := Predecessor (G, Edge);
+         Succ : constant Library_Graph_Vertex_Id := Successor   (G, Edge);
 
       begin
          Write_Str ("    library graph edge (LGE_Id_");
-         Write_Int (Int (LGE_Id));
+         Write_Int (Int (Edge));
          Write_Str (")");
          Write_Eol;
 
          Write_Str ("      Kind = ");
-         Write_Str (Kind (G, LGE_Id)'Img);
+         Write_Str (Kind (G, Edge)'Img);
          Write_Eol;
 
          Write_Str  ("      Predecessor (LGV_Id_");
@@ -956,22 +1062,20 @@ package body Bindo.Writers is
 
       procedure Write_Library_Graph_Vertex
         (G      : Library_Graph;
-         LGV_Id : Library_Graph_Vertex_Id)
+         Vertex : Library_Graph_Vertex_Id)
       is
          pragma Assert (Present (G));
-         pragma Assert (Present (LGV_Id));
+         pragma Assert (Present (Vertex));
 
          Item : constant Library_Graph_Vertex_Id :=
-                  Corresponding_Item (G, LGV_Id);
-         U_Id : constant Unit_Id := Unit (G, LGV_Id);
-
-         pragma Assert (Present (U_Id));
+                  Corresponding_Item (G, Vertex);
+         U_Id : constant Unit_Id := Unit (G, Vertex);
 
       begin
          Write_Str  ("library graph vertex (LGV_Id_");
-         Write_Int  (Int (LGV_Id));
+         Write_Int  (Int (Vertex));
          Write_Str  (") name = ");
-         Write_Name (Name (G, LGV_Id));
+         Write_Name (Name (G, Vertex));
          Write_Eol;
 
          if Present (Item) then
@@ -986,7 +1090,7 @@ package body Bindo.Writers is
          Write_Eol;
          Write_Str ("  In_Elaboration_Order = ");
 
-         if In_Elaboration_Order (G, LGV_Id) then
+         if In_Elaboration_Order (G, Vertex) then
             Write_Str ("True");
          else
             Write_Str ("False");
@@ -994,11 +1098,11 @@ package body Bindo.Writers is
 
          Write_Eol;
          Write_Str ("  Pending_Predecessors = ");
-         Write_Int (Int (Pending_Predecessors (G, LGV_Id)));
+         Write_Int (Int (Pending_Predecessors (G, Vertex)));
          Write_Eol;
 
          Write_Str ("  Component (Comp_Id_");
-         Write_Int (Int (Component (G, LGV_Id)));
+         Write_Int (Int (Component (G, Vertex)));
          Write_Str (")");
          Write_Eol;
 
@@ -1008,7 +1112,7 @@ package body Bindo.Writers is
          Write_Name (Name (U_Id));
          Write_Eol;
 
-         Write_Edges_To_Successors (G, LGV_Id);
+         Write_Edges_To_Successors (G, Vertex);
       end Write_Library_Graph_Vertex;
 
       ----------------------------------
@@ -1017,17 +1121,16 @@ package body Bindo.Writers is
 
       procedure Write_Library_Graph_Vertices (G : Library_Graph) is
          Iter   : Library_Graphs.All_Vertex_Iterator;
-         LGV_Id : Library_Graph_Vertex_Id;
+         Vertex : Library_Graph_Vertex_Id;
 
       begin
          pragma Assert (Present (G));
 
          Iter := Iterate_All_Vertices (G);
          while Has_Next (Iter) loop
-            Next (Iter, LGV_Id);
-            pragma Assert (Present (LGV_Id));
+            Next (Iter, Vertex);
 
-            Write_Library_Graph_Vertex (G, LGV_Id);
+            Write_Library_Graph_Vertex (G, Vertex);
          end loop;
       end Write_Library_Graph_Vertices;
 
@@ -1071,11 +1174,11 @@ package body Bindo.Writers is
       pragma Inline (Hash_File_Name);
       --  Obtain the hash value of key Nam
 
-      package FS is new Membership_Sets
+      package File_Name_Tables is new Membership_Sets
         (Element_Type => File_Name_Type,
          "="          => "=",
          Hash         => Hash_File_Name);
-      use FS;
+      use File_Name_Tables;
 
       -----------------------
       -- Local subprograms --

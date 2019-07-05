@@ -1,3 +1,212 @@
+2019-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* ali.adb: Relocate types Invocation_Construct_Record,
+	Invocation_Relation_Record, and Invocation_Signature_Record to
+	the body of ALI.  Relocate tables Invocation_Constructs,
+	Invocation_Relations, and Invocation_Signatures to the body of
+	ALI.  Remove type Body_Placement_Codes.  Add new types
+	Declaration_Placement_Codes, and
+	Invocation_Graph_Encoding_Codes.  Update the literals of type
+	Invocation_Graph_Line_Codes.
+	(Add_Invocation_Construct): Update the parameter profile. Add an
+	invocation construct built from all attributes provided.
+	(Add_Invocation_Relation): Update the parameter profile. Add an
+	invocation relation built from all attributes provided.
+	(Body_Placement): New routine.
+	(Body_Placement_Kind_To_Code, Code_To_Body_Placement_Kind):
+	Removed.
+	(Code_To_Declaration_Placement_Kind,
+	Code_To_Invocation_Graph_Encoding_Kind, Column,
+	Declaration_Placement_Kind_To_Code, Extra,
+	For_Each_Invocation_Construct, For_Each_Invocation_Relation,
+	Invocation_Graph_Encoding,
+	Invocation_Graph_Encoding_Kind_To_Code, Invoker, Kind, Line,
+	Locations, Name): New routine.
+	(Scan_Invocation_Construct_Line): Reimplement the scanning
+	mechanism.
+	(Scan_Invocation_Graph_Attributes_Line): New routine.
+	(Scan_Invocation_Graph_Line): Use a case statement to dispatch.
+	(Scan_Invocation_Relation_Line): Reimplement the scanning
+	mechanism.
+	(Scope): New routine.
+	(Set_Invocation_Graph_Encoding, Signature, Spec_Placement,
+	Target): New routine.
+	* ali.ads: Add new type Invocation_Graph_Encoding_Kind.  Add
+	component Invocation_Graph_Encoding to type Unit_Record.
+	Relocate various types and data structures to the body of ALI.
+	(Add_Invocation_Construct, Add_Invocation_Relation): Update the
+	parameter profile.
+	(Body_Placement): New routine.
+	(Body_Placement_Kind_To_Code, Code_To_Body_Placement_Kind):
+	Removed.
+	(Code_To_Declaration_Placement_Kind,
+	Code_To_Invocation_Graph_Encoding_Kind, Column,
+	Declaration_Placement_Kind_To_Code, Extra,
+	For_Each_Invocation_Construct, For_Each_Invocation_Relation,
+	Invocation_Graph_Encoding,
+	Invocation_Graph_Encoding_Kind_To_Code, Invoker, Kind, Line,
+	Locations, Name, Scope, Set_Invocation_Graph_Encoding,
+	Signature, Spec_Placement, Target): New routine.
+	* bindo.adb: Add with clause for Binde.  Add with and use
+	clauses for Debug.  Update the documentation.  Add new switches.
+	(Find_Elaboration_Order): Dispatch to the proper elaboration
+	mechanism.
+	* bindo-augmentors.adb:
+	Remove with and use clauses for GNAT and GNAT.Sets.  Remove
+	membership set VS.  Update the parameter profiles of most
+	routines to use better parameter names.  Update the
+	implementation of most routine to use the new parameter names.
+	Remove various redundant assertions.
+	* bindo-builders.adb: Use better names for instantiated data
+	structures. Update all references to these names.  Update the
+	parameter profiles of most routines to use better parameter
+	names.  Update the implementation of most routine to use the new
+	parameter names.
+	(Build_Library_Graph): Update the parameter profile. Update the
+	call to Create.
+	(Create_Vertex): Reimplemented.
+	(Declaration_Placement_Vertex): New routine.
+	* bindo-builders.ads (Build_Library_Graph): Update the parameter
+	profile and comment on usage.
+	* bindo-diagnostics.adb: Almost a new unit.
+	* bindo-diagnostics.ads: Add a use clause for
+	Bindo.Graphs.Invocation_Graphs.  Remove package
+	Cycle_Diagnostics.
+	(Diagnose_Circularities): New routine.
+	* bindo-elaborators.adb: Remove the with and use clauses for
+	Binderr and GNAT.Sets.  Remove the use clause for
+	Bindo.Diagnostics.Cycle_Diagnostics.  Remove membership set VS.
+	Update the parameter profiles of most routines to use better
+	parameter names.  Update the implementation of most routine to
+	use the new parameter names.  (Elaborate_Units_Common): Update
+	the parameter profile. Pass an infication to the library graph
+	builder whether the dynamic model is in effect.
+	(Elaborate_Units_Dynamic, Elaborate_Units_Static): Use
+	Diagnose_Circularities to provide diagnostics.
+	(Update_Successor): Use routine In_Same_Component to determine
+	whether the predecessor and successor reside in different
+	components.
+	* bindo-graphs.adb: Add with and use clauses for Butil, Debug,
+	Output, and Bindo.Writers.  Remove with and use clauses for
+	GNAT.Lists.  Update the parameter profiles of most routines to
+	use better parameter names.  Update the implementation of most
+	routine to use the new parameter names.  Remove various
+	redundant assertions.  Remove doubly linked list EL.  Add new
+	type Precedence_Kind.
+	(Add_Cycle): New routine.
+	(Add_Vertex): Update the parameter profile. Update the creation
+	of vertex attributes.
+	(Add_Vertex_And_Complement, Body_Vertex, Column,
+	Complementary_Vertex, Copy_Cycle_Path, Cycle_Kind_Of): New
+	routines.
+	(Destroy_Invocation_Graph_Edge, Destroy_Library_Graph_Cycle,
+	Destroy_Library_Graph_Edge, Extra, File_Name,
+	Find_All_Cycles_Through_Vertex, Find_All_Cycles_With_Edge,
+	Find_Cycles, Find_First_Lower_Precedence_Cycle,
+	Get_LGC_Attributes, Has_Next, Hash_Library_Graph_Cycle,
+	Hash_Library_Graph_Cycle_Attributes, Highest_Precedence_Cycle,
+	Highest_Precedence_Edge, In_Same_Component, Insert_And_Sort,
+	Invocation_Edge_Count, Invocation_Graph_Encoding,
+	Is_Cycle_Initiating_Edge, Is_Cyclic_Edge,
+	Is_Cyclic_Elaborate_All_Edge, Is_Cyclic_Elaborate_Body_Edge,
+	Is_Cyclic_Elaborate_Edge, Is_Cyclic_Forced_Edge,
+	Is_Cyclic_Invocation_Edge, Is_Cyclic_With_Edge,
+	Is_Dynamically_Elaborated, Is_Elaborate_All_Edge,
+	Is_Elaborate_Body_Edge, Is_Elaborate_Edge: New routines.
+	(Is_Existing_Predecessor_Successor_Relation): Removed.
+	(Is_Forced_Edge, Is_Invocation_Edge, Is_Recorded_Cycle,
+	Is_Recorded_Edge, Is_With_Edge, Iterate_Edges_Of_Cycle, Kind,
+	Length): New routine.
+	(Lib_Vertex): Removed.
+	(Line, Links_Vertices_In_Same_Component,
+	Maximum_Invocation_Edge_Count, Next, Normalize_And_Add_Cycle,
+	Normalize_Cycle_Path, Number_Of_Cycles, Path, Precedence,
+	Remove_Vertex_And_Complement, Sequence_Next_Cycle): New routines.
+	(Sequence_Next_IGE_Id): Renamed to Sequence_Next_Edge.
+	(Sequence_Next_IGV_Id): Renamed to Sequence_Next_Vertex.
+	(Sequence_Next_LGE_Id): Renamed to Sequence_Next_Edge.
+	(Sequence_Next_LGV_Id): Renamed to Sequence_Next_Vertex.
+	(Set_Is_Existing_Predecessor_Successor_Relation): Removed.
+	(Set_Is_Recorded_Cycle, Set_Is_Recorded_Edge,
+	Set_LGC_Attributes, Spec_Vertex, Trace_Cycle, Trace_Edge,
+	Trace_Eol, Trace_Vertex): New routines.
+	* bindo-graphs.ads: Add with and use clauses for Types and
+	GNAT.Lists.  Update the parameter profiles of most routines to
+	use better parameter names.  Update the implementation of most
+	routine to use the new parameter names.  Add the new
+	instantiated data structures IGE_Lists, IGV_Sets, LGC_Lists,
+	LGE_Lists, LGE_Sets, LGV_Sets, and RC_Sets.  Add new type
+	Library_Graph_Cycle_Id along with an empty and initial value.
+	Remove component Lib_Vertex and add new components Body_Vertex
+	and Spec_Vertex to type Invocation_Graph_Vertex_Attributes.  Add
+	new type Library_Graph_Cycle_Kind.  Add new iterators
+	All_Cycle_Iterator and Edges_Of_Cycle_Iterator.  Add new type
+	Library_Graph_Cycle_Attributes.  Add new components
+	Cycle_Attributes, Cycles, and Dynamically_Elaborated to type
+	Library_Graph_Attributes.
+	(Body_Vertex, Column, Destroy_Invocation_Graph_Edge,
+	Destroy_Library_Graph_Cycle_Attributes,
+	Destroy_Library_Graph_Edge, Extra, File_Name, Find_Cycles,
+	Has_Elaborate_All_Cycle, Has_Next, Hash_Library_Graph_Cycle,
+	Hash_Library_Graph_Cycle_Attributes, Highest_Precedence_Cycle,
+	In_Same_Component, Invocation_Edge_Count,
+	Invocation_Graph_Encoding, Is_Dynamically_Elaborated,
+	Is_Elaborate_All_Edge, Is_Elaborate_Body_Edge,
+	Is_Elaborate_Edge, Is_Forced_Edge, Is_Invocation_Edge,
+	Is_With_Edge, Iterate_All_Cycles, Iterate_Edges_Of_Cycle, Kind):
+	New routines.
+	(Length, Lib_Vertex, (Line, Next, Number_Of_Cycles, Present,
+	Same_Library_Graph_Cycle_Attributes, Spec_Vertex): New routines.
+	* bindo-units.adb (File_Name, Invocation_Graph_Encoding): New
+	routines.
+	* bindo-units.ads: Add new instantiated data structure
+	Unit_Sets.
+	(File_Name, Invocation_Graph_Encoding): New routine.
+	* bindo-validators.adb: Remove with and use clauses for GNAT and
+	GNAT.Sets.  Remove membership set US.  Update the parameter
+	profiles of most routines to use better parameter names.  Update
+	the implementation of most routine to use the new parameter
+	names.
+	(Validate_Cycle, Validate_Cycle_Path, Validate_Cycles,
+	Validate_Invocation_Graph_Vertex): Remove the validation of
+	component Lib_Vertex. Add the validation of components
+	Body_Vertex and Spec_Vertex.
+	(Write_Error): New routine.
+	* bindo-validators.ads (Validate_Cycles): New routine.
+	* bindo-writers.adb: Update the parameter profiles of most
+	routines to use better parameter names.  Update the
+	implementation of most routine to use the new parameter names.
+	(Write_Cycle, Write_Cyclic_Edge, Write_Cycles): New routines.
+	(Write_Invocation_Graph_Vertex): Remove the output of component
+	Lib_Vertex. Add the output of components Body_Vertex and
+	Spec_Vertex.
+	* bindo-writers.ads (Write_Cycles): New routine.
+	* debug.adb: Use binder switches -d_C and -d_P, add
+	documentation on their usage.
+	* gnatbind.adb: Remove with and use clauses for Binde.  Delegate
+	the choice of elaboration mechanism to Bindo.
+	* lib-writ.adb (Column, Extra, Invoker, Kind, Line, Locations,
+	Name, Placement, Scope, Signature, Target): Removed.
+	(Write_Invocation_Graph): Moved at the top level.
+	(Write_Invocation_Graph_Attributes): New routine.
+	(Write_Invocation_Relation, Write_Invocation_Signature): Moved
+	at the top level.
+	* lib-writ.ads: Add a documentation section on invocation graph
+	attributes.
+	* sem_elab.adb (Body_Placement_Of): New routine.
+	(Declare_Invocation_Construct): Update the call to
+	Add_Invocation_Construct.
+	(Declaration_Placement_Of_Node): New routine.
+	(Get_Invocation_Attributes): Correct the retrieval of the
+	enclosing subprogram where the postcondition procedure lives.
+	(Placement_Of, Placement_Of_Node): Removed.
+	(Record_Invocation_Graph): Record the encoding format used.
+	(Record_Invocation_Graph_Encoding): New routine.
+	(Record_Invocation_Relation): Update the call to
+	Add_Invocation_Relation.
+	(Spec_Placement_Of): Removed.
+	* libgnat/g-lists.ads, libgnat/g-lists.adb (Equal): New routine.
+
 2019-07-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* checks.adb (Apply_Predicate_Check): Except within the

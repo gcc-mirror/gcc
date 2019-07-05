@@ -81,6 +81,16 @@ package Bindo.Writers is
 
    end ALI_Writers;
 
+   -------------------
+   -- Cycle_Writers --
+   -------------------
+
+   package Cycle_Writers is
+      procedure Write_Cycles (G : Library_Graph);
+      --  Write all cycles of library graph G to standard output
+
+   end Cycle_Writers;
+
    -------------------------------
    -- Elaboration_Order_Writers --
    -------------------------------

@@ -30,6 +30,7 @@
 
 with Bindo.Graphs;
 use  Bindo.Graphs;
+use  Bindo.Graphs.Invocation_Graphs;
 use  Bindo.Graphs.Library_Graphs;
 
 package Bindo.Diagnostics is
@@ -46,16 +47,15 @@ package Bindo.Diagnostics is
       Order_Has_Elaborate_All_Circularity,
       Order_OK);
 
-   -----------------------
-   -- Cycle_Diagnostics --
-   -----------------------
+   ---------
+   -- API --
+   ---------
 
-   package Cycle_Diagnostics is
-      function Has_Elaborate_All_Cycle (G : Library_Graph) return Boolean;
-      pragma Inline (Has_Elaborate_All_Cycle);
-      --  Determine whether library graph G contains a cycle where pragma
-      --  Elaborate_All appears within a component.
-
-   end Cycle_Diagnostics;
+   procedure Diagnose_Circularities
+     (Inv_Graph : Invocation_Graph;
+      Lib_Graph : Library_Graph);
+   pragma Inline (Diagnose_Circularities);
+   --  Diagnose all cycles of library graph Lib_Graph with matching invocation
+   --  graph Inv_Graph.
 
 end Bindo.Diagnostics;
