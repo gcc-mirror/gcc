@@ -1,3 +1,12 @@
+2019-07-05  Javier Miranda  <miranda@adacore.com>
+
+	* debug.adb (-gnatd.K): Leave available this switch.
+	* contracts.adb (Build_And_Analyze_Contract_Only_Subprograms):
+	Remove.
+	* scil_ll.ads, scil_ll.adb (Contract_Only_Body_Flag,
+	Contract_Only_Body_Nodes, Get_Contract_Only_Body,
+	Is_Contract_Only_Body, Set_Contract_Only_Body): Remove.
+
 2019-07-05  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* libgnat/a-strunb.ads: Import documentation from the RM

@@ -128,7 +128,7 @@ package body Debug is
    --  d.H  GNSA mode for ASIS
    --  d.I  Do not ignore enum representation clauses in CodePeer mode
    --  d.J  Relaxed rules for pragma No_Return
-   --  d.K  Enable generation of contract-only procedures in CodePeer mode
+   --  d.K
    --  d.L  Depend on back end for limited types in if and case expressions
    --  d.M  Relaxed RM semantics
    --  d.N  Add node to all entities
@@ -903,13 +903,6 @@ package body Debug is
    --       if it applies to a body. This switch disables the legality check
    --       for that. If the procedure does in fact return normally, execution
    --       is erroneous, and therefore unpredictable.
-
-   --  d.K  Enable generation of contract-only procedures in CodePeer mode and
-   --       report a warning on subprograms for which the contract-only body
-   --       cannot be built. Currently reported on subprograms defined in
-   --       nested package specs that have some formal (or return type) whose
-   --       type is a private type defined in some enclosing package and that
-   --       have pre/postconditions.
 
    --  d.L  Normally the front end generates special expansion for conditional
    --       expressions of a limited type. This debug flag removes this special
