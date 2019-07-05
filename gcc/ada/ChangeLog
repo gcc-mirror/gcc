@@ -1,3 +1,13 @@
+2019-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Check_Infinite_Recursion): Reimplemented.
+	(Enclosing_Declaration_Or_Statement,
+	Invoked_With_Different_Arguments, Is_Conditional_Statement,
+	Is_Control_Flow_Statement, Is_Immediately_Within_Body,
+	Is_Raise_Idiom, Is_Raise_Statement, Is_Sole_Statement,
+	Preceded_By_Control_Flow_Statement,
+	Within_Conditional_Statement): New routines.
+
 2019-07-05  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Type_Conversion): Do not apply an
