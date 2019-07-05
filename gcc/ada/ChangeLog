@@ -1,3 +1,10 @@
+2019-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Is_Control_Flow_Statement): Delay statements
+	contain an expression, which in turn may have side effects and
+	affect the infinite recursion. As a result, delay statements
+	should not be treated specially.
+
 2019-07-05  Arnaud Charlet  <charlet@adacore.com>
 
 	* libgnarl/s-linux.ads, libgnarl/s-linux__alpha.ads,
