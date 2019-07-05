@@ -41,10 +41,20 @@ package body GNAT.Traceback is
 
    procedure Call_Chain
      (Traceback : out Tracebacks_Array;
-      Len       : out Natural)
-   is
+      Len       : out Natural) is
    begin
       System.Traceback.Call_Chain (Traceback, Traceback'Length, Len);
+   end Call_Chain;
+
+   function Call_Chain
+     (Max_Len : Positive; Skip_Frames : Natural := 1) return Tracebacks_Array
+   is
+      Traceback : Tracebacks_Array (1 .. Max_Len);
+      Len       : Natural;
+   begin
+      System.Traceback.Call_Chain
+        (Traceback, Max_Len, Len, Skip_Frames => Skip_Frames + 1);
+      return Traceback (1 .. Len);
    end Call_Chain;
 
 end GNAT.Traceback;
