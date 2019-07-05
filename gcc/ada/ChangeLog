@@ -1,3 +1,9 @@
+2019-07-05  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-cofove.ads, libgnat/a-cofove.adb: Definite formal
+	vectors are now always bounded so that they do not need to be
+	limited anymore.
+
 2019-07-05  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* libgnat/g-traceb.ads, libgnat/g-traceb.adb (Call_Chain): New
