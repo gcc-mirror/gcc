@@ -1,4 +1,16 @@
-2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+2019-07-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* except.c (emit_to_new_bb_before): Make sure to put a location on SEQ.
+	* tree-eh.c (replace_goto_queue_1) <GIMPLE_GOTO>: Propagate location.
+	(emit_eh_dispatch): Delete.
+	(lower_catch): Emit the eh_dispatch manually and set the location of
+	the first catch statement onto it.
+	(lower_eh_filter): Emit the eh_dispatch manually and set location.
+	(lower_eh_dispatch): Propagate location.
+	* tree-outof-ssa.c (set_location_for_edge): Handle EH edges specially.
+	(eliminate_build): Likewise.
+
+2019-07-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-cfg.c (gimple_make_forwarder_block): Propagate location info on
 	phi nodes if possible.
