@@ -1,3 +1,18 @@
+2019-07-05  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	Backport from mainline
+	2019-06-03  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/pcs_attribute-2.c: New test.
+	* gcc.target/aarch64/torture/simd-abi-4.c: Check .variant_pcs support.
+	* lib/target-supports.exp (check_effective_target_aarch64_variant_pcs):
+	New.
+
+	2019-06-18  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/pcs_attribute-2.c: Remove ifunc usage.
+	* gcc.target/aarch64/pcs_attribute-3.c: New test.
+
 2019-07-04  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
