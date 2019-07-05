@@ -1,3 +1,10 @@
+2019-07-05  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Is_Build_In_Place_Function): Narrow the check for
+	Has_Foreign_Convention to the imported case only.  If a
+	build-in-place function is exported, and called from Ada code,
+	build-in-place protocols should be used.
+
 2019-07-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Encloing_Subprogram): If Enclosing_Dynamic_Scope

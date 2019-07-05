@@ -1,3 +1,7 @@
+2019-07-05  Bob Duff  <duff@adacore.com>
+
+	* gnat.dg/bip_export.adb, gnat.dg/bip_export.ads: New testcase.
+
 2019-07-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/aggr25.adb, gnat.dg/aggr25.ads: New testcase.
