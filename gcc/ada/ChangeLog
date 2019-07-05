@@ -1,5 +1,11 @@
 2019-07-05  Bob Duff  <duff@adacore.com>
 
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:
+	Fix typo.
+	* gnat_rm.texi: Regenerate.
+
+2019-07-05  Bob Duff  <duff@adacore.com>
+
 	* exp_attr.adb (Input): Take the No_Stream_Optimizations
 	restriction into account.
 

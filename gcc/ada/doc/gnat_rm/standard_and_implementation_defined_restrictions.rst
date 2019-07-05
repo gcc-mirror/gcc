@@ -633,7 +633,7 @@ No_Stream_Optimizations
 [GNAT] This restriction affects the performance of stream operations on types
 ``String``, ``Wide_String`` and ``Wide_Wide_String``. By default, the
 compiler uses block reads and writes when manipulating ``String`` objects
-due to their supperior performance. When this restriction is in effect, the
+due to their superior performance. When this restriction is in effect, the
 compiler performs all IO operations on a per-character basis.
 
 No_Streams
