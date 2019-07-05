@@ -1,5 +1,10 @@
 2019-07-10  Julian Brown  <julian@codesourcery.com>
 
+	* trans-openmp.c (gfc_omp_finish_clause): Change clauses mapping
+	assumed-size arrays to use the GOMP_MAP_FORCE_PRESENT map type.
+
+2019-07-10  Julian Brown  <julian@codesourcery.com>
+
 	* openmp.c (resolve_oacc_data_clauses): Allow polymorphic allocatable
 	variables.
 	* trans-expr.c (gfc_conv_component_ref,
