@@ -1,3 +1,11 @@
+2019-07-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Predicate_Check): Except within the
+	subprogram body that defines the formal, do not apply predicate
+	check on a formal IN parameter: such a check is redundant and
+	its expansion can lead to out-of-scope references when it is
+	originates in a function call in a precondition,
+
 2019-07-05  Yannick Moy  <moy@adacore.com>
 
 	* sem_res.adb (Resolve_Call): Cannot inline in quantified
