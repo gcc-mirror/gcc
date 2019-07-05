@@ -1,3 +1,8 @@
+2019-07-05  Bob Duff  <duff@adacore.com>
+
+	* exp_attr.adb (Input): Take the No_Stream_Optimizations
+	restriction into account.
+
 2019-07-05  Claire Dross  <dross@adacore.com>
 
 	* libgnat/a-cofove.ads, libgnat/a-cofove.adb: Definite formal

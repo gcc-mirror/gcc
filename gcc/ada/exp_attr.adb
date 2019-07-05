@@ -3997,11 +3997,13 @@ package body Exp_Attr is
 
                declare
                   Rtyp : constant Entity_Id := Root_Type (P_Type);
-                  Expr : Node_Id;
+                  Get_Tag : Node_Id; -- expression to read the 'Tag
+                  Expr : Node_Id; -- call to Descendant_Tag
 
                begin
                   --  Read the internal tag (RM 13.13.2(34)) and use it to
-                  --  initialize a dummy tag value. We used to generate:
+                  --  initialize a dummy tag value. We used to unconditionally
+                  --  generate:
                   --
                   --     Descendant_Tag (String'Input (Strm), P_Type);
                   --
@@ -4011,6 +4013,11 @@ package body Exp_Attr is
                   --  String_Input_Tag, which does the same thing as
                   --  String_Input_Blk_IO, except that if the String is
                   --  absurdly long, it raises an exception.
+                  --
+                  --  However, if the No_Stream_Optimizations restriction
+                  --  is active, we disable this unnecessary attempt at
+                  --  robustness; we really need to read the string
+                  --  character-by-character.
                   --
                   --  This value is used only to provide a controlling
                   --  argument for the eventual _Input call. Descendant_Tag is
@@ -4026,18 +4033,30 @@ package body Exp_Attr is
                   --  this constant in Cntrl, but this caused a secondary stack
                   --  leak.
 
+                  if Restriction_Active (No_Stream_Optimizations) then
+                     Get_Tag :=
+                       Make_Attribute_Reference (Loc,
+                         Prefix         =>
+                           New_Occurrence_Of (Standard_String, Loc),
+                         Attribute_Name => Name_Input,
+                         Expressions    => New_List (
+                           Relocate_Node (Duplicate_Subexpr (Strm))));
+                  else
+                     Get_Tag :=
+                       Make_Function_Call (Loc,
+                         Name                   =>
+                           New_Occurrence_Of
+                             (RTE (RE_String_Input_Tag), Loc),
+                         Parameter_Associations => New_List (
+                           Relocate_Node (Duplicate_Subexpr (Strm))));
+                  end if;
+
                   Expr :=
                     Make_Function_Call (Loc,
                       Name                   =>
                         New_Occurrence_Of (RTE (RE_Descendant_Tag), Loc),
                       Parameter_Associations => New_List (
-                        Make_Function_Call (Loc,
-                          Name                   =>
-                            New_Occurrence_Of
-                              (RTE (RE_String_Input_Tag), Loc),
-                          Parameter_Associations => New_List (
-                            Relocate_Node (Duplicate_Subexpr (Strm)))),
-
+                        Get_Tag,
                         Make_Attribute_Reference (Loc,
                           Prefix         => New_Occurrence_Of (P_Type, Loc),
                           Attribute_Name => Name_Tag)));
