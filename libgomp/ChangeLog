@@ -1,5 +1,8 @@
 2019-07-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* testsuite/libgomp.c/scan-19.c: New test.
+	* testsuite/libgomp.c/scan-20.c: New test.
+
 	* testsuite/libgomp.c/scan-11.c: New test.
 	* testsuite/libgomp.c/scan-12.c: New test.
 	* testsuite/libgomp.c/scan-13.c: New test.

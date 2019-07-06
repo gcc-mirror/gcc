@@ -1,5 +1,12 @@
 2019-07-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp-low.c (lower_rec_input_clauses): For lastprivate clauses in
+	ctx->for_simd_scan_phase simd copy the outer var to the privatized
+	variable(s).  For conditional lastprivate look through outer
+	GIMPLE_OMP_SCAN context.
+	(lower_omp_1): For conditional lastprivate look through outer
+	GIMPLE_OMP_SCAN context.
+
 	* omp-low.c (struct omp_context): Rename combined_into_simd_safelen0
 	member to combined_into_simd_safelen1.
 	(lower_rec_input_clauses, lower_omp_1): Adjust uses.
