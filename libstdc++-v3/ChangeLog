@@ -1,3 +1,9 @@
+2019-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/atomicity.h (__exchange_and_add, __atomic_add): Replace
+	throw() with _GLIBCXX_NOTHROW.
+	(__atomic_add_dispatch): Return after performing atomic increment.
+
 2019-07-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/ext/atomicity.h [_GLIBCXX_ATOMIC_BUILTINS] (__atomic_add)
