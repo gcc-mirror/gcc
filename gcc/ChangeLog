@@ -1,3 +1,10 @@
+2019-07-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (omp_find_scan): Make static.
+	(lower_omp_for_scan): Fix order of merge arguments in input phase of
+	the second loop, var2 represents the first partial sum and so needs
+	to go before rprivb[ivar].
+
 2019-07-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/rs6000-logue.c: Remove unused code.

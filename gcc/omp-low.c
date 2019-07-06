@@ -9104,7 +9104,7 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, gimple_seq *body_p,
 
 /* Callback for walk_gimple_seq.  Find #pragma omp scan statement.  */
 
-tree
+static tree
 omp_find_scan (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	       struct walk_stmt_info *wi)
 {
@@ -9240,8 +9240,8 @@ omp_find_scan (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
    for (i = 0; i < n; i = i + 1)
      {
        {
-	 // For UDRs, this is UDR merge (rprivb[ivar], var2); r = rprivb[ivar];
-	 r = rprivb[ivar] + var2;
+	 // For UDRs, this is r = var2; UDR merge (r, rprivb[ivar]);
+	 r = var2 + rprivb[ivar];
        }
        {
 	 // This is the scan phase from user code.
@@ -9394,8 +9394,6 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
 	  {
 	    tree placeholder = OMP_CLAUSE_REDUCTION_PLACEHOLDER (c);
 	    tree val = var2;
-	    if (new_vard != new_var)
-	      val = build_fold_addr_expr_loc (clause_loc, val);
 
 	    x = lang_hooks.decls.omp_clause_default_ctor
 		    (c, var2, build_outer_var_ref (var, ctx));
@@ -9420,6 +9418,9 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
 		/* Otherwise, assign to it the identity element.  */
 		gimple_seq tseq = OMP_CLAUSE_REDUCTION_GIMPLE_INIT (c);
 		tseq = copy_gimple_seq_and_replace_locals (tseq);
+
+		if (new_vard != new_var)
+		  val = build_fold_addr_expr_loc (clause_loc, val);
 		SET_DECL_VALUE_EXPR (new_vard, val);
 		DECL_HAS_VALUE_EXPR_P (new_vard) = 1;
 		SET_DECL_VALUE_EXPR (placeholder, error_mark_node);
@@ -9469,11 +9470,19 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
 	    x = lang_hooks.decls.omp_clause_assign_op (c, x, var2);
 	    gimplify_and_add (x, &mdlist);
 
+	    x = unshare_expr (new_var);
+	    x = lang_hooks.decls.omp_clause_assign_op (c, x, var2);
+	    gimplify_and_add (x, &input2_list);
+
+	    val = rprivb_ref;
+	    if (new_vard != new_var)
+	      val = build_fold_addr_expr_loc (clause_loc, val);
+
 	    tseq = OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (c);
 	    tseq = copy_gimple_seq_and_replace_locals (tseq);
 	    SET_DECL_VALUE_EXPR (new_vard, val);
 	    DECL_HAS_VALUE_EXPR_P (new_vard) = 1;
-	    SET_DECL_VALUE_EXPR (placeholder, rprivb_ref);
+	    DECL_HAS_VALUE_EXPR_P (placeholder) = 0;
 	    lower_omp (&tseq, ctx);
 	    if (y)
 	      SET_DECL_VALUE_EXPR (new_vard, y);
@@ -9482,11 +9491,10 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
 		DECL_HAS_VALUE_EXPR_P (new_vard) = 0;
 		SET_DECL_VALUE_EXPR (new_vard, NULL_TREE);
 	      }
+	    SET_DECL_VALUE_EXPR (placeholder, new_var);
+	    DECL_HAS_VALUE_EXPR_P (placeholder) = 1;
+	    lower_omp (&tseq, ctx);
 	    gimple_seq_add_seq (&input2_list, tseq);
-
-	    x = unshare_expr (new_var);
-	    x = lang_hooks.decls.omp_clause_assign_op (c, x, rprivb_ref);
-	    gimplify_and_add (x, &input2_list);
 
 	    x = build_outer_var_ref (var, ctx);
 	    x = lang_hooks.decls.omp_clause_assign_op (c, x, rpriva_ref);
@@ -9545,7 +9553,7 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
 
 	    gimplify_assign (unshare_expr (rpriva_ref), var2, &mdlist);
 
-	    x = build2 (code, TREE_TYPE (new_var), rprivb_ref, var2);
+	    x = build2 (code, TREE_TYPE (new_var), var2, rprivb_ref);
 	    gimplify_assign (new_var, x, &input2_list);
 
 	    gimplify_assign (build_outer_var_ref (var, ctx), rpriva_ref,
