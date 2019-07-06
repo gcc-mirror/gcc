@@ -1,5 +1,11 @@
 2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/h8300/h8300.md (*push1_h8300hs_<mode>): Explicitly
+	specify the mode iterator referenced by <mode>, giving...
+	(*push1_h8300hs_<QHI:mode>): ...this.
+
+2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/gcn/gcn-valu.md
 	(vcond<VEC_1REG_MODE:mode><VEC_1REG_ALT:mode>): Use
 	gen_vec_cmp<VEC_1REG_ALT:mode>di rather than (implicitly)
