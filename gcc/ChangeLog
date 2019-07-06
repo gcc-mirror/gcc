@@ -1,5 +1,21 @@
 2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/i386/i386.md (*fop_<X87MODEF:mode>_3_i387)
+	(l<rounding_insn><MODEF:mode><SWI48:mode>2): Fix ambiguous uses
+	of .md attributes.
+	* config/i386/sse.md (*avx512pf_gatherpf<mode>sf_mask)
+	(*avx512pf_gatherpf<mode>df_mask, *avx512pf_scatterpf<mode>sf_mask)
+	(*avx512pf_scatterpf<mode>df_mask, *avx2_gathersi<mode>)
+	(*avx2_gathersi<mode>_2, *avx2_gatherdi<mode>)
+	(*avx2_gatherdi<mode>_2, *avx2_gatherdi<mode>_3): Likewise.
+	(*avx2_gatherdi<mode>_4, *avx512f_gathersi<mode>): Likewise.
+	(*avx512f_gathersi<mode>_2, *avx512f_gatherdi<mode>): Likewise.
+	(*avx512f_gatherdi<mode>_2, *avx512f_scattersi<mode>): Likewise.
+	(*avx512f_scatterdi<mode>): Likewise.
+	(*andnot<mode>3_bcst): Fix VI/VI48_AVX512VL typo.
+
+2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/h8300/h8300.md (*push1_h8300hs_<mode>): Explicitly
 	specify the mode iterator referenced by <mode>, giving...
 	(*push1_h8300hs_<QHI:mode>): ...this.
