@@ -1,3 +1,12 @@
+2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arm/sync.md
+	(@atomic_compare_and_swap<CCSI:arch><NARROW:mode>_1): Use
+	<NARROW:sync_predtab> instead of (implicitly) <CCSI:sync_predtab>.
+	(@atomic_compare_and_swap<CCSI:arch><SIDI:mode>_1): Likewise
+	<SIDI:sync_predtab>.  Use <SIDI:cas_cmp_operand> and
+	<SIDI:cas_cmp_str>.
+
 2019-07-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (struct omp_context): Add for_simd_scan_phase member.
