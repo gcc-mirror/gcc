@@ -1,5 +1,21 @@
 2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/gcn/gcn-valu.md
+	(vcond<VEC_1REG_MODE:mode><VEC_1REG_ALT:mode>): Use
+	gen_vec_cmp<VEC_1REG_ALT:mode>di rather than (implicitly)
+	gen_vec_cmp<VEC_1REG_MODE:mode>di.  Explicitly use
+	gen_vcond_mask_<VEC_1REG_MODE:mode>di.
+	(vcond<VEC_1REG_MODE:mode><VEC_1REG_ALT:mode>_exec): Likewise,
+	but using the _exec comparison patterns.
+	(vcondu<VEC_1REG_INT_MODE:mode><VEC_1REG_INT_ALT:mode>): Use
+	gen_vec_cmp<VEC_1REG_INT_ALT:mode>di rather than (implicitly)
+	gen_vec_cmp<VEC_1REG_INT_MODE:mode>di.  Explicitly use
+	gen_vcond_mask_<VEC_1REG_INT_MODE:mode>di.
+	(vcondu<VEC_1REG_INT_MODE:mode><VEC_1REG_INT_ALT:mode>_exec): Likewise,
+	but using the _exec comparison patterns.
+
+2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/arm/sync.md
 	(@atomic_compare_and_swap<CCSI:arch><NARROW:mode>_1): Use
 	<NARROW:sync_predtab> instead of (implicitly) <CCSI:sync_predtab>.
