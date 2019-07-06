@@ -1,3 +1,22 @@
+2019-07-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/scan-11.c: New test.
+	* testsuite/libgomp.c/scan-12.c: New test.
+	* testsuite/libgomp.c/scan-13.c: New test.
+	* testsuite/libgomp.c/scan-14.c: New test.
+	* testsuite/libgomp.c/scan-15.c: New test.
+	* testsuite/libgomp.c/scan-16.c: New test.
+	* testsuite/libgomp.c/scan-17.c: New test.
+	* testsuite/libgomp.c/scan-18.c: New test.
+	* testsuite/libgomp.c++/scan-9.C: New test.
+	* testsuite/libgomp.c++/scan-10.C: New test.
+	* testsuite/libgomp.c++/scan-11.C: New test.
+	* testsuite/libgomp.c++/scan-12.C: New test.
+	* testsuite/libgomp.c++/scan-13.C: New test.
+	* testsuite/libgomp.c++/scan-14.C: New test.
+	* testsuite/libgomp.c++/scan-15.C: New test.
+	* testsuite/libgomp.c++/scan-16.C: New test.
+
 2019-07-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/scan-9.c: New test.

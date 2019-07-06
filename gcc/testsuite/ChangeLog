@@ -1,5 +1,7 @@
 2019-07-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/scan-4.c: Don't expect sorry message.
+
 	PR tree-optimization/91096
 	* gcc.dg/vect/vect-simd-10.c (FLT_MIN_VALUE): Define.
 	(bar, main): Use it instead of -__builtin_inff ().

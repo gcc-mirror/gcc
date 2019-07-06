@@ -147,6 +147,9 @@ struct omp_context
 
   /* True if there is nested scan context with exclusive clause.  */
   bool scan_exclusive;
+
+  /* True in the second simd loop of for simd with inscan reductions.  */
+  bool for_simd_scan_phase;
 };
 
 static splay_tree all_contexts;
@@ -2421,6 +2424,85 @@ scan_omp_simd (gimple_stmt_iterator *gsi, gomp_for *stmt,
   scan_omp_for (stmt, outer_ctx)->simt_stmt = new_stmt;
 }
 
+static tree omp_find_scan (gimple_stmt_iterator *, bool *,
+			   struct walk_stmt_info *);
+static omp_context *maybe_lookup_ctx (gimple *);
+
+/* Duplicate #pragma omp simd, one for the scan input phase loop and one
+   for scan phase loop.  */
+
+static void
+scan_omp_simd_scan (gimple_stmt_iterator *gsi, gomp_for *stmt,
+		    omp_context *outer_ctx)
+{
+  /* The only change between inclusive and exclusive scan will be
+     within the first simd loop, so just use inclusive in the
+     worksharing loop.  */
+  outer_ctx->scan_inclusive = true;
+  tree c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_INCLUSIVE);
+  OMP_CLAUSE_DECL (c) = integer_zero_node;
+
+  gomp_scan *input_stmt = gimple_build_omp_scan (NULL, NULL_TREE);
+  gomp_scan *scan_stmt = gimple_build_omp_scan (NULL, c);
+  gsi_replace (gsi, input_stmt, false);
+  gimple_seq input_body = NULL;
+  gimple_seq_add_stmt (&input_body, stmt);
+  gsi_insert_after (gsi, scan_stmt, GSI_NEW_STMT);
+
+  gimple_stmt_iterator input1_gsi = gsi_none ();
+  struct walk_stmt_info wi;
+  memset (&wi, 0, sizeof (wi));
+  wi.val_only = true;
+  wi.info = (void *) &input1_gsi;
+  walk_gimple_seq_mod (gimple_omp_body_ptr (stmt), omp_find_scan, NULL, &wi);
+  gcc_assert (!gsi_end_p (input1_gsi));
+
+  gimple *input_stmt1 = gsi_stmt (input1_gsi);
+  gsi_next (&input1_gsi);
+  gimple *scan_stmt1 = gsi_stmt (input1_gsi);
+  gcc_assert (scan_stmt1 && gimple_code (scan_stmt1) == GIMPLE_OMP_SCAN);
+  c = gimple_omp_scan_clauses (as_a <gomp_scan *> (scan_stmt1));
+  if (c && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_EXCLUSIVE)
+    std::swap (input_stmt1, scan_stmt1);
+
+  gimple_seq input_body1 = gimple_omp_body (input_stmt1);
+  gimple_omp_set_body (input_stmt1, NULL);
+
+  gimple_seq scan_body = copy_gimple_seq_and_replace_locals (stmt);
+  gomp_for *new_stmt = as_a <gomp_for *> (scan_body);
+
+  gimple_omp_set_body (input_stmt1, input_body1);
+  gimple_omp_set_body (scan_stmt1, NULL);
+
+  gimple_stmt_iterator input2_gsi = gsi_none ();
+  memset (&wi, 0, sizeof (wi));
+  wi.val_only = true;
+  wi.info = (void *) &input2_gsi;
+  walk_gimple_seq_mod (gimple_omp_body_ptr (new_stmt), omp_find_scan,
+		       NULL, &wi);
+  gcc_assert (!gsi_end_p (input2_gsi));
+
+  gimple *input_stmt2 = gsi_stmt (input2_gsi);
+  gsi_next (&input2_gsi);
+  gimple *scan_stmt2 = gsi_stmt (input2_gsi);
+  gcc_assert (scan_stmt2 && gimple_code (scan_stmt2) == GIMPLE_OMP_SCAN);
+  if (c && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_EXCLUSIVE)
+    std::swap (input_stmt2, scan_stmt2);
+
+  gimple_omp_set_body (input_stmt2, NULL);
+
+  gimple_omp_set_body (input_stmt, input_body);
+  gimple_omp_set_body (scan_stmt, scan_body);
+
+  omp_context *ctx = new_omp_context (input_stmt, outer_ctx);
+  scan_omp (gimple_omp_body_ptr (input_stmt), ctx);
+
+  ctx = new_omp_context (scan_stmt, outer_ctx);
+  scan_omp (gimple_omp_body_ptr (scan_stmt), ctx);
+
+  maybe_lookup_ctx (new_stmt)->for_simd_scan_phase = true;
+}
+
 /* Scan an OpenMP sections directive.  */
 
 static void
@@ -3321,6 +3403,19 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     case GIMPLE_OMP_FOR:
       if ((gimple_omp_for_kind (as_a <gomp_for *> (stmt))
 	   == GF_OMP_FOR_KIND_SIMD)
+	  && gimple_omp_for_combined_into_p (stmt)
+	  && gimple_code (ctx->stmt) != GIMPLE_OMP_SCAN)
+	{
+	  tree clauses = gimple_omp_for_clauses (as_a <gomp_for *> (stmt));
+	  tree c = omp_find_clause (clauses, OMP_CLAUSE_REDUCTION);
+	  if (c && OMP_CLAUSE_REDUCTION_INSCAN (c) && !seen_error ())
+	    {
+	      scan_omp_simd_scan (gsi, as_a <gomp_for *> (stmt), ctx);
+	      break;
+	    }
+	}
+      if ((gimple_omp_for_kind (as_a <gomp_for *> (stmt))
+	   == GF_OMP_FOR_KIND_SIMD)
 	  && omp_maybe_offloaded_ctx (ctx)
 	  && omp_max_simt_vf ())
 	scan_omp_simd (gsi, as_a <gomp_for *> (stmt), ctx);
@@ -3757,7 +3852,7 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx,
 		     DECL_ATTRIBUTES (avar));
       gimple_add_tmp_var (avar);
       tree iavar = avar;
-      if (rvar)
+      if (rvar && !ctx->for_simd_scan_phase)
 	{
 	  /* For inscan reductions, create another array temporary,
 	     which will hold the reduced value.  */
@@ -5213,7 +5308,16 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		      x = lang_hooks.decls.omp_clause_default_ctor
 				(c, unshare_expr (ivar),
 				 build_outer_var_ref (var, ctx));
-		      if (rvarp)
+		      if (rvarp && ctx->for_simd_scan_phase)
+			{
+			  if (x)
+			    gimplify_and_add (x, &llist[0]);
+			  x = lang_hooks.decls.omp_clause_dtor (c, ivar);
+			  if (x)
+			    gimplify_and_add (x, &llist[1]);
+			  break;
+			}
+		      else if (rvarp)
 			{
 			  if (x)
 			    {
@@ -5371,6 +5475,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
 		      && OMP_CLAUSE_REDUCTION_INSCAN (c))
 		    {
+		      if (ctx->for_simd_scan_phase)
+			goto do_dtor;
 		      if (x || (!is_simd
 				&& OMP_CLAUSE_REDUCTION_OMP_ORIG_REF (c)))
 			{
@@ -5532,6 +5638,8 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 
 		      if (rvarp)
 			{
+			  if (ctx->for_simd_scan_phase)
+			    break;
 			  gimplify_assign (ivar, ref, &llist[0]);
 			  ref = build_outer_var_ref (var, ctx);
 			  gimplify_assign (ref, rvar, &llist[3]);
@@ -8629,11 +8737,13 @@ lower_omp_scan (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   bool input_phase = has_clauses ^ octx->scan_inclusive;
   bool is_simd = (gimple_code (octx->stmt) == GIMPLE_OMP_FOR
-		  && (gimple_omp_for_kind (octx->stmt) & GF_OMP_FOR_SIMD)
-		  && !gimple_omp_for_combined_into_p (octx->stmt));
+		  && (gimple_omp_for_kind (octx->stmt) & GF_OMP_FOR_SIMD));
   bool is_for = (gimple_code (octx->stmt) == GIMPLE_OMP_FOR
 		 && gimple_omp_for_kind (octx->stmt) == GF_OMP_FOR_KIND_FOR
 		 && !gimple_omp_for_combined_p (octx->stmt));
+  bool is_for_simd = is_simd && gimple_omp_for_combined_into_p (octx->stmt);
+  if (is_for_simd && octx->for_simd_scan_phase)
+    is_simd = false;
   if (is_simd)
     if (tree c = omp_find_clause (gimple_omp_for_clauses (octx->stmt),
 				  OMP_CLAUSE__SIMDUID_))
@@ -8866,10 +8976,7 @@ lower_omp_scan (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      }
 	  }
     }
-  else if (has_clauses)
-    sorry_at (gimple_location (stmt),
-	      "%<#pragma omp scan%> not supported yet");
-  if (!is_for)
+  if (is_simd && !is_for_simd)
     {
       gsi_insert_seq_after (gsi_p, gimple_omp_body (stmt), GSI_SAME_STMT);
       gsi_insert_seq_after (gsi_p, before, GSI_SAME_STMT);
@@ -9115,6 +9222,12 @@ omp_find_scan (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
     {
     WALK_SUBSTMTS;
 
+    case GIMPLE_OMP_FOR:
+      if ((gimple_omp_for_kind (stmt) & GF_OMP_FOR_SIMD)
+	  && gimple_omp_for_combined_into_p (stmt))
+	*handled_ops_p = false;
+      break;
+
     case GIMPLE_OMP_SCAN:
       *(gimple_stmt_iterator *) (wi->info) = *gsi_p;
       return integer_zero_node;
@@ -9255,6 +9368,7 @@ static void
 lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
 		    struct omp_for_data *fd, omp_context *ctx)
 {
+  bool is_for_simd = gimple_omp_for_combined_p (stmt);
   gcc_assert (ctx->scan_inclusive || ctx->scan_exclusive);
 
   gimple_seq body = gimple_omp_body (stmt);
@@ -9298,6 +9412,45 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
   gimple *scan_stmt2 = gsi_stmt (gsi);
   gcc_assert (scan_stmt2 && gimple_code (scan_stmt2) == GIMPLE_OMP_SCAN);
   gimple_omp_set_body (scan_stmt2, scan_body);
+
+  gimple_stmt_iterator input3_gsi = gsi_none ();
+  gimple_stmt_iterator scan3_gsi = gsi_none ();
+  gimple_stmt_iterator input4_gsi = gsi_none ();
+  gimple_stmt_iterator scan4_gsi = gsi_none ();
+  gimple *input_stmt3 = NULL, *scan_stmt3 = NULL;
+  gimple *input_stmt4 = NULL, *scan_stmt4 = NULL;
+  omp_context *input_simd_ctx = NULL, *scan_simd_ctx = NULL;
+  if (is_for_simd)
+    {
+      memset (&wi, 0, sizeof (wi));
+      wi.val_only = true;
+      wi.info = (void *) &input3_gsi;
+      walk_gimple_seq_mod (&input_body, omp_find_scan, NULL, &wi);
+      gcc_assert (!gsi_end_p (input3_gsi));
+
+      input_stmt3 = gsi_stmt (input3_gsi);
+      gsi = input3_gsi;
+      gsi_next (&gsi);
+      scan3_gsi = gsi;
+      scan_stmt3 = gsi_stmt (gsi);
+      gcc_assert (scan_stmt3 && gimple_code (scan_stmt3) == GIMPLE_OMP_SCAN);
+
+      memset (&wi, 0, sizeof (wi));
+      wi.val_only = true;
+      wi.info = (void *) &input4_gsi;
+      walk_gimple_seq_mod (&scan_body, omp_find_scan, NULL, &wi);
+      gcc_assert (!gsi_end_p (input4_gsi));
+
+      input_stmt4 = gsi_stmt (input4_gsi);
+      gsi = input4_gsi;
+      gsi_next (&gsi);
+      scan4_gsi = gsi;
+      scan_stmt4 = gsi_stmt (gsi);
+      gcc_assert (scan_stmt4 && gimple_code (scan_stmt4) == GIMPLE_OMP_SCAN);
+
+      input_simd_ctx = maybe_lookup_ctx (input_stmt3)->outer;
+      scan_simd_ctx = maybe_lookup_ctx (input_stmt4)->outer;
+    }
 
   tree num_threads = create_tmp_var (integer_type_node);
   tree thread_num = create_tmp_var (integer_type_node);
@@ -9390,6 +9543,18 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
 	x = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (rprivb), rprivb, x);
 	tree rprivb_ref = build_simple_mem_ref_loc (clause_loc, x);
 
+	tree var4 = is_for_simd ? new_var : var2;
+	tree var5 = NULL_TREE, var6 = NULL_TREE;
+	if (is_for_simd)
+	  {
+	    var5 = lookup_decl (var, input_simd_ctx);
+	    var6 = lookup_decl (var, scan_simd_ctx);
+	    if (new_vard != new_var)
+	      {
+		var5 = build_simple_mem_ref_loc (clause_loc, var5);
+		var6 = build_simple_mem_ref_loc (clause_loc, var6);
+	      }
+	  }
 	if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c))
 	  {
 	    tree placeholder = OMP_CLAUSE_REDUCTION_PLACEHOLDER (c);
@@ -9401,16 +9566,19 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
 	      gimplify_and_add (x, &clist);
 
 	    x = build_outer_var_ref (var, ctx);
-	    x = lang_hooks.decls.omp_clause_assign_op (c, var2, x);
+	    x = lang_hooks.decls.omp_clause_assign_op (c, unshare_expr (var4),
+						       x);
 	    gimplify_and_add (x, &thr01_list);
 
 	    tree y = (DECL_HAS_VALUE_EXPR_P (new_vard)
 		      ? DECL_VALUE_EXPR (new_vard) : NULL_TREE);
 	    if (var3)
 	      {
-		x = lang_hooks.decls.omp_clause_assign_op (c, var2, var3);
+		x = unshare_expr (var4);
+		x = lang_hooks.decls.omp_clause_assign_op (c, x, var3);
 		gimplify_and_add (x, &thrn1_list);
-		x = lang_hooks.decls.omp_clause_assign_op (c, var2, var3);
+		x = unshare_expr (var4);
+		x = lang_hooks.decls.omp_clause_assign_op (c, x, var3);
 		gimplify_and_add (x, &thr02_list);
 	      }
 	    else if (OMP_CLAUSE_REDUCTION_GIMPLE_INIT (c))
@@ -9418,11 +9586,13 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
 		/* Otherwise, assign to it the identity element.  */
 		gimple_seq tseq = OMP_CLAUSE_REDUCTION_GIMPLE_INIT (c);
 		tseq = copy_gimple_seq_and_replace_locals (tseq);
-
-		if (new_vard != new_var)
-		  val = build_fold_addr_expr_loc (clause_loc, val);
-		SET_DECL_VALUE_EXPR (new_vard, val);
-		DECL_HAS_VALUE_EXPR_P (new_vard) = 1;
+		if (!is_for_simd)
+		  {
+		    if (new_vard != new_var)
+		      val = build_fold_addr_expr_loc (clause_loc, val);
+		    SET_DECL_VALUE_EXPR (new_vard, val);
+		    DECL_HAS_VALUE_EXPR_P (new_vard) = 1;
+		  }
 		SET_DECL_VALUE_EXPR (placeholder, error_mark_node);
 		DECL_HAS_VALUE_EXPR_P (placeholder) = 1;
 		lower_omp (&tseq, ctx);
@@ -9442,47 +9612,64 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
 		  }
 	      }
 
-	    x = lang_hooks.decls.omp_clause_assign_op (c, var2, rprivam1_ref);
+	    x = unshare_expr (var4);
+	    x = lang_hooks.decls.omp_clause_assign_op (c, x, rprivam1_ref);
 	    gimplify_and_add (x, &thrn2_list);
 
-	    if (ctx->scan_exclusive)
+	    if (is_for_simd)
 	      {
 		x = unshare_expr (rprivb_ref);
-		x = lang_hooks.decls.omp_clause_assign_op (c, x, var2);
+		x = lang_hooks.decls.omp_clause_assign_op (c, x, var5);
 		gimplify_and_add (x, &scan1_list);
 	      }
-
-	    gimple_seq tseq = OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (c);
-	    tseq = copy_gimple_seq_and_replace_locals (tseq);
-	    SET_DECL_VALUE_EXPR (placeholder, var2);
-	    DECL_HAS_VALUE_EXPR_P (placeholder) = 1;
-	    lower_omp (&tseq, ctx);
-	    gimple_seq_add_seq (&scan1_list, tseq);
-
-	    if (ctx->scan_inclusive)
+	    else
 	      {
-		x = unshare_expr (rprivb_ref);
-		x = lang_hooks.decls.omp_clause_assign_op (c, x, var2);
-		gimplify_and_add (x, &scan1_list);
+		if (ctx->scan_exclusive)
+		  {
+		    x = unshare_expr (rprivb_ref);
+		    x = lang_hooks.decls.omp_clause_assign_op (c, x, var2);
+		    gimplify_and_add (x, &scan1_list);
+		  }
+
+		gimple_seq tseq = OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (c);
+		tseq = copy_gimple_seq_and_replace_locals (tseq);
+		SET_DECL_VALUE_EXPR (placeholder, var2);
+		DECL_HAS_VALUE_EXPR_P (placeholder) = 1;
+		lower_omp (&tseq, ctx);
+		gimple_seq_add_seq (&scan1_list, tseq);
+
+		if (ctx->scan_inclusive)
+		  {
+		    x = unshare_expr (rprivb_ref);
+		    x = lang_hooks.decls.omp_clause_assign_op (c, x, var2);
+		    gimplify_and_add (x, &scan1_list);
+		  }
 	      }
 
 	    x = unshare_expr (rpriva_ref);
-	    x = lang_hooks.decls.omp_clause_assign_op (c, x, var2);
+	    x = lang_hooks.decls.omp_clause_assign_op (c, x,
+						       unshare_expr (var4));
 	    gimplify_and_add (x, &mdlist);
 
-	    x = unshare_expr (new_var);
-	    x = lang_hooks.decls.omp_clause_assign_op (c, x, var2);
+	    x = unshare_expr (is_for_simd ? var6 : new_var);
+	    x = lang_hooks.decls.omp_clause_assign_op (c, x, var4);
 	    gimplify_and_add (x, &input2_list);
 
 	    val = rprivb_ref;
 	    if (new_vard != new_var)
 	      val = build_fold_addr_expr_loc (clause_loc, val);
 
-	    tseq = OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (c);
+	    gimple_seq tseq = OMP_CLAUSE_REDUCTION_GIMPLE_MERGE (c);
 	    tseq = copy_gimple_seq_and_replace_locals (tseq);
 	    SET_DECL_VALUE_EXPR (new_vard, val);
 	    DECL_HAS_VALUE_EXPR_P (new_vard) = 1;
-	    DECL_HAS_VALUE_EXPR_P (placeholder) = 0;
+	    if (is_for_simd)
+	      {
+		SET_DECL_VALUE_EXPR (placeholder, var6);
+		DECL_HAS_VALUE_EXPR_P (placeholder) = 1;
+	      }
+	    else
+	      DECL_HAS_VALUE_EXPR_P (placeholder) = 0;
 	    lower_omp (&tseq, ctx);
 	    if (y)
 	      SET_DECL_VALUE_EXPR (new_vard, y);
@@ -9491,9 +9678,12 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
 		DECL_HAS_VALUE_EXPR_P (new_vard) = 0;
 		SET_DECL_VALUE_EXPR (new_vard, NULL_TREE);
 	      }
-	    SET_DECL_VALUE_EXPR (placeholder, new_var);
-	    DECL_HAS_VALUE_EXPR_P (placeholder) = 1;
-	    lower_omp (&tseq, ctx);
+	    if (!is_for_simd)
+	      {
+		SET_DECL_VALUE_EXPR (placeholder, new_var);
+		DECL_HAS_VALUE_EXPR_P (placeholder) = 1;
+		lower_omp (&tseq, ctx);
+	      }
 	    gimple_seq_add_seq (&input2_list, tseq);
 
 	    x = build_outer_var_ref (var, ctx);
@@ -9532,29 +9722,38 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
 	else
 	  {
 	    x = build_outer_var_ref (var, ctx);
-	    gimplify_assign (var2, x, &thr01_list);
+	    gimplify_assign (unshare_expr (var4), x, &thr01_list);
 
 	    x = omp_reduction_init (c, TREE_TYPE (new_var));
-	    gimplify_assign (var2, unshare_expr (x), &thrn1_list);
-	    gimplify_assign (var2, x, &thr02_list);
+	    gimplify_assign (unshare_expr (var4), unshare_expr (x),
+			     &thrn1_list);
+	    gimplify_assign (unshare_expr (var4), x, &thr02_list);
 
-	    gimplify_assign (var2, rprivam1_ref, &thrn2_list);
+	    gimplify_assign (unshare_expr (var4), rprivam1_ref, &thrn2_list);
 
 	    enum tree_code code = OMP_CLAUSE_REDUCTION_CODE (c);
 	    if (code == MINUS_EXPR)
 	      code = PLUS_EXPR;
 
-	    if (ctx->scan_exclusive)
-	      gimplify_assign (unshare_expr (rprivb_ref), var2, &scan1_list);
-	    x = build2 (code, TREE_TYPE (new_var), var2, new_var);
-	    gimplify_assign (var2, x, &scan1_list);
-	    if (ctx->scan_inclusive)
-	      gimplify_assign (unshare_expr (rprivb_ref), var2, &scan1_list);
+	    if (is_for_simd)
+	      gimplify_assign (unshare_expr (rprivb_ref), var5, &scan1_list);
+	    else
+	      {
+		if (ctx->scan_exclusive)
+		  gimplify_assign (unshare_expr (rprivb_ref), var2,
+				   &scan1_list);
+		x = build2 (code, TREE_TYPE (new_var), var2, new_var);
+		gimplify_assign (var2, x, &scan1_list);
+		if (ctx->scan_inclusive)
+		  gimplify_assign (unshare_expr (rprivb_ref), var2,
+				   &scan1_list);
+	      }
 
-	    gimplify_assign (unshare_expr (rpriva_ref), var2, &mdlist);
+	    gimplify_assign (unshare_expr (rpriva_ref), unshare_expr (var4),
+			     &mdlist);
 
-	    x = build2 (code, TREE_TYPE (new_var), var2, rprivb_ref);
-	    gimplify_assign (new_var, x, &input2_list);
+	    x = build2 (code, TREE_TYPE (new_var), var4, rprivb_ref);
+	    gimplify_assign (is_for_simd ? var6 : new_var, x, &input2_list);
 
 	    gimplify_assign (build_outer_var_ref (var, ctx), rpriva_ref,
 			     &last_list);
@@ -9568,7 +9767,8 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
   g = gimple_build_assign (ivar, PLUS_EXPR, ivar, size_one_node);
   gimple_seq_add_stmt (&scan1_list, g);
   g = gimple_build_assign (ivar, PLUS_EXPR, ivar, size_one_node);
-  gimple_seq_add_stmt (gimple_omp_body_ptr (scan_stmt2), g);
+  gimple_seq_add_stmt (gimple_omp_body_ptr (is_for_simd
+					    ? scan_stmt4 : scan_stmt2), g);
 
   tree controlb = create_tmp_var (boolean_type_node);
   tree controlp = create_tmp_var (ptr_type_node);
@@ -9598,8 +9798,29 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
   *cp2 = gimple_omp_for_clauses (new_stmt);
   gimple_omp_for_set_clauses (new_stmt, new_clauses2);
 
-  gimple_omp_set_body (scan_stmt1, scan1_list);
-  gimple_omp_set_body (input_stmt2, input2_list);
+  if (is_for_simd)
+    {
+      gimple_seq_add_seq (gimple_omp_body_ptr (scan_stmt3), scan1_list);
+      gimple_seq_add_seq (gimple_omp_body_ptr (input_stmt4), input2_list);
+
+      gsi_insert_seq_after (&input3_gsi, gimple_omp_body (input_stmt3),
+			    GSI_SAME_STMT);
+      gsi_remove (&input3_gsi, true);
+      gsi_insert_seq_after (&scan3_gsi, gimple_omp_body (scan_stmt3),
+			    GSI_SAME_STMT);
+      gsi_remove (&scan3_gsi, true);
+      gsi_insert_seq_after (&input4_gsi, gimple_omp_body (input_stmt4),
+			    GSI_SAME_STMT);
+      gsi_remove (&input4_gsi, true);
+      gsi_insert_seq_after (&scan4_gsi, gimple_omp_body (scan_stmt4),
+			    GSI_SAME_STMT);
+      gsi_remove (&scan4_gsi, true);
+    }
+  else
+    {
+      gimple_omp_set_body (scan_stmt1, scan1_list);
+      gimple_omp_set_body (input_stmt2, input2_list);
+    }
 
   gsi_insert_seq_after (&input1_gsi, gimple_omp_body (input_stmt1),
 			GSI_SAME_STMT);
