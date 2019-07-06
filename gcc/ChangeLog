@@ -1,5 +1,22 @@
 2019-07-06  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp-low.c (struct omp_context): Add for_simd_scan_phase member.
+	(maybe_lookup_ctx): Add forward declaration.
+	(omp_find_scan): Likewise.  Walk into body of simd if composited
+	with worksharing loop.
+	(scan_omp_simd_scan): New function.
+	(scan_omp_1_stmt): Call it.
+	(lower_rec_simd_input_clauses): Don't create rvar nor rvar2 if
+	ctx->for_simd_scan_phase.
+	(lower_rec_input_clauses): Do much less work for inscan reductions
+	in ctx->for_simd_scan_phase is_simd regions.
+	(lower_omp_scan): Set is_simd also on simd constructs composited
+	with worksharing loop, unless ctx->for_simd_scan_phase.  Never emit
+	a sorry message.  Don't change GIMPLE_OMP_SCAN stmts into nops and
+	emit their body after in simd constructs composited with worksharing
+	loop.
+	(lower_omp_for_scan): Handle worksharing loop composited with simd.
+
 	* omp-low.c (omp_find_scan): Make static.
 	(lower_omp_for_scan): Fix order of merge arguments in input phase of
 	the second loop, var2 represents the first partial sum and so needs
