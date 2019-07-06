@@ -1,6 +1,11 @@
 2019-07-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/testsuite/
+	* g++.dg/coroutines/torture/mid-suspend-destruction-0.C: New test.
+
+2019-07-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/testsuite/
 	* g++.dg/coroutines/coro.h: Connect up the suspension checking built-
 	in.
 	* g++.dg/coroutines/torture/check-suspended.C: New test.
