@@ -1,3 +1,12 @@
+2019-07-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (struct omp_context): Rename combined_into_simd_safelen0
+	member to combined_into_simd_safelen1.
+	(lower_rec_input_clauses, lower_omp_1): Adjust uses.
+	(lower_lastprivate_clauses): Likewise.  For conditional lastprivate
+	clauses if ctx->combined_into_simd_safelen1 put statements after the
+	predicate conditionalized block rather than into it.
+
 2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/s390/s390.md (*negabs<FP:mode>2_nocc): Use FP for
