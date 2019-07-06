@@ -55,10 +55,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { __atomic_fetch_add(__mem, __val, __ATOMIC_ACQ_REL); }
 #else
   _Atomic_word
-  __exchange_and_add(volatile _Atomic_word*, int) throw ();
+  __exchange_and_add(volatile _Atomic_word*, int) _GLIBCXX_NOTHROW;
 
   void
-  __atomic_add(volatile _Atomic_word*, int) throw ();
+  __atomic_add(volatile _Atomic_word*, int) _GLIBCXX_NOTHROW;
 #endif
 
   inline _Atomic_word
@@ -92,7 +92,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
 #ifdef __GTHREADS
     if (__gthread_active_p())
-      __atomic_add(__mem, __val);
+      {
+	__atomic_add(__mem, __val);
+	return;
+      }
 #endif
     __atomic_add_single(__mem, __val);
   }
