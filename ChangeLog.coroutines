@@ -1,5 +1,24 @@
 2019-07-06  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/
+	* coroutine-builtins.def (BUILT_IN_CORO_IS_SUSPENDED): New.
+	* coroutine-passes.c (lower_coro_builtin): Lower suspension check
+	builtin.
+
+	gcc/cp/
+	* coroutines.cc (build_suspended_fn): New helper function.
+	(morph_fn_to_coro): Add and populate a function pointer field for the
+	suspension-checking routine.
+	* cp-tree.h (morph_fn_to_coro): Alter prototype.
+	* decl.c (finish_function): Generate output for the suspension check
+	helper.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/coro-builtins.C (main): Test that we handle the
+	new __builtin_coro_is_suspended builtin.
+
+2019-07-06  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/cp/
 	* coroutines.cc (build_actor_fn): Clear suspended status on entry
 	set it on suspended returns.

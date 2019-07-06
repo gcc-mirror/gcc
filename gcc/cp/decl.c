@@ -16108,7 +16108,8 @@ tree
 finish_function (bool inline_p)
 {
   tree fndecl = current_function_decl;
-  tree fntype, ctype = NULL_TREE, resumer = NULL_TREE, destroyer = NULL_TREE;
+  tree fntype, ctype = NULL_TREE;
+  tree resumer = NULL_TREE, destroyer = NULL_TREE, suspended_p = NULL_TREE;
   bool coro_p = flag_coroutines
 		&& !processing_template_decl
 		&& DECL_COROUTINE_P (fndecl);
@@ -16139,7 +16140,7 @@ finish_function (bool inline_p)
 
   if (coro_p)
     {
-      if (!morph_fn_to_coro (fndecl, &resumer, &destroyer))
+      if (!morph_fn_to_coro (fndecl, &resumer, &destroyer, &suspended_p))
         {
 	  DECL_SAVED_TREE (fndecl) = pop_stmt_list (DECL_SAVED_TREE (fndecl));
 	  poplevel (1, 0, 1);
@@ -16374,6 +16375,7 @@ finish_function (bool inline_p)
     {
       emit_coro_helper (resumer);
       emit_coro_helper (destroyer);
+      emit_coro_helper (suspended_p);
     }
 
   /* We're leaving the context of this function, so zap cfun.  It's still in

@@ -8,11 +8,12 @@ int main ()
   void *promise;
   const size_t co_align = 16;
 
-  co_h = __builtin_coro_noop();
-  bool d = __builtin_coro_done(co_h);
-  __builtin_coro_resume(co_h);
-  __builtin_coro_destroy(co_h);
-  promise = __builtin_coro_promise(co_h, co_align, true);
+  co_h = __builtin_coro_noop ();
+  bool d = __builtin_coro_done (co_h);
+  __builtin_coro_resume (co_h);
+  __builtin_coro_destroy (co_h);
+  promise = __builtin_coro_promise (co_h, co_align, true);
+  bool s = __builtin_coro_is_suspended (co_h);
 
   return 0;
 }
