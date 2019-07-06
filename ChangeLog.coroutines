@@ -1,3 +1,13 @@
+2019-07-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (build_actor_fn): Clear suspended status on entry
+	set it on suspended returns.
+	(build_destroy_fn): Comment change only.
+	(register_local_var_uses): Rename suspension status field.
+	(morph_fn_to_coro):  Likewise.  Reorder code that initialises the
+	field.
+
 2019-07-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Merge trunk r272840.

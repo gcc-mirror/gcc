@@ -1368,6 +1368,8 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   DECL_ARTIFICIAL (resdecl) = 1;
   DECL_IGNORED_P (resdecl) = 1;
   DECL_RESULT (actor) = resdecl;
+
+  /* We have a definition here.  */
   TREE_STATIC (actor) = 1;
 
   tree actor_outer = push_stmt_list ();
@@ -1437,7 +1439,19 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   tree rat = build3 (COMPONENT_REF, short_unsigned_type_node, actor_frame,
 		    rat_field, NULL_TREE);
 
-  tree ret_label = create_named_label_with_ctx (loc, "actor.ret", actor);
+  tree ret_label = create_named_label_with_ctx (loc, "actor.suspend.ret", actor);
+
+  /* We're not suspended now, regardless of whether that's the initial run,
+     destruction or resumption.  */
+  tree is_susp_name = get_identifier ("__is_suspended");
+  tree is_susp_field = lookup_member (coro_frame_type, is_susp_name, 1, 0,
+				      tf_warning_or_error);
+  tree is_susp = build3 (COMPONENT_REF, boolean_type_node, actor_frame,
+			 is_susp_field, NULL_TREE);
+  tree r = build2_loc (loc, INIT_EXPR, boolean_type_node, is_susp,
+		       boolean_false_node);
+  r = coro_build_cvt_void_expr_stmt (r, loc);
+  add_stmt (r);
 
   tree lsb_if = begin_if_stmt ();
   tree chkb0 = build2 (BIT_AND_EXPR, short_unsigned_type_node, rat,
@@ -1513,7 +1527,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 
   finish_if_stmt (lsb_if);
 
-  tree r = build_stmt (loc, LABEL_EXPR, actor_begin_label);
+  r = build_stmt (loc, LABEL_EXPR, actor_begin_label);
   add_stmt (r);
 
   /* actor's version of the promise.  */
@@ -1673,11 +1687,22 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
   r = do_poplevel (scope);
   add_stmt (r);
 
-  /* This is the eventual (or suspend) return point.  */
+  /* done.  */
+  r = build_stmt (loc, RETURN_EXPR, NULL);
+  TREE_NO_WARNING (r) |= 1; /* We don't want a warning about this.  */
+  r = maybe_cleanup_point_expr_void (r);
+  add_stmt (r);
+
+  /* This is the suspend return point.  */
   r = build_stmt (loc, LABEL_EXPR, ret_label);
   add_stmt (r);
 
-  /* done.  */
+  /* We are suspended.  */
+  r = build2_loc (loc, INIT_EXPR, boolean_type_node, is_susp,
+		       boolean_true_node);
+  r = coro_build_cvt_void_expr_stmt (r, loc);
+  add_stmt (r);
+
   r = build_stmt (loc, RETURN_EXPR, NULL);
   TREE_NO_WARNING (r) |= 1; /* We don't want a warning about this.  */
   r = maybe_cleanup_point_expr_void (r);
@@ -1725,6 +1750,8 @@ build_destroy_fn (location_t loc, tree coro_frame_type,
   DECL_ARTIFICIAL (resdecl) = 1;
   DECL_IGNORED_P (resdecl) = 1;
   DECL_RESULT (destroy) = resdecl;
+
+  /* We have a definition here.  */
   TREE_STATIC (destroy) = 1;
 
   tree destr_outer = push_stmt_list ();
@@ -2015,7 +2042,7 @@ register_local_var_uses (tree *stmt, int *do_subtree, void *d)
   void (*__destroy)(struct _R_frame *);
   struct coro1::promise_type __p;
   bool frame_needs_free; // free the coro frame mem if set.
-  bool __suspended; // set if we're suspended (use for lib. check mode).
+  bool __is_suspended; // set if we're suspended (use for lib. check mode).
   short __resume_at; // this is where clang puts it - but it's a smaller entity.
   coro1::suspend_never_prt __is;
   (maybe) handle_type i_hand;
@@ -2142,7 +2169,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 					     promise_type, fn_start);
   tree fnf_name = coro_make_frame_entry (&field_list, "__frame_needs_free",
 					 boolean_type_node, fn_start);
-  tree susp_name = coro_make_frame_entry (&field_list, "__suspended",
+  tree is_susp_name = coro_make_frame_entry (&field_list, "__is_suspended",
 					  boolean_type_node, fn_start);
   tree resume_idx_name = coro_make_frame_entry (&field_list, "__resume_at",
 						short_unsigned_type_node,
@@ -2333,15 +2360,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
-  /* We're not suspended.  */
-  tree susp_m = lookup_member (coro_frame_type, susp_name, 1, 0,
-			      tf_warning_or_error);
-  tree susp_x = build_class_member_access_expr (deref_fp, susp_m, NULL_TREE,
-					       false, tf_warning_or_error);
-  r = build2 (INIT_EXPR, boolean_type_node, susp_x, boolean_false_node);
-  r = coro_build_cvt_void_expr_stmt (r, fn_start);
-  add_stmt (r);
-
   /* Put the resumer and destroyer functions in.  */
 
   tree actor_addr = build1 (ADDR_EXPR, act_des_fn_ptr, actor);
@@ -2363,6 +2381,16 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 						  NULL_TREE, false,
 						  tf_warning_or_error);
   r = build2_loc (fn_start, INIT_EXPR, act_des_fn_ptr, destroy_x, destroy_addr);
+  r = coro_build_cvt_void_expr_stmt (r, fn_start);
+  add_stmt (r);
+
+  /* .. but we're not suspended at this point.  */
+  tree is_susp_m = lookup_member (coro_frame_type, is_susp_name, 1, 0,
+			      tf_warning_or_error);
+  tree susp_x = build_class_member_access_expr (deref_fp, is_susp_m, NULL_TREE,
+					       false, tf_warning_or_error);
+  r = build2_loc (fn_start, INIT_EXPR, boolean_type_node, susp_x,
+		  boolean_false_node);
   r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
