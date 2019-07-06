@@ -2714,8 +2714,6 @@ bool
 cgraph_node::set_pure_flag (bool pure, bool looping)
 {
   struct set_pure_flag_info info = {pure, looping, false};
-  if (!pure)
-    looping = false;
   call_for_symbol_thunks_and_aliases (set_pure_flag_1, &info, !pure, true);
   return info.changed;
 }
@@ -3620,7 +3618,7 @@ cgraph_node::get_body (void)
       set_dump_file (NULL);
 
       push_cfun (DECL_STRUCT_FUNCTION (decl));
-      execute_all_ipa_transforms ();
+      execute_all_ipa_transforms (true);
       cgraph_edge::rebuild_edges ();
       free_dominance_info (CDI_DOMINATORS);
       free_dominance_info (CDI_POST_DOMINATORS);

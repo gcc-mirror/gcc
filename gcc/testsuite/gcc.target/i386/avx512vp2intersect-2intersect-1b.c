@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -mavx512vp2intersect" } */
+/* { dg-require-effective-target avx512vp2intersect } */
 
 #define AVX512F
 #include <x86intrin.h>

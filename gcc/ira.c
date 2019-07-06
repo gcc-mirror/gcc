@@ -1784,68 +1784,59 @@ setup_prohibited_mode_move_regs (void)
 
 
 
-/* Setup possible alternatives in ALTS for INSN.  */
-void
-ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
+/* Extract INSN and return the set of alternatives that we should consider.
+   This excludes any alternatives whose constraints are obviously impossible
+   to meet (e.g. because the constraint requires a constant and the operand
+   is nonconstant).  It also excludes alternatives that are bound to need
+   a spill or reload, as long as we have other alternatives that match
+   exactly.  */
+alternative_mask
+ira_setup_alts (rtx_insn *insn)
 {
-  /* MAP nalt * nop -> start of constraints for given operand and
-     alternative.  */
-  static vec<const char *> insn_constraints;
   int nop, nalt;
   bool curr_swapped;
   const char *p;
   int commutative = -1;
 
   extract_insn (insn);
+  preprocess_constraints (insn);
   alternative_mask preferred = get_preferred_alternatives (insn);
-  CLEAR_HARD_REG_SET (alts);
-  insn_constraints.release ();
-  insn_constraints.safe_grow_cleared (recog_data.n_operands
-				      * recog_data.n_alternatives + 1);
+  alternative_mask alts = 0;
+  alternative_mask exact_alts = 0;
   /* Check that the hard reg set is enough for holding all
      alternatives.  It is hard to imagine the situation when the
      assertion is wrong.  */
   ira_assert (recog_data.n_alternatives
 	      <= (int) MAX (sizeof (HARD_REG_ELT_TYPE) * CHAR_BIT,
 			    FIRST_PSEUDO_REGISTER));
+  for (nop = 0; nop < recog_data.n_operands; nop++)
+    if (recog_data.constraints[nop][0] == '%')
+      {
+	commutative = nop;
+	break;
+      }
   for (curr_swapped = false;; curr_swapped = true)
     {
-      /* Calculate some data common for all alternatives to speed up the
-	 function.  */
-      for (nop = 0; nop < recog_data.n_operands; nop++)
-	{
-	  for (nalt = 0, p = recog_data.constraints[nop];
-	       nalt < recog_data.n_alternatives;
-	       nalt++)
-	    {
-	      insn_constraints[nop * recog_data.n_alternatives + nalt] = p;
-	      while (*p && *p != ',')
-		{
-		  /* We only support one commutative marker, the first
-		     one.  We already set commutative above.  */
-		  if (*p == '%' && commutative < 0)
-		    commutative = nop;
-		  p++;
-		}
-	      if (*p)
-		p++;
-	    }
-	}
       for (nalt = 0; nalt < recog_data.n_alternatives; nalt++)
 	{
-	  if (!TEST_BIT (preferred, nalt)
-	      || TEST_HARD_REG_BIT (alts, nalt))
+	  if (!TEST_BIT (preferred, nalt) || TEST_BIT (exact_alts, nalt))
 	    continue;
 
+	  const operand_alternative *op_alt
+	    = &recog_op_alt[nalt * recog_data.n_operands];
+	  int this_reject = 0;
 	  for (nop = 0; nop < recog_data.n_operands; nop++)
 	    {
 	      int c, len;
 
+	      this_reject += op_alt[nop].reject;
+
 	      rtx op = recog_data.operand[nop];
-	      p = insn_constraints[nop * recog_data.n_alternatives + nalt];
+	      p = op_alt[nop].constraint;
 	      if (*p == 0 || *p == ',')
 		continue;
-	      
+
+	      bool win_p = false;
 	      do
 		switch (c = *p, len = CONSTRAINT_LEN (c, p), c)
 		  {
@@ -1863,7 +1854,14 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 
 		  case '0':  case '1':  case '2':  case '3':  case '4':
 		  case '5':  case '6':  case '7':  case '8':  case '9':
-		    goto op_success;
+		    {
+		      rtx other = recog_data.operand[c - '0'];
+		      if (MEM_P (other)
+			  ? rtx_equal_p (other, op)
+			  : REG_P (op) || SUBREG_P (op))
+			goto op_success;
+		      win_p = true;
+		    }
 		    break;
 		    
 		  case 'g':
@@ -1877,7 +1875,11 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 			{
 			case CT_REGISTER:
 			  if (reg_class_for_constraint (cn) != NO_REGS)
-			    goto op_success;
+			    {
+			      if (REG_P (op) || SUBREG_P (op))
+				goto op_success;
+			      win_p = true;
+			    }
 			  break;
 
 			case CT_CONST_INT:
@@ -1888,9 +1890,14 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 			  break;
 
 			case CT_ADDRESS:
+			  goto op_success;
+
 			case CT_MEMORY:
 			case CT_SPECIAL_MEMORY:
-			  goto op_success;
+			  if (MEM_P (op))
+			    goto op_success;
+			  win_p = true;
+			  break;
 
 			case CT_FIXED_FORM:
 			  if (constraint_satisfied_p (op, cn))
@@ -1901,12 +1908,22 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
 		    }
 		  }
 	      while (p += len, c);
-	      break;
+	      if (!win_p)
+		break;
+	      /* We can make the alternative match by spilling a register
+		 to memory or loading something into a register.  Count a
+		 cost of one reload (the equivalent of the '?' constraint).  */
+	      this_reject += 6;
 	    op_success:
 	      ;
 	    }
+
 	  if (nop >= recog_data.n_operands)
-	    SET_HARD_REG_BIT (alts, nalt);
+	    {
+	      alts |= ALTERNATIVE_BIT (nalt);
+	      if (this_reject == 0)
+		exact_alts |= ALTERNATIVE_BIT (nalt);
+	    }
 	}
       if (commutative < 0)
 	break;
@@ -1916,14 +1933,15 @@ ira_setup_alts (rtx_insn *insn, HARD_REG_SET &alts)
       if (curr_swapped)
 	break;
     }
+  return exact_alts ? exact_alts : alts;
 }
 
 /* Return the number of the output non-early clobber operand which
    should be the same in any case as operand with number OP_NUM (or
-   negative value if there is no such operand).  The function takes
-   only really possible alternatives into consideration.  */
+   negative value if there is no such operand).  ALTS is the mask
+   of alternatives that we should consider.  */
 int
-ira_get_dup_out_num (int op_num, HARD_REG_SET &alts)
+ira_get_dup_out_num (int op_num, alternative_mask alts)
 {
   int curr_alt, c, original, dup;
   bool ignore_p, use_commut_op_p;
@@ -1940,7 +1958,7 @@ ira_get_dup_out_num (int op_num, HARD_REG_SET &alts)
     {
       rtx op = recog_data.operand[op_num];
       
-      for (curr_alt = 0, ignore_p = !TEST_HARD_REG_BIT (alts, curr_alt),
+      for (curr_alt = 0, ignore_p = !TEST_BIT (alts, curr_alt),
 	   original = -1;;)
 	{
 	  c = *str;
@@ -1951,7 +1969,7 @@ ira_get_dup_out_num (int op_num, HARD_REG_SET &alts)
 	  else if (c == ',')
 	    {
 	      curr_alt++;
-	      ignore_p = !TEST_HARD_REG_BIT (alts, curr_alt);
+	      ignore_p = !TEST_BIT (alts, curr_alt);
 	    }
 	  else if (! ignore_p)
 	    switch (c)
@@ -1981,26 +1999,8 @@ ira_get_dup_out_num (int op_num, HARD_REG_SET &alts)
 	}
       if (original == -1)
 	goto fail;
-      dup = -1;
-      for (ignore_p = false, str = recog_data.constraints[original - '0'];
-	   *str != 0;
-	   str++)
-	if (ignore_p)
-	  {
-	    if (*str == ',')
-	      ignore_p = false;
-	  }
-	else if (*str == '#')
-	  ignore_p = true;
-	else if (! ignore_p)
-	  {
-	    if (*str == '=')
-	      dup = original - '0';
-	    /* It is better ignore an alternative with early clobber.  */
-	    else if (*str == '&')
-	      goto fail;
-	  }
-      if (dup >= 0)
+      dup = original - '0';
+      if (recog_data.operand_type[dup] == OP_OUT)
 	return dup;
     fail:
       if (use_commut_op_p)
@@ -4414,10 +4414,9 @@ rtx_moveable_p (rtx *loc, enum op_type type)
 {
   const char *fmt;
   rtx x = *loc;
-  enum rtx_code code = GET_CODE (x);
   int i, j;
 
-  code = GET_CODE (x);
+  enum rtx_code code = GET_CODE (x);
   switch (code)
     {
     case CONST:

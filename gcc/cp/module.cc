@@ -2240,7 +2240,8 @@ public:
     EK_BINDING = EK_EXPLICIT_HWM, /* Implicitly encoded.  */
     EK_MAYBE_SPEC,	/* Potentially a specialization, else a DECL,
 			   never a returned kind.  */
-    EK_BITS = 3, /* Only need to encode below EK_EXPLICIT_HWM.  */
+
+    EK_BITS = 3		/* Only need to encode below EK_EXPLICIT_HWM.  */
   };
 
 private:
@@ -2262,7 +2263,7 @@ private:
     DB_UNREACHED_BIT,		/* A yet-to-be reached entity.  */
     DB_HIDDEN_BIT,		/* A hidden binding.  */
     DB_MERGEABLE_BIT,		/* An entity that needs merging.  */
-    DB_PSEUDO_SPEC_BIT,		/* A non-specialization
+    DB_PSEUDO_SPEC_BIT		/* A non-specialization
 				   specialization.  */
   };
 
@@ -2707,21 +2708,21 @@ enum tree_tag {
   tt_anon,		/* Anonymous decl.  */
   tt_template,		/* The TEMPLATE_RESULT of a template.  */
   tt_implicit_template, /* An immplicit member template.  */
-  tt_friend_template,   /* A friend of a template class.  */
+  tt_friend_template    /* A friend of a template class.  */
 };
 
 enum walk_kind {
-  WK_none,   /* No walk to do (a back- or fixed-ref happened).  */
-  WK_normal, /* Normal walk (by-name if possible).  */
+  WK_none,	/* No walk to do (a back- or fixed-ref happened).  */
+  WK_normal,	/* Normal walk (by-name if possible).  */
 
   /* These three tags match tree_tag node, mergeable & clone.  */
-  WK_body,   /* By-value walk.  */
+  WK_body,	/* By-value walk.  */
   WK_mergeable, /* By-value mergeable entity walk.  */
-  WK_clone,  /* By-value clone walk.  */
+  WK_clone,	/* By-value clone walk.  */
 
   /* The sole purpose of the following kind is logical error
      detection.  */
-  WK_merging,   /* By-value merging entity walk.  */
+  WK_merging	/* By-value merging entity walk.  */
 };
 static char const *const walk_kind_name[] =
   {NULL, NULL, "body", "mergeable", "clone", NULL};
@@ -2731,7 +2732,7 @@ enum merge_kind
   MK_named,
   MK_spec,
   MK_clone,
-  MK_none,
+  MK_none
 };
 static char const *const merge_kind_name[] =
   {"named", "specialization", "clone"};
@@ -2923,7 +2924,7 @@ public:
     tag_mergeable,	/* Write by value with merge info.  */
     tag_clone,		/* Write by value with clone info.  */
     tag_merging,  	/* Needed for logical error detection.  */
-    tag_fixed,		/* Lower bound on the fixed trees.  */
+    tag_fixed		/* Lower bound on the fixed trees.  */
   };
 
 public:
@@ -9103,7 +9104,7 @@ trees_out::key_mergeable (depset *dep)
 	 predecessor entity, to force their ordering.  */
       tree target = get_clone_target (decl);
       tree predecessor = target;
-      tree clone;
+      tree clone = NULL_TREE;
       FOR_EVERY_CLONE (clone, target)
 	{
 	  if (clone == decl)
@@ -12980,7 +12981,7 @@ enum ct_decl_flags
 {
   cdf_is_voldemort = 0x1,	/* Is a voldemort.  */
   cdf_is_specialization = 0x2,  /* Some kind of specialization.  */
-  cdf_is_partial = 0x4,		/* A partial specialization.  */
+  cdf_is_partial = 0x4		/* A partial specialization.  */
 };
 
 /* Binding modifiers.  */
@@ -12988,7 +12989,7 @@ enum ct_bind_flags
 {
   cbf_export = 0x1,	/* An exported decl.  */
   cbf_using = 0x2,	/* A using decl.  */
-  cbf_hidden = 0x4,	/* A hidden (friend) decl.  */
+  cbf_hidden = 0x4	/* A hidden (friend) decl.  */
 };
 
 
@@ -15500,9 +15501,9 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
 	{
 	  macro_export &exp = defs[ix];
 	  if (exp.undef_loc)
-	    inform (exp.undef_loc, "#undef %E", identifier (node));
+	    inform (exp.undef_loc, "%<#undef %E%>", identifier (node));
 	  if (exp.def)
-	    inform (exp.def->line, "#define %s",
+	    inform (exp.def->line, "%<#define %s%>",
 		    cpp_macro_definition (reader, node, exp.def));
 	}
       def = NULL;
@@ -15877,8 +15878,10 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
 			their_string))
 	  {
 	    inform (loc, "compiler is experimental version %s,"
-		    " close enough? \xc2\xaf\\_(\xe3\x83\x84)_/\xc2\xaf",
-		    my_string);
+		    " close enough? %c%c\\%c(%c%c%c)%c/%c%c",
+		    my_string, 0xc2, 0xaf, '_',
+		    0xe3, 0x83,
+		    '_', 0x84, 0xc2, 0xaf);
 	    note_cmi_name ();
 	  }
     }

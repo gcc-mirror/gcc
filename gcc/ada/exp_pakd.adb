@@ -1022,7 +1022,9 @@ package body Exp_Pakd is
       Ass_OK : constant Boolean := Assignment_OK (Lhs);
       --  Used to preserve assignment OK status when assignment is rewritten
 
-      Rhs : Node_Id := Expression (N);
+      Expr : Node_Id;
+
+      Rhs  : Node_Id := Expression (N);
       --  Initially Rhs is the right hand side value, it will be replaced
       --  later by an appropriate unchecked conversion for the assignment.
 
@@ -1139,6 +1141,36 @@ package body Exp_Pakd is
       else
          Analyze_And_Resolve (Rhs, Ctyp);
       end if;
+
+      --  If any of the indices has a nonstandard representation, introduce
+      --  the proper Rep_To_Pos conversion, which in turn will generate index
+      --  checks when needed. We do this on a copy of the index expression,
+      --  rather that rewriting the LHS altogether.
+
+      Expr := First (Expressions (Lhs));
+      while Present (Expr) loop
+         declare
+            Expr_Typ : constant Entity_Id  := Etype (Expr);
+            Loc      : constant Source_Ptr := Sloc  (Expr);
+
+            Expr_Copy : Node_Id;
+
+         begin
+            if Is_Enumeration_Type (Expr_Typ)
+              and then Has_Non_Standard_Rep (Expr_Typ)
+            then
+               Expr_Copy :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Occurrence_Of (Expr_Typ, Loc),
+                   Attribute_Name => Name_Pos,
+                   Expressions    => New_List (Relocate_Node (Expr)));
+               Set_Parent (Expr_Copy, N);
+               Analyze_And_Resolve (Expr_Copy, Standard_Natural);
+            end if;
+         end;
+
+         Next (Expr);
+      end loop;
 
       --  Case of component size 1,2,4 or any component size for the modular
       --  case. These are the cases for which we can inline the code.

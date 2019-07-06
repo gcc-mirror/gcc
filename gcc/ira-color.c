@@ -1108,7 +1108,6 @@ setup_profitable_hard_regs (void)
 	  || empty_profitable_hard_regs (a))
 	continue;
       data = ALLOCNO_COLOR_DATA (a);
-      mode = ALLOCNO_MODE (a);
       if ((costs = ALLOCNO_UPDATED_HARD_REG_COSTS (a)) != NULL
 	  || (costs = ALLOCNO_HARD_REG_COSTS (a)) != NULL)
 	{

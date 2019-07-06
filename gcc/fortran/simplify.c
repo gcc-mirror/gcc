@@ -4714,7 +4714,7 @@ gfc_simplify_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
   else
     gcc_unreachable();
 
-  offset_a = offset_b = 0;
+  offset_b = 0;
   for (col = 0; col < result_columns; ++col)
     {
       offset_a = 0;
@@ -6999,20 +6999,17 @@ gfc_simplify_scan (gfc_expr *e, gfc_expr *c, gfc_expr *b, gfc_expr *kind)
 	    indx = 0;
 	}
       else
-	{
-	  i = 0;
-	  for (indx = len; indx > 0; indx--)
-	    {
-	      for (i = 0; i < lenc; i++)
-		{
-		  if (c->value.character.string[i]
-		      == e->value.character.string[indx - 1])
-		    break;
-		}
-	      if (i < lenc)
-		break;
-	    }
-	}
+	for (indx = len; indx > 0; indx--)
+	  {
+	    for (i = 0; i < lenc; i++)
+	      {
+		if (c->value.character.string[i]
+		    == e->value.character.string[indx - 1])
+		  break;
+	      }
+	    if (i < lenc)
+	      break;
+	  }
     }
 
   result = gfc_get_int_expr (k, &e->where, indx);

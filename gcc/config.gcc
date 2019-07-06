@@ -526,6 +526,7 @@ riscv*)
 rs6000*-*-*)
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
 	extra_objs="rs6000-string.o rs6000-p8swap.o rs6000-logue.o"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-logue.c"
 	;;
 sparc*-*-*)
 	cpu_type=sparc
@@ -2626,13 +2627,11 @@ powerpc-*-darwin*)
 	    ;;
 	esac
 	tmake_file="${tmake_file} t-slibgcc"
-	extra_headers=altivec.h
 	;;
 powerpc64-*-darwin*)
 	extra_options="${extra_options} ${cpu_type}/darwin.opt"
 	tmake_file="${tmake_file} ${cpu_type}/t-darwin64 t-slibgcc"
 	tm_file="${tm_file} ${cpu_type}/darwin8.h ${cpu_type}/darwin64.h"
-	extra_headers=altivec.h
 	;;
 powerpc*-*-freebsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h ${fbsd_tm_file} rs6000/sysv4.h"
@@ -2810,7 +2809,6 @@ rs6000-ibm-aix6.* | powerpc-ibm-aix6.*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix61.h rs6000/xcoff.h rs6000/aix-stdint.h"
 	tmake_file="rs6000/t-aix52 t-slibgcc"
 	extra_options="${extra_options} rs6000/aix64.opt"
-	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-logue.c"
 	use_collect2=yes
 	thread_file='aix'
 	use_gcc_stdint=wrap
@@ -2820,7 +2818,6 @@ rs6000-ibm-aix7.1.* | powerpc-ibm-aix7.1.*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix71.h rs6000/xcoff.h rs6000/aix-stdint.h"
 	tmake_file="rs6000/t-aix52 t-slibgcc"
 	extra_options="${extra_options} rs6000/aix64.opt"
-	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-logue.c"
 	use_collect2=yes
 	thread_file='aix'
 	use_gcc_stdint=wrap
@@ -2830,7 +2827,6 @@ rs6000-ibm-aix[789].* | powerpc-ibm-aix[789].*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix72.h rs6000/xcoff.h rs6000/aix-stdint.h"
 	tmake_file="rs6000/t-aix52 t-slibgcc"
 	extra_options="${extra_options} rs6000/aix64.opt"
-	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-logue.c"
 	use_collect2=yes
 	thread_file='aix'
 	use_gcc_stdint=wrap

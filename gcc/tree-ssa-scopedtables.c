@@ -298,7 +298,7 @@ avail_exprs_stack::lookup_avail_expr (gimple *stmt, bool insert, bool tbaa_p)
 	    && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
 	    && (ao_ref_init (&ref, gimple_assign_rhs1 (stmt)),
 		ref.base_alias_set = ref.ref_alias_set = tbaa_p ? -1 : 0, true)
-	    && walk_non_aliased_vuses (&ref, vuse2, vuse_eq, NULL, NULL,
+	    && walk_non_aliased_vuses (&ref, vuse2, true, vuse_eq, NULL, NULL,
 				       limit, vuse1) != NULL))
 	{
 	  if (insert)
@@ -494,7 +494,9 @@ avail_expr_hash (class expr_hash_elt *p)
 	    {
 	      enum tree_code code = MEM_REF;
 	      hstate.add_object (code);
-	      inchash::add_expr (base, hstate);
+	      inchash::add_expr (base, hstate,
+				 TREE_CODE (base) == MEM_REF 
+				 ? OEP_ADDRESS_OF : 0);
 	      hstate.add_object (offset);
 	      hstate.add_object (size);
 	      return hstate.end ();
@@ -540,7 +542,12 @@ equal_mem_array_ref_p (tree t0, tree t1)
   if (rev0 != rev1 || maybe_ne (sz0, sz1) || maybe_ne (off0, off1))
     return false;
 
-  return operand_equal_p (base0, base1, 0);
+  return operand_equal_p (base0, base1,
+			  (TREE_CODE (base0) == MEM_REF
+			   || TREE_CODE (base0) == TARGET_MEM_REF)
+			  && (TREE_CODE (base1) == MEM_REF
+			      || TREE_CODE (base1) == TARGET_MEM_REF)
+			  ? OEP_ADDRESS_OF : 0);
 }
 
 /* Compare two hashable_expr structures for equivalence.  They are

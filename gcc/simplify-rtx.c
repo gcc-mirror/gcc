@@ -6697,6 +6697,17 @@ simplify_subreg (machine_mode outermode, rtx op,
 	}
     }
 
+  /* If OP is a vector comparison and the subreg is not changing the
+     number of elements or the size of the elements, change the result
+     of the comparison to the new mode.  */
+  if (COMPARISON_P (op)
+      && VECTOR_MODE_P (outermode)
+      && VECTOR_MODE_P (innermode)
+      && known_eq (GET_MODE_NUNITS (outermode), GET_MODE_NUNITS (innermode))
+      && known_eq (GET_MODE_UNIT_SIZE (outermode),
+		    GET_MODE_UNIT_SIZE (innermode)))
+    return simplify_gen_relational (GET_CODE (op), outermode, innermode,
+				    XEXP (op, 0), XEXP (op, 1));
   return NULL_RTX;
 }
 

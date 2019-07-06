@@ -924,22 +924,26 @@ package body Sem_Ch3 is
          Set_Has_Delayed_Freeze (Current_Scope);
       end if;
 
-      --  Ada 2005: If the designated type is an interface that may contain
-      --  tasks, create a Master entity for the declaration. This must be done
-      --  before expansion of the full declaration, because the declaration may
-      --  include an expression that is an allocator, whose expansion needs the
-      --  proper Master for the created tasks.
+      --  If the designated type is limited and class-wide, the object might
+      --  contain tasks, so we create a Master entity for the declaration. This
+      --  must be done before expansion of the full declaration, because the
+      --  declaration may include an expression that is an allocator, whose
+      --  expansion needs the proper Master for the created tasks.
 
-      if Nkind (Related_Nod) = N_Object_Declaration and then Expander_Active
+      if Expander_Active
+        and then Nkind (Related_Nod) = N_Object_Declaration
       then
-         if Is_Interface (Desig_Type) and then Is_Limited_Record (Desig_Type)
+         if Is_Limited_Record (Desig_Type)
+           and then Is_Class_Wide_Type (Desig_Type)
+           and then Tasking_Allowed
          then
             Build_Class_Wide_Master (Anon_Type);
 
          --  Similarly, if the type is an anonymous access that designates
          --  tasks, create a master entity for it in the current context.
 
-         elsif Has_Task (Desig_Type) and then Comes_From_Source (Related_Nod)
+         elsif Has_Task (Desig_Type)
+           and then Comes_From_Source (Related_Nod)
          then
             Build_Master_Entity (Defining_Identifier (Related_Nod));
             Build_Master_Renaming (Anon_Type);
@@ -8582,6 +8586,16 @@ package body Sem_Ch3 is
          Parent_Base := Base_Type (Parent_Type);
       end if;
 
+      --  If the parent type is declared as a subtype of another private
+      --  type with inherited discriminants, its generated base type is
+      --  itself a record subtype. To further inherit the constraint we
+      --  need to use its own base to have an unconstrained type on which
+      --  to apply the inherited constraint.
+
+      if Ekind (Parent_Base) = E_Record_Subtype then
+         Parent_Base := Base_Type (Parent_Base);
+      end if;
+
       --  AI05-0115: if this is a derivation from a private type in some
       --  other scope that may lead to invisible components for the derived
       --  type, mark it accordingly.
@@ -10376,10 +10390,9 @@ package body Sem_Ch3 is
          --  build-in-place library function, child unit or not.
 
          if (Nkind (Nod) in N_Entity and then Is_Compilation_Unit (Nod))
-           or else
-             (Nkind_In (Nod,
-                N_Defining_Program_Unit_Name, N_Subprogram_Declaration)
-               and then Is_Compilation_Unit (Defining_Entity (Nod)))
+           or else (Nkind_In (Nod, N_Defining_Program_Unit_Name,
+                                   N_Subprogram_Declaration)
+                      and then Is_Compilation_Unit (Defining_Entity (Nod)))
          then
             Add_Global_Declaration (IR);
          else

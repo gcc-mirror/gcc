@@ -124,30 +124,25 @@ extern GTY(()) int darwin_ms_struct;
   "%{fapple-kext|mkernel:-static}",				\
   "%{shared:-Zdynamiclib} %<shared",                            \
   "%{gsplit-dwarf:%ngsplit-dwarf is not supported on this platform} \
-     %<gsplit-dwarf",						\
-  DARWIN_PIE_SPEC,						\
-  DARWIN_NOPIE_SPEC,						\
-  RDYNAMIC
+     %<gsplit-dwarf"
 
 #if LD64_HAS_EXPORT_DYNAMIC
-#define RDYNAMIC "%{rdynamic:-Xlinker -export_dynamic} %<rdynamic"
+#define DARWIN_RDYNAMIC "%{rdynamic:-export_dynamic}"
 #else
-#define RDYNAMIC "%{rdynamic:%nrdynamic is not supported} %<rdynamic"
+#define DARWIN_RDYNAMIC "%{rdynamic:%nrdynamic is not supported}"
 #endif
 
 /* FIXME: we should check that the linker supports the -pie and -no_pie.
    options.  */
 #define DARWIN_PIE_SPEC \
-"%{pie|fpie|fPIE: \
+"%{pie|fpie|fPIE:\
    %{mdynamic-no-pic: \
-       %n'-mdynamic-no-pic' overrides '-pie', '-fpie' or '-fPIE'; \
-     : %:version-compare(>= 10.5 mmacosx-version-min= -Xlinker) \
-       %:version-compare(>= 10.5 mmacosx-version-min= -pie) }} %<pie "
+     %n'-mdynamic-no-pic' overrides '-pie', '-fpie' or '-fPIE'; \
+     :%:version-compare(>= 10.5 mmacosx-version-min= -pie) }} "
 
 #define DARWIN_NOPIE_SPEC \
 "%{no-pie|fno-pie|fno-PIE: \
-   %:version-compare(>= 10.7 mmacosx-version-min= -Xlinker ) \
-   %:version-compare(>= 10.7 mmacosx-version-min= -no_pie) } %<no-pie "
+   %:version-compare(>= 10.7 mmacosx-version-min= -no_pie) }"
 
 #define DARWIN_CC1_SPEC							\
   "%{findirect-virtual-calls: -fapple-kext} %<findirect-virtual-calls " \
@@ -189,8 +184,15 @@ extern GTY(()) int darwin_ms_struct;
 #define DARWIN_NOCOMPACT_UNWIND \
 " %:version-compare(>= 10.6 mmacosx-version-min= -no_compact_unwind) "
 
-/* This is mostly a clone of the standard LINK_COMMAND_SPEC, plus
-   precomp, libtool, and fat build additions.
+/* In Darwin linker specs we can put -lcrt0.o and ld will search the library
+   path for crt0.o or -lcrtx.a and it will search for for libcrtx.a.  As for
+   other ports, we can also put xxx.{o,a}%s and get the appropriate complete
+   startfile absolute directory.  This latter point is important when we want
+   to override ld's rule of .dylib being found ahead of .a and the user wants
+   the convenience library to be linked.  */
+
+/* The LINK_COMMAND spec is mostly a clone of the standard LINK_COMMAND_SPEC,
+   plus precomp, libtool, and fat build additions.
 
    In general, random Darwin linker flags should go into LINK_SPEC
    instead of LINK_COMMAND_SPEC.  The command spec is better for
@@ -220,8 +222,11 @@ extern GTY(()) int darwin_ms_struct;
       %(link_gcc_c_sequence) \
     }}}\
     %{!nostdlib:%{!r:%{!nostartfiles:%E}}} %{T*} %{F*} "\
+    DARWIN_PIE_SPEC \
+    DARWIN_NOPIE_SPEC \
+    DARWIN_RDYNAMIC \
     DARWIN_NOCOMPACT_UNWIND \
-    "}}}}}}}"
+    "}}}}}}} %<pie %<no-pie %<rdynamic "
 
 #define DSYMUTIL "\ndsymutil"
 
@@ -352,43 +357,42 @@ extern GTY(()) int darwin_ms_struct;
 
 /* Support -mmacosx-version-min by supplying different (stub) libgcc_s.dylib
    libraries to link against, and by not linking against libgcc_s on
-   earlier-than-10.3.9.
+   earlier-than-10.3.9.  If we need exceptions, prior to 10.3.9, then we have
+   to link the static eh lib, since there's no shared version on the system.
 
-   Note that by default, -lgcc_eh is not linked against!  This is
-   because in a future version of Darwin the EH frame information may
-   be in a new format, or the fallback routine might be changed; if
-   you want to explicitly link against the static version of those
-   routines, because you know you don't need to unwind through system
-   libraries, you need to explicitly say -static-libgcc.
+   Note that by default, except as above, -lgcc_eh is not linked against.
+   This is because,in general, we need to unwind through system libraries that
+   are linked with the shared unwinder in libunwind (or libgcc_s for 10.4/5).
 
-   If it is linked against, it has to be before -lgcc, because it may
+   The static version of the current libgcc unwinder (which differs from the
+   implementation in libunwind.dylib on systems Darwin10 [10.6]+) can be used
+   by specifying -static-libgcc.
+
+   If libgcc_eh is linked against, it has to be before -lgcc, because it might
    need symbols from -lgcc.  */
+
 #undef REAL_LIBGCC_SPEC
 #define REAL_LIBGCC_SPEC						   \
    "%{static-libgcc|static: -lgcc_eh -lgcc;				   \
-      shared-libgcc|fexceptions|fgnu-runtime:				   \
-       %:version-compare(!> 10.5 mmacosx-version-min= -lgcc_s.10.4)	   \
+      shared-libgcc|fexceptions|fobjc-exceptions|fgnu-runtime:		   \
+       %:version-compare(!> 10.3.9 mmacosx-version-min= -lgcc_eh)	   \
+       %:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_s.10.4) \
        %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lgcc_s.10.5)   \
-       %:version-compare(!> 10.5 mmacosx-version-min= -lgcc_ext.10.4)	   \
+       %:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_ext.10.4) \
        %:version-compare(>= 10.5 mmacosx-version-min= -lgcc_ext.10.5)	   \
        -lgcc ;								   \
       :%:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_s.10.4) \
        %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lgcc_s.10.5)   \
-       %:version-compare(!> 10.5 mmacosx-version-min= -lgcc_ext.10.4)	   \
+       %:version-compare(>< 10.3.9 10.5 mmacosx-version-min= -lgcc_ext.10.4) \
        %:version-compare(>= 10.5 mmacosx-version-min= -lgcc_ext.10.5)	   \
        -lgcc }"
 
-/* We specify crt0.o as -lcrt0.o so that ld will search the library path.
-
-   crt3.o provides __cxa_atexit on systems that don't have it.  Since
-   it's only used with C++, which requires passing -shared-libgcc, key
-   off that to avoid unnecessarily adding a destructor to every
-   powerpc program built.  */
+/* We specify crt0.o as -lcrt0.o so that ld will search the library path.  */
 
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC							    \
-  "%{Zdynamiclib: %(darwin_dylib1) %{fgnu-tm: -lcrttms.o}}		    \
-   %{!Zdynamiclib:%{Zbundle:%{!static:					    \
+"%{Zdynamiclib: %(darwin_dylib1) %{fgnu-tm: -lcrttms.o}}		    \
+ %{!Zdynamiclib:%{Zbundle:%{!static:					    \
 	%:version-compare(< 10.6 mmacosx-version-min= -lbundle1.o)	    \
 	%{fgnu-tm: -lcrttms.o}}}					    \
      %{!Zbundle:%{pg:%{static:-lgcrt0.o}				    \
@@ -402,7 +406,7 @@ extern GTY(()) int darwin_ms_struct;
                                 %{!object:%{preload:-lcrt0.o}		    \
                                   %{!preload: %(darwin_crt1)		    \
 					      %(darwin_crt2)}}}}}}	    \
-  %{shared-libgcc:%:version-compare(< 10.5 mmacosx-version-min= crt3.o%s)}"
+ %(darwin_crt3)"
 
 /* We want a destructor last in the list.  */
 #define TM_DESTRUCTOR "%{fgnu-tm: -lcrttme.o}"
@@ -410,17 +414,29 @@ extern GTY(()) int darwin_ms_struct;
 
 #define DARWIN_EXTRA_SPECS						\
   { "darwin_crt1", DARWIN_CRT1_SPEC },					\
+  { "darwin_crt2", DARWIN_CRT2_SPEC },					\
+  { "darwin_crt3", DARWIN_CRT3_SPEC },					\
   { "darwin_dylib1", DARWIN_DYLIB1_SPEC },
-
-#define DARWIN_DYLIB1_SPEC						\
-  "%:version-compare(!> 10.5 mmacosx-version-min= -ldylib1.o)		\
-   %:version-compare(>< 10.5 10.6 mmacosx-version-min= -ldylib1.10.5.o)"
 
 #define DARWIN_CRT1_SPEC						\
   "%:version-compare(!> 10.5 mmacosx-version-min= -lcrt1.o)		\
    %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lcrt1.10.5.o)	\
    %:version-compare(>< 10.6 10.8 mmacosx-version-min= -lcrt1.10.6.o)	\
    %{fgnu-tm: -lcrttms.o}"
+
+#define DARWIN_CRT2_SPEC ""
+
+/* crt3.o provides __cxa_atexit on systems that don't have it (and a fix
+   up for faulty versions on 10.4).  Since it's only used with C++, which
+   requires passing -shared-libgcc, key off that to avoid unnecessarily
+   adding a destructor to every program built for 10.4 or earlier.  */
+
+#define DARWIN_CRT3_SPEC \
+"%{shared-libgcc:%:version-compare(< 10.5 mmacosx-version-min= crt3.o%s)}"
+
+#define DARWIN_DYLIB1_SPEC						\
+  "%:version-compare(!> 10.5 mmacosx-version-min= -ldylib1.o)		\
+   %:version-compare(>< 10.5 10.6 mmacosx-version-min= -ldylib1.10.5.o)"
 
 #ifdef HAVE_AS_MMACOSX_VERSION_MIN_OPTION
 /* Emit macosx version (but only major).  */
@@ -996,7 +1012,7 @@ extern void darwin_driver_init (unsigned int *,struct cl_decoded_option **);
 
 /* From at least version 62.1, ld64 can build PIC indirection stubs as
    needed, and there is no need for the compiler to emit them.  */
-#define MIN_LD64_OMIT_STUBS "85.2"
+#define MIN_LD64_OMIT_STUBS "62.1"
 
 #ifndef LD64_VERSION
 #define LD64_VERSION "62.1"

@@ -604,6 +604,7 @@ vis_hide
 solaris_ld_v2_maps
 real_host_noncanonical
 accel_dir_suffix
+use_tm_clone_registry
 force_explicit_eh_registry
 CET_FLAGS
 fixed_point
@@ -712,6 +713,7 @@ enable_decimal_float
 with_system_libunwind
 enable_cet
 enable_explicit_exception_frame_registration
+enable_tm_clone_registry
 with_glibc_version
 enable_tls
 with_gcc_major_version_only
@@ -1355,6 +1357,7 @@ Optional Features:
                           register exception tables explicitly at module
                           start, for use e.g. for compatibility with
                           installations without PT_GNU_EH_FRAME support
+  --disable-tm-clone-registry    disable TM clone registry
   --enable-tls            Use thread-local storage [default=yes]
 
 Optional Packages:
@@ -4947,6 +4950,18 @@ if test "$enable_explicit_exception_frame_registration" = yes; then
                   with setjmp/longjmp exceptions" "$LINENO" 5
   fi
   force_explicit_eh_registry=-DUSE_EH_FRAME_REGISTRY_ALWAYS
+fi
+
+fi
+
+
+
+# Check whether --enable-tm-clone-registry was given.
+if test "${enable_tm_clone_registry+set}" = set; then :
+  enableval=$enable_tm_clone_registry;
+use_tm_clone_registry=
+if test "$enable_tm_clone_registry" = no; then
+  use_tm_clone_registry=-DUSE_TM_CLONE_REGISTRY=0
 fi
 
 fi

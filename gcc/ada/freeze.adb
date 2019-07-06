@@ -5943,16 +5943,28 @@ package body Freeze is
             Inherit_Aspects_At_Freeze_Point (E);
          end if;
 
-         --  Check for incompatible size and alignment for record type
+         --  Case of array type
+
+         if Is_Array_Type (E) then
+            Freeze_Array_Type (E);
+         end if;
+
+         --  Check for incompatible size and alignment for array/record type
 
          if Warn_On_Size_Alignment
-           and then Is_Record_Type (E)
-           and then Has_Size_Clause (E) and then Has_Alignment_Clause (E)
+           and then (Is_Array_Type (E) or else Is_Record_Type (E))
+           and then Has_Size_Clause (E)
+           and then Has_Alignment_Clause (E)
 
            --  If explicit Object_Size clause given assume that the programmer
            --  knows what he is doing, and expects the compiler behavior.
 
            and then not Has_Object_Size_Clause (E)
+
+           --  It does not really make sense to warn for the minimum alignment
+           --  since the programmer could not get rid of the warning.
+
+           and then Alignment (E) > 1
 
            --  Check for size not a multiple of alignment
 
@@ -5994,15 +6006,10 @@ package body Freeze is
             end;
          end if;
 
-         --  Array type
-
-         if Is_Array_Type (E) then
-            Freeze_Array_Type (E);
-
          --  For a class-wide type, the corresponding specific type is
          --  frozen as well (RM 13.14(15))
 
-         elsif Is_Class_Wide_Type (E) then
+         if Is_Class_Wide_Type (E) then
             Freeze_And_Append (Root_Type (E), N, Result);
 
             --  If the base type of the class-wide type is still incomplete,
@@ -7665,9 +7672,8 @@ package body Freeze is
         or else Ekind (Current_Scope) = E_Void
       then
          declare
-            N            : constant Node_Id := Current_Scope;
-            Freeze_Nodes : List_Id          := No_List;
-            Pos          : Int              := Scope_Stack.Last;
+            Freeze_Nodes : List_Id := No_List;
+            Pos          : Int     := Scope_Stack.Last;
 
          begin
             if Present (Desig_Typ) then
@@ -7700,7 +7706,19 @@ package body Freeze is
             end if;
 
             if Is_Non_Empty_List (Freeze_Nodes) then
-               if No (Scope_Stack.Table (Pos).Pending_Freeze_Actions) then
+
+               --  When the current scope is transient, insert the freeze nodes
+               --  prior to the expression that produced them. Transient scopes
+               --  may create additional declarations when finalizing objects
+               --  or managing the secondary stack. Inserting the freeze nodes
+               --  of those constructs prior to the scope would result in a
+               --  freeze-before-declaration, therefore the freeze node must
+               --  remain interleaved with their constructs.
+
+               if Scope_Is_Transient then
+                  Insert_Actions (N, Freeze_Nodes);
+
+               elsif No (Scope_Stack.Table (Pos).Pending_Freeze_Actions) then
                   Scope_Stack.Table (Pos).Pending_Freeze_Actions :=
                     Freeze_Nodes;
                else

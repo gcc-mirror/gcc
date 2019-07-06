@@ -616,6 +616,40 @@ namespace __detail
       return __res;
     }
 
+  /// floating-point format for primitive numerical conversion
+  enum class chars_format
+  {
+    scientific = 1, fixed = 2, hex = 4, general = fixed | scientific
+  };
+
+  constexpr chars_format
+  operator|(chars_format __lhs, chars_format __rhs) noexcept
+  { return (chars_format)((unsigned)__lhs | (unsigned)__rhs); }
+
+  constexpr chars_format
+  operator&(chars_format __lhs, chars_format __rhs) noexcept
+  { return (chars_format)((unsigned)__lhs & (unsigned)__rhs); }
+
+  constexpr chars_format
+  operator^(chars_format __lhs, chars_format __rhs) noexcept
+  { return (chars_format)((unsigned)__lhs ^ (unsigned)__rhs); }
+
+  constexpr chars_format
+  operator~(chars_format __fmt) noexcept
+  { return (chars_format)~(unsigned)__fmt; }
+
+  constexpr chars_format&
+  operator|=(chars_format& __lhs, chars_format __rhs) noexcept
+  { return __lhs = __lhs | __rhs; }
+
+  constexpr chars_format&
+  operator&=(chars_format& __lhs, chars_format __rhs) noexcept
+  { return __lhs = __lhs & __rhs; }
+
+  constexpr chars_format&
+  operator^=(chars_format& __lhs, chars_format __rhs) noexcept
+  { return __lhs = __lhs ^ __rhs; }
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++14

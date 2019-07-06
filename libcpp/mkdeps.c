@@ -412,7 +412,7 @@ make_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
 	column = make_write_name (d->bmi_name, fp, column, colmax);
       fputs (":", fp);
       column++;
-      column = make_write_vec (d->deps, fp, column, colmax);
+      make_write_vec (d->deps, fp, column, colmax);
       fputs ("\n", fp);
       if (CPP_OPTION (pfile, deps.phony_targets))
 	for (unsigned i = 1; i < d->deps.size (); i++)

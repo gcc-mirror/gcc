@@ -524,11 +524,11 @@ class GdbPrettyPrinters(gdb.printing.PrettyPrinter):
     def __init__(self, name):
         super(GdbPrettyPrinters, self).__init__(name, [])
 
-    def add_printer_for_types(self, name, class_, types):
-        self.subprinters.append(GdbSubprinterTypeList(name, class_, types))
+    def add_printer_for_types(self, types, name, class_):
+        self.subprinters.append(GdbSubprinterTypeList(types, name, class_))
 
-    def add_printer_for_regex(self, name, class_, regex):
-        self.subprinters.append(GdbSubprinterRegex(name, class_, regex))
+    def add_printer_for_regex(self, regex, name, class_):
+        self.subprinters.append(GdbSubprinterRegex(regex, name, class_))
 
     def __call__(self, gdbval):
         type_ = gdbval.type.unqualified()

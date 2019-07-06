@@ -3044,7 +3044,6 @@ expand_asm_stmt (gasm *stmt)
 	      }
 	}
     }
-  unsigned nclobbers = clobber_rvec.length();
 
   /* First pass over inputs and outputs checks validity and sets
      mark_addressable if needed.  */
@@ -3317,7 +3316,7 @@ expand_asm_stmt (gasm *stmt)
   gcc_assert (constraints.length() == noutputs + ninputs);
 
   /* But it certainly can adjust the clobbers.  */
-  nclobbers = clobber_rvec.length();
+  unsigned nclobbers = clobber_rvec.length ();
 
   /* Third pass checks for easy conflicts.  */
   /* ??? Why are we doing this on trees instead of rtx.  */
@@ -5997,11 +5996,11 @@ construct_init_block (void)
     {
       first_block = e->dest;
       redirect_edge_succ (e, init_block);
-      e = make_single_succ_edge (init_block, first_block, flags);
+      make_single_succ_edge (init_block, first_block, flags);
     }
   else
-    e = make_single_succ_edge (init_block, EXIT_BLOCK_PTR_FOR_FN (cfun),
-			       EDGE_FALLTHRU);
+    make_single_succ_edge (init_block, EXIT_BLOCK_PTR_FOR_FN (cfun),
+			   EDGE_FALLTHRU);
 
   update_bb_for_insn (init_block);
   return init_block;
@@ -6577,36 +6576,26 @@ pass_expand::execute (function *fun)
      split edges which edge insertions might do.  */
   rebuild_jump_labels (get_insns ());
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (fun),
-		  EXIT_BLOCK_PTR_FOR_FN (fun), next_bb)
+  /* If we have a single successor to the entry block, put the pending insns
+     after parm birth, but before NOTE_INSNS_FUNCTION_BEG.  */
+  if (single_succ_p (ENTRY_BLOCK_PTR_FOR_FN (fun)))
     {
-      edge e;
-      edge_iterator ei;
-      for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
+      edge e = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (fun));
+      if (e->insns.r)
 	{
-	  if (e->insns.r)
-	    {
-	      rebuild_jump_labels_chain (e->insns.r);
-	      /* Put insns after parm birth, but before
-		 NOTE_INSNS_FUNCTION_BEG.  */
-	      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (fun)
-		  && single_succ_p (ENTRY_BLOCK_PTR_FOR_FN (fun)))
-		{
-		  rtx_insn *insns = e->insns.r;
-		  e->insns.r = NULL;
-		  if (NOTE_P (parm_birth_insn)
-		      && NOTE_KIND (parm_birth_insn) == NOTE_INSN_FUNCTION_BEG)
-		    emit_insn_before_noloc (insns, parm_birth_insn, e->dest);
-		  else
-		    emit_insn_after_noloc (insns, parm_birth_insn, e->dest);
-		}
-	      else
-		commit_one_edge_insertion (e);
-	    }
+	  rtx_insn *insns = e->insns.r;
+	  e->insns.r = NULL;
+	  rebuild_jump_labels_chain (insns);
+	  if (NOTE_P (parm_birth_insn)
+	      && NOTE_KIND (parm_birth_insn) == NOTE_INSN_FUNCTION_BEG)
+	    emit_insn_before_noloc (insns, parm_birth_insn, e->dest);
 	  else
-	    ei_next (&ei);
+	    emit_insn_after_noloc (insns, parm_birth_insn, e->dest);
 	}
     }
+
+  /* Otherwise, as well as for other edges, take the usual way.  */
+  commit_edge_insertions ();
 
   /* We're done expanding trees to RTL.  */
   currently_expanding_to_rtl = 0;

@@ -5115,6 +5115,14 @@ gfc_match_common (void)
   gfc_array_spec *as;
   gfc_equiv *e1, *e2;
   match m;
+  char c;
+
+  /* COMMON has been matched.  In free form source code, the next character
+     needs to be whitespace or '/'.  Check that here.   Fixed form source
+     code needs to be checked below.  */
+  c = gfc_peek_ascii_char ();
+  if (gfc_current_form == FORM_FREE && !gfc_is_whitespace (c) && c != '/')
+    return MATCH_NO;
 
   as = NULL;
 
@@ -5279,10 +5287,24 @@ gfc_match_common (void)
 	  gfc_gobble_whitespace ();
 	  if (gfc_match_eos () == MATCH_YES)
 	    goto done;
-	  if (gfc_peek_ascii_char () == '/')
+	  c = gfc_peek_ascii_char ();
+	  if (c == '/')
 	    break;
-	  if (gfc_match_char (',') != MATCH_YES)
-	    goto syntax;
+	  if (c != ',')
+	    {
+	      /* In Fixed form source code, gfortran can end up here for an
+		 expression of the form COMMONI = RHS.  This may not be an
+		 error, so return MATCH_NO.  */
+	      if (gfc_current_form == FORM_FIXED && c == '=')
+		{
+		  gfc_free_array_spec (as);
+		  return MATCH_NO;
+		}
+	      goto syntax;
+	    }
+	  else
+	    gfc_match_char (',');
+
 	  gfc_gobble_whitespace ();
 	  if (gfc_peek_ascii_char () == '/')
 	    break;

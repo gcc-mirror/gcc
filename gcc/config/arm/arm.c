@@ -14385,7 +14385,7 @@ arm_block_move_unaligned_loop (rtx dest, rtx src, HOST_WIDE_INT length,
    core type, optimize_size setting, etc.  */
 
 static int
-arm_movmemqi_unaligned (rtx *operands)
+arm_cpymemqi_unaligned (rtx *operands)
 {
   HOST_WIDE_INT length = INTVAL (operands[2]);
   
@@ -14422,7 +14422,7 @@ arm_movmemqi_unaligned (rtx *operands)
 }
 
 int
-arm_gen_movmemqi (rtx *operands)
+arm_gen_cpymemqi (rtx *operands)
 {
   HOST_WIDE_INT in_words_to_go, out_words_to_go, last_bytes;
   HOST_WIDE_INT srcoffset, dstoffset;
@@ -14436,7 +14436,7 @@ arm_gen_movmemqi (rtx *operands)
     return 0;
 
   if (unaligned_access && (INTVAL (operands[3]) & 3) != 0)
-    return arm_movmemqi_unaligned (operands);
+    return arm_cpymemqi_unaligned (operands);
 
   if (INTVAL (operands[3]) & 3)
     return 0;
@@ -14570,7 +14570,7 @@ arm_gen_movmemqi (rtx *operands)
   return 1;
 }
 
-/* Helper for gen_movmem_ldrd_strd. Increase the address of memory rtx
+/* Helper for gen_cpymem_ldrd_strd. Increase the address of memory rtx
 by mode size.  */
 inline static rtx
 next_consecutive_mem (rtx mem)
@@ -14585,7 +14585,7 @@ next_consecutive_mem (rtx mem)
 /* Copy using LDRD/STRD instructions whenever possible.
    Returns true upon success. */
 bool
-gen_movmem_ldrd_strd (rtx *operands)
+gen_cpymem_ldrd_strd (rtx *operands)
 {
   unsigned HOST_WIDE_INT len;
   HOST_WIDE_INT align;
@@ -14629,7 +14629,7 @@ gen_movmem_ldrd_strd (rtx *operands)
 
   /* If we cannot generate any LDRD/STRD, try to generate LDM/STM.  */
   if (!(dst_aligned || src_aligned))
-    return arm_gen_movmemqi (operands);
+    return arm_gen_cpymemqi (operands);
 
   /* If the either src or dst is unaligned we'll be accessing it as pairs
      of unaligned SImode accesses.  Otherwise we can generate DImode
@@ -26395,7 +26395,7 @@ thumb_call_via_reg (rtx reg)
 
 /* Routines for generating rtl.  */
 void
-thumb_expand_movmemqi (rtx *operands)
+thumb_expand_cpymemqi (rtx *operands)
 {
   rtx out = copy_to_mode_reg (SImode, XEXP (operands[0], 0));
   rtx in  = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
@@ -26404,13 +26404,13 @@ thumb_expand_movmemqi (rtx *operands)
 
   while (len >= 12)
     {
-      emit_insn (gen_movmem12b (out, in, out, in));
+      emit_insn (gen_cpymem12b (out, in, out, in));
       len -= 12;
     }
 
   if (len >= 8)
     {
-      emit_insn (gen_movmem8b (out, in, out, in));
+      emit_insn (gen_cpymem8b (out, in, out, in));
       len -= 8;
     }
 

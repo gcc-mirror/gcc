@@ -3162,9 +3162,9 @@
 
 ;; The definition of this insn does not really explain what it does,
 ;; but it should suffice that anything generated as this insn will be
-;; recognized as a movmemsi operation, and that it will not successfully
+;; recognized as a cpymemsi operation, and that it will not successfully
 ;; combine with anything.
-(define_expand "movmemsi"
+(define_expand "cpymemsi"
   [(parallel [(set (match_operand:BLK 0 "" "")
 		   (match_operand:BLK 1 "" ""))
 	      (clobber (match_dup 4))
@@ -3244,7 +3244,7 @@
 ;; operands 0 and 1 are both equivalent to symbolic MEMs.  Thus, we are
 ;; forced to internally copy operands 0 and 1 to operands 7 and 8,
 ;; respectively.  We then split or peephole optimize after reload.
-(define_insn "movmemsi_prereload"
+(define_insn "cpymemsi_prereload"
   [(set (mem:BLK (match_operand:SI 0 "register_operand" "r,r"))
 	(mem:BLK (match_operand:SI 1 "register_operand" "r,r")))
    (clobber (match_operand:SI 2 "register_operand" "=&r,&r"))	;loop cnt/tmp
@@ -3337,7 +3337,7 @@
     }
 }")
 
-(define_insn "movmemsi_postreload"
+(define_insn "cpymemsi_postreload"
   [(set (mem:BLK (match_operand:SI 0 "register_operand" "+r,r"))
 	(mem:BLK (match_operand:SI 1 "register_operand" "+r,r")))
    (clobber (match_operand:SI 2 "register_operand" "=&r,&r"))	;loop cnt/tmp
@@ -3352,7 +3352,7 @@
   "* return pa_output_block_move (operands, !which_alternative);"
   [(set_attr "type" "multi,multi")])
 
-(define_expand "movmemdi"
+(define_expand "cpymemdi"
   [(parallel [(set (match_operand:BLK 0 "" "")
 		   (match_operand:BLK 1 "" ""))
 	      (clobber (match_dup 4))
@@ -3432,7 +3432,7 @@
 ;; operands 0 and 1 are both equivalent to symbolic MEMs.  Thus, we are
 ;; forced to internally copy operands 0 and 1 to operands 7 and 8,
 ;; respectively.  We then split or peephole optimize after reload.
-(define_insn "movmemdi_prereload"
+(define_insn "cpymemdi_prereload"
   [(set (mem:BLK (match_operand:DI 0 "register_operand" "r,r"))
 	(mem:BLK (match_operand:DI 1 "register_operand" "r,r")))
    (clobber (match_operand:DI 2 "register_operand" "=&r,&r"))	;loop cnt/tmp
@@ -3525,7 +3525,7 @@
     }
 }")
 
-(define_insn "movmemdi_postreload"
+(define_insn "cpymemdi_postreload"
   [(set (mem:BLK (match_operand:DI 0 "register_operand" "+r,r"))
 	(mem:BLK (match_operand:DI 1 "register_operand" "+r,r")))
    (clobber (match_operand:DI 2 "register_operand" "=&r,&r"))	;loop cnt/tmp
@@ -8700,9 +8700,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
      restoring the gp.  */
   emit_move_insn (pv, lab);
 
-  /* Restore the stack and frame pointers.  The virtual_stack_vars_rtx
-     is saved instead of the hard_frame_pointer_rtx in the save area.
-     We need to adjust for the offset between these two values.  */
+  /* Restore the stack and frame pointers.  */
   fp = copy_to_reg (fp);
   emit_stack_restore (SAVE_NONLOCAL, stack);
 
@@ -8710,7 +8708,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   emit_insn (gen_blockage ());
   emit_clobber (hard_frame_pointer_rtx);
   emit_clobber (frame_pointer_rtx);
-  emit_move_insn (hard_frame_pointer_rtx, plus_constant (Pmode, fp, -8));
+  emit_move_insn (hard_frame_pointer_rtx, fp);
 
   emit_use (hard_frame_pointer_rtx);
   emit_use (stack_pointer_rtx);

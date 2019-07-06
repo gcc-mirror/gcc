@@ -5590,7 +5590,7 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
 		break;
 	      }
 	  }
-	if (nolimm && !speed)
+	if (nolimm)
 	  {
 	    *total = 0;
 	    return true;
@@ -8778,7 +8778,7 @@ arc_output_commutative_cond_exec (rtx *operands, bool output_p)
   return 8;
 }
 
-/* Helper function of arc_expand_movmem.  ADDR points to a chunk of memory.
+/* Helper function of arc_expand_cpymem.  ADDR points to a chunk of memory.
    Emit code and return an potentially modified address such that offsets
    up to SIZE are can be added to yield a legitimate address.
    if REUSE is set, ADDR is a register that may be modified.  */
@@ -8812,7 +8812,7 @@ force_offsettable (rtx addr, HOST_WIDE_INT size, bool reuse)
    offset ranges.  Return true on success.  */
 
 bool
-arc_expand_movmem (rtx *operands)
+arc_expand_cpymem (rtx *operands)
 {
   rtx dst = operands[0];
   rtx src = operands[1];
@@ -10322,7 +10322,7 @@ arc_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 				    enum by_pieces_operation op,
 				    bool speed_p)
 {
-  /* Let the movmem expander handle small block moves.  */
+  /* Let the cpymem expander handle small block moves.  */
   if (op == MOVE_BY_PIECES)
     return false;
 

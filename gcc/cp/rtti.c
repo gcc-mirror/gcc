@@ -209,8 +209,8 @@ build_headof (tree exp)
   offset = build_vtbl_ref (cp_build_fold_indirect_ref (exp),
                            index);
 
-  type = cp_build_qualified_type (ptr_type_node,
-				  cp_type_quals (TREE_TYPE (exp)));
+  cp_build_qualified_type (ptr_type_node,
+			   cp_type_quals (TREE_TYPE (exp)));
   return fold_build_pointer_plus (exp, offset);
 }
 
@@ -440,7 +440,7 @@ get_tinfo_decl_direct (tree type, tree name, int pseudo_ix)
 {
   /* For a class type, the variable is cached in the type node
      itself.  */
-  tree d;
+  tree d = NULL_TREE;
 
   gcc_checking_assert (TREE_CODE (type) != METHOD_TYPE);
 

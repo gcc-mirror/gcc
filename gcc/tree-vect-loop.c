@@ -730,9 +730,7 @@ vect_get_loop_niters (struct loop *loop, tree *assumptions,
   if (!exit)
     return cond;
 
-  niter = chrec_dont_know;
   may_be_zero = NULL_TREE;
-  niter_assumptions = boolean_true_node;
   if (!number_of_iterations_exit_assumptions (loop, exit, &niter_desc, NULL)
       || chrec_contains_undetermined (niter_desc.niter))
     return cond;
@@ -835,6 +833,7 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in, vec_info_shared *shared)
     operands_swapped (false),
     no_data_dependencies (false),
     has_mask_store (false),
+    scalar_loop_scaling (profile_probability::uninitialized ()),
     scalar_loop (NULL),
     orig_loop_info (NULL)
 {
@@ -1903,7 +1902,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal, unsigned *n_stmts)
   /* Analyze the data references and also adjust the minimal
      vectorization factor according to the loads and stores.  */
 
-  ok = vect_analyze_data_refs (loop_vinfo, &min_vf);
+  ok = vect_analyze_data_refs (loop_vinfo, &min_vf, &fatal);
   if (!ok)
     {
       if (dump_enabled_p ())
@@ -1934,7 +1933,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal, unsigned *n_stmts)
 
   /* Data-flow analysis to detect stmts that do not need to be vectorized.  */
 
-  ok = vect_mark_stmts_to_be_vectorized (loop_vinfo);
+  ok = vect_mark_stmts_to_be_vectorized (loop_vinfo, &fatal);
   if (!ok)
     {
       if (dump_enabled_p ())
@@ -5113,7 +5112,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
 	  if (off != 0)
 	    {
 	      tree new_idx_val = idx_val;
-	      tree new_val = val;
 	      if (off != v_size - el_size)
 		{
 		  new_idx_val = make_ssa_name (idx_eltype);
@@ -5122,7 +5120,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
 						     old_idx_val);
 		  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
 		}
-	      new_val = make_ssa_name (data_eltype);
+	      tree new_val = make_ssa_name (data_eltype);
 	      epilog_stmt = gimple_build_assign (new_val,
 						 COND_EXPR,
 						 build2 (GT_EXPR,
@@ -5303,14 +5301,13 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
 	 in a vector mode of smaller size and first reduce upper/lower
 	 halves against each other.  */
       enum machine_mode mode1 = mode;
-      tree vectype1 = vectype;
       unsigned sz = tree_to_uhwi (TYPE_SIZE_UNIT (vectype));
       unsigned sz1 = sz;
       if (!slp_reduc
 	  && (mode1 = targetm.vectorize.split_reduction (mode)) != mode)
 	sz1 = GET_MODE_SIZE (mode1).to_constant ();
 
-      vectype1 = get_vectype_for_scalar_type_and_size (scalar_type, sz1);
+      tree vectype1 = get_vectype_for_scalar_type_and_size (scalar_type, sz1);
       reduce_with_shift = have_whole_vector_shift (mode1);
       if (!VECTOR_MODE_P (mode1))
 	reduce_with_shift = false;
@@ -5431,7 +5428,6 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
             dump_printf_loc (MSG_NOTE, vect_location,
 			     "Reduce using vector shifts\n");
 
-	  mode1 = TYPE_MODE (vectype1);
           vec_dest = vect_create_destination_var (scalar_dest, vectype1);
           for (elt_offset = nelements / 2;
                elt_offset >= 1;
@@ -8562,6 +8558,10 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   epilogue = vect_do_peeling (loop_vinfo, niters, nitersm1, &niters_vector,
 			      &step_vector, &niters_vector_mult_vf, th,
 			      check_profitability, niters_no_overflow);
+  if (LOOP_VINFO_SCALAR_LOOP (loop_vinfo)
+      && LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo).initialized_p ())
+    scale_loop_frequencies (LOOP_VINFO_SCALAR_LOOP (loop_vinfo),
+			    LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo));
 
   if (niters_vector == NULL_TREE)
     {

@@ -111,8 +111,8 @@ package body Sem_Res is
       Pref : Node_Id);
    --  Check that the type of the prefix of a dereference is not incomplete
 
-   function Check_Infinite_Recursion (N : Node_Id) return Boolean;
-   --  Given a call node, N, which is known to occur immediately within the
+   function Check_Infinite_Recursion (Call : Node_Id) return Boolean;
+   --  Given a call node, Call, which is known to occur immediately within the
    --  subprogram being called, determines whether it is a detectable case of
    --  an infinite recursion, and if so, outputs appropriate messages. Returns
    --  True if an infinite recursion is detected, and False otherwise.
@@ -695,164 +695,398 @@ package body Sem_Res is
    -- Check_Infinite_Recursion --
    ------------------------------
 
-   function Check_Infinite_Recursion (N : Node_Id) return Boolean is
-      P : Node_Id;
-      C : Node_Id;
+   function Check_Infinite_Recursion (Call : Node_Id) return Boolean is
+      function Enclosing_Declaration_Or_Statement (N : Node_Id) return Node_Id;
+      --  Return the nearest enclosing declaration or statement that houses
+      --  arbitrary node N.
 
-      function Same_Argument_List return Boolean;
-      --  Check whether list of actuals is identical to list of formals of
-      --  called function (which is also the enclosing scope).
+      function Invoked_With_Different_Arguments (N : Node_Id) return Boolean;
+      --  Determine whether call N invokes the related enclosing subprogram
+      --  with actuals that differ from the subprogram's formals.
 
-      ------------------------
-      -- Same_Argument_List --
-      ------------------------
+      function Is_Conditional_Statement (N : Node_Id) return Boolean;
+      --  Determine whether arbitrary node N denotes a conditional construct
 
-      function Same_Argument_List return Boolean is
-         A    : Node_Id;
-         F    : Entity_Id;
-         Subp : Entity_Id;
+      function Is_Control_Flow_Statement (N : Node_Id) return Boolean;
+      --  Determine whether arbitrary node N denotes a control flow statement
+      --  or a construct that may contains such a statement.
+
+      function Is_Immediately_Within_Body (N : Node_Id) return Boolean;
+      --  Determine whether arbitrary node N appears immediately within the
+      --  statements of an entry or subprogram body.
+
+      function Is_Raise_Idiom (N : Node_Id) return Boolean;
+      --  Determine whether arbitrary node N appears immediately within the
+      --  body of an entry or subprogram, and is preceded by a single raise
+      --  statement.
+
+      function Is_Raise_Statement (N : Node_Id) return Boolean;
+      --  Determine whether arbitrary node N denotes a raise statement
+
+      function Is_Sole_Statement (N : Node_Id) return Boolean;
+      --  Determine whether arbitrary node N is the sole source statement in
+      --  the body of the enclosing subprogram.
+
+      function Preceded_By_Control_Flow_Statement (N : Node_Id) return Boolean;
+      --  Determine whether arbitrary node N is preceded by a control flow
+      --  statement.
+
+      function Within_Conditional_Statement (N : Node_Id) return Boolean;
+      --  Determine whether arbitrary node N appears within a conditional
+      --  construct.
+
+      ----------------------------------------
+      -- Enclosing_Declaration_Or_Statement --
+      ----------------------------------------
+
+      function Enclosing_Declaration_Or_Statement
+        (N : Node_Id) return Node_Id
+      is
+         Par : Node_Id;
 
       begin
-         if not Is_Entity_Name (Name (N)) then
-            return False;
-         else
-            Subp := Entity (Name (N));
-         end if;
+         Par := N;
+         while Present (Par) loop
+            if Is_Declaration (Par) or else Is_Statement (Par) then
+               return Par;
 
-         F := First_Formal (Subp);
-         A := First_Actual (N);
-         while Present (F) and then Present (A) loop
-            if not Is_Entity_Name (A) or else Entity (A) /= F then
-               return False;
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
             end if;
 
-            Next_Actual (A);
-            Next_Formal (F);
+            Par := Parent (Par);
          end loop;
 
+         return N;
+      end Enclosing_Declaration_Or_Statement;
+
+      --------------------------------------
+      -- Invoked_With_Different_Arguments --
+      --------------------------------------
+
+      function Invoked_With_Different_Arguments (N : Node_Id) return Boolean is
+         Subp : constant Entity_Id := Entity (Name (N));
+
+         Actual : Node_Id;
+         Formal : Entity_Id;
+
+      begin
+         --  Determine whether the formals of the invoked subprogram are not
+         --  used as actuals in the call.
+
+         Actual := First_Actual (Call);
+         Formal := First_Formal (Subp);
+         while Present (Actual) and then Present (Formal) loop
+
+            --  The current actual does not match the current formal
+
+            if not (Is_Entity_Name (Actual)
+                     and then Entity (Actual) = Formal)
+            then
+               return True;
+            end if;
+
+            Next_Actual (Actual);
+            Next_Formal (Formal);
+         end loop;
+
+         return False;
+      end Invoked_With_Different_Arguments;
+
+      ------------------------------
+      -- Is_Conditional_Statement --
+      ------------------------------
+
+      function Is_Conditional_Statement (N : Node_Id) return Boolean is
+      begin
+         return
+           Nkind_In (N, N_And_Then,
+                        N_Case_Expression,
+                        N_Case_Statement,
+                        N_If_Expression,
+                        N_If_Statement,
+                        N_Or_Else);
+      end Is_Conditional_Statement;
+
+      -------------------------------
+      -- Is_Control_Flow_Statement --
+      -------------------------------
+
+      function Is_Control_Flow_Statement (N : Node_Id) return Boolean is
+      begin
+         --  It is assumed that all statements may affect the control flow in
+         --  some way. A raise statement may be expanded into a non-statement
+         --  node.
+
+         return Is_Statement (N) or else Is_Raise_Statement (N);
+      end Is_Control_Flow_Statement;
+
+      --------------------------------
+      -- Is_Immediately_Within_Body --
+      --------------------------------
+
+      function Is_Immediately_Within_Body (N : Node_Id) return Boolean is
+         HSS : constant Node_Id := Parent (N);
+
+      begin
+         return
+           Nkind (HSS) = N_Handled_Sequence_Of_Statements
+             and then Nkind_In (Parent (HSS), N_Entry_Body, N_Subprogram_Body)
+             and then Is_List_Member (N)
+             and then List_Containing (N) = Statements (HSS);
+      end Is_Immediately_Within_Body;
+
+      --------------------
+      -- Is_Raise_Idiom --
+      --------------------
+
+      function Is_Raise_Idiom (N : Node_Id) return Boolean is
+         Raise_Stmt : Node_Id;
+         Stmt       : Node_Id;
+
+      begin
+         if Is_Immediately_Within_Body (N) then
+
+            --  Assume that no raise statement has been seen yet
+
+            Raise_Stmt := Empty;
+
+            --  Examine the statements preceding the input node, skipping
+            --  internally-generated constructs.
+
+            Stmt := Prev (N);
+            while Present (Stmt) loop
+
+               --  Multiple raise statements violate the idiom
+
+               if Is_Raise_Statement (Stmt) then
+                  if Present (Raise_Stmt) then
+                     return False;
+                  end if;
+
+                  Raise_Stmt := Stmt;
+
+               elsif Comes_From_Source (Stmt) then
+                  exit;
+               end if;
+
+               Stmt := Prev (Stmt);
+            end loop;
+
+            --  At this point the node must be preceded by a raise statement,
+            --  and the raise statement has to be the sole statement within
+            --  the enclosing entry or subprogram body.
+
+            return
+              Present (Raise_Stmt) and then Is_Sole_Statement (Raise_Stmt);
+         end if;
+
+         return False;
+      end Is_Raise_Idiom;
+
+      ------------------------
+      -- Is_Raise_Statement --
+      ------------------------
+
+      function Is_Raise_Statement (N : Node_Id) return Boolean is
+      begin
+         --  A raise statement may be transfomed into a Raise_xxx_Error node
+
+         return
+           Nkind (N) = N_Raise_Statement
+             or else Nkind (N) in N_Raise_xxx_Error;
+      end Is_Raise_Statement;
+
+      -----------------------
+      -- Is_Sole_Statement --
+      -----------------------
+
+      function Is_Sole_Statement (N : Node_Id) return Boolean is
+         Stmt : Node_Id;
+
+      begin
+         --  The input node appears within the statements of an entry or
+         --  subprogram body. Examine the statements preceding the node.
+
+         if Is_Immediately_Within_Body (N) then
+            Stmt := Prev (N);
+
+            while Present (Stmt) loop
+
+               --  The statement is preceded by another statement or a source
+               --  construct. This indicates that the node does not appear by
+               --  itself.
+
+               if Is_Control_Flow_Statement (Stmt)
+                 or else Comes_From_Source (Stmt)
+               then
+                  return False;
+               end if;
+
+               Stmt := Prev (Stmt);
+            end loop;
+
+            return True;
+         end if;
+
+         --  The input node is within a construct nested inside the entry or
+         --  subprogram body.
+
+         return False;
+      end Is_Sole_Statement;
+
+      ----------------------------------------
+      -- Preceded_By_Control_Flow_Statement --
+      ----------------------------------------
+
+      function Preceded_By_Control_Flow_Statement
+        (N : Node_Id) return Boolean
+      is
+         Stmt : Node_Id;
+
+      begin
+         if Is_List_Member (N) then
+            Stmt := Prev (N);
+
+            --  Examine the statements preceding the input node
+
+            while Present (Stmt) loop
+               if Is_Control_Flow_Statement (Stmt) then
+                  return True;
+               end if;
+
+               Stmt := Prev (Stmt);
+            end loop;
+
+            return False;
+         end if;
+
+         --  Assume that the node is part of some control flow statement
+
          return True;
-      end Same_Argument_List;
+      end Preceded_By_Control_Flow_Statement;
+
+      ----------------------------------
+      -- Within_Conditional_Statement --
+      ----------------------------------
+
+      function Within_Conditional_Statement (N : Node_Id) return Boolean is
+         Stmt : Node_Id;
+
+      begin
+         Stmt := Parent (N);
+         while Present (Stmt) loop
+            if Is_Conditional_Statement (Stmt) then
+               return True;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Stmt) then
+               exit;
+            end if;
+
+            Stmt := Parent (Stmt);
+         end loop;
+
+         return False;
+      end Within_Conditional_Statement;
+
+      --  Local variables
+
+      Call_Context : constant Node_Id :=
+                       Enclosing_Declaration_Or_Statement (Call);
 
    --  Start of processing for Check_Infinite_Recursion
 
    begin
-      --  Special case, if this is a procedure call and is a call to the
-      --  current procedure with the same argument list, then this is for
-      --  sure an infinite recursion and we insert a call to raise SE.
+      --  The call is assumed to be safe when the enclosing subprogram is
+      --  invoked with actuals other than its formals.
+      --
+      --    procedure Proc (F1 : ...; F2 : ...; ...; FN : ...) is
+      --    begin
+      --       ...
+      --       Proc (A1, A2, ..., AN);
+      --       ...
+      --    end Proc;
 
-      if Is_List_Member (N)
-        and then List_Length (List_Containing (N)) = 1
-        and then Same_Argument_List
-      then
-         declare
-            P : constant Node_Id := Parent (N);
-         begin
-            if Nkind (P) = N_Handled_Sequence_Of_Statements
-              and then Nkind (Parent (P)) = N_Subprogram_Body
-              and then Is_Empty_List (Declarations (Parent (P)))
-            then
-               Error_Msg_Warn := SPARK_Mode /= On;
-               Error_Msg_N ("!infinite recursion<<", N);
-               Error_Msg_N ("\!Storage_Error [<<", N);
-               Insert_Action (N,
-                 Make_Raise_Storage_Error (Sloc (N),
-                   Reason => SE_Infinite_Recursion));
-               return True;
-            end if;
-         end;
+      if Invoked_With_Different_Arguments (Call) then
+         return False;
+
+      --  The call is assumed to be safe when the invocation of the enclosing
+      --  subprogram depends on a conditional statement.
+      --
+      --    procedure Proc (F1 : ...; F2 : ...; ...; FN : ...) is
+      --    begin
+      --       ...
+      --       if Some_Condition then
+      --          Proc (F1, F2, ..., FN);
+      --       end if;
+      --       ...
+      --    end Proc;
+
+      elsif Within_Conditional_Statement (Call) then
+         return False;
+
+      --  The context of the call is assumed to be safe when the invocation of
+      --  the enclosing subprogram is preceded by some control flow statement.
+      --
+      --    procedure Proc (F1 : ...; F2 : ...; ...; FN : ...) is
+      --    begin
+      --       ...
+      --       if Some_Condition then
+      --          ...
+      --       end if;
+      --       ...
+      --       Proc (F1, F2, ..., FN);
+      --       ...
+      --    end Proc;
+
+      elsif Preceded_By_Control_Flow_Statement (Call_Context) then
+         return False;
+
+      --  Detect an idiom where the context of the call is preceded by a single
+      --  raise statement.
+      --
+      --    procedure Proc (F1 : ...; F2 : ...; ...; FN : ...) is
+      --    begin
+      --       raise ...;
+      --       Proc (F1, F2, ..., FN);
+      --    end Proc;
+
+      elsif Is_Raise_Idiom (Call_Context) then
+         return False;
       end if;
 
-      --  If not that special case, search up tree, quitting if we reach a
-      --  construct (e.g. a conditional) that tells us that this is not a
-      --  case for an infinite recursion warning.
+      --  At this point it is certain that infinite recursion will take place
+      --  as long as the call is executed. Detect a case where the context of
+      --  the call is the sole source statement within the subprogram body.
+      --
+      --    procedure Proc (F1 : ...; F2 : ...; ...; FN : ...) is
+      --    begin
+      --       Proc (F1, F2, ..., FN);
+      --    end Proc;
+      --
+      --  Install an explicit raise to prevent the infinite recursion.
 
-      C := N;
-      loop
-         P := Parent (C);
+      if Is_Sole_Statement (Call_Context) then
+         Error_Msg_Warn := SPARK_Mode /= On;
+         Error_Msg_N ("!infinite recursion<<", Call);
+         Error_Msg_N ("\!Storage_Error [<<", Call);
 
-         --  If no parent, then we were not inside a subprogram, this can for
-         --  example happen when processing certain pragmas in a spec. Just
-         --  return False in this case.
+         Insert_Action (Call,
+           Make_Raise_Storage_Error (Sloc (Call),
+             Reason => SE_Infinite_Recursion));
 
-         if No (P) then
-            return False;
-         end if;
+      --  Otherwise infinite recursion could take place, considering other flow
+      --  control constructs such as gotos, exit statements, etc.
 
-         --  Done if we get to subprogram body, this is definitely an infinite
-         --  recursion case if we did not find anything to stop us.
-
-         exit when Nkind (P) = N_Subprogram_Body;
-
-         --  If appearing in conditional, result is false
-
-         if Nkind_In (P, N_Or_Else,
-                         N_And_Then,
-                         N_Case_Expression,
-                         N_Case_Statement,
-                         N_If_Expression,
-                         N_If_Statement)
-         then
-            return False;
-
-         elsif Nkind (P) = N_Handled_Sequence_Of_Statements
-           and then C /= First (Statements (P))
-         then
-            --  If the call is the expression of a return statement and the
-            --  actuals are identical to the formals, it's worth a warning.
-            --  However, we skip this if there is an immediately preceding
-            --  raise statement, since the call is never executed.
-
-            --  Furthermore, this corresponds to a common idiom:
-
-            --    function F (L : Thing) return Boolean is
-            --    begin
-            --       raise Program_Error;
-            --       return F (L);
-            --    end F;
-
-            --  for generating a stub function
-
-            if Nkind (Parent (N)) = N_Simple_Return_Statement
-              and then Same_Argument_List
-            then
-               exit when not Is_List_Member (Parent (N));
-
-               --  OK, return statement is in a statement list, look for raise
-
-               declare
-                  Nod : Node_Id;
-
-               begin
-                  --  Skip past N_Freeze_Entity nodes generated by expansion
-
-                  Nod := Prev (Parent (N));
-                  while Present (Nod)
-                    and then Nkind (Nod) = N_Freeze_Entity
-                  loop
-                     Prev (Nod);
-                  end loop;
-
-                  --  If no raise statement, give warning. We look at the
-                  --  original node, because in the case of "raise ... with
-                  --  ...", the node has been transformed into a call.
-
-                  exit when Nkind (Original_Node (Nod)) /= N_Raise_Statement
-                    and then
-                      (Nkind (Nod) not in N_Raise_xxx_Error
-                        or else Present (Condition (Nod)));
-               end;
-            end if;
-
-            return False;
-
-         else
-            C := P;
-         end if;
-      end loop;
-
-      Error_Msg_Warn := SPARK_Mode /= On;
-      Error_Msg_N ("!possible infinite recursion<<", N);
-      Error_Msg_N ("\!??Storage_Error ]<<", N);
+      else
+         Error_Msg_Warn := SPARK_Mode /= On;
+         Error_Msg_N ("!possible infinite recursion<<", Call);
+         Error_Msg_N ("\!??Storage_Error ]<<", Call);
+      end if;
 
       return True;
    end Check_Infinite_Recursion;
@@ -6070,7 +6304,7 @@ package body Sem_Res is
       --  is frozen in the usual fashion, by the appearance of a real body,
       --  or at the end of a declarative part. However an implicit call to
       --  an expression function may appear when it is part of a default
-      --  expression in a call to an initialiation procedure, and must be
+      --  expression in a call to an initialization procedure, and must be
       --  frozen now, even if the body is inserted at a later point.
 
       if Is_Entity_Name (Subp)
@@ -6767,6 +7001,15 @@ package body Sem_Res is
             elsif In_Default_Expr then
                Cannot_Inline
                  ("cannot inline & (in default expression)?", N, Nam_UA);
+
+            --  Calls cannot be inlined inside quantified expressions, which
+            --  are left in expression form for GNATprove. Since these
+            --  expressions are only preanalyzed, we need to detect the failure
+            --  to inline outside of the case for Full_Analysis below.
+
+            elsif In_Quantified_Expression (N) then
+               Cannot_Inline
+                 ("cannot inline & (in quantified expression)?", N, Nam_UA);
 
             --  Inlining should not be performed during preanalysis
 

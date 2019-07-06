@@ -256,7 +256,7 @@
    * return output_vec_const_move (operands);
    #"
   [(set_attr "type" "vecstore,vecload,veclogical,store,load,*,veclogical,*,*")
-   (set_attr "length" "4,4,4,20,20,20,4,8,32")])
+   (set_attr "length" "*,*,*,20,20,20,*,8,32")])
 
 ;; Unlike other altivec moves, allow the GPRs, since a normal use of TImode
 ;; is for unions.  However for plain data movement, slightly favor the vector

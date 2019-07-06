@@ -1056,17 +1056,17 @@ available.
   If the compilation was performed using a post-18.x version of GNAT, consider
   using the legacy elaboration model, in the following order:
 
+  - Use the relaxed static elaboration model, with compiler switch
+    :switch:`-gnatJ`.
+
+  - Use the relaxed dynamic elaboration model, with compiler switches
+    :switch:`-gnatE` :switch:`-gnatJ`.
+
   - Use the legacy static elaboration model, with compiler switch
     :switch:`-gnatH`.
 
   - Use the legacy dynamic elaboration model, with compiler switches
-    :switch:`-gnatH` :switch:`-gnatE`.
-
-  - Use the relaxed legacy static elaboration model, with compiler switches
-    :switch:`-gnatH` :switch:`-gnatJ`.
-
-  - Use the relaxed legacy dynamic elaboration model, with compiler switches
-    :switch:`-gnatH` :switch:`-gnatJ` :switch:`-gnatE`.
+    :switch:`-gnatE` :switch:`-gnatH`.
 
 * *Suppress all elaboration checks*
 

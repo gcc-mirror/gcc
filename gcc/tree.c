@@ -311,6 +311,7 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE__LOOPTEMP_  */
   1, /* OMP_CLAUSE__REDUCTEMP_  */
   1, /* OMP_CLAUSE__CONDTEMP_  */
+  1, /* OMP_CLAUSE__SCANTEMP_  */
   1, /* OMP_CLAUSE_IF  */
   1, /* OMP_CLAUSE_NUM_THREADS  */
   1, /* OMP_CLAUSE_SCHEDULE  */
@@ -391,6 +392,7 @@ const char * const omp_clause_code_name[] =
   "_looptemp_",
   "_reductemp_",
   "_condtemp_",
+  "_scantemp_",
   "if",
   "num_threads",
   "schedule",
@@ -8222,8 +8224,6 @@ build_nonstandard_integer_type (unsigned HOST_WIDE_INT precision,
   else
     fixup_signed_type (itype);
 
-  ret = itype;
-
   inchash::hash hstate;
   inchash::add_expr (TYPE_MAX_VALUE (itype), hstate);
   ret = type_hash_canon (hstate.end (), itype);
@@ -10653,6 +10653,12 @@ build_common_tree_nodes (bool signed_char)
 
     va_list_type_node = t;
   }
+
+  /* SCEV analyzer global shared trees.  */
+  chrec_dont_know = make_node (SCEV_NOT_KNOWN);
+  TREE_TYPE (chrec_dont_know) = void_type_node;
+  chrec_known = make_node (SCEV_KNOWN);
+  TREE_TYPE (chrec_known) = void_type_node;
 }
 
 /* Modify DECL for given flags.
@@ -12322,6 +12328,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE__LOOPTEMP_:
 	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE__CONDTEMP_:
+	case OMP_CLAUSE__SCANTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
 	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, 0));
 	  /* FALLTHRU */
@@ -13418,6 +13425,9 @@ block_may_fallthru (const_tree block)
       return (block_may_fallthru (TREE_OPERAND (stmt, 0))
 	      && block_may_fallthru (TREE_OPERAND (stmt, 1)));
 
+    case EH_ELSE_EXPR:
+      return block_may_fallthru (TREE_OPERAND (stmt, 0));
+
     case MODIFY_EXPR:
       if (TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR)
 	stmt = TREE_OPERAND (stmt, 1);
@@ -14115,6 +14125,7 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
 
   gcc_assert (!trust_type_canonical
 	      || (type_with_alias_set_p (t1) && type_with_alias_set_p (t2)));
+
   /* If the types have been previously registered and found equal
      they still are.  */
 
@@ -14131,6 +14142,14 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
 			   && canonical_type_used_p (t2));
       return TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2);
     }
+
+  /* For types where we do ODR based TBAA the canonical type is always
+     set correctly, so we know that types are different if their
+     canonical types does not match.  */
+  if (trust_type_canonical
+      && (odr_type_p (t1) && odr_based_tbaa_p (t1))
+	  != (odr_type_p (t2) && odr_based_tbaa_p (t2)))
+    return false;
 
   /* Can't be the same type if the types don't have the same code.  */
   enum tree_code code = tree_code_for_canonical_type_merging (TREE_CODE (t1));

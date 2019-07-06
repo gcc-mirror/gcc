@@ -57,6 +57,7 @@ package System.Win32 is
    INVALID_HANDLE_VALUE : constant HANDLE := -1;
    INVALID_FILE_SIZE    : constant := 16#FFFFFFFF#;
 
+   type ULONG  is new Interfaces.C.unsigned_long;
    type DWORD  is new Interfaces.C.unsigned_long;
    type WORD   is new Interfaces.C.unsigned_short;
    type BYTE   is new Interfaces.C.unsigned_char;
@@ -157,18 +158,20 @@ package System.Win32 is
    GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS : constant := 16#00000004#;
 
    type OVERLAPPED is record
-      Internal     : DWORD;
-      InternalHigh : DWORD;
+      Internal     : access ULONG;
+      InternalHigh : access ULONG;
       Offset       : DWORD;
       OffsetHigh   : DWORD;
       hEvent       : HANDLE;
    end record;
+   pragma Convention (C_Pass_By_Copy, OVERLAPPED);
 
    type SECURITY_ATTRIBUTES is record
       nLength             : DWORD;
       pSecurityDescriptor : PVOID;
       bInheritHandle      : BOOL;
    end record;
+   pragma Convention (C_Pass_By_Copy, SECURITY_ATTRIBUTES);
 
    function CreateFileA
      (lpFileName            : Address;
@@ -267,6 +270,7 @@ package System.Win32 is
       dwAllocationGranularity     : DWORD;
       dwReserved                  : DWORD;
    end record;
+   pragma Convention (C_Pass_By_Copy, SYSTEM_INFO);
 
    procedure GetSystemInfo (SI : access SYSTEM_INFO);
    pragma Import (Stdcall, GetSystemInfo, "GetSystemInfo");
@@ -285,6 +289,7 @@ package System.Win32 is
       wSecond       : WORD;
       wMilliseconds : WORD;
    end record;
+   pragma Convention (C_Pass_By_Copy, SYSTEMTIME);
 
    procedure GetSystemTime (pSystemTime : access SYSTEMTIME);
    pragma Import (Stdcall, GetSystemTime, "GetSystemTime");

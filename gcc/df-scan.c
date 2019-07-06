@@ -229,7 +229,6 @@ void
 df_scan_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
 {
   struct df_scan_problem_data *problem_data;
-  unsigned int insn_num = get_max_uid () + 1;
   basic_block bb;
 
   /* Given the number of pools, this is really faster than tearing
@@ -257,7 +256,6 @@ df_scan_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
   bitmap_obstack_initialize (&problem_data->reg_bitmaps);
   bitmap_obstack_initialize (&problem_data->insn_bitmaps);
 
-  insn_num += insn_num / 4;
   df_grow_reg_info ();
 
   df_grow_insn_info ();

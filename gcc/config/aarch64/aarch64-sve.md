@@ -144,6 +144,7 @@
 
 ;; Handle big-endian memory reloads.  We use byte PTRUE for all modes
 ;; to try to encourage reuse.
+;; This pattern needs constraints due to TARGET_SECONDARY_RELOAD hook.
 (define_expand "aarch64_sve_reload_be"
   [(parallel
      [(set (match_operand 0)
@@ -3120,7 +3121,7 @@
 
 ;; Standard pattern name vec_init<mode><Vel>.
 (define_expand "vec_init<mode><Vel>"
-  [(match_operand:SVE_ALL 0 "register_operand" "")
+  [(match_operand:SVE_ALL 0 "register_operand")
     (match_operand 1 "" "")]
   "TARGET_SVE"
   {

@@ -8906,7 +8906,7 @@
 
 ;; String/block move insn.
 
-(define_expand "movmemsi"
+(define_expand "cpymemsi"
   [(parallel [(set (mem:BLK (match_operand:BLK 0))
 		   (mem:BLK (match_operand:BLK 1)))
 	      (use (match_operand:SI 2 "nonmemory_operand"))

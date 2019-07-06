@@ -1715,11 +1715,15 @@ check_bases (tree t,
 	      && (same_type_ignoring_top_level_qualifiers_p
 		  (TREE_TYPE (field), basetype)))
 	    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
+	  /* DR 1813:
+	     ...has at most one base class subobject of any given type...  */
+	  else if (CLASSTYPE_REPEATED_BASE_P (t))
+	    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
 	  else
 	    /* ...either has no non-static data members in the most-derived
 	       class and at most one base class with non-static data
 	       members, or has no base classes with non-static data
-	       members */
+	       members.  FIXME This was reworded in DR 1813.  */
 	    for (basefield = TYPE_FIELDS (basetype); basefield;
 		 basefield = DECL_CHAIN (basefield))
 	      if (TREE_CODE (basefield) == FIELD_DECL
@@ -4740,8 +4744,6 @@ adjust_clone_args (tree decl)
       tree orig_decl_parms = TYPE_ARG_TYPES (TREE_TYPE (decl));
       tree decl_parms, clone_parms;
 
-      clone_parms = orig_clone_parms;
-
       /* Skip the 'this' parameter.  */
       orig_clone_parms = TREE_CHAIN (orig_clone_parms);
       orig_decl_parms = TREE_CHAIN (orig_decl_parms);
@@ -6429,6 +6431,7 @@ layout_class_type (tree t, tree *virtuals_p)
       SET_TYPE_ALIGN (base_t, rli->record_align);
       TYPE_USER_ALIGN (base_t) = TYPE_USER_ALIGN (t);
       TYPE_TYPELESS_STORAGE (base_t) = TYPE_TYPELESS_STORAGE (t);
+      TYPE_CXX_ODR_P (base_t) = TYPE_CXX_ODR_P (t);
 
       /* Copy the non-static data members of T. This will include its
 	 direct non-virtual bases & vtable.  */
@@ -8576,7 +8579,6 @@ dump_class_hierarchy_r (FILE *stream,
   tree base_binfo;
   int i;
 
-  indented = maybe_indent_hierarchy (stream, indent, 0);
   fprintf (stream, "%s (0x" HOST_WIDE_INT_PRINT_HEX ") ",
 	   type_as_string (BINFO_TYPE (binfo), TFF_PLAIN_IDENTIFIER),
 	   (HOST_WIDE_INT) (uintptr_t) binfo);
@@ -8597,7 +8599,6 @@ dump_class_hierarchy_r (FILE *stream,
     fprintf (stream, " virtual");
   fprintf (stream, "\n");
 
-  indented = 0;
   if (BINFO_PRIMARY_P (binfo))
     {
       indented = maybe_indent_hierarchy (stream, indent + 3, indented);

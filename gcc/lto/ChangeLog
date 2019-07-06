@@ -1,3 +1,35 @@
+2019-07-04  Martin Liska  <mliska@suse.cz>
+
+	PR lto/91078
+	* lto-common.c (lto_file_finalize): Use memcpy to set
+	file_data->lto_section_header.
+
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	* lto-common.c: Read LTO section and verify header.
+
+2019-06-27  Jan Hubicka  <jh@suse.cz>
+
+	* lto-common.c (lto_register_canonical_types_for_odr_types):
+	Copy CXX_ODR_P from the main variant.
+
+2019-06-27  Jan Hubicka  <jh@suse.cz>
+
+	* lto-common.c: tree-pretty-print.h
+	(type_streaming_finished): New static var.
+	(gimple_register_canonical_type_1): Return updated hash; handle ODR
+	types.
+	(iterative_hash_canonical_type): Update use of
+	gimple_register_canonical_type_1.
+
+2019-06-27  Martin Liska  <mliska@suse.cz>
+
+	* lto-dump.c (struct symbol_entry): Add default dtor.
+	(struct variable_entry): Likewise.
+	(struct function_entry): Likewise.
+	(dump_list_functions): Release memory.
+	(dump_list_variables): Likewise.
+
 2019-06-24  Jan Hubicka  <jh@suse.cz>
 
 	* lto-common.c (compare_tree_sccs_1): Compare CXX_ODR_P;

@@ -213,6 +213,8 @@ struct GTY(()) odr_type_d
   bool odr_violated;
   /* Set when virtual table without RTTI previaled table with.  */
   bool rtti_broken;
+  /* Set when the canonical type is determined using the type name.  */
+  bool tbaa_enabled;
 };
 
 /* Return TRUE if all derived types of T are known and thus
@@ -1610,6 +1612,9 @@ add_type_duplicate (odr_type val, tree type)
 
   val->types_set->add (type);
 
+  if (!odr_hash)
+    return NULL;
+
   gcc_checking_assert (can_be_name_hashed_p (type)
 		       && can_be_name_hashed_p (val->type));
 
@@ -1987,6 +1992,46 @@ prevailing_odr_type (tree type)
   if (!t || t->odr_violated)
     return type;
   return t->type;
+}
+
+/* Set tbaa_enabled flag for TYPE.  */
+
+void
+enable_odr_based_tbaa (tree type)
+{
+  odr_type t = get_odr_type (type, true);
+  t->tbaa_enabled = true;
+}
+
+/* True if canonical type of TYPE is determined using ODR name.  */
+
+bool
+odr_based_tbaa_p (const_tree type)
+{
+  if (!RECORD_OR_UNION_TYPE_P (type))
+    return false;
+  odr_type t = get_odr_type (const_cast <tree> (type), false);
+  if (!t || !t->tbaa_enabled)
+    return false;
+  return true;
+}
+
+/* Set TYPE_CANONICAL of type and all its variants and duplicates
+   to CANONICAL.  */
+
+void
+set_type_canonical_for_odr_type (tree type, tree canonical)
+{
+  odr_type t = get_odr_type (type, false);
+  unsigned int i;
+  tree tt;
+
+  for (tree t2 = t->type; t2; t2 = TYPE_NEXT_VARIANT (t2))
+    TYPE_CANONICAL (t2) = canonical;
+  if (t->types)
+    FOR_EACH_VEC_ELT (*t->types, i, tt)
+      for (tree t2 = tt; t2; t2 = TYPE_NEXT_VARIANT (t2))
+        TYPE_CANONICAL (t2) = canonical;
 }
 
 /* Return true if we reported some ODR violation on TYPE.  */

@@ -352,6 +352,9 @@ enum omp_clause_code {
   /* Internal clause: temporary for lastprivate(conditional:).  */
   OMP_CLAUSE__CONDTEMP_,
 
+  /* Internal clause: temporary for inscan reductions.  */
+  OMP_CLAUSE__SCANTEMP_,
+
   /* OpenACC/OpenMP clause: if (scalar-expression).  */
   OMP_CLAUSE_IF,
 
@@ -761,6 +764,9 @@ enum tree_index {
   TI_TARGET_OPTION_CURRENT,
   TI_CURRENT_TARGET_PRAGMA,
   TI_CURRENT_OPTIMIZE_PRAGMA,
+
+  TI_CHREC_DONT_KNOW,
+  TI_CHREC_KNOWN,
 
   TI_MAX
 };

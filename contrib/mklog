@@ -100,7 +100,7 @@ EMAIL = ...
   mklog_conf = os.path.expanduser('~/.mklog')
   if os.path.exists(mklog_conf):
     attrs = {}
-    f = open(mklog_conf, 'rb')
+    f = open(mklog_conf)
     for s in f:
       if cache.match(r'^\s*([a-zA-Z0-9_]+)\s*=\s*(.*?)\s*$', s):
         attrs[cache.group(1)] = cache.group(2)

@@ -2095,8 +2095,8 @@ expand_twoval_binop (optab binoptab, rtx op0, rtx op1, rtx targ0, rtx targ1,
       xop1 = avoid_expensive_constant (mode1, binoptab, 1, xop1, unsignedp);
 
       create_fixed_operand (&ops[0], targ0);
-      create_convert_operand_from (&ops[1], op0, mode, unsignedp);
-      create_convert_operand_from (&ops[2], op1, mode, unsignedp);
+      create_convert_operand_from (&ops[1], xop0, mode, unsignedp);
+      create_convert_operand_from (&ops[2], xop1, mode, unsignedp);
       create_fixed_operand (&ops[3], targ1);
       if (maybe_expand_insn (icode, 4, ops))
 	return 1;

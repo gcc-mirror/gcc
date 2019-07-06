@@ -832,8 +832,13 @@ do_include_common (cpp_reader *pfile, enum include_type type)
     }
 
   /* Prevent #include recursion.  */
-  if (pfile->line_table->depth >= CPP_STACK_MAX)
-    cpp_error (pfile, CPP_DL_ERROR, "#include nested too deeply");
+  if (pfile->line_table->depth >= CPP_OPTION (pfile, max_include_depth))
+    cpp_error (pfile, 
+	       CPP_DL_ERROR, 
+	       "#include nested depth %u exceeds maximum of %u"
+	       " (use -fmax-include-depth=DEPTH to increase the maximum)",
+	       pfile->line_table->depth,
+	       CPP_OPTION (pfile, max_include_depth));
   else
     {
       /* Get out of macro context, if we are.  */

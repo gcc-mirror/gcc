@@ -256,55 +256,55 @@
 
 (define_expand "iwmmxt_setwcgr0"
   [(set (reg:SI WCGR0)
-	(match_operand:SI 0 "register_operand"  ""))]
+	(match_operand:SI 0 "register_operand"))]
   "TARGET_REALLY_IWMMXT"
   {}
 )
 
 (define_expand "iwmmxt_setwcgr1"
   [(set (reg:SI WCGR1)
-	(match_operand:SI 0 "register_operand"  ""))]
+	(match_operand:SI 0 "register_operand"))]
   "TARGET_REALLY_IWMMXT"
   {}
 )
 
 (define_expand "iwmmxt_setwcgr2"
   [(set (reg:SI WCGR2)
-	(match_operand:SI 0 "register_operand"  ""))]
+	(match_operand:SI 0 "register_operand"))]
   "TARGET_REALLY_IWMMXT"
   {}
 )
 
 (define_expand "iwmmxt_setwcgr3"
   [(set (reg:SI WCGR3)
-	(match_operand:SI 0 "register_operand"  ""))]
+	(match_operand:SI 0 "register_operand"))]
   "TARGET_REALLY_IWMMXT"
   {}
 )
 
 (define_expand "iwmmxt_getwcgr0"
-  [(set (match_operand:SI 0 "register_operand"  "")
+  [(set (match_operand:SI 0 "register_operand")
         (reg:SI WCGR0))]
   "TARGET_REALLY_IWMMXT"
   {}
 )
 
 (define_expand "iwmmxt_getwcgr1"
-  [(set (match_operand:SI 0 "register_operand"  "")
+  [(set (match_operand:SI 0 "register_operand")
         (reg:SI WCGR1))]
   "TARGET_REALLY_IWMMXT"
   {}
 )
 
 (define_expand "iwmmxt_getwcgr2"
-  [(set (match_operand:SI 0 "register_operand"  "")
+  [(set (match_operand:SI 0 "register_operand")
         (reg:SI WCGR2))]
   "TARGET_REALLY_IWMMXT"
   {}
 )
 
 (define_expand "iwmmxt_getwcgr3"
-  [(set (match_operand:SI 0 "register_operand"  "")
+  [(set (match_operand:SI 0 "register_operand")
         (reg:SI WCGR3))]
   "TARGET_REALLY_IWMMXT"
   {}

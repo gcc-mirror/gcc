@@ -548,6 +548,9 @@ typedef struct _loop_vec_info : public vec_info {
   /* Mark loops having masked stores.  */
   bool has_mask_store;
 
+  /* Queued scaling factor for the scalar loop.  */
+  profile_probability scalar_loop_scaling;
+
   /* If if-conversion versioned this loop before conversion, this is the
      loop version without if-conversion.  */
   struct loop *scalar_loop;
@@ -603,6 +606,7 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_PEELING_FOR_NITER(L)    (L)->peeling_for_niter
 #define LOOP_VINFO_NO_DATA_DEPENDENCIES(L) (L)->no_data_dependencies
 #define LOOP_VINFO_SCALAR_LOOP(L)	   (L)->scalar_loop
+#define LOOP_VINFO_SCALAR_LOOP_SCALING(L)  (L)->scalar_loop_scaling
 #define LOOP_VINFO_HAS_MASK_STORE(L)       (L)->has_mask_store
 #define LOOP_VINFO_SCALAR_ITERATION_COST(L) (L)->scalar_cost_vec
 #define LOOP_VINFO_SINGLE_SCALAR_ITERATION_COST(L) (L)->single_scalar_iteration_cost
@@ -1501,7 +1505,7 @@ extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 extern stmt_vec_info vect_finish_replace_stmt (stmt_vec_info, gimple *);
 extern stmt_vec_info vect_finish_stmt_generation (stmt_vec_info, gimple *,
 						  gimple_stmt_iterator *);
-extern opt_result vect_mark_stmts_to_be_vectorized (loop_vec_info);
+extern opt_result vect_mark_stmts_to_be_vectorized (loop_vec_info, bool *);
 extern tree vect_get_store_rhs (stmt_vec_info);
 extern tree vect_get_vec_def_for_operand_1 (stmt_vec_info, enum vect_def_type);
 extern tree vect_get_vec_def_for_operand (tree, stmt_vec_info, tree = NULL);
@@ -1559,7 +1563,7 @@ extern bool vect_check_gather_scatter (stmt_vec_info, loop_vec_info,
 				       gather_scatter_info *);
 extern opt_result vect_find_stmt_data_reference (loop_p, gimple *,
 						 vec<data_reference_p> *);
-extern opt_result vect_analyze_data_refs (vec_info *, poly_uint64 *);
+extern opt_result vect_analyze_data_refs (vec_info *, poly_uint64 *, bool *);
 extern void vect_record_base_alignments (vec_info *);
 extern tree vect_create_data_ref_ptr (stmt_vec_info, tree, struct loop *, tree,
 				      tree *, gimple_stmt_iterator *,

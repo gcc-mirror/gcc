@@ -5218,7 +5218,6 @@ cp_build_binary_op (const op_location_t &location,
 	    }
 	  result_type = build_opaque_vector_type (intt,
 						  TYPE_VECTOR_SUBPARTS (type0));
-	  converted = 1;
 	  return build_vec_cmp (resultcode, result_type, op0, op1);
 	}
       build_type = boolean_type_node;
@@ -9188,8 +9187,6 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
     exp = require_complete_type_sfinae (exp, complain);
   if (exp == error_mark_node)
     return error_mark_node;
-
-  rhstype = non_reference (rhstype);
 
   type = complete_type (type);
 

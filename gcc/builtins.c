@@ -1416,7 +1416,7 @@ expand_builtin_prefetch (tree exp)
 }
 
 /* Get a MEM rtx for expression EXP which is the address of an operand
-   to be used in a string instruction (cmpstrsi, movmemsi, ..).  LEN is
+   to be used in a string instruction (cmpstrsi, cpymemsi, ..).  LEN is
    the maximum length of the block of memory that might be accessed or
    NULL if unknown.  */
 
@@ -1638,11 +1638,8 @@ expand_builtin_apply_args_1 (void)
   /* Save the structure value address unless this is passed as an
      "invisible" first argument.  */
   if (struct_incoming_value)
-    {
-      emit_move_insn (adjust_address (registers, Pmode, size),
-		      copy_to_reg (struct_incoming_value));
-      size += GET_MODE_SIZE (Pmode);
-    }
+    emit_move_insn (adjust_address (registers, Pmode, size),
+		    copy_to_reg (struct_incoming_value));
 
   /* Return the address of the block.  */
   return copy_addr_to_reg (XEXP (registers, 0));
@@ -1791,7 +1788,6 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
       emit_move_insn (struct_value, value);
       if (REG_P (struct_value))
 	use_reg (&call_fusage, struct_value);
-      size += GET_MODE_SIZE (Pmode);
     }
 
   /* All arguments and registers used for the call are set up by now!  */
@@ -7122,8 +7118,19 @@ inline_expand_builtin_string_cmp (tree exp, rtx target)
     return NULL_RTX;
 
   /* For strncmp, if the length is not a const, not qualify.  */
-  if (is_ncmp && !tree_fits_uhwi_p (len3_tree))
-    return NULL_RTX;
+  if (is_ncmp)
+    {
+      if (!tree_fits_uhwi_p (len3_tree))
+	return NULL_RTX;
+      else
+	len3 = tree_to_uhwi (len3_tree);
+    }
+
+  if (src_str1 != NULL)
+    len1 = strnlen (src_str1, len1) + 1;
+
+  if (src_str2 != NULL)
+    len2 = strnlen (src_str2, len2) + 1;
 
   int const_str_n = 0;
   if (!len1)
@@ -7138,7 +7145,7 @@ inline_expand_builtin_string_cmp (tree exp, rtx target)
   gcc_checking_assert (const_str_n > 0);
   length = (const_str_n == 1) ? len1 : len2;
 
-  if (is_ncmp && (len3 = tree_to_uhwi (len3_tree)) < length)
+  if (is_ncmp && len3 < length)
     length = len3;
 
   /* If the length of the comparision is larger than the threshold,

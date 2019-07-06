@@ -1,4 +1,48 @@
+2019-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/atomicity.h [_GLIBCXX_ATOMIC_BUILTINS] (__atomic_add)
+	(__exchange_and_add): Replace static specifier with always_inline
+	attribute.
+	(__exchange_and_add_single, __atomic_add_single): Likewise.
+	(__exchange_and_add_dispatch, __atomic_add_dispatch): Likewise. Also
+	combine !__gthread_active_p() and !__GTHREADS branches.
+
+2019-07-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91067
+	* acinclude.m4 (libtool_VERSION): Bump to 6:27:0.
+	* configure: Regenerate.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.27): Add new version. Export
+	missing symbols.
+	* testsuite/27_io/filesystem/iterators/91067.cc: New test.
+	* testsuite/util/testsuite_abi.cc: Add new symbol version.
+
+2019-07-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_HAVE_BUILTIN_LAUNDER)
+	(_GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED): Use __has_builtin
+	instead of __is_identifier to detect Clang support.
+
+2019-07-02  Jim Wilson  <jimw@sifive.com>
+
+	* configure.ac (BUILD_PDF): Also test for doxygen, dot, xsltproc,
+	and xmllint.
+	* configure: Regenerate.
+
+2019-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91012
+	* src/c++17/fs_path.cc (filesystem_error::_Impl): Use a string_view
+	for the what_arg parameters.
+	(filesystem_error::filesystem_error): Pass system_error::what() to
+	the _Impl constructor.
+	* testsuite/27_io/filesystem/filesystem_error/cons.cc: Ensure that
+	filesystem_error::what() contains system_error::what().
+
 2019-06-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (chars_format): Define bitmask type.
+	* testsuite/20_util/to_chars/chars_format.cc: New test.
 
 	* include/bits/fs_path.h (path::__is_encoded_char): Use __is_one_of.
 	* include/std/bit (_If_is_unsigned_integer_type): Remove.

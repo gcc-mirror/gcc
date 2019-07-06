@@ -608,7 +608,7 @@ process_use (stmt_vec_info stmt_vinfo, tree use, loop_vec_info loop_vinfo,
    This pass detects such stmts.  */
 
 opt_result
-vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
+vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo, bool *fatal)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
@@ -778,7 +778,11 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	    = process_use (stmt_vinfo, gs_info.offset, loop_vinfo, relevant,
 			   &worklist, true);
 	  if (!res)
-	    return res;
+	    {
+	      if (fatal)
+		*fatal = false;
+	      return res;
+	    }
 	}
     } /* while worklist */
 
@@ -1492,15 +1496,19 @@ vect_init_vector (stmt_vec_info stmt_info, tree val, tree type,
 		   promotion of invariant/external defs.  */
 		val = gimple_convert (&stmts, TREE_TYPE (type), val);
 	      for (gimple_stmt_iterator gsi2 = gsi_start (stmts);
-		   !gsi_end_p (gsi2); gsi_next (&gsi2))
-		vect_init_vector_1 (stmt_info, gsi_stmt (gsi2), gsi);
+		   !gsi_end_p (gsi2); )
+		{
+		  init_stmt = gsi_stmt (gsi2);
+		  gsi_remove (&gsi2, false);
+		  vect_init_vector_1 (stmt_info, init_stmt, gsi);
+		}
 	    }
 	}
       val = build_vector_from_val (type, val);
     }
 
   new_temp = vect_get_new_ssa_name (type, vect_simple_var, "cst_");
-  init_stmt = gimple_build_assign  (new_temp, val);
+  init_stmt = gimple_build_assign (new_temp, val);
   vect_init_vector_1 (stmt_info, init_stmt, gsi);
   return new_temp;
 }
@@ -3483,8 +3491,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			= gimple_build_call_internal_vec (ifn, vargs);
 		      gimple_call_set_lhs (call, half_res);
 		      gimple_call_set_nothrow (call, true);
-		      new_stmt_info
-			= vect_finish_stmt_generation (stmt_info, call, gsi);
+		      vect_finish_stmt_generation (stmt_info, call, gsi);
 		      if ((i & 1) == 0)
 			{
 			  prev_res = half_res;
@@ -3583,8 +3590,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	      gcall *call = gimple_build_call_internal_vec (ifn, vargs);
 	      gimple_call_set_lhs (call, half_res);
 	      gimple_call_set_nothrow (call, true);
-	      new_stmt_info
-		= vect_finish_stmt_generation (stmt_info, call, gsi);
+	      vect_finish_stmt_generation (stmt_info, call, gsi);
 	      if ((j & 1) == 0)
 		{
 		  prev_res = half_res;
@@ -6347,7 +6353,10 @@ scan_operand_equal_p (tree ref1, tree ref2)
     return false;
   if (maybe_ne (bitsize1, bitsize2))
     return false;
-  if (!operand_equal_p (offset1, offset2, 0))
+  if (offset1 != offset2
+      && (!offset1
+	  || !offset2
+	  || !operand_equal_p (offset1, offset2, 0)))
     return false;
   return true;
 }

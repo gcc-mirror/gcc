@@ -1,3 +1,49 @@
+2019-07-04  Marek Polacek  <polacek@redhat.com>
+
+	DR 1813
+	PR c++/83374 - __is_standard_layout wrong for a class with repeated bases.
+	* class.c (check_bases): Set CLASSTYPE_NON_STD_LAYOUT for a class if
+	CLASSTYPE_REPEATED_BASE_P is true.
+
+2019-07-04  Andrew Stubbs  <ams@codesourcery.com>
+
+	* cp-tree.h (cp_omp_emit_unmappable_type_notes): New prototype.
+	* decl.c (cp_finish_decl): Call cp_omp_emit_unmappable_type_notes.
+	* decl2.c (cp_omp_mappable_type): Move contents to ...
+	(cp_omp_mappable_type_1):  ... here and add note output.
+	(cp_omp_emit_unmappable_type_notes): New function.
+	* semantics.c (finish_omp_clauses): Call
+	cp_omp_emit_unmappable_type_notes in four places.
+
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	* call.c (build_new_op_1): Remove
+	dead assignemts.
+	* typeck.c (cp_build_binary_op): Likewise.
+
+2019-06-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55442 - memory-hog with highly recursive constexpr.
+	* constexpr.c (push_cx_call_context): Return depth.
+	(cxx_eval_call_expression): Don't cache past constexpr_cache_depth.
+
+2019-06-27  Jan Hubicka  <jh@suse.cz>
+
+	* class.c (layout_class_type): Set TYPE_CXX_ODR_P for as-base
+	type copy.
+
+2019-06-27  Martin Liska  <mliska@suse.cz>
+
+	* class.c (adjust_clone_args): Remove obviously
+	dead assignments.
+	(dump_class_hierarchy_r): Likewise.
+	* decl.c (check_initializer): Likewise.
+	* parser.c (cp_parser_lambda_expression): Likewise.
+	* pt.c (unify_bound_ttp_args): Likewise.
+	(convert_template_argument): Likewise.
+	* rtti.c (build_headof): Likewise.
+	* typeck.c (convert_for_initialization): Likewise.
+
 2019-06-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70462 - unnecessary base ctor variant with final.

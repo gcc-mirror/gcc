@@ -317,10 +317,11 @@ GNAT_ADA_OBJS =	\
  ada/frontend.o	\
  ada/libgnat/g-byorma.o	\
  ada/libgnat/g-dynhta.o	\
+ ada/libgnat/g-graphs.o \
  ada/libgnat/g-hesora.o	\
  ada/libgnat/g-htable.o	\
- ada/libgnat/g-lists.o \
- ada/libgnat/g-sets.o \
+ ada/libgnat/g-lists.o	\
+ ada/libgnat/g-sets.o	\
  ada/libgnat/g-spchge.o	\
  ada/libgnat/g-speche.o	\
  ada/libgnat/g-u3spch.o	\
@@ -507,6 +508,15 @@ GNATBIND_OBJS = \
  ada/binde.o      \
  ada/binderr.o    \
  ada/bindgen.o    \
+ ada/bindo.o      \
+ ada/bindo-augmentors.o   \
+ ada/bindo-builders.o     \
+ ada/bindo-diagnostics.o  \
+ ada/bindo-elaborators.o  \
+ ada/bindo-graphs.o       \
+ ada/bindo-units.o        \
+ ada/bindo-validators.o   \
+ ada/bindo-writers.o      \
  ada/bindusg.o    \
  ada/butil.o      \
  ada/casing.o     \
@@ -526,8 +536,12 @@ GNATBIND_OBJS = \
  ada/fname-uf.o   \
  ada/fname.o      \
  ada/libgnat/g-byorma.o   \
+ ada/libgnat/g-dynhta.o   \
+ ada/libgnat/g-graphs.o   \
  ada/libgnat/g-hesora.o   \
  ada/libgnat/g-htable.o   \
+ ada/libgnat/g-lists.o    \
+ ada/libgnat/g-sets.o     \
  ada/libgnat/gnat.o       \
  ada/gnatbind.o   \
  ada/gnatvsn.o    \

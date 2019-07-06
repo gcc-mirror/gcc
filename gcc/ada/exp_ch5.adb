@@ -3304,7 +3304,7 @@ package body Exp_Ch5 is
                 Declarations => New_List (Elmt_Decl),
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements =>  Stats))));
+                    Statements => Stats))));
 
       else
          Elmt_Ref :=
@@ -3330,7 +3330,7 @@ package body Exp_Ch5 is
              Declarations               => New_List (Elmt_Decl),
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements =>  New_List (New_Loop)));
+                 Statements => New_List (New_Loop)));
       end if;
 
       --  The element is only modified in expanded code, so it appears as

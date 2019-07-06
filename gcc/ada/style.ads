@@ -125,6 +125,9 @@ package Style is
    --  Called with Scan_Ptr pointing to the first minus sign of a comment.
    --  Intended for checking any specific rules for comment placement/format.
 
+   procedure Check_Defining_Identifier_Casing
+     renames Style_Inst.Check_Defining_Identifier_Casing;
+
    procedure Check_Dot_Dot
      renames Style_Inst.Check_Dot_Dot;
    --  Called after scanning out dot dot to check spacing
@@ -219,4 +222,5 @@ package Style is
    --  lower case letters. On entry Token_Ptr points to the keyword token.
    --  This is not used for keywords appearing as attribute designators,
    --  where instead Check_Attribute_Name (True) is called.
+
 end Style;

@@ -1757,6 +1757,18 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 		return NULL;
 	    }
 	}
+     
+      /* We do not allow CLOBBERs of handled components.  In case
+	 returned value is stored via such handled component, remove
+	 the clobber so stmt verifier is happy.  */
+      if (gimple_clobber_p (stmt)
+	  && TREE_CODE (gimple_assign_lhs (stmt)) == RESULT_DECL)
+	{
+	  tree remapped = remap_decl (gimple_assign_lhs (stmt), id);
+	  if (!DECL_P (remapped)
+	      && TREE_CODE (remapped) != MEM_REF)
+	    return NULL;
+	}
 
       if (gimple_debug_bind_p (stmt))
 	{
@@ -6241,11 +6253,11 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	     in the debug info that var (whole DECL_ORIGIN is the parm
 	     PARM_DECL) is optimized away, but could be looked up at the
 	     call site as value of D#X there.  */
-	  tree var = vars, vexpr;
+	  tree vexpr;
 	  gimple_stmt_iterator cgsi
 	    = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 	  gimple *def_temp;
-	  var = vars;
+	  tree var = vars;
 	  i = vec_safe_length (*debug_args);
 	  do
 	    {

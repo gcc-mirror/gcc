@@ -846,6 +846,108 @@ package Lib.Writ is
    --      dependency checking, but must be present for proper interpretation
    --      of the cross-reference data.
 
+   --  -------------------------
+   --  -- G  Invocation Graph --
+   --  -------------------------
+
+   --  An invocation graph line has the following format:
+   --
+   --    G line-kind line-attributes
+   --
+   --      Attribute line-kind is a Character which denotes the nature of the
+   --      line. Table ALI.Invocation_Graph_Line_Codes lists all legal values.
+   --
+   --      Attribute line-attributes depends on the value of line-kind, and is
+   --      contents are described further below.
+   --
+   --  An invocation signature uniquely identifies an invocation construct in
+   --  the ALI file namespace, and has the following format:
+   --
+   --      [ name scope line column (locations | "none") ]
+   --
+   --      Attribute name is a String which denotes the name of the construct
+   --
+   --      Attribute scope is a String which denotes the qualified name of the
+   --      scope where the construct is declared.
+   --
+   --      Attribute line is a Positive which denotes the line number where the
+   --      initial declaration of the construct appears.
+   --
+   --      Attribute column is a Positive which denotes the column number where
+   --      the initial declaration of the construct appears.
+   --
+   --      Attribute locations is a String which denotes the line and column
+   --      locations of all instances where the initial declaration of the
+   --      construct appears.
+   --
+   --  When the line-kind denotes invocation graph attributes, line-attributes
+   --  are set as follows:
+   --
+   --      encoding-kind
+   --
+   --      Attribute encoding-kind is a Character which specifies the encoding
+   --      kind used when collecting invocation constructs and relations. Table
+   --      ALI.Invocation_Graph_Encoding_Codes lists all legal values.
+   --
+   --  When the line-kind denotes an invocation construct, line-attributes are
+   --  set as follows:
+   --
+   --      construct-kind construct-spec-placement construct-body-placement
+   --        construct-signature
+   --
+   --      Attribute construct-kind is a Character which denotes the nature of
+   --      the construct. Table ALI.Invocation_Construct_Codes lists all legal
+   --      values.
+   --
+   --      Attribute construct-spec-placement is a Character which denotes the
+   --      placement of the construct's spec within the unit. All legal values
+   --      are listed in table ALI.Spec_And_Body_Placement_Codes.
+   --
+   --      Attribute construct-body-placement is a Character which denotes the
+   --      placement of the construct's body within the unit. All legal values
+   --      are listed in table ALI.Spec_And_Body_Placement_Codes.
+   --
+   --      Attribute construct-signature is the invocation signature of the
+   --      construct.
+   --
+   --  When the line-kind denotes an invocation relation, line-attributes are
+   --  set as follows:
+   --
+   --      relation-kind (extra-name | "none") invoker-signature
+   --         target-signature
+   --
+   --      Attribute relation-kind is a Character which denotes the nature of
+   --      the relation. All legal values are listed in ALI.Invocation_Codes.
+   --
+   --      Attribute extra-name is a String which denotes the name of an extra
+   --      entity used for error diagnostics. The value of extra-name depends
+   --      on the relation-kind as follows:
+   --
+   --        Accept_Alternative                     - related entry
+   --        Access_Taken                           - related subprogram
+   --        Call                                   - not present
+   --        Controlled_Adjustment                  - related controlled type
+   --        Controlled_Finalization                - related controlled type
+   --        Controlled_Initialization              - related controlled type
+   --        Default_Initial_Condition_Verification - related private type
+   --        Initial_Condition_Verification         - not present
+   --        Instantiation                          - not present
+   --        Internal_Controlled_Adjustment         - related controlled type
+   --        Internal_Controlled_Finalization       - related controlled type
+   --        Internal_Controlled_Initialization     - related controlled type
+   --        Invariant_Verification                 - related private type
+   --        Postcondition_Verification             - related routine
+   --        Protected_Entry_Call                   - not present
+   --        Protected_Subprogram_Call              - not present
+   --        Task_Activation                        - not present
+   --        Task_Entry_Call                        - not present
+   --        Type_Initialization                    - related type
+   --
+   --      Attribute invoker-signature is the invocation signature of the
+   --      invoker.
+   --
+   --      Attribute target-signature is the invocation signature of the target
+
    --------------------------
    -- Cross-Reference Data --
    --------------------------

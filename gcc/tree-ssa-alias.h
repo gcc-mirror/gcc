@@ -131,11 +131,11 @@ extern bool call_may_clobber_ref_p (gcall *, tree);
 extern bool call_may_clobber_ref_p_1 (gcall *, ao_ref *);
 extern bool stmt_kills_ref_p (gimple *, tree);
 extern bool stmt_kills_ref_p (gimple *, ao_ref *);
-extern tree get_continuation_for_phi (gimple *, ao_ref *,
+extern tree get_continuation_for_phi (gimple *, ao_ref *, bool,
 				      unsigned int &, bitmap *, bool,
 				      void *(*)(ao_ref *, tree, void *, bool *),
 				      void *);
-extern void *walk_non_aliased_vuses (ao_ref *, tree,
+extern void *walk_non_aliased_vuses (ao_ref *, tree, bool,
 				     void *(*)(ao_ref *, tree, void *),
 				     void *(*)(ao_ref *, tree, void *, bool *),
 				     tree (*)(tree), unsigned &, void *);

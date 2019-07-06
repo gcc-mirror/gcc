@@ -1432,6 +1432,10 @@ fconstexpr-depth=
 C++ ObjC++ Joined RejectNegative UInteger Var(max_constexpr_depth) Init(512)
 -fconstexpr-depth=<number>	Specify maximum constexpr recursion depth.
 
+fconstexpr-cache-depth=
+C++ ObjC++ Joined RejectNegative UInteger Var(constexpr_cache_depth) Init(8)
+-fconstexpr-cache-depth=<number>	Specify maximum constexpr recursion cache depth.
+
 fconstexpr-loop-limit=
 C++ ObjC++ Joined RejectNegative UInteger Var(constexpr_loop_limit) Init(262144)
 -fconstexpr-loop-limit=<number>	Specify maximum constexpr loop iteration count.
@@ -1615,6 +1619,10 @@ Enable lazy module importing.
 fforce-module-macros
 C++ ObjC++ RejectNegative Var(flag_module_macros) Init(0)
 Ensure all imported macros are loaded.
+
+fmax-include-depth=
+C ObjC C++ ObjC++ Joined RejectNegative UInteger
+fmax-include-depth=<number> Set the maximum depth of the nested #include.
 
 fms-extensions
 C ObjC C++ ObjC++ Var(flag_ms_extensions)

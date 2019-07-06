@@ -18,7 +18,7 @@ bar (struct S *x)
 int
 main ()
 {
-  struct S s = {};
+  __attribute__((aligned(8))) struct S s = {};
   s.buf[1] = 1;
   s.buf[3] = 2;
   bar (&s);

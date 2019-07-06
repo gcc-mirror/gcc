@@ -6452,8 +6452,8 @@ package body Sem_Util is
    -- Dynamic_Accessibility_Level --
    ---------------------------------
 
-   function Dynamic_Accessibility_Level (Expr : Node_Id) return Node_Id is
-      Loc : constant Source_Ptr := Sloc (Expr);
+   function Dynamic_Accessibility_Level (N : Node_Id) return Node_Id is
+      Loc : constant Source_Ptr := Sloc (N);
 
       function Make_Level_Literal (Level : Uint) return Node_Id;
       --  Construct an integer literal representing an accessibility level
@@ -6473,7 +6473,12 @@ package body Sem_Util is
 
       --  Local variables
 
-      E : Entity_Id;
+      Expr : constant Node_Id := Original_Node (N);
+      --  Expr references the original node because at this stage N may be the
+      --  reference to a variable internally created by the frontend to remove
+      --  side effects of an expression.
+
+      E    : Entity_Id;
 
    --  Start of processing for Dynamic_Accessibility_Level
 
@@ -6530,12 +6535,69 @@ package body Sem_Util is
 
          when N_Allocator =>
 
-            --  Unimplemented: depends on context. As an actual parameter where
-            --  formal type is anonymous, use
-            --    Scope_Depth (Current_Scope) + 1.
-            --  For other cases, see 3.10.2(14/3) and following. ???
+            --  This is not fully implemented since it depends on context (see
+            --  3.10.2(14/3-14.2/3). More work is needed in the following cases
+            --
+            --  1) For an anonymous allocator defining the value of an access
+            --     parameter, the accessibility level is that of the innermost
+            --     master of the call; however currently we pass the level of
+            --     execution of the called subprogram, which is one greater
+            --     than the current scope level (see Expand_Call_Helper).
+            --
+            --     For example, a statement is a master and a declaration is
+            --     not a master; so we should not pass in the same level for
+            --     the following cases:
+            --
+            --         function F (X : access Integer) return T is ... ;
+            --         Decl : T := F (new Integer); -- level is off by one
+            --      begin
+            --         Decl := F (new Integer); -- we get this case right
+            --
+            --  2) For an anonymous allocator that defines the result of a
+            --     function with an access result, the accessibility level is
+            --     determined as though the allocator were in place of the call
+            --     of the function. In the special case of a call that is the
+            --     operand of a type conversion the level is that of the target
+            --     access type of the conversion.
+            --
+            --  3) For an anonymous allocator defining an access discriminant
+            --     the accessibility level is determined as follows:
+            --       * for an allocator used to define the discriminant of an
+            --         object, the level of the object
+            --       * for an allocator used to define the constraint in a
+            --         subtype_indication in any other context, the level of
+            --         the master that elaborates the subtype_indication.
 
-            null;
+            case Nkind (Parent (N)) is
+               when N_Object_Declaration =>
+
+                  --  For an anonymous allocator whose type is that of a
+                  --  stand-alone object of an anonymous access-to-object type,
+                  --  the accessibility level is that of the declaration of the
+                  --  stand-alone object.
+
+                  return
+                    Make_Level_Literal
+                      (Object_Access_Level
+                         (Defining_Identifier (Parent (N))));
+
+               when N_Assignment_Statement =>
+                  return
+                    Make_Level_Literal
+                      (Object_Access_Level (Name (Parent (N))));
+
+               when others =>
+                  declare
+                     S : constant String :=
+                           Node_Kind'Image (Nkind (Parent (N)));
+                  begin
+                     Error_Msg_Strlen := S'Length;
+                     Error_Msg_String (1 .. Error_Msg_Strlen) := S;
+                     Error_Msg_N
+                       ("unsupported context for anonymous allocator (~)",
+                        Parent (N));
+                  end;
+            end case;
 
          when N_Type_Conversion =>
             if not Is_Local_Anonymous_Access (Etype (Expr)) then
@@ -6721,33 +6783,26 @@ package body Sem_Util is
    -- Enclosing_Generic_Body --
    ----------------------------
 
-   function Enclosing_Generic_Body
-     (N : Node_Id) return Node_Id
-   is
-      P    : Node_Id;
-      Decl : Node_Id;
-      Spec : Node_Id;
+   function Enclosing_Generic_Body (N : Node_Id) return Node_Id is
+      Par     : Node_Id;
+      Spec_Id : Entity_Id;
 
    begin
-      P := Parent (N);
-      while Present (P) loop
-         if Nkind (P) = N_Package_Body
-           or else Nkind (P) = N_Subprogram_Body
-         then
-            Spec := Corresponding_Spec (P);
+      Par := Parent (N);
+      while Present (Par) loop
+         if Nkind_In (Par, N_Package_Body, N_Subprogram_Body) then
+            Spec_Id := Corresponding_Spec (Par);
 
-            if Present (Spec) then
-               Decl := Unit_Declaration_Node (Spec);
-
-               if Nkind (Decl) = N_Generic_Package_Declaration
-                 or else Nkind (Decl) = N_Generic_Subprogram_Declaration
-               then
-                  return P;
-               end if;
+            if Present (Spec_Id)
+              and then Nkind_In (Unit_Declaration_Node (Spec_Id),
+                                 N_Generic_Package_Declaration,
+                                 N_Generic_Subprogram_Declaration)
+            then
+               return Par;
             end if;
          end if;
 
-         P := Parent (P);
+         Par := Parent (Par);
       end loop;
 
       return Empty;
@@ -6757,38 +6812,34 @@ package body Sem_Util is
    -- Enclosing_Generic_Unit --
    ----------------------------
 
-   function Enclosing_Generic_Unit
-     (N : Node_Id) return Node_Id
-   is
-      P    : Node_Id;
-      Decl : Node_Id;
-      Spec : Node_Id;
+   function Enclosing_Generic_Unit (N : Node_Id) return Node_Id is
+      Par       : Node_Id;
+      Spec_Decl : Node_Id;
+      Spec_Id   : Entity_Id;
 
    begin
-      P := Parent (N);
-      while Present (P) loop
-         if Nkind (P) = N_Generic_Package_Declaration
-           or else Nkind (P) = N_Generic_Subprogram_Declaration
+      Par := Parent (N);
+      while Present (Par) loop
+         if Nkind_In (Par, N_Generic_Package_Declaration,
+                           N_Generic_Subprogram_Declaration)
          then
-            return P;
+            return Par;
 
-         elsif Nkind (P) = N_Package_Body
-           or else Nkind (P) = N_Subprogram_Body
-         then
-            Spec := Corresponding_Spec (P);
+         elsif Nkind_In (Par, N_Package_Body, N_Subprogram_Body) then
+            Spec_Id := Corresponding_Spec (Par);
 
-            if Present (Spec) then
-               Decl := Unit_Declaration_Node (Spec);
+            if Present (Spec_Id) then
+               Spec_Decl := Unit_Declaration_Node (Spec_Id);
 
-               if Nkind (Decl) = N_Generic_Package_Declaration
-                 or else Nkind (Decl) = N_Generic_Subprogram_Declaration
+               if Nkind_In (Spec_Decl, N_Generic_Package_Declaration,
+                                       N_Generic_Subprogram_Declaration)
                then
-                  return Decl;
+                  return Spec_Decl;
                end if;
             end if;
          end if;
 
-         P := Parent (P);
+         Par := Parent (Par);
       end loop;
 
       return Empty;
@@ -6851,8 +6902,9 @@ package body Sem_Util is
       elsif Dynamic_Scope = Empty then
          return Empty;
 
-      elsif Ekind_In (Dynamic_Scope, E_Package, E_Package_Body,
-                      E_Generic_Package)
+      elsif Ekind_In (Dynamic_Scope, E_Generic_Package,
+                                     E_Package,
+                                     E_Package_Body)
       then
          return Dynamic_Scope;
 
@@ -6906,7 +6958,7 @@ package body Sem_Util is
       elsif Ekind (Dyn_Scop) = E_Subprogram_Body then
          return Corresponding_Spec (Parent (Parent (Dyn_Scop)));
 
-      elsif Ekind_In (Dyn_Scop, E_Block, E_Return_Statement) then
+      elsif Ekind_In (Dyn_Scop, E_Block, E_Loop, E_Return_Statement) then
          return Enclosing_Subprogram (Dyn_Scop);
 
       elsif Ekind (Dyn_Scop) = E_Entry then
@@ -7578,6 +7630,18 @@ package body Sem_Util is
          Next_Index (Index);
       end loop;
    end Examine_Array_Bounds;
+
+   -------------------
+   -- Exceptions_OK --
+   -------------------
+
+   function Exceptions_OK return Boolean is
+   begin
+      return
+        not (Restriction_Active (No_Exception_Handlers)    or else
+             Restriction_Active (No_Exception_Propagation) or else
+             Restriction_Active (No_Exceptions));
+   end Exceptions_OK;
 
    --------------------------
    -- Explain_Limited_Type --
@@ -8938,6 +9002,12 @@ package body Sem_Util is
 
       begin
          Find_Discrete_Value : while Present (Variant) loop
+
+            --  If a choice is a subtype with a static predicate, it must
+            --  be rewritten as an explicit list of non-predicated choices.
+
+            Expand_Static_Predicates_In_Choices (Variant);
+
             Discrete_Choice := First (Discrete_Choices (Variant));
             while Present (Discrete_Choice) loop
                exit Find_Discrete_Value when
@@ -9201,12 +9271,12 @@ package body Sem_Util is
          Next_Entity (Func);
       end loop;
 
-      --  If not found, no way to resolve remaining primitives.
+      --  If not found, no way to resolve remaining primitives
 
       if Cursor = Any_Type then
          Error_Msg_N
-           ("primitive operation for Iterable type must appear "
-             & "in the same list of declarations as the type", Aspect);
+           ("primitive operation for Iterable type must appear in the same "
+            & "list of declarations as the type", Aspect);
       end if;
 
       return Cursor;
@@ -10737,7 +10807,7 @@ package body Sem_Util is
          --       Asynch_Writers         Effective_Writes
          --
          --  Note that both forms of External have higher precedence than
-         --  Synchronous (SPARK RM 7.1.4(10)).
+         --  Synchronous (SPARK RM 7.1.4(9)).
 
          elsif Has_Synchronous then
             return Nam_In (Property, Name_Async_Readers, Name_Async_Writers);
@@ -12303,6 +12373,25 @@ package body Sem_Util is
          return False;
       end if;
    end In_Pre_Post_Condition;
+
+   ------------------------------
+   -- In_Quantified_Expression --
+   ------------------------------
+
+   function In_Quantified_Expression (N : Node_Id) return Boolean is
+      P : Node_Id;
+   begin
+      P := Parent (N);
+      loop
+         if No (P) then
+            return False;
+         elsif Nkind (P) = N_Quantified_Expression then
+            return True;
+         else
+            P := Parent (P);
+         end if;
+      end loop;
+   end In_Quantified_Expression;
 
    -------------------------------------
    -- In_Reverse_Storage_Order_Object --
@@ -18900,6 +18989,44 @@ package body Sem_Util is
       end if;
    end Mark_Elaboration_Attributes;
 
+   ----------------------------------------
+   -- Mark_Save_Invocation_Graph_Of_Body --
+   ----------------------------------------
+
+   procedure Mark_Save_Invocation_Graph_Of_Body is
+      Main      : constant Node_Id := Cunit (Main_Unit);
+      Main_Unit : constant Node_Id := Unit (Main);
+      Aux_Id    : Entity_Id;
+
+   begin
+      Set_Save_Invocation_Graph_Of_Body (Main);
+
+      --  Assume that the main unit does not have a complimentary unit
+
+      Aux_Id := Empty;
+
+      --  Obtain the complimentary unit of the main unit
+
+      if Nkind_In (Main_Unit, N_Generic_Package_Declaration,
+                              N_Generic_Subprogram_Declaration,
+                              N_Package_Declaration,
+                              N_Subprogram_Declaration)
+      then
+         Aux_Id := Corresponding_Body (Main_Unit);
+
+      elsif Nkind_In (Main_Unit, N_Package_Body,
+                                 N_Subprogram_Body,
+                                 N_Subprogram_Renaming_Declaration)
+      then
+         Aux_Id := Corresponding_Spec (Main_Unit);
+      end if;
+
+      if Present (Aux_Id) then
+         Set_Save_Invocation_Graph_Of_Body
+           (Parent (Unit_Declaration_Node (Aux_Id)));
+      end if;
+   end Mark_Save_Invocation_Graph_Of_Body;
+
    ----------------------------------
    -- Matching_Static_Array_Bounds --
    ----------------------------------
@@ -23288,6 +23415,13 @@ package body Sem_Util is
 
          if From_Typ = Typ then
             return;
+
+         --  Nothing to do when the destination denotes an incomplete type
+         --  because the DIC is associated with the current instance of a
+         --  private type, thus it can never apply to an incomplete type.
+
+         elsif Is_Incomplete_Type (Typ) then
+            return;
          end if;
 
          DIC_Proc := DIC_Procedure (From_Typ);
@@ -26368,12 +26502,12 @@ package body Sem_Util is
 
       --  A record type or type extension yields a synchronized object when its
       --  discriminants (if any) lack default values and all components are of
-      --  a type that yelds a synchronized object.
+      --  a type that yields a synchronized object.
 
       elsif Is_Record_Type (Typ) then
 
          --  Inspect all entities defined in the scope of the type, looking for
-         --  components of a type that does not yeld a synchronized object or
+         --  components of a type that does not yield a synchronized object or
          --  for discriminants with default values.
 
          Id := First_Entity (Typ);
@@ -26403,6 +26537,7 @@ package body Sem_Util is
          --  synchronized object.
 
          if Etype (Typ) /= Typ
+           and then not Is_Private_Type (Etype (Typ))
            and then not Yields_Synchronized_Object (Etype (Typ))
          then
             return False;
@@ -26418,10 +26553,18 @@ package body Sem_Util is
       elsif Is_Synchronized_Interface (Typ) then
          return True;
 
-      --  A task type yelds a synchronized object by default
+      --  A task type yields a synchronized object by default
 
       elsif Is_Task_Type (Typ) then
          return True;
+
+      --  A private type yields a synchronized object if its underlying type
+      --  does.
+
+      elsif Is_Private_Type (Typ)
+        and then Present (Underlying_Type (Typ))
+      then
+         return Yields_Synchronized_Object (Underlying_Type (Typ));
 
       --  Otherwise the type does not yield a synchronized object
 

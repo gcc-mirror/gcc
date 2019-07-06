@@ -5801,7 +5801,7 @@ counter_mode (rtx count_exp)
 
 
 static void
-expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
+expand_set_or_cpymem_via_loop (rtx destmem, rtx srcmem,
 			       rtx destptr, rtx srcptr, rtx value,
 			       rtx count, machine_mode mode, int unroll,
 			       int expected_size, bool issetmem)
@@ -5954,7 +5954,7 @@ scale_counter (rtx countreg, int scale)
    Other arguments have same meaning as for previous function.  */
 
 static void
-expand_set_or_movmem_via_rep (rtx destmem, rtx srcmem,
+expand_set_or_cpymem_via_rep (rtx destmem, rtx srcmem,
 			   rtx destptr, rtx srcptr, rtx value, rtx orig_value,
 			   rtx count,
 			   machine_mode mode, bool issetmem)
@@ -6121,7 +6121,7 @@ ix86_expand_aligntest (rtx variable, int value, bool epilogue)
 /* Output code to copy at most count & (max_size - 1) bytes from SRC to DEST.  */
 
 static void
-expand_movmem_epilogue (rtx destmem, rtx srcmem,
+expand_cpymem_epilogue (rtx destmem, rtx srcmem,
 			rtx destptr, rtx srcptr, rtx count, int max_size)
 {
   rtx src, dest;
@@ -6146,7 +6146,7 @@ expand_movmem_epilogue (rtx destmem, rtx srcmem,
     {
       count = expand_simple_binop (GET_MODE (count), AND, count, GEN_INT (max_size - 1),
 				    count, 1, OPTAB_DIRECT);
-      expand_set_or_movmem_via_loop (destmem, srcmem, destptr, srcptr, NULL,
+      expand_set_or_cpymem_via_loop (destmem, srcmem, destptr, srcptr, NULL,
 				     count, QImode, 1, 4, false);
       return;
     }
@@ -6295,7 +6295,7 @@ expand_setmem_epilogue_via_loop (rtx destmem, rtx destptr, rtx value,
 {
   count = expand_simple_binop (counter_mode (count), AND, count,
 			       GEN_INT (max_size - 1), count, 1, OPTAB_DIRECT);
-  expand_set_or_movmem_via_loop (destmem, NULL, destptr, NULL,
+  expand_set_or_cpymem_via_loop (destmem, NULL, destptr, NULL,
 				 gen_lowpart (QImode, value), count, QImode,
 				 1, max_size / 2, true);
 }
@@ -6416,7 +6416,7 @@ ix86_adjust_counter (rtx countreg, HOST_WIDE_INT value)
    Return value is updated DESTMEM.  */
 
 static rtx
-expand_set_or_movmem_prologue (rtx destmem, rtx srcmem,
+expand_set_or_cpymem_prologue (rtx destmem, rtx srcmem,
 				  rtx destptr, rtx srcptr, rtx value,
 				  rtx vec_value, rtx count, int align,
 				  int desired_alignment, bool issetmem)
@@ -6449,7 +6449,7 @@ expand_set_or_movmem_prologue (rtx destmem, rtx srcmem,
    or setmem sequence that is valid for SIZE..2*SIZE-1 bytes
    and jump to DONE_LABEL.  */
 static void
-expand_small_movmem_or_setmem (rtx destmem, rtx srcmem,
+expand_small_cpymem_or_setmem (rtx destmem, rtx srcmem,
 			       rtx destptr, rtx srcptr,
 			       rtx value, rtx vec_value,
 			       rtx count, int size,
@@ -6575,7 +6575,7 @@ expand_small_movmem_or_setmem (rtx destmem, rtx srcmem,
    done_label:
   */
 static void
-expand_set_or_movmem_prologue_epilogue_by_misaligned_moves (rtx destmem, rtx srcmem,
+expand_set_or_cpymem_prologue_epilogue_by_misaligned_moves (rtx destmem, rtx srcmem,
 							    rtx *destptr, rtx *srcptr,
 							    machine_mode mode,
 							    rtx value, rtx vec_value,
@@ -6616,7 +6616,7 @@ expand_set_or_movmem_prologue_epilogue_by_misaligned_moves (rtx destmem, rtx src
 
       /* Handle sizes > 3.  */
       for (;size2 > 2; size2 >>= 1)
-	expand_small_movmem_or_setmem (destmem, srcmem,
+	expand_small_cpymem_or_setmem (destmem, srcmem,
 				       *destptr, *srcptr,
 				       value, vec_value,
 				       *count,
@@ -6771,7 +6771,7 @@ expand_set_or_movmem_prologue_epilogue_by_misaligned_moves (rtx destmem, rtx src
    is returned, but also of SRC, which is passed as a pointer for that
    reason.  */
 static rtx
-expand_set_or_movmem_constant_prologue (rtx dst, rtx *srcp, rtx destreg,
+expand_set_or_cpymem_constant_prologue (rtx dst, rtx *srcp, rtx destreg,
 					   rtx srcreg, rtx value, rtx vec_value,
 					   int desired_align, int align_bytes,
 					   bool issetmem)
@@ -7214,7 +7214,7 @@ ix86_copy_addr_to_reg (rtx addr)
      3) Main body: the copying loop itself, copying in SIZE_NEEDED chunks
 	with specified algorithm.  */
 bool
-ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
+ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 			   rtx align_exp, rtx expected_align_exp,
 			   rtx expected_size_exp, rtx min_size_exp,
 			   rtx max_size_exp, rtx probable_max_size_exp,
@@ -7436,7 +7436,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   if (misaligned_prologue_used)
     {
       /* Misaligned move prologue handled small blocks by itself.  */
-      expand_set_or_movmem_prologue_epilogue_by_misaligned_moves
+      expand_set_or_cpymem_prologue_epilogue_by_misaligned_moves
 	   (dst, src, &destreg, &srcreg,
 	    move_mode, promoted_val, vec_promoted_val,
 	    &count_exp,
@@ -7553,7 +7553,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 	  dst = change_address (dst, BLKmode, destreg);
 	  if (!issetmem)
 	    src = change_address (src, BLKmode, srcreg);
-	  dst = expand_set_or_movmem_prologue (dst, src, destreg, srcreg,
+	  dst = expand_set_or_cpymem_prologue (dst, src, destreg, srcreg,
 					    promoted_val, vec_promoted_val,
 					    count_exp, align, desired_align,
 					    issetmem);
@@ -7567,7 +7567,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 	{
 	  /* If we know how many bytes need to be stored before dst is
 	     sufficiently aligned, maintain aliasing info accurately.  */
-	  dst = expand_set_or_movmem_constant_prologue (dst, &src, destreg,
+	  dst = expand_set_or_cpymem_constant_prologue (dst, &src, destreg,
 							   srcreg,
 							   promoted_val,
 							   vec_promoted_val,
@@ -7626,19 +7626,19 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
     case loop_1_byte:
     case loop:
     case unrolled_loop:
-      expand_set_or_movmem_via_loop (dst, src, destreg, srcreg, promoted_val,
+      expand_set_or_cpymem_via_loop (dst, src, destreg, srcreg, promoted_val,
 				     count_exp, move_mode, unroll_factor,
 				     expected_size, issetmem);
       break;
     case vector_loop:
-      expand_set_or_movmem_via_loop (dst, src, destreg, srcreg,
+      expand_set_or_cpymem_via_loop (dst, src, destreg, srcreg,
 				     vec_promoted_val, count_exp, move_mode,
 				     unroll_factor, expected_size, issetmem);
       break;
     case rep_prefix_8_byte:
     case rep_prefix_4_byte:
     case rep_prefix_1_byte:
-      expand_set_or_movmem_via_rep (dst, src, destreg, srcreg, promoted_val,
+      expand_set_or_cpymem_via_rep (dst, src, destreg, srcreg, promoted_val,
 				       val_exp, count_exp, move_mode, issetmem);
       break;
     }
@@ -7691,7 +7691,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 				    vec_promoted_val, count_exp,
 				    epilogue_size_needed);
 	  else
-	    expand_movmem_epilogue (dst, src, destreg, srcreg, count_exp,
+	    expand_cpymem_epilogue (dst, src, destreg, srcreg, count_exp,
 				    epilogue_size_needed);
 	}
     }
@@ -16052,14 +16052,13 @@ ix86_expand_rounddf_32 (rtx operand0, rtx operand1)
 			       0, OPTAB_DIRECT);
 
   /* Compensate.  */
-  tmp = gen_reg_rtx (mode);
   /* xa2 = xa2 - (dxa > 0.5 ? 1 : 0) */
   tmp = ix86_expand_sse_compare_mask (UNGT, dxa, half, false);
-  emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (mode, one, tmp)));
+  emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (mode, tmp, one)));
   xa2 = expand_simple_binop (mode, MINUS, xa2, tmp, NULL_RTX, 0, OPTAB_DIRECT);
   /* xa2 = xa2 + (dxa <= -0.5 ? 1 : 0) */
   tmp = ix86_expand_sse_compare_mask (UNGE, mhalf, dxa, false);
-  emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (mode, one, tmp)));
+  emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (mode, tmp, one)));
   xa2 = expand_simple_binop (mode, PLUS, xa2, tmp, NULL_RTX, 0, OPTAB_DIRECT);
 
   /* res = copysign (xa2, operand1) */
@@ -19780,8 +19779,7 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
       emit_insn (gen_vec_widen_umult_even_v4si (t5, 
 					gen_lowpart (V4SImode, op1),
 					gen_lowpart (V4SImode, op2)));
-      op0 = expand_binop (mode, add_optab, t5, t4, op0, 1, OPTAB_DIRECT);
-
+      force_expand_binop (mode, add_optab, t5, t4, op0, 1, OPTAB_DIRECT);
     }
   else
     {

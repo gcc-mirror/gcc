@@ -3418,10 +3418,22 @@ darwin_rs6000_override_options (void)
       rs6000_isa_flags |= OPTION_MASK_POWERPC64;
       warning (0, "%qs requires PowerPC64 architecture, enabling", "-m64");
     }
+
+  /* The linkers [ld64] that support 64Bit do not need the JBSR longcall
+     optimisation, and will not work with the most generic case (where the
+     symbol is undefined external, but there is no symbl stub).  */
+  if (TARGET_64BIT)
+    rs6000_default_long_calls = 0;
+
+  /* ld_classic is (so far) still used for kernel (static) code, and supports
+     the JBSR longcall / branch islands.  */
   if (flag_mkernel)
     {
       rs6000_default_long_calls = 1;
-      rs6000_isa_flags |= OPTION_MASK_SOFT_FLOAT;
+
+      /* Allow a kext author to do -mkernel -mhard-float.  */
+      if (! (rs6000_isa_flags_explicit & OPTION_MASK_SOFT_FLOAT))
+        rs6000_isa_flags |= OPTION_MASK_SOFT_FLOAT;
     }
 
   /* Make -m64 imply -maltivec.  Darwin's 64-bit ABI includes
@@ -3615,6 +3627,12 @@ rs6000_option_override_internal (bool global_init_p)
   if (flag_sanitize & SANITIZE_USER_ADDRESS
       && !global_options_set.x_flag_asynchronous_unwind_tables)
     flag_asynchronous_unwind_tables = 1;
+
+  /* -fvariable-expansion-in-unroller is a win for POWER whenever the
+     loop unroller is active.  It is only checked during unrolling, so
+     we can just set it on by default.  */
+  if (!global_options_set.x_flag_variable_expansion_in_unroller)
+    flag_variable_expansion_in_unroller = 1;
 
   /* Set the pointer size.  */
   if (TARGET_64BIT)
@@ -32082,7 +32100,16 @@ rs6000_force_indexed_or_indirect_mem (rtx x)
 	  addr = reg;
 	}
 
-      x = replace_equiv_address (x, force_reg (Pmode, addr));
+      if (GET_CODE (addr) == PLUS)
+	{
+	  rtx op0 = XEXP (addr, 0);
+	  rtx op1 = XEXP (addr, 1);
+	  op0 = force_reg (Pmode, op0);
+	  op1 = force_reg (Pmode, op1);
+	  x = replace_equiv_address (x, gen_rtx_PLUS (Pmode, op0, op1));
+	}
+      else
+	x = replace_equiv_address (x, force_reg (Pmode, addr));
     }
 
   return x;

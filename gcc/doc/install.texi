@@ -396,6 +396,12 @@ built together with GCC.  Alternatively, the @option{--with-isl} configure
 option should be used if isl is not installed in your default library
 search path.
 
+@item zstd Library.
+
+Necessary to build GCC with zstd compression used for LTO bytecode.
+The library is searched in your default library patch search.
+Alternatively, the @option{--with-zstd} configure option should be used.
+
 @end table
 
 @heading Tools/packages necessary for modifying GCC
@@ -1283,6 +1289,11 @@ assumptions made by the configure test are incorrect.
 @item --disable-tls
 Specify that the target does not support TLS.
 This is an alias for @option{--enable-tls=no}.
+
+@item --disable-tm-clone-registry
+Disable TM clone registry in libgcc. It is enabled in libgcc by default.
+This option helps to reduce code size for embedded targets which do
+not use transactional memory.
 
 @item --with-cpu=@var{cpu}
 @itemx --with-cpu-32=@var{cpu}

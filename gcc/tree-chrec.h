@@ -23,11 +23,14 @@ along with GCC; see the file COPYING3.  If not see
 
 /* The following trees are unique elements.  Thus the comparison of another
    element to these elements should be done on the pointer to these trees,
-   and not on their value.  */
+   and not on their value.
 
-extern tree chrec_not_analyzed_yet;
-extern GTY(()) tree chrec_dont_know;
-extern GTY(()) tree chrec_known;
+   extern tree chrec_not_analyzed_yet;
+   extern tree chrec_dont_know;
+   extern tree chrec_known;
+
+   chrec_not_analyzed_yet is NULL_TREE and the others are defined
+   in global_trees[].  */
 
 /* After having added an automatically generated element, please
    include it in the following function.  */

@@ -6200,13 +6200,50 @@ This pattern is not allowed to @code{FAIL}.
 @item @samp{one_cmpl@var{m}2}
 Store the bitwise-complement of operand 1 into operand 0.
 
+@cindex @code{cpymem@var{m}} instruction pattern
+@item @samp{cpymem@var{m}}
+Block copy instruction.  The destination and source blocks of memory
+are the first two operands, and both are @code{mem:BLK}s with an
+address in mode @code{Pmode}.
+
+The number of bytes to copy is the third operand, in mode @var{m}.
+Usually, you specify @code{Pmode} for @var{m}.  However, if you can
+generate better code knowing the range of valid lengths is smaller than
+those representable in a full Pmode pointer, you should provide
+a pattern with a
+mode corresponding to the range of values you can handle efficiently
+(e.g., @code{QImode} for values in the range 0--127; note we avoid numbers
+that appear negative) and also a pattern with @code{Pmode}.
+
+The fourth operand is the known shared alignment of the source and
+destination, in the form of a @code{const_int} rtx.  Thus, if the
+compiler knows that both source and destination are word-aligned,
+it may provide the value 4 for this operand.
+
+Optional operands 5 and 6 specify expected alignment and size of block
+respectively.  The expected alignment differs from alignment in operand 4
+in a way that the blocks are not required to be aligned according to it in
+all cases. This expected alignment is also in bytes, just like operand 4.
+Expected size, when unknown, is set to @code{(const_int -1)}.
+
+Descriptions of multiple @code{cpymem@var{m}} patterns can only be
+beneficial if the patterns for smaller modes have fewer restrictions
+on their first, second and fourth operands.  Note that the mode @var{m}
+in @code{cpymem@var{m}} does not impose any restriction on the mode of
+individually copied data units in the block.
+
+The @code{cpymem@var{m}} patterns need not give special consideration
+to the possibility that the source and destination strings might
+overlap. These patterns are used to do inline expansion of
+@code{__builtin_memcpy}.
+
 @cindex @code{movmem@var{m}} instruction pattern
 @item @samp{movmem@var{m}}
 Block move instruction.  The destination and source blocks of memory
 are the first two operands, and both are @code{mem:BLK}s with an
 address in mode @code{Pmode}.
 
-The number of bytes to move is the third operand, in mode @var{m}.
+The number of bytes to copy is the third operand, in mode @var{m}.
 Usually, you specify @code{Pmode} for @var{m}.  However, if you can
 generate better code knowing the range of valid lengths is smaller than
 those representable in a full Pmode pointer, you should provide
@@ -6230,10 +6267,11 @@ Descriptions of multiple @code{movmem@var{m}} patterns can only be
 beneficial if the patterns for smaller modes have fewer restrictions
 on their first, second and fourth operands.  Note that the mode @var{m}
 in @code{movmem@var{m}} does not impose any restriction on the mode of
-individually moved data units in the block.
+individually copied data units in the block.
 
-These patterns need not give special consideration to the possibility
-that the source and destination strings might overlap.
+The @code{movmem@var{m}} patterns must correctly handle the case where
+the source and destination strings overlap. These patterns are used to
+do inline expansion of @code{__builtin_memmove}.
 
 @cindex @code{movstr} instruction pattern
 @item @samp{movstr}
@@ -6254,7 +6292,7 @@ given as a @code{mem:BLK} whose address is in mode @code{Pmode}.  The
 number of bytes to set is the second operand, in mode @var{m}.  The value to
 initialize the memory with is the third operand. Targets that only support the
 clearing of memory should reject any value that is not the constant 0.  See
-@samp{movmem@var{m}} for a discussion of the choice of mode.
+@samp{cpymem@var{m}} for a discussion of the choice of mode.
 
 The fourth operand is the known alignment of the destination, in the form
 of a @code{const_int} rtx.  Thus, if the compiler knows that the
@@ -6272,13 +6310,13 @@ Operand 9 is the probable maximal size (i.e.@: we cannot rely on it for
 correctness, but it can be used for choosing proper code sequence for a
 given size).
 
-The use for multiple @code{setmem@var{m}} is as for @code{movmem@var{m}}.
+The use for multiple @code{setmem@var{m}} is as for @code{cpymem@var{m}}.
 
 @cindex @code{cmpstrn@var{m}} instruction pattern
 @item @samp{cmpstrn@var{m}}
 String compare instruction, with five operands.  Operand 0 is the output;
 it has mode @var{m}.  The remaining four operands are like the operands
-of @samp{movmem@var{m}}.  The two memory blocks specified are compared
+of @samp{cpymem@var{m}}.  The two memory blocks specified are compared
 byte by byte in lexicographic order starting at the beginning of each
 string.  The instruction is not allowed to prefetch more than one byte
 at a time since either string may end in the first byte and reading past

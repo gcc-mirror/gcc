@@ -3531,7 +3531,7 @@ two areas of memory, or to set, clear or store to memory, for example\n\
 when copying a @code{struct}. The @code{by_pieces} infrastructure\n\
 implements such memory operations as a sequence of load, store or move\n\
 insns.  Alternate strategies are to expand the\n\
-@code{movmem} or @code{setmem} optabs, to emit a library call, or to emit\n\
+@code{cpymem} or @code{setmem} optabs, to emit a library call, or to emit\n\
 unit-by-unit, loop-based operations.\n\
 \n\
 This target hook should return true if, for a memory operation with a\n\
@@ -3550,7 +3550,7 @@ optimized for speed rather than size.\n\
 \n\
 Returning true for higher values of @var{size} can improve code generation\n\
 for speed if the target does not provide an implementation of the\n\
-@code{movmem} or @code{setmem} standard names, if the @code{movmem} or\n\
+@code{cpymem} or @code{setmem} standard names, if the @code{cpymem} or\n\
 @code{setmem} implementation would be more expensive than a sequence of\n\
 insns, or if the overhead of a library call would dominate that of\n\
 the body of the memory operation.\n\

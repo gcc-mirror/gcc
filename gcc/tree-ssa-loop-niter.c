@@ -4183,6 +4183,55 @@ maybe_lower_iteration_bound (struct loop *loop)
   delete not_executed_last_iteration;
 }
 
+/* Get expected upper bound for number of loop iterations for
+   BUILT_IN_EXPECT_WITH_PROBABILITY for a condition COND.  */
+
+static tree
+get_upper_bound_based_on_builtin_expr_with_prob (gcond *cond)
+{
+  if (cond == NULL)
+    return NULL_TREE;
+
+  tree lhs = gimple_cond_lhs (cond);
+  if (TREE_CODE (lhs) != SSA_NAME)
+    return NULL_TREE;
+
+  gimple *stmt = SSA_NAME_DEF_STMT (gimple_cond_lhs (cond));
+  gcall *def = dyn_cast<gcall *> (stmt);
+  if (def == NULL)
+    return NULL_TREE;
+
+  tree decl = gimple_call_fndecl (def);
+  if (!decl
+      || !fndecl_built_in_p (decl, BUILT_IN_EXPECT_WITH_PROBABILITY)
+      || gimple_call_num_args (stmt) != 3)
+    return NULL_TREE;
+
+  tree c = gimple_call_arg (def, 1);
+  tree condt = TREE_TYPE (lhs);
+  tree res = fold_build2 (gimple_cond_code (cond),
+			  condt, c,
+			  gimple_cond_rhs (cond));
+  if (TREE_CODE (res) != INTEGER_CST)
+    return NULL_TREE;
+
+
+  tree prob = gimple_call_arg (def, 2);
+  tree t = TREE_TYPE (prob);
+  tree one
+    = build_real_from_int_cst (t,
+			       integer_one_node);
+  if (integer_zerop (res))
+    prob = fold_build2 (MINUS_EXPR, t, one, prob);
+  tree r = fold_build2 (RDIV_EXPR, t, one, prob);
+  if (TREE_CODE (r) != REAL_CST)
+    return NULL_TREE;
+
+  HOST_WIDE_INT probi
+    = real_to_integer (TREE_REAL_CST_PTR (r));
+  return build_int_cst (condt, probi);
+}
+
 /* Records estimates on numbers of iterations of LOOP.  If USE_UNDEFINED_P
    is true also use estimates derived from undefined behavior.  */
 
@@ -4231,6 +4280,23 @@ estimate_numbers_of_iterations (struct loop *loop)
   likely_exit = single_likely_exit (loop);
   FOR_EACH_VEC_ELT (exits, i, ex)
     {
+      if (ex == likely_exit)
+	{
+	  gimple *stmt = last_stmt (ex->src);
+	  if (stmt != NULL)
+	    {
+	      gcond *cond = dyn_cast<gcond *> (stmt);
+	      tree niter_bound
+		= get_upper_bound_based_on_builtin_expr_with_prob (cond);
+	      if (niter_bound != NULL_TREE)
+		{
+		  widest_int max = derive_constant_upper_bound (niter_bound);
+		  record_estimate (loop, niter_bound, max, cond,
+				   true, true, false);
+		}
+	    }
+	}
+
       if (!number_of_iterations_exit (loop, ex, &niter_desc, false, false))
 	continue;
 

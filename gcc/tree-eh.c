@@ -503,7 +503,11 @@ replace_goto_queue_1 (gimple *stmt, struct leh_tf_state *tf,
       seq = find_goto_replacement (tf, temp);
       if (seq)
 	{
-	  gsi_insert_seq_before (gsi, gimple_seq_copy (seq), GSI_SAME_STMT);
+	  gimple_stmt_iterator i;
+	  seq = gimple_seq_copy (seq);
+	  for (i = gsi_start (seq); !gsi_end_p (i); gsi_next (&i))
+	    gimple_set_location (gsi_stmt (i), gimple_location (stmt));
+	  gsi_insert_seq_before (gsi, seq, GSI_SAME_STMT);
 	  gsi_remove (gsi, false);
 	  return;
 	}
@@ -809,15 +813,6 @@ emit_resx (gimple_seq *seq, eh_region region)
   gimple_seq_add_stmt (seq, x);
   if (region->outer)
     record_stmt_eh_region (region->outer, x);
-}
-
-/* Emit an EH_DISPATCH statement into SEQ for REGION.  */
-
-static void
-emit_eh_dispatch (gimple_seq *seq, eh_region region)
-{
-  geh_dispatch *x = gimple_build_eh_dispatch (region->index);
-  gimple_seq_add_stmt (seq, x);
 }
 
 /* Note that the current EH region may contain a throw, or a
@@ -1762,7 +1757,9 @@ lower_catch (struct leh_state *state, gtry *tp)
   tree out_label;
   gimple_seq new_seq, cleanup;
   gimple *x;
+  geh_dispatch *eh_dispatch;
   location_t try_catch_loc = gimple_location (tp);
+  location_t catch_loc = UNKNOWN_LOCATION;
 
   if (flag_exceptions)
     {
@@ -1776,7 +1773,8 @@ lower_catch (struct leh_state *state, gtry *tp)
     return gimple_try_eval (tp);
 
   new_seq = NULL;
-  emit_eh_dispatch (&new_seq, try_region);
+  eh_dispatch = gimple_build_eh_dispatch (try_region->index);
+  gimple_seq_add_stmt (&new_seq, eh_dispatch);
   emit_resx (&new_seq, try_region);
 
   this_state.cur_region = state->cur_region;
@@ -1799,6 +1797,8 @@ lower_catch (struct leh_state *state, gtry *tp)
       gimple_seq handler;
 
       catch_stmt = as_a <gcatch *> (gsi_stmt (gsi));
+      if (catch_loc == UNKNOWN_LOCATION)
+	catch_loc = gimple_location (catch_stmt);
       c = gen_eh_region_catch (try_region, gimple_catch_types (catch_stmt));
 
       handler = gimple_catch_handler (catch_stmt);
@@ -1821,6 +1821,10 @@ lower_catch (struct leh_state *state, gtry *tp)
       if (!c->type_list)
 	break;
     }
+
+  /* Try to set a location on the dispatching construct to avoid inheriting
+     the location of the previous statement.  */
+  gimple_set_location (eh_dispatch, catch_loc);
 
   gimple_try_set_cleanup (tp, new_seq);
 
@@ -1857,11 +1861,13 @@ lower_eh_filter (struct leh_state *state, gtry *tp)
   if (!eh_region_may_contain_throw (this_region))
     return gimple_try_eval (tp);
 
-  new_seq = NULL;
   this_state.cur_region = state->cur_region;
   this_state.ehp_region = this_region;
 
-  emit_eh_dispatch (&new_seq, this_region);
+  new_seq = NULL;
+  x = gimple_build_eh_dispatch (this_region->index);
+  gimple_set_location (x, gimple_location (tp));
+  gimple_seq_add_stmt (&new_seq, x);
   emit_resx (&new_seq, this_region);
 
   this_region->u.allowed.label = create_artificial_label (UNKNOWN_LOCATION);
@@ -3752,6 +3758,7 @@ lower_eh_dispatch (basic_block src, geh_dispatch *stmt)
 	    filter = create_tmp_var (TREE_TYPE (TREE_TYPE (fn)));
 	    filter = make_ssa_name (filter, x);
 	    gimple_call_set_lhs (x, filter);
+	    gimple_set_location (x, gimple_location (stmt));
 	    gsi_insert_before (&gsi, x, GSI_SAME_STMT);
 
 	    /* Turn the default label into a default case.  */
@@ -3759,6 +3766,7 @@ lower_eh_dispatch (basic_block src, geh_dispatch *stmt)
 	    sort_case_labels (labels);
 
 	    x = gimple_build_switch (filter, default_label, labels);
+	    gimple_set_location (x, gimple_location (stmt));
 	    gsi_insert_before (&gsi, x, GSI_SAME_STMT);
 	  }
       }
@@ -3775,6 +3783,7 @@ lower_eh_dispatch (basic_block src, geh_dispatch *stmt)
 	filter = create_tmp_var (TREE_TYPE (TREE_TYPE (fn)));
 	filter = make_ssa_name (filter, x);
 	gimple_call_set_lhs (x, filter);
+	gimple_set_location (x, gimple_location (stmt));
 	gsi_insert_before (&gsi, x, GSI_SAME_STMT);
 
 	r->u.allowed.label = NULL;

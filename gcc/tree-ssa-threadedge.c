@@ -1361,7 +1361,6 @@ thread_across_edge (gcond *dummy_cond,
 
         x = new jump_thread_edge (taken_edge, EDGE_COPY_SRC_JOINER_BLOCK);
 	path->safe_push (x);
-	found = false;
 	found = thread_around_empty_blocks (taken_edge,
 					    dummy_cond,
 					    avail_exprs_stack,

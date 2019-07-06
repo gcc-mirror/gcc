@@ -1446,16 +1446,17 @@ static vec<tree> call_stack;
 static int call_stack_tick;
 static int last_cx_error_tick;
 
-static bool
+static int
 push_cx_call_context (tree call)
 {
   ++call_stack_tick;
   if (!EXPR_HAS_LOCATION (call))
     SET_EXPR_LOCATION (call, input_location);
   call_stack.safe_push (call);
-  if (call_stack.length () > (unsigned) max_constexpr_depth)
+  int len = call_stack.length ();
+  if (len > max_constexpr_depth)
     return false;
-  return true;
+  return len;
 }
 
 static void
@@ -1586,7 +1587,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   tree fun = get_function_named_in_call (t);
   constexpr_call new_call
     = { NULL, NULL, NULL, 0, ctx->manifestly_const_eval };
-  bool depth_ok;
+  int depth_ok;
 
   if (fun == NULL_TREE)
     return cxx_eval_internal_function (ctx, t, lval,
@@ -1790,14 +1791,20 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       entry = *slot;
       if (entry == NULL)
 	{
-	  /* We need to keep a pointer to the entry, not just the slot, as the
-	     slot can move in the call to cxx_eval_builtin_function_call.  */
-	  *slot = entry = ggc_alloc<constexpr_call> ();
-	  *entry = new_call;
-	  fb.preserve ();
+	  /* Only cache up to constexpr_cache_depth to limit memory use.  */
+	  if (depth_ok < constexpr_cache_depth)
+	    {
+	      /* We need to keep a pointer to the entry, not just the slot, as
+		 the slot can move during evaluation of the body.  */
+	      *slot = entry = ggc_alloc<constexpr_call> ();
+	      *entry = new_call;
+	      fb.preserve ();
+	    }
 	}
-      /* Calls that are in progress have their result set to NULL,
-	 so that we can detect circular dependencies.  */
+      /* Calls that are in progress have their result set to NULL, so that we
+	 can detect circular dependencies.  Now that we only cache up to
+	 constexpr_cache_depth this won't catch circular dependencies that
+	 start deeper, but they'll hit the recursion or ops limit.  */
       else if (entry->result == NULL)
 	{
 	  if (!ctx->quiet)

@@ -1,5 +1,7 @@
 2019-07-05  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r273146.
+
 	Victory!
 	gcc/cp/
 	* decl2.c (c_parse_final_cleanups): Don't do static init things

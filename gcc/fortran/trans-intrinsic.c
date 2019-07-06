@@ -10971,7 +10971,6 @@ conv_intrinsic_atomic_op (gfc_code *code)
   fn = (built_in_function) ((int) fn
 			    + exact_log2 (tree_to_uhwi (TYPE_SIZE_UNIT (tmp)))
 			    + 1);
-  tmp = builtin_decl_explicit (fn);
   tree itype = TREE_TYPE (TREE_TYPE (atom));
   tmp = builtin_decl_explicit (fn);
 

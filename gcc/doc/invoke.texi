@@ -210,8 +210,9 @@ in the following sections.
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control @gol
 -faligned-new=@var{n}  -fargs-in-order=@var{n}  -fchar8_t  -fcheck-new @gol
--fconstexpr-depth=@var{n}  -fconstexpr-loop-limit=@var{n} @gol
--fconstexpr-ops-limit=@var{n} -fno-elide-constructors @gol
+-fconstexpr-depth=@var{n}  -fconstexpr-cache-depth=@var{n} @gol
+-fconstexpr-loop-limit=@var{n}  -fconstexpr-ops-limit=@var{n} @gol
+-fno-elide-constructors @gol
 -fno-enforce-eh-specs @gol
 -fno-gnu-keywords @gol
 -fno-implicit-templates @gol
@@ -493,8 +494,8 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-p  -pg  -fprofile-arcs  --coverage  -ftest-coverage @gol
 -fprofile-abs-path @gol
 -fprofile-dir=@var{path}  -fprofile-generate  -fprofile-generate=@var{path} @gol
--fprofile-update=@var{method}  -fprofile-filter-files=@var{regex} @gol
--fprofile-exclude-files=@var{regex} @gol
+-fprofile-note=@var{path}  -fprofile-update=@var{method} @gol
+-fprofile-filter-files=@var{regex}  -fprofile-exclude-files=@var{regex} @gol
 -fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style} @gol
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},... @gol
 -fsanitize-undefined-trap-on-error  -fbounds-check @gol
@@ -518,6 +519,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers  @gol
 -fexec-charset=@var{charset}  -fextended-identifiers  @gol
 -finput-charset=@var{charset}  -fmacro-prefix-map=@var{old}=@var{new}  @gol
+-fmax-include-depth=@var{depth} @gol
 -fno-canonical-system-headers  -fpch-deps  -fpch-preprocess  @gol
 -fpreprocessed  -ftabstop=@var{width}  -ftrack-macro-expansion  @gol
 -fwide-exec-charset=@var{charset}  -fworking-directory @gol
@@ -2527,6 +2529,17 @@ Set the maximum nested evaluation depth for C++11 constexpr functions
 to @var{n}.  A limit is needed to detect endless recursion during
 constant expression evaluation.  The minimum specified by the standard
 is 512.
+
+@item -fconstexpr-cache-depth=@var{n}
+@opindex fconstexpr-cache-depth
+Set the maximum level of nested evaluation depth for C++11 constexpr
+functions that will be cached to @var{n}.  This is a heuristic that
+trades off compilation speed (when the cache avoids repeated
+calculations) against memory consumption (when the cache grows very
+large from highly recursive evaluations).  The default is 8.  Very few
+users are likely to want to adjust it, but if your code does heavy
+constexpr calculations you might want to experiment to find which
+value works best for you.
 
 @item -fconstexpr-loop-limit=@var{n}
 @opindex fconstexpr-loop-limit
@@ -6035,8 +6048,9 @@ Warn about types with virtual methods where code quality would be improved
 if the type were declared with the C++11 @code{final} specifier, 
 or, if possible,
 declared in an anonymous namespace. This allows GCC to more aggressively
-devirtualize the polymorphic calls. This warning is more effective with link
-time optimization, where the information about the class hierarchy graph is
+devirtualize the polymorphic calls. This warning is more effective with 
+link-time optimization, 
+where the information about the class hierarchy graph is
 more complete.
 
 @item -Wsuggest-final-methods
@@ -9889,6 +9903,9 @@ This optimization is enabled by default.
 With this option, the compiler creates multiple copies of some
 local variables when unrolling a loop, which can result in superior code.
 
+This optimization is enabled by default for PowerPC targets, but disabled
+by default otherwise.
+
 @item -fpartial-inlining
 @opindex fpartial-inlining
 Inline parts of functions.  This option has any effect only
@@ -12427,6 +12444,11 @@ the profile feedback data files. See @option{-fprofile-dir}.
 To optimize the program based on the collected profile information, use
 @option{-fprofile-use}.  @xref{Optimize Options}, for more information.
 
+@item -fprofile-note=@var{path}
+@opindex fprofile-note
+
+If @var{path} is specified, GCC saves gcno filename into @var{path} location.
+
 @item -fprofile-update=@var{method}
 @opindex fprofile-update
 
@@ -13215,49 +13237,49 @@ Options}.
 
 @item -flinker-output=@var{type}
 @opindex flinker-output
-This option controls code generation of the link time optimizer.  By
+This option controls code generation of the link-time optimizer.  By
 default the linker output is automatically determined by the linker
 plugin.  For debugging the compiler and if incremental linking with a 
 non-LTO object file is desired, it may be useful to control the type
 manually.
 
-If @var{type} is @samp{exec} code generation produces a static
+If @var{type} is @samp{exec}, code generation produces a static
 binary. In this case @option{-fpic} and @option{-fpie} are both
 disabled.
 
-If @var{type} is @samp{dyn} code generation produces a shared
+If @var{type} is @samp{dyn}, code generation produces a shared
 library.  In this case @option{-fpic} or @option{-fPIC} is preserved,
 but not enabled automatically.  This allows to build shared libraries
-without position independent code on architectures where this is
+without position-independent code on architectures where this is
 possible, i.e.@: on x86.
 
-If @var{type} is @samp{pie} code generation produces an @option{-fpie}
+If @var{type} is @samp{pie}, code generation produces an @option{-fpie}
 executable. This results in similar optimizations as @samp{exec}
 except that @option{-fpie} is not disabled if specified at compilation
 time.
 
-If @var{type} is @samp{rel} the compiler assumes that incremental linking is
+If @var{type} is @samp{rel}, the compiler assumes that incremental linking is
 done.  The sections containing intermediate code for link-time optimization are
 merged, pre-optimized, and output to the resulting object file. In addition, if
-@option{-ffat-lto-objects} is specified the binary code is produced for future
-non-LTO linking. The object file produced by incremental linking will be smaller
+@option{-ffat-lto-objects} is specified, binary code is produced for future
+non-LTO linking. The object file produced by incremental linking is smaller
 than a static library produced from the same object files.  At link time the
-result of incremental linking will also load faster to compiler than a static
+result of incremental linking also loads faster than a static
 library assuming that the majority of objects in the library are used.
 
 Finally @samp{nolto-rel} configures the compiler for incremental linking where
-code generation is forced, a final binary is produced and the intermediate
+code generation is forced, a final binary is produced, and the intermediate
 code for later link-time optimization is stripped. When multiple object files
-are linked together the resulting code will be optimized better than with
-link-time optimizations disabled (for example, cross-module inlining will
-happen), most of benefits of whole program optimizations are however lost. 
+are linked together the resulting code is better optimized than with
+link-time optimizations disabled (for example, cross-module inlining 
+happens), but most of benefits of whole program optimizations are lost. 
 
-During the incremental link (by @option{-r}) the linker plugin will default to
+During the incremental link (by @option{-r}) the linker plugin defaults to
 @option{rel}. With current interfaces to GNU Binutils it is however not
 possible to incrementally link LTO objects and non-LTO objects into a single
-mixed object file.  In the case any of object files in incremental link cannot
-be used for link-time optimization the linker plugin will issue a warning and
-use @samp{nolto-rel}. To maintain the whole program optimization it is
+mixed object file.  If any of object files in incremental link cannot
+be used for link-time optimization, the linker plugin issues a warning and
+uses @samp{nolto-rel}. To maintain whole program optimization, it is
 recommended to link such objects into static library instead. Alternatively it
 is possible to use H.J. Lu's binutils with support for mixed objects.
 
@@ -15417,8 +15439,8 @@ Disabled by default.
 
 @item -flto-report-wpa
 @opindex flto-report-wpa
-Like @option{-flto-report}, but only print for the WPA phase of Link
-Time Optimization.
+Like @option{-flto-report}, but only print for the WPA phase of link-time
+optimization.
 
 @item -fmem-report
 @opindex fmem-report

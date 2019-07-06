@@ -784,9 +784,9 @@ package body Sem_Ch8 is
 
       begin
          if Nkind_In (Nam, N_Function_Call, N_Explicit_Dereference)
-           and then Is_Composite_Type (Etype (Nam))
-           and then not Is_Constrained (Etype (Nam))
-           and then not Has_Unknown_Discriminants (Etype (Nam))
+           and then Is_Composite_Type (Typ)
+           and then not Is_Constrained (Typ)
+           and then not Has_Unknown_Discriminants (Typ)
            and then Expander_Active
          then
             --  If Actual_Subtype is already set, nothing to do
@@ -1122,7 +1122,11 @@ package body Sem_Ch8 is
          Wrong_Type (Nam, T);
       end if;
 
-      T2 := Etype (Nam);
+      --  We must search for an actual subtype here so that the bounds of
+      --  objects of unconstrained types don't get dropped on the floor - such
+      --  as with renamings of formal parameters.
+
+      T2 := Get_Actual_Subtype_If_Available (Nam);
 
       --  Ada 2005 (AI-326): Handle wrong use of incomplete type
 
@@ -5489,8 +5493,10 @@ package body Sem_Ch8 is
 
       if Nkind (N) = N_Identifier then
          Mark_Elaboration_Attributes
-           (N_Id  => N,
-            Modes => True);
+           (N_Id     => N,
+            Checks   => True,
+            Modes    => True,
+            Warnings => True);
       end if;
 
       --  Here if Entity pointer was not set, we need full visibility analysis
@@ -6514,8 +6520,10 @@ package body Sem_Ch8 is
       --  resolution, and expansion are over.
 
       Mark_Elaboration_Attributes
-        (N_Id  => N,
-         Modes => True);
+        (N_Id     => N,
+         Checks   => True,
+         Modes    => True,
+         Warnings => True);
 
       --  Set appropriate type
 
@@ -7418,10 +7426,28 @@ package body Sem_Ch8 is
 
             --  It is not an error if the prefix is the current instance of
             --  type name, e.g. the expression of a type aspect, when it is
-            --  analyzed for ASIS use.
+            --  analyzed for ASIS use, or within a generic unit. We still
+            --  have to verify that a component of that name exists, and
+            --  decorate the node accordingly.
 
             elsif Is_Entity_Name (P) and then Is_Current_Instance (P) then
-               null;
+               declare
+                  Comp : Entity_Id;
+
+               begin
+                  Comp := First_Entity (Entity (P));
+                  while Present (Comp) loop
+                     if Chars (Comp) = Chars (Selector_Name (N)) then
+                        Set_Entity (N, Comp);
+                        Set_Etype  (N, Etype (Comp));
+                        Set_Entity (Selector_Name (N), Comp);
+                        Set_Etype  (Selector_Name (N), Etype (Comp));
+                        return;
+                     end if;
+
+                     Next_Entity (Comp);
+                  end loop;
+               end;
 
             elsif Ekind (P_Name) = E_Void then
                Premature_Usage (P);

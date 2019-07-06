@@ -177,3 +177,8 @@ entrypoints:
 --------------------
 ``LIBGCCJIT_ABI_11`` covers the addition of
 :func:`gcc_jit_context_add_driver_option`
+
+``LIBGCCJIT_ABI_12``
+--------------------
+``LIBGCCJIT_ABI_12`` covers the addition of
+:func:`gcc_jit_context_new_bitfield`

@@ -22,6 +22,7 @@ class Import_init_set;
 class Backend;
 class Temporary_statement;
 class Unnamed_label;
+struct Export_impl;
 
 // Codes used for the builtin types.  These are all negative to make
 // them easily distinct from the codes assigned by Export::write_type.
@@ -121,6 +122,7 @@ class Export : public String_dump
   };
 
   Export(Stream*);
+  ~Export();
 
   // Size of export data magic string (which includes version number).
   static const int magic_len = 4;
@@ -158,9 +160,15 @@ class Export : public String_dump
 		 const Import_init_set& imported_init_fns,
 		 const Bindings* bindings);
 
-  // Set the index of a type.
+  // Record a type that is mentioned in export data. Return value is
+  // TRUE for newly visited types, FALSE for types that have been seen
+  // previously.
   bool
-  set_type_index(Type*);
+  record_type(Type*);
+
+  // Assign type indices to types mentioned in export data.
+  int
+  assign_type_indices(const std::vector<Named_object*>& sorted_exports);
 
   // Write a string to the export stream.
   void
@@ -211,11 +219,6 @@ class Export : public String_dump
   Export(const Export&);
   Export& operator=(const Export&);
 
-  // Prepare types for exporting.
-  int
-  prepare_types(const std::vector<Named_object*>* exports,
-		Unordered_set(const Package*)* imports);
-
   // Write out all known packages.
   void
   write_packages(const std::map<std::string, Package*>& packages);
@@ -256,12 +259,18 @@ class Export : public String_dump
   int
   type_index(const Type*);
 
+  // Set the index of a type.
+  void
+  set_type_index(const Type*);
+
   // The stream to which we are writing data.
   Stream* stream_;
   // Index number of next type.
   int type_index_;
   // Packages we have written out.
   Unordered_map(const Package*, int) packages_;
+  // Hidden implementation-specific state.
+  Export_impl* impl_;
 };
 
 // An export streamer that puts the export stream in a named section.

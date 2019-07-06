@@ -1,3 +1,19 @@
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	* line-map.c (linemap_get_expansion_filename): Remove
+	dead assignemts.
+	* mkdeps.c (make_write): Likewise.
+
+2019-07-02  qing zhao  <qing.zhao@oracle.com>
+
+	PR preprocessor/90581
+	* directives.c (do_include_common): Replace CPP_STACK_MAX with
+	CPP_OPTION (pfile, max_include_depth).
+	* include/cpplib.h (struct cpp_options): Add new field
+	max_include_depth.
+	* init.c (cpp_create_reader): Initiate new field max_include_depth.
+	* internal.h: Delete CPP_STACK_MAX.
+
 2019-06-26  Nathan Sidwell  <nathan@acm.org>
 
 	PR preprocessor/90927

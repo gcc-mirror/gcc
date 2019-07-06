@@ -170,11 +170,11 @@
 })
 
 (define_expand "atomic_compare_and_swap<mode>"
-  [(match_operand:SI 0 "s_register_operand" "")		;; bool out
-   (match_operand:QHSD 1 "s_register_operand" "")	;; val out
-   (match_operand:QHSD 2 "mem_noofs_operand" "")	;; memory
-   (match_operand:QHSD 3 "general_operand" "")		;; expected
-   (match_operand:QHSD 4 "s_register_operand" "")	;; desired
+  [(match_operand:SI 0 "s_register_operand")		;; bool out
+   (match_operand:QHSD 1 "s_register_operand")		;; val out
+   (match_operand:QHSD 2 "mem_noofs_operand")		;; memory
+   (match_operand:QHSD 3 "general_operand")		;; expected
+   (match_operand:QHSD 4 "s_register_operand")		;; desired
    (match_operand:SI 5 "const_int_operand")		;; is_weak
    (match_operand:SI 6 "const_int_operand")		;; mod_s
    (match_operand:SI 7 "const_int_operand")]		;; mod_f

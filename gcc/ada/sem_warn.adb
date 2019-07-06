@@ -632,9 +632,16 @@ package body Sem_Warn is
 
                Expression := Condition (Iter);
 
-            --  For iteration, do not process, since loop will always terminate
+            --  For Loop_Parameter_Specification, do not process, since loop
+            --  will always terminate. For Iterator_Specification, also do not
+            --  process. Either it will always terminate (e.g. "for X of
+            --  Some_Array ..."), or we can't tell if it's going to terminate
+            --  without looking at the iterator, so any warning here would be
+            --  noise.
 
-            elsif Present (Loop_Parameter_Specification (Iter)) then
+            elsif Present (Loop_Parameter_Specification (Iter))
+              or else Present (Iterator_Specification (Iter))
+            then
                return;
             end if;
          end if;

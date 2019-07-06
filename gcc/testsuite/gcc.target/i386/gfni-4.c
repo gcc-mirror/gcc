@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mgfni -O2 -msse" } */
+/* { dg-options "-mgfni -O2 -msse2" } */
 /* { dg-final { scan-assembler-times "gf2p8affineinvqb\[ \\t\]+\[^\{\n\]*\\\$3\[^\n\r]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "gf2p8affineqb\[ \\t\]+\[^\{\n\]*\\\$3\[^\n\r]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "gf2p8mulb\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */

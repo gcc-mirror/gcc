@@ -389,6 +389,8 @@ package body Sem_Ch7 is
                      end if;
 
                      --  An inlined subprogram body acts as a referencer
+                     --  unless we generate C code since inlining is then
+                     --  handled by the C compiler.
 
                      --  Note that we test Has_Pragma_Inline here in addition
                      --  to Is_Inlined. We are doing this for a client, since
@@ -397,8 +399,9 @@ package body Sem_Ch7 is
                      --  should occur, so we need to catch all cases where the
                      --  subprogram may be inlined by the client.
 
-                     if Is_Inlined (Decl_Id)
-                       or else Has_Pragma_Inline (Decl_Id)
+                     if not Generate_C_Code
+                       and then (Is_Inlined (Decl_Id)
+                                  or else Has_Pragma_Inline (Decl_Id))
                      then
                         Has_Referencer_Of_Non_Subprograms := True;
 
@@ -415,9 +418,12 @@ package body Sem_Ch7 is
                      Decl_Id := Defining_Entity (Decl);
 
                      --  An inlined subprogram body acts as a referencer
+                     --  unless we generate C code since inlining is then
+                     --  handled by the C compiler.
 
-                     if Is_Inlined (Decl_Id)
-                       or else Has_Pragma_Inline (Decl_Id)
+                     if not Generate_C_Code
+                       and then (Is_Inlined (Decl_Id)
+                                  or else Has_Pragma_Inline (Decl_Id))
                      then
                         Has_Referencer_Of_Non_Subprograms := True;
 
@@ -3253,7 +3259,7 @@ package body Sem_Ch7 is
 
       --  A [generic] package that defines at least one non-null abstract state
       --  requires a completion only when at least one other construct requires
-      --  a completion in a body (SPARK RM 7.1.4(4) and (6)). This check is not
+      --  a completion in a body (SPARK RM 7.1.4(4) and (5)). This check is not
       --  performed if the caller requests this behavior.
 
       if Do_Abstract_States

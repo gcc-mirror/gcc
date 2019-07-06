@@ -46,9 +46,10 @@ with System.OS_Constants;
 package System.OS_Interface is
    pragma Preelaborate;
 
-   pragma Linker_Options ("-lpthread");
    pragma Linker_Options ("-lrt");
    --  Needed for clock_getres with glibc versions prior to 2.17
+
+   pragma Linker_Options ("-lpthread");
 
    subtype int            is Interfaces.C.int;
    subtype char           is Interfaces.C.char;

@@ -204,6 +204,22 @@ DEF_GO_RUNTIME(CHANRECV2, "runtime.chanrecv2", P2(CHAN, POINTER), R1(BOOL))
 DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo", P3(POINTER, POINTER, INT),
 	       R2(INT, BOOL))
 
+// Non-blocking send a value on a channel, used for two-case select
+// statement with a default case.
+DEF_GO_RUNTIME(SELECTNBSEND, "runtime.selectnbsend", P2(CHAN, POINTER), R1(BOOL))
+
+// Non-blocking receive a value from a channel, used for two-case select
+// statement with a default case.
+DEF_GO_RUNTIME(SELECTNBRECV, "runtime.selectnbrecv", P2(POINTER, CHAN), R1(BOOL))
+
+// Non-blocking tuple receive from a channel, used for two-case select
+// statement with a default case.
+DEF_GO_RUNTIME(SELECTNBRECV2, "runtime.selectnbrecv2", P3(POINTER, POINTER, CHAN),
+               R1(BOOL))
+
+// Block execution.  Used for zero-case select.
+DEF_GO_RUNTIME(BLOCK, "runtime.block", P0(), R0())
+
 
 // Panic.
 DEF_GO_RUNTIME(GOPANIC, "runtime.gopanic", P1(EFACE), R0())
@@ -351,10 +367,6 @@ DEF_GO_RUNTIME(GCWRITEBARRIER, "runtime.gcWriteBarrier",
 DEF_GO_RUNTIME(TYPEDMEMMOVE, "runtime.typedmemmove",
 	       P3(TYPE, POINTER, POINTER), R0())
 
-// Clear memory that contains no pointer.
-DEF_GO_RUNTIME(MEMCLRNOPTR, "runtime.memclrNoHeapPointers",
-               P2(POINTER, UINTPTR), R0())
-
 // Clear memory that contains pointer.
 DEF_GO_RUNTIME(MEMCLRHASPTR, "runtime.memclrHasPointers",
                P2(POINTER, UINTPTR), R0())
@@ -413,6 +425,10 @@ DEF_GO_RUNTIME(UNREACHABLE, "__builtin_unreachable", P0(), R0())
 // Memmove.
 DEF_GO_RUNTIME(BUILTIN_MEMMOVE, "__builtin_memmove",
                P3(POINTER, POINTER, UINTPTR), R0())
+
+// Memset, used for zeroing memory.
+DEF_GO_RUNTIME(BUILTIN_MEMSET, "__builtin_memset",
+               P3(POINTER, INT32, UINTPTR), R0())
 
 // Various intrinsics.
 
