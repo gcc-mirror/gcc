@@ -5006,6 +5006,17 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			    lower_omp (&tseq, ctx->outer);
 			  gimple_seq_add_seq (&llist[1], tseq);
 			}
+		      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
+			  && ctx->for_simd_scan_phase)
+			{
+			  x = unshare_expr (ivar);
+			  tree orig_v
+			    = build_outer_var_ref (var, ctx,
+						   OMP_CLAUSE_LASTPRIVATE);
+			  x = lang_hooks.decls.omp_clause_assign_op (c, x,
+								     orig_v);
+			  gimplify_and_add (x, &llist[0]);
+			}
 		      if (y)
 			{
 			  y = lang_hooks.decls.omp_clause_dtor (c, ivar);
@@ -5035,6 +5046,16 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		}
 	      if (nx)
 		gimplify_and_add (nx, ilist);
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
+		  && is_simd
+		  && ctx->for_simd_scan_phase)
+		{
+		  tree orig_v = build_outer_var_ref (var, ctx,
+						     OMP_CLAUSE_LASTPRIVATE);
+		  x = lang_hooks.decls.omp_clause_assign_op (c, new_var,
+							     orig_v);
+		  gimplify_and_add (x, ilist);
+		}
 	      /* FALLTHRU */
 
 	    do_dtor:
@@ -5709,11 +5730,12 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		    && OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
 		  {
 		    tree o = lookup_decl (OMP_CLAUSE_DECL (c), ctx);
-		    tree *v
-		      = ctx->lastprivate_conditional_map->get (o);
-		    tree po = lookup_decl (OMP_CLAUSE_DECL (c), ctx->outer);
-		    tree *pv
-		      = ctx->outer->lastprivate_conditional_map->get (po);
+		    omp_context *outer = ctx->outer;
+		    if (gimple_code (outer->stmt) == GIMPLE_OMP_SCAN)
+		      outer = outer->outer;
+		    tree *v = ctx->lastprivate_conditional_map->get (o);
+		    tree po = lookup_decl (OMP_CLAUSE_DECL (c), outer);
+		    tree *pv = outer->lastprivate_conditional_map->get (po);
 		    *v = *pv;
 		  }
 	    }
@@ -12421,7 +12443,11 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	      {
 		tree clauses;
 		if (up->combined_into_simd_safelen1)
-		  up = up->outer;
+		  {
+		    up = up->outer;
+		    if (gimple_code (up->stmt) == GIMPLE_OMP_SCAN)
+		      up = up->outer;
+		  }
 		if (gimple_code (up->stmt) == GIMPLE_OMP_FOR)
 		  clauses = gimple_omp_for_clauses (up->stmt);
 		else
