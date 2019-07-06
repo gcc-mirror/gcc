@@ -2046,7 +2046,7 @@
 ;;
 
 ; vfcesbs, vfcedbs, wfcexbs, vfchsbs, vfchdbs, wfchxbs, vfchesbs, vfchedbs, wfchexbs
-(define_insn "*vec_cmp<insn_cmp><mode>_cconly"
+(define_insn "*vec_cmp<insn_cmp><VF_HW:mode>_cconly"
   [(set (reg:VFCMP CC_REGNUM)
 	(compare:VFCMP (match_operand:VF_HW 0 "register_operand" "v")
 		       (match_operand:VF_HW 1 "register_operand" "v")))
