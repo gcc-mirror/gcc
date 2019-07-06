@@ -1,5 +1,13 @@
 2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/s390/s390.md (*negabs<FP:mode>2_nocc): Use FP for
+	operand 1.
+	* config/s390/vx-builtins.md (*vec_cmp<insn_cmp><mode>_cconly):
+	Make the choice of <mode> explicit, giving...
+	(*vec_cmp<insn_cmp><VF_HW:mode>_cconly): ...this.
+
+2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/i386/i386.md (*fop_<X87MODEF:mode>_3_i387)
 	(l<rounding_insn><MODEF:mode><SWI48:mode>2): Fix ambiguous uses
 	of .md attributes.
