@@ -1,3 +1,8 @@
+2019-07-10  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* target.c (gomp_load_image_to_device): Allow the accelerator to
+	possess more offloaded functions than the host.
+
 2019-07-10  Julian Brown  <julian@codesourcery.com>
 
 	* oacc-parallel.c (GOACC_enter_exit_data): Fix optional arguments for

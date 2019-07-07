@@ -2131,7 +2131,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
     = devicep->load_image_func (devicep->target_id, version,
 				target_data, &target_table);
 
-  if (num_target_entries != num_funcs + num_vars)
+  if (num_target_entries < num_funcs + num_vars)
     {
       gomp_mutex_unlock (&devicep->lock);
       if (is_register_lock)
