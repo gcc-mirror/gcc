@@ -1,3 +1,8 @@
+2019-07-10  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* target.c (gomp_load_image_to_device): Allow the accelerator to
+	possess more offloaded functions than the host.
+
 2019-05-28  Julian Brown  <julian@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/gangprivate-attrib-2.f90: New test.
