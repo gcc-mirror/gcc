@@ -1,5 +1,12 @@
 2019-07-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR target/91068
+	* config/mips/mips.md (*mul_acc_si, *mul_acc_si_r3900, *macc)
+	(*msac, *msac_using_macc, *mul_sub_si): Use "l" for input operands
+	instead of matching them to "l" output operands.
+
+2019-07-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/mips/mips.c (mips_split_move): Zero-initialize addr
 	and check whether addr.reg is nonnull before using it.
 
