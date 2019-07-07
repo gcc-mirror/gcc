@@ -205,6 +205,7 @@ Classes used:
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
+#include "timevar.h"
 #include "stringpool.h"
 #include "dumpfile.h"
 #include "bitmap.h"
@@ -11617,6 +11618,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
   if (!option)
     option = dflt;
 
+  timevar_start (TV_MODULE_MAPPER);
   dump () && dump ("Initializing mapper %s", option);
 
   int err = 0;
@@ -11902,7 +11904,7 @@ module_mapper::module_mapper (location_t loc, const char *option)
 		errmsg, name ? name : option,
 		err < 0 ? gai_strerror (err) : _("Facility not provided"));
       kill (loc);
-      return;
+      goto done;
     }
 
   if (noisy_p ())
@@ -11974,6 +11976,9 @@ module_mapper::module_mapper (location_t loc, const char *option)
       from = NULL;
       /* Leave fd_from alone to show liveness.  */
     }
+
+ done:
+  timevar_stop (TV_MODULE_MAPPER);
 }
 
 /* Close down the mapper.  Mark it as not restartable.  */
@@ -11984,6 +11989,7 @@ module_mapper::kill (location_t loc)
   if (!is_live ())
     return;
 
+  timevar_start (TV_MODULE_MAPPER);
   dump () && dump ("Killing mapper %s", name);
 
   if (to)
@@ -12032,6 +12038,8 @@ module_mapper::kill (location_t loc)
 
   XDELETEVEC (buffer);
   buffer = NULL;
+
+  timevar_stop (TV_MODULE_MAPPER);
 }
 
 /* Create a new mapper connecting to OPTION.  */
@@ -12395,13 +12403,15 @@ module_mapper::import_export (const module_state *state, bool export_p)
 {
   module_mapper *mapper = get (state->from_loc);
 
-  if (mapper->is_server ())
-    {
-      mapper->imex_query (state, export_p);
-      return mapper->imex_response (state);
-    }
+  if (!mapper->is_server ())
+    return NULL;
 
-  return NULL;
+  timevar_start (TV_MODULE_MAPPER);
+  mapper->imex_query (state, export_p);
+  char *fname = mapper->imex_response (state);
+  timevar_stop (TV_MODULE_MAPPER);
+
+  return fname;
 }
 
 /* Export done.  */
@@ -12411,12 +12421,14 @@ module_mapper::export_done (const module_state *state)
 {
   bool ok = true;
   module_mapper *mapper = get (state->from_loc);
-  
+
   if (mapper->is_server ())
     {
+      timevar_start (TV_MODULE_MAPPER);
       dump (dumper::MAPPER) && dump ("Completed mapper");
       mapper->send_command (state->from_loc, "DONE %s",
 			    state->get_flatname ());
+      timevar_stop (TV_MODULE_MAPPER);
     }
   else
     ok = mapper->is_live ();
@@ -12434,6 +12446,7 @@ module_mapper::translate_include (location_t loc, const char *path)
 {
   bool xlate = false;
 
+  timevar_start (TV_MODULE_MAPPER);
   if (mapper->is_server ())
     {
       send_command (loc, "INCLUDE %s", path);
@@ -12460,6 +12473,7 @@ module_mapper::translate_include (location_t loc, const char *path)
 
       xlate = get_module_slot (name, NULL, false, false) != NULL;
     }
+  timevar_stop (TV_MODULE_MAPPER);
 
   return xlate;
 }
@@ -16887,6 +16901,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
 void
 module_state::direct_import (cpp_reader *reader, bool lazy)
 {
+  timevar_start (TV_MODULE_IMPORT);
   unsigned n = dump.push (this);
 
   direct_p = true;
@@ -16932,6 +16947,7 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
     }
 
   dump.pop (n);
+  timevar_stop (TV_MODULE_IMPORT);
 }
 
 /* Attempt to increase the file descriptor limit.  */
@@ -17032,7 +17048,11 @@ void
 lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 {
   gcc_checking_assert (mod >= MODULE_IMPORT_BASE);
+  if (outer)
+    timevar_start (TV_MODULE_IMPORT);
   (*modules)[mod]->lazy_load (ns, id, mslot, outer);
+  if (outer)
+    timevar_stop (TV_MODULE_IMPORT);
   gcc_assert (!mslot->is_lazy ());
 }
 
@@ -17068,6 +17088,7 @@ lazy_load_specializations (tree tmpl)
 
   tree owner = get_module_owner (tmpl);
 
+  timevar_start (TV_MODULE_IMPORT);
   if (specset *set
       = specset::table->lookup (CP_DECL_CONTEXT (owner), DECL_NAME (owner)))
     {
@@ -17095,6 +17116,7 @@ lazy_load_specializations (tree tmpl)
       dump.outdent ();
       dump.pop (n);
     }
+  timevar_stop (TV_MODULE_IMPORT);
 }
 
 /* Import the module NAME into the current TU and maybe re-export it.
@@ -17449,6 +17471,7 @@ process_deferred_imports (cpp_reader *reader)
   bool has_bmi = imp->mod == MODULE_PURVIEW;
   bool any = false;
 
+  timevar_start (TV_MODULE_MAPPER);
   if (mapper->is_server ())
     /* Send batched request to mapper.  */
     for (unsigned ix = 0; ix != pending_imports->length (); ix++)
@@ -17488,6 +17511,7 @@ process_deferred_imports (cpp_reader *reader)
 
   if (any)
     mapper->maybe_uncork (imp->loc);
+  timevar_stop (TV_MODULE_MAPPER);
 
   /* Now do the importing, which might cause additional requests
      (although nested import filenames are usually in their
@@ -17747,6 +17771,8 @@ finish_module_processing (cpp_reader *reader)
       int fd = -1;
       int e = ENOENT;
 
+      timevar_start (TV_MODULE_EXPORT);
+
       spans.close ();
       /* Force a valid but empty line map at the end.  This simplifies
 	 the line table preparation and writing logic.  */
@@ -17779,6 +17805,7 @@ finish_module_processing (cpp_reader *reader)
 		create_dirs (tmp_name);
 	      }
 	}
+
       unsigned n = dump.push (state);
       state->announce ("creating");
       dump () && dump ("CMI is %s", path);
@@ -17816,6 +17843,8 @@ finish_module_processing (cpp_reader *reader)
 	}
 
       dump.pop (n);
+      timevar_stop (TV_MODULE_EXPORT);
+
       ggc_collect ();
     }
 

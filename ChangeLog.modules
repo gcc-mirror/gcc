@@ -1,3 +1,10 @@
+2019-07-07  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/
+	* timevar.def (TV_MODULE_{IMPORT,EXPORT,MAPPER}): Define.
+	gcc/cp/
+	* module.cc: Include timvar.h.  Sprinkle timevar accounting throughout.
+
 2019-07-05  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r273146.
