@@ -3241,6 +3241,8 @@ darwin_override_options (void)
       && write_symbols == DWARF2_DEBUG)
     flag_var_tracking_uninit = flag_var_tracking;
 
+  /* Final check on PCI options; for Darwin these are not dependent on the PIE
+     ones, although PIE does require PIC to support it.  */
   if (MACHO_DYNAMIC_NO_PIC_P)
     {
       if (flag_pic)
@@ -3249,9 +3251,11 @@ darwin_override_options (void)
 		 " %<-fpie%> or %<-fPIE%>");
       flag_pic = 0;
     }
-  else if (flag_pic == 1)
+  else if (flag_pic == 1
+	   || (flag_pic == 0 && !(flag_mkernel || flag_apple_kext)))
     {
-      /* Darwin's -fpic is -fPIC.  */
+      /* Darwin's -fpic is -fPIC.
+	 We only support "static" code in the kernel and kernel exts.  */
       flag_pic = 2;
     }
 
