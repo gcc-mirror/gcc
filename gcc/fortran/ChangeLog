@@ -1,3 +1,11 @@
+2019-07-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from mainline
+	PR fortran/91077
+	* trans-array.c (gfc_conv_scalarized_array_ref) Delete code
+	that gave symbol backend decl for subref arrays and deferred
+	length variables.
+
 2019-06-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
@@ -52,7 +60,7 @@
 
 	Backport from mainline
 	PR fortran/69499
-	* match.c (gfc_match_select_type):  SELECT TYPE is an executable 
+	* match.c (gfc_match_select_type):  SELECT TYPE is an executable
 	statement, and cannot appear in MODULE or SUBMODULE scope.
 
 2019-06-20  Steven G. Kargl  <kargl@gcc.gnu.org>
