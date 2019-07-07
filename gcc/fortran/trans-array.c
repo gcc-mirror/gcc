@@ -3502,19 +3502,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
     return;
 
   if (get_CFI_desc (NULL, expr, &decl, ar))
-    {
       decl = build_fold_indirect_ref_loc (input_location, decl);
-      goto done;
-    }
-
-  if (expr && ((is_subref_array (expr)
-		&& GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (info->descriptor)))
-	       || (expr->ts.deferred && (expr->expr_type == EXPR_VARIABLE
-					 || expr->expr_type == EXPR_FUNCTION))))
-    decl = expr->symtree->n.sym->backend_decl;
-
-  if (decl && GFC_DECL_PTR_ARRAY_P (decl))
-    goto done;
 
   /* A pointer array component can be detected from its field decl. Fix
      the descriptor, mark the resulting variable decl and pass it to
@@ -3532,7 +3520,6 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
 	decl = info->descriptor;
     }
 
-done:
   se->expr = gfc_build_array_ref (base, index, decl);
 }
 
