@@ -1,5 +1,19 @@
 2019-07-07  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* files.c (cpp_find_failed): Replace with ...
+	(cpp_found_name): ... this.
+	(_cpp_stack_file): Check main_search option.
+	* include/cpplib.h (cpp_options): Add main_search.
+	* internal.h (cpp_find_failed): Replace with ...
+	(cpp_found_name): ... this.
+	* init.c (cpp_read_main_file): Examine main_search option.
+	gcc/c-family/
+	* c-opts.c (c_common_handle_options): Add OPT_{user,system}_search.
+	* c.opt (user-search, system-search): New.
+	gcc/
+	* gcc.c (cpp_unique_options): Add {user,system}-search.
+
 	gcc/
 	* module.cc (module_state::write_cluster): Return cluster size.
 	(avalable_clusters, loaded_clusters): New static vars.

@@ -556,6 +556,8 @@ struct cpp_options
 
   /* The maximum depth of the nested #include.  */
   unsigned int max_include_depth;
+
+  unsigned char main_search;
 };
 
 /* Diagnostic levels.  To get a diagnostic without associating a

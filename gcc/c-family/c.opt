@@ -147,6 +147,12 @@ C ObjC C++ ObjC++ Undocumented Alias(E)
 -print-missing-file-dependencies
 C ObjC C++ ObjC++ Alias(MG)
 
+user-search
+C++
+
+system-search
+C++
+
 -trace-includes
 C ObjC C++ ObjC++ Alias(H)
 

@@ -479,10 +479,10 @@ search_path_exhausted (cpp_reader *pfile, const char *header, _cpp_file *file)
   return false;
 }
 
-bool
-_cpp_find_failed (_cpp_file *file)
+const char *
+_cpp_found_name (_cpp_file *file)
 {
-  return file->err_no != 0;
+  return !file->err_no ? file->path : NULL;
 }
 
 /* Given a filename FNAME search for such a file in the include path
@@ -964,7 +964,8 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
 			   && !CPP_OPTION (pfile, directives_only));
       buffer->file = file;
       buffer->sysp = sysp;
-      buffer->main_file = type >= IT_HEADER_HWM;
+      buffer->main_file = (type >= IT_HEADER_HWM
+			   && !CPP_OPTION (pfile, main_search));
       buffer->to_free = file->buffer_start;
 
       /* Initialize controlling macro state.  */

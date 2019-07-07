@@ -634,18 +634,27 @@ cpp_post_options (cpp_reader *pfile)
 const char *
 cpp_read_main_file (cpp_reader *pfile, const char *fname, bool unlined)
 {
-  if (CPP_OPTION (pfile, deps.style) != DEPS_NONE)
-    {
-      if (!pfile->deps)
-	pfile->deps = deps_init ();
-
-      /* Set the default target (if there is none already).  */
-      deps_add_default_target (pfile->deps, fname);
-    }
+  if (!pfile->deps && CPP_OPTION (pfile, deps.style) != DEPS_NONE)
+    pfile->deps = deps_init ();
 
   pfile->main_file
-    = _cpp_find_file (pfile, fname, &pfile->no_search_path, false, 0, false, 0);
-  if (_cpp_find_failed (pfile->main_file))
+    = _cpp_find_file (pfile, fname,
+		      // FIXME: We should expose an enum
+		      CPP_OPTION (pfile, preprocessed)
+		      || CPP_OPTION (pfile, main_search) == 0
+		      ? &pfile->no_search_path
+		      : CPP_OPTION (pfile, main_search) == 1
+		      ? pfile->quote_include
+		      : pfile->bracket_include,
+		      false, 0, false, 0);
+
+  const char *found_name = _cpp_found_name (pfile->main_file);
+
+  if (pfile->deps)
+    /* Set the default target (if there is none already).  */
+    deps_add_default_target (pfile->deps, found_name ? found_name : fname);
+
+  if (!found_name)
     return NULL;
 
   _cpp_stack_file (pfile, pfile->main_file,
@@ -656,11 +665,11 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname, bool unlined)
   if (CPP_OPTION (pfile, preprocessed))
     {
       read_original_filename (pfile);
-      fname =
-	ORDINARY_MAP_FILE_NAME
-	((LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table)));
+      found_name = ORDINARY_MAP_FILE_NAME
+	(LINEMAPS_LAST_ORDINARY_MAP (pfile->line_table));
     }
-  return fname;
+
+  return found_name;
 }
 
 /* For preprocessed files, if the first tokens are of the form # NUM.

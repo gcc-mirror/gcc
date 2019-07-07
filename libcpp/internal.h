@@ -679,7 +679,7 @@ extern void _cpp_destroy_hashtable (cpp_reader *);
 typedef struct _cpp_file _cpp_file;
 extern _cpp_file *_cpp_find_file (cpp_reader *, const char *, cpp_dir *,
 				  bool, int, bool, location_t);
-extern bool _cpp_find_failed (_cpp_file *);
+extern const char *_cpp_found_name (_cpp_file *);
 extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *);
 extern void _cpp_fake_include (cpp_reader *, const char *);
 extern bool _cpp_stack_file (cpp_reader *, _cpp_file*, include_type, location_t);
