@@ -1749,7 +1749,7 @@
   [(set (match_operand:SI 0 "register_operand" "=l*?*?,l,d?")
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d,d,d")
 			  (match_operand:SI 2 "register_operand" "d,d,d"))
-		 (match_operand:SI 3 "register_operand" "0,0,d")))
+		 (match_operand:SI 3 "register_operand" "l,l,d")))
    (clobber (match_scratch:SI 4 "=X,X,l"))
    (clobber (match_scratch:SI 5 "=X,X,&d"))]
   "GENERATE_MADD_MSUB && !TARGET_MIPS16"
@@ -1778,7 +1778,7 @@
   [(set (match_operand:SI 0 "register_operand" "=l*?*?,l,d*?,d?")
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d,d,d,d")
 			  (match_operand:SI 2 "register_operand" "d,d,d,d"))
-		 (match_operand:SI 3 "register_operand" "0,0,l,d")))
+		 (match_operand:SI 3 "register_operand" "l,l,l,d")))
    (clobber (match_scratch:SI 4 "=X,X,3,l"))
    (clobber (match_scratch:SI 5 "=X,X,X,&d"))]
   "TARGET_MIPS3900 && !TARGET_MIPS16"
@@ -1822,7 +1822,7 @@
   [(set (match_operand:SI 0 "register_operand" "=l,d")
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d,d")
 			  (match_operand:SI 2 "register_operand" "d,d"))
-		 (match_operand:SI 3 "register_operand" "0,l")))
+		 (match_operand:SI 3 "register_operand" "l,l")))
    (clobber (match_scratch:SI 4 "=X,3"))]
   "ISA_HAS_MACC"
 {
@@ -1842,7 +1842,7 @@
 
 (define_insn "*msac"
   [(set (match_operand:SI 0 "register_operand" "=l,d")
-        (minus:SI (match_operand:SI 1 "register_operand" "0,l")
+        (minus:SI (match_operand:SI 1 "register_operand" "l,l")
                   (mult:SI (match_operand:SI 2 "register_operand" "d,d")
                            (match_operand:SI 3 "register_operand" "d,d"))))
    (clobber (match_scratch:SI 4 "=X,1"))]
@@ -1862,7 +1862,7 @@
 ;; An msac-like instruction implemented using negation and a macc.
 (define_insn_and_split "*msac_using_macc"
   [(set (match_operand:SI 0 "register_operand" "=l,d")
-        (minus:SI (match_operand:SI 1 "register_operand" "0,l")
+        (minus:SI (match_operand:SI 1 "register_operand" "l,l")
                   (mult:SI (match_operand:SI 2 "register_operand" "d,d")
                            (match_operand:SI 3 "register_operand" "d,d"))))
    (clobber (match_scratch:SI 4 "=X,1"))
@@ -2005,7 +2005,7 @@
 ;; See the comment above *mul_add_si for details.
 (define_insn "*mul_sub_si"
   [(set (match_operand:SI 0 "register_operand" "=l*?*?,l,d?")
-        (minus:SI (match_operand:SI 1 "register_operand" "0,0,d")
+        (minus:SI (match_operand:SI 1 "register_operand" "l,l,d")
                   (mult:SI (match_operand:SI 2 "register_operand" "d,d,d")
                            (match_operand:SI 3 "register_operand" "d,d,d"))))
    (clobber (match_scratch:SI 4 "=X,X,l"))
