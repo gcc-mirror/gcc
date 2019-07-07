@@ -1,3 +1,8 @@
+2019-07-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_override_options): Don't jam symbol stubs
+	on for kernel code.
+
 2019-07-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/91068
