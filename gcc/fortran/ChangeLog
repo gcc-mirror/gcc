@@ -1,3 +1,10 @@
+2019-07-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91077
+	* trans-array.c (gfc_conv_scalarized_array_ref) Delete code
+	that gave symbol backend decl for subref arrays and deferred
+	length variables.
+
 2019-07-05  Andrew Stubbs  <ams@codesourcery.com>
 
 	* openmp.c (resolve_omp_clauses): Add custom error messages for
@@ -33,9 +40,9 @@
 	ChangeLog forgotten with revision 272667
 	* decl.c (access_attr_decl): Use temporary variable to reduce
 	unreadability of code.  Normalize jumping to return.
-	(gfc_match_protected): Fix parsing error.  Add comments to 
+	(gfc_match_protected): Fix parsing error.  Add comments to
 	explain code.  Remove dead code.
-	(gfc_match_private): Use temporary variable to reduce unreadability 
+	(gfc_match_private): Use temporary variable to reduce unreadability
 	of code. Fix parsing error.  Move code to test for blank PRIVATE.
 	Remove dead code.
 	(gfc_match_public): Move code to test for blank PUBLIC.  Fix
