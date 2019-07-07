@@ -1,3 +1,8 @@
+2019-07-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/mips/mips.c (mips_split_move): Zero-initialize addr
+	and check whether addr.reg is nonnull before using it.
+
 2019-07-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (lower_rec_input_clauses): For lastprivate clauses in
