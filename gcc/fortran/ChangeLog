@@ -1,3 +1,10 @@
+2019-07-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/91077
+	* trans-array.c (gfc_conv_scalarized_array_ref) Delete code
+	that gave symbol backend decl for subref arrays.
+
 2019-06-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk

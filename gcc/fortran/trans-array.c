@@ -3422,10 +3422,8 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
   if (build_class_array_ref (se, base, index))
     return;
 
-  if (expr && ((is_subref_array (expr)
-		&& GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (info->descriptor)))
-	       || (expr->ts.deferred && (expr->expr_type == EXPR_VARIABLE
-					 || expr->expr_type == EXPR_FUNCTION))))
+  if (expr && (expr->ts.deferred && (expr->expr_type == EXPR_VARIABLE
+				     || expr->expr_type == EXPR_FUNCTION)))
     decl = expr->symtree->n.sym->backend_decl;
 
   /* A pointer array component can be detected from its field decl. Fix
