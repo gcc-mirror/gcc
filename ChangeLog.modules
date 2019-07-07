@@ -1,6 +1,14 @@
 2019-07-07  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
+	* module.cc (module_state::write_cluster): Return cluster size.
+	(avalable_clusters, loaded_clusters): New static vars.
+	(module_state::{read,write}): Adjust.
+	(finish_module_processing): Dump more stats.
+	gcc/testsuite/
+	* g++.dg/module/part-3_c.C: Adjust scan.
+
+	gcc/
 	* timevar.def (TV_MODULE_{IMPORT,EXPORT,MAPPER}): Define.
 	gcc/cp/
 	* module.cc: Include timvar.h.  Sprinkle timevar accounting throughout.

@@ -3444,8 +3444,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 			 auto_vec<depset *> &spaces, unsigned *crc_ptr);
   bool read_namespaces (auto_vec<tree> &spaces);
 
-  void write_cluster (elf_out *to, depset *depsets[], unsigned size,
-		      depset::hash &, unsigned &unnamed, unsigned *crc_ptr);
+  unsigned write_cluster (elf_out *to, depset *depsets[], unsigned size,
+			  depset::hash &, unsigned &unnamed, unsigned *crc_ptr);
   bool read_cluster (unsigned snum);
 
  private:
@@ -3623,6 +3623,10 @@ static char *cmi_repo;
 static size_t cmi_repo_length;
 static char *cmi_path;
 static size_t cmi_path_alloc;
+
+/* Count of available and loaded clusters.  */
+static unsigned available_clusters;
+static unsigned loaded_clusters;
 
 /* Global variables.  */
 unsigned module_kind;
@@ -4264,6 +4268,9 @@ dumper::operator () (const char *format, ...)
 	    unsigned x = va_arg (args, unsigned);
 	    fprintf (dumps->stream, "%x", x);
 	  }
+	  break;
+	case '%':
+	  fputc ('%', dumps->stream);
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -13096,7 +13103,7 @@ sort_mergeables (depset *scc[], unsigned size)
    defns < decls < bindings.  Returns number of non-implicit template
    specializations. */
 
-void
+unsigned
 module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 			     depset::hash &table, unsigned &unnamed,
 			     unsigned *crc_ptr)
@@ -13400,6 +13407,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
       name = to->qualified_name (naming_decl, namer->has_defn ());
     }
 
+  unsigned bytes = sec.pos;
   unsigned snum = sec.end (to, name, crc_ptr);
 
   for (unsigned ix = size; ix--;)
@@ -13407,6 +13415,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   dump.outdent ();
   dump () && dump ("Wrote section:%u named-by:%N", scc[0]->section, naming_decl);
+
+  return bytes;
 }
 
 // FIXME: when DECL didn't go via match_mergeable_specialization we'll
@@ -13688,6 +13698,8 @@ module_state::read_cluster (unsigned snum)
 
   dump.outdent ();
   dump () && dump ("Read section:%u", snum);
+
+  loaded_clusters++;
 
   if (!sec.end (from ()))
     return false;
@@ -15823,7 +15835,7 @@ module_state::write_config (elf_out *to, module_state_config &config,
 
   cfg.u (config.sec_range.first);
   cfg.u (config.sec_range.second);
-  dump () && dump ("Declaration sections are [%u,%u)",
+  dump () && dump ("Cluster sections are [%u,%u)",
 		   config.sec_range.first, config.sec_range.second);
 
   cfg.u (config.num_bindings);
@@ -16234,6 +16246,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
      The meaning of depset::cluster changes to provide the
      unnamed-decl count of the depset's decl (and remains zero for
      non-decls and non-unnamed).  */
+  unsigned bytes = 0;
   auto_vec<depset *> spaces (n_spaces);
   for (unsigned size, ix = 0; ix < sccs.length (); ix += size)
     {
@@ -16267,7 +16280,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  /* Cluster is now used to number unnamed decls.  */
 	  base[0]->cluster = 0;
 
-	  write_cluster (to, base, size, table, config.num_unnamed, &crc);
+	  bytes
+	    += write_cluster (to, base, size, table, config.num_unnamed, &crc);
 	}
     }
 
@@ -16304,6 +16318,10 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* Write initializers that header units might contain.  */
   if (is_header ())
     config.num_inits = write_inits (to, table, &crc);
+
+  unsigned clusters = config.sec_range.second - config.sec_range.first;
+  dump () && dump ("Wrote %u clusters, average %u bytes/cluster",
+		   clusters, (bytes + clusters / 2) / (clusters + !clusters));
 
   /* And finish up.  */
   write_config (to, config, crc);
@@ -16396,6 +16414,8 @@ module_state::read (int fd, int e, cpp_reader *reader)
 
   if (!flag_preprocess_only)
     {
+      available_clusters += config.sec_range.second - config.sec_range.first;
+
       /* Read the namespace hierarchy. */
       auto_vec<tree> spaces;
       if (!read_namespaces (spaces))
@@ -17847,6 +17867,15 @@ finish_module_processing (cpp_reader *reader)
 
       ggc_collect ();
     }
+
+  unsigned n = dump.push (NULL);
+  dump () && dump ("Imported %u modules",
+		   modules->length () - MODULE_IMPORT_BASE);
+  dump () && dump ("Containing %u clusters", available_clusters);
+  dump () && dump ("Loaded %u clusters (%u%%)", loaded_clusters,
+		   (loaded_clusters * 100 + 50) /
+		   (available_clusters + !available_clusters));
+  dump.pop (n);
 
   /* We're done with the macro tables now.  */
   vec_free (macro_exports);
