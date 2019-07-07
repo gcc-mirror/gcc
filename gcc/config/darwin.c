@@ -3232,8 +3232,6 @@ darwin_override_options (void)
       /* so no tables either.. */
       flag_unwind_tables = 0;
       flag_asynchronous_unwind_tables = 0;
-      /* We still need to emit branch islands for kernel context.  */
-      darwin_picsymbol_stubs = true;
     }
 
   if (flag_var_tracking_uninit == 0
