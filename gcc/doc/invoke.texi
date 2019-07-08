@@ -467,7 +467,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsignaling-nans @gol
 -fsingle-precision-constant  -fsplit-ivs-in-unroller  -fsplit-loops@gol
 -fsplit-paths @gol
--fsplit-wide-types  -fssa-backprop  -fssa-phiopt @gol
+-fsplit-wide-types  -fsplit-wide-types-early  -fssa-backprop  -fssa-phiopt @gol
 -fstdarg-opt  -fstore-merging  -fstrict-aliasing @gol
 -fthread-jumps  -ftracer  -ftree-bit-ccp @gol
 -ftree-builtin-call-dce  -ftree-ccp  -ftree-ch @gol
@@ -8730,6 +8730,13 @@ but may make debugging more difficult.
 
 Enabled at levels @option{-O}, @option{-O2}, @option{-O3},
 @option{-Os}.
+
+@item -fsplit-wide-types-early
+@opindex fsplit-wide-types-early
+Fully split wide types early, instead of very late.
+This option has no effect unless @option{-fsplit-wide-types} is turned on.
+
+This is the default on some targets.
 
 @item -fcse-follow-jumps
 @opindex fcse-follow-jumps
