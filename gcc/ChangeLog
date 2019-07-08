@@ -1,3 +1,10 @@
+2019-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91108
+	* tree-ssa-sccvn.c: Include builtins.h.
+	(vn_reference_lookup_3): Use only alignment constraints to
+	verify same-valued store disambiguation.
+
 2019-07-05  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	Backport from mainline
