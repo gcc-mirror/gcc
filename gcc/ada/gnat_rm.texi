@@ -12507,7 +12507,8 @@ of exceptions when they are declared.
 @geindex No_Exceptions
 
 [RM H.4] This restriction ensures at compile time that there are no
-raise statements and no exception handlers.
+raise statements and no exception handlers and also suppresses the
+generation of language-defined run-time checks.
 
 @node No_Finalization,No_Fixed_Point,No_Exceptions,Partition-Wide Restrictions
 @anchor{gnat_rm/standard_and_implementation_defined_restrictions no-finalization}@anchor{1d2}
