@@ -1,3 +1,13 @@
+2019-07-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/riscv/pic.md (*local_pic_load_s<mode>)
+	(*local_pic_load_u<mode>): Explicitly specify the mode iterator
+	referenced by <mode>, giving...
+	(*local_pic_load_s<SUBX:mode>, *local_pic_load_u<SUBX:mode>): ...these.
+	* config/riscv/riscv.md (*sge<u>_<X:mode><GPR:mode>)
+	(*slt<u>_<X:mode><GPR:mode>, *sle<u>_<X:mode><GPR:mode>): Explicitly
+	use <X:MODE> for the mode attribute.
+
 2019-07-07  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/91090
