@@ -1,3 +1,8 @@
+2019-07-08  Bob Duff  <duff@adacore.com>
+
+	* libgnat/g-sercom.ads, libgnat/g-sercom__linux.adb (Data_Rate):
+	Support additional data rates.
+
 2019-07-08  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/trans.c (Compilation_Unit_to_gnu): Don't request
