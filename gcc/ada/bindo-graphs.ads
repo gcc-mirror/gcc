@@ -980,6 +980,13 @@ package Bindo.Graphs is
       --
       --  This behavior can be forced by setting flag Force_Complement to True.
 
+      function Contains_Elaborate_All_Edge
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) return Boolean;
+      pragma Inline (Contains_Elaborate_All_Edge);
+      --  Determine whether cycle Cycle of library graph G contains an
+      --  Elaborate_All edge.
+
       function Contains_Weak_Static_Successor
         (G     : Library_Graph;
          Cycle : Library_Graph_Cycle_Id) return Boolean;
