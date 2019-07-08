@@ -7637,7 +7637,7 @@ package body Exp_Disp is
                      Unchecked_Convert_To (RTE (RE_Prim_Ptr),
                        Make_Attribute_Reference (Loc,
                          Prefix         =>
-                           New_Occurrence_Of (Alias (Prim), Loc),
+                           New_Occurrence_Of (Ultimate_Alias (Prim), Loc),
                          Attribute_Name => Name_Unrestricted_Access))));
 
             end if;
