@@ -1,3 +1,7 @@
+2019-07-08  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/s-os_lib.adb: Do not call __gnat_kill for Invalid_Pid.
+
 2019-07-08  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_util.adb (Enclosing_Package_Or_Subprogram): Do not expect
