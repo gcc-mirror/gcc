@@ -1125,6 +1125,12 @@ package body Repinfo is
          Indent    : Natural := 0);
       --  Internal recursive procedure to display the structural layout
 
+      Incomplete_Layout : exception;
+      --  Exception raised if the layout is incomplete in -gnatc mode
+
+      Not_In_Extended_Main : exception;
+      --  Exception raised when an ancestor is not declared in the main unit
+
       Max_Name_Length : Natural := 0;
       Max_Spos_Length : Natural := 0;
 
@@ -1564,14 +1570,29 @@ package body Repinfo is
 
                Disc        : Entity_Id;
                Listed_Disc : Entity_Id;
+               Parent_Type : Entity_Id;
 
             begin
                --  If this is an extension, first list the layout of the parent
                --  and then proceed to the extension part, if any.
 
                if Is_Extension then
-                  List_Structural_Record_Layout
-                    (Base_Type (Parent_Subtype (Ent)), Outer_Ent);
+                  Parent_Type := Parent_Subtype (Ent);
+                  if No (Parent_Type) then
+                     raise Incomplete_Layout;
+                  end if;
+
+                  if Is_Private_Type (Parent_Type) then
+                     Parent_Type := Full_View (Parent_Type);
+                     pragma Assert (Present (Parent_Type));
+                  end if;
+
+                  Parent_Type := Base_Type (Parent_Type);
+                  if not In_Extended_Main_Source_Unit (Parent_Type) then
+                     raise Not_In_Extended_Main;
+                  end if;
+
+                  List_Structural_Record_Layout (Parent_Type, Outer_Ent);
                   First := False;
 
                   if Present (Record_Extension_Part (Definition)) then
@@ -1733,8 +1754,23 @@ package body Repinfo is
          Write_Line (",");
          Write_Str ("  ""record"": [");
 
+         --  ??? We can output structural layout only for base types fully
+         --  declared in the extended main source unit for the time being,
+         --  because otherwise declarations might not be processed at all.
+
          if Is_Base_Type (Ent) then
-            List_Structural_Record_Layout (Ent, Ent);
+            begin
+               List_Structural_Record_Layout (Ent, Ent);
+
+            exception
+               when Incomplete_Layout
+                  | Not_In_Extended_Main
+               =>
+                  List_Record_Layout (Ent);
+
+               when others =>
+                  raise Program_Error;
+            end;
          else
             List_Record_Layout (Ent);
          end if;
