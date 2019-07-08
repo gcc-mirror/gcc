@@ -1,42 +1,33 @@
 /* { dg-require-effective-target size32plus } */
-/* { dg-additional-options "-fopenmp-simd" } */
+/* { dg-additional-options "-O2 -fopenmp -fdump-tree-vect-details" } */
 /* { dg-additional-options "-mavx" { target avx_runtime } } */
-/* { dg-final { scan-tree-dump-times "vectorized \[1-3] loops" 2 "vect" { target i?86-*-* x86_64-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized \[2-6] loops" 2 "vect" { target sse2_runtime } } } */
 
-#ifndef main
-#include "tree-vect.h"
-#endif
-
-#ifdef __FAST_MATH__
-#define FLT_MIN_VALUE (-__FLT_MAX__)
-#else
-#define FLT_MIN_VALUE (-__builtin_inff ())
-#endif
-
+extern void abort (void);
 float r = 1.0f, a[1024], b[1024];
 
 __attribute__((noipa)) void
 foo (float *a, float *b)
 {
-  #pragma omp simd reduction (inscan, *:r)
+  #pragma omp for simd reduction (inscan, *:r)
   for (int i = 0; i < 1024; i++)
     {
-      b[i] = r;
-      #pragma omp scan exclusive(r)
       r *= a[i];
+      #pragma omp scan inclusive(r)
+      b[i] = r;
     }
 }
 
 __attribute__((noipa)) float
 bar (void)
 {
-  float s = FLT_MIN_VALUE;
-  #pragma omp simd reduction (inscan, max:s)
+  float s = -__builtin_inff ();
+  #pragma omp parallel for simd reduction (inscan, max:s)
   for (int i = 0; i < 1024; i++)
     {
-      b[i] = s;
-      #pragma omp scan exclusive(s)
       s = s > a[i] ? s : a[i];
+      #pragma omp scan inclusive(s)
+      b[i] = s;
     }
   return s;
 }
@@ -45,9 +36,6 @@ int
 main ()
 {
   float s = 1.0f;
-#ifndef main
-  check_vect ();
-#endif
   for (int i = 0; i < 1024; ++i)
     {
       if (i < 80)
@@ -72,29 +60,32 @@ main ()
       b[i] = -19.0f;
       asm ("" : "+g" (i));
     }
+  #pragma omp parallel
   foo (a, b);
   if (r * 16384.0f != 0.125f)
     abort ();
   float m = -175.25f;
   for (int i = 0; i < 1024; ++i)
     {
+      s *= a[i];
       if (b[i] != s)
 	abort ();
       else
-	b[i] = -231.75f;
-      s *= a[i];
-      a[i] = m - ((i % 3) == 1 ? 2.0f : (i % 3) == 2 ? 4.0f : 0.0f);
-      m += 0.75f;
+	{
+	  a[i] = m - ((i % 3) == 1 ? 2.0f : (i % 3) == 2 ? 4.0f : 0.0f);
+	  b[i] = -231.75f;
+	  m += 0.75f;
+	}
     }
   if (bar () != 592.0f)
     abort ();
-  s = FLT_MIN_VALUE;
+  s = -__builtin_inff ();
   for (int i = 0; i < 1024; ++i)
     {
-      if (b[i] != s)
-	abort ();
       if (s < a[i])
 	s = a[i];
+      if (b[i] != s)
+	abort ();
     }
   return 0;
 }

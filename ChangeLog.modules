@@ -1,5 +1,7 @@
 2019-07-07  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r273185.
+
 	libcpp/
 	* files.c (cpp_find_failed): Replace with ...
 	(cpp_found_name): ... this.

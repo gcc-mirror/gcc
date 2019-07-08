@@ -2574,10 +2574,10 @@
   ""
   {
     rtx tmp = gen_reg_rtx (DImode);
-    emit_insn (gen_vec_cmp<mode>di (tmp, operands[3], operands[4],
-				    operands[5]));
-    emit_insn (gen_vcond_mask_<mode>di (operands[0], operands[1], operands[2],
-					tmp));
+    emit_insn (gen_vec_cmp<VEC_1REG_ALT:mode>di
+	       (tmp, operands[3], operands[4], operands[5]));
+    emit_insn (gen_vcond_mask_<VEC_1REG_MODE:mode>di
+	       (operands[0], operands[1], operands[2], tmp));
     DONE;
   })
 
@@ -2592,10 +2592,10 @@
   ""
   {
     rtx tmp = gen_reg_rtx (DImode);
-    emit_insn (gen_vec_cmp<mode>di_exec (tmp, operands[3], operands[4],
-					 operands[5], operands[6]));
-    emit_insn (gen_vcond_mask_<mode>di (operands[0], operands[1], operands[2],
-					tmp));
+    emit_insn (gen_vec_cmp<VEC_1REG_ALT:mode>di_exec
+	       (tmp, operands[3], operands[4], operands[5], operands[6]));
+    emit_insn (gen_vcond_mask_<VEC_1REG_MODE:mode>di
+	       (operands[0], operands[1], operands[2], tmp));
     DONE;
   })
 
@@ -2609,10 +2609,10 @@
   ""
   {
     rtx tmp = gen_reg_rtx (DImode);
-    emit_insn (gen_vec_cmp<mode>di (tmp, operands[3], operands[4],
-				    operands[5]));
-    emit_insn (gen_vcond_mask_<mode>di (operands[0], operands[1], operands[2],
-				        tmp));
+    emit_insn (gen_vec_cmp<VEC_1REG_INT_ALT:mode>di
+	       (tmp, operands[3], operands[4], operands[5]));
+    emit_insn (gen_vcond_mask_<VEC_1REG_INT_MODE:mode>di
+	       (operands[0], operands[1], operands[2], tmp));
     DONE;
   })
 
@@ -2627,10 +2627,10 @@
   ""
   {
     rtx tmp = gen_reg_rtx (DImode);
-    emit_insn (gen_vec_cmp<mode>di_exec (tmp, operands[3], operands[4],
-					 operands[5], operands[6]));
-    emit_insn (gen_vcond_mask_<mode>di (operands[0], operands[1], operands[2],
-				        tmp));
+    emit_insn (gen_vec_cmp<VEC_1REG_INT_ALT:mode>di_exec
+	       (tmp, operands[3], operands[4], operands[5], operands[6]));
+    emit_insn (gen_vcond_mask_<VEC_1REG_INT_MODE:mode>di
+	       (operands[0], operands[1], operands[2], tmp));
     DONE;
   })
 

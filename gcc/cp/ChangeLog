@@ -1,7 +1,23 @@
+2019-07-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/67184
+	PR c++/69445
+	* call.c (build_new_method_call_1): Remove set but not used variable
+	binfo.
+
+2019-07-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67184 (again)
+	PR c++/69445
+	* call.c (build_over_call): Devirtualize user-defined operators
+	coming from a base too.
+	(build_new_method_call_1): Do not devirtualize here.
+
 2019-07-04  Marek Polacek  <polacek@redhat.com>
 
 	DR 1813
-	PR c++/83374 - __is_standard_layout wrong for a class with repeated bases.
+	PR c++/83374 - __is_standard_layout wrong for a class with repeated
+	bases.
 	* class.c (check_bases): Set CLASSTYPE_NON_STD_LAYOUT for a class if
 	CLASSTYPE_REPEATED_BASE_P is true.
 

@@ -1,3 +1,130 @@
+2019-07-07  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/91090
+	* tree-ssa-dom.c (simplify_stmt_for_jump_threading): Fix logic error
+	in handling of ranges to simplify switch statements.
+
+2019-07-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_override_options): Make a final check on PIC
+	options.
+
+2019-07-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_override_options): Don't jam symbol stubs
+	on for kernel code.
+
+2019-07-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/91068
+	* config/mips/mips.md (*mul_acc_si, *mul_acc_si_r3900, *macc)
+	(*msac, *msac_using_macc, *mul_sub_si): Use "l" for input operands
+	instead of matching them to "l" output operands.
+
+2019-07-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/mips/mips.c (mips_split_move): Zero-initialize addr
+	and check whether addr.reg is nonnull before using it.
+
+2019-07-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_rec_input_clauses): For lastprivate clauses in
+	ctx->for_simd_scan_phase simd copy the outer var to the privatized
+	variable(s).  For conditional lastprivate look through outer
+	GIMPLE_OMP_SCAN context.
+	(lower_omp_1): For conditional lastprivate look through outer
+	GIMPLE_OMP_SCAN context.
+
+	* omp-low.c (struct omp_context): Rename combined_into_simd_safelen0
+	member to combined_into_simd_safelen1.
+	(lower_rec_input_clauses, lower_omp_1): Adjust uses.
+	(lower_lastprivate_clauses): Likewise.  For conditional lastprivate
+	clauses if ctx->combined_into_simd_safelen1 put statements after the
+	predicate conditionalized block rather than into it.
+
+2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/s390/s390.md (*negabs<FP:mode>2_nocc): Use FP for
+	operand 1.
+	* config/s390/vx-builtins.md (*vec_cmp<insn_cmp><mode>_cconly):
+	Make the choice of <mode> explicit, giving...
+	(*vec_cmp<insn_cmp><VF_HW:mode>_cconly): ...this.
+
+2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/i386/i386.md (*fop_<X87MODEF:mode>_3_i387)
+	(l<rounding_insn><MODEF:mode><SWI48:mode>2): Fix ambiguous uses
+	of .md attributes.
+	* config/i386/sse.md (*avx512pf_gatherpf<mode>sf_mask)
+	(*avx512pf_gatherpf<mode>df_mask, *avx512pf_scatterpf<mode>sf_mask)
+	(*avx512pf_scatterpf<mode>df_mask, *avx2_gathersi<mode>)
+	(*avx2_gathersi<mode>_2, *avx2_gatherdi<mode>)
+	(*avx2_gatherdi<mode>_2, *avx2_gatherdi<mode>_3): Likewise.
+	(*avx2_gatherdi<mode>_4, *avx512f_gathersi<mode>): Likewise.
+	(*avx512f_gathersi<mode>_2, *avx512f_gatherdi<mode>): Likewise.
+	(*avx512f_gatherdi<mode>_2, *avx512f_scattersi<mode>): Likewise.
+	(*avx512f_scatterdi<mode>): Likewise.
+	(*andnot<mode>3_bcst): Fix VI/VI48_AVX512VL typo.
+
+2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/h8300/h8300.md (*push1_h8300hs_<mode>): Explicitly
+	specify the mode iterator referenced by <mode>, giving...
+	(*push1_h8300hs_<QHI:mode>): ...this.
+
+2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/gcn/gcn-valu.md
+	(vcond<VEC_1REG_MODE:mode><VEC_1REG_ALT:mode>): Use
+	gen_vec_cmp<VEC_1REG_ALT:mode>di rather than (implicitly)
+	gen_vec_cmp<VEC_1REG_MODE:mode>di.  Explicitly use
+	gen_vcond_mask_<VEC_1REG_MODE:mode>di.
+	(vcond<VEC_1REG_MODE:mode><VEC_1REG_ALT:mode>_exec): Likewise,
+	but using the _exec comparison patterns.
+	(vcondu<VEC_1REG_INT_MODE:mode><VEC_1REG_INT_ALT:mode>): Use
+	gen_vec_cmp<VEC_1REG_INT_ALT:mode>di rather than (implicitly)
+	gen_vec_cmp<VEC_1REG_INT_MODE:mode>di.  Explicitly use
+	gen_vcond_mask_<VEC_1REG_INT_MODE:mode>di.
+	(vcondu<VEC_1REG_INT_MODE:mode><VEC_1REG_INT_ALT:mode>_exec): Likewise,
+	but using the _exec comparison patterns.
+
+2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/arm/sync.md
+	(@atomic_compare_and_swap<CCSI:arch><NARROW:mode>_1): Use
+	<NARROW:sync_predtab> instead of (implicitly) <CCSI:sync_predtab>.
+	(@atomic_compare_and_swap<CCSI:arch><SIDI:mode>_1): Likewise
+	<SIDI:sync_predtab>.  Use <SIDI:cas_cmp_operand> and
+	<SIDI:cas_cmp_str>.
+
+2019-07-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (struct omp_context): Add for_simd_scan_phase member.
+	(maybe_lookup_ctx): Add forward declaration.
+	(omp_find_scan): Likewise.  Walk into body of simd if composited
+	with worksharing loop.
+	(scan_omp_simd_scan): New function.
+	(scan_omp_1_stmt): Call it.
+	(lower_rec_simd_input_clauses): Don't create rvar nor rvar2 if
+	ctx->for_simd_scan_phase.
+	(lower_rec_input_clauses): Do much less work for inscan reductions
+	in ctx->for_simd_scan_phase is_simd regions.
+	(lower_omp_scan): Set is_simd also on simd constructs composited
+	with worksharing loop, unless ctx->for_simd_scan_phase.  Never emit
+	a sorry message.  Don't change GIMPLE_OMP_SCAN stmts into nops and
+	emit their body after in simd constructs composited with worksharing
+	loop.
+	(lower_omp_for_scan): Handle worksharing loop composited with simd.
+
+	* omp-low.c (omp_find_scan): Make static.
+	(lower_omp_for_scan): Fix order of merge arguments in input phase of
+	the second loop, var2 represents the first partial sum and so needs
+	to go before rprivb[ivar].
+
+2019-07-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/rs6000-logue.c: Remove unused code.
+
 2019-07-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-loop-manip.c (create_iv): Add missing guard for gsi_end_p.

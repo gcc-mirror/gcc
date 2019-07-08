@@ -1,7 +1,29 @@
+2019-07-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91077
+	* gfortran.dg/pointer_array_11.f90 : New test.
+
+2019-07-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/scan-4.c: Don't expect sorry message.
+
+	PR tree-optimization/91096
+	* gcc.dg/vect/vect-simd-10.c (FLT_MIN_VALUE): Define.
+	(bar, main): Use it instead of -__builtin_inff ().
+	* gcc.dg/vect/vect-simd-14.c (FLT_MIN_VALUE): Define.
+	(bar, main): Use it instead of -__builtin_inff ().
+
+2019-07-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67184 (again)
+	PR c++/69445
+	* g++.dg/other/final4.C: New.
+
 2019-07-04  Marek Polacek  <polacek@redhat.com>
 
 	DR 1813
-	PR c++/83374 - __is_standard_layout wrong for a class with repeated bases.
+	PR c++/83374 - __is_standard_layout wrong for a class with repeated
+	bases.
 	* g++.dg/ext/is_std_layout3.C: New test.
 	* g++.dg/ext/is_std_layout4.C: New test.
 

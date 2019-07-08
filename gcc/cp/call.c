@@ -8241,10 +8241,17 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    return error_mark_node;
 	}
 
-      /* See if the function member or the whole class type is declared
-	 final and the call can be devirtualized.  */
+      /* Optimize away vtable lookup if we know that this
+	 function can't be overridden.  We need to check if
+	 the context and the type where we found fn are the same,
+	 actually FN might be defined in a different class
+	 type because of a using-declaration. In this case, we
+	 do not want to perform a non-virtual call.  Note that
+	 resolves_to_fixed_type_p checks CLASSTYPE_FINAL too.  */
       if (DECL_FINAL_P (fn)
-	  || CLASSTYPE_FINAL (TYPE_METHOD_BASETYPE (TREE_TYPE (fn))))
+	  || (resolves_to_fixed_type_p (arg, 0)
+	      && same_type_ignoring_top_level_qualifiers_p
+	      (DECL_CONTEXT (fn), BINFO_TYPE (cand->conversion_path)))) 
 	flags |= LOOKUP_NONVIRTUAL;
 
       /* [class.mfct.nonstatic]: If a nonstatic member function of a class
@@ -9557,7 +9564,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   struct z_candidate *candidates = 0, *cand;
   tree explicit_targs = NULL_TREE;
   tree basetype = NULL_TREE;
-  tree access_binfo, binfo;
+  tree access_binfo;
   tree optype;
   tree first_mem_arg = NULL_TREE;
   tree name;
@@ -9596,7 +9603,6 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   if (!conversion_path)
     conversion_path = BASELINK_BINFO (fns);
   access_binfo = BASELINK_ACCESS_BINFO (fns);
-  binfo = BASELINK_BINFO (fns);
   optype = BASELINK_OPTYPE (fns);
   fns = BASELINK_FUNCTIONS (fns);
   if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
@@ -9845,17 +9851,6 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 
 	  if (call != error_mark_node)
 	    {
-	      /* Optimize away vtable lookup if we know that this
-		 function can't be overridden.  We need to check if
-		 the context and the type where we found fn are the same,
-		 actually FN might be defined in a different class
-		 type because of a using-declaration. In this case, we
-		 do not want to perform a non-virtual call.  */
-	      if (DECL_VINDEX (fn) && ! (flags & LOOKUP_NONVIRTUAL)
-		  && same_type_ignoring_top_level_qualifiers_p
-		  (DECL_CONTEXT (fn), BINFO_TYPE (binfo))
-		  && resolves_to_fixed_type_p (instance, 0))
-		flags |= LOOKUP_NONVIRTUAL;
               if (explicit_targs)
                 flags |= LOOKUP_EXPLICIT_TMPL_ARGS;
 	      /* Now we know what function is being called.  */
