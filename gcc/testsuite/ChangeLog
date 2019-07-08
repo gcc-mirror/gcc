@@ -1,3 +1,8 @@
+2019-07-08  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/interface9.adb, gnat.dg/interface9_root-child.ads,
+	gnat.dg/interface9_root.ads: New testcase.
+
 2019-07-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/predicate9.adb: New testcase.

@@ -1,3 +1,10 @@
+2019-07-08  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Register_Primitive): When registering a
+	primitive in the secondary dispatch table, handle primitive
+	inherited through several levels of type derivation (required to
+	properly handle inherited 'null' primitive).
+
 2019-07-08  Bob Duff  <duff@adacore.com>
 
 	* doc/gnat_ugn/gnat_utility_programs.rst: Document handling of
