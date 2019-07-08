@@ -1,3 +1,7 @@
+2019-07-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* bootstrap-Og.mk: New file.
+
 2019-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
             Andrew Stubbs  <ams@codesourcery.com>
 

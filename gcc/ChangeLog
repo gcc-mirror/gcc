@@ -1,5 +1,9 @@
 2019-07-08  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* doc/install.texi (bootstrap-Og): Document.
+
+2019-07-08  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/riscv/pic.md (*local_pic_load_s<mode>)
 	(*local_pic_load_u<mode>): Explicitly specify the mode iterator
 	referenced by <mode>, giving...
