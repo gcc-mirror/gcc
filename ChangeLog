@@ -1,5 +1,10 @@
 2019-07-08  Kito Cheng  <kito.cheng@sifive.com>
 
+	* MAINTAINERS (Write After Approval): Remove myself, already listed in
+	RISC-V port maitainer.
+
+2019-07-08  Kito Cheng  <kito.cheng@sifive.com>
+
 	* MAINTAINERS (Write After Approval): Fix the list sorted by surname.
 
 2019-07-08  Kito Cheng  <kito.cheng@sifive.com>
