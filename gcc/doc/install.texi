@@ -2535,6 +2535,7 @@ Removes any @option{-O}-started option from @code{BOOT_CFLAGS}, and adds
 @samp{BOOT_CFLAGS='-g -O1'}.
 
 @item @samp{bootstrap-O3}
+@itemx @samp{bootstrap-Og}
 Analogous to @code{bootstrap-O1}.
 
 @item @samp{bootstrap-lto}
