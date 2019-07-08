@@ -3491,7 +3491,9 @@ package body Sem_Ch13 is
 
                   --  Build the precondition/postcondition pragma
 
-                  --  Add note about why we do NOT need Copy_Tree here???
+                  --  We use Relocate_Node here rather than New_Copy_Tree
+                  --  because subsequent visibility analysis of the aspect
+                  --  depends on this sharing. This should be cleaned up???
 
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
@@ -9358,10 +9360,20 @@ package body Sem_Ch13 is
 
       else
          --  In a generic context freeze nodes are not always generated, so
-         --  analyze the expression now.
+         --  analyze the expression now. If the aspect is for a type, this
+         --  makes its potential components accessible.
 
          if not Analyzed (Freeze_Expr) and then Inside_A_Generic then
-            Preanalyze (Freeze_Expr);
+            if A_Id = Aspect_Dynamic_Predicate
+              or else A_Id = Aspect_Predicate
+              or else A_Id = Aspect_Priority
+            then
+               Push_Type (Ent);
+               Preanalyze (Freeze_Expr);
+               Pop_Type (Ent);
+            else
+               Preanalyze (Freeze_Expr);
+            end if;
          end if;
 
          --  Indicate that the expression comes from an aspect specification,
