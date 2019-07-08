@@ -1,3 +1,8 @@
+2019-07-08  Nicolas Roche  <roche@adacore.com>
+
+	* rtinit.c (__gnat_runtime_initialize): Remove dependency on
+	CommandLineToArgvW.
+
 2019-07-08  Doug Rupp  <rupp@adacore.com>
 
 	* Makefile.rtl: Handle vxworks7r2 in x86_64 and x86 vxworks7.
