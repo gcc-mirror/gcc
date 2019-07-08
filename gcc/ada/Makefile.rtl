@@ -1521,7 +1521,6 @@ ifeq ($(strip $(filter-out %86 linux%,$(target_cpu) $(target_os))),)
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   $(TRASYM_DWARF_UNIX_PAIRS) \
-  g-sercom.adb<libgnat/g-sercom__linux.adb \
   s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   a-exetim.adb<libgnarl/a-exetim__posix.adb \
   a-exetim.ads<libgnarl/a-exetim__default.ads \
@@ -2046,7 +2045,6 @@ ifeq ($(strip $(filter-out mips% linux%,$(target_cpu) $(target_os))),)
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
   s-taspri.ads<libgnarl/s-taspri__posix-noaltstack.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
-  g-sercom.adb<libgnat/g-sercom__linux.adb \
   system.ads<libgnat/system-linux-mips.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
@@ -2072,7 +2070,6 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
-  g-sercom.adb<libgnat/g-sercom__linux.adb \
   $(TRASYM_DWARF_UNIX_PAIRS) \
   s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
@@ -2151,7 +2148,6 @@ ifeq ($(strip $(filter-out aarch64% linux%,$(target_cpu) $(target_os))),)
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
-  g-sercom.adb<libgnat/g-sercom__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-linux-arm.ads
@@ -2296,7 +2292,6 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(target_cpu) $(target_os))),)
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   s-taspri.ads<libgnarl/s-taspri__posix-noaltstack.ads \
-  g-sercom.adb<libgnat/g-sercom__linux.adb \
   $(TRASYM_DWARF_UNIX_PAIRS) \
   s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
@@ -2393,7 +2388,6 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(target_cpu) $(target_os))),)
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
-  g-sercom.adb<libgnat/g-sercom__linux.adb \
   $(TRASYM_DWARF_UNIX_PAIRS) \
   s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
@@ -2435,7 +2429,6 @@ ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
-  g-sercom.adb<libgnat/g-sercom__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_64_TARGET_PAIRS) \
   system.ads<libgnat/system-linux-x86.ads
@@ -2592,6 +2585,11 @@ ifeq ($(EH_MECHANISM),-arm)
     s-excmac.adb<libgnat/s-excmac__arm.adb
   EXTRA_LIBGNAT_OBJS+=raise-gcc.o
   EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o
+endif
+
+ifeq ($(strip $(filter-out linux%,$(target_os))),)
+  LIBGNAT_TARGET_PAIRS += \
+    g-sercom.adb<libgnat/g-sercom__linux.adb
 endif
 
 # LIBGNAT_SRCS is the list of all C files (including headers) of the runtime
