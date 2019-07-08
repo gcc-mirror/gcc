@@ -1,3 +1,9 @@
+2019-07-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/65143
+	* g++.dg/tree-ssa/final2.C: New.
+	* g++.dg/tree-ssa/final3.C: Likewise.
+
 2019-07-08  Javier Miranda  <miranda@adacore.com>
 
 	* gnat.dg/interface10.adb: New testcase.
