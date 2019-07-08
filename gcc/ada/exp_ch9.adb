@@ -3887,6 +3887,7 @@ package body Exp_Ch9 is
 
          if Unprotected then
             Set_Protected_Formal (Formal, Defining_Identifier (New_Param));
+            Set_Ekind (Defining_Identifier (New_Param), Ekind (Formal));
          end if;
 
          Append (New_Param, New_Plist);
@@ -10711,7 +10712,7 @@ package body Exp_Ch9 is
               Make_Defining_Identifier (Eloc,
                 New_External_Name (Chars (Ename), 'A', Num_Accept));
 
-            --  Link the acceptor to the original receiving entry
+            --  Link the acceptor to the original receiving entry.
 
             Set_Ekind           (PB_Ent, E_Procedure);
             Set_Receiving_Entry (PB_Ent, Eent);
@@ -12658,14 +12659,6 @@ package body Exp_Ch9 is
           Object_Definition   => New_Occurrence_Of (Standard_Integer, Loc),
           Expression          => D_Disc));
 
-      --  Do the assignment at this stage only because the evaluation of the
-      --  expression must not occur earlier (see ACVC C97302A).
-
-      Append_To (Stmts,
-        Make_Assignment_Statement (Loc,
-          Name       => New_Occurrence_Of (D, Loc),
-          Expression => D_Conv));
-
       --  Parameter block processing
 
       --  Manually create the parameter block for dispatching calls. In the
@@ -12673,6 +12666,13 @@ package body Exp_Ch9 is
       --  to Build_Simple_Entry_Call.
 
       if Is_Disp_Select then
+         --  Compute the delay at this stage because the evaluation of
+         --  its expression must not occur earlier (see ACVC C97302A).
+
+         Append_To (Stmts,
+           Make_Assignment_Statement (Loc,
+             Name       => New_Occurrence_Of (D, Loc),
+             Expression => D_Conv));
 
          --  Tagged kind processing, generate:
          --    K : Ada.Tags.Tagged_Kind :=
@@ -12855,8 +12855,8 @@ package body Exp_Ch9 is
             Next (Stmt);
          end loop;
 
-         --  Do the assignment at this stage only because the evaluation
-         --  of the expression must not occur earlier (see ACVC C97302A).
+         --  Compute the delay at this stage because the evaluation of
+         --  its expression must not occur earlier (see ACVC C97302A).
 
          Insert_Before (Stmt,
            Make_Assignment_Statement (Loc,
@@ -14882,7 +14882,8 @@ package body Exp_Ch9 is
 
          --  Ditto for a package declaration or a full type declaration, etc.
 
-         elsif Nkind (N) = N_Package_Declaration
+         elsif
+           (Nkind (N) = N_Package_Declaration and then N /= Specification (N))
            or else Nkind (N) in N_Declaration
            or else Nkind (N) in N_Renaming_Declaration
          then
