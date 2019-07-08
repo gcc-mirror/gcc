@@ -1,3 +1,12 @@
+2019-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83518
+	* gcc.dg/tree-ssa/ssa-fre-73.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-74.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-75.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-76.c: Likewise.
+	* g++.dg/tree-ssa/pr83518.C: Likewise.
+
 2019-07-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/guality/guality.h: Include <sys/prctl.h> on Linux targets.
