@@ -1,5 +1,9 @@
 2019-07-08  Robin Dapp  <rdapp@linux.ibm.com>
 
+	* gcc.target/s390/rotate-truncation-mask.c: New test.
+
+2019-07-08  Robin Dapp  <rdapp@linux.ibm.com>
+
 	* gcc.target/s390/combine-rotate-modulo.c: New test.
 	* gcc.target/s390/combine-shift-rotate-add-mod.c: New test.
 	* gcc.target/s390/vector/combine-shift-vec.c: New test.

@@ -16412,7 +16412,13 @@ s390_sched_dependencies_evaluation (rtx_insn *head, rtx_insn *tail)
   add_dependence (r11_restore, r15_restore, REG_DEP_ANTI);
 }
 
+/* Implement TARGET_SHIFT_TRUNCATION_MASK for integer shifts.  */
 
+static unsigned HOST_WIDE_INT
+s390_shift_truncation_mask (machine_mode mode)
+{
+  return mode == DImode || mode == SImode ? 63 : 0;
+}
 
 /* Initialize GCC target structure.  */
 
@@ -16709,6 +16715,8 @@ s390_sched_dependencies_evaluation (rtx_insn *head, rtx_insn *tail)
 #define TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK \
   s390_sched_dependencies_evaluation
 
+#undef TARGET_SHIFT_TRUNCATION_MASK
+#define TARGET_SHIFT_TRUNCATION_MASK s390_shift_truncation_mask
 
 /* Use only short displacement, since long displacement is not available for
    the floating point instructions.  */
