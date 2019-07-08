@@ -1,3 +1,8 @@
+2019-07-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/predicate8.adb, gnat.dg/predicate8_pkg.adb,
+	gnat.dg/predicate8_pkg.ads: New testcase.
+
 2019-07-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83518
