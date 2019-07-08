@@ -4338,6 +4338,7 @@ extern void insn_locations_init (void);
 extern void insn_locations_finalize (void);
 extern void set_curr_insn_location (location_t);
 extern location_t curr_insn_location (void);
+extern void set_insn_locations (rtx_insn *, location_t);
 
 /* rtl-error.c */
 extern void _fatal_insn_not_found (const_rtx, const char *, int, const char *)

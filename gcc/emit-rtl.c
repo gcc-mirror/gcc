@@ -6582,6 +6582,18 @@ curr_insn_location (void)
   return curr_location;
 }
 
+/* Set the location of the insn chain starting at INSN to LOC.  */
+void
+set_insn_locations (rtx_insn *insn, location_t loc)
+{
+  while (insn)
+    {
+      if (INSN_P (insn))
+	INSN_LOCATION (insn) = loc;
+      insn = NEXT_INSN (insn);
+    }
+}
+
 /* Return lexical scope block insn belongs to.  */
 tree
 insn_scope (const rtx_insn *insn)

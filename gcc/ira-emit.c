@@ -1011,6 +1011,10 @@ emit_moves (void)
 	    tmp = NEXT_INSN (tmp);
 	  if (NOTE_INSN_BASIC_BLOCK_P (tmp))
 	    tmp = NEXT_INSN (tmp);
+	  /* Propagate the location of the current first instruction to the
+	     moves so that they don't inherit a random location.  */
+	  if (tmp != NULL_RTX && INSN_P (tmp))
+	    set_insn_locations (insns, INSN_LOCATION (tmp));
 	  if (tmp == BB_HEAD (bb))
 	    emit_insn_before (insns, tmp);
 	  else if (tmp != NULL_RTX)

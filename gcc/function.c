@@ -5244,19 +5244,6 @@ use_return_register (void)
   diddle_return_value (do_use_return_reg, NULL);
 }
 
-/* Set the location of the insn chain starting at INSN to LOC.  */
-
-static void
-set_insn_locations (rtx_insn *insn, int loc)
-{
-  while (insn != NULL)
-    {
-      if (INSN_P (insn))
-	INSN_LOCATION (insn) = loc;
-      insn = NEXT_INSN (insn);
-    }
-}
-
 /* Generate RTL for the end of the current function.  */
 
 void
