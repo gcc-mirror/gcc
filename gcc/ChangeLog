@@ -1,3 +1,11 @@
+2019-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-stmts.c (scan_operand_equal_p): Look through MEM_REF
+	with SSA_NAME address of POINTER_PLUS_EXPR.  Handle MULT_EXPR
+	and casts in offset when different, both through gimple stmts
+	and through trees.  Rewritten using loops to minimize code duplication
+	for each operand.
+
 2019-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* emit-rtl.c (set_insn_locations): New function moved from...
