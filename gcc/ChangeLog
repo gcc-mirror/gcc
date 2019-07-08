@@ -1,3 +1,8 @@
+2019-07-08  Martin Liska  <mliska@suse.cz>
+
+	* collect2.c (defined): Revert to before r254460.
+	(scan_prog_file): Revert to before r254460.
+
 2019-07-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/83518
