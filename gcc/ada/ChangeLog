@@ -1,3 +1,12 @@
+2019-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Record_Info): Declare Incomplete_Layout and
+	Not_In_Extended_Main local exceptions.
+	(List_Structural_Record_Layout): For an extension, raise the
+	former if the parent subtype has not been built and the latter
+	if it is not declared in the main source unit.  Fall back to the
+	flat layout if either exception has been raised.
+
 2019-07-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* libgnat/a-strfix.adb (Delete): The RM describes the semantics
