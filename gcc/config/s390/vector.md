@@ -969,20 +969,24 @@
 (define_expand "<vec_shifts_name><mode>3"
   [(set (match_operand:VI 0 "register_operand" "")
 	(VEC_SHIFTS:VI (match_operand:VI 1 "register_operand" "")
-		       (match_operand:SI 2 "nonmemory_operand" "")))]
+		       (match_operand:QI 2 "shift_count_operand" "")))]
   "TARGET_VX")
 
 ; verllb, verllh, verllf, verllg
 ; veslb,  veslh,  veslf,  veslg
 ; vesrab, vesrah, vesraf, vesrag
 ; vesrlb, vesrlh, vesrlf, vesrlg
-(define_insn "*<vec_shifts_name><mode>3<addr_style_op>"
+(define_insn "*<vec_shifts_name><mode>3"
   [(set (match_operand:VI                0 "register_operand"  "=v")
 	(VEC_SHIFTS:VI (match_operand:VI 1 "register_operand"   "v")
-		       (match_operand:SI 2 "nonmemory_operand" "an")))]
-  "TARGET_VX"
-  "<vec_shifts_mnem><bhfgq>\t%v0,%v1,<addr_style_op_ops>"
+		       (match_operand:QI 2 "shift_count_operand_vec" "jsc")))]
+  "TARGET_VX
+  && s390_valid_shift_count (operands[2],
+    GET_MODE_BITSIZE (GET_MODE_INNER (<MODE>mode)) - 1)
+  "
+  "<vec_shifts_mnem><bhfgq>\t%v0,%v1,%Y2"
   [(set_attr "op_type" "VRS")])
+
 
 ; Shift each element by corresponding vector element
 
