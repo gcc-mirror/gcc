@@ -3337,12 +3337,6 @@ Alternatively, you may run the script using the following command line:
      '(' and ':'. This also turns off alignment.
 
 
-   .. index:: --ff-after-pragma-page (gnatpp)
-
-   :switch:`--ff-after-pragma-page`
-     Insert a Form Feed character after a pragma Page.
-
-
    .. index:: --call_threshold (gnatpp)
 
    :switch:`--call_threshold={nnn}`
@@ -4122,11 +4116,6 @@ Alternatively, you may run the script using the following command line:
 
    :switch:`-cl{nnn}`
      :switch:`--indent-continuation={nnn}`
-
-   .. index:: -ff (gnatpp)
-
-   :switch:`-ff`
-     :switch:`--ff-after-pragma-page`
 
    .. index:: -pipe (gnatpp)
 
