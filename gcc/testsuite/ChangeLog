@@ -1,3 +1,8 @@
+2019-07-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/guality/guality.h: Include <sys/prctl.h> on Linux targets.
+	(main): Use PR_SET_PTRACER where available.
+
 2019-07-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/91077
