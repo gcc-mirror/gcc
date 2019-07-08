@@ -6276,13 +6276,17 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   Node_Id gnat_pragma;
   /* Make the decl for the elaboration procedure.  Emit debug info for it, so
      that users can break into their elaboration code in debuggers.  Kludge:
-     don't consider it as a definition so that we have a line map for its body,
-     but no subprogram description in debug info. */
+     don't consider it as a definition so that we have a line map for its
+     body, but no subprogram description in debug info.  In addition, don't
+     qualify it as artificial, even though it is not a user subprogram per se,
+     in particular for specs.  Unlike, say, clones created internally by the
+     compiler, this subprogram materializes specific user code and flagging it
+     artificial would take elab code away from gcov's analysis.  */
   tree gnu_elab_proc_decl
     = create_subprog_decl
       (create_concat_name (gnat_unit_entity, body_p ? "elabb" : "elabs"),
        NULL_TREE, void_ftype, NULL_TREE,
-       is_default, true, false, true, true, false, NULL, gnat_unit);
+       is_default, true, false, false, true, false, NULL, gnat_unit);
   struct elab_info *info;
 
   vec_safe_push (gnu_elab_proc_stack, gnu_elab_proc_decl);

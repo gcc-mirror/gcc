@@ -1,3 +1,8 @@
+2019-07-08  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/trans.c (Compilation_Unit_to_gnu): Don't request
+	DECL_ARTIFICIAL_P on elab proc declarations.
+
 2019-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.adb (List_Record_Info): Declare Incomplete_Layout and
