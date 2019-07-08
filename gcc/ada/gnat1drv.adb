@@ -82,6 +82,7 @@ with Uname;     use Uname;
 with Urealp;
 with Usage;
 with Validsw;   use Validsw;
+with Warnsw;    use Warnsw;
 
 with System.Assertions;
 with System.OS_Lib;
@@ -403,7 +404,22 @@ procedure Gnat1drv is
 
          Relaxed_RM_Semantics := True;
 
-         if not Generate_CodePeer_Messages then
+         if Generate_CodePeer_Messages then
+
+            --  We do want to emit GNAT warnings when using -gnateC. But,
+            --  in CodePeer mode, warnings about memory representation are not
+            --  meaningful, thus, suppress them.
+
+            Warn_On_Biased_Representation := False; -- -gnatw.b
+            Warn_On_Unrepped_Components := False;   -- -gnatw.c
+            Warn_On_Record_Holes := False;          -- -gnatw.h
+            Warn_On_Unchecked_Conversion := False;  -- -gnatwz
+            Warn_On_Size_Alignment := False;        -- -gnatw.z
+            Warn_On_Questionable_Layout := False;   -- -gnatw.q
+            Warn_On_Overridden_Size := False;       -- -gnatw.s
+            Warn_On_Reverse_Bit_Order := False;     -- -gnatw.v
+
+         else
 
             --  Suppress compiler warnings by default when generating SCIL for
             --  CodePeer, except when combined with -gnateC where we do want to

@@ -1,3 +1,8 @@
+2019-07-08  Daniel Mercier  <mercier@adacore.com>
+
+	* gnat1drv.adb: Suppress warnings on memory representation in
+	CodePeer compiler mode.
+
 2019-07-08  Nicolas Roche  <roche@adacore.com>
 
 	* rtinit.c (__gnat_runtime_initialize): Remove dependency on
