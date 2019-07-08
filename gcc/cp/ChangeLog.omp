@@ -1,3 +1,12 @@
+2019-07-09  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2019-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91110
+	* decl2.c (cp_omp_mappable_type_1): Don't emit any note for
+	error_mark_node type.
+
 2019-07-04  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:
