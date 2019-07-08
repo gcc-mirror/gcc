@@ -1,5 +1,11 @@
 2019-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Do not
+	register an address clause when its prefix denotes a generic
+	formal object.
+
+2019-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* bindo-diagnostics.adb (Diagnose_Cycle): Capture the presence
 	of an Elaborate_All edge before iterating over the edges of the
 	cycle.
