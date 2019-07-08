@@ -1369,7 +1369,7 @@ package body GNAT.Sockets is
 
    function Get_Socket_Option
      (Socket  : Socket_Type;
-      Level   : Level_Type := Socket_Level;
+      Level   : Level_Type;
       Name    : Option_Name;
       Optname : Interfaces.C.int := -1) return Option_Type
    is
@@ -2539,7 +2539,7 @@ package body GNAT.Sockets is
 
    procedure Set_Socket_Option
      (Socket : Socket_Type;
-      Level  : Level_Type := Socket_Level;
+      Level  : Level_Type;
       Option : Option_Type)
    is
       use type C.unsigned;
