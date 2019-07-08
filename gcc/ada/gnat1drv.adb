@@ -61,6 +61,7 @@ with Sem_Ch12;
 with Sem_Ch13;
 with Sem_Elim;
 with Sem_Eval;
+with Sem_Prag;
 with Sem_SPARK; use Sem_SPARK;
 with Sem_Type;
 with Set_Targ;
@@ -990,7 +991,7 @@ procedure Gnat1drv is
       Atree.Unlock;
       Nlists.Unlock;
       Sem.Unlock;
-      Sem_Ch13.Validate_Compile_Time_Warning_Errors;
+      Sem_Prag.Validate_Compile_Time_Warning_Errors;
       Sem.Lock;
       Nlists.Lock;
       Atree.Lock;

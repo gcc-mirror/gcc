@@ -555,4 +555,10 @@ package Sem_Prag is
    --
    --    Empty if there is no such argument
 
+   procedure Validate_Compile_Time_Warning_Errors;
+   --  This routine is called after calling the back end to validate pragmas
+   --  Compile_Time_Error and Compile_Time_Warning for size and alignment
+   --  appropriateness. The reason it is called that late is to take advantage
+   --  of any back-annotation of size and alignment performed by the back end.
+
 end Sem_Prag;
