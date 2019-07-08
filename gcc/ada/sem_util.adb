@@ -6924,12 +6924,7 @@ package body Sem_Util is
       S := Scope (E);
       while Present (S) loop
          if Is_Package_Or_Generic_Package (S)
-           or else Ekind (S) = E_Package_Body
-         then
-            return S;
-
-         elsif Is_Subprogram_Or_Generic_Subprogram (S)
-           or else Ekind (S) = E_Subprogram_Body
+           or else Is_Subprogram_Or_Generic_Subprogram (S)
          then
             return S;
 

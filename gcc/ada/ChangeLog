@@ -1,3 +1,8 @@
+2019-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Enclosing_Package_Or_Subprogram): Do not expect
+	package and subprogram bodies.
+
 2019-07-08  Bob Duff  <duff@adacore.com>
 
 	* doc/gnat_ugn/gnat_utility_programs.rst: Remove documentation
