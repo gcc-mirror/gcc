@@ -1840,6 +1840,45 @@ package body Bindo.Graphs is
          return DG.Component (G.Graph, Vertex);
       end Component;
 
+      ---------------------------------
+      -- Contains_Elaborate_All_Edge --
+      ---------------------------------
+
+      function Contains_Elaborate_All_Edge
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) return Boolean
+      is
+         Edge : Library_Graph_Edge_Id;
+         Iter : Edges_Of_Cycle_Iterator;
+         Seen : Boolean;
+
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Cycle));
+
+         --  Assume that no Elaborate_All edge has been seen
+
+         Seen := False;
+
+         --  IMPORTANT:
+         --
+         --    * The iteration must run to completion in order to unlock the
+         --      edges of the cycle.
+
+         Iter := Iterate_Edges_Of_Cycle (G, Cycle);
+         while Has_Next (Iter) loop
+            Next (Iter, Edge);
+
+            if not Seen
+              and then Is_Elaborate_All_Edge (G, Edge)
+            then
+               Seen := True;
+            end if;
+         end loop;
+
+         return Seen;
+      end Contains_Elaborate_All_Edge;
+
       ------------------------------------
       -- Contains_Weak_Static_Successor --
       ------------------------------------
