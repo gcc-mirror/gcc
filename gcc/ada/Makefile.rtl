@@ -1118,7 +1118,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworksae,$(target_cpu) $(target_vendor) $(ta
 endif
 
 # x86/x86_64 VxWorks
-ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(target_vendor) $(target_os))),)
+ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7%,$(target_cpu) $(target_vendor) $(target_os))),)
 
   EH_MECHANISM=-gcc
 
