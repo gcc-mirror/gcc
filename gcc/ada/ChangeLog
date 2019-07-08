@@ -1,3 +1,133 @@
+2019-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* bindo.adb: Update the section on terminology to include new
+	concepts.  Update the section on switches to include new
+	entries.
+	* bindo.ads: Add type Precedence_Kind.
+	* bindo-builders.adb: Add with and use clauses for Debug and
+	Bindo.Validators.  Add use clauses for
+	Bindo.Validators.Invocation_Graph_Validators and
+	Bindo.Validators.Library_Graph_Validators.
+	(Build_Invocation_Graph): Validate the graph immediately after
+	it was built.
+	(Build_Library_Graph): Update the parameter profile. The
+	creation of the graph is now elaboration model-agnostic.
+	Validate the graph immediately after it was built.
+	(Create_With_Edge): Create regular with edges for Elaborate and
+	Elaborate_All edges when the appropriate debug switches are in
+	effect.
+	* bindo-builders.ads (Build_Library_Graph): Update the parameter
+	profile.
+	* bindo-diagnostics.adb (Diagnose_Cycle): Track the presence of
+	an Elaborate_All edge throughout the inspection of the cycle's
+	edges.
+	(Output_Dynamic_Model_Suggestions): Output the suggestion only
+	when the cycle contains at least one weak edge where the
+	successor was statically elaborated.
+	(Output_Elaborate_Body_Transition, Output_Forced_Transition,
+	Output_With_Transition): Update the assertions.
+	* bindo-elaborators.adb: Remove use clauses for
+	Bindo.Validators.Invocation_Graph_Validators and
+	Bindo.Validators.Library_Graph_Validators.  Remove strings
+	Add_To_All_Candidates_Msg and Add_To_Comp_Candidates_Msg.
+	Remove type String_Ptr.
+	(Add_Vertex, Add_Vertex_If_Elaborable, Create_All_Candidates_Set
+	Create_Component_Candidates_Set): Remove.
+	(Create_Component_Vertex_Sets, Create_Vertex_Sets): New routine.
+	(Elaborate_Component): Update the parameter profile and the
+	comment on usage.  Reimplement the elaboration of a component.
+	The algorithm will now attempt to elaborate as many vertices
+	possible. If this is not possible, and a weakly elaborable
+	vertex is available use unit was compiled using the dynamic
+	model, the algorithm will elaborate it.
+	(Elaborate_Library_Graph): Reimplement the elaboration of the
+	graph. The algorithm will now attempt to elaborate as many
+	vertices along with their components as possible. If this is not
+	possible, and a weakly elaborable vertex is available use unit
+	was compiled using the dynamic model, the algorithm will
+	elaborate it along with its component.
+	(Elaborate_Units): Merge with the functionality of
+	Elaborate_Units_Common.
+	(Elaborate_Units_Common, Elaborate_Units_Dynamic,
+	Elaborate_Units_Static): Remove.
+	(Elaborate_Vertex): Update the parameter profile and the comment
+	on usage.  Reimplemented.
+	(Find_Best_Candidate): Remove.
+	(Find_Best_Elaborable_Vertex, Find_Best_Vertex,
+	Find_Best_Weakly_Elaborable_Vertex, Has_Elaborable_Body,
+	Insert_Elaborable_Successor, Insert_Vertex): New routines.
+	(Is_Better_Candidate): Remove.
+	(Is_Better_Elaborable_Vertex,
+	Is_Better_Weakly_Elaborable_Vertex,
+	Is_Suitable_Elaborable_Vertex,
+	Is_Suitable_Weakly_Elaborable_Vertex): New routines.
+	(Trace_Candidate_Vertices): Remove.
+	(Trace_Component): Output the number of strong and weak
+	predecessors.
+	(Trace_Unelaborated_Vertices): Remove.
+	(Trace_Vertex): Output the number of strong and weak
+	predecessors.
+	(Trace_Vertices): New routine.
+	(Update_Successor, Update_Successors): Update the parameter
+	profile and the comment on usage.
+	* bindo-graphs.adb: Remove type Precedence_Kind.
+	(Add_Edge_With_Return): Update the increment of pending
+	predecessors.
+	(Add_Vertex): Provide default values for strong and weak
+	predecessors.
+	(Complementary_Vertex): Move the initial declaration to the
+	spec. Update the parameter profile and the comment on usage.
+	(Contains_Weak_Static_Successor): New routine.
+	(Create): Update the parameter profile. The creation of the
+	graph is now elaboration model-agnostic.
+	(Decrement_Pending_Predecessors): Update the parameter profile
+	and the comment on usage. Reimplemented.
+	(Delete_Edge): Update the decrement of pending predecesors.
+	(Has_Elaborate_Body): Do not treat a vertex as being subject to
+	Elaborate_Body when a debug switch is in effect.
+	(Increment_Pending_Predecessors): Update the parameter profile
+	and the comment on usage. Reimplemented.
+	(Is_Elaborable_Component): Reimplemented.
+	(Is_Elaborable_Vertex): Move the initial declaration to the
+	spec.  Reimplemented.
+	(Is_Elaborate_Body_Pair): New routine.
+	(Is_Dynamically_Elaborated): Update the parameter profile.
+	Reimplemented.
+	(Is_Weakly_Elaborable_Vertex): New routine.
+	(Pending_Predecessors): Removed.
+	(Pending_Predecessors_For_Elaboration,
+	Pending_Strong_Predecessors, Pending_Weak_Predecessors,
+	Update_Pending_Predecessors): New routines.
+	(Update_Pending_Predecessors_Of_Components): Update the
+	increment of pending predecessors.
+	* bindo-graphs.ads: Update the components of type
+	Component_Attributes.  Update the components of type
+	Library_Graph_Attributes.  Update the components of type
+	Library_Graph_Vertex_Attributes.  Update the initialization of
+	No_Component_Attributes.  Update the initialization of
+	No_Library_Graph_Vertex_Attributes.
+	(Complementary_Vertex, Contains_Weak_Static_Successor): New
+	routines.
+	(Create): Update the parameter profile and the comment on usage.
+	(Decrement_Pending_Predecessors, Is_Dynamically_Elaborated):
+	Update the parameter profile and the comment on usage.
+	(Is_Elaborate_Body_Pair, Is_Weakly_Elaborable_Vertex): New
+	routines.
+	(Pending_Predecessors): Removed.
+	(Pending_Predecessors_For_Elaboration,
+	Pending_Strong_Predecessors, Pending_Weak_Predecessors): New
+	routines.
+	* bindo-writers.adb (Write_Components): Moved from the spec.
+	(Write_Component): Output the strong and weak predecessors.
+	(Write_Library_Graph): Output the components as part of the
+	graph.
+	(Write_Library_Graph_Vertex): Output the strong and weak
+	predecessors.
+	* bindo-writers.ads (Write_Components): Moved to the body.
+	* debug.adb: Add and document new GNATbind switches -d_a, -d_b,
+	-d_e.
+	* bindo-validators.adb: Minor reformattings.
+
 2019-07-08  Bob Duff  <duff@adacore.com>
 
 	* libgnat/g-sercom.ads, libgnat/g-sercom__linux.adb (Data_Rate):

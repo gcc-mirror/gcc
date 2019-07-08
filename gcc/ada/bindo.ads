@@ -41,4 +41,14 @@ package Bindo is
    --  exists, it is returned in Order, otherwise Unrecoverable_Error is
    --  raised.
 
+private
+
+   --  The following type represents the various kinds of precedence between
+   --  two items.
+
+   type Precedence_Kind is
+     (Lower_Precedence,
+      Equal_Precedence,
+      Higher_Precedence);
+
 end Bindo;

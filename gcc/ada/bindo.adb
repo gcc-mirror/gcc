@@ -74,7 +74,7 @@ package body Bindo is
    --
    --    * Diagnose elaboration circularities between units
    --
-   --      An elaboration circularity arrises when either
+   --      An elaboration circularity arises when either
    --
    --        - At least one unit cannot be ordered, or
    --
@@ -94,6 +94,12 @@ package body Bindo is
    -----------------
 
    --  * Component - A strongly connected component of a graph.
+   --
+   --  * Elaborable component - A component that is not waiting on other
+   --    components to be elaborated.
+   --
+   --  * Elaborable vertex - A vertex that is not waiting on strong and weak
+   --    predecessors, and whose component is elaborable.
    --
    --  * Elaboration circularity - A cycle involving units from the bind.
    --
@@ -136,8 +142,23 @@ package body Bindo is
    --  * Pending predecessor - A vertex that must be elaborated before another
    --    vertex can be elaborated.
    --
+   --  * Strong edge - A non-invocation library graph edge. Strong edges
+   --    represent the language-defined relations between units.
+   --
+   --  * Strong predecessor - A library graph vertex reachable via a strong
+   --    edge.
+   --
    --  * Target - The destination construct of an invocation relation (the
    --    generic, subprogram, or task type).
+   --
+   --  * Weak edge - An invocation library graph edge. Weak edges represent
+   --    the speculative flow of execution at elaboration time, which may or
+   --    may not take place.
+   --
+   --  * Weak predecessor - A library graph vertex reachable via a weak edge.
+   --
+   --  * Weakly elaborable vertex - A vertex that is waiting solely on weak
+   --    predecessors to be elaborated, and whose component is elaborable.
 
    ------------------
    -- Architecture --
@@ -233,7 +254,7 @@ package body Bindo is
    --      bodies as single vertices.
    --
    --    * Try to order as many vertices of the library graph as possible by
-   --      peforming a topological sort based on the pending predecessors of
+   --      performing a topological sort based on the pending predecessors of
    --      vertices across all components and within a single component.
    --
    --    * Validate the consistency of the order, only when switch -d_V is in
@@ -251,7 +272,7 @@ package body Bindo is
    --  The Diagnostics phase has the following objectives:
    --
    --    * Discover, save, and sort all cycles in the library graph. The cycles
-   --      are sorted based on the following heiristics:
+   --      are sorted based on the following heuristics:
    --
    --        - A cycle with higher precedence is preferred.
    --
@@ -268,7 +289,7 @@ package body Bindo is
    --    * Diagnose the most important cycle, or all cycles when switch -d_C is
    --      in effect. The diagnostic consists of:
    --
-   --        - The reason for the existance of the cycle, along with the unit
+   --        - The reason for the existence of the cycle, along with the unit
    --          whose elaboration cannot be guaranteed.
    --
    --        - A detailed traceback of the cycle, showcasing the transition
@@ -276,7 +297,7 @@ package body Bindo is
    --          information.
    --
    --        - A set of suggestions on how to break the cycle considering the
-   --          the edges coprising the circuit, the elaboration model used to
+   --          the edges comprising the circuit, the elaboration model used to
    --          compile the units, the availability of invocation information,
    --          and the state of various relevant switches.
 
@@ -284,6 +305,23 @@ package body Bindo is
    -- Switches --
    --------------
 
+   --  -d_a  Ignore the effects of pragma Elaborate_All
+   --
+   --        GNATbind creates a regular with edge instead of an Elaborate_All
+   --        edge in the library graph, thus eliminating the effects of the
+   --        pragma.
+   --
+   --  -d_b  Ignore the effects of pragma Elaborate_Body
+   --
+   --        GNATbind treats a spec and body pair as decoupled.
+   --
+   --  -d_e  Ignore the effects of pragma Elaborate
+   --
+   --        GNATbind creates a regular with edge instead of an Elaborate edge
+   --        in the library graph, thus eliminating the effects of the pragma.
+   --        In addition, GNATbind does not create an edge to the body of the
+   --        pragma argument.
+   --
    --  -d_A  Output ALI invocation tables
    --
    --        GNATbind outputs the contents of ALI table Invocation_Constructs

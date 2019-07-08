@@ -140,7 +140,7 @@ package body Bindo.Validators is
 
          Edges := LGE_Sets.Create (Length (G, Cycle));
 
-         --  Inspect the edges of the cucle, trying to catch duplicates
+         --  Inspect the edges of the cycle, trying to catch duplicates
 
          Iter := Iterate_Edges_Of_Cycle (G, Cycle);
          while Has_Next (Iter) loop
@@ -155,7 +155,7 @@ package body Bindo.Validators is
 
                Write_Str ("  library graph edge (LGE_Id_");
                Write_Int (Int (Edge));
-               Write_Str (") is repeaded in cycle (LGC_Id_");
+               Write_Str (") is repeated in cycle (LGC_Id_");
                Write_Int (Int (Cycle));
                Write_Str (")");
                Write_Eol;
@@ -421,7 +421,7 @@ package body Bindo.Validators is
         (G      : Invocation_Graph;
          Vertex : Invocation_Graph_Vertex_Id);
       pragma Inline (Validate_Invocation_Graph_Vertex);
-      --  Verify that the attributes of vertex Vertex of inbocation graph G are
+      --  Verify that the attributes of vertex Vertex of invocation graph G are
       --  properly set.
 
       procedure Validate_Invocation_Graph_Vertices (G : Invocation_Graph);
@@ -468,7 +468,7 @@ package body Bindo.Validators is
          if not Present (Edge) then
             Write_Error (Msg, Has_Invalid_Data);
 
-            Write_Str ("  emply invocation graph edge");
+            Write_Str ("  empty invocation graph edge");
             Write_Eol;
             Write_Eol;
             return;
@@ -530,7 +530,7 @@ package body Bindo.Validators is
          if not Present (Vertex) then
             Write_Error (Msg, Has_Invalid_Data);
 
-            Write_Str ("  emply invocation graph vertex");
+            Write_Str ("  empty invocation graph vertex");
             Write_Eol;
             Write_Eol;
             return;
@@ -662,7 +662,7 @@ package body Bindo.Validators is
          if not Present (Edge) then
             Write_Error (Msg, Has_Invalid_Data);
 
-            Write_Str ("  emply library graph edge");
+            Write_Str ("  empty library graph edge");
             Write_Eol;
             Write_Eol;
             return;

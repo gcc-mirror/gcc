@@ -1025,6 +1025,10 @@ package body Bindo.Writers is
       --  Write all vertices of component Comp of library graph G to standard
       --  output.
 
+      procedure Write_Components (G : Library_Graph);
+      pragma Inline (Write_Component);
+      --  Write all components of library graph G to standard output
+
       procedure Write_Edges_To_Successors
         (G      : Library_Graph;
          Vertex : Library_Graph_Vertex_Id);
@@ -1089,8 +1093,12 @@ package body Bindo.Writers is
          Write_Str (")");
          Write_Eol;
 
-         Write_Str ("  Pending_Predecessors = ");
-         Write_Int (Int (Pending_Predecessors (G, Comp)));
+         Write_Str ("  Pending_Strong_Predecessors = ");
+         Write_Int (Int (Pending_Strong_Predecessors (G, Comp)));
+         Write_Eol;
+
+         Write_Str ("  Pending_Weak_Predecessors   = ");
+         Write_Int (Int (Pending_Weak_Predecessors (G, Comp)));
          Write_Eol;
 
          Write_Component_Vertices (G, Comp);
@@ -1225,6 +1233,7 @@ package body Bindo.Writers is
 
          Write_Statistics (G);
          Write_Library_Graph_Vertices (G);
+         Write_Components (G);
 
          Write_Str ("Library Graph end");
          Write_Eol;
@@ -1312,8 +1321,12 @@ package body Bindo.Writers is
          end if;
 
          Write_Eol;
-         Write_Str ("  Pending_Predecessors = ");
-         Write_Int (Int (Pending_Predecessors (G, Vertex)));
+         Write_Str ("  Pending_Strong_Predecessors = ");
+         Write_Int (Int (Pending_Strong_Predecessors (G, Vertex)));
+         Write_Eol;
+
+         Write_Str ("  Pending_Weak_Predecessors   = ");
+         Write_Int (Int (Pending_Weak_Predecessors (G, Vertex)));
          Write_Eol;
 
          Write_Str ("  Component (Comp_Id_");
@@ -1612,7 +1625,7 @@ package body Bindo.Writers is
    is
       function Digits_Indentation return Indentation_Level;
       pragma Inline (Digits_Indentation);
-      --  Determine the level of indentation the number requies in order to
+      --  Determine the level of indentation the number requires in order to
       --  be right-justified by Val_Indent.
 
       ------------------------

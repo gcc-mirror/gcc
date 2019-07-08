@@ -205,7 +205,7 @@ package body Bindo.Graphs is
         (G   : Invocation_Graph;
          Rel : Source_Target_Relation) return Boolean;
       pragma Inline (Is_Existing_Source_Target_Relation);
-      --  Determine whether a source vertex and a target vertex desctibed by
+      --  Determine whether a source vertex and a target vertex described by
       --  relation Rel are already related in invocation graph G.
 
       procedure Save_Elaboration_Root
@@ -226,7 +226,7 @@ package body Bindo.Graphs is
          Rel : Source_Target_Relation;
          Val : Boolean := True);
       pragma Inline (Set_Is_Existing_Source_Target_Relation);
-      --  Mark a source vertex and a target vertex desctibed by relation Rel as
+      --  Mark a source vertex and a target vertex described by relation Rel as
       --  already related in invocation graph G depending on value Val.
 
       procedure Set_IGE_Attributes
@@ -1026,18 +1026,6 @@ package body Bindo.Graphs is
 
    package body Library_Graphs is
 
-      -----------
-      -- Types --
-      -----------
-
-      --  The following type represents the various kinds of precedence between
-      --  two items.
-
-      type Precedence_Kind is
-        (Lower_Precedence,
-         Equal_Precedence,
-         Higher_Precedence);
-
       -----------------------
       -- Local subprograms --
       -----------------------
@@ -1064,7 +1052,7 @@ package body Bindo.Graphs is
          Attrs  : Library_Graph_Cycle_Attributes;
          Indent : Indentation_Level);
       pragma Inline (Add_Cycle);
-      --  Store a cycle described by attribytes Attrs in library graph G,
+      --  Store a cycle described by attributes Attrs in library graph G,
       --  unless a prior rotation of it already exists. The edges of the cycle
       --  must be in normalized form. Indent is the desired indentation level
       --  for tracing.
@@ -1089,15 +1077,6 @@ package body Bindo.Graphs is
       --  Add vertex Vertex of library graph G to set Set. If the vertex is
       --  part of an Elaborate_Body pair, or flag Do_Complement is set, add
       --  the complementary vertex to the set.
-
-      function Complementary_Vertex
-        (G             : Library_Graph;
-         Vertex        : Library_Graph_Vertex_Id;
-         Do_Complement : Boolean) return Library_Graph_Vertex_Id;
-      pragma Inline (Complementary_Vertex);
-      --  If vertex Vertex of library graph G is part of an Elaborate_Body
-      --  pair, or flag Do_Complement is set, return the spec when Vertex is
-      --  a body, the body when Vertex is a spec, or No_Library_Graph_Vertex.
 
       function Copy_Cycle_Path
         (Cycle_Path : LGE_Lists.Doubly_Linked_List)
@@ -1228,17 +1207,21 @@ package body Bindo.Graphs is
 
       procedure Increment_Pending_Predecessors
         (G    : Library_Graph;
-         Comp : Component_Id);
+         Comp : Component_Id;
+         Edge : Library_Graph_Edge_Id);
       pragma Inline (Increment_Pending_Predecessors);
-      --  Increment the number of pending precedessors component Comp of
-      --  library graph G must wait on before it can be elaborated by one.
+      --  Increment the number of pending predecessors component Comp which was
+      --  reached via edge Edge of library graph G must wait on before it can
+      --  be elaborated by one.
 
       procedure Increment_Pending_Predecessors
         (G      : Library_Graph;
-         Vertex : Library_Graph_Vertex_Id);
+         Vertex : Library_Graph_Vertex_Id;
+         Edge   : Library_Graph_Edge_Id);
       pragma Inline (Increment_Pending_Predecessors);
-      --  Increment the number of pending precedessors vertex Vertex of library
-      --  graph G must wait on before it can be elaborated by one.
+      --  Increment the number of pending predecessors vertex Vertex which was
+      --  reached via edge Edge of library graph G must wait on before it can
+      --  be elaborated by one.
 
       procedure Initialize_Components (G : Library_Graph);
       pragma Inline (Initialize_Components);
@@ -1306,22 +1289,14 @@ package body Bindo.Graphs is
          Edge : Library_Graph_Edge_Id) return Boolean;
       pragma Inline (Is_Cyclic_With_Edge);
       --  Determine whether edge Edge of library graph G participates in a
-      --  cycle and is the result of awith dependency between its successor
+      --  cycle and is the result of a with dependency between its successor
       --  and predecessor.
-
-      function Is_Elaborable_Vertex
-        (G            : Library_Graph;
-         Vertex       : Library_Graph_Vertex_Id;
-         Predecessors : Natural) return Boolean;
-      pragma Inline (Is_Elaborable_Vertex);
-      --  Determine whether vertex Vertex of library graph G can be elaborated
-      --  given that it meets number of predecessors Predecessors.
 
       function Is_Recorded_Cycle
         (G     : Library_Graph;
          Attrs : Library_Graph_Cycle_Attributes) return Boolean;
       pragma Inline (Is_Recorded_Cycle);
-      --  Determine whether a cycle desctibed by its attributes Attrs has
+      --  Determine whether a cycle described by its attributes Attrs has
       --  has already been recorded in library graph G.
 
       function Is_Recorded_Edge
@@ -1329,7 +1304,7 @@ package body Bindo.Graphs is
          Rel : Predecessor_Successor_Relation) return Boolean;
       pragma Inline (Is_Recorded_Edge);
       --  Determine whether a predecessor vertex and a successor vertex
-      --  desctibed by relation Rel are already linked in library graph G.
+      --  described by relation Rel are already linked in library graph G.
 
       function Links_Vertices_In_Same_Component
         (G    : Library_Graph;
@@ -1441,7 +1416,7 @@ package body Bindo.Graphs is
          Rel : Predecessor_Successor_Relation;
          Val : Boolean := True);
       pragma Inline (Set_Is_Recorded_Edge);
-      --  Mark a predecessor vertex and a successor vertex desctibed by
+      --  Mark a predecessor vertex and a successor vertex described by
       --  relation Rel as already linked depending on value Val.
 
       procedure Set_LGC_Attributes
@@ -1493,6 +1468,16 @@ package body Bindo.Graphs is
       --  Write the contents of vertex Vertex of library graph G to standard
       --  output. Indent is the desired indentation level for tracing.
 
+      procedure Update_Pending_Predecessors
+        (Strong_Predecessors : in out Natural;
+         Weak_Predecessors   : in out Natural;
+         Update_Weak         : Boolean;
+         Value               : Integer);
+      pragma Inline (Update_Pending_Predecessors);
+      --  Update the number of pending strong or weak predecessors denoted by
+      --  Strong_Predecessors and Weak_Predecessors respectively depending on
+      --  flag Update_Weak by adding value Value.
+
       procedure Update_Pending_Predecessors_Of_Components (G : Library_Graph);
       pragma Inline (Update_Pending_Predecessors_Of_Components);
       --  Update the number of pending predecessors all components of library
@@ -1523,7 +1508,7 @@ package body Bindo.Graphs is
          pragma Assert (LGE_Lists.Present (Edges));
 
          --  A vertex requires a special Body_Before_Spec edge to its
-         --  Corresponging_Item when it either denotes a
+         --  Corresponding_Item when it either denotes a
          --
          --    * Body that completes a previous spec
          --
@@ -1717,7 +1702,10 @@ package body Bindo.Graphs is
          --  Update the number of pending predecessors the successor must wait
          --  on before it is elaborated.
 
-         Increment_Pending_Predecessors (G, Succ);
+         Increment_Pending_Predecessors
+           (G      => G,
+            Vertex => Succ,
+            Edge   => Edge);
 
          --  Update the edge statistics
 
@@ -1757,10 +1745,12 @@ package body Bindo.Graphs is
          Set_LGV_Attributes
            (G      => G,
             Vertex => Vertex,
-            Val    => (Corresponding_Item   => No_Library_Graph_Vertex,
-                       In_Elaboration_Order => False,
-                       Pending_Predecessors => 0,
-                       Unit                 => U_Id));
+            Val    =>
+              (Corresponding_Item          => No_Library_Graph_Vertex,
+               In_Elaboration_Order        => False,
+               Pending_Strong_Predecessors => 0,
+               Pending_Weak_Predecessors   => 0,
+               Unit                        => U_Id));
 
          --  Associate the unit with its corresponding vertex
 
@@ -1783,9 +1773,9 @@ package body Bindo.Graphs is
 
          Complement : constant Library_Graph_Vertex_Id :=
                         Complementary_Vertex
-                          (G             => G,
-                           Vertex        => Vertex,
-                           Do_Complement => Do_Complement);
+                          (G                => G,
+                           Vertex           => Vertex,
+                           Force_Complement => Do_Complement);
 
       begin
          LGV_Sets.Insert (Set, Vertex);
@@ -1800,9 +1790,9 @@ package body Bindo.Graphs is
       --------------------------
 
       function Complementary_Vertex
-        (G             : Library_Graph;
-         Vertex        : Library_Graph_Vertex_Id;
-         Do_Complement : Boolean) return Library_Graph_Vertex_Id
+        (G                : Library_Graph;
+         Vertex           : Library_Graph_Vertex_Id;
+         Force_Complement : Boolean) return Library_Graph_Vertex_Id
       is
          Complement : Library_Graph_Vertex_Id;
 
@@ -1816,7 +1806,7 @@ package body Bindo.Graphs is
 
          --  The caller requests the complement explicitly
 
-         if Do_Complement then
+         if Force_Complement then
             Complement := Corresponding_Item (G, Vertex);
 
          --  The vertex is a completing body of a spec subject to pragma
@@ -1849,6 +1839,46 @@ package body Bindo.Graphs is
 
          return DG.Component (G.Graph, Vertex);
       end Component;
+
+      ------------------------------------
+      -- Contains_Weak_Static_Successor --
+      ------------------------------------
+
+      function Contains_Weak_Static_Successor
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) return Boolean
+      is
+         Edge : Library_Graph_Edge_Id;
+         Iter : Edges_Of_Cycle_Iterator;
+         Seen : Boolean;
+
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Cycle));
+
+         --  Assume that no weak static successor has been seen
+
+         Seen := False;
+
+         --  IMPORTANT:
+         --
+         --    * The iteration must run to completion in order to unlock the
+         --      edges of the cycle.
+
+         Iter := Iterate_Edges_Of_Cycle (G, Cycle);
+         while Has_Next (Iter) loop
+            Next (Iter, Edge);
+
+            if not Seen
+              and then Is_Invocation_Edge (G, Edge)
+              and then not Is_Dynamically_Elaborated (G, Successor (G, Edge))
+            then
+               Seen := True;
+            end if;
+         end loop;
+
+         return Seen;
+      end Contains_Weak_Static_Successor;
 
       ---------------------
       -- Copy_Cycle_Path --
@@ -1911,15 +1941,12 @@ package body Bindo.Graphs is
       ------------
 
       function Create
-        (Initial_Vertices       : Positive;
-         Initial_Edges          : Positive;
-         Dynamically_Elaborated : Boolean) return Library_Graph
+        (Initial_Vertices : Positive;
+         Initial_Edges    : Positive) return Library_Graph
       is
          G : constant Library_Graph := new Library_Graph_Attributes;
 
       begin
-         G.Dynamically_Elaborated := Dynamically_Elaborated;
-
          G.Component_Attributes := Component_Tables.Create (Initial_Vertices);
          G.Cycle_Attributes     := LGC_Tables.Create       (Initial_Vertices);
          G.Cycles               := LGC_Lists.Create;
@@ -1990,7 +2017,8 @@ package body Bindo.Graphs is
 
       procedure Decrement_Pending_Predecessors
         (G    : Library_Graph;
-         Comp : Component_Id)
+         Comp : Component_Id;
+         Edge : Library_Graph_Edge_Id)
       is
          Attrs : Component_Attributes;
 
@@ -1999,7 +2027,13 @@ package body Bindo.Graphs is
          pragma Assert (Present (Comp));
 
          Attrs := Get_Component_Attributes (G, Comp);
-         Attrs.Pending_Predecessors := Attrs.Pending_Predecessors - 1;
+
+         Update_Pending_Predecessors
+           (Strong_Predecessors => Attrs.Pending_Strong_Predecessors,
+            Weak_Predecessors   => Attrs.Pending_Weak_Predecessors,
+            Update_Weak         => Is_Invocation_Edge (G, Edge),
+            Value               => -1);
+
          Set_Component_Attributes (G, Comp, Attrs);
       end Decrement_Pending_Predecessors;
 
@@ -2009,7 +2043,8 @@ package body Bindo.Graphs is
 
       procedure Decrement_Pending_Predecessors
         (G      : Library_Graph;
-         Vertex : Library_Graph_Vertex_Id)
+         Vertex : Library_Graph_Vertex_Id;
+         Edge   : Library_Graph_Edge_Id)
       is
          Attrs : Library_Graph_Vertex_Attributes;
 
@@ -2018,7 +2053,13 @@ package body Bindo.Graphs is
          pragma Assert (Present (Vertex));
 
          Attrs := Get_LGV_Attributes (G, Vertex);
-         Attrs.Pending_Predecessors := Attrs.Pending_Predecessors - 1;
+
+         Update_Pending_Predecessors
+           (Strong_Predecessors => Attrs.Pending_Strong_Predecessors,
+            Weak_Predecessors   => Attrs.Pending_Weak_Predecessors,
+            Update_Weak         => Is_Invocation_Edge (G, Edge),
+            Value               => -1);
+
          Set_LGV_Attributes (G, Vertex, Attrs);
       end Decrement_Pending_Predecessors;
 
@@ -2071,7 +2112,10 @@ package body Bindo.Graphs is
          --  Update the number of pending predecessors the successor must wait
          --  on before it is elaborated.
 
-         Decrement_Pending_Predecessors (G, Succ);
+         Decrement_Pending_Predecessors
+           (G      => G,
+            Vertex => Succ,
+            Edge   => Edge);
 
          --  Delete the link between the predecessor and successor. This allows
          --  for further attempts to link the same predecessor and successor.
@@ -2298,9 +2342,9 @@ package body Bindo.Graphs is
               (G                      => G,
                Vertex                 =>
                  Complementary_Vertex
-                   (G             => G,
-                    Vertex        => Vertex,
-                    Do_Complement => Spec_And_Body_Together),
+                   (G                => G,
+                    Vertex           => Vertex,
+                    Force_Complement => Spec_And_Body_Together),
                End_Vertices           => End_Vertices,
                Most_Significant_Edge  => Most_Significant_Edge,
                Invocation_Edge_Count  => Invocation_Edge_Count,
@@ -2343,7 +2387,7 @@ package body Bindo.Graphs is
          Trace_Edge (G, Initial_Edge, Indent);
 
          --  Use a set to represent the end vertices of the cycle. The set is
-         --  needed to accomodate the Elaborate_All and Elaborate_Body cases
+         --  needed to accommodate the Elaborate_All and Elaborate_Body cases
          --  where a cycle may terminate on either a spec or a body vertex.
 
          End_Vertices := LGV_Sets.Create (2);
@@ -2650,7 +2694,10 @@ package body Bindo.Graphs is
          U_Rec : Unit_Record renames ALI.Units.Table (U_Id);
 
       begin
-         return U_Rec.Elaborate_Body;
+         --  Treat the spec and body as decoupled when switch -d_b (ignore the
+         --  effects of pragma Elaborate_Body) is in effect.
+
+         return U_Rec.Elaborate_Body and not Debug_Flag_Underscore_B;
       end Has_Elaborate_Body;
 
       --------------
@@ -2884,7 +2931,8 @@ package body Bindo.Graphs is
 
       procedure Increment_Pending_Predecessors
         (G    : Library_Graph;
-         Comp : Component_Id)
+         Comp : Component_Id;
+         Edge : Library_Graph_Edge_Id)
       is
          Attrs : Component_Attributes;
 
@@ -2893,7 +2941,13 @@ package body Bindo.Graphs is
          pragma Assert (Present (Comp));
 
          Attrs := Get_Component_Attributes (G, Comp);
-         Attrs.Pending_Predecessors := Attrs.Pending_Predecessors + 1;
+
+         Update_Pending_Predecessors
+           (Strong_Predecessors => Attrs.Pending_Strong_Predecessors,
+            Weak_Predecessors   => Attrs.Pending_Weak_Predecessors,
+            Update_Weak         => Is_Invocation_Edge (G, Edge),
+            Value               => 1);
+
          Set_Component_Attributes (G, Comp, Attrs);
       end Increment_Pending_Predecessors;
 
@@ -2903,7 +2957,8 @@ package body Bindo.Graphs is
 
       procedure Increment_Pending_Predecessors
         (G      : Library_Graph;
-         Vertex : Library_Graph_Vertex_Id)
+         Vertex : Library_Graph_Vertex_Id;
+         Edge   : Library_Graph_Edge_Id)
       is
          Attrs : Library_Graph_Vertex_Attributes;
 
@@ -2912,7 +2967,13 @@ package body Bindo.Graphs is
          pragma Assert (Present (Vertex));
 
          Attrs := Get_LGV_Attributes (G, Vertex);
-         Attrs.Pending_Predecessors := Attrs.Pending_Predecessors + 1;
+
+         Update_Pending_Predecessors
+           (Strong_Predecessors => Attrs.Pending_Strong_Predecessors,
+            Weak_Predecessors   => Attrs.Pending_Weak_Predecessors,
+            Update_Weak         => Is_Invocation_Edge (G, Edge),
+            Value               => 1);
+
          Set_LGV_Attributes (G, Vertex, Attrs);
       end Increment_Pending_Predecessors;
 
@@ -2925,7 +2986,7 @@ package body Bindo.Graphs is
          pragma Assert (Present (G));
 
          --  The graph already contains a set of components. Reinitialize
-         --  them in order to accomodate the new set of components about to
+         --  them in order to accommodate the new set of components about to
          --  be computed.
 
          if Number_Of_Components (G) > 0 then
@@ -3216,11 +3277,15 @@ package body Bindo.Graphs is
       -- Is_Dynamically_Elaborated --
       -------------------------------
 
-      function Is_Dynamically_Elaborated (G : Library_Graph) return Boolean is
+      function Is_Dynamically_Elaborated
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id) return Boolean
+      is
       begin
          pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
 
-         return G.Dynamically_Elaborated;
+         return Is_Dynamically_Elaborated (Unit (G, Vertex));
       end Is_Dynamically_Elaborated;
 
       -----------------------------
@@ -3235,12 +3300,14 @@ package body Bindo.Graphs is
          pragma Assert (Present (G));
          pragma Assert (Present (Comp));
 
-         --  A component can be elaborated when
+         --  A component is elaborable when:
          --
-         --    * The component is no longer wanting on any of its predecessors
-         --      to be elaborated.
+         --    * It is not waiting on strong predecessors, and
+         --    * It is not waiting on weak predecessors
 
-         return Pending_Predecessors (G, Comp) = 0;
+         return
+           Pending_Strong_Predecessors (G, Comp) = 0
+             and then Pending_Weak_Predecessors (G, Comp) = 0;
       end Is_Elaborable_Component;
 
       --------------------------
@@ -3251,80 +3318,47 @@ package body Bindo.Graphs is
         (G      : Library_Graph;
          Vertex : Library_Graph_Vertex_Id) return Boolean
       is
-         Check_Vertex : Library_Graph_Vertex_Id;
-
-      begin
          pragma Assert (Present (G));
          pragma Assert (Present (Vertex));
 
-         Check_Vertex := Vertex;
+         Complement : constant Library_Graph_Vertex_Id :=
+                        Complementary_Vertex
+                          (G                => G,
+                           Vertex           => Vertex,
+                           Force_Complement => False);
 
-         --  A spec-body pair where the spec carries pragma Elaborate_Body must
-         --  be treated as one vertex for elaboration purposes. Use the spec as
-         --  the point of reference for the composite vertex.
-
-         if Is_Body_Of_Spec_With_Elaborate_Body (G, Check_Vertex) then
-            Check_Vertex := Proper_Spec (G, Check_Vertex);
-         end if;
-
-         return
-           Is_Elaborable_Vertex
-             (G            => G,
-              Vertex       => Check_Vertex,
-              Predecessors => 0);
-      end Is_Elaborable_Vertex;
-
-      --------------------------
-      -- Is_Elaborable_Vertex --
-      --------------------------
-
-      function Is_Elaborable_Vertex
-        (G            : Library_Graph;
-         Vertex       : Library_Graph_Vertex_Id;
-         Predecessors : Natural) return Boolean
-      is
-         Body_Vertex : Library_Graph_Vertex_Id;
+         Strong_Preds : Natural;
+         Weak_Preds   : Natural;
 
       begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Vertex));
-
-         --  The vertex must not be re-elaborated once it has been elaborated
+         --  A vertex is elaborable when:
+         --
+         --    * It has not been elaborated yet, and
+         --    * The complement vertex of an Elaborate_Body pair has not been
+         --      elaborated yet, and
+         --    * It resides within an elaborable component, and
+         --    * It is not waiting on strong predecessors, and
+         --    * It is not waiting on weak predecessors
 
          if In_Elaboration_Order (G, Vertex) then
             return False;
 
-         --  The vertex must not be waiting on more precedessors than requested
-         --  to be elaborated.
-
-         elsif Pending_Predecessors (G, Vertex) /= Predecessors then
+         elsif Present (Complement)
+           and then In_Elaboration_Order (G, Complement)
+         then
             return False;
-
-         --  The component where the vertex resides must not be waiting on any
-         --  of its precedessors to be elaborated.
 
          elsif not Is_Elaborable_Component (G, Component (G, Vertex)) then
             return False;
-
-         --  The vertex denotes a spec with a completing body, and is subject
-         --  to pragma Elaborate_Body. The body must be elaborable for the
-         --  vertex to be elaborated. Account for the sole predecessor of the
-         --  body which is the vertex itself.
-
-         elsif Is_Spec_With_Elaborate_Body (G, Vertex) then
-            Body_Vertex := Proper_Body (G, Vertex);
-            pragma Assert (Present (Body_Vertex));
-
-            return
-              Is_Elaborable_Vertex
-                (G            => G,
-                 Vertex       => Body_Vertex,
-                 Predecessors => 1);
          end if;
 
-         --  At this point it is known that the vertex can be elaborated
+         Pending_Predecessors_For_Elaboration
+           (G            => G,
+            Vertex       => Vertex,
+            Strong_Preds => Strong_Preds,
+            Weak_Preds   => Weak_Preds);
 
-         return True;
+         return Strong_Preds = 0 and then Weak_Preds = 0;
       end Is_Elaborable_Vertex;
 
       ---------------------------
@@ -3377,6 +3411,26 @@ package body Bindo.Graphs is
 
          return Kind (G, Edge) = Elaborate_Edge;
       end Is_Elaborate_Edge;
+
+      ----------------------------
+      -- Is_Elaborate_Body_Pair --
+      ----------------------------
+
+      function Is_Elaborate_Body_Pair
+        (G           : Library_Graph;
+         Spec_Vertex : Library_Graph_Vertex_Id;
+         Body_Vertex : Library_Graph_Vertex_Id) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Spec_Vertex));
+         pragma Assert (Present (Body_Vertex));
+
+         return
+           Is_Spec_With_Elaborate_Body (G, Spec_Vertex)
+             and then Is_Body_Of_Spec_With_Elaborate_Body (G, Body_Vertex)
+             and then Proper_Body (G, Spec_Vertex) = Body_Vertex;
+      end Is_Elaborate_Body_Pair;
 
       --------------------
       -- Is_Forced_Edge --
@@ -3538,6 +3592,57 @@ package body Bindo.Graphs is
            Is_Spec_With_Body (G, Vertex)
              and then Has_Elaborate_Body (G, Vertex);
       end Is_Spec_With_Elaborate_Body;
+
+      ---------------------------------
+      -- Is_Weakly_Elaborable_Vertex --
+      ----------------------------------
+
+      function Is_Weakly_Elaborable_Vertex
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id) return Boolean
+      is
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         Complement : constant Library_Graph_Vertex_Id :=
+                        Complementary_Vertex
+                          (G                => G,
+                           Vertex           => Vertex,
+                           Force_Complement => False);
+
+         Strong_Preds : Natural;
+         Weak_Preds   : Natural;
+
+      begin
+         --  A vertex is weakly elaborable when:
+         --
+         --    * It has not been elaborated yet, and
+         --    * The complement vertex of an Elaborate_Body pair has not been
+         --      elaborated yet, and
+         --    * It resides within an elaborable component, and
+         --    * It is not waiting on strong predecessors, and
+         --    * It is waiting on at least one weak predecessor
+
+         if In_Elaboration_Order (G, Vertex) then
+            return False;
+
+         elsif Present (Complement)
+           and then In_Elaboration_Order (G, Complement)
+         then
+            return False;
+
+         elsif not Is_Elaborable_Component (G, Component (G, Vertex)) then
+            return False;
+         end if;
+
+         Pending_Predecessors_For_Elaboration
+           (G            => G,
+            Vertex       => Vertex,
+            Strong_Preds => Strong_Preds,
+            Weak_Preds   => Weak_Preds);
+
+         return Strong_Preds = 0 and then Weak_Preds >= 1;
+      end Is_Weakly_Elaborable_Vertex;
 
       ------------------
       -- Is_With_Edge --
@@ -4044,11 +4149,72 @@ package body Bindo.Graphs is
          return Get_LGC_Attributes (G, Cycle).Path;
       end Path;
 
-      --------------------------
-      -- Pending_Predecessors --
-      --------------------------
+      ------------------------------------------
+      -- Pending_Predecessors_For_Elaboration --
+      ------------------------------------------
 
-      function Pending_Predecessors
+      procedure Pending_Predecessors_For_Elaboration
+        (G            : Library_Graph;
+         Vertex       : Library_Graph_Vertex_Id;
+         Strong_Preds : out Natural;
+         Weak_Preds   : out Natural)
+      is
+         Complement         : Library_Graph_Vertex_Id;
+         Spec_Vertex        : Library_Graph_Vertex_Id;
+         Total_Strong_Preds : Natural;
+         Total_Weak_Preds   : Natural;
+
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         Total_Strong_Preds := Pending_Strong_Predecessors (G, Vertex);
+         Total_Weak_Preds   := Pending_Weak_Predecessors   (G, Vertex);
+
+         --  Assume that there is no complementary vertex that needs to be
+         --  examined.
+
+         Complement  := No_Library_Graph_Vertex;
+         Spec_Vertex := No_Library_Graph_Vertex;
+
+         if Is_Body_Of_Spec_With_Elaborate_Body (G, Vertex) then
+            Complement  := Proper_Spec (G, Vertex);
+            Spec_Vertex := Complement;
+
+         elsif Is_Spec_With_Elaborate_Body (G, Vertex) then
+            Complement  := Proper_Body (G, Vertex);
+            Spec_Vertex := Vertex;
+         end if;
+
+         --  The vertex is part of an Elaborate_Body pair. Take into account
+         --  the strong and weak predecessors of the complementary vertex.
+
+         if Present (Complement) then
+            Total_Strong_Preds :=
+              Pending_Strong_Predecessors (G, Complement) + Total_Strong_Preds;
+            Total_Weak_Preds :=
+              Pending_Weak_Predecessors   (G, Complement) + Total_Weak_Preds;
+
+            --  The body of an Elaborate_Body pair is the successor of a strong
+            --  edge where the predecessor is the spec. This edge must not be
+            --  considered for elaboration purposes because the pair is treated
+            --  as one vertex. Account for the edge only when the spec has not
+            --  been elaborated yet.
+
+            if not In_Elaboration_Order (G, Spec_Vertex) then
+               Total_Strong_Preds := Total_Strong_Preds - 1;
+            end if;
+         end if;
+
+         Strong_Preds := Total_Strong_Preds;
+         Weak_Preds   := Total_Weak_Preds;
+      end Pending_Predecessors_For_Elaboration;
+
+      ---------------------------------
+      -- Pending_Strong_Predecessors --
+      ---------------------------------
+
+      function Pending_Strong_Predecessors
         (G    : Library_Graph;
          Comp : Component_Id) return Natural
       is
@@ -4056,14 +4222,14 @@ package body Bindo.Graphs is
          pragma Assert (Present (G));
          pragma Assert (Present (Comp));
 
-         return Get_Component_Attributes (G, Comp).Pending_Predecessors;
-      end Pending_Predecessors;
+         return Get_Component_Attributes (G, Comp).Pending_Strong_Predecessors;
+      end Pending_Strong_Predecessors;
 
-      --------------------------
-      -- Pending_Predecessors --
-      --------------------------
+      ---------------------------------
+      -- Pending_Strong_Predecessors --
+      ---------------------------------
 
-      function Pending_Predecessors
+      function Pending_Strong_Predecessors
         (G      : Library_Graph;
          Vertex : Library_Graph_Vertex_Id) return Natural
       is
@@ -4071,8 +4237,38 @@ package body Bindo.Graphs is
          pragma Assert (Present (G));
          pragma Assert (Present (Vertex));
 
-         return Get_LGV_Attributes (G, Vertex).Pending_Predecessors;
-      end Pending_Predecessors;
+         return Get_LGV_Attributes (G, Vertex).Pending_Strong_Predecessors;
+      end Pending_Strong_Predecessors;
+
+      -------------------------------
+      -- Pending_Weak_Predecessors --
+      -------------------------------
+
+      function Pending_Weak_Predecessors
+        (G    : Library_Graph;
+         Comp : Component_Id) return Natural
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Comp));
+
+         return Get_Component_Attributes (G, Comp).Pending_Weak_Predecessors;
+      end Pending_Weak_Predecessors;
+
+      -------------------------------
+      -- Pending_Weak_Predecessors --
+      -------------------------------
+
+      function Pending_Weak_Predecessors
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id) return Natural
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Get_LGV_Attributes (G, Vertex).Pending_Weak_Predecessors;
+      end Pending_Weak_Predecessors;
 
       ----------------
       -- Precedence --
@@ -4306,9 +4502,9 @@ package body Bindo.Graphs is
 
          Complement : constant Library_Graph_Vertex_Id :=
                         Complementary_Vertex
-                          (G             => G,
-                           Vertex        => Vertex,
-                           Do_Complement => Do_Complement);
+                          (G                => G,
+                           Vertex           => Vertex,
+                           Force_Complement => Do_Complement);
 
       begin
          LGV_Sets.Delete (Set, Vertex);
@@ -4702,6 +4898,24 @@ package body Bindo.Graphs is
          return Get_LGV_Attributes (G, Vertex).Unit;
       end Unit;
 
+      ---------------------------------
+      -- Update_Pending_Predecessors --
+      ---------------------------------
+
+      procedure Update_Pending_Predecessors
+        (Strong_Predecessors : in out Natural;
+         Weak_Predecessors   : in out Natural;
+         Update_Weak         : Boolean;
+         Value               : Integer)
+      is
+      begin
+         if Update_Weak then
+            Weak_Predecessors := Weak_Predecessors + Value;
+         else
+            Strong_Predecessors := Strong_Predecessors + Value;
+         end if;
+      end Update_Pending_Predecessors;
+
       -----------------------------------------------
       -- Update_Pending_Predecessors_Of_Components --
       -----------------------------------------------
@@ -4748,7 +4962,10 @@ package body Bindo.Graphs is
          --  must wait on another predecessor until it can be elaborated.
 
          if Pred_Comp /= Succ_Comp then
-            Increment_Pending_Predecessors (G, Succ_Comp);
+            Increment_Pending_Predecessors
+              (G    => G,
+               Comp => Succ_Comp,
+               Edge => Edge);
          end if;
       end Update_Pending_Predecessors_Of_Components;
    end Library_Graphs;
@@ -4835,7 +5052,7 @@ package body Bindo.Graphs is
    --------------------------
 
    LGC_Sequencer : Library_Graph_Cycle_Id := First_Library_Graph_Cycle;
-   --  The couhnter for library graph cycles. Do not directly manipulate its
+   --  The counter for library graph cycles. Do not directly manipulate its
    --  value.
 
    function Sequence_Next_Cycle return Library_Graph_Cycle_Id is
