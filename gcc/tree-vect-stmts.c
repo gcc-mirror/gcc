@@ -6334,30 +6334,88 @@ get_group_alias_ptr_type (stmt_vec_info first_stmt_info)
 static bool
 scan_operand_equal_p (tree ref1, tree ref2)
 {
-  machine_mode mode1, mode2;
-  poly_int64 bitsize1, bitsize2, bitpos1, bitpos2;
-  tree offset1, offset2;
-  int unsignedp1, unsignedp2, reversep1, reversep2;
-  int volatilep1 = 0, volatilep2 = 0;
-  tree base1 = get_inner_reference (ref1, &bitsize1, &bitpos1, &offset1,
-				    &mode1, &unsignedp1, &reversep1,
-				    &volatilep1);
-  tree base2 = get_inner_reference (ref2, &bitsize2, &bitpos2, &offset2,
-				    &mode2, &unsignedp2, &reversep2,
-				    &volatilep2);
-  if (reversep1 || reversep2 || volatilep1 || volatilep2)
+  tree ref[2] = { ref1, ref2 };
+  poly_int64 bitsize[2], bitpos[2];
+  tree offset[2], base[2];
+  for (int i = 0; i < 2; ++i)
+    {
+      machine_mode mode;
+      int unsignedp, reversep, volatilep = 0;
+      base[i] = get_inner_reference (ref[i], &bitsize[i], &bitpos[i],
+      				     &offset[i], &mode, &unsignedp,
+      				     &reversep, &volatilep);
+      if (reversep || volatilep || maybe_ne (bitpos[i], 0))
+	return false;
+      if (TREE_CODE (base[i]) == MEM_REF
+	  && offset[i] == NULL_TREE
+	  && TREE_CODE (TREE_OPERAND (base[i], 0)) == SSA_NAME)
+	{
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (base[i], 0));
+	  if (is_gimple_assign (def_stmt)
+	      && gimple_assign_rhs_code (def_stmt) == POINTER_PLUS_EXPR
+	      && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == ADDR_EXPR
+	      && TREE_CODE (gimple_assign_rhs2 (def_stmt)) == SSA_NAME)
+	    {
+	      if (maybe_ne (mem_ref_offset (base[i]), 0))
+		return false;
+	      base[i] = TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 0);
+	      offset[i] = gimple_assign_rhs2 (def_stmt);
+	    }
+	}
+    }
+
+  if (!operand_equal_p (base[0], base[1], 0))
     return false;
-  if (!operand_equal_p (base1, base2, 0))
+  if (maybe_ne (bitsize[0], bitsize[1]))
     return false;
-  if (maybe_ne (bitpos1, 0) || maybe_ne (bitpos2, 0))
-    return false;
-  if (maybe_ne (bitsize1, bitsize2))
-    return false;
-  if (offset1 != offset2
-      && (!offset1
-	  || !offset2
-	  || !operand_equal_p (offset1, offset2, 0)))
-    return false;
+  if (offset[0] != offset[1])
+    {
+      if (!offset[0] || !offset[1])
+	return false;
+      if (!operand_equal_p (offset[0], offset[1], 0))
+	{
+	  tree step[2];
+	  for (int i = 0; i < 2; ++i)
+	    {
+	      step[i] = integer_one_node;
+	      if (TREE_CODE (offset[i]) == SSA_NAME)
+		{
+		  gimple *def_stmt = SSA_NAME_DEF_STMT (offset[i]);
+		  if (is_gimple_assign (def_stmt)
+		      && gimple_assign_rhs_code (def_stmt) == MULT_EXPR
+		      && (TREE_CODE (gimple_assign_rhs2 (def_stmt))
+			  == INTEGER_CST))
+		    {
+		      step[i] = gimple_assign_rhs2 (def_stmt);
+		      offset[i] = gimple_assign_rhs1 (def_stmt);
+		    }
+		}
+	      else if (TREE_CODE (offset[i]) == MULT_EXPR)
+		{
+		  step[i] = TREE_OPERAND (offset[i], 1);
+		  offset[i] = TREE_OPERAND (offset[i], 0);
+		}
+	      tree rhs1 = NULL_TREE;
+	      if (TREE_CODE (offset[i]) == SSA_NAME)
+		{
+		  gimple *def_stmt = SSA_NAME_DEF_STMT (offset[i]);
+		  if (gimple_assign_cast_p (def_stmt))
+		    rhs1 = gimple_assign_rhs1 (def_stmt);
+		}
+	      else if (CONVERT_EXPR_P (offset[i]))
+		rhs1 = TREE_OPERAND (offset[i], 0);
+	      if (rhs1
+		  && INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+		  && INTEGRAL_TYPE_P (TREE_TYPE (offset[i]))
+		  && (TYPE_PRECISION (TREE_TYPE (offset[i]))
+		      >= TYPE_PRECISION (TREE_TYPE (rhs1))))
+		offset[i] = rhs1;
+	    }
+	  if (!operand_equal_p (offset[0], offset[1], 0)
+	      || !operand_equal_p (step[0], step[1], 0))
+	    return false;
+	}
+    }
   return true;
 }
 

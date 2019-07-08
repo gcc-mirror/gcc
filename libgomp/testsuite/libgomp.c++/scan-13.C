@@ -1,7 +1,7 @@
 // { dg-require-effective-target size32plus }
 // { dg-additional-options "-O2 -fopenmp -fdump-tree-vect-details" }
 // { dg-additional-options "-mavx" { target avx_runtime } }
-// { dg-final { scan-tree-dump-times "vectorized \[2-6] loops" 2 "vect" { xfail *-*-* } } }
+// { dg-final { scan-tree-dump-times "vectorized \[2-6] loops" 2 "vect" { target i?86-*-* x86_64-*-* } } }
 
 extern "C" void abort ();
 

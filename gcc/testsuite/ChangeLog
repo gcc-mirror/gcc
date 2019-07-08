@@ -1,5 +1,8 @@
 2019-07-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/vect/simd-6.cc: Replace xfail with target x86.
+	* g++.dg/vect/simd-9.cc: Likewise.
+
 	PR c++/91110
 	* g++.dg/gomp/pr91110.C: New test.
 
