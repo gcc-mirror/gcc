@@ -1,3 +1,9 @@
+2019-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst:
+	Update the documentation of pragma Initialize_Scalars.
+	* gnat_rm.texi: Regenerate.
+
 2019-07-08  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch4.adb (Tagged_Membership): Fix regression silently
