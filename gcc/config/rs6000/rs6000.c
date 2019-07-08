@@ -5547,22 +5547,26 @@ const char *rs6000_machine;
 const char *
 rs6000_machine_from_flags (void)
 {
-  if ((rs6000_isa_flags & (ISA_FUTURE_MASKS_SERVER & ~ISA_3_0_MASKS_SERVER))
-      != 0)
+  HOST_WIDE_INT flags = rs6000_isa_flags;
+
+  /* Disable the flags that should never influence the .machine selection.  */
+  flags &= ~(OPTION_MASK_PPC_GFXOPT | OPTION_MASK_PPC_GPOPT);
+
+  if ((flags & (ISA_FUTURE_MASKS_SERVER & ~ISA_3_0_MASKS_SERVER)) != 0)
     return "future";
-  if ((rs6000_isa_flags & (ISA_3_0_MASKS_SERVER & ~ISA_2_7_MASKS_SERVER)) != 0)
+  if ((flags & (ISA_3_0_MASKS_SERVER & ~ISA_2_7_MASKS_SERVER)) != 0)
     return "power9";
-  if ((rs6000_isa_flags & (ISA_2_7_MASKS_SERVER & ~ISA_2_6_MASKS_SERVER)) != 0)
+  if ((flags & (ISA_2_7_MASKS_SERVER & ~ISA_2_6_MASKS_SERVER)) != 0)
     return "power8";
-  if ((rs6000_isa_flags & (ISA_2_6_MASKS_SERVER & ~ISA_2_5_MASKS_SERVER)) != 0)
+  if ((flags & (ISA_2_6_MASKS_SERVER & ~ISA_2_5_MASKS_SERVER)) != 0)
     return "power7";
-  if ((rs6000_isa_flags & (ISA_2_5_MASKS_SERVER & ~ISA_2_4_MASKS)) != 0)
+  if ((flags & (ISA_2_5_MASKS_SERVER & ~ISA_2_4_MASKS)) != 0)
     return "power6";
-  if ((rs6000_isa_flags & (ISA_2_4_MASKS & ~ISA_2_1_MASKS)) != 0)
+  if ((flags & (ISA_2_4_MASKS & ~ISA_2_1_MASKS)) != 0)
     return "power5";
-  if ((rs6000_isa_flags & ISA_2_1_MASKS) != 0)
+  if ((flags & ISA_2_1_MASKS) != 0)
     return "power4";
-  if ((rs6000_isa_flags & OPTION_MASK_POWERPC64) != 0)
+  if ((flags & OPTION_MASK_POWERPC64) != 0)
     return "ppc64";
   return "ppc";
 }

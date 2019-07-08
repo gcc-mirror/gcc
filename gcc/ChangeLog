@@ -1,5 +1,11 @@
 2019-07-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.c (rs6000_machine_from_flags): Ignore
+	OPTION_MASK_PPC_GFXOPT and OPTION_MASK_PPC_GPOPT for selecting the
+	.machine string.
+
+2019-07-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR rtl-optimization/88233
 	* common.opt (fsplit-wide-types-early): New option.
 	* common/config/rs6000/rs6000-common.c
