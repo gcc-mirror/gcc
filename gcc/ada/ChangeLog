@@ -1,3 +1,8 @@
+2019-07-08  Yannick Moy  <moy@adacore.com>
+
+	* expander.adb (Expand): Do not reset Analyzed flag always.
+	* sem_eval.adb (Fold_Ureal): Mark node as analyzed.
+
 2019-07-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch9.adb (Expand_N_Timed_Entry_Call): Do not insert twice

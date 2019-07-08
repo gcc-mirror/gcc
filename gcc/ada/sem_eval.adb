@@ -4611,10 +4611,14 @@ package body Sem_Eval is
       --  will cause semantic errors if it is marked as static), and after
       --  the Resolve step (since Resolve in some cases sets this flag).
 
+      --  We mark the node as analyzed so that its type is not erased by
+      --  calling Analyze_Real_Literal.
+
       Analyze (N);
       Set_Is_Static_Expression (N, Static);
       Set_Etype (N, Typ);
       Resolve (N);
+      Set_Analyzed (N);
       Set_Is_Static_Expression (N, Static);
    end Fold_Ureal;
 
