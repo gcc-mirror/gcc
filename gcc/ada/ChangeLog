@@ -1,3 +1,8 @@
+2019-07-08  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Document handling of
+	preprocessor directives in GNATpp.
+
 2019-07-08  Javier Miranda  <miranda@adacore.com>
 
 	* gnat1drv.adb (Post_Compilation_Validation_Checks:

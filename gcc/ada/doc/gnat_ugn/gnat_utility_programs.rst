@@ -3933,6 +3933,67 @@ Alternatively, you may run the script using the following command line:
            Name2_NAME3_Name4 := Name4_NAME3_Name2 > NAME1;
         end Test;
 
+   .. _Preprocessor_directives:
+
+   Preprocessor Directives
+   ^^^^^^^^^^^^^^^^^^^^^^^
+
+   ``gnatpp`` has some support for preprocessor directives.
+   You can use preprocessor symbols, as in ``$symbol``.
+   In addition, you can use conditional compilation,
+   so long as the program text is syntactically legal Ada code
+   after removing all the preprocessor directives (lines starting
+   with ``#``). For example, ``gnatpp`` can format the following:
+
+     .. code-block:: ada
+
+        package P is
+        #IF SOMETHING
+           X : constant Integer := 123;
+        #ELSE
+           X : constant Integer := 456;
+        #END IF;
+        end P;
+
+   which will be formatted as if it were:
+
+     .. code-block:: ada
+
+        package P is
+           X : constant Integer := 123;
+           X : constant Integer := 456;
+        end P;
+
+   except that the ``#`` lines will be preserved.
+   However, ``gnatpp`` cannot format the following:
+
+     .. code-block:: ada
+
+        procedure P is
+        begin
+        #IF SOMETHING
+           if X = 0 then
+        #ELSE
+           if X = 1 then
+        #END IF;
+              null;
+           end if;
+        end P;
+
+   because removing the ``#`` lines gives:
+
+     .. code-block:: ada
+
+        procedure P is
+        begin
+           if X = 0 then
+           if X = 1 then
+              null;
+           end if;
+        end P;
+
+   which is not syntactically legal.
+
    Legacy Switches
    ^^^^^^^^^^^^^^^
 
