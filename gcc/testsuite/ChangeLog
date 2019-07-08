@@ -1,5 +1,9 @@
 2019-07-08  Ed Schonberg  <schonberg@adacore.com>
 
+	* gnat.dg/entry1.adb, gnat.dg/entry1.ads: New testcase.
+
+2019-07-08  Ed Schonberg  <schonberg@adacore.com>
+
 	* gnat.dg/fixed_delete.adb: New testcase.
 
 2019-07-08  Javier Miranda  <miranda@adacore.com>
