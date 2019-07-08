@@ -1,3 +1,9 @@
+2019-07-08  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	Avoid clash with system header declaration.
+	* testsuite/gcc.dg/vect/slp-reduc-sad.c (uint32_t):
+	Remove unused declaration.
+
 2019-07-08  Andrew Waterman  <andrew@sifive.com>
 	    Jim Wilson  <jimw@sifive.com>
 
