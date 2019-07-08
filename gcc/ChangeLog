@@ -1,3 +1,13 @@
+2019-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* emit-rtl.c (set_insn_locations): New function moved from...
+	* function.c (set_insn_locations): ...here.
+	* ira-emit.c (emit_moves): Propagate location of the first instruction
+	to the inserted move instructions.
+	* reg-stack.c (compensate_edge): Set the location if the sequence is
+	inserted on the edge.
+	* rtl.h (set_insn_locations): Declare.
+
 2019-07-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_machine_from_flags): Ignore
