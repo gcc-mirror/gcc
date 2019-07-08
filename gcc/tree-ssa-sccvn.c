@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "tree-scalar-evolution.h"
 #include "tree-ssa-loop-niter.h"
+#include "builtins.h"
 #include "tree-ssa-sccvn.h"
 
 /* This algorithm is based on the SCC algorithm presented by Keith
@@ -2248,24 +2249,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       /* If we reach a clobbering statement try to skip it and see if
          we find a VN result with exactly the same value as the
 	 possible clobber.  In this case we can ignore the clobber
-	 and return the found value.
-	 Note that we don't need to worry about partial overlapping
-	 accesses as we then can use TBAA to disambiguate against the
-	 clobbering statement when looking up a load (thus the
-	 VN_WALKREWRITE guard).  */
-      if (data->vn_walk_kind == VN_WALKREWRITE
-	  && is_gimple_reg_type (TREE_TYPE (lhs))
+	 and return the found value.  */
+      if (is_gimple_reg_type (TREE_TYPE (lhs))
 	  && types_compatible_p (TREE_TYPE (lhs), vr->type)
-	  /* The overlap restriction breaks down when either access
-	     alias-set is zero.  Still for accesses of the size of
-	     an addressable unit there can be no overlaps.  Overlaps
-	     between different union members are not an issue since
-	     activation of a union member via a store makes the
-	     values of untouched bytes unspecified.  */
-	  && (known_eq (ref->size, BITS_PER_UNIT)
-	      || (flag_strict_aliasing
-		  && get_alias_set (lhs) != 0
-		  && ao_ref_alias_set (ref) != 0)))
+	  && ref->ref)
 	{
 	  tree *saved_last_vuse_ptr = data->last_vuse_ptr;
 	  /* Do not update last_vuse_ptr in vn_reference_lookup_2.  */
@@ -2284,7 +2271,14 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      if (TREE_CODE (rhs) == SSA_NAME)
 		rhs = SSA_VAL (rhs);
 	      if (vnresult->result
-		  && operand_equal_p (vnresult->result, rhs, 0))
+		  && operand_equal_p (vnresult->result, rhs, 0)
+		  /* We have to honor our promise about union type punning
+		     and also support arbitrary overlaps with
+		     -fno-strict-aliasing.  So simply resort to alignment to
+		     rule out overlaps.  Do this check last because it is
+		     quite expensive compared to the hash-lookup above.  */
+		  && multiple_p (get_object_alignment (ref->ref), ref->size)
+		  && multiple_p (get_object_alignment (lhs), ref->size))
 		return res;
 	    }
 	}
