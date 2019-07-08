@@ -41,6 +41,7 @@ with Elists;    use Elists;
 with Errout;    use Errout;
 with Exp_Dist;  use Exp_Dist;
 with Exp_Util;  use Exp_Util;
+with Expander;  use Expander;
 with Freeze;    use Freeze;
 with Ghost;     use Ghost;
 with Gnatvsn;   use Gnatvsn;
@@ -298,6 +299,12 @@ package body Sem_Prag is
    --  pragma. Entity name for unit and its parents is taken from item in
    --  previous with_clause that mentions the unit.
 
+   procedure Validate_Compile_Time_Warning_Error (N : Node_Id);
+   --  N is a pragma Compile_Time_Error or Compile_Warning_Error whose boolean
+   --  expression is not known at compile time. This procedure makes an entry
+   --  in a table. The actual checking is performed by Validate_Compile_Time_
+   --  Warning_Errors, which is invoked after calling the back end.
+
    Dummy : Integer := 0;
    pragma Volatile (Dummy);
    --  Dummy volatile integer used in bodies of ip/rv to prevent optimization
@@ -315,6 +322,41 @@ package body Sem_Prag is
    --  It is there for assisting front end debugging. By placing a Reviewable
    --  pragma in the source program, a breakpoint on rv catches this place in
    --  the source, allowing convenient stepping to the point of interest.
+
+   ---------------------------------------------------
+   -- Table for Validate_Compile_Time_Warning_Error --
+   ---------------------------------------------------
+
+   --  The following table collects pragmas Compile_Time_Error and Compile_
+   --  Time_Warning for validation. Entries are made by calls to subprogram
+   --  Validate_Compile_Time_Warning_Error, and the call to the procedure
+   --  Validate_Compile_Time_Warning_Errors does the actual error checking
+   --  and posting of warning and error messages. The reason for this delayed
+   --  processing is to take advantage of back-annotations of attributes size
+   --  and alignment values performed by the back end.
+
+   --  Note: the reason we store a Source_Ptr value instead of a Node_Id is
+   --  that by the time Validate_Unchecked_Conversions is called, Sprint will
+   --  already have modified all Sloc values if the -gnatD option is set.
+
+   type CTWE_Entry is record
+      Eloc  : Source_Ptr;
+      --  Source location used in warnings and error messages
+
+      Prag  : Node_Id;
+      --  Pragma Compile_Time_Error or Compile_Time_Warning
+
+      Scope : Node_Id;
+      --  The scope which encloses the pragma
+   end record;
+
+   package Compile_Time_Warnings_Errors is new Table.Table (
+     Table_Component_Type => CTWE_Entry,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 50,
+     Table_Increment      => 200,
+     Table_Name           => "Compile_Time_Warnings_Errors");
 
    -------------------------------
    -- Adjust_External_Name_Case --
@@ -7605,7 +7647,7 @@ package body Sem_Prag is
             Check_Expression (Arg1x);
 
             if Validation_Needed then
-               Sem_Ch13.Validate_Compile_Time_Warning_Error (N);
+               Validate_Compile_Time_Warning_Error (N);
             end if;
          end if;
       end Process_Compile_Time_Warning_Or_Error;
@@ -30724,6 +30766,7 @@ package body Sem_Prag is
    procedure Initialize is
    begin
       Externals.Init;
+      Compile_Time_Warnings_Errors.Init;
    end Initialize;
 
    --------
@@ -32065,5 +32108,78 @@ package body Sem_Prag is
 
       return Empty;
    end Test_Case_Arg;
+
+   -----------------------------------------
+   -- Validate_Compile_Time_Warning_Error --
+   -----------------------------------------
+
+   procedure Validate_Compile_Time_Warning_Error (N : Node_Id) is
+   begin
+      Compile_Time_Warnings_Errors.Append
+        (New_Val => CTWE_Entry'(Eloc  => Sloc (N),
+                                Scope => Current_Scope,
+                                Prag  => N));
+   end Validate_Compile_Time_Warning_Error;
+
+   ------------------------------------------
+   -- Validate_Compile_Time_Warning_Errors --
+   ------------------------------------------
+
+   procedure Validate_Compile_Time_Warning_Errors is
+      procedure Set_Scope (S : Entity_Id);
+      --  Install all enclosing scopes of S along with S itself
+
+      procedure Unset_Scope (S : Entity_Id);
+      --  Uninstall all enclosing scopes of S along with S itself
+
+      ---------------
+      -- Set_Scope --
+      ---------------
+
+      procedure Set_Scope (S : Entity_Id) is
+      begin
+         if S /= Standard_Standard then
+            Set_Scope (Scope (S));
+         end if;
+
+         Push_Scope (S);
+      end Set_Scope;
+
+      -----------------
+      -- Unset_Scope --
+      -----------------
+
+      procedure Unset_Scope (S : Entity_Id) is
+      begin
+         if S /= Standard_Standard then
+            Unset_Scope (Scope (S));
+         end if;
+
+         Pop_Scope;
+      end Unset_Scope;
+
+   --  Start of processing for Validate_Compile_Time_Warning_Errors
+
+   begin
+      Expander_Mode_Save_And_Set (False);
+      In_Compile_Time_Warning_Or_Error := True;
+
+      for N in Compile_Time_Warnings_Errors.First ..
+               Compile_Time_Warnings_Errors.Last
+      loop
+         declare
+            T : CTWE_Entry renames Compile_Time_Warnings_Errors.Table (N);
+
+         begin
+            Set_Scope (T.Scope);
+            Reset_Analyzed_Flags (T.Prag);
+            Process_Compile_Time_Warning_Or_Error (T.Prag, T.Eloc);
+            Unset_Scope (T.Scope);
+         end;
+      end loop;
+
+      In_Compile_Time_Warning_Or_Error := False;
+      Expander_Mode_Restore;
+   end Validate_Compile_Time_Warning_Errors;
 
 end Sem_Prag;

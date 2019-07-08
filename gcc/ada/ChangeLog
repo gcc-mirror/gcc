@@ -1,3 +1,21 @@
+2019-07-08  Javier Miranda  <miranda@adacore.com>
+
+	* gnat1drv.adb (Post_Compilation_Validation_Checks:
+	Validate_Compile_Time_Warning_Errors is now located in sem_prag
+	(instead of sem_ch13).
+	* sem_ch13.ads (Validate_Compile_Time_Warning_Error,
+	Validate_Compile_Time_Warning_Errors): Move to sem_prag.
+	* sem_ch13.adb
+	(Compile_Time_Warnings_Errors): Move to sem_prag.
+	(Initialize): Remove initialization of table
+	Compile_Time_Warning_Errors.
+	(Validate_Compile_Time_Warning_Error,
+	Validate_Compile_Time_Warning_Errors): Move to sem_prag.
+	* sem_prag.ads (Validate_Compile_Time_Warning_Errors): New
+	procedure.
+	* sem_prag.adb (Initialize): Initialize table
+	Compile_Time_Warning_Errors.
+
 2019-07-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Analyze_Aspect_Specifications): For a
