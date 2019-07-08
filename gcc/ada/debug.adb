@@ -349,11 +349,11 @@ package body Debug is
    --  d.8
    --  d.9
 
-   --  d_a
-   --  d_b
+   --  d_a  Ignore the effects of pragma Elaborate_All
+   --  d_b  Ignore the effects of pragma Elaborate_Body
    --  d_c
    --  d_d
-   --  d_e
+   --  d_e  Ignore the effects of pragma Elaborate
    --  d_f
    --  d_g
    --  d_h
@@ -1140,6 +1140,17 @@ package body Debug is
 
    --  dx  Force the binder to read (and then ignore) the xref information
    --      in ali files (used to check that read circuit is working OK).
+
+   --  d_a  GNATBIND ignores the effects of pragma Elaborate_All in the case of
+   --       elaboration order and treats the associated dependency as a regular
+   --       with edge.
+
+   --  d_b  GNATBIND ignores the effects of pragma Elaborate_Body in the case
+   --       of elaboration order and treats the spec and body as decoupled.
+
+   --  d_e  GNATBIND ignores the effects of pragma Elaborate in the case of
+   --       elaboration order and no longer creates an implicit dependency on
+   --       the body of the argument.
 
    --  d_A  GNATBIND output the contents of all ALI invocation-related tables
    --       in textual format to standard output.

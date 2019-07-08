@@ -25,11 +25,17 @@
 
 with Binderr; use Binderr;
 with Butil;   use Butil;
+with Debug;   use Debug;
 with Opt;     use Opt;
 with Output;  use Output;
 with Types;   use Types;
 
 with Bindo.Units; use Bindo.Units;
+
+with Bindo.Validators;
+use  Bindo.Validators;
+use  Bindo.Validators.Invocation_Graph_Validators;
+use  Bindo.Validators.Library_Graph_Validators;
 
 with GNAT;                 use GNAT;
 with GNAT.Dynamic_HTables; use GNAT.Dynamic_HTables;
@@ -103,6 +109,8 @@ package body Bindo.Builders is
 
          For_Each_Elaborable_Unit (Create_Vertices'Access);
          For_Each_Elaborable_Unit (Create_Edges'Access);
+
+         Validate_Invocation_Graph (Inv_Graph);
 
          return Inv_Graph;
       end Build_Invocation_Graph;
@@ -365,23 +373,21 @@ package body Bindo.Builders is
       -- Build_Library_Graph --
       -------------------------
 
-      function Build_Library_Graph
-        (Dynamically_Elaborated : Boolean) return Library_Graph
-      is
+      function Build_Library_Graph return Library_Graph is
       begin
          --  Prepare the global data
 
          Lib_Graph :=
            Create
-             (Initial_Vertices       => Number_Of_Elaborable_Units,
-              Initial_Edges          => Number_Of_Elaborable_Units,
-              Dynamically_Elaborated => Dynamically_Elaborated);
+             (Initial_Vertices => Number_Of_Elaborable_Units,
+              Initial_Edges    => Number_Of_Elaborable_Units);
 
          For_Each_Elaborable_Unit (Create_Vertex'Access);
          For_Each_Elaborable_Unit (Create_Spec_And_Body_Edge'Access);
          For_Each_Elaborable_Unit (Create_With_Edges'Access);
-
          Create_Forced_Edges;
+
+         Validate_Library_Graph (Lib_Graph);
 
          return Lib_Graph;
       end Build_Library_Graph;
@@ -549,9 +555,13 @@ package body Bindo.Builders is
 
          Withed_Vertex := Corresponding_Vertex (Lib_Graph, Withed_U_Id);
 
-         --  The with comes with pragma Elaborate
+         --  The with comes with pragma Elaborate. Treat the edge as a with
+         --  edge when switch -d_e (ignore the effects of pragma Elaborate)
+         --  is in effect.
 
-         if Withed_Rec.Elaborate then
+         if Withed_Rec.Elaborate
+           and then not Debug_Flag_Underscore_E
+         then
             Kind := Elaborate_Edge;
 
             --  The withed unit is a spec with a completing body. Add an edge
@@ -568,9 +578,13 @@ package body Bindo.Builders is
                   Kind => Kind);
             end if;
 
-         --  The with comes with pragma Elaborate_All
+         --  The with comes with pragma Elaborate_All. Treat the edge as a with
+         --  edge when switch -d_a (ignore the effects of pragma Elaborate_All)
+         --  is in effect.
 
-         elsif Withed_Rec.Elaborate_All then
+         elsif Withed_Rec.Elaborate_All
+           and then not Debug_Flag_Underscore_A
+         then
             Kind := Elaborate_All_Edge;
 
          --  Otherwise this is a regular with

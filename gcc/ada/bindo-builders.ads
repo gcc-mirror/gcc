@@ -56,11 +56,9 @@ package Bindo.Builders is
    ----------------------------
 
    package Library_Graph_Builders is
-      function Build_Library_Graph
-        (Dynamically_Elaborated : Boolean) return Library_Graph;
+      function Build_Library_Graph return Library_Graph;
       --  Return a new library graph that reflects the dependencies between
-      --  all units of the bind. Flag Dynamically_Elaborated must be set when
-      --  the main library unit was compiled using the dynamic model.
+      --  all units of the bind.
 
    end Library_Graph_Builders;
 

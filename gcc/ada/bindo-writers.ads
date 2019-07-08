@@ -127,9 +127,6 @@ package Bindo.Writers is
    ---------------------------
 
    package Library_Graph_Writers is
-      procedure Write_Components (G : Library_Graph);
-      --  Write all components of library graph G to standard output
-
       procedure Write_Library_Graph (G : Library_Graph);
       --  Write library graph G to standard output
 
