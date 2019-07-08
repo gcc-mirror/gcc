@@ -1,3 +1,7 @@
+2019-07-08  Doug Rupp  <rupp@adacore.com>
+
+	* Makefile.rtl: Handle vxworks7r2 in x86_64 and x86 vxworks7.
+
 2019-07-08  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* Makefile.rtl: Use g-sercom__linux.adb for all linuxes.
