@@ -1,3 +1,8 @@
+2019-07-08  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-xref-spark_specific.adb (Create_Heap): Set dummy Etype for
+	the fake __HEAP entity.
+
 2019-07-08  Daniel Mercier  <mercier@adacore.com>
 
 	* gnat1drv.adb: Suppress warnings on memory representation in
