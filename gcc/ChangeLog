@@ -1,5 +1,10 @@
 2019-07-08  Robin Dapp  <rdapp@linux.ibm.com>
 
+	* config/s390/s390.c (s390_shift_truncation_mask): Define.
+	(TARGET_SHIFT_TRUNCATION_MASK): Define.
+
+2019-07-08  Robin Dapp  <rdapp@linux.ibm.com>
+
 	* config/s390/constraints.md: Add new jsc constraint.
 	* config/s390/predicates.md: New predicates.
 	* config/s390/s390-protos.h (s390_valid_shift_count): New function.
