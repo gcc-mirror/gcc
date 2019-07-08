@@ -1,6 +1,11 @@
 2019-07-08  Nathan Sidwell  <nathan@acm.org>
 
-	Update Revision number
+	gcc/c-family/
+	* c-common.c (try_to_locate_new_include): Use strcmp and ignore
+	zero-line maps.
+	gcc/cp/
+	* module.cc (finish_module_processing): Inhibit module stats if
+	not moduling.
 
 2019-07-07  Nathan Sidwell  <nathan@acm.org>
 

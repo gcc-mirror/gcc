@@ -17868,14 +17868,17 @@ finish_module_processing (cpp_reader *reader)
       ggc_collect ();
     }
 
-  unsigned n = dump.push (NULL);
-  dump () && dump ("Imported %u modules",
-		   modules->length () - MODULE_IMPORT_BASE);
-  dump () && dump ("Containing %u clusters", available_clusters);
-  dump () && dump ("Loaded %u clusters (%u%%)", loaded_clusters,
-		   (loaded_clusters * 100 + 50) /
-		   (available_clusters + !available_clusters));
-  dump.pop (n);
+  if (modules)
+    {
+      unsigned n = dump.push (NULL);
+      dump () && dump ("Imported %u modules",
+		       modules->length () - MODULE_IMPORT_BASE);
+      dump () && dump ("Containing %u clusters", available_clusters);
+      dump () && dump ("Loaded %u clusters (%u%%)", loaded_clusters,
+		       (loaded_clusters * 100 + 50) /
+		       (available_clusters + !available_clusters));
+      dump.pop (n);
+    }
 
   /* We're done with the macro tables now.  */
   vec_free (macro_exports);
