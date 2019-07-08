@@ -1,3 +1,16 @@
+2019-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83518
+	* tree-ssa-sccvn.c: Include splay-tree.h.
+	(struct pd_range, struct pd_data): New.
+	(struct vn_walk_cb_data): Add data to track partial definitions.
+	(vn_walk_cb_data::~vn_walk_cb_data): New.
+	(vn_walk_cb_data::push_partial_def): New.
+	(pd_tree_alloc, pd_tree_dealloc, pd_range_compare): New.
+	(vn_reference_lookup_2): When partial defs are registered give up.
+	(vn_reference_lookup_3): Track partial defs for memset and
+	constructor zeroing and for defs from constants.
+
 2019-07-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* doc/install.texi (bootstrap-Og): Document.
