@@ -3495,12 +3495,28 @@ package body Sem_Ch13 is
                   --  because subsequent visibility analysis of the aspect
                   --  depends on this sharing. This should be cleaned up???
 
-                  Make_Aitem_Pragma
-                    (Pragma_Argument_Associations => New_List (
-                       Make_Pragma_Argument_Association (Eloc,
-                         Chars      => Name_Check,
-                         Expression => Relocate_Node (Expr))),
-                       Pragma_Name                => Pname);
+                  --  If the context is generic or involves ASIS, we want
+                  --  to preserve the original tree, and simply share it
+                  --  between aspect and generated attribute. This parallels
+                  --  what is done in sem_prag.adb (see Get_Argument).
+
+                  declare
+                     New_Expr : Node_Id;
+
+                  begin
+                     if ASIS_Mode or else Inside_A_Generic then
+                        New_Expr := Expr;
+                     else
+                        New_Expr := Relocate_Node (Expr);
+                     end if;
+
+                     Make_Aitem_Pragma
+                       (Pragma_Argument_Associations => New_List (
+                          Make_Pragma_Argument_Association (Eloc,
+                            Chars      => Name_Check,
+                            Expression => New_Expr)),
+                          Pragma_Name                => Pname);
+                  end;
 
                   --  Add message unless exception messages are suppressed
 
