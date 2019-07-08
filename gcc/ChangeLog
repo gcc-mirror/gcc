@@ -1,3 +1,22 @@
+2019-07-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/88233
+	* common.opt (fsplit-wide-types-early): New option.
+	* common/config/rs6000/rs6000-common.c
+	(rs6000_option_optimization_table): Add OPT_fsplit_wide_types_early for
+	OPT_LEVELS_ALL.
+	* doc/invoke.texi (Optimization Options): Add -fsplit-wide-types-early.
+	* lower-subreg.c (pass_lower_subreg2::gate): Add test for
+	flag_split_wide_types_early.
+	(pass_data_lower_subreg3): New.
+	(pass_lower_subreg3): New.
+	(make_pass_lower_subreg3): New.
+	* passes.def (pass_lower_subreg2): Move after the loop passes.
+	(pass_lower_subreg3): New, inserted where pass_lower_subreg2 was.
+	* tree-pass.h (make_pass_lower_subreg2): Move up, to its new place in
+	the pass pipeline; its previous place is taken by ...
+	(make_pass_lower_subreg3): ... this.
+
 2019-07-08  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* config/s390/s390.c (s390_shift_truncation_mask): Define.
