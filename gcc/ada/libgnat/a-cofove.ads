@@ -40,12 +40,6 @@ with Ada.Containers.Functional_Vectors;
 generic
    type Index_Type is range <>;
    type Element_Type is private;
-
-   Bounded : Boolean := True;
-   --  If True, the containers are bounded; the initial capacity is the maximum
-   --  size, and heap allocation will be avoided. If False, the containers can
-   --  grow via heap allocation.
-
 package Ada.Containers.Formal_Vectors with
   SPARK_Mode
 is
@@ -73,17 +67,8 @@ is
 
    subtype Capacity_Range is Count_Type range 0 .. Last_Count;
 
-   type Vector (Capacity : Capacity_Range) is limited private with
+   type Vector (Capacity : Capacity_Range) is private with
      Default_Initial_Condition => Is_Empty (Vector);
-   --  In the bounded case, Capacity is the capacity of the container, which
-   --  never changes. In the unbounded case, Capacity is the initial capacity
-   --  of the container, and operations such as Reserve_Capacity and Append can
-   --  increase the capacity. The capacity never shrinks, except in the case of
-   --  Clear.
-   --
-   --  Note that all objects of type Vector are constrained, including in the
-   --  unbounded case; you can't assign from one object to another if the
-   --  Capacity is different.
 
    function Length (Container : Vector) return Capacity_Range with
      Global => null,
@@ -220,11 +205,7 @@ is
    function Capacity (Container : Vector) return Capacity_Range with
      Global => null,
      Post   =>
-       Capacity'Result =
-         (if Bounded then
-             Container.Capacity
-          else
-             Capacity_Range'Last);
+       Capacity'Result = Container.Capacity;
    pragma Annotate (GNATprove, Inline_For_Proof, Capacity);
 
    procedure Reserve_Capacity
@@ -232,7 +213,7 @@ is
       Capacity  : Capacity_Range)
    with
      Global => null,
-     Pre    => (if Bounded then Capacity <= Container.Capacity),
+     Pre    => Capacity <= Container.Capacity,
      Post   => Model (Container) = Model (Container)'Old;
 
    function Is_Empty (Container : Vector) return Boolean with
@@ -242,13 +223,10 @@ is
    procedure Clear (Container : in out Vector) with
      Global => null,
      Post   => Length (Container) = 0;
-   --  Note that this reclaims storage in the unbounded case. You need to call
-   --  this before a container goes out of scope in order to avoid storage
-   --  leaks. In addition, "X := ..." can leak unless you Clear(X) first.
 
    procedure Assign (Target : in out Vector; Source : Vector) with
      Global => null,
-     Pre    => (if Bounded then Length (Source) <= Target.Capacity),
+     Pre    => Length (Source) <= Target.Capacity,
      Post   => Model (Target) = Model (Source);
 
    function Copy
@@ -256,7 +234,7 @@ is
       Capacity : Capacity_Range := 0) return Vector
    with
      Global => null,
-     Pre    => (if Bounded then (Capacity = 0 or Length (Source) <= Capacity)),
+     Pre    => (Capacity = 0 or Length (Source) <= Capacity),
      Post   =>
        Model (Copy'Result) = Model (Source)
          and (if Capacity = 0 then
@@ -267,7 +245,7 @@ is
    procedure Move (Target : in out Vector; Source : in out Vector)
    with
      Global => null,
-     Pre    => (if Bounded then Length (Source) <= Capacity (Target)),
+     Pre    => Length (Source) <= Capacity (Target),
      Post   => Model (Target) = Model (Source)'Old and Length (Source) = 0;
 
    function Element
@@ -894,29 +872,10 @@ private
    type Elements_Array is array (Array_Index range <>) of Element_Type;
    function "=" (L, R : Elements_Array) return Boolean is abstract;
 
-   type Elements_Array_Ptr is access all Elements_Array;
-
-   type Vector (Capacity : Capacity_Range) is limited record
-
-      --  In the bounded case, the elements are stored in Elements. In the
-      --  unbounded case, the elements are initially stored in Elements, until
-      --  we run out of room, then we switch to Elements_Ptr.
-
-      Last         : Extended_Index := No_Index;
-      Elements_Ptr : Elements_Array_Ptr := null;
-      Elements     : aliased Elements_Array (1 .. Capacity);
+   type Vector (Capacity : Capacity_Range) is record
+      Last     : Extended_Index := No_Index;
+      Elements : Elements_Array (1 .. Capacity);
    end record;
-
-   --  The primary reason Vector is limited is that in the unbounded case, once
-   --  Elements_Ptr is in use, assignment statements won't work. "X := Y;" will
-   --  cause X and Y to share state; that is, X.Elements_Ptr = Y.Elements_Ptr,
-   --  so for example "Append (X, ...);" will modify BOTH X and Y. That would
-   --  allow SPARK to "prove" things that are false. We could fix that by
-   --  making Vector a controlled type, and override Adjust to make a deep
-   --  copy, but finalization is not allowed in SPARK.
-   --
-   --  Note that (unfortunately) this means that 'Old and 'Loop_Entry are not
-   --  allowed on Vectors.
 
    function Empty_Vector return Vector is
      ((Capacity => 0, others => <>));

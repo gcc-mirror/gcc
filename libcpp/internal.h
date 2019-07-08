@@ -74,10 +74,6 @@ struct cset_converter
     linemap_line_start (PFILE->line_table, line + 1, COLS_HINT); \
   } while (0)
 
-/* Maximum nesting of cpp_buffers.  We use a static limit, partly for
-   efficiency, and partly to limit runaway recursion.  */
-#define CPP_STACK_MAX 200
-
 /* Host alignment handling.  */
 struct dummy
 {

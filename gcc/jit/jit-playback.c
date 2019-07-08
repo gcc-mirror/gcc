@@ -47,6 +47,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "jit-builtins.h"
 #include "jit-tempdir.h"
 
+/* Compare with gcc/c-family/c-common.h: DECL_C_BIT_FIELD,
+   SET_DECL_C_BIT_FIELD.
+   These are redefined here to avoid depending from the C frontend.  */
+#define DECL_JIT_BIT_FIELD(NODE) \
+  (DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE)) == 1)
+#define SET_DECL_JIT_BIT_FIELD(NODE) \
+  (DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE)) = 1)
 
 /* gcc::jit::playback::context::build_cast uses the convert.h API,
    which in turn requires the frontend to provide a "convert"
@@ -263,6 +270,46 @@ new_field (location *loc,
   return new field (decl);
 }
 
+/* Construct a playback::bitfield instance (wrapping a tree).  */
+
+playback::field *
+playback::context::
+new_bitfield (location *loc,
+	      type *type,
+	      int width,
+	      const char *name)
+{
+  gcc_assert (type);
+  gcc_assert (name);
+  gcc_assert (width);
+
+  /* compare with c/c-decl.c:grokfield,  grokdeclarator and
+     check_bitfield_type_and_width.  */
+
+  tree tree_type = type->as_tree ();
+  gcc_assert (INTEGRAL_TYPE_P (tree_type));
+  tree tree_width = build_int_cst (integer_type_node, width);
+  if (compare_tree_int (tree_width, TYPE_PRECISION (tree_type)) > 0)
+    {
+      add_error (
+	loc,
+	"width of bit-field %s (width: %i) is wider than its type (width: %i)",
+	name, width, TYPE_PRECISION (tree_type));
+      return NULL;
+    }
+
+  tree decl = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+			  get_identifier (name), type->as_tree ());
+  DECL_NONADDRESSABLE_P (decl) = true;
+  DECL_INITIAL (decl) = tree_width;
+  SET_DECL_JIT_BIT_FIELD (decl);
+
+  if (loc)
+    set_tree_location (decl, loc);
+
+  return new field (decl);
+}
+
 /* Construct a playback::compound_type instance (wrapping a tree).  */
 
 playback::compound_type *
@@ -295,8 +342,15 @@ playback::compound_type::set_fields (const auto_vec<playback::field *> *fields)
   for (unsigned i = 0; i < fields->length (); i++)
     {
       field *f = (*fields)[i];
-      DECL_CONTEXT (f->as_tree ()) = t;
-      fieldlist = chainon (f->as_tree (), fieldlist);
+      tree x = f->as_tree ();
+      DECL_CONTEXT (x) = t;
+      if (DECL_JIT_BIT_FIELD (x))
+	{
+	  unsigned HOST_WIDE_INT width = tree_to_uhwi (DECL_INITIAL (x));
+	  DECL_SIZE (x) = bitsize_int (width);
+	  DECL_BIT_FIELD (x) = 1;
+	}
+      fieldlist = chainon (x, fieldlist);
     }
   fieldlist = nreverse (fieldlist);
   TYPE_FIELDS (t) = fieldlist;
@@ -1197,20 +1251,31 @@ dereference (location *loc)
   return new lvalue (get_context (), datum);
 }
 
-/* Mark EXP saying that we need to be able to take the
+/* Mark the lvalue saying that we need to be able to take the
    address of it; it should not be allocated in a register.
-   Compare with e.g. c/c-typeck.c: c_mark_addressable.  */
+   Compare with e.g. c/c-typeck.c: c_mark_addressable really_atomic_lvalue.
+   Returns false if a failure occurred (an error will already have been
+   added to the active context for this case).  */
 
-static void
-jit_mark_addressable (tree exp)
+bool
+playback::lvalue::
+mark_addressable (location *loc)
 {
-  tree x = exp;
+  tree x = as_tree ();;
 
   while (1)
     switch (TREE_CODE (x))
       {
       case COMPONENT_REF:
-	/* (we don't yet support bitfields)  */
+	if (DECL_JIT_BIT_FIELD (TREE_OPERAND (x, 1)))
+	  {
+	    gcc_assert (gcc::jit::active_playback_ctxt);
+	    gcc::jit::
+	      active_playback_ctxt->add_error (loc,
+					       "cannot take address of "
+					       "bit-field");
+	    return false;
+	  }
 	/* fallthrough */
       case ADDR_EXPR:
       case ARRAY_REF:
@@ -1222,7 +1287,7 @@ jit_mark_addressable (tree exp)
       case COMPOUND_LITERAL_EXPR:
       case CONSTRUCTOR:
 	TREE_ADDRESSABLE (x) = 1;
-	return;
+	return true;
 
       case VAR_DECL:
       case CONST_DECL:
@@ -1234,7 +1299,7 @@ jit_mark_addressable (tree exp)
 	TREE_ADDRESSABLE (x) = 1;
 	/* fallthrough */
       default:
-	return;
+	return true;
       }
 }
 
@@ -1251,8 +1316,10 @@ get_address (location *loc)
   tree ptr = build1 (ADDR_EXPR, t_ptrtype, t_lvalue);
   if (loc)
     get_context ()->set_tree_location (ptr, loc);
-  jit_mark_addressable (t_lvalue);
-  return new rvalue (get_context (), ptr);
+  if (mark_addressable (loc))
+    return new rvalue (get_context (), ptr);
+  else
+    return NULL;
 }
 
 /* The wrapper subclasses are GC-managed, but can own non-GC memory.

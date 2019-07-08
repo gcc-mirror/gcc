@@ -61,19 +61,20 @@ is
    --  the result will contain all elapsed leap seconds since the start of
    --  Ada time until now.
 
-   function Year    (Date : Time) return Year_Number  with Global => null;
-   function Month   (Date : Time) return Month_Number with Global => null;
-   function Day     (Date : Time) return Day_Number   with Global => null;
-   function Seconds (Date : Time) return Day_Duration with Global => null;
+   function Year    (Date : Time) return Year_Number;
+   function Month   (Date : Time) return Month_Number;
+   function Day     (Date : Time) return Day_Number;
+   function Seconds (Date : Time) return Day_Duration;
+   --  SPARK Note: These routines, just like Split and Time_Of below, might use
+   --  the OS-specific timezone database that is typically stored in a file.
+   --  This side effect needs to be modeled, so there is no Global => null.
 
    procedure Split
      (Date    : Time;
       Year    : out Year_Number;
       Month   : out Month_Number;
       Day     : out Day_Number;
-      Seconds : out Day_Duration)
-   with
-     Global => null;
+      Seconds : out Day_Duration);
    --  Break down a time value into its date components set in the current
    --  time zone. If Split is called on a time value created using Ada 2005
    --  Time_Of in some arbitrary time zone, the input value will always be
@@ -83,9 +84,7 @@ is
      (Year    : Year_Number;
       Month   : Month_Number;
       Day     : Day_Number;
-      Seconds : Day_Duration := 0.0) return Time
-   with
-     Global => null;
+      Seconds : Day_Duration := 0.0) return Time;
    --  GNAT Note: Normally when procedure Split is called on a Time value
    --  result of a call to function Time_Of, the out parameters of procedure
    --  Split are identical to the in parameters of function Time_Of. However,

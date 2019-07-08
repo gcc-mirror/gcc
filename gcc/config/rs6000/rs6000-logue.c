@@ -5100,24 +5100,11 @@ macho_branch_islands (void)
 #endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
       if (flag_pic)
 	{
-	  if (TARGET_LINK_STACK)
-	    {
-	      char name[32];
-	      get_ppc476_thunk_name (name);
-	      strcat (tmp_buf, ":\n\tmflr r0\n\tbl ");
-	      strcat (tmp_buf, name);
-	      strcat (tmp_buf, "\n");
-	      strcat (tmp_buf, label);
-	      strcat (tmp_buf, "_pic:\n\tmflr r11\n");
-	    }
-	  else
-	    {
-	      strcat (tmp_buf, ":\n\tmflr r0\n\tbcl 20,31,");
-	      strcat (tmp_buf, label);
-	      strcat (tmp_buf, "_pic\n");
-	      strcat (tmp_buf, label);
-	      strcat (tmp_buf, "_pic:\n\tmflr r11\n");
-	    }
+	  strcat (tmp_buf, ":\n\tmflr r0\n\tbcl 20,31,");
+	  strcat (tmp_buf, label);
+	  strcat (tmp_buf, "_pic\n");
+	  strcat (tmp_buf, label);
+	  strcat (tmp_buf, "_pic:\n\tmflr r11\n");
 
 	  strcat (tmp_buf, "\taddis r11,r11,ha16(");
 	  strcat (tmp_buf, name_buf);

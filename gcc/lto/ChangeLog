@@ -1,3 +1,18 @@
+2019-07-04  Martin Liska  <mliska@suse.cz>
+
+	PR lto/91078
+	* lto-common.c (lto_file_finalize): Use memcpy to set
+	file_data->lto_section_header.
+
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	* lto-common.c: Read LTO section and verify header.
+
+2019-06-27  Jan Hubicka  <jh@suse.cz>
+
+	* lto-common.c (lto_register_canonical_types_for_odr_types):
+	Copy CXX_ODR_P from the main variant.
+
 2019-06-27  Jan Hubicka  <jh@suse.cz>
 
 	* lto-common.c: tree-pretty-print.h

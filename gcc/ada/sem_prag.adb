@@ -9861,6 +9861,17 @@ package body Sem_Prag is
       --  Start of processing for Process_Inline
 
       begin
+         --  An inlined subprogram may grant access to its private enclosing
+         --  context depending on the placement of its body. From elaboration
+         --  point of view, the flow of execution may enter this private
+         --  context, and then reach an external unit, thus producing a
+         --  dependency on that external unit. For such a path to be properly
+         --  discovered and encoded in the ALI file of the main unit, let the
+         --  ABE mechanism process the body of the main unit, and encode all
+         --  relevant invocation constructs and the relations between them.
+
+         Mark_Save_Invocation_Graph_Of_Body;
+
          Check_No_Identifiers;
          Check_At_Least_N_Arguments (1);
 
@@ -12219,7 +12230,7 @@ package body Sem_Prag is
                            Check_Ghost_Synchronous;
 
                         --  Option Part_Of without an encapsulating state is
-                        --  illegal (SPARK RM 7.1.4(9)).
+                        --  illegal (SPARK RM 7.1.4(8)).
 
                         elsif Chars (Opt) = Name_Part_Of then
                            SPARK_Msg_N
@@ -23178,7 +23189,16 @@ package body Sem_Prag is
             --  Start of processing for Check_Library_Level_Entity
 
             begin
-               if not Is_Library_Level_Entity (E) then
+               --  A SPARK_Mode of On shall only apply to library-level
+               --  entities, except for those in generic instances, which are
+               --  ignored (even if the entity gets SPARK_Mode pragma attached
+               --  in the AST, its effect is not taken into account unless the
+               --  context already provides SPARK_Mode of On in GNATprove).
+
+               if Get_SPARK_Mode_From_Annotation (N) = On
+                 and then not Is_Library_Level_Entity (E)
+                 and then Instantiation_Location (Sloc (N)) = No_Location
+               then
                   Error_Msg_Name_1 := Pname;
                   Error_Msg_N (Fix_Error (Msg_1), N);
 
@@ -25606,6 +25626,12 @@ package body Sem_Prag is
                return;
             else
                Ent := Underlying_Type (Ent);
+            end if;
+
+            --  The pragma applies to entities with addresses
+
+            if Is_Type (Ent) then
+               Error_Pragma ("pragma applies to objects and subprograms");
             end if;
 
             --  The only processing required is to link this item on to the

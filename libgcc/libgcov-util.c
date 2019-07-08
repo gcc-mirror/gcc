@@ -725,11 +725,11 @@ __gcov_time_profile_counter_op (gcov_type *counters ATTRIBUTE_UNUSED,
   /* Do nothing.  */
 }
 
-/* Performing FN upon single counters.  */
+/* Performing FN upon TOP N counters.  */
 
 static void
-__gcov_single_counter_op (gcov_type *counters, unsigned n_counters,
-                          counter_op_fn fn, void *data1, void *data2)
+__gcov_topn_counter_op (gcov_type *counters, unsigned n_counters,
+			counter_op_fn fn, void *data1, void *data2)
 {
   unsigned i, n_measures;
 

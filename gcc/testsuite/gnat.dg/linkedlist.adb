@@ -5,35 +5,42 @@ with GNAT;        use GNAT;
 with GNAT.Lists;  use GNAT.Lists;
 
 procedure Linkedlist is
-   package Integer_Lists is new Doubly_Linked_List
-     (Element_Type => Integer,
-      "="          => "=");
+   procedure Destroy (Val : in out Integer) is null;
+
+   package Integer_Lists is new Doubly_Linked_Lists
+     (Element_Type    => Integer,
+      "="             => "=",
+      Destroy_Element => Destroy);
    use Integer_Lists;
 
    procedure Check_Empty
      (Caller    : String;
-      L         : Instance;
+      L         : Doubly_Linked_List;
       Low_Elem  : Integer;
       High_Elem : Integer);
    --  Ensure that none of the elements in the range Low_Elem .. High_Elem are
    --  present in list L, and that the list's length is 0.
 
-   procedure Check_Locked_Mutations (Caller : String; L : in out Instance);
+   procedure Check_Locked_Mutations
+     (Caller : String;
+      L      : in out Doubly_Linked_List);
    --  Ensure that all mutation operations of list L are locked
 
    procedure Check_Present
      (Caller    : String;
-      L         : Instance;
+      L         : Doubly_Linked_List;
       Low_Elem  : Integer;
       High_Elem : Integer);
    --  Ensure that all elements in the range Low_Elem .. High_Elem are present
    --  in list L.
 
-   procedure Check_Unlocked_Mutations (Caller : String; L : in out Instance);
+   procedure Check_Unlocked_Mutations
+     (Caller : String;
+      L      : in out Doubly_Linked_List);
    --  Ensure that all mutation operations of list L are unlocked
 
    procedure Populate_With_Append
-     (L         : Instance;
+     (L         : Doubly_Linked_List;
       Low_Elem  : Integer;
       High_Elem : Integer);
    --  Add elements in the range Low_Elem .. High_Elem in that order in list L
@@ -113,7 +120,7 @@ procedure Linkedlist is
 
    procedure Check_Empty
      (Caller    : String;
-      L         : Instance;
+      L         : Doubly_Linked_List;
       Low_Elem  : Integer;
       High_Elem : Integer)
    is
@@ -137,7 +144,9 @@ procedure Linkedlist is
    -- Check_Locked_Mutations --
    ----------------------------
 
-   procedure Check_Locked_Mutations (Caller : String; L : in out Instance) is
+   procedure Check_Locked_Mutations
+     (Caller : String;
+      L      : in out Doubly_Linked_List) is
    begin
       begin
          Append (L, 1);
@@ -247,7 +256,7 @@ procedure Linkedlist is
 
    procedure Check_Present
      (Caller    : String;
-      L         : Instance;
+      L         : Doubly_Linked_List;
       Low_Elem  : Integer;
       High_Elem : Integer)
    is
@@ -287,7 +296,10 @@ procedure Linkedlist is
    -- Check_Unlocked_Mutations --
    ------------------------------
 
-   procedure Check_Unlocked_Mutations (Caller : String; L : in out Instance) is
+   procedure Check_Unlocked_Mutations
+     (Caller : String;
+      L      : in out Doubly_Linked_List)
+   is
    begin
       Append        (L, 1);
       Append        (L, 2);
@@ -306,7 +318,7 @@ procedure Linkedlist is
    --------------------------
 
    procedure Populate_With_Append
-     (L         : Instance;
+     (L         : Doubly_Linked_List;
       Low_Elem  : Integer;
       High_Elem : Integer)
    is
@@ -321,7 +333,7 @@ procedure Linkedlist is
    -----------------
 
    procedure Test_Append is
-      L : Instance := Create;
+      L : Doubly_Linked_List := Create;
 
    begin
       Append (L, 1);
@@ -350,7 +362,7 @@ procedure Linkedlist is
       Low_Bogus  : constant Integer := Low_Elem  - 1;
       High_Bogus : constant Integer := High_Elem + 1;
 
-      L : Instance := Create;
+      L : Doubly_Linked_List := Create;
 
    begin
       Populate_With_Append (L, Low_Elem, High_Elem);
@@ -388,7 +400,7 @@ procedure Linkedlist is
       Count : Natural;
       Flag  : Boolean;
       Iter  : Iterator;
-      L     : Instance;
+      L     : Doubly_Linked_List;
       Val   : Integer;
 
    begin
@@ -548,7 +560,7 @@ procedure Linkedlist is
       High_Elem : Integer)
    is
       Iter : Iterator;
-      L    : Instance := Create;
+      L    : Doubly_Linked_List := Create;
 
    begin
       Populate_With_Append (L, Low_Elem, High_Elem);
@@ -635,7 +647,7 @@ procedure Linkedlist is
      (Low_Elem  : Integer;
       High_Elem : Integer)
    is
-      L : Instance := Create;
+      L : Doubly_Linked_List := Create;
 
    begin
       Populate_With_Append (L, Low_Elem, High_Elem);
@@ -684,7 +696,7 @@ procedure Linkedlist is
      (Low_Elem  : Integer;
       High_Elem : Integer)
    is
-      L : Instance := Create;
+      L : Doubly_Linked_List := Create;
 
    begin
       Populate_With_Append (L, Low_Elem, High_Elem);
@@ -731,7 +743,7 @@ procedure Linkedlist is
 
    procedure Test_First is
       Elem : Integer;
-      L    : Instance := Create;
+      L    : Doubly_Linked_List := Create;
 
    begin
       --  Try to obtain the head. This operation should raise List_Empty.
@@ -766,7 +778,7 @@ procedure Linkedlist is
    -----------------------
 
    procedure Test_Insert_After is
-      L : Instance := Create;
+      L : Doubly_Linked_List := Create;
 
    begin
       --  Try to insert after a non-inserted element, in an empty list
@@ -805,7 +817,7 @@ procedure Linkedlist is
    ------------------------
 
    procedure Test_Insert_Before is
-      L : Instance := Create;
+      L : Doubly_Linked_List := Create;
 
    begin
       --  Try to insert before a non-inserted element, in an empty list
@@ -844,7 +856,7 @@ procedure Linkedlist is
    -------------------
 
    procedure Test_Is_Empty is
-      L : Instance := Create;
+      L : Doubly_Linked_List := Create;
 
    begin
       if not Is_Empty (L) then
@@ -874,7 +886,7 @@ procedure Linkedlist is
       Elem   : Integer;
       Iter_1 : Iterator;
       Iter_2 : Iterator;
-      L      : Instance := Create;
+      L      : Doubly_Linked_List := Create;
 
    begin
       Populate_With_Append (L, 1, 5);
@@ -935,7 +947,7 @@ procedure Linkedlist is
    procedure Test_Iterate_Empty is
       Elem : Integer;
       Iter : Iterator;
-      L    : Instance := Create;
+      L    : Doubly_Linked_List := Create;
 
    begin
       --  Obtain an iterator. This action must lock all mutation operations of
@@ -978,7 +990,7 @@ procedure Linkedlist is
    is
       Elem : Integer;
       Iter : Iterator;
-      L    : Instance := Create;
+      L    : Doubly_Linked_List := Create;
 
    begin
       Populate_With_Append (L, Low_Elem, High_Elem);
@@ -1026,7 +1038,7 @@ procedure Linkedlist is
 
    procedure Test_Last is
       Elem : Integer;
-      L    : Instance := Create;
+      L    : Doubly_Linked_List := Create;
 
    begin
       --  Try to obtain the tail. This operation should raise List_Empty.
@@ -1061,7 +1073,7 @@ procedure Linkedlist is
    ------------------
 
    procedure Test_Prepend is
-      L : Instance := Create;
+      L : Doubly_Linked_List := Create;
 
    begin
       Prepend (L, 5);
@@ -1084,7 +1096,7 @@ procedure Linkedlist is
    ------------------
 
    procedure Test_Replace is
-      L : Instance := Create;
+      L : Doubly_Linked_List := Create;
 
    begin
       Populate_With_Append (L, 1, 5);
@@ -1111,7 +1123,7 @@ procedure Linkedlist is
    ---------------
 
    procedure Test_Size is
-      L : Instance := Create;
+      L : Doubly_Linked_List := Create;
       S : Natural;
 
    begin

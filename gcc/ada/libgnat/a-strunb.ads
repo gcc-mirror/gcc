@@ -36,6 +36,15 @@
 with Ada.Strings.Maps;
 with Ada.Finalization;
 
+--  The language-defined package Strings.Unbounded provides a private type
+--  Unbounded_String and a set of operations. An object of type
+--  Unbounded_String represents a String whose low bound is 1 and whose length
+--  can vary conceptually between 0 and Natural'Last. The subprograms for
+--  fixed-length string handling are either overloaded directly for
+--  Unbounded_String, or are modified as needed to reflect the flexibility in
+--  length. Since the Unbounded_String type is private, relevant constructor
+--  and selector operations are provided.
+
 package Ada.Strings.Unbounded is
    pragma Preelaborate;
 
@@ -43,12 +52,19 @@ package Ada.Strings.Unbounded is
    pragma Preelaborable_Initialization (Unbounded_String);
 
    Null_Unbounded_String : constant Unbounded_String;
+   --  Represents the null String. If an object of type Unbounded_String is not
+   --  otherwise initialized, it will be initialized to the same value as
+   --  Null_Unbounded_String.
 
    function Length (Source : Unbounded_String) return Natural;
+   --  Returns the length of the String represented by Source
 
    type String_Access is access all String;
+   --  Provides a (nonprivate) access type for explicit processing of
+   --  unbounded-length strings.
 
    procedure Free (X : in out String_Access);
+   --  Performs an unchecked deallocation of an object of type String_Access
 
    --------------------------------------------------------
    -- Conversion, Concatenation, and Selection Functions --
@@ -56,16 +72,28 @@ package Ada.Strings.Unbounded is
 
    function To_Unbounded_String
      (Source : String)  return Unbounded_String;
+   --  Returns an Unbounded_String that represents Source
 
    function To_Unbounded_String
      (Length : Natural) return Unbounded_String;
+   --  Returns an Unbounded_String that represents an uninitialized String
+   --  whose length is Length.
 
    function To_String (Source : Unbounded_String) return String;
+   --  Returns the String with lower bound 1 represented by Source
+
+   --  To_String and To_Unbounded_String are related as follows:
+   --
+   --  * If S is a String, then To_String (To_Unbounded_String (S)) = S.
+   --
+   --  * If U is an Unbounded_String, then
+   --    To_Unbounded_String (To_String (U)) = U.
 
    procedure Set_Unbounded_String
      (Target : out Unbounded_String;
       Source : String);
    pragma Ada_05 (Set_Unbounded_String);
+   --  Sets Target to an Unbounded_String that represents Source
 
    procedure Append
      (Source   : in out Unbounded_String;
@@ -78,6 +106,10 @@ package Ada.Strings.Unbounded is
    procedure Append
      (Source   : in out Unbounded_String;
       New_Item : Character);
+
+   --  For each of the Append procedures, the resulting string represented by
+   --  the Source parameter is given by the concatenation of the original value
+   --  of Source and the value of New_Item.
 
    function "&"
      (Left  : Unbounded_String;
@@ -99,25 +131,43 @@ package Ada.Strings.Unbounded is
      (Left  : Character;
       Right : Unbounded_String) return Unbounded_String;
 
+   --  Each of the "&" functions returns an Unbounded_String obtained by
+   --  concatenating the string or character given or represented by one of the
+   --  parameters, with the string or character given or represented by the
+   --  other parameter, and applying To_Unbounded_String to the concatenation
+   --  result string.
+
    function Element
      (Source : Unbounded_String;
       Index  : Positive) return Character;
+   --  Returns the character at position Index in the string represented by
+   --  Source; propagates Index_Error if Index > Length (Source).
 
    procedure Replace_Element
      (Source : in out Unbounded_String;
       Index  : Positive;
       By     : Character);
+   --  Updates Source such that the character at position Index in the string
+   --  represented by Source is By; propagates Index_Error if
+   --  Index > Length (Source).
 
    function Slice
      (Source : Unbounded_String;
       Low    : Positive;
       High   : Natural) return String;
+   --  Returns the slice at positions Low through High in the string
+   --  represented by Source; propagates Index_Error if
+   --  Low > Length (Source) + 1 or High > Length (Source). The bounds of the
+   --  returned string are Low and High.
 
    function Unbounded_Slice
      (Source : Unbounded_String;
       Low    : Positive;
       High   : Natural) return Unbounded_String;
    pragma Ada_05 (Unbounded_Slice);
+   --  Returns the slice at positions Low through High in the string
+   --  represented by Source as an Unbounded_String. This propagates
+   --  Index_Error if Low > Length(Source) + 1 or High > Length (Source).
 
    procedure Unbounded_Slice
      (Source : Unbounded_String;
@@ -125,6 +175,9 @@ package Ada.Strings.Unbounded is
       Low    : Positive;
       High   : Natural);
    pragma Ada_05 (Unbounded_Slice);
+   --  Sets Target to the Unbounded_String representing the slice at positions
+   --  Low through High in the string represented by Source. This propagates
+   --  Index_Error if Low > Length(Source) + 1 or High > Length (Source).
 
    function "="
      (Left  : Unbounded_String;
@@ -185,6 +238,10 @@ package Ada.Strings.Unbounded is
    function ">="
      (Left  : String;
       Right : Unbounded_String) return Boolean;
+
+   --  Each of the functions "=", "<", ">", "<=", and ">=" returns the same
+   --  result as the corresponding String operation applied to the String
+   --  values given or represented by Left and Right.
 
    ------------------------
    -- Search Subprograms --
@@ -272,6 +329,11 @@ package Ada.Strings.Unbounded is
       First  : out Positive;
       Last   : out Natural);
 
+   --  Each of the search subprograms (Index, Index_Non_Blank, Count,
+   --  Find_Token) has the same effect as the corresponding subprogram in
+   --  Strings.Fixed applied to the string represented by the Unbounded_String
+   --  parameter.
+
    ------------------------------------
    -- String Translation Subprograms --
    ------------------------------------
@@ -291,6 +353,11 @@ package Ada.Strings.Unbounded is
    procedure Translate
      (Source  : in out Unbounded_String;
       Mapping : Maps.Character_Mapping_Function);
+
+   --  The Translate function has an analogous effect to the corresponding
+   --  subprogram in Strings.Fixed. The translation is applied to the string
+   --  represented by the Unbounded_String parameter, and the result is
+   --  converted (via To_Unbounded_String) to an Unbounded_String.
 
    ---------------------------------------
    -- String Transformation Subprograms --
@@ -387,6 +454,19 @@ package Ada.Strings.Unbounded is
    function "*"
      (Left  : Natural;
       Right : Unbounded_String) return Unbounded_String;
+
+   --  Each of the transformation functions (Replace_Slice, Insert, Overwrite,
+   --  Delete), selector functions (Trim, Head, Tail), and constructor
+   --  functions ("*") is likewise analogous to its corresponding subprogram in
+   --  Strings.Fixed. For each of the subprograms, the corresponding
+   --  fixed-length string subprogram is applied to the string represented by
+   --  the Unbounded_String parameter, and To_Unbounded_String is applied the
+   --  result string.
+   --
+   --  For each of the procedures Translate, Replace_Slice, Insert, Overwrite,
+   --  Delete, Trim, Head, and Tail, the resulting string represented by the
+   --  Source parameter is given by the corresponding function for fixed-length
+   --  strings applied to the string represented by Source's original value.
 
 private
    pragma Inline (Length);

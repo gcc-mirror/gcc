@@ -11292,6 +11292,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
     case CATCH_EXPR:
     case EH_FILTER_EXPR:
     case TRY_FINALLY_EXPR:
+    case EH_ELSE_EXPR:
       /* Lowered by tree-eh.c.  */
       gcc_unreachable ();
 

@@ -8912,7 +8912,6 @@ trans_class_vptr_len_assignment (stmtblock_t *block, gfc_expr * le,
 		from_len = rse->string_length;
 	      else if (re->ts.type == BT_CHARACTER && re->ts.u.cl->length)
 		{
-		  from_len = gfc_get_expr_charlen (re);
 		  gfc_init_se (&se, NULL);
 		  gfc_conv_expr (&se, re->ts.u.cl->length);
 		  gfc_add_block_to_block (block, &se.pre);
@@ -10171,10 +10170,6 @@ gfc_trans_array_constructor_copy (gfc_expr * expr1, gfc_expr * expr2)
   stype = gfc_typenode_for_spec (&expr2->ts);
   src = gfc_build_constant_array_constructor (expr2, stype);
 
-  stype = TREE_TYPE (src);
-  if (POINTER_TYPE_P (stype))
-    stype = TREE_TYPE (stype);
-
   return gfc_build_memcpy_call (dst, src, len);
 }
 
@@ -10924,7 +10919,6 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 		       && (gfc_is_class_array_function (expr2)
 			   || gfc_is_alloc_class_scalar_function (expr2)))
     {
-      tmp = rse.expr;
       tmp = gfc_nullify_alloc_comp (expr1->ts.u.derived, rse.expr, 0);
       gfc_prepend_expr_to_block (&rse.post, tmp);
       if (lss != gfc_ss_terminator && rss == gfc_ss_terminator)

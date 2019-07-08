@@ -3473,6 +3473,17 @@ package body Sem_Ch12 is
    begin
       Check_SPARK_05_Restriction ("generic is not allowed", N);
 
+      --  A generic may grant access to its private enclosing context depending
+      --  on the placement of its corresponding body. From elaboration point of
+      --  view, the flow of execution may enter this private context, and then
+      --  reach an external unit, thus producing a dependency on that external
+      --  unit. For such a path to be properly discovered and encoded in the
+      --  ALI file of the main unit, let the ABE mechanism process the body of
+      --  the main unit, and encode all relevant invocation constructs and the
+      --  relations between them.
+
+      Mark_Save_Invocation_Graph_Of_Body;
+
       --  We introduce a renaming of the enclosing package, to have a usable
       --  entity as the prefix of an expanded name for a local entity of the
       --  form Par.P.Q, where P is the generic package. This is because a local
@@ -3667,6 +3678,17 @@ package body Sem_Ch12 is
 
    begin
       Check_SPARK_05_Restriction ("generic is not allowed", N);
+
+      --  A generic may grant access to its private enclosing context depending
+      --  on the placement of its corresponding body. From elaboration point of
+      --  view, the flow of execution may enter this private context, and then
+      --  reach an external unit, thus producing a dependency on that external
+      --  unit. For such a path to be properly discovered and encoded in the
+      --  ALI file of the main unit, let the ABE mechanism process the body of
+      --  the main unit, and encode all relevant invocation constructs and the
+      --  relations between them.
+
+      Mark_Save_Invocation_Graph_Of_Body;
 
       --  Create copy of generic unit, and save for instantiation. If the unit
       --  is a child unit, do not copy the specifications for the parent, which
@@ -3899,8 +3921,8 @@ package body Sem_Ch12 is
       --  Local declarations
 
       Gen_Id         : constant Node_Id    := Name (N);
-      Is_Actual_Pack : constant Boolean    :=
-                         Is_Internal (Defining_Entity (N));
+      Inst_Id        : constant Entity_Id  := Defining_Entity (N);
+      Is_Actual_Pack : constant Boolean    := Is_Internal (Inst_Id);
       Loc            : constant Source_Ptr := Sloc (N);
 
       Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
@@ -4109,6 +4131,9 @@ package body Sem_Ch12 is
          goto Leave;
 
       else
+         Set_Ekind (Inst_Id, E_Package);
+         Set_Scope (Inst_Id, Current_Scope);
+
          --  If the context of the instance is subject to SPARK_Mode "off" or
          --  the annotation is altogether missing, set the global flag which
          --  signals Analyze_Pragma to ignore all SPARK_Mode pragmas within
@@ -5156,14 +5181,13 @@ package body Sem_Ch12 is
      (N : Node_Id;
       K : Entity_Kind)
    is
-      Loc    : constant Source_Ptr := Sloc (N);
-      Gen_Id : constant Node_Id    := Name (N);
-      Errs   : constant Nat        := Serious_Errors_Detected;
-
-      Anon_Id : constant Entity_Id :=
-                  Make_Defining_Identifier (Sloc (Defining_Entity (N)),
-                    Chars => New_External_Name
-                               (Chars (Defining_Entity (N)), 'R'));
+      Errs    : constant Nat        := Serious_Errors_Detected;
+      Gen_Id  : constant Node_Id    := Name (N);
+      Inst_Id : constant Entity_Id  := Defining_Entity (N);
+      Anon_Id : constant Entity_Id  :=
+                  Make_Defining_Identifier (Sloc (Inst_Id),
+                    Chars => New_External_Name (Chars (Inst_Id), 'R'));
+      Loc     : constant Source_Ptr := Sloc (N);
 
       Act_Decl_Id : Entity_Id := Empty; -- init to avoid warning
       Act_Decl    : Node_Id;
@@ -5489,6 +5513,9 @@ package body Sem_Ch12 is
          Error_Msg_NE ("instantiation of & within itself", N, Gen_Unit);
 
       else
+         Set_Ekind (Inst_Id, K);
+         Set_Scope (Inst_Id, Current_Scope);
+
          Set_Entity (Gen_Id, Gen_Unit);
          Set_Is_Instantiated (Gen_Unit);
 
@@ -5654,6 +5681,16 @@ package body Sem_Ch12 is
          Set_Has_Pragma_Inline (Act_Decl_Id, Has_Pragma_Inline (Gen_Unit));
          Set_Has_Pragma_Inline (Anon_Id,     Has_Pragma_Inline (Gen_Unit));
 
+         Set_Has_Pragma_Inline_Always
+           (Act_Decl_Id, Has_Pragma_Inline_Always (Gen_Unit));
+         Set_Has_Pragma_Inline_Always
+           (Anon_Id,     Has_Pragma_Inline_Always (Gen_Unit));
+
+         Set_Has_Pragma_No_Inline
+           (Act_Decl_Id, Has_Pragma_No_Inline (Gen_Unit));
+         Set_Has_Pragma_No_Inline
+           (Anon_Id,     Has_Pragma_No_Inline (Gen_Unit));
+
          --  Propagate No_Return if pragma applied to generic unit. This must
          --  be done explicitly because pragma does not appear in generic
          --  declaration (unlike the aspect case).
@@ -5662,11 +5699,6 @@ package body Sem_Ch12 is
             Set_No_Return (Act_Decl_Id);
             Set_No_Return (Anon_Id);
          end if;
-
-         Set_Has_Pragma_Inline_Always
-           (Act_Decl_Id, Has_Pragma_Inline_Always (Gen_Unit));
-         Set_Has_Pragma_Inline_Always
-           (Anon_Id,     Has_Pragma_Inline_Always (Gen_Unit));
 
          --  Mark both the instance spec and the anonymous package in case the
          --  body is instantiated at a later pass. This preserves the original
@@ -5970,7 +6002,7 @@ package body Sem_Ch12 is
             Make_Parameter_Specification (Loc,
                Defining_Identifier => F1,
                Parameter_Type      => New_Occurrence_Of (Op_Type, Loc))),
-          Result_Definition        =>  New_Occurrence_Of (Ret_Type, Loc));
+          Result_Definition        => New_Occurrence_Of (Ret_Type, Loc));
 
       if Is_Binary then
          Append_To (Parameter_Specifications (Spec),
@@ -6190,6 +6222,12 @@ package body Sem_Ch12 is
       --  Common error routine for mismatch between the parameters of the
       --  actual instance and those of the formal package.
 
+      function Is_Defaulted (Param : Entity_Id) return Boolean;
+      --  If the formal package has partly box-initialized formals, skip
+      --  conformance check for these formals. Previously the code assumed
+      --  that box initialization for a formal package applied to all its
+      --  formal parameters.
+
       function Same_Instantiated_Constant (E1, E2 : Entity_Id) return Boolean;
       --  The formal may come from a nested formal package, and the actual may
       --  have been constant-folded. To determine whether the two denote the
@@ -6239,6 +6277,34 @@ package body Sem_Ch12 is
                Parent (Actual_Pack), E1);
          end if;
       end Check_Mismatch;
+
+      ------------------
+      -- Is_Defaulted --
+      ------------------
+
+      function Is_Defaulted (Param : Entity_Id) return Boolean is
+         Assoc : Node_Id;
+
+      begin
+         Assoc :=
+            First (Generic_Associations (Parent
+              (Associated_Formal_Package (Actual_Pack))));
+
+         while Present (Assoc) loop
+            if Nkind (Assoc) = N_Others_Choice then
+               return True;
+
+            elsif Nkind (Assoc) = N_Generic_Association
+              and then Chars (Selector_Name (Assoc)) = Chars (Param)
+            then
+               return Box_Present (Assoc);
+            end if;
+
+            Next (Assoc);
+         end loop;
+
+         return False;
+      end Is_Defaulted;
 
       --------------------------------
       -- Same_Instantiated_Constant --
@@ -6407,6 +6473,9 @@ package body Sem_Ch12 is
            and then Nkind (Unit_Declaration_Node (E2)) in
                       N_Formal_Subprogram_Declaration
          then
+            goto Next_E;
+
+         elsif Is_Defaulted (E1) then
             goto Next_E;
 
          elsif Is_Type (E1) then
@@ -14034,15 +14103,41 @@ package body Sem_Ch12 is
    ------------------------
 
    procedure Preanalyze_Actuals (N : Node_Id; Inst : Entity_Id := Empty) is
+      procedure Perform_Appropriate_Analysis (N : Node_Id);
+      --  Determine if the actuals we are analyzing come from a generic
+      --  instantiation that is a library unit and dispatch accordingly.
+
+      ----------------------------------
+      -- Perform_Appropriate_Analysis --
+      ----------------------------------
+
+      procedure Perform_Appropriate_Analysis (N : Node_Id) is
+      begin
+         --  When we have a library instantiation we cannot allow any expansion
+         --  to occur, since there may be no place to put it. Instead, in that
+         --  case we perform a preanalysis of the actual.
+
+         if Present (Inst) and then Is_Compilation_Unit (Inst) then
+            Preanalyze (N);
+         else
+            Analyze (N);
+         end if;
+      end Perform_Appropriate_Analysis;
+
+      --  Local variables
+
+      Errs : constant Nat := Serious_Errors_Detected;
+
       Assoc : Node_Id;
       Act   : Node_Id;
-      Errs  : constant Nat := Serious_Errors_Detected;
 
       Cur : Entity_Id := Empty;
       --  Current homograph of the instance name
 
       Vis : Boolean := False;
       --  Saved visibility status of the current homograph
+
+   --  Start of processing for Preanalyze_Actuals
 
    begin
       Assoc := First (Generic_Associations (N));
@@ -14085,10 +14180,10 @@ package body Sem_Ch12 is
                null;
 
             elsif Nkind (Act) = N_Attribute_Reference then
-               Analyze (Prefix (Act));
+               Perform_Appropriate_Analysis (Prefix (Act));
 
             elsif Nkind (Act) = N_Explicit_Dereference then
-               Analyze (Prefix (Act));
+               Perform_Appropriate_Analysis (Prefix (Act));
 
             elsif Nkind (Act) = N_Allocator then
                declare
@@ -14096,7 +14191,7 @@ package body Sem_Ch12 is
 
                begin
                   if Nkind (Expr) = N_Subtype_Indication then
-                     Analyze (Subtype_Mark (Expr));
+                     Perform_Appropriate_Analysis (Subtype_Mark (Expr));
 
                      --  Analyze separately each discriminant constraint, when
                      --  given with a named association.
@@ -14108,9 +14203,10 @@ package body Sem_Ch12 is
                         Constr := First (Constraints (Constraint (Expr)));
                         while Present (Constr) loop
                            if Nkind (Constr) = N_Discriminant_Association then
-                              Analyze (Expression (Constr));
+                              Perform_Appropriate_Analysis
+                                (Expression (Constr));
                            else
-                              Analyze (Constr);
+                              Perform_Appropriate_Analysis (Constr);
                            end if;
 
                            Next (Constr);
@@ -14118,12 +14214,12 @@ package body Sem_Ch12 is
                      end;
 
                   else
-                     Analyze (Expr);
+                     Perform_Appropriate_Analysis (Expr);
                   end if;
                end;
 
             elsif Nkind (Act) /= N_Operator_Symbol then
-               Analyze (Act);
+               Perform_Appropriate_Analysis (Act);
 
                --  Within a package instance, mark actuals that are limited
                --  views, so their use can be moved to the body of the
@@ -14144,7 +14240,7 @@ package body Sem_Ch12 is
                --  warnings complaining about the generic being unreferenced,
                --  before abandoning the instantiation.
 
-               Analyze (Name (N));
+               Perform_Appropriate_Analysis (Name (N));
 
                if Is_Entity_Name (Name (N))
                  and then Etype (Name (N)) /= Any_Type

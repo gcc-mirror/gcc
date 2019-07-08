@@ -2105,7 +2105,8 @@ commit_edge_insertions (void)
      which will be done by fixup_partitions.  */
   fixup_partitions ();
 
-  checking_verify_flow_info ();
+  if (!currently_expanding_to_rtl)
+    checking_verify_flow_info ();
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun),
 		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
@@ -2115,7 +2116,11 @@ commit_edge_insertions (void)
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	if (e->insns.r)
-	  commit_one_edge_insertion (e);
+	  {
+	    if (currently_expanding_to_rtl)
+	      rebuild_jump_labels_chain (e->insns.r);
+	    commit_one_edge_insertion (e);
+	  }
     }
 }
 

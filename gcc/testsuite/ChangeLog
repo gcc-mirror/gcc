@@ -1,3 +1,378 @@
+2019-07-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/guality/guality.h: Include <sys/prctl.h> on Linux targets.
+	(main): Use PR_SET_PTRACER where available.
+
+2019-07-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91077
+	* gfortran.dg/pointer_array_11.f90 : New test.
+
+2019-07-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/scan-4.c: Don't expect sorry message.
+
+	PR tree-optimization/91096
+	* gcc.dg/vect/vect-simd-10.c (FLT_MIN_VALUE): Define.
+	(bar, main): Use it instead of -__builtin_inff ().
+	* gcc.dg/vect/vect-simd-14.c (FLT_MIN_VALUE): Define.
+	(bar, main): Use it instead of -__builtin_inff ().
+
+2019-07-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67184 (again)
+	PR c++/69445
+	* g++.dg/other/final4.C: New.
+
+2019-07-04  Marek Polacek  <polacek@redhat.com>
+
+	DR 1813
+	PR c++/83374 - __is_standard_layout wrong for a class with repeated
+	bases.
+	* g++.dg/ext/is_std_layout3.C: New test.
+	* g++.dg/ext/is_std_layout4.C: New test.
+
+2019-07-05  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-77.c: New testcase.
+
+2019-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91091
+	* gcc.dg/tree-ssa/pr91091-2.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-70.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-71.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-72.c: Likewise.
+
+2019-07-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91091
+	* gcc.dg/tree-ssa/pr91091-1.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-61.c: Adjust.
+
+2019-07-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pack23.adb, gnat.dg/pack23_pkg.ads: New testcase.
+
+2019-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/task3.adb, gnat.dg/task3.ads, gnat.dg/task3_pkg1.ads,
+	gnat.dg/task3_pkg2.ads: New testcase.
+
+2019-07-05  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/access6.adb: New testcase.
+
+2019-07-05  Bob Duff  <duff@adacore.com>
+
+	* gnat.dg/bip_export.adb, gnat.dg/bip_export.ads: New testcase.
+
+2019-07-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/aggr25.adb, gnat.dg/aggr25.ads: New testcase.
+
+2019-07-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/predicate7.adb, gnat.dg/predicate7.ads,
+	gnat.dg/predicate7_pkg.ads: New testcase.
+
+2019-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/78884
+	* gcc.dg/gomp/pr78884.c: New test.
+
+2019-07-04  Andrea Corallo <andrea.corallo@arm.com>
+
+	* jit.dg/test-error-gcc_jit_context_new_binary_op-bad-res-type.c:
+	New testcase.
+
+2019-07-04  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.dg/tree-ssa/cunroll-15.c: Remove XFAIL on arm.
+
+2019-07-04  Andrea Corallo <andrea.corallo@arm.com>
+
+	* jit.dg/all-non-failing-tests.h: Add test-accessing-bitfield.c.
+	* jit.dg/test-accessing-bitfield.c: New testcase.
+	* jit.dg/test-error-gcc_jit_context_new_bitfield-invalid-type.c:
+	Likewise.
+	* jit.dg/test-error-gcc_jit_context_new_bitfield-invalid-width.c:
+	Likewise.
+	* jit.dg/test-error-gcc_jit_lvalue_get_address-bitfield.c:
+	Likewise.
+
+2019-07-04  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/alias-access-path-3.c: New testcase.
+	* gcc.dg/tree-ssa/alias-access-path-8.c: New testcase.
+
+2019-07-04  Andrew Stubbs  <ams@codesourcery.com>
+
+	* g++.dg/gomp/unmappable-1.C: New file.
+
+2019-07-04  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/cpp_constructor.adb, gnat.dg/cpp_constructor_fp.ads,
+	gnat.dg/cpp_constructor_useit.ads: New testcase.
+
+2019-07-04  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat.dg/ghost5.adb, gnat.dg/ghost5.ads,
+	gnat.dg/ghost5_parent.ads: New testcase.
+
+2019-07-04  Yannick Moy  <moy@adacore.com>
+
+	* gnat.dg/spark3.adb: New testcase.
+
+2019-07-04  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/tagged2.adb, gnat.dg/tagged2.ads: New testcase.
+
+2019-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/equal6.adb, gnat.dg/equal6_types.adb,
+	gnat.dg/equal6_types.ads: New testcase.
+
+2019-07-04  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/allocator.adb: New testcase.
+
+2019-07-04  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/default_initial_condition.adb,
+	gnat.dg/default_initial_condition_pack.adb,
+	gnat.dg/default_initial_condition_pack.ads: New testcase.
+
+2019-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/aspect2.adb, gnat.dg/aspect2.ads: New testcase.
+
+2019-07-04  Yannick Moy  <moy@adacore.com>
+
+	* gnat.dg/synchronized2.adb, gnat.dg/synchronized2.ads,
+	gnat.dg/synchronized2_pkg.ads: New testcase.
+
+2019-07-04  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/generic_inst4.adb, gnat.dg/generic_inst4_gen.ads,
+	gnat.dg/generic_inst4_inst.ads, gnat.dg/generic_inst4_typ.ads:
+	New testcase.
+
+2019-07-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/dimensions2.adb, gnat.dg/dimensions2_phys.ads,
+	gnat.dg/dimensions2_real_numbers.ads: New testcase.
+
+2019-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91063
+	* gcc.dg/gomp/pr91063.c: New test.
+
+2019-07-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/88833
+	* gfortran.dg/pr88833.f90: New test.
+
+2019-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91069
+	* gcc.dg/pr91069.c (v2df): Use 2 * sizeof (double) instead of
+	hardcoded 16 for better portability.
+	(v2di): Change from long vector to long long vector.  Use
+	2 * sizeof (long long) instead of hardcoded 16.
+
+	PR rtl-optimization/90756
+	* gcc.dg/pr90756.c: New test.
+
+2019-07-04  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	* gcc.target/mips/mips-fmadd.c: Rename to ...
+	* gcc.target/mips/mips-fmadd-o32.c: ... Here; add abi=32.
+	* gcc.target/mips/mips-fmadd-n64.c: New.
+
+2019-07-03  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.dg/store_merging_27.c: Fix test for Arm.
+	* gcc.dg/store_merging_28.c: Likewise.
+	* gcc.dg/store_merging_29.c: Likewise.
+	* gcc.dg/tree-ssa/dump-6.c: Likewise.
+
+2019-07-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91069
+	* gcc.dg/pr91069.c: New testcase.
+
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-prof/val-prof-2.c: Update scanned pattern
+	as we do now better.
+
+2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/debug1.ads: New test.
+
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/90892
+	* gcc.dg/pr90892.c: New test.
+
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/90899
+	* gcc.target/i386/pr90899.c: New test.
+
+2019-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91033
+	* gcc.target/i386/pr91033.c: New test.
+
+2019-07-03  Bob Duff  <duff@adacore.com>
+
+	* gnat.dg/task2.adb, gnat.dg/task2_pkg.adb,
+	gnat.dg/task2_pkg.ads: New testcase.
+
+2019-07-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/inline16.adb, gnat.dg/inline16_gen.adb,
+	gnat.dg/inline16_gen.ads, gnat.dg/inline16_types.ads: New
+	testcase.
+
+2019-07-03  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/renaming13.adb, gnat.dg/renaming14.adb: New testcases.
+
+2019-07-03  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/inline15.adb, gnat.dg/inline15_gen.adb,
+	gnat.dg/inline15_gen.ads, gnat.dg/inline15_types.ads: New
+	testcase.
+
+2019-07-03  Bob Duff  <duff@adacore.com>
+
+	* gnat.dg/warn20.adb, gnat.dg/warn20_pkg.adb,
+	gnat.dg/warn20_pkg.ads: New testcase.
+
+2019-07-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/predicate6.adb, gnat.dg/predicate6.ads: New testcase.
+	* gnat.dg/static_pred1.adb: Remove expected error.
+
+2019-07-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/predicate5.adb, gnat.dg/predicate5.ads: New testcase.
+
+2019-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/alignment14.adb: New testcase.
+
+2019-07-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/predicate4.adb, gnat.dg/predicate4_pkg.ads: New
+	testcase.
+
+2019-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/scan-3.c (f1): Don't expect a sorry message.
+	* c-c++-common/gomp/scan-5.c (foo): Likewise.
+
+	* c-c++-common/gomp/scan-5.c: New test.
+
+	* c-c++-common/gomp/lastprivate-conditional-5.c: New test.
+
+2019-07-02  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/90883
+	* g++.dg/tree-ssa/pr90883.c: Add -Os.  Check dse2 for the
+	deleted store on some targets.
+
+2019-07-02  qing zhao  <qing.zhao@oracle.com>
+
+	PR preprocessor/90581
+	* c-c++-common/cpp/fmax-include-depth-1a.h: New test.
+	* c-c++-common/cpp/fmax-include-depth-1b.h: New test.
+	* c-c++-common/cpp/fmax-include-depth.c: New test.
+
+2019-07-02  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/alias-access-path-7.c: New testcase.
+
+2019-07-02  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/lto/pr90990_0.C: New testcase.
+
+2019-07-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58483
+	* gcc.dg/tree-ssa/ssa-dom-cse-8.c: New testcase.
+
+2019-07-01  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-shift-2.c: New test.
+
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/generic_inst3.adb,
+	gnat.dg/generic_inst3_kafka_lib-topic.ads,
+	gnat.dg/generic_inst3_kafka_lib.ads,
+	gnat.dg/generic_inst3_markets.ads,
+	gnat.dg/generic_inst3_traits-encodables.ads,
+	gnat.dg/generic_inst3_traits.ads: New testcase.
+
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/enum_rep.adb, gnat.dg/enum_rep.ads: New testcase.
+
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/derived_type6.adb, gnat.dg/derived_type6.ads: New
+	testcase.
+
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/weak3.adb, gnat.dg/weak3.ads: New testcase.
+
+2019-07-01  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/prot7.adb, gnat.dg/prot7.ads: New testcase.
+
+2019-07-01  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/gimplefe-42.c: New testcase.
+
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/sets1.adb: Update.
+
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/linkedlist.adb: Update.
+
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/dynhash.adb, gnat.dg/dynhash1.adb: Update.
+
+2019-07-01  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/freezing1.adb, gnat.dg/freezing1.ads,
+	gnat.dg/freezing1_pack.adb, gnat.dg/freezing1_pack.ads: New
+	testcase.
+
+2019-07-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/91028
+	PR lto/90720
+	* g++.dg/lto/alias-1_0.C: Add loop to make inlining happen with
+	-fno-use-linker-plugin
+	* g++.dg/lto/alias-2_0.C: Likewise.
+
+2019-07-01  Dominique d'Humieres  <dominiq@gcc.gnu.org>
+
+	* g++.dg/cpp0x/gen-attrs-67.C: Add error for darwin.
+
+2019-07-01  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/pr77445-2.c: Adjust.
+
 2019-07-01  Hongtao Liu  <hongtao.liu@intel.com>
 
 	* lib/target-supports.exp

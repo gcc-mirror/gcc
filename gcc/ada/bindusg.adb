@@ -133,10 +133,23 @@ package body Bindusg is
       Write_Line
         ("  -F        Force checking of elaboration Flags");
 
+      --  Line for -G switch
+
+      Write_Line
+        ("  -G        Generate binder file suitable for CCG");
+
       --  Line for -h switch
 
       Write_Line
         ("  -h        Output this usage (help) information");
+
+      --  ??? Enable the following code when switching from the old to the new
+      --  elaboration-order mechanism.
+
+      --  Line for -H switch
+
+      --  Write_Line
+      --    ("  -H        Legacy elaboration-order model enabled");
 
       --  Lines for -I switch
 

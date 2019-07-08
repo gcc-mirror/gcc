@@ -211,6 +211,15 @@ package body Sem_Disp is
 
          if Present (Ctrl_Type) then
 
+            --  Obtain the full type in case we are looking at an incomplete
+            --  view.
+
+            if Ekind (Ctrl_Type) = E_Incomplete_Type
+              and then Present (Full_View (Ctrl_Type))
+            then
+               Ctrl_Type := Full_View (Ctrl_Type);
+            end if;
+
             --  When controlling type is concurrent and declared within a
             --  generic or inside an instance use corresponding record type.
 

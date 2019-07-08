@@ -1255,9 +1255,14 @@ coverage_init (const char *filename)
   /* Name of bbg file.  */
   if (flag_test_coverage && !flag_compare_debug)
     {
-      bbg_file_name = XNEWVEC (char, len + strlen (GCOV_NOTE_SUFFIX) + 1);
-      memcpy (bbg_file_name, filename, len);
-      strcpy (bbg_file_name + len, GCOV_NOTE_SUFFIX);
+      if (profile_note_location)
+	bbg_file_name = xstrdup (profile_note_location);
+      else
+	{
+	  bbg_file_name = XNEWVEC (char, len + strlen (GCOV_NOTE_SUFFIX) + 1);
+	  memcpy (bbg_file_name, filename, len);
+	  strcpy (bbg_file_name + len, GCOV_NOTE_SUFFIX);
+	}
 
       if (!gcov_open (bbg_file_name, -1))
 	{

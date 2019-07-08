@@ -1,3 +1,9 @@
+2019-07-01  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Handle
+	_Literal (char *) &"foo" for address literals pointing to
+	STRING_CSTs.
+
 2019-06-24  Martin Sebor  <msebor@redhat.com>
 
 	* c-typeck.c (build_binary_op): Hyphenate floating-point.

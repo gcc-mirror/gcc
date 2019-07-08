@@ -943,8 +943,8 @@ alloc_page (unsigned order)
   if (GGC_DEBUG_LEVEL >= 2)
     fprintf (G.debug_file,
 	     "Allocating page at %p, object size=%lu, data %p-%p\n",
-	     (void *) entry, (unsigned long) OBJECT_SIZE (order), page,
-	     page + entry_size - 1);
+	     (void *) entry, (unsigned long) OBJECT_SIZE (order),
+	     (void *) page, (void *) (page + entry_size - 1));
 
   return entry;
 }
@@ -977,7 +977,7 @@ free_page (page_entry *entry)
   if (GGC_DEBUG_LEVEL >= 2)
     fprintf (G.debug_file,
 	     "Deallocating page at %p, data %p-%p\n", (void *) entry,
-	     entry->page, entry->page + entry->bytes - 1);
+	     (void *) entry->page, (void *) (entry->page + entry->bytes - 1));
 
   /* Mark the page as inaccessible.  Discard the handle to avoid handle
      leak.  */

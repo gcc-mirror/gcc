@@ -889,14 +889,14 @@ include $(iterator)
 
 # Build libgcov components.
 
-LIBGCOV_MERGE = _gcov_merge_add _gcov_merge_single			\
+LIBGCOV_MERGE = _gcov_merge_add _gcov_merge_topn			\
 	_gcov_merge_ior _gcov_merge_time_profile
 LIBGCOV_PROFILER = _gcov_interval_profiler				\
 	_gcov_interval_profiler_atomic					\
 	_gcov_pow2_profiler						\
 	_gcov_pow2_profiler_atomic					\
-	_gcov_one_value_profiler_v2					\
-	_gcov_one_value_profiler_v2_atomic					\
+	_gcov_topn_values_profiler					\
+	_gcov_topn_values_profiler_atomic					\
 	_gcov_average_profiler						\
 	_gcov_average_profiler_atomic					\
 	_gcov_ior_profiler						\

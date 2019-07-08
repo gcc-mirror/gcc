@@ -56,6 +56,12 @@ package body Erroutc is
    --  wild card chars (*). The entire pattern must match the entire string.
    --  Case is ignored in the comparison (so X matches x).
 
+   function Sloc_In_Range (Loc, Start, Stop : Source_Ptr) return Boolean;
+   --  Return whether Loc is in the range Start .. Stop, taking instantiation
+   --  locations of Loc into account. This is useful for suppressing warnings
+   --  from generic instantiations by using pragma Warnings around generic
+   --  instances, as needed in GNATprove.
+
    ---------------
    -- Add_Class --
    ---------------
@@ -1588,6 +1594,25 @@ package body Erroutc is
       end if;
    end Set_Warnings_Mode_On;
 
+   -------------------
+   -- Sloc_In_Range --
+   -------------------
+
+   function Sloc_In_Range (Loc, Start, Stop : Source_Ptr) return Boolean is
+      Cur_Loc : Source_Ptr := Loc;
+
+   begin
+      while Cur_Loc /= No_Location loop
+         if Start <= Cur_Loc and then Cur_Loc <= Stop then
+            return True;
+         end if;
+
+         Cur_Loc := Instantiation_Location (Cur_Loc);
+      end loop;
+
+      return False;
+   end Sloc_In_Range;
+
    --------------------------------
    -- Validate_Specific_Warnings --
    --------------------------------
@@ -1652,7 +1677,7 @@ package body Erroutc is
             --  location is in range of a specific non-configuration pragma.
 
             if SWE.Config
-              or else (SWE.Start <= Loc and then Loc <= SWE.Stop)
+              or else Sloc_In_Range (Loc, SWE.Start, SWE.Stop)
             then
                if Matches (Msg.all, SWE.Msg.all)
                  or else Matches (Tag, SWE.Msg.all)
@@ -1691,8 +1716,8 @@ package body Erroutc is
       --  Loop through table of ON/OFF warnings
 
       for J in Warnings.First .. Warnings.Last loop
-         if Warnings.Table (J).Start <= Loc
-           and then Loc <= Warnings.Table (J).Stop
+         if Sloc_In_Range (Loc, Warnings.Table (J).Start,
+                                Warnings.Table (J).Stop)
          then
             return Warnings.Table (J).Reason;
          end if;

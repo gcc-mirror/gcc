@@ -19779,8 +19779,7 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
       emit_insn (gen_vec_widen_umult_even_v4si (t5, 
 					gen_lowpart (V4SImode, op1),
 					gen_lowpart (V4SImode, op2)));
-      op0 = expand_binop (mode, add_optab, t5, t4, op0, 1, OPTAB_DIRECT);
-
+      force_expand_binop (mode, add_optab, t5, t4, op0, 1, OPTAB_DIRECT);
     }
   else
     {

@@ -1,7 +1,11 @@
-2019-07-06  Iain Sandoe  <iain@sandoe.co.uk>
+2019-07-08  Iain Sandoe  <iain@sandoe.co.uk>
 
-	gcc/testsuite/
-	* g++.dg/coroutines/torture/mid-suspend-destruction-0.C: New test.
+	Merge trunk r272193.
+	gcc/
+	* configure: Regenerated.
+
+	gcc/c-family/
+	* c.opt: Remerge modules flags.
 
 2019-07-06  Iain Sandoe  <iain@sandoe.co.uk>
 

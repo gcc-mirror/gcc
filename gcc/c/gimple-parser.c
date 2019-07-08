@@ -1596,17 +1596,22 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
 		}
 	      else
 		{
-		  bool neg_p;
+		  bool neg_p, addr_p;
 		  if ((neg_p = c_parser_next_token_is (parser, CPP_MINUS)))
+		    c_parser_consume_token (parser);
+		  if ((addr_p = c_parser_next_token_is (parser, CPP_AND)))
 		    c_parser_consume_token (parser);
 		  tree val = c_parser_gimple_postfix_expression (parser).value;
 		  if (! val
 		      || val == error_mark_node
-		      || ! CONSTANT_CLASS_P (val))
+		      || ! CONSTANT_CLASS_P (val)
+		      || (addr_p && TREE_CODE (val) != STRING_CST))
 		    {
 		      c_parser_error (parser, "invalid _Literal");
 		      return expr;
 		    }
+		  if (addr_p)
+		    val = build1 (ADDR_EXPR, type, val);
 		  if (neg_p)
 		    {
 		      val = const_unop (NEGATE_EXPR, TREE_TYPE (val), val);

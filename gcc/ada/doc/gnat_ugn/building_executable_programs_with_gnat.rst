@@ -4045,8 +4045,8 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 :switch:`-gnatw.z`
   *Activate warnings for size not a multiple of alignment.*
 
-  This switch activates warnings for cases of record types with
-  specified ``Size`` and ``Alignment`` attributes where the
+  This switch activates warnings for cases of array and record types
+  with specified ``Size`` and ``Alignment`` attributes where the
   size is not a multiple of the alignment, resulting in an object
   size that is greater than the specified size. The default
   is that such warnings are generated.
@@ -4058,12 +4058,11 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 :switch:`-gnatw.Z`
   *Suppress warnings for size not a multiple of alignment.*
 
-  This switch suppresses warnings for cases of record types with
-  specified ``Size`` and ``Alignment`` attributes where the
+  This switch suppresses warnings for cases of array and record types
+  with specified ``Size`` and ``Alignment`` attributes where the
   size is not a multiple of the alignment, resulting in an object
-  size that is greater than the specified size.
-  The warning can also be
-  suppressed by giving an explicit ``Object_Size`` value.
+  size that is greater than the specified size. The warning can also
+  be suppressed by giving an explicit ``Object_Size`` value.
 
 
 .. index:: -Wunused (gcc)
@@ -4689,6 +4688,16 @@ checks to be performed. The following checks are defined:
   All lines must be terminated by a single ASCII.LF
   character (in particular the DOS line terminator sequence CR/LF is not
   allowed).
+
+
+.. index:: -gnatyD (gcc)
+
+:switch:`-gnatyD`
+  *Check declared identifiers in mixed case.*
+
+  Declared identifiers must be in mixed case, as in
+  This_Is_An_Identifier. Use -gnatyr in addition to ensure
+  that references match declarations.
 
 
 .. index:: -gnatye (gcc)
@@ -5889,8 +5898,8 @@ Debugging Control
   compiler sources.
 
   If the switch is followed by an ``s`` (e.g., :switch:`-gnatR3s`), then
-  the output is to a file with the name :file:`file.rep` where file is
-  the name of the corresponding source file, except if `j`` is also
+  the output is to a file with the name :file:`file.rep` where ``file`` is
+  the name of the corresponding source file, except if ``j`` is also
   specified, in which case the file name is :file:`file.json`.
 
   Note that it is possible for record components to have zero size. In

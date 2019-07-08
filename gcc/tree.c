@@ -311,6 +311,7 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE__LOOPTEMP_  */
   1, /* OMP_CLAUSE__REDUCTEMP_  */
   1, /* OMP_CLAUSE__CONDTEMP_  */
+  1, /* OMP_CLAUSE__SCANTEMP_  */
   1, /* OMP_CLAUSE_IF  */
   1, /* OMP_CLAUSE_NUM_THREADS  */
   1, /* OMP_CLAUSE_SCHEDULE  */
@@ -391,6 +392,7 @@ const char * const omp_clause_code_name[] =
   "_looptemp_",
   "_reductemp_",
   "_condtemp_",
+  "_scantemp_",
   "if",
   "num_threads",
   "schedule",
@@ -10641,6 +10643,12 @@ build_common_tree_nodes (bool signed_char)
 
     va_list_type_node = t;
   }
+
+  /* SCEV analyzer global shared trees.  */
+  chrec_dont_know = make_node (SCEV_NOT_KNOWN);
+  TREE_TYPE (chrec_dont_know) = void_type_node;
+  chrec_known = make_node (SCEV_KNOWN);
+  TREE_TYPE (chrec_known) = void_type_node;
 }
 
 /* Modify DECL for given flags.
@@ -12310,6 +12318,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE__LOOPTEMP_:
 	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE__CONDTEMP_:
+	case OMP_CLAUSE__SCANTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
 	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, 0));
 	  /* FALLTHRU */
@@ -13405,6 +13414,9 @@ block_may_fallthru (const_tree block)
 	 clause and the finally clause fall through.  */
       return (block_may_fallthru (TREE_OPERAND (stmt, 0))
 	      && block_may_fallthru (TREE_OPERAND (stmt, 1)));
+
+    case EH_ELSE_EXPR:
+      return block_may_fallthru (TREE_OPERAND (stmt, 0));
 
     case MODIFY_EXPR:
       if (TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR)

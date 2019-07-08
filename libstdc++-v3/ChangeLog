@@ -1,3 +1,40 @@
+2019-07-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/atomicity.h (__exchange_and_add, __atomic_add): Replace
+	throw() with _GLIBCXX_NOTHROW.
+	(__atomic_add_dispatch): Return after performing atomic increment.
+
+2019-07-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/atomicity.h [_GLIBCXX_ATOMIC_BUILTINS] (__atomic_add)
+	(__exchange_and_add): Replace static specifier with always_inline
+	attribute.
+	(__exchange_and_add_single, __atomic_add_single): Likewise.
+	(__exchange_and_add_dispatch, __atomic_add_dispatch): Likewise. Also
+	combine !__gthread_active_p() and !__GTHREADS branches.
+
+2019-07-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91067
+	* acinclude.m4 (libtool_VERSION): Bump to 6:27:0.
+	* configure: Regenerate.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.27): Add new version. Export
+	missing symbols.
+	* testsuite/27_io/filesystem/iterators/91067.cc: New test.
+	* testsuite/util/testsuite_abi.cc: Add new symbol version.
+
+2019-07-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_HAVE_BUILTIN_LAUNDER)
+	(_GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED): Use __has_builtin
+	instead of __is_identifier to detect Clang support.
+
+2019-07-02  Jim Wilson  <jimw@sifive.com>
+
+	* configure.ac (BUILD_PDF): Also test for doxygen, dot, xsltproc,
+	and xmllint.
+	* configure: Regenerate.
+
 2019-06-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91012

@@ -1,3 +1,8 @@
+2019-07-02  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR other/91048
+	* mklog (read_user_info): Open ~/.mklog in string mode.
+
 2019-06-19  Martin Liska  <mliska@suse.cz>
 
 	* bench-stringop: New file.

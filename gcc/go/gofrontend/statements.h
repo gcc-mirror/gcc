@@ -1061,7 +1061,7 @@ class Select_clauses
   // for the variable to set, and CLOSED is either NULL or a
   // Var_expression to set to whether the channel is closed.  If VAL
   // is NULL, VAR may be a variable to be initialized with the
-  // received value, and CLOSEDVAR ma be a variable to be initialized
+  // received value, and CLOSEDVAR may be a variable to be initialized
   // with whether the channel is closed.  IS_DEFAULT is true if this
   // is the default clause.  STATEMENTS is the list of statements to
   // execute.
@@ -1110,7 +1110,6 @@ class Select_clauses
   void
   dump_clauses(Ast_dump_context*) const;
 
- private:
   // A single clause.
   class Select_clause
   {
@@ -1166,8 +1165,30 @@ class Select_clauses
       return this->is_send_;
     }
 
+    // Return the value to send or the lvalue to receive into.
+    Expression*
+    val() const
+    { return this->val_; }
+
+    // Return the lvalue to set to whether the channel is closed
+    // on a receive.
+    Expression*
+    closed() const
+    { return this->closed_; }
+
+    // Return the variable to initialize, for "case a := <-ch".
+    Named_object*
+    var() const
+    { return this->var_; }
+
+    // Return the variable to initialize to whether the channel
+    // is closed, for "case a, c := <-ch".
+    Named_object*
+    closedvar() const
+    { return this->closedvar_; }
+
     // Return the statements.
-    const Block*
+    Block*
     statements() const
     { return this->statements_; }
 
@@ -1235,6 +1256,11 @@ class Select_clauses
     bool is_lowered_;
   };
 
+  Select_clause&
+  at(size_t i)
+  { return this->clauses_.at(i); }
+
+ private:
   typedef std::vector<Select_clause> Clauses;
 
   Clauses clauses_;
@@ -1288,6 +1314,14 @@ class Select_statement : public Statement
   do_dump_statement(Ast_dump_context*) const;
 
  private:
+  // Lower a one-case select statement.
+  Statement*
+  lower_one_case(Block*);
+
+  // Lower a two-case select statement with one defualt case.
+  Statement*
+  lower_two_case(Block*);
+
   // The select clauses.
   Select_clauses* clauses_;
   // A temporary that holds the index value returned by selectgo.

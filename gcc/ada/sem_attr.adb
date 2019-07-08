@@ -1634,7 +1634,9 @@ package body Sem_Attr is
             raise Bad_Attribute;
          end if;
 
-         --  Normal case of array type or subtype
+         --  Normal case of array type or subtype. Note that if the
+         --  prefix is a current instance of a type declaration it
+         --  appears within an aspect specification and is legal.
 
          Check_Either_E0_Or_E1;
          Check_Dereference;
@@ -1643,6 +1645,7 @@ package body Sem_Attr is
             if not Is_Constrained (P_Type)
               and then Is_Entity_Name (P)
               and then Is_Type (Entity (P))
+              and then not Is_Current_Instance (P)
             then
                --  Note: we do not call Error_Attr here, since we prefer to
                --  continue, using the relevant index type of the array,
@@ -3833,14 +3836,16 @@ package body Sem_Attr is
             Check_Discrete_Type;
             Resolve (E1, P_Base_Type);
 
-         --  X'Enum_Rep case. X must be an object or enumeration literal, and
-         --  it must be of a discrete type.
+         --  X'Enum_Rep case. X must be an object or enumeration literal
+         --  (including an attribute reference), and it must be of a
+         --  discrete type.
 
          elsif not
            ((Is_Object_Reference (P)
                or else
                  (Is_Entity_Name (P)
-                    and then Ekind (Entity (P)) = E_Enumeration_Literal))
+                    and then Ekind (Entity (P)) = E_Enumeration_Literal)
+               or else Nkind (P) = N_Attribute_Reference)
              and then Is_Discrete_Type (Etype (P)))
          then
             Error_Attr_P ("prefix of % attribute must be discrete object");
@@ -11416,7 +11421,7 @@ package body Sem_Attr is
                   if Present (Lo) then
                      Rewrite (P,
                         Make_Indexed_Component (Loc,
-                           Prefix =>  Relocate_Node (Prefix (P)),
+                           Prefix => Relocate_Node (Prefix (P)),
                            Expressions => New_List (Lo)));
 
                      Analyze_And_Resolve (P);

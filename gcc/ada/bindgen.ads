@@ -32,10 +32,9 @@
 
 --  See the body for exact details of the file that is generated
 
-with Binde; use Binde;
+with ALI; use ALI;
 
 package Bindgen is
-
    procedure Gen_Output_File
      (Filename   : String;
       Elab_Order : Unit_Id_Array);

@@ -833,6 +833,7 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in, vec_info_shared *shared)
     operands_swapped (false),
     no_data_dependencies (false),
     has_mask_store (false),
+    scalar_loop_scaling (profile_probability::uninitialized ()),
     scalar_loop (NULL),
     orig_loop_info (NULL)
 {
@@ -1901,7 +1902,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal, unsigned *n_stmts)
   /* Analyze the data references and also adjust the minimal
      vectorization factor according to the loads and stores.  */
 
-  ok = vect_analyze_data_refs (loop_vinfo, &min_vf);
+  ok = vect_analyze_data_refs (loop_vinfo, &min_vf, &fatal);
   if (!ok)
     {
       if (dump_enabled_p ())
@@ -1932,7 +1933,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal, unsigned *n_stmts)
 
   /* Data-flow analysis to detect stmts that do not need to be vectorized.  */
 
-  ok = vect_mark_stmts_to_be_vectorized (loop_vinfo);
+  ok = vect_mark_stmts_to_be_vectorized (loop_vinfo, &fatal);
   if (!ok)
     {
       if (dump_enabled_p ())
@@ -8557,6 +8558,10 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   epilogue = vect_do_peeling (loop_vinfo, niters, nitersm1, &niters_vector,
 			      &step_vector, &niters_vector_mult_vf, th,
 			      check_profitability, niters_no_overflow);
+  if (LOOP_VINFO_SCALAR_LOOP (loop_vinfo)
+      && LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo).initialized_p ())
+    scale_loop_frequencies (LOOP_VINFO_SCALAR_LOOP (loop_vinfo),
+			    LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo));
 
   if (niters_vector == NULL_TREE)
     {

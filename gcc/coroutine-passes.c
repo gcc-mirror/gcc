@@ -77,9 +77,9 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	      *handled_ops_p = true;
 	      return NULL_TREE;
 	    }
-	  /* The coro frame starts with two pointers (to the resume and
-	     destroy() functions.  It is then followed by the promise
-	     which is aligned as per type [or user attribute].
+	  /* The coro frame starts with three pointers (to the resume and
+	     destroy() and suspended_p ()functions.  These are followed by
+	     the promise which is aligned as per type [or user attribute].
 	     The input pointer is the first argument.
 	     The promise alignment is the second and the third is a bool
 	     that is true when we are converting from a promise ptr to a
@@ -95,7 +95,7 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	  HOST_WIDE_INT psize = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vptr));
 	  HOST_WIDE_INT align = TYPE_ALIGN_UNIT (vptr);
 	  align = MAX (align, promise_align);
-	  psize *= 2; /* Start with two pointers.  */
+	  psize *= 3; /* Start with three pointers.  */
 	  psize = ROUND_UP (psize, align);
 	  HOST_WIDE_INT offs = dir ? -psize : psize;
 	  tree repl = build2 (POINTER_PLUS_EXPR, vptr, ptr,
@@ -114,6 +114,33 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	  tree vptr = build_pointer_type (void_type_node);
 	  HOST_WIDE_INT psize = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vptr));
 	  HOST_WIDE_INT offset = call_idx * psize;
+	  tree fntype = TREE_TYPE (decl);
+	  tree fntype_ptr = build_pointer_type (fntype);
+	  tree fntype_ppp = build_pointer_type (fntype_ptr);
+	  tree indirect = fold_build2 (MEM_REF, fntype_ptr, ptr,
+				       wide_int_to_tree (fntype_ppp, offset));
+	  tree f_ptr_tmp = make_ssa_name (TYPE_MAIN_VARIANT (fntype_ptr));
+	  gassign *get_fptr = gimple_build_assign (f_ptr_tmp, indirect);
+	  gsi_insert_before (gsi, get_fptr, GSI_SAME_STMT);
+	  gimple_call_set_fn (static_cast<gcall *>(stmt), f_ptr_tmp);
+	  *handled_ops_p = true;
+	}
+	break;
+      case BUILT_IN_CORO_IS_SUSPENDED:
+	{
+	  /* If we are discarding this, then skip it; the function has no
+	     side-effects.  */
+	  tree lhs = gimple_call_lhs (stmt);
+	  if (!lhs)
+	    {
+	      gsi_remove (gsi, true);
+	      *handled_ops_p = true;
+	      return NULL_TREE;
+	    }
+	  tree ptr = gimple_call_arg (stmt, 0); /* frame ptr.  */
+	  tree vptr = build_pointer_type (void_type_node);
+	  HOST_WIDE_INT psize = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (vptr));
+	  HOST_WIDE_INT offset = 2 * psize;
 	  tree fntype = TREE_TYPE (decl);
 	  tree fntype_ptr = build_pointer_type (fntype);
 	  tree fntype_ppp = build_pointer_type (fntype_ptr);

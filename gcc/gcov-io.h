@@ -266,12 +266,11 @@ GCOV_COUNTERS
 #define GCOV_N_VALUE_COUNTERS \
   (GCOV_LAST_VALUE_COUNTER - GCOV_FIRST_VALUE_COUNTER + 1)
 
-/* Number of single value histogram values that live
-   on disk representation.  */
-#define GCOV_DISK_SINGLE_VALUES 4
+/* Number of top N value histogram.  */
+#define GCOV_TOPN_VALUES 4
 
 /* Total number of single value counters.  */
-#define GCOV_SINGLE_VALUE_COUNTERS (2 * GCOV_DISK_SINGLE_VALUES + 1)
+#define GCOV_TOPN_VALUES_COUNTERS (2 * GCOV_TOPN_VALUES + 1)
 
 /* Convert a counter index to a tag.  */
 #define GCOV_TAG_FOR_COUNTER(COUNT)				\

@@ -378,7 +378,7 @@ make_write (const struct mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
       column = make_write_vec (d->targets, fp, 0, colmax, d->quote_lwm);
       fputs (":", fp);
       column++;
-      column = make_write_vec (d->deps, fp, column, colmax);
+      make_write_vec (d->deps, fp, column, colmax);
       fputs ("\n", fp);
       if (phony)
 	for (unsigned i = 1; i < d->deps.size (); i++)

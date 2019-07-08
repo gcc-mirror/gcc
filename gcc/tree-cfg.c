@@ -5756,12 +5756,16 @@ gimple_make_forwarder_block (edge fallthru)
   basic_block dummy, bb;
   tree var;
   gphi_iterator gsi;
+  bool forward_location_p;
 
   dummy = fallthru->src;
   bb = fallthru->dest;
 
   if (single_pred_p (bb))
     return;
+
+  /* We can forward location info if we have only one predecessor.  */
+  forward_location_p = single_pred_p (dummy);
 
   /* If we redirected a branch we must create new PHI nodes at the
      start of BB.  */
@@ -5774,7 +5778,8 @@ gimple_make_forwarder_block (edge fallthru)
       new_phi = create_phi_node (var, bb);
       gimple_phi_set_result (phi, copy_ssa_name (var, phi));
       add_phi_arg (new_phi, gimple_phi_result (phi), fallthru,
-		   UNKNOWN_LOCATION);
+		   forward_location_p
+		   ? gimple_phi_arg_location (phi, 0) : UNKNOWN_LOCATION);
     }
 
   /* Add the arguments we have stored on edges.  */

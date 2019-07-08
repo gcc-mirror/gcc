@@ -1555,23 +1555,19 @@ package body Exp_Ch3 is
 
       --  Handle the optionally generated formal *_skip_null_excluding_checks
 
-      if Needs_Conditional_Null_Excluding_Check (Full_Init_Type) then
+      --  Look at the associated node for the object we are referencing and
+      --  verify that we are expanding a call to an Init_Proc for an internally
+      --  generated object declaration before passing True and skipping the
+      --  relevant checks.
 
-         --  Look at the associated node for the object we are referencing
-         --  and verify that we are expanding a call to an Init_Proc for an
-         --  internally generated object declaration before passing True and
-         --  skipping the relevant checks.
-
-         if Nkind (Id_Ref) in N_Has_Entity
-           and then Comes_From_Source (Associated_Node (Id_Ref))
-         then
-            Append_To (Args, New_Occurrence_Of (Standard_True, Loc));
-
-         --  Otherwise, we pass False to perform null-excluding checks
-
-         else
-            Append_To (Args, New_Occurrence_Of (Standard_False, Loc));
-         end if;
+      if Needs_Conditional_Null_Excluding_Check (Full_Init_Type)
+        and then Nkind (Id_Ref) in N_Has_Entity
+        and then (Comes_From_Source (Id_Ref)
+                   or else (Present (Associated_Node (Id_Ref))
+                             and then Comes_From_Source
+                                        (Associated_Node (Id_Ref))))
+      then
+         Append_To (Args, New_Occurrence_Of (Standard_True, Loc));
       end if;
 
       --  Add discriminant values if discriminants are present
@@ -4852,7 +4848,7 @@ package body Exp_Ch3 is
                Make_Range (Sloc (Enumeration_Rep_Expr (Ent)),
                  Low_Bound =>
                    Make_Integer_Literal (Loc,
-                    Intval =>  Enumeration_Rep (Ent)),
+                    Intval => Enumeration_Rep (Ent)),
                  High_Bound =>
                    Make_Integer_Literal (Loc, Intval => Last_Repval))),
 
@@ -8695,6 +8691,7 @@ package body Exp_Ch3 is
                Make_Defining_Identifier (Loc,
                  New_External_Name (Chars
                    (Component_Type (Typ)), "_skip_null_excluding_check")),
+             Expression          => New_Occurrence_Of (Standard_False, Loc),
              In_Present          => True,
              Parameter_Type      =>
                New_Occurrence_Of (Standard_Boolean, Loc)));
@@ -9480,14 +9477,22 @@ package body Exp_Ch3 is
 
    --  or a null statement if the list L is empty
 
+   --  Equality may be user-defined for a given component type, in which case
+   --  a function call is constructed instead of an operator node. This is an
+   --  Ada 2012 change in the composability of equality for untagged composite
+   --  types.
+
    function Make_Eq_If
      (E : Entity_Id;
       L : List_Id) return Node_Id
    is
-      Loc        : constant Source_Ptr := Sloc (E);
+      Loc : constant Source_Ptr := Sloc (E);
+
       C          : Node_Id;
-      Field_Name : Name_Id;
       Cond       : Node_Id;
+      Field_Name : Name_Id;
+      Next_Test  : Node_Id;
+      Typ        : Entity_Id;
 
    begin
       if No (L) then
@@ -9498,6 +9503,7 @@ package body Exp_Ch3 is
 
          C := First_Non_Pragma (L);
          while Present (C) loop
+            Typ        := Etype (Defining_Identifier (C));
             Field_Name := Chars (Defining_Identifier (C));
 
             --  The tags must not be compared: they are not part of the value.
@@ -9510,22 +9516,55 @@ package body Exp_Ch3 is
             --  discriminants could be picked up in the private type case.
 
             if Field_Name = Name_uParent
-              and then Is_Interface (Etype (Defining_Identifier (C)))
+              and then Is_Interface (Typ)
             then
                null;
 
             elsif Field_Name /= Name_uTag then
-               Evolve_Or_Else (Cond,
-                 Make_Op_Ne (Loc,
-                   Left_Opnd =>
-                     Make_Selected_Component (Loc,
-                       Prefix        => Make_Identifier (Loc, Name_X),
-                       Selector_Name => Make_Identifier (Loc, Field_Name)),
+               declare
+                  Lhs : constant Node_Id :=
+                    Make_Selected_Component (Loc,
+                      Prefix        => Make_Identifier (Loc, Name_X),
+                      Selector_Name => Make_Identifier (Loc, Field_Name));
 
-                   Right_Opnd =>
-                     Make_Selected_Component (Loc,
-                       Prefix        => Make_Identifier (Loc, Name_Y),
-                       Selector_Name => Make_Identifier (Loc, Field_Name))));
+                  Rhs : constant Node_Id :=
+                    Make_Selected_Component (Loc,
+                      Prefix        => Make_Identifier (Loc, Name_Y),
+                      Selector_Name => Make_Identifier (Loc, Field_Name));
+                  Eq_Call : Node_Id;
+
+               begin
+                  --  Build equality code with a user-defined operator, if
+                  --  available, and with the predefined "=" otherwise. For
+                  --  compatibility with older Ada versions, and preserve the
+                  --  workings of some ASIS tools, we also use the predefined
+                  --  operation if the component-type equality is abstract,
+                  --  rather than raising Program_Error.
+
+                  if Ada_Version < Ada_2012 then
+                     Next_Test := Make_Op_Ne (Loc, Lhs, Rhs);
+
+                  else
+                     Eq_Call := Build_Eq_Call (Typ, Loc, Lhs, Rhs);
+
+                     if No (Eq_Call) then
+                        Next_Test := Make_Op_Ne (Loc, Lhs, Rhs);
+
+                     --  If a component has a defined abstract equality, its
+                     --  application raises Program_Error on that component
+                     --  and therefore on the current variant.
+
+                     elsif Nkind (Eq_Call) = N_Raise_Program_Error then
+                        Set_Etype (Eq_Call, Standard_Boolean);
+                        Next_Test := Make_Op_Not (Loc, Eq_Call);
+
+                     else
+                        Next_Test := Make_Op_Not (Loc, Eq_Call);
+                     end if;
+                  end if;
+               end;
+
+               Evolve_Or_Else (Cond, Next_Test);
             end if;
 
             Next_Non_Pragma (C);

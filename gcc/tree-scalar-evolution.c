@@ -304,21 +304,6 @@ struct GTY((for_user)) scev_info_str {
 static unsigned nb_set_scev = 0;
 static unsigned nb_get_scev = 0;
 
-/* The following trees are unique elements.  Thus the comparison of
-   another element to these elements should be done on the pointer to
-   these trees, and not on their value.  */
-
-/* The SSA_NAMEs that are not yet analyzed are qualified with NULL_TREE.  */
-tree chrec_not_analyzed_yet;
-
-/* Reserved to the cases where the analyzer has detected an
-   undecidable property at compile time.  */
-tree chrec_dont_know;
-
-/* When the analyzer has detected that a property will never
-   happen, then it qualifies it with chrec_known.  */
-tree chrec_known;
-
 struct scev_info_hasher : ggc_ptr_hash<scev_info_str>
 {
   static hashval_t hash (scev_info_str *i);
@@ -3056,23 +3041,6 @@ gather_stats_on_scev_database (void)
 }
 
 
-
-/* Initializer.  */
-
-static void
-initialize_scalar_evolutions_analyzer (void)
-{
-  /* The elements below are unique.  */
-  if (chrec_dont_know == NULL_TREE)
-    {
-      chrec_not_analyzed_yet = NULL_TREE;
-      chrec_dont_know = make_node (SCEV_NOT_KNOWN);
-      chrec_known = make_node (SCEV_KNOWN);
-      TREE_TYPE (chrec_dont_know) = void_type_node;
-      TREE_TYPE (chrec_known) = void_type_node;
-    }
-}
-
 /* Initialize the analysis of scalar evolutions for LOOPS.  */
 
 void
@@ -3083,8 +3051,6 @@ scev_initialize (void)
   gcc_assert (! scev_initialized_p ());
 
   scalar_evolution_info = hash_table<scev_info_hasher>::create_ggc (100);
-
-  initialize_scalar_evolutions_analyzer ();
 
   FOR_EACH_LOOP (loop, 0)
     {
@@ -3714,6 +3680,8 @@ final_value_replacement_loop (struct loop *loop)
 					true, GSI_SAME_STMT);
 
       gassign *ass = gimple_build_assign (rslt, def);
+      gimple_set_location (ass,
+			   gimple_phi_arg_location (phi, exit->dest_idx));
       gsi_insert_before (&gsi, ass, GSI_SAME_STMT);
       if (dump_file)
 	{

@@ -5665,6 +5665,28 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
   Block* b = new Block(enclosing, loc);
 
   int ncases = this->clauses_->size();
+
+  // Zero-case select.  Just block the execution.
+  if (ncases == 0)
+    {
+      Expression* call = Runtime::make_call(Runtime::BLOCK, loc, 0);
+      Statement *s = Statement::make_statement(call, false);
+      b->add_statement(s);
+      this->is_lowered_ = true;
+      return Statement::make_block_statement(b, loc);
+    }
+
+  // One-case select.  It is mostly just to run the case.
+  if (ncases == 1)
+    return this->lower_one_case(b);
+
+  // Two-case select with one default case.  It is a non-blocking
+  // send/receive.
+  if (ncases == 2
+      && (this->clauses_->at(0).is_default()
+          || this->clauses_->at(1).is_default()))
+    return this->lower_two_case(b);
+
   Type* scase_type = Channel_type::select_case_type();
   Expression* ncases_expr =
     Expression::make_integer_ul(ncases, NULL,
@@ -5733,6 +5755,213 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
   return Statement::make_block_statement(b, loc);
 }
 
+// Lower a one-case select statement.
+
+Statement*
+Select_statement::lower_one_case(Block* b)
+{
+  Select_clauses::Select_clause& scase = this->clauses_->at(0);
+  Location loc = this->location();
+  Expression* chan = scase.channel();
+  if (chan != NULL)
+    {
+      // Lower this to
+      //   if chan == nil { block() }; send/recv; body
+      Temporary_statement* chantmp = Statement::make_temporary(NULL, chan, loc);
+      b->add_statement(chantmp);
+      Expression* chanref = Expression::make_temporary_reference(chantmp, loc);
+
+      Expression* nil = Expression::make_nil(loc);
+      Expression* cond = Expression::make_binary(OPERATOR_EQEQ, chanref, nil, loc);
+      Block* bnil = new Block(b, loc);
+      Expression* call = Runtime::make_call(Runtime::BLOCK, loc, 0);
+      Statement* s = Statement::make_statement(call, false);
+      bnil->add_statement(s);
+      Statement* ifs = Statement::make_if_statement(cond, bnil, NULL, loc);
+      b->add_statement(ifs);
+
+      chanref = chanref->copy();
+      Location cloc = scase.location();
+      if (scase.is_send())
+        {
+          s = Statement::make_send_statement(chanref, scase.val(), cloc);
+          b->add_statement(s);
+        }
+      else
+        {
+          if (scase.closed() == NULL && scase.closedvar() == NULL)
+            {
+              // Simple receive.
+              Expression* recv = Expression::make_receive(chanref, cloc);
+              if (scase.val() != NULL)
+                s = Statement::make_assignment(scase.val(), recv, cloc);
+              else if (scase.var() != NULL)
+                {
+                  Temporary_statement *ts =
+                    Statement::make_temporary(NULL, recv, cloc);
+                  Expression* ref =
+                    Expression::make_temporary_reference(ts, cloc);
+                  s = ts;
+                  scase.var()->var_value()->set_init(ref);
+                  scase.var()->var_value()->clear_type_from_chan_element();
+                }
+              else
+                s = Statement::make_statement(recv, false);
+              b->add_statement(s);
+            }
+          else
+            {
+              // Tuple receive.
+              Expression* lhs;
+              if (scase.val() != NULL)
+                lhs = scase.val();
+              else
+                {
+                  Type* valtype = chan->type()->channel_type()->element_type();
+                  Temporary_statement *ts =
+                    Statement::make_temporary(valtype, NULL, cloc);
+                  lhs = Expression::make_temporary_reference(ts, cloc);
+                  b->add_statement(ts);
+                }
+
+              Expression* lhs2;
+              if (scase.closed() != NULL)
+                lhs2 = scase.closed();
+              else
+                {
+                  Type* booltype = Type::make_boolean_type();
+                  Temporary_statement *ts =
+                    Statement::make_temporary(booltype, NULL, cloc);
+                  lhs2 = Expression::make_temporary_reference(ts, cloc);
+                  b->add_statement(ts);
+                }
+
+              s = Statement::make_tuple_receive_assignment(lhs, lhs2, chanref, cloc);
+              b->add_statement(s);
+
+              if (scase.var() != NULL)
+                {
+                  scase.var()->var_value()->set_init(lhs->copy());
+                  scase.var()->var_value()->clear_type_from_chan_element();
+                }
+
+              if (scase.closedvar() != NULL)
+                scase.closedvar()->var_value()->set_init(lhs2->copy());
+            }
+        }
+    }
+
+  Statement* bs =
+    Statement::make_block_statement(scase.statements(), scase.location());
+  b->add_statement(bs);
+
+  this->is_lowered_ = true;
+  return Statement::make_block_statement(b, loc);
+}
+
+// Lower a two-case select statement with one default case.
+
+Statement*
+Select_statement::lower_two_case(Block* b)
+{
+  Select_clauses::Select_clause& chancase =
+    (this->clauses_->at(0).is_default()
+     ? this->clauses_->at(1)
+     : this->clauses_->at(0));
+  Select_clauses::Select_clause& defcase =
+    (this->clauses_->at(0).is_default()
+     ? this->clauses_->at(0)
+     : this->clauses_->at(1));
+  Location loc = this->location();
+  Expression* chan = chancase.channel();
+
+  Temporary_statement* chantmp = Statement::make_temporary(NULL, chan, loc);
+  b->add_statement(chantmp);
+  Expression* chanref = Expression::make_temporary_reference(chantmp, loc);
+
+  Block* bchan;
+  Expression* call;
+  if (chancase.is_send())
+    {
+      // if selectnbsend(chan, &val) { body } else { default body }
+
+      Temporary_statement* ts = Statement::make_temporary(NULL, chancase.val(), loc);
+      // Tell the escape analysis that the value escapes, as it may be sent
+      // to a channel.
+      ts->set_value_escapes();
+      b->add_statement(ts);
+
+      Expression* ref = Expression::make_temporary_reference(ts, loc);
+      Expression* addr = Expression::make_unary(OPERATOR_AND, ref, loc);
+      call = Runtime::make_call(Runtime::SELECTNBSEND, loc, 2, chanref, addr);
+      bchan = chancase.statements();
+    }
+  else
+    {
+      Type* valtype = chan->type()->channel_type()->element_type();
+      Temporary_statement* ts = Statement::make_temporary(valtype, NULL, loc);
+      b->add_statement(ts);
+
+      Expression* ref = Expression::make_temporary_reference(ts, loc);
+      Expression* addr = Expression::make_unary(OPERATOR_AND, ref, loc);
+      Expression* okref = NULL;
+      if (chancase.closed() == NULL && chancase.closedvar() == NULL)
+        {
+          // Simple receive.
+          // if selectnbrecv(&lhs, chan) { body } else { default body }
+          call = Runtime::make_call(Runtime::SELECTNBRECV, loc, 2, addr, chanref);
+        }
+      else
+        {
+          // Tuple receive.
+          // if selectnbrecv2(&lhs, &ok, chan) { body } else { default body }
+
+          Type* booltype = Type::make_boolean_type();
+          Temporary_statement* ts = Statement::make_temporary(booltype, NULL, loc);
+          b->add_statement(ts);
+
+          okref = Expression::make_temporary_reference(ts, loc);
+          Expression* okaddr = Expression::make_unary(OPERATOR_AND, okref, loc);
+          call = Runtime::make_call(Runtime::SELECTNBRECV2, loc, 3, addr, okaddr,
+                                    chanref);
+        }
+
+      Location cloc = chancase.location();
+      bchan = new Block(b, loc);
+      if (chancase.val() != NULL && !chancase.val()->is_sink_expression())
+        {
+          Statement* as = Statement::make_assignment(chancase.val(), ref->copy(),
+                                                     cloc);
+          bchan->add_statement(as);
+        }
+      else if (chancase.var() != NULL)
+        {
+          chancase.var()->var_value()->set_init(ref->copy());
+          chancase.var()->var_value()->clear_type_from_chan_element();
+        }
+
+      if (chancase.closed() != NULL && !chancase.closed()->is_sink_expression())
+        {
+          Statement* as = Statement::make_assignment(chancase.closed(),
+                                                     okref->copy(), cloc);
+          bchan->add_statement(as);
+        }
+      else if (chancase.closedvar() != NULL)
+        chancase.closedvar()->var_value()->set_init(okref->copy());
+
+      Statement* bs = Statement::make_block_statement(chancase.statements(),
+                                                      cloc);
+      bchan->add_statement(bs);
+    }
+
+  Statement* ifs =
+    Statement::make_if_statement(call, bchan, defcase.statements(), loc);
+  b->add_statement(ifs);
+
+  this->is_lowered_ = true;
+  return Statement::make_block_statement(b, loc);
+}
+
 // Whether the select statement itself may fall through to the following
 // statement.
 
@@ -5766,6 +5995,7 @@ Select_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
     {
       ast_dump_context->ostream() << " {" << dsuffix(location()) << std::endl;
       this->clauses_->dump_clauses(ast_dump_context);
+      ast_dump_context->print_indent();
       ast_dump_context->ostream() << "}";
     }
   ast_dump_context->ostream() << std::endl;
@@ -6882,12 +7112,18 @@ For_range_statement::lower_array_range_clear(Gogo* gogo,
   Temporary_statement* ts2 = Statement::make_temporary(NULL, e2, loc);
   b->add_statement(ts2);
 
-  Expression* arg1 = Expression::make_temporary_reference(ts1, loc);
-  Expression* arg2 = Expression::make_temporary_reference(ts2, loc);
-  Runtime::Function code = (elem_type->has_pointer()
-                            ? Runtime::MEMCLRHASPTR
-                            : Runtime::MEMCLRNOPTR);
-  Expression* call = Runtime::make_call(code, loc, 2, arg1, arg2);
+  Expression* ptr_arg = Expression::make_temporary_reference(ts1, loc);
+  Expression* sz_arg = Expression::make_temporary_reference(ts2, loc);
+  Expression* call;
+  if (elem_type->has_pointer())
+    call = Runtime::make_call(Runtime::MEMCLRHASPTR, loc, 2, ptr_arg, sz_arg);
+  else
+    {
+      Type* int32_type = Type::lookup_integer_type("int32");
+      Expression* zero = Expression::make_integer_ul(0, int32_type, loc);
+      call = Runtime::make_call(Runtime::BUILTIN_MEMSET, loc, 3, ptr_arg,
+                                zero, sz_arg);
+    }
   Statement* cs3 = Statement::make_statement(call, true);
   b->add_statement(cs3);
 

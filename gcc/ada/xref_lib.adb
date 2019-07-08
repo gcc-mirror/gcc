@@ -1876,7 +1876,7 @@ package body Xref_Lib is
             end if;
 
          exception
-            when No_Xref_Information =>  null;
+            when No_Xref_Information => null;
          end;
       end loop;
    end Search_Xref;

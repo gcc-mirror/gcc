@@ -3114,8 +3114,17 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 				 GSI_SAME_STMT);
 	}
 
-      /* ???  if-conversion uses profile_probability::always () but
-         prob below is profile_probability::likely ().  */
+      /* if-conversion uses profile_probability::always () for both paths,
+	 reset the paths probabilities appropriately.  */
+      edge te, fe;
+      extract_true_false_edges_from_block (condition_bb, &te, &fe);
+      te->probability = prob;
+      fe->probability = prob.invert ();
+      /* We can scale loops counts immediately but have to postpone
+         scaling the scalar loop because we re-use it during peeling.  */
+      scale_loop_frequencies (loop_to_version, te->probability);
+      LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo) = fe->probability;
+
       nloop = scalar_loop;
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,

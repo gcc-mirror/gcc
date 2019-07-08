@@ -3271,7 +3271,10 @@ package body Exp_Ch6 is
 
                   --  For allocators we pass the level of the execution of the
                   --  called subprogram, which is one greater than the current
-                  --  scope level.
+                  --  scope level. However, according to RM 3.10.2(14/3) this
+                  --  is wrong since for an anonymous allocator defining the
+                  --  value of an access parameter, the accessibility level is
+                  --  that of the innermost master of the call???
 
                   when N_Allocator =>
                      Add_Extra_Actual
@@ -7765,22 +7768,20 @@ package body Exp_Ch6 is
 
       --  For now we test whether E denotes a function or access-to-function
       --  type whose result subtype is inherently limited. Later this test
-      --  may be revised to allow composite nonlimited types. Functions with
-      --  a foreign convention or whose result type has a foreign convention
-      --  never qualify.
+      --  may be revised to allow composite nonlimited types.
 
       if Ekind_In (E, E_Function, E_Generic_Function)
         or else (Ekind (E) = E_Subprogram_Type
                   and then Etype (E) /= Standard_Void_Type)
       then
-         --  Note: If the function has a foreign convention, it cannot build
-         --  its result in place, so you're on your own. On the other hand,
-         --  if only the return type has a foreign convention, its layout is
-         --  intended to be compatible with the other language, but the build-
-         --  in place machinery can ensure that the object is not copied.
+         --  If the function is imported from a foreign language, we don't do
+         --  build-in-place. Note that Import (Ada) functions can do
+         --  build-in-place. Note that it is OK for a build-in-place function
+         --  to return a type with a foreign convention; the build-in-place
+         --  machinery will ensure there is no copying.
 
          return Is_Build_In_Place_Result_Type (Etype (E))
-           and then not Has_Foreign_Convention (E)
+           and then not (Has_Foreign_Convention (E) and then Is_Imported (E))
            and then not Debug_Flag_Dot_L;
       else
          return False;
@@ -9235,8 +9236,9 @@ package body Exp_Ch6 is
          return False;
       end Has_Unconstrained_Access_Discriminant_Component;
 
-      Feature_Disabled : constant Boolean := True;
-      --  Temporary
+      Disable_Coextension_Cases : constant Boolean := True;
+      --  Flag used to temporarily disable a "True" result for types with
+      --  access discriminants and related coextension cases.
 
    --  Start of processing for Needs_Result_Accessibility_Level
 
@@ -9244,9 +9246,6 @@ package body Exp_Ch6 is
       --  False if completion unavailable (how does this happen???)
 
       if not Present (Func_Typ) then
-         return False;
-
-      elsif Feature_Disabled then
          return False;
 
       --  False if not a function, also handle enum-lit renames case
@@ -9273,23 +9272,37 @@ package body Exp_Ch6 is
       elsif Ada_Version < Ada_2012 then
          return False;
 
-      elsif Ekind (Func_Typ) = E_Anonymous_Access_Type
-        or else Is_Tagged_Type (Func_Typ)
-      then
-         --  In the case of, say, a null tagged record result type, the need
-         --  for this extra parameter might not be obvious. This function
-         --  returns True for all tagged types for compatibility reasons.
-         --  A function with, say, a tagged null controlling result type might
-         --  be overridden by a primitive of an extension having an access
-         --  discriminant and the overrider and overridden must have compatible
-         --  calling conventions (including implicitly declared parameters).
-         --  Similarly, values of one access-to-subprogram type might designate
-         --  both a primitive subprogram of a given type and a function
-         --  which is, for example, not a primitive subprogram of any type.
-         --  Again, this requires calling convention compatibility.
-         --  It might be possible to solve these issues by introducing
-         --  wrappers, but that is not the approach that was chosen.
+      --  Handle the situation where a result is an anonymous access type
+      --  RM 3.10.2 (10.3/3).
 
+      elsif Ekind (Func_Typ) = E_Anonymous_Access_Type then
+         return True;
+
+      --  The following cases are related to coextensions and do not fully
+      --  cover everything mentioned in RM 3.10.2 (12) ???
+
+      --  Temporarily disabled ???
+
+      elsif Disable_Coextension_Cases then
+         return False;
+
+      --  In the case of, say, a null tagged record result type, the need for
+      --  this extra parameter might not be obvious so this function returns
+      --  True for all tagged types for compatibility reasons.
+
+      --  A function with, say, a tagged null controlling result type might
+      --  be overridden by a primitive of an extension having an access
+      --  discriminant and the overrider and overridden must have compatible
+      --  calling conventions (including implicitly declared parameters).
+
+      --  Similarly, values of one access-to-subprogram type might designate
+      --  both a primitive subprogram of a given type and a function which is,
+      --  for example, not a primitive subprogram of any type. Again, this
+      --  requires calling convention compatibility. It might be possible to
+      --  solve these issues by introducing wrappers, but that is not the
+      --  approach that was chosen.
+
+      elsif Is_Tagged_Type (Func_Typ) then
          return True;
 
       elsif Has_Unconstrained_Access_Discriminants (Func_Typ) then

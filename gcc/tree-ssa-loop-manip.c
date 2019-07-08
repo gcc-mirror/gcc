@@ -126,10 +126,23 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
     gsi_insert_seq_on_edge_immediate (pe, stmts);
 
   stmt = gimple_build_assign (va, incr_op, vb, step);
+  /* Prevent the increment from inheriting a bogus location if it is not put
+     immediately after a statement whose location is known.  */
   if (after)
-    gsi_insert_after (incr_pos, stmt, GSI_NEW_STMT);
+    {
+      if (gsi_end_p (*incr_pos))
+	{
+	  edge e = single_succ_edge (gsi_bb (*incr_pos));
+	  gimple_set_location (stmt, e->goto_locus);
+	}
+      gsi_insert_after (incr_pos, stmt, GSI_NEW_STMT);
+    }
   else
-    gsi_insert_before (incr_pos, stmt, GSI_NEW_STMT);
+    {
+      if (!gsi_end_p (*incr_pos))
+	gimple_set_location (stmt, gimple_location (gsi_stmt (*incr_pos)));
+      gsi_insert_before (incr_pos, stmt, GSI_NEW_STMT);
+    }
 
   initial = force_gimple_operand (base, &stmts, true, var);
   if (stmts)

@@ -379,8 +379,7 @@ procedure Gnat1drv is
          --  enough useful info.
 
          Reset_Validity_Check_Options;
-         Validity_Check_Default       := True;
-         Validity_Check_Copies        := True;
+         Set_Validity_Check_Options ("dc");
          Check_Validity_Of_Parameters := False;
 
          --  Turn off style check options and ignore any style check pragmas
@@ -1453,9 +1452,13 @@ begin
 
          --  Generate ALI file if specially requested, or for missing subunits,
          --  subunits or predefined generic. For ignored ghost code, the object
-         --  file IS generated, so Object should be True.
+         --  file IS generated, so Object should be True, and since the object
+         --  file is generated, we need to generate the ALI file. We never want
+         --  an object file without an ALI file.
 
-         if Opt.Force_ALI_Tree_File then
+         if Is_Ignored_Ghost_Unit (Main_Unit_Node)
+           or else Opt.Force_ALI_Tree_File
+         then
             Write_ALI (Object => Is_Ignored_Ghost_Unit (Main_Unit_Node));
          end if;
 

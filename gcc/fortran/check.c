@@ -4884,17 +4884,13 @@ gfc_check_c_funloc (gfc_expr *x)
 
   if (attr.function && !attr.proc_pointer && x->expr_type == EXPR_VARIABLE
       && x->symtree->n.sym == x->symtree->n.sym->result)
-    {
-      gfc_namespace *ns = gfc_current_ns;
-
-      for (ns = gfc_current_ns; ns; ns = ns->parent)
-	if (x->symtree->n.sym == ns->proc_name)
-	  {
-	    gfc_error ("Function result %qs at %L is invalid as X argument "
-		       "to C_FUNLOC", x->symtree->n.sym->name, &x->where);
-	    return false;
-	  }
-    }
+    for (gfc_namespace *ns = gfc_current_ns; ns; ns = ns->parent)
+      if (x->symtree->n.sym == ns->proc_name)
+	{
+	  gfc_error ("Function result %qs at %L is invalid as X argument "
+		     "to C_FUNLOC", x->symtree->n.sym->name, &x->where);
+	  return false;
+	}
 
   if (attr.flavor != FL_PROCEDURE)
     {

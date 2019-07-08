@@ -1,3 +1,33 @@
+2019-07-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91077
+	* trans-array.c (gfc_conv_scalarized_array_ref) Delete code
+	that gave symbol backend decl for subref arrays and deferred
+	length variables.
+
+2019-07-05  Andrew Stubbs  <ams@codesourcery.com>
+
+	* openmp.c (resolve_omp_clauses): Add custom error messages for
+	parameters in map clauses.
+
+2019-07-03  Martin Liska  <mliska@suse.cz>
+
+	* check.c (gfc_check_c_funloc): Remove
+	dead assignemts.
+	* decl.c (variable_decl): Likewise.
+	* resolve.c (resolve_typebound_function): Likewise.
+	* simplify.c (gfc_simplify_matmul): Likewise.
+	(gfc_simplify_scan): Likewise.
+	* trans-array.c (gfc_could_be_alias): Likewise.
+	* trans-common.c (add_equivalences): Likewise.
+	* trans-expr.c (trans_class_vptr_len_assignment): Likewise.
+	(gfc_trans_array_constructor_copy): Likewise.
+	(gfc_trans_assignment_1): Likewise.
+	* trans-intrinsic.c (conv_intrinsic_atomic_op): Likewise.
+	* trans-openmp.c (gfc_omp_finish_clause): Likewise.
+	* trans-types.c (gfc_get_array_descriptor_base): Likewise.
+	* trans.c (gfc_build_final_call): Likewise.
+
 2019-06-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/90987
@@ -10,9 +40,9 @@
 	ChangeLog forgotten with revision 272667
 	* decl.c (access_attr_decl): Use temporary variable to reduce
 	unreadability of code.  Normalize jumping to return.
-	(gfc_match_protected): Fix parsing error.  Add comments to 
+	(gfc_match_protected): Fix parsing error.  Add comments to
 	explain code.  Remove dead code.
-	(gfc_match_private): Use temporary variable to reduce unreadability 
+	(gfc_match_private): Use temporary variable to reduce unreadability
 	of code. Fix parsing error.  Move code to test for blank PRIVATE.
 	Remove dead code.
 	(gfc_match_public): Move code to test for blank PUBLIC.  Fix

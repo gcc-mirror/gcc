@@ -4933,9 +4933,13 @@ package body Sem_Ch13 is
       elsif Is_Object (Ent)
         and then Present (Renamed_Object (Ent))
       then
-         --  Case of renamed object from source, this is an error
+         --  In the case of a renamed object from source, this is an error
+         --  unless the object is an aggregate and the renaming is created
+         --  for an object declaration.
 
-         if Comes_From_Source (Renamed_Object (Ent)) then
+         if Comes_From_Source (Renamed_Object (Ent))
+           and then Nkind (Renamed_Object (Ent)) /= N_Aggregate
+         then
             Get_Name_String (Chars (N));
             Error_Msg_Strlen := Name_Len;
             Error_Msg_String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
@@ -5507,7 +5511,7 @@ package body Sem_Ch13 is
          -- Default_Iterator --
          ----------------------
 
-         when Attribute_Default_Iterator =>  Default_Iterator : declare
+         when Attribute_Default_Iterator => Default_Iterator : declare
             Func : Entity_Id;
             Typ  : Entity_Id;
 
@@ -8197,6 +8201,13 @@ package body Sem_Ch13 is
 
          Set_Static_Discrete_Predicate (Typ, Plist);
 
+         --  Within a generic the predicate functions themselves need not
+         --  be constructed.
+
+         if Inside_A_Generic then
+            return;
+         end if;
+
          --  The processing for static predicates put the expression into
          --  canonical form as a series of ranges. It also eliminated
          --  duplicates and collapsed and combined ranges. We might as well
@@ -8729,9 +8740,13 @@ package body Sem_Ch13 is
 
         --  Do not generate predicate bodies within a generic unit. The
         --  expressions have been analyzed already, and the bodies play
-        --  no role if not within an executable unit.
+        --  no role if not within an executable unit. However, if a statc
+        --  predicate is present it must be processed for legality checks
+        --  such as case coverage in an expression.
 
-      elsif Inside_A_Generic then
+      elsif Inside_A_Generic
+        and then not Has_Static_Predicate_Aspect (Typ)
+      then
          return;
       end if;
 
@@ -8887,9 +8902,15 @@ package body Sem_Ch13 is
                         Expression => Expr))));
 
             --  The declaration has been analyzed when created, and placed
-            --  after type declaration. Insert body itself after freeze node.
+            --  after type declaration. Insert body itself after freeze node,
+            --  unless subprogram declaration is already there, in which case
+            --  body better be placed afterwards.
 
-            Insert_After_And_Analyze (N, FBody);
+            if FDecl = Next (N) then
+               Insert_After_And_Analyze (FDecl, FBody);
+            else
+               Insert_After_And_Analyze (N, FBody);
+            end if;
 
             --  The defining identifier of a quantified expression carries the
             --  scope in which the type appears, but when unnesting we need
@@ -9324,8 +9345,8 @@ package body Sem_Ch13 is
          Analyze (End_Decl_Expr);
          Set_Is_Frozen (Ent, True);
 
-         --  If the end of declarations comes before any other freeze
-         --  point, the Freeze_Expr is not analyzed: no check needed.
+         --  If the end of declarations comes before any other freeze point,
+         --  the Freeze_Expr is not analyzed: no check needed.
 
          if Analyzed (Freeze_Expr) and then not In_Instance then
             Check_Overloaded_Name;
@@ -9336,6 +9357,13 @@ package body Sem_Ch13 is
       --  All other cases
 
       else
+         --  In a generic context freeze nodes are not always generated, so
+         --  analyze the expression now.
+
+         if not Analyzed (Freeze_Expr) and then Inside_A_Generic then
+            Preanalyze (Freeze_Expr);
+         end if;
+
          --  Indicate that the expression comes from an aspect specification,
          --  which is used in subsequent analysis even if expansion is off.
 

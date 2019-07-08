@@ -17,6 +17,7 @@ __attribute__ ((used))
 struct b **bptr = (struct b**)&aptr;
 extern void init ();
 extern void inline_me_late (int);
+int n=1;
 
 
 int
@@ -24,7 +25,8 @@ main (int argc, char **argv)
 {
   init ();
   aptr = 0;
-  inline_me_late (argc);
+  for (int i=0; i<n; i++)
+    inline_me_late (argc);
   if (!__builtin_constant_p (aptr == 0))
     __builtin_abort ();
   return (size_t)aptr;

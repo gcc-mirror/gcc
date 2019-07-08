@@ -913,21 +913,26 @@ simplify_stmt_for_jump_threading (gimple *stmt,
 
 	  find_case_label_range (switch_stmt, vr->min (), vr->max (), &i, &j);
 
+	  /* Is there only one such label?  */
 	  if (i == j)
 	    {
 	      tree label = gimple_switch_label (switch_stmt, i);
 	      tree singleton;
 
+	      /* The i'th label will only be taken if the value range of the
+		 operand is entirely within the bounds of this label.  */
 	      if (CASE_HIGH (label) != NULL_TREE
 		  ? (tree_int_cst_compare (CASE_LOW (label), vr->min ()) <= 0
 		     && tree_int_cst_compare (CASE_HIGH (label), vr->max ()) >= 0)
 		  : (vr->singleton_p (&singleton)
 		     && tree_int_cst_equal (CASE_LOW (label), singleton)))
 		return label;
-
-	      if (i > j)
-		return gimple_switch_label (switch_stmt, 0);
 	    }
+
+	  /* If there are no such labels, then the default label
+	     will be taken.  */
+	  if (i > j)
+	    return gimple_switch_label (switch_stmt, 0);
 	}
 
       if (vr->kind () == VR_ANTI_RANGE)

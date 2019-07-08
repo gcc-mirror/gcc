@@ -3779,7 +3779,7 @@ package Einfo is
 
 --    Optimize_Alignment_Space (Flag241)
 --       Defined in type, subtype, variable, and constant entities. This
---       flag records that the type or object is to be layed out in a manner
+--       flag records that the type or object is to be laid out in a manner
 --       consistent with Optimize_Alignment (Space) mode. The compiler and
 --       binder ensure a consistent view of any given type or object. If pragma
 --       Optimize_Alignment (Off) mode applies to the type/object, then neither
@@ -3787,7 +3787,7 @@ package Einfo is
 
 --    Optimize_Alignment_Time (Flag242)
 --       Defined in type, subtype, variable, and constant entities. This
---       flag records that the type or object is to be layed out in a manner
+--       flag records that the type or object is to be laid out in a manner
 --       consistent with Optimize_Alignment (Time) mode. The compiler and
 --       binder ensure a consistent view of any given type or object. If pragma
 --       Optimize_Alignment (Off) mode applies to the type/object, then neither
@@ -4490,7 +4490,7 @@ package Einfo is
 --    Suppress_Initialization (Flag105)
 --       Defined in all variable, type and subtype entities. If set for a base
 --       type, then the generation of initialization procedures is suppressed
---       for the type. Any other implicit initialiation (e.g. from the use of
+--       for the type. Any other implicit initialization (e.g. from the use of
 --       pragma Initialize_Scalars) is also suppressed if this flag is set for
 --       either the subtype in question, or for the base type. For variables,
 --       this flag suppresses all implicit initialization for the object, even

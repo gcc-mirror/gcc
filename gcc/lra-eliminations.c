@@ -1053,7 +1053,7 @@ eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
      PARALLEL since the new one still will, but we can't call
      single_set without having put new body into the insn and the
      re-recognition won't hurt in this rare case.  */
-  id = lra_update_insn_recog_data (insn);
+  lra_update_insn_recog_data (insn);
 }
 
 /* Spill pseudos which are assigned to hard registers in SET.  Add

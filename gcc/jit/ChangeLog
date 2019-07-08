@@ -1,3 +1,40 @@
+2019-07-04  Andrea Corallo <andrea.corallo@arm.com>
+
+	* libgccjit.c (gcc_jit_context_new_binary_op): Check result_type to be a
+	numeric type.
+
+2019-07-04  Andrea Corallo <andrea.corallo@arm.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_12): New ABI tag.
+	* docs/topics/types.rst: Add gcc_jit_context_new_bitfield.
+	* jit-common.h (namespace recording): Add class bitfield.
+	* jit-playback.c:
+	(DECL_C_BIT_FIELD, SET_DECL_C_BIT_FIELD): Add macros.
+	(playback::context::new_bitfield): New method.
+	(playback::compound_type::set_fields): Add bitfield support.
+	(playback::lvalue::mark_addressable): Was jit_mark_addressable make this
+	a method of lvalue plus return a bool to communicate success.
+	(playback::lvalue::get_address): Check for jit_mark_addressable return
+	value.
+	* jit-playback.h (new_bitfield): New method.
+	(class bitfield): New class.
+	(class lvalue): Add jit_mark_addressable method.
+	* jit-recording.c (recording::context::new_bitfield): New method.
+	(recording::bitfield::replay_into): New method.
+	(recording::bitfield::write_to_dump): Likewise.
+	(recording::bitfield::make_debug_string): Likewise.
+	(recording::bitfield::write_reproducer): Likewise.
+	* jit-recording.h (class context): Add new_bitfield method.
+	(class field): Make it derivable by class bitfield.
+	(class bitfield): Add new class.
+	* libgccjit++.h (class context): Add new_bitfield method.
+	* libgccjit.c (struct gcc_jit_bitfield): New structure.
+	(gcc_jit_context_new_bitfield): New function.
+	* libgccjit.h
+	(LIBGCCJIT_HAVE_gcc_jit_context_new_bitfield) New macro.
+	(gcc_jit_context_new_bitfield): New function.
+	* libgccjit.map (LIBGCCJIT_ABI_12) New ABI tag.
+
 2019-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* jit-recording.c (reproducer::m_set_identifiers): Use false as Lazy

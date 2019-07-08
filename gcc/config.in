@@ -1926,6 +1926,12 @@
 #endif
 
 
+/* Define if you have a working <zstd.h> header file. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_ZSTD_H
+#endif
+
+
 /* Define if isl is in use. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_isl

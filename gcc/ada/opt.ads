@@ -746,9 +746,9 @@ package Opt is
    --  file name with extension stripped.
 
    Generate_C_Code : Boolean := False;
-   --  GNAT
+   --  GNAT, GNATBIND
    --  If True, the Cprint circuitry to generate C code output is activated.
-   --  Set True by use of -gnateg or -gnatd.V.
+   --  Set True by use of -gnateg or -gnatd.V for GNAT, and -G for GNATBIND.
 
    Generate_CodePeer_Messages : Boolean := False;
    --  GNAT
@@ -946,6 +946,11 @@ package Opt is
    --  GNAT
    --  Set to True when the pre-18.x access-before-elaboration model is to be
    --  used. Modified by use of -gnatH.
+
+   Legacy_Elaboration_Order : Boolean := False;
+   --  GNATBIND
+   --  Set to True when the pre-20.x elaboration-order model is to be used.
+   --  Modified by use of -H.
 
    Link_Only : Boolean := False;
    --  GNATMAKE, GPRBUILD
