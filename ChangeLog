@@ -1,5 +1,9 @@
 2019-07-08  Kito Cheng  <kito.cheng@sifive.com>
 
+	* MAINTAINERS (Write After Approval): Fix the list sorted by surname.
+
+2019-07-08  Kito Cheng  <kito.cheng@sifive.com>
+
 	* MAINTAINERS (Write After Approval): Add myself.
 
 2019-07-03  Andrea Corallo  <andrea.corallo@arm.com>
