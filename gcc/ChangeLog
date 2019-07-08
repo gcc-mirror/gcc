@@ -1,3 +1,10 @@
+2019-07-08  Andrew Waterman  <andrew@sifive.com>
+	    Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.md (lshrsi3_zero_extend_3+1): Use operands[1]
+	bitsize	instead of BITS_PER_WORD.
+	gcc/testsuite/
+
 2019-07-08  Martin Liska  <mliska@suse.cz>
 
 	* collect2.c (defined): Revert to before r254460.
