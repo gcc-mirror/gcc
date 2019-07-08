@@ -1,3 +1,7 @@
+2019-07-08  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/interface10.adb: New testcase.
+
 2019-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/addr13.adb, gnat.dg/addr13.ads: New testcase.

@@ -1,3 +1,11 @@
+2019-07-08  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Tagged_Membership): Fix regression silently
+	introduced in r260738 that erroneouslusy causes the evaluation
+	to True of the membership test when the left operand of the
+	membership test is a class-wide interface object and the right
+	operand is a type that implements such interface type.
+
 2019-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Do not
