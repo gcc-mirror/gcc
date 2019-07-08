@@ -1,3 +1,10 @@
+2019-07-08  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-socket.ads, libgnat/g-socket.adb: Improve
+	documentation.
+	(Get_Socket_Option, Set_Socket_Option): Remove default value for
+	the Level formal.
+
 2019-07-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations): For an
