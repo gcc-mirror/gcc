@@ -1,3 +1,21 @@
+2019-07-08  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-sercom.ads
+	(Serial_Port_Descriptor): New type.
+	(Serial_Port): Add a comment, make it hold a
+	Serial_Port_Descriptor.
+	(To_Ada, To_C): New procedures.
+	(Port_Data, Port_Data_Access): Remove types.
+	* libgnat/g-sercom.adb (To_Ada): New stub.
+	* libgnat/g-sercom__linux.adb, libgnat/g-sercom__mingw.adb:
+	Update implementations accordingly.
+	* s-oscons-tmplt.c: Bind Serial_Port_Descriptor to
+	System.Win32.HANDLE on Windows, and to Interfaces.C.int on
+	Linux. Add "Interfaces.C." prefix for other basic integer type
+	bindings.
+	* xoscons.adb (Output_Info): Remove the "Interfaces.C." prefix
+	for subtypes generation.
+
 2019-07-08  Arnaud Charlet  <charlet@adacore.com>
 
 	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:

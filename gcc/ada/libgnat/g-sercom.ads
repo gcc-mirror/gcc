@@ -33,6 +33,7 @@
 
 with Ada.Streams;
 with Interfaces.C;
+with System.OS_Constants;
 
 package GNAT.Serial_Communications is
 
@@ -122,6 +123,11 @@ package GNAT.Serial_Communications is
    --  No flow control, hardware flow control, software flow control
 
    type Serial_Port is new Ada.Streams.Root_Stream_Type with private;
+   --  Serial port stream type
+
+   type Serial_Port_Descriptor is
+     new System.OS_Constants.Serial_Port_Descriptor;
+   --  OS specific serial port descriptor
 
    procedure Open
      (Port : out Serial_Port;
@@ -168,13 +174,21 @@ package GNAT.Serial_Communications is
    procedure Close (Port : in out Serial_Port);
    --  Close port
 
+   procedure To_Ada (Port : out Serial_Port; Fd : Serial_Port_Descriptor)
+     with Inline;
+   --  Convert a serial port descriptor to Serial_Port. This is useful when a
+   --  serial port descriptor is obtained from an external library call.
+
+   function To_C
+     (Port : Serial_Port) return Serial_Port_Descriptor with Inline;
+   --  Return a serial port descriptor to be used by external subprograms.
+   --  This is useful for C functions that are not yet interfaced in this
+   --  package.
+
 private
 
-   type Port_Data;
-   type Port_Data_Access is access Port_Data;
-
    type Serial_Port is new Ada.Streams.Root_Stream_Type with record
-      H : Port_Data_Access;
+      H : Serial_Port_Descriptor := -1;
    end record;
 
    Data_Rate_Value : constant array (Data_Rate) of Interfaces.C.unsigned :=
@@ -204,5 +218,8 @@ private
                         B3000000 => 3_000_000,
                         B3500000 => 3_500_000,
                         B4000000 => 4_000_000);
+
+   function To_C (Port : Serial_Port) return Serial_Port_Descriptor is
+      (Port.H);
 
 end GNAT.Serial_Communications;

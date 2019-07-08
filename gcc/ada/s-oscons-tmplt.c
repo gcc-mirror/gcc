@@ -261,6 +261,14 @@ main (void) {
 TXT("--  This is the version for " TARGET)
 TXT("")
 TXT("with Interfaces.C;")
+#if defined (__MINGW32__)
+# define TARGET_OS "Windows"
+# define Serial_Port_Descriptor "System.Win32.HANDLE"
+TXT("with System.Win32;")
+#else
+# define TARGET_OS "Other_OS"
+# define Serial_Port_Descriptor "Interfaces.C.int"
+#endif
 
 /*
 package System.OS_Constants is
@@ -280,11 +288,6 @@ package System.OS_Constants is
 
    type OS_Type is (Windows, Other_OS);
 */
-#if defined (__MINGW32__)
-# define TARGET_OS "Windows"
-#else
-# define TARGET_OS "Other_OS"
-#endif
 C("Target_OS", OS_Type, TARGET_OS, "")
 /*
    pragma Warnings (Off, Target_OS);
@@ -302,6 +305,8 @@ CST(Target_Name, "")
  **/
 #define SIZEOF_unsigned_int sizeof (unsigned int)
 CND(SIZEOF_unsigned_int, "Size of unsigned int")
+
+SUB(Serial_Port_Descriptor)
 
 /*
 
@@ -405,10 +410,10 @@ CND(FNDELAY, "Nonblocking")
 
 #if defined (__FreeBSD__) || defined (__DragonFly__)
 # define CNI CNU
-# define IOCTL_Req_T "unsigned"
+# define IOCTL_Req_T "Interfaces.C.unsigned"
 #else
 # define CNI CND
-# define IOCTL_Req_T "int"
+# define IOCTL_Req_T "Interfaces.C.int"
 #endif
 
 SUB(IOCTL_Req_T)
@@ -1628,9 +1633,9 @@ CND(IF_NAMESIZE, "Max size of interface name with 0 terminator");
 */
 
 #if defined (__sun__) || defined (__hpux__)
-# define Msg_Iovlen_T "int"
+# define Msg_Iovlen_T "Interfaces.C.int"
 #else
-# define Msg_Iovlen_T "size_t"
+# define Msg_Iovlen_T "Interfaces.C.size_t"
 #endif
 
 SUB(Msg_Iovlen_T)
