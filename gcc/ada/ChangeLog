@@ -1,3 +1,16 @@
+2019-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Common_Type_Info): New procedure extracted
+	from...
+	(List_Type_Info): ...here.  Call it for the common information,
+	start with a blank line and output the linker section at the
+	end, if any.
+	(List_Mechanisms): Rename to...
+	(List_Subprogram_Info): ...this.
+	(List_Array_Info): Call List_Common_Type_Info.
+	(List_Entities): Adjust to above change and renaming.
+	(List_Record_Info): Call List_Common_Type_Info.
+
 2019-07-08  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* libgnat/g-sercom.ads
