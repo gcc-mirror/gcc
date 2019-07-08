@@ -1,3 +1,11 @@
+2019-07-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): For a
+	pre/postcondition of a generic subprogram declaration, do not
+	use Relocate_Node on the aspect expression to construct the
+	corresponding attribute specification, to prevent tree anomalies
+	when the expression is a call with named actual parameters.
+
 2019-07-08  Javier Miranda  <miranda@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute [Attribute_Size]): For pragmas
