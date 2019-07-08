@@ -1,3 +1,9 @@
+2019-07-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst:
+	Update documentation on No_Exceptions restriction.
+	* gnat_rm.texi: Regenerate.
+
 2019-07-08  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* libgnat/s-os_lib.adb: Do not call __gnat_kill for Invalid_Pid.

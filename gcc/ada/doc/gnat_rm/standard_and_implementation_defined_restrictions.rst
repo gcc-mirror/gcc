@@ -356,7 +356,9 @@ No_Exceptions
 .. index:: No_Exceptions
 
 [RM H.4] This restriction ensures at compile time that there are no
-raise statements and no exception handlers.
+raise statements and no exception handlers and also suppresses the
+generation of language-defined run-time checks.
+
 
 No_Finalization
 ---------------
