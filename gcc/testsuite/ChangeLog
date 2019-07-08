@@ -1,3 +1,7 @@
+2019-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/addr13.adb, gnat.dg/addr13.ads: New testcase.
+
 2019-07-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/entry1.adb, gnat.dg/entry1.ads: New testcase.

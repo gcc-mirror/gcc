@@ -5145,6 +5145,7 @@ package body Sem_Ch13 is
                      --  aspect case properly.
 
                      if Is_Object (O_Ent)
+                       and then not Is_Generic_Formal (O_Ent)
                        and then not Is_Generic_Type (Etype (U_Ent))
                        and then Address_Clause_Overlay_Warnings
                      then
