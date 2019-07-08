@@ -1,3 +1,11 @@
+2019-07-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* libgnat/a-strfix.adb (Delete): The RM describes the semantics
+	of Delete as equivalent to that of Replace_String with a null
+	argument. As a result, deleting a null string that starts past
+	the end of its argument is a noop and must not raise
+	Index_Error.
+
 2019-07-08  Javier Miranda  <miranda@adacore.com>
 
 	* exp_disp.adb (Register_Primitive): When registering a

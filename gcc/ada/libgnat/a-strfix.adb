@@ -192,7 +192,15 @@ package body Ada.Strings.Fixed is
       elsif From not in Source'Range
         or else Through > Source'Last
       then
-         raise Index_Error;
+         --  In most cases this raises an exception, but the case of deleting
+         --  a null string at the end of the current one is a special-case, and
+         --  reflects the equivalence with Replace_String (RM A.4.3 (86/3)).
+
+         if From = Source'Last + 1 and then From = Through then
+            return Source;
+         else
+            raise Index_Error;
+         end if;
 
       else
          declare
