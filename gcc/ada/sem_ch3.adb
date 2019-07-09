@@ -4592,14 +4592,6 @@ package body Sem_Ch3 is
             elsif Is_Interface (T) then
                null;
 
-            --  In GNATprove mode, Expand_Subtype_From_Expr does nothing. Thus,
-            --  we should prevent the generation of another Itype with the
-            --  same name as the one already generated, or we end up with
-            --  two identical types in GNATprove.
-
-            elsif GNATprove_Mode then
-               null;
-
             --  If the type is an unchecked union, no subtype can be built from
             --  the expression. Rewrite declaration as a renaming, which the
             --  back-end can handle properly. This is a rather unusual case,

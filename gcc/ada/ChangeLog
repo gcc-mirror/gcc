@@ -1,3 +1,10 @@
+2019-07-09  Yannick Moy  <moy@adacore.com>
+
+	* exp_util.adb (Expand_Subtype_From_Expr): Still expand the type
+	of static expressions in GNATprove_Mode.
+	* sem_ch3.adb (Analyze_Object_Declaration): Remove obsolete
+	special case for GNATprove_Mode.
+
 2019-07-09  Piotr Trojanek  <trojanek@adacore.com>
 
 	* doc/gnat_rm/the_gnat_library.rst,
