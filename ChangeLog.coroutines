@@ -1,3 +1,8 @@
+2019-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* cp-tree.def (CO_AWAIT_EXPR): Amend operand descriptions.
+
 2019-07-08  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Merge trunk r272193.

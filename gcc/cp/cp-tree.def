@@ -604,10 +604,11 @@ DEFTREECODE (DISJ_CONSTR, "disj_constr", tcc_expression, 2)
 
   Op 0 is the cast expresssion (potentially modified by the
   promise "await_transform()" method).
-  Op1 is a proxy for the temp / coro frame slot
-  Op2 is the initialiser for Op1
-  Op3 is the awaitable resume method.
-  Op4 is 0 (await) 1 (yield) 2 (initial) 3 (final) */
+  Op1 is a proxy for the temp / coro frame slot 'e' value.
+  Op2 is the initialiser for Op1 (Op0, potentially modified by any
+  applicable 'co_await' operator).
+  Op3 is a vector of the [0] e.ready, [1] e.suspend and [2] e.resume calls.
+  Op4 is a mode : 0 (await) 1 (yield) 2 (initial) 3 (final) */
 DEFTREECODE (CO_AWAIT_EXPR, "co_await", tcc_expression, 5)
 
 /* The co_yield expression is used to support coroutines.
