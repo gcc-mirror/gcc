@@ -1,3 +1,9 @@
+2019-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Entities): Disregard formals altogether.
+	(List_Name): Properly escape the double quote in the JSON
+	output.
+
 2019-07-09  Javier Miranda  <miranda@adacore.com>
 
 	* exp_util.adb (Remove_Side_Effects): Preserve the
