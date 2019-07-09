@@ -4395,7 +4395,7 @@ public:
 static tree
 finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
 {
-  struct nrv_data *dp = (struct nrv_data *)data;
+  class nrv_data *dp = (class nrv_data *)data;
   tree_node **slot;
 
   /* No need to walk into types.  There wouldn't be any need to walk into
@@ -4453,7 +4453,7 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
 void
 finalize_nrv (tree *tp, tree var, tree result)
 {
-  struct nrv_data data;
+  class nrv_data data;
 
   /* Copy name from VAR to RESULT.  */
   DECL_NAME (result) = DECL_NAME (var);

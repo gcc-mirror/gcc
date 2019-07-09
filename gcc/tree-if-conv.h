@@ -19,6 +19,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_IF_CONV_H
 #define GCC_TREE_IF_CONV_H
 
-unsigned int tree_if_conversion (struct loop *, vec<gimple *> * = NULL);
+unsigned int tree_if_conversion (class loop *, vec<gimple *> * = NULL);
 
 #endif  /* GCC_TREE_IF_CONV_H  */

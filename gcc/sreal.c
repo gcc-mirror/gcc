@@ -258,7 +258,7 @@ sreal::stream_out (struct output_block *ob)
 /* Read sreal value from IB.  */
 
 sreal
-sreal::stream_in (struct lto_input_block *ib)
+sreal::stream_in (class lto_input_block *ib)
 {
   sreal val;
   val.m_sig = streamer_read_hwi (ib);

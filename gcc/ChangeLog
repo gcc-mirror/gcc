@@ -8,6 +8,1437 @@
 2019-07-09  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/61339
+	* auto-profile.c: Change class-key of PODs to struct and others
+	to class.
+	* basic-block.h: Same.
+	* bitmap.c (bitmap_alloc): Same.
+	* bitmap.h: Same.
+	* builtins.c (expand_builtin_prefetch): Same.
+	(expand_builtin_interclass_mathfn): Same.
+	(expand_builtin_strlen): Same.
+	(expand_builtin_mempcpy_args): Same.
+	(expand_cmpstr): Same.
+	(expand_builtin___clear_cache): Same.
+	(expand_ifn_atomic_bit_test_and): Same.
+	(expand_builtin_thread_pointer): Same.
+	(expand_builtin_set_thread_pointer): Same.
+	* caller-save.c (setup_save_areas): Same.
+	(replace_reg_with_saved_mem): Same.
+	(insert_restore): Same.
+	(insert_save): Same.
+	(add_used_regs): Same.
+	* cfg.c (get_bb_copy): Same.
+	(set_loop_copy): Same.
+	* cfg.h: Same.
+	* cfganal.h: Same.
+	* cfgexpand.c (alloc_stack_frame_space): Same.
+	(add_stack_var): Same.
+	(add_stack_var_conflict): Same.
+	(add_scope_conflicts_1): Same.
+	(update_alias_info_with_stack_vars): Same.
+	(expand_used_vars): Same.
+	* cfghooks.c (redirect_edge_and_branch_force): Same.
+	(delete_basic_block): Same.
+	(split_edge): Same.
+	(make_forwarder_block): Same.
+	(force_nonfallthru): Same.
+	(duplicate_block): Same.
+	(lv_flush_pending_stmts): Same.
+	* cfghooks.h: Same.
+	* cfgloop.c (flow_loops_cfg_dump): Same.
+	(flow_loop_nested_p): Same.
+	(superloop_at_depth): Same.
+	(get_loop_latch_edges): Same.
+	(flow_loop_dump): Same.
+	(flow_loops_dump): Same.
+	(flow_loops_free): Same.
+	(flow_loop_nodes_find): Same.
+	(establish_preds): Same.
+	(flow_loop_tree_node_add): Same.
+	(flow_loop_tree_node_remove): Same.
+	(flow_loops_find): Same.
+	(find_subloop_latch_edge_by_profile): Same.
+	(find_subloop_latch_edge_by_ivs): Same.
+	(mfb_redirect_edges_in_set): Same.
+	(form_subloop): Same.
+	(merge_latch_edges): Same.
+	(disambiguate_multiple_latches): Same.
+	(disambiguate_loops_with_multiple_latches): Same.
+	(flow_bb_inside_loop_p): Same.
+	(glb_enum_p): Same.
+	(get_loop_body_with_size): Same.
+	(get_loop_body): Same.
+	(fill_sons_in_loop): Same.
+	(get_loop_body_in_dom_order): Same.
+	(get_loop_body_in_custom_order): Same.
+	(release_recorded_exits): Same.
+	(get_loop_exit_edges): Same.
+	(num_loop_branches): Same.
+	(remove_bb_from_loops): Same.
+	(find_common_loop): Same.
+	(delete_loop): Same.
+	(cancel_loop): Same.
+	(verify_loop_structure): Same.
+	(loop_preheader_edge): Same.
+	(loop_exit_edge_p): Same.
+	(single_exit): Same.
+	(loop_exits_to_bb_p): Same.
+	(loop_exits_from_bb_p): Same.
+	(get_loop_location): Same.
+	(record_niter_bound): Same.
+	(get_estimated_loop_iterations_int): Same.
+	(max_stmt_executions_int): Same.
+	(likely_max_stmt_executions_int): Same.
+	(get_estimated_loop_iterations): Same.
+	(get_max_loop_iterations): Same.
+	(get_max_loop_iterations_int): Same.
+	(get_likely_max_loop_iterations): Same.
+	* cfgloop.h (simple_loop_desc): Same.
+	(get_loop): Same.
+	(loop_depth): Same.
+	(loop_outer): Same.
+	(loop_iterator::next): Same.
+	(loop_outermost): Same.
+	* cfgloopanal.c (mark_irreducible_loops): Same.
+	(num_loop_insns): Same.
+	(average_num_loop_insns): Same.
+	(expected_loop_iterations_unbounded): Same.
+	(expected_loop_iterations): Same.
+	(mark_loop_exit_edges): Same.
+	(single_likely_exit): Same.
+	* cfgloopmanip.c (fix_bb_placement): Same.
+	(fix_bb_placements): Same.
+	(remove_path): Same.
+	(place_new_loop): Same.
+	(add_loop): Same.
+	(scale_loop_frequencies): Same.
+	(scale_loop_profile): Same.
+	(create_empty_if_region_on_edge): Same.
+	(create_empty_loop_on_edge): Same.
+	(loopify): Same.
+	(unloop): Same.
+	(fix_loop_placements): Same.
+	(copy_loop_info): Same.
+	(duplicate_loop): Same.
+	(duplicate_subloops): Same.
+	(loop_redirect_edge): Same.
+	(can_duplicate_loop_p): Same.
+	(duplicate_loop_to_header_edge): Same.
+	(mfb_keep_just): Same.
+	(has_preds_from_loop): Same.
+	(create_preheader): Same.
+	(create_preheaders): Same.
+	(lv_adjust_loop_entry_edge): Same.
+	(loop_version): Same.
+	* cfgloopmanip.h: Same.
+	* cgraph.h: Same.
+	* cgraphbuild.c: Same.
+	* combine.c (make_extraction): Same.
+	* config/i386/i386-features.c: Same.
+	* config/i386/i386-features.h: Same.
+	* config/i386/i386.c (ix86_emit_outlined_ms2sysv_save): Same.
+	(ix86_emit_outlined_ms2sysv_restore): Same.
+	(ix86_noce_conversion_profitable_p): Same.
+	(ix86_init_cost): Same.
+	(ix86_simd_clone_usable): Same.
+	* configure.ac: Same.
+	* coretypes.h: Same.
+	* data-streamer-in.c (string_for_index): Same.
+	(streamer_read_indexed_string): Same.
+	(streamer_read_string): Same.
+	(bp_unpack_indexed_string): Same.
+	(bp_unpack_string): Same.
+	(streamer_read_uhwi): Same.
+	(streamer_read_hwi): Same.
+	(streamer_read_gcov_count): Same.
+	(streamer_read_wide_int): Same.
+	* data-streamer.h (streamer_write_bitpack): Same.
+	(bp_unpack_value): Same.
+	(streamer_write_char_stream): Same.
+	(streamer_write_hwi_in_range): Same.
+	(streamer_write_record_start): Same.
+	* ddg.c (create_ddg_dep_from_intra_loop_link): Same.
+	(add_cross_iteration_register_deps): Same.
+	(build_intra_loop_deps): Same.
+	* df-core.c (df_analyze): Same.
+	(loop_post_order_compute): Same.
+	(loop_inverted_post_order_compute): Same.
+	* df-problems.c (df_rd_alloc): Same.
+	(df_rd_simulate_one_insn): Same.
+	(df_rd_local_compute): Same.
+	(df_rd_init_solution): Same.
+	(df_rd_confluence_n): Same.
+	(df_rd_transfer_function): Same.
+	(df_rd_free): Same.
+	(df_rd_dump_defs_set): Same.
+	(df_rd_top_dump): Same.
+	(df_lr_alloc): Same.
+	(df_lr_reset): Same.
+	(df_lr_local_compute): Same.
+	(df_lr_init): Same.
+	(df_lr_confluence_n): Same.
+	(df_lr_free): Same.
+	(df_lr_top_dump): Same.
+	(df_lr_verify_transfer_functions): Same.
+	(df_live_alloc): Same.
+	(df_live_reset): Same.
+	(df_live_init): Same.
+	(df_live_confluence_n): Same.
+	(df_live_finalize): Same.
+	(df_live_free): Same.
+	(df_live_top_dump): Same.
+	(df_live_verify_transfer_functions): Same.
+	(df_mir_alloc): Same.
+	(df_mir_reset): Same.
+	(df_mir_init): Same.
+	(df_mir_confluence_n): Same.
+	(df_mir_free): Same.
+	(df_mir_top_dump): Same.
+	(df_word_lr_alloc): Same.
+	(df_word_lr_reset): Same.
+	(df_word_lr_init): Same.
+	(df_word_lr_confluence_n): Same.
+	(df_word_lr_free): Same.
+	(df_word_lr_top_dump): Same.
+	(df_md_alloc): Same.
+	(df_md_simulate_one_insn): Same.
+	(df_md_reset): Same.
+	(df_md_init): Same.
+	(df_md_free): Same.
+	(df_md_top_dump): Same.
+	* df-scan.c (df_insn_delete): Same.
+	(df_insn_rescan): Same.
+	(df_notes_rescan): Same.
+	(df_sort_and_compress_mws): Same.
+	(df_install_mws): Same.
+	(df_refs_add_to_chains): Same.
+	(df_ref_create_structure): Same.
+	(df_ref_record): Same.
+	(df_def_record_1): Same.
+	(df_find_hard_reg_defs): Same.
+	(df_uses_record): Same.
+	(df_get_conditional_uses): Same.
+	(df_get_call_refs): Same.
+	(df_recompute_luids): Same.
+	(df_get_entry_block_def_set): Same.
+	(df_entry_block_defs_collect): Same.
+	(df_get_exit_block_use_set): Same.
+	(df_exit_block_uses_collect): Same.
+	(df_mws_verify): Same.
+	(df_bb_verify): Same.
+	* df.h (df_scan_get_bb_info): Same.
+	* doc/tm.texi: Same.
+	* dse.c (record_store): Same.
+	* dumpfile.h: Same.
+	* emit-rtl.c (const_fixed_hasher::equal): Same.
+	(set_mem_attributes_minus_bitpos): Same.
+	(change_address): Same.
+	(adjust_address_1): Same.
+	(offset_address): Same.
+	* emit-rtl.h: Same.
+	* except.c (dw2_build_landing_pads): Same.
+	(sjlj_emit_dispatch_table): Same.
+	* explow.c (allocate_dynamic_stack_space): Same.
+	(emit_stack_probe): Same.
+	(probe_stack_range): Same.
+	* expmed.c (store_bit_field_using_insv): Same.
+	(store_bit_field_1): Same.
+	(store_integral_bit_field): Same.
+	(extract_bit_field_using_extv): Same.
+	(extract_bit_field_1): Same.
+	(emit_cstore): Same.
+	* expr.c (emit_block_move_via_cpymem): Same.
+	(expand_cmpstrn_or_cmpmem): Same.
+	(set_storage_via_setmem): Same.
+	(emit_single_push_insn_1): Same.
+	(expand_assignment): Same.
+	(store_constructor): Same.
+	(expand_expr_real_2): Same.
+	(expand_expr_real_1): Same.
+	(try_casesi): Same.
+	* flags.h: Same.
+	* function.c (try_fit_stack_local): Same.
+	(assign_stack_local_1): Same.
+	(assign_stack_local): Same.
+	(cut_slot_from_list): Same.
+	(insert_slot_to_list): Same.
+	(max_slot_level): Same.
+	(move_slot_to_level): Same.
+	(temp_address_hasher::equal): Same.
+	(remove_unused_temp_slot_addresses): Same.
+	(assign_temp): Same.
+	(combine_temp_slots): Same.
+	(update_temp_slot_address): Same.
+	(preserve_temp_slots): Same.
+	* function.h: Same.
+	* fwprop.c: Same.
+	* gcc-rich-location.h: Same.
+	* gcov.c: Same.
+	* genattrtab.c (check_attr_test): Same.
+	(check_attr_value): Same.
+	(convert_set_attr_alternative): Same.
+	(convert_set_attr): Same.
+	(check_defs): Same.
+	(copy_boolean): Same.
+	(get_attr_value): Same.
+	(expand_delays): Same.
+	(make_length_attrs): Same.
+	(min_fn): Same.
+	(make_alternative_compare): Same.
+	(simplify_test_exp): Same.
+	(tests_attr_p): Same.
+	(get_attr_order): Same.
+	(clear_struct_flag): Same.
+	(gen_attr): Same.
+	(compares_alternatives_p): Same.
+	(gen_insn): Same.
+	(gen_delay): Same.
+	(find_attrs_to_cache): Same.
+	(write_test_expr): Same.
+	(walk_attr_value): Same.
+	(write_attr_get): Same.
+	(eliminate_known_true): Same.
+	(write_insn_cases): Same.
+	(write_attr_case): Same.
+	(write_attr_valueq): Same.
+	(write_attr_value): Same.
+	(write_dummy_eligible_delay): Same.
+	(next_comma_elt): Same.
+	(find_attr): Same.
+	(make_internal_attr): Same.
+	(copy_rtx_unchanging): Same.
+	(gen_insn_reserv): Same.
+	(check_tune_attr): Same.
+	(make_automaton_attrs): Same.
+	(handle_arg): Same.
+	* genextract.c (gen_insn): Same.
+	(VEC_char_to_string): Same.
+	* genmatch.c (print_operand): Same.
+	(lower): Same.
+	(parser::parse_operation): Same.
+	(parser::parse_capture): Same.
+	(parser::parse_c_expr): Same.
+	(parser::parse_simplify): Same.
+	(main): Same.
+	* genoutput.c (output_operand_data): Same.
+	(output_get_insn_name): Same.
+	(compare_operands): Same.
+	(place_operands): Same.
+	(process_template): Same.
+	(validate_insn_alternatives): Same.
+	(validate_insn_operands): Same.
+	(gen_expand): Same.
+	(note_constraint): Same.
+	* genpreds.c (write_one_predicate_function): Same.
+	(add_constraint): Same.
+	(process_define_register_constraint): Same.
+	(write_lookup_constraint_1): Same.
+	(write_lookup_constraint_array): Same.
+	(write_insn_constraint_len): Same.
+	(write_reg_class_for_constraint_1): Same.
+	(write_constraint_satisfied_p_array): Same.
+	* genrecog.c (optimize_subroutine_group): Same.
+	* gensupport.c (process_define_predicate): Same.
+	(queue_pattern): Same.
+	(remove_from_queue): Same.
+	(process_rtx): Same.
+	(is_predicable): Same.
+	(change_subst_attribute): Same.
+	(subst_pattern_match): Same.
+	(alter_constraints): Same.
+	(alter_attrs_for_insn): Same.
+	(shift_output_template): Same.
+	(alter_output_for_subst_insn): Same.
+	(process_one_cond_exec): Same.
+	(subst_dup): Same.
+	(process_define_cond_exec): Same.
+	(mnemonic_htab_callback): Same.
+	(gen_mnemonic_attr): Same.
+	(read_md_rtx): Same.
+	* ggc-page.c: Same.
+	* gimple-loop-interchange.cc (dump_reduction): Same.
+	(dump_induction): Same.
+	(loop_cand::~loop_cand): Same.
+	(free_data_refs_with_aux): Same.
+	(tree_loop_interchange::interchange_loops): Same.
+	(tree_loop_interchange::map_inductions_to_loop): Same.
+	(tree_loop_interchange::move_code_to_inner_loop): Same.
+	(compute_access_stride): Same.
+	(compute_access_strides): Same.
+	(proper_loop_form_for_interchange): Same.
+	(tree_loop_interchange_compute_ddrs): Same.
+	(prune_datarefs_not_in_loop): Same.
+	(prepare_data_references): Same.
+	(pass_linterchange::execute): Same.
+	* gimple-loop-jam.c (bb_prevents_fusion_p): Same.
+	(unroll_jam_possible_p): Same.
+	(fuse_loops): Same.
+	(adjust_unroll_factor): Same.
+	(tree_loop_unroll_and_jam): Same.
+	* gimple-loop-versioning.cc (loop_versioning::~loop_versioning): Same.
+	(loop_versioning::expensive_stmt_p): Same.
+	(loop_versioning::version_for_unity): Same.
+	(loop_versioning::dump_inner_likelihood): Same.
+	(loop_versioning::find_per_loop_multiplication): Same.
+	(loop_versioning::analyze_term_using_scevs): Same.
+	(loop_versioning::record_address_fragment): Same.
+	(loop_versioning::analyze_expr): Same.
+	(loop_versioning::analyze_blocks): Same.
+	(loop_versioning::prune_conditions): Same.
+	(loop_versioning::merge_loop_info): Same.
+	(loop_versioning::add_loop_to_queue): Same.
+	(loop_versioning::decide_whether_loop_is_versionable): Same.
+	(loop_versioning::make_versioning_decisions): Same.
+	(loop_versioning::implement_versioning_decisions): Same.
+	* gimple-ssa-evrp-analyze.c
+	(evrp_range_analyzer::record_ranges_from_phis): Same.
+	* gimple-ssa-store-merging.c (split_store::split_store): Same.
+	(count_multiple_uses): Same.
+	(split_group): Same.
+	(imm_store_chain_info::output_merged_store): Same.
+	(pass_store_merging::process_store): Same.
+	* gimple-ssa-strength-reduction.c (slsr_process_phi): Same.
+	* gimple-ssa-warn-alloca.c (adjusted_warn_limit): Same.
+	(is_max): Same.
+	(alloca_call_type): Same.
+	(pass_walloca::execute): Same.
+	* gimple-streamer-in.c (input_phi): Same.
+	(input_gimple_stmt): Same.
+	* gimple-streamer.h: Same.
+	* godump.c (go_force_record_alignment): Same.
+	(go_format_type): Same.
+	(go_output_type): Same.
+	(go_output_fndecl): Same.
+	(go_output_typedef): Same.
+	(keyword_hash_init): Same.
+	(find_dummy_types): Same.
+	* graph.c (draw_cfg_nodes_no_loops): Same.
+	(draw_cfg_nodes_for_loop): Same.
+	* hard-reg-set.h (hard_reg_set_iter_next): Same.
+	* hsa-brig.c: Same.
+	* hsa-common.h (hsa_internal_fn_hasher::equal): Same.
+	* hsa-dump.c (dump_hsa_cfun): Same.
+	* hsa-gen.c (gen_function_def_parameters): Same.
+	* hsa-regalloc.c (dump_hsa_cfun_regalloc): Same.
+	* input.c (dump_line_table_statistics): Same.
+	(test_lexer): Same.
+	* input.h: Same.
+	* internal-fn.c (get_multi_vector_move): Same.
+	(expand_load_lanes_optab_fn): Same.
+	(expand_GOMP_SIMT_ENTER_ALLOC): Same.
+	(expand_GOMP_SIMT_EXIT): Same.
+	(expand_GOMP_SIMT_LAST_LANE): Same.
+	(expand_GOMP_SIMT_ORDERED_PRED): Same.
+	(expand_GOMP_SIMT_VOTE_ANY): Same.
+	(expand_GOMP_SIMT_XCHG_BFLY): Same.
+	(expand_GOMP_SIMT_XCHG_IDX): Same.
+	(expand_addsub_overflow): Same.
+	(expand_neg_overflow): Same.
+	(expand_mul_overflow): Same.
+	(expand_call_mem_ref): Same.
+	(expand_mask_load_optab_fn): Same.
+	(expand_scatter_store_optab_fn): Same.
+	(expand_gather_load_optab_fn): Same.
+	* ipa-cp.c (ipa_get_parm_lattices): Same.
+	(print_all_lattices): Same.
+	(ignore_edge_p): Same.
+	(build_toporder_info): Same.
+	(free_toporder_info): Same.
+	(push_node_to_stack): Same.
+	(ipcp_lattice<valtype>::set_contains_variable): Same.
+	(set_agg_lats_to_bottom): Same.
+	(ipcp_bits_lattice::meet_with): Same.
+	(set_single_call_flag): Same.
+	(initialize_node_lattices): Same.
+	(ipa_get_jf_ancestor_result): Same.
+	(ipcp_verify_propagated_values): Same.
+	(propagate_scalar_across_jump_function): Same.
+	(propagate_context_across_jump_function): Same.
+	(propagate_bits_across_jump_function): Same.
+	(ipa_vr_operation_and_type_effects): Same.
+	(propagate_vr_across_jump_function): Same.
+	(set_check_aggs_by_ref): Same.
+	(set_chain_of_aglats_contains_variable): Same.
+	(merge_aggregate_lattices): Same.
+	(agg_pass_through_permissible_p): Same.
+	(propagate_aggs_across_jump_function): Same.
+	(call_passes_through_thunk_p): Same.
+	(propagate_constants_across_call): Same.
+	(devirtualization_time_bonus): Same.
+	(good_cloning_opportunity_p): Same.
+	(context_independent_aggregate_values): Same.
+	(gather_context_independent_values): Same.
+	(perform_estimation_of_a_value): Same.
+	(estimate_local_effects): Same.
+	(value_topo_info<valtype>::add_val): Same.
+	(add_all_node_vals_to_toposort): Same.
+	(value_topo_info<valtype>::propagate_effects): Same.
+	(ipcp_propagate_stage): Same.
+	(ipcp_discover_new_direct_edges): Same.
+	(same_node_or_its_all_contexts_clone_p): Same.
+	(cgraph_edge_brings_value_p): Same.
+	(gather_edges_for_value): Same.
+	(create_specialized_node): Same.
+	(find_more_scalar_values_for_callers_subset): Same.
+	(find_more_contexts_for_caller_subset): Same.
+	(copy_plats_to_inter): Same.
+	(intersect_aggregates_with_edge): Same.
+	(find_aggregate_values_for_callers_subset): Same.
+	(cgraph_edge_brings_all_agg_vals_for_node): Same.
+	(decide_about_value): Same.
+	(decide_whether_version_node): Same.
+	(spread_undeadness): Same.
+	(identify_dead_nodes): Same.
+	(ipcp_store_vr_results): Same.
+	* ipa-devirt.c (final_warning_record::grow_type_warnings): Same.
+	* ipa-fnsummary.c (ipa_fn_summary::account_size_time): Same.
+	(redirect_to_unreachable): Same.
+	(edge_set_predicate): Same.
+	(evaluate_conditions_for_known_args): Same.
+	(evaluate_properties_for_edge): Same.
+	(ipa_fn_summary_t::duplicate): Same.
+	(ipa_call_summary_t::duplicate): Same.
+	(dump_ipa_call_summary): Same.
+	(ipa_dump_fn_summary): Same.
+	(eliminated_by_inlining_prob): Same.
+	(set_cond_stmt_execution_predicate): Same.
+	(set_switch_stmt_execution_predicate): Same.
+	(compute_bb_predicates): Same.
+	(will_be_nonconstant_expr_predicate): Same.
+	(phi_result_unknown_predicate): Same.
+	(analyze_function_body): Same.
+	(compute_fn_summary): Same.
+	(estimate_edge_devirt_benefit): Same.
+	(estimate_edge_size_and_time): Same.
+	(estimate_calls_size_and_time): Same.
+	(estimate_node_size_and_time): Same.
+	(remap_edge_change_prob): Same.
+	(remap_edge_summaries): Same.
+	(ipa_merge_fn_summary_after_inlining): Same.
+	(ipa_fn_summary_generate): Same.
+	(inline_read_section): Same.
+	(ipa_fn_summary_read): Same.
+	(ipa_fn_summary_write): Same.
+	* ipa-fnsummary.h: Same.
+	* ipa-hsa.c (ipa_hsa_read_section): Same.
+	* ipa-icf-gimple.c (func_checker::compare_loops): Same.
+	* ipa-icf.c (sem_function::param_used_p): Same.
+	* ipa-inline-analysis.c (do_estimate_edge_time): Same.
+	* ipa-inline.c (edge_badness): Same.
+	(inline_small_functions): Same.
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::stream_out): Same.
+	* ipa-predicate.c (predicate::remap_after_duplication): Same.
+	(predicate::remap_after_inlining): Same.
+	(predicate::stream_out): Same.
+	* ipa-predicate.h: Same.
+	* ipa-profile.c (ipa_profile_read_summary): Same.
+	* ipa-prop.c (ipa_get_param_decl_index_1): Same.
+	(count_formal_params): Same.
+	(ipa_dump_param): Same.
+	(ipa_alloc_node_params): Same.
+	(ipa_print_node_jump_functions_for_edge): Same.
+	(ipa_print_node_jump_functions): Same.
+	(ipa_load_from_parm_agg): Same.
+	(get_ancestor_addr_info): Same.
+	(ipa_compute_jump_functions_for_edge): Same.
+	(ipa_analyze_virtual_call_uses): Same.
+	(ipa_analyze_stmt_uses): Same.
+	(ipa_analyze_params_uses_in_bb): Same.
+	(update_jump_functions_after_inlining): Same.
+	(try_decrement_rdesc_refcount): Same.
+	(ipa_impossible_devirt_target): Same.
+	(update_indirect_edges_after_inlining): Same.
+	(combine_controlled_uses_counters): Same.
+	(ipa_edge_args_sum_t::duplicate): Same.
+	(ipa_write_jump_function): Same.
+	(ipa_write_indirect_edge_info): Same.
+	(ipa_write_node_info): Same.
+	(ipa_read_edge_info): Same.
+	(ipa_prop_read_section): Same.
+	(read_replacements_section): Same.
+	* ipa-prop.h (ipa_get_param_count): Same.
+	(ipa_get_param): Same.
+	(ipa_get_type): Same.
+	(ipa_get_param_move_cost): Same.
+	(ipa_set_param_used): Same.
+	(ipa_get_controlled_uses): Same.
+	(ipa_set_controlled_uses): Same.
+	(ipa_get_cs_argument_count): Same.
+	* ipa-pure-const.c (analyze_function): Same.
+	(pure_const_read_summary): Same.
+	* ipa-ref.h: Same.
+	* ipa-reference.c (ipa_reference_read_optimization_summary): Same.
+	* ipa-split.c (test_nonssa_use): Same.
+	(dump_split_point): Same.
+	(dominated_by_forbidden): Same.
+	(split_part_set_ssa_name_p): Same.
+	(find_split_points): Same.
+	* ira-build.c (finish_loop_tree_nodes): Same.
+	(low_pressure_loop_node_p): Same.
+	* ira-color.c (ira_reuse_stack_slot): Same.
+	* ira-int.h: Same.
+	* ira.c (setup_reg_equiv): Same.
+	(print_insn_chain): Same.
+	(ira): Same.
+	* loop-doloop.c (doloop_condition_get): Same.
+	(add_test): Same.
+	(record_reg_sets): Same.
+	(doloop_optimize): Same.
+	* loop-init.c (loop_optimizer_init): Same.
+	(fix_loop_structure): Same.
+	* loop-invariant.c (merge_identical_invariants): Same.
+	(compute_always_reached): Same.
+	(find_exits): Same.
+	(may_assign_reg_p): Same.
+	(find_invariants_bb): Same.
+	(find_invariants_body): Same.
+	(replace_uses): Same.
+	(can_move_invariant_reg): Same.
+	(free_inv_motion_data): Same.
+	(move_single_loop_invariants): Same.
+	(change_pressure): Same.
+	(mark_ref_regs): Same.
+	(calculate_loop_reg_pressure): Same.
+	* loop-iv.c (biv_entry_hasher::equal): Same.
+	(iv_extend_to_rtx_code): Same.
+	(check_iv_ref_table_size): Same.
+	(clear_iv_info): Same.
+	(latch_dominating_def): Same.
+	(iv_get_reaching_def): Same.
+	(iv_constant): Same.
+	(iv_subreg): Same.
+	(iv_extend): Same.
+	(iv_neg): Same.
+	(iv_add): Same.
+	(iv_mult): Same.
+	(get_biv_step): Same.
+	(record_iv): Same.
+	(analyzed_for_bivness_p): Same.
+	(record_biv): Same.
+	(iv_analyze_biv): Same.
+	(iv_analyze_expr): Same.
+	(iv_analyze_def): Same.
+	(iv_analyze_op): Same.
+	(iv_analyze): Same.
+	(iv_analyze_result): Same.
+	(biv_p): Same.
+	(eliminate_implied_conditions): Same.
+	(simplify_using_initial_values): Same.
+	(shorten_into_mode): Same.
+	(canonicalize_iv_subregs): Same.
+	(determine_max_iter): Same.
+	(check_simple_exit): Same.
+	(find_simple_exit): Same.
+	(get_simple_loop_desc): Same.
+	* loop-unroll.c (report_unroll): Same.
+	(decide_unrolling): Same.
+	(unroll_loops): Same.
+	(loop_exit_at_end_p): Same.
+	(decide_unroll_constant_iterations): Same.
+	(unroll_loop_constant_iterations): Same.
+	(compare_and_jump_seq): Same.
+	(unroll_loop_runtime_iterations): Same.
+	(decide_unroll_stupid): Same.
+	(unroll_loop_stupid): Same.
+	(referenced_in_one_insn_in_loop_p): Same.
+	(reset_debug_uses_in_loop): Same.
+	(analyze_iv_to_split_insn): Same.
+	* lra-eliminations.c (lra_debug_elim_table): Same.
+	(setup_can_eliminate): Same.
+	(form_sum): Same.
+	(lra_get_elimination_hard_regno): Same.
+	(lra_eliminate_regs_1): Same.
+	(eliminate_regs_in_insn): Same.
+	(update_reg_eliminate): Same.
+	(init_elimination): Same.
+	(lra_eliminate): Same.
+	* lra-int.h: Same.
+	* lra-lives.c (initiate_live_solver): Same.
+	* lra-remat.c (create_remat_bb_data): Same.
+	* lra-spills.c (lra_spill): Same.
+	* lra.c (lra_set_insn_recog_data): Same.
+	(lra_set_used_insn_alternative_by_uid): Same.
+	(init_reg_info): Same.
+	(expand_reg_info): Same.
+	* lto-cgraph.c (output_symtab): Same.
+	(read_identifier): Same.
+	(get_alias_symbol): Same.
+	(input_node): Same.
+	(input_varpool_node): Same.
+	(input_ref): Same.
+	(input_edge): Same.
+	(input_cgraph_1): Same.
+	(input_refs): Same.
+	(input_symtab): Same.
+	(input_offload_tables): Same.
+	(output_cgraph_opt_summary): Same.
+	(input_edge_opt_summary): Same.
+	(input_cgraph_opt_section): Same.
+	* lto-section-in.c (lto_free_raw_section_data): Same.
+	(lto_create_simple_input_block): Same.
+	(lto_free_function_in_decl_state_for_node): Same.
+	* lto-streamer-in.c (lto_tag_check_set): Same.
+	(lto_location_cache::revert_location_cache): Same.
+	(lto_location_cache::input_location): Same.
+	(lto_input_location): Same.
+	(stream_input_location_now): Same.
+	(lto_input_tree_ref): Same.
+	(lto_input_eh_catch_list): Same.
+	(input_eh_region): Same.
+	(lto_init_eh): Same.
+	(make_new_block): Same.
+	(input_cfg): Same.
+	(fixup_call_stmt_edges): Same.
+	(input_struct_function_base): Same.
+	(input_function): Same.
+	(lto_read_body_or_constructor): Same.
+	(lto_read_tree_1): Same.
+	(lto_read_tree): Same.
+	(lto_input_scc): Same.
+	(lto_input_tree_1): Same.
+	(lto_input_toplevel_asms): Same.
+	(lto_input_mode_table): Same.
+	(lto_reader_init): Same.
+	(lto_data_in_create): Same.
+	* lto-streamer-out.c (output_cfg): Same.
+	* lto-streamer.h: Same.
+	* modulo-sched.c (duplicate_insns_of_cycles): Same.
+	(generate_prolog_epilog): Same.
+	(mark_loop_unsched): Same.
+	(dump_insn_location): Same.
+	(loop_canon_p): Same.
+	(sms_schedule): Same.
+	* omp-expand.c (expand_omp_for_ordered_loops): Same.
+	(expand_omp_for_generic): Same.
+	(expand_omp_for_static_nochunk): Same.
+	(expand_omp_for_static_chunk): Same.
+	(expand_omp_simd): Same.
+	(expand_omp_taskloop_for_inner): Same.
+	(expand_oacc_for): Same.
+	(expand_omp_atomic_pipeline): Same.
+	(mark_loops_in_oacc_kernels_region): Same.
+	* omp-offload.c (oacc_xform_loop): Same.
+	* omp-simd-clone.c (simd_clone_adjust): Same.
+	* optabs-query.c (get_traditional_extraction_insn): Same.
+	* optabs.c (expand_vector_broadcast): Same.
+	(expand_binop_directly): Same.
+	(expand_twoval_unop): Same.
+	(expand_twoval_binop): Same.
+	(expand_unop_direct): Same.
+	(emit_indirect_jump): Same.
+	(emit_conditional_move): Same.
+	(emit_conditional_neg_or_complement): Same.
+	(emit_conditional_add): Same.
+	(vector_compare_rtx): Same.
+	(expand_vec_perm_1): Same.
+	(expand_vec_perm_const): Same.
+	(expand_vec_cond_expr): Same.
+	(expand_vec_series_expr): Same.
+	(maybe_emit_atomic_exchange): Same.
+	(maybe_emit_sync_lock_test_and_set): Same.
+	(expand_atomic_compare_and_swap): Same.
+	(expand_atomic_load): Same.
+	(expand_atomic_store): Same.
+	(maybe_emit_op): Same.
+	(valid_multiword_target_p): Same.
+	(create_integer_operand): Same.
+	(maybe_legitimize_operand_same_code): Same.
+	(maybe_legitimize_operand): Same.
+	(create_convert_operand_from_type): Same.
+	(can_reuse_operands_p): Same.
+	(maybe_legitimize_operands): Same.
+	(maybe_gen_insn): Same.
+	(maybe_expand_insn): Same.
+	(maybe_expand_jump_insn): Same.
+	(expand_insn): Same.
+	* optabs.h (create_expand_operand): Same.
+	(create_fixed_operand): Same.
+	(create_output_operand): Same.
+	(create_input_operand): Same.
+	(create_convert_operand_to): Same.
+	(create_convert_operand_from): Same.
+	* optinfo.h: Same.
+	* poly-int.h: Same.
+	* predict.c (optimize_insn_for_speed_p): Same.
+	(optimize_loop_for_size_p): Same.
+	(optimize_loop_for_speed_p): Same.
+	(optimize_loop_nest_for_speed_p): Same.
+	(get_base_value): Same.
+	(predicted_by_loop_heuristics_p): Same.
+	(predict_extra_loop_exits): Same.
+	(predict_loops): Same.
+	(predict_paths_for_bb): Same.
+	(predict_paths_leading_to): Same.
+	(propagate_freq): Same.
+	(pass_profile::execute): Same.
+	* predict.h: Same.
+	* profile-count.c (profile_count::differs_from_p): Same.
+	(profile_probability::differs_lot_from_p): Same.
+	* profile-count.h: Same.
+	* profile.c (branch_prob): Same.
+	* regrename.c (free_chain_data): Same.
+	(mark_conflict): Same.
+	(create_new_chain): Same.
+	(merge_overlapping_regs): Same.
+	(init_rename_info): Same.
+	(merge_chains): Same.
+	(regrename_analyze): Same.
+	(regrename_do_replace): Same.
+	(scan_rtx_reg): Same.
+	(record_out_operands): Same.
+	(build_def_use): Same.
+	* regrename.h: Same.
+	* reload.h: Same.
+	* reload1.c (init_reload): Same.
+	(maybe_fix_stack_asms): Same.
+	(copy_reloads): Same.
+	(count_pseudo): Same.
+	(count_spilled_pseudo): Same.
+	(find_reg): Same.
+	(find_reload_regs): Same.
+	(select_reload_regs): Same.
+	(spill_hard_reg): Same.
+	(fixup_eh_region_note): Same.
+	(set_reload_reg): Same.
+	(allocate_reload_reg): Same.
+	(compute_reload_subreg_offset): Same.
+	(reload_adjust_reg_for_icode): Same.
+	(emit_input_reload_insns): Same.
+	(emit_output_reload_insns): Same.
+	(do_input_reload): Same.
+	(inherit_piecemeal_p): Same.
+	* rtl.h: Same.
+	* sanopt.c (maybe_get_dominating_check): Same.
+	(maybe_optimize_ubsan_ptr_ifn): Same.
+	(can_remove_asan_check): Same.
+	(maybe_optimize_asan_check_ifn): Same.
+	(sanopt_optimize_walker): Same.
+	* sched-deps.c (add_dependence_list): Same.
+	(chain_to_prev_insn): Same.
+	(add_insn_mem_dependence): Same.
+	(create_insn_reg_set): Same.
+	(maybe_extend_reg_info_p): Same.
+	(sched_analyze_reg): Same.
+	(sched_analyze_1): Same.
+	(get_implicit_reg_pending_clobbers): Same.
+	(chain_to_prev_insn_p): Same.
+	(deps_analyze_insn): Same.
+	(deps_start_bb): Same.
+	(sched_free_deps): Same.
+	(init_deps): Same.
+	(init_deps_reg_last): Same.
+	(free_deps): Same.
+	* sched-ebb.c: Same.
+	* sched-int.h: Same.
+	* sched-rgn.c (add_branch_dependences): Same.
+	(concat_insn_mem_list): Same.
+	(deps_join): Same.
+	(sched_rgn_compute_dependencies): Same.
+	* sel-sched-ir.c (reset_target_context): Same.
+	(copy_deps_context): Same.
+	(init_id_from_df): Same.
+	(has_dependence_p): Same.
+	(change_loops_latches): Same.
+	(bb_top_order_comparator): Same.
+	(make_region_from_loop_preheader): Same.
+	(sel_init_pipelining): Same.
+	(get_loop_nest_for_rgn): Same.
+	(make_regions_from_the_rest): Same.
+	(sel_is_loop_preheader_p): Same.
+	* sel-sched-ir.h (inner_loop_header_p): Same.
+	(get_all_loop_exits): Same.
+	* selftest.h: Same.
+	* sese.c (sese_build_liveouts): Same.
+	(sese_insert_phis_for_liveouts): Same.
+	* sese.h (defined_in_sese_p): Same.
+	* sreal.c (sreal::stream_out): Same.
+	* sreal.h: Same.
+	* streamer-hooks.h: Same.
+	* target-globals.c (save_target_globals): Same.
+	* target-globals.h: Same.
+	* target.def: Same.
+	* target.h: Same.
+	* targhooks.c (default_has_ifunc_p): Same.
+	(default_empty_mask_is_expensive): Same.
+	(default_init_cost): Same.
+	* targhooks.h: Same.
+	* toplev.c: Same.
+	* tree-affine.c (aff_combination_mult): Same.
+	(aff_combination_expand): Same.
+	(aff_combination_constant_multiple_p): Same.
+	* tree-affine.h: Same.
+	* tree-cfg.c (build_gimple_cfg): Same.
+	(replace_loop_annotate_in_block): Same.
+	(replace_uses_by): Same.
+	(remove_bb): Same.
+	(dump_cfg_stats): Same.
+	(gimple_duplicate_sese_region): Same.
+	(gimple_duplicate_sese_tail): Same.
+	(move_block_to_fn): Same.
+	(replace_block_vars_by_duplicates): Same.
+	(move_sese_region_to_fn): Same.
+	(print_loops_bb): Same.
+	(print_loop): Same.
+	(print_loops): Same.
+	(debug): Same.
+	(debug_loops): Same.
+	* tree-cfg.h: Same.
+	* tree-chrec.c (chrec_fold_plus_poly_poly): Same.
+	(chrec_fold_multiply_poly_poly): Same.
+	(chrec_evaluate): Same.
+	(chrec_component_in_loop_num): Same.
+	(reset_evolution_in_loop): Same.
+	(is_multivariate_chrec): Same.
+	(chrec_contains_symbols): Same.
+	(nb_vars_in_chrec): Same.
+	(chrec_convert_1): Same.
+	(chrec_convert_aggressive): Same.
+	* tree-chrec.h: Same.
+	* tree-core.h: Same.
+	* tree-data-ref.c (dump_data_dependence_relation): Same.
+	(canonicalize_base_object_address): Same.
+	(data_ref_compare_tree): Same.
+	(prune_runtime_alias_test_list): Same.
+	(get_segment_min_max): Same.
+	(create_intersect_range_checks): Same.
+	(conflict_fn_no_dependence): Same.
+	(object_address_invariant_in_loop_p): Same.
+	(analyze_ziv_subscript): Same.
+	(analyze_siv_subscript_cst_affine): Same.
+	(analyze_miv_subscript): Same.
+	(analyze_overlapping_iterations): Same.
+	(build_classic_dist_vector_1): Same.
+	(add_other_self_distances): Same.
+	(same_access_functions): Same.
+	(build_classic_dir_vector): Same.
+	(subscript_dependence_tester_1): Same.
+	(subscript_dependence_tester): Same.
+	(access_functions_are_affine_or_constant_p): Same.
+	(get_references_in_stmt): Same.
+	(loop_nest_has_data_refs): Same.
+	(graphite_find_data_references_in_stmt): Same.
+	(find_data_references_in_bb): Same.
+	(get_base_for_alignment): Same.
+	(find_loop_nest_1): Same.
+	(find_loop_nest): Same.
+	* tree-data-ref.h (dr_alignment): Same.
+	(ddr_dependence_level): Same.
+	* tree-if-conv.c (fold_build_cond_expr): Same.
+	(add_to_predicate_list): Same.
+	(add_to_dst_predicate_list): Same.
+	(phi_convertible_by_degenerating_args): Same.
+	(idx_within_array_bound): Same.
+	(all_preds_critical_p): Same.
+	(pred_blocks_visited_p): Same.
+	(predicate_bbs): Same.
+	(build_region): Same.
+	(if_convertible_loop_p_1): Same.
+	(is_cond_scalar_reduction): Same.
+	(predicate_scalar_phi): Same.
+	(remove_conditions_and_labels): Same.
+	(combine_blocks): Same.
+	(version_loop_for_if_conversion): Same.
+	(versionable_outer_loop_p): Same.
+	(ifcvt_local_dce): Same.
+	(tree_if_conversion): Same.
+	(pass_if_conversion::gate): Same.
+	* tree-if-conv.h: Same.
+	* tree-inline.c (maybe_move_debug_stmts_to_successors): Same.
+	* tree-loop-distribution.c (bb_top_order_cmp): Same.
+	(free_rdg): Same.
+	(stmt_has_scalar_dependences_outside_loop): Same.
+	(copy_loop_before): Same.
+	(create_bb_after_loop): Same.
+	(const_with_all_bytes_same): Same.
+	(generate_memset_builtin): Same.
+	(generate_memcpy_builtin): Same.
+	(destroy_loop): Same.
+	(build_rdg_partition_for_vertex): Same.
+	(compute_access_range): Same.
+	(data_ref_segment_size): Same.
+	(latch_dominated_by_data_ref): Same.
+	(compute_alias_check_pairs): Same.
+	(fuse_memset_builtins): Same.
+	(finalize_partitions): Same.
+	(find_seed_stmts_for_distribution): Same.
+	(prepare_perfect_loop_nest): Same.
+	* tree-parloops.c (lambda_transform_legal_p): Same.
+	(loop_parallel_p): Same.
+	(reduc_stmt_res): Same.
+	(add_field_for_name): Same.
+	(create_call_for_reduction_1): Same.
+	(replace_uses_in_bb_by): Same.
+	(transform_to_exit_first_loop_alt): Same.
+	(try_transform_to_exit_first_loop_alt): Same.
+	(transform_to_exit_first_loop): Same.
+	(num_phis): Same.
+	(gen_parallel_loop): Same.
+	(gather_scalar_reductions): Same.
+	(get_omp_data_i_param): Same.
+	(try_create_reduction_list): Same.
+	(oacc_entry_exit_single_gang): Same.
+	(parallelize_loops): Same.
+	* tree-pass.h: Same.
+	* tree-predcom.c (determine_offset): Same.
+	(last_always_executed_block): Same.
+	(split_data_refs_to_components): Same.
+	(suitable_component_p): Same.
+	(valid_initializer_p): Same.
+	(find_looparound_phi): Same.
+	(insert_looparound_copy): Same.
+	(add_looparound_copies): Same.
+	(determine_roots_comp): Same.
+	(predcom_tmp_var): Same.
+	(initialize_root_vars): Same.
+	(initialize_root_vars_store_elim_1): Same.
+	(initialize_root_vars_store_elim_2): Same.
+	(finalize_eliminated_stores): Same.
+	(initialize_root_vars_lm): Same.
+	(remove_stmt): Same.
+	(determine_unroll_factor): Same.
+	(execute_pred_commoning_cbck): Same.
+	(base_names_in_chain_on): Same.
+	(combine_chains): Same.
+	(pcom_stmt_dominates_stmt_p): Same.
+	(try_combine_chains): Same.
+	(prepare_initializers_chain_store_elim): Same.
+	(prepare_initializers_chain): Same.
+	(prepare_initializers): Same.
+	(prepare_finalizers_chain): Same.
+	(prepare_finalizers): Same.
+	(insert_init_seqs): Same.
+	* tree-scalar-evolution.c (loop_phi_node_p): Same.
+	(compute_overall_effect_of_inner_loop): Same.
+	(add_to_evolution_1): Same.
+	(add_to_evolution): Same.
+	(follow_ssa_edge_binary): Same.
+	(follow_ssa_edge_expr): Same.
+	(backedge_phi_arg_p): Same.
+	(follow_ssa_edge_in_condition_phi_branch): Same.
+	(follow_ssa_edge_in_condition_phi): Same.
+	(follow_ssa_edge_inner_loop_phi): Same.
+	(follow_ssa_edge): Same.
+	(analyze_evolution_in_loop): Same.
+	(analyze_initial_condition): Same.
+	(interpret_loop_phi): Same.
+	(interpret_condition_phi): Same.
+	(interpret_rhs_expr): Same.
+	(interpret_expr): Same.
+	(interpret_gimple_assign): Same.
+	(analyze_scalar_evolution_1): Same.
+	(analyze_scalar_evolution): Same.
+	(analyze_scalar_evolution_for_address_of): Same.
+	(get_instantiated_value_entry): Same.
+	(loop_closed_phi_def): Same.
+	(instantiate_scev_name): Same.
+	(instantiate_scev_poly): Same.
+	(instantiate_scev_binary): Same.
+	(instantiate_scev_convert): Same.
+	(instantiate_scev_not): Same.
+	(instantiate_scev_r): Same.
+	(instantiate_scev): Same.
+	(resolve_mixers): Same.
+	(initialize_scalar_evolutions_analyzer): Same.
+	(scev_reset_htab): Same.
+	(scev_reset): Same.
+	(derive_simple_iv_with_niters): Same.
+	(simple_iv_with_niters): Same.
+	(expression_expensive_p): Same.
+	(final_value_replacement_loop): Same.
+	* tree-scalar-evolution.h (block_before_loop): Same.
+	* tree-ssa-address.h: Same.
+	* tree-ssa-dce.c (find_obviously_necessary_stmts): Same.
+	* tree-ssa-dom.c (edge_info::record_simple_equiv): Same.
+	(record_edge_info): Same.
+	* tree-ssa-live.c (var_map_base_fini): Same.
+	(remove_unused_locals): Same.
+	* tree-ssa-live.h: Same.
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): Same.
+	(pass_ch_vect::execute): Same.
+	(pass_ch::process_loop_p): Same.
+	* tree-ssa-loop-im.c (mem_ref_hasher::hash): Same.
+	(movement_possibility): Same.
+	(outermost_invariant_loop): Same.
+	(stmt_cost): Same.
+	(determine_max_movement): Same.
+	(invariantness_dom_walker::before_dom_children): Same.
+	(move_computations): Same.
+	(may_move_till): Same.
+	(force_move_till_op): Same.
+	(force_move_till): Same.
+	(memref_free): Same.
+	(record_mem_ref_loc): Same.
+	(set_ref_stored_in_loop): Same.
+	(mark_ref_stored): Same.
+	(sort_bbs_in_loop_postorder_cmp): Same.
+	(sort_locs_in_loop_postorder_cmp): Same.
+	(analyze_memory_references): Same.
+	(mem_refs_may_alias_p): Same.
+	(find_ref_loc_in_loop_cmp): Same.
+	(rewrite_mem_ref_loc::operator): Same.
+	(first_mem_ref_loc_1::operator): Same.
+	(sm_set_flag_if_changed::operator): Same.
+	(execute_sm_if_changed_flag_set): Same.
+	(execute_sm): Same.
+	(hoist_memory_references): Same.
+	(ref_always_accessed::operator): Same.
+	(refs_independent_p): Same.
+	(record_dep_loop): Same.
+	(ref_indep_loop_p_1): Same.
+	(ref_indep_loop_p): Same.
+	(can_sm_ref_p): Same.
+	(find_refs_for_sm): Same.
+	(loop_suitable_for_sm): Same.
+	(store_motion_loop): Same.
+	(store_motion): Same.
+	(fill_always_executed_in): Same.
+	* tree-ssa-loop-ivcanon.c (constant_after_peeling): Same.
+	(estimated_unrolled_size): Same.
+	(loop_edge_to_cancel): Same.
+	(remove_exits_and_undefined_stmts): Same.
+	(remove_redundant_iv_tests): Same.
+	(unloop_loops): Same.
+	(estimated_peeled_sequence_size): Same.
+	(try_peel_loop): Same.
+	(canonicalize_loop_induction_variables): Same.
+	(canonicalize_induction_variables): Same.
+	* tree-ssa-loop-ivopts.c (iv_inv_expr_hasher::equal): Same.
+	(name_info): Same.
+	(stmt_after_inc_pos): Same.
+	(contains_abnormal_ssa_name_p): Same.
+	(niter_for_exit): Same.
+	(find_bivs): Same.
+	(mark_bivs): Same.
+	(find_givs_in_bb): Same.
+	(find_induction_variables): Same.
+	(find_interesting_uses_cond): Same.
+	(outermost_invariant_loop_for_expr): Same.
+	(idx_find_step): Same.
+	(add_candidate_1): Same.
+	(add_iv_candidate_derived_from_uses): Same.
+	(alloc_use_cost_map): Same.
+	(prepare_decl_rtl): Same.
+	(generic_predict_doloop_p): Same.
+	(computation_cost): Same.
+	(determine_common_wider_type): Same.
+	(get_computation_aff_1): Same.
+	(get_use_type): Same.
+	(determine_group_iv_cost_address): Same.
+	(iv_period): Same.
+	(difference_cannot_overflow_p): Same.
+	(may_eliminate_iv): Same.
+	(determine_set_costs): Same.
+	(cheaper_cost_pair): Same.
+	(compare_cost_pair): Same.
+	(iv_ca_cand_for_group): Same.
+	(iv_ca_recount_cost): Same.
+	(iv_ca_set_remove_invs): Same.
+	(iv_ca_set_no_cp): Same.
+	(iv_ca_set_add_invs): Same.
+	(iv_ca_set_cp): Same.
+	(iv_ca_add_group): Same.
+	(iv_ca_cost): Same.
+	(iv_ca_compare_deps): Same.
+	(iv_ca_delta_reverse): Same.
+	(iv_ca_delta_commit): Same.
+	(iv_ca_cand_used_p): Same.
+	(iv_ca_delta_free): Same.
+	(iv_ca_new): Same.
+	(iv_ca_free): Same.
+	(iv_ca_dump): Same.
+	(iv_ca_extend): Same.
+	(iv_ca_narrow): Same.
+	(iv_ca_prune): Same.
+	(cheaper_cost_with_cand): Same.
+	(iv_ca_replace): Same.
+	(try_add_cand_for): Same.
+	(get_initial_solution): Same.
+	(try_improve_iv_set): Same.
+	(find_optimal_iv_set_1): Same.
+	(create_new_iv): Same.
+	(rewrite_use_compare): Same.
+	(remove_unused_ivs): Same.
+	(determine_scaling_factor): Same.
+	* tree-ssa-loop-ivopts.h: Same.
+	* tree-ssa-loop-manip.c (create_iv): Same.
+	(compute_live_loop_exits): Same.
+	(add_exit_phi): Same.
+	(add_exit_phis): Same.
+	(find_uses_to_rename_use): Same.
+	(find_uses_to_rename_def): Same.
+	(find_uses_to_rename_in_loop): Same.
+	(rewrite_into_loop_closed_ssa): Same.
+	(check_loop_closed_ssa_bb): Same.
+	(split_loop_exit_edge): Same.
+	(ip_end_pos): Same.
+	(ip_normal_pos): Same.
+	(copy_phi_node_args): Same.
+	(gimple_duplicate_loop_to_header_edge): Same.
+	(can_unroll_loop_p): Same.
+	(determine_exit_conditions): Same.
+	(scale_dominated_blocks_in_loop): Same.
+	(niter_for_unrolled_loop): Same.
+	(tree_transform_and_unroll_loop): Same.
+	(rewrite_all_phi_nodes_with_iv): Same.
+	* tree-ssa-loop-manip.h: Same.
+	* tree-ssa-loop-niter.c (number_of_iterations_ne_max): Same.
+	(number_of_iterations_ne): Same.
+	(assert_no_overflow_lt): Same.
+	(assert_loop_rolls_lt): Same.
+	(number_of_iterations_lt): Same.
+	(adjust_cond_for_loop_until_wrap): Same.
+	(tree_simplify_using_condition): Same.
+	(simplify_using_initial_conditions): Same.
+	(simplify_using_outer_evolutions): Same.
+	(loop_only_exit_p): Same.
+	(ssa_defined_by_minus_one_stmt_p): Same.
+	(number_of_iterations_popcount): Same.
+	(number_of_iterations_exit): Same.
+	(find_loop_niter): Same.
+	(finite_loop_p): Same.
+	(chain_of_csts_start): Same.
+	(get_val_for): Same.
+	(loop_niter_by_eval): Same.
+	(derive_constant_upper_bound_ops): Same.
+	(do_warn_aggressive_loop_optimizations): Same.
+	(record_estimate): Same.
+	(get_cst_init_from_scev): Same.
+	(record_nonwrapping_iv): Same.
+	(idx_infer_loop_bounds): Same.
+	(infer_loop_bounds_from_ref): Same.
+	(infer_loop_bounds_from_array): Same.
+	(infer_loop_bounds_from_pointer_arith): Same.
+	(infer_loop_bounds_from_signedness): Same.
+	(bound_index): Same.
+	(discover_iteration_bound_by_body_walk): Same.
+	(maybe_lower_iteration_bound): Same.
+	(estimate_numbers_of_iterations): Same.
+	(estimated_loop_iterations): Same.
+	(estimated_loop_iterations_int): Same.
+	(max_loop_iterations): Same.
+	(max_loop_iterations_int): Same.
+	(likely_max_loop_iterations): Same.
+	(likely_max_loop_iterations_int): Same.
+	(estimated_stmt_executions_int): Same.
+	(max_stmt_executions): Same.
+	(likely_max_stmt_executions): Same.
+	(estimated_stmt_executions): Same.
+	(stmt_dominates_stmt_p): Same.
+	(nowrap_type_p): Same.
+	(loop_exits_before_overflow): Same.
+	(scev_var_range_cant_overflow): Same.
+	(scev_probably_wraps_p): Same.
+	(free_numbers_of_iterations_estimates): Same.
+	* tree-ssa-loop-niter.h: Same.
+	* tree-ssa-loop-prefetch.c (release_mem_refs): Same.
+	(idx_analyze_ref): Same.
+	(analyze_ref): Same.
+	(gather_memory_references_ref): Same.
+	(mark_nontemporal_store): Same.
+	(emit_mfence_after_loop): Same.
+	(may_use_storent_in_loop_p): Same.
+	(mark_nontemporal_stores): Same.
+	(should_unroll_loop_p): Same.
+	(volume_of_dist_vector): Same.
+	(add_subscript_strides): Same.
+	(self_reuse_distance): Same.
+	(insn_to_prefetch_ratio_too_small_p): Same.
+	* tree-ssa-loop-split.c (split_at_bb_p): Same.
+	(patch_loop_exit): Same.
+	(find_or_create_guard_phi): Same.
+	(easy_exit_values): Same.
+	(connect_loop_phis): Same.
+	(connect_loops): Same.
+	(compute_new_first_bound): Same.
+	(split_loop): Same.
+	(tree_ssa_split_loops): Same.
+	* tree-ssa-loop-unswitch.c (tree_ssa_unswitch_loops): Same.
+	(is_maybe_undefined): Same.
+	(tree_may_unswitch_on): Same.
+	(simplify_using_entry_checks): Same.
+	(tree_unswitch_single_loop): Same.
+	(tree_unswitch_loop): Same.
+	(tree_unswitch_outer_loop): Same.
+	(empty_bb_without_guard_p): Same.
+	(used_outside_loop_p): Same.
+	(get_vop_from_header): Same.
+	(hoist_guard): Same.
+	* tree-ssa-loop.c (gate_oacc_kernels): Same.
+	(get_lsm_tmp_name): Same.
+	* tree-ssa-loop.h: Same.
+	* tree-ssa-reassoc.c (add_repeat_to_ops_vec): Same.
+	(build_and_add_sum): Same.
+	(no_side_effect_bb): Same.
+	(get_ops): Same.
+	(linearize_expr): Same.
+	(should_break_up_subtract): Same.
+	(linearize_expr_tree): Same.
+	* tree-ssa-scopedtables.c: Same.
+	* tree-ssa-scopedtables.h: Same.
+	* tree-ssa-structalias.c (condense_visit): Same.
+	(label_visit): Same.
+	(dump_pred_graph): Same.
+	(perform_var_substitution): Same.
+	(move_complex_constraints): Same.
+	(remove_preds_and_fake_succs): Same.
+	* tree-ssa-threadupdate.c (dbds_continue_enumeration_p): Same.
+	(determine_bb_domination_status): Same.
+	(duplicate_thread_path): Same.
+	(thread_through_all_blocks): Same.
+	* tree-ssa-threadupdate.h: Same.
+	* tree-streamer-in.c (streamer_read_string_cst): Same.
+	(input_identifier): Same.
+	(unpack_ts_type_common_value_fields): Same.
+	(unpack_ts_block_value_fields): Same.
+	(unpack_ts_translation_unit_decl_value_fields): Same.
+	(unpack_ts_omp_clause_value_fields): Same.
+	(streamer_read_tree_bitfields): Same.
+	(streamer_alloc_tree): Same.
+	(lto_input_ts_common_tree_pointers): Same.
+	(lto_input_ts_vector_tree_pointers): Same.
+	(lto_input_ts_poly_tree_pointers): Same.
+	(lto_input_ts_complex_tree_pointers): Same.
+	(lto_input_ts_decl_minimal_tree_pointers): Same.
+	(lto_input_ts_decl_common_tree_pointers): Same.
+	(lto_input_ts_decl_non_common_tree_pointers): Same.
+	(lto_input_ts_decl_with_vis_tree_pointers): Same.
+	(lto_input_ts_field_decl_tree_pointers): Same.
+	(lto_input_ts_function_decl_tree_pointers): Same.
+	(lto_input_ts_type_common_tree_pointers): Same.
+	(lto_input_ts_type_non_common_tree_pointers): Same.
+	(lto_input_ts_list_tree_pointers): Same.
+	(lto_input_ts_vec_tree_pointers): Same.
+	(lto_input_ts_exp_tree_pointers): Same.
+	(lto_input_ts_block_tree_pointers): Same.
+	(lto_input_ts_binfo_tree_pointers): Same.
+	(lto_input_ts_constructor_tree_pointers): Same.
+	(lto_input_ts_omp_clause_tree_pointers): Same.
+	(streamer_read_tree_body): Same.
+	* tree-streamer.h: Same.
+	* tree-switch-conversion.c (bit_test_cluster::is_beneficial): Same.
+	* tree-vect-data-refs.c (vect_get_smallest_scalar_type): Same.
+	(vect_analyze_possibly_independent_ddr): Same.
+	(vect_analyze_data_ref_dependence): Same.
+	(vect_compute_data_ref_alignment): Same.
+	(vect_enhance_data_refs_alignment): Same.
+	(vect_analyze_data_ref_access): Same.
+	(vect_check_gather_scatter): Same.
+	(vect_find_stmt_data_reference): Same.
+	(vect_create_addr_base_for_vector_ref): Same.
+	(vect_setup_realignment): Same.
+	(vect_supportable_dr_alignment): Same.
+	* tree-vect-loop-manip.c (rename_variables_in_bb): Same.
+	(adjust_phi_and_debug_stmts): Same.
+	(vect_set_loop_mask): Same.
+	(add_preheader_seq): Same.
+	(vect_maybe_permute_loop_masks): Same.
+	(vect_set_loop_masks_directly): Same.
+	(vect_set_loop_condition_masked): Same.
+	(vect_set_loop_condition_unmasked): Same.
+	(slpeel_duplicate_current_defs_from_edges): Same.
+	(slpeel_add_loop_guard): Same.
+	(slpeel_can_duplicate_loop_p): Same.
+	(create_lcssa_for_virtual_phi): Same.
+	(iv_phi_p): Same.
+	(vect_update_ivs_after_vectorizer): Same.
+	(vect_gen_vector_loop_niters_mult_vf): Same.
+	(slpeel_update_phi_nodes_for_loops): Same.
+	(slpeel_update_phi_nodes_for_guard1): Same.
+	(find_guard_arg): Same.
+	(slpeel_update_phi_nodes_for_guard2): Same.
+	(slpeel_update_phi_nodes_for_lcssa): Same.
+	(vect_do_peeling): Same.
+	(vect_create_cond_for_alias_checks): Same.
+	(vect_loop_versioning): Same.
+	* tree-vect-loop.c (vect_determine_vf_for_stmt): Same.
+	(vect_inner_phi_in_double_reduction_p): Same.
+	(vect_analyze_scalar_cycles_1): Same.
+	(vect_fixup_scalar_cycles_with_patterns): Same.
+	(vect_get_loop_niters): Same.
+	(bb_in_loop_p): Same.
+	(vect_get_max_nscalars_per_iter): Same.
+	(vect_verify_full_masking): Same.
+	(vect_compute_single_scalar_iteration_cost): Same.
+	(vect_analyze_loop_form_1): Same.
+	(vect_analyze_loop_form): Same.
+	(vect_active_double_reduction_p): Same.
+	(vect_analyze_loop_operations): Same.
+	(neutral_op_for_slp_reduction): Same.
+	(vect_is_simple_reduction): Same.
+	(vect_model_reduction_cost): Same.
+	(get_initial_def_for_reduction): Same.
+	(get_initial_defs_for_reduction): Same.
+	(vect_create_epilog_for_reduction): Same.
+	(vectorize_fold_left_reduction): Same.
+	(vectorizable_reduction): Same.
+	(vectorizable_induction): Same.
+	(vectorizable_live_operation): Same.
+	(loop_niters_no_overflow): Same.
+	(vect_get_loop_mask): Same.
+	(vect_transform_loop_stmt): Same.
+	(vect_transform_loop): Same.
+	* tree-vect-patterns.c (vect_reassociating_reduction_p): Same.
+	(vect_determine_precisions): Same.
+	(vect_pattern_recog_1): Same.
+	* tree-vect-slp.c (vect_analyze_slp_instance): Same.
+	* tree-vect-stmts.c (stmt_vectype): Same.
+	(process_use): Same.
+	(vect_init_vector_1): Same.
+	(vect_truncate_gather_scatter_offset): Same.
+	(get_group_load_store_type): Same.
+	(vect_build_gather_load_calls): Same.
+	(vect_get_strided_load_store_ops): Same.
+	(vectorizable_simd_clone_call): Same.
+	(vectorizable_store): Same.
+	(permute_vec_elements): Same.
+	(vectorizable_load): Same.
+	(vect_transform_stmt): Same.
+	(supportable_widening_operation): Same.
+	* tree-vectorizer.c (vec_info::replace_stmt): Same.
+	(vec_info::free_stmt_vec_info): Same.
+	(vect_free_loop_info_assumptions): Same.
+	(vect_loop_vectorized_call): Same.
+	(set_uid_loop_bbs): Same.
+	(vectorize_loops): Same.
+	* tree-vectorizer.h (STMT_VINFO_BB_VINFO): Same.
+	* tree.c (add_tree_to_fld_list): Same.
+	(fld_type_variant_equal_p): Same.
+	(fld_decl_context): Same.
+	(fld_incomplete_type_of): Same.
+	(free_lang_data_in_binfo): Same.
+	(need_assembler_name_p): Same.
+	(find_decls_types_r): Same.
+	(get_eh_types_for_runtime): Same.
+	(find_decls_types_in_eh_region): Same.
+	(find_decls_types_in_node): Same.
+	(assign_assembler_name_if_needed): Same.
+	* value-prof.c (stream_out_histogram_value): Same.
+	* value-prof.h: Same.
+	* var-tracking.c (use_narrower_mode): Same.
+	(prepare_call_arguments): Same.
+	(vt_expand_loc_callback): Same.
+	(resolve_expansions_pending_recursion): Same.
+	(vt_expand_loc): Same.
+	* varasm.c (const_hash_1): Same.
+	(compare_constant): Same.
+	(tree_output_constant_def): Same.
+	(simplify_subtraction): Same.
+	(get_pool_constant): Same.
+	(output_constant_pool_2): Same.
+	(output_constant_pool_1): Same.
+	(mark_constants_in_pattern): Same.
+	(mark_constant_pool): Same.
+	(get_section_anchor): Same.
+	* vr-values.c (compare_range_with_value): Same.
+	(vr_values::extract_range_from_phi_node): Same.
+	* vr-values.h: Same.
+	* web.c (unionfind_union): Same.
+	* wide-int.h: Same.
+
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
 	* align.h: Change class-key from class to struct and vice versa
 	to match convention and avoid -Wclass-is-pod and -Wstruct-no-pod.
 	* alloc-pool.h: Same.

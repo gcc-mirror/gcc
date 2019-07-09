@@ -96,7 +96,7 @@ class expr_hash_elt
 
   /* A unique stamp, typically the address of the hash
      element itself, used in removing entries from the table.  */
-  struct expr_hash_elt *m_stamp;
+  class expr_hash_elt *m_stamp;
 
   /* We should never be making assignments between objects in this class.
      Though it might allow us to exploit C++11 move semantics if we

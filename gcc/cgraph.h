@@ -912,9 +912,8 @@ struct cgraph_edge_hasher : ggc_ptr_hash<cgraph_edge>
 /* The cgraph data structure.
    Each function decl has assigned cgraph_node listing callees and callers.  */
 
-class GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
+struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 {
-public:
   friend class symbol_table;
 
   /* Remove the node from cgraph and all inline clones inlined into it.
@@ -1506,7 +1505,7 @@ struct cgraph_node_set_def
 typedef cgraph_node_set_def *cgraph_node_set;
 typedef struct varpool_node_set_def *varpool_node_set;
 
-class varpool_node;
+struct varpool_node;
 
 /* A varpool node set is a collection of varpool nodes.  A varpool node
    can appear in multiple sets.  */
@@ -1620,7 +1619,7 @@ public:
 
   /* LTO streaming.  */
   void stream_out (struct output_block *) const;
-  void stream_in (struct lto_input_block *, struct data_in *data_in);
+  void stream_in (class lto_input_block *, class data_in *data_in);
 
 private:
   bool combine_speculation_with (tree, HOST_WIDE_INT, bool, tree);
@@ -1679,7 +1678,7 @@ class GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
 	   for_user)) cgraph_edge
 {
 public:
-  friend class cgraph_node;
+  friend struct cgraph_node;
   friend class symbol_table;
 
   /* Remove the edge in the cgraph.  */
@@ -2078,9 +2077,9 @@ struct asmname_hasher : ggc_ptr_hash <symtab_node>
 class GTY((tag ("SYMTAB"))) symbol_table
 {
 public:
-  friend class symtab_node;
-  friend class cgraph_node;
-  friend class cgraph_edge;
+  friend struct symtab_node;
+  friend struct cgraph_node;
+  friend struct cgraph_edge;
 
   symbol_table (): cgraph_max_uid (1), cgraph_max_summary_id (0),
   edges_max_uid (1), edges_max_summary_id (0)

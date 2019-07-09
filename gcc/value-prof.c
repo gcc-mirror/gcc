@@ -345,7 +345,7 @@ stream_out_histogram_value (struct output_block *ob, histogram_value hist)
 /* Dump information about HIST to DUMP_FILE.  */
 
 void
-stream_in_histogram_value (struct lto_input_block *ib, gimple *stmt)
+stream_in_histogram_value (class lto_input_block *ib, gimple *stmt)
 {
   enum hist_type type;
   unsigned int ncounters = 0;

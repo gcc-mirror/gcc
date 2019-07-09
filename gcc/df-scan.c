@@ -53,25 +53,25 @@ public:
   auto_vec<df_mw_hardreg *, 32> mw_vec;
 };
 
-static void df_ref_record (enum df_ref_class, struct df_collection_rec *,
+static void df_ref_record (enum df_ref_class, class df_collection_rec *,
 			   rtx, rtx *,
 			   basic_block, struct df_insn_info *,
 			   enum df_ref_type, int ref_flags);
-static void df_def_record_1 (struct df_collection_rec *, rtx *,
+static void df_def_record_1 (class df_collection_rec *, rtx *,
 			     basic_block, struct df_insn_info *,
 			     int ref_flags);
-static void df_defs_record (struct df_collection_rec *, rtx,
+static void df_defs_record (class df_collection_rec *, rtx,
 			    basic_block, struct df_insn_info *,
 			    int ref_flags);
-static void df_uses_record (struct df_collection_rec *,
+static void df_uses_record (class df_collection_rec *,
 			    rtx *, enum df_ref_type,
 			    basic_block, struct df_insn_info *,
 			    int ref_flags);
 
 static void df_install_ref_incremental (df_ref);
-static void df_insn_refs_collect (struct df_collection_rec*,
+static void df_insn_refs_collect (class df_collection_rec*,
 				  basic_block, struct df_insn_info *);
-static void df_canonize_collection_rec (struct df_collection_rec *);
+static void df_canonize_collection_rec (class df_collection_rec *);
 
 static void df_get_regular_block_artificial_uses (bitmap);
 static void df_get_eh_block_artificial_uses (bitmap);
@@ -84,13 +84,13 @@ static void df_grow_ref_info (struct df_ref_info *, unsigned int);
 static void df_ref_chain_delete_du_chain (df_ref);
 static void df_ref_chain_delete (df_ref);
 
-static void df_refs_add_to_chains (struct df_collection_rec *,
+static void df_refs_add_to_chains (class df_collection_rec *,
 				   basic_block, rtx_insn *, unsigned int);
 
-static bool df_insn_refs_verify (struct df_collection_rec *, basic_block,
+static bool df_insn_refs_verify (class df_collection_rec *, basic_block,
 				 rtx_insn *, bool);
-static void df_entry_block_defs_collect (struct df_collection_rec *, bitmap);
-static void df_exit_block_uses_collect (struct df_collection_rec *, bitmap);
+static void df_entry_block_defs_collect (class df_collection_rec *, bitmap);
+static void df_exit_block_uses_collect (class df_collection_rec *, bitmap);
 static void df_install_ref (df_ref, struct df_reg_info *,
 			    struct df_ref_info *, bool);
 
@@ -983,7 +983,7 @@ df_insn_delete (rtx_insn *insn)
 /* Free all of the refs and the mw_hardregs in COLLECTION_REC.  */
 
 static void
-df_free_collection_rec (struct df_collection_rec *collection_rec)
+df_free_collection_rec (class df_collection_rec *collection_rec)
 {
   unsigned int ix;
   struct df_scan_problem_data *problem_data
@@ -1014,7 +1014,7 @@ df_insn_rescan (rtx_insn *insn)
   unsigned int uid = INSN_UID (insn);
   struct df_insn_info *insn_info = NULL;
   basic_block bb = BLOCK_FOR_INSN (insn);
-  struct df_collection_rec collection_rec;
+  class df_collection_rec collection_rec;
 
   if ((!df) || (!INSN_P (insn)))
     return false;
@@ -1976,7 +1976,7 @@ df_notes_rescan (rtx_insn *insn)
     {
       basic_block bb = BLOCK_FOR_INSN (insn);
       rtx note;
-      struct df_collection_rec collection_rec;
+      class df_collection_rec collection_rec;
       unsigned int i;
 
       df_mw_hardreg_chain_delete_eq_uses (insn_info);
@@ -2269,7 +2269,7 @@ df_sort_and_compress_mws (vec<df_mw_hardreg *, va_heap> *mw_vec)
 /* Sort and remove duplicates from the COLLECTION_REC.  */
 
 static void
-df_canonize_collection_rec (struct df_collection_rec *collection_rec)
+df_canonize_collection_rec (class df_collection_rec *collection_rec)
 {
   df_sort_and_compress_refs (&collection_rec->def_vec);
   df_sort_and_compress_refs (&collection_rec->use_vec);
@@ -2405,7 +2405,7 @@ df_install_mws (const vec<df_mw_hardreg *, va_heap> *old_vec)
    chains and update other necessary information.  */
 
 static void
-df_refs_add_to_chains (struct df_collection_rec *collection_rec,
+df_refs_add_to_chains (class df_collection_rec *collection_rec,
 		       basic_block bb, rtx_insn *insn, unsigned int flags)
 {
   if (insn)
@@ -2467,7 +2467,7 @@ df_refs_add_to_chains (struct df_collection_rec *collection_rec,
 
 static df_ref
 df_ref_create_structure (enum df_ref_class cl,
-			 struct df_collection_rec *collection_rec,
+			 class df_collection_rec *collection_rec,
 			 rtx reg, rtx *loc,
 			 basic_block bb, struct df_insn_info *info,
 			 enum df_ref_type ref_type,
@@ -2553,7 +2553,7 @@ df_ref_create_structure (enum df_ref_class cl,
 
 static void
 df_ref_record (enum df_ref_class cl,
-	       struct df_collection_rec *collection_rec,
+	       class df_collection_rec *collection_rec,
                rtx reg, rtx *loc,
 	       basic_block bb, struct df_insn_info *insn_info,
 	       enum df_ref_type ref_type,
@@ -2625,7 +2625,7 @@ df_ref_record (enum df_ref_class cl,
    Any change here has to be matched in df_find_hard_reg_defs_1.  */
 
 static void
-df_def_record_1 (struct df_collection_rec *collection_rec,
+df_def_record_1 (class df_collection_rec *collection_rec,
                  rtx *loc, basic_block bb, struct df_insn_info *insn_info,
 		 int flags)
 {
@@ -2690,7 +2690,7 @@ df_def_record_1 (struct df_collection_rec *collection_rec,
    here has to be matched in df_find_hard_reg_defs.  */
 
 static void
-df_defs_record (struct df_collection_rec *collection_rec,
+df_defs_record (class df_collection_rec *collection_rec,
                 rtx x, basic_block bb, struct df_insn_info *insn_info,
 		int flags)
 {
@@ -2796,7 +2796,7 @@ df_find_hard_reg_defs (rtx x, HARD_REG_SET *defs)
 /* Process all the registers used in the rtx at address LOC.  */
 
 static void
-df_uses_record (struct df_collection_rec *collection_rec,
+df_uses_record (class df_collection_rec *collection_rec,
                 rtx *loc, enum df_ref_type ref_type,
 		basic_block bb, struct df_insn_info *insn_info,
 		int flags)
@@ -3055,7 +3055,7 @@ df_uses_record (struct df_collection_rec *collection_rec,
 /* For all DF_REF_CONDITIONAL defs, add a corresponding uses.  */
 
 static void
-df_get_conditional_uses (struct df_collection_rec *collection_rec)
+df_get_conditional_uses (class df_collection_rec *collection_rec)
 {
   unsigned int ix;
   df_ref ref;
@@ -3079,7 +3079,7 @@ df_get_conditional_uses (struct df_collection_rec *collection_rec)
 /* Get call's extra defs and uses (track caller-saved registers). */
 
 static void
-df_get_call_refs (struct df_collection_rec *collection_rec,
+df_get_call_refs (class df_collection_rec *collection_rec,
                   basic_block bb,
                   struct df_insn_info *insn_info,
                   int flags)
@@ -3162,7 +3162,7 @@ df_get_call_refs (struct df_collection_rec *collection_rec,
    and reg chains. */
 
 static void
-df_insn_refs_collect (struct df_collection_rec *collection_rec,
+df_insn_refs_collect (class df_collection_rec *collection_rec,
 		      basic_block bb, struct df_insn_info *insn_info)
 {
   rtx note;
@@ -3258,7 +3258,7 @@ df_recompute_luids (basic_block bb)
    to COLLECTION_REC.  */
 
 static void
-df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
+df_bb_refs_collect (class df_collection_rec *collection_rec, basic_block bb)
 {
   collection_rec->def_vec.truncate (0);
   collection_rec->use_vec.truncate (0);
@@ -3558,7 +3558,7 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
    reference to include.  */
 
 static void
-df_entry_block_defs_collect (struct df_collection_rec *collection_rec,
+df_entry_block_defs_collect (class df_collection_rec *collection_rec,
 			     bitmap entry_block_defs)
 {
   unsigned int i;
@@ -3580,7 +3580,7 @@ df_entry_block_defs_collect (struct df_collection_rec *collection_rec,
 static void
 df_record_entry_block_defs (bitmap entry_block_defs)
 {
-  struct df_collection_rec collection_rec;
+  class df_collection_rec collection_rec;
   df_entry_block_defs_collect (&collection_rec, entry_block_defs);
 
   /* Process bb_refs chain */
@@ -3715,7 +3715,7 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
    It uses df->exit_block_uses to determine register to include.  */
 
 static void
-df_exit_block_uses_collect (struct df_collection_rec *collection_rec, bitmap exit_block_uses)
+df_exit_block_uses_collect (class df_collection_rec *collection_rec, bitmap exit_block_uses)
 {
   unsigned int i;
   bitmap_iterator bi;
@@ -3744,7 +3744,7 @@ df_exit_block_uses_collect (struct df_collection_rec *collection_rec, bitmap exi
 static void
 df_record_exit_block_uses (bitmap exit_block_uses)
 {
-  struct df_collection_rec collection_rec;
+  class df_collection_rec collection_rec;
   df_exit_block_uses_collect (&collection_rec, exit_block_uses);
 
   /* Process bb_refs chain */
@@ -4052,7 +4052,7 @@ df_mws_verify (const vec<df_mw_hardreg *, va_heap> *new_rec,
    If ABORT_IF_FAIL is set, this function never returns false.  */
 
 static bool
-df_insn_refs_verify (struct df_collection_rec *collection_rec,
+df_insn_refs_verify (class df_collection_rec *collection_rec,
 		     basic_block bb,
                      rtx_insn *insn,
 		     bool abort_if_fail)
@@ -4093,7 +4093,7 @@ df_bb_verify (basic_block bb)
 {
   rtx_insn *insn;
   struct df_scan_bb_info *bb_info = df_scan_get_bb_info (bb->index);
-  struct df_collection_rec collection_rec;
+  class df_collection_rec collection_rec;
 
   gcc_assert (bb_info);
 

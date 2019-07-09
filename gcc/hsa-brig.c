@@ -150,9 +150,8 @@ struct hsa_brig_data_chunk
 
 /* Structure representing a BRIG section, holding and writing its data.  */
 
-class hsa_brig_section
+struct hsa_brig_section
 {
-public:
   /* Section name that will be output to the BRIG.  */
   const char *section_name;
   /* Size in bytes of all data stored in the section.  */
@@ -579,7 +578,7 @@ static void emit_immediate_operand (hsa_op_immed *imm);
    Return the offset of the directive.  */
 
 static unsigned
-emit_directive_variable (struct hsa_symbol *symbol)
+emit_directive_variable (class hsa_symbol *symbol)
 {
   struct BrigDirectiveVariable dirvar;
   unsigned name_offset;

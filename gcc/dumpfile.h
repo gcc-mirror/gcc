@@ -648,7 +648,7 @@ extern void dump_combine_total_stats (FILE *);
 /* In cfghooks.c  */
 extern void dump_bb (FILE *, basic_block, int, dump_flags_t);
 
-struct opt_pass;
+class opt_pass;
 
 namespace gcc {
 

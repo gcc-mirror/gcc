@@ -1970,7 +1970,7 @@ DEFHOOK
  "non-NULL, it identifies the loop being vectorized; otherwise a single block "
  "is being vectorized.",
  void *,
- (struct loop *loop_info),
+ (class loop *loop_info),
  default_init_cost)
 
 /* Target function to record N statements of the given kind using the
@@ -1987,7 +1987,7 @@ DEFHOOK
  "revised.",
  unsigned,
  (void *data, int count, enum vect_cost_for_stmt kind,
-  struct _stmt_vec_info *stmt_info, int misalign,
+  class _stmt_vec_info *stmt_info, int misalign,
   enum vect_cost_model_location where),
  default_add_stmt_cost)
 
@@ -2665,7 +2665,7 @@ the loop is to be unrolled. The parameter @var{loop} is a pointer to\n\
 the loop, which is going to be checked for unrolling. This target hook\n\
 is required only when the target has special constraints like maximum\n\
 number of memory accesses.",
- unsigned, (unsigned nunroll, struct loop *loop),
+ unsigned, (unsigned nunroll, class loop *loop),
  NULL)
 
 /* True if X is a legitimate MODE-mode immediate operand.  */
@@ -3182,7 +3182,7 @@ DEFHOOK
   version of this hook assumes the system C library errno location\
   is either a declaration of type int or accessed by dereferencing\
   a pointer to int.",
- bool, (struct ao_ref *ref),
+ bool, (ao_ref *ref),
  default_ref_may_alias_errno)
 
 /* Support for named address spaces.  */
@@ -4243,7 +4243,7 @@ for a particular loop.  The parameter @var{loop} is a pointer to the loop.\n\
 This target hook is required only when the target supports low-overhead\n\
 loops, and will help ivopts to make some decisions.\n\
 The default version of this hook returns false.",
- bool, (struct loop *loop),
+ bool, (class loop *loop),
  default_predict_doloop_p)
 
 DEFHOOK

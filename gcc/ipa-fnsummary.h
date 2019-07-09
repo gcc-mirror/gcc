@@ -184,7 +184,7 @@ public:
 
   static ipa_fn_summary_t *create_ggc (symbol_table *symtab)
   {
-    struct ipa_fn_summary_t *summary = new (ggc_alloc <ipa_fn_summary_t> ())
+    class ipa_fn_summary_t *summary = new (ggc_alloc <ipa_fn_summary_t> ())
       ipa_fn_summary_t (symtab);
     summary->disable_insertion_hook ();
     return summary;

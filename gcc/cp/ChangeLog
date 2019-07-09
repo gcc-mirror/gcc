@@ -1,6 +1,13 @@
 2019-07-09  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/61339
+	* cp-tree.h: Change class-key of PODs to struct and others to class.
+	* search.c: Same.
+	* semantics.c (finalize_nrv_r): Same.
+
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
 	* constexpr.c (cxx_eval_call_expression): Change class-key from class
 	to struct and vice versa to match convention and avoid -Wclass-is-pod
 	and -Wstruct-no-pod.

@@ -103,11 +103,11 @@ along with GCC; see the file COPYING3.  If not see
    to the OLD loop or the outer loop of OLD now is inside LOOP.  */
 
 static void
-merge_loop_tree (struct loop *loop, struct loop *old)
+merge_loop_tree (class loop *loop, class loop *old)
 {
   basic_block *bbs;
   int i, n;
-  struct loop *subloop;
+  class loop *subloop;
   edge e;
   edge_iterator ei;
 
@@ -186,11 +186,11 @@ bb_prevents_fusion_p (basic_block bb)
    If so return true, otherwise return false.  */
 
 static bool
-unroll_jam_possible_p (struct loop *outer, struct loop *loop)
+unroll_jam_possible_p (class loop *outer, class loop *loop)
 {
   basic_block *bbs;
   int i, n;
-  struct tree_niter_desc niter;
+  class tree_niter_desc niter;
 
   /* When fusing the loops we skip the latch block
      of the first one, so it mustn't have any effects to
@@ -301,9 +301,9 @@ unroll_jam_possible_p (struct loop *outer, struct loop *loop)
    be in appropriate form.  */
 
 static void
-fuse_loops (struct loop *loop)
+fuse_loops (class loop *loop)
 {
-  struct loop *next = loop->next;
+  class loop *next = loop->next;
 
   while (next)
     {
@@ -353,7 +353,7 @@ fuse_loops (struct loop *loop)
 
       merge_loop_tree (loop, next);
       gcc_assert (!next->num_nodes);
-      struct loop *ln = next->next;
+      class loop *ln = next->next;
       delete_loop (next);
       next = ln;
     }
@@ -422,7 +422,7 @@ adjust_unroll_factor (struct data_dependence_relation *ddr,
 static unsigned int
 tree_loop_unroll_and_jam (void)
 {
-  struct loop *loop;
+  class loop *loop;
   bool changed = false;
 
   gcc_assert (scev_initialized_p ());
@@ -430,7 +430,7 @@ tree_loop_unroll_and_jam (void)
   /* Go through all innermost loops.  */
   FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
     {
-      struct loop *outer = loop_outer (loop);
+      class loop *outer = loop_outer (loop);
 
       if (loop_depth (loop) < 2
 	  || optimize_loop_nest_for_size_p (outer))
@@ -442,7 +442,7 @@ tree_loop_unroll_and_jam (void)
       vec<data_reference_p> datarefs;
       vec<ddr_p> dependences;
       unsigned unroll_factor, profit_unroll, removed;
-      struct tree_niter_desc desc;
+      class tree_niter_desc desc;
       bool unroll = false;
 
       auto_vec<loop_p, 3> loop_nest;

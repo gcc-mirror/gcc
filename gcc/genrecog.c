@@ -950,7 +950,7 @@ list_head <T>::singleton () const
   return first == last ? first : 0;
 }
 
-struct state;
+class state;
 
 /* Describes a possible successful return from a routine.  */
 struct acceptance_type
@@ -1499,7 +1499,7 @@ operator != (const int_set &a, const int_set &b)
   return !operator == (a, b);
 }
 
-struct decision;
+class decision;
 
 /* Represents a transition between states, dependent on the result of
    a test T.  */
@@ -2244,7 +2244,7 @@ optimize_subroutine_group (const char *type, state *root)
 	   st.longest_backtrack, st.longest_backtrack_code);
 }
 
-struct merge_pattern_info;
+class merge_pattern_info;
 
 /* Represents a transition from one pattern to another.  */
 class merge_pattern_transition

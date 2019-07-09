@@ -394,10 +394,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-rtl.h"
 
 struct target_ira default_target_ira;
-struct target_ira_int default_target_ira_int;
+class target_ira_int default_target_ira_int;
 #if SWITCHABLE_TARGET
 struct target_ira *this_target_ira = &default_target_ira;
-struct target_ira_int *this_target_ira_int = &default_target_ira_int;
+class target_ira_int *this_target_ira_int = &default_target_ira_int;
 #endif
 
 /* A modified value of flag `-fira-verbose' used internally.  */
@@ -411,7 +411,7 @@ int ira_spilled_reg_stack_slots_num;
 
 /* The following array contains info about spilled pseudo-registers
    stack slots used in current function so far.  */
-struct ira_spilled_reg_stack_slot *ira_spilled_reg_stack_slots;
+class ira_spilled_reg_stack_slot *ira_spilled_reg_stack_slots;
 
 /* Correspondingly overall cost of the allocation, overall cost before
    reload, cost of the allocnos assigned to hard-registers, cost of
@@ -4061,7 +4061,7 @@ setup_reg_equiv (void)
 
 /* Print chain C to FILE.  */
 static void
-print_insn_chain (FILE *file, struct insn_chain *c)
+print_insn_chain (FILE *file, class insn_chain *c)
 {
   fprintf (file, "insn=%d, ", INSN_UID (c->insn));
   bitmap_print (file, &c->live_throughout, "live_throughout: ", ", ");
@@ -4073,7 +4073,7 @@ print_insn_chain (FILE *file, struct insn_chain *c)
 static void
 print_insn_chains (FILE *file)
 {
-  struct insn_chain *c;
+  class insn_chain *c;
   for (c = reload_insn_chain; c ; c = c->next)
     print_insn_chain (file, c);
 }
@@ -4134,10 +4134,10 @@ static void
 build_insn_chain (void)
 {
   unsigned int i;
-  struct insn_chain **p = &reload_insn_chain;
+  class insn_chain **p = &reload_insn_chain;
   basic_block bb;
-  struct insn_chain *c = NULL;
-  struct insn_chain *next = NULL;
+  class insn_chain *c = NULL;
+  class insn_chain *next = NULL;
   auto_bitmap live_relevant_regs;
   auto_bitmap elim_regset;
   /* live_subregs is a vector used to keep accurate information about
@@ -5467,11 +5467,11 @@ ira (FILE *f)
 	{
 	  ira_spilled_reg_stack_slots_num = 0;
 	  ira_spilled_reg_stack_slots
-	    = ((struct ira_spilled_reg_stack_slot *)
+	    = ((class ira_spilled_reg_stack_slot *)
 	       ira_allocate (max_regno
-			     * sizeof (struct ira_spilled_reg_stack_slot)));
+			     * sizeof (class ira_spilled_reg_stack_slot)));
 	  memset ((void *)ira_spilled_reg_stack_slots, 0,
-		  max_regno * sizeof (struct ira_spilled_reg_stack_slot));
+		  max_regno * sizeof (class ira_spilled_reg_stack_slot));
 	}
     }
   allocate_initial_values ();

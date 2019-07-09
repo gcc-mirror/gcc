@@ -585,7 +585,7 @@ c_parser_gimple_compound_statement (gimple_parser &parser, gimple_seq *seq)
 				  profile_probability::always ());
 
 	      /* We leave the proper setting to fixup.  */
-	      struct loop *loop_father = loops_for_fn (cfun)->tree_root;
+	      class loop *loop_father = loops_for_fn (cfun)->tree_root;
 	      /* If the new block is a loop header, allocate a loop
 		 struct.  Fixup will take care of proper placement within
 		 the loop tree.  */
@@ -598,7 +598,7 @@ c_parser_gimple_compound_statement (gimple_parser &parser, gimple_seq *seq)
 		    }
 		  else
 		    {
-		      struct loop *loop = alloc_loop ();
+		      class loop *loop = alloc_loop ();
 		      loop->num = is_loop_header_of;
 		      loop->header = bb;
 		      vec_safe_grow_cleared (loops_for_fn (cfun)->larray,

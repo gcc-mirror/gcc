@@ -58,14 +58,14 @@ struct streamer_tree_cache_d
 };
 
 /* In tree-streamer-in.c.  */
-tree streamer_read_string_cst (struct data_in *, struct lto_input_block *);
-tree streamer_read_chain (struct lto_input_block *, struct data_in *);
-tree streamer_alloc_tree (struct lto_input_block *, struct data_in *,
+tree streamer_read_string_cst (class data_in *, class lto_input_block *);
+tree streamer_read_chain (class lto_input_block *, class data_in *);
+tree streamer_alloc_tree (class lto_input_block *, class data_in *,
 		          enum LTO_tags);
-void streamer_read_tree_body (struct lto_input_block *, struct data_in *, tree);
-tree streamer_get_pickled_tree (struct lto_input_block *, struct data_in *);
-void streamer_read_tree_bitfields (struct lto_input_block *,
-				   struct data_in *, tree);
+void streamer_read_tree_body (class lto_input_block *, class data_in *, tree);
+tree streamer_get_pickled_tree (class lto_input_block *, class data_in *);
+void streamer_read_tree_bitfields (class lto_input_block *,
+				   class data_in *, tree);
 
 /* In tree-streamer-out.c.  */
 void streamer_write_string_cst (struct output_block *,
@@ -117,7 +117,7 @@ static inline machine_mode
 bp_unpack_machine_mode (struct bitpack_d *bp)
 {
   return (machine_mode)
-	   ((struct lto_input_block *)
+	   ((class lto_input_block *)
 	    bp->stream)->mode_table[bp_unpack_enum (bp, machine_mode, 1 << 8)];
 }
 

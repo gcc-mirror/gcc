@@ -84,7 +84,7 @@ public:
     return STUB_INDEX_OFFSET + m_stack_align_off_in;
   }
 
-  static const struct xlogue_layout &get_instance ();
+  static const class xlogue_layout &get_instance ();
   static unsigned count_stub_managed_regs ();
   static bool is_stub_managed_reg (unsigned regno, unsigned count);
 

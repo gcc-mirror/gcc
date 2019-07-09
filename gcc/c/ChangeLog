@@ -1,6 +1,16 @@
 2019-07-09  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/61339
+	* c-decl.c (xref_tag): Change class-key of PODs to struct and others
+	to class.
+	(field_decl_cmp): Same.
+	* c-parser.c (c_parser_struct_or_union_specifier): Same.
+	* c-tree.h: Same.
+	* gimple-parser.c (c_parser_gimple_compound_statement): Same.
+
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
 	* c-decl.c: Change class-key from class to struct and vice versa
 	to match convention and avoid -Wclass-is-pod and -Wstruct-no-pod.
 	* gimple-parser.c: Same.

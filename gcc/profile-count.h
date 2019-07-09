@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_PROFILE_COUNT_H
 
 struct function;
-class profile_count;
+struct profile_count;
 
 /* Quality of the profile count.  Because gengtype does not support enums
    inside of classes, this is in global namespace.  */
@@ -154,7 +154,7 @@ class GTY((user)) profile_probability
   uint32_t m_val : 29;
   enum profile_quality m_quality : 3;
 
-  friend class profile_count;
+  friend struct profile_count;
 public:
   profile_probability (): m_val (uninitialized_probability),
     m_quality (GUESSED)
@@ -615,7 +615,7 @@ public:
 					  profile_count count2) const;
 
   /* LTO streaming support.  */
-  static profile_probability stream_in (struct lto_input_block *);
+  static profile_probability stream_in (class lto_input_block *);
   void stream_out (struct output_block *);
   void stream_out (struct lto_output_stream *);
 };
@@ -1201,7 +1201,7 @@ public:
 				       profile_quality quality = PRECISE);
 
   /* LTO streaming support.  */
-  static profile_count stream_in (struct lto_input_block *);
+  static profile_count stream_in (class lto_input_block *);
   void stream_out (struct output_block *);
   void stream_out (struct lto_output_stream *);
 };

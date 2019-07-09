@@ -2974,7 +2974,7 @@ final_warning_record::grow_type_warnings (unsigned newlen)
     }
 }
 
-struct final_warning_record *final_warning_records;
+class final_warning_record *final_warning_records;
 
 /* Return vector containing possible targets of polymorphic call of type
    OTR_TYPE calling method OTR_TOKEN within type of OTR_OUTER_TYPE and OFFSET.

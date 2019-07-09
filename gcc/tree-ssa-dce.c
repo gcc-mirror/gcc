@@ -411,7 +411,7 @@ find_obviously_necessary_stmts (bool aggressive)
   /* Prevent the empty possibly infinite loops from being removed.  */
   if (aggressive)
     {
-      struct loop *loop;
+      class loop *loop;
       if (mark_irreducible_loops ())
 	FOR_EACH_BB_FN (bb, cfun)
 	  {

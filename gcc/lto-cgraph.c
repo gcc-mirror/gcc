@@ -1012,7 +1012,7 @@ output_symtab (void)
 /* Return identifier encoded in IB as a plain string.  */
 
 static tree
-read_identifier (struct lto_input_block *ib)
+read_identifier (class lto_input_block *ib)
 {
   unsigned int len = strnlen (ib->data + ib->p, ib->len - ib->p - 1);
   tree id;
@@ -1032,7 +1032,7 @@ read_identifier (struct lto_input_block *ib)
 /* Return string encoded in IB, NULL if string is empty.  */
 
 static const char *
-read_string (struct lto_input_block *ib)
+read_string (class lto_input_block *ib)
 {
   unsigned int len = strnlen (ib->data + ib->p, ib->len - ib->p - 1);
   const char *str;
@@ -1203,7 +1203,7 @@ get_alias_symbol (tree decl)
 
 static struct cgraph_node *
 input_node (struct lto_file_decl_data *file_data,
-	    struct lto_input_block *ib,
+	    class lto_input_block *ib,
 	    enum LTO_symtab_tags tag,
 	    vec<symtab_node *> nodes)
 {
@@ -1326,7 +1326,7 @@ input_node (struct lto_file_decl_data *file_data,
 
 static varpool_node *
 input_varpool_node (struct lto_file_decl_data *file_data,
-		    struct lto_input_block *ib)
+		    class lto_input_block *ib)
 {
   int decl_index;
   tree var_decl;
@@ -1402,7 +1402,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
    Return the node read or overwriten.  */
 
 static void
-input_ref (struct lto_input_block *ib,
+input_ref (class lto_input_block *ib,
 	   symtab_node *referring_node,
 	   vec<symtab_node *> nodes)
 {
@@ -1428,7 +1428,7 @@ input_ref (struct lto_input_block *ib,
    indirect_unknown_callee set).  */
 
 static void
-input_edge (struct lto_input_block *ib, vec<symtab_node *> nodes,
+input_edge (class lto_input_block *ib, vec<symtab_node *> nodes,
 	    bool indirect)
 {
   struct cgraph_node *caller, *callee;
@@ -1496,7 +1496,7 @@ input_edge (struct lto_input_block *ib, vec<symtab_node *> nodes,
 
 static vec<symtab_node *> 
 input_cgraph_1 (struct lto_file_decl_data *file_data,
-		struct lto_input_block *ib)
+		class lto_input_block *ib)
 {
   enum LTO_symtab_tags tag;
   vec<symtab_node *> nodes = vNULL;
@@ -1573,7 +1573,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
 /* Input ipa_refs.  */
 
 static void
-input_refs (struct lto_input_block *ib,
+input_refs (class lto_input_block *ib,
 	    vec<symtab_node *> nodes)
 {
   int count;
@@ -1596,7 +1596,7 @@ input_refs (struct lto_input_block *ib,
 	    
 /* Input profile_info from IB.  */
 static void
-input_profile_summary (struct lto_input_block *ib,
+input_profile_summary (class lto_input_block *ib,
 		       struct lto_file_decl_data *file_data)
 {
   unsigned int runs = streamer_read_uhwi (ib);
@@ -1693,7 +1693,7 @@ input_symtab (void)
     {
       const char *data;
       size_t len;
-      struct lto_input_block *ib;
+      class lto_input_block *ib;
       vec<symtab_node *> nodes;
 
       ib = lto_create_simple_input_block (file_data, LTO_section_symtab_nodes,
@@ -1750,7 +1750,7 @@ input_offload_tables (bool do_force_output)
     {
       const char *data;
       size_t len;
-      struct lto_input_block *ib
+      class lto_input_block *ib
 	= lto_create_simple_input_block (file_data, LTO_section_offload_table,
 					 &data, &len);
       if (!ib)
@@ -1909,7 +1909,7 @@ output_cgraph_opt_summary (void)
 
 static void
 input_edge_opt_summary (struct cgraph_edge *edge ATTRIBUTE_UNUSED,
-			struct lto_input_block *ib_main ATTRIBUTE_UNUSED)
+			class lto_input_block *ib_main ATTRIBUTE_UNUSED)
 {
 }
 
@@ -1917,8 +1917,8 @@ input_edge_opt_summary (struct cgraph_edge *edge ATTRIBUTE_UNUSED,
 
 static void
 input_node_opt_summary (struct cgraph_node *node,
-			struct lto_input_block *ib_main,
-			struct data_in *data_in)
+			class lto_input_block *ib_main,
+			class data_in *data_in)
 {
   int i;
   int count;
@@ -1973,7 +1973,7 @@ input_cgraph_opt_section (struct lto_file_decl_data *file_data,
   const int cfg_offset = sizeof (struct lto_function_header);
   const int main_offset = cfg_offset + header->cfg_size;
   const int string_offset = main_offset + header->main_size;
-  struct data_in *data_in;
+  class data_in *data_in;
   unsigned int i;
   unsigned int count;
 

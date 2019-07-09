@@ -76,17 +76,17 @@ using namespace std;
 
 /* This is the size of the buffer used to read in source file lines.  */
 
-struct function_info;
-struct block_info;
-struct source_info;
+class function_info;
+class block_info;
+class source_info;
 
 /* Describes an arc between two basic blocks.  */
 
 struct arc_info
 {
   /* source and destination blocks.  */
-  struct block_info *src;
-  struct block_info *dst;
+  class block_info *src;
+  class block_info *dst;
 
   /* transition counts.  */
   gcov_type count;
@@ -178,7 +178,7 @@ public:
 
   /* Temporary chain for solving graph, and for chaining blocks on one
      line.  */
-  struct block_info *chain;
+  class block_info *chain;
 
 };
 
@@ -297,7 +297,7 @@ public:
   vector<line_info> lines;
 
   /* Next function.  */
-  struct function_info *next;
+  class function_info *next;
 
   /*  Get demangled name of a function.  The demangled name
       is converted when it is used for the first time.  */

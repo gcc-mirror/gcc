@@ -1068,7 +1068,7 @@ private:
 static inline hsa_bb *
 hsa_bb_for_bb (basic_block bb)
 {
-  return (struct hsa_bb *) bb->aux;
+  return (class hsa_bb *) bb->aux;
 }
 
 /* Class for hashing local hsa_symbols.  */
@@ -1150,14 +1150,14 @@ public:
   hash_map <tree, hsa_symbol *> m_string_constants_map;
 
   /* Vector of pointers to spill symbols.  */
-  vec <struct hsa_symbol *> m_spill_symbols;
+  vec <class hsa_symbol *> m_spill_symbols;
 
   /* Vector of pointers to global variables and transformed string constants
      that are used by the function.  */
-  vec <struct hsa_symbol *> m_global_symbols;
+  vec <class hsa_symbol *> m_global_symbols;
 
   /* Private function artificial variables.  */
-  vec <struct hsa_symbol *> m_private_variables;
+  vec <class hsa_symbol *> m_private_variables;
 
   /* Vector of called function declarations.  */
   vec <tree> m_called_functions;
@@ -1318,7 +1318,7 @@ hsa_internal_fn_hasher::equal (const value_type a, const compare_type b)
 }
 
 /* in hsa-common.c */
-extern struct hsa_function_representation *hsa_cfun;
+extern class hsa_function_representation *hsa_cfun;
 extern hash_map <tree, vec <const char *> *> *hsa_decl_kernel_dependencies;
 extern hsa_summary_t *hsa_summaries;
 extern hsa_symbol *hsa_num_threads;

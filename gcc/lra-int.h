@@ -119,7 +119,7 @@ public:
 };
 
 /* References to the common info about each register.  */
-extern struct lra_reg *lra_reg_info;
+extern class lra_reg *lra_reg_info;
 
 extern HARD_REG_SET hard_regs_spilled_into;
 
@@ -244,7 +244,7 @@ public:
   struct lra_insn_reg *regs;
 };
 
-typedef struct lra_insn_recog_data *lra_insn_recog_data_t;
+typedef class lra_insn_recog_data *lra_insn_recog_data_t;
 
 /* Whether the clobber is used temporary in LRA.  */
 #define LRA_TEMP_CLOBBER_P(x) \

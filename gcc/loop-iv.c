@@ -89,7 +89,7 @@ class biv_entry
 {
 public:
   unsigned regno;	/* The register of the biv.  */
-  struct rtx_iv iv;	/* Value of the biv.  */
+  class rtx_iv iv;	/* Value of the biv.  */
 };
 
 static bool clean_slate = true;
@@ -97,7 +97,7 @@ static bool clean_slate = true;
 static unsigned int iv_ref_table_size = 0;
 
 /* Table of rtx_ivs indexed by the df_ref uid field.  */
-static struct rtx_iv ** iv_ref_table;
+static class rtx_iv ** iv_ref_table;
 
 /* Induction variable stored at the reference.  */
 #define DF_REF_IV(REF) iv_ref_table[DF_REF_ID (REF)]
@@ -105,7 +105,7 @@ static struct rtx_iv ** iv_ref_table;
 
 /* The current loop.  */
 
-static struct loop *current_loop;
+static class loop *current_loop;
 
 /* Hashtable helper.  */
 
@@ -136,7 +136,7 @@ biv_entry_hasher::equal (const biv_entry *b, const rtx_def *r)
 
 static hash_table<biv_entry_hasher> *bivs;
 
-static bool iv_analyze_op (rtx_insn *, scalar_int_mode, rtx, struct rtx_iv *);
+static bool iv_analyze_op (rtx_insn *, scalar_int_mode, rtx, class rtx_iv *);
 
 /* Return the RTX code corresponding to the IV extend code EXTEND.  */
 static inline enum rtx_code
@@ -156,9 +156,9 @@ iv_extend_to_rtx_code (enum iv_extend_code extend)
 
 /* Dumps information about IV to FILE.  */
 
-extern void dump_iv_info (FILE *, struct rtx_iv *);
+extern void dump_iv_info (FILE *, class rtx_iv *);
 void
-dump_iv_info (FILE *file, struct rtx_iv *iv)
+dump_iv_info (FILE *file, class rtx_iv *iv)
 {
   if (!iv->base)
     {
@@ -204,9 +204,9 @@ check_iv_ref_table_size (void)
   if (iv_ref_table_size < DF_DEFS_TABLE_SIZE ())
     {
       unsigned int new_size = DF_DEFS_TABLE_SIZE () + (DF_DEFS_TABLE_SIZE () / 4);
-      iv_ref_table = XRESIZEVEC (struct rtx_iv *, iv_ref_table, new_size);
+      iv_ref_table = XRESIZEVEC (class rtx_iv *, iv_ref_table, new_size);
       memset (&iv_ref_table[iv_ref_table_size], 0,
-	      (new_size - iv_ref_table_size) * sizeof (struct rtx_iv *));
+	      (new_size - iv_ref_table_size) * sizeof (class rtx_iv *));
       iv_ref_table_size = new_size;
     }
 }
@@ -245,7 +245,7 @@ static void
 clear_iv_info (void)
 {
   unsigned i, n_defs = DF_DEFS_TABLE_SIZE ();
-  struct rtx_iv *iv;
+  class rtx_iv *iv;
 
   check_iv_ref_table_size ();
   for (i = 0; i < n_defs; i++)
@@ -265,7 +265,7 @@ clear_iv_info (void)
 /* Prepare the data for an induction variable analysis of a LOOP.  */
 
 void
-iv_analysis_loop_init (struct loop *loop)
+iv_analysis_loop_init (class loop *loop)
 {
   current_loop = loop;
 
@@ -303,7 +303,7 @@ latch_dominating_def (rtx reg, df_ref *def)
 {
   df_ref single_rd = NULL, adef;
   unsigned regno = REGNO (reg);
-  struct df_rd_bb_info *bb_info = DF_RD_BB_INFO (current_loop->latch);
+  class df_rd_bb_info *bb_info = DF_RD_BB_INFO (current_loop->latch);
 
   for (adef = DF_REG_DEF_CHAIN (regno); adef; adef = DF_REF_NEXT_REG (adef))
     {
@@ -386,7 +386,7 @@ iv_get_reaching_def (rtx_insn *insn, rtx reg, df_ref *def)
    consistency with other iv manipulation functions that may fail).  */
 
 static bool
-iv_constant (struct rtx_iv *iv, scalar_int_mode mode, rtx cst)
+iv_constant (class rtx_iv *iv, scalar_int_mode mode, rtx cst)
 {
   iv->mode = mode;
   iv->base = cst;
@@ -403,7 +403,7 @@ iv_constant (struct rtx_iv *iv, scalar_int_mode mode, rtx cst)
 /* Evaluates application of subreg to MODE on IV.  */
 
 static bool
-iv_subreg (struct rtx_iv *iv, scalar_int_mode mode)
+iv_subreg (class rtx_iv *iv, scalar_int_mode mode)
 {
   /* If iv is invariant, just calculate the new value.  */
   if (iv->step == const0_rtx
@@ -445,7 +445,7 @@ iv_subreg (struct rtx_iv *iv, scalar_int_mode mode)
 /* Evaluates application of EXTEND to MODE on IV.  */
 
 static bool
-iv_extend (struct rtx_iv *iv, enum iv_extend_code extend, scalar_int_mode mode)
+iv_extend (class rtx_iv *iv, enum iv_extend_code extend, scalar_int_mode mode)
 {
   /* If iv is invariant, just calculate the new value.  */
   if (iv->step == const0_rtx
@@ -483,7 +483,7 @@ iv_extend (struct rtx_iv *iv, enum iv_extend_code extend, scalar_int_mode mode)
 /* Evaluates negation of IV.  */
 
 static bool
-iv_neg (struct rtx_iv *iv)
+iv_neg (class rtx_iv *iv)
 {
   if (iv->extend == IV_UNKNOWN_EXTEND)
     {
@@ -506,7 +506,7 @@ iv_neg (struct rtx_iv *iv)
 /* Evaluates addition or subtraction (according to OP) of IV1 to IV0.  */
 
 static bool
-iv_add (struct rtx_iv *iv0, struct rtx_iv *iv1, enum rtx_code op)
+iv_add (class rtx_iv *iv0, class rtx_iv *iv1, enum rtx_code op)
 {
   scalar_int_mode mode;
   rtx arg;
@@ -576,7 +576,7 @@ iv_add (struct rtx_iv *iv0, struct rtx_iv *iv1, enum rtx_code op)
 /* Evaluates multiplication of IV by constant CST.  */
 
 static bool
-iv_mult (struct rtx_iv *iv, rtx mby)
+iv_mult (class rtx_iv *iv, rtx mby)
 {
   scalar_int_mode mode = iv->extend_mode;
 
@@ -601,7 +601,7 @@ iv_mult (struct rtx_iv *iv, rtx mby)
 /* Evaluates shift of IV by constant CST.  */
 
 static bool
-iv_shift (struct rtx_iv *iv, rtx mby)
+iv_shift (class rtx_iv *iv, rtx mby)
 {
   scalar_int_mode mode = iv->extend_mode;
 
@@ -811,9 +811,9 @@ get_biv_step (df_ref last_def, scalar_int_mode outer_mode, rtx reg,
 /* Records information that DEF is induction variable IV.  */
 
 static void
-record_iv (df_ref def, struct rtx_iv *iv)
+record_iv (df_ref def, class rtx_iv *iv)
 {
-  struct rtx_iv *recorded_iv = XNEW (struct rtx_iv);
+  class rtx_iv *recorded_iv = XNEW (class rtx_iv);
 
   *recorded_iv = *iv;
   check_iv_ref_table_size ();
@@ -824,9 +824,9 @@ record_iv (df_ref def, struct rtx_iv *iv)
    IV and return true.  Otherwise return false.  */
 
 static bool
-analyzed_for_bivness_p (rtx def, struct rtx_iv *iv)
+analyzed_for_bivness_p (rtx def, class rtx_iv *iv)
 {
-  struct biv_entry *biv = bivs->find_with_hash (def, REGNO (def));
+  class biv_entry *biv = bivs->find_with_hash (def, REGNO (def));
 
   if (!biv)
     return false;
@@ -836,9 +836,9 @@ analyzed_for_bivness_p (rtx def, struct rtx_iv *iv)
 }
 
 static void
-record_biv (rtx def, struct rtx_iv *iv)
+record_biv (rtx def, class rtx_iv *iv)
 {
-  struct biv_entry *biv = XNEW (struct biv_entry);
+  class biv_entry *biv = XNEW (class biv_entry);
   biv_entry **slot = bivs->find_slot_with_hash (def, REGNO (def), INSERT);
 
   biv->regno = REGNO (def);
@@ -851,7 +851,7 @@ record_biv (rtx def, struct rtx_iv *iv)
    to *IV.  OUTER_MODE is the mode of DEF.  */
 
 static bool
-iv_analyze_biv (scalar_int_mode outer_mode, rtx def, struct rtx_iv *iv)
+iv_analyze_biv (scalar_int_mode outer_mode, rtx def, class rtx_iv *iv)
 {
   rtx inner_step, outer_step;
   scalar_int_mode inner_mode;
@@ -929,11 +929,11 @@ iv_analyze_biv (scalar_int_mode outer_mode, rtx def, struct rtx_iv *iv)
 
 bool
 iv_analyze_expr (rtx_insn *insn, scalar_int_mode mode, rtx rhs,
-		 struct rtx_iv *iv)
+		 class rtx_iv *iv)
 {
   rtx mby = NULL_RTX;
   rtx op0 = NULL_RTX, op1 = NULL_RTX;
-  struct rtx_iv iv0, iv1;
+  class rtx_iv iv0, iv1;
   enum rtx_code code = GET_CODE (rhs);
   scalar_int_mode omode = mode;
 
@@ -1040,7 +1040,7 @@ iv_analyze_expr (rtx_insn *insn, scalar_int_mode mode, rtx rhs,
 /* Analyzes iv DEF and stores the result to *IV.  */
 
 static bool
-iv_analyze_def (df_ref def, struct rtx_iv *iv)
+iv_analyze_def (df_ref def, class rtx_iv *iv)
 {
   rtx_insn *insn = DF_REF_INSN (def);
   rtx reg = DF_REF_REG (def);
@@ -1104,7 +1104,7 @@ iv_analyze_def (df_ref def, struct rtx_iv *iv)
    mode of OP.  */
 
 static bool
-iv_analyze_op (rtx_insn *insn, scalar_int_mode mode, rtx op, struct rtx_iv *iv)
+iv_analyze_op (rtx_insn *insn, scalar_int_mode mode, rtx op, class rtx_iv *iv)
 {
   df_ref def = NULL;
   enum iv_grd_result res;
@@ -1165,7 +1165,7 @@ iv_analyze_op (rtx_insn *insn, scalar_int_mode mode, rtx op, struct rtx_iv *iv)
    mode of VAL.  */
 
 bool
-iv_analyze (rtx_insn *insn, scalar_int_mode mode, rtx val, struct rtx_iv *iv)
+iv_analyze (rtx_insn *insn, scalar_int_mode mode, rtx val, class rtx_iv *iv)
 {
   rtx reg;
 
@@ -1190,7 +1190,7 @@ iv_analyze (rtx_insn *insn, scalar_int_mode mode, rtx val, struct rtx_iv *iv)
 /* Analyzes definition of DEF in INSN and stores the result to IV.  */
 
 bool
-iv_analyze_result (rtx_insn *insn, rtx def, struct rtx_iv *iv)
+iv_analyze_result (rtx_insn *insn, rtx def, class rtx_iv *iv)
 {
   df_ref adef;
 
@@ -1210,7 +1210,7 @@ iv_analyze_result (rtx_insn *insn, rtx def, struct rtx_iv *iv)
 bool
 biv_p (rtx_insn *insn, scalar_int_mode mode, rtx reg)
 {
-  struct rtx_iv iv;
+  class rtx_iv iv;
   df_ref def, last_def;
 
   if (!simple_reg_p (reg))
@@ -1232,7 +1232,7 @@ biv_p (rtx_insn *insn, scalar_int_mode mode, rtx reg)
 /* Calculates value of IV at ITERATION-th iteration.  */
 
 rtx
-get_iv_value (struct rtx_iv *iv, rtx iteration)
+get_iv_value (class rtx_iv *iv, rtx iteration)
 {
   rtx val;
 
@@ -1851,7 +1851,7 @@ eliminate_implied_conditions (enum rtx_code op, rtx *head, rtx tail)
    is a list, its elements are assumed to be combined using OP.  */
 
 static void
-simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
+simplify_using_initial_values (class loop *loop, enum rtx_code op, rtx *expr)
 {
   bool expression_valid;
   rtx head, tail, last_valid_expr;
@@ -2072,8 +2072,8 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
    is SIGNED_P to DESC.  */
 
 static void
-shorten_into_mode (struct rtx_iv *iv, scalar_int_mode mode,
-		   enum rtx_code cond, bool signed_p, struct niter_desc *desc)
+shorten_into_mode (class rtx_iv *iv, scalar_int_mode mode,
+		   enum rtx_code cond, bool signed_p, class niter_desc *desc)
 {
   rtx mmin, mmax, cond_over, cond_under;
 
@@ -2131,8 +2131,8 @@ shorten_into_mode (struct rtx_iv *iv, scalar_int_mode mode,
    some assumptions to DESC).  */
 
 static bool
-canonicalize_iv_subregs (struct rtx_iv *iv0, struct rtx_iv *iv1,
-			 enum rtx_code cond, struct niter_desc *desc)
+canonicalize_iv_subregs (class rtx_iv *iv0, class rtx_iv *iv1,
+			 enum rtx_code cond, class niter_desc *desc)
 {
   scalar_int_mode comp_mode;
   bool signed_p;
@@ -2247,7 +2247,7 @@ canonicalize_iv_subregs (struct rtx_iv *iv0, struct rtx_iv *iv1,
    expression for the number of iterations, before we tried to simplify it.  */
 
 static uint64_t
-determine_max_iter (struct loop *loop, struct niter_desc *desc, rtx old_niter)
+determine_max_iter (class loop *loop, class niter_desc *desc, rtx old_niter)
 {
   rtx niter = desc->niter_expr;
   rtx mmin, mmax, cmp;
@@ -2305,11 +2305,11 @@ determine_max_iter (struct loop *loop, struct niter_desc *desc, rtx old_niter)
    (basically its rtl version), complicated by things like subregs.  */
 
 static void
-iv_number_of_iterations (struct loop *loop, rtx_insn *insn, rtx condition,
-			 struct niter_desc *desc)
+iv_number_of_iterations (class loop *loop, rtx_insn *insn, rtx condition,
+			 class niter_desc *desc)
 {
   rtx op0, op1, delta, step, bound, may_xform, tmp, tmp0, tmp1;
-  struct rtx_iv iv0, iv1;
+  class rtx_iv iv0, iv1;
   rtx assumption, may_not_xform;
   enum rtx_code cond;
   machine_mode nonvoid_mode;
@@ -2867,7 +2867,7 @@ fail:
    into DESC.  */
 
 static void
-check_simple_exit (struct loop *loop, edge e, struct niter_desc *desc)
+check_simple_exit (class loop *loop, edge e, class niter_desc *desc)
 {
   basic_block exit_bb;
   rtx condition;
@@ -2915,12 +2915,12 @@ check_simple_exit (struct loop *loop, edge e, struct niter_desc *desc)
 /* Finds a simple exit of LOOP and stores its description into DESC.  */
 
 void
-find_simple_exit (struct loop *loop, struct niter_desc *desc)
+find_simple_exit (class loop *loop, class niter_desc *desc)
 {
   unsigned i;
   basic_block *body;
   edge e;
-  struct niter_desc act;
+  class niter_desc act;
   bool any = false;
   edge_iterator ei;
 
@@ -3018,10 +3018,10 @@ find_simple_exit (struct loop *loop, struct niter_desc *desc)
 /* Creates a simple loop description of LOOP if it was not computed
    already.  */
 
-struct niter_desc *
-get_simple_loop_desc (struct loop *loop)
+class niter_desc *
+get_simple_loop_desc (class loop *loop)
 {
-  struct niter_desc *desc = simple_loop_desc (loop);
+  class niter_desc *desc = simple_loop_desc (loop);
 
   if (desc)
     return desc;
@@ -3038,9 +3038,9 @@ get_simple_loop_desc (struct loop *loop)
 /* Releases simple loop description for LOOP.  */
 
 void
-free_simple_loop_desc (struct loop *loop)
+free_simple_loop_desc (class loop *loop)
 {
-  struct niter_desc *desc = simple_loop_desc (loop);
+  class niter_desc *desc = simple_loop_desc (loop);
 
   if (!desc)
     return;

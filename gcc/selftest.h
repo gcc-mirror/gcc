@@ -150,7 +150,7 @@ class auto_fix_quotes
    The following struct describes a particular case within our test
    matrix.  */
 
-struct line_table_case;
+class line_table_case;
 
 /* A class for overriding the global "line_table" within a selftest,
    restoring its value afterwards.  At most one instance of this

@@ -70,55 +70,55 @@ class queue_elem
 public:
   rtx data;
   file_location loc;
-  struct queue_elem *next;
+  class queue_elem *next;
   /* In a DEFINE_INSN that came from a DEFINE_INSN_AND_SPLIT or
      DEFINE_INSN_AND_REWRITE, SPLIT points to the generated DEFINE_SPLIT.  */
-  struct queue_elem *split;
+  class queue_elem *split;
 };
 
 #define MNEMONIC_ATTR_NAME "mnemonic"
 #define MNEMONIC_HTAB_SIZE 1024
 
-static struct queue_elem *define_attr_queue;
-static struct queue_elem **define_attr_tail = &define_attr_queue;
-static struct queue_elem *define_pred_queue;
-static struct queue_elem **define_pred_tail = &define_pred_queue;
-static struct queue_elem *define_insn_queue;
-static struct queue_elem **define_insn_tail = &define_insn_queue;
-static struct queue_elem *define_cond_exec_queue;
-static struct queue_elem **define_cond_exec_tail = &define_cond_exec_queue;
-static struct queue_elem *define_subst_queue;
-static struct queue_elem **define_subst_tail = &define_subst_queue;
-static struct queue_elem *other_queue;
-static struct queue_elem **other_tail = &other_queue;
-static struct queue_elem *define_subst_attr_queue;
-static struct queue_elem **define_subst_attr_tail = &define_subst_attr_queue;
+static class queue_elem *define_attr_queue;
+static class queue_elem **define_attr_tail = &define_attr_queue;
+static class queue_elem *define_pred_queue;
+static class queue_elem **define_pred_tail = &define_pred_queue;
+static class queue_elem *define_insn_queue;
+static class queue_elem **define_insn_tail = &define_insn_queue;
+static class queue_elem *define_cond_exec_queue;
+static class queue_elem **define_cond_exec_tail = &define_cond_exec_queue;
+static class queue_elem *define_subst_queue;
+static class queue_elem **define_subst_tail = &define_subst_queue;
+static class queue_elem *other_queue;
+static class queue_elem **other_tail = &other_queue;
+static class queue_elem *define_subst_attr_queue;
+static class queue_elem **define_subst_attr_tail = &define_subst_attr_queue;
 
 /* Mapping from DEFINE_* rtxes to their location in the source file.  */
 static hash_map <rtx, file_location> *rtx_locs;
 
 static void remove_constraints (rtx);
 
-static int is_predicable (struct queue_elem *);
+static int is_predicable (class queue_elem *);
 static void identify_predicable_attribute (void);
 static int n_alternatives (const char *);
 static void collect_insn_data (rtx, int *, int *);
-static const char *alter_test_for_insn (struct queue_elem *,
-					struct queue_elem *);
+static const char *alter_test_for_insn (class queue_elem *,
+					class queue_elem *);
 static char *shift_output_template (char *, const char *, int);
-static const char *alter_output_for_insn (struct queue_elem *,
-					  struct queue_elem *,
+static const char *alter_output_for_insn (class queue_elem *,
+					  class queue_elem *,
 					  int, int);
-static void process_one_cond_exec (struct queue_elem *);
+static void process_one_cond_exec (class queue_elem *);
 static void process_define_cond_exec (void);
 static void init_predicate_table (void);
 static void record_insn_name (int, const char *);
 
-static bool has_subst_attribute (struct queue_elem *, struct queue_elem *);
+static bool has_subst_attribute (class queue_elem *, class queue_elem *);
 static const char * alter_output_for_subst_insn (rtx, int);
-static void alter_attrs_for_subst_insn (struct queue_elem *, int);
-static void process_substs_on_one_elem (struct queue_elem *,
-					struct queue_elem *);
+static void alter_attrs_for_subst_insn (class queue_elem *, int);
+static void process_substs_on_one_elem (class queue_elem *,
+					class queue_elem *);
 static rtx subst_dup (rtx, int, int);
 static void process_define_subst (void);
 
@@ -400,11 +400,11 @@ process_define_predicate (rtx desc, file_location loc)
 /* Queue PATTERN on LIST_TAIL.  Return the address of the new queue
    element.  */
 
-static struct queue_elem *
-queue_pattern (rtx pattern, struct queue_elem ***list_tail,
+static class queue_elem *
+queue_pattern (rtx pattern, class queue_elem ***list_tail,
 	       file_location loc)
 {
-  struct queue_elem *e = XNEW (struct queue_elem);
+  class queue_elem *e = XNEW (class queue_elem);
   e->data = pattern;
   e->loc = loc;
   e->next = NULL;
@@ -416,9 +416,9 @@ queue_pattern (rtx pattern, struct queue_elem ***list_tail,
 
 /* Remove element ELEM from QUEUE.  */
 static void
-remove_from_queue (struct queue_elem *elem, struct queue_elem **queue)
+remove_from_queue (class queue_elem *elem, class queue_elem **queue)
 {
-  struct queue_elem *prev, *e;
+  class queue_elem *prev, *e;
   prev = NULL;
   for (e = *queue; e ; e = e->next)
     {
@@ -440,7 +440,7 @@ remove_from_queue (struct queue_elem *elem, struct queue_elem **queue)
 static void
 add_define_attr (const char *name)
 {
-  struct queue_elem *e = XNEW (struct queue_elem);
+  class queue_elem *e = XNEW (class queue_elem);
   rtx t1 = rtx_alloc (DEFINE_ATTR);
   XSTR (t1, 0) = name;
   XSTR (t1, 1) = "no,yes";
@@ -591,8 +591,8 @@ process_rtx (rtx desc, file_location loc)
 	rtx split;
 	rtvec attr;
 	int i;
-	struct queue_elem *insn_elem;
-	struct queue_elem *split_elem;
+	class queue_elem *insn_elem;
+	class queue_elem *split_elem;
 	int split_code = (GET_CODE (desc) == DEFINE_INSN_AND_REWRITE ? 5 : 6);
 
 	/* Create a split with values from the insn_and_split.  */
@@ -646,7 +646,7 @@ process_rtx (rtx desc, file_location loc)
    a DEFINE_INSN.  */
 
 static int
-is_predicable (struct queue_elem *elem)
+is_predicable (class queue_elem *elem)
 {
   rtvec vec = XVEC (elem->data, 4);
   const char *value;
@@ -716,8 +716,8 @@ is_predicable (struct queue_elem *elem)
 
 /* Find attribute SUBST in ELEM and assign NEW_VALUE to it.  */
 static void
-change_subst_attribute (struct queue_elem *elem,
-			struct queue_elem *subst_elem,
+change_subst_attribute (class queue_elem *elem,
+			class queue_elem *subst_elem,
 			const char *new_value)
 {
   rtvec attrs_vec = XVEC (elem->data, 4);
@@ -746,7 +746,7 @@ change_subst_attribute (struct queue_elem *elem,
    words, we suppose the default value of the attribute to be 'no' since it is
    always generated automatically in read-rtl.c.  */
 static bool
-has_subst_attribute (struct queue_elem *elem, struct queue_elem *subst_elem)
+has_subst_attribute (class queue_elem *elem, class queue_elem *subst_elem)
 {
   rtvec attrs_vec = XVEC (elem->data, 4);
   const char *value, *subst_name = XSTR (subst_elem->data, 0);
@@ -979,7 +979,7 @@ subst_pattern_match (rtx x, rtx pt, file_location loc)
 static void
 identify_predicable_attribute (void)
 {
-  struct queue_elem *elem;
+  class queue_elem *elem;
   char *p_true, *p_false;
   const char *value;
 
@@ -1327,8 +1327,8 @@ alter_constraints (rtx pattern, int n_dup, constraints_handler_t alter)
 }
 
 static const char *
-alter_test_for_insn (struct queue_elem *ce_elem,
-		     struct queue_elem *insn_elem)
+alter_test_for_insn (class queue_elem *ce_elem,
+		     class queue_elem *insn_elem)
 {
   return rtx_reader_ptr->join_c_conditions (XSTR (ce_elem->data, 1),
 					    XSTR (insn_elem->data, 2));
@@ -1439,7 +1439,7 @@ alter_attrs_for_insn (rtx insn)
 
   if (!global_changes_made)
     {
-      struct queue_elem *elem;
+      class queue_elem *elem;
 
       global_changes_made = true;
       add_define_attr ("ce_enabled");
@@ -1480,7 +1480,7 @@ alter_attrs_for_insn (rtx insn)
    ELEM is a queue element, containing our rtl-template,
    N_DUP - multiplication factor.  */
 static void
-alter_attrs_for_subst_insn (struct queue_elem * elem, int n_dup)
+alter_attrs_for_subst_insn (class queue_elem * elem, int n_dup)
 {
   rtvec vec = XVEC (elem->data, 4);
   int num_elem;
@@ -1543,8 +1543,8 @@ shift_output_template (char *dest, const char *src, int disp)
 }
 
 static const char *
-alter_output_for_insn (struct queue_elem *ce_elem,
-		       struct queue_elem *insn_elem,
+alter_output_for_insn (class queue_elem *ce_elem,
+		       class queue_elem *insn_elem,
 		       int alt, int max_op)
 {
   const char *ce_out, *insn_out;
@@ -1732,9 +1732,9 @@ alter_output_for_subst_insn (rtx insn, int alt)
 /* Replicate insns as appropriate for the given DEFINE_COND_EXEC.  */
 
 static void
-process_one_cond_exec (struct queue_elem *ce_elem)
+process_one_cond_exec (class queue_elem *ce_elem)
 {
-  struct queue_elem *insn_elem;
+  class queue_elem *insn_elem;
   for (insn_elem = define_insn_queue; insn_elem ; insn_elem = insn_elem->next)
     {
       int alternatives, max_operand;
@@ -1838,10 +1838,10 @@ process_one_cond_exec (struct queue_elem *ce_elem)
    was applied, ELEM would be deleted.  */
 
 static void
-process_substs_on_one_elem (struct queue_elem *elem,
-			    struct queue_elem *queue)
+process_substs_on_one_elem (class queue_elem *elem,
+			    class queue_elem *queue)
 {
-  struct queue_elem *subst_elem;
+  class queue_elem *subst_elem;
   int i, j, patterns_match;
 
   for (subst_elem = define_subst_queue;
@@ -2248,7 +2248,7 @@ subst_dup (rtx pattern, int n_alt, int n_subst_alt)
 static void
 process_define_cond_exec (void)
 {
-  struct queue_elem *elem;
+  class queue_elem *elem;
 
   identify_predicable_attribute ();
   if (have_error)
@@ -2264,7 +2264,7 @@ process_define_cond_exec (void)
 static void
 process_define_subst (void)
 {
-  struct queue_elem *elem, *elem_attr;
+  class queue_elem *elem, *elem_attr;
 
   /* Check if each define_subst has corresponding define_subst_attr.  */
   for (elem = define_subst_queue; elem ; elem = elem->next)
@@ -2475,7 +2475,7 @@ mnemonic_htab_callback (void **slot, void *info ATTRIBUTE_UNUSED)
 static void
 gen_mnemonic_attr (void)
 {
-  struct queue_elem *elem;
+  class queue_elem *elem;
   rtx mnemonic_attr = NULL;
   htab_t mnemonic_htab;
   const char *str, *p;
@@ -2552,7 +2552,7 @@ gen_mnemonic_attr (void)
 static void
 check_define_attr_duplicates ()
 {
-  struct queue_elem *elem;
+  class queue_elem *elem;
   htab_t attr_htab;
   char * attr_name;
   void **slot;
@@ -2648,7 +2648,7 @@ read_md_rtx (md_rtx_info *info)
      to use elided pattern numbers for anything.  */
   do
     {
-      struct queue_elem **queue, *elem;
+      class queue_elem **queue, *elem;
 
       /* Read all patterns from a given queue before moving on to the next.  */
       if (define_attr_queue != NULL)

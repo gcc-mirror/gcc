@@ -68,8 +68,8 @@ extern GTY(()) const char *weak_global_object_name;
 const char *first_global_object_name;
 const char *weak_global_object_name;
 
-struct addr_const;
-struct constant_descriptor_rtx;
+class addr_const;
+class constant_descriptor_rtx;
 struct rtx_constant_pool;
 
 #define n_deferred_constants (crtl->varasm.deferred_constants)
@@ -105,7 +105,7 @@ static int contains_pointers_p (tree);
 #ifdef ASM_OUTPUT_EXTERNAL
 static bool incorporeal_function_p (tree);
 #endif
-static void decode_addr_const (tree, struct addr_const *);
+static void decode_addr_const (tree, class addr_const *);
 static hashval_t const_hash_1 (const tree);
 static int compare_constant (const tree, const tree);
 static void output_constant_def_contents (rtx);
@@ -2906,7 +2906,7 @@ public:
 };
 
 static void
-decode_addr_const (tree exp, struct addr_const *value)
+decode_addr_const (tree exp, class addr_const *value)
 {
   tree target = TREE_OPERAND (exp, 0);
   poly_int64 offset = 0;
@@ -3076,7 +3076,7 @@ const_hash_1 (const tree exp)
       /* Fallthru.  */
     case FDESC_EXPR:
       {
-	struct addr_const value;
+	class addr_const value;
 
 	decode_addr_const (exp, &value);
 	switch (GET_CODE (value.base))
@@ -3272,7 +3272,7 @@ compare_constant (const tree t1, const tree t2)
     case ADDR_EXPR:
     case FDESC_EXPR:
       {
-	struct addr_const value1, value2;
+	class addr_const value1, value2;
 	enum rtx_code code;
 	int ret;
 
@@ -3624,7 +3624,7 @@ tree_output_constant_def (tree exp)
 
 class GTY((chain_next ("%h.next"), for_user)) constant_descriptor_rtx {
 public:
-  struct constant_descriptor_rtx *next;
+  class constant_descriptor_rtx *next;
   rtx mem;
   rtx sym;
   rtx constant;
@@ -3651,8 +3651,8 @@ struct const_rtx_desc_hasher : ggc_ptr_hash<constant_descriptor_rtx>
 
 struct GTY(()) rtx_constant_pool {
   /* Pointers to first and last constant in pool, as ordered by offset.  */
-  struct constant_descriptor_rtx *first;
-  struct constant_descriptor_rtx *last;
+  class constant_descriptor_rtx *first;
+  class constant_descriptor_rtx *last;
 
   /* Hash facility for making memory-constants from constant rtl-expressions.
      It is used on RISC machines where immediate integer arguments and
@@ -3812,7 +3812,7 @@ simplify_subtraction (rtx x)
 rtx
 force_const_mem (machine_mode in_mode, rtx x)
 {
-  struct constant_descriptor_rtx *desc, tmp;
+  class constant_descriptor_rtx *desc, tmp;
   struct rtx_constant_pool *pool;
   char label[256];
   rtx def, symbol;
@@ -3920,7 +3920,7 @@ get_pool_constant (const_rtx addr)
 rtx
 get_pool_constant_mark (rtx addr, bool *pmarked)
 {
-  struct constant_descriptor_rtx *desc;
+  class constant_descriptor_rtx *desc;
 
   desc = SYMBOL_REF_CONSTANT (addr);
   *pmarked = (desc->mark != 0);
@@ -4028,7 +4028,7 @@ output_constant_pool_2 (fixed_size_mode mode, rtx x, unsigned int align)
    giving it ALIGN bits of alignment.  */
 
 static void
-output_constant_pool_1 (struct constant_descriptor_rtx *desc,
+output_constant_pool_1 (class constant_descriptor_rtx *desc,
 			unsigned int align)
 {
   rtx x, tmp;
@@ -4105,7 +4105,7 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc,
 static void
 recompute_pool_offsets (struct rtx_constant_pool *pool)
 {
-  struct constant_descriptor_rtx *desc;
+  class constant_descriptor_rtx *desc;
   pool->offset = 0;
 
   for (desc = pool->first; desc ; desc = desc->next)
@@ -4134,7 +4134,7 @@ mark_constants_in_pattern (rtx insn)
 	{
 	  if (CONSTANT_POOL_ADDRESS_P (x))
 	    {
-	      struct constant_descriptor_rtx *desc = SYMBOL_REF_CONSTANT (x);
+	      class constant_descriptor_rtx *desc = SYMBOL_REF_CONSTANT (x);
 	      if (desc->mark == 0)
 		{
 		  desc->mark = 1;
@@ -4203,7 +4203,7 @@ mark_constant_pool (void)
 static void
 output_constant_pool_contents (struct rtx_constant_pool *pool)
 {
-  struct constant_descriptor_rtx *desc;
+  class constant_descriptor_rtx *desc;
 
   for (desc = pool->first; desc ; desc = desc->next)
     if (desc->mark)
@@ -7452,7 +7452,7 @@ void
 place_block_symbol (rtx symbol)
 {
   unsigned HOST_WIDE_INT size, mask, offset;
-  struct constant_descriptor_rtx *desc;
+  class constant_descriptor_rtx *desc;
   unsigned int alignment;
   struct object_block *block;
   tree decl;
@@ -7614,7 +7614,7 @@ get_section_anchor (struct object_block *block, HOST_WIDE_INT offset,
 static void
 output_object_block (struct object_block *block)
 {
-  struct constant_descriptor_rtx *desc;
+  class constant_descriptor_rtx *desc;
   unsigned int i;
   HOST_WIDE_INT offset;
   tree decl;

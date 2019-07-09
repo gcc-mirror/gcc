@@ -179,7 +179,7 @@ lto_splay_tree_new (void)
    input.  */
 
 static const uint32_t *
-lto_read_in_decl_state (struct data_in *data_in, const uint32_t *data,
+lto_read_in_decl_state (class data_in *data_in, const uint32_t *data,
 			struct lto_in_decl_state *state)
 {
   uint32_t ix;
@@ -868,7 +868,7 @@ mentions_vars_p (tree t)
 /* Return the resolution for the decl with index INDEX from DATA_IN.  */
 
 static enum ld_plugin_symbol_resolution
-get_resolution (struct data_in *data_in, unsigned index)
+get_resolution (class data_in *data_in, unsigned index)
 {
   if (data_in->globals_resolution.exists ())
     {
@@ -911,7 +911,7 @@ register_resolution (struct lto_file_decl_data *file_data, tree decl,
    different files.  */
 
 static void
-lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl,
+lto_register_var_decl_in_symtab (class data_in *data_in, tree decl,
 				 unsigned ix)
 {
   tree context;
@@ -936,7 +936,7 @@ lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl,
    file being read.  */
 
 static void
-lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl,
+lto_register_function_decl_in_symtab (class data_in *data_in, tree decl,
 				      unsigned ix)
 {
   /* If this variable has already been declared, queue the
@@ -949,7 +949,7 @@ lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl,
 /* Check if T is a decl and needs register its resolution info.  */
 
 static void
-lto_maybe_register_decl (struct data_in *data_in, tree t, unsigned ix)
+lto_maybe_register_decl (class data_in *data_in, tree t, unsigned ix)
 {
   if (TREE_CODE (t) == VAR_DECL)
     lto_register_var_decl_in_symtab (data_in, t, ix);
@@ -1624,7 +1624,7 @@ cmp_tree (const void *p1_, const void *p2_)
    that was successful, otherwise return false.  */
 
 static bool
-unify_scc (struct data_in *data_in, unsigned from,
+unify_scc (class data_in *data_in, unsigned from,
 	   unsigned len, unsigned scc_entry_len, hashval_t scc_hash)
 {
   bool unified_p = false;
@@ -1787,7 +1787,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
   const int decl_offset = sizeof (struct lto_decl_header);
   const int main_offset = decl_offset + header->decl_state_size;
   const int string_offset = main_offset + header->main_size;
-  struct data_in *data_in;
+  class data_in *data_in;
   unsigned int i;
   const uint32_t *data_ptr, *data_end;
   uint32_t num_decl_states;

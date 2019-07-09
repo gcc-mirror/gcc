@@ -145,7 +145,7 @@ public:
 };
 
 /* Array for all BB data.  Indexed by the corresponding BB index.  */
-typedef struct remat_bb_data *remat_bb_data_t;
+typedef class remat_bb_data *remat_bb_data_t;
 
 /* Basic blocks for data flow problems -- all bocks except the special
    ones.  */
@@ -510,7 +510,7 @@ create_remat_bb_data (void)
   basic_block bb;
   remat_bb_data_t bb_info;
 
-  remat_bb_data = XNEWVEC (struct remat_bb_data,
+  remat_bb_data = XNEWVEC (class remat_bb_data,
 			   last_basic_block_for_fn (cfun));
   FOR_ALL_BB_FN (bb, cfun)
     {

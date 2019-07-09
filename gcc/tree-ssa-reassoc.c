@@ -270,7 +270,7 @@ static long
 phi_rank (gimple *stmt)
 {
   basic_block bb = gimple_bb (stmt);
-  struct loop *father = bb->loop_father;
+  class loop *father = bb->loop_father;
   tree res;
   unsigned i;
   use_operand_p use;
@@ -603,7 +603,7 @@ add_repeat_to_ops_vec (vec<operand_entry *> *ops, tree op,
    operation with tree code CODE, and is inside LOOP.  */
 
 static bool
-is_reassociable_op (gimple *stmt, enum tree_code code, struct loop *loop)
+is_reassociable_op (gimple *stmt, enum tree_code code, class loop *loop)
 {
   basic_block bb = gimple_bb (stmt);
 
@@ -1560,7 +1560,7 @@ build_and_add_sum (tree type, tree op1, tree op2, enum tree_code opcode)
 
 static bool
 undistribute_ops_list (enum tree_code opcode,
-		       vec<operand_entry *> *ops, struct loop *loop)
+		       vec<operand_entry *> *ops, class loop *loop)
 {
   unsigned int length = ops->length ();
   operand_entry *oe1;
@@ -3861,7 +3861,7 @@ no_side_effect_bb (basic_block bb)
 
 static bool
 get_ops (tree var, enum tree_code code, vec<operand_entry *> *ops,
-	 struct loop *loop)
+	 class loop *loop)
 {
   gimple *stmt = SSA_NAME_DEF_STMT (var);
   tree rhs[2];
@@ -3896,7 +3896,7 @@ get_ops (tree var, enum tree_code code, vec<operand_entry *> *ops,
 
 static tree
 update_ops (tree var, enum tree_code code, vec<operand_entry *> ops,
-	    unsigned int *pidx, struct loop *loop)
+	    unsigned int *pidx, class loop *loop)
 {
   gimple *stmt = SSA_NAME_DEF_STMT (var);
   tree rhs[4];
@@ -4834,7 +4834,7 @@ linearize_expr (gimple *stmt)
   gimple *oldbinrhs = binrhs;
   enum tree_code rhscode = gimple_assign_rhs_code (stmt);
   gimple *newbinrhs = NULL;
-  struct loop *loop = loop_containing_stmt (stmt);
+  class loop *loop = loop_containing_stmt (stmt);
   tree lhs = gimple_assign_lhs (stmt);
 
   gcc_assert (is_reassociable_op (binlhs, rhscode, loop)
@@ -4968,7 +4968,7 @@ should_break_up_subtract (gimple *stmt)
   tree binlhs = gimple_assign_rhs1 (stmt);
   tree binrhs = gimple_assign_rhs2 (stmt);
   gimple *immusestmt;
-  struct loop *loop = loop_containing_stmt (stmt);
+  class loop *loop = loop_containing_stmt (stmt);
 
   if (TREE_CODE (binlhs) == SSA_NAME
       && is_reassociable_op (SSA_NAME_DEF_STMT (binlhs), PLUS_EXPR, loop))
@@ -5123,7 +5123,7 @@ linearize_expr_tree (vec<operand_entry *> *ops, gimple *stmt,
   bool binlhsisreassoc = false;
   bool binrhsisreassoc = false;
   enum tree_code rhscode = gimple_assign_rhs_code (stmt);
-  struct loop *loop = loop_containing_stmt (stmt);
+  class loop *loop = loop_containing_stmt (stmt);
 
   if (set_visited)
     gimple_set_visited (stmt, true);

@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lower-subreg.h"
 
 #if SWITCHABLE_TARGET
-struct target_globals default_target_globals = {
+class target_globals default_target_globals = {
   &default_target_flag_state,
   &default_target_regs,
   &default_target_rtl,
@@ -61,11 +61,11 @@ struct target_globals default_target_globals = {
   &default_target_lower_subreg
 };
 
-struct target_globals *
+class target_globals *
 save_target_globals (void)
 {
-  struct target_globals *g = ggc_cleared_alloc <target_globals> ();
-  g->flag_state = XCNEW (struct target_flag_state);
+  class target_globals *g = ggc_cleared_alloc <target_globals> ();
+  g->flag_state = XCNEW (class target_flag_state);
   g->regs = XCNEW (struct target_regs);
   g->rtl = ggc_cleared_alloc<target_rtl> ();
   g->recog = XCNEW (struct target_recog);
@@ -76,7 +76,7 @@ save_target_globals (void)
   g->libfuncs = ggc_cleared_alloc<target_libfuncs> ();
   g->cfgloop = XCNEW (struct target_cfgloop);
   g->ira = XCNEW (struct target_ira);
-  g->ira_int = XCNEW (struct target_ira_int);
+  g->ira_int = XCNEW (class target_ira_int);
   g->builtins = XCNEW (struct target_builtins);
   g->gcse = XCNEW (struct target_gcse);
   g->bb_reorder = XCNEW (struct target_bb_reorder);
@@ -91,10 +91,10 @@ save_target_globals (void)
    correctly when a previous function has changed
    *this_target_optabs.  */
 
-struct target_globals *
+class target_globals *
 save_target_globals_default_opts ()
 {
-  struct target_globals *globals;
+  class target_globals *globals;
 
   if (optimization_current_node != optimization_default_node)
     {

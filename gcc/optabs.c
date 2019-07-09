@@ -250,7 +250,7 @@ rtx
 expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
 			   rtx target, int unsignedp)
 {
-  struct expand_operand eops[4];
+  class expand_operand eops[4];
   tree oprnd0, oprnd1, oprnd2;
   machine_mode wmode = VOIDmode, tmode0, tmode1 = VOIDmode;
   optab widen_pattern_optab;
@@ -344,7 +344,7 @@ rtx
 expand_ternary_op (machine_mode mode, optab ternary_optab, rtx op0,
 		   rtx op1, rtx op2, rtx target, int unsignedp)
 {
-  struct expand_operand ops[4];
+  class expand_operand ops[4];
   enum insn_code icode = optab_handler (ternary_optab, mode);
 
   gcc_assert (optab_handler (ternary_optab, mode) != CODE_FOR_nothing);
@@ -413,7 +413,7 @@ expand_vector_broadcast (machine_mode vmode, rtx op)
   insn_code icode = optab_handler (vec_duplicate_optab, vmode);
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand ops[2];
+      class expand_operand ops[2];
       create_output_operand (&ops[0], NULL_RTX, vmode);
       create_input_operand (&ops[1], op, GET_MODE (op));
       expand_insn (icode, 2, ops);
@@ -1039,7 +1039,7 @@ expand_binop_directly (enum insn_code icode, machine_mode mode, optab binoptab,
   machine_mode xmode0 = insn_data[(int) icode].operand[1].mode;
   machine_mode xmode1 = insn_data[(int) icode].operand[2].mode;
   machine_mode mode0, mode1, tmp_mode;
-  struct expand_operand ops[3];
+  class expand_operand ops[3];
   bool commutative_p;
   rtx_insn *pat;
   rtx xop0 = op0, xop1 = op1;
@@ -2012,7 +2012,7 @@ expand_twoval_unop (optab unoptab, rtx op0, rtx targ0, rtx targ1,
 
   if (optab_handler (unoptab, mode) != CODE_FOR_nothing)
     {
-      struct expand_operand ops[3];
+      class expand_operand ops[3];
       enum insn_code icode = optab_handler (unoptab, mode);
 
       create_fixed_operand (&ops[0], targ0);
@@ -2084,7 +2084,7 @@ expand_twoval_binop (optab binoptab, rtx op0, rtx op1, rtx targ0, rtx targ1,
 
   if (optab_handler (binoptab, mode) != CODE_FOR_nothing)
     {
-      struct expand_operand ops[4];
+      class expand_operand ops[4];
       enum insn_code icode = optab_handler (binoptab, mode);
       machine_mode mode0 = insn_data[icode].operand[1].mode;
       machine_mode mode1 = insn_data[icode].operand[2].mode;
@@ -2724,7 +2724,7 @@ expand_unop_direct (machine_mode mode, optab unoptab, rtx op0, rtx target,
 {
   if (optab_handler (unoptab, mode) != CODE_FOR_nothing)
     {
-      struct expand_operand ops[2];
+      class expand_operand ops[2];
       enum insn_code icode = optab_handler (unoptab, mode);
       rtx_insn *last = get_last_insn ();
       rtx_insn *pat;
@@ -3578,7 +3578,7 @@ bool
 maybe_emit_unop_insn (enum insn_code icode, rtx target, rtx op0,
 		      enum rtx_code code)
 {
-  struct expand_operand ops[2];
+  class expand_operand ops[2];
   rtx_insn *pat;
 
   create_output_operand (&ops[0], target, GET_MODE (target));
@@ -4289,7 +4289,7 @@ emit_indirect_jump (rtx loc)
     sorry ("indirect jumps are not available on this target");
   else
     {
-      struct expand_operand ops[1];
+      class expand_operand ops[1];
       create_address_operand (&ops[0], loc);
       expand_jump_insn (targetm.code_for_indirect_jump, 1, ops);
       emit_barrier ();
@@ -4394,7 +4394,7 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
 			    OPTAB_WIDEN, &comparison, &cmpmode);
 	  if (comparison)
 	    {
-	      struct expand_operand ops[4];
+	      class expand_operand ops[4];
 
 	      create_output_operand (&ops[0], target, mode);
 	      create_fixed_operand (&ops[1], comparison);
@@ -4460,7 +4460,7 @@ emit_conditional_neg_or_complement (rtx target, rtx_code code,
     target = gen_reg_rtx (mode);
 
   rtx_insn *last = get_last_insn ();
-  struct expand_operand ops[4];
+  class expand_operand ops[4];
 
   create_output_operand (&ops[0], target, mode);
   create_fixed_operand (&ops[1], cond);
@@ -4548,7 +4548,7 @@ emit_conditional_add (rtx target, enum rtx_code code, rtx op0, rtx op1,
                     &comparison, &cmode);
   if (comparison)
     {
-      struct expand_operand ops[4];
+      class expand_operand ops[4];
 
       create_output_operand (&ops[0], target, mode);
       create_fixed_operand (&ops[1], comparison);
@@ -5414,7 +5414,7 @@ vector_compare_rtx (machine_mode cmp_mode, enum tree_code tcode,
 		    tree t_op0, tree t_op1, bool unsignedp,
 		    enum insn_code icode, unsigned int opno)
 {
-  struct expand_operand ops[2];
+  class expand_operand ops[2];
   rtx rtx_op0, rtx_op1;
   machine_mode m0, m1;
   enum rtx_code rcode = get_rtx_code (tcode, unsignedp);
@@ -5509,7 +5509,7 @@ expand_vec_perm_1 (enum insn_code icode, rtx target,
 {
   machine_mode tmode = GET_MODE (target);
   machine_mode smode = GET_MODE (sel);
-  struct expand_operand ops[4];
+  class expand_operand ops[4];
 
   gcc_assert (GET_MODE_CLASS (smode) == MODE_VECTOR_INT
 	      || mode_for_int_vector (tmode).require () == smode);
@@ -5596,7 +5596,7 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
       rtx shift_amt = shift_amt_for_vec_perm_mask (mode, indices, shift_optab);
       if (shift_amt)
 	{
-	  struct expand_operand ops[3];
+	  class expand_operand ops[3];
 	  if (shift_code != CODE_FOR_nothing)
 	    {
 	      create_output_operand (&ops[0], target, mode);
@@ -5782,7 +5782,7 @@ rtx
 expand_vec_cond_mask_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
 			   rtx target)
 {
-  struct expand_operand ops[4];
+  class expand_operand ops[4];
   machine_mode mode = TYPE_MODE (vec_cond_type);
   machine_mode mask_mode = TYPE_MODE (TREE_TYPE (op0));
   enum insn_code icode = get_vcond_mask_icode (mode, mask_mode);
@@ -5814,7 +5814,7 @@ rtx
 expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
 		      rtx target)
 {
-  struct expand_operand ops[6];
+  class expand_operand ops[6];
   enum insn_code icode;
   rtx comparison, rtx_op1, rtx_op2;
   machine_mode mode = TYPE_MODE (vec_cond_type);
@@ -5884,7 +5884,7 @@ expand_vec_cond_expr (tree vec_cond_type, tree op0, tree op1, tree op2,
 rtx
 expand_vec_series_expr (machine_mode vmode, rtx op0, rtx op1, rtx target)
 {
-  struct expand_operand ops[3];
+  class expand_operand ops[3];
   enum insn_code icode;
   machine_mode emode = GET_MODE_INNER (vmode);
 
@@ -5904,7 +5904,7 @@ expand_vec_series_expr (machine_mode vmode, rtx op0, rtx op1, rtx target)
 rtx
 expand_vec_cmp_expr (tree type, tree exp, rtx target)
 {
-  struct expand_operand ops[4];
+  class expand_operand ops[4];
   enum insn_code icode;
   rtx comparison;
   machine_mode mask_mode = TYPE_MODE (type);
@@ -5945,7 +5945,7 @@ rtx
 expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
 		      rtx target, bool uns_p)
 {
-  struct expand_operand eops[3];
+  class expand_operand eops[3];
   enum insn_code icode;
   int method, i;
   machine_mode wmode;
@@ -6098,7 +6098,7 @@ maybe_emit_atomic_exchange (rtx target, rtx mem, rtx val, enum memmodel model)
   icode = direct_optab_handler (atomic_exchange_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand ops[4];
+      class expand_operand ops[4];
 
       create_output_operand (&ops[0], target, mode);
       create_fixed_operand (&ops[1], mem);
@@ -6136,7 +6136,7 @@ maybe_emit_sync_lock_test_and_set (rtx target, rtx mem, rtx val,
 
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand ops[3];
+      class expand_operand ops[3];
       create_output_operand (&ops[0], target, mode);
       create_fixed_operand (&ops[1], mem);
       create_input_operand (&ops[2], val, mode);
@@ -6196,7 +6196,7 @@ static rtx
 maybe_emit_atomic_test_and_set (rtx target, rtx mem, enum memmodel model)
 {
   machine_mode pat_bool_mode;
-  struct expand_operand ops[3];
+  class expand_operand ops[3];
 
   if (!targetm.have_atomic_test_and_set ())
     return NULL_RTX;
@@ -6366,7 +6366,7 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
 				enum memmodel fail_model)
 {
   machine_mode mode = GET_MODE (mem);
-  struct expand_operand ops[8];
+  class expand_operand ops[8];
   enum insn_code icode;
   rtx target_oval, target_bool = NULL_RTX;
   rtx libfunc;
@@ -6568,7 +6568,7 @@ expand_atomic_load (rtx target, rtx mem, enum memmodel model)
   icode = direct_optab_handler (atomic_load_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand ops[3];
+      class expand_operand ops[3];
       rtx_insn *last = get_last_insn ();
       if (is_mm_seq_cst (model))
 	expand_memory_blockage ();
@@ -6621,7 +6621,7 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
 {
   machine_mode mode = GET_MODE (mem);
   enum insn_code icode;
-  struct expand_operand ops[3];
+  class expand_operand ops[3];
 
   /* If the target supports the store directly, great.  */
   icode = direct_optab_handler (atomic_store_optab, mode);
@@ -6831,7 +6831,7 @@ maybe_emit_op (const struct atomic_op_functions *optab, rtx target, rtx mem,
 	       rtx val, bool use_memmodel, enum memmodel model, bool after)
 {
   machine_mode mode = GET_MODE (mem);
-  struct expand_operand ops[4];
+  class expand_operand ops[4];
   enum insn_code icode;
   int op_counter = 0;
   int num_ops;
@@ -7145,7 +7145,7 @@ valid_multiword_target_p (rtx target)
    of that rtx if so.  */
 
 void
-create_integer_operand (struct expand_operand *op, poly_int64 intval)
+create_integer_operand (class expand_operand *op, poly_int64 intval)
 {
   create_expand_operand (op, EXPAND_INTEGER,
 			 gen_int_mode (intval, MAX_MODE_INT),
@@ -7157,7 +7157,7 @@ create_integer_operand (struct expand_operand *op, poly_int64 intval)
 
 static bool
 maybe_legitimize_operand_same_code (enum insn_code icode, unsigned int opno,
-				    struct expand_operand *op)
+				    class expand_operand *op)
 {
   /* See if the operand matches in its current form.  */
   if (insn_operand_matches (icode, opno, op->value))
@@ -7199,7 +7199,7 @@ maybe_legitimize_operand_same_code (enum insn_code icode, unsigned int opno,
 
 static bool
 maybe_legitimize_operand (enum insn_code icode, unsigned int opno,
-			  struct expand_operand *op)
+			  class expand_operand *op)
 {
   machine_mode mode, imode;
   bool old_volatile_ok, result;
@@ -7281,7 +7281,7 @@ maybe_legitimize_operand (enum insn_code icode, unsigned int opno,
    TYPE is the type of VALUE.  */
 
 void
-create_convert_operand_from_type (struct expand_operand *op,
+create_convert_operand_from_type (class expand_operand *op,
 				  rtx value, tree type)
 {
   create_convert_operand_from (op, value, TYPE_MODE (type),
@@ -7296,8 +7296,8 @@ create_convert_operand_from_type (struct expand_operand *op,
 static inline bool
 can_reuse_operands_p (enum insn_code icode,
 		      unsigned int opno1, unsigned int opno2,
-		      const struct expand_operand *op1,
-		      const struct expand_operand *op2)
+		      const class expand_operand *op1,
+		      const class expand_operand *op2)
 {
   /* Check requirements that are common to all types.  */
   if (op1->type != op2->type
@@ -7332,7 +7332,7 @@ can_reuse_operands_p (enum insn_code icode,
 
 bool
 maybe_legitimize_operands (enum insn_code icode, unsigned int opno,
-			   unsigned int nops, struct expand_operand *ops)
+			   unsigned int nops, class expand_operand *ops)
 {
   rtx_insn *last = get_last_insn ();
   rtx *orig_values = XALLOCAVEC (rtx, nops);
@@ -7374,7 +7374,7 @@ maybe_legitimize_operands (enum insn_code icode, unsigned int opno,
 
 rtx_insn *
 maybe_gen_insn (enum insn_code icode, unsigned int nops,
-		struct expand_operand *ops)
+		class expand_operand *ops)
 {
   gcc_assert (nops == (unsigned int) insn_data[(int) icode].n_generator_args);
   if (!maybe_legitimize_operands (icode, 0, nops, ops))
@@ -7418,7 +7418,7 @@ maybe_gen_insn (enum insn_code icode, unsigned int nops,
 
 bool
 maybe_expand_insn (enum insn_code icode, unsigned int nops,
-		   struct expand_operand *ops)
+		   class expand_operand *ops)
 {
   rtx_insn *pat = maybe_gen_insn (icode, nops, ops);
   if (pat)
@@ -7433,7 +7433,7 @@ maybe_expand_insn (enum insn_code icode, unsigned int nops,
 
 bool
 maybe_expand_jump_insn (enum insn_code icode, unsigned int nops,
-			struct expand_operand *ops)
+			class expand_operand *ops)
 {
   rtx_insn *pat = maybe_gen_insn (icode, nops, ops);
   if (pat)
@@ -7449,7 +7449,7 @@ maybe_expand_jump_insn (enum insn_code icode, unsigned int nops,
 
 void
 expand_insn (enum insn_code icode, unsigned int nops,
-	     struct expand_operand *ops)
+	     class expand_operand *ops)
 {
   if (!maybe_expand_insn (icode, nops, ops))
     gcc_unreachable ();
@@ -7459,7 +7459,7 @@ expand_insn (enum insn_code icode, unsigned int nops,
 
 void
 expand_jump_insn (enum insn_code icode, unsigned int nops,
-		  struct expand_operand *ops)
+		  class expand_operand *ops)
 {
   if (!maybe_expand_jump_insn (icode, nops, ops))
     gcc_unreachable ();

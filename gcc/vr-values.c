@@ -1711,7 +1711,7 @@ compare_range_with_value (enum tree_code comp, value_range *vr, tree val,
    for VAR.  If so, update VR with the new limits.  */
 
 void
-vr_values::adjust_range_with_scev (value_range *vr, struct loop *loop,
+vr_values::adjust_range_with_scev (value_range *vr, class loop *loop,
 				   gimple *stmt, tree var)
 {
   tree init, step, chrec, tmin, tmax, min, max, type, tem;
@@ -2806,7 +2806,7 @@ vr_values::extract_range_from_phi_node (gphi *phi, value_range *vr_result)
   value_range *lhs_vr = get_value_range (lhs);
   bool first = true;
   int edges, old_edges;
-  struct loop *l;
+  class loop *l;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {

@@ -3145,7 +3145,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
     {
       /* Parse a struct or union definition.  Start the scope of the
 	 tag before parsing components.  */
-      struct c_struct_parse_info *struct_info;
+      class c_struct_parse_info *struct_info;
       tree type = start_struct (struct_loc, code, ident, &struct_info);
       tree postfix_attrs;
       /* We chain the components in reverse order, then put them in

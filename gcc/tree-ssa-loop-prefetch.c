@@ -421,7 +421,7 @@ release_mem_refs (struct mem_ref_group *groups)
 
 struct ar_data
 {
-  struct loop *loop;			/* Loop of the reference.  */
+  class loop *loop;			/* Loop of the reference.  */
   gimple *stmt;				/* Statement of the reference.  */
   tree *step;				/* Step of the memory reference.  */
   HOST_WIDE_INT *delta;			/* Offset of the memory reference.  */
@@ -486,7 +486,7 @@ idx_analyze_ref (tree base, tree *index, void *data)
    references from REF_P.  */
 
 static bool
-analyze_ref (struct loop *loop, tree *ref_p, tree *base,
+analyze_ref (class loop *loop, tree *ref_p, tree *base,
 	     tree *step, HOST_WIDE_INT *delta,
 	     gimple *stmt)
 {
@@ -535,7 +535,7 @@ analyze_ref (struct loop *loop, tree *ref_p, tree *base,
    reference was recorded, false otherwise.  */
 
 static bool
-gather_memory_references_ref (struct loop *loop, struct mem_ref_group **refs,
+gather_memory_references_ref (class loop *loop, struct mem_ref_group **refs,
 			      tree ref, bool write_p, gimple *stmt)
 {
   tree base, step;
@@ -606,7 +606,7 @@ gather_memory_references_ref (struct loop *loop, struct mem_ref_group **refs,
    true if there are no other memory references inside the loop.  */
 
 static struct mem_ref_group *
-gather_memory_references (struct loop *loop, bool *no_other_refs, unsigned *ref_count)
+gather_memory_references (class loop *loop, bool *no_other_refs, unsigned *ref_count)
 {
   basic_block *body = get_loop_body_in_dom_order (loop);
   basic_block bb;
@@ -1286,7 +1286,7 @@ mark_nontemporal_store (struct mem_ref *ref)
 /* Issue a memory fence instruction after LOOP.  */
 
 static void
-emit_mfence_after_loop (struct loop *loop)
+emit_mfence_after_loop (class loop *loop)
 {
   vec<edge> exits = get_loop_exit_edges (loop);
   edge exit;
@@ -1315,7 +1315,7 @@ emit_mfence_after_loop (struct loop *loop)
 /* Returns true if we can use storent in loop, false otherwise.  */
 
 static bool
-may_use_storent_in_loop_p (struct loop *loop)
+may_use_storent_in_loop_p (class loop *loop)
 {
   bool ret = true;
 
@@ -1345,7 +1345,7 @@ may_use_storent_in_loop_p (struct loop *loop)
    references in the loop.  */
 
 static void
-mark_nontemporal_stores (struct loop *loop, struct mem_ref_group *groups)
+mark_nontemporal_stores (class loop *loop, struct mem_ref_group *groups)
 {
   struct mem_ref *ref;
   bool any = false;
@@ -1366,7 +1366,7 @@ mark_nontemporal_stores (struct loop *loop, struct mem_ref_group *groups)
    iterations.  */
 
 static bool
-should_unroll_loop_p (struct loop *loop, struct tree_niter_desc *desc,
+should_unroll_loop_p (class loop *loop, class tree_niter_desc *desc,
 		      unsigned factor)
 {
   if (!can_unroll_loop_p (loop, factor, desc))
@@ -1390,8 +1390,8 @@ should_unroll_loop_p (struct loop *loop, struct tree_niter_desc *desc,
    the loop, or -1 if no estimate is available.  */
 
 static unsigned
-determine_unroll_factor (struct loop *loop, struct mem_ref_group *refs,
-			 unsigned ninsns, struct tree_niter_desc *desc,
+determine_unroll_factor (class loop *loop, struct mem_ref_group *refs,
+			 unsigned ninsns, class tree_niter_desc *desc,
 			 HOST_WIDE_INT est_niter)
 {
   unsigned upper_bound;
@@ -1493,9 +1493,9 @@ volume_of_dist_vector (lambda_vector vec, unsigned *loop_sizes, unsigned n)
 
 static void
 add_subscript_strides (tree access_fn, unsigned stride,
-		       HOST_WIDE_INT *strides, unsigned n, struct loop *loop)
+		       HOST_WIDE_INT *strides, unsigned n, class loop *loop)
 {
-  struct loop *aloop;
+  class loop *aloop;
   tree step;
   HOST_WIDE_INT astep;
   unsigned min_depth = loop_depth (loop) - n;
@@ -1526,7 +1526,7 @@ add_subscript_strides (tree access_fn, unsigned stride,
 
 static unsigned
 self_reuse_distance (data_reference_p dr, unsigned *loop_sizes, unsigned n,
-		     struct loop *loop)
+		     class loop *loop)
 {
   tree stride, access_fn;
   HOST_WIDE_INT *strides, astride;
@@ -1596,10 +1596,10 @@ self_reuse_distance (data_reference_p dr, unsigned *loop_sizes, unsigned n,
    memory references in the loop.  Return false if the analysis fails.  */
 
 static bool
-determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
+determine_loop_nest_reuse (class loop *loop, struct mem_ref_group *refs,
 			   bool no_other_refs)
 {
-  struct loop *nest, *aloop;
+  class loop *nest, *aloop;
   vec<data_reference_p> datarefs = vNULL;
   vec<ddr_p> dependences = vNULL;
   struct mem_ref_group *gr;
@@ -1879,12 +1879,12 @@ insn_to_prefetch_ratio_too_small_p (unsigned ninsns, unsigned prefetch_count,
    true if the LOOP was unrolled.  */
 
 static bool
-loop_prefetch_arrays (struct loop *loop)
+loop_prefetch_arrays (class loop *loop)
 {
   struct mem_ref_group *refs;
   unsigned ahead, ninsns, time, unroll_factor;
   HOST_WIDE_INT est_niter;
-  struct tree_niter_desc desc;
+  class tree_niter_desc desc;
   bool unrolled = false, no_other_refs;
   unsigned prefetch_count;
   unsigned mem_ref_count;
@@ -1982,7 +1982,7 @@ fail:
 unsigned int
 tree_ssa_prefetch_arrays (void)
 {
-  struct loop *loop;
+  class loop *loop;
   bool unrolled = false;
   int todo_flags = 0;
 

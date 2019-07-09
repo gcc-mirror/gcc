@@ -2019,7 +2019,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
       else
 	{
 	  /* Create a new SLP instance.  */
-	  new_instance = XNEW (struct _slp_instance);
+	  new_instance = XNEW (class _slp_instance);
 	  SLP_INSTANCE_TREE (new_instance) = node;
 	  SLP_INSTANCE_GROUP_SIZE (new_instance) = group_size;
 	  SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;

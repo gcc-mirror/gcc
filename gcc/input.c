@@ -124,14 +124,14 @@ public:
 
 location_t input_location = UNKNOWN_LOCATION;
 
-struct line_maps *line_table;
+class line_maps *line_table;
 
 /* A stashed copy of "line_table" for use by selftest::line_table_test.
    This needs to be a global so that it can be a GC root, and thus
    prevent the stashed copy from being garbage-collected if the GC runs
    during a line_table_test.  */
 
-struct line_maps *saved_line_table;
+class line_maps *saved_line_table;
 
 static fcache *fcache_tab;
 static const size_t fcache_tab_size = 16;
@@ -980,7 +980,7 @@ dump_line_table_statistics (void)
 /* Get location one beyond the final location in ordinary map IDX.  */
 
 static location_t
-get_end_location (struct line_maps *set, unsigned int idx)
+get_end_location (class line_maps *set, unsigned int idx)
 {
   if (idx == LINEMAPS_ORDINARY_USED (set) - 1)
     return set->highest_location;
@@ -2051,7 +2051,7 @@ test_lexer (const line_table_case &case_)
 
 /* Forward decls.  */
 
-struct lexer_test;
+class lexer_test;
 class lexer_test_options;
 
 /* A class for specifying options of a lexer_test.

@@ -278,7 +278,7 @@ public:
     } positions_needed;
 
   /* The next store info for this insn.  */
-  struct store_info *next;
+  class store_info *next;
 
   /* The right hand side of the store.  This is used if there is a
      subsequent reload of the mems address somewhere later in the
@@ -326,9 +326,9 @@ public:
   rtx mem;
 
   /* The next read_info for this insn.  */
-  struct read_info_type *next;
+  class read_info_type *next;
 };
-typedef struct read_info_type *read_info_t;
+typedef class read_info_type *read_info_t;
 
 static object_allocator<read_info_type> read_info_type_pool ("read_info_pool");
 
@@ -1509,7 +1509,7 @@ record_store (rtx body, bb_info_t bb_info)
   while (ptr)
     {
       insn_info_t next = ptr->next_local_store;
-      struct store_info *s_info = ptr->store_rec;
+      class store_info *s_info = ptr->store_rec;
       bool del = true;
 
       /* Skip the clobbers. We delete the active insn if this insn

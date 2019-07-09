@@ -66,11 +66,11 @@ public:
 
 extern bool for_each_index (tree *, bool (*) (tree, tree *, void *), void *);
 extern char *get_lsm_tmp_name (tree ref, unsigned n, const char *suffix = NULL);
-extern unsigned tree_num_loop_insns (struct loop *, struct eni_weights *);
+extern unsigned tree_num_loop_insns (class loop *, struct eni_weights *);
 
 /* Returns the loop of the statement STMT.  */
 
-static inline struct loop *
+static inline class loop *
 loop_containing_stmt (gimple *stmt)
 {
   basic_block bb = gimple_bb (stmt);

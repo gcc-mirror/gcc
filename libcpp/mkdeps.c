@@ -184,7 +184,7 @@ munge (const char *str, const char *trail = NULL, ...)
 /* If T begins with any of the partial pathnames listed in d->vpathv,
    then advance T to point beyond that pathname.  */
 static const char *
-apply_vpath (struct mkdeps *d, const char *t)
+apply_vpath (class mkdeps *d, const char *t)
 {
   if (unsigned len = d->vpath.size ())
     for (unsigned i = len; i--;)
@@ -222,14 +222,14 @@ apply_vpath (struct mkdeps *d, const char *t)
 
 /* Public routines.  */
 
-struct mkdeps *
+class mkdeps *
 deps_init (void)
 {
   return new mkdeps ();
 }
 
 void
-deps_free (struct mkdeps *d)
+deps_free (class mkdeps *d)
 {
   delete d;
 }
@@ -237,7 +237,7 @@ deps_free (struct mkdeps *d)
 /* Adds a target T.  We make a copy, so it need not be a permanent
    string.  QUOTE is true if the string should be quoted.  */
 void
-deps_add_target (struct mkdeps *d, const char *t, int quote)
+deps_add_target (class mkdeps *d, const char *t, int quote)
 {
   t = xstrdup (apply_vpath (d, t));
 
@@ -261,7 +261,7 @@ deps_add_target (struct mkdeps *d, const char *t, int quote)
    string as the default target in interpreted as stdin.  The string
    is quoted for MAKE.  */
 void
-deps_add_default_target (struct mkdeps *d, const char *tgt)
+deps_add_default_target (class mkdeps *d, const char *tgt)
 {
   /* Only if we have no targets.  */
   if (d->targets.size ())
@@ -291,7 +291,7 @@ deps_add_default_target (struct mkdeps *d, const char *tgt)
 }
 
 void
-deps_add_dep (struct mkdeps *d, const char *t)
+deps_add_dep (class mkdeps *d, const char *t)
 {
   gcc_assert (*t);
 
@@ -301,7 +301,7 @@ deps_add_dep (struct mkdeps *d, const char *t)
 }
 
 void
-deps_add_vpath (struct mkdeps *d, const char *vpath)
+deps_add_vpath (class mkdeps *d, const char *vpath)
 {
   const char *elem, *p;
 
@@ -367,7 +367,7 @@ make_write_vec (const mkdeps::vec<const char *> &vec, FILE *fp,
    .PHONY targets for all the dependencies too.  */
 
 static void
-make_write (const struct mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
+make_write (const class mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
 {
   unsigned column = 0;
   if (colmax && colmax < 34)
@@ -390,7 +390,7 @@ make_write (const struct mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
    only Make at the moment).  */
 
 void
-deps_write (const struct mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
+deps_write (const class mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
 {
   make_write (d, fp, phony, colmax);
 }
@@ -400,7 +400,7 @@ deps_write (const struct mkdeps *d, FILE *fp, bool phony, unsigned int colmax)
    error number will be in errno.  */
 
 int
-deps_save (struct mkdeps *deps, FILE *f)
+deps_save (class mkdeps *deps, FILE *f)
 {
   unsigned int i;
   size_t size;
@@ -432,7 +432,7 @@ deps_save (struct mkdeps *deps, FILE *f)
    in which case that filename is skipped.  */
 
 int
-deps_restore (struct mkdeps *deps, FILE *fd, const char *self)
+deps_restore (class mkdeps *deps, FILE *fd, const char *self)
 {
   size_t size;
   char *buf = NULL;
