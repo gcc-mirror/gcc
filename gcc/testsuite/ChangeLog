@@ -1,3 +1,7 @@
+2019-07-09  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/rep_clause8.adb: New testcase.
+
 2019-07-09  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/equal7.adb, gnat.dg/equal7_pkg.adb,
