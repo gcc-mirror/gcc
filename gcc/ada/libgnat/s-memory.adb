@@ -33,13 +33,10 @@
 
 --  This implementation assumes that the underlying malloc/free/realloc
 --  implementation is thread safe, and thus, no additional lock is required.
---  Note that we still need to defer abort because on most systems, an
---  asynchronous signal (as used for implementing asynchronous abort of
---  task) cannot safely be handled while malloc is executing.
-
---  If you are not using Ada constructs containing the "abort" keyword, then
---  you can remove the calls to Abort_Defer.all and Abort_Undefer.all from
---  this unit.
+--  Note that when using sjlj exception handling, we still need to defer abort
+--  because an asynchronous signal (as used for implementing asynchronous abort
+--  of task on sjlj runtimes) cannot safely be handled while malloc is
+--  executing.
 
 pragma Compiler_Unit_Warning;
 
@@ -80,7 +77,7 @@ package body System.Memory is
          raise Storage_Error with "object too large";
       end if;
 
-      if Parameters.No_Abort then
+      if ZCX_By_Default or else Parameters.No_Abort then
          Result := c_malloc (System.CRTL.size_t (Size));
       else
          Abort_Defer.all;
@@ -121,7 +118,7 @@ package body System.Memory is
 
    procedure Free (Ptr : System.Address) is
    begin
-      if Parameters.No_Abort then
+      if ZCX_By_Default or else Parameters.No_Abort then
          c_free (Ptr);
       else
          Abort_Defer.all;
@@ -145,7 +142,7 @@ package body System.Memory is
          raise Storage_Error with "object too large";
       end if;
 
-      if Parameters.No_Abort then
+      if ZCX_By_Default or else Parameters.No_Abort then
          Result := c_realloc (Ptr, System.CRTL.size_t (Size));
       else
          Abort_Defer.all;
