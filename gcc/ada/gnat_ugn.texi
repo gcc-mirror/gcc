@@ -28458,6 +28458,29 @@ declared in the spec by elaboration code in the body.
 The programmer should remove the pragma as advised, and rebuild the program.
 
 @item 
+Use of pragma Restrictions
+
+@example
+use pragma Restrictions (No_Entry_Calls_In_Elaboration_Code)
+@end example
+
+This tactic is suggested when the binder has determined that a task
+activation at elaboration time
+
+
+@itemize -
+
+@item 
+Prevents a set of units from being elaborated.
+@end itemize
+
+Note that the binder cannot determine with certainty whether the task will
+block at elaboration time.
+
+The programmer should create a configuration file, place the pragma within,
+update the general compilation arguments, and rebuild the program.
+
+@item 
 Use of dynamic elaboration model
 
 @example

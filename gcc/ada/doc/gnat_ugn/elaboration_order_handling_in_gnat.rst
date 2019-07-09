@@ -1014,6 +1014,23 @@ following tactics to eliminate the circularity:
 
   The programmer should remove the pragma as advised, and rebuild the program.
 
+* Use of pragma Restrictions
+
+  ::
+
+     use pragma Restrictions (No_Entry_Calls_In_Elaboration_Code)
+
+  This tactic is suggested when the binder has determined that a task
+  activation at elaboration time
+
+  - Prevents a set of units from being elaborated.
+
+  Note that the binder cannot determine with certainty whether the task will
+  block at elaboration time.
+
+  The programmer should create a configuration file, place the pragma within,
+  update the general compilation arguments, and rebuild the program.
+
 * Use of dynamic elaboration model
 
   ::

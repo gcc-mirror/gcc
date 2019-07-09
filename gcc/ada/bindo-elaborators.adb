@@ -180,20 +180,11 @@ package body Bindo.Elaborators is
       --  can be elaborated. Step is the current step in the elaboration order.
       --  Indent is the desired indentation level for tracing.
 
-      type Comparator_Ptr is access function
-        (G           : Library_Graph;
-         Vertex      : Library_Graph_Vertex_Id;
-         Compared_To : Library_Graph_Vertex_Id) return Precedence_Kind;
-
-      type Predicate_Ptr is access function
-        (G      : Library_Graph;
-         Vertex : Library_Graph_Vertex_Id) return Boolean;
-
       function Find_Best_Vertex
         (G                   : Library_Graph;
          Set                 : LGV_Sets.Membership_Set;
-         Is_Suitable_Vertex  : Predicate_Ptr;
-         Compare_Vertices    : Comparator_Ptr;
+         Is_Suitable_Vertex  : LGV_Predicate_Ptr;
+         Compare_Vertices    : LGV_Comparator_Ptr;
          Initial_Best_Msg    : String;
          Subsequent_Best_Msg : String;
          Step                : Elaboration_Order_Step;
@@ -917,8 +908,8 @@ package body Bindo.Elaborators is
       function Find_Best_Vertex
         (G                   : Library_Graph;
          Set                 : LGV_Sets.Membership_Set;
-         Is_Suitable_Vertex  : Predicate_Ptr;
-         Compare_Vertices    : Comparator_Ptr;
+         Is_Suitable_Vertex  : LGV_Predicate_Ptr;
+         Compare_Vertices    : LGV_Comparator_Ptr;
          Initial_Best_Msg    : String;
          Subsequent_Best_Msg : String;
          Step                : Elaboration_Order_Step;

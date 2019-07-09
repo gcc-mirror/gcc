@@ -415,10 +415,11 @@ package body Bindo.Builders is
          Write_Eol;
 
          Add_Edge
-           (G    => Lib_Graph,
-            Pred => Pred_Vertex,
-            Succ => Succ_Vertex,
-            Kind => Forced_Edge);
+           (G              => Lib_Graph,
+            Pred           => Pred_Vertex,
+            Succ           => Succ_Vertex,
+            Kind           => Forced_Edge,
+            Activates_Task => False);
       end Create_Forced_Edge;
 
       -------------------------
@@ -497,10 +498,11 @@ package body Bindo.Builders is
             Set_Corresponding_Item (Lib_Graph, Vertex, Extra_Vertex);
 
             Add_Edge
-              (G    => Lib_Graph,
-               Pred => Extra_Vertex,
-               Succ => Vertex,
-               Kind => Spec_Before_Body_Edge);
+              (G              => Lib_Graph,
+               Pred           => Extra_Vertex,
+               Succ           => Vertex,
+               Kind           => Spec_Before_Body_Edge,
+               Activates_Task => False);
 
          --  The unit denotes a spec with a completing body. Link the spec and
          --  body.
@@ -570,12 +572,13 @@ package body Bindo.Builders is
 
             if Is_Spec_With_Body (Lib_Graph, Withed_Vertex) then
                Add_Edge
-                 (G    => Lib_Graph,
-                  Pred =>
+                 (G              => Lib_Graph,
+                  Pred           =>
                     Corresponding_Vertex
                       (Lib_Graph, Corresponding_Body (Withed_U_Id)),
-                  Succ => Succ,
-                  Kind => Kind);
+                  Succ           => Succ,
+                  Kind           => Kind,
+                  Activates_Task => False);
             end if;
 
          --  The with comes with pragma Elaborate_All. Treat the edge as a with
@@ -597,10 +600,11 @@ package body Bindo.Builders is
          --  successor.
 
          Add_Edge
-           (G    => Lib_Graph,
-            Pred => Withed_Vertex,
-            Succ => Succ,
-            Kind => Kind);
+           (G              => Lib_Graph,
+            Pred           => Withed_Vertex,
+            Succ           => Succ,
+            Kind           => Kind,
+            Activates_Task => False);
       end Create_With_Edge;
 
       -----------------------
