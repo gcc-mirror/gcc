@@ -1,3 +1,9 @@
+2019-07-09  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* gcc.target/arm/aes-fuse-1.c: New.
+	* gcc.target/arm/aes-fuse-2.c: New.
+	* gcc.target/arm/aes_xor_combine.c: New.
+
 2019-07-09  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/predict-17.c: Test loop optimizer assumption

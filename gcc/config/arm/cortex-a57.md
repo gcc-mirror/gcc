@@ -801,9 +801,3 @@
 ;; help.
 (define_bypass 1 "cortex_a57_*"
 		 "cortex_a57_call,cortex_a57_branch")
-
-;; AESE+AESMC and AESD+AESIMC pairs forward with zero latency
-(define_bypass 0 "cortex_a57_crypto_simple"
-		 "cortex_a57_crypto_simple"
-		 "aarch_crypto_can_dual_issue")
-

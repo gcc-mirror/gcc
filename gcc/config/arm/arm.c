@@ -30606,10 +30606,6 @@ aarch_macro_fusion_pair_p (rtx_insn* prev, rtx_insn* curr)
   if (!arm_macro_fusion_p ())
     return false;
 
-  if (current_tune->fusible_ops & tune_params::FUSE_AES_AESMC
-      && aarch_crypto_can_dual_issue (prev, curr))
-    return true;
-
   if (current_tune->fusible_ops & tune_params::FUSE_MOVW_MOVT
       && arm_sets_movw_movt_fusible_p (prev_set, curr_set))
     return true;
