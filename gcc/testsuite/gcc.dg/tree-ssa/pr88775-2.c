@@ -41,3 +41,5 @@ f5 (void)
   int c[64] = {}, d[64] = {};
   return (__UINTPTR_TYPE__) &c[64] != (__UINTPTR_TYPE__) &d[0];
 }
+
+/* { dg-prune-output "-Wreturn-local-addr" } */
