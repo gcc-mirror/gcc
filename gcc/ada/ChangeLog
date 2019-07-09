@@ -1,3 +1,10 @@
+2019-07-09  Yannick Moy  <moy@adacore.com>
+
+	* sem_spark.adb (Check_Expression): Handle correctly implicit
+	assignments as part of allocators and (extension) aggregates.
+	(Get_Root_Object): Adapt for new path expressions.
+	(Is_Path_Expression): Return True for (extension) aggregate.
+
 2019-07-09  Piotr Trojanek  <trojanek@adacore.com>
 
 	* einfo.ads: Fix a typo.

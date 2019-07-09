@@ -1436,6 +1436,13 @@ package body Sem_SPARK is
       function Is_Type_Name (Expr : Node_Id) return Boolean;
       --  Detect when a path expression is in fact a type name
 
+      procedure Move_Expression (Expr : Node_Id);
+      --  Some subexpressions are only analyzed in Move mode. This is a
+      --  specialized version of Check_Expression for that case.
+
+      procedure Move_Expression_List (L : List_Id);
+      --  Call Move_Expression on every expression in the list L
+
       procedure Read_Expression (Expr : Node_Id);
       --  Most subexpressions are only analyzed in Read mode. This is a
       --  specialized version of Check_Expression for that case.
@@ -1457,6 +1464,36 @@ package body Sem_SPARK is
          return Nkind_In (Expr, N_Expanded_Name, N_Identifier)
            and then Is_Type (Entity (Expr));
       end Is_Type_Name;
+
+      ---------------------
+      -- Move_Expression --
+      ---------------------
+
+      --  Distinguish the case where the argument is a path expression that
+      --  needs explicit moving.
+
+      procedure Move_Expression (Expr : Node_Id) is
+      begin
+         if Is_Path_Expression (Expr) then
+            Check_Expression (Expr, Move);
+         else
+            Read_Expression (Expr);
+         end if;
+      end Move_Expression;
+
+      --------------------------
+      -- Move_Expression_List --
+      --------------------------
+
+      procedure Move_Expression_List (L : List_Id) is
+         N : Node_Id;
+      begin
+         N := First (L);
+         while Present (N) loop
+            Move_Expression (N);
+            Next (N);
+         end loop;
+      end Move_Expression_List;
 
       ---------------------
       -- Read_Expression --
@@ -1489,7 +1526,26 @@ package body Sem_SPARK is
 
          --  Local subprograms
 
+         function Is_Singleton_Choice (Choices : List_Id) return Boolean;
+         --  Return whether Choices is a singleton choice
+
          procedure Read_Param (Formal : Entity_Id; Actual : Node_Id);
+         --  Call Read_Expression on the actual
+
+         -------------------------
+         -- Is_Singleton_Choice --
+         -------------------------
+
+         function Is_Singleton_Choice (Choices : List_Id) return Boolean is
+            Choice : constant Node_Id := First (Choices);
+         begin
+            return List_Length (Choices) = 1
+              and then Nkind (Choice) /= N_Others_Choice
+              and then not Nkind_In (Choice, N_Subtype_Indication, N_Range)
+              and then not
+                (Nkind_In (Choice, N_Identifier, N_Expanded_Name)
+                  and then Is_Type (Entity (Choice)));
+         end Is_Singleton_Choice;
 
          ----------------
          -- Read_Param --
@@ -1526,8 +1582,11 @@ package body Sem_SPARK is
                Read_Indexes (Prefix (Expr));
                Read_Expression (Discrete_Range (Expr));
 
+            --  The argument of an allocator is moved as part of the implicit
+            --  assignment.
+
             when N_Allocator =>
-               Read_Expression (Expression (Expr));
+               Move_Expression (Expression (Expr));
 
             when N_Function_Call =>
                Read_Params (Expr);
@@ -1538,6 +1597,91 @@ package body Sem_SPARK is
                | N_Unchecked_Type_Conversion
             =>
                Read_Indexes (Expression (Expr));
+
+            when N_Aggregate =>
+               declare
+                  Assocs : constant List_Id := Component_Associations (Expr);
+                  CL     : List_Id;
+                  Assoc  : Node_Id := Nlists.First (Assocs);
+                  Choice : Node_Id;
+
+               begin
+                  --  The subexpressions of an aggregate are moved as part
+                  --  of the implicit assignments. Handle the positional
+                  --  components first.
+
+                  Move_Expression_List (Expressions (Expr));
+
+                  --  Handle the named components next.
+
+                  while Present (Assoc) loop
+                     CL := Choices (Assoc);
+
+                     --  For an array aggregate, we should also check that the
+                     --  expressions used in choices are readable.
+
+                     if Is_Array_Type (Etype (Expr)) then
+                        Choice := Nlists.First (CL);
+                        while Present (Choice) loop
+                           if Nkind (Choice) /= N_Others_Choice then
+                              Read_Expression (Choice);
+                           end if;
+                           Next (Choice);
+                        end loop;
+                     end if;
+
+                     --  There can be only one element for a value of deep type
+                     --  in order to avoid aliasing.
+
+                     if Is_Deep (Etype (Expression (Assoc)))
+                       and then not Is_Singleton_Choice (CL)
+                     then
+                        Error_Msg_F ("singleton choice required"
+                                     & " to prevent aliasing", First (CL));
+                     end if;
+
+                     --  The subexpressions of an aggregate are moved as part
+                     --  of the implicit assignments.
+
+                     Move_Expression (Expression (Assoc));
+
+                     Next (Assoc);
+                  end loop;
+               end;
+
+            when N_Extension_Aggregate =>
+               declare
+                  Exprs  : constant List_Id := Expressions (Expr);
+                  Assocs : constant List_Id := Component_Associations (Expr);
+                  CL     : List_Id;
+                  Assoc  : Node_Id := Nlists.First (Assocs);
+
+               begin
+                  Move_Expression (Ancestor_Part (Expr));
+
+                  --  No positional components allowed at this stage
+
+                  if Present (Exprs) then
+                     raise Program_Error;
+                  end if;
+
+                  while Present (Assoc) loop
+                     CL := Choices (Assoc);
+
+                     --  Only singleton components allowed at this stage
+
+                     if not Is_Singleton_Choice (CL) then
+                        raise Program_Error;
+                     end if;
+
+                     --  The subexpressions of an aggregate are moved as part
+                     --  of the implicit assignments.
+
+                     Move_Expression (Expression (Assoc));
+
+                     Next (Assoc);
+                  end loop;
+               end;
 
             when others =>
                raise Program_Error;
@@ -1759,45 +1903,6 @@ package body Sem_SPARK is
                Read_Expression (Condition (Expr));
             end;
 
-         when N_Aggregate =>
-            declare
-               Assocs  : constant List_Id := Component_Associations (Expr);
-               Assoc   : Node_Id := First (Assocs);
-               CL      : List_Id;
-               Choice  : Node_Id;
-
-            begin
-               while Present (Assoc) loop
-
-                  --  An array aggregate with a single component association
-                  --  may have a nonstatic choice expression that needs to be
-                  --  analyzed. This can only occur for a single choice that
-                  --  is not the OTHERS one.
-
-                  if Is_Array_Type (Etype (Expr)) then
-                     CL := Choices (Assoc);
-                     if List_Length (CL) = 1 then
-                        Choice := First (CL);
-                        if Nkind (Choice) /= N_Others_Choice then
-                           Read_Expression (Choice);
-                        end if;
-                     end if;
-                  end if;
-
-                  --  The expression in the component association also needs to
-                  --  be analyzed.
-
-                  Read_Expression (Expression (Assoc));
-                  Next (Assoc);
-               end loop;
-
-               Read_Expression_List (Expressions (Expr));
-            end;
-
-         when N_Extension_Aggregate =>
-            Read_Expression (Ancestor_Part (Expr));
-            Read_Expression_List (Expressions (Expr));
-
          when N_Character_Literal
             | N_Numeric_Or_String_Literal
             | N_Operator_Symbol
@@ -1818,9 +1923,11 @@ package body Sem_SPARK is
 
          --  Path expressions are handled before this point
 
-         when N_Allocator
+         when N_Aggregate
+            | N_Allocator
             | N_Expanded_Name
             | N_Explicit_Dereference
+            | N_Extension_Aggregate
             | N_Function_Call
             | N_Identifier
             | N_Indexed_Component
@@ -3283,7 +3390,7 @@ package body Sem_SPARK is
                return (R => Unfolded, Tree_Access => C);
             end;
 
-         --  For a non-terminal path, we get the permission tree of its
+         --  For a nonterminal path, we get the permission tree of its
          --  prefix, and then get the subtree associated with the extension,
          --  if unfolded. If folded, we return the permission associated with
          --  children.
@@ -3389,9 +3496,12 @@ package body Sem_SPARK is
          =>
             return Get_Root_Object (Prefix (Expr), Through_Traversal);
 
-         --  There is no root object for an allocator or NULL
+         --  There is no root object for an (extension) aggregate, allocator,
+         --  or NULL.
 
-         when N_Allocator
+         when N_Aggregate
+            | N_Allocator
+            | N_Extension_Aggregate
             | N_Null
          =>
             return Empty;
@@ -3596,10 +3706,12 @@ package body Sem_SPARK is
          when N_Null =>
             return True;
 
-         --  Object returned by a allocator or function call corresponds to
-         --  a path.
+         --  Object returned by an (extension) aggregate, an allocator, or
+         --  a function call corresponds to a path.
 
-         when N_Allocator
+         when N_Aggregate
+            | N_Allocator
+            | N_Extension_Aggregate
             | N_Function_Call
          =>
             return True;
@@ -4763,7 +4875,7 @@ package body Sem_SPARK is
                return C;
             end;
 
-         --  For a non-terminal path, we set the permission tree of its prefix,
+         --  For a nonterminal path, we set the permission tree of its prefix,
          --  and then we extract from the returned pointer the subtree and
          --  assign an adequate permission to it, if unfolded. If folded,
          --  we unroll the tree one level.
