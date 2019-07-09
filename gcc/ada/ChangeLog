@@ -1,3 +1,11 @@
+2019-07-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Scope_Within_Or_Same): Handle properly task
+	bodies and protected bodies, so that local variables within have
+	their proper scopes after these constructs have been rewritten
+	during expansion. This patch resembles but is not identical to
+	the code in Scope_Within.
+
 2019-07-09  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat1drv.adb (Adjust_Global_Switches): Set

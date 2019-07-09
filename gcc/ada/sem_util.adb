@@ -24268,13 +24268,32 @@ package body Sem_Util is
      (Inner : Entity_Id;
       Outer : Entity_Id) return Boolean
    is
-      Curr : Entity_Id;
-
+      Curr : Entity_Id := Inner;
    begin
-      Curr := Inner;
+      --  Similar to the above, but check for scope identity first.
+
       while Present (Curr) and then Curr /= Standard_Standard loop
          if Curr = Outer then
             return True;
+
+         elsif Ekind (Curr) = E_Task_Type
+           and then Outer = Task_Body_Procedure (Curr)
+         then
+            return True;
+
+         elsif Is_Subprogram (Curr)
+           and then Outer = Protected_Body_Subprogram (Curr)
+         then
+            return True;
+
+         elsif Is_Private_Type (Curr)
+           and then Present (Full_View (Curr))
+         then
+            if Full_View (Curr) = Outer then
+               return True;
+            else
+               return Scope_Within (Full_View (Curr), Outer);
+            end if;
          end if;
 
          Curr := Scope (Curr);
