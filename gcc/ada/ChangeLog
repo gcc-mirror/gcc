@@ -1,3 +1,12 @@
+2019-07-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): If the object type
+	is a composite type that has a dynamic predicate and, the
+	expression in the declaration is an aggregate, the generated
+	predicate check must appear after the expanded code for the
+	aggregate, which will appear after the rewritten object
+	declarastion.
+
 2019-07-09  Justin Squirek  <squirek@adacore.com>
 
 	* sem_eval.adb (Expr_Value_E): Add conditional to correctly
