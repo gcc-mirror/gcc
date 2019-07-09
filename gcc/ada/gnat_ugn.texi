@@ -6646,8 +6646,9 @@ identifiers with identical name (except casing) will generate compilation
 errors (e.g. @code{shm_get} vs @code{SHM_GET}).
 @end itemize
 
-The code generated is using the Ada 2005 syntax, which makes it
-easier to interface with other languages than previous versions of Ada.
+The code is generated using Ada 2012 syntax, which makes it easier to interface
+with other languages. In most cases you can still use the generated binding
+even if your code is compiled using earlier versions of Ada (e.g. @code{-gnat95}).
 
 @menu
 * Running the Binding Generator:: 
@@ -6668,7 +6669,7 @@ header files needed by these files transitively. For example:
 
 @example
 $ g++ -c -fdump-ada-spec -C /usr/include/time.h
-$ gcc -c -gnat05 *.ads
+$ gcc -c *.ads
 @end example
 
 will generate, under GNU/Linux, the following files: @code{time_h.ads},
