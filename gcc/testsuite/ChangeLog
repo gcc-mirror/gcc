@@ -1,3 +1,9 @@
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90989
+	* gcc.dg/strlenopt-26.c: Exit with test result status.
+	* gcc.dg/strlenopt-67.c: New test.
+
 2019-07-09  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
 
 	* gcc.target/mips/cfgcleanup-jalr1.c: New test.
