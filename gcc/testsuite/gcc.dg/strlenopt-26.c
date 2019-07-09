@@ -17,8 +17,7 @@ main (void)
 {
   char p[] = "foobar";
   const char *volatile q = "xyzzy";
-  fn1 (p, q);
-  return 0;
+  return fn1 (p, q);
 }
 
 /* { dg-final { scan-tree-dump-times "strlen \\(" 2 "strlen" } } */
