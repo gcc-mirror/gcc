@@ -3270,7 +3270,16 @@ package body Sem_SPARK is
                C : constant Perm_Tree_Access :=
                  Get (Current_Perm_Env, Unique_Entity (Entity (N)));
             begin
-               pragma Assert (C /= null);
+               --  Except during elaboration, the root object should have been
+               --  declared and entered into the current permission
+               --  environment.
+
+               if not Inside_Elaboration
+                 and then C = null
+               then
+                  Illegal_Global_Usage (N);
+               end if;
+
                return (R => Unfolded, Tree_Access => C);
             end;
 
