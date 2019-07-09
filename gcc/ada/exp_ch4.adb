@@ -72,6 +72,7 @@ with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
 with Validsw;  use Validsw;
+with Warnsw;   use Warnsw;
 
 package body Exp_Ch4 is
 
@@ -4354,6 +4355,15 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_N_Allocator
 
    begin
+      --  Warn on the presence of an allocator of an anonymous access type when
+      --  enabled.
+
+      if Warn_On_Anonymous_Allocators
+        and then Ekind (PtrT) = E_Anonymous_Access_Type
+      then
+         Error_Msg_N ("?use of an anonymous access type allocator", N);
+      end if;
+
       --  RM E.2.3(22). We enforce that the expected type of an allocator
       --  shall not be a remote access-to-class-wide-limited-private type
 

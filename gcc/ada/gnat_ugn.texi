@@ -11040,6 +11040,37 @@ This switch suppresses warnings for assertions where the compiler can tell at
 compile time that the assertion will fail.
 @end table
 
+@geindex -gnatw_a
+
+
+@table @asis
+
+@item @code{-gnatw_a}
+
+@emph{Activate warnings on anonymous allocators.}
+
+@geindex Anonymous allocators
+
+This switch activates warnings for allocators of anonymous access types,
+which can involve run-time accessibility checks and lead to unexpected
+accessibility violations. For more details on the rules involved, see
+RM 3.10.2 (14).
+@end table
+
+@geindex -gnatw_A
+
+
+@table @asis
+
+@item @code{-gnatw_A}
+
+@emph{Supress warnings on anonymous allocators.}
+
+@geindex Anonymous allocators
+
+This switch suppresses warnings for anonymous access type allocators.
+@end table
+
 @geindex -gnatwb (gcc)
 
 

@@ -1,3 +1,17 @@
+2019-07-09  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator): Add conditional to detect
+	the presence of anoymous access type allocators and issue a
+	warning if the appropriate warning flag is enabled.
+	* warnsw.ads: Add new warning flag for anonymous allocators
+	* warnsw.adb (All_Warnings, Restore_Warnings, Save_Warnings,
+	Set_Underscore_Warning_Switch): Register new flags.
+	(WA_Warnings): Register new flag as an "all warnings" switch
+	* usage.adb,
+	doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Document new warning switches -gnatw_a and -gnatw_A.
+	* gnat_ugn.texi: Regenerate.
+
 2019-07-09  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Diagnose_Call): Improve error recovery when a
