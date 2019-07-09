@@ -11693,6 +11693,10 @@ package body Exp_Util is
 
       Set_Assignment_OK (Res, Assignment_OK (Exp));
 
+      --  Preserve the Do_Range_Check flag in all copies.
+
+      Set_Do_Range_Check (Res, Do_Range_Check (Exp));
+
       --  Finally rewrite the original expression and we are done
 
       Rewrite (Exp, Res);
