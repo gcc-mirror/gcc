@@ -1,3 +1,56 @@
+2019-07-09  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* bindo.ads: Move type Precedence_Kind from the private to the
+	visible part of the unit.
+	* bindo-augmentors.adb: Remove the use of global data as it is
+	bad practice.
+	(Augment_Library_Graph): Update the parameter profile.
+	(Is_Visited, Set_Is_Visited): Remove.
+	(Visit_Elaboration_Root, Visit_Elaboration_Roots): Update the
+	parameter profile and comment on usage.
+	(Visit_Vertex): Likewise.  Also keep track of which invocation
+	edge activates a task.
+	* bindo-augmentors.ads (Augment_Library_Graph): Update the
+	parameter profile and comment on usage.
+	* bindo-builders.adb (Create_Forced_Edge,
+	Create_Spec_And_Body_Edge, Create_With_Edge): Update the call to
+	Add_Edge.
+	* bindo-diagnostics.adb: Add with end use clauses for Restrict
+	and Rident.
+	(Output_Dynamic_Model_Suggestions): Remove.
+	(Output_Invocation_Related_Suggestions): New routine.
+	(Output_Suggestions): Output all invocation-related suggestions
+	together.
+	* bindo-elaborators.adb: Remove types Comparator_Ptr and
+	Predicate_Ptr.
+	(Find_Best_Vertex): Update the parameter profile.
+	* bindo-graphs.adb (Activates_Task): New routine.
+	(Add_Body_Before_Spec_Edge): Update the call to
+	Add_Edge_With_Return.
+	(Add_Edge): Update the parameter profile and the call to
+	Add_Edge_With_Return.
+	(Add_Edge_With_Return): Update the parameter profile and comment
+	on usage.
+	(At_Least_One_Edge_Satisfies): New routine.
+	(Contains_Elaborate_All_Edge): Reimplement.
+	(Contains_Static_Successor_Edge, Contains_Task_Activation): New
+	routine.
+	(Contains_Weak_Static_Successor): Remove.
+	(Is_Static_Successor_Edge): New routine.
+	* bindo-graphs.ads: Add types LGE_Predicate_Ptr,
+	LGV_Comparator_Ptr, and LGV_Predicate_Ptr.  Update type
+	Library_Graph_Edge_Attributes to capture whether an invocation
+	edge activates a task.  Update the value of
+	No_Library_Graph_Edge_Attributes.
+	(Activates_Task): Update the parameter profile and comment on
+	usage.
+	(Contains_Static_Successor_Edge, Contains_Task_Activation): New
+	routines.
+	(Contains_Weak_Static_Successor): Remove.
+	* doc/gnat_ugn/elaboration_order_handling_in_gnat.rst:
+	Update the documentation to reflect the new task-related advice.
+	* gnat_ugn.texi: Regenerate.
+
 2019-07-09  Piotr Trojanek  <trojanek@adacore.com>
 
 	* exp_util.adb (Containing_Package_With_Ext_Axioms): Replace

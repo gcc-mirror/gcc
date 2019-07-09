@@ -732,18 +732,33 @@ package Bindo.Graphs is
       type Library_Graph is private;
       Nil : constant Library_Graph;
 
+      type LGE_Predicate_Ptr is access function
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean;
+
+      type LGV_Comparator_Ptr is access function
+        (G           : Library_Graph;
+         Vertex      : Library_Graph_Vertex_Id;
+         Compared_To : Library_Graph_Vertex_Id) return Precedence_Kind;
+
+      type LGV_Predicate_Ptr is access function
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id) return Boolean;
+
       ----------------------
       -- Graph operations --
       ----------------------
 
       procedure Add_Edge
-        (G    : Library_Graph;
-         Pred : Library_Graph_Vertex_Id;
-         Succ : Library_Graph_Vertex_Id;
-         Kind : Library_Graph_Edge_Kind);
+        (G              : Library_Graph;
+         Pred           : Library_Graph_Vertex_Id;
+         Succ           : Library_Graph_Vertex_Id;
+         Kind           : Library_Graph_Edge_Kind;
+         Activates_Task : Boolean);
       pragma Inline (Add_Edge);
       --  Create a new edge in library graph G with source vertex Pred and
-      --  destination vertex Succ. Kind denotes the nature of the edge.
+      --  destination vertex Succ. Kind denotes the nature of the edge. Flag
+      --  Activates_Task should be set when the edge involves task activation.
 
       procedure Add_Vertex
         (G    : Library_Graph;
@@ -895,6 +910,12 @@ package Bindo.Graphs is
       -- Edge attributes --
       ---------------------
 
+      function Activates_Task
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean;
+      pragma Inline (Activates_Task);
+      --  Determine whether edge Edge of library graph G activates a task
+
       function Kind
         (G    : Library_Graph;
          Edge : Library_Graph_Edge_Id) return Library_Graph_Edge_Kind;
@@ -987,12 +1008,20 @@ package Bindo.Graphs is
       --  Determine whether cycle Cycle of library graph G contains an
       --  Elaborate_All edge.
 
-      function Contains_Weak_Static_Successor
+      function Contains_Static_Successor_Edge
         (G     : Library_Graph;
          Cycle : Library_Graph_Cycle_Id) return Boolean;
-      pragma Inline (Contains_Weak_Static_Successor);
-      --  Determine whether cycle Cycle of library graph G contains a weak edge
+      pragma Inline (Contains_Static_Successor_Edge);
+      --  Determine whether cycle Cycle of library graph G contains an edge
       --  where the successor was compiled using the static model.
+
+      function Contains_Task_Activation
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) return Boolean;
+      pragma Inline (Contains_Task_Activation);
+      --  Determine whether cycle Cycle of library graph G contains an
+      --  invocation edge where the path it represents involves a task
+      --  activation.
 
       function Has_Elaborate_All_Cycle (G : Library_Graph) return Boolean;
       pragma Inline (Has_Elaborate_All_Cycle);
@@ -1439,13 +1468,18 @@ package Bindo.Graphs is
       --  The following type represents the attributes of a library graph edge
 
       type Library_Graph_Edge_Attributes is record
+         Activates_Task : Boolean := False;
+         --  Set for an invocation edge, where at least one of the paths the
+         --  edge represents activates a task.
+
          Kind : Library_Graph_Edge_Kind := No_Edge;
          --  The nature of the library graph edge
       end record;
 
       No_Library_Graph_Edge_Attributes :
         constant Library_Graph_Edge_Attributes :=
-          (Kind => No_Edge);
+          (Activates_Task => False,
+           Kind           => No_Edge);
 
       procedure Destroy_Library_Graph_Edge_Attributes
         (Attrs : in out Library_Graph_Edge_Attributes);

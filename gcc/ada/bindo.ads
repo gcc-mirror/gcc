@@ -31,6 +31,14 @@ with Namet; use Namet;
 
 package Bindo is
 
+   --  The following type represents the various kinds of precedence between
+   --  two items.
+
+   type Precedence_Kind is
+     (Lower_Precedence,
+      Equal_Precedence,
+      Higher_Precedence);
+
    procedure Find_Elaboration_Order
      (Order         : out Unit_Id_Table;
       Main_Lib_File : File_Name_Type);
@@ -40,15 +48,5 @@ package Bindo is
    --  Main_Lib_File is the argument of the bind. If a satisfactory order
    --  exists, it is returned in Order, otherwise Unrecoverable_Error is
    --  raised.
-
-private
-
-   --  The following type represents the various kinds of precedence between
-   --  two items.
-
-   type Precedence_Kind is
-     (Lower_Precedence,
-      Equal_Precedence,
-      Higher_Precedence);
 
 end Bindo;

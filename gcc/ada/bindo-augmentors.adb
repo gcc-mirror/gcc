@@ -37,14 +37,6 @@ package body Bindo.Augmentors is
 
    package body Library_Graph_Augmentors is
 
-      -----------------
-      -- Global data --
-      -----------------
-
-      Inv_Graph : Invocation_Graph        := Invocation_Graphs.Nil;
-      Lib_Graph : Library_Graph           := Library_Graphs.Nil;
-      Visited   : IGV_Sets.Membership_Set := IGV_Sets.Nil;
-
       ----------------
       -- Statistics --
       ----------------
@@ -61,20 +53,10 @@ package body Bindo.Augmentors is
       -- Local subprograms --
       -----------------------
 
-      function Is_Visited
-        (Vertex : Invocation_Graph_Vertex_Id) return Boolean;
-      pragma Inline (Is_Visited);
-      --  Determine whether invocation graph vertex Vertex has been visited
-      --  during the traversal.
-
-      procedure Set_Is_Visited
-        (Vertex : Invocation_Graph_Vertex_Id;
-         Val    : Boolean := True);
-      pragma Inline (Set_Is_Visited);
-      --  Mark invocation graph vertex Vertex as visited during the traversal
-      --  depending on value Val.
-
-      procedure Visit_Elaboration_Root (Root : Invocation_Graph_Vertex_Id);
+      procedure Visit_Elaboration_Root
+        (Inv_Graph : Invocation_Graph;
+         Lib_Graph : Library_Graph;
+         Root      : Invocation_Graph_Vertex_Id);
       pragma Inline (Visit_Elaboration_Root);
       --  Start a DFS traversal from elaboration root Root to:
       --
@@ -83,7 +65,9 @@ package body Bindo.Augmentors is
       --    * Create invocation edges for each such transition where the
       --      successor is Root.
 
-      procedure Visit_Elaboration_Roots;
+      procedure Visit_Elaboration_Roots
+        (Inv_Graph : Invocation_Graph;
+         Lib_Graph : Library_Graph);
       pragma Inline (Visit_Elaboration_Roots);
       --  Start a DFS traversal from all elaboration roots to:
       --
@@ -93,9 +77,13 @@ package body Bindo.Augmentors is
       --      successor is the current root.
 
       procedure Visit_Vertex
-        (Invoker                    : Invocation_Graph_Vertex_Id;
+        (Inv_Graph                  : Invocation_Graph;
+         Lib_Graph                  : Library_Graph;
+         Invoker                    : Invocation_Graph_Vertex_Id;
          Last_Vertex                : Library_Graph_Vertex_Id;
          Root_Vertex                : Library_Graph_Vertex_Id;
+         Visited_Invokers           : IGV_Sets.Membership_Set;
+         Activates_Task             : Boolean;
          Internal_Controlled_Action : Boolean;
          Path                       : Natural);
       pragma Inline (Visit_Vertex);
@@ -124,86 +112,56 @@ package body Bindo.Augmentors is
       ---------------------------
 
       procedure Augment_Library_Graph
-        (Inv_G : Invocation_Graph;
-         Lib_G : Library_Graph)
+        (Inv_Graph : Invocation_Graph;
+         Lib_Graph : Library_Graph)
       is
       begin
-         pragma Assert (Present (Lib_G));
+         pragma Assert (Present (Lib_Graph));
 
          --  Nothing to do when there is no invocation graph
 
-         if not Present (Inv_G) then
+         if not Present (Inv_Graph) then
             return;
          end if;
 
-         --  Prepare the global data. Note that Visited is initialized for each
-         --  elaboration root.
+         --  Prepare the statistics data
 
-         Inv_Graph     := Inv_G;
-         Lib_Graph     := Lib_G;
          Longest_Path  := 0;
          Total_Visited := 0;
 
-         Visit_Elaboration_Roots;
+         Visit_Elaboration_Roots (Inv_Graph, Lib_Graph);
          Write_Statistics;
       end Augment_Library_Graph;
-
-      ----------------
-      -- Is_Visited --
-      ----------------
-
-      function Is_Visited
-        (Vertex : Invocation_Graph_Vertex_Id) return Boolean
-      is
-      begin
-         pragma Assert (IGV_Sets.Present (Visited));
-         pragma Assert (Present (Vertex));
-
-         return IGV_Sets.Contains (Visited, Vertex);
-      end Is_Visited;
-
-      --------------------
-      -- Set_Is_Visited --
-      --------------------
-
-      procedure Set_Is_Visited
-        (Vertex : Invocation_Graph_Vertex_Id;
-         Val    : Boolean := True)
-      is
-      begin
-         pragma Assert (IGV_Sets.Present (Visited));
-         pragma Assert (Present (Vertex));
-
-         if Val then
-            IGV_Sets.Insert (Visited, Vertex);
-         else
-            IGV_Sets.Delete (Visited, Vertex);
-         end if;
-      end Set_Is_Visited;
 
       ----------------------------
       -- Visit_Elaboration_Root --
       ----------------------------
 
-      procedure Visit_Elaboration_Root (Root : Invocation_Graph_Vertex_Id) is
+      procedure Visit_Elaboration_Root
+        (Inv_Graph : Invocation_Graph;
+         Lib_Graph : Library_Graph;
+         Root      : Invocation_Graph_Vertex_Id)
+      is
          pragma Assert (Present (Inv_Graph));
-         pragma Assert (Present (Root));
          pragma Assert (Present (Lib_Graph));
+         pragma Assert (Present (Root));
 
          Root_Vertex : constant Library_Graph_Vertex_Id :=
                          Body_Vertex (Inv_Graph, Root);
 
-         pragma Assert (Present (Root_Vertex));
+         Visited : IGV_Sets.Membership_Set;
 
       begin
-         --  Prepare the global data
-
          Visited := IGV_Sets.Create (Number_Of_Vertices (Inv_Graph));
 
          Visit_Vertex
-           (Invoker                    => Root,
+           (Inv_Graph                  => Inv_Graph,
+            Lib_Graph                  => Lib_Graph,
+            Invoker                    => Root,
             Last_Vertex                => Root_Vertex,
             Root_Vertex                => Root_Vertex,
+            Visited_Invokers           => Visited,
+            Activates_Task             => False,
             Internal_Controlled_Action => False,
             Path                       => 0);
 
@@ -214,18 +172,25 @@ package body Bindo.Augmentors is
       -- Visit_Elaboration_Roots --
       -----------------------------
 
-      procedure Visit_Elaboration_Roots is
+      procedure Visit_Elaboration_Roots
+        (Inv_Graph : Invocation_Graph;
+         Lib_Graph : Library_Graph)
+      is
          Iter : Elaboration_Root_Iterator;
          Root : Invocation_Graph_Vertex_Id;
 
       begin
          pragma Assert (Present (Inv_Graph));
+         pragma Assert (Present (Lib_Graph));
 
          Iter := Iterate_Elaboration_Roots (Inv_Graph);
          while Has_Next (Iter) loop
             Next (Iter, Root);
 
-            Visit_Elaboration_Root (Root);
+            Visit_Elaboration_Root
+              (Inv_Graph => Inv_Graph,
+               Lib_Graph => Lib_Graph,
+               Root      => Root);
          end loop;
       end Visit_Elaboration_Roots;
 
@@ -234,15 +199,20 @@ package body Bindo.Augmentors is
       ------------------
 
       procedure Visit_Vertex
-        (Invoker                    : Invocation_Graph_Vertex_Id;
+        (Inv_Graph                  : Invocation_Graph;
+         Lib_Graph                  : Library_Graph;
+         Invoker                    : Invocation_Graph_Vertex_Id;
          Last_Vertex                : Library_Graph_Vertex_Id;
          Root_Vertex                : Library_Graph_Vertex_Id;
+         Visited_Invokers           : IGV_Sets.Membership_Set;
+         Activates_Task             : Boolean;
          Internal_Controlled_Action : Boolean;
          Path                       : Natural)
       is
          New_Path : constant Natural := Path + 1;
 
          Edge           : Invocation_Graph_Edge_Id;
+         Edge_Kind      : Invocation_Kind;
          Invoker_Vertex : Library_Graph_Vertex_Id;
          Iter           : Edges_To_Targets_Iterator;
 
@@ -252,15 +222,16 @@ package body Bindo.Augmentors is
          pragma Assert (Present (Invoker));
          pragma Assert (Present (Last_Vertex));
          pragma Assert (Present (Root_Vertex));
+         pragma Assert (IGV_Sets.Present (Visited_Invokers));
 
          --  Nothing to do when the current invocation graph vertex has already
          --  been visited.
 
-         if Is_Visited (Invoker) then
+         if IGV_Sets.Contains (Visited_Invokers, Invoker) then
             return;
          end if;
 
-         Set_Is_Visited (Invoker);
+         IGV_Sets.Insert (Visited_Invokers, Invoker);
 
          --  Update the statistics
 
@@ -294,10 +265,11 @@ package body Bindo.Augmentors is
 
             else
                Add_Edge
-                 (G    => Lib_Graph,
-                  Pred => Invoker_Vertex,
-                  Succ => Root_Vertex,
-                  Kind => Invocation_Edge);
+                 (G              => Lib_Graph,
+                  Pred           => Invoker_Vertex,
+                  Succ           => Root_Vertex,
+                  Kind           => Invocation_Edge,
+                  Activates_Task => Activates_Task);
             end if;
          end if;
 
@@ -307,15 +279,21 @@ package body Bindo.Augmentors is
          Iter := Iterate_Edges_To_Targets (Inv_Graph, Invoker);
          while Has_Next (Iter) loop
             Next (Iter, Edge);
+            Edge_Kind := Kind (Inv_Graph, Edge);
 
             Visit_Vertex
-              (Invoker                    => Target (Inv_Graph, Edge),
+              (Inv_Graph                  => Inv_Graph,
+               Lib_Graph                  => Lib_Graph,
+               Invoker                    => Target (Inv_Graph, Edge),
                Last_Vertex                => Invoker_Vertex,
                Root_Vertex                => Root_Vertex,
+               Visited_Invokers           => Visited_Invokers,
+               Activates_Task             =>
+                 Activates_Task
+                   or else Edge_Kind = Task_Activation,
                Internal_Controlled_Action =>
                  Internal_Controlled_Action
-                   or else Kind (Inv_Graph, Edge) in
-                             Internal_Controlled_Invocation_Kind,
+                   or else Edge_Kind in Internal_Controlled_Invocation_Kind,
                Path                       => New_Path);
          end loop;
       end Visit_Vertex;
