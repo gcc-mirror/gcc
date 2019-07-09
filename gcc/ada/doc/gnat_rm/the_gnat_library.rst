@@ -937,7 +937,7 @@ programs written in Ada.
 
 Provides a high level interface to ``Ada.Command_Line`` facilities,
 including the ability to scan for named switches with optional parameters
-and expand file names using wild card notations.
+and expand file names using wildcard notations.
 
 .. _`GNAT.Compiler_Version_(g-comver.ads)`:
 

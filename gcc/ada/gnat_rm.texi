@@ -24044,7 +24044,7 @@ programs written in Ada.
 
 Provides a high level interface to @code{Ada.Command_Line} facilities,
 including the ability to scan for named switches with optional parameters
-and expand file names using wild card notations.
+and expand file names using wildcard notations.
 
 @node GNAT Compiler_Version g-comver ads,GNAT Ctrl_C g-ctrl_c ads,GNAT Command_Line g-comlin ads,The GNAT Library
 @anchor{gnat_rm/the_gnat_library gnat-compiler-version-g-comver-ads}@anchor{346}@anchor{gnat_rm/the_gnat_library id61}@anchor{347}

@@ -50,7 +50,7 @@
 --       matching with the restriction that it matches entire strings. It
 --       is particularly useful for file name matching, and in particular
 --       it provides "globbing patterns" that are useful in implementing
---       unix or DOS style wild card matching for file names.
+--       unix or DOS style wildcard matching for file names.
 
 --     GNAT.Regpat (files g-regpat.ads/s-regpat.ads/g-regpat.adb)
 --       This is a more complete implementation of Unix-style regular
