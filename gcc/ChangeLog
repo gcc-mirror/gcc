@@ -1,3 +1,8 @@
+2019-07-09  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* cfgcleanup.c (old_insns_match_p): Check if used hard regs set is equal
+	for both call instructions.
+
 2019-07-09  John Darrington  <john@darrington.wattle.id.au>
 
 	* simplify-rtx.c (simplify_unary_operation_1): Use GET_MODE_PRECISION
