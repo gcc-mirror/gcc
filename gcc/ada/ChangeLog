@@ -1,3 +1,8 @@
+2019-07-09  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): Preserve the
+	Do_Range_Check flag.
+
 2019-07-09  Yannick Moy  <moy@adacore.com>
 
 	* sinfo.ads: Refine comment for Do_Range_Check.

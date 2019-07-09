@@ -1,3 +1,8 @@
+2019-07-09  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/range_check3.adb, gnat.dg/range_check3_pkg.adb,
+	gnat.dg/range_check3_pkg.ads: New testcase.
+
 2019-07-09  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/generic_inst5.adb, gnat.dg/generic_inst6.adb,
