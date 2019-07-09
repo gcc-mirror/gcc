@@ -1,3 +1,9 @@
+2019-07-09  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* gcc.target/mips/cfgcleanup-jalr1.c: New test.
+	* gcc.target/mips/cfgcleanup-jalr2.c: New test.
+	* gcc.target/mips/cfgcleanup-jalr3.c: New test.
+
 2019-07-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91114
