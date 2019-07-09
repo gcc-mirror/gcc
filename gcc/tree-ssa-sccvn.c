@@ -1670,15 +1670,18 @@ struct pd_data
 
 struct vn_walk_cb_data
 {
-  vn_walk_cb_data (vn_reference_t vr_, tree *last_vuse_ptr_,
+  vn_walk_cb_data (vn_reference_t vr_, tree orig_ref_, tree *last_vuse_ptr_,
 		   vn_lookup_kind vn_walk_kind_, bool tbaa_p_)
-    : vr (vr_), last_vuse_ptr (last_vuse_ptr_), vn_walk_kind (vn_walk_kind_),
-      tbaa_p (tbaa_p_), known_ranges (NULL)
-   {}
+    : vr (vr_), last_vuse_ptr (last_vuse_ptr_),
+      vn_walk_kind (vn_walk_kind_), tbaa_p (tbaa_p_), known_ranges (NULL)
+   {
+     ao_ref_init (&orig_ref, orig_ref_);
+   }
   ~vn_walk_cb_data ();
   void *push_partial_def (const pd_data& pd, tree, HOST_WIDE_INT);
 
   vn_reference_t vr;
+  ao_ref orig_ref;
   tree *last_vuse_ptr;
   vn_lookup_kind vn_walk_kind;
   bool tbaa_p;
@@ -2246,6 +2249,28 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  lhs_ref_ok = true;
 	}
 
+      /* Besides valueizing the LHS we can also use access-path based
+         disambiguation on the original non-valueized ref.  */
+      if (!ref->ref
+	  && lhs_ref_ok
+	  && data->orig_ref.ref)
+	{
+	  /* We want to use the non-valueized LHS for this, but avoid redundant
+	     work.  */
+	  ao_ref *lref = &lhs_ref;
+	  ao_ref lref_alt;
+	  if (valueized_anything)
+	    {
+	      ao_ref_init (&lref_alt, lhs);
+	      lref = &lref_alt;
+	    }
+	  if (!refs_may_alias_p_1 (&data->orig_ref, lref, data->tbaa_p))
+	    {
+	      *disambiguate_only = true;
+	      return NULL;
+	    }
+	}
+
       /* If we reach a clobbering statement try to skip it and see if
          we find a VN result with exactly the same value as the
 	 possible clobber.  In this case we can ignore the clobber
@@ -2763,6 +2788,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 
       /* Do not update last seen VUSE after translating.  */
       data->last_vuse_ptr = NULL;
+      /* Invalidate the original access path since it now contains
+         the wrong base.  */
+      data->orig_ref.ref = NULL_TREE;
 
       /* Keep looking for the adjusted *REF / VR pair.  */
       return NULL;
@@ -2923,6 +2951,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 
       /* Do not update last seen VUSE after translating.  */
       data->last_vuse_ptr = NULL;
+      /* Invalidate the original access path since it now contains
+         the wrong base.  */
+      data->orig_ref.ref = NULL_TREE;
 
       /* Keep looking for the adjusted *REF / VR pair.  */
       return NULL;
@@ -2983,7 +3014,7 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
     {
       ao_ref r;
       unsigned limit = PARAM_VALUE (PARAM_SCCVN_MAX_ALIAS_QUERIES_PER_ACCESS);
-      vn_walk_cb_data data (&vr1, NULL, kind, true);
+      vn_walk_cb_data data (&vr1, NULL_TREE, NULL, kind, true);
       if (ao_ref_init_from_vn_reference (&r, set, type, vr1.operands))
 	*vnresult =
 	  (vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse, true,
@@ -3040,7 +3071,8 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
 	  || !ao_ref_init_from_vn_reference (&r, vr1.set, vr1.type,
 					     vr1.operands))
 	ao_ref_init (&r, op);
-      vn_walk_cb_data data (&vr1, last_vuse_ptr, kind, tbaa_p);
+      vn_walk_cb_data data (&vr1, r.ref ? NULL_TREE : op,
+			    last_vuse_ptr, kind, tbaa_p);
       wvnresult =
 	(vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse, tbaa_p,
 						vn_reference_lookup_2,
