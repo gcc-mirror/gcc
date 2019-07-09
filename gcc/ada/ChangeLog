@@ -1,3 +1,25 @@
+2019-07-09  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* bindo.adb: Remove with and use clauses for Debug.  Add with
+	and use clauses for Opt.
+	(Find_Elaboration_Order): Enable the v4.0 elaboration order. The
+	v3.0 mechanism is now available under binder switch -H.
+	* bindusg.adb (Display): Enable switch -H.
+	* debug.adb: Free compiler switch -gnatd_G.  Free binder switch
+	-d_N.
+	* sem_elab.adb: Update the section on switches to remove
+	-gnatd_G.
+	(Invocation_Graph_Recording_OK): The invocation graph is now
+	unconditionally recorded in ALI files.
+	* switch-b.adb (Scan_Binder_Switches): Scan switch -H.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Update the documentation on compiler switches related to
+	elaboration.  Update the documentation on binder switches to
+	include switch -H.
+	* doc/gnat_ugn/elaboration_order_handling_in_gnat.rst: Update
+	the documentation on elaboration order handling in GNAT.
+	* gnat_ugn.texi: Regenerate.
+
 2019-07-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.adb (List_Entities): Disregard formals altogether.
