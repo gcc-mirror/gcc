@@ -1,3 +1,19 @@
+2019-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.ads (JSON format): Adjust.
+	* repinfo.adb (Need_Blank_Line): Rename to...
+	(Need_Separator): ...this.
+	(Blank_Line): Rename to...
+	(Write_Separator): ...this and add JSON specific handling.
+	(List_Array_Info): Adjust to above renaming.
+	(List_Object_Info): Likewise.
+	(List_Record_Info): Likewise.
+	(List_Subprogram_Info): Likewise.
+	(List_Type_Info): Likewise.
+	(List_Entities): Do not set Need_Blank_Line.
+	(List_Rep_Info): Set Need_Separator and add JSON specific
+	handling. Output a single JSON stream in the  normal case.
+
 2019-07-09  Arnaud Charlet  <charlet@adacore.com>
 
 	* doc/gnat_ugn/the_gnat_compilation_model.rst: Update doc on

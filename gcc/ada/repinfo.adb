@@ -115,10 +115,9 @@ package body Repinfo is
    --  Identifier casing for current unit. This is set by List_Rep_Info for
    --  each unit, before calling subprograms which may read it.
 
-   Need_Blank_Line : Boolean;
-   --  Set True if a blank line is needed before outputting any information for
-   --  the current entity. Set True when a new entity is processed, and false
-   --  when the blank line is output.
+   Need_Separator : Boolean;
+   --  Set True if a separator is needed before outputting any information for
+   --  the current entity.
 
    ------------------------------
    -- Set of Relevant Entities --
@@ -150,10 +149,6 @@ package body Repinfo is
    --  Test for layout mode, True = back end, False = front end. This function
    --  is used rather than checking the configuration parameter because we do
    --  not want Repinfo to depend on Targparm (for ASIS)
-
-   procedure Blank_Line;
-   --  Called before outputting anything for an entity. Ensures that
-   --  a blank line precedes the output for a particular entity.
 
    procedure List_Entities
      (Ent              : Entity_Id;
@@ -217,6 +212,10 @@ package body Repinfo is
    procedure Write_Mechanism (M : Mechanism_Type);
    --  Writes symbolic string for mechanism represented by M
 
+   procedure Write_Separator;
+   --  Called before outputting anything for an entity. Ensures that
+   --  a separator precedes the output for a particular entity.
+
    procedure Write_Unknown_Val;
    --  Writes symbolic string for an unknown or non-representable value
 
@@ -237,18 +236,6 @@ package body Repinfo is
 
       return Rep_Table.Last > 0;
    end Back_End_Layout;
-
-   ----------------
-   -- Blank_Line --
-   ----------------
-
-   procedure Blank_Line is
-   begin
-      if Need_Blank_Line then
-         Write_Eol;
-         Need_Blank_Line := False;
-      end if;
-   end Blank_Line;
 
    ------------------------
    -- Create_Discrim_Ref --
@@ -342,7 +329,7 @@ package body Repinfo is
 
    procedure List_Array_Info (Ent : Entity_Id; Bytes_Big_Endian : Boolean) is
    begin
-      Blank_Line;
+      Write_Separator;
 
       if List_Representation_Info_To_JSON then
          Write_Line ("{");
@@ -504,14 +491,11 @@ package body Repinfo is
                       or else Ekind (Ent) = E_Entry_Family)
            and then not In_Subprogram
          then
-            Need_Blank_Line := True;
             List_Subprogram_Info (Ent);
          end if;
 
          E := First_Entity (Ent);
          while Present (E) loop
-            Need_Blank_Line := True;
-
             --  We list entities that come from source (excluding private or
             --  incomplete types or deferred constants, for which we will list
             --  the information for the full view). If requested, we also list
@@ -939,7 +923,7 @@ package body Repinfo is
 
    procedure List_Object_Info (Ent : Entity_Id) is
    begin
-      Blank_Line;
+      Write_Separator;
 
       if List_Representation_Info_To_JSON then
          Write_Line ("{");
@@ -1621,7 +1605,7 @@ package body Repinfo is
    --  Start of processing for List_Record_Info
 
    begin
-      Blank_Line;
+      Write_Separator;
 
       if List_Representation_Info_To_JSON then
          Write_Line ("{");
@@ -1694,6 +1678,15 @@ package body Repinfo is
       if List_Representation_Info /= 0
         or else List_Representation_Info_Mechanisms
       then
+         --  For the normal case, we output a single JSON stream
+
+         if not List_Representation_Info_To_File
+           and then List_Representation_Info_To_JSON
+         then
+            Write_Line ("[");
+            Need_Separator := False;
+         end if;
+
          for U in Main_Unit .. Last_Unit loop
             if In_Extended_Main_Source_Unit (Cunit_Entity (U)) then
                Unit_Casing := Identifier_Casing (Source_Index (U));
@@ -1717,6 +1710,7 @@ package body Repinfo is
                      end loop;
 
                      Write_Eol;
+                     Need_Separator := True;
                   end if;
 
                   List_Entities (Cunit_Entity (U), Bytes_Big_Endian);
@@ -1727,12 +1721,25 @@ package body Repinfo is
                   Create_Repinfo_File_Access.all
                     (Get_Name_String (File_Name (Source_Index (U))));
                   Set_Special_Output (Write_Info_Line'Access);
+                  if List_Representation_Info_To_JSON then
+                     Write_Line ("[");
+                  end if;
+                  Need_Separator := False;
                   List_Entities (Cunit_Entity (U), Bytes_Big_Endian);
+                  if List_Representation_Info_To_JSON then
+                     Write_Line ("]");
+                  end if;
                   Cancel_Special_Output;
                   Close_Repinfo_File_Access.all;
                end if;
             end if;
          end loop;
+
+         if not List_Representation_Info_To_File
+           and then List_Representation_Info_To_JSON
+         then
+            Write_Line ("]");
+         end if;
       end if;
    end List_Rep_Info;
 
@@ -1821,7 +1828,7 @@ package body Repinfo is
       Form  : Entity_Id;
 
    begin
-      Blank_Line;
+      Write_Separator;
 
       if List_Representation_Info_To_JSON then
          Write_Line ("{");
@@ -1999,7 +2006,7 @@ package body Repinfo is
 
    procedure List_Type_Info (Ent : Entity_Id) is
    begin
-      Blank_Line;
+      Write_Separator;
 
       if List_Representation_Info_To_JSON then
          Write_Line ("{");
@@ -2334,6 +2341,23 @@ package body Repinfo is
             raise Program_Error;
       end case;
    end Write_Mechanism;
+
+   ---------------------
+   -- Write_Separator --
+   ---------------------
+
+   procedure Write_Separator is
+   begin
+      if Need_Separator then
+         if List_Representation_Info_To_JSON then
+            Write_Line (",");
+         else
+            Write_Eol;
+         end if;
+      else
+         Need_Separator := True;
+      end if;
+   end Write_Separator;
 
    -----------------------
    -- Write_Unknown_Val --

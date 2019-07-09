@@ -193,7 +193,7 @@ package Repinfo is
    --  following description, the terminology is that of the JSON syntax
    --  from the ECMA document and of the JSON grammar from www.json.org.
 
-   --  The output is a concatenation of entities
+   --  The output is an array of entities
 
    --  An entity is an object whose members are pairs taken from:
 
