@@ -1,3 +1,11 @@
+2019-07-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (struct vn_walk_cb_data): Add orig_ref member.
+	(vn_reference_lookup_3): If the main ref has no access path recorded
+	but orig_ref has use it to do access-path based disambiguation.
+	(vn_reference_lookup_pieces): Adjust.
+	(vn_reference_lookup): Pass down original ref if we valueized.
+
 2019-07-09  Martin Liska  <mliska@suse.cz>
 
 	* lto-compress.c (lto_normalized_zstd_level): Do not use
