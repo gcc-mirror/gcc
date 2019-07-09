@@ -1,3 +1,17 @@
+2019-07-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/71924
+	PR middle-end/90549
+	* gimple-ssa-isolate-paths.c (isolate_path): Add attribute.  Update
+	comment.
+	(args_loc_t): New type.
+	(args_loc_t, locmap_t): same.
+	(diag_returned_locals): New function.
+	(is_addr_local): Same.
+	(handle_return_addr_local_phi_arg, warn_return_addr_local): Same.
+	(find_implicit_erroneous_behavior): Call warn_return_addr_local_phi_arg.
+	(find_explicit_erroneous_behavior): Call warn_return_addr_local.
+
 2019-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-stmts.c (scan_operand_equal_p): Look through MEM_REF

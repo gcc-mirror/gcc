@@ -1,3 +1,23 @@
+2019-07-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/71924
+	PR middle-end/90549
+	* gcc.c-torture/execute/return-addr.c: New test.
+	* gcc.dg/Wreturn-local-addr-2.c: New test.
+	* gcc.dg/Wreturn-local-addr-4.c: New test.
+	* gcc.dg/Wreturn-local-addr-5.c: New test.
+	* gcc.dg/Wreturn-local-addr-6.c: New test.
+	* gcc.dg/Wreturn-local-addr-7.c: New test.
+	* gcc.dg/Wreturn-local-addr-8.c: New test.
+	* gcc.dg/Wreturn-local-addr-9.c: New test.
+	* gcc.dg/Wreturn-local-addr-10.c: New test.
+	* gcc.dg/Walloca-4.c: Handle expected warnings.
+	* gcc.dg/pr41551.c: Same.
+	* gcc.dg/pr59523.c: Same.
+	* gcc.dg/tree-ssa/pr88775-2.c: Same.
+	* gcc.dg/tree-ssa/alias-37.c: Same.
+	* gcc.dg/winline-7.c: Same.
+
 2019-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/vect/simd-6.cc: Replace xfail with target x86.
