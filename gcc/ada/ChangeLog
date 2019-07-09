@@ -1,3 +1,13 @@
+2019-07-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Formal_Package): Handle properly the
+	case where the actual for a formal package in an instance is the
+	current instance of an enclosing generic package.
+	(Check_Formal_Packages): If the formal package declaration is
+	box-initialized or lacks associations altogether, no internal
+	instance was created to verify conformance, and there is no
+	validating package to remove from tree.
+
 2019-07-09  Yannick Moy  <moy@adacore.com>
 
 	* freeze.adb (Build_Renamed_Body): Do not set body to inline in

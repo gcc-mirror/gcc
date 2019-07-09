@@ -1,3 +1,11 @@
+2019-07-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/generic_inst5.adb, gnat.dg/generic_inst6.adb,
+	gnat.dg/generic_inst6_g1-c.adb, gnat.dg/generic_inst6_g1-c.ads,
+	gnat.dg/generic_inst6_g1.ads, gnat.dg/generic_inst6_i1.ads,
+	gnat.dg/generic_inst6_i2.ads, gnat.dg/generic_inst6_x.ads: New
+	testcases.
+
 2019-07-08  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/71924
