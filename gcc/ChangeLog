@@ -1,3 +1,10 @@
+2019-07-09  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000-internal.h (create_TOC_reference): Delete.
+	* config/rs6000/rs6000-logue.c (create_TOC_reference): Move
+	function from rs6000-logue.c back to rs6000.c.
+	* config/rs6000/rs6000.c (create_TOC_reference): Likewise.
+
 2019-07-09  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/61339
