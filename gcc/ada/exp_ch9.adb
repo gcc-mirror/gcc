@@ -10712,7 +10712,7 @@ package body Exp_Ch9 is
               Make_Defining_Identifier (Eloc,
                 New_External_Name (Chars (Ename), 'A', Num_Accept));
 
-            --  Link the acceptor to the original receiving entry.
+            --  Link the acceptor to the original receiving entry
 
             Set_Ekind           (PB_Ent, E_Procedure);
             Set_Receiving_Entry (PB_Ent, Eent);
@@ -12666,8 +12666,9 @@ package body Exp_Ch9 is
       --  to Build_Simple_Entry_Call.
 
       if Is_Disp_Select then
-         --  Compute the delay at this stage because the evaluation of
-         --  its expression must not occur earlier (see ACVC C97302A).
+
+         --  Compute the delay at this stage because the evaluation of its
+         --  expression must not occur earlier (see ACVC C97302A).
 
          Append_To (Stmts,
            Make_Assignment_Statement (Loc,
@@ -14882,8 +14883,8 @@ package body Exp_Ch9 is
 
          --  Ditto for a package declaration or a full type declaration, etc.
 
-         elsif
-           (Nkind (N) = N_Package_Declaration and then N /= Specification (N))
+         elsif (Nkind (N) = N_Package_Declaration
+                 and then N /= Specification (N))
            or else Nkind (N) in N_Declaration
            or else Nkind (N) in N_Renaming_Declaration
          then

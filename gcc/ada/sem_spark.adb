@@ -1612,7 +1612,7 @@ package body Sem_SPARK is
 
                   Move_Expression_List (Expressions (Expr));
 
-                  --  Handle the named components next.
+                  --  Handle the named components next
 
                   while Present (Assoc) loop
                      CL := Choices (Assoc);
@@ -1636,8 +1636,9 @@ package body Sem_SPARK is
                      if Is_Deep (Etype (Expression (Assoc)))
                        and then not Is_Singleton_Choice (CL)
                      then
-                        Error_Msg_F ("singleton choice required"
-                                     & " to prevent aliasing", First (CL));
+                        Error_Msg_F
+                          ("singleton choice required to prevent aliasing",
+                           First (CL));
                      end if;
 
                      --  The subexpressions of an aggregate are moved as part

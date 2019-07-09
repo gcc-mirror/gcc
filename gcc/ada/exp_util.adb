@@ -5073,9 +5073,7 @@ package body Exp_Util is
       --  is necessary both for passing legality checks in GNAT and for precise
       --  analysis in GNATprove.
 
-      if GNATprove_Mode
-        and then not Is_Static_Expression (Exp)
-      then
+      if GNATprove_Mode and then not Is_Static_Expression (Exp) then
          return;
       end if;
 
@@ -5100,7 +5098,7 @@ package body Exp_Util is
 
             --  This subtype indication may be used later for constraint checks
             --  we better make sure that if a variable was used as a bound of
-            --  of the original slice, its value is frozen.
+            --  the original slice, its value is frozen.
 
             Evaluate_Slice_Bounds (Exp);
          end;
@@ -11693,7 +11691,7 @@ package body Exp_Util is
 
       Set_Assignment_OK (Res, Assignment_OK (Exp));
 
-      --  Preserve the Do_Range_Check flag in all copies.
+      --  Preserve the Do_Range_Check flag in all copies
 
       Set_Do_Range_Check (Res, Do_Range_Check (Exp));
 

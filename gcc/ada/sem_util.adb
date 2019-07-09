@@ -24269,8 +24269,9 @@ package body Sem_Util is
       Outer : Entity_Id) return Boolean
    is
       Curr : Entity_Id := Inner;
+
    begin
-      --  Similar to the above, but check for scope identity first.
+      --  Similar to the above, but check for scope identity first
 
       while Present (Curr) and then Curr /= Standard_Standard loop
          if Curr = Outer then

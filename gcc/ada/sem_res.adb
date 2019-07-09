@@ -8446,6 +8446,7 @@ package body Sem_Res is
             declare
                I  : Interp_Index;
                It : Interp;
+
             begin
                Get_First_Interp (N, I, It);
 
@@ -10086,6 +10087,7 @@ package body Sem_Res is
               and then Is_Overloaded (Opnd)
             then
                Resolve_Equality_Op (Opnd, B_Typ);
+
                if Ekind (Entity (Opnd)) = E_Function then
                   Rewrite_Operator_As_Call (Opnd, Entity (Opnd));
                end if;
