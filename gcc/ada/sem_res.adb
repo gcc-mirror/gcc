@@ -8437,6 +8437,45 @@ package body Sem_Res is
             Explain_Redundancy (Original_Node (R));
          end if;
 
+         --  If the equality is overloaded and the operands have resolved
+         --  properly, set the proper equality operator on the node. The
+         --  current setting is the first one found during analysis, which
+         --  is not necessarily the one to which the node has resolved.
+
+         if Is_Overloaded (N) then
+            declare
+               I  : Interp_Index;
+               It : Interp;
+            begin
+               Get_First_Interp (N, I, It);
+
+               --  If the equality is user-defined, the type of the operands
+               --  matches that of the formals. For a predefined operqtor,
+               --  it is the scope that matters, given that the predefined
+               --  equality has Any_Type formals. In either case the result
+               --  type (most often Booleam) must match the context .
+
+               while Present (It.Typ) loop
+                  if Etype (It.Nam) = Typ
+                    and then
+                     (Etype (First_Entity (It.Nam)) = Etype (L)
+                       or else Scope (It.Nam) = Scope (T))
+                  then
+                     Set_Entity (N, It.Nam);
+
+                     Set_Is_Overloaded (N, False);
+                     exit;
+                  end if;
+
+                  Get_Next_Interp (I, It);
+               end loop;
+
+               if Present (Alias (Entity (N))) then
+                  Set_Entity (N, Alias (Entity (N)));
+               end if;
+            end;
+         end if;
+
          Check_Unset_Reference (L);
          Check_Unset_Reference (R);
          Generate_Operator_Reference (N, T);
@@ -10034,9 +10073,36 @@ package body Sem_Res is
          end if;
 
          --  Complete resolution and evaluation of NOT
+         --  If argument is an equality and expected type is boolean, that
+         --  expected type has no effect on resolution, and there are
+         --  special rules for resolution of Eq, Neq in the presence of
+         --  overloaded operands, so we directly call its resolution routines.
 
-         Resolve (Right_Opnd (N), B_Typ);
-         Check_Unset_Reference (Right_Opnd (N));
+         declare
+            Opnd : constant Node_Id := Right_Opnd (N);
+         begin
+            if B_Typ = Standard_Boolean
+              and then Nkind_In (Opnd, N_Op_Eq, N_Op_Ne)
+              and then Is_Overloaded (Opnd)
+            then
+               Resolve_Equality_Op (Opnd, B_Typ);
+               if Ekind (Entity (Opnd)) = E_Function then
+                  Rewrite_Operator_As_Call (Opnd, Entity (Opnd));
+               end if;
+
+               if not Inside_A_Generic or else Is_Entity_Name (Opnd) then
+                  Freeze_Expression (Opnd);
+               end if;
+
+               Expand (Opnd);
+
+            else
+               Resolve (Opnd, B_Typ);
+            end if;
+
+            Check_Unset_Reference (Opnd);
+         end;
+
          Set_Etype (N, B_Typ);
          Generate_Operator_Reference (N, B_Typ);
          Eval_Op_Not (N);
