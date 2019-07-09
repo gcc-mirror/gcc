@@ -13045,8 +13045,11 @@ when testing pointer or floating-point values.
 For the purposes of branch prediction optimizations, the probability that
 a @code{__builtin_expect} expression is @code{true} is controlled by GCC's
 @code{builtin-expect-probability} parameter, which defaults to 90%.  
+
 You can also use @code{__builtin_expect_with_probability} to explicitly 
-assign a probability value to individual expressions.
+assign a probability value to individual expressions.  If the built-in
+is used in a loop construct, the provided probability will influence
+the expected number of iterations made by loop optimizations.
 @end deftypefn
 
 @deftypefn {Built-in Function} long __builtin_expect_with_probability

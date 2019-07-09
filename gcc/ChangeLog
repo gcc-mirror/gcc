@@ -8,6 +8,11 @@
 
 2019-07-09  Martin Liska  <mliska@suse.cz>
 
+	* doc/extend.texi: Document influence on loop
+	optimizers.
+
+2019-07-09  Martin Liska  <mliska@suse.cz>
+
 	* lto-compress.c (lto_normalized_zstd_level): Do not use
 	ZSTD_CLEVEL_DEFAULT as it is not default in old releases
 	of libzstd.  One can use 0 as a default compression level.
