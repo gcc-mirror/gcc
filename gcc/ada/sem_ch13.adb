@@ -11562,7 +11562,7 @@ package body Sem_Ch13 is
 
    begin
       --  A representation item is either subtype-specific (Size and Alignment
-      --  clauses) or type-related (all others).  Subtype-specific aspects may
+      --  clauses) or type-related (all others). Subtype-specific aspects may
       --  differ for different subtypes of the same type (RM 13.1.8).
 
       --  A derived type inherits each type-related representation aspect of
@@ -12623,7 +12623,7 @@ package body Sem_Ch13 is
       function Is_Derived_Type_With_Constraint return Boolean;
       --  Check whether T is a derived type with an explicit constraint, in
       --  which case the constraint has frozen the type and the item is too
-      --  late.  This compensates for the fact that for derived scalar types
+      --  late. This compensates for the fact that for derived scalar types
       --  we freeze the base type unconditionally on account of a long-standing
       --  issue in gigi.
 

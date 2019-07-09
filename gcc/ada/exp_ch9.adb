@@ -477,12 +477,11 @@ package body Exp_Ch9 is
    --    <actualN> := P.<formalN>;
 
    procedure Reset_Scopes_To (Bod : Node_Id; E : Entity_Id);
-   --  Reset the scope of declarations and blocks at the top level of Bod
-   --  to be E. Bod is either a block or a subprogram body.  Used after
-   --  expanding various kinds of entry bodies into their corresponding
-   --  constructs. This is needed during unnesting to determine whether a
-   --  body generated for an entry or an accept alternative includes uplevel
-   --  references.
+   --  Reset the scope of declarations and blocks at the top level of Bod to
+   --  be E. Bod is either a block or a subprogram body. Used after expanding
+   --  various kinds of entry bodies into their corresponding constructs. This
+   --  is needed during unnesting to determine whether a body generated for an
+   --  entry or an accept alternative includes uplevel references.
 
    function Trivial_Accept_OK return Boolean;
    --  If there is no DO-END block for an accept, or if the DO-END block has
@@ -12943,10 +12942,9 @@ package body Exp_Ch9 is
 
       Analyze (N);
 
-      --  Some items in Decls used to be in the N_Block in  E_Call that
-      --  is constructed in Expand_Entry_Call, and are now in the new
-      --  Block into which N has been rewritten.  Adjust their scopes
-      --  to reflect that.
+      --  Some items in Decls used to be in the N_Block in E_Call that is
+      --  constructed in Expand_Entry_Call, and are now in the new Block
+      --  into which N has been rewritten. Adjust their scopes to reflect that.
 
       if Nkind (E_Call) = N_Block_Statement then
          Obj := First_Entity (Entity (Identifier (E_Call)));

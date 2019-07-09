@@ -1757,7 +1757,7 @@ package body Sem_Ch7 is
          end if;
 
       --  There may be inherited private subprograms that need to be declared,
-      --  even in the absence of an explicit private part.  If there are any
+      --  even in the absence of an explicit private part. If there are any
       --  public declarations in the package and the package is a public child
       --  unit, then an implicit private part is assumed.
 

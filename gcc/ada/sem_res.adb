@@ -159,7 +159,7 @@ package body Sem_Res is
       Typ     : Entity_Id;
       Is_Comp : Boolean);
    --  Internal procedure for Resolve_Op_Concat to resolve one operand of
-   --  concatenation operator.  The operand is either of the array type or of
+   --  concatenation operator. The operand is either of the array type or of
    --  the component type. If the operand is an aggregate, and the component
    --  type is composite, this is ambiguous if component type has aggregates.
 

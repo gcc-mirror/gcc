@@ -25787,7 +25787,7 @@ package body Sem_Prag is
 
                --  Otherwise we have a call to an overridden primitive, and we
                --  will create a common class-wide clone for the body of
-               --  original operation and its eventual inherited versions.  If
+               --  original operation and its eventual inherited versions. If
                --  the original operation dispatches on result it is never
                --  inherited and there is no need for a clone. There is not
                --  need for a clone either in GNATprove mode, as cases that

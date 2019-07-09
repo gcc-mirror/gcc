@@ -1442,7 +1442,7 @@ package body Ch6 is
                   Look_Ahead : loop
 
                      --  If we run into a semicolon, then assume that a
-                     --  colon was missing, e.g.  Parms (X Y; ...). Also
+                     --  colon was missing, e.g. Parms (X Y; ...). Also
                      --  assume missing colon on EOF (a real disaster)
                      --  and on a right paren, e.g. Parms (X Y), and also
                      --  on an assignment symbol, e.g. Parms (X Y := ..)

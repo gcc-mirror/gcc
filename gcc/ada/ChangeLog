@@ -1,3 +1,18 @@
+2019-07-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* ali.ads, bindo-graphs.adb, bindo-validators.adb, clean.adb,
+	doc/gnat_ugn/elaboration_order_handling_in_gnat.rst, einfo.ads,
+	exp_aggr.adb, exp_ch13.adb, exp_ch4.adb, exp_ch5.adb,
+	exp_ch6.adb, exp_ch7.adb, exp_ch9.adb, exp_pakd.adb,
+	fname-uf.ads, gnatlink.adb, inline.adb, lib.ads, make.adb,
+	namet.ads, opt.ads, par-ch4.adb, par-ch6.adb, par-labl.adb,
+	prep.adb, sem_aggr.adb, sem_ch13.adb, sem_ch4.adb, sem_ch5.adb,
+	sem_ch6.adb, sem_ch6.ads, sem_ch7.adb, sem_ch8.adb, sem_dim.adb,
+	sem_disp.adb, sem_prag.adb, sem_res.adb, sem_warn.adb,
+	sinfo.ads: Replace ".  " with ". ". Minor reformatting and typo
+	corrections.
+	* gnat_ugn.texi: Generate.
+
 2019-07-09  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* bindo.ads: Move type Precedence_Kind from the private to the

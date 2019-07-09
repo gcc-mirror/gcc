@@ -378,7 +378,7 @@ package body Bindo.Validators is
          --  Validate each unit in the elaboration order against the set of
          --  units that need to be elaborated.
 
-         for Index in Unit_Id_Tables.First ..  Unit_Id_Tables.Last (Order) loop
+         for Index in Unit_Id_Tables.First .. Unit_Id_Tables.Last (Order) loop
             Validate_Unit
               (U_Id     => Order.Table (Index),
                Elab_Set => Elab_Set);

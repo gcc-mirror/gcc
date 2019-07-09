@@ -1321,7 +1321,7 @@ package body Bindo.Graphs is
          Edge : Library_Graph_Edge_Id) return Boolean;
       pragma Inline (Is_Static_Successor_Edge);
       --  Determine whether the successor of invocation edge Edge represents a
-      --  unit that was compile with the static model.
+      --  unit that was compiled with the static model.
 
       function Links_Vertices_In_Same_Component
         (G    : Library_Graph;

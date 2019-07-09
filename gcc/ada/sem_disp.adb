@@ -596,7 +596,7 @@ package body Sem_Disp is
                --  We need to determine whether the context of the call
                --  provides a tag to make the call dispatching. This requires
                --  the call to be the actual in an enclosing call, and that
-               --  actual must be controlling.  If the call is an operand of
+               --  actual must be controlling. If the call is an operand of
                --  equality, the other operand must not ve abstract.
 
                if not Is_Tagged_Type (Typ)

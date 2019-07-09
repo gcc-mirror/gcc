@@ -1252,7 +1252,7 @@ package Sinfo is
    --    conversion node is introduced to represent the required check.
 
    --    A special case arises for the arguments of the Pred/Succ attributes.
-   --    Here the range check needed is against First + 1 ..  Last (Pred) or
+   --    Here the range check needed is against First + 1 .. Last (Pred) or
    --    First .. Last - 1 (Succ) of the corresponding base type. Essentially
    --    these checks are what would be performed within the implicit body of
    --    the functions that correspond to these attributes. In these cases,
