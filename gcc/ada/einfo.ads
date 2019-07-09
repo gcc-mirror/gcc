@@ -4133,7 +4133,7 @@ package Einfo is
 --       Defined in generic subprograms, generic packages, and their
 --       instances. Also defined in the instances of the corresponding
 --       bodies. Denotes the renaming map (generic entities => instance
---       entities) used to construct the instance by givin an index into
+--       entities) used to construct the instance by giving an index into
 --       the tables used to represent these maps. See Sem_Ch12 for further
 --       details. The maps for package instances are also used when the
 --       instance is the actual corresponding to a formal package.
