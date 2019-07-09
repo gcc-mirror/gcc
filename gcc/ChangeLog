@@ -1,3 +1,14 @@
+2019-07-09  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_crypto_aes<aes_op>v16qi): Redefine pattern with xor.
+	(aarch64_crypto_aes<aesmc_op>v16qi): Remove attribute enabled.
+	(*aarch64_crypto_aes<aes_op>v16qi_xor_combine): Remove both.
+	(*aarch64_crypto_aese_fused,
+	*aarch64_crypto_aesd_fused): Update to new definition.
+	* config/aarch64/aarch64.c
+	(aarch_macro_fusion_pair_p): Remove aese/aesmc fusion check.
+
 2019-07-09  Richard Biener  <rguenther@suse.de>
 
 	* gimple-match.h (gimple_match_op::resimplify): New.

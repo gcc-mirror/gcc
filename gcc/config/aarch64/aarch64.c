@@ -17965,10 +17965,6 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
         }
     }
 
-  if (aarch64_fusion_enabled_p (AARCH64_FUSE_AES_AESMC)
-       && aarch_crypto_can_dual_issue (prev, curr))
-    return true;
-
   if (aarch64_fusion_enabled_p (AARCH64_FUSE_CMP_BRANCH)
       && any_condjump_p (curr))
     {
