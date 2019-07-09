@@ -12548,6 +12548,24 @@ package body Sem_Ch13 is
    ------------------------
 
    function Rep_Item_Too_Early (T : Entity_Id; N : Node_Id) return Boolean is
+      function Has_Generic_Parent (E : Entity_Id) return Boolean;
+      --  Return True if any ancestor is a generic type
+
+      function Has_Generic_Parent (E : Entity_Id) return Boolean is
+         Ancestor_Type : Entity_Id := Etype (E);
+
+      begin
+         while Present (Ancestor_Type)
+           and then not Is_Generic_Type (Ancestor_Type)
+           and then Etype (Ancestor_Type) /= Ancestor_Type
+         loop
+            Ancestor_Type := Etype (Ancestor_Type);
+         end loop;
+
+         return Present (Ancestor_Type)
+                  and then Is_Generic_Type (Ancestor_Type);
+      end Has_Generic_Parent;
+
    begin
       --  Cannot apply non-operational rep items to generic types
 
@@ -12555,7 +12573,7 @@ package body Sem_Ch13 is
          return False;
 
       elsif Is_Type (T)
-        and then Is_Generic_Type (Root_Type (T))
+        and then Has_Generic_Parent (T)
         and then (Nkind (N) /= N_Pragma
                    or else Get_Pragma_Id (N) /= Pragma_Convention)
       then

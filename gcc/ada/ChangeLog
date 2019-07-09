@@ -1,3 +1,10 @@
+2019-07-09  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch13.adb (Rep_Item_Too_Early): Representation clauses are
+	not allowed for a derivation of a generic type. Extend the
+	current test to check that none of the parents is a generic
+	type.
+
 2019-07-09  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch9.adb, exp_util.adb, repinfo.adb, sem_ch12.adb,
