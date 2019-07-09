@@ -1,3 +1,14 @@
+2019-07-09  Yannick Moy  <moy@adacore.com>
+
+	* sem_spark.adb (Check_Expression): Change signature to take an
+	Extended_Checking_Mode, for handling read permission checking of
+	sub-expressions in an assignment.
+	(Check_Parameter_Or_Global): Adapt to new behavior of
+	Check_Expression for mode Assign.
+	(Check_Safe_Pointers): Do not analyze generic bodies.
+	(Check_Assignment): Separate checking of the target of an
+	assignment.
+
 2019-07-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.ads (JSON format): Adjust.

@@ -560,9 +560,13 @@ package body Sem_SPARK is
    --  has the right permission, and also updating permissions when a path is
    --  moved, borrowed, or observed.
 
-   type Checking_Mode is
+   type Extended_Checking_Mode is
 
-     (Read,
+     (Read_Subexpr,
+      --  Special value used for assignment, to check that subexpressions of
+      --  the assigned path are readable.
+
+      Read,
       --  Default mode
 
       Move,
@@ -590,6 +594,8 @@ package body Sem_SPARK is
       --  observing a path, its permission and the permission of its prefixes
       --  and extensions are set to Read_Only.
      );
+
+   subtype Checking_Mode is Extended_Checking_Mode range Read .. Observe;
 
    type Result_Kind is (Folded, Unfolded);
    --  The type declaration to discriminate in the Perm_Or_Tree type
@@ -631,7 +637,7 @@ package body Sem_SPARK is
 
    procedure Check_Declaration (Decl : Node_Id);
 
-   procedure Check_Expression (Expr : Node_Id; Mode : Checking_Mode);
+   procedure Check_Expression (Expr : Node_Id; Mode : Extended_Checking_Mode);
    pragma Precondition (Nkind_In (Expr, N_Index_Or_Discriminant_Constraint,
                                         N_Range_Constraint,
                                         N_Subtype_Indication)
@@ -1421,8 +1427,10 @@ package body Sem_SPARK is
    -- Check_Expression --
    ----------------------
 
-   procedure Check_Expression (Expr : Node_Id; Mode : Checking_Mode) is
-
+   procedure Check_Expression
+     (Expr : Node_Id;
+      Mode : Extended_Checking_Mode)
+   is
       --  Local subprograms
 
       function Is_Type_Name (Expr : Node_Id) return Boolean;
@@ -1543,8 +1551,14 @@ package body Sem_SPARK is
          return;
 
       elsif Is_Path_Expression (Expr) then
-         Read_Indexes (Expr);
-         Process_Path (Expr, Mode);
+         if Mode /= Assign then
+            Read_Indexes (Expr);
+         end if;
+
+         if Mode /= Read_Subexpr then
+            Process_Path (Expr, Mode);
+         end if;
+
          return;
       end if;
 
@@ -2511,6 +2525,10 @@ package body Sem_SPARK is
             Mode := Move;
       end case;
 
+      if Mode = Assign then
+         Check_Expression (Expr, Read_Subexpr);
+      end if;
+
       Check_Expression (Expr, Mode);
    end Check_Parameter_Or_Global;
 
@@ -2618,11 +2636,6 @@ package body Sem_SPARK is
          Reset (Current_Perm_Env);
       end Initialize;
 
-      --  Local variables
-
-      Prag : Node_Id;
-      --  SPARK_Mode pragma in application
-
    --  Start of processing for Check_Safe_Pointers
 
    begin
@@ -2636,20 +2649,28 @@ package body Sem_SPARK is
             | N_Package_Declaration
             | N_Subprogram_Body
          =>
-            Prag := SPARK_Pragma (Defining_Entity (N));
+            declare
+               E    : constant Entity_Id := Defining_Entity (N);
+               Prag : constant Node_Id := SPARK_Pragma (E);
+               --  SPARK_Mode pragma in application
 
-            if Present (Prag) then
-               if Get_SPARK_Mode_From_Annotation (Prag) = Opt.On then
-                  Check_Node (N);
+            begin
+               if Ekind (Unique_Entity (E)) in Generic_Unit_Kind then
+                  null;
+
+               elsif Present (Prag) then
+                  if Get_SPARK_Mode_From_Annotation (Prag) = Opt.On then
+                     Check_Node (N);
+                  end if;
+
+               elsif Nkind (N) = N_Package_Body then
+                  Check_List (Declarations (N));
+
+               elsif Nkind (N) = N_Package_Declaration then
+                  Check_List (Private_Declarations (Specification (N)));
+                  Check_List (Visible_Declarations (Specification (N)));
                end if;
-
-            elsif Nkind (N) = N_Package_Body then
-               Check_List (Declarations (N));
-
-            elsif Nkind (N) = N_Package_Declaration then
-               Check_List (Private_Declarations (Specification (N)));
-               Check_List (Visible_Declarations (Specification (N)));
-            end if;
+            end;
 
          when others =>
             null;
@@ -2717,7 +2738,14 @@ package body Sem_SPARK is
          when N_Assignment_Statement =>
             declare
                Target : constant Node_Id := Name (Stmt);
+
             begin
+               --  Start with checking that the subexpressions of the target
+               --  path are readable, before possibly updating the permission
+               --  of these subexpressions in Check_Assignment.
+
+               Check_Expression (Target, Read_Subexpr);
+
                Check_Assignment (Target => Target,
                                  Expr   => Expression (Stmt));
 
