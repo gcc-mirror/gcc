@@ -2842,6 +2842,29 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   compile time that the assertion will fail.
 
 
+.. index:: -gnatw_a
+
+:switch:`-gnatw_a`
+  *Activate warnings on anonymous allocators.*
+
+  .. index:: Anonymous allocators
+
+  This switch activates warnings for allocators of anonymous access types,
+  which can involve run-time accessibility checks and lead to unexpected
+  accessibility violations. For more details on the rules involved, see
+  RM 3.10.2 (14).
+
+
+.. index:: -gnatw_A
+
+:switch:`-gnatw_A`
+  *Supress warnings on anonymous allocators.*
+
+  .. index:: Anonymous allocators
+
+  This switch suppresses warnings for anonymous access type allocators.
+
+
 .. index:: -gnatwb  (gcc)
 
 :switch:`-gnatwb`
