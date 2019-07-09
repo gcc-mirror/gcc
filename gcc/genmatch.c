@@ -50,7 +50,7 @@ unsigned verbose;
 
 /* libccp helpers.  */
 
-static struct line_maps *line_table;
+static class line_maps *line_table;
 
 /* The rich_location class within libcpp requires a way to expand
    location_t instances, and relies on the client code
@@ -416,7 +416,7 @@ public:
   unsigned int fn;
 };
 
-struct simplify;
+class simplify;
 
 /* Identifier that maps to a user-defined predicate.  */
 
@@ -665,8 +665,8 @@ typedef hash_map<nofree_string_hash, unsigned> cid_map_t;
 
 /* The AST produced by parsing of the pattern definitions.  */
 
-struct dt_operand;
-struct capture_info;
+class dt_operand;
+class capture_info;
 
 /* The base class for operands.  */
 
@@ -880,7 +880,7 @@ public:
      produced when the pattern applies in the leafs.
      For a (match ...) the leafs are either empty if it is a simple predicate
      or the single expression specifying the matched operands.  */
-  struct operand *result;
+  class operand *result;
   /* Collected 'for' expression operators that have to be replaced
      in the lowering phase.  */
   vec<vec<user_id *> > for_vec;
@@ -933,7 +933,7 @@ print_operand (operand *o, FILE *f = stderr, bool flattened = false)
 }
 
 DEBUG_FUNCTION void
-print_matches (struct simplify *s, FILE *f = stderr)
+print_matches (class simplify *s, FILE *f = stderr)
 {
   fprintf (f, "for expression: ");
   print_operand (s->match, f);
@@ -1583,7 +1583,7 @@ lower (vec<simplify *>& simplifiers, bool gimple)
    matching code.  It represents the 'match' expression of all
    simplifies and has those as its leafs.  */
 
-struct dt_simplify;
+class dt_simplify;
 
 /* A hash-map collecting semantically equivalent leafs in the decision
    tree for splitting out to separate functions.  */
@@ -1719,7 +1719,7 @@ class decision_tree
 public:
   dt_node *root;
 
-  void insert (struct simplify *, unsigned);
+  void insert (class simplify *, unsigned);
   void gen (FILE *f, bool gimple);
   void print (FILE *f = stderr);
 
@@ -2025,7 +2025,7 @@ at_assert_elm:
 /* Insert S into the decision tree.  */
 
 void
-decision_tree::insert (struct simplify *s, unsigned pattern_no)
+decision_tree::insert (class simplify *s, unsigned pattern_no)
 {
   current_id = s->id;
   dt_operand **indexes = XCNEWVEC (dt_operand *, s->capture_max + 1);
@@ -4190,7 +4190,7 @@ parser::parse_operation ()
 /* Parse a capture.
      capture = '@'<number>  */
 
-struct operand *
+class operand *
 parser::parse_capture (operand *op, bool require_existing)
 {
   location_t src_loc = eat_token (CPP_ATSIGN)->src_loc;
@@ -4227,7 +4227,7 @@ parser::parse_capture (operand *op, bool require_existing)
 /* Parse an expression
      expr = '(' <operation>[capture][flag][type] <operand>... ')'  */
 
-struct operand *
+class operand *
 parser::parse_expr ()
 {
   const cpp_token *token = peek ();
@@ -4395,11 +4395,11 @@ parser::parse_c_expr (cpp_ttype start)
    a standalone capture.
      op = predicate | expr | c_expr | capture  */
 
-struct operand *
+class operand *
 parser::parse_op ()
 {
   const cpp_token *token = peek ();
-  struct operand *op = NULL;
+  class operand *op = NULL;
   if (token->type == CPP_OPEN_PAREN)
     {
       eat_token (CPP_OPEN_PAREN);
@@ -4618,7 +4618,7 @@ parser::parse_simplify (simplify::simplify_kind kind,
 
   const cpp_token *loc = peek ();
   parsing_match_operand = true;
-  struct operand *match = parse_op ();
+  class operand *match = parse_op ();
   finish_match_operand (match);
   parsing_match_operand = false;
   if (match->type == operand::OP_CAPTURE && !matcher)
@@ -5090,7 +5090,7 @@ main (int argc, char **argv)
 	}
     }
 
-  line_table = XCNEW (struct line_maps);
+  line_table = XCNEW (class line_maps);
   linemap_init (line_table, 0);
   line_table->reallocator = xrealloc;
   line_table->round_alloc_size = round_alloc_size;

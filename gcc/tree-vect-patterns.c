@@ -859,7 +859,7 @@ vect_reassociating_reduction_p (stmt_vec_info stmt_info, tree_code code,
 
   /* We don't allow changing the order of the computation in the inner-loop
      when doing outer-loop vectorization.  */
-  struct loop *loop = LOOP_VINFO_LOOP (loop_info);
+  class loop *loop = LOOP_VINFO_LOOP (loop_info);
   if (loop && nested_in_vect_loop_p (loop, stmt_info))
     return false;
 
@@ -4664,7 +4664,7 @@ vect_determine_precisions (vec_info *vinfo)
 
   if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
     {
-      struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+      class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
       basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
       unsigned int nbbs = loop->num_nodes;
 
@@ -4954,7 +4954,7 @@ vect_pattern_recog_1 (vect_recog_func *recog_func, stmt_vec_info stmt_info)
 void
 vect_pattern_recog (vec_info *vinfo)
 {
-  struct loop *loop;
+  class loop *loop;
   basic_block *bbs;
   unsigned int nbbs;
   gimple_stmt_iterator si;

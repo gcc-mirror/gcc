@@ -775,7 +775,7 @@ bitmap_alloc (bitmap_obstack *bit_obstack MEM_STAT_DECL)
     bit_obstack = &bitmap_default_obstack;
   map = bit_obstack->heads;
   if (map)
-    bit_obstack->heads = (struct bitmap_head *) map->first;
+    bit_obstack->heads = (class bitmap_head *) map->first;
   else
     map = XOBNEW (&bit_obstack->obstack, bitmap_head);
   bitmap_initialize (map, bit_obstack PASS_MEM_STAT);

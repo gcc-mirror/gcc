@@ -253,10 +253,10 @@ finish_loop_tree_nodes (void)
    loop designating the whole function when CFG loops are not
    built.  */
 static void
-add_loop_to_tree (struct loop *loop)
+add_loop_to_tree (class loop *loop)
 {
   int loop_num;
-  struct loop *parent;
+  class loop *parent;
   ira_loop_tree_node_t loop_node, parent_node;
 
   /* We cannot use loop node access macros here because of potential
@@ -331,7 +331,7 @@ static void
 form_loop_tree (void)
 {
   basic_block bb;
-  struct loop *parent;
+  class loop *parent;
   ira_loop_tree_node_t bb_node, loop_node;
 
   /* We cannot use loop/bb node access macros because of potential
@@ -2168,7 +2168,7 @@ low_pressure_loop_node_p (ira_loop_tree_node_t node)
    form a region from such loop if the target use stack register
    because reg-stack.c cannot deal with such edges.  */
 static bool
-loop_with_complex_edge_p (struct loop *loop)
+loop_with_complex_edge_p (class loop *loop)
 {
   int i;
   edge_iterator ei;

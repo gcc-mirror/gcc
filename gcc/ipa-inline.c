@@ -1037,7 +1037,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   int growth;
   sreal edge_time, unspec_edge_time;
   struct cgraph_node *callee = edge->callee->ultimate_alias_target ();
-  struct ipa_fn_summary *callee_info = ipa_fn_summaries->get (callee);
+  class ipa_fn_summary *callee_info = ipa_fn_summaries->get (callee);
   ipa_hints hints;
   cgraph_node *caller = (edge->caller->global.inlined_to 
 			 ? edge->caller->global.inlined_to
@@ -1799,7 +1799,7 @@ inline_small_functions (void)
 	    && (node->has_gimple_body_p () || node->thunk.thunk_p)
 	    && opt_for_fn (node->decl, optimize))
 	  {
-	    struct ipa_fn_summary *info = ipa_fn_summaries->get (node);
+	    class ipa_fn_summary *info = ipa_fn_summaries->get (node);
 	    struct ipa_dfs_info *dfs = (struct ipa_dfs_info *) node->aux;
 
 	    /* Do not account external functions, they will be optimized out

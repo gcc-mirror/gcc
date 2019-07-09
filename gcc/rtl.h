@@ -210,7 +210,7 @@ union rtunion
   tree rt_tree;
   basic_block rt_bb;
   mem_attrs *rt_mem;
-  struct constant_descriptor_rtx *rt_constant;
+  class constant_descriptor_rtx *rt_constant;
   struct dw_cfi_node *rt_cfi;
 };
 
@@ -3726,7 +3726,7 @@ struct GTY(()) target_rtl {
   rtx x_static_reg_base_value[FIRST_PSEUDO_REGISTER];
 
   /* The default memory attributes for each mode.  */
-  struct mem_attrs *x_mode_mem_attrs[(int) MAX_MACHINE_MODE];
+  class mem_attrs *x_mode_mem_attrs[(int) MAX_MACHINE_MODE];
 
   /* Track if RTL has been initialized.  */
   bool target_specific_initialized;
@@ -3760,10 +3760,10 @@ extern struct target_rtl *this_target_rtl;
 
 #ifndef GENERATOR_FILE
 /* Return the attributes of a MEM rtx.  */
-static inline const struct mem_attrs *
+static inline const class mem_attrs *
 get_mem_attrs (const_rtx x)
 {
-  struct mem_attrs *attrs;
+  class mem_attrs *attrs;
 
   attrs = MEM_ATTRS (x);
   if (!attrs)

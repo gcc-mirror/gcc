@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_VECTORIZER_H
 #define GCC_TREE_VECTORIZER_H
 
-typedef struct _stmt_vec_info *stmt_vec_info;
+typedef class _stmt_vec_info *stmt_vec_info;
 
 #include "tree-data-ref.h"
 #include "tree-hash-traits.h"
@@ -227,7 +227,7 @@ public:
   stmt_vec_info lookup_stmt (gimple *);
   stmt_vec_info lookup_def (tree);
   stmt_vec_info lookup_single_use (tree);
-  struct dr_vec_info *lookup_dr (data_reference *);
+  class dr_vec_info *lookup_dr (data_reference *);
   void move_dr (stmt_vec_info, stmt_vec_info);
   void remove_stmt (stmt_vec_info);
   void replace_stmt (gimple_stmt_iterator *, stmt_vec_info, gimple *);
@@ -262,8 +262,8 @@ private:
   void free_stmt_vec_info (stmt_vec_info);
 };
 
-struct _loop_vec_info;
-struct _bb_vec_info;
+class _loop_vec_info;
+class _bb_vec_info;
 
 template<>
 template<>
@@ -383,11 +383,11 @@ typedef auto_vec<rgroup_masks> vec_loop_masks;
 /*-----------------------------------------------------------------*/
 typedef class _loop_vec_info : public vec_info {
 public:
-  _loop_vec_info (struct loop *, vec_info_shared *);
+  _loop_vec_info (class loop *, vec_info_shared *);
   ~_loop_vec_info ();
 
   /* The loop to which this info struct refers to.  */
-  struct loop *loop;
+  class loop *loop;
 
   /* The loop basic blocks.  */
   basic_block *bbs;
@@ -445,7 +445,7 @@ public:
   tree iv_type;
 
   /* Unknown DRs according to which loop was peeled.  */
-  struct dr_vec_info *unaligned_dr;
+  class dr_vec_info *unaligned_dr;
 
   /* peeling_for_alignment indicates whether peeling for alignment will take
      place, and what the peeling factor should be:
@@ -558,7 +558,7 @@ public:
 
   /* If if-conversion versioned this loop before conversion, this is the
      loop version without if-conversion.  */
-  struct loop *scalar_loop;
+  class loop *scalar_loop;
 
   /* For loops being epilogues of already vectorized loops
      this points to the original vectorized loop.  Otherwise NULL.  */
@@ -650,7 +650,7 @@ public:
 typedef opt_pointer_wrapper <loop_vec_info> opt_loop_vec_info;
 
 static inline loop_vec_info
-loop_vec_info_for_loop (struct loop *loop)
+loop_vec_info_for_loop (class loop *loop)
 {
   return (loop_vec_info) loop->aux;
 }
@@ -1112,7 +1112,7 @@ STMT_VINFO_BB_VINFO (stmt_vec_info stmt_vinfo)
        && TYPE_UNSIGNED (TYPE)))
 
 static inline bool
-nested_in_vect_loop_p (struct loop *loop, stmt_vec_info stmt_info)
+nested_in_vect_loop_p (class loop *loop, stmt_vec_info stmt_info)
 {
   return (loop->inner
 	  && (loop->inner == (gimple_bb (stmt_info->stmt))->loop_father));
@@ -1206,7 +1206,7 @@ int vect_get_stmt_cost (enum vect_cost_for_stmt type_of_cost)
 /* Alias targetm.vectorize.init_cost.  */
 
 static inline void *
-init_cost (struct loop *loop_info)
+init_cost (class loop *loop_info)
 {
   return targetm.vectorize.init_cost (loop_info);
 }
@@ -1475,17 +1475,17 @@ class auto_purge_vect_location
 
 /* Simple loop peeling and versioning utilities for vectorizer's purposes -
    in tree-vect-loop-manip.c.  */
-extern void vect_set_loop_condition (struct loop *, loop_vec_info,
+extern void vect_set_loop_condition (class loop *, loop_vec_info,
 				     tree, tree, tree, bool);
-extern bool slpeel_can_duplicate_loop_p (const struct loop *, const_edge);
-struct loop *slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *,
-						     struct loop *, edge);
-struct loop *vect_loop_versioning (loop_vec_info, unsigned int, bool,
+extern bool slpeel_can_duplicate_loop_p (const class loop *, const_edge);
+class loop *slpeel_tree_duplicate_loop_to_edge_cfg (class loop *,
+						     class loop *, edge);
+class loop *vect_loop_versioning (loop_vec_info, unsigned int, bool,
 				   poly_uint64);
-extern struct loop *vect_do_peeling (loop_vec_info, tree, tree,
+extern class loop *vect_do_peeling (loop_vec_info, tree, tree,
 				     tree *, tree *, tree *, int, bool, bool);
 extern void vect_prepare_for_masked_peels (loop_vec_info);
-extern dump_user_location_t find_loop_location (struct loop *);
+extern dump_user_location_t find_loop_location (class loop *);
 extern bool vect_can_advance_ivs_p (loop_vec_info);
 
 /* In tree-vect-stmts.c.  */
@@ -1544,7 +1544,7 @@ extern void vect_get_store_cost (stmt_vec_info, int,
 extern bool vect_supportable_shift (enum tree_code, tree);
 extern tree vect_gen_perm_mask_any (tree, const vec_perm_indices &);
 extern tree vect_gen_perm_mask_checked (tree, const vec_perm_indices &);
-extern void optimize_mask_stores (struct loop*);
+extern void optimize_mask_stores (class loop*);
 extern gcall *vect_gen_while (tree, tree, tree);
 extern tree vect_gen_while_not (gimple_seq *, tree, tree, tree);
 extern opt_result vect_get_vector_types_for_stmt (stmt_vec_info, tree *,
@@ -1573,7 +1573,7 @@ extern opt_result vect_find_stmt_data_reference (loop_p, gimple *,
 						 vec<data_reference_p> *);
 extern opt_result vect_analyze_data_refs (vec_info *, poly_uint64 *, bool *);
 extern void vect_record_base_alignments (vec_info *);
-extern tree vect_create_data_ref_ptr (stmt_vec_info, tree, struct loop *, tree,
+extern tree vect_create_data_ref_ptr (stmt_vec_info, tree, class loop *, tree,
 				      tree *, gimple_stmt_iterator *,
 				      gimple **, bool,
 				      tree = NULL_TREE, tree = NULL_TREE);
@@ -1589,7 +1589,7 @@ extern void vect_permute_store_chain (vec<tree> ,unsigned int, stmt_vec_info,
                                     gimple_stmt_iterator *, vec<tree> *);
 extern tree vect_setup_realignment (stmt_vec_info, gimple_stmt_iterator *,
 				    tree *, enum dr_alignment_support, tree,
-                                    struct loop **);
+	                            class loop **);
 extern void vect_transform_grouped_load (stmt_vec_info, vec<tree> , int,
                                          gimple_stmt_iterator *);
 extern void vect_record_grouped_load_vectors (stmt_vec_info, vec<tree>);
@@ -1608,7 +1608,7 @@ extern widest_int vect_iv_limit_for_full_masking (loop_vec_info loop_vinfo);
 extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);
 /* Drive for loop analysis stage.  */
-extern opt_loop_vec_info vect_analyze_loop (struct loop *,
+extern opt_loop_vec_info vect_analyze_loop (class loop *,
 					    loop_vec_info,
 					    vec_info_shared *);
 extern tree vect_build_loop_niters (loop_vec_info, bool * = NULL);
@@ -1622,8 +1622,8 @@ extern tree vect_get_loop_mask (gimple_stmt_iterator *, vec_loop_masks *,
 				unsigned int, tree, unsigned int);
 
 /* Drive for loop transformation stage.  */
-extern struct loop *vect_transform_loop (loop_vec_info);
-extern opt_loop_vec_info vect_analyze_loop_form (struct loop *,
+extern class loop *vect_transform_loop (loop_vec_info);
+extern opt_loop_vec_info vect_analyze_loop_form (class loop *,
 						 vec_info_shared *);
 extern bool vectorizable_live_operation (stmt_vec_info, gimple_stmt_iterator *,
 					 slp_tree, int, stmt_vec_info *,
@@ -1671,8 +1671,8 @@ void vect_pattern_recog (vec_info *);
 
 /* In tree-vectorizer.c.  */
 unsigned vectorize_loops (void);
-void vect_free_loop_info_assumptions (struct loop *);
-gimple *vect_loop_vectorized_call (struct loop *, gcond **cond = NULL);
+void vect_free_loop_info_assumptions (class loop *);
+gimple *vect_loop_vectorized_call (class loop *, gcond **cond = NULL);
 
 
 #endif  /* GCC_TREE_VECTORIZER_H  */

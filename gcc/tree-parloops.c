@@ -412,7 +412,7 @@ lambda_transform_legal_p (lambda_trans_matrix trans,
    in parallel).  */
 
 static bool
-loop_parallel_p (struct loop *loop, struct obstack * parloop_obstack)
+loop_parallel_p (class loop *loop, struct obstack * parloop_obstack)
 {
   vec<ddr_p> dependence_relations;
   vec<data_reference_p> datarefs;
@@ -468,7 +468,7 @@ loop_parallel_p (struct loop *loop, struct obstack * parloop_obstack)
    BB_IRREDUCIBLE_LOOP flag.  */
 
 static inline bool
-loop_has_blocks_with_irreducible_flag (struct loop *loop)
+loop_has_blocks_with_irreducible_flag (class loop *loop)
 {
   unsigned i;
   basic_block *bbs = get_loop_body_in_dom_order (loop);
@@ -572,7 +572,7 @@ reduc_stmt_res (gimple *stmt)
    the loop described in DATA.  */
 
 int
-initialize_reductions (reduction_info **slot, struct loop *loop)
+initialize_reductions (reduction_info **slot, class loop *loop)
 {
   tree init;
   tree type, arg;
@@ -1034,7 +1034,7 @@ add_field_for_name (name_to_copy_elt **slot, tree type)
    reduction's data structure.  */
 
 int
-create_phi_for_local_result (reduction_info **slot, struct loop *loop)
+create_phi_for_local_result (reduction_info **slot, class loop *loop)
 {
   struct reduction_info *const reduc = *slot;
   edge e;
@@ -1158,11 +1158,11 @@ create_call_for_reduction_1 (reduction_info **slot, struct clsn_data *clsn_data)
    LD_ST_DATA describes the shared data structure where
    shared data is stored in and loaded from.  */
 static void
-create_call_for_reduction (struct loop *loop,
+create_call_for_reduction (class loop *loop,
 			   reduction_info_table_type *reduction_list,
 			   struct clsn_data *ld_st_data)
 {
-  reduction_list->traverse <struct loop *, create_phi_for_local_result> (loop);
+  reduction_list->traverse <class loop *, create_phi_for_local_result> (loop);
   /* Find the fallthru edge from GIMPLE_OMP_CONTINUE.  */
   basic_block continue_bb = single_pred (loop->latch);
   ld_st_data->load_bb = FALLTHRU_EDGE (continue_bb)->dest;
@@ -1640,7 +1640,7 @@ replace_uses_in_bb_by (tree name, tree val, basic_block bb)
    bound.  */
 
 static void
-transform_to_exit_first_loop_alt (struct loop *loop,
+transform_to_exit_first_loop_alt (class loop *loop,
 				  reduction_info_table_type *reduction_list,
 				  tree bound)
 {
@@ -1797,7 +1797,7 @@ transform_to_exit_first_loop_alt (struct loop *loop,
    transformation is successful.  */
 
 static bool
-try_transform_to_exit_first_loop_alt (struct loop *loop,
+try_transform_to_exit_first_loop_alt (class loop *loop,
 				      reduction_info_table_type *reduction_list,
 				      tree nit)
 {
@@ -1916,7 +1916,7 @@ try_transform_to_exit_first_loop_alt (struct loop *loop,
    LOOP.  */
 
 static void
-transform_to_exit_first_loop (struct loop *loop,
+transform_to_exit_first_loop (class loop *loop,
 			      reduction_info_table_type *reduction_list,
 			      tree nit)
 {
@@ -2030,7 +2030,7 @@ transform_to_exit_first_loop (struct loop *loop,
    that number is to be determined later.  */
 
 static void
-create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
+create_parallel_loop (class loop *loop, tree loop_fn, tree data,
 		      tree new_data, unsigned n_threads, location_t loc,
 		      bool oacc_kernels_p)
 {
@@ -2266,9 +2266,9 @@ num_phis (basic_block bb, bool count_virtual_p)
    REDUCTION_LIST describes the reductions existent in the LOOP.  */
 
 static void
-gen_parallel_loop (struct loop *loop,
+gen_parallel_loop (class loop *loop,
 		   reduction_info_table_type *reduction_list,
-		   unsigned n_threads, struct tree_niter_desc *niter,
+		   unsigned n_threads, class tree_niter_desc *niter,
 		   bool oacc_kernels_p)
 {
   tree many_iterations_cond, type, nit;
@@ -2441,7 +2441,7 @@ gen_parallel_loop (struct loop *loop,
 
   /* Generate initializations for reductions.  */
   if (!reduction_list->is_empty ())
-    reduction_list->traverse <struct loop *, initialize_reductions> (loop);
+    reduction_list->traverse <class loop *, initialize_reductions> (loop);
 
   /* Eliminate the references to local variables from the loop.  */
   gcc_assert (single_exit (loop));
@@ -2489,7 +2489,7 @@ gen_parallel_loop (struct loop *loop,
 /* Returns true when LOOP contains vector phi nodes.  */
 
 static bool
-loop_has_vector_phi_nodes (struct loop *loop ATTRIBUTE_UNUSED)
+loop_has_vector_phi_nodes (class loop *loop ATTRIBUTE_UNUSED)
 {
   unsigned i;
   basic_block *bbs = get_loop_body_in_dom_order (loop);
@@ -2695,7 +2695,7 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 /* Try to initialize NITER for code generation part.  */
 
 static bool
-try_get_loop_niter (loop_p loop, struct tree_niter_desc *niter)
+try_get_loop_niter (loop_p loop, class tree_niter_desc *niter)
 {
   edge exit = single_dom_exit (loop);
 
@@ -2737,7 +2737,7 @@ get_omp_data_i_param (void)
    and return addr.  Otherwise, return NULL_TREE.  */
 
 static tree
-find_reduc_addr (struct loop *loop, gphi *phi)
+find_reduc_addr (class loop *loop, gphi *phi)
 {
   edge e = loop_preheader_edge (loop);
   tree arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
@@ -2907,7 +2907,7 @@ try_create_reduction_list (loop_p loop,
 /* Return true if LOOP contains phis with ADDR_EXPR in args.  */
 
 static bool
-loop_has_phi_with_address_arg (struct loop *loop)
+loop_has_phi_with_address_arg (class loop *loop)
 {
   basic_block *bbs = get_loop_body (loop);
   bool res = false;
@@ -3244,7 +3244,7 @@ oacc_entry_exit_single_gang (bitmap in_loop_bbs, vec<basic_block> region_bbs,
    outside LOOP by guarding them such that only a single gang executes them.  */
 
 static bool
-oacc_entry_exit_ok (struct loop *loop,
+oacc_entry_exit_ok (class loop *loop,
 		    reduction_info_table_type *reduction_list)
 {
   basic_block *loop_bbs = get_loop_body_in_dom_order (loop);
@@ -3289,9 +3289,9 @@ parallelize_loops (bool oacc_kernels_p)
 {
   unsigned n_threads;
   bool changed = false;
-  struct loop *loop;
-  struct loop *skip_loop = NULL;
-  struct tree_niter_desc niter_desc;
+  class loop *loop;
+  class loop *skip_loop = NULL;
+  class tree_niter_desc niter_desc;
   struct obstack parloop_obstack;
   HOST_WIDE_INT estimated;
 

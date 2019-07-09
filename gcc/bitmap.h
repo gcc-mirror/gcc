@@ -290,7 +290,7 @@ typedef unsigned long BITMAP_WORD;
 /* Obstack for allocating bitmaps and elements from.  */
 struct bitmap_obstack {
   struct bitmap_element *elements;
-  struct bitmap_head *heads;
+  bitmap_head *heads;
   struct obstack obstack;
 };
 

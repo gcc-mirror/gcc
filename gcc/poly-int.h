@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef HAVE_POLY_INT_H
 #define HAVE_POLY_INT_H
 
-template<unsigned int N, typename T> class poly_int_pod;
+template<unsigned int N, typename T> struct poly_int_pod;
 template<unsigned int N, typename T> class poly_int;
 
 /* poly_coeff_traiits<T> describes the properties of a poly_int

@@ -6070,7 +6070,7 @@ gen_function_def_parameters ()
   for (parm = DECL_ARGUMENTS (cfun->decl); parm;
        parm = DECL_CHAIN (parm))
     {
-      struct hsa_symbol **slot;
+      class hsa_symbol **slot;
 
       hsa_symbol *arg
 	= new hsa_symbol (BRIG_TYPE_NONE, hsa_cfun->m_kern_p
@@ -6128,7 +6128,7 @@ gen_function_def_parameters ()
 
   if (!VOID_TYPE_P (TREE_TYPE (TREE_TYPE (cfun->decl))))
     {
-      struct hsa_symbol **slot;
+      class hsa_symbol **slot;
 
       hsa_cfun->m_output_arg = new hsa_symbol (BRIG_TYPE_NONE, BRIG_SEGMENT_ARG,
 					       BRIG_LINKAGE_FUNCTION);

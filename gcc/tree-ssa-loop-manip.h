@@ -20,41 +20,41 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_SSA_LOOP_MANIP_H
 #define GCC_TREE_SSA_LOOP_MANIP_H
 
-typedef void (*transform_callback)(struct loop *, void *);
+typedef void (*transform_callback)(class loop *, void *);
 
-extern void create_iv (tree, tree, tree, struct loop *, gimple_stmt_iterator *,
+extern void create_iv (tree, tree, tree, class loop *, gimple_stmt_iterator *,
 		       bool, tree *, tree *);
 extern void rewrite_into_loop_closed_ssa_1 (bitmap, unsigned, int,
-					    struct loop *);
+					    class loop *);
 extern void rewrite_into_loop_closed_ssa (bitmap, unsigned);
-extern void rewrite_virtuals_into_loop_closed_ssa (struct loop *);
-extern void verify_loop_closed_ssa (bool, struct loop * = NULL);
+extern void rewrite_virtuals_into_loop_closed_ssa (class loop *);
+extern void verify_loop_closed_ssa (bool, class loop * = NULL);
 
 static inline void
-checking_verify_loop_closed_ssa (bool verify_ssa_p, struct loop *loop = NULL)
+checking_verify_loop_closed_ssa (bool verify_ssa_p, class loop *loop = NULL)
 {
   if (flag_checking)
     verify_loop_closed_ssa (verify_ssa_p, loop);
 }
 
 extern basic_block split_loop_exit_edge (edge, bool = false);
-extern basic_block ip_end_pos (struct loop *);
-extern basic_block ip_normal_pos (struct loop *);
-extern void standard_iv_increment_position (struct loop *,
+extern basic_block ip_end_pos (class loop *);
+extern basic_block ip_normal_pos (class loop *);
+extern void standard_iv_increment_position (class loop *,
 					    gimple_stmt_iterator *, bool *);
-extern bool gimple_duplicate_loop_to_header_edge (struct loop *, edge,
+extern bool gimple_duplicate_loop_to_header_edge (class loop *, edge,
 						  unsigned int, sbitmap,
 						  edge, vec<edge> *,
 						  int);
-extern bool can_unroll_loop_p (struct loop *loop, unsigned factor,
-			       struct tree_niter_desc *niter);
-extern gcov_type niter_for_unrolled_loop (struct loop *, unsigned);
-extern void tree_transform_and_unroll_loop (struct loop *, unsigned,
-					    edge, struct tree_niter_desc *,
+extern bool can_unroll_loop_p (class loop *loop, unsigned factor,
+			       class tree_niter_desc *niter);
+extern gcov_type niter_for_unrolled_loop (class loop *, unsigned);
+extern void tree_transform_and_unroll_loop (class loop *, unsigned,
+					    edge, class tree_niter_desc *,
 					    transform_callback, void *);
-extern void tree_unroll_loop (struct loop *, unsigned,
-			      edge, struct tree_niter_desc *);
-extern tree canonicalize_loop_ivs (struct loop *, tree *, bool);
+extern void tree_unroll_loop (class loop *, unsigned,
+			      edge, class tree_niter_desc *);
+extern tree canonicalize_loop_ivs (class loop *, tree *, bool);
 
 
 

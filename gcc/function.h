@@ -186,7 +186,7 @@ struct GTY(()) function_subsections {
 class GTY(()) frame_space
 {
 public:
-  struct frame_space *next;
+  class frame_space *next;
 
   poly_int64 start;
   poly_int64 length;
@@ -243,7 +243,7 @@ struct GTY(()) function {
   char *pass_startwith;
 
   /* The stack usage of this function.  */
-  struct stack_usage *su;
+  class stack_usage *su;
 
   /* Value histograms attached to particular statements.  */
   htab_t GTY((skip)) value_histograms;

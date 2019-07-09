@@ -85,7 +85,7 @@ extern bool default_fixed_point_supported_p (void);
 
 extern bool default_has_ifunc_p (void);
 
-extern bool default_predict_doloop_p (struct loop *);
+extern bool default_predict_doloop_p (class loop *);
 extern const char * default_invalid_within_doloop (const rtx_insn *);
 
 extern tree default_builtin_vectorized_function (unsigned int, tree, tree);
@@ -114,9 +114,9 @@ extern machine_mode default_split_reduction (machine_mode);
 extern void default_autovectorize_vector_sizes (vector_sizes *, bool);
 extern opt_machine_mode default_get_mask_mode (poly_uint64, poly_uint64);
 extern bool default_empty_mask_is_expensive (unsigned);
-extern void *default_init_cost (struct loop *);
+extern void *default_init_cost (class loop *);
 extern unsigned default_add_stmt_cost (void *, int, enum vect_cost_for_stmt,
-				       struct _stmt_vec_info *, int,
+				       class _stmt_vec_info *, int,
 				       enum vect_cost_model_location);
 extern void default_finish_cost (void *, unsigned *, unsigned *, unsigned *);
 extern void default_destroy_cost_data (void *);
@@ -188,7 +188,7 @@ extern bool default_target_option_valid_attribute_p (tree, tree, tree, int);
 extern bool default_target_option_pragma_parse (tree, tree);
 extern bool default_target_can_inline_p (tree, tree);
 extern bool default_valid_pointer_mode (scalar_int_mode);
-extern bool default_ref_may_alias_errno (struct ao_ref *);
+extern bool default_ref_may_alias_errno (class ao_ref *);
 extern scalar_int_mode default_addr_space_pointer_mode (addr_space_t);
 extern scalar_int_mode default_addr_space_address_mode (addr_space_t);
 extern bool default_addr_space_valid_pointer_mode (scalar_int_mode,

@@ -329,7 +329,7 @@ typedef generic_wide_int < fixed_wide_int_storage <WIDE_INT_MAX_PRECISION * 2> >
 /* wi::storage_ref can be a reference to a primitive type,
    so this is the conservatively-correct setting.  */
 template <bool SE, bool HDP = true>
-struct wide_int_ref_storage;
+class wide_int_ref_storage;
 
 typedef generic_wide_int <wide_int_ref_storage <false> > wide_int_ref;
 

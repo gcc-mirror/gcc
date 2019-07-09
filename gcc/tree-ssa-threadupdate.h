@@ -59,6 +59,6 @@ enum bb_dom_status
   DOMST_DOMINATING
 };
 
-enum bb_dom_status determine_bb_domination_status (struct loop *, basic_block);
+enum bb_dom_status determine_bb_domination_status (class loop *, basic_block);
 
 #endif

@@ -123,7 +123,7 @@ struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_d
   PTR GTY ((skip (""))) aux;
 
   /* Innermost loop containing the block.  */
-  struct loop *loop_father;
+  class loop *loop_father;
 
   /* The dominance and postdominance information node.  */
   struct et_node * GTY ((skip (""))) dom[2];

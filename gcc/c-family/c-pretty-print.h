@@ -36,7 +36,7 @@ enum pp_c_pretty_print_flags
 
 /* The data type used to bundle information necessary for pretty-printing
    a C or C++ entity.  */
-struct c_pretty_printer;
+class c_pretty_printer;
 
 /* The type of a C pretty-printer 'member' function.  */
 typedef void (*c_pretty_print_fn) (c_pretty_printer *, tree);

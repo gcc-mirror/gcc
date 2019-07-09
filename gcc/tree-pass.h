@@ -132,7 +132,7 @@ protected:
   }
 };
 
-class varpool_node;
+struct varpool_node;
 struct cgraph_node;
 struct lto_symtab_encoder_d;
 

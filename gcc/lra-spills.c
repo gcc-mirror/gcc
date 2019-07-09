@@ -122,7 +122,7 @@ public:
 
 /* Array containing info about the stack slots.	 The array element is
    indexed by the stack slot number in the range [0..slots_num).  */
-static struct slot *slots;
+static class slot *slots;
 /* The number of the stack slots currently existing.  */
 static int slots_num;
 
@@ -587,7 +587,7 @@ lra_spill (void)
       spill_hard_reg[i] = NULL_RTX;
       pseudo_slots[i].mem = NULL_RTX;
     }
-  slots = XNEWVEC (struct slot, regs_num);
+  slots = XNEWVEC (class slot, regs_num);
   /* Sort regnos according their usage frequencies.  */
   qsort (pseudo_regnos, n, sizeof (int), regno_freq_compare);
   n = assign_spill_hard_regs (pseudo_regnos, n);

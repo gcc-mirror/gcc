@@ -1015,7 +1015,7 @@ dw2_build_landing_pads (void)
       make_single_succ_edge (bb, bb->next_bb, e_flags);
       if (current_loops)
 	{
-	  struct loop *loop = bb->next_bb->loop_father;
+	  class loop *loop = bb->next_bb->loop_father;
 	  /* If we created a pre-header block, add the new block to the
 	     outer loop, otherwise to the loop itself.  */
 	  if (bb->next_bb == loop->header)
@@ -1389,7 +1389,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
 	make_single_succ_edge (bb, bb->next_bb, EDGE_FALLTHRU);
 	if (current_loops)
 	  {
-	    struct loop *loop = bb->next_bb->loop_father;
+	    class loop *loop = bb->next_bb->loop_father;
 	    /* If we created a pre-header block, add the new block to the
 	       outer loop, otherwise to the loop itself.  */
 	    if (bb->next_bb == loop->header)
@@ -1427,7 +1427,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
       make_single_succ_edge (bb, bb->next_bb, EDGE_FALLTHRU);
       if (current_loops)
 	{
-	  struct loop *loop = bb->next_bb->loop_father;
+	  class loop *loop = bb->next_bb->loop_father;
 	  /* If we created a pre-header block, add the new block to the
 	     outer loop, otherwise to the loop itself.  */
 	  if (bb->next_bb == loop->header)

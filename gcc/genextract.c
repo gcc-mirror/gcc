@@ -80,7 +80,7 @@ public:
 };
 
 /* Forward declarations.  */
-static void walk_rtx (md_rtx_info *, rtx, struct accum_extract *);
+static void walk_rtx (md_rtx_info *, rtx, class accum_extract *);
 
 #define UPPER_OFFSET ('A' - ('z' - 'a' + 1))
 
@@ -89,7 +89,7 @@ static void walk_rtx (md_rtx_info *, rtx, struct accum_extract *);
    in ACC.  */
 static void
 push_pathstr_operand (int operand, bool is_vector,
-		     struct accum_extract *acc)
+		     class accum_extract *acc)
 {
   if (is_vector && 'a' + operand > 'z')
     acc->pathstr.safe_push (operand + UPPER_OFFSET);
@@ -106,7 +106,7 @@ gen_insn (md_rtx_info *info)
   unsigned int op_count, dup_count, j;
   struct extraction *p;
   struct code_ptr *link;
-  struct accum_extract acc;
+  class accum_extract acc;
 
   /* Walk the insn's pattern, remembering at all times the path
      down to the walking point.  */
@@ -224,7 +224,7 @@ VEC_char_to_string (vec<char> v)
 }
 
 static void
-walk_rtx (md_rtx_info *info, rtx x, struct accum_extract *acc)
+walk_rtx (md_rtx_info *info, rtx x, class accum_extract *acc)
 {
   RTX_CODE code;
   int i, len;

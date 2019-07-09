@@ -152,7 +152,7 @@ const xlogue_layout xlogue_layout::s_instances[XLOGUE_SET_COUNT] = {
 
 /* Return an appropriate const instance of xlogue_layout based upon values
    in cfun->machine and crtl.  */
-const struct xlogue_layout &
+const class xlogue_layout &
 xlogue_layout::get_instance ()
 {
   enum xlogue_stub_sets stub_set;

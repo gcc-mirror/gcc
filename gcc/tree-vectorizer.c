@@ -633,7 +633,7 @@ vec_info::replace_stmt (gimple_stmt_iterator *gsi, stmt_vec_info stmt_info,
 stmt_vec_info
 vec_info::new_stmt_vec_info (gimple *stmt)
 {
-  stmt_vec_info res = XCNEW (struct _stmt_vec_info);
+  stmt_vec_info res = XCNEW (class _stmt_vec_info);
   res->vinfo = this;
   res->stmt = stmt;
 
@@ -714,7 +714,7 @@ vec_info::free_stmt_vec_info (stmt_vec_info stmt_info)
    clear loop constraint LOOP_C_FINITE.  */
 
 void
-vect_free_loop_info_assumptions (struct loop *loop)
+vect_free_loop_info_assumptions (class loop *loop)
 {
   scev_reset_htab ();
   /* We need to explicitly reset upper bound information since they are
@@ -729,7 +729,7 @@ vect_free_loop_info_assumptions (struct loop *loop)
    guarding it.  */
 
 gimple *
-vect_loop_vectorized_call (struct loop *loop, gcond **cond)
+vect_loop_vectorized_call (class loop *loop, gcond **cond)
 {
   basic_block bb = loop_preheader_edge (loop)->src;
   gimple *g;
@@ -765,11 +765,11 @@ vect_loop_vectorized_call (struct loop *loop, gcond **cond)
    internal call.  */
 
 static gimple *
-vect_loop_dist_alias_call (struct loop *loop)
+vect_loop_dist_alias_call (class loop *loop)
 {
   basic_block bb;
   basic_block entry;
-  struct loop *outer, *orig;
+  class loop *outer, *orig;
   gimple_stmt_iterator gsi;
   gimple *g;
 
@@ -824,7 +824,7 @@ set_uid_loop_bbs (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
   tree arg = gimple_call_arg (loop_vectorized_call, 1);
   basic_block *bbs;
   unsigned int i;
-  struct loop *scalar_loop = get_loop (cfun, tree_to_shwi (arg));
+  class loop *scalar_loop = get_loop (cfun, tree_to_shwi (arg));
 
   LOOP_VINFO_SCALAR_LOOP (loop_vinfo) = scalar_loop;
   gcc_checking_assert (vect_loop_vectorized_call (scalar_loop)
@@ -1047,7 +1047,7 @@ vectorize_loops (void)
   unsigned int i;
   unsigned int num_vectorized_loops = 0;
   unsigned int vect_loops_num;
-  struct loop *loop;
+  class loop *loop;
   hash_table<simduid_to_vf> *simduid_to_vf_htab = NULL;
   hash_table<simd_array_to_simduid> *simd_array_to_simduid_htab = NULL;
   bool any_ifcvt_loops = false;
@@ -1098,7 +1098,7 @@ vectorize_loops (void)
 		&& vect_loop_vectorized_call (loop->inner))
 	      {
 		tree arg = gimple_call_arg (loop_vectorized_call, 0);
-		struct loop *vector_loop
+		class loop *vector_loop
 		  = get_loop (cfun, tree_to_shwi (arg));
 		if (vector_loop && vector_loop != loop)
 		  {

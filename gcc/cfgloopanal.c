@@ -41,7 +41,7 @@ struct target_cfgloop *this_target_cfgloop = &default_target_cfgloop;
 /* Checks whether BB is executed exactly once in each LOOP iteration.  */
 
 bool
-just_once_each_iteration_p (const struct loop *loop, const_basic_block bb)
+just_once_each_iteration_p (const class loop *loop, const_basic_block bb)
 {
   /* It must be executed at least once each iteration.  */
   if (!dominated_by_p (CDI_DOMINATORS, loop->latch, bb))
@@ -81,7 +81,7 @@ mark_irreducible_loops (void)
   unsigned depth;
   struct graph *g;
   int num = number_of_loops (cfun);
-  struct loop *cloop;
+  class loop *cloop;
   bool irred_loop_found = false;
   int i;
 
@@ -173,7 +173,7 @@ mark_irreducible_loops (void)
 
 /* Counts number of insns inside LOOP.  */
 int
-num_loop_insns (const struct loop *loop)
+num_loop_insns (const class loop *loop)
 {
   basic_block *bbs, bb;
   unsigned i, ninsns = 0;
@@ -197,7 +197,7 @@ num_loop_insns (const struct loop *loop)
 
 /* Counts number of insns executed on average per iteration LOOP.  */
 int
-average_num_loop_insns (const struct loop *loop)
+average_num_loop_insns (const class loop *loop)
 {
   basic_block *bbs, bb;
   unsigned i, binsns;
@@ -238,7 +238,7 @@ average_num_loop_insns (const struct loop *loop)
    return -1 in those scenarios.  */
 
 gcov_type
-expected_loop_iterations_unbounded (const struct loop *loop,
+expected_loop_iterations_unbounded (const class loop *loop,
 				    bool *read_profile_p,
 				    bool by_profile_only)
 {
@@ -310,7 +310,7 @@ expected_loop_iterations_unbounded (const struct loop *loop,
    by REG_BR_PROB_BASE.  */
 
 unsigned
-expected_loop_iterations (struct loop *loop)
+expected_loop_iterations (class loop *loop)
 {
   gcov_type expected = expected_loop_iterations_unbounded (loop);
   return (expected > REG_BR_PROB_BASE ? REG_BR_PROB_BASE : expected);
@@ -319,9 +319,9 @@ expected_loop_iterations (struct loop *loop)
 /* Returns the maximum level of nesting of subloops of LOOP.  */
 
 unsigned
-get_loop_level (const struct loop *loop)
+get_loop_level (const class loop *loop)
 {
-  const struct loop *ploop;
+  const class loop *ploop;
   unsigned mx = 0, l;
 
   for (ploop = loop->inner; ploop; ploop = ploop->next)
@@ -463,7 +463,7 @@ mark_loop_exit_edges (void)
    to noreturn call.  */
 
 edge
-single_likely_exit (struct loop *loop)
+single_likely_exit (class loop *loop)
 {
   edge found = single_exit (loop);
   vec<edge> exits;
@@ -500,7 +500,7 @@ single_likely_exit (struct loop *loop)
    header != latch, latch is the 1-st block.  */
 
 vec<basic_block>
-get_loop_hot_path (const struct loop *loop)
+get_loop_hot_path (const class loop *loop)
 {
   basic_block bb = loop->header;
   vec<basic_block> path = vNULL;

@@ -297,8 +297,8 @@ public:
   tree cached_basis;
 };
 
-typedef struct slsr_cand_d slsr_cand, *slsr_cand_t;
-typedef const struct slsr_cand_d *const_slsr_cand_t;
+typedef class slsr_cand_d slsr_cand, *slsr_cand_t;
+typedef const class slsr_cand_d *const_slsr_cand_t;
 
 /* Pointers to candidates are chained together as part of a mapping
    from base expressions to the candidates that use them.  */
@@ -354,7 +354,7 @@ public:
   basic_block init_bb;
 };
 
-typedef struct incr_info_d incr_info, *incr_info_t;
+typedef class incr_info_d incr_info, *incr_info_t;
 
 /* Candidates are maintained in a vector.  If candidate X dominates
    candidate Y, then X appears before Y in the vector; but the
@@ -807,7 +807,7 @@ slsr_process_phi (gphi *phi, bool speed)
   unsigned i;
   tree arg0_base = NULL_TREE, base_type;
   slsr_cand_t c;
-  struct loop *cand_loop = gimple_bb (phi)->loop_father;
+  class loop *cand_loop = gimple_bb (phi)->loop_father;
   unsigned savings = 0;
 
   /* A CAND_PHI requires each of its arguments to have the same

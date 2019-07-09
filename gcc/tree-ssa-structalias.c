@@ -1420,7 +1420,7 @@ public:
    number 1, pages 9-14.  */
 
 static void
-scc_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
+scc_visit (constraint_graph_t graph, class scc_info *si, unsigned int n)
 {
   unsigned int i;
   bitmap_iterator bi;
@@ -2023,7 +2023,7 @@ static int location_equiv_class;
    and label it's nodes with DFS numbers.  */
 
 static void
-condense_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
+condense_visit (constraint_graph_t graph, class scc_info *si, unsigned int n)
 {
   unsigned int i;
   bitmap_iterator bi;
@@ -2128,7 +2128,7 @@ condense_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
    3. Hashable.  */
 
 static void
-label_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
+label_visit (constraint_graph_t graph, class scc_info *si, unsigned int n)
 {
   unsigned int i, first_pred;
   bitmap_iterator bi;
@@ -2215,7 +2215,7 @@ label_visit (constraint_graph_t graph, struct scc_info *si, unsigned int n)
 /* Print the pred graph in dot format.  */
 
 static void
-dump_pred_graph (struct scc_info *si, FILE *file)
+dump_pred_graph (class scc_info *si, FILE *file)
 {
   unsigned int i;
 
@@ -2290,7 +2290,7 @@ dump_pred_graph (struct scc_info *si, FILE *file)
 /* Perform offline variable substitution, discovering equivalence
    classes, and eliminating non-pointer variables.  */
 
-static struct scc_info *
+static class scc_info *
 perform_var_substitution (constraint_graph_t graph)
 {
   unsigned int i;
@@ -2424,7 +2424,7 @@ perform_var_substitution (constraint_graph_t graph)
    substitution.  */
 
 static void
-free_var_substitution_info (struct scc_info *si)
+free_var_substitution_info (class scc_info *si)
 {
   delete si;
   free (graph->pointer_label);
@@ -2548,7 +2548,7 @@ move_complex_constraints (constraint_graph_t graph)
 
 static void
 rewrite_constraints (constraint_graph_t graph,
-		     struct scc_info *si)
+		     class scc_info *si)
 {
   int i;
   constraint_t c;
@@ -7184,7 +7184,7 @@ remove_preds_and_fake_succs (constraint_graph_t graph)
 static void
 solve_constraints (void)
 {
-  struct scc_info *si;
+  class scc_info *si;
 
   /* Sort varinfos so that ones that cannot be pointed to are last.
      This makes bitmaps more efficient.  */

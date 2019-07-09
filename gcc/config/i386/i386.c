@@ -7689,7 +7689,7 @@ ix86_emit_outlined_ms2sysv_save (const struct ix86_frame &frame)
   rtx_insn *insn;
   rtx sym, addr;
   rtx rax = gen_rtx_REG (word_mode, AX_REG);
-  const struct xlogue_layout &xlogue = xlogue_layout::get_instance ();
+  const class xlogue_layout &xlogue = xlogue_layout::get_instance ();
 
   /* AL should only be live with sysv_abi.  */
   gcc_assert (!ix86_eax_live_at_start_p ());
@@ -8492,7 +8492,7 @@ ix86_emit_outlined_ms2sysv_restore (const struct ix86_frame &frame,
   rtx sym, tmp;
   rtx rsi = gen_rtx_REG (word_mode, SI_REG);
   rtx r10 = NULL_RTX;
-  const struct xlogue_layout &xlogue = xlogue_layout::get_instance ();
+  const class xlogue_layout &xlogue = xlogue_layout::get_instance ();
   HOST_WIDE_INT stub_ptr_offset = xlogue.get_stub_ptr_offset ();
   HOST_WIDE_INT rsi_offset = frame.stack_realign_offset + stub_ptr_offset;
   rtx rsi_frame_load = NULL_RTX;
@@ -21503,7 +21503,7 @@ ix86_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
 /* Implement targetm.vectorize.init_cost.  */
 
 static void *
-ix86_init_cost (struct loop *)
+ix86_init_cost (class loop *)
 {
   unsigned *cost = XNEWVEC (unsigned, 3);
   cost[vect_prologue] = cost[vect_body] = cost[vect_epilogue] = 0;
@@ -21514,7 +21514,7 @@ ix86_init_cost (struct loop *)
 
 static unsigned
 ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
-		    struct _stmt_vec_info *stmt_info, int misalign,
+		    class _stmt_vec_info *stmt_info, int misalign,
 		    enum vect_cost_model_location where)
 {
   unsigned *cost = (unsigned *) data;
@@ -21942,7 +21942,7 @@ ix86_simd_clone_usable (struct cgraph_node *node)
    (value 32 is used) as a heuristic. */
 
 static unsigned
-ix86_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
+ix86_loop_unroll_adjust (unsigned nunroll, class loop *loop)
 {
   basic_block *bbs;
   rtx_insn *insn;

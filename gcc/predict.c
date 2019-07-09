@@ -87,10 +87,10 @@ static void dump_prediction (FILE *, enum br_predictor, int, basic_block,
 			     enum predictor_reason, edge);
 static void predict_paths_leading_to (basic_block, enum br_predictor,
 				      enum prediction,
-				      struct loop *in_loop = NULL);
+				      class loop *in_loop = NULL);
 static void predict_paths_leading_to_edge (edge, enum br_predictor,
 					   enum prediction,
-					   struct loop *in_loop = NULL);
+					   class loop *in_loop = NULL);
 static bool can_predict_insn_p (const rtx_insn *);
 static HOST_WIDE_INT get_predictor_value (br_predictor, HOST_WIDE_INT);
 static void determine_unlikely_bbs ();
@@ -355,7 +355,7 @@ optimize_insn_for_speed_p (void)
 /* Return TRUE when LOOP should be optimized for size.  */
 
 bool
-optimize_loop_for_size_p (struct loop *loop)
+optimize_loop_for_size_p (class loop *loop)
 {
   return optimize_bb_for_size_p (loop->header);
 }
@@ -363,7 +363,7 @@ optimize_loop_for_size_p (struct loop *loop)
 /* Return TRUE when LOOP should be optimized for speed.  */
 
 bool
-optimize_loop_for_speed_p (struct loop *loop)
+optimize_loop_for_speed_p (class loop *loop)
 {
   return optimize_bb_for_speed_p (loop->header);
 }
@@ -371,9 +371,9 @@ optimize_loop_for_speed_p (struct loop *loop)
 /* Return TRUE when LOOP nest should be optimized for speed.  */
 
 bool
-optimize_loop_nest_for_speed_p (struct loop *loop)
+optimize_loop_nest_for_speed_p (class loop *loop)
 {
-  struct loop *l = loop;
+  class loop *l = loop;
   if (optimize_loop_for_speed_p (loop))
     return true;
   l = loop->inner;
@@ -399,7 +399,7 @@ optimize_loop_nest_for_speed_p (struct loop *loop)
 /* Return TRUE when LOOP nest should be optimized for size.  */
 
 bool
-optimize_loop_nest_for_size_p (struct loop *loop)
+optimize_loop_nest_for_size_p (class loop *loop)
 {
   return !optimize_loop_nest_for_speed_p (loop);
 }
@@ -1471,7 +1471,7 @@ get_base_value (tree t)
    Otherwise return false and set LOOP_INVAIANT to NULL.  */
 
 static bool
-is_comparison_with_loop_invariant_p (gcond *stmt, struct loop *loop,
+is_comparison_with_loop_invariant_p (gcond *stmt, class loop *loop,
 				     tree *loop_invariant,
 				     enum tree_code *compare_code,
 				     tree *loop_step,
@@ -1637,7 +1637,7 @@ predicted_by_loop_heuristics_p (basic_block bb)
   In this loop, we will predict the branch inside the loop to be taken.  */
 
 static void
-predict_iv_comparison (struct loop *loop, basic_block bb,
+predict_iv_comparison (class loop *loop, basic_block bb,
 		       tree loop_bound_var,
 		       tree loop_iv_base_var,
 		       enum tree_code loop_bound_code,
@@ -1896,9 +1896,9 @@ predict_extra_loop_exits (edge exit_edge)
 static void
 predict_loops (void)
 {
-  struct loop *loop;
+  class loop *loop;
   basic_block bb;
-  hash_set <struct loop *> with_recursion(10);
+  hash_set <class loop *> with_recursion(10);
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -1923,9 +1923,9 @@ predict_loops (void)
       basic_block bb, *bbs;
       unsigned j, n_exits = 0;
       vec<edge> exits;
-      struct tree_niter_desc niter_desc;
+      class tree_niter_desc niter_desc;
       edge ex;
-      struct nb_iter_bound *nb_iter;
+      class nb_iter_bound *nb_iter;
       enum tree_code loop_bound_code = ERROR_MARK;
       tree loop_bound_step = NULL;
       tree loop_bound_var = NULL;
@@ -3135,7 +3135,7 @@ static void
 predict_paths_for_bb (basic_block cur, basic_block bb,
 		      enum br_predictor pred,
 		      enum prediction taken,
-		      bitmap visited, struct loop *in_loop = NULL)
+		      bitmap visited, class loop *in_loop = NULL)
 {
   edge e;
   edge_iterator ei;
@@ -3201,7 +3201,7 @@ predict_paths_for_bb (basic_block cur, basic_block bb,
 
 static void
 predict_paths_leading_to (basic_block bb, enum br_predictor pred,
-			  enum prediction taken, struct loop *in_loop)
+			  enum prediction taken, class loop *in_loop)
 {
   predict_paths_for_bb (bb, bb, pred, taken, auto_bitmap (), in_loop);
 }
@@ -3210,7 +3210,7 @@ predict_paths_leading_to (basic_block bb, enum br_predictor pred,
 
 static void
 predict_paths_leading_to_edge (edge e, enum br_predictor pred,
-			       enum prediction taken, struct loop *in_loop)
+			       enum prediction taken, class loop *in_loop)
 {
   bool has_nonloop_edge = false;
   edge_iterator ei;
@@ -3400,9 +3400,9 @@ propagate_freq (basic_block head, bitmap tovisit)
 /* Estimate frequencies in loops at same nest level.  */
 
 static void
-estimate_loops_at_level (struct loop *first_loop)
+estimate_loops_at_level (class loop *first_loop)
 {
-  struct loop *loop;
+  class loop *loop;
 
   for (loop = first_loop; loop; loop = loop->next)
     {
@@ -4052,7 +4052,7 @@ pass_profile::execute (function *fun)
     profile_status_for_fn (fun) = PROFILE_GUESSED;
  if (dump_file && (dump_flags & TDF_DETAILS))
    {
-     struct loop *loop;
+     class loop *loop;
      FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
        if (loop->header->count.initialized_p ())
          fprintf (dump_file, "Loop got predicted %d to iterate %i times.\n",

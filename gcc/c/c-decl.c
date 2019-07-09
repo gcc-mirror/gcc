@@ -592,7 +592,7 @@ public:
 
 /* Information for the struct or union currently being parsed, or
    NULL if not parsing a struct or union.  */
-static struct c_struct_parse_info *struct_parse_info;
+static class c_struct_parse_info *struct_parse_info;
 
 /* Forward declarations.  */
 static tree lookup_name_in_scope (tree, struct c_scope *);
@@ -7768,7 +7768,7 @@ xref_tag (enum tree_code code, tree name)
 
 tree
 start_struct (location_t loc, enum tree_code code, tree name,
-	      struct c_struct_parse_info **enclosing_struct_parse_info)
+	      class c_struct_parse_info **enclosing_struct_parse_info)
 {
   /* If there is already a tag defined at this scope
      (as a forward reference), just return it.  */
@@ -8183,7 +8183,7 @@ field_decl_cmp (const void *x_p, const void *y_p)
 
 tree
 finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
-	       struct c_struct_parse_info *enclosing_struct_parse_info)
+	       class c_struct_parse_info *enclosing_struct_parse_info)
 {
   tree x;
   bool toplevel = file_scope == current_scope;

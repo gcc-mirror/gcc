@@ -122,7 +122,7 @@ public:
   enum malloc_state_e malloc_state;
 };
 
-typedef struct funct_state_d * funct_state;
+typedef class funct_state_d * funct_state;
 
 /* The storage of the funct_state is abstracted because there is the
    possibility that it may be desirable to move this to the cgraph
@@ -1014,7 +1014,7 @@ analyze_function (struct cgraph_node *fn, bool ipa)
   funct_state l;
   basic_block this_block;
 
-  l = XCNEW (struct funct_state_d);
+  l = XCNEW (class funct_state_d);
   l->pure_const_state = IPA_CONST;
   l->state_previously_known = IPA_NEITHER;
   l->looping_previously_known = true;
@@ -1086,7 +1086,7 @@ end:
 	    }
 	  else
 	    {
-	      struct loop *loop;
+	      class loop *loop;
 	      scev_initialize ();
 	      FOR_EACH_LOOP (loop, 0)
 		if (!finite_loop_p (loop))
@@ -1279,7 +1279,7 @@ pure_const_read_summary (void)
     {
       const char *data;
       size_t len;
-      struct lto_input_block *ib
+      class lto_input_block *ib
 	= lto_create_simple_input_block (file_data,
 					 LTO_section_ipa_pure_const,
 					 &data, &len);

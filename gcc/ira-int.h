@@ -82,7 +82,7 @@ struct ira_loop_tree_node
   /* The node represents basic block if children == NULL.  */
   basic_block bb;    /* NULL for loop.  */
   /* NULL for BB or for loop tree root if we did not build CFG loop tree.  */
-  struct loop *loop;
+  class loop *loop;
   /* NEXT/SUBLOOP_NEXT is the next node/loop-node of the same parent.
      SUBLOOP_NEXT is always NULL for BBs.  */
   ira_loop_tree_node_t subloop_next, next;
@@ -613,7 +613,7 @@ extern int ira_spilled_reg_stack_slots_num;
 
 /* The following array contains info about spilled pseudo-registers
    stack slots used in current function so far.  */
-extern struct ira_spilled_reg_stack_slot *ira_spilled_reg_stack_slots;
+extern class ira_spilled_reg_stack_slot *ira_spilled_reg_stack_slots;
 
 /* Correspondingly overall cost of the allocation, cost of the
    allocnos assigned to hard-registers, cost of the allocnos assigned
@@ -909,9 +909,9 @@ public:
   bool x_ira_prohibited_mode_move_regs_initialized_p;
 };
 
-extern struct target_ira_int default_target_ira_int;
+extern class target_ira_int default_target_ira_int;
 #if SWITCHABLE_TARGET
-extern struct target_ira_int *this_target_ira_int;
+extern class target_ira_int *this_target_ira_int;
 #else
 #define this_target_ira_int (&default_target_ira_int)
 #endif

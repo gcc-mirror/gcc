@@ -73,18 +73,18 @@ void streamer_write_wide_int (struct output_block *, const wide_int &);
 void streamer_write_widest_int (struct output_block *, const widest_int &);
 
 /* In data-streamer-in.c  */
-const char *streamer_read_string (struct data_in *, struct lto_input_block *);
-const char *streamer_read_indexed_string (struct data_in *,
-					  struct lto_input_block *,
+const char *streamer_read_string (class data_in *, class lto_input_block *);
+const char *streamer_read_indexed_string (class data_in *,
+					  class lto_input_block *,
 					  unsigned int *);
-const char *bp_unpack_indexed_string (struct data_in *, struct bitpack_d *,
+const char *bp_unpack_indexed_string (class data_in *, struct bitpack_d *,
 				      unsigned int *);
-const char *bp_unpack_string (struct data_in *, struct bitpack_d *);
-unsigned HOST_WIDE_INT streamer_read_uhwi (struct lto_input_block *);
-HOST_WIDE_INT streamer_read_hwi (struct lto_input_block *);
-gcov_type streamer_read_gcov_count (struct lto_input_block *);
-wide_int streamer_read_wide_int (struct lto_input_block *);
-widest_int streamer_read_widest_int (struct lto_input_block *);
+const char *bp_unpack_string (class data_in *, struct bitpack_d *);
+unsigned HOST_WIDE_INT streamer_read_uhwi (class lto_input_block *);
+HOST_WIDE_INT streamer_read_hwi (class lto_input_block *);
+gcov_type streamer_read_gcov_count (class lto_input_block *);
+wide_int streamer_read_wide_int (class lto_input_block *);
+widest_int streamer_read_widest_int (class lto_input_block *);
 
 /* Returns a new bit-packing context for bit-packing into S.  */
 static inline struct bitpack_d
@@ -149,7 +149,7 @@ streamer_write_bitpack (struct bitpack_d *bp)
 
 /* Returns a new bit-packing context for bit-unpacking from IB.  */
 static inline struct bitpack_d
-streamer_read_bitpack (struct lto_input_block *ib)
+streamer_read_bitpack (class lto_input_block *ib)
 {
   struct bitpack_d bp;
   bp.word = streamer_read_uhwi (ib);
@@ -174,7 +174,7 @@ bp_unpack_value (struct bitpack_d *bp, unsigned nbits)
   if (pos + nbits > BITS_PER_BITPACK_WORD)
     {
       bp->word = val 
-	= streamer_read_uhwi ((struct lto_input_block *)bp->stream);
+	= streamer_read_uhwi ((class lto_input_block *)bp->stream);
       bp->pos = nbits;
       return val & mask;
     }
@@ -218,7 +218,7 @@ streamer_write_char_stream (struct lto_output_stream *obs, char c)
 /* Read byte from the input block.  */
 
 static inline unsigned char
-streamer_read_uchar (struct lto_input_block *ib)
+streamer_read_uchar (class lto_input_block *ib)
 {
   if (ib->p >= ib->len)
     lto_section_overrun (ib);
@@ -248,7 +248,7 @@ streamer_write_hwi_in_range (struct lto_output_stream *obs,
    to be compile time constant.  PURPOSE is used for error reporting.  */
 
 static inline HOST_WIDE_INT
-streamer_read_hwi_in_range (struct lto_input_block *ib,
+streamer_read_hwi_in_range (class lto_input_block *ib,
 				 const char *purpose,
 				 HOST_WIDE_INT min,
 				 HOST_WIDE_INT max)
@@ -337,7 +337,7 @@ streamer_write_record_start (struct output_block *ob, enum LTO_tags tag)
 /* Return the next tag in the input block IB.  */
 
 static inline enum LTO_tags
-streamer_read_record_start (struct lto_input_block *ib)
+streamer_read_record_start (class lto_input_block *ib)
 {
   return streamer_read_enum (ib, LTO_tags, LTO_NUM_TAGS);
 }

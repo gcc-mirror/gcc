@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 
 struct dataflow;
-struct df_d;
+class df_d;
 struct df_problem;
 struct df_link;
 struct df_insn_info;
@@ -935,7 +935,7 @@ public:
 /* This is used for debugging and for the dumpers to find the latest
    instance so that the df info can be added to the dumps.  This
    should not be used by regular code.  */
-extern struct df_d *df;
+extern class df_d *df;
 #define df_scan    (df->problems_by_index[DF_SCAN])
 #define df_rd      (df->problems_by_index[DF_RD])
 #define df_lr      (df->problems_by_index[DF_LR])
@@ -968,7 +968,7 @@ extern void df_remove_problem (struct dataflow *);
 extern void df_finish_pass (bool);
 extern void df_analyze_problem (struct dataflow *, bitmap, int *, int);
 extern void df_analyze ();
-extern void df_analyze_loop (struct loop *);
+extern void df_analyze_loop (class loop *);
 extern int df_get_n_blocks (enum df_flow_dir);
 extern int *df_get_postorder (enum df_flow_dir);
 extern void df_simple_dataflow (enum df_flow_dir, df_init_function,
@@ -1103,56 +1103,56 @@ df_scan_get_bb_info (unsigned int index)
     return NULL;
 }
 
-static inline struct df_rd_bb_info *
+static inline class df_rd_bb_info *
 df_rd_get_bb_info (unsigned int index)
 {
   if (index < df_rd->block_info_size)
-    return &((struct df_rd_bb_info *) df_rd->block_info)[index];
+    return &((class df_rd_bb_info *) df_rd->block_info)[index];
   else
     return NULL;
 }
 
-static inline struct df_lr_bb_info *
+static inline class df_lr_bb_info *
 df_lr_get_bb_info (unsigned int index)
 {
   if (index < df_lr->block_info_size)
-    return &((struct df_lr_bb_info *) df_lr->block_info)[index];
+    return &((class df_lr_bb_info *) df_lr->block_info)[index];
   else
     return NULL;
 }
 
-static inline struct df_md_bb_info *
+static inline class df_md_bb_info *
 df_md_get_bb_info (unsigned int index)
 {
   if (index < df_md->block_info_size)
-    return &((struct df_md_bb_info *) df_md->block_info)[index];
+    return &((class df_md_bb_info *) df_md->block_info)[index];
   else
     return NULL;
 }
 
-static inline struct df_live_bb_info *
+static inline class df_live_bb_info *
 df_live_get_bb_info (unsigned int index)
 {
   if (index < df_live->block_info_size)
-    return &((struct df_live_bb_info *) df_live->block_info)[index];
+    return &((class df_live_bb_info *) df_live->block_info)[index];
   else
     return NULL;
 }
 
-static inline struct df_word_lr_bb_info *
+static inline class df_word_lr_bb_info *
 df_word_lr_get_bb_info (unsigned int index)
 {
   if (index < df_word_lr->block_info_size)
-    return &((struct df_word_lr_bb_info *) df_word_lr->block_info)[index];
+    return &((class df_word_lr_bb_info *) df_word_lr->block_info)[index];
   else
     return NULL;
 }
 
-static inline struct df_mir_bb_info *
+static inline class df_mir_bb_info *
 df_mir_get_bb_info (unsigned int index)
 {
   if (index < df_mir->block_info_size)
-    return &((struct df_mir_bb_info *) df_mir->block_info)[index];
+    return &((class df_mir_bb_info *) df_mir->block_info)[index];
   else
     return NULL;
 }

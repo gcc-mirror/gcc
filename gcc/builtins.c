@@ -1400,7 +1400,7 @@ expand_builtin_prefetch (tree exp)
 
   if (targetm.have_prefetch ())
     {
-      struct expand_operand ops[3];
+      class expand_operand ops[3];
 
       create_address_operand (&ops[0], op0);
       create_integer_operand (&ops[1], INTVAL (op1));
@@ -2445,7 +2445,7 @@ expand_builtin_interclass_mathfn (tree exp, rtx target)
 
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand ops[1];
+      class expand_operand ops[1];
       rtx_insn *last = get_last_insn ();
       tree orig_arg = arg;
 
@@ -2946,7 +2946,7 @@ expand_builtin_strlen (tree exp, rtx target,
   if (!validate_arglist (exp, POINTER_TYPE, VOID_TYPE))
     return NULL_RTX;
 
-  struct expand_operand ops[4];
+  class expand_operand ops[4];
   rtx pat;
   tree len;
   tree src = CALL_EXPR_ARG (exp, 0);
@@ -3923,7 +3923,7 @@ expand_builtin_mempcpy_args (tree dest, tree src, tree len,
 static rtx
 expand_movstr (tree dest, tree src, rtx target, memop_ret retmode)
 {
-  struct expand_operand ops[3];
+  class expand_operand ops[3];
   rtx dest_mem;
   rtx src_mem;
 
@@ -4633,7 +4633,7 @@ expand_cmpstr (insn_code icode, rtx target, rtx arg1_rtx, rtx arg2_rtx,
   if (target && (!REG_P (target) || HARD_REGISTER_P (target)))
     target = NULL_RTX;
 
-  struct expand_operand ops[4];
+  class expand_operand ops[4];
   create_output_operand (&ops[0], target, insn_mode);
   create_fixed_operand (&ops[1], arg1_rtx);
   create_fixed_operand (&ops[2], arg2_rtx);
@@ -5606,7 +5606,7 @@ expand_builtin___clear_cache (tree exp)
 
   if (targetm.have_clear_cache ())
     {
-      struct expand_operand ops[2];
+      class expand_operand ops[2];
 
       begin = CALL_EXPR_ARG (exp, 0);
       begin_rtx = expand_expr (begin, NULL_RTX, Pmode, EXPAND_NORMAL);
@@ -6566,7 +6566,7 @@ expand_ifn_atomic_bit_test_and (gcall *call)
   machine_mode mode = TYPE_MODE (TREE_TYPE (flag));
   enum rtx_code code;
   optab optab;
-  struct expand_operand ops[5];
+  class expand_operand ops[5];
 
   gcc_assert (flag_inline_atomics);
 
@@ -6874,7 +6874,7 @@ expand_builtin_thread_pointer (tree exp, rtx target)
   icode = direct_optab_handler (get_thread_pointer_optab, Pmode);
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand op;
+      class expand_operand op;
       /* If the target is not sutitable then create a new target. */
       if (target == NULL_RTX
 	  || !REG_P (target)
@@ -6897,7 +6897,7 @@ expand_builtin_set_thread_pointer (tree exp)
   icode = direct_optab_handler (set_thread_pointer_optab, Pmode);
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand op;
+      class expand_operand op;
       rtx val = expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 			     Pmode, EXPAND_NORMAL);      
       create_input_operand (&op, val, Pmode);

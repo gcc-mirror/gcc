@@ -133,7 +133,7 @@ vec<tree, va_gc> *types_used_by_cur_var_decl;
 
 /* Forward declarations.  */
 
-static struct temp_slot *find_temp_slot_from_address (rtx);
+static class temp_slot *find_temp_slot_from_address (rtx);
 static void pad_to_arg_alignment (struct args_size *, int, struct args_size *);
 static void pad_below (struct args_size *, machine_mode, tree);
 static void reorder_blocks_1 (rtx_insn *, tree, vec<tree> *);
@@ -345,7 +345,7 @@ try_fit_stack_local (poly_int64 start, poly_int64 length,
 static void
 add_frame_space (poly_int64 start, poly_int64 end)
 {
-  struct frame_space *space = ggc_alloc<frame_space> ();
+  class frame_space *space = ggc_alloc<frame_space> ();
   space->next = crtl->frame_space_list;
   crtl->frame_space_list = space;
   space->start = start;
@@ -441,11 +441,11 @@ assign_stack_local_1 (machine_mode mode, poly_int64 size,
     {
       if (kind & ASLK_RECORD_PAD)
 	{
-	  struct frame_space **psp;
+	  class frame_space **psp;
 
 	  for (psp = &crtl->frame_space_list; *psp; psp = &(*psp)->next)
 	    {
-	      struct frame_space *space = *psp;
+	      class frame_space *space = *psp;
 	      if (!try_fit_stack_local (space->start, space->length, size,
 					alignment, &slot_offset))
 		continue;
@@ -559,9 +559,9 @@ assign_stack_local (machine_mode mode, poly_int64 size, int align)
 class GTY(()) temp_slot {
 public:
   /* Points to next temporary slot.  */
-  struct temp_slot *next;
+  class temp_slot *next;
   /* Points to previous temporary slot.  */
-  struct temp_slot *prev;
+  class temp_slot *prev;
   /* The rtx to used to reference the slot.  */
   rtx slot;
   /* The size, in units, of the slot.  */
@@ -589,7 +589,7 @@ public:
 struct GTY((for_user)) temp_slot_address_entry {
   hashval_t hash;
   rtx address;
-  struct temp_slot *temp_slot;
+  class temp_slot *temp_slot;
 };
 
 struct temp_address_hasher : ggc_ptr_hash<temp_slot_address_entry>
@@ -606,7 +606,7 @@ static size_t n_temp_slots_in_use;
 /* Removes temporary slot TEMP from LIST.  */
 
 static void
-cut_slot_from_list (struct temp_slot *temp, struct temp_slot **list)
+cut_slot_from_list (class temp_slot *temp, class temp_slot **list)
 {
   if (temp->next)
     temp->next->prev = temp->prev;
@@ -621,7 +621,7 @@ cut_slot_from_list (struct temp_slot *temp, struct temp_slot **list)
 /* Inserts temporary slot TEMP to LIST.  */
 
 static void
-insert_slot_to_list (struct temp_slot *temp, struct temp_slot **list)
+insert_slot_to_list (class temp_slot *temp, class temp_slot **list)
 {
   temp->next = *list;
   if (*list)
@@ -632,7 +632,7 @@ insert_slot_to_list (struct temp_slot *temp, struct temp_slot **list)
 
 /* Returns the list of used temp slots at LEVEL.  */
 
-static struct temp_slot **
+static class temp_slot **
 temp_slots_at_level (int level)
 {
   if (level >= (int) vec_safe_length (used_temp_slots))
@@ -655,7 +655,7 @@ max_slot_level (void)
 /* Moves temporary slot TEMP to LEVEL.  */
 
 static void
-move_slot_to_level (struct temp_slot *temp, int level)
+move_slot_to_level (class temp_slot *temp, int level)
 {
   cut_slot_from_list (temp, temp_slots_at_level (temp->level));
   insert_slot_to_list (temp, temp_slots_at_level (level));
@@ -665,7 +665,7 @@ move_slot_to_level (struct temp_slot *temp, int level)
 /* Make temporary slot TEMP available.  */
 
 static void
-make_slot_available (struct temp_slot *temp)
+make_slot_available (class temp_slot *temp)
 {
   cut_slot_from_list (temp, temp_slots_at_level (temp->level));
   insert_slot_to_list (temp, &avail_temp_slots);
@@ -701,7 +701,7 @@ temp_address_hasher::equal (temp_slot_address_entry *t1,
 
 /* Add ADDRESS as an alias of TEMP_SLOT to the addess -> temp slot mapping.  */
 static void
-insert_temp_slot_address (rtx address, struct temp_slot *temp_slot)
+insert_temp_slot_address (rtx address, class temp_slot *temp_slot)
 {
   struct temp_slot_address_entry *t = ggc_alloc<temp_slot_address_entry> ();
   t->address = address;
@@ -735,10 +735,10 @@ remove_unused_temp_slot_addresses (void)
 
 /* Find the temp slot corresponding to the object at address X.  */
 
-static struct temp_slot *
+static class temp_slot *
 find_temp_slot_from_address (rtx x)
 {
-  struct temp_slot *p;
+  class temp_slot *p;
   struct temp_slot_address_entry tmp, *t;
 
   /* First try the easy way:
@@ -787,7 +787,7 @@ rtx
 assign_stack_temp_for_type (machine_mode mode, poly_int64 size, tree type)
 {
   unsigned int align;
-  struct temp_slot *p, *best_p = 0, *selected = NULL, **pp;
+  class temp_slot *p, *best_p = 0, *selected = NULL, **pp;
   rtx slot;
 
   gcc_assert (known_size_p (size));
@@ -1031,7 +1031,7 @@ assign_temp (tree type_or_decl, int memory_required,
 static void
 combine_temp_slots (void)
 {
-  struct temp_slot *p, *q, *next, *next_q;
+  class temp_slot *p, *q, *next, *next_q;
   int num_slots;
 
   /* We can't combine slots, because the information about which slot
@@ -1095,7 +1095,7 @@ combine_temp_slots (void)
 void
 update_temp_slot_address (rtx old_rtx, rtx new_rtx)
 {
-  struct temp_slot *p;
+  class temp_slot *p;
 
   if (rtx_equal_p (old_rtx, new_rtx))
     return;
@@ -1149,7 +1149,7 @@ update_temp_slot_address (rtx old_rtx, rtx new_rtx)
 void
 preserve_temp_slots (rtx x)
 {
-  struct temp_slot *p = 0, *next;
+  class temp_slot *p = 0, *next;
 
   if (x == 0)
     return;
@@ -1189,7 +1189,7 @@ preserve_temp_slots (rtx x)
 void
 free_temp_slots (void)
 {
-  struct temp_slot *p, *next;
+  class temp_slot *p, *next;
   bool some_available = false;
 
   for (p = *temp_slots_at_level (temp_slot_level); p; p = next)

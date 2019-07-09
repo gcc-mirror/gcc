@@ -70,7 +70,7 @@ along with GCC; see the file COPYING3.  If not see
    point in *BORDER and the comparison induction variable in IV.  */
 
 static tree
-split_at_bb_p (struct loop *loop, basic_block bb, tree *border, affine_iv *iv)
+split_at_bb_p (class loop *loop, basic_block bb, tree *border, affine_iv *iv)
 {
   gimple *last;
   gcond *stmt;
@@ -102,7 +102,7 @@ split_at_bb_p (struct loop *loop, basic_block bb, tree *border, affine_iv *iv)
 
   tree op0 = gimple_cond_lhs (stmt);
   tree op1 = gimple_cond_rhs (stmt);
-  struct loop *useloop = loop_containing_stmt (stmt);
+  class loop *useloop = loop_containing_stmt (stmt);
 
   if (!simple_iv (loop, useloop, op0, iv, false))
     return NULL_TREE;
@@ -150,7 +150,7 @@ split_at_bb_p (struct loop *loop, basic_block bb, tree *border, affine_iv *iv)
    also be true/false in the next iteration.  */
 
 static void
-patch_loop_exit (struct loop *loop, gcond *guard, tree nextval, tree newbound,
+patch_loop_exit (class loop *loop, gcond *guard, tree nextval, tree newbound,
 		 bool initial_true)
 {
   edge exit = single_exit (loop);
@@ -181,7 +181,7 @@ patch_loop_exit (struct loop *loop, gcond *guard, tree nextval, tree newbound,
    such phi node.  Return that phi node.  */
 
 static gphi *
-find_or_create_guard_phi (struct loop *loop, tree guard_iv, affine_iv * /*iv*/)
+find_or_create_guard_phi (class loop *loop, tree guard_iv, affine_iv * /*iv*/)
 {
   gimple *def = SSA_NAME_DEF_STMT (guard_iv);
   gphi *phi;
@@ -197,7 +197,7 @@ find_or_create_guard_phi (struct loop *loop, tree guard_iv, affine_iv * /*iv*/)
    determined easily (i.e. that connect_loop_phis can determine them).  */
 
 static bool
-easy_exit_values (struct loop *loop)
+easy_exit_values (class loop *loop)
 {
   edge exit = single_exit (loop);
   edge latch = loop_latch_edge (loop);
@@ -229,7 +229,7 @@ easy_exit_values (struct loop *loop)
    this.  The loops need to fulfill easy_exit_values().  */
 
 static void
-connect_loop_phis (struct loop *loop1, struct loop *loop2, edge new_e)
+connect_loop_phis (class loop *loop1, class loop *loop2, edge new_e)
 {
   basic_block rest = loop_preheader_edge (loop2)->src;
   gcc_assert (new_e->dest == rest);
@@ -323,7 +323,7 @@ connect_loop_phis (struct loop *loop1, struct loop *loop2, edge new_e)
    This doesn't update the SSA form, see connect_loop_phis for that.  */
 
 static edge
-connect_loops (struct loop *loop1, struct loop *loop2)
+connect_loops (class loop *loop1, class loop *loop2)
 {
   edge exit = single_exit (loop1);
   basic_block skip_bb = split_edge (exit);
@@ -387,7 +387,7 @@ connect_loops (struct loop *loop1, struct loop *loop2)
    and add or subtract 1.  This routine computes newend above.  */
 
 static tree
-compute_new_first_bound (gimple_seq *stmts, struct tree_niter_desc *niter,
+compute_new_first_bound (gimple_seq *stmts, class tree_niter_desc *niter,
 			 tree border,
 			 enum tree_code guard_code, tree guard_init)
 {
@@ -487,7 +487,7 @@ compute_new_first_bound (gimple_seq *stmts, struct tree_niter_desc *niter,
    single exit of LOOP.  */
 
 static bool
-split_loop (struct loop *loop1, struct tree_niter_desc *niter)
+split_loop (class loop *loop1, class tree_niter_desc *niter)
 {
   basic_block *bbs;
   unsigned i;
@@ -557,7 +557,7 @@ split_loop (struct loop *loop1, struct tree_niter_desc *niter)
 	initialize_original_copy_tables ();
 	basic_block cond_bb;
 
-	struct loop *loop2 = loop_version (loop1, cond, &cond_bb,
+	class loop *loop2 = loop_version (loop1, cond, &cond_bb,
 					   profile_probability::always (),
 					   profile_probability::always (),
 					   profile_probability::always (),
@@ -617,7 +617,7 @@ split_loop (struct loop *loop1, struct tree_niter_desc *niter)
 static unsigned int
 tree_ssa_split_loops (void)
 {
-  struct loop *loop;
+  class loop *loop;
   bool changed = false;
 
   gcc_assert (scev_initialized_p ());
@@ -627,7 +627,7 @@ tree_ssa_split_loops (void)
   /* Go through all loops starting from innermost.  */
   FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     {
-      struct tree_niter_desc niter;
+      class tree_niter_desc niter;
       if (loop->aux)
 	{
 	  /* If any of our inner loops was split, don't split us,

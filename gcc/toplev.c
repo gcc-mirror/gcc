@@ -159,9 +159,9 @@ HOST_WIDE_INT random_seed;
    the support provided depends on the backend.  */
 rtx stack_limit_rtx;
 
-struct target_flag_state default_target_flag_state;
+class target_flag_state default_target_flag_state;
 #if SWITCHABLE_TARGET
-struct target_flag_state *this_target_flag_state = &default_target_flag_state;
+class target_flag_state *this_target_flag_state = &default_target_flag_state;
 #else
 #define this_target_flag_state (&default_target_flag_state)
 #endif

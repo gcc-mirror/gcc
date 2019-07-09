@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
    amount.  */
 
 static bool
-should_duplicate_loop_header_p (basic_block header, struct loop *loop,
+should_duplicate_loop_header_p (basic_block header, class loop *loop,
 				int *limit)
 {
   gimple_stmt_iterator bsi;
@@ -211,7 +211,7 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
 /* Checks whether LOOP is a do-while style loop.  */
 
 static bool
-do_while_loop_p (struct loop *loop)
+do_while_loop_p (class loop *loop)
 {
   gimple *stmt = last_stmt (loop->latch);
 
@@ -268,7 +268,7 @@ class ch_base : public gimple_opt_pass
   unsigned int copy_headers (function *fun);
 
   /* Return true to copy headers of LOOP or false to skip.  */
-  virtual bool process_loop_p (struct loop *loop) = 0;
+  virtual bool process_loop_p (class loop *loop) = 0;
 };
 
 const pass_data pass_data_ch =
@@ -301,7 +301,7 @@ public:
 
 protected:
   /* ch_base method: */
-  virtual bool process_loop_p (struct loop *loop);
+  virtual bool process_loop_p (class loop *loop);
 }; // class pass_ch
 
 const pass_data pass_data_ch_vect =
@@ -339,7 +339,7 @@ public:
 
 protected:
   /* ch_base method: */
-  virtual bool process_loop_p (struct loop *loop);
+  virtual bool process_loop_p (class loop *loop);
 }; // class pass_ch_vect
 
 /* For all loops, copy the condition at the end of the loop body in front
@@ -349,7 +349,7 @@ protected:
 unsigned int
 ch_base::copy_headers (function *fun)
 {
-  struct loop *loop;
+  class loop *loop;
   basic_block header;
   edge exit, entry;
   basic_block *bbs, *copied_bbs;
@@ -549,7 +549,7 @@ pass_ch_vect::execute (function *fun)
 /* Apply header copying according to a very simple test of do-while shape.  */
 
 bool
-pass_ch::process_loop_p (struct loop *loop)
+pass_ch::process_loop_p (class loop *loop)
 {
   return !do_while_loop_p (loop);
 }
@@ -557,7 +557,7 @@ pass_ch::process_loop_p (struct loop *loop)
 /* Apply header-copying to loops where we might enable vectorization.  */
 
 bool
-pass_ch_vect::process_loop_p (struct loop *loop)
+pass_ch_vect::process_loop_p (class loop *loop)
 {
   if (!flag_tree_loop_vectorize && !loop->force_vectorize)
     return false;

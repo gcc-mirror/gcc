@@ -1031,7 +1031,7 @@ use_narrower_mode (rtx x, scalar_int_mode mode, scalar_int_mode wmode)
 static rtx
 adjust_mems (rtx loc, const_rtx old_rtx, void *data)
 {
-  struct adjust_mem_data *amd = (struct adjust_mem_data *) data;
+  class adjust_mem_data *amd = (class adjust_mem_data *) data;
   rtx mem, addr = loc, tem;
   machine_mode mem_mode_save;
   bool store_save;
@@ -6389,7 +6389,7 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 
 	    if (!frame_pointer_needed)
 	      {
-		struct adjust_mem_data amd;
+		class adjust_mem_data amd;
 		amd.mem_mode = VOIDmode;
 		amd.stack_adjust = -VTI (bb)->out.stack_adjust;
 		amd.store = true;
@@ -8330,8 +8330,8 @@ static inline rtx
 vt_expand_var_loc_chain (variable *var, bitmap regs, void *data,
 			 bool *pendrecp)
 {
-  struct expand_loc_callback_data *elcd
-    = (struct expand_loc_callback_data *) data;
+  class expand_loc_callback_data *elcd
+    = (class expand_loc_callback_data *) data;
   location_chain *loc, *next;
   rtx result = NULL;
   int first_child, result_first_child, last_child;
@@ -8469,8 +8469,8 @@ vt_expand_loc_callback (rtx x, bitmap regs,
 			int max_depth ATTRIBUTE_UNUSED,
 			void *data)
 {
-  struct expand_loc_callback_data *elcd
-    = (struct expand_loc_callback_data *) data;
+  class expand_loc_callback_data *elcd
+    = (class expand_loc_callback_data *) data;
   decl_or_value dv;
   variable *var;
   rtx result, subreg;
@@ -8627,7 +8627,7 @@ resolve_expansions_pending_recursion (vec<rtx, va_heap> *pending)
 static rtx
 vt_expand_loc (rtx loc, variable_table_type *vars)
 {
-  struct expand_loc_callback_data data;
+  class expand_loc_callback_data data;
   rtx result;
 
   if (!MAY_HAVE_DEBUG_BIND_INSNS)
@@ -8649,7 +8649,7 @@ vt_expand_loc (rtx loc, variable_table_type *vars)
 static rtx
 vt_expand_1pvar (variable *var, variable_table_type *vars)
 {
-  struct expand_loc_callback_data data;
+  class expand_loc_callback_data data;
   rtx loc;
 
   gcc_checking_assert (var->onepart && var->n_var_parts == 1);

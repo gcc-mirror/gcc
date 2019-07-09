@@ -23,8 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "line-map.h"
 
-extern GTY(()) struct line_maps *line_table;
-extern GTY(()) struct line_maps *saved_line_table;
+extern GTY(()) class line_maps *line_table;
+extern GTY(()) class line_maps *saved_line_table;
 
 /* A value which will never be used to represent a real location.  */
 #define UNKNOWN_LOCATION ((location_t) 0)

@@ -1275,7 +1275,7 @@ tree
 lookup_member_fuzzy (tree xbasetype, tree name, bool want_type_p)
 {
   tree type = NULL_TREE, basetype_path = NULL_TREE;
-  struct lookup_field_fuzzy_info lffi (want_type_p);
+  class lookup_field_fuzzy_info lffi (want_type_p);
 
   /* rval_binfo is the binfo associated with the found member, note,
      this can be set with useful information, even when rval is not

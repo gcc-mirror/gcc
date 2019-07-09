@@ -224,8 +224,8 @@ edge
 single_def_use_dom_walker::before_dom_children (basic_block bb)
 {
   int bb_index = bb->index;
-  struct df_md_bb_info *md_bb_info = df_md_get_bb_info (bb_index);
-  struct df_lr_bb_info *lr_bb_info = df_lr_get_bb_info (bb_index);
+  class df_md_bb_info *md_bb_info = df_md_get_bb_info (bb_index);
+  class df_lr_bb_info *lr_bb_info = df_lr_get_bb_info (bb_index);
   rtx_insn *insn;
 
   bitmap_copy (local_md, &md_bb_info->in);

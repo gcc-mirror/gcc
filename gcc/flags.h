@@ -56,9 +56,9 @@ public:
   enum excess_precision x_flag_excess_precision;
 };
 
-extern struct target_flag_state default_target_flag_state;
+extern class target_flag_state default_target_flag_state;
 #if SWITCHABLE_TARGET
-extern struct target_flag_state *this_target_flag_state;
+extern class target_flag_state *this_target_flag_state;
 #else
 #define this_target_flag_state (&default_target_flag_state)
 #endif
