@@ -1,3 +1,8 @@
+2019-07-09  John Darrington  <john@darrington.wattle.id.au>
+
+	* simplify-rtx.c (simplify_unary_operation_1): Use GET_MODE_PRECISION
+	rather than GET_MODE_BITSIZE to better handle partial integer modes.
+
 2019-07-09  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000-internal.h (create_TOC_reference): Delete.
