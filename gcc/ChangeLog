@@ -1,3 +1,8 @@
+2019-07-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Add link from -fprofile-dir option.
+	Use better wording for 'gcno filename'.
+
 2019-07-08  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/71924

@@ -12376,7 +12376,7 @@ profile data file appears in the same directory as the object file.
 In order to prevent the file name clashing, if the object file name is
 not an absolute path, we mangle the absolute path of the
 @file{@var{sourcename}.gcda} file and use it as the file name of a
-@file{.gcda} file.
+@file{.gcda} file.  See similar option @option{-fprofile-note}.
 
 When an executable is run in a massive parallel environment, it is recommended
 to save profile to different folders.  That can be done with variables
@@ -12414,7 +12414,9 @@ To optimize the program based on the collected profile information, use
 @item -fprofile-note=@var{path}
 @opindex fprofile-note
 
-If @var{path} is specified, GCC saves gcno filename into @var{path} location.
+If @var{path} is specified, GCC saves @file{.gcno} file into @var{path}
+location.  If you combine the option with multiple source files,
+the @file{.gcno} file will be overwritten.
 
 @item -fprofile-update=@var{method}
 @opindex fprofile-update
