@@ -5067,9 +5067,15 @@ package body Exp_Util is
       --  may be constants that depend on the bounds of a string literal, both
       --  standard string types and more generally arrays of characters.
 
-      --  In GNATprove mode, these extra subtypes are not needed
+      --  In GNATprove mode, these extra subtypes are not needed, unless Exp is
+      --  a static expression. In that case, the subtype will be constrained
+      --  while the original type might be unconstrained, so expanding the type
+      --  is necessary both for passing legality checks in GNAT and for precise
+      --  analysis in GNATprove.
 
-      if GNATprove_Mode then
+      if GNATprove_Mode
+        and then not Is_Static_Expression (Exp)
+      then
          return;
       end if;
 
