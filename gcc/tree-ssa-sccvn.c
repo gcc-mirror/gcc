@@ -1968,21 +1968,25 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert)
        RCODE (OPS...).
      So first simplify and lookup this expression to see if it
      is already available.  */
-  mprts_hook = vn_lookup_simplify_result;
+  /* For simplification valueize.  */
+  unsigned i;
+  for (i = 0; i < res_op->num_ops; ++i)
+    if (TREE_CODE (res_op->ops[i]) == SSA_NAME)
+      {
+	tree tem = vn_valueize (res_op->ops[i]);
+	if (!tem)
+	  break;
+	res_op->ops[i] = tem;
+      }
+  /* If valueization of an operand fails (it is not available), skip
+     simplification.  */
   bool res = false;
-  switch (TREE_CODE_LENGTH ((tree_code) res_op->code))
+  if (i == res_op->num_ops)
     {
-    case 1:
-      res = gimple_resimplify1 (NULL, res_op, vn_valueize);
-      break;
-    case 2:
-      res = gimple_resimplify2 (NULL, res_op, vn_valueize);
-      break;
-    case 3:
-      res = gimple_resimplify3 (NULL, res_op, vn_valueize);
-      break;
+      mprts_hook = vn_lookup_simplify_result;
+      res = res_op->resimplify (NULL, vn_valueize);
+      mprts_hook = NULL;
     }
-  mprts_hook = NULL;
   gimple *new_stmt = NULL;
   if (res
       && gimple_simplified_result_is_gimple_val (res_op))

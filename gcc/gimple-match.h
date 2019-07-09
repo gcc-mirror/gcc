@@ -105,6 +105,8 @@ struct gimple_match_op
 
   tree op_or_null (unsigned int) const;
 
+  bool resimplify (gimple_seq *, tree (*)(tree));
+
   /* The maximum value of NUM_OPS.  */
   static const unsigned int MAX_NUM_OPS = 5;
 
@@ -331,11 +333,6 @@ extern tree (*mprts_hook) (gimple_match_op *);
 
 bool gimple_simplify (gimple *, gimple_match_op *, gimple_seq *,
 		      tree (*)(tree), tree (*)(tree));
-bool gimple_resimplify1 (gimple_seq *, gimple_match_op *, tree (*)(tree));
-bool gimple_resimplify2 (gimple_seq *, gimple_match_op *, tree (*)(tree));
-bool gimple_resimplify3 (gimple_seq *, gimple_match_op *, tree (*)(tree));
-bool gimple_resimplify4 (gimple_seq *, gimple_match_op *, tree (*)(tree));
-bool gimple_resimplify5 (gimple_seq *, gimple_match_op *, tree (*)(tree));
 tree maybe_push_res_to_seq (gimple_match_op *, gimple_seq *,
 			    tree res = NULL_TREE);
 void maybe_build_generic_op (gimple_match_op *);
