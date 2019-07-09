@@ -1,3 +1,10 @@
+2019-07-09  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* gcc.target/aarch64/crypto-fuse-1.c: Remove.
+	* gcc.target/aarch64/crypto-fuse-2.c: Remove.
+	* gcc.target/aarch64/aes-fuse-1.c: New testcase.
+	* gcc.target/aarch64/aes-fuse-2.c: New testcase.
+
 2019-07-09  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/cmse/bitfield-1.c: Fix address of .gnu.sgstubs
