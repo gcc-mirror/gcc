@@ -1406,41 +1406,6 @@ uses_TOC (void)
 }
 #endif
 
-rtx
-create_TOC_reference (rtx symbol, rtx largetoc_reg)
-{
-  rtx tocrel, tocreg, hi;
-
-  if (TARGET_DEBUG_ADDR)
-    {
-      if (SYMBOL_REF_P (symbol))
-	fprintf (stderr, "\ncreate_TOC_reference, (symbol_ref %s)\n",
-		 XSTR (symbol, 0));
-      else
-	{
-	  fprintf (stderr, "\ncreate_TOC_reference, code %s:\n",
-		   GET_RTX_NAME (GET_CODE (symbol)));
-	  debug_rtx (symbol);
-	}
-    }
-
-  if (!can_create_pseudo_p ())
-    df_set_regs_ever_live (TOC_REGISTER, true);
-
-  tocreg = gen_rtx_REG (Pmode, TOC_REGISTER);
-  tocrel = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, symbol, tocreg), UNSPEC_TOCREL);
-  if (TARGET_CMODEL == CMODEL_SMALL || can_create_pseudo_p ())
-    return tocrel;
-
-  hi = gen_rtx_HIGH (Pmode, copy_rtx (tocrel));
-  if (largetoc_reg != NULL)
-    {
-      emit_move_insn (largetoc_reg, hi);
-      hi = largetoc_reg;
-    }
-  return gen_rtx_LO_SUM (Pmode, hi, tocrel);
-}
-
 /* Issue assembly directives that create a reference to the given DWARF
    FRAME_TABLE_LABEL from the current function section.  */
 void

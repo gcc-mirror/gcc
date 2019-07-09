@@ -92,7 +92,6 @@ extern void rs6000_emit_prologue_components (sbitmap components);
 extern void rs6000_emit_epilogue_components (sbitmap components);
 extern void rs6000_set_handled_components (sbitmap components);
 extern rs6000_stack_t * rs6000_stack_info (void);
-extern rtx create_TOC_reference (rtx symbol, rtx largetoc_reg);
 extern rtx rs6000_got_sym (void);
 extern struct machine_function *rs6000_init_machine_status (void);
 extern bool save_reg_p (int reg);
