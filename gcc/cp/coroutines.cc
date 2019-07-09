@@ -499,14 +499,6 @@ finish_co_yield_expr (location_t kw, tree expr)
 					    "co_yield"))
     return error_mark_node;
 
-  /* We must be able to look up the "yield_value" method in the scope of
-     the promise type, and obtain it's return type.  */
-  if (!coro_promise_type_found_p (current_function_decl, kw))
-    return error_mark_node;
-
-  /* The current function has now become a coroutine, if it wasn't already.  */
-  DECL_COROUTINE_P (current_function_decl) = 1;
-
   /* Belt and braces, we should never get here, the expression should be
      required in the parser. */
   if (expr == NULL_TREE)
@@ -514,6 +506,28 @@ finish_co_yield_expr (location_t kw, tree expr)
       error_at (kw, "%<co_yield%> requires an expression." );
       return error_mark_node;
     }
+
+  if (error_operand_p (expr))
+    return error_mark_node;
+
+  /* The current function has now become a coroutine, if it wasn't already.  */
+  DECL_COROUTINE_P (current_function_decl) = 1;
+
+  if (processing_template_decl)
+    {
+      if (check_for_bare_parameter_packs (expr))
+	return error_mark_node;
+
+      tree functype = TREE_TYPE (TREE_TYPE (current_function_decl));
+      /* If we don't know the promise type, we can't proceed.  */
+      if (dependent_type_p (functype) || type_dependent_expression_p (expr))
+	return build2_loc (kw, CO_YIELD_EXPR, NULL_TREE, expr, NULL_TREE);
+    }
+
+  if (! coro_promise_type_found_p (current_function_decl, kw))
+    /* We must be able to look up the "yield_value" method in the scope of
+       the promise type, and obtain its return type.  */
+    return error_mark_node;
 
   /* The incoming expr is "e" per 8.21 §1, lookup and build a call for
      p.yield_value(e).  */
@@ -534,13 +548,13 @@ finish_co_yield_expr (location_t kw, tree expr)
   /* So now we have the type of p.yield_value (e).
      Now we want to build co_await p.yield_value (e).
      Noting that for co_yield, there is no evaluation of any potential
-     promise transform_await().  The trailing '1' is a flag that notes this
-     co_await resulted from a co_yield.   */
+     promise transform_await().  The trailing '1' is a flag that notes
+     this co_await resulted from a co_yield.   */
 
   tree op = build_co_await (kw, yield_call, integer_one_node);
-  op = build2 (CO_YIELD_EXPR, TREE_TYPE (op), expr, op);
+
+  op = build2_loc (kw, CO_YIELD_EXPR, TREE_TYPE (op), expr, op);
   TREE_SIDE_EFFECTS (op) = 1;
-  SET_EXPR_LOCATION (op, kw);
 
   return op;
 }

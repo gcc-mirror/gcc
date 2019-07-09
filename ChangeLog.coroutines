@@ -1,6 +1,16 @@
 2019-07-09  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (finish_co_yield_expr): Return early with the original
+	expression when we have incomplete promise type.
+	* pt.c (tsubst_expr): Handle CO_YIELD_EXPR.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/co-yield-3-tmpl.C: New test.
+
+2019-07-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (finish_co_return_stmt): Return early with the original
 	expression when we have incomplete promise type.
 	* pt.c (tsubst_expr): Handle CO_RETRN_EXPR.
