@@ -26,6 +26,7 @@
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
+with Exp_Attr;
 with Exp_Ch4;
 with Exp_Ch5;  use Exp_Ch5;
 with Exp_Dbug; use Exp_Dbug;
@@ -195,6 +196,12 @@ package body Exp_SPARK is
                New_Occurrence_Of (RTE (RE_To_Address), Loc),
              Parameter_Associations => New_List (Expr)));
          Analyze_And_Resolve (N, Typ);
+
+      --  Whenever possible, replace a prefix which is an enumeration literal
+      --  by the corresponding literal value.
+
+      elsif Attr_Id = Attribute_Enum_Rep then
+         Exp_Attr.Expand_N_Attribute_Reference (N);
 
       --  For attributes which return Universal_Integer, introduce a conversion
       --  to the expected type with the appropriate check flags set.
