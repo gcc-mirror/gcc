@@ -4281,7 +4281,15 @@ package body Sem_Eval is
          return Ent;
       else
          pragma Assert (Ekind (Ent) = E_Constant);
-         return Expr_Value_E (Constant_Value (Ent));
+
+         --  We may be dealing with a enumerated character type constant, so
+         --  handle that case here.
+
+         if Nkind (Constant_Value (Ent)) = N_Character_Literal then
+            return Ent;
+         else
+            return Expr_Value_E (Constant_Value (Ent));
+         end if;
       end if;
    end Expr_Value_E;
 
