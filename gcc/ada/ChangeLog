@@ -1,5 +1,9 @@
 2019-07-09  Yannick Moy  <moy@adacore.com>
 
+	* sinfo.ads: Refine comment for Do_Range_Check.
+
+2019-07-09  Yannick Moy  <moy@adacore.com>
+
 	* exp_spark.adb (Expand_SPARK_N_Attribute_Reference): Expand
 	attribute reference on Enum_Rep.
 
