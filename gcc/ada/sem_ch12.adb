@@ -6657,9 +6657,11 @@ package body Sem_Ch12 is
                Formal_Decl := Parent (Associated_Formal_Package (E));
 
                --  Nothing to check if the formal has a box or an others_clause
-               --  (necessarily with a box).
+               --  (necessarily with a box), or no associations altogether
 
-               if Box_Present (Formal_Decl) then
+               if Box_Present (Formal_Decl)
+                 or else No (Generic_Associations (Formal_Decl))
+               then
                   null;
 
                elsif Nkind (First (Generic_Associations (Formal_Decl))) =
@@ -10309,8 +10311,11 @@ package body Sem_Ch12 is
    begin
       Analyze (Actual);
 
+      --  The actual must be a package instance, or else a current instance
+      --  such as a parent generic within the body of a generic child.
+
       if not Is_Entity_Name (Actual)
-        or else Ekind (Entity (Actual)) /= E_Package
+        or else not Ekind_In (Entity (Actual), E_Package, E_Generic_Package)
       then
          Error_Msg_N
            ("expect package instance to instantiate formal", Actual);
@@ -10351,6 +10356,14 @@ package body Sem_Ch12 is
 
          elsif
            Is_Instance_Of (Parent_Spec, Get_Instance_Of (Gen_Parent))
+         then
+            null;
+
+         --  If this is the current instance of an enclosing generic, that
+         --  unit is the generic package we need.
+
+         elsif In_Open_Scopes (Actual_Pack)
+           and then Ekind (Actual_Pack) = E_Generic_Package
          then
             null;
 
@@ -10487,6 +10500,17 @@ package body Sem_Ch12 is
 
                Next_Entity (Actual_Ent);
             end loop;
+
+            --  No conformance to check if the generic has no formal parameters
+            --  and the formal package has no generic associations.
+
+            if Is_Empty_List (Formals)
+              and then
+                (Box_Present (Formal)
+                   or else No (Generic_Associations (Formal)))
+            then
+               return Decls;
+            end if;
          end;
 
          --  If the formal is not declared with a box, reanalyze it as an
