@@ -1,3 +1,9 @@
+2019-07-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91114
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Failure to
+	find a vector type isn't fatal.
+
 2019-07-09  Sylvia Taylor  <sylvia.taylor@arm.com>
 
 	* config/aarch64/aarch64-simd.md
