@@ -377,14 +377,6 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       cpp_opts->deps.modules = false;
       break;
 
-    case OPT_user_search:
-      cpp_opts->main_search = 1;
-      break;
-
-    case OPT_system_search:
-      cpp_opts->main_search = 2;
-      break;
-
     case OPT_MQ:
     case OPT_MT:
       deps_seen = true;

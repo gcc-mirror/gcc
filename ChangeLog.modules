@@ -1,3 +1,16 @@
+2019-07-09  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/c-family/
+	* c-opts.c (c_common_handle_option): Remove {user,system}_search.
+	* c.opt ({user,system}-search): Delete.
+	(fmodule-header): Undeprecate.
+	gcc/cp/
+	* module.cc (module_state_config::get_opts): Drop
+	OPT_fmodule_header_.
+	(handle_module_option): Handle fmodule-header=.
+	gcc/
+	* gcc.c (cpp_unique_options): Drop {user,system}-search.
+
 2019-07-08  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/c-family/

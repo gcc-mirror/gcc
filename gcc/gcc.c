@@ -1122,7 +1122,6 @@ static const char *cpp_unique_options =
  %{MMD:-MMD %{!o:%b.d}%{o*:%.d%*}}\
  %{M} %{MM} %{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
  %{Mmodules} %{Mno-modules}\
- %{user-search} %{system-search}\
  %{!E:%{!M:%{!MM:%{!MT:%{!MQ:%{MD|MMD:%{o*:-MQ %*}}}}}}}\
  %{remap} %{g3|ggdb3|gstabs3|gxcoff3|gvms3:-dD}\
  %{!iplugindir*:%{fplugin*:%:find-plugindir()}}\

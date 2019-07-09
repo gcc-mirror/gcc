@@ -15720,6 +15720,7 @@ module_state_config::get_opts ()
       /* Drop module-related options we don't need to preserve.  */
       if (opt->opt_index == OPT_fmodule_lazy
 	  || opt->opt_index == OPT_fmodule_header
+	  || opt->opt_index == OPT_fmodule_header_
 	  || opt->opt_index == OPT_fforce_module_macros
 	  || opt->opt_index == OPT_fmodule_mapper_
 	  || opt->opt_index == OPT_fmodule_only
@@ -16406,8 +16407,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
      read_config.  */
   gcc_assert (!from ()->is_frozen ());
 
-  /* Look away.  Look away now.  */
-  extern cpp_options *cpp_opts;
+  cpp_options *cpp_opts = cpp_get_options (reader);
   if (config.num_macros && !cpp_opts->preprocessed)
     if (!read_macros ())
       return NULL;
@@ -17929,6 +17929,19 @@ handle_module_option (unsigned code, const char *str, int)
     case OPT_fmodule_mapper_:
       module_mapper_name = str;
       return true;
+
+    case OPT_fmodule_header_:
+      {
+	/* Look away.  Look away now.  */
+	extern cpp_options *cpp_opts;
+	if (!strcmp (str, "user"))
+	  cpp_opts->main_search = 1;
+	else if (!strcmp (str, "system"))
+	  cpp_opts->main_search = 2;
+	else
+	  error ("unknown header kind %qs", str);
+      }
+      /* Fallthrough.  */
 
     case OPT_fmodule_header:
       flag_header_unit = 1;

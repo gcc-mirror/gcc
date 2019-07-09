@@ -147,12 +147,6 @@ C ObjC C++ ObjC++ Undocumented Alias(E)
 -print-missing-file-dependencies
 C ObjC C++ ObjC++ Alias(MG)
 
-user-search
-C++
-
-system-search
-C++
-
 -trace-includes
 C ObjC C++ ObjC++ Alias(H)
 
@@ -1608,7 +1602,7 @@ C++ ObjC RejectNegative Var(flag_header_unit,0) Integer
 Enable C++ header module (experimental).
 
 fmodule-header=
-C++ ObjC++ Joined RejectNegative Undocumented Deprecated
+C++ ObjC++ Joined RejectNegative Undocumented
 
 fmodule-only
 C++ ObjC RejectNegative Var(flag_module_only) Integer
