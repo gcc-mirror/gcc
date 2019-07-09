@@ -320,7 +320,7 @@ package Einfo is
 --  an attempt to set the attribute on a subtype will raise an assert error.
 
 --  Other attributes are noted as applying to the [implementation base type
---  only].  These are representation attributes which must always apply to a
+--  only]. These are representation attributes which must always apply to a
 --  full non-private type, and where the attributes are always on the full
 --  type. The attribute can be referenced on a subtype (and automatically
 --  retrieves the value from the implementation base type). However, it is an

@@ -3203,7 +3203,7 @@ package body Exp_Ch6 is
                            --  ???
 
                            --  A further case that requires special handling
-                           --  is the common idiom E.all'access.  If E is a
+                           --  is the common idiom E.all'access. If E is a
                            --  formal of the enclosing subprogram, the
                            --  accessibility of the expression is that of E.
 
@@ -8525,7 +8525,7 @@ package body Exp_Ch6 is
          --  The presence of an address clause complicates the build-in-place
          --  expansion because the indicated address must be processed before
          --  the indirect call is generated (including the definition of a
-         --  local pointer to the object).  The address clause may come from
+         --  local pointer to the object). The address clause may come from
          --  an aspect specification or from an explicit attribute
          --  specification appearing after the object declaration. These two
          --  cases require different processing.

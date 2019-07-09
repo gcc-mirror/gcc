@@ -3919,7 +3919,7 @@ package body Exp_Ch5 is
    --      --  Default_Iterator aspect of Vector. This increments Lock,
    --      --  disallowing tampering with cursors. Unfortunately, it does not
    --      --  increment Busy. The result of Iterate is Limited_Controlled;
-   --      --  finalization will decrement Lock.  This is a build-in-place
+   --      --  finalization will decrement Lock. This is a build-in-place
    --      --  dispatching call to Iterate.
 
    --      Cur : Cursor := First (Iter); -- or Last

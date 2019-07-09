@@ -115,7 +115,7 @@ package body Sem_Dim is
 
    type Symbol_Array is
      array (Dimension_Position range
-              Low_Position_Bound ..  High_Position_Bound) of String_Id;
+              Low_Position_Bound .. High_Position_Bound) of String_Id;
    --  Store the symbols of all units within a system
 
    No_Symbols : constant Symbol_Array := (others => No_String);
@@ -151,7 +151,7 @@ package body Sem_Dim is
 
    type Dimension_Type is
      array (Dimension_Position range
-              Low_Position_Bound ..  High_Position_Bound) of Rational;
+              Low_Position_Bound .. High_Position_Bound) of Rational;
 
    Null_Dimension : constant Dimension_Type := (others => Zero);
 
@@ -2906,7 +2906,7 @@ package body Sem_Dim is
          New_Aspects  := Empty_List;
 
          List_Of_Dims := New_List;
-         for Position in Dims_Of_N'First ..  System.Count loop
+         for Position in Dims_Of_N'First .. System.Count loop
             Dim_Power := Dims_Of_N (Position);
             Append_To (List_Of_Dims,
                Make_Op_Divide (Loc,
@@ -3023,7 +3023,7 @@ package body Sem_Dim is
    --  System.Dim.Float_IO or System.Dim.Integer_IO, the default string
    --  parameter is rewritten to include the unit symbol (or the dimension
    --  symbols if not a defined quantity) in the output of a dimensioned
-   --  object.  If a value is already supplied by the user for the parameter
+   --  object. If a value is already supplied by the user for the parameter
    --  Symbol, it is used as is.
 
    --  Case 1. Item is dimensionless

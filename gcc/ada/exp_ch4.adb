@@ -7404,7 +7404,7 @@ package body Exp_Ch4 is
                --     Obj1 : Enclosing_Non_UU_Type;
                --     Obj2 : Enclosing_Non_UU_Type (1);
 
-               --     ...  Obj1 = Obj2 ...
+               --     ... Obj1 = Obj2 ...
 
                --     Generated code:
 

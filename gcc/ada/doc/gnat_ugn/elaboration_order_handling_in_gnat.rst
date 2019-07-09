@@ -184,7 +184,7 @@ factors:
 
 * preelaborability of units
 
-* presence of elaboration control pragmas
+* presence of elaboration-control pragmas
 
 * invocations performed in elaboration code
 
@@ -255,7 +255,7 @@ successfully elaborated.
 Ada states that a total elaboration order must exist, but it does not define
 what this order is. A compiler is thus tasked with choosing a suitable
 elaboration order which satisfies the dependencies imposed by |with| clauses,
-unit categorization, elaboration control pragmas, and invocations performed in
+unit categorization, elaboration-control pragmas, and invocations performed in
 elaboration code. Ideally an order that avoids ABE problems should be chosen,
 however a compiler may not always find such an order due to complications with
 respect to control and data flow.
@@ -265,7 +265,7 @@ respect to control and data flow.
 Checking the Elaboration Order
 ==============================
 
-To avoid placing the entire elaboration order burden on the programmer, Ada 
+To avoid placing the entire elaboration-order burden on the programmer, Ada 
 provides three lines of defense:
 
 * *Static semantics*
@@ -545,7 +545,7 @@ depend on.
   be elaborated prior to ``Client``.
 
   Removing pragma ``Elaborate_All`` could result in the following incorrect
-  elaboration order
+  elaboration order:
 
   ::
 
@@ -617,7 +617,7 @@ elaboration order and to diagnose elaboration problems.
   - All code within all units in a partition is considered to be elaboration
     code.
 
-  - Some of the invocations in elaboration code may not take place at runtime
+  - Some of the invocations in elaboration code may not take place at run time
     due to conditional execution.
 
   GNAT performs extensive diagnostics on a unit-by-unit basis for all scenarios
@@ -625,11 +625,11 @@ elaboration order and to diagnose elaboration problems.
   all external targets and for all scenarios that may exhibit ABE problems.
 
   The elaboration order is obtained by honoring all |with| clauses, purity and
-  preelaborability of units, and elaboration control pragmas. The dynamic model
+  preelaborability of units, and elaboration-control pragmas. The dynamic model
   attempts to take all invocations in elaboration code into account. If an
   invocation leads to a circularity, GNAT ignores the invocation based on the
   assumptions stated above. An order obtained using the dynamic model may fail
-  an ABE check at runtime when GNAT ignored an invocation.
+  an ABE check at run time when GNAT ignored an invocation.
 
   The dynamic model is enabled with compiler switch :switch:`-gnatE`.
 
@@ -643,7 +643,7 @@ elaboration order and to diagnose elaboration problems.
   - Only code at the library level and in package body statements within all
     units in a partition is considered to be elaboration code.
 
-  - All invocations in elaboration will take place at runtime, regardless of
+  - All invocations in elaboration will take place at run time, regardless of
     conditional execution.
 
   GNAT performs extensive diagnostics on a unit-by-unit basis for all scenarios
@@ -651,7 +651,7 @@ elaboration order and to diagnose elaboration problems.
   all external targets and for all scenarios that may exhibit ABE problems.
 
   The elaboration order is obtained by honoring all |with| clauses, purity and
-  preelaborability of units, presence of elaboration control pragmas, and all
+  preelaborability of units, presence of elaboration-control pragmas, and all
   invocations in elaboration code. An order obtained using the static model is
   guaranteed to be ABE problem-free, excluding dispatching calls and
   access-to-subprogram types.
@@ -846,9 +846,9 @@ Elaboration Circularities
 An **elaboration circularity** occurs whenever the elaboration of a set of
 units enters a deadlocked state, where each unit is waiting for another unit
 to be elaborated. This situation may be the result of improper use of |with|
-clauses, elaboration control pragmas, or invocations in elaboration code.
+clauses, elaboration-control pragmas, or invocations in elaboration code.
 
-The following example showcases an elaboration circularity.
+The following example exhibits an elaboration circularity.
 
   ::
 
@@ -941,7 +941,7 @@ too much modification, especially in the case of complex legacy code.
 When faced with an elaboration circularity, the programmer should also consider
 the tactics given in the suggestions section of the circularity diagnostic.
 Depending on the units involved in the circularity, their |with| clauses,
-purity, preelaborability, presence of elaboration control pragmas and
+purity, preelaborability, presence of elaboration-control pragmas and
 invocations at elaboration time, the binder may suggest one or more of the
 following tactics to eliminate the circularity:
 
@@ -951,8 +951,8 @@ following tactics to eliminate the circularity:
 
      remove pragma Elaborate for unit "..." in unit "..."
 
-  This tactic is suggested when the binder has determine that pragma
-  ``Elaborate``
+  This tactic is suggested when the binder has determined that pragma
+  ``Elaborate``:
 
   - Prevents a set of units from being elaborated.
 
@@ -971,7 +971,7 @@ following tactics to eliminate the circularity:
      remove pragma Elaborate_All for unit "..." in unit "..."
 
   This tactic is suggested when the binder has determined that pragma
-  ``Elaborate_All``
+  ``Elaborate_All``:
 
   - Prevents a set of units from being elaborated.
 
@@ -1002,7 +1002,7 @@ following tactics to eliminate the circularity:
      remove pragma Elaborate_Body in unit "..."
 
   This tactic is suggested when the binder has determined that pragma
-  ``Elaborate_Body``
+  ``Elaborate_Body``:
 
   - Prevents a set of units from being elaborated.
 
@@ -1021,7 +1021,7 @@ following tactics to eliminate the circularity:
      use pragma Restrictions (No_Entry_Calls_In_Elaboration_Code)
 
   This tactic is suggested when the binder has determined that a task
-  activation at elaboration time
+  activation at elaboration time:
 
   - Prevents a set of units from being elaborated.
 
@@ -1038,7 +1038,7 @@ following tactics to eliminate the circularity:
      use the dynamic elaboration model (compiler switch -gnatE)
 
   This tactic is suggested when the binder has determined that an invocation at
-  elaboration time
+  elaboration time:
 
   - Prevents a set of units from being elaborated.
 
@@ -1070,43 +1070,43 @@ following tactics to eliminate the circularity:
   The programmer should analyze this information to determine which units
   should be compiled with the dynamic model.
 
-* Forced dependency elimination
+* Forced-dependency elimination
 
   ::
 
      remove the dependency of unit "..." on unit "..." from the argument of switch -f
 
   This tactic is suggested when the binder has determined that a dependency
-  present in the forced delboration order file indicated by binder switch
-  :switch:`-f`
+  present in the forced-elaboration-order file indicated by binder switch
+  :switch:`-f`:
 
   - Prevents a set of units from being elaborated.
 
   - The removal of the dependency will enable the successful ordering of the
     units.
 
-  The programmer should edit the forced elaboration order file, remove the
+  The programmer should edit the forced-elaboration-order file, remove the
   dependency, and rebind the program.
 
-* All forced dependency elimination
+* All forced-dependency elimination
 
   ::
 
      remove switch -f
 
-  This tactic is suggested in case editing the forced elaboration order file is
+  This tactic is suggested in case editing the forced-elaboration-order file is
   not an option.
 
   The programmer should remove binder switch :switch:`-f` from the binder
   arguments, and rebind.
 
-* Multiple circularities diagnostic
+* Multiple-circularities diagnostic
 
   ::
 
      diagnose all circularities (binder switch -d_C)
 
-  By default, the binder will diagnose only the highest precedence circularity.
+  By default, the binder will diagnose only the highest-precedence circularity.
   If the program contains multiple circularities, the binder will suggest the
   use of binder switch :switch:`-d_C` in order to obtain the diagnostics of all
   circularities.
@@ -1118,16 +1118,16 @@ If none of the tactics suggested by the binder eliminate the elaboration
 circularity, the programmer should consider using one of the legacy elaboration
 models, in the following order:
 
-* Use the pre-20.x legacy elaboration order model, with binder switch
+* Use the pre-20.x legacy elaboration-order model, with binder switch
   :switch:`-H`.
 
 * Use both pre-18.x and pre-20.x legacy elaboration models, with compiler
   switch :switch:`-gnatH` and binder switch :switch:`-H`.
 
-* Use the relaxed static elaboration model, with compiler switches
+* Use the relaxed static-elaboration model, with compiler switches
   :switch:`-gnatH` :switch:`-gnatJ` and binder switch :switch:`-H`.
 
-* Use the relaxed dynamic elaboration model, with compiler switches
+* Use the relaxed dynamic-elaboration model, with compiler switches
   :switch:`-gnatH` :switch:`-gnatJ` :switch:`-gnatE` and binder switch
   :switch:`-H`.
 
@@ -1304,7 +1304,7 @@ options:
 * If none of the steps outlined above resolve the circularity, use a more
   permissive elaboration model, in the following order:
 
-  - Use the pre-20.x legacy elaboration order model, with binder switch
+  - Use the pre-20.x legacy elaboration-order model, with binder switch
     :switch:`-H`.
 
   - Use both pre-18.x and pre-20.x legacy elaboration models, with compiler
