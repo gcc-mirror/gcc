@@ -4531,8 +4531,9 @@ Some of the known limitations include:
 * identifiers with identical name (except casing) will generate compilation
   errors (e.g. ``shm_get`` vs ``SHM_GET``).
 
-The code generated is using the Ada 2005 syntax, which makes it
-easier to interface with other languages than previous versions of Ada.
+The code is generated using Ada 2012 syntax, which makes it easier to interface
+with other languages. In most cases you can still use the generated binding
+even if your code is compiled using earlier versions of Ada (e.g. ``-gnat95``).
 
 .. _Running_the_binding_generator:
 
@@ -4547,7 +4548,7 @@ header files needed by these files transitively. For example:
 .. code-block:: sh
 
       $ g++ -c -fdump-ada-spec -C /usr/include/time.h
-      $ gcc -c -gnat05 *.ads
+      $ gcc -c *.ads
 
 will generate, under GNU/Linux, the following files: :file:`time_h.ads`,
 :file:`bits_time_h.ads`, :file:`stddef_h.ads`, :file:`bits_types_h.ads` which

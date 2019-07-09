@@ -1,3 +1,9 @@
+2019-07-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_ugn/the_gnat_compilation_model.rst: Update doc on
+	-fdump-ada-spec now that we generate Ada 2012.
+	* gnat_ugn.texi: Regenerate.
+
 2019-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.adb (List_Common_Type_Info): New procedure extracted
