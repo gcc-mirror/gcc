@@ -1,3 +1,8 @@
+2019-07-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/predicate10.adb, gnat.dg/predicate10_pkg.adb,
+	gnat.dg/predicate10_pkg.ads: New testcase.
+
 2019-07-09  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/image1.adb: New testcase.
