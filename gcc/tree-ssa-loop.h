@@ -36,8 +36,9 @@ struct affine_iv
    the structure can be evaluated at the end of the loop's preheader
    (and due to ssa form, also anywhere inside the body of the loop).  */
 
-struct tree_niter_desc
+class tree_niter_desc
 {
+public:
   tree assumptions;	/* The boolean expression.  If this expression evaluates
 			   to false, then the other fields in this structure
 			   should not be used; there is no guarantee that they

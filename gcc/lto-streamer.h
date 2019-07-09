@@ -735,8 +735,9 @@ struct output_block
 
 
 /* Data and descriptors used when reading from an LTO file.  */
-struct data_in
+class data_in
 {
+public:
   /* The global decls and types.  */
   struct lto_file_decl_data *file_data;
 

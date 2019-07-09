@@ -143,8 +143,9 @@ static struct operand_data **odata_end = &null_operand.next;
 /* Record in this chain all information that we will output,
    associated with the code number of the insn.  */
 
-struct data
+class data
 {
+public:
   struct data *next;
   const char *name;
   const char *template_code;
@@ -179,8 +180,9 @@ static void process_template (struct data *, const char *);
 static void validate_insn_alternatives (struct data *);
 static void validate_insn_operands (struct data *);
 
-struct constraint_data
+class constraint_data
 {
+public:
   struct constraint_data *next_this_letter;
   file_location loc;
   unsigned int namelen;

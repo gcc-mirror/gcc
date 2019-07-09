@@ -428,8 +428,9 @@ get_or_alloc_expr_for_name (tree name)
 
 /* An unordered bitmap set.  One bitmap tracks values, the other,
    expressions.  */
-typedef struct bitmap_set
+typedef class bitmap_set
 {
+public:
   bitmap_head expressions;
   bitmap_head values;
 } *bitmap_set_t;

@@ -597,8 +597,9 @@ extern int ira_copies_num;
 
 /* The following structure describes a stack slot used for spilled
    pseudo-registers.  */
-struct ira_spilled_reg_stack_slot
+class ira_spilled_reg_stack_slot
 {
+public:
   /* pseudo-registers assigned to the stack slot.  */
   bitmap_head spilled_regs;
   /* RTL representation of the stack slot.  */
@@ -774,7 +775,8 @@ minmax_set_iter_next (minmax_set_iterator *i)
        minmax_set_iter_cond (&(ITER), &(N));			\
        minmax_set_iter_next (&(ITER)))
 
-struct target_ira_int {
+class target_ira_int {
+public:
   ~target_ira_int ();
 
   void free_ira_costs ();

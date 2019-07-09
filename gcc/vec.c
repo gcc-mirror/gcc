@@ -49,8 +49,9 @@ along with GCC; see the file COPYING3.  If not see
 vnull vNULL;
 
 /* Vector memory usage.  */
-struct vec_usage: public mem_usage
+class vec_usage: public mem_usage
 {
+public:
   /* Default constructor.  */
   vec_usage (): m_items (0), m_items_peak (0), m_element_size (0) {}
 

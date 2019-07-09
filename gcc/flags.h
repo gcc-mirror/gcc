@@ -42,8 +42,9 @@ extern bool final_insns_dump_p;
 
 /* Other basic status info about current function.  */
 
-struct target_flag_state
+class target_flag_state
 {
+public:
   /* Each falign-foo can generate up to two levels of alignment:
      -falign-foo=N:M[:N2:M2] */
   align_flags x_align_loops;

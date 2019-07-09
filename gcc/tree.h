@@ -5984,8 +5984,9 @@ desired_pro_or_demotion_p (const_tree to_type, const_tree from_type)
 
 /* Pointer type used to declare builtins before we have seen its real
    declaration.  */
-struct builtin_structptr_type
+class builtin_structptr_type
 {
+public:
   tree& node;
   tree& base;
   const char *str;
@@ -6069,8 +6070,9 @@ fndecl_built_in_p (const_tree node, built_in_function name)
 
    where it is not.  */
 
-struct op_location_t
+class op_location_t
 {
+public:
   location_t m_operator_loc;
   location_t m_combined_loc;
 

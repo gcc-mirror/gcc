@@ -12032,8 +12032,9 @@ tsubst_binary_right_fold (tree t, tree args, tsubst_flags_t complain,
 /* Walk through the pattern of a pack expansion, adding everything in
    local_specializations to a list.  */
 
-struct el_data
+class el_data
 {
+public:
   hash_set<tree> internal;
   tree extra;
   tsubst_flags_t complain;

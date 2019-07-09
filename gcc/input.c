@@ -32,11 +32,13 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This is a cache used by get_next_line to store the content of a
    file to be searched for file lines.  */
-struct fcache
+class fcache
 {
+public:
   /* These are information used to store a line boundary.  */
-  struct line_info
+  class line_info
   {
+  public:
     /* The line number.  It starts from 1.  */
     size_t line_num;
 
@@ -1691,8 +1693,9 @@ assert_loceq (const char *exp_filename, int exp_linenum, int exp_colnum,
    The following struct describes a particular case within our test
    matrix.  */
 
-struct line_table_case
+class line_table_case
 {
+public:
   line_table_case (int default_range_bits, int base_location)
   : m_default_range_bits (default_range_bits),
     m_base_location (base_location)
@@ -2085,8 +2088,9 @@ class cpp_reader_ptr
 
 /* A struct for writing lexer tests.  */
 
-struct lexer_test
+class lexer_test
 {
+public:
   lexer_test (const line_table_case &case_, const char *content,
 	      lexer_test_options *options);
   ~lexer_test ();

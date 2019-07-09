@@ -367,8 +367,9 @@ class dump_user_location_t
 /* A class for identifying where in the compiler's own source
    (or a plugin) that a dump message is being emitted from.  */
 
-struct dump_impl_location_t
+class dump_impl_location_t
 {
+public:
   dump_impl_location_t (
 #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
 			const char *file = __builtin_FILE (),

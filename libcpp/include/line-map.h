@@ -770,7 +770,8 @@ struct GTY(()) location_adhoc_data_map {
 };
 
 /* A set of chronological line_map structures.  */
-struct GTY(()) line_maps {
+class GTY(()) line_maps {
+public:
 
   ~line_maps ();
   
@@ -1783,8 +1784,9 @@ protected:
    of localized text, and a flag to determine if the caller should "free" the
    buffer.  */
 
-struct label_text
+class label_text
 {
+public:
   label_text ()
   : m_buffer (NULL), m_caller_owned (false)
   {}

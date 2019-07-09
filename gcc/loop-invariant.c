@@ -58,8 +58,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* The data stored for the loop.  */
 
-struct loop_data
+class loop_data
 {
+public:
   struct loop *outermost_exit;	/* The outermost exit of the loop.  */
   bool has_call;		/* True if the loop contains a call.  */
   /* Maximal register pressure inside loop for given register class

@@ -29,7 +29,7 @@ along with this program; see the file COPYING3.  If not see
 
 /* Keep this structure local to this file, so clients don't find it
    easy to start making assumptions.  */
-struct mkdeps
+class mkdeps
 {
 public:
   /* T has trivial cctor & dtor.  */

@@ -133,8 +133,9 @@ static struct obstack *temp_obstack = &obstack2;
    `struct insn_def'.  This is done to allow attribute definitions to occur
    anywhere in the file.  */
 
-struct insn_def
+class insn_def
 {
+public:
   struct insn_def *next;	/* Next insn in chain.  */
   rtx def;			/* The DEFINE_...  */
   int insn_code;		/* Instruction number.  */
@@ -169,8 +170,9 @@ struct attr_value
 
 /* Structure for each attribute.  */
 
-struct attr_desc
+class attr_desc
 {
+public:
   char *name;			/* Name of attribute.  */
   const char *enum_name;	/* Enum name for DEFINE_ENUM_NAME.  */
   struct attr_desc *next;	/* Next attribute.  */
@@ -184,8 +186,9 @@ struct attr_desc
 
 /* Structure for each DEFINE_DELAY.  */
 
-struct delay_desc
+class delay_desc
 {
+public:
   rtx def;			/* DEFINE_DELAY expression.  */
   struct delay_desc *next;	/* Next DEFINE_DELAY.  */
   file_location loc;		/* Where in the .md files it occurs.  */

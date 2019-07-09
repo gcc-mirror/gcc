@@ -6213,8 +6213,9 @@ transformable_switch_to_sbr_p (gswitch *s)
 /* Structure hold connection between PHI nodes and immediate
    values hold by there nodes.  */
 
-struct phi_definition
+class phi_definition
 {
+public:
   phi_definition (unsigned phi_i, unsigned label_i, tree imm):
     phi_index (phi_i), label_index (label_i), phi_value (imm)
   {}

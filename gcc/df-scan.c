@@ -44,8 +44,9 @@ static HARD_REG_SET elim_reg_set;
 /* Initialize ur_in and ur_out as if all hard registers were partially
    available.  */
 
-struct df_collection_rec
+class df_collection_rec
 {
+public:
   auto_vec<df_ref, 128> def_vec;
   auto_vec<df_ref, 32> use_vec;
   auto_vec<df_ref, 32> eq_use_vec;

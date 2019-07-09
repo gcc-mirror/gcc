@@ -39,7 +39,8 @@ extern struct target_bb_reorder *this_target_bb_reorder;
 extern struct target_lower_subreg *this_target_lower_subreg;
 #endif
 
-struct GTY(()) target_globals {
+class GTY(()) target_globals {
+public:
   ~target_globals ();
 
   struct target_flag_state *GTY((skip)) flag_state;

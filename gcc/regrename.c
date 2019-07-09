@@ -547,8 +547,9 @@ struct incoming_reg_info {
    A pointer to such a structure is stored in each basic block's aux field
    during regrename_analyze, except for blocks we know can't be optimized
    (such as entry and exit blocks).  */
-struct bb_rename_info
+class bb_rename_info
 {
+public:
   /* The basic block corresponding to this structure.  */
   basic_block bb;
   /* Copies of the global information.  */

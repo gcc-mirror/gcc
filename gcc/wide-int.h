@@ -642,8 +642,9 @@ namespace wi
 {
   /* Contains the components of a decomposed integer for easy, direct
      access.  */
-  struct storage_ref
+  class storage_ref
   {
+  public:
     storage_ref () {}
     storage_ref (const HOST_WIDE_INT *, unsigned int, unsigned int);
 
@@ -968,7 +969,7 @@ decompose (HOST_WIDE_INT *, unsigned int precision,
    wide_int, with the optimization that VAL is normally a pointer to
    another integer's storage, so that no array copy is needed.  */
 template <bool SE, bool HDP>
-struct wide_int_ref_storage : public wi::storage_ref
+class wide_int_ref_storage : public wi::storage_ref
 {
 private:
   /* Scratch space that can be used when decomposing the original integer.
@@ -1357,7 +1358,7 @@ namespace wi
    bytes beyond the sizeof need to be allocated.  Use set_precision
    to initialize the structure.  */
 template <int N>
-class GTY((user)) trailing_wide_ints
+struct GTY((user)) trailing_wide_ints
 {
 private:
   /* The shared precision of each number.  */
@@ -1554,8 +1555,9 @@ namespace wi
 {
   /* Stores HWI-sized integer VAL, treating it as having signedness SGN
      and precision PRECISION.  */
-  struct hwi_with_prec
+  class hwi_with_prec
   {
+  public:
     hwi_with_prec () {}
     hwi_with_prec (HOST_WIDE_INT, unsigned int, signop);
     HOST_WIDE_INT val;

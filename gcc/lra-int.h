@@ -64,8 +64,9 @@ struct lra_copy
 };
 
 /* Common info about a register (pseudo or hard register).  */
-struct lra_reg
+class lra_reg
 {
+public:
   /* Bitmap of UIDs of insns (including debug insns) referring the
      reg.  */
   bitmap_head insn_bitmap;
@@ -210,8 +211,9 @@ struct lra_static_insn_data
 
 /* LRA internal info about an insn (LRA internal insn
    representation).  */
-struct lra_insn_recog_data
+class lra_insn_recog_data
 {
+public:
   /* The insn code.  */
   int icode;
   /* The alternative should be used for the insn, LRA_UNKNOWN_ALT if

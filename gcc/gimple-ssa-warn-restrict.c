@@ -124,8 +124,9 @@ pass_wrestrict::execute (function *fun)
 /* Description of a memory reference by a built-in function.  This
    is similar to ao_ref but made especially suitable for -Wrestrict
    and not for optimization.  */
-struct builtin_memref
+class builtin_memref
 {
+public:
   /* The original pointer argument to the built-in function.  */
   tree ptr;
   /* The referenced subobject or NULL if not available, and the base

@@ -666,8 +666,9 @@ write_one_predicate_function (struct pred_data *p)
    verify that there are no duplicate names.  */
 
 /* All data from one constraint definition.  */
-struct constraint_data
+class constraint_data
 {
+public:
   struct constraint_data *next_this_letter;
   struct constraint_data *next_textual;
   const char *name;

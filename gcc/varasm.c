@@ -2899,7 +2899,8 @@ assemble_real (REAL_VALUE_TYPE d, scalar_float_mode mode, unsigned int align,
    Store them both in the structure *VALUE.
    EXP must be reducible.  */
 
-struct addr_const {
+class addr_const {
+public:
   rtx base;
   poly_int64 offset;
 };
@@ -3621,7 +3622,8 @@ tree_output_constant_def (tree exp)
   return decl;
 }
 
-struct GTY((chain_next ("%h.next"), for_user)) constant_descriptor_rtx {
+class GTY((chain_next ("%h.next"), for_user)) constant_descriptor_rtx {
+public:
   struct constant_descriptor_rtx *next;
   rtx mem;
   rtx sym;

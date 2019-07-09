@@ -175,8 +175,9 @@ enum use_type
 };
 
 /* Cost of a computation.  */
-struct comp_cost
+class comp_cost
 {
+public:
   comp_cost (): cost (0), complexity (0), scratch (0)
   {}
 
@@ -352,8 +353,9 @@ operator<= (comp_cost cost1, comp_cost cost2)
 struct iv_inv_expr_ent;
 
 /* The candidate - cost pair.  */
-struct cost_pair
+class cost_pair
 {
+public:
   struct iv_cand *cand;	/* The candidate.  */
   comp_cost cost;	/* The cost.  */
   enum tree_code comp;	/* For iv elimination, the comparison.  */
@@ -442,8 +444,9 @@ struct iv_cand
 };
 
 /* Hashtable entry for common candidate derived from iv uses.  */
-struct iv_common_cand
+class iv_common_cand
 {
+public:
   tree base;
   tree step;
   /* IV uses from which this common candidate is derived.  */
@@ -616,8 +619,9 @@ struct ivopts_data
 
 /* An assignment of iv candidates to uses.  */
 
-struct iv_ca
+class iv_ca
 {
+public:
   /* The number of uses covered by the assignment.  */
   unsigned upto;
 

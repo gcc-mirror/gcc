@@ -305,8 +305,9 @@ set_rtl (tree t, rtx x)
 
 /* This structure holds data relevant to one variable that will be
    placed in a stack slot.  */
-struct stack_var
+class stack_var
 {
+public:
   /* The Variable.  */
   tree decl;
 
@@ -1021,8 +1022,9 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
   set_rtl (decl, x);
 }
 
-struct stack_vars_data
+class stack_vars_data
 {
+public:
   /* Vector of offset pairs, always end of some padding followed
      by start of the padding that needs Address Sanitizer protection.
      The vector is in reversed, highest offset pairs come first.  */

@@ -23,7 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include <profile-count.h>
 
 /* Control flow edge information.  */
-struct GTY((user)) edge_def {
+class GTY((user)) edge_def {
+public:
   /* The two blocks at the ends of the edge.  */
   basic_block src;
   basic_block dest;

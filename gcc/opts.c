@@ -1282,8 +1282,9 @@ wrap_help (const char *help,
 
 /* Data structure used to print list of valid option values.  */
 
-struct option_help_tuple
+class option_help_tuple
 {
+public:
   option_help_tuple (int code, vec<const char *> values):
     m_code (code), m_values (values)
   {}
@@ -1801,8 +1802,9 @@ const struct sanitizer_opts_s coverage_sanitizer_opts[] =
 
 /* A struct for describing a run of chars within a string.  */
 
-struct string_fragment
+class string_fragment
 {
+public:
   string_fragment (const char *start, size_t len)
   : m_start (start), m_len (len) {}
 

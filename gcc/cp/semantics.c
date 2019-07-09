@@ -4380,8 +4380,9 @@ expand_or_defer_fn (tree fn)
     }
 }
 
-struct nrv_data
+class nrv_data
 {
+public:
   nrv_data () : visited (37) {}
 
   tree var;

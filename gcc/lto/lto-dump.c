@@ -38,8 +38,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Stores details of symbols for dumping symbol list.  */
 
-struct symbol_entry
+class symbol_entry
 {
+public:
   symtab_node *node;
   symbol_entry (symtab_node *node_): node (node_)
   {}
@@ -70,8 +71,9 @@ struct symbol_entry
 
 /* Stores variable specific details of symbols for dumping symbol list.  */
 
-struct variable_entry: public symbol_entry
+class variable_entry: public symbol_entry
 {
+public:
   variable_entry (varpool_node *node_): symbol_entry (node_)
   {}
 
@@ -100,8 +102,9 @@ struct variable_entry: public symbol_entry
 
 /* Stores function specific details of symbols for dumping symbol list.  */
 
-struct function_entry: public symbol_entry
+class function_entry: public symbol_entry
 {
+public:
   function_entry (cgraph_node *node_): symbol_entry (node_)
   {}
 

@@ -1324,8 +1324,9 @@ namespace {
    and the other fields also reflect the memory load, or an SSA name, then
    VAL represents the SSA name and all the other fields are zero,  */
 
-struct store_operand_info
+class store_operand_info
 {
+public:
   tree val;
   tree base_addr;
   poly_uint64 bitsize;
@@ -1347,8 +1348,9 @@ store_operand_info::store_operand_info ()
    to memory.  These are created in the first phase and coalesced into
    merged_store_group objects in the second phase.  */
 
-struct store_immediate_info
+class store_immediate_info
 {
+public:
   unsigned HOST_WIDE_INT bitsize;
   unsigned HOST_WIDE_INT bitpos;
   unsigned HOST_WIDE_INT bitregion_start;
@@ -1413,8 +1415,9 @@ store_immediate_info::store_immediate_info (unsigned HOST_WIDE_INT bs,
    These are produced by the second phase (coalescing) and consumed in the
    third phase that outputs the widened stores.  */
 
-struct merged_store_group
+class merged_store_group
 {
+public:
   unsigned HOST_WIDE_INT start;
   unsigned HOST_WIDE_INT width;
   unsigned HOST_WIDE_INT bitregion_start;
@@ -2083,8 +2086,9 @@ merged_store_group::apply_stores ()
 
 /* Structure describing the store chain.  */
 
-struct imm_store_chain_info
+class imm_store_chain_info
 {
+public:
   /* Doubly-linked list that imposes an order on chain processing.
      PNXP (prev's next pointer) points to the head of a list, or to
      the next field in the previous chain in the list.
@@ -3064,8 +3068,9 @@ get_location_for_stmts (vec<gimple *> &stmts)
 /* Used to decribe a store resulting from splitting a wide store in smaller
    regularly-sized stores in split_group.  */
 
-struct split_store
+class split_store
 {
+public:
   unsigned HOST_WIDE_INT bytepos;
   unsigned HOST_WIDE_INT size;
   unsigned HOST_WIDE_INT align;

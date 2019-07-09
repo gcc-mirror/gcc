@@ -195,8 +195,9 @@ hash_table <hsa_internal_fn_hasher> *hsa_emitted_internal_decls;
 /* List of sbr instructions.  */
 static vec <hsa_insn_sbr *> *switch_instructions;
 
-struct function_linkage_pair
+class function_linkage_pair
 {
+public:
   function_linkage_pair (tree decl, unsigned int off)
     : function_decl (decl), offset (off) {}
 

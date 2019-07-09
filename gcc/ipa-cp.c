@@ -130,7 +130,7 @@ template <typename valtype> class ipcp_value;
 /* Describes a particular source for an IPA-CP value.  */
 
 template <typename valtype>
-class ipcp_value_source
+struct ipcp_value_source
 {
 public:
   /* Aggregate offset of the source, negative if the source is scalar value of
@@ -209,7 +209,7 @@ public:
    contains_variable flag should be disregarded.  */
 
 template <typename valtype>
-class ipcp_lattice
+struct ipcp_lattice
 {
 public:
   /* The list of known values and types in this lattice.  Note that values are
@@ -236,7 +236,7 @@ public:
 /* Lattice of tree values with an offset to describe a part of an
    aggregate.  */
 
-class ipcp_agg_lattice : public ipcp_lattice<tree>
+struct ipcp_agg_lattice : public ipcp_lattice<tree>
 {
 public:
   /* Offset that is being described by this lattice. */
@@ -3385,8 +3385,9 @@ static call_summary <edge_clone_summary *> *edge_clone_summaries = NULL;
 
 /* Edge clone summary.  */
 
-struct edge_clone_summary
+class edge_clone_summary
 {
+public:
   /* Default constructor.  */
   edge_clone_summary (): prev_clone (NULL), next_clone (NULL) {}
 

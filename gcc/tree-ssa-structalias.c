@@ -1393,8 +1393,9 @@ static bitmap changed;
 
 /* Strongly Connected Component visitation info.  */
 
-struct scc_info
+class scc_info
 {
+public:
   scc_info (size_t size);
   ~scc_info ();
 

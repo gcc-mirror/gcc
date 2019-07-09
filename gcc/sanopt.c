@@ -207,8 +207,9 @@ struct sanopt_tree_couple_hash : typed_noop_remove <sanopt_tree_couple>
 /* This is used to carry various hash maps and variables used
    in sanopt_optimize_walker.  */
 
-struct sanopt_ctx
+class sanopt_ctx
 {
+public:
   /* This map maps a pointer (the first argument of UBSAN_NULL) to
      a vector of UBSAN_NULL call statements that check this pointer.  */
   hash_map<tree, auto_vec<gimple *> > null_check_map;

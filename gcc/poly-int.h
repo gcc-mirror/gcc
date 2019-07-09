@@ -335,7 +335,7 @@ struct poly_result<T1, T2, 2>
 /* A base POD class for polynomial integers.  The polynomial has N
    coefficients of type C.  */
 template<unsigned int N, typename C>
-class poly_int_pod
+struct poly_int_pod
 {
 public:
   template<typename Ca>

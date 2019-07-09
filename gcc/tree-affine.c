@@ -695,8 +695,9 @@ aff_combination_find_elt (aff_tree *comb, tree val, unsigned *idx)
 /* Element of the cache that maps ssa name NAME to its expanded form
    as an affine expression EXPANSION.  */
 
-struct name_expansion
+class name_expansion
 {
+public:
   aff_tree expansion;
 
   /* True if the expansion for the name is just being generated.  */

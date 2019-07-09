@@ -384,8 +384,9 @@ mark_regno_dead (int regno, machine_mode mode)
 
 /* Structure describing local BB data used for pseudo
    live-analysis.  */
-struct bb_data_pseudos
+class bb_data_pseudos
 {
+public:
   /* Basic block about which the below data are.  */
   basic_block bb;
   bitmap_head killed_pseudos; /* pseudos killed in the BB.  */

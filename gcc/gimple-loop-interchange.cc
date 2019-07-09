@@ -172,8 +172,9 @@ dump_induction (struct loop *loop, induction_p iv)
 
 /* Loop candidate for interchange.  */
 
-struct loop_cand
+class loop_cand
 {
+public:
   loop_cand (struct loop *, struct loop *);
   ~loop_cand ();
 

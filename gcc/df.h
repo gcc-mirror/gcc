@@ -524,8 +524,9 @@ struct df_reg_info
    used by owners of the problem.
 ----------------------------------------------------------------------------*/
 
-struct df_d
+class df_d
 {
+public:
 
   /* The set of problems to be solved is stored in two arrays.  In
      PROBLEMS_IN_ORDER, the problems are stored in the order that they
@@ -830,8 +831,9 @@ struct df_scan_bb_info
    the ref except sparse_kill which is indexed by regno.  For the
    LR&RD problem, the kill set is not complete: It does not contain
    DEFs killed because the set register has died in the LR set.  */
-struct df_rd_bb_info
+class df_rd_bb_info
 {
+public:
   /* Local sets to describe the basic blocks.   */
   bitmap_head kill;
   bitmap_head sparse_kill;
@@ -846,8 +848,9 @@ struct df_rd_bb_info
 /* Multiple reaching definitions.  All bitmaps are referenced by the
    register number.  */
 
-struct df_md_bb_info
+class df_md_bb_info
 {
+public:
   /* Local sets to describe the basic blocks.  */
   bitmap_head gen;    /* Partial/conditional definitions live at BB out.  */
   bitmap_head kill;   /* Other definitions that are live at BB out.  */
@@ -862,8 +865,9 @@ struct df_md_bb_info
 /* Live registers, a backwards dataflow problem.  All bitmaps are
    referenced by the register number.  */
 
-struct df_lr_bb_info
+class df_lr_bb_info
 {
+public:
   /* Local sets to describe the basic blocks.  */
   bitmap_head def;   /* The set of registers set in this block
                         - except artificial defs at the top.  */
@@ -879,8 +883,9 @@ struct df_lr_bb_info
    register number.  Anded results of the forwards and backward live
    info.  Note that the forwards live information is not available
    separately.  */
-struct df_live_bb_info
+class df_live_bb_info
 {
+public:
   /* Local sets to describe the basic blocks.  */
   bitmap_head kill;  /* The set of registers unset in this block.  Calls,
 		        for instance, unset registers.  */
@@ -897,8 +902,9 @@ struct df_live_bb_info
    pseudo.  Only pseudos that have a size of 2 * UNITS_PER_WORD are
    meaningfully tracked.  */
 
-struct df_word_lr_bb_info
+class df_word_lr_bb_info
 {
+public:
   /* Local sets to describe the basic blocks.  */
   bitmap_head def;   /* The set of registers set in this block
                         - except artificial defs at the top.  */
@@ -911,8 +917,9 @@ struct df_word_lr_bb_info
 
 /* Must-initialized registers.  All bitmaps are referenced by the
    register number.  */
-struct df_mir_bb_info
+class df_mir_bb_info
 {
+public:
   /* Local sets to describe the basic blocks.  */
   bitmap_head kill;  /* The set of registers unset in this block.  Calls,
 		        for instance, unset registers.  */
@@ -1222,7 +1229,7 @@ df_single_use (const df_insn_info *info)
 
 /* web */
 
-class web_entry_base
+struct web_entry_base
 {
  private:
   /* Reference to the parent in the union/find tree.  */

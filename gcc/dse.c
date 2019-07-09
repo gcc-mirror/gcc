@@ -220,8 +220,9 @@ static bitmap scratch = NULL;
 struct insn_info_type;
 
 /* This structure holds information about a candidate store.  */
-struct store_info
+class store_info
 {
+public:
 
   /* False means this is a clobber.  */
   bool is_set;
@@ -309,8 +310,9 @@ static object_allocator<store_info> rtx_store_info_pool ("rtx_store_info_pool");
 
 /* This structure holds information about a load.  These are only
    built for rtx bases.  */
-struct read_info_type
+class read_info_type
 {
+public:
   /* The id of the mem group of the base address.  */
   int group_id;
 

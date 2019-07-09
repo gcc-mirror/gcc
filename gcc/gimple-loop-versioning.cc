@@ -179,8 +179,9 @@ struct address_term_info
 
 /* Information about an address calculation, and the range of constant
    offsets applied to it.  */
-struct address_info
+class address_info
 {
+public:
   static const unsigned int MAX_TERMS = 8;
 
   /* One statement that calculates the address.  If multiple statements
@@ -210,8 +211,9 @@ struct address_info_hasher : nofree_ptr_hash <address_info>
 };
 
 /* Information about the versioning we'd like to apply to a loop.  */
-struct loop_info
+class loop_info
 {
+public:
   bool worth_versioning_p () const;
 
   /* True if we've decided not to version this loop.  The remaining

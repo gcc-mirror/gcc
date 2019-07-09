@@ -71,8 +71,9 @@ along with GCC; see the file COPYING3.	If not see
 
 /* This structure is used to record information about hard register
    eliminations.  */
-struct lra_elim_table
+class lra_elim_table
 {
+public:
   /* Hard register number to be eliminated.  */
   int from;
   /* Hard register number used as replacement.	*/

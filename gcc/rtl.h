@@ -145,8 +145,9 @@ struct addr_diff_vec_flags
 /* Structure used to describe the attributes of a MEM.  These are hashed
    so MEMs that the same attributes share a data structure.  This means
    they cannot be modified in place.  */
-struct GTY(()) mem_attrs
+class GTY(()) mem_attrs
 {
+public:
   mem_attrs ();
 
   /* The expression that the MEM accesses, or null if not known.
@@ -187,7 +188,8 @@ struct GTY(()) mem_attrs
    object in the low part of a 4-byte register, the OFFSET field
    will be -3 rather than 0.  */
 
-struct GTY((for_user)) reg_attrs {
+class GTY((for_user)) reg_attrs {
+public:
   tree decl;			/* decl corresponding to REG.  */
   poly_int64 offset;		/* Offset from start of DECL.  */
 };
@@ -449,8 +451,9 @@ struct GTY((desc("0"), tag("0"),
 
 /* A node for constructing singly-linked lists of rtx.  */
 
-class GTY(()) rtx_expr_list : public rtx_def
+struct GTY(()) rtx_expr_list : public rtx_def
 {
+private:
   /* No extra fields, but adds invariant: (GET_CODE (X) == EXPR_LIST).  */
 
 public:
@@ -469,8 +472,9 @@ is_a_helper <rtx_expr_list *>::test (rtx rt)
   return rt->code == EXPR_LIST;
 }
 
-class GTY(()) rtx_insn_list : public rtx_def
+struct GTY(()) rtx_insn_list : public rtx_def
 {
+private:
   /* No extra fields, but adds invariant: (GET_CODE (X) == INSN_LIST).
 
      This is an instance of:
@@ -501,8 +505,9 @@ is_a_helper <rtx_insn_list *>::test (rtx rt)
 /* A node with invariant GET_CODE (X) == SEQUENCE i.e. a vector of rtx,
    typically (but not always) of rtx_insn *, used in the late passes.  */
 
-class GTY(()) rtx_sequence : public rtx_def
+struct GTY(()) rtx_sequence : public rtx_def
 {
+private:
   /* No extra fields, but adds invariant: (GET_CODE (X) == SEQUENCE).  */
 
 public:
@@ -533,7 +538,7 @@ is_a_helper <const rtx_sequence *>::test (const_rtx rt)
   return rt->code == SEQUENCE;
 }
 
-class GTY(()) rtx_insn : public rtx_def
+struct GTY(()) rtx_insn : public rtx_def
 {
 public:
   /* No extra fields, but adds the invariant:
@@ -567,7 +572,7 @@ public:
 
 /* Subclasses of rtx_insn.  */
 
-class GTY(()) rtx_debug_insn : public rtx_insn
+struct GTY(()) rtx_debug_insn : public rtx_insn
 {
   /* No extra fields, but adds the invariant:
        DEBUG_INSN_P (X) aka (GET_CODE (X) == DEBUG_INSN)
@@ -578,7 +583,7 @@ class GTY(()) rtx_debug_insn : public rtx_insn
      from rtl.def.  */
 };
 
-class GTY(()) rtx_nonjump_insn : public rtx_insn
+struct GTY(()) rtx_nonjump_insn : public rtx_insn
 {
   /* No extra fields, but adds the invariant:
        NONJUMP_INSN_P (X) aka (GET_CODE (X) == INSN)
@@ -589,7 +594,7 @@ class GTY(()) rtx_nonjump_insn : public rtx_insn
      from rtl.def.  */
 };
 
-class GTY(()) rtx_jump_insn : public rtx_insn
+struct GTY(()) rtx_jump_insn : public rtx_insn
 {
 public:
   /* No extra fields, but adds the invariant:
@@ -616,7 +621,7 @@ public:
   inline void set_jump_target (rtx_code_label *);
 };
 
-class GTY(()) rtx_call_insn : public rtx_insn
+struct GTY(()) rtx_call_insn : public rtx_insn
 {
   /* No extra fields, but adds the invariant:
        CALL_P (X) aka (GET_CODE (X) == CALL_INSN)
@@ -629,7 +634,7 @@ class GTY(()) rtx_call_insn : public rtx_insn
      from rtl.def.  */
 };
 
-class GTY(()) rtx_jump_table_data : public rtx_insn
+struct GTY(()) rtx_jump_table_data : public rtx_insn
 {
   /* No extra fields, but adds the invariant:
        JUMP_TABLE_DATA_P (X) aka (GET_CODE (INSN) == JUMP_TABLE_DATA)
@@ -639,8 +644,6 @@ class GTY(()) rtx_jump_table_data : public rtx_insn
      This is an instance of:
        DEF_RTL_EXPR(JUMP_TABLE_DATA, "jump_table_data", "uuBe0000", RTX_INSN)
      from rtl.def.  */
-
-public:
 
   /* This can be either:
 
@@ -657,7 +660,7 @@ public:
   inline scalar_int_mode get_data_mode () const;
 };
 
-class GTY(()) rtx_barrier : public rtx_insn
+struct GTY(()) rtx_barrier : public rtx_insn
 {
   /* No extra fields, but adds the invariant:
        BARRIER_P (X) aka (GET_CODE (X) == BARRIER)
@@ -668,7 +671,7 @@ class GTY(()) rtx_barrier : public rtx_insn
      from rtl.def.  */
 };
 
-class GTY(()) rtx_code_label : public rtx_insn
+struct GTY(()) rtx_code_label : public rtx_insn
 {
   /* No extra fields, but adds the invariant:
        LABEL_P (X) aka (GET_CODE (X) == CODE_LABEL)
@@ -679,7 +682,7 @@ class GTY(()) rtx_code_label : public rtx_insn
      from rtl.def.  */
 };
 
-class GTY(()) rtx_note : public rtx_insn
+struct GTY(()) rtx_note : public rtx_insn
 {
   /* No extra fields, but adds the invariant:
        NOTE_P(X) aka (GET_CODE (X) == NOTE)
@@ -2096,7 +2099,8 @@ costs_add_n_insns (struct full_rtx_costs *c, int n)
    inner_mode == the mode of the SUBREG_REG
    offset     == the SUBREG_BYTE
    outer_mode == the mode of the SUBREG itself.  */
-struct subreg_shape {
+class subreg_shape {
+public:
   subreg_shape (machine_mode, poly_uint16, machine_mode);
   bool operator == (const subreg_shape &) const;
   bool operator != (const subreg_shape &) const;

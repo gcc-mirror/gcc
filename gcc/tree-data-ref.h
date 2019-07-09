@@ -203,8 +203,9 @@ typedef struct data_reference *data_reference_p;
    including the data ref itself and the segment length for aliasing
    checks.  This is used to merge alias checks.  */
 
-struct dr_with_seg_len
+class dr_with_seg_len
 {
+public:
   dr_with_seg_len (data_reference_p d, tree len, unsigned HOST_WIDE_INT size,
 		   unsigned int a)
     : dr (d), seg_len (len), access_size (size), align (a) {}
@@ -224,8 +225,9 @@ struct dr_with_seg_len
 /* This struct contains two dr_with_seg_len objects with aliasing data
    refs.  Two comparisons are generated from them.  */
 
-struct dr_with_seg_len_pair_t
+class dr_with_seg_len_pair_t
 {
+public:
   dr_with_seg_len_pair_t (const dr_with_seg_len& d1,
 			       const dr_with_seg_len& d2)
     : first (d1), second (d2) {}

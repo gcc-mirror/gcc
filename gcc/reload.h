@@ -278,8 +278,9 @@ extern int num_not_at_initial_offset;
 /* This structure describes instructions which are relevant for reload.
    Apart from all regular insns, this also includes CODE_LABELs, since they
    must be examined for register elimination.  */
-struct insn_chain
+class insn_chain
 {
+public:
   /* Links to the neighbor instructions.  */
   struct insn_chain *next, *prev;
 

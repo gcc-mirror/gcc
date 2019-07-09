@@ -68,8 +68,9 @@ struct GTY(()) pt_solution
 /* Simplified and cached information about a memory reference tree.
    Used by the alias-oracle internally and externally in alternate
    interfaces.  */
-struct ao_ref
+class ao_ref
 {
+public:
   /* The original full memory reference tree or NULL_TREE if that is
      not available.  */
   tree ref;

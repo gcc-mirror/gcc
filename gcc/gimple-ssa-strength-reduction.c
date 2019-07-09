@@ -226,8 +226,9 @@ enum cand_kind
   CAND_PHI
 };
 
-struct slsr_cand_d
+class slsr_cand_d
 {
+public:
   /* The candidate statement S1.  */
   gimple *cand_stmt;
 
@@ -329,8 +330,9 @@ typedef const struct cand_chain_d *const_cand_chain_t;
    of the cost of initializers.  The absolute value of the increment
    is stored in the incr_info.  */
 
-struct incr_info_d
+class incr_info_d
 {
+public:
   /* The increment that relates a candidate to its basis.  */
   widest_int incr;
 

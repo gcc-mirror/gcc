@@ -144,8 +144,9 @@ struct GTY(()) ipa_agg_jump_function
 typedef struct ipa_agg_jump_function *ipa_agg_jump_function_p;
 
 /* Information about zero/non-zero bits.  */
-struct GTY(()) ipa_bits
+class GTY(()) ipa_bits
 {
+public:
   /* The propagated value.  */
   widest_int value;
   /* Mask corresponding to the value.
@@ -156,8 +157,9 @@ struct GTY(()) ipa_bits
 
 /* Info about value ranges.  */
 
-struct GTY(()) ipa_vr
+class GTY(()) ipa_vr
 {
+public:
   /* The data fields below are valid only if known is true.  */
   bool known;
   enum value_range_kind type;
@@ -319,8 +321,9 @@ struct GTY(()) ipa_param_descriptor
    and some other information for interprocedural passes that operate on
    parameters (such as ipa-cp).  */
 
-struct GTY((for_user)) ipa_node_params
+class GTY((for_user)) ipa_node_params
 {
+public:
   /* Default constructor.  */
   ipa_node_params ();
 

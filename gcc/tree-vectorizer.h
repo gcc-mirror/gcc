@@ -141,7 +141,8 @@ struct _slp_tree {
 
 /* SLP instance is a sequence of stmts in a loop that can be packed into
    SIMD stmts.  */
-typedef struct _slp_instance {
+typedef class _slp_instance {
+public:
   /* The root of SLP tree.  */
   slp_tree root;
 
@@ -181,7 +182,8 @@ typedef std::pair<tree, tree> vec_object_pair;
 
 /* Records that vectorization is only possible if abs (EXPR) >= MIN_VALUE.
    UNSIGNED_P is true if we can assume that abs (EXPR) == EXPR.  */
-struct vec_lower_bound {
+class vec_lower_bound {
+public:
   vec_lower_bound () {}
   vec_lower_bound (tree e, bool u, poly_uint64 m)
     : expr (e), unsigned_p (u), min_value (m) {}
@@ -193,7 +195,8 @@ struct vec_lower_bound {
 
 /* Vectorizer state shared between different analyses like vector sizes
    of the same CFG region.  */
-struct vec_info_shared {
+class vec_info_shared {
+public:
   vec_info_shared();
   ~vec_info_shared();
 
@@ -213,7 +216,8 @@ struct vec_info_shared {
 };
 
 /* Vectorizer state common between loop and basic-block vectorization.  */
-struct vec_info {
+class vec_info {
+public:
   enum vec_kind { bb, loop };
 
   vec_info (vec_kind, void *, vec_info_shared *);
@@ -377,7 +381,8 @@ typedef auto_vec<rgroup_masks> vec_loop_masks;
 /*-----------------------------------------------------------------*/
 /* Info on vectorized loops.                                       */
 /*-----------------------------------------------------------------*/
-typedef struct _loop_vec_info : public vec_info {
+typedef class _loop_vec_info : public vec_info {
+public:
   _loop_vec_info (struct loop *, vec_info_shared *);
   ~_loop_vec_info ();
 
@@ -650,8 +655,9 @@ loop_vec_info_for_loop (struct loop *loop)
   return (loop_vec_info) loop->aux;
 }
 
-typedef struct _bb_vec_info : public vec_info
+typedef class _bb_vec_info : public vec_info
 {
+public:
   _bb_vec_info (gimple_stmt_iterator, gimple_stmt_iterator, vec_info_shared *);
   ~_bb_vec_info ();
 
@@ -790,7 +796,8 @@ enum vect_memory_access_type {
   VMAT_GATHER_SCATTER
 };
 
-struct dr_vec_info {
+class dr_vec_info {
+public:
   /* The data reference itself.  */
   data_reference *dr;
   /* The statement that contains the data reference.  */
@@ -807,7 +814,8 @@ struct dr_vec_info {
 
 typedef struct data_reference *dr_p;
 
-struct _stmt_vec_info {
+class _stmt_vec_info {
+public:
 
   enum stmt_vec_info_type type;
 

@@ -113,8 +113,9 @@ struct mem_ref_loc
 
 /* Description of a memory reference.  */
 
-struct im_mem_ref
+class im_mem_ref
 {
+public:
   unsigned id : 30;		/* ID assigned to the memory reference
 				   (its index in memory_accesses.refs_list)  */
   unsigned ref_canonical : 1;   /* Whether mem.ref was canonicalized.  */
@@ -1756,8 +1757,9 @@ for_all_locs_in_loop (struct loop *loop, im_mem_ref *ref, FN fn)
 
 /* Rewrites location LOC by TMP_VAR.  */
 
-struct rewrite_mem_ref_loc
+class rewrite_mem_ref_loc
 {
+public:
   rewrite_mem_ref_loc (tree tmp_var_) : tmp_var (tmp_var_) {}
   bool operator () (mem_ref_loc *loc);
   tree tmp_var;
@@ -1781,8 +1783,9 @@ rewrite_mem_refs (struct loop *loop, im_mem_ref *ref, tree tmp_var)
 
 /* Stores the first reference location in LOCP.  */
 
-struct first_mem_ref_loc_1
+class first_mem_ref_loc_1
 {
+public:
   first_mem_ref_loc_1 (mem_ref_loc **locp_) : locp (locp_) {}
   bool operator () (mem_ref_loc *loc);
   mem_ref_loc **locp;
@@ -2017,8 +2020,9 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
 
 /* When REF is set on the location, set flag indicating the store.  */
 
-struct sm_set_flag_if_changed
+class sm_set_flag_if_changed
 {
+public:
   sm_set_flag_if_changed (tree flag_, hash_set <basic_block> *bbs_)
 	 : flag (flag_), bbs (bbs_) {}
   bool operator () (mem_ref_loc *loc);
@@ -2151,8 +2155,9 @@ hoist_memory_references (struct loop *loop, bitmap mem_refs,
     }
 }
 
-struct ref_always_accessed
+class ref_always_accessed
 {
+public:
   ref_always_accessed (struct loop *loop_, bool stored_p_)
       : loop (loop_), stored_p (stored_p_) {}
   bool operator () (mem_ref_loc *loc);

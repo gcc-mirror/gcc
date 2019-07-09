@@ -134,8 +134,9 @@ test_set_of_strings ()
   ASSERT_EQ (2, t.elements ());
 }
 
-typedef struct hash_set_test_value_t
+typedef class hash_set_test_value_t
 {
+public:
   static int ndefault;
   static int ncopy;
   static int nassign;

@@ -1,3 +1,152 @@
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* align.h: Change class-key from class to struct and vice versa
+	to match convention and avoid -Wclass-is-pod and -Wstruct-no-pod.
+	* alloc-pool.h: Same.
+	* asan.c (shadow_mem_size): Same.
+	* auto-profile.c: Same.
+	* basic-block.h: Same.
+	* bitmap.h: Same.
+	* cfgexpand.c (set_rtl): Same.
+	(expand_one_stack_var_at): Same.
+	* cfghooks.h: Same.
+	* cfgloop.h: Same.
+	* cgraph.h: Same.
+	* config/i386/i386.h: Same.
+	* df-problems.c (df_print_bb_index): Same.
+	* df-scan.c: Same.
+	* df.h (df_single_use): Same.
+	* diagnostic-show-locus.c (layout::print_annotation_line): Same.
+	(layout::annotation_line_showed_range_p): Same.
+	(get_printed_columns): Same.
+	(correction::ensure_terminated): Same.
+	(line_corrections::~line_corrections): Same.
+	* dojump.h: Same.
+	* dse.c: Same.
+	* dump-context.h: Same.
+	* dumpfile.h: Same.
+	* dwarf2out.c: Same.
+	* edit-context.c: Same.
+	* fibonacci_heap.c (test_union_of_equal_heaps): Same.
+	* flags.h: Same.
+	* function.c (assign_stack_local): Same.
+	* function.h: Same.
+	* gcc.c: Same.
+	* gcov.c (block_info::block_info): Same.
+	* genattrtab.c: Same.
+	* genextract.c: Same.
+	* genmatch.c (comparison_code_p): Same.
+	(id_base::id_base): Same.
+	(decision_tree::print): Same.
+	* genoutput.c: Same.
+	* genpreds.c (write_one_predicate_function): Same.
+	* genrecog.c (validate_pattern): Same.
+	(find_operand_positions): Same.
+	(optimize_subroutine_group): Same.
+	(merge_pattern_transition::merge_pattern_transition): Same.
+	(merge_pattern_info::merge_pattern_info): Same.
+	(merge_state_result::merge_state_result): Same.
+	(merge_into_state): Same.
+	* gensupport.c: Same.
+	* gensupport.h: Same.
+	* ggc-common.c (init_ggc_heuristics): Same.
+	* ggc-tests.c (test_union): Same.
+	* gimple-loop-interchange.cc (dump_induction): Same.
+	* gimple-loop-versioning.cc: Same.
+	* gimple-match.h (gimple_match_cond::any_else): Same.
+	* gimple-ssa-backprop.c: Same.
+	* gimple-ssa-sprintf.c: Same.
+	* gimple-ssa-store-merging.c (store_operand_info::store_operand_info): Same.
+	(store_immediate_info::store_immediate_info): Same.
+	(merged_store_group::apply_stores): Same.
+	(get_location_for_stmts): Same.
+	* gimple-ssa-strength-reduction.c: Same.
+	* gimple-ssa-warn-alloca.c: Same.
+	* gimple-ssa-warn-restrict.c (pass_wrestrict::execute): Same.
+	* godump.c (go_type_decl): Same.
+	* hash-map-tests.c (test_map_of_strings_to_int): Same.
+	* hash-map.h: Same.
+	* hash-set-tests.c (test_set_of_strings): Same.
+	* hsa-brig.c: Same.
+	* hsa-common.h: Same.
+	* hsa-gen.c (transformable_switch_to_sbr_p): Same.
+	* input.c (assert_loceq): Same.
+	* input.h: Same.
+	* ipa-cp.c: Same.
+	* ipa-devirt.c (possible_polymorphic_call_targets_1): Same.
+	* ipa-fnsummary.h: Same.
+	* ipa-inline.h: Same.
+	* ipa-prop.h: Same.
+	* ipa-split.c (visit_bb): Same.
+	* ira-int.h (minmax_set_iter_next): Same.
+	* loop-invariant.c: Same.
+	* loop-iv.c: Same.
+	* lra-eliminations.c: Same.
+	* lra-int.h: Same.
+	* lra-lives.c (mark_regno_dead): Same.
+	* lra-remat.c: Same.
+	* lra-spills.c: Same.
+	* lto-streamer.h: Same.
+	* mem-stats.h: Same.
+	* omp-grid.c (omp_grid_lastprivate_predicate): Same.
+	* omp-low.c (omp_clause_aligned_alignment): Same.
+	* optabs-query.h (get_vcond_eq_icode): Same.
+	* optabs.h: Same.
+	* opts.c (wrap_help): Same.
+	* poly-int.h: Same.
+	* predict.c (predict_paths_leading_to_edge): Same.
+	* pretty-print.h: Same.
+	* profile-count.h: Same.
+	* read-md.h: Same.
+	* read-rtl-function.c: Same.
+	* ree.c: Same.
+	* reginfo.c: Same.
+	* regrename.c: Same.
+	* regrename.h: Same.
+	* reload.h: Same.
+	* rtl-iter.h: Same.
+	* rtl.h (costs_add_n_insns): Same.
+	* sanopt.c: Same.
+	* sched-int.h: Same.
+	* sel-sched-ir.h: Same.
+	* selftest.h: Same.
+	* sese.h (vec_find): Same.
+	* stmt.c: Same.
+	* target-globals.h: Same.
+	* tree-affine.c (aff_combination_find_elt): Same.
+	* tree-affine.h: Same.
+	* tree-data-ref.h: Same.
+	* tree-outof-ssa.c (ssa_is_replaceable_p): Same.
+	* tree-predcom.c: Same.
+	* tree-scalar-evolution.c (find_var_scev_info): Same.
+	* tree-ssa-alias.h: Same.
+	* tree-ssa-ccp.c: Same.
+	* tree-ssa-coalesce.c (ssa_conflicts_dump): Same.
+	* tree-ssa-loop-im.c (for_all_locs_in_loop): Same.
+	(rewrite_mem_refs): Same.
+	(execute_sm_if_changed): Same.
+	(hoist_memory_references): Same.
+	* tree-ssa-loop-ivopts.c (operator<=): Same.
+	* tree-ssa-loop.h: Same.
+	* tree-ssa-pre.c (get_or_alloc_expr_for_name): Same.
+	* tree-ssa-structalias.c: Same.
+	* tree-switch-conversion.h (cluster::cluster): Same.
+	(simple_cluster::simple_cluster): Same.
+	* tree-vect-patterns.c (type_conversion_p): Same.
+	* tree-vectorizer.c (dump_stmt_cost): Same.
+	* tree-vectorizer.h (loop_vec_info_for_loop): Same.
+	* tree.c (protected_set_expr_location): Same.
+	* tree.h (desired_pro_or_demotion_p): Same.
+	(fndecl_built_in_p): Same.
+	* unique-ptr-tests.cc: Same.
+	* var-tracking.c (delete_variable_part): Same.
+	* varasm.c (assemble_real): Same.
+	(tree_output_constant_def): Same.
+	* vec.c: Same.
+	* wide-int-bitmask.h: Same.
+	* wide-int.h (decompose): Same.
+
 2019-07-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91114

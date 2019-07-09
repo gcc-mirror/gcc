@@ -68,8 +68,9 @@ static struct code_ptr *peepholes;
    data that will be used to produce an extractions structure.  */
 
 
-struct accum_extract
+class accum_extract
 {
+public:
   accum_extract () : oplocs (10), duplocs (10), dupnums (10), pathstr (20) {}
 
   auto_vec<locstr> oplocs;

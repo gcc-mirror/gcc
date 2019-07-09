@@ -58,8 +58,9 @@ typedef int_hash <unsigned short, 0> dependence_hash;
 
 /* Optional data for duplicate_block.   */
 
-struct copy_bb_data
+class copy_bb_data
 {
+public:
   copy_bb_data() : dependence_map (NULL) {}
   ~copy_bb_data () { delete dependence_map; }
 
