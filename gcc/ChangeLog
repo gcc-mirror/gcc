@@ -1,3 +1,7 @@
+2019-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ira-emit.c (emit_moves): Skip DEBUG_INSNs when setting the location.
+
 2019-07-09  Sylvia Taylor  <sylvia.taylor@arm.com>
 
 	* config/arm/crypto.md:
