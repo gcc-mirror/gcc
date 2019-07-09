@@ -1,3 +1,11 @@
+2019-07-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Diagnose_Call): Improve error recovery when a
+	local subprogram name hides a possible candidate name declared
+	in a child package in the context of the current unit.
+	* sem_ch6.adb (Process_Formals): Protect against malformed
+	formal types when the parameter type does not denote an entity.
+
 2019-07-09  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* bindo-augmentors.adb (Visit_Elaboration_Root): Do not start a
