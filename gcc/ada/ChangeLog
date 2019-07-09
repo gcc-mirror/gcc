@@ -1,3 +1,19 @@
+2019-07-09  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* bindo-augmentors.adb (Visit_Elaboration_Root): Do not start a
+	DFS from an elaboration root whose corresponding unit lacks
+	elaboration code. This behavior mimics that of the old
+	elaboration order mechanism.
+	* bindo-graphs.adb (Find_All_Cycles_Through_Vertex): Move the
+	vertex tracing within the functional branches of the routine.
+	This prevents spurious trace output.
+	(Has_No_Elaboration_Code): New routine.
+	(Trace_Cycle, Trace_Edge): Update the various Ids to use the
+	"standard" trace format.
+	* bindo-graphs.ads (Has_No_Elaboration_Code): New routine.
+	* bindo-units.ads, bindo-units.adb (Has_No_Elaboration_Code):
+	New routine.
+
 2019-07-09  Piotr Trojanek  <trojanek@adacore.com>
 
 	* ali.ads, bindo-graphs.adb, bindo-validators.adb, clean.adb,

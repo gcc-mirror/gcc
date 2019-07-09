@@ -1028,6 +1028,13 @@ package Bindo.Graphs is
       --  Determine whether library graph G contains a cycle involving pragma
       --  Elaborate_All.
 
+      function Has_No_Elaboration_Code
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id) return Boolean;
+      pragma Inline (Has_No_Elaboration_Code);
+      --  Determine whether vertex Vertex of library graph G represents a unit
+      --  that lacks elaboration code.
+
       function In_Same_Component
         (G     : Library_Graph;
          Left  : Library_Graph_Vertex_Id;

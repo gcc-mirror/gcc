@@ -2356,13 +2356,13 @@ package body Bindo.Graphs is
             return;
          end if;
 
-         Trace_Vertex (G, Vertex, Indent);
-
          --  The current vertex denotes the end vertex of the cycle and closes
          --  the circuit. Normalize the cycle such that it is rotated with its
          --  most significant edge first, and record it for diagnostics.
 
          if LGV_Sets.Contains (End_Vertices, Vertex) then
+            Trace_Vertex (G, Vertex, Indent);
+
             Normalize_And_Add_Cycle
               (G                     => G,
                Most_Significant_Edge => Most_Significant_Edge,
@@ -2374,6 +2374,7 @@ package body Bindo.Graphs is
          --  not been visited yet.
 
          elsif not LGV_Sets.Contains (Visited_Vertices, Vertex) then
+            Trace_Vertex (G, Vertex, Indent);
 
             --  Prepare for vertex backtracking
 
@@ -2858,6 +2859,21 @@ package body Bindo.Graphs is
       begin
          return DG.Has_Next (DG.Outgoing_Edge_Iterator (Iter));
       end Has_Next;
+
+      -----------------------------
+      -- Has_No_Elaboration_Code --
+      -----------------------------
+
+      function Has_No_Elaboration_Code
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Vertex));
+
+         return Has_No_Elaboration_Code (Unit (G, Vertex));
+      end Has_No_Elaboration_Code;
 
       -----------------------------------------
       -- Hash_Library_Graph_Cycle_Attributes --
@@ -4878,7 +4894,7 @@ package body Bindo.Graphs is
             Next (Iter, Edge);
 
             Indent_By (Edge_Indent);
-            Write_Str ("library graph edge (Edge_");
+            Write_Str ("library graph edge (LGE_Id_");
             Write_Int (Int (Edge));
             Write_Str (")");
             Write_Eol;
@@ -4912,7 +4928,7 @@ package body Bindo.Graphs is
          end if;
 
          Indent_By (Indent);
-         Write_Str ("library graph edge (Edge_");
+         Write_Str ("library graph edge (LGE_Id_");
          Write_Int (Int (Edge));
          Write_Str (")");
          Write_Eol;
@@ -4923,14 +4939,14 @@ package body Bindo.Graphs is
          Write_Eol;
 
          Indent_By  (Attr_Indent);
-         Write_Str  ("Predecessor (Vertex_");
+         Write_Str  ("Predecessor (LGV_Id_");
          Write_Int  (Int (Pred));
          Write_Str  (") name = ");
          Write_Name (Name (G, Pred));
          Write_Eol;
 
          Indent_By  (Attr_Indent);
-         Write_Str  ("Successor   (Vertex_");
+         Write_Str  ("Successor   (LGV_Id_");
          Write_Int  (Int (Succ));
          Write_Str  (") name = ");
          Write_Name (Name (G, Succ));
@@ -4977,7 +4993,7 @@ package body Bindo.Graphs is
          end if;
 
          Indent_By (Indent);
-         Write_Str ("library graph vertex (Vertex_");
+         Write_Str ("library graph vertex (LGV_Id_");
          Write_Int (Int (Vertex));
          Write_Str (")");
          Write_Eol;
