@@ -144,8 +144,9 @@ df_print_bb_index (basic_block bb, FILE *file)
 
 /* Private data used to compute the solution for this problem.  These
    data structures are not accessible outside of this module.  */
-struct df_rd_problem_data
+class df_rd_problem_data
 {
+public:
   /* The set of defs to regs invalidated by call.  */
   bitmap_head sparse_invalidated_by_call;
   /* The set of defs to regs invalidate by call for rd.  */

@@ -1,3 +1,19 @@
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* constexpr.c (cxx_eval_call_expression): Change class-key from class
+	to struct and vice versa to match convention and avoid -Wclass-is-pod
+	and -Wstruct-no-pod.
+	* constraint.cc (get_concept_definition): Same.
+	* cp-tree.h: Same.
+	* cxx-pretty-print.h: Same.
+	* error.c: Same.
+	* logic.cc (term_list::replace): Same.
+	* name-lookup.c (find_local_binding): Same.
+	* pt.c (tsubst_binary_right_fold): Same.
+	* search.c (field_accessor_p): Same.
+	* semantics.c (expand_or_defer_fn): Same.
+
 2019-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91110

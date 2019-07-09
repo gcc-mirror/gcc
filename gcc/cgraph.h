@@ -100,8 +100,8 @@ enum symbol_partitioning_class
 
 /* Base of all entries in the symbol table.
    The symtab_node is inherited by cgraph and varpol nodes.  */
-class GTY((desc ("%h.type"), tag ("SYMTAB_SYMBOL"),
-	   chain_next ("%h.next"), chain_prev ("%h.previous")))
+struct GTY((desc ("%h.type"), tag ("SYMTAB_SYMBOL"),
+	    chain_next ("%h.next"), chain_prev ("%h.previous")))
   symtab_node
 {
 public:
@@ -912,7 +912,8 @@ struct cgraph_edge_hasher : ggc_ptr_hash<cgraph_edge>
 /* The cgraph data structure.
    Each function decl has assigned cgraph_node listing callees and callers.  */
 
-struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node {
+class GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
+{
 public:
   friend class symbol_table;
 
@@ -1632,8 +1633,9 @@ private:
 
 /* Structure containing additional information about an indirect call.  */
 
-struct GTY(()) cgraph_indirect_call_info
+class GTY(()) cgraph_indirect_call_info
 {
+public:
   /* When agg_content is set, an offset where the call pointer is located
      within the aggregate.  */
   HOST_WIDE_INT offset;
@@ -1673,8 +1675,10 @@ struct GTY(()) cgraph_indirect_call_info
   unsigned vptr_changed : 1;
 };
 
-struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
-	    for_user)) cgraph_edge {
+class GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
+	   for_user)) cgraph_edge
+{
+public:
   friend class cgraph_node;
   friend class symbol_table;
 
@@ -1856,8 +1860,8 @@ private:
 /* The varpool data structure.
    Each static variable decl has assigned varpool_node.  */
 
-class GTY((tag ("SYMTAB_VARIABLE"))) varpool_node : public symtab_node {
-public:
+struct GTY((tag ("SYMTAB_VARIABLE"))) varpool_node : public symtab_node
+{
   /* Dump given varpool node to F.  */
   void dump (FILE *f);
 

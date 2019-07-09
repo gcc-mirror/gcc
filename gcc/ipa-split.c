@@ -108,8 +108,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Per basic block info.  */
 
-struct split_bb_info
+class split_bb_info
 {
+public:
   unsigned int size;
   sreal time;
 };
@@ -118,8 +119,9 @@ static vec<split_bb_info> bb_info_vec;
 
 /* Description of split point.  */
 
-struct split_point
+class split_point
 {
+public:
   /* Size of the partitions.  */
   sreal header_time, split_time;
   unsigned int header_size, split_size;
@@ -979,8 +981,9 @@ visit_bb (basic_block bb, basic_block return_bb,
 
 /* Stack entry for recursive DFS walk in find_split_point.  */
 
-struct stack_entry
+class stack_entry
 {
+public:
   /* Basic block we are examining.  */
   basic_block bb;
 

@@ -65,8 +65,9 @@ static htab_t condition_table;
    define_cond_exec and define_subst patterns, then return
    them one at a time.  */
 
-struct queue_elem
+class queue_elem
 {
+public:
   rtx data;
   file_location loc;
   struct queue_elem *next;

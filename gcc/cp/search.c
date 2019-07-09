@@ -1803,8 +1803,9 @@ field_accessor_p (tree fn, tree field_decl, bool const_p)
 
 /* Callback data for dfs_locate_field_accessor_pre.  */
 
-struct locate_field_data
+class locate_field_data
 {
+public:
   locate_field_data (tree field_decl_, bool const_p_)
   : field_decl (field_decl_), const_p (const_p_) {}
 

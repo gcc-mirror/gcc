@@ -3236,8 +3236,9 @@ predict_paths_leading_to_edge (edge e, enum br_predictor pred,
 /* This is used to carry information about basic blocks.  It is
    attached to the AUX field of the standard CFG block.  */
 
-struct block_info
+class block_info
 {
+public:
   /* Estimated frequency of execution of basic_block.  */
   sreal frequency;
 
@@ -3249,8 +3250,9 @@ struct block_info
 };
 
 /* Similar information for edges.  */
-struct edge_prob_info
+class edge_prob_info
 {
+public:
   /* In case edge is a loopback edge, the probability edge will be reached
      in case header is.  Estimated number of iterations of the loop can be
      then computed as 1 / (1 - back_edge_prob).  */

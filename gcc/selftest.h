@@ -30,8 +30,9 @@ namespace selftest {
 /* A struct describing the source-location of a selftest, to make it
    easier to track down failing tests.  */
 
-struct location
+class location
 {
+public:
   location (const char *file, int line, const char *function)
     : m_file (file), m_line (line), m_function (function) {}
 

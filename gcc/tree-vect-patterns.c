@@ -286,7 +286,8 @@ type_conversion_p (tree name, stmt_vec_info stmt_vinfo, bool check_sign,
 
 /* Holds information about an input operand after some sign changes
    and type promotions have been peeled away.  */
-struct vect_unpromoted_value {
+class vect_unpromoted_value {
+public:
   vect_unpromoted_value ();
 
   void set_op (tree, vect_def_type, stmt_vec_info = NULL);

@@ -83,8 +83,9 @@ omp_grid_lastprivate_predicate (struct omp_for_data *fd)
 /* Structure describing the basic properties of the loop we ara analyzing
    whether it can be gridified and when it is gridified.  */
 
-struct grid_prop
+class grid_prop
 {
+public:
   /* True when we are doing tiling gridification, i.e. when there is a distinct
      distribute loop over groups and a loop construct over work-items.  False
      when distribute and parallel for loops form a combined construct.  */

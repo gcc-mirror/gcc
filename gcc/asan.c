@@ -1225,8 +1225,9 @@ shadow_mem_size (unsigned HOST_WIDE_INT size)
 #define RZ_BUFFER_SIZE 4
 
 /* ASAN redzone buffer container that handles emission of shadow bytes.  */
-struct asan_redzone_buffer
+class asan_redzone_buffer
 {
+public:
   /* Constructor.  */
   asan_redzone_buffer (rtx shadow_mem, HOST_WIDE_INT prev_offset):
     m_shadow_mem (shadow_mem), m_prev_offset (prev_offset),

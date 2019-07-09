@@ -121,8 +121,9 @@ struct arc_info
 /* Describes which locations (lines and files) are associated with
    a basic block.  */
 
-struct block_location_info
+class block_location_info
 {
+public:
   block_location_info (unsigned _source_file_idx):
     source_file_idx (_source_file_idx)
   {}
@@ -134,8 +135,9 @@ struct block_location_info
 /* Describes a basic block. Contains lists of arcs to successor and
    predecessor blocks.  */
 
-struct block_info
+class block_info
 {
+public:
   /* Constructor.  */
   block_info ();
 
@@ -191,8 +193,9 @@ block_info::block_info (): succ (NULL), pred (NULL), num_succ (0), num_pred (0),
 /* Describes a single line of source.  Contains a chain of basic blocks
    with code on it.  */
 
-struct line_info
+class line_info
 {
+public:
   /* Default constructor.  */
   line_info ();
 
@@ -230,8 +233,9 @@ static int flag_demangled_names = 0;
 
 /* Describes a single function. Contains an array of basic blocks.  */
 
-struct function_info
+class function_info
 {
+public:
   function_info ();
   ~function_info ();
 
@@ -356,8 +360,9 @@ struct coverage_info
 /* Describes a file mentioned in the block graph.  Contains an array
    of line info.  */
 
-struct source_info
+class source_info
 {
+public:
   /* Default constructor.  */
   source_info ();
 

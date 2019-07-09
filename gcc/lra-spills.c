@@ -97,8 +97,9 @@ static struct pseudo_slot *pseudo_slots;
 
 /* The structure describes a register or a stack slot which can be
    used for several spilled pseudos.  */
-struct slot
+class slot
 {
+public:
   /* First pseudo with given stack slot.  */
   int regno;
   /* Hard reg into which the slot pseudos are spilled.	The value is

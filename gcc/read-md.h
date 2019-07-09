@@ -23,7 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 
 /* Records a position in the file.  */
-struct file_location {
+class file_location {
+public:
   file_location () {}
   file_location (const char *, int, int);
 

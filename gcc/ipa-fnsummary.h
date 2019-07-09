@@ -72,8 +72,9 @@ struct agg_position_info
 /* Representation of function body size and time depending on the call
    context.  We keep simple array of record, every containing of predicate
    and time/size to account.  */
-struct GTY(()) size_time_entry
+class GTY(()) size_time_entry
 {
+public:
   /* Predicate for code to be executed.  */
   predicate exec_predicate;
   /* Predicate for value to be constant and optimized out in a specialized copy.
@@ -85,8 +86,9 @@ struct GTY(()) size_time_entry
 };
 
 /* Function inlining information.  */
-struct GTY(()) ipa_fn_summary
+class GTY(()) ipa_fn_summary
 {
+public:
   /* Keep all field empty so summary dumping works during its computation.
      This is useful for debugging.  */
   ipa_fn_summary ()
@@ -205,8 +207,9 @@ extern GTY(()) fast_function_summary <ipa_fn_summary *, va_gc>
   *ipa_fn_summaries;
 
 /* Information kept about callgraph edges.  */
-struct ipa_call_summary
+class ipa_call_summary
 {
+public:
   /* Keep all field empty so summary dumping works during its computation.
      This is useful for debugging.  */
   ipa_call_summary ()

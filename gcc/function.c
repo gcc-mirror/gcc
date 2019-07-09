@@ -556,7 +556,8 @@ assign_stack_local (machine_mode mode, poly_int64 size, int align)
    result, all temporaries are preserved.  A temporary is preserved by
    pretending it was allocated at the previous nesting level.  */
 
-struct GTY(()) temp_slot {
+class GTY(()) temp_slot {
+public:
   /* Points to next temporary slot.  */
   struct temp_slot *next;
   /* Points to previous temporary slot.  */

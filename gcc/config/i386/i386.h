@@ -2417,8 +2417,9 @@ const wide_int_bitmask PTA_KNM = PTA_KNL | PTA_AVX5124VNNIW
 
 #include "insn-attr-common.h"
 
-struct pta
+class pta
 {
+public:
   const char *const name;		/* processor name or nickname.  */
   const enum processor_type processor;
   const enum attr_cpu schedule;

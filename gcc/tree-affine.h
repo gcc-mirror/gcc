@@ -28,8 +28,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Element of an affine combination.  */
 
-struct aff_comb_elt
+class aff_comb_elt
 {
+public:
   /* The value of the element.  */
   tree val;
 
@@ -37,8 +38,9 @@ struct aff_comb_elt
   widest_int coef;
 };
 
-struct aff_tree
+class aff_tree
 {
+public:
   /* Type of the result of the combination.  */
   tree type;
 

@@ -243,8 +243,9 @@ along with GCC; see the file COPYING3.  If not see
 /* Data references (or phi nodes that carry data reference values across
    loop iterations).  */
 
-typedef struct dref_d
+typedef class dref_d
 {
+public:
   /* The reference itself.  */
   struct data_reference *ref;
 

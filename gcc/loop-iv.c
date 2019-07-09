@@ -85,8 +85,9 @@ enum iv_grd_result
 
 /* Information about a biv.  */
 
-struct biv_entry
+class biv_entry
 {
+public:
   unsigned regno;	/* The register of the biv.  */
   struct rtx_iv iv;	/* Value of the biv.  */
 };

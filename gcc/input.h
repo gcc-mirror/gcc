@@ -175,8 +175,9 @@ void diagnostics_file_cache_fini (void);
 
 void diagnostics_file_cache_forcibly_evict_file (const char *file_path);
 
-struct GTY(()) string_concat
+class GTY(()) string_concat
 {
+public:
   string_concat (int num, location_t *locs);
 
   int m_num;

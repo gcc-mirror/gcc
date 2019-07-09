@@ -188,8 +188,9 @@ dump_stmt_cost (FILE *f, void *data, int count, enum vect_cost_for_stmt kind,
 
 /* For mapping simduid to vectorization factor.  */
 
-struct simduid_to_vf : free_ptr_hash<simduid_to_vf>
+class simduid_to_vf : public free_ptr_hash<simduid_to_vf>
 {
+public:
   unsigned int simduid;
   poly_uint64 vf;
 

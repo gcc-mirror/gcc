@@ -41,7 +41,8 @@ enum expand_operand_type {
 };
 
 /* Information about an operand for instruction expansion.  */
-struct expand_operand {
+class expand_operand {
+public:
   /* The type of operand.  */
   ENUM_BITFIELD (expand_operand_type) type : 8;
 

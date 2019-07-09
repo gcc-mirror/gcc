@@ -26,8 +26,9 @@ typedef struct ifsese_s *ifsese;
 
 /* A Single Entry, Single Exit region is a part of the CFG delimited
    by two edges.  */
-struct sese_l
+class sese_l
 {
+public:
   sese_l (edge e, edge x) : entry (e), exit (x) {}
 
   operator bool () const { return entry && exit; }
@@ -71,8 +72,9 @@ vec_find (const vec<T> &v, const T &elem)
 }
 
 /* A helper structure for bookkeeping information about a scop in graphite.  */
-typedef struct sese_info_t
+typedef class sese_info_t
 {
+public:
   /* The SESE region.  */
   sese_l region;
 

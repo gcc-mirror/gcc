@@ -136,8 +136,9 @@ typedef std::map<unsigned, gcov_type> icall_target_map;
 typedef std::set<gimple *> stmt_set;
 
 /* Represent count info of an inline stack.  */
-struct count_info
+class count_info
 {
+public:
   /* Sampled count of the inline stack.  */
   gcov_type count;
 

@@ -713,8 +713,9 @@ struct transformed_insns
 
 /* Indexed by INSN_LUID, the collection of all data associated with
    a single instruction that is in the stream.  */
-struct _sel_insn_data
+class _sel_insn_data
 {
+public:
   /* The expression that contains vinsn for this insn and some
      flow-sensitive data like priority.  */
   expr_def expr;

@@ -22,8 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* We keep linked lists of DU_HEAD structures, each of which describes
    a chain of occurrences of a reg.  */
-struct du_head
+class du_head
 {
+public:
   /* The next chain.  */
   struct du_head *next_chain;
   /* The first and last elements of this chain.  */

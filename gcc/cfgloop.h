@@ -46,7 +46,8 @@ enum iv_extend_code
 
 /* The structure describing a bound on number of iterations of a loop.  */
 
-struct GTY ((chain_next ("%h.next"))) nb_iter_bound {
+class GTY ((chain_next ("%h.next"))) nb_iter_bound {
+public:
   /* The statement STMT is executed at most ...  */
   gimple *stmt;
 
@@ -113,7 +114,8 @@ struct GTY ((chain_next ("%h.next"))) control_iv {
 };
 
 /* Structure to hold information for each natural loop.  */
-struct GTY ((chain_next ("%h.next"))) loop {
+class GTY ((chain_next ("%h.next"))) loop {
+public:
   /* Index into loops array.  Note indices will never be reused after loop
      is destroyed.  */
   int num;
@@ -422,8 +424,9 @@ void mark_loop_for_removal (loop_p);
    computation is done, which would enable it to be different from the
    outer one?  */
 
-struct rtx_iv
+class rtx_iv
 {
+public:
   /* Its base and step (mode of base and step is supposed to be extend_mode,
      see the description above).  */
   rtx base, step;
@@ -448,8 +451,9 @@ struct rtx_iv
 /* The description of an exit from the loop and of the number of iterations
    till we take the exit.  */
 
-struct GTY(()) niter_desc
+class GTY(()) niter_desc
 {
+public:
   /* The edge out of the loop.  */
   edge out_edge;
 
@@ -651,8 +655,9 @@ enum li_flags
 
 /* The iterator for loops.  */
 
-struct loop_iterator
+class loop_iterator
 {
+public:
   loop_iterator (function *fn, loop_p *loop, unsigned flags);
   ~loop_iterator ();
 

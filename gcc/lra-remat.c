@@ -124,8 +124,9 @@ static cand_t *regno_cands;
 
 /* Data about basic blocks used for the rematerialization
    sub-pass.  */
-struct remat_bb_data
+class remat_bb_data
 {
+public:
   /* Basic block about which the below data are.  */
   basic_block bb;
   /* Registers changed in the basic block: */

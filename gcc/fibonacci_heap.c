@@ -219,8 +219,9 @@ test_union_of_equal_heaps ()
 
 /* Dummy struct for testing.  */
 
-struct heap_key
+class heap_key
 {
+public:
   heap_key (int k): key (k)
   {
   }

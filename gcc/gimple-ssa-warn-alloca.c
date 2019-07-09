@@ -118,7 +118,8 @@ enum alloca_type {
 };
 
 // Type of an alloca call with its corresponding limit, if applicable.
-struct alloca_type_and_limit {
+class alloca_type_and_limit {
+public:
   enum alloca_type type;
   // For ALLOCA_BOUND_MAYBE_LARGE and ALLOCA_BOUND_DEFINITELY_LARGE
   // types, this field indicates the assumed limit if known or

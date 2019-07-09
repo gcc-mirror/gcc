@@ -68,8 +68,9 @@ along with GCC; see the file COPYING3.  If not see
 
 */
 
-struct simple_case_node
+class simple_case_node
 {
+public:
   simple_case_node (tree low, tree high, tree code_label):
     m_low (low), m_high (high), m_code_label (code_label)
   {}

@@ -929,8 +929,9 @@ static poly_int64 hard_frame_pointer_adjustment = -1;
 
 /* Data for adjust_mems callback.  */
 
-struct adjust_mem_data
+class adjust_mem_data
 {
+public:
   bool store;
   machine_mode mem_mode;
   HOST_WIDE_INT stack_adjust;
@@ -8061,8 +8062,9 @@ delete_variable_part (dataflow_set *set, rtx loc, decl_or_value dv,
 
 /* Structure for passing some other parameters to function
    vt_expand_loc_callback.  */
-struct expand_loc_callback_data
+class expand_loc_callback_data
 {
+public:
   /* The variables and values active at this point.  */
   variable_table_type *vars;
 

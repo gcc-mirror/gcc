@@ -43,8 +43,9 @@ private:
 /* Represents the condition under which an operation should happen,
    and the value to use otherwise.  The condition applies elementwise
    (as for VEC_COND_EXPR) if the values are vectors.  */
-struct gimple_match_cond
+class gimple_match_cond
 {
+public:
   enum uncond { UNCOND };
 
   /* Build an unconditional op.  */
@@ -79,8 +80,9 @@ gimple_match_cond::any_else () const
 
 /* Represents an operation to be simplified, or the result of the
    simplification.  */
-struct gimple_match_op
+class gimple_match_op
 {
+public:
   gimple_match_op ();
   gimple_match_op (const gimple_match_cond &, code_helper, tree, unsigned int);
   gimple_match_op (const gimple_match_cond &,

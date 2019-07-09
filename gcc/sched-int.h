@@ -454,8 +454,9 @@ struct deps_reg
 };
 
 /* Describe state of dependencies used during sched_analyze phase.  */
-struct deps_desc
+class deps_desc
 {
+public:
   /* The *_insns and *_mems are paired lists.  Each pending memory operation
      will have a pointer to the MEM rtx on one list and a pointer to the
      containing insn on the other list in the same place in the list.  */

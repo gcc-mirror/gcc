@@ -535,8 +535,9 @@ go_type_decl (tree decl, int local)
 /* A container for the data we pass around when generating information
    at the end of the compilation.  */
 
-struct godump_container
+class godump_container
 {
+public:
   /* DECLs that we have already seen.  */
   hash_set<tree> decls_seen;
 

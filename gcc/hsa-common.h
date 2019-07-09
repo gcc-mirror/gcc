@@ -55,8 +55,9 @@ class hsa_bb;
 /* Class representing an input argument, output argument (result) or a
    variable, that will eventually end up being a symbol directive.  */
 
-struct hsa_symbol
+class hsa_symbol
 {
+public:
   /* Constructor.  */
   hsa_symbol (BrigType16_t type, BrigSegment8_t segment,
 	      BrigLinkage8_t linkage, bool global_scope_p = false,
@@ -1213,8 +1214,9 @@ enum hsa_function_kind
   HSA_FUNCTION
 };
 
-struct hsa_function_summary
+class hsa_function_summary
 {
+public:
   /* Default constructor.  */
   hsa_function_summary ();
 

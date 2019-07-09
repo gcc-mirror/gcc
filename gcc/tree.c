@@ -5107,8 +5107,9 @@ protected_set_expr_location (tree t, location_t loc)
 
 /* Data used when collecting DECLs and TYPEs for language data removal.  */
 
-struct free_lang_data_d
+class free_lang_data_d
 {
+public:
   free_lang_data_d () : decls (100), types (100) {}
 
   /* Worklist to avoid excessive recursion.  */

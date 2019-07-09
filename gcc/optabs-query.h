@@ -144,8 +144,9 @@ get_vcond_eq_icode (machine_mode vmode, machine_mode cmode)
 enum extraction_pattern { EP_insv, EP_extv, EP_extzv };
 
 /* Describes an instruction that inserts or extracts a bitfield.  */
-struct extraction_insn
+class extraction_insn
 {
+public:
   /* The code of the instruction.  */
   enum insn_code icode;
 

@@ -676,7 +676,7 @@ public:
 
 class sreal;
 
-class GTY(()) profile_count
+struct GTY(()) profile_count
 {
 public:
   /* Use 62bit to hold basic block counters.  Should be at least

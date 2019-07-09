@@ -68,8 +68,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* GIMPLE parser state.  */
 
-struct gimple_parser
+class gimple_parser
 {
+public:
   gimple_parser (c_parser *p) : parser (p), edges(), current_bb(NULL) {}
   /* c_parser is not visible here, use composition and fake inheritance
      via a conversion operator.  */
@@ -77,8 +78,9 @@ struct gimple_parser
   c_parser *parser;
 
   /* CFG build state.  */
-  struct gimple_parser_edge
+  class gimple_parser_edge
   {
+  public:
     int src;
     int dest;
     int flags;

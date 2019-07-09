@@ -3777,7 +3777,8 @@ omp_clause_aligned_alignment (tree clause)
 /* This structure is part of the interface between lower_rec_simd_input_clauses
    and lower_rec_input_clauses.  */
 
-struct omplow_simd_context {
+class omplow_simd_context {
+public:
   omplow_simd_context () { memset (this, 0, sizeof (*this)); }
   tree idx;
   tree lane;

@@ -370,8 +370,9 @@ find_var_scev_info (basic_block instantiated_below, tree var)
    analyzing a scalar evolution, instantiating a CHREC or
    resolving mixers.  */
 
-struct instantiate_cache_type
+class instantiate_cache_type
 {
+public:
   htab_t map;
   vec<scev_info_str> entries;
 
