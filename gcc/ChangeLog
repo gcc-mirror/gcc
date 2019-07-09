@@ -1,5 +1,11 @@
 2019-07-09  Martin Liska  <mliska@suse.cz>
 
+	* lto-compress.c (lto_normalized_zstd_level): Do not use
+	ZSTD_CLEVEL_DEFAULT as it is not default in old releases
+	of libzstd.  One can use 0 as a default compression level.
+
+2019-07-09  Martin Liska  <mliska@suse.cz>
+
 	* doc/invoke.texi: Add link from -fprofile-dir option.
 	Use better wording for 'gcno filename'.
 
