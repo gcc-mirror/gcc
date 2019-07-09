@@ -320,7 +320,12 @@ procedure Gnat1drv is
             Elaboration_Check => True,
             others            => False);
 
-         Dynamic_Elaboration_Checks := False;
+         --  Need to enable dynamic elaboration checks to disable strict
+         --  static checking performed by gnatbind. We are at the same time
+         --  suppressing actual compile time elaboration checks to simplify
+         --  the generated code.
+
+         Dynamic_Elaboration_Checks := True;
 
          --  Set STRICT mode for overflow checks if not set explicitly. This
          --  prevents suppressing of overflow checks by default, in code down
