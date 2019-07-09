@@ -525,9 +525,6 @@ package body Repinfo is
 
                   List_Entities (E, Bytes_Big_Endian, True);
 
-               elsif Is_Formal (E) and then In_Subprogram then
-                  null;
-
                elsif Ekind_In (E, E_Entry,
                                   E_Entry_Family,
                                   E_Subprogram_Type)
@@ -560,12 +557,10 @@ package body Repinfo is
                      List_Type_Info (E);
                   end if;
 
-               elsif Ekind_In (E, E_Variable, E_Constant) then
-                  if List_Representation_Info >= 2 then
-                     List_Object_Info (E);
-                  end if;
+               --  Note that formals are not annotated so we skip them here
 
-               elsif Ekind (E) = E_Loop_Parameter or else Is_Formal (E) then
+               elsif Ekind_In (E, E_Variable, E_Constant, E_Loop_Parameter)
+               then
                   if List_Representation_Info >= 2 then
                      List_Object_Info (E);
                   end if;
@@ -899,6 +894,8 @@ package body Repinfo is
    ---------------
 
    procedure List_Name (Ent : Entity_Id) is
+      C : Character;
+
    begin
       --  List the qualified name recursively, except
       --  at compilation unit level in default mode.
@@ -914,7 +911,16 @@ package body Repinfo is
 
       Get_Unqualified_Decoded_Name_String (Chars (Ent));
       Set_Casing (Unit_Casing);
-      Write_Str (Name_Buffer (1 .. Name_Len));
+
+      --  The name of operators needs to be properly escaped for JSON
+
+      for J in 1 .. Name_Len loop
+         C := Name_Buffer (J);
+         if C = '"' and then List_Representation_Info_To_JSON then
+            Write_Char ('\');
+         end if;
+         Write_Char (C);
+      end loop;
    end List_Name;
 
    ---------------------
