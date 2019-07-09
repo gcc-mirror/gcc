@@ -1,3 +1,8 @@
+2019-07-09  Justin Squirek  <squirek@adacore.com>
+
+	* sem_eval.adb (Expr_Value_E): Add conditional to correctly
+	handle constant enumerated character types.
+
 2019-07-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* libgnarl/s-osinte__mingw.ads (CRITICAL_SECTION): Use proper
