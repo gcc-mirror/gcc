@@ -4492,7 +4492,7 @@ package body Exp_Util is
    begin
       --  E is the package or generic package which is externally axiomatized
 
-      if Ekind_In (E, E_Generic_Package, E_Package)
+      if Is_Package_Or_Generic_Package (E)
         and then Has_Annotate_Pragma_For_External_Axiomatization (E)
       then
          return E;

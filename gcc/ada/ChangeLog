@@ -1,3 +1,8 @@
+2019-07-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Containing_Package_With_Ext_Axioms): Replace
+	low-level Ekind test with a high-level wrapper.
+
 2019-07-09  Arnaud Charlet  <charlet@adacore.com>
 
 	* libgnat/s-memory.adb: Disable calls to Abort defer/undefer
