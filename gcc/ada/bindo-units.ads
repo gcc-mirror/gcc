@@ -81,6 +81,10 @@ package Bindo.Units is
    pragma Inline (For_Each_Unit);
    --  Invoke Processor on each unit in the bind
 
+   function Has_No_Elaboration_Code (U_Id : Unit_Id) return Boolean;
+   pragma Inline (Has_No_Elaboration_Code);
+   --  Determine whether unit U_Id lacks elaboration code
+
    function Hash_Invocation_Signature
      (IS_Id : Invocation_Signature_Id) return Bucket_Range_Type;
    pragma Inline (Hash_Invocation_Signature);

@@ -152,6 +152,17 @@ package body Bindo.Augmentors is
          Visited : IGV_Sets.Membership_Set;
 
       begin
+         --  Nothing to do when the unit where the elaboration root resides
+         --  lacks elaboration code. This implies that any invocation edges
+         --  going out of the unit are unwanted. This behavior emulates the
+         --  old elaboration order mechanism.
+
+         if Has_No_Elaboration_Code (Lib_Graph, Root_Vertex) then
+            return;
+         end if;
+
+         --  Prepare the global data
+
          Visited := IGV_Sets.Create (Number_Of_Vertices (Inv_Graph));
 
          Visit_Vertex
