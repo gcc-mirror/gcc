@@ -570,12 +570,32 @@ finish_co_return_stmt (location_t kw, tree expr)
 					   "co_return"))
     return error_mark_node;
 
-  if (! coro_promise_type_found_p (current_function_decl, kw))
-    return error_mark_node;
-
   /* The current function has now become a coroutine, if it wasn't
      already.  */
   DECL_COROUTINE_P (current_function_decl) = 1;
+
+  if (processing_template_decl)
+    {
+      current_function_returns_value = 1;
+
+      if (check_for_bare_parameter_packs (expr))
+	return error_mark_node;
+
+      tree functype = TREE_TYPE (TREE_TYPE (current_function_decl));
+      /* If we don't know the promise type, we can't proceed, return the
+	 expression as it is.  */
+      if (dependent_type_p (functype) || type_dependent_expression_p (expr))
+	{
+	  expr = build2_loc (kw, CO_RETRN_EXPR, void_type_node, expr,
+			     NULL_TREE);
+	  expr = maybe_cleanup_point_expr_void (expr);
+	  expr = add_stmt (expr);
+	  return expr;
+	}
+    }
+
+  if (! coro_promise_type_found_p (current_function_decl, kw))
+    return error_mark_node;
 
   bool no_warning;
   expr = check_co_return_expr (expr, &no_warning);
@@ -589,33 +609,35 @@ finish_co_return_stmt (location_t kw, tree expr)
     TREE_NO_WARNING (current_function_decl) = true;
 
   if (!processing_template_decl && warn_sequence_point)
-    verify_sequence_points (expr);    
+    verify_sequence_points (expr);
 
   /* If the promise object doesn't have the correct return call then
      there's a mis-match between the co_return <expr> and this.  */
   tree co_ret_call = NULL_TREE;
   if (expr == NULL_TREE || VOID_TYPE_P (TREE_TYPE (expr)))
     {
-      tree crv_meth = lookup_promise_member (current_function_decl, "return_void",
+      tree crv_meth = lookup_promise_member (current_function_decl,
+					     "return_void",
 					     kw, true /*musthave*/);
       if (!crv_meth || crv_meth == error_mark_node)
 	return error_mark_node;
 
       co_ret_call = build_new_method_call
-	(DECL_COROUTINE_PROMISE_PROXY (current_function_decl), crv_meth,  NULL,
-	 NULL_TREE, LOOKUP_NORMAL, NULL, tf_warning_or_error);
+	(DECL_COROUTINE_PROMISE_PROXY (current_function_decl), crv_meth,
+	 NULL, NULL_TREE, LOOKUP_NORMAL, NULL, tf_warning_or_error);
     }
   else
     {
-      tree crv_meth = lookup_promise_member (current_function_decl, "return_value",
-					     kw, true /*musthave*/);
+      tree crv_meth = lookup_promise_member (current_function_decl,
+						 "return_value",
+						 kw, true /*musthave*/);
       if (!crv_meth || crv_meth == error_mark_node)
 	return error_mark_node;
 
       vec<tree, va_gc>* args = make_tree_vector_single (expr);
       co_ret_call = build_new_method_call
-	(DECL_COROUTINE_PROMISE_PROXY (current_function_decl), crv_meth,  &args,
-	 NULL_TREE, LOOKUP_NORMAL, NULL, tf_warning_or_error);
+	(DECL_COROUTINE_PROMISE_PROXY (current_function_decl), crv_meth,
+	 &args, NULL_TREE, LOOKUP_NORMAL, NULL, tf_warning_or_error);
     }
 
   /* Makes no sense for a co-routine really. */

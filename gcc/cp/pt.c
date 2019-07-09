@@ -17049,6 +17049,10 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       finish_return_stmt (RECUR (TREE_OPERAND (t, 0)));
       break;
 
+    case CO_RETRN_EXPR:
+      finish_co_return_stmt (input_location, RECUR (TREE_OPERAND (t, 0)));
+      break;
+
     case EXPR_STMT:
       tmp = RECUR (EXPR_STMT_EXPR (t));
       if (EXPR_STMT_STMT_EXPR_RESULT (t))
