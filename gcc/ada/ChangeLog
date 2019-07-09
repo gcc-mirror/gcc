@@ -1,5 +1,10 @@
 2019-07-09  Yannick Moy  <moy@adacore.com>
 
+	* sem_spark.adb (Get_Perm_Or_Tree): Issue an error when
+	encountering unknown global variable.
+
+2019-07-09  Yannick Moy  <moy@adacore.com>
+
 	* sem_spark.adb (Check_Expression): Change signature to take an
 	Extended_Checking_Mode, for handling read permission checking of
 	sub-expressions in an assignment.
