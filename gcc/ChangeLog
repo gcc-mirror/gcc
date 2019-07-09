@@ -1,3 +1,15 @@
+2019-07-09  Richard Biener  <rguenther@suse.de>
+
+	* gimple-match.h (gimple_match_op::resimplify): New.
+	(gimple_resimplify1, gimple_resimplify2, gimple_resimplify3,
+	gimple_resimplify4, gimple_resimplify5): Remove.
+	* gimple-match-head.c (gimple_resimplify1, gimple_resimplify2,
+	gimple_resimplify3, gimple_resimplify4, gimple_resimplify5):
+	Make static.
+	(gimple_match_op::resimplify): New.
+	* tree-ssa-sccvn.c (vn_nary_build_or_lookup_1): Valueize
+	according to availability.  Use gimple_match_op::resimplify. 
+
 2019-07-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ira-emit.c (emit_moves): Skip DEBUG_INSNs when setting the location.
