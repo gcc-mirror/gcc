@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "gcc-rich-location.h"
 #include "selftest.h"
+extern void debug_tree(tree);
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
@@ -16191,6 +16192,11 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	 to the containing function, inlined copy or so.  */
       return t;
 
+    case CO_AWAIT_EXPR:
+      return tsubst_expr (t, args, complain, in_decl,
+			  /*integral_constant_expression_p=*/false);
+      break;
+
     default:
       /* We shouldn't get here, but keep going if !flag_checking.  */
       if (flag_checking)
@@ -17055,6 +17061,12 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
     case CO_YIELD_EXPR:
       stmt = finish_co_yield_expr (input_location,
+				   RECUR (TREE_OPERAND (t, 0)));
+      RETURN (stmt);
+      break;
+
+    case CO_AWAIT_EXPR:
+      stmt = finish_co_await_expr (input_location,
 				   RECUR (TREE_OPERAND (t, 0)));
       RETURN (stmt);
       break;

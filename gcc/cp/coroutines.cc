@@ -313,7 +313,15 @@ coro_function_valid_p (tree fndecl)
 }
 
 /*  This performs 8.3.8 bullet 3.3 and validates the interface obtained.
-    It is also used to build the initial and final suspend points.   */
+    It is also used to build the initial and final suspend points.
+
+    A is the original await expr.
+    MODE:
+      0 = regular function body co_await
+      1 = await from a co_yield
+      2 = initial await
+      3 = final await.
+*/
 static tree
 build_co_await (location_t loc, tree a, tree mode)
 {
@@ -438,11 +446,6 @@ finish_co_await_expr (location_t kw, tree expr)
 					   "co_await"))
     return error_mark_node;
 
-  /* We must be able to look up the "await_transform" method in the scope of
-     the promise type, and obtain it's return type.  */
-  if (!coro_promise_type_found_p (current_function_decl, kw))
-    return error_mark_node;
-
   /* The current function has now become a coroutine, if it wasn't already.  */
   DECL_COROUTINE_P (current_function_decl) = 1;
 
@@ -451,6 +454,26 @@ finish_co_await_expr (location_t kw, tree expr)
       error_at (kw, "%<co_await%> requires an expression." );
       return error_mark_node;
     }
+
+  if (error_operand_p (expr))
+    return error_mark_node;
+
+  if (processing_template_decl)
+    {
+      if (check_for_bare_parameter_packs (expr))
+	return error_mark_node;
+
+      /* If we don't know the promise type, we can't proceed.  */
+      tree functype = TREE_TYPE (TREE_TYPE (current_function_decl));
+      if (dependent_type_p (functype) || type_dependent_expression_p (expr))
+	return build5_loc (kw, CO_AWAIT_EXPR, NULL_TREE, expr, NULL_TREE,
+			     NULL_TREE, NULL_TREE, integer_zero_node);
+    }
+
+  /* We must be able to look up the "await_transform" method in the scope of
+     the promise type, and obtain its return type.  */
+  if (!coro_promise_type_found_p (current_function_decl, kw))
+    return error_mark_node;
 
   /* The incoming cast expression might be transformed by a promise
      'await_transform()'.  */
@@ -2218,7 +2241,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer, tree *suspended_p)
   tree final_await = build_init_or_final_await (fn_start, true);
   if (final_await == error_mark_node)
     return false;
-  /* The type of the frame var for this is the type of it's temp proxy.  */
+  /* The type of the frame var for this is the type of its temp proxy.  */
   tree final_suspend_type = TREE_TYPE (TREE_OPERAND (final_await, 1));
 
   tree coro_frame_type = xref_tag (record_type, get_identifier ("_R_frame"),
