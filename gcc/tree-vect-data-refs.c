@@ -4360,6 +4360,8 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf, bool *fatal)
 	      STMT_VINFO_VECTORIZABLE (stmt_info) = false;
 	      continue;
 	    }
+	  if (fatal)
+	    *fatal = false;
 	  return opt_result::failure_at (stmt_info->stmt,
 					 "not vectorized:"
 					 " no vectype for stmt: %G"
