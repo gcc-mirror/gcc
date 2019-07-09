@@ -754,7 +754,11 @@ package Sinfo is
    --  GNATprove mode. As a special case, the front end does not insert a
    --  Do_Division_Check flag on float exponentiation expressions, for the case
    --  where the value is 0.0 and the exponent is negative, although this case
-   --  does lead to a division check failure.
+   --  does lead to a division check failure. As another special case,
+   --  the frontend does not insert a Do_Range_Check on an allocator where
+   --  the designated type is scalar, and the designated type is more
+   --  constrained than the type of the initialized allocator value or the type
+   --  of the default value for an uninitialized allocator.
 
    --  Note: the expander always takes care of the Do_Range check case,
    --  so this flag will never be set in the expanded tree passed to the
