@@ -24,7 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Binde;
-with Debug; use Debug;
+with Opt;   use Opt;
 
 with Bindo.Elaborators;
 use  Bindo.Elaborators;
@@ -426,9 +426,7 @@ package body Bindo is
    --    Units and routines of interest:
    --      Bindo.Elaborators
    --      Elaborate_Library_Graph
-   --      Elaborate_Units_Common
-   --      Elaborate_Units_Dynamic
-   --      Elaborate_Units_Static
+   --      Elaborate_Units
    --
    --  * Invalid invocation graph
    --
@@ -490,40 +488,19 @@ package body Bindo is
       Main_Lib_File : File_Name_Type)
    is
    begin
-      --  ??? Enable the following code when switching from the old to the new
-      --  elaboration-order mechanism.
-
       --  Use the library graph and heuristic-based elaboration order when
       --  switch -H (legacy elaboration-order mode enabled).
 
-      --  if Legacy_Elaboration_Order then
-      --     Binde.Find_Elab_Order (Order, Main_Lib_File);
+      if Legacy_Elaboration_Order then
+         Binde.Find_Elab_Order (Order, Main_Lib_File);
 
       --  Otherwise use the invocation and library-graph-based elaboration
       --  order.
 
-      --  else
-      --     Invocation_And_Library_Graph_Elaborators.Elaborate_Units
-      --       (Order         => Order,
-      --        Main_Lib_File => Main_Lib_File);
-      --  end if;
-
-      --  ??? Remove the following code when switching from the old to the new
-      --  elaboration-order mechanism.
-
-      --  Use the invocation and library-graph-based elaboration order when
-      --  switch -d_N (new bindo order) is in effect.
-
-      if Debug_Flag_Underscore_NN then
+      else
          Invocation_And_Library_Graph_Elaborators.Elaborate_Units
            (Order         => Order,
             Main_Lib_File => Main_Lib_File);
-
-      --  Otherwise use the library-graph and heuristic-based elaboration
-      --  order.
-
-      else
-         Binde.Find_Elab_Order (Order, Main_Lib_File);
       end if;
    end Find_Elaboration_Order;
 

@@ -496,12 +496,6 @@ package body Sem_Elab is
    --           actual subprograms through generic formal subprograms. As a
    --           result, the calls are not recorded or processed.
    --
-   --  -gnatd_G encode invocation graph in ALI files
-   --
-   --           The ABE mechanism encodes the invocation graph of the main
-   --           unit. This includes elaboration code, as well as invocation
-   --           constructs.
-   --
    --  -gnatd_i ignore activations and calls to instances for elaboration
    --
    --           The ABE mechanism ignores calls and task activations when they
@@ -12192,19 +12186,10 @@ package body Sem_Elab is
          Main_Cunit : constant Node_Id := Cunit (Main_Unit);
 
       begin
-         --  ??? Remove the following use of the debug flag when switching from
-         --  the old to the new elaboration-order mechanism.
-
-         --  Nothing to do when switch -gnatd_G (encode invocation graph in ALI
-         --  files) is not in effect.
-
-         if not Debug_Flag_Underscore_GG then
-            return False;
-
          --  Nothing to do when compiling for GNATprove because the invocation
          --  graph is not needed.
 
-         elsif GNATprove_Mode then
+         if GNATprove_Mode then
             return False;
 
          --  Nothing to do when the compilation will not produce an ALI file

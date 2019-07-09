@@ -178,7 +178,7 @@ package body Debug is
    --  d_D
    --  d_E
    --  d_F  Encode full invocation paths in ALI files
-   --  d_G  Encode invocation graph in ALI files
+   --  d_G
    --  d_H
    --  d_I
    --  d_J
@@ -388,7 +388,7 @@ package body Debug is
    --  d_K
    --  d_L  Output library graph
    --  d_M
-   --  d_N  New bindo order
+   --  d_N
    --  d_O
    --  d_P  Output cycle paths
    --  d_Q
@@ -1001,9 +1001,6 @@ package body Debug is
    --       an external target, offering additional information to GNATBIND for
    --       purposes of error diagnostics.
 
-   --  d_G  The compiler encodes the invocation graph of a unit in its ALI
-   --       file.
-
    --  d_L  Output trace information on elaboration checking. This debug switch
    --       causes output to be generated showing each call or instantiation as
    --       it is checked, and the progress of the recursive trace through
@@ -1163,8 +1160,6 @@ package body Debug is
 
    --  d_L  GNATBIND outputs the contents of the library graph in textual
    --       format to standard output.
-
-   --  d_N  GNATBIND utilizes the elaboration order provided by bindo
 
    --  d_P  GNATBIND outputs the cycle paths to standard output
 
