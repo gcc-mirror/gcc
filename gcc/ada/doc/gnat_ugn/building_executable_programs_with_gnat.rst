@@ -5290,7 +5290,7 @@ Using ``gcc`` for Syntax Checking
 
   compiles file :file:`x.adb` in syntax-check-only mode. You can check a
   series of files in a single command
-  , and can use wild cards to specify such a group of files.
+  , and can use wildcards to specify such a group of files.
   Note that you must specify the :switch:`-c` (compile
   only) flag in addition to the :switch:`-gnats` flag.
 

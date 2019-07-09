@@ -1,3 +1,13 @@
+2019-07-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/the_gnat_library.rst,
+	doc/gnat_ugn/building_executable_programs_with_gnat.rst,
+	erroutc.adb, libgnat/g-comlin.adb, libgnat/g-comlin.ads,
+	libgnat/g-regexp.ads, libgnat/g-regpat.ads,
+	libgnat/g-spipat.ads, libgnat/s-os_lib.ads,
+	libgnat/s-regexp.ads: Reword "wild card" to "wildcard".
+	* gnat_rm.texi, gnat_ugn.texi: Regenerate.
+
 2019-07-09  Yannick Moy  <moy@adacore.com>
 
 	* sem_spark.adb (Check_Expression): Handle correctly implicit
