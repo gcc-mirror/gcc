@@ -8963,8 +8963,7 @@ package body Sem_Prag is
             Mark_Rewrite_Insertion (Decl);
 
          else
-            Error_Pragma_Arg ("no matching type found for pragma%",
-            Arg2);
+            Error_Pragma_Arg ("no matching type found for pragma%", Arg2);
          end if;
       end Process_Import_Predefined_Type;
 

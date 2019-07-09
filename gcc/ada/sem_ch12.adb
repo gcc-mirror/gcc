@@ -10315,7 +10315,7 @@ package body Sem_Ch12 is
       --  such as a parent generic within the body of a generic child.
 
       if not Is_Entity_Name (Actual)
-        or else not Ekind_In (Entity (Actual), E_Package, E_Generic_Package)
+        or else not Ekind_In (Entity (Actual), E_Generic_Package, E_Package)
       then
          Error_Msg_N
            ("expect package instance to instantiate formal", Actual);
@@ -10354,13 +10354,11 @@ package body Sem_Ch12 is
               ("previous error in declaration of formal package", Actual);
             Abandon_Instantiation (Actual);
 
-         elsif
-           Is_Instance_Of (Parent_Spec, Get_Instance_Of (Gen_Parent))
-         then
+         elsif Is_Instance_Of (Parent_Spec, Get_Instance_Of (Gen_Parent)) then
             null;
 
-         --  If this is the current instance of an enclosing generic, that
-         --  unit is the generic package we need.
+         --  If this is the current instance of an enclosing generic, that unit
+         --  is the generic package we need.
 
          elsif In_Open_Scopes (Actual_Pack)
            and then Ekind (Actual_Pack) = E_Generic_Package
@@ -10425,7 +10423,7 @@ package body Sem_Ch12 is
 
             Actual_Ent := First_Entity (Actual_Pack);
             Actual_Of_Formal :=
-               First (Visible_Declarations (Specification (Analyzed_Formal)));
+              First (Visible_Declarations (Specification (Analyzed_Formal)));
             while Present (Actual_Ent)
               and then Actual_Ent /= First_Private_Entity (Actual_Pack)
             loop
