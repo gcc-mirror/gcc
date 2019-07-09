@@ -10369,7 +10369,7 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
       if (!slp_node)
 	{
-	  if (swap_p)
+	  if (swap_p && j == 0)
 	    std::swap (vec_rhs1, vec_rhs2);
 	  vec_oprnds0.quick_push (vec_rhs1);
 	  vec_oprnds1.quick_push (vec_rhs2);
