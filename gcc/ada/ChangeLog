@@ -1,3 +1,7 @@
+2019-07-09  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads: Fix a typo.
+
 2019-07-09  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Scope_Within_Or_Same): Handle properly task
