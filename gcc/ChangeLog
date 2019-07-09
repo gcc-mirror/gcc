@@ -1,3 +1,24 @@
+2019-07-09  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* config/arm/crypto.md:
+	(crypto_<crypto_pattern>): Redefine aese/aesd pattern with xor.
+	(crypto_<crypto_pattern>): Remove attribute enabled for aesmc.
+	(crypto_<crypto_pattern>): Split CRYPTO_BINARY into 2 patterns.
+	(*aarch32_crypto_aese_fused, *aarch32_crypto_aesd_fused): New.
+	* config/arm/arm.c
+	(aarch_macro_fusion_pair_p): Remove aes/aesmc fusion check.
+	* config/arm/aarch-common-protos.h
+	(aarch_crypto_can_dual_issue): Remove.
+	* config/arm/aarch-common.c
+	(aarch_crypto_can_dual_issue): Likewise.
+	* config/arm/exynos-m1.md: Remove aese/aesmc fusion.
+	* config/arm/cortex-a53.md: Likewise.
+	* config/arm/cortex-a57.md: Likewise.
+	* config/arm/iterators.md:
+	(CRYPTO_BINARY): Redefine.
+	(CRYPTO_UNARY): Removed.
+	(CRYPTO_AES, CRYPTO_AESMC): New.
+
 2019-07-09  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (struct vn_walk_cb_data): Add orig_ref member.

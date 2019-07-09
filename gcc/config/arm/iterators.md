@@ -413,10 +413,11 @@
 (define_int_iterator CRC [UNSPEC_CRC32B UNSPEC_CRC32H UNSPEC_CRC32W
                           UNSPEC_CRC32CB UNSPEC_CRC32CH UNSPEC_CRC32CW])
 
-(define_int_iterator CRYPTO_UNARY [UNSPEC_AESMC UNSPEC_AESIMC])
+(define_int_iterator CRYPTO_AESMC [UNSPEC_AESMC UNSPEC_AESIMC])
 
-(define_int_iterator CRYPTO_BINARY [UNSPEC_AESD UNSPEC_AESE
-                                    UNSPEC_SHA1SU1 UNSPEC_SHA256SU0])
+(define_int_iterator CRYPTO_AES [UNSPEC_AESD UNSPEC_AESE])
+
+(define_int_iterator CRYPTO_BINARY [UNSPEC_SHA1SU1 UNSPEC_SHA256SU0])
 
 (define_int_iterator CRYPTO_TERNARY [UNSPEC_SHA1SU0 UNSPEC_SHA256H
                                      UNSPEC_SHA256H2 UNSPEC_SHA256SU1])
