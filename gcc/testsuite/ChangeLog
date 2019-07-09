@@ -1,3 +1,11 @@
+2019-07-09  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/cmse/bitfield-1.c: Fix address of .gnu.sgstubs
+	section.
+	* gcc.target/arm/cmse/bitfield-2.c: Likewise.
+	* gcc.target/arm/cmse/bitfield-3.c: Likewise.
+	* gcc.target/arm/cmse/struct-1.c: Likewise.
+
 2019-07-09  Sylvia Taylor  <sylvia.taylor@arm.com>
 
 	* gcc.target/arm/aes-fuse-1.c: New.

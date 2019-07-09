@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "--save-temps -mcmse -Wl,--section-start,.gnu.sgstubs=0x20400000" } */
+/* { dg-options "--save-temps -mcmse -Wl,--section-start,.gnu.sgstubs=0x00400000" } */
 
 typedef struct
 {
