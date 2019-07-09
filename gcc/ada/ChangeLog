@@ -1,3 +1,13 @@
+2019-07-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Equality_Op): If the node was overloaded,
+	set properly the entity to which the node has been resolved. The
+	original entity is the first one found during analysis, and is
+	not necessarily the resolved one.
+	(Resolve_Op_Not): If the argument of negation is an overloaded
+	equality operation, call its resolution directly given that the
+	context type does not participate in overload resolution.
+
 2019-07-09  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* bindo.adb: Remove with and use clauses for Debug.  Add with
