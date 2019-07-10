@@ -368,7 +368,7 @@ package body Debug is
    --  d_q
    --  d_r
    --  d_s
-   --  d_t
+   --  d_t  Output cycle detection trace information
    --  d_u
    --  d_v
    --  d_w
@@ -380,6 +380,7 @@ package body Debug is
    --  d_B
    --  d_C  Diagnose all cycles
    --  d_D
+   --  d_E
    --  d_F
    --  d_G
    --  d_H
@@ -394,7 +395,7 @@ package body Debug is
    --  d_Q
    --  d_R
    --  d_S
-   --  d_T  Output elaboration order and cycle detection trace information
+   --  d_T  Output elaboration order trace information
    --  d_U
    --  d_V  Validate bindo cycles, graphs, and order
    --  d_W
@@ -1149,6 +1150,9 @@ package body Debug is
    --       elaboration order and no longer creates an implicit dependency on
    --       the body of the argument.
 
+   --  d_t  GNATBIND output trace information of cycle detection activities to
+   --       standard output.
+
    --  d_A  GNATBIND output the contents of all ALI invocation-related tables
    --       in textual format to standard output.
 
@@ -1163,8 +1167,8 @@ package body Debug is
 
    --  d_P  GNATBIND outputs the cycle paths to standard output
 
-   --  d_T  GNATBIND outputs trace information of elaboration order and cycle
-   --       detection activities to standard output.
+   --  d_T  GNATBIND outputs trace information of elaboration order detection
+   --       activities to standard output.
 
    --  d_V  GNATBIND validates the invocation graph, library graph along with
    --       its cycles, and the elaboration order.
