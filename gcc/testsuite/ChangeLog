@@ -1,3 +1,8 @@
+2019-07-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/limited3.adb, gnat.dg/limited3_pkg.adb,
+	gnat.dg/limited3_pkg.ads: New testcase.
+
 2019-07-10  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/incomplete7.adb, gnat.dg/incomplete7.ads: New testcase.
