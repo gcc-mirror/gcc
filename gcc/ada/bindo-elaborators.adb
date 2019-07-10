@@ -274,6 +274,10 @@ package body Bindo.Elaborators is
       --  Determine whether vertex Vertex of library graph G is suitable for
       --  weak elaboration.
 
+      procedure Set_Unit_Elaboration_Positions (Order : Unit_Id_Table);
+      pragma Inline (Set_Unit_Elaboration_Positions);
+      --  Set the ALI.Units positions of all elaboration units in order Order
+
       procedure Trace_Component
         (G    : Library_Graph;
          Comp : Component_Id;
@@ -749,6 +753,11 @@ package body Bindo.Elaborators is
 
          if Status = Order_OK then
             Validate_Elaboration_Order (Order);
+
+            --  Set attribute Elab_Position of table ALI.Units for all units in
+            --  the elaboration order.
+
+            Set_Unit_Elaboration_Positions (Order);
 
             --  Output the dependencies among units when switch -e (output
             --  complete list of elaboration order dependencies) is active.
@@ -1303,6 +1312,23 @@ package body Bindo.Elaborators is
            Is_Dynamically_Elaborated (G, Vertex)
              and then Is_Weakly_Elaborable_Vertex (G, Vertex);
       end Is_Suitable_Weakly_Elaborable_Vertex;
+
+      ------------------------------------
+      -- Set_Unit_Elaboration_Positions --
+      ------------------------------------
+
+      procedure Set_Unit_Elaboration_Positions (Order : Unit_Id_Table) is
+         U_Id : Unit_Id;
+
+      begin
+         for Position in Unit_Id_Tables.First ..
+                         Unit_Id_Tables.Last (Order)
+         loop
+            U_Id := Order.Table (Position);
+
+            ALI.Units.Table (U_Id).Elab_Position := Position;
+         end loop;
+      end Set_Unit_Elaboration_Positions;
 
       ---------------------
       -- Trace_Component --
