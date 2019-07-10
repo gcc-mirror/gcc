@@ -1,3 +1,8 @@
+2019-07-10  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Support
+	_Literal (int *) &x for address literals.
+
 2019-07-09  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/61339
