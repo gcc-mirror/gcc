@@ -2594,8 +2594,8 @@ package body Exp_Ch6 is
       ----------------------------------
 
       function Is_Class_Wide_Interface_Type (E : Entity_Id) return Boolean is
-         Typ : Entity_Id := E;
          DDT : Entity_Id;
+         Typ : Entity_Id := E;
 
       begin
          if Has_Non_Limited_View (Typ) then

@@ -41,8 +41,8 @@ package Warnsw is
    Warn_On_Anonymous_Allocators : Boolean := False;
    --  Warn when allocators for anonymous access types are present, which,
    --  although not illegal in Ada, may be confusing to users due to how
-   --  accessibility checks get generated. Off by default, modified by use of
-   --  -gnatw_a/_A and set as part of -gnatwa.
+   --  accessibility checks get generated. Off by default, modified by use
+   --  of -gnatw_a/_A and set as part of -gnatwa.
 
    Warn_On_Late_Primitives : Boolean := False;
    --  Warn when tagged type public primitives are defined after its private

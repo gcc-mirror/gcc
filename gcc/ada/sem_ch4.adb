@@ -6178,20 +6178,17 @@ package body Sem_Ch4 is
            and then Ekind (Entity (Name (N))) = E_Function
            and then Present (Homonym (Entity (Name (N))))
          then
-
-            --  A name may appear overloaded if it has a homonym, even if
-            --  that homonym is non-overloadable, in which case the overload
-            --  list is in fact empty. This specialized case deserves a
-            --  special message if the homonym is a child package.
+            --  A name may appear overloaded if it has a homonym, even if that
+            --  homonym is non-overloadable, in which case the overload list is
+            --  in fact empty. This specialized case deserves a special message
+            --  if the homonym is a child package.
 
             declare
                Nam : constant Node_Id := Name (N);
                H   : constant Entity_Id := Homonym (Entity (Nam));
 
             begin
-               if Ekind (H) = E_Package
-                 and then Is_Child_Unit (H)
-               then
+               if Ekind (H) = E_Package and then Is_Child_Unit (H) then
                   Error_Msg_Qual_Level := 2;
                   Error_Msg_NE ("if an entity in package& is meant, ", Nam, H);
                   Error_Msg_NE ("\use a fully qualified name", Nam, H);
@@ -6208,9 +6205,9 @@ package body Sem_Ch4 is
                end if;
             end loop;
 
-            --  If all interpretations are procedures, this deserves a
-            --  more precise message. Ditto if this appears as the prefix
-            --  of a selected component, which may be a lexical error.
+            --  If all interpretations are procedures, this deserves a more
+            --  precise message. Ditto if this appears as the prefix of a
+            --  selected component, which may be a lexical error.
 
             Error_Msg_N
               ("\context requires function call, found procedure name", Nam);
@@ -6226,8 +6223,7 @@ package body Sem_Ch4 is
       elsif Nkind (N) = N_Procedure_Call_Statement
         and then not Void_Interp_Seen
       then
-         Error_Msg_N (
-         "\function name found in procedure call", Nam);
+         Error_Msg_N ("\function name found in procedure call", Nam);
       end if;
 
       All_Errors_Mode := Err_Mode;

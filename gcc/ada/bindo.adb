@@ -322,9 +322,9 @@ package body Bindo is
    --        In addition, GNATbind does not create an edge to the body of the
    --        pragma argument.
    --
-   --  -d_t  Output cycle detection trace information
+   --  -d_t  Output cycle-detection trace information
    --
-   --        GNATbind outputs trace information on cycle detection activities
+   --        GNATbind outputs trace information on cycle-detection activities
    --        to standard output.
    --
    --  -d_A  Output ALI invocation tables

@@ -3651,7 +3651,7 @@ package body Sem_Ch3 is
    procedure Analyze_Object_Declaration (N : Node_Id) is
       Loc       : constant Source_Ptr := Sloc (N);
       Id        : constant Entity_Id  := Defining_Identifier (N);
-      Next_Decl : constant Node_Id := Next (N);
+      Next_Decl : constant Node_Id    := Next (N);
 
       Act_T : Entity_Id;
       T     : Entity_Id;
@@ -4507,12 +4507,11 @@ package body Sem_Ch3 is
 
             declare
                Check : constant Node_Id :=
-                 Make_Predicate_Check (T, New_Occurrence_Of (Id, Loc));
+                         Make_Predicate_Check (T, New_Occurrence_Of (Id, Loc));
 
             begin
                if No (Next_Decl) then
                   Append_To (List_Containing (N), Check);
-
                else
                   Insert_Before (Next_Decl, Check);
                end if;

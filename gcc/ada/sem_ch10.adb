@@ -4355,7 +4355,7 @@ package body Sem_Ch10 is
                   end;
                end if;
 
-            --  The With_Clause may be on a grand-child or one of its further
+            --  The With_Clause may be on a grandchild or one of its further
             --  descendants, which makes a child immediately visible. Examine
             --  ancestry to determine whether such a child exists. For example,
             --  if current unit is A.C, and with_clause is on A.X.Y.Z, then X
@@ -4394,7 +4394,7 @@ package body Sem_Ch10 is
                   --  Scan context of current unit, to check whether there is
                   --  a with_clause on the same unit as a private with-clause
                   --  on a parent, in which case child unit is visible. If the
-                  --  unit is a grand-child, the same applies to its parent.
+                  --  unit is a grandchild, the same applies to its parent.
 
                   ----------------
                   -- In_Context --

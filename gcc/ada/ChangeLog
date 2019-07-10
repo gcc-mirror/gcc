@@ -1,3 +1,10 @@
+2019-07-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* bindo-graphs.adb, bindo.adb, debug.adb, exp_ch6.adb,
+	sem_ch10.adb, sem_ch13.adb, sem_ch3.adb, sem_ch4.adb,
+	sem_ch6.adb, sem_ch7.adb, sem_res.adb, sem_spark.adb,
+	sem_util.adb, warnsw.ads: Minor reformatting.
+
 2019-07-10  Joffrey Huguet  <huguet@adacore.com>
 
 	* libgnat/a-strbou.ads, libgnat/a-strfix.ads,

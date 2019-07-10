@@ -8716,9 +8716,7 @@ package body Sem_Util is
          if Is_Subprogram_Or_Generic_Subprogram (Subp) then
             Body_Id := Subprogram_Body_Entity (Subp);
 
-         elsif Is_Entry (Subp)
-           or else Is_Task_Type (Subp)
-         then
+         elsif Is_Entry (Subp) or else Is_Task_Type (Subp) then
             Body_Id := Corresponding_Body (Parent (Subp));
 
          --  ??? It should be possible to retrieve the Refined_Global on the
