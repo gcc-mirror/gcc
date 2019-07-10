@@ -1,5 +1,9 @@
 2019-07-10  Ed Schonberg  <schonberg@adacore.com>
 
+	* gnat.dg/modular5.adb: New testcase.
+
+2019-07-10  Ed Schonberg  <schonberg@adacore.com>
+
 	* gnat.dg/limited3.adb, gnat.dg/limited3_pkg.adb,
 	gnat.dg/limited3_pkg.ads: New testcase.
 
