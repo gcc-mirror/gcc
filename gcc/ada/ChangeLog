@@ -1,3 +1,16 @@
+2019-07-10  Claire Dross  <dross@adacore.com>
+
+	* sem_spark.adb (Check_Expression): Allow digits constraints as
+	input.
+	(Illegal_Global_Usage): Pass in the entity.
+	(Is_Subpath_Expression): New function to allow different nodes
+	as inner parts of a path expression.
+	(Read_Indexes): Allow concatenation and aggregates with box
+	expressions.  Allow attributes Update and Loop_Entry.
+	(Check_Expression): Allow richer membership test.
+	(Check_Node): Ignore bodies of generics.
+	(Get_Root_Object): Allow concatenation and attributes.
+
 2019-07-10  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch6.adb (Check_Discriminant_Conformance): Use Find_Type to
