@@ -3972,7 +3972,7 @@ execution of this erroneous program:
 
     ::
 
-       $ gnatmem [ switches ] user_program
+       $ gnatmem [ switches ] [ DEPTH ] user_program
 
   The program must have been linked with the instrumented version of the
   allocation and deallocation routines. This is done by linking with the
@@ -4062,15 +4062,16 @@ execution of this erroneous program:
     memory leaks. Omits statistical information.
 
 
-  .. index:: N switch (gnatmem)
+  .. index:: DEPTH switch (gnatmem)
 
-  :samp:`{N}`
-    ``N`` is an integer literal (usually between 1 and 10) which controls the
-    depth of the backtraces defining allocation root. The default value for
-    N is 1. The deeper the backtrace, the more precise the localization of
+  :samp:`{DEPTH}`
+    ``DEPTH`` is an integer literal (usually between 1 and 10) which controls
+    the depth of the backtraces defining allocation root. The default value for
+    DEPTH is 1. The deeper the backtrace, the more precise the localization of
     the root. Note that the total number of roots can depend on this
-    parameter. This parameter must be specified *before* the name of the
-    executable to be analyzed, to avoid ambiguity.
+    parameter, in other words there may be more roots when the requested
+    backtrace depth is higher. This parameter must be specified *before* the
+    name of the executable to be analyzed, to avoid ambiguity.
 
 
   .. index:: -b (gnatmem)
