@@ -3009,14 +3009,15 @@ package body Sem_Ch3 is
                --  is consistent with that of the parent.
 
                declare
-                  Par_Discr  : constant Entity_Id :=
-                                Get_Reference_Discriminant (Par_Type);
-                  Cur_Discr  : constant Entity_Id :=
+                  Cur_Discr : constant Entity_Id :=
                                 Get_Reference_Discriminant (Prev);
+                  Par_Discr : constant Entity_Id :=
+                                Get_Reference_Discriminant (Par_Type);
 
                begin
                   if Corresponding_Discriminant (Cur_Discr) /= Par_Discr then
-                     Error_Msg_N ("aspect incosistent with that of parent", N);
+                     Error_Msg_N
+                       ("aspect inconsistent with that of parent", N);
                   end if;
 
                   --  Check that specification in partial view matches the
@@ -3029,7 +3030,7 @@ package body Sem_Ch3 is
                                Chars (Cur_Discr)
                   then
                      Error_Msg_N
-                       ("aspect incosistent with that of parent", N);
+                       ("aspect inconsistent with that of parent", N);
                   end if;
                end;
             end if;
@@ -10641,9 +10642,9 @@ package body Sem_Ch3 is
             if Ekind (Contr_Typ) /= E_Protected_Type then
                Error_Msg_Node_2 := Contr_Typ;
                Error_Msg_NE
-                 ("interface subprogram & cannot be implemented by a " &
-                  "primitive procedure of task type &", Subp_Alias,
-                  Iface_Alias);
+                 ("interface subprogram & cannot be implemented by a "
+                  & "primitive procedure of task type &",
+                  Subp_Alias, Iface_Alias);
 
             --  An interface subprogram whose implementation kind is By_
             --  Protected_Procedure must be implemented by a procedure.
@@ -10651,28 +10652,27 @@ package body Sem_Ch3 is
             elsif Ekind (Impl_Subp) /= E_Procedure then
                Error_Msg_Node_2 := Iface_Alias;
                Error_Msg_NE
-                 ("type & must implement abstract subprogram & with a " &
-                  "procedure", Subp_Alias, Contr_Typ);
+                 ("type & must implement abstract subprogram & with a "
+                  & "procedure", Subp_Alias, Contr_Typ);
 
             elsif Present (Get_Rep_Pragma (Impl_Subp, Name_Implemented))
               and then Implementation_Kind (Impl_Subp) /= Impl_Kind
             then
                Error_Msg_Name_1 := Impl_Kind;
                Error_Msg_N
-                ("overriding operation& must have synchronization%",
-                 Subp_Alias);
+                 ("overriding operation& must have synchronization%",
+                  Subp_Alias);
             end if;
 
          --  If primitive has Optional synchronization, overriding operation
-         --  must match if it has an explicit synchronization..
+         --  must match if it has an explicit synchronization.
 
          elsif Present (Get_Rep_Pragma (Impl_Subp, Name_Implemented))
            and then Implementation_Kind (Impl_Subp) /= Impl_Kind
          then
-               Error_Msg_Name_1 := Impl_Kind;
-               Error_Msg_N
-                ("overriding operation& must have syncrhonization%",
-                 Subp_Alias);
+            Error_Msg_Name_1 := Impl_Kind;
+            Error_Msg_N
+              ("overriding operation& must have synchronization%", Subp_Alias);
          end if;
       end Check_Pragma_Implemented;
 
