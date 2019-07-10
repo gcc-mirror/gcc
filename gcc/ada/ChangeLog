@@ -1,3 +1,16 @@
+2019-07-10  Justin Squirek  <squirek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_attributes.rst: Add mention
+	of 'Image attribute with 'Img's entry to mention additional
+	added 2012 usage of Obj'Image.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Correct
+	mispelling of Async_Writers.
+	* gnat_rm.texi: Regenerate.
+	* sem_prag.adb (Analyze_Pragma): Correct mispelling of
+	Async_Writers.
+	* sem_util.adb (State_Has_Enabled_Property): Correct mispelling
+	of Async_Writers.
+
 2019-07-10  Simon Buist  <buist@adacore.com>
 
 	* sem_util.ads (Child_Prefix): New constant.

@@ -13620,8 +13620,8 @@ package body Sem_Prag is
          -- Async_Readers/Async_Writers/Effective_Reads/Effective_Writes --
          ------------------------------------------------------------------
 
-         --  pragma Asynch_Readers   [ (boolean_EXPRESSION) ];
-         --  pragma Asynch_Writers   [ (boolean_EXPRESSION) ];
+         --  pragma Async_Readers    [ (boolean_EXPRESSION) ];
+         --  pragma Async_Writers    [ (boolean_EXPRESSION) ];
          --  pragma Effective_Reads  [ (boolean_EXPRESSION) ];
          --  pragma Effective_Writes [ (boolean_EXPRESSION) ];
 

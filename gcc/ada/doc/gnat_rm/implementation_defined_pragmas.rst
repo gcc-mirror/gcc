@@ -719,7 +719,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Asynch_Readers [ (boolean_EXPRESSION) ];
+  pragma Async_Readers [ (boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Async_Readers`` in
 the SPARK 2014 Reference Manual, section 7.1.2.
@@ -733,7 +733,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Asynch_Writers [ (boolean_EXPRESSION) ];
+  pragma Async_Writers [ (boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Async_Writers`` in
 the SPARK 2014 Reference Manual, section 7.1.2.
