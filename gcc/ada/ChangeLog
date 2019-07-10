@@ -1,3 +1,13 @@
+2019-07-10  Yannick Moy  <moy@adacore.com>
+
+	* sem_aux.adb, sem_aux.ads (Is_Protected_Operation): New
+	function to determine if a subprogram is protected.
+	* sem_spark.adb (Setup_Protected_Components): New procedure to
+	add protected components to the environment.
+	(Check_Callable_Body): Call the new Setup_Protected_Components.
+	(Check_Package_Spec): Merge local environment with enclosing one
+	when done.
+
 2019-07-10  Claire Dross  <dross@adacore.com>
 
 	* sem_spark.adb (Check_Expression): Allow digits constraints as

@@ -876,6 +876,10 @@ package body Sem_SPARK is
    --  Takes a subprogram as input, and sets up the environment by adding
    --  formal parameters with appropriate permissions.
 
+   procedure Setup_Protected_Components (Subp : Entity_Id);
+   --  Takes a protected operation as input, and sets up the environment by
+   --  adding protected components with appropriate permissions.
+
    ----------------------
    -- Global Variables --
    ----------------------
@@ -1334,6 +1338,13 @@ package body Sem_SPARK is
       if Is_Subprogram_Or_Entry (Spec_Id) then
          Setup_Parameters (Spec_Id);
          Setup_Globals (Spec_Id);
+      end if;
+
+      --  For protected operations, add protected components to the environment
+      --  with adequate permissions.
+
+      if Is_Protected_Operation (Spec_Id) then
+         Setup_Protected_Components (Spec_Id);
       end if;
 
       --  Analyze the body of the subprogram
@@ -2634,9 +2645,13 @@ package body Sem_SPARK is
             Check_List (Private_Declarations (Spec));
          end if;
 
-         --  Restore the saved environment and free the current one
+         --  Restore the saved environment and free the current one. As part of
+         --  the restoration, the environment of the package spec is merged in
+         --  the enclosing environment, which may be an enclosing
+         --  package/subprogram spec or body which has access to the variables
+         --  of the package spec.
 
-         Move_Env (Saved_Env, Current_Perm_Env);
+         Merge_Env (Saved_Env, Current_Perm_Env);
 
          Inside_Elaboration := Save_In_Elab;
       end if;
@@ -5417,5 +5432,38 @@ package body Sem_SPARK is
          Next_Formal (Formal);
       end loop;
    end Setup_Parameters;
+
+   --------------------------------
+   -- Setup_Protected_Components --
+   --------------------------------
+
+   procedure Setup_Protected_Components (Subp : Entity_Id) is
+      Typ  : constant Entity_Id := Scope (Subp);
+      Comp : Entity_Id;
+      Kind : Formal_Kind;
+
+   begin
+      Comp := First_Component_Or_Discriminant (Typ);
+
+      --  The protected object is an implicit input of protected functions, and
+      --  an implicit input-output of protected procedures and entries.
+
+      if Ekind (Subp) = E_Function then
+         Kind := E_In_Parameter;
+      else
+         Kind := E_In_Out_Parameter;
+      end if;
+
+      while Present (Comp) loop
+         Setup_Parameter_Or_Global
+           (Id         => Comp,
+            Typ        => Underlying_Type (Etype (Comp)),
+            Kind       => Kind,
+            Subp       => Subp,
+            Global_Var => False,
+            Expl       => Comp);
+         Next_Component_Or_Discriminant (Comp);
+      end loop;
+   end Setup_Protected_Components;
 
 end Sem_SPARK;
