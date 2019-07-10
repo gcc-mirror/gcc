@@ -1,3 +1,8 @@
+2019-07-10  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/91132
+	* gcc.dg/strlenopt-67.c: Removed second copy of test.
+
 2019-07-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/91102
