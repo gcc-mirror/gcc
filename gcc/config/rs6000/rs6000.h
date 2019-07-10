@@ -2526,16 +2526,27 @@ typedef struct GTY(()) machine_function
 #pragma GCC poison TARGET_FLOAT128 OPTION_MASK_FLOAT128 MASK_FLOAT128
 #endif
 
-/* Whether a given VALUE is a valid 16- or 34-bit signed offset.  EXTRA is the
-   amount that we can't touch at the high end of the range (typically if the
-   address is split into smaller addresses, the extra covers the addresses
-   which might be generated when the insn is split).  */
-#define SIGNED_16BIT_OFFSET_P(VALUE, EXTRA)				\
-  IN_RANGE (VALUE,							\
+/* Whether a given VALUE is a valid 16 or 34-bit signed offset.  */
+#define SIGNED_16BIT_OFFSET_P(VALUE)					\
+  IN_RANGE ((VALUE),							\
+	    -(HOST_WIDE_INT_1 << 15),					\
+	    (HOST_WIDE_INT_1 << 15) - 1)
+
+#define SIGNED_34BIT_OFFSET_P(VALUE)					\
+  IN_RANGE ((VALUE),							\
+	    -(HOST_WIDE_INT_1 << 33),					\
+	    (HOST_WIDE_INT_1 << 33) - 1)
+
+/* Like SIGNED_16BIT_OFFSET_P and SIGNED_34BIT_OFFSET_P, but with an extra
+   argument that gives a length to validate a range of addresses, to allow for
+   splitting insns into several insns, each of which has an offsettable
+   address.  */
+#define SIGNED_16BIT_OFFSET_EXTRA_P(VALUE, EXTRA)			\
+  IN_RANGE ((VALUE),							\
 	    -(HOST_WIDE_INT_1 << 15),					\
 	    (HOST_WIDE_INT_1 << 15) - 1 - (EXTRA))
 
-#define SIGNED_34BIT_OFFSET_P(VALUE, EXTRA)				\
-  IN_RANGE (VALUE,							\
+#define SIGNED_34BIT_OFFSET_EXTRA_P(VALUE, EXTRA)			\
+  IN_RANGE ((VALUE),							\
 	    -(HOST_WIDE_INT_1 << 33),					\
 	    (HOST_WIDE_INT_1 << 33) - 1 - (EXTRA))

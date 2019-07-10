@@ -309,7 +309,7 @@
   if (!TARGET_PREFIXED_ADDR)
     return 0;
 
-  return SIGNED_34BIT_OFFSET_P (INTVAL (op), 0);
+  return SIGNED_34BIT_OFFSET_P (INTVAL (op));
 })
 
 ;; Return 1 if op is a register that is not special.
@@ -1638,7 +1638,7 @@
       rtx op0 = XEXP (op, 0);
       rtx op1 = XEXP (op, 1);
 
-      if (!CONST_INT_P (op1) || !SIGNED_34BIT_OFFSET_P (INTVAL (op1), 0))
+      if (!CONST_INT_P (op1) || !SIGNED_34BIT_OFFSET_P (INTVAL (op1)))
 	return false;
 
       op = op0;
@@ -1673,7 +1673,7 @@
       rtx op0 = XEXP (op, 0);
       rtx op1 = XEXP (op, 1);
 
-      if (!CONST_INT_P (op1) || !SIGNED_34BIT_OFFSET_P (INTVAL (op1), 0))
+      if (!CONST_INT_P (op1) || !SIGNED_34BIT_OFFSET_P (INTVAL (op1)))
 	return false;
 
       op = op0;

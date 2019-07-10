@@ -21523,11 +21523,11 @@ rs6000_prefixed_address (rtx addr, machine_mode mode)
 	return false;
 
       HOST_WIDE_INT value = INTVAL (op1);
-      if (!SIGNED_34BIT_OFFSET_P (value, 0))
+      if (!SIGNED_34BIT_OFFSET_P (value))
 	return false;
 
       /* Offset larger than 16-bits?  */
-      if (!SIGNED_16BIT_OFFSET_P (value, 0))
+      if (!SIGNED_16BIT_OFFSET_P (value))
 	return true;
 
       /* DQ instruction (bottom 4 bits must be 0) for vectors.  */
