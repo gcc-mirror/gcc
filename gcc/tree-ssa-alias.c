@@ -1128,6 +1128,94 @@ aliasing_component_refs_p (tree ref1,
   return false;
 }
 
+/* FIELD1 and FIELD2 are two fields of component refs.  We assume
+   that bases of both component refs are either equivalent or nonoverlapping.
+   We do not assume that the containers of FIELD1 and FIELD2 are of the
+   same type or size.
+
+   Return 0 in case the base address of component_refs are same then 
+   FIELD1 and FIELD2 have same address. Note that FIELD1 and FIELD2
+   may not be of same type or size.
+
+   Return 1 if FIELD1 and FIELD2 are non-overlapping.
+
+   Return -1 otherwise.
+
+   Main difference between 0 and -1 is to let
+   nonoverlapping_component_refs_since_match_p discover the semantically
+   equivalent part of the access path.
+
+   Note that this function is used even with -fno-strict-aliasing
+   and makes use of no TBAA assumptions.  */
+
+static int
+nonoverlapping_component_refs_p_1 (const_tree field1, const_tree field2)
+{
+  /* If both fields are of the same type, we could save hard work of
+     comparing offsets.  */
+  tree type1 = DECL_CONTEXT (field1);
+  tree type2 = DECL_CONTEXT (field2);
+
+  if (TREE_CODE (type1) == RECORD_TYPE
+      && DECL_BIT_FIELD_REPRESENTATIVE (field1))
+    field1 = DECL_BIT_FIELD_REPRESENTATIVE (field1);
+  if (TREE_CODE (type2) == RECORD_TYPE
+      && DECL_BIT_FIELD_REPRESENTATIVE (field2))
+    field2 = DECL_BIT_FIELD_REPRESENTATIVE (field2);
+
+  /* ??? Bitfields can overlap at RTL level so punt on them.
+     FIXME: RTL expansion should be fixed by adjusting the access path
+     when producing MEM_ATTRs for MEMs which are wider than 
+     the bitfields similarly as done in set_mem_attrs_minus_bitpos.  */
+  if (DECL_BIT_FIELD (field1) && DECL_BIT_FIELD (field2))
+    return -1;
+
+  /* Assume that different FIELD_DECLs never overlap within a RECORD_TYPE.  */
+  if (type1 == type2 && TREE_CODE (type1) == RECORD_TYPE)
+    return field1 != field2;
+
+  /* In common case the offsets and bit offsets will be the same.
+     However if frontends do not agree on the alignment, they may be
+     different even if they actually represent same address.
+     Try the common case first and if that fails calcualte the
+     actual bit offset.  */
+  if (tree_int_cst_equal (DECL_FIELD_OFFSET (field1),
+			  DECL_FIELD_OFFSET (field2))
+      && tree_int_cst_equal (DECL_FIELD_BIT_OFFSET (field1),
+			     DECL_FIELD_BIT_OFFSET (field2)))
+    return 0;
+
+  /* Note that it may be possible to use component_ref_field_offset
+     which would provide offsets as trees. However constructing and folding
+     trees is expensive and does not seem to be worth the compile time
+     cost.  */
+
+  poly_uint64 offset1, offset2;
+  poly_uint64 bit_offset1, bit_offset2;
+
+  if (poly_int_tree_p (DECL_FIELD_OFFSET (field1), &offset1)
+      && poly_int_tree_p (DECL_FIELD_OFFSET (field2), &offset2)
+      && poly_int_tree_p (DECL_FIELD_BIT_OFFSET (field1), &bit_offset1)
+      && poly_int_tree_p (DECL_FIELD_BIT_OFFSET (field2), &bit_offset2))
+    {
+      offset1 = (offset1 << LOG2_BITS_PER_UNIT) + bit_offset1;
+      offset2 = (offset2 << LOG2_BITS_PER_UNIT) + bit_offset2;
+
+      if (known_eq (offset1, offset2))
+	return 0;
+
+      poly_uint64 size1, size2;
+
+      if (poly_int_tree_p (DECL_SIZE (field1), &size1)
+	  && poly_int_tree_p (DECL_SIZE (field2), &size2)
+	  && !ranges_maybe_overlap_p (offset1, size1, offset2, size2))
+	return 1;
+    }
+  /* Resort to slower overlap checking by looking for matching types in
+     the middle of access path.  */
+  return -1;
+}
+
 /* Try to disambiguate REF1 and REF2 under the assumption that MATCH1 and
    MATCH2 either point to the same address or are disjoint.
    MATCH1 and MATCH2 are assumed to be ref in the access path of REF1 and REF2
@@ -1224,6 +1312,7 @@ nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
      case the return value will precisely be false.  */
   while (true)
     {
+      bool seen_noncomponent_ref_p = false;
       do
 	{
 	  if (component_refs1.is_empty ())
@@ -1233,6 +1322,8 @@ nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
 	      return 0;
 	    }
 	  ref1 = component_refs1.pop ();
+	  if (TREE_CODE (ref1) != COMPONENT_REF)
+	    seen_noncomponent_ref_p = true;
 	}
       while (!RECORD_OR_UNION_TYPE_P (TREE_TYPE (TREE_OPERAND (ref1, 0))));
 
@@ -1245,17 +1336,15 @@ nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
 	      return 0;
 	    }
 	  ref2 = component_refs2.pop ();
+	  if (TREE_CODE (ref2) != COMPONENT_REF)
+	    seen_noncomponent_ref_p = true;
 	}
       while (!RECORD_OR_UNION_TYPE_P (TREE_TYPE (TREE_OPERAND (ref2, 0))));
 
-      /* Beware of BIT_FIELD_REF.  */
-      if (TREE_CODE (ref1) != COMPONENT_REF
-	  || TREE_CODE (ref2) != COMPONENT_REF)
-	{
-	  ++alias_stats
-		.nonoverlapping_component_refs_since_match_p_may_alias;
-	  return -1;
-	}
+      /* BIT_FIELD_REF and VIEW_CONVERT_EXPR are taken off the vectors
+	 earlier.  */
+      gcc_checking_assert (TREE_CODE (ref1) == COMPONENT_REF
+			   && TREE_CODE (ref2) == COMPONENT_REF);
 
       tree field1 = TREE_OPERAND (ref1, 1);
       tree field2 = TREE_OPERAND (ref2, 1);
@@ -1266,39 +1355,51 @@ nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
       tree type1 = DECL_CONTEXT (field1);
       tree type2 = DECL_CONTEXT (field2);
 
-      /* We cannot disambiguate fields in a union or qualified union.  */
-      if (type1 != type2 || TREE_CODE (type1) != RECORD_TYPE)
+      /* If we skipped array refs on type of different sizes, we can
+	 no longer be sure that there are not partial overlaps.  */
+      if (seen_noncomponent_ref_p
+	  && !operand_equal_p (TYPE_SIZE (type1), TYPE_SIZE (type2), 0))
 	{
-	  ++alias_stats.nonoverlapping_component_refs_since_match_p_may_alias;
+	  ++alias_stats
+	    .nonoverlapping_component_refs_since_match_p_may_alias;
 	  return -1;
 	}
 
-      if (field1 != field2)
+      int cmp = nonoverlapping_component_refs_p_1 (field1, field2);
+      if (cmp == -1)
 	{
-	  /* A field and its representative need to be considered the
-	     same.  */
-	  if (DECL_BIT_FIELD_REPRESENTATIVE (field1) == field2
-	      || DECL_BIT_FIELD_REPRESENTATIVE (field2) == field1)
-	    {
-	      ++alias_stats
-		.nonoverlapping_component_refs_since_match_p_must_overlap;
-	      return 0;
-	    }
-	  /* Different fields of the same record type cannot overlap.
-	     ??? Bitfields can overlap at RTL level so punt on them.  */
-	  if (DECL_BIT_FIELD (field1) && DECL_BIT_FIELD (field2))
-	    {
-	      ++alias_stats
-		.nonoverlapping_component_refs_since_match_p_must_overlap;
-	      return 0;
-	    }
-	  ++alias_stats.nonoverlapping_component_refs_since_match_p_no_alias;
+	  ++alias_stats
+	    .nonoverlapping_component_refs_since_match_p_may_alias;
+	  return -1;
+	}
+      else if (cmp == 1)
+	{
+	  ++alias_stats
+	    .nonoverlapping_component_refs_since_match_p_no_alias;
 	  return 1;
 	}
     }
 
   ++alias_stats.nonoverlapping_component_refs_since_match_p_must_overlap;
   return 0;
+}
+
+/* Return TYPE_UID which can be used to match record types we consider
+   same for TBAA purposes.  */
+
+static inline int
+ncr_type_uid (const_tree field)
+{
+  /* ??? We cannot simply use the type of operand #0 of the refs here
+     as the Fortran compiler smuggles type punning into COMPONENT_REFs
+     for common blocks instead of using unions like everyone else.  */
+  tree type = DECL_FIELD_CONTEXT (field);
+  /* With LTO types considered same_type_for_tbaa_p 
+     from different translation unit may not have same
+     main variant.  They however have same TYPE_CANONICAL.  */
+  if (TYPE_CANONICAL (type))
+    return TYPE_UID (TYPE_CANONICAL (type));
+  return TYPE_UID (type);
 }
 
 /* qsort compare function to sort FIELD_DECLs after their
@@ -1309,8 +1410,9 @@ ncr_compar (const void *field1_, const void *field2_)
 {
   const_tree field1 = *(const_tree *) const_cast <void *>(field1_);
   const_tree field2 = *(const_tree *) const_cast <void *>(field2_);
-  unsigned int uid1 = TYPE_UID (DECL_FIELD_CONTEXT (field1));
-  unsigned int uid2 = TYPE_UID (DECL_FIELD_CONTEXT (field2));
+  unsigned int uid1 = ncr_type_uid (field1);
+  unsigned int uid2 = ncr_type_uid (field2);
+
   if (uid1 < uid2)
     return -1;
   else if (uid1 > uid2)
@@ -1377,10 +1479,9 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
   if (fieldsx.length () == 1
       && fieldsy.length () == 1)
    {
-     if ((DECL_FIELD_CONTEXT (fieldsx[0])
-         == DECL_FIELD_CONTEXT (fieldsy[0]))
-        && fieldsx[0] != fieldsy[0]
-        && !(DECL_BIT_FIELD (fieldsx[0]) && DECL_BIT_FIELD (fieldsy[0])))
+     if (same_type_for_tbaa (DECL_FIELD_CONTEXT (fieldsx[0]),
+			     DECL_FIELD_CONTEXT (fieldsy[0])) == 1
+	 && nonoverlapping_component_refs_p_1 (fieldsx[0], fieldsy[0]) == 1)
       {
          ++alias_stats.nonoverlapping_component_refs_p_no_alias;
          return true;
@@ -1413,31 +1514,18 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
     {
       const_tree fieldx = fieldsx[i];
       const_tree fieldy = fieldsy[j];
-      tree typex = DECL_FIELD_CONTEXT (fieldx);
-      tree typey = DECL_FIELD_CONTEXT (fieldy);
-      if (typex == typey)
+
+      /* We're left with accessing different fields of a structure,
+	 no possible overlap.  */
+      if (same_type_for_tbaa (DECL_FIELD_CONTEXT (fieldx),
+			      DECL_FIELD_CONTEXT (fieldy)) == 1
+	  && nonoverlapping_component_refs_p_1 (fieldx, fieldy) == 1)
 	{
-	  /* We're left with accessing different fields of a structure,
-	     no possible overlap.  */
-	  if (fieldx != fieldy)
-	    {
-	      /* A field and its representative need to be considered the
-		 same.  */
-	      if (DECL_BIT_FIELD_REPRESENTATIVE (fieldx) == fieldy
-		  || DECL_BIT_FIELD_REPRESENTATIVE (fieldy) == fieldx)
-		;
-	      /* Different fields of the same record type cannot overlap.
-		 ??? Bitfields can overlap at RTL level so punt on them.  */
-	      else if (DECL_BIT_FIELD (fieldx) && DECL_BIT_FIELD (fieldy))
-		;
-	      else
-		{
-		  ++alias_stats.nonoverlapping_component_refs_p_no_alias;
-		  return true;
-		}
-	    }
+	  ++alias_stats.nonoverlapping_component_refs_p_no_alias;
+	  return true;
 	}
-      if (TYPE_UID (typex) < TYPE_UID (typey))
+
+      if (ncr_type_uid (fieldx) < ncr_type_uid (fieldy))
 	{
 	  i++;
 	  if (i == fieldsx.length ())

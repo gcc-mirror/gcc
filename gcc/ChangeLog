@@ -1,3 +1,14 @@
+2019-07-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (nonoverlapping_component_refs_p_1): Break out
+	from ...; work also on duplicated types.
+	(nonoverlapping_component_refs_since_match): ... here
+	(ncr_type_uid): Break out from ...
+	(ncr_compar): ... here; look for TYPE_UID of canonical type if
+	available.
+	(nonoverlapping_component_refs_p): Use same_type_for_tbaa to match
+	the types and nonoverlapping_component_refs_p_1 to disambiguate.
+
 2019-07-09  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/90989
