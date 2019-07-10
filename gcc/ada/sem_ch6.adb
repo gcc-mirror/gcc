@@ -11342,7 +11342,7 @@ package body Sem_Ch6 is
                goto Continue;
             end if;
 
-            --  Protect against malformed parameter types.
+            --  Protect against malformed parameter types
 
             if Nkind (Ptype) not in N_Has_Entity then
                Formal_Type := Any_Type;

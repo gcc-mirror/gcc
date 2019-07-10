@@ -1180,11 +1180,11 @@ package body Bindo.Graphs is
       --    * End vertices is the set of vertices that terminate a potential
       --      cycle.
       --
-      --    * Deleted vertices is the set of vertices that have been expended
+      --    * Deleted vertices is the set of vertices that have been expanded
       --      during previous depth-first searches and should not be visited
       --      for the rest of the algorithm.
       --
-      --    * Most_Significant_Edge is the current highest precedence edge on
+      --    * Most_Significant_Edge is the current highest-precedence edge on
       --      the path of the potential cycle.
       --
       --    * Invocation_Edge_Count is the number of invocation edges on the
@@ -1233,11 +1233,11 @@ package body Bindo.Graphs is
       --    * End_Vertices is the set of vertices that terminate a potential
       --      cycle.
       --
-      --    * Deleted_Vertices is the set of vertices that have been expended
+      --    * Deleted_Vertices is the set of vertices that have been expanded
       --      during previous depth-first searches and should not be visited
       --      for the rest of the algorithm.
       --
-      --    * Most_Significant_Edge is the current highest precedence edge on
+      --    * Most_Significant_Edge is the current highest-precedence edge on
       --      the path of the potential cycle.
       --
       --    * Invocation_Edge_Count is the number of invocation edges on the
@@ -2341,7 +2341,7 @@ package body Bindo.Graphs is
          elsif Cycle_Invs > Comp_Invs then
             return Lower_Precedence;
 
-         --  Prever a cycle with a higher path precedence
+         --  Prefer a cycle with a higher path precedence
 
          else
             return
@@ -2684,7 +2684,7 @@ package body Bindo.Graphs is
          pragma Assert (Present (G));
 
          --  The cycles of graph G are discovered using Tarjan's enumeration
-         --  of the elementary circuits of a directed graph algorithm. Do not
+         --  of the elementary circuits of a directed-graph algorithm. Do not
          --  modify this code unless you intimately understand the algorithm.
          --
          --  The logic of the algorithm is split among the following routines:
@@ -2698,7 +2698,7 @@ package body Bindo.Graphs is
          --
          --  The original algorithm has been significantly modified in order to
          --
-         --    * Accomodate the semantics of Elaborate_All and Elaborate_Body.
+         --    * Accommodate the semantics of Elaborate_All and Elaborate_Body.
          --
          --    * Capture cycle paths as edges rather than vertices.
          --
@@ -2834,7 +2834,7 @@ package body Bindo.Graphs is
          --  the "complementary" vertex resulted in a cycle.
 
          Successor_Has_Cycle : Boolean;
-         --  This flag is set when visiting at least once successor of the
+         --  This flag is set when visiting at least one successor of the
          --  current vertex resulted in a cycle.
 
       begin
@@ -2851,7 +2851,7 @@ package body Bindo.Graphs is
          Has_Cycle := False;
 
          --  Nothing to do when the limit on the number of saved cycles has
-         --  been reached. This protects against a combinatorial explostion
+         --  been reached. This protects against a combinatorial explosion
          --  in components with Elaborate_All cycles.
 
          if Cycle_Count >= Cycle_Limit then
@@ -2859,8 +2859,8 @@ package body Bindo.Graphs is
 
          --  The vertex closes the circuit, thus resulting in a cycle. Save
          --  the cycle for later diagnostics. The initial invocation of the
-         --  routine always ignores the starting vertex to prevent a spurious
-         --  self cycle.
+         --  routine always ignores the starting vertex, to prevent a spurious
+         --  self-cycle.
 
          elsif not Is_Start_Vertex
            and then LGV_Sets.Contains (End_Vertices, Vertex)
@@ -3053,7 +3053,7 @@ package body Bindo.Graphs is
          Visited_Set : LGV_Sets.Membership_Set := LGV_Sets.Nil;
          --  The "mark" array of Tarjan's algorithm. Since the original visits
          --  all vertices in increasing ordinal number 1 .. N, the array offers
-         --  a one to one mapping between a vertex and its "marked" state. The
+         --  a one-to-one mapping between a vertex and its "marked" state. The
          --  modified version however visits vertices within components, where
          --  their ordinals are not contiguous. Vertices are added to this set
          --  and treated as "marked".
@@ -3091,7 +3091,7 @@ package body Bindo.Graphs is
                  Vertex               => Vertex,
                  Elaborate_All_Active => Elaborate_All_Active);
 
-            --  The modified version maintans two addition attributes while
+            --  The modified version maintains two additional attributes while
             --  performing the depth-first search:
             --
             --    * The most significant edge of the current potential cycle.
@@ -3099,7 +3099,7 @@ package body Bindo.Graphs is
             --    * The number of invocation edges encountered along the path
             --      of the current potential cycle.
             --
-            --  Both attributes are used in the heuristic which determines the
+            --  Both attributes are used in the heuristic that determines the
             --  importance of cycles.
 
             Find_Cycles_From_Vertex
@@ -5243,7 +5243,7 @@ package body Bindo.Graphs is
          pragma Assert (Present (G));
          pragma Assert (Present (Comp));
 
-         --  Nothing to do when switch -d_t (output cycle detection trace
+         --  Nothing to do when switch -d_t (output cycle-detection trace
          --  information) is not in effect.
 
          if not Debug_Flag_Underscore_T then
@@ -5279,7 +5279,7 @@ package body Bindo.Graphs is
          pragma Assert (Present (G));
          pragma Assert (Present (Cycle));
 
-         --  Nothing to do when switch -d_t (output cycle detection trace
+         --  Nothing to do when switch -d_t (output cycle-detection trace
          --  information) is not in effect.
 
          if not Debug_Flag_Underscore_T then
@@ -5338,7 +5338,7 @@ package body Bindo.Graphs is
          Succ : constant Library_Graph_Vertex_Id := Successor   (G, Edge);
 
       begin
-         --  Nothing to do when switch -d_t (output cycle detection trace
+         --  Nothing to do when switch -d_t (output cycle-detection trace
          --  information) is not in effect.
 
          if not Debug_Flag_Underscore_T then
@@ -5387,7 +5387,7 @@ package body Bindo.Graphs is
          pragma Assert (Present (G));
          pragma Assert (Present (Vertex));
 
-         --  Nothing to do when switch -d_t (output cycle detection trace
+         --  Nothing to do when switch -d_t (output cycle-detection trace
          --  information) is not in effect.
 
          if not Debug_Flag_Underscore_T then

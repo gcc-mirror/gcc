@@ -1302,9 +1302,7 @@ package body Sem_SPARK is
    begin
       --  Only SPARK bodies are analyzed
 
-      if No (Prag)
-        or else Get_SPARK_Mode_From_Annotation (Prag) /= Opt.On
-      then
+      if No (Prag) or else Get_SPARK_Mode_From_Annotation (Prag) /= Opt.On then
          return;
       end if;
 
@@ -1314,8 +1312,9 @@ package body Sem_SPARK is
         and then Is_Anonymous_Access_Type (Etype (Spec_Id))
         and then not Is_Traversal_Function (Spec_Id)
       then
-         Error_Msg_N ("anonymous access type for result only allowed for "
-                      & "traveral functions", Spec_Id);
+         Error_Msg_N
+           ("anonymous access type for result only allowed for traveral "
+            & "functions", Spec_Id);
          return;
       end if;
 

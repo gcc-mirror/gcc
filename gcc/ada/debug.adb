@@ -368,7 +368,7 @@ package body Debug is
    --  d_q
    --  d_r
    --  d_s
-   --  d_t  Output cycle detection trace information
+   --  d_t  Output cycle-detection trace information
    --  d_u
    --  d_v
    --  d_w
@@ -1150,7 +1150,7 @@ package body Debug is
    --       elaboration order and no longer creates an implicit dependency on
    --       the body of the argument.
 
-   --  d_t  GNATBIND output trace information of cycle detection activities to
+   --  d_t  GNATBIND output trace information of cycle-detection activities to
    --       standard output.
 
    --  d_A  GNATBIND output the contents of all ALI invocation-related tables
