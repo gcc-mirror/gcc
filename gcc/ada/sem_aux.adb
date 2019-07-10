@@ -1324,6 +1324,18 @@ package body Sem_Aux is
       end if;
    end Is_Limited_View;
 
+   ----------------------------
+   -- Is_Protected_Operation --
+   ----------------------------
+
+   function Is_Protected_Operation (E : Entity_Id) return Boolean is
+   begin
+      return Is_Entry (E)
+        or else (Is_Subprogram (E)
+                 and then Nkind (Parent (Unit_Declaration_Node (E))) =
+                            N_Protected_Definition);
+   end Is_Protected_Operation;
+
    ----------------------
    -- Nearest_Ancestor --
    ----------------------

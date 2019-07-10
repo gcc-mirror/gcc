@@ -357,6 +357,10 @@ package Sem_Aux is
    --  these types). This older routine overlaps with the previous one, this
    --  should be cleaned up???
 
+   function Is_Protected_Operation (E : Entity_Id) return Boolean;
+   --  Given a subprogram or entry, determines whether E is a protected entry
+   --  or subprogram.
+
    function Nearest_Ancestor (Typ : Entity_Id) return Entity_Id;
    --  Given a subtype Typ, this function finds out the nearest ancestor from
    --  which constraints and predicates are inherited. There is no simple link
