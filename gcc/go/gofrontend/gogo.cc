@@ -3422,24 +3422,6 @@ Gogo::create_function_descriptors()
   this->traverse(&cfd);
 }
 
-// Look for interface types to finalize methods of inherited
-// interfaces.
-
-class Finalize_methods : public Traverse
-{
- public:
-  Finalize_methods(Gogo* gogo)
-    : Traverse(traverse_types),
-      gogo_(gogo)
-  { }
-
-  int
-  type(Type*);
-
- private:
-  Gogo* gogo_;
-};
-
 // Finalize the methods of an interface type.
 
 int

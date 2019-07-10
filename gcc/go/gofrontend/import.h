@@ -20,6 +20,7 @@ class Expression;
 class Import_function_body;
 class Temporary_statement;
 class Unnamed_label;
+class Finalize_methods;
 
 // Expressions can be imported either directly from import data (for
 // simple constant expressions that can appear in a const declaration
@@ -207,8 +208,7 @@ class Import : public Import_expression
   // Constructor.
   Import(Stream*, Location);
 
-  virtual ~Import()
-  {}
+  virtual ~Import();
 
   // Register the builtin types.
   void
@@ -423,6 +423,10 @@ class Import : public Import_expression
     return true;
   }
 
+  // Finalize methods for newly imported types.
+  void
+  finalize_methods();
+
   // The general IR.
   Gogo* gogo_;
   // The stream from which to read import data.
@@ -446,6 +450,8 @@ class Import : public Import_expression
   std::vector<Named_type*> builtin_types_;
   // Mapping from exported type codes to Type structures.
   std::vector<Type*> types_;
+  // Helper for finalizing methods.
+  Finalize_methods* finalizer_;
   // Version of export data we're reading.
   Export_data_version version_;
 };
