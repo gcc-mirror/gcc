@@ -319,7 +319,7 @@
   "vld1.<V_sz_elem>\t{%q0}, %A1"
   [(set_attr "type" "neon_load1_1reg<q>")])
 
-(define_insn "vec_set<mode>_internal"
+(define_insn "@vec_set<mode>_internal"
   [(set (match_operand:VD_LANE 0 "s_register_operand" "=w,w")
         (vec_merge:VD_LANE
           (vec_duplicate:VD_LANE
@@ -340,7 +340,7 @@
 }
   [(set_attr "type" "neon_load1_all_lanes<q>,neon_from_gp<q>")])
 
-(define_insn "vec_set<mode>_internal"
+(define_insn "@vec_set<mode>_internal"
   [(set (match_operand:VQ2 0 "s_register_operand" "=w,w")
         (vec_merge:VQ2
           (vec_duplicate:VQ2
@@ -369,12 +369,12 @@
   [(set_attr "type" "neon_load1_all_lanes<q>,neon_from_gp<q>")]
 )
 
-(define_insn "vec_setv2di_internal"
-  [(set (match_operand:V2DI 0 "s_register_operand" "=w,w")
-        (vec_merge:V2DI
-          (vec_duplicate:V2DI
+(define_insn "@vec_set<mode>_internal"
+  [(set (match_operand:V2DI_ONLY 0 "s_register_operand" "=w,w")
+        (vec_merge:V2DI_ONLY
+          (vec_duplicate:V2DI_ONLY
             (match_operand:DI 1 "nonimmediate_operand" "Um,r"))
-          (match_operand:V2DI 3 "s_register_operand" "0,0")
+          (match_operand:V2DI_ONLY 3 "s_register_operand" "0,0")
           (match_operand:SI 2 "immediate_operand" "i,i")))]
   "TARGET_NEON"
 {

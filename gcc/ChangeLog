@@ -1,3 +1,13 @@
+2019-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/91060
+	* config/arm/iterators.md (V2DI_ONLY): New mode iterator.
+	* config/arm/neon.md (vec_set<mode>_internal): Add a '@' prefix.
+	(vec_setv2di_internal): Reexpress as...
+	(@vec_set<V2DI_ONLY:mode>_internal): ...this.
+	* config/arm/arm.c (neon_expand_vector_init): Use gen_vec_set_internal
+	rather than gen_neon_vset_lane<mode>.
+
 2019-07-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/91102
