@@ -1,3 +1,7 @@
+2019-07-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* sfn_scan.adb (Scan_SFN_Pragmas): Add pragma Assert.
+
 2019-07-10  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb (Check_Nonoverridable_Aspects): Correct the
