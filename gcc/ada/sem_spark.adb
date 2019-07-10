@@ -714,7 +714,6 @@ package body Sem_SPARK is
    function Get_Root_Object
      (Expr              : Node_Id;
       Through_Traversal : Boolean := True) return Entity_Id;
-   pragma Precondition (Is_Path_Expression (Expr));
    --  Return the root of the path expression Expr, or Empty for an allocator,
    --  NULL, or a function call. Through_Traversal is True if it should follow
    --  through calls to traversal functions.
@@ -1311,6 +1310,15 @@ package body Sem_SPARK is
 
       Inside_Elaboration := False;
 
+      if Ekind (Spec_Id) = E_Function
+        and then Is_Anonymous_Access_Type (Etype (Spec_Id))
+        and then not Is_Traversal_Function (Spec_Id)
+      then
+         Error_Msg_N ("anonymous access type for result only allowed for "
+                      & "traveral functions", Spec_Id);
+         return;
+      end if;
+
       --  Save environment and put a new one in place
 
       Move_Env (Current_Perm_Env, Saved_Env);
@@ -1451,7 +1459,6 @@ package body Sem_SPARK is
       --  Call Read_Expression on every expression in the list L
 
       procedure Read_Indexes (Expr : Node_Id);
-      pragma Precondition (Is_Path_Expression (Expr));
       --  When processing a path, the index expressions and function call
       --  arguments occurring on the path should be analyzed in Read mode.
 
@@ -1562,6 +1569,11 @@ package body Sem_SPARK is
       --  Start of processing for Read_Indexes
 
       begin
+         if not Is_Path_Expression (Expr) then
+            Error_Msg_N ("name expected here for move/borrow/observe", Expr);
+            return;
+         end if;
+
          case N_Subexpr'(Nkind (Expr)) is
             when N_Identifier
                | N_Expanded_Name
@@ -1710,7 +1722,10 @@ package body Sem_SPARK is
       --  Expressions that are not path expressions should only be analyzed in
       --  Read mode.
 
-      pragma Assert (Mode = Read);
+      if Mode /= Read then
+         Error_Msg_N ("name expected here for move/borrow/observe", Expr);
+         return;
+      end if;
 
       --  Special handling for nodes that may contain evaluated expressions in
       --  the form of constraints.
@@ -3484,6 +3499,11 @@ package body Sem_SPARK is
       Through_Traversal : Boolean := True) return Entity_Id
    is
    begin
+      if not Is_Path_Expression (Expr) then
+         Error_Msg_N ("name expected here for path", Expr);
+         return Empty;
+      end if;
+
       case Nkind (Expr) is
          when N_Expanded_Name
             | N_Identifier
