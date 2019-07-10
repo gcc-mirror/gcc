@@ -1,3 +1,10 @@
+2019-07-10  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnat/a-strbou.ads, libgnat/a-strfix.ads,
+	libgnat/a-strunb.ads, libgnat/a-strunb__shared.ads: Add global
+	contracts, contract cases, preconditions and postconditions to
+	procedures and functions.
+
 2019-07-10  Doug Rupp  <rupp@adacore.com>
 
 	* sysdep.c (__gnat_is_file_not_found_error): Reformulate to also
