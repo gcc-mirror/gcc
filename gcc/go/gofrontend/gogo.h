@@ -3556,6 +3556,24 @@ class Traverse
   Expressions_seen* expressions_seen_;
 };
 
+// This class looks for interface types to finalize methods of inherited
+// interfaces.
+
+class Finalize_methods : public Traverse
+{
+ public:
+  Finalize_methods(Gogo* gogo)
+    : Traverse(traverse_types),
+      gogo_(gogo)
+  { }
+
+  int
+  type(Type*);
+
+ private:
+  Gogo* gogo_;
+};
+
 // A class which makes it easier to insert new statements before the
 // current statement during a traversal.
 
