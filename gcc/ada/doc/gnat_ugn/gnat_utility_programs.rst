@@ -3248,6 +3248,14 @@ Alternatively, you may run the script using the following command line:
 
    :switch:`--preserve-line-breaks`
      Preserve line breaks in the input, to the extent possible.
+     By default, line breaks are also inserted at appropriate
+     places.
+
+   .. index:: --source-line-breaks (gnatpp)
+
+   :switch:`--source-line-breaks`
+     Keep the line breaks from the source; do not insert or delete any
+     line breaks.
 
    The ``--comments`` switches are compatible with one another, except
    that the ``--comments-unchanged`` switch disables all other comment
