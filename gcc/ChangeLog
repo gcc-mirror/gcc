@@ -1,3 +1,8 @@
+2019-07-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Look at valueized
+	LHS whenever possible.
+
 2019-07-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-alias.c (nonoverlapping_component_refs_p_1): Break out

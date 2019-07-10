@@ -1606,8 +1606,10 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
 		  tree val = c_parser_gimple_postfix_expression (parser).value;
 		  if (! val
 		      || val == error_mark_node
-		      || ! CONSTANT_CLASS_P (val)
-		      || (addr_p && TREE_CODE (val) != STRING_CST))
+		      || (!CONSTANT_CLASS_P (val)
+			  && !(addr_p
+			       && (TREE_CODE (val) == STRING_CST
+				   || DECL_P (val)))))
 		    {
 		      c_parser_error (parser, "invalid _Literal");
 		      return expr;

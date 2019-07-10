@@ -2488,12 +2488,22 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	   && gimple_assign_rhs_code (def_stmt) == CONSTRUCTOR
 	   && CONSTRUCTOR_NELTS (gimple_assign_rhs1 (def_stmt)) == 0)
     {
+      tree lhs = gimple_assign_lhs (def_stmt);
       tree base2;
       poly_int64 offset2, size2, maxsize2;
       HOST_WIDE_INT offset2i, size2i;
       bool reverse;
-      base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
-				       &offset2, &size2, &maxsize2, &reverse);
+      if (lhs_ref_ok)
+	{
+	  base2 = ao_ref_base (&lhs_ref);
+	  offset2 = lhs_ref.offset;
+	  size2 = lhs_ref.size;
+	  maxsize2 = lhs_ref.max_size;
+	  reverse = reverse_storage_order_for_component_p (lhs);
+	}
+      else
+	base2 = get_ref_base_and_extent (lhs,
+					 &offset2, &size2, &maxsize2, &reverse);
       if (known_size_p (maxsize2)
 	  && known_eq (maxsize2, size2)
 	  && adjust_offsets_for_equal_base_address (base, &offset,
@@ -2541,12 +2551,22 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	       || (TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME
 		   && is_gimple_min_invariant (SSA_VAL (gimple_assign_rhs1 (def_stmt))))))
     {
+      tree lhs = gimple_assign_lhs (def_stmt);
       tree base2;
       poly_int64 offset2, size2, maxsize2;
       HOST_WIDE_INT offset2i, size2i;
       bool reverse;
-      base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
-				       &offset2, &size2, &maxsize2, &reverse);
+      if (lhs_ref_ok)
+	{
+	  base2 = ao_ref_base (&lhs_ref);
+	  offset2 = lhs_ref.offset;
+	  size2 = lhs_ref.size;
+	  maxsize2 = lhs_ref.max_size;
+	  reverse = reverse_storage_order_for_component_p (lhs);
+	}
+      else
+	base2 = get_ref_base_and_extent (lhs,
+					 &offset2, &size2, &maxsize2, &reverse);
       if (base2
 	  && !reverse
 	  && known_eq (maxsize2, size2)
@@ -2627,12 +2647,21 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      downstream, not so much for actually doing the insertion.  */
 	   && data->partial_defs.is_empty ())
     {
+      tree lhs = gimple_assign_lhs (def_stmt);
       tree base2;
       poly_int64 offset2, size2, maxsize2;
       bool reverse;
-      base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
-				       &offset2, &size2, &maxsize2,
-				       &reverse);
+      if (lhs_ref_ok)
+	{
+	  base2 = ao_ref_base (&lhs_ref);
+	  offset2 = lhs_ref.offset;
+	  size2 = lhs_ref.size;
+	  maxsize2 = lhs_ref.max_size;
+	  reverse = reverse_storage_order_for_component_p (lhs);
+	}
+      else
+	base2 = get_ref_base_and_extent (lhs,
+					 &offset2, &size2, &maxsize2, &reverse);
       tree def_rhs = gimple_assign_rhs1 (def_stmt);
       if (!reverse
 	  && known_size_p (maxsize2)
