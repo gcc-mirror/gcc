@@ -12471,7 +12471,7 @@ neon_expand_vector_init (rtx target, rtx vals)
   if (n_var == 1)
     {
       rtx copy = copy_rtx (vals);
-      rtx index = GEN_INT (one_var);
+      rtx merge_mask = GEN_INT (1 << one_var);
 
       /* Load constant part of vector, substitute neighboring value for
 	 varying element.  */
@@ -12480,38 +12480,7 @@ neon_expand_vector_init (rtx target, rtx vals)
 
       /* Insert variable.  */
       x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, one_var));
-      switch (mode)
-	{
-	case E_V8QImode:
-	  emit_insn (gen_neon_vset_lanev8qi (target, x, target, index));
-	  break;
-	case E_V16QImode:
-	  emit_insn (gen_neon_vset_lanev16qi (target, x, target, index));
-	  break;
-	case E_V4HImode:
-	  emit_insn (gen_neon_vset_lanev4hi (target, x, target, index));
-	  break;
-	case E_V8HImode:
-	  emit_insn (gen_neon_vset_lanev8hi (target, x, target, index));
-	  break;
-	case E_V2SImode:
-	  emit_insn (gen_neon_vset_lanev2si (target, x, target, index));
-	  break;
-	case E_V4SImode:
-	  emit_insn (gen_neon_vset_lanev4si (target, x, target, index));
-	  break;
-	case E_V2SFmode:
-	  emit_insn (gen_neon_vset_lanev2sf (target, x, target, index));
-	  break;
-	case E_V4SFmode:
-	  emit_insn (gen_neon_vset_lanev4sf (target, x, target, index));
-	  break;
-	case E_V2DImode:
-	  emit_insn (gen_neon_vset_lanev2di (target, x, target, index));
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
+      emit_insn (gen_vec_set_internal (mode, target, x, merge_mask, target));
       return;
     }
 

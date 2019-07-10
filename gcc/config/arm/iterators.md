@@ -186,6 +186,9 @@
 ;; Modes with 8-bit elements.
 (define_mode_iterator VE [V8QI V16QI])
 
+;; V2DI only (for use with @ patterns).
+(define_mode_iterator V2DI_ONLY [V2DI])
+
 ;; Modes with 64-bit elements only.
 (define_mode_iterator V64 [DI V2DI])
 
