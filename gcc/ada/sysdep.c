@@ -33,6 +33,7 @@
    GNAT Run Time Library */
 
 #ifdef __vxworks
+#include "vxWorks.h"
 #include "ioLib.h"
 #if ! defined (VTHREADS)
 #include "dosFsLib.h"
@@ -41,7 +42,6 @@
 # include "nfsLib.h"
 #endif
 #include "selectLib.h"
-#include "vxWorks.h"
 #include "version.h"
 #if defined (__RTP__)
 #  include "vwModNum.h"
