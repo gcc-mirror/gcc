@@ -640,7 +640,8 @@ package body Sem_SPARK is
    procedure Check_Expression (Expr : Node_Id; Mode : Extended_Checking_Mode);
    pragma Precondition (Nkind_In (Expr, N_Index_Or_Discriminant_Constraint,
                                         N_Range_Constraint,
-                                        N_Subtype_Indication)
+                                        N_Subtype_Indication,
+                                        N_Digits_Constraint)
                         or else Nkind (Expr) in N_Subexpr);
 
    procedure Check_Globals (Subp : Entity_Id);
@@ -738,7 +739,7 @@ package body Sem_SPARK is
    --  the debugger to look into a hash table.
    pragma Unreferenced (Hp);
 
-   procedure Illegal_Global_Usage (N : Node_Or_Entity_Id);
+   procedure Illegal_Global_Usage (N : Node_Or_Entity_Id; E : Entity_Id);
    pragma No_Return (Illegal_Global_Usage);
    --  A procedure that is called when deep globals or aliased globals are used
    --  without any global aspect.
@@ -749,6 +750,9 @@ package body Sem_SPARK is
 
    function Is_Path_Expression (Expr : Node_Id) return Boolean;
    --  Return whether Expr corresponds to a path
+
+   function Is_Subpath_Expression (Expr : Node_Id) return Boolean;
+   --  Return True if Expr can be part of a path expression
 
    function Is_Prefix_Or_Almost (Pref, Expr : Node_Id) return Boolean;
    --  Determine if the candidate Prefix is indeed a prefix of Expr, or almost
@@ -1302,7 +1306,9 @@ package body Sem_SPARK is
    begin
       --  Only SPARK bodies are analyzed
 
-      if No (Prag) or else Get_SPARK_Mode_From_Annotation (Prag) /= Opt.On then
+      if No (Prag)
+        or else Get_SPARK_Mode_From_Annotation (Prag) /= Opt.On
+      then
          return;
       end if;
 
@@ -1312,9 +1318,8 @@ package body Sem_SPARK is
         and then Is_Anonymous_Access_Type (Etype (Spec_Id))
         and then not Is_Traversal_Function (Spec_Id)
       then
-         Error_Msg_N
-           ("anonymous access type for result only allowed for traveral "
-            & "functions", Spec_Id);
+         Error_Msg_N ("anonymous access type for result only allowed for "
+                      & "traveral functions", Spec_Id);
          return;
       end if;
 
@@ -1568,7 +1573,7 @@ package body Sem_SPARK is
       --  Start of processing for Read_Indexes
 
       begin
-         if not Is_Path_Expression (Expr) then
+         if not Is_Subpath_Expression (Expr) then
             Error_Msg_N ("name expected here for move/borrow/observe", Expr);
             return;
          end if;
@@ -1602,6 +1607,10 @@ package body Sem_SPARK is
             when N_Function_Call =>
                Read_Params (Expr);
                Check_Globals (Get_Called_Entity (Expr));
+
+            when N_Op_Concat =>
+               Read_Expression (Left_Opnd (Expr));
+               Read_Expression (Right_Opnd (Expr));
 
             when N_Qualified_Expression
                | N_Type_Conversion
@@ -1644,7 +1653,8 @@ package body Sem_SPARK is
                      --  There can be only one element for a value of deep type
                      --  in order to avoid aliasing.
 
-                     if Is_Deep (Etype (Expression (Assoc)))
+                     if not (Box_Present (Assoc))
+                       and then Is_Deep (Etype (Expression (Assoc)))
                        and then not Is_Singleton_Choice (CL)
                      then
                         Error_Msg_F
@@ -1655,7 +1665,9 @@ package body Sem_SPARK is
                      --  The subexpressions of an aggregate are moved as part
                      --  of the implicit assignments.
 
-                     Move_Expression (Expression (Assoc));
+                     if not Box_Present (Assoc) then
+                        Move_Expression (Expression (Assoc));
+                     end if;
 
                      Next (Assoc);
                   end loop;
@@ -1689,11 +1701,27 @@ package body Sem_SPARK is
                      --  The subexpressions of an aggregate are moved as part
                      --  of the implicit assignments.
 
-                     Move_Expression (Expression (Assoc));
+                     if not Box_Present (Assoc) then
+                        Move_Expression (Expression (Assoc));
+                     end if;
 
                      Next (Assoc);
                   end loop;
                end;
+
+            when N_Attribute_Reference =>
+               pragma Assert
+                 (Get_Attribute_Id (Attribute_Name (Expr)) =
+                    Attribute_Loop_Entry
+                  or else
+                  Get_Attribute_Id (Attribute_Name (Expr)) = Attribute_Update);
+
+               Read_Expression (Prefix (Expr));
+
+               if Get_Attribute_Id (Attribute_Name (Expr)) = Attribute_Update
+               then
+                  Read_Expression_List (Expressions (Expr));
+               end if;
 
             when others =>
                raise Program_Error;
@@ -1758,6 +1786,13 @@ package body Sem_SPARK is
             end if;
             return;
 
+         when N_Digits_Constraint =>
+            Read_Expression (Digits_Expression (Expr));
+            if Present (Range_Constraint (Expr)) then
+               Read_Expression (Range_Constraint (Expr));
+            end if;
+            return;
+
          when others =>
             null;
       end case;
@@ -1767,11 +1802,27 @@ package body Sem_SPARK is
       case N_Subexpr'(Nkind (Expr)) is
 
          when N_Binary_Op
-            | N_Membership_Test
             | N_Short_Circuit
          =>
             Read_Expression (Left_Opnd (Expr));
             Read_Expression (Right_Opnd (Expr));
+
+         when N_Membership_Test =>
+            Read_Expression (Left_Opnd (Expr));
+            if Present (Right_Opnd (Expr)) then
+               Read_Expression (Right_Opnd (Expr));
+            else
+               declare
+                  Cases    : constant List_Id := Alternatives (Expr);
+                  Cur_Case : Node_Id := First (Cases);
+
+               begin
+                  while Present (Cur_Case) loop
+                     Read_Expression (Cur_Case);
+                     Next (Cur_Case);
+                  end loop;
+               end;
+            end if;
 
          when N_Unary_Op =>
             Read_Expression (Right_Opnd (Expr));
@@ -1854,6 +1905,14 @@ package body Sem_SPARK is
                   --  expression, so it can be ignored for this analysis.
 
                   when Attribute_Modulus =>
+                     null;
+
+                  --  The following attributes apply to types; there are no
+                  --  expressions to read.
+
+                  when Attribute_Class
+                     | Attribute_Storage_Size
+                  =>
                      null;
 
                   --  Postconditions should not be analyzed
@@ -2418,13 +2477,17 @@ package body Sem_SPARK is
             Check_Call_Statement (N);
 
          when N_Package_Body =>
-            Check_Package_Body (N);
+            if not Is_Generic_Unit (Unique_Defining_Entity (N)) then
+               Check_Package_Body (N);
+            end if;
 
          when N_Subprogram_Body
             | N_Entry_Body
             | N_Task_Body
          =>
-            Check_Callable_Body (N);
+            if not Is_Generic_Unit (Unique_Defining_Entity (N)) then
+               Check_Callable_Body (N);
+            end if;
 
          when N_Protected_Body =>
             Check_List (Declarations (N));
@@ -3399,7 +3462,7 @@ package body Sem_SPARK is
                if not Inside_Elaboration
                  and then C = null
                then
-                  Illegal_Global_Usage (N);
+                  Illegal_Global_Usage (N, N);
                end if;
 
                return (R => Unfolded, Tree_Access => C);
@@ -3498,7 +3561,7 @@ package body Sem_SPARK is
       Through_Traversal : Boolean := True) return Entity_Id
    is
    begin
-      if not Is_Path_Expression (Expr) then
+      if not Is_Subpath_Expression (Expr) then
          Error_Msg_N ("name expected here for path", Expr);
          return Empty;
       end if;
@@ -3517,12 +3580,13 @@ package body Sem_SPARK is
             return Get_Root_Object (Prefix (Expr), Through_Traversal);
 
          --  There is no root object for an (extension) aggregate, allocator,
-         --  or NULL.
+         --  concat, or NULL.
 
          when N_Aggregate
             | N_Allocator
             | N_Extension_Aggregate
             | N_Null
+            | N_Op_Concat
          =>
             return Empty;
 
@@ -3544,6 +3608,15 @@ package body Sem_SPARK is
             | N_Unchecked_Type_Conversion
          =>
             return Get_Root_Object (Expression (Expr), Through_Traversal);
+
+         when N_Attribute_Reference =>
+            pragma Assert
+              (Get_Attribute_Id (Attribute_Name (Expr)) =
+                 Attribute_Loop_Entry
+               or else
+               Get_Attribute_Id (Attribute_Name (Expr)) =
+                 Attribute_Update);
+            return Empty;
 
          when others =>
             raise Program_Error;
@@ -3646,9 +3719,10 @@ package body Sem_SPARK is
    -- Illegal_Global_Usage --
    --------------------------
 
-   procedure Illegal_Global_Usage (N : Node_Or_Entity_Id)  is
+   procedure Illegal_Global_Usage (N : Node_Or_Entity_Id; E : Entity_Id)
+   is
    begin
-      Error_Msg_NE ("cannot use global variable & of deep type", N, N);
+      Error_Msg_NE ("cannot use global variable & of deep type", N, E);
       Error_Msg_N ("\without prior declaration in a Global aspect", N);
       Errout.Finalize (Last_Call => True);
       Errout.Output_Messages;
@@ -3668,7 +3742,7 @@ package body Sem_SPARK is
          when E_Array_Type
             | E_Array_Subtype
          =>
-            return Is_Deep (Component_Type (Typ));
+            return Is_Deep (Component_Type (Underlying_Type (Typ)));
 
          when Record_Kind =>
             declare
@@ -3859,6 +3933,23 @@ package body Sem_SPARK is
          return True;
       end if;
    end Is_Prefix_Or_Almost;
+
+   ---------------------------
+   -- Is_Subpath_Expression --
+   ---------------------------
+
+   function Is_Subpath_Expression (Expr : Node_Id) return Boolean is
+   begin
+      return Is_Path_Expression (Expr)
+        or else (Nkind (Expr) = N_Attribute_Reference
+                  and then
+                    (Get_Attribute_Id (Attribute_Name (Expr)) =
+                       Attribute_Update
+                     or else
+                     Get_Attribute_Id (Attribute_Name (Expr)) =
+                       Attribute_Loop_Entry))
+       or else Nkind (Expr) = N_Op_Concat;
+   end Is_Subpath_Expression;
 
    ---------------------------
    -- Is_Traversal_Function --
@@ -4397,7 +4488,7 @@ package body Sem_SPARK is
       if not Inside_Elaboration
         and then Get (Current_Perm_Env, Root) = null
       then
-         Illegal_Global_Usage (Expr);
+         Illegal_Global_Usage (Expr, Root);
       end if;
 
       --  During elaboration, only the validity of operations is checked, no
