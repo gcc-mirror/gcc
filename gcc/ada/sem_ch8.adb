@@ -802,12 +802,17 @@ package body Sem_Ch8 is
                null;
 
             --  If a record is limited its size is invariant. This is the case
-            --  in particular with record types with an access discirminant
+            --  in particular with record types with an access discriminant
             --  that are used in iterators. This is an optimization, but it
             --  also prevents typing anomalies when the prefix is further
-            --  expanded. Limited types with discriminants are included.
+            --  expanded. This also applies to limited types with access
+            --  discriminants.
+            --  Note that we cannot just use the Is_Limited_Record flag because
+            --  it does not apply to records with limited components, for which
+            --  this syntactic flag is not set, but whose size is also fixed.
 
-            elsif Is_Limited_Record (Typ)
+            elsif (Is_Record_Type (Typ)
+                and then Is_Limited_Type (Typ))
               or else
                 (Ekind (Typ) = E_Limited_Private_Type
                   and then Has_Discriminants (Typ)

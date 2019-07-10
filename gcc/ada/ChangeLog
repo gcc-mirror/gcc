@@ -1,3 +1,10 @@
+2019-07-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Check_Constrained_Object): A record that is
+	limited because of the presence of a limited component is
+	constrained, and no subtype indiciation needs to be created for
+	it, just as is the case for declared limited records.
+
 2019-07-10  Yannick Moy  <moy@adacore.com>
 
 	* sem_aux.adb, sem_aux.ads (Is_Protected_Operation): New
