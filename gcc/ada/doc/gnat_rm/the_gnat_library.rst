@@ -722,6 +722,17 @@ Provides access to key=value associations captured at bind time.
 These associations can be specified using the :switch:`-V` binder command
 line switch.
 
+.. _`GNAT.Branch_Prediction_(g-brapre.ads)`:
+
+``GNAT.Branch_Prediction`` (:file:`g-brapre.ads`)
+=================================================
+
+.. index:: GNAT.Branch_Prediction (g-brapre.ads)
+
+.. index:: Branch Prediction
+
+Provides routines giving hints to the branch predictor of the code generator.
+
 .. _`GNAT.Bounded_Buffers_(g-boubuf.ads)`:
 
 ``GNAT.Bounded_Buffers`` (:file:`g-boubuf.ads`)
