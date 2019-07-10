@@ -1,3 +1,10 @@
+2019-07-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb (Check_Nonoverridable_Aspects): Correct the
+	spelling in certain error messages.
+	(Check_Pragma_Implemented): Correct the spelling in certain
+	error messages.
+
 2019-07-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add g-brapre.
