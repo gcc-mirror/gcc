@@ -1,5 +1,11 @@
 2019-07-10  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* fold-const.c (fold_relational_const): Fix folding of
+	vector-to-scalar NE_EXPRs.
+	(test_vector_folding): Add more tests.
+
+2019-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR target/91060
 	* config/arm/iterators.md (V2DI_ONLY): New mode iterator.
 	* config/arm/neon.md (vec_set<mode>_internal): Add a '@' prefix.
