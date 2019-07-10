@@ -5960,7 +5960,7 @@ package body Sem_Ch6 is
               Access_Definition (N, Discriminant_Type (New_Discr));
 
          else
-            Analyze (Discriminant_Type (New_Discr));
+            Find_Type (Discriminant_Type (New_Discr));
             New_Discr_Type := Etype (Discriminant_Type (New_Discr));
 
             --  Ada 2005: if the discriminant definition carries a null
