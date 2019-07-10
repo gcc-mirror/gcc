@@ -8471,7 +8471,14 @@ package body Sem_Res is
                   Get_Next_Interp (I, It);
                end loop;
 
-               if Present (Alias (Entity (N))) then
+               --  If expansion is active and this is wn inherited operation,
+               --  replace it with its ancestor. This must not be done during
+               --  preanalysis because the type nay not be frozen yet, as when
+               --  the context is a pre/post condition.
+
+               if Present (Alias (Entity (N)))
+                 and then Expander_Active
+               then
                   Set_Entity (N, Alias (Entity (N)));
                end if;
             end;

@@ -1,3 +1,10 @@
+2019-07-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Equality_Op): Do not replace the resolved
+	operator by its alias if expander is not active, because the
+	operand type may not be frozen yet and its inherited operations
+	have not yet been created.
+
 2019-07-10  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* bindo-elaborators.adb (Elaborate_Units): Set attribute
