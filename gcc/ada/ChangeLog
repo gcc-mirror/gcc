@@ -1,5 +1,13 @@
 2019-07-10  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_ch4.adb (Expand_N_Case_Expression): Mark the generated
+	assignments to the temporary result as being OK because the
+	expansion of case expressions is correct by construction.
+	(Is_Copy_Type): Update the predicate to match the comment
+	within.
+
+2019-07-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* bindo-graphs.adb, bindo.adb, debug.adb, exp_ch6.adb,
 	sem_ch10.adb, sem_ch13.adb, sem_ch3.adb, sem_ch4.adb,
 	sem_ch6.adb, sem_ch7.adb, sem_res.adb, sem_spark.adb,
