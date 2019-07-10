@@ -1102,6 +1102,8 @@ package body Bindo.Writers is
          Write_Eol;
 
          Write_Component_Vertices (G, Comp);
+
+         Write_Eol;
       end Write_Component;
 
       ------------------------------
@@ -1112,25 +1114,34 @@ package body Bindo.Writers is
         (G    : Library_Graph;
          Comp : Component_Id)
       is
+         pragma Assert (Present (G));
+         pragma Assert (Present (Comp));
+
+         Num_Of_Vertices : constant Natural :=
+                             Number_Of_Component_Vertices (G, Comp);
+
          Iter   : Component_Vertex_Iterator;
          Vertex : Library_Graph_Vertex_Id;
 
       begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Comp));
-
-         Iter := Iterate_Component_Vertices (G, Comp);
-         while Has_Next (Iter) loop
-            Next (Iter, Vertex);
-
-            Write_Str  ("    library graph vertex (LGV_Id_");
-            Write_Int  (Int (Vertex));
-            Write_Str  (") name = ");
-            Write_Name (Name (G, Vertex));
-            Write_Eol;
-         end loop;
-
+         Write_Str ("  Vertices: ");
+         Write_Int (Int (Num_Of_Vertices));
          Write_Eol;
+
+         if Num_Of_Vertices > 0 then
+            Iter := Iterate_Component_Vertices (G, Comp);
+            while Has_Next (Iter) loop
+               Next (Iter, Vertex);
+
+               Write_Str  ("    library graph vertex (LGV_Id_");
+               Write_Int  (Int (Vertex));
+               Write_Str  (") name = ");
+               Write_Name (Name (G, Vertex));
+               Write_Eol;
+            end loop;
+         else
+            Write_Eol;
+         end if;
       end Write_Component_Vertices;
 
       ----------------------

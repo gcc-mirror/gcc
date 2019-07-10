@@ -1,3 +1,44 @@
+2019-07-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* bindo.adb: Update the section on switches.
+	* bindo-graphs.adb
+	(Add_Cycle, Add_Vertex_And_Complement): Remove.
+	(Create): The graph no longer needs a set of recorded cycles
+	because the cycles are not rediscovered in permuted forms.
+	(Cycle_End_Vertices): New routine.
+	(Destroy): The graph no longer needs a set of recorded cycles
+	because the cycles are not rediscovered in permuted forms.
+	(Destroy_Library_Graph_Vertex): Move to the library level.
+	(Find_All_Cycles_Through_Vertex, Find_All_Cycles_With_Edge):
+	Remove.
+	(Find_Cycles_From_Successor, Find_Cycles_From_Vertex,
+	Find_Cycles_In_Component, Has_Elaborate_All_Edge): New routines.
+	(Insert_And_Sort): Remove.
+	(Is_Elaborate_Body_Edge): Use predicate
+	Is_Vertex_With_Elaborate_Body.
+	(Is_Recorded_Cycle): Remove.
+	(Is_Vertex_With_Elaborate_Body): New routine.
+	(Normalize_And_Add_Cycle): Remove.
+	(Precedence): Rename to xxx_Precedence, where xxx relates to the
+	input.  These versions better reflect the desired input
+	precedence.
+	(Record_Cycle): New routine.
+	(Remove_Vertex_And_Complement, Set_Is_Recorded_Cycle): Remove.
+	(Trace_xxx): Update all versions to use debug switch -d_t.
+	(Trace_Component): New routine.
+	(Trace_Eol): Removed.
+	(Trace_Vertex): Do not output the component as this information
+	is already available when the component is traced.
+	(Unvisit, Visit): New routine.
+	* bindo-graphs.ads: Add new instance LGV_Lists.  Remove instance
+	RC_Sets.  Update the structure of type Library_Graph_Attributes
+	to remove the set of recorded cycles.
+	(Destroy_Library_Graph_Vertex): Move to the library level.
+	* bindo-writers.adb (Write_Component_Vertices): Output
+	information about the number of vertices.
+	* debug.adb: Document the use of binder switch -d_t.  Update the
+	use of binder switch -d_T.
+
 2019-07-10  Yannick Moy  <moy@adacore.com>
 
 	* sem_spark.adb (Get_Root_Object): Replace precondition by error
