@@ -1,3 +1,8 @@
+2019-07-10  Corentin Gay  <gay@adacore.com>
+
+	* sysdep.c: Put include directive for 'vxWorks.h' before any
+	other VxWorks headers.
+
 2019-07-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_attributes.rst
