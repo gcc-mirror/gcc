@@ -1,5 +1,9 @@
 2019-07-10  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* gnat.dg/incomplete7.adb, gnat.dg/incomplete7.ads: New testcase.
+
+2019-07-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* gnat.dg/limited2.adb, gnat.dg/limited2_pack_1.adb,
 	gnat.dg/limited2_pack_1.ads, gnat.dg/limited2_pack_2.adb,
 	gnat.dg/limited2_pack_2.ads: New testcase.
