@@ -343,7 +343,7 @@ package body Exp_Util is
             return;
          end if;
 
-         --  Case of zero/non-zero semantics or non-standard enumeration
+         --  Case of zero/nonzero semantics or nonstandard enumeration
          --  representation. In each case, we rewrite the node as:
 
          --      ityp!(N) /= False'Enum_Rep
@@ -5618,7 +5618,7 @@ package body Exp_Util is
          --  We can retrieve primitive operations by name if it is an internal
          --  name. For equality we must check that both of its operands have
          --  the same type, to avoid confusion with user-defined equalities
-         --  than may have a non-symmetric signature.
+         --  than may have a asymmetric signature.
 
          exit when Chars (Op) = Name
            and then
@@ -6822,8 +6822,8 @@ package body Exp_Util is
          N := Assoc_Node;
          P := Parent (Assoc_Node);
 
-      --  Non-subexpression case. Note that N is initially Empty in this case
-      --  (N is only guaranteed Non-Empty in the subexpr case).
+      --  Nonsubexpression case. Note that N is initially Empty in this case
+      --  (N is only guaranteed non-Empty in the subexpr case).
 
       else
          N := Empty;
@@ -8345,7 +8345,7 @@ package body Exp_Util is
             S : Nat;
 
          begin
-            --  If component reference is for an array with non-static bounds,
+            --  If component reference is for an array with nonstatic bounds,
             --  then it is always aligned: we can only process unaligned arrays
             --  with static bounds (more precisely compile time known bounds).
 
@@ -9067,7 +9067,7 @@ package body Exp_Util is
       then
          Constr_Root := Root_Typ;
 
-         --  At this point in the expansion, non-limited view of the type
+         --  At this point in the expansion, nonlimited view of the type
          --  must be available, otherwise the error will be reported later.
 
          if From_Limited_With (Constr_Root)
@@ -9840,7 +9840,7 @@ package body Exp_Util is
       --  in the derivation chain starting from parent type Par_Typ leading to
       --  derived type Deriv_Typ. The returned value is one of the following:
       --
-      --    * An entity which is either a discriminant or a non-discriminant
+      --    * An entity which is either a discriminant or a nondiscriminant
       --      name, and renames/constraints Discr.
       --
       --    * An expression which constraints Discr
@@ -11336,8 +11336,8 @@ package body Exp_Util is
          --  In GNATprove mode, we prefer to use renamings for intermediate
          --  variables to definition of constants, due to the implicit move
          --  operation that such a constant definition causes as part of the
-         --  support in GNATprove for ownership pointers. Hence we generate
-         --  a renaming for a reference to an object of a non-scalar type.
+         --  support in GNATprove for ownership pointers. Hence, we generate
+         --  a renaming for a reference to an object of a nonscalar type.
 
          if Renaming_Req
            or else (GNATprove_Mode
@@ -11465,7 +11465,7 @@ package body Exp_Util is
 
       --  For expressions that denote names, we can use a renaming scheme.
       --  This is needed for correctness in the case of a volatile object of
-      --  a non-volatile type because the Make_Reference call of the "default"
+      --  a nonvolatile type because the Make_Reference call of the "default"
       --  approach would generate an illegal access value (an access value
       --  cannot designate such an object - see Analyze_Reference).
 
@@ -11487,7 +11487,7 @@ package body Exp_Util is
              Name                => Relocate_Node (Exp)));
 
          --  If this is a packed reference, or a selected component with
-         --  a non-standard representation, a reference to the temporary
+         --  a nonstandard representation, a reference to the temporary
          --  will be replaced by a copy of the original expression (see
          --  Exp_Ch2.Expand_Renaming). Otherwise the temporary must be
          --  elaborated by gigi, and is of course not to be replaced in-line
@@ -12097,7 +12097,7 @@ package body Exp_Util is
                          and then Nkind_In (N, N_Package_Body,
                                                N_Package_Specification);
       --  N is at the library level if the top-most context is a package and
-      --  the path taken to reach N does not inlcude non-package constructs.
+      --  the path taken to reach N does not include nonpackage constructs.
 
    begin
       case Nkind (N) is
@@ -12784,7 +12784,7 @@ package body Exp_Util is
 
             --  Mark the assignment statement as elaboration code. This allows
             --  the early call region mechanism (see Sem_Elab) to properly
-            --  ignore such assignments even though they are non-preelaborable
+            --  ignore such assignments even though they are nonpreelaborable
             --  code.
 
             Set_Is_Elaboration_Code (Asn);
