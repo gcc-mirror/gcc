@@ -2104,7 +2104,7 @@ case, and it is recommended that these two options not be used together.
 Syntax:
 
 @example
-pragma Asynch_Readers [ (boolean_EXPRESSION) ];
+pragma Async_Readers [ (boolean_EXPRESSION) ];
 @end example
 
 For the semantics of this pragma, see the entry for aspect @code{Async_Readers} in
@@ -2118,7 +2118,7 @@ the SPARK 2014 Reference Manual, section 7.1.2.
 Syntax:
 
 @example
-pragma Asynch_Writers [ (boolean_EXPRESSION) ];
+pragma Async_Writers [ (boolean_EXPRESSION) ];
 @end example
 
 For the semantics of this pragma, see the entry for aspect @code{Async_Writers} in
@@ -10713,16 +10713,16 @@ indicates whether or not the corresponding actual type has discriminants.
 
 @geindex Img
 
-The @code{Img} attribute differs from @code{Image} in that it is applied
-directly to an object, and yields the same result as
-@code{Image} for the subtype of the object.  This is convenient for
-debugging:
+The @code{Img} attribute differs from @code{Image} in that, while both can be
+applied directly to an object, @code{Img} cannot be applied to types.
+
+Example usage of the attribute:
 
 @example
 Put_Line ("X = " & X'Img);
 @end example
 
-has the same meaning as the more verbose:
+which has the same meaning as the more verbose:
 
 @example
 Put_Line ("X = " & T'Image (X));

@@ -10813,8 +10813,8 @@ package body Sem_Util is
          --  Simple option Synchronous
          --
          --    enables                disables
-         --       Asynch_Readers         Effective_Reads
-         --       Asynch_Writers         Effective_Writes
+         --       Async_Readers          Effective_Reads
+         --       Async_Writers          Effective_Writes
          --
          --  Note that both forms of External have higher precedence than
          --  Synchronous (SPARK RM 7.1.4(9)).

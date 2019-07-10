@@ -479,17 +479,17 @@ Attribute Img
 =============
 .. index:: Img
 
-The ``Img`` attribute differs from ``Image`` in that it is applied
-directly to an object, and yields the same result as
-``Image`` for the subtype of the object.  This is convenient for
-debugging:
+The ``Img`` attribute differs from ``Image`` in that, while both can be
+applied directly to an object, ``Img`` cannot be applied to types.
+
+Example usage of the attribute:
 
 .. code-block:: ada
 
   Put_Line ("X = " & X'Img);
 
 
-has the same meaning as the more verbose:
+which has the same meaning as the more verbose:
 
 .. code-block:: ada
 
