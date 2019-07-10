@@ -1,3 +1,14 @@
+2019-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (get_type_quals,
+	smallest_type_location (const cp_decl_specifier_seq*)): New.
+	(check_tag_decl): Use smallest_type_location in error_at about
+	multiple types in one declaration.
+	(grokdeclarator): Use locations[ds_complex] in error_at about
+	complex invalid; use locations[ds_storage_class] in error_at
+	about static cdtor; use id_loc in error_at about flexible
+	array member in union; use get_type_quals.
+
 2019-07-09  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/61339

@@ -1,3 +1,12 @@
+2019-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/complex-invalid-1.C: New.
+	* g++.dg/diagnostic/static-cdtor-1.C: Likewise.
+	* g++.dg/cpp1z/has-unique-obj-representations2.C: Test location
+	too.
+	* g++.dg/other/anon-union3.C: Adjust expected location.
+	* g++.dg/parse/error8.C: Likewise.
+
 2019-07-09  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/lto/alias-3_0.C: New file.

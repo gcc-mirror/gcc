@@ -100,6 +100,7 @@ static tree build_cp_library_fn (tree, enum tree_code, tree, int);
 static void store_parm_decls (tree);
 static void initialize_local_var (tree, tree);
 static void expand_static_init (tree, tree);
+static location_t smallest_type_location (const cp_decl_specifier_seq*);
 
 /* The following symbols are subsumed in the cp_global_trees array, and
    listed here individually for documentation purposes.
@@ -4802,6 +4803,24 @@ warn_misplaced_attr_for_class_type (location_t location,
 	    class_type, class_key_or_enum_as_string (class_type));
 }
 
+/* Returns the cv-qualifiers that apply to the type specified
+   by the DECLSPECS.  */
+
+static int
+get_type_quals (const cp_decl_specifier_seq *declspecs)
+{
+  int type_quals = TYPE_UNQUALIFIED;
+
+  if (decl_spec_seq_has_spec_p (declspecs, ds_const))
+    type_quals |= TYPE_QUAL_CONST;
+  if (decl_spec_seq_has_spec_p (declspecs, ds_volatile))
+    type_quals |= TYPE_QUAL_VOLATILE;
+  if (decl_spec_seq_has_spec_p (declspecs, ds_restrict))
+    type_quals |= TYPE_QUAL_RESTRICT;
+
+  return type_quals;
+}
+
 /* Make sure that a declaration with no declarator is well-formed, i.e.
    just declares a tagged type or anonymous union.
 
@@ -4821,7 +4840,8 @@ check_tag_decl (cp_decl_specifier_seq *declspecs,
   bool error_p = false;
 
   if (declspecs->multiple_types_p)
-    error ("multiple types in one declaration");
+    error_at (smallest_type_location (declspecs),
+	      "multiple types in one declaration");
   else if (declspecs->redefined_builtin_type)
     {
       if (!in_system_header_at (input_location))
@@ -10142,6 +10162,13 @@ smallest_type_location (int type_quals, const location_t* locations)
   return min_location (loc, locations[ds_type_spec]);
 }
 
+static location_t
+smallest_type_location (const cp_decl_specifier_seq *declspecs)
+{
+  int type_quals = get_type_quals (declspecs);
+  return smallest_type_location (type_quals, declspecs->locations);
+}
+
 /* Check that it's OK to declare a function with the indicated TYPE
    and TYPE_QUALS.  SFK indicates the kind of special function (if any)
    that this function is.  OPTYPE is the type given in a conversion
@@ -10407,7 +10434,7 @@ grokdeclarator (const cp_declarator *declarator,
      a member function.  */
   cp_ref_qualifier rqual = REF_QUAL_NONE;
   /* cv-qualifiers that apply to the type specified by the DECLSPECS.  */
-  int type_quals = TYPE_UNQUALIFIED;
+  int type_quals = get_type_quals (declspecs);
   tree raises = NULL_TREE;
   int template_count = 0;
   tree returned_attrs = NULL_TREE;
@@ -10453,13 +10480,6 @@ grokdeclarator (const cp_declarator *declarator,
   bool concept_p = decl_spec_seq_has_spec_p (declspecs, ds_concept);
   if (concept_p)
     constexpr_p = true;
-
-  if (decl_spec_seq_has_spec_p (declspecs, ds_const))
-    type_quals |= TYPE_QUAL_CONST;
-  if (decl_spec_seq_has_spec_p (declspecs, ds_volatile))
-    type_quals |= TYPE_QUAL_VOLATILE;
-  if (decl_spec_seq_has_spec_p (declspecs, ds_restrict))
-    type_quals |= TYPE_QUAL_RESTRICT;
 
   if (decl_context == FUNCDEF)
     funcdef_flag = true, decl_context = NORMAL;
@@ -10999,7 +11019,8 @@ grokdeclarator (const cp_declarator *declarator,
   if (decl_spec_seq_has_spec_p (declspecs, ds_complex))
     {
       if (TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != REAL_TYPE)
-	error ("complex invalid for %qs", name);
+	error_at (declspecs->locations[ds_complex],
+		  "complex invalid for %qs", name);
       /* If a modifier is specified, the resulting complex is the complex
 	 form of TYPE.  E.g, "complex short" is "complex short int".  */
       else if (type == integer_type_node)
@@ -11578,9 +11599,12 @@ grokdeclarator (const cp_declarator *declarator,
 		   virtual.  A constructor may not be static.
 		   A constructor may not be declared with ref-qualifier. */
 		if (staticp == 2)
-		  error ((flags == DTOR_FLAG)
-			 ? G_("destructor cannot be static member function")
-			 : G_("constructor cannot be static member function"));
+		  error_at (declspecs->locations[ds_storage_class],
+			    (flags == DTOR_FLAG)
+			    ? G_("destructor cannot be static member "
+				 "function")
+			    : G_("constructor cannot be static member "
+				 "function"));
 		if (memfn_quals)
 		  {
 		    error ((flags == DTOR_FLAG)
@@ -12438,7 +12462,7 @@ grokdeclarator (const cp_declarator *declarator,
 		&& (TREE_CODE (ctype) == UNION_TYPE
 		    || TREE_CODE (ctype) == QUAL_UNION_TYPE))
 	      {
-		error ("flexible array member in union");
+		error_at (id_loc, "flexible array member in union");
 		type = error_mark_node;
 	      }
 	    else
