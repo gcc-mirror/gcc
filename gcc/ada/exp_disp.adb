@@ -1682,18 +1682,34 @@ package body Exp_Disp is
       while Present (Formal) loop
          Formal_Typ := Etype (Formal);
 
+         if Has_Non_Limited_View (Formal_Typ) then
+            Formal_Typ := Non_Limited_View (Formal_Typ);
+         end if;
+
          if Ekind (Formal_Typ) = E_Record_Type_With_Private then
             Formal_Typ := Full_View (Formal_Typ);
          end if;
 
          if Is_Access_Type (Formal_Typ) then
             Formal_DDT := Directly_Designated_Type (Formal_Typ);
+
+            if Has_Non_Limited_View (Formal_DDT) then
+               Formal_DDT := Non_Limited_View (Formal_DDT);
+            end if;
          end if;
 
          Actual_Typ := Etype (Actual);
 
+         if Has_Non_Limited_View (Actual_Typ) then
+            Actual_Typ := Non_Limited_View (Actual_Typ);
+         end if;
+
          if Is_Access_Type (Actual_Typ) then
             Actual_DDT := Directly_Designated_Type (Actual_Typ);
+
+            if Has_Non_Limited_View (Actual_DDT) then
+               Actual_DDT := Non_Limited_View (Actual_DDT);
+            end if;
          end if;
 
          if Is_Interface (Formal_Typ)
