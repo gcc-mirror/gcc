@@ -1,3 +1,10 @@
+2019-07-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add g-brapre.
+	* libgnat/g-brapre.ads: New package specification.
+	* doc/gnat_rm/the_gnat_library.rst: Document it.
+	* gnat_rm.texi: Regenerate.
+
 2019-07-10  Yannick Moy  <moy@adacore.com>
 
 	* osint-c.adb (Set_File_Name): Always add extension for multiple
