@@ -1,3 +1,10 @@
+2019-07-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (LIB_SPEC): Collate this spec here.
+	* config/rs6000/darwin7.h (LIB_SPEC): Remove.
+	* config/rs6000/darwin8.h (LIB_SPEC): Remove.
+	(DEF_MIN_OSX_VERSION): New.
+
 2019-07-10  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* fold-const.c (fold_relational_const): Fix folding of
