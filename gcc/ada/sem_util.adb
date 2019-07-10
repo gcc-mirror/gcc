@@ -8713,7 +8713,24 @@ package body Sem_Util is
       --  case, it can only be located on the body entity.
 
       if Refined then
-         Body_Id := Subprogram_Body_Entity (Subp);
+         if Is_Subprogram_Or_Generic_Subprogram (Subp) then
+            Body_Id := Subprogram_Body_Entity (Subp);
+
+         elsif Is_Entry (Subp)
+           or else Is_Task_Type (Subp)
+         then
+            Body_Id := Corresponding_Body (Parent (Subp));
+
+         --  ??? It should be possible to retrieve the Refined_Global on the
+         --  task body associated to the task object. This is not yet possible.
+
+         elsif Is_Single_Task_Object (Subp) then
+            Body_Id := Empty;
+
+         else
+            Body_Id := Empty;
+         end if;
+
          if Present (Body_Id) then
             Global := Get_Pragma (Body_Id, Pragma_Refined_Global);
          end if;

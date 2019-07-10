@@ -1,3 +1,15 @@
+2019-07-10  Yannick Moy  <moy@adacore.com>
+
+	* sem_spark.adb (Get_Root_Object): Replace precondition by error
+	message.
+	(Read_Indexes): Replace precondition by error message.
+	(Check_Callable_Body): Check only traversal function returns an
+	anonymous access type.
+	(Check_Expression): Issue error on unexpected expression as
+	path.
+	* sem_util.adb (First_Global): Fix access to global on
+	entry/task.
+
 2019-07-10  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch6.adb (Is_Class_Wide_Interface_Type): New subprogram.
