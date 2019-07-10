@@ -1,3 +1,8 @@
+2019-07-10  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/s-ststop.adb: Remove System.Strings.Stream_Ops
+	dependence on System.Streams.Stream_IO.
+
 2019-07-10  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch2.adb (Analyze_Integer_Literal): Preserve the type of
