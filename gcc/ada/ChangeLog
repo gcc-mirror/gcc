@@ -1,3 +1,9 @@
+2019-07-10  Simon Buist  <buist@adacore.com>
+
+	* sem_util.ads (Child_Prefix): New constant.
+	* sem_util.adb (Unique_Name): Add a special prefix to child
+	units that have a nested subprogram or package.
+
 2019-07-10  Arnaud Charlet  <charlet@adacore.com>
 
 	* sfn_scan.adb (Scan_SFN_Pragmas): Add pragma Assert.
