@@ -1832,10 +1832,20 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
 			    0, MIN ((HOST_WIDE_INT)sizeof (buffer), pd.size));
 		  else
 		    {
+		      unsigned pad = 0;
+		      if (BYTES_BIG_ENDIAN
+			  && is_a <scalar_mode> (TYPE_MODE (TREE_TYPE (pd.rhs))))
+			{
+			  /* On big-endian the padding is at the 'front' so
+			     just skip the initial bytes.  */
+			  fixed_size_mode mode = as_a <fixed_size_mode>
+					       (TYPE_MODE (TREE_TYPE (pd.rhs)));
+			  pad = GET_MODE_SIZE (mode) - pd.size;
+			}
 		      len = native_encode_expr (pd.rhs,
 						buffer + MAX (0, pd.offset),
 						sizeof (buffer - MAX (0, pd.offset)),
-						MAX (0, -pd.offset));
+						MAX (0, -pd.offset) + pad);
 		      if (len <= 0
 			  || len < (pd.size - MAX (0, -pd.offset)))
 			{
@@ -2588,9 +2598,20 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      tree rhs = gimple_assign_rhs1 (def_stmt);
 	      if (TREE_CODE (rhs) == SSA_NAME)
 		rhs = SSA_VAL (rhs);
+	      unsigned pad = 0;
+	      if (BYTES_BIG_ENDIAN
+		  && is_a <scalar_mode> (TYPE_MODE (TREE_TYPE (rhs))))
+		{
+		  /* On big-endian the padding is at the 'front' so
+		     just skip the initial bytes.  */
+		  fixed_size_mode mode
+		    = as_a <fixed_size_mode> (TYPE_MODE (TREE_TYPE (rhs)));
+		  pad = GET_MODE_SIZE (mode) - size2i / BITS_PER_UNIT;
+		}
 	      len = native_encode_expr (rhs,
 					buffer, sizeof (buffer),
-					(offseti - offset2i) / BITS_PER_UNIT);
+					((offseti - offset2i) / BITS_PER_UNIT
+					 + pad));
 	      if (len > 0 && len * BITS_PER_UNIT >= maxsizei)
 		{
 		  tree type = vr->type;
