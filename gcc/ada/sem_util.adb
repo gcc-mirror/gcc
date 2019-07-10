@@ -25781,6 +25781,8 @@ package body Sem_Util is
                   end if;
                end;
 
+            elsif Is_Child_Unit (U) then
+               return Child_Prefix & Unique_Name (S) & "__" & This_Name;
             else
                return Unique_Name (S) & "__" & This_Name;
             end if;

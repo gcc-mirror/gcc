@@ -2854,6 +2854,10 @@ package Sem_Util is
    --  Return a unique name for entity E, which could be used to identify E
    --  across compilation units.
 
+   Child_Prefix : constant String := "ada___";
+   --  Prefix for child packages when building a unique name for an entity. It
+   --  is included here to share between Unique_Name and gnatprove.
+
    function Unit_Is_Visible (U : Entity_Id) return Boolean;
    --  Determine whether a compilation unit is visible in the current context,
    --  because there is a with_clause that makes the unit available. Used to
