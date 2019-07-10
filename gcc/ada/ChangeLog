@@ -1,3 +1,12 @@
+2019-07-10  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Is_Class_Wide_Interface_Type): New subprogram.
+	(Expand_Call_Helper): Handle non-limited views when we check if
+	any formal is a class-wide interface type.
+	* exp_disp.adb (Expand_Interface_Actuals): Handle non-limited
+	views when we look for interface type formals to force "this"
+	displacement.
+
 2019-07-10  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Resolve_Equality_Op): Do not replace the resolved
