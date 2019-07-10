@@ -11333,7 +11333,17 @@ package body Exp_Util is
          --  Generate:
          --    Rnn : Exp_Type renames Expr;
 
-         if Renaming_Req then
+         --  In GNATprove mode, we prefer to use renamings for intermediate
+         --  variables to definition of constants, due to the implicit move
+         --  operation that such a constant definition causes as part of the
+         --  support in GNATprove for ownership pointers. Hence we generate
+         --  a renaming for a reference to an object of a non-scalar type.
+
+         if Renaming_Req
+           or else (GNATprove_Mode
+                     and then Is_Object_Reference (Exp)
+                     and then not Is_Scalar_Type (Exp_Type))
+         then
             E :=
               Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier => Def_Id,
