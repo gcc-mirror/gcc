@@ -60,6 +60,9 @@
 #endif
 
 #if defined (__vxworks)
+  #include <vxWorks.h>
+  #include <version.h>
+
   #if defined (__RTP__)
     /* On VxWorks 6 Real-Time process mode, environ is defined in unistd.h.  */
     #include <unistd.h>
@@ -69,14 +72,18 @@
        envLib.h on VxWorks MILS and VxWorks 653.  */
     #include <vThreadsData.h>
     #include <envLib.h>
-  #else
-    /* This should work for kernel mode on both VxWorks 5 and VxWorks 6.  */
+  #elif (_WRS_VXWORKS_MAJOR <= 6)
     #include <envLib.h>
-
-    /* In that mode environ is a macro which reference the following symbol.
-       As the symbol is not defined in any VxWorks include files we declare
-       it as extern.  */
+    /* In that mode the following symbol is not defined in any VxWorks
+       include files, prior to vxWorks 7, so we declare it as extern.  */
     extern char** ppGlobalEnviron;
+  #elif (_WRS_VXWORKS_MAJOR >= 7)
+    /* This should work for kernel mode on VxWorks 7.x.  In 7.2 the tcb
+       is made private, so accessor functions must be used, in 7.0 it
+       is optional but there is no way to distinguish between 7.2
+       and 7.0 since the version.h header file was never updated.  */
+    #include <envLib.h>
+    #include <taskLibCommon.h>
   #endif
 #endif
 
@@ -223,7 +230,18 @@ __gnat_environ (void)
   extern char **environ;
   return environ;
 #else
-  return environ;
+  #if defined (__RTP__) || defined (VTHREADS) || (_WRS_VXWORKS_MAJOR <= 6)
+    return environ;
+  #elif (_WRS_VXWORKS_MAJOR >= 7)
+    char **task_environ;
+
+    task_environ = envGet (taskIdSelf ());
+
+    if (task_environ == NULL)
+       return ppGlobalEnviron;
+    else
+       return task_environ;
+  #endif
 #endif
 }
 
