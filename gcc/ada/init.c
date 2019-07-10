@@ -1725,7 +1725,7 @@ __gnat_install_handler (void)
 #include <iv.h>
 #endif
 
-#if ((defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6)) || defined (__x86_64__)) && !defined(__RTP__)
+#if ((defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6))) && !defined(__RTP__)
 #define VXWORKS_FORCE_GUARD_PAGE 1
 #include <vmLib.h>
 extern size_t vxIntStackOverflowSize;
