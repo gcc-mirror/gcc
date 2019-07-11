@@ -815,8 +815,7 @@ package body Sem_Ch8 is
             --  it does not apply to records with limited components, for which
             --  this syntactic flag is not set, but whose size is also fixed.
 
-            elsif (Is_Record_Type (Typ)
-                and then Is_Limited_Type (Typ))
+            elsif (Is_Record_Type (Typ) and then Is_Limited_Type (Typ))
               or else
                 (Ekind (Typ) = E_Limited_Private_Type
                   and then Has_Discriminants (Typ)

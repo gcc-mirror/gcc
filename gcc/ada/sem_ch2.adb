@@ -31,7 +31,6 @@ with Restrict; use Restrict;
 with Rident;   use Rident;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Dim;  use Sem_Dim;
---  with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
 with Uintp;    use Uintp;
@@ -97,9 +96,7 @@ package body Sem_Ch2 is
       --  prior analysis (or construction) of the literal, and after type
       --  checking and resolution.
 
-      if No (Etype (N))
-        or else not Is_Modular_Integer_Type (Etype (N))
-      then
+      if No (Etype (N)) or else not Is_Modular_Integer_Type (Etype (N)) then
          Set_Etype (N, Universal_Integer);
       end if;
 

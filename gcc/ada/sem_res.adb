@@ -3467,8 +3467,8 @@ package body Sem_Res is
            or else Nkind (Original_Node (N)) not in N_Subprogram_Call
            or else (Nkind (Name (N)) = N_Identifier
                      and then Present (Entity (Name (N)))
-                     and then Nkind (Entity (Name (N)))
-                       = N_Defining_Operator_Symbol)
+                     and then Nkind (Entity (Name (N))) =
+                                N_Defining_Operator_Symbol)
            or else not Comes_From_Source (N)
          then
             return;
