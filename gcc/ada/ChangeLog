@@ -1,3 +1,7 @@
+2019-07-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* errno.c: Remove obsolete support for MaRTE OS.
+
 2019-07-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Type_Conversion): If a predicate check
