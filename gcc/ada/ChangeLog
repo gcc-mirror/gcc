@@ -1,3 +1,45 @@
+2019-07-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* bindo.adb: Update the section of switches and debugging
+	elaboration issues.
+	* bindo.ads: Add type Elaboration_Phase.
+	* bindo-augmentors.adb: Add use clause for
+	Bindo.Writers.Phase_Writers.
+	(Augment_Library_Graph): Signal the start and end of the
+	aubmentation phase.
+	* bindo-builders.adb: Add with and use clause for Bindo.Writers.
+	Add use clause for Bindo.Writers.Phase_Writers.
+	(Build_Invocation_Graph): Signal the start and end of the
+	invocation graph construction phase.
+	(Build_Library_Graph): Signal the start and end of the library
+	graph construction phase.
+	* bindo-diagnostics.adb: Add use clause for
+	Bindo.Writers.Phase_Writers.
+	(Diagnose_Cycle): Signal the start and end of the cycle
+	diagnostic phase.
+	* bindo-elaborators.adb: Add use clause for
+	Bindo.Writers.Phase_Writers.
+	(Elaborate_Units): Signal the start and end of the unit
+	elaboration phase.
+	* bindo-graphs.adb: Add use clause for
+	Bindo.Writers.Phase_Writers.
+	(Find_Components): Signal the start and end of the component
+	discovery phase.
+	(Find_Cycles): Signal the start and end of the cycle discovery
+	phase.
+	* bindo-units.adb: Add with and use clause for Bindo.Writers.
+	Add use clause for Bindo.Writers.Phase_Writers.
+	(Collect_Elaborable_Units): Signal the start and end of the unit
+	collection phase.
+	* bindo-validators.adb: Add with and use clause for
+	Bindo.Writers.  Add use clause for Bindo.Writers.Phase_Writers.
+	(Validate_Cycles, Validate_Elaboration_Order,
+	Validate_Invocation_Graph, Validate_Library_Graph): Signal the
+	start and end of the libray graph validation phase.
+	* bindo-writers.ads, bindo-writers.adb: Add new nested package
+	Phase_Writers.
+	* debug.adb: Update the documentation of switch d_S.
+
 2019-07-11  Yannick Moy  <moy@adacore.com>
 
 	* sem_res.adb (Check_Argument_Order): Special case calls to

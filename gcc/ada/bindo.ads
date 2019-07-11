@@ -31,6 +31,24 @@ with Namet; use Namet;
 
 package Bindo is
 
+   --  The following type represents the various phases of the elaboration
+   --  order mechanism.
+
+   type Elaboration_Phase is
+     (Component_Discovery,
+      Cycle_Diagnostics,
+      Cycle_Discovery,
+      Cycle_Validation,
+      Elaboration_Order_Validation,
+      Invocation_Graph_Construction,
+      Invocation_Graph_Validation,
+      Library_Graph_Augmentation,
+      Library_Graph_Construction,
+      Library_Graph_Elaboration,
+      Library_Graph_Validation,
+      Unit_Collection,
+      Unit_Elaboration);
+
    --  The following type represents the various kinds of precedence between
    --  two items.
 

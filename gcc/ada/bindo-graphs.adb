@@ -31,6 +31,7 @@ with Output; use Output;
 
 with Bindo.Writers;
 use  Bindo.Writers;
+use  Bindo.Writers.Phase_Writers;
 
 package body Bindo.Graphs is
 
@@ -2636,6 +2637,8 @@ package body Bindo.Graphs is
       begin
          pragma Assert (Present (G));
 
+         Start_Phase (Component_Discovery);
+
          --  Initialize or reinitialize the components of the graph
 
          Initialize_Components (G);
@@ -2660,6 +2663,7 @@ package body Bindo.Graphs is
          --  before they can be elaborated.
 
          Update_Pending_Predecessors_Of_Components (G);
+         End_Phase (Component_Discovery);
       end Find_Components;
 
       -----------------
@@ -2682,6 +2686,8 @@ package body Bindo.Graphs is
 
       begin
          pragma Assert (Present (G));
+
+         Start_Phase (Cycle_Discovery);
 
          --  The cycles of graph G are discovered using Tarjan's enumeration
          --  of the elementary circuits of a directed-graph algorithm. Do not
@@ -2721,6 +2727,8 @@ package body Bindo.Graphs is
                Cycle_Count => Cycle_Count,
                Cycle_Limit => All_Cycle_Limit);
          end loop;
+
+         End_Phase (Cycle_Discovery);
       end Find_Cycles;
 
       --------------------------------

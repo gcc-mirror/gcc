@@ -23,6 +23,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Bindo.Writers;
+use  Bindo.Writers;
+use  Bindo.Writers.Phase_Writers;
+
 package body Bindo.Units is
 
    -------------------
@@ -79,9 +83,13 @@ package body Bindo.Units is
 
    procedure Collect_Elaborable_Units is
    begin
+      Start_Phase (Unit_Collection);
+
       for U_Id in ALI.Units.First .. ALI.Units.Last loop
          Process_Unit (U_Id);
       end loop;
+
+      End_Phase (Unit_Collection);
    end Collect_Elaborable_Units;
 
    ------------------------

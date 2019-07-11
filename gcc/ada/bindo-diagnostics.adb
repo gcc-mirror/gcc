@@ -36,6 +36,7 @@ use  Bindo.Validators.Cycle_Validators;
 with Bindo.Writers;
 use  Bindo.Writers;
 use  Bindo.Writers.Cycle_Writers;
+use  Bindo.Writers.Phase_Writers;
 
 package body Bindo.Diagnostics is
 
@@ -348,6 +349,8 @@ package body Bindo.Diagnostics is
       Next_Edge    : Library_Graph_Edge_Id;
 
    begin
+      Start_Phase (Cycle_Diagnostics);
+
       First_Edge := No_Library_Graph_Edge;
 
       --  Inspect the edges of the cycle in pairs, emitting diagnostics based
@@ -402,6 +405,8 @@ package body Bindo.Diagnostics is
         (G          => Lib_Graph,
          Cycle      => Cycle,
          First_Edge => First_Edge);
+
+      End_Phase (Cycle_Diagnostics);
    end Diagnose_Cycle;
 
    --------------------------------------

@@ -54,6 +54,7 @@ use  Bindo.Writers.Dependency_Writers;
 use  Bindo.Writers.Elaboration_Order_Writers;
 use  Bindo.Writers.Invocation_Graph_Writers;
 use  Bindo.Writers.Library_Graph_Writers;
+use  Bindo.Writers.Phase_Writers;
 use  Bindo.Writers.Unit_Closure_Writers;
 
 with GNAT;        use GNAT;
@@ -711,6 +712,8 @@ package body Bindo.Elaborators is
          Status    : Elaboration_Order_Status;
 
       begin
+         Start_Phase (Unit_Elaboration);
+
          --  Initialize all unit-related data structures and gather all units
          --  that need elaboration.
 
@@ -786,6 +789,7 @@ package body Bindo.Elaborators is
          --  Destroy all unit-related data structures
 
          Finalize_Units;
+         End_Phase (Unit_Elaboration);
 
          --  Halt the bind when there is no satisfactory elaboration order
 

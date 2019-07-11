@@ -355,6 +355,11 @@ package body Bindo is
    --
    --        GNATbind output the cycle paths in text format to standard output
    --
+   --  -d_S  Output elaboration-order status information
+   --
+   --        GNATbind outputs trace information concerning the status of its
+   --        various phases to standard output.
+   --
    --  -d_T  Output elaboration-order trace information
    --
    --        GNATbind outputs trace information on elaboration-order detection
@@ -415,6 +420,11 @@ package body Bindo is
    --    plge   --  print library-graph edge
    --    plgv   --  print library-graph vertex
    --    pu     --  print units
+   --
+   --  * Apparent infinite loop
+   --
+   --    The elaboration order mechanism appears to be stuck in an infinite
+   --    loop. Use switch -d_S to output the status of each elaboration phase.
    --
    --  * Invalid elaboration order
    --

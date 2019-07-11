@@ -27,7 +27,12 @@ with Debug;  use Debug;
 with Output; use Output;
 with Types;  use Types;
 
-with Bindo.Units; use Bindo.Units;
+with Bindo.Units;
+use  Bindo.Units;
+
+with Bindo.Writers;
+use  Bindo.Writers;
+use  Bindo.Writers.Phase_Writers;
 
 package body Bindo.Validators is
 
@@ -188,12 +193,16 @@ package body Bindo.Validators is
             return;
          end if;
 
+         Start_Phase (Cycle_Validation);
+
          Iter := Iterate_All_Cycles (G);
          while Has_Next (Iter) loop
             Next (Iter, Cycle);
 
             Validate_Cycle (G, Cycle);
          end loop;
+
+         End_Phase (Cycle_Validation);
 
          if Has_Invalid_Cycle then
             raise Invalid_Cycle;
@@ -330,7 +339,11 @@ package body Bindo.Validators is
             return;
          end if;
 
+         Start_Phase (Elaboration_Order_Validation);
+
          Validate_Units (Order);
+
+         End_Phase (Elaboration_Order_Validation);
 
          if Has_Invalid_Data then
             raise Invalid_Elaboration_Order;
@@ -444,8 +457,12 @@ package body Bindo.Validators is
             return;
          end if;
 
+         Start_Phase (Invocation_Graph_Validation);
+
          Validate_Invocation_Graph_Vertices (G);
-         Validate_Invocation_Graph_Edges (G);
+         Validate_Invocation_Graph_Edges    (G);
+
+         End_Phase (Invocation_Graph_Validation);
 
          if Has_Invalid_Data then
             raise Invalid_Invocation_Graph;
@@ -638,8 +655,12 @@ package body Bindo.Validators is
             return;
          end if;
 
+         Start_Phase (Library_Graph_Validation);
+
          Validate_Library_Graph_Vertices (G);
-         Validate_Library_Graph_Edges (G);
+         Validate_Library_Graph_Edges    (G);
+
+         End_Phase (Library_Graph_Validation);
 
          if Has_Invalid_Data then
             raise Invalid_Library_Graph;
