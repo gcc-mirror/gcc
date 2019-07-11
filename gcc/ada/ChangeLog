@@ -1,5 +1,11 @@
 2019-07-11  Bob Duff  <duff@adacore.com>
 
+	* doc/gnat_ugn/gnat_utility_programs.rst: Fix inconsistent
+	documentation for gnatmetric.
+	* gnat_ugn.texi: Regenerate.
+
+2019-07-11  Bob Duff  <duff@adacore.com>
+
 	* doc/gnat_ugn/gnat_utility_programs.rst: Document gnatpp's
 	--spaces-only switch.
 

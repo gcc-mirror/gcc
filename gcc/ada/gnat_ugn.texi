@@ -19024,7 +19024,7 @@ If you do not specify an extension, it will default to @code{htm}.
 @item @code{f}
 
 By default, gnathtml will generate html links only for global entities
-('with'ed units, global variables and types,...).  If you specify
+('with'ed units, global variables and types,...). If you specify
 @code{-f} on the command line, then links will be generated for local
 entities too.
 @end table
