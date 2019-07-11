@@ -7056,7 +7056,7 @@ package body Checks is
             Convert_And_Check_Range;
          end if;
 
-      --  Note that at this stage we now that the Target_Base_Type is not in
+      --  Note that at this stage we know that the Target_Base_Type is not in
       --  the range of the Source_Base_Type (since even the Target_Type itself
       --  is not in this range). It could still be the case that Source_Type is
       --  in range of the target base type since we have not checked that case.

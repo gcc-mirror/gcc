@@ -8703,6 +8703,8 @@ package body Sem_Util is
       Global  : Node_Id := Empty;
       Body_Id : Entity_Id;
 
+   --  Start of processing for First_Global
+
    begin
       pragma Assert (Nam_In (Global_Mode, Name_In_Out,
                                           Name_Input,
