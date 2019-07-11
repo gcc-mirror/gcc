@@ -1,5 +1,9 @@
 2019-07-11  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000-logue.c: Add Modula-2 to comment.
+
+2019-07-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000-logue.c (rs6000_output_function_epilogue):
 	Handle Modula-2.
 
