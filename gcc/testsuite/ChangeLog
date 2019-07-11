@@ -1,3 +1,8 @@
+2019-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91131
+	* gcc.target/i386/pr91131.c: New testcase.
+
 2019-07-10  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/91132
