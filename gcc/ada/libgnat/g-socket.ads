@@ -773,7 +773,10 @@ package GNAT.Sockets is
       IP_Protocol_For_IP_Level,
       IP_Protocol_For_IPv6_Level,
       IP_Protocol_For_UDP_Level,
-      IP_Protocol_For_TCP_Level);
+      IP_Protocol_For_TCP_Level,
+      IP_Protocol_For_ICMP_Level,
+      IP_Protocol_For_IGMP_Level,
+      IP_Protocol_For_RAW_Level);
 
    --  There are several options available to manipulate sockets. Each option
    --  has a name and several values available. Most of the time, the value
