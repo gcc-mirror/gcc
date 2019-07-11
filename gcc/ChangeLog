@@ -1,3 +1,10 @@
+2019-07-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	Backported from mainline
+	2019-07-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/i386/sse.md (*andnot<mode>3_bcst): Fix VI/VI48_AVX512VL typo.
+
 2019-07-11  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Handle

@@ -12481,8 +12481,8 @@
 	      (const_string "<sseinsnmode>")))])
 
 (define_insn "*andnot<mode>3_bcst"
-  [(set (match_operand:VI 0 "register_operand" "=v")
-	(and:VI
+  [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")
+	(and:VI48_AVX512VL
 	  (not:VI48_AVX512VL
 	     (match_operand:VI48_AVX512VL 1 "register_operand" "v"))
 	  (vec_duplicate:VI48_AVX512VL
