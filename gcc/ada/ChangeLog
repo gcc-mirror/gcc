@@ -1,3 +1,8 @@
+2019-07-11  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-cfhama.adb, libgnat/a-cfhase.adb (Free): Do not
+	reset the Has_Element flag if no element is freed.
+
 2019-07-11  Arnaud Charlet  <charlet@adacore.com>
 
 	* errno.c: Remove obsolete support for MaRTE OS.
