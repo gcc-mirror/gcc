@@ -774,6 +774,10 @@ package body Sem_Ch8 is
       --  has already established its actual subtype. This is only relevant
       --  if the renamed object is an explicit dereference.
 
+      function Get_Object_Name (Nod : Node_Id) return Node_Id;
+      --  Obtain the name of the object from node Nod which is being renamed by
+      --  the object renaming declaration N.
+
       ------------------------------
       -- Check_Constrained_Object --
       ------------------------------
@@ -839,6 +843,33 @@ package body Sem_Ch8 is
             end if;
          end if;
       end Check_Constrained_Object;
+
+      ---------------------
+      -- Get_Object_Name --
+      ---------------------
+
+      function Get_Object_Name (Nod : Node_Id) return Node_Id is
+         Obj_Nam : Node_Id;
+
+      begin
+         Obj_Nam := Nod;
+         while Present (Obj_Nam) loop
+            if Nkind_In (Obj_Nam, N_Attribute_Reference,
+                                  N_Explicit_Dereference,
+                                  N_Indexed_Component,
+                                  N_Slice)
+            then
+               Obj_Nam := Prefix (Obj_Nam);
+
+            elsif Nkind (Obj_Nam) = N_Selected_Component then
+               Obj_Nam := Selector_Name (Obj_Nam);
+            else
+               exit;
+            end if;
+         end loop;
+
+         return Obj_Nam;
+      end Get_Object_Name;
 
    --  Start of processing for Analyze_Object_Renaming
 
@@ -1156,18 +1187,10 @@ package body Sem_Ch8 is
 
       elsif Ada_Version >= Ada_2005 and then Nkind (Nam) in N_Has_Entity then
          declare
-            Nam_Decl : Node_Id;
-            Nam_Ent  : Entity_Id;
+            Nam_Ent  : constant Entity_Id := Entity (Get_Object_Name (Nam));
+            Nam_Decl : constant Node_Id   := Declaration_Node (Nam_Ent);
 
          begin
-            if Nkind (Nam) = N_Attribute_Reference then
-               Nam_Ent := Entity (Prefix (Nam));
-            else
-               Nam_Ent := Entity (Nam);
-            end if;
-
-            Nam_Decl := Parent (Nam_Ent);
-
             if Has_Null_Exclusion (N)
               and then not Has_Null_Exclusion (Nam_Decl)
             then
