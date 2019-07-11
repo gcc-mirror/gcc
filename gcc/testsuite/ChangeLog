@@ -1,3 +1,7 @@
+2019-07-11  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/access7.adb: New testcase.
+
 2019-07-11  Yannick Moy  <moy@adacore.com>
 
 	* gnat.dg/warn21.adb, gnat.dg/warn21.ads: New testcase.

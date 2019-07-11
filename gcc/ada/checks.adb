@@ -577,6 +577,7 @@ package body Checks is
       Typ         : Entity_Id;
       Insert_Node : Node_Id)
    is
+      Check_Cond  : Node_Id;
       Loc         : constant Source_Ptr := Sloc (N);
       Param_Ent   : Entity_Id           := Param_Entity (N);
       Param_Level : Node_Id;
@@ -638,15 +639,29 @@ package body Checks is
          --  Raise Program_Error if the accessibility level of the access
          --  parameter is deeper than the level of the target access type.
 
+         Check_Cond := Make_Op_Gt (Loc,
+                         Left_Opnd  => Param_Level,
+                         Right_Opnd => Type_Level);
+
          Insert_Action (Insert_Node,
            Make_Raise_Program_Error (Loc,
-             Condition =>
-               Make_Op_Gt (Loc,
-                 Left_Opnd  => Param_Level,
-                 Right_Opnd => Type_Level),
-             Reason => PE_Accessibility_Check_Failed));
+             Condition => Check_Cond,
+             Reason    => PE_Accessibility_Check_Failed));
 
          Analyze_And_Resolve (N);
+
+         --  If constant folding has happened on the condition for the
+         --  generated error, then warn about it being unconditional.
+
+         if Nkind (Check_Cond) = N_Identifier
+           and then Entity (Check_Cond) = Standard_True
+         then
+            Error_Msg_Warn := SPARK_Mode /= On;
+            Error_Msg_N
+              ("accessibility check fails<<", N);
+            Error_Msg_N
+              ("\Program_Error [<<", N);
+         end if;
       end if;
    end Apply_Accessibility_Check;
 
