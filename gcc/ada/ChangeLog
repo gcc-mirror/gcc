@@ -1,3 +1,8 @@
+2019-07-11  Justin Squirek  <squirek@adacore.com>
+
+	* checks.adb (Apply_Accessibility_Check): Add check for constant
+	folded conditions on accessibility checks.
+
 2019-07-11  Arnaud Charlet  <charlet@adacore.com>
 
 	* libgnarl/g-thread.ads, libgnarl/g-thread.adb (Get_Thread):
