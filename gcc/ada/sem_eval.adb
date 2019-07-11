@@ -986,12 +986,32 @@ package body Sem_Eval is
          Lf : constant Node_Id := Compare_Fixup (L);
          Rf : constant Node_Id := Compare_Fixup (R);
 
+         function Is_Rewritten_Loop_Entry (N : Node_Id) return Boolean;
+         --  An attribute reference to Loop_Entry may have been rewritten into
+         --  its prefix as a way to avoid generating a constant for that
+         --  attribute when the corresponding pragma is ignored. These nodes
+         --  should be ignored when deciding if they can be equal to one
+         --  another.
+
          function Is_Same_Subscript (L, R : List_Id) return Boolean;
          --  L, R are the Expressions values from two attribute nodes for First
          --  or Last attributes. Either may be set to No_List if no expressions
          --  are present (indicating subscript 1). The result is True if both
          --  expressions represent the same subscript (note one case is where
          --  one subscript is missing and the other is explicitly set to 1).
+
+         -----------------------------
+         -- Is_Rewritten_Loop_Entry --
+         -----------------------------
+
+         function Is_Rewritten_Loop_Entry (N : Node_Id) return Boolean is
+            Orig_N : constant Node_Id := Original_Node (N);
+         begin
+            return Orig_N /= N
+              and then Nkind (Orig_N) = N_Attribute_Reference
+              and then Get_Attribute_Id (Attribute_Name (Orig_N)) =
+                Attribute_Loop_Entry;
+         end Is_Rewritten_Loop_Entry;
 
          -----------------------
          -- Is_Same_Subscript --
@@ -1018,23 +1038,32 @@ package body Sem_Eval is
       --  Start of processing for Is_Same_Value
 
       begin
+         --  Loop_Entry nodes rewritten into their prefix inside ignored
+         --  pragmas should never lead to a decision of equality.
+
+         if Is_Rewritten_Loop_Entry (Lf)
+           or else Is_Rewritten_Loop_Entry (Rf)
+         then
+            return False;
+
          --  Values are the same if they refer to the same entity and the
-         --  entity is non-volatile. This does not however apply to Float
-         --  types, since we may have two NaN values and they should never
-         --  compare equal.
+         --  entity is nonvolatile.
 
-         --  If the entity is a discriminant, the two expressions may be bounds
-         --  of components of objects of the same discriminated type. The
-         --  values of the discriminants are not static, and therefore the
-         --  result is unknown.
-
-         --  It would be better to comment individual branches of this test ???
-
-         if Nkind_In (Lf, N_Identifier, N_Expanded_Name)
+         elsif Nkind_In (Lf, N_Identifier, N_Expanded_Name)
            and then Nkind_In (Rf, N_Identifier, N_Expanded_Name)
            and then Entity (Lf) = Entity (Rf)
+
+           --  If the entity is a discriminant, the two expressions may be
+           --  bounds of components of objects of the same discriminated type.
+           --  The values of the discriminants are not static, and therefore
+           --  the result is unknown.
+
            and then Ekind (Entity (Lf)) /= E_Discriminant
            and then Present (Entity (Lf))
+
+           --  This does not however apply to Float types, since we may have
+           --  two NaN values and they should never compare equal.
+
            and then not Is_Floating_Point_Type (Etype (L))
            and then not Is_Volatile_Reference (L)
            and then not Is_Volatile_Reference (R)

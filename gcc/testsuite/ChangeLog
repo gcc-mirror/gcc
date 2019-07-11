@@ -1,3 +1,7 @@
+2019-07-11  Yannick Moy  <moy@adacore.com>
+
+	* gnat.dg/loop_entry1.adb: New testcase.
+
 2019-07-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/prot8.adb, gnat.dg/prot8.ads: New testcase.
