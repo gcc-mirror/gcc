@@ -12050,10 +12050,13 @@ package body Exp_Ch4 is
 
          begin
             --  Avoid infinite recursion on the subsequent expansion of
-            --  of the copy of the original type conversion.
+            --  of the copy of the original type conversion. When needed,
+            --  a range check has already been applied to the expression.
 
             Set_Comes_From_Source (New_Expr, False);
-            Insert_Action (N, Make_Predicate_Check (Target_Type, New_Expr));
+            Insert_Action (N,
+               Make_Predicate_Check (Target_Type, New_Expr),
+               Suppress => Range_Check);
          end;
       end if;
    end Expand_N_Type_Conversion;

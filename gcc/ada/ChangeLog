@@ -1,3 +1,16 @@
+2019-07-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): If a predicate check
+	is generated, analyze it with range check suppressed, because
+	that check has been previously applied.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): If the RHS is a
+	type conversion to the type of the LHS, do not apply a predicate
+	check to the RHS because it will have been generated already
+	during its expansion.
+	* exp_ch6.adb (Can_Fold_Predicate_Call): Extend processing to
+	handle a predicate check on a constant entity whose value is
+	static.
+
 2019-07-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* bindo.adb: Remove the documentation of switch -d_N because it
