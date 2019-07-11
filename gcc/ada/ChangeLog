@@ -1,5 +1,10 @@
 2019-07-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_util.adb (Null_Status): Assume that an erroneous construct
+	has an undefined null status.
+
+2019-07-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* checks.adb, exp_ch6.adb, gnat1drv.adb, sem_aux.adb,
 	sem_ch2.adb, sem_ch8.adb, sem_res.adb: Minor reformatting.
 
