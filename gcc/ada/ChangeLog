@@ -1,3 +1,17 @@
+2019-07-11  Patrick Bernardi  <bernardi@adacore.com>
+
+	* bindgen.adb (Gen_Main): Do not generate a reference to
+	Ada_Main_Program_Name when the Minimal_Binder flag is set.
+	(Gen_Output_File_Ada): Do not output GNAT_Version and
+	Ada_Main_Program_Name info if Minimal_Binder flag is set.
+	* bindusg.adb: Add documentation for new -minimal switch.
+	* gnatbind.adb (Scan_Bind_Arg): Scan -minimal switch.
+	* opt.ads: Add new global flag Minimal_Binder to indicate if the
+	binder should not produce global variables.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Update documentation with new binder -minimal switch.
+	* gnat_ugn.texi: Regenerate.
+
 2019-07-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Makefile.rtl: Add warning note about compilation flags and

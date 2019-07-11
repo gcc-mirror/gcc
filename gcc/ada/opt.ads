@@ -1120,6 +1120,12 @@ package Opt is
    --  Maximum number of processes that should be spawned to carry out
    --  compilations.
 
+   Minimal_Binder : Boolean := False;
+   --  GNATBIND
+   --  Set to True to suppress the generation of objects by the binder that
+   --  are not strictly required for a program to run. Intended for ZFP
+   --  applications that have tight memory constraints.
+
    Minimal_Recompilation : Boolean := False;
    --  GNATMAKE
    --  Set to True if minimal recompilation mode requested

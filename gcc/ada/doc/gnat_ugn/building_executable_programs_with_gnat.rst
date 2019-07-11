@@ -6475,7 +6475,6 @@ be presented in subsequent sections.
   Rename generated main program from main to xyz. This option is
   supported on cross environments only.
 
-
   .. index:: -m  (gnatbind)
 
 :switch:`-m{n}`
@@ -6488,6 +6487,16 @@ be presented in subsequent sections.
   A value of zero means that no limit is enforced. The equal
   sign is optional.
 
+  .. index:: -minimal  (gnatbind)
+
+:switch:`-minimal`
+  Generate a binder file suitable for space-constrained applications. When
+  active, binder-generated objects not required for program operation are no
+  longer generated. **Warning:** this option comes with the following
+  limitations:
+
+  * Debugging will not work;
+  * Programs using GNAT.Compiler_Version will not link.
 
   .. index:: -n  (gnatbind)
 

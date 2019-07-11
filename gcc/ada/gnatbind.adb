@@ -474,6 +474,17 @@ procedure Gnatbind is
 
             Mapping_File := new String'(Argv (4 .. Argv'Last));
 
+         --  -minimal
+
+         elsif Argv (2 .. Argv'Last) = "minimal" then
+            if not Is_Cross_Compiler then
+               Write_Line
+                 ("gnatbind: -minimal not expected to be used on native " &
+                  "platforms");
+            end if;
+
+            Opt.Minimal_Binder := True;
+
          --  -Mname
 
          elsif Argv'Length >= 3 and then Argv (2) = 'M' then
