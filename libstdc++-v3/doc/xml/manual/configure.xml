@@ -166,18 +166,24 @@
 
  <varlistentry><term><code>--enable-libstdcxx-time=OPTION</code></term>
  <listitem><para>Enables link-type checks for the availability of the
-	clock_gettime clocks, used in the implementation of [time.clock],
-	and of the nanosleep and sched_yield functions, used in the
+	<function>clock_gettime</function> clocks, used in the implementation
+	of [time.clock], and of the <function>nanosleep</function> and
+	<function>sched_yield</function> functions, used in the
 	implementation of [thread.thread.this] of the 2011 ISO C++ standard.
 	The choice OPTION=yes checks for the availability of the facilities
 	in libc and libposix4.  In case it's needed the latter is also linked
-	to libstdc++ as part of the build process.  OPTION=rt also searches
-	(and, if needed, links) librt.   Note that the latter is not always
-	desirable because, in glibc, for example, in turn it triggers the
-	linking of libpthread too, which activates locking, a large overhead
-	for single-thread programs.  OPTION=no skips the tests completely.
+	to libstdc++ as part of the build process.  OPTION=rt also checks in
+	librt (and, if it's needed, links to it).  Note that linking to librt
+	is not always desirable because for glibc it requires linking to
+	libpthread too, which causes all reference counting to use atomic
+	operations, resulting in a potentially large overhead for
+	single-threaded programs.  OPTION=no skips the tests completely.
 	The default is OPTION=auto, which skips the checks and enables the
 	features only for targets known to support them.
+	For Linux targets, if <function>clock_gettime</function> is not used
+	then the [time.clock] implementation will use a system call to access
+	the realtime and monotonic clocks, which is significantly slower than
+	the C library's <function>clock_gettime</function> function.
     </para>
  </listitem></varlistentry>
 

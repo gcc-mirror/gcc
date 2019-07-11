@@ -1,5 +1,8 @@
 2019-07-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/configure.xml: Improve documentation of
+	--enable-libstdcxx-time option.
+
 	* include/bits/atomic_base.h (__atomic_impl): New namespace for
 	wrappers around atomic built-ins.
 	(__atomic_float, __atomic_ref): New class templates for use as base
