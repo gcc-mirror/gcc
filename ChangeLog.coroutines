@@ -1,6 +1,11 @@
 2019-07-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp
+	* coroutines.cc (co_await_expander): Exit early for statement class.
+
+2019-07-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp
 	* coroutines.cc (co_await_expander): Recurse into co_await sub-trees.
 
 	gcc/testsuite/

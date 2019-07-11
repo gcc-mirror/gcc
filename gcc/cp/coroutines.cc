@@ -906,7 +906,7 @@ TODO :
 static tree
 co_await_expander (tree *stmt, int *do_subtree, void *d)
 {
-  if (!EXPR_P (*stmt))
+  if (STATEMENT_CLASS_P (*stmt) || !EXPR_P (*stmt))
     return NULL_TREE;
 
   struct __coro_aw_data *data = (struct __coro_aw_data *) d;
