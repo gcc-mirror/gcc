@@ -1159,7 +1159,6 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
     append_to_statement_list (dtor, &stmt_list);
   data->index += 2;
   *stmt = stmt_list;
-  *do_subtree = 0;
   return NULL_TREE;
 }
 

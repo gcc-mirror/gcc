@@ -1,5 +1,14 @@
 2019-07-11  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp
+	* coroutines.cc (co_await_expander): Recurse into co_await sub-trees.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/co-await-8-cascade.C: New test.
+	* g++.dg/coroutines/torture/co-await-9-pair.C: New test.
+
+2019-07-11  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/cp/
 	* coroutines.cc (co_await_expander):Use reordered expression vars.
 	(transform_await_expr): Re-order expression vars.
