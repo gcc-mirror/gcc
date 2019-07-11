@@ -143,7 +143,7 @@ package body Lib.Writ is
       --  Nothing to do if we already compiled System
 
       for Unum in Units.First .. Last_Unit loop
-         if Units.Table (Unum).Source_Index = System_Source_File_Index then
+         if Source_Index (Unum) = System_Source_File_Index then
             return;
          end if;
       end loop;
@@ -431,7 +431,7 @@ package body Lib.Writ is
 
          Id := First_Sdep_Entry;
          for J in 1 .. Num_Sdep loop
-            Sind := Units.Table (Sdep_Table (J)).Source_Index;
+            Sind := Source_Index (Sdep_Table (J));
 
             while Sdep.Table (Id).Sfile /= File_Name (Sind) loop
                if Id = Sdep.Last then
@@ -1563,7 +1563,7 @@ package body Lib.Writ is
          for J in 1 .. Num_Sdep loop
             Unum := Sdep_Table (J);
             Units.Table (Unum).Dependency_Num := J;
-            Sind := Units.Table (Unum).Source_Index;
+            Sind := Source_Index (Unum);
 
             Write_Info_Initiate ('D');
             Write_Info_Char (' ');
