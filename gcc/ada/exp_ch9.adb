@@ -8928,6 +8928,8 @@ package body Exp_Ch9 is
       Current_Node : Node_Id := N;
       E_Count      : Int;
       Entries_Aggr : Node_Id;
+      Rec_Decl     : Node_Id;
+      Rec_Id       : Entity_Id;
 
       procedure Check_Inlining (Subp : Entity_Id);
       --  If the original operation has a pragma Inline, propagate the flag
@@ -8948,6 +8950,21 @@ package body Exp_Ch9 is
       procedure Register_Handler;
       --  For a protected operation that is an interrupt handler, add the
       --  freeze action that will register it as such.
+
+      procedure Replace_Access_Definition (Comp : Node_Id);
+      --  If a private component of the type is an access to itself, this
+      --  is not a reference to the current instance, but an access type out
+      --  of which one might construct a list. If such a component exists, we
+      --  create an incomplete type for the equivalent record type, and
+      --  a named access type for it, that replaces the access definition
+      --  of the original component. This is similar to what is done for
+      --  records in Check_Anonymous_Access_Components, but simpler, because
+      --  the corresponding record type has no previous declaration.
+      --  This needs to be done only once, even if there are several such
+      --  access components. The following entity stores the constructed
+      --  access type.
+
+      Acc_T : Entity_Id := Empty;
 
       --------------------
       -- Check_Inlining --
@@ -9096,6 +9113,41 @@ package body Exp_Ch9 is
          Append_Freeze_Action (Prot_Proc, RTS_Call);
       end Register_Handler;
 
+      -------------------------------
+      -- Replace_Access_Definition --
+      -------------------------------
+
+      procedure Replace_Access_Definition (Comp : Node_Id) is
+         Loc     : constant Source_Ptr := Sloc (Comp);
+         Inc_T   : Node_Id;
+         Inc_D   : Node_Id;
+         Acc_Def : Node_Id;
+         Acc_D   : Node_Id;
+
+      begin
+         if No (Acc_T) then
+            Inc_T   := Make_Defining_Identifier (Loc, Chars (Rec_Id));
+            Inc_D   := Make_Incomplete_Type_Declaration (Loc, Inc_T);
+            Acc_T   := Make_Temporary (Loc, 'S');
+            Acc_Def :=
+              Make_Access_To_Object_Definition (Loc,
+                Subtype_Indication => New_Occurrence_Of (Inc_T, Loc));
+            Acc_D :=
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier => Acc_T,
+                Type_Definition => Acc_Def);
+
+            Insert_Before (Rec_Decl, Inc_D);
+            Analyze (Inc_D);
+
+            Insert_Before (Rec_Decl, Acc_D);
+            Analyze (Acc_D);
+         end if;
+
+         Set_Access_Definition (Comp, Empty);
+         Set_Subtype_Indication (Comp, New_Occurrence_Of (Acc_T, Loc));
+      end Replace_Access_Definition;
+
       --  Local variables
 
       Body_Arr    : Node_Id;
@@ -9107,7 +9159,6 @@ package body Exp_Ch9 is
       Obj_Def     : Node_Id;
       Object_Comp : Node_Id;
       Priv        : Node_Id;
-      Rec_Decl    : Node_Id;
       Sub         : Node_Id;
 
    --  Start of processing for Expand_N_Protected_Type_Declaration
@@ -9117,6 +9168,7 @@ package body Exp_Ch9 is
          return;
       else
          Rec_Decl := Build_Corresponding_Record (N, Prot_Typ, Loc);
+         Rec_Id   := Defining_Identifier (Rec_Decl);
       end if;
 
       Cdecls := Component_Items (Component_List (Type_Definition (Rec_Decl)));
@@ -9262,6 +9314,15 @@ package body Exp_Ch9 is
                          Access_Definition  =>
                            New_Copy_Tree
                              (Access_Definition (Old_Comp), Discr_Map));
+
+                      --  A self-reference in the private part becomes a
+                      --  self-reference to the corresponding record.
+
+                     if Entity (Subtype_Mark (Access_Definition (New_Comp)))
+                       = Prot_Typ
+                     then
+                        Replace_Access_Definition (New_Comp);
+                     end if;
                   end if;
 
                   New_Priv :=
