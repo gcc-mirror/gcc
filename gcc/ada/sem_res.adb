@@ -10091,15 +10091,20 @@ package body Sem_Res is
 
          declare
             Opnd : constant Node_Id := Right_Opnd (N);
+            Op_Id : Entity_Id;
+
          begin
             if B_Typ = Standard_Boolean
               and then Nkind_In (Opnd, N_Op_Eq, N_Op_Ne)
               and then Is_Overloaded (Opnd)
             then
                Resolve_Equality_Op (Opnd, B_Typ);
+               Op_Id := Entity (Opnd);
 
-               if Ekind (Entity (Opnd)) = E_Function then
-                  Rewrite_Operator_As_Call (Opnd, Entity (Opnd));
+               if Ekind (Op_Id) = E_Function
+                 and then not Is_Intrinsic_Subprogram (Op_Id)
+               then
+                  Rewrite_Operator_As_Call (Opnd, Op_Id);
                end if;
 
                if not Inside_A_Generic or else Is_Entity_Name (Opnd) then
