@@ -757,11 +757,25 @@ _mm_maskz_loadu_epi64 (__mmask8 __U, void const *__P)
 
 extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_storeu_epi64 (void *__P, __m256i __A)
+{
+  *(__m256i_u *) __P = (__m256i_u) __A;
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_storeu_epi64 (void *__P, __mmask8 __U, __m256i __A)
 {
   __builtin_ia32_storedqudi256_mask ((long long *) __P,
 				     (__v4di) __A,
 				     (__mmask8) __U);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_storeu_epi64 (void *__P, __m128i __A)
+{
+  *(__m128i_u *) __P = (__m128i_u) __A;
 }
 
 extern __inline void
@@ -813,11 +827,25 @@ _mm_maskz_loadu_epi32 (__mmask8 __U, void const *__P)
 
 extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_storeu_epi32 (void *__P, __m256i __A)
+{
+  *(__m256i_u *) __P = (__m256i_u) __A;
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_storeu_epi32 (void *__P, __mmask8 __U, __m256i __A)
 {
   __builtin_ia32_storedqusi256_mask ((int *) __P,
 				     (__v8si) __A,
 				     (__mmask8) __U);
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_storeu_epi32 (void *__P, __m128i __A)
+{
+  *(__m128i_u *) __P = (__m128i_u) __A;
 }
 
 extern __inline void
