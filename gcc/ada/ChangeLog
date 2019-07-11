@@ -1,3 +1,8 @@
+2019-07-11  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Document gnatpp's
+	--spaces-only switch.
+
 2019-07-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_util.adb (Null_Status): Assume that an erroneous construct

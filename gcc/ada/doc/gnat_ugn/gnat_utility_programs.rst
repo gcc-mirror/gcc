@@ -3257,6 +3257,12 @@ Alternatively, you may run the script using the following command line:
      Keep the line breaks from the source; do not insert or delete any
      line breaks.
 
+   .. index:: --spaces-only (gnatpp)
+
+   :switch:`--spaces-only`
+     Disable all formatting except for inserting and removing spaces.
+     This implies --source-line-breaks.
+
    The ``--comments`` switches are compatible with one another, except
    that the ``--comments-unchanged`` switch disables all other comment
    formatting switches.
