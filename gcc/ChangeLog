@@ -1,3 +1,9 @@
+2019-07-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (intersect_ranges): If we know the intersection is
+	empty, there is no need to conservatively add anything else to
+	the set.
+
 2019-07-11  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/91131
