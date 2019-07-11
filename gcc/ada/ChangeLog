@@ -1,3 +1,8 @@
+2019-07-11  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* libgnat/g-socket.ads (Mode_Type): Add a Socket_Raw enumerator.
+	* libgnat/g-socket.adb (Modes): Handle Socket_Raw.
+
 2019-07-11  Justin Squirek  <squirek@adacore.com>
 
 	* exp_ch9.adb (Build_Private_Protected_Declaration): Add

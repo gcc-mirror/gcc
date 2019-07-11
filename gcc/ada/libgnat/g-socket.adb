@@ -77,7 +77,8 @@ package body GNAT.Sockets is
 
    Modes : constant array (Mode_Type) of C.int :=
              (Socket_Stream   => SOSC.SOCK_STREAM,
-              Socket_Datagram => SOSC.SOCK_DGRAM);
+              Socket_Datagram => SOSC.SOCK_DGRAM,
+              Socket_Raw      => SOSC.SOCK_RAW);
 
    Shutmodes : constant array (Shutmode_Type) of C.int :=
                  (Shut_Read       => SOSC.SHUT_RD,
