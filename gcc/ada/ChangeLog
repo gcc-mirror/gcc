@@ -1,5 +1,9 @@
 2019-07-11  Yannick Moy  <moy@adacore.com>
 
+	* debug.adb: Flip meaning of debug switch -gnatdF.
+
+2019-07-11  Yannick Moy  <moy@adacore.com>
+
 	* sem_eval.adb (Is_Same_Value): Add special case for rewritten
 	Loop_Entry attribute.
 

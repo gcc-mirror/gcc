@@ -602,10 +602,11 @@ package body Debug is
    --  dE   Apply compile time elaboration checking for with relations between
    --       predefined units. Normally no checks are made.
 
-   --  dF   Perform the new SPARK checking rules for pointer aliasing. This is
-   --       only activated in GNATprove mode and on SPARK code. These rules are
-   --       not yet part of the official SPARK language, but are expected to be
-   --       included in a future version of SPARK.
+   --  dF   Disable the new SPARK checking rules for pointer aliasing. This is
+   --       only activated as part of GNATprove mode and on SPARK code. Now
+   --       that pointer support is part of the official SPARK language, this
+   --       switch allows reverting to the previous version of GNATprove
+   --       rejecting pointers.
 
    --  dG   Generate all warnings. Normally Errout suppresses warnings on
    --       units that are not part of the main extended source, and also
