@@ -1,3 +1,8 @@
+2019-07-11  Yannick Moy  <moy@adacore.com>
+
+	* sem_eval.adb (Is_Same_Value): Add special case for rewritten
+	Loop_Entry attribute.
+
 2019-07-11  Claire Dross  <dross@adacore.com>
 
 	* gnat1drv.adb: SPARK checking rules for pointer aliasing are
