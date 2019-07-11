@@ -394,8 +394,8 @@ package body Debug is
    --  d_P  Output cycle paths
    --  d_Q
    --  d_R
-   --  d_S
-   --  d_T  Output elaboration order trace information
+   --  d_S  Output elaboration-order status
+   --  d_T  Output elaboration-order trace information
    --  d_U
    --  d_V  Validate bindo cycles, graphs, and order
    --  d_W
@@ -1166,6 +1166,9 @@ package body Debug is
    --       format to standard output.
 
    --  d_P  GNATBIND outputs the cycle paths to standard output
+
+   --  d_S  GNATBIND outputs trace information concerning the status of its
+   --       various phases to standard output.
 
    --  d_T  GNATBIND outputs trace information of elaboration order detection
    --       activities to standard output.

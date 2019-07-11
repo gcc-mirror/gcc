@@ -37,6 +37,10 @@ use  Bindo.Validators;
 use  Bindo.Validators.Invocation_Graph_Validators;
 use  Bindo.Validators.Library_Graph_Validators;
 
+with Bindo.Writers;
+use  Bindo.Writers;
+use  Bindo.Writers.Phase_Writers;
+
 with GNAT;                 use GNAT;
 with GNAT.Dynamic_HTables; use GNAT.Dynamic_HTables;
 
@@ -99,6 +103,8 @@ package body Bindo.Builders is
       begin
          pragma Assert (Present (Lib_G));
 
+         Start_Phase (Invocation_Graph_Construction);
+
          --  Prepare the global data
 
          Inv_Graph :=
@@ -111,6 +117,7 @@ package body Bindo.Builders is
          For_Each_Elaborable_Unit (Create_Edges'Access);
 
          Validate_Invocation_Graph (Inv_Graph);
+         End_Phase (Invocation_Graph_Construction);
 
          return Inv_Graph;
       end Build_Invocation_Graph;
@@ -375,6 +382,8 @@ package body Bindo.Builders is
 
       function Build_Library_Graph return Library_Graph is
       begin
+         Start_Phase (Library_Graph_Construction);
+
          --  Prepare the global data
 
          Lib_Graph :=
@@ -388,6 +397,7 @@ package body Bindo.Builders is
          Create_Forced_Edges;
 
          Validate_Library_Graph (Lib_Graph);
+         End_Phase (Library_Graph_Construction);
 
          return Lib_Graph;
       end Build_Library_Graph;

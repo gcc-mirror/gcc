@@ -1404,6 +1404,94 @@ package body Bindo.Writers is
       end Write_Statistics;
    end Library_Graph_Writers;
 
+   -------------------
+   -- Phase_Writers --
+   -------------------
+
+   package body Phase_Writers is
+
+      subtype Phase_Message is String (1 .. 32);
+
+      --  The following table contains the phase-specific messages for phase
+      --  completion.
+
+      End_Messages : constant array (Elaboration_Phase) of Phase_Message :=
+        (Component_Discovery           => "components discovered.          ",
+         Cycle_Diagnostics             => "cycle diagnosed.                ",
+         Cycle_Discovery               => "cycles discovered.              ",
+         Cycle_Validation              => "cycles validated.               ",
+         Elaboration_Order_Validation  => "elaboration order validated.    ",
+         Invocation_Graph_Construction => "invocation graph constructed.   ",
+         Invocation_Graph_Validation   => "invocation graph validated.     ",
+         Library_Graph_Augmentation    => "library graph augmented.        ",
+         Library_Graph_Construction    => "library graph constructed.      ",
+         Library_Graph_Elaboration     => "library graph elaborated.       ",
+         Library_Graph_Validation      => "library graph validated.        ",
+         Unit_Collection               => "units collected.                ",
+         Unit_Elaboration              => "units elaborated.               ");
+
+      --  The following table contains the phase-specific messages for phase
+      --  commencement.
+
+      Start_Messages : constant array (Elaboration_Phase) of Phase_Message :=
+        (Component_Discovery           => "discovering components...       ",
+         Cycle_Diagnostics             => "diagnosing cycle...             ",
+         Cycle_Discovery               => "discovering cycles...           ",
+         Cycle_Validation              => "validating cycles...            ",
+         Elaboration_Order_Validation  => "validating elaboration order... ",
+         Invocation_Graph_Construction => "constructing invocation graph...",
+         Invocation_Graph_Validation   => "validating invocation graph...  ",
+         Library_Graph_Augmentation    => "augmenting library graph...     ",
+         Library_Graph_Construction    => "constructing library graph...   ",
+         Library_Graph_Elaboration     => "elaborating library graph...    ",
+         Library_Graph_Validation      => "validating library graph...     ",
+         Unit_Collection               => "collecting units...             ",
+         Unit_Elaboration              => "elaborating units...            ");
+
+      -----------------------
+      -- Local subprograms --
+      -----------------------
+
+      procedure Write_Phase_Message (Msg : Phase_Message);
+      pragma Inline (Write_Phase_Message);
+      --  Write elaboration phase-related message Msg to standard output
+
+      ---------------
+      -- End_Phase --
+      ---------------
+
+      procedure End_Phase (Phase : Elaboration_Phase) is
+      begin
+         Write_Phase_Message (End_Messages (Phase));
+      end End_Phase;
+
+      -----------------
+      -- Start_Phase --
+      -----------------
+
+      procedure Start_Phase (Phase : Elaboration_Phase) is
+      begin
+         Write_Phase_Message (Start_Messages (Phase));
+      end Start_Phase;
+
+      -------------------------
+      -- Write_Phase_Message --
+      -------------------------
+
+      procedure Write_Phase_Message (Msg : Phase_Message) is
+      begin
+         --  Nothing to do when switch -d_S (output elaboration order status)
+         --  is not in effect.
+
+         if not Debug_Flag_Underscore_SS then
+            return;
+         end if;
+
+         Write_Str (Msg);
+         Write_Eol;
+      end Write_Phase_Message;
+   end Phase_Writers;
+
    --------------------------
    -- Unit_Closure_Writers --
    --------------------------

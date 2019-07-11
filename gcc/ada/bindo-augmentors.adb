@@ -27,7 +27,9 @@ with Debug;  use Debug;
 with Output; use Output;
 with Types;  use Types;
 
-with Bindo.Writers; use Bindo.Writers;
+with Bindo.Writers;
+use  Bindo.Writers;
+use  Bindo.Writers.Phase_Writers;
 
 package body Bindo.Augmentors is
 
@@ -124,6 +126,8 @@ package body Bindo.Augmentors is
             return;
          end if;
 
+         Start_Phase (Library_Graph_Augmentation);
+
          --  Prepare the statistics data
 
          Longest_Path  := 0;
@@ -131,6 +135,8 @@ package body Bindo.Augmentors is
 
          Visit_Elaboration_Roots (Inv_Graph, Lib_Graph);
          Write_Statistics;
+
+         End_Phase (Library_Graph_Augmentation);
       end Augment_Library_Graph;
 
       ----------------------------

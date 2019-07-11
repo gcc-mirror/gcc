@@ -132,6 +132,23 @@ package Bindo.Writers is
 
    end Library_Graph_Writers;
 
+   -------------------
+   -- Phase_Writers --
+   -------------------
+
+   package Phase_Writers is
+      procedure End_Phase (Phase : Elaboration_Phase);
+      pragma Inline (End_Phase);
+      --  Write the end message associated with elaboration phase Phase to
+      --  standard output.
+
+      procedure Start_Phase (Phase : Elaboration_Phase);
+      pragma Inline (Start_Phase);
+      --  Write the start message associated with elaboration phase Phase to
+      --  standard output.
+
+   end Phase_Writers;
+
    --------------------------
    -- Unit_Closure_Writers --
    --------------------------
