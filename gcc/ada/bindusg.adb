@@ -178,6 +178,12 @@ package body Bindusg is
         ("  -mnnn     Limit number of detected errors/warnings to nnn "
          & "(1-999999)");
 
+      --  Line for -minimal switch
+
+      Write_Line
+        ("  -minimal  Generate binder file suitable for space-constrained "
+         & "applications");
+
       --  Line for -M switch
 
       Write_Line

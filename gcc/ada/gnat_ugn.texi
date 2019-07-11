@@ -15892,6 +15892,25 @@ limit, then a message is output and the bind is abandoned.
 A value of zero means that no limit is enforced. The equal
 sign is optional.
 
+@geindex -minimal (gnatbind)
+
+@item @code{-minimal}
+
+Generate a binder file suitable for space-constrained applications. When
+active, binder-generated objects not required for program operation are no
+longer generated. @strong{Warning:} this option comes with the following
+limitations:
+
+
+@itemize *
+
+@item 
+Debugging will not work;
+
+@item 
+Programs using GNAT.Compiler_Version will not link.
+@end itemize
+
 @geindex -n (gnatbind)
 
 @item @code{-n}
