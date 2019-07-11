@@ -1,5 +1,10 @@
 2019-07-11  Yannick Moy  <moy@adacore.com>
 
+	* sem_res.adb (Resolve_Call): Do not perform dimensionality
+	checking on inlined bodies.
+
+2019-07-11  Yannick Moy  <moy@adacore.com>
+
 	* debug.adb: Flip meaning of debug switch -gnatdF.
 
 2019-07-11  Yannick Moy  <moy@adacore.com>
