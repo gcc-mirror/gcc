@@ -1,8 +1,4 @@
-// { dg-do compile { target c++11 } }
-// { dg-require-atomic-builtins "" }
-// { dg-options "-Wno-pedantic" }
-
-// Copyright (C) 2014-2019 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,12 +15,27 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-std=gnu++2a" }
+// { dg-do compile { target c++2a } }
+
 #include <atomic>
 
-// libstdc++/60695
+void
+test01()
+{
+  int i = 0;
+  std::atomic_ref a0(i);
+  static_assert(std::is_same_v<decltype(a0), std::atomic_ref<int>>);
 
-struct X {
-  char stuff[0]; // GNU extension, type has zero size
-};
+  float f = 1.0f;
+  std::atomic_ref a1(f);
+  static_assert(std::is_same_v<decltype(a1), std::atomic_ref<float>>);
 
-std::atomic<X> a;  // { dg-error "zero-sized types" "" { target *-*-* } 0 }
+  int* p = &i;
+  std::atomic_ref a2(p);
+  static_assert(std::is_same_v<decltype(a2), std::atomic_ref<int*>>);
+
+  struct X { } x;
+  std::atomic_ref a3(x);
+  static_assert(std::is_same_v<decltype(a3), std::atomic_ref<X>>);
+}

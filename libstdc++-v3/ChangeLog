@@ -1,3 +1,24 @@
+2019-07-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h (__atomic_impl): New namespace for
+	wrappers around atomic built-ins.
+	(__atomic_float, __atomic_ref): New class templates for use as base
+	classes.
+	* include/std/atomic (atomic<float>, atomic<double>)
+	(atomic<long double>): New explicit specializations.
+	(atomic_ref): New class template.
+	(__cpp_lib_atomic_ref): Define.
+	* include/std/version (__cpp_lib_atomic_ref): Define.
+	* testsuite/29_atomics/atomic/60695.cc: Adjust dg-error.
+	* testsuite/29_atomics/atomic_float/1.cc: New test.
+	* testsuite/29_atomics/atomic_float/requirements.cc: New test.
+	* testsuite/29_atomics/atomic_ref/deduction.cc: New test.
+	* testsuite/29_atomics/atomic_ref/float.cc: New test.
+	* testsuite/29_atomics/atomic_ref/generic.cc: New test.
+	* testsuite/29_atomics/atomic_ref/integral.cc: New test.
+	* testsuite/29_atomics/atomic_ref/pointer.cc: New test.
+	* testsuite/29_atomics/atomic_ref/requirements.cc: New test.
+
 2019-07-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/ext/atomicity.h (__exchange_and_add, __atomic_add): Replace
