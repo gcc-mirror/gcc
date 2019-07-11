@@ -1,5 +1,12 @@
 2019-07-11  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* coroutines.cc (co_await_expander):Use reordered expression vars.
+	(transform_await_expr): Re-order expression vars.
+
+2019-07-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* tree.c (cp_walk_subtrees): Handle CO_YIELD_EXPR, CO_AWAIT_EXPR and
 	CO_RETRN_EXPR.
 

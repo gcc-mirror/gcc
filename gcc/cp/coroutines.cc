@@ -886,13 +886,14 @@ co_await_find_in_subtree (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED,
 }
 
 /* When we come here:
-    the first operand is 'o' as defined in 8.3.8 (3.3)
+    the first operand is the [currently unused] handle for suspend.
     the second operand is the var to be copy-initialised
-    the third operand is the handle for suspend.
-    the fourth operand is NULL unless this is final suspend, when it's 1.
+    the third operand is 'o' (the initialiser for the second)
+			      as defined in 8.3.8 (3.3)
+    the fourth operand is the mode as per the comment on build_co_await ().
 
    When we leave:
-   the CO_AWAIT carries the labels of the resume and destroy
+   the IFN_CO_YIELD carries the labels of the resume and destroy
    branch targets for this await.
 
 TODO :
@@ -956,9 +957,9 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
 
   tree actor = data->actor_fn;
   location_t loc = EXPR_LOCATION (*stmt);
-  tree expr = TREE_OPERAND (saved_co_await, 0);
-  tree var = TREE_OPERAND (saved_co_await, 1);
-  //tree sv_handle = TREE_OPERAND (saved_co_await, 2); /* not yet.  */
+  //tree sv_handle = TREE_OPERAND (saved_co_await, 0); /* not yet.  */
+  tree var = TREE_OPERAND (saved_co_await, 1); /* frame slot. */
+  tree expr = TREE_OPERAND (saved_co_await, 2); /* initialiser.  */
   tree awaiter_calls = TREE_OPERAND (saved_co_await, 3);
 
   tree source = TREE_OPERAND (saved_co_await, 4);
@@ -1226,20 +1227,19 @@ transform_await_expr (tree await_expr, struct __await_xform_data *xform)
 					   true, tf_warning_or_error);
     }
 
-  /* So, we have now :
-     in : CO_AWAIT_EXPR (a, e_proxy, o, awr_call, mode)
+  /* So, on entry, we have:
+     in : CO_AWAIT_EXPR (a, e_proxy, o, awr_call_vector, mode)
           We no longer need a [it had diagnostic value, maybe?]
           We need to replace the promise proxy in all elements
           We need to replace the e_proxy in the awr_call.
   */
 
+  /* Replace Op 0 with the frame slot for the temporary handle, thus discarding
+     'a'.  */
+  TREE_OPERAND (await_expr, 0) = ah;
+
   /* FIXME: determine if it's better to walk the co_await several times with
      a quick test, or once with a more complex test.  */
-  /* the initialise expression is 'o', currently in slot 2, move it to slot
-     0 (thus discarding 'a').  */
-  TREE_OPERAND (await_expr, 0) = TREE_OPERAND (await_expr, 2);
-  /* Op 2 becomes the frame slot for the temporary handle.  */
-  TREE_OPERAND (await_expr, 2) = ah;
 
   struct __proxy_replace data = { TREE_OPERAND (await_expr, 1), as};
   cp_walk_tree (&await_expr, replace_proxy, &data, NULL);
