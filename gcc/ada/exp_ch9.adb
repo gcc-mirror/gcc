@@ -3493,6 +3493,8 @@ package body Exp_Ch9 is
       procedure Move_Pragmas (From : Node_Id; To : Node_Id);
       --  Find all suitable source pragmas at the top of subprogram body From's
       --  declarations and insert them after arbitrary node To.
+      --
+      --  Very similar to Move_Pragmas in sem_ch6 ???
 
       ---------------------
       -- Analyze_Pragmas --
@@ -3544,7 +3546,14 @@ package body Exp_Ch9 is
 
             Next_Decl := Next (Decl);
 
-            if Nkind (Decl) = N_Pragma then
+            --  We add an exception here for Unreferenced pragmas since the
+            --  internally generated spec gets analyzed within
+            --  Build_Private_Protected_Declaration and will lead to spurious
+            --  warnings due to the way references are checked.
+
+            if Nkind (Decl) = N_Pragma
+              and then Pragma_Name_Unmapped (Decl) /= Name_Unreferenced
+            then
                Remove (Decl);
                Insert_After (Insert_Nod, Decl);
                Insert_Nod := Decl;
