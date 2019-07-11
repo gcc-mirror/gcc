@@ -35,21 +35,10 @@
    as it may be defined using a macro.
 */
 
-
+#ifndef _REENTRANT
 #define _REENTRANT
-#define _THREAD_SAFE
-
-#ifdef MaRTE
-
-/* MaRTE OS provides its own implementation of errno related functionality. We
-   want to ensure the use of the MaRTE version for tasking programs (the MaRTE
-   library will not be linked if no tasking constructs are used), so we use the
-   weak symbols mechanism to use the MaRTE version whenever is available. */
-
-#pragma weak __get_errno
-#pragma weak __set_errno
-
 #endif
+#define _THREAD_SAFE
 
 #include <errno.h>
 int
