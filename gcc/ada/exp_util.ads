@@ -944,10 +944,6 @@ package Exp_Util is
    --  consist of constants, when the object has a nontrivial initialization
    --  or is controlled.
 
-   function Needs_Finalization (Typ : Entity_Id) return Boolean;
-   --  Determine whether type Typ is controlled and this requires finalization
-   --  actions.
-
    function Non_Limited_Designated_Type (T : Entity_Id) return Entity_Id;
    --  An anonymous access type may designate a limited view. Check whether
    --  non-limited view is available during expansion, to examine components
