@@ -73,7 +73,10 @@ package body GNAT.Sockets is
                IP_Protocol_For_IP_Level   => SOSC.IPPROTO_IP,
                IP_Protocol_For_IPv6_Level => SOSC.IPPROTO_IPV6,
                IP_Protocol_For_UDP_Level  => SOSC.IPPROTO_UDP,
-               IP_Protocol_For_TCP_Level  => SOSC.IPPROTO_TCP);
+               IP_Protocol_For_TCP_Level  => SOSC.IPPROTO_TCP,
+               IP_Protocol_For_ICMP_Level => SOSC.IPPROTO_ICMP,
+               IP_Protocol_For_IGMP_Level => SOSC.IPPROTO_IGMP,
+               IP_Protocol_For_RAW_Level  => SOSC.IPPROTO_RAW);
 
    Modes : constant array (Mode_Type) of C.int :=
              (Socket_Stream   => SOSC.SOCK_STREAM,
