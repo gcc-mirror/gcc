@@ -1,3 +1,10 @@
+2019-07-11  Sunil K Pandey  <sunil.k.pandey@intel.com>
+
+	PR target/90980
+	* gcc.target/i386/pr90980-1.c: New test.
+	* gcc.target/i386/pr90980-2.c: Likewise.
+	* gcc.target/i386/pr90980-3.c: Likewise.
+
 2019-07-11  Yannick Moy  <moy@adacore.com>
 
 	* gnat.dg/loop_entry1.adb: New testcase.
