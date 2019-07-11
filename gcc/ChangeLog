@@ -1,3 +1,58 @@
+2019-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91124
+	* config/i386/i386-builtin-types.def
+	(V32HI_FTYPE_V32HI_V32HI_V32HI_INT,
+	V16HI_FTYPE_V16HI_V16HI_V16HI_INT, V8HI_FTYPE_V8HI_V8HI_V8HI_INT,
+	V8SI_FTYPE_V8SI_V8SI_V8SI_INT, V4DI_FTYPE_V4DI_V4DI_V4DI_INT,
+	V8DI_FTYPE_V8DI_V8DI_V8DI_INT, V16SI_FTYPE_V16SI_V16SI_V16SI_INT,
+	V2DI_FTYPE_V2DI_V2DI_V2DI_INT, V4SI_FTYPE_V4SI_V4SI_V4SI_INT): Remove.
+	* config/i386/i386-builtin.def (__builtin_ia32_vpshrdv_v32hi_mask,
+	__builtin_ia32_vpshrdv_v32hi_maskz, __builtin_ia32_vpshrdv_v16hi_mask,
+	__builtin_ia32_vpshrdv_v16hi_maskz, __builtin_ia32_vpshrdv_v8hi_mask,
+	__builtin_ia32_vpshrdv_v8hi_maskz, __builtin_ia32_vpshrdv_v16si_mask,
+	__builtin_ia32_vpshrdv_v16si_maskz, __builtin_ia32_vpshrdv_v8si_mask,
+	__builtin_ia32_vpshrdv_v8si_maskz, __builtin_ia32_vpshrdv_v4si_mask,
+	__builtin_ia32_vpshrdv_v4si_maskz, __builtin_ia32_vpshrdv_v8di_mask,
+	__builtin_ia32_vpshrdv_v8di_maskz, __builtin_ia32_vpshrdv_v4di_mask,
+	__builtin_ia32_vpshrdv_v4di_maskz, __builtin_ia32_vpshrdv_v2di_mask,
+	__builtin_ia32_vpshrdv_v2di_maskz, __builtin_ia32_vpshldv_v32hi_mask,
+	__builtin_ia32_vpshldv_v32hi_maskz, __builtin_ia32_vpshldv_v16hi_mask,
+	__builtin_ia32_vpshldv_v16hi_maskz, __builtin_ia32_vpshldv_v8hi_mask,
+	__builtin_ia32_vpshldv_v8hi_maskz, __builtin_ia32_vpshldv_v16si_mask,
+	__builtin_ia32_vpshldv_v16si_maskz, __builtin_ia32_vpshldv_v8si_mask,
+	__builtin_ia32_vpshldv_v8si_maskz, __builtin_ia32_vpshldv_v4si_mask,
+	__builtin_ia32_vpshldv_v4si_maskz, __builtin_ia32_vpshldv_v8di_mask,
+	__builtin_ia32_vpshldv_v8di_maskz, __builtin_ia32_vpshldv_v4di_mask,
+	__builtin_ia32_vpshldv_v4di_maskz, __builtin_ia32_vpshldv_v2di_mask,
+	__builtin_ia32_vpshldv_v2di_maskz, __builtin_ia32_vpdpbusd_v16si_mask,
+	__builtin_ia32_vpdpbusd_v16si_maskz, __builtin_ia32_vpdpbusd_v8si_mask,
+	__builtin_ia32_vpdpbusd_v8si_maskz, __builtin_ia32_vpdpbusd_v4si_mask,
+	__builtin_ia32_vpdpbusd_v4si_maskz,
+	__builtin_ia32_vpdpbusds_v16si_mask,
+	__builtin_ia32_vpdpbusds_v16si_maskz,
+	__builtin_ia32_vpdpbusds_v8si_mask,
+	__builtin_ia32_vpdpbusds_v8si_maskz,
+	__builtin_ia32_vpdpbusds_v4si_mask,
+	__builtin_ia32_vpdpbusds_v4si_maskz,
+	__builtin_ia32_vpdpwssd_v16si_mask,
+	__builtin_ia32_vpdpwssd_v16si_maskz, __builtin_ia32_vpdpwssd_v8si_mask,
+	__builtin_ia32_vpdpwssd_v8si_maskz, __builtin_ia32_vpdpwssd_v4si_mask,
+	__builtin_ia32_vpdpwssd_v4si_maskz,
+	__builtin_ia32_vpdpwssds_v16si_mask,
+	__builtin_ia32_vpdpwssds_v16si_maskz,
+	__builtin_ia32_vpdpwssds_v8si_mask,
+	__builtin_ia32_vpdpwssds_v8si_maskz,
+	__builtin_ia32_vpdpwssds_v4si_mask,
+	__builtin_ia32_vpdpwssds_v4si_maskz): Use *_USI, *_UHI or *_UQI
+	suffixed types rather than *_INT.
+	* config/i386/i386-expand.c (ix86_expand_args_builtin): Don't handle
+	V32HI_FTYPE_V32HI_V32HI_V32HI_INT, V16HI_FTYPE_V16HI_V16HI_V16HI_INT,
+	V8HI_FTYPE_V8HI_V8HI_V8HI_INT, V8SI_FTYPE_V8SI_V8SI_V8SI_INT,
+	V4DI_FTYPE_V4DI_V4DI_V4DI_INT, V8DI_FTYPE_V8DI_V8DI_V8DI_INT,
+	V16SI_FTYPE_V16SI_V16SI_V16SI_INT, V2DI_FTYPE_V2DI_V2DI_V2DI_INT
+	and V4SI_FTYPE_V4SI_V4SI_V4SI_INT.
+
 2019-07-11  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.c (intersect_ranges): If we know the intersection is
