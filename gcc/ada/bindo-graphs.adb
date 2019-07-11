@@ -4183,6 +4183,21 @@ package body Bindo.Graphs is
          return U_Rec.Utype = Is_Spec or else U_Rec.Utype = Is_Spec_Only;
       end Is_Spec;
 
+      ------------------------------
+      -- Is_Spec_Before_Body_Edge --
+      ------------------------------
+
+      function Is_Spec_Before_Body_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean
+      is
+      begin
+         pragma Assert (Present (G));
+         pragma Assert (Present (Edge));
+
+         return Kind (G, Edge) = Spec_Before_Body_Edge;
+      end Is_Spec_Before_Body_Edge;
+
       -----------------------
       -- Is_Spec_With_Body --
       -----------------------

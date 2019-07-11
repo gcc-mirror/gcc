@@ -610,6 +610,11 @@ package body Bindo.Writers is
                  & "elaboration time",
                Info => True);
 
+         elsif Is_Spec_Before_Body_Edge (G, Edge) then
+            Error_Msg_Output
+              (Msg  => "     reason: spec must be elaborated before body",
+               Info => True);
+
          else
             pragma Assert (Is_With_Edge (G, Edge));
 

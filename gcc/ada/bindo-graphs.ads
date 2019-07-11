@@ -1166,6 +1166,13 @@ package Bindo.Graphs is
       pragma Inline (Is_Spec);
       --  Determine whether vertex Vertex of library graph G denotes a spec
 
+      function Is_Spec_Before_Body_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean;
+      pragma Inline (Is_Spec_Before_Body_Edge);
+      --  Determine whether edge Edge of library graph G links a predecessor
+      --  spec and a successor body belonging to the same unit.
+
       function Is_Spec_With_Body
         (G      : Library_Graph;
          Vertex : Library_Graph_Vertex_Id) return Boolean;
