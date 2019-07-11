@@ -5977,6 +5977,11 @@ intersect_ranges (enum value_range_kind *vr0type,
 	gcc_unreachable ();
     }
 
+  /* If we know the intersection is empty, there's no need to
+     conservatively add anything else to the set.  */
+  if (*vr0type == VR_UNDEFINED)
+    return;
+
   /* As a fallback simply use { *VRTYPE, *VR0MIN, *VR0MAX } as
      result for the intersection.  That's always a conservative
      correct estimate unless VR1 is a constant singleton range
