@@ -1,3 +1,12 @@
+2019-07-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* bindo.adb: Remove the documentation of switch -d_N because it
+	is no longer in use.
+	* bindo-graphs.ads, bindo-graphs.adb (Is_Spec_Before_Body_Edge):
+	New routine.
+	* bindo-writers.adb (Write_Dependency_Edge): Add the missing
+	case of a spec-before-body edge.
+
 2019-07-11  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* libgnat/g-socket.ads (Mode_Type): Add a Socket_Raw enumerator.

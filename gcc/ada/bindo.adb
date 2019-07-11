@@ -347,13 +347,9 @@ package body Bindo is
    --        GNATbind outputs the library graph in textual format to standard
    --        output.
    --
-   --  -d_N  New bindo order
-   --
-   --        GNATbind utilizes the new bindo elaboration order
-   --
    --  -d_P  Output cycle paths
    --
-   --        GNATbind output the cycle paths in text format to standard output
+   --        GNATbind outputs the cycle paths in text format to standard output
    --
    --  -d_S  Output elaboration-order status information
    --
