@@ -1,5 +1,10 @@
 2019-07-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* checks.adb, exp_ch6.adb, gnat1drv.adb, sem_aux.adb,
+	sem_ch2.adb, sem_ch8.adb, sem_res.adb: Minor reformatting.
+
+2019-07-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* sem_ch8.adb (Analyze_Object_Renaming): Obtain the object being
 	renamed using routine Get_Object_Name which takes care of
 	various name forms.

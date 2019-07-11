@@ -1056,9 +1056,10 @@ procedure Gnat1drv is
       for U in Main_Unit .. Last_Unit loop
          if In_Extended_Main_Source_Unit (Cunit_Entity (U)) then
             declare
-               Nam : constant String :=
-                     Get_Name_String (File_Name (Source_Index (U))) & ".json";
-               Namid : constant File_Name_Type := Name_Enter (Nam);
+               Nam   : constant String :=
+                         Get_Name_String
+                           (File_Name (Source_Index (U))) & ".json";
+               Namid : constant File_Name_Type    := Name_Enter (Nam);
                Index : constant Source_File_Index := Load_Config_File (Namid);
 
             begin

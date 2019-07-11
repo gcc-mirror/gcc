@@ -2481,8 +2481,6 @@ package body Exp_Ch6 is
       function Can_Fold_Predicate_Call (P : Entity_Id) return Boolean is
          Actual : constant Node_Id :=
                     First (Parameter_Associations (Call_Node));
-         Subt : constant Entity_Id := Etype (First_Entity (P));
-         Pred : Node_Id;
 
          function May_Fold (N : Node_Id) return Traverse_Result;
          --  The predicate expression is foldable if it only contains operators
@@ -2491,13 +2489,21 @@ package body Exp_Ch6 is
          --  value of the actual. This is done on a copy of the analyzed
          --  expression for the predicate.
 
+         --------------
+         -- May_Fold --
+         --------------
+
          function May_Fold (N : Node_Id) return Traverse_Result is
          begin
             case Nkind (N) is
-               when N_Binary_Op | N_Unary_Op  =>
+               when N_Binary_Op
+                  | N_Unary_Op
+               =>
                   return OK;
 
-               when N_Identifier | N_Expanded_Name =>
+               when N_Expanded_Name
+                  | N_Identifier
+               =>
                   if Ekind (Entity (N)) = E_In_Parameter
                     and then Entity (N) = First_Entity (P)
                   then
@@ -2512,7 +2518,9 @@ package body Exp_Ch6 is
                      return Abandon;
                   end if;
 
-               when N_If_Expression | N_Case_Expression =>
+               when N_Case_Expression
+                  | N_If_Expression
+               =>
                   return OK;
 
                when N_Integer_Literal =>
@@ -2524,6 +2532,11 @@ package body Exp_Ch6 is
          end May_Fold;
 
          function Try_Fold is new Traverse_Func (May_Fold);
+
+         --  Local variables
+
+         Subt : constant Entity_Id := Etype (First_Entity (P));
+         Pred : Node_Id;
 
       --  Start of processing for Can_Fold_Predicate_Call
 
@@ -2542,17 +2555,17 @@ package body Exp_Ch6 is
          --  Retrieve the analyzed expression for the predicate
 
          Pred :=
-            New_Copy_Tree
-              (Expression (Find_Aspect (Subt, Aspect_Dynamic_Predicate)));
+           New_Copy_Tree
+             (Expression (Find_Aspect (Subt, Aspect_Dynamic_Predicate)));
 
          if Try_Fold (Pred) = OK then
             Rewrite (Call_Node, Pred);
             Analyze_And_Resolve (Call_Node, Standard_Boolean);
             return True;
 
-         else
-            --  Continue expansion of function call
+         --  Otherwise continue the expansion of the function call
 
+         else
             return False;
          end if;
       end Can_Fold_Predicate_Call;
