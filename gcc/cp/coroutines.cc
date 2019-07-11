@@ -175,13 +175,13 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
   if (DECL_COROUTINE_PROMISE_TYPE(fndecl) == NULL_TREE)
     {
       /* Get the coroutine traits temple decl for the specified return and
-         argument type list.  coroutine_traits <R, ...> */
+	 argument type list.  coroutine_traits <R, ...> */
       tree templ_decl = find_coro_traits_template_decl (loc);
       /* Find the promise type for that.  */
       DECL_COROUTINE_PROMISE_TYPE (fndecl) = find_promise_type (templ_decl);
       /* Find the handle type for that.  */
       tree handle_type
-        = find_coro_handle_type (loc, DECL_COROUTINE_PROMISE_TYPE(fndecl));
+	= find_coro_handle_type (loc, DECL_COROUTINE_PROMISE_TYPE(fndecl));
       /* Instantiate this, we're going to use it.  */
       handle_type = complete_type_or_else (handle_type, fndecl);
       DECL_COROUTINE_HANDLE_TYPE (fndecl) = handle_type;
@@ -300,14 +300,14 @@ coro_function_valid_p (tree fndecl)
      their context and thus the promise type should be known at this point.
   */
   gcc_assert (DECL_COROUTINE_HANDLE_TYPE(fndecl) != NULL_TREE
-              && DECL_COROUTINE_PROMISE_TYPE(fndecl) != NULL_TREE);
+	      && DECL_COROUTINE_PROMISE_TYPE(fndecl) != NULL_TREE);
 
   if (current_function_returns_value || current_function_returns_null)
     /* TODO: record or extract positions of returns (and the first coro
        keyword) so that we can add notes to the diagnostic about where
        the bad keyword is and what made the function into a coro.  */
     error_at (f_loc, "return statement not allowed in coroutine;"
-                     " did you mean %<co_return%>?" );
+		     " did you mean %<co_return%>?" );
 
   return true;
 }
@@ -478,7 +478,8 @@ finish_co_await_expr (location_t kw, tree expr)
   /* The incoming cast expression might be transformed by a promise
      'await_transform()'.  */
   tree at_meth = lookup_promise_member (current_function_decl, 
-					"await_transform", kw, false /*musthave*/);
+					"await_transform", kw,
+					false /*musthave*/);
   if (at_meth == error_mark_node)
     return error_mark_node;
 
@@ -843,10 +844,10 @@ co_return_expander (tree *stmt, int *do_subtree, void *d)
 	 have to replace it with a list.  */
       tree replace = coro_maybe_expand_co_return (*stmt, data);
       if (replace != NULL_TREE)
-        {
+	{
 	  *stmt = replace;
 	  *do_subtree = 0; /* Done here.  */
-        }
+	}
     }
   return NULL_TREE;
 }
@@ -900,7 +901,7 @@ TODO :
   be void.
 
 */
-    
+
 static tree
 co_await_expander (tree *stmt, int *do_subtree, void *d)
 {
@@ -938,13 +939,12 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
     {
       sub_code = TREE_CODE (TREE_OPERAND (stripped_stmt, 1));
       if (sub_code == CO_AWAIT_EXPR)
-        saved_co_await = TREE_OPERAND (stripped_stmt, 1); /* Get the RHS.  */
+	saved_co_await = TREE_OPERAND (stripped_stmt, 1); /* Get the RHS.  */
       else if (tree r = cp_walk_tree 
 			 (&TREE_OPERAND (stripped_stmt, 1),
 			  co_await_find_in_subtree, &buried_stmt, NULL))
 	{
-          //debug_tree(*stmt);
-          saved_co_await = r;
+	  saved_co_await = r;
 	}
     }
 
@@ -1133,7 +1133,7 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
       break;
     case INIT_EXPR:
     case MODIFY_EXPR:
-       /* Replace the use of co_await by the resume expr.  */
+      /* Replace the use of co_await by the resume expr.  */
       if (sub_code == CO_AWAIT_EXPR)
 	{
 	  /* We're updating the interior of a possibly <(void) expr>cleanup.  */
@@ -1141,18 +1141,18 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
 	  append_to_statement_list (saved_statement, &stmt_list);
 	}
       else if (buried_stmt != NULL)
-        {
+	{
 	  *buried_stmt = resume_call;
 	  append_to_statement_list (saved_statement, &stmt_list);
-        }
+	}
       else
-        {
+	{
 	  error_at (loc, "failed to substitute the resume method in %qE",
 		    saved_statement);
 	  append_to_statement_list (saved_statement, &stmt_list);
-        }
+	}
       break;
-      
+
     }
   if (needs_dtor)
     append_to_statement_list (dtor, &stmt_list);
@@ -1323,9 +1323,9 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	     references to vars replaced at a higher level.  */
 	  cp_walk_tree (&DECL_INITIAL (lvar), transform_local_var_uses,
 		        d, NULL);
-          cp_walk_tree (&DECL_SIZE (lvar), transform_local_var_uses,
+	  cp_walk_tree (&DECL_SIZE (lvar), transform_local_var_uses,
 		        d, NULL);
-          cp_walk_tree (&DECL_SIZE_UNIT (lvar), transform_local_var_uses,
+	  cp_walk_tree (&DECL_SIZE_UNIT (lvar), transform_local_var_uses,
 		        d, NULL);
 
 	  /* TODO: implement selective generation of fields when vars are
@@ -1375,8 +1375,8 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
       location_t loc = DECL_SOURCE_LOCATION (var_decl);
       tree init_and_copy = push_stmt_list ();
       /* Just copy the original cleanup/DECL, including any init, the
-         contained var's context should have been re-written when its bind
-         expression was processed.  */
+	 contained var's context should have been re-written when its bind
+	 expression was processed.  */
       add_stmt (*stmt);
       /* Now add an initialiser for the frame version of this var, with the
 	 intent that the obvious optimisation will get done.  */
@@ -1398,10 +1398,10 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 /* The actor transform.  */
 static void
 build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
-	        tree fnbody, tree orig,
-	        hash_map<tree, __param_info_t> *param_uses,
-	        hash_map<tree, __local_var_info_t> *local_var_uses,
-	        vec<tree, va_gc> *param_dtor_list,
+		tree fnbody, tree orig,
+		hash_map<tree, __param_info_t> *param_uses,
+		hash_map<tree, __local_var_info_t> *local_var_uses,
+		vec<tree, va_gc> *param_dtor_list,
 		tree initial_await, tree final_await, unsigned body_count)
 {
   verify_stmt_tree (fnbody);
@@ -2211,7 +2211,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer, tree *suspended_p)
   if (is_noexcept)
     {
       /* Simplified abstract from begin_eh_spec_block, since we already
-         know the outcome.  */
+	 know the outcome.  */
       fnbody = TREE_OPERAND (body_start, 0); /* Stash the original...  */
       add_stmt (body_start);		     /* ... and start the new.  */
       TREE_OPERAND (body_start, 0) = push_stmt_list ();
@@ -2361,10 +2361,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer, tree *suspended_p)
 
       /* If no uses were seen, act as if there were no params.  */
       if (!param_data.param_seen)
-        {
-          delete param_uses;
-          param_uses = NULL;
-        }
+	{
+	  param_uses;
+	  param_uses = NULL;
+	}
     }
 
   /* 4. Now make space for local vars, this is conservative again, and we
@@ -2547,7 +2547,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer, tree *suspended_p)
       vec<tree, va_gc> *args = make_tree_vector ();
       tree arg;
       for (arg = DECL_ARGUMENTS (orig); arg != NULL; arg = DECL_CHAIN (arg))
-        vec_safe_push (args, arg);
+	vec_safe_push (args, arg);
       r = build_special_member_call (p, complete_ctor_identifier, &args,
 				    promise_type, LOOKUP_NORMAL,
 				    tf_none);
@@ -2713,7 +2713,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer, tree *suspended_p)
   build_actor_fn (fn_start, coro_frame_type, actor, fnbody, orig, param_uses,
 		  &local_var_uses, param_dtor_list, initial_await, final_await,
 		  body_aw_points.count);
-  
+
   /* Destroyer ... */
   build_destroy_fn (fn_start, coro_frame_type, destroy, actor);
 
@@ -2728,10 +2728,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer, tree *suspended_p)
   TREE_CHAIN (destroy) = suspended;
   TREE_CHAIN (actor) = destroy;
   TREE_CHAIN (orig) = actor;
-  
+
   *resumer = actor;
   *destroyer = destroy;
   *suspended_p = suspended;
-  
+
   return true;
 }

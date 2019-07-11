@@ -1,3 +1,8 @@
+2019-07-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc: Fix line wrapping, leading and trailing whitespace.
+
 2019-07-09  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
