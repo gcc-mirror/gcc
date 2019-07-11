@@ -1,6 +1,28 @@
 2019-07-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/91124
+	* config/i386/sse.md (sse2_cvtpd2dq<mask_name>): Change into ...
+	(sse2_cvtpd2dq): ... this.  Remove mask substitution macros.
+	(sse2_cvtpd2dq_mask, sse2_cvtpd2dq_mask_1): New define_insns.
+	(ufix_notruncv2dfv2si2<mask_name>): Change into ...
+	(ufix_notruncv2dfv2si2): ... this.  Remove mask substitution macros.
+	(ufix_notruncv2dfv2si2_mask, ufix_notruncv2dfv2si2_mask_1): New
+	define_insns.
+	(ufix_truncv2dfv2si2<mask_name>): Change into ...
+	(ufix_truncv2dfv2si2): ... this.  Remove mask substitution macros.
+	(ufix_truncv2dfv2si2_mask, ufix_truncv2dfv2si2_mask_1): New
+	define_insns.
+	(sse2_cvttpd2dq<mask_name>): Change into ...
+	(sse2_cvttpd2dq): ... this.  Remove mask substitution macros.
+	(sse2_cvttpd2dq_mask, sse2_cvttpd2dq_mask_1): New define_insns.
+	(*sse2_cvtpd2dq<mask_name>): Change into ...
+	(*sse2_cvtpd2dq): ... this.  Remove mask substitution macros.
+	Add "C" constraint to const0_operand.
+	(*sse2_cvtpd2dq_mask, *sse2_cvtpd2dq_mask_1): New define_insns.
+	(sse2_cvtpd2ps_mask): Adjust expand to match *sse2_cvtpd2ps_mask
+	changes.
+
+	PR target/91124
 	* config/i386/i386-builtin-types.def
 	(V32HI_FTYPE_V32HI_V32HI_V32HI_INT,
 	V16HI_FTYPE_V16HI_V16HI_V16HI_INT, V8HI_FTYPE_V8HI_V8HI_V8HI_INT,
