@@ -1,3 +1,10 @@
+2019-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91131
+	* gimplify.c (gimplify_compound_literal_expr): Force a temporary
+	when the object is volatile and we have not cleared it even though
+	there are no nonzero elements.
+
 2019-07-10  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/predicates.md (cint34_operand): Update
