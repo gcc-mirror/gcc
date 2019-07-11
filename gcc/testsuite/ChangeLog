@@ -1,3 +1,11 @@
+2019-07-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	Backported from mainline
+	2019-06-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr81563.c (dg-final): Check that no
+	registers are restored from %esp.
+
 2019-07-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91108
