@@ -2688,9 +2688,15 @@ setup-rts: force
 	          $(LN_S) $(GNAT_SRC)/$(word 2,$(subst <, ,$(PAIR))) \
 	                $(RTSDIR)/$(word 1,$(subst <, ,$(PAIR)));)
 
-# Special flags
+# Special flags. It is recommended not to change the compilation flags
+# without a careful analysis of the consequences because (part of) the
+# runtime implements low-level support that is outside of the semantics
+# of the language and therefore needs to be treated differently from the
+# other units. For example, the part of the runtime implementing the
+# propagation of exceptions cannot itself be compiled with checks that
+# may give rise to exceptions, e.g. stack overflow checks.
 
-# force no sibling call optimization on s-traceb.o so the number of stack
+# Force no sibling call optimization on s-traceb.o so the number of stack
 # frames to be skipped when computing a call chain is not modified by
 # optimization. We don't want inlining, either.
 
@@ -2699,14 +2705,14 @@ s-traceb.o  : s-traceb.adb s-traceb.ads
 	  $(NO_INLINE_ADAFLAGS) $(NO_SIBLING_ADAFLAGS) $(ADA_INCLUDES) $< \
 	  $(OUTPUT_OPTION)
 
-# compile s-tasdeb.o without optimization and with debug info so that it is
+# Compile s-tasdeb.o without optimization and with debug info so that it is
 # always possible to set conditional breakpoints on tasks.
 
 s-tasdeb.o  : s-tasdeb.adb s-tasdeb.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
-# force no function reordering on a-except.o because of the exclusion bounds
+# Force no function reordering on a-except.o because of the exclusion bounds
 # mechanism (see the source file for more detailed information).
 # force debugging information on a-except.o so that it is always
 # possible to set conditional breakpoints on exceptions.
@@ -2717,7 +2723,7 @@ a-except.o  : a-except.adb a-except.ads
 	  $(NO_INLINE_ADAFLAGS) $(NO_REORDER_ADAFLAGS) -O1 $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
-# compile s-excdeb.o without optimization and with debug info to let the
+# Compile s-excdeb.o without optimization and with debug info to let the
 # debugger set breakpoints and inspect subprogram parameters on exception
 # related events.
 
@@ -2725,21 +2731,21 @@ s-excdeb.o  : s-excdeb.adb s-excdeb.ads s-except.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 \
 	  $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
-# force debugging information on s-assert.o so that it is always
+# Force debugging information on s-assert.o so that it is always
 # possible to set breakpoint on assert failures.
 
 s-assert.o  : s-assert.adb s-assert.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
-# force debugging information on a-tags.o so that the debugger can find
+# Force debugging information on a-tags.o so that the debugger can find
 # the description of Ada.Tags.Type_Specific_Data.
 
 a-tags.o  : a-tags.adb a-tags.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
-# force no sibling call optimization on s-memory.o to avoid turning the
+# Force no sibling call optimization on s-memory.o to avoid turning the
 # tail recursion in Alloc into a loop that confuses branch prediction.
 
 s-memory.o  : s-memory.adb s-memory.ads
