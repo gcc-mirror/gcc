@@ -1,5 +1,11 @@
 2019-07-11  Piotr Trojanek  <trojanek@adacore.com>
 
+	* lib-writ.adb (Ensure_System_Dependency,
+	Up_To_Date_ALI_File_Exists, Write_ALI): Replace low-level access
+	to table with a high-level query.
+
+2019-07-11  Piotr Trojanek  <trojanek@adacore.com>
+
 	* checks.adb: Fix typo in comment.
 	* sem.adb (Semantics): Avoid repeated calls to
 	In_Extended_Main_Source_Unit by reusing an already-cached
