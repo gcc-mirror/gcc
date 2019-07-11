@@ -1,3 +1,18 @@
+2019-07-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* alloc.ads (Rep_JSON_Table_Initial): New constant.
+	(Rep_JSON_Table_Increment): Likewise.
+	* debug.adb: Document -gnatd_j switch.
+	* gcc-interface/Make-lang.in (GNAT_ADA_OBJS): Add
+	repinfo-input.o.
+	* gnat1drv.adb: Add with clause for Repinfo.Input.
+	Add with and use clauses for Sinput.
+	(Read_JSON_Files_For_Repinfo): New procedure.
+	(Gnat1drv1): Deal with -gnatd_j switch.
+	* repinfo-input.ad[sb]: New unit.
+	* snames.ads-tmpl (Name_Discriminant): New constant.
+	(Name_Operands): Likewise.
+
 2019-07-11  Justin Squirek  <squirek@adacore.com>
 
 	* checks.adb (Apply_Accessibility_Check): Add check for constant
