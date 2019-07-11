@@ -22367,9 +22367,15 @@ package body Sem_Util is
    --  Start of processing for Null_Status
 
    begin
+      --  Prevent cascaded errors or infinite loops when trying to determine
+      --  the null status of an erroneous construct.
+
+      if Error_Posted (N) then
+         return Unknown;
+
       --  An allocator always creates a non-null value
 
-      if Nkind (N) = N_Allocator then
+      elsif Nkind (N) = N_Allocator then
          return Is_Non_Null;
 
       --  Taking the 'Access of something yields a non-null value
