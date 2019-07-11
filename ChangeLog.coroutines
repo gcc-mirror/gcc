@@ -1,5 +1,10 @@
 2019-07-11  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* tree.c (cp_walk_subtrees): Handle CO_YIELD_EXPR, CO_AWAIT_EXPR and
+	CO_RETRN_EXPR.
+
+2019-07-11  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/cp/
 	* coroutines.cc: Fix line wrapping, leading and trailing whitespace.
 
