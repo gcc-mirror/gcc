@@ -1,3 +1,13 @@
+2019-07-11  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.ads, exp_util.adb (Needs_Finalization): Move to
+	Sem_Util.
+	* sem_ch9.adb (Analyze_Protected_Definition): Code cleanup. Mark
+	the protected type as having controlled components when it
+	contains at least one such component.
+	* sem_util.ads, sem_util.adb (Needs_Finalization): New
+	function.
+
 2019-07-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* alloc.ads (Rep_JSON_Table_Initial): New constant.

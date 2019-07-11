@@ -10554,94 +10554,6 @@ package body Exp_Util is
       end if;
    end Needs_Constant_Address;
 
-   ------------------------
-   -- Needs_Finalization --
-   ------------------------
-
-   function Needs_Finalization (Typ : Entity_Id) return Boolean is
-      function Has_Some_Controlled_Component
-        (Input_Typ : Entity_Id) return Boolean;
-      --  Determine whether type Input_Typ has at least one controlled
-      --  component.
-
-      -----------------------------------
-      -- Has_Some_Controlled_Component --
-      -----------------------------------
-
-      function Has_Some_Controlled_Component
-        (Input_Typ : Entity_Id) return Boolean
-      is
-         Comp : Entity_Id;
-
-      begin
-         --  When a type is already frozen and has at least one controlled
-         --  component, or is manually decorated, it is sufficient to inspect
-         --  flag Has_Controlled_Component.
-
-         if Has_Controlled_Component (Input_Typ) then
-            return True;
-
-         --  Otherwise inspect the internals of the type
-
-         elsif not Is_Frozen (Input_Typ) then
-            if Is_Array_Type (Input_Typ) then
-               return Needs_Finalization (Component_Type (Input_Typ));
-
-            elsif Is_Record_Type (Input_Typ) then
-               Comp := First_Component (Input_Typ);
-               while Present (Comp) loop
-                  if Needs_Finalization (Etype (Comp)) then
-                     return True;
-                  end if;
-
-                  Next_Component (Comp);
-               end loop;
-            end if;
-         end if;
-
-         return False;
-      end Has_Some_Controlled_Component;
-
-   --  Start of processing for Needs_Finalization
-
-   begin
-      --  Certain run-time configurations and targets do not provide support
-      --  for controlled types.
-
-      if Restriction_Active (No_Finalization) then
-         return False;
-
-      --  C++ types are not considered controlled. It is assumed that the non-
-      --  Ada side will handle their clean up.
-
-      elsif Convention (Typ) = Convention_CPP then
-         return False;
-
-      --  Class-wide types are treated as controlled because derivations from
-      --  the root type may introduce controlled components.
-
-      elsif Is_Class_Wide_Type (Typ) then
-         return True;
-
-      --  Concurrent types are controlled as long as their corresponding record
-      --  is controlled.
-
-      elsif Is_Concurrent_Type (Typ)
-        and then Present (Corresponding_Record_Type (Typ))
-        and then Needs_Finalization (Corresponding_Record_Type (Typ))
-      then
-         return True;
-
-      --  Otherwise the type is controlled when it is either derived from type
-      --  [Limited_]Controlled and not subject to aspect Disable_Controlled, or
-      --  contains at least one controlled component.
-
-      else
-         return
-           Is_Controlled (Typ) or else Has_Some_Controlled_Component (Typ);
-      end if;
-   end Needs_Finalization;
-
    ----------------------------
    -- New_Class_Wide_Subtype --
    ----------------------------
@@ -12170,9 +12082,7 @@ package body Exp_Util is
       Typ     : Entity_Id;
 
    begin
-      if No (L)
-        or else Is_Empty_List (L)
-      then
+      if No (L) or else Is_Empty_List (L) then
          return False;
       end if;
 

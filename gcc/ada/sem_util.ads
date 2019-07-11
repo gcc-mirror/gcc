@@ -2220,6 +2220,10 @@ package Sem_Util is
    --  Return the entity of the nearest enclosing instance which encapsulates
    --  entity E. If no such instance exits, return Empty.
 
+   function Needs_Finalization (Typ : Entity_Id) return Boolean;
+   --  Determine whether type Typ is controlled and this requires finalization
+   --  actions.
+
    function Needs_One_Actual (E : Entity_Id) return Boolean;
    --  Returns True if a function has defaults for all but its first formal,
    --  which is a controlling formal. Used in Ada 2005 mode to solve the

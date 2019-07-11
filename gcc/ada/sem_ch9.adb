@@ -1897,9 +1897,6 @@ package body Sem_Ch9 is
    ----------------------------------
 
    procedure Analyze_Protected_Definition (N : Node_Id) is
-      E : Entity_Id;
-      L : Entity_Id;
-
       procedure Undelay_Itypes (T : Entity_Id);
       --  Itypes created for the private components of a protected type
       --  do not receive freeze nodes, because there is no scope in which
@@ -1932,9 +1929,7 @@ package body Sem_Ch9 is
          end if;
 
          while Present (Comp) loop
-            if Is_Type (Comp)
-              and then Is_Itype (Comp)
-            then
+            if Is_Type (Comp) and then Is_Itype (Comp) then
                Set_Has_Delayed_Freeze (Comp, False);
                Set_Is_Frozen (Comp);
 
@@ -1942,9 +1937,7 @@ package body Sem_Ch9 is
                   Layout_Type (Comp);
                end if;
 
-               if Is_Record_Type (Comp)
-                 or else Is_Protected_Type (Comp)
-               then
+               if Is_Record_Type (Comp) or else Is_Protected_Type (Comp) then
                   Undelay_Itypes (Comp);
                end if;
             end if;
@@ -1952,6 +1945,12 @@ package body Sem_Ch9 is
             Next_Entity (Comp);
          end loop;
       end Undelay_Itypes;
+
+      --  Local variables
+
+      Prot_Typ : constant Entity_Id := Current_Scope;
+      Item_Id  : Entity_Id;
+      Last_Id  : Entity_Id;
 
    --  Start of processing for Analyze_Protected_Definition
 
@@ -1963,32 +1962,37 @@ package body Sem_Ch9 is
       if Present (Private_Declarations (N))
         and then not Is_Empty_List (Private_Declarations (N))
       then
-         L := Last_Entity (Current_Scope);
+         Last_Id := Last_Entity (Prot_Typ);
          Analyze_Declarations (Private_Declarations (N));
 
-         if Present (L) then
-            Set_First_Private_Entity (Current_Scope, Next_Entity (L));
+         if Present (Last_Id) then
+            Set_First_Private_Entity (Prot_Typ, Next_Entity (Last_Id));
          else
-            Set_First_Private_Entity (Current_Scope,
-              First_Entity (Current_Scope));
+            Set_First_Private_Entity (Prot_Typ, First_Entity (Prot_Typ));
          end if;
       end if;
 
-      E := First_Entity (Current_Scope);
-      while Present (E) loop
-         if Ekind_In (E, E_Function, E_Procedure) then
-            Set_Convention (E, Convention_Protected);
+      Item_Id := First_Entity (Prot_Typ);
+      while Present (Item_Id) loop
+         if Ekind_In (Item_Id, E_Function, E_Procedure) then
+            Set_Convention (Item_Id, Convention_Protected);
          else
-            Propagate_Concurrent_Flags (Current_Scope, Etype (E));
+            Propagate_Concurrent_Flags (Prot_Typ, Etype (Item_Id));
+
+            if Chars (Item_Id) /= Name_uParent
+              and then Needs_Finalization (Etype (Item_Id))
+            then
+               Set_Has_Controlled_Component (Prot_Typ);
+            end if;
          end if;
 
-         Next_Entity (E);
+         Next_Entity (Item_Id);
       end loop;
 
-      Undelay_Itypes (Current_Scope);
+      Undelay_Itypes (Prot_Typ);
 
       Check_Max_Entries (N, Max_Protected_Entries);
-      Process_End_Label (N, 'e', Current_Scope);
+      Process_End_Label (N, 'e', Prot_Typ);
    end Analyze_Protected_Definition;
 
    ----------------------------------------
