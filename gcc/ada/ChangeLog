@@ -1,3 +1,38 @@
+2019-07-11  Claire Dross  <dross@adacore.com>
+
+	* gnat1drv.adb: SPARK checking rules for pointer aliasing are
+	moved to GNATprove backend.
+	* sem_spark.ads, sem_spark.adb (Sem_SPARK): Is now a generic
+	unit. Takes as parameters:
+	 - Retysp which is used to query the most underlying type
+	   visible in SPARK. We do not introduce aliasing checks for
+	   types which are not visibly deep.
+	 - Component_Is_Visible_In_SPARK is used to avoid doing pointer
+	   aliasing checks on components which are not visible in SPARK.
+	 - Emit_Messages returns True in the second phase of SPARK
+	   analysis. Error messages for failed aliasing checks are only
+	   output in this case.
+	Additionally, errors on constructs not supported in SPARK are
+	removed as duplicates of marking errors. Components are stored
+	in the permission map using their original component to avoid
+	inconsistencies between components of different views of the
+	same type.
+	(Check_Expression): Handle delta constraints.
+	(Is_Deep): Exported so that we can check for SPARK restrictions
+	on deep types inside SPARK semantic checkings.
+	(Is_Traversal_Function): Exported so that we can check for SPARK
+	restrictions on traversal functions inside SPARK semantic
+	checkings.
+	(Check_Call_Statement, Read_Indexes): Check wether we are
+	dealing with a subprogram pointer type before querying called
+	entity.
+	(Is_Subpath_Expression): Image attribute can appear inside a
+	path.
+	(Check_Loop_Statement): Correct order of statements in the loop.
+	(Check_Node): Ignore raise nodes.
+	(Check_Statement): Use Last_Non_Pragma to get the object
+	declaration in an extended return statement.
+
 2019-07-11  Patrick Bernardi  <bernardi@adacore.com>
 
 	* bindgen.adb (Gen_Main): Do not generate a reference to

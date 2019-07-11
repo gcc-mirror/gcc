@@ -63,7 +63,6 @@ with Sem_Ch13;
 with Sem_Elim;
 with Sem_Eval;
 with Sem_Prag;
-with Sem_SPARK; use Sem_SPARK;
 with Sem_Type;
 with Set_Targ;
 with Sinfo;     use Sinfo;
@@ -1585,13 +1584,6 @@ begin
       Prepcomp.Add_Dependencies;
 
       if GNATprove_Mode then
-
-         --  Perform the new SPARK checking rules for pointer aliasing. This is
-         --  only activated in GNATprove mode and on SPARK code.
-
-         if Debug_Flag_FF then
-            Check_Safe_Pointers (Main_Unit_Node);
-         end if;
 
          --  In GNATprove mode we're writing the ALI much earlier than usual
          --  as flow analysis needs the file present in order to append its
