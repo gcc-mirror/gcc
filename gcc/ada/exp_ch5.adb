@@ -2021,15 +2021,21 @@ package body Exp_Ch5 is
 
       if not Suppress_Assignment_Checks (N) then
 
-         --  First deal with generation of range check if required
+         --  First deal with generation of range check if required,
+         --  and then predicate checks if the type carries a predicate.
+         --  If the Rhs is an expression these tests may have been applied
+         --  already. This is the case if the RHS is a type conversion.
+         --  Other such redundant checks could be removed ???
 
-         if Do_Range_Check (Rhs) then
-            Generate_Range_Check (Rhs, Typ, CE_Range_Check_Failed);
+         if Nkind (Rhs) /= N_Type_Conversion
+           or else Entity (Subtype_Mark (Rhs)) /= Typ
+         then
+            if Do_Range_Check (Rhs) then
+               Generate_Range_Check (Rhs, Typ, CE_Range_Check_Failed);
+            end if;
+
+            Apply_Predicate_Check (Rhs, Typ);
          end if;
-
-         --  Then generate predicate check if required
-
-         Apply_Predicate_Check (Rhs, Typ);
       end if;
 
       --  Check for a special case where a high level transformation is

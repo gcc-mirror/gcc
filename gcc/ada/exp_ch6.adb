@@ -2479,8 +2479,7 @@ package body Exp_Ch6 is
       -----------------------------
 
       function Can_Fold_Predicate_Call (P : Entity_Id) return Boolean is
-         Actual : constant Node_Id :=
-                    First (Parameter_Associations (Call_Node));
+         Actual : Node_Id;
 
          function May_Fold (N : Node_Id) return Traverse_Result;
          --  The predicate expression is foldable if it only contains operators
@@ -2533,10 +2532,11 @@ package body Exp_Ch6 is
 
          function Try_Fold is new Traverse_Func (May_Fold);
 
-         --  Local variables
+         --  Other lLocal variables
 
-         Subt : constant Entity_Id := Etype (First_Entity (P));
-         Pred : Node_Id;
+         Subt   : constant Entity_Id := Etype (First_Entity (P));
+         Aspect : Node_Id;
+         Pred   : Node_Id;
 
       --  Start of processing for Can_Fold_Predicate_Call
 
@@ -2545,8 +2545,21 @@ package body Exp_Ch6 is
          --  has a Dynamic_Predicate aspect. For CodePeer we preserve the
          --  function call.
 
-         if Nkind (Actual) /= N_Integer_Literal
+         Actual := First (Parameter_Associations (Call_Node));
+         Aspect := Find_Aspect (Subt, Aspect_Dynamic_Predicate);
+
+         --  If actual is a declared constant, retrieve its value
+
+         if Is_Entity_Name (Actual)
+           and then Ekind (Entity (Actual)) = E_Constant
+         then
+            Actual := Constant_Value (Entity (Actual));
+         end if;
+
+         if No (Actual)
+           or else Nkind (Actual) /= N_Integer_Literal
            or else not Has_Dynamic_Predicate_Aspect (Subt)
+           or else No (Aspect)
            or else CodePeer_Mode
          then
             return False;
@@ -2554,9 +2567,7 @@ package body Exp_Ch6 is
 
          --  Retrieve the analyzed expression for the predicate
 
-         Pred :=
-           New_Copy_Tree
-             (Expression (Find_Aspect (Subt, Aspect_Dynamic_Predicate)));
+         Pred := New_Copy_Tree (Expression (Aspect));
 
          if Try_Fold (Pred) = OK then
             Rewrite (Call_Node, Pred);
