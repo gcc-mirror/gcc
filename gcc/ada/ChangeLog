@@ -1,3 +1,8 @@
+2019-07-11  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Check_Argument_Order): Special case calls to
+	operators.
+
 2019-07-10  Dmitriy Anisimkov  <anisimko@adacore.com>
 
 	* libgnat/s-ststop.adb: Remove System.Strings.Stream_Ops

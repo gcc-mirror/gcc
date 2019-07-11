@@ -3458,12 +3458,17 @@ package body Sem_Res is
       begin
          --  Nothing to do if no parameters, or original node is neither a
          --  function call nor a procedure call statement (happens in the
-         --  operator-transformed-to-function call case), or the call does
+         --  operator-transformed-to-function call case), or the call is to an
+         --  operator symbol (which is usually in infix form), or the call does
          --  not come from source, or this warning is off.
 
          if not Warn_On_Parameter_Order
            or else No (Parameter_Associations (N))
            or else Nkind (Original_Node (N)) not in N_Subprogram_Call
+           or else (Nkind (Name (N)) = N_Identifier
+                     and then Present (Entity (Name (N)))
+                     and then Nkind (Entity (Name (N)))
+                       = N_Defining_Operator_Symbol)
            or else not Comes_From_Source (N)
          then
             return;

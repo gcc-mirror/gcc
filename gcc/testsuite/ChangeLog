@@ -1,3 +1,7 @@
+2019-07-11  Yannick Moy  <moy@adacore.com>
+
+	* gnat.dg/warn21.adb, gnat.dg/warn21.ads: New testcase.
+
 2019-07-11  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/91131
