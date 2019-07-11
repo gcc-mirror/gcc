@@ -1,3 +1,9 @@
+2019-07-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Can_Fold_Predicate_Call): New function,
+	subsidiary of Expand_Call_Helper, to compute statically a
+	predicate check when the argument is a static integer.
+
 2019-07-11  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_res.adb (Resolve_Op_Not): Do not rewrite an equality
