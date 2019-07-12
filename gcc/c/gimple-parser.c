@@ -117,6 +117,7 @@ static struct c_expr c_parser_gimple_postfix_expression_after_primary
 static void c_parser_gimple_declaration (gimple_parser &);
 static void c_parser_gimple_goto_stmt (gimple_parser &, location_t,
 				       tree, gimple_seq *);
+static void c_parser_gimple_try_stmt (gimple_parser &, gimple_seq *);
 static void c_parser_gimple_if_stmt (gimple_parser &, gimple_seq *);
 static void c_parser_gimple_switch_stmt (gimple_parser &, gimple_seq *);
 static void c_parser_gimple_return_stmt (gimple_parser &, gimple_seq *);
@@ -407,6 +408,9 @@ c_parser_gimple_compound_statement (gimple_parser &parser, gimple_seq *seq)
 	case CPP_KEYWORD:
 	  switch (c_parser_peek_token (parser)->keyword)
 	    {
+	    case RID_AT_TRY:
+	      c_parser_gimple_try_stmt (parser, seq);
+	      break;
 	    case RID_IF:
 	      c_parser_gimple_if_stmt (parser, seq);
 	      break;
@@ -446,6 +450,14 @@ c_parser_gimple_compound_statement (gimple_parser &parser, gimple_seq *seq)
 	  if (c_parser_peek_2nd_token (parser)->type == CPP_COLON)
 	    {
 	      c_parser_gimple_label (parser, seq);
+	      break;
+	    }
+	  if (c_parser_next_token_is (parser, CPP_NAME)
+	      && c_parser_peek_token (parser)->id_kind == C_ID_ID
+	      && strcmp (IDENTIFIER_POINTER (c_parser_peek_token (parser)->value),
+			 "try") == 0)
+	    {
+	      c_parser_gimple_try_stmt (parser, seq);
 	      break;
 	    }
 	  /* Basic block specification.
@@ -2090,6 +2102,55 @@ c_parser_gimple_paren_condition (gimple_parser &parser)
   if (! c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))
     return error_mark_node;
   return cond;
+}
+
+/* Parse gimple try statement.
+
+   try-statement:
+     try { ... } finally { ... }
+     try { ... } finally { ... } else { ... }
+
+   This could support try/catch as well, but it's not implemented yet.
+ */
+
+static void
+c_parser_gimple_try_stmt (gimple_parser &parser, gimple_seq *seq)
+{
+  gimple_seq tryseq = NULL;
+  c_parser_consume_token (parser);
+  c_parser_gimple_compound_statement (parser, &tryseq);
+
+  if ((c_parser_next_token_is (parser, CPP_KEYWORD)
+       && c_parser_peek_token (parser)->keyword == RID_AT_FINALLY)
+      || (c_parser_next_token_is (parser, CPP_NAME)
+	  && c_parser_peek_token (parser)->id_kind == C_ID_ID
+	  && strcmp (IDENTIFIER_POINTER (c_parser_peek_token (parser)->value),
+		     "finally") == 0))
+    {
+      gimple_seq finseq = NULL;
+      c_parser_consume_token (parser);
+      c_parser_gimple_compound_statement (parser, &finseq);
+
+      if (c_parser_next_token_is (parser, CPP_KEYWORD)
+	  && c_parser_peek_token (parser)->keyword == RID_ELSE)
+	{
+	  gimple_seq elsseq = NULL;
+	  c_parser_consume_token (parser);
+	  c_parser_gimple_compound_statement (parser, &elsseq);
+
+	  geh_else *stmt = gimple_build_eh_else (finseq, elsseq);
+	  finseq = NULL;
+	  gimple_seq_add_stmt_without_update (&finseq, stmt);
+	}
+
+      gtry *stmt = gimple_build_try (tryseq, finseq, GIMPLE_TRY_FINALLY);
+      gimple_seq_add_stmt_without_update (seq, stmt);
+    }
+  else if (c_parser_next_token_is (parser, CPP_KEYWORD)
+      && c_parser_peek_token (parser)->keyword == RID_AT_CATCH)
+    c_parser_error (parser, "%<catch%> is not supported");
+  else
+    c_parser_error (parser, "expected %<finally%> or %<catch%>");
 }
 
 /* Parse gimple if-else statement.

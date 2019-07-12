@@ -1,3 +1,8 @@
+2019-07-12  Alexandre Oliva <oliva@adacore.com>
+
+	* gimple-parser.c (c_parser_gimple_try_stmt): New.
+	(c_parser_compound_statement): Call it.
+
 2019-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_clause_name): Handle order clause.
