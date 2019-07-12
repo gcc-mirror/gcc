@@ -1,3 +1,7 @@
+2019-07-12  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/vector-7.c: New testcase.
+
 2019-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/order-1.c: New test.

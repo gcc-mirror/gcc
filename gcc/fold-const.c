@@ -11839,10 +11839,15 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 }
 
 /* Gets the element ACCESS_INDEX from CTOR, which must be a CONSTRUCTOR
-   of an array (or vector).  */
+   of an array (or vector).  *CTOR_IDX if non-NULL is updated with the
+   constructor element index of the value returned.  If the element is
+   not found NULL_TREE is returned and *CTOR_IDX is updated to
+   the index of the element after the ACCESS_INDEX position (which
+   may be outside of the CTOR array).  */
 
 tree
-get_array_ctor_element_at_index (tree ctor, offset_int access_index)
+get_array_ctor_element_at_index (tree ctor, offset_int access_index,
+				 unsigned *ctor_idx)
 {
   tree index_type = NULL_TREE;
   offset_int low_bound = 0;
@@ -11869,7 +11874,7 @@ get_array_ctor_element_at_index (tree ctor, offset_int access_index)
 		     TYPE_SIGN (index_type));
 
   offset_int max_index;
-  unsigned HOST_WIDE_INT cnt;
+  unsigned cnt;
   tree cfield, cval;
 
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield, cval)
@@ -11897,11 +11902,26 @@ get_array_ctor_element_at_index (tree ctor, offset_int access_index)
 	  max_index = index;
 	}
 
-    /* Do we have match?  */
-    if (wi::cmpu (access_index, index) >= 0
-	&& wi::cmpu (access_index, max_index) <= 0)
-      return cval;
-  }
+      /* Do we have match?  */
+      if (wi::cmpu (access_index, index) >= 0)
+	{
+	  if (wi::cmpu (access_index, max_index) <= 0)
+	    {
+	      if (ctor_idx)
+		*ctor_idx = cnt;
+	      return cval;
+	    }
+	}
+      else if (in_gimple_form)
+	/* We're past the element we search for.  Note during parsing
+	   the elements might not be sorted.
+	   ???  We should use a binary search and a flag on the
+	   CONSTRUCTOR as to whether elements are sorted in declaration
+	   order.  */
+	break;
+    }
+  if (ctor_idx)
+    *ctor_idx = cnt;
   return NULL_TREE;
 }
 

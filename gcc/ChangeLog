@@ -1,3 +1,13 @@
+2019-07-12  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.h (get_array_ctor_element_at_index): Adjust.
+	* fold-const.c (get_array_ctor_element_at_index): Add
+	ctor_idx output parameter informing the caller where in
+	the constructor the element was (not) found.  Add early exit
+	for when the ctor is sorted.
+	* gimple-fold.c (fold_array_ctor_reference): Support constant
+	folding across multiple array elements.
+
 2019-07-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgexpand.c (expand_gimple_stmt_1) <GIMPLE_RETURN>: If the statement
