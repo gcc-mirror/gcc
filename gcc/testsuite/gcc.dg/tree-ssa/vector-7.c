@@ -25,7 +25,7 @@ main()
   for (unsigned i = 0; i < 4; ++i)
     if (v3[i] !=
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-	(v4si) { 0x01020304, 0x05060708, 0x090a0b0c, 0x0d0e0f01 }[i]
+	(v4si) { 0x01020304, 0x05060708, 0x090a0b0c, 0x0d0e0f10 }[i]
 #elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 	(v4si) { 0x04030201, 0x08070605, 0x0c0b0a09, 0x100f0e0d }[i]
 #else
