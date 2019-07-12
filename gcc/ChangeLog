@@ -1,3 +1,9 @@
+2019-07-12  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* gcc/cfgrtl.c (print_rtl_with_bb): Emit a hint if the
+	fallthrough target of current basic block isn't the placed
+	right next.
+
 2019-07-11  Sunil K Pandey  <sunil.k.pandey@intel.com>
 
 	PR target/90980
