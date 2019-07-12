@@ -1,3 +1,8 @@
+2019-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml: Update status for atomic_ref
+	and floating point atomics.
+
 2019-07-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/configure.xml: Improve documentation of
