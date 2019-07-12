@@ -199,13 +199,14 @@ template<typename T, typename Derived>
 T
 vector_builder<T, Derived>::elt (unsigned int i) const
 {
-  /* This only makes sense if the encoding has been fully populated.  */
-  gcc_checking_assert (encoded_nelts () <= this->length ());
-
   /* First handle elements that are already present in the underlying
      vector, regardless of whether they're part of the encoding or not.  */
   if (i < this->length ())
     return (*this)[i];
+
+  /* Extrapolation is only possible if the encoding has been fully
+     populated.  */
+  gcc_checking_assert (encoded_nelts () <= this->length ());
 
   /* Identify the pattern that contains element I and work out the index of
      the last encoded element for that pattern.  */
