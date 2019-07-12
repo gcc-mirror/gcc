@@ -1,5 +1,13 @@
 2019-07-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/string_view (__detail::__idt): Remove.
+	(operator==, operator!=, operator<, operator>, operator<=, operator>=):
+	Use __type_identity_t instead of __detail::__idt;
+	* include/std/string_view (__detail::__idt): Remove.
+	(operator==, operator!=, operator<, operator>, operator<=, operator>=):
+	Use __type_identity_t instead of __detail::__idt;
+	* include/std/type_traits (__type_identity_t): New alias template.
+
 	* doc/xml/manual/status_cxx2020.xml: Update status for atomic_ref
 	and floating point atomics.
 
