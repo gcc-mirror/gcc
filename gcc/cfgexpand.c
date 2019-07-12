@@ -3714,6 +3714,12 @@ expand_gimple_stmt_1 (gimple *stmt)
       {
 	op0 = gimple_return_retval (as_a <greturn *> (stmt));
 
+	/* If a return doesn't have a location, it very likely represents
+	   multiple user returns so we cannot let it inherit the location
+	   of the last statement of the previous basic block in RTL.  */
+	if (!gimple_has_location (stmt))
+	  set_curr_insn_location (cfun->function_end_locus);
+
 	if (op0 && op0 != error_mark_node)
 	  {
 	    tree result = DECL_RESULT (current_function_decl);
