@@ -1,3 +1,7 @@
+2019-07-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/pr57438-2.c: Remove.
+
 2019-07-12  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/Warray-bounds-43.c: New test.
