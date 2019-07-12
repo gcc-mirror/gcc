@@ -1,3 +1,36 @@
+2019-07-12  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91063
+	* gcc.dg/gomp/pr91063.c: New test.
+
+	2019-06-27  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/91004
+	* g++.dg/torture/pr34850.C: Fix overly reduced testcase.
+
+	2019-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/90982
+	* g++.dg/torture/pr90982.C: New testcase.
+
+	2019-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90972
+	* gcc.dg/torture/pr90972.c: New testcase.
+
+	2019-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90914
+	* g++.dg/debug/pr90914.C: New testcase.
+
+	2019-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90900
+	* gcc.dg/gomp/pr90900.c: New testcase.
+
 2019-07-11  Uroš Bizjak  <ubizjak@gmail.com>
 
 	Backported from mainline
