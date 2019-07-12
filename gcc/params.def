@@ -1437,6 +1437,12 @@ DEFPARAM(PARAM_HASH_TABLE_VERIFICATION_LIMIT,
 	 "each searched element.",
 	 10, 0, 0)
 
+DEFPARAM(PARAM_SSA_NAME_DEF_CHAIN_LIMIT,
+	 "ssa-name-def-chain-limit",
+	 "The maximum number of SSA_NAME assignments to follow in determining "
+	 "a value.",
+	 512, 0, 0)
+
 /*
 
 Local variables:

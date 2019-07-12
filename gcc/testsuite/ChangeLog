@@ -1,3 +1,7 @@
+2019-07-12  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Warray-bounds-43.c: New test.
+
 2019-07-12  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/alias-access-path-9.c: New testcase.
