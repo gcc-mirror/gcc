@@ -1,3 +1,12 @@
+2019-07-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/md.texi: Document that @ patterns can have different
+	numbers of operands.
+	* genemit.c (handle_overloaded_gen): Handle this case.
+	* genopinit.c (handle_overloaded_gen): Likewise.
+	* gensupport.c (replace_operands_with_dups): Iterate over
+	the new rtx's format rather than the old one's.
+
 2019-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_ORDER.
