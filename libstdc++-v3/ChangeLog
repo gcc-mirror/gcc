@@ -1,5 +1,7 @@
 2019-07-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/29_atomics/atomic_float/1.cc: Fix comment.
+
 	* include/experimental/string_view (__detail::__idt): Remove.
 	(operator==, operator!=, operator<, operator>, operator<=, operator>=):
 	Use __type_identity_t instead of __detail::__idt;
