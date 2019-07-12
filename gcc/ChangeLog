@@ -1,3 +1,9 @@
+2019-07-12  Alexandre Oliva <oliva@adacore.com>
+
+	* tree-eh.c (honor_protect_cleanup_actions): Use outer_
+	rather than this_state as the lowering context for the ELSE
+	seq in a GIMPLE_EH_ELSE.
+
 2019-07-12  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* vector-builder.h (vector_builder::elt): Allow already-supplied
