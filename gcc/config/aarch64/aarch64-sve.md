@@ -1363,7 +1363,7 @@
   ;; don't have an unnecessary PTRUE.
   "&& !CONSTANT_P (operands[1])"
   {
-    operands[1] = CONSTM1_RTX (<MODE>mode);
+    operands[1] = CONSTM1_RTX (<PRED_ALL:MODE>mode);
   }
 )
 

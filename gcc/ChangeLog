@@ -1,5 +1,18 @@
 2019-07-12  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64.md (*compare_condjump<mode>)
+	(loadwb_pair<GPI:mode>_<P:mode>, loadwb_pair<GPF:mode>_<P:mode>)
+	(storewb_pair<GPI:mode>_<P:mode>, storewb_pair<GPF:mode>_<P:mode>)
+	(*ands<mode>_compare0): Fix ambiguous uses of .md attributes.
+	* config/aarch64/aarch64-simd.md
+	(*aarch64_get_lane_extend<GPI:mode><VDQQH:mode>): Likewise.
+	(*aarch64_get_lane_zero_extend<GPI:mode><VDQQH:mode>): Likewise.
+	* config/aarch64/aarch64-sve.md
+	(while_ult<GPI:mode><PRED_ALL:mode>): Likewise.
+	(*cond_<optab><mode>_any): Fix SVE_I/SVE_SDI typo.
+
+2019-07-12  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* doc/md.texi: Document that @ patterns can have different
 	numbers of operands.
 	* genemit.c (handle_overloaded_gen): Handle this case.
