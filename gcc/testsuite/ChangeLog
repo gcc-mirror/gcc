@@ -1,3 +1,13 @@
+2019-07-08  Jiangning Liu  <jiangning.liu@amperecomputing.com>
+
+	PR tree-optimization/89430
+	* gcc.dg/tree-ssa/pr89430-1.c: New test.
+	* gcc.dg/tree-ssa/pr89430-2.c: New test.
+	* gcc.dg/tree-ssa/pr89430-3.c: New test.
+	* gcc.dg/tree-ssa/pr89430-4.c: New test.
+	* gcc.dg/tree-ssa/pr89430-5.c: New test.
+	* gcc.dg/tree-ssa/pr89430-6.c: New test.
+
 2019-07-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91145
