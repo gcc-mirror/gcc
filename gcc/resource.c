@@ -966,9 +966,13 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
     {
       regset regs_live = DF_LR_IN (BASIC_BLOCK_FOR_FN (cfun, b));
       rtx_insn *start_insn, *stop_insn;
+      df_ref def;
 
       /* Compute hard regs live at start of block.  */
       REG_SET_TO_HARD_REG_SET (current_live_regs, regs_live);
+      FOR_EACH_ARTIFICIAL_DEF (def, b)
+	if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
+	  SET_HARD_REG_BIT (current_live_regs, DF_REF_REGNO (def));
 
       /* Get starting and ending insn, handling the case where each might
 	 be a SEQUENCE.  */
