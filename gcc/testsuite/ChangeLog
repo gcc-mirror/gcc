@@ -1,5 +1,7 @@
 2019-07-12  Alexandre Oliva <oliva@adacore.com>
 
+	* gcc.dg/gimplefe-44.c: New.
+
 	* gcc.dg/gimplefe-43.c: New.
 
 2019-07-12  Richard Biener  <rguenther@suse.de>
