@@ -476,7 +476,7 @@ test03()
     VERIFY( a0 == 13.2l );
   }
 
-  // Repeat for volatile std::atomic<double>
+  // Repeat for volatile std::atomic<long double>
   if constexpr (std::atomic<long double>::is_always_lock_free)
   {
     volatile std::atomic<long double> a0;
