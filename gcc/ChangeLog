@@ -1,3 +1,16 @@
+2019-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_ORDER.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name): Add
+	order clause entries.
+	(walk_tree_1): Handle OMP_CLAUSE_ORDER.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+	* gimplify.c (gimplify_scan_omp_clauses, gimplify_adjust_omp_clauses):
+	Likewise.
+	* omp-low.c (scan_sharing_clauses): Likewise.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Likewise.
+
 2019-07-12  Kewen Lin  <linkw@gcc.gnu.org>
 
 	* gcc/cfgrtl.c (print_rtl_with_bb): Emit a hint if the

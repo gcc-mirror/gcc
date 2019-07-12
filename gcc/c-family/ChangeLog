@@ -1,7 +1,12 @@
+2019-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_ORDER.
+	* c-omp.c (c_omp_split_clauses): Handle splitting of OMP_CLAUSE_ORDER.
+
 2019-07-09  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/61339
-	* c-opts.c (handle_deferred_opts): : Change class-key of PODs to struct
+	* c-opts.c (handle_deferred_opts): Change class-key of PODs to struct
 	and others to class.
 	* c-pretty-print.h: Same.
 

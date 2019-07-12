@@ -1,3 +1,8 @@
+2019-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/order-1.c: New test.
+	* c-c++-common/gomp/order-2.c: New test.
+
 2019-07-11  Sunil K Pandey  <sunil.k.pandey@intel.com>
 
 	PR target/90980

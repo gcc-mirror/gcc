@@ -32528,6 +32528,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	case 'o':
 	  if (!strcmp ("ordered", p))
 	    result = PRAGMA_OMP_CLAUSE_ORDERED;
+	  else if (!strcmp ("order", p))
+	    result = PRAGMA_OMP_CLAUSE_ORDER;
 	  break;
 	case 'p':
 	  if (!strcmp ("parallel", p))
@@ -33909,6 +33911,50 @@ cp_parser_omp_clause_defaultmap (cp_parser *parser, tree list,
 
   c = build_omp_clause (location, OMP_CLAUSE_DEFAULTMAP);
   OMP_CLAUSE_DEFAULTMAP_SET_KIND (c, behavior, category);
+  OMP_CLAUSE_CHAIN (c) = list;
+  return c;
+
+ out_err:
+  cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					 /*or_comma=*/false,
+					 /*consume_paren=*/true);
+  return list;
+}
+
+/* OpenMP 5.0:
+   order ( concurrent ) */
+
+static tree
+cp_parser_omp_clause_order (cp_parser *parser, tree list, location_t location)
+{
+  tree c, id;
+  const char *p;
+
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return list;
+
+  if (!cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      cp_parser_error (parser, "expected %<concurrent%>");
+      goto out_err;
+    }
+  else
+    {
+      id = cp_lexer_peek_token (parser->lexer)->u.value;
+      p = IDENTIFIER_POINTER (id);
+    }
+  if (strcmp (p, "concurrent") != 0)
+    {
+      cp_parser_error (parser, "expected %<concurrent%>");
+      goto out_err;
+    }
+  cp_lexer_consume_token (parser->lexer);
+  if (!parens.require_close (parser))
+    goto out_err;
+
+  /* check_no_duplicate_clause (list, OMP_CLAUSE_ORDER, "order", location); */
+  c = build_omp_clause (location, OMP_CLAUSE_ORDER);
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
 
@@ -35510,7 +35556,8 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  c_name = "mergeable";
 	  break;
 	case PRAGMA_OMP_CLAUSE_NOWAIT:
-	  clauses = cp_parser_omp_clause_nowait (parser, clauses, token->location);
+	  clauses = cp_parser_omp_clause_nowait (parser, clauses,
+						 token->location);
 	  c_name = "nowait";
 	  break;
 	case PRAGMA_OMP_CLAUSE_NUM_TASKS:
@@ -35522,6 +35569,11 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses = cp_parser_omp_clause_num_threads (parser, clauses,
 						      token->location);
 	  c_name = "num_threads";
+	  break;
+	case PRAGMA_OMP_CLAUSE_ORDER:
+	  clauses = cp_parser_omp_clause_order (parser, clauses,
+						token->location);
+	  c_name = "order";
 	  break;
 	case PRAGMA_OMP_CLAUSE_ORDERED:
 	  clauses = cp_parser_omp_clause_ordered (parser, clauses,
@@ -37560,7 +37612,8 @@ cp_omp_split_clauses (location_t loc, enum tree_code code,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IF)		\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NONTEMPORAL))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NONTEMPORAL)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ORDER))
 
 static tree
 cp_parser_omp_simd (cp_parser *parser, cp_token *pragma_tok,
@@ -37620,7 +37673,8 @@ cp_parser_omp_simd (cp_parser *parser, cp_token *pragma_tok,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ORDERED)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SCHEDULE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ORDER))
 
 static tree
 cp_parser_omp_for (cp_parser *parser, cp_token *pragma_tok,

@@ -1632,6 +1632,24 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	    }
 	  s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 	  break;
+	/* order clauses are allowed on for and simd.  */
+	case OMP_CLAUSE_ORDER:
+	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SCHEDULE)) != 0)
+	    {
+	      if (code == OMP_SIMD)
+		{
+		  c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+					OMP_CLAUSE_ORDER);
+		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_FOR];
+		  cclauses[C_OMP_CLAUSE_SPLIT_FOR] = c;
+		  s = C_OMP_CLAUSE_SPLIT_SIMD;
+		}
+	      else
+		s = C_OMP_CLAUSE_SPLIT_FOR;
+	    }
+	  else
+	    s = C_OMP_CLAUSE_SPLIT_SIMD;
+	  break;
 	/* Reduction is allowed on simd, for, parallel, sections, taskloop
 	   and teams.  Duplicate it on all of them, but omit on for or
 	   sections if parallel is present (unless inscan, in that case

@@ -13667,6 +13667,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   tree last_iterators = NULL_TREE;
   bool last_iterators_remove = false;
   tree *nogroup_seen = NULL;
+  tree *order_clause = NULL;
   /* 1 if normal/task reduction has been seen, -1 if inscan reduction
      has been seen, -2 if mixed inscan/normal reduction diagnosed.  */
   int reduction_seen = 0;
@@ -14631,6 +14632,25 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 
+	case OMP_CLAUSE_ORDER:
+	  if (ordered_clause)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<order%> clause must not be used together "
+			"with %<ordered%>");
+	      remove = true;
+	      break;
+	    }
+	  else if (order_clause)
+	    {
+	      /* Silently remove duplicates.  */
+	      remove = true;
+	      break;
+	    }
+	  order_clause = pc;
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
 	case OMP_CLAUSE_NUM_TEAMS:
@@ -14683,6 +14703,14 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
 	case OMP_CLAUSE_ORDERED:
 	  ordered_clause = c;
+	  if (order_clause)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (*order_clause),
+			"%<order%> clause must not be used together "
+			"with %<ordered%>");
+	      *order_clause = OMP_CLAUSE_CHAIN (*order_clause);
+	      order_clause = NULL;
+	    }
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 
