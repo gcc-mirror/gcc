@@ -1,3 +1,9 @@
+2019-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91145
+	* tree-vect-slp.c (vect_build_slp_tree_2): Fix reduction
+	chain check.
+
 2019-07-12  Alexandre Oliva <oliva@adacore.com>
 
 	* tree-eh.c (honor_protect_cleanup_actions): Use outer_
