@@ -1040,6 +1040,10 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_right_paren (pp);
       break;
 
+    case OMP_CLAUSE_ORDER:
+      pp_string (pp, "order(concurrent)");
+      break;
+
     case OMP_CLAUSE__SIMDUID_:
       pp_string (pp, "_simduid_(");
       dump_generic_node (pp, OMP_CLAUSE__SIMDUID__DECL (clause),

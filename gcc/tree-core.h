@@ -448,6 +448,9 @@ enum omp_clause_code {
   /* OpenMP clause: defaultmap (tofrom: scalar).  */
   OMP_CLAUSE_DEFAULTMAP,
 
+  /* OpenMP clause: order (concurrent).  */
+  OMP_CLAUSE_ORDER,
+
   /* Internally used only clause, holding SIMD uid.  */
   OMP_CLAUSE__SIMDUID_,
 

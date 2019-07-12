@@ -6127,6 +6127,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool branch_seen = false;
   bool copyprivate_seen = false;
   bool ordered_seen = false;
+  bool order_seen = false;
   bool schedule_seen = false;
   bool oacc_async = false;
   tree last_iterators = NULL_TREE;
@@ -7600,6 +7601,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  ordered_seen = true;
 	  break;
 
+	case OMP_CLAUSE_ORDER:
+	  if (order_seen)
+	    remove = true;
+	  else
+	    order_seen = true;
+	  break;
+
 	case OMP_CLAUSE_INBRANCH:
 	case OMP_CLAUSE_NOTINBRANCH:
 	  if (branch_seen)
@@ -7773,6 +7781,17 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    error_at (OMP_CLAUSE_LOCATION (c),
 		      "%qs clause specified together with %<inscan%> "
 		      "%<reduction%> clause", "ordered");
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+	case OMP_CLAUSE_ORDER:
+	  if (ordered_seen)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<order%> clause must not be used together "
+			"with %<ordered%>");
+	      *pc = OMP_CLAUSE_CHAIN (c);
+	      continue;
+	    }
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 	case OMP_CLAUSE_NOWAIT:

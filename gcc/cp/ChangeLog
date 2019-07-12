@@ -1,3 +1,13 @@
+2019-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_name): Handle order clause.
+	(cp_parser_omp_clause_order): New function.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_ORDER.
+	(OMP_SIMD_CLAUSE_MASK, OMP_FOR_CLAUSE_MASK): Add
+	PRAGMA_OMP_CLAUSE_ORDER.
+	* semantics.c (finish_omp_clauses): Handle OMP_CLAUSE_ORDER.
+	* pt.c (tsubst_omp_clauses): Likewise.
+
 2019-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (get_type_quals,
