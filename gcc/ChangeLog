@@ -1,3 +1,8 @@
+2019-07-12  Jeff Law  <law@redhat.com>
+
+	* config/c6x/c6x.c (c6x_section_type): Clear SECTION_NOTYPE
+	for the ".far" section.
+
 2019-07-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91145
