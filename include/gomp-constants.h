@@ -219,7 +219,8 @@ enum gomp_map_kind
 #define GOMP_DEVICE_NVIDIA_PTX		5
 #define GOMP_DEVICE_INTEL_MIC		6
 #define GOMP_DEVICE_HSA			7
-#define GOMP_DEVICE_CURRENT		8
+#define GOMP_DEVICE_GCN			8
+#define GOMP_DEVICE_CURRENT		9
 
 #define GOMP_DEVICE_ICV			-1
 #define GOMP_DEVICE_HOST_FALLBACK	-2
@@ -276,6 +277,7 @@ enum gomp_map_kind
 #define GOMP_VERSION_NVIDIA_PTX 1
 #define GOMP_VERSION_INTEL_MIC 0
 #define GOMP_VERSION_HSA 0
+#define GOMP_VERSION_GCN 0
 
 #define GOMP_VERSION_PACK(LIB, DEV) (((LIB) << 16) | (DEV))
 #define GOMP_VERSION_LIB(PACK) (((PACK) >> 16) & 0xffff)

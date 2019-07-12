@@ -275,7 +275,7 @@ program main
   if (ltmp .neqv. .not. lexp) STOP 33
   if (lgot .neqv. lexp) STOP 34
 
-  igot = 1
+  igot = 0
   iexp = N
 
   !$acc parallel loop copy (igot, itmp)
@@ -287,12 +287,16 @@ program main
     end do
   !$acc end parallel loop
 
+  itmp = 0
   do i = 1, N
-     if (.not. (1 <= iarr(i) .and. iarr(i) < iexp)) STOP 35
+     if (iarr(i) == 0 .and. itmp == 0) itmp = i
+  end do
+  do i = 1, N
+     if (iarr(i) == 0 .and. i /= itmp) STOP 35
   end do
   if (igot /= iexp) STOP 36
 
-  igot = N
+  igot = N + 1
   iexp = 1
 
   !$acc parallel loop copy (igot, itmp)
@@ -304,8 +308,12 @@ program main
     end do
   !$acc end parallel loop
 
+  itmp = 0
   do i = 1, N
-     if (.not. (iarr(i) == 1 .or. iarr(i) == N)) STOP 37
+     if (iarr(i) == N + 1 .and. itmp == 0) itmp = i
+  end do
+  do i = 1, N
+      if (iarr(i) == N + 1 .and. i /= itmp) STOP 37
   end do
   if (igot /= iexp) STOP 38
 
@@ -314,7 +322,7 @@ program main
 
   !$acc parallel loop copy (igot, itmp)
     do i = 0, N - 1
-      iexpr = ibclr (-2, i)
+      iexpr = ibclr (-1, i)
   !$acc atomic capture
       iarr(i) = igot
       igot = iand (igot, iexpr)
@@ -322,9 +330,13 @@ program main
     end do
   !$acc end parallel loop
 
-  do i = 1, N
-     if (.not. (iarr(i - 1) < 0)) STOP 39
+  itmp = 0
+  do i = 0, N - 1
+     do j = 0, N - 1
+        if (btest (iarr(i), j)) itmp = itmp + 1
+     end do
   end do
+  if (itmp /= 528) STOP 39
   if (igot /= iexp) STOP 40
 
   igot = 0
@@ -340,10 +352,14 @@ program main
     end do
   !$acc end parallel loop
 
-  do i = 1, N
-     if (.not. (iarr(i - 1) >= 0)) STOP 41
+  itmp = 0
+  do i = 0, N - 1
+     do j = 0, N - 1
+        if (btest (iarr(i), j)) itmp = itmp + 1
+     end do
   end do
-  if (igot /= iexp) STOP 42
+  if (igot /= iexp) STOP 41
+  if (itmp /= 496) STOP 42
 
   igot = -1
   iexp = 0 
@@ -358,12 +374,16 @@ program main
     end do
   !$acc end parallel loop
 
-  do i = 1, N
-     if (.not. (iarr(i - 1) < 0)) STOP 43
+  itmp = 0
+  do i = 0, N - 1
+     do j = 0, N - 1
+        if (btest (iarr(i), j)) itmp = itmp + 1
+     end do
   end do
-  if (igot /= iexp) STOP 44
+  if (igot /= iexp) STOP 43
+  if (itmp /= 528) STOP 44
 
-  igot = 1
+  igot = 0
   iexp = N
 
   !$acc parallel loop copy (igot, itmp)
@@ -375,12 +395,16 @@ program main
     end do
   !$acc end parallel loop
 
+  itmp = 0
   do i = 1, N
-     if (.not. (1 <= iarr(i) .and. iarr(i) < iexp)) STOP 45
+     if (iarr(i) == 0 .and. itmp == 0) itmp = i
+  end do
+  do i = 1, N
+     if (iarr(i) == 0 .and. itmp /= i) STOP 45
   end do
   if (igot /= iexp) STOP 46
 
-  igot = N
+  igot = N + 1
   iexp = 1
 
   !$acc parallel loop copy (igot, itmp)
@@ -392,8 +416,12 @@ program main
     end do
   !$acc end parallel loop
 
+  itmp = 0
   do i = 1, N
-     if (.not. (iarr(i) == 1 .or. iarr(i) == N)) STOP 47
+     if (iarr(i) == N + 1 .and. itmp == 0) itmp = i
+  end do
+  do i = 1, N
+      if (iarr(i) == N + 1 .and. i /= itmp) STOP 47
   end do
   if (igot /= iexp) STOP 48
 
@@ -402,7 +430,7 @@ program main
 
   !$acc parallel loop copy (igot, itmp)
     do i = 0, N - 1
-      iexpr = ibclr (-2, i)
+      iexpr = ibclr (-1, i)
   !$acc atomic capture
       iarr(i) = igot
       igot = iand (iexpr, igot)
@@ -410,14 +438,18 @@ program main
     end do
   !$acc end parallel loop
 
-  do i = 1, N
-     if (.not. (iarr(i - 1) < 0)) STOP 49
+  itmp = 0
+  do i = 0, N - 1
+     do j = 0, N - 1
+        if (btest (iarr(i), j)) itmp = itmp + 1
+     end do
   end do
+  if (itmp /= 528) STOP 49
   if (igot /= iexp) STOP 50
 
   igot = 0
   iexp = -1 
-	!!
+
   !$acc parallel loop copy (igot, itmp)
     do i = 0, N - 1
       iexpr = lshift (1, i)
@@ -428,10 +460,14 @@ program main
     end do
   !$acc end parallel loop
 
-  do i = 1, N
-     if (.not. (iarr(i - 1) >= 0)) STOP 51
+  itmp = 0
+  do i = 0, N - 1
+     do j = 0, N - 1
+        if (btest (iarr(i), j)) itmp = itmp + 1
+     end do
   end do
-  if (igot /= iexp) STOP 52
+  if (igot /= iexp) STOP 51
+  if (itmp /= 496) STOP 52
 
   igot = -1
   iexp = 0 
@@ -446,10 +482,14 @@ program main
     end do
   !$acc end parallel loop
 
-  do i = 1, N
-     if (.not. (iarr(i - 1) < 0)) STOP 53
+  itmp = 0
+  do i = 0, N - 1
+     do j = 0, N - 1
+        if (btest (iarr(i), j)) itmp = itmp + 1
+     end do
   end do
-  if (igot /= iexp) STOP 54
+  if (igot /= iexp) STOP 53
+  if (itmp /= 528) STOP 54
 
   fgot = 1234.0
   fexp = 1266.0
@@ -720,7 +760,7 @@ program main
   end do
   if (igot /= iexp) STOP 88
 
-  igot = N
+  igot = N + 1
   iexp = 1
 
   !$acc parallel loop copy (igot, itmp)
@@ -733,7 +773,7 @@ program main
   !$acc end parallel loop
 
   do i = 1, N
-     if (.not. (iarr(i) == iexp)) STOP 89
+     if (iarr(i) .lt. 1 .or. iarr(i) .gt. N) STOP 89
   end do
   if (igot /= iexp) STOP 90
 
@@ -742,7 +782,7 @@ program main
 
   !$acc parallel loop copy (igot, itmp)
     do i = 0, N - 1
-      iexpr = ibclr (-2, i)
+      iexpr = ibclr (-1, i)
   !$acc atomic capture
       igot = iand (igot, iexpr)
       iarr(i) = igot
@@ -750,9 +790,13 @@ program main
     end do
   !$acc end parallel loop
 
-  do i = 1, N
-     if (.not. (iarr(i - 1) <= 0)) STOP 91
+  itmp = 0
+  do i = 0, N - 1
+     do j = 0, N - 1
+        if (btest (iarr(i), j)) itmp = itmp + 1
+     end do
   end do
+  if (itmp /= 496) STOP 91
   if (igot /= iexp) STOP 92
 
   igot = 0
@@ -768,9 +812,13 @@ program main
     end do
   !$acc end parallel loop
 
-  do i = 1, N
-     if (.not. (iarr(i - 1) >= -1)) STOP 93
+  itmp = 0
+  do i = 0, N - 1
+     do j = 0, N - 1
+        if (btest (iarr(i), j)) itmp = itmp + 1
+     end do
   end do
+  if (itmp /= 528) STOP 93
   if (igot /= iexp) STOP 94
 
   igot = -1
@@ -786,9 +834,13 @@ program main
     end do
   !$acc end parallel loop
 
-  do i = 1, N
-     if (.not. (iarr(i - 1) <= 0)) STOP 95
+  itmp = 0
+  do i = 0, N - 1
+     do j = 0, N - 1
+        if (btest (iarr(i), j)) itmp = itmp + 1
+     end do
   end do
+  if (itmp /= 496) STOP 95
   if (igot /= iexp) STOP 96
 
   igot = 1
@@ -808,7 +860,7 @@ program main
   end do
   if (igot /= iexp) STOP 98
 
-  igot = N
+  igot = N + 1
   iexp = 1
 
   !$acc parallel loop copy (igot, itmp)
@@ -821,7 +873,7 @@ program main
   !$acc end parallel loop
 
   do i = 1, N
-     if (.not. (iarr(i) == iexp )) STOP 99
+     if (iarr(i) .lt. 1 .or. iarr(i) .gt. N) STOP 99
   end do
   if (igot /= iexp) STOP 100
 
@@ -830,7 +882,7 @@ program main
 
   !$acc parallel loop copy (igot, itmp)
     do i = 0, N - 1
-      iexpr = ibclr (-2, i)
+      iexpr = ibclr (-1, i)
   !$acc atomic capture
       igot = iand (iexpr, igot)
       iarr(i) = igot
@@ -838,9 +890,13 @@ program main
     end do
   !$acc end parallel loop
 
-  do i = 1, N
-     if (.not. (iarr(i - 1) <= 0)) STOP 101
+  itmp = 0
+  do i = 0, N - 1
+     do j = 0, N - 1
+        if (btest (iarr(i), j)) itmp = itmp + 1
+     end do
   end do
+  if (itmp /= 496) STOP 101
   if (igot /= iexp) STOP 102
 
   igot = 0
@@ -856,9 +912,13 @@ program main
     end do
   !$acc end parallel loop
 
-  do i = 1, N
-     if (.not. (iarr(i - 1) >= iexp)) STOP 103
+  itmp = 0
+  do i = 0, N - 1
+     do j = 0, N - 1
+        if (btest (iarr(i), j)) itmp = itmp + 1
+     end do
   end do
+  if (itmp /= 528) STOP 103
   if (igot /= iexp) STOP 104
 
   igot = -1
@@ -874,9 +934,12 @@ program main
     end do
   !$acc end parallel loop
 
-  do i = 1, N
-     if (.not. (iarr(i - 1) <= iexp)) STOP 105
+  itmp = 0
+  do i = 0, N - 1
+     do j = 0, N - 1
+        if (btest (iarr(i), j)) itmp = itmp + 1
+     end do
   end do
+  if (itmp /= 496) STOP 105
   if (igot /= iexp) STOP 106
-
 end program

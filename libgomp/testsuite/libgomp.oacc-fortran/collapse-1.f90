@@ -6,7 +6,7 @@ program collapse1
   l = .false.
   a(:, :, :) = 0
   !$acc parallel
-  !$acc loop collapse(4 - 1)
+  !$acc loop collapse(4 - 1) gang(static:*)
     do i = 1, 3
       do j = 4, 6
         do k = 5, 7
@@ -14,7 +14,7 @@ program collapse1
         end do
       end do
     end do
-  !$acc loop collapse(2) reduction(.or.:l)
+  !$acc loop collapse(3) gang(static:*) reduction(.or.:l)
     do i = 1, 3
       do j = 4, 6
         do k = 5, 7

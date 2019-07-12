@@ -312,6 +312,9 @@ GOMP_4.5 {
 	GOMP_loop_ull_nonmonotonic_guided_start;
 	GOMP_parallel_loop_nonmonotonic_dynamic;
 	GOMP_parallel_loop_nonmonotonic_guided;
+	gomp_print_string;
+	gomp_print_integer;
+	gomp_print_double;
 } GOMP_4.0.1;
 
 GOMP_5.0 {

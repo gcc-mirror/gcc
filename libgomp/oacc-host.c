@@ -257,7 +257,7 @@ host_openacc_async_queue_callback (struct goacc_asyncqueue *aq
 }
 
 static struct goacc_asyncqueue *
-host_openacc_async_construct (void)
+host_openacc_async_construct (int device __attribute__((unused)))
 {
   /* Non-NULL 0xffff... value as opaque dummy.  */
   return (struct goacc_asyncqueue *) -1;

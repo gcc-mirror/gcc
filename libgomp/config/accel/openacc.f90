@@ -51,6 +51,8 @@ module openacc_kinds
   ! integer (acc_device_kind), parameter :: acc_device_host_nonshm = 3 removed.
   integer (acc_device_kind), parameter :: acc_device_not_host = 4
   integer (acc_device_kind), parameter :: acc_device_nvidia = 5
+  integer (acc_device_kind), parameter :: acc_device_hsa = 6
+  integer (acc_device_kind), parameter :: acc_device_gcn = 7
 
 end module
 

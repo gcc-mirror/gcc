@@ -1,3 +1,13 @@
+2019-07-31  Julian Brown  <julian@codesourcery.com>
+	    Andrew Stubbs  <ams@codesourcery.com>
+
+	* Makefile.in: Allow disabling of emutls.
+	* config/gcn/gomp_print.c: New.
+	* config/gcn/reduction.c: New.
+	* config/gcn/t-amdgcn (LIB2ADD): Add gomp_print.c and reduction.c.
+	Disable emutls.c.
+	* config/gcn/t-gcn-hsa: New.
+
 2019-06-25  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:

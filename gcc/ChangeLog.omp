@@ -1,3 +1,10 @@
+2019-07-31  Julian Brown  <julian@codesourcery.com>
+	    Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.gcc (amdgcn-*-*): Add default option for gfx906.
+	* config/gcn/mkoffload.c: New.
+	* config/gcn/offload.h: New.
+
 2019-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
             Andrew Stubbs  <ams@codesourcery.com>
 

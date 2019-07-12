@@ -732,6 +732,8 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 	  || kind == GOMP_MAP_FORCE_FROM)
 	finalize = true;
     }
+  else if (num_waits == acc_async_noval)
+    acc_wait_all_async (async);
 
   /* Determine if this is an "acc enter data".  */
   for (i = 0; i < mapnum; ++i)
@@ -749,7 +751,8 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 	  || kind == GOMP_MAP_FORCE_TO
 	  || kind == GOMP_MAP_TO
 	  || kind == GOMP_MAP_ALLOC
-	  || kind == GOMP_MAP_DECLARE_ALLOCATE)
+	  || kind == GOMP_MAP_DECLARE_ALLOCATE
+	  || kind == GOMP_MAP_ZERO_LEN_ARRAY_SECTION)
 	{
 	  data_enter = true;
 	  break;
@@ -761,7 +764,8 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 	  || kind == GOMP_MAP_FORCE_DETACH
 	  || kind == GOMP_MAP_FROM
 	  || kind == GOMP_MAP_FORCE_FROM
-	  || kind == GOMP_MAP_DECLARE_DEALLOCATE)
+	  || kind == GOMP_MAP_DECLARE_DEALLOCATE
+	  || kind == GOMP_MAP_DELETE_ZERO_LEN_ARRAY_SECTION)
 	break;
 
       gomp_fatal (">>>> GOACC_enter_exit_data UNHANDLED kind 0x%.2x",
@@ -865,6 +869,10 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 		case GOMP_MAP_ALLOC:
 		case GOMP_MAP_FORCE_ALLOC:
 		  acc_create_async (hostaddrs[i], sizes[i], async);
+		  break;
+		case GOMP_MAP_ZERO_LEN_ARRAY_SECTION:
+		  if (hostaddrs[i] != NULL)
+		    acc_create_async (hostaddrs[i], 1, async);
 		  break;
 		case GOMP_MAP_TO:
 		case GOMP_MAP_FORCE_TO:
@@ -984,6 +992,15 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum,
 						   async);
 		      else
 			acc_delete_async (hostaddrs[i], sizes[i], async);
+		    }
+		  break;
+		case GOMP_MAP_DELETE_ZERO_LEN_ARRAY_SECTION:
+		  if (acc_is_present (hostaddrs[i], 1))
+		    {
+		      if (finalize)
+			acc_delete_finalize_async (hostaddrs[i], 1, async);
+		      else
+			acc_delete_async (hostaddrs[i], 1, async);
 		    }
 		  break;
 		case GOMP_MAP_DETACH:
@@ -1196,6 +1213,7 @@ GOACC_update (int flags_m, size_t mapnum,
 	{
 	case GOMP_MAP_POINTER:
 	case GOMP_MAP_TO_PSET:
+	case GOMP_MAP_ZERO_LEN_ARRAY_SECTION:
 	  break;
 
 	case GOMP_MAP_ALWAYS_POINTER:

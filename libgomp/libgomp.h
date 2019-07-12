@@ -692,6 +692,24 @@ static inline struct gomp_thread *gomp_thread (void)
   asm ("mov.u32 %0, %%tid.y;" : "=r" (tid));
   return nvptx_thrs + tid;
 }
+#elif defined __AMDGCN__
+static inline struct gomp_thread *gcn_thrs (void)
+{
+  /* The value is at the bottom of LDS.  */
+  struct gomp_thread * __lds *thrs = (struct gomp_thread * __lds *)4;
+  return *thrs;
+}
+static inline void set_gcn_thrs (struct gomp_thread *val)
+{
+  /* The value is at the bottom of LDS.  */
+  struct gomp_thread * __lds *thrs = (struct gomp_thread * __lds *)4;
+  *thrs = val;
+}
+static inline struct gomp_thread *gomp_thread (void)
+{
+  int tid = __builtin_gcn_dim_pos(1);
+  return gcn_thrs () + tid;
+}
 #elif defined HAVE_TLS || defined USE_EMUTLS
 extern __thread struct gomp_thread gomp_tls_data;
 static inline struct gomp_thread *gomp_thread (void)
@@ -751,7 +769,7 @@ extern void gomp_display_affinity_place (char *, size_t, size_t *, int);
 
 /* affinity-fmt.c */
 
-extern void gomp_print_string (const char *str, size_t len);
+extern void gomp_write_string (const char *str, size_t len);
 extern void gomp_set_affinity_format (const char *, size_t);
 extern void gomp_display_string (char *, size_t, size_t *, const char *,
 				 size_t);

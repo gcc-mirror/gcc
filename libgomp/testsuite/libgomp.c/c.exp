@@ -23,10 +23,81 @@ dg-init
 # Turn on OpenMP.
 lappend ALWAYS_CFLAGS "additional_flags=-fopenmp"
 
+# Generate new tests for each DO_TEST entry in TEST_LIST.
+proc generate_tests { test_list } {
+    global srcdir
+    global subdir
+
+    # Get corresponding source file.
+    set base_file [regsub "\.list" $test_list ""]
+    set base_file [regsub "$srcdir/$subdir/" $base_file ""]
+    set c_file $base_file.c
+
+    # Get dg directives from c file.
+    set dg_directives ""
+    set fp [open "$srcdir/$subdir/$c_file" r]
+    while {[gets $fp line] >= 0} {
+	if {[regexp -line -- "^/\\* \{ dg-" $line]} {
+	    if { "$dg_directives" == "" } {
+		set sep ""
+	    } else {
+		set sep "\n"
+	    }
+	    set dg_directives "$dg_directives$sep$line"
+	}
+    }
+    close $fp
+
+    # Get list of tests.
+    set fp [open "$test_list" r]
+    set file_data [read $fp]
+    close $fp
+    set file_data [regsub -all "DO_TEST" $file_data ""]
+    set file_data [regsub -all "\\(" $file_data ""]
+    set file_data [regsub -all "\\)" $file_data ""]
+    set file_data [regsub -all \[\n\] $file_data ""]
+    set file_data [string trimleft $file_data " "]
+    set tests [split $file_data]
+
+    # Create directory to generate files.
+    set test_dir [pwd]
+    set generated_dir $test_dir/generated/libgomp.c
+    file mkdir $generated_dir
+
+    # Generate tests.
+    set new_files []
+    set i 1
+    foreach test $tests {
+	set new_file "$generated_dir/$base_file-$test.c"
+
+	set fp [open "$new_file" w]
+	puts $fp "$dg_directives"
+	puts $fp "#define ONE_TEST $test"
+	puts $fp "#define TEST_NR $i"
+	puts $fp "#include \"$srcdir/$subdir/$c_file\""
+	close $fp
+
+	set i [expr $i + 1]
+	lappend new_files $new_file
+    }
+
+    return $new_files
+}
+
+# Generate tests for each .list file
+set test_lists [find $srcdir/$subdir *.list]
+set generated_tests []
+foreach test_list $test_lists {
+    set generated_tests [concat \
+			     $generated_tests \
+			     [generate_tests $test_list]]
+}
+
 # Gather a list of all tests.
 set tests [lsort [concat \
 		      [find $srcdir/$subdir *.c] \
-		      [find $srcdir/$subdir/../libgomp.c-c++-common *.c]]]
+		      [find $srcdir/$subdir/../libgomp.c-c++-common *.c] \
+		      $generated_tests]]
 
 set ld_library_path $always_ld_library_path
 append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]

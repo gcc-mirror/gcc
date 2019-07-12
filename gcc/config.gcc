@@ -4126,7 +4126,7 @@ case "${target}" in
 		for which in arch tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | carrizo | fiji | gfx900 )
+			"" | carrizo | fiji | gfx900 | gfx906 )
 				# OK
 				;;
 			*)

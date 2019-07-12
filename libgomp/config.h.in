@@ -170,6 +170,9 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
+/* Define to 1 if the GCN plugin is built, 0 if not. */
+#undef PLUGIN_GCN
+
 /* Define to 1 if the HSA plugin is built, 0 if not. */
 #undef PLUGIN_HSA
 

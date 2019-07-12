@@ -37,7 +37,7 @@ module openacc_kinds
   integer, parameter :: acc_device_kind = int32
 
   public :: acc_device_none, acc_device_default, acc_device_host
-  public :: acc_device_not_host, acc_device_nvidia
+  public :: acc_device_not_host, acc_device_nvidia, acc_device_gcn
 
   ! Keep in sync with include/gomp-constants.h.
   integer (acc_device_kind), parameter :: acc_device_none = 0
@@ -46,7 +46,9 @@ module openacc_kinds
   ! integer (acc_device_kind), parameter :: acc_device_host_nonshm = 3 removed.
   integer (acc_device_kind), parameter :: acc_device_not_host = 4
   integer (acc_device_kind), parameter :: acc_device_nvidia = 5
-  integer (acc_device_kind), parameter :: acc_device_current = 8
+  integer (acc_device_kind), parameter :: acc_device_hsa = 7
+  integer (acc_device_kind), parameter :: acc_device_gcn = 8
+  integer (acc_device_kind), parameter :: acc_device_current = 9
 
   public :: acc_device_property
 

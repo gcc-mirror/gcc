@@ -9,8 +9,10 @@ int main ()
   int ix;
   int ondev = 0;
   int t = 0,  h = 0;
+  int workersize;
 
-#pragma acc parallel num_workers(32) vector_length(32) copy(ondev)
+#pragma acc parallel num_workers(32) vector_length(32) copy(ondev) \
+	    copyout(workersize)
   {
 #pragma acc loop worker reduction(+:t)
     for (unsigned ix = 0; ix < N; ix++)
@@ -29,6 +31,7 @@ int main ()
 	  }
 	t += val;
       }
+    workersize = __builtin_goacc_parlevel_size (GOMP_DIM_WORKER);
   }
 
   for (ix = 0; ix < N; ix++)
@@ -37,7 +40,7 @@ int main ()
       if(ondev)
 	{
 	  int g = 0;
-	  int w = ix % 32;
+	  int w = ix % workersize;
 	  int v = 0;
 
 	  val = (g << 16) | (w << 8) | v;

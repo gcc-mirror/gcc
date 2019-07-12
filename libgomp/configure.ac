@@ -177,7 +177,7 @@ case "$host" in
   *-*-rtems*)
     # RTEMS supports Pthreads, but the library is not available at GCC build time.
     ;;
-  nvptx*-*-*)
+  nvptx*-*-* | amdgcn*-*-*)
     # NVPTX does not support Pthreads, has its own code replacement.
     libgomp_use_pthreads=no
     # NVPTX is an accelerator-only target

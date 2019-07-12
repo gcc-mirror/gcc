@@ -2,8 +2,14 @@
 #include <openacc.h>
 #include <gomp-constants.h>
 
+#ifdef ACC_DEVICE_TYPE_gcn
+/* FIXME: Max. number of workers may increase for GCN in the future.  */
+#define NUM_WORKERS 4
+#define NUM_VECTORS 1
+#else
 #define NUM_WORKERS 16
 #define NUM_VECTORS 32
+#endif
 #define WIDTH 64
 #define HEIGHT 32
 
@@ -37,7 +43,8 @@ int DoWorkVec (int nw)
       ary[ix][jx] = 0xdeadbeef;
 
   printf ("spawning %d ...", nw); fflush (stdout);
-  
+
+/* { dg-warning "region contains vector partitioned code but is not vector partitioned" "vector" { target openacc_amdgcn_accel_selected } 48 } */
 #pragma acc parallel num_workers(nw) vector_length (NUM_VECTORS) copy (ary)
   {
     WorkVec ((int *)ary, WIDTH, HEIGHT, nw, NUM_VECTORS);

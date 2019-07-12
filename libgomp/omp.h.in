@@ -188,6 +188,18 @@ extern __SIZE_TYPE__ omp_capture_affinity (char *, __SIZE_TYPE__, const char *)
 extern int omp_pause_resource (omp_pause_resource_t, int) __GOMP_NOTHROW;
 extern int omp_pause_resource_all (omp_pause_resource_t) __GOMP_NOTHROW;
 
+/************************************************************************/
+/* Libgomp extensions.                                                  */
+
+#include <stdint.h>
+
+/* Print a message, and value, possibly from a GPU-offloaded function.
+   Primarily intended for debug messages.
+   Maximum message & value length is 128 bytes.  */
+void gomp_print_string (const char *msg, const char *value);
+void gomp_print_integer (const char *msg, int64_t value);
+void gomp_print_double (const char *msg, double value);
+
 #ifdef __cplusplus
 }
 #endif

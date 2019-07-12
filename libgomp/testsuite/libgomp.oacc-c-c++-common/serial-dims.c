@@ -11,7 +11,8 @@ static unsigned int __attribute__ ((optimize ("O2"))) acc_gang ()
 {
   if (acc_on_device ((int) acc_device_host))
     return 0;
-  else if (acc_on_device ((int) acc_device_nvidia))
+  else if (acc_on_device ((int) acc_device_nvidia)
+	   || acc_on_device ((int) acc_device_gcn))
     return __builtin_goacc_parlevel_id (GOMP_DIM_GANG);
   else
     __builtin_abort ();
@@ -22,7 +23,8 @@ static unsigned int __attribute__ ((optimize ("O2"))) acc_worker ()
 {
   if (acc_on_device ((int) acc_device_host))
     return 0;
-  else if (acc_on_device ((int) acc_device_nvidia))
+  else if (acc_on_device ((int) acc_device_nvidia)
+	   || acc_on_device ((int) acc_device_gcn))
     return __builtin_goacc_parlevel_id (GOMP_DIM_WORKER);
   else
     __builtin_abort ();
@@ -33,7 +35,8 @@ static unsigned int __attribute__ ((optimize ("O2"))) acc_vector ()
 {
   if (acc_on_device ((int) acc_device_host))
     return 0;
-  else if (acc_on_device ((int) acc_device_nvidia))
+  else if (acc_on_device ((int) acc_device_nvidia)
+	   || acc_on_device ((int) acc_device_gcn))
     return __builtin_goacc_parlevel_id (GOMP_DIM_VECTOR);
   else
     __builtin_abort ();

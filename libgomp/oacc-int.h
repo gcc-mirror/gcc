@@ -82,7 +82,14 @@ struct goacc_thread
   void *target_tls;
 };
 
-#if defined HAVE_TLS || defined USE_EMUTLS
+#ifdef __AMDGCN__
+static inline struct goacc_thread *
+goacc_thread (void)
+{
+  /* Unused in the offload libgomp for OpenACC: return a dummy value.  */
+  return 0;
+}
+#elif defined HAVE_TLS || defined USE_EMUTLS
 extern __thread struct goacc_thread *goacc_tls_data;
 static inline struct goacc_thread *
 goacc_thread (void)

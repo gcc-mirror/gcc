@@ -1,3 +1,160 @@
+2019-07-31  Julian Brown  <julian@codesourcery.com>
+	    Andrew Stubbs  <ams@codesourcery.com>
+
+	* Makefile.am (libgomp_la_SOURCES): Add gomp_print.c.
+	* Makefile.in: Regenerate.
+	* affinity-fmt.c: Rename calls to gomp_write_string from
+	gomp_print_string.
+	* config.h.in (PLUGIN_GCN): Add #undef.
+	* config/nvptx/libgomp-plugin.c: Rename to...
+	* config/accel/libgomp-plugin.c: ...this.
+	* config/nvptx/lock.c: Rename to...
+	* config/accel/lock.c: ...this.
+	* config/nvptx/mutex.c: Rename to...
+	* config/accel/mutex.c: ...this.
+	* config/nvptx/mutex.h: Rename to...
+	* config/accel/mutex.h: ...this.
+	* config/nvptx/oacc-async.c: Rename to...
+	* config/accel/oacc-async.c: ...this.
+	* config/nvptx/oacc-cuda.c: Rename to...
+	* config/accel/oacc-cuda.c: ...this.
+	* config/nvptx/oacc-host.c: Rename to...
+	* config/accel/oacc-host.c: ...this.
+	* config/nvptx/oacc-init.c: Rename to...
+	* config/accel/oacc-init.c: ...this.
+	* config/nvptx/oacc-mem.c: Rename to...
+	* config/accel/oacc-mem.c: ...this.
+	* config/nvptx/oacc-plugin.c: Rename to...
+	* config/accel/oacc-plugin.c: ...this.
+	* config/nvptx/omp-lock.h: Rename to...
+	* config/accel/omp-lock.h: ...this.
+	* config/nvptx/openacc.f90: Rename to...
+	* config/accel/openacc.f90: ...this.  Add acc_device_hsa and
+	acc_device_gcn.
+	* config/nvptx/pool.h: Rename to...
+	* config/accel/pool.h: ...this.
+	* config/nvptx/proc.c: Rename to...
+	* config/accel/proc.c: ...this.  Add omp_get_num_procs alias.
+	* config/nvptx/ptrlock.c: Rename to...
+	* config/accel/ptrlock.c: ...this.
+	* config/nvptx/ptrlock.h: Rename to...
+	* config/accel/ptrlock.h: ...this.
+	* config/nvptx/sem.c: Rename to...
+	* config/accel/sem.c: ...this.
+	* config/nvptx/sem.h: Rename to...
+	* config/accel/sem.h: ...this.
+	* config/nvptx/thread-stacksize.h: Rename to...
+	* config/accel/thread-stacksize.h: ...this.
+	* config/gcn/affinity-fmt.c: New.
+	* config/gcn/bar.c: New.
+	* config/gcn/bar.h: New.
+	* config/gcn/doacross.h: New.
+	* config/gcn/gomp_print.c: New.
+	* config/gcn/icv-device.c: New.
+	* config/gcn/simple-bar.h: New.
+	* config/gcn/target.c: New.
+	* config/gcn/task.c: New.
+	* config/gcn/team.c: New.
+	* config/gcn/time.c: New.
+	* config/linux/gomp_print.c: New.
+	* configure.ac (amdgcn*-*-*): Disable pthreads.
+	* configure: Regenerated.
+	* configure.tgt (nvptx*-*-*): Add 'accel' config_path.
+	(amdgcn*-*-*): Set config_path.
+	* fortran.c (omp_display_affinity_): Rename calls to gomp_write_string
+	from gomp_print_string.
+	* libgomp-plugin.h (enum offload_target_type): Add
+	OFFLOAD_TARGET_TYPE_GCN.
+	(GOMP_OFFLOAD_openacc_async_construct): Change parameter type to int.
+	* libgomp.h (gcn_thrs, set_gcn_thrs, gomp_thread): Add for __AMDGCN__.
+	(gomp_print_string): Rename to...
+	(gomp_write_string): ...this.
+	* libgomp.map (GOMP_4.5): Add gomp_rpint_string, gomp_print_integer,
+	gomp_print_double.
+	* oacc-async.c (lookup_goacc_asyncqueue): Pass target_id to async queue
+	construct function.
+	* oacc-host.c (host_openacc_async_construct): Add dummy device
+	parameter.
+	* oacc-init.c (name_of_acc_device_t): Add acc_device_gcn.
+	* oacc-int.h (goacc_thread): Add dummy implementation for __AMDGCN__.
+	* oacc-parallel.c (GOACC_enter_exit_data): Support acc_async_noval and
+	zero-length array sections.
+	* omp.h.in (gomp_print_string, gomp_print_integer, gomp_print_double):
+	Add prototypes.
+	* omp_lib.f90.in (gomp_print_string, gomp_print_integer,
+	gomp_print_double): Add interfaces.
+	* openacc.f90 (openacc_kinds): Add acc_device_gcn.  Bump
+	acc_device_current code.
+	* openacc.h (acc_device_t): Add acc_device_gcn, bump acc_device_current
+	code.
+	* openacc_lib.h (acc_device_hsa, acc_device_gcn): Add.
+	* plugin/Makefrag.am (PLUGIN_GCN): Support building GCN plugin.
+	* plugin/configfrag.am (PLUGIN_GCN, PLUGIN_GCN_CPPFLAGS,
+	PLUGIN_GCN_LDFLAGS, PLUGIN_GCN_LIBS): Add.  Add suport for GCN plugin.
+	* plugin/plugin-gcn.c: New.
+	* target.c (stdio.h): Include unconditionally.
+	(gomp_copy_host2dev): Add function comment.
+	(copy_host2dev_immediate): New function.
+	(gomp_map_pointer, gomp_map_vars_internal): Use
+	copy_host2dev_immediate where appropriate.
+	(offload_target_to_plugin_name): Support gcn.
+	* team.c (gomp_free_pool_helper): Support gcn.
+	* testsuite/Makefile.in: Regenerated.
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_openacc_amdgcn_accel_present): New.
+	(check_effective_target_openacc_amdgcn_accel_selected): New.
+	* testsuite/libgomp.c/c.exp (generate_tests, test_lists,
+	generated_tests): New.
+	(tests): Add generated tests.
+	* testsuite/libgomp.c/for-1.h: New.
+	* testsuite/libgomp.c/for-2.h: New.
+	* testsuite/libgomp.c/for-3.h: New.
+	* testsuite/libgomp.c/for-3.list: New.
+	* testsuite/libgomp.c/for-5.c: New.
+	* testsuite/libgomp.c/for-5.list: New.
+	* testsuite/libgomp.c/for-6.c: New.
+	* testsuite/libgomp.c/for-6.list: New.
+	* testsuite/libgomp.c/target-print-1.c: New.
+	* testsuite/libgomp.fortran/target-print-1.f90: New.
+	* testsuite/libgomp.oacc-c++/c++.exp (amdgcn*): Add support for AMD GCN.
+	* testsuite/libgomp.oacc-c-c++-common/atomic_capture-2.c: Adjust for
+	portability.
+	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Skip unsuitable
+	test for AMD GCN.
+	* testsuite/libgomp.oacc-c-c++-common/loop-gwv-1.c: Adjust for
+	portability.
+	* testsuite/libgomp.oacc-c-c++-common/loop-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-v-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-gwv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-v-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/serial-dims.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/private-variables-2.c: New.
+	* testsuite/libgomp.oacc-c-c++-common/tile-1.c: Skip for AMD GCN.
+	* testsuite/libgomp.oacc-c/c.exp (amdgcn*): Add support for AMD GCN.
+	* testsuite/libgomp.oacc-c/offload-target-1.c: Add AMD GCN support.
+	* testsuite/libgomp.oacc-c/print-1.c: New.
+	* testsuite/libgomp.oacc-fortran/fortran.exp (amdgcn*): Add AMD GCN
+	support.
+	* testsuite/libgomp.oacc-fortran/atomic_capture-1.f90: Adjust for
+	portability.
+	* testsuite/libgomp.oacc-fortran/collapse-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/collapse-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/error_stop-1.f: Support AMD GCN.
+	* testsuite/libgomp.oacc-fortran/error_stop-2.f: Support AMD GCN.
+	* testsuite/libgomp.oacc-fortran/error_stop-3.f: Support AMD GCN.
+	* testsuite/libgomp.oacc-fortran/print-1.f90: New.
+
 2019-01-23  Thomas Schwinge <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c: Update.

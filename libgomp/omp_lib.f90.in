@@ -484,4 +484,30 @@
           end function
         end interface
 
+        ! Libgomp extensions.
+
+        interface
+          subroutine gomp_print_string (msg, str) bind(C)
+            use iso_c_binding, only: c_char
+            character (kind=c_char) :: msg(*)
+            character (kind=c_char) :: str(*)
+          end subroutine gomp_print_string
+        end interface
+
+        interface
+          subroutine gomp_print_integer (msg, i) bind(C)
+            use iso_c_binding, only: c_char, c_int64_t
+            character (kind=c_char) :: msg(*)
+            integer (kind=c_int64_t), value :: i
+          end subroutine gomp_print_integer
+        end interface
+
+        interface
+          subroutine gomp_print_double (msg, d) bind(C)
+            use iso_c_binding, only: c_char, c_double
+            character (kind=c_char) :: msg(*)
+            real (kind=c_double), value :: d
+          end subroutine gomp_print_double
+        end interface
+
       end module omp_lib

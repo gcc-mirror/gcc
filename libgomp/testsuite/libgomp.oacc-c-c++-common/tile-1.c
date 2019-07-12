@@ -1,3 +1,6 @@
+/* AMD GCN does not use 32-lane vectors.
+   { dg-skip-if "unsuitable dimensions" { openacc_amdgcn_accel_selected } { "*" } { "" } } */
+
 /* { dg-additional-options "-fopenacc-dim=32" } */
 
 #include <stdio.h>

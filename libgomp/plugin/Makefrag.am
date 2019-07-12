@@ -52,3 +52,17 @@ libgomp_plugin_hsa_la_LDFLAGS += $(PLUGIN_HSA_LDFLAGS)
 libgomp_plugin_hsa_la_LIBADD = libgomp.la $(PLUGIN_HSA_LIBS)
 libgomp_plugin_hsa_la_LIBTOOLFLAGS = --tag=disable-static
 endif
+
+if PLUGIN_GCN
+# AMD GCN plugin
+libgomp_plugin_gcn_version_info = -version-info $(libtool_VERSION)
+toolexeclib_LTLIBRARIES += libgomp-plugin-gcn.la
+libgomp_plugin_gcn_la_SOURCES = plugin/plugin-gcn.c
+libgomp_plugin_gcn_la_CPPFLAGS = $(AM_CPPFLAGS) $(PLUGIN_GCN_CPPFLAGS) \
+	-D_GNU_SOURCE
+libgomp_plugin_gcn_la_LDFLAGS = $(libgomp_plugin_gcn_version_info) \
+	$(lt_host_flags)
+libgomp_plugin_gcn_la_LDFLAGS += $(PLUGIN_GCN_LDFLAGS)
+libgomp_plugin_gcn_la_LIBADD = libgomp.la $(PLUGIN_GCN_LIBS)
+libgomp_plugin_gcn_la_LIBTOOLFLAGS = --tag=disable-static
+endif

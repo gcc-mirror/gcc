@@ -38,7 +38,7 @@
 #endif
 
 void
-gomp_print_string (const char *str, size_t len)
+gomp_write_string (const char *str, size_t len)
 {
   fwrite (str, 1, len, stderr);
 }
@@ -462,13 +462,13 @@ omp_display_affinity (const char *format)
   if (ret < sizeof buf)
     {
       buf[ret] = '\n';
-      gomp_print_string (buf, ret + 1);
+      gomp_write_string (buf, ret + 1);
       return;
     }
   b = gomp_malloc (ret + 1);
   ialias_call (omp_capture_affinity) (b, ret + 1, format);
   b[ret] = '\n';
-  gomp_print_string (b, ret + 1);
+  gomp_write_string (b, ret + 1);
   free (b);
 }
 
@@ -483,13 +483,13 @@ gomp_display_affinity_thread (gomp_thread_handle handle,
   if (ret < sizeof buf)
     {
       buf[ret] = '\n';
-      gomp_print_string (buf, ret + 1);
+      gomp_write_string (buf, ret + 1);
       return;
     }
   b = gomp_malloc (ret + 1);
   gomp_display_affinity (b, ret + 1, gomp_affinity_format_var,
   			 handle, ts, place);
   b[ret] = '\n';
-  gomp_print_string (b, ret + 1);
+  gomp_write_string (b, ret + 1);
   free (b);
 }

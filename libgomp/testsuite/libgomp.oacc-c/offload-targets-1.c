@@ -26,6 +26,9 @@ int main ()
 #if defined ACC_DEVICE_TYPE_nvidia
   offload_target_requested = ACC_DEVICE_TYPE_nvidia;
   acc_device_type_requested = acc_device_nvidia;
+#elif defined ACC_DEVICE_TYPE_gcn
+  offload_target_requested = ACC_DEVICE_TYPE_gcn;
+  acc_device_type_requested = acc_device_gcn;
 #elif defined ACC_DEVICE_TYPE_host
   offload_target_requested = ACC_DEVICE_TYPE_host;
   acc_device_type_requested = acc_device_host;

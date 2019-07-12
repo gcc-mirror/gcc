@@ -661,6 +661,8 @@ LIBGOMP_BUILD_VERSIONED_SHLIB_FALSE
 LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE
 OPT_LDFLAGS
 SECTION_LDFLAGS
+PLUGIN_GCN_FALSE
+PLUGIN_GCN_TRUE
 PLUGIN_HSA_FALSE
 PLUGIN_HSA_TRUE
 PLUGIN_NVPTX_FALSE
@@ -669,6 +671,10 @@ offload_additional_lib_paths
 offload_additional_options
 offload_targets
 offload_plugins
+PLUGIN_GCN_LIBS
+PLUGIN_GCN_LDFLAGS
+PLUGIN_GCN_CPPFLAGS
+PLUGIN_GCN
 PLUGIN_HSA_LIBS
 PLUGIN_HSA_LDFLAGS
 PLUGIN_HSA_CPPFLAGS
@@ -11396,7 +11402,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11399 "configure"
+#line 11405 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11502,7 +11508,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11505 "configure"
+#line 11511 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15315,7 +15321,7 @@ case "$host" in
   *-*-rtems*)
     # RTEMS supports Pthreads, but the library is not available at GCC build time.
     ;;
-  nvptx*-*-*)
+  nvptx*-*-* | amdgcn*-*-*)
     # NVPTX does not support Pthreads, has its own code replacement.
     libgomp_use_pthreads=no
     # NVPTX is an accelerator-only target
@@ -15645,6 +15651,15 @@ PLUGIN_HSA_LIBS=
 
 
 
+PLUGIN_GCN=0
+PLUGIN_GCN_CPPFLAGS=
+PLUGIN_GCN_LDFLAGS=
+PLUGIN_GCN_LIBS=
+
+
+
+
+
 # Parse '--enable-offload-targets', figure out the corresponding libgomp
 # plugins, and configure to find the corresponding offload compilers.
 # 'offload_plugins' and 'offload_targets' will be populated in the same order.
@@ -15756,6 +15771,29 @@ rm -f core conftest.err conftest.$ac_objext \
             ;;
         esac
         ;;
+
+      amdgcn*)
+	case "${target}" in
+	  x86_64-*-*)
+	    case " ${CC} ${CFLAGS} " in
+	      *" -m32 "*)
+		PLUGIN_GCN=0
+		;;
+	      *)
+		tgt_name=gcn
+		PLUGIN_GCN=$tgt
+		PLUGIN_GCN_CPPFLAGS=$HSA_RUNTIME_CPPFLAGS
+		PLUGIN_GCN_LDFLAGS="$HSA_RUNTIME_LDFLAGS"
+		PLUGIN_GCN_LIBS="-ldl"
+		PLUGIN_GCN=1
+		;;
+	      esac
+	    ;;
+	  *-*-*)
+	    PLUGIN_GCN=0
+	     ;;
+	esac
+	;;
       *)
 	as_fn_error $? "unknown offload target specified" "$LINENO" 5
 	;;
@@ -15818,6 +15856,19 @@ fi
 
 cat >>confdefs.h <<_ACEOF
 #define PLUGIN_HSA $PLUGIN_HSA
+_ACEOF
+
+ if test $PLUGIN_GCN = 1; then
+  PLUGIN_GCN_TRUE=
+  PLUGIN_GCN_FALSE='#'
+else
+  PLUGIN_GCN_TRUE='#'
+  PLUGIN_GCN_FALSE=
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define PLUGIN_GCN $PLUGIN_GCN
 _ACEOF
 
 
@@ -17443,6 +17494,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${PLUGIN_HSA_TRUE}" && test -z "${PLUGIN_HSA_FALSE}"; then
   as_fn_error $? "conditional \"PLUGIN_HSA\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${PLUGIN_GCN_TRUE}" && test -z "${PLUGIN_GCN_FALSE}"; then
+  as_fn_error $? "conditional \"PLUGIN_GCN\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE}" && test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_FALSE}"; then

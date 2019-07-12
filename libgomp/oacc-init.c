@@ -110,8 +110,9 @@ name_of_acc_device_t (enum acc_device_t type)
     case acc_device_host: return "host";
     case acc_device_not_host: return "not_host";
     case acc_device_nvidia: return "nvidia";
-    case /* not supported */ _acc_device_intel_mic:
+    case acc_device_gcn: return "gcn";
     case /* not supported */ _acc_device_hsa:
+    case /* not supported */ _acc_device_intel_mic:
     default: gomp_fatal ("unknown device type %u", (unsigned) type);
     }
 }
