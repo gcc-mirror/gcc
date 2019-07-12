@@ -1265,20 +1265,6 @@ nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
         component_refs1.safe_push (ref1);
       ref1 = TREE_OPERAND (ref1, 0);
     }
-  if (TREE_CODE (ref1) == MEM_REF && ref1 != match1)
-    {
-      if (!integer_zerop (TREE_OPERAND (ref1, 1)))
-	{
-	  ++alias_stats.nonoverlapping_component_refs_since_match_p_may_alias;
-	  return -1;
-	}
-    }
-  /* TODO: Handle TARGET_MEM_REF later.  */
-  if (TREE_CODE (ref1) == TARGET_MEM_REF && ref1 != match1)
-    {
-      ++alias_stats.nonoverlapping_component_refs_since_match_p_may_alias;
-      return -1;
-    }
 
   /* Create the stack of handled components for REF2.  */
   while (handled_component_p (ref2) && ref2 != match2)
@@ -1290,19 +1276,30 @@ nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
         component_refs2.safe_push (ref2);
       ref2 = TREE_OPERAND (ref2, 0);
     }
-  if (TREE_CODE (ref2) == MEM_REF && ref2 != match2)
-    {
-      if (!integer_zerop (TREE_OPERAND (ref2, 1)))
-	{
-	  ++alias_stats.nonoverlapping_component_refs_since_match_p_may_alias;
-	  return -1;
-	}
-    }
-  if (TREE_CODE (ref2) == TARGET_MEM_REF && ref2 != match2)
+
+  bool mem_ref1 = TREE_CODE (ref1) == MEM_REF && ref1 != match1;
+  bool mem_ref2 = TREE_CODE (ref2) == MEM_REF && ref2 != match2;
+
+  /* If only one of access path starts with MEM_REF check that offset is 0
+     so the addresses stays the same after stripping it.
+     TODO: In this case we may walk the other access path until we get same
+     offset.
+
+     If both starts with MEM_REF, offset has to be same.  */
+  if ((mem_ref1 && !mem_ref2 && !integer_zerop (TREE_OPERAND (ref1, 1)))
+      || (mem_ref2 && !mem_ref1 && !integer_zerop (TREE_OPERAND (ref2, 1)))
+      || (mem_ref1 && mem_ref2
+	  && !tree_int_cst_equal (TREE_OPERAND (ref1, 1),
+				  TREE_OPERAND (ref2, 1))))
     {
       ++alias_stats.nonoverlapping_component_refs_since_match_p_may_alias;
       return -1;
     }
+
+  /* TARGET_MEM_REF are never wrapped in handled components, so we do not need
+     to handle them here at all.  */
+  gcc_checking_assert (TREE_CODE (ref1) != TARGET_MEM_REF
+		       && TREE_CODE (ref2) != TARGET_MEM_REF);
 
   /* Pop the stacks in parallel and examine the COMPONENT_REFs of the same
      rank.  This is sufficient because we start from the same DECL and you

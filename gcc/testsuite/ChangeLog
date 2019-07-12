@@ -1,3 +1,7 @@
+2019-07-12  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/alias-access-path-9.c: New testcase.
+
 2019-07-08  Jiangning Liu  <jiangning.liu@amperecomputing.com>
 
 	PR tree-optimization/89430

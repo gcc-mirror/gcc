@@ -1,3 +1,10 @@
+2019-07-12  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-alias.c (same_tmr_indexing_p): Break out from ...
+	(indirect_refs_may_alias_p): ... here.
+	(nonoverlapping_component_refs_since_match_p): Support also non-trivial
+	mem refs in the access paths.
+
 2019-07-12  Jiangning Liu  <jiangning.liu@amperecomputing.com>
 
 	PR tree-optimization/89430
@@ -21,6 +28,7 @@
 	rather than this_state as the lowering context for the ELSE
 	seq in a GIMPLE_EH_ELSE.
 
+>>>>>>> .r273450
 2019-07-12  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* vector-builder.h (vector_builder::elt): Allow already-supplied
