@@ -1,3 +1,10 @@
+2019-07-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/91136
+	* df-core.c (ACCESSING REFS): Fix typos in comment.
+	* resource.c (mark_target_live_reg): Add artificial defs that occur at
+	the beginning of the block to the initial set of live registers.
+
 2019-07-11  Uroš Bizjak  <ubizjak@gmail.com>
 
 	Backported from mainline
