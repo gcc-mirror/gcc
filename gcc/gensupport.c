@@ -500,12 +500,14 @@ replace_operands_with_dups (rtx x)
     {
       newx = rtx_alloc (MATCH_DUP);
       XINT (newx, 0) = XINT (x, 0);
+      x = newx;
     }
   else if (GET_CODE (x) == MATCH_OPERATOR)
     {
       newx = rtx_alloc (MATCH_OP_DUP);
       XINT (newx, 0) = XINT (x, 0);
       XVEC (newx, 1) = XVEC (x, 2);
+      x = newx;
     }
   else
     newx = shallow_copy_rtx (x);
