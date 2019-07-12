@@ -2188,7 +2188,7 @@ cgraph_node::expand (void)
 
   bitmap_obstack_initialize (&reg_obstack); /* FIXME, only at RTL generation*/
 
-  execute_all_ipa_transforms ();
+  execute_all_ipa_transforms (false);
 
   /* Perform all tree transforms and optimizations.  */
 

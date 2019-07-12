@@ -1,3 +1,55 @@
+2019-07-12  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91063
+	* tree-vect-stmts.c (vect_init_vector): Call gsi_remove to remove
+	stmt from stmts sequence before calling vect_init_vector_1.
+	Formatting fix.
+
+	2019-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/91062
+	* tree-pass.h (execute_all_ipa_transforms): Add a flag
+	parameter whether to disable GC collection.
+	* passes.c (execute_one_ipa_transform_pass): Likewise, and
+	honor it.
+	(execute_all_ipa_transforms): Likewise and pass it down.
+	* cgraph.c (cgraph_node::get_body): Do not invoke garbage
+	collection from applying IPA transforms.
+	* cgraphunit.c (cgraph_node::expand): Allow garbage collection
+	from applying IPA transforms.
+
+	2019-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/90982
+	* tree-inline.c (remap_ssa_name): Copy SSA range info.
+
+	2019-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90972
+	* tree-vect-stmts.c (vect_init_vector): Handle CONSTANT_CLASS_P
+	in common code, dealing with STRING_CST properly.
+
+	2019-06-21  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90914
+	* dwarf2out.c (prune_unused_types_walk): Always consider
+	function-local extern declarations as used.
+
+	2019-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/90900
+	* cfgexpand.c (expand_debug_expr): Treat NOTE_P DECL_RTL
+	as if optimized away.
+
+	2019-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR lto/90369
+	* lto-wrapper.c (debug_objcopy): Use the original filename
+	including archive offset for the filename used for -save-temps.
+
 2019-07-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/91136
