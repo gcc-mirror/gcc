@@ -1,3 +1,23 @@
+2019-07-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (struct gimplify_omp_ctx): Add order_concurrent member.
+	(omp_notice_threadprivate_variable): Diagnose threadprivate variable
+	uses inside of order(concurrent) constructs.
+	(gimplify_scan_omp_clauses): Set ctx->order_concurrent if
+	OMP_CLAUSE_ORDER is seen.
+	* omp-low.c (struct omp_context): Add order_concurrent member.
+	(scan_sharing_clauses): Set ctx->order_concurrent if
+	OMP_CLAUSE_ORDER is seen.
+	(check_omp_nesting_restrictions): Diagnose ordered or atomic inside
+	of simd order(concurrent).  Diagnose constructs not allowed inside of
+	for order(concurrent).
+	(setjmp_or_longjmp_p): Add a context and TREE_PUBLIC check to avoid
+	complaining about static double setjmp (double); or class static
+	methods or non-global namespace setjmps.
+	(omp_runtime_api_call): New function.
+	(scan_omp_1_stmt): Diagnose OpenMP runtime API calls inside of
+	order(concurrent) loops.
+
 2019-07-12  Martin Sebor  <msebor@redhat.com>
 
 	* doc/invoke.texi (ssa-name-def-chain-limit): Document new --param.

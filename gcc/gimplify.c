@@ -222,6 +222,7 @@ struct gimplify_omp_ctx
   bool distribute;
   bool target_firstprivatize_array_bases;
   bool add_safelen1;
+  bool order_concurrent;
   int defaultmap[4];
 };
 
@@ -7025,14 +7026,24 @@ omp_notice_threadprivate_variable (struct gimplify_omp_ctx *ctx, tree decl,
   struct gimplify_omp_ctx *octx;
 
   for (octx = ctx; octx; octx = octx->outer_context)
-    if ((octx->region_type & ORT_TARGET) != 0)
+    if ((octx->region_type & ORT_TARGET) != 0
+	|| octx->order_concurrent)
       {
 	n = splay_tree_lookup (octx->variables, (splay_tree_key)decl);
 	if (n == NULL)
 	  {
-	    error ("threadprivate variable %qE used in target region",
-		   DECL_NAME (decl));
-	    error_at (octx->location, "enclosing target region");
+	    if (octx->order_concurrent)
+	      {
+		error ("threadprivate variable %qE used in a region with"
+		       " %<order(concurrent)%> clause", DECL_NAME (decl));
+		error_at (octx->location, "enclosing region");
+	      }
+	    else
+	      {
+		error ("threadprivate variable %qE used in target region",
+		       DECL_NAME (decl));
+		error_at (octx->location, "enclosing target region");
+	      }
 	    splay_tree_insert (octx->variables, (splay_tree_key)decl, 0);
 	  }
 	if (decl2)
@@ -9263,9 +9274,12 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_NOGROUP:
 	case OMP_CLAUSE_THREADS:
 	case OMP_CLAUSE_SIMD:
-	case OMP_CLAUSE_ORDER:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
+	  break;
+
+	case OMP_CLAUSE_ORDER:
+	  ctx->order_concurrent = true;
 	  break;
 
 	case OMP_CLAUSE_DEFAULTMAP:
