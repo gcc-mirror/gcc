@@ -1,3 +1,7 @@
+2019-07-13  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* Makefile.rtl: Use g-sercom__linux.adb for all linuxes.
+
 2019-07-11  Piotr Trojanek  <trojanek@adacore.com>
 
 	* lib-writ.adb (Ensure_System_Dependency,
