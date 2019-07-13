@@ -1,3 +1,12 @@
+2019-07-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/90723
+	* recog.h (temporary_volatile_ok): New class.
+	* config/aarch64/aarch64.c (aarch64_emit_sve_pred_move): Set
+	volatile_ok temporarily to true using temporary_volatile_ok.
+	* expr.c (emit_block_move_via_cpymem): Likewise.
+	* optabs.c (maybe_legitimize_operand): Likewise.
+
 2019-07-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (struct gimplify_omp_ctx): Add order_concurrent member.

@@ -1732,8 +1732,6 @@ emit_block_move_via_cpymem (rtx x, rtx y, rtx size, unsigned int align,
 			    unsigned HOST_WIDE_INT max_size,
 			    unsigned HOST_WIDE_INT probable_max_size)
 {
-  int save_volatile_ok = volatile_ok;
-
   if (expected_align < align)
     expected_align = align;
   if (expected_size != -1)
@@ -1745,7 +1743,7 @@ emit_block_move_via_cpymem (rtx x, rtx y, rtx size, unsigned int align,
     }
 
   /* Since this is a move insn, we don't care about volatility.  */
-  volatile_ok = 1;
+  temporary_volatile_ok v (true);
 
   /* Try the most limited insn first, because there's no point
      including more than one in the machine description unless
@@ -1809,14 +1807,10 @@ emit_block_move_via_cpymem (rtx x, rtx y, rtx size, unsigned int align,
 		create_fixed_operand (&ops[8], NULL);
 	    }
 	  if (maybe_expand_insn (code, nops, ops))
-	    {
-	      volatile_ok = save_volatile_ok;
-	      return true;
-	    }
+	    return true;
 	}
     }
 
-  volatile_ok = save_volatile_ok;
   return false;
 }
 

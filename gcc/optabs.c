@@ -7202,17 +7202,15 @@ maybe_legitimize_operand (enum insn_code icode, unsigned int opno,
 			  class expand_operand *op)
 {
   machine_mode mode, imode;
-  bool old_volatile_ok, result;
 
   mode = op->mode;
   switch (op->type)
     {
     case EXPAND_FIXED:
-      old_volatile_ok = volatile_ok;
-      volatile_ok = true;
-      result = maybe_legitimize_operand_same_code (icode, opno, op);
-      volatile_ok = old_volatile_ok;
-      return result;
+      {
+	temporary_volatile_ok v (true);
+	return maybe_legitimize_operand_same_code (icode, opno, op);
+      }
 
     case EXPAND_OUTPUT:
       gcc_assert (mode != VOIDmode);

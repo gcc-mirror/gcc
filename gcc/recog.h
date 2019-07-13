@@ -186,6 +186,23 @@ skip_alternative (const char *p)
 /* Nonzero means volatile operands are recognized.  */
 extern int volatile_ok;
 
+/* RAII class for temporarily setting volatile_ok.  */
+
+class temporary_volatile_ok
+{
+public:
+  temporary_volatile_ok (int value) : save_volatile_ok (volatile_ok)
+  {
+    volatile_ok = value;
+  }
+
+  ~temporary_volatile_ok () { volatile_ok = save_volatile_ok; }
+
+private:
+  temporary_volatile_ok (const temporary_volatile_ok &);
+  int save_volatile_ok;
+};
+
 /* Set by constrain_operands to the number of the alternative that
    matched.  */
 extern int which_alternative;
