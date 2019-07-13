@@ -14785,62 +14785,53 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
 
   gcc_assert (name != NULL);
   if ((fnmask & RS6000_BTM_CELL) != 0)
-    error ("builtin function %qs is only valid for the cell processor", name);
+    error ("%qs is only valid for the cell processor", name);
   else if ((fnmask & RS6000_BTM_VSX) != 0)
-    error ("builtin function %qs requires the %qs option", name, "-mvsx");
+    error ("%qs requires the %qs option", name, "-mvsx");
   else if ((fnmask & RS6000_BTM_HTM) != 0)
-    error ("builtin function %qs requires the %qs option", name, "-mhtm");
+    error ("%qs requires the %qs option", name, "-mhtm");
   else if ((fnmask & RS6000_BTM_ALTIVEC) != 0)
-    error ("builtin function %qs requires the %qs option", name, "-maltivec");
+    error ("%qs requires the %qs option", name, "-maltivec");
   else if ((fnmask & (RS6000_BTM_DFP | RS6000_BTM_P8_VECTOR))
 	   == (RS6000_BTM_DFP | RS6000_BTM_P8_VECTOR))
-    error ("builtin function %qs requires the %qs and %qs options",
-	   name, "-mhard-dfp", "-mpower8-vector");
-  else if ((fnmask & RS6000_BTM_DFP) != 0)
-    error ("builtin function %qs requires the %qs option", name, "-mhard-dfp");
-  else if ((fnmask & RS6000_BTM_P8_VECTOR) != 0)
-    error ("builtin function %qs requires the %qs option", name,
+    error ("%qs requires the %qs and %qs options", name, "-mhard-dfp",
 	   "-mpower8-vector");
+  else if ((fnmask & RS6000_BTM_DFP) != 0)
+    error ("%qs requires the %qs option", name, "-mhard-dfp");
+  else if ((fnmask & RS6000_BTM_P8_VECTOR) != 0)
+    error ("%qs requires the %qs option", name, "-mpower8-vector");
   else if ((fnmask & (RS6000_BTM_P9_VECTOR | RS6000_BTM_64BIT))
 	   == (RS6000_BTM_P9_VECTOR | RS6000_BTM_64BIT))
-    error ("builtin function %qs requires the %qs and %qs options",
-	   name, "-mcpu=power9", "-m64");
+    error ("%qs requires the %qs and %qs options", name, "-mcpu=power9",
+	   "-m64");
   else if ((fnmask & RS6000_BTM_P9_VECTOR) != 0)
-    error ("builtin function %qs requires the %qs option", name,
-	   "-mcpu=power9");
+    error ("%qs requires the %qs option", name, "-mcpu=power9");
   else if ((fnmask & (RS6000_BTM_P9_MISC | RS6000_BTM_64BIT))
 	   == (RS6000_BTM_P9_MISC | RS6000_BTM_64BIT))
-    error ("builtin function %qs requires the %qs and %qs options",
-	   name, "-mcpu=power9", "-m64");
+    error ("%qs requires the %qs and %qs options", name, "-mcpu=power9",
+	   "-m64");
   else if ((fnmask & RS6000_BTM_P9_MISC) == RS6000_BTM_P9_MISC)
-    error ("builtin function %qs requires the %qs option", name,
-	   "-mcpu=power9");
+    error ("%qs requires the %qs option", name, "-mcpu=power9");
   else if ((fnmask & RS6000_BTM_LDBL128) == RS6000_BTM_LDBL128)
     {
       if (!TARGET_HARD_FLOAT)
-	error ("builtin function %qs requires the %qs option", name,
-	       "-mhard-float");
+	error ("%qs requires the %qs option", name, "-mhard-float");
       else
-	error ("builtin function %qs requires the %qs option", name,
+	error ("%qs requires the %qs option", name,
 	       TARGET_IEEEQUAD ? "-mabi=ibmlongdouble" : "-mlong-double-128");
     }
   else if ((fnmask & RS6000_BTM_HARD_FLOAT) != 0)
-    error ("builtin function %qs requires the %qs option", name,
-	   "-mhard-float");
+    error ("%qs requires the %qs option", name, "-mhard-float");
   else if ((fnmask & RS6000_BTM_FLOAT128_HW) != 0)
-    error ("builtin function %qs requires ISA 3.0 IEEE 128-bit floating point",
-	   name);
+    error ("%qs requires ISA 3.0 IEEE 128-bit floating point", name);
   else if ((fnmask & RS6000_BTM_FLOAT128) != 0)
-    error ("builtin function %qs requires the %qs option", name,
-	   "%<-mfloat128%>");
+    error ("%qs requires the %qs option", name, "%<-mfloat128%>");
   else if ((fnmask & (RS6000_BTM_POPCNTD | RS6000_BTM_POWERPC64))
 	   == (RS6000_BTM_POPCNTD | RS6000_BTM_POWERPC64))
-    error ("builtin function %qs requires the %qs (or newer), and "
-	   "%qs or %qs options",
+    error ("%qs requires the %qs (or newer), and %qs or %qs options",
 	   name, "-mcpu=power7", "-m64", "-mpowerpc64");
   else
-    error ("builtin function %qs is not supported with the current options",
-	   name);
+    error ("%qs is not supported with the current options", name);
 }
 
 /* Target hook for early folding of built-ins, shamelessly stolen

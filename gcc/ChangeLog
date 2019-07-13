@@ -1,4 +1,10 @@
-2019-07-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+2019-07-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/91148
+	* config/rs6000/rs6000.c (rs6000_invalid_builtin): Remove superfluous
+	"builtin function" phrasing.
+
+2019-07-13  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR target/90723
 	* recog.h (temporary_volatile_ok): New class.
