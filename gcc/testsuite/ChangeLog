@@ -1,3 +1,8 @@
+2019-07-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/powerpc/stabs-attrib-vect-darwin.c: Require stabs
+	support.
+
 2019-07-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/91148
