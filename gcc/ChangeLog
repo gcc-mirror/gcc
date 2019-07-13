@@ -1,3 +1,10 @@
+2019-07-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (component_ref_to_zero_sized_trailing_array_p):
+	Break out from ...
+	(aliasing_component_refs_walk): Break out from ...
+	(aliasing_component_refs_p): ... here.
+
 2019-07-13  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/91148
