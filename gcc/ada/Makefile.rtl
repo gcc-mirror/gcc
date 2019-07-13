@@ -2460,7 +2460,6 @@ ifeq ($(strip $(filter-out riscv% linux%,$(target_cpu) $(target_os))),)
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
   s-taspri.ads<libgnarl/s-taspri__posix-noaltstack.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
-  g-sercom.adb<libgnat/g-sercom__linux.adb \
   system.ads<libgnat/system-linux-riscv.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
