@@ -150,6 +150,9 @@ struct omp_context
 
   /* True in the second simd loop of for simd with inscan reductions.  */
   bool for_simd_scan_phase;
+
+  /* True if there is order(concurrent) clause on the construct.  */
+  bool order_concurrent;
 };
 
 static splay_tree all_contexts;
@@ -1390,6 +1393,10 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	    }
 	  break;
 
+	case OMP_CLAUSE_ORDER:
+	  ctx->order_concurrent = true;
+	  break;
+
 	case OMP_CLAUSE_NOWAIT:
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_COLLAPSE:
@@ -1402,7 +1409,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_NOGROUP:
 	case OMP_CLAUSE_DEFAULTMAP:
-	case OMP_CLAUSE_ORDER:
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
 	case OMP_CLAUSE_GANG:
@@ -2669,9 +2675,20 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	  && gimple_code (ctx->outer->stmt) == GIMPLE_OMP_FOR)
 	ctx = ctx->outer;
       if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-	  && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
+	  && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD)
 	{
 	  c = NULL_TREE;
+	  if (ctx->order_concurrent
+	      && (gimple_code (stmt) == GIMPLE_OMP_ORDERED
+		  || gimple_code (stmt) == GIMPLE_OMP_ATOMIC_LOAD
+		  || gimple_code (stmt) == GIMPLE_OMP_ATOMIC_STORE))
+	    {
+	      error_at (gimple_location (stmt),
+			"OpenMP constructs other than %<parallel%> or"
+			" %<simd%> may not be nested inside a region with"
+			" the %<order(concurrent)%> clause");
+	      return false;
+	    }
 	  if (gimple_code (stmt) == GIMPLE_OMP_ORDERED)
 	    {
 	      c = gimple_omp_ordered_clauses (as_a <gomp_ordered *> (stmt));
@@ -2716,6 +2733,18 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 			"region");
 	      return false;
 	    }
+	}
+      else if (ctx->order_concurrent
+	       && gimple_code (stmt) != GIMPLE_OMP_PARALLEL
+	       && (gimple_code (stmt) != GIMPLE_OMP_FOR
+		   || gimple_omp_for_kind (stmt) != GF_OMP_FOR_KIND_SIMD)
+	       && gimple_code (stmt) != GIMPLE_OMP_SCAN)
+	{
+	  error_at (gimple_location (stmt),
+		    "OpenMP constructs other than %<parallel%> or"
+		    " %<simd%> may not be nested inside a region with"
+		    " the %<order(concurrent)%> clause");
+	  return false;
 	}
     }
   switch (gimple_code (stmt))
@@ -3323,12 +3352,123 @@ setjmp_or_longjmp_p (const_tree fndecl)
     return true;
 
   tree declname = DECL_NAME (fndecl);
-  if (!declname)
+  if (!declname
+      || (DECL_CONTEXT (fndecl) != NULL_TREE
+          && TREE_CODE (DECL_CONTEXT (fndecl)) != TRANSLATION_UNIT_DECL)
+      || !TREE_PUBLIC (fndecl))
     return false;
+
   const char *name = IDENTIFIER_POINTER (declname);
   return !strcmp (name, "setjmp") || !strcmp (name, "longjmp");
 }
 
+/* Return true if FNDECL is an omp_* runtime API call.  */
+
+static bool
+omp_runtime_api_call (const_tree fndecl)
+{
+  tree declname = DECL_NAME (fndecl);
+  if (!declname
+      || (DECL_CONTEXT (fndecl) != NULL_TREE
+          && TREE_CODE (DECL_CONTEXT (fndecl)) != TRANSLATION_UNIT_DECL)
+      || !TREE_PUBLIC (fndecl))
+    return false;
+
+  const char *name = IDENTIFIER_POINTER (declname);
+  if (strncmp (name, "omp_", 4) != 0)
+    return false;
+
+  static const char *omp_runtime_apis[] =
+    {
+      /* This array has 3 sections.  First omp_* calls that don't
+	 have any suffixes.  */
+      "target_alloc",
+      "target_associate_ptr",
+      "target_disassociate_ptr",
+      "target_free",
+      "target_is_present",
+      "target_memcpy",
+      "target_memcpy_rect",
+      NULL,
+      /* Now omp_* calls that are available as omp_* and omp_*_.  */
+      "capture_affinity",
+      "destroy_lock",
+      "destroy_nest_lock",
+      "display_affinity",
+      "get_active_level",
+      "get_affinity_format",
+      "get_cancellation",
+      "get_default_device",
+      "get_dynamic",
+      "get_initial_device",
+      "get_level",
+      "get_max_active_levels",
+      "get_max_task_priority",
+      "get_max_threads",
+      "get_nested",
+      "get_num_devices",
+      "get_num_places",
+      "get_num_procs",
+      "get_num_teams",
+      "get_num_threads",
+      "get_partition_num_places",
+      "get_place_num",
+      "get_proc_bind",
+      "get_team_num",
+      "get_thread_limit",
+      "get_thread_num",
+      "get_wtick",
+      "get_wtime",
+      "in_final",
+      "in_parallel",
+      "init_lock",
+      "init_nest_lock",
+      "is_initial_device",
+      "pause_resource",
+      "pause_resource_all",
+      "set_affinity_format",
+      "set_lock",
+      "set_nest_lock",
+      "test_lock",
+      "test_nest_lock",
+      "unset_lock",
+      "unset_nest_lock",
+      NULL,
+      /* And finally calls available as omp_*, omp_*_ and omp_*_8_.  */
+      "get_ancestor_thread_num",
+      "get_partition_place_nums",
+      "get_place_num_procs",
+      "get_place_proc_ids",
+      "get_schedule",
+      "get_team_size",
+      "set_default_device",
+      "set_dynamic",
+      "set_max_active_levels",
+      "set_nested",
+      "set_num_threads",
+      "set_schedule"
+    };
+
+  int mode = 0;
+  for (unsigned i = 0; i < ARRAY_SIZE (omp_runtime_apis); i++)
+    {
+      if (omp_runtime_apis[i] == NULL)
+	{
+	  mode++;
+	  continue;
+	}
+      size_t len = strlen (omp_runtime_apis[i]);
+      if (strncmp (name + 4, omp_runtime_apis[i], len) == 0
+	  && (name[4 + len] == '\0'
+	      || (mode > 0
+		  && name[4 + len] == '_'
+		  && (name[4 + len + 1] == '\0'
+		      || (mode > 1
+			  && strcmp (name + 4 + len + 1, "8_") == 0)))))
+	return true;
+    }
+  return false;
+}
 
 /* Helper function for scan_omp.
 
@@ -3354,10 +3494,10 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       tree fndecl = gimple_call_fndecl (stmt);
       if (fndecl)
 	{
-	  if (setjmp_or_longjmp_p (fndecl)
-	      && ctx
+	  if (ctx
 	      && gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-	      && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
+	      && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_SIMD
+	      && setjmp_or_longjmp_p (fndecl))
 	    {
 	      remove = true;
 	      error_at (gimple_location (stmt),
@@ -3378,6 +3518,19 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	      default:
 		break;
 	      }
+	  else if (ctx)
+	    {
+	      omp_context *octx = ctx;
+	      if (gimple_code (ctx->stmt) == GIMPLE_OMP_SCAN && ctx->outer)
+		octx = ctx->outer;
+	      if (octx->order_concurrent && omp_runtime_api_call (fndecl))
+		{
+		  remove = true;
+		  error_at (gimple_location (stmt),
+			    "OpenMP runtime API call %qD in a region with "
+			    "%<order(concurrent)%> clause", fndecl);
+		}
+	    }
 	}
     }
   if (remove)

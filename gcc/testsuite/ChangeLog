@@ -1,3 +1,8 @@
+2019-07-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/order-3.c: New test.
+	* c-c++-common/gomp/order-4.c: New test.
+
 2019-07-12  Bill Seurer  <seurer@linux.vnet.ibm.com>
 
 	* gcc.dg/tree-ssa/vector-7.c: Fix typo.
