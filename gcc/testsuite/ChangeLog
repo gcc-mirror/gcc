@@ -1,5 +1,8 @@
 2019-07-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/91149
+	* c-c++-common/gomp/reduction-task-3.c: New test.
+
 	* c-c++-common/gomp/order-3.c: New test.
 	* c-c++-common/gomp/order-4.c: New test.
 
