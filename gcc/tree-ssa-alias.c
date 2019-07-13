@@ -895,6 +895,97 @@ aliasing_matching_component_refs_p (tree match1, tree ref1,
   return true;
 }
 
+/* Return true if REF is reference to zero sized trailing array. I.e.
+   struct foo {int bar; int array[0];} *fooptr;
+   fooptr->array.  */
+
+static bool
+component_ref_to_zero_sized_trailing_array_p (tree ref)
+{
+  return (TREE_CODE (ref) == COMPONENT_REF
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 1))) == ARRAY_TYPE
+	  && (!TYPE_SIZE (TREE_TYPE (TREE_OPERAND (ref, 1)))
+	      || integer_zerop (TYPE_SIZE (TREE_TYPE (TREE_OPERAND (ref, 1)))))
+	  && array_at_struct_end_p (ref));
+}
+
+/* Worker for aliasing_component_refs_p. Most parameters match parameters of
+   aliasing_component_refs_p.
+
+   Walk access path REF2 and try to find type matching TYPE1
+   (which is a start of possibly aliasing access path REF1).
+   If match is found, try to disambiguate.
+
+   Return 0 for sucessful disambiguation.
+   Return 1 if match was found but disambiguation failed
+   Return -1 if there is no match.
+   In this case MAYBE_MATCH is set to 0 if there is no type matching TYPE1
+   in access patch REF2 and -1 if we are not sure.  */
+
+static int
+aliasing_component_refs_walk (tree ref1, tree type1, tree base1,
+			      poly_int64 offset1, poly_int64 max_size1,
+			      tree end_struct_ref1,
+			      tree ref2, tree base2,
+			      poly_int64 offset2, poly_int64 max_size2,
+			      bool *maybe_match)
+{
+  tree ref = ref2;
+  int same_p;
+
+  while (true)
+    {
+      /* We walk from inner type to the outer types. If type we see is
+	 already too large to be part of type1, terminate the search.  */
+      int cmp = compare_type_sizes (type1, TREE_TYPE (ref));
+
+      if (cmp < 0
+	  && (!end_struct_ref1
+	      || compare_type_sizes (TREE_TYPE (end_struct_ref1),
+				     TREE_TYPE (ref)) < 0))
+	break;
+      /* If types may be of same size, see if we can decide about their
+	 equality.  */
+      if (cmp == 0)
+	{
+	  same_p = same_type_for_tbaa (TREE_TYPE (ref), type1);
+	  if (same_p == 1)
+	    break;
+	  /* In case we can't decide whether types are same try to
+	     continue looking for the exact match.
+	     Remember however that we possibly saw a match
+	     to bypass the access path continuations tests we do later.  */
+	  if (same_p == -1)
+	    *maybe_match = true;
+	}
+      if (!handled_component_p (ref))
+	break;
+      ref = TREE_OPERAND (ref, 0);
+    }
+  if (same_p == 1)
+    {
+      /* We assume that arrays can overlap by multiple of their elements
+	 size as tested in gcc.dg/torture/alias-2.c.
+	 This partial overlap happen only when both arrays are bases of
+	 the access and not contained within another component ref.
+	 To be safe we also assume partial overlap for VLAs. */
+      if (TREE_CODE (TREE_TYPE (base1)) == ARRAY_TYPE
+	  && (!TYPE_SIZE (TREE_TYPE (base1))
+	      || TREE_CODE (TYPE_SIZE (TREE_TYPE (base1))) != INTEGER_CST
+	      || ref == base2))
+	/* Setting maybe_match to true triggers
+	   nonoverlapping_component_refs_p test later that still may do
+	   useful disambiguation.  */
+	*maybe_match = true;
+      else
+	return aliasing_matching_component_refs_p (base1, ref1,
+						   offset1, max_size1,
+						   ref, ref2,
+						   offset2, max_size2);
+    }
+  return -1;
+}
+
 /* Determine if the two component references REF1 and REF2 which are
    based on access types TYPE1 and TYPE2 and of which at least one is based
    on an indirect reference may alias.  
@@ -919,7 +1010,6 @@ aliasing_component_refs_p (tree ref1,
      disambiguating q->i and p->a.j.  */
   tree base1, base2;
   tree type1, type2;
-  int same_p1 = 0, same_p2 = 0;
   bool maybe_match = false;
   tree end_struct_ref1 = NULL, end_struct_ref2 = NULL;
 
@@ -938,11 +1028,7 @@ aliasing_component_refs_p (tree ref1,
 
 	 Because we compare sizes of arrays just by sizes of their elements,
 	 we only need to care about zero sized array fields here.  */
-      if (TREE_CODE (base1) == COMPONENT_REF
-	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (base1, 1))) == ARRAY_TYPE
-	  && (!TYPE_SIZE (TREE_TYPE (TREE_OPERAND (base1, 1)))
-	      || integer_zerop (TYPE_SIZE (TREE_TYPE (TREE_OPERAND (base1, 1)))))
-	  && array_at_struct_end_p (base1))
+      if (component_ref_to_zero_sized_trailing_array_p (base1))
 	{
 	  gcc_checking_assert (!end_struct_ref1);
           end_struct_ref1 = base1;
@@ -956,11 +1042,7 @@ aliasing_component_refs_p (tree ref1,
   base2 = ref2;
   while (handled_component_p (base2))
     {
-      if (TREE_CODE (base2) == COMPONENT_REF
-	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (base2, 1))) == ARRAY_TYPE
-	  && (!TYPE_SIZE (TREE_TYPE (TREE_OPERAND (base2, 1)))
-	      || integer_zerop (TYPE_SIZE (TREE_TYPE (TREE_OPERAND (base2, 1)))))
-	  && array_at_struct_end_p (base2))
+      if (component_ref_to_zero_sized_trailing_array_p (base2))
 	{
 	  gcc_checking_assert (!end_struct_ref2);
 	  end_struct_ref2 = base2;
@@ -984,57 +1066,13 @@ aliasing_component_refs_p (tree ref1,
       || (end_struct_ref2
 	  && compare_type_sizes (TREE_TYPE (end_struct_ref2), type1) >= 0))
     {
-      tree ref = ref2;
-      while (true)
-	{
-	  /* We walk from inner type to the outer types. If type we see is
-	     already too large to be part of type1, terminate the search.  */
-	  int cmp = compare_type_sizes (type1, TREE_TYPE (ref));
-
-	  if (cmp < 0
-	      && (!end_struct_ref1
-		  || compare_type_sizes (TREE_TYPE (end_struct_ref1),
-					 TREE_TYPE (ref)) < 0))
-	    break;
-	  /* If types may be of same size, see if we can decide about their
-	     equality.  */
-	  if (cmp == 0)
-	    {
-	      same_p2 = same_type_for_tbaa (TREE_TYPE (ref), type1);
-	      if (same_p2 == 1)
-		break;
-	      /* In case we can't decide whether types are same try to
-		 continue looking for the exact match.
-		 Remember however that we possibly saw a match
-		 to bypass the access path continuations tests we do later.  */
-	      if (same_p2 == -1)
-		maybe_match = true;
-	    }
-	  if (!handled_component_p (ref))
-	    break;
-	  ref = TREE_OPERAND (ref, 0);
-	}
-      if (same_p2 == 1)
-	{
-	  /* We assume that arrays can overlap by multiple of their elements
-	     size as tested in gcc.dg/torture/alias-2.c.
-	     This partial overlap happen only when both arrays are bases of
-	     the access and not contained within another component ref.
-	     To be safe we also assume partial overlap for VLAs. */
-	  if (TREE_CODE (TREE_TYPE (base1)) == ARRAY_TYPE
-	      && (!TYPE_SIZE (TREE_TYPE (base1))
-		  || TREE_CODE (TYPE_SIZE (TREE_TYPE (base1))) != INTEGER_CST
-		  || ref == base2))
-	    /* Setting maybe_match to true triggers
-	       nonoverlapping_component_refs_p test later that still may do
-	       useful disambiguation.  */
-	    maybe_match = true;
-	  else
-	    return aliasing_matching_component_refs_p (base1, ref1,
-						       offset1, max_size1,
-						       ref, ref2,
-						       offset2, max_size2);
-	}
+      int res = aliasing_component_refs_walk (ref1, type1, base1,
+					      offset1, max_size1,
+					      end_struct_ref1,
+					      ref2, base2, offset2, max_size2,
+					      &maybe_match);
+      if (res != -1)
+	return res;
     }
 
   /* If we didn't find a common base, try the other way around.  */
@@ -1042,42 +1080,13 @@ aliasing_component_refs_p (tree ref1,
       || (end_struct_ref1
 	  && compare_type_sizes (TREE_TYPE (end_struct_ref1), type1) <= 0))
     {
-      tree ref = ref1;
-      while (true)
-	{
-	  int cmp = compare_type_sizes (type2, TREE_TYPE (ref));
-	  if (cmp < 0
-	      && (!end_struct_ref2
-		  || compare_type_sizes (TREE_TYPE (end_struct_ref2),
-					 TREE_TYPE (ref)) < 0))
-	    break;
-	  /* If types may be of same size, see if we can decide about their
-	     equality.  */
-	  if (cmp == 0)
-	    {
-	      same_p1 = same_type_for_tbaa (TREE_TYPE (ref), type2);
-	      if (same_p1 == 1)
-		break;
-	      if (same_p1 == -1)
-		maybe_match = true;
-	    }
-	  if (!handled_component_p (ref))
-	    break;
-	  ref = TREE_OPERAND (ref, 0);
-	}
-      if (same_p1 == 1)
-	{
-	  if (TREE_CODE (TREE_TYPE (base2)) == ARRAY_TYPE
-	      && (!TYPE_SIZE (TREE_TYPE (base2))
-		  || TREE_CODE (TYPE_SIZE (TREE_TYPE (base2))) != INTEGER_CST
-		  || ref == base1))
-	    maybe_match = true;
-	  else
-	    return aliasing_matching_component_refs_p (ref, ref1,
-						       offset1, max_size1,
-						       base2, ref2,
-						       offset2, max_size2);
-	}
+      int res = aliasing_component_refs_walk (ref2, type2, base2,
+					      offset2, max_size2,
+					      end_struct_ref2,
+					      ref1, base1, offset1, max_size1,
+					      &maybe_match);
+      if (res != -1)
+	return res;
     }
 
   /* In the following code we make an assumption that the types in access
