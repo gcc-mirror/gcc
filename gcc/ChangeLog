@@ -1,3 +1,9 @@
+2019-07-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/91148
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): Remove
+	superfluous "builtin function" phrasing.
+
 2019-07-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-alias.c (component_ref_to_zero_sized_trailing_array_p):

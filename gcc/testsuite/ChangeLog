@@ -1,3 +1,18 @@
+2019-07-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/91148
+	* gcc.target/powerpc/bfp/scalar-extract-exp-2.c: Adjust.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-2.c: Adjust.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-2.c: Adjust.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-5.c: Adjust.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-8.c: Adjust.
+	* gcc.target/powerpc/byte-in-set-2.c: Adjust.
+	* gcc.target/powerpc/cmpb-3.c: Adjust.
+	* gcc.target/powerpc/vsu/vec-all-nez-7.c: Adjust.
+	* gcc.target/powerpc/vsu/vec-any-eqz-7.c: Adjust.
+	* gcc.target/powerpc/vsu/vec-xl-len-13.c: Adjust.
+	* gcc.target/powerpc/vsu/vec-xst-len-12.c: Adjust.
+
 2019-07-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/powerpc/stabs-attrib-vect-darwin.c: Require stabs
