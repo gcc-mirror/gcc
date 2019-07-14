@@ -1,3 +1,11 @@
+2019-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/90756
+	* gcc.dg/pr90756.c: New test.
+
 2019-07-12  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR testsuite/78529
