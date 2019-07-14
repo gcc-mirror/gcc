@@ -3,6 +3,9 @@
 	Backported from mainline
 	2019-07-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/78884
+	* gcc.dg/gomp/pr78884.c: New test.
+
 	PR rtl-optimization/90756
 	* gcc.dg/pr90756.c: New test.
 
