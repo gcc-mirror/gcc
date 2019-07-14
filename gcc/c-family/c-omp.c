@@ -1648,7 +1648,7 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		}
 	      else if (code != OMP_SECTIONS
 		       && (mask & (OMP_CLAUSE_MASK_1
-				   << PRAGMA_OMP_CLAUSE_SCHEDULE)) == 0
+				   << PRAGMA_OMP_CLAUSE_NUM_THREADS)) == 0
 		       && (mask & (OMP_CLAUSE_MASK_1
 				   << PRAGMA_OMP_CLAUSE_SCHEDULE)) == 0)
 		{

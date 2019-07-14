@@ -1,3 +1,12 @@
+2019-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2019-07-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/91149
+	* c-omp.c (c_omp_split_clauses): Fix a pasto in
+	OMP_CLAUSE_REDUCTION_TASK handling.
+
 2019-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
