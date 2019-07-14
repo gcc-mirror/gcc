@@ -1,3 +1,11 @@
+2019-07-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/87233
+	* gfortran.dg/initialization_14.f90: Modify to now pass by
+	removing two dg-error commands. Added comments.
+	* gfortran.dg/initialization_30.f90: New test that includes the
+	two tests removed above with the 'dg-options -std=f95'.
+
 2019-07-14  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tree-ssa/pr84512.c (dg-final): Remove XFAIL on alpha*-*-*.
