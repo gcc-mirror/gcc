@@ -210,6 +210,7 @@ struct gimplify_omp_ctx
   bool combined_loop;
   bool distribute;
   bool target_firstprivatize_array_bases;
+  bool add_safelen1;
   int defaultmap[4];
 };
 
@@ -1319,12 +1320,17 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 		  || splay_tree_lookup (ctx->variables,
 					(splay_tree_key) t) == NULL))
 	    {
+	      int flag = GOVD_LOCAL;
 	      if (ctx->region_type == ORT_SIMD
 		  && TREE_ADDRESSABLE (t)
 		  && !TREE_STATIC (t))
-		omp_add_variable (ctx, t, GOVD_PRIVATE | GOVD_SEEN);
-	      else
-		omp_add_variable (ctx, t, GOVD_LOCAL | GOVD_SEEN);
+		{
+		  if (TREE_CODE (DECL_SIZE_UNIT (t)) != INTEGER_CST)
+		    ctx->add_safelen1 = true;
+		  else
+		    flag = GOVD_PRIVATE;
+		}
+	      omp_add_variable (ctx, t, flag | GOVD_SEEN);
 	    }
 
 	  DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
@@ -9684,6 +9690,19 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 			   omp_find_stores_op, &wi);
 	}
     }
+
+  if (ctx->add_safelen1)
+    {
+      /* If there are VLAs in the body of simd loop, prevent
+	 vectorization.  */
+      gcc_assert (ctx->region_type == ORT_SIMD);
+      c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_SAFELEN);
+      OMP_CLAUSE_SAFELEN_EXPR (c) = integer_one_node;
+      OMP_CLAUSE_CHAIN (c) = *list_p;
+      *list_p = c;
+      list_p = &OMP_CLAUSE_CHAIN (c);
+    }
+
   while ((c = *list_p) != NULL)
     {
       splay_tree_node n;
