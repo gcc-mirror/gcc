@@ -1,3 +1,24 @@
+2019-07-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-fnsummary.c (ipa_dump_hints): Do not dump array_index.
+	(ipa_fn_summary::~ipa_fn_summary): Do not destroy array_index.
+	(ipa_fn_summary_t::duplicate): Do not duplicate array_index.
+	(array_index_predicate): Remove.
+	(analyze_function_body): Account cost for variable ofsetted array
+	indexing.
+	(estimate_node_size_and_time): Do not compute array index hint.
+	(ipa_merge_fn_summary_after_inlining): Do not merge array index hint.
+	(inline_read_section): Do not read array index hint.
+	(ipa_fn_summary_write): Do not write array index hint.
+	* doc/invoke.texi (ipa-cp-array-index-hint-bonus): Remove.
+	* ipa-cp.c (hint_time_bonus): Remove.
+	* ipa-fnsummary.h (ipa_hints_vals): Remove array_index.
+	(ipa_fnsummary): Remove array_index.
+	* ipa-inline.c (want_inline_small_function_p): Do not use
+	array_index.
+	(edge_badness): Likewise.
+	* params.def (PARAM_IPA_CP_ARRAY_INDEX_HINT_BONUS): Remove.
+
 2019-07-14  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/91148

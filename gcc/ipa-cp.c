@@ -2607,8 +2607,6 @@ hint_time_bonus (ipa_hints hints)
   int result = 0;
   if (hints & (INLINE_HINT_loop_iterations | INLINE_HINT_loop_stride))
     result += PARAM_VALUE (PARAM_IPA_CP_LOOP_HINT_BONUS);
-  if (hints & INLINE_HINT_array_index)
-    result += PARAM_VALUE (PARAM_IPA_CP_ARRAY_INDEX_HINT_BONUS);
   return result;
 }
 

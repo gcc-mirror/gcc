@@ -11895,12 +11895,6 @@ of iterations of a loop known, it adds a bonus of
 @option{ipa-cp-loop-hint-bonus} to the profitability score of
 the candidate.
 
-@item ipa-cp-array-index-hint-bonus
-When IPA-CP determines that a cloning candidate would make the index of
-an array access known, it adds a bonus of
-@option{ipa-cp-array-index-hint-bonus} to the profitability
-score of the candidate.
-
 @item ipa-max-aa-steps
 During its analysis of function bodies, IPA-CP employs alias analysis
 in order to track values pointed to by function parameters.  In order

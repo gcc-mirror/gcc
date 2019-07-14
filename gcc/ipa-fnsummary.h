@@ -48,11 +48,8 @@ enum ipa_hints_vals {
      if functions are in different modules, inlining may not be so important. 
      Set by simple_edge_hints in ipa-inline-analysis.c.   */
   INLINE_HINT_cross_module = 64,
-  /* If array indexes of loads/stores become known there may be room for
-     further optimization.  */
-  INLINE_HINT_array_index = 128,
   /* We know that the callee is hot by profile.  */
-  INLINE_HINT_known_hot = 256
+  INLINE_HINT_known_hot = 128
 };
 
 typedef int ipa_hints;
@@ -97,7 +94,7 @@ public:
       fp_expressions (false), estimated_stack_size (false),
       stack_frame_offset (false), time (0), size (0), conds (NULL),
       size_time_table (NULL), loop_iterations (NULL), loop_stride (NULL),
-      array_index (NULL), growth (0), scc_no (0)
+      growth (0), scc_no (0)
   {
   }
 
@@ -111,7 +108,7 @@ public:
     stack_frame_offset (s.stack_frame_offset), time (s.time), size (s.size),
     conds (s.conds), size_time_table (s.size_time_table),
     loop_iterations (s.loop_iterations), loop_stride (s.loop_stride),
-    array_index (s.array_index), growth (s.growth), scc_no (s.scc_no)
+    growth (s.growth), scc_no (s.scc_no)
   {}
 
   /* Default constructor.  */
@@ -157,8 +154,6 @@ public:
   /* Predicate on when some loop in the function becomes to have known
      stride.   */
   predicate * GTY((skip)) loop_stride;
-  /* Predicate on when some array indexes become constants.  */
-  predicate * GTY((skip)) array_index;
   /* Estimated growth for inlining all copies of the function before start
      of small functions inlining.
      This value will get out of date as the callers are duplicated, but
