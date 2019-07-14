@@ -1,3 +1,14 @@
+2019-07-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (nonmemory_szext_operand): New mode attribute.
+	(test<mode>_ccno_1): Macroize insn pattern from testsi_ccno_1
+	and testdi_ccno_1 using SWI48 mode attribute.
+	(*testdi_1): Use x86_64_szext_nonmemory_operand instead of
+	x86_64_szext_general_operand.
+	(*testqi_1_maybe_si): Use nonmemory_operand instead of general_operand.
+	(*test<mode>_1): Use nonmemory_szext_operand mode attribute
+	instead of genera_operand mode attribute.
+
 2019-07-14  Vladislav Ivanishin <vlad@ispras.ru>
 
 	* gdbhooks.py (DumpFn.invoke): Add explicit casts of return values of
