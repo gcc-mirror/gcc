@@ -1,3 +1,11 @@
+2019-07-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (register_param_uses): Ensure complete types for
+	params.  Save actual frame type.  Tidy up a useless statement.
+	(morph_fn_to_coro):  Used the actual saved frame type to figure
+	determine if construction is needed. 
+
 2019-07-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp

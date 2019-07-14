@@ -1278,6 +1278,7 @@ transform_await_wrapper (tree *stmt, int *do_subtree, void *d)
 typedef struct __param_info {
   tree field_id;
   vec<tree *> *body_uses;
+  tree frame_type;
 } __param_info_t;
 
 typedef struct __local_var_info {
@@ -2048,6 +2049,9 @@ register_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
       tree ptype = DECL_ARG_TYPE (*stmt);
       if (TREE_CODE (ptype) == REFERENCE_TYPE)
 	ptype = TREE_TYPE (ptype);
+      if (!COMPLETE_TYPE_P (ptype))
+	ptype = complete_type_or_else (ptype, *stmt);
+      parm.frame_type = ptype;
       tree pname = DECL_NAME (*stmt);
       size_t namsize = sizeof ("__parm.") + IDENTIFIER_LENGTH (pname) + 1;
       char *buf = (char *) alloca (namsize);
@@ -2361,7 +2365,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer, tree *suspended_p)
       /* If no uses were seen, act as if there were no params.  */
       if (!param_data.param_seen)
 	{
-	  param_uses;
 	  param_uses = NULL;
 	}
     }
@@ -2583,12 +2586,13 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer, tree *suspended_p)
 						         NULL_TREE, false,
 						         tf_warning_or_error);
 	  tree parm_orig_type = TREE_TYPE (arg);
-	  if (TYPE_NEEDS_CONSTRUCTING (parm_orig_type))
+	  tree parm_passed_type = DECL_ARG_TYPE (arg);
+	  if (TYPE_NEEDS_CONSTRUCTING (parm.frame_type))
 	    {
 	      vec<tree, va_gc> *p_in = make_tree_vector_single (arg);
 	      /* Make a placement new.  */
 	      r = build_special_member_call (fld_idx, complete_ctor_identifier,
-					    &p_in, parm_orig_type,
+					    &p_in, parm.frame_type,
 					    LOOKUP_NORMAL,
 					    tf_warning_or_error);
 	      release_tree_vector (p_in);
@@ -2597,7 +2601,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer, tree *suspended_p)
 	      vec_safe_push (param_dtor_list, parm.field_id);
 	    }
 	  else
-	    r = build_modify_expr (fn_start, fld_idx, DECL_ARG_TYPE (arg),
+	    r = build_modify_expr (fn_start, fld_idx, parm.frame_type,
 				   INIT_EXPR, DECL_SOURCE_LOCATION (arg),
 				   arg, DECL_ARG_TYPE (arg));
 	  r = coro_build_cvt_void_expr_stmt (r, fn_start);
