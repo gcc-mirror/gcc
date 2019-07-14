@@ -1,3 +1,9 @@
+2019-07-14  Vladislav Ivanishin <vlad@ispras.ru>
+
+	* gdbhooks.py (DumpFn.invoke): Add explicit casts of return values of
+	fopen and fclose to their respective types.
+	(DotFn.invoke): Ditto.
+
 2019-07-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-fnsummary.c (ipa_dump_hints): Do not dump array_index.
