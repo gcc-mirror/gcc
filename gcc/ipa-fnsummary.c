@@ -134,11 +134,6 @@ ipa_dump_hints (FILE *f, ipa_hints hints)
       hints &= ~INLINE_HINT_declared_inline;
       fprintf (f, " declared_inline");
     }
-  if (hints & INLINE_HINT_array_index)
-    {
-      hints &= ~INLINE_HINT_array_index;
-      fprintf (f, " array_index");
-    }
   if (hints & INLINE_HINT_known_hot)
     {
       hints &= ~INLINE_HINT_known_hot;
@@ -549,8 +544,6 @@ ipa_fn_summary::~ipa_fn_summary ()
     edge_predicate_pool.remove (loop_iterations);
   if (loop_stride)
     edge_predicate_pool.remove (loop_stride);
-  if (array_index)
-    edge_predicate_pool.remove (array_index);
   vec_free (conds);
   vec_free (size_time_table);
 }
@@ -703,8 +696,6 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
 					      possible_truths);
       remap_hint_predicate_after_duplication (&info->loop_stride,
 					      possible_truths);
-      remap_hint_predicate_after_duplication (&info->array_index,
-					      possible_truths);
 
       /* If inliner or someone after inliner will ever start producing
          non-trivial clones, we will get trouble with lack of information
@@ -726,12 +717,6 @@ ipa_fn_summary_t::duplicate (cgraph_node *src,
 	  predicate p = *info->loop_stride;
 	  info->loop_stride = NULL;
 	  set_hint_predicate (&info->loop_stride, p);
-	}
-      if (info->array_index)
-	{
-	  predicate p = *info->array_index;
-	  info->array_index = NULL;
-	  set_hint_predicate (&info->array_index, p);
 	}
     }
   if (!dst->global.inlined_to)
@@ -893,11 +878,6 @@ ipa_dump_fn_summary (FILE *f, struct cgraph_node *node)
 	    {
 	      fprintf (f, "  loop stride:");
 	      s->loop_stride->dump (f, s->conds);
-	    }
-	  if (s->array_index)
-	    {
-	      fprintf (f, "  array index:");
-	      s->array_index->dump (f, s->conds);
 	    }
 	  fprintf (f, "  calls:\n");
 	  dump_ipa_call_summary (f, 4, node, s);
@@ -1824,27 +1804,6 @@ predicate_for_phi_result (class ipa_fn_summary *summary, gphi *phi,
   nonconstant_names[SSA_NAME_VERSION (gimple_phi_result (phi))] = *p;
 }
 
-/* Return predicate specifying when array index in access OP becomes non-constant.  */
-
-static predicate
-array_index_predicate (ipa_fn_summary *info,
-		       vec< predicate> nonconstant_names, tree op)
-{
-  predicate p = false;
-  while (handled_component_p (op))
-    {
-      if (TREE_CODE (op) == ARRAY_REF || TREE_CODE (op) == ARRAY_RANGE_REF)
-	{
-	  if (TREE_CODE (TREE_OPERAND (op, 1)) == SSA_NAME)
-	    p = p.or_with (info->conds, 
-			   nonconstant_names[SSA_NAME_VERSION
-						  (TREE_OPERAND (op, 1))]);
-	}
-      op = TREE_OPERAND (op, 0);
-    }
-  return p;
-}
-
 /* For a typical usage of __builtin_expect (a<b, 1), we
    may introduce an extra relation stmt:
    With the builtin, we have
@@ -2001,7 +1960,6 @@ analyze_function_body (struct cgraph_node *node, bool early)
   vec<predicate> nonconstant_names = vNULL;
   int nblocks, n;
   int *order;
-  predicate array_index = true;
   gimple *fix_builtin_expect_stmt;
 
   gcc_assert (my_function && my_function->cfg);
@@ -2146,26 +2104,6 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		       this_time);
 	    }
 
-	  if (gimple_assign_load_p (stmt) && nonconstant_names.exists ())
-	    {
-	      predicate this_array_index;
-	      this_array_index =
-		array_index_predicate (info, nonconstant_names,
-				       gimple_assign_rhs1 (stmt));
-	      if (this_array_index != false)
-		array_index &= this_array_index;
-	    }
-	  if (gimple_store_p (stmt) && nonconstant_names.exists ())
-	    {
-	      predicate this_array_index;
-	      this_array_index =
-		array_index_predicate (info, nonconstant_names,
-				       gimple_get_lhs (stmt));
-	      if (this_array_index != false)
-		array_index &= this_array_index;
-	    }
-
-
 	  if (is_gimple_call (stmt)
 	      && !gimple_call_internal_p (stmt))
 	    {
@@ -2273,14 +2211,40 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		  if (dump_file)
 		    fprintf (dump_file, "   fp_expression set\n");
 		}
-
-	      gcc_assert (time >= 0);
-	      gcc_assert (size >= 0);
 	    }
+
+	  /* Account cost of address calculations in the statements.  */
+	  for (unsigned int i = 0; i < gimple_num_ops (stmt); i++)
+	    {
+	      for (tree op = gimple_op (stmt, i);
+		   op && handled_component_p (op);
+		   op = TREE_OPERAND (op, 0))
+	        if ((TREE_CODE (op) == ARRAY_REF
+		     || TREE_CODE (op) == ARRAY_RANGE_REF)
+		    && TREE_CODE (TREE_OPERAND (op, 1)) == SSA_NAME)
+		  {
+		    predicate p = bb_predicate;
+		    if (fbi.info)
+		      p = p & will_be_nonconstant_expr_predicate
+				 (&fbi, info, TREE_OPERAND (op, 1),
+			          nonconstant_names);
+		    if (p != false)
+		      {
+			time += freq;
+			size += 1;
+			if (dump_file)
+			  fprintf (dump_file,
+				   "\t\tAccounting address calculation.\n");
+			info->account_size_time (ipa_fn_summary::size_scale,
+						 freq,
+						 bb_predicate,
+						 p);
+		      }
+		  }
+	    }
+
 	}
     }
-  set_hint_predicate (&ipa_fn_summaries->get_create (node)->array_index,
-		      array_index);
   free (order);
 
   if (nonconstant_names.exists () && !early)
@@ -2783,9 +2747,6 @@ estimate_node_size_and_time (struct cgraph_node *node,
   if (info->loop_stride
       && !info->loop_stride->evaluate (possible_truths))
     hints |= INLINE_HINT_loop_stride;
-  if (info->array_index
-      && !info->array_index->evaluate (possible_truths))
-    hints |= INLINE_HINT_array_index;
   if (info->scc_no)
     hints |= INLINE_HINT_in_scc;
   if (DECL_DECLARED_INLINE_P (node->decl))
@@ -3106,9 +3067,6 @@ ipa_merge_fn_summary_after_inlining (struct cgraph_edge *edge)
   remap_hint_predicate (info, callee_info,
 			&callee_info->loop_stride,
 			operand_map, offset_map, clause, &toplev_predicate);
-  remap_hint_predicate (info, callee_info,
-			&callee_info->array_index,
-			operand_map, offset_map, clause, &toplev_predicate);
 
   ipa_call_summary *s = ipa_call_summaries->get (edge);
   inline_update_callee_summaries (edge->callee, s->loop_depth);
@@ -3366,9 +3324,6 @@ inline_read_section (struct lto_file_decl_data *file_data, const char *data,
       p.stream_in (&ib);
       if (info)
         set_hint_predicate (&info->loop_stride, p);
-      p.stream_in (&ib);
-      if (info)
-        set_hint_predicate (&info->array_index, p);
       for (e = node->callees; e; e = e->next_callee)
 	read_ipa_call_summary (&ib, e, info != NULL);
       for (e = node->indirect_calls; e; e = e->next_callee)
@@ -3516,10 +3471,6 @@ ipa_fn_summary_write (void)
 	  if (info->loop_stride)
 	    info->loop_stride->stream_out (ob);
  	  else
-	    streamer_write_uhwi (ob, 0);
-	  if (info->array_index)
-	    info->array_index->stream_out (ob);
-	  else
 	    streamer_write_uhwi (ob, 0);
 	  for (edge = cnode->callees; edge; edge = edge->next_callee)
 	    write_ipa_call_summary (ob, edge);
