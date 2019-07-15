@@ -500,7 +500,11 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_frepo:
       flag_use_repository = value;
       if (value)
-	flag_implicit_templates = 0;
+	{
+	  flag_implicit_templates = 0;
+	  warning (OPT_Wdeprecated, "%<-frepo%> is deprecated and will "
+		   "be removed in a future release");
+	}
       break;
 
     case OPT_ftabstop_:

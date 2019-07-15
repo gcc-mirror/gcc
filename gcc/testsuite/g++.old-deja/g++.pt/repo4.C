@@ -2,6 +2,7 @@
 // { dg-options "-frepo" }
 // { dg-require-host-local "" }
 // { dg-skip-if "dkms are not final links" { vxworks_kernel } }
+// { dg-warning "is deprecated and will be removed in a future release" "" { target *-*-* } 0 }
 
 template <class T>
 struct S {

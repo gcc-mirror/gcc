@@ -1,3 +1,9 @@
+2019-07-15  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91125
+	* c-opts.c (c_common_handle_option): Warn the -frepo
+	will be removed in the future.
+
 2019-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
