@@ -1,3 +1,8 @@
+2019-07-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (aliasing_component_refs_walk): Initialize same_p
+	to 0.
+
 2019-07-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/91162

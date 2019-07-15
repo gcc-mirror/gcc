@@ -931,7 +931,7 @@ aliasing_component_refs_walk (tree ref1, tree type1, tree base1,
 			      bool *maybe_match)
 {
   tree ref = ref2;
-  int same_p;
+  int same_p = 0;
 
   while (true)
     {
