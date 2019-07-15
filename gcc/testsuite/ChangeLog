@@ -1,3 +1,26 @@
+2019-07-15  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91125
+	* g++.dg/parse/repo1.C: Add scan for the new warning.
+	* g++.dg/rtti/repo1.C: Likewise.
+	* g++.dg/template/repo1.C: Likewise.
+	* g++.dg/template/repo10.C: Likewise.
+	* g++.dg/template/repo11.C: Likewise.
+	* g++.dg/template/repo2.C: Likewise.
+	* g++.dg/template/repo3.C: Likewise.
+	* g++.dg/template/repo4.C: Likewise.
+	* g++.dg/template/repo5.C: Likewise.
+	* g++.dg/template/repo6.C: Likewise.
+	* g++.dg/template/repo7.C: Likewise.
+	* g++.dg/template/repo8.C: Likewise.
+	* g++.dg/template/repo9.C: Likewise.
+	* g++.old-deja/g++.pt/instantiate4.C: Likewise.
+	* g++.old-deja/g++.pt/instantiate6.C: Likewise.
+	* g++.old-deja/g++.pt/repo1.C: Likewise.
+	* g++.old-deja/g++.pt/repo2.C: Likewise.
+	* g++.old-deja/g++.pt/repo3.C: Likewise.
+	* g++.old-deja/g++.pt/repo4.C: Likewise.
+
 2019-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
