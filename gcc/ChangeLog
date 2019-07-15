@@ -1,3 +1,13 @@
+2019-07-15  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	Backport from mainline
+	2019-01-23  Bin Cheng  <bin.cheng@arm.com>
+		    Steve Ellcey  <sellcey@marvell.com>
+
+	PR target/85711
+	* recog.c (address_operand): Return false on wrong mode for address.
+	(constrain_operands): Check for mode with 'p' constraint.
+
 2019-07-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/91136
