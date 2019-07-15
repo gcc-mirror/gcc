@@ -1,3 +1,8 @@
+2019-07-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91162
+	* gcc.dg/autopar/pr91162.c: New testcase.
+
 2019-07-15  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR tree-optimization/88497

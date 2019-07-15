@@ -1,3 +1,9 @@
+2019-07-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91162
+	* tree-cfg.c (move_block_to_fn): When releasing a virtual PHI
+	node make sure to replace all uses with something valid.
+
 2019-07-15  Kewen Lin  <linkw@gcc.gnu.org>
 
 	PR tree-optimization/88497
