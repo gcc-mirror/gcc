@@ -5644,9 +5644,7 @@ rs6000_file_start (void)
 
 #ifdef USING_ELFOS_H
   rs6000_machine = rs6000_machine_from_flags ();
-  if (!(rs6000_default_cpu && rs6000_default_cpu[0])
-      && !global_options_set.x_rs6000_cpu_index)
-    emit_asm_machine ();
+  emit_asm_machine ();
 #endif
 
   if (DEFAULT_ABI == ABI_ELFv2)

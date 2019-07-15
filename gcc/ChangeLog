@@ -1,3 +1,9 @@
+2019-07-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/91050
+	* config/rs6000/rs6000.c (rs6000_file_start): Never skip emitting a
+	.machine directive.
+
 2019-07-15  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (@test<mode>_ccno_1):
