@@ -933,7 +933,7 @@
 	(VEC_SHIFTS:VI (match_operand:VI 1 "register_operand"   "v")
 		       (match_operand:SI 2 "nonmemory_operand" "an")))]
   "TARGET_VX"
-  "<vec_shifts_mnem><bhfgq>\t%v0,%v1,%Y2"
+  "<vec_shifts_mnem><bhfgq>\t%v0,%v1,<addr_style_op_ops>"
   [(set_attr "op_type" "VRS")])
 
 ; Shift each element by corresponding vector element
