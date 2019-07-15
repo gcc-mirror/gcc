@@ -1,3 +1,14 @@
+2019-07-15  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/88497
+	* gcc.dg/tree-ssa/pr88497-1.c: New test.
+	* gcc.dg/tree-ssa/pr88497-2.c: Likewise.
+	* gcc.dg/tree-ssa/pr88497-3.c: Likewise.
+	* gcc.dg/tree-ssa/pr88497-4.c: Likewise.
+	* gcc.dg/tree-ssa/pr88497-5.c: Likewise.
+	* gcc.dg/tree-ssa/pr88497-6.c: Likewise.
+	* gcc.dg/tree-ssa/pr88497-7.c: Likewise.
+
 2019-07-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/87233
