@@ -1,3 +1,13 @@
+2019-07-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (@test<mode>_ccno_1):
+	Rename from test<mode>_ccno_1.
+	(*testdi_1): Remove redundant alternatives.  Remove modrm attribute.
+	(*testqi_1_maybe_si): Remove modrm attribute.
+	(*test<mode>_1): Ditto.
+	* config/i386/i386-expand.c (ix86_split_idivmod): Use
+	gen_test_ccno_1 and gen_extend_insn.
+
 2019-07-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	* tree-ssa-alias.c (aliasing_component_refs_walk): Initialize same_p
