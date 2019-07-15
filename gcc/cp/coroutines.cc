@@ -2046,18 +2046,25 @@ register_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 
   if (parm.field_id == NULL_TREE)
     {
-      tree ptype = DECL_ARG_TYPE (*stmt);
-      if (TREE_CODE (ptype) == REFERENCE_TYPE)
-	ptype = TREE_TYPE (ptype);
-      if (!COMPLETE_TYPE_P (ptype))
-	ptype = complete_type_or_else (ptype, *stmt);
-      parm.frame_type = ptype;
+      tree actual_type = TREE_TYPE (*stmt);
+
+      if (! COMPLETE_TYPE_P (actual_type))
+	actual_type = complete_type_or_else (actual_type, *stmt);
+
+      if (TREE_CODE (actual_type) == REFERENCE_TYPE)
+	{
+	  if (! COMPLETE_TYPE_P (TREE_TYPE (actual_type)))
+	    TREE_TYPE (actual_type) =
+	      complete_type_or_else (TREE_TYPE (actual_type), *stmt);
+	  actual_type = build_pointer_type (TREE_TYPE (actual_type));
+	}
+      parm.frame_type = actual_type;
       tree pname = DECL_NAME (*stmt);
       size_t namsize = sizeof ("__parm.") + IDENTIFIER_LENGTH (pname) + 1;
       char *buf = (char *) alloca (namsize);
       snprintf (buf, namsize, "__parm.%s", IDENTIFIER_POINTER (pname));
       parm.field_id = coro_make_frame_entry (data->field_list, buf,
-					     ptype, data->loc);
+					     actual_type, data->loc);
       vec_alloc (parm.body_uses, 4);
       parm.body_uses->quick_push (stmt);
       data->param_seen = true;
@@ -2585,7 +2592,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer, tree *suspended_p)
 	  tree fld_idx = build_class_member_access_expr (deref_fp, fld_ref,
 						         NULL_TREE, false,
 						         tf_warning_or_error);
-	  tree parm_orig_type = TREE_TYPE (arg);
 	  tree parm_passed_type = DECL_ARG_TYPE (arg);
 	  if (TYPE_NEEDS_CONSTRUCTING (parm.frame_type))
 	    {
@@ -2601,9 +2607,16 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer, tree *suspended_p)
 	      vec_safe_push (param_dtor_list, parm.field_id);
 	    }
 	  else
-	    r = build_modify_expr (fn_start, fld_idx, parm.frame_type,
-				   INIT_EXPR, DECL_SOURCE_LOCATION (arg),
-				   arg, DECL_ARG_TYPE (arg));
+	    {
+	      if (! same_type_p (parm.frame_type, TREE_TYPE (arg)))
+		r = build1_loc (DECL_SOURCE_LOCATION (arg), CONVERT_EXPR,
+				parm.frame_type, arg);
+	      else
+		r = arg;
+	      r = build_modify_expr (fn_start, fld_idx, parm.frame_type,
+				     INIT_EXPR, DECL_SOURCE_LOCATION (arg),
+				     r, TREE_TYPE (r));
+	    }
 	  r = coro_build_cvt_void_expr_stmt (r, fn_start);
 	  add_stmt (r);
 	}

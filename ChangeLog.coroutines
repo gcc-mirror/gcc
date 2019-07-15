@@ -1,3 +1,14 @@
+2019-07-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (register_param_uses): Convert reference types to
+	pointers.
+	(morph_fn_to_coro): Add an explicit type conversion in the case that
+	the passed-by type differs from the actual.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/func-params-5.C: New test.
+
 2019-07-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
