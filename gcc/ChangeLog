@@ -1,3 +1,11 @@
+2019-07-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*testdi_1): Match CCZmode for
+	constants that might have the SImode sign bit set.
+	(*testqi_1_maybe_si): Remove "!" constraint modifier.
+	Use correct constraints for pentium pairing.
+	(*test<mode>_1): Ditto.
+
 2019-07-16  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/91173
@@ -6179,7 +6187,6 @@
 	(*call_value_nonlocal_aix): Likewise.
 	(*call_indirect_pcrel): New insn.
 	(*call_value_indirect_pcrel): Likewise.
-
 
 2019-05-29  Uroš Bizjak  <ubizjak@gmail.com>
 
