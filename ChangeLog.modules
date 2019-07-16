@@ -1,4 +1,11 @@
-2019-07-16  Nathan Sidwell  <nathan@acm.org>
+2019-07-16  Nathan Sidwell  <nathan@acm.org>r
+
+	Fix it better.
+	gcc/cp/
+	* mangle.c (mangle_module_substitution): Offset overflow.
+	gcc/testsuite/
+	* g++.dg/modules/sym-subst-3_[ab].C: Fix
+	* g++.dg/modules/sym-subst-[456].C: New.
 
 	Fix module backref subst.
 	gcc/cp/

@@ -850,7 +850,8 @@ mangle_module_substitution (int v)
   else
     {
       write_char ('W');
-      write_compact_number (v);
+      write_unsigned_number (v - 10);
+      write_char ('_');
     }
 }
 
