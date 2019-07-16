@@ -1,5 +1,18 @@
 2019-07-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* read-md.h (md_reader::ptr_loc): Moved from read-md.c.
+	Use file_location instead of separate fields.
+	(md_reader::set_md_ptr_loc): Take a file_location instead of a
+	separate filename and line number.
+	* read-md.c (ptr_loc): As above.
+	(md_reader::copy_md_ptr_loc): Update for new ptr_loc layout.
+	(md_reader::fprint_md_ptr_loc): Likewise.
+	(md_reader::set_md_ptr_loc): Likewise.  Take a file_location
+	instead of a separate filename and line number.
+	(md_reader::read_string): Update call accordingly.
+
+2019-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/rs6000/rs6000.md (*mov<mode>_update1): Explicitly
 	use <SFDF:mode>, <SFDF:MODE>, <SFDF:Ff> and <SFDF:bits> rather than
 	leaving the choice between SFDF and P implicit.
