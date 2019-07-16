@@ -3441,8 +3441,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_bindings (auto_vec<tree> &spaces, unsigned, const range_t &range);
 
   void write_namespaces (elf_out *to, depset::hash &table,
-			 auto_vec<depset *> &spaces, unsigned *crc_ptr);
-  bool read_namespaces (auto_vec<tree> &spaces);
+			 vec<depset *> spaces, unsigned *crc_ptr);
+  bool read_namespaces (vec<tree> &spaces);
 
   unsigned write_cluster (elf_out *to, depset *depsets[], unsigned size,
 			  depset::hash &, unsigned &unnamed, unsigned *crc_ptr);
@@ -10567,7 +10567,9 @@ depset::hash::add_writables (tree ns, bitmap partitions)
   dump.indent ();
 
   unsigned count = 0;
-  auto_vec<tree> bindings (DECL_NAMESPACE_BINDINGS (ns)->size ());
+  vec<tree> bindings;
+  bindings.create (DECL_NAMESPACE_BINDINGS (ns)->size ());
+
   hash_table<named_decl_hash>::iterator end
     (DECL_NAMESPACE_BINDINGS (ns)->end ());
   for (hash_table<named_decl_hash>::iterator iter
@@ -10600,6 +10602,8 @@ depset::hash::add_writables (tree ns, bitmap partitions)
 	}
     }
 
+  bindings.release ();
+
   if (count)
     dump () && dump ("Found %u entries", count);
   dump.outdent ();
@@ -10607,7 +10611,7 @@ depset::hash::add_writables (tree ns, bitmap partitions)
   return count != 0;
 }
 
-typedef std::pair<bitmap, auto_vec<spec_entry *> > spec_tuple;
+typedef std::pair<bitmap, vec<spec_entry *> > spec_tuple;
 
 /* We add the partial & explicit specializations, and the explicit
    instntiations.  */
@@ -10759,7 +10763,8 @@ depset::hash::add_clone (tree clone, tree target)
 void
 depset::hash::add_specializations (bool decl_p, bitmap partitions)
 {
-  spec_tuple data (partitions, 100);
+  spec_tuple data (partitions, vec<spec_entry *>());
+  data.second.create (100);
   walk_specializations (decl_p, specialization_add, &data);
   data.second.qsort (specialization_cmp);
   while (data.second.length ())
@@ -10866,6 +10871,7 @@ depset::hash::add_specializations (bool decl_p, bitmap partitions)
 	    add_redirect (dep);
 	}
     }
+  data.second.release ();
 }
 
 /* Iteratively find dependencies.  During the walk we may find more
@@ -13717,7 +13723,7 @@ module_state::read_cluster (unsigned snum)
 
 void
 module_state::write_namespaces (elf_out *to, depset::hash &table,
-				auto_vec<depset *> &spaces,
+				vec<depset *> spaces,
 				unsigned *crc_p)
 {
   dump () && dump ("Writing namespaces");
@@ -13780,7 +13786,7 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
    SPACES from that data.  */
 
 bool
-module_state::read_namespaces (auto_vec<tree> &spaces)
+module_state::read_namespaces (vec<tree> &spaces)
 {
   bytes_in sec;
 
@@ -16248,7 +16254,9 @@ module_state::write (elf_out *to, cpp_reader *reader)
      unnamed-decl count of the depset's decl (and remains zero for
      non-decls and non-unnamed).  */
   unsigned bytes = 0;
-  auto_vec<depset *> spaces (n_spaces);
+  vec<depset *> spaces;
+  spaces.create (n_spaces);
+
   for (unsigned size, ix = 0; ix < sccs.length (); ix += size)
     {
       depset **base = &sccs[ix];
@@ -16327,6 +16335,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* And finish up.  */
   write_config (to, config, crc);
 
+  spaces.release ();
   sccs.release ();
 
   /* Human-readable info.  */

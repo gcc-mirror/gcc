@@ -1,5 +1,12 @@
 2019-07-16  Nathan Sidwell  <nathan@acm.org>r
 
+	gcc/cp/
+	module.cc (depset::hash::add_writables): Use plain vec.
+	(typedef spec_tuple): Use plain vec.
+	(depset::hash::add_speciailizations): Correctly init vec.
+	(module_state::{read,write}_namespaces): Use plain vec.
+	(module_state::{read,write}): Adjust.
+
 	Fix it better.
 	gcc/cp/
 	* mangle.c (mangle_module_substitution): Offset overflow.
