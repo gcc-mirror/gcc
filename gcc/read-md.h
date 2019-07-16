@@ -212,8 +212,8 @@ class md_reader
   rtx copy_rtx_for_iterators (rtx original);
   void read_conditions ();
   void record_potential_iterator_use (struct iterator_group *group,
-				      rtx x, unsigned int index,
-				      const char *name);
+				      file_location loc, rtx x,
+				      unsigned int index, const char *name);
   struct mapping *read_mapping (struct iterator_group *group, htab_t table);
   overloaded_name *handle_overloaded_name (rtx, vec<mapping *> *);
 

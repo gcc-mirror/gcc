@@ -1,5 +1,25 @@
 2019-07-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* read-md.h (md_reader::record_potential_iterator_use): Add a
+	file_location parameter.
+	* read-rtl.c (attribute_use::loc): New field.
+	(map_attr_string): Take a file_location parameter.  Report cases
+	in which attributes map to multiple distinct values.
+	(apply_attribute_uses): Update call accordingly.
+	(md_reader::handle_overloaded_name): Likewise.
+	(md_reader::apply_iterator_to_string): Likewise.  Skip empty
+	nonnull strings.
+	(record_attribute_use): Take a file_location parameter.
+	Initialize attribute_use::loc.
+	(md_reader::record_potential_iterator_use): Take a file_location
+	parameter.  Update call to record_attribute_use.
+	(rtx_reader::rtx_alloc_for_name): Update call accordingly.
+	(rtx_reader::read_rtx_code): Likewise.
+	(rtx_reader::read_rtx_operand): Likewise.  Record a location
+	for implicitly-expanded empty strings.
+
+2019-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* read-md.h (md_reader::ptr_loc): Moved from read-md.c.
 	Use file_location instead of separate fields.
 	(md_reader::set_md_ptr_loc): Take a file_location instead of a
