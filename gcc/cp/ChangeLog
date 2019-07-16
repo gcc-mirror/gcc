@@ -1,5 +1,8 @@
 2019-07-16  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (cp_parser_simple_type_specifier): Separate tentative
+	parses for optional type-spec and CTAD.
+
 	* parser.c (cp_parser_nested_name_specifier_opt): If the token is
 	already CPP_NESTED_NAME_SPECIFIER, leave it alone.
 

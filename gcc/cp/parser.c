@@ -17833,7 +17833,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
       /* Don't gobble tokens or issue error messages if this is an
 	 optional type-specifier.  */
-      if ((flags & CP_PARSER_FLAGS_OPTIONAL) || cxx_dialect >= cxx17)
+      if (flags & CP_PARSER_FLAGS_OPTIONAL)
 	cp_parser_parse_tentatively (parser);
 
       token = cp_lexer_peek_token (parser->lexer);
@@ -17873,37 +17873,26 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	      else
 		{
 		  cp_parser_error (parser, "expected template-id for type");
-		  type = NULL_TREE;
+		  type = error_mark_node;
 		}
 	    }
 	}
-      /* Otherwise, look for a type-name.  */
-      else
-	type = cp_parser_type_name (parser, (qualified_p && typename_p));
 
-      /* Keep track of all name-lookups performed in class scopes.  */
-      if (type
-	  && !global_p
-	  && !qualified_p
-	  && TREE_CODE (type) == TYPE_DECL
-	  && identifier_p (DECL_NAME (type)))
-	maybe_note_name_used_in_class (DECL_NAME (type), type);
-      /* If it didn't work out, we don't have a TYPE.  */
-      if (((flags & CP_PARSER_FLAGS_OPTIONAL) || cxx_dialect >= cxx17)
-	  && !cp_parser_parse_definitely (parser))
-	type = NULL_TREE;
-      if (!type && cxx_dialect >= cxx17)
+      /* Otherwise, look for a type-name.  */
+      if (!type)
 	{
-	  if (flags & CP_PARSER_FLAGS_OPTIONAL)
+	  if (cxx_dialect >= cxx17)
 	    cp_parser_parse_tentatively (parser);
 
-	  cp_parser_global_scope_opt (parser,
-				      /*current_scope_valid_p=*/false);
-	  cp_parser_nested_name_specifier_opt (parser,
-					       /*typename_keyword_p=*/false,
-					       /*check_dependency_p=*/true,
-					       /*type_p=*/false,
-					       /*is_declaration=*/false);
+	  type = cp_parser_type_name (parser, (qualified_p && typename_p));
+
+	  if (cxx_dialect >= cxx17 && !cp_parser_parse_definitely (parser))
+	    type = NULL_TREE;
+	}
+
+      if (!type && cxx_dialect >= cxx17)
+	{
+	  /* Try class template argument deduction.  */
 	  tree name = cp_parser_identifier (parser);
 	  if (name && TREE_CODE (name) == IDENTIFIER_NODE
 	      && parser->scope != error_mark_node)
@@ -17929,11 +17918,21 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	    }
 	  else
 	    type = error_mark_node;
-
-	  if ((flags & CP_PARSER_FLAGS_OPTIONAL)
-	      && !cp_parser_parse_definitely (parser))
-	    type = NULL_TREE;
 	}
+
+      /* If it didn't work out, we don't have a TYPE.  */
+      if ((flags & CP_PARSER_FLAGS_OPTIONAL)
+	  && !cp_parser_parse_definitely (parser))
+	type = NULL_TREE;
+
+      /* Keep track of all name-lookups performed in class scopes.  */
+      if (type
+	  && !global_p
+	  && !qualified_p
+	  && TREE_CODE (type) == TYPE_DECL
+	  && identifier_p (DECL_NAME (type)))
+	maybe_note_name_used_in_class (DECL_NAME (type), type);
+
       if (type && decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
 				      token,
