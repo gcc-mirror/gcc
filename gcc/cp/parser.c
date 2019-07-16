@@ -773,6 +773,16 @@ cp_lexer_previous_token (cp_lexer *lexer)
   return cp_lexer_token_at (lexer, tp);
 }
 
+/* Overload for make_location, taking the lexer to mean the location of the
+   previous token.  */
+
+static inline location_t
+make_location (location_t caret, location_t start, cp_lexer *lexer)
+{
+  cp_token *t = cp_lexer_previous_token (lexer);
+  return make_location (caret, start, t->location);
+}
+
 /* nonzero if we are presently saving tokens.  */
 
 static inline int
@@ -7774,10 +7784,8 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	       ~~~^~~~~~~~~~~~~
 	     where the caret is at the deref token, ranging from
 	     the start of postfix_expression to the end of the access expr.  */
-	  location_t end_loc
-	    = get_finish (cp_lexer_previous_token (parser->lexer)->location);
 	  location_t combined_loc
-	    = make_location (input_location, start_loc, end_loc);
+	    = make_location (input_location, start_loc, parser->lexer);
 	  protected_set_expr_location (postfix_expression, combined_loc);
 	}
     }
@@ -8187,10 +8195,8 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	       ^~~~~~~~~~~~~~
 	       with start == caret at the start of the "alignof"/"sizeof"
 	       token, with the endpoint at the final closing paren.  */
-	    location_t finish_loc
-	      = cp_lexer_previous_token (parser->lexer)->location;
 	    location_t compound_loc
-	      = make_location (start_loc, start_loc, finish_loc);
+	      = make_location (start_loc, start_loc, parser->lexer);
 
 	    cp_expr ret_expr (ret);
 	    ret_expr.set_location (compound_loc);
@@ -8291,8 +8297,6 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 
 	    parser->type_definition_forbidden_message = saved_message;
 
-	    location_t finish_loc
-	      = cp_lexer_peek_token (parser->lexer)->location;
 	    parens.require_close (parser);
 
 	    /* Construct a location of the form:
@@ -8300,7 +8304,7 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	       ^~~~~~~~~~~~~~~
 	       with start == caret, finishing at the close-paren.  */
 	    location_t noexcept_loc
-	      = make_location (start_loc, start_loc, finish_loc);
+	      = make_location (start_loc, start_loc, parser->lexer);
 
 	    return cp_expr (finish_noexcept_expr (expr, tf_warning_or_error),
 			    noexcept_loc);
@@ -8351,15 +8355,13 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	  /* Consume the '&&' token.  */
 	  cp_lexer_consume_token (parser->lexer);
 	  /* Look for the identifier.  */
-	  location_t finish_loc
-	    = get_finish (cp_lexer_peek_token (parser->lexer)->location);
 	  identifier = cp_parser_identifier (parser);
 	  /* Construct a location of the form:
 	       &&label
 	       ^~~~~~~
 	     with caret==start at the "&&", finish at the end of the label.  */
 	  location_t combined_loc
-	    = make_location (start_loc, start_loc, finish_loc);
+	    = make_location (start_loc, start_loc, parser->lexer);
 	  /* Create an expression representing the address.  */
 	  expression = finish_label_address_expr (identifier, combined_loc);
 	  if (cp_parser_non_integral_constant_expression (parser,
@@ -8607,10 +8609,8 @@ cp_parser_has_attribute_expression (cp_parser *parser)
      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      with start == caret at the start of the built-in token,
      and with the endpoint at the final closing paren.  */
-  location_t finish_loc
-    = cp_lexer_previous_token (parser->lexer)->location;
   location_t compound_loc
-    = make_location (start_loc, start_loc, finish_loc);
+    = make_location (start_loc, start_loc, parser->lexer);
 
   cp_expr ret_expr (ret ? boolean_true_node : boolean_false_node);
   ret_expr.set_location (compound_loc);
@@ -8732,9 +8732,8 @@ cp_parser_new_expression (cp_parser* parser)
                  ^~~~~~~~~~~~
          with caret == start at the start of the "new" token, and the end
          at the end of the final token we consumed.  */
-      cp_token *end_tok = cp_lexer_previous_token (parser->lexer);
-      location_t end_loc = get_finish (end_tok->location);
-      location_t combined_loc = make_location (start_loc, start_loc, end_loc);
+      location_t combined_loc = make_location (start_loc, start_loc,
+					       parser->lexer);
 
       /* Create a representation of the new-expression.  */
       ret = build_new (&placement, type, nelts, &initializer, global_scope_p,
@@ -10501,10 +10500,9 @@ cp_parser_lambda_expression (cp_parser* parser)
   insert_pending_capture_proxies ();
 
   /* Update the lambda expression to a range.  */
-  cp_token *end_tok = cp_lexer_previous_token (parser->lexer);
   LAMBDA_EXPR_LOCATION (lambda_expr) = make_location (token->location,
 						      token->location,
-						      end_tok->location);
+						      parser->lexer);
 
   if (ok)
     lambda_expr = build_lambda_object (lambda_expr);
@@ -11147,11 +11145,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
     cp_parser_parse_tentatively (parser);
   std_attrs = cp_parser_std_attribute_spec_seq (parser);
   if (std_attrs)
-    {
-      location_t end_loc
-	= cp_lexer_previous_token (parser->lexer)->location;
-      attrs_loc = make_location (attrs_loc, attrs_loc, end_loc);
-    }
+    attrs_loc = make_location (attrs_loc, attrs_loc, parser->lexer);
   if (c_dialect_objc ())
     {
       if (!cp_parser_parse_definitely (parser))
@@ -15529,10 +15523,8 @@ cp_parser_operator (cp_parser* parser, location_t start_loc)
 	     ^~~~~~~~~~~~~~~~~~~~~
 	   with caret == start at the start token, finish at the end of the
 	   suffix identifier.  */
-	location_t finish_loc
-	  = get_finish (cp_lexer_previous_token (parser->lexer)->location);
 	location_t combined_loc
-	  = make_location (start_loc, start_loc, finish_loc);
+	  = make_location (start_loc, start_loc, parser->lexer);
 	return cp_expr (id, combined_loc);
       }
 
@@ -16454,10 +16446,8 @@ cp_parser_template_id (cp_parser *parser,
      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      with caret == start at the start of the template-name,
      ranging until the closing '>'.  */
-  location_t finish_loc
-    = get_finish (cp_lexer_previous_token (parser->lexer)->location);
   location_t combined_loc
-    = make_location (token->location, token->location, finish_loc);
+    = make_location (token->location, token->location, parser->lexer);
 
   /* Check for concepts autos where they don't belong.  We could
      identify types in some cases of idnetifier TEMPL, looking ahead
@@ -28567,10 +28557,8 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
 	    ^~~~~~~~~~~~~~~
 	 with caret == start at the start of the type name,
 	 finishing at the closing brace.  */
-      location_t finish_loc
-	= get_finish (cp_lexer_previous_token (parser->lexer)->location);
       location_t combined_loc = make_location (start_loc, start_loc,
-					       finish_loc);
+					       parser->lexer);
       cast.set_location (combined_loc);
       return cast;
    }
@@ -28605,9 +28593,7 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
        ^~~~~~~~
      with caret == start at the start of the type name,
      finishing at the closing paren.  */
-  location_t finish_loc
-    = get_finish (cp_lexer_previous_token (parser->lexer)->location);
-  location_t combined_loc = make_location (start_loc, start_loc, finish_loc);
+  location_t combined_loc = make_location (start_loc, start_loc, parser->lexer);
   cast.set_location (combined_loc);
   return cast;
 }
@@ -30652,9 +30638,7 @@ cp_parser_objc_encode_expression (cp_parser* parser)
        @encode(int)
        ^~~~~~~~~~~~
      with caret==start at the @ token, finishing at the close paren.  */
-  location_t combined_loc
-    = make_location (start_loc, start_loc,
-                     cp_lexer_previous_token (parser->lexer)->location);
+  location_t combined_loc = make_location (start_loc, start_loc, parser->lexer);
 
   return cp_expr (objc_build_encode_expr (type), combined_loc);
 }
@@ -30698,9 +30682,7 @@ cp_parser_objc_protocol_expression (cp_parser* parser)
        @protocol(prot)
        ^~~~~~~~~~~~~~~
      with caret==start at the @ token, finishing at the close paren.  */
-  location_t combined_loc
-    = make_location (start_loc, start_loc,
-                     cp_lexer_previous_token (parser->lexer)->location);
+  location_t combined_loc = make_location (start_loc, start_loc, parser->lexer);
   tree result = objc_build_protocol_expr (proto);
   protected_set_expr_location (result, combined_loc);
   return result;
@@ -30785,9 +30767,7 @@ cp_parser_objc_selector_expression (cp_parser* parser)
        @selector(func)
        ^~~~~~~~~~~~~~~
      with caret==start at the @ token, finishing at the close paren.  */
-  location_t combined_loc
-    = make_location (loc, loc,
-                     cp_lexer_previous_token (parser->lexer)->location);
+  location_t combined_loc = make_location (loc, loc, parser->lexer);
   tree result = objc_build_selector_expr (combined_loc, sel_seq);
   /* TODO: objc_build_selector_expr doesn't always honor the location.  */
   protected_set_expr_location (result, combined_loc);

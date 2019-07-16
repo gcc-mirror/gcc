@@ -1,5 +1,8 @@
 2019-07-16  Jason Merrill  <jason@redhat.com>
 
+	* parser.c (make_location): Add overload taking cp_lexer* as last
+	parameter.
+
 	* parser.c (cp_parser_simple_type_specifier): Separate tentative
 	parses for optional type-spec and CTAD.
 
