@@ -1,6 +1,12 @@
 2019-07-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	Backport from mainline
+	PR target/89222
+	* gcc.target/arm/pr89222.c: Add new test.
+
+2019-07-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	Backport from mainline
 	2019-02-04  Wilco Dijkstra  <wdijkstr@arm.com>
 	PR target/89190
 	* gcc.target/arm/pr89190.c: New test.

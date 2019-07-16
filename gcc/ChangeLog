@@ -1,6 +1,15 @@
 2019-07-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	Backport from mainline
+	PR target/89222
+	* config/arm/arm.md (movsi): Use targetm.cannot_force_const_mem
+	to decide when to split off a non-zero offset from a symbol.
+	* config/arm/arm.c (arm_cannot_force_const_mem): Disallow offsets
+	in function symbols.
+
+2019-07-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	Backport from mainline
 	2019-02-13  Wilco Dijkstra  <wdijkstr@arm.com>
 	PR target/89190
 	* config/arm/arm.c (ldm_stm_operation_p) Set
