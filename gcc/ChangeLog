@@ -1,3 +1,11 @@
+2019-07-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	Backport from mainline
+	2019-05-30  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR driver/90684
+	* gcc/opts.c (parse_and_check_align_values): Allow 4 alignment values.
+
 2019-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
