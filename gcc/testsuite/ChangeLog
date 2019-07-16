@@ -1,3 +1,8 @@
+2019-07-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/89190
+	* gcc.target/arm/pr89190.c: New test.
+
 2019-07-16  Martin Liska  <mliska@suse.cz>
 
 	PR testsuite/91175
