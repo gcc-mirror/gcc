@@ -840,10 +840,18 @@ write_encoding (const tree decl)
    module name mangler.  */
 
 void
-mangle_substitution (char c, int v)
+mangle_module_substitution (int v)
 {
-  write_char (c);
-  write_compact_number (v);
+  if (v < 10)
+    {
+      write_char ('_');
+      write_char ('0' + v);
+    }
+  else
+    {
+      write_char ('W');
+      write_compact_number (v);
+    }
 }
 
 void

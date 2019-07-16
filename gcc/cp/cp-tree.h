@@ -7760,7 +7760,7 @@ extern tree mangle_template_parm_object		(tree);
 extern char * get_mangled_vtable_map_var_name   (tree);
 extern bool mangle_return_type_p		(tree);
 extern tree mangle_decomp			(tree, vec<tree> &);
-extern void mangle_substitution			(char, int);
+extern void mangle_module_substitution		(int);
 extern void mangle_identifier			(tree);
 
 /* in dump.c */

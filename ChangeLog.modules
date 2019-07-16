@@ -1,3 +1,16 @@
+2019-07-16  Nathan Sidwell  <nathan@acm.org>
+
+	Fix module backref subst.
+	gcc/cp/
+	* cp-tree.h (mangle_substitution): Rename to ...
+	(mangle_module_substitution): ... here.  Drop genecity.
+	* mangle.c: Likewise.  Fix mangling.
+	* module.cc (module_state::mangle): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/sym-subst-1.C: Adjust scan.
+	* g++.dg/modules/sym-subst-2_[ab].C: Adjust scan.
+	* g++.dg/modules/sym-subst-3_[ab].C: New.
+
 2019-07-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/c-family/

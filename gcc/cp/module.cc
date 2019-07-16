@@ -12526,7 +12526,7 @@ void
 module_state::mangle ()
 {
   if (subst)
-    mangle_substitution ('W', subst - 1);
+    mangle_module_substitution (subst - 1);
   else
     {
       if (parent)
