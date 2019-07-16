@@ -5999,52 +5999,29 @@
         }
     }
 
-  if (ARM_OFFSETS_MUST_BE_WITHIN_SECTIONS_P)
+  split_const (operands[1], &base, &offset);
+  if (INTVAL (offset) != 0
+      && targetm.cannot_force_const_mem (SImode, operands[1]))
     {
-      split_const (operands[1], &base, &offset);
-      if (GET_CODE (base) == SYMBOL_REF
-	  && !offset_within_block_p (base, INTVAL (offset)))
-	{
-	  tmp = can_create_pseudo_p () ? gen_reg_rtx (SImode) : operands[0];
-	  emit_move_insn (tmp, base);
-	  emit_insn (gen_addsi3 (operands[0], tmp, offset));
-	  DONE;
-	}
+      tmp = can_create_pseudo_p () ? gen_reg_rtx (SImode) : operands[0];
+      emit_move_insn (tmp, base);
+      emit_insn (gen_addsi3 (operands[0], tmp, offset));
+      DONE;
     }
+
+  tmp = can_create_pseudo_p () ? NULL_RTX : operands[0];
 
   /* Recognize the case where operand[1] is a reference to thread-local
-     data and load its address to a register.  */
+     data and load its address to a register.  Offsets have been split off
+     already.  */
   if (arm_tls_referenced_p (operands[1]))
-    {
-      rtx tmp = operands[1];
-      rtx addend = NULL;
-
-      if (GET_CODE (tmp) == CONST && GET_CODE (XEXP (tmp, 0)) == PLUS)
-        {
-          addend = XEXP (XEXP (tmp, 0), 1);
-          tmp = XEXP (XEXP (tmp, 0), 0);
-        }
-
-      gcc_assert (GET_CODE (tmp) == SYMBOL_REF);
-      gcc_assert (SYMBOL_REF_TLS_MODEL (tmp) != 0);
-
-      tmp = legitimize_tls_address (tmp,
-				    !can_create_pseudo_p () ? operands[0] : 0);
-      if (addend)
-        {
-          tmp = gen_rtx_PLUS (SImode, tmp, addend);
-          tmp = force_operand (tmp, operands[0]);
-        }
-      operands[1] = tmp;
-    }
+    operands[1] = legitimize_tls_address (operands[1], tmp);
   else if (flag_pic
 	   && (CONSTANT_P (operands[1])
 	       || symbol_mentioned_p (operands[1])
 	       || label_mentioned_p (operands[1])))
-      operands[1] = legitimize_pic_address (operands[1], SImode,
-					    (!can_create_pseudo_p ()
-					     ? operands[0]
-					     : 0));
+    operands[1] =
+      legitimize_pic_address (operands[1], SImode, tmp);
   }
   "
 )
