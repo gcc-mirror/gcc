@@ -1,4 +1,4 @@
-// { dg-additional-options -fmodules-ts }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module" }
 
 module foo;
 
