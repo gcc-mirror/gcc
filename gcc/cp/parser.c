@@ -6275,7 +6275,8 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
   cp_token *token;
 
   /* Remember where the nested-name-specifier starts.  */
-  if (cp_parser_uncommitted_to_tentative_parse_p (parser))
+  if (cp_parser_uncommitted_to_tentative_parse_p (parser)
+      && cp_lexer_next_token_is_not (parser->lexer, CPP_NESTED_NAME_SPECIFIER))
     {
       start = cp_lexer_token_position (parser->lexer, false);
       push_deferring_access_checks (dk_deferred);
