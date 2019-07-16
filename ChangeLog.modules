@@ -1,7 +1,14 @@
 2019-07-16  Nathan Sidwell  <nathan@acm.org>r
 
 	gcc/cp/
-	module.cc (depset::hash::add_writables): Use plain vec.
+	* module.cc (module_state::read_{bindings,namespaces}): Use plain
+	vec
+	(module_state::read): Adjust.
+	(module_state::write_macros): Use plain vec.
+	(module_state::deferred_macro): Use plain vec.
+
+	gcc/cp/
+	* module.cc (depset::hash::add_writables): Use plain vec.
 	(typedef spec_tuple): Use plain vec.
 	(depset::hash::add_speciailizations): Correctly init vec.
 	(module_state::{read,write}_namespaces): Use plain vec.

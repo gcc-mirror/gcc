@@ -3438,11 +3438,11 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
  private:
   static unsigned write_bindings (elf_out *to, vec<depset *> depsets,
 				  depset::hash &table, unsigned *crc_ptr);
-  bool read_bindings (auto_vec<tree> &spaces, unsigned, const range_t &range);
+  bool read_bindings (vec<tree> spaces, unsigned, const range_t &range);
 
   void write_namespaces (elf_out *to, depset::hash &table,
 			 vec<depset *> spaces, unsigned *crc_ptr);
-  bool read_namespaces (vec<tree> &spaces);
+  vec<tree> read_namespaces ();
 
   unsigned write_cluster (elf_out *to, depset *depsets[], unsigned size,
 			  depset::hash &, unsigned &unnamed, unsigned *crc_ptr);
@@ -13785,13 +13785,16 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
 /* Read the namespace hierarchy from MOD_SNAME_PFX.namespace.  Fill in
    SPACES from that data.  */
 
-bool
-module_state::read_namespaces (vec<tree> &spaces)
+vec<tree>
+module_state::read_namespaces ()
 {
   bytes_in sec;
+  vec<tree> spaces;
 
+  spaces.create (100);
+  
   if (!sec.begin (loc, from (), MOD_SNAME_PFX ".nms"))
-    return false;
+    return spaces;
 
   dump () && dump ("Reading namespaces");
   dump.indent ();
@@ -13833,10 +13836,11 @@ module_state::read_namespaces (vec<tree> &spaces)
       spaces.safe_push (inner);
     }
   dump.outdent ();
-  if (!sec.end (from ()))
-    return false;
 
-  return true;
+  if (!sec.end (from ()))
+    spaces.truncate (0);
+
+  return spaces;
 }
 
 /* Write the binding TABLE to MOD_SNAME_PFX.bind
@@ -13884,7 +13888,7 @@ module_state::write_bindings (elf_out *to, vec<depset *> sccs,
 /* Read the binding table from MOD_SNAME_PFX.bind.  */
 
 bool
-module_state::read_bindings (auto_vec<tree> &spaces, unsigned num,
+module_state::read_bindings (vec<tree> spaces, unsigned num,
 			     const range_t &range)
 {
   bytes_in sec;
@@ -15199,7 +15203,7 @@ maybe_add_macro (cpp_reader *, cpp_hashnode *node, void *data_)
     }
 
   if (exporting)
-    static_cast<auto_vec<cpp_hashnode *> *> (data_)->safe_push (node);
+    static_cast<vec<cpp_hashnode *> *> (data_)->safe_push (node);
 
   return 1; /* Don't stop.  */
 }
@@ -15238,7 +15242,8 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
   dump () && dump ("Writing macros");
   dump.indent ();
 
-  auto_vec<cpp_hashnode *> macros;
+  vec<cpp_hashnode *> macros;
+  macros.create (100);
   cpp_forall_identifiers (reader, maybe_add_macro, &macros);
 
   const cpp_hashnode *controlling_node = cpp_main_controlling_macro (reader);
@@ -15322,6 +15327,7 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
 	}
     }
 
+  macros.release ();
   dump.outdent ();
   return count;
 }
@@ -15478,7 +15484,8 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
   /* Now find the macros that are still visible.  */
   bool failed = false;
   cpp_macro *def = NULL;
-  auto_vec<macro_export> defs (imports.length ());
+  vec<macro_export> defs;
+  defs.create (imports.length ());
   for (unsigned ix = imports.length (); ix--;)
     {
       const macro_import::slot &slot = imports[ix];
@@ -15540,6 +15547,8 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
 	}
       def = NULL;
     }
+
+  defs.release ();
 
   dump.pop (n);
 
@@ -16426,12 +16435,13 @@ module_state::read (int fd, int e, cpp_reader *reader)
       available_clusters += config.sec_range.second - config.sec_range.first;
 
       /* Read the namespace hierarchy. */
-      auto_vec<tree> spaces;
-      if (!read_namespaces (spaces))
-	return NULL;
+      vec<tree> spaces = read_namespaces ();
 
-      /* And the bindings.  */
-      if (!read_bindings (spaces, config.num_bindings, config.sec_range))
+      bool ok = spaces.length ()
+	&& read_bindings (spaces, config.num_bindings, config.sec_range);
+
+      spaces.release ();
+      if (!ok)
 	return NULL;
 
       /* And unnamed.  */
