@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target int128 } } */
 /* { dg-options "-O -ftree-parallelize-loops=2 -fno-tree-dominator-opts --param parloops-min-per-thread=30" } */
 
 void
