@@ -1,3 +1,11 @@
+2019-07-16  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/lto/alias-1_0.C: Use -O3.
+	* g++.dg/lto/alias-2_0.C: Use -O3.
+	* g++.dg/lto/alias-3_0.C: Add loop to enable inlining with
+	-fno-use-linker-plugin.
+	* g++.dg/lto/alias-3_1.C: Remove dg-lto-do and dg-lto-options.
+
 2019-07-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/tree-ssa/pr84512.c: Don't xfail scan-tree-dump on

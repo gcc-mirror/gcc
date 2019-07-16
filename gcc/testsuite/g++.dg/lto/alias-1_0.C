@@ -1,5 +1,5 @@
 /* { dg-lto-do run } */
-/* { dg-lto-options { { -O2 -flto } } } */
+/* { dg-lto-options { { -O3 -flto } } } */
 
 /* With LTO we consider all pointers to incomplete types to be possibly
    aliasing.  This makes *bptr to alias with aptr.
