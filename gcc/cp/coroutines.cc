@@ -2052,12 +2052,8 @@ register_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 	actual_type = complete_type_or_else (actual_type, *stmt);
 
       if (TREE_CODE (actual_type) == REFERENCE_TYPE)
-	{
-	  if (! COMPLETE_TYPE_P (TREE_TYPE (actual_type)))
-	    TREE_TYPE (actual_type) =
-	      complete_type_or_else (TREE_TYPE (actual_type), *stmt);
-	  actual_type = build_pointer_type (TREE_TYPE (actual_type));
-	}
+	actual_type = build_pointer_type (TREE_TYPE (actual_type));
+
       parm.frame_type = actual_type;
       tree pname = DECL_NAME (*stmt);
       size_t namsize = sizeof ("__parm.") + IDENTIFIER_LENGTH (pname) + 1;
