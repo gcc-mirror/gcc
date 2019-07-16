@@ -3621,7 +3621,10 @@ rest_of_handle_dse (void)
   if ((locally_deleted || globally_deleted)
       && cfun->can_throw_non_call_exceptions
       && purge_all_dead_edges ())
-    cleanup_cfg (0);
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      cleanup_cfg (0);
+    }
 
   return 0;
 }
