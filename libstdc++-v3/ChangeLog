@@ -1,3 +1,8 @@
+2019-07-16  Jason Merrill  <jason@redhat.com>
+
+	* include/std/memory (uses_allocator_construction_args): Add parens
+	around constraint.
+
 2019-07-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/29_atomics/atomic_float/1.cc: Fix comment.
