@@ -1,3 +1,8 @@
+2019-07-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR bootstrap/91176
+	* ipa-fnsummary.c (analyze_function_body): Skip debug stmts
+
 2019-07-15  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/91050

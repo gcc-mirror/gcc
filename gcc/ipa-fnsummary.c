@@ -2078,8 +2078,8 @@ analyze_function_body (struct cgraph_node *node, bool early)
 
       fix_builtin_expect_stmt = find_foldable_builtin_expect (bb);
 
-      for (gimple_stmt_iterator bsi = gsi_start_bb (bb); !gsi_end_p (bsi);
-	   gsi_next (&bsi))
+      for (gimple_stmt_iterator bsi = gsi_start_nondebug_bb (bb);
+	   !gsi_end_p (bsi); gsi_next_nondebug (&bsi))
 	{
 	  gimple *stmt = gsi_stmt (bsi);
 	  int this_size = estimate_num_insns (stmt, &eni_size_weights);
