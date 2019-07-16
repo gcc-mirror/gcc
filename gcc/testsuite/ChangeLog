@@ -1,5 +1,10 @@
 2019-07-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* gcc.dg/tree-ssa/pr84512.c: Don't xfail scan-tree-dump on
+	sparcv9.
+
+2019-07-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* gcc.dg/autopar/pr91162.c: Require int128 support.
 
 2019-07-15  Richard Biener  <rguenther@suse.de>
