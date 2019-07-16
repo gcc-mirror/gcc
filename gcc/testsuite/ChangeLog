@@ -1,3 +1,8 @@
+2019-07-16  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/91175
+	* g++.old-deja/g++.pt/instantiate4.C: Do not use -Werror.
+
 2019-07-15  Martin Liska  <mliska@suse.cz>
 
 	PR c++/91125
