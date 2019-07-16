@@ -3828,7 +3828,7 @@
 {
   operands[4] = gen_rtx_REG (DImode, REGNO (operands[3]));
 }
-  [(set_attr "isa" "<VSisa>")])
+  [(set_attr "isa" "<FL_CONV:VSisa>")])
 
 (define_insn_and_split "*vsx_ext_<VSX_EXTRACT_I:VS_scalar>_ufl_<FL_CONV:mode>"
   [(set (match_operand:FL_CONV 0 "gpc_reg_operand" "=wa")
@@ -3851,7 +3851,7 @@
 {
   operands[4] = gen_rtx_REG (DImode, REGNO (operands[3]));
 }
-  [(set_attr "isa" "<VSisa>")])
+  [(set_attr "isa" "<FL_CONV:VSisa>")])
 
 ;; V4SI/V8HI/V16QI set operation on ISA 3.0
 (define_insn "vsx_set_<mode>_p9"

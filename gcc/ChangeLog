@@ -1,5 +1,24 @@
 2019-07-16  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/rs6000/rs6000.md (*mov<mode>_update1): Explicitly
+	use <SFDF:mode>, <SFDF:MODE>, <SFDF:Ff> and <SFDF:bits> rather than
+	leaving the choice between SFDF and P implicit.
+	(*mov<mode>_update2): Likewise.
+	(*cmp<IBM128:mode>_internal2): Explicitly use <IBM128:MODE>
+	rather than leaving the choice betweem IBM128 and GPR implicit.
+	(*fix<uns>_trunc<IEEE128:mode><QHSI:mode>2_mem): Explicitly use
+	<IEEE128:MODE> rather than leaving the choice between IEEE128 and
+	QHSI implicit.
+	(AltiVec define_peephole2s): Explicitly use <ALTIVEC_DFORM:MODE>
+	rather than leaving the choice between ALTIVEC_DFORM and P implicit.
+	* config/rs6000/vsx.md
+	(*vsx_ext_<VSX_EXTRACT_I:VS_scalar>_fl_<FL_CONV:mode>)
+	(*vsx_ext_<VSX_EXTRACT_I:VS_scalar>_ufl_<FL_CONV:mode>): Explicitly
+	use <FL_CONV:VSisa> rather than leaving the choice between FL_CONV
+	and VSX_EXTRACT_I implicit.
+
+2019-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/mips/micromips.md (*movep<MOVEP1:mode><MOVEP2:mode>):
 	Explicitly use <MOVEP1:MODE> for the mode attribute.
 
