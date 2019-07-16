@@ -9679,7 +9679,7 @@ cp_parser_question_colon_clause (cp_parser* parser, cp_expr logical_or_expr)
   if (cp_parser_allow_gnu_extensions_p (parser)
       && token->type == CPP_COLON)
     {
-      pedwarn (token->location, OPT_Wpedantic, 
+      pedwarn (token->location, OPT_Wpedantic,
 	       "ISO C++ does not allow %<?:%> with omitted middle operand");
       /* Implicit true clause.  */
       expr = NULL_TREE;
