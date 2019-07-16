@@ -149,6 +149,13 @@ struct mapping;
 class md_reader
 {
  public:
+  /* Associates PTR (which can be a string, etc.) with the file location
+     specified by LOC.  */
+  struct ptr_loc {
+    const void *ptr;
+    file_location loc;
+  };
+
   md_reader (bool compact);
   virtual ~md_reader ();
 
@@ -183,7 +190,7 @@ class md_reader
   void require_word_ws (const char *expected);
   int peek_char (void);
 
-  void set_md_ptr_loc (const void *ptr, const char *filename, int lineno);
+  void set_md_ptr_loc (const void *ptr, file_location);
   const struct ptr_loc *get_md_ptr_loc (const void *ptr);
   void copy_md_ptr_loc (const void *new_ptr, const void *old_ptr);
   void fprint_md_ptr_loc (FILE *outf, const void *ptr);
