@@ -1,3 +1,13 @@
+2019-07-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	Backport from mainline
+	2019-02-13  Wilco Dijkstra  <wdijkstr@arm.com>
+	PR target/89190
+	* config/arm/arm.c (ldm_stm_operation_p) Set
+	addr_reg_in_reglist correctly for first register.
+	(load_multiple_sequence): Remove dead base check.
+	(gen_ldm_seq): Correctly set write_back for Thumb-1.
+
 2019-07-15  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline
