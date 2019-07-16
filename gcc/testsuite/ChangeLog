@@ -1,3 +1,8 @@
+2019-07-16  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/91173
+	* g++.dg/pr91173.C: New test.
+
 2019-07-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/89190
