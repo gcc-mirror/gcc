@@ -1914,7 +1914,23 @@ get_fn_local_identifier (tree orig, const char *append)
 # endif
 #endif
 
-  char *an = ACONCAT ((pfx, IDENTIFIER_POINTER (nm), sep, append, (char*)0));
+  char *an;
+  if (DECL_USE_TEMPLATE (orig)
+      && DECL_TEMPLATE_INFO (orig)
+      && DECL_TI_ARGS (orig))
+    {
+      tree tpl_args = DECL_TI_ARGS (orig);
+      an = ACONCAT ((pfx, IDENTIFIER_POINTER (nm), (char*)0));
+      for (int i = 0; i < TREE_VEC_LENGTH (tpl_args); ++i)
+	{
+	  tree typ = DECL_NAME (TYPE_NAME (TREE_VEC_ELT (tpl_args, i)));
+	  an = ACONCAT ((an, sep, IDENTIFIER_POINTER (typ), (char*)0));
+	}
+      an = ACONCAT ((an, sep, append, (char*)0));
+    }
+  else
+    an = ACONCAT ((pfx, IDENTIFIER_POINTER (nm), sep, append, (char*)0));
+
   return get_identifier (an);
 }
 
@@ -2247,10 +2263,12 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer, tree *suspended_p)
   tree final_await = build_init_or_final_await (fn_start, true);
   if (final_await == error_mark_node)
     return false;
+
   /* The type of the frame var for this is the type of its temp proxy.  */
   tree final_suspend_type = TREE_TYPE (TREE_OPERAND (final_await, 1));
 
-  tree coro_frame_type = xref_tag (record_type, get_identifier ("_R_frame"),
+  tree fr_name = get_fn_local_identifier (orig, "frame");
+  tree coro_frame_type = xref_tag (record_type, fr_name,
 				   ts_current, false);
   DECL_CONTEXT (TYPE_NAME (coro_frame_type)) = current_scope ();
   tree coro_frame_ptr = build_pointer_type (coro_frame_type);

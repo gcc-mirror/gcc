@@ -1,5 +1,12 @@
 2019-07-16  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* coroutines.cc (get_fn_local_identifier): Use the instantiated type
+	names to unique the function-local identifiers in instantiations.
+	(morph_fn_to_coro): Use get_fn_local_identifier to make the frame
+	identifier.
+
+2019-07-16  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* coroutines.cc (register_param_uses):  Back out forced type completion
 	for referenced parameter types.
 
