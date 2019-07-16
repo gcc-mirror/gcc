@@ -1,3 +1,10 @@
+2019-07-16  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/91173
+	* tree-ssa-address.c (addr_for_mem_ref): If the base is an
+	SSA_NAME with a constant value, fold its value into the offset
+	and clear the base before calling gen_addr_rtx.
+
 2019-07-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/91164
