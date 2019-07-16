@@ -1,3 +1,8 @@
+2019-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/mips/micromips.md (*movep<MOVEP1:mode><MOVEP2:mode>):
+	Explicitly use <MOVEP1:MODE> for the mode attribute.
+
 2019-07-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR bootstrap/91176
