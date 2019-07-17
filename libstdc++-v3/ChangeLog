@@ -1,3 +1,7 @@
+2019-07-17  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Update.
+
 2019-07-16  Jason Merrill  <jason@redhat.com>
 
 	* include/std/memory (uses_allocator_construction_args): Add parens
