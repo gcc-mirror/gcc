@@ -583,7 +583,8 @@ debug_ddrs (vec<ddr_p> ddrs)
 
 static void
 split_constant_offset (tree exp, tree *var, tree *off,
-		       hash_map<tree, std::pair<tree, tree> > &cache);
+		       hash_map<tree, std::pair<tree, tree> > &cache,
+		       unsigned *limit);
 
 /* Helper function for split_constant_offset.  Expresses OP0 CODE OP1
    (the type of the result is TYPE) as VAR + OFF, where OFF is a nonzero
@@ -594,7 +595,8 @@ split_constant_offset (tree exp, tree *var, tree *off,
 static bool
 split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 			 tree *var, tree *off,
-			 hash_map<tree, std::pair<tree, tree> > &cache)
+			 hash_map<tree, std::pair<tree, tree> > &cache,
+			 unsigned *limit)
 {
   tree var0, var1;
   tree off0, off1;
@@ -615,8 +617,15 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
       /* FALLTHROUGH */
     case PLUS_EXPR:
     case MINUS_EXPR:
-      split_constant_offset (op0, &var0, &off0, cache);
-      split_constant_offset (op1, &var1, &off1, cache);
+      if (TREE_CODE (op1) == INTEGER_CST)
+	{
+	  split_constant_offset (op0, &var0, &off0, cache, limit);
+	  *var = var0;
+	  *off = size_binop (ocode, off0, fold_convert (ssizetype, op1));
+	  return true;
+	}
+      split_constant_offset (op0, &var0, &off0, cache, limit);
+      split_constant_offset (op1, &var1, &off1, cache, limit);
       *var = fold_build2 (code, type, var0, var1);
       *off = size_binop (ocode, off0, off1);
       return true;
@@ -625,7 +634,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
       if (TREE_CODE (op1) != INTEGER_CST)
 	return false;
 
-      split_constant_offset (op0, &var0, &off0, cache);
+      split_constant_offset (op0, &var0, &off0, cache, limit);
       *var = fold_build2 (MULT_EXPR, type, var0, op1);
       *off = size_binop (MULT_EXPR, off0, fold_convert (ssizetype, op1));
       return true;
@@ -649,7 +658,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 
 	if (poffset)
 	  {
-	    split_constant_offset (poffset, &poffset, &off1, cache);
+	    split_constant_offset (poffset, &poffset, &off1, cache, limit);
 	    off0 = size_binop (PLUS_EXPR, off0, off1);
 	    if (POINTER_TYPE_P (TREE_TYPE (base)))
 	      base = fold_build_pointer_plus (base, poffset);
@@ -719,11 +728,15 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 	    e = std::make_pair (op0, ssize_int (0));
 	  }
 
+	if (*limit == 0)
+	  return false;
+	--*limit;
+
 	var0 = gimple_assign_rhs1 (def_stmt);
 	var1 = gimple_assign_rhs2 (def_stmt);
 
 	bool res = split_constant_offset_1 (type, var0, subcode, var1,
-					    var, off, cache);
+					    var, off, cache, limit);
 	if (res && use_cache)
 	  *cache.get (op0) = std::make_pair (*var, *off);
 	return res;
@@ -746,7 +759,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 		/* Split the unconverted operand and try to prove that
 		   wrapping isn't a problem.  */
 		tree tmp_var, tmp_off;
-		split_constant_offset (op0, &tmp_var, &tmp_off, cache);
+		split_constant_offset (op0, &tmp_var, &tmp_off, cache, limit);
 
 		/* See whether we have an SSA_NAME whose range is known
 		   to be [A, B].  */
@@ -781,7 +794,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 		*off = wide_int_to_tree (ssizetype, diff);
 	      }
 	    else
-	      split_constant_offset (op0, &var0, off, cache);
+	      split_constant_offset (op0, &var0, off, cache, limit);
 	    *var = fold_convert (type, var0);
 	    return true;
 	  }
@@ -798,7 +811,8 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 
 static void
 split_constant_offset (tree exp, tree *var, tree *off,
-		       hash_map<tree, std::pair<tree, tree> > &cache)
+		       hash_map<tree, std::pair<tree, tree> > &cache,
+		       unsigned *limit)
 {
   tree type = TREE_TYPE (exp), op0, op1, e, o;
   enum tree_code code;
@@ -812,7 +826,7 @@ split_constant_offset (tree exp, tree *var, tree *off,
 
   code = TREE_CODE (exp);
   extract_ops_from_tree (exp, &code, &op0, &op1);
-  if (split_constant_offset_1 (type, op0, code, op1, &e, &o, cache))
+  if (split_constant_offset_1 (type, op0, code, op1, &e, &o, cache, limit))
     {
       *var = e;
       *off = o;
@@ -822,10 +836,11 @@ split_constant_offset (tree exp, tree *var, tree *off,
 void
 split_constant_offset (tree exp, tree *var, tree *off)
 {
+  unsigned limit = PARAM_VALUE (PARAM_SSA_NAME_DEF_CHAIN_LIMIT);
   static hash_map<tree, std::pair<tree, tree> > *cache;
   if (!cache)
     cache = new hash_map<tree, std::pair<tree, tree> > (37);
-  split_constant_offset (exp, var, off, *cache);
+  split_constant_offset (exp, var, off, *cache, &limit);
   cache->empty ();
 }
 
