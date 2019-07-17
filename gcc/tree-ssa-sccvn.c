@@ -2486,7 +2486,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	{
 	  pd_data pd;
 	  pd.rhs = build_constructor (NULL_TREE, NULL);
-	  pd.offset = offset2i - offseti;
+	  pd.offset = (offset2i - offseti) / BITS_PER_UNIT;
 	  pd.size = leni;
 	  return data->push_partial_def (pd, vuse, maxsizei);
 	}
