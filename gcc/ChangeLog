@@ -1,6 +1,16 @@
 2019-07-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91178
+	* tree-ssa.c (release_defs_bitset): Iterate from higher to
+	lower SSA names to avoid quadratic behavior in the common case.
+	* tree-data-ref.c (split_constant_offset): Add limit argument
+	and pass it down.  Initialize it from PARAM_SSA_NAME_DEF_CHAIN_LIMIT.
+	(split_constant_offset_1): Add limit argument and use it to
+	limit SSA def walking.  Optimize the common plus/minus case.
+
+2019-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91178
 	* tree-vect-stmts.c (get_group_load_store_type): For SLP
 	loads with a gap larger than the vector size always use
 	VMAT_STRIDED_SLP.
