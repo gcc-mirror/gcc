@@ -1,3 +1,9 @@
+2019-07-17  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dse.c (initialize_ao_ref_for_dse): Fix formatting.
+	(dse_walker::dse_optimize_stmt): Likewise.  Add missing return to
+	avoid unexpected switch statement fallthru.
+
 2019-07-17  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*add<dwi>3_doubleword):
