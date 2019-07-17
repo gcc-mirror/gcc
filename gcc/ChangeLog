@@ -1,5 +1,15 @@
 2019-07-17  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/91178
+	* tree-vect-stmts.c (get_group_load_store_type): For SLP
+	loads with a gap larger than the vector size always use
+	VMAT_STRIDED_SLP.
+	(vectorizable_load): For VMAT_STRIDED_SLP with a permutation
+	avoid loading vectors that are only contained in the gap
+	and thus are not needed.
+
+2019-07-17  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/91180
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Fix offset
 	computation for memset partial defs.
