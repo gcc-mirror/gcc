@@ -1,3 +1,10 @@
+2019-07-17  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backport from mainline
+	2019-07-01  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-shift-2.c: New test.
+
 2019-07-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/89190
