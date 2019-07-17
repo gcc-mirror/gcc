@@ -1,3 +1,14 @@
+2019-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91157
+	* tree-vect-generic.c (expand_vector_comparison): Handle lhs being
+	a vector boolean with scalar mode.
+	(expand_vector_condition): Handle first operand being a vector boolean
+	with scalar mode.
+	(expand_vector_operations_1): For comparisons, don't bail out early
+	if the return type is vector boolean with scalar mode, but comparison
+	operand type is not.
+
 2019-07-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91181
