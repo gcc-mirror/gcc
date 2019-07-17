@@ -857,7 +857,7 @@ vect_build_slp_tree_1 (unsigned char *swap,
 	      continue;
 	    }
 
-	  if (rhs_code == CALL_EXPR)
+	  if (!load_p && rhs_code == CALL_EXPR)
 	    {
 	      if (!compatible_calls_p (as_a <gcall *> (stmts[0]->stmt),
 				       as_a <gcall *> (stmt)))
