@@ -1,7 +1,41 @@
+2019-07-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*add<dwi>3_doubleword):
+	Remove redundant constraints.
+	(*add<mode>_1): Ditto.
+	(*addhi_1): Ditto.
+	(*addqi_1): Ditto.
+	(*addqi_1_slp): Ditto.
+	(*add<mode>_2): Ditto.
+	(*addv<mode>4): Ditto.
+	(*sub<dwi>3_doubleword): Ditto.
+	(*sub<mode>_1): Ditto.
+	(*subqi_1_slp): Ditto.
+	(*sub<mode>_2): Ditto.
+	(*subv<mode>4): Ditto.
+	(*sub<mode>_3): Ditto.
+	(@add<mode>3_carry): Ditto.
+	(@sub<mode>3_carry): Ditto.
+	(*add<mode>3_cc_overflow_1): Ditto.
+	(*add<mode>3_zext_cc_overflow_2): Ditto.
+	(*anddi_1): Ditto.
+	(*and<mode>_1): Ditto.
+	(*andqi_1): Ditto.
+	(*andqi_1_slp): Ditto.
+	(*anddi_2): Ditto.
+	(*andqi_2_maybe_si): Ditto.
+	(*and<mode>_2): Ditto.
+	(*andqi_2_slp): Ditto.
+	(*<code><mode>_1): Ditto.
+	(*<code>qi_1): Ditto.
+	(*<code>qi_1_slp): Ditto.
+	(*<code><mode>_2): Ditto.
+	(*<code>qi_2_slp): Ditto.
+
 2019-07-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* alias.c (record_component_aliases): Do not simplify pointed-to
-	types of ODR types 
+	types of ODR types.
 
 2019-07-17  Uroš Bizjak  <ubizjak@gmail.com>
 
