@@ -1,3 +1,8 @@
+2019-07-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90455
+	* g++.dg/cpp0x/nsdmi-list6.C: New test.
+
 2019-07-17  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/lto/alias-4_0.C
