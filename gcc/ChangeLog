@@ -1,3 +1,8 @@
+2019-07-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* alias.c (record_component_aliases): Do not simplify pointed-to
+	types of ODR types 
+
 2019-07-17  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*andqi_2_maybe_si): Handle potential

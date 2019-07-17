@@ -1202,47 +1202,52 @@ record_component_aliases (tree type)
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
-      for (field = TYPE_FIELDS (type); field != 0; field = DECL_CHAIN (field))
-	if (TREE_CODE (field) == FIELD_DECL && !DECL_NONADDRESSABLE_P (field))
-	  {
-	    /* LTO type merging does not make any difference between 
-	       component pointer types.  We may have
+      {
+	/* LTO non-ODR type merging does not make any difference between 
+	   component pointer types.  We may have
 
-	       struct foo {int *a;};
+	   struct foo {int *a;};
 
-	       as TYPE_CANONICAL of 
+	   as TYPE_CANONICAL of 
 
-	       struct bar {float *a;};
+	   struct bar {float *a;};
 
-	       Because accesses to int * and float * do not alias, we would get
-	       false negative when accessing the same memory location by
-	       float ** and bar *. We thus record the canonical type as:
+	   Because accesses to int * and float * do not alias, we would get
+	   false negative when accessing the same memory location by
+	   float ** and bar *. We thus record the canonical type as:
 
-	       struct {void *a;};
+	   struct {void *a;};
 
-	       void * is special cased and works as a universal pointer type.
-	       Accesses to it conflicts with accesses to any other pointer
-	       type.  */
-	    tree t = TREE_TYPE (field);
-	    if (in_lto_p)
-	      {
-		/* VECTOR_TYPE and ARRAY_TYPE share the alias set with their
-		   element type and that type has to be normalized to void *,
-		   too, in the case it is a pointer. */
-		while (!canonical_type_used_p (t) && !POINTER_TYPE_P (t))
-		  {
-		    gcc_checking_assert (TYPE_STRUCTURAL_EQUALITY_P (t));
-		    t = TREE_TYPE (t);
-		  }
-		if (POINTER_TYPE_P (t))
-		  t = ptr_type_node;
-		else if (flag_checking)
-		  gcc_checking_assert (get_alias_set (t)
-				       == get_alias_set (TREE_TYPE (field)));
-	      }
+	   void * is special cased and works as a universal pointer type.
+	   Accesses to it conflicts with accesses to any other pointer
+	   type.  */
+	bool void_pointers = in_lto_p
+			     && (!odr_type_p (type)
+				 || !odr_based_tbaa_p (type));
+	for (field = TYPE_FIELDS (type); field != 0; field = DECL_CHAIN (field))
+	  if (TREE_CODE (field) == FIELD_DECL && !DECL_NONADDRESSABLE_P (field))
+	    {
+	      tree t = TREE_TYPE (field);
+	      if (void_pointers)
+		{
+		  /* VECTOR_TYPE and ARRAY_TYPE share the alias set with their
+		     element type and that type has to be normalized to void *,
+		     too, in the case it is a pointer. */
+		  while (!canonical_type_used_p (t) && !POINTER_TYPE_P (t))
+		    {
+		      gcc_checking_assert (TYPE_STRUCTURAL_EQUALITY_P (t));
+		      t = TREE_TYPE (t);
+		    }
+		  if (POINTER_TYPE_P (t))
+		    t = ptr_type_node;
+		  else if (flag_checking)
+		    gcc_checking_assert (get_alias_set (t)
+					 == get_alias_set (TREE_TYPE (field)));
+		}
 
-	    record_alias_subset (superset, get_alias_set (t));
-	  }
+	      record_alias_subset (superset, get_alias_set (t));
+	    }
+      }
       break;
 
     case COMPLEX_TYPE:

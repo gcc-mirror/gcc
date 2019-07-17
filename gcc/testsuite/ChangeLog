@@ -1,3 +1,7 @@
+2019-07-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/lto/alias-4_0.C
+
 2019-07-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91178
