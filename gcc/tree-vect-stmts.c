@@ -2267,6 +2267,14 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 			/ vect_get_scalar_dr_size (first_dr_info)))
 	    overrun_p = false;
 
+	  /* If the gap at the end of the group exceeds a whole vector
+	     in size use the strided SLP code which can skip code-generation
+	     for the gap.  */
+	  if (vls_type == VLS_LOAD && known_gt (gap, nunits))
+	    *memory_access_type = VMAT_STRIDED_SLP;
+	  else
+	    *memory_access_type = VMAT_CONTIGUOUS;
+
 	  /* If the gap splits the vector in half and the target
 	     can do half-vector operations avoid the epilogue peeling
 	     by simply loading half of the vector only.  Usually
@@ -2274,7 +2282,8 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 	  dr_alignment_support alignment_support_scheme;
 	  scalar_mode elmode = SCALAR_TYPE_MODE (TREE_TYPE (vectype));
 	  machine_mode vmode;
-	  if (overrun_p
+	  if (*memory_access_type == VMAT_CONTIGUOUS
+	      && overrun_p
 	      && !masked_p
 	      && (((alignment_support_scheme
 		      = vect_supportable_dr_alignment (first_dr_info, false)))
@@ -2297,7 +2306,6 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 				 "Peeling for outer loop is not supported\n");
 	      return false;
 	    }
-	  *memory_access_type = VMAT_CONTIGUOUS;
 	}
     }
   else
@@ -8732,6 +8740,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       /* Checked by get_load_store_type.  */
       unsigned int const_nunits = nunits.to_constant ();
       unsigned HOST_WIDE_INT cst_offset = 0;
+      unsigned int group_gap = 0;
 
       gcc_assert (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo));
       gcc_assert (!nested_in_vect_loop);
@@ -8749,6 +8758,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       if (slp && grouped_load)
 	{
 	  group_size = DR_GROUP_SIZE (first_stmt_info);
+	  group_gap = DR_GROUP_GAP (first_stmt_info);
 	  ref_type = get_group_alias_ptr_type (first_stmt_info);
 	}
       else
@@ -8892,6 +8902,14 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  if (nloads > 1)
 	    vec_alloc (v, nloads);
 	  stmt_vec_info new_stmt_info = NULL;
+	  if (slp && slp_perm
+	      && (group_el % group_size) > group_size - group_gap
+	      && (group_el % group_size) + nloads * lnel < group_size)
+	    {
+	      dr_chain.quick_push (NULL_TREE);
+	      group_el += nloads * lnel;
+	      continue;
+	    }
 	  for (i = 0; i < nloads; i++)
 	    {
 	      tree this_off = build_int_cst (TREE_TYPE (alias_off),
