@@ -107,42 +107,42 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write)
     {
       switch (DECL_FUNCTION_CODE (gimple_call_fndecl (stmt)))
 	{
-	  case BUILT_IN_MEMCPY:
-	  case BUILT_IN_MEMMOVE:
-	  case BUILT_IN_MEMSET:
-	  case BUILT_IN_MEMCPY_CHK:
-	  case BUILT_IN_MEMMOVE_CHK:
-	  case BUILT_IN_MEMSET_CHK:
-	    {
-	      tree size = NULL_TREE;
-	      if (gimple_call_num_args (stmt) == 3)
-		size = gimple_call_arg (stmt, 2);
-	      tree ptr = gimple_call_arg (stmt, 0);
-	      ao_ref_init_from_ptr_and_size (write, ptr, size);
-	      return true;
-	    }
+	case BUILT_IN_MEMCPY:
+	case BUILT_IN_MEMMOVE:
+	case BUILT_IN_MEMSET:
+	case BUILT_IN_MEMCPY_CHK:
+	case BUILT_IN_MEMMOVE_CHK:
+	case BUILT_IN_MEMSET_CHK:
+	  {
+	    tree size = NULL_TREE;
+	    if (gimple_call_num_args (stmt) == 3)
+	      size = gimple_call_arg (stmt, 2);
+	    tree ptr = gimple_call_arg (stmt, 0);
+	    ao_ref_init_from_ptr_and_size (write, ptr, size);
+	    return true;
+	  }
 
-	  /* A calloc call can never be dead, but it can make
-	     subsequent stores redundant if they store 0 into
-	     the same memory locations.  */
-	  case BUILT_IN_CALLOC:
-	    {
-	      tree nelem = gimple_call_arg (stmt, 0);
-	      tree selem = gimple_call_arg (stmt, 1);
-	      tree lhs;
-	      if (TREE_CODE (nelem) == INTEGER_CST
-		  && TREE_CODE (selem) == INTEGER_CST
-		  && (lhs = gimple_call_lhs (stmt)) != NULL_TREE)
-		{
-		  tree size = fold_build2 (MULT_EXPR, TREE_TYPE (nelem),
-					   nelem, selem);
-		  ao_ref_init_from_ptr_and_size (write, lhs, size);
-		  return true;
-		}
-	    }
+	/* A calloc call can never be dead, but it can make
+	   subsequent stores redundant if they store 0 into
+	   the same memory locations.  */
+	case BUILT_IN_CALLOC:
+	  {
+	    tree nelem = gimple_call_arg (stmt, 0);
+	    tree selem = gimple_call_arg (stmt, 1);
+	    tree lhs;
+	    if (TREE_CODE (nelem) == INTEGER_CST
+		&& TREE_CODE (selem) == INTEGER_CST
+		&& (lhs = gimple_call_lhs (stmt)) != NULL_TREE)
+	      {
+		tree size = fold_build2 (MULT_EXPR, TREE_TYPE (nelem),
+					 nelem, selem);
+		ao_ref_init_from_ptr_and_size (write, lhs, size);
+		return true;
+	      }
+	  }
 
-	  default:
-	    break;
+	default:
+	  break;
 	}
     }
   else if (is_gimple_assign (stmt))
@@ -964,57 +964,58 @@ dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
       tree fndecl = gimple_call_fndecl (stmt);
       switch (DECL_FUNCTION_CODE (fndecl))
 	{
-	  case BUILT_IN_MEMCPY:
-	  case BUILT_IN_MEMMOVE:
-	  case BUILT_IN_MEMSET:
-	  case BUILT_IN_MEMCPY_CHK:
-	  case BUILT_IN_MEMMOVE_CHK:
-	  case BUILT_IN_MEMSET_CHK:
-	    {
-	      /* Occasionally calls with an explicit length of zero
-		 show up in the IL.  It's pointless to do analysis
-		 on them, they're trivially dead.  */
-	      tree size = gimple_call_arg (stmt, 2);
-	      if (integer_zerop (size))
-		{
-		  delete_dead_or_redundant_call (gsi, "dead");
-		  return;
-		}
-
-	      /* If this is a memset call that initializes an object
-		 to zero, it may be redundant with an earlier memset
-		 or empty CONSTRUCTOR of a larger object.  */
-	      if ((DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMSET
-		   || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMSET_CHK)
-		  && integer_zerop (gimple_call_arg (stmt, 1)))
-		dse_optimize_redundant_stores (stmt);
-
-	      enum dse_store_status store_status;
-	      m_byte_tracking_enabled
-		= setup_live_bytes_from_ref (&ref, m_live_bytes);
-	      store_status = dse_classify_store (&ref, stmt,
-						 m_byte_tracking_enabled,
-						 m_live_bytes);
-	      if (store_status == DSE_STORE_LIVE)
-		return;
-
-	      if (store_status == DSE_STORE_MAYBE_PARTIAL_DEAD)
-		{
-		  maybe_trim_memstar_call (&ref, m_live_bytes, stmt);
-		  return;
-		}
-
-	      if (store_status == DSE_STORE_DEAD)
+	case BUILT_IN_MEMCPY:
+	case BUILT_IN_MEMMOVE:
+	case BUILT_IN_MEMSET:
+	case BUILT_IN_MEMCPY_CHK:
+	case BUILT_IN_MEMMOVE_CHK:
+	case BUILT_IN_MEMSET_CHK:
+	  {
+	    /* Occasionally calls with an explicit length of zero
+	       show up in the IL.  It's pointless to do analysis
+	       on them, they're trivially dead.  */
+	    tree size = gimple_call_arg (stmt, 2);
+	    if (integer_zerop (size))
+	      {
 		delete_dead_or_redundant_call (gsi, "dead");
+		return;
+	      }
+
+	    /* If this is a memset call that initializes an object
+	       to zero, it may be redundant with an earlier memset
+	       or empty CONSTRUCTOR of a larger object.  */
+	    if ((DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMSET
+		 || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMSET_CHK)
+		&& integer_zerop (gimple_call_arg (stmt, 1)))
+	      dse_optimize_redundant_stores (stmt);
+
+	    enum dse_store_status store_status;
+	    m_byte_tracking_enabled
+	      = setup_live_bytes_from_ref (&ref, m_live_bytes);
+	    store_status = dse_classify_store (&ref, stmt,
+					       m_byte_tracking_enabled,
+					       m_live_bytes);
+	    if (store_status == DSE_STORE_LIVE)
 	      return;
-	    }
 
-	  case BUILT_IN_CALLOC:
-	    /* We already know the arguments are integer constants.  */
-	    dse_optimize_redundant_stores (stmt);
+	    if (store_status == DSE_STORE_MAYBE_PARTIAL_DEAD)
+	      {
+		maybe_trim_memstar_call (&ref, m_live_bytes, stmt);
+		return;
+	      }
 
-	  default:
+	    if (store_status == DSE_STORE_DEAD)
+	      delete_dead_or_redundant_call (gsi, "dead");
 	    return;
+	  }
+
+	case BUILT_IN_CALLOC:
+	  /* We already know the arguments are integer constants.  */
+	  dse_optimize_redundant_stores (stmt);
+	  return;
+
+	default:
+	  return;
 	}
     }
 
