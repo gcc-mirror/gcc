@@ -153,24 +153,22 @@ enum gf_mask {
     GF_OMP_PARALLEL_GRID_PHONY = 1 << 1,
     GF_OMP_TASK_TASKLOOP	= 1 << 0,
     GF_OMP_TASK_TASKWAIT	= 1 << 1,
-    GF_OMP_FOR_KIND_MASK	= (1 << 4) - 1,
+    GF_OMP_FOR_KIND_MASK	= (1 << 3) - 1,
     GF_OMP_FOR_KIND_FOR		= 0,
     GF_OMP_FOR_KIND_DISTRIBUTE	= 1,
     GF_OMP_FOR_KIND_TASKLOOP	= 2,
     GF_OMP_FOR_KIND_OACC_LOOP	= 4,
-    GF_OMP_FOR_KIND_GRID_LOOP = 5,
-    /* Flag for SIMD variants of OMP_FOR kinds.  */
-    GF_OMP_FOR_SIMD		= 1 << 3,
-    GF_OMP_FOR_KIND_SIMD	= GF_OMP_FOR_SIMD | 0,
-    GF_OMP_FOR_COMBINED		= 1 << 4,
-    GF_OMP_FOR_COMBINED_INTO	= 1 << 5,
+    GF_OMP_FOR_KIND_GRID_LOOP	= 5,
+    GF_OMP_FOR_KIND_SIMD	= 6,
+    GF_OMP_FOR_COMBINED		= 1 << 3,
+    GF_OMP_FOR_COMBINED_INTO	= 1 << 4,
     /* The following flag must not be used on GF_OMP_FOR_KIND_GRID_LOOP loop
        statements.  */
-    GF_OMP_FOR_GRID_PHONY	= 1 << 6,
+    GF_OMP_FOR_GRID_PHONY	= 1 << 5,
     /* The following two flags should only be set on GF_OMP_FOR_KIND_GRID_LOOP
        loop statements.  */
-    GF_OMP_FOR_GRID_INTRA_GROUP	= 1 << 6,
-    GF_OMP_FOR_GRID_GROUP_ITER  = 1 << 7,
+    GF_OMP_FOR_GRID_INTRA_GROUP	= 1 << 5,
+    GF_OMP_FOR_GRID_GROUP_ITER  = 1 << 6,
     GF_OMP_TARGET_KIND_MASK	= (1 << 4) - 1,
     GF_OMP_TARGET_KIND_REGION	= 0,
     GF_OMP_TARGET_KIND_DATA	= 1,

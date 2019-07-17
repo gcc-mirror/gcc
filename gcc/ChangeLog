@@ -1,5 +1,22 @@
 2019-07-17  Jakub Jelinek  <jakub@redhat.com>
 
+	* gimple.h (enum gf_mask): Remove GF_OMP_FOR_SIMD, change
+	GF_OMP_FOR_KIND_SIMD to a value serially after other kinds,
+	divide GF_OMP_FOR_KIND_MASK, GF_OMP_FOR_COMBINED,
+	GF_OMP_FOR_COMBINED_INTO, GF_OMP_FOR_GRID_PHONY,
+	GF_OMP_FOR_GRID_INTRA_GROUP and GF_OMP_FOR_GRID_GROUP_ITER by two.
+	* omp-grid.c (grid_process_grid_body,
+	grid_eliminate_combined_simd_part): Use GF_OMP_FOR_KIND_SIMD instead
+	of GF_OMP_FOR_SIMD, don't test & GF_OMP_FOR_SIMD but
+	== GF_OMP_FOR_KIND_SIMD.
+	* omp-low.c (build_outer_var_ref, scan_sharing_clauses,
+	check_omp_nesting_restrictions, scan_omp_1_stmt,
+	lower_rec_input_clauses, lower_lastprivate_conditional_clauses,
+	lower_lastprivate_clauses, lower_reduction_clauses, lower_omp_scan,
+	omp_find_scan): Likewise.
+	* omp-expand.c (expand_omp_for): Likewise.
+	* omp-general.c (omp_extract_for_data): Likewise.
+
 	PR tree-optimization/91157
 	* tree-vect-generic.c (expand_vector_comparison): Handle lhs being
 	a vector boolean with scalar mode.

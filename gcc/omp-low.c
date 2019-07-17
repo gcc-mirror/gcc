@@ -580,7 +580,7 @@ build_outer_var_ref (tree var, omp_context *ctx,
       x = build_receiver_ref (var, by_ref, ctx);
     }
   else if ((gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-	    && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
+	    && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD)
 	   || (code == OMP_CLAUSE_PRIVATE
 	       && (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
 		   || gimple_code (ctx->stmt) == GIMPLE_OMP_SECTIONS
@@ -1441,7 +1441,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	      install_var_local (decl, ctx);
 	    }
 	  else if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-		   && (gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
+		   && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD
 		   && !OMP_CLAUSE__CONDTEMP__ITER (c))
 	    install_var_local (decl, ctx);
 	  break;
@@ -2750,7 +2750,7 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
   switch (gimple_code (stmt))
     {
     case GIMPLE_OMP_FOR:
-      if (gimple_omp_for_kind (stmt) & GF_OMP_FOR_SIMD)
+      if (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_SIMD)
 	return true;
       if (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_DISTRIBUTE)
 	{
@@ -3496,7 +3496,7 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	{
 	  if (ctx
 	      && gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-	      && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_SIMD
+	      && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD
 	      && setjmp_or_longjmp_p (fndecl))
 	    {
 	      remove = true;
@@ -4118,7 +4118,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
   bool reduction_omp_orig_ref = false;
   int pass;
   bool is_simd = (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-		  && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD);
+		  && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD);
   omplow_simd_context sctx = omplow_simd_context ();
   tree simt_lane = NULL_TREE, simtrec = NULL_TREE;
   tree ivar = NULL_TREE, lvar = NULL_TREE, uid = NULL_TREE;
@@ -6093,7 +6093,7 @@ lower_lastprivate_conditional_clauses (tree *clauses, omp_context *ctx)
   tree cond_ptr = NULL_TREE;
   tree iter_var = NULL_TREE;
   bool is_simd = (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-		  && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD);
+		  && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD);
   tree next = *clauses;
   for (tree c = *clauses; c; c = OMP_CLAUSE_CHAIN (c))
     if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
@@ -6225,7 +6225,7 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *body_p,
 
   bool maybe_simt = false;
   if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-      && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
+      && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD)
     {
       maybe_simt = omp_find_clause (orig_clauses, OMP_CLAUSE__SIMT_);
       simduid = omp_find_clause (orig_clauses, OMP_CLAUSE__SIMDUID_);
@@ -6707,7 +6707,7 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp,
 
   /* SIMD reductions are handled in lower_rec_input_clauses.  */
   if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-      && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_SIMD)
+      && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD)
     return;
 
   /* inscan reductions are handled elsewhere.  */
@@ -8923,7 +8923,7 @@ lower_omp_scan (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   bool input_phase = has_clauses ^ octx->scan_inclusive;
   bool is_simd = (gimple_code (octx->stmt) == GIMPLE_OMP_FOR
-		  && (gimple_omp_for_kind (octx->stmt) & GF_OMP_FOR_SIMD));
+		  && gimple_omp_for_kind (octx->stmt) == GF_OMP_FOR_KIND_SIMD);
   bool is_for = (gimple_code (octx->stmt) == GIMPLE_OMP_FOR
 		 && gimple_omp_for_kind (octx->stmt) == GF_OMP_FOR_KIND_FOR
 		 && !gimple_omp_for_combined_p (octx->stmt));
@@ -9409,7 +9409,7 @@ omp_find_scan (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
     WALK_SUBSTMTS;
 
     case GIMPLE_OMP_FOR:
-      if ((gimple_omp_for_kind (stmt) & GF_OMP_FOR_SIMD)
+      if (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_SIMD
 	  && gimple_omp_for_combined_into_p (stmt))
 	*handled_ops_p = false;
       break;
