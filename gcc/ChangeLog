@@ -1,3 +1,8 @@
+2019-07-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*andqi_2_maybe_si): Handle potential
+	partial reg stall on alternative 2.
+
 2019-07-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91178
