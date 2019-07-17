@@ -1898,6 +1898,7 @@ build_suspended_fn (location_t loc, tree coro_frame_type,
 static tree
 get_fn_local_identifier (tree orig, const char *append)
 {
+
   /* Figure out the bits we need to generate names for the outlined things
      For consistency this needs to behave the same way as
      ASM_FORMAT_PRIVATE_NAME does. */
@@ -1915,7 +1916,10 @@ get_fn_local_identifier (tree orig, const char *append)
 #endif
 
   char *an;
-  if (DECL_USE_TEMPLATE (orig)
+  if (DECL_ASSEMBLER_NAME (orig))
+    an = ACONCAT ((IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (orig)),
+		   sep, append, (char*)0));
+  else if (DECL_USE_TEMPLATE (orig)
       && DECL_TEMPLATE_INFO (orig)
       && DECL_TI_ARGS (orig))
     {
