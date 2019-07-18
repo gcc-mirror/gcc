@@ -1,3 +1,39 @@
+2019-07-18  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/aix.h (TARGET_HAS_TOC): Rename TARGET_TOC to
+	TARGET_HAS_TOC.
+	(TARGET_TOC): Likewise.
+	(TARGET_NO_TOC): Delete here, define TARGET_NO_TOC_OR_PCREL in
+	rs6000.h.
+	* config/rs6000/darwin.h (TARGET_HAS_TOC): Rename TARGET_TOC to
+	TARGET_HAS_TOC.
+	(TARGET_TOC): Likewise.
+	(TARGET_NO_TOC): Delete here, define TARGET_NO_TOC_OR_PCREL in
+	rs6000.h.
+	* config/rs6000/linux64.h (TARGET_HAS_TOC): Rename TARGET_TOC to
+	TARGET_HAS_TOC.
+	(TARGET_TOC): Likewise.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Add
+	check to require -mcmodel=medium for pc-relative addressing.
+	(create_TOC_reference): Add assertion for TARGET_TOC.
+	(rs6000_legitimize_address): Use TARGET_NO_TOC_OR_PCREL instead of
+	TARGET_NO_TOC.
+	(rs6000_emit_move): Likewise.
+	(TOC_alias_set): Rename TOC alias set static variable from 'set'
+	to 'TOC_alias_set'.
+	(get_TOC_alias_set): Likewise.
+	(output_toc): Use TARGET_NO_TOC_OR_PCREL instead of
+	TARGET_NO_TOC.
+	(rs6000_can_eliminate): Likewise.
+	* config/rs6000/rs6000.h (TARGET_TOC): Define in terms of
+	TARGET_HAS_TOC and not pc-relative.
+	(TARGET_NO_TOC_OR_PCREL): New macro to replace TARGET_NO_TOC.
+	* config/rs6000/sysv4.h (TARGET_HAS_TOC): Rename TARGET_TOC to
+	TARGET_HAS_TOC.
+	(TARGET_TOC): Likewise.
+	(TARGET_NO_TOC): Delete here, define TARGET_NO_TOC_OR_PCREL in
+	rs6000.h.
+
 2019-07-18  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/91188

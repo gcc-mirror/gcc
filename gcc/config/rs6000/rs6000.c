@@ -4333,6 +4333,16 @@ rs6000_option_override_internal (bool global_init_p)
   SUB3TARGET_OVERRIDE_OPTIONS;
 #endif
 
+  /* -mpcrel requires -mcmodel=medium, but we can't check TARGET_CMODEL until
+      after the subtarget override options are done.  */
+  if (TARGET_PCREL && TARGET_CMODEL != CMODEL_MEDIUM)
+    {
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
+	error ("%qs requires %qs", "-mpcrel", "-mcmodel=medium");
+
+      rs6000_isa_flags &= ~OPTION_MASK_PCREL;
+    }
+
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
     rs6000_print_isa_options (stderr, 0, "after subtarget", rs6000_isa_flags);
 
@@ -7742,6 +7752,8 @@ create_TOC_reference (rtx symbol, rtx largetoc_reg)
 {
   rtx tocrel, tocreg, hi;
 
+  gcc_assert (TARGET_TOC);
+
   if (TARGET_DEBUG_ADDR)
     {
       if (SYMBOL_REF_P (symbol))
@@ -8121,7 +8133,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 #endif
 	    )
 	   && TARGET_32BIT
-	   && TARGET_NO_TOC
+	   && TARGET_NO_TOC_OR_PCREL
 	   && !flag_pic
 	   && !CONST_INT_P (x)
 	   && !CONST_WIDE_INT_P (x)
@@ -9811,7 +9823,7 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 	}
 
       if ((TARGET_ELF || DEFAULT_ABI == ABI_DARWIN)
-	  && TARGET_NO_TOC
+	  && TARGET_NO_TOC_OR_PCREL
 	  && ! flag_pic
 	  && mode == Pmode
 	  && CONSTANT_P (operands[1])
@@ -23725,14 +23737,14 @@ rs6000_split_multireg_move (rtx dst, rtx src)
     }
 }
 
-static GTY(()) alias_set_type set = -1;
+static GTY(()) alias_set_type TOC_alias_set = -1;
 
 alias_set_type
 get_TOC_alias_set (void)
 {
-  if (set == -1)
-    set = new_alias_set ();
-  return set;
+  if (TOC_alias_set == -1)
+    TOC_alias_set = new_alias_set ();
+  return TOC_alias_set;
 }
 
 /* Return the internal arg pointer used for function incoming
@@ -24103,7 +24115,7 @@ output_toc (FILE *file, rtx x, int labelno, machine_mode mode)
   rtx base = x;
   HOST_WIDE_INT offset = 0;
 
-  gcc_assert (!TARGET_NO_TOC);
+  gcc_assert (!TARGET_NO_TOC_OR_PCREL);
 
   /* When the linker won't eliminate them, don't output duplicate
      TOC entries (this happens on AIX if there is any kind of TOC,
@@ -30469,7 +30481,7 @@ rs6000_can_eliminate (const int from, const int to)
   return (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM
 	  ? ! frame_pointer_needed
 	  : from == RS6000_PIC_OFFSET_TABLE_REGNUM
-	    ? ! TARGET_MINIMAL_TOC || TARGET_NO_TOC
+	    ? ! TARGET_MINIMAL_TOC || TARGET_NO_TOC_OR_PCREL
 		|| constant_pool_empty_p ()
 	    : true);
 }

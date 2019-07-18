@@ -54,6 +54,13 @@
 #define TARGET_AIX_OS 0
 #endif
 
+/* Turn off TOC support if pc-relative addressing is used.  */
+#define TARGET_TOC             (TARGET_HAS_TOC && !TARGET_PCREL)
+
+/* On 32-bit systems without a TOC or pc-relative addressing, we need to use
+   ADDIS/ADDI to load up the address of a symbol.  */
+#define TARGET_NO_TOC_OR_PCREL (!TARGET_HAS_TOC && !TARGET_PCREL)
+
 /* Control whether function entry points use a "dot" symbol when
    ABI_AIX.  */
 #define DOT_SYMBOLS 1

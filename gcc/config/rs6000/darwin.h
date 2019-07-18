@@ -43,8 +43,7 @@
 
 /* We're not ever going to do TOCs.  */
 
-#define TARGET_TOC 0
-#define TARGET_NO_TOC 1
+#define TARGET_HAS_TOC 0
 
 /* Override the default rs6000 definition.  */
 #undef  PTRDIFF_TYPE
