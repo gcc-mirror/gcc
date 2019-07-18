@@ -1,3 +1,12 @@
+2019-07-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_som_asm_init_sections): Don't force all constant
+	data into data section when generating PIC code.
+	(pa_select_section): Use pa_reloc_rw_mask() to qualify relocs.
+	(pa_reloc_rw_mask): Return 3 when generating PIC code and when
+	generating code for SOM targets earlier than HP-UX 11.  Otherwise,
+	return 2 for SOM and 0 for other targets.
+	 
 2019-07-17  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline
