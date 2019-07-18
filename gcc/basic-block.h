@@ -508,6 +508,8 @@ ei_cond (edge_iterator ei, edge *p)
 #define CLEANUP_CFGLAYOUT	32	/* Do cleanup in cfglayout mode.  */
 #define CLEANUP_CFG_CHANGED	64      /* The caller changed the CFG.  */
 #define CLEANUP_NO_PARTITIONING	128     /* Do not try to fix partitions.  */
+#define CLEANUP_FORCE_FAST_DCE	0x100	/* Force run_fast_dce to be called
+					   at least once.  */
 
 /* Return true if BB is in a transaction.  */
 

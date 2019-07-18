@@ -1,3 +1,12 @@
+2019-07-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* basic-block.h (CLEANUP_FORCE_FAST_DCE): New macro.
+	* cfgcleanup.c (cleanup_cfg): Call run_fast_dce if
+	CLEANUP_FORCE_FAST_DCE is set.
+	* ifcvt.c (rest_of_handle_if_conversion): Pass
+	CLEANUP_FORCE_FAST_DCE to the final cleanup_cfg call if
+	if-conversion succeeded.
+
 2019-07-18  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Refactor
