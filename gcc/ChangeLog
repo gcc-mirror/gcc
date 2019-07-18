@@ -1,3 +1,9 @@
+2019-07-17  Alexandre Oliva <oliva@adacore.com>
+
+	PR middle-end/81824
+	* attribs.c (decls_mismatched_attributes): Simplify the logic
+	that avoids duplicates and false positives.
+
 2019-07-17  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_som_asm_init_sections): Don't force all constant

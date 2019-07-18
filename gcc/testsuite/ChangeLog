@@ -1,3 +1,9 @@
+2019-07-17  Alexandre Oliva <oliva@adacore.com>
+
+	PR middle-end/81824
+	* g++.dg/Wmissing-attributes-1.C: New.  Some of its fragments
+	are from Martin Sebor.
+
 2019-07-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90455
