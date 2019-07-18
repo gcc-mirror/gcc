@@ -1,3 +1,9 @@
+2019-07-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/53633
+	* c-decl.c (finish_function): Check targetm.warn_func_return
+	before issuing a -Wreturn-type warning.
+
 2019-07-12  Alexandre Oliva <oliva@adacore.com>
 
 	* gimple-parser.c (c_parser_gimple_try_stmt): New.
