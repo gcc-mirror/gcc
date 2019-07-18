@@ -1746,160 +1746,136 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
       first_range.size = pd.size;
       first_vuse = vuse;
       last_vuse_ptr = NULL;
+      /* Continue looking for partial defs.  */
+      return NULL;
+    }
+
+  if (!known_ranges)
+    {
+      /* ???  Optimize the case where the 2nd partial def completes things.  */
+      gcc_obstack_init (&ranges_obstack);
+      known_ranges = splay_tree_new_with_allocator (pd_range_compare, 0, 0,
+						    pd_tree_alloc,
+						    pd_tree_dealloc, this);
+      splay_tree_insert (known_ranges,
+			 (splay_tree_key)&first_range.offset,
+			 (splay_tree_value)&first_range);
+    }
+
+  pd_range newr = { pd.offset, pd.size };
+  splay_tree_node n;
+  pd_range *r;
+  /* Lookup the predecessor of offset + 1 and see if we need to merge.  */
+  HOST_WIDE_INT loffset = newr.offset + 1;
+  if ((n = splay_tree_predecessor (known_ranges, (splay_tree_key)&loffset))
+      && ((r = (pd_range *)n->value), true)
+      && ranges_known_overlap_p (r->offset, r->size + 1,
+				 newr.offset, newr.size))
+    {
+      /* Ignore partial defs already covered.  */
+      if (known_subrange_p (newr.offset, newr.size, r->offset, r->size))
+	return NULL;
+      r->size = MAX (r->offset + r->size, newr.offset + newr.size) - r->offset;
     }
   else
     {
-      if (!known_ranges)
+      /* newr.offset wasn't covered yet, insert the range.  */
+      r = XOBNEW (&ranges_obstack, pd_range);
+      *r = newr;
+      splay_tree_insert (known_ranges, (splay_tree_key)&r->offset,
+			 (splay_tree_value)r);
+    }
+  /* Merge r which now contains newr and is a member of the splay tree with
+     adjacent overlapping ranges.  */
+  pd_range *rafter;
+  while ((n = splay_tree_successor (known_ranges, (splay_tree_key)&r->offset))
+	 && ((rafter = (pd_range *)n->value), true)
+	 && ranges_known_overlap_p (r->offset, r->size + 1,
+				    rafter->offset, rafter->size))
+    {
+      r->size = MAX (r->offset + r->size,
+		     rafter->offset + rafter->size) - r->offset;
+      splay_tree_remove (known_ranges, (splay_tree_key)&rafter->offset);
+    }
+  partial_defs.safe_push (pd);
+
+  /* Now we have merged newr into the range tree.  When we have covered
+     [offseti, sizei] then the tree will contain exactly one node which has
+     the desired properties and it will be 'r'.  */
+  if (!known_subrange_p (0, maxsizei / BITS_PER_UNIT, r->offset, r->size))
+    /* Continue looking for partial defs.  */
+    return NULL;
+
+  /* Now simply native encode all partial defs in reverse order.  */
+  unsigned ndefs = partial_defs.length ();
+  /* We support up to 512-bit values (for V8DFmode).  */
+  unsigned char buffer[64];
+  int len;
+
+  while (!partial_defs.is_empty ())
+    {
+      pd_data pd = partial_defs.pop ();
+      if (TREE_CODE (pd.rhs) == CONSTRUCTOR)
+	/* Empty CONSTRUCTOR.  */
+	memset (buffer + MAX (0, pd.offset),
+		0, MIN ((HOST_WIDE_INT)sizeof (buffer), pd.size));
+      else
 	{
-	  /* ???  Optimize the case where the second partial def
-	     completes things.  */
-	  gcc_obstack_init (&ranges_obstack);
-	  known_ranges
-	      = splay_tree_new_with_allocator (pd_range_compare, 0, 0,
-					       pd_tree_alloc,
-					       pd_tree_dealloc, this);
-	  splay_tree_insert (known_ranges,
-			     (splay_tree_key)&first_range.offset,
-			     (splay_tree_value)&first_range);
-	}
-      if (known_ranges)
-	{
-	  pd_range newr = { pd.offset, pd.size };
-	  splay_tree_node n;
-	  pd_range *r;
-	  /* Lookup the predecessor of offset + 1 and see if
-	     we need to merge with it.  */
-	  HOST_WIDE_INT loffset = newr.offset + 1;
-	  if ((n = splay_tree_predecessor (known_ranges,
-					   (splay_tree_key)&loffset))
-	      && ((r = (pd_range *)n->value), true)
-	      && ranges_known_overlap_p (r->offset, r->size + 1,
-					 newr.offset, newr.size))
+	  unsigned pad = 0;
+	  if (BYTES_BIG_ENDIAN
+	      && is_a <scalar_mode> (TYPE_MODE (TREE_TYPE (pd.rhs))))
 	    {
-	      /* Ignore partial defs already covered.  */
-	      if (known_subrange_p (newr.offset, newr.size,
-				    r->offset, r->size))
-		return NULL;
-	      r->size = MAX (r->offset + r->size,
-			     newr.offset + newr.size) - r->offset;
+	      /* On big-endian the padding is at the 'front' so just skip
+		 the initial bytes.  */
+	      fixed_size_mode mode
+		= as_a <fixed_size_mode> (TYPE_MODE (TREE_TYPE (pd.rhs)));
+	      pad = GET_MODE_SIZE (mode) - pd.size;
 	    }
-	  else
+	  len = native_encode_expr (pd.rhs, buffer + MAX (0, pd.offset),
+				    sizeof (buffer - MAX (0, pd.offset)),
+				    MAX (0, -pd.offset) + pad);
+	  if (len <= 0 || len < (pd.size - MAX (0, -pd.offset)))
 	    {
-	      /* newr.offset wasn't covered yet, insert the
-		 range.  */
-	      r = XOBNEW (&ranges_obstack, pd_range);
-	      *r = newr;
-	      splay_tree_insert (known_ranges,
-				 (splay_tree_key)&r->offset,
-				 (splay_tree_value)r);
-	    }
-	  /* Merge r which now contains newr and is a member
-	     of the splay tree with adjacent overlapping ranges.  */
-	  pd_range *rafter;
-	  while ((n = splay_tree_successor (known_ranges,
-					    (splay_tree_key)&r->offset))
-		 && ((rafter = (pd_range *)n->value), true)
-		 && ranges_known_overlap_p (r->offset, r->size + 1,
-					    rafter->offset, rafter->size))
-	    {
-	      r->size = MAX (r->offset + r->size,
-			     rafter->offset + rafter->size) - r->offset;
-	      splay_tree_remove (known_ranges,
-				 (splay_tree_key)&rafter->offset);
-	    }
-	  partial_defs.safe_push (pd);
-
-	  /* Now we have merged newr into the range tree.
-	     When we have covered [offseti, sizei] then the
-	     tree will contain exactly one node which has
-	     the desired properties and it will be 'r'.  */
-	  if (known_subrange_p (0, maxsizei / BITS_PER_UNIT,
-				r->offset, r->size))
-	    {
-	      /* Now simply native encode all partial defs
-		 in reverse order.  */
-	      unsigned ndefs = partial_defs.length ();
-	      /* We support up to 512-bit values (for V8DFmode).  */
-	      unsigned char buffer[64];
-	      int len;
-
-	      while (!partial_defs.is_empty ())
-		{
-		  pd_data pd = partial_defs.pop ();
-		  if (TREE_CODE (pd.rhs) == CONSTRUCTOR)
-		    /* Empty CONSTRUCTOR.  */
-		    memset (buffer + MAX (0, pd.offset),
-			    0, MIN ((HOST_WIDE_INT)sizeof (buffer), pd.size));
-		  else
-		    {
-		      unsigned pad = 0;
-		      if (BYTES_BIG_ENDIAN
-			  && is_a <scalar_mode> (TYPE_MODE (TREE_TYPE (pd.rhs))))
-			{
-			  /* On big-endian the padding is at the 'front' so
-			     just skip the initial bytes.  */
-			  fixed_size_mode mode = as_a <fixed_size_mode>
-					       (TYPE_MODE (TREE_TYPE (pd.rhs)));
-			  pad = GET_MODE_SIZE (mode) - pd.size;
-			}
-		      len = native_encode_expr (pd.rhs,
-						buffer + MAX (0, pd.offset),
-						sizeof (buffer - MAX (0, pd.offset)),
-						MAX (0, -pd.offset) + pad);
-		      if (len <= 0
-			  || len < (pd.size - MAX (0, -pd.offset)))
-			{
-			  if (dump_file && (dump_flags & TDF_DETAILS))
-			    fprintf (dump_file, "Failed to encode %u "
-				     "partial definitions\n", ndefs);
-			  return (void *)-1;
-			}
-		    }
-		}
-
-	      tree type = vr->type;
-	      /* Make sure to interpret in a type that has a range
-		 covering the whole access size.  */
-	      if (INTEGRAL_TYPE_P (vr->type)
-		  && maxsizei != TYPE_PRECISION (vr->type))
-		type = build_nonstandard_integer_type (maxsizei,
-						       TYPE_UNSIGNED (type));
-	      tree val = native_interpret_expr (type, buffer,
-						maxsizei / BITS_PER_UNIT);
-	      /* If we chop off bits because the types precision doesn't
-		 match the memory access size this is ok when optimizing
-		 reads but not when called from the DSE code during
-		 elimination.  */
-	      if (val
-		  && type != vr->type)
-		{
-		  if (! int_fits_type_p (val, vr->type))
-		    val = NULL_TREE;
-		  else
-		    val = fold_convert (vr->type, val);
-		}
-
-	      if (val)
-		{
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    fprintf (dump_file, "Successfully combined %u "
-			     "partial definitions\n", ndefs);
-		  return vn_reference_lookup_or_insert_for_pieces
-		      (first_vuse,
-		       vr->set, vr->type, vr->operands, val);
-		}
-	      else
-		{
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    fprintf (dump_file, "Failed to interpret %u "
-			     "encoded partial definitions\n", ndefs);
-		  return (void *)-1;
-		}
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Failed to encode %u "
+			 "partial definitions\n", ndefs);
+	      return (void *)-1;
 	    }
 	}
     }
-  /* Continue looking for partial defs.  */
-  return NULL;
+
+  tree type = vr->type;
+  /* Make sure to interpret in a type that has a range covering the whole
+     access size.  */
+  if (INTEGRAL_TYPE_P (vr->type) && maxsizei != TYPE_PRECISION (vr->type))
+    type = build_nonstandard_integer_type (maxsizei, TYPE_UNSIGNED (type));
+  tree val = native_interpret_expr (type, buffer, maxsizei / BITS_PER_UNIT);
+  /* If we chop off bits because the types precision doesn't match the memory
+     access size this is ok when optimizing reads but not when called from
+     the DSE code during elimination.  */
+  if (val && type != vr->type)
+    {
+      if (! int_fits_type_p (val, vr->type))
+	val = NULL_TREE;
+      else
+	val = fold_convert (vr->type, val);
+    }
+
+  if (val)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Successfully combined %u partial definitions\n", ndefs);
+      return vn_reference_lookup_or_insert_for_pieces
+		(first_vuse, vr->set, vr->type, vr->operands, val);
+    }
+  else
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Failed to interpret %u encoded partial definitions\n", ndefs);
+      return (void *)-1;
+    }
 }
 
 /* Callback for walk_non_aliased_vuses.  Adjusts the vn_reference_t VR_
