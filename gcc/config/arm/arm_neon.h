@@ -16938,37 +16938,32 @@ __extension__ extern __inline uint32_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vsha1h_u32 (uint32_t __hash_e)
 {
-  uint32x4_t __t = vdupq_n_u32 (0);
-  __t = vsetq_lane_u32 (__hash_e, __t, 0);
-  __t = __builtin_arm_crypto_sha1h (__t);
-  return vgetq_lane_u32 (__t, 0);
+  return vgetq_lane_u32 (__builtin_arm_crypto_sha1h (vdupq_n_u32 (__hash_e)),
+			 0);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vsha1cq_u32 (uint32x4_t __hash_abcd, uint32_t __hash_e, uint32x4_t __wk)
 {
-  uint32x4_t __t = vdupq_n_u32 (0);
-  __t = vsetq_lane_u32 (__hash_e, __t, 0);
-  return __builtin_arm_crypto_sha1c (__hash_abcd, __t, __wk);
+  return __builtin_arm_crypto_sha1c (__hash_abcd, vdupq_n_u32 (__hash_e),
+				     __wk);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vsha1pq_u32 (uint32x4_t __hash_abcd, uint32_t __hash_e, uint32x4_t __wk)
 {
-  uint32x4_t __t = vdupq_n_u32 (0);
-  __t = vsetq_lane_u32 (__hash_e, __t, 0);
-  return __builtin_arm_crypto_sha1p (__hash_abcd, __t, __wk);
+  return __builtin_arm_crypto_sha1p (__hash_abcd, vdupq_n_u32 (__hash_e),
+				     __wk);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vsha1mq_u32 (uint32x4_t __hash_abcd, uint32_t __hash_e, uint32x4_t __wk)
 {
-  uint32x4_t __t = vdupq_n_u32 (0);
-  __t = vsetq_lane_u32 (__hash_e, __t, 0);
-  return __builtin_arm_crypto_sha1m (__hash_abcd, __t, __wk);
+  return __builtin_arm_crypto_sha1m (__hash_abcd,  vdupq_n_u32 (__hash_e),
+				     __wk);
 }
 
 __extension__ extern __inline uint32x4_t

@@ -1,3 +1,19 @@
+2019-07-18  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+        PR target/90317
+        * gcc.target/arm/crypto-vsha1cq_u32.c (foo): Change return type to
+        uint32_t.
+        (GET_LANE, TEST_SHA1C_VEC_SELECT): New.
+        * gcc.target/arm/crypto-vsha1h_u32.c (foo): Change return type to
+        uint32_t.
+        (GET_LANE, TEST_SHA1H_VEC_SELECT): New.
+        * gcc.target/arm/crypto-vsha1mq_u32.c (foo): Change return type to
+        uint32_t.
+        (GET_LANE, TEST_SHA1M_VEC_SELECT): New.
+        * gcc.target/arm/crypto-vsha1pq_u32.c (foo): Change return type to
+        uint32_t.
+        (GET_LANE, TEST_SHA1P_VEC_SELECT): New.
+
 2019-07-18  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/lto/alias-5_0.C: New testcase.
