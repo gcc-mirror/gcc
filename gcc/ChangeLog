@@ -1,5 +1,16 @@
 2019-07-18  Sylvia Taylor  <sylvia.taylor@arm.com>
 
+	* config/arm/arm-builtins.c
+	(arm_expand_ternop_builtin): Remove explicit sha1 builtin handling.
+	(arm_expand_unop_builtin): Likewise.
+	* config/arm/crypto.md
+	(crypto_sha1h): Convert from define_insn to define_expand.
+	(crypto_<crypto_pattern>): Likewise.
+	(crypto_sha1h_lb): New define_insn.
+	(crypto_<crypto_pattern>_lb): Likewise.
+
+2019-07-18  Sylvia Taylor  <sylvia.taylor@arm.com>
+
         PR target/90317
         * config/arm/arm_neon.h
         (vsha1h_u32): Refactor.
