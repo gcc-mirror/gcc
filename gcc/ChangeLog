@@ -1,3 +1,8 @@
+2019-07-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*addqi_2_slp): Remove.
+	(*<code>qi_2_slp): Ditto.
+
 2019-07-18  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/predicates.md (prefixed_mem_operand): Call
