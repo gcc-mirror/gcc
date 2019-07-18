@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "tree-cfg.h"
 #include "tree-into-ssa.h"
+#include "tree-ssa-propagate.h"
 #include "gimple-pretty-print.h"
 #include "cfghooks.h"
 
@@ -544,4 +545,91 @@ gimple_opt_pass *
 make_pass_coroutine_expand_ifns (gcc::context *ctxt)
 {
   return new pass_coroutine_expand_ifns (ctxt);
+}
+
+
+/* Optimize (not yet) and lower frame allocation.  */
+
+static unsigned int
+execute_finalize_frame (void)
+{
+  /* Don't rebuild stuff unless we have to. */
+  unsigned int todoflags = 0;
+  bool changed = false;
+
+  basic_block bb;
+
+  gimple_stmt_iterator gsi;
+  FOR_EACH_BB_FN (bb, cfun)
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+      {
+	gimple *stmt = gsi_stmt (gsi);
+	if (!is_gimple_call (stmt) || !gimple_call_internal_p (stmt))
+	  {
+	    gsi_next (&gsi);
+	    continue;
+	  }
+	switch (gimple_call_internal_fn (stmt))
+	  {
+	  case IFN_CO_FRAME:
+	    {
+	    tree size = gimple_call_arg (stmt, 0);
+	    update_gimple_call (&gsi, builtin_decl_explicit (BUILT_IN_MALLOC), 1, size);
+	    changed = true;
+	    }
+	  default:
+	    gsi_next (&gsi);
+	    break;
+	  }
+      }
+
+  if (!changed)
+    {
+      if (dump_file)
+	fprintf (dump_file, "coro: nothing to do\n");
+      return todoflags;
+    }
+  else if (dump_file)
+    fprintf (dump_file, "called frame expansion for %s\n", IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
+  return 0;
+}
+
+namespace {
+
+const pass_data pass_data_coroutine_finalize_frame  =
+{
+  GIMPLE_PASS, /* type */
+  "coro-finalize-frame", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  (PROP_cfg | PROP_ssa), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0  /* todo_flags_finish, set this in the fn. */
+};
+
+class pass_coroutine_finalize_frame : public gimple_opt_pass
+{
+public:
+  pass_coroutine_finalize_frame (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_coroutine_finalize_frame , ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *) { return flag_coroutines; };
+
+  virtual unsigned int execute (function *f ATTRIBUTE_UNUSED)
+    {
+      return execute_finalize_frame ();
+    }
+
+}; // class pass_coroutine_finalize_frame
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_coroutine_finalize_frame (gcc::context *ctxt)
+{
+  return new pass_coroutine_finalize_frame (ctxt);
 }

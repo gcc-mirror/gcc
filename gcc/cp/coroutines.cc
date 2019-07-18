@@ -2448,16 +2448,12 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer, tree *suspended_p)
   tree r = build_stmt (fn_start, DECL_EXPR, coro_fp);
   add_stmt (r);
 
-  /* Allocate the frame.  This is the "real version"...
+  /* Allocate the frame.  This is a place-holder which we might alter or lower
+     in some special way after the full contents of the frame are known.  */
   tree allocated
     = build_call_expr_internal_loc (fn_start, IFN_CO_FRAME,
 				    build_pointer_type (void_type_node), 1,
-				    coro_fp);
-  .. and this is a temporary one until we do heap allocation elision. */
-  tree allocated
-    = build_call_expr_loc (fn_start,
-			   builtin_decl_explicit (BUILT_IN_MALLOC), 1,
-			   TYPE_SIZE_UNIT (coro_frame_type));
+				    TYPE_SIZE_UNIT (coro_frame_type));
   allocated = build1 (CONVERT_EXPR, coro_frame_ptr, allocated);
   r = build2 (INIT_EXPR, TREE_TYPE (coro_fp), coro_fp, allocated);
   r = coro_build_cvt_void_expr_stmt (r, fn_start);
