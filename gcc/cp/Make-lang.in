@@ -62,20 +62,23 @@ ifeq ($(DEVPHASE_c),experimental)
 cp/module.o : $(srcdir)/cp
 # Some date's don't grok 'r', if so, simply use today's
 # date (don't bootstrap at midnight).
-MODULE_VERSION := $(shell date -r $(srcdir)/cp '+%y%m%d-%H%M' 2>/dev/null || \
-	date '+%y%m%d-0000' 2>/dev/null || echo 0)
+MODULE_VERSION := $(shell date -r $(srcdir)/cp '+%y%m%d-%H%M' 2>/dev/null\
+  || date '+%y%m%d-0000' 2>/dev/null || echo 0)
 # Try svnversion
-MODULE_REVISION := $(shell svnversion $(srcdir) 2>/dev/null | sed 's/[0-9]*://')
-ifeq ($(shell echo $(MODULE_REVISION) | sed 's/^[0-9][0-9]*M*S*P*$$/SVN/'),SVN)
-MODULE_REVISION := svn-$(MODULE_REVISION)
-else
-# Look in Changelog.modules
-MODULE_REVISION := $(shell tail -1 $(srcdir)/../ChangeLog.modules 2>/dev/null)
-ifeq ($(firstword $(MODULE_REVISION)),$$Rev:)
-MODULE_REVISION := log-$(word 2,$(MODULE_REVISION))
-else
-MODULE_REVISION := unknown
+MODULE_REVISION := $(shell svnversion $(srcdir) 2>/dev/null\
+  | sed -ne 's/^\(.*:\)\?\([0-9][0-9]*M\?S\?P\?\)$$/svn-\2/p')
+ifeq ($(MODULE_REVISION),)
+# See if this is git-svn
+MODULE_REVISION := $(shell git -C $(srcdir)/.. log ChangeLog.modules 2>/dev/null\
+  | sed -ne '/ *git-svn-id: /{s/.*@\([^ ]*\).*/svn-\1/p;q}')
 endif
+ifeq ($(MODULE_REVISION),)
+# Look in Changelog.modules
+MODULE_REVISION := $(shell tail -1 $(srcdir)/../ChangeLog.modules 2>/dev/null\
+  | sed -ne 's/^\$$Rev: *\([0-9][0-9]*\) \$$$$/log-\1/p')
+endif
+ifeq ($(MODULE_REVISION),)
+MODULE_REVISION := unknown
 endif
 version.o : $(srcdir)/cp
 # Set REVISION string
