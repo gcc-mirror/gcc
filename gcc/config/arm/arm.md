@@ -1110,7 +1110,7 @@
    (parallel [(set (reg:CC CC_REGNUM)
 		   (compare:CC (match_dup 4) (match_dup 5)))
 	     (set (match_dup 3) (minus:SI (minus:SI (match_dup 4) (match_dup 5))
-			       (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))])]
+			       (ltu:SI (reg:CC CC_REGNUM) (const_int 0))))])]
   {
     operands[3] = gen_highpart (SImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
@@ -1141,7 +1141,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
 	(minus:SI (minus:SI (match_operand:SI 1 "reg_or_int_operand" "r,I,Pz")
 			    (match_operand:SI 2 "s_register_operand" "r,r,r"))
-		  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+		  (match_operand:SI 3 "arm_borrow_operation" "")))]
   "TARGET_32BIT"
   "@
    sbc%?\\t%0, %1, %2
@@ -1155,9 +1155,10 @@
 
 (define_insn "*subsi3_carryin_const"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-        (minus:SI (plus:SI (match_operand:SI 1 "s_register_operand" "r")
-                           (match_operand:SI 2 "arm_neg_immediate_operand" "L"))
-                  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+	(minus:SI (plus:SI
+		   (match_operand:SI 1 "s_register_operand" "r")
+		   (match_operand:SI 2 "arm_neg_immediate_operand" "L"))
+		  (match_operand:SI 3 "arm_borrow_operation" "")))]
   "TARGET_32BIT"
   "sbc\\t%0, %1, #%n2"
   [(set_attr "conds" "use")
@@ -1166,8 +1167,8 @@
 
 (define_insn "*subsi3_carryin_const0"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-        (minus:SI (match_operand:SI 1 "s_register_operand" "r")
-                  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+	(minus:SI (match_operand:SI 1 "s_register_operand" "r")
+		  (match_operand:SI 2 "arm_borrow_operation" "")))]
   "TARGET_32BIT"
   "sbc\\t%0, %1, #0"
   [(set_attr "conds" "use")
@@ -1176,12 +1177,11 @@
 
 (define_insn "*subsi3_carryin_compare"
   [(set (reg:CC CC_REGNUM)
-        (compare:CC (match_operand:SI 1 "s_register_operand" "r")
-                    (match_operand:SI 2 "s_register_operand" "r")))
+	(compare:CC (match_operand:SI 1 "s_register_operand" "r")
+		    (match_operand:SI 2 "s_register_operand" "r")))
    (set (match_operand:SI 0 "s_register_operand" "=r")
-        (minus:SI (minus:SI (match_dup 1)
-                            (match_dup 2))
-                  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+	(minus:SI (minus:SI (match_dup 1) (match_dup 2))
+		  (match_operand:SI 3 "arm_borrow_operation" "")))]
   "TARGET_32BIT"
   "sbcs\\t%0, %1, %2"
   [(set_attr "conds" "set")
@@ -1190,12 +1190,13 @@
 
 (define_insn "*subsi3_carryin_compare_const"
   [(set (reg:CC CC_REGNUM)
-        (compare:CC (match_operand:SI 1 "reg_or_int_operand" "r")
-                    (match_operand:SI 2 "const_int_I_operand" "I")))
+	(compare:CC (match_operand:SI 1 "reg_or_int_operand" "r")
+		    (match_operand:SI 2 "const_int_I_operand" "I")))
    (set (match_operand:SI 0 "s_register_operand" "=r")
-        (minus:SI (plus:SI (match_dup 1)
-                           (match_operand:SI 3 "arm_neg_immediate_operand" "L"))
-                  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+	(minus:SI (plus:SI
+		   (match_dup 1)
+		   (match_operand:SI 3 "arm_neg_immediate_operand" "L"))
+		  (match_operand:SI 4 "arm_borrow_operation" "")))]
   "TARGET_32BIT
    && (INTVAL (operands[2])
        == trunc_int_for_mode (-INTVAL (operands[3]), SImode))"
@@ -1206,11 +1207,11 @@
 
 (define_insn "*subsi3_carryin_compare_const0"
   [(set (reg:CC CC_REGNUM)
-        (compare:CC (match_operand:SI 1 "reg_or_int_operand" "r")
+	(compare:CC (match_operand:SI 1 "reg_or_int_operand" "r")
 		    (const_int 0)))
    (set (match_operand:SI 0 "s_register_operand" "=r")
-        (minus:SI (match_dup 1)
-                  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+	(minus:SI (match_dup 1)
+		  (match_operand:SI 2 "arm_borrow_operation" "")))]
   "TARGET_32BIT"
   "sbcs\\t%0, %1, #0"
   [(set_attr "conds" "set")
@@ -1220,28 +1221,28 @@
 (define_insn "*subsi3_carryin_shift"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(minus:SI (minus:SI
-		  (match_operand:SI 1 "s_register_operand" "r")
-                  (match_operator:SI 2 "shift_operator"
-                   [(match_operand:SI 3 "s_register_operand" "r")
-                    (match_operand:SI 4 "reg_or_int_operand" "rM")]))
-                 (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+		   (match_operand:SI 1 "s_register_operand" "r")
+		   (match_operator:SI 2 "shift_operator"
+		    [(match_operand:SI 3 "s_register_operand" "r")
+		     (match_operand:SI 4 "reg_or_int_operand" "rM")]))
+		  (match_operand:SI 5 "arm_borrow_operation" "")))]
   "TARGET_32BIT"
   "sbc%?\\t%0, %1, %3%S2"
   [(set_attr "conds" "use")
    (set_attr "predicable" "yes")
    (set (attr "type") (if_then_else (match_operand 4 "const_int_operand" "")
-		      (const_string "alu_shift_imm")
-                     (const_string "alu_shift_reg")))]
+				    (const_string "alu_shift_imm")
+				    (const_string "alu_shift_reg")))]
 )
 
 (define_insn "*rsbsi3_carryin_shift"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(minus:SI (minus:SI
-                  (match_operator:SI 2 "shift_operator"
-                   [(match_operand:SI 3 "s_register_operand" "r")
-                    (match_operand:SI 4 "reg_or_int_operand" "rM")])
+		   (match_operator:SI 2 "shift_operator"
+		    [(match_operand:SI 3 "s_register_operand" "r")
+		     (match_operand:SI 4 "reg_or_int_operand" "rM")])
 		   (match_operand:SI 1 "s_register_operand" "r"))
-                 (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+		  (match_operand:SI 5 "arm_borrow_operation" "")))]
   "TARGET_ARM"
   "rsc%?\\t%0, %1, %3%S2"
   [(set_attr "conds" "use")
@@ -1311,7 +1312,7 @@
 		   (compare:CC (match_dup 1) (match_dup 2)))
 	      (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))])
    (set (match_dup 3) (minus:SI (minus:SI (match_dup 4) (match_dup 5))
-			       (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+			       (ltu:SI (reg:CC CC_REGNUM) (const_int 0))))]
   {
     operands[3] = gen_highpart (SImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
@@ -1338,7 +1339,7 @@
 		   (compare:CC (match_dup 1) (match_dup 2)))
 	      (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))])
    (set (match_dup 3) (minus:SI (match_dup 4)
-                                (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+				(ltu:SI (reg:CC CC_REGNUM) (const_int 0))))]
   {
     operands[3] = gen_highpart (SImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
@@ -1365,7 +1366,7 @@
    (set (match_dup 3) (minus:SI (minus:SI (match_dup 4)
                                          (ashiftrt:SI (match_dup 2)
                                                       (const_int 31)))
-                                (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+                                (ltu:SI (reg:CC CC_REGNUM) (const_int 0))))]
   {
     operands[3] = gen_highpart (SImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
@@ -1392,7 +1393,7 @@
 		   (compare:CC (match_dup 2) (match_dup 1)))
 	      (set (match_dup 0) (minus:SI (match_dup 2) (match_dup 1)))])
    (set (match_dup 3) (minus:SI (minus:SI (const_int 0) (match_dup 4))
-			       (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+			       (ltu:SI (reg:CC CC_REGNUM) (const_int 0))))]
   {
     operands[3] = gen_highpart (SImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
@@ -1422,7 +1423,7 @@
                                 (ashiftrt:SI (match_dup 2)
                                              (const_int 31))
                                 (match_dup 4))
-			       (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+			       (ltu:SI (reg:CC CC_REGNUM) (const_int 0))))]
   {
     operands[3] = gen_highpart (SImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
@@ -1448,7 +1449,7 @@
 		   (compare:CC (match_dup 1) (match_dup 2)))
 	      (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))])
    (set (match_dup 3) (minus:SI (minus:SI (match_dup 1) (match_dup 1))
-			       (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+			       (ltu:SI (reg:CC CC_REGNUM) (const_int 0))))]
   {
        operands[3] = gen_highpart (SImode, operands[0]);
        operands[0] = gen_lowpart (SImode, operands[0]);
@@ -4661,7 +4662,7 @@
 	     (set (match_dup 2)
 		  (minus:SI
 		   (minus:SI (const_int 0) (match_dup 3))
-		   (ltu:SI (reg:CC_C CC_REGNUM)
+		   (ltu:SI (reg:CC CC_REGNUM)
 			   (const_int 0))))])]
   {
     operands[2] = gen_highpart (SImode, operands[0]);
@@ -4703,7 +4704,7 @@
 		   (compare:CC (const_int 0) (match_dup 1)))
 	      (set (match_dup 0) (minus:SI (const_int 0) (match_dup 1)))])
    (set (match_dup 2) (minus:SI (minus:SI (const_int 0) (match_dup 3))
-                                (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+                                (ltu:SI (reg:CC CC_REGNUM) (const_int 0))))]
   {
     operands[2] = gen_highpart (SImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
@@ -4722,7 +4723,7 @@
    (set (match_operand:SI 0 "s_register_operand" "=r")
 	(minus:SI (minus:SI (const_int 0)
 			    (match_dup 1))
-		  (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+		  (match_operand:SI 2 "arm_borrow_operation" "")))]
   "TARGET_ARM"
   "rscs\\t%0, %1, #0"
   [(set_attr "conds" "set")
@@ -4799,7 +4800,7 @@
 		asr	Rhi, Rin, #31
 		rsbs	Rlo, Rin, #0
 		rsc	Rhi, Rhi, #0 (thumb2: sbc Rhi, Rhi, Rhi, lsl #1).  */
-	rtx cc_reg = gen_rtx_REG (CC_Cmode, CC_REGNUM);
+	rtx cc_reg = gen_rtx_REG (CCmode, CC_REGNUM);
 
 	emit_insn (gen_rtx_SET (high,
 				gen_rtx_ASHIFTRT (SImode, operands[1],
@@ -4861,10 +4862,10 @@
       ;; since we just need to propagate the carry.
   "&& reload_completed"
   [(parallel [(set (reg:CC CC_REGNUM)
-                   (compare:CC (const_int 0) (match_dup 1)))
-              (set (match_dup 0) (minus:SI (const_int 0) (match_dup 1)))])
+		   (compare:CC (const_int 0) (match_dup 1)))
+	      (set (match_dup 0) (minus:SI (const_int 0) (match_dup 1)))])
    (set (match_dup 2) (minus:SI (minus:SI (match_dup 2) (match_dup 2))
-                                (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))]
+				(ltu:SI (reg:CC CC_REGNUM) (const_int 0))))]
   {
     operands[2] = gen_highpart (SImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
@@ -7448,12 +7449,12 @@
   "#"   ; "cmp\\t%Q0, %Q1\;sbcs\\t%2, %R0, %R1"
   "&& reload_completed"
   [(set (reg:CC CC_REGNUM)
-        (compare:CC (match_dup 0) (match_dup 1)))
+	(compare:CC (match_dup 0) (match_dup 1)))
    (parallel [(set (reg:CC CC_REGNUM)
-                   (compare:CC (match_dup 3) (match_dup 4)))
-              (set (match_dup 2)
-                   (minus:SI (match_dup 5)
-			     (ltu:SI (reg:CC_C CC_REGNUM) (const_int 0))))])]
+		   (compare:CC (match_dup 3) (match_dup 4)))
+	      (set (match_dup 2)
+		   (minus:SI (match_dup 5)
+			     (ltu:SI (reg:CC CC_REGNUM) (const_int 0))))])]
   {
     operands[3] = gen_highpart (SImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
