@@ -1,5 +1,9 @@
 2019-07-18  Michael Meissner  <meissner@linux.ibm.com>
 
+	* config/rs6000/predicates.md (prefixed_mem_operand): Call
+	rs6000_prefixed_address_mode_p instead of rs6000_prefixed_address.
+	* config/rs6000/rs6000-protos.h (rs6000_prefixed_address_mode_p):
+	Rename function from rs6000_prefixed_address.
 	* config/rs6000/aix.h (TARGET_HAS_TOC): Rename TARGET_TOC to
 	TARGET_HAS_TOC.
 	(TARGET_TOC): Likewise.
@@ -25,6 +29,8 @@
 	(output_toc): Use TARGET_NO_TOC_OR_PCREL instead of
 	TARGET_NO_TOC.
 	(rs6000_can_eliminate): Likewise.
+	(rs6000_prefixed_address_mode_p): Rename function from
+	rs6000_prefixed_address.
 	* config/rs6000/rs6000.h (TARGET_TOC): Define in terms of
 	TARGET_HAS_TOC and not pc-relative.
 	(TARGET_NO_TOC_OR_PCREL): New macro to replace TARGET_NO_TOC.

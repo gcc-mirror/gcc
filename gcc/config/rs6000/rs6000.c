@@ -21504,7 +21504,7 @@ mode_supports_prefixed_address_p (machine_mode mode)
    mode MODE.  */
 
 bool
-rs6000_prefixed_address (rtx addr, machine_mode mode)
+rs6000_prefixed_address_mode_p (rtx addr, machine_mode mode)
 {
   if (!TARGET_PREFIXED_ADDR || !mode_supports_prefixed_address_p (mode))
     return false;
