@@ -1,3 +1,21 @@
+2019-07-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91188
+	* config/i386/i386.md (*addqi_1_slp): Use register_operand predicate
+	for operand 0.  Do not use (match_dup) to match operand 1 with
+	operand 0.  Add check in insn constraint that either input operand
+	matches operand 0.  Use SWI12 mode iterator to also handle
+	HImode operands.
+	(*and<mode>_1_slp): Ditto.
+	(*<code>qi_1_slp): Ditto.
+	(*sub<mode>_1_slp): Use register_operand predicate for operand 0.
+	Do not use (match_dup) to match operand 1 with operand 0.  Add
+	check in insn constraint that operand 1 matches operand 0.
+	Use SWI12 mode iterator to also handle HImode operands.
+	(*ashl<mode>3_1_slp): Ditto.
+	(*<shift_insn><mode>3_1_slp): Ditto.
+	(*<rotate_insn><mode>3_1_slp): Ditto.
+
 2019-07-18  Sylvia Taylor  <sylvia.taylor@arm.com>
 
 	* config/arm/arm-builtins.c

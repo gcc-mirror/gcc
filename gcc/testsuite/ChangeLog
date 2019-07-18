@@ -1,3 +1,13 @@
+2019-07-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91188
+	* gcc.target/i386/pr91188-1a.c: New test.
+	* gcc.target/i386/pr91188-1b.c: Ditto.
+	* gcc.target/i386/pr91188-1c.c: Ditto.
+	* gcc.target/i386/pr91188-2a.c: Ditto.
+	* gcc.target/i386/pr91188-2b.c: Ditto.
+	* gcc.target/i386/pr91188-2c.c: Ditto.
+
 2019-07-18  Sylvia Taylor  <sylvia.taylor@arm.com>
 
         PR target/90317
