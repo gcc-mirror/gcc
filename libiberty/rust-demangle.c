@@ -47,6 +47,7 @@ extern void *memset(void *s, int c, size_t n);
 
 #include <demangle.h>
 #include "libiberty.h"
+#include "rust-demangle.h"
 
 
 /* Mangled Rust symbols look like this:
