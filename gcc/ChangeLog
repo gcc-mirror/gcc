@@ -1,3 +1,12 @@
+2019-07-18  Bin Cheng  <bin.linux@linux.alibaba.com>
+
+	PR tree-optimization/91137
+	* tree-ssa-loop-ivopts.c (struct ivopts_data): New field.
+	(tree_ssa_iv_optimize_init, alloc_iv, tree_ssa_iv_optimize_finalize):
+	Init, use and fini the above new field.
+	(determine_base_object_1): New function.
+	(determine_base_object): Reimplement using walk_tree.
+
 2019-07-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* basic-block.h (CLEANUP_FORCE_FAST_DCE): New macro.
