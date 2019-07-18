@@ -1,3 +1,8 @@
+2019-07-18  Bin Cheng  <bin.linux@linux.alibaba.com>
+
+	PR tree-optimization/91137
+	* gcc.c-torture/execute/pr91137.c: New test.
+
 2019-07-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* c-c++-common/pr53633-2.c: New test.
