@@ -2610,7 +2610,7 @@ LIBGNAT_OBJS = adadecode.o adaint.o argv.o aux-io.o 			\
 
 LIBGNAT_SRCS = $(patsubst %.o,%.c,$(LIBGNAT_OBJS))			\
   adadecode.h adaint.h env.h gsocket.h raise.h standard.ads.h		\
-  tb-gcc.c libgnarl/thread.c $(EXTRA_LIBGNAT_SRCS)
+  tb-gcc.c runtime.h libgnarl/thread.c $(EXTRA_LIBGNAT_SRCS)
 
 # memtrack.o is special as not put into libgnat.
 GNATRTL_OBJS = $(GNATRTL_NONTASKING_OBJS) $(GNATRTL_TASKING_OBJS) \

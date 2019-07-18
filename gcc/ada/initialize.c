@@ -41,8 +41,7 @@
 #endif
 
 #ifdef IN_RTS
-#include "tconfig.h"
-#include "tsystem.h"
+#include "runtime.h"
 /* We don't have libiberty, so use malloc.  */
 #define xmalloc(S) malloc (S)
 #define xrealloc(V,S) realloc (V,S)

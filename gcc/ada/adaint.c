@@ -88,8 +88,26 @@
 #endif
 
 #ifdef IN_RTS
+
+#ifdef STANDALONE
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* for CPU_SET/CPU_ZERO */
+#define _GNU_SOURCE
+#define __USE_GNU
+
+#include "runtime.h"
+
+#else
 #include "tconfig.h"
 #include "tsystem.h"
+#endif
+
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <time.h>

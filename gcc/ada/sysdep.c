@@ -54,8 +54,10 @@
 
 #ifdef IN_RTS
 #define POSIX
-#include "tconfig.h"
-#include "tsystem.h"
+#include "runtime.h"
+#include <string.h>
+#include <unistd.h>
+
 #include <fcntl.h>
 #include <sys/stat.h>
 #else

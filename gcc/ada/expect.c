@@ -29,14 +29,11 @@
  *                                                                          *
  ****************************************************************************/
 
-#ifdef __alpha_vxworks
-#include "vxWorks.h"
-#endif
-
 #ifdef IN_RTS
 #define POSIX
-#include "tconfig.h"
-#include "tsystem.h"
+#include "runtime.h"
+#include <unistd.h>
+
 #else
 #include "config.h"
 #include "system.h"

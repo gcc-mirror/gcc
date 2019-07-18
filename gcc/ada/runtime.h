@@ -2,11 +2,11 @@
  *                                                                          *
  *                         GNAT COMPILER COMPONENTS                         *
  *                                                                          *
- *                                E X I T                                   *
+ *                                 RUNTIME                                  *
  *                                                                          *
- *                          C Implementation File                           *
+ *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2019, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2019, Free Software Foundation, Inc.              *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -29,20 +29,16 @@
  *                                                                          *
  ****************************************************************************/
 
-#ifdef __cplusplus
-extern "C" {
+/* This file provides common definitions used by GNAT C runtime files.  */
+
+#ifdef __vxworks
+#include "vxWorks.h"
+#endif /* __vxworks */
+
+#ifndef ATTRIBUTE_UNUSED
+#define ATTRIBUTE_UNUSED __attribute__((unused))
 #endif
 
-/* Routine used by Ada.Command_Line.Set_Exit_Status.  */
-
-int gnat_exit_status = 0;
-
-void
-__gnat_set_exit_status (int i)
-{
-  gnat_exit_status = i;
-}
-
-#ifdef __cplusplus
-}
+#ifndef ATTRIBUTE_NORETURN
+#define ATTRIBUTE_NORETURN __attribute__((noreturn))
 #endif

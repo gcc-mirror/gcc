@@ -1,3 +1,14 @@
+2019-07-18  Arnaud Charlet  <charlet@adacore.com>
+
+	* Makefile.rtl, expect.c, env.c, aux-io.c, mkdir.c, initialize.c,
+	cstreams.c, raise.c, tracebak.c, adadecode.c, init.c, raise-gcc.c,
+	argv.c, adaint.c, adaint.h, ctrl_c.c, sysdep.c, rtinit.c, cio.c,
+	seh_init.c, exit.c, targext.c: Introduce a "STANDALONE" mode where C
+	runtime files do not have any dependency on GCC include files.
+	Remove unnecessary includes.
+	Remove remaining references to VMS in runtime C file.
+	* runtime.h: new File.
+
 2019-07-13  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* Makefile.rtl: Use g-sercom__linux.adb for all linuxes.

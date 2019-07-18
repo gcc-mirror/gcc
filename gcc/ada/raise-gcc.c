@@ -39,11 +39,11 @@
   /* Don't use fancy_abort.  */
 # undef abort
 #else
-# ifndef CERT
+# if !defined(CERT) && !defined(STANDALONE)
 #  include "tconfig.h"
 #  include "tsystem.h"
 # else
-#  define ATTRIBUTE_UNUSED __attribute__((unused))
+#  include "runtime.h"
 #  define HAVE_GETIPINFO 1
 # endif
 #endif
@@ -115,6 +115,10 @@ extern void __gnat_unhandled_except_handler (_Unwind_Exception *);
 /* Called in case of error during propagation.  */
 extern void __gnat_raise_abort (void) __attribute__ ((noreturn));
 #define abort() __gnat_raise_abort()
+
+#elif defined(STANDALONE)
+#include <stdlib.h>
+#define inhibit_libc
 #endif
 
 #include "unwind-pe.h"
