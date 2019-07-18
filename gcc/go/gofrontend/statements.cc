@@ -2176,7 +2176,9 @@ Block_statement::do_import(Import_function_body* ifb, Location loc,
   ifb->set_off(nl + 1);
   ifb->increment_indent();
   Block* block = new Block(ifb->block(), loc);
+  ifb->begin_block(block);
   bool ok = Block::import_block(block, ifb, loc);
+  ifb->finish_block();
   ifb->decrement_indent();
   if (!ok)
     return NULL;

@@ -1535,6 +1535,26 @@ Stream_from_file::do_advance(size_t skip)
 
 // Class Import_function_body.
 
+Import_function_body::Import_function_body(Gogo* gogo,
+                                           Import* imp,
+                                           Named_object* named_object,
+                                           const std::string& body,
+                                           size_t off,
+                                           Block* block,
+                                           int indent)
+    : gogo_(gogo), imp_(imp), named_object_(named_object), body_(body),
+      off_(off), indent_(indent), temporaries_(), labels_(),
+      saw_error_(false)
+{
+  this->blocks_.push_back(block);
+}
+
+Import_function_body::~Import_function_body()
+{
+  // At this point we should be left with the original outer block only.
+  go_assert(saw_errors() || this->blocks_.size() == 1);
+}
+
 // The name of the function we are parsing.
 
 const std::string&
