@@ -1,3 +1,27 @@
+2020-03-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/90311
+	Backport from master
+	2019-07-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/predicates.md (arm_borrow_operation): New predicate.
+	* config/arm/arm.c (subdi3_compare1): Use CCmode for the split.
+	(arm_subdi3, subdi_di_zesidi, subdi_di_sesidi): Likewise.
+	(subdi_zesidi_zesidi): Likewise.
+	(negdi2_compare, negdi2_insn): Likewise.
+	(negdi_extensidi): Likewise.
+	(negdi_zero_extendsidi): Likewise.
+	(arm_cmpdi_insn): Likewise.
+	(subsi3_carryin): Use arm_borrow_operation.
+	(subsi3_carryin_const): Likewise.
+	(subsi3_carryin_const0): Likewise.
+	(subsi3_carryin_compare): Likewise.
+	(subsi3_carryin_compare_const): Likewise.
+	(subsi3_carryin_compare_const0): Likewise.
+	(subsi3_carryin_shift): Likewise.
+	(rsbsi3_carryin_shift): Likewise.
+	(negsi2_carryin_compare): Likewise.
+
 2020-03-04  Marek Polacek  <polacek@redhat.com>
 
 	Backport from mainline

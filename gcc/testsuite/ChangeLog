@@ -1,3 +1,9 @@
+2020-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from master
+	PR target/90311
+	* gcc.c-torture/execute/pr90311.c: New test.
+
 2020-03-05  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/asan/asan_test.C (dg-options): Add
