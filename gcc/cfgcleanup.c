@@ -3193,7 +3193,10 @@ cleanup_cfg (int mode)
 	      && !delete_trivially_dead_insns (get_insns (), max_reg_num ()))
 	    break;
 	  if ((mode & CLEANUP_CROSSJUMP) && crossjumps_occurred)
-	    run_fast_dce ();
+	    {
+	      run_fast_dce ();
+	      mode &= ~CLEANUP_FORCE_FAST_DCE;
+	    }
 	}
       else
 	break;
@@ -3201,6 +3204,9 @@ cleanup_cfg (int mode)
 
   if (mode & CLEANUP_CROSSJUMP)
     remove_fake_exit_edges ();
+
+  if (mode & CLEANUP_FORCE_FAST_DCE)
+    run_fast_dce ();
 
   /* Don't call delete_dead_jumptables in cfglayout mode, because
      that function assumes that jump tables are in the insns stream.
