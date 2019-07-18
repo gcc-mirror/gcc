@@ -25,5 +25,17 @@ sub4 (unsigned long i)
 {
   return (i << 52) >> 52;
 }
-/* { dg-final { scan-assembler-times "slli" 4 } } */
-/* { dg-final { scan-assembler-times "srli" 4 } } */
+
+unsigned int
+sub5 (unsigned int i)
+{
+  unsigned int j;
+  j = i >> 24;
+  j = j * (1 << 24);
+  j = i - j;
+  return j;
+}
+/* { dg-final { scan-assembler-times "slli" 5 } } */
+/* { dg-final { scan-assembler-times "srli" 5 } } */
+/* { dg-final { scan-assembler-times "slliw" 1 } } */
+/* { dg-final { scan-assembler-times "srliw" 1 } } */
