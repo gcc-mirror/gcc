@@ -593,11 +593,8 @@ class Import_function_body : public Import_expression
  public:
   Import_function_body(Gogo* gogo, Import* imp, Named_object* named_object,
 		       const std::string& body, size_t off, Block* block,
-		       int indent)
-    : gogo_(gogo), imp_(imp), named_object_(named_object), body_(body),
-      off_(off), block_(block), indent_(indent), temporaries_(), labels_(),
-      saw_error_(false)
-  { }
+		       int indent);
+  ~Import_function_body();
 
   // The IR.
   Gogo*
@@ -637,7 +634,17 @@ class Import_function_body : public Import_expression
   // The current block.
   Block*
   block()
-  { return this->block_; }
+  { return this->blocks_.back(); }
+
+  // Begin importing a new block BLOCK nested within the current block.
+  void
+  begin_block(Block *block)
+  { this->blocks_.push_back(block); }
+
+  // Record the fact that we're done importing the current block.
+  void
+  finish_block()
+  { this->blocks_.pop_back(); }
 
   // The current indentation.
   int
@@ -757,8 +764,8 @@ class Import_function_body : public Import_expression
   const std::string& body_;
   // The current offset into body_.
   size_t off_;
-  // Current block.
-  Block* block_;
+  // Stack to record nesting of blocks being imported.
+  std::vector<Block *> blocks_;
   // Current expected indentation level.
   int indent_;
   // Temporary statements by index.
