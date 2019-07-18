@@ -1,3 +1,9 @@
+2019-07-18  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tempbuf.h (__detail::__return_temporary_buffer): New.
+	(~_Temporary_buffer()): Use latter.
+	(_Temporary_buffer(_FIterator, size_type)): Likewise.
+
 2019-07-17  Andreas Schwab  <schwab@suse.de>
 
 	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Update.
