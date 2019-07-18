@@ -1,3 +1,10 @@
+2019-07-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backport from mainline
+	2019-07-08  Jim Wilson  <jimw@sifive.com>
+
+	* gcc.target/riscv/shift-shift-2.c: Add one more test.
+
 2019-07-17  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline

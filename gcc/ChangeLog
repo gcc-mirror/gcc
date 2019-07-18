@@ -1,3 +1,13 @@
+2019-07-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backport from mainline
+	2019-07-08  Andrew Waterman  <andrew@sifive.com>
+		    Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.md (lshrsi3_zero_extend_3+1): Use operands[1]
+	bitsize	instead of BITS_PER_WORD.
+	gcc/testsuite/
+
 2019-07-17  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_som_asm_init_sections): Don't force all constant
