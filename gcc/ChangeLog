@@ -1,3 +1,8 @@
+2019-07-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Refactor
+	branches to make code less indented.
+
 2019-07-17  Alexandre Oliva <oliva@adacore.com>
 
 	PR middle-end/81824
