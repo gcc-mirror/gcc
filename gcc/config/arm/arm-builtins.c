@@ -1993,24 +1993,11 @@ arm_expand_ternop_builtin (enum insn_code icode,
   rtx op0 = expand_normal (arg0);
   rtx op1 = expand_normal (arg1);
   rtx op2 = expand_normal (arg2);
-  rtx op3 = NULL_RTX;
 
-  /* The sha1c, sha1p, sha1m crypto builtins require a different vec_select
-     lane operand depending on endianness.  */
-  bool builtin_sha1cpm_p = false;
-
-  if (insn_data[icode].n_operands == 5)
-    {
-      gcc_assert (icode == CODE_FOR_crypto_sha1c
-                  || icode == CODE_FOR_crypto_sha1p
-                  || icode == CODE_FOR_crypto_sha1m);
-      builtin_sha1cpm_p = true;
-    }
   machine_mode tmode = insn_data[icode].operand[0].mode;
   machine_mode mode0 = insn_data[icode].operand[1].mode;
   machine_mode mode1 = insn_data[icode].operand[2].mode;
   machine_mode mode2 = insn_data[icode].operand[3].mode;
-
 
   if (VECTOR_MODE_P (mode0))
     op0 = safe_vector_operand (op0, mode0);
@@ -2034,13 +2021,8 @@ arm_expand_ternop_builtin (enum insn_code icode,
     op1 = copy_to_mode_reg (mode1, op1);
   if (! (*insn_data[icode].operand[3].predicate) (op2, mode2))
     op2 = copy_to_mode_reg (mode2, op2);
-  if (builtin_sha1cpm_p)
-    op3 = GEN_INT (TARGET_BIG_END ? 1 : 0);
 
-  if (builtin_sha1cpm_p)
-    pat = GEN_FCN (icode) (target, op0, op1, op2, op3);
-  else
-    pat = GEN_FCN (icode) (target, op0, op1, op2);
+  pat = GEN_FCN (icode) (target, op0, op1, op2);
   if (! pat)
     return 0;
   emit_insn (pat);
@@ -2096,16 +2078,8 @@ arm_expand_unop_builtin (enum insn_code icode,
   rtx pat;
   tree arg0 = CALL_EXPR_ARG (exp, 0);
   rtx op0 = expand_normal (arg0);
-  rtx op1 = NULL_RTX;
   machine_mode tmode = insn_data[icode].operand[0].mode;
   machine_mode mode0 = insn_data[icode].operand[1].mode;
-  bool builtin_sha1h_p = false;
-
-  if (insn_data[icode].n_operands == 3)
-    {
-      gcc_assert (icode == CODE_FOR_crypto_sha1h);
-      builtin_sha1h_p = true;
-    }
 
   if (! target
       || GET_MODE (target) != tmode
@@ -2121,13 +2095,9 @@ arm_expand_unop_builtin (enum insn_code icode,
       if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
 	op0 = copy_to_mode_reg (mode0, op0);
     }
-  if (builtin_sha1h_p)
-    op1 = GEN_INT (TARGET_BIG_END ? 1 : 0);
 
-  if (builtin_sha1h_p)
-    pat = GEN_FCN (icode) (target, op0, op1);
-  else
-    pat = GEN_FCN (icode) (target, op0);
+  pat = GEN_FCN (icode) (target, op0);
+
   if (! pat)
     return 0;
   emit_insn (pat);
