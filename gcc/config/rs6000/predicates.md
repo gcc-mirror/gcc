@@ -1686,7 +1686,7 @@
 (define_predicate "prefixed_mem_operand"
   (match_code "mem")
 {
-  return rs6000_prefixed_address (XEXP (op, 0), GET_MODE (op));
+  return rs6000_prefixed_address_mode_p (XEXP (op, 0), GET_MODE (op));
 })
 
 ;; Return 1 if op is a memory operand to an external variable when we
