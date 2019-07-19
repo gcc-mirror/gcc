@@ -4278,6 +4278,11 @@ build_converted_constant_expr_internal (tree type, tree expr,
 
   if (conv)
     {
+      /* Don't copy a class in a template.  */
+      if (CLASS_TYPE_P (type) && conv->kind == ck_rvalue
+	  && processing_template_decl)
+	conv = next_conversion (conv);
+
       conv->check_narrowing = true;
       conv->check_narrowing_const_only = true;
       expr = convert_like (conv, expr, complain);
