@@ -1,3 +1,9 @@
+2019-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82081 - tail call optimization breaks noexcept
+	* tree-tailcall.c (find_tail_calls): Don't turn a call from a
+	nothrow function to a might-throw function into a tail call.
+
 2019-07-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	Backport from mainline
