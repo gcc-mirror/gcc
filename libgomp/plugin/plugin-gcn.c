@@ -44,10 +44,6 @@
 #include "oacc-int.h"
 #include <assert.h>
 
-#define obstack_chunk_alloc GOMP_PLUGIN_malloc
-#define obstack_chunk_free free
-#include "obstack.h"
-
 /* These probably won't be in elf.h for a while.  */
 #define R_AMDGPU_NONE		0
 #define R_AMDGPU_ABS32_LO	1	/* (S + A) & 0xFFFFFFFF  */
@@ -1952,9 +1948,6 @@ create_and_finalize_hsa_program (struct agent_info *agent)
       goto fail;
     }
 
-  struct obstack unmodified_sections_os;
-  obstack_init (&unmodified_sections_os);
-
   /* Load any GCN modules.  */
   struct module_info *module = agent->module;
   if (module)
@@ -1965,16 +1958,13 @@ create_and_finalize_hsa_program (struct agent_info *agent)
 	 Keep a copy of the unmodified section headers to use later.  */
       Elf64_Shdr *image_sections = (Elf64_Shdr *)((char *)image
 						  + image->e_shoff);
-      Elf64_Shdr *sections = malloc (sizeof (Elf64_Shdr) * image->e_shnum);
-      memcpy (sections, image_sections, sizeof (Elf64_Shdr) * image->e_shnum);
       for (int i = image->e_shnum - 1; i >= 0; i--)
 	{
 	  if (image_sections[i].sh_type == SHT_RELA
 	      || image_sections[i].sh_type == SHT_REL)
 	    /* Change section type to something harmless.  */
-	    image_sections[i].sh_type = SHT_NOTE;
+	    image_sections[i].sh_type |= 0x80;
 	}
-      obstack_ptr_grow (&unmodified_sections_os, sections);
 
       hsa_code_object_t co = { 0 };
       status = hsa_fns.hsa_code_object_deserialize_fn
@@ -2020,7 +2010,6 @@ create_and_finalize_hsa_program (struct agent_info *agent)
 	}
 
     }
-  Elf64_Shdr **unmodified_sections = obstack_finish (&unmodified_sections_os);
 
   if (debug)
     dump_executable_symbols (agent->executable);
@@ -2032,12 +2021,11 @@ create_and_finalize_hsa_program (struct agent_info *agent)
       goto fail;
     }
 
-  int s = 0;
   if (agent->module)
     {
       struct module_info *module = agent->module;
       Elf64_Ehdr *image = (Elf64_Ehdr *)module->image_desc->gcn_image->image;
-      Elf64_Shdr *sections = unmodified_sections[s++];
+      Elf64_Shdr *sections = (Elf64_Shdr *)((char *)image + image->e_shoff);
 
       Elf64_Addr load_offset;
       if (!find_load_offset (&load_offset, agent, module, image, sections))
@@ -2070,7 +2058,7 @@ create_and_finalize_hsa_program (struct agent_info *agent)
       /* Fix up relocations.  */
       for (int i = 0; i < image->e_shnum; i++)
 	{
-	  if (sections[i].sh_type == SHT_RELA)
+	  if (sections[i].sh_type == (SHT_RELA | 0x80))
 	    for (size_t offset = 0;
 		 offset < sections[i].sh_size;
 		 offset += sections[i].sh_entsize)
@@ -2153,10 +2141,7 @@ create_and_finalize_hsa_program (struct agent_info *agent)
 		reloc_count++;
 	      }
 	}
-
-      free (sections);
     }
-  obstack_free (&unmodified_sections_os, NULL);
 
   HSA_DEBUG ("Loaded GCN kernels to device %d (%d relocations)\n",
 	     agent->device_id, reloc_count);

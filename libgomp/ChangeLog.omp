@@ -1,3 +1,13 @@
+2019-09-10  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (obstack_chunk_alloc): Delete.
+	(obstack_chunk_free): Delete.
+	(obstack.h): Remove include.
+	(create_and_finalize_hsa_program): Remove all unmodified_sections_os
+	and use sections directly from the issue.
+	Use "or 0x80" instead of SHT_NOTE to hide relocations, and then
+	simply recognise that ourselves.
+
 2019-09-09  Andrew Stubbs  <ams@codesourcery.com>
 
 	* plugin/plugin-gcn.c (struct hsa_runtime_fn_info): Add
