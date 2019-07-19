@@ -99,6 +99,7 @@ extern const char * rs6000_machine_from_flags (void);
 extern void emit_asm_machine (void);
 extern bool rs6000_global_entry_point_prologue_needed_p (void);
 extern bool rs6000_keep_leaf_when_profiled (void);
+extern void rs6000_live_on_entry (bitmap regs);
 
 /* Return true if the OFFSET is valid for the quad address instructions that
    use d-form (register + offset) addressing.  */
@@ -122,5 +123,77 @@ typedef struct branch_island_d {
 extern vec<branch_island, va_gc> *branch_islands;
 
 #endif
+
+/* Declare functions in rs6000-call.c or called in rs6000.c
+   from rs6000-call.c  */
+extern int rs6000_darwin64_struct_check_p (machine_mode mode, const_tree type);
+extern bool rs6000_discover_homogeneous_aggregate (machine_mode mode,
+						   const_tree type,
+						   machine_mode *elt_mode,
+						   int *n_elts);
+extern void rs6000_output_mi_thunk (FILE *file,
+				    tree thunk_fndecl ATTRIBUTE_UNUSED,
+				    HOST_WIDE_INT delta,
+				    HOST_WIDE_INT vcall_offset,
+				    tree function);
+extern bool rs6000_output_addr_const_extra (FILE *file, rtx x);
+extern bool rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi);
+extern void rs6000_invalid_builtin (enum rs6000_builtins fncode);
+extern tree rs6000_build_builtin_va_list (void);
+extern void rs6000_va_start (tree valist, rtx nextarg);
+extern tree rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
+				    gimple_seq *post_p);
+extern machine_mode rs6000_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
+						  machine_mode mode,
+						  int *punsignedp ATTRIBUTE_UNUSED,
+						  const_tree, int);
+extern bool rs6000_return_in_memory (const_tree type, 
+				     const_tree fntype ATTRIBUTE_UNUSED);
+extern bool rs6000_return_in_msb (const_tree valtype);
+extern bool rs6000_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
+				      machine_mode mode, const_tree type,
+				      bool named ATTRIBUTE_UNUSED);
+extern void setup_incoming_varargs (cumulative_args_t cum, machine_mode mode,
+				    tree type, int *pretend_size ATTRIBUTE_UNUSED,
+				    int no_rtl);
+extern unsigned int rs6000_function_arg_boundary (machine_mode mode,
+						  const_tree type);
+extern bool rs6000_must_pass_in_stack (machine_mode mode, const_tree type);
+extern int rs6000_arg_partial_bytes (cumulative_args_t cum_v,
+				     machine_mode mode, tree type,
+				     bool named);
+extern void rs6000_function_arg_advance (cumulative_args_t cum,
+					 machine_mode mode,
+					 const_tree type, bool named);
+extern pad_direction rs6000_function_arg_padding (machine_mode mode,
+						  const_tree type);
+extern rtx rs6000_function_arg (cumulative_args_t cum_v, machine_mode mode,
+				const_tree type, bool named);
+extern rtx rs6000_darwin64_record_arg (CUMULATIVE_ARGS *, const_tree,
+				       bool, bool);
+extern rtx rs6000_internal_arg_pointer (void);
+
+extern void rs6000_init_builtins (void);
+extern tree rs6000_builtin_decl (unsigned code,
+				 bool initialize_p ATTRIBUTE_UNUSED);
+extern rtx rs6000_expand_builtin (tree exp, rtx target,
+				  rtx subtarget ATTRIBUTE_UNUSED,
+				  machine_mode mode ATTRIBUTE_UNUSED,
+				  int ignore ATTRIBUTE_UNUSED);
+extern tree rs6000_fold_builtin (tree fndecl ATTRIBUTE_UNUSED,
+			         int n_args ATTRIBUTE_UNUSED,
+			         tree *args ATTRIBUTE_UNUSED,
+			         bool ignore ATTRIBUTE_UNUSED);
+
+#if TARGET_ELF
+extern bool rs6000_passes_ieee128;
+#endif
+extern bool rs6000_passes_float;
+extern bool rs6000_passes_long_double;
+extern bool rs6000_passes_vector;
+extern bool rs6000_returns_struct;
+extern bool cpu_builtin_p;
+extern GTY(()) tree builtin_mode_to_type[MAX_MACHINE_MODE][2];
+extern GTY(()) tree altivec_builtin_mask_for_load;
 
 #endif
