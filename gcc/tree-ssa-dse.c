@@ -113,10 +113,10 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write)
 	case BUILT_IN_MEMCPY_CHK:
 	case BUILT_IN_MEMMOVE_CHK:
 	case BUILT_IN_MEMSET_CHK:
+	case BUILT_IN_STRNCPY:
+	case BUILT_IN_STRNCPY_CHK:
 	  {
-	    tree size = NULL_TREE;
-	    if (gimple_call_num_args (stmt) == 3)
-	      size = gimple_call_arg (stmt, 2);
+	    tree size = gimple_call_arg (stmt, 2);
 	    tree ptr = gimple_call_arg (stmt, 0);
 	    ao_ref_init_from_ptr_and_size (write, ptr, size);
 	    return true;
@@ -469,8 +469,10 @@ maybe_trim_memstar_call (ao_ref *ref, sbitmap live, gimple *stmt)
     {
     case BUILT_IN_MEMCPY:
     case BUILT_IN_MEMMOVE:
+    case BUILT_IN_STRNCPY:
     case BUILT_IN_MEMCPY_CHK:
     case BUILT_IN_MEMMOVE_CHK:
+    case BUILT_IN_STRNCPY_CHK:
       {
 	int head_trim, tail_trim;
 	compute_trims (ref, live, &head_trim, &tail_trim, stmt);
@@ -966,9 +968,11 @@ dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
 	{
 	case BUILT_IN_MEMCPY:
 	case BUILT_IN_MEMMOVE:
+	case BUILT_IN_STRNCPY:
 	case BUILT_IN_MEMSET:
 	case BUILT_IN_MEMCPY_CHK:
 	case BUILT_IN_MEMMOVE_CHK:
+	case BUILT_IN_STRNCPY_CHK:
 	case BUILT_IN_MEMSET_CHK:
 	  {
 	    /* Occasionally calls with an explicit length of zero
