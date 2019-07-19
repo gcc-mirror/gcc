@@ -1504,7 +1504,7 @@ recursive_inlining (struct cgraph_edge *edge,
       struct cgraph_node *cnode, *dest = curr->callee;
 
       if (!can_inline_edge_p (curr, true)
-	  || can_inline_edge_by_limits_p (curr, true))
+	  || !can_inline_edge_by_limits_p (curr, true))
 	continue;
 
       /* MASTER_CLONE is produced in the case we already started modified
