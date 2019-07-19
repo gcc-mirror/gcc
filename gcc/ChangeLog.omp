@@ -1,3 +1,17 @@
+2019-09-09  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-run.c (heap_region): New global variable.
+	(struct hsa_runtime_fn_info): Add hsa_memory_assign_agent_fn.
+	(init_hsa_runtime_functions): Initialize hsa_memory_assign_agent.
+	(get_kernarg_region): Move contents to ....
+	(get_memory_region): .... here.
+	(get_heap_region): New function.
+	(init_device): Initialize the heap_region.
+	(device_malloc): Add region parameter.
+	(struct kernargs): Move heap ....
+	(heap): ... to global scope.
+	(main): Allocate heap separate to kernargs.
+
 2019-09-06  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:

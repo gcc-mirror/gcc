@@ -149,6 +149,8 @@ struct hsa_runtime_fn_info
 					hsa_signal_t *signal);
   hsa_status_t (*hsa_memory_allocate_fn) (hsa_region_t region, size_t size,
 					  void **ptr);
+  hsa_status_t (*hsa_memory_assign_agent_fn) (void *ptr, hsa_agent_t agent,
+					      hsa_access_permission_t access);
   hsa_status_t (*hsa_memory_copy_fn)(void *dst, const void *src, size_t size);
   hsa_status_t (*hsa_memory_free_fn) (void *ptr);
   hsa_status_t (*hsa_signal_destroy_fn) (hsa_signal_t signal);
@@ -629,6 +631,9 @@ struct agent_info
   /* The HSA memory region from which to allocate kernel arguments.  */
   hsa_region_t kernarg_region;
 
+  /* The HSA memory region from which to allocate device data.  */
+  hsa_region_t data_region;
+
   /* Read-write lock that protects kernels which are running or about to be run
      from interference with loading and unloading of images.  Needs to be
      locked for reading while a kernel is being run, and for writing if the
@@ -693,6 +698,7 @@ init_hsa_runtime_functions (void)
   DLSYM_FN (hsa_executable_freeze)
   DLSYM_FN (hsa_signal_create)
   DLSYM_FN (hsa_memory_allocate)
+  DLSYM_FN (hsa_memory_assign_agent)
   DLSYM_FN (hsa_memory_copy)
   DLSYM_FN (hsa_memory_free)
   DLSYM_FN (hsa_signal_destroy)
@@ -1293,11 +1299,12 @@ find_executable_symbol (hsa_executable_t executable,
 }
 
 /* Callback of hsa_agent_iterate_regions.  Determine if a memory REGION can be
-   used for kernarg allocations and if so write it to the memory pointed to by
+   used for allocations of KIND and if so write it to the memory pointed to by
    DATA and break the query.  */
 
 static hsa_status_t
-get_kernarg_memory_region (hsa_region_t region, void *data)
+get_memory_region (hsa_region_t region, hsa_region_t *retval,
+		   hsa_region_global_flag_t kind)
 {
   hsa_status_t status;
   hsa_region_segment_t segment;
@@ -1314,13 +1321,26 @@ get_kernarg_memory_region (hsa_region_t region, void *data)
 					   &flags);
   if (status != HSA_STATUS_SUCCESS)
     return status;
-  if (flags & HSA_REGION_GLOBAL_FLAG_KERNARG)
+  if (flags & kind)
     {
-      hsa_region_t *ret = (hsa_region_t *) data;
-      *ret = region;
+      *retval = region;
       return HSA_STATUS_INFO_BREAK;
     }
   return HSA_STATUS_SUCCESS;
+}
+
+static hsa_status_t
+get_kernarg_memory_region (hsa_region_t region, void *data)
+{
+  return get_memory_region (region, (hsa_region_t *)data,
+			    HSA_REGION_GLOBAL_FLAG_KERNARG);
+}
+
+static hsa_status_t
+get_data_memory_region (hsa_region_t region, void *data)
+{
+  return get_memory_region (region, (hsa_region_t *)data,
+			    HSA_REGION_GLOBAL_FLAG_COARSE_GRAINED);
 }
 
 /* Part of the libgomp plugin interface.  Return the number of HSA devices on
@@ -1338,7 +1358,7 @@ union gomp_device_property_value
 GOMP_OFFLOAD_get_property (int device, int prop)
 {
   struct agent_info *agent = get_agent_info (device);
-  hsa_region_t region = agent->kernarg_region;
+  hsa_region_t region = agent->data_region;
 
   union gomp_device_property_value propval = { .val = 0 };
 
@@ -1634,6 +1654,19 @@ GOMP_OFFLOAD_init_device (int n)
     }
   HSA_DEBUG ("Selected kernel arguments memory region:\n");
   dump_hsa_region (agent->kernarg_region, NULL);
+
+  agent->data_region.handle = (uint64_t) -1;
+  status = hsa_fns.hsa_agent_iterate_regions_fn (agent->id,
+						 get_data_memory_region,
+						 &agent->data_region);
+  if (agent->data_region.handle == (uint64_t) -1)
+    {
+      GOMP_PLUGIN_error ("Could not find suitable memory region for device "
+			 "data");
+      return false;
+    }
+  HSA_DEBUG ("Selected device data memory region:\n");
+  dump_hsa_region (agent->data_region, NULL);
 
   HSA_DEBUG ("GCN agent %d initialized\n", n);
 
@@ -1964,7 +1997,7 @@ create_and_finalize_hsa_program (struct agent_info *agent)
 
       if (!module->heap)
 	{
-	  status = hsa_fns.hsa_memory_allocate_fn (agent->kernarg_region,
+	  status = hsa_fns.hsa_memory_allocate_fn (agent->data_region,
 						   gcn_kernel_heap_size,
 						   (void**)&module->heap);
 	  if (status != HSA_STATUS_SUCCESS)
@@ -1973,7 +2006,17 @@ create_and_finalize_hsa_program (struct agent_info *agent)
 	      goto fail;
 	    }
 
-	  module->heap->size = gcn_kernel_heap_size;
+	  status = hsa_fns.hsa_memory_assign_agent_fn
+			(module->heap, agent->id, HSA_ACCESS_PERMISSION_RW);
+	  if (status != HSA_STATUS_SUCCESS)
+	    {
+	      hsa_error ("Could not assign GCN heap memory to device", status);
+	      goto fail;
+	    }
+
+	  hsa_fns.hsa_memory_copy_fn (&module->heap->size,
+				      &gcn_kernel_heap_size,
+				      sizeof (gcn_kernel_heap_size));
 	}
 
     }
@@ -3016,11 +3059,19 @@ GOMP_OFFLOAD_alloc_by_agent (struct agent_info *agent, size_t size)
     size = 4;
 
   void *ptr;
-  hsa_status_t status = hsa_fns.hsa_memory_allocate_fn (agent->kernarg_region,
+  hsa_status_t status = hsa_fns.hsa_memory_allocate_fn (agent->data_region,
 							size, &ptr);
   if (status != HSA_STATUS_SUCCESS)
     {
       hsa_error ("Could not allocate device memory", status);
+      return NULL;
+    }
+
+  status = hsa_fns.hsa_memory_assign_agent_fn (ptr, agent->id,
+					       HSA_ACCESS_PERMISSION_RW);
+  if (status != HSA_STATUS_SUCCESS)
+    {
+      hsa_error ("Could not assign data memory to device", status);
       return NULL;
     }
 
@@ -3107,27 +3158,11 @@ GOMP_OFFLOAD_free (int device, void *ptr)
   return true;
 }
 
-/* Returns true if PTR falls within the bounds of any loaded kernel image.  */
-
-static bool
-image_address_p (struct agent_info *agent, const void *ptr)
-{
-  Elf64_Addr addr = (Elf64_Addr)ptr;
-  if (agent->module)
-    {
-      if (addr >= agent->module->phys_address_start
-	  && addr <= agent->module->phys_address_end)
-	return true;
-    }
-  return false;
-}
-
 struct copy_data
 {
   void *dst;
   const void *src;
   size_t len;
-  bool use_hsa_memory_copy;
   bool using_src_copy;
   struct goacc_asyncqueue *aq;
 };
@@ -3139,10 +3174,7 @@ copy_data (void *data_)
   HSA_DEBUG ("Async thread %d:%d: Copying %zu bytes from (%p) to (%p)\n",
 	     data->aq->agent->device_id, data->aq->id, data->len, data->src,
 	     data->dst);
-  if (data->use_hsa_memory_copy)
-    hsa_fns.hsa_memory_copy_fn (data->dst, data->src, data->len);
-  else
-    memcpy (data->dst, data->src, data->len);
+  hsa_fns.hsa_memory_copy_fn (data->dst, data->src, data->len);
   if (data->using_src_copy)
     free ((void *) data->src);
   free (data);
@@ -3150,7 +3182,7 @@ copy_data (void *data_)
 
 static void
 queue_push_copy (struct goacc_asyncqueue *aq, void *dst, const void *src,
-		 size_t len, bool use_hsa_memory_copy, bool using_src_copy)
+		 size_t len, bool using_src_copy)
 {
   if (DEBUG_QUEUES)
     HSA_DEBUG ("queue_push_copy %d:%d: %zu bytes from (%p) to (%p)\n",
@@ -3160,7 +3192,6 @@ queue_push_copy (struct goacc_asyncqueue *aq, void *dst, const void *src,
   data->dst = dst;
   data->src = src;
   data->len = len;
-  data->use_hsa_memory_copy = use_hsa_memory_copy;
   data->using_src_copy = using_src_copy;
   data->aq = aq;
   queue_push_callback (aq, copy_data, data);
@@ -3171,13 +3202,7 @@ GOMP_OFFLOAD_dev2host (int device, void *dst, const void *src, size_t n)
 {
   HSA_DEBUG ("Copying %zu bytes from device %d (%p) to host (%p)\n", n, device,
 	     src, dst);
-
-  /* memcpy only works for addresses allocated with hsa_memory_allocate,
-     but hsa_memory_copy seems unable to read from .rodata variables.  */
-  if (image_address_p (get_agent_info (device), src))
-    hsa_fns.hsa_memory_copy_fn (dst, src, n);
-  else
-    memcpy (dst, src, n);
+  hsa_fns.hsa_memory_copy_fn (dst, src, n);
   return true;
 }
 
@@ -3186,12 +3211,7 @@ GOMP_OFFLOAD_host2dev (int device, void *dst, const void *src, size_t n)
 {
   HSA_DEBUG ("Copying %zu bytes from host (%p) to device %d (%p)\n", n, src,
 	     device, dst);
-  /* memcpy only works for addresses allocated with hsa_memory_allocate,
-     but hsa_memory_copy seems unable to read from .rodata variables.  */
-  if (image_address_p (get_agent_info (device), dst))
-    hsa_fns.hsa_memory_copy_fn (dst, src, n);
-  else
-    memcpy (dst, src, n);
+  hsa_fns.hsa_memory_copy_fn (dst, src, n);
   return true;
 }
 
@@ -3206,14 +3226,13 @@ GOMP_OFFLOAD_dev2dev (int device, void *dst, const void *src, size_t n)
     {
       struct agent_info *agent = get_agent_info (device);
       maybe_init_omp_async (agent);
-      queue_push_copy (agent->omp_async_queue, dst, src, n, false, false);
+      queue_push_copy (agent->omp_async_queue, dst, src, n, false);
       return true;
     }
 
   HSA_DEBUG ("Copying %zu bytes from device %d (%p) to device %d (%p)\n", n,
 	     device, src, device, dst);
-  /* We can assume that dev2dev moves are always within allocated memory.  */
-  memcpy (dst, src, n);
+  hsa_fns.hsa_memory_copy_fn (dst, src, n);
   return true;
 }
 
@@ -3272,7 +3291,9 @@ gcn_exec (struct kernel_info *kernel, size_t mapnum, void **hostaddrs,
   void **ind_da = GOMP_OFFLOAD_alloc_by_agent (kernel->agent,
 					       sizeof (void*) * mapnum);
   for (size_t i = 0; i < mapnum; i++)
-    ind_da[i] = devaddrs[i] ? devaddrs[i] : hostaddrs[i];
+    hsa_fns.hsa_memory_copy_fn (&ind_da[i],
+				devaddrs[i] ? &devaddrs[i] : &hostaddrs[i],
+				sizeof (void *));
 
   struct hsa_kernel_description *hsa_kernel_desc = NULL;
   for (unsigned i = 0; i < kernel->module->image_desc->kernel_count; i++)
@@ -3582,7 +3603,7 @@ GOMP_OFFLOAD_openacc_async_host2dev (int device, void *dst, const void *src,
      But, that is probably correct.  */
   void *src_copy = GOMP_PLUGIN_malloc (n);
   memcpy (src_copy, src, n);
-  queue_push_copy (aq, dst, src_copy, n, image_address_p (agent, dst), true);
+  queue_push_copy (aq, dst, src, n, true);
   return true;
 }
 
@@ -3592,7 +3613,7 @@ GOMP_OFFLOAD_openacc_async_dev2host (int device, void *dst, const void *src,
 {
   struct agent_info *agent = get_agent_info (device);
   assert (agent == aq->agent);
-  queue_push_copy (aq, dst, src, n, image_address_p (agent, src), false);
+  queue_push_copy (aq, dst, src, n, false);
   return true;
 }
 

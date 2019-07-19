@@ -1,3 +1,28 @@
+2019-09-09  Andrew Stubbs  <ams@codesourcery.com>
+
+	* plugin/plugin-gcn.c (struct hsa_runtime_fn_info): Add
+	hsa_memory_assign_agent_fn.
+	(struct agent_info): Add data_region.
+	(init_hsa_runtime_functions): Initialize hsa_memory_assign_agent.
+	(get_kernarg_memory_region): Move contents to new function ...
+	(get_memory_region): ... here.
+	(get_data_memory_region): New function.
+	(GOMP_OFFLOAD_get_property): Use data_region, not kernarg_region.
+	(GOMP_OFFLOAD_init_device): Initialize data_region.
+	(create_and_finalize_hsa_program): Use data_region, not
+	kernarg_region, and assign heap to device agent.
+	(GOMP_OFFLOAD_alloc_by_agent): Likewise.
+	(image_address_p): Delete function.
+	(struct copy_data): Remove use_hsa_memory_copy.
+	(copy_data): Always use hsa_memory_copy.
+	(queue_push_copy): Remove use_hsa_memory_copy.
+	(GOMP_OFFLOAD_dev2host): Always use hsa_memory_copy.
+	(GOMP_OFFLOAD_host2dev): Likewise.
+	(GOMP_OFFLOAD_dev2dev): Likewise.
+	(gcn_exec): Use hsa_memory_copy.
+	(GOMP_OFFLOAD_openacc_async_host2dev): Always use hsa_memory_copy.
+	(GOMP_OFFLOAD_openacc_async_dev2host): Likewise.
+
 2019-09-06  Julian Brown  <julian@codesourcery.com>
 
 	* plugin/plugin-gcn.c (GOMP_OFFLOAD_alloc_by_agent,
