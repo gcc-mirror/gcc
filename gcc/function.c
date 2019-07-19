@@ -704,7 +704,7 @@ static void
 insert_temp_slot_address (rtx address, class temp_slot *temp_slot)
 {
   struct temp_slot_address_entry *t = ggc_alloc<temp_slot_address_entry> ();
-  t->address = address;
+  t->address = copy_rtx (address);
   t->temp_slot = temp_slot;
   t->hash = temp_slot_address_compute_hash (t);
   *temp_slot_address_table->find_slot_with_hash (t, t->hash, INSERT) = t;
