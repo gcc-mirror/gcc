@@ -1,3 +1,8 @@
+2019-07-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91204
+	* config/i386/mmx.md (one_cmpl<mode>2): New expander.
+
 2019-07-19  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/91194
