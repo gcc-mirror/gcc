@@ -1,3 +1,9 @@
+2019-07-19  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dse.c (initialize_ao_ref_for_dse): Handle
+	strncpy.  Drop some trivial dead code.
+	(maybe_trim_memstar_call): Handle strncpy.
+
 2019-07-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91211
