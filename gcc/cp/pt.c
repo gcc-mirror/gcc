@@ -25228,6 +25228,8 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
 		 "with %<-std=c++2a%> or %<-std=gnu++2a%>");
 	  return true;
 	}
+      if (dependent_type_p (type))
+	return false;
       if (!complete_type_or_else (type, NULL_TREE))
 	return true;
       if (!literal_type_p (type))
