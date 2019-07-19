@@ -1,3 +1,8 @@
+2019-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85552 - wrong instantiation of dtor for DMI.
+	* typeck2.c (digest_nsdmi_init): Set tf_no_cleanup for direct-init.
+
 2019-07-19  Nina Dinka Ranns  <dinka.ranns@gmail.com>
 
 	PR c++/63149 - Wrong auto deduction from braced-init-list.
