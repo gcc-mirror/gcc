@@ -80,6 +80,12 @@
 #define TARGET_PROFILE_KERNEL 0
 #endif
 
+#ifdef HAVE_AS_GNU_ATTRIBUTE
+# ifndef HAVE_LD_PPC_GNU_ATTR_LONG_DOUBLE
+# define HAVE_LD_PPC_GNU_ATTR_LONG_DOUBLE 0
+# endif
+#endif
+
 struct builtin_description
 {
   const HOST_WIDE_INT mask;

@@ -1,3 +1,8 @@
+2019-07-17  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-call.c (HAVE_AS_GNU_ATTRIBUTE): define value
+	as in rs6000.c.
+
 2019-07-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.h (DRIVER_SELF_SPECS): Ignore X and Mach specs which
