@@ -4954,7 +4954,8 @@ process_partial_specialization (tree decl)
                  simple identifier' condition and also the `specialized
                  non-type argument' bit.  */
               && TREE_CODE (arg) != TEMPLATE_PARM_INDEX
-	      && !(REFERENCE_REF_P (arg)
+	      && !((REFERENCE_REF_P (arg)
+		    || TREE_CODE (arg) == VIEW_CONVERT_EXPR)
 		   && TREE_CODE (TREE_OPERAND (arg, 0)) == TEMPLATE_PARM_INDEX))
             {
               if ((!packed_args && tpd.arg_uses_template_parms[i])
@@ -22371,9 +22372,11 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	/* Template-parameter dependent expression.  Just accept it for now.
 	   It will later be processed in convert_template_argument.  */
 	;
-      else if (same_type_p (non_reference (TREE_TYPE (arg)),
-			    non_reference (tparm)))
-	/* OK */;
+      else if (same_type_ignoring_top_level_qualifiers_p
+	       (non_reference (TREE_TYPE (arg)),
+		non_reference (tparm)))
+	/* OK.  Ignore top-level quals here because a class-type template
+	   parameter object is const.  */;
       else if ((strict & UNIFY_ALLOW_INTEGER)
 	       && CP_INTEGRAL_TYPE_P (tparm))
 	/* Convert the ARG to the type of PARM; the deduced non-type
