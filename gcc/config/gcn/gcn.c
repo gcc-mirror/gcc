@@ -4884,6 +4884,14 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	sgpr = 102 - extra_regs;
     }
 
+  /* GFX8 allocates SGPRs in blocks of 8.
+     GFX9 uses blocks of 16.  */
+  int granulated_sgprs;
+  if (TARGET_GCN3)
+    granulated_sgprs = (sgpr + extra_regs + 7) / 8 - 1;
+  else if (TARGET_GCN5)
+    granulated_sgprs = 2 * ((sgpr + extra_regs + 15) / 16 - 1);
+
   fputs ("\t.align\t256\n", file);
   fputs ("\t.type\t", file);
   assemble_name (file, name);
@@ -4922,7 +4930,7 @@ gcn_hsa_declare_function_name (FILE *file, const char *name, tree)
 	   "\t\tcompute_pgm_rsrc2_excp_en = 0\n",
 	   (vgpr - 1) / 4,
 	   /* Must match wavefront_sgpr_count */
-	   (sgpr + extra_regs + 7) / 8 - 1,
+	   granulated_sgprs,
 	   /* The total number of SGPR user data registers requested.  This
 	      number must match the number of user data registers enabled.  */
 	   cfun->machine->args.nsgprs);

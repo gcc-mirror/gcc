@@ -1,3 +1,8 @@
+2019-09-10  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_hsa_declare_function_name): Calculate
+	granulated_sgprs according to architecture.
+
 2019-09-09  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-run.c (heap_region): New global variable.
