@@ -1,5 +1,14 @@
 2019-07-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/90098 - partial specialization and class non-type parms.
+	PR c++/90099
+	PR c++/90101
+	* call.c (build_converted_constant_expr_internal): Don't copy.
+	* pt.c (process_partial_specialization): Allow VIEW_CONVERT_EXPR
+	around class non-type parameter.
+	(unify) [TEMPLATE_PARM_INDEX]: Ignore cv-quals.
+	(invalid_nontype_parm_type_p): Check for dependent class type.
+
 	PR c++/85552 - wrong instantiation of dtor for DMI.
 	* typeck2.c (digest_nsdmi_init): Set tf_no_cleanup for direct-init.
 
