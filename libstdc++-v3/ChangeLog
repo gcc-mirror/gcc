@@ -1,3 +1,8 @@
+2019-07-19  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tempbuf.h (__detail::__return_temporary_buffer): Fix
+	sized deallocation size computation.
+
 2019-07-19  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Update.
