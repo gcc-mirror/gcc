@@ -1818,7 +1818,8 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
       if (TREE_CODE (pd.rhs) == CONSTRUCTOR)
 	/* Empty CONSTRUCTOR.  */
 	memset (buffer + MAX (0, pd.offset),
-		0, MIN ((HOST_WIDE_INT)sizeof (buffer), pd.size));
+		0, MIN ((HOST_WIDE_INT)sizeof (buffer),
+			pd.size + MIN (0, pd.offset)));
       else
 	{
 	  unsigned pad = 0;
