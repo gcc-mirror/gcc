@@ -16083,7 +16083,7 @@ not affect code generation.  This option is enabled by default for
 @item sve2
 Enable the Armv8-a Scalable Vector Extension 2.  This also enables SVE
 instructions.
-@item bitperm
+@item sve2-bitperm
 Enable SVE2 bitperm instructions.  This also enables SVE2 instructions.
 @item sve2-sm4
 Enable SVE2 sm4 instructions.  This also enables SVE2 instructions.
