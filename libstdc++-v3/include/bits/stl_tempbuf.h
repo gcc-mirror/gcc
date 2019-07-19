@@ -71,7 +71,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				size_t __len __attribute__((__unused__)))
       {
 #if __cpp_sized_deallocation
-	::operator delete(__p, __len);
+	::operator delete(__p, __len * sizeof(_Tp));
 #else
 	::operator delete(__p);
 #endif
