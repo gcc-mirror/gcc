@@ -1,3 +1,17 @@
+2019-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91207
+	Revert
+	2019-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91178
+	* tree-vect-stmts.c (get_group_load_store_type): For SLP
+	loads with a gap larger than the vector size always use
+	VMAT_STRIDED_SLP.
+	(vectorizable_load): For VMAT_STRIDED_SLP with a permutation
+	avoid loading vectors that are only contained in the gap
+	and thus are not needed.
+
 2019-07-18  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*addqi_2_slp): Remove.
