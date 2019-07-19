@@ -5109,6 +5109,8 @@ int
 Mark_inline_candidates::function(Named_object* no)
 {
   Function* func = no->func_value();
+  if ((func->pragmas() & GOPRAGMA_NOINLINE) != 0)
+    return TRAVERSE_CONTINUE;
   int budget = budget_heuristic;
   Inline_within_budget iwb(&budget);
   func->block()->traverse(&iwb);
@@ -5138,6 +5140,8 @@ Mark_inline_candidates::type(Type* t)
       Named_object* no = *p;
       go_assert(no->is_function());
       Function *func = no->func_value();
+      if ((func->pragmas() & GOPRAGMA_NOINLINE) != 0)
+        continue;
       int budget = budget_heuristic;
       Inline_within_budget iwb(&budget);
       func->block()->traverse(&iwb);
