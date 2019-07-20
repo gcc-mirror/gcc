@@ -1,3 +1,12 @@
+2019-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_LOOP.
+	(enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_BIND.
+	* c-pragma.c (omp_pragmas_simd): Add PRAGMA_OMP_LOOP entry.
+	* c-common.h (enum c_omp_clause_split): Add C_OMP_CLAUSE_SPLIT_LOOP.
+	* c-omp.c (c_omp_split_clauses): Add support for 4 new combined
+	constructs with the loop construct.
+
 2019-07-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/91149

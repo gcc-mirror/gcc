@@ -451,6 +451,9 @@ enum omp_clause_code {
   /* OpenMP clause: order (concurrent).  */
   OMP_CLAUSE_ORDER,
 
+  /* OpenMP clause: bind (binding).  */
+  OMP_CLAUSE_BIND,
+
   /* Internally used only clause, holding SIMD uid.  */
   OMP_CLAUSE__SIMDUID_,
 
@@ -537,6 +540,12 @@ enum omp_clause_defaultmap_kind {
   OMP_CLAUSE_DEFAULTMAP_DEFAULT
     = 7 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1),
   OMP_CLAUSE_DEFAULTMAP_MASK = 7 * (OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK + 1)
+};
+
+enum omp_clause_bind_kind {
+  OMP_CLAUSE_BIND_TEAMS,
+  OMP_CLAUSE_BIND_PARALLEL,
+  OMP_CLAUSE_BIND_THREAD
 };
 
 /* memory-order-clause on OpenMP atomic/flush constructs or
@@ -1531,6 +1540,7 @@ struct GTY(()) tree_omp_clause {
     enum omp_clause_linear_kind    linear_kind;
     enum tree_code                 if_modifier;
     enum omp_clause_defaultmap_kind defaultmap_kind;
+    enum omp_clause_bind_kind      bind_kind;
     /* The dimension a OMP_CLAUSE__GRIDDIM_ clause of a gridified target
        construct describes.  */
     unsigned int		   dimension;
