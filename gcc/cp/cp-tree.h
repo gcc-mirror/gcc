@@ -774,7 +774,8 @@ class ovl_iterator
   /* Whether this overload was introduced by a using decl.  */
   bool using_p () const
   {
-    return TREE_CODE (ovl) == OVERLOAD && OVL_USING_P (ovl);
+    return (TREE_CODE (ovl) == USING_DECL
+	    || (TREE_CODE (ovl) == OVERLOAD && OVL_USING_P (ovl)));
   }
   bool hidden_p () const
   {
