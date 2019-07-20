@@ -18,46 +18,46 @@ f1 (int *a)
   #pragma omp simd order(concurrent)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp parallel		/* { dg-error "OpenMP constructs other than '#pragma omp ordered simd' or '#pragma omp atomic' may not be nested inside 'simd' region" } */
+      #pragma omp parallel		/* { dg-error "OpenMP constructs other than 'ordered simd', 'simd', 'loop' or 'atomic' may not be nested inside 'simd' region" } */
       foo ();
     }
   #pragma omp simd order(concurrent)
   for (i = 0; i < 64; i++)
     {
       int j;
-      #pragma omp simd			/* { dg-error "OpenMP constructs other than '#pragma omp ordered simd' or '#pragma omp atomic' may not be nested inside 'simd' region" } */
+      #pragma omp simd
       for (j = 0; j < 64; j++)
 	a[64 * i + j] = i + j;
     }
   #pragma omp simd order(concurrent)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp critical		/* { dg-error "OpenMP constructs other than '#pragma omp ordered simd' or '#pragma omp atomic' may not be nested inside 'simd' region" } */
+      #pragma omp critical		/* { dg-error "OpenMP constructs other than 'ordered simd', 'simd', 'loop' or 'atomic' may not be nested inside 'simd' region" } */
       foo ();
     }
   #pragma omp simd order(concurrent)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp ordered simd		/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
+      #pragma omp ordered simd		/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
       foo ();
     }
   #pragma omp simd order(concurrent)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp atomic		/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
+      #pragma omp atomic		/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
       v++;
     }
   #pragma omp simd order(concurrent)
   for (i = 0; i < 64; i++)
     {
       #pragma omp atomic read
-      a[i] = v;				/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
+      a[i] = v;				/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
     }
   #pragma omp simd order(concurrent)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp atomic write		/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" "" { target c++ } } */
-      v = a[i];				/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" "" { target c } } */
+      #pragma omp atomic write		/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" "" { target c++ } } */
+      v = a[i];				/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" "" { target c } } */
     }
   #pragma omp simd order(concurrent)
   for (i = 0; i < 64; i++)
@@ -80,46 +80,46 @@ f2 (int *a)
   #pragma omp for simd order(concurrent)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp parallel		/* { dg-error "OpenMP constructs other than '#pragma omp ordered simd' or '#pragma omp atomic' may not be nested inside 'simd' region" } */
+      #pragma omp parallel		/* { dg-error "OpenMP constructs other than 'ordered simd', 'simd', 'loop' or 'atomic' may not be nested inside 'simd' region" } */
       foo ();
     }
   #pragma omp for simd order(concurrent)
   for (i = 0; i < 64; i++)
     {
       int j;
-      #pragma omp simd			/* { dg-error "OpenMP constructs other than '#pragma omp ordered simd' or '#pragma omp atomic' may not be nested inside 'simd' region" } */
+      #pragma omp simd
       for (j = 0; j < 64; j++)
 	a[64 * i + j] = i + j;
     }
   #pragma omp for simd order(concurrent)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp critical		/* { dg-error "OpenMP constructs other than '#pragma omp ordered simd' or '#pragma omp atomic' may not be nested inside 'simd' region" } */
+      #pragma omp critical		/* { dg-error "OpenMP constructs other than 'ordered simd', 'simd', 'loop' or 'atomic' may not be nested inside 'simd' region" } */
       foo ();
     }
   #pragma omp for simd order(concurrent)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp ordered simd		/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
+      #pragma omp ordered simd		/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
       foo ();
     }
   #pragma omp for simd order(concurrent)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp atomic		/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
+      #pragma omp atomic		/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
       v++;
     }
   #pragma omp for simd order(concurrent)
   for (i = 0; i < 64; i++)
     {
       #pragma omp atomic read
-      a[i] = v;				/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
+      a[i] = v;				/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
     }
   #pragma omp for simd order(concurrent)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp atomic write		/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" "" { target c++ } } */
-      v = a[i];				/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" "" { target c } } */
+      #pragma omp atomic write		/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" "" { target c++ } } */
+      v = a[i];				/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" "" { target c } } */
     }
   #pragma omp for simd order(concurrent)
   for (i = 0; i < 64; i++)
@@ -156,44 +156,44 @@ f3 (int *a)
   #pragma omp for order(concurrent)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp critical		/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
+      #pragma omp critical		/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
       foo ();
     }
   #pragma omp for order(concurrent)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp ordered simd		/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
+      #pragma omp ordered simd		/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
       foo ();
     }
   #pragma omp for order(concurrent)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp atomic		/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
+      #pragma omp atomic		/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
       v++;
     }
   #pragma omp for order(concurrent)
   for (i = 0; i < 64; i++)
     {
       #pragma omp atomic read
-      a[i] = v;				/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
+      a[i] = v;				/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
     }
   #pragma omp for order(concurrent)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp atomic write		/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" "" { target c++ } } */
-      v = a[i];				/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" "" { target c } } */
+      #pragma omp atomic write		/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" "" { target c++ } } */
+      v = a[i];				/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" "" { target c } } */
     }
   #pragma omp for order(concurrent)
   for (i = 0; i < 64; i++)
     {
-      #pragma omp task			/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
+      #pragma omp task			/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
       a[i]++;
     }
   #pragma omp for order(concurrent)
   for (i = 0; i < 64; i++)
     {
       int j;
-      #pragma omp taskloop		/* { dg-error "OpenMP constructs other than 'parallel' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
+      #pragma omp taskloop		/* { dg-error "OpenMP constructs other than 'parallel', 'loop' or 'simd' may not be nested inside a region with the 'order\\(concurrent\\)' clause" } */
       for (j = 0; j < 64; j++)
 	a[64 * i + j] = i + j;
     }

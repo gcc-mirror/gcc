@@ -1,5 +1,46 @@
 2019-07-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree.def (OMP_LOOP): New tree code.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_BIND.
+	(enum omp_clause_bind_kind): New enum.
+	(struct tree_omp_clause): Add subcode.bind_kind.
+	* tree.h (OMP_LOOP_CHECK): Rename to ...
+	(OMP_LOOPING_CHECK): ... this.
+	(OMP_FOR_BODY, OMP_FOR_CLAUSES, OMP_FOR_INIT, OMP_FOR_COND,
+	OMP_FOR_INCR, OMP_FOR_PRE_BODY, OMP_FOR_ORIG_DECLS): Use
+	OMP_LOOPING_CHECK instead of OMP_LOOP_CHECK.
+	(OMP_CLAUSE_BIND_KIND): Define.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name): Add
+	bind clause entries.
+	(walk_tree_1): Handle OMP_CLAUSE_BIND.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+	(dump_generic_node): Handle OMP_LOOP.
+	* gimplify.c (enum omp_region_type): Add ORT_IMPLICIT_TARGET.
+	(in_omp_construct): New variable.
+	(is_gimple_stmt): Handle OMP_LOOP.
+	(gimplify_scan_omp_clauses): For lastprivate don't set
+	check_non_private if code == OMP_LOOP.  For reduction clause
+	on OMP_LOOP combined with parallel or teams propagate as shared
+	on the combined construct.  Handle OMP_CLAUSE_BIND.
+	(gimplify_adjust_omp_clauses): Handle OMP_CLAUSE_BIND.
+	(gimplify_omp_for): Pass OMP_LOOP instead of OMP_{FOR,DISTRIBUTE}
+	for constructs from a loop construct to gimplify_scan_omp_clauses.
+	Don't predetermine iterator linear on OMP_SIMD from loop construct.
+	(replace_reduction_placeholders, gimplify_omp_loop): New functions.
+	(gimplify_omp_workshare): Use ORT_IMPLICIT_TARGET instead of trying
+	to match the implicit ORT_TARGET construct around whole body.
+	Temporarily clear in_omp_construct when processing body.
+	(gimplify_expr): Handle OMP_LOOP.  For OMP_MASTER, OMP_TASKGROUP
+	etc. temporarily set in_omp_construct when processing body.
+	(gimplify_body): Create ORT_IMPLICIT_TARGET instead of ORT_TARGET.
+	* omp-low.c (struct omp_context): Add loop_p.
+	(build_outer_var_ref): Treat ctx->loop_p similarly to simd construct
+	in that the original var might be private.
+	(scan_sharing_clauses): Handle OMP_CLAUSE_BIND.
+	(check_omp_nesting_restrictions): Adjust nesting restrictions for
+	addition of loop construct.
+	(scan_omp_1_stmt): Allow setjmp inside of loop construct.
+
 	* omp-low.c (lower_rec_input_clauses): Don't force simd arrays for
 	lastprivate non-addressable iterator of a collapse(1) simd.
 

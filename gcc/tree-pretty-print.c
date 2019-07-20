@@ -1044,6 +1044,25 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_string (pp, "order(concurrent)");
       break;
 
+    case OMP_CLAUSE_BIND:
+      pp_string (pp, "bind(");
+      switch (OMP_CLAUSE_BIND_KIND (clause))
+	{
+	case OMP_CLAUSE_BIND_TEAMS:
+	  pp_string (pp, "teams");
+	  break;
+	case OMP_CLAUSE_BIND_PARALLEL:
+	  pp_string (pp, "parallel");
+	  break;
+	case OMP_CLAUSE_BIND_THREAD:
+	  pp_string (pp, "thread");
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      pp_right_paren (pp);
+      break;
+
     case OMP_CLAUSE__SIMDUID_:
       pp_string (pp, "_simduid_(");
       dump_generic_node (pp, OMP_CLAUSE__SIMDUID__DECL (clause),
@@ -3259,6 +3278,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case OMP_TASKLOOP:
       pp_string (pp, "#pragma omp taskloop");
+      goto dump_omp_loop;
+
+    case OMP_LOOP:
+      pp_string (pp, "#pragma omp loop");
       goto dump_omp_loop;
 
     case OACC_LOOP:

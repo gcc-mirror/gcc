@@ -1,3 +1,15 @@
+2019-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Handle bind clause.
+	(c_parser_omp_clause_bind): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_BIND.
+	(OMP_LOOP_CLAUSE_MASK): Define.
+	(c_parser_omp_loop): New function.
+	(c_parser_omp_parallel, c_parser_omp_teams): Handle parsing of
+	loop combined with parallel or teams.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_LOOP.
+	* c-typeck.c (c_finish_omp_clauses): Handle OMP_CLAUSE_BIND.
+
 2019-07-18  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR c/53633

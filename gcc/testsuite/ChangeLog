@@ -1,5 +1,19 @@
 2019-07-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/cancel-1.c: Adjust expected diagnostic wording.
+	* c-c++-common/gomp/clauses-1.c (foo, baz, bar): Add order(concurrent)
+	clause where allowed.  Add combined constructs with loop with all
+	possible clauses.
+	(qux): New function.
+	* c-c++-common/gomp/loop-1.c: New test.
+	* c-c++-common/gomp/loop-2.c: New test.
+	* c-c++-common/gomp/loop-3.c: New test.
+	* c-c++-common/gomp/loop-4.c: New test.
+	* c-c++-common/gomp/loop-5.c: New test.
+	* c-c++-common/gomp/order-3.c: Adjust expected diagnostic wording.
+	* c-c++-common/gomp/simd-setjmp-1.c: New test.
+	* c-c++-common/gomp/teams-2.c: Adjust expected diagnostic wording.
+
 	* gcc.dg/vect/vect-simd-16.c: New test.
 
 2019-07-19  Jeff Law  <law@redhat.com>

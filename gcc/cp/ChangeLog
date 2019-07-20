@@ -1,3 +1,19 @@
+2019-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (OMP_FOR_GIMPLIFYING_P): Use OMP_LOOPING_CHECK
+	instead of OMP_LOOP_CHECK.
+	* parser.c (cp_parser_omp_clause_name): Handle bind clause.
+	(cp_parser_omp_clause_bind): New function.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_BIND.
+	(OMP_LOOP_CLAUSE_MASK): Define.
+	(cp_parser_omp_loop): New function.
+	(cp_parser_omp_parallel, cp_parser_omp_teams): Handle parsing of
+	loop combined with parallel or teams.
+	(cp_parser_omp_construct): Handle PRAGMA_OMP_LOOP.
+	(cp_parser_pragma): Likewise.
+	* pt.c (tsubst_expr): Handle OMP_LOOP.
+	* semantics.c (finish_omp_clauses): Handle OMP_CLAUSE_BIND.
+
 2019-07-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90101 - dependent class non-type parameter.
