@@ -5097,7 +5097,10 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		{
 		  tree y = lang_hooks.decls.omp_clause_dtor (c, new_var);
 		  if ((TREE_ADDRESSABLE (new_var) || nx || y
-		       || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
+		       || (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
+			   && (gimple_omp_for_collapse (ctx->stmt) != 1
+			       || (gimple_omp_for_index (ctx->stmt, 0)
+				   != new_var)))
 		       || OMP_CLAUSE_CODE (c) == OMP_CLAUSE__CONDTEMP_
 		       || omp_is_reference (var))
 		      && lower_rec_simd_input_clauses (new_var, ctx, &sctx,
