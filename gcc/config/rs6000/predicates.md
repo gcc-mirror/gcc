@@ -1031,7 +1031,7 @@
 	       const_double,const_wide_int,const_vector,const_int")
 {
   /* Memory is always valid.  */
-  if (memory_operand (op, mode))
+  if (any_memory_operand (op, mode))
     return 1;
 
   /* For floating-point, easy constants are valid.  */
