@@ -703,11 +703,16 @@
 ;; memory references.  So this function allows us to recognize volatile
 ;; references where it's safe.
 (define_predicate "volatile_mem_operand"
-  (and (and (match_code "mem")
-	    (match_test "MEM_VOLATILE_P (op)"))
+  (and (match_code "mem")
+       (match_test "MEM_VOLATILE_P (op)")
        (if_then_else (match_test "reload_completed")
 	 (match_operand 0 "memory_operand")
 	 (match_test "memory_address_p (mode, XEXP (op, 0))"))))
+
+;; Return 1 if the operand is a volatile or non-volatile memory operand.
+(define_predicate "any_memory_operand"
+  (ior (match_operand 0 "memory_operand")
+       (match_operand 0 "volatile_mem_operand")))
 
 ;; Return 1 if the operand is an offsettable memory operand.
 (define_predicate "offsettable_mem_operand"
@@ -891,11 +896,10 @@
 
 ;; Return 1 if the operand is a general non-special register or memory operand.
 (define_predicate "reg_or_mem_operand"
-  (ior (match_operand 0 "memory_operand")
+  (ior (match_operand 0 "gpc_reg_operand")
+       (match_operand 0 "any_memory_operand")
        (and (match_code "mem")
-	    (match_test "macho_lo_sum_memory_operand (op, mode)"))
-       (match_operand 0 "volatile_mem_operand")
-       (match_operand 0 "gpc_reg_operand")))
+	    (match_test "macho_lo_sum_memory_operand (op, mode)"))))
 
 ;; Return 1 if the operand is CONST_DOUBLE 0, register or memory operand.
 (define_predicate "zero_reg_mem_operand"
