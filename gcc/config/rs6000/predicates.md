@@ -929,7 +929,7 @@
 
   if (gpc_reg_operand (inner, mode))
     return true;
-  if (!memory_operand (inner, mode))
+  if (!any_memory_operand (inner, mode))
     return false;
 
   addr = XEXP (inner, 0);

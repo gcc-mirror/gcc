@@ -1,5 +1,9 @@
 2019-07-20  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/predicates.md (lwa_operand): Allow volatile memory.
+
+2019-07-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/predicates.md (volatile_mem_operand): Modernize syntax.
 	(any_memory_operand): New predicate.
 	(reg_or_mem_operand): Use it.
