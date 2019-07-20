@@ -716,7 +716,7 @@
 
 ;; Return 1 if the operand is an offsettable memory operand.
 (define_predicate "offsettable_mem_operand"
-  (and (match_operand 0 "memory_operand")
+  (and (match_operand 0 "any_memory_operand")
        (match_test "offsettable_nonstrict_memref_p (op)")))
 
 ;; Return 1 if the operand is a simple offsettable memory operand
