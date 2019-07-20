@@ -1,3 +1,12 @@
+2019-07-20  Jason Merrill  <jason@redhat.com>
+
+	Reduce memory consumption for push/pop_access_scope.
+	* name-lookup.c (leave_scope): Do add class levels other than
+	previous_class_level to free_binding_level.
+	(invalidate_class_lookup_cache): Move from class.c, add to
+	free_binding_level.
+	* pt.c (saved_access_scope): Change from list to vec.
+
 2019-07-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (OMP_FOR_GIMPLIFYING_P): Use OMP_LOOPING_CHECK

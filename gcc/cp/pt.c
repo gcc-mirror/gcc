@@ -67,7 +67,7 @@ static vec<int> inline_parm_levels;
 
 static GTY(()) struct tinst_level *current_tinst_level;
 
-static GTY(()) tree saved_access_scope;
+static GTY(()) vec<tree, va_gc> *saved_access_scope;
 
 /* Live only within one (recursive) call to tsubst_expr.  We use
    this to pass the statement expression node from the STMT_EXPR
@@ -247,8 +247,7 @@ push_access_scope (tree t)
 
   if (TREE_CODE (t) == FUNCTION_DECL)
     {
-      saved_access_scope = tree_cons
-	(NULL_TREE, current_function_decl, saved_access_scope);
+      vec_safe_push (saved_access_scope, current_function_decl);
       current_function_decl = t;
     }
 }
@@ -260,10 +259,7 @@ static void
 pop_access_scope (tree t)
 {
   if (TREE_CODE (t) == FUNCTION_DECL)
-    {
-      current_function_decl = TREE_VALUE (saved_access_scope);
-      saved_access_scope = TREE_CHAIN (saved_access_scope);
-    }
+    current_function_decl = saved_access_scope->pop();
 
   if (DECL_FRIEND_CONTEXT (t) || DECL_CLASS_SCOPE_P (t))
     pop_nested_class ();
