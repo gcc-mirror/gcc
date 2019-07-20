@@ -1,3 +1,8 @@
+2019-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_rec_input_clauses): Don't force simd arrays for
+	lastprivate non-addressable iterator of a collapse(1) simd.
+
 2019-07-17  Bill Seurer  <seurer@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-call.c (HAVE_AS_GNU_ATTRIBUTE): define value
