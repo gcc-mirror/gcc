@@ -1045,8 +1045,8 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
   DECL_IGNORED_P (cond) = 1;
   layout_decl (cond, 0);
 
-  r =  build_call_expr_internal_loc (loc, IFN_CO_YIELD, integer_type_node, 4,
-				     susp_idx, final_susp, r_l, d_l);
+  r =  build_call_expr_internal_loc (loc, IFN_CO_YIELD, integer_type_node, 5,
+				     susp_idx, final_susp, r_l, d_l, data->coro_fp);
   r = build2 (INIT_EXPR, integer_type_node, cond, r);
   finish_switch_cond (r, sw);
   r = build_case_label (build_int_cst (integer_type_node, 0), NULL_TREE,
@@ -1078,8 +1078,8 @@ co_await_expander (tree *stmt, int *do_subtree, void *d)
   DECL_ARTIFICIAL (cond) = 1;
   DECL_IGNORED_P (cond) = 1;
   layout_decl (cond, 0);
-  r =  build_call_expr_internal_loc (loc, IFN_CO_YIELD, integer_type_node, 4,
-				     susp_idx, final_susp, r_l, d_l);
+  r =  build_call_expr_internal_loc (loc, IFN_CO_YIELD, integer_type_node, 5,
+				     susp_idx, final_susp, r_l, d_l, data->coro_fp);
   r = build2 (INIT_EXPR, integer_type_node, cond, r);
   r = build1 (CLEANUP_POINT_EXPR, integer_type_node, r);
   append_to_statement_list (r, &body_list);

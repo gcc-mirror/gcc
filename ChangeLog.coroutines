@@ -1,3 +1,13 @@
+2019-07-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
+	* internal-fn.def (CO_YIELD): Add function signature.
+	(CO_FRAME): Make leaf.
+
+	gcc/cp/=
+	* coroutines.cc (co_await_expander): Add coro frame as a call arg to
+	IFN_CO_YIELD calls.
+
 2019-07-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/
