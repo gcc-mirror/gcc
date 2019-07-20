@@ -1,5 +1,8 @@
 2019-07-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/91204
+	* gcc.c-torture/compile/pr91204.c: New test.
+
 	* c-c++-common/gomp/cancel-1.c: Adjust expected diagnostic wording.
 	* c-c++-common/gomp/clauses-1.c (foo, baz, bar): Add order(concurrent)
 	clause where allowed.  Add combined constructs with loop with all

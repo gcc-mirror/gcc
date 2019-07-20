@@ -2972,6 +2972,17 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
       return target;
     }
 
+  /* Emit ~op0 as op0 ^ -1.  */
+  if (unoptab == one_cmpl_optab
+      && (SCALAR_INT_MODE_P (mode) || GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+      && optab_handler (xor_optab, mode) != CODE_FOR_nothing)
+    {
+      temp = expand_binop (mode, xor_optab, op0, CONSTM1_RTX (mode),
+			   target, unsignedp, OPTAB_DIRECT);
+      if (temp)
+	return temp;
+    }
+
   if (optab_to_code (unoptab) == NEG)
     {
       /* Try negating floating point values by flipping the sign bit.  */

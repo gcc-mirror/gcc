@@ -1,3 +1,8 @@
+2019-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91204
+	* optabs.c (expand_unop): As fallback, expand ~op0 as op0 ^ -1.
+
 2019-07-20  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.h (hppa_profile_hook): Delete declaration.
