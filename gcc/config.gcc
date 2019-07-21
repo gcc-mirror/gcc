@@ -2579,6 +2579,7 @@ or1k*-*-*)
 		case ${or1k_multilib} in
 		mcmov | msext | msfimm | \
 		mror | mrori | \
+		mhard-float | mdouble-float | munordered-float | msoft-float | \
 		mhard-div | mhard-mul | \
 		msoft-div | msoft-mul )
 			TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG},${or1k_multilib}"

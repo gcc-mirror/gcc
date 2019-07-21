@@ -90,6 +90,11 @@
 (define_predicate "equality_comparison_operator"
   (match_code "ne,eq"))
 
+(define_predicate "fp_comparison_operator"
+  (if_then_else (match_test "TARGET_FP_UNORDERED")
+    (match_operand 0 "comparison_operator")
+    (match_operand 0 "ordered_comparison_operator")))
+
 ;; Borrowed from rs6000
 ;; Return true if the operand is in volatile memory.  Note that during the
 ;; RTL generation phase, memory_operand does not return TRUE for volatile

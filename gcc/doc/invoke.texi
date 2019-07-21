@@ -1034,6 +1034,7 @@ Objective-C and Objective-C++ Dialects}.
 @emph{OpenRISC Options}
 @gccoptlist{-mboard=@var{name}  -mnewlib  -mhard-mul  -mhard-div @gol
 -msoft-mul  -msoft-div @gol
+-msoft-float  -mhard-float  -mdouble-float -munordered-float @gol
 -mcmov  -mror  -mrori  -msext  -msfimm  -mshftimm}
 
 @emph{PDP-11 Options}
@@ -23665,6 +23666,26 @@ This default is hardware divide.
 @opindex mhard-mul
 Select software or hardware multiply (@code{l.mul}, @code{l.muli}) instructions.
 This default is hardware multiply.
+
+@item -msoft-float
+@itemx -mhard-float
+@opindex msoft-float
+@opindex mhard-float
+Select software or hardware for floating point operations.
+The default is software.
+
+@item -mdouble-float
+@opindex mdouble-float
+When @option{-mhard-float} is selected, enables generation of double-precision
+floating point instructions.  By default functions from @file{libgcc} are used
+to perform double-precision floating point operations.
+
+@item -munordered-float
+@opindex munordered-float
+When @option{-mhard-float} is selected, enables generation of unordered
+floating point compare and set flag (@code{lf.sfun*}) instructions.  By default
+functions from @file{libgcc} are used to perform unordered floating point
+compare and set flag operations.
 
 @item -mcmov
 @opindex mcmov

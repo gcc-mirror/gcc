@@ -24,6 +24,7 @@
 
 ; We use:
 ;  c - sibcall registers
+;  d - double pair base registers (excludes r0, r30 and r31 which overflow)
 ;  I - constant signed 16-bit
 ;  K - constant unsigned 16-bit
 ;  M - constant signed 16-bit shifted left 16-bits (l.movhi)
@@ -31,6 +32,9 @@
 
 (define_register_constraint "c" "SIBCALL_REGS"
   "Registers which can hold a sibling call address")
+
+(define_register_constraint "d" "DOUBLE_REGS"
+  "Registers which can be used for double reg pairs.")
 
 ;; Immediates
 (define_constraint "I"
