@@ -1226,6 +1226,19 @@ or1k_print_operand (FILE *file, rtx x, int code)
 	output_operand_lossage ("invalid %%H value");
       break;
 
+    case 'd':
+      if (REG_P (x))
+	{
+	  if (GET_MODE (x) == DFmode || GET_MODE (x) == DImode)
+	    fprintf (file, "%s,%s", reg_names[REGNO (operand)],
+				    reg_names[REGNO (operand) + 1]);
+	  else
+	    fprintf (file, "%s", reg_names[REGNO (operand)]);
+	}
+      else
+	output_operand_lossage ("invalid %%d value");
+      break;
+
     case 'h':
       print_reloc (file, x, 0, RKIND_HI);
       break;
@@ -1435,21 +1448,42 @@ void
 or1k_expand_compare (rtx *operands)
 {
   rtx sr_f = gen_rtx_REG (BImode, SR_F_REGNUM);
+  rtx_code cmp_code = GET_CODE (operands[0]);
+  bool flag_check_ne = true;
 
   /* The RTL may receive an immediate in argument 1 of the compare, this is not
      supported unless we have l.sf*i instructions, force them into registers.  */
   if (!TARGET_SFIMM)
     XEXP (operands[0], 1) = force_reg (SImode, XEXP (operands[0], 1));
 
+  /* Normalize comparison operators to ones OpenRISC support.  */
+  switch (cmp_code)
+    {
+      case LTGT:
+	cmp_code = UNEQ;
+	flag_check_ne = false;
+	break;
+
+      case ORDERED:
+	cmp_code = UNORDERED;
+	flag_check_ne = false;
+	break;
+
+      default:
+	break;
+    }
+
   /* Emit the given comparison into the Flag bit.  */
   PUT_MODE (operands[0], BImode);
+  PUT_CODE (operands[0], cmp_code);
   emit_insn (gen_rtx_SET (sr_f, operands[0]));
 
   /* Adjust the operands for use in the caller.  */
-  operands[0] = gen_rtx_NE (VOIDmode, sr_f, const0_rtx);
+  operands[0] = flag_check_ne ? gen_rtx_NE (VOIDmode, sr_f, const0_rtx)
+			      : gen_rtx_EQ (VOIDmode, sr_f, const0_rtx);
   operands[1] = sr_f;
   operands[2] = const0_rtx;
-}
+ }
 
 /* Expand the patterns "call", "sibcall", "call_value" and "sibcall_value".
    Expands a function call where argument RETVAL is an optional RTX providing

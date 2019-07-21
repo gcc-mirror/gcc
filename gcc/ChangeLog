@@ -1,5 +1,32 @@
 2019-07-22  Stafford Horne  <shorne@gmail.com>
 
+	* config.gcc (or1k*-*-*): Add mhard-float, mdouble-float, msoft-float
+	and munordered-float validations.
+	* config/or1k/constraints.md (d): New register constraint.
+	* config/or1k/predicates.md (fp_comparison_operator): New.
+	* config/or1k/or1k.c (or1k_print_operand): Add support for printing 'd'
+	operands.
+	(or1k_expand_compare): Normalize unordered comparisons.
+	* config/or1k/or1k.h (reg_class): Define DOUBLE_REGS.
+	(REG_CLASS_NAMES): Add "DOUBLE_REGS".
+	(REG_CLASS_CONTENTS): Add contents for DOUBLE_REGS.
+	* config/or1k/or1k.md (type): Add fpu.
+	(fpu): New instruction reservation.
+	(F, f, fr, fi, FI, FOP, fop): New.
+	(<fop><F:mode>3): New ALU instruction definition.
+	(float<fi><F:mode>2): New conversion instruction definition.
+	(fix_trunc<F:mode><fi>2): New conversion instruction definition.
+	(fpcmpcc): New code iterator.
+	(*sf_fp_insn): New instruction definition.
+	(cstore<F:mode>4): New expand definition.
+	(cbranch<F:mode>4): New expand definition.
+	* config/or1k/or1k.opt (msoft-float, mhard-float, mdouble-float,
+	munordered-float): New options.
+	* doc/invoke.texi: Document msoft-float, mhard-float, mdouble-float and
+	munordered-float.
+
+2019-07-22  Stafford Horne  <shorne@gmail.com>
+
 	* config.gcc (or1k*-*-*): Add mrori and mror to validation.
 	* doc/invoke.texi (OpenRISC Options): Add mrori option, rewrite all
 	documenation to be more clear.

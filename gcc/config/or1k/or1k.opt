@@ -41,6 +41,28 @@ Target RejectNegative Mask(SOFT_MUL).
 Enable generation of binaries which use functions from libgcc to perform
 multiply operations. The default is -mhard-mul.
 
+msoft-float
+Target RejectNegative InverseMask(HARD_FLOAT)
+Enable generation of binaries which use functions from libgcc to perform
+floating point operations.  This is the default; use -mhard-float to override.
+
+mhard-float
+Target RejectNegative Mask(HARD_FLOAT)
+Enable generation of hardware floating point instructions. The default is
+-msoft-float.
+
+mdouble-float
+Target Mask(DOUBLE_FLOAT)
+When -mhard-float is selected, enables generation of double-precision floating
+point instructions.  By default functions from libgcc are used to perform
+double-precision floating point operations.
+
+munordered-float
+Target RejectNegative Mask(FP_UNORDERED)
+When -mhard-float is selected, enables generation of unordered floating point
+compare and set flag (lf.sfun*) instructions.  By default functions from libgcc
+are used to perform unordered floating point compare and set flag operations.
+
 mcmov
 Target RejectNegative Mask(CMOV)
 Enable generation of conditional move (l.cmov) instructions.  By default the
