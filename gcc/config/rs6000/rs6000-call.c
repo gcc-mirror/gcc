@@ -86,6 +86,10 @@
 # endif
 #endif
 
+#ifndef TARGET_NO_PROTOTYPE
+#define TARGET_NO_PROTOTYPE 0
+#endif
+
 struct builtin_description
 {
   const HOST_WIDE_INT mask;

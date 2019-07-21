@@ -84,10 +84,6 @@
 /* This file should be included last.  */
 #include "target-def.h"
 
-#ifndef TARGET_NO_PROTOTYPE
-#define TARGET_NO_PROTOTYPE 0
-#endif
-
   /* Set -mabi=ieeelongdouble on some old targets.  In the future, power server
      systems will also set long double to be IEEE 128-bit.  AIX and Darwin
      explicitly redefine TARGET_IEEEQUAD and TARGET_IEEEQUAD_DEFAULT to 0, so
