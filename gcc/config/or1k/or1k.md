@@ -328,11 +328,11 @@
 ;; Sign Extending
 ;; -------------------------------------------------------------------------
 
-;; Zero extension can always be done with AND and an extending load.
+;; Zero extension can always be done with AND or an extending load.
 
 (define_insn "zero_extend<mode>si2"
   [(set (match_operand:SI 0 "register_operand"                     "=r,r")
-	(zero_extend:SI (match_operand:I12 1 "nonimmediate_operand" "r,m")))]
+	(zero_extend:SI (match_operand:I12 1 "reg_or_mem_operand" "r,m")))]
   ""
   "@
    l.andi\t%0, %1, <zext_andi>
@@ -344,7 +344,7 @@
 
 (define_insn "extend<mode>si2"
   [(set (match_operand:SI 0 "register_operand"                      "=r,r")
-	(sign_extend:SI (match_operand:I12 1 "nonimmediate_operand"  "r,m")))]
+	(sign_extend:SI (match_operand:I12 1 "reg_or_mem_operand"  "r,m")))]
   "TARGET_SEXT"
   "@
    l.ext<ldst>s\t%0, %1

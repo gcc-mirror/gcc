@@ -1,3 +1,11 @@
+2019-07-22  Stafford Horne  <shorne@gmail.com>
+
+	PR target/90363
+	* config/or1k/or1k.md (zero_extend<mode>si2): Update predicate.
+	(extend<mode>si2): Update predicate.
+	* gcc/config/or1k/predicates.md (volatile_mem_operand): New.
+	(reg_or_mem_operand): New.
+
 2019-07-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/rs6000.c (TARGET_NO_PROTOTYPE): Move from here...
