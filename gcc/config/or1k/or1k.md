@@ -63,7 +63,7 @@
   "alu,st,ld,control,multi"
   (const_string "alu"))
 
-(define_attr "insn_support" "class1,sext,sfimm,shftimm" (const_string "class1"))
+(define_attr "insn_support" "class1,sext,sfimm,shftimm,ror,rori" (const_string "class1"))
 
 (define_attr "enabled" ""
   (cond [(eq_attr "insn_support" "class1") (const_int 1)
@@ -72,7 +72,11 @@
 	 (and (eq_attr "insn_support" "sfimm")
 	      (ne (symbol_ref "TARGET_SFIMM") (const_int 0))) (const_int 1)
 	 (and (eq_attr "insn_support" "shftimm")
-	      (ne (symbol_ref "TARGET_SHFTIMM") (const_int 0))) (const_int 1)]
+	      (ne (symbol_ref "TARGET_SHFTIMM") (const_int 0))) (const_int 1)
+	 (and (eq_attr "insn_support" "ror")
+	      (ne (symbol_ref "TARGET_ROR") (const_int 0))) (const_int 1)
+	 (and (eq_attr "insn_support" "rori")
+	      (ne (symbol_ref "TARGET_RORI") (const_int 0))) (const_int 1)]
 	(const_int 0)))
 
 ;; Describe a user's asm statement.
@@ -178,12 +182,12 @@
 (define_insn "rotrsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(rotatert:SI (match_operand:SI 1 "register_operand"  "r,r")
-		  (match_operand:SI 2 "reg_or_u6_operand" "r,n")))]
-  "TARGET_ROR"
+		     (match_operand:SI 2 "ror_reg_or_u6_operand" "r,n")))]
+  "TARGET_ROR || TARGET_RORI"
   "@
    l.ror\t%0, %1, %2
    l.rori\t%0, %1, %2"
-  [(set_attr "insn_support" "*,shftimm")])
+  [(set_attr "insn_support" "ror,rori")])
 
 (define_insn "andsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")

@@ -1,5 +1,11 @@
 2019-07-22  Stafford Horne  <shorne@gmail.com>
 
+	* gcc.target/or1k/ror-4.c: New file.
+	* gcc.target/or1k/shftimm-1.c: Update test from rotate to shift
+	as the shftimm option no longer controls rotate.
+
+2019-07-22  Stafford Horne  <shorne@gmail.com>
+
 	PR target/90362
 	* gcc.target/or1k/div-mul-3.c: New test.
 
