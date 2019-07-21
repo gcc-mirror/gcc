@@ -1,3 +1,9 @@
+2019-07-22  Stafford Horne  <shorne@gmail.com>
+
+	PR target/90363
+	* gcc.target/or1k/swap-1.c: New test.
+	* gcc.target/or1k/swap-2.c: New test.
+
 2019-07-20  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/volatile-mem.c: New testcase.

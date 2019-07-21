@@ -82,3 +82,21 @@
 
 (define_predicate "equality_comparison_operator"
   (match_code "ne,eq"))
+
+;; Borrowed from rs6000
+;; Return true if the operand is in volatile memory.  Note that during the
+;; RTL generation phase, memory_operand does not return TRUE for volatile
+;; memory references.  So this function allows us to recognize volatile
+;; references where it's safe.
+(define_predicate "volatile_mem_operand"
+  (and (match_code "mem")
+       (match_test "MEM_VOLATILE_P (op)")
+       (if_then_else (match_test "reload_completed")
+	 (match_operand 0 "memory_operand")
+	 (match_test "memory_address_p (mode, XEXP (op, 0))"))))
+
+;; Return true if the operand is a register or memory; including volatile
+;; memory.
+(define_predicate "reg_or_mem_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
+       (match_operand 0 "volatile_mem_operand")))
