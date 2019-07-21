@@ -1,3 +1,10 @@
+2019-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backport from mainline
+	2019-07-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-c++-common/pr53633-2.c: New test.
+
 2019-07-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	Backport from mainline

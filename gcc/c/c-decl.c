@@ -9506,7 +9506,8 @@ finish_function (void)
       && !C_FUNCTION_IMPLICIT_INT (fndecl)
       /* Normally, with -Wreturn-type, flow will complain, but we might
          optimize out static functions.  */
-      && !TREE_PUBLIC (fndecl))
+      && !TREE_PUBLIC (fndecl)
+      && targetm.warn_func_return (fndecl))
     {
       warning (OPT_Wreturn_type,
 	       "no return statement in function returning non-void");

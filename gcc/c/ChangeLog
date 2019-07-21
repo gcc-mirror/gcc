@@ -1,3 +1,12 @@
+2019-07-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backport from mainline
+	2019-07-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/53633
+	* c-decl.c (finish_function): Check targetm.warn_func_return
+	before issuing a -Wreturn-type warning.
+
 2019-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
