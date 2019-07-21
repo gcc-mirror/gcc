@@ -1,5 +1,10 @@
 2019-07-22  Stafford Horne  <shorne@gmail.com>
 
+	* config/or1k/or1k.c (or1k_expand_compare): Check for int before
+	force_reg.
+
+2019-07-22  Stafford Horne  <shorne@gmail.com>
+
 	* config.gcc (or1k*-*-*): Add mhard-float, mdouble-float, msoft-float
 	and munordered-float validations.
 	* config/or1k/constraints.md (d): New register constraint.
