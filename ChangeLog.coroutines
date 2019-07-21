@@ -1,5 +1,10 @@
 2019-07-21  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* coroutines.cc (morph_fn_to_coro): Remove unused var.
+
+2019-07-21  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/
 	* coroutine-passes.c (lower_coro_builtin): Revert changes to handle
 	three callback pointers.  Reimplement the is_suspended check to be a

@@ -2502,7 +2502,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	  tree fld_idx = build_class_member_access_expr (deref_fp, fld_ref,
 						         NULL_TREE, false,
 						         tf_warning_or_error);
-	  tree parm_passed_type = DECL_ARG_TYPE (arg);
+
 	  if (TYPE_NEEDS_CONSTRUCTING (parm.frame_type))
 	    {
 	      vec<tree, va_gc> *p_in = make_tree_vector_single (arg);
