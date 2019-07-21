@@ -198,6 +198,14 @@ static variable variable_table[] = {
   /* Print out a backtrace if possible on runtime error */
   { "GFORTRAN_ERROR_BACKTRACE", -1, &options.backtrace, init_boolean },
 
+  /* Buffer size for unformatted files.  */
+  { "GFORTRAN_UNFORMATTED_BUFFER_SIZE", 0, &options.unformatted_buffer_size,
+    init_integer },
+
+  /* Buffer size for formatted files.  */
+  { "GFORTRAN_FORMATTED_BUFFER_SIZE", 0, &options.formatted_buffer_size,
+    init_integer },
+
   { NULL, 0, NULL, NULL }
 };
 
