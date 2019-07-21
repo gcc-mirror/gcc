@@ -1,3 +1,11 @@
+2019-07-22  Stafford Horne  <shorne@gmail.com>
+
+	PR target/90362
+	* config/or1k/lib1funcs.S (__udivsi3): Change l.sfeqi
+	to l.sfeq and l.sfltsi to l.sflts equivalents as the immediate
+	instructions are not available on every processor.  Change a
+	l.bnf to l.bf to fix logic issue.
+
 2019-07-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config.host: Remove reference to t-darwin8.
