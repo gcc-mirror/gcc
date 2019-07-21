@@ -1,3 +1,19 @@
+2019-07-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
+	* coroutine-passes.c (lower_coro_builtin): Revert changes to handle
+	three callback pointers.  Reimplement the is_suspended check to be a
+	test for non-null on the destroy() function pointer field.
+
+	gcc/cp/
+	* coroutines.cc (build_actor_fn): Remove support for the "is_suspended"
+	test.
+	(build_suspended_fn): Likewise.
+	(register_local_var_uses): Likewise.
+	(morph_fn_to_coro): Likewise.
+	* cp-tree.h (morph_fn_to_coro): Likewise.
+	* decl.c (finish_function): Likewise.
+
 2019-07-20  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/
