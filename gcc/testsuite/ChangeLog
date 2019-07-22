@@ -1,3 +1,9 @@
+2019-07-22  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	Backport from mainline
+	* gcc.target/arc/tls-2.c: New test.
+	* gcc.target/arc/tls-3.c: Likewise.
+
 2019-07-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backport from mainline
