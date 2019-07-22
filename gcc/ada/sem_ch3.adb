@@ -12970,6 +12970,10 @@ package body Sem_Ch3 is
          if Desig_Type = Current_Scope
            and then No (Def_Id)
          then
+            Error_Msg_Warn := SPARK_Mode /= On;
+            Error_Msg_N ("<<constraint is ignored on component that is "
+                         & "access to current record", S);
+
             Set_Ekind (Desig_Subtype, E_Record_Subtype);
             Def_Id := Entity (Subtype_Mark (S));
 

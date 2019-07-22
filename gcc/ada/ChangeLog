@@ -1,3 +1,8 @@
+2019-07-22  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb (Constrain_Access): Issue a message about ignored
+	constraint.
+
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch8.adb (End_Use_Type): Reset the In_Use flag on the

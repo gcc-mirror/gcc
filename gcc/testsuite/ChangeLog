@@ -1,3 +1,7 @@
+2019-07-22  Yannick Moy  <moy@adacore.com>
+
+	* gnat.dg/warn24.adb: New testcase.
+
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/inline17.adb, gnat.dg/inline17_pkg1.adb,
