@@ -1,3 +1,8 @@
+2019-07-22  Boris Kolpackov <boris@codesynthesis.com>
+
+	gcc/cp/
+	* Make-lang.in (MODULE_REVISION): Add git rev, if it's git.
+
 2019-07-16  Nathan Sidwell  <nathan@acm.org>r
 
 	gcc/cp/

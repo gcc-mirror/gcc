@@ -64,18 +64,30 @@ cp/module.o : $(srcdir)/cp
 # date (don't bootstrap at midnight).
 MODULE_VERSION := $(shell date -r $(srcdir)/cp '+%y%m%d-%H%M' 2>/dev/null\
   || date '+%y%m%d-0000' 2>/dev/null || echo 0)
-# Try svnversion
-MODULE_REVISION := $(shell svnversion $(srcdir) 2>/dev/null\
+
+# Try svnversion, remove lower bound commit, but retain dirty info
+MODULE_REVISION := $(shell svnversion $(srcdir) 2>/dev/null \
   | sed -ne 's/^\(.*:\)\?\([0-9][0-9]*M\?S\?P\?\)$$/svn-\2/p')
 ifeq ($(MODULE_REVISION),)
-# See if this is git-svn
-MODULE_REVISION := $(shell git -C $(srcdir)/.. log ChangeLog.modules 2>/dev/null\
-  | sed -ne '/ *git-svn-id: /{s/.*@\([^ ]*\).*/svn-\1/p;q}')
+# Try git commit and dirty info, similar to svnversion.
+MODULE_REVISION := $(shell git -C $(srcdir)/.. rev-parse --short HEAD \
+  2>/dev/null | sed s/\(.\)/git-\1/)
+ifneq ($(MODULE_REVISION),)
+# It is git, figure dirty info
+MODULE_REVISION := $(MODULE_REVISION)$(shell git -C $(srcdir)/.. \
+    status --porcelain 2>/dev/null | sed -ne 's/..*/M/p;q')
+# and see if there's git-svn info
+MODULE_REV_SVN := $(shell git -C $(srcdir)/.. log ChangeLog.modules \
+  2>/dev/null | sed -ne '/ *git-svn-id: /{s/.*@\([^ ]*\).*/svn-\1/p;q}')
+ifneq ($(MODULE_REV_SVN),)
+MODULE_REVISION := $(MODULE_REVISION):$(MODULE_REV_SVN)
+endif
+endif
 endif
 ifeq ($(MODULE_REVISION),)
-# Look in Changelog.modules
-MODULE_REVISION := $(shell tail -1 $(srcdir)/../ChangeLog.modules 2>/dev/null\
-  | sed -ne 's/^\$$Rev: *\([0-9][0-9]*\) \$$$$/log-\1/p')
+# Get a rev from Changelog.modules
+MODULE_REVISION := $(shell tail -1 $(srcdir)/../ChangeLog.modules \
+  2>/dev/null | sed -ne 's/^\$$Rev: *\([0-9][0-9]*\) \$$$$/log-\1/p')
 endif
 ifeq ($(MODULE_REVISION),)
 MODULE_REVISION := unknown
