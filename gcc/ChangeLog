@@ -1,5 +1,11 @@
 2019-07-22  Martin Liska  <mliska@suse.cz>
 
+	* config/avr/avr.c (avr_asm_output_aligned_decl_common): Update
+	comment.
+	* toplev.c (compile_file): Do not emit __gnu_lto_v1 symbol.
+
+2019-07-22  Martin Liska  <mliska@suse.cz>
+
 	* lto-section-in.c (lto_get_section_data):
 	Use new function get_compression.
 	* lto-streamer-out.c (produce_lto_section): Use

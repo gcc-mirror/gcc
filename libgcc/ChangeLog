@@ -1,3 +1,8 @@
+2019-07-22  Martin Liska  <mliska@suse.cz>
+
+	* config/pa/stublib.c: Remove stub symbol __gnu_lto_v1.
+	* config/pa/t-stublib: Likewise.
+
 2019-07-22  Stafford Horne  <shorne@gmail.com>
 
 	PR target/90362
