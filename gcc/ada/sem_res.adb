@@ -4190,17 +4190,16 @@ package body Sem_Res is
                      DDT : constant Entity_Id :=
                              Directly_Designated_Type (Base_Type (Etype (F)));
 
-                     New_Itype : Entity_Id;
-
                   begin
+                     --  Displace the pointer to the object to reference its
+                     --  secondary dispatch table.
+
                      if Is_Class_Wide_Type (DDT)
                        and then Is_Interface (DDT)
                      then
-                        New_Itype := Create_Itype (E_Anonymous_Access_Type, A);
-                        Set_Etype (New_Itype, Etype (A));
-                        Set_Directly_Designated_Type
-                          (New_Itype, Directly_Designated_Type (Etype (A)));
-                        Set_Etype (A, New_Itype);
+                        Rewrite (A, Convert_To (Etype (F), Relocate_Node (A)));
+                        Analyze_And_Resolve (A, Etype (F),
+                          Suppress => Access_Check);
                      end if;
 
                      --  Ada 2005, AI-162:If the actual is an allocator, the
