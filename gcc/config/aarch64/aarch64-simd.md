@@ -986,6 +986,18 @@
   [(set_attr "type" "neon_shift_imm<q>")]
 )
 
+(define_insn "*aarch64_simd_sra<mode>"
+ [(set (match_operand:VDQ_I 0 "register_operand" "=w")
+	(plus:VDQ_I
+	   (SHIFTRT:VDQ_I
+		(match_operand:VDQ_I 1 "register_operand" "w")
+		(match_operand:VDQ_I 2 "aarch64_simd_rshift_imm" "Dr"))
+	   (match_operand:VDQ_I 3 "register_operand" "0")))]
+  "TARGET_SIMD"
+  "<sra_op>sra\t%0.<Vtype>, %1.<Vtype>, %2"
+  [(set_attr "type" "neon_shift_acc<q>")]
+)
+
 (define_insn "aarch64_simd_imm_shl<mode>"
  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
        (ashift:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")

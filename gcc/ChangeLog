@@ -1,3 +1,11 @@
+2019-07-22  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(*aarch64_simd_sra<mode>): New.
+	* config/aarch64/iterators.md
+	(SHIFTRT): New iterator.
+	(sra_op): New attribute.
+
 2019-07-22  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config/msp430/msp430.c (msp430_preserve_reg_p): Don't save
