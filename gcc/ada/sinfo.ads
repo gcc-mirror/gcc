@@ -755,14 +755,15 @@ package Sinfo is
    --  Do_Division_Check flag on float exponentiation expressions, for the case
    --  where the value is 0.0 and the exponent is negative, although this case
    --  does lead to a division check failure. As another special case,
-   --  the frontend does not insert a Do_Range_Check on an allocator where
+   --  the front end does not insert a Do_Range_Check on an allocator where
    --  the designated type is scalar, and the designated type is more
    --  constrained than the type of the initialized allocator value or the type
    --  of the default value for an uninitialized allocator.
 
-   --  Note: the expander always takes care of the Do_Range check case,
-   --  so this flag will never be set in the expanded tree passed to the
-   --  back end code generator.
+   --  Note that the expander always takes care of the Do_Range_Check case, so
+   --  this flag will never be set in the expanded tree passed to the back end.
+   --  For the other two flags, the check can be generated either by the back
+   --  end or by the front end, depending on the setting of a target parameter.
 
    --  Note that this accounts for all nodes that trigger the corresponding
    --  checks, except for range checks on subtype_indications, which may be
@@ -1186,9 +1187,10 @@ package Sinfo is
    --    conversion nodes (and set if the conversion requires a check).
 
    --  Do_Division_Check (Flag13-Sem)
-   --    This flag is set on a division operator (/ mod rem) to indicate
-   --    that a zero divide check is required. The actual check is dealt
-   --    with by the backend (all the front end does is to set the flag).
+   --    This flag is set on a division operator (/ mod rem) to indicate that
+   --    a zero divide check is required. The actual check is either dealt with
+   --    by the back end if Backend_Divide_Checks is set to true, or by the
+   --    front end itself if it is set to false.
 
    --  Do_Length_Check (Flag4-Sem)
    --    This flag is set in an N_Assignment_Statement, N_Op_And, N_Op_Or,
@@ -1197,15 +1199,13 @@ package Sinfo is
 
    --  Do_Overflow_Check (Flag17-Sem)
    --    This flag is set on an operator where an overflow check is required on
-   --    the operation. The actual check is dealt with by the backend (all the
-   --    front end does is to set the flag). The other cases where this flag is
-   --    used is on a Type_Conversion node and for attribute reference nodes.
+   --    the operation. The actual check is either dealt with by the back end
+   --    if Backend_Overflow_Checks is set to true, or by the front end itself
+   --    if it is set to false. The other cases where this flag is used is on a
+   --    Type_Conversion node as well on if and case expression nodes.
    --    For a type conversion, it means that the conversion is from one base
    --    type to another, and the value may not fit in the target base type.
-   --    See also the description of Do_Range_Check for this case. The only
-   --    attribute references which use this flag are Pred and Succ, where it
-   --    means that the result should be checked for going outside the base
-   --    range. Note that this flag is not set for modular types. This flag is
+   --    See also the description of Do_Range_Check for this case. This flag is
    --    also set on if and case expression nodes if we are operating in either
    --    MINIMIZED or ELIMINATED overflow checking mode (to make sure that we
    --    properly process overflow checking for dependent expressions).
@@ -1215,9 +1215,9 @@ package Sinfo is
    --    range check is required. The target type is clear from the context.
    --    The contexts in which this flag can appear are the following:
 
-   --      Right side of an assignment. In this case the target type is
-   --      taken from the left side of the assignment, which is referenced
-   --      by the Name of the N_Assignment_Statement node.
+   --      Right side of an assignment. In this case the target type is taken
+   --      from the left side of the assignment, which is referenced by the
+   --      Name of the N_Assignment_Statement node.
 
    --      Subscript expressions in an indexed component. In this case the
    --      target type is determined from the type of the array, which is
@@ -1250,15 +1250,6 @@ package Sinfo is
    --    Note: when a range check is required in contexts other than those
    --    listed above (e.g. in a return statement), an additional type
    --    conversion node is introduced to represent the required check.
-
-   --    A special case arises for the arguments of the Pred/Succ attributes.
-   --    Here the range check needed is against First + 1 .. Last (Pred) or
-   --    First .. Last - 1 (Succ) of the corresponding base type. Essentially
-   --    these checks are what would be performed within the implicit body of
-   --    the functions that correspond to these attributes. In these cases,
-   --    the Do_Range check flag is set on the argument to the attribute
-   --    function, and the back end must special case the appropriate range
-   --    to check against.
 
    --  Do_Storage_Check (Flag17-Sem)
    --    This flag is set in an N_Allocator node to indicate that a storage
