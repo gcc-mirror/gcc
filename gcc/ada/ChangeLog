@@ -1,3 +1,10 @@
+2019-07-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Fixed_Point_Type):  When freezing a
+	fixed-point subtype, check whether the parent type declarastion
+	includes an aspect specification for the 'Small type attribute,
+	and inherit the specified value.
+
 2019-07-22  Javier Miranda  <miranda@adacore.com>
 
 	* freeze.adb (Freeze_Subprogram): Check that C++ constructors
