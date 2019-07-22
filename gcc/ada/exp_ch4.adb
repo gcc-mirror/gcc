@@ -12072,7 +12072,10 @@ package body Exp_Ch4 is
       --  Check: are these rules stated in sinfo??? if so, why restate here???
 
       --  The only remaining step is to generate a range check if we still have
-      --  a type conversion at this stage and Do_Range_Check is set.
+      --  a type conversion at this stage and Do_Range_Check is set. Note that
+      --  we need to deal with at most 8 out of the 9 possible cases of numeric
+      --  conversions here, because the float-to-integer case is entirely dealt
+      --  with by Apply_Float_Conversion_Check.
 
       if Nkind (N) = N_Type_Conversion
         and then Do_Range_Check (Expression (N))
@@ -12726,13 +12729,13 @@ package body Exp_Ch4 is
       if Nkind (Parent (Conv)) = N_Attribute_Reference
         and then Attribute_Name (Parent (Conv)) = Name_Round
       then
-         Set_Etype (N, Etype (Parent (Conv)));
+         Set_Etype (N, Base_Type (Etype (Parent (Conv))));
          Set_Rounded_Result (N);
 
       --  Normal case where type comes from conversion above us
 
       else
-         Set_Etype (N, Etype (Conv));
+         Set_Etype (N, Base_Type (Etype (Conv)));
       end if;
    end Fixup_Universal_Fixed_Operation;
 
