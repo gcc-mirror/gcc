@@ -1,3 +1,10 @@
+2019-07-22  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (ternlogsuffix): New.
+	(one_cmpl<mode>2): Don't force CONSTM1_RTX into a register when
+	AVX512F is in use.
+	(<mask_codefor>one_cmpl<mode>2<mask_name>): New.
+
 2019-07-22  Martin Liska  <mliska@suse.cz>
 
 	* config/avr/avr.c (avr_asm_output_aligned_decl_common): Update
