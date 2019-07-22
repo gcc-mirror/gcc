@@ -8003,6 +8003,7 @@ package body Freeze is
       Brng  : constant Node_Id    := Scalar_Range (Btyp);
       BLo   : constant Node_Id    := Low_Bound (Brng);
       BHi   : constant Node_Id    := High_Bound (Brng);
+      Par   : constant Entity_Id  := First_Subtype (Typ);
       Small : constant Ureal      := Small_Value (Typ);
       Loval : Ureal;
       Hival : Ureal;
@@ -8053,6 +8054,16 @@ package body Freeze is
          else
             Set_Esize (Typ, Esize (Base_Type (Typ)));
          end if;
+      end if;
+
+      --  The 'small attribute may have been specified with an aspect,
+      --  in which case it is processed after a subtype declaration, so
+      --  inherit now the specified value.
+
+      if Typ /= Par
+        and then Present (Find_Aspect (Par, Aspect_Small))
+      then
+         Set_Small_Value (Typ, Small_Value (Par));
       end if;
 
       --  Immediate return if the range is already analyzed. This means that
