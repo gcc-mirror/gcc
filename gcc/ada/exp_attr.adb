@@ -3282,6 +3282,13 @@ package body Exp_Attr is
 
          Expr := Unchecked_Convert_To (Ptyp, First (Exprs));
 
+         --  Ensure that the expression is not truncated since the "bad" bits
+         --  are desired.
+
+         if Nkind (Expr) = N_Unchecked_Type_Conversion then
+            Set_No_Truncation (Expr);
+         end if;
+
          Insert_Action (N,
            Make_Raise_Constraint_Error (Loc,
              Condition =>
