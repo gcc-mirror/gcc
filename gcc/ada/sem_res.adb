@@ -10625,8 +10625,25 @@ package body Sem_Res is
       if Is_Access_Type (Etype (P)) then
          T := Designated_Type (Etype (P));
          Check_Fully_Declared_Prefix (T, P);
+
       else
          T := Etype (P);
+
+         --  If the prefix is an entity it may have a deferred reference set
+         --  during analysis of the selected component. After resolution we
+         --  can transform it into a proper reference. This prevents spurious
+         --  warnings on useless assignments when the same selected component
+         --  is the actual for an out parameter in a subsequent call.
+
+         if Is_Entity_Name (P)
+           and then Has_Deferred_Reference (Entity (P))
+         then
+            if May_Be_Lvalue (N) then
+               Generate_Reference (Entity (P), P, 'm');
+            else
+               Generate_Reference (Entity (P), P, 'r');
+            end if;
+         end if;
       end if;
 
       --  Set flag for expander if discriminant check required on a component
