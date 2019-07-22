@@ -1,3 +1,8 @@
+2019-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91221
+	* g++.dg/pr91221.C: New testcase.
+
 2019-07-22  Martin Liska  <mliska@suse.cz>
 
 	PR driver/91172

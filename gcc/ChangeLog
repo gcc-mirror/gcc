@@ -1,3 +1,10 @@
+2019-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91221
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Appropriately
+	restrict partial-def handling of empty constructors and
+	memset to refs with known offset.
+
 2019-07-22  Jan Beulich  <jbeulich@suse.com>
 
 	* config/i386/sse.md (ternlogsuffix): New.

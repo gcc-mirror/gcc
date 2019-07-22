@@ -2455,7 +2455,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	           (vuse, vr->set, vr->type, vr->operands, val);
 	}
       /* For now handle clearing memory with partial defs.  */
-      else if (integer_zerop (gimple_call_arg (def_stmt, 1))
+      else if (known_eq (ref->size, maxsize)
+	       && integer_zerop (gimple_call_arg (def_stmt, 1))
 	       && tree_to_poly_int64 (len).is_constant (&leni)
 	       && offset.is_constant (&offseti)
 	       && offset2.is_constant (&offset2i)
@@ -2503,7 +2504,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      return vn_reference_lookup_or_insert_for_pieces
 		  (vuse, vr->set, vr->type, vr->operands, val);
 	    }
-	  else if (maxsize.is_constant (&maxsizei)
+	  else if (known_eq (ref->size, maxsize)
+		   && maxsize.is_constant (&maxsizei)
 		   && maxsizei % BITS_PER_UNIT == 0
 		   && offset.is_constant (&offseti)
 		   && offseti % BITS_PER_UNIT == 0
