@@ -2856,13 +2856,14 @@ package body Exp_Ch5 is
    -----------------------------
 
    procedure Expand_N_Case_Statement (N : Node_Id) is
-      Loc    : constant Source_Ptr := Sloc (N);
-      Expr   : constant Node_Id    := Expression (N);
-      Alt    : Node_Id;
-      Len    : Nat;
-      Cond   : Node_Id;
-      Choice : Node_Id;
-      Chlist : List_Id;
+      Loc            : constant Source_Ptr := Sloc (N);
+      Expr           : constant Node_Id    := Expression (N);
+      From_Cond_Expr : constant Boolean    := From_Conditional_Expression (N);
+      Alt            : Node_Id;
+      Len            : Nat;
+      Cond           : Node_Id;
+      Choice         : Node_Id;
+      Chlist         : List_Id;
 
    begin
       --  Check for the situation where we know at compile time which branch
@@ -3073,7 +3074,15 @@ package body Exp_Ch5 is
                    Condition => Cond,
                    Then_Statements => Then_Stms,
                    Else_Statements => Else_Stms));
+
+               --  The rewritten if statement needs to inherit whether the
+               --  case statement was expanded from a conditional expression,
+               --  for proper handling of nested controlled objects.
+
+               Set_From_Conditional_Expression (N, From_Cond_Expr);
+
                Analyze (N);
+
                return;
             end if;
          end if;
