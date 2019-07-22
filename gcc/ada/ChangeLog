@@ -1,5 +1,13 @@
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sprint.adb (Sprint_Node_Actual)
+	<N_Decimal_Fixed_Point_Definition>: Swap a couple of spaces.
+	(Write_Itype): Minor consistency fixes throughout.  Add support
+	for printing ordinary and decimal fixed-point types and
+	subtypes.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* exp_attr.adb (Expand_Loop_Entry_Attribute): Beef up comment.
 
 2019-07-22  Ed Schonberg  <schonberg@adacore.com>
