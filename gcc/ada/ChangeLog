@@ -1,3 +1,8 @@
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_warn.adb (Find_Var): Bail out for a function call with an
+	Out or In/Out parameter.
+
 2019-07-22  Nicolas Roche  <roche@adacore.com>
 
 	* terminals.c (__gnat_tty_waitpid): Support both blocking and
