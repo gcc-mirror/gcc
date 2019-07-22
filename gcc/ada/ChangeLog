@@ -1,3 +1,20 @@
+2019-07-22  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Size_In_Storage_Elements): Improve the expansion
+	to handle array indexes that are modular type.
+	(Expand_N_Allocator): For 32-bit targets improve the generation
+	of the runtime check associated with large arrays supporting
+	arrays initialized with a qualified expression.
+	* libgnat/s-imenne.adb (Image_Enumeration_8,
+	Image_Enumeration_16, Image_Enumeration_32): Define the index of
+	Index_Table with range Natural'First .. Names'Length since in
+	the worst case all the literals of the enumeration type would be
+	single letter literals and the Table built by the frontend would
+	have as many components as the length of the names string. As a
+	result of this enhancement, the internal tables declared using
+	Index_Table have a length closer to the real needs, thus
+	avoiding the declaration of large arrays on 32-bit CCG targets.
+
 2019-07-22  Yannick Moy  <moy@adacore.com>
 
 	* sem_ch3.adb (Constrain_Access): Issue a message about ignored
