@@ -1,3 +1,15 @@
+2019-07-22  Yannick Moy  <moy@adacore.com>
+
+	* sem_spark.adb (Get_Root_Object, Is_Path_Expression,
+	Is_Subpath_Expression): Add parameter Is_Traversal to adapt
+	these functions to the case of paths returned from a traversal
+	function.
+	(Read_Indexes): Handle the case of an if-expression or
+	case-expression.
+	(Check_Statement): Check Emit_Messages only when issuing an
+	error message. This is important as Emit_Messages may store the
+	information that an error was detected.
+
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* checks.adb (Apply_Type_Conversion_Checks): Do not set
