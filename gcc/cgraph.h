@@ -135,6 +135,9 @@ public:
   /* Dump symtab node to F.  */
   void dump (FILE *f);
 
+  /* Dump symtab callgraph in graphviz format.  */
+  void dump_graphviz (FILE *f);
+
   /* Dump symtab node to stderr.  */
   void DEBUG_FUNCTION debug (void);
 
@@ -1105,6 +1108,9 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
   /* Dump call graph node to file F.  */
   void dump (FILE *f);
+
+  /* Dump call graph node to file F.  */
+  void dump_graphviz (FILE *f);
 
   /* Dump call graph node to stderr.  */
   void DEBUG_FUNCTION debug (void);
@@ -2281,6 +2287,9 @@ public:
 
   /* Dump symbol table to F.  */
   void dump (FILE *f);
+
+  /* Dump symbol table to F in graphviz format.  */
+  void dump_graphviz (FILE *f);
 
   /* Dump symbol table to stderr.  */
   void DEBUG_FUNCTION debug (void);
