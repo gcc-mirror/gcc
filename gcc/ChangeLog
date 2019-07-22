@@ -1,3 +1,8 @@
+2019-07-22  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_blend_epi16): New.
+	(_mm_blendv_epi8): New.
+
 2019-07-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91221
