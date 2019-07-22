@@ -1,3 +1,8 @@
+2019-07-22  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (prepare_move_operands): Always use an
+	intermediate register when storing a TLS symbols.
+
 2019-07-22  Stafford Horne  <shorne@gmail.com>
 
 	* config/or1k/or1k.c (or1k_expand_compare): Check for int before

@@ -8959,7 +8959,7 @@ prepare_move_operands (rtx *operands, machine_mode mode)
   if (GET_CODE (operands[1]) == SYMBOL_REF)
     {
       enum tls_model model = SYMBOL_REF_TLS_MODEL (operands[1]);
-      if (MEM_P (operands[0]) && flag_pic)
+      if (MEM_P (operands[0]))
 	operands[1] = force_reg (mode, operands[1]);
       else if (model)
 	operands[1] = arc_legitimize_tls_address (operands[1], model);
