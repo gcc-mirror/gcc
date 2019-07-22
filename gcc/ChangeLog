@@ -1,3 +1,9 @@
+2019-07-02  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraph.c (dump_graphviz): New function.
+	* cgraph.h (dump_graphviz): New function.
+	* symtab.c (dump_graphviz): New function.
+
 2019-07-22  Sylvia Taylor  <sylvia.taylor@arm.com>
 
 	* config/aarch64/aarch64-simd.md

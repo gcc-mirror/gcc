@@ -127,6 +127,9 @@ help
 LTODump Var(flag_lto_dump_tool_help)
 Dump the dump tool command line options.
 
+callgraph
+LTODump Var(flag_dump_callgraph)
+Dump the symtab callgraph.
 
 fresolution=
 LTO Joined
