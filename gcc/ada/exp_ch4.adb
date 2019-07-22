@@ -10274,7 +10274,6 @@ package body Exp_Ch4 is
       Apply_Constraint_Check (Operand, Target_Type, No_Sliding => True);
 
       if Do_Range_Check (Operand) then
-         Set_Do_Range_Check (Operand, False);
          Generate_Range_Check (Operand, Target_Type, CE_Range_Check_Failed);
       end if;
    end Expand_N_Qualified_Expression;
@@ -10929,8 +10928,11 @@ package body Exp_Ch4 is
    procedure Expand_N_Type_Conversion (N : Node_Id) is
       Loc          : constant Source_Ptr := Sloc (N);
       Operand      : constant Node_Id    := Expression (N);
-      Target_Type  : constant Entity_Id  := Etype (N);
+      Target_Type  : Entity_Id           := Etype (N);
       Operand_Type : Entity_Id           := Etype (Operand);
+
+      procedure Discrete_Range_Check;
+      --  Handles generation of range check for discrete target value
 
       procedure Handle_Changed_Representation;
       --  This is called in the case of record and array type conversions to
@@ -10953,6 +10955,44 @@ package body Exp_Ch4 is
       function Has_Extra_Accessibility (Id : Entity_Id) return Boolean;
       --  True iff Present (Effective_Extra_Accessibility (Id)) successfully
       --  evaluates to True.
+
+      --------------------------
+      -- Discrete_Range_Check --
+      --------------------------
+
+      --  Case of conversions to a discrete type
+
+      procedure Discrete_Range_Check is
+         Expr : Node_Id;
+         Ityp : Entity_Id;
+
+      begin
+         --  Nothing to do if conversion was rewritten
+
+         if Nkind (N) /= N_Type_Conversion then
+            return;
+         end if;
+
+         Expr := Expression (N);
+
+         --  Before we do a range check, we have to deal with treating
+         --  a fixed-point operand as an integer. The way we do this
+         --  is simply to do an unchecked conversion to an appropriate
+         --  integer type large enough to hold the result.
+
+         if Is_Fixed_Point_Type (Etype (Expr)) then
+            if Esize (Base_Type (Etype (Expr))) > Esize (Standard_Integer) then
+               Ityp := Standard_Long_Long_Integer;
+            else
+               Ityp := Standard_Integer;
+            end if;
+
+            Set_Do_Range_Check (Expr, False);
+            Rewrite (Expr, Unchecked_Convert_To (Ityp, Expr));
+         end if;
+
+         Generate_Range_Check (Expr, Target_Type, CE_Range_Check_Failed);
+      end Discrete_Range_Check;
 
       -----------------------------------
       -- Handle_Changed_Representation --
@@ -11169,7 +11209,6 @@ package body Exp_Ch4 is
          Btyp : constant Entity_Id := Base_Type (Target_Type);
          Lo   : constant Node_Id   := Type_Low_Bound  (Target_Type);
          Hi   : constant Node_Id   := Type_High_Bound (Target_Type);
-         Xtyp : constant Entity_Id := Etype (Operand);
 
          Conv   : Node_Id;
          Hi_Arg : Node_Id;
@@ -11193,6 +11232,12 @@ package body Exp_Ch4 is
                       and then
                     Hi = Type_High_Bound (Btyp))
          then
+            --  Unset the range check flag on the current value of
+            --  Expression (N), since the captured Operand may have
+            --  been rewritten (such as for the case of a conversion
+            --  to a fixed-point type).
+
+            Set_Do_Range_Check (Expression (N), False);
             return;
          end if;
 
@@ -11202,6 +11247,7 @@ package body Exp_Ch4 is
          if Is_Entity_Name (Operand)
            and then Range_Checks_Suppressed (Entity (Operand))
          then
+            Set_Do_Range_Check (Expression (N), False);
             return;
          end if;
 
@@ -11211,12 +11257,12 @@ package body Exp_Ch4 is
          --  not trust it to be in range (might be infinite)
 
          declare
-            S_Lo : constant Node_Id := Type_Low_Bound (Xtyp);
-            S_Hi : constant Node_Id := Type_High_Bound (Xtyp);
+            S_Lo : constant Node_Id := Type_Low_Bound (Operand_Type);
+            S_Hi : constant Node_Id := Type_High_Bound (Operand_Type);
 
          begin
-            if (not Is_Floating_Point_Type (Xtyp)
-                 or else Is_Constrained (Xtyp))
+            if (not Is_Floating_Point_Type (Operand_Type)
+                 or else Is_Constrained (Operand_Type))
               and then Compile_Time_Known_Value (S_Lo)
               and then Compile_Time_Known_Value (S_Hi)
               and then Compile_Time_Known_Value (Hi)
@@ -11229,7 +11275,7 @@ package body Exp_Ch4 is
                   S_Hiv : Ureal;
 
                begin
-                  if Is_Real_Type (Xtyp) then
+                  if Is_Real_Type (Operand_Type) then
                      S_Lov := Expr_Value_R (S_Lo);
                      S_Hiv := Expr_Value_R (S_Hi);
                   else
@@ -11241,29 +11287,16 @@ package body Exp_Ch4 is
                     and then S_Lov >= D_Lov
                     and then S_Hiv <= D_Hiv
                   then
-                     --  Unset the range check flag on the current value of
-                     --  Expression (N), since the captured Operand may have
-                     --  been rewritten (such as for the case of a conversion
-                     --  to a fixed-point type).
-
                      Set_Do_Range_Check (Expression (N), False);
-
                      return;
                   end if;
                end;
             end if;
          end;
 
-         --  For float to float conversions, we are done
-
-         if Is_Floating_Point_Type (Xtyp)
-              and then
-            Is_Floating_Point_Type (Btyp)
-         then
-            return;
-         end if;
-
          --  Otherwise rewrite the conversion as described above
+
+         Set_Do_Range_Check (Expression (N), False);
 
          Conv := Relocate_Node (N);
          Rewrite (Subtype_Mark (Conv), New_Occurrence_Of (Btyp, Loc));
@@ -11273,7 +11306,7 @@ package body Exp_Ch4 is
          --  where it is never required, since we can never have overflow in
          --  this case.
 
-         if not Is_Integer_Type (Etype (Operand)) then
+         if not Is_Integer_Type (Operand_Type) then
             Enable_Overflow_Check (Conv);
          end if;
 
@@ -11895,31 +11928,21 @@ package body Exp_Ch4 is
          then
             Set_Rounded_Result (N);
             Set_Etype (N, Etype (Parent (N)));
+            Target_Type := Etype (N);
          end if;
 
-         --  Otherwise do correct fixed-conversion, but skip these if the
-         --  Conversion_OK flag is set, because from a semantic point of view
-         --  these are simple integer conversions needing no further processing
-         --  (the backend will simply treat them as integers).
+         if Is_Fixed_Point_Type (Target_Type) then
+            Expand_Convert_Fixed_To_Fixed (N);
+            Real_Range_Check;
 
-         if not Conversion_OK (N) then
-            if Is_Fixed_Point_Type (Etype (N)) then
-               Expand_Convert_Fixed_To_Fixed (N);
-               Real_Range_Check;
+         elsif Is_Integer_Type (Target_Type) then
+            Expand_Convert_Fixed_To_Integer (N);
+            Discrete_Range_Check;
 
-            elsif Is_Integer_Type (Etype (N)) then
-               Expand_Convert_Fixed_To_Integer (N);
-
-               --  The result of the conversion might need a range check, so do
-               --  not assume that the result is in bounds.
-
-               Set_Etype (N, Base_Type (Target_Type));
-
-            else
-               pragma Assert (Is_Floating_Point_Type (Etype (N)));
-               Expand_Convert_Fixed_To_Float (N);
-               Real_Range_Check;
-            end if;
+         else
+            pragma Assert (Is_Floating_Point_Type (Target_Type));
+            Expand_Convert_Fixed_To_Float (N);
+            Real_Range_Check;
          end if;
 
       --  Case of conversions to a fixed-point type
@@ -11939,42 +11962,6 @@ package body Exp_Ch4 is
             pragma Assert (Is_Floating_Point_Type (Operand_Type));
             Expand_Convert_Float_To_Fixed (N);
             Real_Range_Check;
-         end if;
-
-      --  Case of float-to-integer conversions
-
-      --  We also handle float-to-fixed conversions with Conversion_OK set
-      --  since semantically the fixed-point target is treated as though it
-      --  were an integer in such cases.
-
-      elsif Is_Floating_Point_Type (Operand_Type)
-        and then
-          (Is_Integer_Type (Target_Type)
-            or else
-          (Is_Fixed_Point_Type (Target_Type) and then Conversion_OK (N)))
-      then
-         --  One more check here, gcc is still not able to do conversions of
-         --  this type with proper overflow checking, and so gigi is doing an
-         --  approximation of what is required by doing floating-point compares
-         --  with the end-point. But that can lose precision in some cases, and
-         --  give a wrong result. Converting the operand to Universal_Real is
-         --  helpful, but still does not catch all cases with 64-bit integers
-         --  on targets with only 64-bit floats.
-
-         --  The above comment seems obsoleted by Apply_Float_Conversion_Check
-         --  Can this code be removed ???
-
-         if Do_Range_Check (Operand) then
-            Rewrite (Operand,
-              Make_Type_Conversion (Loc,
-                Subtype_Mark =>
-                  New_Occurrence_Of (Universal_Real, Loc),
-                Expression =>
-                  Relocate_Node (Operand)));
-
-            Set_Etype (Operand, Universal_Real);
-            Enable_Range_Check (Operand);
-            Set_Do_Range_Check (Expression (Operand), False);
          end if;
 
       --  Case of array conversions
@@ -12059,11 +12046,6 @@ package body Exp_Ch4 is
 
             Analyze_And_Resolve (N, Target_Type);
          end if;
-
-      --  Case of conversions to floating-point
-
-      elsif Is_Floating_Point_Type (Target_Type) then
-         Real_Range_Check;
       end if;
 
       --  At this stage, either the conversion node has been transformed into
@@ -12081,80 +12063,51 @@ package body Exp_Ch4 is
       --  Check: are these rules stated in sinfo??? if so, why restate here???
 
       --  The only remaining step is to generate a range check if we still have
-      --  a type conversion at this stage and Do_Range_Check is set. For now we
-      --  do this only for conversions of discrete types and for float-to-float
-      --  conversions.
+      --  a type conversion at this stage and Do_Range_Check is set.
 
-      if Nkind (N) = N_Type_Conversion then
+      if Nkind (N) = N_Type_Conversion
+        and then Do_Range_Check (Expression (N))
+      then
+         --  Float-to-float conversions
 
-         --  For now we only support floating-point cases where both source
-         --  and target are floating-point types. Conversions where the source
-         --  and target involve integer or fixed-point types are still TBD,
-         --  though not clear whether those can even happen at this point, due
-         --  to transformations above. ???
-
-         if Is_Floating_Point_Type (Etype (N))
+         if Is_Floating_Point_Type (Target_Type)
            and then Is_Floating_Point_Type (Etype (Expression (N)))
          then
-            if Do_Range_Check (Expression (N))
-              and then Is_Floating_Point_Type (Target_Type)
+            Generate_Range_Check
+              (Expression (N), Target_Type, CE_Range_Check_Failed);
+
+         --  Discrete-to-discrete conversions or fixed-point-to-discrete
+         --  conversions when Conversion_OK is set.
+
+         elsif Is_Discrete_Type (Target_Type)
+           and then (Is_Discrete_Type (Etype (Expression (N)))
+                      or else (Is_Fixed_Point_Type (Etype (Expression (N)))
+                                and then Conversion_OK (N)))
+         then
+            --  Reset overflow flag, since the range check will include
+            --  dealing with possible overflow, and generate the check.
+
+            Set_Do_Overflow_Check (N, False);
+
+            --  If Address is either a source type or target type,
+            --  suppress range check to avoid typing anomalies when
+            --  it is a visible integer type.
+
+            if Is_Descendant_Of_Address (Etype (Expression (N)))
+              or else Is_Descendant_Of_Address (Target_Type)
             then
-               Generate_Range_Check
-                 (Expression (N), Target_Type, CE_Range_Check_Failed);
+               Set_Do_Range_Check (Expression (N), False);
+            else
+               Discrete_Range_Check;
             end if;
 
-         --  Discrete-to-discrete conversions
+         --  Conversions to floating- or fixed-point when Conversion_OK is set
 
-         elsif Is_Discrete_Type (Etype (N)) then
-            declare
-               Expr : constant Node_Id := Expression (N);
-               Ftyp : Entity_Id;
-               Ityp : Entity_Id;
-
-            begin
-               if Do_Range_Check (Expr)
-                 and then Is_Discrete_Type (Etype (Expr))
-               then
-                  Set_Do_Range_Check (Expr, False);
-
-                  --  Before we do a range check, we have to deal with treating
-                  --  a fixed-point operand as an integer. The way we do this
-                  --  is simply to do an unchecked conversion to an appropriate
-                  --  integer type large enough to hold the result.
-
-                  --  This code is not active yet, because we are only dealing
-                  --  with discrete types so far ???
-
-                  if Nkind (Expr) in N_Has_Treat_Fixed_As_Integer
-                    and then Treat_Fixed_As_Integer (Expr)
-                  then
-                     Ftyp := Base_Type (Etype (Expr));
-
-                     if Esize (Ftyp) >= Esize (Standard_Integer) then
-                        Ityp := Standard_Long_Long_Integer;
-                     else
-                        Ityp := Standard_Integer;
-                     end if;
-
-                     Rewrite (Expr, Unchecked_Convert_To (Ityp, Expr));
-                  end if;
-
-                  --  Reset overflow flag, since the range check will include
-                  --  dealing with possible overflow, and generate the check.
-                  --  If Address is either a source type or target type,
-                  --  suppress range check to avoid typing anomalies when
-                  --  it is a visible integer type.
-
-                  Set_Do_Overflow_Check (N, False);
-
-                  if not Is_Descendant_Of_Address (Etype (Expr))
-                    and then not Is_Descendant_Of_Address (Target_Type)
-                  then
-                     Generate_Range_Check
-                       (Expr, Target_Type, CE_Range_Check_Failed);
-                  end if;
-               end if;
-            end;
+         elsif Is_Floating_Point_Type (Target_Type)
+           or else (Is_Fixed_Point_Type (Target_Type)
+                     and then Conversion_OK (N))
+         then
+            Real_Range_Check;
          end if;
       end if;
 
