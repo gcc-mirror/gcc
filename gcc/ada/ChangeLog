@@ -1,5 +1,19 @@
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* einfo.ads (Is_For_Access_Subtype): Delete.
+	(Set_Is_For_Access_Subtype): Likewise.
+	* einfo.adb (Is_For_Access_Subtype): Likewise.
+	(Set_Is_For_Access_Subtype): Likewise.
+	(Write_Entity_Flags): Do not write Is_For_Access_Subtype.
+	* exp_ch4.adb (Expand_N_Selected_Component): Do not deal with
+	it.
+	* exp_spark.adb (Expand_SPARK_N_Selected_Component): Likewise.
+	* sem_ch4.adb (Analyze_Explicit_Dereference): Likewise.
+	* sem_ch3.adb (Build_Discriminated_Subtype): Do not build a
+	special private subtype for access-to-record subtypes.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* sem_ch3.adb (Complete_Private_Subtype): Rework the setting of
 	the Etype of the full view for full base types that cannot
 	contain any discriminant.  Remove code and comment about it in

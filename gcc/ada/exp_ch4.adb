@@ -10330,12 +10330,6 @@ package body Exp_Ch4 is
          Insert_Explicit_Dereference (P);
          Analyze_And_Resolve (P, Designated_Type (Ptyp));
 
-         if Ekind (Etype (P)) = E_Private_Subtype
-           and then Is_For_Access_Subtype (Etype (P))
-         then
-            Set_Etype (P, Base_Type (Etype (P)));
-         end if;
-
          Ptyp := Etype (P);
       end if;
 
