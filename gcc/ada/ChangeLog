@@ -1,3 +1,10 @@
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Complete_Private_Subtype): Rework the setting of
+	the Etype of the full view for full base types that cannot
+	contain any discriminant.  Remove code and comment about it in
+	the main path.
+
 2019-07-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Convert_Bound): Subsidiary of

@@ -12351,48 +12351,73 @@ package body Sem_Ch3 is
       --  Next_Entity field of full to ensure that the calls to Copy_Node do
       --  not corrupt the entity chain.
 
-      --  Note that the type of the full view is the same entity as the type
-      --  of the partial view. In this fashion, the subtype has access to the
-      --  correct view of the parent.
-      --  The list below included access types, but this leads to several
-      --  regressions. How should the base type of the full view be
-      --  set consistently for subtypes completed by access types?
-
       Save_Next_Entity := Next_Entity (Full);
       Save_Homonym     := Homonym (Priv);
 
-      case Ekind (Full_Base) is
-         when Class_Wide_Kind
-            | Private_Kind
-            | Protected_Kind
-            | Task_Kind
-            | E_Record_Subtype
-            | E_Record_Type
-         =>
-            Copy_Node (Priv, Full);
+      if Ekind (Full_Base) in Private_Kind
+        or else Ekind (Full_Base) in Protected_Kind
+        or else Ekind (Full_Base) in Record_Kind
+        or else Ekind (Full_Base) in Task_Kind
+      then
+         Copy_Node (Priv, Full);
 
-            Set_Has_Discriminants
-                             (Full, Has_Discriminants (Full_Base));
-            Set_Has_Unknown_Discriminants
-                             (Full, Has_Unknown_Discriminants (Full_Base));
-            Set_First_Entity (Full, First_Entity (Full_Base));
-            Set_Last_Entity  (Full, Last_Entity (Full_Base));
+         --  Note that the Etype of the full view is the same as the Etype of
+         --  the partial view. In this fashion, the subtype has access to the
+         --  correct view of the parent.
 
-            --  If the underlying base type is constrained, we know that the
-            --  full view of the subtype is constrained as well (the converse
-            --  is not necessarily true).
+         Set_Has_Discriminants (Full, Has_Discriminants (Full_Base));
+         Set_Has_Unknown_Discriminants
+                                 (Full, Has_Unknown_Discriminants (Full_Base));
+         Set_First_Entity (Full, First_Entity (Full_Base));
+         Set_Last_Entity  (Full, Last_Entity (Full_Base));
 
-            if Is_Constrained (Full_Base) then
-               Set_Is_Constrained (Full);
-            end if;
+         --  If the underlying base type is constrained, we know that the
+         --  full view of the subtype is constrained as well (the converse
+         --  is not necessarily true).
 
-         when others =>
-            Copy_Node (Full_Base, Full);
+         if Is_Constrained (Full_Base) then
+            Set_Is_Constrained (Full);
+         end if;
 
-            Set_Chars         (Full, Chars (Priv));
-            Conditional_Delay (Full, Priv);
-            Set_Sloc          (Full, Sloc (Priv));
-      end case;
+      else
+         Copy_Node (Full_Base, Full);
+
+         --  The following subtlety with the Etype of the full view needs to be
+         --  taken into account here. One could think that it must naturally be
+         --  set to the base type of the full base:
+
+         --    Set_Etype (Full, Base_Type (Full_Base));
+
+         --  so that the full view becomes a subtype of the full base when the
+         --  latter is a base type, which must for example happen when the full
+         --  base is declared as derived type. That's also correct if the full
+         --  base is declared as an array type, or a floating-point type, or a
+         --  fixed-point type, or a signed integer type, as these declarations
+         --  create an implicit base type and a first subtype so the Etype of
+         --  the full views must be the implicit base type. But that's wrong
+         --  if the full base is declared as an access type, or an enumeration
+         --  type, or a modular integer type, as these declarations directly
+         --  create a base type, i.e. with Etype pointing to itself. Moreover
+         --  the full base being declared in the private part, i.e. when the
+         --  views are swapped, the end result is that the Etype of the full
+         --  base is set to its private view in this case and that we need to
+         --  propagate this setting to the full view in order for the subtype
+         --  to be compatible with the base type.
+
+         if Is_Base_Type (Full_Base)
+           and then (Is_Derived_Type (Full_Base)
+                      or else Ekind (Full_Base) in Array_Kind
+                      or else Ekind (Full_Base) in Fixed_Point_Kind
+                      or else Ekind (Full_Base) in Float_Kind
+                      or else Ekind (Full_Base) in Signed_Integer_Kind)
+         then
+            Set_Etype (Full, Full_Base);
+         end if;
+
+         Set_Chars         (Full, Chars (Priv));
+         Set_Sloc          (Full, Sloc (Priv));
+         Conditional_Delay (Full, Priv);
+      end if;
 
       Link_Entities                 (Full, Save_Next_Entity);
       Set_Homonym                   (Full, Save_Homonym);
@@ -12400,34 +12425,13 @@ package body Sem_Ch3 is
 
       --  Set common attributes for all subtypes: kind, convention, etc.
 
-      Set_Ekind (Full, Subtype_Kind (Ekind (Full_Base)));
-      Set_Convention (Full, Convention (Full_Base));
-
-      --  The Etype of the full view is inconsistent. Gigi needs to see the
-      --  structural full view, which is what the current scheme gives: the
-      --  Etype of the full view is the etype of the full base. However, if the
-      --  full base is a derived type, the full view then looks like a subtype
-      --  of the parent, not a subtype of the full base. If instead we write:
-
-      --       Set_Etype (Full, Full_Base);
-
-      --  then we get inconsistencies in the front-end (confusion between
-      --  views). Several outstanding bugs are related to this ???
-
+      Set_Ekind            (Full, Subtype_Kind (Ekind (Full_Base)));
+      Set_Convention       (Full, Convention (Full_Base));
       Set_Is_First_Subtype (Full, False);
       Set_Scope            (Full, Scope (Priv));
       Set_Size_Info        (Full, Full_Base);
       Set_RM_Size          (Full, RM_Size (Full_Base));
       Set_Is_Itype         (Full);
-
-      --  For the unusual case of a type with unknown discriminants whose
-      --  completion is an array, use the proper full base.
-
-      if Is_Array_Type (Full_Base)
-        and then Has_Unknown_Discriminants (Priv)
-      then
-         Set_Etype (Full, Full_Base);
-      end if;
 
       --  A subtype of a private-type-without-discriminants, whose full-view
       --  has discriminants with default expressions, is not constrained.
