@@ -1,3 +1,57 @@
+2019-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Handle bind clause.
+	(c_parser_omp_clause_bind): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_BIND.
+	(OMP_LOOP_CLAUSE_MASK): Define.
+	(c_parser_omp_loop): New function.
+	(c_parser_omp_parallel, c_parser_omp_teams): Handle parsing of
+	loop combined with parallel or teams.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_LOOP.
+	* c-typeck.c (c_finish_omp_clauses): Handle OMP_CLAUSE_BIND.
+
+2019-07-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/53633
+	* c-decl.c (finish_function): Check targetm.warn_func_return
+	before issuing a -Wreturn-type warning.
+
+2019-07-12  Alexandre Oliva <oliva@adacore.com>
+
+	* gimple-parser.c (c_parser_gimple_try_stmt): New.
+	(c_parser_compound_statement): Call it.
+
+2019-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Handle order clause.
+	(c_parser_omp_clause_order): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_ORDER.
+	(OMP_SIMD_CLAUSE_MASK, OMP_FOR_CLAUSE_MASK): Add
+	PRAGMA_OMP_CLAUSE_ORDER.
+	* c-typeck.c (c_finish_omp_clauses): Handle OMP_CLAUSE_ORDER.
+
+2019-07-10  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.c (c_parser_gimple_postfix_expression): Support
+	_Literal (int *) &x for address literals.
+
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* c-decl.c (xref_tag): Change class-key of PODs to struct and others
+	to class.
+	(field_decl_cmp): Same.
+	* c-parser.c (c_parser_struct_or_union_specifier): Same.
+	* c-tree.h: Same.
+	* gimple-parser.c (c_parser_gimple_compound_statement): Same.
+
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* c-decl.c: Change class-key from class to struct and vice versa
+	to match convention and avoid -Wclass-is-pod and -Wstruct-no-pod.
+	* gimple-parser.c: Same.
+
 2019-07-01  Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.c (c_parser_gimple_postfix_expression): Handle

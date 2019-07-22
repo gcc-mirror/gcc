@@ -1287,7 +1287,7 @@ handle_deferred_opts (void)
   if (!deps_seen)
     return;
 
-  struct mkdeps *deps = cpp_get_deps (parse_in);
+  mkdeps *deps = cpp_get_deps (parse_in);
 
   for (size_t i = 0; i < deferred_count; i++)
     {

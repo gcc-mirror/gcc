@@ -599,7 +599,7 @@ store_bit_field_using_insv (const extraction_insn *insv, rtx op0,
 			    unsigned HOST_WIDE_INT bitnum,
 			    rtx value, scalar_int_mode value_mode)
 {
-  struct expand_operand ops[4];
+  class expand_operand ops[4];
   rtx value1;
   rtx xop0 = op0;
   rtx_insn *last = get_last_insn ();
@@ -759,7 +759,7 @@ store_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
       && known_eq (bitsize, GET_MODE_BITSIZE (innermode))
       && multiple_p (bitnum, GET_MODE_BITSIZE (innermode), &pos))
     {
-      struct expand_operand ops[3];
+      class expand_operand ops[3];
       enum insn_code icode = optab_handler (vec_set_optab, outermode);
 
       create_fixed_operand (&ops[0], op0);
@@ -870,7 +870,7 @@ store_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
       && known_eq (bitsize, GET_MODE_BITSIZE (fieldmode))
       && optab_handler (movstrict_optab, fieldmode) != CODE_FOR_nothing)
     {
-      struct expand_operand ops[2];
+      class expand_operand ops[2];
       enum insn_code icode = optab_handler (movstrict_optab, fieldmode);
       rtx arg0 = op0;
       unsigned HOST_WIDE_INT subreg_off;
@@ -1499,7 +1499,7 @@ extract_bit_field_using_extv (const extraction_insn *extv, rtx op0,
 			      int unsignedp, rtx target,
 			      machine_mode mode, machine_mode tmode)
 {
-  struct expand_operand ops[4];
+  class expand_operand ops[4];
   rtx spec_target = target;
   rtx spec_target_subreg = 0;
   scalar_int_mode ext_mode = extv->field_mode;
@@ -1655,7 +1655,7 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	      != CODE_FOR_nothing)
 	  && multiple_p (bitnum, GET_MODE_BITSIZE (tmode), &pos))
 	{
-	  struct expand_operand ops[3];
+	  class expand_operand ops[3];
 	  machine_mode outermode = new_mode;
 	  machine_mode innermode = tmode;
 	  enum insn_code icode
@@ -1722,7 +1722,7 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	  && known_eq (bitsize, GET_MODE_BITSIZE (innermode))
 	  && multiple_p (bitnum, GET_MODE_BITSIZE (innermode), &pos))
 	{
-	  struct expand_operand ops[3];
+	  class expand_operand ops[3];
 
 	  create_output_operand (&ops[0], target, innermode);
 	  ops[0].target = 1;
@@ -5428,7 +5428,7 @@ emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
 	     int unsignedp, rtx x, rtx y, int normalizep,
 	     machine_mode target_mode)
 {
-  struct expand_operand ops[4];
+  class expand_operand ops[4];
   rtx op0, comparison, subtarget;
   rtx_insn *last;
   scalar_int_mode result_mode = targetm.cstore_mode (icode);

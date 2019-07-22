@@ -1699,7 +1699,7 @@ package body Sem_Ch4 is
 
       --  If the case expression is a formal object of mode in out, then
       --  treat it as having a nonstatic subtype by forcing use of the base
-      --  type (which has to get passed to Check_Case_Choices below).  Also
+      --  type (which has to get passed to Check_Case_Choices below). Also
       --  use base type when the case expression is parenthesized.
 
       if Paren_Count (Expr) > 0
@@ -6173,33 +6173,57 @@ package body Sem_Ch4 is
 
       if Nkind (N) = N_Function_Call then
          Get_First_Interp (Nam, X, It);
-         while Present (It.Nam) loop
-            if Ekind_In (It.Nam, E_Function, E_Operator) then
-               return;
-            else
-               Get_Next_Interp (X, It);
-            end if;
-         end loop;
 
-         --  If all interpretations are procedures, this deserves a
-         --  more precise message. Ditto if this appears as the prefix
-         --  of a selected component, which may be a lexical error.
-
-         Error_Msg_N
-           ("\context requires function call, found procedure name", Nam);
-
-         if Nkind (Parent (N)) = N_Selected_Component
-           and then N = Prefix (Parent (N))
+         if No (It.Typ)
+           and then Ekind (Entity (Name (N))) = E_Function
+           and then Present (Homonym (Entity (Name (N))))
          then
-            Error_Msg_N -- CODEFIX
-              ("\period should probably be semicolon", Parent (N));
+            --  A name may appear overloaded if it has a homonym, even if that
+            --  homonym is non-overloadable, in which case the overload list is
+            --  in fact empty. This specialized case deserves a special message
+            --  if the homonym is a child package.
+
+            declare
+               Nam : constant Node_Id := Name (N);
+               H   : constant Entity_Id := Homonym (Entity (Nam));
+
+            begin
+               if Ekind (H) = E_Package and then Is_Child_Unit (H) then
+                  Error_Msg_Qual_Level := 2;
+                  Error_Msg_NE ("if an entity in package& is meant, ", Nam, H);
+                  Error_Msg_NE ("\use a fully qualified name", Nam, H);
+                  Error_Msg_Qual_Level := 0;
+               end if;
+            end;
+
+         else
+            while Present (It.Nam) loop
+               if Ekind_In (It.Nam, E_Function, E_Operator) then
+                  return;
+               else
+                  Get_Next_Interp (X, It);
+               end if;
+            end loop;
+
+            --  If all interpretations are procedures, this deserves a more
+            --  precise message. Ditto if this appears as the prefix of a
+            --  selected component, which may be a lexical error.
+
+            Error_Msg_N
+              ("\context requires function call, found procedure name", Nam);
+
+            if Nkind (Parent (N)) = N_Selected_Component
+              and then N = Prefix (Parent (N))
+            then
+               Error_Msg_N -- CODEFIX
+                 ("\period should probably be semicolon", Parent (N));
+            end if;
          end if;
 
       elsif Nkind (N) = N_Procedure_Call_Statement
         and then not Void_Interp_Seen
       then
-         Error_Msg_N (
-         "\function name found in procedure call", Nam);
+         Error_Msg_N ("\function name found in procedure call", Nam);
       end if;
 
       All_Errors_Mode := Err_Mode;
@@ -7806,7 +7830,7 @@ package body Sem_Ch4 is
                   --  In_Parameter, but for now we examine the formal that
                   --  corresponds to the indexing, and assume that variable
                   --  indexing is required if some interpretation has an
-                  --  assignable formal at that position.  Still does not
+                  --  assignable formal at that position. Still does not
                   --  cover the most complex cases ???
 
                   if Is_Overloaded (Name (Parent (Par))) then

@@ -115,10 +115,9 @@ package body Repinfo is
    --  Identifier casing for current unit. This is set by List_Rep_Info for
    --  each unit, before calling subprograms which may read it.
 
-   Need_Blank_Line : Boolean;
-   --  Set True if a blank line is needed before outputting any information for
-   --  the current entity. Set True when a new entity is processed, and false
-   --  when the blank line is output.
+   Need_Separator : Boolean;
+   --  Set True if a separator is needed before outputting any information for
+   --  the current entity.
 
    ------------------------------
    -- Set of Relevant Entities --
@@ -151,10 +150,6 @@ package body Repinfo is
    --  is used rather than checking the configuration parameter because we do
    --  not want Repinfo to depend on Targparm (for ASIS)
 
-   procedure Blank_Line;
-   --  Called before outputting anything for an entity. Ensures that
-   --  a blank line precedes the output for a particular entity.
-
    procedure List_Entities
      (Ent              : Entity_Id;
       Bytes_Big_Endian : Boolean;
@@ -172,16 +167,15 @@ package body Repinfo is
    procedure List_Array_Info (Ent : Entity_Id; Bytes_Big_Endian : Boolean);
    --  List representation info for array type Ent
 
+   procedure List_Common_Type_Info (Ent : Entity_Id);
+   --  List common type info (name, size, alignment) for type Ent
+
    procedure List_Linker_Section (Ent : Entity_Id);
    --  List linker section for Ent (caller has checked that Ent is an entity
    --  for which the Linker_Section_Pragma field is defined).
 
    procedure List_Location (Ent : Entity_Id);
    --  List location information for Ent
-
-   procedure List_Mechanisms (Ent : Entity_Id);
-   --  List mechanism information for parameters of Ent, which is subprogram,
-   --  subprogram type, or an entry or entry family.
 
    procedure List_Object_Info (Ent : Entity_Id);
    --  List representation info for object Ent
@@ -194,6 +188,9 @@ package body Repinfo is
       Bytes_Big_Endian : Boolean);
    --  List scalar storage order information for record or array type Ent.
    --  Also includes bit order information for record types, if necessary.
+
+   procedure List_Subprogram_Info (Ent : Entity_Id);
+   --  List subprogram info for subprogram Ent
 
    procedure List_Type_Info (Ent : Entity_Id);
    --  List type info for type Ent
@@ -215,6 +212,10 @@ package body Repinfo is
    procedure Write_Mechanism (M : Mechanism_Type);
    --  Writes symbolic string for mechanism represented by M
 
+   procedure Write_Separator;
+   --  Called before outputting anything for an entity. Ensures that
+   --  a separator precedes the output for a particular entity.
+
    procedure Write_Unknown_Val;
    --  Writes symbolic string for an unknown or non-representable value
 
@@ -235,18 +236,6 @@ package body Repinfo is
 
       return Rep_Table.Last > 0;
    end Back_End_Layout;
-
-   ----------------
-   -- Blank_Line --
-   ----------------
-
-   procedure Blank_Line is
-   begin
-      if Need_Blank_Line then
-         Write_Eol;
-         Need_Blank_Line := False;
-      end if;
-   end Blank_Line;
 
    ------------------------
    -- Create_Discrim_Ref --
@@ -340,13 +329,13 @@ package body Repinfo is
 
    procedure List_Array_Info (Ent : Entity_Id; Bytes_Big_Endian : Boolean) is
    begin
-      Blank_Line;
+      Write_Separator;
 
       if List_Representation_Info_To_JSON then
          Write_Line ("{");
       end if;
 
-      List_Type_Info (Ent);
+      List_Common_Type_Info (Ent);
 
       if List_Representation_Info_To_JSON then
          Write_Line (",");
@@ -369,6 +358,81 @@ package body Repinfo is
          Write_Line ("}");
       end if;
    end List_Array_Info;
+
+   ---------------------------
+   -- List_Common_Type_Info --
+   ---------------------------
+
+   procedure List_Common_Type_Info (Ent : Entity_Id) is
+   begin
+      if List_Representation_Info_To_JSON then
+         Write_Str ("  ""name"": """);
+         List_Name (Ent);
+         Write_Line (""",");
+         List_Location (Ent);
+      end if;
+
+      --  Do not list size info for unconstrained arrays, not meaningful
+
+      if Is_Array_Type (Ent) and then not Is_Constrained (Ent) then
+         null;
+
+      else
+         --  If Esize and RM_Size are the same, list as Size. This is a common
+         --  case, which we may as well list in simple form.
+
+         if Esize (Ent) = RM_Size (Ent) then
+            if List_Representation_Info_To_JSON then
+               Write_Str ("  ""Size"": ");
+               Write_Val (Esize (Ent));
+               Write_Line (",");
+            else
+               Write_Str ("for ");
+               List_Name (Ent);
+               Write_Str ("'Size use ");
+               Write_Val (Esize (Ent));
+               Write_Line (";");
+            end if;
+
+         --  Otherwise list size values separately
+
+         else
+            if List_Representation_Info_To_JSON then
+               Write_Str ("  ""Object_Size"": ");
+               Write_Val (Esize (Ent));
+               Write_Line (",");
+
+               Write_Str ("  ""Value_Size"": ");
+               Write_Val (RM_Size (Ent));
+               Write_Line (",");
+
+            else
+               Write_Str ("for ");
+               List_Name (Ent);
+               Write_Str ("'Object_Size use ");
+               Write_Val (Esize (Ent));
+               Write_Line (";");
+
+               Write_Str ("for ");
+               List_Name (Ent);
+               Write_Str ("'Value_Size use ");
+               Write_Val (RM_Size (Ent));
+               Write_Line (";");
+            end if;
+         end if;
+      end if;
+
+      if List_Representation_Info_To_JSON then
+         Write_Str ("  ""Alignment"": ");
+         Write_Val (Alignment (Ent));
+      else
+         Write_Str ("for ");
+         List_Name (Ent);
+         Write_Str ("'Alignment use ");
+         Write_Val (Alignment (Ent));
+         Write_Line (";");
+      end if;
+   end List_Common_Type_Info;
 
    -------------------
    -- List_Entities --
@@ -427,14 +491,11 @@ package body Repinfo is
                       or else Ekind (Ent) = E_Entry_Family)
            and then not In_Subprogram
          then
-            Need_Blank_Line := True;
-            List_Mechanisms (Ent);
+            List_Subprogram_Info (Ent);
          end if;
 
          E := First_Entity (Ent);
          while Present (E) loop
-            Need_Blank_Line := True;
-
             --  We list entities that come from source (excluding private or
             --  incomplete types or deferred constants, for which we will list
             --  the information for the full view). If requested, we also list
@@ -457,22 +518,19 @@ package body Repinfo is
             then
                if Is_Subprogram (E) then
                   if List_Representation_Info_Mechanisms then
-                     List_Mechanisms (E);
+                     List_Subprogram_Info (E);
                   end if;
 
                   --  Recurse into entities local to subprogram
 
                   List_Entities (E, Bytes_Big_Endian, True);
 
-               elsif Is_Formal (E) and then In_Subprogram then
-                  null;
-
                elsif Ekind_In (E, E_Entry,
                                   E_Entry_Family,
                                   E_Subprogram_Type)
                then
                   if List_Representation_Info_Mechanisms then
-                     List_Mechanisms (E);
+                     List_Subprogram_Info (E);
                   end if;
 
                elsif Is_Record_Type (E) then
@@ -496,24 +554,15 @@ package body Repinfo is
 
                elsif Is_Type (E) then
                   if List_Representation_Info >= 2 then
-                     Blank_Line;
-                     if List_Representation_Info_To_JSON then
-                        Write_Line ("{");
-                     end if;
                      List_Type_Info (E);
-                     List_Linker_Section (E);
-                     if List_Representation_Info_To_JSON then
-                        Write_Eol;
-                        Write_Line ("}");
-                     end if;
                   end if;
 
-               elsif Ekind_In (E, E_Variable, E_Constant) then
-                  if List_Representation_Info >= 2 then
-                     List_Object_Info (E);
-                  end if;
+               --  Note that formals are not annotated so we skip them here
 
-               elsif Ekind (E) = E_Loop_Parameter or else Is_Formal (E) then
+               elsif Ekind_In (E, E_Constant,
+                                  E_Loop_Parameter,
+                                  E_Variable)
+               then
                   if List_Representation_Info >= 2 then
                      List_Object_Info (E);
                   end if;
@@ -530,12 +579,12 @@ package body Repinfo is
 
                --  Recurse into bodies
 
-               elsif Ekind_In (E, E_Protected_Type,
-                                  E_Task_Type,
+               elsif Ekind_In (E, E_Package_Body,
+                                  E_Protected_Body,
+                                  E_Protected_Type,
                                   E_Subprogram_Body,
-                                  E_Package_Body,
                                   E_Task_Body,
-                                  E_Protected_Body)
+                                  E_Task_Type)
                then
                   List_Entities (E, Bytes_Big_Endian);
 
@@ -842,193 +891,13 @@ package body Repinfo is
       Write_Line (""",");
    end List_Location;
 
-   ---------------------
-   -- List_Mechanisms --
-   ---------------------
-
-   procedure List_Mechanisms (Ent : Entity_Id) is
-      First : Boolean := True;
-      Plen  : Natural;
-      Form  : Entity_Id;
-
-   begin
-      Blank_Line;
-
-      if List_Representation_Info_To_JSON then
-         Write_Line ("{");
-         Write_Str ("  ""name"": """);
-         List_Name (Ent);
-         Write_Line (""",");
-         List_Location (Ent);
-
-         Write_Str ("  ""Convention"": """);
-      else
-         case Ekind (Ent) is
-            when E_Function =>
-               Write_Str ("function ");
-
-            when E_Operator =>
-               Write_Str ("operator ");
-
-            when E_Procedure =>
-               Write_Str ("procedure ");
-
-            when E_Subprogram_Type =>
-               Write_Str ("type ");
-
-            when E_Entry
-               | E_Entry_Family
-            =>
-               Write_Str ("entry ");
-
-            when others =>
-               raise Program_Error;
-         end case;
-
-         List_Name (Ent);
-         Write_Str (" declared at ");
-         Write_Location (Sloc (Ent));
-         Write_Eol;
-
-         Write_Str ("convention : ");
-      end if;
-
-      case Convention (Ent) is
-         when Convention_Ada =>
-            Write_Str ("Ada");
-
-         when Convention_Ada_Pass_By_Copy =>
-            Write_Str ("Ada_Pass_By_Copy");
-
-         when Convention_Ada_Pass_By_Reference =>
-            Write_Str ("Ada_Pass_By_Reference");
-
-         when Convention_Intrinsic =>
-            Write_Str ("Intrinsic");
-
-         when Convention_Entry =>
-            Write_Str ("Entry");
-
-         when Convention_Protected =>
-            Write_Str ("Protected");
-
-         when Convention_Assembler =>
-            Write_Str ("Assembler");
-
-         when Convention_C =>
-            Write_Str ("C");
-
-         when Convention_COBOL =>
-            Write_Str ("COBOL");
-
-         when Convention_CPP =>
-            Write_Str ("C++");
-
-         when Convention_Fortran =>
-            Write_Str ("Fortran");
-
-         when Convention_Stdcall =>
-            Write_Str ("Stdcall");
-
-         when Convention_Stubbed =>
-            Write_Str ("Stubbed");
-      end case;
-
-      if List_Representation_Info_To_JSON then
-         Write_Line (""",");
-         Write_Str ("  ""formal"": [");
-      else
-         Write_Eol;
-      end if;
-
-      --  Find max length of formal name
-
-      Plen := 0;
-      Form := First_Formal (Ent);
-      while Present (Form) loop
-         Get_Unqualified_Decoded_Name_String (Chars (Form));
-
-         if Name_Len > Plen then
-            Plen := Name_Len;
-         end if;
-
-         Next_Formal (Form);
-      end loop;
-
-      --  Output formals and mechanisms
-
-      Form := First_Formal (Ent);
-      while Present (Form) loop
-         Get_Unqualified_Decoded_Name_String (Chars (Form));
-         Set_Casing (Unit_Casing);
-
-         if List_Representation_Info_To_JSON then
-            if First then
-               Write_Eol;
-               First := False;
-            else
-               Write_Line (",");
-            end if;
-
-            Write_Line ("    {");
-            Write_Str ("      ""name"": """);
-            Write_Str (Name_Buffer (1 .. Name_Len));
-            Write_Line (""",");
-
-            Write_Str ("      ""mechanism"": """);
-            Write_Mechanism (Mechanism (Form));
-            Write_Line ("""");
-            Write_Str ("    }");
-         else
-            while Name_Len <= Plen loop
-               Name_Len := Name_Len + 1;
-               Name_Buffer (Name_Len) := ' ';
-            end loop;
-
-            Write_Str ("   ");
-            Write_Str (Name_Buffer (1 .. Plen + 1));
-            Write_Str (": passed by ");
-
-            Write_Mechanism (Mechanism (Form));
-            Write_Eol;
-         end if;
-
-         Next_Formal (Form);
-      end loop;
-
-      if List_Representation_Info_To_JSON then
-         Write_Eol;
-         Write_Str ("  ]");
-      end if;
-
-      if Ekind (Ent) = E_Function then
-         if List_Representation_Info_To_JSON then
-            Write_Line (",");
-            Write_Str ("  ""mechanism"": """);
-            Write_Mechanism (Mechanism (Ent));
-            Write_Str ("""");
-         else
-            Write_Str ("returns by ");
-            Write_Mechanism (Mechanism (Ent));
-            Write_Eol;
-         end if;
-      end if;
-
-      if not Is_Entry (Ent) then
-         List_Linker_Section (Ent);
-      end if;
-
-      if List_Representation_Info_To_JSON then
-         Write_Eol;
-         Write_Line ("}");
-      end if;
-   end List_Mechanisms;
-
    ---------------
    -- List_Name --
    ---------------
 
    procedure List_Name (Ent : Entity_Id) is
+      C : Character;
+
    begin
       --  List the qualified name recursively, except
       --  at compilation unit level in default mode.
@@ -1044,7 +913,16 @@ package body Repinfo is
 
       Get_Unqualified_Decoded_Name_String (Chars (Ent));
       Set_Casing (Unit_Casing);
-      Write_Str (Name_Buffer (1 .. Name_Len));
+
+      --  The name of operators needs to be properly escaped for JSON
+
+      for J in 1 .. Name_Len loop
+         C := Name_Buffer (J);
+         if C = '"' and then List_Representation_Info_To_JSON then
+            Write_Char ('\');
+         end if;
+         Write_Char (C);
+      end loop;
    end List_Name;
 
    ---------------------
@@ -1053,7 +931,7 @@ package body Repinfo is
 
    procedure List_Object_Info (Ent : Entity_Id) is
    begin
-      Blank_Line;
+      Write_Separator;
 
       if List_Representation_Info_To_JSON then
          Write_Line ("{");
@@ -1124,6 +1002,12 @@ package body Repinfo is
          Variant   : Node_Id := Empty;
          Indent    : Natural := 0);
       --  Internal recursive procedure to display the structural layout
+
+      Incomplete_Layout : exception;
+      --  Exception raised if the layout is incomplete in -gnatc mode
+
+      Not_In_Extended_Main : exception;
+      --  Exception raised when an ancestor is not declared in the main unit
 
       Max_Name_Length : Natural := 0;
       Max_Spos_Length : Natural := 0;
@@ -1564,14 +1448,29 @@ package body Repinfo is
 
                Disc        : Entity_Id;
                Listed_Disc : Entity_Id;
+               Parent_Type : Entity_Id;
 
             begin
                --  If this is an extension, first list the layout of the parent
                --  and then proceed to the extension part, if any.
 
                if Is_Extension then
-                  List_Structural_Record_Layout
-                    (Base_Type (Parent_Subtype (Ent)), Outer_Ent);
+                  Parent_Type := Parent_Subtype (Ent);
+                  if No (Parent_Type) then
+                     raise Incomplete_Layout;
+                  end if;
+
+                  if Is_Private_Type (Parent_Type) then
+                     Parent_Type := Full_View (Parent_Type);
+                     pragma Assert (Present (Parent_Type));
+                  end if;
+
+                  Parent_Type := Base_Type (Parent_Type);
+                  if not In_Extended_Main_Source_Unit (Parent_Type) then
+                     raise Not_In_Extended_Main;
+                  end if;
+
+                  List_Structural_Record_Layout (Parent_Type, Outer_Ent);
                   First := False;
 
                   if Present (Record_Extension_Part (Definition)) then
@@ -1714,13 +1613,13 @@ package body Repinfo is
    --  Start of processing for List_Record_Info
 
    begin
-      Blank_Line;
+      Write_Separator;
 
       if List_Representation_Info_To_JSON then
          Write_Line ("{");
       end if;
 
-      List_Type_Info (Ent);
+      List_Common_Type_Info (Ent);
 
       --  First find out max line length and max starting position
       --  length, for the purpose of lining things up nicely.
@@ -1733,8 +1632,23 @@ package body Repinfo is
          Write_Line (",");
          Write_Str ("  ""record"": [");
 
+         --  ??? We can output structural layout only for base types fully
+         --  declared in the extended main source unit for the time being,
+         --  because otherwise declarations might not be processed at all.
+
          if Is_Base_Type (Ent) then
-            List_Structural_Record_Layout (Ent, Ent);
+            begin
+               List_Structural_Record_Layout (Ent, Ent);
+
+            exception
+               when Incomplete_Layout
+                  | Not_In_Extended_Main
+               =>
+                  List_Record_Layout (Ent);
+
+               when others =>
+                  raise Program_Error;
+            end;
          else
             List_Record_Layout (Ent);
          end if;
@@ -1772,6 +1686,15 @@ package body Repinfo is
       if List_Representation_Info /= 0
         or else List_Representation_Info_Mechanisms
       then
+         --  For the normal case, we output a single JSON stream
+
+         if not List_Representation_Info_To_File
+           and then List_Representation_Info_To_JSON
+         then
+            Write_Line ("[");
+            Need_Separator := False;
+         end if;
+
          for U in Main_Unit .. Last_Unit loop
             if In_Extended_Main_Source_Unit (Cunit_Entity (U)) then
                Unit_Casing := Identifier_Casing (Source_Index (U));
@@ -1795,6 +1718,7 @@ package body Repinfo is
                      end loop;
 
                      Write_Eol;
+                     Need_Separator := True;
                   end if;
 
                   List_Entities (Cunit_Entity (U), Bytes_Big_Endian);
@@ -1805,12 +1729,25 @@ package body Repinfo is
                   Create_Repinfo_File_Access.all
                     (Get_Name_String (File_Name (Source_Index (U))));
                   Set_Special_Output (Write_Info_Line'Access);
+                  if List_Representation_Info_To_JSON then
+                     Write_Line ("[");
+                  end if;
+                  Need_Separator := False;
                   List_Entities (Cunit_Entity (U), Bytes_Big_Endian);
+                  if List_Representation_Info_To_JSON then
+                     Write_Line ("]");
+                  end if;
                   Cancel_Special_Output;
                   Close_Repinfo_File_Access.all;
                end if;
             end if;
          end loop;
+
+         if not List_Representation_Info_To_File
+           and then List_Representation_Info_To_JSON
+         then
+            Write_Line ("]");
+         end if;
       end if;
    end List_Rep_Info;
 
@@ -1889,79 +1826,201 @@ package body Repinfo is
       end if;
    end List_Scalar_Storage_Order;
 
+   --------------------------
+   -- List_Subprogram_Info --
+   --------------------------
+
+   procedure List_Subprogram_Info (Ent : Entity_Id) is
+      First : Boolean := True;
+      Plen  : Natural;
+      Form  : Entity_Id;
+
+   begin
+      Write_Separator;
+
+      if List_Representation_Info_To_JSON then
+         Write_Line ("{");
+         Write_Str ("  ""name"": """);
+         List_Name (Ent);
+         Write_Line (""",");
+         List_Location (Ent);
+
+         Write_Str ("  ""Convention"": """);
+      else
+         case Ekind (Ent) is
+            when E_Function =>
+               Write_Str ("function ");
+
+            when E_Operator =>
+               Write_Str ("operator ");
+
+            when E_Procedure =>
+               Write_Str ("procedure ");
+
+            when E_Subprogram_Type =>
+               Write_Str ("type ");
+
+            when E_Entry
+               | E_Entry_Family
+            =>
+               Write_Str ("entry ");
+
+            when others =>
+               raise Program_Error;
+         end case;
+
+         List_Name (Ent);
+         Write_Str (" declared at ");
+         Write_Location (Sloc (Ent));
+         Write_Eol;
+
+         Write_Str ("convention : ");
+      end if;
+
+      case Convention (Ent) is
+         when Convention_Ada =>
+            Write_Str ("Ada");
+
+         when Convention_Ada_Pass_By_Copy =>
+            Write_Str ("Ada_Pass_By_Copy");
+
+         when Convention_Ada_Pass_By_Reference =>
+            Write_Str ("Ada_Pass_By_Reference");
+
+         when Convention_Intrinsic =>
+            Write_Str ("Intrinsic");
+
+         when Convention_Entry =>
+            Write_Str ("Entry");
+
+         when Convention_Protected =>
+            Write_Str ("Protected");
+
+         when Convention_Assembler =>
+            Write_Str ("Assembler");
+
+         when Convention_C =>
+            Write_Str ("C");
+
+         when Convention_COBOL =>
+            Write_Str ("COBOL");
+
+         when Convention_CPP =>
+            Write_Str ("C++");
+
+         when Convention_Fortran =>
+            Write_Str ("Fortran");
+
+         when Convention_Stdcall =>
+            Write_Str ("Stdcall");
+
+         when Convention_Stubbed =>
+            Write_Str ("Stubbed");
+      end case;
+
+      if List_Representation_Info_To_JSON then
+         Write_Line (""",");
+         Write_Str ("  ""formal"": [");
+      else
+         Write_Eol;
+      end if;
+
+      --  Find max length of formal name
+
+      Plen := 0;
+      Form := First_Formal (Ent);
+      while Present (Form) loop
+         Get_Unqualified_Decoded_Name_String (Chars (Form));
+
+         if Name_Len > Plen then
+            Plen := Name_Len;
+         end if;
+
+         Next_Formal (Form);
+      end loop;
+
+      --  Output formals and mechanisms
+
+      Form := First_Formal (Ent);
+      while Present (Form) loop
+         Get_Unqualified_Decoded_Name_String (Chars (Form));
+         Set_Casing (Unit_Casing);
+
+         if List_Representation_Info_To_JSON then
+            if First then
+               Write_Eol;
+               First := False;
+            else
+               Write_Line (",");
+            end if;
+
+            Write_Line ("    {");
+            Write_Str ("      ""name"": """);
+            Write_Str (Name_Buffer (1 .. Name_Len));
+            Write_Line (""",");
+
+            Write_Str ("      ""mechanism"": """);
+            Write_Mechanism (Mechanism (Form));
+            Write_Line ("""");
+            Write_Str ("    }");
+         else
+            while Name_Len <= Plen loop
+               Name_Len := Name_Len + 1;
+               Name_Buffer (Name_Len) := ' ';
+            end loop;
+
+            Write_Str ("   ");
+            Write_Str (Name_Buffer (1 .. Plen + 1));
+            Write_Str (": passed by ");
+
+            Write_Mechanism (Mechanism (Form));
+            Write_Eol;
+         end if;
+
+         Next_Formal (Form);
+      end loop;
+
+      if List_Representation_Info_To_JSON then
+         Write_Eol;
+         Write_Str ("  ]");
+      end if;
+
+      if Ekind (Ent) = E_Function then
+         if List_Representation_Info_To_JSON then
+            Write_Line (",");
+            Write_Str ("  ""mechanism"": """);
+            Write_Mechanism (Mechanism (Ent));
+            Write_Str ("""");
+         else
+            Write_Str ("returns by ");
+            Write_Mechanism (Mechanism (Ent));
+            Write_Eol;
+         end if;
+      end if;
+
+      if not Is_Entry (Ent) then
+         List_Linker_Section (Ent);
+      end if;
+
+      if List_Representation_Info_To_JSON then
+         Write_Eol;
+         Write_Line ("}");
+      end if;
+   end List_Subprogram_Info;
+
    --------------------
    -- List_Type_Info --
    --------------------
 
    procedure List_Type_Info (Ent : Entity_Id) is
    begin
-      if List_Representation_Info_To_JSON then
-         Write_Str ("  ""name"": """);
-         List_Name (Ent);
-         Write_Line (""",");
-         List_Location (Ent);
-      end if;
-
-      --  Do not list size info for unconstrained arrays, not meaningful
-
-      if Is_Array_Type (Ent) and then not Is_Constrained (Ent) then
-         null;
-
-      else
-         --  If Esize and RM_Size are the same, list as Size. This is a common
-         --  case, which we may as well list in simple form.
-
-         if Esize (Ent) = RM_Size (Ent) then
-            if List_Representation_Info_To_JSON then
-               Write_Str ("  ""Size"": ");
-               Write_Val (Esize (Ent));
-               Write_Line (",");
-            else
-               Write_Str ("for ");
-               List_Name (Ent);
-               Write_Str ("'Size use ");
-               Write_Val (Esize (Ent));
-               Write_Line (";");
-            end if;
-
-         --  Otherwise list size values separately
-
-         else
-            if List_Representation_Info_To_JSON then
-               Write_Str ("  ""Object_Size"": ");
-               Write_Val (Esize (Ent));
-               Write_Line (",");
-
-               Write_Str ("  ""Value_Size"": ");
-               Write_Val (RM_Size (Ent));
-               Write_Line (",");
-
-            else
-               Write_Str ("for ");
-               List_Name (Ent);
-               Write_Str ("'Object_Size use ");
-               Write_Val (Esize (Ent));
-               Write_Line (";");
-
-               Write_Str ("for ");
-               List_Name (Ent);
-               Write_Str ("'Value_Size use ");
-               Write_Val (RM_Size (Ent));
-               Write_Line (";");
-            end if;
-         end if;
-      end if;
+      Write_Separator;
 
       if List_Representation_Info_To_JSON then
-         Write_Str ("  ""Alignment"": ");
-         Write_Val (Alignment (Ent));
-      else
-         Write_Str ("for ");
-         List_Name (Ent);
-         Write_Str ("'Alignment use ");
-         Write_Val (Alignment (Ent));
-         Write_Line (";");
+         Write_Line ("{");
       end if;
+
+      List_Common_Type_Info (Ent);
 
       --  Special stuff for fixed-point
 
@@ -2009,6 +2068,13 @@ package body Repinfo is
                end if;
             end if;
          end;
+      end if;
+
+      List_Linker_Section (Ent);
+
+      if List_Representation_Info_To_JSON then
+         Write_Eol;
+         Write_Line ("}");
       end if;
    end List_Type_Info;
 
@@ -2283,6 +2349,23 @@ package body Repinfo is
             raise Program_Error;
       end case;
    end Write_Mechanism;
+
+   ---------------------
+   -- Write_Separator --
+   ---------------------
+
+   procedure Write_Separator is
+   begin
+      if Need_Separator then
+         if List_Representation_Info_To_JSON then
+            Write_Line (",");
+         else
+            Write_Eol;
+         end if;
+      else
+         Need_Separator := True;
+      end if;
+   end Write_Separator;
 
    -----------------------
    -- Write_Unknown_Val --

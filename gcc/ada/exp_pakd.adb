@@ -1127,7 +1127,7 @@ package body Exp_Pakd is
 
       --  If we are building the initialization procedure for a packed array,
       --  and Initialize_Scalars is enabled, each component assignment is an
-      --  out-of-range value by design.  Compile this value without checks,
+      --  out-of-range value by design. Compile this value without checks,
       --  because a call to the array init_proc must not raise an exception.
 
       --  Condition is not consistent with description above, Within_Init_Proc

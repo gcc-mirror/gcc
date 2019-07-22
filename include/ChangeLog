@@ -1,3 +1,8 @@
+2019-07-18  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
+
+	* demangle.h (rust_is_mangled): Move to libiberty/rust-demangle.h.
+	(rust_demangle_sym): Move to libiberty/rust-demangle.h.
+
 2019-06-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gomp-constants.h (enum gomp_map_kind): Fix description of

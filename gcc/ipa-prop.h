@@ -144,8 +144,9 @@ struct GTY(()) ipa_agg_jump_function
 typedef struct ipa_agg_jump_function *ipa_agg_jump_function_p;
 
 /* Information about zero/non-zero bits.  */
-struct GTY(()) ipa_bits
+class GTY(()) ipa_bits
 {
+public:
   /* The propagated value.  */
   widest_int value;
   /* Mask corresponding to the value.
@@ -156,8 +157,9 @@ struct GTY(()) ipa_bits
 
 /* Info about value ranges.  */
 
-struct GTY(()) ipa_vr
+class GTY(()) ipa_vr
 {
+public:
   /* The data fields below are valid only if known is true.  */
   bool known;
   enum value_range_kind type;
@@ -177,12 +179,12 @@ struct GTY (()) ipa_jump_func
   /* Information about zero/non-zero bits.  The pointed to structure is shared
      betweed different jump functions.  Use ipa_set_jfunc_bits to set this
      field.  */
-  struct ipa_bits *bits;
+  class ipa_bits *bits;
 
   /* Information about value range, containing valid data only when vr_known is
      true.  The pointed to structure is shared betweed different jump
      functions.  Use ipa_set_jfunc_vr to set this field.  */
-  struct value_range_base *m_vr;
+  class value_range_base *m_vr;
 
   enum jump_func_type type;
   /* Represents a value of a jump function.  pass_through is used only in jump
@@ -319,8 +321,9 @@ struct GTY(()) ipa_param_descriptor
    and some other information for interprocedural passes that operate on
    parameters (such as ipa-cp).  */
 
-struct GTY((for_user)) ipa_node_params
+class GTY((for_user)) ipa_node_params
 {
+public:
   /* Default constructor.  */
   ipa_node_params ();
 
@@ -332,7 +335,7 @@ struct GTY((for_user)) ipa_node_params
   vec<ipa_param_descriptor, va_gc> *descriptors;
   /* Pointer to an array of structures describing individual formal
      parameters.  */
-  struct ipcp_param_lattices * GTY((skip)) lattices;
+  class ipcp_param_lattices * GTY((skip)) lattices;
   /* Only for versioned nodes this field would not be NULL,
      it points to the node that IPA cp cloned from.  */
   struct cgraph_node * GTY((skip)) ipcp_orig_node;
@@ -420,7 +423,7 @@ struct ipa_func_body_info
   cgraph_node *node;
 
   /* Its info.  */
-  struct ipa_node_params *info;
+  class ipa_node_params *info;
 
   /* Information about individual BBs. */
   vec<ipa_bb_info> bb_infos;
@@ -439,7 +442,7 @@ struct ipa_func_body_info
 /* Return the number of formal parameters. */
 
 static inline int
-ipa_get_param_count (struct ipa_node_params *info)
+ipa_get_param_count (class ipa_node_params *info)
 {
   return vec_safe_length (info->descriptors);
 }
@@ -450,7 +453,7 @@ ipa_get_param_count (struct ipa_node_params *info)
    WPA.  */
 
 static inline tree
-ipa_get_param (struct ipa_node_params *info, int i)
+ipa_get_param (class ipa_node_params *info, int i)
 {
   gcc_checking_assert (info->descriptors);
   gcc_checking_assert (!flag_wpa);
@@ -463,7 +466,7 @@ ipa_get_param (struct ipa_node_params *info, int i)
    to INFO if it is known or NULL if not.  */
 
 static inline tree
-ipa_get_type (struct ipa_node_params *info, int i)
+ipa_get_type (class ipa_node_params *info, int i)
 {
   if (vec_safe_length (info->descriptors) <= (unsigned) i)
     return NULL;
@@ -480,7 +483,7 @@ ipa_get_type (struct ipa_node_params *info, int i)
    to INFO.  */
 
 static inline int
-ipa_get_param_move_cost (struct ipa_node_params *info, int i)
+ipa_get_param_move_cost (class ipa_node_params *info, int i)
 {
   gcc_checking_assert (info->descriptors);
   return (*info->descriptors)[i].move_cost;
@@ -490,7 +493,7 @@ ipa_get_param_move_cost (struct ipa_node_params *info, int i)
    associated with INFO to VAL.  */
 
 static inline void
-ipa_set_param_used (struct ipa_node_params *info, int i, bool val)
+ipa_set_param_used (class ipa_node_params *info, int i, bool val)
 {
   gcc_checking_assert (info->descriptors);
   (*info->descriptors)[i].used = val;
@@ -500,7 +503,7 @@ ipa_set_param_used (struct ipa_node_params *info, int i, bool val)
    IPA_UNDESCRIBED_USE if there is a use that is not described by these
    structures.  */
 static inline int
-ipa_get_controlled_uses (struct ipa_node_params *info, int i)
+ipa_get_controlled_uses (class ipa_node_params *info, int i)
 {
   /* FIXME: introducing speculation causes out of bounds access here.  */
   if (vec_safe_length (info->descriptors) > (unsigned)i)
@@ -511,7 +514,7 @@ ipa_get_controlled_uses (struct ipa_node_params *info, int i)
 /* Set the controlled counter of a given parameter.  */
 
 static inline void
-ipa_set_controlled_uses (struct ipa_node_params *info, int i, int val)
+ipa_set_controlled_uses (class ipa_node_params *info, int i, int val)
 {
   gcc_checking_assert (info->descriptors);
   (*info->descriptors)[i].controlled_uses = val;
@@ -521,7 +524,7 @@ ipa_set_controlled_uses (struct ipa_node_params *info, int i, int val)
    function associated with INFO.  */
 
 static inline bool
-ipa_is_param_used (struct ipa_node_params *info, int i)
+ipa_is_param_used (class ipa_node_params *info, int i)
 {
   gcc_checking_assert (info->descriptors);
   return (*info->descriptors)[i].used;
@@ -589,7 +592,7 @@ class GTY((for_user)) ipa_edge_args
 /* Return the number of actual arguments. */
 
 static inline int
-ipa_get_cs_argument_count (struct ipa_edge_args *args)
+ipa_get_cs_argument_count (class ipa_edge_args *args)
 {
   return vec_safe_length (args->jump_functions);
 }
@@ -599,15 +602,15 @@ ipa_get_cs_argument_count (struct ipa_edge_args *args)
    ipa_compute_jump_functions. */
 
 static inline struct ipa_jump_func *
-ipa_get_ith_jump_func (struct ipa_edge_args *args, int i)
+ipa_get_ith_jump_func (class ipa_edge_args *args, int i)
 {
   return &(*args->jump_functions)[i];
 }
 
 /* Returns a pointer to the polymorphic call context for the ith argument.
    NULL if contexts are not computed.  */
-static inline struct ipa_polymorphic_call_context *
-ipa_get_ith_polymorhic_call_context (struct ipa_edge_args *args, int i)
+static inline class ipa_polymorphic_call_context *
+ipa_get_ith_polymorhic_call_context (class ipa_edge_args *args, int i)
 {
   if (!args->polymorphic_call_contexts)
     return NULL;
@@ -778,11 +781,11 @@ extern object_allocator<ipcp_value<ipa_polymorphic_call_context> >
   ipcp_poly_ctx_values_pool;
 
 template <typename valtype>
-class ipcp_value_source;
+struct ipcp_value_source;
 
 extern object_allocator<ipcp_value_source<tree> > ipcp_sources_pool;
 
-class ipcp_agg_lattice;
+struct ipcp_agg_lattice;
 
 extern object_allocator<ipcp_agg_lattice> ipcp_agg_lattice_pool;
 
@@ -792,15 +795,15 @@ void ipa_prop_write_jump_functions (void);
 void ipa_prop_read_jump_functions (void);
 void ipcp_write_transformation_summaries (void);
 void ipcp_read_transformation_summaries (void);
-int ipa_get_param_decl_index (struct ipa_node_params *, tree);
-tree ipa_value_from_jfunc (struct ipa_node_params *info,
+int ipa_get_param_decl_index (class ipa_node_params *, tree);
+tree ipa_value_from_jfunc (class ipa_node_params *info,
 			   struct ipa_jump_func *jfunc, tree type);
 unsigned int ipcp_transform_function (struct cgraph_node *node);
 ipa_polymorphic_call_context ipa_context_from_jfunc (ipa_node_params *,
 						     cgraph_edge *,
 						     int,
 						     ipa_jump_func *);
-void ipa_dump_param (FILE *, struct ipa_node_params *info, int i);
+void ipa_dump_param (FILE *, class ipa_node_params *info, int i);
 void ipa_release_body_info (struct ipa_func_body_info *);
 tree ipa_get_callee_param_type (struct cgraph_edge *e, int i);
 

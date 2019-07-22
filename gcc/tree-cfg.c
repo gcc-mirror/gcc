@@ -256,7 +256,7 @@ build_gimple_cfg (gimple_seq seq)
    come immediately before the condition in BB, if any.  */
 
 static void
-replace_loop_annotate_in_block (basic_block bb, struct loop *loop)
+replace_loop_annotate_in_block (basic_block bb, class loop *loop)
 {
   gimple_stmt_iterator gsi = gsi_last_bb (bb);
   gimple *stmt = gsi_stmt (gsi);
@@ -311,7 +311,7 @@ replace_loop_annotate_in_block (basic_block bb, struct loop *loop)
 static void
 replace_loop_annotate (void)
 {
-  struct loop *loop;
+  class loop *loop;
   basic_block bb;
   gimple_stmt_iterator gsi;
   gimple *stmt;
@@ -1996,7 +1996,7 @@ replace_uses_by (tree name, tree val)
   /* Also update the trees stored in loop structures.  */
   if (current_loops)
     {
-      struct loop *loop;
+      class loop *loop;
 
       FOR_EACH_LOOP (loop, 0)
 	{
@@ -2223,7 +2223,7 @@ remove_bb (basic_block bb)
 
   if (current_loops)
     {
-      struct loop *loop = bb->loop_father;
+      class loop *loop = bb->loop_father;
 
       /* If a loop gets removed, clean up the information associated
 	 with it.  */
@@ -2547,7 +2547,7 @@ dump_cfg_stats (FILE *file)
   num_edges = 0;
   FOR_EACH_BB_FN (bb, cfun)
     num_edges += EDGE_COUNT (bb->succs);
-  size = num_edges * sizeof (struct edge_def);
+  size = num_edges * sizeof (class edge_def);
   total += size;
   fprintf (file, fmt_str_2, "Edges", num_edges, SIZE_AMOUNT (size));
 
@@ -6383,7 +6383,7 @@ gimple_duplicate_sese_region (edge entry, edge exit,
 {
   unsigned i;
   bool free_region_copy = false, copying_header = false;
-  struct loop *loop = entry->dest->loop_father;
+  class loop *loop = entry->dest->loop_father;
   edge exit_copy;
   vec<basic_block> doms = vNULL;
   edge redirected;
@@ -6549,8 +6549,8 @@ gimple_duplicate_sese_tail (edge entry, edge exit,
 {
   unsigned i;
   bool free_region_copy = false;
-  struct loop *loop = exit->dest->loop_father;
-  struct loop *orig_loop = entry->dest->loop_father;
+  class loop *loop = exit->dest->loop_father;
+  class loop *orig_loop = entry->dest->loop_father;
   basic_block switch_bb, entry_bb, nentry_bb;
   vec<basic_block> doms;
   profile_count total_count = profile_count::uninitialized (),
@@ -6563,7 +6563,7 @@ gimple_duplicate_sese_tail (edge entry, edge exit,
   gphi_iterator psi;
   gphi *phi;
   tree def;
-  struct loop *target, *aloop, *cloop;
+  class loop *target, *aloop, *cloop;
 
   gcc_assert (EDGE_COUNT (exit->src->succs) == 2);
   exits[0] = exit;
@@ -7040,7 +7040,7 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
   /* Move BB from its current loop to the copy in the new function.  */
   if (current_loops)
     {
-      struct loop *new_loop = (struct loop *)bb->loop_father->aux;
+      class loop *new_loop = (class loop *)bb->loop_father->aux;
       if (new_loop)
 	bb->loop_father = new_loop;
     }
@@ -7088,7 +7088,14 @@ move_block_to_fn (struct function *dest_cfun, basic_block bb,
       if (virtual_operand_p (op))
 	{
 	  /* Remove the phi nodes for virtual operands (alias analysis will be
-	     run for the new function, anyway).  */
+	     run for the new function, anyway).  But replace all uses that
+	     might be outside of the region we move.  */
+	  use_operand_p use_p;
+	  imm_use_iterator iter;
+	  gimple *use_stmt;
+	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, op)
+	    FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+	      SET_USE (use_p, SSA_NAME_VAR (op));
           remove_phi_node (&psi, true);
 	  continue;
 	}
@@ -7304,7 +7311,7 @@ replace_block_vars_by_duplicates (tree block, hash_map<tree, tree> *vars_map,
 
 static void
 fixup_loop_arrays_after_move (struct function *fn1, struct function *fn2,
-			      struct loop *loop)
+			      class loop *loop)
 {
   /* Discard it from the old loop array.  */
   (*get_loops (fn1))[loop->num] = NULL;
@@ -7464,8 +7471,8 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   edge_iterator ei;
   htab_t new_label_map;
   hash_map<void *, void *> *eh_map;
-  struct loop *loop = entry_bb->loop_father;
-  struct loop *loop0 = get_loop (saved_cfun, 0);
+  class loop *loop = entry_bb->loop_father;
+  class loop *loop0 = get_loop (saved_cfun, 0);
   struct move_stmt_d d;
 
   /* If ENTRY does not strictly dominate EXIT, this cannot be an SESE
@@ -7573,8 +7580,8 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
     {
       if (bb->loop_father->header == bb)
 	{
-	  struct loop *this_loop = bb->loop_father;
-	  struct loop *outer = loop_outer (this_loop);
+	  class loop *this_loop = bb->loop_father;
+	  class loop *outer = loop_outer (this_loop);
 	  if (outer == loop
 	      /* If the SESE region contains some bbs ending with
 		 a noreturn call, those are considered to belong
@@ -7614,7 +7621,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 
   /* Fix up orig_loop_num.  If the block referenced in it has been moved
      to dest_cfun, update orig_loop_num field, otherwise clear it.  */
-  struct loop *dloop;
+  class loop *dloop;
   signed char *moved_orig_loop_num = NULL;
   FOR_EACH_LOOP_FN (dest_cfun, dloop, 0)
     if (dloop->orig_loop_num)
@@ -7722,14 +7729,14 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   loop0->aux = NULL;
   /* Loop sizes are no longer correct, fix them up.  */
   loop->num_nodes -= num_nodes;
-  for (struct loop *outer = loop_outer (loop);
+  for (class loop *outer = loop_outer (loop);
        outer; outer = loop_outer (outer))
     outer->num_nodes -= num_nodes;
   loop0->num_nodes -= bbs.length () - num_nodes;
 
   if (saved_cfun->has_simduid_loops || saved_cfun->has_force_vectorize_loops)
     {
-      struct loop *aloop;
+      class loop *aloop;
       for (i = 0; vec_safe_iterate (loops->larray, i, &aloop); i++)
 	if (aloop != NULL)
 	  {
@@ -8180,14 +8187,14 @@ print_loops_bb (FILE *file, basic_block bb, int indent, int verbosity)
     }
 }
 
-static void print_loop_and_siblings (FILE *, struct loop *, int, int);
+static void print_loop_and_siblings (FILE *, class loop *, int, int);
 
 /* Pretty print LOOP on FILE, indented INDENT spaces.  Following
    VERBOSITY level this outputs the contents of the loop, or just its
    structure.  */
 
 static void
-print_loop (FILE *file, struct loop *loop, int indent, int verbosity)
+print_loop (FILE *file, class loop *loop, int indent, int verbosity)
 {
   char *s_indent;
   basic_block bb;
@@ -8253,7 +8260,7 @@ print_loop (FILE *file, struct loop *loop, int indent, int verbosity)
    loop, or just its structure.  */
 
 static void
-print_loop_and_siblings (FILE *file, struct loop *loop, int indent,
+print_loop_and_siblings (FILE *file, class loop *loop, int indent,
 			 int verbosity)
 {
   if (loop == NULL)
@@ -8280,13 +8287,13 @@ print_loops (FILE *file, int verbosity)
 /* Dump a loop.  */
 
 DEBUG_FUNCTION void
-debug (struct loop &ref)
+debug (class loop &ref)
 {
   print_loop (stderr, &ref, 0, /*verbosity*/0);
 }
 
 DEBUG_FUNCTION void
-debug (struct loop *ptr)
+debug (class loop *ptr)
 {
   if (ptr)
     debug (*ptr);
@@ -8297,13 +8304,13 @@ debug (struct loop *ptr)
 /* Dump a loop verbosely.  */
 
 DEBUG_FUNCTION void
-debug_verbose (struct loop &ref)
+debug_verbose (class loop &ref)
 {
   print_loop (stderr, &ref, 0, /*verbosity*/3);
 }
 
 DEBUG_FUNCTION void
-debug_verbose (struct loop *ptr)
+debug_verbose (class loop *ptr)
 {
   if (ptr)
     debug (*ptr);
@@ -8323,7 +8330,7 @@ debug_loops (int verbosity)
 /* Print on stderr the code of LOOP, at some VERBOSITY level.  */
 
 DEBUG_FUNCTION void
-debug_loop (struct loop *loop, int verbosity)
+debug_loop (class loop *loop, int verbosity)
 {
   print_loop (stderr, loop, 0, verbosity);
 }

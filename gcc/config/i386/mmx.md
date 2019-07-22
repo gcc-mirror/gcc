@@ -1158,6 +1158,14 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define_expand "one_cmpl<mode>2"
+  [(set (match_operand:MMXMODEI 0 "register_operand")
+	(xor:MMXMODEI
+	  (match_operand:MMXMODEI 1 "register_operand")
+	  (match_dup 2)))]
+  "TARGET_MMX_WITH_SSE"
+  "operands[2] = force_reg (<MODE>mode, CONSTM1_RTX (<MODE>mode));")
+
 (define_insn "mmx_andnot<mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,Yv")
 	(and:MMXMODEI

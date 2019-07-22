@@ -56,6 +56,7 @@ package body Warnsw is
       Warn_On_Ada_2005_Compatibility      := Setting;
       Warn_On_Ada_2012_Compatibility      := Setting;
       Warn_On_All_Unread_Out_Parameters   := Setting;
+      Warn_On_Anonymous_Allocators        := Setting;
       Warn_On_Assertion_Failure           := Setting;
       Warn_On_Assumed_Low_Bound           := Setting;
       Warn_On_Atomic_Synchronization      := Setting;
@@ -129,6 +130,8 @@ package body Warnsw is
         W.Warn_On_Ada_2012_Compatibility;
       Warn_On_All_Unread_Out_Parameters   :=
         W.Warn_On_All_Unread_Out_Parameters;
+      Warn_On_Anonymous_Allocators        :=
+        W.Warn_On_Anonymous_Allocators;
       Warn_On_Assertion_Failure           :=
         W.Warn_On_Assertion_Failure;
       Warn_On_Assumed_Low_Bound           :=
@@ -235,6 +238,8 @@ package body Warnsw is
         Warn_On_Ada_2012_Compatibility;
       W.Warn_On_All_Unread_Out_Parameters   :=
         Warn_On_All_Unread_Out_Parameters;
+      W.Warn_On_Anonymous_Allocators        :=
+        Warn_On_Anonymous_Allocators;
       W.Warn_On_Assertion_Failure           :=
         Warn_On_Assertion_Failure;
       W.Warn_On_Assumed_Low_Bound           :=
@@ -478,6 +483,12 @@ package body Warnsw is
    function Set_Underscore_Warning_Switch (C : Character) return Boolean is
    begin
       case C is
+         when 'a' =>
+            Warn_On_Anonymous_Allocators := True;
+
+         when 'A' =>
+            Warn_On_Anonymous_Allocators := False;
+
          when others =>
             if Ignore_Unrecognized_VWY_Switches then
                Write_Line ("unrecognized switch -gnatw_" & C & " ignored");
@@ -705,6 +716,7 @@ package body Warnsw is
       Ineffective_Inline_Warnings         := True; -- -gnatwp
       Warn_On_Ada_2005_Compatibility      := True; -- -gnatwy
       Warn_On_Ada_2012_Compatibility      := True; -- -gnatwy
+      Warn_On_Anonymous_Allocators        := True; -- -gnatw_a
       Warn_On_Assertion_Failure           := True; -- -gnatw.a
       Warn_On_Assumed_Low_Bound           := True; -- -gnatww
       Warn_On_Bad_Fixed_Value             := True; -- -gnatwb

@@ -502,7 +502,7 @@ fold_build_cond_expr (tree type, tree cond, tree rhs, tree lhs)
    cd-equivalent if they are executed under the same condition.  */
 
 static inline void
-add_to_predicate_list (struct loop *loop, basic_block bb, tree nc)
+add_to_predicate_list (class loop *loop, basic_block bb, tree nc)
 {
   tree bc, *tp;
   basic_block dom_bb;
@@ -567,7 +567,7 @@ add_to_predicate_list (struct loop *loop, basic_block bb, tree nc)
    the loop to be if-converted.  */
 
 static void
-add_to_dst_predicate_list (struct loop *loop, edge e,
+add_to_dst_predicate_list (class loop *loop, edge e,
 			   tree prev_cond, tree cond)
 {
   if (!flow_bb_inside_loop_p (loop, e->dest))
@@ -584,7 +584,7 @@ add_to_dst_predicate_list (struct loop *loop, edge e,
 /* Return true if one of the successor edges of BB exits LOOP.  */
 
 static bool
-bb_with_exit_edge_p (struct loop *loop, basic_block bb)
+bb_with_exit_edge_p (class loop *loop, basic_block bb)
 {
   edge e;
   edge_iterator ei;
@@ -661,7 +661,7 @@ phi_convertible_by_degenerating_args (gphi *phi)
    ANY_COMPLICATED_PHI if PHI is complicated.  */
 
 static bool
-if_convertible_phi_p (struct loop *loop, basic_block bb, gphi *phi)
+if_convertible_phi_p (class loop *loop, basic_block bb, gphi *phi)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -756,7 +756,7 @@ idx_within_array_bound (tree ref, tree *idx, void *dta)
   widest_int niter, valid_niter, delta, wi_step;
   tree ev, init, step;
   tree low, high;
-  struct loop *loop = (struct loop*) dta;
+  class loop *loop = (class loop*) dta;
 
   /* Only support within-bound access for array references.  */
   if (TREE_CODE (ref) != ARRAY_REF)
@@ -822,7 +822,7 @@ idx_within_array_bound (tree ref, tree *idx, void *dta)
 static bool
 ref_within_array_bound (gimple *stmt, tree ref)
 {
-  struct loop *loop = loop_containing_stmt (stmt);
+  class loop *loop = loop_containing_stmt (stmt);
 
   gcc_assert (loop != NULL);
   return for_each_index (&ref, idx_within_array_bound, loop);
@@ -1128,7 +1128,7 @@ all_preds_critical_p (basic_block bb)
    inside LOOP.  */
 
 static bool
-if_convertible_bb_p (struct loop *loop, basic_block bb, basic_block exit_bb)
+if_convertible_bb_p (class loop *loop, basic_block bb, basic_block exit_bb)
 {
   edge e;
   edge_iterator ei;
@@ -1197,7 +1197,7 @@ pred_blocks_visited_p (basic_block bb, bitmap *visited)
    predecessors are already selected.  */
 
 static basic_block *
-get_loop_body_in_if_conv_order (const struct loop *loop)
+get_loop_body_in_if_conv_order (const class loop *loop)
 {
   basic_block *blocks, *blocks_in_bfs_order;
   basic_block bb;
@@ -1344,7 +1344,7 @@ predicate_bbs (loop_p loop)
 /* Build region by adding loop pre-header and post-header blocks.  */
 
 static vec<basic_block>
-build_region (struct loop *loop)
+build_region (class loop *loop)
 {
   vec<basic_block> region = vNULL;
   basic_block exit_bb = NULL;
@@ -1378,7 +1378,7 @@ build_region (struct loop *loop)
    in if_convertible_loop_p.  */
 
 static bool
-if_convertible_loop_p_1 (struct loop *loop, vec<data_reference_p> *refs)
+if_convertible_loop_p_1 (class loop *loop, vec<data_reference_p> *refs)
 {
   unsigned int i;
   basic_block exit_bb = NULL;
@@ -1518,7 +1518,7 @@ if_convertible_loop_p_1 (struct loop *loop, vec<data_reference_p> *refs)
    - if its basic blocks and phi nodes are if convertible.  */
 
 static bool
-if_convertible_loop_p (struct loop *loop)
+if_convertible_loop_p (class loop *loop)
 {
   edge e;
   edge_iterator ei;
@@ -1597,7 +1597,7 @@ is_cond_scalar_reduction (gimple *phi, gimple **reduc, tree arg_0, tree arg_1,
   gimple *header_phi = NULL;
   enum tree_code reduction_op;
   basic_block bb = gimple_bb (phi);
-  struct loop *loop = bb->loop_father;
+  class loop *loop = bb->loop_father;
   edge latch_e = loop_latch_edge (loop);
   imm_use_iterator imm_iter;
   use_operand_p use_p;
@@ -2004,7 +2004,7 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
    LOOP->header block with conditional modify expressions.  */
 
 static void
-predicate_all_scalar_phis (struct loop *loop)
+predicate_all_scalar_phis (class loop *loop)
 {
   basic_block bb;
   unsigned int orig_loop_num_nodes = loop->num_nodes;
@@ -2526,7 +2526,7 @@ remove_conditions_and_labels (loop_p loop)
    blocks.  Replace PHI nodes with conditional modify expressions.  */
 
 static void
-combine_blocks (struct loop *loop)
+combine_blocks (class loop *loop)
 {
   basic_block bb, exit_bb, merge_target_bb;
   unsigned int orig_loop_num_nodes = loop->num_nodes;
@@ -2719,12 +2719,12 @@ combine_blocks (struct loop *loop)
    out of LOOP_VECTORIZED must have 100% probability so the profile remains
    consistent after the condition is folded in the vectorizer.  */
 
-static struct loop *
-version_loop_for_if_conversion (struct loop *loop, vec<gimple *> *preds)
+static class loop *
+version_loop_for_if_conversion (class loop *loop, vec<gimple *> *preds)
 {
   basic_block cond_bb;
   tree cond = make_ssa_name (boolean_type_node);
-  struct loop *new_loop;
+  class loop *new_loop;
   gimple *g;
   gimple_stmt_iterator gsi;
   unsigned int save_length;
@@ -2781,7 +2781,7 @@ version_loop_for_if_conversion (struct loop *loop, vec<gimple *> *preds)
       inner loop's exit block.  */
 
 static bool
-versionable_outer_loop_p (struct loop *loop)
+versionable_outer_loop_p (class loop *loop)
 {
   if (!loop_outer (loop)
       || loop->dont_vectorize
@@ -2815,7 +2815,7 @@ versionable_outer_loop_p (struct loop *loop)
    Last restriction is valid only if AGGRESSIVE_IF_CONV is false.  */
 
 static bool
-ifcvt_split_critical_edges (struct loop *loop, bool aggressive_if_conv)
+ifcvt_split_critical_edges (class loop *loop, bool aggressive_if_conv)
 {
   basic_block *body;
   basic_block bb;
@@ -2982,11 +2982,11 @@ ifcvt_local_dce (basic_block bb)
    changed.  */
 
 unsigned int
-tree_if_conversion (struct loop *loop, vec<gimple *> *preds)
+tree_if_conversion (class loop *loop, vec<gimple *> *preds)
 {
   unsigned int todo = 0;
   bool aggressive_if_conv;
-  struct loop *rloop;
+  class loop *rloop;
   bitmap exit_bbs;
 
  again:
@@ -3001,7 +3001,7 @@ tree_if_conversion (struct loop *loop, vec<gimple *> *preds)
   aggressive_if_conv = loop->force_vectorize;
   if (!aggressive_if_conv)
     {
-      struct loop *outer_loop = loop_outer (loop);
+      class loop *outer_loop = loop_outer (loop);
       if (outer_loop && outer_loop->force_vectorize)
 	aggressive_if_conv = true;
     }
@@ -3027,10 +3027,10 @@ tree_if_conversion (struct loop *loop, vec<gimple *> *preds)
       || any_complicated_phi
       || flag_tree_loop_if_convert != 1)
     {
-      struct loop *vloop
+      class loop *vloop
 	= (versionable_outer_loop_p (loop_outer (loop))
 	   ? loop_outer (loop) : loop);
-      struct loop *nloop = version_loop_for_if_conversion (vloop, preds);
+      class loop *nloop = version_loop_for_if_conversion (vloop, preds);
       if (nloop == NULL)
 	goto cleanup;
       if (vloop != loop)
@@ -3138,7 +3138,7 @@ pass_if_conversion::gate (function *fun)
 unsigned int
 pass_if_conversion::execute (function *fun)
 {
-  struct loop *loop;
+  class loop *loop;
   unsigned todo = 0;
 
   if (number_of_loops (fun) <= 1)

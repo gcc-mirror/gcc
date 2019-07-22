@@ -430,6 +430,7 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_rtl_doloop);
 	  NEXT_PASS (pass_rtl_loop_done);
       POP_INSERT_PASSES ()
+      NEXT_PASS (pass_lower_subreg2);
       NEXT_PASS (pass_web);
       NEXT_PASS (pass_rtl_cprop);
       NEXT_PASS (pass_cse2);
@@ -443,7 +444,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_partition_blocks);
       NEXT_PASS (pass_outof_cfg_layout_mode);
       NEXT_PASS (pass_split_all_insns);
-      NEXT_PASS (pass_lower_subreg2);
+      NEXT_PASS (pass_lower_subreg3);
       NEXT_PASS (pass_df_initialize_no_opt);
       NEXT_PASS (pass_stack_ptr_mod);
       NEXT_PASS (pass_mode_switching);

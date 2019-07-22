@@ -43,10 +43,10 @@ package Bindo.Augmentors is
 
    package Library_Graph_Augmentors is
       procedure Augment_Library_Graph
-        (Inv_G : Invocation_Graph;
-         Lib_G : Library_Graph);
-      --  Augment library graph Lib_G with information from invocation graph
-      --  Inv_G as follows:
+        (Inv_Graph : Invocation_Graph;
+         Lib_Graph : Library_Graph);
+      --  Augment library graph Lib_Graph with information from invocation
+      --  graph Inv_Graph as follows:
       --
       --    1) Traverse the invocation graph starting from each elaboration
       --       procedure of unit Root.

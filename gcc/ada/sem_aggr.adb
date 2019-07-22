@@ -904,7 +904,7 @@ package body Sem_Aggr is
 
       --  If the aggregate has box-initialized components, its type must be
       --  frozen so that initialization procedures can properly be called
-      --  in the resolution that follows.  The replacement of boxes with
+      --  in the resolution that follows. The replacement of boxes with
       --  initialization calls is properly an expansion activity but it must
       --  be done during resolution.
 

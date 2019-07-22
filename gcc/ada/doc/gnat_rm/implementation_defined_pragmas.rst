@@ -719,7 +719,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Asynch_Readers [ (boolean_EXPRESSION) ];
+  pragma Async_Readers [ (boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Async_Readers`` in
 the SPARK 2014 Reference Manual, section 7.1.2.
@@ -733,7 +733,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Asynch_Writers [ (boolean_EXPRESSION) ];
+  pragma Async_Writers [ (boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Async_Writers`` in
 the SPARK 2014 Reference Manual, section 7.1.2.
@@ -2432,7 +2432,7 @@ with Import and Export pragmas.  There are two cases to consider:
   ``As_Is`` provides the normal default behavior in which the casing is
   taken from the string provided.
 
-This pragma may appear anywhere that a pragma is valid.  In particular, it
+This pragma may appear anywhere that a pragma is valid. In particular, it
 can be used as a configuration pragma in the :file:`gnat.adc` file, in which
 case it applies to all subsequent compilations, or it can be used as a program
 unit pragma, in which case it only applies to the current unit, or it can
@@ -2999,58 +2999,87 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Initialize_Scalars;
+  pragma Initialize_Scalars
+    [ ( TYPE_VALUE_PAIR {, TYPE_VALUE_PAIR} ) ];
+
+  TYPE_VALUE_PAIR ::=
+    SCALAR_TYPE => static_EXPRESSION
+
+  SCALAR_TYPE :=
+    Short_Float
+  | Float
+  | Long_Float
+  | Long_Long_Flat
+  | Signed_8
+  | Signed_16
+  | Signed_32
+  | Signed_64
+  | Unsigned_8
+  | Unsigned_16
+  | Unsigned_32
+  | Unsigned_64
 
 
-This pragma is similar to ``Normalize_Scalars`` conceptually but has
-two important differences.  First, there is no requirement for the pragma
-to be used uniformly in all units of a partition, in particular, it is fine
-to use this just for some or all of the application units of a partition,
-without needing to recompile the run-time library.
+This pragma is similar to ``Normalize_Scalars`` conceptually but has two
+important differences.
 
-In the case where some units are compiled with the pragma, and some without,
-then a declaration of a variable where the type is defined in package
-Standard or is locally declared will always be subject to initialization,
-as will any declaration of a scalar variable.  For composite variables,
-whether the variable is initialized may also depend on whether the package
-in which the type of the variable is declared is compiled with the pragma.
+First, there is no requirement for the pragma to be used uniformly in all units
+of a partition. In particular, it is fine to use this just for some or all of
+the application units of a partition, without needing to recompile the run-time
+library. In the case where some units are compiled with the pragma, and some
+without, then a declaration of a variable where the type is defined in package
+Standard or is locally declared will always be subject to initialization, as
+will any declaration of a scalar variable. For composite variables, whether the
+variable is initialized may also depend on whether the package in which the
+type of the variable is declared is compiled with the pragma.
 
-The other important difference is that you can control the value used
-for initializing scalar objects.  At bind time, you can select several
-options for initialization. You can
-initialize with invalid values (similar to Normalize_Scalars, though for
-Initialize_Scalars it is not always possible to determine the invalid
-values in complex cases like signed component fields with non-standard
-sizes). You can also initialize with high or
-low values, or with a specified bit pattern.  See the GNAT
-User's Guide for binder options for specifying these cases.
+The other important difference is that the programmer can control the value
+used for initializing scalar objects. This effect can be achieved in several
+different ways:
 
-This means that you can compile a program, and then without having to
-recompile the program, you can run it with different values being used
-for initializing otherwise uninitialized values, to test if your program
-behavior depends on the choice.  Of course the behavior should not change,
-and if it does, then most likely you have an incorrect reference to an
-uninitialized value.
+* At compile time, the programmer can specify the invalid value for a
+  particular family of scalar types using the optional arguments of the pragma.
 
-It is even possible to change the value at execution time eliminating even
-the need to rebind with a different switch using an environment variable.
-See the GNAT User's Guide for details.
+  The compile-time approach is intended to optimize the generated code for the
+  pragma, by possibly using fast operations such as ``memset``.
 
-Note that pragma ``Initialize_Scalars`` is particularly useful in
-conjunction with the enhanced validity checking that is now provided
-in GNAT, which checks for invalid values under more conditions.
-Using this feature (see description of the *-gnatV* flag in the
-GNAT User's Guide) in conjunction with
-pragma ``Initialize_Scalars``
-provides a powerful new tool to assist in the detection of problems
-caused by uninitialized variables.
+* At bind time, the programmer has several options:
 
-Note: the use of ``Initialize_Scalars`` has a fairly extensive
-effect on the generated code. This may cause your code to be
-substantially larger. It may also cause an increase in the amount
-of stack required, so it is probably a good idea to turn on stack
-checking (see description of stack checking in the GNAT
-User's Guide) when using this pragma.
+  * Initialization with invalid values (similar to Normalize_Scalars, though
+    for Initialize_Scalars it is not always possible to determine the invalid
+    values in complex cases like signed component fields with nonstandard
+    sizes).
+
+  * Initialization with high values.
+
+  * Initialization with low values.
+
+  * Initialization with a specific bit pattern.
+
+  See the GNAT User's Guide for binder options for specifying these cases.
+
+  The bind-time approach is intended to provide fast turnaround for testing
+  with different values, without having to recompile the program.
+
+* At execution time, the programmer can speify the invalid values using an
+  environment variable. See the GNAT User's Guide for details.
+
+  The execution-time approach is intended to provide fast turnaround for
+  testing with different values, without having to recompile and rebind the
+  program.
+
+Note that pragma ``Initialize_Scalars`` is particularly useful in conjunction
+with the enhanced validity checking that is now provided in GNAT, which checks
+for invalid values under more conditions. Using this feature (see description
+of the *-gnatV* flag in the GNAT User's Guide) in conjunction with pragma
+``Initialize_Scalars`` provides a powerful new tool to assist in the detection
+of problems caused by uninitialized variables.
+
+Note: the use of ``Initialize_Scalars`` has a fairly extensive effect on the
+generated code. This may cause your code to be substantially larger. It may
+also cause an increase in the amount of stack required, so it is probably a
+good idea to turn on stack checking (see description of stack checking in the
+GNAT User's Guide) when using this pragma.
 
 .. _Pragma-Initializes:
 

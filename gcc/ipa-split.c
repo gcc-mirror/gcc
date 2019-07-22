@@ -108,8 +108,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Per basic block info.  */
 
-struct split_bb_info
+class split_bb_info
 {
+public:
   unsigned int size;
   sreal time;
 };
@@ -118,8 +119,9 @@ static vec<split_bb_info> bb_info_vec;
 
 /* Description of split point.  */
 
-struct split_point
+class split_point
 {
+public:
   /* Size of the partitions.  */
   sreal header_time, split_time;
   unsigned int header_size, split_size;
@@ -144,7 +146,7 @@ struct split_point
 
 /* Best split point found.  */
 
-struct split_point best_split_point;
+class split_point best_split_point;
 
 /* Set of basic blocks that are not allowed to dominate a split point.  */
 
@@ -191,7 +193,7 @@ test_nonssa_use (gimple *, tree t, tree, void *data)
 /* Dump split point CURRENT.  */
 
 static void
-dump_split_point (FILE * file, struct split_point *current)
+dump_split_point (FILE * file, class split_point *current)
 {
   fprintf (file,
 	   "Split point at BB %i\n"
@@ -210,7 +212,7 @@ dump_split_point (FILE * file, struct split_point *current)
    Parameters are the same as for consider_split.  */
 
 static bool
-verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
+verify_non_ssa_vars (class split_point *current, bitmap non_ssa_vars,
 		     basic_block return_bb)
 {
   bitmap seen = BITMAP_ALLOC (NULL);
@@ -404,7 +406,7 @@ dominated_by_forbidden (basic_block bb)
 /* For give split point CURRENT and return block RETURN_BB return 1
    if ssa name VAL is set by split part and 0 otherwise.  */
 static bool
-split_part_set_ssa_name_p (tree val, struct split_point *current,
+split_part_set_ssa_name_p (tree val, class split_point *current,
 			   basic_block return_bb)
 {
   if (TREE_CODE (val) != SSA_NAME)
@@ -421,7 +423,7 @@ split_part_set_ssa_name_p (tree val, struct split_point *current,
    See if we can split function here.  */
 
 static void
-consider_split (struct split_point *current, bitmap non_ssa_vars,
+consider_split (class split_point *current, bitmap non_ssa_vars,
 		basic_block return_bb)
 {
   tree parm;
@@ -979,8 +981,9 @@ visit_bb (basic_block bb, basic_block return_bb,
 
 /* Stack entry for recursive DFS walk in find_split_point.  */
 
-struct stack_entry
+class stack_entry
 {
+public:
   /* Basic block we are examining.  */
   basic_block bb;
 
@@ -1032,7 +1035,7 @@ find_split_points (basic_block return_bb, sreal overall_time, int overall_size)
   stack_entry first;
   vec<stack_entry> stack = vNULL;
   basic_block bb;
-  struct split_point current;
+  class split_point current;
 
   current.header_time = overall_time;
   current.header_size = overall_size;
@@ -1178,7 +1181,7 @@ find_split_points (basic_block return_bb, sreal overall_time, int overall_size)
 /* Split function at SPLIT_POINT.  */
 
 static void
-split_function (basic_block return_bb, struct split_point *split_point,
+split_function (basic_block return_bb, class split_point *split_point,
 		bool add_tsan_func_exit)
 {
   vec<tree> args_to_pass = vNULL;

@@ -3104,7 +3104,8 @@ die_node;
 /* Set to TRUE while dwarf2out_early_global_decl is running.  */
 static bool early_dwarf;
 static bool early_dwarf_finished;
-struct set_early_dwarf {
+class set_early_dwarf {
+public:
   bool saved;
   set_early_dwarf () : saved(early_dwarf)
     {

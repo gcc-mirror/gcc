@@ -2176,7 +2176,9 @@ Block_statement::do_import(Import_function_body* ifb, Location loc,
   ifb->set_off(nl + 1);
   ifb->increment_indent();
   Block* block = new Block(ifb->block(), loc);
+  ifb->begin_block(block);
   bool ok = Block::import_block(block, ifb, loc);
+  ifb->finish_block();
   ifb->decrement_indent();
   if (!ok)
     return NULL;
@@ -5855,6 +5857,10 @@ Select_statement::lower_one_case(Block* b)
     Statement::make_block_statement(scase.statements(), scase.location());
   b->add_statement(bs);
 
+  Statement* label =
+    Statement::make_unnamed_label_statement(this->break_label());
+  b->add_statement(label);
+
   this->is_lowered_ = true;
   return Statement::make_block_statement(b, loc);
 }
@@ -5957,6 +5963,10 @@ Select_statement::lower_two_case(Block* b)
   Statement* ifs =
     Statement::make_if_statement(call, bchan, defcase.statements(), loc);
   b->add_statement(ifs);
+
+  Statement* label =
+    Statement::make_unnamed_label_statement(this->break_label());
+  b->add_statement(label);
 
   this->is_lowered_ = true;
   return Statement::make_block_statement(b, loc);

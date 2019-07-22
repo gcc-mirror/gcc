@@ -127,13 +127,27 @@ package Bindo.Writers is
    ---------------------------
 
    package Library_Graph_Writers is
-      procedure Write_Components (G : Library_Graph);
-      --  Write all components of library graph G to standard output
-
       procedure Write_Library_Graph (G : Library_Graph);
       --  Write library graph G to standard output
 
    end Library_Graph_Writers;
+
+   -------------------
+   -- Phase_Writers --
+   -------------------
+
+   package Phase_Writers is
+      procedure End_Phase (Phase : Elaboration_Phase);
+      pragma Inline (End_Phase);
+      --  Write the end message associated with elaboration phase Phase to
+      --  standard output.
+
+      procedure Start_Phase (Phase : Elaboration_Phase);
+      pragma Inline (Start_Phase);
+      --  Write the start message associated with elaboration phase Phase to
+      --  standard output.
+
+   end Phase_Writers;
 
    --------------------------
    -- Unit_Closure_Writers --

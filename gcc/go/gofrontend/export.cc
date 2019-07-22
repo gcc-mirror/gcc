@@ -111,7 +111,7 @@ class Collect_export_references : public Traverse
     : Traverse(traverse_expressions
                | traverse_types),
       exp_(exp), exports_(exports), imports_(imports),
-      inline_fcn_worklist_(NULL)
+      inline_fcn_worklist_(NULL), exports_finalized_(false)
   { }
 
   // Initial entry point; performs a walk to expand the exports set.
@@ -121,7 +121,7 @@ class Collect_export_references : public Traverse
   // Second entry point (called after the method above), to find
   // all types referenced by exports.
   void
-  prepare_types();
+  prepare_types(const std::vector<Named_object*>& sorted_exports);
 
  protected:
   // Override of parent class method.
@@ -141,6 +141,13 @@ class Collect_export_references : public Traverse
   traverse_named_type(Named_type*);
 
  private:
+
+  // Add a named object to the exports set (during expand_exports()).
+  // Returns TRUE if a new object was added to the exports set,
+  // FALSE otherwise.
+  bool
+  add_to_exports(Named_object*);
+
   // The exporter.
   Export* exp_;
   // The set of named objects to export.
@@ -152,6 +159,8 @@ class Collect_export_references : public Traverse
   // Worklist of functions we are exporting with inline bodies that need
   // to be checked.
   std::vector<Named_object*>* inline_fcn_worklist_;
+  // Set to true if expand_exports() has been called and is complete.
+  bool exports_finalized_;
 };
 
 void
@@ -172,6 +181,18 @@ Collect_export_references::expand_exports(std::vector<Named_object*>* fcns)
 	}
     }
   this->inline_fcn_worklist_ = NULL;
+  this->exports_finalized_ = true;
+}
+
+bool
+Collect_export_references::add_to_exports(Named_object* no)
+{
+  std::pair<Unordered_set(Named_object*)::iterator, bool> ins =
+      this->exports_->insert(no);
+  // If the export list has been finalized, then we should not be
+  // adding anything new to the exports set.
+  go_assert(!this->exports_finalized_ || !ins.second);
+  return ins.second;
 }
 
 int
@@ -189,7 +210,7 @@ Collect_export_references::expression(Expression** pexpr)
           if (var_package != NULL)
             this->imports_->insert(var_package);
 
-	  this->exports_->insert(no);
+	  this->add_to_exports(no);
 	  no->var_value()->set_is_referenced_by_inline();
 	}
       return TRAVERSE_CONTINUE;
@@ -210,17 +231,16 @@ Collect_export_references::expression(Expression** pexpr)
 
       if (this->inline_fcn_worklist_ != NULL)
         {
-          std::pair<Unordered_set(Named_object*)::iterator, bool> ins =
-              this->exports_->insert(no);
+          bool added = this->add_to_exports(no);
 
           if (no->is_function())
             no->func_value()->set_is_referenced_by_inline();
 
-          // If ins.second is false then this object was already in
+          // If 'added' is false then this object was already in
           // exports_, in which case it was already added to
           // check_inline_refs_ the first time we added it to exports_, so
           // we don't need to add it again.
-          if (ins.second
+          if (added
               && no->is_function()
               && no->func_value()->export_for_inlining())
             this->inline_fcn_worklist_->push_back(no);
@@ -238,11 +258,11 @@ Collect_export_references::expression(Expression** pexpr)
 // exported inline function from another package).
 
 void
-Collect_export_references::prepare_types()
+Collect_export_references::prepare_types(const std::vector<Named_object*>& sorted_exports)
 {
   // Iterate through the exported objects and traverse any types encountered.
-  for (Unordered_set(Named_object*)::iterator p = this->exports_->begin();
-       p != this->exports_->end();
+  for (std::vector<Named_object*>::const_iterator p = sorted_exports.begin();
+       p != sorted_exports.end();
        ++p)
     {
       Named_object* no = *p;
@@ -506,7 +526,8 @@ Export::export_globals(const std::string& package_name,
 		       const std::map<std::string, Package*>& imports,
 		       const std::string& import_init_fn,
                        const Import_init_set& imported_init_fns,
-		       const Bindings* bindings)
+		       const Bindings* bindings,
+                       Unordered_set(Named_object*)* functions_marked_inline)
 {
   // If there have been any errors so far, don't try to export
   // anything.  That way the export code doesn't have to worry about
@@ -520,35 +541,21 @@ Export::export_globals(const std::string& package_name,
   // CHECK_INLINE_REFS is also on EXPORTS.
   Unordered_set(Named_object*) exports;
   std::vector<Named_object*> check_inline_refs;
+  check_inline_refs.reserve(functions_marked_inline->size());
+
+  // Add all functions/methods from the "marked inlined" set to the
+  // CHECK_INLINE_REFS worklist.
+  for (Unordered_set(Named_object*)::const_iterator p = functions_marked_inline->begin();
+       p != functions_marked_inline->end();
+       ++p)
+      check_inline_refs.push_back(*p);
 
   for (Bindings::const_definitions_iterator p = bindings->begin_definitions();
        p != bindings->end_definitions();
        ++p)
     {
       if (should_export(*p))
-	{
-	  exports.insert(*p);
-
-	  if ((*p)->is_function()
-	      && (*p)->func_value()->export_for_inlining())
-	    check_inline_refs.push_back(*p);
-	  else if ((*p)->is_type())
-	    {
-	      const Bindings* methods = (*p)->type_value()->local_methods();
-	      if (methods != NULL)
-		{
-		  for (Bindings::const_definitions_iterator pm =
-			 methods->begin_definitions();
-		       pm != methods->end_definitions();
-		       ++pm)
-		    {
-		      Function* fn = (*pm)->func_value();
-		      if (fn->export_for_inlining())
-			check_inline_refs.push_back(*pm);
-		    }
-		}
-	    }
-	}
+        exports.insert(*p);
     }
 
   for (Bindings::const_declarations_iterator p =
@@ -593,7 +600,7 @@ Export::export_globals(const std::string& package_name,
 
   // Collect up the set of types mentioned in things we're exporting,
   // and any packages that may be referred to indirectly.
-  collect.prepare_types();
+  collect.prepare_types(sorted_exports);
 
   // Assign indexes to all exported types and types referenced by
   // things we're exporting.  Return value is index of first non-exported

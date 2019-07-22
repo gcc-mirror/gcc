@@ -22,8 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_IPA_REF_H
 
 struct cgraph_node;
-class varpool_node;
-class symtab_node;
+struct varpool_node;
+struct symtab_node;
 
 
 /* How the reference is done.  */

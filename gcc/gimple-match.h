@@ -43,8 +43,9 @@ private:
 /* Represents the condition under which an operation should happen,
    and the value to use otherwise.  The condition applies elementwise
    (as for VEC_COND_EXPR) if the values are vectors.  */
-struct gimple_match_cond
+class gimple_match_cond
 {
+public:
   enum uncond { UNCOND };
 
   /* Build an unconditional op.  */
@@ -79,8 +80,9 @@ gimple_match_cond::any_else () const
 
 /* Represents an operation to be simplified, or the result of the
    simplification.  */
-struct gimple_match_op
+class gimple_match_op
 {
+public:
   gimple_match_op ();
   gimple_match_op (const gimple_match_cond &, code_helper, tree, unsigned int);
   gimple_match_op (const gimple_match_cond &,
@@ -104,6 +106,8 @@ struct gimple_match_op
   void set_value (tree);
 
   tree op_or_null (unsigned int) const;
+
+  bool resimplify (gimple_seq *, tree (*)(tree));
 
   /* The maximum value of NUM_OPS.  */
   static const unsigned int MAX_NUM_OPS = 5;
@@ -331,11 +335,6 @@ extern tree (*mprts_hook) (gimple_match_op *);
 
 bool gimple_simplify (gimple *, gimple_match_op *, gimple_seq *,
 		      tree (*)(tree), tree (*)(tree));
-bool gimple_resimplify1 (gimple_seq *, gimple_match_op *, tree (*)(tree));
-bool gimple_resimplify2 (gimple_seq *, gimple_match_op *, tree (*)(tree));
-bool gimple_resimplify3 (gimple_seq *, gimple_match_op *, tree (*)(tree));
-bool gimple_resimplify4 (gimple_seq *, gimple_match_op *, tree (*)(tree));
-bool gimple_resimplify5 (gimple_seq *, gimple_match_op *, tree (*)(tree));
 tree maybe_push_res_to_seq (gimple_match_op *, gimple_seq *,
 			    tree res = NULL_TREE);
 void maybe_build_generic_op (gimple_match_op *);

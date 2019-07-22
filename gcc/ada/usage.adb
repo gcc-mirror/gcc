@@ -483,6 +483,8 @@ begin
    Write_Line ("        A    turn off all optional info/warnings");
    Write_Line ("        .a*+ turn on warnings for failing assertion");
    Write_Line ("        .A   turn off warnings for failing assertion");
+   Write_Line ("        _a*+ turn on warnings for anonymous allocators");
+   Write_Line ("        _A   turn off warnings for anonymous allocators");
    Write_Line ("        b+   turn on warnings for bad fixed value " &
                                                   "(not multiple of small)");
    Write_Line ("        B*   turn off warnings for bad fixed value " &

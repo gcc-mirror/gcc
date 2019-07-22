@@ -176,8 +176,9 @@ test_union ()
 
 /* Verify that destructors get run when instances are collected.  */
 
-struct GTY(()) test_struct_with_dtor
+class GTY(()) test_struct_with_dtor
 {
+public:
   /* This struct has a destructor; it *ought* to be called
      by the ggc machinery when instances are collected.  */
   ~test_struct_with_dtor () { dtor_call_count++; }

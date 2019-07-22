@@ -943,7 +943,7 @@ strtolinenum (const uchar *str, size_t len, linenum_type *nump, bool *wrapped)
 static void
 do_line (cpp_reader *pfile)
 {
-  struct line_maps *line_table = pfile->line_table;
+  class line_maps *line_table = pfile->line_table;
   const line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
 
   /* skip_rest_of_line() may cause line table to be realloc()ed so note down
@@ -1006,7 +1006,7 @@ do_line (cpp_reader *pfile)
 static void
 do_linemarker (cpp_reader *pfile)
 {
-  struct line_maps *line_table = pfile->line_table;
+  class line_maps *line_table = pfile->line_table;
   const line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (line_table);
   const cpp_token *token;
   const char *new_file = ORDINARY_MAP_FILE_NAME (map);
@@ -2544,7 +2544,7 @@ cpp_set_callbacks (cpp_reader *pfile, cpp_callbacks *cb)
 }
 
 /* The dependencies structure.  (Creates one if it hasn't already been.)  */
-struct mkdeps *
+class mkdeps *
 cpp_get_deps (cpp_reader *pfile)
 {
   if (!pfile->deps)

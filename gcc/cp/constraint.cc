@@ -517,8 +517,9 @@ get_concept_definition (tree decl)
 
 int expansion_level = 0;
 
-struct expanding_concept_sentinel
+class expanding_concept_sentinel
 {
+public:
   expanding_concept_sentinel ()
   {
     ++expansion_level;

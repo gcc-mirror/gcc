@@ -57,7 +57,7 @@ compilation is specified by a string called a "spec".  */
      getenv ();
    Hence we need to use "get" for the accessor method, not "getenv".  */
 
-class env_manager
+struct env_manager
 {
  public:
   void init (bool can_restore, bool debug);
@@ -8579,7 +8579,7 @@ static int n_mdswitches;
 /* Check whether a particular argument was used.  The first time we
    canonicalize the switches to keep only the ones we care about.  */
 
-class used_arg_t
+struct used_arg_t
 {
  public:
   int operator () (const char *p, int len);

@@ -53,7 +53,7 @@ package body Erroutc is
 
    function Matches (S : String; P : String) return Boolean;
    --  Returns true if the String S patches the pattern P, which can contain
-   --  wild card chars (*). The entire pattern must match the entire string.
+   --  wildcard chars (*). The entire pattern must match the entire string.
    --  Case is ignored in the comparison (so X matches x).
 
    function Sloc_In_Range (Loc, Start, Stop : Source_Ptr) return Boolean;

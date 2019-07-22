@@ -27,7 +27,12 @@ with Debug;  use Debug;
 with Output; use Output;
 with Types;  use Types;
 
-with Bindo.Units; use Bindo.Units;
+with Bindo.Units;
+use  Bindo.Units;
+
+with Bindo.Writers;
+use  Bindo.Writers;
+use  Bindo.Writers.Phase_Writers;
 
 package body Bindo.Validators is
 
@@ -140,7 +145,7 @@ package body Bindo.Validators is
 
          Edges := LGE_Sets.Create (Length (G, Cycle));
 
-         --  Inspect the edges of the cucle, trying to catch duplicates
+         --  Inspect the edges of the cycle, trying to catch duplicates
 
          Iter := Iterate_Edges_Of_Cycle (G, Cycle);
          while Has_Next (Iter) loop
@@ -155,7 +160,7 @@ package body Bindo.Validators is
 
                Write_Str ("  library graph edge (LGE_Id_");
                Write_Int (Int (Edge));
-               Write_Str (") is repeaded in cycle (LGC_Id_");
+               Write_Str (") is repeated in cycle (LGC_Id_");
                Write_Int (Int (Cycle));
                Write_Str (")");
                Write_Eol;
@@ -188,12 +193,16 @@ package body Bindo.Validators is
             return;
          end if;
 
+         Start_Phase (Cycle_Validation);
+
          Iter := Iterate_All_Cycles (G);
          while Has_Next (Iter) loop
             Next (Iter, Cycle);
 
             Validate_Cycle (G, Cycle);
          end loop;
+
+         End_Phase (Cycle_Validation);
 
          if Has_Invalid_Cycle then
             raise Invalid_Cycle;
@@ -330,7 +339,11 @@ package body Bindo.Validators is
             return;
          end if;
 
+         Start_Phase (Elaboration_Order_Validation);
+
          Validate_Units (Order);
+
+         End_Phase (Elaboration_Order_Validation);
 
          if Has_Invalid_Data then
             raise Invalid_Elaboration_Order;
@@ -378,7 +391,7 @@ package body Bindo.Validators is
          --  Validate each unit in the elaboration order against the set of
          --  units that need to be elaborated.
 
-         for Index in Unit_Id_Tables.First ..  Unit_Id_Tables.Last (Order) loop
+         for Index in Unit_Id_Tables.First .. Unit_Id_Tables.Last (Order) loop
             Validate_Unit
               (U_Id     => Order.Table (Index),
                Elab_Set => Elab_Set);
@@ -421,7 +434,7 @@ package body Bindo.Validators is
         (G      : Invocation_Graph;
          Vertex : Invocation_Graph_Vertex_Id);
       pragma Inline (Validate_Invocation_Graph_Vertex);
-      --  Verify that the attributes of vertex Vertex of inbocation graph G are
+      --  Verify that the attributes of vertex Vertex of invocation graph G are
       --  properly set.
 
       procedure Validate_Invocation_Graph_Vertices (G : Invocation_Graph);
@@ -444,8 +457,12 @@ package body Bindo.Validators is
             return;
          end if;
 
+         Start_Phase (Invocation_Graph_Validation);
+
          Validate_Invocation_Graph_Vertices (G);
-         Validate_Invocation_Graph_Edges (G);
+         Validate_Invocation_Graph_Edges    (G);
+
+         End_Phase (Invocation_Graph_Validation);
 
          if Has_Invalid_Data then
             raise Invalid_Invocation_Graph;
@@ -468,7 +485,7 @@ package body Bindo.Validators is
          if not Present (Edge) then
             Write_Error (Msg, Has_Invalid_Data);
 
-            Write_Str ("  emply invocation graph edge");
+            Write_Str ("  empty invocation graph edge");
             Write_Eol;
             Write_Eol;
             return;
@@ -530,7 +547,7 @@ package body Bindo.Validators is
          if not Present (Vertex) then
             Write_Error (Msg, Has_Invalid_Data);
 
-            Write_Str ("  emply invocation graph vertex");
+            Write_Str ("  empty invocation graph vertex");
             Write_Eol;
             Write_Eol;
             return;
@@ -638,8 +655,12 @@ package body Bindo.Validators is
             return;
          end if;
 
+         Start_Phase (Library_Graph_Validation);
+
          Validate_Library_Graph_Vertices (G);
-         Validate_Library_Graph_Edges (G);
+         Validate_Library_Graph_Edges    (G);
+
+         End_Phase (Library_Graph_Validation);
 
          if Has_Invalid_Data then
             raise Invalid_Library_Graph;
@@ -662,7 +683,7 @@ package body Bindo.Validators is
          if not Present (Edge) then
             Write_Error (Msg, Has_Invalid_Data);
 
-            Write_Str ("  emply library graph edge");
+            Write_Str ("  empty library graph edge");
             Write_Eol;
             Write_Eol;
             return;

@@ -1931,15 +1931,19 @@ decls_mismatched_attributes (tree tmpl, tree decl, tree attrlist,
 	  if (!has_attribute (tmpls[j], tmpl_attrs[j], blacklist[i]))
 	    continue;
 
+	  bool found = false;
 	  unsigned kmax = 1 + !!decl_attrs[1];
 	  for (unsigned k = 0; k != kmax; ++k)
 	    {
 	      if (has_attribute (decls[k], decl_attrs[k], blacklist[i]))
-		break;
+		{
+		  found = true;
+		  break;
+		}
+	    }
 
-	      if (!k && kmax > 1)
-		continue;
-
+	  if (!found)
+	    {
 	      if (nattrs)
 		pp_string (attrstr, ", ");
 	      pp_begin_quote (attrstr, pp_show_color (global_dc->printer));
@@ -1947,6 +1951,8 @@ decls_mismatched_attributes (tree tmpl, tree decl, tree attrlist,
 	      pp_end_quote (attrstr, pp_show_color (global_dc->printer));
 	      ++nattrs;
 	    }
+
+	  break;
 	}
     }
 

@@ -436,14 +436,10 @@ inline namespace fundamentals_v1
 
   // [string.view.comparison], non-member basic_string_view comparison functions
 
-  namespace __detail
-  {
-    // Identity transform to create a non-deduced context, so that only one
-    // argument participates in template argument deduction and the other
-    // argument gets implicitly converted to the deduced type. See n3766.html.
-    template<typename _Tp>
-      using __idt = common_type_t<_Tp>;
-  }
+  // Several of these functions use type_identity_t to create a non-deduced
+  // context, so that only one argument participates in template argument
+  // deduction and the other argument gets implicitly converted to the deduced
+  // type (see N3766).
 
   template<typename _CharT, typename _Traits>
     constexpr bool
@@ -454,12 +450,13 @@ inline namespace fundamentals_v1
   template<typename _CharT, typename _Traits>
     constexpr bool
     operator==(basic_string_view<_CharT, _Traits> __x,
-               __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
+               __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+    noexcept
     { return __x.size() == __y.size() && __x.compare(__y) == 0; }
 
   template<typename _CharT, typename _Traits>
     constexpr bool
-    operator==(__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
+    operator==(__type_identity_t<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.size() == __y.size() && __x.compare(__y) == 0; }
 
@@ -472,12 +469,13 @@ inline namespace fundamentals_v1
   template<typename _CharT, typename _Traits>
     constexpr bool
     operator!=(basic_string_view<_CharT, _Traits> __x,
-               __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
+               __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+    noexcept
     { return !(__x == __y); }
 
   template<typename _CharT, typename _Traits>
     constexpr bool
-    operator!=(__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
+    operator!=(__type_identity_t<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return !(__x == __y); }
 
@@ -490,12 +488,13 @@ inline namespace fundamentals_v1
   template<typename _CharT, typename _Traits>
     constexpr bool
     operator< (basic_string_view<_CharT, _Traits> __x,
-               __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
+               __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+    noexcept
     { return __x.compare(__y) < 0; }
 
   template<typename _CharT, typename _Traits>
     constexpr bool
-    operator< (__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
+    operator< (__type_identity_t<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) < 0; }
 
@@ -508,12 +507,13 @@ inline namespace fundamentals_v1
   template<typename _CharT, typename _Traits>
     constexpr bool
     operator> (basic_string_view<_CharT, _Traits> __x,
-               __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
+               __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+    noexcept
     { return __x.compare(__y) > 0; }
 
   template<typename _CharT, typename _Traits>
     constexpr bool
-    operator> (__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
+    operator> (__type_identity_t<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) > 0; }
 
@@ -526,12 +526,13 @@ inline namespace fundamentals_v1
   template<typename _CharT, typename _Traits>
     constexpr bool
     operator<=(basic_string_view<_CharT, _Traits> __x,
-               __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
+               __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+    noexcept
     { return __x.compare(__y) <= 0; }
 
   template<typename _CharT, typename _Traits>
     constexpr bool
-    operator<=(__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
+    operator<=(__type_identity_t<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) <= 0; }
 
@@ -544,12 +545,13 @@ inline namespace fundamentals_v1
   template<typename _CharT, typename _Traits>
     constexpr bool
     operator>=(basic_string_view<_CharT, _Traits> __x,
-               __detail::__idt<basic_string_view<_CharT, _Traits>> __y) noexcept
+               __type_identity_t<basic_string_view<_CharT, _Traits>> __y)
+    noexcept
     { return __x.compare(__y) >= 0; }
 
   template<typename _CharT, typename _Traits>
     constexpr bool
-    operator>=(__detail::__idt<basic_string_view<_CharT, _Traits>> __x,
+    operator>=(__type_identity_t<basic_string_view<_CharT, _Traits>> __x,
                basic_string_view<_CharT, _Traits> __y) noexcept
     { return __x.compare(__y) >= 0; }
 

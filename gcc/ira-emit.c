@@ -997,23 +997,30 @@ emit_moves (void)
   basic_block bb;
   edge_iterator ei;
   edge e;
-  rtx_insn *insns, *tmp;
+  rtx_insn *insns, *tmp, *next;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
       if (at_bb_start[bb->index] != NULL)
 	{
 	  at_bb_start[bb->index] = modify_move_list (at_bb_start[bb->index]);
-	  insns = emit_move_list (at_bb_start[bb->index],
-				  REG_FREQ_FROM_BB (bb));
+	  insns
+	    = emit_move_list (at_bb_start[bb->index], REG_FREQ_FROM_BB (bb));
 	  tmp = BB_HEAD (bb);
 	  if (LABEL_P (tmp))
 	    tmp = NEXT_INSN (tmp);
 	  if (NOTE_INSN_BASIC_BLOCK_P (tmp))
 	    tmp = NEXT_INSN (tmp);
+	  /* Make sure to put the location of TMP or a subsequent instruction
+	     to avoid inheriting the location of the previous instruction.  */
+	  next = tmp;
+	  while (next && !NONDEBUG_INSN_P (next))
+	    next = NEXT_INSN (next);
+	  if (next)
+	    set_insn_locations (insns, INSN_LOCATION (next));
 	  if (tmp == BB_HEAD (bb))
 	    emit_insn_before (insns, tmp);
-	  else if (tmp != NULL_RTX)
+	  else if (tmp)
 	    emit_insn_after (insns, PREV_INSN (tmp));
 	  else
 	    emit_insn_after (insns, get_last_insn ());

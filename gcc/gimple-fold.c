@@ -6716,14 +6716,13 @@ fold_array_ctor_reference (tree type, tree ctor,
   elt_size = wi::to_offset (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ctor))));
 
   /* When TYPE is non-null, verify that it specifies a constant-sized
-     accessed not larger than size of array element.  Avoid division
+     access of a multiple of the array element size.  Avoid division
      by zero below when ELT_SIZE is zero, such as with the result of
      an initializer for a zero-length array or an empty struct.  */
   if (elt_size == 0
       || (type
 	  && (!TYPE_SIZE_UNIT (type)
-	      || TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST
-	      || elt_size < wi::to_offset (TYPE_SIZE_UNIT (type)))))
+	      || TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST)))
     return NULL_TREE;
 
   /* Compute the array index we look for.  */
@@ -6734,10 +6733,88 @@ fold_array_ctor_reference (tree type, tree ctor,
   /* And offset within the access.  */
   inner_offset = offset % (elt_size.to_uhwi () * BITS_PER_UNIT);
 
-  /* See if the array field is large enough to span whole access.  We do not
-     care to fold accesses spanning multiple array indexes.  */
-  if (inner_offset + size > elt_size.to_uhwi () * BITS_PER_UNIT)
-    return NULL_TREE;
+  if (size > elt_size.to_uhwi () * BITS_PER_UNIT)
+    {
+      /* native_encode_expr constraints.  */
+      if (size > MAX_BITSIZE_MODE_ANY_MODE
+	  || size % BITS_PER_UNIT != 0
+	  || inner_offset % BITS_PER_UNIT != 0)
+	return NULL_TREE;
+
+      unsigned ctor_idx;
+      tree val = get_array_ctor_element_at_index (ctor, access_index,
+						  &ctor_idx);
+      if (!val && ctor_idx >= CONSTRUCTOR_NELTS  (ctor))
+	return build_zero_cst (type);
+
+      /* native-encode adjacent ctor elements.  */
+      unsigned char buf[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
+      unsigned bufoff = 0;
+      offset_int index = 0;
+      offset_int max_index = access_index;
+      constructor_elt *elt = CONSTRUCTOR_ELT (ctor, ctor_idx);
+      if (!val)
+	val = build_zero_cst (TREE_TYPE (TREE_TYPE (ctor)));
+      else if (!CONSTANT_CLASS_P (val))
+	return NULL_TREE;
+      if (!elt->index)
+	;
+      else if (TREE_CODE (elt->index) == RANGE_EXPR)
+	{
+	  index = wi::to_offset (TREE_OPERAND (elt->index, 0));
+	  max_index = wi::to_offset (TREE_OPERAND (elt->index, 1));
+	}
+      else
+	index = max_index = wi::to_offset (elt->index);
+      index = wi::umax (index, access_index);
+      do
+	{
+	  int len = native_encode_expr (val, buf + bufoff,
+					elt_size.to_uhwi (),
+					inner_offset / BITS_PER_UNIT);
+	  if (len != elt_size - inner_offset / BITS_PER_UNIT)
+	    return NULL_TREE;
+	  inner_offset = 0;
+	  bufoff += len;
+
+	  access_index += 1;
+	  if (wi::cmpu (access_index, index) == 0)
+	    val = elt->value;
+	  else if (wi::cmpu (access_index, max_index) > 0)
+	    {
+	      ctor_idx++;
+	      if (ctor_idx >= CONSTRUCTOR_NELTS (ctor))
+		{
+		  val = build_zero_cst (TREE_TYPE (TREE_TYPE (ctor)));
+		  ++max_index;
+		}
+	      else
+		{
+		  elt = CONSTRUCTOR_ELT (ctor, ctor_idx);
+		  index = 0;
+		  max_index = access_index;
+		  if (!elt->index)
+		    ;
+		  else if (TREE_CODE (elt->index) == RANGE_EXPR)
+		    {
+		      index = wi::to_offset (TREE_OPERAND (elt->index, 0));
+		      max_index = wi::to_offset (TREE_OPERAND (elt->index, 1));
+		    }
+		  else
+		    index = max_index = wi::to_offset (elt->index);
+		  index = wi::umax (index, access_index);
+		  if (wi::cmpu (access_index, index) == 0)
+		    val = elt->value;
+		  else
+		    val = build_zero_cst (TREE_TYPE (TREE_TYPE (ctor)));
+		}
+	    }
+	}
+      while (bufoff < size / BITS_PER_UNIT);
+      *suboff += size;
+      return native_interpret_expr (type, buf, size / BITS_PER_UNIT);
+    }
+
   if (tree val = get_array_ctor_element_at_index (ctor, access_index))
     {
       if (!size && TREE_CODE (val) != CONSTRUCTOR)

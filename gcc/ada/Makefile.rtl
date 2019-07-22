@@ -387,6 +387,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-arrspl$(objext) \
   g-awk$(objext) \
   g-binenv$(objext) \
+  g-brapre$(objext) \
   g-bubsor$(objext) \
   g-busora$(objext) \
   g-busorg$(objext) \
@@ -867,7 +868,7 @@ GCC_SPEC_FILES=
 # If what's left is null then it's a match.
 
 # PowerPC and e500v2 VxWorks
-ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7 vxworks7spe,$(target_cpu) $(target_vendor) $(target_os))),)
+ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7% vxworks7spe,$(target_cpu) $(target_vendor) $(target_os))),)
 
   ifeq ($(strip $(filter-out e500%, $(target_alias))),)
      ARCH_STR=e500
@@ -1118,7 +1119,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworksae,$(target_cpu) $(target_vendor) $(ta
 endif
 
 # x86/x86_64 VxWorks
-ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(target_vendor) $(target_os))),)
+ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7%,$(target_cpu) $(target_vendor) $(target_os))),)
 
   EH_MECHANISM=-gcc
 
@@ -1521,7 +1522,6 @@ ifeq ($(strip $(filter-out %86 linux%,$(target_cpu) $(target_os))),)
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   $(TRASYM_DWARF_UNIX_PAIRS) \
-  g-sercom.adb<libgnat/g-sercom__linux.adb \
   s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   a-exetim.adb<libgnarl/a-exetim__posix.adb \
   a-exetim.ads<libgnarl/a-exetim__default.ads \
@@ -2046,7 +2046,6 @@ ifeq ($(strip $(filter-out mips% linux%,$(target_cpu) $(target_os))),)
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
   s-taspri.ads<libgnarl/s-taspri__posix-noaltstack.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
-  g-sercom.adb<libgnat/g-sercom__linux.adb \
   system.ads<libgnat/system-linux-mips.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
@@ -2072,7 +2071,6 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux.ads \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
-  g-sercom.adb<libgnat/g-sercom__linux.adb \
   $(TRASYM_DWARF_UNIX_PAIRS) \
   s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
@@ -2151,7 +2149,6 @@ ifeq ($(strip $(filter-out aarch64% linux%,$(target_cpu) $(target_os))),)
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
-  g-sercom.adb<libgnat/g-sercom__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-linux-arm.ads
@@ -2296,7 +2293,6 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(target_cpu) $(target_os))),)
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   s-taspri.ads<libgnarl/s-taspri__posix-noaltstack.ads \
-  g-sercom.adb<libgnat/g-sercom__linux.adb \
   $(TRASYM_DWARF_UNIX_PAIRS) \
   s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
@@ -2393,7 +2389,6 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(target_cpu) $(target_os))),)
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
-  g-sercom.adb<libgnat/g-sercom__linux.adb \
   $(TRASYM_DWARF_UNIX_PAIRS) \
   s-tsmona.adb<libgnat/s-tsmona__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
@@ -2435,7 +2430,6 @@ ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
-  g-sercom.adb<libgnat/g-sercom__linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_64_TARGET_PAIRS) \
   system.ads<libgnat/system-linux-x86.ads
@@ -2466,7 +2460,6 @@ ifeq ($(strip $(filter-out riscv% linux%,$(target_cpu) $(target_os))),)
   s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
   s-taspri.ads<libgnarl/s-taspri__posix-noaltstack.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
-  g-sercom.adb<libgnat/g-sercom__linux.adb \
   system.ads<libgnat/system-linux-riscv.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
@@ -2594,6 +2587,11 @@ ifeq ($(EH_MECHANISM),-arm)
   EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o
 endif
 
+ifeq ($(strip $(filter-out linux%,$(target_os))),)
+  LIBGNAT_TARGET_PAIRS += \
+    g-sercom.adb<libgnat/g-sercom__linux.adb
+endif
+
 # LIBGNAT_SRCS is the list of all C files (including headers) of the runtime
 # library.  LIBGNAT_OBJS is the list of object files for libgnat.
 # thread.c is special as put into GNATRTL_TASKING_OBJS
@@ -2612,7 +2610,7 @@ LIBGNAT_OBJS = adadecode.o adaint.o argv.o aux-io.o 			\
 
 LIBGNAT_SRCS = $(patsubst %.o,%.c,$(LIBGNAT_OBJS))			\
   adadecode.h adaint.h env.h gsocket.h raise.h standard.ads.h		\
-  tb-gcc.c libgnarl/thread.c $(EXTRA_LIBGNAT_SRCS)
+  tb-gcc.c runtime.h libgnarl/thread.c $(EXTRA_LIBGNAT_SRCS)
 
 # memtrack.o is special as not put into libgnat.
 GNATRTL_OBJS = $(GNATRTL_NONTASKING_OBJS) $(GNATRTL_TASKING_OBJS) \
@@ -2689,9 +2687,15 @@ setup-rts: force
 	          $(LN_S) $(GNAT_SRC)/$(word 2,$(subst <, ,$(PAIR))) \
 	                $(RTSDIR)/$(word 1,$(subst <, ,$(PAIR)));)
 
-# Special flags
+# Special flags. It is recommended not to change the compilation flags
+# without a careful analysis of the consequences because (part of) the
+# runtime implements low-level support that is outside of the semantics
+# of the language and therefore needs to be treated differently from the
+# other units. For example, the part of the runtime implementing the
+# propagation of exceptions cannot itself be compiled with checks that
+# may give rise to exceptions, e.g. stack overflow checks.
 
-# force no sibling call optimization on s-traceb.o so the number of stack
+# Force no sibling call optimization on s-traceb.o so the number of stack
 # frames to be skipped when computing a call chain is not modified by
 # optimization. We don't want inlining, either.
 
@@ -2700,14 +2704,14 @@ s-traceb.o  : s-traceb.adb s-traceb.ads
 	  $(NO_INLINE_ADAFLAGS) $(NO_SIBLING_ADAFLAGS) $(ADA_INCLUDES) $< \
 	  $(OUTPUT_OPTION)
 
-# compile s-tasdeb.o without optimization and with debug info so that it is
+# Compile s-tasdeb.o without optimization and with debug info so that it is
 # always possible to set conditional breakpoints on tasks.
 
 s-tasdeb.o  : s-tasdeb.adb s-tasdeb.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
-# force no function reordering on a-except.o because of the exclusion bounds
+# Force no function reordering on a-except.o because of the exclusion bounds
 # mechanism (see the source file for more detailed information).
 # force debugging information on a-except.o so that it is always
 # possible to set conditional breakpoints on exceptions.
@@ -2718,7 +2722,7 @@ a-except.o  : a-except.adb a-except.ads
 	  $(NO_INLINE_ADAFLAGS) $(NO_REORDER_ADAFLAGS) -O1 $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
-# compile s-excdeb.o without optimization and with debug info to let the
+# Compile s-excdeb.o without optimization and with debug info to let the
 # debugger set breakpoints and inspect subprogram parameters on exception
 # related events.
 
@@ -2726,21 +2730,21 @@ s-excdeb.o  : s-excdeb.adb s-excdeb.ads s-except.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 \
 	  $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
-# force debugging information on s-assert.o so that it is always
+# Force debugging information on s-assert.o so that it is always
 # possible to set breakpoint on assert failures.
 
 s-assert.o  : s-assert.adb s-assert.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
-# force debugging information on a-tags.o so that the debugger can find
+# Force debugging information on a-tags.o so that the debugger can find
 # the description of Ada.Tags.Type_Specific_Data.
 
 a-tags.o  : a-tags.adb a-tags.ads
 	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(OUTPUT_OPTION)
 
-# force no sibling call optimization on s-memory.o to avoid turning the
+# Force no sibling call optimization on s-memory.o to avoid turning the
 # tail recursion in Alloc into a loop that confuses branch prediction.
 
 s-memory.o  : s-memory.adb s-memory.ads

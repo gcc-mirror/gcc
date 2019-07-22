@@ -53,6 +53,13 @@
     (match_test "INTVAL (op) >= -32768 && INTVAL (op) <= 32767")
     (match_operand 0 "register_operand")))
 
+(define_predicate "ror_reg_or_u6_operand"
+  (if_then_else (match_code "const_int")
+    (and (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 0x3f")
+	 (match_test "TARGET_RORI"))
+    (and (match_operand 0 "register_operand")
+	 (match_test "TARGET_ROR"))))
+
 (define_predicate "call_insn_operand"
   (ior (match_code "symbol_ref")
        (match_operand 0 "register_operand")))
@@ -82,3 +89,26 @@
 
 (define_predicate "equality_comparison_operator"
   (match_code "ne,eq"))
+
+(define_predicate "fp_comparison_operator"
+  (if_then_else (match_test "TARGET_FP_UNORDERED")
+    (match_operand 0 "comparison_operator")
+    (match_operand 0 "ordered_comparison_operator")))
+
+;; Borrowed from rs6000
+;; Return true if the operand is in volatile memory.  Note that during the
+;; RTL generation phase, memory_operand does not return TRUE for volatile
+;; memory references.  So this function allows us to recognize volatile
+;; references where it's safe.
+(define_predicate "volatile_mem_operand"
+  (and (match_code "mem")
+       (match_test "MEM_VOLATILE_P (op)")
+       (if_then_else (match_test "reload_completed")
+	 (match_operand 0 "memory_operand")
+	 (match_test "memory_address_p (mode, XEXP (op, 0))"))))
+
+;; Return true if the operand is a register or memory; including volatile
+;; memory.
+(define_predicate "reg_or_mem_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
+       (match_operand 0 "volatile_mem_operand")))

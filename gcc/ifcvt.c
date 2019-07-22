@@ -5457,6 +5457,8 @@ if_convert (bool after_combine)
 static unsigned int
 rest_of_handle_if_conversion (void)
 {
+  int flags = 0;
+
   if (flag_if_conversion)
     {
       if (dump_file)
@@ -5466,9 +5468,12 @@ rest_of_handle_if_conversion (void)
 	}
       cleanup_cfg (CLEANUP_EXPENSIVE);
       if_convert (false);
+      if (num_updated_if_blocks)
+	/* Get rid of any dead CC-related instructions.  */
+	flags |= CLEANUP_FORCE_FAST_DCE;
     }
 
-  cleanup_cfg (0);
+  cleanup_cfg (flags);
   return 0;
 }
 

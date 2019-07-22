@@ -996,11 +996,14 @@ honor_protect_cleanup_actions (struct leh_state *outer_state,
       gimple_try_set_cleanup (tf->top_p, gimple_eh_else_n_body (eh_else));
       finally = gimple_eh_else_e_body (eh_else);
 
-      /* Let the ELSE see the exception that's being processed.  */
-      eh_region save_ehp = this_state->ehp_region;
-      this_state->ehp_region = this_state->cur_region;
-      lower_eh_constructs_1 (this_state, &finally);
-      this_state->ehp_region = save_ehp;
+      /* Let the ELSE see the exception that's being processed, but
+	 since the cleanup is outside the try block, process it with
+	 outer_state, otherwise it may be used as a cleanup for
+	 itself, and Bad Things (TM) ensue.  */
+      eh_region save_ehp = outer_state->ehp_region;
+      outer_state->ehp_region = this_state->cur_region;
+      lower_eh_constructs_1 (outer_state, &finally);
+      outer_state->ehp_region = save_ehp;
     }
   else
     {

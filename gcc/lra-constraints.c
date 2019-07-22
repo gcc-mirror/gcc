@@ -2172,8 +2172,9 @@ process_alt_operands (int only_alternative)
 		    else
 		      {
 			/* Operands don't match.  If the operands are
-			   different user defined explicit hard registers,
-			   then we cannot make them match.  */
+			   different user defined explicit hard
+			   registers, then we cannot make them match
+			   when one is early clobber operand.  */
 			if ((REG_P (*curr_id->operand_loc[nop])
 			     || SUBREG_P (*curr_id->operand_loc[nop]))
 			    && (REG_P (*curr_id->operand_loc[m])
@@ -2192,9 +2193,17 @@ process_alt_operands (int only_alternative)
 				&& REG_P (m_reg)
 				&& HARD_REGISTER_P (m_reg)
 				&& REG_USERVAR_P (m_reg))
-			      break;
+			      {
+				int i;
+				
+				for (i = 0; i < early_clobbered_regs_num; i++)
+				  if (m == early_clobbered_nops[i])
+				    break;
+				if (i < early_clobbered_regs_num
+				    || early_clobber_p)
+				  break;
+			      }
 			  }
-
 			/* Both operands must allow a reload register,
 			   otherwise we cannot make them match.  */
 			if (curr_alt[m] == NO_REGS)

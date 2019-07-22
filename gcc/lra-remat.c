@@ -124,8 +124,9 @@ static cand_t *regno_cands;
 
 /* Data about basic blocks used for the rematerialization
    sub-pass.  */
-struct remat_bb_data
+class remat_bb_data
 {
+public:
   /* Basic block about which the below data are.  */
   basic_block bb;
   /* Registers changed in the basic block: */
@@ -144,7 +145,7 @@ struct remat_bb_data
 };
 
 /* Array for all BB data.  Indexed by the corresponding BB index.  */
-typedef struct remat_bb_data *remat_bb_data_t;
+typedef class remat_bb_data *remat_bb_data_t;
 
 /* Basic blocks for data flow problems -- all bocks except the special
    ones.  */
@@ -509,7 +510,7 @@ create_remat_bb_data (void)
   basic_block bb;
   remat_bb_data_t bb_info;
 
-  remat_bb_data = XNEWVEC (struct remat_bb_data,
+  remat_bb_data = XNEWVEC (class remat_bb_data,
 			   last_basic_block_for_fn (cfun));
   FOR_ALL_BB_FN (bb, cfun)
     {

@@ -1628,6 +1628,10 @@ class Set_and_use_temporary_expression : public Expression
   }
 
   bool
+  do_must_eval_in_order() const
+  { return true; }
+
+  bool
   do_is_addressable() const
   { return true; }
 

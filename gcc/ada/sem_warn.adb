@@ -2698,7 +2698,7 @@ package body Sem_Warn is
 
       --  Flag any unused with clauses. For a subunit, check only the units
       --  in its context, not those of the parent, which may be needed by other
-      --  subunits.  We will get the full warnings when we compile the parent,
+      --  subunits. We will get the full warnings when we compile the parent,
       --  but the following is helpful when compiling a subunit by itself.
 
       if Nkind (Unit (Cunit (Main_Unit))) = N_Subunit then

@@ -367,8 +367,9 @@ class dump_user_location_t
 /* A class for identifying where in the compiler's own source
    (or a plugin) that a dump message is being emitted from.  */
 
-struct dump_impl_location_t
+class dump_impl_location_t
 {
+public:
   dump_impl_location_t (
 #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)
 			const char *file = __builtin_FILE (),
@@ -647,7 +648,7 @@ extern void dump_combine_total_stats (FILE *);
 /* In cfghooks.c  */
 extern void dump_bb (FILE *, basic_block, int, dump_flags_t);
 
-struct opt_pass;
+class opt_pass;
 
 namespace gcc {
 

@@ -89,8 +89,8 @@ rename_variables_in_bb (basic_block bb, bool rename_from_outer_loop)
   ssa_op_iter iter;
   edge e;
   edge_iterator ei;
-  struct loop *loop = bb->loop_father;
-  struct loop *outer_loop = NULL;
+  class loop *loop = bb->loop_father;
+  class loop *outer_loop = NULL;
 
   if (rename_from_outer_loop)
     {
@@ -258,7 +258,7 @@ adjust_phi_and_debug_stmts (gimple *update_phi, edge e, tree new_def)
    value that it should have on subsequent iterations.  */
 
 static void
-vect_set_loop_mask (struct loop *loop, tree mask, tree init_mask,
+vect_set_loop_mask (class loop *loop, tree mask, tree init_mask,
 		    tree next_mask)
 {
   gphi *phi = create_phi_node (mask, loop->header);
@@ -269,7 +269,7 @@ vect_set_loop_mask (struct loop *loop, tree mask, tree init_mask,
 /* Add SEQ to the end of LOOP's preheader block.  */
 
 static void
-add_preheader_seq (struct loop *loop, gimple_seq seq)
+add_preheader_seq (class loop *loop, gimple_seq seq)
 {
   if (seq)
     {
@@ -282,7 +282,7 @@ add_preheader_seq (struct loop *loop, gimple_seq seq)
 /* Add SEQ to the beginning of LOOP's header block.  */
 
 static void
-add_header_seq (struct loop *loop, gimple_seq seq)
+add_header_seq (class loop *loop, gimple_seq seq)
 {
   if (seq)
     {
@@ -406,7 +406,7 @@ vect_maybe_permute_loop_masks (gimple_seq *seq, rgroup_masks *dest_rgm,
    would ever hit a value that produces a set of all-false masks for RGM.  */
 
 static tree
-vect_set_loop_masks_directly (struct loop *loop, loop_vec_info loop_vinfo,
+vect_set_loop_masks_directly (class loop *loop, loop_vec_info loop_vinfo,
 			      gimple_seq *preheader_seq,
 			      gimple_stmt_iterator loop_cond_gsi,
 			      rgroup_masks *rgm, tree niters, tree niters_skip,
@@ -635,7 +635,7 @@ vect_set_loop_masks_directly (struct loop *loop, loop_vec_info loop_vinfo,
    final gcond.  */
 
 static gcond *
-vect_set_loop_condition_masked (struct loop *loop, loop_vec_info loop_vinfo,
+vect_set_loop_condition_masked (class loop *loop, loop_vec_info loop_vinfo,
 				tree niters, tree final_iv,
 				bool niters_maybe_zero,
 				gimple_stmt_iterator loop_cond_gsi)
@@ -743,7 +743,7 @@ vect_set_loop_condition_masked (struct loop *loop, loop_vec_info loop_vinfo,
    are no loop masks.  */
 
 static gcond *
-vect_set_loop_condition_unmasked (struct loop *loop, tree niters,
+vect_set_loop_condition_unmasked (class loop *loop, tree niters,
 				  tree step, tree final_iv,
 				  bool niters_maybe_zero,
 				  gimple_stmt_iterator loop_cond_gsi)
@@ -896,7 +896,7 @@ vect_set_loop_condition_unmasked (struct loop *loop, tree niters,
    Assumption: the exit-condition of LOOP is the last stmt in the loop.  */
 
 void
-vect_set_loop_condition (struct loop *loop, loop_vec_info loop_vinfo,
+vect_set_loop_condition (class loop *loop, loop_vec_info loop_vinfo,
 			 tree niters, tree step, tree final_iv,
 			 bool niters_maybe_zero)
 {
@@ -985,11 +985,11 @@ slpeel_duplicate_current_defs_from_edges (edge from, edge to)
    basic blocks from SCALAR_LOOP instead of LOOP, but to either the
    entry or exit of LOOP.  */
 
-struct loop *
-slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop,
-					struct loop *scalar_loop, edge e)
+class loop *
+slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop,
+					class loop *scalar_loop, edge e)
 {
-  struct loop *new_loop;
+  class loop *new_loop;
   basic_block *new_bbs, *bbs, *pbbs;
   bool at_exit;
   bool was_imm_dom;
@@ -1214,7 +1214,7 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond,
  */
 
 bool
-slpeel_can_duplicate_loop_p (const struct loop *loop, const_edge e)
+slpeel_can_duplicate_loop_p (const class loop *loop, const_edge e)
 {
   edge exit_e = single_exit (loop);
   edge entry_e = loop_preheader_edge (loop);
@@ -1244,7 +1244,7 @@ slpeel_can_duplicate_loop_p (const struct loop *loop, const_edge e)
    uses should be renamed.  */
 
 static void
-create_lcssa_for_virtual_phi (struct loop *loop)
+create_lcssa_for_virtual_phi (class loop *loop)
 {
   gphi_iterator gsi;
   edge exit_e = single_exit (loop);
@@ -1289,7 +1289,7 @@ create_lcssa_for_virtual_phi (struct loop *loop)
    Return the loop location if succeed and NULL if not.  */
 
 dump_user_location_t
-find_loop_location (struct loop *loop)
+find_loop_location (class loop *loop)
 {
   gimple *stmt = NULL;
   basic_block bb;
@@ -1351,7 +1351,7 @@ iv_phi_p (stmt_vec_info stmt_info)
 bool
 vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 {
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block bb = loop->header;
   gphi_iterator gsi;
 
@@ -1465,7 +1465,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
 				  tree niters, edge update_e)
 {
   gphi_iterator gsi, gsi1;
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block update_bb = update_e->dest;
   basic_block exit_bb = single_exit (loop)->dest;
 
@@ -1991,7 +1991,7 @@ vect_gen_vector_loop_niters_mult_vf (loop_vec_info loop_vinfo,
 {
   /* We should be using a step_vector of VF if VF is variable.  */
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo).to_constant ();
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree type = TREE_TYPE (niters_vector);
   tree log_vf = build_int_cst (type, exact_log2 (vf));
   basic_block exit_bb = single_exit (loop)->dest;
@@ -2059,11 +2059,11 @@ vect_gen_vector_loop_niters_mult_vf (loop_vec_info loop_vinfo,
 
 static void
 slpeel_update_phi_nodes_for_loops (loop_vec_info loop_vinfo,
-				   struct loop *first, struct loop *second,
+				   class loop *first, class loop *second,
 				   bool create_lcssa_for_iv_phis)
 {
   gphi_iterator gsi_update, gsi_orig;
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   edge first_latch_e = EDGE_SUCC (first->latch, 0);
   edge second_preheader_e = loop_preheader_edge (second);
@@ -2147,8 +2147,8 @@ slpeel_update_phi_nodes_for_loops (loop_vec_info loop_vinfo,
    in the update_loop's PHI node with the result of new PHI result.  */
 
 static void
-slpeel_update_phi_nodes_for_guard1 (struct loop *skip_loop,
-				    struct loop *update_loop,
+slpeel_update_phi_nodes_for_guard1 (class loop *skip_loop,
+				    class loop *update_loop,
 				    edge guard_edge, edge merge_edge)
 {
   location_t merge_loc, guard_loc;
@@ -2188,7 +2188,7 @@ slpeel_update_phi_nodes_for_guard1 (struct loop *skip_loop,
    NULL.  */
 
 static tree
-find_guard_arg (struct loop *loop, struct loop *epilog ATTRIBUTE_UNUSED,
+find_guard_arg (class loop *loop, class loop *epilog ATTRIBUTE_UNUSED,
 		gphi *lcssa_phi)
 {
   gphi_iterator gsi;
@@ -2259,7 +2259,7 @@ find_guard_arg (struct loop *loop, struct loop *epilog ATTRIBUTE_UNUSED,
    in exit_bb will also be updated.  */
 
 static void
-slpeel_update_phi_nodes_for_guard2 (struct loop *loop, struct loop *epilog,
+slpeel_update_phi_nodes_for_guard2 (class loop *loop, class loop *epilog,
 				    edge guard_edge, edge merge_edge)
 {
   gphi_iterator gsi;
@@ -2308,7 +2308,7 @@ slpeel_update_phi_nodes_for_guard2 (struct loop *loop, struct loop *epilog,
    the arg of its loop closed ssa PHI needs to be updated.  */
 
 static void
-slpeel_update_phi_nodes_for_lcssa (struct loop *epilog)
+slpeel_update_phi_nodes_for_lcssa (class loop *epilog)
 {
   gphi_iterator gsi;
   basic_block exit_bb = single_exit (epilog)->dest;
@@ -2397,7 +2397,7 @@ slpeel_update_phi_nodes_for_lcssa (struct loop *epilog)
    versioning conditions if loop versioning is needed.  */
 
 
-struct loop *
+class loop *
 vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 		 tree *niters_vector, tree *step_vector,
 		 tree *niters_vector_mult_vf_var, int th,
@@ -2439,8 +2439,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   prob_prolog = prob_epilog = profile_probability::guessed_always ()
 			.apply_scale (estimated_vf - 1, estimated_vf);
 
-  struct loop *prolog, *epilog = NULL, *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  struct loop *first_loop = loop;
+  class loop *prolog, *epilog = NULL, *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *first_loop = loop;
   bool irred_flag = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
   create_lcssa_for_virtual_phi (loop);
   update_ssa (TODO_update_ssa_only_virtuals);
@@ -2503,7 +2503,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
     }
 
   dump_user_location_t loop_loc = find_loop_location (loop);
-  struct loop *scalar_loop = LOOP_VINFO_SCALAR_LOOP (loop_vinfo);
+  class loop *scalar_loop = LOOP_VINFO_SCALAR_LOOP (loop_vinfo);
   if (prolog_peeling)
     {
       e = loop_preheader_edge (loop);
@@ -2965,13 +2965,13 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
    The versioning precondition(s) are placed in *COND_EXPR and
    *COND_EXPR_STMT_LIST.  */
 
-struct loop *
+class loop *
 vect_loop_versioning (loop_vec_info loop_vinfo,
 		      unsigned int th, bool check_profitability,
 		      poly_uint64 versioning_threshold)
 {
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo), *nloop;
-  struct loop *scalar_loop = LOOP_VINFO_SCALAR_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo), *nloop;
+  class loop *scalar_loop = LOOP_VINFO_SCALAR_LOOP (loop_vinfo);
   basic_block condition_bb;
   gphi_iterator gsi;
   gimple_stmt_iterator cond_exp_gsi;
@@ -3058,7 +3058,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 
   /* Compute the outermost loop cond_expr and cond_expr_stmt_list are
      invariant in.  */
-  struct loop *outermost = outermost_invariant_loop_for_expr (loop, cond_expr);
+  class loop *outermost = outermost_invariant_loop_for_expr (loop, cond_expr);
   for (gimple_stmt_iterator gsi = gsi_start (cond_expr_stmt_list);
        !gsi_end_p (gsi); gsi_next (&gsi))
     {
@@ -3075,7 +3075,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 
   /* Search for the outermost loop we can version.  Avoid versioning of
      non-perfect nests but allow if-conversion versioned loops inside.  */
-  struct loop *loop_to_version = loop;
+  class loop *loop_to_version = loop;
   if (flow_loop_nested_p (outermost, loop))
     { 
       if (dump_enabled_p ())
@@ -3148,7 +3148,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
       /* Kill off IFN_LOOP_VECTORIZED_CALL in the copy, nobody will
          reap those otherwise;  they also refer to the original
 	 loops.  */
-      struct loop *l = loop;
+      class loop *l = loop;
       while (gimple *call = vect_loop_vectorized_call (l))
 	{
 	  call = SSA_NAME_DEF_STMT (get_current_def (gimple_call_lhs (call)));

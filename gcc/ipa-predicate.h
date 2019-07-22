@@ -205,11 +205,11 @@ public:
   predicate remap_after_duplication (clause_t);
 
   /* Return predicate equal to THIS after inlining.  */
-  predicate remap_after_inlining (struct ipa_fn_summary *,
-			          struct ipa_fn_summary *,
+  predicate remap_after_inlining (class ipa_fn_summary *,
+			          class ipa_fn_summary *,
 			          vec<int>, vec<int>, clause_t, const predicate &);
 
-  void stream_in (struct lto_input_block *);
+  void stream_in (class lto_input_block *);
   void stream_out (struct output_block *);
 
 private:
@@ -227,6 +227,6 @@ private:
 };
 
 void dump_condition (FILE *f, conditions conditions, int cond);
-predicate add_condition (struct ipa_fn_summary *summary, int operand_num,
+predicate add_condition (class ipa_fn_summary *summary, int operand_num,
 			 HOST_WIDE_INT size, struct agg_position_info *aggpos,
 			 enum tree_code code, tree val);

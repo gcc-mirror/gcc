@@ -3135,30 +3135,31 @@
 (define_insn "*aarch64_get_lane_extend<GPI:mode><VDQQH:mode>"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(sign_extend:GPI
-	  (vec_select:<VEL>
-	    (match_operand:VDQQH 1 "register_operand" "w")
-	    (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
-  "TARGET_SIMD"
-  {
-    operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
-    return "smov\\t%<GPI:w>0, %1.<VDQQH:Vetype>[%2]";
-  }
-  [(set_attr "type" "neon_to_gp<q>")]
-)
-
-(define_insn "*aarch64_get_lane_zero_extend<GPI:mode><VDQQH:mode>"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-	(zero_extend:GPI
-	  (vec_select:<VEL>
+	  (vec_select:<VDQQH:VEL>
 	    (match_operand:VDQQH 1 "register_operand" "w")
 	    (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
   "TARGET_SIMD"
   {
     operands[2] = aarch64_endian_lane_rtx (<VDQQH:MODE>mode,
 					   INTVAL (operands[2]));
-    return "umov\\t%w0, %1.<Vetype>[%2]";
+    return "smov\\t%<GPI:w>0, %1.<VDQQH:Vetype>[%2]";
   }
-  [(set_attr "type" "neon_to_gp<q>")]
+  [(set_attr "type" "neon_to_gp<VDQQH:q>")]
+)
+
+(define_insn "*aarch64_get_lane_zero_extend<GPI:mode><VDQQH:mode>"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(zero_extend:GPI
+	  (vec_select:<VDQQH:VEL>
+	    (match_operand:VDQQH 1 "register_operand" "w")
+	    (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
+  "TARGET_SIMD"
+  {
+    operands[2] = aarch64_endian_lane_rtx (<VDQQH:MODE>mode,
+					   INTVAL (operands[2]));
+    return "umov\\t%w0, %1.<VDQQH:Vetype>[%2]";
+  }
+  [(set_attr "type" "neon_to_gp<VDQQH:q>")]
 )
 
 ;; Lane extraction of a value, neither sign nor zero extension
@@ -6053,56 +6054,23 @@
 
 (define_insn "aarch64_crypto_aes<aes_op>v16qi"
   [(set (match_operand:V16QI 0 "register_operand" "=w")
-	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "%0")
-		       (match_operand:V16QI 2 "register_operand" "w")]
+	(unspec:V16QI
+		[(xor:V16QI
+		 (match_operand:V16QI 1 "register_operand" "%0")
+		 (match_operand:V16QI 2 "register_operand" "w"))]
          CRYPTO_AES))]
   "TARGET_SIMD && TARGET_AES"
   "aes<aes_op>\\t%0.16b, %2.16b"
   [(set_attr "type" "crypto_aese")]
 )
 
-(define_insn "*aarch64_crypto_aes<aes_op>v16qi_xor_combine"
-  [(set (match_operand:V16QI 0 "register_operand" "=w")
-	(unspec:V16QI [(xor:V16QI
-			(match_operand:V16QI 1 "register_operand" "%0")
-			(match_operand:V16QI 2 "register_operand" "w"))
-		       (match_operand:V16QI 3 "aarch64_simd_imm_zero" "")]
-		       CRYPTO_AES))]
-  "TARGET_SIMD && TARGET_AES"
-  "aes<aes_op>\\t%0.16b, %2.16b"
-  [(set_attr "type" "crypto_aese")]
-)
-
-(define_insn "*aarch64_crypto_aes<aes_op>v16qi_xor_combine"
-  [(set (match_operand:V16QI 0 "register_operand" "=w")
-	(unspec:V16QI [(match_operand:V16QI 3 "aarch64_simd_imm_zero" "")
-	(xor:V16QI (match_operand:V16QI 1 "register_operand" "%0")
-		   (match_operand:V16QI 2 "register_operand" "w"))]
-	CRYPTO_AES))]
-  "TARGET_SIMD && TARGET_AES"
-  "aes<aes_op>\\t%0.16b, %2.16b"
-  [(set_attr "type" "crypto_aese")]
-)
-
-;; When AES/AESMC fusion is enabled we want the register allocation to
-;; look like:
-;;    AESE Vn, _
-;;    AESMC Vn, Vn
-;; So prefer to tie operand 1 to operand 0 when fusing.
-
 (define_insn "aarch64_crypto_aes<aesmc_op>v16qi"
-  [(set (match_operand:V16QI 0 "register_operand" "=w,w")
-	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "0,w")]
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "w")]
 	 CRYPTO_AESMC))]
   "TARGET_SIMD && TARGET_AES"
   "aes<aesmc_op>\\t%0.16b, %1.16b"
-  [(set_attr "type" "crypto_aesmc")
-   (set_attr_alternative "enabled"
-     [(if_then_else (match_test
-		       "aarch64_fusion_enabled_p (AARCH64_FUSE_AES_AESMC)")
-		     (const_string "yes" )
-		     (const_string "no"))
-      (const_string "yes")])]
+  [(set_attr "type" "crypto_aesmc")]
 )
 
 ;; When AESE/AESMC fusion is enabled we really want to keep the two together
@@ -6111,12 +6079,14 @@
 ;;  Mash the two together during combine.
 
 (define_insn "*aarch64_crypto_aese_fused"
-  [(set (match_operand:V16QI 0 "register_operand" "=&w")
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
 	(unspec:V16QI
 	  [(unspec:V16QI
-	    [(match_operand:V16QI 1 "register_operand" "0")
-	     (match_operand:V16QI 2 "register_operand" "w")] UNSPEC_AESE)
-	  ] UNSPEC_AESMC))]
+	   [(xor:V16QI
+		(match_operand:V16QI 1 "register_operand" "%0")
+		(match_operand:V16QI 2 "register_operand" "w"))]
+	     UNSPEC_AESE)]
+	UNSPEC_AESMC))]
   "TARGET_SIMD && TARGET_AES
    && aarch64_fusion_enabled_p (AARCH64_FUSE_AES_AESMC)"
   "aese\\t%0.16b, %2.16b\;aesmc\\t%0.16b, %0.16b"
@@ -6130,12 +6100,14 @@
 ;;  Mash the two together during combine.
 
 (define_insn "*aarch64_crypto_aesd_fused"
-  [(set (match_operand:V16QI 0 "register_operand" "=&w")
+  [(set (match_operand:V16QI 0 "register_operand" "=w")
 	(unspec:V16QI
 	  [(unspec:V16QI
-	    [(match_operand:V16QI 1 "register_operand" "0")
-	     (match_operand:V16QI 2 "register_operand" "w")] UNSPEC_AESD)
-	  ] UNSPEC_AESIMC))]
+		    [(xor:V16QI
+			(match_operand:V16QI 1 "register_operand" "%0")
+			(match_operand:V16QI 2 "register_operand" "w"))]
+		UNSPEC_AESD)]
+	  UNSPEC_AESIMC))]
   "TARGET_SIMD && TARGET_AES
    && aarch64_fusion_enabled_p (AARCH64_FUSE_AES_AESMC)"
   "aesd\\t%0.16b, %2.16b\;aesimc\\t%0.16b, %0.16b"

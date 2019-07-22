@@ -132,12 +132,34 @@
 --  get read-write permission, which can be specified using the node's
 --  Children_Permission field.
 
+--  The implementation is done as a generic, so that GNATprove can instantiate
+--  it with suitable formal arguments that depend on the SPARK_Mode boundary
+--  as well as the two-phase architecture of GNATprove (which runs the GNAT
+--  front end twice, once for global generation and once for analysis).
+
 with Types; use Types;
+
+generic
+   with function Retysp (X : Entity_Id) return Entity_Id;
+   --  Return the representative type in SPARK for a type.
+
+   with function Component_Is_Visible_In_SPARK (C : Entity_Id) return Boolean;
+   --  Return whether a component is visible in SPARK. No aliasing check is
+   --  performed for a component that is visible.
+
+   with function Emit_Messages return Boolean;
+   --  Return True when error messages should be emitted.
 
 package Sem_SPARK is
 
    procedure Check_Safe_Pointers (N : Node_Id);
    --  The entry point of this package. It analyzes a node and reports errors
    --  when there are violations of ownership rules.
+
+   function Is_Deep (Typ : Entity_Id) return Boolean;
+   --  A function that can tell whether a type is deep. Returns True if the
+   --  type passed as argument is deep.
+
+   function Is_Traversal_Function (E : Entity_Id) return Boolean;
 
 end Sem_SPARK;

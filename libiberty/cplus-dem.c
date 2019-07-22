@@ -52,6 +52,7 @@ void * realloc ();
 #define CURRENT_DEMANGLING_STYLE options
 
 #include "libiberty.h"
+#include "rust-demangle.h"
 
 enum demangling_styles current_demangling_style = auto_demangling;
 

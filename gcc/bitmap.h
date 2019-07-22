@@ -212,8 +212,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 
 /* Bitmap memory usage.  */
-struct bitmap_usage: public mem_usage
+class bitmap_usage: public mem_usage
 {
+public:
   /* Default contructor.  */
   bitmap_usage (): m_nsearches (0), m_search_iter (0) {}
   /* Constructor.  */
@@ -289,7 +290,7 @@ typedef unsigned long BITMAP_WORD;
 /* Obstack for allocating bitmaps and elements from.  */
 struct bitmap_obstack {
   struct bitmap_element *elements;
-  struct bitmap_head *heads;
+  bitmap_head *heads;
   struct obstack obstack;
 };
 
@@ -321,7 +322,8 @@ struct GTY((chain_next ("%h.next"))) bitmap_element {
 /* Head of bitmap linked list.  The 'current' member points to something
    already pointed to by the chain started by first, so GTY((skip)) it.  */
 
-struct GTY(()) bitmap_head {
+class GTY(()) bitmap_head {
+public:
   static bitmap_obstack crashme;
   /* Poison obstack to not make it not a valid initialized GC bitmap.  */
   CONSTEXPR bitmap_head()

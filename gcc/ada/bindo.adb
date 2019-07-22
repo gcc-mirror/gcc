@@ -24,7 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Binde;
-with Debug; use Debug;
+with Opt;   use Opt;
 
 with Bindo.Elaborators;
 use  Bindo.Elaborators;
@@ -74,7 +74,7 @@ package body Bindo is
    --
    --    * Diagnose elaboration circularities between units
    --
-   --      An elaboration circularity arrises when either
+   --      An elaboration circularity arises when either
    --
    --        - At least one unit cannot be ordered, or
    --
@@ -94,6 +94,12 @@ package body Bindo is
    -----------------
 
    --  * Component - A strongly connected component of a graph.
+   --
+   --  * Elaborable component - A component that is not waiting on other
+   --    components to be elaborated.
+   --
+   --  * Elaborable vertex - A vertex that is not waiting on strong and weak
+   --    predecessors, and whose component is elaborable.
    --
    --  * Elaboration circularity - A cycle involving units from the bind.
    --
@@ -136,8 +142,23 @@ package body Bindo is
    --  * Pending predecessor - A vertex that must be elaborated before another
    --    vertex can be elaborated.
    --
+   --  * Strong edge - A non-invocation library graph edge. Strong edges
+   --    represent the language-defined relations between units.
+   --
+   --  * Strong predecessor - A library graph vertex reachable via a strong
+   --    edge.
+   --
    --  * Target - The destination construct of an invocation relation (the
    --    generic, subprogram, or task type).
+   --
+   --  * Weak edge - An invocation library graph edge. Weak edges represent
+   --    the speculative flow of execution at elaboration time, which may or
+   --    may not take place.
+   --
+   --  * Weak predecessor - A library graph vertex reachable via a weak edge.
+   --
+   --  * Weakly elaborable vertex - A vertex that is waiting solely on weak
+   --    predecessors to be elaborated, and whose component is elaborable.
 
    ------------------
    -- Architecture --
@@ -233,7 +254,7 @@ package body Bindo is
    --      bodies as single vertices.
    --
    --    * Try to order as many vertices of the library graph as possible by
-   --      peforming a topological sort based on the pending predecessors of
+   --      performing a topological sort based on the pending predecessors of
    --      vertices across all components and within a single component.
    --
    --    * Validate the consistency of the order, only when switch -d_V is in
@@ -251,7 +272,7 @@ package body Bindo is
    --  The Diagnostics phase has the following objectives:
    --
    --    * Discover, save, and sort all cycles in the library graph. The cycles
-   --      are sorted based on the following heiristics:
+   --      are sorted based on the following heuristics:
    --
    --        - A cycle with higher precedence is preferred.
    --
@@ -268,7 +289,7 @@ package body Bindo is
    --    * Diagnose the most important cycle, or all cycles when switch -d_C is
    --      in effect. The diagnostic consists of:
    --
-   --        - The reason for the existance of the cycle, along with the unit
+   --        - The reason for the existence of the cycle, along with the unit
    --          whose elaboration cannot be guaranteed.
    --
    --        - A detailed traceback of the cycle, showcasing the transition
@@ -276,7 +297,7 @@ package body Bindo is
    --          information.
    --
    --        - A set of suggestions on how to break the cycle considering the
-   --          the edges coprising the circuit, the elaboration model used to
+   --          the edges comprising the circuit, the elaboration model used to
    --          compile the units, the availability of invocation information,
    --          and the state of various relevant switches.
 
@@ -284,6 +305,28 @@ package body Bindo is
    -- Switches --
    --------------
 
+   --  -d_a  Ignore the effects of pragma Elaborate_All
+   --
+   --        GNATbind creates a regular with edge instead of an Elaborate_All
+   --        edge in the library graph, thus eliminating the effects of the
+   --        pragma.
+   --
+   --  -d_b  Ignore the effects of pragma Elaborate_Body
+   --
+   --        GNATbind treats a spec and body pair as decoupled.
+   --
+   --  -d_e  Ignore the effects of pragma Elaborate
+   --
+   --        GNATbind creates a regular with edge instead of an Elaborate edge
+   --        in the library graph, thus eliminating the effects of the pragma.
+   --        In addition, GNATbind does not create an edge to the body of the
+   --        pragma argument.
+   --
+   --  -d_t  Output cycle-detection trace information
+   --
+   --        GNATbind outputs trace information on cycle-detection activities
+   --        to standard output.
+   --
    --  -d_A  Output ALI invocation tables
    --
    --        GNATbind outputs the contents of ALI table Invocation_Constructs
@@ -304,18 +347,19 @@ package body Bindo is
    --        GNATbind outputs the library graph in textual format to standard
    --        output.
    --
-   --  -d_N  New bindo order
-   --
-   --        GNATbind utilizes the new bindo elaboration order
-   --
    --  -d_P  Output cycle paths
    --
-   --        GNATbind output the cycle paths in text format to standard output
+   --        GNATbind outputs the cycle paths in text format to standard output
+   --
+   --  -d_S  Output elaboration-order status information
+   --
+   --        GNATbind outputs trace information concerning the status of its
+   --        various phases to standard output.
    --
    --  -d_T  Output elaboration-order trace information
    --
-   --        GNATbind outputs trace information on elaboration-order and cycle-
-   --        detection activities to standard output.
+   --        GNATbind outputs trace information on elaboration-order detection
+   --        activities to standard output.
    --
    --  -d_V  Validate bindo cycles, graphs, and order
    --
@@ -357,7 +401,7 @@ package body Bindo is
    --  number of files in the bind, Bindo may emit anywhere between several MBs
    --  to several hundred MBs of data to standard output. The switches are:
    --
-   --    -d_A -d_C -d_I -d_L -d_P -d_T -d_V
+   --    -d_A -d_C -d_I -d_L -d_P -d_t -d_T -d_V
    --
    --  Bindo offers several debugging routines that can be invoked from gdb.
    --  Those are defined in the body of Bindo.Writers, in sections denoted by
@@ -372,6 +416,11 @@ package body Bindo is
    --    plge   --  print library-graph edge
    --    plgv   --  print library-graph vertex
    --    pu     --  print units
+   --
+   --  * Apparent infinite loop
+   --
+   --    The elaboration order mechanism appears to be stuck in an infinite
+   --    loop. Use switch -d_S to output the status of each elaboration phase.
    --
    --  * Invalid elaboration order
    --
@@ -388,9 +437,7 @@ package body Bindo is
    --    Units and routines of interest:
    --      Bindo.Elaborators
    --      Elaborate_Library_Graph
-   --      Elaborate_Units_Common
-   --      Elaborate_Units_Dynamic
-   --      Elaborate_Units_Static
+   --      Elaborate_Units
    --
    --  * Invalid invocation graph
    --
@@ -452,40 +499,19 @@ package body Bindo is
       Main_Lib_File : File_Name_Type)
    is
    begin
-      --  ??? Enable the following code when switching from the old to the new
-      --  elaboration-order mechanism.
-
       --  Use the library graph and heuristic-based elaboration order when
       --  switch -H (legacy elaboration-order mode enabled).
 
-      --  if Legacy_Elaboration_Order then
-      --     Binde.Find_Elab_Order (Order, Main_Lib_File);
+      if Legacy_Elaboration_Order then
+         Binde.Find_Elab_Order (Order, Main_Lib_File);
 
       --  Otherwise use the invocation and library-graph-based elaboration
       --  order.
 
-      --  else
-      --     Invocation_And_Library_Graph_Elaborators.Elaborate_Units
-      --       (Order         => Order,
-      --        Main_Lib_File => Main_Lib_File);
-      --  end if;
-
-      --  ??? Remove the following code when switching from the old to the new
-      --  elaboration-order mechanism.
-
-      --  Use the invocation and library-graph-based elaboration order when
-      --  switch -d_N (new bindo order) is in effect.
-
-      if Debug_Flag_Underscore_NN then
+      else
          Invocation_And_Library_Graph_Elaborators.Elaborate_Units
            (Order         => Order,
             Main_Lib_File => Main_Lib_File);
-
-      --  Otherwise use the library-graph and heuristic-based elaboration
-      --  order.
-
-      else
-         Binde.Find_Elab_Order (Order, Main_Lib_File);
       end if;
    end Find_Elaboration_Order;
 

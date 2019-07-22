@@ -23,8 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Data we cache about callgraph edges during inlining to avoid expensive
    re-computations during the greedy algorithm.  */
-struct edge_growth_cache_entry
+class edge_growth_cache_entry
 {
+public:
   sreal time, nonspec_time;
   int size;
   ipa_hints hints;

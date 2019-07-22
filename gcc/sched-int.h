@@ -454,8 +454,9 @@ struct deps_reg
 };
 
 /* Describe state of dependencies used during sched_analyze phase.  */
-struct deps_desc
+class deps_desc
 {
+public:
   /* The *_insns and *_mems are paired lists.  Each pending memory operation
      will have a pointer to the MEM rtx on one list and a pointer to the
      containing insn on the other list in the same place in the list.  */
@@ -570,7 +571,7 @@ struct deps_desc
   BOOL_BITFIELD readonly : 1;
 };
 
-typedef struct deps_desc *deps_t;
+typedef class deps_desc *deps_t;
 
 /* This structure holds some state of the current scheduling pass, and
    contains some function pointers that abstract out some of the non-generic
@@ -1346,14 +1347,14 @@ extern bool sched_insns_conditions_mutex_p (const rtx_insn *,
 					    const rtx_insn *);
 extern bool sched_insn_is_legitimate_for_speculation_p (const rtx_insn *, ds_t);
 extern void add_dependence (rtx_insn *, rtx_insn *, enum reg_note);
-extern void sched_analyze (struct deps_desc *, rtx_insn *, rtx_insn *);
-extern void init_deps (struct deps_desc *, bool);
-extern void init_deps_reg_last (struct deps_desc *);
-extern void free_deps (struct deps_desc *);
+extern void sched_analyze (class deps_desc *, rtx_insn *, rtx_insn *);
+extern void init_deps (class deps_desc *, bool);
+extern void init_deps_reg_last (class deps_desc *);
+extern void free_deps (class deps_desc *);
 extern void init_deps_global (void);
 extern void finish_deps_global (void);
-extern void deps_analyze_insn (struct deps_desc *, rtx_insn *);
-extern void remove_from_deps (struct deps_desc *, rtx_insn *);
+extern void deps_analyze_insn (class deps_desc *, rtx_insn *);
+extern void remove_from_deps (class deps_desc *, rtx_insn *);
 extern void init_insn_reg_pressure_info (rtx_insn *);
 extern void get_implicit_reg_pending_clobbers (HARD_REG_SET *, rtx_insn *);
 
@@ -1376,7 +1377,7 @@ extern void haifa_note_reg_use (int);
 
 extern void maybe_extend_reg_info_p (void);
 
-extern void deps_start_bb (struct deps_desc *, rtx_insn *);
+extern void deps_start_bb (class deps_desc *, rtx_insn *);
 extern enum reg_note ds_to_dt (ds_t);
 
 extern bool deps_pools_are_empty_p (void);
@@ -1508,7 +1509,7 @@ extern void dump_rgn_dependencies_dot (const char *);
 extern void free_rgn_deps (void);
 extern int contributes_to_priority (rtx_insn *, rtx_insn *);
 extern void extend_rgns (int *, int *, sbitmap, int *);
-extern void deps_join (struct deps_desc *, struct deps_desc *);
+extern void deps_join (class deps_desc *, class deps_desc *);
 
 extern void rgn_setup_common_sched_info (void);
 extern void rgn_setup_sched_infos (void);

@@ -3131,6 +3131,49 @@ s390_decompose_addrstyle_without_index (rtx op, rtx *base,
    return true;
 }
 
+/*  Check that OP is a valid shift count operand.
+    It should be of the following structure:
+      (subreg (and (plus (reg imm_op)) 2^k-1) 7)
+    where subreg, and and plus are optional.
+
+    If IMPLICIT_MASK is > 0 and OP contains and
+      (AND ... immediate)
+    it is checked whether IMPLICIT_MASK and the immediate match.
+    Otherwise, no checking is performed.
+  */
+bool
+s390_valid_shift_count (rtx op, HOST_WIDE_INT implicit_mask)
+{
+  /* Strip subreg.  */
+  while (GET_CODE (op) == SUBREG && subreg_lowpart_p (op))
+    op = XEXP (op, 0);
+
+  /* Check for an and with proper constant.  */
+  if (GET_CODE (op) == AND)
+  {
+    rtx op1 = XEXP (op, 0);
+    rtx imm = XEXP (op, 1);
+
+    if (GET_CODE (op1) == SUBREG && subreg_lowpart_p (op1))
+      op1 = XEXP (op1, 0);
+
+    if (!(register_operand (op1, GET_MODE (op1)) || GET_CODE (op1) == PLUS))
+      return false;
+
+    if (!immediate_operand (imm, GET_MODE (imm)))
+      return false;
+
+    HOST_WIDE_INT val = INTVAL (imm);
+    if (implicit_mask > 0
+	&& (val & implicit_mask) != implicit_mask)
+      return false;
+
+    op = op1;
+  }
+
+  /* Check the rest.  */
+  return s390_decompose_addrstyle_without_index (op, NULL, NULL);
+}
 
 /* Return true if CODE is a valid address without index.  */
 
@@ -7448,6 +7491,27 @@ print_addrstyle_operand (FILE *file, rtx op)
     fprintf (file, "(%s)", reg_names[REGNO (base)]);
 }
 
+/* Print the shift count operand OP to FILE.
+   OP is an address-style operand in a form which
+   s390_valid_shift_count permits.  Subregs and no-op
+   and-masking of the operand are stripped.  */
+
+static void
+print_shift_count_operand (FILE *file, rtx op)
+{
+  /* No checking of the and mask required here.  */
+  if (!s390_valid_shift_count (op, 0))
+    gcc_unreachable ();
+
+  while (op && GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  if (GET_CODE (op) == AND)
+    op = XEXP (op, 0);
+
+  print_addrstyle_operand (file, op);
+}
+
 /* Assigns the number of NOP halfwords to be emitted before and after the
    function label to *HW_BEFORE and *HW_AFTER.  Both pointers must not be NULL.
    If hotpatching is disabled for the function, the values are set to zero.
@@ -7912,7 +7976,7 @@ print_operand (FILE *file, rtx x, int code)
       break;
 
     case 'Y':
-      print_addrstyle_operand (file, x);
+      print_shift_count_operand (file, x);
       return;
     }
 
@@ -16348,7 +16412,13 @@ s390_sched_dependencies_evaluation (rtx_insn *head, rtx_insn *tail)
   add_dependence (r11_restore, r15_restore, REG_DEP_ANTI);
 }
 
+/* Implement TARGET_SHIFT_TRUNCATION_MASK for integer shifts.  */
 
+static unsigned HOST_WIDE_INT
+s390_shift_truncation_mask (machine_mode mode)
+{
+  return mode == DImode || mode == SImode ? 63 : 0;
+}
 
 /* Initialize GCC target structure.  */
 
@@ -16645,6 +16715,8 @@ s390_sched_dependencies_evaluation (rtx_insn *head, rtx_insn *tail)
 #define TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK \
   s390_sched_dependencies_evaluation
 
+#undef TARGET_SHIFT_TRUNCATION_MASK
+#define TARGET_SHIFT_TRUNCATION_MASK s390_shift_truncation_mask
 
 /* Use only short displacement, since long displacement is not available for
    the floating point instructions.  */

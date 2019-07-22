@@ -12,7 +12,7 @@ int *foo (int bogus, int n)
     p = &a[2];
   else
     p = &i;
-  return p;
+  return p;         /* { dg-warning "\\\[-Wreturn-local-addr" } */
 }
 
 /* { dg-final { scan-tree-dump "Deleted dead store" "dse1" } } */

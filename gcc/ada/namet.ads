@@ -431,7 +431,7 @@ package Namet is
    --  Uhh encoding (hh = hex code), other 16-bit wide character values are
    --  stored using the Whhhh (hhhh = hex code) encoding, and other 32-bit wide
    --  wide character values are stored using the WWhhhhhhhh (hhhhhhhh = hex
-   --  code).  Note that this procedure does not fold upper case letters (they
+   --  code). Note that this procedure does not fold upper case letters (they
    --  are stored using the Uhh encoding).
 
    procedure Set_Character_Literal_Name

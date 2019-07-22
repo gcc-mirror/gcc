@@ -320,7 +320,7 @@ package Einfo is
 --  an attempt to set the attribute on a subtype will raise an assert error.
 
 --  Other attributes are noted as applying to the [implementation base type
---  only].  These are representation attributes which must always apply to a
+--  only]. These are representation attributes which must always apply to a
 --  full non-private type, and where the attributes are always on the full
 --  type. The attribute can be referenced on a subtype (and automatically
 --  retrieves the value from the implementation base type). However, it is an
@@ -4133,7 +4133,7 @@ package Einfo is
 --       Defined in generic subprograms, generic packages, and their
 --       instances. Also defined in the instances of the corresponding
 --       bodies. Denotes the renaming map (generic entities => instance
---       entities) used to construct the instance by givin an index into
+--       entities) used to construct the instance by giving an index into
 --       the tables used to represent these maps. See Sem_Ch12 for further
 --       details. The maps for package instances are also used when the
 --       instance is the actual corresponding to a formal package.

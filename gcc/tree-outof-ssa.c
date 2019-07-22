@@ -129,8 +129,9 @@ ssa_is_replaceable_p (gimple *stmt)
    rarely more than 6, and in the bootstrap of gcc, the maximum number
    of nodes encountered was 12.  */
 
-struct elim_graph
+class elim_graph
 {
+public:
   elim_graph (var_map map);
 
   /* Size of the elimination vectors.  */

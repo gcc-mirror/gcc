@@ -857,7 +857,7 @@ vect_build_slp_tree_1 (unsigned char *swap,
 	      continue;
 	    }
 
-	  if (rhs_code == CALL_EXPR)
+	  if (!load_p && rhs_code == CALL_EXPR)
 	    {
 	      if (!compatible_calls_p (as_a <gcall *> (stmts[0]->stmt),
 				       as_a <gcall *> (stmt)))
@@ -1140,7 +1140,8 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  FOR_EACH_VEC_ELT (stmts, i, other_info)
 	    {
 	      /* But for reduction chains only check on the first stmt.  */
-	      if (REDUC_GROUP_FIRST_ELEMENT (other_info)
+	      if (!STMT_VINFO_DATA_REF (other_info)
+		  && REDUC_GROUP_FIRST_ELEMENT (other_info)
 		  && REDUC_GROUP_FIRST_ELEMENT (other_info) != stmt_info)
 		continue;
 	      if (STMT_VINFO_DEF_TYPE (other_info) != def_type)
@@ -2019,7 +2020,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
       else
 	{
 	  /* Create a new SLP instance.  */
-	  new_instance = XNEW (struct _slp_instance);
+	  new_instance = XNEW (class _slp_instance);
 	  SLP_INSTANCE_TREE (new_instance) = node;
 	  SLP_INSTANCE_GROUP_SIZE (new_instance) = group_size;
 	  SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;

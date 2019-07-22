@@ -207,8 +207,9 @@ struct sanopt_tree_couple_hash : typed_noop_remove <sanopt_tree_couple>
 /* This is used to carry various hash maps and variables used
    in sanopt_optimize_walker.  */
 
-struct sanopt_ctx
+class sanopt_ctx
 {
+public:
   /* This map maps a pointer (the first argument of UBSAN_NULL) to
      a vector of UBSAN_NULL call statements that check this pointer.  */
   hash_map<tree, auto_vec<gimple *> > null_check_map;
@@ -353,7 +354,7 @@ maybe_get_dominating_check (auto_vec<gimple *> &v)
 /* Optimize away redundant UBSAN_NULL calls.  */
 
 static bool
-maybe_optimize_ubsan_null_ifn (struct sanopt_ctx *ctx, gimple *stmt)
+maybe_optimize_ubsan_null_ifn (class sanopt_ctx *ctx, gimple *stmt)
 {
   gcc_assert (gimple_call_num_args (stmt) == 3);
   tree ptr = gimple_call_arg (stmt, 0);
@@ -590,7 +591,7 @@ maybe_optimize_ubsan_ptr_ifn (sanopt_ctx *ctx, gimple *stmt)
    when we can actually optimize.  */
 
 static bool
-maybe_optimize_ubsan_vptr_ifn (struct sanopt_ctx *ctx, gimple *stmt)
+maybe_optimize_ubsan_vptr_ifn (class sanopt_ctx *ctx, gimple *stmt)
 {
   gcc_assert (gimple_call_num_args (stmt) == 5);
   sanopt_tree_triplet triplet;
@@ -694,7 +695,7 @@ can_remove_asan_check (auto_vec<gimple *> &v, tree len, basic_block bb)
 /* Optimize away redundant ASAN_CHECK calls.  */
 
 static bool
-maybe_optimize_asan_check_ifn (struct sanopt_ctx *ctx, gimple *stmt)
+maybe_optimize_asan_check_ifn (class sanopt_ctx *ctx, gimple *stmt)
 {
   gcc_assert (gimple_call_num_args (stmt) == 4);
   tree ptr = gimple_call_arg (stmt, 1);
@@ -767,7 +768,7 @@ maybe_optimize_asan_check_ifn (struct sanopt_ctx *ctx, gimple *stmt)
    anything anymore.  CTX is a sanopt context.  */
 
 static void
-sanopt_optimize_walker (basic_block bb, struct sanopt_ctx *ctx)
+sanopt_optimize_walker (basic_block bb, class sanopt_ctx *ctx)
 {
   basic_block son;
   gimple_stmt_iterator gsi;
@@ -886,7 +887,7 @@ sanopt_optimize_walker (basic_block bb, struct sanopt_ctx *ctx)
 static int
 sanopt_optimize (function *fun, bool *contains_asan_mark)
 {
-  struct sanopt_ctx ctx;
+  class sanopt_ctx ctx;
   ctx.asan_num_accesses = 0;
   ctx.contains_asan_mark = false;
 

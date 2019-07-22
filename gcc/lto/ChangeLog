@@ -1,3 +1,27 @@
+2019-07-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-common.c (gimple_register_canonical_type_1): Do not look for
+	non-ODR conflicts of types in anonymous namespaces.
+	(unify_scc): Do not merge anonymous namespace types.
+
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* lto-common.c (lto_splay_tree_new): : Change class-key of PODs
+	to struct and others to class.
+	(mentions_vars_p): Same.
+	(register_resolution): Same.
+	(lto_register_var_decl_in_symtab): Same.
+	(lto_register_function_decl_in_symtab): Same.
+	(cmp_tree): Same.
+	(lto_read_decls): Same.
+
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* lto-dump.c: Change class-key from class to struct and vice versa
+	to match convention and avoid -Wclass-is-pod and -Wstruct-no-pod.
+
 2019-07-04  Martin Liska  <mliska@suse.cz>
 
 	PR lto/91078

@@ -127,7 +127,7 @@ static struct datadep_stats
 
 static bool subscript_dependence_tester_1 (struct data_dependence_relation *,
 					   unsigned int, unsigned int,
-					   struct loop *);
+					   class loop *);
 /* Returns true iff A divides B.  */
 
 static inline bool
@@ -448,7 +448,7 @@ dump_data_dependence_relation (FILE *outf,
   else if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
     {
       unsigned int i;
-      struct loop *loopi;
+      class loop *loopi;
 
       subscript *sub;
       FOR_EACH_VEC_ELT (DDR_SUBSCRIPTS (ddr), i, sub)
@@ -583,7 +583,8 @@ debug_ddrs (vec<ddr_p> ddrs)
 
 static void
 split_constant_offset (tree exp, tree *var, tree *off,
-		       hash_map<tree, std::pair<tree, tree> > &cache);
+		       hash_map<tree, std::pair<tree, tree> > &cache,
+		       unsigned *limit);
 
 /* Helper function for split_constant_offset.  Expresses OP0 CODE OP1
    (the type of the result is TYPE) as VAR + OFF, where OFF is a nonzero
@@ -594,7 +595,8 @@ split_constant_offset (tree exp, tree *var, tree *off,
 static bool
 split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 			 tree *var, tree *off,
-			 hash_map<tree, std::pair<tree, tree> > &cache)
+			 hash_map<tree, std::pair<tree, tree> > &cache,
+			 unsigned *limit)
 {
   tree var0, var1;
   tree off0, off1;
@@ -615,8 +617,15 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
       /* FALLTHROUGH */
     case PLUS_EXPR:
     case MINUS_EXPR:
-      split_constant_offset (op0, &var0, &off0, cache);
-      split_constant_offset (op1, &var1, &off1, cache);
+      if (TREE_CODE (op1) == INTEGER_CST)
+	{
+	  split_constant_offset (op0, &var0, &off0, cache, limit);
+	  *var = var0;
+	  *off = size_binop (ocode, off0, fold_convert (ssizetype, op1));
+	  return true;
+	}
+      split_constant_offset (op0, &var0, &off0, cache, limit);
+      split_constant_offset (op1, &var1, &off1, cache, limit);
       *var = fold_build2 (code, type, var0, var1);
       *off = size_binop (ocode, off0, off1);
       return true;
@@ -625,7 +634,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
       if (TREE_CODE (op1) != INTEGER_CST)
 	return false;
 
-      split_constant_offset (op0, &var0, &off0, cache);
+      split_constant_offset (op0, &var0, &off0, cache, limit);
       *var = fold_build2 (MULT_EXPR, type, var0, op1);
       *off = size_binop (MULT_EXPR, off0, fold_convert (ssizetype, op1));
       return true;
@@ -649,7 +658,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 
 	if (poffset)
 	  {
-	    split_constant_offset (poffset, &poffset, &off1, cache);
+	    split_constant_offset (poffset, &poffset, &off1, cache, limit);
 	    off0 = size_binop (PLUS_EXPR, off0, off1);
 	    if (POINTER_TYPE_P (TREE_TYPE (base)))
 	      base = fold_build_pointer_plus (base, poffset);
@@ -719,11 +728,15 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 	    e = std::make_pair (op0, ssize_int (0));
 	  }
 
+	if (*limit == 0)
+	  return false;
+	--*limit;
+
 	var0 = gimple_assign_rhs1 (def_stmt);
 	var1 = gimple_assign_rhs2 (def_stmt);
 
 	bool res = split_constant_offset_1 (type, var0, subcode, var1,
-					    var, off, cache);
+					    var, off, cache, limit);
 	if (res && use_cache)
 	  *cache.get (op0) = std::make_pair (*var, *off);
 	return res;
@@ -746,7 +759,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 		/* Split the unconverted operand and try to prove that
 		   wrapping isn't a problem.  */
 		tree tmp_var, tmp_off;
-		split_constant_offset (op0, &tmp_var, &tmp_off, cache);
+		split_constant_offset (op0, &tmp_var, &tmp_off, cache, limit);
 
 		/* See whether we have an SSA_NAME whose range is known
 		   to be [A, B].  */
@@ -781,7 +794,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 		*off = wide_int_to_tree (ssizetype, diff);
 	      }
 	    else
-	      split_constant_offset (op0, &var0, off, cache);
+	      split_constant_offset (op0, &var0, off, cache, limit);
 	    *var = fold_convert (type, var0);
 	    return true;
 	  }
@@ -798,7 +811,8 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 
 static void
 split_constant_offset (tree exp, tree *var, tree *off,
-		       hash_map<tree, std::pair<tree, tree> > &cache)
+		       hash_map<tree, std::pair<tree, tree> > &cache,
+		       unsigned *limit)
 {
   tree type = TREE_TYPE (exp), op0, op1, e, o;
   enum tree_code code;
@@ -812,7 +826,7 @@ split_constant_offset (tree exp, tree *var, tree *off,
 
   code = TREE_CODE (exp);
   extract_ops_from_tree (exp, &code, &op0, &op1);
-  if (split_constant_offset_1 (type, op0, code, op1, &e, &o, cache))
+  if (split_constant_offset_1 (type, op0, code, op1, &e, &o, cache, limit))
     {
       *var = e;
       *off = o;
@@ -822,10 +836,11 @@ split_constant_offset (tree exp, tree *var, tree *off,
 void
 split_constant_offset (tree exp, tree *var, tree *off)
 {
+  unsigned limit = PARAM_VALUE (PARAM_SSA_NAME_DEF_CHAIN_LIMIT);
   static hash_map<tree, std::pair<tree, tree> > *cache;
   if (!cache)
     cache = new hash_map<tree, std::pair<tree, tree> > (37);
-  split_constant_offset (exp, var, off, *cache);
+  split_constant_offset (exp, var, off, *cache, &limit);
   cache->empty ();
 }
 
@@ -873,7 +888,7 @@ canonicalize_base_object_address (tree addr)
 
 opt_result
 dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
-		      struct loop *loop, const gimple *stmt)
+		      class loop *loop, const gimple *stmt)
 {
   poly_int64 pbitsize, pbitpos;
   tree base, poffset;
@@ -1351,7 +1366,7 @@ data_ref_compare_tree (tree t1, tree t2)
    check.  */
 
 opt_result
-runtime_alias_check_p (ddr_p ddr, struct loop *loop, bool speed_p)
+runtime_alias_check_p (ddr_p ddr, class loop *loop, bool speed_p)
 {
   if (dump_enabled_p ())
     dump_printf (MSG_NOTE,
@@ -1624,7 +1639,7 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
    Note evolution step of index needs to be considered in comparison.  */
 
 static bool
-create_intersect_range_checks_index (struct loop *loop, tree *cond_expr,
+create_intersect_range_checks_index (class loop *loop, tree *cond_expr,
 				     const dr_with_seg_len& dr_a,
 				     const dr_with_seg_len& dr_b)
 {
@@ -1858,7 +1873,7 @@ get_segment_min_max (const dr_with_seg_len &d, tree *seg_min_out,
      || (DR_B_addr_0 + DER_B_segment_length_0) <= DR_A_addr_0))  */
 
 static void
-create_intersect_range_checks (struct loop *loop, tree *cond_expr,
+create_intersect_range_checks (class loop *loop, tree *cond_expr,
 			       const dr_with_seg_len& dr_a,
 			       const dr_with_seg_len& dr_b)
 {
@@ -1917,7 +1932,7 @@ create_intersect_range_checks (struct loop *loop, tree *cond_expr,
    that controls which version of the loop gets executed at runtime.  */
 
 void
-create_runtime_alias_checks (struct loop *loop,
+create_runtime_alias_checks (class loop *loop,
 			     vec<dr_with_seg_len_pair_t> *alias_pairs,
 			     tree * cond_expr)
 {
@@ -2197,7 +2212,7 @@ conflict_fn_no_dependence (void)
 /* Returns true if the address of OBJ is invariant in LOOP.  */
 
 static bool
-object_address_invariant_in_loop_p (const struct loop *loop, const_tree obj)
+object_address_invariant_in_loop_p (const class loop *loop, const_tree obj)
 {
   while (handled_component_p (obj))
     {
@@ -2231,7 +2246,7 @@ object_address_invariant_in_loop_p (const struct loop *loop, const_tree obj)
 
 bool
 dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
-		struct loop *loop_nest)
+		class loop *loop_nest)
 {
   tree addr_a = DR_BASE_OBJECT (a);
   tree addr_b = DR_BASE_OBJECT (b);
@@ -2892,7 +2907,7 @@ analyze_ziv_subscript (tree chrec_a,
    chrec_dont_know.  */
 
 static tree
-max_stmt_executions_tree (struct loop *loop)
+max_stmt_executions_tree (class loop *loop)
 {
   widest_int nit;
 
@@ -3046,7 +3061,7 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 		  if (tree_fold_divides_p (CHREC_RIGHT (chrec_b), difference))
 		    {
 		      HOST_WIDE_INT numiter;
-		      struct loop *loop = get_chrec_loop (chrec_b);
+		      class loop *loop = get_chrec_loop (chrec_b);
 
 		      *overlaps_a = conflict_fn (1, affine_fn_cst (integer_zero_node));
 		      tmp = fold_build2 (EXACT_DIV_EXPR, type,
@@ -3127,7 +3142,7 @@ analyze_siv_subscript_cst_affine (tree chrec_a,
 		  if (tree_fold_divides_p (CHREC_RIGHT (chrec_b), difference))
 		    {
 		      HOST_WIDE_INT numiter;
-		      struct loop *loop = get_chrec_loop (chrec_b);
+		      class loop *loop = get_chrec_loop (chrec_b);
 
 		      *overlaps_a = conflict_fn (1, affine_fn_cst (integer_zero_node));
 		      tmp = fold_build2 (EXACT_DIV_EXPR, type, difference,
@@ -4023,7 +4038,7 @@ analyze_miv_subscript (tree chrec_a,
 		       conflict_function **overlaps_a,
 		       conflict_function **overlaps_b,
 		       tree *last_conflicts,
-		       struct loop *loop_nest)
+		       class loop *loop_nest)
 {
   tree type, difference;
 
@@ -4125,7 +4140,7 @@ analyze_overlapping_iterations (tree chrec_a,
 				tree chrec_b,
 				conflict_function **overlap_iterations_a,
 				conflict_function **overlap_iterations_b,
-				tree *last_conflicts, struct loop *loop_nest)
+				tree *last_conflicts, class loop *loop_nest)
 {
   unsigned int lnn = loop_nest->num;
 
@@ -4275,7 +4290,7 @@ build_classic_dist_vector_1 (struct data_dependence_relation *ddr,
 {
   unsigned i;
   lambda_vector init_v = lambda_vector_new (DDR_NB_LOOPS (ddr));
-  struct loop *loop = DDR_LOOP_NEST (ddr)[0];
+  class loop *loop = DDR_LOOP_NEST (ddr)[0];
 
   for (i = 0; i < DDR_NUM_SUBSCRIPTS (ddr); i++)
     {
@@ -4426,7 +4441,7 @@ add_other_self_distances (struct data_dependence_relation *ddr)
   unsigned i;
   int index_carry = DDR_NB_LOOPS (ddr);
   subscript *sub;
-  struct loop *loop = DDR_LOOP_NEST (ddr)[0];
+  class loop *loop = DDR_LOOP_NEST (ddr)[0];
 
   FOR_EACH_VEC_ELT (DDR_SUBSCRIPTS (ddr), i, sub)
     {
@@ -4546,7 +4561,7 @@ same_access_functions (const struct data_dependence_relation *ddr)
 
 static bool
 build_classic_dist_vector (struct data_dependence_relation *ddr,
-			   struct loop *loop_nest)
+			   class loop *loop_nest)
 {
   bool init_b = false;
   int index_carry = DDR_NB_LOOPS (ddr);
@@ -4733,7 +4748,7 @@ build_classic_dir_vector (struct data_dependence_relation *ddr)
 static bool
 subscript_dependence_tester_1 (struct data_dependence_relation *ddr,
 			       unsigned int a_index, unsigned int b_index,
-			       struct loop *loop_nest)
+			       class loop *loop_nest)
 {
   unsigned int i;
   tree last_conflicts;
@@ -4792,7 +4807,7 @@ subscript_dependence_tester_1 (struct data_dependence_relation *ddr,
 
 static void
 subscript_dependence_tester (struct data_dependence_relation *ddr,
-			     struct loop *loop_nest)
+			     class loop *loop_nest)
 {
   if (subscript_dependence_tester_1 (ddr, 0, 1, loop_nest))
     dependence_stats.num_dependence_dependent++;
@@ -4807,7 +4822,7 @@ subscript_dependence_tester (struct data_dependence_relation *ddr,
 
 static bool
 access_functions_are_affine_or_constant_p (const struct data_reference *a,
-					   const struct loop *loop_nest)
+					   const class loop *loop_nest)
 {
   unsigned int i;
   vec<tree> fns = DR_ACCESS_FNS (a);
@@ -4832,7 +4847,7 @@ access_functions_are_affine_or_constant_p (const struct data_reference *a,
 
 void
 compute_affine_dependence (struct data_dependence_relation *ddr,
-			   struct loop *loop_nest)
+			   class loop *loop_nest)
 {
   struct data_reference *dra = DDR_A (ddr);
   struct data_reference *drb = DDR_B (ddr);
@@ -4975,7 +4990,7 @@ get_references_in_stmt (gimple *stmt, vec<data_ref_loc, va_heap> *references)
 	  {
 	  case IFN_GOMP_SIMD_LANE:
 	    {
-	      struct loop *loop = gimple_bb (stmt)->loop_father;
+	      class loop *loop = gimple_bb (stmt)->loop_father;
 	      tree uid = gimple_call_arg (stmt, 0);
 	      gcc_assert (TREE_CODE (uid) == SSA_NAME);
 	      if (loop == NULL
@@ -5117,7 +5132,7 @@ loop_nest_has_data_refs (loop_p loop)
    loop of the loop nest in which the references should be analyzed.  */
 
 opt_result
-find_data_references_in_stmt (struct loop *nest, gimple *stmt,
+find_data_references_in_stmt (class loop *nest, gimple *stmt,
 			      vec<data_reference_p> *datarefs)
 {
   unsigned i;
@@ -5176,7 +5191,7 @@ graphite_find_data_references_in_stmt (edge nest, loop_p loop, gimple *stmt,
    difficult case, returns NULL_TREE otherwise.  */
 
 tree
-find_data_references_in_bb (struct loop *loop, basic_block bb,
+find_data_references_in_bb (class loop *loop, basic_block bb,
                             vec<data_reference_p> *datarefs)
 {
   gimple_stmt_iterator bsi;
@@ -5206,7 +5221,7 @@ find_data_references_in_bb (struct loop *loop, basic_block bb,
    arithmetic as if they were array accesses, etc.  */
 
 tree
-find_data_references_in_loop (struct loop *loop,
+find_data_references_in_loop (class loop *loop,
 			      vec<data_reference_p> *datarefs)
 {
   basic_block bb, *bbs;
@@ -5331,7 +5346,7 @@ get_base_for_alignment (tree addr, unsigned int *max_alignment)
 /* Recursive helper function.  */
 
 static bool
-find_loop_nest_1 (struct loop *loop, vec<loop_p> *loop_nest)
+find_loop_nest_1 (class loop *loop, vec<loop_p> *loop_nest)
 {
   /* Inner loops of the nest should not contain siblings.  Example:
      when there are two consecutive loops,
@@ -5362,7 +5377,7 @@ find_loop_nest_1 (struct loop *loop, vec<loop_p> *loop_nest)
    appear in the classic distance vector.  */
 
 bool
-find_loop_nest (struct loop *loop, vec<loop_p> *loop_nest)
+find_loop_nest (class loop *loop, vec<loop_p> *loop_nest)
 {
   loop_nest->safe_push (loop);
   if (loop->inner)
@@ -5378,7 +5393,7 @@ find_loop_nest (struct loop *loop, vec<loop_p> *loop_nest)
    COMPUTE_SELF_AND_READ_READ_DEPENDENCES is TRUE.  */
 
 bool
-compute_data_dependences_for_loop (struct loop *loop,
+compute_data_dependences_for_loop (class loop *loop,
 				   bool compute_self_and_read_read_dependences,
 				   vec<loop_p> *loop_nest,
 				   vec<data_reference_p> *datarefs,

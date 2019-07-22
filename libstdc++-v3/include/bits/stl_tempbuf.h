@@ -63,6 +63,21 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  namespace __detail
+  {
+    template<typename _Tp>
+      inline void
+      __return_temporary_buffer(_Tp* __p,
+				size_t __len __attribute__((__unused__)))
+      {
+#if __cpp_sized_deallocation
+	::operator delete(__p, __len * sizeof(_Tp));
+#else
+	::operator delete(__p);
+#endif
+      }
+  }
+
   /**
    *  @brief Allocates a temporary buffer.
    *  @param  __len  The number of objects of type Tp.
@@ -111,7 +126,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     return_temporary_buffer(_Tp* __p)
     { ::operator delete(__p); }
-
 
   /**
    *  This class is used in two places: stl_algo.h and ext/memory,
@@ -165,7 +179,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ~_Temporary_buffer()
       {
 	std::_Destroy(_M_buffer, _M_buffer + _M_len);
-	std::return_temporary_buffer(_M_buffer);
+	std::__detail::__return_temporary_buffer(_M_buffer, _M_len);
       }
 
     private:
@@ -185,7 +199,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         __ucr(_Pointer __first, _Pointer __last,
 	      _ForwardIterator __seed)
         {
-	  if(__first == __last)
+	  if (__first == __last)
 	    return;
 
 	  _Pointer __cur = __first;
@@ -244,22 +258,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Temporary_buffer(_ForwardIterator __seed, size_type __original_len)
     : _M_original_len(__original_len), _M_len(0), _M_buffer(0)
     {
-      __try
+      std::pair<pointer, size_type> __p(
+		std::get_temporary_buffer<value_type>(_M_original_len));
+
+      if (__p.first)
 	{
-	  std::pair<pointer, size_type> __p(std::get_temporary_buffer<
-					    value_type>(_M_original_len));
-	  _M_buffer = __p.first;
-	  _M_len = __p.second;
-	  if (_M_buffer)
-	    std::__uninitialized_construct_buf(_M_buffer, _M_buffer + _M_len,
-					       __seed);
-	}
-      __catch(...)
-	{
-	  std::return_temporary_buffer(_M_buffer);
-	  _M_buffer = 0;
-	  _M_len = 0;
-	  __throw_exception_again;
+	  __try
+	    {
+	      std::__uninitialized_construct_buf(__p.first, __p.first + __p.second,
+						 __seed);
+	      _M_buffer = __p.first;
+	      _M_len = __p.second;
+	    }
+	  __catch(...)
+	    {
+	      std::__detail::__return_temporary_buffer(__p.first, __p.second);
+	      __throw_exception_again;
+	    }
 	}
     }
 

@@ -262,7 +262,7 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
 	     use PHI arg ranges which may be still UNDEFINED but have
 	     to use VARYING for them.  But we can still resort to
 	     SCEV for loop header PHIs.  */
-	  struct loop *l;
+	  class loop *l;
 	  if (scev_initialized_p ()
 	      && interesting
 	      && (l = loop_containing_stmt (phi))

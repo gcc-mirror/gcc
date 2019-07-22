@@ -651,7 +651,7 @@ default_has_ifunc_p (void)
    if the target can take advantage of it.  */
 
 bool
-default_predict_doloop_p (struct loop *loop ATTRIBUTE_UNUSED)
+default_predict_doloop_p (class loop *loop ATTRIBUTE_UNUSED)
 {
   return false;
 }
@@ -1366,7 +1366,7 @@ default_empty_mask_is_expensive (unsigned ifn)
    array of three unsigned ints, set it to zero, and return its address.  */
 
 void *
-default_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
+default_init_cost (class loop *loop_info ATTRIBUTE_UNUSED)
 {
   unsigned *cost = XNEWVEC (unsigned, 3);
   cost[vect_prologue] = cost[vect_body] = cost[vect_epilogue] = 0;
@@ -1379,7 +1379,7 @@ default_init_cost (struct loop *loop_info ATTRIBUTE_UNUSED)
 
 unsigned
 default_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
-		       struct _stmt_vec_info *stmt_info, int misalign,
+		       class _stmt_vec_info *stmt_info, int misalign,
 		       enum vect_cost_model_location where)
 {
   unsigned *cost = (unsigned *) data;

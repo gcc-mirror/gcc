@@ -28,8 +28,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Element of an affine combination.  */
 
-struct aff_comb_elt
+class aff_comb_elt
 {
+public:
   /* The value of the element.  */
   tree val;
 
@@ -37,8 +38,9 @@ struct aff_comb_elt
   widest_int coef;
 };
 
-struct aff_tree
+class aff_tree
 {
+public:
   /* Type of the result of the combination.  */
   tree type;
 
@@ -54,7 +56,7 @@ struct aff_tree
 
      The coefficients are always sign extended from the precision of TYPE
      (regardless of signedness of TYPE).  */
-  struct aff_comb_elt elts[MAX_AFF_ELTS];
+  class aff_comb_elt elts[MAX_AFF_ELTS];
 
   /* Remainder of the expression.  Usually NULL, used only if there are more
      than MAX_AFF_ELTS elements.  Type of REST will be either sizetype for
@@ -62,7 +64,7 @@ struct aff_tree
   tree rest;
 };
 
-struct name_expansion;
+class name_expansion;
 
 void aff_combination_const (aff_tree *, tree, const poly_widest_int &);
 void aff_combination_elt (aff_tree *, tree, tree);

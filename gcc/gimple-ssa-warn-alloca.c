@@ -118,7 +118,8 @@ enum alloca_type {
 };
 
 // Type of an alloca call with its corresponding limit, if applicable.
-struct alloca_type_and_limit {
+class alloca_type_and_limit {
+public:
   enum alloca_type type;
   // For ALLOCA_BOUND_MAYBE_LARGE and ALLOCA_BOUND_DEFINITELY_LARGE
   // types, this field indicates the assumed limit if known or
@@ -184,7 +185,7 @@ adjusted_warn_limit (bool idx)
 // MAX_SIZE is WARN_ALLOCA= adjusted for VLAs.  It is the maximum size
 // in bytes we allow for arg.
 
-static struct alloca_type_and_limit
+static class alloca_type_and_limit
 alloca_call_type_by_arg (tree arg, tree arg_casted, edge e,
 			 unsigned HOST_WIDE_INT max_size)
 {
@@ -325,7 +326,7 @@ is_max (tree x, wide_int max)
 // type to an unsigned type, set *INVALID_CASTED_TYPE to the
 // problematic signed type.
 
-static struct alloca_type_and_limit
+static class alloca_type_and_limit
 alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 {
   gcc_assert (gimple_alloca_call_p (stmt));
@@ -458,7 +459,7 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
   // If we couldn't find anything, try a few heuristics for things we
   // can easily determine.  Check these misc cases but only accept
   // them if all predecessors have a known bound.
-  struct alloca_type_and_limit ret = alloca_type_and_limit (ALLOCA_OK);
+  class alloca_type_and_limit ret = alloca_type_and_limit (ALLOCA_OK);
   FOR_EACH_EDGE (e, ei, gimple_bb (stmt)->preds)
     {
       gcc_assert (!len_casted || TYPE_UNSIGNED (TREE_TYPE (len_casted)));
@@ -535,7 +536,7 @@ pass_walloca::execute (function *fun)
 	    continue;
 
 	  tree invalid_casted_type = NULL;
-	  struct alloca_type_and_limit t
+	  class alloca_type_and_limit t
 	    = alloca_call_type (stmt, is_vla, &invalid_casted_type);
 
 	  unsigned HOST_WIDE_INT adjusted_alloca_limit

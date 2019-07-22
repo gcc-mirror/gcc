@@ -23,6 +23,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#pragma GCC optimize ("no-isolate-erroneous-paths-dereference")
+
 /* powerpc 32-bit not supported.  */
 #if !defined __powerpc__ || defined __powerpc64__
 

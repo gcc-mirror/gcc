@@ -1083,6 +1083,14 @@ c6x_section_type_flags (tree decl, const char *name, int reloc)
 
   flags |= default_section_type_flags (decl, name, reloc);
 
+  /* The ".far" section will be declared with @nobits elsewhere.
+     But when declared via this path it will not have the @nobits
+     flag because of SECTION_NOTYPE.  This causes linker warnings
+     due to the mismatched attribute.  Clearing SECTION_NOTYPE
+     for the ".far" section is sufficient to fix this problem.  */
+  if (strcmp (name, ".far") == 0)
+    flags &= ~SECTION_NOTYPE;
+
   return flags;
 }
 

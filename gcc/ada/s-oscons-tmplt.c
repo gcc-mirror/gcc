@@ -261,6 +261,14 @@ main (void) {
 TXT("--  This is the version for " TARGET)
 TXT("")
 TXT("with Interfaces.C;")
+#if defined (__MINGW32__)
+# define TARGET_OS "Windows"
+# define Serial_Port_Descriptor "System.Win32.HANDLE"
+TXT("with System.Win32;")
+#else
+# define TARGET_OS "Other_OS"
+# define Serial_Port_Descriptor "Interfaces.C.int"
+#endif
 
 /*
 package System.OS_Constants is
@@ -280,11 +288,6 @@ package System.OS_Constants is
 
    type OS_Type is (Windows, Other_OS);
 */
-#if defined (__MINGW32__)
-# define TARGET_OS "Windows"
-#else
-# define TARGET_OS "Other_OS"
-#endif
 C("Target_OS", OS_Type, TARGET_OS, "")
 /*
    pragma Warnings (Off, Target_OS);
@@ -302,6 +305,8 @@ CST(Target_Name, "")
  **/
 #define SIZEOF_unsigned_int sizeof (unsigned int)
 CND(SIZEOF_unsigned_int, "Size of unsigned int")
+
+SUB(Serial_Port_Descriptor)
 
 /*
 
@@ -405,10 +410,10 @@ CND(FNDELAY, "Nonblocking")
 
 #if defined (__FreeBSD__) || defined (__DragonFly__)
 # define CNI CNU
-# define IOCTL_Req_T "unsigned"
+# define IOCTL_Req_T "Interfaces.C.unsigned"
 #else
 # define CNI CND
-# define IOCTL_Req_T "int"
+# define IOCTL_Req_T "Interfaces.C.int"
 #endif
 
 SUB(IOCTL_Req_T)
@@ -1287,6 +1292,111 @@ CND(IPPROTO_UDP, "UDP")
 #endif
 CND(IPPROTO_TCP, "TCP")
 
+#ifndef IPPROTO_ICMP
+# define IPPROTO_ICMP -1
+#endif
+CND(IPPROTO_ICMP, "Internet Control Message Protocol")
+
+#ifndef IPPROTO_IGMP
+# define IPPROTO_IGMP -1
+#endif
+CND(IPPROTO_IGMP, "Internet Group Management Protocol")
+
+#ifndef IPPROTO_IPIP
+# define IPPROTO_IPIP -1
+#endif
+CND(IPPROTO_IPIP, "IPIP tunnels (older KA9Q tunnels use 94)")
+
+#ifndef IPPROTO_EGP
+# define IPPROTO_EGP -1
+#endif
+CND(IPPROTO_EGP, "Exterior Gateway Protocol")
+
+#ifndef IPPROTO_PUP
+# define IPPROTO_PUP -1
+#endif
+CND(IPPROTO_PUP, "PUP protocol")
+
+#ifndef IPPROTO_IDP
+# define IPPROTO_IDP -1
+#endif
+CND(IPPROTO_IDP, "XNS IDP protocol")
+
+#ifndef IPPROTO_TP
+# define IPPROTO_TP -1
+#endif
+CND(IPPROTO_TP, "SO Transport Protocol Class 4")
+
+#ifndef IPPROTO_DCCP
+# define IPPROTO_DCCP -1
+#endif
+CND(IPPROTO_DCCP, "Datagram Congestion Control Protocol")
+
+#ifndef IPPROTO_RSVP
+# define IPPROTO_RSVP -1
+#endif
+CND(IPPROTO_RSVP, "Reservation Protocol")
+
+#ifndef IPPROTO_GRE
+# define IPPROTO_GRE -1
+#endif
+CND(IPPROTO_GRE, "General Routing Encapsulation")
+
+#ifndef IPPROTO_ESP
+# define IPPROTO_ESP -1
+#endif
+CND(IPPROTO_ESP, "encapsulating security payload")
+
+#ifndef IPPROTO_AH
+# define IPPROTO_AH -1
+#endif
+CND(IPPROTO_AH, "authentication header")
+
+#ifndef IPPROTO_MTP
+# define IPPROTO_MTP -1
+#endif
+CND(IPPROTO_MTP, "Multicast Transport Protocol")
+
+#ifndef IPPROTO_BEETPH
+# define IPPROTO_BEETPH -1
+#endif
+CND(IPPROTO_BEETPH, "IP option pseudo header for BEET")
+
+#ifndef IPPROTO_ENCAP
+# define IPPROTO_ENCAP -1
+#endif
+CND(IPPROTO_ENCAP, "Encapsulation Header")
+
+#ifndef IPPROTO_PIM
+# define IPPROTO_PIM -1
+#endif
+CND(IPPROTO_PIM, "Protocol Independent Multicast")
+
+#ifndef IPPROTO_COMP
+# define IPPROTO_COMP -1
+#endif
+CND(IPPROTO_COMP, "Compression Header Protocol")
+
+#ifndef IPPROTO_SCTP
+# define IPPROTO_SCTP -1
+#endif
+CND(IPPROTO_SCTP, "Stream Control Transmission Protocol")
+
+#ifndef IPPROTO_UDPLITE
+# define IPPROTO_UDPLITE -1
+#endif
+CND(IPPROTO_UDPLITE, "UDP-Lite protocol")
+
+#ifndef IPPROTO_MPLS
+# define IPPROTO_MPLS -1
+#endif
+CND(IPPROTO_MPLS, "MPLS in IP")
+
+#ifndef IPPROTO_RAW
+# define IPPROTO_RAW -1
+#endif
+CND(IPPROTO_RAW, "Raw IP packets")
+
 /*
 
    -------------------
@@ -1628,9 +1738,9 @@ CND(IF_NAMESIZE, "Max size of interface name with 0 terminator");
 */
 
 #if defined (__sun__) || defined (__hpux__)
-# define Msg_Iovlen_T "int"
+# define Msg_Iovlen_T "Interfaces.C.int"
 #else
-# define Msg_Iovlen_T "size_t"
+# define Msg_Iovlen_T "Interfaces.C.size_t"
 #endif
 
 SUB(Msg_Iovlen_T)

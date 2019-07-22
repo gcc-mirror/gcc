@@ -45,8 +45,9 @@ struct align_flags_tuple
 /* Alignment flags is structure used as value of -align-* options.
    It's used in target-dependant code.  */
 
-struct align_flags
+class align_flags
 {
+public:
   /* Default constructor.  */
   align_flags (int log0 = 0, int maxskip0 = 0, int log1 = 0, int maxskip1 = 0)
   {

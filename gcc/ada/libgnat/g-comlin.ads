@@ -466,9 +466,9 @@ package GNAT.Command_Line is
    --  function should not be called before Getopt has returned ASCII.NUL.
    --
    --  If Do_Expansion is True, then the parameter on the command line will
-   --  be considered as a filename with wild cards, and will be expanded. The
+   --  be considered as a filename with wildcards, and will be expanded. The
    --  matching file names will be returned one at a time. This is useful in
-   --  non-Unix systems for obtaining normal expansion of wild card references.
+   --  non-Unix systems for obtaining normal expansion of wildcard references.
    --  When there are no more arguments on the command line, this function
    --  returns an empty string.
 
@@ -515,7 +515,7 @@ package GNAT.Command_Line is
       Pattern      : String;
       Directory    : String := "";
       Basic_Regexp : Boolean := True);
-   --  Initialize a wild card expansion. The next calls to Expansion will
+   --  Initialize a wildcard expansion. The next calls to Expansion will
    --  return the next file name in Directory which match Pattern (Pattern
    --  is a regular expression, using only the Unix shell and DOS syntax if
    --  Basic_Regexp is True). When Directory is an empty string, the current
