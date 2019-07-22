@@ -1,3 +1,11 @@
+2019-07-22  Paul A. Clarke  <pc@us.ibm.com>
+
+	Backport from mainline
+	* gcc.target/powerpc/sse4_1-check.h: New.
+	* gcc.target/powerpc/sse4_1-pblendvb.c: New.
+	* gcc.target/powerpc/sse4_1-pblendw.c: New.
+	* gcc.target/powerpc/sse4_1-pblendw-2.c: New.
+
 2019-07-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline

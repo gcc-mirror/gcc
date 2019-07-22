@@ -1,3 +1,9 @@
+2019-07-22  Paul A. Clarke  <pc@us.ibm.com>
+
+	Backport from mainline
+	* config/rs6000/smmintrin.h (_mm_blend_epi16): New.
+	(_mm_blendv_epi8): New.
+
 2019-07-22  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
