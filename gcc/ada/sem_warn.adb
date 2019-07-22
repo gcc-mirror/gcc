@@ -333,6 +333,11 @@ package body Sem_Warn is
 
             elsif Has_Warnings_Off (Entity (Name (N))) then
                return;
+
+            --  Forget it if the parameter is not In
+
+            elsif Has_Out_Or_In_Out_Parameter (Entity (Name (N))) then
+               return;
             end if;
 
             --  OK, see if we have one argument
