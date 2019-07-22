@@ -1,3 +1,8 @@
+2019-07-22  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/tls-2.c: New test.
+	* gcc.target/arc/tls-3.c: Likewise.
+
 2019-07-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/67853
