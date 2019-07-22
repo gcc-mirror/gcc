@@ -1,3 +1,10 @@
+2019-07-22  Andrea Corallo <andrea.corallo@arm.com>
+
+	* jit.dg/test-error-gcc_jit_context_new_unary_op-bad-res-type.c:
+	New testcase.
+	* jit.dg/test-error-gcc_jit_context_new_binary_op-bad-res-type.c:
+	Adjust error message.
+
 2019-07-22  Paul A. Clarke  <pc@us.ibm.com>
 
 	* gcc.target/powerpc/sse4_1-check.h: New.

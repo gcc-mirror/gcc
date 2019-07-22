@@ -1336,6 +1336,13 @@ gcc_jit_context_new_unary_op (gcc_jit_context *ctxt,
     "unrecognized value for enum gcc_jit_unary_op: %i",
     op);
   RETURN_NULL_IF_FAIL (result_type, ctxt, loc, "NULL result_type");
+  RETURN_NULL_IF_FAIL_PRINTF3 (
+    result_type->is_numeric (), ctxt, loc,
+    "gcc_jit_unary_op %s with operand %s "
+    "has non-numeric result_type: %s",
+    gcc::jit::unary_op_reproducer_strings[op],
+    rvalue->get_debug_string (),
+    result_type->get_debug_string ());
   RETURN_NULL_IF_FAIL (rvalue, ctxt, loc, "NULL rvalue");
 
   return (gcc_jit_rvalue *)ctxt->new_unary_op (loc, op, result_type, rvalue);
@@ -1387,9 +1394,10 @@ gcc_jit_context_new_binary_op (gcc_jit_context *ctxt,
     b->get_type ()->get_debug_string ());
   RETURN_NULL_IF_FAIL_PRINTF4 (
     result_type->is_numeric (), ctxt, loc,
-    "gcc_jit_binary_op %i with operands a: %s b: %s "
-    "has non numeric result_type: %s",
-    op, a->get_debug_string (), b->get_debug_string (),
+    "gcc_jit_binary_op %s with operands a: %s b: %s "
+    "has non-numeric result_type: %s",
+    gcc::jit::binary_op_reproducer_strings[op],
+    a->get_debug_string (), b->get_debug_string (),
     result_type->get_debug_string ());
 
   return (gcc_jit_rvalue *)ctxt->new_binary_op (loc, op, result_type, a, b);
