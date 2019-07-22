@@ -543,27 +543,6 @@ compile_file (void)
       process_pending_assemble_externals ();
    }
 
-  /* Emit LTO marker if LTO info has been previously emitted.  This is
-     used by collect2 to determine whether an object file contains IL.
-     We used to emit an undefined reference here, but this produces
-     link errors if an object file with IL is stored into a shared
-     library without invoking lto1.  */
-  if (flag_generate_lto || flag_generate_offload)
-    {
-#if defined ASM_OUTPUT_ALIGNED_DECL_COMMON
-      ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, NULL_TREE,
-				      "__gnu_lto_v1",
-				      HOST_WIDE_INT_1U, 8);
-#elif defined ASM_OUTPUT_ALIGNED_COMMON
-      ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, "__gnu_lto_v1",
-				 HOST_WIDE_INT_1U, 8);
-#else
-      ASM_OUTPUT_COMMON (asm_out_file, "__gnu_lto_v1",
-			 HOST_WIDE_INT_1U,
-			 HOST_WIDE_INT_1U);
-#endif
-    }
-
   /* Let linker plugin know that this is a slim object and must be LTOed
      even when user did not ask for it.  */
   if (flag_generate_lto && !flag_fat_lto_objects)
