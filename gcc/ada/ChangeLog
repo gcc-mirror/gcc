@@ -1,5 +1,10 @@
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sem_ch8.adb (Check_Constrained_Object): Further extend the
+	special optimization to all limited types.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* exp_attr.adb (Expand_N_Attribute_Reference)
 	<Attribute_Enum_Val>: Set No_Truncation on the
 	N_Unchecked_Type_Conversion built around the argument passed to

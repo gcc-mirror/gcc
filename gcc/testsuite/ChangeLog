@@ -1,5 +1,9 @@
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/iter5.adb, gnat.dg/iter5_pkg.ads: New testcase.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/enum_val1.adb: New testcase.
 
 2019-07-22  Nicolas Roche  <roche@adacore.com>

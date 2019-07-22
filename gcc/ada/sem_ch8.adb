@@ -809,18 +809,12 @@ package body Sem_Ch8 is
             --  in particular with record types with an access discriminant
             --  that are used in iterators. This is an optimization, but it
             --  also prevents typing anomalies when the prefix is further
-            --  expanded. This also applies to limited types with access
-            --  discriminants.
+            --  expanded.
             --  Note that we cannot just use the Is_Limited_Record flag because
             --  it does not apply to records with limited components, for which
             --  this syntactic flag is not set, but whose size is also fixed.
 
-            elsif (Is_Record_Type (Typ) and then Is_Limited_Type (Typ))
-              or else
-                (Ekind (Typ) = E_Limited_Private_Type
-                  and then Has_Discriminants (Typ)
-                  and then Is_Access_Type (Etype (First_Discriminant (Typ))))
-            then
+            elsif Is_Limited_Type (Typ) then
                null;
 
             else
