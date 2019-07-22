@@ -4836,6 +4836,13 @@ package body Sem_Ch8 is
             Set_In_Use (Base_Type (T), False);
             Set_Current_Use_Clause (T, Empty);
             Set_Current_Use_Clause (Base_Type (T), Empty);
+
+            --  See Use_One_Type for the rationale. This is a bit on the naive
+            --  side, but should be good enough in practice.
+
+            if Is_Tagged_Type (T) then
+               Set_In_Use (Class_Wide_Type (T), False);
+            end if;
          end if;
       end if;
 
@@ -9985,7 +9992,10 @@ package body Sem_Ch8 is
          Set_In_Use (T);
 
          --  If T is tagged, primitive operators on class-wide operands are
-         --  also available.
+         --  also deemed available. Note that this is really necessary only
+         --  in semantics-only mode, because the primitive operators are not
+         --  fully constructed in this mode, but we do it in all modes for the
+         --  sake of uniformity, as this should not matter in practice.
 
          if Is_Tagged_Type (T) then
             Set_In_Use (Class_Wide_Type (T));

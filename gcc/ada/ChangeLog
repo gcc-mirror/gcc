@@ -1,5 +1,12 @@
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sem_ch8.adb (End_Use_Type): Reset the In_Use flag on the
+	class-wide type if the type is tagged.
+	(Use_One_Type): Add commentary on the handling of the class-wide
+	type.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* einfo.ads (Is_For_Access_Subtype): Delete.
 	(Set_Is_For_Access_Subtype): Likewise.
 	* einfo.adb (Is_For_Access_Subtype): Likewise.
