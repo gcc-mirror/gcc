@@ -4249,9 +4249,12 @@ package body Exp_Ch4 is
 
       function Size_In_Storage_Elements (E : Entity_Id) return Node_Id;
       --  Given a constrained array type E, returns a node representing the
-      --  code to compute the size in storage elements for the given type.
-      --  This is done without using the attribute (which malfunctions for
-      --  large sizes ???)
+      --  code to compute a close approximation of the size in storage elements
+      --  for the given type; for indexes that are modular types we compute
+      --  'Last - First (instead of 'Length) because for large arrays computing
+      --  'Last -'First + 1 causes overflow. This is done without using the
+      --  attribute 'Size_In_Storage_Elements (which malfunctions for large
+      --  sizes ???)
 
       -------------------------
       -- Rewrite_Coextension --
@@ -4310,17 +4313,77 @@ package body Exp_Ch4 is
          --  just a fraction of a storage element???
 
          declare
+            Idx : Node_Id := First_Index (E);
             Len : Node_Id;
             Res : Node_Id;
             pragma Warnings (Off, Res);
 
          begin
             for J in 1 .. Number_Dimensions (E) loop
-               Len :=
-                 Make_Attribute_Reference (Loc,
-                   Prefix         => New_Occurrence_Of (E, Loc),
-                   Attribute_Name => Name_Length,
-                   Expressions    => New_List (Make_Integer_Literal (Loc, J)));
+
+               if not Is_Modular_Integer_Type (Etype (Idx)) then
+                  Len :=
+                    Make_Attribute_Reference (Loc,
+                      Prefix         => New_Occurrence_Of (E, Loc),
+                      Attribute_Name => Name_Length,
+                      Expressions    => New_List
+                                          (Make_Integer_Literal (Loc, J)));
+
+               --  For indexes that are modular types we cannot generate code
+               --  to compute 'Length since for large arrays 'Last -'First + 1
+               --  causes overflow; therefore we compute 'Last - 'First (which
+               --  is not the exact number of components but it is valid for
+               --  the purpose of this runtime check on 32-bit targets)
+
+               else
+                  declare
+                     Len_Minus_1_Expr : Node_Id;
+                     Test_Gt          : Node_Id;
+
+                  begin
+                     Test_Gt :=
+                       Make_Op_Gt (Loc,
+                         Make_Attribute_Reference (Loc,
+                           Prefix         => New_Occurrence_Of (E, Loc),
+                           Attribute_Name => Name_Last,
+                           Expressions    =>
+                             New_List (Make_Integer_Literal (Loc, J))),
+                         Make_Attribute_Reference (Loc,
+                           Prefix         => New_Occurrence_Of (E, Loc),
+                           Attribute_Name => Name_First,
+                           Expressions    =>
+                             New_List (Make_Integer_Literal (Loc, J))));
+
+                     Len_Minus_1_Expr :=
+                       Convert_To (Standard_Unsigned,
+                         Make_Op_Subtract (Loc,
+                           Make_Attribute_Reference (Loc,
+                             Prefix => New_Occurrence_Of (E, Loc),
+                             Attribute_Name => Name_Last,
+                             Expressions =>
+                               New_List
+                                 (Make_Integer_Literal (Loc, J))),
+                           Make_Attribute_Reference (Loc,
+                             Prefix => New_Occurrence_Of (E, Loc),
+                             Attribute_Name => Name_First,
+                             Expressions =>
+                               New_List
+                                 (Make_Integer_Literal (Loc, J)))));
+
+                     --  Handle superflat arrays, i.e. arrays with such bounds
+                     --  as 4 .. 2, to insure that the result is correct.
+
+                     --  Generate:
+                     --    (if X'Last > X'First then X'Last - X'First else 0)
+
+                     Len :=
+                       Make_If_Expression (Loc,
+                         Expressions => New_List (
+                           Test_Gt,
+                           Len_Minus_1_Expr,
+                           Make_Integer_Literal (Loc, Uint_0)));
+                  end;
+               end if;
 
                if J = 1 then
                   Res := Len;
@@ -4331,6 +4394,8 @@ package body Exp_Ch4 is
                       Left_Opnd  => Res,
                       Right_Opnd => Len);
                end if;
+
+               Next_Index (Idx);
             end loop;
 
             return
@@ -4573,15 +4638,83 @@ package body Exp_Ch4 is
          --  apply the check for constrained arrays, and manually compute the
          --  value of the attribute ???
 
-         if Is_Array_Type (Etyp) and then Is_Constrained (Etyp) then
-            Insert_Action (N,
-              Make_Raise_Storage_Error (Loc,
-                Condition =>
-                  Make_Op_Gt (Loc,
-                    Left_Opnd  => Size_In_Storage_Elements (Etyp),
-                    Right_Opnd =>
-                      Make_Integer_Literal (Loc, Uint_7 * (Uint_2 ** 29))),
-                Reason    => SE_Object_Too_Large));
+         --  The check on No_Initialization is used here to prevent generating
+         --  this runtime check twice when the allocator is locally replaced by
+         --  the expander by another one.
+
+         if Is_Array_Type (Etyp) and then not No_Initialization (N) then
+            declare
+               Cond    : Node_Id;
+               Ins_Nod : Node_Id   := N;
+               Siz_Typ : Entity_Id := Etyp;
+               Expr    : Node_Id;
+
+            begin
+               --  For unconstrained array types initialized with a qualified
+               --  expression we use its type to perform this check
+
+               if not Is_Constrained (Etyp)
+                 and then not No_Initialization (N)
+                 and then Nkind (Expression (N)) = N_Qualified_Expression
+               then
+                  Expr    := Expression (Expression (N));
+                  Siz_Typ := Etype (Expression (Expression (N)));
+
+                  --  If the qualified expression has been moved to an internal
+                  --  temporary (to remove side effects) then we must insert
+                  --  the runtime check before its declaration to ensure that
+                  --  the check is performed before the execution of the code
+                  --  computing the qualified expression.
+
+                  if Nkind (Expr) = N_Identifier
+                    and then Is_Internal_Name (Chars (Expr))
+                    and then
+                      Nkind (Parent (Entity (Expr))) = N_Object_Declaration
+                  then
+                     Ins_Nod := Parent (Entity (Expr));
+                  else
+                     Ins_Nod := Expr;
+                  end if;
+               end if;
+
+               if Is_Constrained (Siz_Typ)
+                 and then Ekind (Siz_Typ) /= E_String_Literal_Subtype
+               then
+                  --  For CCG targets the largest array may have up to 2**31-1
+                  --  components (i.e. 2 Gigabytes if each array component is
+                  --  1-byte). This insures that fat pointer fields do not
+                  --  overflow, since they are 32-bit integer types, and also
+                  --  insures that 'Length can be computed at run time.
+
+                  if Modify_Tree_For_C then
+                     Cond :=
+                       Make_Op_Gt (Loc,
+                         Left_Opnd  => Size_In_Storage_Elements (Siz_Typ),
+                         Right_Opnd => Make_Integer_Literal (Loc,
+                                         Uint_2 ** 31 - Uint_1));
+
+                  --  For native targets the largest object is 3.5 gigabytes
+
+                  else
+                     Cond :=
+                       Make_Op_Gt (Loc,
+                         Left_Opnd  => Size_In_Storage_Elements (Siz_Typ),
+                         Right_Opnd => Make_Integer_Literal (Loc,
+                                         Uint_7 * (Uint_2 ** 29)));
+                  end if;
+
+                  Insert_Action (Ins_Nod,
+                    Make_Raise_Storage_Error (Loc,
+                      Condition => Cond,
+                      Reason    => SE_Object_Too_Large));
+
+                  if Entity (Cond) = Standard_True then
+                     Error_Msg_N
+                       ("object too large: Storage_Error will be raised at "
+                        & "run time??", N);
+                  end if;
+               end if;
+            end;
          end if;
       end if;
 
