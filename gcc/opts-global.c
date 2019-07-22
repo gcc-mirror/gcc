@@ -100,10 +100,14 @@ complain_wrong_lang (const struct cl_decoded_option *decoded,
 	   text, bad_lang);
   else if (lang_mask == CL_DRIVER)
     gcc_unreachable ();
-  else
+  else if (ok_langs[0] != '\0')
     /* Eventually this should become a hard error IMO.  */
     warning (0, "command line option %qs is valid for %s but not for %s",
 	     text, ok_langs, bad_lang);
+  else
+    /* Happens for -Werror=warning_name.  */
+    warning (0, "%<-Werror=%> argument %qs is not valid for %s",
+	     text, bad_lang);
 
   free (ok_langs);
   free (bad_lang);
