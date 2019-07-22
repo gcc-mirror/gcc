@@ -1,5 +1,10 @@
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* repinfo.adb (List_Entities): Also list compiled-generated
+	types present as Etype of objects.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* sinfo.ads: Update the documentation about the
 	Do_Division_Check, Do_Overflow_Check and Do_Range_Check flags.
 
