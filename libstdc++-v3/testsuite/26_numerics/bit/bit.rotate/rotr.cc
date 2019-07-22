@@ -21,11 +21,26 @@
 #include <bit>
 
 template<typename UInt>
+constexpr bool
+test_negative_shifts()
+{
+  constexpr unsigned digits = std::numeric_limits<UInt>::digits;
+
+  UInt xarr[] = { (UInt)-1, 0, 1, 3, 6, 7, 0x10, 0x11, 0x22, 0x44, 0x80 };
+  int sarr[] = { 1, 4, 5, digits - 1, digits };
+  for (UInt x : xarr)
+    for (int s : sarr)
+      if (std::rotr(x, -s) != std::rotl(x, s))
+	return false;
+  return true;
+}
+
+template<typename UInt>
 constexpr auto
 test(UInt x)
--> decltype(std::rotr(x, 0u))
+-> decltype(std::rotr(x, 0))
 {
-  static_assert( noexcept(std::rotr(x, 0u)) );
+  static_assert( noexcept(std::rotr(x, 0)) );
 
   constexpr unsigned digits = std::numeric_limits<UInt>::digits;
 
@@ -64,6 +79,8 @@ test(UInt x)
     static_assert( std::rotr((UInt)0b1010'0101, 4)
 			      == (0b1010 | ((UInt)0b0101 << digits - 4)) );
   }
+
+  static_assert( test_negative_shifts<UInt>() );
 
   return true;
 }

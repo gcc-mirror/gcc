@@ -1,5 +1,16 @@
 2019-07-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/bit (__rotl, __rotr): Change second parameter from
+	unsigned int to int and handle negative values.
+	(rotl, rotr): Remove check for __STRICT_ANSI__. Change second
+	parameter from unsigned int to int. Add nodiscard attribute.
+	* testsuite/26_numerics/bit/bitops.rot/rotl.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.rotate/rotl.cc: Here. Test negative
+	shifts.
+	* testsuite/26_numerics/bit/bitops.rot/rotr.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.rotate/rotr.cc: Here. Test negative
+	shifts.
+
 	* include/std/bit (__ceil2): Make unrepresentable results undefined,
 	as per P1355R2. Add debug assertion. Perform one left shift, not two,
 	so that out of range values cause undefined behaviour. Ensure that
