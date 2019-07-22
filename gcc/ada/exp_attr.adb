@@ -1384,6 +1384,8 @@ package body Exp_Attr is
                Stmts     : List_Id;
 
             begin
+               Func_Id := Make_Temporary (Loc, 'F');
+
                --  Wrap the condition of the while loop in a Boolean function.
                --  This avoids the duplication of the same code which may lead
                --  to gigi issues with respect to multiple declaration of the
@@ -1403,7 +1405,9 @@ package body Exp_Attr is
 
                Append_To (Stmts,
                  Make_Simple_Return_Statement (Loc,
-                   Expression => Relocate_Node (Condition (Scheme))));
+                   Expression =>
+                     New_Copy_Tree (Condition (Scheme),
+                       New_Scope => Func_Id)));
 
                --  Generate:
                --    function Fnn return Boolean is
@@ -1411,7 +1415,6 @@ package body Exp_Attr is
                --       <Stmts>
                --    end Fnn;
 
-               Func_Id   := Make_Temporary (Loc, 'F');
                Func_Decl :=
                  Make_Subprogram_Body (Loc,
                    Specification              =>

@@ -1,3 +1,8 @@
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Expand_Loop_Entry_Attribute): Copy the condition
+	of a while loop instead of simply relocating it.
+
 2019-07-18  Arnaud Charlet  <charlet@adacore.com>
 
 	* Makefile.rtl, expect.c, env.c, aux-io.c, mkdir.c, initialize.c,
