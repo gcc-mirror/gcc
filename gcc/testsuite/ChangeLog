@@ -1,5 +1,10 @@
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/encode_string1.adb, gnat.dg/encode_string1_pkg.adb,
+	gnat.dg/encode_string1_pkg.ads: New testcase.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/warn23.adb: New testcase.
 
 2019-07-22  Javier Miranda  <miranda@adacore.com>
