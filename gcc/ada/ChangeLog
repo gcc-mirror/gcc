@@ -1,3 +1,11 @@
+2019-07-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_In): Do not suggest the use of attribute
+	'Valid as a replacement for a range check on a discrete type
+	when the bounds of the range are given by type conversions,
+	because in such a case there are distinct types involved and the
+	subbested attribute replacement would be misplaced.
+
 2019-07-22  Yannick Moy  <moy@adacore.com>
 
 	* sem_spark.adb (Get_Root_Object, Is_Path_Expression,

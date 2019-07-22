@@ -1,3 +1,7 @@
+2019-07-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/warn26.adb: New testcase.
+
 2019-07-22  Javier Miranda  <miranda@adacore.com>
 
 	* gnat.dg/class_wide5.adb: New testcase.

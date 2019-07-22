@@ -6272,10 +6272,19 @@ package body Exp_Ch4 is
               --  Similarly, do not rewrite membership as a validity check if
               --  within the predicate function for the type.
 
+              --  Finally, if the original bounds are type conversions, even
+              --  if they have been folded into constants, there are different
+              --  types involved and 'Valid is not appropriate.
+
             then
                if In_Instance
                  or else (Ekind (Current_Scope) = E_Function
                            and then Is_Predicate_Function (Current_Scope))
+               then
+                  null;
+
+               elsif Nkind (Lo_Orig) = N_Type_Conversion
+                 or else Nkind (Hi_Orig) = N_Type_Conversion
                then
                   null;
 
