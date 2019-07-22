@@ -5,7 +5,7 @@
 
 #include "harness.h"
 
-/* Try to create a binary operator with invalid result type.  */
+/* Try to create an unary operator with invalid result type.  */
 
 void
 create_code (gcc_jit_context *ctxt, void *user_data)
@@ -15,17 +15,14 @@ create_code (gcc_jit_context *ctxt, void *user_data)
   gcc_jit_type *void_ptr_type =
     gcc_jit_context_get_type (ctxt, GCC_JIT_TYPE_VOID_PTR);
 
-  gcc_jit_context_new_binary_op (
+  gcc_jit_context_new_unary_op (
     ctxt,
     NULL,
-    GCC_JIT_BINARY_OP_MINUS,
+    GCC_JIT_UNARY_OP_LOGICAL_NEGATE,
     void_ptr_type,
     gcc_jit_context_new_rvalue_from_int (ctxt,
 					 int_type,
-					 1),
-    gcc_jit_context_new_rvalue_from_int (ctxt,
-					 int_type,
-					 2));
+					 1));
 }
 
 void
@@ -35,7 +32,7 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
 
   /* Verify that the correct error message was emitted.	 */
   CHECK_STRING_VALUE (gcc_jit_context_get_first_error (ctxt),
-		      "gcc_jit_context_new_binary_op: gcc_jit_binary_op "
-		      "GCC_JIT_BINARY_OP_MINUS with operands a: "
-		      "(int)1 b: (int)2 has non-numeric result_type: void *");
+		      "gcc_jit_context_new_unary_op: gcc_jit_unary_op "
+		      "GCC_JIT_UNARY_OP_LOGICAL_NEGATE with operand "
+		      "(int)1 has non-numeric result_type: void *");
 }

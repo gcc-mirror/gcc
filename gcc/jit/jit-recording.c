@@ -4888,7 +4888,7 @@ recording::unary_op::make_debug_string ()
 			      m_a->get_debug_string ());
 }
 
-static const char * const unary_op_reproducer_strings[] = {
+const char * const unary_op_reproducer_strings[] = {
   "GCC_JIT_UNARY_OP_MINUS",
   "GCC_JIT_UNARY_OP_BITWISE_NEGATE",
   "GCC_JIT_UNARY_OP_LOGICAL_NEGATE",
@@ -4968,7 +4968,7 @@ recording::binary_op::make_debug_string ()
 			      m_b->get_debug_string_parens (prec));
 }
 
-static const char * const binary_op_reproducer_strings[] = {
+const char * const binary_op_reproducer_strings[] = {
   "GCC_JIT_BINARY_OP_PLUS",
   "GCC_JIT_BINARY_OP_MINUS",
   "GCC_JIT_BINARY_OP_MULT",
