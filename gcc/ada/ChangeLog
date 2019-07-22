@@ -1,5 +1,10 @@
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* libgnat/g-encstr.adb (Encode_Wide_String): Fix oversight.
+	(Encode_Wide_Wide_String): Likewise.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* sem_warn.adb (Find_Var): Bail out for a function call with an
 	Out or In/Out parameter.
 
