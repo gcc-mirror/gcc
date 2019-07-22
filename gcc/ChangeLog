@@ -1,3 +1,13 @@
+2019-07-22  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2019-07-22  Martin Liska  <mliska@suse.cz>
+
+	PR driver/91172
+	* opts-common.c (decode_cmdline_option): Decode
+	argument of -Werror and check it for a wrong language.
+	* opts-global.c (complain_wrong_lang): Remove such case.
+
 2019-07-22  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	Backport from mainline.
