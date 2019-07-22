@@ -1,5 +1,8 @@
 2019-07-22  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/26_numerics/bit/bitops.count/*: Rename to ...
+	* testsuite/26_numerics/bit/bit.count/*: Here.
+
 	* include/std/bit (__rotl, __rotr): Change second parameter from
 	unsigned int to int and handle negative values.
 	(rotl, rotr): Remove check for __STRICT_ANSI__. Change second
