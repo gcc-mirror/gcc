@@ -17827,11 +17827,15 @@ package body Sem_Ch3 is
       Digs_Val      : Uint;
       Base_Typ      : Entity_Id;
       Implicit_Base : Entity_Id;
-      Bound         : Node_Id;
 
       function Can_Derive_From (E : Entity_Id) return Boolean;
       --  Find if given digits value, and possibly a specified range, allows
       --  derivation from specified type
+
+      procedure Convert_Bound (B : Node_Id);
+      --  If specified, the bounds must be static but may be of different
+      --  types. They must be converted into machine numbers of the base type,
+      --  in accordance with RM 4.9(38).
 
       function Find_Base_Type return Entity_Id;
       --  Find a predefined base type that Def can derive from, or generate
@@ -17869,6 +17873,28 @@ package body Sem_Ch3 is
 
          return True;
       end Can_Derive_From;
+
+      -------------------
+      -- Convert_Bound --
+      --------------------
+
+      procedure Convert_Bound (B : Node_Id) is
+      begin
+         --  If the bound is not a literal it can only be static if it is
+         --  a static constant, possibly of a specified type.
+
+         if Is_Entity_Name (B)
+           and then Ekind (Entity (B)) = E_Constant
+         then
+            Rewrite (B, Constant_Value (Entity (B)));
+         end if;
+
+         if Nkind (B) = N_Real_Literal then
+            Set_Realval (B, Machine (Base_Typ, Realval (B), Round, B));
+            Set_Is_Machine_Number (B);
+            Set_Etype (B, Base_Typ);
+         end if;
+      end Convert_Bound;
 
       --------------------
       -- Find_Base_Type --
@@ -17967,24 +17993,8 @@ package body Sem_Ch3 is
          Set_Scalar_Range (T, Real_Range_Specification (Def));
          Set_Is_Constrained (T);
 
-         --  The bounds of this range must be converted to machine numbers
-         --  in accordance with RM 4.9(38).
-
-         Bound := Type_Low_Bound (T);
-
-         if Nkind (Bound) = N_Real_Literal then
-            Set_Realval
-              (Bound, Machine (Base_Typ, Realval (Bound), Round, Bound));
-            Set_Is_Machine_Number (Bound);
-         end if;
-
-         Bound := Type_High_Bound (T);
-
-         if Nkind (Bound) = N_Real_Literal then
-            Set_Realval
-              (Bound, Machine (Base_Typ, Realval (Bound), Round, Bound));
-            Set_Is_Machine_Number (Bound);
-         end if;
+         Convert_Bound (Type_Low_Bound (T));
+         Convert_Bound (Type_High_Bound (T));
 
       else
          Set_Scalar_Range (T, Scalar_Range (Base_Typ));
