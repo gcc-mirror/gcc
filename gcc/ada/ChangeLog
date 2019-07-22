@@ -1,3 +1,8 @@
+2019-07-22  Nicolas Roche  <roche@adacore.com>
+
+	* libgnat/s-valrea.adb (Scan_Real): Ignore non significative
+	digits to avoid converging to infinity in some cases.
+
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* libgnat/g-encstr.adb (Encode_Wide_String): Fix oversight.
