@@ -1,3 +1,7 @@
+2019-07-22  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/cpp_constructor2.adb: New testcase.
+
 2019-07-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/warn22.adb: New testcase.
