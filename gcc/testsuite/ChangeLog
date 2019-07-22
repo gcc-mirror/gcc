@@ -1,3 +1,11 @@
+2019-07-22  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/isr-push-pop-main.c: New test.
+	* gcc.target/msp430/isr-push-pop-isr-430.c: Likewise.
+	* gcc.target/msp430/isr-push-pop-isr-430x.c: Likewise.
+	* gcc.target/msp430/isr-push-pop-leaf-isr-430.c: Likewise.
+	* gcc.target/msp430/isr-push-pop-leaf-isr-430x.c: Likewise.
+
 2019-07-22  Andrea Corallo <andrea.corallo@arm.com>
 
 	* jit.dg/test-error-gcc_jit_context_new_unary_op-bad-res-type.c:

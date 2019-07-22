@@ -1755,11 +1755,19 @@ msp430_preserve_reg_p (int regno)
   if (fixed_regs [regno])
     return false;
 
-  /* Interrupt handlers save all registers they use, even
-     ones which are call saved.  If they call other functions
-     then *every* register is saved.  */
-  if (msp430_is_interrupt_func ())
-    return ! crtl->is_leaf || df_regs_ever_live_p (regno);
+  /* For interrupt functions we must save and restore the used regs that
+     would normally be caller-saved (R11->R15).  */
+  if (msp430_is_interrupt_func () && regno >= 11 && regno <= 15)
+    {
+      if (crtl->is_leaf && df_regs_ever_live_p (regno))
+	/* If the interrupt func is a leaf then we only need to restore the
+	   caller-saved regs that are used.  */
+	return true;
+      else if (!crtl->is_leaf)
+	/* If the interrupt function is not a leaf we must save all
+	   caller-saved regs in case the callee modifies them.  */
+	return true;
+    }
 
   if (!call_used_regs [regno]
       && df_regs_ever_live_p (regno))
