@@ -1,5 +1,12 @@
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/inline17.adb, gnat.dg/inline17_pkg1.adb,
+	gnat.dg/inline17_pkg1.ads, gnat.dg/inline17_pkg2.ads,
+	gnat.dg/inline17_pkg3.adb, gnat.dg/inline17_pkg3.ads: New
+	testcase.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/iter5.adb, gnat.dg/iter5_pkg.ads: New testcase.
 
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
