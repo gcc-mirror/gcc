@@ -438,7 +438,8 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 
   extra_args = 0;
 
-  opt_index = find_opt (argv[0] + 1, lang_mask);
+  const char *opt_value = argv[0] + 1;
+  opt_index = find_opt (opt_value, lang_mask);
   i = 0;
   while (opt_index == OPT_SPECIAL_unknown
 	 && i < ARRAY_SIZE (option_map))
@@ -641,6 +642,23 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   /* Check if this is a switch for a different front end.  */
   if (!option_ok_for_language (option, lang_mask))
     errors |= CL_ERR_WRONG_LANG;
+  else if (strcmp (option->opt_text, "-Werror=") == 0
+	   && strchr (opt_value, ',') == NULL)
+    {
+      /* Verify that -Werror argument is a valid warning
+	 for a language.  */
+      char *werror_arg = xstrdup (opt_value + 6);
+      werror_arg[0] = 'W';
+
+      size_t warning_index = find_opt (werror_arg, lang_mask);
+      if (warning_index != OPT_SPECIAL_unknown)
+	{
+	  const struct cl_option *warning_option
+	    = &cl_options[warning_index];
+	  if (!option_ok_for_language (warning_option, lang_mask))
+	    errors |= CL_ERR_WRONG_LANG;
+	}
+    }
 
   /* Convert the argument to lowercase if appropriate.  */
   if (arg && option->cl_tolower)
