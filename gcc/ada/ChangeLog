@@ -1,3 +1,7 @@
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sprint.ads: Fix pasto in comment.
+
 2019-07-22  Javier Miranda  <miranda@adacore.com>
 
 	* sem_res.adb (Resolve_Actuals): Replace code that displaces the
