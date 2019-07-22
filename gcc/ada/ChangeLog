@@ -1,3 +1,10 @@
+2019-07-22  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Replace code that displaces the
+	pointer to an allocated object to reference its secondary
+	dispatch table by a type conversion (which takes care of
+	handling all cases).
+
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sprint.adb (Sprint_Node_Actual)
