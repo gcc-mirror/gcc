@@ -1,3 +1,8 @@
+2019-07-22  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* gcc.target/aarch64/simd/ssra.c: New test.
+	* gcc.target/aarch64/simd/usra.c: New test.
+
 2019-07-22  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc.target/msp430/isr-push-pop-main.c: New test.
