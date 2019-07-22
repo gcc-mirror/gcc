@@ -1413,9 +1413,13 @@ package body Sem_Warn is
                   goto Continue;
                end if;
 
-               --  Check for unset reference
+               --  Check for unset reference. If type of object has
+               --  preelaborable initialization, warning is misleading.
 
-               if Warn_On_No_Value_Assigned and then Present (UR) then
+               if Warn_On_No_Value_Assigned
+                 and then Present (UR)
+                 and then not Known_To_Have_Preelab_Init (Etype (E1))
+               then
 
                   --  For other than access type, go back to original node to
                   --  deal with case where original unset reference has been

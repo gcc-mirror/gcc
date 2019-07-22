@@ -1,3 +1,10 @@
+2019-07-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Check_References): Do not emit s warning on a
+	referenced entity with no explicit assignment if the type of the
+	entity has Preelaborable_Initialixation, such as
+	Exception_Occurrence.
+
 2019-07-22  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch4.adb (Size_In_Storage_Elements): Improve the expansion

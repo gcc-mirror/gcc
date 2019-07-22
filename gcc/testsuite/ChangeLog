@@ -1,3 +1,7 @@
+2019-07-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/warn25.adb: New testcase.
+
 2019-07-22  Yannick Moy  <moy@adacore.com>
 
 	* gnat.dg/warn24.adb: New testcase.
