@@ -2608,12 +2608,6 @@ package Einfo is
 --    Is_Formal_Subprogram (Flag111)
 --       Defined in all entities. Set for generic formal subprograms.
 
---    Is_For_Access_Subtype (Flag118)
---       Defined in E_Private_Subtype and E_Record_Subtype entities. Means the
---       sole purpose of the type is to be designated by an Access_Subtype and
---       hence should not be expanded into components because the type may not
---       have been found or frozen yet.
-
 --    Is_Frozen (Flag4)
 --       Defined in all type and subtype entities. Set if type or subtype has
 --       been frozen.
@@ -6458,7 +6452,6 @@ package Einfo is
    --    Stored_Constraint                   (Elist23)
    --    Has_Completion                      (Flag26)
    --    Is_Controlled_Active                (Flag42)   (base type only)
-   --    Is_For_Access_Subtype               (Flag118)  (subtype only)
    --    (plus type attributes)
 
    --  E_Procedure
@@ -7311,7 +7304,6 @@ package Einfo is
    function Is_Exported                         (Id : E) return B;
    function Is_Finalized_Transient              (Id : E) return B;
    function Is_First_Subtype                    (Id : E) return B;
-   function Is_For_Access_Subtype               (Id : E) return B;
    function Is_Frozen                           (Id : E) return B;
    function Is_Generic_Instance                 (Id : E) return B;
    function Is_Hidden                           (Id : E) return B;
@@ -8012,7 +8004,6 @@ package Einfo is
    procedure Set_Is_Exported                     (Id : E; V : B := True);
    procedure Set_Is_Finalized_Transient          (Id : E; V : B := True);
    procedure Set_Is_First_Subtype                (Id : E; V : B := True);
-   procedure Set_Is_For_Access_Subtype           (Id : E; V : B := True);
    procedure Set_Is_Formal_Subprogram            (Id : E; V : B := True);
    procedure Set_Is_Frozen                       (Id : E; V : B := True);
    procedure Set_Is_Generic_Actual_Subprogram    (Id : E; V : B := True);
@@ -8859,7 +8850,6 @@ package Einfo is
    pragma Inline (Is_First_Subtype);
    pragma Inline (Is_Fixed_Point_Type);
    pragma Inline (Is_Floating_Point_Type);
-   pragma Inline (Is_For_Access_Subtype);
    pragma Inline (Is_Formal);
    pragma Inline (Is_Formal_Object);
    pragma Inline (Is_Formal_Subprogram);
@@ -9376,7 +9366,6 @@ package Einfo is
    pragma Inline (Set_Is_Exported);
    pragma Inline (Set_Is_Finalized_Transient);
    pragma Inline (Set_Is_First_Subtype);
-   pragma Inline (Set_Is_For_Access_Subtype);
    pragma Inline (Set_Is_Formal_Subprogram);
    pragma Inline (Set_Is_Frozen);
    pragma Inline (Set_Is_Generic_Actual_Subprogram);

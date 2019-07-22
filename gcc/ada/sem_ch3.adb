@@ -221,9 +221,7 @@ package body Sem_Ch3 is
    --  T has discriminants but there are no discriminant constraints). The
    --  Related_Nod is the same as Decl_Node in Create_Constrained_Components.
    --  The For_Access says whether or not this subtype is really constraining
-   --  an access type. That is its sole purpose is the designated type of an
-   --  access type -- in which case a Private_Subtype Is_For_Access_Subtype
-   --  is built to avoid freezing T when the access subtype is frozen.
+   --  an access type.
 
    function Build_Scalar_Bound
      (Bound : Node_Id;
@@ -10236,12 +10234,7 @@ package body Sem_Ch3 is
 
    begin
       if Ekind (T) = E_Record_Type then
-         if For_Access then
-            Set_Ekind (Def_Id, E_Private_Subtype);
-            Set_Is_For_Access_Subtype (Def_Id, True);
-         else
-            Set_Ekind (Def_Id, E_Record_Subtype);
-         end if;
+         Set_Ekind (Def_Id, E_Record_Subtype);
 
          --  Inherit preelaboration flag from base, for types for which it
          --  may have been set: records, private types, protected types.
@@ -10372,7 +10365,7 @@ package body Sem_Ch3 is
          then
             Create_Constrained_Components (Def_Id, Related_Nod, T, Elist);
 
-         elsif not For_Access then
+         else
             Set_Cloned_Subtype (Def_Id, T);
          end if;
       end if;
