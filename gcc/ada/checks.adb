@@ -3622,13 +3622,14 @@ package body Checks is
                   --  will not be generated.
 
                   if GNATprove_Mode
-                    or else not Is_Fixed_Point_Type (Expr_Type)
+                    or else (not Is_Fixed_Point_Type (Expr_Type)
+                              and then not Is_Fixed_Point_Type (Target_Type))
                   then
                      Apply_Scalar_Range_Check
                        (Expr, Target_Type, Fixed_Int => Conv_OK);
 
                   else
-                     Set_Do_Range_Check (Expression (N), False);
+                     Set_Do_Range_Check (Expr, False);
                   end if;
 
                   --  If the target type has predicates, we need to indicate

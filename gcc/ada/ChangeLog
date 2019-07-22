@@ -1,5 +1,27 @@
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* checks.adb (Apply_Type_Conversion_Checks): Do not set
+	Do_Range_Check flag on conversions from fixed-point types
+	either.
+	* exp_attr.adb: Add use and with clause for Expander.
+	(Expand_N_Attribute_Reference) <Fixed_Value, Integer_Value>: Set
+	the Conversion_OK flag and do not generate overflow/range checks
+	manually.
+	* exp_ch4.adb (Expand_N_Qualified_Expression): Remove
+	superfluous clearing of Do_Range_Check flag.
+	(Discrete_Range_Check): New procedure to generate a range check
+	for discrete types.
+	(Real_Range_Check): Remove redundant local variable and adjust.
+	Remove useless shortcut.  Clear Do_Range_Check flag on all
+	paths.
+	(Expand_N_Type_Conversion): Remove redundant test on
+	Conversion_OK.  Call Discrete_Range_Check to generate range
+	checks on discrete types.  Remove obsolete code for
+	float-to-integer conversions.  Add code to generate range checks
+	for conversions involving fixed-point types.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* sprint.ads: Fix pasto in comment.
 
 2019-07-22  Javier Miranda  <miranda@adacore.com>
