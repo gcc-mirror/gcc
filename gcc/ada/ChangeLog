@@ -1,3 +1,13 @@
+2019-07-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Selected_Component): If the prefix has a
+	deferred reference, generate the correct reference now, to
+	indicate that the previous assignment is used.  This prevents
+	spurious warnings on useless assignments when compiling with all
+	warnings enabled. when there is a subsequent call in the same
+	stqtement list, in which the prefix of the selected component is
+	the actual for an out parameter.
+
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_attr.adb (Expand_Loop_Entry_Attribute): Copy the condition

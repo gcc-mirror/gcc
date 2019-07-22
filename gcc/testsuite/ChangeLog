@@ -1,3 +1,7 @@
+2019-07-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/warn22.adb: New testcase.
+
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/loop_invariant1.adb, gnat.dg/loop_invariant1.ads: New
