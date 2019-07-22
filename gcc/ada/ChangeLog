@@ -1,3 +1,10 @@
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference)
+	<Attribute_Enum_Val>: Set No_Truncation on the
+	N_Unchecked_Type_Conversion built around the argument passed to
+	the attribute.
+
 2019-07-22  Nicolas Roche  <roche@adacore.com>
 
 	* libgnat/s-valrea.adb (Scan_Real): Ignore non significative
