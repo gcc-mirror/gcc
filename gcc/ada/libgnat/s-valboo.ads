@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 package System.Val_Bool is
-   pragma Pure;
+   pragma Preelaborate;
 
    function Value_Boolean (Str : String) return Boolean;
    --  Computes Boolean'Value (Str)
