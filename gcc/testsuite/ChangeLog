@@ -1,3 +1,8 @@
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_invariant1.adb, gnat.dg/loop_invariant1.ads: New
+	testcase.
+
 2019-07-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91221
