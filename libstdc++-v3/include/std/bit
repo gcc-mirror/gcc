@@ -42,20 +42,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     constexpr _Tp
-    __rotl(_Tp __x, unsigned int __s) noexcept
+    __rotl(_Tp __x, int __s) noexcept
     {
       constexpr auto _Nd = numeric_limits<_Tp>::digits;
-      const unsigned __sN = __s % _Nd;
-      return (__x << __sN) | (__x >> ((_Nd - __sN) % _Nd));
+      const int __r = __s % _Nd;
+      if (__r == 0)
+	return __x;
+      else if (__r > 0)
+	return (__x << __r) | (__x >> ((_Nd - __r) % _Nd));
+      else
+	return (__x >> -__r) | (__x << ((_Nd + __r) % _Nd)); // rotr(x, -r)
     }
 
   template<typename _Tp>
     constexpr _Tp
-    __rotr(_Tp __x, unsigned int __s) noexcept
+    __rotr(_Tp __x, int __s) noexcept
     {
       constexpr auto _Nd = numeric_limits<_Tp>::digits;
-      const unsigned __sN = __s % _Nd;
-      return (__x >> __sN) | (__x << ((_Nd - __sN) % _Nd));
+      const int __r = __s % _Nd;
+      if (__r == 0)
+	return __x;
+      else if (__r > 0)
+	return (__x >> __r) | (__x << ((_Nd - __r) % _Nd));
+      else
+	return (__x << -__r) | (__x >> ((_Nd + __r) % _Nd)); // rotl(x, -r)
     }
 
   template<typename _Tp>
@@ -244,20 +254,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using _If_is_unsigned_integer
       = enable_if_t<__is_unsigned_integer<_Tp>::value, _Up>;
 
-#if ! __STRICT_ANSI__
-  // [bitops.rot], rotating
+  // [bit.rot], rotating
 
   template<typename _Tp>
-    constexpr _If_is_unsigned_integer<_Tp>
-    rotl(_Tp __x, unsigned int __s) noexcept
+    [[nodiscard]] constexpr _If_is_unsigned_integer<_Tp>
+    rotl(_Tp __x, int __s) noexcept
     { return std::__rotl(__x, __s); }
 
   template<typename _Tp>
-    constexpr _If_is_unsigned_integer<_Tp>
-    rotr(_Tp __x, unsigned int __s) noexcept
+    [[nodiscard]] constexpr _If_is_unsigned_integer<_Tp>
+    rotr(_Tp __x, int __s) noexcept
     { return std::__rotr(__x, __s); }
 
-  // [bitops.count], counting
+  // [bit.count], counting
 
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp, int>
@@ -283,9 +292,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr _If_is_unsigned_integer<_Tp, int>
     popcount(_Tp __x) noexcept
     { return std::__popcount(__x); }
-#endif
 
-  // Integral power-of-two operations
+  // [bit.pow.two], integral powers of 2
 
   template<typename _Tp>
     constexpr _If_is_unsigned_integer<_Tp, bool>
