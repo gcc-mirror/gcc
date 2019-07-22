@@ -1,3 +1,11 @@
+2019-07-22  Nicolas Roche  <roche@adacore.com>
+
+	* terminals.c (__gnat_tty_waitpid): Support both blocking and
+	not blocking mode.
+	* libgnat/g-exptty.ads (Is_Process_Running): New function.
+	* libgnat/g-exptty.adb (Close): Don't try to interrupt/terminate
+	a process if it is already dead.
+
 2019-07-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Freeze_Fixed_Point_Type):  When freezing a
