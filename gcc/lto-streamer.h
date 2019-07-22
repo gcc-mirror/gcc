@@ -394,9 +394,22 @@ struct lto_section
 {
   int16_t major_version;
   int16_t minor_version;
-  unsigned char slim_object: 1;
-  lto_compression compression: 4;
-  int32_t reserved0: 27;
+  unsigned char slim_object;
+
+  /* Flags is a private field that is not defined publicly.  */
+  uint16_t flags;
+
+  /* Set compression to FLAGS.  */
+  inline void set_compression (lto_compression c)
+  {
+    flags = c;
+  }
+
+  /* Get compression from FLAGS.  */
+  inline lto_compression get_compression ()
+  {
+    return (lto_compression) flags;
+  }
 };
 
 STATIC_ASSERT (sizeof (lto_section) == 8);
