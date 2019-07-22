@@ -563,6 +563,13 @@ package body Repinfo is
                                   E_Loop_Parameter,
                                   E_Variable)
                then
+                  --  The type is relevant for an object
+
+                  if List_Representation_Info = 4 and then Is_Itype (Etype (E))
+                  then
+                     Relevant_Entities.Set (Etype (E), True);
+                  end if;
+
                   if List_Representation_Info >= 2 then
                      List_Object_Info (E);
                   end if;
