@@ -24189,8 +24189,27 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  /* Now we can parse the noexcept-specifier.  */
 	  spec = cp_parser_late_noexcept_specifier (parser, spec);
 
-	  if (spec != error_mark_node)
-	    TREE_TYPE (decl) = build_exception_variant (TREE_TYPE (decl), spec);
+	  if (spec == error_mark_node)
+	    spec = NULL_TREE;
+
+	  {
+	    /* Update the fn's type.  */
+	    tree orig_type = TREE_TYPE (decl);
+	    tree new_type = build_exception_variant (orig_type, spec);
+	    gcc_checking_assert (new_type != orig_type);
+	    TREE_TYPE (decl) = new_type;
+
+	    /* If this is a primary template, update the
+	       template_decl too.  (We never encounter the
+	       template_decl itself in this code path.)  */
+	    if (DECL_TEMPLATE_INFO (decl)
+		&& DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (decl)) == decl)
+	      TREE_TYPE (DECL_TI_TEMPLATE (decl)) = new_type;
+
+	    // FIXME: Via decltype &| noexcept tricks, the unparsed
+	    // spec could have escaped into the type system.  The
+	    // general case might be hard to clean up
+	  }
 
 	  /* Restore the state of local_variables_forbidden_p.  */
 	  parser->local_variables_forbidden_p = local_variables_forbidden_p;

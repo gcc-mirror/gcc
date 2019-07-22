@@ -1,3 +1,11 @@
+2019-07-22  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* parser.c (cp_parser_class_specifier_1): Fixup a template's type
+	with a late exception specifier.
+	gcc/testsuite/
+	* g++.dg/modules/except-1.C: New.
+
 2019-07-22  Boris Kolpackov <boris@codesynthesis.com>
 
 	gcc/cp/
