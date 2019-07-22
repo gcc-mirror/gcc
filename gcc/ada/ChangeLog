@@ -1,3 +1,12 @@
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_aggr.adb (Rewrite_Bound): Be prepared for discriminals
+	too.
+	(Rewrite_Range;): Minor tweak.
+	(Resolve_Record_Aggregate): For a component with default
+	initialization whose expression is an array aggregate, also
+	rewrite the bounds of the component associations, if any.
+
 2019-07-22  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch5.adb (Expand_N_Case_Statement): In the case where a
