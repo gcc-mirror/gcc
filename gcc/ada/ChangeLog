@@ -1,5 +1,18 @@
 2019-07-22  Ed Schonberg  <schonberg@adacore.com>
 
+	* libgnat/s-valboo.ads, libgnat/s-valcha.ads,
+	libgnat/s-valdec.ads, libgnat/s-valenu.ads,
+	libgnat/s-valint.ads, libgnat/s-vallld.ads,
+	libgnat/s-vallli.ads, libgnat/s-valllu.ads,
+	libgnat/s-valrea.ads, libgnat/s-valuns.ads,
+	libgnat/s-valwch.ads: Change categorization of packages that
+	implement attribute 'Value from Pure to Preelaborate, to prevent
+	undesirable optimizations when the evaluation of the attribute
+	raises Constraint_Error, but subsequent use of the result of
+	this evsaluation is removed by a subsequent optimization.
+
+2019-07-22  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_warn.adb (Check_References): Do not emit s warning on a
 	referenced entity with no explicit assignment if the type of the
 	entity has Preelaborable_Initialixation, such as
