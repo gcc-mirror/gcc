@@ -1,3 +1,10 @@
+2019-07-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Convert_Bound): Subsidiary of
+	Floating_Point_Type_Declaration, to handle properly range
+	specifications with bounds that may include static constants of
+	a given type rather than real literals.
+
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_aggr.adb (Rewrite_Bound): Be prepared for discriminals
