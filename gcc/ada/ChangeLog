@@ -1,3 +1,7 @@
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Expand_Loop_Entry_Attribute): Beef up comment.
+
 2019-07-22  Ed Schonberg  <schonberg@adacore.com>
 
 	* libgnat/s-valboo.ads, libgnat/s-valcha.ads,

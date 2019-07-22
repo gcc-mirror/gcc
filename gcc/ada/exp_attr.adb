@@ -1390,8 +1390,9 @@ package body Exp_Attr is
                --  This avoids the duplication of the same code which may lead
                --  to gigi issues with respect to multiple declaration of the
                --  same entity in the presence of side effects or checks. Note
-               --  that the condition actions must also be relocated to the
-               --  wrapping function.
+               --  that the condition actions must also be relocated into the
+               --  wrapping function because they may contain itypes, e.g. in
+               --  the case of a comparison involving slices.
 
                --  Generate:
                --    <condition actions>
