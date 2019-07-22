@@ -1,3 +1,7 @@
+2019-07-22  Nicolas Roche  <roche@adacore.com>
+
+	* gnat.dg/float_value1.adb: New testcase.
+
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/encode_string1.adb, gnat.dg/encode_string1_pkg.adb,

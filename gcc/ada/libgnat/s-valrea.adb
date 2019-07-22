@@ -71,16 +71,13 @@ package body System.Val_Real is
       After_Point : Natural := 0;
       --  Set to 1 after the point
 
-      Num_Saved_Zeroes : Natural := 0;
-      --  This counts zeroes after the decimal point. A non-zero value means
-      --  that this number of previously scanned digits are zero. If the end
-      --  of the number is reached, these zeroes are simply discarded, which
-      --  ensures that trailing zeroes after the point never affect the value
-      --  (which might otherwise happen as a result of rounding). With this
-      --  processing in place, we can ensure that, for example, we get the
-      --  same exact result from 1.0E+49 and 1.0000000E+49. This is not
-      --  necessarily required in a case like this where the result is not
-      --  a machine number, but it is certainly a desirable behavior.
+      Precision_Limit : constant Long_Long_Float :=
+         2.0 ** (Long_Long_Float'Machine_Mantissa - 1);
+      --  This is an upper bound for the number of bits used to represent the
+      --  mantissa. Beyond that number, any digits parsed by Scanf are useless.
+      --  Thus, only the scale should be updated. This ensures that infinity is
+      --  not reached by the temporary Uval, which could lead to erroneous
+      --  rounding (for example: 0.4444444... or 1<n zero>E-n).
 
       procedure Scanf;
       --  Scans integer literal value starting at current character position.
@@ -96,56 +93,50 @@ package body System.Val_Real is
       -----------
 
       procedure Scanf is
-         Digit : Natural;
-
+         Digit                   : Natural;
+         Uval_Tmp                : Long_Long_Float;
+         Precision_Limit_Reached : Boolean := False;
       begin
          loop
             Digit := Character'Pos (Str (P)) - Character'Pos ('0');
-            P := P + 1;
 
-            --  Save up trailing zeroes after the decimal point
+            if not Precision_Limit_Reached then
+               --  Compute potential new value
+               Uval_Tmp := Uval * 10.0 + Long_Long_Float (Digit);
 
-            if Digit = 0 and then After_Point = 1 then
-               Num_Saved_Zeroes := Num_Saved_Zeroes + 1;
-
-            --  Here for a non-zero digit
-
-            else
-               --  First deal with any previously saved zeroes
-
-               if Num_Saved_Zeroes /= 0 then
-                  while Num_Saved_Zeroes > Maxpow loop
-                     Uval := Uval * Powten (Maxpow);
-                     Num_Saved_Zeroes := Num_Saved_Zeroes - Maxpow;
-                     Scale := Scale - Maxpow;
-                  end loop;
-
-                  Uval := Uval * Powten (Num_Saved_Zeroes);
-                  Scale := Scale - Num_Saved_Zeroes;
-
-                  Num_Saved_Zeroes := 0;
+               if Uval_Tmp > Precision_Limit then
+                  Precision_Limit_Reached := True;
                end if;
+            end if;
 
-               --  Accumulate new digit
-
-               Uval := Uval * 10.0 + Long_Long_Float (Digit);
+            if Precision_Limit_Reached then
+               --  If beyond the precision of the mantissa then just ignore the
+               --  digit, to avoid rounding issues.
+               if After_Point = 0 then
+                  Scale := Scale + 1;
+               end if;
+            else
+               Uval := Uval_Tmp;
                Scale := Scale - After_Point;
             end if;
 
-            --  Done if end of input field
+            --  Check next character
+            P := P + 1;
 
             if P > Max then
+               --  Done if end of input field
                return;
 
-            --  Check next character
-
             elsif Str (P) not in Digs then
+               --  If next character is not a digit, check if this is an
+               --  underscore. If this is not the case, then return.
                if Str (P) = '_' then
                   Scan_Underscore (Str, P, Ptr, Max, False);
                else
                   return;
                end if;
             end if;
+
          end loop;
       end Scanf;
 
@@ -198,7 +189,8 @@ package body System.Val_Real is
             Base_Char : constant Character := Str (P);
             Digit     : Natural;
             Fdigit    : Long_Long_Float;
-
+            Uval_Tmp  : Long_Long_Float;
+            Precision_Limit_Reached : Boolean := False;
          begin
             --  Set bad base if out of range, and use safe base of 16.0,
             --  to guard against division by zero in the loop below.
@@ -243,22 +235,24 @@ package body System.Val_Real is
                   Bad_Value (Str);
                end if;
 
-               --  Save up trailing zeroes after the decimal point
+               if not Precision_Limit_Reached then
+                  --  Compute potential new value
+                  Uval_Tmp := Uval * Base + Long_Long_Float (Digit);
 
-               if Digit = 0 and then After_Point = 1 then
-                  Num_Saved_Zeroes := Num_Saved_Zeroes + 1;
+                  if Uval_Tmp > Precision_Limit then
+                     Precision_Limit_Reached := True;
+                  end if;
+               end if;
 
-               --  Here for a non-zero digit
+               if Precision_Limit_Reached then
+                  --  If beyond precision of the mantissa then just update
+                  --  the scale and discard remaining digits.
 
-               else
-                  --  First deal with any previously saved zeroes
-
-                  if Num_Saved_Zeroes /= 0 then
-                     Uval := Uval * Base ** Num_Saved_Zeroes;
-                     Scale := Scale - Num_Saved_Zeroes;
-                     Num_Saved_Zeroes := 0;
+                  if After_Point = 0 then
+                     Scale := Scale + 1;
                   end if;
 
+               else
                   --  Now accumulate the new digit
 
                   Fdigit := Long_Long_Float (Digit);
@@ -267,7 +261,7 @@ package body System.Val_Real is
                      Bad_Base := True;
                   else
                      Scale := Scale - After_Point;
-                     Uval := Uval * Base + Fdigit;
+                     Uval := Uval_Tmp;
                   end if;
                end if;
 
