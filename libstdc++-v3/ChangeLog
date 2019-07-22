@@ -1,3 +1,14 @@
+2019-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bit (__ceil2): Make unrepresentable results undefined,
+	as per P1355R2. Add debug assertion. Perform one left shift, not two,
+	so that out of range values cause undefined behaviour. Ensure that
+	shift will still be undefined if left operand is promoted.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2.cc: Replace checks for
+	unrepresentable values with checks that they are not core constant
+	expressions.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2_neg.cc: New test.
+
 2019-07-19  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_tempbuf.h (__detail::__return_temporary_buffer): Fix

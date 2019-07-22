@@ -197,9 +197,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr auto _Nd = numeric_limits<_Tp>::digits;
       if (__x == 0 || __x == 1)
         return 1;
-      const unsigned __n = _Nd - std::__countl_zero((_Tp)(__x - 1u));
-      const _Tp __y_2 = (_Tp)1u << (__n - 1u);
-      return __y_2 << 1u;
+      auto __shift_exponent = _Nd - std::__countl_zero((_Tp)(__x - 1u));
+      // If the shift exponent equals _Nd then the correct result is not
+      // representable as a value of _Tp, and so the result is undefined.
+      // Want that undefined behaviour to be detected in constant expressions,
+      // by UBSan, and by debug assertions.
+#ifdef _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+      if (!__builtin_is_constant_evaluated())
+	__glibcxx_assert( __shift_exponent != numeric_limits<_Tp>::digits );
+#endif
+      using __promoted_type = decltype(__x << 1);
+      if _GLIBCXX17_CONSTEXPR (!is_same<__promoted_type, _Tp>::value)
+	{
+	  // If __x undergoes integral promotion then shifting by _Nd is
+	  // not undefined. In order to make the shift undefined, so that
+	  // it is diagnosed in constant expressions and by UBsan, we also
+	  // need to "promote" the shift exponent to be too large for the
+	  // promoted type.
+	  const int __extra_exp = sizeof(__promoted_type) / sizeof(_Tp) / 2;
+	  __shift_exponent |= (__shift_exponent & _Nd) << __extra_exp;
+	}
+      return (_Tp)1u << __shift_exponent;
     }
 
   template<typename _Tp>
