@@ -1,3 +1,10 @@
+2019-07-23  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch7.adb (Create_Finalizer): Force finalizer not to be
+	Ghost enabled.
+	* exp_dbug.adb (Get_External_Name): Explain special case of
+	Ghost finalizer.
+
 2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.adb (List_Entities): Also list compiled-generated
