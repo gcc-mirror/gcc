@@ -1140,6 +1140,14 @@ input_function (tree fn_decl, struct data_in *data_in,
 		      ? !MAY_HAVE_DEBUG_MARKER_STMTS
 		      : !MAY_HAVE_DEBUG_BIND_STMTS))
 		remove = true;
+	      /* In case the linemap overflows locations can be dropped
+		 to zero.  Thus do not keep nonsensical inline entry markers
+		 we'd later ICE on.  */
+	      tree block;
+	      if (gimple_debug_inline_entry_p (stmt)
+		  && (block = gimple_block (stmt))
+		  && !inlined_function_outer_scope_p (block))
+		remove = true;
 	      if (is_gimple_call (stmt)
 		  && gimple_call_internal_p (stmt))
 		{
