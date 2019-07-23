@@ -1,3 +1,14 @@
+2019-07-23  Matthew Beliveau  <mbelivea@redhat.com>
+	
+	Backported from mainline
+	2019-07-16  Jeff Law  <law@redhat.com>
+	
+	PR rtl-optimization/91173
+	* tree-ssa-address.c (addr_for_mem_ref): If the base is an
+	SSA_NAME with a constant value, fold its value into the offset
+	and clear the base before calling gen_addr_rtx.
+	* g++.dg/pr91173.C: New test.
+
 2019-07-23  Richard Biener  <rguenther@suse.de>
 
 	PR debug/91231
