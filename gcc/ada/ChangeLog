@@ -1,3 +1,10 @@
+2019-07-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations,
+	Freeze_Entity_Checks): Include Aspect_CPU with other aspects
+	whose expresssion may depend on a discriminant, and thus require
+	that components of the type be made visible.
+
 2019-07-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* checks.adb (Convert_And_Check_Range): Add Suppress parameter

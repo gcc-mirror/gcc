@@ -9388,6 +9388,7 @@ package body Sem_Ch13 is
          elsif A_Id = Aspect_Dynamic_Predicate
            or else A_Id = Aspect_Predicate
            or else A_Id = Aspect_Priority
+           or else A_Id = Aspect_CPU
          then
             Push_Type (Ent);
             Preanalyze_Spec_Expression (End_Decl_Expr, T);
@@ -11279,6 +11280,7 @@ package body Sem_Ch13 is
                   if A_Id = Aspect_Dynamic_Predicate
                     or else A_Id = Aspect_Predicate
                     or else A_Id = Aspect_Priority
+                    or else A_Id = Aspect_CPU
                   then
                     --  Retrieve the visibility to components and discriminants
                     --  in order to properly analyze the aspects.
