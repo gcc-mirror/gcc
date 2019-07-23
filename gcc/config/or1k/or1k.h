@@ -189,6 +189,7 @@ enum reg_class
 {
   NO_REGS,
   SIBCALL_REGS,
+  DOUBLE_REGS,
   GENERAL_REGS,
   FLAG_REGS,
   ALL_REGS,
@@ -200,6 +201,7 @@ enum reg_class
 #define REG_CLASS_NAMES {	\
   "NO_REGS", 			\
   "SIBCALL_REGS",		\
+  "DOUBLE_REGS",		\
   "GENERAL_REGS",		\
   "FLAG_REGS",			\
   "ALL_REGS" }
@@ -212,6 +214,7 @@ enum reg_class
 #define REG_CLASS_CONTENTS      \
 { { 0x00000000, 0x00000000 },	\
   { SIBCALL_REGS_MASK,   0 },	\
+  { 0x7f7ffffe, 0x00000000 },	\
   { 0xffffffff, 0x00000003 },	\
   { 0x00000000, 0x00000004 },	\
   { 0xffffffff, 0x00000007 }	\

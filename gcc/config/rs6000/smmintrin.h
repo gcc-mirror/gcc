@@ -66,4 +66,24 @@ _mm_extract_ps (__m128 __X, const int __N)
   return ((__v4si)__X)[__N & 3];
 }
 
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_blend_epi16 (__m128i __A, __m128i __B, const int __imm8)
+{
+  __v16qi __charmask = vec_splats ((signed char) __imm8);
+  __charmask = vec_gb (__charmask);
+  __v8hu __shortmask = (__v8hu) vec_unpackh (__charmask);
+  #ifdef __BIG_ENDIAN__
+  __shortmask = vec_reve (__shortmask);
+  #endif
+  return (__m128i) vec_sel ((__v8hu) __A, (__v8hu) __B, __shortmask);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_blendv_epi8 (__m128i __A, __m128i __B, __m128i __mask)
+{
+  const __v16qu __seven = vec_splats ((unsigned char) 0x07);
+  __v16qu __lmask = vec_sra ((__v16qu) __mask, __seven);
+  return (__m128i) vec_sel ((__v16qu) __A, (__v16qu) __B, __lmask);
+}
+
 #endif

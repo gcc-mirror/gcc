@@ -33,6 +33,7 @@
 
 with Ada.Streams;
 with Interfaces.C;
+with System.OS_Constants;
 
 package GNAT.Serial_Communications is
 
@@ -100,8 +101,13 @@ package GNAT.Serial_Communications is
    --  cases, an explicit port name can be passed directly to Open.
 
    type Data_Rate is
-     (B75, B110, B150, B300, B600, B1200, B2400, B4800, B9600,
-      B19200, B38400, B57600, B115200);
+     (B75, B110, B150, B300, B600, B1200,
+      B2400, B4800, B9600,
+      B19200, B38400, B57600, B115200,
+      B230400, B460800, B500000, B576000, B921600,
+      B1000000, B1152000, B1500000,
+      B2000000, B2500000, B3000000,
+      B3500000, B4000000);
    --  Speed of the communication
 
    type Data_Bits is (CS8, CS7);
@@ -117,6 +123,11 @@ package GNAT.Serial_Communications is
    --  No flow control, hardware flow control, software flow control
 
    type Serial_Port is new Ada.Streams.Root_Stream_Type with private;
+   --  Serial port stream type
+
+   type Serial_Port_Descriptor is
+     new System.OS_Constants.Serial_Port_Descriptor;
+   --  OS specific serial port descriptor
 
    procedure Open
      (Port : out Serial_Port;
@@ -163,28 +174,52 @@ package GNAT.Serial_Communications is
    procedure Close (Port : in out Serial_Port);
    --  Close port
 
+   procedure To_Ada (Port : out Serial_Port; Fd : Serial_Port_Descriptor)
+     with Inline;
+   --  Convert a serial port descriptor to Serial_Port. This is useful when a
+   --  serial port descriptor is obtained from an external library call.
+
+   function To_C
+     (Port : Serial_Port) return Serial_Port_Descriptor with Inline;
+   --  Return a serial port descriptor to be used by external subprograms.
+   --  This is useful for C functions that are not yet interfaced in this
+   --  package.
+
 private
 
-   type Port_Data;
-   type Port_Data_Access is access Port_Data;
-
    type Serial_Port is new Ada.Streams.Root_Stream_Type with record
-      H : Port_Data_Access;
+      H : Serial_Port_Descriptor := -1;
    end record;
 
    Data_Rate_Value : constant array (Data_Rate) of Interfaces.C.unsigned :=
-                       (B75     =>      75,
-                        B110    =>     110,
-                        B150    =>     150,
-                        B300    =>     300,
-                        B600    =>     600,
-                        B1200   =>   1_200,
-                        B2400   =>   2_400,
-                        B4800   =>   4_800,
-                        B9600   =>   9_600,
-                        B19200  =>  19_200,
-                        B38400  =>  38_400,
-                        B57600  =>  57_600,
-                        B115200 => 115_200);
+                       (B75      =>        75,
+                        B110     =>       110,
+                        B150     =>       150,
+                        B300     =>       300,
+                        B600     =>       600,
+                        B1200    =>     1_200,
+                        B2400    =>     2_400,
+                        B4800    =>     4_800,
+                        B9600    =>     9_600,
+                        B19200   =>    19_200,
+                        B38400   =>    38_400,
+                        B57600   =>    57_600,
+                        B115200  =>   115_200,
+                        B230400  =>   230_400,
+                        B460800  =>   460_800,
+                        B500000  =>   500_000,
+                        B576000  =>   576_000,
+                        B921600  =>   921_600,
+                        B1000000 => 1_000_000,
+                        B1152000 => 1_152_000,
+                        B1500000 => 1_500_000,
+                        B2000000 => 2_000_000,
+                        B2500000 => 2_500_000,
+                        B3000000 => 3_000_000,
+                        B3500000 => 3_500_000,
+                        B4000000 => 4_000_000);
+
+   function To_C (Port : Serial_Port) return Serial_Port_Descriptor is
+      (Port.H);
 
 end GNAT.Serial_Communications;

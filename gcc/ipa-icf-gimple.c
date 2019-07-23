@@ -614,8 +614,8 @@ func_checker::compare_loops (basic_block bb1, basic_block bb2)
   if ((bb1->loop_father == NULL) != (bb2->loop_father == NULL))
     return return_false ();
 
-  struct loop *l1 = bb1->loop_father;
-  struct loop *l2 = bb2->loop_father;
+  class loop *l1 = bb1->loop_father;
+  class loop *l2 = bb2->loop_father;
   if (l1 == NULL)
     return true;
 

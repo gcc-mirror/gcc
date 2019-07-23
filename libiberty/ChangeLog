@@ -1,3 +1,19 @@
+2019-07-12  Ren Kimura  <rkx1209dev@gmail.com>
+
+	* simple-object-elf.c (simple_object_elf_match): Check zero value shstrndx.
+	This fixes a Bug 90924.
+
+2019-07-22  Martin Liska  <mliska@suse.cz>
+
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Do not search for gnu_lto_v1, but search for first '\0'.
+
+2019-07-18  Eduard-Mihai Burtescu  <eddyb@lyken.rs>
+
+	* cplus-dem.c: Include rust-demangle.h.
+	* rust-demangle.c: Include rust-demangle.h.
+	* rust-demangle.h: New file.
+
 2019-05-31  Michael Forney  <mforney@mforney.org>
 
 	* cp-demangle.c: Don't define CP_DYNAMIC_ARRAYS if __STDC_NO_VLA__

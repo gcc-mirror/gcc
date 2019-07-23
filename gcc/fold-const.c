@@ -11839,10 +11839,15 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 }
 
 /* Gets the element ACCESS_INDEX from CTOR, which must be a CONSTRUCTOR
-   of an array (or vector).  */
+   of an array (or vector).  *CTOR_IDX if non-NULL is updated with the
+   constructor element index of the value returned.  If the element is
+   not found NULL_TREE is returned and *CTOR_IDX is updated to
+   the index of the element after the ACCESS_INDEX position (which
+   may be outside of the CTOR array).  */
 
 tree
-get_array_ctor_element_at_index (tree ctor, offset_int access_index)
+get_array_ctor_element_at_index (tree ctor, offset_int access_index,
+				 unsigned *ctor_idx)
 {
   tree index_type = NULL_TREE;
   offset_int low_bound = 0;
@@ -11869,7 +11874,7 @@ get_array_ctor_element_at_index (tree ctor, offset_int access_index)
 		     TYPE_SIGN (index_type));
 
   offset_int max_index;
-  unsigned HOST_WIDE_INT cnt;
+  unsigned cnt;
   tree cfield, cval;
 
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield, cval)
@@ -11897,11 +11902,26 @@ get_array_ctor_element_at_index (tree ctor, offset_int access_index)
 	  max_index = index;
 	}
 
-    /* Do we have match?  */
-    if (wi::cmpu (access_index, index) >= 0
-	&& wi::cmpu (access_index, max_index) <= 0)
-      return cval;
-  }
+      /* Do we have match?  */
+      if (wi::cmpu (access_index, index) >= 0)
+	{
+	  if (wi::cmpu (access_index, max_index) <= 0)
+	    {
+	      if (ctor_idx)
+		*ctor_idx = cnt;
+	      return cval;
+	    }
+	}
+      else if (in_gimple_form)
+	/* We're past the element we search for.  Note during parsing
+	   the elements might not be sorted.
+	   ???  We should use a binary search and a flag on the
+	   CONSTRUCTOR as to whether elements are sorted in declaration
+	   order.  */
+	break;
+    }
+  if (ctor_idx)
+    *ctor_idx = cnt;
   return NULL_TREE;
 }
 
@@ -14026,13 +14046,13 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
 	    {
 	      tree elem0 = VECTOR_CST_ELT (op0, i);
 	      tree elem1 = VECTOR_CST_ELT (op1, i);
-	      tree tmp = fold_relational_const (code, type, elem0, elem1);
+	      tree tmp = fold_relational_const (EQ_EXPR, type, elem0, elem1);
 	      if (tmp == NULL_TREE)
 		return NULL_TREE;
 	      if (integer_zerop (tmp))
-		return constant_boolean_node (false, type);
+		return constant_boolean_node (code == NE_EXPR, type);
 	    }
-	  return constant_boolean_node (true, type);
+	  return constant_boolean_node (code == EQ_EXPR, type);
 	}
       tree_vector_builder elts;
       if (!elts.new_binary_operation (type, op0, op1, false))
@@ -14803,6 +14823,7 @@ test_vector_folding ()
   tree type = build_vector_type (inner_type, 4);
   tree zero = build_zero_cst (type);
   tree one = build_one_cst (type);
+  tree index = build_index_vector (type, 0, 1);
 
   /* Verify equality tests that return a scalar boolean result.  */
   tree res_type = boolean_type_node;
@@ -14810,6 +14831,13 @@ test_vector_folding ()
   ASSERT_TRUE (integer_nonzerop (fold_build2 (EQ_EXPR, res_type, zero, zero)));
   ASSERT_TRUE (integer_nonzerop (fold_build2 (NE_EXPR, res_type, zero, one)));
   ASSERT_FALSE (integer_nonzerop (fold_build2 (NE_EXPR, res_type, one, one)));
+  ASSERT_TRUE (integer_nonzerop (fold_build2 (NE_EXPR, res_type, index, one)));
+  ASSERT_FALSE (integer_nonzerop (fold_build2 (EQ_EXPR, res_type,
+					       index, one)));
+  ASSERT_FALSE (integer_nonzerop (fold_build2 (NE_EXPR, res_type,
+					      index, index)));
+  ASSERT_TRUE (integer_nonzerop (fold_build2 (EQ_EXPR, res_type,
+					      index, index)));
 }
 
 /* Verify folding of VEC_DUPLICATE_EXPRs.  */

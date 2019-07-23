@@ -1229,7 +1229,7 @@ dump_hsa_cfun (FILE *f)
 
   FOR_ALL_BB_FN (bb, cfun)
     {
-      hsa_bb *hbb = (struct hsa_bb *) bb->aux;
+      hsa_bb *hbb = (class hsa_bb *) bb->aux;
       dump_hsa_bb (f, hbb);
     }
 }

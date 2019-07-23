@@ -4904,7 +4904,8 @@ riscv_can_change_mode_class (machine_mode, machine_mode, reg_class_t rclass)
 static HOST_WIDE_INT
 riscv_constant_alignment (const_tree exp, HOST_WIDE_INT align)
 {
-  if (TREE_CODE (exp) == STRING_CST || TREE_CODE (exp) == CONSTRUCTOR)
+  if ((TREE_CODE (exp) == STRING_CST || TREE_CODE (exp) == CONSTRUCTOR)
+      && (riscv_align_data_type == riscv_align_data_type_xlen))
     return MAX (align, BITS_PER_WORD);
   return align;
 }

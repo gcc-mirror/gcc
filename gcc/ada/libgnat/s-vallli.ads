@@ -33,7 +33,7 @@
 --  values for use in Text_IO.Integer_IO, and the Value attribute.
 
 package System.Val_LLI is
-   pragma Pure;
+   pragma Preelaborate;
 
    function Scan_Long_Long_Integer
      (Str  : String;

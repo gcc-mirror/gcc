@@ -48,8 +48,9 @@ class line_event;
 
 /* A struct to hold the params of a print_diff call.  */
 
-struct diff
+class diff
 {
+public:
   diff (pretty_printer *pp, bool show_filenames)
   : m_pp (pp), m_show_filenames (show_filenames) {}
 

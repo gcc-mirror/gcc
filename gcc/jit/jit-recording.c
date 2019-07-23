@@ -872,6 +872,24 @@ recording::context::new_field (recording::location *loc,
   return result;
 }
 
+/* Create a recording::bitfield instance and add it to this context's list
+   of mementos.
+
+   Implements the post-error-checking part of
+   gcc_jit_context_new_bitfield.  */
+
+recording::field *
+recording::context::new_bitfield (recording::location *loc,
+				  recording::type *type,
+				  int width,
+				  const char *name)
+{
+  recording::field *result =
+    new recording::bitfield (this, loc, type, width, new_string (name));
+  record (result);
+  return result;
+}
+
 /* Create a recording::struct_ instance and add it to this context's
    list of mementos and list of compound types.
 
@@ -2962,7 +2980,7 @@ recording::field::replay_into (replayer *r)
    recording::memento::write_to_dump.  Dump each field
    by dumping a line of the form:
       TYPE NAME;
-   so that we can build up a struct/union field-byfield.  */
+   so that we can build up a struct/union field by field.  */
 
 void
 recording::field::write_to_dump (dump &d)
@@ -2997,6 +3015,66 @@ recording::field::write_reproducer (reproducer &r)
 	  r.get_identifier (m_loc),
 	  r.get_identifier_as_type (m_type),
 	  m_name->get_debug_string ());
+}
+
+/* The implementation of class gcc::jit::recording::bitfield.  */
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::bitfield.  */
+
+void
+recording::bitfield::replay_into (replayer *r)
+{
+  set_playback_obj (r->new_bitfield (playback_location (r, m_loc),
+				     m_type->playback_type (),
+				     m_width,
+				     playback_string (m_name)));
+}
+
+/* Override the default implementation of
+   recording::memento::write_to_dump.  Dump each bit field
+   by dumping a line of the form:
+      TYPE NAME:WIDTH;
+   so that we can build up a struct/union field by field.  */
+
+void
+recording::bitfield::write_to_dump (dump &d)
+{
+  d.write ("  %s %s:%d;\n",
+	   m_type->get_debug_string (),
+	   m_name->c_str (),
+	   m_width);
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   results of new_bitfield.  */
+
+recording::string *
+recording::bitfield::make_debug_string ()
+{
+  return string::from_printf (m_ctxt,
+			      "%s:%d",
+			      m_name->c_str (), m_width);
+}
+
+/* Implementation of recording::memento::write_reproducer for bitfields.  */
+
+void
+recording::bitfield::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "bitfield");
+  r.write ("  gcc_jit_field *%s =\n"
+	   "    gcc_jit_context_new_bitfield (%s,\n"
+	   "                               %s, /* gcc_jit_location *loc */\n"
+	   "                               %s, /* gcc_jit_type *type, */\n"
+	   "                               %d, /* int width, */\n"
+	   "                               %s); /* const char *name */\n",
+	   id,
+	   r.get_identifier (get_context ()),
+	   r.get_identifier (m_loc),
+	   r.get_identifier_as_type (m_type),
+	   m_width,
+	   m_name->get_debug_string ());
 }
 
 /* The implementation of class gcc::jit::recording::compound_type */
@@ -4810,7 +4888,7 @@ recording::unary_op::make_debug_string ()
 			      m_a->get_debug_string ());
 }
 
-static const char * const unary_op_reproducer_strings[] = {
+const char * const unary_op_reproducer_strings[] = {
   "GCC_JIT_UNARY_OP_MINUS",
   "GCC_JIT_UNARY_OP_BITWISE_NEGATE",
   "GCC_JIT_UNARY_OP_LOGICAL_NEGATE",
@@ -4890,7 +4968,7 @@ recording::binary_op::make_debug_string ()
 			      m_b->get_debug_string_parens (prec));
 }
 
-static const char * const binary_op_reproducer_strings[] = {
+const char * const binary_op_reproducer_strings[] = {
   "GCC_JIT_BINARY_OP_PLUS",
   "GCC_JIT_BINARY_OP_MINUS",
   "GCC_JIT_BINARY_OP_MULT",

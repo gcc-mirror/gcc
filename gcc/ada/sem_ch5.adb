@@ -2234,8 +2234,17 @@ package body Sem_Ch5 is
                It : Interp;
 
             begin
+               --  THe domain of iteralion must implement either the RM
+               --  iterator interface, or the SPARK Iterable aspect.
+
                if No (Iterator) then
-                  null;  --  error reported below
+                  if No
+                     (Find_Aspect (Etype (Iter_Name), Aspect_Iterable))
+                  then
+                     Error_Msg_NE ("cannot iterate over&",
+                       N, Base_Type (Etype (Iter_Name)));
+                     return;
+                  end if;
 
                elsif not Is_Overloaded (Iterator) then
                   Check_Reverse_Iteration (Etype (Iterator));
@@ -3080,7 +3089,7 @@ package body Sem_Ch5 is
 
          else
             --  A quantified expression that appears in a pre/post condition
-            --  is preanalyzed several times.  If the range is given by an
+            --  is preanalyzed several times. If the range is given by an
             --  attribute reference it is rewritten as a range, and this is
             --  done even with expansion disabled. If the type is already set
             --  do not reanalyze, because a range with static bounds may be
@@ -3904,7 +3913,7 @@ package body Sem_Ch5 is
       --  If the expander is not active then we want to analyze the loop body
       --  now even in the Ada 2012 iterator case, since the rewriting will not
       --  be done. Insert the loop variable in the current scope, if not done
-      --  when analysing the iteration scheme.  Set its kind properly to detect
+      --  when analysing the iteration scheme. Set its kind properly to detect
       --  improper uses in the loop body.
 
       --  In GNATprove mode, we do one of the above depending on the kind of
@@ -3998,7 +4007,7 @@ package body Sem_Ch5 is
 
       --  Variables referenced within a loop subject to possible OpenACC
       --  offloading may be implicitly written to as part of the OpenACC
-      --  transaction.  Clear flags possibly conveying that they are constant,
+      --  transaction. Clear flags possibly conveying that they are constant,
       --  set for example when the code does not explicitly assign them.
 
       if Is_OpenAcc_Environment (Stmt) then
@@ -4062,7 +4071,7 @@ package body Sem_Ch5 is
                end if;
 
             --  If we failed to find a label, it means the implicit declaration
-            --  of the label was hidden.  A for-loop parameter can do this to
+            --  of the label was hidden. A for-loop parameter can do this to
             --  a label with the same name inside the loop, since the implicit
             --  label declaration is in the innermost enclosing body or block
             --  statement.

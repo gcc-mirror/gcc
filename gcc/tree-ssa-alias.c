@@ -105,6 +105,7 @@ static struct {
   unsigned HOST_WIDE_INT nonoverlapping_component_refs_p_may_alias;
   unsigned HOST_WIDE_INT nonoverlapping_component_refs_p_no_alias;
   unsigned HOST_WIDE_INT nonoverlapping_component_refs_since_match_p_may_alias;
+  unsigned HOST_WIDE_INT nonoverlapping_component_refs_since_match_p_must_overlap;
   unsigned HOST_WIDE_INT nonoverlapping_component_refs_since_match_p_no_alias;
 } alias_stats;
 
@@ -138,10 +139,13 @@ dump_alias_stats (FILE *s)
 	   + alias_stats.nonoverlapping_component_refs_p_may_alias);
   fprintf (s, "  nonoverlapping_component_refs_since_match_p: "
 	   HOST_WIDE_INT_PRINT_DEC" disambiguations, "
+	   HOST_WIDE_INT_PRINT_DEC" must overlaps, "
 	   HOST_WIDE_INT_PRINT_DEC" queries\n",
 	   alias_stats.nonoverlapping_component_refs_since_match_p_no_alias,
+	   alias_stats.nonoverlapping_component_refs_since_match_p_must_overlap,
 	   alias_stats.nonoverlapping_component_refs_since_match_p_no_alias
-	   + alias_stats.nonoverlapping_component_refs_since_match_p_may_alias);
+	   + alias_stats.nonoverlapping_component_refs_since_match_p_may_alias
+	   + alias_stats.nonoverlapping_component_refs_since_match_p_must_overlap);
   fprintf (s, "  aliasing_component_refs_p: "
 	   HOST_WIDE_INT_PRINT_DEC" disambiguations, "
 	   HOST_WIDE_INT_PRINT_DEC" queries\n",
@@ -891,6 +895,97 @@ aliasing_matching_component_refs_p (tree match1, tree ref1,
   return true;
 }
 
+/* Return true if REF is reference to zero sized trailing array. I.e.
+   struct foo {int bar; int array[0];} *fooptr;
+   fooptr->array.  */
+
+static bool
+component_ref_to_zero_sized_trailing_array_p (tree ref)
+{
+  return (TREE_CODE (ref) == COMPONENT_REF
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 1))) == ARRAY_TYPE
+	  && (!TYPE_SIZE (TREE_TYPE (TREE_OPERAND (ref, 1)))
+	      || integer_zerop (TYPE_SIZE (TREE_TYPE (TREE_OPERAND (ref, 1)))))
+	  && array_at_struct_end_p (ref));
+}
+
+/* Worker for aliasing_component_refs_p. Most parameters match parameters of
+   aliasing_component_refs_p.
+
+   Walk access path REF2 and try to find type matching TYPE1
+   (which is a start of possibly aliasing access path REF1).
+   If match is found, try to disambiguate.
+
+   Return 0 for sucessful disambiguation.
+   Return 1 if match was found but disambiguation failed
+   Return -1 if there is no match.
+   In this case MAYBE_MATCH is set to 0 if there is no type matching TYPE1
+   in access patch REF2 and -1 if we are not sure.  */
+
+static int
+aliasing_component_refs_walk (tree ref1, tree type1, tree base1,
+			      poly_int64 offset1, poly_int64 max_size1,
+			      tree end_struct_ref1,
+			      tree ref2, tree base2,
+			      poly_int64 offset2, poly_int64 max_size2,
+			      bool *maybe_match)
+{
+  tree ref = ref2;
+  int same_p = 0;
+
+  while (true)
+    {
+      /* We walk from inner type to the outer types. If type we see is
+	 already too large to be part of type1, terminate the search.  */
+      int cmp = compare_type_sizes (type1, TREE_TYPE (ref));
+
+      if (cmp < 0
+	  && (!end_struct_ref1
+	      || compare_type_sizes (TREE_TYPE (end_struct_ref1),
+				     TREE_TYPE (ref)) < 0))
+	break;
+      /* If types may be of same size, see if we can decide about their
+	 equality.  */
+      if (cmp == 0)
+	{
+	  same_p = same_type_for_tbaa (TREE_TYPE (ref), type1);
+	  if (same_p == 1)
+	    break;
+	  /* In case we can't decide whether types are same try to
+	     continue looking for the exact match.
+	     Remember however that we possibly saw a match
+	     to bypass the access path continuations tests we do later.  */
+	  if (same_p == -1)
+	    *maybe_match = true;
+	}
+      if (!handled_component_p (ref))
+	break;
+      ref = TREE_OPERAND (ref, 0);
+    }
+  if (same_p == 1)
+    {
+      /* We assume that arrays can overlap by multiple of their elements
+	 size as tested in gcc.dg/torture/alias-2.c.
+	 This partial overlap happen only when both arrays are bases of
+	 the access and not contained within another component ref.
+	 To be safe we also assume partial overlap for VLAs. */
+      if (TREE_CODE (TREE_TYPE (base1)) == ARRAY_TYPE
+	  && (!TYPE_SIZE (TREE_TYPE (base1))
+	      || TREE_CODE (TYPE_SIZE (TREE_TYPE (base1))) != INTEGER_CST
+	      || ref == base2))
+	/* Setting maybe_match to true triggers
+	   nonoverlapping_component_refs_p test later that still may do
+	   useful disambiguation.  */
+	*maybe_match = true;
+      else
+	return aliasing_matching_component_refs_p (base1, ref1,
+						   offset1, max_size1,
+						   ref, ref2,
+						   offset2, max_size2);
+    }
+  return -1;
+}
+
 /* Determine if the two component references REF1 and REF2 which are
    based on access types TYPE1 and TYPE2 and of which at least one is based
    on an indirect reference may alias.  
@@ -915,7 +1010,6 @@ aliasing_component_refs_p (tree ref1,
      disambiguating q->i and p->a.j.  */
   tree base1, base2;
   tree type1, type2;
-  int same_p1 = 0, same_p2 = 0;
   bool maybe_match = false;
   tree end_struct_ref1 = NULL, end_struct_ref2 = NULL;
 
@@ -934,11 +1028,7 @@ aliasing_component_refs_p (tree ref1,
 
 	 Because we compare sizes of arrays just by sizes of their elements,
 	 we only need to care about zero sized array fields here.  */
-      if (TREE_CODE (base1) == COMPONENT_REF
-	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (base1, 1))) == ARRAY_TYPE
-	  && (!TYPE_SIZE (TREE_TYPE (TREE_OPERAND (base1, 1)))
-	      || integer_zerop (TYPE_SIZE (TREE_TYPE (TREE_OPERAND (base1, 1)))))
-	  && array_at_struct_end_p (base1))
+      if (component_ref_to_zero_sized_trailing_array_p (base1))
 	{
 	  gcc_checking_assert (!end_struct_ref1);
           end_struct_ref1 = base1;
@@ -952,11 +1042,7 @@ aliasing_component_refs_p (tree ref1,
   base2 = ref2;
   while (handled_component_p (base2))
     {
-      if (TREE_CODE (base2) == COMPONENT_REF
-	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (base2, 1))) == ARRAY_TYPE
-	  && (!TYPE_SIZE (TREE_TYPE (TREE_OPERAND (base2, 1)))
-	      || integer_zerop (TYPE_SIZE (TREE_TYPE (TREE_OPERAND (base2, 1)))))
-	  && array_at_struct_end_p (base2))
+      if (component_ref_to_zero_sized_trailing_array_p (base2))
 	{
 	  gcc_checking_assert (!end_struct_ref2);
 	  end_struct_ref2 = base2;
@@ -980,57 +1066,13 @@ aliasing_component_refs_p (tree ref1,
       || (end_struct_ref2
 	  && compare_type_sizes (TREE_TYPE (end_struct_ref2), type1) >= 0))
     {
-      tree ref = ref2;
-      while (true)
-	{
-	  /* We walk from inner type to the outer types. If type we see is
-	     already too large to be part of type1, terminate the search.  */
-	  int cmp = compare_type_sizes (type1, TREE_TYPE (ref));
-
-	  if (cmp < 0
-	      && (!end_struct_ref1
-		  || compare_type_sizes (TREE_TYPE (end_struct_ref1),
-					 TREE_TYPE (ref)) < 0))
-	    break;
-	  /* If types may be of same size, see if we can decide about their
-	     equality.  */
-	  if (cmp == 0)
-	    {
-	      same_p2 = same_type_for_tbaa (TREE_TYPE (ref), type1);
-	      if (same_p2 == 1)
-		break;
-	      /* In case we can't decide whether types are same try to
-		 continue looking for the exact match.
-		 Remember however that we possibly saw a match
-		 to bypass the access path continuations tests we do later.  */
-	      if (same_p2 == -1)
-		maybe_match = true;
-	    }
-	  if (!handled_component_p (ref))
-	    break;
-	  ref = TREE_OPERAND (ref, 0);
-	}
-      if (same_p2 == 1)
-	{
-	  /* We assume that arrays can overlap by multiple of their elements
-	     size as tested in gcc.dg/torture/alias-2.c.
-	     This partial overlap happen only when both arrays are bases of
-	     the access and not contained within another component ref.
-	     To be safe we also assume partial overlap for VLAs. */
-	  if (TREE_CODE (TREE_TYPE (base1)) == ARRAY_TYPE
-	      && (!TYPE_SIZE (TREE_TYPE (base1))
-		  || TREE_CODE (TYPE_SIZE (TREE_TYPE (base1))) != INTEGER_CST
-		  || ref == base2))
-	    /* Setting maybe_match to true triggers
-	       nonoverlapping_component_refs_p test later that still may do
-	       useful disambiguation.  */
-	    maybe_match = true;
-	  else
-	    return aliasing_matching_component_refs_p (base1, ref1,
-						       offset1, max_size1,
-						       ref, ref2,
-						       offset2, max_size2);
-	}
+      int res = aliasing_component_refs_walk (ref1, type1, base1,
+					      offset1, max_size1,
+					      end_struct_ref1,
+					      ref2, base2, offset2, max_size2,
+					      &maybe_match);
+      if (res != -1)
+	return res;
     }
 
   /* If we didn't find a common base, try the other way around.  */
@@ -1038,42 +1080,13 @@ aliasing_component_refs_p (tree ref1,
       || (end_struct_ref1
 	  && compare_type_sizes (TREE_TYPE (end_struct_ref1), type1) <= 0))
     {
-      tree ref = ref1;
-      while (true)
-	{
-	  int cmp = compare_type_sizes (type2, TREE_TYPE (ref));
-	  if (cmp < 0
-	      && (!end_struct_ref2
-		  || compare_type_sizes (TREE_TYPE (end_struct_ref2),
-					 TREE_TYPE (ref)) < 0))
-	    break;
-	  /* If types may be of same size, see if we can decide about their
-	     equality.  */
-	  if (cmp == 0)
-	    {
-	      same_p1 = same_type_for_tbaa (TREE_TYPE (ref), type2);
-	      if (same_p1 == 1)
-		break;
-	      if (same_p1 == -1)
-		maybe_match = true;
-	    }
-	  if (!handled_component_p (ref))
-	    break;
-	  ref = TREE_OPERAND (ref, 0);
-	}
-      if (same_p1 == 1)
-	{
-	  if (TREE_CODE (TREE_TYPE (base2)) == ARRAY_TYPE
-	      && (!TYPE_SIZE (TREE_TYPE (base2))
-		  || TREE_CODE (TYPE_SIZE (TREE_TYPE (base2))) != INTEGER_CST
-		  || ref == base1))
-	    maybe_match = true;
-	  else
-	    return aliasing_matching_component_refs_p (ref, ref1,
-						       offset1, max_size1,
-						       base2, ref2,
-						       offset2, max_size2);
-	}
+      int res = aliasing_component_refs_walk (ref2, type2, base2,
+					      offset2, max_size2,
+					      end_struct_ref2,
+					      ref1, base1, offset1, max_size1,
+					      &maybe_match);
+      if (res != -1)
+	return res;
     }
 
   /* In the following code we make an assumption that the types in access
@@ -1124,6 +1137,94 @@ aliasing_component_refs_p (tree ref1,
   return false;
 }
 
+/* FIELD1 and FIELD2 are two fields of component refs.  We assume
+   that bases of both component refs are either equivalent or nonoverlapping.
+   We do not assume that the containers of FIELD1 and FIELD2 are of the
+   same type or size.
+
+   Return 0 in case the base address of component_refs are same then 
+   FIELD1 and FIELD2 have same address. Note that FIELD1 and FIELD2
+   may not be of same type or size.
+
+   Return 1 if FIELD1 and FIELD2 are non-overlapping.
+
+   Return -1 otherwise.
+
+   Main difference between 0 and -1 is to let
+   nonoverlapping_component_refs_since_match_p discover the semantically
+   equivalent part of the access path.
+
+   Note that this function is used even with -fno-strict-aliasing
+   and makes use of no TBAA assumptions.  */
+
+static int
+nonoverlapping_component_refs_p_1 (const_tree field1, const_tree field2)
+{
+  /* If both fields are of the same type, we could save hard work of
+     comparing offsets.  */
+  tree type1 = DECL_CONTEXT (field1);
+  tree type2 = DECL_CONTEXT (field2);
+
+  if (TREE_CODE (type1) == RECORD_TYPE
+      && DECL_BIT_FIELD_REPRESENTATIVE (field1))
+    field1 = DECL_BIT_FIELD_REPRESENTATIVE (field1);
+  if (TREE_CODE (type2) == RECORD_TYPE
+      && DECL_BIT_FIELD_REPRESENTATIVE (field2))
+    field2 = DECL_BIT_FIELD_REPRESENTATIVE (field2);
+
+  /* ??? Bitfields can overlap at RTL level so punt on them.
+     FIXME: RTL expansion should be fixed by adjusting the access path
+     when producing MEM_ATTRs for MEMs which are wider than 
+     the bitfields similarly as done in set_mem_attrs_minus_bitpos.  */
+  if (DECL_BIT_FIELD (field1) && DECL_BIT_FIELD (field2))
+    return -1;
+
+  /* Assume that different FIELD_DECLs never overlap within a RECORD_TYPE.  */
+  if (type1 == type2 && TREE_CODE (type1) == RECORD_TYPE)
+    return field1 != field2;
+
+  /* In common case the offsets and bit offsets will be the same.
+     However if frontends do not agree on the alignment, they may be
+     different even if they actually represent same address.
+     Try the common case first and if that fails calcualte the
+     actual bit offset.  */
+  if (tree_int_cst_equal (DECL_FIELD_OFFSET (field1),
+			  DECL_FIELD_OFFSET (field2))
+      && tree_int_cst_equal (DECL_FIELD_BIT_OFFSET (field1),
+			     DECL_FIELD_BIT_OFFSET (field2)))
+    return 0;
+
+  /* Note that it may be possible to use component_ref_field_offset
+     which would provide offsets as trees. However constructing and folding
+     trees is expensive and does not seem to be worth the compile time
+     cost.  */
+
+  poly_uint64 offset1, offset2;
+  poly_uint64 bit_offset1, bit_offset2;
+
+  if (poly_int_tree_p (DECL_FIELD_OFFSET (field1), &offset1)
+      && poly_int_tree_p (DECL_FIELD_OFFSET (field2), &offset2)
+      && poly_int_tree_p (DECL_FIELD_BIT_OFFSET (field1), &bit_offset1)
+      && poly_int_tree_p (DECL_FIELD_BIT_OFFSET (field2), &bit_offset2))
+    {
+      offset1 = (offset1 << LOG2_BITS_PER_UNIT) + bit_offset1;
+      offset2 = (offset2 << LOG2_BITS_PER_UNIT) + bit_offset2;
+
+      if (known_eq (offset1, offset2))
+	return 0;
+
+      poly_uint64 size1, size2;
+
+      if (poly_int_tree_p (DECL_SIZE (field1), &size1)
+	  && poly_int_tree_p (DECL_SIZE (field2), &size2)
+	  && !ranges_maybe_overlap_p (offset1, size1, offset2, size2))
+	return 1;
+    }
+  /* Resort to slower overlap checking by looking for matching types in
+     the middle of access path.  */
+  return -1;
+}
+
 /* Try to disambiguate REF1 and REF2 under the assumption that MATCH1 and
    MATCH2 either point to the same address or are disjoint.
    MATCH1 and MATCH2 are assumed to be ref in the access path of REF1 and REF2
@@ -1149,61 +1250,65 @@ static int
 nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
 					     tree match2, tree ref2)
 {
+  /* Early return if there are no references to match, we do not need
+     to walk the access paths.
+
+     Do not consider this as may-alias for stats - it is more useful
+     to have information how many disambiguations happened provided that
+     the query was meaningful.  */
+
+  if (match1 == ref1 || !handled_component_p (ref1)
+      || match2 == ref2 || !handled_component_p (ref2))
+    return -1;
+
   auto_vec<tree, 16> component_refs1;
   auto_vec<tree, 16> component_refs2;
 
   /* Create the stack of handled components for REF1.  */
-  while (handled_component_p (ref1))
+  while (handled_component_p (ref1) && ref1 != match1)
     {
       if (TREE_CODE (ref1) == VIEW_CONVERT_EXPR
 	  || TREE_CODE (ref1) == BIT_FIELD_REF)
 	component_refs1.truncate (0);
       else
         component_refs1.safe_push (ref1);
-      if (ref1 == match1)
-	break;
       ref1 = TREE_OPERAND (ref1, 0);
-    }
-  if (TREE_CODE (ref1) == MEM_REF && ref1 != match1)
-    {
-      if (!integer_zerop (TREE_OPERAND (ref1, 1)))
-	{
-	  ++alias_stats.nonoverlapping_component_refs_since_match_p_may_alias;
-	  return -1;
-	}
-    }
-  /* TODO: Handle TARGET_MEM_REF later.  */
-  if (TREE_CODE (ref1) == TARGET_MEM_REF && ref1 != match1)
-    {
-      ++alias_stats.nonoverlapping_component_refs_since_match_p_may_alias;
-      return -1;
     }
 
   /* Create the stack of handled components for REF2.  */
-  while (handled_component_p (ref2))
+  while (handled_component_p (ref2) && ref2 != match2)
     {
       if (TREE_CODE (ref2) == VIEW_CONVERT_EXPR
 	  || TREE_CODE (ref2) == BIT_FIELD_REF)
 	component_refs2.truncate (0);
       else
         component_refs2.safe_push (ref2);
-      if (ref2 == match2)
-	break;
       ref2 = TREE_OPERAND (ref2, 0);
     }
-  if (TREE_CODE (ref2) == MEM_REF && ref2 != match2)
-    {
-      if (!integer_zerop (TREE_OPERAND (ref2, 1)))
-	{
-	  ++alias_stats.nonoverlapping_component_refs_since_match_p_may_alias;
-	  return -1;
-	}
-    }
-  if (TREE_CODE (ref2) == TARGET_MEM_REF && ref2 != match2)
+
+  bool mem_ref1 = TREE_CODE (ref1) == MEM_REF && ref1 != match1;
+  bool mem_ref2 = TREE_CODE (ref2) == MEM_REF && ref2 != match2;
+
+  /* If only one of access path starts with MEM_REF check that offset is 0
+     so the addresses stays the same after stripping it.
+     TODO: In this case we may walk the other access path until we get same
+     offset.
+
+     If both starts with MEM_REF, offset has to be same.  */
+  if ((mem_ref1 && !mem_ref2 && !integer_zerop (TREE_OPERAND (ref1, 1)))
+      || (mem_ref2 && !mem_ref1 && !integer_zerop (TREE_OPERAND (ref2, 1)))
+      || (mem_ref1 && mem_ref2
+	  && !tree_int_cst_equal (TREE_OPERAND (ref1, 1),
+				  TREE_OPERAND (ref2, 1))))
     {
       ++alias_stats.nonoverlapping_component_refs_since_match_p_may_alias;
       return -1;
     }
+
+  /* TARGET_MEM_REF are never wrapped in handled components, so we do not need
+     to handle them here at all.  */
+  gcc_checking_assert (TREE_CODE (ref1) != TARGET_MEM_REF
+		       && TREE_CODE (ref2) != TARGET_MEM_REF);
 
   /* Pop the stacks in parallel and examine the COMPONENT_REFs of the same
      rank.  This is sufficient because we start from the same DECL and you
@@ -1213,15 +1318,18 @@ nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
      case the return value will precisely be false.  */
   while (true)
     {
+      bool seen_noncomponent_ref_p = false;
       do
 	{
 	  if (component_refs1.is_empty ())
 	    {
 	      ++alias_stats
-		.nonoverlapping_component_refs_since_match_p_may_alias;
+		.nonoverlapping_component_refs_since_match_p_must_overlap;
 	      return 0;
 	    }
 	  ref1 = component_refs1.pop ();
+	  if (TREE_CODE (ref1) != COMPONENT_REF)
+	    seen_noncomponent_ref_p = true;
 	}
       while (!RECORD_OR_UNION_TYPE_P (TREE_TYPE (TREE_OPERAND (ref1, 0))));
 
@@ -1230,21 +1338,19 @@ nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
 	  if (component_refs2.is_empty ())
 	    {
 	      ++alias_stats
-		.nonoverlapping_component_refs_since_match_p_may_alias;
+		.nonoverlapping_component_refs_since_match_p_must_overlap;
 	      return 0;
 	    }
 	  ref2 = component_refs2.pop ();
+	  if (TREE_CODE (ref2) != COMPONENT_REF)
+	    seen_noncomponent_ref_p = true;
 	}
       while (!RECORD_OR_UNION_TYPE_P (TREE_TYPE (TREE_OPERAND (ref2, 0))));
 
-      /* Beware of BIT_FIELD_REF.  */
-      if (TREE_CODE (ref1) != COMPONENT_REF
-	  || TREE_CODE (ref2) != COMPONENT_REF)
-	{
-	  ++alias_stats
-		.nonoverlapping_component_refs_since_match_p_may_alias;
-	  return -1;
-	}
+      /* BIT_FIELD_REF and VIEW_CONVERT_EXPR are taken off the vectors
+	 earlier.  */
+      gcc_checking_assert (TREE_CODE (ref1) == COMPONENT_REF
+			   && TREE_CODE (ref2) == COMPONENT_REF);
 
       tree field1 = TREE_OPERAND (ref1, 1);
       tree field2 = TREE_OPERAND (ref2, 1);
@@ -1255,39 +1361,51 @@ nonoverlapping_component_refs_since_match_p (tree match1, tree ref1,
       tree type1 = DECL_CONTEXT (field1);
       tree type2 = DECL_CONTEXT (field2);
 
-      /* We cannot disambiguate fields in a union or qualified union.  */
-      if (type1 != type2 || TREE_CODE (type1) != RECORD_TYPE)
+      /* If we skipped array refs on type of different sizes, we can
+	 no longer be sure that there are not partial overlaps.  */
+      if (seen_noncomponent_ref_p
+	  && !operand_equal_p (TYPE_SIZE (type1), TYPE_SIZE (type2), 0))
 	{
-	  ++alias_stats.nonoverlapping_component_refs_since_match_p_may_alias;
+	  ++alias_stats
+	    .nonoverlapping_component_refs_since_match_p_may_alias;
 	  return -1;
 	}
 
-      if (field1 != field2)
+      int cmp = nonoverlapping_component_refs_p_1 (field1, field2);
+      if (cmp == -1)
 	{
-	  /* A field and its representative need to be considered the
-	     same.  */
-	  if (DECL_BIT_FIELD_REPRESENTATIVE (field1) == field2
-	      || DECL_BIT_FIELD_REPRESENTATIVE (field2) == field1)
-	    {
-	      ++alias_stats
-		.nonoverlapping_component_refs_since_match_p_may_alias;
-	      return 0;
-	    }
-	  /* Different fields of the same record type cannot overlap.
-	     ??? Bitfields can overlap at RTL level so punt on them.  */
-	  if (DECL_BIT_FIELD (field1) && DECL_BIT_FIELD (field2))
-	    {
-	      ++alias_stats
-		.nonoverlapping_component_refs_since_match_p_may_alias;
-	      return 0;
-	    }
-	  ++alias_stats.nonoverlapping_component_refs_since_match_p_no_alias;
+	  ++alias_stats
+	    .nonoverlapping_component_refs_since_match_p_may_alias;
+	  return -1;
+	}
+      else if (cmp == 1)
+	{
+	  ++alias_stats
+	    .nonoverlapping_component_refs_since_match_p_no_alias;
 	  return 1;
 	}
     }
 
-  ++alias_stats.nonoverlapping_component_refs_since_match_p_may_alias;
+  ++alias_stats.nonoverlapping_component_refs_since_match_p_must_overlap;
   return 0;
+}
+
+/* Return TYPE_UID which can be used to match record types we consider
+   same for TBAA purposes.  */
+
+static inline int
+ncr_type_uid (const_tree field)
+{
+  /* ??? We cannot simply use the type of operand #0 of the refs here
+     as the Fortran compiler smuggles type punning into COMPONENT_REFs
+     for common blocks instead of using unions like everyone else.  */
+  tree type = DECL_FIELD_CONTEXT (field);
+  /* With LTO types considered same_type_for_tbaa_p 
+     from different translation unit may not have same
+     main variant.  They however have same TYPE_CANONICAL.  */
+  if (TYPE_CANONICAL (type))
+    return TYPE_UID (TYPE_CANONICAL (type));
+  return TYPE_UID (type);
 }
 
 /* qsort compare function to sort FIELD_DECLs after their
@@ -1298,8 +1416,9 @@ ncr_compar (const void *field1_, const void *field2_)
 {
   const_tree field1 = *(const_tree *) const_cast <void *>(field1_);
   const_tree field2 = *(const_tree *) const_cast <void *>(field2_);
-  unsigned int uid1 = TYPE_UID (DECL_FIELD_CONTEXT (field1));
-  unsigned int uid2 = TYPE_UID (DECL_FIELD_CONTEXT (field2));
+  unsigned int uid1 = ncr_type_uid (field1);
+  unsigned int uid2 = ncr_type_uid (field2);
+
   if (uid1 < uid2)
     return -1;
   else if (uid1 > uid2)
@@ -1313,14 +1432,16 @@ ncr_compar (const void *field1_, const void *field2_)
 static bool
 nonoverlapping_component_refs_p (const_tree x, const_tree y)
 {
+  /* Early return if we have nothing to do.
+
+     Do not consider this as may-alias for stats - it is more useful
+     to have information how many disambiguations happened provided that
+     the query was meaningful.  */
   if (!flag_strict_aliasing
       || !x || !y
       || !handled_component_p (x)
       || !handled_component_p (y))
-    {
-      ++alias_stats.nonoverlapping_component_refs_p_may_alias;
-      return false;
-    }
+    return false;
 
   auto_vec<const_tree, 16> fieldsx;
   while (handled_component_p (x))
@@ -1364,10 +1485,9 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
   if (fieldsx.length () == 1
       && fieldsy.length () == 1)
    {
-     if ((DECL_FIELD_CONTEXT (fieldsx[0])
-         == DECL_FIELD_CONTEXT (fieldsy[0]))
-        && fieldsx[0] != fieldsy[0]
-        && !(DECL_BIT_FIELD (fieldsx[0]) && DECL_BIT_FIELD (fieldsy[0])))
+     if (same_type_for_tbaa (DECL_FIELD_CONTEXT (fieldsx[0]),
+			     DECL_FIELD_CONTEXT (fieldsy[0])) == 1
+	 && nonoverlapping_component_refs_p_1 (fieldsx[0], fieldsy[0]) == 1)
       {
          ++alias_stats.nonoverlapping_component_refs_p_no_alias;
          return true;
@@ -1400,31 +1520,18 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
     {
       const_tree fieldx = fieldsx[i];
       const_tree fieldy = fieldsy[j];
-      tree typex = DECL_FIELD_CONTEXT (fieldx);
-      tree typey = DECL_FIELD_CONTEXT (fieldy);
-      if (typex == typey)
+
+      /* We're left with accessing different fields of a structure,
+	 no possible overlap.  */
+      if (same_type_for_tbaa (DECL_FIELD_CONTEXT (fieldx),
+			      DECL_FIELD_CONTEXT (fieldy)) == 1
+	  && nonoverlapping_component_refs_p_1 (fieldx, fieldy) == 1)
 	{
-	  /* We're left with accessing different fields of a structure,
-	     no possible overlap.  */
-	  if (fieldx != fieldy)
-	    {
-	      /* A field and its representative need to be considered the
-		 same.  */
-	      if (DECL_BIT_FIELD_REPRESENTATIVE (fieldx) == fieldy
-		  || DECL_BIT_FIELD_REPRESENTATIVE (fieldy) == fieldx)
-		;
-	      /* Different fields of the same record type cannot overlap.
-		 ??? Bitfields can overlap at RTL level so punt on them.  */
-	      else if (DECL_BIT_FIELD (fieldx) && DECL_BIT_FIELD (fieldy))
-		;
-	      else
-		{
-		  ++alias_stats.nonoverlapping_component_refs_p_no_alias;
-		  return true;
-		}
-	    }
+	  ++alias_stats.nonoverlapping_component_refs_p_no_alias;
+	  return true;
 	}
-      if (TYPE_UID (typex) < TYPE_UID (typey))
+
+      if (ncr_type_uid (fieldx) < ncr_type_uid (fieldy))
 	{
 	  i++;
 	  if (i == fieldsx.length ())
@@ -1452,8 +1559,10 @@ nonoverlapping_component_refs_p (const_tree x, const_tree y)
 static bool
 decl_refs_may_alias_p (tree ref1, tree base1,
 		       poly_int64 offset1, poly_int64 max_size1,
+		       poly_int64 size1,
 		       tree ref2, tree base2,
-		       poly_int64 offset2, poly_int64 max_size2)
+		       poly_int64 offset2, poly_int64 max_size2,
+		       poly_int64 size2)
 {
   gcc_checking_assert (DECL_P (base1) && DECL_P (base2));
 
@@ -1465,6 +1574,10 @@ decl_refs_may_alias_p (tree ref1, tree base1,
      the accesses do not overlap.  */
   if (!ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2))
     return false;
+
+  /* If there is must alias, there is no use disambiguating further.  */
+  if (known_eq (size1, max_size1) && known_eq (size2, max_size2))
+    return true;
 
   /* For components with variable position, the above test isn't sufficient,
      so we disambiguate component references manually.  */
@@ -1487,10 +1600,12 @@ decl_refs_may_alias_p (tree ref1, tree base1,
 static bool
 indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 			       poly_int64 offset1, poly_int64 max_size1,
+			       poly_int64 size1,
 			       alias_set_type ref1_alias_set,
 			       alias_set_type base1_alias_set,
 			       tree ref2 ATTRIBUTE_UNUSED, tree base2,
 			       poly_int64 offset2, poly_int64 max_size2,
+			       poly_int64 size2,
 			       alias_set_type ref2_alias_set,
 			       alias_set_type base2_alias_set, bool tbaa_p)
 {
@@ -1598,7 +1713,19 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       && (TREE_CODE (TREE_TYPE (base1)) != ARRAY_TYPE
 	  || (TYPE_SIZE (TREE_TYPE (base1))
 	      && TREE_CODE (TYPE_SIZE (TREE_TYPE (base1))) == INTEGER_CST)))
-    return ranges_maybe_overlap_p (doffset1, max_size1, doffset2, max_size2);
+    {
+      if (!ranges_maybe_overlap_p (doffset1, max_size1, doffset2, max_size2))
+	return false;
+      if (!ref1 || !ref2
+	  /* If there is must alias, there is no use disambiguating further.  */
+	  || (known_eq (size1, max_size1) && known_eq (size2, max_size2)))
+	return true;
+      int res = nonoverlapping_component_refs_since_match_p (base1, ref1,
+							     base2, ref2);
+      if (res == -1)
+	return !nonoverlapping_component_refs_p (ref1, ref2);
+      return !res;
+    }
 
   /* Do access-path based disambiguation.  */
   if (ref1 && ref2
@@ -1623,10 +1750,12 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 static bool
 indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 			   poly_int64 offset1, poly_int64 max_size1,
+			   poly_int64 size1,
 			   alias_set_type ref1_alias_set,
 			   alias_set_type base1_alias_set,
 			   tree ref2 ATTRIBUTE_UNUSED, tree base2,
 			   poly_int64 offset2, poly_int64 max_size2,
+			   poly_int64 size2,
 			   alias_set_type ref2_alias_set,
 			   alias_set_type base2_alias_set, bool tbaa_p)
 {
@@ -1671,6 +1800,9 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       if (!ranges_maybe_overlap_p (offset1 + moff1, max_size1,
 				   offset2 + moff2, max_size2))
 	return false;
+      /* If there is must alias, there is no use disambiguating further.  */
+      if (known_eq (size1, max_size1) && known_eq (size2, max_size2))
+	return true;
       if (ref1 && ref2)
 	{
 	  int res = nonoverlapping_component_refs_since_match_p (NULL, ref1,
@@ -1717,7 +1849,18 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
          can overlap by an exact multiple of their element size.
          See gcc.dg/torture/alias-2.c.  */
       && TREE_CODE (TREE_TYPE (ptrtype1)) != ARRAY_TYPE)
-    return ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2);
+    {
+      if (!ranges_maybe_overlap_p (offset1, max_size1, offset2, max_size2))
+	return false;
+      if (!ref1 || !ref2
+	  || (known_eq (size1, max_size1) && known_eq (size2, max_size2)))
+	return true;
+      int res = nonoverlapping_component_refs_since_match_p (base1, ref1,
+							     base2, ref2);
+      if (res == -1)
+	return !nonoverlapping_component_refs_p (ref1, ref2);
+      return !res;
+    }
 
   /* Do access-path based disambiguation.  */
   if (ref1 && ref2
@@ -1802,7 +1945,9 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   var2_p = DECL_P (base2);
   if (var1_p && var2_p)
     return decl_refs_may_alias_p (ref1->ref, base1, offset1, max_size1,
-				  ref2->ref, base2, offset2, max_size2);
+				  ref1->size,
+				  ref2->ref, base2, offset2, max_size2,
+				  ref2->size);
 
   /* Handle restrict based accesses.
      ???  ao_ref_base strips inner MEM_REF [&decl], recover from that
@@ -1870,21 +2015,21 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   /* Dispatch to the pointer-vs-decl or pointer-vs-pointer disambiguators.  */
   if (var1_p && ind2_p)
     return indirect_ref_may_alias_decl_p (ref2->ref, base2,
-					  offset2, max_size2,
+					  offset2, max_size2, ref2->size,
 					  ao_ref_alias_set (ref2),
 					  ao_ref_base_alias_set (ref2),
 					  ref1->ref, base1,
-					  offset1, max_size1,
+					  offset1, max_size1, ref1->size,
 					  ao_ref_alias_set (ref1),
 					  ao_ref_base_alias_set (ref1),
 					  tbaa_p);
   else if (ind1_p && ind2_p)
     return indirect_refs_may_alias_p (ref1->ref, base1,
-				      offset1, max_size1,
+				      offset1, max_size1, ref1->size,
 				      ao_ref_alias_set (ref1),
 				      ao_ref_base_alias_set (ref1),
 				      ref2->ref, base2,
-				      offset2, max_size2,
+				      offset2, max_size2, ref2->size,
 				      ao_ref_alias_set (ref2),
 				      ao_ref_base_alias_set (ref2),
 				      tbaa_p);
@@ -3003,8 +3148,8 @@ stmt_kills_ref_p (gimple *stmt, tree ref)
 
 static bool
 maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
-		  ao_ref *ref, tree vuse, unsigned int &limit, bitmap *visited,
-		  bool abort_on_visited,
+		  ao_ref *ref, tree vuse, bool tbaa_p, unsigned int &limit,
+		  bitmap *visited, bool abort_on_visited,
 		  void *(*translate)(ao_ref *, tree, void *, bool *),
 		  void *data)
 {
@@ -3038,7 +3183,7 @@ maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
 	  /* An already visited PHI node ends the walk successfully.  */
 	  if (bitmap_bit_p (*visited, SSA_NAME_VERSION (PHI_RESULT (def_stmt))))
 	    return !abort_on_visited;
-	  vuse = get_continuation_for_phi (def_stmt, ref, limit,
+	  vuse = get_continuation_for_phi (def_stmt, ref, tbaa_p, limit,
 					   visited, abort_on_visited,
 					   translate, data);
 	  if (!vuse)
@@ -3053,7 +3198,7 @@ maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
 	  if ((int)limit <= 0)
 	    return false;
 	  --limit;
-	  if (stmt_may_clobber_ref_p_1 (def_stmt, ref))
+	  if (stmt_may_clobber_ref_p_1 (def_stmt, ref, tbaa_p))
 	    {
 	      bool disambiguate_only = true;
 	      if (translate
@@ -3085,7 +3230,7 @@ maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
    Returns NULL_TREE if no suitable virtual operand can be found.  */
 
 tree
-get_continuation_for_phi (gimple *phi, ao_ref *ref,
+get_continuation_for_phi (gimple *phi, ao_ref *ref, bool tbaa_p,
 			  unsigned int &limit, bitmap *visited,
 			  bool abort_on_visited,
 			  void *(*translate)(ao_ref *, tree, void *, bool *),
@@ -3128,7 +3273,8 @@ get_continuation_for_phi (gimple *phi, ao_ref *ref,
       arg1 = PHI_ARG_DEF (phi, i);
       if (arg1 == arg0)
 	;
-      else if (! maybe_skip_until (phi, arg0, dom, ref, arg1, limit, visited,
+      else if (! maybe_skip_until (phi, arg0, dom, ref, arg1, tbaa_p,
+				   limit, visited,
 				   abort_on_visited,
 				   /* Do not translate when walking over
 				      backedges.  */
@@ -3172,7 +3318,7 @@ get_continuation_for_phi (gimple *phi, ao_ref *ref,
    TODO: Cache the vector of equivalent vuses per ref, vuse pair.  */
 
 void *
-walk_non_aliased_vuses (ao_ref *ref, tree vuse,
+walk_non_aliased_vuses (ao_ref *ref, tree vuse, bool tbaa_p,
 			void *(*walker)(ao_ref *, tree, void *),
 			void *(*translate)(ao_ref *, tree, void *, bool *),
 			tree (*valueize)(tree),
@@ -3213,7 +3359,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
       if (gimple_nop_p (def_stmt))
 	break;
       else if (gimple_code (def_stmt) == GIMPLE_PHI)
-	vuse = get_continuation_for_phi (def_stmt, ref, limit,
+	vuse = get_continuation_for_phi (def_stmt, ref, tbaa_p, limit,
 					 &visited, translated, translate, data);
       else
 	{
@@ -3223,7 +3369,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse,
 	      break;
 	    }
 	  --limit;
-	  if (stmt_may_clobber_ref_p_1 (def_stmt, ref))
+	  if (stmt_may_clobber_ref_p_1 (def_stmt, ref, tbaa_p))
 	    {
 	      if (!translate)
 		break;

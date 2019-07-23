@@ -103,8 +103,9 @@ test_map_of_strings_to_int ()
   ASSERT_EQ (1, string_map.elements ());
 }
 
-typedef struct hash_map_test_val_t
+typedef class hash_map_test_val_t
 {
+public:
   static int ndefault;
   static int ncopy;
   static int nassign;

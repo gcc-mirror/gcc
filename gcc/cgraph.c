@@ -2204,6 +2204,22 @@ cgraph_node::dump (FILE *f)
     }
 }
 
+/* Dump call graph node to file F in graphviz format.  */
+
+void
+cgraph_node::dump_graphviz (FILE *f)
+{
+  cgraph_edge *edge;
+
+  for (edge = callees; edge; edge = edge->next_callee)
+    {
+      cgraph_node *callee = edge->callee;
+
+      fprintf (f, "\t\"%s\" -> \"%s\"\n", name (), callee->name ());
+    }
+}
+
+
 /* Dump call graph node NODE to stderr.  */
 
 DEBUG_FUNCTION void
@@ -3618,7 +3634,7 @@ cgraph_node::get_body (void)
       set_dump_file (NULL);
 
       push_cfun (DECL_STRUCT_FUNCTION (decl));
-      execute_all_ipa_transforms ();
+      execute_all_ipa_transforms (true);
       cgraph_edge::rebuild_edges ();
       free_dominance_info (CDI_DOMINATORS);
       free_dominance_info (CDI_POST_DOMINATORS);

@@ -1776,10 +1776,11 @@
   (set (match_dup 0)
        (lshiftrt:GPR (match_dup 0) (match_dup 2)))]
 {
-  operands[2] = GEN_INT (BITS_PER_WORD
+  /* Op2 is a VOIDmode constant, so get the mode size from op1.  */
+  operands[2] = GEN_INT (GET_MODE_BITSIZE (GET_MODE (operands[1]))
 			 - exact_log2 (INTVAL (operands[2]) + 1));
 })
-  
+
 ;; Handle AND with 0xF...F0...0 where there are 32 to 63 zeros.  This can be
 ;; split into two shifts.  Otherwise it requires 3 instructions: li, sll, and.
 (define_split
@@ -2054,7 +2055,7 @@
   ""
   "slt%i2<u>\t%0,zero,%1"
   [(set_attr "type" "slt")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<X:MODE>")])
 
 (define_insn "*slt<u>_<X:mode><GPR:mode>"
   [(set (match_operand:GPR           0 "register_operand" "= r")
@@ -2063,7 +2064,7 @@
   ""
   "slt%i2<u>\t%0,%1,%2"
   [(set_attr "type" "slt")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<X:MODE>")])
 
 (define_insn "*sle<u>_<X:mode><GPR:mode>"
   [(set (match_operand:GPR           0 "register_operand" "=r")
@@ -2075,7 +2076,7 @@
   return "slt%i2<u>\t%0,%1,%2";
 }
   [(set_attr "type" "slt")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<X:MODE>")])
 
 ;;
 ;;  ....................

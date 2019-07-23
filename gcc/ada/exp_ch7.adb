@@ -393,7 +393,7 @@ package body Exp_Ch7 is
    --  name. Before generating the proper call to one of these operations we
    --  check whether Typ is known to be controlled at the point of definition.
    --  If it is not then we must retrieve the hidden operation of the parent
-   --  and use it instead.  This is one case that might be solved more cleanly
+   --  and use it instead. This is one case that might be solved more cleanly
    --  once Overriding pragmas or declarations are in place.
 
    function Contains_Subprogram (Blk : Entity_Id) return Boolean;
@@ -2035,6 +2035,13 @@ package body Exp_Ch7 is
 
             Analyze (Fin_Body, Suppress => All_Checks);
          end if;
+
+         --  Never consider that the finalizer procedure is enabled Ghost, even
+         --  when the corresponding unit is Ghost, as this would lead to an
+         --  an external name with a ___ghost_ prefix that the binder cannot
+         --  generate, as it has no knowledge of the Ghost status of units.
+
+         Set_Is_Checked_Ghost_Entity (Fin_Id, False);
       end Create_Finalizer;
 
       --------------------------
@@ -3873,7 +3880,7 @@ package body Exp_Ch7 is
                             Attribute_Name  => Name_Range,
                             Expressions     => New_List (
                               Make_Integer_Literal (Loc, Dim))))),
-                Statements       =>  Free_One_Dimension (Dim + 1)));
+                Statements       => Free_One_Dimension (Dim + 1)));
          end if;
       end Free_One_Dimension;
 
@@ -3893,10 +3900,11 @@ package body Exp_Ch7 is
       Typ  : Entity_Id) return List_Id
    is
       Loc   : constant Source_Ptr := Sloc (N);
-      Tsk   : Node_Id;
-      Comp  : Entity_Id;
       Stmts : constant List_Id    := New_List;
       U_Typ : constant Entity_Id  := Underlying_Type (Typ);
+
+      Comp : Entity_Id;
+      Tsk  : Node_Id;
 
    begin
       if Has_Discriminants (U_Typ)
@@ -3918,7 +3926,7 @@ package body Exp_Ch7 is
          return New_List (Make_Null_Statement (Loc));
       end if;
 
-      Comp := First_Component (Typ);
+      Comp := First_Component (U_Typ);
       while Present (Comp) loop
          if Has_Task (Etype (Comp))
            or else Has_Simple_Protected_Object (Etype (Comp))
@@ -3937,8 +3945,8 @@ package body Exp_Ch7 is
 
             elsif Is_Record_Type (Etype (Comp)) then
 
-               --  Recurse, by generating the prefix of the argument to
-               --  the eventual cleanup call.
+               --  Recurse, by generating the prefix of the argument to the
+               --  eventual cleanup call.
 
                Append_List_To (Stmts, Cleanup_Record (N, Tsk, Etype (Comp)));
 

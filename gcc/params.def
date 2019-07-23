@@ -1109,12 +1109,6 @@ DEFPARAM (PARAM_IPA_CP_LOOP_HINT_BONUS,
 	  "bounds or strides known.",
 	  64, 0, 0)
 
-DEFPARAM (PARAM_IPA_CP_ARRAY_INDEX_HINT_BONUS,
-	  "ipa-cp-array-index-hint-bonus",
-	  "Compile-time bonus IPA-CP assigns to candidates which make an array "
-	  "index known.",
-	  48, 0, 0)
-
 DEFPARAM (PARAM_IPA_MAX_AA_STEPS,
 	  "ipa-max-aa-steps",
 	  "Maximum number of statements that will be visited by IPA formal "
@@ -1436,6 +1430,12 @@ DEFPARAM(PARAM_HASH_TABLE_VERIFICATION_LIMIT,
 	 "The number of elements for which hash table verification is done for "
 	 "each searched element.",
 	 10, 0, 0)
+
+DEFPARAM(PARAM_SSA_NAME_DEF_CHAIN_LIMIT,
+	 "ssa-name-def-chain-limit",
+	 "The maximum number of SSA_NAME assignments to follow in determining "
+	 "a value.",
+	 512, 0, 0)
 
 /*
 

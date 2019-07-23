@@ -23,7 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 
 /* Records a position in the file.  */
-struct file_location {
+class file_location {
+public:
   file_location () {}
   file_location (const char *, int, int);
 
@@ -148,6 +149,13 @@ struct mapping;
 class md_reader
 {
  public:
+  /* Associates PTR (which can be a string, etc.) with the file location
+     specified by LOC.  */
+  struct ptr_loc {
+    const void *ptr;
+    file_location loc;
+  };
+
   md_reader (bool compact);
   virtual ~md_reader ();
 
@@ -182,7 +190,7 @@ class md_reader
   void require_word_ws (const char *expected);
   int peek_char (void);
 
-  void set_md_ptr_loc (const void *ptr, const char *filename, int lineno);
+  void set_md_ptr_loc (const void *ptr, file_location);
   const struct ptr_loc *get_md_ptr_loc (const void *ptr);
   void copy_md_ptr_loc (const void *new_ptr, const void *old_ptr);
   void fprint_md_ptr_loc (FILE *outf, const void *ptr);
@@ -204,8 +212,8 @@ class md_reader
   rtx copy_rtx_for_iterators (rtx original);
   void read_conditions ();
   void record_potential_iterator_use (struct iterator_group *group,
-				      rtx x, unsigned int index,
-				      const char *name);
+				      file_location loc, rtx x,
+				      unsigned int index, const char *name);
   struct mapping *read_mapping (struct iterator_group *group, htab_t table);
   overloaded_name *handle_overloaded_name (rtx, vec<mapping *> *);
 

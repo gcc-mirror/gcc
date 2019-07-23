@@ -120,7 +120,7 @@ get_traditional_extraction_insn (extraction_insn *insn,
    POS_OP is the operand number of the bit position.  */
 
 static bool
-get_optab_extraction_insn (struct extraction_insn *insn,
+get_optab_extraction_insn (class extraction_insn *insn,
 			   enum extraction_type type,
 			   machine_mode mode, direct_optab reg_optab,
 			   direct_optab misalign_optab, int pos_op)

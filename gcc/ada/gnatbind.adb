@@ -26,7 +26,6 @@
 with ALI;      use ALI;
 with ALI.Util; use ALI.Util;
 with Bcheck;   use Bcheck;
-with Binde;    use Binde;
 with Binderr;  use Binderr;
 with Bindgen;  use Bindgen;
 with Bindo;    use Bindo;
@@ -475,6 +474,17 @@ procedure Gnatbind is
 
             Mapping_File := new String'(Argv (4 .. Argv'Last));
 
+         --  -minimal
+
+         elsif Argv (2 .. Argv'Last) = "minimal" then
+            if not Is_Cross_Compiler then
+               Write_Line
+                 ("gnatbind: -minimal not expected to be used on native " &
+                  "platforms");
+            end if;
+
+            Opt.Minimal_Binder := True;
+
          --  -Mname
 
          elsif Argv'Length >= 3 and then Argv (2) = 'M' then
@@ -883,14 +893,7 @@ begin
             Elab_Order : Unit_Id_Table;
 
          begin
-            --  Use the invocation and library graph-based elaboration order
-            --  when switch -d_N (new bindo order) is in effect.
-
-            if Debug_Flag_Underscore_NN then
-               Find_Elaboration_Order (Elab_Order, First_Main_Lib_File);
-            else
-               Find_Elab_Order (Elab_Order, First_Main_Lib_File);
-            end if;
+            Find_Elaboration_Order (Elab_Order, First_Main_Lib_File);
 
             if Errors_Detected = 0 and then not Check_Only then
                Gen_Output_File

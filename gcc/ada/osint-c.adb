@@ -385,6 +385,21 @@ package body Osint.C is
          end if;
       end loop;
 
+      --  If we are in multiple-units-per-file mode, then add a ~nnn extension
+      --  to the name.
+
+      if Multiple_Unit_Index /= 0 then
+         declare
+            Exten : constant String := Name_Buffer (Dot_Index .. Name_Len);
+         begin
+            Name_Len := Dot_Index - 1;
+            Add_Char_To_Name_Buffer (Multi_Unit_Index_Character);
+            Add_Nat_To_Name_Buffer (Multiple_Unit_Index);
+            Dot_Index := Name_Len + 1;
+            Add_Str_To_Name_Buffer (Exten);
+         end;
+      end if;
+
       --  Make sure that the output file name matches the source file name.
       --  To compare them, remove file name directories and extensions.
 
@@ -394,21 +409,6 @@ package body Osint.C is
          --  if the source file name has no extension.
 
          Name_Buffer (Dot_Index) := '.';
-
-         --  If we are in multiple unit per file mode, then add ~nnn
-         --  extension to the name before doing the comparison.
-
-         if Multiple_Unit_Index /= 0 then
-            declare
-               Exten : constant String := Name_Buffer (Dot_Index .. Name_Len);
-            begin
-               Name_Len := Dot_Index - 1;
-               Add_Char_To_Name_Buffer (Multi_Unit_Index_Character);
-               Add_Nat_To_Name_Buffer (Multiple_Unit_Index);
-               Dot_Index := Name_Len + 1;
-               Add_Str_To_Name_Buffer (Exten);
-            end;
-         end if;
 
          --  Remove extension preparing to replace it
 

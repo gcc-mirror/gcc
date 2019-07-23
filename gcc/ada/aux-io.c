@@ -31,10 +31,7 @@
 
 #include <stdio.h>
 
-#ifdef IN_RTS
-#include "tconfig.h"
-#include "tsystem.h"
-#else
+#ifndef IN_RTS
 #include "config.h"
 #include "system.h"
 #endif

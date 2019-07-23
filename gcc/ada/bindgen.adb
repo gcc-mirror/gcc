@@ -1810,9 +1810,11 @@ package body Bindgen is
       --  with a pragma Volatile in order to tell the compiler to preserve
       --  this variable at any level of optimization.
 
-      --  CodePeer and CCG do not need this extra code on the other hand
+      --  CodePeer and CCG do not need this extra code. The code is also not
+      --  needed if the binder is in "Minimal Binder" mode.
 
       if Bind_Main_Program
+        and then not Minimal_Binder
         and then not CodePeer_Mode
         and then not Generate_C_Code
       then
@@ -2354,25 +2356,27 @@ package body Bindgen is
          --  program uses two Ada libraries). Also zero terminate the string
          --  so that its end can be found reliably at run time.
 
-         WBI ("");
-         WBI ("   GNAT_Version : constant String :=");
-         WBI ("                    """ & Ver_Prefix &
-                                   Gnat_Version_String &
-                                   """ & ASCII.NUL;");
-         WBI ("   pragma Export (C, GNAT_Version, ""__gnat_version"");");
+         if not Minimal_Binder then
+            WBI ("");
+            WBI ("   GNAT_Version : constant String :=");
+            WBI ("                    """ & Ver_Prefix &
+                                      Gnat_Version_String &
+                                      """ & ASCII.NUL;");
+            WBI ("   pragma Export (C, GNAT_Version, ""__gnat_version"");");
 
-         WBI ("");
-         Set_String ("   Ada_Main_Program_Name : constant String := """);
-         Get_Name_String (Units.Table (First_Unit_Entry).Uname);
+            WBI ("");
+            Set_String ("   Ada_Main_Program_Name : constant String := """);
+            Get_Name_String (Units.Table (First_Unit_Entry).Uname);
 
-         Set_Main_Program_Name;
-         Set_String (""" & ASCII.NUL;");
+            Set_Main_Program_Name;
+            Set_String (""" & ASCII.NUL;");
 
-         Write_Statement_Buffer;
+            Write_Statement_Buffer;
 
-         WBI
-           ("   pragma Export (C, Ada_Main_Program_Name, " &
-            """__gnat_ada_main_program_name"");");
+            WBI
+              ("   pragma Export (C, Ada_Main_Program_Name, " &
+               """__gnat_ada_main_program_name"");");
+         end if;
       end if;
 
       WBI ("");

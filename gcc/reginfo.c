@@ -50,8 +50,9 @@ int max_regno;
 
 /* Used to cache the results of simplifiable_subregs.  SHAPE is the input
    parameter and SIMPLIFIABLE_REGS is the result.  */
-struct simplifiable_subreg
+class simplifiable_subreg
 {
+public:
   simplifiable_subreg (const subreg_shape &);
 
   subreg_shape shape;

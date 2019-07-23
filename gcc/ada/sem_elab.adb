@@ -496,12 +496,6 @@ package body Sem_Elab is
    --           actual subprograms through generic formal subprograms. As a
    --           result, the calls are not recorded or processed.
    --
-   --  -gnatd_G encode invocation graph in ALI files
-   --
-   --           The ABE mechanism encodes the invocation graph of the main
-   --           unit. This includes elaboration code, as well as invocation
-   --           constructs.
-   --
    --  -gnatd_i ignore activations and calls to instances for elaboration
    --
    --           The ABE mechanism ignores calls and task activations when they
@@ -676,6 +670,22 @@ package body Sem_Elab is
    -- Kinds --
    -----------
 
+   --  The following type enumerates all possible elaboration phase statutes
+
+   type Elaboration_Phase_Status is
+     (Inactive,
+      --  The elaboration phase of the compiler has not started yet
+
+      Active,
+      --  The elaboration phase of the compiler is currently in progress
+
+      Completed);
+      --  The elaboration phase of the compiler has finished
+
+   Elaboration_Phase : Elaboration_Phase_Status := Inactive;
+   --  The status of the elaboration phase. Use routine Set_Elaboration_Phase
+   --  to alter its value.
+
    --  The following type enumerates all subprogram body traversal modes
 
    type Body_Traversal_Kind is
@@ -771,6 +781,9 @@ package body Sem_Elab is
    type Target_Kind is
      (Generic_Target,
       --  A generic unit being instantiated
+
+      Package_Target,
+      --  The package form of an instantiation
 
       Subprogram_Target,
       --  An entry, operator, or subprogram being invoked, or aliased through
@@ -1958,6 +1971,14 @@ package body Sem_Elab is
    --  Return the type of subprogram Subp_Id's first formal parameter. If the
    --  subprogram lacks formal parameters, return Empty.
 
+   function Elaboration_Phase_Active return Boolean;
+   pragma Inline (Elaboration_Phase_Active);
+   --  Determine whether the elaboration phase of the compilation has started
+
+   procedure Finalize_All_Data_Structures;
+   pragma Inline (Finalize_All_Data_Structures);
+   --  Destroy all internal data structures
+
    function Has_Body (Pack_Decl : Node_Id) return Boolean;
    pragma Inline (Has_Body);
    --  Determine whether package declaration Pack_Decl has a corresponding body
@@ -1983,6 +2004,10 @@ package body Sem_Elab is
    --  Determine whether two arbitrary nodes N1 and N2 appear within the same
    --  context ignoring enclosing library levels. Nested_OK should be set when
    --  the context of N1 can enclose that of N2.
+
+   procedure Initialize_All_Data_Structures;
+   pragma Inline (Initialize_All_Data_Structures);
+   --  Create all internal data structures
 
    function Instantiated_Generic (Inst : Node_Id) return Entity_Id;
    pragma Inline (Instantiated_Generic);
@@ -2018,6 +2043,10 @@ package body Sem_Elab is
    pragma Inline (Is_Same_Unit);
    --  Determine whether entities Unit_1 and Unit_2 denote the same unit
 
+   function Main_Unit_Entity return Entity_Id;
+   pragma Inline (Main_Unit_Entity);
+   --  Return the entity of the main unit
+
    function Non_Private_View (Typ : Entity_Id) return Entity_Id;
    pragma Inline (Non_Private_View);
    --  Return the full view of private type Typ if available, otherwise return
@@ -2026,6 +2055,10 @@ package body Sem_Elab is
    function Scenario (N : Node_Id) return Node_Id;
    pragma Inline (Scenario);
    --  Return the appropriate scenario node for scenario N
+
+   procedure Set_Elaboration_Phase (Status : Elaboration_Phase_Status);
+   pragma Inline (Set_Elaboration_Phase);
+   --  Change the status of the elaboration phase of the compiler to Status
 
    procedure Spec_And_Body_From_Entity
      (Id        : Node_Id;
@@ -3572,6 +3605,12 @@ package body Sem_Elab is
       elsif Preanalysis_Active then
          return;
 
+      --  Nothing to do when the elaboration phase of the compiler is not
+      --  active.
+
+      elsif not Elaboration_Phase_Active then
+         return;
+
       --  Nothing to do when the input does not denote a call or a requeue
 
       elsif not Nkind_In (N, N_Entry_Call_Statement,
@@ -3789,6 +3828,13 @@ package body Sem_Elab is
    --  Start of processing for Build_Variable_Reference_Marker
 
    begin
+      --  Nothing to do when the elaboration phase of the compiler is not
+      --  active.
+
+      if not Elaboration_Phase_Active then
+         return;
+      end if;
+
       Marker := Make_Variable_Reference_Marker (Sloc (N));
 
       --  Inherit the attributes of the original variable reference
@@ -3887,30 +3933,30 @@ package body Sem_Elab is
       --  to carry out this action.
 
       if Legacy_Elaboration_Checks then
+         Finalize_All_Data_Structures;
          return;
 
       --  Nothing to do for ASIS because ABE checks and diagnostics are not
       --  performed in this mode.
 
       elsif ASIS_Mode then
+         Finalize_All_Data_Structures;
+         return;
+
+      --  Nothing to do when the elaboration phase of the compiler is not
+      --  active.
+
+      elsif not Elaboration_Phase_Active then
+         Finalize_All_Data_Structures;
          return;
       end if;
-
-      --  Create all internal data structures
-
-      Initialize_Body_Processor;
-      Initialize_Early_Call_Region_Processor;
-      Initialize_Elaborated_Units;
-      Initialize_Internal_Representation;
-      Initialize_Invocation_Graph;
-      Initialize_Scenario_Storage;
 
       --  Restore the original elaboration model which was in effect when the
       --  scenarios were first recorded. The model may be specified by pragma
       --  Elaboration_Checks which appears on the initial declaration of the
       --  main unit.
 
-      Install_Elaboration_Model (Unit_Entity (Cunit_Entity (Main_Unit)));
+      Install_Elaboration_Model (Unit_Entity (Main_Unit_Entity));
 
       --  Examine the context of the main unit and record all units with prior
       --  elaboration with respect to it.
@@ -3949,14 +3995,11 @@ package body Sem_Elab is
 
       Record_Invocation_Graph;
 
-      --  Destroy all internal data structures
+      --  Destroy all internal data structures and complete the elaboration
+      --  phase of the compiler.
 
-      Finalize_Body_Processor;
-      Finalize_Early_Call_Region_Processor;
-      Finalize_Elaborated_Units;
-      Finalize_Internal_Representation;
-      Finalize_Invocation_Graph;
-      Finalize_Scenario_Storage;
+      Finalize_All_Data_Structures;
+      Set_Elaboration_Phase (Completed);
    end Check_Elaboration_Scenarios;
 
    ---------------------
@@ -6302,7 +6345,7 @@ package body Sem_Elab is
          --  because diagnostics on reads are relevant only for external
          --  variables.
 
-         if Is_Same_Unit (Unit_Id, Cunit_Entity (Main_Unit)) then
+         if Is_Same_Unit (Unit_Id, Main_Unit_Entity) then
             null;
 
          --  Nothing to do when the variable is already initialized. Note that
@@ -7676,8 +7719,7 @@ package body Sem_Elab is
       --  The following map relates an elaboration attributes of a unit to the
       --  unit.
 
-      Unit_To_Attributes_Map : UA_Map.Dynamic_Hash_Table :=
-                                 UA_Map.Create (250);
+      Unit_To_Attributes_Map : UA_Map.Dynamic_Hash_Table := UA_Map.Nil;
 
       ------------------
       -- Constructors --
@@ -8122,7 +8164,7 @@ package body Sem_Elab is
          --       body of A elaborated  <--  problem
          --
          --    The generation of an implicit pragma Elaborate_All (B) ensures
-         --    that the elaboration order mechanism will not pick the above
+         --    that the elaboration-order mechanism will not pick the above
          --    order.
          --
          --    An implicit Elaborate is NOT generated when the unit is subject
@@ -8461,10 +8503,9 @@ package body Sem_Elab is
          Elab_Body_OK : Boolean := False;
          Same_Unit_OK : Boolean := False) return Boolean
       is
-         EA_Id : constant Elaboration_Attributes_Id :=
-                   Elaboration_Attributes_Of (Unit_Id);
-
-         Main_Id   : constant Entity_Id := Cunit_Entity (Main_Unit);
+         EA_Id     : constant Elaboration_Attributes_Id :=
+                       Elaboration_Attributes_Of (Unit_Id);
+         Main_Id   : constant Entity_Id := Main_Unit_Entity;
          Unit_Prag : constant Node_Id   := Elab_Pragma (EA_Id);
          Unit_With : constant Node_Id   := With_Clause (EA_Id);
 
@@ -8519,7 +8560,7 @@ package body Sem_Elab is
 
       procedure Initialize_Elaborated_Units is
       begin
-         null;
+         Unit_To_Attributes_Map := UA_Map.Create (250);
       end Initialize_Elaborated_Units;
 
       ----------------------------------
@@ -8534,7 +8575,7 @@ package body Sem_Elab is
       is
          pragma Assert (Nam_In (Req_Nam, Name_Elaborate, Name_Elaborate_All));
 
-         Main_Id : constant Entity_Id := Cunit_Entity (Main_Unit);
+         Main_Id : constant Entity_Id := Main_Unit_Entity;
          Unit_Id : constant Entity_Id := Find_Top_Unit (Targ_Id);
 
          procedure Elaboration_Requirement_Error;
@@ -8799,6 +8840,29 @@ package body Sem_Elab is
          return Elaboration_Attributes.Table (EA_Id).With_Clause;
       end With_Clause;
    end Elaborated_Units;
+
+   ------------------------------
+   -- Elaboration_Phase_Active --
+   ------------------------------
+
+   function Elaboration_Phase_Active return Boolean is
+   begin
+      return Elaboration_Phase = Active;
+   end Elaboration_Phase_Active;
+
+   ----------------------------------
+   -- Finalize_All_Data_Structures --
+   ----------------------------------
+
+   procedure Finalize_All_Data_Structures is
+   begin
+      Finalize_Body_Processor;
+      Finalize_Early_Call_Region_Processor;
+      Finalize_Elaborated_Units;
+      Finalize_Internal_Representation;
+      Finalize_Invocation_Graph;
+      Finalize_Scenario_Storage;
+   end Finalize_All_Data_Structures;
 
    -----------------------------
    -- Find_Enclosing_Instance --
@@ -10072,7 +10136,27 @@ package body Sem_Elab is
       --  each time it is transformed into another node.
 
       Set_Rewriting_Proc (Update_Elaboration_Scenario'Access);
+
+      --  Create all internal data structures and activate the elaboration
+      --  phase of the compiler.
+
+      Initialize_All_Data_Structures;
+      Set_Elaboration_Phase (Active);
    end Initialize;
+
+   ------------------------------------
+   -- Initialize_All_Data_Structures --
+   ------------------------------------
+
+   procedure Initialize_All_Data_Structures is
+   begin
+      Initialize_Body_Processor;
+      Initialize_Early_Call_Region_Processor;
+      Initialize_Elaborated_Units;
+      Initialize_Internal_Representation;
+      Initialize_Invocation_Graph;
+      Initialize_Scenario_Storage;
+   end Initialize_All_Data_Structures;
 
    --------------------------
    -- Instantiated_Generic --
@@ -10201,8 +10285,7 @@ package body Sem_Elab is
 
       --  The following map relates target representations to entities
 
-      Entity_To_Target_Map : ETT_Map.Dynamic_Hash_Table :=
-                               ETT_Map.Create (500);
+      Entity_To_Target_Map : ETT_Map.Dynamic_Hash_Table := ETT_Map.Nil;
 
       procedure Destroy (S_Id : in out Scenario_Rep_Id);
       --  Destroy a scenario representation S_Id
@@ -10221,8 +10304,7 @@ package body Sem_Elab is
 
       --  The following map relates scenario representations to nodes
 
-      Node_To_Scenario_Map : NTS_Map.Dynamic_Hash_Table :=
-                               NTS_Map.Create (500);
+      Node_To_Scenario_Map : NTS_Map.Dynamic_Hash_Table := NTS_Map.Nil;
 
       --  The following table stores all scenario representations
 
@@ -10273,6 +10355,11 @@ package body Sem_Elab is
         (Inst : Node_Id) return Scenario_Rep_Record;
       pragma Inline (Create_Instantiation_Rep);
       --  Create the representation of instantiation Inst
+
+      function Create_Package_Rep
+        (Pack_Id : Entity_Id) return Target_Rep_Record;
+      pragma Inline (Create_Package_Rep);
+      --  Create the representation of package Pack_Id
 
       function Create_Protected_Entry_Rep
         (PE_Id : Entity_Id) return Target_Rep_Record;
@@ -10542,6 +10629,26 @@ package body Sem_Elab is
          return Rec;
       end Create_Instantiation_Rep;
 
+      ------------------------
+      -- Create_Package_Rep --
+      ------------------------
+
+      function Create_Package_Rep
+        (Pack_Id : Entity_Id) return Target_Rep_Record
+      is
+         Rec : Target_Rep_Record;
+
+      begin
+         Rec.Kind := Package_Target;
+
+         Spec_And_Body_From_Entity
+           (Id        => Pack_Id,
+            Body_Decl => Rec.Body_Decl,
+            Spec_Decl => Rec.Spec_Decl);
+
+         return Rec;
+      end Create_Package_Rep;
+
       --------------------------------
       -- Create_Protected_Entry_Rep --
       --------------------------------
@@ -10763,6 +10870,9 @@ package body Sem_Elab is
                              E_Procedure)
          then
             Rec := Create_Subprogram_Rep (Id);
+
+         elsif Ekind (Id) = E_Package then
+            Rec := Create_Package_Rep (Id);
 
          else
             pragma Assert (False);
@@ -11058,7 +11168,8 @@ package body Sem_Elab is
 
       procedure Initialize_Internal_Representation is
       begin
-         null;
+         Entity_To_Target_Map := ETT_Map.Create (500);
+         Node_To_Scenario_Map := NTS_Map.Create (500);
       end Initialize_Internal_Representation;
 
       -------------------------
@@ -11539,6 +11650,14 @@ package body Sem_Elab is
       --  Process invocation call scenario Call with representation Call_Rep.
       --  In_State is the current state of the Processing phase.
 
+      procedure Process_Invocation_Instantiation
+        (Inst     : Node_Id;
+         Inst_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State);
+      pragma Inline (Process_Invocation_Instantiation);
+      --  Process invocation instantiation scenario Inst with representation
+      --  Inst_Rep. In_State is the current state of the Processing phase.
+
       procedure Process_Invocation_Scenario
         (N        : Node_Id;
          In_State : Processing_In_State);
@@ -11605,6 +11724,11 @@ package body Sem_Elab is
       --  Record all relations between scenario pairs found in the stack of
       --  active scenarios. In_State is the current state of the Processing
       --  phase.
+
+      procedure Record_Invocation_Graph_Encoding;
+      pragma Inline (Record_Invocation_Graph_Encoding);
+      --  Record the encoding format used to capture information related to
+      --  invocation constructs and relations.
 
       procedure Record_Invocation_Path (In_State : Processing_In_State);
       pragma Inline (Record_Invocation_Path);
@@ -11679,7 +11803,7 @@ package body Sem_Elab is
          end if;
 
          Spec_And_Body_From_Entity
-           (Id        => Cunit_Entity (Main_Unit),
+           (Id        => Main_Unit_Entity,
             Body_Decl => Body_Decl,
             Spec_Decl => Spec_Decl);
 
@@ -11711,7 +11835,7 @@ package body Sem_Elab is
 
          Set_Ekind (Proc_Id, E_Procedure);
          Set_Etype (Proc_Id, Standard_Void_Type);
-         Set_Scope (Proc_Id, Unique_Entity (Cunit_Entity (Main_Unit)));
+         Set_Scope (Proc_Id, Unique_Entity (Main_Unit_Entity));
 
          --  Create a dummy declaration for the elaboration procedure. The
          --  declaration does not need to be syntactically legal, but must
@@ -11742,7 +11866,7 @@ package body Sem_Elab is
          end if;
 
          Spec_And_Body_From_Entity
-           (Id        => Cunit_Entity (Main_Unit),
+           (Id        => Main_Unit_Entity,
             Body_Decl => Body_Decl,
             Spec_Decl => Spec_Decl);
 
@@ -11855,40 +11979,32 @@ package body Sem_Elab is
         (Constr_Id : Entity_Id;
          In_State  : Processing_In_State)
       is
+         function Body_Placement_Of
+           (Id : Entity_Id) return Declaration_Placement_Kind;
+         pragma Inline (Body_Placement_Of);
+         --  Obtain the placement of arbitrary entity Id's body
+
+         function Declaration_Placement_Of_Node
+           (N : Node_Id) return Declaration_Placement_Kind;
+         pragma Inline (Declaration_Placement_Of_Node);
+         --  Obtain the placement of arbitrary node N
+
          function Kind_Of (Id : Entity_Id) return Invocation_Construct_Kind;
          pragma Inline (Kind_Of);
          --  Obtain the invocation construct kind of arbitrary entity Id
 
-         function Placement_Of (Id : Entity_Id) return Body_Placement_Kind;
-         pragma Inline (Placement_Of);
-         --  Obtain the body placement of arbitrary entity Id
+         function Spec_Placement_Of
+           (Id : Entity_Id) return Declaration_Placement_Kind;
+         pragma Inline (Spec_Placement_Of);
+         --  Obtain the placement of arbitrary entity Id's spec
 
-         function Placement_Of_Node (N : Node_Id) return Body_Placement_Kind;
-         pragma Inline (Placement_Of_Node);
-         --  Obtain the body placement of arbitrary node N
+         -----------------------
+         -- Body_Placement_Of --
+         -----------------------
 
-         -------------
-         -- Kind_Of --
-         -------------
-
-         function Kind_Of (Id : Entity_Id) return Invocation_Construct_Kind is
-         begin
-            if Id = Elab_Body_Id then
-               return Elaborate_Body_Procedure;
-
-            elsif Id = Elab_Spec_Id then
-               return Elaborate_Spec_Procedure;
-
-            else
-               return Regular_Construct;
-            end if;
-         end Kind_Of;
-
-         ------------------
-         -- Placement_Of --
-         ------------------
-
-         function Placement_Of (Id : Entity_Id) return Body_Placement_Kind is
+         function Body_Placement_Of
+           (Id : Entity_Id) return Declaration_Placement_Kind
+         is
             Id_Rep    : constant Target_Rep_Id :=
                           Target_Representation_Of (Id, In_State);
             Body_Decl : constant Node_Id := Body_Declaration (Id_Rep);
@@ -11898,22 +12014,24 @@ package body Sem_Elab is
             --  The entity has a body
 
             if Present (Body_Decl) then
-               return Placement_Of_Node (Body_Decl);
+               return Declaration_Placement_Of_Node (Body_Decl);
 
             --  Otherwise the entity must have a spec
 
             else
                pragma Assert (Present (Spec_Decl));
-               return Placement_Of_Node (Spec_Decl);
+               return Declaration_Placement_Of_Node (Spec_Decl);
             end if;
-         end Placement_Of;
+         end Body_Placement_Of;
 
-         -----------------------
-         -- Placement_Of_Node --
-         -----------------------
+         -----------------------------------
+         -- Declaration_Placement_Of_Node --
+         -----------------------------------
 
-         function Placement_Of_Node (N : Node_Id) return Body_Placement_Kind is
-            Main_Unit_Id : constant Entity_Id := Cunit_Entity (Main_Unit);
+         function Declaration_Placement_Of_Node
+           (N : Node_Id) return Declaration_Placement_Kind
+         is
+            Main_Unit_Id : constant Entity_Id := Main_Unit_Entity;
             N_Unit_Id    : constant Entity_Id := Find_Top_Unit (N);
 
          begin
@@ -11956,11 +12074,50 @@ package body Sem_Elab is
             else
                return In_Body;
             end if;
-         end Placement_Of_Node;
+         end Declaration_Placement_Of_Node;
 
-         --  Local variables
+         -------------
+         -- Kind_Of --
+         -------------
 
-         IC_Rec : Invocation_Construct_Record;
+         function Kind_Of (Id : Entity_Id) return Invocation_Construct_Kind is
+         begin
+            if Id = Elab_Body_Id then
+               return Elaborate_Body_Procedure;
+
+            elsif Id = Elab_Spec_Id then
+               return Elaborate_Spec_Procedure;
+
+            else
+               return Regular_Construct;
+            end if;
+         end Kind_Of;
+
+         -----------------------
+         -- Spec_Placement_Of --
+         -----------------------
+
+         function Spec_Placement_Of
+           (Id : Entity_Id) return Declaration_Placement_Kind
+         is
+            Id_Rep    : constant Target_Rep_Id :=
+                          Target_Representation_Of (Id, In_State);
+            Body_Decl : constant Node_Id := Body_Declaration (Id_Rep);
+            Spec_Decl : constant Node_Id := Spec_Declaration (Id_Rep);
+
+         begin
+            --  The entity has a spec
+
+            if Present (Spec_Decl) then
+               return Declaration_Placement_Of_Node (Spec_Decl);
+
+            --  Otherwise the entity must have a body
+
+            else
+               pragma Assert (Present (Body_Decl));
+               return Declaration_Placement_Of_Node (Body_Decl);
+            end if;
+         end Spec_Placement_Of;
 
       --  Start of processing for Declare_Invocation_Construct
 
@@ -11976,15 +12133,14 @@ package body Sem_Elab is
 
          Set_Is_Saved_Construct (Constr_Id);
 
-         IC_Rec.Kind      := Kind_Of      (Constr_Id);
-         IC_Rec.Placement := Placement_Of (Constr_Id);
-         IC_Rec.Signature := Signature_Of (Constr_Id);
-
          --  Add the construct in the ALI file
 
          Add_Invocation_Construct
-           (IC_Rec       => IC_Rec,
-            Update_Units => False);
+           (Body_Placement => Body_Placement_Of (Constr_Id),
+            Kind           => Kind_Of           (Constr_Id),
+            Signature      => Signature_Of      (Constr_Id),
+            Spec_Placement => Spec_Placement_Of (Constr_Id),
+            Update_Units   => False);
       end Declare_Invocation_Construct;
 
       -------------------------------
@@ -12030,16 +12186,10 @@ package body Sem_Elab is
          Main_Cunit : constant Node_Id := Cunit (Main_Unit);
 
       begin
-         --  Nothing to do when switch -gnatd_G (encode invocation graph in ALI
-         --  files) is not in effect.
-
-         if not Debug_Flag_Underscore_GG then
-            return False;
-
          --  Nothing to do when compiling for GNATprove because the invocation
          --  graph is not needed.
 
-         elsif GNATprove_Mode then
+         if GNATprove_Mode then
             return False;
 
          --  Nothing to do when the compilation will not produce an ALI file
@@ -12338,6 +12488,43 @@ package body Sem_Elab is
          end if;
       end Process_Invocation_Call;
 
+      --------------------------------------
+      -- Process_Invocation_Instantiation --
+      --------------------------------------
+
+      procedure Process_Invocation_Instantiation
+        (Inst     : Node_Id;
+         Inst_Rep : Scenario_Rep_Id;
+         In_State : Processing_In_State)
+      is
+         pragma Unreferenced (Inst);
+
+         Gen_Id : constant Entity_Id := Target (Inst_Rep);
+
+      begin
+         --  Nothing to do when the generic appears within an internal unit
+
+         if In_Internal_Unit (Gen_Id) then
+            return;
+         end if;
+
+         --  The generic being instantiated resides within an external unit
+         --
+         --      Main unit         External unit
+         --    +-----------+      +-------------+
+         --    |           |      |             |
+         --    |  Start ------------> Generic   |
+         --    |           |      |             |
+         --    +-----------+      +-------------+
+         --
+         --  Record the invocation path which originates from Start and reaches
+         --  the generic.
+
+         if not In_Extended_Main_Code_Unit (Gen_Id) then
+            Record_Invocation_Path (In_State);
+         end if;
+      end Process_Invocation_Instantiation;
+
       ---------------------------------
       -- Process_Invocation_Scenario --
       ---------------------------------
@@ -12383,6 +12570,14 @@ package body Sem_Elab is
                      In_State  => In_State);
                end if;
             end if;
+
+         --  Instantiation
+
+         elsif Is_Suitable_Instantiation (Scen) then
+            Process_Invocation_Instantiation
+              (Inst     => Scen,
+               Inst_Rep => Scenario_Representation_Of (Scen, In_State),
+               In_State => In_State);
          end if;
 
          --  Remove the current scenario from the stack of active scenarios
@@ -12726,6 +12921,12 @@ package body Sem_Elab is
             return;
          end if;
 
+         --  Save the encoding format used to capture information about the
+         --  invocation constructs and relations in the ALI file of the main
+         --  unit.
+
+         Record_Invocation_Graph_Encoding;
+
          --  Examine all library level invocation scenarios and perform DFS
          --  traversals from each one. Encode a path in the ALI file of the
          --  main unit if it reaches into an external unit.
@@ -12740,6 +12941,30 @@ package body Sem_Elab is
 
          Process_Main_Unit;
       end Record_Invocation_Graph;
+
+      --------------------------------------
+      -- Record_Invocation_Graph_Encoding --
+      --------------------------------------
+
+      procedure Record_Invocation_Graph_Encoding is
+         Kind : Invocation_Graph_Encoding_Kind := No_Encoding;
+
+      begin
+         --  Switch -gnatd_F (encode full invocation paths in ALI files) is in
+         --  effect.
+
+         if Debug_Flag_Underscore_FF then
+            Kind := Full_Path_Encoding;
+         else
+            Kind := Endpoints_Encoding;
+         end if;
+
+         --  Save the encoding format in the ALI file of the main unit
+
+         Set_Invocation_Graph_Encoding
+           (Kind         => Kind,
+            Update_Units => False);
+      end Record_Invocation_Graph_Encoding;
 
       ----------------------------
       -- Record_Invocation_Path --
@@ -12799,6 +13024,10 @@ package body Sem_Elab is
            (Extra : out Entity_Id;
             Kind  : out Invocation_Kind)
          is
+            Targ_Rep  : constant Target_Rep_Id :=
+                          Target_Representation_Of (Targ_Id, In_State);
+            Spec_Decl : constant Node_Id := Spec_Declaration (Targ_Rep);
+
          begin
             --  Accept within a task body
 
@@ -12887,7 +13116,7 @@ package body Sem_Elab is
             --  Postcondition verification
 
             elsif Is_Postconditions_Proc (Targ_Id) then
-               Extra := Find_Enclosing_Scope (Targ_Id);
+               Extra := Find_Enclosing_Scope (Spec_Decl);
                Kind  := Postcondition_Verification;
 
             --  Protected entry call
@@ -12930,7 +13159,6 @@ package body Sem_Elab is
 
          Extra     : Entity_Id;
          Extra_Nam : Name_Id;
-         IR_Rec    : Invocation_Relation_Record;
          Kind      : Invocation_Kind;
          Rel       : Invoker_Target_Relation;
 
@@ -12969,15 +13197,13 @@ package body Sem_Elab is
             Extra_Nam := No_Name;
          end if;
 
-         IR_Rec.Extra   := Extra_Nam;
-         IR_Rec.Invoker := Signature_Of (Invk_Id);
-         IR_Rec.Kind    := Kind;
-         IR_Rec.Target  := Signature_Of (Targ_Id);
-
          --  Add the relation in the ALI file
 
          Add_Invocation_Relation
-           (IR_Rec       => IR_Rec,
+           (Extra        => Extra_Nam,
+            Invoker      => Signature_Of (Invk_Id),
+            Kind         => Kind,
+            Target       => Signature_Of (Targ_Id),
             Update_Units => False);
       end Record_Invocation_Relation;
 
@@ -13422,6 +13648,12 @@ package body Sem_Elab is
 
       if Legacy_Elaboration_Checks then
          return;
+
+      --  Nothing to do when the elaboration phase of the compiler is not
+      --  active.
+
+      elsif not Elaboration_Phase_Active then
+         return;
       end if;
 
       --  Eliminate a recorded scenario when it appears within dead code
@@ -13431,6 +13663,18 @@ package body Sem_Elab is
          Delete_Scenario (N);
       end if;
    end Kill_Elaboration_Scenario;
+
+   ----------------------
+   -- Main_Unit_Entity --
+   ----------------------
+
+   function Main_Unit_Entity return Entity_Id is
+   begin
+      --  Note that Cunit_Entity (Main_Unit) is not reliable in the presence of
+      --  generic bodies and may return an outdated entity.
+
+      return Defining_Entity (Unit (Cunit (Main_Unit)));
+   end Main_Unit_Entity;
 
    ----------------------
    -- Non_Private_View --
@@ -13785,6 +14029,12 @@ package body Sem_Elab is
 
       elsif Preanalysis_Active then
          return;
+
+      --  Nothing to do when the elaboration phase of the compiler is not
+      --  active.
+
+      elsif not Elaboration_Phase_Active then
+         return;
       end if;
 
       Scen_Lvl := Find_Enclosing_Level (Scen);
@@ -13889,16 +14139,11 @@ package body Sem_Elab is
 
       --  The following sets store all scenarios
 
-      Declaration_Scenarios       : NE_Set.Membership_Set :=
-                                      NE_Set.Create (1000);
-      Dynamic_ABE_Check_Scenarios : NE_Set.Membership_Set :=
-                                      NE_Set.Create (500);
-      Library_Body_Scenarios      : NE_Set.Membership_Set :=
-                                      NE_Set.Create (1000);
-      Library_Spec_Scenarios      : NE_Set.Membership_Set :=
-                                      NE_Set.Create (1000);
-      SPARK_Scenarios             : NE_Set.Membership_Set :=
-                                      NE_Set.Create (100);
+      Declaration_Scenarios       : NE_Set.Membership_Set := NE_Set.Nil;
+      Dynamic_ABE_Check_Scenarios : NE_Set.Membership_Set := NE_Set.Nil;
+      Library_Body_Scenarios      : NE_Set.Membership_Set := NE_Set.Nil;
+      Library_Spec_Scenarios      : NE_Set.Membership_Set := NE_Set.Nil;
+      SPARK_Scenarios             : NE_Set.Membership_Set := NE_Set.Nil;
 
       -------------------------------
       -- Finalize_Scenario_Storage --
@@ -13919,7 +14164,11 @@ package body Sem_Elab is
 
       procedure Initialize_Scenario_Storage is
       begin
-         null;
+         Declaration_Scenarios       := NE_Set.Create (1000);
+         Dynamic_ABE_Check_Scenarios := NE_Set.Create (500);
+         Library_Body_Scenarios      := NE_Set.Create (1000);
+         Library_Spec_Scenarios      := NE_Set.Create (1000);
+         SPARK_Scenarios             := NE_Set.Create (100);
       end Initialize_Scenario_Storage;
 
       ------------------------------
@@ -14796,6 +15045,15 @@ package body Sem_Elab is
       end Is_Up_Level_Target;
    end Semantics;
 
+   ---------------------------
+   -- Set_Elaboration_Phase --
+   ---------------------------
+
+   procedure Set_Elaboration_Phase (Status : Elaboration_Phase_Status) is
+   begin
+      Elaboration_Phase := Status;
+   end Set_Elaboration_Phase;
+
    ---------------------
    -- SPARK_Processor --
    ---------------------
@@ -14855,8 +15113,7 @@ package body Sem_Elab is
       --  emitted multiple times.
 
       procedure Check_SPARK_Model_In_Effect is
-         Spec_Id : constant Entity_Id :=
-                     Unique_Entity (Cunit_Entity (Main_Unit));
+         Spec_Id : constant Entity_Id := Unique_Entity (Main_Unit_Entity);
 
       begin
          --  Do not emit the warning multiple times as this creates useless
@@ -15700,17 +15957,24 @@ package body Sem_Elab is
 
    procedure Update_Elaboration_Scenario (New_N : Node_Id; Old_N : Node_Id) is
    begin
+      --  Nothing to do when the elaboration phase of the compiler is not
+      --  active.
+
+      if not Elaboration_Phase_Active then
+         return;
+
       --  Nothing to do when the old and new scenarios are one and the same
 
-      if Old_N = New_N then
+      elsif Old_N = New_N then
          return;
+      end if;
 
       --  A scenario is being transformed by Atree.Rewrite. Update all relevant
       --  internal data structures to reflect this change. This ensures that a
       --  potential run-time conditional ABE check or a guaranteed ABE failure
       --  is inserted at the proper place in the tree.
 
-      elsif Is_Scenario (Old_N) then
+      if Is_Scenario (Old_N) then
          Replace_Scenario (Old_N, New_N);
       end if;
    end Update_Elaboration_Scenario;

@@ -749,9 +749,17 @@ class Gogo
   void
   remove_shortcuts();
 
+  // Turn short-cut operators into explicit if statements in a block.
+  void
+  remove_shortcuts_in_block(Block*);
+
   // Use temporary variables to force order of evaluation.
   void
   order_evaluations();
+
+  // Order evaluations in a block.
+  void
+  order_block(Block*);
 
   // Add write barriers as needed.
   void
@@ -3554,6 +3562,24 @@ class Traverse
   Types_seen* types_seen_;
   // Expressions which have been seen in this traversal.
   Expressions_seen* expressions_seen_;
+};
+
+// This class looks for interface types to finalize methods of inherited
+// interfaces.
+
+class Finalize_methods : public Traverse
+{
+ public:
+  Finalize_methods(Gogo* gogo)
+    : Traverse(traverse_types),
+      gogo_(gogo)
+  { }
+
+  int
+  type(Type*);
+
+ private:
+  Gogo* gogo_;
 };
 
 // A class which makes it easier to insert new statements before the

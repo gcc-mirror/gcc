@@ -11381,4 +11381,13 @@ name and same types of iterator.  For example:
 would produce a single set of functions that handles both
 @code{INTEGER_MODES} and @code{FLOAT_MODES}.
 
+It is also possible for these @samp{@@} patterns to have different
+numbers of operands from each other.  For example, patterns with
+a binary rtl code might take three operands (one output and two inputs)
+while patterns with a ternary rtl code might take four operands (one
+output and three inputs).  This combination would produce separate
+@samp{maybe_gen_@var{name}} and @samp{gen_@var{name}} functions for
+each operand count, but it would still produce a single
+@samp{maybe_code_for_@var{name}} and a single @samp{code_for_@var{name}}.
+
 @end ifset

@@ -32,6 +32,9 @@ import (
 //go:linkname chanrecv1 runtime.chanrecv1
 //go:linkname chanrecv2 runtime.chanrecv2
 //go:linkname closechan runtime.closechan
+//go:linkname selectnbsend runtime.selectnbsend
+//go:linkname selectnbrecv runtime.selectnbrecv
+//go:linkname selectnbrecv2 runtime.selectnbrecv2
 
 const (
 	maxAlign  = 8

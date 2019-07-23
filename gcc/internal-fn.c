@@ -149,7 +149,7 @@ get_multi_vector_move (tree array_type, convert_optab optab)
 static void
 expand_load_lanes_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
-  struct expand_operand ops[2];
+  class expand_operand ops[2];
   tree type, lhs, rhs;
   rtx target, mem;
 
@@ -173,7 +173,7 @@ expand_load_lanes_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 static void
 expand_store_lanes_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
-  struct expand_operand ops[2];
+  class expand_operand ops[2];
   tree type, lhs, rhs;
   rtx target, reg;
 
@@ -227,7 +227,7 @@ expand_GOMP_SIMT_ENTER_ALLOC (internal_fn, gcall *stmt)
     target = gen_reg_rtx (Pmode);
   rtx size = expand_normal (gimple_call_arg (stmt, 0));
   rtx align = expand_normal (gimple_call_arg (stmt, 1));
-  struct expand_operand ops[3];
+  class expand_operand ops[3];
   create_output_operand (&ops[0], target, Pmode);
   create_input_operand (&ops[1], size, Pmode);
   create_input_operand (&ops[2], align, Pmode);
@@ -242,7 +242,7 @@ expand_GOMP_SIMT_EXIT (internal_fn, gcall *stmt)
 {
   gcc_checking_assert (!gimple_call_lhs (stmt));
   rtx arg = expand_normal (gimple_call_arg (stmt, 0));
-  struct expand_operand ops[1];
+  class expand_operand ops[1];
   create_input_operand (&ops[0], arg, Pmode);
   gcc_assert (targetm.have_omp_simt_exit ());
   expand_insn (targetm.code_for_omp_simt_exit, 1, ops);
@@ -285,7 +285,7 @@ expand_GOMP_SIMT_LAST_LANE (internal_fn, gcall *stmt)
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   rtx cond = expand_normal (gimple_call_arg (stmt, 0));
   machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
-  struct expand_operand ops[2];
+  class expand_operand ops[2];
   create_output_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], cond, mode);
   gcc_assert (targetm.have_omp_simt_last_lane ());
@@ -304,7 +304,7 @@ expand_GOMP_SIMT_ORDERED_PRED (internal_fn, gcall *stmt)
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   rtx ctr = expand_normal (gimple_call_arg (stmt, 0));
   machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
-  struct expand_operand ops[2];
+  class expand_operand ops[2];
   create_output_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], ctr, mode);
   gcc_assert (targetm.have_omp_simt_ordered ());
@@ -324,7 +324,7 @@ expand_GOMP_SIMT_VOTE_ANY (internal_fn, gcall *stmt)
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   rtx cond = expand_normal (gimple_call_arg (stmt, 0));
   machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
-  struct expand_operand ops[2];
+  class expand_operand ops[2];
   create_output_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], cond, mode);
   gcc_assert (targetm.have_omp_simt_vote_any ());
@@ -345,7 +345,7 @@ expand_GOMP_SIMT_XCHG_BFLY (internal_fn, gcall *stmt)
   rtx src = expand_normal (gimple_call_arg (stmt, 0));
   rtx idx = expand_normal (gimple_call_arg (stmt, 1));
   machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
-  struct expand_operand ops[3];
+  class expand_operand ops[3];
   create_output_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], src, mode);
   create_input_operand (&ops[2], idx, SImode);
@@ -366,7 +366,7 @@ expand_GOMP_SIMT_XCHG_IDX (internal_fn, gcall *stmt)
   rtx src = expand_normal (gimple_call_arg (stmt, 0));
   rtx idx = expand_normal (gimple_call_arg (stmt, 1));
   machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
-  struct expand_operand ops[3];
+  class expand_operand ops[3];
   create_output_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], src, mode);
   create_input_operand (&ops[2], idx, SImode);
@@ -774,7 +774,7 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
                                        : usubv4_optab, mode);
       if (icode != CODE_FOR_nothing)
 	{
-	  struct expand_operand ops[4];
+	  class expand_operand ops[4];
 	  rtx_insn *last = get_last_insn ();
 
 	  res = gen_reg_rtx (mode);
@@ -995,7 +995,7 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
 				     : subv4_optab, mode);
     if (icode != CODE_FOR_nothing)
       {
-	struct expand_operand ops[4];
+	class expand_operand ops[4];
 	rtx_insn *last = get_last_insn ();
 
 	res = gen_reg_rtx (mode);
@@ -1146,7 +1146,7 @@ expand_neg_overflow (location_t loc, tree lhs, tree arg1, bool is_ubsan,
   enum insn_code icode = optab_handler (negv3_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand ops[3];
+      class expand_operand ops[3];
       rtx_insn *last = get_last_insn ();
 
       res = gen_reg_rtx (mode);
@@ -1539,7 +1539,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
     }
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand ops[4];
+      class expand_operand ops[4];
       rtx_insn *last = get_last_insn ();
 
       res = gen_reg_rtx (mode);
@@ -2475,7 +2475,7 @@ expand_call_mem_ref (tree type, gcall *stmt, int index)
 static void
 expand_mask_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
-  struct expand_operand ops[3];
+  class expand_operand ops[3];
   tree type, lhs, rhs, maskt;
   rtx mem, target, mask;
   insn_code icode;
@@ -2510,7 +2510,7 @@ expand_mask_load_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 static void
 expand_mask_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
-  struct expand_operand ops[3];
+  class expand_operand ops[3];
   tree type, lhs, rhs, maskt;
   rtx mem, reg, mask;
   insn_code icode;
@@ -2771,7 +2771,7 @@ expand_scatter_store_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
   HOST_WIDE_INT scale_int = tree_to_shwi (scale);
   rtx rhs_rtx = expand_normal (rhs);
 
-  struct expand_operand ops[6];
+  class expand_operand ops[6];
   int i = 0;
   create_address_operand (&ops[i++], base_rtx);
   create_input_operand (&ops[i++], offset_rtx, TYPE_MODE (TREE_TYPE (offset)));
@@ -2805,7 +2805,7 @@ expand_gather_load_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
   HOST_WIDE_INT scale_int = tree_to_shwi (scale);
 
   int i = 0;
-  struct expand_operand ops[6];
+  class expand_operand ops[6];
   create_output_operand (&ops[i++], lhs_rtx, TYPE_MODE (TREE_TYPE (lhs)));
   create_address_operand (&ops[i++], base_rtx);
   create_input_operand (&ops[i++], offset_rtx, TYPE_MODE (TREE_TYPE (offset)));

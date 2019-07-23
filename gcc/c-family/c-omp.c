@@ -1263,7 +1263,7 @@ c_oacc_split_loop_clauses (tree clauses, tree *not_loop_clauses,
 }
 
 /* This function attempts to split or duplicate clauses for OpenMP
-   combined/composite constructs.  Right now there are 26 different
+   combined/composite constructs.  Right now there are 30 different
    constructs.  CODE is the innermost construct in the combined construct,
    and MASK allows to determine which constructs are combined together,
    as every construct has at least one clause that no other construct
@@ -1278,6 +1278,7 @@ c_oacc_split_loop_clauses (tree clauses, tree *not_loop_clauses,
    #pragma omp master taskloop simd
    #pragma omp parallel for
    #pragma omp parallel for simd
+   #pragma omp parallel loop
    #pragma omp parallel master
    #pragma omp parallel master taskloop
    #pragma omp parallel master taskloop simd
@@ -1285,17 +1286,20 @@ c_oacc_split_loop_clauses (tree clauses, tree *not_loop_clauses,
    #pragma omp target parallel
    #pragma omp target parallel for
    #pragma omp target parallel for simd
+   #pragma omp target parallel loop
    #pragma omp target teams
    #pragma omp target teams distribute
    #pragma omp target teams distribute parallel for
    #pragma omp target teams distribute parallel for simd
    #pragma omp target teams distribute simd
+   #pragma omp target teams loop
    #pragma omp target simd
    #pragma omp taskloop simd
    #pragma omp teams distribute
    #pragma omp teams distribute parallel for
    #pragma omp teams distribute parallel for simd
-   #pragma omp teams distribute simd  */
+   #pragma omp teams distribute simd
+   #pragma omp teams loop  */
 
 void
 c_omp_split_clauses (location_t loc, enum tree_code code,
@@ -1375,7 +1379,11 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	case OMP_CLAUSE_PRIORITY:
 	  s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
 	  break;
-	/* Duplicate this to all of taskloop, distribute, for and simd.  */
+	case OMP_CLAUSE_BIND:
+	  s = C_OMP_CLAUSE_SPLIT_LOOP;
+	  break;
+	/* Duplicate this to all of taskloop, distribute, for, simd and
+	   loop.  */
 	case OMP_CLAUSE_COLLAPSE:
 	  if (code == OMP_SIMD)
 	    {
@@ -1418,6 +1426,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	  else if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOGROUP))
 		   != 0)
 	    s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
+	  else if (code == OMP_LOOP)
+	    s = C_OMP_CLAUSE_SPLIT_LOOP;
 	  else
 	    s = C_OMP_CLAUSE_SPLIT_DISTRIBUTE;
 	  break;
@@ -1435,12 +1445,13 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	    case OMP_TEAMS: s = C_OMP_CLAUSE_SPLIT_TEAMS; break;
 	    case OMP_MASTER: s = C_OMP_CLAUSE_SPLIT_PARALLEL; break;
 	    case OMP_TASKLOOP: s = C_OMP_CLAUSE_SPLIT_TASKLOOP; break;
+	    case OMP_LOOP: s = C_OMP_CLAUSE_SPLIT_LOOP; break;
 	    default: gcc_unreachable ();
 	    }
 	  break;
 	/* Firstprivate clause is supported on all constructs but
-	   simd and master.  Put it on the outermost of those and duplicate on
-	   teams and parallel.  */
+	   simd, master and loop.  Put it on the outermost of those and
+	   duplicate on teams and parallel.  */
 	case OMP_CLAUSE_FIRSTPRIVATE:
 	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP))
 	      != 0)
@@ -1486,7 +1497,7 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
 	      else
 		/* This must be
-		   #pragma omp parallel{, for{, simd}, sections}
+		   #pragma omp parallel{, for{, simd}, sections,loop}
 		   or
 		   #pragma omp target parallel.  */
 		s = C_OMP_CLAUSE_SPLIT_PARALLEL;
@@ -1495,10 +1506,11 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		   != 0)
 	    {
 	      /* This must be one of
-		 #pragma omp {,target }teams distribute
+		 #pragma omp {,target }teams {distribute,loop}
 		 #pragma omp target teams
 		 #pragma omp {,target }teams distribute simd.  */
 	      gcc_assert (code == OMP_DISTRIBUTE
+			  || code == OMP_LOOP
 			  || code == OMP_TEAMS
 			  || code == OMP_SIMD);
 	      s = C_OMP_CLAUSE_SPLIT_TEAMS;
@@ -1526,9 +1538,9 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	      s = C_OMP_CLAUSE_SPLIT_FOR;
 	    }
 	  break;
-	/* Lastprivate is allowed on distribute, for, sections, taskloop and
-	   simd.  In parallel {for{, simd},sections} we actually want to put
-	   it on parallel rather than for or sections.  */
+	/* Lastprivate is allowed on distribute, for, sections, taskloop, loop
+	   and simd.  In parallel {for{, simd},sections} we actually want to
+	   put it on parallel rather than for or sections.  */
 	case OMP_CLAUSE_LASTPRIVATE:
 	  if (code == OMP_DISTRIBUTE)
 	    {
@@ -1558,6 +1570,11 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	  if (code == OMP_TASKLOOP)
 	    {
 	      s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
+	      break;
+	    }
+	  if (code == OMP_LOOP)
+	    {
+	      s = C_OMP_CLAUSE_SPLIT_LOOP;
 	      break;
 	    }
 	  gcc_assert (code == OMP_SIMD);
@@ -1632,24 +1649,44 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	    }
 	  s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 	  break;
-	/* Reduction is allowed on simd, for, parallel, sections, taskloop
-	   and teams.  Duplicate it on all of them, but omit on for or
+	/* order clauses are allowed on for, simd and loop.  */
+	case OMP_CLAUSE_ORDER:
+	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SCHEDULE)) != 0)
+	    {
+	      if (code == OMP_SIMD)
+		{
+		  c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+					OMP_CLAUSE_ORDER);
+		  OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_FOR];
+		  cclauses[C_OMP_CLAUSE_SPLIT_FOR] = c;
+		  s = C_OMP_CLAUSE_SPLIT_SIMD;
+		}
+	      else
+		s = C_OMP_CLAUSE_SPLIT_FOR;
+	    }
+	  else if (code == OMP_LOOP)
+	    s = C_OMP_CLAUSE_SPLIT_LOOP;
+	  else
+	    s = C_OMP_CLAUSE_SPLIT_SIMD;
+	  break;
+	/* Reduction is allowed on simd, for, parallel, sections, taskloop,
+	   teams and loop.  Duplicate it on all of them, but omit on for or
 	   sections if parallel is present (unless inscan, in that case
-	   omit on parallel).  If taskloop is combined with
+	   omit on parallel).  If taskloop or loop is combined with
 	   parallel, omit it on parallel.  */
 	case OMP_CLAUSE_REDUCTION:
 	  if (OMP_CLAUSE_REDUCTION_TASK (clauses))
 	    {
-	      if (code == OMP_SIMD /* || code == OMP_LOOP */)
+	      if (code == OMP_SIMD || code == OMP_LOOP)
 		{
 		  error_at (OMP_CLAUSE_LOCATION (clauses),
 			    "invalid %<task%> reduction modifier on construct "
-			    "combined with %<simd%>" /* or %<loop%> */);
+			    "combined with %<simd%> or %<loop%>");
 		  OMP_CLAUSE_REDUCTION_TASK (clauses) = 0;
 		}
 	      else if (code != OMP_SECTIONS
 		       && (mask & (OMP_CLAUSE_MASK_1
-				   << PRAGMA_OMP_CLAUSE_SCHEDULE)) == 0
+				   << PRAGMA_OMP_CLAUSE_NUM_THREADS)) == 0
 		       && (mask & (OMP_CLAUSE_MASK_1
 				   << PRAGMA_OMP_CLAUSE_SCHEDULE)) == 0)
 		{
@@ -1721,6 +1758,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	    s = C_OMP_CLAUSE_SPLIT_PARALLEL;
 	  else if (code == OMP_TASKLOOP)
 	    s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
+	  else if (code == OMP_LOOP)
+	    s = C_OMP_CLAUSE_SPLIT_LOOP;
 	  else if (code == OMP_SIMD)
 	    {
 	      if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOGROUP))
@@ -1912,7 +1951,8 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
     gcc_assert (cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL] == NULL_TREE);
   if ((mask & ((OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SCHEDULE)
 	       | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOGROUP))) == 0
-      && code != OMP_SECTIONS)
+      && code != OMP_SECTIONS
+      && code != OMP_LOOP)
     gcc_assert (cclauses[C_OMP_CLAUSE_SPLIT_FOR] == NULL_TREE);
   if (code != OMP_SIMD)
     gcc_assert (cclauses[C_OMP_CLAUSE_SPLIT_SIMD] == NULL_TREE);

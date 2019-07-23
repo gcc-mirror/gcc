@@ -1,8 +1,8 @@
 /* { dg-do run } */
 /* { dg-options "-std=gnu11" } */
 
-typedef double v2df __attribute__((vector_size(16)));
-typedef long v2di __attribute__((vector_size(16)));
+typedef double v2df __attribute__((vector_size(2 * sizeof (double))));
+typedef long long v2di __attribute__((vector_size(2 * sizeof (long long))));
 
 void foo (v2df *res, v2df *src)
 {

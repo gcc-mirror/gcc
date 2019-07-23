@@ -2021,15 +2021,21 @@ package body Exp_Ch5 is
 
       if not Suppress_Assignment_Checks (N) then
 
-         --  First deal with generation of range check if required
+         --  First deal with generation of range check if required,
+         --  and then predicate checks if the type carries a predicate.
+         --  If the Rhs is an expression these tests may have been applied
+         --  already. This is the case if the RHS is a type conversion.
+         --  Other such redundant checks could be removed ???
 
-         if Do_Range_Check (Rhs) then
-            Generate_Range_Check (Rhs, Typ, CE_Range_Check_Failed);
+         if Nkind (Rhs) /= N_Type_Conversion
+           or else Entity (Subtype_Mark (Rhs)) /= Typ
+         then
+            if Do_Range_Check (Rhs) then
+               Generate_Range_Check (Rhs, Typ, CE_Range_Check_Failed);
+            end if;
+
+            Apply_Predicate_Check (Rhs, Typ);
          end if;
-
-         --  Then generate predicate check if required
-
-         Apply_Predicate_Check (Rhs, Typ);
       end if;
 
       --  Check for a special case where a high level transformation is
@@ -2850,13 +2856,14 @@ package body Exp_Ch5 is
    -----------------------------
 
    procedure Expand_N_Case_Statement (N : Node_Id) is
-      Loc    : constant Source_Ptr := Sloc (N);
-      Expr   : constant Node_Id    := Expression (N);
-      Alt    : Node_Id;
-      Len    : Nat;
-      Cond   : Node_Id;
-      Choice : Node_Id;
-      Chlist : List_Id;
+      Loc            : constant Source_Ptr := Sloc (N);
+      Expr           : constant Node_Id    := Expression (N);
+      From_Cond_Expr : constant Boolean    := From_Conditional_Expression (N);
+      Alt            : Node_Id;
+      Len            : Nat;
+      Cond           : Node_Id;
+      Choice         : Node_Id;
+      Chlist         : List_Id;
 
    begin
       --  Check for the situation where we know at compile time which branch
@@ -3067,7 +3074,15 @@ package body Exp_Ch5 is
                    Condition => Cond,
                    Then_Statements => Then_Stms,
                    Else_Statements => Else_Stms));
+
+               --  The rewritten if statement needs to inherit whether the
+               --  case statement was expanded from a conditional expression,
+               --  for proper handling of nested controlled objects.
+
+               Set_From_Conditional_Expression (N, From_Cond_Expr);
+
                Analyze (N);
+
                return;
             end if;
          end if;
@@ -3304,7 +3319,7 @@ package body Exp_Ch5 is
                 Declarations => New_List (Elmt_Decl),
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements =>  Stats))));
+                    Statements => Stats))));
 
       else
          Elmt_Ref :=
@@ -3330,7 +3345,7 @@ package body Exp_Ch5 is
              Declarations               => New_List (Elmt_Decl),
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements =>  New_List (New_Loop)));
+                 Statements => New_List (New_Loop)));
       end if;
 
       --  The element is only modified in expanded code, so it appears as
@@ -3919,7 +3934,7 @@ package body Exp_Ch5 is
    --      --  Default_Iterator aspect of Vector. This increments Lock,
    --      --  disallowing tampering with cursors. Unfortunately, it does not
    --      --  increment Busy. The result of Iterate is Limited_Controlled;
-   --      --  finalization will decrement Lock.  This is a build-in-place
+   --      --  finalization will decrement Lock. This is a build-in-place
    --      --  dispatching call to Iterate.
 
    --      Cur : Cursor := First (Iter); -- or Last

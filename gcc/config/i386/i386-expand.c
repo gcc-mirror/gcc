@@ -1122,8 +1122,6 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
   rtx_insn *insn;
   rtx scratch, tmp0, tmp1, tmp2;
   rtx (*gen_divmod4_1) (rtx, rtx, rtx, rtx);
-  rtx (*gen_zero_extend) (rtx, rtx);
-  rtx (*gen_test_ccno_1) (rtx, rtx);
 
   switch (mode)
     {
@@ -1135,21 +1133,16 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
 	  else
 	    gen_divmod4_1
 	      = unsigned_p ? gen_udivmodsi4_zext_2 : gen_divmodsi4_zext_2;
-	  gen_zero_extend = gen_zero_extendqisi2;
 	}
       else
-	{
-	  gen_divmod4_1
-	    = unsigned_p ? gen_udivmodsi4_zext_1 : gen_divmodsi4_zext_1;
-	  gen_zero_extend = gen_zero_extendqidi2;
-	}
-      gen_test_ccno_1 = gen_testsi_ccno_1;
+	gen_divmod4_1
+	  = unsigned_p ? gen_udivmodsi4_zext_1 : gen_divmodsi4_zext_1;
       break;
+
     case E_DImode:
       gen_divmod4_1 = unsigned_p ? gen_udivmoddi4_1 : gen_divmoddi4_1;
-      gen_test_ccno_1 = gen_testdi_ccno_1;
-      gen_zero_extend = gen_zero_extendqidi2;
       break;
+
     default:
       gcc_unreachable ();
     }
@@ -1164,7 +1157,7 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
   emit_move_insn (scratch, operands[2]);
   scratch = expand_simple_binop (mode, IOR, scratch, operands[3],
 				 scratch, 1, OPTAB_DIRECT);
-  emit_insn (gen_test_ccno_1 (scratch, GEN_INT (-0x100)));
+  emit_insn (gen_test_ccno_1 (mode, scratch, GEN_INT (-0x100)));
   tmp0 = gen_rtx_REG (CCNOmode, FLAGS_REG);
   tmp0 = gen_rtx_EQ (VOIDmode, tmp0, const0_rtx);
   tmp0 = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp0,
@@ -1227,7 +1220,9 @@ ix86_split_idivmod (machine_mode mode, rtx operands[],
 
   /* Zero extend quotient from AL.  */
   tmp1 = gen_lowpart (QImode, tmp0);
-  insn = emit_insn (gen_zero_extend (operands[0], tmp1));
+  insn = emit_insn (gen_extend_insn
+		    (operands[0], tmp1,
+		     GET_MODE (operands[0]), QImode, 1));
   set_unique_reg_note (insn, REG_EQUAL, div);
 
   emit_label (end_label);
@@ -9573,15 +9568,6 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case USI_FTYPE_V32HI_V32HI_INT_USI:
     case UHI_FTYPE_V16HI_V16HI_INT_UHI:
     case UQI_FTYPE_V8HI_V8HI_INT_UQI:
-    case V32HI_FTYPE_V32HI_V32HI_V32HI_INT:
-    case V16HI_FTYPE_V16HI_V16HI_V16HI_INT:
-    case V8HI_FTYPE_V8HI_V8HI_V8HI_INT:
-    case V8SI_FTYPE_V8SI_V8SI_V8SI_INT:
-    case V4DI_FTYPE_V4DI_V4DI_V4DI_INT:
-    case V8DI_FTYPE_V8DI_V8DI_V8DI_INT:
-    case V16SI_FTYPE_V16SI_V16SI_V16SI_INT:
-    case V2DI_FTYPE_V2DI_V2DI_V2DI_INT:
-    case V4SI_FTYPE_V4SI_V4SI_V4SI_INT:
       nargs = 4;
       mask_pos = 1;
       nargs_constant = 1;

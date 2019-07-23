@@ -1,3 +1,42 @@
+2019-07-21  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/91030
+	* gfortran.texi (GFORTRAN_FORMATTED_BUFFER_SIZE): Document
+	(GFORTRAN_UNFORMATTED_BUFFER_SIZE): Likewise.
+
+2019-07-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/90903
+	* libgfortran.h: Add mask for -fcheck=bits option.
+	* options.c (gfc_handle_runtime_check_option): Add option "bits"
+	to run-time checks selectable via -fcheck.
+	* trans-intrinsic.c (gfc_conv_intrinsic_btest)
+	(gfc_conv_intrinsic_singlebitop, gfc_conv_intrinsic_ibits)
+	(gfc_conv_intrinsic_shift, gfc_conv_intrinsic_ishft)
+	(gfc_conv_intrinsic_ishftc): Implement run-time checks for the
+	POS, LEN, SHIFT, and SIZE arguments.
+	* gfortran.texi: Document run-time checks for bit manipulation
+	intrinsics.
+	* invoke.texi: Document new -fcheck=bits option.
+
+2019-07-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/87233
+	* expr.c (check_restricted): Relax constraint C1279 which was
+	removed from F2008 and above.
+
+2019-07-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/91077
+	* trans-array.c (gfc_conv_scalarized_array_ref) Delete code
+	that gave symbol backend decl for subref arrays and deferred
+	length variables.
+
+2019-07-05  Andrew Stubbs  <ams@codesourcery.com>
+
+	* openmp.c (resolve_omp_clauses): Add custom error messages for
+	parameters in map clauses.
+
 2019-07-03  Martin Liska  <mliska@suse.cz>
 
 	* check.c (gfc_check_c_funloc): Remove
@@ -28,9 +67,9 @@
 	ChangeLog forgotten with revision 272667
 	* decl.c (access_attr_decl): Use temporary variable to reduce
 	unreadability of code.  Normalize jumping to return.
-	(gfc_match_protected): Fix parsing error.  Add comments to 
+	(gfc_match_protected): Fix parsing error.  Add comments to
 	explain code.  Remove dead code.
-	(gfc_match_private): Use temporary variable to reduce unreadability 
+	(gfc_match_private): Use temporary variable to reduce unreadability
 	of code. Fix parsing error.  Move code to test for blank PRIVATE.
 	Remove dead code.
 	(gfc_match_public): Move code to test for blank PUBLIC.  Fix

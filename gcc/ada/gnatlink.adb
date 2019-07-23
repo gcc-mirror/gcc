@@ -459,7 +459,7 @@ procedure Gnatlink is
 
                      when 'v' =>
 
-                        --  Support "double" verbose mode.  Second -v
+                        --  Support "double" verbose mode. Second -v
                         --  gets sent to the linker and binder phases.
 
                         if Verbose_Mode then
@@ -2068,7 +2068,7 @@ begin
    end Link_Step;
 
    --  Only keep the binder output file and it's associated object
-   --  file if compiling with the -g option.  These files are only
+   --  file if compiling with the -g option. These files are only
    --  useful if debugging.
 
    if not Debug_Flag_Present then

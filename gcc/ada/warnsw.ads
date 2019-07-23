@@ -38,6 +38,12 @@ package Warnsw is
    --  here as time goes by. And in fact a really nice idea would be to put
    --  them all in a Warn_Record so that they would be easy to save/restore.
 
+   Warn_On_Anonymous_Allocators : Boolean := False;
+   --  Warn when allocators for anonymous access types are present, which,
+   --  although not illegal in Ada, may be confusing to users due to how
+   --  accessibility checks get generated. Off by default, modified by use
+   --  of -gnatw_a/_A and set as part of -gnatwa.
+
    Warn_On_Late_Primitives : Boolean := False;
    --  Warn when tagged type public primitives are defined after its private
    --  extensions.
@@ -90,6 +96,7 @@ package Warnsw is
       Warn_On_Ada_2005_Compatibility      : Boolean;
       Warn_On_Ada_2012_Compatibility      : Boolean;
       Warn_On_All_Unread_Out_Parameters   : Boolean;
+      Warn_On_Anonymous_Allocators        : Boolean;
       Warn_On_Assertion_Failure           : Boolean;
       Warn_On_Assumed_Low_Bound           : Boolean;
       Warn_On_Atomic_Synchronization      : Boolean;

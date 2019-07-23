@@ -34,8 +34,9 @@ typedef unsigned long ALLOC_POOL_ID_TYPE;
 extern ALLOC_POOL_ID_TYPE last_id;
 
 /* Pool allocator memory usage.  */
-struct pool_usage: public mem_usage
+class pool_usage: public mem_usage
 {
+public:
   /* Default contructor.  */
   pool_usage (): m_element_size (0), m_pool_name ("") {}
   /* Constructor.  */

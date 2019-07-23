@@ -1753,8 +1753,9 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   /* We build up the bindings list before we know whether we already have this
      call cached.  If we don't end up saving these bindings, ggc_free them when
      this function exits.  */
-  struct free_bindings
+  class free_bindings
   {
+  public:
     tree &bindings;
     bool do_free;
     free_bindings (tree &b): bindings (b), do_free(true) { }

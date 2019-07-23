@@ -482,7 +482,7 @@ sem_function::param_used_p (unsigned int i)
   if (ipa_node_params_sum == NULL)
     return true;
 
-  struct ipa_node_params *parms_info = IPA_NODE_REF (get_node ());
+  class ipa_node_params *parms_info = IPA_NODE_REF (get_node ());
 
   if (vec_safe_length (parms_info->descriptors) <= i)
     return true;

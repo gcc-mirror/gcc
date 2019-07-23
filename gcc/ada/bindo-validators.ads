@@ -35,6 +35,26 @@ use  Bindo.Graphs.Library_Graphs;
 
 package Bindo.Validators is
 
+   ----------------------
+   -- Cycle_Validators --
+   ----------------------
+
+   package Cycle_Validators is
+      Invalid_Cycle : exception;
+      --  Exception raised when the library graph contains an invalid cycle
+
+      procedure Validate_Cycles (G : Library_Graph);
+      --  Ensure that all cycles of library graph G meet the following
+      --  requirements:
+      --
+      --    * Are of proper kind
+      --    * Have enough edges to form a circuit
+      --    * No edge is repeated
+      --
+      --  Diagnose issues and raise Invalid_Cycle if this is not the case.
+
+   end Cycle_Validators;
+
    ----------------------------------
    -- Elaboration_Order_Validators --
    ----------------------------------

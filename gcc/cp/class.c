@@ -1715,11 +1715,15 @@ check_bases (tree t,
 	      && (same_type_ignoring_top_level_qualifiers_p
 		  (TREE_TYPE (field), basetype)))
 	    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
+	  /* DR 1813:
+	     ...has at most one base class subobject of any given type...  */
+	  else if (CLASSTYPE_REPEATED_BASE_P (t))
+	    CLASSTYPE_NON_STD_LAYOUT (t) = 1;
 	  else
 	    /* ...either has no non-static data members in the most-derived
 	       class and at most one base class with non-static data
 	       members, or has no base classes with non-static data
-	       members */
+	       members.  FIXME This was reworded in DR 1813.  */
 	    for (basefield = TYPE_FIELDS (basetype); basefield;
 		 basefield = DECL_CHAIN (basefield))
 	      if (TREE_CODE (basefield) == FIELD_DECL
@@ -7582,16 +7586,6 @@ pushclass (tree type)
     pushlevel_class ();
   else
     restore_class_cache ();
-}
-
-/* When we exit a toplevel class scope, we save its binding level so
-   that we can restore it quickly.  Here, we've entered some other
-   class, so we must invalidate our cache.  */
-
-void
-invalidate_class_lookup_cache (void)
-{
-  previous_class_level = NULL;
 }
 
 /* Get out of the current class scope. If we were in a class scope

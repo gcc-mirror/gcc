@@ -22,14 +22,15 @@ along with GCC; see the file COPYING3.  If not see
 
 /* We keep linked lists of DU_HEAD structures, each of which describes
    a chain of occurrences of a reg.  */
-struct du_head
+class du_head
 {
+public:
   /* The next chain.  */
-  struct du_head *next_chain;
+  class du_head *next_chain;
   /* The first and last elements of this chain.  */
   struct du_chain *first, *last;
   /* The chain that this chain is tied to.  */
-  struct du_head *tied_chain;
+  class du_head *tied_chain;
   /* Describes the register being tracked.  */
   unsigned regno;
   int nregs;
@@ -55,7 +56,7 @@ struct du_head
   unsigned int target_data_2;
 };
 
-typedef struct du_head *du_head_p;
+typedef class du_head *du_head_p;
 
 /* This struct describes a single occurrence of a register.  */
 struct du_chain
@@ -81,7 +82,7 @@ struct operand_rr_info
   /* Holds either the chain for the operand itself, or for the registers in
      a memory operand.  */
   struct du_chain *chains[MAX_REGS_PER_ADDRESS];
-  struct du_head *heads[MAX_REGS_PER_ADDRESS];
+  class du_head *heads[MAX_REGS_PER_ADDRESS];
 };
 
 /* A struct to hold a vector of operand_rr_info structures describing the

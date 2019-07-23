@@ -535,8 +535,9 @@ go_type_decl (tree decl, int local)
 /* A container for the data we pass around when generating information
    at the end of the compilation.  */
 
-struct godump_container
+class godump_container
 {
+public:
   /* DECLs that we have already seen.  */
   hash_set<tree> decls_seen;
 
@@ -679,7 +680,7 @@ go_force_record_alignment (struct obstack *ob, const char *type_string,
    calls from go_format_type() itself.  */
 
 static bool
-go_format_type (struct godump_container *container, tree type,
+go_format_type (class godump_container *container, tree type,
 		bool use_type_name, bool is_func_ok, unsigned int *p_art_i,
 		bool is_anon_record_or_union)
 {
@@ -1091,7 +1092,7 @@ go_format_type (struct godump_container *container, tree type,
    it.  */
 
 static void
-go_output_type (struct godump_container *container)
+go_output_type (class godump_container *container)
 {
   struct obstack *ob;
 
@@ -1104,7 +1105,7 @@ go_output_type (struct godump_container *container)
 /* Output a function declaration.  */
 
 static void
-go_output_fndecl (struct godump_container *container, tree decl)
+go_output_fndecl (class godump_container *container, tree decl)
 {
   if (!go_format_type (container, TREE_TYPE (decl), false, true, NULL, false))
     fprintf (go_dump_file, "// ");
@@ -1118,7 +1119,7 @@ go_output_fndecl (struct godump_container *container, tree decl)
 /* Output a typedef or something like a struct definition.  */
 
 static void
-go_output_typedef (struct godump_container *container, tree decl)
+go_output_typedef (class godump_container *container, tree decl)
 {
   /* If we have an enum type, output the enum constants
      separately.  */
@@ -1245,7 +1246,7 @@ go_output_typedef (struct godump_container *container, tree decl)
 /* Output a variable.  */
 
 static void
-go_output_var (struct godump_container *container, tree decl)
+go_output_var (class godump_container *container, tree decl)
 {
   bool is_valid;
   tree type_name;
@@ -1334,7 +1335,7 @@ static const char * const keywords[] = {
 };
 
 static void
-keyword_hash_init (struct godump_container *container)
+keyword_hash_init (class godump_container *container)
 {
   size_t i;
   size_t count = sizeof (keywords) / sizeof (keywords[0]);
@@ -1354,7 +1355,7 @@ keyword_hash_init (struct godump_container *container)
 bool
 find_dummy_types (const char *const &ptr, godump_container *adata)
 {
-  struct godump_container *data = (struct godump_container *) adata;
+  class godump_container *data = (class godump_container *) adata;
   const char *type = (const char *) ptr;
   void **slot;
   void **islot;
@@ -1371,7 +1372,7 @@ find_dummy_types (const char *const &ptr, godump_container *adata)
 static void
 go_finish (const char *filename)
 {
-  struct godump_container container;
+  class godump_container container;
   unsigned int ix;
   tree decl;
 

@@ -1,3 +1,142 @@
+2019-07-20  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (ovl_iterator::using_p): A USING_DECL by itself was also
+	introduced by a using-declaration.
+
+2019-07-20  Jason Merrill  <jason@redhat.com>
+
+	Reduce memory consumption for push/pop_access_scope.
+	* name-lookup.c (leave_scope): Do add class levels other than
+	previous_class_level to free_binding_level.
+	(invalidate_class_lookup_cache): Move from class.c, add to
+	free_binding_level.
+	* pt.c (saved_access_scope): Change from list to vec.
+
+2019-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (OMP_FOR_GIMPLIFYING_P): Use OMP_LOOPING_CHECK
+	instead of OMP_LOOP_CHECK.
+	* parser.c (cp_parser_omp_clause_name): Handle bind clause.
+	(cp_parser_omp_clause_bind): New function.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_BIND.
+	(OMP_LOOP_CLAUSE_MASK): Define.
+	(cp_parser_omp_loop): New function.
+	(cp_parser_omp_parallel, cp_parser_omp_teams): Handle parsing of
+	loop combined with parallel or teams.
+	(cp_parser_omp_construct): Handle PRAGMA_OMP_LOOP.
+	(cp_parser_pragma): Likewise.
+	* pt.c (tsubst_expr): Handle OMP_LOOP.
+	* semantics.c (finish_omp_clauses): Handle OMP_CLAUSE_BIND.
+
+2019-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90101 - dependent class non-type parameter.
+	* pt.c (invalid_nontype_parm_type_p): Check for dependent class type.
+
+2019-07-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90098 - partial specialization and class non-type parms.
+	PR c++/90099
+	PR c++/90101
+	* call.c (build_converted_constant_expr_internal): Don't copy.
+	* pt.c (process_partial_specialization): Allow VIEW_CONVERT_EXPR
+	around class non-type parameter.
+	(unify) [TEMPLATE_PARM_INDEX]: Ignore cv-quals.
+
+2019-07-16  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (make_location): Add overload taking cp_lexer* as last
+	parameter.
+
+	* parser.c (cp_parser_simple_type_specifier): Separate tentative
+	parses for optional type-spec and CTAD.
+
+	* parser.c (cp_parser_nested_name_specifier_opt): If the token is
+	already CPP_NESTED_NAME_SPECIFIER, leave it alone.
+
+2019-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_name): Handle order clause.
+	(cp_parser_omp_clause_order): New function.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_ORDER.
+	(OMP_SIMD_CLAUSE_MASK, OMP_FOR_CLAUSE_MASK): Add
+	PRAGMA_OMP_CLAUSE_ORDER.
+	* semantics.c (finish_omp_clauses): Handle OMP_CLAUSE_ORDER.
+	* pt.c (tsubst_omp_clauses): Likewise.
+
+2019-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (get_type_quals,
+	smallest_type_location (const cp_decl_specifier_seq*)): New.
+	(check_tag_decl): Use smallest_type_location in error_at about
+	multiple types in one declaration.
+	(grokdeclarator): Use locations[ds_complex] in error_at about
+	complex invalid; use locations[ds_storage_class] in error_at
+	about static cdtor; use id_loc in error_at about flexible
+	array member in union; use get_type_quals.
+
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* cp-tree.h: Change class-key of PODs to struct and others to class.
+	* search.c: Same.
+	* semantics.c (finalize_nrv_r): Same.
+
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* constexpr.c (cxx_eval_call_expression): Change class-key from class
+	to struct and vice versa to match convention and avoid -Wclass-is-pod
+	and -Wstruct-no-pod.
+	* constraint.cc (get_concept_definition): Same.
+	* cp-tree.h: Same.
+	* cxx-pretty-print.h: Same.
+	* error.c: Same.
+	* logic.cc (term_list::replace): Same.
+	* name-lookup.c (find_local_binding): Same.
+	* pt.c (tsubst_binary_right_fold): Same.
+	* search.c (field_accessor_p): Same.
+	* semantics.c (expand_or_defer_fn): Same.
+
+2019-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91110
+	* decl2.c (cp_omp_mappable_type_1): Don't emit any note for
+	error_mark_node type.
+
+2019-07-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/67184
+	PR c++/69445
+	* call.c (build_new_method_call_1): Remove set but not used variable
+	binfo.
+
+2019-07-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67184 (again)
+	PR c++/69445
+	* call.c (build_over_call): Devirtualize user-defined operators
+	coming from a base too.
+	(build_new_method_call_1): Do not devirtualize here.
+
+2019-07-04  Marek Polacek  <polacek@redhat.com>
+
+	DR 1813
+	PR c++/83374 - __is_standard_layout wrong for a class with repeated
+	bases.
+	* class.c (check_bases): Set CLASSTYPE_NON_STD_LAYOUT for a class if
+	CLASSTYPE_REPEATED_BASE_P is true.
+
+2019-07-04  Andrew Stubbs  <ams@codesourcery.com>
+
+	* cp-tree.h (cp_omp_emit_unmappable_type_notes): New prototype.
+	* decl.c (cp_finish_decl): Call cp_omp_emit_unmappable_type_notes.
+	* decl2.c (cp_omp_mappable_type): Move contents to ...
+	(cp_omp_mappable_type_1):  ... here and add note output.
+	(cp_omp_emit_unmappable_type_notes): New function.
+	* semantics.c (finish_omp_clauses): Call
+	cp_omp_emit_unmappable_type_notes in four places.
+
 2019-07-03  Martin Liska  <mliska@suse.cz>
 
 	* call.c (build_new_op_1): Remove

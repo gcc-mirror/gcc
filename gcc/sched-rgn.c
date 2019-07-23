@@ -248,7 +248,7 @@ static void compute_block_dependences (int);
 static void schedule_region (int);
 static void concat_insn_mem_list (rtx_insn_list *, rtx_expr_list *,
 				  rtx_insn_list **, rtx_expr_list **);
-static void propagate_deps (int, struct deps_desc *);
+static void propagate_deps (int, class deps_desc *);
 static void free_pending_lists (void);
 
 /* Functions for construction of the control flow graph.  */
@@ -2583,7 +2583,7 @@ add_branch_dependences (rtx_insn *head, rtx_insn *tail)
    the variables of its predecessors.  When the analysis for a bb completes,
    we save the contents to the corresponding bb_deps[bb] variable.  */
 
-static struct deps_desc *bb_deps;
+static class deps_desc *bb_deps;
 
 static void
 concat_insn_mem_list (rtx_insn_list *copy_insns,
@@ -2608,7 +2608,7 @@ concat_insn_mem_list (rtx_insn_list *copy_insns,
 
 /* Join PRED_DEPS to the SUCC_DEPS.  */
 void
-deps_join (struct deps_desc *succ_deps, struct deps_desc *pred_deps)
+deps_join (class deps_desc *succ_deps, class deps_desc *pred_deps)
 {
   unsigned reg;
   reg_set_iterator rsi;
@@ -2670,7 +2670,7 @@ deps_join (struct deps_desc *succ_deps, struct deps_desc *pred_deps)
 /* After computing the dependencies for block BB, propagate the dependencies
    found in TMP_DEPS to the successors of the block.  */
 static void
-propagate_deps (int bb, struct deps_desc *pred_deps)
+propagate_deps (int bb, class deps_desc *pred_deps)
 {
   basic_block block = BASIC_BLOCK_FOR_FN (cfun, BB_TO_BLOCK (bb));
   edge_iterator ei;
@@ -2727,7 +2727,7 @@ static void
 compute_block_dependences (int bb)
 {
   rtx_insn *head, *tail;
-  struct deps_desc tmp_deps;
+  class deps_desc tmp_deps;
 
   tmp_deps = bb_deps[bb];
 
@@ -3351,7 +3351,7 @@ sched_rgn_compute_dependencies (int rgn)
       init_deps_global ();
 
       /* Initializations for region data dependence analysis.  */
-      bb_deps = XNEWVEC (struct deps_desc, current_nr_blocks);
+      bb_deps = XNEWVEC (class deps_desc, current_nr_blocks);
       for (bb = 0; bb < current_nr_blocks; bb++)
 	init_deps (bb_deps + bb, false);
 

@@ -10163,7 +10163,7 @@ avr_asm_output_aligned_decl_common (FILE * stream,
       return;
     }
 
-  /* __gnu_lto_v1 etc. are just markers for the linker injected by toplev.c.
+  /* __gnu_lto_slim is just a marker for the linker injected by toplev.c.
      There is no need to trigger __do_clear_bss code for them.  */
 
   if (!STR_PREFIX_P (name, "__gnu_lto"))

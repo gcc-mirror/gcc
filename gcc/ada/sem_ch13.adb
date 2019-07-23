@@ -30,7 +30,6 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
-with Expander; use Expander;
 with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
@@ -246,41 +245,6 @@ package body Sem_Ch13 is
    procedure Pop_Type (E : Entity_Id);
    --  Remove visibility to the discriminants of type entity E and pop the
    --  scope stack if E has discriminants and is not a subtype.
-
-   ---------------------------------------------------
-   -- Table for Validate_Compile_Time_Warning_Error --
-   ---------------------------------------------------
-
-   --  The following table collects pragmas Compile_Time_Error and Compile_
-   --  Time_Warning for validation. Entries are made by calls to subprogram
-   --  Validate_Compile_Time_Warning_Error, and the call to the procedure
-   --  Validate_Compile_Time_Warning_Errors does the actual error checking
-   --  and posting of warning and error messages. The reason for this delayed
-   --  processing is to take advantage of back-annotations of attributes size
-   --  and alignment values performed by the back end.
-
-   --  Note: the reason we store a Source_Ptr value instead of a Node_Id is
-   --  that by the time Validate_Unchecked_Conversions is called, Sprint will
-   --  already have modified all Sloc values if the -gnatD option is set.
-
-   type CTWE_Entry is record
-      Eloc  : Source_Ptr;
-      --  Source location used in warnings and error messages
-
-      Prag  : Node_Id;
-      --  Pragma Compile_Time_Error or Compile_Time_Warning
-
-      Scope : Node_Id;
-      --  The scope which encloses the pragma
-   end record;
-
-   package Compile_Time_Warnings_Errors is new Table.Table (
-     Table_Component_Type => CTWE_Entry,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 1,
-     Table_Initial        => 50,
-     Table_Increment      => 200,
-     Table_Name           => "Compile_Time_Warnings_Errors");
 
    ----------------------------------------------
    -- Table for Validate_Unchecked_Conversions --
@@ -3491,14 +3455,32 @@ package body Sem_Ch13 is
 
                   --  Build the precondition/postcondition pragma
 
-                  --  Add note about why we do NOT need Copy_Tree here???
+                  --  We use Relocate_Node here rather than New_Copy_Tree
+                  --  because subsequent visibility analysis of the aspect
+                  --  depends on this sharing. This should be cleaned up???
 
-                  Make_Aitem_Pragma
-                    (Pragma_Argument_Associations => New_List (
-                       Make_Pragma_Argument_Association (Eloc,
-                         Chars      => Name_Check,
-                         Expression => Relocate_Node (Expr))),
-                       Pragma_Name                => Pname);
+                  --  If the context is generic or involves ASIS, we want
+                  --  to preserve the original tree, and simply share it
+                  --  between aspect and generated attribute. This parallels
+                  --  what is done in sem_prag.adb (see Get_Argument).
+
+                  declare
+                     New_Expr : Node_Id;
+
+                  begin
+                     if ASIS_Mode or else Inside_A_Generic then
+                        New_Expr := Expr;
+                     else
+                        New_Expr := Relocate_Node (Expr);
+                     end if;
+
+                     Make_Aitem_Pragma
+                       (Pragma_Argument_Associations => New_List (
+                          Make_Pragma_Argument_Association (Eloc,
+                            Chars      => Name_Check,
+                            Expression => New_Expr)),
+                          Pragma_Name                => Pname);
+                  end;
 
                   --  Add message unless exception messages are suppressed
 
@@ -5163,6 +5145,7 @@ package body Sem_Ch13 is
                      --  aspect case properly.
 
                      if Is_Object (O_Ent)
+                       and then not Is_Generic_Formal (O_Ent)
                        and then not Is_Generic_Type (Etype (U_Ent))
                        and then Address_Clause_Overlay_Warnings
                      then
@@ -5511,7 +5494,7 @@ package body Sem_Ch13 is
          -- Default_Iterator --
          ----------------------
 
-         when Attribute_Default_Iterator =>  Default_Iterator : declare
+         when Attribute_Default_Iterator => Default_Iterator : declare
             Func : Entity_Id;
             Typ  : Entity_Id;
 
@@ -8902,9 +8885,15 @@ package body Sem_Ch13 is
                         Expression => Expr))));
 
             --  The declaration has been analyzed when created, and placed
-            --  after type declaration. Insert body itself after freeze node.
+            --  after type declaration. Insert body itself after freeze node,
+            --  unless subprogram declaration is already there, in which case
+            --  body better be placed afterwards.
 
-            Insert_After_And_Analyze (N, FBody);
+            if FDecl = Next (N) then
+               Insert_After_And_Analyze (FDecl, FBody);
+            else
+               Insert_After_And_Analyze (N, FBody);
+            end if;
 
             --  The defining identifier of a quantified expression carries the
             --  scope in which the type appears, but when unnesting we need
@@ -9352,10 +9341,20 @@ package body Sem_Ch13 is
 
       else
          --  In a generic context freeze nodes are not always generated, so
-         --  analyze the expression now.
+         --  analyze the expression now. If the aspect is for a type, this
+         --  makes its potential components accessible.
 
          if not Analyzed (Freeze_Expr) and then Inside_A_Generic then
-            Preanalyze (Freeze_Expr);
+            if A_Id = Aspect_Dynamic_Predicate
+              or else A_Id = Aspect_Predicate
+              or else A_Id = Aspect_Priority
+            then
+               Push_Type (Ent);
+               Preanalyze (Freeze_Expr);
+               Pop_Type (Ent);
+            else
+               Preanalyze (Freeze_Expr);
+            end if;
          end if;
 
          --  Indicate that the expression comes from an aspect specification,
@@ -9389,6 +9388,7 @@ package body Sem_Ch13 is
          elsif A_Id = Aspect_Dynamic_Predicate
            or else A_Id = Aspect_Predicate
            or else A_Id = Aspect_Priority
+           or else A_Id = Aspect_CPU
          then
             Push_Type (Ent);
             Preanalyze_Spec_Expression (End_Decl_Expr, T);
@@ -11280,6 +11280,7 @@ package body Sem_Ch13 is
                   if A_Id = Aspect_Dynamic_Predicate
                     or else A_Id = Aspect_Predicate
                     or else A_Id = Aspect_Priority
+                    or else A_Id = Aspect_CPU
                   then
                     --  Retrieve the visibility to components and discriminants
                     --  in order to properly analyze the aspects.
@@ -11563,7 +11564,7 @@ package body Sem_Ch13 is
 
    begin
       --  A representation item is either subtype-specific (Size and Alignment
-      --  clauses) or type-related (all others).  Subtype-specific aspects may
+      --  clauses) or type-related (all others). Subtype-specific aspects may
       --  differ for different subtypes of the same type (RM 13.1.8).
 
       --  A derived type inherits each type-related representation aspect of
@@ -11796,7 +11797,6 @@ package body Sem_Ch13 is
    procedure Initialize is
    begin
       Address_Clause_Checks.Init;
-      Compile_Time_Warnings_Errors.Init;
       Unchecked_Conversions.Init;
 
       --  ??? Might be needed in the future for some non GCC back-ends
@@ -12550,6 +12550,30 @@ package body Sem_Ch13 is
    ------------------------
 
    function Rep_Item_Too_Early (T : Entity_Id; N : Node_Id) return Boolean is
+      function Has_Generic_Parent (E : Entity_Id) return Boolean;
+      --  Return True if any ancestor is a generic type
+
+      ------------------------
+      -- Has_Generic_Parent --
+      ------------------------
+
+      function Has_Generic_Parent (E : Entity_Id) return Boolean is
+         Ancestor_Type : Entity_Id := Etype (E);
+
+      begin
+         while Present (Ancestor_Type)
+           and then not Is_Generic_Type (Ancestor_Type)
+           and then Etype (Ancestor_Type) /= Ancestor_Type
+         loop
+            Ancestor_Type := Etype (Ancestor_Type);
+         end loop;
+
+         return
+           Present (Ancestor_Type) and then Is_Generic_Type (Ancestor_Type);
+      end Has_Generic_Parent;
+
+   --  Start of processing for Rep_Item_Too_Early
+
    begin
       --  Cannot apply non-operational rep items to generic types
 
@@ -12557,7 +12581,7 @@ package body Sem_Ch13 is
          return False;
 
       elsif Is_Type (T)
-        and then Is_Generic_Type (Root_Type (T))
+        and then Has_Generic_Parent (T)
         and then (Nkind (N) /= N_Pragma
                    or else Get_Pragma_Id (N) /= Pragma_Convention)
       then
@@ -12607,7 +12631,7 @@ package body Sem_Ch13 is
       function Is_Derived_Type_With_Constraint return Boolean;
       --  Check whether T is a derived type with an explicit constraint, in
       --  which case the constraint has frozen the type and the item is too
-      --  late.  This compensates for the fact that for derived scalar types
+      --  late. This compensates for the fact that for derived scalar types
       --  we freeze the base type unconditionally on account of a long-standing
       --  issue in gigi.
 
@@ -13902,79 +13926,6 @@ package body Sem_Ch13 is
          end;
       end loop;
    end Validate_Address_Clauses;
-
-   -----------------------------------------
-   -- Validate_Compile_Time_Warning_Error --
-   -----------------------------------------
-
-   procedure Validate_Compile_Time_Warning_Error (N : Node_Id) is
-   begin
-      Compile_Time_Warnings_Errors.Append
-        (New_Val => CTWE_Entry'(Eloc  => Sloc (N),
-                                Scope => Current_Scope,
-                                Prag  => N));
-   end Validate_Compile_Time_Warning_Error;
-
-   ------------------------------------------
-   -- Validate_Compile_Time_Warning_Errors --
-   ------------------------------------------
-
-   procedure Validate_Compile_Time_Warning_Errors is
-      procedure Set_Scope (S : Entity_Id);
-      --  Install all enclosing scopes of S along with S itself
-
-      procedure Unset_Scope (S : Entity_Id);
-      --  Uninstall all enclosing scopes of S along with S itself
-
-      ---------------
-      -- Set_Scope --
-      ---------------
-
-      procedure Set_Scope (S : Entity_Id) is
-      begin
-         if S /= Standard_Standard then
-            Set_Scope (Scope (S));
-         end if;
-
-         Push_Scope (S);
-      end Set_Scope;
-
-      -----------------
-      -- Unset_Scope --
-      -----------------
-
-      procedure Unset_Scope (S : Entity_Id) is
-      begin
-         if S /= Standard_Standard then
-            Unset_Scope (Scope (S));
-         end if;
-
-         Pop_Scope;
-      end Unset_Scope;
-
-   --  Start of processing for Validate_Compile_Time_Warning_Errors
-
-   begin
-      Expander_Mode_Save_And_Set (False);
-      In_Compile_Time_Warning_Or_Error := True;
-
-      for N in Compile_Time_Warnings_Errors.First ..
-               Compile_Time_Warnings_Errors.Last
-      loop
-         declare
-            T : CTWE_Entry renames Compile_Time_Warnings_Errors.Table (N);
-
-         begin
-            Set_Scope (T.Scope);
-            Reset_Analyzed_Flags (T.Prag);
-            Process_Compile_Time_Warning_Or_Error (T.Prag, T.Eloc);
-            Unset_Scope (T.Scope);
-         end;
-      end loop;
-
-      In_Compile_Time_Warning_Or_Error := False;
-      Expander_Mode_Restore;
-   end Validate_Compile_Time_Warning_Errors;
 
    ---------------------------
    -- Validate_Independence --

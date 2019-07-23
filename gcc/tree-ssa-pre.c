@@ -428,8 +428,9 @@ get_or_alloc_expr_for_name (tree name)
 
 /* An unordered bitmap set.  One bitmap tracks values, the other,
    expressions.  */
-typedef struct bitmap_set
+typedef class bitmap_set
 {
+public:
   bitmap_head expressions;
   bitmap_head values;
 } *bitmap_set_t;
@@ -1185,8 +1186,8 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
 	  bitmap visited = NULL;
 	  /* Try to find a vuse that dominates this phi node by skipping
 	     non-clobbering statements.  */
-	  vuse = get_continuation_for_phi (phi, &ref, cnt, &visited, false,
-					   NULL, NULL);
+	  vuse = get_continuation_for_phi (phi, &ref, true,
+					   cnt, &visited, false, NULL, NULL);
 	  if (visited)
 	    BITMAP_FREE (visited);
 	}

@@ -157,7 +157,7 @@ find_local_binding (cp_binding_level *b, tree name)
   return NULL;
 }
 
-struct name_lookup
+class name_lookup
 {
 public:
   typedef std::pair<tree, tree> using_pair;
@@ -3392,7 +3392,7 @@ leave_scope (void)
      namespace.  For classes, we cache some binding levels.  For other
      scopes, we just make the structure available for reuse.  */
   if (scope->kind != sk_namespace
-      && scope->kind != sk_class)
+      && scope != previous_class_level)
     {
       scope->level_chain = free_binding_level;
       gcc_assert (!ENABLE_SCOPE_CHECKING
@@ -3418,6 +3418,18 @@ leave_scope (void)
     }
 
   return current_binding_level;
+}
+
+/* When we exit a toplevel class scope, we save its binding level so
+   that we can restore it quickly.  Here, we've entered some other
+   class, so we must invalidate our cache.  */
+
+void
+invalidate_class_lookup_cache (void)
+{
+  previous_class_level->level_chain = free_binding_level;
+  free_binding_level = previous_class_level;
+  previous_class_level = NULL;
 }
 
 static void

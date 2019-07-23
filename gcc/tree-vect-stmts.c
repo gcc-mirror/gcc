@@ -62,7 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Return the vectorized type for the given statement.  */
 
 tree
-stmt_vectype (struct _stmt_vec_info *stmt_info)
+stmt_vectype (class _stmt_vec_info *stmt_info)
 {
   return STMT_VINFO_VECTYPE (stmt_info);
 }
@@ -70,12 +70,12 @@ stmt_vectype (struct _stmt_vec_info *stmt_info)
 /* Return TRUE iff the given statement is in an inner loop relative to
    the loop being vectorized.  */
 bool
-stmt_in_inner_loop_p (struct _stmt_vec_info *stmt_info)
+stmt_in_inner_loop_p (class _stmt_vec_info *stmt_info)
 {
   gimple *stmt = STMT_VINFO_STMT (stmt_info);
   basic_block bb = gimple_bb (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop* loop;
+  class loop* loop;
 
   if (!loop_vinfo)
     return false;
@@ -297,7 +297,7 @@ static bool
 vect_stmt_relevant_p (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 		      enum vect_relevant *relevant, bool *live_p)
 {
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   ssa_op_iter op_iter;
   imm_use_iterator imm_iter;
   use_operand_p use_p;
@@ -610,7 +610,7 @@ process_use (stmt_vec_info stmt_vinfo, tree use, loop_vec_info loop_vinfo,
 opt_result
 vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo, bool *fatal)
 {
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   unsigned int nbbs = loop->num_nodes;
   gimple_stmt_iterator si;
@@ -1415,7 +1415,7 @@ vect_init_vector_1 (stmt_vec_info stmt_vinfo, gimple *new_stmt,
 
       if (loop_vinfo)
         {
-          struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+	  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
 	  basic_block new_bb;
 	  edge pe;
 
@@ -1496,15 +1496,19 @@ vect_init_vector (stmt_vec_info stmt_info, tree val, tree type,
 		   promotion of invariant/external defs.  */
 		val = gimple_convert (&stmts, TREE_TYPE (type), val);
 	      for (gimple_stmt_iterator gsi2 = gsi_start (stmts);
-		   !gsi_end_p (gsi2); gsi_next (&gsi2))
-		vect_init_vector_1 (stmt_info, gsi_stmt (gsi2), gsi);
+		   !gsi_end_p (gsi2); )
+		{
+		  init_stmt = gsi_stmt (gsi2);
+		  gsi_remove (&gsi2, false);
+		  vect_init_vector_1 (stmt_info, init_stmt, gsi);
+		}
 	    }
 	}
       val = build_vector_from_val (type, val);
     }
 
   new_temp = vect_get_new_ssa_name (type, vect_simple_var, "cst_");
-  init_stmt = gimple_build_assign  (new_temp, val);
+  init_stmt = gimple_build_assign (new_temp, val);
   vect_init_vector_1 (stmt_info, init_stmt, gsi);
   return new_temp;
 }
@@ -2037,7 +2041,7 @@ vect_truncate_gather_scatter_offset (stmt_vec_info stmt_info,
   unsigned HOST_WIDE_INT count = vect_max_vf (loop_vinfo) - 1;
 
   /* Try lowering COUNT to the number of scalar latch iterations.  */
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   widest_int max_iters;
   if (max_loop_iterations (loop, &max_iters)
       && max_iters < count)
@@ -2205,7 +2209,7 @@ get_group_load_store_type (stmt_vec_info stmt_info, tree vectype, bool slp,
 {
   vec_info *vinfo = stmt_info->vinfo;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
+  class loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
   stmt_vec_info first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
   dr_vec_info *first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
   unsigned int group_size = DR_GROUP_SIZE (first_stmt_info);
@@ -2723,7 +2727,7 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
 			      tree mask)
 {
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   int ncopies = vect_get_num_copies (loop_vinfo, vectype);
@@ -2965,7 +2969,7 @@ vect_build_gather_load_calls (stmt_vec_info stmt_info,
    containing loop.  */
 
 static void
-vect_get_gather_scatter_ops (struct loop *loop, stmt_vec_info stmt_info,
+vect_get_gather_scatter_ops (class loop *loop, stmt_vec_info stmt_info,
 			     gather_scatter_info *gs_info,
 			     tree *dataref_ptr, tree *vec_offset)
 {
@@ -3000,7 +3004,7 @@ vect_get_strided_load_store_ops (stmt_vec_info stmt_info,
 				 tree *dataref_bump, tree *vec_offset)
 {
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   gimple_seq stmts;
 
@@ -3755,7 +3759,7 @@ struct simd_call_arg_info
    *ARGINFO.  */
 
 static void
-vect_simd_lane_linear (tree op, struct loop *loop,
+vect_simd_lane_linear (tree op, class loop *loop,
 		       struct simd_call_arg_info *arginfo)
 {
   gimple *def_stmt = SSA_NAME_DEF_STMT (op);
@@ -3852,7 +3856,7 @@ vectorizable_simd_clone_call (stmt_vec_info stmt_info,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   vec_info *vinfo = stmt_info->vinfo;
-  struct loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
+  class loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
   tree fndecl, new_temp;
   int ncopies, j;
   auto_vec<simd_call_arg_info> arginfo;
@@ -6330,30 +6334,88 @@ get_group_alias_ptr_type (stmt_vec_info first_stmt_info)
 static bool
 scan_operand_equal_p (tree ref1, tree ref2)
 {
-  machine_mode mode1, mode2;
-  poly_int64 bitsize1, bitsize2, bitpos1, bitpos2;
-  tree offset1, offset2;
-  int unsignedp1, unsignedp2, reversep1, reversep2;
-  int volatilep1 = 0, volatilep2 = 0;
-  tree base1 = get_inner_reference (ref1, &bitsize1, &bitpos1, &offset1,
-				    &mode1, &unsignedp1, &reversep1,
-				    &volatilep1);
-  tree base2 = get_inner_reference (ref2, &bitsize2, &bitpos2, &offset2,
-				    &mode2, &unsignedp2, &reversep2,
-				    &volatilep2);
-  if (reversep1 || reversep2 || volatilep1 || volatilep2)
+  tree ref[2] = { ref1, ref2 };
+  poly_int64 bitsize[2], bitpos[2];
+  tree offset[2], base[2];
+  for (int i = 0; i < 2; ++i)
+    {
+      machine_mode mode;
+      int unsignedp, reversep, volatilep = 0;
+      base[i] = get_inner_reference (ref[i], &bitsize[i], &bitpos[i],
+      				     &offset[i], &mode, &unsignedp,
+      				     &reversep, &volatilep);
+      if (reversep || volatilep || maybe_ne (bitpos[i], 0))
+	return false;
+      if (TREE_CODE (base[i]) == MEM_REF
+	  && offset[i] == NULL_TREE
+	  && TREE_CODE (TREE_OPERAND (base[i], 0)) == SSA_NAME)
+	{
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (base[i], 0));
+	  if (is_gimple_assign (def_stmt)
+	      && gimple_assign_rhs_code (def_stmt) == POINTER_PLUS_EXPR
+	      && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == ADDR_EXPR
+	      && TREE_CODE (gimple_assign_rhs2 (def_stmt)) == SSA_NAME)
+	    {
+	      if (maybe_ne (mem_ref_offset (base[i]), 0))
+		return false;
+	      base[i] = TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 0);
+	      offset[i] = gimple_assign_rhs2 (def_stmt);
+	    }
+	}
+    }
+
+  if (!operand_equal_p (base[0], base[1], 0))
     return false;
-  if (!operand_equal_p (base1, base2, 0))
+  if (maybe_ne (bitsize[0], bitsize[1]))
     return false;
-  if (maybe_ne (bitpos1, 0) || maybe_ne (bitpos2, 0))
-    return false;
-  if (maybe_ne (bitsize1, bitsize2))
-    return false;
-  if (offset1 != offset2
-      && (!offset1
-	  || !offset2
-	  || !operand_equal_p (offset1, offset2, 0)))
-    return false;
+  if (offset[0] != offset[1])
+    {
+      if (!offset[0] || !offset[1])
+	return false;
+      if (!operand_equal_p (offset[0], offset[1], 0))
+	{
+	  tree step[2];
+	  for (int i = 0; i < 2; ++i)
+	    {
+	      step[i] = integer_one_node;
+	      if (TREE_CODE (offset[i]) == SSA_NAME)
+		{
+		  gimple *def_stmt = SSA_NAME_DEF_STMT (offset[i]);
+		  if (is_gimple_assign (def_stmt)
+		      && gimple_assign_rhs_code (def_stmt) == MULT_EXPR
+		      && (TREE_CODE (gimple_assign_rhs2 (def_stmt))
+			  == INTEGER_CST))
+		    {
+		      step[i] = gimple_assign_rhs2 (def_stmt);
+		      offset[i] = gimple_assign_rhs1 (def_stmt);
+		    }
+		}
+	      else if (TREE_CODE (offset[i]) == MULT_EXPR)
+		{
+		  step[i] = TREE_OPERAND (offset[i], 1);
+		  offset[i] = TREE_OPERAND (offset[i], 0);
+		}
+	      tree rhs1 = NULL_TREE;
+	      if (TREE_CODE (offset[i]) == SSA_NAME)
+		{
+		  gimple *def_stmt = SSA_NAME_DEF_STMT (offset[i]);
+		  if (gimple_assign_cast_p (def_stmt))
+		    rhs1 = gimple_assign_rhs1 (def_stmt);
+		}
+	      else if (CONVERT_EXPR_P (offset[i]))
+		rhs1 = TREE_OPERAND (offset[i], 0);
+	      if (rhs1
+		  && INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
+		  && INTEGRAL_TYPE_P (TREE_TYPE (offset[i]))
+		  && (TYPE_PRECISION (TREE_TYPE (offset[i]))
+		      >= TYPE_PRECISION (TREE_TYPE (rhs1))))
+		offset[i] = rhs1;
+	    }
+	  if (!operand_equal_p (offset[0], offset[1], 0)
+	      || !operand_equal_p (step[0], step[1], 0))
+	    return false;
+	}
+    }
   return true;
 }
 
@@ -7138,7 +7200,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   tree vec_oprnd = NULL_TREE;
   tree elem_type;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop *loop = NULL;
+  class loop *loop = NULL;
   machine_mode vec_mode;
   tree dummy;
   enum dr_alignment_support alignment_support_scheme;
@@ -8287,7 +8349,7 @@ permute_vec_elements (tree x, tree y, tree mask_vec, stmt_vec_info stmt_info,
    otherwise returns false.  */
 
 static bool
-hoist_defs_of_uses (stmt_vec_info stmt_info, struct loop *loop)
+hoist_defs_of_uses (stmt_vec_info stmt_info, class loop *loop)
 {
   ssa_op_iter i;
   tree op;
@@ -8355,8 +8417,8 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   tree data_ref = NULL;
   stmt_vec_info prev_stmt_info;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop *loop = NULL;
-  struct loop *containing_loop = gimple_bb (stmt_info->stmt)->loop_father;
+  class loop *loop = NULL;
+  class loop *containing_loop = gimple_bb (stmt_info->stmt)->loop_father;
   bool nested_in_vect_loop = false;
   tree elem_type;
   tree new_temp;
@@ -8380,7 +8442,7 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   stmt_vec_info first_stmt_info;
   stmt_vec_info first_stmt_info_for_drptr = NULL;
   bool compute_in_loop = false;
-  struct loop *at_loop;
+  class loop *at_loop;
   int vec_num;
   bool slp = (slp_node != NULL);
   bool slp_perm = false;
@@ -10307,7 +10369,7 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
       if (!slp_node)
 	{
-	  if (swap_p)
+	  if (swap_p && j == 0)
 	    std::swap (vec_rhs1, vec_rhs2);
 	  vec_oprnds0.quick_push (vec_rhs1);
 	  vec_oprnds1.quick_push (vec_rhs2);
@@ -10749,7 +10811,7 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
           || STMT_VINFO_RELEVANT (stmt_info) ==
                                            vect_used_in_outer_by_reduction))
     {
-      struct loop *innerloop = LOOP_VINFO_LOOP (
+      class loop *innerloop = LOOP_VINFO_LOOP (
                                 STMT_VINFO_LOOP_VINFO (stmt_info))->inner;
       imm_use_iterator imm_iter;
       use_operand_p use_p;
@@ -11141,7 +11203,7 @@ supportable_widening_operation (enum tree_code code, stmt_vec_info stmt_info,
                                 vec<tree> *interm_types)
 {
   loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop *vect_loop = NULL;
+  class loop *vect_loop = NULL;
   machine_mode vec_mode;
   enum insn_code icode1, icode2;
   optab optab1, optab2;

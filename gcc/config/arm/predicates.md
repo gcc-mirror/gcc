@@ -358,6 +358,27 @@
 (define_special_predicate "lt_ge_comparison_operator"
   (match_code "lt,ge"))
 
+;; Match a "borrow" operation for use with SBC.  The precise code will
+;; depend on the form of the comparison.  This is generally the inverse of
+;; a carry operation, since the logic of SBC uses "not borrow" in it's
+;; calculation.
+(define_special_predicate "arm_borrow_operation"
+  (match_code "geu,ltu")
+  {
+    if (XEXP (op, 1) != const0_rtx)
+      return false;
+    rtx op0 = XEXP (op, 0);
+    if (!REG_P (op0) || REGNO (op0) != CC_REGNUM)
+      return false;
+    machine_mode ccmode = GET_MODE (op0);
+    if (ccmode == CC_Cmode)
+      return GET_CODE (op) == GEU;
+    else if (ccmode == CCmode)
+      return GET_CODE (op) == LTU;
+    return false;
+  }
+)
+
 ;; The vsel instruction only accepts the ARM condition codes listed below.
 (define_special_predicate "arm_vsel_comparison_operator"
   (and (match_operand 0 "expandable_comparison_operator")

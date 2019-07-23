@@ -2098,6 +2098,8 @@ Type::write_specific_type_functions(Gogo* gogo, Named_type* name, int64_t size,
   Block* b = gogo->finish_block(bloc);
   gogo->add_block(b, bloc);
   gogo->lower_block(hash_fn, b);
+  gogo->order_block(b);
+  gogo->remove_shortcuts_in_block(b);
   gogo->finish_function(bloc);
 
   Named_object *equal_fn = gogo->start_function(equal_name, equal_fntype,
@@ -2119,6 +2121,8 @@ Type::write_specific_type_functions(Gogo* gogo, Named_type* name, int64_t size,
   b = gogo->finish_block(bloc);
   gogo->add_block(b, bloc);
   gogo->lower_block(equal_fn, b);
+  gogo->order_block(b);
+  gogo->remove_shortcuts_in_block(b);
   gogo->finish_function(bloc);
 
   // Build the function descriptors for the type descriptor to refer to.

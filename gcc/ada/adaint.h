@@ -51,7 +51,7 @@ extern "C" {
    determine at compile time what support the system offers for large files.
    For now we just list the platforms we have manually tested. */
 
-#if defined (__GLIBC__) || defined (__sun__) || defined (__QNX__)
+#if (defined (__GLIBC__) && !defined(STANDALONE)) || defined (__sun__) || defined (__QNX__)
 #define GNAT_FOPEN fopen64
 #define GNAT_OPEN open64
 #define GNAT_STAT stat64

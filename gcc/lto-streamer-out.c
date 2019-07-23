@@ -1911,7 +1911,7 @@ output_cfg (struct output_block *ob, struct function *fn)
   /* Output each loop, skipping the tree root which has number zero.  */
   for (unsigned i = 1; i < number_of_loops (fn); ++i)
     {
-      struct loop *loop = get_loop (fn, i);
+      class loop *loop = get_loop (fn, i);
 
       /* Write the index of the loop header.  That's enough to rebuild
          the loop tree on the reader side.  Stream -1 for an unused
@@ -2403,7 +2403,8 @@ produce_lto_section ()
 
   bool slim_object = flag_generate_lto && !flag_fat_lto_objects;
   lto_section s
-    = { LTO_major_version, LTO_minor_version, slim_object, compression, 0 };
+    = { LTO_major_version, LTO_minor_version, slim_object, 0 };
+  s.set_compression (compression);
   lto_write_data (&s, sizeof s);
   lto_end_section ();
   destroy_output_block (ob);

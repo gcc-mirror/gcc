@@ -2516,7 +2516,7 @@ expand_omp_for_ordered_loops (struct omp_for_data *fd, tree *counts,
 
       if (e2)
 	{
-	  struct loop *loop = alloc_loop ();
+	  class loop *loop = alloc_loop ();
 	  loop->header = new_header;
 	  loop->latch = e2->src;
 	  add_loop (loop, body_bb->loop_father);
@@ -3477,14 +3477,14 @@ expand_omp_for_generic (struct omp_region *region,
       /* We enter expand_omp_for_generic with a loop.  This original loop may
 	 have its own loop struct, or it may be part of an outer loop struct
 	 (which may be the fake loop).  */
-      struct loop *outer_loop = entry_bb->loop_father;
+      class loop *outer_loop = entry_bb->loop_father;
       bool orig_loop_has_loop_struct = l1_bb->loop_father != outer_loop;
 
       add_bb_to_loop (l2_bb, outer_loop);
 
       /* We've added a new loop around the original loop.  Allocate the
 	 corresponding loop struct.  */
-      struct loop *new_loop = alloc_loop ();
+      class loop *new_loop = alloc_loop ();
       new_loop->header = l0_bb;
       new_loop->latch = l2_bb;
       add_loop (new_loop, outer_loop);
@@ -3494,7 +3494,7 @@ expand_omp_for_generic (struct omp_region *region,
       if (!orig_loop_has_loop_struct
 	  && !gimple_omp_for_combined_p (fd->for_stmt))
 	{
-	  struct loop *orig_loop = alloc_loop ();
+	  class loop *orig_loop = alloc_loop ();
 	  orig_loop->header = l1_bb;
 	  /* The loop may have multiple latches.  */
 	  add_loop (orig_loop, new_loop);
@@ -3744,7 +3744,9 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       cond_var = OMP_CLAUSE_DECL (c);
     }
   if (fd->have_reductemp
-      || fd->have_pointer_condtemp
+      /* For scan, we don't want to reinitialize condtemp before the
+	 second loop.  */
+      || (fd->have_pointer_condtemp && !fd->have_scantemp)
       || fd->have_nonctrl_scantemp)
     {
       tree t1 = build_int_cst (long_integer_type_node, 0);
@@ -4235,7 +4237,8 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       else
 	gsi_insert_after (&gsi, omp_build_barrier (t), GSI_SAME_STMT);
     }
-  else if (fd->have_pointer_condtemp)
+  else if ((fd->have_pointer_condtemp || fd->have_scantemp)
+	   && !fd->have_nonctrl_scantemp)
     {
       tree fn = builtin_decl_explicit (BUILT_IN_GOMP_LOOP_END_NOWAIT);
       gcall *g = gimple_build_call (fn, 0);
@@ -4353,7 +4356,7 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       set_immediate_dominator (CDI_DOMINATORS, exit3_bb, exit_bb);
     }
 
-  struct loop *loop = body_bb->loop_father;
+  class loop *loop = body_bb->loop_father;
   if (loop != entry_bb->loop_father)
     {
       gcc_assert (broken_loop || loop->header == body_bb);
@@ -5101,8 +5104,8 @@ expand_omp_for_static_chunk (struct omp_region *region,
 
   if (!broken_loop)
     {
-      struct loop *loop = body_bb->loop_father;
-      struct loop *trip_loop = alloc_loop ();
+      class loop *loop = body_bb->loop_father;
+      class loop *trip_loop = alloc_loop ();
       trip_loop->header = iter_part_bb;
       trip_loop->latch = trip_update_bb;
       add_loop (trip_loop, iter_part_bb->loop_father);
@@ -5520,7 +5523,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 
   if (!broken_loop)
     {
-      struct loop *loop = alloc_loop ();
+      class loop *loop = alloc_loop ();
       loop->header = l1_bb;
       loop->latch = cont_bb;
       add_loop (loop, l1_bb->loop_father);
@@ -5941,7 +5944,7 @@ expand_omp_taskloop_for_inner (struct omp_region *region,
 
   if (!broken_loop && !gimple_omp_for_combined_p (fd->for_stmt))
     {
-      struct loop *loop = alloc_loop ();
+      class loop *loop = alloc_loop ();
       loop->header = body_bb;
       if (collapse_bb == NULL)
 	loop->latch = cont_bb;
@@ -6458,12 +6461,12 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
     {
       /* We now have one, two or three nested loops.  Update the loop
 	 structures.  */
-      struct loop *parent = entry_bb->loop_father;
-      struct loop *body = body_bb->loop_father;
+      class loop *parent = entry_bb->loop_father;
+      class loop *body = body_bb->loop_father;
 
       if (chunking)
 	{
-	  struct loop *chunk_loop = alloc_loop ();
+	  class loop *chunk_loop = alloc_loop ();
 	  chunk_loop->header = head_bb;
 	  chunk_loop->latch = bottom_bb;
 	  add_loop (chunk_loop, parent);
@@ -6479,7 +6482,7 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
 
       if (parent)
 	{
-	  struct loop *body_loop = alloc_loop ();
+	  class loop *body_loop = alloc_loop ();
 	  body_loop->header = body_bb;
 	  body_loop->latch = cont_bb;
 	  add_loop (body_loop, parent);
@@ -6487,7 +6490,7 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
 	  if (fd->tiling)
 	    {
 	      /* Insert tiling's element loop.  */
-	      struct loop *inner_loop = alloc_loop ();
+	      class loop *inner_loop = alloc_loop ();
 	      inner_loop->header = elem_body_bb;
 	      inner_loop->latch = elem_cont_bb;
 	      add_loop (inner_loop, body_loop);
@@ -6529,7 +6532,7 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
        original loops from being detected.  Fix that up.  */
     loops_state_set (LOOPS_NEED_FIXUP);
 
-  if (gimple_omp_for_kind (fd.for_stmt) & GF_OMP_FOR_SIMD)
+  if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_SIMD)
     expand_omp_simd (region, &fd);
   else if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_OACC_LOOP)
     {
@@ -7472,7 +7475,7 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
   /* Remove GIMPLE_OMP_ATOMIC_STORE.  */
   gsi_remove (&si, true);
 
-  struct loop *loop = alloc_loop ();
+  class loop *loop = alloc_loop ();
   loop->header = loop_header;
   loop->latch = store_bb;
   add_loop (loop, loop_header->loop_father);
@@ -7622,14 +7625,14 @@ static void
 mark_loops_in_oacc_kernels_region (basic_block region_entry,
 				   basic_block region_exit)
 {
-  struct loop *outer = region_entry->loop_father;
+  class loop *outer = region_entry->loop_father;
   gcc_assert (region_exit == NULL || outer == region_exit->loop_father);
 
   /* Don't parallelize the kernels region if it contains more than one outer
      loop.  */
   unsigned int nr_outer_loops = 0;
-  struct loop *single_outer = NULL;
-  for (struct loop *loop = outer->inner; loop != NULL; loop = loop->next)
+  class loop *single_outer = NULL;
+  for (class loop *loop = outer->inner; loop != NULL; loop = loop->next)
     {
       gcc_assert (loop_outer (loop) == outer);
 
@@ -7646,14 +7649,14 @@ mark_loops_in_oacc_kernels_region (basic_block region_entry,
   if (nr_outer_loops != 1)
     return;
 
-  for (struct loop *loop = single_outer->inner;
+  for (class loop *loop = single_outer->inner;
        loop != NULL;
        loop = loop->inner)
     if (loop->next)
       return;
 
   /* Mark the loops in the region.  */
-  for (struct loop *loop = single_outer; loop != NULL; loop = loop->inner)
+  for (class loop *loop = single_outer; loop != NULL; loop = loop->inner)
     loop->in_oacc_kernels_region = true;
 }
 

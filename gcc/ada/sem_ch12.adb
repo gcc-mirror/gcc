@@ -6002,7 +6002,7 @@ package body Sem_Ch12 is
             Make_Parameter_Specification (Loc,
                Defining_Identifier => F1,
                Parameter_Type      => New_Occurrence_Of (Op_Type, Loc))),
-          Result_Definition        =>  New_Occurrence_Of (Ret_Type, Loc));
+          Result_Definition        => New_Occurrence_Of (Ret_Type, Loc));
 
       if Is_Binary then
          Append_To (Parameter_Specifications (Spec),
@@ -6657,9 +6657,11 @@ package body Sem_Ch12 is
                Formal_Decl := Parent (Associated_Formal_Package (E));
 
                --  Nothing to check if the formal has a box or an others_clause
-               --  (necessarily with a box).
+               --  (necessarily with a box), or no associations altogether
 
-               if Box_Present (Formal_Decl) then
+               if Box_Present (Formal_Decl)
+                 or else No (Generic_Associations (Formal_Decl))
+               then
                   null;
 
                elsif Nkind (First (Generic_Associations (Formal_Decl))) =
@@ -10309,8 +10311,11 @@ package body Sem_Ch12 is
    begin
       Analyze (Actual);
 
+      --  The actual must be a package instance, or else a current instance
+      --  such as a parent generic within the body of a generic child.
+
       if not Is_Entity_Name (Actual)
-        or else Ekind (Entity (Actual)) /= E_Package
+        or else not Ekind_In (Entity (Actual), E_Generic_Package, E_Package)
       then
          Error_Msg_N
            ("expect package instance to instantiate formal", Actual);
@@ -10349,8 +10354,14 @@ package body Sem_Ch12 is
               ("previous error in declaration of formal package", Actual);
             Abandon_Instantiation (Actual);
 
-         elsif
-           Is_Instance_Of (Parent_Spec, Get_Instance_Of (Gen_Parent))
+         elsif Is_Instance_Of (Parent_Spec, Get_Instance_Of (Gen_Parent)) then
+            null;
+
+         --  If this is the current instance of an enclosing generic, that unit
+         --  is the generic package we need.
+
+         elsif In_Open_Scopes (Actual_Pack)
+           and then Ekind (Actual_Pack) = E_Generic_Package
          then
             null;
 
@@ -10412,7 +10423,7 @@ package body Sem_Ch12 is
 
             Actual_Ent := First_Entity (Actual_Pack);
             Actual_Of_Formal :=
-               First (Visible_Declarations (Specification (Analyzed_Formal)));
+              First (Visible_Declarations (Specification (Analyzed_Formal)));
             while Present (Actual_Ent)
               and then Actual_Ent /= First_Private_Entity (Actual_Pack)
             loop
@@ -10487,6 +10498,17 @@ package body Sem_Ch12 is
 
                Next_Entity (Actual_Ent);
             end loop;
+
+            --  No conformance to check if the generic has no formal parameters
+            --  and the formal package has no generic associations.
+
+            if Is_Empty_List (Formals)
+              and then
+                (Box_Present (Formal)
+                   or else No (Generic_Associations (Formal)))
+            then
+               return Decls;
+            end if;
          end;
 
          --  If the formal is not declared with a box, reanalyze it as an
@@ -14103,15 +14125,41 @@ package body Sem_Ch12 is
    ------------------------
 
    procedure Preanalyze_Actuals (N : Node_Id; Inst : Entity_Id := Empty) is
+      procedure Perform_Appropriate_Analysis (N : Node_Id);
+      --  Determine if the actuals we are analyzing come from a generic
+      --  instantiation that is a library unit and dispatch accordingly.
+
+      ----------------------------------
+      -- Perform_Appropriate_Analysis --
+      ----------------------------------
+
+      procedure Perform_Appropriate_Analysis (N : Node_Id) is
+      begin
+         --  When we have a library instantiation we cannot allow any expansion
+         --  to occur, since there may be no place to put it. Instead, in that
+         --  case we perform a preanalysis of the actual.
+
+         if Present (Inst) and then Is_Compilation_Unit (Inst) then
+            Preanalyze (N);
+         else
+            Analyze (N);
+         end if;
+      end Perform_Appropriate_Analysis;
+
+      --  Local variables
+
+      Errs : constant Nat := Serious_Errors_Detected;
+
       Assoc : Node_Id;
       Act   : Node_Id;
-      Errs  : constant Nat := Serious_Errors_Detected;
 
       Cur : Entity_Id := Empty;
       --  Current homograph of the instance name
 
       Vis : Boolean := False;
       --  Saved visibility status of the current homograph
+
+   --  Start of processing for Preanalyze_Actuals
 
    begin
       Assoc := First (Generic_Associations (N));
@@ -14154,10 +14202,10 @@ package body Sem_Ch12 is
                null;
 
             elsif Nkind (Act) = N_Attribute_Reference then
-               Analyze (Prefix (Act));
+               Perform_Appropriate_Analysis (Prefix (Act));
 
             elsif Nkind (Act) = N_Explicit_Dereference then
-               Analyze (Prefix (Act));
+               Perform_Appropriate_Analysis (Prefix (Act));
 
             elsif Nkind (Act) = N_Allocator then
                declare
@@ -14165,7 +14213,7 @@ package body Sem_Ch12 is
 
                begin
                   if Nkind (Expr) = N_Subtype_Indication then
-                     Analyze (Subtype_Mark (Expr));
+                     Perform_Appropriate_Analysis (Subtype_Mark (Expr));
 
                      --  Analyze separately each discriminant constraint, when
                      --  given with a named association.
@@ -14177,9 +14225,10 @@ package body Sem_Ch12 is
                         Constr := First (Constraints (Constraint (Expr)));
                         while Present (Constr) loop
                            if Nkind (Constr) = N_Discriminant_Association then
-                              Analyze (Expression (Constr));
+                              Perform_Appropriate_Analysis
+                                (Expression (Constr));
                            else
-                              Analyze (Constr);
+                              Perform_Appropriate_Analysis (Constr);
                            end if;
 
                            Next (Constr);
@@ -14187,12 +14236,12 @@ package body Sem_Ch12 is
                      end;
 
                   else
-                     Analyze (Expr);
+                     Perform_Appropriate_Analysis (Expr);
                   end if;
                end;
 
             elsif Nkind (Act) /= N_Operator_Symbol then
-               Analyze (Act);
+               Perform_Appropriate_Analysis (Act);
 
                --  Within a package instance, mark actuals that are limited
                --  views, so their use can be moved to the body of the
@@ -14213,7 +14262,7 @@ package body Sem_Ch12 is
                --  warnings complaining about the generic being unreferenced,
                --  before abandoning the instantiation.
 
-               Analyze (Name (N));
+               Perform_Appropriate_Analysis (Name (N));
 
                if Is_Entity_Name (Name (N))
                  and then Etype (Name (N)) /= Any_Type

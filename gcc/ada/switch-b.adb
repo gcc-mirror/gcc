@@ -353,6 +353,12 @@ package body Switch.B is
             Ptr := Ptr + 1;
             Usage_Requested := True;
 
+         --  Processing for H switch
+
+         when 'H' =>
+            Ptr := Ptr + 1;
+            Legacy_Elaboration_Order := True;
+
          --  Processing for i switch
 
          when 'i' =>

@@ -329,7 +329,7 @@ typedef generic_wide_int < fixed_wide_int_storage <WIDE_INT_MAX_PRECISION * 2> >
 /* wi::storage_ref can be a reference to a primitive type,
    so this is the conservatively-correct setting.  */
 template <bool SE, bool HDP = true>
-struct wide_int_ref_storage;
+class wide_int_ref_storage;
 
 typedef generic_wide_int <wide_int_ref_storage <false> > wide_int_ref;
 
@@ -642,8 +642,9 @@ namespace wi
 {
   /* Contains the components of a decomposed integer for easy, direct
      access.  */
-  struct storage_ref
+  class storage_ref
   {
+  public:
     storage_ref () {}
     storage_ref (const HOST_WIDE_INT *, unsigned int, unsigned int);
 
@@ -968,7 +969,7 @@ decompose (HOST_WIDE_INT *, unsigned int precision,
    wide_int, with the optimization that VAL is normally a pointer to
    another integer's storage, so that no array copy is needed.  */
 template <bool SE, bool HDP>
-struct wide_int_ref_storage : public wi::storage_ref
+class wide_int_ref_storage : public wi::storage_ref
 {
 private:
   /* Scratch space that can be used when decomposing the original integer.
@@ -1357,7 +1358,7 @@ namespace wi
    bytes beyond the sizeof need to be allocated.  Use set_precision
    to initialize the structure.  */
 template <int N>
-class GTY((user)) trailing_wide_ints
+struct GTY((user)) trailing_wide_ints
 {
 private:
   /* The shared precision of each number.  */
@@ -1554,8 +1555,9 @@ namespace wi
 {
   /* Stores HWI-sized integer VAL, treating it as having signedness SGN
      and precision PRECISION.  */
-  struct hwi_with_prec
+  class hwi_with_prec
   {
+  public:
     hwi_with_prec () {}
     hwi_with_prec (HOST_WIDE_INT, unsigned int, signop);
     HOST_WIDE_INT val;
@@ -3032,8 +3034,7 @@ wi::lshift (const T1 &x, const T2 &y)
       if (STATIC_CONSTANT_P (xi.precision > HOST_BITS_PER_WIDE_INT)
 	  ? (STATIC_CONSTANT_P (shift < HOST_BITS_PER_WIDE_INT - 1)
 	     && xi.len == 1
-	     && xi.val[0] <= (HOST_WIDE_INT) ((unsigned HOST_WIDE_INT)
-					      HOST_WIDE_INT_MAX >> shift))
+	     && IN_RANGE (xi.val[0], 0, HOST_WIDE_INT_MAX >> shift))
 	  : precision <= HOST_BITS_PER_WIDE_INT)
 	{
 	  val[0] = xi.ulow () << shift;

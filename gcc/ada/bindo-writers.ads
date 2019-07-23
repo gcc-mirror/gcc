@@ -81,6 +81,27 @@ package Bindo.Writers is
 
    end ALI_Writers;
 
+   -------------------
+   -- Cycle_Writers --
+   -------------------
+
+   package Cycle_Writers is
+      procedure Write_Cycles (G : Library_Graph);
+      --  Write all cycles of library graph G to standard output
+
+   end Cycle_Writers;
+
+   ------------------------
+   -- Dependency_Writers --
+   ------------------------
+
+   package Dependency_Writers is
+      procedure Write_Dependencies (G : Library_Graph);
+      --  Write all elaboration dependencies of the units represented by
+      --  vertices of library graph G.
+
+   end Dependency_Writers;
+
    -------------------------------
    -- Elaboration_Order_Writers --
    -------------------------------
@@ -110,6 +131,23 @@ package Bindo.Writers is
       --  Write library graph G to standard output
 
    end Library_Graph_Writers;
+
+   -------------------
+   -- Phase_Writers --
+   -------------------
+
+   package Phase_Writers is
+      procedure End_Phase (Phase : Elaboration_Phase);
+      pragma Inline (End_Phase);
+      --  Write the end message associated with elaboration phase Phase to
+      --  standard output.
+
+      procedure Start_Phase (Phase : Elaboration_Phase);
+      pragma Inline (Start_Phase);
+      --  Write the start message associated with elaboration phase Phase to
+      --  standard output.
+
+   end Phase_Writers;
 
    --------------------------
    -- Unit_Closure_Writers --

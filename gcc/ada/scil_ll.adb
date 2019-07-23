@@ -49,25 +49,6 @@ package body SCIL_LL is
    -- Internal Hash Tables --
    --------------------------
 
-   package Contract_Only_Body_Flag is new Simple_HTable
-     (Header_Num => Header_Num,
-      Element    => Boolean,
-      No_Element => False,
-      Key        => Node_Id,
-      Hash       => Hash,
-      Equal      => "=");
-   --  This table records the value of flag Is_Contract_Only_Flag of tree nodes
-
-   package Contract_Only_Body_Nodes is new Simple_HTable
-     (Header_Num => Header_Num,
-      Element    => Node_Id,
-      No_Element => Empty,
-      Key        => Node_Id,
-      Hash       => Hash,
-      Equal      => "=");
-   --  This table records the value of attribute Contract_Only_Body of tree
-   --  nodes.
-
    package SCIL_Nodes is new Simple_HTable
      (Header_Num => Header_Num,
       Element    => Node_Id,
@@ -85,21 +66,6 @@ package body SCIL_LL is
    begin
       Set_SCIL_Node (Target, Get_SCIL_Node (Source));
    end Copy_SCIL_Node;
-
-   ----------------------------
-   -- Get_Contract_Only_Body --
-   ----------------------------
-
-   function Get_Contract_Only_Body (N : Node_Id) return Node_Id is
-   begin
-      if CodePeer_Mode
-        and then Present (N)
-      then
-         return Contract_Only_Body_Nodes.Get (N);
-      else
-         return Empty;
-      end if;
-   end Get_Contract_Only_Body;
 
    -------------------
    -- Get_SCIL_Node --
@@ -132,41 +98,8 @@ package body SCIL_LL is
    procedure Initialize is
    begin
       SCIL_Nodes.Reset;
-      Contract_Only_Body_Nodes.Reset;
-      Contract_Only_Body_Flag.Reset;
       Set_Reporting_Proc (Copy_SCIL_Node'Access);
    end Initialize;
-
-   ---------------------------
-   -- Is_Contract_Only_Body --
-   ---------------------------
-
-   function Is_Contract_Only_Body (E : Entity_Id) return Boolean is
-   begin
-      return Contract_Only_Body_Flag.Get (E);
-   end Is_Contract_Only_Body;
-
-   ----------------------------
-   -- Set_Contract_Only_Body --
-   ----------------------------
-
-   procedure Set_Contract_Only_Body (N : Node_Id; Value : Node_Id) is
-   begin
-      pragma Assert (CodePeer_Mode
-        and then Present (N)
-        and then Is_Contract_Only_Body (Value));
-
-      Contract_Only_Body_Nodes.Set (N, Value);
-   end Set_Contract_Only_Body;
-
-   -------------------------------
-   -- Set_Is_Contract_Only_Body --
-   -------------------------------
-
-   procedure Set_Is_Contract_Only_Body (E : Entity_Id) is
-   begin
-      Contract_Only_Body_Flag.Set (E, True);
-   end Set_Is_Contract_Only_Body;
 
    -------------------
    -- Set_SCIL_Node --

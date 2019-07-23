@@ -62,6 +62,7 @@ with Sem_Util;  use Sem_Util;
 with Sinfo;     use Sinfo;
 with Snames;    use Snames;
 with Stand;     use Stand;
+with Stringt;   use Stringt;
 with Targparm;  use Targparm;
 with Tbuild;    use Tbuild;
 with Ttypes;    use Ttypes;
@@ -407,11 +408,14 @@ package body Freeze is
       --  calls to the renamed entity. The body must be generated in any case
       --  for calls that may appear elsewhere. This is not done in the case
       --  where the subprogram is an instantiation because the actual proper
-      --  body has not been built yet.
+      --  body has not been built yet. This is also not done in GNATprove mode
+      --  as we need to check other conditions for creating a body to inline
+      --  in that case, which are controlled in Analyze_Subprogram_Body_Helper.
 
       if Ekind_In (Old_S, E_Function, E_Procedure)
         and then Nkind (Decl) = N_Subprogram_Declaration
         and then not Is_Generic_Instance (Old_S)
+        and then not GNATprove_Mode
       then
          Set_Body_To_Inline (Decl, Old_S);
       end if;
@@ -7999,6 +8003,7 @@ package body Freeze is
       Brng  : constant Node_Id    := Scalar_Range (Btyp);
       BLo   : constant Node_Id    := Low_Bound (Brng);
       BHi   : constant Node_Id    := High_Bound (Brng);
+      Par   : constant Entity_Id  := First_Subtype (Typ);
       Small : constant Ureal      := Small_Value (Typ);
       Loval : Ureal;
       Hival : Ureal;
@@ -8049,6 +8054,16 @@ package body Freeze is
          else
             Set_Esize (Typ, Esize (Base_Type (Typ)));
          end if;
+      end if;
+
+      --  The 'small attribute may have been specified with an aspect,
+      --  in which case it is processed after a subtype declaration, so
+      --  inherit now the specified value.
+
+      if Typ /= Par
+        and then Present (Find_Aspect (Par, Aspect_Small))
+      then
+         Set_Small_Value (Typ, Small_Value (Par));
       end if;
 
       --  Immediate return if the range is already analyzed. This means that
@@ -8761,6 +8776,20 @@ package body Freeze is
         and then not Is_Intrinsic_Subprogram (E)
       then
          Set_Is_Pure (E, False);
+      end if;
+
+      --  For C++ constructors check that their external name has been given
+      --  (either in pragma CPP_Constructor or in a pragma import).
+
+      if Is_Constructor (E)
+        and then
+           (No (Interface_Name (E))
+              or else String_Equal
+                        (L => Strval (Interface_Name (E)),
+                         R => Strval (Get_Default_External_Name (E))))
+      then
+         Error_Msg_N
+           ("'C++ constructor must have external name or link name", E);
       end if;
 
       --  We also reset the Pure indication on a subprogram with an Address

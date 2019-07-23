@@ -58,8 +58,9 @@ typedef int_hash <unsigned short, 0> dependence_hash;
 
 /* Optional data for duplicate_block.   */
 
-struct copy_bb_data
+class copy_bb_data
 {
+public:
   copy_bb_data() : dependence_map (NULL) {}
   ~copy_bb_data () { delete dependence_map; }
 
@@ -165,7 +166,7 @@ struct cfg_hooks
 
   /* A hook for duplicating loop in CFG, currently this is used
      in loop versioning.  */
-  bool (*cfg_hook_duplicate_loop_to_header_edge) (struct loop *, edge,
+  bool (*cfg_hook_duplicate_loop_to_header_edge) (class loop *, edge,
 						  unsigned, sbitmap,
 						  edge, vec<edge> *,
 						  int);
@@ -249,7 +250,7 @@ extern bool block_ends_with_condjump_p (const_basic_block bb);
 extern int flow_call_edges_add (sbitmap);
 extern void execute_on_growing_pred (edge);
 extern void execute_on_shrinking_pred (edge);
-extern bool cfg_hook_duplicate_loop_to_header_edge (struct loop *loop, edge,
+extern bool cfg_hook_duplicate_loop_to_header_edge (class loop *loop, edge,
 						    unsigned int ndupl,
 						    sbitmap wont_exit,
 						    edge orig,
@@ -265,7 +266,7 @@ extern void lv_add_condition_to_bb (basic_block, basic_block, basic_block,
 
 extern bool can_copy_bbs_p (basic_block *, unsigned);
 extern void copy_bbs (basic_block *, unsigned, basic_block *,
-		      edge *, unsigned, edge *, struct loop *,
+		      edge *, unsigned, edge *, class loop *,
 		      basic_block, bool);
 
 void profile_record_check_consistency (profile_record *);

@@ -384,8 +384,9 @@ mark_regno_dead (int regno, machine_mode mode)
 
 /* Structure describing local BB data used for pseudo
    live-analysis.  */
-struct bb_data_pseudos
+class bb_data_pseudos
 {
+public:
   /* Basic block about which the below data are.  */
   basic_block bb;
   bitmap_head killed_pseudos; /* pseudos killed in the BB.  */
@@ -393,7 +394,7 @@ struct bb_data_pseudos
 };
 
 /* Array for all BB data.  Indexed by the corresponding BB index.  */
-typedef struct bb_data_pseudos *bb_data_t;
+typedef class bb_data_pseudos *bb_data_t;
 
 /* All basic block data are referred through the following array.  */
 static bb_data_t bb_data;
@@ -469,7 +470,7 @@ initiate_live_solver (void)
 {
   bitmap_initialize (&all_hard_regs_bitmap, &reg_obstack);
   bitmap_set_range (&all_hard_regs_bitmap, 0, FIRST_PSEUDO_REGISTER);
-  bb_data = XNEWVEC (struct bb_data_pseudos, last_basic_block_for_fn (cfun));
+  bb_data = XNEWVEC (class bb_data_pseudos, last_basic_block_for_fn (cfun));
   bitmap_initialize (&all_blocks, &reg_obstack);
 
   basic_block bb;

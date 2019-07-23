@@ -87,7 +87,7 @@ package Sem_Aux is
    -----------------
 
    function Ancestor_Subtype (Typ : Entity_Id) return Entity_Id;
-   --  The argument Id is a type or subtype entity. If the argument is a
+   --  The argument Typ is a type or subtype entity. If the argument is a
    --  subtype then it returns the subtype or type from which the subtype was
    --  obtained, otherwise it returns Empty.
 
@@ -356,6 +356,10 @@ package Sem_Aux is
    --  composite containing a limited component, or a subtype of any of
    --  these types). This older routine overlaps with the previous one, this
    --  should be cleaned up???
+
+   function Is_Protected_Operation (E : Entity_Id) return Boolean;
+   --  Given a subprogram or entry, determines whether E is a protected entry
+   --  or subprogram.
 
    function Nearest_Ancestor (Typ : Entity_Id) return Entity_Id;
    --  Given a subtype Typ, this function finds out the nearest ancestor from

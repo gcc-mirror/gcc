@@ -67,7 +67,7 @@ static vec<int> inline_parm_levels;
 
 static GTY(()) struct tinst_level *current_tinst_level;
 
-static GTY(()) tree saved_access_scope;
+static GTY(()) vec<tree, va_gc> *saved_access_scope;
 
 /* Live only within one (recursive) call to tsubst_expr.  We use
    this to pass the statement expression node from the STMT_EXPR
@@ -247,8 +247,7 @@ push_access_scope (tree t)
 
   if (TREE_CODE (t) == FUNCTION_DECL)
     {
-      saved_access_scope = tree_cons
-	(NULL_TREE, current_function_decl, saved_access_scope);
+      vec_safe_push (saved_access_scope, current_function_decl);
       current_function_decl = t;
     }
 }
@@ -260,10 +259,7 @@ static void
 pop_access_scope (tree t)
 {
   if (TREE_CODE (t) == FUNCTION_DECL)
-    {
-      current_function_decl = TREE_VALUE (saved_access_scope);
-      saved_access_scope = TREE_CHAIN (saved_access_scope);
-    }
+    current_function_decl = saved_access_scope->pop();
 
   if (DECL_FRIEND_CONTEXT (t) || DECL_CLASS_SCOPE_P (t))
     pop_nested_class ();
@@ -4954,7 +4950,8 @@ process_partial_specialization (tree decl)
                  simple identifier' condition and also the `specialized
                  non-type argument' bit.  */
               && TREE_CODE (arg) != TEMPLATE_PARM_INDEX
-	      && !(REFERENCE_REF_P (arg)
+	      && !((REFERENCE_REF_P (arg)
+		    || TREE_CODE (arg) == VIEW_CONVERT_EXPR)
 		   && TREE_CODE (TREE_OPERAND (arg, 0)) == TEMPLATE_PARM_INDEX))
             {
               if ((!packed_args && tpd.arg_uses_template_parms[i])
@@ -12032,8 +12029,9 @@ tsubst_binary_right_fold (tree t, tree args, tsubst_flags_t complain,
 /* Walk through the pattern of a pack expansion, adding everything in
    local_specializations to a list.  */
 
-struct el_data
+class el_data
 {
+public:
   hash_set<tree> internal;
   tree extra;
   tsubst_flags_t complain;
@@ -16421,6 +16419,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	case OMP_CLAUSE_THREADS:
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_DEFAULTMAP:
+	case OMP_CLAUSE_ORDER:
 	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_SEQ:
@@ -17550,6 +17549,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       break;
 
     case OMP_FOR:
+    case OMP_LOOP:
     case OMP_SIMD:
     case OMP_DISTRIBUTE:
     case OMP_TASKLOOP:
@@ -22369,9 +22369,11 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	/* Template-parameter dependent expression.  Just accept it for now.
 	   It will later be processed in convert_template_argument.  */
 	;
-      else if (same_type_p (non_reference (TREE_TYPE (arg)),
-			    non_reference (tparm)))
-	/* OK */;
+      else if (same_type_ignoring_top_level_qualifiers_p
+	       (non_reference (TREE_TYPE (arg)),
+		non_reference (tparm)))
+	/* OK.  Ignore top-level quals here because a class-type template
+	   parameter object is const.  */;
       else if ((strict & UNIFY_ALLOW_INTEGER)
 	       && CP_INTEGRAL_TYPE_P (tparm))
 	/* Convert the ARG to the type of PARM; the deduced non-type
@@ -25223,6 +25225,8 @@ invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
 		 "with %<-std=c++2a%> or %<-std=gnu++2a%>");
 	  return true;
 	}
+      if (dependent_type_p (type))
+	return false;
       if (!complete_type_or_else (type, NULL_TREE))
 	return true;
       if (!literal_type_p (type))

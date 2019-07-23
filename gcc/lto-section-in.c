@@ -161,7 +161,8 @@ lto_get_section_data (struct lto_file_decl_data *file_data,
 
       stream = lto_start_uncompression (lto_append_data, &buffer);
       lto_uncompress_block (stream, data, *len);
-      lto_end_uncompression (stream, file_data->lto_section_header.compression);
+      lto_end_uncompression (stream,
+			     file_data->lto_section_header.get_compression ());
 
       *len = buffer.length - header_length;
       data = buffer.data + header_length;
@@ -228,7 +229,7 @@ lto_free_raw_section_data (struct lto_file_decl_data *file_data,
    raw pointer to the section is returned in DATAR and LEN.  These are
    used to free the section.  Return NULL if the section is not present.  */
 
-struct lto_input_block *
+class lto_input_block *
 lto_create_simple_input_block (struct lto_file_decl_data *file_data,
 			       enum lto_section_type section_type,
 			       const char **datar, size_t *len)
@@ -257,7 +258,7 @@ lto_create_simple_input_block (struct lto_file_decl_data *file_data,
 void
 lto_destroy_simple_input_block (struct lto_file_decl_data *file_data,
 				enum lto_section_type section_type,
-				struct lto_input_block *ib,
+				class lto_input_block *ib,
 				const char *data, size_t len)
 {
   delete ib;
@@ -437,7 +438,7 @@ lto_free_function_in_decl_state_for_node (symtab_node *node)
 /* Report read pass end of the section.  */
 
 void
-lto_section_overrun (struct lto_input_block *ib)
+lto_section_overrun (class lto_input_block *ib)
 {
   fatal_error (input_location, "bytecode stream: trying to read %d bytes "
 	       "after the end of the input buffer", ib->p - ib->len);

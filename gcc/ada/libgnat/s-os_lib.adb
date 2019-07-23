@@ -1629,10 +1629,12 @@ package body System.OS_Lib is
       pragma Import (C, C_Kill, "__gnat_kill");
 
    begin
-      if Hard_Kill then
-         C_Kill (Pid, SIGKILL, 1);
-      else
-         C_Kill (Pid, SIGINT, 1);
+      if Pid /= Invalid_Pid then
+         if Hard_Kill then
+            C_Kill (Pid, SIGKILL, 1);
+         else
+            C_Kill (Pid, SIGINT, 1);
+         end if;
       end if;
    end Kill;
 

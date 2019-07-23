@@ -290,8 +290,14 @@ Import::Import(Stream* stream, Location location)
   : gogo_(NULL), stream_(stream), location_(location), package_(NULL),
     add_to_globals_(false), packages_(), type_data_(), type_pos_(0),
     type_offsets_(), builtin_types_((- SMALLEST_BUILTIN_CODE) + 1),
-    types_(), version_(EXPORT_FORMAT_UNKNOWN)
+    types_(), finalizer_(NULL), version_(EXPORT_FORMAT_UNKNOWN)
 {
+}
+
+Import::~Import()
+{
+  if (this->finalizer_ != NULL)
+    delete this->finalizer_;
 }
 
 // Import the data in the associated stream.
@@ -443,6 +449,14 @@ Import::import(Gogo* gogo, const std::string& local_name,
       this->require_semicolon_if_old_version();
       this->require_c_string("\n");
     }
+
+  // Finalize methods for any imported types. This call is made late in the
+  // import process so as to A) avoid finalization of a type whose methods
+  // refer to types that are only partially read in, and B) capture both the
+  // types imported by read_types() directly, and those imported indirectly
+  // because they are referenced by an imported function or variable.
+  // See issues #33013 and #33219 for more on why this is needed.
+  this->finalize_methods();
 
   return this->package_;
 }
@@ -673,6 +687,31 @@ Import::read_types()
     }
 
   return true;
+}
+
+void
+Import::finalize_methods()
+{
+  if (this->finalizer_ == NULL)
+    this->finalizer_ = new Finalize_methods(gogo_);
+  Unordered_set(Type*) real_for_named;
+  for (size_t i = 1; i < this->types_.size(); i++)
+    {
+      Type* type = this->types_[i];
+      if (type != NULL && type->named_type() != NULL)
+        {
+          this->finalizer_->type(type);
+          real_for_named.insert(type->named_type()->real_type());
+        }
+    }
+  for (size_t i = 1; i < this->types_.size(); i++)
+    {
+      Type* type = this->types_[i];
+      if (type != NULL
+          && type->named_type() == NULL
+          && real_for_named.find(type) == real_for_named.end())
+        this->finalizer_->type(type);
+    }
 }
 
 // Import a constant.
@@ -1497,6 +1536,26 @@ Stream_from_file::do_advance(size_t skip)
 }
 
 // Class Import_function_body.
+
+Import_function_body::Import_function_body(Gogo* gogo,
+                                           Import* imp,
+                                           Named_object* named_object,
+                                           const std::string& body,
+                                           size_t off,
+                                           Block* block,
+                                           int indent)
+    : gogo_(gogo), imp_(imp), named_object_(named_object), body_(body),
+      off_(off), indent_(indent), temporaries_(), labels_(),
+      saw_error_(false)
+{
+  this->blocks_.push_back(block);
+}
+
+Import_function_body::~Import_function_body()
+{
+  // At this point we should be left with the original outer block only.
+  go_assert(saw_errors() || this->blocks_.size() == 1);
+}
 
 // The name of the function we are parsing.
 

@@ -73,11 +73,15 @@ package body GNAT.Sockets is
                IP_Protocol_For_IP_Level   => SOSC.IPPROTO_IP,
                IP_Protocol_For_IPv6_Level => SOSC.IPPROTO_IPV6,
                IP_Protocol_For_UDP_Level  => SOSC.IPPROTO_UDP,
-               IP_Protocol_For_TCP_Level  => SOSC.IPPROTO_TCP);
+               IP_Protocol_For_TCP_Level  => SOSC.IPPROTO_TCP,
+               IP_Protocol_For_ICMP_Level => SOSC.IPPROTO_ICMP,
+               IP_Protocol_For_IGMP_Level => SOSC.IPPROTO_IGMP,
+               IP_Protocol_For_RAW_Level  => SOSC.IPPROTO_RAW);
 
    Modes : constant array (Mode_Type) of C.int :=
              (Socket_Stream   => SOSC.SOCK_STREAM,
-              Socket_Datagram => SOSC.SOCK_DGRAM);
+              Socket_Datagram => SOSC.SOCK_DGRAM,
+              Socket_Raw      => SOSC.SOCK_RAW);
 
    Shutmodes : constant array (Shutmode_Type) of C.int :=
                  (Shut_Read       => SOSC.SHUT_RD,
@@ -1369,7 +1373,7 @@ package body GNAT.Sockets is
 
    function Get_Socket_Option
      (Socket  : Socket_Type;
-      Level   : Level_Type := Socket_Level;
+      Level   : Level_Type;
       Name    : Option_Name;
       Optname : Interfaces.C.int := -1) return Option_Type
    is
@@ -2539,7 +2543,7 @@ package body GNAT.Sockets is
 
    procedure Set_Socket_Option
      (Socket : Socket_Type;
-      Level  : Level_Type := Socket_Level;
+      Level  : Level_Type;
       Option : Option_Type)
    is
       use type C.unsigned;
@@ -2643,21 +2647,29 @@ package body GNAT.Sockets is
          =>
             if Is_Windows then
 
-               --  On Windows, the timeout is a DWORD in milliseconds, and
-               --  the actual timeout is 500 ms + the given value (unless it
-               --  is 0).
-
-               U4 := C.unsigned (Option.Timeout / 0.001);
-
-               if U4 > 500 then
-                  U4 := U4 - 500;
-
-               elsif U4 > 0 then
-                  U4 := 1;
-               end if;
+               --  On Windows, the timeout is a DWORD in milliseconds
 
                Len := U4'Size / 8;
                Add := U4'Address;
+
+               U4 := C.unsigned (Option.Timeout / 0.001);
+
+               if Option.Timeout > 0.0 and then U4 = 0 then
+                  --  Avoid round to zero. Zero timeout mean unlimited.
+                  U4 := 1;
+               end if;
+
+               --  Old windows versions actual timeout is 500 ms + the given
+               --  value (unless it is 0).
+
+               if Minus_500ms_Windows_Timeout /= 0 then
+                  if U4 > 500 then
+                     U4 := U4 - 500;
+
+                  elsif U4 > 0 then
+                     U4 := 1;
+                  end if;
+               end if;
 
             else
                VT  := To_Timeval (Option.Timeout);

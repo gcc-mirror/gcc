@@ -807,7 +807,6 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 		   || (!(hints & (INLINE_HINT_indirect_call
 				  | INLINE_HINT_known_hot
 				  | INLINE_HINT_loop_iterations
-				  | INLINE_HINT_array_index
 				  | INLINE_HINT_loop_stride))
 		       && !(big_speedup = big_speedup_p (e)))))
 	{
@@ -833,7 +832,6 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	       && !(hints & INLINE_HINT_known_hot)
 	       && growth >= ((hints & (INLINE_HINT_indirect_call
 				       | INLINE_HINT_loop_iterations
-			               | INLINE_HINT_array_index
 				       | INLINE_HINT_loop_stride))
 			     ? MAX (MAX_INLINE_INSNS_AUTO,
 				    MAX_INLINE_INSNS_SINGLE)
@@ -1037,7 +1035,7 @@ edge_badness (struct cgraph_edge *edge, bool dump)
   int growth;
   sreal edge_time, unspec_edge_time;
   struct cgraph_node *callee = edge->callee->ultimate_alias_target ();
-  struct ipa_fn_summary *callee_info = ipa_fn_summaries->get (callee);
+  class ipa_fn_summary *callee_info = ipa_fn_summaries->get (callee);
   ipa_hints hints;
   cgraph_node *caller = (edge->caller->global.inlined_to 
 			 ? edge->caller->global.inlined_to
@@ -1227,7 +1225,6 @@ edge_badness (struct cgraph_edge *edge, bool dump)
     badness = badness.shift (badness > 0 ? 4 : -4);
   if ((hints & (INLINE_HINT_indirect_call
 		| INLINE_HINT_loop_iterations
-		| INLINE_HINT_array_index
 		| INLINE_HINT_loop_stride))
       || callee_info->growth <= 0)
     badness = badness.shift (badness > 0 ? -2 : 2);
@@ -1507,7 +1504,7 @@ recursive_inlining (struct cgraph_edge *edge,
       struct cgraph_node *cnode, *dest = curr->callee;
 
       if (!can_inline_edge_p (curr, true)
-	  || can_inline_edge_by_limits_p (curr, true))
+	  || !can_inline_edge_by_limits_p (curr, true))
 	continue;
 
       /* MASTER_CLONE is produced in the case we already started modified
@@ -1799,7 +1796,7 @@ inline_small_functions (void)
 	    && (node->has_gimple_body_p () || node->thunk.thunk_p)
 	    && opt_for_fn (node->decl, optimize))
 	  {
-	    struct ipa_fn_summary *info = ipa_fn_summaries->get (node);
+	    class ipa_fn_summary *info = ipa_fn_summaries->get (node);
 	    struct ipa_dfs_info *dfs = (struct ipa_dfs_info *) node->aux;
 
 	    /* Do not account external functions, they will be optimized out

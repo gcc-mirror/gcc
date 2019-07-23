@@ -131,3 +131,17 @@ Mask(RVE)
 mriscv-attribute
 Target Report Var(riscv_emit_attribute_p) Init(-1)
 Emit RISC-V ELF attribute.
+
+malign-data=
+Target RejectNegative Joined Var(riscv_align_data_type) Enum(riscv_align_data) Init(riscv_align_data_type_xlen)
+Use the given data alignment.
+
+Enum
+Name(riscv_align_data) Type(enum riscv_align_data)
+Known data alignment choices (for use with the -malign-data= option):
+
+EnumValue
+Enum(riscv_align_data) String(xlen) Value(riscv_align_data_type_xlen)
+
+EnumValue
+Enum(riscv_align_data) String(natural) Value(riscv_align_data_type_natural)

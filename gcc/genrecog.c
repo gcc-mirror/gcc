@@ -818,11 +818,13 @@ validate_pattern (rtx pattern, md_rtx_info *info, rtx set, int set_code)
    to "T *prev, *next;" and a function "void set_parent (list_head <T> *)"
    to set the parent list.  */
 template <typename T>
-struct list_head
+class list_head
 {
+public:
   /* A range of linked items.  */
-  struct range
+  class range
   {
+  public:
     range (T *);
     range (T *, T *);
 
@@ -948,7 +950,7 @@ list_head <T>::singleton () const
   return first == last ? first : 0;
 }
 
-struct state;
+class state;
 
 /* Describes a possible successful return from a routine.  */
 struct acceptance_type
@@ -1008,8 +1010,9 @@ operator != (const acceptance_type &a, const acceptance_type &b)
 }
 
 /* Represents a parameter to a pattern routine.  */
-struct parameter
+class parameter
 {
+public:
   /* The C type of parameter.  */
   enum type_enum {
     /* Represents an invalid parameter.  */
@@ -1069,8 +1072,9 @@ operator != (const parameter &param1, const parameter &param2)
    an ad-hoc enum value on success and -1 on failure.  The routine can
    be used by any subroutine type.  The match can be parameterized by
    things like mode, code and UNSPEC number.  */
-struct pattern_routine
+class pattern_routine
 {
+public:
   /* The state that implements the pattern.  */
   state *s;
 
@@ -1096,8 +1100,9 @@ struct pattern_routine
 static vec <pattern_routine *> patterns;
 
 /* Represents one use of a pattern routine.  */
-struct pattern_use
+class pattern_use
 {
+public:
   /* The pattern routine to use.  */
   pattern_routine *routine;
 
@@ -1107,8 +1112,9 @@ struct pattern_use
 };
 
 /* Represents a test performed by a decision.  */
-struct rtx_test
+class rtx_test
 {
+public:
   rtx_test ();
 
   /* The types of test that can be performed.  Most of them take as input
@@ -1427,8 +1433,9 @@ operator != (const rtx_test &a, const rtx_test &b)
 
 /* A simple set of transition labels.  Most transitions have a singleton
    label, so try to make that case as efficient as possible.  */
-struct int_set : public auto_vec <uint64_t, 1>
+class int_set : public auto_vec <uint64_t, 1>
 {
+public:
   typedef uint64_t *iterator;
 
   int_set ();
@@ -1492,12 +1499,13 @@ operator != (const int_set &a, const int_set &b)
   return !operator == (a, b);
 }
 
-struct decision;
+class decision;
 
 /* Represents a transition between states, dependent on the result of
    a test T.  */
-struct transition
+class transition
 {
+public:
   transition (const int_set &, state *, bool);
 
   void set_parent (list_head <transition> *);
@@ -1536,8 +1544,9 @@ struct transition
    to the transition's target state.  If no suitable transition exists,
    the machine either falls through to the next decision or, if there are no
    more decisions to try, fails the match.  */
-struct decision : list_head <transition>
+class decision : public list_head <transition>
 {
+public:
   decision (const rtx_test &);
 
   void set_parent (list_head <decision> *s);
@@ -1556,8 +1565,9 @@ struct decision : list_head <transition>
 /* Represents one machine state.  For each state the machine tries a list
    of decisions, in order, and acts on the first match.  It fails without
    further backtracking if no decisions match.  */
-struct state : list_head <decision>
+class state : public list_head <decision>
 {
+public:
   void set_parent (list_head <state> *) {}
 };
 
@@ -1767,8 +1777,9 @@ const unsigned char TESTED_CODE = 1;
 const unsigned char TESTED_VECLEN = 2;
 
 /* Represents a set of conditions that are known to hold.  */
-struct known_conditions
+class known_conditions
 {
+public:
   /* A mask of TESTED_ values for each position, indexed by the position's
      id field.  */
   auto_vec <unsigned char> position_tests;
@@ -2095,8 +2106,9 @@ find_operand_positions (state *s, vec <int> &operand_pos)
 }
 
 /* Statistics about a matching routine.  */
-struct stats
+class stats
 {
+public:
   stats ();
 
   /* The total number of decisions in the routine, excluding trivial
@@ -2232,11 +2244,12 @@ optimize_subroutine_group (const char *type, state *root)
 	   st.longest_backtrack, st.longest_backtrack_code);
 }
 
-struct merge_pattern_info;
+class merge_pattern_info;
 
 /* Represents a transition from one pattern to another.  */
-struct merge_pattern_transition
+class merge_pattern_transition
 {
+public:
   merge_pattern_transition (merge_pattern_info *);
 
   /* The target pattern.  */
@@ -2256,8 +2269,9 @@ merge_pattern_transition::merge_pattern_transition (merge_pattern_info *to_in)
 /* Represents a pattern that can might match several states.  The pattern
    may replace parts of the test with a parameter value.  It may also
    replace transition labels with parameters.  */
-struct merge_pattern_info
+class merge_pattern_info
 {
+public:
   merge_pattern_info (unsigned int);
 
   /* If PARAM_TEST_P, the state's singleton test should be generalized
@@ -2329,8 +2343,9 @@ merge_pattern_info::merge_pattern_info (unsigned int num_transitions)
 
 /* Describes one way of matching a particular state to a particular
    pattern.  */
-struct merge_state_result
+class merge_state_result
 {
+public:
   merge_state_result (merge_pattern_info *, position *, merge_state_result *);
 
   /* A pattern that matches the state.  */
@@ -2360,8 +2375,9 @@ merge_state_result::merge_state_result (merge_pattern_info *pattern_in,
 
 /* Information about a state, used while trying to match it against
    a pattern.  */
-struct merge_state_info
+class merge_state_info
 {
+public:
   merge_state_info (state *);
 
   /* The state itself.  */
@@ -3860,7 +3876,8 @@ merge_into_state (state *s1, state *s2)
 
 /* Pairs a pattern that needs to be matched with the rtx position at
    which the pattern should occur.  */
-struct pattern_pos {
+class pattern_pos {
+public:
   pattern_pos () {}
   pattern_pos (rtx, position *);
 
@@ -4384,8 +4401,9 @@ enum exit_state {
 
 /* Information used while writing out code.  */
 
-struct output_state
+class output_state
 {
+public:
   /* The type of routine that we're generating.  */
   routine_type type;
 

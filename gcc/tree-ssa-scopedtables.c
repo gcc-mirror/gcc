@@ -298,7 +298,7 @@ avail_exprs_stack::lookup_avail_expr (gimple *stmt, bool insert, bool tbaa_p)
 	    && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
 	    && (ao_ref_init (&ref, gimple_assign_rhs1 (stmt)),
 		ref.base_alias_set = ref.ref_alias_set = tbaa_p ? -1 : 0, true)
-	    && walk_non_aliased_vuses (&ref, vuse2, vuse_eq, NULL, NULL,
+	    && walk_non_aliased_vuses (&ref, vuse2, true, vuse_eq, NULL, NULL,
 				       limit, vuse1) != NULL))
 	{
 	  if (insert)
@@ -1028,9 +1028,9 @@ bool
 expr_elt_hasher::equal (const value_type &p1, const compare_type &p2)
 {
   const struct hashable_expr *expr1 = p1->expr ();
-  const struct expr_hash_elt *stamp1 = p1->stamp ();
+  const class expr_hash_elt *stamp1 = p1->stamp ();
   const struct hashable_expr *expr2 = p2->expr ();
-  const struct expr_hash_elt *stamp2 = p2->stamp ();
+  const class expr_hash_elt *stamp2 = p2->stamp ();
 
   /* This case should apply only when removing entries from the table.  */
   if (stamp1 == stamp2)

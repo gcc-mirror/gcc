@@ -65,7 +65,7 @@ struct bounds
 
 static bool number_of_iterations_popcount (loop_p loop, edge exit,
 					   enum tree_code code,
-					   struct tree_niter_desc *niter);
+					   class tree_niter_desc *niter);
 
 
 /* Splits expression EXPR to a variable part VAR and constant OFFSET.  */
@@ -346,7 +346,7 @@ end:
    in TYPE to MIN and MAX.  */
 
 static void
-determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
+determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
 		       mpz_t min, mpz_t max)
 {
   int cnt = 0;
@@ -704,7 +704,7 @@ end:
    comparisons before the loop (usually created by loop header copying).  */
 
 static void
-bound_difference (struct loop *loop, tree x, tree y, bounds *bnds)
+bound_difference (class loop *loop, tree x, tree y, bounds *bnds)
 {
   tree type = TREE_TYPE (x);
   tree varx, vary;
@@ -964,8 +964,8 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
    bounds on the difference FINAL - IV->base.  */
 
 static bool
-number_of_iterations_ne (struct loop *loop, tree type, affine_iv *iv,
-			 tree final, struct tree_niter_desc *niter,
+number_of_iterations_ne (class loop *loop, tree type, affine_iv *iv,
+			 tree final, class tree_niter_desc *niter,
 			 bool exit_must_be_taken, bounds *bnds)
 {
   tree niter_type = unsigned_type_for (type);
@@ -1149,7 +1149,7 @@ number_of_iterations_ne (struct loop *loop, tree type, affine_iv *iv,
 
 static bool
 number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
-			       struct tree_niter_desc *niter,
+			       class tree_niter_desc *niter,
 			       tree *delta, tree step,
 			       bool exit_must_be_taken, bounds *bnds)
 {
@@ -1268,7 +1268,7 @@ end:
 
 static bool
 assert_no_overflow_lt (tree type, affine_iv *iv0, affine_iv *iv1,
-		       struct tree_niter_desc *niter, tree step)
+		       class tree_niter_desc *niter, tree step)
 {
   tree bound, d, assumption, diff;
   tree niter_type = TREE_TYPE (step);
@@ -1337,7 +1337,7 @@ assert_no_overflow_lt (tree type, affine_iv *iv0, affine_iv *iv1,
 
 static void
 assert_loop_rolls_lt (tree type, affine_iv *iv0, affine_iv *iv1,
-		      struct tree_niter_desc *niter, bounds *bnds)
+		      class tree_niter_desc *niter, bounds *bnds)
 {
   tree assumption = boolean_true_node, bound, diff;
   tree mbz, mbzl, mbzr, type1;
@@ -1463,8 +1463,8 @@ assert_loop_rolls_lt (tree type, affine_iv *iv0, affine_iv *iv1,
    that the exit must be taken eventually.  */
 
 static bool
-number_of_iterations_lt (struct loop *loop, tree type, affine_iv *iv0,
-			 affine_iv *iv1, struct tree_niter_desc *niter,
+number_of_iterations_lt (class loop *loop, tree type, affine_iv *iv0,
+			 affine_iv *iv1, class tree_niter_desc *niter,
 			 bool exit_must_be_taken, bounds *bnds)
 {
   tree niter_type = unsigned_type_for (type);
@@ -1576,8 +1576,8 @@ number_of_iterations_lt (struct loop *loop, tree type, affine_iv *iv0,
    is the case).  BNDS bounds the difference IV1->base - IV0->base.  */
 
 static bool
-number_of_iterations_le (struct loop *loop, tree type, affine_iv *iv0,
-			 affine_iv *iv1, struct tree_niter_desc *niter,
+number_of_iterations_le (class loop *loop, tree type, affine_iv *iv0,
+			 affine_iv *iv1, class tree_niter_desc *niter,
 			 bool exit_must_be_taken, bounds *bnds)
 {
   tree assumption;
@@ -1721,14 +1721,14 @@ adjust_cond_for_loop_until_wrap (tree type, affine_iv *iv0, tree_code *code,
    if EVERY_ITERATION is true, we know the test is executed on every iteration.
 
    The results (number of iterations and assumptions as described in
-   comments at struct tree_niter_desc in tree-ssa-loop.h) are stored to NITER.
+   comments at class tree_niter_desc in tree-ssa-loop.h) are stored to NITER.
    Returns false if it fails to determine number of iterations, true if it
    was determined (possibly with some assumptions).  */
 
 static bool
-number_of_iterations_cond (struct loop *loop,
+number_of_iterations_cond (class loop *loop,
 			   tree type, affine_iv *iv0, enum tree_code code,
-			   affine_iv *iv1, struct tree_niter_desc *niter,
+			   affine_iv *iv1, class tree_niter_desc *niter,
 			   bool only_exit, bool every_iteration)
 {
   bool exit_must_be_taken = false, ret;
@@ -2263,7 +2263,7 @@ tree_simplify_using_condition (tree cond, tree expr)
    simplification was possible).  */
 
 tree
-simplify_using_initial_conditions (struct loop *loop, tree expr)
+simplify_using_initial_conditions (class loop *loop, tree expr)
 {
   edge e;
   basic_block bb;
@@ -2315,7 +2315,7 @@ simplify_using_initial_conditions (struct loop *loop, tree expr)
    (or EXPR unchanged, if no simplification was possible).  */
 
 static tree
-simplify_using_outer_evolutions (struct loop *loop, tree expr)
+simplify_using_outer_evolutions (class loop *loop, tree expr)
 {
   enum tree_code code = TREE_CODE (expr);
   bool changed;
@@ -2368,7 +2368,7 @@ simplify_using_outer_evolutions (struct loop *loop, tree expr)
 /* Returns true if EXIT is the only possible exit from LOOP.  */
 
 bool
-loop_only_exit_p (const struct loop *loop, const_edge exit)
+loop_only_exit_p (const class loop *loop, const_edge exit)
 {
   basic_block *body;
   gimple_stmt_iterator bsi;
@@ -2395,15 +2395,15 @@ loop_only_exit_p (const struct loop *loop, const_edge exit)
 /* Stores description of number of iterations of LOOP derived from
    EXIT (an exit edge of the LOOP) in NITER.  Returns true if some useful
    information could be derived (and fields of NITER have meaning described
-   in comments at struct tree_niter_desc declaration), false otherwise.
+   in comments at class tree_niter_desc declaration), false otherwise.
    When EVERY_ITERATION is true, only tests that are known to be executed
    every iteration are considered (i.e. only test that alone bounds the loop).
    If AT_STMT is not NULL, this function stores LOOP's condition statement in
    it when returning true.  */
 
 bool
-number_of_iterations_exit_assumptions (struct loop *loop, edge exit,
-				       struct tree_niter_desc *niter,
+number_of_iterations_exit_assumptions (class loop *loop, edge exit,
+				       class tree_niter_desc *niter,
 				       gcond **at_stmt, bool every_iteration)
 {
   gimple *last;
@@ -2598,7 +2598,7 @@ ssa_defined_by_minus_one_stmt_p (tree op, tree val)
 static bool
 number_of_iterations_popcount (loop_p loop, edge exit,
 			       enum tree_code code,
-			       struct tree_niter_desc *niter)
+			       class tree_niter_desc *niter)
 {
   bool adjust = true;
   tree iter;
@@ -2720,8 +2720,8 @@ number_of_iterations_popcount (loop_p loop, edge exit,
    the niter information holds unconditionally.  */
 
 bool
-number_of_iterations_exit (struct loop *loop, edge exit,
-			   struct tree_niter_desc *niter,
+number_of_iterations_exit (class loop *loop, edge exit,
+			   class tree_niter_desc *niter,
 			   bool warn, bool every_iteration)
 {
   gcond *stmt;
@@ -2746,13 +2746,13 @@ number_of_iterations_exit (struct loop *loop, edge exit,
    chrec_dont_know is returned.  */
 
 tree
-find_loop_niter (struct loop *loop, edge *exit)
+find_loop_niter (class loop *loop, edge *exit)
 {
   unsigned i;
   vec<edge> exits = get_loop_exit_edges (loop);
   edge ex;
   tree niter = NULL_TREE, aniter;
-  struct tree_niter_desc desc;
+  class tree_niter_desc desc;
 
   *exit = NULL;
   FOR_EACH_VEC_ELT (exits, i, ex)
@@ -2808,7 +2808,7 @@ find_loop_niter (struct loop *loop, edge *exit)
 /* Return true if loop is known to have bounded number of iterations.  */
 
 bool
-finite_loop_p (struct loop *loop)
+finite_loop_p (class loop *loop)
 {
   widest_int nit;
   int flags;
@@ -2870,7 +2870,7 @@ finite_loop_p (struct loop *loop)
    operands are constants.  */
 
 static gphi *
-chain_of_csts_start (struct loop *loop, tree x)
+chain_of_csts_start (class loop *loop, tree x)
 {
   gimple *stmt = SSA_NAME_DEF_STMT (x);
   tree use;
@@ -2919,7 +2919,7 @@ chain_of_csts_start (struct loop *loop, tree x)
    If such phi node exists, it is returned, otherwise NULL is returned.  */
 
 static gphi *
-get_base_for (struct loop *loop, tree x)
+get_base_for (class loop *loop, tree x)
 {
   gphi *phi;
   tree init, next;
@@ -3007,7 +3007,7 @@ get_val_for (tree x, tree base)
    of the iterations of LOOP if successful, chrec_dont_know otherwise.  */
 
 tree
-loop_niter_by_eval (struct loop *loop, edge exit)
+loop_niter_by_eval (class loop *loop, edge exit)
 {
   tree acnd;
   tree op[2], val[2], next[2], aval[2];
@@ -3108,7 +3108,7 @@ loop_niter_by_eval (struct loop *loop, edge exit)
    determines the number of iterations, chrec_dont_know is returned.  */
 
 tree
-find_loop_niter_by_eval (struct loop *loop, edge *exit)
+find_loop_niter_by_eval (class loop *loop, edge *exit)
 {
   unsigned i;
   vec<edge> exits = get_loop_exit_edges (loop);
@@ -3325,7 +3325,7 @@ derive_constant_upper_bound_ops (tree type, tree op0,
 /* Emit a -Waggressive-loop-optimizations warning if needed.  */
 
 static void
-do_warn_aggressive_loop_optimizations (struct loop *loop,
+do_warn_aggressive_loop_optimizations (class loop *loop,
 				       widest_int i_bound, gimple *stmt)
 {
   /* Don't warn if the loop doesn't have known constant bound.  */
@@ -3367,7 +3367,7 @@ do_warn_aggressive_loop_optimizations (struct loop *loop,
    BOUND times.  I_BOUND is a widest_int upper estimate on BOUND.  */
 
 static void
-record_estimate (struct loop *loop, tree bound, const widest_int &i_bound,
+record_estimate (class loop *loop, tree bound, const widest_int &i_bound,
 		 gimple *at_stmt, bool is_exit, bool realistic, bool upper)
 {
   widest_int delta;
@@ -3399,7 +3399,7 @@ record_estimate (struct loop *loop, tree bound, const widest_int &i_bound,
 	  || loop->nb_iterations == NULL_TREE
 	  || TREE_CODE (loop->nb_iterations) != INTEGER_CST))
     {
-      struct nb_iter_bound *elt = ggc_alloc<nb_iter_bound> ();
+      class nb_iter_bound *elt = ggc_alloc<nb_iter_bound> ();
 
       elt->bound = i_bound;
       elt->stmt = at_stmt;
@@ -3436,7 +3436,7 @@ record_estimate (struct loop *loop, tree bound, const widest_int &i_bound,
    and doesn't overflow.  */
 
 static void
-record_control_iv (struct loop *loop, struct tree_niter_desc *niter)
+record_control_iv (class loop *loop, class tree_niter_desc *niter)
 {
   struct control_iv *iv;
 
@@ -3470,7 +3470,7 @@ get_cst_init_from_scev (tree var, wide_int *init, bool is_min)
     return false;
 
   gimple *def_stmt = SSA_NAME_DEF_STMT (var);
-  struct loop *loop = loop_containing_stmt (def_stmt);
+  class loop *loop = loop_containing_stmt (def_stmt);
 
   if (loop == NULL)
     return false;
@@ -3499,7 +3499,7 @@ get_cst_init_from_scev (tree var, wide_int *init, bool is_min)
    UPPER is true if we are sure the induction variable does not wrap.  */
 
 static void
-record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple *stmt,
+record_nonwrapping_iv (class loop *loop, tree base, tree step, gimple *stmt,
 		       tree low, tree high, bool realistic, bool upper)
 {
   tree niter_bound, extreme, delta;
@@ -3576,7 +3576,7 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple *stmt,
 
 struct ilb_data
 {
-  struct loop *loop;
+  class loop *loop;
   gimple *stmt;
 };
 
@@ -3587,7 +3587,7 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
   tree ev, init, step;
   tree low, high, type, next;
   bool sign, upper = true, at_end = false;
-  struct loop *loop = data->loop;
+  class loop *loop = data->loop;
 
   if (TREE_CODE (base) != ARRAY_REF)
     return true;
@@ -3601,7 +3601,7 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
       upper = false;
     }
 
-  struct loop *dloop = loop_containing_stmt (data->stmt);
+  class loop *dloop = loop_containing_stmt (data->stmt);
   if (!dloop)
     return true;
 
@@ -3676,7 +3676,7 @@ idx_infer_loop_bounds (tree base, tree *idx, void *dta)
    STMT is guaranteed to be executed in every iteration of LOOP.*/
 
 static void
-infer_loop_bounds_from_ref (struct loop *loop, gimple *stmt, tree ref)
+infer_loop_bounds_from_ref (class loop *loop, gimple *stmt, tree ref)
 {
   struct ilb_data data;
 
@@ -3690,7 +3690,7 @@ infer_loop_bounds_from_ref (struct loop *loop, gimple *stmt, tree ref)
    executed in every iteration of LOOP.  */
 
 static void
-infer_loop_bounds_from_array (struct loop *loop, gimple *stmt)
+infer_loop_bounds_from_array (class loop *loop, gimple *stmt)
 {
   if (is_gimple_assign (stmt))
     {
@@ -3727,7 +3727,7 @@ infer_loop_bounds_from_array (struct loop *loop, gimple *stmt)
    that pointer arithmetics in STMT does not overflow.  */
 
 static void
-infer_loop_bounds_from_pointer_arith (struct loop *loop, gimple *stmt)
+infer_loop_bounds_from_pointer_arith (class loop *loop, gimple *stmt)
 {
   tree def, base, step, scev, type, low, high;
   tree var, ptr;
@@ -3752,7 +3752,7 @@ infer_loop_bounds_from_pointer_arith (struct loop *loop, gimple *stmt)
   if (TYPE_PRECISION (type) != TYPE_PRECISION (TREE_TYPE (var)))
     return;
 
-  struct loop *uloop = loop_containing_stmt (stmt);
+  class loop *uloop = loop_containing_stmt (stmt);
   scev = instantiate_parameters (loop, analyze_scalar_evolution (uloop, def));
   if (chrec_contains_undetermined (scev))
     return;
@@ -3786,7 +3786,7 @@ infer_loop_bounds_from_pointer_arith (struct loop *loop, gimple *stmt)
    that signed arithmetics in STMT does not overflow.  */
 
 static void
-infer_loop_bounds_from_signedness (struct loop *loop, gimple *stmt)
+infer_loop_bounds_from_signedness (class loop *loop, gimple *stmt)
 {
   tree def, base, step, scev, type, low, high;
 
@@ -3838,7 +3838,7 @@ infer_loop_bounds_from_signedness (struct loop *loop, gimple *stmt)
 */
 
 static void
-infer_loop_bounds_from_undefined (struct loop *loop)
+infer_loop_bounds_from_undefined (class loop *loop)
 {
   unsigned i;
   basic_block *bbs;
@@ -3918,9 +3918,9 @@ bound_index (vec<widest_int> bounds, const widest_int &bound)
    some bounded statement.  */
 
 static void
-discover_iteration_bound_by_body_walk (struct loop *loop)
+discover_iteration_bound_by_body_walk (class loop *loop)
 {
-  struct nb_iter_bound *elt;
+  class nb_iter_bound *elt;
   auto_vec<widest_int> bounds;
   vec<vec<basic_block> > queues = vNULL;
   vec<basic_block> queue = vNULL;
@@ -4083,10 +4083,10 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
    count by 1.  */
 
 static void
-maybe_lower_iteration_bound (struct loop *loop)
+maybe_lower_iteration_bound (class loop *loop)
 {
   hash_set<gimple *> *not_executed_last_iteration = NULL;
-  struct nb_iter_bound *elt;
+  class nb_iter_bound *elt;
   bool found_exit = false;
   auto_vec<basic_block> queue;
   bitmap visited;
@@ -4183,16 +4183,65 @@ maybe_lower_iteration_bound (struct loop *loop)
   delete not_executed_last_iteration;
 }
 
+/* Get expected upper bound for number of loop iterations for
+   BUILT_IN_EXPECT_WITH_PROBABILITY for a condition COND.  */
+
+static tree
+get_upper_bound_based_on_builtin_expr_with_prob (gcond *cond)
+{
+  if (cond == NULL)
+    return NULL_TREE;
+
+  tree lhs = gimple_cond_lhs (cond);
+  if (TREE_CODE (lhs) != SSA_NAME)
+    return NULL_TREE;
+
+  gimple *stmt = SSA_NAME_DEF_STMT (gimple_cond_lhs (cond));
+  gcall *def = dyn_cast<gcall *> (stmt);
+  if (def == NULL)
+    return NULL_TREE;
+
+  tree decl = gimple_call_fndecl (def);
+  if (!decl
+      || !fndecl_built_in_p (decl, BUILT_IN_EXPECT_WITH_PROBABILITY)
+      || gimple_call_num_args (stmt) != 3)
+    return NULL_TREE;
+
+  tree c = gimple_call_arg (def, 1);
+  tree condt = TREE_TYPE (lhs);
+  tree res = fold_build2 (gimple_cond_code (cond),
+			  condt, c,
+			  gimple_cond_rhs (cond));
+  if (TREE_CODE (res) != INTEGER_CST)
+    return NULL_TREE;
+
+
+  tree prob = gimple_call_arg (def, 2);
+  tree t = TREE_TYPE (prob);
+  tree one
+    = build_real_from_int_cst (t,
+			       integer_one_node);
+  if (integer_zerop (res))
+    prob = fold_build2 (MINUS_EXPR, t, one, prob);
+  tree r = fold_build2 (RDIV_EXPR, t, one, prob);
+  if (TREE_CODE (r) != REAL_CST)
+    return NULL_TREE;
+
+  HOST_WIDE_INT probi
+    = real_to_integer (TREE_REAL_CST_PTR (r));
+  return build_int_cst (condt, probi);
+}
+
 /* Records estimates on numbers of iterations of LOOP.  If USE_UNDEFINED_P
    is true also use estimates derived from undefined behavior.  */
 
 void
-estimate_numbers_of_iterations (struct loop *loop)
+estimate_numbers_of_iterations (class loop *loop)
 {
   vec<edge> exits;
   tree niter, type;
   unsigned i;
-  struct tree_niter_desc niter_desc;
+  class tree_niter_desc niter_desc;
   edge ex;
   widest_int bound;
   edge likely_exit;
@@ -4231,6 +4280,23 @@ estimate_numbers_of_iterations (struct loop *loop)
   likely_exit = single_likely_exit (loop);
   FOR_EACH_VEC_ELT (exits, i, ex)
     {
+      if (ex == likely_exit)
+	{
+	  gimple *stmt = last_stmt (ex->src);
+	  if (stmt != NULL)
+	    {
+	      gcond *cond = dyn_cast<gcond *> (stmt);
+	      tree niter_bound
+		= get_upper_bound_based_on_builtin_expr_with_prob (cond);
+	      if (niter_bound != NULL_TREE)
+		{
+		  widest_int max = derive_constant_upper_bound (niter_bound);
+		  record_estimate (loop, niter_bound, max, cond,
+				   true, true, false);
+		}
+	    }
+	}
+
       if (!number_of_iterations_exit (loop, ex, &niter_desc, false, false))
 	continue;
 
@@ -4271,7 +4337,7 @@ estimate_numbers_of_iterations (struct loop *loop)
    the function returns false, otherwise returns true.  */
 
 bool
-estimated_loop_iterations (struct loop *loop, widest_int *nit)
+estimated_loop_iterations (class loop *loop, widest_int *nit)
 {
   /* When SCEV information is available, try to update loop iterations
      estimate.  Otherwise just return whatever we recorded earlier.  */
@@ -4286,7 +4352,7 @@ estimated_loop_iterations (struct loop *loop, widest_int *nit)
    on the number of iterations of LOOP could not be derived, returns -1.  */
 
 HOST_WIDE_INT
-estimated_loop_iterations_int (struct loop *loop)
+estimated_loop_iterations_int (class loop *loop)
 {
   widest_int nit;
   HOST_WIDE_INT hwi_nit;
@@ -4307,7 +4373,7 @@ estimated_loop_iterations_int (struct loop *loop)
    false, otherwise returns true.  */
 
 bool
-max_loop_iterations (struct loop *loop, widest_int *nit)
+max_loop_iterations (class loop *loop, widest_int *nit)
 {
   /* When SCEV information is available, try to update loop iterations
      estimate.  Otherwise just return whatever we recorded earlier.  */
@@ -4322,7 +4388,7 @@ max_loop_iterations (struct loop *loop, widest_int *nit)
    on the number of iterations of LOOP could not be derived, returns -1.  */
 
 HOST_WIDE_INT
-max_loop_iterations_int (struct loop *loop)
+max_loop_iterations_int (class loop *loop)
 {
   widest_int nit;
   HOST_WIDE_INT hwi_nit;
@@ -4342,7 +4408,7 @@ max_loop_iterations_int (struct loop *loop)
    false, otherwise returns true.  */
 
 bool
-likely_max_loop_iterations (struct loop *loop, widest_int *nit)
+likely_max_loop_iterations (class loop *loop, widest_int *nit)
 {
   /* When SCEV information is available, try to update loop iterations
      estimate.  Otherwise just return whatever we recorded earlier.  */
@@ -4357,7 +4423,7 @@ likely_max_loop_iterations (struct loop *loop, widest_int *nit)
    on the number of iterations of LOOP could not be derived, returns -1.  */
 
 HOST_WIDE_INT
-likely_max_loop_iterations_int (struct loop *loop)
+likely_max_loop_iterations_int (class loop *loop)
 {
   widest_int nit;
   HOST_WIDE_INT hwi_nit;
@@ -4377,7 +4443,7 @@ likely_max_loop_iterations_int (struct loop *loop)
    the number of execution of the latch by one.  */
 
 HOST_WIDE_INT
-estimated_stmt_executions_int (struct loop *loop)
+estimated_stmt_executions_int (class loop *loop)
 {
   HOST_WIDE_INT nit = estimated_loop_iterations_int (loop);
   HOST_WIDE_INT snit;
@@ -4396,7 +4462,7 @@ estimated_stmt_executions_int (struct loop *loop)
    false, otherwise returns true.  */
 
 bool
-max_stmt_executions (struct loop *loop, widest_int *nit)
+max_stmt_executions (class loop *loop, widest_int *nit)
 {
   widest_int nit_minus_one;
 
@@ -4415,7 +4481,7 @@ max_stmt_executions (struct loop *loop, widest_int *nit)
    false, otherwise returns true.  */
 
 bool
-likely_max_stmt_executions (struct loop *loop, widest_int *nit)
+likely_max_stmt_executions (class loop *loop, widest_int *nit)
 {
   widest_int nit_minus_one;
 
@@ -4434,7 +4500,7 @@ likely_max_stmt_executions (struct loop *loop, widest_int *nit)
    false, otherwise returns true.  */
 
 bool
-estimated_stmt_executions (struct loop *loop, widest_int *nit)
+estimated_stmt_executions (class loop *loop, widest_int *nit)
 {
   widest_int nit_minus_one;
 
@@ -4453,7 +4519,7 @@ estimated_stmt_executions (struct loop *loop, widest_int *nit)
 void
 estimate_numbers_of_iterations (function *fn)
 {
-  struct loop *loop;
+  class loop *loop;
 
   /* We don't want to issue signed overflow warnings while getting
      loop iteration estimates.  */
@@ -4511,7 +4577,7 @@ stmt_dominates_stmt_p (gimple *s1, gimple *s2)
 
 static bool
 n_of_executions_at_most (gimple *stmt,
-			 struct nb_iter_bound *niter_bound,
+			 class nb_iter_bound *niter_bound,
 			 tree niter)
 {
   widest_int bound = niter_bound->bound;
@@ -4598,11 +4664,11 @@ nowrap_type_p (tree type)
 
 static bool
 loop_exits_before_overflow (tree base, tree step,
-			    gimple *at_stmt, struct loop *loop)
+			    gimple *at_stmt, class loop *loop)
 {
   widest_int niter;
   struct control_iv *civ;
-  struct nb_iter_bound *bound;
+  class nb_iter_bound *bound;
   tree e, delta, step_abs, unsigned_base;
   tree type = TREE_TYPE (step);
   tree unsigned_type, valid_niter;
@@ -4790,7 +4856,7 @@ loop_exits_before_overflow (tree base, tree step,
    (4294967295, 4294967296, ...).  */
 
 static bool
-scev_var_range_cant_overflow (tree var, tree step, struct loop *loop)
+scev_var_range_cant_overflow (tree var, tree step, class loop *loop)
 {
   tree type;
   wide_int minv, maxv, diff, step_wi;
@@ -4844,7 +4910,7 @@ scev_var_range_cant_overflow (tree var, tree step, struct loop *loop)
 
 bool
 scev_probably_wraps_p (tree var, tree base, tree step,
-		       gimple *at_stmt, struct loop *loop,
+		       gimple *at_stmt, class loop *loop,
 		       bool use_overflow_semantics)
 {
   /* FIXME: We really need something like
@@ -4896,16 +4962,16 @@ scev_probably_wraps_p (tree var, tree base, tree step,
 /* Frees the information on upper bounds on numbers of iterations of LOOP.  */
 
 void
-free_numbers_of_iterations_estimates (struct loop *loop)
+free_numbers_of_iterations_estimates (class loop *loop)
 {
   struct control_iv *civ;
-  struct nb_iter_bound *bound;
+  class nb_iter_bound *bound;
 
   loop->nb_iterations = NULL;
   loop->estimate_state = EST_NOT_COMPUTED;
   for (bound = loop->bounds; bound;)
     {
-      struct nb_iter_bound *next = bound->next;
+      class nb_iter_bound *next = bound->next;
       ggc_free (bound);
       bound = next;
     }
@@ -4925,7 +4991,7 @@ free_numbers_of_iterations_estimates (struct loop *loop)
 void
 free_numbers_of_iterations_estimates (function *fn)
 {
-  struct loop *loop;
+  class loop *loop;
 
   FOR_EACH_LOOP_FN (fn, loop, 0)
     free_numbers_of_iterations_estimates (loop);
@@ -4935,7 +5001,7 @@ free_numbers_of_iterations_estimates (function *fn)
    at LOOP.  */
 
 void
-substitute_in_loop_info (struct loop *loop, tree name, tree val)
+substitute_in_loop_info (class loop *loop, tree name, tree val)
 {
   loop->nb_iterations = simplify_replace_tree (loop->nb_iterations, name, val);
 }

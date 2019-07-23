@@ -88,11 +88,11 @@ static void mark_set_regs (rtx, const_rtx, void *);
 static void mark_referenced_regs (rtx *, refmarker_fn *mark, void *mark_arg);
 static refmarker_fn mark_reg_as_referenced;
 static refmarker_fn replace_reg_with_saved_mem;
-static int insert_save (struct insn_chain *, int, HARD_REG_SET *,
+static int insert_save (class insn_chain *, int, HARD_REG_SET *,
 			machine_mode *);
-static int insert_restore (struct insn_chain *, int, int, int,
+static int insert_restore (class insn_chain *, int, int, int,
 			   machine_mode *);
-static struct insn_chain *insert_one_insn (struct insn_chain *, int, int,
+static class insn_chain *insert_one_insn (class insn_chain *, int, int,
 					   rtx);
 static void add_stored_regs (rtx, const_rtx, void *);
 
@@ -419,7 +419,7 @@ setup_save_areas (void)
   HARD_REG_SET hard_regs_used;
   struct saved_hard_reg *saved_reg;
   rtx_insn *insn;
-  struct insn_chain *chain, *next;
+  class insn_chain *chain, *next;
   unsigned int regno;
   HARD_REG_SET hard_regs_to_save, used_regs, this_insn_sets;
   reg_set_iterator rsi;
@@ -744,7 +744,7 @@ setup_save_areas (void)
 void
 save_call_clobbered_regs (void)
 {
-  struct insn_chain *chain, *next, *last = NULL;
+  class insn_chain *chain, *next, *last = NULL;
   machine_mode save_mode [FIRST_PSEUDO_REGISTER];
 
   /* Computed in mark_set_regs, holds all registers set by the current
@@ -1174,14 +1174,14 @@ replace_reg_with_saved_mem (rtx *loc,
    Return the extra number of registers saved.  */
 
 static int
-insert_restore (struct insn_chain *chain, int before_p, int regno,
+insert_restore (class insn_chain *chain, int before_p, int regno,
 		int maxrestore, machine_mode *save_mode)
 {
   int i, k;
   rtx pat = NULL_RTX;
   int code;
   unsigned int numregs = 0;
-  struct insn_chain *new_chain;
+  class insn_chain *new_chain;
   rtx mem;
 
   /* A common failure mode if register status is not correct in the
@@ -1253,7 +1253,7 @@ insert_restore (struct insn_chain *chain, int before_p, int regno,
 /* Like insert_restore above, but save registers instead.  */
 
 static int
-insert_save (struct insn_chain *chain, int regno,
+insert_save (class insn_chain *chain, int regno,
 	     HARD_REG_SET *to_save, machine_mode *save_mode)
 {
   int i;
@@ -1261,7 +1261,7 @@ insert_save (struct insn_chain *chain, int regno,
   rtx pat = NULL_RTX;
   int code;
   unsigned int numregs = 0;
-  struct insn_chain *new_chain;
+  class insn_chain *new_chain;
   rtx mem;
 
   /* A common failure mode if register status is not correct in the
@@ -1351,11 +1351,11 @@ add_used_regs (rtx *loc, void *data)
 }
 
 /* Emit a new caller-save insn and set the code.  */
-static struct insn_chain *
-insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
+static class insn_chain *
+insert_one_insn (class insn_chain *chain, int before_p, int code, rtx pat)
 {
   rtx_insn *insn = chain->insn;
-  struct insn_chain *new_chain;
+  class insn_chain *new_chain;
 
   /* If INSN references CC0, put our insns in front of the insn that sets
      CC0.  This is always safe, since the only way we could be passed an

@@ -351,7 +351,7 @@ const_fixed_hasher::equal (rtx x, rtx y)
 /* Return true if the given memory attributes are equal.  */
 
 bool
-mem_attrs_eq_p (const struct mem_attrs *p, const struct mem_attrs *q)
+mem_attrs_eq_p (const class mem_attrs *p, const class mem_attrs *q)
 {
   if (p == q)
     return true;
@@ -1924,7 +1924,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 {
   poly_int64 apply_bitpos = 0;
   tree type;
-  struct mem_attrs attrs, *defattrs, *refattrs;
+  class mem_attrs attrs, *defattrs, *refattrs;
   addr_space_t as;
 
   /* It can happen that type_for_mode was given a mode for which there
@@ -2334,7 +2334,7 @@ change_address (rtx memref, machine_mode mode, rtx addr)
 {
   rtx new_rtx = change_address_1 (memref, mode, addr, 1, false);
   machine_mode mmode = GET_MODE (new_rtx);
-  struct mem_attrs *defattrs;
+  class mem_attrs *defattrs;
 
   mem_attrs attrs (*get_mem_attrs (memref));
   defattrs = mode_mem_attrs[(int) mmode];
@@ -2378,7 +2378,7 @@ adjust_address_1 (rtx memref, machine_mode mode, poly_int64 offset,
   rtx addr = XEXP (memref, 0);
   rtx new_rtx;
   scalar_int_mode address_mode;
-  struct mem_attrs attrs (*get_mem_attrs (memref)), *defattrs;
+  class mem_attrs attrs (*get_mem_attrs (memref)), *defattrs;
   unsigned HOST_WIDE_INT max_align;
 #ifdef POINTERS_EXTEND_UNSIGNED
   scalar_int_mode pointer_mode
@@ -2524,7 +2524,7 @@ offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
 {
   rtx new_rtx, addr = XEXP (memref, 0);
   machine_mode address_mode;
-  struct mem_attrs *defattrs;
+  class mem_attrs *defattrs;
 
   mem_attrs attrs (*get_mem_attrs (memref));
   address_mode = get_address_mode (memref);
@@ -6580,6 +6580,18 @@ location_t
 curr_insn_location (void)
 {
   return curr_location;
+}
+
+/* Set the location of the insn chain starting at INSN to LOC.  */
+void
+set_insn_locations (rtx_insn *insn, location_t loc)
+{
+  while (insn)
+    {
+      if (INSN_P (insn))
+	INSN_LOCATION (insn) = loc;
+      insn = NEXT_INSN (insn);
+    }
 }
 
 /* Return lexical scope block insn belongs to.  */

@@ -1194,7 +1194,7 @@ simd_clone_adjust (struct cgraph_node *node)
 
   gimple *g;
   basic_block incr_bb = NULL;
-  struct loop *loop = NULL;
+  class loop *loop = NULL;
 
   /* Create a new BB right before the original exit BB, to hold the
      iteration increment and the condition/branch.  */

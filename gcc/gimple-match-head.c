@@ -57,6 +57,16 @@ static bool gimple_simplify (gimple_match_op *, gimple_seq *, tree (*)(tree),
 			     code_helper, tree, tree, tree, tree, tree);
 static bool gimple_simplify (gimple_match_op *, gimple_seq *, tree (*)(tree),
 			     code_helper, tree, tree, tree, tree, tree, tree);
+static bool gimple_resimplify1 (gimple_seq *, gimple_match_op *,
+				tree (*)(tree));
+static bool gimple_resimplify2 (gimple_seq *, gimple_match_op *,
+				tree (*)(tree));
+static bool gimple_resimplify3 (gimple_seq *, gimple_match_op *,
+				tree (*)(tree));
+static bool gimple_resimplify4 (gimple_seq *, gimple_match_op *,
+				tree (*)(tree));
+static bool gimple_resimplify5 (gimple_seq *, gimple_match_op *,
+				tree (*)(tree));
 
 const unsigned int gimple_match_op::MAX_NUM_OPS;
 
@@ -173,7 +183,7 @@ maybe_resimplify_conditional_op (gimple_seq *seq, gimple_match_op *res_op,
    RES_OP with a simplified and/or canonicalized result and
    returns whether any change was made.  */
 
-bool
+static bool
 gimple_resimplify1 (gimple_seq *seq, gimple_match_op *res_op,
 		    tree (*valueize)(tree))
 {
@@ -233,7 +243,7 @@ gimple_resimplify1 (gimple_seq *seq, gimple_match_op *res_op,
    RES_OP with a simplified and/or canonicalized result and
    returns whether any change was made.  */
 
-bool
+static bool
 gimple_resimplify2 (gimple_seq *seq, gimple_match_op *res_op,
 		    tree (*valueize)(tree))
 {
@@ -305,7 +315,7 @@ gimple_resimplify2 (gimple_seq *seq, gimple_match_op *res_op,
    RES_OP with a simplified and/or canonicalized result and
    returns whether any change was made.  */
 
-bool
+static bool
 gimple_resimplify3 (gimple_seq *seq, gimple_match_op *res_op,
 		    tree (*valueize)(tree))
 {
@@ -376,7 +386,7 @@ gimple_resimplify3 (gimple_seq *seq, gimple_match_op *res_op,
    RES_OP with a simplified and/or canonicalized result and
    returns whether any change was made.  */
 
-bool
+static bool
 gimple_resimplify4 (gimple_seq *seq, gimple_match_op *res_op,
 		    tree (*valueize)(tree))
 {
@@ -417,7 +427,7 @@ gimple_resimplify4 (gimple_seq *seq, gimple_match_op *res_op,
    RES_OP with a simplified and/or canonicalized result and
    returns whether any change was made.  */
 
-bool
+static bool
 gimple_resimplify5 (gimple_seq *seq, gimple_match_op *res_op,
 		    tree (*valueize)(tree))
 {
@@ -437,6 +447,30 @@ gimple_resimplify5 (gimple_seq *seq, gimple_match_op *res_op,
     return true;
 
   return false;
+}
+
+/* Match and simplify the toplevel valueized operation THIS.
+   Replaces THIS with a simplified and/or canonicalized result and
+   returns whether any change was made.  */
+
+bool
+gimple_match_op::resimplify (gimple_seq *seq, tree (*valueize)(tree))
+{
+  switch (num_ops)
+    {
+    case 1:
+      return gimple_resimplify1 (seq, this, valueize);
+    case 2:
+      return gimple_resimplify2 (seq, this, valueize);
+    case 3:
+      return gimple_resimplify3 (seq, this, valueize);
+    case 4:
+      return gimple_resimplify4 (seq, this, valueize);
+    case 5:
+      return gimple_resimplify5 (seq, this, valueize);
+    default:
+      gcc_unreachable ();
+    }
 }
 
 /* If in GIMPLE the operation described by RES_OP should be single-rhs,

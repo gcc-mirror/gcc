@@ -92,9 +92,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct conditional;
 
   template <typename _Type>
-    struct __type_identity {
-      using type = _Type;
-    };
+    struct __type_identity
+    { using type = _Type; };
+
+  template<typename _Tp>
+    using __type_identity_t = typename __type_identity<_Tp>::type;
 
   template<typename...>
     struct __or_;

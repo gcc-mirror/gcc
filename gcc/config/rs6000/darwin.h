@@ -43,8 +43,7 @@
 
 /* We're not ever going to do TOCs.  */
 
-#define TARGET_TOC 0
-#define TARGET_NO_TOC 1
+#define TARGET_HAS_TOC 0
 
 /* Override the default rs6000 definition.  */
 #undef  PTRDIFF_TYPE
@@ -86,6 +85,24 @@ extern int darwin_emit_picsym_stub;
 
 #define RS6000_DEFAULT_LONG_DOUBLE_SIZE 128
 
+/* Machine dependent libraries.
+   Include libmx when targeting Darwin 7.0 and above, but before libSystem,
+   since the functions are actually in libSystem but for 7.x compatibility
+   we want them to be looked for in libmx first.
+   Include libSystemStubs when compiling against 10.3 - 10.5 SDKs (we assume
+   this is the case when targetting these) - but not for 64-bit long double.
+   Don't do either for m64, the library is either a dummy or non-existent.
+*/
+
+#undef LIB_SPEC
+#define LIB_SPEC \
+"%{!static:								\
+  %{!m64:%{!mlong-double-64:						\
+    %{pg:%:version-compare(>< 10.3 10.5 mmacosx-version-min= -lSystemStubs_profile)} \
+    %{!pg:%:version-compare(>< 10.3 10.5 mmacosx-version-min= -lSystemStubs)} \
+     %:version-compare(>< 10.3 10.4 mmacosx-version-min= -lmx)}}	\
+  -lSystem								\
+}"
 
 /* We want -fPIC by default, unless we're using -static to compile for
    the kernel or some such.  The "-faltivec" option should have been

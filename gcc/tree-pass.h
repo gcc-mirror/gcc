@@ -132,7 +132,7 @@ protected:
   }
 };
 
-class varpool_node;
+struct varpool_node;
 struct cgraph_node;
 struct lto_symtab_encoder_d;
 
@@ -552,6 +552,7 @@ extern rtl_opt_pass *make_pass_rtl_unroll_loops (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_rtl_doloop (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_rtl_loop_done (gcc::context *ctxt);
 
+extern rtl_opt_pass *make_pass_lower_subreg2 (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_web (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_cse2 (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_df_initialize_opt (gcc::context *ctxt);
@@ -567,7 +568,7 @@ extern rtl_opt_pass *make_pass_partition_blocks (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_match_asm_constraints (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_split_all_insns (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_fast_rtl_byte_dce (gcc::context *ctxt);
-extern rtl_opt_pass *make_pass_lower_subreg2 (gcc::context *ctxt);
+extern rtl_opt_pass *make_pass_lower_subreg3 (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_mode_switching (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_sms (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_sched (gcc::context *ctxt);
@@ -632,7 +633,7 @@ extern bool execute_one_pass (opt_pass *);
 extern void execute_pass_list (function *, opt_pass *);
 extern void execute_ipa_pass_list (opt_pass *);
 extern void execute_ipa_summary_passes (ipa_opt_pass_d *);
-extern void execute_all_ipa_transforms (void);
+extern void execute_all_ipa_transforms (bool);
 extern void execute_all_ipa_stmt_fixups (struct cgraph_node *, gimple **);
 extern bool pass_init_dump_file (opt_pass *);
 extern void pass_fini_dump_file (opt_pass *);

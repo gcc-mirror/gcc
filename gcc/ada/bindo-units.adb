@@ -23,13 +23,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Bindo.Writers;
+use  Bindo.Writers;
+use  Bindo.Writers.Phase_Writers;
+
 package body Bindo.Units is
 
    -------------------
    -- Signature set --
    -------------------
 
-   package SS is new Membership_Sets
+   package Signature_Sets is new Membership_Sets
      (Element_Type => Invocation_Signature_Id,
       "="          => "=",
       Hash         => Hash_Invocation_Signature);
@@ -41,11 +45,11 @@ package body Bindo.Units is
    --  The following set stores all invocation signatures that appear in
    --  elaborable units.
 
-   Elaborable_Constructs : SS.Membership_Set := SS.Nil;
+   Elaborable_Constructs : Signature_Sets.Membership_Set := Signature_Sets.Nil;
 
    --  The following set stores all units the need to be elaborated
 
-   Elaborable_Units : US.Membership_Set := US.Nil;
+   Elaborable_Units : Unit_Sets.Membership_Set := Unit_Sets.Nil;
 
    -----------------------
    -- Local subprograms --
@@ -79,9 +83,13 @@ package body Bindo.Units is
 
    procedure Collect_Elaborable_Units is
    begin
+      Start_Phase (Unit_Collection);
+
       for U_Id in ALI.Units.First .. ALI.Units.Last loop
          Process_Unit (U_Id);
       end loop;
+
+      End_Phase (Unit_Collection);
    end Collect_Elaborable_Units;
 
    ------------------------
@@ -139,14 +147,27 @@ package body Bindo.Units is
       return Corresponding_Unit (Name_Id (UNam));
    end Corresponding_Unit;
 
+   ---------------
+   -- File_Name --
+   ---------------
+
+   function File_Name (U_Id : Unit_Id) return File_Name_Type is
+      pragma Assert (Present (U_Id));
+
+      U_Rec : Unit_Record renames ALI.Units.Table (U_Id);
+
+   begin
+      return U_Rec.Sfile;
+   end File_Name;
+
    --------------------
    -- Finalize_Units --
    --------------------
 
    procedure Finalize_Units is
    begin
-      SS.Destroy (Elaborable_Constructs);
-      US.Destroy (Elaborable_Units);
+      Signature_Sets.Destroy (Elaborable_Constructs);
+      Unit_Sets.Destroy      (Elaborable_Units);
    end Finalize_Units;
 
    ------------------------------
@@ -183,8 +204,21 @@ package body Bindo.Units is
 
    function Has_Next (Iter : Elaborable_Units_Iterator) return Boolean is
    begin
-      return US.Has_Next (US.Iterator (Iter));
+      return Unit_Sets.Has_Next (Unit_Sets.Iterator (Iter));
    end Has_Next;
+
+   -----------------------------
+   -- Has_No_Elaboration_Code --
+   -----------------------------
+
+   function Has_No_Elaboration_Code (U_Id : Unit_Id) return Boolean is
+      pragma Assert (Present (U_Id));
+
+      U_Rec : Unit_Record renames ALI.Units.Table (U_Id);
+
+   begin
+      return U_Rec.No_Elab;
+   end Has_No_Elaboration_Code;
 
    -------------------------------
    -- Hash_Invocation_Signature --
@@ -216,9 +250,25 @@ package body Bindo.Units is
 
    procedure Initialize_Units is
    begin
-      Elaborable_Constructs := SS.Create (Number_Of_Units);
-      Elaborable_Units      := US.Create (Number_Of_Units);
+      Elaborable_Constructs := Signature_Sets.Create (Number_Of_Units);
+      Elaborable_Units      := Unit_Sets.Create      (Number_Of_Units);
    end Initialize_Units;
+
+   -------------------------------
+   -- Invocation_Graph_Encoding --
+   -------------------------------
+
+   function Invocation_Graph_Encoding
+     (U_Id : Unit_Id) return Invocation_Graph_Encoding_Kind
+   is
+      pragma Assert (Present (U_Id));
+
+      U_Rec : Unit_Record renames ALI.Units.Table (U_Id);
+      U_ALI : ALIs_Record renames ALI.ALIs.Table  (U_Rec.My_ALI);
+
+   begin
+      return U_ALI.Invocation_Graph_Encoding;
+   end Invocation_Graph_Encoding;
 
    -------------------------------
    -- Is_Dynamically_Elaborated --
@@ -278,7 +328,7 @@ package body Bindo.Units is
 
    function Iterate_Elaborable_Units return Elaborable_Units_Iterator is
    begin
-      return Elaborable_Units_Iterator (US.Iterate (Elaborable_Units));
+      return Elaborable_Units_Iterator (Unit_Sets.Iterate (Elaborable_Units));
    end Iterate_Elaborable_Units;
 
    ----------
@@ -304,7 +354,7 @@ package body Bindo.Units is
    begin
       pragma Assert (Present (IS_Id));
 
-      return SS.Contains (Elaborable_Constructs, IS_Id);
+      return Signature_Sets.Contains (Elaborable_Constructs, IS_Id);
    end Needs_Elaboration;
 
    -----------------------
@@ -315,7 +365,7 @@ package body Bindo.Units is
    begin
       pragma Assert (Present (U_Id));
 
-      return US.Contains (Elaborable_Units, U_Id);
+      return Unit_Sets.Contains (Elaborable_Units, U_Id);
    end Needs_Elaboration;
 
    ----------
@@ -327,7 +377,7 @@ package body Bindo.Units is
       U_Id : out Unit_Id)
    is
    begin
-      US.Next (US.Iterator (Iter), U_Id);
+      Unit_Sets.Next (Unit_Sets.Iterator (Iter), U_Id);
    end Next;
 
    --------------------------------
@@ -336,7 +386,7 @@ package body Bindo.Units is
 
    function Number_Of_Elaborable_Units return Natural is
    begin
-      return US.Size (Elaborable_Units);
+      return Unit_Sets.Size (Elaborable_Units);
    end Number_Of_Elaborable_Units;
 
    ---------------------
@@ -355,14 +405,12 @@ package body Bindo.Units is
    procedure Process_Invocation_Construct (IC_Id : Invocation_Construct_Id) is
       pragma Assert (Present (IC_Id));
 
-      IC_Rec : Invocation_Construct_Record renames
-                 Invocation_Constructs.Table (IC_Id);
-      IC_Sig : constant Invocation_Signature_Id := IC_Rec.Signature;
+      IS_Id : constant Invocation_Signature_Id := Signature (IC_Id);
 
-      pragma Assert (Present (IC_Sig));
+      pragma Assert (Present (IS_Id));
 
    begin
-      SS.Insert (Elaborable_Constructs, IC_Sig);
+      Signature_Sets.Insert (Elaborable_Constructs, IS_Id);
    end Process_Invocation_Construct;
 
    -----------------------------------
@@ -402,7 +450,7 @@ package body Bindo.Units is
       --  signatures of constructs it declares.
 
       else
-         US.Insert (Elaborable_Units, U_Id);
+         Unit_Sets.Insert (Elaborable_Units, U_Id);
          Process_Invocation_Constructs (U_Id);
       end if;
    end Process_Unit;

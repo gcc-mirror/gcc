@@ -4355,7 +4355,7 @@ package body Sem_Ch10 is
                   end;
                end if;
 
-            --  The With_Clause may be on a grand-child or one of its further
+            --  The With_Clause may be on a grandchild or one of its further
             --  descendants, which makes a child immediately visible. Examine
             --  ancestry to determine whether such a child exists. For example,
             --  if current unit is A.C, and with_clause is on A.X.Y.Z, then X
@@ -4394,7 +4394,7 @@ package body Sem_Ch10 is
                   --  Scan context of current unit, to check whether there is
                   --  a with_clause on the same unit as a private with-clause
                   --  on a parent, in which case child unit is visible. If the
-                  --  unit is a grand-child, the same applies to its parent.
+                  --  unit is a grandchild, the same applies to its parent.
 
                   ----------------
                   -- In_Context --
@@ -6379,22 +6379,38 @@ package body Sem_Ch10 is
 
    begin
       --  Ada 2005 (AI-50217): We remove the context clauses in two phases:
-      --  limited-views first and regular-views later (to maintain the
-      --  stack model).
+      --  limited-views first and regular-views later (to maintain the stack
+      --  model).
 
       --  First Phase: Remove limited_with context clauses
 
       Item := First (Context_Items (N));
       while Present (Item) loop
 
-         --  We are interested only in with clauses which got installed
-         --  on entry.
+         --  We are interested only in with clauses that got installed on entry
 
          if Nkind (Item) = N_With_Clause
            and then Limited_Present (Item)
-           and then Limited_View_Installed (Item)
          then
-            Remove_Limited_With_Clause (Item);
+            if Limited_View_Installed (Item) then
+               Remove_Limited_With_Clause (Item);
+
+            --  An unusual case: If the library unit of the Main_Unit has a
+            --  limited with_clause on some unit P and the context somewhere
+            --  includes a with_clause on P, P has been analyzed. The entity
+            --  for P is still visible, which in general is harmless because
+            --  this is the end of the compilation, but it can affect pending
+            --  instantiations that may have been generated elsewhere, so it
+            --  it is necessary to remove U from visibility so that inlining
+            --  and the analysis of instance bodies can proceed cleanly.
+
+            elsif Current_Sem_Unit = Main_Unit
+              and then Serious_Errors_Detected = 0
+              and then not Implicit_With (Item)
+            then
+               Set_Is_Immediately_Visible
+                 (Defining_Entity (Unit (Library_Unit (Item))), False);
+            end if;
          end if;
 
          Next (Item);

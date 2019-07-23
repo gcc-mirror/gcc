@@ -421,7 +421,6 @@ package body Einfo is
    --    Never_Set_In_Source             Flag115
    --    Is_Visible_Lib_Unit             Flag116
    --    Is_Unchecked_Union              Flag117
-   --    Is_For_Access_Subtype           Flag118
    --    Has_Convention_Pragma           Flag119
    --    Has_Primitive_Operations        Flag120
 
@@ -2302,12 +2301,6 @@ package body Einfo is
    begin
       return Flag70 (Id);
    end Is_First_Subtype;
-
-   function Is_For_Access_Subtype (Id : E) return B is
-   begin
-      pragma Assert (Ekind_In (Id, E_Record_Subtype, E_Private_Subtype));
-      return Flag118 (Id);
-   end Is_For_Access_Subtype;
 
    function Is_Formal_Subprogram (Id : E) return B is
    begin
@@ -5526,12 +5519,6 @@ package body Einfo is
       Set_Flag70 (Id, V);
    end Set_Is_First_Subtype;
 
-   procedure Set_Is_For_Access_Subtype (Id : E; V : B := True) is
-   begin
-      pragma Assert (Ekind_In (Id, E_Record_Subtype, E_Private_Subtype));
-      Set_Flag118 (Id, V);
-   end Set_Is_For_Access_Subtype;
-
    procedure Set_Is_Formal_Subprogram (Id : E; V : B := True) is
    begin
       Set_Flag111 (Id, V);
@@ -8127,7 +8114,7 @@ package body Einfo is
    function Is_Elaboration_Target (Id : Entity_Id) return Boolean is
    begin
       return
-        Ekind_In (Id, E_Constant, E_Variable)
+        Ekind_In (Id, E_Constant, E_Package, E_Variable)
           or else Is_Entry        (Id)
           or else Is_Generic_Unit (Id)
           or else Is_Subprogram   (Id)
@@ -9826,7 +9813,6 @@ package body Einfo is
       W ("Is_Exported",                     Flag99  (Id));
       W ("Is_Finalized_Transient",          Flag252 (Id));
       W ("Is_First_Subtype",                Flag70  (Id));
-      W ("Is_For_Access_Subtype",           Flag118 (Id));
       W ("Is_Formal_Subprogram",            Flag111 (Id));
       W ("Is_Frozen",                       Flag4   (Id));
       W ("Is_Generic_Actual_Subprogram",    Flag274 (Id));

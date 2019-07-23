@@ -1406,41 +1406,6 @@ uses_TOC (void)
 }
 #endif
 
-rtx
-create_TOC_reference (rtx symbol, rtx largetoc_reg)
-{
-  rtx tocrel, tocreg, hi;
-
-  if (TARGET_DEBUG_ADDR)
-    {
-      if (SYMBOL_REF_P (symbol))
-	fprintf (stderr, "\ncreate_TOC_reference, (symbol_ref %s)\n",
-		 XSTR (symbol, 0));
-      else
-	{
-	  fprintf (stderr, "\ncreate_TOC_reference, code %s:\n",
-		   GET_RTX_NAME (GET_CODE (symbol)));
-	  debug_rtx (symbol);
-	}
-    }
-
-  if (!can_create_pseudo_p ())
-    df_set_regs_ever_live (TOC_REGISTER, true);
-
-  tocreg = gen_rtx_REG (Pmode, TOC_REGISTER);
-  tocrel = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, symbol, tocreg), UNSPEC_TOCREL);
-  if (TARGET_CMODEL == CMODEL_SMALL || can_create_pseudo_p ())
-    return tocrel;
-
-  hi = gen_rtx_HIGH (Pmode, copy_rtx (tocrel));
-  if (largetoc_reg != NULL)
-    {
-      emit_move_insn (largetoc_reg, hi);
-      hi = largetoc_reg;
-    }
-  return gen_rtx_LO_SUM (Pmode, hi, tocrel);
-}
-
 /* Issue assembly directives that create a reference to the given DWARF
    FRAME_TABLE_LABEL from the current function section.  */
 void
@@ -5100,24 +5065,11 @@ macho_branch_islands (void)
 #endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
       if (flag_pic)
 	{
-	  if (TARGET_LINK_STACK)
-	    {
-	      char name[32];
-	      get_ppc476_thunk_name (name);
-	      strcat (tmp_buf, ":\n\tmflr r0\n\tbl ");
-	      strcat (tmp_buf, name);
-	      strcat (tmp_buf, "\n");
-	      strcat (tmp_buf, label);
-	      strcat (tmp_buf, "_pic:\n\tmflr r11\n");
-	    }
-	  else
-	    {
-	      strcat (tmp_buf, ":\n\tmflr r0\n\tbcl 20,31,");
-	      strcat (tmp_buf, label);
-	      strcat (tmp_buf, "_pic\n");
-	      strcat (tmp_buf, label);
-	      strcat (tmp_buf, "_pic:\n\tmflr r11\n");
-	    }
+	  strcat (tmp_buf, ":\n\tmflr r0\n\tbcl 20,31,");
+	  strcat (tmp_buf, label);
+	  strcat (tmp_buf, "_pic\n");
+	  strcat (tmp_buf, label);
+	  strcat (tmp_buf, "_pic:\n\tmflr r11\n");
 
 	  strcat (tmp_buf, "\taddis r11,r11,ha16(");
 	  strcat (tmp_buf, name_buf);
@@ -5285,7 +5237,7 @@ rs6000_output_function_epilogue (FILE *file)
       /* Language type.  Unfortunately, there does not seem to be any
 	 official way to discover the language being compiled, so we
 	 use language_string.
-	 C is 0.  Fortran is 1.  Ada is 3.  C++ is 9.
+	 C is 0.  Fortran is 1.  Ada is 3.  Modula-2 is 8.  C++ is 9.
 	 Java is 13.  Objective-C is 14.  Objective-C++ isn't assigned
 	 a number, so for now use 9.  LTO, Go, D, and JIT aren't assigned
 	 numbers either, so for now use 0.  */
@@ -5300,6 +5252,8 @@ rs6000_output_function_epilogue (FILE *file)
 	i = 1;
       else if (! strcmp (language_string, "GNU Ada"))
 	i = 3;
+      else if (! strcmp (language_string, "GNU Modula-2"))
+	i = 8;
       else if (lang_GNU_CXX ()
 	       || ! strcmp (language_string, "GNU Objective-C++"))
 	i = 9;

@@ -27,10 +27,9 @@ with Debug;  use Debug;
 with Output; use Output;
 with Types;  use Types;
 
-with Bindo.Writers; use Bindo.Writers;
-
-with GNAT;      use GNAT;
-with GNAT.Sets; use GNAT.Sets;
+with Bindo.Writers;
+use  Bindo.Writers;
+use  Bindo.Writers.Phase_Writers;
 
 package body Bindo.Augmentors is
 
@@ -39,24 +38,6 @@ package body Bindo.Augmentors is
    ------------------------------
 
    package body Library_Graph_Augmentors is
-
-      -----------------
-      -- Visited set --
-      -----------------
-
-      package VS is new Membership_Sets
-        (Element_Type => Invocation_Graph_Vertex_Id,
-         "="          => "=",
-         Hash         => Hash_Invocation_Graph_Vertex);
-      use VS;
-
-      -----------------
-      -- Global data --
-      -----------------
-
-      Inv_Graph : Invocation_Graph := Invocation_Graphs.Nil;
-      Lib_Graph : Library_Graph    := Library_Graphs.Nil;
-      Visited   : Membership_Set   := VS.Nil;
 
       ----------------
       -- Statistics --
@@ -74,20 +55,10 @@ package body Bindo.Augmentors is
       -- Local subprograms --
       -----------------------
 
-      function Is_Visited
-        (IGV_Id : Invocation_Graph_Vertex_Id) return Boolean;
-      pragma Inline (Is_Visited);
-      --  Determine whether invocation graph vertex IGV_Id has been visited
-      --  during the traversal.
-
-      procedure Set_Is_Visited
-        (IGV_Id : Invocation_Graph_Vertex_Id;
-         Val    : Boolean := True);
-      pragma Inline (Set_Is_Visited);
-      --  Mark invocation graph vertex IGV_Id as visited during the traversal
-      --  depending on value Val.
-
-      procedure Visit_Elaboration_Root (Root : Invocation_Graph_Vertex_Id);
+      procedure Visit_Elaboration_Root
+        (Inv_Graph : Invocation_Graph;
+         Lib_Graph : Library_Graph;
+         Root      : Invocation_Graph_Vertex_Id);
       pragma Inline (Visit_Elaboration_Root);
       --  Start a DFS traversal from elaboration root Root to:
       --
@@ -96,7 +67,9 @@ package body Bindo.Augmentors is
       --    * Create invocation edges for each such transition where the
       --      successor is Root.
 
-      procedure Visit_Elaboration_Roots;
+      procedure Visit_Elaboration_Roots
+        (Inv_Graph : Invocation_Graph;
+         Lib_Graph : Library_Graph);
       pragma Inline (Visit_Elaboration_Roots);
       --  Start a DFS traversal from all elaboration roots to:
       --
@@ -106,26 +79,30 @@ package body Bindo.Augmentors is
       --      successor is the current root.
 
       procedure Visit_Vertex
-        (Curr_IGV_Id   : Invocation_Graph_Vertex_Id;
-         Last_LGV_Id   : Library_Graph_Vertex_Id;
-         Root_LGV_Id   : Library_Graph_Vertex_Id;
-         Internal_Ctrl : Boolean;
-         Path          : Natural);
+        (Inv_Graph                  : Invocation_Graph;
+         Lib_Graph                  : Library_Graph;
+         Invoker                    : Invocation_Graph_Vertex_Id;
+         Last_Vertex                : Library_Graph_Vertex_Id;
+         Root_Vertex                : Library_Graph_Vertex_Id;
+         Visited_Invokers           : IGV_Sets.Membership_Set;
+         Activates_Task             : Boolean;
+         Internal_Controlled_Action : Boolean;
+         Path                       : Natural);
       pragma Inline (Visit_Vertex);
-      --  Visit invocation graph vertex Curr_IGV_Id to:
+      --  Visit invocation graph vertex Invoker to:
       --
       --    * Detect a transition from the last library graph vertex denoted by
-      --      Last_LGV_Id to the library graph vertex of Curr_IGV_Id.
+      --      Last_Vertex to the library graph vertex of Invoker.
       --
       --    * Create an invocation edge in library graph Lib_Graph to reflect
       --      the transition, where the predecessor is the library graph vertex
-      --      or Curr_IGV_Id, and the successor is Root_LGV_Id.
+      --      or Invoker, and the successor is Root_Vertex.
       --
-      --    * Visit the neighbours of Curr_IGV_Id.
+      --    * Visit the neighbours of Invoker.
       --
-      --  Flag Internal_Ctrl should be set when the DFS traversal visited an
-      --  internal controlled invocation edge. Path denotes the length of the
-      --  path.
+      --  Flag Internal_Controlled_Action should be set when the DFS traversal
+      --  visited an internal controlled invocation edge. Path is the length of
+      --  the path.
 
       procedure Write_Statistics;
       pragma Inline (Write_Statistics);
@@ -137,109 +114,100 @@ package body Bindo.Augmentors is
       ---------------------------
 
       procedure Augment_Library_Graph
-        (Inv_G : Invocation_Graph;
-         Lib_G : Library_Graph)
+        (Inv_Graph : Invocation_Graph;
+         Lib_Graph : Library_Graph)
       is
       begin
-         pragma Assert (Present (Lib_G));
+         pragma Assert (Present (Lib_Graph));
 
          --  Nothing to do when there is no invocation graph
 
-         if not Present (Inv_G) then
+         if not Present (Inv_Graph) then
             return;
          end if;
 
-         --  Prepare the global data. Note that Visited is initialized for each
-         --  elaboration root.
+         Start_Phase (Library_Graph_Augmentation);
 
-         Inv_Graph     := Inv_G;
-         Lib_Graph     := Lib_G;
+         --  Prepare the statistics data
+
          Longest_Path  := 0;
          Total_Visited := 0;
 
-         Visit_Elaboration_Roots;
+         Visit_Elaboration_Roots (Inv_Graph, Lib_Graph);
          Write_Statistics;
+
+         End_Phase (Library_Graph_Augmentation);
       end Augment_Library_Graph;
-
-      ----------------
-      -- Is_Visited --
-      ----------------
-
-      function Is_Visited
-        (IGV_Id : Invocation_Graph_Vertex_Id) return Boolean
-      is
-      begin
-         pragma Assert (Present (Visited));
-         pragma Assert (Present (IGV_Id));
-
-         return Contains (Visited, IGV_Id);
-      end Is_Visited;
-
-      --------------------
-      -- Set_Is_Visited --
-      --------------------
-
-      procedure Set_Is_Visited
-        (IGV_Id : Invocation_Graph_Vertex_Id;
-         Val    : Boolean := True)
-      is
-      begin
-         pragma Assert (Present (Visited));
-         pragma Assert (Present (IGV_Id));
-
-         if Val then
-            Insert (Visited, IGV_Id);
-         else
-            Delete (Visited, IGV_Id);
-         end if;
-      end Set_Is_Visited;
 
       ----------------------------
       -- Visit_Elaboration_Root --
       ----------------------------
 
-      procedure Visit_Elaboration_Root (Root : Invocation_Graph_Vertex_Id) is
+      procedure Visit_Elaboration_Root
+        (Inv_Graph : Invocation_Graph;
+         Lib_Graph : Library_Graph;
+         Root      : Invocation_Graph_Vertex_Id)
+      is
          pragma Assert (Present (Inv_Graph));
-         pragma Assert (Present (Root));
          pragma Assert (Present (Lib_Graph));
+         pragma Assert (Present (Root));
 
-         Root_LGV_Id : constant Library_Graph_Vertex_Id :=
-                         Lib_Vertex (Inv_Graph, Root);
+         Root_Vertex : constant Library_Graph_Vertex_Id :=
+                         Body_Vertex (Inv_Graph, Root);
 
-         pragma Assert (Present (Root_LGV_Id));
+         Visited : IGV_Sets.Membership_Set;
 
       begin
+         --  Nothing to do when the unit where the elaboration root resides
+         --  lacks elaboration code. This implies that any invocation edges
+         --  going out of the unit are unwanted. This behavior emulates the
+         --  old elaboration order mechanism.
+
+         if Has_No_Elaboration_Code (Lib_Graph, Root_Vertex) then
+            return;
+         end if;
+
          --  Prepare the global data
 
-         Visited := Create (Number_Of_Vertices (Inv_Graph));
+         Visited := IGV_Sets.Create (Number_Of_Vertices (Inv_Graph));
 
          Visit_Vertex
-           (Curr_IGV_Id   => Root,
-            Last_LGV_Id   => Root_LGV_Id,
-            Root_LGV_Id   => Root_LGV_Id,
-            Internal_Ctrl => False,
-            Path          => 0);
+           (Inv_Graph                  => Inv_Graph,
+            Lib_Graph                  => Lib_Graph,
+            Invoker                    => Root,
+            Last_Vertex                => Root_Vertex,
+            Root_Vertex                => Root_Vertex,
+            Visited_Invokers           => Visited,
+            Activates_Task             => False,
+            Internal_Controlled_Action => False,
+            Path                       => 0);
 
-         Destroy (Visited);
+         IGV_Sets.Destroy (Visited);
       end Visit_Elaboration_Root;
 
       -----------------------------
       -- Visit_Elaboration_Roots --
       -----------------------------
 
-      procedure Visit_Elaboration_Roots is
+      procedure Visit_Elaboration_Roots
+        (Inv_Graph : Invocation_Graph;
+         Lib_Graph : Library_Graph)
+      is
          Iter : Elaboration_Root_Iterator;
          Root : Invocation_Graph_Vertex_Id;
 
       begin
          pragma Assert (Present (Inv_Graph));
+         pragma Assert (Present (Lib_Graph));
 
          Iter := Iterate_Elaboration_Roots (Inv_Graph);
          while Has_Next (Iter) loop
             Next (Iter, Root);
-            pragma Assert (Present (Root));
 
-            Visit_Elaboration_Root (Root);
+            Visit_Elaboration_Root
+              (Inv_Graph => Inv_Graph,
+               Lib_Graph => Lib_Graph,
+               Root      => Root);
          end loop;
       end Visit_Elaboration_Roots;
 
@@ -248,34 +216,39 @@ package body Bindo.Augmentors is
       ------------------
 
       procedure Visit_Vertex
-        (Curr_IGV_Id   : Invocation_Graph_Vertex_Id;
-         Last_LGV_Id   : Library_Graph_Vertex_Id;
-         Root_LGV_Id   : Library_Graph_Vertex_Id;
-         Internal_Ctrl : Boolean;
-         Path          : Natural)
+        (Inv_Graph                  : Invocation_Graph;
+         Lib_Graph                  : Library_Graph;
+         Invoker                    : Invocation_Graph_Vertex_Id;
+         Last_Vertex                : Library_Graph_Vertex_Id;
+         Root_Vertex                : Library_Graph_Vertex_Id;
+         Visited_Invokers           : IGV_Sets.Membership_Set;
+         Activates_Task             : Boolean;
+         Internal_Controlled_Action : Boolean;
+         Path                       : Natural)
       is
          New_Path : constant Natural := Path + 1;
 
-         Curr_LGV_Id : Library_Graph_Vertex_Id;
-         IGE_Id      : Invocation_Graph_Edge_Id;
-         Iter        : Edges_To_Targets_Iterator;
-         Targ        : Invocation_Graph_Vertex_Id;
+         Edge           : Invocation_Graph_Edge_Id;
+         Edge_Kind      : Invocation_Kind;
+         Invoker_Vertex : Library_Graph_Vertex_Id;
+         Iter           : Edges_To_Targets_Iterator;
 
       begin
          pragma Assert (Present (Inv_Graph));
-         pragma Assert (Present (Curr_IGV_Id));
          pragma Assert (Present (Lib_Graph));
-         pragma Assert (Present (Last_LGV_Id));
-         pragma Assert (Present (Root_LGV_Id));
+         pragma Assert (Present (Invoker));
+         pragma Assert (Present (Last_Vertex));
+         pragma Assert (Present (Root_Vertex));
+         pragma Assert (IGV_Sets.Present (Visited_Invokers));
 
          --  Nothing to do when the current invocation graph vertex has already
          --  been visited.
 
-         if Is_Visited (Curr_IGV_Id) then
+         if IGV_Sets.Contains (Visited_Invokers, Invoker) then
             return;
          end if;
 
-         Set_Is_Visited (Curr_IGV_Id);
+         IGV_Sets.Insert (Visited_Invokers, Invoker);
 
          --  Update the statistics
 
@@ -287,10 +260,10 @@ package body Bindo.Augmentors is
          --  indicates that elaboration is transitioning from one unit to
          --  another. Add a library graph edge to capture this dependency.
 
-         Curr_LGV_Id := Lib_Vertex (Inv_Graph, Curr_IGV_Id);
-         pragma Assert (Present (Curr_LGV_Id));
+         Invoker_Vertex := Body_Vertex (Inv_Graph, Invoker);
+         pragma Assert (Present (Invoker_Vertex));
 
-         if Curr_LGV_Id /= Last_LGV_Id then
+         if Invoker_Vertex /= Last_Vertex then
 
             --  The path ultimately reaches back into the unit where the root
             --  resides, resulting in a self dependency. In most cases this is
@@ -299,7 +272,9 @@ package body Bindo.Augmentors is
             --  library graph edge because the circularity is the result of
             --  expansion and thus spurious.
 
-            if Curr_LGV_Id = Root_LGV_Id and then Internal_Ctrl then
+            if Invoker_Vertex = Root_Vertex
+              and then Internal_Controlled_Action
+            then
                null;
 
             --  Otherwise create the library graph edge, even if this results
@@ -307,33 +282,36 @@ package body Bindo.Augmentors is
 
             else
                Add_Edge
-                 (G    => Lib_Graph,
-                  Pred => Curr_LGV_Id,
-                  Succ => Root_LGV_Id,
-                  Kind => Invocation_Edge);
+                 (G              => Lib_Graph,
+                  Pred           => Invoker_Vertex,
+                  Succ           => Root_Vertex,
+                  Kind           => Invocation_Edge,
+                  Activates_Task => Activates_Task);
             end if;
          end if;
 
          --  Extend the DFS traversal to all targets of the invocation graph
          --  vertex.
 
-         Iter := Iterate_Edges_To_Targets (Inv_Graph, Curr_IGV_Id);
+         Iter := Iterate_Edges_To_Targets (Inv_Graph, Invoker);
          while Has_Next (Iter) loop
-            Next (Iter, IGE_Id);
-            pragma Assert (Present (IGE_Id));
-
-            Targ := Target (Inv_Graph, IGE_Id);
-            pragma Assert (Present (Targ));
+            Next (Iter, Edge);
+            Edge_Kind := Kind (Inv_Graph, Edge);
 
             Visit_Vertex
-              (Curr_IGV_Id   => Targ,
-               Last_LGV_Id   => Curr_LGV_Id,
-               Root_LGV_Id   => Root_LGV_Id,
-               Internal_Ctrl =>
-                 Internal_Ctrl
-                   or else Kind (Inv_Graph, IGE_Id) in
-                             Internal_Controlled_Invocation_Kind,
-               Path          => New_Path);
+              (Inv_Graph                  => Inv_Graph,
+               Lib_Graph                  => Lib_Graph,
+               Invoker                    => Target (Inv_Graph, Edge),
+               Last_Vertex                => Invoker_Vertex,
+               Root_Vertex                => Root_Vertex,
+               Visited_Invokers           => Visited_Invokers,
+               Activates_Task             =>
+                 Activates_Task
+                   or else Edge_Kind = Task_Activation,
+               Internal_Controlled_Action =>
+                 Internal_Controlled_Action
+                   or else Edge_Kind in Internal_Controlled_Invocation_Kind,
+               Path                       => New_Path);
          end loop;
       end Visit_Vertex;
 

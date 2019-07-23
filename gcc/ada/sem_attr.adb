@@ -1634,7 +1634,9 @@ package body Sem_Attr is
             raise Bad_Attribute;
          end if;
 
-         --  Normal case of array type or subtype
+         --  Normal case of array type or subtype. Note that if the
+         --  prefix is a current instance of a type declaration it
+         --  appears within an aspect specification and is legal.
 
          Check_Either_E0_Or_E1;
          Check_Dereference;
@@ -1643,6 +1645,7 @@ package body Sem_Attr is
             if not Is_Constrained (P_Type)
               and then Is_Entity_Name (P)
               and then Is_Type (Entity (P))
+              and then not Is_Current_Instance (P)
             then
                --  Note: we do not call Error_Attr here, since we prefer to
                --  continue, using the relevant index type of the array,
@@ -5845,8 +5848,19 @@ package body Sem_Attr is
                       or else Ekind (Entity (P)) = E_Enumeration_Literal)
            and then Size_Known_At_Compile_Time (Entity (P))
          then
-            Rewrite (N, Make_Integer_Literal (Sloc (N), Esize (Entity (P))));
-            Analyze (N);
+            declare
+               Siz : Uint;
+
+            begin
+               if Known_Static_RM_Size (Entity (P)) then
+                  Siz := RM_Size (Entity (P));
+               else
+                  Siz := Esize (Entity (P));
+               end if;
+
+               Rewrite (N, Make_Integer_Literal (Sloc (N), Siz));
+               Analyze (N);
+            end;
          end if;
 
       -----------
@@ -11418,7 +11432,7 @@ package body Sem_Attr is
                   if Present (Lo) then
                      Rewrite (P,
                         Make_Indexed_Component (Loc,
-                           Prefix =>  Relocate_Node (Prefix (P)),
+                           Prefix => Relocate_Node (Prefix (P)),
                            Expressions => New_List (Lo)));
 
                      Analyze_And_Resolve (P);

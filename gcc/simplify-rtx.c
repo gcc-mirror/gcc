@@ -1504,12 +1504,12 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  && CONST_INT_P (XEXP (op, 1))
 	  && XEXP (XEXP (op, 0), 1) == XEXP (op, 1)
 	  && (op_mode = as_a <scalar_int_mode> (GET_MODE (op)),
-	      GET_MODE_BITSIZE (op_mode) > INTVAL (XEXP (op, 1))))
+	      GET_MODE_PRECISION (op_mode) > INTVAL (XEXP (op, 1))))
 	{
 	  scalar_int_mode tmode;
-	  gcc_assert (GET_MODE_BITSIZE (int_mode)
-		      > GET_MODE_BITSIZE (op_mode));
-	  if (int_mode_for_size (GET_MODE_BITSIZE (op_mode)
+	  gcc_assert (GET_MODE_PRECISION (int_mode)
+		      > GET_MODE_PRECISION (op_mode));
+	  if (int_mode_for_size (GET_MODE_PRECISION (op_mode)
 				 - INTVAL (XEXP (op, 1)), 1).exists (&tmode))
 	    {
 	      rtx inner =
@@ -6697,6 +6697,17 @@ simplify_subreg (machine_mode outermode, rtx op,
 	}
     }
 
+  /* If OP is a vector comparison and the subreg is not changing the
+     number of elements or the size of the elements, change the result
+     of the comparison to the new mode.  */
+  if (COMPARISON_P (op)
+      && VECTOR_MODE_P (outermode)
+      && VECTOR_MODE_P (innermode)
+      && known_eq (GET_MODE_NUNITS (outermode), GET_MODE_NUNITS (innermode))
+      && known_eq (GET_MODE_UNIT_SIZE (outermode),
+		    GET_MODE_UNIT_SIZE (innermode)))
+    return simplify_gen_relational (GET_CODE (op), outermode, innermode,
+				    XEXP (op, 0), XEXP (op, 1));
   return NULL_RTX;
 }
 

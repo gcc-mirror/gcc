@@ -1387,14 +1387,14 @@ class auto_suppress_location_wrappers
 #define OMP_TASKREG_BODY(NODE)    TREE_OPERAND (OMP_TASKREG_CHECK (NODE), 0)
 #define OMP_TASKREG_CLAUSES(NODE) TREE_OPERAND (OMP_TASKREG_CHECK (NODE), 1)
 
-#define OMP_LOOP_CHECK(NODE) TREE_RANGE_CHECK (NODE, OMP_FOR, OACC_LOOP)
-#define OMP_FOR_BODY(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 0)
-#define OMP_FOR_CLAUSES(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 1)
-#define OMP_FOR_INIT(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 2)
-#define OMP_FOR_COND(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 3)
-#define OMP_FOR_INCR(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 4)
-#define OMP_FOR_PRE_BODY(NODE)	   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 5)
-#define OMP_FOR_ORIG_DECLS(NODE)   TREE_OPERAND (OMP_LOOP_CHECK (NODE), 6)
+#define OMP_LOOPING_CHECK(NODE) TREE_RANGE_CHECK (NODE, OMP_FOR, OACC_LOOP)
+#define OMP_FOR_BODY(NODE)	   TREE_OPERAND (OMP_LOOPING_CHECK (NODE), 0)
+#define OMP_FOR_CLAUSES(NODE)	   TREE_OPERAND (OMP_LOOPING_CHECK (NODE), 1)
+#define OMP_FOR_INIT(NODE)	   TREE_OPERAND (OMP_LOOPING_CHECK (NODE), 2)
+#define OMP_FOR_COND(NODE)	   TREE_OPERAND (OMP_LOOPING_CHECK (NODE), 3)
+#define OMP_FOR_INCR(NODE)	   TREE_OPERAND (OMP_LOOPING_CHECK (NODE), 4)
+#define OMP_FOR_PRE_BODY(NODE)	   TREE_OPERAND (OMP_LOOPING_CHECK (NODE), 5)
+#define OMP_FOR_ORIG_DECLS(NODE)   TREE_OPERAND (OMP_LOOPING_CHECK (NODE), 6)
 
 #define OMP_SECTIONS_BODY(NODE)    TREE_OPERAND (OMP_SECTIONS_CHECK (NODE), 0)
 #define OMP_SECTIONS_CLAUSES(NODE) TREE_OPERAND (OMP_SECTIONS_CHECK (NODE), 1)
@@ -1741,6 +1741,9 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_DEFAULTMAP_SET_KIND(NODE, BEHAVIOR, CATEGORY) \
   (OMP_CLAUSE_DEFAULTMAP_KIND (NODE) \
    = (enum omp_clause_defaultmap_kind) (CATEGORY | BEHAVIOR))
+
+#define OMP_CLAUSE_BIND_KIND(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_BIND)->omp_clause.subcode.bind_kind)
 
 #define OMP_CLAUSE_TILE_LIST(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_TILE), 0)
@@ -5984,8 +5987,9 @@ desired_pro_or_demotion_p (const_tree to_type, const_tree from_type)
 
 /* Pointer type used to declare builtins before we have seen its real
    declaration.  */
-struct builtin_structptr_type
+class builtin_structptr_type
 {
+public:
   tree& node;
   tree& base;
   const char *str;
@@ -6069,8 +6073,9 @@ fndecl_built_in_p (const_tree node, built_in_function name)
 
    where it is not.  */
 
-struct op_location_t
+class op_location_t
 {
+public:
   location_t m_operator_loc;
   location_t m_combined_loc;
 

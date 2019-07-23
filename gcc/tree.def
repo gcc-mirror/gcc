@@ -908,7 +908,14 @@ DEFTREECODE (TRY_CATCH_EXPR, "try_catch_expr", tcc_statement, 2)
 /* Evaluate the first operand.
    The second operand is a cleanup expression which is evaluated
    on any exit (normal, exception, or jump out) from this expression.  */
-DEFTREECODE (TRY_FINALLY_EXPR, "try_finally", tcc_statement, 2)
+DEFTREECODE (TRY_FINALLY_EXPR, "try_finally_expr", tcc_statement, 2)
+
+/* Evaluate either the normal or the exceptional cleanup.  This must
+   only be present as the cleanup expression in a TRY_FINALLY_EXPR.
+   If the TRY_FINALLY_EXPR completes normally, the first operand of
+   EH_ELSE_EXPR is used as a cleanup, otherwise the second operand is
+   used.  */
+DEFTREECODE (EH_ELSE_EXPR, "eh_else_expr", tcc_statement, 2)
 
 /* These types of expressions have no useful value,
    and always have side effects.  */
@@ -1145,6 +1152,10 @@ DEFTREECODE (OMP_DISTRIBUTE, "omp_distribute", tcc_statement, 7)
 /* OpenMP - #pragma omp taskloop [clause1 ... clauseN]
    Operands like for OMP_FOR.  */
 DEFTREECODE (OMP_TASKLOOP, "omp_taskloop", tcc_statement, 7)
+
+/* OpenMP - #pragma omp loop [clause1 ... clauseN]
+   Operands like for OMP_FOR.  */
+DEFTREECODE (OMP_LOOP, "omp_loop", tcc_statement, 7)
 
 /* OpenMP - #pragma acc loop [clause1 ... clauseN]
    Operands like for OMP_FOR.  */

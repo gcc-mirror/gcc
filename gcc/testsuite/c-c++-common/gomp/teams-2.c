@@ -10,7 +10,7 @@ foo (void)
   }
   #pragma omp teams
   {
-    #pragma omp teams	/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp teams	/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
     ;
   }
   #pragma omp target
@@ -72,48 +72,48 @@ bar (void)
   #pragma omp teams
   {
     int x, y, v = 4;
-    #pragma omp target			/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp target			/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
     ;
-    #pragma omp target data map (to: v)	/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp target data map (to: v)	/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
     ;
-    #pragma omp for			/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp for			/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
     for (int i = 0; i < 64; ++i)
       ;
-    #pragma omp simd			/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp simd			/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
     for (int i = 0; i < 64; ++i)
       ;
-    #pragma omp for simd		/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp for simd		/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
     for (int i = 0; i < 64; ++i)
       ;
-    #pragma omp single			/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp single			/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
     ;
-    #pragma omp master			/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp master			/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
     ;
-    #pragma omp sections		/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp sections		/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
     {
       x = 1;
       #pragma omp section
       y = 2;
     }
-    #pragma omp critical		/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp critical		/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
     ;
-    #pragma omp target enter data map (to: v)	/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
-    #pragma omp target exit data map (from: v)	/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
-    #pragma omp cancel parallel		/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
-    #pragma omp cancellation point parallel /* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
-    #pragma omp barrier			/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
-    #pragma omp ordered			/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp target enter data map (to: v)	/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp target exit data map (from: v)	/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp cancel parallel		/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp cancellation point parallel /* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp barrier			/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp ordered			/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
     ;
-    #pragma omp task			/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp task			/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
     ;
-    #pragma omp taskloop		/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp taskloop		/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
     for (int i = 0; i < 64; ++i)
       ;
-    #pragma omp atomic			/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp atomic			/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
     v++;
-    #pragma omp taskgroup		/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp taskgroup		/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
     ;
-    #pragma omp taskwait		/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
-    #pragma omp taskyield		/* { dg-error "only 'distribute' or 'parallel' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp taskwait		/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
+    #pragma omp taskyield		/* { dg-error "only 'distribute', 'parallel' or 'loop' regions are allowed to be strictly nested inside 'teams' region" } */
   }
 }

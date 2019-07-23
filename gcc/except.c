@@ -27,14 +27,14 @@ along with GCC; see the file COPYING3.  If not see
    the compilation process:
 
    In the beginning, in the front end, we have the GENERIC trees
-   TRY_CATCH_EXPR, TRY_FINALLY_EXPR, WITH_CLEANUP_EXPR,
+   TRY_CATCH_EXPR, TRY_FINALLY_EXPR, EH_ELSE_EXPR, WITH_CLEANUP_EXPR,
    CLEANUP_POINT_EXPR, CATCH_EXPR, and EH_FILTER_EXPR.
 
-   During initial gimplification (gimplify.c) these are lowered
-   to the GIMPLE_TRY, GIMPLE_CATCH, and GIMPLE_EH_FILTER nodes.
-   The WITH_CLEANUP_EXPR and CLEANUP_POINT_EXPR nodes are converted
-   into GIMPLE_TRY_FINALLY nodes; the others are a more direct 1-1
-   conversion.
+   During initial gimplification (gimplify.c) these are lowered to the
+   GIMPLE_TRY, GIMPLE_CATCH, GIMPLE_EH_ELSE, and GIMPLE_EH_FILTER
+   nodes.  The WITH_CLEANUP_EXPR and CLEANUP_POINT_EXPR nodes are
+   converted into GIMPLE_TRY_FINALLY nodes; the others are a more
+   direct 1-1 conversion.
 
    During pass_lower_eh (tree-eh.c) we record the nested structure
    of the TRY nodes in EH_REGION nodes in CFUN->EH->REGION_TREE.
@@ -921,7 +921,7 @@ assign_filter_values (void)
 static basic_block
 emit_to_new_bb_before (rtx_insn *seq, rtx_insn *insn)
 {
-  rtx_insn *last;
+  rtx_insn *next, *last;
   basic_block bb;
   edge e;
   edge_iterator ei;
@@ -934,7 +934,16 @@ emit_to_new_bb_before (rtx_insn *seq, rtx_insn *insn)
       force_nonfallthru (e);
     else
       ei_next (&ei);
-  last = emit_insn_before (seq, insn);
+
+  /* Make sure to put the location of INSN or a subsequent instruction on SEQ
+     to avoid inheriting the location of the previous instruction.  */
+  next = insn;
+  while (next && !NONDEBUG_INSN_P (next))
+    next = NEXT_INSN (next);
+  if (next)
+    last = emit_insn_before_setloc (seq, insn, INSN_LOCATION (next));
+  else
+    last = emit_insn_before (seq, insn);
   if (BARRIER_P (last))
     last = PREV_INSN (last);
   bb = create_basic_block (seq, last, BLOCK_FOR_INSN (insn)->prev_bb);
@@ -1006,7 +1015,7 @@ dw2_build_landing_pads (void)
       make_single_succ_edge (bb, bb->next_bb, e_flags);
       if (current_loops)
 	{
-	  struct loop *loop = bb->next_bb->loop_father;
+	  class loop *loop = bb->next_bb->loop_father;
 	  /* If we created a pre-header block, add the new block to the
 	     outer loop, otherwise to the loop itself.  */
 	  if (bb->next_bb == loop->header)
@@ -1380,7 +1389,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
 	make_single_succ_edge (bb, bb->next_bb, EDGE_FALLTHRU);
 	if (current_loops)
 	  {
-	    struct loop *loop = bb->next_bb->loop_father;
+	    class loop *loop = bb->next_bb->loop_father;
 	    /* If we created a pre-header block, add the new block to the
 	       outer loop, otherwise to the loop itself.  */
 	    if (bb->next_bb == loop->header)
@@ -1418,7 +1427,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
       make_single_succ_edge (bb, bb->next_bb, EDGE_FALLTHRU);
       if (current_loops)
 	{
-	  struct loop *loop = bb->next_bb->loop_father;
+	  class loop *loop = bb->next_bb->loop_father;
 	  /* If we created a pre-header block, add the new block to the
 	     outer loop, otherwise to the loop itself.  */
 	  if (bb->next_bb == loop->header)

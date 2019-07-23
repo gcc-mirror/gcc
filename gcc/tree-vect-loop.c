@@ -286,7 +286,7 @@ vect_determine_vf_for_stmt (stmt_vec_info stmt_info, poly_uint64 *vf,
 static opt_result
 vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 {
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   unsigned nbbs = loop->num_nodes;
   poly_uint64 vectorization_factor = 1;
@@ -481,7 +481,7 @@ vect_inner_phi_in_double_reduction_p (stmt_vec_info stmt_info, gphi *phi)
    enclosing LOOP).  */
 
 static void
-vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
+vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop)
 {
   basic_block bb = loop->header;
   tree init, step;
@@ -633,7 +633,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 static void
 vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
 {
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   vect_analyze_scalar_cycles_1 (loop_vinfo, loop);
 
@@ -714,11 +714,11 @@ vect_fixup_scalar_cycles_with_patterns (loop_vec_info loop_vinfo)
 
 
 static gcond *
-vect_get_loop_niters (struct loop *loop, tree *assumptions,
+vect_get_loop_niters (class loop *loop, tree *assumptions,
 		      tree *number_of_iterations, tree *number_of_iterationsm1)
 {
   edge exit = single_exit (loop);
-  struct tree_niter_desc niter_desc;
+  class tree_niter_desc niter_desc;
   tree niter_assumptions, niter, may_be_zero;
   gcond *cond = get_loop_exit_condition (loop);
 
@@ -793,7 +793,7 @@ vect_get_loop_niters (struct loop *loop, tree *assumptions,
 static bool
 bb_in_loop_p (const_basic_block bb, const void *data)
 {
-  const struct loop *const loop = (const struct loop *)data;
+  const class loop *const loop = (const class loop *)data;
   if (flow_bb_inside_loop_p (loop, bb))
     return true;
   return false;
@@ -803,7 +803,7 @@ bb_in_loop_p (const_basic_block bb, const void *data)
 /* Create and initialize a new loop_vec_info struct for LOOP_IN, as well as
    stmt_vec_info structs for all the stmts in LOOP_IN.  */
 
-_loop_vec_info::_loop_vec_info (struct loop *loop_in, vec_info_shared *shared)
+_loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
   : vec_info (vec_info::loop, init_cost (loop_in), shared),
     loop (loop_in),
     bbs (XCNEWVEC (basic_block, loop->num_nodes)),
@@ -833,6 +833,7 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in, vec_info_shared *shared)
     operands_swapped (false),
     no_data_dependencies (false),
     has_mask_store (false),
+    scalar_loop_scaling (profile_probability::uninitialized ()),
     scalar_loop (NULL),
     orig_loop_info (NULL)
 {
@@ -1028,7 +1029,7 @@ vect_get_max_nscalars_per_iter (loop_vec_info loop_vinfo)
 static bool
 vect_verify_full_masking (loop_vec_info loop_vinfo)
 {
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   unsigned int min_ni_width;
   unsigned int max_nscalars_per_iter
     = vect_get_max_nscalars_per_iter (loop_vinfo);
@@ -1121,7 +1122,7 @@ vect_verify_full_masking (loop_vec_info loop_vinfo)
 static void
 vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
 {
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   int nbbs = loop->num_nodes, factor;
   int innerloop_iters, i;
@@ -1203,7 +1204,7 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
      niter could be analyzed under some assumptions.  */
 
 opt_result
-vect_analyze_loop_form_1 (struct loop *loop, gcond **loop_cond,
+vect_analyze_loop_form_1 (class loop *loop, gcond **loop_cond,
 			  tree *assumptions, tree *number_of_iterationsm1,
 			  tree *number_of_iterations, gcond **inner_loop_cond)
 {
@@ -1238,7 +1239,7 @@ vect_analyze_loop_form_1 (struct loop *loop, gcond **loop_cond,
     }
   else
     {
-      struct loop *innerloop = loop->inner;
+      class loop *innerloop = loop->inner;
       edge entryedge;
 
       /* Nested loop. We currently require that the loop is doubly-nested,
@@ -1355,7 +1356,7 @@ vect_analyze_loop_form_1 (struct loop *loop, gcond **loop_cond,
 /* Analyze LOOP form and return a loop_vec_info if it is of suitable form.  */
 
 opt_loop_vec_info
-vect_analyze_loop_form (struct loop *loop, vec_info_shared *shared)
+vect_analyze_loop_form (class loop *loop, vec_info_shared *shared)
 {
   tree assumptions, number_of_iterations, number_of_iterationsm1;
   gcond *loop_cond, *inner_loop_cond = NULL;
@@ -1418,7 +1419,7 @@ vect_analyze_loop_form (struct loop *loop, vec_info_shared *shared)
 static void
 vect_update_vf_for_slp (loop_vec_info loop_vinfo)
 {
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   int nbbs = loop->num_nodes;
   poly_uint64 vectorization_factor;
@@ -1514,7 +1515,7 @@ vect_active_double_reduction_p (stmt_vec_info stmt_info)
 static opt_result
 vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 {
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   int nbbs = loop->num_nodes;
   int i;
@@ -1660,7 +1661,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 static int
 vect_analyze_loop_costing (loop_vec_info loop_vinfo)
 {
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   unsigned int assumed_vf = vect_vf_for_cost (loop_vinfo);
 
   /* Only fully-masked loops can have iteration counts less than the
@@ -2327,7 +2328,7 @@ again:
    loop_vec_info struct.  If ORIG_LOOP_VINFO is not NULL epilogue must
    be vectorized.  */
 opt_loop_vec_info
-vect_analyze_loop (struct loop *loop, loop_vec_info orig_loop_vinfo,
+vect_analyze_loop (class loop *loop, loop_vec_info orig_loop_vinfo,
 		   vec_info_shared *shared)
 {
   auto_vector_sizes vector_sizes;
@@ -2531,7 +2532,7 @@ neutral_op_for_slp_reduction (slp_tree slp_node, tree_code code,
   stmt_vec_info stmt_vinfo = stmts[0];
   tree vector_type = STMT_VINFO_VECTYPE (stmt_vinfo);
   tree scalar_type = TREE_TYPE (vector_type);
-  struct loop *loop = gimple_bb (stmt_vinfo->stmt)->loop_father;
+  class loop *loop = gimple_bb (stmt_vinfo->stmt)->loop_father;
   gcc_assert (loop);
 
   switch (code)
@@ -2610,8 +2611,8 @@ static bool
 vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
 		       gimple *first_stmt)
 {
-  struct loop *loop = (gimple_bb (phi))->loop_father;
-  struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
+  class loop *loop = (gimple_bb (phi))->loop_father;
+  class loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
   enum tree_code code;
   gimple *loop_use_stmt = NULL;
   stmt_vec_info use_stmt_info;
@@ -2950,8 +2951,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 			  enum vect_reduction_type *v_reduc_type)
 {
   gphi *phi = as_a <gphi *> (phi_info->stmt);
-  struct loop *loop = (gimple_bb (phi))->loop_father;
-  struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
+  class loop *loop = (gimple_bb (phi))->loop_father;
+  class loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
   bool nested_in_vect_loop = flow_loop_nested_p (vect_loop, loop);
   gimple *phi_use_stmt = NULL;
   enum tree_code orig_code, code;
@@ -3976,7 +3977,7 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, internal_fn reduc_fn,
   tree vectype;
   machine_mode mode;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop *loop = NULL;
+  class loop *loop = NULL;
 
   if (loop_vinfo)
     loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -4207,7 +4208,7 @@ get_initial_def_for_reduction (stmt_vec_info stmt_vinfo, tree init_val,
                                tree *adjustment_def)
 {
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree scalar_type = TREE_TYPE (init_val);
   tree vectype = get_vectype_for_scalar_type (scalar_type);
   enum tree_code code = gimple_assign_rhs_code (stmt_vinfo->stmt);
@@ -4328,7 +4329,7 @@ get_initial_defs_for_reduction (slp_tree slp_node,
   tree vector_type;
   unsigned int group_size = stmts.length ();
   unsigned int i;
-  struct loop *loop;
+  class loop *loop;
 
   vector_type = STMT_VINFO_VECTYPE (stmt_vinfo);
 
@@ -4516,7 +4517,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs,
   tree vectype;
   machine_mode mode;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo), *outer_loop = NULL;
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo), *outer_loop = NULL;
   basic_block exit_bb;
   tree scalar_dest;
   tree scalar_type;
@@ -5954,7 +5955,7 @@ vectorize_fold_left_reduction (stmt_vec_info stmt_info,
 			       int reduc_index, vec_loop_masks *masks)
 {
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree vectype_out = STMT_VINFO_VECTYPE (stmt_info);
   stmt_vec_info new_stmt_info = NULL;
   internal_fn mask_reduc_fn = get_masked_reduction_fn (reduc_fn, vectype_in);
@@ -6097,7 +6098,7 @@ vectorize_fold_left_reduction (stmt_vec_info stmt_info,
    does not cause overflow.  */
 
 static bool
-is_nonwrapping_integer_induction (stmt_vec_info stmt_vinfo, struct loop *loop)
+is_nonwrapping_integer_induction (stmt_vec_info stmt_vinfo, class loop *loop)
 {
   gphi *phi = as_a <gphi *> (stmt_vinfo->stmt);
   tree base = STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED (stmt_vinfo);
@@ -6255,7 +6256,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   tree vectype_out = STMT_VINFO_VECTYPE (stmt_info);
   tree vectype_in = NULL_TREE;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   enum tree_code code, orig_code;
   internal_fn reduc_fn;
   machine_mode vec_mode;
@@ -6279,7 +6280,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   bool nested_cycle = false, found_nested_cycle_def = false;
   bool double_reduc = false;
   basic_block def_bb;
-  struct loop * def_stmt_loop;
+  class loop * def_stmt_loop;
   tree def_arg;
   auto_vec<tree> vec_oprnds0;
   auto_vec<tree> vec_oprnds1;
@@ -7467,10 +7468,10 @@ vectorizable_induction (stmt_vec_info stmt_info,
 			stmt_vector_for_cost *cost_vec)
 {
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   unsigned ncopies;
   bool nested_in_vect_loop = false;
-  struct loop *iv_loop;
+  class loop *iv_loop;
   tree vec_def;
   edge pe = loop_preheader_edge (loop);
   basic_block new_bb;
@@ -8011,7 +8012,7 @@ vectorizable_live_operation (stmt_vec_info stmt_info,
 			     stmt_vector_for_cost *)
 {
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   imm_use_iterator imm_iter;
   tree lhs, lhs_type, bitsize, vec_bitsize;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
@@ -8219,7 +8220,7 @@ vectorizable_live_operation (stmt_vec_info stmt_info,
 /* Kill any debug uses outside LOOP of SSA names defined in STMT_INFO.  */
 
 static void
-vect_loop_kill_debug_uses (struct loop *loop, stmt_vec_info stmt_info)
+vect_loop_kill_debug_uses (class loop *loop, stmt_vec_info stmt_info)
 {
   ssa_op_iter op_iter;
   imm_use_iterator imm_iter;
@@ -8275,7 +8276,7 @@ loop_niters_no_overflow (loop_vec_info loop_vinfo)
     }
 
   widest_int max;
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   /* Check the upper bound of loop niters.  */
   if (get_max_loop_iterations (loop, &max))
     {
@@ -8383,7 +8384,7 @@ vect_get_loop_mask (gimple_stmt_iterator *gsi, vec_loop_masks *masks,
    by factor VF.  */
 
 static void
-scale_profile_for_vect_loop (struct loop *loop, unsigned vf)
+scale_profile_for_vect_loop (class loop *loop, unsigned vf)
 {
   edge preheader = loop_preheader_edge (loop);
   /* Reduce loop iterations by the vectorization factor.  */
@@ -8421,7 +8422,7 @@ static void
 vect_transform_loop_stmt (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 			  gimple_stmt_iterator *gsi, stmt_vec_info *seen_store)
 {
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
 
   if (dump_enabled_p ())
@@ -8466,11 +8467,11 @@ vect_transform_loop_stmt (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
    stmts in the loop, and update the loop exit condition.
    Returns scalar epilogue loop if any.  */
 
-struct loop *
+class loop *
 vect_transform_loop (loop_vec_info loop_vinfo)
 {
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  struct loop *epilogue = NULL;
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *epilogue = NULL;
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
   int nbbs = loop->num_nodes;
   int i;
@@ -8527,7 +8528,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 					      versioning_threshold);
 	  check_profitability = false;
 	}
-      struct loop *sloop
+      class loop *sloop
 	= vect_loop_versioning (loop_vinfo, th, check_profitability,
 				versioning_threshold);
       sloop->force_vectorize = false;
@@ -8557,6 +8558,10 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   epilogue = vect_do_peeling (loop_vinfo, niters, nitersm1, &niters_vector,
 			      &step_vector, &niters_vector_mult_vf, th,
 			      check_profitability, niters_no_overflow);
+  if (LOOP_VINFO_SCALAR_LOOP (loop_vinfo)
+      && LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo).initialized_p ())
+    scale_loop_frequencies (LOOP_VINFO_SCALAR_LOOP (loop_vinfo),
+			    LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo));
 
   if (niters_vector == NULL_TREE)
     {
@@ -8889,13 +8894,13 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 */
 
 void
-optimize_mask_stores (struct loop *loop)
+optimize_mask_stores (class loop *loop)
 {
   basic_block *bbs = get_loop_body (loop);
   unsigned nbbs = loop->num_nodes;
   unsigned i;
   basic_block bb;
-  struct loop *bb_loop;
+  class loop *bb_loop;
   gimple_stmt_iterator gsi;
   gimple *stmt;
   auto_vec<gimple *> worklist;
@@ -9084,7 +9089,7 @@ widest_int
 vect_iv_limit_for_full_masking (loop_vec_info loop_vinfo)
 {
   tree niters_skip = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   unsigned HOST_WIDE_INT max_vf = vect_max_vf (loop_vinfo);
 
   /* Calculate the value that the induction variable must be able

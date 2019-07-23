@@ -477,12 +477,11 @@ package body Exp_Ch9 is
    --    <actualN> := P.<formalN>;
 
    procedure Reset_Scopes_To (Bod : Node_Id; E : Entity_Id);
-   --  Reset the scope of declarations and blocks at the top level of Bod
-   --  to be E. Bod is either a block or a subprogram body.  Used after
-   --  expanding various kinds of entry bodies into their corresponding
-   --  constructs. This is needed during unnesting to determine whether a
-   --  body generated for an entry or an accept alternative includes uplevel
-   --  references.
+   --  Reset the scope of declarations and blocks at the top level of Bod to
+   --  be E. Bod is either a block or a subprogram body. Used after expanding
+   --  various kinds of entry bodies into their corresponding constructs. This
+   --  is needed during unnesting to determine whether a body generated for an
+   --  entry or an accept alternative includes uplevel references.
 
    function Trivial_Accept_OK return Boolean;
    --  If there is no DO-END block for an accept, or if the DO-END block has
@@ -869,7 +868,7 @@ package body Exp_Ch9 is
           Make_Implicit_Exception_Handler (Loc,
             Exception_Choices => New_List (Ohandle),
 
-            Statements =>  New_List (
+            Statements => New_List (
               Make_Procedure_Call_Statement (Sloc (Stats),
                 Name                   => New_Occurrence_Of (
                   RTE (RE_Exceptional_Complete_Rendezvous), Sloc (Stats)),
@@ -3494,6 +3493,8 @@ package body Exp_Ch9 is
       procedure Move_Pragmas (From : Node_Id; To : Node_Id);
       --  Find all suitable source pragmas at the top of subprogram body From's
       --  declarations and insert them after arbitrary node To.
+      --
+      --  Very similar to Move_Pragmas in sem_ch6 ???
 
       ---------------------
       -- Analyze_Pragmas --
@@ -3545,7 +3546,14 @@ package body Exp_Ch9 is
 
             Next_Decl := Next (Decl);
 
-            if Nkind (Decl) = N_Pragma then
+            --  We add an exception here for Unreferenced pragmas since the
+            --  internally generated spec gets analyzed within
+            --  Build_Private_Protected_Declaration and will lead to spurious
+            --  warnings due to the way references are checked.
+
+            if Nkind (Decl) = N_Pragma
+              and then Pragma_Name_Unmapped (Decl) /= Name_Unreferenced
+            then
                Remove (Decl);
                Insert_After (Insert_Nod, Decl);
                Insert_Nod := Decl;
@@ -3792,7 +3800,7 @@ package body Exp_Ch9 is
                    Make_Implicit_Exception_Handler (EH_Loc,
                      Exception_Choices => New_List (Ohandle),
 
-                     Statements        =>  New_List (
+                     Statements        => New_List (
                        Make_Procedure_Call_Statement (EH_Loc,
                          Name                   => Complete,
                          Parameter_Associations => New_List (
@@ -3887,6 +3895,7 @@ package body Exp_Ch9 is
 
          if Unprotected then
             Set_Protected_Formal (Formal, Defining_Identifier (New_Param));
+            Set_Ekind (Defining_Identifier (New_Param), Ekind (Formal));
          end if;
 
          Append (New_Param, New_Plist);
@@ -8919,6 +8928,8 @@ package body Exp_Ch9 is
       Current_Node : Node_Id := N;
       E_Count      : Int;
       Entries_Aggr : Node_Id;
+      Rec_Decl     : Node_Id;
+      Rec_Id       : Entity_Id;
 
       procedure Check_Inlining (Subp : Entity_Id);
       --  If the original operation has a pragma Inline, propagate the flag
@@ -8939,6 +8950,21 @@ package body Exp_Ch9 is
       procedure Register_Handler;
       --  For a protected operation that is an interrupt handler, add the
       --  freeze action that will register it as such.
+
+      procedure Replace_Access_Definition (Comp : Node_Id);
+      --  If a private component of the type is an access to itself, this
+      --  is not a reference to the current instance, but an access type out
+      --  of which one might construct a list. If such a component exists, we
+      --  create an incomplete type for the equivalent record type, and
+      --  a named access type for it, that replaces the access definition
+      --  of the original component. This is similar to what is done for
+      --  records in Check_Anonymous_Access_Components, but simpler, because
+      --  the corresponding record type has no previous declaration.
+      --  This needs to be done only once, even if there are several such
+      --  access components. The following entity stores the constructed
+      --  access type.
+
+      Acc_T : Entity_Id := Empty;
 
       --------------------
       -- Check_Inlining --
@@ -9087,6 +9113,41 @@ package body Exp_Ch9 is
          Append_Freeze_Action (Prot_Proc, RTS_Call);
       end Register_Handler;
 
+      -------------------------------
+      -- Replace_Access_Definition --
+      -------------------------------
+
+      procedure Replace_Access_Definition (Comp : Node_Id) is
+         Loc     : constant Source_Ptr := Sloc (Comp);
+         Inc_T   : Node_Id;
+         Inc_D   : Node_Id;
+         Acc_Def : Node_Id;
+         Acc_D   : Node_Id;
+
+      begin
+         if No (Acc_T) then
+            Inc_T   := Make_Defining_Identifier (Loc, Chars (Rec_Id));
+            Inc_D   := Make_Incomplete_Type_Declaration (Loc, Inc_T);
+            Acc_T   := Make_Temporary (Loc, 'S');
+            Acc_Def :=
+              Make_Access_To_Object_Definition (Loc,
+                Subtype_Indication => New_Occurrence_Of (Inc_T, Loc));
+            Acc_D :=
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier => Acc_T,
+                Type_Definition => Acc_Def);
+
+            Insert_Before (Rec_Decl, Inc_D);
+            Analyze (Inc_D);
+
+            Insert_Before (Rec_Decl, Acc_D);
+            Analyze (Acc_D);
+         end if;
+
+         Set_Access_Definition (Comp, Empty);
+         Set_Subtype_Indication (Comp, New_Occurrence_Of (Acc_T, Loc));
+      end Replace_Access_Definition;
+
       --  Local variables
 
       Body_Arr    : Node_Id;
@@ -9098,7 +9159,6 @@ package body Exp_Ch9 is
       Obj_Def     : Node_Id;
       Object_Comp : Node_Id;
       Priv        : Node_Id;
-      Rec_Decl    : Node_Id;
       Sub         : Node_Id;
 
    --  Start of processing for Expand_N_Protected_Type_Declaration
@@ -9108,6 +9168,7 @@ package body Exp_Ch9 is
          return;
       else
          Rec_Decl := Build_Corresponding_Record (N, Prot_Typ, Loc);
+         Rec_Id   := Defining_Identifier (Rec_Decl);
       end if;
 
       Cdecls := Component_Items (Component_List (Type_Definition (Rec_Decl)));
@@ -9253,6 +9314,15 @@ package body Exp_Ch9 is
                          Access_Definition  =>
                            New_Copy_Tree
                              (Access_Definition (Old_Comp), Discr_Map));
+
+                      --  A self-reference in the private part becomes a
+                      --  self-reference to the corresponding record.
+
+                     if Entity (Subtype_Mark (Access_Definition (New_Comp)))
+                       = Prot_Typ
+                     then
+                        Replace_Access_Definition (New_Comp);
+                     end if;
                   end if;
 
                   New_Priv :=
@@ -10639,7 +10709,7 @@ package body Exp_Ch9 is
 
              Statements       => New_List (
                Make_Implicit_If_Statement (N,
-                 Condition       =>  Cond,
+                 Condition       => Cond,
                  Then_Statements => New_List (
                    Make_Select_Call (
                      New_Occurrence_Of (RTE (RE_Simple_Mode), Loc)),
@@ -12658,14 +12728,6 @@ package body Exp_Ch9 is
           Object_Definition   => New_Occurrence_Of (Standard_Integer, Loc),
           Expression          => D_Disc));
 
-      --  Do the assignment at this stage only because the evaluation of the
-      --  expression must not occur earlier (see ACVC C97302A).
-
-      Append_To (Stmts,
-        Make_Assignment_Statement (Loc,
-          Name       => New_Occurrence_Of (D, Loc),
-          Expression => D_Conv));
-
       --  Parameter block processing
 
       --  Manually create the parameter block for dispatching calls. In the
@@ -12673,6 +12735,14 @@ package body Exp_Ch9 is
       --  to Build_Simple_Entry_Call.
 
       if Is_Disp_Select then
+
+         --  Compute the delay at this stage because the evaluation of its
+         --  expression must not occur earlier (see ACVC C97302A).
+
+         Append_To (Stmts,
+           Make_Assignment_Statement (Loc,
+             Name       => New_Occurrence_Of (D, Loc),
+             Expression => D_Conv));
 
          --  Tagged kind processing, generate:
          --    K : Ada.Tags.Tagged_Kind :=
@@ -12855,8 +12925,8 @@ package body Exp_Ch9 is
             Next (Stmt);
          end loop;
 
-         --  Do the assignment at this stage only because the evaluation
-         --  of the expression must not occur earlier (see ACVC C97302A).
+         --  Compute the delay at this stage because the evaluation of
+         --  its expression must not occur earlier (see ACVC C97302A).
 
          Insert_Before (Stmt,
            Make_Assignment_Statement (Loc,
@@ -12942,10 +13012,9 @@ package body Exp_Ch9 is
 
       Analyze (N);
 
-      --  Some items in Decls used to be in the N_Block in  E_Call that
-      --  is constructed in Expand_Entry_Call, and are now in the new
-      --  Block into which N has been rewritten.  Adjust their scopes
-      --  to reflect that.
+      --  Some items in Decls used to be in the N_Block in E_Call that is
+      --  constructed in Expand_Entry_Call, and are now in the new Block
+      --  into which N has been rewritten. Adjust their scopes to reflect that.
 
       if Nkind (E_Call) = N_Block_Statement then
          Obj := First_Entity (Entity (Identifier (E_Call)));
@@ -14882,7 +14951,8 @@ package body Exp_Ch9 is
 
          --  Ditto for a package declaration or a full type declaration, etc.
 
-         elsif Nkind (N) = N_Package_Declaration
+         elsif (Nkind (N) = N_Package_Declaration
+                 and then N /= Specification (N))
            or else Nkind (N) in N_Declaration
            or else Nkind (N) in N_Renaming_Declaration
          then

@@ -2319,6 +2319,13 @@ package body Exp_Ch6 is
       --  Adds invariant checks for every intermediate type between the range
       --  of a view converted argument to its ancestor (from parent to child).
 
+      function Can_Fold_Predicate_Call (P : Entity_Id) return Boolean;
+      --  Try to constant-fold a predicate check, which often enough is a
+      --  simple arithmetic expression that can be computed statically if
+      --  its argument is static. This cleans up the output of CCG, even
+      --  though useless predicate checks will be generally removed by
+      --  back-end optimizations.
+
       function Inherited_From_Formal (S : Entity_Id) return Entity_Id;
       --  Within an instance, a type derived from an untagged formal derived
       --  type inherits from the original parent, not from the actual. The
@@ -2330,6 +2337,10 @@ package body Exp_Ch6 is
 
       function In_Unfrozen_Instance (E : Entity_Id) return Boolean;
       --  Return true if E comes from an instance that is not yet frozen
+
+      function Is_Class_Wide_Interface_Type (E : Entity_Id) return Boolean;
+      --  Return True when E is a class-wide interface type or an access to
+      --  a class-wide interface type.
 
       function Is_Direct_Deep_Call (Subp : Entity_Id) return Boolean;
       --  Determine if Subp denotes a non-dispatching call to a Deep routine
@@ -2463,6 +2474,113 @@ package body Exp_Ch6 is
          end if;
       end Add_View_Conversion_Invariants;
 
+      -----------------------------
+      -- Can_Fold_Predicate_Call --
+      -----------------------------
+
+      function Can_Fold_Predicate_Call (P : Entity_Id) return Boolean is
+         Actual : Node_Id;
+
+         function May_Fold (N : Node_Id) return Traverse_Result;
+         --  The predicate expression is foldable if it only contains operators
+         --  and literals. During this check, we also replace occurrences of
+         --  the formal of the constructed predicate function with the static
+         --  value of the actual. This is done on a copy of the analyzed
+         --  expression for the predicate.
+
+         --------------
+         -- May_Fold --
+         --------------
+
+         function May_Fold (N : Node_Id) return Traverse_Result is
+         begin
+            case Nkind (N) is
+               when N_Binary_Op
+                  | N_Unary_Op
+               =>
+                  return OK;
+
+               when N_Expanded_Name
+                  | N_Identifier
+               =>
+                  if Ekind (Entity (N)) = E_In_Parameter
+                    and then Entity (N) = First_Entity (P)
+                  then
+                     Rewrite (N, New_Copy (Actual));
+                     Set_Is_Static_Expression (N);
+                     return OK;
+
+                  elsif Ekind (Entity (N)) = E_Enumeration_Literal then
+                     return OK;
+
+                  else
+                     return Abandon;
+                  end if;
+
+               when N_Case_Expression
+                  | N_If_Expression
+               =>
+                  return OK;
+
+               when N_Integer_Literal =>
+                  return OK;
+
+               when others =>
+                  return Abandon;
+            end case;
+         end May_Fold;
+
+         function Try_Fold is new Traverse_Func (May_Fold);
+
+         --  Other lLocal variables
+
+         Subt   : constant Entity_Id := Etype (First_Entity (P));
+         Aspect : Node_Id;
+         Pred   : Node_Id;
+
+      --  Start of processing for Can_Fold_Predicate_Call
+
+      begin
+         --  Folding is only interesting if the actual is static and its type
+         --  has a Dynamic_Predicate aspect. For CodePeer we preserve the
+         --  function call.
+
+         Actual := First (Parameter_Associations (Call_Node));
+         Aspect := Find_Aspect (Subt, Aspect_Dynamic_Predicate);
+
+         --  If actual is a declared constant, retrieve its value
+
+         if Is_Entity_Name (Actual)
+           and then Ekind (Entity (Actual)) = E_Constant
+         then
+            Actual := Constant_Value (Entity (Actual));
+         end if;
+
+         if No (Actual)
+           or else Nkind (Actual) /= N_Integer_Literal
+           or else not Has_Dynamic_Predicate_Aspect (Subt)
+           or else No (Aspect)
+           or else CodePeer_Mode
+         then
+            return False;
+         end if;
+
+         --  Retrieve the analyzed expression for the predicate
+
+         Pred := New_Copy_Tree (Expression (Aspect));
+
+         if Try_Fold (Pred) = OK then
+            Rewrite (Call_Node, Pred);
+            Analyze_And_Resolve (Call_Node, Standard_Boolean);
+            return True;
+
+         --  Otherwise continue the expansion of the function call
+
+         else
+            return False;
+         end if;
+      end Can_Fold_Predicate_Call;
+
       ---------------------------
       -- Inherited_From_Formal --
       ---------------------------
@@ -2584,6 +2702,32 @@ package body Exp_Ch6 is
 
          return False;
       end In_Unfrozen_Instance;
+
+      ----------------------------------
+      -- Is_Class_Wide_Interface_Type --
+      ----------------------------------
+
+      function Is_Class_Wide_Interface_Type (E : Entity_Id) return Boolean is
+         DDT : Entity_Id;
+         Typ : Entity_Id := E;
+
+      begin
+         if Has_Non_Limited_View (Typ) then
+            Typ := Non_Limited_View (Typ);
+         end if;
+
+         if Ekind (Typ) = E_Anonymous_Access_Type then
+            DDT := Directly_Designated_Type (Typ);
+
+            if Has_Non_Limited_View (DDT) then
+               DDT := Non_Limited_View (DDT);
+            end if;
+
+            return Is_Class_Wide_Type (DDT) and then Is_Interface (DDT);
+         else
+            return Is_Class_Wide_Type (Typ) and then Is_Interface (Typ);
+         end if;
+      end Is_Class_Wide_Interface_Type;
 
       -------------------------
       -- Is_Direct_Deep_Call --
@@ -2785,6 +2929,17 @@ package body Exp_Ch6 is
          end;
       end if;
 
+      --  if this is a call to a predicate function, try to constant
+      --  fold it.
+
+      if Nkind (Call_Node) = N_Function_Call
+        and then Is_Entity_Name (Name (Call_Node))
+        and then Is_Predicate_Function (Subp)
+        and then Can_Fold_Predicate_Call (Subp)
+      then
+         return;
+      end if;
+
       if Modify_Tree_For_C
         and then Nkind (Call_Node) = N_Function_Call
         and then Is_Entity_Name (Name (Call_Node))
@@ -2919,15 +3074,7 @@ package body Exp_Ch6 is
 
          CW_Interface_Formals_Present :=
            CW_Interface_Formals_Present
-             or else
-               (Is_Class_Wide_Type (Etype (Formal))
-                 and then Is_Interface (Etype (Etype (Formal))))
-             or else
-               (Ekind (Etype (Formal)) = E_Anonymous_Access_Type
-                 and then Is_Class_Wide_Type (Directly_Designated_Type
-                                               (Etype (Etype (Formal))))
-                 and then Is_Interface (Directly_Designated_Type
-                                         (Etype (Etype (Formal)))));
+             or else Is_Class_Wide_Interface_Type (Etype (Formal));
 
          --  Create possible extra actual for constrained case. Usually, the
          --  extra actual is of the form actual'constrained, but since this
@@ -3203,7 +3350,7 @@ package body Exp_Ch6 is
                            --  ???
 
                            --  A further case that requires special handling
-                           --  is the common idiom E.all'access.  If E is a
+                           --  is the common idiom E.all'access. If E is a
                            --  formal of the enclosing subprogram, the
                            --  accessibility of the expression is that of E.
 
@@ -3271,7 +3418,10 @@ package body Exp_Ch6 is
 
                   --  For allocators we pass the level of the execution of the
                   --  called subprogram, which is one greater than the current
-                  --  scope level.
+                  --  scope level. However, according to RM 3.10.2(14/3) this
+                  --  is wrong since for an anonymous allocator defining the
+                  --  value of an access parameter, the accessibility level is
+                  --  that of the innermost master of the call???
 
                   when N_Allocator =>
                      Add_Extra_Actual
@@ -7765,22 +7915,20 @@ package body Exp_Ch6 is
 
       --  For now we test whether E denotes a function or access-to-function
       --  type whose result subtype is inherently limited. Later this test
-      --  may be revised to allow composite nonlimited types. Functions with
-      --  a foreign convention or whose result type has a foreign convention
-      --  never qualify.
+      --  may be revised to allow composite nonlimited types.
 
       if Ekind_In (E, E_Function, E_Generic_Function)
         or else (Ekind (E) = E_Subprogram_Type
                   and then Etype (E) /= Standard_Void_Type)
       then
-         --  Note: If the function has a foreign convention, it cannot build
-         --  its result in place, so you're on your own. On the other hand,
-         --  if only the return type has a foreign convention, its layout is
-         --  intended to be compatible with the other language, but the build-
-         --  in place machinery can ensure that the object is not copied.
+         --  If the function is imported from a foreign language, we don't do
+         --  build-in-place. Note that Import (Ada) functions can do
+         --  build-in-place. Note that it is OK for a build-in-place function
+         --  to return a type with a foreign convention; the build-in-place
+         --  machinery will ensure there is no copying.
 
          return Is_Build_In_Place_Result_Type (Etype (E))
-           and then not Has_Foreign_Convention (E)
+           and then not (Has_Foreign_Convention (E) and then Is_Imported (E))
            and then not Debug_Flag_Dot_L;
       else
          return False;
@@ -8524,7 +8672,7 @@ package body Exp_Ch6 is
          --  The presence of an address clause complicates the build-in-place
          --  expansion because the indicated address must be processed before
          --  the indirect call is generated (including the definition of a
-         --  local pointer to the object).  The address clause may come from
+         --  local pointer to the object). The address clause may come from
          --  an aspect specification or from an explicit attribute
          --  specification appearing after the object declaration. These two
          --  cases require different processing.
@@ -9235,8 +9383,9 @@ package body Exp_Ch6 is
          return False;
       end Has_Unconstrained_Access_Discriminant_Component;
 
-      Feature_Disabled : constant Boolean := True;
-      --  Temporary
+      Disable_Coextension_Cases : constant Boolean := True;
+      --  Flag used to temporarily disable a "True" result for types with
+      --  access discriminants and related coextension cases.
 
    --  Start of processing for Needs_Result_Accessibility_Level
 
@@ -9244,9 +9393,6 @@ package body Exp_Ch6 is
       --  False if completion unavailable (how does this happen???)
 
       if not Present (Func_Typ) then
-         return False;
-
-      elsif Feature_Disabled then
          return False;
 
       --  False if not a function, also handle enum-lit renames case
@@ -9273,23 +9419,37 @@ package body Exp_Ch6 is
       elsif Ada_Version < Ada_2012 then
          return False;
 
-      elsif Ekind (Func_Typ) = E_Anonymous_Access_Type
-        or else Is_Tagged_Type (Func_Typ)
-      then
-         --  In the case of, say, a null tagged record result type, the need
-         --  for this extra parameter might not be obvious. This function
-         --  returns True for all tagged types for compatibility reasons.
-         --  A function with, say, a tagged null controlling result type might
-         --  be overridden by a primitive of an extension having an access
-         --  discriminant and the overrider and overridden must have compatible
-         --  calling conventions (including implicitly declared parameters).
-         --  Similarly, values of one access-to-subprogram type might designate
-         --  both a primitive subprogram of a given type and a function
-         --  which is, for example, not a primitive subprogram of any type.
-         --  Again, this requires calling convention compatibility.
-         --  It might be possible to solve these issues by introducing
-         --  wrappers, but that is not the approach that was chosen.
+      --  Handle the situation where a result is an anonymous access type
+      --  RM 3.10.2 (10.3/3).
 
+      elsif Ekind (Func_Typ) = E_Anonymous_Access_Type then
+         return True;
+
+      --  The following cases are related to coextensions and do not fully
+      --  cover everything mentioned in RM 3.10.2 (12) ???
+
+      --  Temporarily disabled ???
+
+      elsif Disable_Coextension_Cases then
+         return False;
+
+      --  In the case of, say, a null tagged record result type, the need for
+      --  this extra parameter might not be obvious so this function returns
+      --  True for all tagged types for compatibility reasons.
+
+      --  A function with, say, a tagged null controlling result type might
+      --  be overridden by a primitive of an extension having an access
+      --  discriminant and the overrider and overridden must have compatible
+      --  calling conventions (including implicitly declared parameters).
+
+      --  Similarly, values of one access-to-subprogram type might designate
+      --  both a primitive subprogram of a given type and a function which is,
+      --  for example, not a primitive subprogram of any type. Again, this
+      --  requires calling convention compatibility. It might be possible to
+      --  solve these issues by introducing wrappers, but that is not the
+      --  approach that was chosen.
+
+      elsif Is_Tagged_Type (Func_Typ) then
          return True;
 
       elsif Has_Unconstrained_Access_Discriminants (Func_Typ) then

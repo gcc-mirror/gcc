@@ -308,7 +308,7 @@ public:
   /* Tree merging did suceed; throw away recent changes.  */
   void revert_location_cache ();
   void input_location (location_t *loc, struct bitpack_d *bp,
-		       struct data_in *data_in);
+		       class data_in *data_in);
   lto_location_cache ()
      : loc_cache (), accepted_length (0), current_file (NULL), current_line (0),
        current_col (0), current_sysp (false), current_loc (UNKNOWN_LOCATION)
@@ -394,9 +394,22 @@ struct lto_section
 {
   int16_t major_version;
   int16_t minor_version;
-  unsigned char slim_object: 1;
-  lto_compression compression: 4;
-  int32_t reserved0: 27;
+  unsigned char slim_object;
+
+  /* Flags is a private field that is not defined publicly.  */
+  uint16_t flags;
+
+  /* Set compression to FLAGS.  */
+  inline void set_compression (lto_compression c)
+  {
+    flags = c;
+  }
+
+  /* Get compression from FLAGS.  */
+  inline lto_compression get_compression ()
+  {
+    return (lto_compression) flags;
+  }
 };
 
 STATIC_ASSERT (sizeof (lto_section) == 8);
@@ -735,8 +748,9 @@ struct output_block
 
 
 /* Data and descriptors used when reading from an LTO file.  */
-struct data_in
+class data_in
 {
+public:
   /* The global decls and types.  */
   struct lto_file_decl_data *file_data;
 
@@ -758,13 +772,13 @@ struct data_in
 
 
 /* In lto-section-in.c  */
-extern struct lto_input_block * lto_create_simple_input_block (
+extern class lto_input_block * lto_create_simple_input_block (
 			       struct lto_file_decl_data *,
 			       enum lto_section_type, const char **, size_t *);
 extern void
 lto_destroy_simple_input_block (struct lto_file_decl_data *,
 				enum lto_section_type,
-				struct lto_input_block *, const char *, size_t);
+				class lto_input_block *, const char *, size_t);
 extern void lto_set_in_hooks (struct lto_file_decl_data **,
 			      lto_get_section_data_f *,
 			      lto_free_section_data_f *);
@@ -794,7 +808,7 @@ extern struct lto_in_decl_state *lto_get_function_in_decl_state (
 				      struct lto_file_decl_data *, tree);
 extern void lto_free_function_in_decl_state (struct lto_in_decl_state *);
 extern void lto_free_function_in_decl_state_for_node (symtab_node *);
-extern void lto_section_overrun (struct lto_input_block *) ATTRIBUTE_NORETURN;
+extern void lto_section_overrun (class lto_input_block *) ATTRIBUTE_NORETURN;
 extern void lto_value_range_error (const char *,
 				   HOST_WIDE_INT, HOST_WIDE_INT,
 				   HOST_WIDE_INT) ATTRIBUTE_NORETURN;
@@ -859,23 +873,23 @@ extern void lto_input_constructors_and_inits (struct lto_file_decl_data *,
 					      const char *);
 extern void lto_input_toplevel_asms (struct lto_file_decl_data *, int);
 extern void lto_input_mode_table (struct lto_file_decl_data *);
-extern struct data_in *lto_data_in_create (struct lto_file_decl_data *,
+extern class data_in *lto_data_in_create (struct lto_file_decl_data *,
 				    const char *, unsigned,
 				    vec<ld_plugin_symbol_resolution_t> );
-extern void lto_data_in_delete (struct data_in *);
-extern void lto_input_data_block (struct lto_input_block *, void *, size_t);
-void lto_input_location (location_t *, struct bitpack_d *, struct data_in *);
+extern void lto_data_in_delete (class data_in *);
+extern void lto_input_data_block (class lto_input_block *, void *, size_t);
+void lto_input_location (location_t *, struct bitpack_d *, class data_in *);
 location_t stream_input_location_now (struct bitpack_d *bp,
-				      struct data_in *data);
-tree lto_input_tree_ref (struct lto_input_block *, struct data_in *,
+				      class data_in *data);
+tree lto_input_tree_ref (class lto_input_block *, class data_in *,
 			 struct function *, enum LTO_tags);
 void lto_tag_check_set (enum LTO_tags, int, ...);
 void lto_init_eh (void);
-hashval_t lto_input_scc (struct lto_input_block *, struct data_in *,
+hashval_t lto_input_scc (class lto_input_block *, class data_in *,
 			 unsigned *, unsigned *);
-tree lto_input_tree_1 (struct lto_input_block *, struct data_in *,
+tree lto_input_tree_1 (class lto_input_block *, class data_in *,
 		       enum LTO_tags, hashval_t hash);
-tree lto_input_tree (struct lto_input_block *, struct data_in *);
+tree lto_input_tree (class lto_input_block *, class data_in *);
 
 
 /* In lto-streamer-out.c  */
@@ -930,14 +944,14 @@ void select_what_to_stream (void);
 void cl_target_option_stream_out (struct output_block *, struct bitpack_d *,
 				  struct cl_target_option *);
 
-void cl_target_option_stream_in (struct data_in *,
+void cl_target_option_stream_in (class data_in *,
 				 struct bitpack_d *,
 				 struct cl_target_option *);
 
 void cl_optimization_stream_out (struct output_block *,
 				 struct bitpack_d *, struct cl_optimization *);
 
-void cl_optimization_stream_in (struct data_in *,
+void cl_optimization_stream_in (class data_in *,
 				struct bitpack_d *, struct cl_optimization *);
 
 
