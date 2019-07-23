@@ -1068,7 +1068,8 @@ See RS/6000 and PowerPC Options.
 -mcmodel=medlow  -mcmodel=medany @gol
 -mexplicit-relocs  -mno-explicit-relocs @gol
 -mrelax  -mno-relax @gol
--mriscv-attribute  -mmo-riscv-attribute}
+-mriscv-attribute  -mmo-riscv-attribute @gol
+-malign-data=@var{type}}
 
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs @gol
@@ -24039,6 +24040,13 @@ linker relaxations.
 @itemx -mno-emit-attribute
 Emit (do not emit) RISC-V attribute to record extra information into ELF
 objects.  This feature requires at least binutils 2.32.
+
+@item -malign-data=@var{type}
+@opindex malign-data
+Control how GCC aligns variables and constants of array, structure, or union
+types.  Supported values for @var{type} are @samp{xlen} which uses x register
+width as the alignment value, and @samp{natural} which uses natural alignment.
+@samp{xlen} is the default.
 @end table
 
 @node RL78 Options

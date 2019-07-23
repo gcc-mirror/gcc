@@ -1,3 +1,14 @@
+2019-07-22  Ilia Diachkov  <ilia.diachkov@optimitech.com>
+
+	* config/riscv/riscv-opts.h (struct riscv_align_data): New.
+	* config/riscv/riscv.c (riscv_constant_alignment): Use
+	riscv_align_data_type.
+	* config/riscv/riscv.h (RISCV_EXPAND_ALIGNMENT): New.
+	(DATA_ALIGNMENT): Use RISCV_EXPAND_ALIGNMENT.
+	(LOCAL_ALIGNMENT): Use RISCV_EXPAND_ALIGNMENT.
+	* config/riscv/riscv.opt (malign-data): New.
+	* doc/invoke.texi (RISC-V Options): Document -malign-data=.
+
 2019-07-02  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* cgraph.c (dump_graphviz): New function.

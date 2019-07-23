@@ -46,4 +46,9 @@ enum riscv_microarchitecture_type {
 };
 extern enum riscv_microarchitecture_type riscv_microarchitecture;
 
+enum riscv_align_data {
+  riscv_align_data_type_xlen,
+  riscv_align_data_type_natural
+};
+
 #endif /* ! GCC_RISCV_OPTS_H */
