@@ -1,3 +1,22 @@
+2019-07-23  Thomas König  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR libfortran/91030
+	* io/unix.c (BUFFER_SIZE): Delete.
+	(BUFFER_FORMATTED_SIZE_DEFAULT): New variable.
+	(BUFFER_UNFORMATTED_SIZE_DEFAULT): New variable.
+	(unix_stream): Add buffer_size.
+	(buf_read): Use s->buffer_size instead of BUFFER_SIZE.
+	(buf_write): Likewise.
+	(buf_init): Add argument unformatted.  Handle block sizes
+	for unformatted vs. formatted, using defaults if provided.
+	(fd_to_stream): Add argument unformatted in call to buf_init.
+	* libgfortran.h (options_t): Add buffer_size_formatted and
+	buffer_size_unformatted.
+	* runtime/environ.c (variable_table): Add
+	GFORTRAN_UNFORMATTED_BUFFER_SIZE and
+	GFORTRAN_FORMATTED_BUFFER_SIZE.
+
 2019-05-20  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	Backport from trunk
