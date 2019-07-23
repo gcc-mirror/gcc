@@ -16848,6 +16848,7 @@ unsigned long __builtin_ppc_mftb ();
 double __builtin_unpack_ibm128 (__ibm128, int);
 __ibm128 __builtin_pack_ibm128 (double, double);
 double __builtin_mffs (void);
+double __builtin_mtfsf (const int, double);
 void __builtin_mtfsb0 (const int);
 void __builtin_mtfsb1 (const int);
 void __builtin_set_fpscr_rn (int);
@@ -16863,7 +16864,10 @@ the most significant word on 32-bit environments.  The @code{__builtin_mffs}
 return the value of the FPSCR register.  Note, ISA 3.0 supports the
 @code{__builtin_mffsl()} which permits software to read the control and
 non-sticky status bits in the FSPCR without the higher latency associated with
-accessing the sticky status bits.  The
+accessing the sticky status bits.  The @code{__builtin_mtfsf} takes a constant
+8-bit integer field mask and a double precision floating point argument
+and generates the @code{mtfsf} (extended mnemonic) instruction to write new
+values to selected fields of the FPSCR.  The
 @code{__builtin_mtfsb0} and @code{__builtin_mtfsb1} take the bit to change
 as an argument.  The valid bit range is between 0 and 31.  The builtins map to
 the @code{mtfsb0} and @code{mtfsb1} instructions which take the argument and
