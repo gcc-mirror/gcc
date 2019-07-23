@@ -1,0 +1,9 @@
+2019-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+
+	libgfortran/
+	* configure: Regenerate.
+	* configure.ac (LIBGFOR_MINIMAL): Do not use on AMD GCN.
+

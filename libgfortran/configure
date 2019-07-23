@@ -6164,8 +6164,7 @@ fi
 # * C library support for other features such as signal, environment
 #   variables, time functions
 
- if test "x${target_cpu}" = xnvptx \
-				 || test "x${target_cpu}" = xamdgcn; then
+ if test "x${target_cpu}" = xnvptx; then
   LIBGFOR_MINIMAL_TRUE=
   LIBGFOR_MINIMAL_FALSE='#'
 else
