@@ -35,10 +35,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-memory.h"
 
 /* A BOZ literal constant can appear in a limited number of contexts.
-   gfc_invalid_boz() is a help function to simplify error/warning generation.
-   Note, gfortran accepts the nonstandard 'X' for 'Z' the nonstandard
-   suffix location.  If -fallow-invalid-boz is used, then issue a warning;
-   otherwise issue an error.  */
+   gfc_invalid_boz() is a helper function to simplify error/warning
+   generation.  gfortran accepts the nonstandard 'X' for 'Z', and gfortran
+   allows the BOZ indicator to appear as a suffix.  If -fallow-invalid-boz
+   is used, then issue a warning; otherwise issue an error.  */
 
 bool
 gfc_invalid_boz (const char *msg, locus *loc)
@@ -53,6 +53,20 @@ gfc_invalid_boz (const char *msg, locus *loc)
   return true;
 }
 
+
+/* Issue an error for an illegal BOZ argument.  */
+static bool
+illegal_boz_arg (gfc_expr *x)
+{
+  if (x->ts.type == BT_BOZ)
+    {
+      gfc_error ("BOZ literal constant at %L cannot be an actual argument "
+		 "to %qs", &x->where, gfc_current_intrinsic);
+      return true;
+    }
+
+  return false;
+}
 
 /* Some precedures take two arguments such that both cannot be BOZ.  */
 
@@ -2202,8 +2216,6 @@ gfc_check_co_sum (gfc_expr *a, gfc_expr *result_image, gfc_expr *stat,
 bool
 gfc_check_complex (gfc_expr *x, gfc_expr *y)
 {
-
-  /* FIXME BOZ.  What to do with complex?  */
   if (!boz_args_check (x, y))
     return false;
 
@@ -5894,6 +5906,12 @@ gfc_check_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
       return false;
     }
 
+  if (source->ts.type == BT_BOZ && illegal_boz_arg (source))
+    return false;
+
+  if (mold->ts.type == BT_BOZ && illegal_boz_arg (mold))
+    return false;
+
   /* MOLD shall be a scalar or array of any type.  */
   if (mold->ts.type == BT_PROCEDURE
       && mold->symtree->n.sym->attr.subroutine == 1)
@@ -7124,6 +7142,9 @@ gfc_check_storage_size (gfc_expr *a, gfc_expr *kind)
 		 gfc_current_intrinsic, &a->where);
       return false;
     }
+
+  if (a->ts.type == BT_BOZ && illegal_boz_arg (a))
+    return false;
 
   if (kind == NULL)
     return true;

@@ -494,7 +494,6 @@ match_boz_constant (gfc_expr **result)
   e->boz.str = XCNEWVEC (char, length + 1);
   strncpy (e->boz.str, buffer, length);
 
-  /* FIXME BOZ.  */
   if (!gfc_in_match_data ()
       && (!gfc_notify_std(GFC_STD_F2003, "BOZ used outside a DATA "
 			  "statement at %L", &e->where)))

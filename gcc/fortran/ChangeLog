@@ -1,5 +1,15 @@
 2019-07-23  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/54072
+	* check.c (gfc_invalid_boz): Fix comment.
+	(illegal_boz_arg): New function.
+	(gfc_check_transfer): Use to arguments.
+	(gfc_check_storage_size): Ditto.
+	(gfc_check_complex): Remove leftover comment from BOZ patch.
+	* primary.c (match_boz_constant): Remove leftover comment. 
+
+2019-07-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	* arith.c (gfc_convert_integer, gfc_convert_real, gfc_convert_complex):
 	Move to ...
 	* primary.c (convert_integer, convert_real, convert_complex): ... here.
