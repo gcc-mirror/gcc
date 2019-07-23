@@ -1,5 +1,13 @@
 2019-07-23  Yannick Moy  <moy@adacore.com>
 
+	* sem_spark.ads (Is_Local_Context): New function.
+	* sem_spark.adb (Check_Declaration): Issue errors on violations
+	of SPARK RM 3.10(4)
+	(Process_Path): Do not issue error on borrow/observe during
+	elaboration, as these are caught by the new rule.
+
+2019-07-23  Yannick Moy  <moy@adacore.com>
+
 	* exp_ch7.adb (Create_Finalizer): Force finalizer not to be
 	Ghost enabled.
 	* exp_dbug.adb (Get_External_Name): Explain special case of

@@ -1419,9 +1419,37 @@ package body Sem_SPARK is
             Check_Expression (Subtype_Indication (Decl), Read);
 
          when N_Object_Declaration =>
+            Expr := Expression (Decl);
+
             Check_Type (Target_Typ);
 
-            Expr := Expression (Decl);
+            --  A declaration of a stand-alone object of an anonymous access
+            --  type shall have an explicit initial value and shall occur
+            --  immediately within a subprogram body, an entry body, or a
+            --  block statement (SPARK RM 3.10(4)).
+
+            if Is_Anonymous_Access_Type (Target_Typ) then
+               declare
+                  Scop : constant Entity_Id := Scope (Target);
+               begin
+                  if not Is_Local_Context (Scop) then
+                     if Emit_Messages then
+                        Error_Msg_N
+                          ("object of anonymous access type must be declared "
+                           & "immediately within a subprogram, entry or block "
+                           & "(SPARK RM 3.10(4))", Decl);
+                     end if;
+                  end if;
+               end;
+
+               if No (Expr) then
+                  if Emit_Messages then
+                     Error_Msg_N ("object of anonymous access type must be "
+                                  & "initialized (SPARK RM 3.10(4))", Decl);
+                  end if;
+               end if;
+            end if;
+
             if Present (Expr) then
                Check_Assignment (Target => Target,
                                  Expr   => Expr);
@@ -2848,9 +2876,14 @@ package body Sem_SPARK is
          --  independently for R permission. Outputs are checked
          --  independently to have RW permission on exit.
 
-         when Pragma_Contract_Cases
+         --  Postconditions are checked for correct use of 'Old, but starting
+         --  from the corresponding declaration, in order to avoid dealing with
+         --  with contracts on generic subprograms, which are not handled in
+         --  GNATprove.
+
+         when Pragma_Precondition
             | Pragma_Postcondition
-            | Pragma_Precondition
+            | Pragma_Contract_Cases
             | Pragma_Refined_Post
          =>
             null;
@@ -3993,6 +4026,16 @@ package body Sem_SPARK is
       end case;
    end Is_Deep;
 
+   ----------------------
+   -- Is_Local_Context --
+   ----------------------
+
+   function Is_Local_Context (Scop : Entity_Id) return Boolean is
+   begin
+      return Is_Subprogram_Or_Entry (Scop)
+        or else Ekind (Scop) = E_Block;
+   end Is_Local_Context;
+
    ------------------------
    -- Is_Path_Expression --
    ------------------------
@@ -4863,13 +4906,10 @@ package body Sem_SPARK is
 
          when Borrow =>
 
-            --  Forbidden during elaboration
+            --  Forbidden during elaboration, an error is already issued in
+            --  Check_Declaration, just return.
 
             if Inside_Elaboration then
-               if not Inside_Procedure_Call and then Emit_Messages then
-                  Error_Msg_N ("illegal borrow during elaboration", Expr);
-               end if;
-
                return;
             end if;
 
@@ -4882,13 +4922,10 @@ package body Sem_SPARK is
 
          when Observe =>
 
-            --  Forbidden during elaboration
+            --  Forbidden during elaboration, an error is already issued in
+            --  Check_Declaration, just return.
 
             if Inside_Elaboration then
-               if not Inside_Procedure_Call and then Emit_Messages then
-                  Error_Msg_N ("illegal observe during elaboration", Expr);
-               end if;
-
                return;
             end if;
 
