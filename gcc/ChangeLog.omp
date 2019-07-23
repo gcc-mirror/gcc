@@ -1,3 +1,26 @@
+2019-05-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Andrew Stubbs  <amd@codesourcery.com>
+
+	Backport from mainline:
+
+	* config.gcc (gcc_cv_initfini_array): Set for AMD GCN.
+	* config/gcn/gcn-run.c (init_array_kernel, fini_array_kernel): New.
+	(kernel): Rename to...
+	(main_kernel): ... this.
+	(load_image): Load _init_array and _fini_array kernels.
+	(run): Add argument for kernel to run.
+	(main): Run init_array_kernel before main_kernel, and
+	fini_array_kernel after.
+	* config/gcn/gcn.c (gcn_handle_amdgpu_hsa_kernel_attribute): Allow
+	amdgpu_hsa_kernel attribute on functions.
+	(gcn_disable_constructors): Delete.
+	(TARGET_ASM_CONSTRUCTOR, TARGET_ASM_DESTRUCTOR): Delete.
+	* config/gcn/crt0.c (size_t): Define.
+	(_init_array, _fini_array): New.
+	(__preinit_array_start, __preinit_array_end,
+	__init_array_start, __init_array_end,
+	__fini_array_start, __fini_array_end): Declare weak references.
+
 2019-07-10  Cesar Philippidis  <cesar@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 

@@ -305,9 +305,7 @@ static tree
 gcn_handle_amdgpu_hsa_kernel_attribute (tree *node, tree name,
 					tree args, int, bool *no_add_attrs)
 {
-  if (FUNC_OR_METHOD_TYPE_P (*node)
-      && TREE_CODE (*node) != FIELD_DECL
-      && TREE_CODE (*node) != TYPE_DECL)
+  if (!FUNC_OR_METHOD_TYPE_P (*node))
     {
       warning (OPT_Wattributes, "%qE attribute only applies to functions",
 	       name);
@@ -3161,20 +3159,6 @@ gcn_valid_cvt_p (machine_mode from, machine_mode to, enum gcn_cvt_t op)
 	  || (to == DFmode && (from == SImode || from == SFmode)));
 }
 
-/* Implement both TARGET_ASM_CONSTRUCTOR and TARGET_ASM_DESTRUCTOR.
-
-   The current loader does not support running code outside "main".  This
-   hook implementation can be replaced or removed when that changes.  */
-
-void
-gcn_disable_constructors (rtx symbol, int priority __attribute__ ((unused)))
-{
-  tree d = SYMBOL_REF_DECL (symbol);
-  location_t l = d ? DECL_SOURCE_LOCATION (d) : UNKNOWN_LOCATION;
-
-  sorry_at (l, "GCN does not support static constructors or destructors");
-}
-
 /* }}}  */
 /* {{{ Costs.  */
 
@@ -5991,10 +5975,6 @@ print_operand (FILE *file, rtx x, int code)
 #define TARGET_ARG_PARTIAL_BYTES gcn_arg_partial_bytes
 #undef  TARGET_ASM_ALIGNED_DI_OP
 #define TARGET_ASM_ALIGNED_DI_OP "\t.8byte\t"
-#undef  TARGET_ASM_CONSTRUCTOR
-#define TARGET_ASM_CONSTRUCTOR gcn_disable_constructors
-#undef  TARGET_ASM_DESTRUCTOR
-#define TARGET_ASM_DESTRUCTOR gcn_disable_constructors
 #undef  TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START output_file_start
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
