@@ -1,3 +1,8 @@
+2019-07-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/iter5.adb: Add an expected error.
+	* gnat.dg/iter6.adb: New testcase.
+
 2019-07-23  Yannick Moy  <moy@adacore.com>
 
 	* gnat.dg/ghost6.adb, gnat.dg/ghost6_pkg.ads: New testcase.

@@ -277,6 +277,20 @@ package Aspects is
       Aspect_Warnings                   => True,
       others                            => False);
 
+   --  The following array indicates aspects that specify operational
+   --  characteristics, and thus are view-specific. Representation
+   --  aspects break privacy, as they are needed during expansion and
+   --  code generation.
+   --  List is currently incomplete ???
+
+   Operational_Aspect : constant array (Aspect_Id) of Boolean :=
+     (Aspect_Constant_Indexing          => True,
+      Aspect_Default_Iterator           => True,
+      Aspect_Iterator_Element           => True,
+      Aspect_Iterable                   => True,
+      Aspect_Variable_Indexing          => True,
+      others                            => False);
+
    --  The following array indicates aspects for which multiple occurrences of
    --  the same aspect attached to the same declaration are allowed.
 
