@@ -1,3 +1,10 @@
+2019-07-23  Thomas König  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR libfortran/91030
+	* gfortran.texi (GFORTRAN_FORMATTED_BUFFER_SIZE): Document.
+	(GFORTRAN_UNFORMATTED_BUFFER_SIZE): Likewise.
+
 2019-07-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from mainline
