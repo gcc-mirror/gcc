@@ -1,3 +1,8 @@
+2019-07-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/x86-tune-costs.h (znver2_memcpy): Update.
+	(znver2_costs): Update 256 bit SSE costs and multiplication.
+
 2019-07-23  Jan Beulich  <jbeulich@suse.com>
 
 	* config/i386/sse.md (<avx512>_cvtmask2<ssemodesuffix><mode>):
