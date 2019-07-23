@@ -605,7 +605,8 @@ def build_pretty_printer():
 
 gdb.printing.register_pretty_printer(
     gdb.current_objfile(),
-    build_pretty_printer())
+    build_pretty_printer(),
+    replace=True)
 
 def find_gcc_source_dir():
     # Use location of global "g" to locate the source tree
