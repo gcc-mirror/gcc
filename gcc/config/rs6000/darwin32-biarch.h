@@ -18,15 +18,32 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-#undef  TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_POWERPC64 | MASK_64BIT \
-			| MASK_MULTIPLE | MASK_PPC_GFXOPT)
-
 #undef DARWIN_ARCH_SPEC
-#define DARWIN_ARCH_SPEC "%{m32:ppc;:ppc64}"
+#define DARWIN_ARCH_SPEC "%{m64:ppc64;:ppc}"
 
 #undef DARWIN_SUBARCH_SPEC
-#define DARWIN_SUBARCH_SPEC DARWIN_ARCH_SPEC
+#define DARWIN_SUBARCH_SPEC "			\
+ %{m64: ppc64}					\
+ %{!m64:					\
+ %{mcpu=601:ppc601;				\
+   mcpu=603:ppc603;				\
+   mcpu=603e:ppc603;				\
+   mcpu=604:ppc604;				\
+   mcpu=604e:ppc604e;				\
+   mcpu=740:ppc750;				\
+   mcpu=750:ppc750;				\
+   mcpu=G3:ppc750;				\
+   mcpu=7400:ppc7400;				\
+   mcpu=G4:ppc7400;				\
+   mcpu=7450:ppc7450;				\
+   mcpu=970:ppc970;				\
+   mcpu=power4:ppc970;				\
+   mcpu=G5:ppc970;				\
+   :ppc}}"
 
-#undef DARWIN_CRT2_SPEC
-#define DARWIN_CRT2_SPEC ""
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS			\
+  DARWIN_EXTRA_SPECS                            \
+  { "darwin_arch", DARWIN_ARCH_SPEC },		\
+  { "darwin_crt2", DARWIN_CRT2_SPEC },		\
+  { "darwin_subarch", DARWIN_SUBARCH_SPEC },

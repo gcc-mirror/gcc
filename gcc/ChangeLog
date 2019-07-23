@@ -1,3 +1,33 @@
+2019-07-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/87030
+	* config.gcc (*-*-darwin*): Don't include CPU t-darwin here.
+	(i[34567]86-*-darwin*): Adjust to use biarch files. Produce
+	an error message if i686-darwin configuration is attempted for
+	Darwin >= 18.
+	(x86_64-*-darwin*): Switch to single multilib for Darwin >= 18.
+	(powerpc-*-darwin*): Use biarch files where needed.
+	(powerpc64-*-darwin*): Likewise.
+	* config/i386/darwin.h (REAL_LIBGCC_SPEC): Move to new biarch file.
+	(DARWIN_ARCH_SPEC, DARWIN_SUBARCH_SPEC): Revise for default single
+	arch case.
+	* config/i386/darwin32-biarch.h: New.
+	* config/i386/darwin64.h: Rename.
+	* gcc/config/i386/darwin64-biarch.h: To this.
+	* config/i386/t-darwin: Rename.
+	* gcc/config/i386/t-darwin32-biarch: To this.
+	* config/i386/t-darwin64: Rename.
+	* gcc/config/i386/t-darwin64-biarch: To this.
+	* config/rs6000/darwin32-biarch.h: New.
+	* config/rs6000/darwin64.h: Rename.
+	* config/rs6000/darwin64-biarch.h: To this.
+	(DARWIN_ARCH_SPEC, DARWIN_SUBARCH_SPEC): Revise for default single
+	arch case.
+	* config/rs6000/t-darwin8: Rename.
+	* config/rs6000/t-darwin32-biarch: To this.
+	* config/rs6000/t-darwin64 Rename.
+	* config/rs6000/t-darwin64-biarch: To this.
+
 2019-07-23  Martin Sebor  <msebor@redhat.com>
 
 	* configure.ac (ACX_PROG_CXX_WARNING_OPTS): Revert r273311.
