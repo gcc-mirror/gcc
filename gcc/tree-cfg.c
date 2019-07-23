@@ -1437,19 +1437,19 @@ make_gimple_asm_edges (basic_block bb)
    (almost) no new labels should be created.  */
 
 /* A map from basic block index to the leading label of that block.  */
-static struct label_record
+struct label_record
 {
   /* The label.  */
   tree label;
 
   /* True if the label is referenced from somewhere.  */
   bool used;
-} *label_for_bb;
+};
 
 /* Given LABEL return the first label in the same basic block.  */
 
 static tree
-main_block_label (tree label)
+main_block_label (tree label, label_record *label_for_bb)
 {
   basic_block bb = label_to_block (cfun, label);
   tree main_label = label_for_bb[bb->index].label;
@@ -1468,7 +1468,7 @@ main_block_label (tree label)
 /* Clean up redundant labels within the exception tree.  */
 
 static void
-cleanup_dead_labels_eh (void)
+cleanup_dead_labels_eh (label_record *label_for_bb)
 {
   eh_landing_pad lp;
   eh_region r;
@@ -1481,7 +1481,7 @@ cleanup_dead_labels_eh (void)
   for (i = 1; vec_safe_iterate (cfun->eh->lp_array, i, &lp); ++i)
     if (lp && lp->post_landing_pad)
       {
-	lab = main_block_label (lp->post_landing_pad);
+	lab = main_block_label (lp->post_landing_pad, label_for_bb);
 	if (lab != lp->post_landing_pad)
 	  {
 	    EH_LANDING_PAD_NR (lp->post_landing_pad) = 0;
@@ -1503,7 +1503,7 @@ cleanup_dead_labels_eh (void)
 	    {
 	      lab = c->label;
 	      if (lab)
-		c->label = main_block_label (lab);
+		c->label = main_block_label (lab, label_for_bb);
 	    }
 	}
 	break;
@@ -1511,7 +1511,7 @@ cleanup_dead_labels_eh (void)
       case ERT_ALLOWED_EXCEPTIONS:
 	lab = r->u.allowed.label;
 	if (lab)
-	  r->u.allowed.label = main_block_label (lab);
+	  r->u.allowed.label = main_block_label (lab, label_for_bb);
 	break;
       }
 }
@@ -1526,7 +1526,8 @@ void
 cleanup_dead_labels (void)
 {
   basic_block bb;
-  label_for_bb = XCNEWVEC (struct label_record, last_basic_block_for_fn (cfun));
+  label_record *label_for_bb = XCNEWVEC (struct label_record,
+					 last_basic_block_for_fn (cfun));
 
   /* Find a suitable label for each block.  We use the first user-defined
      label if there is one, or otherwise just the first label we see.  */
@@ -1582,7 +1583,7 @@ cleanup_dead_labels (void)
 	    label = gimple_cond_true_label (cond_stmt);
 	    if (label)
 	      {
-		new_label = main_block_label (label);
+		new_label = main_block_label (label, label_for_bb);
 		if (new_label != label)
 		  gimple_cond_set_true_label (cond_stmt, new_label);
 	      }
@@ -1590,7 +1591,7 @@ cleanup_dead_labels (void)
 	    label = gimple_cond_false_label (cond_stmt);
 	    if (label)
 	      {
-		new_label = main_block_label (label);
+		new_label = main_block_label (label, label_for_bb);
 		if (new_label != label)
 		  gimple_cond_set_false_label (cond_stmt, new_label);
 	      }
@@ -1607,7 +1608,7 @@ cleanup_dead_labels (void)
 	      {
 		tree case_label = gimple_switch_label (switch_stmt, i);
 		label = CASE_LABEL (case_label);
-		new_label = main_block_label (label);
+		new_label = main_block_label (label, label_for_bb);
 		if (new_label != label)
 		  CASE_LABEL (case_label) = new_label;
 	      }
@@ -1622,7 +1623,7 @@ cleanup_dead_labels (void)
 	    for (i = 0; i < n; ++i)
 	      {
 		tree cons = gimple_asm_label_op (asm_stmt, i);
-		tree label = main_block_label (TREE_VALUE (cons));
+		tree label = main_block_label (TREE_VALUE (cons), label_for_bb);
 		TREE_VALUE (cons) = label;
 	      }
 	    break;
@@ -1635,7 +1636,7 @@ cleanup_dead_labels (void)
 	    {
 	      ggoto *goto_stmt = as_a <ggoto *> (stmt);
 	      label = gimple_goto_dest (goto_stmt);
-	      new_label = main_block_label (label);
+	      new_label = main_block_label (label, label_for_bb);
 	      if (new_label != label)
 		gimple_goto_set_dest (goto_stmt, new_label);
 	    }
@@ -1648,7 +1649,7 @@ cleanup_dead_labels (void)
 	    label = gimple_transaction_label_norm (txn);
 	    if (label)
 	      {
-		new_label = main_block_label (label);
+		new_label = main_block_label (label, label_for_bb);
 		if (new_label != label)
 		  gimple_transaction_set_label_norm (txn, new_label);
 	      }
@@ -1656,7 +1657,7 @@ cleanup_dead_labels (void)
 	    label = gimple_transaction_label_uninst (txn);
 	    if (label)
 	      {
-		new_label = main_block_label (label);
+		new_label = main_block_label (label, label_for_bb);
 		if (new_label != label)
 		  gimple_transaction_set_label_uninst (txn, new_label);
 	      }
@@ -1664,7 +1665,7 @@ cleanup_dead_labels (void)
 	    label = gimple_transaction_label_over (txn);
 	    if (label)
 	      {
-		new_label = main_block_label (label);
+		new_label = main_block_label (label, label_for_bb);
 		if (new_label != label)
 		  gimple_transaction_set_label_over (txn, new_label);
 	      }
@@ -1677,7 +1678,7 @@ cleanup_dead_labels (void)
     }
 
   /* Do the same for the exception region tree labels.  */
-  cleanup_dead_labels_eh ();
+  cleanup_dead_labels_eh (label_for_bb);
 
   /* Finally, purge dead labels.  All user-defined labels and labels that
      can be the target of non-local gotos and labels which have their

@@ -1,3 +1,10 @@
+2019-07-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (label_for_bb): Remove global var.
+	(main_block_label): Take label_for_bb as argument.
+	(cleanup_dead_labels_eh): Likewise, adjust.
+	(cleanup_dead_labels): Adjust.
+
 2019-07-22  Paul A. Clarke  <pc@us.ibm.com>
 
 	* doc/extend.texi (Basic PowerPC Built-in Functions Available on all
