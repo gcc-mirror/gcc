@@ -1,3 +1,8 @@
+2019-07-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Component_Layout): Pass Decimal to UI_Write.
+	(Write_Val): Likewise.
+
 2019-07-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* aspects.ads: New table Operational_Aspect, used to distinguish

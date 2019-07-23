@@ -1150,7 +1150,7 @@ package body Repinfo is
             if Ekind (Ent) = E_Discriminant then
                Spaces (Indent);
                Write_Str ("      ""discriminant"": ");
-               UI_Write (Discriminant_Number (Ent));
+               UI_Write (Discriminant_Number (Ent), Decimal);
                Write_Line (",");
             end if;
             Spaces (Indent);
@@ -1181,7 +1181,7 @@ package body Repinfo is
             Spaces (Max_Spos_Length - 2);
 
             if Starting_Position /= Uint_0 then
-               UI_Write (Starting_Position);
+               UI_Write (Starting_Position, Decimal);
                Write_Str (" + ");
             end if;
 
@@ -1205,7 +1205,7 @@ package body Repinfo is
             Sbit := Sbit - SSU;
          end if;
 
-         UI_Write (Sbit);
+         UI_Write (Sbit, Decimal);
 
          if List_Representation_Info_To_JSON then
             Write_Line (", ");
@@ -1227,13 +1227,13 @@ package body Repinfo is
             Lbit := Sbit + Esiz - 1;
 
             if List_Representation_Info_To_JSON then
-               UI_Write (Esiz);
+               UI_Write (Esiz, Decimal);
             else
                if Lbit >= 0 and then Lbit < 10 then
                   Write_Char (' ');
                end if;
 
-               UI_Write (Lbit);
+               UI_Write (Lbit, Decimal);
             end if;
 
          --  The test for Esize (Ent) not Uint_0 here is an annoying special
@@ -2414,7 +2414,7 @@ package body Repinfo is
          end if;
 
       else
-         UI_Write (Val);
+         UI_Write (Val, Decimal);
       end if;
    end Write_Val;
 
