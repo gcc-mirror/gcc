@@ -435,7 +435,7 @@ package body Checks is
 
       --  Fall through for cases where we do set the flag
 
-      Set_Do_Overflow_Check (N, True);
+      Set_Do_Overflow_Check (N);
       Possible_Local_Raise (N, Standard_Constraint_Error);
    end Activate_Overflow_Check;
 
