@@ -1,3 +1,7 @@
+2019-07-23  Yannick Moy  <moy@adacore.com>
+
+	* gnat.dg/ghost6.adb, gnat.dg/ghost6_pkg.ads: New testcase.
+
 2019-07-22  Sylvia Taylor  <sylvia.taylor@arm.com>
 
 	* gcc.target/aarch64/simd/ssra.c: New test.
