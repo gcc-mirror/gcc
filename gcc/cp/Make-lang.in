@@ -71,7 +71,7 @@ MODULE_REVISION := $(shell svnversion $(srcdir) 2>/dev/null \
 ifeq ($(MODULE_REVISION),)
 # Try git commit and dirty info, similar to svnversion.
 MODULE_REVISION := $(shell git -C $(srcdir)/.. rev-parse --short HEAD \
-  2>/dev/null | sed s/\(.\)/git-\1/)
+  2>/dev/null | sed 's/\(.\)/git-\1/')
 ifneq ($(MODULE_REVISION),)
 # It is git, figure dirty info
 MODULE_REVISION := $(MODULE_REVISION)$(shell git -C $(srcdir)/.. \
