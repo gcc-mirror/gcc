@@ -1,5 +1,6 @@
 LIB2ADD += $(srcdir)/config/gcn/lib2-divmod.c \
-	   $(srcdir)/config/gcn/lib2-divmod-hi.c
+	   $(srcdir)/config/gcn/lib2-divmod-hi.c \
+	   $(srcdir)/config/gcn/unwind-gcn.c
 
 LIB2ADDEH=
 LIB2FUNCS_EXCLUDE=__main

@@ -1,3 +1,10 @@
+2019-06-25  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+
+	* config/gcn/t-amdgcn (LIB2ADD): Add unwind-gcn.c.
+	* config/gcn/unwind-gcn.c: New file.
+
 2019-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
             Andrew Stubbs  <ams@codesourcery.com>
 
