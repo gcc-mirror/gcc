@@ -1,5 +1,11 @@
 2019-07-23  Jan Hubicka  <hubicka@ucw.cz>
 
+	* i386-common.c: Use PROCESSOR_ZNVER2 scheduler for znver2.
+	* config/i386/znver1.md: Enable patterns for znver2 and add store
+	variants which use extra AGU unit.
+
+2019-07-23  Jan Hubicka  <hubicka@ucw.cz>
+
 	* config/i386/i386-options.c (ix86_option_override_internal): Default
 	PARAM_AVOID_FMA_MAX_BITS to 256 for znver2.
 	* config/i386/x86-tune.def (X86_TUNE_AVOID_256FMA_CHAINS): Set
