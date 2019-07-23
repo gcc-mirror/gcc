@@ -3159,6 +3159,16 @@ gcn_valid_cvt_p (machine_mode from, machine_mode to, enum gcn_cvt_t op)
 	  || (to == DFmode && (from == SImode || from == SFmode)));
 }
 
+/* Implement TARGET_EMUTLS_VAR_INIT.
+
+   Disable emutls (gthr-gcn.h does not support it, yet).  */
+
+tree
+gcn_emutls_var_init (tree, tree decl, tree)
+{
+  sorry_at (DECL_SOURCE_LOCATION (decl), "TLS is not implemented for GCN.");
+}
+
 /* }}}  */
 /* {{{ Costs.  */
 
@@ -6003,6 +6013,8 @@ print_operand (FILE *file, rtx x, int code)
 #define TARGET_CONSTANT_ALIGNMENT gcn_constant_alignment
 #undef  TARGET_DEBUG_UNWIND_INFO
 #define TARGET_DEBUG_UNWIND_INFO gcn_debug_unwind_info
+#undef  TARGET_EMUTLS_VAR_INIT
+#define TARGET_EMUTLS_VAR_INIT gcn_emutls_var_init
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN gcn_expand_builtin
 #undef  TARGET_FUNCTION_ARG

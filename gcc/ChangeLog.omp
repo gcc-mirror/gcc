@@ -1,3 +1,12 @@
+2019-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+            Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+
+	* config.gcc (thread_file): Set to gcn for AMD GCN.
+	* config/gcn/gcn.c (gcn_emutls_var_init): New function.
+	(TARGET_EMUTLS_VAR_INIT): New hook.
+
 2019-05-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Andrew Stubbs  <amd@codesourcery.com>
 

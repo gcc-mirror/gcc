@@ -1431,6 +1431,7 @@ amdgcn-*-amdhsa)
 	fi
 	# Force .init_array support.
 	gcc_cv_initfini_array=yes
+	thread_file=gcn
 	;;
 moxie-*-elf)
 	gas=yes

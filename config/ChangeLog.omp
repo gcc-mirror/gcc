@@ -1,0 +1,7 @@
+2019-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+            Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+
+	* gthr.m4 (GCC_AC_THREAD_HEADER): Add case for gcn.
+

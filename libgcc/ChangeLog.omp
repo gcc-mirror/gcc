@@ -1,0 +1,8 @@
+2019-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+            Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+
+	* configure: Regenerate.
+	* config/gcn/gthr-gcn.h: New.
+
