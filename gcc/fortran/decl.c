@@ -547,7 +547,7 @@ match_old_style_init (const char *name)
   match m;
   gfc_symtree *st;
   gfc_symbol *sym;
-  gfc_data *newdata;
+  gfc_data *newdata, *nd;
 
   /* Set up data structure to hold initializers.  */
   gfc_find_sym_tree (name, NULL, 0, &st);
@@ -565,6 +565,25 @@ match_old_style_init (const char *name)
     {
       free (newdata);
       return m;
+    }
+
+  /* Check that a BOZ did not creep into an old-style initialization.  */
+  for (nd = newdata; nd; nd = nd->next)
+    {
+      if (nd->value->expr->ts.type == BT_BOZ
+	  && gfc_invalid_boz ("BOZ at %L cannot appear in an old-style "
+			      "initialization", &nd->value->expr->where))
+	return MATCH_ERROR;
+
+      if (nd->var->expr->ts.type != BT_INTEGER
+	  && nd->var->expr->ts.type != BT_REAL
+	  && nd->value->expr->ts.type == BT_BOZ)
+	{
+	  gfc_error ("Mismatch in variable type and BOZ literal constant "
+		     "at %L in an old-style initialization",
+		     &nd->value->expr->where);
+	  return MATCH_ERROR;
+	}
     }
 
   if (gfc_pure (NULL))

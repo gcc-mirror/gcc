@@ -377,6 +377,10 @@ fall-intrinsics
 Fortran RejectNegative Var(flag_all_intrinsics)
 All intrinsics procedures are available regardless of selected standard.
 
+fallow-invalid-boz
+Fortran RejectNegative Var(flag_allow_invalid_boz)
+Allow a BOZ literal constant to appear in an invalid context.
+
 fallow-leading-underscore
 Fortran Undocumented Var(flag_allow_leading_underscore)
 ; For internal use only: allow the first character of symbol names to be an underscore

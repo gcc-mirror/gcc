@@ -1,3 +1,8 @@
+2019-07-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* testsuite/libgomp.fortran/reduction4.f90: Update BOZ usage
+	* testsuite/libgomp.fortran/reduction5.f90: Ditto.
+	
 2019-07-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/loop-1.c: New test.
