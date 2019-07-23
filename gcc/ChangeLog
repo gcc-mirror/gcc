@@ -1,3 +1,7 @@
+2019-07-23  Martin Sebor  <msebor@redhat.com>
+
+	* configure.ac (ACX_PROG_CXX_WARNING_OPTS): Revert r273311.
+
 2019-07-23  Vladislav Ivanishin <vlad@ispras.ru>
 
 	* gdbinit.in (reload-gdbhooks): New command with an attached doc string.
@@ -1364,9 +1368,11 @@
 	(ix86_noce_conversion_profitable_p): Same.
 	(ix86_init_cost): Same.
 	(ix86_simd_clone_usable): Same.
-	* configure.ac: Same.
+	* configure.ac (ACX_PROG_CXX_WARNING_OPTS): Add -Wclass-is-pod and
+	Wstruct-not-pod.
 	* coretypes.h: Same.
-	* data-streamer-in.c (string_for_index): Same.
+	* data-streamer-in.c (string_for_index): Change class-key of PODs
+	to struct and others to class.
 	(streamer_read_indexed_string): Same.
 	(streamer_read_string): Same.
 	(bp_unpack_indexed_string): Same.
