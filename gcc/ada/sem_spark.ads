@@ -162,4 +162,8 @@ package Sem_SPARK is
 
    function Is_Traversal_Function (E : Entity_Id) return Boolean;
 
+   function Is_Local_Context (Scop : Entity_Id) return Boolean;
+   --  Return if a given scope defines a local context where it is legal to
+   --  declare a variable of anonymous access type.
+
 end Sem_SPARK;
