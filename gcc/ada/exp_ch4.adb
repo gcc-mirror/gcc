@@ -11000,6 +11000,11 @@ package body Exp_Ch4 is
             Rewrite (Expr, Unchecked_Convert_To (Ityp, Expr));
          end if;
 
+         --  Reset overflow flag, since the range check will include
+         --  dealing with possible overflow, and generate the check.
+
+         Set_Do_Overflow_Check (N, False);
+
          Generate_Range_Check (Expr, Target_Type, CE_Range_Check_Failed);
       end Discrete_Range_Check;
 
@@ -12096,11 +12101,6 @@ package body Exp_Ch4 is
                       or else (Is_Fixed_Point_Type (Etype (Expression (N)))
                                 and then Conversion_OK (N)))
          then
-            --  Reset overflow flag, since the range check will include
-            --  dealing with possible overflow, and generate the check.
-
-            Set_Do_Overflow_Check (N, False);
-
             --  If Address is either a source type or target type,
             --  suppress range check to avoid typing anomalies when
             --  it is a visible integer type.

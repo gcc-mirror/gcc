@@ -1,5 +1,12 @@
 2019-07-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* checks.adb (Activate_Overflow_Check): Remove redundant
+	argument.
+	* exp_ch4.adb (Discrete_Range_Check): Reset the overflow flag.
+	(Expand_N_Type_Conversion): Do not reset it here.
+
+2019-07-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* repinfo.adb (List_Component_Layout): Pass Decimal to UI_Write.
 	(Write_Val): Likewise.
 
