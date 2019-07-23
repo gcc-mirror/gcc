@@ -1,3 +1,17 @@
+2019-07-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/87030
+	* config/i386/darwin.h (REAL_LIBGCC_SPEC): Move from here...
+	* config/i386/darwin32-biarch.h .. to here.
+	* config/i386/darwin64-biarch.h: Adjust comments.
+	* config/rs6000/darwin32-biarch.h: Likewise.
+	* config/rs6000/darwin64-biarch.h: Likewise.
+	* config.gcc: Missed commit from r273746
+	(*-*-darwin*): Don't include CPU t-darwin here.
+	(i[34567]86-*-darwin*): Adjust to use biarch files. Produce
+	an error message if i686-darwin configuration is attempted for
+	Darwin >= 18.
+
 2019-07-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR bootstrap/87030

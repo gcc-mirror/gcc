@@ -1,4 +1,5 @@
-/* Target definitions for PowerPC64 running Darwin (Mac OS X).
+/* Target definitions for PowerPC64 running Darwin (Mac OS X) for a 64b host
+   supporting a 32b multilib.
    Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
