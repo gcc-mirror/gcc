@@ -1,3 +1,9 @@
+2019-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83518
+	* gimple-parser.c (c_parser_parse_gimple_body): When we have
+	a CFG also rebuild cgraph edges.
+
 2019-07-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_clause_name): Handle bind clause.

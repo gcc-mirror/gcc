@@ -1,3 +1,9 @@
+2019-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83518
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Handle aggregate
+	init from a constant even when partial defs are already recorded.
+
 2019-07-23  Jan Hubicka  <hubicka@ucw.cz>
 
 	* i386-common.c: Use PROCESSOR_ZNVER2 scheduler for znver2.

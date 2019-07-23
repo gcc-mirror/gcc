@@ -2702,9 +2702,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	   && gimple_assign_single_p (def_stmt)
 	   && (DECL_P (gimple_assign_rhs1 (def_stmt))
 	       || TREE_CODE (gimple_assign_rhs1 (def_stmt)) == MEM_REF
-	       || handled_component_p (gimple_assign_rhs1 (def_stmt)))
-	   /* Handling this is more complicated, give up for now.  */
-	   && data->partial_defs.is_empty ())
+	       || handled_component_p (gimple_assign_rhs1 (def_stmt))))
     {
       tree base2;
       int i, j, k;
@@ -2808,8 +2806,30 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       /* Try folding the new reference to a constant.  */
       tree val = fully_constant_vn_reference_p (vr);
       if (val)
-	return vn_reference_lookup_or_insert_for_pieces
-		 (vuse, vr->set, vr->type, vr->operands, val);
+	{
+	  if (data->partial_defs.is_empty ())
+	    return vn_reference_lookup_or_insert_for_pieces
+		(vuse, vr->set, vr->type, vr->operands, val);
+	  /* This is the only interesting case for partial-def handling
+	     coming from targets that like to gimplify init-ctors as
+	     aggregate copies from constant data like aarch64 for
+	     PR83518.  */
+	  if (maxsize.is_constant (&maxsizei)
+	      && known_eq (ref->size, maxsize))
+	    {
+	      pd_data pd;
+	      pd.rhs = val;
+	      pd.offset = 0;
+	      pd.size = maxsizei / BITS_PER_UNIT;
+	      return data->push_partial_def (pd, vuse, maxsizei);
+	    }
+	}
+
+      /* Continuing with partial defs isn't easily possible here, we
+         have to find a full def from further lookups from here.  Probably
+	 not worth the special-casing everywhere.  */
+      if (!data->partial_defs.is_empty ())
+	return (void *)-1;
 
       /* Adjust *ref from the new operands.  */
       if (!ao_ref_init_from_vn_reference (&r, vr->set, vr->type, vr->operands))

@@ -356,6 +356,8 @@ c_parser_parse_gimple_body (c_parser *cparser, char *gimple_pass,
       gcov_type t = PARAM_VALUE (PARAM_GIMPLE_FE_COMPUTED_HOT_BB_THRESHOLD);
       set_hot_bb_threshold (t);
       update_max_bb_count ();
+      cgraph_node::get_create (cfun->decl);
+      cgraph_edge::rebuild_edges ();
     }
   dump_function (TDI_gimple, current_function_decl);
 }
