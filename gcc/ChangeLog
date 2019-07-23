@@ -1,3 +1,8 @@
+2019-07-23  Vladislav Ivanishin <vlad@ispras.ru>
+
+	* gdbhooks.py: Pass replace=True to
+	gdb.printing.register_pretty_printer.
+
 2019-07-23  Richard Biener  <rguenther@suse.de>
 
 	PR debug/91231
