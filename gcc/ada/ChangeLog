@@ -1,3 +1,16 @@
+2019-07-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* aspects.ads: New table Operational_Aspect, used to distinguish
+	between aspects that are view-specific, such as those related to
+	iterators, and representation aspects that apply to all views of
+	a type.
+	* aspects.adb (Find_Aspect): If the aspect being sought is
+	operational, do not ecamine the full view of a private type to
+	retrieve it.
+	* sem_ch5.adb (Analyze_Iterator_Specification): Improve error
+	message when the intended domain of iteration does not implement
+	the required iterator aspects.
+
 2019-07-23  Yannick Moy  <moy@adacore.com>
 
 	* sem_spark.ads (Is_Local_Context): New function.
