@@ -1,3 +1,8 @@
+2019-07-22  Paul A. Clarke  <pc@us.ibm.com>
+
+	* doc/extend.texi (Basic PowerPC Built-in Functions Available on all
+	Configurations): Add documentation for __builtin_mtfsf.
+
 2019-07-22  Ilia Diachkov  <ilia.diachkov@optimitech.com>
 
 	* config/riscv/riscv-opts.h (struct riscv_align_data): New.
