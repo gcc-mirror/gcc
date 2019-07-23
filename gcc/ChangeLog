@@ -1,5 +1,10 @@
 2019-07-23  Vladislav Ivanishin <vlad@ispras.ru>
 
+	* gdbinit.in (reload-gdbhooks): New command with an attached doc string.
+	(rh): New alias for it.
+
+2019-07-23  Vladislav Ivanishin <vlad@ispras.ru>
+
 	* gdbhooks.py: Pass replace=True to
 	gdb.printing.register_pretty_printer.
 
