@@ -12,7 +12,7 @@ k = and(i, z'1234')
 k = ieor(z'ade',i)
 k = ior(i,z'1111')
 k = ior(i,k)                  ! { dg-error "different kind type parameters" }
-k = and(i,k)
-k = and(a,z'1234')            ! { dg-error "must have the same type" }
+k = and(i,k)                  ! { dg-error "must be the same type" }
+k = and(a,z'1234')            ! { dg-error "must be the same type" }
 end program foo
 

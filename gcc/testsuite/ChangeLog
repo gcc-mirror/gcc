@@ -1,3 +1,52 @@
+2019-07-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/achar_5.f90: Fix for new BOZ handling.
+	* arithmetic_overflow_1.f90: Ditto.
+	* gfortran.dg/boz_11.f90: Ditto.
+	* gfortran.dg/boz_12.f90: Ditto.
+	* gfortran.dg/boz_4.f90: Ditto.
+	* gfortran.dg/boz_5.f90: Ditto.
+	* gfortran.dg/boz_6.f90: Ditto.
+	* gfortran.dg/boz_7.f90: Ditto.
+	* gfortran.dg/boz_8.f90: Ditto.
+	* gfortran.dg/dec_structure_6.f90: Ditto.
+	* gfortran.dg/dec_union_1.f90: Ditto.
+	* gfortran.dg/dec_union_2.f90: Ditto.
+	* gfortran.dg/dec_union_5.f90: Ditto.
+	* gfortran.dg/dshift_3.f90: Ditto.
+	* gfortran.dg/gnu_logical_2.f90: Ditto.
+	* gfortran.dg/int_conv_1.f90: Ditto.
+	* gfortran.dg/ishft_1.f90: Ditto.
+	* gfortran.dg/nan_4.f90: Ditto.
+	* gfortran.dg/no_range_check_3.f90: Ditto.
+	* gfortran.dg/pr16433.f: Ditto.
+	* gfortran.dg/pr44491.f90: Ditto.
+	* gfortran.dg/pr58027.f90: Ditto.
+	* gfortran.dg/pr81509_2.f90: Ditto.
+	* gfortran.dg/unf_io_convert_1.f90: Ditto.
+	* gfortran.dg/unf_io_convert_2.f90: Ditto.
+	* gfortran.fortran-torture/execute/intrinsic_fraction_exponent.f90:
+	Ditto.
+	* gfortran.fortran-torture/execute/intrinsic_mvbits.f90: Ditto.
+	* gfortran.fortran-torture/execute/intrinsic_nearest.f90: Ditto.
+	* gfortran.fortran-torture/execute/seq_io.f90: Ditto.
+	* gfortran.dg/gnu_logical_1.F: Delete test.
+	* gfortran.dg/merge_bits_3.f90: New test.
+	* gfortran.dg/merge_bits_3.f90: Ditto.
+	* gfortran.dg/boz_int.f90: Ditto.
+	* gfortran.dg/boz_bge.f90: Ditto.
+	* gfortran.dg/boz_complex_1.f90: Ditto.
+	* gfortran.dg/boz_complex_2.f90: Ditto.
+	* gfortran.dg/boz_complex_3.f90: Ditto.
+	* gfortran.dg/boz_dble.f90: Ditto.
+	* gfortran.dg/boz_dshift_1.f90: Ditto.
+	* gfortran.dg/boz_dshift_2.f90: Ditto.
+	* gfortran.dg/boz_float_1.f90: Ditto.
+	* gfortran.dg/boz_float_2.f90: Ditto.
+	* gfortran.dg/boz_float_3.f90: Ditto.
+	* gfortran.dg/boz_iand_1.f90: Ditto.
+	* gfortran.dg/boz_iand_2.f90: Ditto.
+
 2019-07-23  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/86061

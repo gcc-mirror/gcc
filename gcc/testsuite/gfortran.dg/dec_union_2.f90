@@ -31,6 +31,7 @@ structure /s1/
     end map
   end union
 end structure
+
 structure /s2/
   union ! U2
     map ! M4
@@ -51,9 +52,9 @@ r1.b = 1.33e7
 if ( r1.a .eq. 0 ) call aborts ("basic union 1")
 
 ! Endian-agnostic runtime check
-r2.long = z'12345678'
-if (.not. (     (r2.w1 .eq. z'1234' .and. r2.w2 .eq. z'5678') &
-           .or. (r2.w1 .eq. z'5678' .and. r2.w2 .eq. z'1234')) ) then
+r2.long = int(z'12345678')
+if (.not. (     (r2.w1 .eq. int(z'1234',2) .and. r2.w2 .eq. int(z'5678',2)) &
+           .or. (r2.w1 .eq. int(z'5678',2) .and. r2.w2 .eq. int(z'1234',2))) ) then
     call aborts ("basic union 2")
 endif
 
