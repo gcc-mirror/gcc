@@ -24460,6 +24460,13 @@ gen_producer_string (void)
       case OPT_fchecking_:
 	/* Ignore these.  */
 	continue;
+      case OPT_flto_:
+	{
+	  const char *lto_canonical = "-flto";
+	  switches.safe_push (lto_canonical);
+	  len += strlen (lto_canonical) + 1;
+	  break;
+	}
       default:
         if (cl_options[save_decoded_options[j].opt_index].flags
 	    & CL_NO_DWARF_RECORD)
