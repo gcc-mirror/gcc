@@ -1,5 +1,17 @@
 2019-07-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* checks.adb (Convert_And_Check_Range): Add Suppress parameter
+	and pass it in the call to Insert_Actions.  Rename local
+	variable.
+	(Generate_Range_Check): Minor comment fixes.  Pass Range_Check
+	in the first call to Convert_And_Check_Range and All_Checks in
+	the second call.
+	* exp_ch4.adb (Expand_N_Type_Conversion): Reset the
+	Do_Overflow_Check flag in the float-to-float case too if there
+	is also a range check.
+
+2019-07-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* checks.adb (Activate_Overflow_Check): Remove redundant
 	argument.
 	* exp_ch4.adb (Discrete_Range_Check): Reset the overflow flag.

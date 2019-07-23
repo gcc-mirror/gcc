@@ -12090,6 +12090,11 @@ package body Exp_Ch4 is
          if Is_Floating_Point_Type (Target_Type)
            and then Is_Floating_Point_Type (Etype (Expression (N)))
          then
+            --  Reset overflow flag, since the range check will include
+            --  dealing with possible overflow, and generate the check.
+
+            Set_Do_Overflow_Check (N, False);
+
             Generate_Range_Check
               (Expression (N), Target_Type, CE_Range_Check_Failed);
 
