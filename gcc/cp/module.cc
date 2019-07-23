@@ -2250,7 +2250,7 @@ private:
   enum disc_bits 
   {
     DB_ZERO_BIT, /* Set to disambiguate identifier from flags  */
-    DB_MARK_BIT, /* First dep slot is special.  */
+    DB_SPECIAL_BIT, /* First dep slot is special.  */
     DB_KIND_BIT, /* Kind of the entity.  */
     DB_KIND_BITS = EK_BITS,
     DB_DEFN_BIT = DB_KIND_BIT + DB_KIND_BITS,
@@ -2383,13 +2383,13 @@ public:
   }
 
 public:
-  bool is_marked () const
+  bool is_special () const
   {
-    return get_flag_bit<DB_MARK_BIT> ();
+    return get_flag_bit<DB_SPECIAL_BIT> ();
   }
-  void set_marked ()
+  void set_special ()
   {
-    set_flag_bit<DB_MARK_BIT> ();
+    set_flag_bit<DB_SPECIAL_BIT> ();
   }
 
 public:
@@ -8123,8 +8123,11 @@ trees_out::tree_node (tree t)
     }
 
   if (TREE_CODE (t) == INTEGER_CST
-      && !TREE_OVERFLOW (t) && TREE_CODE (TREE_TYPE (t)) == ENUMERAL_TYPE)
+      && !TREE_OVERFLOW (t)
+      && TREE_CODE (TREE_TYPE (t)) == ENUMERAL_TYPE)
     {
+      /* An integral constant of enumeral type.  See if it matches one
+	 of the enumeration values.  */
       unsigned ix = 0;
       for (tree values = TYPE_VALUES (TREE_TYPE (t));
 	   values; ix++, values = TREE_CHAIN (values))
@@ -8139,6 +8142,8 @@ trees_out::tree_node (tree t)
 	      && dump ("Written enum value %N[%u]", TREE_TYPE (t), ix);
 	    goto done;
 	  }
+      /* It didn't match.  We'll write it a an explicit INTEGER_CST
+	 node.  */
     }
 
  skip_normal:
@@ -9093,12 +9098,12 @@ trees_out::key_mergeable (depset *dep)
       if (!streaming_p ())
 	{
 	  /* When /determining/ mergeable ordering, there's an indirection.  */
-	  gcc_assert (spec->is_marked ());
+	  gcc_assert (spec->is_special ());
 	  spec = dep->deps[0];
 	}
 
       tree tmpl, args;
-      gcc_assert (spec->is_marked ());
+      gcc_assert (spec->is_special ());
       spec_entry *entry = reinterpret_cast <spec_entry *> (spec->deps[0]);
       tmpl = entry->tmpl;
       args = entry->args;
@@ -9191,7 +9196,7 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
     {
       *container = tree_node ();
       *key = tree_node ();
-      }
+    }
 
   return get_overrun () ? MK_none : mk;
 }
@@ -10242,7 +10247,11 @@ depset::hash::find_binding (tree ctx, tree name)
    of the template, which might be suboptimal.
 
    DECL will be an OVL_USING_P OVERLOAD, if it's from a binding that's
-   a using decl.  */
+   a using decl.
+
+   We do not have to worry about adding the same dependency more than
+   once.  First it's harmless, but secondly the TREE_VISITED marking
+   prevents us wanting to do it anyway.  */
 
 depset *
 depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
@@ -10412,6 +10421,7 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	{
 	  current->deps.safe_push (dep);
 	  if (current->is_binding ())
+	    /* Binding and contents are mutually dependent.  */
 	    dep->deps.safe_push (current);
 	  else
 	    {
@@ -10427,8 +10437,8 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 		  && (CP_DECL_CONTEXT (current->get_entity ())
 		      == TREE_TYPE (dep->get_entity ())))
 		/* Unscoped enum values are pushed into the containing
-		   scope.  Insert a dependency to the current binding, if it
-		   is one of the enum constants.  */
+		   scope.  Insert a dependency to the current binding,
+		   if it is one of the enum constants.  */
 		dep->deps.safe_push (current);
 	    }
 
@@ -10850,7 +10860,7 @@ depset::hash::add_specializations (bool decl_p, bitmap partitions)
 	owner = (*modules)[owner]->remap;
       depset *dep = add_dependency (spec, depset::EK_SPECIALIZATION,
 				    owner >= MODULE_IMPORT_BASE);
-      if (dep->is_marked ())
+      if (dep->is_special ())
 	{
 	  /* An already located specialization, this must be a friend
 	     with a different entry->tmpl.  */
@@ -10863,7 +10873,7 @@ depset::hash::add_specializations (bool decl_p, bitmap partitions)
 	}
       else
 	{
-	  dep->set_marked ();
+	  dep->set_special ();
 	  dep->deps.safe_push (reinterpret_cast<depset *> (entry));
 	  if (needs_reaching)
 	    dep->set_flag_bit<DB_UNREACHED_BIT> ();
@@ -10923,7 +10933,7 @@ depset::hash::find_dependencies ()
 
 		  if (current->get_entity_kind () == EK_SPECIALIZATION)
 		    {
-		      gcc_assert (current->is_marked ());
+		      gcc_assert (current->is_special ());
 		      /* Even though specializations end up keyed to
 		         their primary template, we need to explicitly
 		         make them depend on both that and the
@@ -10981,7 +10991,7 @@ depset::hash::add_mergeable (depset *mergeable)
 
   /* So we can locate the mergeable depset this depset refers to,
      mark the first dep.  */
-  dep->set_marked ();
+  dep->set_special ();
   dep->deps.safe_push (mergeable);
 
   if (mergeable->is_partial ())
@@ -10998,7 +11008,7 @@ depset::hash::add_mergeable_horcrux (depset *unnamed)
   depset **slot = entity_slot (decl, true);
   depset *dep = *slot;
   if (dep)
-    gcc_checking_assert (!dep->is_marked ());
+    gcc_checking_assert (!dep->is_special ());
   else
     {
       dep = make_entity (decl, unnamed->get_entity_kind ());
@@ -11138,7 +11148,7 @@ depset::tarjan::connect (depset *v)
   stack.safe_push (v);
 
   /* Walk all our dependencies, ignore a first marked slot  */
-  for (unsigned ix = v->is_marked (); ix != v->deps.length (); ix++)
+  for (unsigned ix = v->is_special (); ix != v->deps.length (); ix++)
     {
       depset *dep = v->deps[ix];
       unsigned lwm = dep->cluster;
@@ -13057,7 +13067,7 @@ sort_mergeables (depset *scc[], unsigned size)
 	depset *dep = scc[ix];
 	if (dep->refs_unnamed () && dep->is_mergeable ())
 	  {
-	    for (unsigned jx = dep->is_marked ();
+	    for (unsigned jx = dep->is_special ();
 		 jx != dep->deps.length (); jx++)
 	      {
 		depset *d = dep->deps[jx];
@@ -13080,7 +13090,7 @@ sort_mergeables (depset *scc[], unsigned size)
   unsigned pos = 0;
   unsigned count = 0;
   for (unsigned ix = 0; ix != order.length (); ix++)
-    if (order[ix]->is_marked ())
+    if (order[ix]->is_special ())
       {
 	gcc_checking_assert (pos != binding_lwm);
 	depset *dep = order[ix]->deps[0];
@@ -13186,7 +13196,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  depset *b = scc[ix];
 
-	  for (unsigned jx = b->is_marked (); jx != b->deps.length (); jx++)
+	  for (unsigned jx = b->is_special (); jx != b->deps.length (); jx++)
 	    {
 	      depset *d = b->deps[jx];
 	      if ((d->get_entity_kind () == depset::EK_UNNAMED
