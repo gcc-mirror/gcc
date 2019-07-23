@@ -548,7 +548,15 @@ simple_object_elf_match (unsigned char header[SIMPLE_OBJECT_MATCH_HEADER_LEN],
       XDELETE (eor);
       return NULL;
     }
-
+  
+  if (eor->shstrndx == 0)
+    {
+      *errmsg = "invalid ELF shstrndx == 0";
+      *err = 0;
+      XDELETE (eor);
+      return NULL;
+    }
+  
   return (void *) eor;
 }
 
