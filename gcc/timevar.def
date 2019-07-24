@@ -68,6 +68,8 @@ DEFTIMEVAR (TV_PCH_CPP_RESTORE       , "PCH preprocessor state restore")
 
 DEFTIMEVAR (TV_CGRAPH                , "callgraph construction")
 DEFTIMEVAR (TV_CGRAPHOPT             , "callgraph optimization")
+DEFTIMEVAR (TV_CGRAPH_FUNC_EXPANSION , "callgraph functions expansion")
+DEFTIMEVAR (TV_CGRAPH_IPA_PASSES     , "callgraph ipa passes")
 DEFTIMEVAR (TV_IPA_FNSUMMARY         , "ipa function summary")
 DEFTIMEVAR (TV_IPA_UNREACHABLE       , "ipa dead code removal")
 DEFTIMEVAR (TV_IPA_INHERITANCE       , "ipa inheritance graph")
