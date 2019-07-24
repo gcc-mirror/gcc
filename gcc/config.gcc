@@ -2512,6 +2512,12 @@ msp430*-*-*)
 	cxx_target_objs="msp430-c.o"
 	tmake_file="${tmake_file} msp430/t-msp430"
 	extra_gcc_objs="driver-msp430.o"
+	# Enable .init_array unless it has been explicitly disabled.
+	# The MSP430 EABI mandates the use of .init_array, and the Newlib CRT code
+	# since mid-2019 expects it.
+	if test x${disable_initfini_array} != xyes; then
+		gcc_cv_initfini_array=yes
+	fi
 	;;
 nds32*-*-*)
 	target_cpu_default="0"
