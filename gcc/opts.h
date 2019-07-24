@@ -359,7 +359,8 @@ extern void decode_options (struct gcc_options *opts,
 			    location_t loc,
 			    diagnostic_context *dc,
 			    void (*target_option_override_hook) (void));
-extern int option_enabled (int opt_idx, void *opts);
+extern int option_enabled (int opt_idx, unsigned lang_mask, void *opts);
+
 extern bool get_option_state (struct gcc_options *, int,
 			      struct cl_option_state *);
 extern void set_option (struct gcc_options *opts,

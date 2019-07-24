@@ -1,3 +1,20 @@
+2019-07-24  Martin Sebor  <msebor@redhat.com>
+
+	PR driver/80545
+	* diagnostic.c (diagnostic_classify_diagnostic): Use lang_mask.
+	(diagnostic_report_diagnostic): Same.
+	* diagnostic.h (diagnostic_context::option_enabled): Add an argument.
+	(diagnostic_context::lang_mask): New data member.
+	* ipa-pure-const.c (suggest_attribute): Use
+	lang_hooks.option_lang_mask ().
+	* opts-common.c (option_enabled): Handle new argument.
+	(get_option_state): Pass an additional argument.
+	* opts.c (print_filtered_help): Print supported languages for
+	unsupported options.  Adjust printing of current state.
+	* opts.h (option_enabled): Add argument.
+	* toplev.c (print_switch_values): Use lang_mask.
+	(general_init): Set global_dc->lang_mask.
+
 2019-07-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR bootstrap/87030

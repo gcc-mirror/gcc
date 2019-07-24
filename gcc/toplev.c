@@ -815,9 +815,10 @@ print_switch_values (print_switch_fn_type print_fn)
   pos = print_single_switch (print_fn, 0,
 			     SWITCH_TYPE_DESCRIPTIVE, _("options enabled: "));
 
+  unsigned lang_mask = lang_hooks.option_lang_mask ();
   for (j = 0; j < cl_options_count; j++)
     if (cl_options[j].cl_report
-	&& option_enabled (j, &global_options) > 0)
+	&& option_enabled (j, lang_mask, &global_options) > 0)
       pos = print_single_switch (print_fn, pos,
 				 SWITCH_TYPE_ENABLED, cl_options[j].opt_text);
 
@@ -1088,6 +1089,7 @@ general_init (const char *argv0, bool init_signals)
   /* Initialize the diagnostics reporting machinery, so option parsing
      can give warnings and errors.  */
   diagnostic_initialize (global_dc, N_OPTS);
+  global_dc->lang_mask = lang_hooks.option_lang_mask ();
   /* Set a default printer.  Language specific initializations will
      override it later.  */
   tree_diagnostics_defaults (global_dc);

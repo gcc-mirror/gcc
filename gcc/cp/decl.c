@@ -16301,6 +16301,7 @@ finish_function (bool inline_p)
 	      && same_type_ignoring_top_level_qualifiers_p
 		  (TREE_TYPE (valtype), TREE_TYPE (current_class_ref))
 	      && global_dc->option_enabled (OPT_Wreturn_type,
+					    global_dc->lang_mask,
 					    global_dc->option_state))
 	    add_return_star_this_fixit (&richloc, fndecl);
 	}
