@@ -1,3 +1,10 @@
+2019-07-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR middle-end/91166
+	* match.pd (vec_perm_expr(v, v, mask) -> v): New pattern.
+	(define_predicates): Add entry for uniform_vector_p.
+	(vec_same_elem_p): New match pattern.
+
 2019-07-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR bootstrap/87030
