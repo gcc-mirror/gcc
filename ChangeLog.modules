@@ -1,5 +1,13 @@
 2019-07-24  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/alias-2_a.H: Add dg-module-header.
+	* g++.dg/modules/alias-3_a.H: Likewise.
+	* g++.dg/modules/mod-decl-0-2a.C: std=c++2a.
+	* g++.dg/modules/mod-decl-0.C: std=c++17.
+	* g++.dg/modules/modules.exp: Add dg-module-header, iterate over
+	different c++ stds.
+
 	gcc/cp/
 	* module.cc (trees_out::tree_decl): Cope with using decls in the
 	binding list.
