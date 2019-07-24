@@ -1,3 +1,9 @@
+2019-07-24  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraphunit.c (symbol_table::compile): Start and stop 
+	TV_CGRAPH_IPA_PASSES and TV_CGRAPH_FUNC_EXPANSION timers.
+	* timevar.def (TV_CGRAPH_IPA_PASSES, TV_CGRAPH_FUNC_EXPANSION): New.
+
 2019-07-24  Oliver Browne  <oliverbrowne62@gmail.com>
 
 	* gimplify.c (flag_instrument_functions_exclude_p): Include
