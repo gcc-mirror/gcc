@@ -3490,7 +3490,9 @@ record_mergeable_decl (tree *slot, tree name, tree decl)
 }
 
 /* DECL is a new declaration that may be duplicated in OVL.  Use RET &
-   ARGS to find its clone, or NULL.
+   ARGS to find its clone, or NULL.  If DECL's DECL_NAME is NULL, this
+   has been found by a proxy.  It will be an enum type located by it's
+   first member.
 
    We're conservative with matches, so ambiguous decls will be
    registered as different, then lead to a lookup error if the two
@@ -3501,6 +3503,12 @@ record_mergeable_decl (tree *slot, tree name, tree decl)
 static tree
 check_mergeable_decl (tree decl, tree ovl, tree ret, tree args)
 {
+  bool proxied = !DECL_NAME (decl);
+
+  if (proxied)
+    gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (decl)
+			 && TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE);
+
   for (ovl_iterator iter (ovl); iter; ++iter)
     {
       gcc_assert (!iter.using_p ());
@@ -3516,6 +3524,14 @@ check_mergeable_decl (tree decl, tree ovl, tree ret, tree args)
 	      && !DECL_NAMESPACE_ALIAS (match))
 	    /* Namespaces are never overloaded.  */
 	    return match;
+
+	  if (proxied
+	      && TREE_CODE (m_inner) == CONST_DECL
+	      && TREE_CODE (TREE_TYPE (m_inner)) == ENUMERAL_TYPE)
+	    {
+	      tree enum_decl = TYPE_STUB_DECL (TREE_TYPE (m_inner));
+	      return enum_decl;
+	    }
 	  continue;
 	}
 
@@ -3908,6 +3924,8 @@ match_mergeable_decl (tree decl, tree ctx, tree name, bool partition,
   if (tree match = check_mergeable_decl (decl, *gslot, ret, args))
     return match;
 
+  /* If DECL is an unnamed enum, we'll be pushing it into the slot for
+     its first member.  Remember to fix that up!  */
   add_mergeable_decl (gslot, decl);
 
   return NULL_TREE;
@@ -8708,6 +8726,9 @@ make_namespace (tree ctx, tree name, location_t loc,
 	  else if (global_purview_p ())
 	    /* We cannot have it here, because there's nothing
 	       unique to mangle into the name.  */
+	    // FIXME: this is wrong, we can do this by giving
+	    // anon-namespaces TU-specific indices, it doesn't matter
+	    // if these are different upon import.
 	    error ("anonymous namespaces cannot be used in"
 		   " global module fragment");
 	  anon_name = asm_name;

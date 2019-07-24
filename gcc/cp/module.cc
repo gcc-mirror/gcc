@@ -2256,7 +2256,8 @@ private:
     DB_DEFN_BIT = DB_KIND_BIT + DB_KIND_BITS,
     DB_IS_INTERNAL_BIT,		/* It is an internal-linkage entity.  */
     DB_REFS_UNNAMED_BIT,	/* Refer to a voldemort entity.  */
-    DB_REFS_INTERNAL_BIT,	/* Refers to an internal-linkage entity. */
+    DB_REFS_INTERNAL_BIT,	/* Refers to an internal-linkage
+				   entity. */
     DB_GLOBAL_BIT,		/* Global module entity.  */
     DB_IMPORTED_BIT,		/* An imported entity.  */
     DB_PARTIAL_BIT,		/* A partial instantiation or
@@ -2561,7 +2562,7 @@ depset::entity_kind_name () const
      "binding"};
   entity_kind kind = get_entity_kind ();
   gcc_checking_assert (kind < sizeof (names) / sizeof(names[0]));
-  return names[get_entity_kind ()];
+  return names[kind];
 }
 
 depset *depset::make_binding (tree ns, tree name)
@@ -2730,13 +2731,14 @@ static char const *const walk_kind_name[] =
 
 enum merge_kind
 {
-  MK_named,
-  MK_spec,
-  MK_clone,
+  MK_named,  /* Found by CTX, NAME + maybe_arg types.  */
+  MK_spec,   /* Found by PRIMARY, SPECS.  */
+  MK_clone,  /* Found by CLONED, PREV.  */
+  MK_enum,   /* Found by CTX, 1stMemberNAME.  */
   MK_none
 };
 static char const *const merge_kind_name[] =
-  {"named", "specialization", "clone"};
+  {"named", "specialization", "clone", "enum"};
 
 /* Tree stream reader.  Note that reading a stream doesn't mark the
    read trees with TREE_VISITED.  Thus it's quite safe to have
@@ -7233,9 +7235,24 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 		gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl) && code == tt_named);
 		proxy = TYPE_NAME (TREE_TYPE (decl));
 		name = DECL_NAME (proxy);
+		gcc_checking_assert (code == tt_named);
+		if (IDENTIFIER_ANON_P (name))
+		  {
+		    // FIXME: what about namespace-scope anon classes?
+		    gcc_checking_assert (TREE_CODE (TREE_TYPE (decl))
+					 == ENUMERAL_TYPE);
+		    proxy = TYPE_VALUES (TREE_TYPE (decl));
+		    if (proxy)
+		      {
+			proxy = TREE_VALUE (proxy);
+			name = DECL_NAME (proxy);
+		      }
+		    else
+		      // FIXME: empty anon enum. but can we get here?
+		      name = NULL_TREE;
+		  }
 		gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (proxy) == owner);
 		gcc_checking_assert (TYPE_STUB_DECL (TREE_TYPE (proxy)) == decl);
-		gcc_checking_assert (code == tt_named);
 		code = tt_anon;
 	      }
 	    else
@@ -7851,7 +7868,8 @@ trees_in::tree_value (walk_kind walk)
       else
 	{
 	  /* A named decl.  */
-	  DECL_NAME (res) = key;
+	  if (mk == MK_named)
+	    DECL_NAME (res) = key;
 	  DECL_CONTEXT (res) = FROB_CONTEXT (container);
 	}
 
@@ -8128,20 +8146,19 @@ trees_out::tree_node (tree t)
     {
       /* An integral constant of enumeral type.  See if it matches one
 	 of the enumeration values.  */
-      unsigned ix = 0;
       for (tree values = TYPE_VALUES (TREE_TYPE (t));
-	   values; ix++, values = TREE_CHAIN (values))
-	if (tree_int_cst_equal (DECL_INITIAL (TREE_VALUE (values)), t))
-	  {
-	    if (streaming_p ())
-	      u (tt_enum_int);
-	    tree_node (TYPE_NAME (TREE_TYPE (t)));
-	    if (streaming_p ())
-	      u (ix);
-	    dump (dumper::TREE)
-	      && dump ("Written enum value %N[%u]", TREE_TYPE (t), ix);
-	    goto done;
-	  }
+	   values; values = TREE_CHAIN (values))
+	{
+	  tree decl = TREE_VALUE (values);
+	  if (tree_int_cst_equal (DECL_INITIAL (decl), t))
+	    {
+	      if (streaming_p ())
+		u (tt_enum_int);
+	      tree_node (decl);
+	      dump (dumper::TREE) && dump ("Written enum value %N", decl);
+	      goto done;
+	    }
+	}
       /* It didn't match.  We'll write it a an explicit INTEGER_CST
 	 node.  */
     }
@@ -8431,22 +8448,13 @@ trees_in::tree_node ()
       break;
 
     case tt_enum_int:
-      /* An enum const.  */
+      /* An enum const value.  */
       {
-	tree decl = tree_node ();
-	unsigned ix = u ();
-
-	if (!decl)
-	  break;
-
-	dump (dumper::TREE) && dump ("Read enum value %N[%u]", decl, ix);
-	for (tree values = TYPE_VALUES (TREE_TYPE (decl));
-	     values; values = TREE_CHAIN (values))
-	  if (!ix--)
-	    {
-	      res = DECL_INITIAL (TREE_VALUE (values));
-	      break;
-	    }
+	if (tree decl = tree_node ())
+	  {
+	    dump (dumper::TREE) && dump ("Read enum value %N", decl);
+	    res = DECL_INITIAL (decl);
+	  }
 
 	if (!res)
 	  set_overrun ();
@@ -9062,6 +9070,12 @@ trees_out::key_mergeable (depset *dep)
       break;
 
     default:
+      if (DECL_IMPLICIT_TYPEDEF_P (decl) && TYPE_ANON_P (TREE_TYPE (decl)))
+	{
+	  // FIXME: namespace-scope anon classes?
+	  gcc_checking_assert (TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE);
+	  mk = MK_enum;
+	}
       break;
     }
 
@@ -9129,6 +9143,13 @@ trees_out::key_mergeable (depset *dep)
       tree_ctx (target, false, NULL_TREE);
       tree_node (predecessor);
     }
+  else if (mk == MK_enum)
+    {
+      tree name = NULL_TREE;
+      if (tree values = TYPE_VALUES (TREE_TYPE (decl)))
+	name = DECL_NAME (TREE_VALUE (values));
+      tree_node (name);
+    }
   else
     {
       /* Regular decls are located by their context, name, and
@@ -9165,7 +9186,7 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
   *fn_args = *r_type = NULL_TREE;
 
   unsigned i = u ();
-  if (i > MK_clone)
+  if (i >= MK_none)
     return MK_none;
   merge_kind mk = merge_kind (i);
 
@@ -9180,7 +9201,7 @@ trees_in::key_mergeable (tree decl, tree inner, tree,
     *parm_tag = fn_parms_init (inner);
 
   /* Now read the locating information. */
-  if (mk == MK_named)
+  if (mk == MK_named || mk == MK_enum)
     {
       *container = ctx;
       *key = tree_node ();
@@ -10257,11 +10278,12 @@ depset *
 depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 {
   /* Make sure we're being told consistent information.  */
-  gcc_checking_assert ((ek == EK_USING) == (TREE_CODE (decl) == OVERLOAD));
   gcc_checking_assert ((ek == EK_NAMESPACE)
 		       == (TREE_CODE (decl) == NAMESPACE_DECL
 			   && !DECL_NAMESPACE_ALIAS (decl)));
   gcc_checking_assert (ek != EK_BINDING && ek != EK_REDIRECT);
+  if (ek == EK_USING)
+    gcc_checking_assert (current->is_binding () && TREE_CODE (decl) == OVERLOAD);
   if (is_import)
     /* Only (potentially) unnameable imports need to be so marked.  */
     gcc_checking_assert (ek == EK_UNNAMED || ek == EK_SPECIALIZATION
@@ -10276,17 +10298,14 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
       if (is_for_mergeable ())
 	/* Bindings are never mergeable.  */
 	gcc_checking_assert (!binding_p);
-      if (ek == EK_USING)
-	/* Usings only occur in bindings.  */
-	gcc_checking_assert (OVL_USING_P (decl) && binding_p);
       if (ek == EK_UNNAMED)
 	/* Unnameable things are not namespace scope  */
 	gcc_checking_assert (TREE_CODE (CP_DECL_CONTEXT (decl))
 			     != NAMESPACE_DECL);
-
       if (!dep)
 	{
-	  bool has_def = (!is_for_mergeable () && ek != EK_USING
+	  bool has_def = (!is_for_mergeable ()
+			  && ek != EK_USING
 			  && has_definition (decl));
 	  bool maybe_spec = ek == EK_MAYBE_SPEC;
 	  if (maybe_spec)
@@ -10432,14 +10451,22 @@ depset::hash::add_dependency (tree decl, entity_kind ek, bool is_import)
 	      if (dep->is_internal ())
 		current->set_flag_bit<DB_REFS_INTERNAL_BIT> ();
 
-	      if (TREE_CODE (dep->get_entity ()) == TYPE_DECL
-		  && UNSCOPED_ENUM_P (TREE_TYPE (dep->get_entity ()))
-		  && (CP_DECL_CONTEXT (current->get_entity ())
-		      == TREE_TYPE (dep->get_entity ())))
-		/* Unscoped enum values are pushed into the containing
-		   scope.  Insert a dependency to the current binding,
-		   if it is one of the enum constants.  */
-		dep->deps.safe_push (current);
+	      if (current->get_entity_kind () == EK_USING
+		  && !OVL_USING_P (current->get_entity ())
+		  && DECL_IMPLICIT_TYPEDEF_P (decl)
+		  && TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
+		{
+		  /* CURRENT is an unwrapped using-decl and DECL is an
+		     enum's implicit typedef.  Is CURRENT a member of
+		     the enum?  */
+		  tree c_decl = OVL_FUNCTION (current->get_entity ());
+
+		  if (TREE_CODE (c_decl) == CONST_DECL
+		      && DECL_CONTEXT (c_decl) == TREE_TYPE (decl)
+		      && !is_for_mergeable ())
+		    /* Make DECL depend on CURRENT.  */
+		    dep->deps.safe_push (current);
+		}
 	    }
 
 	  if (dep->is_unreached ())
@@ -10507,15 +10534,15 @@ depset::hash::add_binding (tree ns, tree value)
 	  maybe_using = iter.get_using ();
 	  ek = depset::EK_USING;
 	}
-      else if (CP_DECL_CONTEXT (decl) != ns
-	       && TREE_CODE (decl) != CONST_DECL)
+      else if (CP_DECL_CONTEXT (decl) != ns)
 	{
-	  /* A using that lost its wrapper.  */
+	  /* A using that lost its wrapper or an unscoped enum
+	     constant.  */
 	  // FIXME: name-lookup should preserve this, but we tend to
 	  // drop it for non-function decls :(
-	  using_p = true;
 	  maybe_using = ovl_make (decl, NULL_TREE);
-	  OVL_USING_P (maybe_using) = true;
+	  if (DECL_MODULE_EXPORT_P (decl))
+	    OVL_EXPORT_P (maybe_using) = true;
 	  ek = depset::EK_USING;
 	}
 
@@ -10527,7 +10554,6 @@ depset::hash::add_binding (tree ns, tree value)
 	     this TU.  The same is not true for export_p. */
 	  // FIXME: check whether a partition can make the entity
 	  // unhidden, perhaps the right things already happen?
-	  gcc_checking_assert (!using_p);
 	  dep->set_hidden_binding ();
 	}
     }
@@ -11075,6 +11101,7 @@ binding_cmp (const void *a_, const void *b_)
     return a_export ? +1 : -1;
 
   /* At this point we don't care, but want a stable sort.  */
+
   if (a_using != b_using)
     /* using first.  */
     return a_using? -1 : +1;
@@ -11230,10 +11257,9 @@ depset_cmp (const void *a_, const void *b_)
   return a < b ? -1 : +1;
 }
 
-/* Compare members of a cluster.  Order defn < decl < bind.  depsets
+/* Compare members of a cluster.  Order other < USING < BIND.  depsets
    of the same kind can be arbitrary, but we want something
    stable.  */
-// FIXME: Use entity_kind more
 
 static int
 cluster_cmp (const void *a_, const void *b_)
@@ -11241,36 +11267,21 @@ cluster_cmp (const void *a_, const void *b_)
   depset *a = *(depset *const *)a_;
   depset *b = *(depset *const *)b_;
 
-  bool is_bind = a->is_binding ();
-  if (is_bind != b->is_binding ())
-    /* Exactly one is a binding, it comes last.  */
-    return is_bind ? +1 : -1;
+  if (a == b)
+    return 0;
 
-  if (!is_bind)
-    {
-      /* Neither is a binding, try order-by-defn.  */
-      bool is_defn = a->has_defn ();
-      if (is_defn != b->has_defn ())
-	/* Exactly one is a defn.  It comes first.  */
-	return is_defn ? -1 : +1;
+  if (a->is_binding () != b->is_binding ())
+    return a->is_binding () ? +1 : -1;
 
-      if (!is_defn)
-	{
-	  /* Neither is a defn, try order-by-using.  */
-	  bool is_using = a->get_entity_kind () == depset::EK_USING;
-	  if (is_using != (b->get_entity_kind () == depset::EK_USING))
-	    /* Exactly one is a using.  It comes last.  */
-	    return is_using ? +1 : -1;
-	}
-    }
-
-  /* They are both the same kind.  Order for qsort stability.  */
   tree a_decl = a->get_entity ();
   tree b_decl = b->get_entity ();
+  bool a_using = a->get_entity_kind () == depset::EK_USING;
+  if (a_using != (b->get_entity_kind () == depset::EK_USING))
+    return a_using ? +1 : -1;
 
-  if (a->get_entity_kind () == depset::EK_USING)
+  /* Now order for qsort stability.  */
+  if (a_using)
     {
-      /* If one is a using, the other must be too.  */
       a_decl = OVL_FUNCTION (a_decl);
       b_decl = OVL_FUNCTION (b_decl);
     }
@@ -11279,24 +11290,10 @@ cluster_cmp (const void *a_, const void *b_)
     /* Different entities, order by their UID.  */
     return DECL_UID (a_decl) < DECL_UID (b_decl) ? -1 : +1;
 
-  /* Same decl.  They must be bindings or using_decls (when not in the
-     same cluster).  */
-
-  if (a->is_binding ())
-    {
-      /* Order by identifier hash (hey, it's a consistent number).  */
-      // FIXME: strcmp for user-meaningful order?
-      gcc_checking_assert (a->get_name () != b->get_name ());
-      return (IDENTIFIER_HASH_VALUE (a->get_name ())
-	      < IDENTIFIER_HASH_VALUE (b->get_name ())
-	      ? -1 : +1);
-    }
-
-  /* Must be doing global ordering.  */
-  gcc_checking_assert (a->get_entity_kind () == depset::EK_USING
-		       && !a->section && !b->section);
-  /* Order by depset address.  Not the best, but it is something.  */
-  return a < b ? -1 : +1;
+  /* Same decl.  They must be bindings.  Order by stcmp for
+     user-meaningful order.  */
+  return strcmp (IDENTIFIER_POINTER (a->get_name ()),
+		 IDENTIFIER_POINTER (b->get_name ()));
 }
 
 /* Reduce graph to SCCS clusters.  SCCS will be populated with the
@@ -13025,10 +13022,12 @@ enum ct_decl_flags
 enum ct_bind_flags
 {
   cbf_export = 0x1,	/* An exported decl.  */
-  cbf_using = 0x2,	/* A using decl.  */
-  cbf_hidden = 0x4	/* A hidden (friend) decl.  */
+  cbf_hidden = 0x2,	/* A hidden (friend) decl.  */
+  cbf_using = 0x4,	/* A using decl.  */
+  cbf_wrapped = 0x4,  	/* ... that is wrapped.  */
 };
 
+/* The cluster must already have been sorted cia cluster_cmp.  */
 
 static unsigned
 sort_mergeables (depset *scc[], unsigned size)
@@ -13037,32 +13036,33 @@ sort_mergeables (depset *scc[], unsigned size)
 
   dump.indent ();
 
-  unsigned binding_lwm = size;
+  unsigned lwm = size;
   bool refs_unnamed = false;
   for (unsigned ix = size; ix--;)
     {
       depset *dep = scc[ix];
-      if (dep->is_binding ())
+      switch (dep->get_entity_kind ())
 	{
-	  /* Move bindings to the end.  */
-	  if (--binding_lwm != ix)
-	    {
-	      scc[ix] = scc[binding_lwm];
-	      scc[binding_lwm] = dep;
-	    }
-	}
-      else
-	{
+	case depset::EK_BINDING:
+	case depset::EK_USING:
+	  gcc_checking_assert (lwm == ix + 1);
+	  lwm = ix;
+	  break;
+
+	default:
 	  table.add_mergeable (dep);
 	  if (dep->refs_unnamed () && dep->is_mergeable ())
 	    refs_unnamed = true;
+	  break;
 	}
     }
-  dump (dumper::MERGE) && dump ("Ordering %u depsets", binding_lwm);
+
+  dump (dumper::MERGE) && dump ("Ordering %u depsets", lwm);
+
   if (refs_unnamed)
     /* Insert horcrux markers for the unnameable decls outside of the
        mergeable set.  */
-    for (unsigned ix = binding_lwm; ix--;)
+    for (unsigned ix = lwm; ix--;)
       {
 	depset *dep = scc[ix];
 	if (dep->refs_unnamed () && dep->is_mergeable ())
@@ -13092,7 +13092,7 @@ sort_mergeables (depset *scc[], unsigned size)
   for (unsigned ix = 0; ix != order.length (); ix++)
     if (order[ix]->is_special ())
       {
-	gcc_checking_assert (pos != binding_lwm);
+	gcc_checking_assert (pos != lwm);
 	depset *dep = order[ix]->deps[0];
 	scc[pos++] = dep;
 
@@ -13106,7 +13106,7 @@ sort_mergeables (depset *scc[], unsigned size)
 					  ix, dep->get_entity ());
 	  }
       }
-  gcc_checking_assert (pos == binding_lwm);
+  gcc_checking_assert (pos == lwm);
 
   order.release ();
   dump (dumper::MERGE) && dump ("Ordered %u mergeables", count);
@@ -13358,6 +13358,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		if (dep->get_entity_kind () == depset::EK_USING)
 		  {
 		    flags |= cbf_using;
+		    if (OVL_USING_P (decl))
+		      flags |= cbf_wrapped;
 		    if (OVL_EXPORT_P (decl))
 		      flags |= cbf_export;
 		    decl = OVL_FUNCTION (decl);
@@ -13534,14 +13536,15 @@ module_state::read_cluster (unsigned snum)
 		else
 		  {
 		    if (decls
-			|| (flags & (cbf_hidden | cbf_using))
+			|| (flags & (cbf_hidden | cbf_wrapped))
 			|| (dedup && TREE_CODE (decl) == FUNCTION_DECL)
 			|| DECL_FUNCTION_TEMPLATE_P (decl))
 		      {
 			decls = ovl_make (decl, decls);
 			if (flags & cbf_using)
 			  {
-			    OVL_USING_P (decls) = dedup = true;
+			    dedup = true;
+			    OVL_USING_P (decls) = true;
 			    if (flags & cbf_export)
 			      OVL_EXPORT_P (decls) = true;
 			  }
@@ -16240,9 +16243,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	}
       base[0]->cluster = base[0]->section = 0;
 
-      // FIXME: Unneeded.
       /* Sort the cluster.  Later processing makes use of the ordering
-	 of defns < decls < bindings. */
+	 of others < EK_USING < EK_BINDING. */
       qsort (base, size, sizeof (depset *), cluster_cmp);
 
       if (base[0]->get_entity_kind () == depset::EK_NAMESPACE)

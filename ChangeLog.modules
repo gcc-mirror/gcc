@@ -1,3 +1,22 @@
+2019-07-24  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (enum merge_kind): Add MK_enum.
+	(trees_out::tree_decl): Deal with anon enums.
+	(trees_in::tree_value): Adjust for MK_enum.
+	(trees_{in,out}::tree_node): Adjust tt_enum_int streaming.
+	(trees_{in,out}::key_mergeable): Add MK_enum key.
+	(depset::hash::add_dependency): Enum values are like using decls.
+	(depset::hash::add_binding): Likewise.
+	(depset_cmp): Reorder for new requirements.
+	(enum ct_bind_flags): Add cbf_wrapped.
+	(sort_mergeables): Presume sorted by depset_cmp.
+	(module_state::{read,write}_cluster): Adjust.
+	* name-lookup.c (check_mergeable_decl): Deal with anon-enum
+	proxies.
+	gcc/testsuite/
+	* g++.dg/modules/enum-1_a.C: Adjust scan.
+
 2019-07-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
