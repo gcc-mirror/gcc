@@ -36,7 +36,8 @@ along with GCC; see the file COPYING3.  If not see
    integer_valued_real_p
    integer_pow2p
    uniform_integer_cst_p
-   HONOR_NANS)
+   HONOR_NANS
+   uniform_vector_p)
 
 /* Operator lists.  */
 (define_operator_list tcc_comparison
@@ -5568,3 +5569,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
          { bitsize_int (at * tree_to_uhwi (TYPE_SIZE (TREE_TYPE (type)))); })
        (if (changed)
         (vec_perm { op0; } { op1; } { op2; }))))))))))
+
+/* VEC_PERM_EXPR (v, v, mask) -> v where v contains same element.  */
+
+(match vec_same_elem_p
+ @0
+ (if (uniform_vector_p (@0))))
+
+(match vec_same_elem_p
+ (vec_duplicate @0))
+
+(simplify
+ (vec_perm vec_same_elem_p@0 @0 @1)
+ @0)

@@ -1,3 +1,8 @@
+2019-07-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR middle-end/91166
+	* gcc.target/aarch64/sve/pr91166.c: New test.
+
 2019-07-23  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/54072
