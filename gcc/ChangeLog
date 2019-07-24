@@ -1,3 +1,8 @@
+2019-07-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/87030
+	* config/i386/darwin.h (REAL_LIBGCC_SPEC): Revert change from r273749.
+
 2019-07-24  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* cgraphunit.c (symbol_table::compile): Start and stop 
