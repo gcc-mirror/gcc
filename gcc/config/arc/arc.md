@@ -163,6 +163,7 @@
   VUNSPEC_ARC_LL
   VUNSPEC_ARC_BLOCKAGE
   VUNSPEC_ARC_EH_RETURN
+  VUNSPEC_ARC_ARC600_RTIE
   ])
 
 (define_constants
@@ -187,17 +188,37 @@
    (R30_REG 30)
    (RETURN_ADDR_REGNUM 31)
    (R32_REG 32)
+   (R33_REG 33)
+   (R34_REG 34)
+   (R35_REG 35)
+   (R36_REG 36)
+   (R37_REG 37)
+   (R38_REG 38)
+   (R39_REG 39)
    (R40_REG 40)
    (R41_REG 41)
    (R42_REG 42)
    (R43_REG 43)
    (R44_REG 44)
+   (R45_REG 45)
+   (R46_REG 46)
+   (R47_REG 47)
+   (R48_REG 48)
+   (R49_REG 49)
+   (R50_REG 50)
+   (R51_REG 51)
+   (R52_REG 52)
+   (R53_REG 53)
+   (R54_REG 54)
+   (R55_REG 55)
+   (R56_REG 56)
    (R57_REG 57)
+   (R58_REG 58)
+   (R59_REG 59)
+
    (MUL64_OUT_REG 58)
    (MUL32x16_REG 56)
    (ARCV2_ACC 58)
-   (R59_REG 59)
-
    (LP_COUNT 60)
    (CC_REG 61)
    (PCL_REG 63)
@@ -214,7 +235,7 @@
 
 (define_attr "type"
   "move,load,store,cmove,unary,binary,compare,shift,uncond_branch,jump,branch,
-   brcc,brcc_no_delay_slot,call,sfunc,call_no_delay_slot,
+   brcc,brcc_no_delay_slot,call,sfunc,call_no_delay_slot,rtie,
    multi,umulti, two_cycle_core,lr,sr,divaw,loop_setup,loop_end,return,
    misc,spfp,dpfp_mult,dpfp_addsub,mulmac_600,cc_arith,
    simd_vload, simd_vload128, simd_vstore, simd_vmove, simd_vmove_else_zero,
@@ -531,9 +552,7 @@
   (cond [(eq_attr "in_delay_slot" "false")
 	 (const_string "no")
 	 (match_test "regno_clobbered_p
-			(arc_return_address_register
-			  (arc_compute_function_type (cfun)),
-			 insn, SImode, 1)")
+			(RETURN_ADDR_REGNUM, insn, SImode, 1)")
 	 (const_string "no")]
 	(const_string "yes")))
 
@@ -757,9 +776,9 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 ; execution must reflect this, lest out-of-range branches are created.
 ; the iscompact attribute allows the epilogue expander to know for which
 ; insns it should lengthen the return insn.
-(define_insn_and_split "*movsi_insn"		; 0  1 2 3    4  5  6   7   8   9  10  11  12  13  14  15  16    17      18  19  20    21   22 23  24   25 26  27  28
-  [(set (match_operand:SI 0 "move_dest_operand" "=q, q,r,q,   h,rl, r,  r,  r,  r, ?r,  r,  q,  h, rl,  q,  S,   Us<,RcqRck,!*x,  r,!*Rsd,!*Rcd,r,Ucm,  Usd,m,  m,VUsc")
-	(match_operand:SI 1 "move_src_operand"  "rL,rP,q,P,hCm1,rL, I,Clo,Chi,Cbi,Cpc,Clb,Cax,Cal,Cal,Uts,Rcq,RcqRck,   Us>,Usd,Ucm,  Usd,  Ucd,m,  r,!*Rzd,r,Cm3, C32"))]
+(define_insn_and_split "*movsi_insn"		; 0  1 2 3    4   5 6   7   8   9  10  11  12  13  14  15  16    17      18  19  20    21   22 23  24   25 26  27  28
+  [(set (match_operand:SI 0 "move_dest_operand" "=q, q,r,q,   h, rl,r,  r,  r,  r, ?r,  r,  q,  h, rl,  q,  S,   Us<,RcqRck,!*x,  r,!*Rsd,!*Rcd,r,Ucm,  Usd,m,  m,VUsc")
+	(match_operand:SI 1 "move_src_operand"  "rL,rP,q,P,hCm1,rLl,I,Clo,Chi,Cbi,Cpc,Clb,Cax,Cal,Cal,Uts,Rcq,RcqRck,   Us>,Usd,Ucm,  Usd,  Ucd,m,  r,!*Rzd,r,Cm3, C32"))]
   "register_operand (operands[0], SImode)
    || register_operand (operands[1], SImode)
    || (CONSTANT_P (operands[1])
@@ -775,8 +794,8 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    mov%?\\t%0,%1	;4
    mov%?\\t%0,%1	;5
    mov%?\\t%0,%1	;6
-   movl.cl\\t %0,%1	;7
-   movh.cl\\t %0,%L1>>16 ;8
+   movl.cl\\t%0,%1	;7
+   movh.cl\\t%0,%L1>>16 ;8
    * return INTVAL (operands[1]) & 0xffffff ? \"movbi.cl\\t%0,%1 >> %p1,%p1,8;9\" : \"movbi.cl\\t%0,%L1 >> 24,24,8;9\";
    add\\t%0,%1		;10
    add\\t%0,pcl,%1@pcl  ;11
@@ -784,7 +803,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    mov%?\\t%0,%j1	;13
    mov%?\\t%0,%j1	;14
    ld%?\\t%0,%1		;15
-   st%?\\t %1,%0	;16
+   st%?\\t%1,%0		;16
    * return arc_short_long (insn, \"push%?\\t%1%&\", \"st%U0\\t%1,%0%&\");
    * return arc_short_long (insn, \"pop%?\\t%0%&\",  \"ld%U1\\t%0,%1%&\");
    ld%?\\t%0,%1		;19
@@ -4560,13 +4579,13 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   (set_attr "type" "misc")])
 
 (define_insn "rtie"
-  [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "N")]
-		   VUNSPEC_ARC_RTIE)]
-  ""
+  [(return)
+   (unspec_volatile [(const_int 0)] VUNSPEC_ARC_RTIE)]
+  "!TARGET_ARC600_FAMILY"
   "rtie"
   [(set_attr "length" "4")
-  (set_attr "type" "misc")
-  (set_attr "cond" "clob")])
+   (set_attr "type" "rtie")
+   (set_attr "cond" "clob")])
 
 (define_insn "sync"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "N")]
@@ -4788,88 +4807,52 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 ; forbid instructions that change blink in the return / sibcall delay slot.
 (define_insn "simple_return"
   [(simple_return)]
-  "reload_completed"
-{
-  rtx reg
-    = gen_rtx_REG (Pmode,
-		   arc_return_address_register (arc_compute_function_type
-						(cfun)));
+  ""
+  "j%!%*\\t[blink]"
+  [(set_attr "type" "return")
+   (set_attr "cond" "canuse")
+   (set_attr "iscompact" "maybe")
+   (set_attr "length" "*")])
 
-  if (TARGET_V2
-      && ARC_INTERRUPT_P (arc_compute_function_type (cfun)))
-  {
-    return \"rtie\";
-  }
-  output_asm_insn (\"j%!%* [%0]%&\", &reg);
-  return \"\";
-}
-  [(set (attr "type")
-	(cond [(and (match_test "ARC_INTERRUPT_P (arc_compute_function_type (cfun))")
-		    (match_test "TARGET_V2"))
-	       (const_string "brcc_no_delay_slot")]
-	      (const_string "return")))
-   ; predicable won't help here since the canonical rtl looks different
-   ; for branches.
-   (set (attr "cond")
-	(cond [(and (eq (symbol_ref "arc_compute_function_type (cfun)")
-			(symbol_ref "ARC_FUNCTION_ILINK1"))
-		    (match_test "TARGET_V2"))
-	       (const_string "nocond")]
-	      (const_string "canuse")))
-  (set (attr "iscompact")
-	(cond [(eq (symbol_ref "arc_compute_function_type (cfun)")
-		   (symbol_ref "ARC_FUNCTION_NORMAL"))
-	       (const_string "maybe")]
-	      (const_string "false")))
-   (set (attr "length")
-	(cond [(ne (symbol_ref "arc_compute_function_type (cfun)")
-		   (symbol_ref "ARC_FUNCTION_NORMAL"))
-	       (const_int 4)]
-	      (const_int 2)))])
+(define_insn "arc600_rtie"
+  [(return)
+   (unspec_volatile [(match_operand 0 "pmode_register_operand" "")]
+		    VUNSPEC_ARC_ARC600_RTIE)]
+  "TARGET_ARC600_FAMILY"
+  "j.f\\t[%0]"
+  [(set_attr "length" "4")
+   (set_attr "type" "rtie")
+   (set_attr "cond" "clob")])
 
 (define_insn "p_return_i"
   [(set (pc)
 	(if_then_else (match_operator 0 "proper_comparison_operator"
 				      [(reg CC_REG) (const_int 0)])
 		      (simple_return) (pc)))]
-  "reload_completed
-   && !(TARGET_V2
-     && ARC_INTERRUPT_P (arc_compute_function_type (cfun)))"
+  "reload_completed"
 {
-  rtx xop[2];
-  xop[0] = operands[0];
-  xop[1]
-    = gen_rtx_REG (Pmode,
-		   arc_return_address_register (arc_compute_function_type
-						(cfun)));
-
-  output_asm_insn (\"j%d0%!%# [%1]%&\", xop);
+  output_asm_insn (\"j%d0%!%#\\t[blink]\", operands);
   /* record the condition in case there is a delay insn.  */
-  arc_ccfsm_record_condition (xop[0], false, insn, 0);
+  arc_ccfsm_record_condition (operands[0], false, insn, 0);
   return \"\";
 }
   [(set_attr "type" "return")
    (set_attr "cond" "use")
-   (set (attr "iscompact")
-	(cond [(eq (symbol_ref "arc_compute_function_type (cfun)")
-		   (symbol_ref "ARC_FUNCTION_NORMAL"))
-	       (const_string "maybe")]
-	      (const_string "false")))
+   (set_attr "iscompact" "maybe" )
    (set (attr "length")
-	(cond [(ne (symbol_ref "arc_compute_function_type (cfun)")
-		   (symbol_ref "ARC_FUNCTION_NORMAL"))
-	       (const_int 4)
-	       (not (match_operand 0 "equality_comparison_operator" ""))
+	(cond [(not (match_operand 0 "equality_comparison_operator" ""))
 	       (const_int 4)
 	       (eq_attr "delay_slot_filled" "yes")
 	       (const_int 4)]
 	      (const_int 2)))])
 
-;; ??? #ifdefs in function.c require the presence of this pattern, with a
-;; non-constant predicate.
+;; Return nonzero if this function is known to have a null epilogue.
+;; This allows the optimizer to omit jumps to jumps if no stack
+;; was created.
 (define_expand "return"
   [(return)]
-  "optimize < 0")
+  "arc_can_use_return_insn ()"
+  "")
 
  ;; Comment in final.c (insn_current_reference_address) says
  ;; forward branch addresses are calculated from the next insn after branch
