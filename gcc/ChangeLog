@@ -607,7 +607,7 @@
 	(rsbsi3_carryin_shift): Likewise.
 	(negsi2_carryin_compare): Likewise.
 
-2019-07-18  Bin Cheng  <bin.linux@linux.alibaba.com>
+2019-07-18  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/91137
 	* tree-ssa-loop-ivopts.c (struct ivopts_data): New field.
