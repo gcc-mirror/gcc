@@ -1,3 +1,9 @@
+2019-07-24  Martin Sebor  <msebor@redhat.com>
+
+	PR driver/80545
+	* gcc.misc-tests/help.exp: Add tests.
+	* lib/options.exp: Handle C++.
+
 2019-07-24  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* gcc.target/arc/arc.exp (check_effective_target_accregs): New

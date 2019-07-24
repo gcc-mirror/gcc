@@ -1526,9 +1526,15 @@ option_flag_var (int opt_index, struct gcc_options *opts)
    or -1 if it isn't a simple on-off switch.  */
 
 int
-option_enabled (int opt_idx, void *opts)
+option_enabled (int opt_idx, unsigned lang_mask, void *opts)
 {
   const struct cl_option *option = &(cl_options[opt_idx]);
+
+  /* A language-specific option can only be considered enabled when it's
+     valid for the current language.  */
+  if (option->flags & CL_LANG_ALL && !(option->flags | lang_mask))
+    return 0;
+
   struct gcc_options *optsg = (struct gcc_options *) opts;
   void *flag_var = option_flag_var (opt_idx, optsg);
 
@@ -1598,7 +1604,7 @@ get_option_state (struct gcc_options *opts, int option,
 
     case CLVC_BIT_CLEAR:
     case CLVC_BIT_SET:
-      state->ch = option_enabled (option, opts);
+      state->ch = option_enabled (option, -1, opts);
       state->data = &state->ch;
       state->size = 1;
       break;

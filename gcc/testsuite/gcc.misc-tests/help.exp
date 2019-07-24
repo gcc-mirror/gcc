@@ -91,6 +91,34 @@ maximum number of
 -O
 } "" ""
 
+# Verify that a C++/Objective C++ only option is indicated as such
+# by the C compiler.
+check_for_options c "-Q --help=warnings" {
+-Wclass-memaccess[ \t]+\[available in C\+\+, ObjC\+\+\]
+} "" ""
+
+# Do the same for a C/Objective C only option and the C++ compiler.
+check_for_options c++ "-Q --help=warnings" {
+-Wabsolute-value[ \t]+\[available in C, ObjC\]
+} "" ""
+
+# Verify that an option that's an alias for another option is shown
+# with the other option as the value.
+check_for_options c "-Q --help=warnings" {
+--all-warnings[ \t]+\-Wall
+-W[ \t]+-Wextra
+-Wmissing-format-attribute[ \t]+-Wsuggest-attribute=format
+-Wno-alloc-size-larger-than[ \t]+-Walloc-size-larger-than=[1-9][0-9]+
+-Wno-vla-larger-than[ \t]+-Wvla-larger-than=[1-9][0-9]+
+} "" ""
+
+# Verify that an option that expects a byte-size argument is shown with
+# a meaningful byte-size argument as the value.
+check_for_options c "-Q --help=warnings" {
+-Walloc-size-larger-than=[ \t]+[1-9][0-9]+ bytes
+-Wlarger-than=[^\n\r]+[1-9][0-9]+ bytes
+} "" ""
+
 # Ensure PR 37805 is fixed.
 # Specify patterns (arguments 3 and later) that match option names
 # at the beginning of the line and not when they are referenced by
