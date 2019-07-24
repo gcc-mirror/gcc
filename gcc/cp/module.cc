@@ -2735,6 +2735,9 @@ enum merge_kind
   MK_spec,   /* Found by PRIMARY, SPECS.  */
   MK_clone,  /* Found by CLONED, PREV.  */
   MK_enum,   /* Found by CTX, 1stMemberNAME.  */
+  // FIXME: It's possible there are other merge key kinds --
+  // namespace-scope anonymous unions keyed to the injected reference?
+  // (maybe those must be static?)
   MK_none
 };
 static char const *const merge_kind_name[] =
@@ -7268,13 +7271,31 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 	    gcc_assert (bind && bind->section < section);
 
 	    for (ident = bind->deps.length (); ident--;)
-	      if (bind->deps[ident]->get_entity () == proxy)
-		break;
+	      {
+		depset *bdep = bind->deps[ident];
+		tree bdecl = bdep->get_entity ();
+		if (bdep->get_entity_kind () == depset::EK_USING)
+		  bdecl = OVL_FUNCTION (bdecl);
+		if (bdecl == proxy)
+		  break;
+	      }
+
 	    gcc_assert (ident >= 0);
 
-	    if (bind->deps.length () > 1
-		&& DECL_IMPLICIT_TYPEDEF_P (bind->deps[0]->get_entity ()))
-	      ident--;
+	    if (bind->deps.length () > 1)
+	      {
+		depset *fdep = bind->deps[0];
+		tree fdecl = fdep->get_entity ();
+
+		if (fdep->get_entity_kind () == depset::EK_USING)
+		  /* Although we don't get this case right now, I
+		     expect it to appear in the not-too distant
+		     future.  Let's make future-me's life easier.  */
+		  fdecl = OVL_FUNCTION (fdecl);
+
+		if (DECL_IMPLICIT_TYPEDEF_P (fdecl))
+		  ident--;
+	      }
 
 	    kind = owner == MODULE_NONE ? "GMF" : "purview";
 	    /* Any GMF entities need to be looked up on this module's slot.  */

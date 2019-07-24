@@ -1,6 +1,12 @@
 2019-07-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (trees_out::tree_decl): Cope with using decls in the
+	binding list.
+	gcc/testsuite/
+	* g++.dg/modules/enum-6_[ab].[HC]: New.
+
+	gcc/cp/
 	* module.cc (enum merge_kind): Add MK_enum.
 	(trees_out::tree_decl): Deal with anon enums.
 	(trees_in::tree_value): Adjust for MK_enum.
