@@ -262,6 +262,8 @@ add_comma_separated_to_vector (void **pvec, const char *arg)
       else
 	*w++ = *r++;
     }
+
+  *w = '\0';
   if (*token_start != '\0')
     v->safe_push (token_start);
 
