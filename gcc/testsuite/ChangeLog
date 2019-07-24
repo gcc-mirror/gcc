@@ -1,3 +1,10 @@
+2019-07-24  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/addsub-signed-overflow-1.c: New test.
+	* gcc.target/s390/addsub-signed-overflow-2.c: New test.
+	* gcc.target/s390/mul-signed-overflow-1.c: New test.
+	* gcc.target/s390/mul-signed-overflow-2.c: New test.
+
 2019-07-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR middle-end/91166
