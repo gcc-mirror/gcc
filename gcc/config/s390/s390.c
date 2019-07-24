@@ -1378,6 +1378,7 @@ s390_match_ccmode_set (rtx set, machine_mode req_mode)
     case E_CCSRmode:
     case E_CCUmode:
     case E_CCURmode:
+    case E_CCOmode:
     case E_CCLmode:
     case E_CCL1mode:
     case E_CCL2mode:
@@ -2067,6 +2068,15 @@ s390_branch_condition_mask (rtx code)
 	case GT:	return CC2 | CC3;
 	case LE:	return CC0 | CC1;
 	case GE:	return CC0 | CC2 | CC3;
+	default:	return -1;
+	}
+      break;
+
+    case E_CCOmode:
+      switch (GET_CODE (code))
+	{
+	case EQ:	return CC0 | CC1 | CC2;
+	case NE:	return CC3;
 	default:	return -1;
 	}
       break;

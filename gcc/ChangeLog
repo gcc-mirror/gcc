@@ -1,3 +1,15 @@
+2019-07-24  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/predicates.md (addv_const_operand): New predicate.
+	* config/s390/s390-modes.def (CCO): New condition code mode.
+	* config/s390/s390.c (s390_match_ccmode_set): Handle E_CCOmode.
+	(s390_branch_condition_mask): Likewise.
+	* config/s390/s390.md ("addv<mode>4", "subv<mode>4")
+	("mulv<mode>4"): New expanders.
+	("*addv<mode>3_ccoverflow", "*addv<mode>3_ccoverflow_const")
+	("*subv<mode>3_ccoverflow", "*mulv<mode>3_ccoverflow"): New
+	pattern definitions.
+
 2019-07-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR middle-end/91166
