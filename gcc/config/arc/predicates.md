@@ -285,6 +285,8 @@
 	return GET_MODE (op) == SFmode;
       return 0;
     case REG :
+      if (REGNO (op) == LP_COUNT)
+	return 1;
       return register_operand (op, mode);
     case SUBREG :
       /* (subreg (mem ...) ...) can occur here if the inner part was once a

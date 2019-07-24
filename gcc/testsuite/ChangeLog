@@ -1,3 +1,13 @@
+2019-07-24  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/arc.exp (check_effective_target_accregs): New
+	predicate.
+	* gcc.target/arc/builtin_special.c: Update test/
+	* gcc.target/arc/interrupt-1.c: Likewise.
+	* gcc.target/arc/interrupt-10.c: New test.
+	* gcc.target/arc/interrupt-11.c: Likewise.
+	* gcc.target/arc/interrupt-12.c: Likewise.
+
 2019-07-24  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* gcc.target/s390/addsub-signed-overflow-1.c: New test.

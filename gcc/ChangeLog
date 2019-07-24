@@ -1,3 +1,78 @@
+2019-07-24  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (arc_output_function_epilogue): Delete
+	declaration.
+	(arc_compute_frame_size): Millicode is disabled when compiling
+	ISR.
+	(arc_return_address_register): Likewise.
+	(arc_compute_function_type): Likewise.
+	(arc_compute_frame_size): Likewise.
+	(secondary_reload_info): Likewise.
+	(arc_get_unalign): Likewise.
+	(arc_can_use_return_insn): Declare.
+	* config/arc/arc.c (AUX_LP_START): Define
+	(AUX_LP_END): Likewise.
+	(arc_frame_info): Update gmask member to 64-bit datum.
+	(GMASK_LEN): Update.
+	(arc_compute_function_type): Make it static, move it forward.
+	(arc_must_save_register): Update, consider the extra regs.
+	(arc_compute_millicode_save_restore_regs): Update to use the 64
+	bit gmask.
+	(arc_compute_frame_size): Likewise.
+	(arc_enter_leave_p): Likewise.
+	(arc_save_callee_saves): Likewise.
+	(arc_restore_callee_saves): Likewise.
+	(arc_save_callee_enter): Likewise.
+	(arc_restore_callee_leave): Likewise.
+	(arc_save_callee_milli): Likewise.
+	(arc_restore_callee_milli): Likewise.
+	(arc_expand_prologue): Add new interrupt handling.
+	(arc_return_address_register): Make it static, move it forward.
+	(arc_expand_epilogue): Add new interrupt handling.
+	(arc_get_unalign): Delete.
+	(arc_epilogue_uses): Make sure we do not remove the extra
+	saved/restored registers when interrupt.
+	(arc_can_use_return_insn): New function.
+	(push_reg): Likewise.
+	(pop_reg): Likewise.
+	(arc_save_callee_saves): Add ZOL and FPX aux registers saving
+	procedures.
+	(arc_restore_callee_saves): Likewise, but restoring.
+	* config/arc/arc.md (VUNSPEC_ARC_ARC600_RTIE): Define.
+	(R33_REG): Likewise.
+	(R34_REG): Likewise.
+	(R35_REG): Likewise.
+	(R36_REG): Likewise.
+	(R37_REG): Likewise.
+	(R38_REG): Likewise.
+	(R39_REG): Likewise.
+	(R45_REG): Likewise.
+	(R46_REG): Likewise.
+	(R47_REG): Likewise.
+	(R48_REG): Likewise.
+	(R49_REG): Likewise.
+	(R50_REG): Likewise.
+	(R51_REG): Likewise.
+	(R52_REG): Likewise.
+	(R53_REG): Likewise.
+	(R54_REG): Likewise.
+	(R55_REG): Likewise.
+	(R56_REG): Likewise.
+	(R58_REG): Likewise.
+	(type): Add rtie attribute.
+	(in_call_delay_slot): Use RETURN_ADDR_REGNUM.
+	(movsi_insn): Accept moves to lp_count.
+	(rtie): Update pattern.
+	(simple_return): Simplify it, don't use this pattern as a return
+	from an interrupt.
+	(arc600_rtie): New pattern.
+	(p_return_i): Clean up.
+	(return): Likewise.
+	* config/arc/builtins.def (rtie): Only available for non ARC6xx
+	family CPUs.
+	* config/arc/predicates.md (move_src_operand): Consider lp_count
+	as a register.
+
 2019-07-24  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/predicates.md (addv_const_operand): New predicate.

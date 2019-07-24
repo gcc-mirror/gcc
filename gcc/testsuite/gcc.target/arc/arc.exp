@@ -94,6 +94,24 @@ proc check_effective_target_barrelshifter { } {
     }]
 }
 
+#return 1 if we use ARCv2 Accumulator registers
+proc check_effective_target_accregs { } {
+    return [check_no_compiler_messages accregs assembly {
+	#if !defined(__ARC_MPY_DMPY__) \
+	     && !defined(__ARC_MPY_MACD__) && !defined(__ARC_MPY_QMACW__)
+	#error No accumulator available for this config
+	#endif
+    }]
+}
+
+proc check_effective_target_dpfp { } {
+    return [check_no_compiler_messages dpfp assembly {
+	#if !defined(__ARC_FPX_DP__) && !defined(__ARC_FPU_ASSIST__)
+	#error No FPX available for this config
+	#endif
+    }]
+}
+
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
 if ![info exists DEFAULT_CFLAGS] then {
