@@ -1,7 +1,7 @@
-2019-07-24  Bin Cheng  <bin.linux@linux.alibaba.com>
+2019-07-24  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	Backport from mainline
-	2019-07-18  Bin Cheng  <bin.linux@linux.alibaba.com>
+	2019-07-18  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/91137
 	* gcc.c-torture/execute/pr91137.c: New test.
