@@ -189,6 +189,55 @@ match_digits (int signflag, int radix, char *buffer)
   return length;
 }
 
+/* Convert an integer string to an expression node.  */
+
+static gfc_expr *
+convert_integer (const char *buffer, int kind, int radix, locus *where)
+{
+  gfc_expr *e;
+  const char *t;
+
+  e = gfc_get_constant_expr (BT_INTEGER, kind, where);
+  /* A leading plus is allowed, but not by mpz_set_str.  */
+  if (buffer[0] == '+')
+    t = buffer + 1;
+  else
+    t = buffer;
+  mpz_set_str (e->value.integer, t, radix);
+
+  return e;
+}
+
+
+/* Convert a real string to an expression node.  */
+
+static gfc_expr *
+convert_real (const char *buffer, int kind, locus *where)
+{
+  gfc_expr *e;
+
+  e = gfc_get_constant_expr (BT_REAL, kind, where);
+  mpfr_set_str (e->value.real, buffer, 10, GFC_RND_MODE);
+
+  return e;
+}
+
+
+/* Convert a pair of real, constant expression nodes to a single
+   complex expression node.  */
+
+static gfc_expr *
+convert_complex (gfc_expr *real, gfc_expr *imag, int kind)
+{
+  gfc_expr *e;
+
+  e = gfc_get_constant_expr (BT_COMPLEX, kind, &real->where);
+  mpc_set_fr_fr (e->value.complex, real->value.real, imag->value.real,
+		 GFC_MPC_RND_MODE);
+
+  return e;
+}
+
 
 /* Match an integer (digit string and optional kind).
    A sign will be accepted if signflag is set.  */
@@ -231,7 +280,7 @@ match_integer_constant (gfc_expr **result, int signflag)
       return MATCH_ERROR;
     }
 
-  e = gfc_convert_integer (buffer, kind, 10, &gfc_current_locus);
+  e = convert_integer (buffer, kind, 10, &gfc_current_locus);
   e->ts.is_c_interop = is_iso_c;
 
   if (gfc_range_check (e) != ARITH_OK)
@@ -337,7 +386,7 @@ cleanup:
 static match
 match_boz_constant (gfc_expr **result)
 {
-  int radix, length, x_hex, kind;
+  int radix, length, x_hex;
   locus old_loc, start_loc;
   char *buffer, post, delim;
   gfc_expr *e;
@@ -383,9 +432,9 @@ match_boz_constant (gfc_expr **result)
     goto backup;
 
   if (x_hex
-      && (!gfc_notify_std(GFC_STD_GNU, "Hexadecimal "
-			  "constant at %C uses non-standard syntax")))
-      return MATCH_ERROR;
+      && gfc_invalid_boz ("Hexadecimal constant at %L uses "
+			  "nonstandard syntax", &gfc_current_locus))
+    return MATCH_ERROR;
 
   old_loc = gfc_current_locus;
 
@@ -421,8 +470,8 @@ match_boz_constant (gfc_expr **result)
 	  goto backup;
 	}
 
-      if (!gfc_notify_std (GFC_STD_GNU, "BOZ constant "
-			   "at %C uses non-standard postfix syntax"))
+      if (gfc_invalid_boz ("BOZ constant at %C uses nonstandard postfix "
+			   "syntax", &gfc_current_locus))
 	return MATCH_ERROR;
     }
 
@@ -436,30 +485,19 @@ match_boz_constant (gfc_expr **result)
   if (post == 1)
     gfc_next_ascii_char ();  /* Eat postfixed b, o, z, or x.  */
 
-  /* In section 5.2.5 and following C567 in the Fortran 2003 standard, we find
-     "If a data-stmt-constant is a boz-literal-constant, the corresponding
-     variable shall be of type integer.  The boz-literal-constant is treated
-     as if it were an int-literal-constant with a kind-param that specifies
-     the representation method with the largest decimal exponent range
-     supported by the processor."  */
-
-  kind = gfc_max_integer_kind;
-  e = gfc_convert_integer (buffer, kind, radix, &gfc_current_locus);
-
-  /* Mark as boz variable.  */
-  e->is_boz = 1;
-
-  if (gfc_range_check (e) != ARITH_OK)
-    {
-      gfc_error ("Integer too big for integer kind %i at %C", kind);
-      gfc_free_expr (e);
-      return MATCH_ERROR;
-    }
+  e = gfc_get_expr ();
+  e->expr_type = EXPR_CONSTANT;
+  e->ts.type = BT_BOZ;
+  e->where = gfc_current_locus;
+  e->boz.rdx = radix;
+  e->boz.len = length;
+  e->boz.str = XCNEWVEC (char, length + 1);
+  strncpy (e->boz.str, buffer, length);
 
   if (!gfc_in_match_data ()
       && (!gfc_notify_std(GFC_STD_F2003, "BOZ used outside a DATA "
-			  "statement at %C")))
-      return MATCH_ERROR;
+			  "statement at %L", &e->where)))
+    return MATCH_ERROR;
 
   *result = e;
   return MATCH_YES;
@@ -715,7 +753,7 @@ done:
 	}
     }
 
-  e = gfc_convert_real (buffer, kind, &gfc_current_locus);
+  e = convert_real (buffer, kind, &gfc_current_locus);
   if (negate)
     mpfr_neg (e->value.real, e->value.real, GFC_RND_MODE);
   e->ts.is_c_interop = is_iso_c;
@@ -1433,7 +1471,7 @@ match_complex_constant (gfc_expr **result)
   if (imag->ts.type != BT_REAL || kind != imag->ts.kind)
     gfc_convert_type (imag, &target, 2);
 
-  e = gfc_convert_complex (real, imag, kind);
+  e = convert_complex (real, imag, kind);
   e->where = gfc_current_locus;
 
   gfc_free_expr (real);

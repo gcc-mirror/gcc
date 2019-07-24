@@ -2804,15 +2804,15 @@ maybe_move_debug_stmts_to_successors (copy_body_data *id, basic_block new_bb)
 
 static void
 copy_loops (copy_body_data *id,
-	    struct loop *dest_parent, struct loop *src_parent)
+	    class loop *dest_parent, class loop *src_parent)
 {
-  struct loop *src_loop = src_parent->inner;
+  class loop *src_loop = src_parent->inner;
   while (src_loop)
     {
       if (!id->blocks_to_copy
 	  || bitmap_bit_p (id->blocks_to_copy, src_loop->header->index))
 	{
-	  struct loop *dest_loop = alloc_loop ();
+	  class loop *dest_loop = alloc_loop ();
 
 	  /* Assign the new loop its header and latch and associate
 	     those with the new loop.  */

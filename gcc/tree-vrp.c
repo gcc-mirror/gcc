@@ -4492,7 +4492,8 @@ vrp_prop::check_mem_ref (location_t location, tree ref,
      The loop computes the range of the final offset for expressions such
      as (A + i0 + ... + iN)[CSTOFF] where i0 through iN are SSA_NAMEs in
      some range.  */
-  while (TREE_CODE (arg) == SSA_NAME)
+  const unsigned limit = PARAM_VALUE (PARAM_SSA_NAME_DEF_CHAIN_LIMIT);
+  for (unsigned n = 0; TREE_CODE (arg) == SSA_NAME && n < limit; ++n)
     {
       gimple *def = SSA_NAME_DEF_STMT (arg);
       if (!is_gimple_assign (def))
@@ -5976,6 +5977,11 @@ intersect_ranges (enum value_range_kind *vr0type,
       else
 	gcc_unreachable ();
     }
+
+  /* If we know the intersection is empty, there's no need to
+     conservatively add anything else to the set.  */
+  if (*vr0type == VR_UNDEFINED)
+    return;
 
   /* As a fallback simply use { *VRTYPE, *VR0MIN, *VR0MAX } as
      result for the intersection.  That's always a conservative

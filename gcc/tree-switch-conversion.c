@@ -1448,8 +1448,8 @@ bit_test_cluster::is_beneficial (const vec<cluster *> &clusters,
 int
 case_bit_test::cmp (const void *p1, const void *p2)
 {
-  const struct case_bit_test *const d1 = (const struct case_bit_test *) p1;
-  const struct case_bit_test *const d2 = (const struct case_bit_test *) p2;
+  const case_bit_test *const d1 = (const case_bit_test *) p1;
+  const case_bit_test *const d2 = (const case_bit_test *) p2;
 
   if (d2->bits != d1->bits)
     return d2->bits - d1->bits;
@@ -1480,7 +1480,7 @@ void
 bit_test_cluster::emit (tree index_expr, tree index_type,
 			tree, basic_block default_bb)
 {
-  struct case_bit_test test[m_max_case_bit_tests] = { {} };
+  case_bit_test test[m_max_case_bit_tests] = { {} };
   unsigned int i, j, k;
   unsigned int count;
 

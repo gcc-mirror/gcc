@@ -1416,7 +1416,7 @@ cp_omp_mappable_type_1 (tree type, bool notes)
   /* Mappable type has to be complete.  */
   if (type == error_mark_node || !COMPLETE_TYPE_P (type))
     {
-      if (notes)
+      if (notes && type != error_mark_node)
 	{
 	  tree decl = TYPE_MAIN_DECL (type);
 	  inform ((decl ? DECL_SOURCE_LOCATION (decl) : input_location),

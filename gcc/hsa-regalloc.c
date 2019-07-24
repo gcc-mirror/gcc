@@ -256,7 +256,7 @@ dump_hsa_cfun_regalloc (FILE *f)
 
   FOR_ALL_BB_FN (bb, cfun)
   {
-    hsa_bb *hbb = (struct hsa_bb *) bb->aux;
+    hsa_bb *hbb = (class hsa_bb *) bb->aux;
     bitmap_print (dump_file, hbb->m_livein, "m_livein  ", "\n");
     dump_hsa_bb (f, hbb);
     bitmap_print (dump_file, hbb->m_liveout, "m_liveout ", "\n");

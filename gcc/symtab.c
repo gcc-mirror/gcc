@@ -956,12 +956,29 @@ symtab_node::dump (FILE *f)
 }
 
 void
+symtab_node::dump_graphviz (FILE *f)
+{
+  if (cgraph_node *cnode = dyn_cast <cgraph_node *> (this))
+    cnode->dump_graphviz (f);
+}
+
+void
 symbol_table::dump (FILE *f)
 {
   symtab_node *node;
   fprintf (f, "Symbol table:\n\n");
   FOR_EACH_SYMBOL (node)
     node->dump (f);
+}
+
+void
+symbol_table::dump_graphviz (FILE *f)
+{
+  symtab_node *node;
+  fprintf (f, "digraph symtab {\n");
+  FOR_EACH_SYMBOL (node)
+    node->dump_graphviz (f);
+  fprintf (f, "}\n");
 }
 
 DEBUG_FUNCTION void

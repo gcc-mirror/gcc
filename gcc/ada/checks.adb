@@ -435,7 +435,7 @@ package body Checks is
 
       --  Fall through for cases where we do set the flag
 
-      Set_Do_Overflow_Check (N, True);
+      Set_Do_Overflow_Check (N);
       Possible_Local_Raise (N, Standard_Constraint_Error);
    end Activate_Overflow_Check;
 
@@ -577,8 +577,10 @@ package body Checks is
       Typ         : Entity_Id;
       Insert_Node : Node_Id)
    is
-      Loc         : constant Source_Ptr := Sloc (N);
-      Param_Ent   : Entity_Id           := Param_Entity (N);
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Check_Cond  : Node_Id;
+      Param_Ent   : Entity_Id := Param_Entity (N);
       Param_Level : Node_Id;
       Type_Level  : Node_Id;
 
@@ -638,15 +640,28 @@ package body Checks is
          --  Raise Program_Error if the accessibility level of the access
          --  parameter is deeper than the level of the target access type.
 
+         Check_Cond :=
+           Make_Op_Gt (Loc,
+             Left_Opnd  => Param_Level,
+             Right_Opnd => Type_Level);
+
          Insert_Action (Insert_Node,
            Make_Raise_Program_Error (Loc,
-             Condition =>
-               Make_Op_Gt (Loc,
-                 Left_Opnd  => Param_Level,
-                 Right_Opnd => Type_Level),
-             Reason => PE_Accessibility_Check_Failed));
+             Condition => Check_Cond,
+             Reason    => PE_Accessibility_Check_Failed));
 
          Analyze_And_Resolve (N);
+
+         --  If constant folding has happened on the condition for the
+         --  generated error, then warn about it being unconditional.
+
+         if Nkind (Check_Cond) = N_Identifier
+           and then Entity (Check_Cond) = Standard_True
+         then
+            Error_Msg_Warn := SPARK_Mode /= On;
+            Error_Msg_N ("accessibility check fails<<", N);
+            Error_Msg_N ("\Program_Error [<<", N);
+         end if;
       end if;
    end Apply_Accessibility_Check;
 
@@ -3607,13 +3622,14 @@ package body Checks is
                   --  will not be generated.
 
                   if GNATprove_Mode
-                    or else not Is_Fixed_Point_Type (Expr_Type)
+                    or else (not Is_Fixed_Point_Type (Expr_Type)
+                              and then not Is_Fixed_Point_Type (Target_Type))
                   then
                      Apply_Scalar_Range_Check
                        (Expr, Target_Type, Fixed_Int => Conv_OK);
 
                   else
-                     Set_Do_Range_Check (Expression (N), False);
+                     Set_Do_Range_Check (Expr, False);
                   end if;
 
                   --  If the target type has predicates, we need to indicate
@@ -6825,18 +6841,19 @@ package body Checks is
       Source_Base_Type : constant Entity_Id  := Base_Type (Source_Type);
       Target_Base_Type : constant Entity_Id  := Base_Type (Target_Type);
 
-      procedure Convert_And_Check_Range;
-      --  Convert the conversion operand to the target base type and save in
-      --  a temporary. Then check the converted value against the range of the
-      --  target subtype.
+      procedure Convert_And_Check_Range (Suppress : Check_Id);
+      --  Convert N to the target base type and save the result in a temporary.
+      --  The action is analyzed using the default checks as modified by the
+      --  given Suppress argument. Then check the converted value against the
+      --  range of the target subtype.
 
       -----------------------------
       -- Convert_And_Check_Range --
       -----------------------------
 
-      procedure Convert_And_Check_Range is
-         Tnn       : constant Entity_Id := Make_Temporary (Loc, 'T', N);
-         Conv_Node : Node_Id;
+      procedure Convert_And_Check_Range (Suppress : Check_Id) is
+         Tnn    : constant Entity_Id := Make_Temporary (Loc, 'T', N);
+         Conv_N : Node_Id;
 
       begin
          --  For enumeration types with non-standard representation this is a
@@ -6851,36 +6868,26 @@ package body Checks is
            and then Present (Enum_Pos_To_Rep (Source_Base_Type))
            and then Is_Integer_Type (Target_Base_Type)
          then
-            Conv_Node :=
-              OK_Convert_To
-                (Typ  => Target_Base_Type,
-                 Expr => Duplicate_Subexpr (N));
-
-         --  Common case
-
+            Conv_N := OK_Convert_To (Target_Base_Type, Duplicate_Subexpr (N));
          else
-            Conv_Node :=
-              Make_Type_Conversion (Loc,
-                Subtype_Mark => New_Occurrence_Of (Target_Base_Type, Loc),
-                Expression   => Duplicate_Subexpr (N));
+            Conv_N := Convert_To (Target_Base_Type, Duplicate_Subexpr (N));
          end if;
 
-         --  We make a temporary to hold the value of the converted value
-         --  (converted to the base type), and then do the test against this
-         --  temporary. The conversion itself is replaced by an occurrence of
-         --  Tnn and followed by the explicit range check. Note that checks
-         --  are suppressed for this code, since we don't want a recursive
-         --  range check popping up.
+         --  We make a temporary to hold the value of the conversion to the
+         --  target base type, and then do the test against this temporary.
+         --  N itself is replaced by an occurrence of Tnn and followed by
+         --  the explicit range check.
 
          --     Tnn : constant Target_Base_Type := Target_Base_Type (N);
          --     [constraint_error when Tnn not in Target_Type]
+         --     Tnn
 
          Insert_Actions (N, New_List (
            Make_Object_Declaration (Loc,
              Defining_Identifier => Tnn,
              Object_Definition   => New_Occurrence_Of (Target_Base_Type, Loc),
              Constant_Present    => True,
-             Expression          => Conv_Node),
+             Expression          => Conv_N),
 
            Make_Raise_Constraint_Error (Loc,
              Condition =>
@@ -6888,7 +6895,7 @@ package body Checks is
                  Left_Opnd  => New_Occurrence_Of (Tnn, Loc),
                  Right_Opnd => New_Occurrence_Of (Target_Type, Loc)),
              Reason => Reason)),
-           Suppress => All_Checks);
+           Suppress => Suppress);
 
          Rewrite (N, New_Occurrence_Of (Tnn, Loc));
 
@@ -6905,7 +6912,7 @@ package body Checks is
       --  First special case, if the source type is already within the range
       --  of the target type, then no check is needed (probably we should have
       --  stopped Do_Range_Check from being set in the first place, but better
-      --  late than never in preventing junk code and junk flag settings.
+      --  late than never in preventing junk code and junk flag settings).
 
       if In_Subrange_Of (Source_Type, Target_Type)
 
@@ -6982,7 +6989,8 @@ package body Checks is
 
       --  Next test for the case where the target type is within the bounds
       --  of the base type of the source type, since in this case we can
-      --  simply convert these bounds to the base type of T to do the test.
+      --  simply convert the bounds of the target type to this base bype
+      --  to do the test.
 
       --    [constraint_error when N not in
       --       Source_Base_Type (Target_Type'First)
@@ -7031,26 +7039,32 @@ package body Checks is
               Suppress => All_Checks);
 
          --  For conversions involving at least one type that is not discrete,
-         --  first convert to target type and then generate the range check.
-         --  This avoids problems with values that are close to a bound of the
-         --  target type that would fail a range check when done in a larger
-         --  source type before converting but would pass if converted with
+         --  first convert to the target base type and then generate the range
+         --  check. This avoids problems with values that are close to a bound
+         --  of the target type that would fail a range check when done in a
+         --  larger source type before converting but pass if converted with
          --  rounding and then checked (such as in float-to-float conversions).
 
+         --  Note that overflow checks are not suppressed for this code because
+         --  we do not know whether the source type is in range of the target
+         --  base type (unlike in the next case below).
+
          else
-            Convert_And_Check_Range;
+            Convert_And_Check_Range (Suppress => Range_Check);
          end if;
 
-      --  Note that at this stage we now that the Target_Base_Type is not in
+      --  Note that at this stage we know that the Target_Base_Type is not in
       --  the range of the Source_Base_Type (since even the Target_Type itself
       --  is not in this range). It could still be the case that Source_Type is
       --  in range of the target base type since we have not checked that case.
 
       --  If that is the case, we can freely convert the source to the target,
-      --  and then test the target result against the bounds.
+      --  and then test the target result against the bounds. Note that checks
+      --  are suppressed for this code, since we don't want a recursive range
+      --  check popping up.
 
       elsif In_Subrange_Of (Source_Type, Target_Base_Type) then
-         Convert_And_Check_Range;
+         Convert_And_Check_Range (Suppress => All_Checks);
 
       --  At this stage, we know that we have two scalar types, which are
       --  directly convertible, and where neither scalar type has a base

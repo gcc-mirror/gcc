@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-fre3" } */
+/* { dg-options "-O2 -fdump-tree-fre1" } */
 struct a {
   int val;
 };
@@ -18,4 +18,4 @@ test (int i, int j, int k, int l)
   cptr2->b[k].a2[l].val=2;
   return cptr->b[i].a[j].val;
 }
-/* { dg-final { scan-tree-dump-times "return 123" 1 "fre3"} } */
+/* { dg-final { scan-tree-dump-times "return 123" 1 "fre1"} } */

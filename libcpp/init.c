@@ -171,7 +171,7 @@ init_library (void)
 /* Initialize a cpp_reader structure.  */
 cpp_reader *
 cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
-		   struct line_maps *line_table)
+		   class line_maps *line_table)
 {
   cpp_reader *pfile;
 
@@ -286,7 +286,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
 /* Set the line_table entry in PFILE.  This is called after reading a
    PCH file, as the old line_table will be incorrect.  */
 void
-cpp_set_line_map (cpp_reader *pfile, struct line_maps *line_table)
+cpp_set_line_map (cpp_reader *pfile, class line_maps *line_table)
 {
   pfile->line_table = line_table;
 }

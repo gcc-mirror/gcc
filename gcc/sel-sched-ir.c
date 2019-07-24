@@ -61,7 +61,7 @@ struct succs_info current_succs;
 static struct common_sched_info_def sel_common_sched_info;
 
 /* The loop nest being pipelined.  */
-struct loop *current_loop_nest;
+class loop *current_loop_nest;
 
 /* LOOP_NESTS is a vector containing the corresponding loop nest for
    each region.  */
@@ -424,7 +424,7 @@ reset_target_context (tc_t tc, bool clean_p)
 }
 
 /* Functions to work with dependence contexts.
-   Dc (aka deps context, aka deps_t, aka struct deps_desc *) is short for dependence
+   Dc (aka deps context, aka deps_t, aka class deps_desc *) is short for dependence
    context.  It accumulates information about processed insns to decide if
    current insn is dependent on the processed ones.  */
 
@@ -440,7 +440,7 @@ copy_deps_context (deps_t to, deps_t from)
 static deps_t
 alloc_deps_context (void)
 {
-  return XNEW (struct deps_desc);
+  return XNEW (class deps_desc);
 }
 
 /* Allocate and initialize dep context.  */
@@ -2749,7 +2749,7 @@ init_id_from_df (idata_t id, insn_t insn, bool force_unique_p)
 static void
 deps_init_id (idata_t id, insn_t insn, bool force_unique_p)
 {
-  struct deps_desc _dc, *dc = &_dc;
+  class deps_desc _dc, *dc = &_dc;
 
   deps_init_id_data.where = DEPS_IN_NOWHERE;
   deps_init_id_data.id = id;
@@ -3390,7 +3390,7 @@ has_dependence_p (expr_t expr, insn_t pred, ds_t **has_dep_pp)
 {
   int i;
   ds_t ds;
-  struct deps_desc *dc;
+  class deps_desc *dc;
 
   if (INSN_SIMPLEJUMP_P (pred))
     /* Unconditional jump is just a transfer of control flow.
@@ -5397,7 +5397,7 @@ change_loops_latches (basic_block from, basic_block to)
 
   if (current_loop_nest)
     {
-      struct loop *loop;
+      class loop *loop;
 
       for (loop = current_loop_nest; loop; loop = loop_outer (loop))
         if (considered_for_pipelining_p (loop) && loop->latch == from)
@@ -6002,11 +6002,11 @@ bb_top_order_comparator (const void *x, const void *y)
 /* Create a region for LOOP and return its number.  If we don't want
    to pipeline LOOP, return -1.  */
 static int
-make_region_from_loop (struct loop *loop)
+make_region_from_loop (class loop *loop)
 {
   unsigned int i;
   int new_rgn_number = -1;
-  struct loop *inner;
+  class loop *inner;
 
   /* Basic block index, to be assigned to BLOCK_TO_BB.  */
   int bb_ord_index = 0;
@@ -6095,9 +6095,9 @@ make_region_from_loop_preheader (vec<basic_block> *&loop_blocks)
    pipelined before outer loops.  Returns true when a region for LOOP
    is created.  */
 static bool
-make_regions_from_loop_nest (struct loop *loop)
+make_regions_from_loop_nest (class loop *loop)
 {
-  struct loop *cur_loop;
+  class loop *cur_loop;
   int rgn_number;
 
   /* Traverse all inner nodes of the loop.  */
@@ -6133,7 +6133,7 @@ sel_init_pipelining (void)
   recompute_rev_top_order ();
 }
 
-/* Returns a struct loop for region RGN.  */
+/* Returns a class loop for region RGN.  */
 loop_p
 get_loop_nest_for_rgn (unsigned int rgn)
 {
@@ -6147,7 +6147,7 @@ get_loop_nest_for_rgn (unsigned int rgn)
 
 /* True when LOOP was included into pipelining regions.   */
 bool
-considered_for_pipelining_p (struct loop *loop)
+considered_for_pipelining_p (class loop *loop)
 {
   if (loop_depth (loop) == 0)
     return false;
@@ -6249,7 +6249,7 @@ make_regions_from_the_rest (void)
 /* Free data structures used in pipelining of loops.  */
 void sel_finish_pipelining (void)
 {
-  struct loop *loop;
+  class loop *loop;
 
   /* Release aux fields so we don't free them later by mistake.  */
   FOR_EACH_LOOP (loop, 0)
@@ -6324,7 +6324,7 @@ sel_is_loop_preheader_p (basic_block bb)
 {
   if (current_loop_nest)
     {
-      struct loop *outer;
+      class loop *outer;
 
       if (preheader_removed)
         return false;

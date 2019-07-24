@@ -2220,6 +2220,10 @@ package Sem_Util is
    --  Return the entity of the nearest enclosing instance which encapsulates
    --  entity E. If no such instance exits, return Empty.
 
+   function Needs_Finalization (Typ : Entity_Id) return Boolean;
+   --  Determine whether type Typ is controlled and this requires finalization
+   --  actions.
+
    function Needs_One_Actual (E : Entity_Id) return Boolean;
    --  Returns True if a function has defaults for all but its first formal,
    --  which is a controlling formal. Used in Ada 2005 mode to solve the
@@ -2853,6 +2857,10 @@ package Sem_Util is
    function Unique_Name (E : Entity_Id) return String;
    --  Return a unique name for entity E, which could be used to identify E
    --  across compilation units.
+
+   Child_Prefix : constant String := "ada___";
+   --  Prefix for child packages when building a unique name for an entity. It
+   --  is included here to share between Unique_Name and gnatprove.
 
    function Unit_Is_Visible (U : Entity_Id) return Boolean;
    --  Determine whether a compilation unit is visible in the current context,

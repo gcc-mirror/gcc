@@ -1,3 +1,91 @@
+2019-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/bit/bitops.count/*: Rename to ...
+	* testsuite/26_numerics/bit/bit.count/*: Here.
+
+	* include/std/bit (__rotl, __rotr): Change second parameter from
+	unsigned int to int and handle negative values.
+	(rotl, rotr): Remove check for __STRICT_ANSI__. Change second
+	parameter from unsigned int to int. Add nodiscard attribute.
+	* testsuite/26_numerics/bit/bitops.rot/rotl.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.rotate/rotl.cc: Here. Test negative
+	shifts.
+	* testsuite/26_numerics/bit/bitops.rot/rotr.cc: Rename to ...
+	* testsuite/26_numerics/bit/bit.rotate/rotr.cc: Here. Test negative
+	shifts.
+
+	* include/std/bit (__ceil2): Make unrepresentable results undefined,
+	as per P1355R2. Add debug assertion. Perform one left shift, not two,
+	so that out of range values cause undefined behaviour. Ensure that
+	shift will still be undefined if left operand is promoted.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2.cc: Replace checks for
+	unrepresentable values with checks that they are not core constant
+	expressions.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2_neg.cc: New test.
+
+2019-07-19  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tempbuf.h (__detail::__return_temporary_buffer): Fix
+	sized deallocation size computation.
+
+2019-07-19  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Update.
+
+2019-07-18  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tempbuf.h (__detail::__return_temporary_buffer): New.
+	(~_Temporary_buffer()): Use latter.
+	(_Temporary_buffer(_FIterator, size_type)): Likewise.
+
+2019-07-17  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Update.
+
+2019-07-16  Jason Merrill  <jason@redhat.com>
+
+	* include/std/memory (uses_allocator_construction_args): Add parens
+	around constraint.
+
+2019-07-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/29_atomics/atomic_float/1.cc: Fix comment.
+
+	* include/experimental/string_view (__detail::__idt): Remove.
+	(operator==, operator!=, operator<, operator>, operator<=, operator>=):
+	Use __type_identity_t instead of __detail::__idt;
+	* include/std/string_view (__detail::__idt): Remove.
+	(operator==, operator!=, operator<, operator>, operator<=, operator>=):
+	Use __type_identity_t instead of __detail::__idt;
+	* include/std/type_traits (__type_identity_t): New alias template.
+
+	* doc/xml/manual/status_cxx2020.xml: Update status for atomic_ref
+	and floating point atomics.
+
+2019-07-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/configure.xml: Improve documentation of
+	--enable-libstdcxx-time option.
+
+	* include/bits/atomic_base.h (__atomic_impl): New namespace for
+	wrappers around atomic built-ins.
+	(__atomic_float, __atomic_ref): New class templates for use as base
+	classes.
+	* include/std/atomic (atomic<float>, atomic<double>)
+	(atomic<long double>): New explicit specializations.
+	(atomic_ref): New class template.
+	(__cpp_lib_atomic_ref): Define.
+	* include/std/version (__cpp_lib_atomic_ref): Define.
+	* testsuite/29_atomics/atomic/60695.cc: Adjust dg-error.
+	* testsuite/29_atomics/atomic_float/1.cc: New test.
+	* testsuite/29_atomics/atomic_float/requirements.cc: New test.
+	* testsuite/29_atomics/atomic_ref/deduction.cc: New test.
+	* testsuite/29_atomics/atomic_ref/float.cc: New test.
+	* testsuite/29_atomics/atomic_ref/generic.cc: New test.
+	* testsuite/29_atomics/atomic_ref/integral.cc: New test.
+	* testsuite/29_atomics/atomic_ref/pointer.cc: New test.
+	* testsuite/29_atomics/atomic_ref/requirements.cc: New test.
+
 2019-07-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/ext/atomicity.h (__exchange_and_add, __atomic_add): Replace

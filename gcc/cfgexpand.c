@@ -305,8 +305,9 @@ set_rtl (tree t, rtx x)
 
 /* This structure holds data relevant to one variable that will be
    placed in a stack slot.  */
-struct stack_var
+class stack_var
 {
+public:
   /* The Variable.  */
   tree decl;
 
@@ -331,7 +332,7 @@ struct stack_var
 #define EOC  ((size_t)-1)
 
 /* We have an array of such objects while deciding allocation.  */
-static struct stack_var *stack_vars;
+static class stack_var *stack_vars;
 static size_t stack_vars_alloc;
 static size_t stack_vars_num;
 static hash_map<tree, size_t> *decl_to_stack_part;
@@ -425,7 +426,7 @@ alloc_stack_frame_space (poly_int64 size, unsigned HOST_WIDE_INT align)
 static void
 add_stack_var (tree decl, bool really_expand)
 {
-  struct stack_var *v;
+  class stack_var *v;
 
   if (stack_vars_num >= stack_vars_alloc)
     {
@@ -434,7 +435,7 @@ add_stack_var (tree decl, bool really_expand)
       else
 	stack_vars_alloc = 32;
       stack_vars
-	= XRESIZEVEC (struct stack_var, stack_vars, stack_vars_alloc);
+	= XRESIZEVEC (class stack_var, stack_vars, stack_vars_alloc);
     }
   if (!decl_to_stack_part)
     decl_to_stack_part = new hash_map<tree, size_t>;
@@ -473,8 +474,8 @@ add_stack_var (tree decl, bool really_expand)
 static void
 add_stack_var_conflict (size_t x, size_t y)
 {
-  struct stack_var *a = &stack_vars[x];
-  struct stack_var *b = &stack_vars[y];
+  class stack_var *a = &stack_vars[x];
+  class stack_var *b = &stack_vars[y];
   if (x == y)
     return;
   if (!a->conflicts)
@@ -490,8 +491,8 @@ add_stack_var_conflict (size_t x, size_t y)
 static bool
 stack_var_conflict_p (size_t x, size_t y)
 {
-  struct stack_var *a = &stack_vars[x];
-  struct stack_var *b = &stack_vars[y];
+  class stack_var *a = &stack_vars[x];
+  class stack_var *b = &stack_vars[y];
   if (x == y)
     return false;
   /* Partitions containing an SSA name result from gimple registers
@@ -606,7 +607,7 @@ add_scope_conflicts_1 (basic_block bb, bitmap work, bool for_conflict)
 	      unsigned i;
 	      EXECUTE_IF_SET_IN_BITMAP (work, 0, i, bi)
 		{
-		  struct stack_var *a = &stack_vars[i];
+		  class stack_var *a = &stack_vars[i];
 		  if (!a->conflicts)
 		    a->conflicts = BITMAP_ALLOC (&stack_var_bitmap_obstack);
 		  bitmap_ior_into (a->conflicts, work);
@@ -852,7 +853,7 @@ update_alias_info_with_stack_vars (void)
 static void
 union_stack_vars (size_t a, size_t b)
 {
-  struct stack_var *vb = &stack_vars[b];
+  class stack_var *vb = &stack_vars[b];
   bitmap_iterator bi;
   unsigned u;
 
@@ -1021,8 +1022,9 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
   set_rtl (decl, x);
 }
 
-struct stack_vars_data
+class stack_vars_data
 {
+public:
   /* Vector of offset pairs, always end of some padding followed
      by start of the padding that needs Address Sanitizer protection.
      The vector is in reversed, highest offset pairs come first.  */
@@ -1043,7 +1045,7 @@ struct stack_vars_data
    with that location.  */
 
 static void
-expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
+expand_stack_vars (bool (*pred) (size_t), class stack_vars_data *data)
 {
   size_t si, i, j, n = stack_vars_num;
   poly_uint64 large_size = 0, large_alloc = 0;
@@ -2230,7 +2232,7 @@ expand_used_vars (void)
   /* Assign rtl to each variable based on these partitions.  */
   if (stack_vars_num > 0)
     {
-      struct stack_vars_data data;
+      class stack_vars_data data;
 
       data.asan_base = NULL_RTX;
       data.asan_alignb = 0;
@@ -3711,6 +3713,12 @@ expand_gimple_stmt_1 (gimple *stmt)
     case GIMPLE_RETURN:
       {
 	op0 = gimple_return_retval (as_a <greturn *> (stmt));
+
+	/* If a return doesn't have a location, it very likely represents
+	   multiple user returns so we cannot let it inherit the location
+	   of the last statement of the previous basic block in RTL.  */
+	if (!gimple_has_location (stmt))
+	  set_curr_insn_location (cfun->function_end_locus);
 
 	if (op0 && op0 != error_mark_node)
 	  {

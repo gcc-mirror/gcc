@@ -734,6 +734,16 @@ cp_lexer_previous_token (cp_lexer *lexer)
   return cp_lexer_token_at (lexer, tp);
 }
 
+/* Overload for make_location, taking the lexer to mean the location of the
+   previous token.  */
+
+static inline location_t
+make_location (location_t caret, location_t start, cp_lexer *lexer)
+{
+  cp_token *t = cp_lexer_previous_token (lexer);
+  return make_location (caret, start, t->location);
+}
+
 /* nonzero if we are presently saving tokens.  */
 
 static inline int
@@ -6561,7 +6571,8 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
   cp_token *token;
 
   /* Remember where the nested-name-specifier starts.  */
-  if (cp_parser_uncommitted_to_tentative_parse_p (parser))
+  if (cp_parser_uncommitted_to_tentative_parse_p (parser)
+      && cp_lexer_next_token_is_not (parser->lexer, CPP_NESTED_NAME_SPECIFIER))
     {
       start = cp_lexer_token_position (parser->lexer, false);
       push_deferring_access_checks (dk_deferred);
@@ -8060,10 +8071,8 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	       ~~~^~~~~~~~~~~~~
 	     where the caret is at the deref token, ranging from
 	     the start of postfix_expression to the end of the access expr.  */
-	  location_t end_loc
-	    = get_finish (cp_lexer_previous_token (parser->lexer)->location);
 	  location_t combined_loc
-	    = make_location (input_location, start_loc, end_loc);
+	    = make_location (input_location, start_loc, parser->lexer);
 	  protected_set_expr_location (postfix_expression, combined_loc);
 	}
     }
@@ -8473,10 +8482,8 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	       ^~~~~~~~~~~~~~
 	       with start == caret at the start of the "alignof"/"sizeof"
 	       token, with the endpoint at the final closing paren.  */
-	    location_t finish_loc
-	      = cp_lexer_previous_token (parser->lexer)->location;
 	    location_t compound_loc
-	      = make_location (start_loc, start_loc, finish_loc);
+	      = make_location (start_loc, start_loc, parser->lexer);
 
 	    cp_expr ret_expr (ret);
 	    ret_expr.set_location (compound_loc);
@@ -8577,8 +8584,6 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 
 	    parser->type_definition_forbidden_message = saved_message;
 
-	    location_t finish_loc
-	      = cp_lexer_peek_token (parser->lexer)->location;
 	    parens.require_close (parser);
 
 	    /* Construct a location of the form:
@@ -8586,7 +8591,7 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	       ^~~~~~~~~~~~~~~
 	       with start == caret, finishing at the close-paren.  */
 	    location_t noexcept_loc
-	      = make_location (start_loc, start_loc, finish_loc);
+	      = make_location (start_loc, start_loc, parser->lexer);
 
 	    return cp_expr (finish_noexcept_expr (expr, tf_warning_or_error),
 			    noexcept_loc);
@@ -8637,15 +8642,13 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	  /* Consume the '&&' token.  */
 	  cp_lexer_consume_token (parser->lexer);
 	  /* Look for the identifier.  */
-	  location_t finish_loc
-	    = get_finish (cp_lexer_peek_token (parser->lexer)->location);
 	  identifier = cp_parser_identifier (parser);
 	  /* Construct a location of the form:
 	       &&label
 	       ^~~~~~~
 	     with caret==start at the "&&", finish at the end of the label.  */
 	  location_t combined_loc
-	    = make_location (start_loc, start_loc, finish_loc);
+	    = make_location (start_loc, start_loc, parser->lexer);
 	  /* Create an expression representing the address.  */
 	  expression = finish_label_address_expr (identifier, combined_loc);
 	  if (cp_parser_non_integral_constant_expression (parser,
@@ -8893,10 +8896,8 @@ cp_parser_has_attribute_expression (cp_parser *parser)
      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      with start == caret at the start of the built-in token,
      and with the endpoint at the final closing paren.  */
-  location_t finish_loc
-    = cp_lexer_previous_token (parser->lexer)->location;
   location_t compound_loc
-    = make_location (start_loc, start_loc, finish_loc);
+    = make_location (start_loc, start_loc, parser->lexer);
 
   cp_expr ret_expr (ret ? boolean_true_node : boolean_false_node);
   ret_expr.set_location (compound_loc);
@@ -9018,9 +9019,8 @@ cp_parser_new_expression (cp_parser* parser)
                  ^~~~~~~~~~~~
          with caret == start at the start of the "new" token, and the end
          at the end of the final token we consumed.  */
-      cp_token *end_tok = cp_lexer_previous_token (parser->lexer);
-      location_t end_loc = get_finish (end_tok->location);
-      location_t combined_loc = make_location (start_loc, start_loc, end_loc);
+      location_t combined_loc = make_location (start_loc, start_loc,
+					       parser->lexer);
 
       /* Create a representation of the new-expression.  */
       ret = build_new (&placement, type, nelts, &initializer, global_scope_p,
@@ -9966,7 +9966,7 @@ cp_parser_question_colon_clause (cp_parser* parser, cp_expr logical_or_expr)
   if (cp_parser_allow_gnu_extensions_p (parser)
       && token->type == CPP_COLON)
     {
-      pedwarn (token->location, OPT_Wpedantic, 
+      pedwarn (token->location, OPT_Wpedantic,
 	       "ISO C++ does not allow %<?:%> with omitted middle operand");
       /* Implicit true clause.  */
       expr = NULL_TREE;
@@ -10787,10 +10787,9 @@ cp_parser_lambda_expression (cp_parser* parser)
   insert_pending_capture_proxies ();
 
   /* Update the lambda expression to a range.  */
-  cp_token *end_tok = cp_lexer_previous_token (parser->lexer);
   LAMBDA_EXPR_LOCATION (lambda_expr) = make_location (token->location,
 						      token->location,
-						      end_tok->location);
+						      parser->lexer);
 
   if (ok)
     lambda_expr = build_lambda_object (lambda_expr);
@@ -11433,11 +11432,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
     cp_parser_parse_tentatively (parser);
   std_attrs = cp_parser_std_attribute_spec_seq (parser);
   if (std_attrs)
-    {
-      location_t end_loc
-	= cp_lexer_previous_token (parser->lexer)->location;
-      attrs_loc = make_location (attrs_loc, attrs_loc, end_loc);
-    }
+    attrs_loc = make_location (attrs_loc, attrs_loc, parser->lexer);
   if (c_dialect_objc ())
     {
       if (!cp_parser_parse_definitely (parser))
@@ -16014,10 +16009,8 @@ cp_parser_operator (cp_parser* parser, location_t start_loc)
 	     ^~~~~~~~~~~~~~~~~~~~~
 	   with caret == start at the start token, finish at the end of the
 	   suffix identifier.  */
-	location_t finish_loc
-	  = get_finish (cp_lexer_previous_token (parser->lexer)->location);
 	location_t combined_loc
-	  = make_location (start_loc, start_loc, finish_loc);
+	  = make_location (start_loc, start_loc, parser->lexer);
 	return cp_expr (id, combined_loc);
       }
 
@@ -16944,10 +16937,8 @@ cp_parser_template_id (cp_parser *parser,
      ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      with caret == start at the start of the template-name,
      ranging until the closing '>'.  */
-  location_t finish_loc
-    = get_finish (cp_lexer_previous_token (parser->lexer)->location);
   location_t combined_loc
-    = make_location (token->location, token->location, finish_loc);
+    = make_location (token->location, token->location, parser->lexer);
 
   /* Check for concepts autos where they don't belong.  We could
      identify types in some cases of idnetifier TEMPL, looking ahead
@@ -18325,7 +18316,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
       /* Don't gobble tokens or issue error messages if this is an
 	 optional type-specifier.  */
-      if ((flags & CP_PARSER_FLAGS_OPTIONAL) || cxx_dialect >= cxx17)
+      if (flags & CP_PARSER_FLAGS_OPTIONAL)
 	cp_parser_parse_tentatively (parser);
 
       token = cp_lexer_peek_token (parser->lexer);
@@ -18365,37 +18356,26 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	      else
 		{
 		  cp_parser_error (parser, "expected template-id for type");
-		  type = NULL_TREE;
+		  type = error_mark_node;
 		}
 	    }
 	}
-      /* Otherwise, look for a type-name.  */
-      else
-	type = cp_parser_type_name (parser, (qualified_p && typename_p));
 
-      /* Keep track of all name-lookups performed in class scopes.  */
-      if (type
-	  && !global_p
-	  && !qualified_p
-	  && TREE_CODE (type) == TYPE_DECL
-	  && identifier_p (DECL_NAME (type)))
-	maybe_note_name_used_in_class (DECL_NAME (type), type);
-      /* If it didn't work out, we don't have a TYPE.  */
-      if (((flags & CP_PARSER_FLAGS_OPTIONAL) || cxx_dialect >= cxx17)
-	  && !cp_parser_parse_definitely (parser))
-	type = NULL_TREE;
-      if (!type && cxx_dialect >= cxx17)
+      /* Otherwise, look for a type-name.  */
+      if (!type)
 	{
-	  if (flags & CP_PARSER_FLAGS_OPTIONAL)
+	  if (cxx_dialect >= cxx17)
 	    cp_parser_parse_tentatively (parser);
 
-	  cp_parser_global_scope_opt (parser,
-				      /*current_scope_valid_p=*/false);
-	  cp_parser_nested_name_specifier_opt (parser,
-					       /*typename_keyword_p=*/false,
-					       /*check_dependency_p=*/true,
-					       /*type_p=*/false,
-					       /*is_declaration=*/false);
+	  type = cp_parser_type_name (parser, (qualified_p && typename_p));
+
+	  if (cxx_dialect >= cxx17 && !cp_parser_parse_definitely (parser))
+	    type = NULL_TREE;
+	}
+
+      if (!type && cxx_dialect >= cxx17)
+	{
+	  /* Try class template argument deduction.  */
 	  tree name = cp_parser_identifier (parser);
 	  if (name && TREE_CODE (name) == IDENTIFIER_NODE
 	      && parser->scope != error_mark_node)
@@ -18421,11 +18401,21 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	    }
 	  else
 	    type = error_mark_node;
-
-	  if ((flags & CP_PARSER_FLAGS_OPTIONAL)
-	      && !cp_parser_parse_definitely (parser))
-	    type = NULL_TREE;
 	}
+
+      /* If it didn't work out, we don't have a TYPE.  */
+      if ((flags & CP_PARSER_FLAGS_OPTIONAL)
+	  && !cp_parser_parse_definitely (parser))
+	type = NULL_TREE;
+
+      /* Keep track of all name-lookups performed in class scopes.  */
+      if (type
+	  && !global_p
+	  && !qualified_p
+	  && TREE_CODE (type) == TYPE_DECL
+	  && identifier_p (DECL_NAME (type)))
+	maybe_note_name_used_in_class (DECL_NAME (type), type);
+
       if (type && decl_specs)
 	cp_parser_set_decl_spec_type (decl_specs, type,
 				      token,
@@ -29074,10 +29064,8 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
 	    ^~~~~~~~~~~~~~~
 	 with caret == start at the start of the type name,
 	 finishing at the closing brace.  */
-      location_t finish_loc
-	= get_finish (cp_lexer_previous_token (parser->lexer)->location);
       location_t combined_loc = make_location (start_loc, start_loc,
-					       finish_loc);
+					       parser->lexer);
       cast.set_location (combined_loc);
       return cast;
    }
@@ -29112,9 +29100,7 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
        ^~~~~~~~
      with caret == start at the start of the type name,
      finishing at the closing paren.  */
-  location_t finish_loc
-    = get_finish (cp_lexer_previous_token (parser->lexer)->location);
-  location_t combined_loc = make_location (start_loc, start_loc, finish_loc);
+  location_t combined_loc = make_location (start_loc, start_loc, parser->lexer);
   cast.set_location (combined_loc);
   return cast;
 }
@@ -31159,9 +31145,7 @@ cp_parser_objc_encode_expression (cp_parser* parser)
        @encode(int)
        ^~~~~~~~~~~~
      with caret==start at the @ token, finishing at the close paren.  */
-  location_t combined_loc
-    = make_location (start_loc, start_loc,
-                     cp_lexer_previous_token (parser->lexer)->location);
+  location_t combined_loc = make_location (start_loc, start_loc, parser->lexer);
 
   return cp_expr (objc_build_encode_expr (type), combined_loc);
 }
@@ -31205,9 +31189,7 @@ cp_parser_objc_protocol_expression (cp_parser* parser)
        @protocol(prot)
        ^~~~~~~~~~~~~~~
      with caret==start at the @ token, finishing at the close paren.  */
-  location_t combined_loc
-    = make_location (start_loc, start_loc,
-                     cp_lexer_previous_token (parser->lexer)->location);
+  location_t combined_loc = make_location (start_loc, start_loc, parser->lexer);
   tree result = objc_build_protocol_expr (proto);
   protected_set_expr_location (result, combined_loc);
   return result;
@@ -31292,9 +31274,7 @@ cp_parser_objc_selector_expression (cp_parser* parser)
        @selector(func)
        ^~~~~~~~~~~~~~~
      with caret==start at the @ token, finishing at the close paren.  */
-  location_t combined_loc
-    = make_location (loc, loc,
-                     cp_lexer_previous_token (parser->lexer)->location);
+  location_t combined_loc = make_location (loc, loc, parser->lexer);
   tree result = objc_build_selector_expr (combined_loc, sel_seq);
   /* TODO: objc_build_selector_expr doesn't always honor the location.  */
   protected_set_expr_location (result, combined_loc);
@@ -32936,6 +32916,10 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	  else if (!strcmp ("async", p))
 	    result = PRAGMA_OACC_CLAUSE_ASYNC;
 	  break;
+	case 'b':
+	  if (!strcmp ("bind", p))
+	    result = PRAGMA_OMP_CLAUSE_BIND;
+	  break;
 	case 'c':
 	  if (!strcmp ("collapse", p))
 	    result = PRAGMA_OMP_CLAUSE_COLLAPSE;
@@ -33035,6 +33019,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	case 'o':
 	  if (!strcmp ("ordered", p))
 	    result = PRAGMA_OMP_CLAUSE_ORDERED;
+	  else if (!strcmp ("order", p))
+	    result = PRAGMA_OMP_CLAUSE_ORDER;
 	  break;
 	case 'p':
 	  if (!strcmp ("parallel", p))
@@ -34416,6 +34402,100 @@ cp_parser_omp_clause_defaultmap (cp_parser *parser, tree list,
 
   c = build_omp_clause (location, OMP_CLAUSE_DEFAULTMAP);
   OMP_CLAUSE_DEFAULTMAP_SET_KIND (c, behavior, category);
+  OMP_CLAUSE_CHAIN (c) = list;
+  return c;
+
+ out_err:
+  cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					 /*or_comma=*/false,
+					 /*consume_paren=*/true);
+  return list;
+}
+
+/* OpenMP 5.0:
+   order ( concurrent ) */
+
+static tree
+cp_parser_omp_clause_order (cp_parser *parser, tree list, location_t location)
+{
+  tree c, id;
+  const char *p;
+
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return list;
+
+  if (!cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      cp_parser_error (parser, "expected %<concurrent%>");
+      goto out_err;
+    }
+  else
+    {
+      id = cp_lexer_peek_token (parser->lexer)->u.value;
+      p = IDENTIFIER_POINTER (id);
+    }
+  if (strcmp (p, "concurrent") != 0)
+    {
+      cp_parser_error (parser, "expected %<concurrent%>");
+      goto out_err;
+    }
+  cp_lexer_consume_token (parser->lexer);
+  if (!parens.require_close (parser))
+    goto out_err;
+
+  /* check_no_duplicate_clause (list, OMP_CLAUSE_ORDER, "order", location); */
+  c = build_omp_clause (location, OMP_CLAUSE_ORDER);
+  OMP_CLAUSE_CHAIN (c) = list;
+  return c;
+
+ out_err:
+  cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					 /*or_comma=*/false,
+					 /*consume_paren=*/true);
+  return list;
+}
+
+/* OpenMP 5.0:
+   bind ( teams | parallel | thread ) */
+
+static tree
+cp_parser_omp_clause_bind (cp_parser *parser, tree list,
+			   location_t location)
+{
+  tree c;
+  const char *p;
+  enum omp_clause_bind_kind kind = OMP_CLAUSE_BIND_THREAD;
+
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return list;
+
+  if (!cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+    invalid:
+      cp_parser_error (parser,
+		       "expected %<teams%>, %<parallel%> or %<thread%>");
+      goto out_err;
+    }
+  else
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      p = IDENTIFIER_POINTER (id);
+    }
+  if (strcmp (p, "teams") == 0)
+    kind = OMP_CLAUSE_BIND_TEAMS;
+  else if (strcmp (p, "parallel") == 0)
+    kind = OMP_CLAUSE_BIND_PARALLEL;
+  else if (strcmp (p, "thread") != 0)
+    goto invalid;
+  cp_lexer_consume_token (parser->lexer);
+  if (!parens.require_close (parser))
+    goto out_err;
+
+  /* check_no_duplicate_clause (list, OMP_CLAUSE_BIND, "bind", location); */
+  c = build_omp_clause (location, OMP_CLAUSE_BIND);
+  OMP_CLAUSE_BIND_KIND (c) = kind;
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
 
@@ -35943,6 +36023,11 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 
       switch (c_kind)
 	{
+	case PRAGMA_OMP_CLAUSE_BIND:
+	  clauses = cp_parser_omp_clause_bind (parser, clauses,
+					       token->location);
+	  c_name = "bind";
+	  break;
 	case PRAGMA_OMP_CLAUSE_COLLAPSE:
 	  clauses = cp_parser_omp_clause_collapse (parser, clauses,
 						   token->location);
@@ -36017,7 +36102,8 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  c_name = "mergeable";
 	  break;
 	case PRAGMA_OMP_CLAUSE_NOWAIT:
-	  clauses = cp_parser_omp_clause_nowait (parser, clauses, token->location);
+	  clauses = cp_parser_omp_clause_nowait (parser, clauses,
+						 token->location);
 	  c_name = "nowait";
 	  break;
 	case PRAGMA_OMP_CLAUSE_NUM_TASKS:
@@ -36029,6 +36115,11 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses = cp_parser_omp_clause_num_threads (parser, clauses,
 						      token->location);
 	  c_name = "num_threads";
+	  break;
+	case PRAGMA_OMP_CLAUSE_ORDER:
+	  clauses = cp_parser_omp_clause_order (parser, clauses,
+						token->location);
+	  c_name = "order";
 	  break;
 	case PRAGMA_OMP_CLAUSE_ORDERED:
 	  clauses = cp_parser_omp_clause_ordered (parser, clauses,
@@ -38053,6 +38144,50 @@ cp_omp_split_clauses (location_t loc, enum tree_code code,
       cclauses[i] = finish_omp_clauses (cclauses[i], C_ORT_OMP);
 }
 
+/* OpenMP 5.0:
+   #pragma omp loop loop-clause[optseq] new-line
+     for-loop  */
+
+#define OMP_LOOP_CLAUSE_MASK					\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LASTPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_BIND)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ORDER))
+
+static tree
+cp_parser_omp_loop (cp_parser *parser, cp_token *pragma_tok,
+		    char *p_name, omp_clause_mask mask, tree *cclauses,
+		    bool *if_p)
+{
+  tree clauses, sb, ret;
+  unsigned int save;
+  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+
+  strcat (p_name, " loop");
+  mask |= OMP_LOOP_CLAUSE_MASK;
+
+  clauses = cp_parser_omp_all_clauses (parser, mask, p_name, pragma_tok,
+				       cclauses == NULL);
+  if (cclauses)
+    {
+      cp_omp_split_clauses (loc, OMP_LOOP, mask, clauses, cclauses);
+      clauses = cclauses[C_OMP_CLAUSE_SPLIT_LOOP];
+    }
+
+  keep_next_level (true);
+  sb = begin_omp_structured_block ();
+  save = cp_parser_begin_omp_structured_block (parser);
+
+  ret = cp_parser_omp_for_loop (parser, OMP_LOOP, clauses, cclauses, if_p);
+
+  cp_parser_end_omp_structured_block (parser, save);
+  add_stmt (finish_omp_for_block (finish_omp_structured_block (sb), ret));
+
+  return ret;
+}
+
 /* OpenMP 4.0:
    #pragma omp simd simd-clause[optseq] new-line
      for-loop  */
@@ -38067,7 +38202,8 @@ cp_omp_split_clauses (location_t loc, enum tree_code code,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IF)		\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NONTEMPORAL))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NONTEMPORAL)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ORDER))
 
 static tree
 cp_parser_omp_simd (cp_parser *parser, cp_token *pragma_tok,
@@ -38127,7 +38263,8 @@ cp_parser_omp_simd (cp_parser *parser, cp_token *pragma_tok,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ORDERED)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SCHEDULE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ORDER))
 
 static tree
 cp_parser_omp_for (cp_parser *parser, cp_token *pragma_tok,
@@ -38511,11 +38648,11 @@ cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok,
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
       return NULL_TREE;
     }
-  else if (cclauses == NULL && cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+  else if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
       const char *p = IDENTIFIER_POINTER (id);
-      if (strcmp (p, "master") == 0)
+      if (cclauses == NULL && strcmp (p, "master") == 0)
 	{
 	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
 	  cclauses = cclauses_buf;
@@ -38533,12 +38670,34 @@ cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok,
 	    return ret;
 	  return stmt;
 	}
+      else if (strcmp (p, "loop") == 0)
+	{
+	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
+	  if (cclauses == NULL)
+	    cclauses = cclauses_buf;
+
+	  cp_lexer_consume_token (parser->lexer);
+	  if (!flag_openmp)  /* flag_openmp_simd  */
+	    return cp_parser_omp_loop (parser, pragma_tok, p_name, mask,
+				       cclauses, if_p);
+	  block = begin_omp_parallel ();
+	  save = cp_parser_begin_omp_structured_block (parser);
+	  tree ret = cp_parser_omp_loop (parser, pragma_tok, p_name, mask,
+					 cclauses, if_p);
+	  cp_parser_end_omp_structured_block (parser, save);
+	  stmt = finish_omp_parallel (cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL],
+				      block);
+	  if (ret == NULL_TREE)
+	    return ret;
+	  OMP_PARALLEL_COMBINED (stmt) = 1;
+	  return stmt;
+	}
       else if (!flag_openmp)  /* flag_openmp_simd  */
 	{
 	  cp_parser_skip_to_pragma_eol (parser, pragma_tok);
 	  return NULL_TREE;
 	}
-      else if (strcmp (p, "sections") == 0)
+      else if (cclauses == NULL && strcmp (p, "sections") == 0)
 	{
 	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
 	  cclauses = cclauses_buf;
@@ -38920,6 +39079,34 @@ cp_parser_omp_teams (cp_parser *parser, cp_token *pragma_tok,
 	  save = cp_parser_begin_omp_structured_block (parser);
 	  ret = cp_parser_omp_distribute (parser, pragma_tok, p_name, mask,
 					  cclauses, if_p);
+	  cp_parser_end_omp_structured_block (parser, save);
+	  tree body = finish_omp_structured_block (sb);
+	  if (ret == NULL)
+	    return ret;
+	  clauses = cclauses[C_OMP_CLAUSE_SPLIT_TEAMS];
+	  ret = make_node (OMP_TEAMS);
+	  TREE_TYPE (ret) = void_type_node;
+	  OMP_TEAMS_CLAUSES (ret) = clauses;
+	  OMP_TEAMS_BODY (ret) = body;
+	  OMP_TEAMS_COMBINED (ret) = 1;
+	  SET_EXPR_LOCATION (ret, loc);
+	  return add_stmt (ret);
+	}
+      else if (strcmp (p, "loop") == 0)
+	{
+	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
+	  if (cclauses == NULL)
+	    cclauses = cclauses_buf;
+
+	  cp_lexer_consume_token (parser->lexer);
+	  if (!flag_openmp)  /* flag_openmp_simd  */
+	    return cp_parser_omp_loop (parser, pragma_tok, p_name, mask,
+				       cclauses, if_p);
+	  keep_next_level (true);
+	  sb = begin_omp_structured_block ();
+	  save = cp_parser_begin_omp_structured_block (parser);
+	  ret = cp_parser_omp_loop (parser, pragma_tok, p_name, mask,
+				    cclauses, if_p);
 	  cp_parser_end_omp_structured_block (parser, save);
 	  tree body = finish_omp_structured_block (sb);
 	  if (ret == NULL)
@@ -41189,6 +41376,11 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
       stmt = cp_parser_omp_for (parser, pragma_tok, p_name, mask, NULL,
 				if_p);
       break;
+    case PRAGMA_OMP_LOOP:
+      strcpy (p_name, "#pragma omp");
+      stmt = cp_parser_omp_loop (parser, pragma_tok, p_name, mask, NULL,
+				 if_p);
+      break;
     case PRAGMA_OMP_MASTER:
       strcpy (p_name, "#pragma omp");
       stmt = cp_parser_omp_master (parser, pragma_tok, p_name, mask, NULL,
@@ -41827,6 +42019,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
     case PRAGMA_OMP_CRITICAL:
     case PRAGMA_OMP_DISTRIBUTE:
     case PRAGMA_OMP_FOR:
+    case PRAGMA_OMP_LOOP:
     case PRAGMA_OMP_MASTER:
     case PRAGMA_OMP_PARALLEL:
     case PRAGMA_OMP_SECTIONS:

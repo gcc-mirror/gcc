@@ -605,7 +605,8 @@ def build_pretty_printer():
 
 gdb.printing.register_pretty_printer(
     gdb.current_objfile(),
-    build_pretty_printer())
+    build_pretty_printer(),
+    replace=True)
 
 def find_gcc_source_dir():
     # Use location of global "g" to locate the source tree
@@ -740,18 +741,17 @@ class DumpFn(gdb.Command):
             f.close()
 
         # Open file
-        fp = gdb.parse_and_eval("fopen (\"%s\", \"w\")" % filename)
+        fp = gdb.parse_and_eval("(FILE *) fopen (\"%s\", \"w\")" % filename)
         if fp == 0:
             print ("Could not open file: %s" % filename)
             return
-        fp = "(FILE *)%u" % fp
 
         # Dump function to file
         _ = gdb.parse_and_eval("dump_function_to_file (%s, %s, %u)" %
                                (func, fp, flags))
 
         # Close file
-        ret = gdb.parse_and_eval("fclose (%s)" % fp)
+        ret = gdb.parse_and_eval("(int) fclose (%s)" % fp)
         if ret != 0:
             print ("Could not close file: %s" % filename)
             return
@@ -810,11 +810,10 @@ class DotFn(gdb.Command):
 
         # Close and reopen temp file to get C FILE*
         f.close()
-        fp = gdb.parse_and_eval("fopen (\"%s\", \"w\")" % filename)
+        fp = gdb.parse_and_eval("(FILE *) fopen (\"%s\", \"w\")" % filename)
         if fp == 0:
             print("Cannot open temp file")
             return
-        fp = "(FILE *)%u" % fp
 
         # Write graph to temp file
         _ = gdb.parse_and_eval("start_graph_dump (%s, \"<debug>\")" % fp)
@@ -823,7 +822,7 @@ class DotFn(gdb.Command):
         _ = gdb.parse_and_eval("end_graph_dump (%s)" % fp)
 
         # Close temp file
-        ret = gdb.parse_and_eval("fclose (%s)" % fp)
+        ret = gdb.parse_and_eval("(int) fclose (%s)" % fp)
         if ret != 0:
             print("Could not close temp file: %s" % filename)
             return

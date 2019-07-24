@@ -7829,7 +7829,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
      For memory, assume that the desired extraction_mode and pos_mode
      are the same as for a register operation, since at present we don't
      have named patterns for aligned memory structures.  */
-  struct extraction_insn insn;
+  class extraction_insn insn;
   unsigned int inner_size;
   if (GET_MODE_BITSIZE (inner_mode).is_constant (&inner_size)
       && get_best_reg_extraction_insn (&insn, pattern, inner_size, mode))

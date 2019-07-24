@@ -1751,7 +1751,7 @@ package body Inline is
          --  occurrences of pragmas referencing the formals are removed since
          --  they have no meaning when the body is inlined and the formals are
          --  rewritten (the analysis of the non-inlined body will handle these
-         --  pragmas).  A new internal name is associated with Body_To_Inline.
+         --  pragmas). A new internal name is associated with Body_To_Inline.
 
          ------------------------------
          -- Generate_Subprogram_Body --

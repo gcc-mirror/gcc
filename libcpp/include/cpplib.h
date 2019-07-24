@@ -956,11 +956,11 @@ class cpp_substring_ranges
    that cpplib will share; this technique is used by the C front
    ends.  */
 extern cpp_reader *cpp_create_reader (enum c_lang, struct ht *,
-				      struct line_maps *);
+				      class line_maps *);
 
 /* Reset the cpp_reader's line_map.  This is only used after reading a
    PCH file.  */
-extern void cpp_set_line_map (cpp_reader *, struct line_maps *);
+extern void cpp_set_line_map (cpp_reader *, class line_maps *);
 
 /* Call this to change the selected language standard (e.g. because of
    command line options).  */
@@ -977,7 +977,7 @@ extern void cpp_set_include_chains (cpp_reader *, cpp_dir *, cpp_dir *, int);
 extern cpp_options *cpp_get_options (cpp_reader *);
 extern cpp_callbacks *cpp_get_callbacks (cpp_reader *);
 extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
-extern struct mkdeps *cpp_get_deps (cpp_reader *);
+extern class mkdeps *cpp_get_deps (cpp_reader *);
 
 extern const char *cpp_find_header_unit (cpp_reader *, const char *file,
 					 bool angle_p,  location_t);

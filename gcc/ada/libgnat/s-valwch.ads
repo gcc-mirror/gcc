@@ -34,7 +34,7 @@
 with System.WCh_Con;
 
 package System.Val_WChar is
-   pragma Pure;
+   pragma Preelaborate;
 
    function Value_Wide_Character
      (Str : String;

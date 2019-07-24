@@ -342,7 +342,9 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_THREADS  */
   0, /* OMP_CLAUSE_SIMD  */
   1, /* OMP_CLAUSE_HINT  */
-  0, /* OMP_CLAUSE_DEFALTMAP  */
+  0, /* OMP_CLAUSE_DEFAULTMAP  */
+  0, /* OMP_CLAUSE_ORDER  */
+  0, /* OMP_CLAUSE_BIND  */
   1, /* OMP_CLAUSE__SIMDUID_  */
   0, /* OMP_CLAUSE__SIMT_  */
   0, /* OMP_CLAUSE_INDEPENDENT  */
@@ -424,6 +426,8 @@ const char * const omp_clause_code_name[] =
   "simd",
   "hint",
   "defaultmap",
+  "order",
+  "bind",
   "_simduid_",
   "_simt_",
   "independent",
@@ -5117,8 +5121,9 @@ protected_set_expr_location (tree t, location_t loc)
 
 /* Data used when collecting DECLs and TYPEs for language data removal.  */
 
-struct free_lang_data_d
+class free_lang_data_d
 {
+public:
   free_lang_data_d () : decls (100), types (100) {}
 
   /* Worklist to avoid excessive recursion.  */
@@ -5139,7 +5144,7 @@ struct free_lang_data_d
    language data removed.  The lists are held inside FLD.  */
 
 static void
-add_tree_to_fld_list (tree t, struct free_lang_data_d *fld)
+add_tree_to_fld_list (tree t, class free_lang_data_d *fld)
 {
   if (DECL_P (t))
     fld->decls.safe_push (t);
@@ -5152,7 +5157,7 @@ add_tree_to_fld_list (tree t, struct free_lang_data_d *fld)
 /* Push tree node T into FLD->WORKLIST.  */
 
 static inline void
-fld_worklist_push (tree t, struct free_lang_data_d *fld)
+fld_worklist_push (tree t, class free_lang_data_d *fld)
 {
   if (t && !is_lang_specific (t) && !fld->pset.contains (t))
     fld->worklist.safe_push ((t));
@@ -5206,7 +5211,7 @@ fld_type_variant_equal_p (tree t, tree v, tree inner_type)
    Set TREE_TYPE to INNER_TYPE if non-NULL.  */
 
 static tree
-fld_type_variant (tree first, tree t, struct free_lang_data_d *fld,
+fld_type_variant (tree first, tree t, class free_lang_data_d *fld,
 		  tree inner_type = NULL)
 {
   if (first == TYPE_MAIN_VARIANT (t))
@@ -5251,7 +5256,7 @@ static hash_map<tree, tree> *fld_simplified_types;
 
 static tree
 fld_process_array_type (tree t, tree t2, hash_map<tree, tree> *map,
-			struct free_lang_data_d *fld)
+			class free_lang_data_d *fld)
 {
   if (TREE_TYPE (t) == t2)
     return t;
@@ -5300,7 +5305,7 @@ fld_decl_context (tree ctx)
    Return T if no simplification is possible.  */
 
 static tree
-fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
+fld_incomplete_type_of (tree t, class free_lang_data_d *fld)
 {
   if (!t)
     return NULL;
@@ -5392,7 +5397,7 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
    types.  */
 
 static tree
-fld_simplified_type (tree t, struct free_lang_data_d *fld)
+fld_simplified_type (tree t, class free_lang_data_d *fld)
 {
   if (!t)
     return t;
@@ -5450,7 +5455,7 @@ free_lang_data_in_binfo (tree binfo)
 /* Reset all language specific information still present in TYPE.  */
 
 static void
-free_lang_data_in_type (tree type, struct free_lang_data_d *fld)
+free_lang_data_in_type (tree type, class free_lang_data_d *fld)
 {
   gcc_assert (TYPE_P (type));
 
@@ -5666,7 +5671,7 @@ need_assembler_name_p (tree decl)
    DECL.  */
 
 static void
-free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
+free_lang_data_in_decl (tree decl, class free_lang_data_d *fld)
 {
   gcc_assert (DECL_P (decl));
 
@@ -5830,7 +5835,7 @@ static tree
 find_decls_types_r (tree *tp, int *ws, void *data)
 {
   tree t = *tp;
-  struct free_lang_data_d *fld = (struct free_lang_data_d *) data;
+  class free_lang_data_d *fld = (class free_lang_data_d *) data;
 
   if (TREE_CODE (t) == TREE_LIST)
     return NULL_TREE;
@@ -5986,7 +5991,7 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 /* Find decls and types in T.  */
 
 static void
-find_decls_types (tree t, struct free_lang_data_d *fld)
+find_decls_types (tree t, class free_lang_data_d *fld)
 {
   while (1)
     {
@@ -6028,7 +6033,7 @@ get_eh_types_for_runtime (tree list)
    FLD->DECLS and FLD->TYPES.  */
 
 static void
-find_decls_types_in_eh_region (eh_region r, struct free_lang_data_d *fld)
+find_decls_types_in_eh_region (eh_region r, class free_lang_data_d *fld)
 {
   switch (r->type)
     {
@@ -6071,7 +6076,7 @@ find_decls_types_in_eh_region (eh_region r, struct free_lang_data_d *fld)
    NAMESPACE_DECLs, etc).  */
 
 static void
-find_decls_types_in_node (struct cgraph_node *n, struct free_lang_data_d *fld)
+find_decls_types_in_node (struct cgraph_node *n, class free_lang_data_d *fld)
 {
   basic_block bb;
   struct function *fn;
@@ -6140,7 +6145,7 @@ find_decls_types_in_node (struct cgraph_node *n, struct free_lang_data_d *fld)
    NAMESPACE_DECLs, etc).  */
 
 static void
-find_decls_types_in_var (varpool_node *v, struct free_lang_data_d *fld)
+find_decls_types_in_var (varpool_node *v, class free_lang_data_d *fld)
 {
   find_decls_types (v->decl, fld);
 }
@@ -6191,7 +6196,7 @@ assign_assembler_name_if_needed (tree t)
    been set up.  */
 
 static void
-free_lang_data_in_cgraph (struct free_lang_data_d *fld)
+free_lang_data_in_cgraph (class free_lang_data_d *fld)
 {
   struct cgraph_node *n;
   varpool_node *v;
@@ -6232,7 +6237,7 @@ static unsigned
 free_lang_data (void)
 {
   unsigned i;
-  struct free_lang_data_d fld;
+  class free_lang_data_d fld;
 
   /* If we are the LTO frontend we have freed lang-specific data already.  */
   if (in_lto_p
@@ -12349,6 +12354,8 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_THREADS:
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_DEFAULTMAP:
+	case OMP_CLAUSE_ORDER:
+	case OMP_CLAUSE_BIND:
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_TILE:

@@ -6166,6 +6166,24 @@ gfc_conv_intrinsic_btest (gfc_se * se, gfc_expr * expr)
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
   type = TREE_TYPE (args[0]);
 
+  /* Optionally generate code for runtime argument check.  */
+  if (gfc_option.rtcheck & GFC_RTCHECK_BITS)
+    {
+      tree below = fold_build2_loc (input_location, LT_EXPR,
+				    logical_type_node, args[1],
+				    build_int_cst (TREE_TYPE (args[1]), 0));
+      tree nbits = build_int_cst (TREE_TYPE (args[1]), TYPE_PRECISION (type));
+      tree above = fold_build2_loc (input_location, GE_EXPR,
+				    logical_type_node, args[1], nbits);
+      tree scond = fold_build2_loc (input_location, TRUTH_ORIF_EXPR,
+				    logical_type_node, below, above);
+      gfc_trans_runtime_check (true, false, scond, &se->pre, &expr->where,
+			       "POS argument (%ld) out of range 0:%ld "
+			       "in intrinsic BTEST",
+			       fold_convert (long_integer_type_node, args[1]),
+			       fold_convert (long_integer_type_node, nbits));
+    }
+
   tmp = fold_build2_loc (input_location, LSHIFT_EXPR, type,
 			 build_int_cst (type, 1), args[1]);
   tmp = fold_build2_loc (input_location, BIT_AND_EXPR, type, args[0], tmp);
@@ -6236,6 +6254,32 @@ gfc_conv_intrinsic_singlebitop (gfc_se * se, gfc_expr * expr, int set)
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
   type = TREE_TYPE (args[0]);
 
+  /* Optionally generate code for runtime argument check.  */
+  if (gfc_option.rtcheck & GFC_RTCHECK_BITS)
+    {
+      tree below = fold_build2_loc (input_location, LT_EXPR,
+				    logical_type_node, args[1],
+				    build_int_cst (TREE_TYPE (args[1]), 0));
+      tree nbits = build_int_cst (TREE_TYPE (args[1]), TYPE_PRECISION (type));
+      tree above = fold_build2_loc (input_location, GE_EXPR,
+				    logical_type_node, args[1], nbits);
+      tree scond = fold_build2_loc (input_location, TRUTH_ORIF_EXPR,
+				    logical_type_node, below, above);
+      size_t len_name = strlen (expr->value.function.isym->name);
+      char *name = XALLOCAVEC (char, len_name + 1);
+      for (size_t i = 0; i < len_name; i++)
+	name[i] = TOUPPER (expr->value.function.isym->name[i]);
+      name[len_name] = '\0';
+      tree iname = gfc_build_addr_expr (pchar_type_node,
+					gfc_build_cstring_const (name));
+      gfc_trans_runtime_check (true, false, scond, &se->pre, &expr->where,
+			       "POS argument (%ld) out of range 0:%ld "
+			       "in intrinsic %s",
+			       fold_convert (long_integer_type_node, args[1]),
+			       fold_convert (long_integer_type_node, nbits),
+			       iname);
+    }
+
   tmp = fold_build2_loc (input_location, LSHIFT_EXPR, type,
 			 build_int_cst (type, 1), args[1]);
   if (set)
@@ -6260,6 +6304,42 @@ gfc_conv_intrinsic_ibits (gfc_se * se, gfc_expr * expr)
 
   gfc_conv_intrinsic_function_args (se, expr, args, 3);
   type = TREE_TYPE (args[0]);
+
+  /* Optionally generate code for runtime argument check.  */
+  if (gfc_option.rtcheck & GFC_RTCHECK_BITS)
+    {
+      tree tmp1 = fold_convert (long_integer_type_node, args[1]);
+      tree tmp2 = fold_convert (long_integer_type_node, args[2]);
+      tree nbits = build_int_cst (long_integer_type_node,
+				  TYPE_PRECISION (type));
+      tree below = fold_build2_loc (input_location, LT_EXPR,
+				    logical_type_node, args[1],
+				    build_int_cst (TREE_TYPE (args[1]), 0));
+      tree above = fold_build2_loc (input_location, GT_EXPR,
+				    logical_type_node, tmp1, nbits);
+      tree scond = fold_build2_loc (input_location, TRUTH_ORIF_EXPR,
+				    logical_type_node, below, above);
+      gfc_trans_runtime_check (true, false, scond, &se->pre, &expr->where,
+			       "POS argument (%ld) out of range 0:%ld "
+			       "in intrinsic IBITS", tmp1, nbits);
+      below = fold_build2_loc (input_location, LT_EXPR,
+			       logical_type_node, args[2],
+			       build_int_cst (TREE_TYPE (args[2]), 0));
+      above = fold_build2_loc (input_location, GT_EXPR,
+			       logical_type_node, tmp2, nbits);
+      scond = fold_build2_loc (input_location, TRUTH_ORIF_EXPR,
+			       logical_type_node, below, above);
+      gfc_trans_runtime_check (true, false, scond, &se->pre, &expr->where,
+			       "LEN argument (%ld) out of range 0:%ld "
+			       "in intrinsic IBITS", tmp2, nbits);
+      above = fold_build2_loc (input_location, PLUS_EXPR,
+			       long_integer_type_node, tmp1, tmp2);
+      scond = fold_build2_loc (input_location, GT_EXPR,
+			       logical_type_node, above, nbits);
+      gfc_trans_runtime_check (true, false, scond, &se->pre, &expr->where,
+			       "POS(%ld)+LEN(%ld)>BIT_SIZE(%ld) "
+			       "in intrinsic IBITS", tmp1, tmp2, nbits);
+    }
 
   mask = build_int_cst (type, -1);
   mask = fold_build2_loc (input_location, LSHIFT_EXPR, type, mask, args[2]);
@@ -6382,6 +6462,32 @@ gfc_conv_intrinsic_shift (gfc_se * se, gfc_expr * expr, bool right_shift,
      gcc requires a shift width < BIT_SIZE(I), so we have to catch this
      special case.  */
   num_bits = build_int_cst (TREE_TYPE (args[1]), TYPE_PRECISION (type));
+
+  /* Optionally generate code for runtime argument check.  */
+  if (gfc_option.rtcheck & GFC_RTCHECK_BITS)
+    {
+      tree below = fold_build2_loc (input_location, LT_EXPR,
+				    logical_type_node, args[1],
+				    build_int_cst (TREE_TYPE (args[1]), 0));
+      tree above = fold_build2_loc (input_location, GT_EXPR,
+				    logical_type_node, args[1], num_bits);
+      tree scond = fold_build2_loc (input_location, TRUTH_ORIF_EXPR,
+				    logical_type_node, below, above);
+      size_t len_name = strlen (expr->value.function.isym->name);
+      char *name = XALLOCAVEC (char, len_name + 1);
+      for (size_t i = 0; i < len_name; i++)
+	name[i] = TOUPPER (expr->value.function.isym->name[i]);
+      name[len_name] = '\0';
+      tree iname = gfc_build_addr_expr (pchar_type_node,
+					gfc_build_cstring_const (name));
+      gfc_trans_runtime_check (true, false, scond, &se->pre, &expr->where,
+			       "SHIFT argument (%ld) out of range 0:%ld "
+			       "in intrinsic %s",
+			       fold_convert (long_integer_type_node, args[1]),
+			       fold_convert (long_integer_type_node, num_bits),
+			       iname);
+    }
+
   cond = fold_build2_loc (input_location, GE_EXPR, logical_type_node,
 			  args[1], num_bits);
 
@@ -6436,6 +6542,20 @@ gfc_conv_intrinsic_ishft (gfc_se * se, gfc_expr * expr)
      gcc requires a shift width < BIT_SIZE(I), so we have to catch this
      special case.  */
   num_bits = build_int_cst (TREE_TYPE (args[1]), TYPE_PRECISION (type));
+
+  /* Optionally generate code for runtime argument check.  */
+  if (gfc_option.rtcheck & GFC_RTCHECK_BITS)
+    {
+      tree outside = fold_build2_loc (input_location, GT_EXPR,
+				    logical_type_node, width, num_bits);
+      gfc_trans_runtime_check (true, false, outside, &se->pre, &expr->where,
+			       "SHIFT argument (%ld) out of range -%ld:%ld "
+			       "in intrinsic ISHFT",
+			       fold_convert (long_integer_type_node, args[1]),
+			       fold_convert (long_integer_type_node, num_bits),
+			       fold_convert (long_integer_type_node, num_bits));
+    }
+
   cond = fold_build2_loc (input_location, GE_EXPR, logical_type_node, width,
 			  num_bits);
   se->expr = fold_build3_loc (input_location, COND_EXPR, type, cond,
@@ -6454,6 +6574,7 @@ gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
   tree lrot;
   tree rrot;
   tree zero;
+  tree nbits;
   unsigned int num_args;
 
   num_args = gfc_intrinsic_argument_list_length (expr);
@@ -6461,12 +6582,14 @@ gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
 
   gfc_conv_intrinsic_function_args (se, expr, args, num_args);
 
+  type = TREE_TYPE (args[0]);
+  nbits = build_int_cst (long_integer_type_node, TYPE_PRECISION (type));
+
   if (num_args == 3)
     {
       /* Use a library function for the 3 parameter version.  */
       tree int4type = gfc_get_int_type (4);
 
-      type = TREE_TYPE (args[0]);
       /* We convert the first argument to at least 4 bytes, and
 	 convert back afterwards.  This removes the need for library
 	 functions for all argument sizes, and function will be
@@ -6479,6 +6602,32 @@ gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
 	 BIT_SIZE (I) so the conversion is safe.  */
       args[1] = convert (int4type, args[1]);
       args[2] = convert (int4type, args[2]);
+
+      /* Optionally generate code for runtime argument check.  */
+      if (gfc_option.rtcheck & GFC_RTCHECK_BITS)
+	{
+	  tree size = fold_convert (long_integer_type_node, args[2]);
+	  tree below = fold_build2_loc (input_location, LE_EXPR,
+					logical_type_node, size,
+					build_int_cst (TREE_TYPE (args[1]), 0));
+	  tree above = fold_build2_loc (input_location, GT_EXPR,
+					logical_type_node, size, nbits);
+	  tree scond = fold_build2_loc (input_location, TRUTH_ORIF_EXPR,
+					logical_type_node, below, above);
+	  gfc_trans_runtime_check (true, false, scond, &se->pre, &expr->where,
+				   "SIZE argument (%ld) out of range 1:%ld "
+				   "in intrinsic ISHFTC", size, nbits);
+	  tree width = fold_convert (long_integer_type_node, args[1]);
+	  width = fold_build1_loc (input_location, ABS_EXPR,
+				   long_integer_type_node, width);
+	  scond = fold_build2_loc (input_location, GT_EXPR,
+				   logical_type_node, width, size);
+	  gfc_trans_runtime_check (true, false, scond, &se->pre, &expr->where,
+				   "SHIFT argument (%ld) out of range -%ld:%ld "
+				   "in intrinsic ISHFTC",
+				   fold_convert (long_integer_type_node, args[1]),
+				   size, size);
+	}
 
       switch (expr->ts.kind)
 	{
@@ -6505,11 +6654,25 @@ gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
 
       return;
     }
-  type = TREE_TYPE (args[0]);
 
   /* Evaluate arguments only once.  */
   args[0] = gfc_evaluate_now (args[0], &se->pre);
   args[1] = gfc_evaluate_now (args[1], &se->pre);
+
+  /* Optionally generate code for runtime argument check.  */
+  if (gfc_option.rtcheck & GFC_RTCHECK_BITS)
+    {
+      tree width = fold_convert (long_integer_type_node, args[1]);
+      width = fold_build1_loc (input_location, ABS_EXPR,
+			       long_integer_type_node, width);
+      tree outside = fold_build2_loc (input_location, GT_EXPR,
+				      logical_type_node, width, nbits);
+      gfc_trans_runtime_check (true, false, outside, &se->pre, &expr->where,
+			       "SHIFT argument (%ld) out of range -%ld:%ld "
+			       "in intrinsic ISHFTC",
+			       fold_convert (long_integer_type_node, args[1]),
+			       nbits, nbits);
+    }
 
   /* Rotate left if positive.  */
   lrot = fold_build2_loc (input_location, LROTATE_EXPR, type, args[0], args[1]);

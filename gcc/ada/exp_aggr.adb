@@ -192,7 +192,7 @@ package body Exp_Aggr is
 
    procedure Convert_To_Assignments (N : Node_Id; Typ : Entity_Id);
    --  Transform a record aggregate into a sequence of assignments performed
-   --  component by component.  N is an N_Aggregate or N_Extension_Aggregate.
+   --  component by component. N is an N_Aggregate or N_Extension_Aggregate.
    --  Typ is the type of the record aggregate.
 
    procedure Expand_Record_Aggregate
@@ -8751,7 +8751,7 @@ package body Exp_Aggr is
          Val   := 0;
          Packed_Num := 0;
 
-         --  Account for endianness.  See corresponding comment in
+         --  Account for endianness. See corresponding comment in
          --  Packed_Array_Aggregate_Handled concerning the following.
 
          if Bytes_Big_Endian

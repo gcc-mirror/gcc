@@ -2204,6 +2204,22 @@ cgraph_node::dump (FILE *f)
     }
 }
 
+/* Dump call graph node to file F in graphviz format.  */
+
+void
+cgraph_node::dump_graphviz (FILE *f)
+{
+  cgraph_edge *edge;
+
+  for (edge = callees; edge; edge = edge->next_callee)
+    {
+      cgraph_node *callee = edge->callee;
+
+      fprintf (f, "\t\"%s\" -> \"%s\"\n", name (), callee->name ());
+    }
+}
+
+
 /* Dump call graph node NODE to stderr.  */
 
 DEBUG_FUNCTION void

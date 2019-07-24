@@ -33,7 +33,7 @@
 --  in Text_IO.Integer_IO, and the Value attribute.
 
 package System.Val_Int is
-   pragma Pure;
+   pragma Preelaborate;
 
    function Scan_Integer
      (Str : String;

@@ -30,8 +30,9 @@ namespace selftest {
 /* A struct describing the source-location of a selftest, to make it
    easier to track down failing tests.  */
 
-struct location
+class location
 {
+public:
   location (const char *file, int line, const char *function)
     : m_file (file), m_line (line), m_function (function) {}
 
@@ -149,7 +150,7 @@ class auto_fix_quotes
    The following struct describes a particular case within our test
    matrix.  */
 
-struct line_table_case;
+class line_table_case;
 
 /* A class for overriding the global "line_table" within a selftest,
    restoring its value afterwards.  At most one instance of this

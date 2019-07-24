@@ -64,8 +64,9 @@ struct lra_copy
 };
 
 /* Common info about a register (pseudo or hard register).  */
-struct lra_reg
+class lra_reg
 {
+public:
   /* Bitmap of UIDs of insns (including debug insns) referring the
      reg.  */
   bitmap_head insn_bitmap;
@@ -118,7 +119,7 @@ struct lra_reg
 };
 
 /* References to the common info about each register.  */
-extern struct lra_reg *lra_reg_info;
+extern class lra_reg *lra_reg_info;
 
 extern HARD_REG_SET hard_regs_spilled_into;
 
@@ -210,8 +211,9 @@ struct lra_static_insn_data
 
 /* LRA internal info about an insn (LRA internal insn
    representation).  */
-struct lra_insn_recog_data
+class lra_insn_recog_data
 {
+public:
   /* The insn code.  */
   int icode;
   /* The alternative should be used for the insn, LRA_UNKNOWN_ALT if
@@ -242,7 +244,7 @@ struct lra_insn_recog_data
   struct lra_insn_reg *regs;
 };
 
-typedef struct lra_insn_recog_data *lra_insn_recog_data_t;
+typedef class lra_insn_recog_data *lra_insn_recog_data_t;
 
 /* Whether the clobber is used temporary in LRA.  */
 #define LRA_TEMP_CLOBBER_P(x) \

@@ -29,8 +29,9 @@ enum cxx_pretty_printer_flags
   pp_cxx_flag_default_argument = 1 << pp_c_flag_last_bit
 };
 
-struct cxx_pretty_printer : c_pretty_printer
+class cxx_pretty_printer : public c_pretty_printer
 {
+public:
   cxx_pretty_printer ();
 
   void constant (tree);

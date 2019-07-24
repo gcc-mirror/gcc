@@ -206,6 +206,13 @@ static int rgf_banked_register_count;
    this to be no less than the 1/p  */
 #define MAX_INSNS_SKIPPED 3
 
+/* ZOL control registers.  */
+#define AUX_LP_START 0x02
+#define AUX_LP_END 0x03
+
+/* FPX AUX registers.  */
+#define AUX_DPFP_START 0x301
+
 /* A nop is needed between a 4 byte insn that sets the condition codes and
    a branch that uses them (the same isn't true for an 8 byte insn that sets
    the condition codes).  Set by arc_ccfsm_advance.  Used by
@@ -297,6 +304,129 @@ static bool arc_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 
 /* Globally visible information about currently selected cpu.  */
 const arc_cpu_t *arc_selected_cpu;
+
+/* Traditionally, we push saved registers first in the prologue,
+   then we allocate the rest of the frame - and reverse in the epilogue.
+   This has still its merits for ease of debugging, or saving code size
+   or even execution time if the stack frame is so large that some accesses
+   can't be encoded anymore with offsets in the instruction code when using
+   a different scheme.
+   Also, it would be a good starting point if we got instructions to help
+   with register save/restore.
+
+   However, often stack frames are small, and the pushing / popping has
+   some costs:
+   - the stack modification prevents a lot of scheduling.
+   - frame allocation / deallocation may need extra instructions.
+   - we need to place a memory barrier after frame allocation to avoid
+     the delay slot scheduler to reschedule a frame related info and
+     messing up with dwarf unwinding.  The barrier before deallocation
+     is for flushing all pending sp operations.
+
+   Thus, for small frames, we'd like to use a different scheme:
+   - The frame is allocated in full with the first prologue instruction,
+     and deallocated in full with the last epilogue instruction.
+     Thus, the instructions in-between can be freely scheduled.
+   - If the function has no outgoing arguments on the stack, we can allocate
+     one register save slot at the top of the stack.  This register can then
+     be saved simultaneously with frame allocation, and restored with
+     frame deallocation.
+     This register can be picked depending on scheduling considerations,
+     although same though should go into having some set of registers
+     to be potentially lingering after a call, and others to be available
+     immediately - i.e. in the absence of interprocedual optimization, we
+     can use an ABI-like convention for register allocation to reduce
+     stalls after function return.  */
+
+/* ARCompact stack frames look like:
+
+           Before call                     After call
+  high  +-----------------------+       +-----------------------+
+  mem   |  reg parm save area   |       | reg parm save area    |
+        |  only created for     |       | only created for      |
+        |  variable arg fns     |       | variable arg fns      |
+    AP  +-----------------------+       +-----------------------+
+        |  return addr register |       | return addr register  |
+        |  (if required)        |       | (if required)         |
+        +-----------------------+       +-----------------------+
+        |                       |       |                       |
+        |  reg save area        |       | reg save area         |
+        |                       |       |                       |
+        +-----------------------+       +-----------------------+
+        |  frame pointer        |       | frame pointer         |
+        |  (if required)        |       | (if required)         |
+    FP  +-----------------------+       +-----------------------+
+        |                       |       |                       |
+        |  local/temp variables |       | local/temp variables  |
+        |                       |       |                       |
+        +-----------------------+       +-----------------------+
+        |                       |       |                       |
+        |  arguments on stack   |       | arguments on stack    |
+        |                       |       |                       |
+    SP  +-----------------------+       +-----------------------+
+                                        | reg parm save area    |
+                                        | only created for      |
+                                        | variable arg fns      |
+                                    AP  +-----------------------+
+                                        | return addr register  |
+                                        | (if required)         |
+                                        +-----------------------+
+                                        |                       |
+                                        | reg save area         |
+                                        |                       |
+                                        +-----------------------+
+                                        | frame pointer         |
+                                        | (if required)         |
+                                    FP  +-----------------------+
+                                        |                       |
+                                        | local/temp variables  |
+                                        |                       |
+                                        +-----------------------+
+                                        |                       |
+                                        | arguments on stack    |
+  low                                   |                       |
+  mem                               SP  +-----------------------+
+
+Notes:
+1) The "reg parm save area" does not exist for non variable argument fns.
+   The "reg parm save area" can be eliminated completely if we created our
+   own va-arc.h, but that has tradeoffs as well (so it's not done).  */
+
+/* Structure to be filled in by arc_compute_frame_size with register
+   save masks, and offsets for the current function.  */
+struct GTY (()) arc_frame_info
+{
+  unsigned int total_size;	/* # bytes that the entire frame takes up.  */
+  unsigned int extra_size;	/* # bytes of extra stuff.  */
+  unsigned int pretend_size;	/* # bytes we push and pretend caller did.  */
+  unsigned int args_size;	/* # bytes that outgoing arguments take up.  */
+  unsigned int reg_size;	/* # bytes needed to store regs.  */
+  unsigned int var_size;	/* # bytes that variables take up.  */
+  uint64_t gmask;		/* Mask of saved gp registers.  */
+  bool initialized; /* FALSE if frame size already calculated.  */
+  short millicode_start_reg;
+  short millicode_end_reg;
+  bool save_return_addr;
+};
+
+/* GMASK bit length -1.  */
+#define GMASK_LEN 63
+
+/* Defining data structures for per-function information.  */
+
+typedef struct GTY (()) machine_function
+{
+  unsigned int fn_type;
+  struct arc_frame_info frame_info;
+  /* To keep track of unalignment caused by short insns.  */
+  int unalign;
+  struct arc_ccfsm ccfsm_current;
+  /* Map from uid to ccfsm state during branch shortening.  */
+  rtx ccfsm_current_insn;
+  char arc_reorg_started;
+  char prescan_initialized;
+} machine_function;
+
 
 /* Given a symbol RTX (const (symb <+ const_int>), returns its
    alignment.  */
@@ -1996,6 +2126,50 @@ arc_handle_fndecl_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
   return NULL_TREE;
 }
 
+/* Type of function DECL.
+
+   The result is cached.  To reset the cache at the end of a function,
+   call with DECL = NULL_TREE.  */
+
+static unsigned int
+arc_compute_function_type (struct function *fun)
+{
+  tree attr, decl = fun->decl;
+  unsigned int fn_type = fun->machine->fn_type;
+
+  if (fn_type != ARC_FUNCTION_UNKNOWN)
+    return fn_type;
+
+  /* Check if it is a naked function.  */
+  if (lookup_attribute ("naked", DECL_ATTRIBUTES (decl)) != NULL_TREE)
+    fn_type |= ARC_FUNCTION_NAKED;
+  else
+    fn_type |= ARC_FUNCTION_NORMAL;
+
+  /* Now see if this is an interrupt handler.  */
+  attr = lookup_attribute ("interrupt", DECL_ATTRIBUTES (decl));
+  if (attr != NULL_TREE)
+    {
+      tree value, args = TREE_VALUE (attr);
+
+      gcc_assert (list_length (args) == 1);
+      value = TREE_VALUE (args);
+      gcc_assert (TREE_CODE (value) == STRING_CST);
+
+      if (!strcmp (TREE_STRING_POINTER (value), "ilink1")
+	  || !strcmp (TREE_STRING_POINTER (value), "ilink"))
+	fn_type |= ARC_FUNCTION_ILINK1;
+      else if (!strcmp (TREE_STRING_POINTER (value), "ilink2"))
+	fn_type |= ARC_FUNCTION_ILINK2;
+      else if (!strcmp (TREE_STRING_POINTER (value), "firq"))
+	fn_type |= ARC_FUNCTION_FIRQ;
+      else
+	gcc_unreachable ();
+    }
+
+  return fun->machine->fn_type = fn_type;
+}
+
 /* Implement `TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS' */
 
 static bool
@@ -2402,174 +2576,6 @@ frame_stack_add (HOST_WIDE_INT offset)
   return frame_add (stack_pointer_rtx, offset);
 }
 
-/* Traditionally, we push saved registers first in the prologue,
-   then we allocate the rest of the frame - and reverse in the epilogue.
-   This has still its merits for ease of debugging, or saving code size
-   or even execution time if the stack frame is so large that some accesses
-   can't be encoded anymore with offsets in the instruction code when using
-   a different scheme.
-   Also, it would be a good starting point if we got instructions to help
-   with register save/restore.
-
-   However, often stack frames are small, and the pushing / popping has
-   some costs:
-   - the stack modification prevents a lot of scheduling.
-   - frame allocation / deallocation needs extra instructions.
-   - unless we know that we compile ARC700 user code, we need to put
-     a memory barrier after frame allocation / before deallocation to
-     prevent interrupts clobbering our data in the frame.
-     In particular, we don't have any such guarantees for library functions,
-     which tend to, on the other hand, to have small frames.
-
-   Thus, for small frames, we'd like to use a different scheme:
-   - The frame is allocated in full with the first prologue instruction,
-     and deallocated in full with the last epilogue instruction.
-     Thus, the instructions in-betwen can be freely scheduled.
-   - If the function has no outgoing arguments on the stack, we can allocate
-     one register save slot at the top of the stack.  This register can then
-     be saved simultanously with frame allocation, and restored with
-     frame deallocation.
-     This register can be picked depending on scheduling considerations,
-     although same though should go into having some set of registers
-     to be potentially lingering after a call, and others to be available
-     immediately - i.e. in the absence of interprocedual optimization, we
-     can use an ABI-like convention for register allocation to reduce
-     stalls after function return.  */
-/* Function prologue/epilogue handlers.  */
-
-/* ARCompact stack frames look like:
-
-           Before call                     After call
-  high  +-----------------------+       +-----------------------+
-  mem   |  reg parm save area   |       | reg parm save area    |
-        |  only created for     |       | only created for      |
-        |  variable arg fns     |       | variable arg fns      |
-    AP  +-----------------------+       +-----------------------+
-        |  return addr register |       | return addr register  |
-        |  (if required)        |       | (if required)         |
-        +-----------------------+       +-----------------------+
-        |                       |       |                       |
-        |  reg save area        |       | reg save area         |
-        |                       |       |                       |
-        +-----------------------+       +-----------------------+
-        |  frame pointer        |       | frame pointer         |
-        |  (if required)        |       | (if required)         |
-    FP  +-----------------------+       +-----------------------+
-        |                       |       |                       |
-        |  local/temp variables |       | local/temp variables  |
-        |                       |       |                       |
-        +-----------------------+       +-----------------------+
-        |                       |       |                       |
-        |  arguments on stack   |       | arguments on stack    |
-        |                       |       |                       |
-    SP  +-----------------------+       +-----------------------+
-                                        | reg parm save area    |
-                                        | only created for      |
-                                        | variable arg fns      |
-                                    AP  +-----------------------+
-                                        | return addr register  |
-                                        | (if required)         |
-                                        +-----------------------+
-                                        |                       |
-                                        | reg save area         |
-                                        |                       |
-                                        +-----------------------+
-                                        | frame pointer         |
-                                        | (if required)         |
-                                    FP  +-----------------------+
-                                        |                       |
-                                        | local/temp variables  |
-                                        |                       |
-                                        +-----------------------+
-                                        |                       |
-                                        | arguments on stack    |
-  low                                   |                       |
-  mem                               SP  +-----------------------+
-
-Notes:
-1) The "reg parm save area" does not exist for non variable argument fns.
-   The "reg parm save area" can be eliminated completely if we created our
-   own va-arc.h, but that has tradeoffs as well (so it's not done).  */
-
-/* Structure to be filled in by arc_compute_frame_size with register
-   save masks, and offsets for the current function.  */
-struct GTY (()) arc_frame_info
-{
-  unsigned int total_size;	/* # bytes that the entire frame takes up.  */
-  unsigned int extra_size;	/* # bytes of extra stuff.  */
-  unsigned int pretend_size;	/* # bytes we push and pretend caller did.  */
-  unsigned int args_size;	/* # bytes that outgoing arguments take up.  */
-  unsigned int reg_size;	/* # bytes needed to store regs.  */
-  unsigned int var_size;	/* # bytes that variables take up.  */
-  unsigned int gmask;		/* Mask of saved gp registers.  */
-  bool initialized; /* FALSE if frame size already calculated.  */
-  short millicode_start_reg;
-  short millicode_end_reg;
-  bool save_return_addr;
-};
-
-/* GMASK bit length -1.  */
-#define GMASK_LEN 31
-
-/* Defining data structures for per-function information.  */
-
-typedef struct GTY (()) machine_function
-{
-  unsigned int fn_type;
-  struct arc_frame_info frame_info;
-  /* To keep track of unalignment caused by short insns.  */
-  int unalign;
-  struct arc_ccfsm ccfsm_current;
-  /* Map from uid to ccfsm state during branch shortening.  */
-  rtx ccfsm_current_insn;
-  char arc_reorg_started;
-  char prescan_initialized;
-} machine_function;
-
-/* Type of function DECL.
-
-   The result is cached.  To reset the cache at the end of a function,
-   call with DECL = NULL_TREE.  */
-
-unsigned int
-arc_compute_function_type (struct function *fun)
-{
-  tree attr, decl = fun->decl;
-  unsigned int fn_type = fun->machine->fn_type;
-
-  if (fn_type != ARC_FUNCTION_UNKNOWN)
-    return fn_type;
-
-  /* Check if it is a naked function.  */
-  if (lookup_attribute ("naked", DECL_ATTRIBUTES (decl)) != NULL_TREE)
-    fn_type |= ARC_FUNCTION_NAKED;
-  else
-    fn_type |= ARC_FUNCTION_NORMAL;
-
-  /* Now see if this is an interrupt handler.  */
-  attr = lookup_attribute ("interrupt", DECL_ATTRIBUTES (decl));
-  if (attr != NULL_TREE)
-    {
-      tree value, args = TREE_VALUE (attr);
-
-      gcc_assert (list_length (args) == 1);
-      value = TREE_VALUE (args);
-      gcc_assert (TREE_CODE (value) == STRING_CST);
-
-      if (!strcmp (TREE_STRING_POINTER (value), "ilink1")
-	  || !strcmp (TREE_STRING_POINTER (value), "ilink"))
-	fn_type |= ARC_FUNCTION_ILINK1;
-      else if (!strcmp (TREE_STRING_POINTER (value), "ilink2"))
-	fn_type |= ARC_FUNCTION_ILINK2;
-      else if (!strcmp (TREE_STRING_POINTER (value), "firq"))
-	fn_type |= ARC_FUNCTION_FIRQ;
-      else
-	gcc_unreachable ();
-    }
-
-  return fun->machine->fn_type = fn_type;
-}
-
 /* Helper function to wrap FRAME_POINTER_NEEDED.  We do this as
    FRAME_POINTER_NEEDED will not be true until the IRA (Integrated
    Register Allocator) pass, while we want to get the frame size
@@ -2619,14 +2625,12 @@ arc_frame_pointer_needed (void)
 }
 
 /* Tell prologue and epilogue if register REGNO should be saved /
-   restored.  The return address, stack pointer and frame pointer are
-   treated separately.  Don't consider them here.  Addition for pic:
-   The gp register needs to be saved if the current function changes
-   it to access gotoff variables.  FIXME: This will not be needed if
-   we used some arbitrary register instead of r26.  */
+   restored.  The SPECIAL_P is true when the register may need special
+   ld/st sequence.  The return address, and stack pointer are treated
+   separately.  Don't consider them here.  */
 
 static bool
-arc_must_save_register (int regno, struct function *func)
+arc_must_save_register (int regno, struct function *func, bool special_p)
 {
   unsigned int fn_type = arc_compute_function_type (func);
   bool irq_auto_save_p = ((irq_ctrl_saved.irq_save_last_reg >= regno)
@@ -2656,8 +2660,69 @@ arc_must_save_register (int regno, struct function *func)
 
   switch (regno)
     {
+    case ILINK1_REG:
     case RETURN_ADDR_REGNUM:
     case STACK_POINTER_REGNUM:
+      /* The stack pointer and the return address are handled
+	 separately.  */
+      return false;
+
+    case R30_REG:
+      /* r30 is either used as ilink2 by ARCv1 or as a free register
+	 by ARCv2.  */
+      if (!TARGET_V2)
+	return false;
+      break;
+
+    case R40_REG:
+    case R41_REG:
+    case R42_REG:
+    case R43_REG:
+    case R44_REG:
+      /* If those ones are used by the FPX machinery, we handle them
+	 separately.  */
+      if (TARGET_DPFP && !special_p)
+	return false;
+      /* FALLTHRU.  */
+
+    case R32_REG:
+    case R33_REG:
+    case R34_REG:
+    case R35_REG:
+    case R36_REG:
+    case R37_REG:
+    case R38_REG:
+    case R39_REG:
+    case R45_REG:
+    case R46_REG:
+    case R47_REG:
+    case R48_REG:
+    case R49_REG:
+    case R50_REG:
+    case R51_REG:
+    case R52_REG:
+    case R53_REG:
+    case R54_REG:
+    case R55_REG:
+    case R56_REG:
+    case R57_REG:
+    case R58_REG:
+    case R59_REG:
+      /* The Extension Registers.  */
+      if (ARC_INTERRUPT_P (fn_type)
+	  && (df_regs_ever_live_p (RETURN_ADDR_REGNUM)
+	      || df_regs_ever_live_p (regno))
+	  /* Not all extension registers are available, choose the
+	     real ones.  */
+	  && !fixed_regs[regno])
+	return true;
+      return false;
+
+    case 61:
+    case 62:
+    case 63:
+      /* Fixed/control register, nothing to do.  LP_COUNT is
+	 different.  */
       return false;
 
     case HARD_FRAME_POINTER_REGNUM:
@@ -2665,18 +2730,21 @@ arc_must_save_register (int regno, struct function *func)
 	 regular reg.  */
       if (arc_frame_pointer_needed ())
 	return false;
+      break;
 
-      /* FALLTHRU */
     default:
-      if (df_regs_ever_live_p (regno)
-	  && (!call_used_regs[regno]
-	      || ARC_INTERRUPT_P (fn_type))
-	  /* Do not emit code for auto saved regs.  */
-	  && !irq_auto_save_p
-	  && !firq_auto_save_p)
-	return true;
+      break;
     }
 
+  if (((df_regs_ever_live_p (regno) && !call_used_regs[regno])
+       /* In an interrupt save everything.  */
+       || (ARC_INTERRUPT_P (fn_type)
+	   && (df_regs_ever_live_p (RETURN_ADDR_REGNUM)
+	       || df_regs_ever_live_p (regno))))
+      /* Do not emit code for auto saved regs.  */
+      && !irq_auto_save_p
+      && !firq_auto_save_p)
+    return true;
   return false;
 }
 
@@ -2700,14 +2768,14 @@ arc_must_save_return_addr (struct function *func)
    of registers to be saved / restored with a millicode call.  */
 
 static int
-arc_compute_millicode_save_restore_regs (unsigned int gmask,
+arc_compute_millicode_save_restore_regs (uint64_t gmask,
 					 struct arc_frame_info *frame)
 {
   int regno;
 
   int start_reg = 13, end_reg = 25;
 
-  for (regno = start_reg; regno <= end_reg && (gmask & (1L << regno));)
+  for (regno = start_reg; regno <= end_reg && (gmask & (1ULL << regno));)
     regno++;
   end_reg = regno - 1;
   /* There is no point in using millicode thunks if we don't save/restore
@@ -2731,7 +2799,7 @@ arc_compute_frame_size (void)
   int regno;
   unsigned int total_size, var_size, args_size, pretend_size, extra_size;
   unsigned int reg_size;
-  unsigned int gmask;
+  uint64_t gmask;
   struct arc_frame_info *frame_info;
   int size;
   unsigned int extra_plus_reg_size;
@@ -2759,12 +2827,13 @@ arc_compute_frame_size (void)
   reg_size = 0;
   gmask = 0;
 
-  for (regno = 0; regno <= 31; regno++)
+  /* The last 4 regs are special, avoid them.  */
+  for (regno = 0; regno <= (GMASK_LEN - 4); regno++)
     {
-      if (arc_must_save_register (regno, cfun))
+      if (arc_must_save_register (regno, cfun, false))
 	{
 	  reg_size += UNITS_PER_WORD;
-	  gmask |= 1L << regno;
+	  gmask |= 1ULL << regno;
 	}
     }
 
@@ -2779,7 +2848,7 @@ arc_compute_frame_size (void)
     for (regno = 0; EH_RETURN_DATA_REGNO (regno) != INVALID_REGNUM; regno++)
       {
 	reg_size += UNITS_PER_WORD;
-	gmask |= 1L << regno;
+	gmask |= 1ULL << regno;
       }
 
   /* Check if we need to save the return address.  */
@@ -2789,11 +2858,24 @@ arc_compute_frame_size (void)
 
   /* Saving blink reg for millicode thunk calls.  */
   if (TARGET_MILLICODE_THUNK_SET
-      && !crtl->calls_eh_return)
+      && !crtl->calls_eh_return
+      && !ARC_INTERRUPT_P (arc_compute_function_type (cfun)))
     {
       if (arc_compute_millicode_save_restore_regs (gmask, frame_info))
 	frame_info->save_return_addr = true;
     }
+
+  /* Save lp_count, lp_start and lp_end.  */
+  if (arc_lpcwidth != 0 && arc_must_save_register (LP_COUNT, cfun, true))
+    reg_size += UNITS_PER_WORD * 3;
+
+  /* Check for the special R40-R44 regs used by FPX extension.  */
+  if (arc_must_save_register (TARGET_BIG_ENDIAN ? R41_REG : R40_REG,
+			      cfun, TARGET_DPFP))
+    reg_size += UNITS_PER_WORD * 2;
+  if (arc_must_save_register (TARGET_BIG_ENDIAN ? R43_REG : R42_REG,
+			      cfun, TARGET_DPFP))
+    reg_size += UNITS_PER_WORD * 2;
 
   /* 4) Calculate extra size made up of the blink + fp size.  */
   extra_size = 0;
@@ -2929,6 +3011,22 @@ frame_save_reg (rtx reg, HOST_WIDE_INT offset)
   return GET_MODE_SIZE (GET_MODE (reg)) - offset;
 }
 
+/* Helper used when saving AUX regs during ISR.  */
+
+static int
+push_reg (rtx reg)
+{
+  rtx stkslot = gen_rtx_MEM (GET_MODE (reg), gen_rtx_PRE_DEC (Pmode,
+						   stack_pointer_rtx));
+  rtx insn = emit_move_insn (stkslot, reg);
+  RTX_FRAME_RELATED_P (insn) = 1;
+  add_reg_note (insn, REG_CFA_ADJUST_CFA,
+		gen_rtx_SET (stack_pointer_rtx,
+			     plus_constant (Pmode, stack_pointer_rtx,
+					    -GET_MODE_SIZE (GET_MODE (reg)))));
+  return GET_MODE_SIZE (GET_MODE (reg));
+}
+
 /* Helper for epilogue: emit frame load with post_modify or post_inc
    to restore register REG from stack.  The initial offset is passed
    via OFFSET.  */
@@ -2967,12 +3065,29 @@ frame_restore_reg (rtx reg, HOST_WIDE_INT offset)
   return GET_MODE_SIZE (GET_MODE (reg)) + offset;
 }
 
+/* Helper used when restoring AUX regs during ISR.  */
+
+static int
+pop_reg (rtx reg)
+{
+  rtx stkslot = gen_rtx_MEM (GET_MODE (reg), gen_rtx_POST_INC (Pmode,
+						   stack_pointer_rtx));
+  rtx insn = emit_move_insn (reg, stkslot);
+  RTX_FRAME_RELATED_P (insn) = 1;
+  add_reg_note (insn, REG_CFA_ADJUST_CFA,
+		gen_rtx_SET (stack_pointer_rtx,
+			     plus_constant (Pmode, stack_pointer_rtx,
+					    GET_MODE_SIZE (GET_MODE (reg)))));
+  return GET_MODE_SIZE (GET_MODE (reg));
+}
+
+
 /* Check if we have a continous range to be save/restored with the
    help of enter/leave instructions.  A vaild register range starts
    from $r13 and is up to (including) $r26.  */
 
 static bool
-arc_enter_leave_p (unsigned int gmask)
+arc_enter_leave_p (uint64_t gmask)
 {
   int regno;
   unsigned int rmask = 0;
@@ -2981,8 +3096,8 @@ arc_enter_leave_p (unsigned int gmask)
     return false;
 
   for (regno = ENTER_LEAVE_START_REG;
-       regno <= ENTER_LEAVE_END_REG && (gmask & (1L << regno)); regno++)
-    rmask |= 1L << regno;
+       regno <= ENTER_LEAVE_END_REG && (gmask & (1ULL << regno)); regno++)
+    rmask |= 1ULL << regno;
 
   if (rmask ^ gmask)
     return false;
@@ -2995,13 +3110,14 @@ arc_enter_leave_p (unsigned int gmask)
    instructions.  */
 
 static int
-arc_save_callee_saves (unsigned int gmask,
+arc_save_callee_saves (uint64_t gmask,
 		       bool save_blink,
 		       bool save_fp,
 		       HOST_WIDE_INT offset)
 {
   rtx reg;
   int frame_allocated = 0;
+  int i;
 
   /* The home-grown ABI says link register is saved first.  */
   if (save_blink)
@@ -3013,25 +3129,60 @@ arc_save_callee_saves (unsigned int gmask,
 
   /* N.B. FRAME_POINTER_MASK and RETURN_ADDR_MASK are cleared in gmask.  */
   if (gmask)
-    for (int i = 31; i >= 0; i--)
+    for (i = GMASK_LEN; i >= 0; i--)
       {
 	machine_mode save_mode = SImode;
 
 	if (TARGET_LL64
 	    && ((i - 1) % 2 == 0)
-	    && ((gmask & (1L << i)) != 0)
-	    && ((gmask & (1L << (i - 1))) != 0))
+	    && ((gmask & (1ULL << i)) != 0)
+	    && ((gmask & (1ULL << (i - 1))) != 0))
 	  {
 	    save_mode = DImode;
 	    --i;
 	  }
-	else if ((gmask & (1L << i)) == 0)
+	else if ((gmask & (1ULL << i)) == 0)
 	  continue;
 
 	reg = gen_rtx_REG (save_mode, i);
 	frame_allocated += frame_save_reg (reg, offset);
 	offset = 0;
       }
+
+  /* Check if we need to save the ZOL machinery.  */
+  if (arc_lpcwidth != 0 && arc_must_save_register (LP_COUNT, cfun, true))
+    {
+      rtx reg0 = gen_rtx_REG (SImode, R0_REG);
+      emit_insn (gen_rtx_SET (reg0,
+			      gen_rtx_UNSPEC_VOLATILE
+			      (Pmode, gen_rtvec (1, GEN_INT (AUX_LP_START)),
+			       VUNSPEC_ARC_LR)));
+      frame_allocated += push_reg (reg0);
+      emit_insn (gen_rtx_SET (reg0,
+			      gen_rtx_UNSPEC_VOLATILE
+			      (Pmode, gen_rtvec (1, GEN_INT (AUX_LP_END)),
+			       VUNSPEC_ARC_LR)));
+      frame_allocated += push_reg (reg0);
+      emit_move_insn (reg0, gen_rtx_REG (SImode, LP_COUNT));
+      frame_allocated += push_reg (reg0);
+    }
+
+  /* Save AUX regs used by FPX machinery.  */
+  if (arc_must_save_register (TARGET_BIG_ENDIAN ? R41_REG : R40_REG,
+			      cfun, TARGET_DPFP))
+    {
+      rtx reg0 = gen_rtx_REG (SImode, R0_REG);
+
+      for (i = 0; i < 4; i++)
+	{
+	  emit_insn (gen_rtx_SET (reg0,
+				  gen_rtx_UNSPEC_VOLATILE
+				  (Pmode, gen_rtvec (1, GEN_INT (AUX_DPFP_START
+								 + i)),
+				   VUNSPEC_ARC_LR)));
+	  frame_allocated += push_reg (reg0);
+	}
+    }
 
   /* Save frame pointer if needed.  First save the FP on stack, if not
      autosaved.  Unfortunately, I cannot add it to gmask and use the
@@ -3054,7 +3205,7 @@ arc_save_callee_saves (unsigned int gmask,
    if it is for an interrupt handler) using LD/LDD instructions.  */
 
 static int
-arc_restore_callee_saves (unsigned int gmask,
+arc_restore_callee_saves (uint64_t gmask,
 			  bool restore_blink,
 			  bool restore_fp,
 			  HOST_WIDE_INT offset,
@@ -3064,6 +3215,7 @@ arc_restore_callee_saves (unsigned int gmask,
   int frame_deallocated = 0;
   HOST_WIDE_INT offs = cfun->machine->frame_info.reg_size;
   bool early_blink_restore;
+  int i;
 
   /* Emit mov fp,sp.  */
   if (arc_frame_pointer_needed () && offset)
@@ -3080,6 +3232,43 @@ arc_restore_callee_saves (unsigned int gmask,
       frame_deallocated += frame_restore_reg (hard_frame_pointer_rtx, 0);
     }
 
+  /* Restore AUX-regs used by FPX machinery.  */
+  if (arc_must_save_register (TARGET_BIG_ENDIAN ? R41_REG : R40_REG,
+			      cfun, TARGET_DPFP))
+    {
+      rtx reg0 = gen_rtx_REG (SImode, R0_REG);
+
+      gcc_assert (offset == 0);
+      for (i = 0; i < 4; i++)
+	{
+	  frame_deallocated += pop_reg (reg0);
+	  emit_insn (gen_rtx_UNSPEC_VOLATILE
+		     (VOIDmode, gen_rtvec (2, reg0, GEN_INT (AUX_DPFP_START
+							     + i)),
+		      VUNSPEC_ARC_SR));
+	}
+    }
+
+  /* Check if we need to restore the ZOL machinery.  */
+  if (arc_lpcwidth !=0 && arc_must_save_register (LP_COUNT, cfun, true))
+    {
+      rtx reg0 = gen_rtx_REG (SImode, R0_REG);
+
+      gcc_assert (offset == 0);
+      frame_deallocated += pop_reg (reg0);
+      emit_move_insn (gen_rtx_REG (SImode, LP_COUNT), reg0);
+
+      frame_deallocated += pop_reg (reg0);
+      emit_insn (gen_rtx_UNSPEC_VOLATILE
+		 (VOIDmode, gen_rtvec (2, reg0, GEN_INT (AUX_LP_END)),
+		  VUNSPEC_ARC_SR));
+
+      frame_deallocated += pop_reg (reg0);
+      emit_insn (gen_rtx_UNSPEC_VOLATILE
+		 (VOIDmode, gen_rtvec (2, reg0, GEN_INT (AUX_LP_START)),
+		  VUNSPEC_ARC_SR));
+    }
+
   if (offset)
     {
       /* No $fp involved, we need to do an add to set the $sp to the
@@ -3090,7 +3279,8 @@ arc_restore_callee_saves (unsigned int gmask,
     }
 
   /* When we do not optimize for size, restore first blink.  */
-  early_blink_restore = restore_blink && !optimize_size && offs;
+  early_blink_restore = restore_blink && !optimize_size && offs
+    && !ARC_INTERRUPT_P (arc_compute_function_type (cfun));
   if (early_blink_restore)
     {
       rtx addr = plus_constant (Pmode, stack_pointer_rtx, offs);
@@ -3103,16 +3293,16 @@ arc_restore_callee_saves (unsigned int gmask,
 
   /* N.B. FRAME_POINTER_MASK and RETURN_ADDR_MASK are cleared in gmask.  */
   if (gmask)
-    for (int i = 0; i <= GMASK_LEN; i++)
+    for (i = 0; i <= GMASK_LEN; i++)
       {
 	machine_mode restore_mode = SImode;
 
 	if (TARGET_LL64
 	    && ((i % 2) == 0)
-	    && ((gmask & (1L << i)) != 0)
-	    && ((gmask & (1L << (i + 1))) != 0))
+	    && ((gmask & (1ULL << i)) != 0)
+	    && ((gmask & (1ULL << (i + 1))) != 0))
 	  restore_mode = DImode;
-	else if ((gmask & (1L << i)) == 0)
+	else if ((gmask & (1ULL << i)) == 0)
 	  continue;
 
 	reg = gen_rtx_REG (restore_mode, i);
@@ -3120,12 +3310,12 @@ arc_restore_callee_saves (unsigned int gmask,
 	switch (restore_mode)
 	  {
 	  case E_DImode:
-	    if ((GMASK_LEN - __builtin_clz (gmask)) == (i + 1)
+	    if ((GMASK_LEN - __builtin_clzll (gmask)) == (i + 1)
 		&& early_blink_restore)
 	      offs = 4;
 	    break;
 	  case E_SImode:
-	    if ((GMASK_LEN - __builtin_clz (gmask)) == i
+	    if ((GMASK_LEN - __builtin_clzll (gmask)) == i
 		&& early_blink_restore)
 	      offs = 4;
 	    break;
@@ -3158,7 +3348,7 @@ arc_restore_callee_saves (unsigned int gmask,
    register.  */
 
 static int
-arc_save_callee_enter (unsigned int gmask,
+arc_save_callee_enter (uint64_t gmask,
 		       bool save_blink,
 		       bool save_fp,
 		       HOST_WIDE_INT offset)
@@ -3169,7 +3359,7 @@ arc_save_callee_enter (unsigned int gmask,
   rtx insn, reg, mem;
   int frame_allocated = 0;
 
-  for (regno = start_reg; regno <= end_reg && (gmask & (1L << regno));)
+  for (regno = start_reg; regno <= end_reg && (gmask & (1ULL << regno));)
     regno++;
 
   end_reg = regno - 1;
@@ -3214,7 +3404,7 @@ arc_save_callee_enter (unsigned int gmask,
 						  off));
       XVECEXP (insn, 0, indx) = gen_rtx_SET (mem, reg);
       RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx)) = 1;
-      gmask = gmask & ~(1L << regno);
+      gmask = gmask & ~(1ULL << regno);
     }
 
   if (save_fp)
@@ -3249,7 +3439,7 @@ arc_save_callee_enter (unsigned int gmask,
    (RESTORE_FP), and can automatic return (RETURN_P).  */
 
 static int
-arc_restore_callee_leave (unsigned int gmask,
+arc_restore_callee_leave (uint64_t gmask,
 			  bool restore_blink,
 			  bool restore_fp,
 			  bool return_p,
@@ -3261,7 +3451,7 @@ arc_restore_callee_leave (unsigned int gmask,
   rtx insn, reg, mem;
   int frame_allocated = 0;
 
-  for (regno = start_reg; regno <= end_reg && (gmask & (1L << regno));)
+  for (regno = start_reg; regno <= end_reg && (gmask & (1ULL << regno));)
     regno++;
 
   end_reg = regno - 1;
@@ -3322,7 +3512,7 @@ arc_restore_callee_leave (unsigned int gmask,
 						  off));
       XVECEXP (insn, 0, indx) = gen_rtx_SET (reg, mem);
       RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx)) = 1;
-      gmask = gmask & ~(1L << regno);
+      gmask = gmask & ~(1ULL << regno);
     }
 
   if (restore_fp)
@@ -3385,7 +3575,7 @@ arc_restore_callee_leave (unsigned int gmask,
 */
 
 static int
-arc_save_callee_milli (unsigned int gmask,
+arc_save_callee_milli (uint64_t gmask,
 		       bool save_blink,
 		       bool save_fp,
 		       HOST_WIDE_INT offset,
@@ -3397,7 +3587,7 @@ arc_save_callee_milli (unsigned int gmask,
   rtx insn, reg, mem;
   int frame_allocated = 0;
 
-  for (regno = start_reg; regno <= end_reg && (gmask & (1L << regno));)
+  for (regno = start_reg; regno <= end_reg && (gmask & (1ULL << regno));)
     regno++;
 
   end_reg = regno - 1;
@@ -3440,7 +3630,7 @@ arc_save_callee_milli (unsigned int gmask,
 						  off));
       XVECEXP (insn, 0, indx) = gen_rtx_SET (mem, reg);
       RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx)) = 1;
-      gmask = gmask & ~(1L << regno);
+      gmask = gmask & ~(1ULL << regno);
     }
   insn = frame_insn (insn);
 
@@ -3468,9 +3658,9 @@ arc_save_callee_milli (unsigned int gmask,
     }
 
   /* Save remaining registers using st instructions.  */
-  for (regno = 0; regno <= 31; regno++)
+  for (regno = 0; regno <= GMASK_LEN; regno++)
     {
-      if ((gmask & (1L << regno)) == 0)
+      if ((gmask & (1ULL << regno)) == 0)
 	continue;
 
       reg = gen_rtx_REG (SImode, regno);
@@ -3499,7 +3689,7 @@ arc_save_callee_milli (unsigned int gmask,
 /* Like the previous function but restore.  */
 
 static int
-arc_restore_callee_milli (unsigned int gmask,
+arc_restore_callee_milli (uint64_t gmask,
 			  bool restore_blink,
 			  bool restore_fp,
 			  bool return_p,
@@ -3511,7 +3701,7 @@ arc_restore_callee_milli (unsigned int gmask,
   rtx insn, reg, mem;
   int frame_allocated = 0;
 
-  for (regno = start_reg; regno <= end_reg && (gmask & (1L << regno));)
+  for (regno = start_reg; regno <= end_reg && (gmask & (1ULL << regno));)
     regno++;
 
   end_reg = regno - 1;
@@ -3571,13 +3761,13 @@ arc_restore_callee_milli (unsigned int gmask,
 						  off));
       XVECEXP (insn, 0, indx) = gen_rtx_SET (reg, mem);
       RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx)) = 1;
-      gmask = gmask & ~(1L << regno);
+      gmask = gmask & ~(1ULL << regno);
     }
 
   /* Restore remaining registers using LD instructions.  */
-  for (regno = 0; regno <= 31; regno++)
+  for (regno = 0; regno <= GMASK_LEN; regno++)
     {
-      if ((gmask & (1L << regno)) == 0)
+      if ((gmask & (1ULL << regno)) == 0)
 	continue;
 
       reg = gen_rtx_REG (SImode, regno);
@@ -3627,7 +3817,7 @@ void
 arc_expand_prologue (void)
 {
   int size;
-  unsigned int gmask = cfun->machine->frame_info.gmask;
+  uint64_t gmask = cfun->machine->frame_info.gmask;
   struct arc_frame_info *frame = &cfun->machine->frame_info;
   unsigned int frame_size_to_allocate;
   int first_offset = 0;
@@ -3700,6 +3890,30 @@ arc_expand_prologue (void)
   emit_insn (gen_blockage ());
 }
 
+/* Return the register number of the register holding the return address
+   for a function of type TYPE.  */
+
+static int
+arc_return_address_register (unsigned int fn_type)
+{
+  int regno = 0;
+
+  if (ARC_INTERRUPT_P (fn_type))
+    {
+      if ((fn_type & (ARC_FUNCTION_ILINK1 | ARC_FUNCTION_FIRQ)) != 0)
+	regno = ILINK1_REG;
+      else if ((fn_type & ARC_FUNCTION_ILINK2) != 0)
+	regno = ILINK2_REG;
+      else
+	gcc_unreachable ();
+    }
+  else if (ARC_NORMAL_P (fn_type) || ARC_NAKED_P (fn_type))
+    regno = RETURN_ADDR_REGNUM;
+
+  gcc_assert (regno != 0);
+  return regno;
+}
+
 /* Do any necessary cleanup after a function to restore stack, frame,
    and regs.  */
 
@@ -3715,11 +3929,10 @@ arc_expand_epilogue (int sibcall_p)
   bool restore_fp = arc_frame_pointer_needed () && !ARC_AUTOFP_IRQ_P (fn_type);
   bool restore_blink = arc_must_save_return_addr (cfun)
     && !ARC_AUTOBLINK_IRQ_P (fn_type);
-  unsigned int gmask = cfun->machine->frame_info.gmask;
+  uint64_t gmask = cfun->machine->frame_info.gmask;
   bool return_p = !sibcall_p && fn_type == ARC_FUNCTION_NORMAL
 		   && !cfun->machine->frame_info.pretend_size;
   struct arc_frame_info *frame = &cfun->machine->frame_info;
-
 
   /* Naked functions don't have epilogue.  */
   if (ARC_NAKED_P (fn_type))
@@ -3795,7 +4008,18 @@ arc_expand_epilogue (int sibcall_p)
 			      EH_RETURN_STACKADJ_RTX));
 
   /* Emit the return instruction.  */
-  if (sibcall_p == FALSE)
+  if (ARC_INTERRUPT_P (fn_type))
+    {
+      rtx ra = gen_rtx_REG (Pmode, arc_return_address_register (fn_type));
+
+      if (TARGET_V2)
+	emit_jump_insn (gen_rtie ());
+      else if (TARGET_ARC700)
+	emit_jump_insn (gen_rtie ());
+      else
+	emit_jump_insn (gen_arc600_rtie (ra));
+    }
+  else if (sibcall_p == FALSE)
     emit_jump_insn (gen_simple_return ());
 }
 
@@ -8959,7 +9183,7 @@ prepare_move_operands (rtx *operands, machine_mode mode)
   if (GET_CODE (operands[1]) == SYMBOL_REF)
     {
       enum tls_model model = SYMBOL_REF_TLS_MODEL (operands[1]);
-      if (MEM_P (operands[0]) && flag_pic)
+      if (MEM_P (operands[0]))
 	operands[1] = force_reg (mode, operands[1]);
       else if (model)
 	operands[1] = arc_legitimize_tls_address (operands[1], model);
@@ -9702,12 +9926,6 @@ arc_check_millicode (rtx op, int offset, int load_p)
 
 /* Accessor functions for cfun->machine->unalign.  */
 
-int
-arc_get_unalign (void)
-{
-  return cfun->machine->unalign;
-}
-
 void
 arc_clear_unalign (void)
 {
@@ -10142,29 +10360,6 @@ arc_can_follow_jump (const rtx_insn *follower, const rtx_insn *followee)
   return true;
 }
 
-/* Return the register number of the register holding the return address
-   for a function of type TYPE.  */
-
-int
-arc_return_address_register (unsigned int fn_type)
-{
-  int regno = 0;
-
-  if (ARC_INTERRUPT_P (fn_type))
-    {
-      if ((fn_type & (ARC_FUNCTION_ILINK1 | ARC_FUNCTION_FIRQ)) != 0)
-	regno = ILINK1_REG;
-      else if ((fn_type & ARC_FUNCTION_ILINK2) != 0)
-	regno = ILINK2_REG;
-      else
-	gcc_unreachable ();
-    }
-  else if (ARC_NORMAL_P (fn_type) || ARC_NAKED_P (fn_type))
-    regno = RETURN_ADDR_REGNUM;
-
-  gcc_assert (regno != 0);
-  return regno;
-}
 
 /* Implement EPILOGUE_USES.
    Return true if REGNO should be added to the deemed uses of the epilogue.
@@ -10177,25 +10372,25 @@ bool
 arc_epilogue_uses (int regno)
 {
   unsigned int fn_type;
+  fn_type = arc_compute_function_type (cfun);
 
   if (regno == arc_tp_regno)
     return true;
 
-  fn_type = arc_compute_function_type (cfun);
-  if (reload_completed)
+  if (regno == RETURN_ADDR_REGNUM)
+    return true;
+
+  if (regno == arc_return_address_register (fn_type))
+    return true;
+
+  if (epilogue_completed && ARC_INTERRUPT_P (fn_type))
     {
-      if (ARC_INTERRUPT_P (cfun->machine->fn_type))
-	{
-	  if (!fixed_regs[regno])
-	    return true;
-	  return ((regno == arc_return_address_register (fn_type))
-		  || (regno == RETURN_ADDR_REGNUM));
-	}
-      else
-	return regno == RETURN_ADDR_REGNUM;
+      /* An interrupt function restores more registers.  */
+      if (df_regs_ever_live_p (regno) || call_used_regs[regno])
+	return true;
     }
-  else
-    return regno == arc_return_address_register (fn_type);
+
+  return false;
 }
 
 /* Helper for EH_USES macro.  */
@@ -11491,6 +11686,16 @@ arc_check_mov_const (HOST_WIDE_INT ival)
   return false;
 }
 
+/* Return nonzero if this function is known to have a null epilogue.
+   This allows the optimizer to omit jumps to jumps if no stack
+   was created.  */
+
+bool
+arc_can_use_return_insn (void)
+{
+  return (reload_completed && cfun->machine->frame_info.total_size == 0
+	  && !ARC_INTERRUPT_P (arc_compute_function_type (cfun)));
+}
 
 #undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
 #define TARGET_USE_ANCHORS_FOR_SYMBOL_P arc_use_anchors_for_symbol_p

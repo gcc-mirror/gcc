@@ -100,6 +100,9 @@ gfc_basic_typename (bt type)
     case BT_VOID:
       p = "VOID";
       break;
+    case BT_BOZ:
+      p = "BOZ";
+      break;
     case BT_UNKNOWN:
       p = "UNKNOWN";
       break;
@@ -168,6 +171,9 @@ gfc_typename (gfc_typespec *ts)
       break;
     case BT_PROCEDURE:
       strcpy (buffer, "PROCEDURE");
+      break;
+    case BT_BOZ:
+      strcpy (buffer, "BOZ");
       break;
     case BT_UNKNOWN:
       strcpy (buffer, "UNKNOWN");

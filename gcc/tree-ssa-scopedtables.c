@@ -1028,9 +1028,9 @@ bool
 expr_elt_hasher::equal (const value_type &p1, const compare_type &p2)
 {
   const struct hashable_expr *expr1 = p1->expr ();
-  const struct expr_hash_elt *stamp1 = p1->stamp ();
+  const class expr_hash_elt *stamp1 = p1->stamp ();
   const struct hashable_expr *expr2 = p2->expr ();
-  const struct expr_hash_elt *stamp2 = p2->stamp ();
+  const class expr_hash_elt *stamp2 = p2->stamp ();
 
   /* This case should apply only when removing entries from the table.  */
   if (stamp1 == stamp2)

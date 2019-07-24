@@ -389,8 +389,8 @@ oacc_xform_loop (gcall *call)
 	      || !global_options_set.x_flag_tree_loop_vectorize))
 	{
 	  basic_block bb = gsi_bb (gsi);
-	  struct loop *parent = bb->loop_father;
-	  struct loop *body = parent->inner;
+	  class loop *parent = bb->loop_father;
+	  class loop *body = parent->inner;
 
 	  parent->force_vectorize = true;
 	  parent->safelen = INT_MAX;

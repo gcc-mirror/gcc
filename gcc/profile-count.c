@@ -125,7 +125,7 @@ profile_count::differs_from_p (profile_count other) const
 /* Stream THIS from IB.  */
 
 profile_count
-profile_count::stream_in (struct lto_input_block *ib)
+profile_count::stream_in (class lto_input_block *ib)
 {
   profile_count ret;
   ret.m_val = streamer_read_gcov_count (ib);
@@ -216,7 +216,7 @@ profile_probability::differs_lot_from_p (profile_probability other) const
 /* Stream THIS from IB.  */
 
 profile_probability
-profile_probability::stream_in (struct lto_input_block *ib)
+profile_probability::stream_in (class lto_input_block *ib)
 {
   profile_probability ret;
   ret.m_val = streamer_read_uhwi (ib);

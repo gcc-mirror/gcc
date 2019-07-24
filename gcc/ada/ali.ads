@@ -226,7 +226,7 @@ package ALI is
 
       No_Component_Reordering : Boolean;
       --  Set to True if file was compiled with a configuration pragma file
-      --  containing pragma No_Component_Reordering.  Not set if 'P' appears
+      --  containing pragma No_Component_Reordering. Not set if 'P' appears
       --  in Ignore_Lines.
 
       No_Object : Boolean;

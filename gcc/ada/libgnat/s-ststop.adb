@@ -31,8 +31,8 @@
 
 pragma Compiler_Unit_Warning;
 
+with Ada.IO_Exceptions;        use Ada.IO_Exceptions;
 with Ada.Streams;              use Ada.Streams;
-with Ada.Streams.Stream_IO;    use Ada.Streams.Stream_IO;
 with Ada.Unchecked_Conversion;
 
 with System;                   use System;

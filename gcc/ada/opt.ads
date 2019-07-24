@@ -1120,6 +1120,12 @@ package Opt is
    --  Maximum number of processes that should be spawned to carry out
    --  compilations.
 
+   Minimal_Binder : Boolean := False;
+   --  GNATBIND
+   --  Set to True to suppress the generation of objects by the binder that
+   --  are not strictly required for a program to run. Intended for ZFP
+   --  applications that have tight memory constraints.
+
    Minimal_Recompilation : Boolean := False;
    --  GNATMAKE
    --  Set to True if minimal recompilation mode requested
@@ -1984,7 +1990,7 @@ package Opt is
    --  set by the command line switches -gnat83/95/2005/2012, and possibly
    --  modified by the use of configuration pragmas Ada_*. This switch is used
    --  to set the initial value for Ada_Version mode at the start of analysis
-   --  of a unit.  Note however that the setting of this flag is ignored for
+   --  of a unit. Note however that the setting of this flag is ignored for
    --  internal and predefined units (which are always compiled in the most up
    --  to date version of Ada).
 

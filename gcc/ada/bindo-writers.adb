@@ -610,6 +610,11 @@ package body Bindo.Writers is
                  & "elaboration time",
                Info => True);
 
+         elsif Is_Spec_Before_Body_Edge (G, Edge) then
+            Error_Msg_Output
+              (Msg  => "     reason: spec must be elaborated before body",
+               Info => True);
+
          else
             pragma Assert (Is_With_Edge (G, Edge));
 
@@ -1025,6 +1030,10 @@ package body Bindo.Writers is
       --  Write all vertices of component Comp of library graph G to standard
       --  output.
 
+      procedure Write_Components (G : Library_Graph);
+      pragma Inline (Write_Component);
+      --  Write all components of library graph G to standard output
+
       procedure Write_Edges_To_Successors
         (G      : Library_Graph;
          Vertex : Library_Graph_Vertex_Id);
@@ -1089,11 +1098,17 @@ package body Bindo.Writers is
          Write_Str (")");
          Write_Eol;
 
-         Write_Str ("  Pending_Predecessors = ");
-         Write_Int (Int (Pending_Predecessors (G, Comp)));
+         Write_Str ("  Pending_Strong_Predecessors = ");
+         Write_Int (Int (Pending_Strong_Predecessors (G, Comp)));
+         Write_Eol;
+
+         Write_Str ("  Pending_Weak_Predecessors   = ");
+         Write_Int (Int (Pending_Weak_Predecessors (G, Comp)));
          Write_Eol;
 
          Write_Component_Vertices (G, Comp);
+
+         Write_Eol;
       end Write_Component;
 
       ------------------------------
@@ -1104,25 +1119,34 @@ package body Bindo.Writers is
         (G    : Library_Graph;
          Comp : Component_Id)
       is
+         pragma Assert (Present (G));
+         pragma Assert (Present (Comp));
+
+         Num_Of_Vertices : constant Natural :=
+                             Number_Of_Component_Vertices (G, Comp);
+
          Iter   : Component_Vertex_Iterator;
          Vertex : Library_Graph_Vertex_Id;
 
       begin
-         pragma Assert (Present (G));
-         pragma Assert (Present (Comp));
-
-         Iter := Iterate_Component_Vertices (G, Comp);
-         while Has_Next (Iter) loop
-            Next (Iter, Vertex);
-
-            Write_Str  ("    library graph vertex (LGV_Id_");
-            Write_Int  (Int (Vertex));
-            Write_Str  (") name = ");
-            Write_Name (Name (G, Vertex));
-            Write_Eol;
-         end loop;
-
+         Write_Str ("  Vertices: ");
+         Write_Int (Int (Num_Of_Vertices));
          Write_Eol;
+
+         if Num_Of_Vertices > 0 then
+            Iter := Iterate_Component_Vertices (G, Comp);
+            while Has_Next (Iter) loop
+               Next (Iter, Vertex);
+
+               Write_Str  ("    library graph vertex (LGV_Id_");
+               Write_Int  (Int (Vertex));
+               Write_Str  (") name = ");
+               Write_Name (Name (G, Vertex));
+               Write_Eol;
+            end loop;
+         else
+            Write_Eol;
+         end if;
       end Write_Component_Vertices;
 
       ----------------------
@@ -1225,6 +1249,7 @@ package body Bindo.Writers is
 
          Write_Statistics (G);
          Write_Library_Graph_Vertices (G);
+         Write_Components (G);
 
          Write_Str ("Library Graph end");
          Write_Eol;
@@ -1312,8 +1337,12 @@ package body Bindo.Writers is
          end if;
 
          Write_Eol;
-         Write_Str ("  Pending_Predecessors = ");
-         Write_Int (Int (Pending_Predecessors (G, Vertex)));
+         Write_Str ("  Pending_Strong_Predecessors = ");
+         Write_Int (Int (Pending_Strong_Predecessors (G, Vertex)));
+         Write_Eol;
+
+         Write_Str ("  Pending_Weak_Predecessors   = ");
+         Write_Int (Int (Pending_Weak_Predecessors (G, Vertex)));
          Write_Eol;
 
          Write_Str ("  Component (Comp_Id_");
@@ -1379,6 +1408,94 @@ package body Bindo.Writers is
          Write_Eol;
       end Write_Statistics;
    end Library_Graph_Writers;
+
+   -------------------
+   -- Phase_Writers --
+   -------------------
+
+   package body Phase_Writers is
+
+      subtype Phase_Message is String (1 .. 32);
+
+      --  The following table contains the phase-specific messages for phase
+      --  completion.
+
+      End_Messages : constant array (Elaboration_Phase) of Phase_Message :=
+        (Component_Discovery           => "components discovered.          ",
+         Cycle_Diagnostics             => "cycle diagnosed.                ",
+         Cycle_Discovery               => "cycles discovered.              ",
+         Cycle_Validation              => "cycles validated.               ",
+         Elaboration_Order_Validation  => "elaboration order validated.    ",
+         Invocation_Graph_Construction => "invocation graph constructed.   ",
+         Invocation_Graph_Validation   => "invocation graph validated.     ",
+         Library_Graph_Augmentation    => "library graph augmented.        ",
+         Library_Graph_Construction    => "library graph constructed.      ",
+         Library_Graph_Elaboration     => "library graph elaborated.       ",
+         Library_Graph_Validation      => "library graph validated.        ",
+         Unit_Collection               => "units collected.                ",
+         Unit_Elaboration              => "units elaborated.               ");
+
+      --  The following table contains the phase-specific messages for phase
+      --  commencement.
+
+      Start_Messages : constant array (Elaboration_Phase) of Phase_Message :=
+        (Component_Discovery           => "discovering components...       ",
+         Cycle_Diagnostics             => "diagnosing cycle...             ",
+         Cycle_Discovery               => "discovering cycles...           ",
+         Cycle_Validation              => "validating cycles...            ",
+         Elaboration_Order_Validation  => "validating elaboration order... ",
+         Invocation_Graph_Construction => "constructing invocation graph...",
+         Invocation_Graph_Validation   => "validating invocation graph...  ",
+         Library_Graph_Augmentation    => "augmenting library graph...     ",
+         Library_Graph_Construction    => "constructing library graph...   ",
+         Library_Graph_Elaboration     => "elaborating library graph...    ",
+         Library_Graph_Validation      => "validating library graph...     ",
+         Unit_Collection               => "collecting units...             ",
+         Unit_Elaboration              => "elaborating units...            ");
+
+      -----------------------
+      -- Local subprograms --
+      -----------------------
+
+      procedure Write_Phase_Message (Msg : Phase_Message);
+      pragma Inline (Write_Phase_Message);
+      --  Write elaboration phase-related message Msg to standard output
+
+      ---------------
+      -- End_Phase --
+      ---------------
+
+      procedure End_Phase (Phase : Elaboration_Phase) is
+      begin
+         Write_Phase_Message (End_Messages (Phase));
+      end End_Phase;
+
+      -----------------
+      -- Start_Phase --
+      -----------------
+
+      procedure Start_Phase (Phase : Elaboration_Phase) is
+      begin
+         Write_Phase_Message (Start_Messages (Phase));
+      end Start_Phase;
+
+      -------------------------
+      -- Write_Phase_Message --
+      -------------------------
+
+      procedure Write_Phase_Message (Msg : Phase_Message) is
+      begin
+         --  Nothing to do when switch -d_S (output elaboration order status)
+         --  is not in effect.
+
+         if not Debug_Flag_Underscore_SS then
+            return;
+         end if;
+
+         Write_Str (Msg);
+         Write_Eol;
+      end Write_Phase_Message;
+   end Phase_Writers;
 
    --------------------------
    -- Unit_Closure_Writers --
@@ -1612,7 +1729,7 @@ package body Bindo.Writers is
    is
       function Digits_Indentation return Indentation_Level;
       pragma Inline (Digits_Indentation);
-      --  Determine the level of indentation the number requies in order to
+      --  Determine the level of indentation the number requires in order to
       --  be right-justified by Val_Indent.
 
       ------------------------

@@ -225,7 +225,10 @@ package body Aspects is
             Owner := Root_Type (Owner);
          end if;
 
-         if Is_Private_Type (Owner) and then Present (Full_View (Owner)) then
+         if Is_Private_Type (Owner)
+            and then Present (Full_View (Owner))
+            and then not Operational_Aspect (A)
+         then
             Owner := Full_View (Owner);
          end if;
       end if;

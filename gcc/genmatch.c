@@ -50,7 +50,7 @@ unsigned verbose;
 
 /* libccp helpers.  */
 
-static struct line_maps *line_table;
+static class line_maps *line_table;
 
 /* The rich_location class within libcpp requires a way to expand
    location_t instances, and relies on the client code
@@ -347,8 +347,9 @@ comparison_code_p (enum tree_code code)
 
 /* Base class for all identifiers the parser knows.  */
 
-struct id_base : nofree_ptr_hash<id_base>
+class id_base : public nofree_ptr_hash<id_base>
 {
+public:
   enum id_kind { CODE, FN, PREDICATE, USER, NULL_ID } kind;
 
   id_base (id_kind, const char *, int = -1);
@@ -393,8 +394,9 @@ id_base::id_base (id_kind kind_, const char *id_, int nargs_)
 
 /* Identifier that maps to a tree code.  */
 
-struct operator_id : public id_base
+class operator_id : public id_base
 {
+public:
   operator_id (enum tree_code code_, const char *id_, unsigned nargs_,
 	       const char *tcc_)
       : id_base (id_base::CODE, id_, nargs_), code (code_), tcc (tcc_) {}
@@ -404,8 +406,9 @@ struct operator_id : public id_base
 
 /* Identifier that maps to a builtin or internal function code.  */
 
-struct fn_id : public id_base
+class fn_id : public id_base
 {
+public:
   fn_id (enum built_in_function fn_, const char *id_)
       : id_base (id_base::FN, id_), fn (fn_) {}
   fn_id (enum internal_fn fn_, const char *id_)
@@ -413,12 +416,13 @@ struct fn_id : public id_base
   unsigned int fn;
 };
 
-struct simplify;
+class simplify;
 
 /* Identifier that maps to a user-defined predicate.  */
 
-struct predicate_id : public id_base
+class predicate_id : public id_base
 {
+public:
   predicate_id (const char *id_)
     : id_base (id_base::PREDICATE, id_), matchers (vNULL) {}
   vec<simplify *> matchers;
@@ -426,8 +430,9 @@ struct predicate_id : public id_base
 
 /* Identifier that maps to a operator defined by a 'for' directive.  */
 
-struct user_id : public id_base
+class user_id : public id_base
 {
+public:
   user_id (const char *id_, bool is_oper_list_ = false)
     : id_base (id_base::USER, id_), substitutes (vNULL),
       used (false), is_oper_list (is_oper_list_) {}
@@ -660,12 +665,13 @@ typedef hash_map<nofree_string_hash, unsigned> cid_map_t;
 
 /* The AST produced by parsing of the pattern definitions.  */
 
-struct dt_operand;
-struct capture_info;
+class dt_operand;
+class capture_info;
 
 /* The base class for operands.  */
 
-struct operand {
+class operand {
+public:
   enum op_type { OP_PREDICATE, OP_EXPR, OP_CAPTURE, OP_C_EXPR, OP_IF, OP_WITH };
   operand (enum op_type type_, location_t loc_)
     : type (type_), location (loc_) {}
@@ -680,8 +686,9 @@ struct operand {
 
 /* A predicate operand.  Predicates are leafs in the AST.  */
 
-struct predicate : public operand
+class predicate : public operand
 {
+public:
   predicate (predicate_id *p_, location_t loc)
     : operand (OP_PREDICATE, loc), p (p_) {}
   predicate_id *p;
@@ -690,8 +697,9 @@ struct predicate : public operand
 /* An operand that constitutes an expression.  Expressions include
    function calls and user-defined predicate invocations.  */
 
-struct expr : public operand
+class expr : public operand
 {
+public:
   expr (id_base *operation_, location_t loc, bool is_commutative_ = false)
     : operand (OP_EXPR, loc), operation (operation_),
       ops (vNULL), expr_type (NULL), is_commutative (is_commutative_),
@@ -723,11 +731,13 @@ struct expr : public operand
    a leaf operand in the AST.  This class is also used to represent
    the code to be generated for 'if' and 'with' expressions.  */
 
-struct c_expr : public operand
+class c_expr : public operand
 {
+public:
   /* A mapping of an identifier and its replacement.  Used to apply
      'for' lowering.  */
-  struct id_tab {
+  class id_tab {
+  public:
     const char *id;
     const char *oper;
     id_tab (const char *id_, const char *oper_): id (id_), oper (oper_) {}
@@ -753,8 +763,9 @@ struct c_expr : public operand
 
 /* A wrapper around another operand that captures its value.  */
 
-struct capture : public operand
+class capture : public operand
 {
+public:
   capture (location_t loc, unsigned where_, operand *what_, bool value_)
       : operand (OP_CAPTURE, loc), where (where_), value_match (value_),
         what (what_) {}
@@ -773,8 +784,9 @@ struct capture : public operand
 
 /* if expression.  */
 
-struct if_expr : public operand
+class if_expr : public operand
 {
+public:
   if_expr (location_t loc)
     : operand (OP_IF, loc), cond (NULL), trueexpr (NULL), falseexpr (NULL) {}
   c_expr *cond;
@@ -784,8 +796,9 @@ struct if_expr : public operand
 
 /* with expression.  */
 
-struct with_expr : public operand
+class with_expr : public operand
 {
+public:
   with_expr (location_t loc)
     : operand (OP_WITH, loc), with (NULL), subexpr (NULL) {}
   c_expr *with;
@@ -845,8 +858,9 @@ is_a_helper <with_expr *>::test (operand *op)
    duplicates all outer 'if' and 'for' expressions here so each
    simplify can exist in isolation.  */
 
-struct simplify
+class simplify
 {
+public:
   enum simplify_kind { SIMPLIFY, MATCH };
 
   simplify (simplify_kind kind_, unsigned id_, operand *match_,
@@ -866,7 +880,7 @@ struct simplify
      produced when the pattern applies in the leafs.
      For a (match ...) the leafs are either empty if it is a simple predicate
      or the single expression specifying the matched operands.  */
-  struct operand *result;
+  class operand *result;
   /* Collected 'for' expression operators that have to be replaced
      in the lowering phase.  */
   vec<vec<user_id *> > for_vec;
@@ -919,7 +933,7 @@ print_operand (operand *o, FILE *f = stderr, bool flattened = false)
 }
 
 DEBUG_FUNCTION void
-print_matches (struct simplify *s, FILE *f = stderr)
+print_matches (class simplify *s, FILE *f = stderr)
 {
   fprintf (f, "for expression: ");
   print_operand (s->match, f);
@@ -1569,7 +1583,7 @@ lower (vec<simplify *>& simplifiers, bool gimple)
    matching code.  It represents the 'match' expression of all
    simplifies and has those as its leafs.  */
 
-struct dt_simplify;
+class dt_simplify;
 
 /* A hash-map collecting semantically equivalent leafs in the decision
    tree for splitting out to separate functions.  */
@@ -1598,8 +1612,9 @@ static unsigned current_id;
 
 /* Decision tree base class, used for DT_NODE.  */
 
-struct dt_node
+class dt_node
 {
+public:
   enum dt_type { DT_NODE, DT_OPERAND, DT_TRUE, DT_MATCH, DT_SIMPLIFY };
 
   enum dt_type type;
@@ -1634,8 +1649,9 @@ struct dt_node
 
 /* Generic decision tree node used for DT_OPERAND, DT_MATCH and DT_TRUE.  */
 
-struct dt_operand : public dt_node
+class dt_operand : public dt_node
 {
+public:
   operand *op;
   dt_operand *match_dop;
   unsigned pos;
@@ -1660,8 +1676,9 @@ struct dt_operand : public dt_node
 
 /* Leaf node of the decision tree, used for DT_SIMPLIFY.  */
 
-struct dt_simplify : public dt_node
+class dt_simplify : public dt_node
 {
+public:
   simplify *s;
   unsigned pattern_no;
   dt_operand **indexes;
@@ -1697,11 +1714,12 @@ is_a_helper <dt_simplify *>::test (dt_node *n)
 
 /* A container for the actual decision tree.  */
 
-struct decision_tree
+class decision_tree
 {
+public:
   dt_node *root;
 
-  void insert (struct simplify *, unsigned);
+  void insert (class simplify *, unsigned);
   void gen (FILE *f, bool gimple);
   void print (FILE *f = stderr);
 
@@ -2007,7 +2025,7 @@ at_assert_elm:
 /* Insert S into the decision tree.  */
 
 void
-decision_tree::insert (struct simplify *s, unsigned pattern_no)
+decision_tree::insert (class simplify *s, unsigned pattern_no)
 {
   current_id = s->id;
   dt_operand **indexes = XCNEWVEC (dt_operand *, s->capture_max + 1);
@@ -2070,8 +2088,9 @@ decision_tree::print (FILE *f)
    on the outermost match expression operands for cases we cannot
    handle.  */
 
-struct capture_info
+class capture_info
 {
+public:
   capture_info (simplify *s, operand *, bool);
   void walk_match (operand *o, unsigned toplevel_arg, bool, bool);
   bool walk_result (operand *o, bool, operand *);
@@ -4171,7 +4190,7 @@ parser::parse_operation ()
 /* Parse a capture.
      capture = '@'<number>  */
 
-struct operand *
+class operand *
 parser::parse_capture (operand *op, bool require_existing)
 {
   location_t src_loc = eat_token (CPP_ATSIGN)->src_loc;
@@ -4208,7 +4227,7 @@ parser::parse_capture (operand *op, bool require_existing)
 /* Parse an expression
      expr = '(' <operation>[capture][flag][type] <operand>... ')'  */
 
-struct operand *
+class operand *
 parser::parse_expr ()
 {
   const cpp_token *token = peek ();
@@ -4376,11 +4395,11 @@ parser::parse_c_expr (cpp_ttype start)
    a standalone capture.
      op = predicate | expr | c_expr | capture  */
 
-struct operand *
+class operand *
 parser::parse_op ()
 {
   const cpp_token *token = peek ();
-  struct operand *op = NULL;
+  class operand *op = NULL;
   if (token->type == CPP_OPEN_PAREN)
     {
       eat_token (CPP_OPEN_PAREN);
@@ -4599,7 +4618,7 @@ parser::parse_simplify (simplify::simplify_kind kind,
 
   const cpp_token *loc = peek ();
   parsing_match_operand = true;
-  struct operand *match = parse_op ();
+  class operand *match = parse_op ();
   finish_match_operand (match);
   parsing_match_operand = false;
   if (match->type == operand::OP_CAPTURE && !matcher)
@@ -5071,7 +5090,7 @@ main (int argc, char **argv)
 	}
     }
 
-  line_table = XCNEW (struct line_maps);
+  line_table = XCNEW (class line_maps);
   linemap_init (line_table, 0);
   line_table->reallocator = xrealloc;
   line_table->round_alloc_size = round_alloc_size;

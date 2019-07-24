@@ -688,8 +688,8 @@ ipa_polymorphic_call_context::stream_out (struct output_block *ob) const
 /* Stream in the context from IB and DATA_IN.  */
 
 void
-ipa_polymorphic_call_context::stream_in (struct lto_input_block *ib,
-					 struct data_in *data_in)
+ipa_polymorphic_call_context::stream_in (class lto_input_block *ib,
+					 class data_in *data_in)
 {
   struct bitpack_d bp = streamer_read_bitpack (ib);
 

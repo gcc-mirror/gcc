@@ -1732,8 +1732,6 @@ emit_block_move_via_cpymem (rtx x, rtx y, rtx size, unsigned int align,
 			    unsigned HOST_WIDE_INT max_size,
 			    unsigned HOST_WIDE_INT probable_max_size)
 {
-  int save_volatile_ok = volatile_ok;
-
   if (expected_align < align)
     expected_align = align;
   if (expected_size != -1)
@@ -1745,7 +1743,7 @@ emit_block_move_via_cpymem (rtx x, rtx y, rtx size, unsigned int align,
     }
 
   /* Since this is a move insn, we don't care about volatility.  */
-  volatile_ok = 1;
+  temporary_volatile_ok v (true);
 
   /* Try the most limited insn first, because there's no point
      including more than one in the machine description unless
@@ -1769,7 +1767,7 @@ emit_block_move_via_cpymem (rtx x, rtx y, rtx size, unsigned int align,
 	      || max_size <= (GET_MODE_MASK (mode) >> 1)
 	      || GET_MODE_BITSIZE (mode) >= GET_MODE_BITSIZE (Pmode)))
 	{
-	  struct expand_operand ops[9];
+	  class expand_operand ops[9];
 	  unsigned int nops;
 
 	  /* ??? When called via emit_block_move_for_call, it'd be
@@ -1809,14 +1807,10 @@ emit_block_move_via_cpymem (rtx x, rtx y, rtx size, unsigned int align,
 		create_fixed_operand (&ops[8], NULL);
 	    }
 	  if (maybe_expand_insn (code, nops, ops))
-	    {
-	      volatile_ok = save_volatile_ok;
-	      return true;
-	    }
+	    return true;
 	}
     }
 
-  volatile_ok = save_volatile_ok;
   return false;
 }
 
@@ -1932,7 +1926,7 @@ expand_cmpstrn_or_cmpmem (insn_code icode, rtx target, rtx arg1_rtx,
   if (target && (!REG_P (target) || HARD_REGISTER_P (target)))
     target = NULL_RTX;
 
-  struct expand_operand ops[5];
+  class expand_operand ops[5];
   create_output_operand (&ops[0], target, insn_mode);
   create_fixed_operand (&ops[1], arg1_rtx);
   create_fixed_operand (&ops[2], arg2_rtx);
@@ -3137,7 +3131,7 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align,
 	      || max_size <= (GET_MODE_MASK (mode) >> 1)
 	      || GET_MODE_BITSIZE (mode) >= GET_MODE_BITSIZE (Pmode)))
 	{
-	  struct expand_operand ops[9];
+	  class expand_operand ops[9];
 	  unsigned int nops;
 
 	  nops = insn_data[(int) code].n_generator_args;
@@ -4181,7 +4175,7 @@ emit_single_push_insn_1 (machine_mode mode, rtx x, tree type)
   icode = optab_handler (push_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
-      struct expand_operand ops[1];
+      class expand_operand ops[1];
 
       create_input_operand (&ops[0], x, mode);
       if (maybe_expand_insn (icode, 1, ops))
@@ -5027,7 +5021,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 
       if (icode != CODE_FOR_nothing)
 	{
-	  struct expand_operand ops[2];
+	  class expand_operand ops[2];
 
 	  create_fixed_operand (&ops[0], mem);
 	  create_input_operand (&ops[1], reg, mode);
@@ -5456,7 +5450,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 bool
 emit_storent_insn (rtx to, rtx from)
 {
-  struct expand_operand ops[2];
+  class expand_operand ops[2];
   machine_mode mode = GET_MODE (to);
   enum insn_code code = optab_handler (storent_optab, mode);
 
@@ -6759,7 +6753,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		!= CODE_FOR_nothing)
 	    && (elt = uniform_vector_p (exp)))
 	  {
-	    struct expand_operand ops[2];
+	    class expand_operand ops[2];
 	    create_output_operand (&ops[0], target, mode);
 	    create_input_operand (&ops[1], expand_normal (elt), eltmode);
 	    expand_insn (icode, 2, ops);
@@ -9554,7 +9548,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  && mode == TYPE_MODE (TREE_TYPE (treeop0))
 	  && SCALAR_INT_MODE_P (mode))
 	{
-	  struct expand_operand eops[4];
+	  class expand_operand eops[4];
 	  machine_mode imode = TYPE_MODE (TREE_TYPE (treeop0));
 	  expand_operands (treeop0, treeop1,
 			   subtarget, &op0, &op1, EXPAND_NORMAL);
@@ -10292,7 +10286,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    && ((icode = optab_handler (movmisalign_optab, mode))
 		!= CODE_FOR_nothing))
 	  {
-	    struct expand_operand ops[2];
+	    class expand_operand ops[2];
 
 	    /* We've already validated the memory, and we're creating a
 	       new pseudo destination.  The predicates really can't fail,
@@ -10374,7 +10368,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    if ((icode = optab_handler (movmisalign_optab, mode))
 		!= CODE_FOR_nothing)
 	      {
-		struct expand_operand ops[2];
+		class expand_operand ops[2];
 
 		/* We've already validated the memory, and we're creating a
 		   new pseudo destination.  The predicates really can't fail,
@@ -12180,7 +12174,7 @@ try_casesi (tree index_type, tree index_expr, tree minval, tree range,
 	    rtx table_label, rtx default_label, rtx fallback_label,
             profile_probability default_probability)
 {
-  struct expand_operand ops[5];
+  class expand_operand ops[5];
   scalar_int_mode index_mode = SImode;
   rtx op1, op2, index;
 

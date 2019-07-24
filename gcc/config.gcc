@@ -499,7 +499,7 @@ or1k*-*-*)
 	;;
 powerpc*-*-*)
 	cpu_type=rs6000
-	extra_objs="rs6000-string.o rs6000-p8swap.o rs6000-logue.o"
+	extra_objs="rs6000-string.o rs6000-p8swap.o rs6000-logue.o rs6000-call.o"
 	extra_headers="ppc-asm.h altivec.h htmintrin.h htmxlintrin.h"
 	extra_headers="${extra_headers} bmi2intrin.h bmiintrin.h"
 	extra_headers="${extra_headers} xmmintrin.h mm_malloc.h emmintrin.h"
@@ -513,7 +513,7 @@ powerpc*-*-*)
 		;;
 	esac
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
-	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-logue.c"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-logue.c \$(srcdir)/config/rs6000/rs6000-call.c"
 	;;
 pru-*-*)
 	cpu_type=pru
@@ -525,8 +525,8 @@ riscv*)
 	;;
 rs6000*-*-*)
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
-	extra_objs="rs6000-string.o rs6000-p8swap.o rs6000-logue.o"
-	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-logue.c"
+	extra_objs="rs6000-string.o rs6000-p8swap.o rs6000-logue.o rs6000-call.o"
+	target_gtfiles="$target_gtfiles \$(srcdir)/config/rs6000/rs6000-logue.c \$(srcdir)/config/rs6000/rs6000-call.c"
 	;;
 sparc*-*-*)
 	cpu_type=sparc
@@ -673,7 +673,7 @@ x86_cpus="generic intel"
 # Common parts for widely ported systems.
 case ${target} in
 *-*-darwin*)
-  tmake_file="t-darwin ${cpu_type}/t-darwin"
+  tmake_file="t-darwin "
   tm_file="${tm_file} darwin.h"
   case ${target} in
   *-*-darwin9*)
@@ -1645,16 +1645,25 @@ hppa[12]*-*-hpux11*)
 		dwarf2=no
 	fi
 	;;
+i[34567]86-*-darwin1[89]*)
+	echo "Error: 32bit target is not supported after Darwin17" 1>&2
+	;;
 i[34567]86-*-darwin*)
 	need_64bit_isa=yes
 	# Baseline choice for a machine that allows m64 support.
+	with_cpu=${with_cpu:-core2}
+	tmake_file="${tmake_file} ${cpu_type}/t-darwin32-biarch t-slibgcc"
+	tm_file="${tm_file} ${cpu_type}/darwin32-biarch.h"
+	;;
+x86_64-*-darwin1[89]* | x86_64-*-darwin2[01]*)
+	# Only 64b from now
 	with_cpu=${with_cpu:-core2}
 	tmake_file="${tmake_file} t-slibgcc"
 	;;
 x86_64-*-darwin*)
 	with_cpu=${with_cpu:-core2}
-	tmake_file="${tmake_file} ${cpu_type}/t-darwin64 t-slibgcc"
-	tm_file="${tm_file} ${cpu_type}/darwin64.h"
+	tmake_file="${tmake_file} ${cpu_type}/t-darwin64-biarch t-slibgcc"
+	tm_file="${tm_file} ${cpu_type}/darwin64-biarch.h"
 	;;
 i[34567]86-*-elfiamcu)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/iamcu.h"
@@ -2578,6 +2587,8 @@ or1k*-*-*)
 	for or1k_multilib in ${or1k_multilibs}; do
 		case ${or1k_multilib} in
 		mcmov | msext | msfimm | \
+		mror | mrori | \
+		mhard-float | mdouble-float | munordered-float | msoft-float | \
 		mhard-div | mhard-mul | \
 		msoft-div | msoft-mul )
 			TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG},${or1k_multilib}"
@@ -2614,24 +2625,31 @@ pdp11-*-*)
 #	extra_headers=
 #	;;
 powerpc-*-darwin*)
-	extra_options="${extra_options} rs6000/darwin.opt"
+	extra_options="${extra_options} ${cpu_type}/darwin.opt"
 	case ${target} in
-	  *-darwin1[0-9]* | *-darwin[8-9]*)
-	    tmake_file="${tmake_file} rs6000/t-darwin8"
-	    tm_file="${tm_file} rs6000/darwin8.h"
+	  *-darwin1[0-9]* | *-darwin9*)
+	    tmake_file="${tmake_file} ${cpu_type}/t-darwin32-biarch"
+	    tm_file="${tm_file} ${cpu_type}/darwin32-biarch.h"
+	    ;;
+	  *-darwin8*)
+	    tmake_file="${tmake_file} ${cpu_type}/t-darwin32-biarch"
+	    tm_file="${tm_file} ${cpu_type}/darwin32-biarch.h"
+	    tm_file="${tm_file} ${cpu_type}/darwin8.h"
 	    ;;
 	  *-darwin7*)
-	    tm_file="${tm_file} rs6000/darwin7.h"
+	    tm_file="${tm_file} ${cpu_type}/darwin7.h"
 	    ;;
-	  *-darwin[0-6]*)
+	  *-darwin[456]*)
+	    # Earlier - ingle arch, with 32b only
+	    # OS X 10.0, the first edition is Darwin4
 	    ;;
 	esac
 	tmake_file="${tmake_file} t-slibgcc"
 	;;
 powerpc64-*-darwin*)
 	extra_options="${extra_options} ${cpu_type}/darwin.opt"
-	tmake_file="${tmake_file} ${cpu_type}/t-darwin64 t-slibgcc"
-	tm_file="${tm_file} ${cpu_type}/darwin8.h ${cpu_type}/darwin64.h"
+	tmake_file="${tmake_file} ${cpu_type}/t-darwin64-biarch t-slibgcc"
+	tm_file="${tm_file} ${cpu_type}/darwin64-biarch.h"
 	;;
 powerpc*-*-freebsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h ${fbsd_tm_file} rs6000/sysv4.h"

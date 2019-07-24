@@ -41,7 +41,8 @@ enum expand_operand_type {
 };
 
 /* Information about an operand for instruction expansion.  */
-struct expand_operand {
+class expand_operand {
+public:
   /* The type of operand.  */
   ENUM_BITFIELD (expand_operand_type) type : 8;
 
@@ -70,7 +71,7 @@ struct expand_operand {
    to their default values.  */
 
 static inline void
-create_expand_operand (struct expand_operand *op,
+create_expand_operand (class expand_operand *op,
 		       enum expand_operand_type type,
 		       rtx value, machine_mode mode,
 		       bool unsigned_p, poly_int64 int_value = 0)
@@ -86,7 +87,7 @@ create_expand_operand (struct expand_operand *op,
 /* Make OP describe an operand that must use rtx X, even if X is volatile.  */
 
 static inline void
-create_fixed_operand (struct expand_operand *op, rtx x)
+create_fixed_operand (class expand_operand *op, rtx x)
 {
   create_expand_operand (op, EXPAND_FIXED, x, VOIDmode, false);
 }
@@ -97,7 +98,7 @@ create_fixed_operand (struct expand_operand *op, rtx x)
    be ignored in that case.  */
 
 static inline void
-create_output_operand (struct expand_operand *op, rtx x,
+create_output_operand (class expand_operand *op, rtx x,
 		       machine_mode mode)
 {
   create_expand_operand (op, EXPAND_OUTPUT, x, mode, false);
@@ -109,7 +110,7 @@ create_output_operand (struct expand_operand *op, rtx x,
    as an operand.  */
 
 static inline void
-create_input_operand (struct expand_operand *op, rtx value,
+create_input_operand (class expand_operand *op, rtx value,
 		      machine_mode mode)
 {
   create_expand_operand (op, EXPAND_INPUT, value, mode, false);
@@ -119,7 +120,7 @@ create_input_operand (struct expand_operand *op, rtx value,
    to mode MODE.  UNSIGNED_P says whether VALUE is unsigned.  */
 
 static inline void
-create_convert_operand_to (struct expand_operand *op, rtx value,
+create_convert_operand_to (class expand_operand *op, rtx value,
 			   machine_mode mode, bool unsigned_p)
 {
   create_expand_operand (op, EXPAND_CONVERT_TO, value, mode, unsigned_p);
@@ -131,7 +132,7 @@ create_convert_operand_to (struct expand_operand *op, rtx value,
    UNSIGNED_P says whether VALUE is unsigned.  */
 
 static inline void
-create_convert_operand_from (struct expand_operand *op, rtx value,
+create_convert_operand_from (class expand_operand *op, rtx value,
 			     machine_mode mode, bool unsigned_p)
 {
   create_expand_operand (op, EXPAND_CONVERT_FROM, value, mode, unsigned_p);
@@ -142,12 +143,12 @@ create_convert_operand_from (struct expand_operand *op, rtx value,
    of the address, but it may need to be converted to Pmode first.  */
 
 static inline void
-create_address_operand (struct expand_operand *op, rtx value)
+create_address_operand (class expand_operand *op, rtx value)
 {
   create_expand_operand (op, EXPAND_ADDRESS, value, Pmode, false);
 }
 
-extern void create_integer_operand (struct expand_operand *, poly_int64);
+extern void create_integer_operand (class expand_operand *, poly_int64);
 
 /* Passed to expand_simple_binop and expand_binop to say which options
    to try to use if the requested operation can't be open-coded on the
@@ -335,21 +336,21 @@ rtx expand_atomic_fetch_op (rtx, rtx, rtx, enum rtx_code, enum memmodel,
 extern bool insn_operand_matches (enum insn_code icode, unsigned int opno,
 				  rtx operand);
 extern bool valid_multiword_target_p (rtx);
-extern void create_convert_operand_from_type (struct expand_operand *op,
+extern void create_convert_operand_from_type (class expand_operand *op,
 					      rtx value, tree type);
 extern bool maybe_legitimize_operands (enum insn_code icode,
 				       unsigned int opno, unsigned int nops,
-				       struct expand_operand *ops);
+				       class expand_operand *ops);
 extern rtx_insn *maybe_gen_insn (enum insn_code icode, unsigned int nops,
-				 struct expand_operand *ops);
+				 class expand_operand *ops);
 extern bool maybe_expand_insn (enum insn_code icode, unsigned int nops,
-			       struct expand_operand *ops);
+			       class expand_operand *ops);
 extern bool maybe_expand_jump_insn (enum insn_code icode, unsigned int nops,
-				    struct expand_operand *ops);
+				    class expand_operand *ops);
 extern void expand_insn (enum insn_code icode, unsigned int nops,
-			 struct expand_operand *ops);
+			 class expand_operand *ops);
 extern void expand_jump_insn (enum insn_code icode, unsigned int nops,
-			      struct expand_operand *ops);
+			      class expand_operand *ops);
 
 extern enum rtx_code get_rtx_code (enum tree_code tcode, bool unsignedp);
 

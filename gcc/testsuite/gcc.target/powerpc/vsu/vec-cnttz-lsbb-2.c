@@ -9,5 +9,5 @@ count_trailing_zero_byte_bits (vector unsigned char *arg1_p)
 {
   vector unsigned char arg_1 = *arg1_p;
 
-  return __builtin_vec_vctzlsbb (arg_1);	/* { dg-error "builtin function '__builtin_altivec_vctzlsbb_v16qi' requires the '-mcpu=power9' option" } */
+  return __builtin_vec_vctzlsbb (arg_1);	/* { dg-error "'__builtin_altivec_vctzlsbb_v16qi' requires the '-mcpu=power9' option" } */
 }

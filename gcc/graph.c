@@ -197,7 +197,7 @@ draw_cfg_nodes_no_loops (pretty_printer *pp, struct function *fun)
 
 static void
 draw_cfg_nodes_for_loop (pretty_printer *pp, int funcdef_no,
-			 struct loop *loop)
+			 class loop *loop)
 {
   basic_block *body;
   unsigned int i;
@@ -217,7 +217,7 @@ draw_cfg_nodes_for_loop (pretty_printer *pp, int funcdef_no,
 	       fillcolors[(loop_depth (loop) - 1) % 3],
 	       loop->num);
 
-  for (struct loop *inner = loop->inner; inner; inner = inner->next)
+  for (class loop *inner = loop->inner; inner; inner = inner->next)
     draw_cfg_nodes_for_loop (pp, funcdef_no, inner);
 
   if (loop->header == NULL)

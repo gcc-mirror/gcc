@@ -1370,7 +1370,7 @@ branch_prob (bool thunk)
   if (flag_branch_probabilities
       && (profile_status_for_fn (cfun) == PROFILE_READ))
     {
-      struct loop *loop;
+      class loop *loop;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	report_predictor_hitrates ();
 

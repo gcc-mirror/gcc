@@ -548,7 +548,15 @@ simple_object_elf_match (unsigned char header[SIMPLE_OBJECT_MATCH_HEADER_LEN],
       XDELETE (eor);
       return NULL;
     }
-
+  
+  if (eor->shstrndx == 0)
+    {
+      *errmsg = "invalid ELF shstrndx == 0";
+      *err = 0;
+      XDELETE (eor);
+      return NULL;
+    }
+  
   return (void *) eor;
 }
 
@@ -1358,9 +1366,8 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 	  return errmsg;
 	}
 
-      /* If we are processing .symtab purge __gnu_lto_v1 and
-	 __gnu_lto_slim symbols from it and any symbols in discarded
-	 sections.  */
+      /* If we are processing .symtab purge __gnu_lto_slim symbol
+	 from it and any symbols in discarded sections.  */
       if (sh_type == SHT_SYMTAB)
 	{
 	  unsigned entsize = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
@@ -1380,14 +1387,9 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 				       sobj->offset + stroff,
 				       (unsigned char *)strings,
 				       strsz, &errmsg, err);
-	  /* Find gnu_lto_ in strings.  */
-	  while ((gnu_lto = (char *) memchr (gnu_lto, 'g',
-					     strings + strsz - gnu_lto)))
-	    if (strncmp (gnu_lto, "gnu_lto_v1",
-			 strings + strsz - gnu_lto) == 0)
-	      break;
-	    else
-	      gnu_lto++;
+	  /* Find first '\0' in strings.  */
+	  gnu_lto = (char *) memchr (gnu_lto + 1, '\0',
+				     strings + strsz - gnu_lto);
 	  /* Read the section index table if present.  */
 	  if (symtab_indices_shndx[i - 1] != 0)
 	    {
@@ -1461,10 +1463,9 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 			 undefined and sharing the gnu_lto_ name.  */
 		      bind = STB_WEAK;
 		      other = STV_HIDDEN;
-		      if (gnu_lto)
-			ELF_SET_FIELD (type_functions, ei_class, Sym,
-				       ent, st_name, Elf_Word,
-				       gnu_lto - strings);
+		      ELF_SET_FIELD (type_functions, ei_class, Sym,
+				     ent, st_name, Elf_Word,
+				     gnu_lto - strings);
 		      ELF_SET_FIELD (type_functions, ei_class, Sym,
 				     ent, st_shndx, Elf_Half, SHN_UNDEF);
 		    }

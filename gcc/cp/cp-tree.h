@@ -794,7 +794,8 @@ class ovl_iterator {
   /* Whether this overload was introduced by a using decl.  */
   bool using_p () const
   {
-    return TREE_CODE (ovl) == OVERLOAD && OVL_USING_P (ovl);
+    return (TREE_CODE (ovl) == USING_DECL
+	    || (TREE_CODE (ovl) == OVERLOAD && OVL_USING_P (ovl)));
   }
   /* Whether this using is being exported.  */
   bool exporting_p () const
@@ -947,8 +948,9 @@ struct GTY(()) tree_module_vec {
 
 /* Simplified unique_ptr clone to release a tree vec on exit.  */
 
-struct releasing_vec
+class releasing_vec
 {
+public:
   typedef vec<tree, va_gc> vec_t;
 
   releasing_vec (vec_t *v): v(v) { }
@@ -1835,8 +1837,9 @@ extern GTY(()) struct saved_scope *scope_chain;
 /* RAII sentinel to handle clearing processing_template_decl and restoring
    it when done.  */
 
-struct processing_template_decl_sentinel
+class processing_template_decl_sentinel
 {
+public:
   int saved;
   processing_template_decl_sentinel (bool reset = true)
     : saved (processing_template_decl)
@@ -1853,8 +1856,9 @@ struct processing_template_decl_sentinel
 /* RAII sentinel to disable certain warnings during template substitution
    and elsewhere.  */
 
-struct warning_sentinel
+class warning_sentinel
 {
+public:
   int &flag;
   int val;
   warning_sentinel(int& flag, bool suppress=true)
@@ -5030,7 +5034,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 /* Used while gimplifying continue statements bound to OMP_FOR nodes.  */
 #define OMP_FOR_GIMPLIFYING_P(NODE) \
-  (TREE_LANG_FLAG_0 (OMP_LOOP_CHECK (NODE)))
+  (TREE_LANG_FLAG_0 (OMP_LOOPING_CHECK (NODE)))
 
 /* A language-specific token attached to the OpenMP data clauses to
    hold code (or code fragments) related to ctors, dtors, and op=.
@@ -5377,8 +5381,9 @@ extern int cp_unevaluated_operand;
 /* RAII class used to inhibit the evaluation of operands during parsing
    and template instantiation. Evaluation warnings are also inhibited. */
 
-struct cp_unevaluated
+class cp_unevaluated
 {
+public:
   cp_unevaluated ();
   ~cp_unevaluated ();
 };
@@ -5386,8 +5391,9 @@ struct cp_unevaluated
 /* The reverse: an RAII class used for nested contexts that are evaluated even
    if the enclosing context is not.  */
 
-struct cp_evaluated
+class cp_evaluated
 {
+public:
   int uneval;
   int inhibit;
   cp_evaluated ()
@@ -5414,8 +5420,9 @@ enum unification_kind_t {
 // specializations. When the stack goes out of scope, the
 // previous pointer map is restored.
 enum lss_policy { lss_blank, lss_copy };
-struct local_specialization_stack
+class local_specialization_stack
 {
+public:
   local_specialization_stack (lss_policy = lss_blank);
   ~local_specialization_stack ();
 
@@ -7170,8 +7177,9 @@ extern bool perform_or_defer_access_check	(tree, tree, tree,
 /* RAII sentinel to ensures that deferred access checks are popped before
   a function returns.  */
 
-struct deferring_access_check_sentinel
+class deferring_access_check_sentinel
 {
+public:
   deferring_access_check_sentinel (enum deferring_kind kind = dk_deferred)
   {
     push_deferring_access_checks (kind);

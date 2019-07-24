@@ -270,7 +270,7 @@ static long
 phi_rank (gimple *stmt)
 {
   basic_block bb = gimple_bb (stmt);
-  struct loop *father = bb->loop_father;
+  class loop *father = bb->loop_father;
   tree res;
   unsigned i;
   use_operand_p use;
@@ -603,7 +603,7 @@ add_repeat_to_ops_vec (vec<operand_entry *> *ops, tree op,
    operation with tree code CODE, and is inside LOOP.  */
 
 static bool
-is_reassociable_op (gimple *stmt, enum tree_code code, struct loop *loop)
+is_reassociable_op (gimple *stmt, enum tree_code code, class loop *loop)
 {
   basic_block bb = gimple_bb (stmt);
 
@@ -1560,7 +1560,7 @@ build_and_add_sum (tree type, tree op1, tree op2, enum tree_code opcode)
 
 static bool
 undistribute_ops_list (enum tree_code opcode,
-		       vec<operand_entry *> *ops, struct loop *loop)
+		       vec<operand_entry *> *ops, class loop *loop)
 {
   unsigned int length = ops->length ();
   operand_entry *oe1;
@@ -1770,6 +1770,274 @@ undistribute_ops_list (enum tree_code opcode,
   cvec.release ();
 
   return changed;
+}
+
+/* Pair to hold the information of one specific VECTOR_TYPE SSA_NAME:
+   first: element index for each relevant BIT_FIELD_REF.
+   second: the index of vec ops* for each relevant BIT_FIELD_REF.  */
+typedef std::pair<unsigned, unsigned> v_info_elem;
+typedef auto_vec<v_info_elem, 32> v_info;
+typedef v_info *v_info_ptr;
+
+/* Comparison function for qsort on VECTOR SSA_NAME trees by machine mode.  */
+static int
+sort_by_mach_mode (const void *p_i, const void *p_j)
+{
+  const tree tr1 = *((const tree *) p_i);
+  const tree tr2 = *((const tree *) p_j);
+  unsigned int mode1 = TYPE_MODE (TREE_TYPE (tr1));
+  unsigned int mode2 = TYPE_MODE (TREE_TYPE (tr2));
+  if (mode1 > mode2)
+    return 1;
+  else if (mode1 < mode2)
+    return -1;
+  else
+    return 0;
+}
+
+/* Cleanup hash map for VECTOR information.  */
+static void
+cleanup_vinfo_map (hash_map<tree, v_info_ptr> &info_map)
+{
+  for (hash_map<tree, v_info_ptr>::iterator it = info_map.begin ();
+       it != info_map.end (); ++it)
+    {
+      v_info_ptr info = (*it).second;
+      delete info;
+      (*it).second = NULL;
+    }
+}
+
+/* Perform un-distribution of BIT_FIELD_REF on VECTOR_TYPE.
+     V1[0] + V1[1] + ... + V1[k] + V2[0] + V2[1] + ... + V2[k] + ... Vn[k]
+   is transformed to
+     Vs = (V1 + V2 + ... + Vn)
+     Vs[0] + Vs[1] + ... + Vs[k]
+
+   The basic steps are listed below:
+
+    1) Check the addition chain *OPS by looking those summands coming from
+       VECTOR bit_field_ref on VECTOR type.  Put the information into
+       v_info_map for each satisfied summand, using VECTOR SSA_NAME as key.
+
+    2) For each key (VECTOR SSA_NAME), validate all its BIT_FIELD_REFs are
+       continuous, they can cover the whole VECTOR perfectly without any holes.
+       Obtain one VECTOR list which contain candidates to be transformed.
+
+    3) Sort the VECTOR list by machine mode of VECTOR type, for each group of
+       candidates with same mode, build the addition statements for them and
+       generate BIT_FIELD_REFs accordingly.
+
+   TODO:
+       The current implementation requires the whole VECTORs should be fully
+       covered, but it can be extended to support partial, checking adjacent
+       but not fill the whole, it may need some cost model to define the
+       boundary to do or not.
+*/
+static bool
+undistribute_bitref_for_vector (enum tree_code opcode,
+				vec<operand_entry *> *ops, struct loop *loop)
+{
+  if (ops->length () <= 1)
+    return false;
+
+  if (opcode != PLUS_EXPR && opcode != MULT_EXPR && opcode != BIT_XOR_EXPR
+      && opcode != BIT_IOR_EXPR && opcode != BIT_AND_EXPR)
+    return false;
+
+  hash_map<tree, v_info_ptr> v_info_map;
+  operand_entry *oe1;
+  unsigned i;
+
+  /* Find those summands from VECTOR BIT_FIELD_REF in addition chain, put the
+     information into map.  */
+  FOR_EACH_VEC_ELT (*ops, i, oe1)
+    {
+      enum tree_code dcode;
+      gimple *oe1def;
+
+      if (TREE_CODE (oe1->op) != SSA_NAME)
+	continue;
+      oe1def = SSA_NAME_DEF_STMT (oe1->op);
+      if (!is_gimple_assign (oe1def))
+	continue;
+      dcode = gimple_assign_rhs_code (oe1def);
+      if (dcode != BIT_FIELD_REF || !is_reassociable_op (oe1def, dcode, loop))
+	continue;
+
+      tree rhs = gimple_assign_rhs1 (oe1def);
+      tree vec = TREE_OPERAND (rhs, 0);
+      tree vec_type = TREE_TYPE (vec);
+
+      if (TREE_CODE (vec) != SSA_NAME || !VECTOR_TYPE_P (vec_type))
+	continue;
+
+      /* Ignore it if target machine can't support this VECTOR type.  */
+      if (!VECTOR_MODE_P (TYPE_MODE (vec_type)))
+	continue;
+
+      /* Check const vector type, constrain BIT_FIELD_REF offset and size.  */
+      if (!TYPE_VECTOR_SUBPARTS (vec_type).is_constant ())
+	continue;
+
+      tree elem_type = TREE_TYPE (vec_type);
+      unsigned HOST_WIDE_INT elem_size
+	= TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
+      if (maybe_ne (bit_field_size (rhs), elem_size))
+	continue;
+
+      unsigned idx;
+      if (!constant_multiple_p (bit_field_offset (rhs), elem_size, &idx))
+	continue;
+
+      /* Ignore it if target machine can't support this type of VECTOR
+         operation.  */
+      optab op_tab = optab_for_tree_code (opcode, vec_type, optab_vector);
+      if (optab_handler (op_tab, TYPE_MODE (vec_type)) == CODE_FOR_nothing)
+	continue;
+
+      bool existed;
+      v_info_ptr &info = v_info_map.get_or_insert (vec, &existed);
+      if (!existed)
+	info = new v_info;
+      info->safe_push (std::make_pair (idx, i));
+    }
+
+  /* At least two VECTOR to combine.  */
+  if (v_info_map.elements () <= 1)
+    {
+      cleanup_vinfo_map (v_info_map);
+      return false;
+    }
+
+  /* Verify all VECTOR candidates by checking two conditions:
+       1) sorted offsets are adjacent, no holes.
+       2) can fill the whole VECTOR perfectly.
+     And add the valid candidates to a vector for further handling.  */
+  auto_vec<tree> valid_vecs (v_info_map.elements ());
+  for (hash_map<tree, v_info_ptr>::iterator it = v_info_map.begin ();
+       it != v_info_map.end (); ++it)
+    {
+      tree cand_vec = (*it).first;
+      v_info_ptr cand_info = (*it).second;
+      unsigned int num_elems = VECTOR_CST_NELTS (cand_vec).to_constant ();
+      if (cand_info->length () != num_elems)
+	continue;
+      sbitmap holes = sbitmap_alloc (num_elems);
+      bitmap_ones (holes);
+      bool valid = true;
+      v_info_elem *curr;
+      FOR_EACH_VEC_ELT (*cand_info, i, curr)
+	{
+	  if (!bitmap_bit_p (holes, curr->first))
+	    {
+	      valid = false;
+	      break;
+	    }
+	  else
+	    bitmap_clear_bit (holes, curr->first);
+	}
+      if (valid && bitmap_empty_p (holes))
+	valid_vecs.quick_push (cand_vec);
+      sbitmap_free (holes);
+    }
+
+  /* At least two VECTOR to combine.  */
+  if (valid_vecs.length () <= 1)
+    {
+      cleanup_vinfo_map (v_info_map);
+      return false;
+    }
+
+  valid_vecs.qsort (sort_by_mach_mode);
+  /* Go through all candidates by machine mode order, query the mode_to_total
+     to get the total number for each mode and skip the single one.  */
+  for (unsigned i = 0; i < valid_vecs.length () - 1; ++i)
+    {
+      tree tvec = valid_vecs[i];
+      enum machine_mode mode = TYPE_MODE (TREE_TYPE (tvec));
+
+      /* Skip modes with only a single candidate.  */
+      if (TYPE_MODE (TREE_TYPE (valid_vecs[i + 1])) != mode)
+	continue;
+
+      unsigned int idx, j;
+      gimple *sum = NULL;
+      v_info_ptr info_ptr;
+      tree sum_vec = tvec;
+      v_info_elem *elem;
+
+      /* Build the sum for all candidates with same mode.  */
+      do
+	{
+	  sum = build_and_add_sum (TREE_TYPE (sum_vec), sum_vec,
+				   valid_vecs[i + 1], opcode);
+	  sum_vec = gimple_get_lhs (sum);
+	  info_ptr = *(v_info_map.get (valid_vecs[i + 1]));
+	  /* Update those related ops of current candidate VECTOR.  */
+	  FOR_EACH_VEC_ELT (*info_ptr, j, elem)
+	    {
+	      idx = elem->second;
+	      gimple *def = SSA_NAME_DEF_STMT ((*ops)[idx]->op);
+	      /* Set this then op definition will get DCEd later.  */
+	      gimple_set_visited (def, true);
+	      if (opcode == PLUS_EXPR || opcode == BIT_XOR_EXPR
+		  || opcode == BIT_IOR_EXPR)
+		(*ops)[idx]->op = build_zero_cst (TREE_TYPE ((*ops)[idx]->op));
+	      else if (opcode == MULT_EXPR)
+		(*ops)[idx]->op = build_one_cst (TREE_TYPE ((*ops)[idx]->op));
+	      else
+		{
+		  gcc_assert (opcode == BIT_AND_EXPR);
+		  (*ops)[idx]->op
+		    = build_all_ones_cst (TREE_TYPE ((*ops)[idx]->op));
+		}
+	      (*ops)[idx]->rank = 0;
+	    }
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Generating addition -> ");
+	      print_gimple_stmt (dump_file, sum, 0);
+	    }
+	  i++;
+	}
+      while ((i < valid_vecs.length () - 1)
+	     && TYPE_MODE (TREE_TYPE (valid_vecs[i + 1])) == mode);
+
+      /* Referring to first valid VECTOR with this mode, generate the
+         BIT_FIELD_REF statements accordingly.  */
+      info_ptr = *(v_info_map.get (tvec));
+      gcc_assert (sum);
+      tree elem_type = TREE_TYPE (TREE_TYPE (tvec));
+      FOR_EACH_VEC_ELT (*info_ptr, j, elem)
+	{
+	  idx = elem->second;
+	  tree dst = make_ssa_name (elem_type);
+	  gimple *gs = gimple_build_assign (
+	    dst, BIT_FIELD_REF,
+	    build3 (BIT_FIELD_REF, elem_type, sum_vec, TYPE_SIZE (elem_type),
+		    bitsize_int (elem->first
+				 * tree_to_uhwi (TYPE_SIZE (elem_type)))));
+	  insert_stmt_after (gs, sum);
+	  gimple *def = SSA_NAME_DEF_STMT ((*ops)[idx]->op);
+	  /* Set this then op definition will get DCEd later.  */
+	  gimple_set_visited (def, true);
+	  (*ops)[idx]->op = gimple_assign_lhs (gs);
+	  (*ops)[idx]->rank = get_rank ((*ops)[idx]->op);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Generating bit_field_ref -> ");
+	      print_gimple_stmt (dump_file, gs, 0);
+	    }
+	}
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "undistributiong bit_field_ref for vector done.\n");
+
+  cleanup_vinfo_map (v_info_map);
+
+  return true;
 }
 
 /* If OPCODE is BIT_IOR_EXPR or BIT_AND_EXPR and CURR is a comparison
@@ -3861,7 +4129,7 @@ no_side_effect_bb (basic_block bb)
 
 static bool
 get_ops (tree var, enum tree_code code, vec<operand_entry *> *ops,
-	 struct loop *loop)
+	 class loop *loop)
 {
   gimple *stmt = SSA_NAME_DEF_STMT (var);
   tree rhs[2];
@@ -3896,7 +4164,7 @@ get_ops (tree var, enum tree_code code, vec<operand_entry *> *ops,
 
 static tree
 update_ops (tree var, enum tree_code code, vec<operand_entry *> ops,
-	    unsigned int *pidx, struct loop *loop)
+	    unsigned int *pidx, class loop *loop)
 {
   gimple *stmt = SSA_NAME_DEF_STMT (var);
   tree rhs[4];
@@ -4834,7 +5102,7 @@ linearize_expr (gimple *stmt)
   gimple *oldbinrhs = binrhs;
   enum tree_code rhscode = gimple_assign_rhs_code (stmt);
   gimple *newbinrhs = NULL;
-  struct loop *loop = loop_containing_stmt (stmt);
+  class loop *loop = loop_containing_stmt (stmt);
   tree lhs = gimple_assign_lhs (stmt);
 
   gcc_assert (is_reassociable_op (binlhs, rhscode, loop)
@@ -4968,7 +5236,7 @@ should_break_up_subtract (gimple *stmt)
   tree binlhs = gimple_assign_rhs1 (stmt);
   tree binrhs = gimple_assign_rhs2 (stmt);
   gimple *immusestmt;
-  struct loop *loop = loop_containing_stmt (stmt);
+  class loop *loop = loop_containing_stmt (stmt);
 
   if (TREE_CODE (binlhs) == SSA_NAME
       && is_reassociable_op (SSA_NAME_DEF_STMT (binlhs), PLUS_EXPR, loop))
@@ -5123,7 +5391,7 @@ linearize_expr_tree (vec<operand_entry *> *ops, gimple *stmt,
   bool binlhsisreassoc = false;
   bool binrhsisreassoc = false;
   enum tree_code rhscode = gimple_assign_rhs_code (stmt);
-  struct loop *loop = loop_containing_stmt (stmt);
+  class loop *loop = loop_containing_stmt (stmt);
 
   if (set_visited)
     gimple_set_visited (stmt, true);
@@ -5879,11 +6147,6 @@ reassociate_bb (basic_block bb)
 	  tree lhs, rhs1, rhs2;
 	  enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
 
-	  /* If this is not a gimple binary expression, there is
-	     nothing for us to do with it.  */
-	  if (get_gimple_rhs_class (rhs_code) != GIMPLE_BINARY_RHS)
-	    continue;
-
 	  /* If this was part of an already processed statement,
 	     we don't need to touch it again. */
 	  if (gimple_visited_p (stmt))
@@ -5909,6 +6172,11 @@ reassociate_bb (basic_block bb)
 		}
 	      continue;
 	    }
+
+	  /* If this is not a gimple binary expression, there is
+	     nothing for us to do with it.  */
+	  if (get_gimple_rhs_class (rhs_code) != GIMPLE_BINARY_RHS)
+	    continue;
 
 	  lhs = gimple_assign_lhs (stmt);
 	  rhs1 = gimple_assign_rhs1 (stmt);
@@ -5948,7 +6216,12 @@ reassociate_bb (basic_block bb)
 		  ops.qsort (sort_by_operand_rank);
 		  optimize_ops_list (rhs_code, &ops);
 		}
-
+	      if (undistribute_bitref_for_vector (rhs_code, &ops,
+						  loop_containing_stmt (stmt)))
+		{
+		  ops.qsort (sort_by_operand_rank);
+		  optimize_ops_list (rhs_code, &ops);
+		}
 	      if (rhs_code == PLUS_EXPR
 		  && transform_add_to_multiply (&ops))
 		ops.qsort (sort_by_operand_rank);

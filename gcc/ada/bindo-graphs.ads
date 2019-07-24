@@ -174,6 +174,11 @@ package Bindo.Graphs is
    First_Library_Graph_Vertex : constant Library_Graph_Vertex_Id :=
                                   No_Library_Graph_Vertex + 1;
 
+   procedure Destroy_Library_Graph_Vertex
+     (Vertex : in out Library_Graph_Vertex_Id);
+   pragma Inline (Destroy_Library_Graph_Vertex);
+   --  Destroy library graph vertex Vertex
+
    function Hash_Library_Graph_Vertex
      (Vertex : Library_Graph_Vertex_Id) return Bucket_Range_Type;
    pragma Inline (Hash_Library_Graph_Vertex);
@@ -182,6 +187,11 @@ package Bindo.Graphs is
    function Present (Vertex : Library_Graph_Vertex_Id) return Boolean;
    pragma Inline (Present);
    --  Determine whether library graph vertex Vertex exists
+
+   package LGV_Lists is new Doubly_Linked_Lists
+     (Element_Type    => Library_Graph_Vertex_Id,
+      "="             => "=",
+      Destroy_Element => Destroy_Library_Graph_Vertex);
 
    package LGV_Sets is new Membership_Sets
      (Element_Type => Library_Graph_Vertex_Id,
@@ -668,7 +678,7 @@ package Bindo.Graphs is
 
       --  The following type represents the various kinds of library graph
       --  cycles. The ordering of kinds is significant, where a literal with
-      --  lower ordinal has a higner precedence than one with higher ordinal.
+      --  lower ordinal has a higher precedence than one with higher ordinal.
 
       type Library_Graph_Cycle_Kind is
         (Elaborate_Body_Cycle,
@@ -732,18 +742,33 @@ package Bindo.Graphs is
       type Library_Graph is private;
       Nil : constant Library_Graph;
 
+      type LGE_Predicate_Ptr is access function
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean;
+
+      type LGV_Comparator_Ptr is access function
+        (G           : Library_Graph;
+         Vertex      : Library_Graph_Vertex_Id;
+         Compared_To : Library_Graph_Vertex_Id) return Precedence_Kind;
+
+      type LGV_Predicate_Ptr is access function
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id) return Boolean;
+
       ----------------------
       -- Graph operations --
       ----------------------
 
       procedure Add_Edge
-        (G    : Library_Graph;
-         Pred : Library_Graph_Vertex_Id;
-         Succ : Library_Graph_Vertex_Id;
-         Kind : Library_Graph_Edge_Kind);
+        (G              : Library_Graph;
+         Pred           : Library_Graph_Vertex_Id;
+         Succ           : Library_Graph_Vertex_Id;
+         Kind           : Library_Graph_Edge_Kind;
+         Activates_Task : Boolean);
       pragma Inline (Add_Edge);
       --  Create a new edge in library graph G with source vertex Pred and
-      --  destination vertex Succ. Kind denotes the nature of the edge.
+      --  destination vertex Succ. Kind denotes the nature of the edge. Flag
+      --  Activates_Task should be set when the edge involves task activation.
 
       procedure Add_Vertex
         (G    : Library_Graph;
@@ -753,13 +778,11 @@ package Bindo.Graphs is
       --  describes.
 
       function Create
-        (Initial_Vertices       : Positive;
-         Initial_Edges          : Positive;
-         Dynamically_Elaborated : Boolean) return Library_Graph;
+        (Initial_Vertices : Positive;
+         Initial_Edges    : Positive) return Library_Graph;
       pragma Inline (Create);
       --  Create a new empty graph with vertex capacity Initial_Vertices and
-      --  edge capacity Initial_Edges. Flag Dynamically_Elaborated must be set
-      --  when the main library unit was compiled using the dynamic model.
+      --  edge capacity Initial_Edges.
 
       procedure Destroy (G : in out Library_Graph);
       pragma Inline (Destroy);
@@ -809,10 +832,12 @@ package Bindo.Graphs is
 
       procedure Decrement_Pending_Predecessors
         (G      : Library_Graph;
-         Vertex : Library_Graph_Vertex_Id);
+         Vertex : Library_Graph_Vertex_Id;
+         Edge   : Library_Graph_Edge_Id);
       pragma Inline (Decrement_Pending_Predecessors);
-      --  Decrease the number of pending predecessors vertex Vertex of library
-      --  graph G must wait on until it can be elaborated.
+      --  Decrease the number of pending predecessors vertex Vertex which was
+      --  reached via edge Edge of library graph G must wait until it can be
+      --  elaborated.
 
       function File_Name
         (G      : Library_Graph;
@@ -844,12 +869,30 @@ package Bindo.Graphs is
       --  Obtain the name of the unit which vertex Vertex of library graph G
       --  represents.
 
-      function Pending_Predecessors
+      procedure Pending_Predecessors_For_Elaboration
+        (G            : Library_Graph;
+         Vertex       : Library_Graph_Vertex_Id;
+         Strong_Preds : out Natural;
+         Weak_Preds   : out Natural);
+      pragma Inline (Pending_Predecessors_For_Elaboration);
+      --  Obtain the number of pending strong and weak predecessors of vertex
+      --  Vertex of library graph G, taking into account Elaborate_Body pairs.
+      --  Strong predecessors are returned in Strong_Preds. Weak predecessors
+      --  are returned in Weak_Preds.
+
+      function Pending_Strong_Predecessors
         (G      : Library_Graph;
          Vertex : Library_Graph_Vertex_Id) return Natural;
-      pragma Inline (Pending_Predecessors);
-      --  Obtain the number of pending predecessors vertex Vertex of library
-      --  graph G must wait on until it can be elaborated.
+      pragma Inline (Pending_Strong_Predecessors);
+      --  Obtain the number of pending strong predecessors vertex Vertex of
+      --  library graph G must wait on until it can be elaborated.
+
+      function Pending_Weak_Predecessors
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id) return Natural;
+      pragma Inline (Pending_Weak_Predecessors);
+      --  Obtain the number of pending weak predecessors vertex Vertex of
+      --  library graph G must wait on until it can be elaborated.
 
       procedure Set_Corresponding_Item
         (G      : Library_Graph;
@@ -877,6 +920,12 @@ package Bindo.Graphs is
       -- Edge attributes --
       ---------------------
 
+      function Activates_Task
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean;
+      pragma Inline (Activates_Task);
+      --  Determine whether edge Edge of library graph G activates a task
+
       function Kind
         (G    : Library_Graph;
          Edge : Library_Graph_Edge_Id) return Library_Graph_Edge_Kind;
@@ -901,17 +950,26 @@ package Bindo.Graphs is
 
       procedure Decrement_Pending_Predecessors
         (G    : Library_Graph;
-         Comp : Component_Id);
+         Comp : Component_Id;
+         Edge : Library_Graph_Edge_Id);
       pragma Inline (Decrement_Pending_Predecessors);
-      --  Decrease the number of pending predecessors component Comp of library
-      --  graph G must wait on until it can be elaborated.
+      --  Decrease the number of pending predecessors component Comp which was
+      --  reached via edge Edge of library graph G must wait on until it can be
+      --  elaborated.
 
-      function Pending_Predecessors
+      function Pending_Strong_Predecessors
         (G    : Library_Graph;
          Comp : Component_Id) return Natural;
-      pragma Inline (Pending_Predecessors);
-      --  Obtain the number of pending predecessors component Comp of library
-      --  graph G must wait on until it can be elaborated.
+      pragma Inline (Pending_Strong_Predecessors);
+      --  Obtain the number of pending strong predecessors component Comp of
+      --  library graph G must wait on until it can be elaborated.
+
+      function Pending_Weak_Predecessors
+        (G    : Library_Graph;
+         Comp : Component_Id) return Natural;
+      pragma Inline (Pending_Weak_Predecessors);
+      --  Obtain the number of pending weak predecessors component Comp of
+      --  library graph G must wait on until it can be elaborated.
 
       ----------------------
       -- Cycle attributes --
@@ -940,10 +998,52 @@ package Bindo.Graphs is
       -- Semantics --
       ---------------
 
+      function Complementary_Vertex
+        (G                : Library_Graph;
+         Vertex           : Library_Graph_Vertex_Id;
+         Force_Complement : Boolean) return Library_Graph_Vertex_Id;
+      pragma Inline (Complementary_Vertex);
+      --  Obtain the complementary vertex of vertex Vertex of library graph G
+      --  as follows:
+      --
+      --    * If Vertex is the spec of an Elaborate_Body pair, return the body
+      --    * If Vertex is the body of an Elaborate_Body pair, return the spec
+      --
+      --  This behavior can be forced by setting flag Force_Complement to True.
+
+      function Contains_Elaborate_All_Edge
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) return Boolean;
+      pragma Inline (Contains_Elaborate_All_Edge);
+      --  Determine whether cycle Cycle of library graph G contains an
+      --  Elaborate_All edge.
+
+      function Contains_Static_Successor_Edge
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) return Boolean;
+      pragma Inline (Contains_Static_Successor_Edge);
+      --  Determine whether cycle Cycle of library graph G contains an edge
+      --  where the successor was compiled using the static model.
+
+      function Contains_Task_Activation
+        (G     : Library_Graph;
+         Cycle : Library_Graph_Cycle_Id) return Boolean;
+      pragma Inline (Contains_Task_Activation);
+      --  Determine whether cycle Cycle of library graph G contains an
+      --  invocation edge where the path it represents involves a task
+      --  activation.
+
       function Has_Elaborate_All_Cycle (G : Library_Graph) return Boolean;
       pragma Inline (Has_Elaborate_All_Cycle);
       --  Determine whether library graph G contains a cycle involving pragma
       --  Elaborate_All.
+
+      function Has_No_Elaboration_Code
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id) return Boolean;
+      pragma Inline (Has_No_Elaboration_Code);
+      --  Determine whether vertex Vertex of library graph G represents a unit
+      --  that lacks elaboration code.
 
       function In_Same_Component
         (G     : Library_Graph;
@@ -973,22 +1073,26 @@ package Bindo.Graphs is
       --  Determine whether vertex Vertex of library graph G denotes a body
       --  with a corresponding spec.
 
-      function Is_Dynamically_Elaborated (G : Library_Graph) return Boolean;
+      function Is_Dynamically_Elaborated
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id) return Boolean;
       pragma Inline (Is_Dynamically_Elaborated);
-      --  Determine whether library graph G was created from a set of units
-      --  where the main library unit was compiled using the dynamic model.
+      --  Determine whether vertex Vertex of library graph G was compiled
+      --  using the dynamic model.
 
       function Is_Elaborable_Component
         (G    : Library_Graph;
          Comp : Component_Id) return Boolean;
       pragma Inline (Is_Elaborable_Component);
-      --  Determine whether component Comp of library graph G can be elaborated
+      --  Determine whether component Comp of library graph G is not waiting on
+      --  any predecessors, and can thus be elaborated.
 
       function Is_Elaborable_Vertex
         (G      : Library_Graph;
          Vertex : Library_Graph_Vertex_Id) return Boolean;
       pragma Inline (Is_Elaborable_Vertex);
-      --  Determine whether vertex Vertex of library graph G can be elaborated
+      --  Determine whether vertex Vertex of library graph G is not waiting on
+      --  any predecessors, and can thus be elaborated.
 
       function Is_Elaborate_All_Edge
         (G    : Library_Graph;
@@ -1011,6 +1115,15 @@ package Bindo.Graphs is
       pragma Inline (Is_Elaborate_Edge);
       --  Determine whether edge Edge of library graph G is an edge whose
       --  predecessor is subject to pragma Elaborate.
+
+      function Is_Elaborate_Body_Pair
+        (G           : Library_Graph;
+         Spec_Vertex : Library_Graph_Vertex_Id;
+         Body_Vertex : Library_Graph_Vertex_Id) return Boolean;
+      pragma Inline (Is_Elaborate_Body_Pair);
+      --  Determine whether vertices Spec_Vertex and Body_Vertex of library
+      --  graph G denote a spec subject to Elaborate_Body and its completing
+      --  body.
 
       function Is_Forced_Edge
         (G    : Library_Graph;
@@ -1045,13 +1158,20 @@ package Bindo.Graphs is
          Vertex : Library_Graph_Vertex_Id) return Boolean;
       pragma Inline (Is_Preelaborated_Unit);
       --  Determine whether vertex Vertex of library graph G denotes a unit
-      --  subjec to pragma Pure or Preelaborable.
+      --  subject to pragma Pure or Preelaborable.
 
       function Is_Spec
         (G      : Library_Graph;
          Vertex : Library_Graph_Vertex_Id) return Boolean;
       pragma Inline (Is_Spec);
       --  Determine whether vertex Vertex of library graph G denotes a spec
+
+      function Is_Spec_Before_Body_Edge
+        (G    : Library_Graph;
+         Edge : Library_Graph_Edge_Id) return Boolean;
+      pragma Inline (Is_Spec_Before_Body_Edge);
+      --  Determine whether edge Edge of library graph G links a predecessor
+      --  spec and a successor body belonging to the same unit.
 
       function Is_Spec_With_Body
         (G      : Library_Graph;
@@ -1066,6 +1186,14 @@ package Bindo.Graphs is
       pragma Inline (Is_Spec_With_Elaborate_Body);
       --  Determine whether vertex Vertex of library graph G denotes a spec
       --  with a corresponding body, and is subject to pragma Elaborate_Body.
+
+      function Is_Weakly_Elaborable_Vertex
+        (G      : Library_Graph;
+         Vertex : Library_Graph_Vertex_Id) return Boolean;
+      pragma Inline (Is_Weakly_Elaborable_Vertex);
+      --  Determine whether vertex Vertex of library graph G is waiting on
+      --  weak predecessors only, in which case it can be elaborated assuming
+      --  that the weak edges will not be exercised at elaboration time.
 
       function Is_With_Edge
         (G    : Library_Graph;
@@ -1295,11 +1423,6 @@ package Bindo.Graphs is
       -- Vertices --
       --------------
 
-      procedure Destroy_Library_Graph_Vertex
-        (Vertex : in out Library_Graph_Vertex_Id);
-      pragma Inline (Destroy_Library_Graph_Vertex);
-      --  Destroy library graph vertex Vertex
-
       --  The following type represents the attributes of a library graph
       --  vertex.
 
@@ -1320,9 +1443,13 @@ package Bindo.Graphs is
          In_Elaboration_Order : Boolean := False;
          --  Set when this vertex is elaborated
 
-         Pending_Predecessors : Natural := 0;
-         --  The number of pending predecessor vertices this vertex must wait
-         --  on before it can be elaborated.
+         Pending_Strong_Predecessors : Natural := 0;
+         --  The number of pending strong predecessor vertices this vertex must
+         --  wait on before it can be elaborated.
+
+         Pending_Weak_Predecessors : Natural := 0;
+         --  The number of weak predecessor vertices this vertex must wait on
+         --  before it can be elaborated.
 
          Unit : Unit_Id := No_Unit_Id;
          --  The reference to unit this vertex represents
@@ -1330,10 +1457,11 @@ package Bindo.Graphs is
 
       No_Library_Graph_Vertex_Attributes :
         constant Library_Graph_Vertex_Attributes :=
-          (Corresponding_Item   => No_Library_Graph_Vertex,
-           In_Elaboration_Order => False,
-           Pending_Predecessors => 0,
-           Unit                 => No_Unit_Id);
+          (Corresponding_Item          => No_Library_Graph_Vertex,
+           In_Elaboration_Order        => False,
+           Pending_Strong_Predecessors => 0,
+           Pending_Weak_Predecessors   => 0,
+           Unit                        => No_Unit_Id);
 
       procedure Destroy_Library_Graph_Vertex_Attributes
         (Attrs : in out Library_Graph_Vertex_Attributes);
@@ -1359,13 +1487,18 @@ package Bindo.Graphs is
       --  The following type represents the attributes of a library graph edge
 
       type Library_Graph_Edge_Attributes is record
+         Activates_Task : Boolean := False;
+         --  Set for an invocation edge, where at least one of the paths the
+         --  edge represents activates a task.
+
          Kind : Library_Graph_Edge_Kind := No_Edge;
          --  The nature of the library graph edge
       end record;
 
       No_Library_Graph_Edge_Attributes :
         constant Library_Graph_Edge_Attributes :=
-          (Kind => No_Edge);
+          (Activates_Task => False,
+           Kind           => No_Edge);
 
       procedure Destroy_Library_Graph_Edge_Attributes
         (Attrs : in out Library_Graph_Edge_Attributes);
@@ -1391,13 +1524,18 @@ package Bindo.Graphs is
       --  The following type represents the attributes of a component
 
       type Component_Attributes is record
-         Pending_Predecessors : Natural := 0;
-         --  The number of pending predecessor components this component must
-         --  wait on before it can be elaborated.
+         Pending_Strong_Predecessors : Natural := 0;
+         --  The number of pending strong predecessor components this component
+         --  must wait on before it can be elaborated.
+
+         Pending_Weak_Predecessors : Natural := 0;
+         --  The number of pending weak predecessor components this component
+         --  must wait on before it can be elaborated.
       end record;
 
       No_Component_Attributes : constant Component_Attributes :=
-        (Pending_Predecessors => 0);
+        (Pending_Strong_Predecessors => 0,
+         Pending_Weak_Predecessors   => 0);
 
       procedure Destroy_Component_Attributes
         (Attrs : in out Component_Attributes);
@@ -1466,15 +1604,6 @@ package Bindo.Graphs is
          "="                   => "=",
          Destroy_Value         => Destroy_Library_Graph_Cycle_Attributes,
          Hash                  => Hash_Library_Graph_Cycle);
-
-      ---------------------
-      -- Recorded cycles --
-      ---------------------
-
-      package RC_Sets is new Membership_Sets
-        (Element_Type => Library_Graph_Cycle_Attributes,
-         "="          => Same_Library_Graph_Cycle_Attributes,
-         Hash         => Hash_Library_Graph_Cycle_Attributes);
 
       --------------------
       -- Recorded edges --
@@ -1560,20 +1689,12 @@ package Bindo.Graphs is
          Cycles : LGC_Lists.Doubly_Linked_List := LGC_Lists.Nil;
          --  The list of all cycles in the graph, sorted based on precedence
 
-         Dynamically_Elaborated : Boolean := False;
-         --  Set when the main library unit was compiled using the dynamic
-         --  model.
-
          Edge_Attributes : LGE_Tables.Dynamic_Hash_Table := LGE_Tables.Nil;
          --  The map of edge -> edge attributes for all edges in the graph
 
          Graph : DG.Directed_Graph := DG.Nil;
          --  The underlying graph describing the relations between edges and
          --  vertices.
-
-         Recorded_Cycles : RC_Sets.Membership_Set := RC_Sets.Nil;
-         --  The set of recorded cycles, used to prevent duplicate cycles in
-         --  the graph.
 
          Recorded_Edges : RE_Sets.Membership_Set := RE_Sets.Nil;
          --  The set of recorded edges, used to prevent duplicate edges in the

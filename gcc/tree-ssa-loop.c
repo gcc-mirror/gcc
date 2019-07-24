@@ -157,7 +157,7 @@ gate_oacc_kernels (function *fn)
   if (!lookup_attribute ("oacc kernels", DECL_ATTRIBUTES (fn->decl)))
     return false;
 
-  struct loop *loop;
+  class loop *loop;
   FOR_EACH_LOOP (loop, 0)
     if (loop->in_oacc_kernels_region)
       return true;
@@ -455,7 +455,7 @@ public:
 unsigned
 pass_scev_cprop::execute (function *)
 {
-  struct loop *loop;
+  class loop *loop;
   bool any = false;
 
   /* Perform final value replacement in loops, in case the replacement
@@ -776,7 +776,7 @@ get_lsm_tmp_name (tree ref, unsigned n, const char *suffix)
 /* Computes an estimated number of insns in LOOP, weighted by WEIGHTS.  */
 
 unsigned
-tree_num_loop_insns (struct loop *loop, eni_weights *weights)
+tree_num_loop_insns (class loop *loop, eni_weights *weights)
 {
   basic_block *body = get_loop_body (loop);
   gimple_stmt_iterator gsi;

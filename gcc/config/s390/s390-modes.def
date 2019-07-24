@@ -31,6 +31,8 @@ FLOAT_MODE (TF, 16, ieee_quad_format);
 
 Condition Codes
 
+      CC0         CC1          CC2         CC3
+
 Check for zero
 
 CCZ:  EQ          NE           NE          NE
@@ -56,6 +58,10 @@ Condition codes resulting from add with overflow
 CCA:  EQ          LT           GT          Overflow
 CCAP: EQ          LT           GT          LT         (AGHI, AHI)
 CCAN: EQ          LT           GT          GT         (AGHI, AHI)
+
+Condition codes for overflow checking resulting from signed adds/subs/mults
+
+CCO:  EQ          EQ           EQ          NE         (AGR, AGHI, SGR, MSC, ...)
 
 Condition codes of unsigned adds and subs
 
@@ -96,6 +102,13 @@ less than/greater than data are lost. Nevertheless a comparison can be done
 whenever immediate values are involved because they are known at compile time.
 If you know whether the used constant is positive or negative you can predict
 the sign of the result even in case of an overflow.
+
+
+CCO
+
+This mode is used to check whether there was an overflow condition in
+a signed add, sub, or mul operation.  See (addv<mode>4, subv<mode>4,
+mulv<mode>4 patterns).
 
 
 CCT, CCT1, CCT2, CCT3
@@ -204,6 +217,7 @@ CC_MODE (CCZ1);
 CC_MODE (CCA);
 CC_MODE (CCAP);
 CC_MODE (CCAN);
+CC_MODE (CCO);
 CC_MODE (CCL);
 CC_MODE (CCL1);
 CC_MODE (CCL2);

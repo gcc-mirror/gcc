@@ -369,7 +369,7 @@ private
       --  section for the resource.
 
       LockSemaphore : Win32.HANDLE;
-      SpinCount     : Win32.DWORD;
+      SpinCount     : Interfaces.C.size_t;
    end record;
 
 end System.OS_Interface;

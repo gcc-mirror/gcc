@@ -158,7 +158,8 @@ class Export : public String_dump
 		 const std::map<std::string, Package*>& imports,
 		 const std::string& import_init_fn,
 		 const Import_init_set& imported_init_fns,
-		 const Bindings* bindings);
+		 const Bindings* bindings,
+                 Unordered_set(Named_object*)* marked_inline_functions);
 
   // Record a type that is mentioned in export data. Return value is
   // TRUE for newly visited types, FALSE for types that have been seen

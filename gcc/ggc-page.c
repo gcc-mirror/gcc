@@ -200,7 +200,7 @@ static const size_t extra_order_size_table[] = {
   sizeof (struct function),
   sizeof (struct basic_block_def),
   sizeof (struct cgraph_node),
-  sizeof (struct loop),
+  sizeof (class loop),
 };
 
 /* The total number of orders.  */

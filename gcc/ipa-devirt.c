@@ -2626,8 +2626,9 @@ possible_polymorphic_call_targets_1 (vec <cgraph_node *> &nodes,
    polymorphic calls in the program, so we memoize all the previous
    queries and avoid duplicated work.  */
 
-struct polymorphic_call_target_d
+class polymorphic_call_target_d
 {
+public:
   HOST_WIDE_INT otr_token;
   ipa_polymorphic_call_context context;
   odr_type type;
@@ -2949,8 +2950,9 @@ struct decl_warn_count
 
 /* Information about type and decl warnings.  */
 
-struct final_warning_record
+class final_warning_record
 {
+public:
   /* If needed grow type_warnings vector and initialize new decl_warn_count
      to have dyn_count set to profile_count::zero ().  */
   void grow_type_warnings (unsigned newlen);
@@ -2972,7 +2974,7 @@ final_warning_record::grow_type_warnings (unsigned newlen)
     }
 }
 
-struct final_warning_record *final_warning_records;
+class final_warning_record *final_warning_records;
 
 /* Return vector containing possible targets of polymorphic call of type
    OTR_TYPE calling method OTR_TOKEN within type of OTR_OUTER_TYPE and OFFSET.

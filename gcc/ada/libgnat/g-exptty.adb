@@ -38,6 +38,28 @@ package body GNAT.Expect.TTY is
    On_Windows : constant Boolean := Directory_Separator = '\';
    --  True when on Windows
 
+   function Waitpid (Process : System.Address; Blocking : Integer)
+                     return Integer;
+   pragma Import (C, Waitpid, "__gnat_tty_waitpid");
+   --  Wait for a specific process id, and return its exit code
+
+   ------------------------
+   -- Is_Process_Running --
+   ------------------------
+
+   function Is_Process_Running
+      (Descriptor : in out TTY_Process_Descriptor)
+      return Boolean
+   is
+   begin
+      if Descriptor.Process = System.Null_Address then
+         return False;
+      end if;
+
+      Descriptor.Exit_Status := Waitpid (Descriptor.Process, Blocking => 0);
+      return Descriptor.Exit_Status = Still_Active;
+   end Is_Process_Running;
+
    -----------
    -- Close --
    -----------
@@ -49,10 +71,6 @@ package body GNAT.Expect.TTY is
       procedure Terminate_Process (Process : System.Address);
       pragma Import (C, Terminate_Process, "__gnat_terminate_process");
 
-      function Waitpid (Process : System.Address) return Integer;
-      pragma Import (C, Waitpid, "__gnat_tty_waitpid");
-      --  Wait for a specific process id, and return its exit code
-
       procedure Free_Process (Process : System.Address);
       pragma Import (C, Free_Process, "__gnat_free_process");
 
@@ -63,7 +81,7 @@ package body GNAT.Expect.TTY is
       --  If we haven't already closed the process
 
       if Descriptor.Process = System.Null_Address then
-         Status := -1;
+         Status := Descriptor.Exit_Status;
 
       else
          --  Send a Ctrl-C to the process first. This way, if the launched
@@ -74,9 +92,6 @@ package body GNAT.Expect.TTY is
          --  Note: special characters are sent to the terminal to generate the
          --  signal, so this needs to be done while the file descriptors are
          --  still open (it used to be after the closes and that was wrong).
-
-         Interrupt (Descriptor);
-         delay (0.05);
 
          if Descriptor.Input_Fd /= Invalid_FD then
             Close (Descriptor.Input_Fd);
@@ -92,8 +107,23 @@ package body GNAT.Expect.TTY is
             Close (Descriptor.Output_Fd);
          end if;
 
-         Terminate_Process (Descriptor.Process);
-         Status := Waitpid (Descriptor.Process);
+         if Descriptor.Exit_Status = Still_Active then
+            Status := Waitpid (Descriptor.Process, Blocking => 0);
+
+            if Status = Still_Active then
+               --  In theory the process might hav died since the check. In
+               --  practice the following calls should not cause any issue.
+               Interrupt (Descriptor);
+               delay (0.05);
+               Terminate_Process (Descriptor.Process);
+               Status := Waitpid (Descriptor.Process, Blocking => 1);
+               Descriptor.Exit_Status := Status;
+            end if;
+         else
+            --  If Exit_Status is not STILL_ACTIVE just retrieve the saved
+            --  exit status
+            Status := Descriptor.Exit_Status;
+         end if;
 
          if not On_Windows then
             Close_TTY (Descriptor.Process);
@@ -258,6 +288,7 @@ package body GNAT.Expect.TTY is
       pragma Import (C, Internal, "__gnat_setup_communication");
 
    begin
+      Pid.Exit_Status := Still_Active;
       if Internal (Pid.Process'Address) /= 0 then
          raise Invalid_Process with "cannot setup communication.";
       end if;

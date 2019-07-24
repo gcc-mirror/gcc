@@ -33,12 +33,10 @@
 
 with Ada.Streams;                use Ada.Streams;
 with Ada;                        use Ada;
-with Ada.Unchecked_Deallocation;
 
 with System;               use System;
 with System.Communication; use System.Communication;
 with System.CRTL;          use System.CRTL;
-with System.OS_Constants;
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
@@ -48,8 +46,6 @@ package body GNAT.Serial_Communications is
 
    use type Interfaces.C.unsigned;
 
-   type Port_Data is new int;
-
    subtype unsigned is Interfaces.C.unsigned;
    subtype char is Interfaces.C.char;
    subtype unsigned_char is Interfaces.C.unsigned_char;
@@ -58,19 +54,32 @@ package body GNAT.Serial_Communications is
    pragma Import (C, fcntl, "fcntl");
 
    C_Data_Rate : constant array (Data_Rate) of unsigned :=
-                   (B75     => OSC.B75,
-                    B110    => OSC.B110,
-                    B150    => OSC.B150,
-                    B300    => OSC.B300,
-                    B600    => OSC.B600,
-                    B1200   => OSC.B1200,
-                    B2400   => OSC.B2400,
-                    B4800   => OSC.B4800,
-                    B9600   => OSC.B9600,
-                    B19200  => OSC.B19200,
-                    B38400  => OSC.B38400,
-                    B57600  => OSC.B57600,
-                    B115200 => OSC.B115200);
+                   (B75      => OSC.B75,
+                    B110     => OSC.B110,
+                    B150     => OSC.B150,
+                    B300     => OSC.B300,
+                    B600     => OSC.B600,
+                    B1200    => OSC.B1200,
+                    B2400    => OSC.B2400,
+                    B4800    => OSC.B4800,
+                    B9600    => OSC.B9600,
+                    B19200   => OSC.B19200,
+                    B38400   => OSC.B38400,
+                    B57600   => OSC.B57600,
+                    B115200  => OSC.B115200,
+                    B230400  => OSC.B230400,
+                    B460800  => OSC.B460800,
+                    B500000  => OSC.B500000,
+                    B576000  => OSC.B576000,
+                    B921600  => OSC.B921600,
+                    B1000000 => OSC.B1000000,
+                    B1152000 => OSC.B1152000,
+                    B1500000 => OSC.B1500000,
+                    B2000000 => OSC.B2000000,
+                    B2500000 => OSC.B2500000,
+                    B3000000 => OSC.B3000000,
+                    B3500000 => OSC.B3500000,
+                    B4000000 => OSC.B4000000);
 
    C_Bits      : constant array (Data_Bits) of unsigned :=
                    (CS7 => OSC.CS7, CS8 => OSC.CS8);
@@ -111,20 +120,16 @@ package body GNAT.Serial_Communications is
       Res    : int;
 
    begin
-      if Port.H = null then
-         Port.H := new Port_Data;
-      end if;
-
-      Port.H.all := Port_Data (open
+      Port.H := Serial_Port_Descriptor (open
          (C_Name (C_Name'First)'Address, int (O_RDWR + O_NOCTTY + O_NDELAY)));
 
-      if Port.H.all = -1 then
+      if Port.H = -1 then
          Raise_Error ("open: open failed");
       end if;
 
       --  By default we are in blocking mode
 
-      Res := fcntl (int (Port.H.all), F_SETFL, 0);
+      Res := fcntl (int (Port.H), F_SETFL, 0);
 
       if Res = -1 then
          Raise_Error ("open: fcntl failed");
@@ -156,11 +161,11 @@ package body GNAT.Serial_Communications is
       Res : ssize_t;
 
    begin
-      if Port.H = null then
+      if Port.H = -1 then
          Raise_Error ("read: port not opened", 0);
       end if;
 
-      Res := read (Integer (Port.H.all), Buffer'Address, Len);
+      Res := read (Integer (Port.H), Buffer'Address, Len);
 
       if Res = -1 then
          Raise_Error ("read failed");
@@ -215,13 +220,13 @@ package body GNAT.Serial_Communications is
       --  Warnings off, since we don't always test the result
 
    begin
-      if Port.H = null then
+      if Port.H = -1 then
          Raise_Error ("set: port not opened", 0);
       end if;
 
       --  Get current port settings
 
-      Res := tcgetattr (int (Port.H.all), Current'Address);
+      Res := tcgetattr (int (Port.H), Current'Address);
 
       --  Change settings now
 
@@ -256,17 +261,26 @@ package body GNAT.Serial_Communications is
 
       --  Set port settings
 
-      Res := tcflush (int (Port.H.all), TCIFLUSH);
-      Res := tcsetattr (int (Port.H.all), TCSANOW, Current'Address);
+      Res := tcflush (int (Port.H), TCIFLUSH);
+      Res := tcsetattr (int (Port.H), TCSANOW, Current'Address);
 
       --  Block
 
-      Res := fcntl (int (Port.H.all), F_SETFL, (if Block then 0 else FNDELAY));
+      Res := fcntl (int (Port.H), F_SETFL, (if Block then 0 else FNDELAY));
 
       if Res = -1 then
          Raise_Error ("set: fcntl failed");
       end if;
    end Set;
+
+   ------------
+   -- To_Ada --
+   ------------
+
+   procedure To_Ada (Port : out Serial_Port; Fd : Serial_Port_Descriptor) is
+   begin
+      Port.H := Fd;
+   end To_Ada;
 
    -----------
    -- Write --
@@ -280,11 +294,11 @@ package body GNAT.Serial_Communications is
       Res : ssize_t;
 
    begin
-      if Port.H = null then
+      if Port.H = -1 then
          Raise_Error ("write: port not opened", 0);
       end if;
 
-      Res := write (int (Port.H.all), Buffer'Address, Len);
+      Res := write (int (Port.H), Buffer'Address, Len);
 
       if Res = -1 then
          Raise_Error ("write failed");
@@ -298,16 +312,12 @@ package body GNAT.Serial_Communications is
    -----------
 
    procedure Close (Port : in out Serial_Port) is
-      procedure Unchecked_Free is
-        new Unchecked_Deallocation (Port_Data, Port_Data_Access);
-
       Res : int;
       pragma Unreferenced (Res);
 
    begin
-      if Port.H /= null then
-         Res := close (int (Port.H.all));
-         Unchecked_Free (Port.H);
+      if Port.H /= -1 then
+         Res := close (int (Port.H));
       end if;
    end Close;
 

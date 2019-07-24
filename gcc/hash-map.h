@@ -254,7 +254,8 @@ public:
     /* Can't use std::pair here, because GCC before 4.3 don't handle
        std::pair where template parameters are references well.
        See PR86739.  */
-    struct reference_pair {
+    class reference_pair {
+    public:
       const Key &first;
       Value &second;
 

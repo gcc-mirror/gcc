@@ -1,5 +1,7 @@
 2019-07-24  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r273764.
+
 	gcc/testsuite/
 	* g++.dg/modules/alias-2_a.H: Add dg-module-header.
 	* g++.dg/modules/alias-3_a.H: Likewise.

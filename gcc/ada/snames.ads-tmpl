@@ -1511,6 +1511,11 @@ package Snames is
    Name_Runtime_Library_Dir              : constant Name_Id := N + $;
    Name_Runtime_Source_Dir               : constant Name_Id := N + $;
 
+   --  Additional names used by the Repinfo unit
+
+   Name_Discriminant                     : constant Name_Id := N + $;
+   Name_Operands                         : constant Name_Id := N + $;
+
    --  Other miscellaneous names used in front end
 
    Name_Unaligned_Valid                  : constant Name_Id := N + $;

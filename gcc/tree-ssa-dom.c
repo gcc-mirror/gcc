@@ -395,7 +395,7 @@ edge_info::record_simple_equiv (tree lhs, tree rhs)
 void
 free_dom_edge_info (edge e)
 {
-  class edge_info *edge_info = (struct edge_info *)e->aux;
+  class edge_info *edge_info = (class edge_info *)e->aux;
 
   if (edge_info)
     delete edge_info;
@@ -543,7 +543,7 @@ record_edge_info (basic_block bb)
               bool can_infer_simple_equiv
                 = !(HONOR_SIGNED_ZEROS (op0)
                     && real_zerop (op0));
-              struct edge_info *edge_info;
+	      class edge_info *edge_info;
 
 	      edge_info = new class edge_info (true_edge);
               record_conditions (&edge_info->cond_equivalences, cond, inverted);
@@ -567,7 +567,7 @@ record_edge_info (basic_block bb)
               bool can_infer_simple_equiv
                 = !(HONOR_SIGNED_ZEROS (op1)
                     && (TREE_CODE (op1) == SSA_NAME || real_zerop (op1)));
-              struct edge_info *edge_info;
+	      class edge_info *edge_info;
 
 	      edge_info = new class edge_info (true_edge);
               record_conditions (&edge_info->cond_equivalences, cond, inverted);

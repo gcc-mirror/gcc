@@ -37,9 +37,4 @@ program test
   print *, char(huge(0_8),kind=4) ! { dg-error "too large for the collating sequence" }
   print *, achar(huge(0_8),kind=4) ! { dg-error "too large for the collating sequence" }
 
-  print *, char(z'FFFFFFFF', kind=4)
-  print *, achar(z'FFFFFFFF', kind=4)
-  print *, char(z'100000000', kind=4) ! { dg-error "too large for the collating sequence" }
-  print *, achar(z'100000000', kind=4) ! { dg-error "too large for the collating sequence" }
-
 end program test

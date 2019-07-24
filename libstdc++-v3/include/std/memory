@@ -261,7 +261,7 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
     uses_allocator_construction_args(const _Alloc& __a,
 				     _Args&&... __args) noexcept
 #if __cpp_concepts
-    requires ! _Std_pair<_Tp>
+    requires (! _Std_pair<_Tp>)
 #endif
     {
       return std::__uses_alloc_args<_Tp>(__a, std::forward<_Args>(__args)...);

@@ -333,6 +333,11 @@ package body Sem_Warn is
 
             elsif Has_Warnings_Off (Entity (Name (N))) then
                return;
+
+            --  Forget it if the parameter is not In
+
+            elsif Has_Out_Or_In_Out_Parameter (Entity (Name (N))) then
+               return;
             end if;
 
             --  OK, see if we have one argument
@@ -1408,9 +1413,13 @@ package body Sem_Warn is
                   goto Continue;
                end if;
 
-               --  Check for unset reference
+               --  Check for unset reference. If type of object has
+               --  preelaborable initialization, warning is misleading.
 
-               if Warn_On_No_Value_Assigned and then Present (UR) then
+               if Warn_On_No_Value_Assigned
+                 and then Present (UR)
+                 and then not Known_To_Have_Preelab_Init (Etype (E1))
+               then
 
                   --  For other than access type, go back to original node to
                   --  deal with case where original unset reference has been
@@ -2698,7 +2707,7 @@ package body Sem_Warn is
 
       --  Flag any unused with clauses. For a subunit, check only the units
       --  in its context, not those of the parent, which may be needed by other
-      --  subunits.  We will get the full warnings when we compile the parent,
+      --  subunits. We will get the full warnings when we compile the parent,
       --  but the following is helpful when compiling a subunit by itself.
 
       if Nkind (Unit (Cunit (Main_Unit))) = N_Subunit then

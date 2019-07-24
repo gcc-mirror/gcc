@@ -1839,8 +1839,9 @@ class flag_chars_t
 /* Support struct for argument_parser and check_format_info_main.
    Encapsulates any length modifier applied to the current argument.  */
 
-struct length_modifier
+class length_modifier
 {
+public:
   length_modifier ()
   : chars (NULL), val (FMT_LEN_none), std (STD_C89),
     scalar_identity_flag (0)
@@ -2858,8 +2859,9 @@ check_argument_type (const format_char_info *fci,
 /* Describes "paired tokens" within the format string that are
    expected to be balanced.  */
 
-struct baltoks_t
+class baltoks_t
 {
+public:
   baltoks_t (): singlequote (), doublequote () { }
 
   typedef auto_vec<const char *> balanced_tokens_t;

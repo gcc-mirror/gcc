@@ -169,6 +169,16 @@ create_tmp_var_for (struct nesting_info *info, tree type, const char *prefix)
   return tmp_var;
 }
 
+/* Like build_simple_mem_ref, but set TREE_THIS_NOTRAP on the result.  */
+
+static tree
+build_simple_mem_ref_notrap (tree ptr)
+{
+  tree t = build_simple_mem_ref (ptr);
+  TREE_THIS_NOTRAP (t) = 1;
+  return t;
+}
+
 /* Take the address of EXP to be used within function CONTEXT.
    Mark it for addressability as necessary.  */
 
@@ -877,7 +887,7 @@ get_static_chain (struct nesting_info *info, tree target_context,
 	{
 	  tree field = get_chain_field (i);
 
-	  x = build_simple_mem_ref (x);
+	  x = build_simple_mem_ref_notrap (x);
 	  x = build3 (COMPONENT_REF, TREE_TYPE (field), x, field, NULL_TREE);
 	  x = init_tmp_var (info, x, gsi);
 	}
@@ -914,12 +924,12 @@ get_frame_field (struct nesting_info *info, tree target_context,
 	{
 	  tree field = get_chain_field (i);
 
-	  x = build_simple_mem_ref (x);
+	  x = build_simple_mem_ref_notrap (x);
 	  x = build3 (COMPONENT_REF, TREE_TYPE (field), x, field, NULL_TREE);
 	  x = init_tmp_var (info, x, gsi);
 	}
 
-      x = build_simple_mem_ref (x);
+      x = build_simple_mem_ref_notrap (x);
     }
 
   x = build3 (COMPONENT_REF, TREE_TYPE (field), x, field, NULL_TREE);
@@ -963,16 +973,16 @@ get_nonlocal_debug_decl (struct nesting_info *info, tree decl)
       for (i = info->outer; i->context != target_context; i = i->outer)
 	{
 	  field = get_chain_field (i);
-	  x = build_simple_mem_ref (x);
+	  x = build_simple_mem_ref_notrap (x);
 	  x = build3 (COMPONENT_REF, TREE_TYPE (field), x, field, NULL_TREE);
 	}
-      x = build_simple_mem_ref (x);
+      x = build_simple_mem_ref_notrap (x);
     }
 
   field = lookup_field_for_decl (i, decl, INSERT);
   x = build3 (COMPONENT_REF, TREE_TYPE (field), x, field, NULL_TREE);
   if (use_pointer_in_frame (decl))
-    x = build_simple_mem_ref (x);
+    x = build_simple_mem_ref_notrap (x);
 
   /* ??? We should be remapping types as well, surely.  */
   new_decl = build_decl (DECL_SOURCE_LOCATION (decl),
@@ -1060,7 +1070,7 @@ convert_nonlocal_reference_op (tree *tp, int *walk_subtrees, void *data)
 	    if (use_pointer_in_frame (t))
 	      {
 		x = init_tmp_var (info, x, &wi->gsi);
-		x = build_simple_mem_ref (x);
+		x = build_simple_mem_ref_notrap (x);
 	      }
 	  }
 
@@ -1343,6 +1353,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_THREADS:
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_DEFAULTMAP:
+	case OMP_CLAUSE_ORDER:
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_AUTO:
@@ -2073,6 +2084,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	case OMP_CLAUSE_THREADS:
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_DEFAULTMAP:
+	case OMP_CLAUSE_ORDER:
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_AUTO:

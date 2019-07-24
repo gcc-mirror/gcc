@@ -607,6 +607,7 @@ package body SFN_Scan is
 
    exception
       when others =>
+         pragma Assert (P'Valid);
          Cursor := P - S'First + 1;
          raise;
    end Scan_SFN_Pragmas;

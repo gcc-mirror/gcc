@@ -67,7 +67,7 @@ struct cset_converter
 #define CPP_BUF_COL(BUF) CPP_BUF_COLUMN(BUF, (BUF)->cur)
 
 #define CPP_INCREMENT_LINE(PFILE, COLS_HINT) do { \
-    const struct line_maps *line_table = PFILE->line_table; \
+    const class line_maps *line_table = PFILE->line_table; \
     const struct line_map_ordinary *map = \
       LINEMAPS_LAST_ORDINARY_MAP (line_table); \
     linenum_type line = SOURCE_LINE (map, line_table->highest_line); \
@@ -411,7 +411,7 @@ struct cpp_reader
   struct lexer_state state;
 
   /* Source line tracking.  */
-  struct line_maps *line_table;
+  class line_maps *line_table;
 
   /* The line of the '#' of the current directive.  */
   location_t directive_line;
@@ -526,7 +526,7 @@ struct cpp_reader
   cpp_token eof;
 
   /* Opaque handle to the dependencies of mkdeps.c.  */
-  struct mkdeps *deps;
+  class mkdeps *deps;
 
   /* Obstack holding all macro hash nodes.  This never shrinks.
      See identifiers.c */
@@ -864,7 +864,7 @@ ufputs (const unsigned char *s, FILE *f)
   return fputs ((const char *)s, f);
 }
 
-  /* In line-map.c.  */
+/* In line-map.c.  */
 
 /* Create and return a virtual location for a token that is part of a
    macro expansion-list at a macro expansion point.  See the comment
@@ -898,7 +898,7 @@ location_t linemap_add_macro_token (const line_map_macro *,
    LOCATION is the location of token that is part of the
    expansion-list of a macro expansion return the line number of the
    macro expansion point.  */
-int linemap_get_expansion_line (struct line_maps *,
+int linemap_get_expansion_line (class line_maps *,
 				location_t);
 
 /* Return the path of the file corresponding to source code location
@@ -909,7 +909,7 @@ int linemap_get_expansion_line (struct line_maps *,
    macro expansion point.
 
    SET is the line map set LOCATION comes from.  */
-const char* linemap_get_expansion_filename (struct line_maps *,
+const char* linemap_get_expansion_filename (class line_maps *,
 					    location_t);
 
 #ifdef __cplusplus

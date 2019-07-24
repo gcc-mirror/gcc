@@ -26,7 +26,8 @@ struct obstack;
 extern struct obstack *rtl_obstack;
 
 /* Information about an .md define_* rtx.  */
-struct md_rtx_info {
+class md_rtx_info {
+public:
   /* The rtx itself.  */
   rtx def;
 

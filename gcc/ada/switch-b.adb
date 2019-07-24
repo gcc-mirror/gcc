@@ -353,14 +353,11 @@ package body Switch.B is
             Ptr := Ptr + 1;
             Usage_Requested := True;
 
-         --  ??? Enable the following code when switching from the old to the
-         --  new elaboration-order mechanism.
-
          --  Processing for H switch
 
-         --  when 'H' =>
-         --     Ptr := Ptr + 1;
-         --     Legacy_Elaboration_Order := True;
+         when 'H' =>
+            Ptr := Ptr + 1;
+            Legacy_Elaboration_Order := True;
 
          --  Processing for i switch
 

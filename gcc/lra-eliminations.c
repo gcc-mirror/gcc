@@ -71,8 +71,9 @@ along with GCC; see the file COPYING3.	If not see
 
 /* This structure is used to record information about hard register
    eliminations.  */
-struct lra_elim_table
+class lra_elim_table
 {
+public:
   /* Hard register number to be eliminated.  */
   int from;
   /* Hard register number used as replacement.	*/
@@ -99,7 +100,7 @@ struct lra_elim_table
    of eliminating a register in favor of another.  If there is more
    than one way of eliminating a particular register, the most
    preferred should be specified first.	 */
-static struct lra_elim_table *reg_eliminate = 0;
+static class lra_elim_table *reg_eliminate = 0;
 
 /* This is an intermediate structure to initialize the table.  It has
    exactly the members provided by ELIMINABLE_REGS.  */
@@ -117,7 +118,7 @@ static const struct elim_table_1
 static void
 print_elim_table (FILE *f)
 {
-  struct lra_elim_table *ep;
+  class lra_elim_table *ep;
 
   for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
     {
@@ -141,7 +142,7 @@ lra_debug_elim_table (void)
    VALUE.  Setup FRAME_POINTER_NEEDED if elimination from frame
    pointer to stack pointer is not possible anymore.  */
 static void
-setup_can_eliminate (struct lra_elim_table *ep, bool value)
+setup_can_eliminate (class lra_elim_table *ep, bool value)
 {
   ep->can_eliminate = ep->prev_can_eliminate = value;
   if (! value
@@ -155,12 +156,12 @@ setup_can_eliminate (struct lra_elim_table *ep, bool value)
    or NULL if none.  The elimination table may contain more than
    one elimination for the same hard register, but this map specifies
    the one that we are currently using.  */
-static struct lra_elim_table *elimination_map[FIRST_PSEUDO_REGISTER];
+static class lra_elim_table *elimination_map[FIRST_PSEUDO_REGISTER];
 
 /* When an eliminable hard register becomes not eliminable, we use the
    following special structure to restore original offsets for the
    register.  */
-static struct lra_elim_table self_elim_table;
+static class lra_elim_table self_elim_table;
 
 /* Offsets should be used to restore original offsets for eliminable
    hard register which just became not eliminable.  Zero,
@@ -176,7 +177,7 @@ static void
 setup_elimination_map (void)
 {
   int i;
-  struct lra_elim_table *ep;
+  class lra_elim_table *ep;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     elimination_map[i] = NULL;
@@ -241,7 +242,7 @@ form_sum (rtx x, rtx y)
 int
 lra_get_elimination_hard_regno (int hard_regno)
 {
-  struct lra_elim_table *ep;
+  class lra_elim_table *ep;
 
   if (hard_regno < 0 || hard_regno >= FIRST_PSEUDO_REGISTER)
     return hard_regno;
@@ -252,11 +253,11 @@ lra_get_elimination_hard_regno (int hard_regno)
 
 /* Return elimination which will be used for hard reg REG, NULL
    otherwise.  */
-static struct lra_elim_table *
+static class lra_elim_table *
 get_elimination (rtx reg)
 {
   int hard_regno;
-  struct lra_elim_table *ep;
+  class lra_elim_table *ep;
 
   lra_assert (REG_P (reg));
   if ((hard_regno = REGNO (reg)) < 0 || hard_regno >= FIRST_PSEUDO_REGISTER)
@@ -333,7 +334,7 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 		      poly_int64 update_sp_offset, bool full_p)
 {
   enum rtx_code code = GET_CODE (x);
-  struct lra_elim_table *ep;
+  class lra_elim_table *ep;
   rtx new_rtx;
   int i, j;
   const char *fmt;
@@ -730,7 +731,7 @@ static void
 mark_not_eliminable (rtx x, machine_mode mem_mode)
 {
   enum rtx_code code = GET_CODE (x);
-  struct lra_elim_table *ep;
+  class lra_elim_table *ep;
   int i, j;
   const char *fmt;
   poly_int64 offset = 0;
@@ -900,7 +901,7 @@ eliminate_regs_in_insn (rtx_insn *insn, bool replace_p, bool first_p,
   int i;
   rtx substed_operand[MAX_RECOG_OPERANDS];
   rtx orig_operand[MAX_RECOG_OPERANDS];
-  struct lra_elim_table *ep;
+  class lra_elim_table *ep;
   rtx plus_src, plus_cst_src;
   lra_insn_recog_data_t id;
   struct lra_static_insn_data *static_id;
@@ -1108,7 +1109,7 @@ static bool
 update_reg_eliminate (bitmap insns_with_changed_offsets)
 {
   bool prev, result;
-  struct lra_elim_table *ep, *ep1;
+  class lra_elim_table *ep, *ep1;
   HARD_REG_SET temp_hard_reg_set;
 
   targetm.compute_frame_layout ();
@@ -1213,12 +1214,12 @@ update_reg_eliminate (bitmap insns_with_changed_offsets)
 static void
 init_elim_table (void)
 {
-  struct lra_elim_table *ep;
+  class lra_elim_table *ep;
   bool value_p;
   const struct elim_table_1 *ep1;
 
   if (!reg_eliminate)
-    reg_eliminate = XCNEWVEC (struct lra_elim_table, NUM_ELIMINABLE_REGS);
+    reg_eliminate = XCNEWVEC (class lra_elim_table, NUM_ELIMINABLE_REGS);
 
   memset (self_elim_offsets, 0, sizeof (self_elim_offsets));
   /* Initiate member values which will be never changed.  */
@@ -1261,7 +1262,7 @@ init_elimination (void)
   bool stop_to_sp_elimination_p;
   basic_block bb;
   rtx_insn *insn;
-  struct lra_elim_table *ep;
+  class lra_elim_table *ep;
 
   init_elim_table ();
   FOR_EACH_BB_FN (bb, cfun)
@@ -1295,7 +1296,7 @@ void
 lra_eliminate_reg_if_possible (rtx *loc)
 {
   int regno;
-  struct lra_elim_table *ep;
+  class lra_elim_table *ep;
 
   lra_assert (REG_P (*loc));
   if ((regno = REGNO (*loc)) >= FIRST_PSEUDO_REGISTER
@@ -1339,7 +1340,7 @@ lra_eliminate (bool final_p, bool first_p)
   unsigned int uid;
   bitmap_head insns_with_changed_offsets;
   bitmap_iterator bi;
-  struct lra_elim_table *ep;
+  class lra_elim_table *ep;
 
   gcc_assert (! final_p || ! first_p);
 

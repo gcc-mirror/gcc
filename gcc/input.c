@@ -32,11 +32,13 @@ along with GCC; see the file COPYING3.  If not see
 
 /* This is a cache used by get_next_line to store the content of a
    file to be searched for file lines.  */
-struct fcache
+class fcache
 {
+public:
   /* These are information used to store a line boundary.  */
-  struct line_info
+  class line_info
   {
+  public:
     /* The line number.  It starts from 1.  */
     size_t line_num;
 
@@ -122,14 +124,14 @@ struct fcache
 
 location_t input_location = UNKNOWN_LOCATION;
 
-struct line_maps *line_table;
+class line_maps *line_table;
 
 /* A stashed copy of "line_table" for use by selftest::line_table_test.
    This needs to be a global so that it can be a GC root, and thus
    prevent the stashed copy from being garbage-collected if the GC runs
    during a line_table_test.  */
 
-struct line_maps *saved_line_table;
+class line_maps *saved_line_table;
 
 static fcache *fcache_tab;
 static const size_t fcache_tab_size = 16;
@@ -978,7 +980,7 @@ dump_line_table_statistics (void)
 /* Get location one beyond the final location in ordinary map IDX.  */
 
 static location_t
-get_end_location (struct line_maps *set, unsigned int idx)
+get_end_location (class line_maps *set, unsigned int idx)
 {
   if (idx == LINEMAPS_ORDINARY_USED (set) - 1)
     return set->highest_location;
@@ -1691,8 +1693,9 @@ assert_loceq (const char *exp_filename, int exp_linenum, int exp_colnum,
    The following struct describes a particular case within our test
    matrix.  */
 
-struct line_table_case
+class line_table_case
 {
+public:
   line_table_case (int default_range_bits, int base_location)
   : m_default_range_bits (default_range_bits),
     m_base_location (base_location)
@@ -2048,7 +2051,7 @@ test_lexer (const line_table_case &case_)
 
 /* Forward decls.  */
 
-struct lexer_test;
+class lexer_test;
 class lexer_test_options;
 
 /* A class for specifying options of a lexer_test.
@@ -2085,8 +2088,9 @@ class cpp_reader_ptr
 
 /* A struct for writing lexer tests.  */
 
-struct lexer_test
+class lexer_test
 {
+public:
   lexer_test (const line_table_case &case_, const char *content,
 	      lexer_test_options *options);
   ~lexer_test ();

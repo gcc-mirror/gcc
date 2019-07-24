@@ -1275,7 +1275,7 @@ tree
 lookup_member_fuzzy (tree xbasetype, tree name, bool want_type_p)
 {
   tree type = NULL_TREE, basetype_path = NULL_TREE;
-  struct lookup_field_fuzzy_info lffi (want_type_p);
+  class lookup_field_fuzzy_info lffi (want_type_p);
 
   /* rval_binfo is the binfo associated with the found member, note,
      this can be set with useful information, even when rval is not
@@ -1803,8 +1803,9 @@ field_accessor_p (tree fn, tree field_decl, bool const_p)
 
 /* Callback data for dfs_locate_field_accessor_pre.  */
 
-struct locate_field_data
+class locate_field_data
 {
+public:
   locate_field_data (tree field_decl_, bool const_p_)
   : field_decl (field_decl_), const_p (const_p_) {}
 

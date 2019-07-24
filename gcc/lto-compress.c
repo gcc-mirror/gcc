@@ -115,13 +115,10 @@ lto_normalized_zstd_level (void)
 {
   int level = flag_lto_compression_level;
 
-  if (level != ZSTD_CLEVEL_DEFAULT)
-    {
-      if (level < 1)
-	level = 1;
-      else if (level > ZSTD_maxCLevel ())
-	level = ZSTD_maxCLevel ();
-    }
+  if (level < 0)
+    level = 0;
+  else if (level > ZSTD_maxCLevel ())
+    level = ZSTD_maxCLevel ();
 
   return level;
 }

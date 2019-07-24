@@ -567,14 +567,14 @@
 ;; 	sub	x0, x1, #(CST & 0xfff000)
 ;; 	subs	x0, x0, #(CST & 0x000fff)
 ;; 	b<ne,eq> .Label
-(define_insn_and_split "*compare_condjump<mode>"
+(define_insn_and_split "*compare_condjump<GPI:mode>"
   [(set (pc) (if_then_else (EQL
 			      (match_operand:GPI 0 "register_operand" "r")
 			      (match_operand:GPI 1 "aarch64_imm24" "n"))
 			   (label_ref:P (match_operand 2 "" ""))
 			   (pc)))]
-  "!aarch64_move_imm (INTVAL (operands[1]), <MODE>mode)
-   && !aarch64_plus_operand (operands[1], <MODE>mode)
+  "!aarch64_move_imm (INTVAL (operands[1]), <GPI:MODE>mode)
+   && !aarch64_plus_operand (operands[1], <GPI:MODE>mode)
    && !reload_completed"
   "#"
   "&& true"
@@ -582,11 +582,12 @@
   {
     HOST_WIDE_INT lo_imm = UINTVAL (operands[1]) & 0xfff;
     HOST_WIDE_INT hi_imm = UINTVAL (operands[1]) & 0xfff000;
-    rtx tmp = gen_reg_rtx (<MODE>mode);
-    emit_insn (gen_add<mode>3 (tmp, operands[0], GEN_INT (-hi_imm)));
-    emit_insn (gen_add<mode>3_compare0 (tmp, tmp, GEN_INT (-lo_imm)));
+    rtx tmp = gen_reg_rtx (<GPI:MODE>mode);
+    emit_insn (gen_add<GPI:mode>3 (tmp, operands[0], GEN_INT (-hi_imm)));
+    emit_insn (gen_add<GPI:mode>3_compare0 (tmp, tmp, GEN_INT (-lo_imm)));
     rtx cc_reg = gen_rtx_REG (CC_NZmode, CC_REGNUM);
-    rtx cmp_rtx = gen_rtx_fmt_ee (<EQL:CMP>, <MODE>mode, cc_reg, const0_rtx);
+    rtx cmp_rtx = gen_rtx_fmt_ee (<EQL:CMP>, <GPI:MODE>mode,
+				  cc_reg, const0_rtx);
     emit_jump_insn (gen_condjump (cmp_rtx, cc_reg, operands[2]));
     DONE;
   }
@@ -1505,8 +1506,8 @@
           (mem:GPI (plus:P (match_dup 1)
                    (match_operand:P 5 "const_int_operand" "n"))))])]
   "INTVAL (operands[5]) == GET_MODE_SIZE (<GPI:MODE>mode)"
-  "ldp\\t%<w>2, %<w>3, [%1], %4"
-  [(set_attr "type" "load_<ldpstp_sz>")]
+  "ldp\\t%<GPI:w>2, %<GPI:w>3, [%1], %4"
+  [(set_attr "type" "load_<GPI:ldpstp_sz>")]
 )
 
 (define_insn "loadwb_pair<GPF:mode>_<P:mode>"
@@ -1520,7 +1521,7 @@
           (mem:GPF (plus:P (match_dup 1)
                    (match_operand:P 5 "const_int_operand" "n"))))])]
   "INTVAL (operands[5]) == GET_MODE_SIZE (<GPF:MODE>mode)"
-  "ldp\\t%<w>2, %<w>3, [%1], %4"
+  "ldp\\t%<GPF:w>2, %<GPF:w>3, [%1], %4"
   [(set_attr "type" "neon_load1_2reg")]
 )
 
@@ -1553,8 +1554,8 @@
                    (match_operand:P 5 "const_int_operand" "n")))
           (match_operand:GPI 3 "register_operand" "r"))])]
   "INTVAL (operands[5]) == INTVAL (operands[4]) + GET_MODE_SIZE (<GPI:MODE>mode)"
-  "stp\\t%<w>2, %<w>3, [%0, %4]!"
-  [(set_attr "type" "store_<ldpstp_sz>")]
+  "stp\\t%<GPI:w>2, %<GPI:w>3, [%0, %4]!"
+  [(set_attr "type" "store_<GPI:ldpstp_sz>")]
 )
 
 (define_insn "storewb_pair<GPF:mode>_<P:mode>"
@@ -1569,7 +1570,7 @@
                    (match_operand:P 5 "const_int_operand" "n")))
           (match_operand:GPF 3 "register_operand" "w"))])]
   "INTVAL (operands[5]) == INTVAL (operands[4]) + GET_MODE_SIZE (<GPF:MODE>mode)"
-  "stp\\t%<w>2, %<w>3, [%0, %4]!"
+  "stp\\t%<GPF:w>2, %<GPF:w>3, [%0, %4]!"
   [(set_attr "type" "neon_store1_2reg<q>")]
 )
 
@@ -4782,7 +4783,7 @@
   [(set_attr "type" "alus_imm")]
 )
 
-(define_insn "*ands<mode>_compare0"
+(define_insn "*ands<GPI:mode>_compare0"
   [(set (reg:CC_NZ CC_REGNUM)
 	(compare:CC_NZ
 	 (zero_extend:GPI (match_operand:SHORT 1 "register_operand" "r"))

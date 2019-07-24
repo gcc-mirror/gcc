@@ -7615,16 +7615,6 @@ pushclass (tree type)
     restore_class_cache ();
 }
 
-/* When we exit a toplevel class scope, we save its binding level so
-   that we can restore it quickly.  Here, we've entered some other
-   class, so we must invalidate our cache.  */
-
-void
-invalidate_class_lookup_cache (void)
-{
-  previous_class_level = NULL;
-}
-
 /* Get out of the current class scope. If we were in a class scope
    previously, that is the one popped to.  */
 

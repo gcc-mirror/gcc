@@ -47,9 +47,9 @@ typedef int64_t gcov_type;
 typedef uint64_t gcov_type_unsigned;
 
 struct bitmap_obstack;
-struct bitmap_head;
-typedef struct bitmap_head *bitmap;
-typedef const struct bitmap_head *const_bitmap;
+class bitmap_head;
+typedef class bitmap_head *bitmap;
+typedef const class bitmap_head *const_bitmap;
 struct simple_bitmap_def;
 typedef struct simple_bitmap_def *sbitmap;
 typedef const struct simple_bitmap_def *const_sbitmap;
@@ -65,7 +65,7 @@ template<typename> class opt_mode;
 typedef opt_mode<scalar_mode> opt_scalar_mode;
 typedef opt_mode<scalar_int_mode> opt_scalar_int_mode;
 typedef opt_mode<scalar_float_mode> opt_scalar_float_mode;
-template<typename> class pod_mode;
+template<typename> struct pod_mode;
 typedef pod_mode<scalar_mode> scalar_mode_pod;
 typedef pod_mode<scalar_int_mode> scalar_int_mode_pod;
 typedef pod_mode<fixed_size_mode> fixed_size_mode_pod;
@@ -73,19 +73,19 @@ typedef pod_mode<fixed_size_mode> fixed_size_mode_pod;
 /* Subclasses of rtx_def, using indentation to show the class
    hierarchy, along with the relevant invariant.
    Where possible, keep this list in the same order as in rtl.def.  */
-class rtx_def;
-  class rtx_expr_list;           /* GET_CODE (X) == EXPR_LIST */
-  class rtx_insn_list;           /* GET_CODE (X) == INSN_LIST */
-  class rtx_sequence;            /* GET_CODE (X) == SEQUENCE */
-  class rtx_insn;
-    class rtx_debug_insn;      /* DEBUG_INSN_P (X) */
-    class rtx_nonjump_insn;    /* NONJUMP_INSN_P (X) */
-    class rtx_jump_insn;       /* JUMP_P (X) */
-    class rtx_call_insn;       /* CALL_P (X) */
-    class rtx_jump_table_data; /* JUMP_TABLE_DATA_P (X) */
-    class rtx_barrier;         /* BARRIER_P (X) */
-    class rtx_code_label;      /* LABEL_P (X) */
-    class rtx_note;            /* NOTE_P (X) */
+struct rtx_def;
+  struct rtx_expr_list;           /* GET_CODE (X) == EXPR_LIST */
+  struct rtx_insn_list;           /* GET_CODE (X) == INSN_LIST */
+  struct rtx_sequence;            /* GET_CODE (X) == SEQUENCE */
+  struct rtx_insn;
+    struct rtx_debug_insn;      /* DEBUG_INSN_P (X) */
+    struct rtx_nonjump_insn;    /* NONJUMP_INSN_P (X) */
+    struct rtx_jump_insn;       /* JUMP_P (X) */
+    struct rtx_call_insn;       /* CALL_P (X) */
+    struct rtx_jump_table_data; /* JUMP_TABLE_DATA_P (X) */
+    struct rtx_barrier;         /* BARRIER_P (X) */
+    struct rtx_code_label;      /* LABEL_P (X) */
+    struct rtx_note;            /* NOTE_P (X) */
 
 struct rtvec_def;
 typedef struct rtvec_def *rtvec;
@@ -138,9 +138,9 @@ struct gomp_teams;
 /* Subclasses of symtab_node, using indentation to show the class
    hierarchy.  */
 
-class symtab_node;
+struct symtab_node;
   struct cgraph_node;
-  class varpool_node;
+  struct varpool_node;
 
 union section;
 typedef union section section;
@@ -151,7 +151,7 @@ struct cl_option;
 struct cl_decoded_option;
 struct cl_option_handlers;
 struct diagnostic_context;
-struct pretty_printer;
+class pretty_printer;
 
 /* Address space number for named address space support.  */
 typedef unsigned char addr_space_t;
@@ -298,9 +298,9 @@ enum warn_strict_overflow_code
    set yet).  */
 typedef int alias_set_type;
 
-struct edge_def;
-typedef struct edge_def *edge;
-typedef const struct edge_def *const_edge;
+class edge_def;
+typedef class edge_def *edge;
+typedef const class edge_def *const_edge;
 struct basic_block_def;
 typedef struct basic_block_def *basic_block;
 typedef const struct basic_block_def *const_basic_block;

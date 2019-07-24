@@ -35,7 +35,7 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
 
   /* Verify that the correct error message was emitted.	 */
   CHECK_STRING_VALUE (gcc_jit_context_get_first_error (ctxt),
-		      "gcc_jit_context_new_binary_op: gcc_jit_binary_op 1 with"
-		      " operands a: (int)1 b: (int)2 has non numeric "
-		      "result_type: void *");
+		      "gcc_jit_context_new_binary_op: gcc_jit_binary_op "
+		      "GCC_JIT_BINARY_OP_MINUS with operands a: "
+		      "(int)1 b: (int)2 has non-numeric result_type: void *");
 }

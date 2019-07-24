@@ -496,7 +496,7 @@ redirect_edge_and_branch_force (edge e, basic_block dest)
     {
       if (ret != NULL)
 	{
-	  struct loop *loop
+	  class loop *loop
 	    = find_common_loop (single_pred (ret)->loop_father,
 				single_succ (ret)->loop_father);
 	  add_bb_to_loop (ret, loop);
@@ -604,7 +604,7 @@ delete_basic_block (basic_block bb)
 
   if (current_loops != NULL)
     {
-      struct loop *loop = bb->loop_father;
+      class loop *loop = bb->loop_father;
 
       /* If we remove the header or the latch of a loop, mark the loop for
 	 removal.  */
@@ -640,7 +640,7 @@ split_edge (edge e)
   profile_count count = e->count ();
   edge f;
   bool irr = (e->flags & EDGE_IRREDUCIBLE_LOOP) != 0;
-  struct loop *loop;
+  class loop *loop;
   basic_block src = e->src, dest = e->dest;
 
   if (!cfg_hooks->split_edge)
@@ -870,7 +870,7 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
   edge e, fallthru;
   edge_iterator ei;
   basic_block dummy, jump;
-  struct loop *loop, *ploop, *cloop;
+  class loop *loop, *ploop, *cloop;
 
   if (!cfg_hooks->make_forwarder_block)
     internal_error ("%s does not support make_forwarder_block",
@@ -1035,7 +1035,7 @@ force_nonfallthru (edge e)
 	{
 	  basic_block pred = single_pred (ret);
 	  basic_block succ = single_succ (ret);
-	  struct loop *loop
+	  class loop *loop
 	    = find_common_loop (pred->loop_father, succ->loop_father);
 	  rescan_loop_exit (e, false, true);
 	  add_bb_to_loop (ret, loop);
@@ -1118,8 +1118,8 @@ duplicate_block (basic_block bb, edge e, basic_block after, copy_bb_data *id)
      of BB if the loop is not being copied.  */
   if (current_loops != NULL)
     {
-      struct loop *cloop = bb->loop_father;
-      struct loop *copy = get_loop_copy (cloop);
+      class loop *cloop = bb->loop_father;
+      class loop *copy = get_loop_copy (cloop);
       /* If we copied the loop header block but not the loop
 	 we have created a loop with multiple entries.  Ditch the loop,
 	 add the new block to the outer loop and arrange for a fixup.  */
@@ -1228,7 +1228,7 @@ lv_flush_pending_stmts (edge e)
    a need to call the tree_duplicate_loop_to_header_edge rather
    than duplicate_loop_to_header_edge when we are in tree mode.  */
 bool
-cfg_hook_duplicate_loop_to_header_edge (struct loop *loop, edge e,
+cfg_hook_duplicate_loop_to_header_edge (class loop *loop, edge e,
 					unsigned int ndupl,
 					sbitmap wont_exit, edge orig,
 					vec<edge> *to_remove,
@@ -1336,7 +1336,7 @@ end:
 void
 copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
 	  edge *edges, unsigned num_edges, edge *new_edges,
-	  struct loop *base, basic_block after, bool update_dominance)
+	  class loop *base, basic_block after, bool update_dominance)
 {
   unsigned i, j;
   basic_block bb, new_bb, dom_bb;

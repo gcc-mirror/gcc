@@ -159,7 +159,7 @@ package body Sem_Res is
       Typ     : Entity_Id;
       Is_Comp : Boolean);
    --  Internal procedure for Resolve_Op_Concat to resolve one operand of
-   --  concatenation operator.  The operand is either of the array type or of
+   --  concatenation operator. The operand is either of the array type or of
    --  the component type. If the operand is an aggregate, and the component
    --  type is composite, this is ambiguous if component type has aggregates.
 
@@ -3458,12 +3458,17 @@ package body Sem_Res is
       begin
          --  Nothing to do if no parameters, or original node is neither a
          --  function call nor a procedure call statement (happens in the
-         --  operator-transformed-to-function call case), or the call does
+         --  operator-transformed-to-function call case), or the call is to an
+         --  operator symbol (which is usually in infix form), or the call does
          --  not come from source, or this warning is off.
 
          if not Warn_On_Parameter_Order
            or else No (Parameter_Associations (N))
            or else Nkind (Original_Node (N)) not in N_Subprogram_Call
+           or else (Nkind (Name (N)) = N_Identifier
+                     and then Present (Entity (Name (N)))
+                     and then Nkind (Entity (Name (N))) =
+                                N_Defining_Operator_Symbol)
            or else not Comes_From_Source (N)
          then
             return;
@@ -4185,17 +4190,16 @@ package body Sem_Res is
                      DDT : constant Entity_Id :=
                              Directly_Designated_Type (Base_Type (Etype (F)));
 
-                     New_Itype : Entity_Id;
-
                   begin
+                     --  Displace the pointer to the object to reference its
+                     --  secondary dispatch table.
+
                      if Is_Class_Wide_Type (DDT)
                        and then Is_Interface (DDT)
                      then
-                        New_Itype := Create_Itype (E_Anonymous_Access_Type, A);
-                        Set_Etype (New_Itype, Etype (A));
-                        Set_Directly_Designated_Type
-                          (New_Itype, Directly_Designated_Type (Etype (A)));
-                        Set_Etype (A, New_Itype);
+                        Rewrite (A, Convert_To (Etype (F), Relocate_Node (A)));
+                        Analyze_And_Resolve (A, Etype (F),
+                          Suppress => Access_Check);
                      end if;
 
                      --  Ada 2005, AI-162:If the actual is an allocator, the
@@ -6944,7 +6948,9 @@ package body Sem_Res is
       --  Check the dimensions of the actuals in the call. For function calls,
       --  propagate the dimensions from the returned type to N.
 
-      Analyze_Dimension_Call (N, Nam);
+      if not In_Inlined_Body then
+         Analyze_Dimension_Call (N, Nam);
+      end if;
 
       --  All done, evaluate call and deal with elaboration issues
 
@@ -8435,6 +8441,51 @@ package body Sem_Res is
             Error_Msg_N -- CODEFIX
               ("?r?comparison with True is redundant!", N);
             Explain_Redundancy (Original_Node (R));
+         end if;
+
+         --  If the equality is overloaded and the operands have resolved
+         --  properly, set the proper equality operator on the node. The
+         --  current setting is the first one found during analysis, which
+         --  is not necessarily the one to which the node has resolved.
+
+         if Is_Overloaded (N) then
+            declare
+               I  : Interp_Index;
+               It : Interp;
+
+            begin
+               Get_First_Interp (N, I, It);
+
+               --  If the equality is user-defined, the type of the operands
+               --  matches that of the formals. For a predefined operqtor,
+               --  it is the scope that matters, given that the predefined
+               --  equality has Any_Type formals. In either case the result
+               --  type (most often Booleam) must match the context .
+
+               while Present (It.Typ) loop
+                  if Etype (It.Nam) = Typ
+                    and then
+                     (Etype (First_Entity (It.Nam)) = Etype (L)
+                       or else Scope (It.Nam) = Scope (T))
+                  then
+                     Set_Entity (N, It.Nam);
+
+                     Set_Is_Overloaded (N, False);
+                     exit;
+                  end if;
+
+                  Get_Next_Interp (I, It);
+               end loop;
+
+               --  If expansion is active and this is an inherited operation,
+               --  replace it with its ancestor. This must not be done during
+               --  preanalysis because the type may not be frozen yet, as when
+               --  the context is a precondition or postcondition.
+
+               if Present (Alias (Entity (N))) and then Expander_Active then
+                  Set_Entity (N, Alias (Entity (N)));
+               end if;
+            end;
          end if;
 
          Check_Unset_Reference (L);
@@ -10034,9 +10085,42 @@ package body Sem_Res is
          end if;
 
          --  Complete resolution and evaluation of NOT
+         --  If argument is an equality and expected type is boolean, that
+         --  expected type has no effect on resolution, and there are
+         --  special rules for resolution of Eq, Neq in the presence of
+         --  overloaded operands, so we directly call its resolution routines.
 
-         Resolve (Right_Opnd (N), B_Typ);
-         Check_Unset_Reference (Right_Opnd (N));
+         declare
+            Opnd : constant Node_Id := Right_Opnd (N);
+            Op_Id : Entity_Id;
+
+         begin
+            if B_Typ = Standard_Boolean
+              and then Nkind_In (Opnd, N_Op_Eq, N_Op_Ne)
+              and then Is_Overloaded (Opnd)
+            then
+               Resolve_Equality_Op (Opnd, B_Typ);
+               Op_Id := Entity (Opnd);
+
+               if Ekind (Op_Id) = E_Function
+                 and then not Is_Intrinsic_Subprogram (Op_Id)
+               then
+                  Rewrite_Operator_As_Call (Opnd, Op_Id);
+               end if;
+
+               if not Inside_A_Generic or else Is_Entity_Name (Opnd) then
+                  Freeze_Expression (Opnd);
+               end if;
+
+               Expand (Opnd);
+
+            else
+               Resolve (Opnd, B_Typ);
+            end if;
+
+            Check_Unset_Reference (Opnd);
+         end;
+
          Set_Etype (N, B_Typ);
          Generate_Operator_Reference (N, B_Typ);
          Eval_Op_Not (N);
@@ -10540,8 +10624,25 @@ package body Sem_Res is
       if Is_Access_Type (Etype (P)) then
          T := Designated_Type (Etype (P));
          Check_Fully_Declared_Prefix (T, P);
+
       else
          T := Etype (P);
+
+         --  If the prefix is an entity it may have a deferred reference set
+         --  during analysis of the selected component. After resolution we
+         --  can transform it into a proper reference. This prevents spurious
+         --  warnings on useless assignments when the same selected component
+         --  is the actual for an out parameter in a subsequent call.
+
+         if Is_Entity_Name (P)
+           and then Has_Deferred_Reference (Entity (P))
+         then
+            if May_Be_Lvalue (N) then
+               Generate_Reference (Entity (P), P, 'm');
+            else
+               Generate_Reference (Entity (P), P, 'r');
+            end if;
+         end if;
       end if;
 
       --  Set flag for expander if discriminant check required on a component

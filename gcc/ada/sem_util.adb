@@ -6924,12 +6924,7 @@ package body Sem_Util is
       S := Scope (E);
       while Present (S) loop
          if Is_Package_Or_Generic_Package (S)
-           or else Ekind (S) = E_Package_Body
-         then
-            return S;
-
-         elsif Is_Subprogram_Or_Generic_Subprogram (S)
-           or else Ekind (S) = E_Subprogram_Body
+           or else Is_Subprogram_Or_Generic_Subprogram (S)
          then
             return S;
 
@@ -8708,6 +8703,8 @@ package body Sem_Util is
       Global  : Node_Id := Empty;
       Body_Id : Entity_Id;
 
+   --  Start of processing for First_Global
+
    begin
       pragma Assert (Nam_In (Global_Mode, Name_In_Out,
                                           Name_Input,
@@ -8718,7 +8715,22 @@ package body Sem_Util is
       --  case, it can only be located on the body entity.
 
       if Refined then
-         Body_Id := Subprogram_Body_Entity (Subp);
+         if Is_Subprogram_Or_Generic_Subprogram (Subp) then
+            Body_Id := Subprogram_Body_Entity (Subp);
+
+         elsif Is_Entry (Subp) or else Is_Task_Type (Subp) then
+            Body_Id := Corresponding_Body (Parent (Subp));
+
+         --  ??? It should be possible to retrieve the Refined_Global on the
+         --  task body associated to the task object. This is not yet possible.
+
+         elsif Is_Single_Task_Object (Subp) then
+            Body_Id := Empty;
+
+         else
+            Body_Id := Empty;
+         end if;
+
          if Present (Body_Id) then
             Global := Get_Pragma (Body_Id, Pragma_Refined_Global);
          end if;
@@ -10803,8 +10815,8 @@ package body Sem_Util is
          --  Simple option Synchronous
          --
          --    enables                disables
-         --       Asynch_Readers         Effective_Reads
-         --       Asynch_Writers         Effective_Writes
+         --       Async_Readers          Effective_Reads
+         --       Async_Writers          Effective_Writes
          --
          --  Note that both forms of External have higher precedence than
          --  Synchronous (SPARK RM 7.1.4(9)).
@@ -19408,6 +19420,94 @@ package body Sem_Util is
       return Empty;
    end Nearest_Enclosing_Instance;
 
+   ------------------------
+   -- Needs_Finalization --
+   ------------------------
+
+   function Needs_Finalization (Typ : Entity_Id) return Boolean is
+      function Has_Some_Controlled_Component
+        (Input_Typ : Entity_Id) return Boolean;
+      --  Determine whether type Input_Typ has at least one controlled
+      --  component.
+
+      -----------------------------------
+      -- Has_Some_Controlled_Component --
+      -----------------------------------
+
+      function Has_Some_Controlled_Component
+        (Input_Typ : Entity_Id) return Boolean
+      is
+         Comp : Entity_Id;
+
+      begin
+         --  When a type is already frozen and has at least one controlled
+         --  component, or is manually decorated, it is sufficient to inspect
+         --  flag Has_Controlled_Component.
+
+         if Has_Controlled_Component (Input_Typ) then
+            return True;
+
+         --  Otherwise inspect the internals of the type
+
+         elsif not Is_Frozen (Input_Typ) then
+            if Is_Array_Type (Input_Typ) then
+               return Needs_Finalization (Component_Type (Input_Typ));
+
+            elsif Is_Record_Type (Input_Typ) then
+               Comp := First_Component (Input_Typ);
+               while Present (Comp) loop
+                  if Needs_Finalization (Etype (Comp)) then
+                     return True;
+                  end if;
+
+                  Next_Component (Comp);
+               end loop;
+            end if;
+         end if;
+
+         return False;
+      end Has_Some_Controlled_Component;
+
+   --  Start of processing for Needs_Finalization
+
+   begin
+      --  Certain run-time configurations and targets do not provide support
+      --  for controlled types.
+
+      if Restriction_Active (No_Finalization) then
+         return False;
+
+      --  C++ types are not considered controlled. It is assumed that the non-
+      --  Ada side will handle their clean up.
+
+      elsif Convention (Typ) = Convention_CPP then
+         return False;
+
+      --  Class-wide types are treated as controlled because derivations from
+      --  the root type may introduce controlled components.
+
+      elsif Is_Class_Wide_Type (Typ) then
+         return True;
+
+      --  Concurrent types are controlled as long as their corresponding record
+      --  is controlled.
+
+      elsif Is_Concurrent_Type (Typ)
+        and then Present (Corresponding_Record_Type (Typ))
+        and then Needs_Finalization (Corresponding_Record_Type (Typ))
+      then
+         return True;
+
+      --  Otherwise the type is controlled when it is either derived from type
+      --  [Limited_]Controlled and not subject to aspect Disable_Controlled, or
+      --  contains at least one controlled component.
+
+      else
+         return
+           Is_Controlled (Typ) or else Has_Some_Controlled_Component (Typ);
+      end if;
+   end Needs_Finalization;
+
    ----------------------
    -- Needs_One_Actual --
    ----------------------
@@ -22269,9 +22369,15 @@ package body Sem_Util is
    --  Start of processing for Null_Status
 
    begin
+      --  Prevent cascaded errors or infinite loops when trying to determine
+      --  the null status of an erroneous construct.
+
+      if Error_Posted (N) then
+         return Unknown;
+
       --  An allocator always creates a non-null value
 
-      if Nkind (N) = N_Allocator then
+      elsif Nkind (N) = N_Allocator then
          return Is_Non_Null;
 
       --  Taking the 'Access of something yields a non-null value
@@ -24273,13 +24379,33 @@ package body Sem_Util is
      (Inner : Entity_Id;
       Outer : Entity_Id) return Boolean
    is
-      Curr : Entity_Id;
+      Curr : Entity_Id := Inner;
 
    begin
-      Curr := Inner;
+      --  Similar to the above, but check for scope identity first
+
       while Present (Curr) and then Curr /= Standard_Standard loop
          if Curr = Outer then
             return True;
+
+         elsif Ekind (Curr) = E_Task_Type
+           and then Outer = Task_Body_Procedure (Curr)
+         then
+            return True;
+
+         elsif Is_Subprogram (Curr)
+           and then Outer = Protected_Body_Subprogram (Curr)
+         then
+            return True;
+
+         elsif Is_Private_Type (Curr)
+           and then Present (Full_View (Curr))
+         then
+            if Full_View (Curr) = Outer then
+               return True;
+            else
+               return Scope_Within (Full_View (Curr), Outer);
+            end if;
          end if;
 
          Curr := Scope (Curr);
@@ -25751,6 +25877,8 @@ package body Sem_Util is
                   end if;
                end;
 
+            elsif Is_Child_Unit (U) then
+               return Child_Prefix & Unique_Name (S) & "__" & This_Name;
             else
                return Unique_Name (S) & "__" & This_Name;
             end if;

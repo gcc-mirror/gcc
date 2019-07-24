@@ -10473,44 +10473,32 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
   lhs = code->expr1;
   rhs = code->expr2;
 
-  if (rhs->is_boz
-      && !gfc_notify_std (GFC_STD_GNU, "BOZ literal at %L outside "
-			  "a DATA statement and outside INT/REAL/DBLE/CMPLX",
-			  &code->loc))
-    return false;
-
   /* Handle the case of a BOZ literal on the RHS.  */
-  if (rhs->is_boz && lhs->ts.type != BT_INTEGER)
+  if (rhs->ts.type == BT_BOZ)
     {
-      int rc;
-      if (warn_surprising)
-	gfc_warning (OPT_Wsurprising,
-		     "BOZ literal at %L is bitwise transferred "
-		     "non-integer symbol %qs", &code->loc,
-		     lhs->symtree->n.sym->name);
-
-      if (!gfc_convert_boz (rhs, &lhs->ts))
+      if (gfc_invalid_boz ("BOZ literal constant at %L is neither a DATA "
+			   "statement value nor an actual argument of "
+			   "INT/REAL/DBLE/CMPLX intrinsic subprogram",
+			   &rhs->where))
 	return false;
-      if ((rc = gfc_range_check (rhs)) != ARITH_OK)
+
+      switch (lhs->ts.type)
 	{
-	  if (rc == ARITH_UNDERFLOW)
-	    gfc_error ("Arithmetic underflow of bit-wise transferred BOZ at %L"
-		       ". This check can be disabled with the option "
-		       "%<-fno-range-check%>", &rhs->where);
-	  else if (rc == ARITH_OVERFLOW)
-	    gfc_error ("Arithmetic overflow of bit-wise transferred BOZ at %L"
-		       ". This check can be disabled with the option "
-		       "%<-fno-range-check%>", &rhs->where);
-	  else if (rc == ARITH_NAN)
-	    gfc_error ("Arithmetic NaN of bit-wise transferred BOZ at %L"
-		       ". This check can be disabled with the option "
-		       "%<-fno-range-check%>", &rhs->where);
+	case BT_INTEGER:
+	  if (!gfc_boz2int (rhs, lhs->ts.kind))
+	    return false;
+	  break;
+	case BT_REAL:
+	  if (!gfc_boz2real (rhs, lhs->ts.kind))
+	    return false;
+	  break;
+	default:
+	  gfc_error ("Invalid use of BOZ literal constant at %L", &rhs->where);
 	  return false;
 	}
     }
 
-  if (lhs->ts.type == BT_CHARACTER
-	&& warn_character_truncation)
+  if (lhs->ts.type == BT_CHARACTER && warn_character_truncation)
     {
       HOST_WIDE_INT llen = 0, rlen = 0;
       if (lhs->ts.u.cl != NULL

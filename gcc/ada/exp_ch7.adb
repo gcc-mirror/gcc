@@ -393,7 +393,7 @@ package body Exp_Ch7 is
    --  name. Before generating the proper call to one of these operations we
    --  check whether Typ is known to be controlled at the point of definition.
    --  If it is not then we must retrieve the hidden operation of the parent
-   --  and use it instead.  This is one case that might be solved more cleanly
+   --  and use it instead. This is one case that might be solved more cleanly
    --  once Overriding pragmas or declarations are in place.
 
    function Contains_Subprogram (Blk : Entity_Id) return Boolean;
@@ -2035,6 +2035,13 @@ package body Exp_Ch7 is
 
             Analyze (Fin_Body, Suppress => All_Checks);
          end if;
+
+         --  Never consider that the finalizer procedure is enabled Ghost, even
+         --  when the corresponding unit is Ghost, as this would lead to an
+         --  an external name with a ___ghost_ prefix that the binder cannot
+         --  generate, as it has no knowledge of the Ghost status of units.
+
+         Set_Is_Checked_Ghost_Entity (Fin_Id, False);
       end Create_Finalizer;
 
       --------------------------

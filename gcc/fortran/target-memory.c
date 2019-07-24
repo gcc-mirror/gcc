@@ -769,35 +769,19 @@ gfc_convert_boz (gfc_expr *expr, gfc_typespec *ts)
   int index;
   unsigned char *buffer;
 
-  if (!expr->is_boz)
+  if (expr->ts.type != BT_INTEGER)
     return true;
-
-  gcc_assert (expr->expr_type == EXPR_CONSTANT
-	      && expr->ts.type == BT_INTEGER);
 
   /* Don't convert BOZ to logical, character, derived etc.  */
-  if (ts->type == BT_REAL)
-    {
-      buffer_size = size_float (ts->kind);
-      ts_bit_size = buffer_size * 8;
-    }
-  else if (ts->type == BT_COMPLEX)
-    {
-      buffer_size = size_complex (ts->kind);
-      ts_bit_size = buffer_size * 8 / 2;
-    }
-  else
-    return true;
+  gcc_assert (ts->type == BT_REAL);
+
+  buffer_size = size_float (ts->kind);
+  ts_bit_size = buffer_size * 8;
 
   /* Convert BOZ to the smallest possible integer kind.  */
   boz_bit_size = mpz_sizeinbase (expr->value.integer, 2);
 
-  if (boz_bit_size > ts_bit_size)
-    {
-      gfc_error_now ("BOZ constant at %L is too large (%ld vs %ld bits)",
-		     &expr->where, (long) boz_bit_size, (long) ts_bit_size);
-      return false;
-    }
+  gcc_assert (boz_bit_size <= ts_bit_size);
 
   for (index = 0; gfc_integer_kinds[index].kind != 0; ++index)
     if ((unsigned) gfc_integer_kinds[index].bit_size >= ts_bit_size)
@@ -810,18 +794,9 @@ gfc_convert_boz (gfc_expr *expr, gfc_typespec *ts)
   encode_integer (expr->ts.kind, expr->value.integer, buffer, buffer_size);
   mpz_clear (expr->value.integer);
 
-  if (ts->type == BT_REAL)
-    {
-      mpfr_init (expr->value.real);
-      gfc_interpret_float (ts->kind, buffer, buffer_size, expr->value.real);
-    }
-  else
-    {
-      mpc_init2 (expr->value.complex, mpfr_get_default_prec());
-      gfc_interpret_complex (ts->kind, buffer, buffer_size,
-			     expr->value.complex);
-    }
-  expr->is_boz = 0;
+  mpfr_init (expr->value.real);
+  gfc_interpret_float (ts->kind, buffer, buffer_size, expr->value.real);
+
   expr->ts.type = ts->type;
   expr->ts.kind = ts->kind;
 

@@ -31,46 +31,6 @@
 #include "rtl-iter.h"
 #include "memmodel.h"
 
-/* In ARMv8-A there's a general expectation that AESE/AESMC
-   and AESD/AESIMC sequences of the form:
-
-   AESE Vn, _
-   AESMC Vn, Vn
-
-   will issue both instructions in a single cycle on super-scalar
-   implementations.  This function identifies such pairs.  */
-
-int
-aarch_crypto_can_dual_issue (rtx_insn *producer_insn, rtx_insn *consumer_insn)
-{
-  rtx producer_set, consumer_set;
-  rtx producer_src, consumer_src;
-
-  producer_set = single_set (producer_insn);
-  consumer_set = single_set (consumer_insn);
-
-  producer_src = producer_set ? SET_SRC (producer_set) : NULL;
-  consumer_src = consumer_set ? SET_SRC (consumer_set) : NULL;
-
-  if (producer_src && consumer_src
-      && GET_CODE (producer_src) == UNSPEC && GET_CODE (consumer_src) == UNSPEC
-      && ((XINT (producer_src, 1) == UNSPEC_AESE
-           && XINT (consumer_src, 1) == UNSPEC_AESMC)
-          || (XINT (producer_src, 1) == UNSPEC_AESD
-              && XINT (consumer_src, 1) == UNSPEC_AESIMC)))
-  {
-    unsigned int regno = REGNO (SET_DEST (producer_set));
-
-    /* Before reload the registers are virtual, so the destination of
-       consumer_set doesn't need to match.  */
-
-    return (REGNO (SET_DEST (consumer_set)) == regno || !reload_completed)
-	    && REGNO (XVECEXP (consumer_src, 0, 0)) == regno;
-  }
-
-  return 0;
-}
-
 /* Return TRUE if X is either an arithmetic shift left, or
    is a multiplication by a power of two.  */
 bool

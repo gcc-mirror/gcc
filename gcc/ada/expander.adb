@@ -112,7 +112,12 @@ package body Expander is
             Expand_SPARK (N);
          end if;
 
-         Set_Analyzed (N, Full_Analysis);
+         --  Do not reset the Analyzed flag if it has been set on purpose
+         --  during preanalysis.
+
+         if Full_Analysis then
+            Set_Analyzed (N);
+         end if;
 
          --  Regular expansion is normally followed by special handling for
          --  transient scopes for unconstrained results, etc. but this is not

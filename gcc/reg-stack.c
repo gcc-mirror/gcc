@@ -2929,6 +2929,7 @@ compensate_edge (edge e)
       seq = get_insns ();
       end_sequence ();
 
+      set_insn_locations (seq, e->goto_locus);
       insert_insn_on_edge (seq, e);
       return true;
     }

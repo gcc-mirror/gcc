@@ -1,3 +1,3164 @@
+2019-07-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-nested.c (build_simple_mem_ref_notrap): New function.
+	(get_static_chain): Call it instead of build_simple_mem_ref.
+	(get_frame_field): Likewise.
+	(get_nonlocal_debug_decl): Likewise.
+	(convert_nonlocal_reference_op): Likewise.
+
+2019-07-24  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (arc_output_function_epilogue): Delete
+	declaration.
+	(arc_compute_frame_size): Millicode is disabled when compiling
+	ISR.
+	(arc_return_address_register): Likewise.
+	(arc_compute_function_type): Likewise.
+	(arc_compute_frame_size): Likewise.
+	(secondary_reload_info): Likewise.
+	(arc_get_unalign): Likewise.
+	(arc_can_use_return_insn): Declare.
+	* config/arc/arc.c (AUX_LP_START): Define
+	(AUX_LP_END): Likewise.
+	(arc_frame_info): Update gmask member to 64-bit datum.
+	(GMASK_LEN): Update.
+	(arc_compute_function_type): Make it static, move it forward.
+	(arc_must_save_register): Update, consider the extra regs.
+	(arc_compute_millicode_save_restore_regs): Update to use the 64
+	bit gmask.
+	(arc_compute_frame_size): Likewise.
+	(arc_enter_leave_p): Likewise.
+	(arc_save_callee_saves): Likewise.
+	(arc_restore_callee_saves): Likewise.
+	(arc_save_callee_enter): Likewise.
+	(arc_restore_callee_leave): Likewise.
+	(arc_save_callee_milli): Likewise.
+	(arc_restore_callee_milli): Likewise.
+	(arc_expand_prologue): Add new interrupt handling.
+	(arc_return_address_register): Make it static, move it forward.
+	(arc_expand_epilogue): Add new interrupt handling.
+	(arc_get_unalign): Delete.
+	(arc_epilogue_uses): Make sure we do not remove the extra
+	saved/restored registers when interrupt.
+	(arc_can_use_return_insn): New function.
+	(push_reg): Likewise.
+	(pop_reg): Likewise.
+	(arc_save_callee_saves): Add ZOL and FPX aux registers saving
+	procedures.
+	(arc_restore_callee_saves): Likewise, but restoring.
+	* config/arc/arc.md (VUNSPEC_ARC_ARC600_RTIE): Define.
+	(R33_REG): Likewise.
+	(R34_REG): Likewise.
+	(R35_REG): Likewise.
+	(R36_REG): Likewise.
+	(R37_REG): Likewise.
+	(R38_REG): Likewise.
+	(R39_REG): Likewise.
+	(R45_REG): Likewise.
+	(R46_REG): Likewise.
+	(R47_REG): Likewise.
+	(R48_REG): Likewise.
+	(R49_REG): Likewise.
+	(R50_REG): Likewise.
+	(R51_REG): Likewise.
+	(R52_REG): Likewise.
+	(R53_REG): Likewise.
+	(R54_REG): Likewise.
+	(R55_REG): Likewise.
+	(R56_REG): Likewise.
+	(R58_REG): Likewise.
+	(type): Add rtie attribute.
+	(in_call_delay_slot): Use RETURN_ADDR_REGNUM.
+	(movsi_insn): Accept moves to lp_count.
+	(rtie): Update pattern.
+	(simple_return): Simplify it, don't use this pattern as a return
+	from an interrupt.
+	(arc600_rtie): New pattern.
+	(p_return_i): Clean up.
+	(return): Likewise.
+	* config/arc/builtins.def (rtie): Only available for non ARC6xx
+	family CPUs.
+	* config/arc/predicates.md (move_src_operand): Consider lp_count
+	as a register.
+
+2019-07-24  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/predicates.md (addv_const_operand): New predicate.
+	* config/s390/s390-modes.def (CCO): New condition code mode.
+	* config/s390/s390.c (s390_match_ccmode_set): Handle E_CCOmode.
+	(s390_branch_condition_mask): Likewise.
+	* config/s390/s390.md ("addv<mode>4", "subv<mode>4")
+	("mulv<mode>4"): New expanders.
+	("*addv<mode>3_ccoverflow", "*addv<mode>3_ccoverflow_const")
+	("*subv<mode>3_ccoverflow", "*mulv<mode>3_ccoverflow"): New
+	pattern definitions.
+
+2019-07-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR middle-end/91166
+	* match.pd (vec_perm_expr(v, v, mask) -> v): New pattern.
+	(define_predicates): Add entry for uniform_vector_p.
+	(vec_same_elem_p): New match pattern.
+
+2019-07-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/87030
+	* config/i386/darwin.h (REAL_LIBGCC_SPEC): Move from here...
+	* config/i386/darwin32-biarch.h .. to here.
+	* config/i386/darwin64-biarch.h: Adjust comments.
+	* config/rs6000/darwin32-biarch.h: Likewise.
+	* config/rs6000/darwin64-biarch.h: Likewise.
+	* config.gcc: Missed commit from r273746
+	(*-*-darwin*): Don't include CPU t-darwin here.
+	(i[34567]86-*-darwin*): Adjust to use biarch files. Produce
+	an error message if i686-darwin configuration is attempted for
+	Darwin >= 18.
+
+2019-07-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/87030
+	* config.gcc (*-*-darwin*): Don't include CPU t-darwin here.
+	(i[34567]86-*-darwin*): Adjust to use biarch files. Produce
+	an error message if i686-darwin configuration is attempted for
+	Darwin >= 18.
+	(x86_64-*-darwin*): Switch to single multilib for Darwin >= 18.
+	(powerpc-*-darwin*): Use biarch files where needed.
+	(powerpc64-*-darwin*): Likewise.
+	* config/i386/darwin.h (REAL_LIBGCC_SPEC): Move to new biarch file.
+	(DARWIN_ARCH_SPEC, DARWIN_SUBARCH_SPEC): Revise for default single
+	arch case.
+	* config/i386/darwin32-biarch.h: New.
+	* config/i386/darwin64.h: Rename.
+	* gcc/config/i386/darwin64-biarch.h: To this.
+	* config/i386/t-darwin: Rename.
+	* gcc/config/i386/t-darwin32-biarch: To this.
+	* config/i386/t-darwin64: Rename.
+	* gcc/config/i386/t-darwin64-biarch: To this.
+	* config/rs6000/darwin32-biarch.h: New.
+	* config/rs6000/darwin64.h: Rename.
+	* config/rs6000/darwin64-biarch.h: To this.
+	(DARWIN_ARCH_SPEC, DARWIN_SUBARCH_SPEC): Revise for default single
+	arch case.
+	* config/rs6000/t-darwin8: Rename.
+	* config/rs6000/t-darwin32-biarch: To this.
+	* config/rs6000/t-darwin64 Rename.
+	* config/rs6000/t-darwin64-biarch: To this.
+
+2019-07-23  Martin Sebor  <msebor@redhat.com>
+
+	* configure.ac (ACX_PROG_CXX_WARNING_OPTS): Revert r273311.
+
+2019-07-23  Vladislav Ivanishin <vlad@ispras.ru>
+
+	* gdbinit.in (reload-gdbhooks): New command with an attached doc string.
+	(rh): New alias for it.
+
+2019-07-23  Vladislav Ivanishin <vlad@ispras.ru>
+
+	* gdbhooks.py: Pass replace=True to
+	gdb.printing.register_pretty_printer.
+
+2019-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR debug/91231
+	* lto-streamer-in.c (input_function): Drop inline-entry markers
+	that ended up with an unknown location block.
+
+2019-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83518
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Handle aggregate
+	init from a constant even when partial defs are already recorded.
+
+2019-07-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* i386-common.c: Use PROCESSOR_ZNVER2 scheduler for znver2.
+	* config/i386/znver1.md: Enable patterns for znver2 and add store
+	variants which use extra AGU unit.
+
+2019-07-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386-options.c (ix86_option_override_internal): Default
+	PARAM_AVOID_FMA_MAX_BITS to 256 for znver2.
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_256FMA_CHAINS): Set
+	for ZNVER2.
+
+2019-07-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/x86-tune-costs.h (znver2_memcpy): Update.
+	(znver2_costs): Update 256 bit SSE costs and multiplication.
+
+2019-07-23  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (<avx512>_cvtmask2<ssemodesuffix><mode>):
+	Require only AVX512F.
+	(*<avx512>_cvtmask2<ssemodesuffix><mode>): Likewise.  Add
+	alternative expanding to vpternlog.
+
+2019-07-23  Martin Liska  <mliska@suse.cz>
+
+	* dwarf2out.c (gen_producer_string): Canonize -flto=N
+	to -flto in dwarf producer string.
+
+2019-07-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (label_for_bb): Remove global var.
+	(main_block_label): Take label_for_bb as argument.
+	(cleanup_dead_labels_eh): Likewise, adjust.
+	(cleanup_dead_labels): Adjust.
+
+2019-07-22  Paul A. Clarke  <pc@us.ibm.com>
+
+	* doc/extend.texi (Basic PowerPC Built-in Functions Available on all
+	Configurations): Add documentation for __builtin_mtfsf.
+
+2019-07-22  Ilia Diachkov  <ilia.diachkov@optimitech.com>
+
+	* config/riscv/riscv-opts.h (struct riscv_align_data): New.
+	* config/riscv/riscv.c (riscv_constant_alignment): Use
+	riscv_align_data_type.
+	* config/riscv/riscv.h (RISCV_EXPAND_ALIGNMENT): New.
+	(DATA_ALIGNMENT): Use RISCV_EXPAND_ALIGNMENT.
+	(LOCAL_ALIGNMENT): Use RISCV_EXPAND_ALIGNMENT.
+	* config/riscv/riscv.opt (malign-data): New.
+	* doc/invoke.texi (RISC-V Options): Document -malign-data=.
+
+2019-07-02  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraph.c (dump_graphviz): New function.
+	* cgraph.h (dump_graphviz): New function.
+	* symtab.c (dump_graphviz): New function.
+
+2019-07-22  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(*aarch64_simd_sra<mode>): New.
+	* config/aarch64/iterators.md
+	(SHIFTRT): New iterator.
+	(sra_op): New attribute.
+
+2019-07-22  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_preserve_reg_p): Don't save
+	callee-saved regs R4->R10 in an interrupt function that calls another
+	function.
+
+2019-07-22  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_blend_epi16): New.
+	(_mm_blendv_epi8): New.
+
+2019-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91221
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Appropriately
+	restrict partial-def handling of empty constructors and
+	memset to refs with known offset.
+
+2019-07-22  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (ternlogsuffix): New.
+	(one_cmpl<mode>2): Don't force CONSTM1_RTX into a register when
+	AVX512F is in use.
+	(<mask_codefor>one_cmpl<mode>2<mask_name>): New.
+
+2019-07-22  Martin Liska  <mliska@suse.cz>
+
+	* config/avr/avr.c (avr_asm_output_aligned_decl_common): Update
+	comment.
+	* toplev.c (compile_file): Do not emit __gnu_lto_v1 symbol.
+
+2019-07-22  Martin Liska  <mliska@suse.cz>
+
+	* lto-section-in.c (lto_get_section_data):
+	Use new function get_compression.
+	* lto-streamer-out.c (produce_lto_section): Use
+	set_compression to encode compression algorithm.
+	* lto-streamer.h (struct lto_section): Do not
+	use bitfields in the format.
+
+2019-07-22  Martin Liska  <mliska@suse.cz>
+
+	PR driver/91172
+	* opts-common.c (decode_cmdline_option): Decode
+	argument of -Werror and check it for a wrong language.
+	* opts-global.c (complain_wrong_lang): Remove such case.
+
+2019-07-22  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (prepare_move_operands): Always use an
+	intermediate register when storing a TLS symbols.
+
+2019-07-22  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/or1k.c (or1k_expand_compare): Check for int before
+	force_reg.
+
+2019-07-22  Stafford Horne  <shorne@gmail.com>
+
+	* config.gcc (or1k*-*-*): Add mhard-float, mdouble-float, msoft-float
+	and munordered-float validations.
+	* config/or1k/constraints.md (d): New register constraint.
+	* config/or1k/predicates.md (fp_comparison_operator): New.
+	* config/or1k/or1k.c (or1k_print_operand): Add support for printing 'd'
+	operands.
+	(or1k_expand_compare): Normalize unordered comparisons.
+	* config/or1k/or1k.h (reg_class): Define DOUBLE_REGS.
+	(REG_CLASS_NAMES): Add "DOUBLE_REGS".
+	(REG_CLASS_CONTENTS): Add contents for DOUBLE_REGS.
+	* config/or1k/or1k.md (type): Add fpu.
+	(fpu): New instruction reservation.
+	(F, f, fr, fi, FI, FOP, fop): New.
+	(<fop><F:mode>3): New ALU instruction definition.
+	(float<fi><F:mode>2): New conversion instruction definition.
+	(fix_trunc<F:mode><fi>2): New conversion instruction definition.
+	(fpcmpcc): New code iterator.
+	(*sf_fp_insn): New instruction definition.
+	(cstore<F:mode>4): New expand definition.
+	(cbranch<F:mode>4): New expand definition.
+	* config/or1k/or1k.opt (msoft-float, mhard-float, mdouble-float,
+	munordered-float): New options.
+	* doc/invoke.texi: Document msoft-float, mhard-float, mdouble-float and
+	munordered-float.
+
+2019-07-22  Stafford Horne  <shorne@gmail.com>
+
+	* config.gcc (or1k*-*-*): Add mrori and mror to validation.
+	* doc/invoke.texi (OpenRISC Options): Add mrori option, rewrite all
+	documenation to be more clear.
+	* config/or1k/elf.opt (mboard=, mnewlib): Rewrite documentation to be
+	more clear.
+	* config/or1k/or1k.opt (mrori): New option.
+	(mhard-div, msoft-div, mhard-mul, msoft-mul, mcmov, mror, msext,
+	msfimm, mshftimm): Rewrite documentation to be more clear.
+	* config/or1k/or1k.md (insn_support): Add ror and rori.
+	(enabled): Add conditions for ror and rori.
+	(rotrsi3): Replace condition for shftimm with ror and rori.
+
+2019-07-22  Stafford Horne  <shorne@gmail.com>
+
+	PR target/90363
+	* config/or1k/or1k.md (zero_extend<mode>si2): Update predicate.
+	(extend<mode>si2): Update predicate.
+	* gcc/config/or1k/predicates.md (volatile_mem_operand): New.
+	(reg_or_mem_operand): New.
+
+2019-07-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/rs6000.c (TARGET_NO_PROTOTYPE): Move from here...
+	* config/rs6000/rs6000-call.c: ... to here.
+
+2019-07-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (offsettable_mem_operand): Allow volatile
+	memory.
+
+2019-07-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (input_operand): Allow volatile memory.
+
+2019-07-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (lwa_operand): Allow volatile memory.
+
+2019-07-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/predicates.md (volatile_mem_operand): Modernize syntax.
+	(any_memory_operand): New predicate.
+	(reg_or_mem_operand): Use it.
+
+2019-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91204
+	* optabs.c (expand_unop): As fallback, expand ~op0 as op0 ^ -1.
+
+2019-07-20  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.h (hppa_profile_hook): Delete declaration.
+	* config/pa/pa-protos.h (hppa_profile_hook): Add declaration.
+
+2019-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.def (OMP_LOOP): New tree code.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_BIND.
+	(enum omp_clause_bind_kind): New enum.
+	(struct tree_omp_clause): Add subcode.bind_kind.
+	* tree.h (OMP_LOOP_CHECK): Rename to ...
+	(OMP_LOOPING_CHECK): ... this.
+	(OMP_FOR_BODY, OMP_FOR_CLAUSES, OMP_FOR_INIT, OMP_FOR_COND,
+	OMP_FOR_INCR, OMP_FOR_PRE_BODY, OMP_FOR_ORIG_DECLS): Use
+	OMP_LOOPING_CHECK instead of OMP_LOOP_CHECK.
+	(OMP_CLAUSE_BIND_KIND): Define.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name): Add
+	bind clause entries.
+	(walk_tree_1): Handle OMP_CLAUSE_BIND.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+	(dump_generic_node): Handle OMP_LOOP.
+	* gimplify.c (enum omp_region_type): Add ORT_IMPLICIT_TARGET.
+	(in_omp_construct): New variable.
+	(is_gimple_stmt): Handle OMP_LOOP.
+	(gimplify_scan_omp_clauses): For lastprivate don't set
+	check_non_private if code == OMP_LOOP.  For reduction clause
+	on OMP_LOOP combined with parallel or teams propagate as shared
+	on the combined construct.  Handle OMP_CLAUSE_BIND.
+	(gimplify_adjust_omp_clauses): Handle OMP_CLAUSE_BIND.
+	(gimplify_omp_for): Pass OMP_LOOP instead of OMP_{FOR,DISTRIBUTE}
+	for constructs from a loop construct to gimplify_scan_omp_clauses.
+	Don't predetermine iterator linear on OMP_SIMD from loop construct.
+	(replace_reduction_placeholders, gimplify_omp_loop): New functions.
+	(gimplify_omp_workshare): Use ORT_IMPLICIT_TARGET instead of trying
+	to match the implicit ORT_TARGET construct around whole body.
+	Temporarily clear in_omp_construct when processing body.
+	(gimplify_expr): Handle OMP_LOOP.  For OMP_MASTER, OMP_TASKGROUP
+	etc. temporarily set in_omp_construct when processing body.
+	(gimplify_body): Create ORT_IMPLICIT_TARGET instead of ORT_TARGET.
+	* omp-low.c (struct omp_context): Add loop_p.
+	(build_outer_var_ref): Treat ctx->loop_p similarly to simd construct
+	in that the original var might be private.
+	(scan_sharing_clauses): Handle OMP_CLAUSE_BIND.
+	(check_omp_nesting_restrictions): Adjust nesting restrictions for
+	addition of loop construct.
+	(scan_omp_1_stmt): Allow setjmp inside of loop construct.
+
+	* omp-low.c (lower_rec_input_clauses): Don't force simd arrays for
+	lastprivate non-addressable iterator of a collapse(1) simd.
+
+2019-07-17  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-call.c (HAVE_AS_GNU_ATTRIBUTE): define value
+	as in rs6000.c.
+
+2019-07-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (DRIVER_SELF_SPECS): Ignore X and Mach specs which
+	refer to default conditions.  Warn for the 'y' spec which is ignored
+	by current linkers.
+
+2019-07-19  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (builtin_description, cpu_is_info,
+	cpu_supports_info, builtin_hash_struct, builtin_hasher,
+	builtin_hash_table, rs6000_builtin_info_type, rs6000_builtin_info,
+	rs6000_aggregate_candidate, rs6000_discover_homogeneous_aggregate,
+	rs6000_return_in_memory, rs6000_return_in_msb, call_ABI_of_interest,
+	init_cumulative_args, rs6000_promote_function_mode,
+	rs6000_must_pass_in_stack, is_complex_IBM_long_double,
+	abi_v4_pass_in_fpr, rs6000_function_arg_padding,
+	rs6000_function_arg_boundary, rs6000_parm_offset,
+	rs6000_parm_start, rs6000_arg_size,
+	rs6000_darwin64_record_arg_advance_flush,
+	rs6000_darwin64_record_arg_advance_recurse,
+	rs6000_darwin64_struct_check_p, rs6000_function_arg_advance_1,
+	rs6000_function_arg_advance, rs6000_darwin64_record_arg_flush,
+	rs6000_darwin64_record_arg_recurse, rs6000_darwin64_record_arg,
+	rs6000_mixed_function_arg, rs6000_psave_function_arg,
+	rs6000_finish_function_arg, rs6000_function_arg,
+	rs6000_arg_partial_bytes, rs6000_pass_by_reference,
+	rs6000_parm_needs_stack, rs6000_function_parms_need_stack,
+	rs6000_reg_parm_stack_space, rs6000_move_block_from_reg,
+	setup_incoming_varargs, rs6000_build_builtin_va_list, rs6000_va_start,
+	rs6000_gimplify_va_arg, def_builtin, bdesc_3arg, bdesc_dst,
+	bdesc_2arg, bdesc_altivec_preds, bdesc_abs, bdesc_1arg, bdesc_0arg,
+	bdesc_htm, rs6000_overloaded_builtin_p, rs6000_overloaded_builtin_name,
+	rs6000_expand_zeroop_builtin, rs6000_expand_mtfsf_builtin,
+	rs6000_expand_mtfsb_builtin, rs6000_expand_set_fpscr_rn_builtin,
+	rs6000_expand_set_fpscr_drn_builtin, rs6000_expand_unop_builtin,
+	altivec_expand_abs_builtin, rs6000_expand_binop_builtin,
+	altivec_expand_predicate_builtin, swap_endian_selector_for_mode,
+	altivec_expand_lv_builtin, altivec_expand_stxvl_builtin,
+	altivec_expand_stv_builtin, htm_spr_num, rs6000_htm_spr_icode,
+	htm_expand_builtin, cpu_expand_builtin, rs6000_expand_ternop_builtin,
+	altivec_expand_dst_builtin, altivec_expand_vec_init_builtin,
+	get_element_number, altivec_expand_vec_set_builtin,
+	altivec_expand_vec_ext_builtin, altivec_expand_builtin,
+	rs6000_builtin_is_supported_p, rs6000_invalid_builtin,
+	rs6000_fold_builtin, rs6000_builtin_valid_without_lhs,
+	fold_build_vec_cmp, fold_compare_helper, fold_mergehl_helper,
+	fold_mergeeo_helper, rs6000_gimple_fold_builtin,
+	rs6000_expand_builtin, rs6000_vector_type,
+	rs6000_init_builtins, rs6000_builtin_decl, altivec_init_builtins,
+	htm_init_builtins, builtin_function_type, rs6000_common_init_builtins,
+	rs6000_internal_arg_pointer, rs6000_output_mi_thunk): Move
+	to rs6000-call.c.
+	* config/rs6000/rs6000-call.c (builtin_description, cpu_is_info,
+	cpu_supports_info, builtin_hash_struct, builtin_hasher,
+	builtin_hash_table, rs6000_builtin_info_type, rs6000_builtin_info,
+	rs6000_aggregate_candidate, rs6000_discover_homogeneous_aggregate,
+	rs6000_return_in_memory, rs6000_return_in_msb, call_ABI_of_interest,
+	init_cumulative_args, rs6000_promote_function_mode,
+	rs6000_must_pass_in_stack, is_complex_IBM_long_double,
+	abi_v4_pass_in_fpr, rs6000_function_arg_padding,
+	rs6000_function_arg_boundary, rs6000_parm_offset,
+	rs6000_parm_start, rs6000_arg_size,
+	rs6000_darwin64_record_arg_advance_flush,
+	rs6000_darwin64_record_arg_advance_recurse,
+	rs6000_darwin64_struct_check_p, rs6000_function_arg_advance_1,
+	rs6000_function_arg_advance, rs6000_darwin64_record_arg_flush,
+	rs6000_darwin64_record_arg_recurse, rs6000_darwin64_record_arg,
+	rs6000_mixed_function_arg, rs6000_psave_function_arg,
+	rs6000_finish_function_arg, rs6000_function_arg,
+	rs6000_arg_partial_bytes, rs6000_pass_by_reference,
+	rs6000_parm_needs_stack, rs6000_function_parms_need_stack,
+	rs6000_reg_parm_stack_space, rs6000_move_block_from_reg,
+	setup_incoming_varargs, rs6000_build_builtin_va_list, rs6000_va_start,
+	rs6000_gimplify_va_arg, def_builtin, bdesc_3arg, bdesc_dst,
+	bdesc_2arg, bdesc_altivec_preds, bdesc_abs, bdesc_1arg, bdesc_0arg,
+	bdesc_htm, rs6000_overloaded_builtin_p, rs6000_overloaded_builtin_name,
+	rs6000_expand_zeroop_builtin, rs6000_expand_mtfsf_builtin,
+	rs6000_expand_mtfsb_builtin, rs6000_expand_set_fpscr_rn_builtin,
+	rs6000_expand_set_fpscr_drn_builtin, rs6000_expand_unop_builtin,
+	altivec_expand_abs_builtin, rs6000_expand_binop_builtin,
+	altivec_expand_predicate_builtin, swap_endian_selector_for_mode,
+	altivec_expand_lv_builtin, altivec_expand_stxvl_builtin,
+	altivec_expand_stv_builtin, htm_spr_num, rs6000_htm_spr_icode,
+	htm_expand_builtin, cpu_expand_builtin, rs6000_expand_ternop_builtin,
+	altivec_expand_dst_builtin, altivec_expand_vec_init_builtin,
+	get_element_number, altivec_expand_vec_set_builtin,
+	altivec_expand_vec_ext_builtin, altivec_expand_builtin,
+	rs6000_builtin_is_supported_p, rs6000_invalid_builtin,
+	rs6000_fold_builtin, rs6000_builtin_valid_without_lhs,
+	fold_build_vec_cmp, fold_compare_helper, fold_mergehl_helper,
+	fold_mergeeo_helper, rs6000_gimple_fold_builtin,
+	rs6000_expand_builtin, rs6000_vector_type,
+	rs6000_init_builtins, rs6000_builtin_decl, altivec_init_builtins,
+	htm_init_builtins, builtin_function_type, rs6000_common_init_builtins,
+	rs6000_internal_arg_pointer, rs6000_output_mi_thunk: Move
+	to here from rs6000.c.
+	* config/rs6000/rs6000-internal.h: (rs6000_darwin64_struct_check_p,
+	rs6000_discover_homogeneous_aggregate, rs6000_output_mi_thunk,
+	rs6000_output_addr_const_extra, rs6000_gimple_fold_builtin,
+	rs6000_invalid_builtin, rs6000_build_builtin_va_list, rs6000_va_start,
+	rs6000_gimplify_va_arg, rs6000_promote_function_mode,
+	rs6000_return_in_memory, rs6000_return_in_msb,
+	rs6000_pass_by_reference, setup_incoming_varargs,
+	rs6000_function_arg_boundary, rs6000_must_pass_in_stack,
+	rs6000_arg_partial_bytes, rs6000_function_arg_advance,
+	rs6000_function_arg_padding, rs6000_function_arg,
+	rs6000_darwin64_record_arg, rs6000_internal_arg_pointer,
+	rs6000_init_builtins, rs6000_builtin_decl, rs6000_expand_builtin,
+	rs6000_fold_builtin, rs6000_passes_ieee128, rs6000_passes_float,
+	rs6000_passes_long_double, rs6000_passes_vector,
+	rs6000_returns_struct, cpu_builtin_p, tree builtin_mode_to_type,
+	altivec_builtin_mask_for_load) Add declarations.
+	* config/rs6000/t-rs6000: Add new source file rs6000-call.c.
+	* config/config.gcc: Add new source file rs6000-call.c to garbage
+	collector and extra_objs.
+
+2019-07-19  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/86061
+	* tree-ssa-dse.c (initialize_ao_ref_for_dse): Handle
+	strncpy.  Drop some trivial dead code.
+	(maybe_trim_memstar_call): Handle strncpy.
+
+2019-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91211
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Fix
+	memset encoding size.
+
+2019-07-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91204
+	* config/i386/mmx.md (one_cmpl<mode>2): New expander.
+
+2019-07-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/91194
+	* ipa-inline.c (recursive_inlining): Fix limits check.
+
+2019-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91200
+	* tree-ssa-phiopt.c (cond_store_replacement): Check we have
+	no PHI nodes in middle-bb.
+
+2019-07-19  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/invoke.texi: Rename the AArch64 +bitperm extension flag
+	to +sve-bitperm.
+	* config/aarch64/aarch64-option-extensions.def: Likewise.
+
+2019-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91190
+	* function.c (insert_temp_slot_address): Store into the hash table
+	a copy of address to avoid RTL sharing issues.
+
+2019-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91207
+	Revert
+	2019-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91178
+	* tree-vect-stmts.c (get_group_load_store_type): For SLP
+	loads with a gap larger than the vector size always use
+	VMAT_STRIDED_SLP.
+	(vectorizable_load): For VMAT_STRIDED_SLP with a permutation
+	avoid loading vectors that are only contained in the gap
+	and thus are not needed.
+
+2019-07-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*addqi_2_slp): Remove.
+	(*<code>qi_2_slp): Ditto.
+
+2019-07-18  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/predicates.md (prefixed_mem_operand): Call
+	rs6000_prefixed_address_mode_p instead of rs6000_prefixed_address.
+	* config/rs6000/rs6000-protos.h (rs6000_prefixed_address_mode_p):
+	Rename function from rs6000_prefixed_address.
+	* config/rs6000/aix.h (TARGET_HAS_TOC): Rename TARGET_TOC to
+	TARGET_HAS_TOC.
+	(TARGET_TOC): Likewise.
+	(TARGET_NO_TOC): Delete here, define TARGET_NO_TOC_OR_PCREL in
+	rs6000.h.
+	* config/rs6000/darwin.h (TARGET_HAS_TOC): Rename TARGET_TOC to
+	TARGET_HAS_TOC.
+	(TARGET_TOC): Likewise.
+	(TARGET_NO_TOC): Delete here, define TARGET_NO_TOC_OR_PCREL in
+	rs6000.h.
+	* config/rs6000/linux64.h (TARGET_HAS_TOC): Rename TARGET_TOC to
+	TARGET_HAS_TOC.
+	(TARGET_TOC): Likewise.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Add
+	check to require -mcmodel=medium for pc-relative addressing.
+	(create_TOC_reference): Add assertion for TARGET_TOC.
+	(rs6000_legitimize_address): Use TARGET_NO_TOC_OR_PCREL instead of
+	TARGET_NO_TOC.
+	(rs6000_emit_move): Likewise.
+	(TOC_alias_set): Rename TOC alias set static variable from 'set'
+	to 'TOC_alias_set'.
+	(get_TOC_alias_set): Likewise.
+	(output_toc): Use TARGET_NO_TOC_OR_PCREL instead of
+	TARGET_NO_TOC.
+	(rs6000_can_eliminate): Likewise.
+	(rs6000_prefixed_address_mode_p): Rename function from
+	rs6000_prefixed_address.
+	* config/rs6000/rs6000.h (TARGET_TOC): Define in terms of
+	TARGET_HAS_TOC and not pc-relative.
+	(TARGET_NO_TOC_OR_PCREL): New macro to replace TARGET_NO_TOC.
+	* config/rs6000/sysv4.h (TARGET_HAS_TOC): Rename TARGET_TOC to
+	TARGET_HAS_TOC.
+	(TARGET_TOC): Likewise.
+	(TARGET_NO_TOC): Delete here, define TARGET_NO_TOC_OR_PCREL in
+	rs6000.h.
+
+2019-07-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91188
+	* config/i386/i386.md (*addqi_1_slp): Use register_operand predicate
+	for operand 0.  Do not use (match_dup) to match operand 1 with
+	operand 0.  Add check in insn constraint that either input operand
+	matches operand 0.  Use SWI12 mode iterator to also handle
+	HImode operands.
+	(*and<mode>_1_slp): Ditto.
+	(*<code>qi_1_slp): Ditto.
+	(*sub<mode>_1_slp): Use register_operand predicate for operand 0.
+	Do not use (match_dup) to match operand 1 with operand 0.  Add
+	check in insn constraint that operand 1 matches operand 0.
+	Use SWI12 mode iterator to also handle HImode operands.
+	(*ashl<mode>3_1_slp): Ditto.
+	(*<shift_insn><mode>3_1_slp): Ditto.
+	(*<rotate_insn><mode>3_1_slp): Ditto.
+
+2019-07-18  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* config/arm/arm-builtins.c
+	(arm_expand_ternop_builtin): Remove explicit sha1 builtin handling.
+	(arm_expand_unop_builtin): Likewise.
+	* config/arm/crypto.md
+	(crypto_sha1h): Convert from define_insn to define_expand.
+	(crypto_<crypto_pattern>): Likewise.
+	(crypto_sha1h_lb): New define_insn.
+	(crypto_<crypto_pattern>_lb): Likewise.
+
+2019-07-18  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+        PR target/90317
+        * config/arm/arm_neon.h
+        (vsha1h_u32): Refactor.
+        (vsha1cq_u32): Likewise.
+        (vsha1pq_u32): Likewise.
+        (vsha1mq_u32): Likewise.
+        * config/arm/crypto.md:
+        (crypto_sha1h): Remove zero extend, correct vec select.
+        (crypto_sha1c): Correct vec select.
+        (crypto_sha1m): Likewise.
+        (crypto_sha1p): Likewise.
+
+2019-07-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/predicates.md (arm_borrow_operation): New predicate.
+	* config/arm/arm.c (subdi3_compare1): Use CCmode for the split.
+	(arm_subdi3, subdi_di_zesidi, subdi_di_sesidi): Likewise.
+	(subdi_zesidi_zesidi): Likewise.
+	(negdi2_compare, negdi2_insn): Likewise.
+	(negdi_extensidi): Likewise.
+	(negdi_zero_extendsidi): Likewise.
+	(arm_cmpdi_insn): Likewise.
+	(subsi3_carryin): Use arm_borrow_operation.
+	(subsi3_carryin_const): Likewise.
+	(subsi3_carryin_const0): Likewise.
+	(subsi3_carryin_compare): Likewise.
+	(subsi3_carryin_compare_const): Likewise.
+	(subsi3_carryin_compare_const0): Likewise.
+	(subsi3_carryin_shift): Likewise.
+	(rsbsi3_carryin_shift): Likewise.
+	(negsi2_carryin_compare): Likewise.
+
+2019-07-18  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/91137
+	* tree-ssa-loop-ivopts.c (struct ivopts_data): New field.
+	(tree_ssa_iv_optimize_init, alloc_iv, tree_ssa_iv_optimize_finalize):
+	Init, use and fini the above new field.
+	(determine_base_object_1): New function.
+	(determine_base_object): Reimplement using walk_tree.
+
+2019-07-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* basic-block.h (CLEANUP_FORCE_FAST_DCE): New macro.
+	* cfgcleanup.c (cleanup_cfg): Call run_fast_dce if
+	CLEANUP_FORCE_FAST_DCE is set.
+	* ifcvt.c (rest_of_handle_if_conversion): Pass
+	CLEANUP_FORCE_FAST_DCE to the final cleanup_cfg call if
+	if-conversion succeeded.
+
+2019-07-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Refactor
+	branches to make code less indented.
+
+2019-07-17  Alexandre Oliva <oliva@adacore.com>
+
+	PR middle-end/81824
+	* attribs.c (decls_mismatched_attributes): Simplify the logic
+	that avoids duplicates and false positives.
+
+2019-07-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (pa_som_asm_init_sections): Don't force all constant
+	data into data section when generating PIC code.
+	(pa_select_section): Use pa_reloc_rw_mask() to qualify relocs.
+	(pa_reloc_rw_mask): Return 3 when generating PIC code and when
+	generating code for SOM targets earlier than HP-UX 11.  Otherwise,
+	return 2 for SOM and 0 for other targets.
+	 
+2019-07-17  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dse.c (initialize_ao_ref_for_dse): Fix formatting.
+	(dse_walker::dse_optimize_stmt): Likewise.  Add missing return to
+	avoid unexpected switch statement fallthru.
+
+2019-07-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*add<dwi>3_doubleword):
+	Remove redundant constraints.
+	(*add<mode>_1): Ditto.
+	(*addhi_1): Ditto.
+	(*addqi_1): Ditto.
+	(*addqi_1_slp): Ditto.
+	(*add<mode>_2): Ditto.
+	(*addv<mode>4): Ditto.
+	(*sub<dwi>3_doubleword): Ditto.
+	(*sub<mode>_1): Ditto.
+	(*subqi_1_slp): Ditto.
+	(*sub<mode>_2): Ditto.
+	(*subv<mode>4): Ditto.
+	(*sub<mode>_3): Ditto.
+	(@add<mode>3_carry): Ditto.
+	(@sub<mode>3_carry): Ditto.
+	(*add<mode>3_cc_overflow_1): Ditto.
+	(*add<mode>3_zext_cc_overflow_2): Ditto.
+	(*anddi_1): Ditto.
+	(*and<mode>_1): Ditto.
+	(*andqi_1): Ditto.
+	(*andqi_1_slp): Ditto.
+	(*anddi_2): Ditto.
+	(*andqi_2_maybe_si): Ditto.
+	(*and<mode>_2): Ditto.
+	(*andqi_2_slp): Ditto.
+	(*<code><mode>_1): Ditto.
+	(*<code>qi_1): Ditto.
+	(*<code>qi_1_slp): Ditto.
+	(*<code><mode>_2): Ditto.
+	(*<code>qi_2_slp): Ditto.
+
+2019-07-17  Jan Hubicka  <hubicka@ucw.cz>
+
+	* alias.c (record_component_aliases): Do not simplify pointed-to
+	types of ODR types.
+
+2019-07-17  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*andqi_2_maybe_si): Handle potential
+	partial reg stall on alternative 2.
+
+2019-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91178
+	* tree-ssa.c (release_defs_bitset): Iterate from higher to
+	lower SSA names to avoid quadratic behavior in the common case.
+	* tree-data-ref.c (split_constant_offset): Add limit argument
+	and pass it down.  Initialize it from PARAM_SSA_NAME_DEF_CHAIN_LIMIT.
+	(split_constant_offset_1): Add limit argument and use it to
+	limit SSA def walking.  Optimize the common plus/minus case.
+
+2019-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91178
+	* tree-vect-stmts.c (get_group_load_store_type): For SLP
+	loads with a gap larger than the vector size always use
+	VMAT_STRIDED_SLP.
+	(vectorizable_load): For VMAT_STRIDED_SLP with a permutation
+	avoid loading vectors that are only contained in the gap
+	and thus are not needed.
+
+2019-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91180
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Fix offset
+	computation for memset partial defs.
+
+2019-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple.h (enum gf_mask): Remove GF_OMP_FOR_SIMD, change
+	GF_OMP_FOR_KIND_SIMD to a value serially after other kinds,
+	divide GF_OMP_FOR_KIND_MASK, GF_OMP_FOR_COMBINED,
+	GF_OMP_FOR_COMBINED_INTO, GF_OMP_FOR_GRID_PHONY,
+	GF_OMP_FOR_GRID_INTRA_GROUP and GF_OMP_FOR_GRID_GROUP_ITER by two.
+	* omp-grid.c (grid_process_grid_body,
+	grid_eliminate_combined_simd_part): Use GF_OMP_FOR_KIND_SIMD instead
+	of GF_OMP_FOR_SIMD, don't test & GF_OMP_FOR_SIMD but
+	== GF_OMP_FOR_KIND_SIMD.
+	* omp-low.c (build_outer_var_ref, scan_sharing_clauses,
+	check_omp_nesting_restrictions, scan_omp_1_stmt,
+	lower_rec_input_clauses, lower_lastprivate_conditional_clauses,
+	lower_lastprivate_clauses, lower_reduction_clauses, lower_omp_scan,
+	omp_find_scan): Likewise.
+	* omp-expand.c (expand_omp_for): Likewise.
+	* omp-general.c (omp_extract_for_data): Likewise.
+
+	PR tree-optimization/91157
+	* tree-vect-generic.c (expand_vector_comparison): Handle lhs being
+	a vector boolean with scalar mode.
+	(expand_vector_condition): Handle first operand being a vector boolean
+	with scalar mode.
+	(expand_vector_operations_1): For comparisons, don't bail out early
+	if the return type is vector boolean with scalar mode, but comparison
+	operand type is not.
+
+2019-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91181
+	* tree-vect-slp.c (vect_build_slp_tree_1): Do not compare
+	IFN_LOADs as calls.
+
+2019-07-16  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*testdi_1): Match CCZmode for
+	constants that might have the SImode sign bit set.
+	(*testqi_1_maybe_si): Remove "!" constraint modifier.
+	Use correct constraints for pentium pairing.
+	(*test<mode>_1): Ditto.
+
+2019-07-16  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/91173
+	* tree-ssa-address.c (addr_for_mem_ref): If the base is an
+	SSA_NAME with a constant value, fold its value into the offset
+	and clear the base before calling gen_addr_rtx.
+
+2019-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/91164
+	* dse.c (rest_of_handle_dse): If dead edges have been purged,
+	invalidate dominance info.
+
+2019-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* read-md.h (md_reader::record_potential_iterator_use): Add a
+	file_location parameter.
+	* read-rtl.c (attribute_use::loc): New field.
+	(map_attr_string): Take a file_location parameter.  Report cases
+	in which attributes map to multiple distinct values.
+	(apply_attribute_uses): Update call accordingly.
+	(md_reader::handle_overloaded_name): Likewise.
+	(md_reader::apply_iterator_to_string): Likewise.  Skip empty
+	nonnull strings.
+	(record_attribute_use): Take a file_location parameter.
+	Initialize attribute_use::loc.
+	(md_reader::record_potential_iterator_use): Take a file_location
+	parameter.  Update call to record_attribute_use.
+	(rtx_reader::rtx_alloc_for_name): Update call accordingly.
+	(rtx_reader::read_rtx_code): Likewise.
+	(rtx_reader::read_rtx_operand): Likewise.  Record a location
+	for implicitly-expanded empty strings.
+
+2019-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* read-md.h (md_reader::ptr_loc): Moved from read-md.c.
+	Use file_location instead of separate fields.
+	(md_reader::set_md_ptr_loc): Take a file_location instead of a
+	separate filename and line number.
+	* read-md.c (ptr_loc): As above.
+	(md_reader::copy_md_ptr_loc): Update for new ptr_loc layout.
+	(md_reader::fprint_md_ptr_loc): Likewise.
+	(md_reader::set_md_ptr_loc): Likewise.  Take a file_location
+	instead of a separate filename and line number.
+	(md_reader::read_string): Update call accordingly.
+
+2019-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/rs6000/rs6000.md (*mov<mode>_update1): Explicitly
+	use <SFDF:mode>, <SFDF:MODE>, <SFDF:Ff> and <SFDF:bits> rather than
+	leaving the choice between SFDF and P implicit.
+	(*mov<mode>_update2): Likewise.
+	(*cmp<IBM128:mode>_internal2): Explicitly use <IBM128:MODE>
+	rather than leaving the choice betweem IBM128 and GPR implicit.
+	(*fix<uns>_trunc<IEEE128:mode><QHSI:mode>2_mem): Explicitly use
+	<IEEE128:MODE> rather than leaving the choice between IEEE128 and
+	QHSI implicit.
+	(AltiVec define_peephole2s): Explicitly use <ALTIVEC_DFORM:MODE>
+	rather than leaving the choice between ALTIVEC_DFORM and P implicit.
+	* config/rs6000/vsx.md
+	(*vsx_ext_<VSX_EXTRACT_I:VS_scalar>_fl_<FL_CONV:mode>)
+	(*vsx_ext_<VSX_EXTRACT_I:VS_scalar>_ufl_<FL_CONV:mode>): Explicitly
+	use <FL_CONV:VSisa> rather than leaving the choice between FL_CONV
+	and VSX_EXTRACT_I implicit.
+
+2019-07-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/mips/micromips.md (*movep<MOVEP1:mode><MOVEP2:mode>):
+	Explicitly use <MOVEP1:MODE> for the mode attribute.
+
+2019-07-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR bootstrap/91176
+	* ipa-fnsummary.c (analyze_function_body): Skip debug stmts
+
+2019-07-15  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/91050
+	* config/rs6000/rs6000.c (rs6000_file_start): Never skip emitting a
+	.machine directive.
+
+2019-07-15  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (@test<mode>_ccno_1):
+	Rename from test<mode>_ccno_1.
+	(*testdi_1): Remove redundant alternatives.  Remove modrm attribute.
+	(*testqi_1_maybe_si): Remove modrm attribute.
+	(*test<mode>_1): Ditto.
+	* config/i386/i386-expand.c (ix86_split_idivmod): Use
+	gen_test_ccno_1 and gen_extend_insn.
+
+2019-07-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (aliasing_component_refs_walk): Initialize same_p
+	to 0.
+
+2019-07-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91162
+	* tree-cfg.c (move_block_to_fn): When releasing a virtual PHI
+	node make sure to replace all uses with something valid.
+
+2019-07-15  Kewen Lin  <linkw@gcc.gnu.org>
+
+	PR tree-optimization/88497
+	* tree-ssa-reassoc.c (reassociate_bb): Swap the positions of
+	GIMPLE_BINARY_RHS check and gimple_visited_p check, call new
+	function undistribute_bitref_for_vector.
+	(undistribute_bitref_for_vector): New function.
+	(cleanup_vinfo_map): Likewise.
+	(sort_by_mach_mode): Likewise.
+
+2019-07-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (nonmemory_szext_operand): New mode attribute.
+	(test<mode>_ccno_1): Macroize insn pattern from testsi_ccno_1
+	and testdi_ccno_1 using SWI48 mode attribute.
+	(*testdi_1): Use x86_64_szext_nonmemory_operand instead of
+	x86_64_szext_general_operand.
+	(*testqi_1_maybe_si): Use nonmemory_operand instead of general_operand.
+	(*test<mode>_1): Use nonmemory_szext_operand mode attribute
+	instead of genera_operand mode attribute.
+
+2019-07-14  Vladislav Ivanishin <vlad@ispras.ru>
+
+	* gdbhooks.py (DumpFn.invoke): Add explicit casts of return values of
+	fopen and fclose to their respective types.
+	(DotFn.invoke): Ditto.
+
+2019-07-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-fnsummary.c (ipa_dump_hints): Do not dump array_index.
+	(ipa_fn_summary::~ipa_fn_summary): Do not destroy array_index.
+	(ipa_fn_summary_t::duplicate): Do not duplicate array_index.
+	(array_index_predicate): Remove.
+	(analyze_function_body): Account cost for variable ofsetted array
+	indexing.
+	(estimate_node_size_and_time): Do not compute array index hint.
+	(ipa_merge_fn_summary_after_inlining): Do not merge array index hint.
+	(inline_read_section): Do not read array index hint.
+	(ipa_fn_summary_write): Do not write array index hint.
+	* doc/invoke.texi (ipa-cp-array-index-hint-bonus): Remove.
+	* ipa-cp.c (hint_time_bonus): Remove.
+	* ipa-fnsummary.h (ipa_hints_vals): Remove array_index.
+	(ipa_fnsummary): Remove array_index.
+	* ipa-inline.c (want_inline_small_function_p): Do not use
+	array_index.
+	(edge_badness): Likewise.
+	* params.def (PARAM_IPA_CP_ARRAY_INDEX_HINT_BONUS): Remove.
+
+2019-07-14  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/91148
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): Remove
+	superfluous "builtin function" phrasing.
+
+2019-07-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (component_ref_to_zero_sized_trailing_array_p):
+	Break out from ...
+	(aliasing_component_refs_walk): Break out from ...
+	(aliasing_component_refs_p): ... here.
+
+2019-07-13  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/91148
+	* config/rs6000/rs6000.c (rs6000_invalid_builtin): Remove superfluous
+	"builtin function" phrasing.
+
+2019-07-13  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/90723
+	* recog.h (temporary_volatile_ok): New class.
+	* config/aarch64/aarch64.c (aarch64_emit_sve_pred_move): Set
+	volatile_ok temporarily to true using temporary_volatile_ok.
+	* expr.c (emit_block_move_via_cpymem): Likewise.
+	* optabs.c (maybe_legitimize_operand): Likewise.
+
+2019-07-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (struct gimplify_omp_ctx): Add order_concurrent member.
+	(omp_notice_threadprivate_variable): Diagnose threadprivate variable
+	uses inside of order(concurrent) constructs.
+	(gimplify_scan_omp_clauses): Set ctx->order_concurrent if
+	OMP_CLAUSE_ORDER is seen.
+	* omp-low.c (struct omp_context): Add order_concurrent member.
+	(scan_sharing_clauses): Set ctx->order_concurrent if
+	OMP_CLAUSE_ORDER is seen.
+	(check_omp_nesting_restrictions): Diagnose ordered or atomic inside
+	of simd order(concurrent).  Diagnose constructs not allowed inside of
+	for order(concurrent).
+	(setjmp_or_longjmp_p): Add a context and TREE_PUBLIC check to avoid
+	complaining about static double setjmp (double); or class static
+	methods or non-global namespace setjmps.
+	(omp_runtime_api_call): New function.
+	(scan_omp_1_stmt): Diagnose OpenMP runtime API calls inside of
+	order(concurrent) loops.
+
+2019-07-12  Martin Sebor  <msebor@redhat.com>
+
+	* doc/invoke.texi (ssa-name-def-chain-limit): Document new --param.
+	* params.def (PARAM_SSA_NAME_DEF_CHAIN_LIMIT): Add new --param.
+	* tree-vrp.c (vrp_prop::check_mem_ref): Use
+	PARAM_SSA_NAME_DEF_CHAIN_LIMIT.
+
+2019-07-12  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-alias.c (same_tmr_indexing_p): Break out from ...
+	(indirect_refs_may_alias_p): ... here.
+	(nonoverlapping_component_refs_since_match_p): Support also non-trivial
+	mem refs in the access paths.
+
+2019-07-12  Jiangning Liu  <jiangning.liu@amperecomputing.com>
+
+	PR tree-optimization/89430
+	* tree-ssa-phiopt.c (cond_store_replacement): Support conditional
+	store elimination for local variable without address escape.
+
+2019-07-12  Jeff Law  <law@redhat.com>
+
+	* config/c6x/c6x.c (c6x_section_type): Clear SECTION_NOTYPE
+	for the ".far" section.
+
+2019-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91145
+	* tree-vect-slp.c (vect_build_slp_tree_2): Fix reduction
+	chain check.
+
+2019-07-12  Alexandre Oliva <oliva@adacore.com>
+
+	* tree-eh.c (honor_protect_cleanup_actions): Use outer_
+	rather than this_state as the lowering context for the ELSE
+	seq in a GIMPLE_EH_ELSE.
+
+2019-07-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* vector-builder.h (vector_builder::elt): Allow already-supplied
+	elements to be read back before building is complete.
+
+2019-07-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/91136
+	* df-core.c (ACCESSING REFS): Fix typos in comment.
+	* resource.c (mark_target_live_reg): Add artificial defs that occur at
+	the beginning of the block to the initial set of live registers.
+
+2019-07-12  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.h (get_array_ctor_element_at_index): Adjust.
+	* fold-const.c (get_array_ctor_element_at_index): Add
+	ctor_idx output parameter informing the caller where in
+	the constructor the element was (not) found.  Add early exit
+	for when the ctor is sorted.
+	* gimple-fold.c (fold_array_ctor_reference): Support constant
+	folding across multiple array elements.
+
+2019-07-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgexpand.c (expand_gimple_stmt_1) <GIMPLE_RETURN>: If the statement
+	doesn't have location, set the current location to the function's end.
+
+2019-07-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (*compare_condjump<mode>)
+	(loadwb_pair<GPI:mode>_<P:mode>, loadwb_pair<GPF:mode>_<P:mode>)
+	(storewb_pair<GPI:mode>_<P:mode>, storewb_pair<GPF:mode>_<P:mode>)
+	(*ands<mode>_compare0): Fix ambiguous uses of .md attributes.
+	* config/aarch64/aarch64-simd.md
+	(*aarch64_get_lane_extend<GPI:mode><VDQQH:mode>): Likewise.
+	(*aarch64_get_lane_zero_extend<GPI:mode><VDQQH:mode>): Likewise.
+	* config/aarch64/aarch64-sve.md
+	(while_ult<GPI:mode><PRED_ALL:mode>): Likewise.
+	(*cond_<optab><mode>_any): Fix SVE_I/SVE_SDI typo.
+
+2019-07-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/md.texi: Document that @ patterns can have different
+	numbers of operands.
+	* genemit.c (handle_overloaded_gen): Handle this case.
+	* genopinit.c (handle_overloaded_gen): Likewise.
+	* gensupport.c (replace_operands_with_dups): Iterate over
+	the new rtx's format rather than the old one's.
+
+2019-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_ORDER.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name): Add
+	order clause entries.
+	(walk_tree_1): Handle OMP_CLAUSE_ORDER.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+	* gimplify.c (gimplify_scan_omp_clauses, gimplify_adjust_omp_clauses):
+	Likewise.
+	* omp-low.c (scan_sharing_clauses): Likewise.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Likewise.
+
+2019-07-12  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* gcc/cfgrtl.c (print_rtl_with_bb): Emit a hint if the
+	fallthrough target of current basic block isn't the placed
+	right next.
+
+2019-07-11  Sunil K Pandey  <sunil.k.pandey@intel.com>
+
+	PR target/90980
+	* config/i386/avx512fintrin.h (_mm512_loadu_epi64): New.
+	(_mm512_storeu_epi64): Likewise.
+	(_mm512_loadu_epi32): Likewise.
+	(_mm512_storeu_epi32): Likewise.
+	* config/i386/avx512vlintrin.h (_mm256_storeu_epi64): New.
+	(_mm_storeu_epi64): Likewise.
+	(_mm256_storeu_epi32): Likewise.
+	(_mm_storeu_epi32): Likewise.
+
+2019-07-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-logue.c: Add Modula-2 to comment.
+
+2019-07-11  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-logue.c (rs6000_output_function_epilogue):
+	Handle Modula-2.
+
+2019-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91124
+	* config/i386/sse.md (sse2_cvtpd2dq<mask_name>): Change into ...
+	(sse2_cvtpd2dq): ... this.  Remove mask substitution macros.
+	(sse2_cvtpd2dq_mask, sse2_cvtpd2dq_mask_1): New define_insns.
+	(ufix_notruncv2dfv2si2<mask_name>): Change into ...
+	(ufix_notruncv2dfv2si2): ... this.  Remove mask substitution macros.
+	(ufix_notruncv2dfv2si2_mask, ufix_notruncv2dfv2si2_mask_1): New
+	define_insns.
+	(ufix_truncv2dfv2si2<mask_name>): Change into ...
+	(ufix_truncv2dfv2si2): ... this.  Remove mask substitution macros.
+	(ufix_truncv2dfv2si2_mask, ufix_truncv2dfv2si2_mask_1): New
+	define_insns.
+	(sse2_cvttpd2dq<mask_name>): Change into ...
+	(sse2_cvttpd2dq): ... this.  Remove mask substitution macros.
+	(sse2_cvttpd2dq_mask, sse2_cvttpd2dq_mask_1): New define_insns.
+	(*sse2_cvtpd2dq<mask_name>): Change into ...
+	(*sse2_cvtpd2dq): ... this.  Remove mask substitution macros.
+	Add "C" constraint to const0_operand.
+	(*sse2_cvtpd2dq_mask, *sse2_cvtpd2dq_mask_1): New define_insns.
+	(sse2_cvtpd2ps_mask): Adjust expand to match *sse2_cvtpd2ps_mask
+	changes.
+
+	PR target/91124
+	* config/i386/i386-builtin-types.def
+	(V32HI_FTYPE_V32HI_V32HI_V32HI_INT,
+	V16HI_FTYPE_V16HI_V16HI_V16HI_INT, V8HI_FTYPE_V8HI_V8HI_V8HI_INT,
+	V8SI_FTYPE_V8SI_V8SI_V8SI_INT, V4DI_FTYPE_V4DI_V4DI_V4DI_INT,
+	V8DI_FTYPE_V8DI_V8DI_V8DI_INT, V16SI_FTYPE_V16SI_V16SI_V16SI_INT,
+	V2DI_FTYPE_V2DI_V2DI_V2DI_INT, V4SI_FTYPE_V4SI_V4SI_V4SI_INT): Remove.
+	* config/i386/i386-builtin.def (__builtin_ia32_vpshrdv_v32hi_mask,
+	__builtin_ia32_vpshrdv_v32hi_maskz, __builtin_ia32_vpshrdv_v16hi_mask,
+	__builtin_ia32_vpshrdv_v16hi_maskz, __builtin_ia32_vpshrdv_v8hi_mask,
+	__builtin_ia32_vpshrdv_v8hi_maskz, __builtin_ia32_vpshrdv_v16si_mask,
+	__builtin_ia32_vpshrdv_v16si_maskz, __builtin_ia32_vpshrdv_v8si_mask,
+	__builtin_ia32_vpshrdv_v8si_maskz, __builtin_ia32_vpshrdv_v4si_mask,
+	__builtin_ia32_vpshrdv_v4si_maskz, __builtin_ia32_vpshrdv_v8di_mask,
+	__builtin_ia32_vpshrdv_v8di_maskz, __builtin_ia32_vpshrdv_v4di_mask,
+	__builtin_ia32_vpshrdv_v4di_maskz, __builtin_ia32_vpshrdv_v2di_mask,
+	__builtin_ia32_vpshrdv_v2di_maskz, __builtin_ia32_vpshldv_v32hi_mask,
+	__builtin_ia32_vpshldv_v32hi_maskz, __builtin_ia32_vpshldv_v16hi_mask,
+	__builtin_ia32_vpshldv_v16hi_maskz, __builtin_ia32_vpshldv_v8hi_mask,
+	__builtin_ia32_vpshldv_v8hi_maskz, __builtin_ia32_vpshldv_v16si_mask,
+	__builtin_ia32_vpshldv_v16si_maskz, __builtin_ia32_vpshldv_v8si_mask,
+	__builtin_ia32_vpshldv_v8si_maskz, __builtin_ia32_vpshldv_v4si_mask,
+	__builtin_ia32_vpshldv_v4si_maskz, __builtin_ia32_vpshldv_v8di_mask,
+	__builtin_ia32_vpshldv_v8di_maskz, __builtin_ia32_vpshldv_v4di_mask,
+	__builtin_ia32_vpshldv_v4di_maskz, __builtin_ia32_vpshldv_v2di_mask,
+	__builtin_ia32_vpshldv_v2di_maskz, __builtin_ia32_vpdpbusd_v16si_mask,
+	__builtin_ia32_vpdpbusd_v16si_maskz, __builtin_ia32_vpdpbusd_v8si_mask,
+	__builtin_ia32_vpdpbusd_v8si_maskz, __builtin_ia32_vpdpbusd_v4si_mask,
+	__builtin_ia32_vpdpbusd_v4si_maskz,
+	__builtin_ia32_vpdpbusds_v16si_mask,
+	__builtin_ia32_vpdpbusds_v16si_maskz,
+	__builtin_ia32_vpdpbusds_v8si_mask,
+	__builtin_ia32_vpdpbusds_v8si_maskz,
+	__builtin_ia32_vpdpbusds_v4si_mask,
+	__builtin_ia32_vpdpbusds_v4si_maskz,
+	__builtin_ia32_vpdpwssd_v16si_mask,
+	__builtin_ia32_vpdpwssd_v16si_maskz, __builtin_ia32_vpdpwssd_v8si_mask,
+	__builtin_ia32_vpdpwssd_v8si_maskz, __builtin_ia32_vpdpwssd_v4si_mask,
+	__builtin_ia32_vpdpwssd_v4si_maskz,
+	__builtin_ia32_vpdpwssds_v16si_mask,
+	__builtin_ia32_vpdpwssds_v16si_maskz,
+	__builtin_ia32_vpdpwssds_v8si_mask,
+	__builtin_ia32_vpdpwssds_v8si_maskz,
+	__builtin_ia32_vpdpwssds_v4si_mask,
+	__builtin_ia32_vpdpwssds_v4si_maskz): Use *_USI, *_UHI or *_UQI
+	suffixed types rather than *_INT.
+	* config/i386/i386-expand.c (ix86_expand_args_builtin): Don't handle
+	V32HI_FTYPE_V32HI_V32HI_V32HI_INT, V16HI_FTYPE_V16HI_V16HI_V16HI_INT,
+	V8HI_FTYPE_V8HI_V8HI_V8HI_INT, V8SI_FTYPE_V8SI_V8SI_V8SI_INT,
+	V4DI_FTYPE_V4DI_V4DI_V4DI_INT, V8DI_FTYPE_V8DI_V8DI_V8DI_INT,
+	V16SI_FTYPE_V16SI_V16SI_V16SI_INT, V2DI_FTYPE_V2DI_V2DI_V2DI_INT
+	and V4SI_FTYPE_V4SI_V4SI_V4SI_INT.
+
+2019-07-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (intersect_ranges): If we know the intersection is
+	empty, there is no need to conservatively add anything else to
+	the set.
+
+2019-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91131
+	* gimplify.c (gimplify_compound_literal_expr): Force a temporary
+	when the object is volatile and we have not cleared it even though
+	there are no nonzero elements.
+
+2019-07-10  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/predicates.md (cint34_operand): Update
+	SIGNED_34BIT_OFFSET_P call.
+	(pcrel_address): Update SIGNED_34BIT_OFFSET_P call.
+	(pcrel_external_address): Update SIGNED_34BIT_OFFSET_P call.
+	* config/rs6000/rs6000.c (rs6000_prefixed_address): Update
+	SIGNED_16BIT_OFFSET_P and SIGNED_34BIT_OFFSET_P calls.
+	* config/rs6000/rs6000.h (SIGNED_16BIT_OFFSET_P): Remove EXTRA
+	argument.
+	(SIGNED_34BIT_OFFSET_P): Remove EXTRA argument.
+	(SIGNED_16BIT_OFFSET_EXTRA_P): New macro, like
+	SIGNED_16BIT_OFFSET_P with an EXTRA argument.
+	(SIGNED_34BIT_OFFSET_EXTRA_P): New macro, like
+	SIGNED_34BIT_OFFSET_P with an EXTRA argument.
+
+2019-07-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (LIB_SPEC): Collate this spec here.
+	* config/rs6000/darwin7.h (LIB_SPEC): Remove.
+	* config/rs6000/darwin8.h (LIB_SPEC): Remove.
+	(DEF_MIN_OSX_VERSION): New.
+
+2019-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* fold-const.c (fold_relational_const): Fix folding of
+	vector-to-scalar NE_EXPRs.
+	(test_vector_folding): Add more tests.
+
+2019-07-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/91060
+	* config/arm/iterators.md (V2DI_ONLY): New mode iterator.
+	* config/arm/neon.md (vec_set<mode>_internal): Add a '@' prefix.
+	(vec_setv2di_internal): Reexpress as...
+	(@vec_set<V2DI_ONLY:mode>_internal): ...this.
+	* config/arm/arm.c (neon_expand_vector_init): Use gen_vec_set_internal
+	rather than gen_neon_vset_lane<mode>.
+
+2019-07-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/91102
+	* lra-constraints.c (process_alt_operands): Don't match user
+	defined regs only if they are early clobbers.
+
+2019-07-10  Marc Glisse  <marc.glisse@inria.fr>
+
+	* wide-int.h (wi::lshift): Reject negative values for the fast path.
+
+2019-07-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91126
+	* tree-ssa-sccvn.c (n_walk_cb_data::push_partial_def): Adjust
+	native encoding offset for BYTES_BIG_ENDIAN.
+	(vn_reference_lookup_3): Likewise.
+
+2019-07-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Look at valueized
+	LHS whenever possible.
+
+2019-07-09  Jan Hubicka  <hubicka@ucw.cz>
+
+	* tree-ssa-alias.c (nonoverlapping_component_refs_p_1): Break out
+	from ...; work also on duplicated types.
+	(nonoverlapping_component_refs_since_match): ... here
+	(ncr_type_uid): Break out from ...
+	(ncr_compar): ... here; look for TYPE_UID of canonical type if
+	available.
+	(nonoverlapping_component_refs_p): Use same_type_for_tbaa to match
+	the types and nonoverlapping_component_refs_p_1 to disambiguate.
+
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/90989
+	* tree-ssa-strlen.c (handle_char_store): Constrain a single character
+	optimization to just single character stores.
+
+2019-07-09  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	* tree-vect-stmts.c (vectorizable_comparison) <!slp_node>:
+	Swap operands only once.
+
+2019-07-09  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
+
+	* cfgcleanup.c (old_insns_match_p): Check if used hard regs set is equal
+	for both call instructions.
+
+2019-07-09  John Darrington  <john@darrington.wattle.id.au>
+
+	* simplify-rtx.c (simplify_unary_operation_1): Use GET_MODE_PRECISION
+	rather than GET_MODE_BITSIZE to better handle partial integer modes.
+
+2019-07-09  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000-internal.h (create_TOC_reference): Delete.
+	* config/rs6000/rs6000-logue.c (create_TOC_reference): Move
+	function from rs6000-logue.c back to rs6000.c.
+	* config/rs6000/rs6000.c (create_TOC_reference): Likewise.
+
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* auto-profile.c: Change class-key of PODs to struct and others
+	to class.
+	* basic-block.h: Same.
+	* bitmap.c (bitmap_alloc): Same.
+	* bitmap.h: Same.
+	* builtins.c (expand_builtin_prefetch): Same.
+	(expand_builtin_interclass_mathfn): Same.
+	(expand_builtin_strlen): Same.
+	(expand_builtin_mempcpy_args): Same.
+	(expand_cmpstr): Same.
+	(expand_builtin___clear_cache): Same.
+	(expand_ifn_atomic_bit_test_and): Same.
+	(expand_builtin_thread_pointer): Same.
+	(expand_builtin_set_thread_pointer): Same.
+	* caller-save.c (setup_save_areas): Same.
+	(replace_reg_with_saved_mem): Same.
+	(insert_restore): Same.
+	(insert_save): Same.
+	(add_used_regs): Same.
+	* cfg.c (get_bb_copy): Same.
+	(set_loop_copy): Same.
+	* cfg.h: Same.
+	* cfganal.h: Same.
+	* cfgexpand.c (alloc_stack_frame_space): Same.
+	(add_stack_var): Same.
+	(add_stack_var_conflict): Same.
+	(add_scope_conflicts_1): Same.
+	(update_alias_info_with_stack_vars): Same.
+	(expand_used_vars): Same.
+	* cfghooks.c (redirect_edge_and_branch_force): Same.
+	(delete_basic_block): Same.
+	(split_edge): Same.
+	(make_forwarder_block): Same.
+	(force_nonfallthru): Same.
+	(duplicate_block): Same.
+	(lv_flush_pending_stmts): Same.
+	* cfghooks.h: Same.
+	* cfgloop.c (flow_loops_cfg_dump): Same.
+	(flow_loop_nested_p): Same.
+	(superloop_at_depth): Same.
+	(get_loop_latch_edges): Same.
+	(flow_loop_dump): Same.
+	(flow_loops_dump): Same.
+	(flow_loops_free): Same.
+	(flow_loop_nodes_find): Same.
+	(establish_preds): Same.
+	(flow_loop_tree_node_add): Same.
+	(flow_loop_tree_node_remove): Same.
+	(flow_loops_find): Same.
+	(find_subloop_latch_edge_by_profile): Same.
+	(find_subloop_latch_edge_by_ivs): Same.
+	(mfb_redirect_edges_in_set): Same.
+	(form_subloop): Same.
+	(merge_latch_edges): Same.
+	(disambiguate_multiple_latches): Same.
+	(disambiguate_loops_with_multiple_latches): Same.
+	(flow_bb_inside_loop_p): Same.
+	(glb_enum_p): Same.
+	(get_loop_body_with_size): Same.
+	(get_loop_body): Same.
+	(fill_sons_in_loop): Same.
+	(get_loop_body_in_dom_order): Same.
+	(get_loop_body_in_custom_order): Same.
+	(release_recorded_exits): Same.
+	(get_loop_exit_edges): Same.
+	(num_loop_branches): Same.
+	(remove_bb_from_loops): Same.
+	(find_common_loop): Same.
+	(delete_loop): Same.
+	(cancel_loop): Same.
+	(verify_loop_structure): Same.
+	(loop_preheader_edge): Same.
+	(loop_exit_edge_p): Same.
+	(single_exit): Same.
+	(loop_exits_to_bb_p): Same.
+	(loop_exits_from_bb_p): Same.
+	(get_loop_location): Same.
+	(record_niter_bound): Same.
+	(get_estimated_loop_iterations_int): Same.
+	(max_stmt_executions_int): Same.
+	(likely_max_stmt_executions_int): Same.
+	(get_estimated_loop_iterations): Same.
+	(get_max_loop_iterations): Same.
+	(get_max_loop_iterations_int): Same.
+	(get_likely_max_loop_iterations): Same.
+	* cfgloop.h (simple_loop_desc): Same.
+	(get_loop): Same.
+	(loop_depth): Same.
+	(loop_outer): Same.
+	(loop_iterator::next): Same.
+	(loop_outermost): Same.
+	* cfgloopanal.c (mark_irreducible_loops): Same.
+	(num_loop_insns): Same.
+	(average_num_loop_insns): Same.
+	(expected_loop_iterations_unbounded): Same.
+	(expected_loop_iterations): Same.
+	(mark_loop_exit_edges): Same.
+	(single_likely_exit): Same.
+	* cfgloopmanip.c (fix_bb_placement): Same.
+	(fix_bb_placements): Same.
+	(remove_path): Same.
+	(place_new_loop): Same.
+	(add_loop): Same.
+	(scale_loop_frequencies): Same.
+	(scale_loop_profile): Same.
+	(create_empty_if_region_on_edge): Same.
+	(create_empty_loop_on_edge): Same.
+	(loopify): Same.
+	(unloop): Same.
+	(fix_loop_placements): Same.
+	(copy_loop_info): Same.
+	(duplicate_loop): Same.
+	(duplicate_subloops): Same.
+	(loop_redirect_edge): Same.
+	(can_duplicate_loop_p): Same.
+	(duplicate_loop_to_header_edge): Same.
+	(mfb_keep_just): Same.
+	(has_preds_from_loop): Same.
+	(create_preheader): Same.
+	(create_preheaders): Same.
+	(lv_adjust_loop_entry_edge): Same.
+	(loop_version): Same.
+	* cfgloopmanip.h: Same.
+	* cgraph.h: Same.
+	* cgraphbuild.c: Same.
+	* combine.c (make_extraction): Same.
+	* config/i386/i386-features.c: Same.
+	* config/i386/i386-features.h: Same.
+	* config/i386/i386.c (ix86_emit_outlined_ms2sysv_save): Same.
+	(ix86_emit_outlined_ms2sysv_restore): Same.
+	(ix86_noce_conversion_profitable_p): Same.
+	(ix86_init_cost): Same.
+	(ix86_simd_clone_usable): Same.
+	* configure.ac (ACX_PROG_CXX_WARNING_OPTS): Add -Wclass-is-pod and
+	Wstruct-not-pod.
+	* coretypes.h: Same.
+	* data-streamer-in.c (string_for_index): Change class-key of PODs
+	to struct and others to class.
+	(streamer_read_indexed_string): Same.
+	(streamer_read_string): Same.
+	(bp_unpack_indexed_string): Same.
+	(bp_unpack_string): Same.
+	(streamer_read_uhwi): Same.
+	(streamer_read_hwi): Same.
+	(streamer_read_gcov_count): Same.
+	(streamer_read_wide_int): Same.
+	* data-streamer.h (streamer_write_bitpack): Same.
+	(bp_unpack_value): Same.
+	(streamer_write_char_stream): Same.
+	(streamer_write_hwi_in_range): Same.
+	(streamer_write_record_start): Same.
+	* ddg.c (create_ddg_dep_from_intra_loop_link): Same.
+	(add_cross_iteration_register_deps): Same.
+	(build_intra_loop_deps): Same.
+	* df-core.c (df_analyze): Same.
+	(loop_post_order_compute): Same.
+	(loop_inverted_post_order_compute): Same.
+	* df-problems.c (df_rd_alloc): Same.
+	(df_rd_simulate_one_insn): Same.
+	(df_rd_local_compute): Same.
+	(df_rd_init_solution): Same.
+	(df_rd_confluence_n): Same.
+	(df_rd_transfer_function): Same.
+	(df_rd_free): Same.
+	(df_rd_dump_defs_set): Same.
+	(df_rd_top_dump): Same.
+	(df_lr_alloc): Same.
+	(df_lr_reset): Same.
+	(df_lr_local_compute): Same.
+	(df_lr_init): Same.
+	(df_lr_confluence_n): Same.
+	(df_lr_free): Same.
+	(df_lr_top_dump): Same.
+	(df_lr_verify_transfer_functions): Same.
+	(df_live_alloc): Same.
+	(df_live_reset): Same.
+	(df_live_init): Same.
+	(df_live_confluence_n): Same.
+	(df_live_finalize): Same.
+	(df_live_free): Same.
+	(df_live_top_dump): Same.
+	(df_live_verify_transfer_functions): Same.
+	(df_mir_alloc): Same.
+	(df_mir_reset): Same.
+	(df_mir_init): Same.
+	(df_mir_confluence_n): Same.
+	(df_mir_free): Same.
+	(df_mir_top_dump): Same.
+	(df_word_lr_alloc): Same.
+	(df_word_lr_reset): Same.
+	(df_word_lr_init): Same.
+	(df_word_lr_confluence_n): Same.
+	(df_word_lr_free): Same.
+	(df_word_lr_top_dump): Same.
+	(df_md_alloc): Same.
+	(df_md_simulate_one_insn): Same.
+	(df_md_reset): Same.
+	(df_md_init): Same.
+	(df_md_free): Same.
+	(df_md_top_dump): Same.
+	* df-scan.c (df_insn_delete): Same.
+	(df_insn_rescan): Same.
+	(df_notes_rescan): Same.
+	(df_sort_and_compress_mws): Same.
+	(df_install_mws): Same.
+	(df_refs_add_to_chains): Same.
+	(df_ref_create_structure): Same.
+	(df_ref_record): Same.
+	(df_def_record_1): Same.
+	(df_find_hard_reg_defs): Same.
+	(df_uses_record): Same.
+	(df_get_conditional_uses): Same.
+	(df_get_call_refs): Same.
+	(df_recompute_luids): Same.
+	(df_get_entry_block_def_set): Same.
+	(df_entry_block_defs_collect): Same.
+	(df_get_exit_block_use_set): Same.
+	(df_exit_block_uses_collect): Same.
+	(df_mws_verify): Same.
+	(df_bb_verify): Same.
+	* df.h (df_scan_get_bb_info): Same.
+	* doc/tm.texi: Same.
+	* dse.c (record_store): Same.
+	* dumpfile.h: Same.
+	* emit-rtl.c (const_fixed_hasher::equal): Same.
+	(set_mem_attributes_minus_bitpos): Same.
+	(change_address): Same.
+	(adjust_address_1): Same.
+	(offset_address): Same.
+	* emit-rtl.h: Same.
+	* except.c (dw2_build_landing_pads): Same.
+	(sjlj_emit_dispatch_table): Same.
+	* explow.c (allocate_dynamic_stack_space): Same.
+	(emit_stack_probe): Same.
+	(probe_stack_range): Same.
+	* expmed.c (store_bit_field_using_insv): Same.
+	(store_bit_field_1): Same.
+	(store_integral_bit_field): Same.
+	(extract_bit_field_using_extv): Same.
+	(extract_bit_field_1): Same.
+	(emit_cstore): Same.
+	* expr.c (emit_block_move_via_cpymem): Same.
+	(expand_cmpstrn_or_cmpmem): Same.
+	(set_storage_via_setmem): Same.
+	(emit_single_push_insn_1): Same.
+	(expand_assignment): Same.
+	(store_constructor): Same.
+	(expand_expr_real_2): Same.
+	(expand_expr_real_1): Same.
+	(try_casesi): Same.
+	* flags.h: Same.
+	* function.c (try_fit_stack_local): Same.
+	(assign_stack_local_1): Same.
+	(assign_stack_local): Same.
+	(cut_slot_from_list): Same.
+	(insert_slot_to_list): Same.
+	(max_slot_level): Same.
+	(move_slot_to_level): Same.
+	(temp_address_hasher::equal): Same.
+	(remove_unused_temp_slot_addresses): Same.
+	(assign_temp): Same.
+	(combine_temp_slots): Same.
+	(update_temp_slot_address): Same.
+	(preserve_temp_slots): Same.
+	* function.h: Same.
+	* fwprop.c: Same.
+	* gcc-rich-location.h: Same.
+	* gcov.c: Same.
+	* genattrtab.c (check_attr_test): Same.
+	(check_attr_value): Same.
+	(convert_set_attr_alternative): Same.
+	(convert_set_attr): Same.
+	(check_defs): Same.
+	(copy_boolean): Same.
+	(get_attr_value): Same.
+	(expand_delays): Same.
+	(make_length_attrs): Same.
+	(min_fn): Same.
+	(make_alternative_compare): Same.
+	(simplify_test_exp): Same.
+	(tests_attr_p): Same.
+	(get_attr_order): Same.
+	(clear_struct_flag): Same.
+	(gen_attr): Same.
+	(compares_alternatives_p): Same.
+	(gen_insn): Same.
+	(gen_delay): Same.
+	(find_attrs_to_cache): Same.
+	(write_test_expr): Same.
+	(walk_attr_value): Same.
+	(write_attr_get): Same.
+	(eliminate_known_true): Same.
+	(write_insn_cases): Same.
+	(write_attr_case): Same.
+	(write_attr_valueq): Same.
+	(write_attr_value): Same.
+	(write_dummy_eligible_delay): Same.
+	(next_comma_elt): Same.
+	(find_attr): Same.
+	(make_internal_attr): Same.
+	(copy_rtx_unchanging): Same.
+	(gen_insn_reserv): Same.
+	(check_tune_attr): Same.
+	(make_automaton_attrs): Same.
+	(handle_arg): Same.
+	* genextract.c (gen_insn): Same.
+	(VEC_char_to_string): Same.
+	* genmatch.c (print_operand): Same.
+	(lower): Same.
+	(parser::parse_operation): Same.
+	(parser::parse_capture): Same.
+	(parser::parse_c_expr): Same.
+	(parser::parse_simplify): Same.
+	(main): Same.
+	* genoutput.c (output_operand_data): Same.
+	(output_get_insn_name): Same.
+	(compare_operands): Same.
+	(place_operands): Same.
+	(process_template): Same.
+	(validate_insn_alternatives): Same.
+	(validate_insn_operands): Same.
+	(gen_expand): Same.
+	(note_constraint): Same.
+	* genpreds.c (write_one_predicate_function): Same.
+	(add_constraint): Same.
+	(process_define_register_constraint): Same.
+	(write_lookup_constraint_1): Same.
+	(write_lookup_constraint_array): Same.
+	(write_insn_constraint_len): Same.
+	(write_reg_class_for_constraint_1): Same.
+	(write_constraint_satisfied_p_array): Same.
+	* genrecog.c (optimize_subroutine_group): Same.
+	* gensupport.c (process_define_predicate): Same.
+	(queue_pattern): Same.
+	(remove_from_queue): Same.
+	(process_rtx): Same.
+	(is_predicable): Same.
+	(change_subst_attribute): Same.
+	(subst_pattern_match): Same.
+	(alter_constraints): Same.
+	(alter_attrs_for_insn): Same.
+	(shift_output_template): Same.
+	(alter_output_for_subst_insn): Same.
+	(process_one_cond_exec): Same.
+	(subst_dup): Same.
+	(process_define_cond_exec): Same.
+	(mnemonic_htab_callback): Same.
+	(gen_mnemonic_attr): Same.
+	(read_md_rtx): Same.
+	* ggc-page.c: Same.
+	* gimple-loop-interchange.cc (dump_reduction): Same.
+	(dump_induction): Same.
+	(loop_cand::~loop_cand): Same.
+	(free_data_refs_with_aux): Same.
+	(tree_loop_interchange::interchange_loops): Same.
+	(tree_loop_interchange::map_inductions_to_loop): Same.
+	(tree_loop_interchange::move_code_to_inner_loop): Same.
+	(compute_access_stride): Same.
+	(compute_access_strides): Same.
+	(proper_loop_form_for_interchange): Same.
+	(tree_loop_interchange_compute_ddrs): Same.
+	(prune_datarefs_not_in_loop): Same.
+	(prepare_data_references): Same.
+	(pass_linterchange::execute): Same.
+	* gimple-loop-jam.c (bb_prevents_fusion_p): Same.
+	(unroll_jam_possible_p): Same.
+	(fuse_loops): Same.
+	(adjust_unroll_factor): Same.
+	(tree_loop_unroll_and_jam): Same.
+	* gimple-loop-versioning.cc (loop_versioning::~loop_versioning): Same.
+	(loop_versioning::expensive_stmt_p): Same.
+	(loop_versioning::version_for_unity): Same.
+	(loop_versioning::dump_inner_likelihood): Same.
+	(loop_versioning::find_per_loop_multiplication): Same.
+	(loop_versioning::analyze_term_using_scevs): Same.
+	(loop_versioning::record_address_fragment): Same.
+	(loop_versioning::analyze_expr): Same.
+	(loop_versioning::analyze_blocks): Same.
+	(loop_versioning::prune_conditions): Same.
+	(loop_versioning::merge_loop_info): Same.
+	(loop_versioning::add_loop_to_queue): Same.
+	(loop_versioning::decide_whether_loop_is_versionable): Same.
+	(loop_versioning::make_versioning_decisions): Same.
+	(loop_versioning::implement_versioning_decisions): Same.
+	* gimple-ssa-evrp-analyze.c
+	(evrp_range_analyzer::record_ranges_from_phis): Same.
+	* gimple-ssa-store-merging.c (split_store::split_store): Same.
+	(count_multiple_uses): Same.
+	(split_group): Same.
+	(imm_store_chain_info::output_merged_store): Same.
+	(pass_store_merging::process_store): Same.
+	* gimple-ssa-strength-reduction.c (slsr_process_phi): Same.
+	* gimple-ssa-warn-alloca.c (adjusted_warn_limit): Same.
+	(is_max): Same.
+	(alloca_call_type): Same.
+	(pass_walloca::execute): Same.
+	* gimple-streamer-in.c (input_phi): Same.
+	(input_gimple_stmt): Same.
+	* gimple-streamer.h: Same.
+	* godump.c (go_force_record_alignment): Same.
+	(go_format_type): Same.
+	(go_output_type): Same.
+	(go_output_fndecl): Same.
+	(go_output_typedef): Same.
+	(keyword_hash_init): Same.
+	(find_dummy_types): Same.
+	* graph.c (draw_cfg_nodes_no_loops): Same.
+	(draw_cfg_nodes_for_loop): Same.
+	* hard-reg-set.h (hard_reg_set_iter_next): Same.
+	* hsa-brig.c: Same.
+	* hsa-common.h (hsa_internal_fn_hasher::equal): Same.
+	* hsa-dump.c (dump_hsa_cfun): Same.
+	* hsa-gen.c (gen_function_def_parameters): Same.
+	* hsa-regalloc.c (dump_hsa_cfun_regalloc): Same.
+	* input.c (dump_line_table_statistics): Same.
+	(test_lexer): Same.
+	* input.h: Same.
+	* internal-fn.c (get_multi_vector_move): Same.
+	(expand_load_lanes_optab_fn): Same.
+	(expand_GOMP_SIMT_ENTER_ALLOC): Same.
+	(expand_GOMP_SIMT_EXIT): Same.
+	(expand_GOMP_SIMT_LAST_LANE): Same.
+	(expand_GOMP_SIMT_ORDERED_PRED): Same.
+	(expand_GOMP_SIMT_VOTE_ANY): Same.
+	(expand_GOMP_SIMT_XCHG_BFLY): Same.
+	(expand_GOMP_SIMT_XCHG_IDX): Same.
+	(expand_addsub_overflow): Same.
+	(expand_neg_overflow): Same.
+	(expand_mul_overflow): Same.
+	(expand_call_mem_ref): Same.
+	(expand_mask_load_optab_fn): Same.
+	(expand_scatter_store_optab_fn): Same.
+	(expand_gather_load_optab_fn): Same.
+	* ipa-cp.c (ipa_get_parm_lattices): Same.
+	(print_all_lattices): Same.
+	(ignore_edge_p): Same.
+	(build_toporder_info): Same.
+	(free_toporder_info): Same.
+	(push_node_to_stack): Same.
+	(ipcp_lattice<valtype>::set_contains_variable): Same.
+	(set_agg_lats_to_bottom): Same.
+	(ipcp_bits_lattice::meet_with): Same.
+	(set_single_call_flag): Same.
+	(initialize_node_lattices): Same.
+	(ipa_get_jf_ancestor_result): Same.
+	(ipcp_verify_propagated_values): Same.
+	(propagate_scalar_across_jump_function): Same.
+	(propagate_context_across_jump_function): Same.
+	(propagate_bits_across_jump_function): Same.
+	(ipa_vr_operation_and_type_effects): Same.
+	(propagate_vr_across_jump_function): Same.
+	(set_check_aggs_by_ref): Same.
+	(set_chain_of_aglats_contains_variable): Same.
+	(merge_aggregate_lattices): Same.
+	(agg_pass_through_permissible_p): Same.
+	(propagate_aggs_across_jump_function): Same.
+	(call_passes_through_thunk_p): Same.
+	(propagate_constants_across_call): Same.
+	(devirtualization_time_bonus): Same.
+	(good_cloning_opportunity_p): Same.
+	(context_independent_aggregate_values): Same.
+	(gather_context_independent_values): Same.
+	(perform_estimation_of_a_value): Same.
+	(estimate_local_effects): Same.
+	(value_topo_info<valtype>::add_val): Same.
+	(add_all_node_vals_to_toposort): Same.
+	(value_topo_info<valtype>::propagate_effects): Same.
+	(ipcp_propagate_stage): Same.
+	(ipcp_discover_new_direct_edges): Same.
+	(same_node_or_its_all_contexts_clone_p): Same.
+	(cgraph_edge_brings_value_p): Same.
+	(gather_edges_for_value): Same.
+	(create_specialized_node): Same.
+	(find_more_scalar_values_for_callers_subset): Same.
+	(find_more_contexts_for_caller_subset): Same.
+	(copy_plats_to_inter): Same.
+	(intersect_aggregates_with_edge): Same.
+	(find_aggregate_values_for_callers_subset): Same.
+	(cgraph_edge_brings_all_agg_vals_for_node): Same.
+	(decide_about_value): Same.
+	(decide_whether_version_node): Same.
+	(spread_undeadness): Same.
+	(identify_dead_nodes): Same.
+	(ipcp_store_vr_results): Same.
+	* ipa-devirt.c (final_warning_record::grow_type_warnings): Same.
+	* ipa-fnsummary.c (ipa_fn_summary::account_size_time): Same.
+	(redirect_to_unreachable): Same.
+	(edge_set_predicate): Same.
+	(evaluate_conditions_for_known_args): Same.
+	(evaluate_properties_for_edge): Same.
+	(ipa_fn_summary_t::duplicate): Same.
+	(ipa_call_summary_t::duplicate): Same.
+	(dump_ipa_call_summary): Same.
+	(ipa_dump_fn_summary): Same.
+	(eliminated_by_inlining_prob): Same.
+	(set_cond_stmt_execution_predicate): Same.
+	(set_switch_stmt_execution_predicate): Same.
+	(compute_bb_predicates): Same.
+	(will_be_nonconstant_expr_predicate): Same.
+	(phi_result_unknown_predicate): Same.
+	(analyze_function_body): Same.
+	(compute_fn_summary): Same.
+	(estimate_edge_devirt_benefit): Same.
+	(estimate_edge_size_and_time): Same.
+	(estimate_calls_size_and_time): Same.
+	(estimate_node_size_and_time): Same.
+	(remap_edge_change_prob): Same.
+	(remap_edge_summaries): Same.
+	(ipa_merge_fn_summary_after_inlining): Same.
+	(ipa_fn_summary_generate): Same.
+	(inline_read_section): Same.
+	(ipa_fn_summary_read): Same.
+	(ipa_fn_summary_write): Same.
+	* ipa-fnsummary.h: Same.
+	* ipa-hsa.c (ipa_hsa_read_section): Same.
+	* ipa-icf-gimple.c (func_checker::compare_loops): Same.
+	* ipa-icf.c (sem_function::param_used_p): Same.
+	* ipa-inline-analysis.c (do_estimate_edge_time): Same.
+	* ipa-inline.c (edge_badness): Same.
+	(inline_small_functions): Same.
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::stream_out): Same.
+	* ipa-predicate.c (predicate::remap_after_duplication): Same.
+	(predicate::remap_after_inlining): Same.
+	(predicate::stream_out): Same.
+	* ipa-predicate.h: Same.
+	* ipa-profile.c (ipa_profile_read_summary): Same.
+	* ipa-prop.c (ipa_get_param_decl_index_1): Same.
+	(count_formal_params): Same.
+	(ipa_dump_param): Same.
+	(ipa_alloc_node_params): Same.
+	(ipa_print_node_jump_functions_for_edge): Same.
+	(ipa_print_node_jump_functions): Same.
+	(ipa_load_from_parm_agg): Same.
+	(get_ancestor_addr_info): Same.
+	(ipa_compute_jump_functions_for_edge): Same.
+	(ipa_analyze_virtual_call_uses): Same.
+	(ipa_analyze_stmt_uses): Same.
+	(ipa_analyze_params_uses_in_bb): Same.
+	(update_jump_functions_after_inlining): Same.
+	(try_decrement_rdesc_refcount): Same.
+	(ipa_impossible_devirt_target): Same.
+	(update_indirect_edges_after_inlining): Same.
+	(combine_controlled_uses_counters): Same.
+	(ipa_edge_args_sum_t::duplicate): Same.
+	(ipa_write_jump_function): Same.
+	(ipa_write_indirect_edge_info): Same.
+	(ipa_write_node_info): Same.
+	(ipa_read_edge_info): Same.
+	(ipa_prop_read_section): Same.
+	(read_replacements_section): Same.
+	* ipa-prop.h (ipa_get_param_count): Same.
+	(ipa_get_param): Same.
+	(ipa_get_type): Same.
+	(ipa_get_param_move_cost): Same.
+	(ipa_set_param_used): Same.
+	(ipa_get_controlled_uses): Same.
+	(ipa_set_controlled_uses): Same.
+	(ipa_get_cs_argument_count): Same.
+	* ipa-pure-const.c (analyze_function): Same.
+	(pure_const_read_summary): Same.
+	* ipa-ref.h: Same.
+	* ipa-reference.c (ipa_reference_read_optimization_summary): Same.
+	* ipa-split.c (test_nonssa_use): Same.
+	(dump_split_point): Same.
+	(dominated_by_forbidden): Same.
+	(split_part_set_ssa_name_p): Same.
+	(find_split_points): Same.
+	* ira-build.c (finish_loop_tree_nodes): Same.
+	(low_pressure_loop_node_p): Same.
+	* ira-color.c (ira_reuse_stack_slot): Same.
+	* ira-int.h: Same.
+	* ira.c (setup_reg_equiv): Same.
+	(print_insn_chain): Same.
+	(ira): Same.
+	* loop-doloop.c (doloop_condition_get): Same.
+	(add_test): Same.
+	(record_reg_sets): Same.
+	(doloop_optimize): Same.
+	* loop-init.c (loop_optimizer_init): Same.
+	(fix_loop_structure): Same.
+	* loop-invariant.c (merge_identical_invariants): Same.
+	(compute_always_reached): Same.
+	(find_exits): Same.
+	(may_assign_reg_p): Same.
+	(find_invariants_bb): Same.
+	(find_invariants_body): Same.
+	(replace_uses): Same.
+	(can_move_invariant_reg): Same.
+	(free_inv_motion_data): Same.
+	(move_single_loop_invariants): Same.
+	(change_pressure): Same.
+	(mark_ref_regs): Same.
+	(calculate_loop_reg_pressure): Same.
+	* loop-iv.c (biv_entry_hasher::equal): Same.
+	(iv_extend_to_rtx_code): Same.
+	(check_iv_ref_table_size): Same.
+	(clear_iv_info): Same.
+	(latch_dominating_def): Same.
+	(iv_get_reaching_def): Same.
+	(iv_constant): Same.
+	(iv_subreg): Same.
+	(iv_extend): Same.
+	(iv_neg): Same.
+	(iv_add): Same.
+	(iv_mult): Same.
+	(get_biv_step): Same.
+	(record_iv): Same.
+	(analyzed_for_bivness_p): Same.
+	(record_biv): Same.
+	(iv_analyze_biv): Same.
+	(iv_analyze_expr): Same.
+	(iv_analyze_def): Same.
+	(iv_analyze_op): Same.
+	(iv_analyze): Same.
+	(iv_analyze_result): Same.
+	(biv_p): Same.
+	(eliminate_implied_conditions): Same.
+	(simplify_using_initial_values): Same.
+	(shorten_into_mode): Same.
+	(canonicalize_iv_subregs): Same.
+	(determine_max_iter): Same.
+	(check_simple_exit): Same.
+	(find_simple_exit): Same.
+	(get_simple_loop_desc): Same.
+	* loop-unroll.c (report_unroll): Same.
+	(decide_unrolling): Same.
+	(unroll_loops): Same.
+	(loop_exit_at_end_p): Same.
+	(decide_unroll_constant_iterations): Same.
+	(unroll_loop_constant_iterations): Same.
+	(compare_and_jump_seq): Same.
+	(unroll_loop_runtime_iterations): Same.
+	(decide_unroll_stupid): Same.
+	(unroll_loop_stupid): Same.
+	(referenced_in_one_insn_in_loop_p): Same.
+	(reset_debug_uses_in_loop): Same.
+	(analyze_iv_to_split_insn): Same.
+	* lra-eliminations.c (lra_debug_elim_table): Same.
+	(setup_can_eliminate): Same.
+	(form_sum): Same.
+	(lra_get_elimination_hard_regno): Same.
+	(lra_eliminate_regs_1): Same.
+	(eliminate_regs_in_insn): Same.
+	(update_reg_eliminate): Same.
+	(init_elimination): Same.
+	(lra_eliminate): Same.
+	* lra-int.h: Same.
+	* lra-lives.c (initiate_live_solver): Same.
+	* lra-remat.c (create_remat_bb_data): Same.
+	* lra-spills.c (lra_spill): Same.
+	* lra.c (lra_set_insn_recog_data): Same.
+	(lra_set_used_insn_alternative_by_uid): Same.
+	(init_reg_info): Same.
+	(expand_reg_info): Same.
+	* lto-cgraph.c (output_symtab): Same.
+	(read_identifier): Same.
+	(get_alias_symbol): Same.
+	(input_node): Same.
+	(input_varpool_node): Same.
+	(input_ref): Same.
+	(input_edge): Same.
+	(input_cgraph_1): Same.
+	(input_refs): Same.
+	(input_symtab): Same.
+	(input_offload_tables): Same.
+	(output_cgraph_opt_summary): Same.
+	(input_edge_opt_summary): Same.
+	(input_cgraph_opt_section): Same.
+	* lto-section-in.c (lto_free_raw_section_data): Same.
+	(lto_create_simple_input_block): Same.
+	(lto_free_function_in_decl_state_for_node): Same.
+	* lto-streamer-in.c (lto_tag_check_set): Same.
+	(lto_location_cache::revert_location_cache): Same.
+	(lto_location_cache::input_location): Same.
+	(lto_input_location): Same.
+	(stream_input_location_now): Same.
+	(lto_input_tree_ref): Same.
+	(lto_input_eh_catch_list): Same.
+	(input_eh_region): Same.
+	(lto_init_eh): Same.
+	(make_new_block): Same.
+	(input_cfg): Same.
+	(fixup_call_stmt_edges): Same.
+	(input_struct_function_base): Same.
+	(input_function): Same.
+	(lto_read_body_or_constructor): Same.
+	(lto_read_tree_1): Same.
+	(lto_read_tree): Same.
+	(lto_input_scc): Same.
+	(lto_input_tree_1): Same.
+	(lto_input_toplevel_asms): Same.
+	(lto_input_mode_table): Same.
+	(lto_reader_init): Same.
+	(lto_data_in_create): Same.
+	* lto-streamer-out.c (output_cfg): Same.
+	* lto-streamer.h: Same.
+	* modulo-sched.c (duplicate_insns_of_cycles): Same.
+	(generate_prolog_epilog): Same.
+	(mark_loop_unsched): Same.
+	(dump_insn_location): Same.
+	(loop_canon_p): Same.
+	(sms_schedule): Same.
+	* omp-expand.c (expand_omp_for_ordered_loops): Same.
+	(expand_omp_for_generic): Same.
+	(expand_omp_for_static_nochunk): Same.
+	(expand_omp_for_static_chunk): Same.
+	(expand_omp_simd): Same.
+	(expand_omp_taskloop_for_inner): Same.
+	(expand_oacc_for): Same.
+	(expand_omp_atomic_pipeline): Same.
+	(mark_loops_in_oacc_kernels_region): Same.
+	* omp-offload.c (oacc_xform_loop): Same.
+	* omp-simd-clone.c (simd_clone_adjust): Same.
+	* optabs-query.c (get_traditional_extraction_insn): Same.
+	* optabs.c (expand_vector_broadcast): Same.
+	(expand_binop_directly): Same.
+	(expand_twoval_unop): Same.
+	(expand_twoval_binop): Same.
+	(expand_unop_direct): Same.
+	(emit_indirect_jump): Same.
+	(emit_conditional_move): Same.
+	(emit_conditional_neg_or_complement): Same.
+	(emit_conditional_add): Same.
+	(vector_compare_rtx): Same.
+	(expand_vec_perm_1): Same.
+	(expand_vec_perm_const): Same.
+	(expand_vec_cond_expr): Same.
+	(expand_vec_series_expr): Same.
+	(maybe_emit_atomic_exchange): Same.
+	(maybe_emit_sync_lock_test_and_set): Same.
+	(expand_atomic_compare_and_swap): Same.
+	(expand_atomic_load): Same.
+	(expand_atomic_store): Same.
+	(maybe_emit_op): Same.
+	(valid_multiword_target_p): Same.
+	(create_integer_operand): Same.
+	(maybe_legitimize_operand_same_code): Same.
+	(maybe_legitimize_operand): Same.
+	(create_convert_operand_from_type): Same.
+	(can_reuse_operands_p): Same.
+	(maybe_legitimize_operands): Same.
+	(maybe_gen_insn): Same.
+	(maybe_expand_insn): Same.
+	(maybe_expand_jump_insn): Same.
+	(expand_insn): Same.
+	* optabs.h (create_expand_operand): Same.
+	(create_fixed_operand): Same.
+	(create_output_operand): Same.
+	(create_input_operand): Same.
+	(create_convert_operand_to): Same.
+	(create_convert_operand_from): Same.
+	* optinfo.h: Same.
+	* poly-int.h: Same.
+	* predict.c (optimize_insn_for_speed_p): Same.
+	(optimize_loop_for_size_p): Same.
+	(optimize_loop_for_speed_p): Same.
+	(optimize_loop_nest_for_speed_p): Same.
+	(get_base_value): Same.
+	(predicted_by_loop_heuristics_p): Same.
+	(predict_extra_loop_exits): Same.
+	(predict_loops): Same.
+	(predict_paths_for_bb): Same.
+	(predict_paths_leading_to): Same.
+	(propagate_freq): Same.
+	(pass_profile::execute): Same.
+	* predict.h: Same.
+	* profile-count.c (profile_count::differs_from_p): Same.
+	(profile_probability::differs_lot_from_p): Same.
+	* profile-count.h: Same.
+	* profile.c (branch_prob): Same.
+	* regrename.c (free_chain_data): Same.
+	(mark_conflict): Same.
+	(create_new_chain): Same.
+	(merge_overlapping_regs): Same.
+	(init_rename_info): Same.
+	(merge_chains): Same.
+	(regrename_analyze): Same.
+	(regrename_do_replace): Same.
+	(scan_rtx_reg): Same.
+	(record_out_operands): Same.
+	(build_def_use): Same.
+	* regrename.h: Same.
+	* reload.h: Same.
+	* reload1.c (init_reload): Same.
+	(maybe_fix_stack_asms): Same.
+	(copy_reloads): Same.
+	(count_pseudo): Same.
+	(count_spilled_pseudo): Same.
+	(find_reg): Same.
+	(find_reload_regs): Same.
+	(select_reload_regs): Same.
+	(spill_hard_reg): Same.
+	(fixup_eh_region_note): Same.
+	(set_reload_reg): Same.
+	(allocate_reload_reg): Same.
+	(compute_reload_subreg_offset): Same.
+	(reload_adjust_reg_for_icode): Same.
+	(emit_input_reload_insns): Same.
+	(emit_output_reload_insns): Same.
+	(do_input_reload): Same.
+	(inherit_piecemeal_p): Same.
+	* rtl.h: Same.
+	* sanopt.c (maybe_get_dominating_check): Same.
+	(maybe_optimize_ubsan_ptr_ifn): Same.
+	(can_remove_asan_check): Same.
+	(maybe_optimize_asan_check_ifn): Same.
+	(sanopt_optimize_walker): Same.
+	* sched-deps.c (add_dependence_list): Same.
+	(chain_to_prev_insn): Same.
+	(add_insn_mem_dependence): Same.
+	(create_insn_reg_set): Same.
+	(maybe_extend_reg_info_p): Same.
+	(sched_analyze_reg): Same.
+	(sched_analyze_1): Same.
+	(get_implicit_reg_pending_clobbers): Same.
+	(chain_to_prev_insn_p): Same.
+	(deps_analyze_insn): Same.
+	(deps_start_bb): Same.
+	(sched_free_deps): Same.
+	(init_deps): Same.
+	(init_deps_reg_last): Same.
+	(free_deps): Same.
+	* sched-ebb.c: Same.
+	* sched-int.h: Same.
+	* sched-rgn.c (add_branch_dependences): Same.
+	(concat_insn_mem_list): Same.
+	(deps_join): Same.
+	(sched_rgn_compute_dependencies): Same.
+	* sel-sched-ir.c (reset_target_context): Same.
+	(copy_deps_context): Same.
+	(init_id_from_df): Same.
+	(has_dependence_p): Same.
+	(change_loops_latches): Same.
+	(bb_top_order_comparator): Same.
+	(make_region_from_loop_preheader): Same.
+	(sel_init_pipelining): Same.
+	(get_loop_nest_for_rgn): Same.
+	(make_regions_from_the_rest): Same.
+	(sel_is_loop_preheader_p): Same.
+	* sel-sched-ir.h (inner_loop_header_p): Same.
+	(get_all_loop_exits): Same.
+	* selftest.h: Same.
+	* sese.c (sese_build_liveouts): Same.
+	(sese_insert_phis_for_liveouts): Same.
+	* sese.h (defined_in_sese_p): Same.
+	* sreal.c (sreal::stream_out): Same.
+	* sreal.h: Same.
+	* streamer-hooks.h: Same.
+	* target-globals.c (save_target_globals): Same.
+	* target-globals.h: Same.
+	* target.def: Same.
+	* target.h: Same.
+	* targhooks.c (default_has_ifunc_p): Same.
+	(default_empty_mask_is_expensive): Same.
+	(default_init_cost): Same.
+	* targhooks.h: Same.
+	* toplev.c: Same.
+	* tree-affine.c (aff_combination_mult): Same.
+	(aff_combination_expand): Same.
+	(aff_combination_constant_multiple_p): Same.
+	* tree-affine.h: Same.
+	* tree-cfg.c (build_gimple_cfg): Same.
+	(replace_loop_annotate_in_block): Same.
+	(replace_uses_by): Same.
+	(remove_bb): Same.
+	(dump_cfg_stats): Same.
+	(gimple_duplicate_sese_region): Same.
+	(gimple_duplicate_sese_tail): Same.
+	(move_block_to_fn): Same.
+	(replace_block_vars_by_duplicates): Same.
+	(move_sese_region_to_fn): Same.
+	(print_loops_bb): Same.
+	(print_loop): Same.
+	(print_loops): Same.
+	(debug): Same.
+	(debug_loops): Same.
+	* tree-cfg.h: Same.
+	* tree-chrec.c (chrec_fold_plus_poly_poly): Same.
+	(chrec_fold_multiply_poly_poly): Same.
+	(chrec_evaluate): Same.
+	(chrec_component_in_loop_num): Same.
+	(reset_evolution_in_loop): Same.
+	(is_multivariate_chrec): Same.
+	(chrec_contains_symbols): Same.
+	(nb_vars_in_chrec): Same.
+	(chrec_convert_1): Same.
+	(chrec_convert_aggressive): Same.
+	* tree-chrec.h: Same.
+	* tree-core.h: Same.
+	* tree-data-ref.c (dump_data_dependence_relation): Same.
+	(canonicalize_base_object_address): Same.
+	(data_ref_compare_tree): Same.
+	(prune_runtime_alias_test_list): Same.
+	(get_segment_min_max): Same.
+	(create_intersect_range_checks): Same.
+	(conflict_fn_no_dependence): Same.
+	(object_address_invariant_in_loop_p): Same.
+	(analyze_ziv_subscript): Same.
+	(analyze_siv_subscript_cst_affine): Same.
+	(analyze_miv_subscript): Same.
+	(analyze_overlapping_iterations): Same.
+	(build_classic_dist_vector_1): Same.
+	(add_other_self_distances): Same.
+	(same_access_functions): Same.
+	(build_classic_dir_vector): Same.
+	(subscript_dependence_tester_1): Same.
+	(subscript_dependence_tester): Same.
+	(access_functions_are_affine_or_constant_p): Same.
+	(get_references_in_stmt): Same.
+	(loop_nest_has_data_refs): Same.
+	(graphite_find_data_references_in_stmt): Same.
+	(find_data_references_in_bb): Same.
+	(get_base_for_alignment): Same.
+	(find_loop_nest_1): Same.
+	(find_loop_nest): Same.
+	* tree-data-ref.h (dr_alignment): Same.
+	(ddr_dependence_level): Same.
+	* tree-if-conv.c (fold_build_cond_expr): Same.
+	(add_to_predicate_list): Same.
+	(add_to_dst_predicate_list): Same.
+	(phi_convertible_by_degenerating_args): Same.
+	(idx_within_array_bound): Same.
+	(all_preds_critical_p): Same.
+	(pred_blocks_visited_p): Same.
+	(predicate_bbs): Same.
+	(build_region): Same.
+	(if_convertible_loop_p_1): Same.
+	(is_cond_scalar_reduction): Same.
+	(predicate_scalar_phi): Same.
+	(remove_conditions_and_labels): Same.
+	(combine_blocks): Same.
+	(version_loop_for_if_conversion): Same.
+	(versionable_outer_loop_p): Same.
+	(ifcvt_local_dce): Same.
+	(tree_if_conversion): Same.
+	(pass_if_conversion::gate): Same.
+	* tree-if-conv.h: Same.
+	* tree-inline.c (maybe_move_debug_stmts_to_successors): Same.
+	* tree-loop-distribution.c (bb_top_order_cmp): Same.
+	(free_rdg): Same.
+	(stmt_has_scalar_dependences_outside_loop): Same.
+	(copy_loop_before): Same.
+	(create_bb_after_loop): Same.
+	(const_with_all_bytes_same): Same.
+	(generate_memset_builtin): Same.
+	(generate_memcpy_builtin): Same.
+	(destroy_loop): Same.
+	(build_rdg_partition_for_vertex): Same.
+	(compute_access_range): Same.
+	(data_ref_segment_size): Same.
+	(latch_dominated_by_data_ref): Same.
+	(compute_alias_check_pairs): Same.
+	(fuse_memset_builtins): Same.
+	(finalize_partitions): Same.
+	(find_seed_stmts_for_distribution): Same.
+	(prepare_perfect_loop_nest): Same.
+	* tree-parloops.c (lambda_transform_legal_p): Same.
+	(loop_parallel_p): Same.
+	(reduc_stmt_res): Same.
+	(add_field_for_name): Same.
+	(create_call_for_reduction_1): Same.
+	(replace_uses_in_bb_by): Same.
+	(transform_to_exit_first_loop_alt): Same.
+	(try_transform_to_exit_first_loop_alt): Same.
+	(transform_to_exit_first_loop): Same.
+	(num_phis): Same.
+	(gen_parallel_loop): Same.
+	(gather_scalar_reductions): Same.
+	(get_omp_data_i_param): Same.
+	(try_create_reduction_list): Same.
+	(oacc_entry_exit_single_gang): Same.
+	(parallelize_loops): Same.
+	* tree-pass.h: Same.
+	* tree-predcom.c (determine_offset): Same.
+	(last_always_executed_block): Same.
+	(split_data_refs_to_components): Same.
+	(suitable_component_p): Same.
+	(valid_initializer_p): Same.
+	(find_looparound_phi): Same.
+	(insert_looparound_copy): Same.
+	(add_looparound_copies): Same.
+	(determine_roots_comp): Same.
+	(predcom_tmp_var): Same.
+	(initialize_root_vars): Same.
+	(initialize_root_vars_store_elim_1): Same.
+	(initialize_root_vars_store_elim_2): Same.
+	(finalize_eliminated_stores): Same.
+	(initialize_root_vars_lm): Same.
+	(remove_stmt): Same.
+	(determine_unroll_factor): Same.
+	(execute_pred_commoning_cbck): Same.
+	(base_names_in_chain_on): Same.
+	(combine_chains): Same.
+	(pcom_stmt_dominates_stmt_p): Same.
+	(try_combine_chains): Same.
+	(prepare_initializers_chain_store_elim): Same.
+	(prepare_initializers_chain): Same.
+	(prepare_initializers): Same.
+	(prepare_finalizers_chain): Same.
+	(prepare_finalizers): Same.
+	(insert_init_seqs): Same.
+	* tree-scalar-evolution.c (loop_phi_node_p): Same.
+	(compute_overall_effect_of_inner_loop): Same.
+	(add_to_evolution_1): Same.
+	(add_to_evolution): Same.
+	(follow_ssa_edge_binary): Same.
+	(follow_ssa_edge_expr): Same.
+	(backedge_phi_arg_p): Same.
+	(follow_ssa_edge_in_condition_phi_branch): Same.
+	(follow_ssa_edge_in_condition_phi): Same.
+	(follow_ssa_edge_inner_loop_phi): Same.
+	(follow_ssa_edge): Same.
+	(analyze_evolution_in_loop): Same.
+	(analyze_initial_condition): Same.
+	(interpret_loop_phi): Same.
+	(interpret_condition_phi): Same.
+	(interpret_rhs_expr): Same.
+	(interpret_expr): Same.
+	(interpret_gimple_assign): Same.
+	(analyze_scalar_evolution_1): Same.
+	(analyze_scalar_evolution): Same.
+	(analyze_scalar_evolution_for_address_of): Same.
+	(get_instantiated_value_entry): Same.
+	(loop_closed_phi_def): Same.
+	(instantiate_scev_name): Same.
+	(instantiate_scev_poly): Same.
+	(instantiate_scev_binary): Same.
+	(instantiate_scev_convert): Same.
+	(instantiate_scev_not): Same.
+	(instantiate_scev_r): Same.
+	(instantiate_scev): Same.
+	(resolve_mixers): Same.
+	(initialize_scalar_evolutions_analyzer): Same.
+	(scev_reset_htab): Same.
+	(scev_reset): Same.
+	(derive_simple_iv_with_niters): Same.
+	(simple_iv_with_niters): Same.
+	(expression_expensive_p): Same.
+	(final_value_replacement_loop): Same.
+	* tree-scalar-evolution.h (block_before_loop): Same.
+	* tree-ssa-address.h: Same.
+	* tree-ssa-dce.c (find_obviously_necessary_stmts): Same.
+	* tree-ssa-dom.c (edge_info::record_simple_equiv): Same.
+	(record_edge_info): Same.
+	* tree-ssa-live.c (var_map_base_fini): Same.
+	(remove_unused_locals): Same.
+	* tree-ssa-live.h: Same.
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): Same.
+	(pass_ch_vect::execute): Same.
+	(pass_ch::process_loop_p): Same.
+	* tree-ssa-loop-im.c (mem_ref_hasher::hash): Same.
+	(movement_possibility): Same.
+	(outermost_invariant_loop): Same.
+	(stmt_cost): Same.
+	(determine_max_movement): Same.
+	(invariantness_dom_walker::before_dom_children): Same.
+	(move_computations): Same.
+	(may_move_till): Same.
+	(force_move_till_op): Same.
+	(force_move_till): Same.
+	(memref_free): Same.
+	(record_mem_ref_loc): Same.
+	(set_ref_stored_in_loop): Same.
+	(mark_ref_stored): Same.
+	(sort_bbs_in_loop_postorder_cmp): Same.
+	(sort_locs_in_loop_postorder_cmp): Same.
+	(analyze_memory_references): Same.
+	(mem_refs_may_alias_p): Same.
+	(find_ref_loc_in_loop_cmp): Same.
+	(rewrite_mem_ref_loc::operator): Same.
+	(first_mem_ref_loc_1::operator): Same.
+	(sm_set_flag_if_changed::operator): Same.
+	(execute_sm_if_changed_flag_set): Same.
+	(execute_sm): Same.
+	(hoist_memory_references): Same.
+	(ref_always_accessed::operator): Same.
+	(refs_independent_p): Same.
+	(record_dep_loop): Same.
+	(ref_indep_loop_p_1): Same.
+	(ref_indep_loop_p): Same.
+	(can_sm_ref_p): Same.
+	(find_refs_for_sm): Same.
+	(loop_suitable_for_sm): Same.
+	(store_motion_loop): Same.
+	(store_motion): Same.
+	(fill_always_executed_in): Same.
+	* tree-ssa-loop-ivcanon.c (constant_after_peeling): Same.
+	(estimated_unrolled_size): Same.
+	(loop_edge_to_cancel): Same.
+	(remove_exits_and_undefined_stmts): Same.
+	(remove_redundant_iv_tests): Same.
+	(unloop_loops): Same.
+	(estimated_peeled_sequence_size): Same.
+	(try_peel_loop): Same.
+	(canonicalize_loop_induction_variables): Same.
+	(canonicalize_induction_variables): Same.
+	* tree-ssa-loop-ivopts.c (iv_inv_expr_hasher::equal): Same.
+	(name_info): Same.
+	(stmt_after_inc_pos): Same.
+	(contains_abnormal_ssa_name_p): Same.
+	(niter_for_exit): Same.
+	(find_bivs): Same.
+	(mark_bivs): Same.
+	(find_givs_in_bb): Same.
+	(find_induction_variables): Same.
+	(find_interesting_uses_cond): Same.
+	(outermost_invariant_loop_for_expr): Same.
+	(idx_find_step): Same.
+	(add_candidate_1): Same.
+	(add_iv_candidate_derived_from_uses): Same.
+	(alloc_use_cost_map): Same.
+	(prepare_decl_rtl): Same.
+	(generic_predict_doloop_p): Same.
+	(computation_cost): Same.
+	(determine_common_wider_type): Same.
+	(get_computation_aff_1): Same.
+	(get_use_type): Same.
+	(determine_group_iv_cost_address): Same.
+	(iv_period): Same.
+	(difference_cannot_overflow_p): Same.
+	(may_eliminate_iv): Same.
+	(determine_set_costs): Same.
+	(cheaper_cost_pair): Same.
+	(compare_cost_pair): Same.
+	(iv_ca_cand_for_group): Same.
+	(iv_ca_recount_cost): Same.
+	(iv_ca_set_remove_invs): Same.
+	(iv_ca_set_no_cp): Same.
+	(iv_ca_set_add_invs): Same.
+	(iv_ca_set_cp): Same.
+	(iv_ca_add_group): Same.
+	(iv_ca_cost): Same.
+	(iv_ca_compare_deps): Same.
+	(iv_ca_delta_reverse): Same.
+	(iv_ca_delta_commit): Same.
+	(iv_ca_cand_used_p): Same.
+	(iv_ca_delta_free): Same.
+	(iv_ca_new): Same.
+	(iv_ca_free): Same.
+	(iv_ca_dump): Same.
+	(iv_ca_extend): Same.
+	(iv_ca_narrow): Same.
+	(iv_ca_prune): Same.
+	(cheaper_cost_with_cand): Same.
+	(iv_ca_replace): Same.
+	(try_add_cand_for): Same.
+	(get_initial_solution): Same.
+	(try_improve_iv_set): Same.
+	(find_optimal_iv_set_1): Same.
+	(create_new_iv): Same.
+	(rewrite_use_compare): Same.
+	(remove_unused_ivs): Same.
+	(determine_scaling_factor): Same.
+	* tree-ssa-loop-ivopts.h: Same.
+	* tree-ssa-loop-manip.c (create_iv): Same.
+	(compute_live_loop_exits): Same.
+	(add_exit_phi): Same.
+	(add_exit_phis): Same.
+	(find_uses_to_rename_use): Same.
+	(find_uses_to_rename_def): Same.
+	(find_uses_to_rename_in_loop): Same.
+	(rewrite_into_loop_closed_ssa): Same.
+	(check_loop_closed_ssa_bb): Same.
+	(split_loop_exit_edge): Same.
+	(ip_end_pos): Same.
+	(ip_normal_pos): Same.
+	(copy_phi_node_args): Same.
+	(gimple_duplicate_loop_to_header_edge): Same.
+	(can_unroll_loop_p): Same.
+	(determine_exit_conditions): Same.
+	(scale_dominated_blocks_in_loop): Same.
+	(niter_for_unrolled_loop): Same.
+	(tree_transform_and_unroll_loop): Same.
+	(rewrite_all_phi_nodes_with_iv): Same.
+	* tree-ssa-loop-manip.h: Same.
+	* tree-ssa-loop-niter.c (number_of_iterations_ne_max): Same.
+	(number_of_iterations_ne): Same.
+	(assert_no_overflow_lt): Same.
+	(assert_loop_rolls_lt): Same.
+	(number_of_iterations_lt): Same.
+	(adjust_cond_for_loop_until_wrap): Same.
+	(tree_simplify_using_condition): Same.
+	(simplify_using_initial_conditions): Same.
+	(simplify_using_outer_evolutions): Same.
+	(loop_only_exit_p): Same.
+	(ssa_defined_by_minus_one_stmt_p): Same.
+	(number_of_iterations_popcount): Same.
+	(number_of_iterations_exit): Same.
+	(find_loop_niter): Same.
+	(finite_loop_p): Same.
+	(chain_of_csts_start): Same.
+	(get_val_for): Same.
+	(loop_niter_by_eval): Same.
+	(derive_constant_upper_bound_ops): Same.
+	(do_warn_aggressive_loop_optimizations): Same.
+	(record_estimate): Same.
+	(get_cst_init_from_scev): Same.
+	(record_nonwrapping_iv): Same.
+	(idx_infer_loop_bounds): Same.
+	(infer_loop_bounds_from_ref): Same.
+	(infer_loop_bounds_from_array): Same.
+	(infer_loop_bounds_from_pointer_arith): Same.
+	(infer_loop_bounds_from_signedness): Same.
+	(bound_index): Same.
+	(discover_iteration_bound_by_body_walk): Same.
+	(maybe_lower_iteration_bound): Same.
+	(estimate_numbers_of_iterations): Same.
+	(estimated_loop_iterations): Same.
+	(estimated_loop_iterations_int): Same.
+	(max_loop_iterations): Same.
+	(max_loop_iterations_int): Same.
+	(likely_max_loop_iterations): Same.
+	(likely_max_loop_iterations_int): Same.
+	(estimated_stmt_executions_int): Same.
+	(max_stmt_executions): Same.
+	(likely_max_stmt_executions): Same.
+	(estimated_stmt_executions): Same.
+	(stmt_dominates_stmt_p): Same.
+	(nowrap_type_p): Same.
+	(loop_exits_before_overflow): Same.
+	(scev_var_range_cant_overflow): Same.
+	(scev_probably_wraps_p): Same.
+	(free_numbers_of_iterations_estimates): Same.
+	* tree-ssa-loop-niter.h: Same.
+	* tree-ssa-loop-prefetch.c (release_mem_refs): Same.
+	(idx_analyze_ref): Same.
+	(analyze_ref): Same.
+	(gather_memory_references_ref): Same.
+	(mark_nontemporal_store): Same.
+	(emit_mfence_after_loop): Same.
+	(may_use_storent_in_loop_p): Same.
+	(mark_nontemporal_stores): Same.
+	(should_unroll_loop_p): Same.
+	(volume_of_dist_vector): Same.
+	(add_subscript_strides): Same.
+	(self_reuse_distance): Same.
+	(insn_to_prefetch_ratio_too_small_p): Same.
+	* tree-ssa-loop-split.c (split_at_bb_p): Same.
+	(patch_loop_exit): Same.
+	(find_or_create_guard_phi): Same.
+	(easy_exit_values): Same.
+	(connect_loop_phis): Same.
+	(connect_loops): Same.
+	(compute_new_first_bound): Same.
+	(split_loop): Same.
+	(tree_ssa_split_loops): Same.
+	* tree-ssa-loop-unswitch.c (tree_ssa_unswitch_loops): Same.
+	(is_maybe_undefined): Same.
+	(tree_may_unswitch_on): Same.
+	(simplify_using_entry_checks): Same.
+	(tree_unswitch_single_loop): Same.
+	(tree_unswitch_loop): Same.
+	(tree_unswitch_outer_loop): Same.
+	(empty_bb_without_guard_p): Same.
+	(used_outside_loop_p): Same.
+	(get_vop_from_header): Same.
+	(hoist_guard): Same.
+	* tree-ssa-loop.c (gate_oacc_kernels): Same.
+	(get_lsm_tmp_name): Same.
+	* tree-ssa-loop.h: Same.
+	* tree-ssa-reassoc.c (add_repeat_to_ops_vec): Same.
+	(build_and_add_sum): Same.
+	(no_side_effect_bb): Same.
+	(get_ops): Same.
+	(linearize_expr): Same.
+	(should_break_up_subtract): Same.
+	(linearize_expr_tree): Same.
+	* tree-ssa-scopedtables.c: Same.
+	* tree-ssa-scopedtables.h: Same.
+	* tree-ssa-structalias.c (condense_visit): Same.
+	(label_visit): Same.
+	(dump_pred_graph): Same.
+	(perform_var_substitution): Same.
+	(move_complex_constraints): Same.
+	(remove_preds_and_fake_succs): Same.
+	* tree-ssa-threadupdate.c (dbds_continue_enumeration_p): Same.
+	(determine_bb_domination_status): Same.
+	(duplicate_thread_path): Same.
+	(thread_through_all_blocks): Same.
+	* tree-ssa-threadupdate.h: Same.
+	* tree-streamer-in.c (streamer_read_string_cst): Same.
+	(input_identifier): Same.
+	(unpack_ts_type_common_value_fields): Same.
+	(unpack_ts_block_value_fields): Same.
+	(unpack_ts_translation_unit_decl_value_fields): Same.
+	(unpack_ts_omp_clause_value_fields): Same.
+	(streamer_read_tree_bitfields): Same.
+	(streamer_alloc_tree): Same.
+	(lto_input_ts_common_tree_pointers): Same.
+	(lto_input_ts_vector_tree_pointers): Same.
+	(lto_input_ts_poly_tree_pointers): Same.
+	(lto_input_ts_complex_tree_pointers): Same.
+	(lto_input_ts_decl_minimal_tree_pointers): Same.
+	(lto_input_ts_decl_common_tree_pointers): Same.
+	(lto_input_ts_decl_non_common_tree_pointers): Same.
+	(lto_input_ts_decl_with_vis_tree_pointers): Same.
+	(lto_input_ts_field_decl_tree_pointers): Same.
+	(lto_input_ts_function_decl_tree_pointers): Same.
+	(lto_input_ts_type_common_tree_pointers): Same.
+	(lto_input_ts_type_non_common_tree_pointers): Same.
+	(lto_input_ts_list_tree_pointers): Same.
+	(lto_input_ts_vec_tree_pointers): Same.
+	(lto_input_ts_exp_tree_pointers): Same.
+	(lto_input_ts_block_tree_pointers): Same.
+	(lto_input_ts_binfo_tree_pointers): Same.
+	(lto_input_ts_constructor_tree_pointers): Same.
+	(lto_input_ts_omp_clause_tree_pointers): Same.
+	(streamer_read_tree_body): Same.
+	* tree-streamer.h: Same.
+	* tree-switch-conversion.c (bit_test_cluster::is_beneficial): Same.
+	* tree-vect-data-refs.c (vect_get_smallest_scalar_type): Same.
+	(vect_analyze_possibly_independent_ddr): Same.
+	(vect_analyze_data_ref_dependence): Same.
+	(vect_compute_data_ref_alignment): Same.
+	(vect_enhance_data_refs_alignment): Same.
+	(vect_analyze_data_ref_access): Same.
+	(vect_check_gather_scatter): Same.
+	(vect_find_stmt_data_reference): Same.
+	(vect_create_addr_base_for_vector_ref): Same.
+	(vect_setup_realignment): Same.
+	(vect_supportable_dr_alignment): Same.
+	* tree-vect-loop-manip.c (rename_variables_in_bb): Same.
+	(adjust_phi_and_debug_stmts): Same.
+	(vect_set_loop_mask): Same.
+	(add_preheader_seq): Same.
+	(vect_maybe_permute_loop_masks): Same.
+	(vect_set_loop_masks_directly): Same.
+	(vect_set_loop_condition_masked): Same.
+	(vect_set_loop_condition_unmasked): Same.
+	(slpeel_duplicate_current_defs_from_edges): Same.
+	(slpeel_add_loop_guard): Same.
+	(slpeel_can_duplicate_loop_p): Same.
+	(create_lcssa_for_virtual_phi): Same.
+	(iv_phi_p): Same.
+	(vect_update_ivs_after_vectorizer): Same.
+	(vect_gen_vector_loop_niters_mult_vf): Same.
+	(slpeel_update_phi_nodes_for_loops): Same.
+	(slpeel_update_phi_nodes_for_guard1): Same.
+	(find_guard_arg): Same.
+	(slpeel_update_phi_nodes_for_guard2): Same.
+	(slpeel_update_phi_nodes_for_lcssa): Same.
+	(vect_do_peeling): Same.
+	(vect_create_cond_for_alias_checks): Same.
+	(vect_loop_versioning): Same.
+	* tree-vect-loop.c (vect_determine_vf_for_stmt): Same.
+	(vect_inner_phi_in_double_reduction_p): Same.
+	(vect_analyze_scalar_cycles_1): Same.
+	(vect_fixup_scalar_cycles_with_patterns): Same.
+	(vect_get_loop_niters): Same.
+	(bb_in_loop_p): Same.
+	(vect_get_max_nscalars_per_iter): Same.
+	(vect_verify_full_masking): Same.
+	(vect_compute_single_scalar_iteration_cost): Same.
+	(vect_analyze_loop_form_1): Same.
+	(vect_analyze_loop_form): Same.
+	(vect_active_double_reduction_p): Same.
+	(vect_analyze_loop_operations): Same.
+	(neutral_op_for_slp_reduction): Same.
+	(vect_is_simple_reduction): Same.
+	(vect_model_reduction_cost): Same.
+	(get_initial_def_for_reduction): Same.
+	(get_initial_defs_for_reduction): Same.
+	(vect_create_epilog_for_reduction): Same.
+	(vectorize_fold_left_reduction): Same.
+	(vectorizable_reduction): Same.
+	(vectorizable_induction): Same.
+	(vectorizable_live_operation): Same.
+	(loop_niters_no_overflow): Same.
+	(vect_get_loop_mask): Same.
+	(vect_transform_loop_stmt): Same.
+	(vect_transform_loop): Same.
+	* tree-vect-patterns.c (vect_reassociating_reduction_p): Same.
+	(vect_determine_precisions): Same.
+	(vect_pattern_recog_1): Same.
+	* tree-vect-slp.c (vect_analyze_slp_instance): Same.
+	* tree-vect-stmts.c (stmt_vectype): Same.
+	(process_use): Same.
+	(vect_init_vector_1): Same.
+	(vect_truncate_gather_scatter_offset): Same.
+	(get_group_load_store_type): Same.
+	(vect_build_gather_load_calls): Same.
+	(vect_get_strided_load_store_ops): Same.
+	(vectorizable_simd_clone_call): Same.
+	(vectorizable_store): Same.
+	(permute_vec_elements): Same.
+	(vectorizable_load): Same.
+	(vect_transform_stmt): Same.
+	(supportable_widening_operation): Same.
+	* tree-vectorizer.c (vec_info::replace_stmt): Same.
+	(vec_info::free_stmt_vec_info): Same.
+	(vect_free_loop_info_assumptions): Same.
+	(vect_loop_vectorized_call): Same.
+	(set_uid_loop_bbs): Same.
+	(vectorize_loops): Same.
+	* tree-vectorizer.h (STMT_VINFO_BB_VINFO): Same.
+	* tree.c (add_tree_to_fld_list): Same.
+	(fld_type_variant_equal_p): Same.
+	(fld_decl_context): Same.
+	(fld_incomplete_type_of): Same.
+	(free_lang_data_in_binfo): Same.
+	(need_assembler_name_p): Same.
+	(find_decls_types_r): Same.
+	(get_eh_types_for_runtime): Same.
+	(find_decls_types_in_eh_region): Same.
+	(find_decls_types_in_node): Same.
+	(assign_assembler_name_if_needed): Same.
+	* value-prof.c (stream_out_histogram_value): Same.
+	* value-prof.h: Same.
+	* var-tracking.c (use_narrower_mode): Same.
+	(prepare_call_arguments): Same.
+	(vt_expand_loc_callback): Same.
+	(resolve_expansions_pending_recursion): Same.
+	(vt_expand_loc): Same.
+	* varasm.c (const_hash_1): Same.
+	(compare_constant): Same.
+	(tree_output_constant_def): Same.
+	(simplify_subtraction): Same.
+	(get_pool_constant): Same.
+	(output_constant_pool_2): Same.
+	(output_constant_pool_1): Same.
+	(mark_constants_in_pattern): Same.
+	(mark_constant_pool): Same.
+	(get_section_anchor): Same.
+	* vr-values.c (compare_range_with_value): Same.
+	(vr_values::extract_range_from_phi_node): Same.
+	* vr-values.h: Same.
+	* web.c (unionfind_union): Same.
+	* wide-int.h: Same.
+
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* align.h: Change class-key from class to struct and vice versa
+	to match convention and avoid -Wclass-is-pod and -Wstruct-no-pod.
+	* alloc-pool.h: Same.
+	* asan.c (shadow_mem_size): Same.
+	* auto-profile.c: Same.
+	* basic-block.h: Same.
+	* bitmap.h: Same.
+	* cfgexpand.c (set_rtl): Same.
+	(expand_one_stack_var_at): Same.
+	* cfghooks.h: Same.
+	* cfgloop.h: Same.
+	* cgraph.h: Same.
+	* config/i386/i386.h: Same.
+	* df-problems.c (df_print_bb_index): Same.
+	* df-scan.c: Same.
+	* df.h (df_single_use): Same.
+	* diagnostic-show-locus.c (layout::print_annotation_line): Same.
+	(layout::annotation_line_showed_range_p): Same.
+	(get_printed_columns): Same.
+	(correction::ensure_terminated): Same.
+	(line_corrections::~line_corrections): Same.
+	* dojump.h: Same.
+	* dse.c: Same.
+	* dump-context.h: Same.
+	* dumpfile.h: Same.
+	* dwarf2out.c: Same.
+	* edit-context.c: Same.
+	* fibonacci_heap.c (test_union_of_equal_heaps): Same.
+	* flags.h: Same.
+	* function.c (assign_stack_local): Same.
+	* function.h: Same.
+	* gcc.c: Same.
+	* gcov.c (block_info::block_info): Same.
+	* genattrtab.c: Same.
+	* genextract.c: Same.
+	* genmatch.c (comparison_code_p): Same.
+	(id_base::id_base): Same.
+	(decision_tree::print): Same.
+	* genoutput.c: Same.
+	* genpreds.c (write_one_predicate_function): Same.
+	* genrecog.c (validate_pattern): Same.
+	(find_operand_positions): Same.
+	(optimize_subroutine_group): Same.
+	(merge_pattern_transition::merge_pattern_transition): Same.
+	(merge_pattern_info::merge_pattern_info): Same.
+	(merge_state_result::merge_state_result): Same.
+	(merge_into_state): Same.
+	* gensupport.c: Same.
+	* gensupport.h: Same.
+	* ggc-common.c (init_ggc_heuristics): Same.
+	* ggc-tests.c (test_union): Same.
+	* gimple-loop-interchange.cc (dump_induction): Same.
+	* gimple-loop-versioning.cc: Same.
+	* gimple-match.h (gimple_match_cond::any_else): Same.
+	* gimple-ssa-backprop.c: Same.
+	* gimple-ssa-sprintf.c: Same.
+	* gimple-ssa-store-merging.c (store_operand_info::store_operand_info):
+	Same.
+	(store_immediate_info::store_immediate_info): Same.
+	(merged_store_group::apply_stores): Same.
+	(get_location_for_stmts): Same.
+	* gimple-ssa-strength-reduction.c: Same.
+	* gimple-ssa-warn-alloca.c: Same.
+	* gimple-ssa-warn-restrict.c (pass_wrestrict::execute): Same.
+	* godump.c (go_type_decl): Same.
+	* hash-map-tests.c (test_map_of_strings_to_int): Same.
+	* hash-map.h: Same.
+	* hash-set-tests.c (test_set_of_strings): Same.
+	* hsa-brig.c: Same.
+	* hsa-common.h: Same.
+	* hsa-gen.c (transformable_switch_to_sbr_p): Same.
+	* input.c (assert_loceq): Same.
+	* input.h: Same.
+	* ipa-cp.c: Same.
+	* ipa-devirt.c (possible_polymorphic_call_targets_1): Same.
+	* ipa-fnsummary.h: Same.
+	* ipa-inline.h: Same.
+	* ipa-prop.h: Same.
+	* ipa-split.c (visit_bb): Same.
+	* ira-int.h (minmax_set_iter_next): Same.
+	* loop-invariant.c: Same.
+	* loop-iv.c: Same.
+	* lra-eliminations.c: Same.
+	* lra-int.h: Same.
+	* lra-lives.c (mark_regno_dead): Same.
+	* lra-remat.c: Same.
+	* lra-spills.c: Same.
+	* lto-streamer.h: Same.
+	* mem-stats.h: Same.
+	* omp-grid.c (omp_grid_lastprivate_predicate): Same.
+	* omp-low.c (omp_clause_aligned_alignment): Same.
+	* optabs-query.h (get_vcond_eq_icode): Same.
+	* optabs.h: Same.
+	* opts.c (wrap_help): Same.
+	* poly-int.h: Same.
+	* predict.c (predict_paths_leading_to_edge): Same.
+	* pretty-print.h: Same.
+	* profile-count.h: Same.
+	* read-md.h: Same.
+	* read-rtl-function.c: Same.
+	* ree.c: Same.
+	* reginfo.c: Same.
+	* regrename.c: Same.
+	* regrename.h: Same.
+	* reload.h: Same.
+	* rtl-iter.h: Same.
+	* rtl.h (costs_add_n_insns): Same.
+	* sanopt.c: Same.
+	* sched-int.h: Same.
+	* sel-sched-ir.h: Same.
+	* selftest.h: Same.
+	* sese.h (vec_find): Same.
+	* stmt.c: Same.
+	* target-globals.h: Same.
+	* tree-affine.c (aff_combination_find_elt): Same.
+	* tree-affine.h: Same.
+	* tree-data-ref.h: Same.
+	* tree-outof-ssa.c (ssa_is_replaceable_p): Same.
+	* tree-predcom.c: Same.
+	* tree-scalar-evolution.c (find_var_scev_info): Same.
+	* tree-ssa-alias.h: Same.
+	* tree-ssa-ccp.c: Same.
+	* tree-ssa-coalesce.c (ssa_conflicts_dump): Same.
+	* tree-ssa-loop-im.c (for_all_locs_in_loop): Same.
+	(rewrite_mem_refs): Same.
+	(execute_sm_if_changed): Same.
+	(hoist_memory_references): Same.
+	* tree-ssa-loop-ivopts.c (operator<=): Same.
+	* tree-ssa-loop.h: Same.
+	* tree-ssa-pre.c (get_or_alloc_expr_for_name): Same.
+	* tree-ssa-structalias.c: Same.
+	* tree-switch-conversion.h (cluster::cluster): Same.
+	(simple_cluster::simple_cluster): Same.
+	* tree-vect-patterns.c (type_conversion_p): Same.
+	* tree-vectorizer.c (dump_stmt_cost): Same.
+	* tree-vectorizer.h (loop_vec_info_for_loop): Same.
+	* tree.c (protected_set_expr_location): Same.
+	* tree.h (desired_pro_or_demotion_p): Same.
+	(fndecl_built_in_p): Same.
+	* unique-ptr-tests.cc: Same.
+	* var-tracking.c (delete_variable_part): Same.
+	* varasm.c (assemble_real): Same.
+	(tree_output_constant_def): Same.
+	* vec.c: Same.
+	* wide-int-bitmask.h: Same.
+	* wide-int.h (decompose): Same.
+
+2019-07-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91114
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Failure to
+	find a vector type isn't fatal.
+
+2019-07-09  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_crypto_aes<aes_op>v16qi): Redefine pattern with xor.
+	(aarch64_crypto_aes<aesmc_op>v16qi): Remove attribute enabled.
+	(*aarch64_crypto_aes<aes_op>v16qi_xor_combine): Remove both.
+	(*aarch64_crypto_aese_fused,
+	*aarch64_crypto_aesd_fused): Update to new definition.
+	* config/aarch64/aarch64.c
+	(aarch_macro_fusion_pair_p): Remove aese/aesmc fusion check.
+
+2019-07-09  Richard Biener  <rguenther@suse.de>
+
+	* gimple-match.h (gimple_match_op::resimplify): New.
+	(gimple_resimplify1, gimple_resimplify2, gimple_resimplify3,
+	gimple_resimplify4, gimple_resimplify5): Remove.
+	* gimple-match-head.c (gimple_resimplify1, gimple_resimplify2,
+	gimple_resimplify3, gimple_resimplify4, gimple_resimplify5):
+	Make static.
+	(gimple_match_op::resimplify): New.
+	* tree-ssa-sccvn.c (vn_nary_build_or_lookup_1): Valueize
+	according to availability.  Use gimple_match_op::resimplify.
+
+2019-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ira-emit.c (emit_moves): Skip DEBUG_INSNs when setting the location.
+
+2019-07-09  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* config/arm/crypto.md:
+	(crypto_<crypto_pattern>): Redefine aese/aesd pattern with xor.
+	(crypto_<crypto_pattern>): Remove attribute enabled for aesmc.
+	(crypto_<crypto_pattern>): Split CRYPTO_BINARY into 2 patterns.
+	(*aarch32_crypto_aese_fused, *aarch32_crypto_aesd_fused): New.
+	* config/arm/arm.c
+	(aarch_macro_fusion_pair_p): Remove aes/aesmc fusion check.
+	* config/arm/aarch-common-protos.h
+	(aarch_crypto_can_dual_issue): Remove.
+	* config/arm/aarch-common.c
+	(aarch_crypto_can_dual_issue): Likewise.
+	* config/arm/exynos-m1.md: Remove aese/aesmc fusion.
+	* config/arm/cortex-a53.md: Likewise.
+	* config/arm/cortex-a57.md: Likewise.
+	* config/arm/iterators.md:
+	(CRYPTO_BINARY): Redefine.
+	(CRYPTO_UNARY): Removed.
+	(CRYPTO_AES, CRYPTO_AESMC): New.
+
+2019-07-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (struct vn_walk_cb_data): Add orig_ref member.
+	(vn_reference_lookup_3): If the main ref has no access path recorded
+	but orig_ref has use it to do access-path based disambiguation.
+	(vn_reference_lookup_pieces): Adjust.
+	(vn_reference_lookup): Pass down original ref if we valueized.
+
+2019-07-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Document influence on loop
+	optimizers.
+
+2019-07-09  Martin Liska  <mliska@suse.cz>
+
+	* lto-compress.c (lto_normalized_zstd_level): Do not use
+	ZSTD_CLEVEL_DEFAULT as it is not default in old releases
+	of libzstd.  One can use 0 as a default compression level.
+
+2019-07-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Add link from -fprofile-dir option.
+	Use better wording for 'gcno filename'.
+
+2019-07-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/71924
+	PR middle-end/90549
+	* gimple-ssa-isolate-paths.c (isolate_path): Add attribute.  Update
+	comment.
+	(args_loc_t): New type.
+	(args_loc_t, locmap_t): same.
+	(diag_returned_locals): New function.
+	(is_addr_local): Same.
+	(handle_return_addr_local_phi_arg, warn_return_addr_local): Same.
+	(find_implicit_erroneous_behavior): Call warn_return_addr_local_phi_arg.
+	(find_explicit_erroneous_behavior): Call warn_return_addr_local.
+
+2019-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-stmts.c (scan_operand_equal_p): Look through MEM_REF
+	with SSA_NAME address of POINTER_PLUS_EXPR.  Handle MULT_EXPR
+	and casts in offset when different, both through gimple stmts
+	and through trees.  Rewritten using loops to minimize code duplication
+	for each operand.
+
+2019-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* emit-rtl.c (set_insn_locations): New function moved from...
+	* function.c (set_insn_locations): ...here.
+	* ira-emit.c (emit_moves): Propagate location of the first instruction
+	to the inserted move instructions.
+	* reg-stack.c (compensate_edge): Set the location if the sequence is
+	inserted on the edge.
+	* rtl.h (set_insn_locations): Declare.
+
+2019-07-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_machine_from_flags): Ignore
+	OPTION_MASK_PPC_GFXOPT and OPTION_MASK_PPC_GPOPT for selecting the
+	.machine string.
+
+2019-07-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/88233
+	* common.opt (fsplit-wide-types-early): New option.
+	* common/config/rs6000/rs6000-common.c
+	(rs6000_option_optimization_table): Add OPT_fsplit_wide_types_early for
+	OPT_LEVELS_ALL.
+	* doc/invoke.texi (Optimization Options): Add -fsplit-wide-types-early.
+	* lower-subreg.c (pass_lower_subreg2::gate): Add test for
+	flag_split_wide_types_early.
+	(pass_data_lower_subreg3): New.
+	(pass_lower_subreg3): New.
+	(make_pass_lower_subreg3): New.
+	* passes.def (pass_lower_subreg2): Move after the loop passes.
+	(pass_lower_subreg3): New, inserted where pass_lower_subreg2 was.
+	* tree-pass.h (make_pass_lower_subreg2): Move up, to its new place in
+	the pass pipeline; its previous place is taken by ...
+	(make_pass_lower_subreg3): ... this.
+
+2019-07-08  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.c (s390_shift_truncation_mask): Define.
+	(TARGET_SHIFT_TRUNCATION_MASK): Define.
+
+2019-07-08  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/constraints.md: Add new jsc constraint.
+	* config/s390/predicates.md: New predicates.
+	* config/s390/s390-protos.h (s390_valid_shift_count): New function.
+	* config/s390/s390.c (s390_valid_shift_count): New function.
+	(print_shift_count_operand): Use s390_valid_shift_count.
+	(print_operand): Likewise.
+	* config/s390/s390.md: Use new predicate.
+	* config/s390/subst.md: Remove addr_style_op and masked_op substs.
+	* config/s390/vector.md: Use new predicate.
+
+2019-07-08  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	Avoid clash with system header declaration.
+	* testsuite/gcc.dg/vect/slp-reduc-sad.c (uint32_t):
+	Remove unused declaration.
+
+2019-07-08  Andrew Waterman  <andrew@sifive.com>
+	    Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.md (lshrsi3_zero_extend_3+1): Use operands[1]
+	bitsize	instead of BITS_PER_WORD.
+	gcc/testsuite/
+
+2019-07-08  Martin Liska  <mliska@suse.cz>
+
+	* collect2.c (defined): Revert to before r254460.
+	(scan_prog_file): Revert to before r254460.
+
+2019-07-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83518
+	* tree-ssa-sccvn.c: Include splay-tree.h.
+	(struct pd_range, struct pd_data): New.
+	(struct vn_walk_cb_data): Add data to track partial definitions.
+	(vn_walk_cb_data::~vn_walk_cb_data): New.
+	(vn_walk_cb_data::push_partial_def): New.
+	(pd_tree_alloc, pd_tree_dealloc, pd_range_compare): New.
+	(vn_reference_lookup_2): When partial defs are registered give up.
+	(vn_reference_lookup_3): Track partial defs for memset and
+	constructor zeroing and for defs from constants.
+
+2019-07-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/install.texi (bootstrap-Og): Document.
+
+2019-07-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/riscv/pic.md (*local_pic_load_s<mode>)
+	(*local_pic_load_u<mode>): Explicitly specify the mode iterator
+	referenced by <mode>, giving...
+	(*local_pic_load_s<SUBX:mode>, *local_pic_load_u<SUBX:mode>): ...these.
+	* config/riscv/riscv.md (*sge<u>_<X:mode><GPR:mode>)
+	(*slt<u>_<X:mode><GPR:mode>, *sle<u>_<X:mode><GPR:mode>): Explicitly
+	use <X:MODE> for the mode attribute.
+
 2019-07-07  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/91090
@@ -218,8 +3379,8 @@
 
 2019-07-04  Martin Liska  <mliska@suse.cz>
 
-	* tree-ssa-loop-niter.c (get_upper_bound_based_on_builtin_expr_with_prob):
-	New function.
+	* tree-ssa-loop-niter.c
+	(get_upper_bound_based_on_builtin_expr_with_prob): New function.
 	(estimate_numbers_of_iterations):
 	Support __builtin_expect_with_probability for analysis
 	of # of loop iterations.
@@ -873,7 +4034,7 @@
 
 2019-07-01  Vladislav Ivanishin <vlad@ispras.ru>
 
-        * gdbhooks.py (GdbPrettyPrinters.add_printer_for_types): Reorder
+	* gdbhooks.py (GdbPrettyPrinters.add_printer_for_types): Reorder
 	parameter names to match usage (no functional change).
 	(GdbPrettyPrinters.add_printer_for_regex): Ditto.
 
@@ -1060,7 +4221,7 @@
 	* config/arc/arc.h: Change movmem to cpymem in comment.
 	* config/arc/arc.md (movmemsi): Change movmem to cpymem.
 	* config/arm/arm-protos.h: Change movmem to cpymem in names.
-	* config/arm/arm.c (arm_movmemqi_unaligned, arm_gen_movmemqi, 
+	* config/arm/arm.c (arm_movmemqi_unaligned, arm_gen_movmemqi,
 	gen_movmem_ldrd_strd, thumb_expand_movmemqi) Change movmem to cpymem.
 	* config/arm/arm.md (movmemqi): Change movmem to cpymem.
 	* config/arm/thumb1.md (movmem12b, movmem8b): Change movmem to cpymem.
@@ -1085,7 +4246,7 @@
 	expand_setmem_epilogue_via_loop, expand_set_or_cpymem_prologue,
 	expand_small_cpymem_or_setmem,
 	expand_set_or_cpymem_prologue_epilogue_by_misaligned_moves,
-	expand_set_or_cpymem_constant_prologue, 
+	expand_set_or_cpymem_constant_prologue,
 	ix86_expand_set_or_cpymem): Change movmem to cpymem.
 	* config/i386/i386-protos.h: Change movmem to cpymem.
 	* config/i386/i386.h: Change movmem to cpymem in comment.
@@ -1116,9 +4277,9 @@
 	* config/pa/pa.c (compute_movmem_length): Change movmem to cpymem.
 	(pa_adjust_insn_length): Change call to compute_movmem_length.
 	* config/pa/pa.md (movmemsi, movmemsi_prereload, movmemsi_postreload,
-	movmemdi, movmemdi_prereload, 
+	movmemdi, movmemdi_prereload,
 	movmemdi_postreload): Change movmem to cpymem.
-	* config/pdp11/pdp11.md (movmemhi, movmemhi1, 
+	* config/pdp11/pdp11.md (movmemhi, movmemhi1,
 	movmemhi_nocc, UNSPEC_MOVMEM): Change movmem to cpymem.
 	* config/riscv/riscv.c: Change movmem to cpymem in comment.
 	* config/riscv/riscv.h: Change movmem to cpymem.
@@ -1143,7 +4304,7 @@
 	* doc/md.texi: Change movmem to cpymem and update description to match.
 	* doc/rtl.texi: Change movmem to cpymem.
 	* target.def (use_by_pieces_infrastructure_p): Change movmem to cpymem.
-        * doc/tm.texi: Regenerate.
+	* doc/tm.texi: Regenerate.
 
 2019-06-27  Bill Schmidt  <wschmidt@linux.ibm.com>
 
@@ -1222,7 +4383,8 @@
 	* dojump.c (do_jump_by_parts_greater_rtx): Likewise.
 	* early-remat.c (early_remat::record_equiv_candidates): Likewise.
 	* emit-rtl.c (try_split): Likewise.
-	* graphite-scop-detection.c (assign_parameter_index_in_region): Likewise.
+	* graphite-scop-detection.c (assign_parameter_index_in_region):
+	Likewise.
 	* ipa-cp.c (cgraph_edge_brings_all_agg_vals_for_node): Likewise.
 	* ira-color.c (setup_profitable_hard_regs): Likewise.
 	* ira.c (rtx_moveable_p): Likewise.
@@ -1379,13 +4541,6 @@
 	* bb-reorder.c (connect_better_edge_p): Add missing else
 	statement in the middle of if-else statements.
 
-/home/marxin/Programming/gcc/gcc/bb-reorder.c:1031:2: warning: Value stored to 'is_better_edge' is never read
-        is_better_edge = true;
-        ^                ~~~~
-/home/marxin/Programming/gcc/gcc/bb-reorder.c:1034:2: warning: Value stored to 'is_better_edge' is never read
-        is_better_edge = false;
-        ^                ~~~~~
-
 2019-06-25  Hongtao Liu  <hongtao.liu@intel.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 	    Olga Makhotina  <olga.makhotina@intel.com>
@@ -1535,7 +4690,7 @@
 	(df_update_exit_block_uses): Likewise.
 
 2019-06-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
-            Andrew Stubbs  <ams@codesourcery.com>
+	    Andrew Stubbs  <ams@codesourcery.com>
 
 	* config.gcc (thread_file): Set to gcn for AMD GCN.
 	* config/gcn/gcn.c (gcn_emutls_var_init): New function.
@@ -2025,7 +5180,7 @@
 
 2019-06-18  Iain Sandoe  <iain@sandoe.co.uk>
 
-        * config/darwin.c: Strip trailing whitespace.
+	* config/darwin.c: Strip trailing whitespace.
 
 2019-06-18  Iain Sandoe  <iain@sandoe.co.uk>
 
@@ -2557,10 +5712,10 @@
 
 2019-06-12  Przemyslaw Wirkus  <przemyslaw.wirkus@arm.com>
 
-        * config/arm/iterators.md (VABAL): New int iterator.
-        * config/arm/neon.md (<sup>sadv16qi): New define_expand.
-        * config/arm/unspecs.md ("unspec"): Define UNSPEC_VABAL_S, UNSPEC_VABAL_U
-        values.
+	* config/arm/iterators.md (VABAL): New int iterator.
+	* config/arm/neon.md (<sup>sadv16qi): New define_expand.
+	* config/arm/unspecs.md ("unspec"): Define UNSPEC_VABAL_S,
+	UNSPEC_VABAL_U values.
 
 2019-06-12  Martin Liska  <mliska@suse.cz>
 
@@ -2809,8 +5964,7 @@
 	(gimple_stringops_transform): Likewise.
 	(gimple_find_values_to_profile): Set number
 	of counters for HIST_TYPE_SINGLE_VALUE.
-	* value-prof.h (get_most_common_single_value):
-	New.
+	* value-prof.h (get_most_common_single_value): New.
 
 2019-06-10  Martin Liska  <mliska@suse.cz>
 
@@ -2894,7 +6048,7 @@
 	(types_same_for_odr): Remove.
 	(types_odr_comparable): Remove.
 	(odr_vtable_hasher::equal): Remove.
-	(odr_vtable_hash_type, odr_vtable_hash): Remove.	
+	(odr_vtable_hash_type, odr_vtable_hash): Remove.
 	(add_type_duplicate): Do not synchronize vtable and name hashtables.
 	(get_odr_type): Do not use vtable hash.
 	(dump_odr_type): Remove commented out code.
@@ -3605,7 +6759,8 @@
 2019-06-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/iterators.md (MAX_OPP): New code attr.
-	* config/aarch64/aarch64-simd.md (*aarch64_<su>abd<mode>_3): Rename to...
+	* config/aarch64/aarch64-simd.md (*aarch64_<su>abd<mode>_3):
+	Rename to...
 	(aarch64_<su>abd<mode>_3): ... This.
 	(<sur>sadv16qi): Add TARGET_DOTPROD expansion.
 
@@ -3686,7 +6841,7 @@
 	NOTE_INSN_DELETED_LABEL check.
 
 2019-05-31  Prachi Godbole  <prachi.godbole@imgtec.com>
-            Robert Suchanek  <robert.suchanek@mips.com>
+	    Robert Suchanek  <robert.suchanek@mips.com>
 
 	* config/mips/mips.c (mips_expand_builtin_insn): Swap the 1st
 	and 3rd operands of the fmadd/fmsub/maddv builtin.
@@ -3852,7 +7007,7 @@
 
 2019-05-30  Sam Tebbs  <sam.tebbs@arm.com>
 
-	* aarch64/aarch64.c (aarch64_post_cfi_startproc): Add 
+	* aarch64/aarch64.c (aarch64_post_cfi_startproc): Add
 	cfun->is_thunk check.
 
 2019-05-30  Jakub Jelinek  <jakub@redhat.com>
@@ -3893,7 +7048,6 @@
 	(*call_value_nonlocal_aix): Likewise.
 	(*call_indirect_pcrel): New insn.
 	(*call_value_indirect_pcrel): Likewise.
-
 
 2019-05-29  Uroš Bizjak  <ubizjak@gmail.com>
 
@@ -3981,8 +7135,9 @@
 	* config/aarch64/iterators.md (pauth_hint_num_a): Replace
 	UNSPEC_PACI1716 and UNSPEC_AUTI1716 with UNSPEC_PACIA1716 and
 	UNSPEC_AUTIA1716 respectively.
-	* config/aarch64/iterators.md (pauth_hint_num_a): Rename to pauth_hint_num
-	and add UNSPEC_PACIBSP, UNSPEC_AUTIBSP, UNSPEC_PACIB1716, UNSPEC_AUTIB1716.
+	* config/aarch64/iterators.md (pauth_hint_num_a): Rename to
+	pauth_hint_num and add UNSPEC_PACIBSP, UNSPEC_AUTIBSP,
+	UNSPEC_PACIB1716, UNSPEC_AUTIB1716.
 	* doc/invoke.texi (-mbranch-protection): Add b-key type.
 	* config/aarch64/aarch64-bti-insert.c (aarch64_pac_insn_p): Rename
 	UNSPEC_PACISP to UNSPEC_PACIASP and UNSPEC_PACIBSP.
@@ -4329,8 +7484,8 @@
 
 2019-05-23  Iain Sandoe  <iain@sandoe.co.uk>
 
-       * config/i386/darwin.h: Reject -mfentry*.
-       * doc/sourcebuild.texi: Document mfentry target support.
+	* config/i386/darwin.h: Reject -mfentry*.
+	* doc/sourcebuild.texi: Document mfentry target support.
 
 2019-05-23  Bill Schmidt  <wschmidt@linux.ibm.com>
 
@@ -4467,7 +7622,7 @@
 	decl.
 
 2019-05-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
-            Andrew Stubbs  <amd@codesourcery.com>
+	    Andrew Stubbs  <amd@codesourcery.com>
 
 	* config.gcc (gcc_cv_initfini_array): Set for AMD GCN.
 	* config/gcn/gcn-run.c (init_array_kernel, fini_array_kernel): New.
@@ -4745,8 +7900,6 @@
 	(altivec_expand_builtin): Likewise.
 	(rs6000_get_function_versions_dispatcher): Quote target_clones.
 
-Fix test-suite.
-
 2019-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/59813
@@ -5017,120 +8170,120 @@ Fix test-suite.
 
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
-        * builtins.c (expand_builtin_atomic_always_lock_free): Quote
-        identifiers, keywords, operators, and types in diagnostics.  Correct
-        quoting, spelling, and sentence capitalization issues.
-        (expand_builtin_atomic_is_lock_free): Same.
-        (fold_builtin_next_arg): Same.
-        * cfgexpand.c (expand_one_var): Same.
-        (tree_conflicts_with_clobbers_p): Same.
-        (expand_asm_stmt): Same.
-        (verify_loop_structure): Same.
-        * cgraphunit.c (process_function_and_variable_attributes): Same.
-        * collect-utils.c (collect_execute): Same.
-        * collect2.c (maybe_run_lto_and_relink): Same.
-        (is_lto_object_file): Same.
-        (scan_prog_file): Same.
-        * convert.c (convert_to_real_1): Same.
-        * dwarf2out.c (dwarf2out_begin_prologue): Same.
-        * except.c (verify_eh_tree): Same.
-        * gcc.c (execute): Same.
-        (eval_spec_function): Same.
-        (run_attempt): Same.
-        (driver::set_up_specs): Same.
-        (compare_debug_auxbase_opt_spec_function): Same.
-        * gcov-tool.c (unlink_gcda_file): Same.
-        (do_merge): Same.
-        (do_rewrite): Same.
-        * gcse.c (gcse_or_cprop_is_too_expensive): Same.
-        * gimplify.c (gimplify_asm_expr): Same.
-        (gimplify_adjust_omp_clauses): Same.
-        * hsa-gen.c (gen_hsa_addr_insns): Same.
-        (gen_hsa_insns_for_load): Same.
-        (gen_hsa_cmp_insn_from_gimple): Same.
-        (gen_hsa_insns_for_operation_assignment): Same.
-        (gen_get_level): Same.
-        (gen_hsa_alloca): Same.
-        (omp_simple_builtin::generate): Same.
-        (gen_hsa_atomic_for_builtin): Same.
-        (gen_hsa_insns_for_call): Same.
-        * input.c (dump_location_info): Same.
-        * ipa-devirt.c (compare_virtual_tables): Same.
-        * ira.c (ira_setup_eliminable_regset): Same.
-        * lra-assigns.c (lra_assign): Same.
-        * lra-constraints.c (lra_constraints): Same.
-        * lto-streamer-in.c (lto_input_mode_table): Same.
-        * lto-wrapper.c (get_options_from_collect_gcc_options): Same.
-        (merge_and_complain): Same.
-        (compile_offload_image): Same.
-        (compile_images_for_offload_targets): Same.
-        (debug_objcopy): Same.
-        (run_gcc): Same.
-        (main): Same.
-        * opts.c (print_specific_help): Same.
-        (parse_no_sanitize_attribute): Same.
-        (print_help): Same.
-        (handle_param): Same.
-        * plugin.c (add_new_plugin): Same.
-        (parse_plugin_arg_opt): Same.
-        (try_init_one_plugin): Same.
-        * print-rtl.c (debug_bb_n_slim): Quote identifiers, keywords,
-        operators, and types in diagnostics.  Correct quoting and spelling
-        issues.
-        * read-rtl-function.c (parse_edge_flag_token): Same.
-        (function_reader::parse_enum_value): Same.
-        * reg-stack.c (check_asm_stack_operands): Same.
-        * regcprop.c (validate_value_data): Same.
-        * sched-rgn.c (make_pass_sched_fusion): Same.
-        * stmt.c (check_unique_operand_names): Same.
-        * targhooks.c (default_target_option_pragma_parse): Same.
-        * tlink.c (recompile_files): Same.
-        * toplev.c (process_options): Same.
-        (do_compile): Same.
-        * trans-mem.c (diagnose_tm_1): Same.
-        (ipa_tm_scan_irr_block): Same.
-        (ipa_tm_diagnose_transaction): Same.
-        * tree-cfg.c (verify_address): Same.  Use get_tree_code_name to
-        format a tree code name in a diagnostic.
-        (verify_types_in_gimple_min_lval): Same.
-        (verify_types_in_gimple_reference): Same.
-        (verify_gimple_call): Same.
-        (verify_gimple_assign_unary): Same.
-        (verify_gimple_assign_binary): Same.
-        (verify_gimple_assign_ternary): Same.
-        (verify_gimple_assign_single): Same.
-        (verify_gimple_switch): Same.
-        (verify_gimple_label): Same.
-        (verify_gimple_phi): Same.
-        (verify_gimple_in_seq): Same.
-        (verify_eh_throw_stmt_node): Same.
-        (collect_subblocks): Same.
-        (gimple_verify_flow_info): Same.
-        (do_warn_unused_result): Same.
-        * tree-inline.c (expand_call_inline): Same.
-        * tree-into-ssa.c (update_ssa): Same.
-        * tree.c (tree_int_cst_elt_check_failed): Same.
-        (tree_vec_elt_check_failed): Same.
-        (omp_clause_operand_check_failed): Same.
-        (verify_type_variant): Same.
-        (verify_type): Same.
-        * value-prof.c (verify_histograms): Same.
-        * varasm.c (assemble_start_function): Same.
+	* builtins.c (expand_builtin_atomic_always_lock_free): Quote
+	identifiers, keywords, operators, and types in diagnostics.  Correct
+	quoting, spelling, and sentence capitalization issues.
+	(expand_builtin_atomic_is_lock_free): Same.
+	(fold_builtin_next_arg): Same.
+	* cfgexpand.c (expand_one_var): Same.
+	(tree_conflicts_with_clobbers_p): Same.
+	(expand_asm_stmt): Same.
+	(verify_loop_structure): Same.
+	* cgraphunit.c (process_function_and_variable_attributes): Same.
+	* collect-utils.c (collect_execute): Same.
+	* collect2.c (maybe_run_lto_and_relink): Same.
+	(is_lto_object_file): Same.
+	(scan_prog_file): Same.
+	* convert.c (convert_to_real_1): Same.
+	* dwarf2out.c (dwarf2out_begin_prologue): Same.
+	* except.c (verify_eh_tree): Same.
+	* gcc.c (execute): Same.
+	(eval_spec_function): Same.
+	(run_attempt): Same.
+	(driver::set_up_specs): Same.
+	(compare_debug_auxbase_opt_spec_function): Same.
+	* gcov-tool.c (unlink_gcda_file): Same.
+	(do_merge): Same.
+	(do_rewrite): Same.
+	* gcse.c (gcse_or_cprop_is_too_expensive): Same.
+	* gimplify.c (gimplify_asm_expr): Same.
+	(gimplify_adjust_omp_clauses): Same.
+	* hsa-gen.c (gen_hsa_addr_insns): Same.
+	(gen_hsa_insns_for_load): Same.
+	(gen_hsa_cmp_insn_from_gimple): Same.
+	(gen_hsa_insns_for_operation_assignment): Same.
+	(gen_get_level): Same.
+	(gen_hsa_alloca): Same.
+	(omp_simple_builtin::generate): Same.
+	(gen_hsa_atomic_for_builtin): Same.
+	(gen_hsa_insns_for_call): Same.
+	* input.c (dump_location_info): Same.
+	* ipa-devirt.c (compare_virtual_tables): Same.
+	* ira.c (ira_setup_eliminable_regset): Same.
+	* lra-assigns.c (lra_assign): Same.
+	* lra-constraints.c (lra_constraints): Same.
+	* lto-streamer-in.c (lto_input_mode_table): Same.
+	* lto-wrapper.c (get_options_from_collect_gcc_options): Same.
+	(merge_and_complain): Same.
+	(compile_offload_image): Same.
+	(compile_images_for_offload_targets): Same.
+	(debug_objcopy): Same.
+	(run_gcc): Same.
+	(main): Same.
+	* opts.c (print_specific_help): Same.
+	(parse_no_sanitize_attribute): Same.
+	(print_help): Same.
+	(handle_param): Same.
+	* plugin.c (add_new_plugin): Same.
+	(parse_plugin_arg_opt): Same.
+	(try_init_one_plugin): Same.
+	* print-rtl.c (debug_bb_n_slim): Quote identifiers, keywords,
+	operators, and types in diagnostics.  Correct quoting and spelling
+	issues.
+	* read-rtl-function.c (parse_edge_flag_token): Same.
+	(function_reader::parse_enum_value): Same.
+	* reg-stack.c (check_asm_stack_operands): Same.
+	* regcprop.c (validate_value_data): Same.
+	* sched-rgn.c (make_pass_sched_fusion): Same.
+	* stmt.c (check_unique_operand_names): Same.
+	* targhooks.c (default_target_option_pragma_parse): Same.
+	* tlink.c (recompile_files): Same.
+	* toplev.c (process_options): Same.
+	(do_compile): Same.
+	* trans-mem.c (diagnose_tm_1): Same.
+	(ipa_tm_scan_irr_block): Same.
+	(ipa_tm_diagnose_transaction): Same.
+	* tree-cfg.c (verify_address): Same.  Use get_tree_code_name to
+	format a tree code name in a diagnostic.
+	(verify_types_in_gimple_min_lval): Same.
+	(verify_types_in_gimple_reference): Same.
+	(verify_gimple_call): Same.
+	(verify_gimple_assign_unary): Same.
+	(verify_gimple_assign_binary): Same.
+	(verify_gimple_assign_ternary): Same.
+	(verify_gimple_assign_single): Same.
+	(verify_gimple_switch): Same.
+	(verify_gimple_label): Same.
+	(verify_gimple_phi): Same.
+	(verify_gimple_in_seq): Same.
+	(verify_eh_throw_stmt_node): Same.
+	(collect_subblocks): Same.
+	(gimple_verify_flow_info): Same.
+	(do_warn_unused_result): Same.
+	* tree-inline.c (expand_call_inline): Same.
+	* tree-into-ssa.c (update_ssa): Same.
+	* tree.c (tree_int_cst_elt_check_failed): Same.
+	(tree_vec_elt_check_failed): Same.
+	(omp_clause_operand_check_failed): Same.
+	(verify_type_variant): Same.
+	(verify_type): Same.
+	* value-prof.c (verify_histograms): Same.
+	* varasm.c (assemble_start_function): Same.
 
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
-        * config/i386/i386-expand.c (get_element_number): Quote keywords
-        and other internal names in diagnostics.  Adjust other diagnostic
-        formatting issues noted by -Wformat-diag.
-        * config/i386/i386-features.c
-        (ix86_mangle_function_version_assembler_name): Same.
-        * config/i386/i386-options.c (ix86_handle_abi_attribute): Same.
-        * config/i386/i386.c (ix86_function_type_abi): Same.
-        (ix86_function_ms_hook_prologue): Same.
-        (classify_argument): Same.
-        (ix86_expand_prologue): Same.
-        (ix86_md_asm_adjust): Same.
-        (ix86_memmodel_check): Same.
+	* config/i386/i386-expand.c (get_element_number): Quote keywords
+	and other internal names in diagnostics.  Adjust other diagnostic
+	formatting issues noted by -Wformat-diag.
+	* config/i386/i386-features.c
+	(ix86_mangle_function_version_assembler_name): Same.
+	* config/i386/i386-options.c (ix86_handle_abi_attribute): Same.
+	* config/i386/i386.c (ix86_function_type_abi): Same.
+	(ix86_function_ms_hook_prologue): Same.
+	(classify_argument): Same.
+	(ix86_expand_prologue): Same.
+	(ix86_md_asm_adjust): Same.
+	(ix86_memmodel_check): Same.
 
 2019-05-17  Dragan Mladjenovic  <dmladjenovic@wavecomp.com>
 
@@ -6871,8 +10024,8 @@ Fix test-suite.
 
 	PR target/89952
 	* config/s390/s390.c (s390_restore_gprs_from_fprs): Restore GPRs
-    	from FPRs in reverse order.  Generate REG_CFA_DEF_CFA note also
-    	for restored hard frame pointer.
+	from FPRs in reverse order.  Generate REG_CFA_DEF_CFA note also
+	for restored hard frame pointer.
 	(s390_sched_dependencies_evaluation): Implement new target hook.
 	(TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK): New macro definition.
 
@@ -7241,7 +10394,7 @@ Fix test-suite.
 
 	* config/microblaze/microblaze.c (microblaze_expand_block_move): Treat
 	size and alignment as unsigned.
- 
+
 2019-04-15  Richard Biener  <rguenther@suse.de>
 
 	PR debug/90074
@@ -12229,7 +15382,8 @@ Fix test-suite.
 	(_mm256_mask_fixupimm_ps): Ditto.
 	(_mm_mask_fixupimm_pd): Ditto.
 	(_mm_mask_fixupimm_ps): Ditto.
-	* config/i386/i386-builtin-types.def: Add new types and remove useless ones.
+	* config/i386/i386-builtin-types.def: Add new types and remove
+	useless ones.
 	* config/i386/i386-builtin.def: Update builtin definitions.
 	* config/i386/i386.c: Handle new builtin types and remove useless ones.
 	* config/i386/sse.md: Update VFIXUPIMM* patterns.
@@ -12348,10 +15502,12 @@ Fix test-suite.
 
 2019-01-16  Tamar Christina  <tamar.christina@arm.com>
 
-	* config/arm/arm-protos.h (neon_vcmla_lane_prepare_operands): Remove patternmode.
+	* config/arm/arm-protos.h (neon_vcmla_lane_prepare_operands):
+	Remove patternmode.
 	* config/arm/arm.c (neon_vcmla_lane_prepare_operands): Likewise.
-	* config/arm/neon.md (neon_vcmla_lane<rot><mode>, neon_vcmla_laneq<rot><mode>,
-	neon_vcmlaq_lane<rot><mode>): Remove endianness conversion.
+	* config/arm/neon.md (neon_vcmla_lane<rot><mode>,
+	neon_vcmla_laneq<rot><mode>, neon_vcmlaq_lane<rot><mode>):
+	Remove endianness conversion.
 
 2019-01-16  Martin Liska  <mliska@suse.cz>
 

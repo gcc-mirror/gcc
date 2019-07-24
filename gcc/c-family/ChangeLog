@@ -1,3 +1,38 @@
+2019-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_LOOP.
+	(enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_BIND.
+	* c-pragma.c (omp_pragmas_simd): Add PRAGMA_OMP_LOOP entry.
+	* c-common.h (enum c_omp_clause_split): Add C_OMP_CLAUSE_SPLIT_LOOP.
+	* c-omp.c (c_omp_split_clauses): Add support for 4 new combined
+	constructs with the loop construct.
+
+2019-07-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/91149
+	* c-omp.c (c_omp_split_clauses): Fix a pasto in
+	OMP_CLAUSE_REDUCTION_TASK handling.
+
+2019-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_ORDER.
+	* c-omp.c (c_omp_split_clauses): Handle splitting of OMP_CLAUSE_ORDER.
+
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* c-opts.c (handle_deferred_opts): Change class-key of PODs to struct
+	and others to class.
+	* c-pretty-print.h: Same.
+
+2019-07-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/61339
+	* c-format.c (check_argument_type): Change class-key from class to
+	struct and vice versa to match convention and avoid -Wclass-is-pod
+	and -Wstruct-no-pod.
+	* c-pretty-print.h: Same.
+
 2019-07-03  Martin Liska  <mliska@suse.cz>
 
 	* c-common.c (try_to_locate_new_include_insertion_point): Remove

@@ -17,7 +17,6 @@ subroutine foo(i, j, k)
    print *, dshiftl(i, k, 10)           ! { dg-error "must be the same type and kind" }
    print *, dshiftl(k, j, 10)           ! { dg-error "must be the same type and kind" }
    print *, dshiftl(i, j, k)
-   print *, dshiftl(i, j, z'd')
 
    print *, dshiftr(i,      j, 134)     ! { dg-error "must be less than or equal" }
    print *, dshiftr(z'FFF', j, 134)     ! { dg-error "must be less than or equal" }
@@ -29,6 +28,5 @@ subroutine foo(i, j, k)
    print *, dshiftr(i, k, 10)           ! { dg-error "must be the same type and kind" }
    print *, dshiftr(k, j, 10)           ! { dg-error "must be the same type and kind" }
    print *, dshiftr(i, j, k)
-   print *, dshiftr(i, j, z'd')
 
 end subroutine foo

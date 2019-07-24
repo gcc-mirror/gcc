@@ -74,8 +74,9 @@ struct chunk_info
 
 /* The output buffer datatype.  This is best seen as an abstract datatype
    whose fields should not be accessed directly by clients.  */
-struct output_buffer
+class output_buffer
 {
+public:
   output_buffer ();
   ~output_buffer ();
 
@@ -214,8 +215,9 @@ class format_postprocessor
 /* The data structure that contains the bare minimum required to do
    proper pretty-printing.  Clients may derived from this structure
    and add additional fields they need.  */
-struct pretty_printer
+class pretty_printer
 {
+public:
   /* Default construct a pretty printer with specified
      maximum line length cut off limit.  */
   explicit pretty_printer (int = 0);

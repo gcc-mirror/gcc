@@ -5848,8 +5848,19 @@ package body Sem_Attr is
                       or else Ekind (Entity (P)) = E_Enumeration_Literal)
            and then Size_Known_At_Compile_Time (Entity (P))
          then
-            Rewrite (N, Make_Integer_Literal (Sloc (N), Esize (Entity (P))));
-            Analyze (N);
+            declare
+               Siz : Uint;
+
+            begin
+               if Known_Static_RM_Size (Entity (P)) then
+                  Siz := RM_Size (Entity (P));
+               else
+                  Siz := Esize (Entity (P));
+               end if;
+
+               Rewrite (N, Make_Integer_Literal (Sloc (N), Siz));
+               Analyze (N);
+            end;
          end if;
 
       -----------

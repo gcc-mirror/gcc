@@ -7036,8 +7036,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 		    name, internal_name);
 	  }
 	else
-	  error ("builtin function %qs not supported in this compiler "
-		 "configuration", name);
+	  error ("%qs is not supported in this compiler configuration", name);
 	/* If an error-representing  result tree was returned from
 	   altivec_build_resolved_builtin above, use it.  */
 	return (result != NULL) ? result : error_mark_node;

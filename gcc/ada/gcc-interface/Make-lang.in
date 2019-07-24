@@ -355,6 +355,7 @@ GNAT_ADA_OBJS =	\
  ada/prep.o	\
  ada/prepcomp.o	\
  ada/put_scos.o	\
+ ada/repinfo-input.o	\
  ada/repinfo.o	\
  ada/restrict.o	\
  ada/rident.o	\

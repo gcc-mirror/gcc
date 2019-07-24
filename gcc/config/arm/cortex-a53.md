@@ -723,9 +723,3 @@
 		 "cortex_a53_fpmac"
 		 "aarch_accumulator_forwarding")
 
-;; We want AESE and AESMC to end up consecutive to one another.
-
-(define_bypass 0 "cortex_a53_crypto_aese"
-		 "cortex_a53_crypto_aesmc"
-		 "aarch_crypto_can_dual_issue")
-

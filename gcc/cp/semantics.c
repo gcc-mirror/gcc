@@ -4381,8 +4381,9 @@ expand_or_defer_fn (tree fn)
     }
 }
 
-struct nrv_data
+class nrv_data
 {
+public:
   nrv_data () : visited (37) {}
 
   tree var;
@@ -4395,7 +4396,7 @@ struct nrv_data
 static tree
 finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
 {
-  struct nrv_data *dp = (struct nrv_data *)data;
+  class nrv_data *dp = (class nrv_data *)data;
   tree_node **slot;
 
   /* No need to walk into types.  There wouldn't be any need to walk into
@@ -4453,7 +4454,7 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
 void
 finalize_nrv (tree *tp, tree var, tree result)
 {
-  struct nrv_data data;
+  class nrv_data data;
 
   /* Copy name from VAR to RESULT.  */
   DECL_NAME (result) = DECL_NAME (var);
@@ -6127,6 +6128,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool branch_seen = false;
   bool copyprivate_seen = false;
   bool ordered_seen = false;
+  bool order_seen = false;
   bool schedule_seen = false;
   bool oacc_async = false;
   tree last_iterators = NULL_TREE;
@@ -7549,6 +7551,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_THREADS:
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_DEFAULTMAP:
+	case OMP_CLAUSE_BIND:
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_SEQ:
@@ -7598,6 +7601,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
 	case OMP_CLAUSE_ORDERED:
 	  ordered_seen = true;
+	  break;
+
+	case OMP_CLAUSE_ORDER:
+	  if (order_seen)
+	    remove = true;
+	  else
+	    order_seen = true;
 	  break;
 
 	case OMP_CLAUSE_INBRANCH:
@@ -7773,6 +7783,17 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    error_at (OMP_CLAUSE_LOCATION (c),
 		      "%qs clause specified together with %<inscan%> "
 		      "%<reduction%> clause", "ordered");
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+	case OMP_CLAUSE_ORDER:
+	  if (ordered_seen)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<order%> clause must not be used together "
+			"with %<ordered%>");
+	      *pc = OMP_CLAUSE_CHAIN (c);
+	      continue;
+	    }
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 	case OMP_CLAUSE_NOWAIT:

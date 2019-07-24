@@ -1504,12 +1504,12 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  && CONST_INT_P (XEXP (op, 1))
 	  && XEXP (XEXP (op, 0), 1) == XEXP (op, 1)
 	  && (op_mode = as_a <scalar_int_mode> (GET_MODE (op)),
-	      GET_MODE_BITSIZE (op_mode) > INTVAL (XEXP (op, 1))))
+	      GET_MODE_PRECISION (op_mode) > INTVAL (XEXP (op, 1))))
 	{
 	  scalar_int_mode tmode;
-	  gcc_assert (GET_MODE_BITSIZE (int_mode)
-		      > GET_MODE_BITSIZE (op_mode));
-	  if (int_mode_for_size (GET_MODE_BITSIZE (op_mode)
+	  gcc_assert (GET_MODE_PRECISION (int_mode)
+		      > GET_MODE_PRECISION (op_mode));
+	  if (int_mode_for_size (GET_MODE_PRECISION (op_mode)
 				 - INTVAL (XEXP (op, 1)), 1).exists (&tmode))
 	    {
 	      rtx inner =

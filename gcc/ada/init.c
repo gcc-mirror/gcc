@@ -54,8 +54,14 @@
 #endif
 
 #ifdef IN_RTS
+
+#ifdef STANDALONE
+#include "runtime.h"
+#else
 #include "tconfig.h"
 #include "tsystem.h"
+#endif
+
 #include <sys/stat.h>
 
 /* We don't have libiberty, so use malloc.  */
@@ -463,6 +469,7 @@ void fake_linux_sigemptyset (sigset_t *set)
 void
 __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 {
+#ifndef STANDALONE
   mcontext_t *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
 
   /* On the i386 and x86-64 architectures, stack checking is performed by
@@ -511,6 +518,7 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
      mode (arm vs thumb) as the signaling compilation unit, this works.  */
   if (mcontext->arm_cpsr & (1<<CPSR_THUMB_BIT))
     mcontext->arm_pc+=1;
+#endif
 #endif
 #endif
 }
@@ -1725,7 +1733,7 @@ __gnat_install_handler (void)
 #include <iv.h>
 #endif
 
-#if ((defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6)) || defined (__x86_64__)) && !defined(__RTP__)
+#if ((defined (ARMEL) && (_WRS_VXWORKS_MAJOR == 6))) && !defined(__RTP__)
 #define VXWORKS_FORCE_GUARD_PAGE 1
 #include <vmLib.h>
 extern size_t vxIntStackOverflowSize;

@@ -277,8 +277,8 @@ extern int dot_symbols;
 #ifndef RS6000_BI_ARCH
 
 /* 64-bit PowerPC Linux always has a TOC.  */
-#undef  TARGET_TOC
-#define	TARGET_TOC		1
+#undef  TARGET_HAS_TOC
+#define TARGET_HAS_TOC		1
 
 /* Some things from sysv4.h we don't do when 64 bit.  */
 #undef	OPTION_RELOCATABLE

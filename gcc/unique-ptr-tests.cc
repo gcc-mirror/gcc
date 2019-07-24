@@ -31,8 +31,9 @@ namespace {
 
 /* A class for counting ctor and dtor invocations.  */
 
-struct stats
+class stats
 {
+public:
   stats () : ctor_count (0), dtor_count (0) {}
 
   int ctor_count;
@@ -59,8 +60,9 @@ private:
 
 /* A struct for testing unique_ptr<T[]>.  */
 
-struct has_default_ctor
+class has_default_ctor
 {
+public:
   has_default_ctor () : m_field (42) {}
   int m_field;
 };
