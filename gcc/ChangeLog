@@ -1,3 +1,11 @@
+2019-07-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-nested.c (build_simple_mem_ref_notrap): New function.
+	(get_static_chain): Call it instead of build_simple_mem_ref.
+	(get_frame_field): Likewise.
+	(get_nonlocal_debug_decl): Likewise.
+	(convert_nonlocal_reference_op): Likewise.
+
 2019-07-24  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc-protos.h (arc_output_function_epilogue): Delete
