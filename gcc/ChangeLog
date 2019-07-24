@@ -1,3 +1,10 @@
+2019-07-24  Oliver Browne  <oliverbrowne62@gmail.com>
+
+	* gimplify.c (flag_instrument_functions_exclude_p): Include
+	namespace/class information in the printable name.
+	* opts.c (add_comma_separated_to_vector): Add NUL terminator
+	to tokens entered into the vector.
+
 2019-07-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-nested.c (build_simple_mem_ref_notrap): New function.
