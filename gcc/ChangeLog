@@ -1,5 +1,11 @@
 2019-07-24  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* config.gcc (msp430*-*-*): Fix non-GNU style in r273774.
+	* config/msp430/msp430.h (ENDFILE_SPEC): Fix non-GNU style in
+	r273773.
+
+2019-07-24  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* config.gcc (msp430*-*-*): Enable initfini_array by default unless
 	explicitly disabled with --disable-initfini-array.
 
