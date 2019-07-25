@@ -84,7 +84,7 @@ evrp_range_analyzer::try_find_new_range (tree name,
 				    tree op, tree_code code, tree limit)
 {
   value_range vr;
-  value_range *old_vr = get_value_range (name);
+  const value_range *old_vr = get_value_range (name);
 
   /* Discover VR when condition is true.  */
   vr_values->extract_range_for_var_from_comparison_expr (name, code, op,
@@ -209,7 +209,7 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	      /* But make sure we do not weaken ranges like when
 	         getting first [64, +INF] and then ~[0, 0] from
 		 conditions like (s & 0x3cc0) == 0).  */
-	      value_range *old_vr = get_value_range (vrs[i].first);
+	      const value_range *old_vr = get_value_range (vrs[i].first);
 	      value_range_base tem (old_vr->kind (), old_vr->min (),
 				    old_vr->max ());
 	      tem.intersect (vrs[i].second);
@@ -427,10 +427,10 @@ evrp_range_analyzer::push_value_range (tree var, value_range *vr)
 
 /* Pop the Value Range from the vrp_stack and update VAR with it.  */
 
-value_range *
+const value_range *
 evrp_range_analyzer::pop_value_range (tree var)
 {
-  value_range *vr = stack.last ().second;
+  const value_range *vr = stack.last ().second;
   gcc_checking_assert (var == stack.last ().first);
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -440,7 +440,9 @@ evrp_range_analyzer::pop_value_range (tree var)
       dump_value_range (dump_file, vr);
       fprintf (dump_file, "\n");
     }
-  vr_values->set_vr_value (var, vr);
+  /* We saved off a lattice entry, now give it back - it can now
+     be modified again, thus the const casting.  */
+  vr_values->set_vr_value (var, const_cast <value_range *> (vr));
   stack.pop ();
   return vr;
 }

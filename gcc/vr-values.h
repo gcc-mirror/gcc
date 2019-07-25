@@ -40,9 +40,10 @@ class vr_values
   vr_values (void);
   ~vr_values (void);
 
-  value_range *get_value_range (const_tree);
+  const value_range *get_value_range (const_tree);
 
   void set_vr_value (tree, value_range *);
+  void set_def_to_varying (const_tree);
   void set_defs_to_varying (gimple *);
   bool update_value_range (const_tree, value_range *);
   tree op_with_constant_singleton_value_range (tree);
@@ -72,10 +73,11 @@ class vr_values
   void cleanup_edges_and_switches (void);
 
  private:
+  value_range *get_lattice_entry (const_tree);
   bool vrp_stmt_computes_nonzero (gimple *);
   bool op_with_boolean_value_range_p (tree);
   bool check_for_binary_op_overflow (enum tree_code, tree, tree, tree, bool *);
-  value_range *get_vr_for_comparison (int, value_range *);
+  const value_range *get_vr_for_comparison (int, value_range *);
   tree compare_name_with_value (enum tree_code, tree, tree, bool *, bool);
   tree compare_names (enum tree_code, tree, tree, bool *);
   bool two_valued_val_range_p (tree, tree *, tree *);

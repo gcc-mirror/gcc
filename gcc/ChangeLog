@@ -1,3 +1,67 @@
+2019-07-25  Richard Biener  <rguenther@suse.de>
+
+	* gimple-loop-versioning.cc (loop_versioning::prune_loop_conditions):
+	Make value_range * temporary const.
+	* gimple-ssa-evrp-analyze.c (evrp_range_analyzer::try_find_new_range):
+	Likewise.
+	(evrp_range_analyzer::record_ranges_from_): Likewise.
+	(evrp_range_analyzer::pop_value_range): Return a const value_range *,
+	deal with having recorded a const one.
+	* gimple-ssa-evrp-analyze.h (evrp_range_analyzer::get_value_range):
+	Return a const value_range *.
+	(evrp_range_analyzer::pop_value_range): Likewise.
+	(evrp_range_analyzer::stack): Record const value_range *s.
+	* gimple-ssa-evrp.c (evrp_dom_walker::before_dom_children):
+	Adjust.
+	* gimple-ssa-sprintf.c (get_int_range): Likewise.
+	(format_integer): Likewise.
+	(sprintf_dom_walker::handle_gimple_call): Likewise.
+	* tree-ssa-dom.c (simplify_stmt_for_jump_threading): Likewise.
+	* tree-vrp.c (vrp_prop::set_def_to_varying): Add.
+	(vrp_prop::get_value_range): Adjust.
+	(vrp_prop::vrp_initialize): Use set_def_to_varying instead of
+	modifying the lattice in-place.
+	(vrp_prop::visit_stmt): Likewise.
+	* vr-values.c (vr_values::get_lattice_entry): New private method.
+	(vr_values::get_value_range): Wrap it and return a const
+	value_range *.
+	(vr_values::set_def_to_varying): New.
+	(vr_values::set_defs_to_varying): Use it.
+	(vr_values::update_value_range): Likewise.
+	(vr_values::vrp_stmt_computes_nonzero): Adjust.
+	(values::op_with_constant_singleton_va): Likewise.
+	(vr_values::extract_range_for_var_from_co): Likewise.
+	(vr_values::extract_range_from_ssa_name): Likewise.
+	(vr_values::extract_range_from_cond_expr): Likewise.
+	(vr_values::extract_range_basic): Likewise.
+	(compare_ranges): Take const value_range *, adjust.
+	(compare_range_with_value): Likewise.
+	(vrp_valueize): Adjust.
+	(vrp_valueize_1): Likewise.
+	(vr_values::get_vr_for_comparison): Return a const value_range *.
+	(vr_values::compare_name_with_value): Adjust.
+	(vr_values::compare_names): Likewise.
+	(vr_values::vrp_evaluate_conditional_warnv_with_ops_using_ranges):
+	Likewise.
+	(vr_values::vrp_evaluate_conditional): Likewise.
+	(find_case_label_ranges): Take a const value_range *.
+	(vr_values::vrp_visit_switch_stmt): Adjust.
+	(vr_values::extract_range_from_phi_node): Likewise.
+	(vr_values::simplify_div_or_mod_using_ran): Likewise.
+	(vr_values::simplify_abs_using_ranges): Likewise.
+	(test_for_singularity): Take a const value_range *.
+	(range_fits_type_p): Likewise.
+	(vr_values::simplify_cond_using_ranges_1): Adjust.
+	(vr_values::simplify_cond_using_ranges_2): Likewise.
+	(vr_values::simplify_switch_using_ranges): Likewise.
+	(vr_values::simplify_float_conversion_usi): Likewise.
+	(vr_values::two_valued_val_range_p): Likewise.
+	* vr-values.h (vr_values::get_value_range): Return a const
+	value_range *.
+	(vr_values::set_def_to_varying): New.
+	(vr_values::get_lattice_entry): New private method.
+	(vr_values::get_vr_for_comparison): Return a const value_range *.
+
 2019-07-25  Martin Liska  <mliska@suse.cz>
 	    Dominik Infuhr  <dominik.infuehr@theobroma-systems.com>
 
