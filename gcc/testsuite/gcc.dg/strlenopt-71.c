@@ -8,8 +8,8 @@
 
 #define CHAR_BIT __CHAR_BIT__
 
-typedef __INT16_TYPE__ int16_t;
-typedef __INT32_TYPE__ int32_t;
+typedef __UINT16_TYPE__ uint16_t;
+typedef __UINT32_TYPE__ uint32_t;
 
 #define NOIPA __attribute__ ((noclone, noinline, noipa))
 
@@ -40,12 +40,23 @@ NOIPA void terminate (void)
       }									\
   } while (0)
 
+
+#define ELT(s, i)   ((s "\0\0\0\0")[i])
+
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-#  define I16(s) ((s[0] << 8) + s[1])
-#  define I32(s) ((s[0] << 24) + (s[1] << 16) + (s[2] << 8) + s[3])
+#  define I16(s) (((uint16_t)ELT (s, 0) << 8) + (uint16_t)ELT (s, 1))
+#  define I32(s)				\
+  (((uint32_t)ELT (s, 0) << 24)			\
+   + ((uint32_t)ELT (s, 1) << 16)		\
+   + ((uint32_t)ELT (s, 2) << 8)		\
+   + (uint32_t)ELT (s, 3))
 #elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#  define I16(s) ((s[1] << 8) + s[0])
-#  define I32(s) ((s[3] << 24) + (s[2] << 16) + (s[1] << 8) + s[0])
+#  define I16(s) (((uint16_t)ELT (s, 1) << 8) + (uint16_t)ELT (s, 0))
+#  define I32(s)				\
+  (((uint32_t)ELT (s, 3) << 24)			\
+   + ((uint32_t)ELT (s, 2) << 16)		\
+   + ((uint32_t)ELT (s, 1) << 8)		\
+   + (uint32_t)ELT (s, 0))
 #endif
 
 char a[32];
@@ -53,21 +64,21 @@ char a[32];
 NOIPA void
 i16_1 (void)
 {
-  *(int16_t*)a = I16 ("12");
-  *(int16_t*)(a + 2) = I16 ("3");
+  *(uint16_t*)a = I16 ("12");
+  *(uint16_t*)(a + 2) = I16 ("3");
   VERIFY (a, "123");
 
-  *(int16_t*)(a + 1) = I16 ("23");
+  *(uint16_t*)(a + 1) = I16 ("23");
   VERIFY (a, "123");
 
-  *(int16_t*)(a) = I16 ("12");
+  *(uint16_t*)(a) = I16 ("12");
   VERIFY (a, "123");
 
-  *(int16_t*)(a + 1) = I16 ("2");
+  *(uint16_t*)(a + 1) = I16 ("2");
   VERIFY (a, "12");
 
-  *(int16_t*)(a + 3) = I16 ("45");
-  *(int16_t*)(a + 2) = I16 ("34");
+  *(uint16_t*)(a + 3) = I16 ("45");
+  *(uint16_t*)(a + 2) = I16 ("34");
   VERIFY (a, "12345");
 }
 
@@ -77,19 +88,19 @@ i16_2 (void)
   strcpy (a, "12");
   strcat (a, "34");
 
-  *(int16_t*)a = I16 ("12");
+  *(uint16_t*)a = I16 ("12");
   VERIFY (a, "1234");
 
-  *(int16_t*)(a + 1) = I16 ("12");
+  *(uint16_t*)(a + 1) = I16 ("12");
   VERIFY (a, "1124");
 
-  *(int16_t*)(a + 2) = I16 ("12");
+  *(uint16_t*)(a + 2) = I16 ("12");
   VERIFY (a, "1112");
 
-  *(int16_t*)(a + 3) = I16 ("12");
+  *(uint16_t*)(a + 3) = I16 ("12");
   VERIFY (a, "11112");
 
-  *(int16_t*)(a + 4) = I16 ("12");
+  *(uint16_t*)(a + 4) = I16 ("12");
   VERIFY (a, "111112");
 }
 
@@ -97,10 +108,10 @@ i16_2 (void)
 NOIPA void
 i32_1 (void)
 {
-  *(int32_t*)a = I32 ("1234");
+  *(uint32_t*)a = I32 ("1234");
   VERIFY (a, "1234");
 
-  *(int32_t*)(a + 1) = I32 ("2345");
+  *(uint32_t*)(a + 1) = I32 ("2345");
   VERIFY (a, "12345");
 }
 
@@ -110,22 +121,22 @@ i32_2 (void)
   strcpy (a, "12");
   strcat (a, "34");
 
-  *(int32_t*)a = I32 ("1234");
+  *(uint32_t*)a = I32 ("1234");
   VERIFY (a, "1234");
 
-  *(int32_t*)(a + 4) = I32 ("567");
+  *(uint32_t*)(a + 4) = I32 ("567");
   VERIFY (a, "1234567");
 
-  *(int32_t*)(a + 7) = I32 ("89\0");
+  *(uint32_t*)(a + 7) = I32 ("89\0");
   VERIFY (a, "123456789");
 
-  *(int32_t*)(a + 3) = I32 ("4567");
+  *(uint32_t*)(a + 3) = I32 ("4567");
   VERIFY (a, "123456789");
 
-  *(int32_t*)(a + 2) = I32 ("3456");
+  *(uint32_t*)(a + 2) = I32 ("3456");
   VERIFY (a, "123456789");
 
-  *(int32_t*)(a + 1) = I32 ("2345");
+  *(uint32_t*)(a + 1) = I32 ("2345");
   VERIFY (a, "123456789");
 }
 
@@ -136,25 +147,25 @@ i32_3 (void)
   strcpy (a, "1234");
   strcat (a, "5678");
 
-  *(int32_t*)a = I32 ("1234");
+  *(uint32_t*)a = I32 ("1234");
   VERIFY (a, "12345678");
 
-  *(int32_t*)(a + 1) = I32 ("234");
+  *(uint32_t*)(a + 1) = I32 ("234");
   VERIFY (a, "1234");
 
-  *(int32_t*)(a + 2) = I32 ("3456");
+  *(uint32_t*)(a + 2) = I32 ("3456");
   VERIFY (a, "12345678");
 
-  *(int32_t*)(a + 3) = I32 ("4567");
+  *(uint32_t*)(a + 3) = I32 ("4567");
   VERIFY (a, "12345678");
 
-  *(int32_t*)(a + 4) = I32 ("5678");
+  *(uint32_t*)(a + 4) = I32 ("5678");
   VERIFY (a, "12345678");
 
-  *(int32_t*)(a + 5) = I32 ("6789");
+  *(uint32_t*)(a + 5) = I32 ("6789");
   VERIFY (a, "123456789");
 
-  *(int32_t*)(a + 6) = I32 ("789A");
+  *(uint32_t*)(a + 6) = I32 ("789A");
   VERIFY (a, "123456789A");
 }
 
@@ -166,25 +177,25 @@ i32_4 (void)
   strcpy (a, "1234");
   strcat (a, "5678");
 
-  *(int32_t*)a = vzero ? I32 ("1\0\0\0") : I32 ("1234");
+  *(uint32_t*)a = vzero ? I32 ("1\0\0\0") : I32 ("1234");
   VERIFY (a, "12345678");
 
-  *(int32_t*)a = vzero ? I32 ("12\0\0") : I32 ("1234");
+  *(uint32_t*)a = vzero ? I32 ("12\0\0") : I32 ("1234");
   VERIFY (a, "12345678");
 
-  *(int32_t*)a = vzero ? I32 ("123\0") : I32 ("1234");
+  *(uint32_t*)a = vzero ? I32 ("123\0") : I32 ("1234");
   VERIFY (a, "12345678");
 
-  *(int32_t*)a = vzero ? I32 ("1234") : I32 ("1234");
+  *(uint32_t*)a = vzero ? I32 ("1234") : I32 ("1234");
   VERIFY (a, "12345678");
 
-  *(int32_t*)a = vzero ? I32 ("1235") : I32 ("1234");
+  *(uint32_t*)a = vzero ? I32 ("1235") : I32 ("1234");
   VERIFY (a, "12345678");
 
-  *(int32_t*)a = vzero ? I32 ("1234") : I32 ("123\0");
+  *(uint32_t*)a = vzero ? I32 ("1234") : I32 ("123\0");
   VERIFY (a, "123");
 
-  *(int32_t*)(a + 3) = vzero ? I32 ("456\0") : I32 ("4567");
+  *(uint32_t*)(a + 3) = vzero ? I32 ("456\0") : I32 ("4567");
   VERIFY (a, "12345678");
 }
 
