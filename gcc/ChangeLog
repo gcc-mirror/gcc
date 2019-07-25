@@ -1,3 +1,7 @@
+2019-07-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (add_type_duplicate): Fix return value.
+
 2019-07-25  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (extract_range_from_multiplicative_op): Add
