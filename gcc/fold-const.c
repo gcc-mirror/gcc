@@ -9250,7 +9250,7 @@ tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 	tree fndecl = get_callee_fndecl (t);
 	if (!fndecl) return false;
 	if (flag_delete_null_pointer_checks && !flag_check_new
-	    && DECL_IS_OPERATOR_NEW (fndecl)
+	    && DECL_IS_OPERATOR_NEW_P (fndecl)
 	    && !TREE_NOTHROW (fndecl))
 	  return true;
 	if (flag_delete_null_pointer_checks

@@ -2450,7 +2450,7 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 	      return NULL;
 	    }
 
-	  if (DECL_IS_MALLOC (decl) || DECL_IS_OPERATOR_NEW (decl))
+	  if (DECL_IS_MALLOC (decl) || DECL_IS_OPERATOR_NEW_P (decl))
 	    {
 	      if (predictor)
 		*predictor = PRED_MALLOC_NONNULL;
