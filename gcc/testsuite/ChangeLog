@@ -1,3 +1,7 @@
+2019-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/case_optimization3.ad[sb]: New test.
+
 2019-07-25  Martin Liska  <mliska@suse.cz
 	    Dominik Infuhr  <dominik.infuehr@theobroma-systems.com>
 
