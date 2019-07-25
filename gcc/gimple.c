@@ -1583,7 +1583,7 @@ gimple_call_nonnull_result_p (gcall *call)
   if (!fndecl)
     return false;
   if (flag_delete_null_pointer_checks && !flag_check_new
-      && DECL_IS_OPERATOR_NEW (fndecl)
+      && DECL_IS_OPERATOR_NEW_P (fndecl)
       && !TREE_NOTHROW (fndecl))
     return true;
 

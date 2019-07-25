@@ -1,3 +1,28 @@
+2019-07-25  Martin Liska  <mliska@suse.cz>
+
+	* calls.c (maybe_warn_alloc_args_overflow): Use new macros
+	(e.g. DECL_SET_LAMBDA_FUNCTION and DECL_LAMBDA_FUNCTION_P).
+	* coverage.c (coverage_begin_function): Likewise.
+	* fold-const.c (tree_expr_nonzero_warnv_p): Likewise.
+	* gimple.c (gimple_call_nonnull_result_p): Likewise.
+	* ipa-icf.c (sem_item::compare_referenced_symbol_properties): Likewise.
+	(sem_item::hash_referenced_symbol_properties): Likewise.
+	* lto-streamer-out.c (hash_tree): Likewise.
+	* predict.c (expr_expected_value_1): Likewise.
+	* tree-inline.c (expand_call_inline): Likewise.
+	* tree-streamer-in.c (unpack_ts_function_decl_value_fields): Likewise.
+	* tree-streamer-out.c (pack_ts_function_decl_value_fields): Likewise.
+	* tree-core.h (enum function_decl_type): New enum.
+	(struct tree_function_decl): Remove operator_new_flag and lambda_function.
+	* tree.h (FUNCTION_DECL_DECL_TYPE): New.
+	(set_function_decl_type): Likewise.
+	(DECL_IS_OPERATOR_NEW_P): New.
+	(DECL_SET_IS_OPERATOR_NEW): Likewise.
+	(DECL_LAMBDA_FUNCTION): Likewise.
+	(DECL_LAMBDA_FUNCTION_P): Likewise.
+	(DECL_IS_OPERATOR_NEW): Remove.
+	(DECL_SET_LAMBDA_FUNCTION): Likewise.
+
 2019-07-25  Xiong Hu Luo  <luoxhu@linux.ibm.com>
 
 	* ipa-profile.c (get_most_common_single_value): Use

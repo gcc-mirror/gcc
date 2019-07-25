@@ -1,3 +1,11 @@
+2019-07-25  Martin Liska  <mliska@suse.cz>
+
+	* decl.c (duplicate_decls): Use new macros
+	(e.g. DECL_SET_LAMBDA_FUNCTION and DECL_LAMBDA_FUNCTION_P).
+	(cxx_init_decl_processing): Likewise.
+	(grok_op_properties): Likewise.
+	* parser.c (cp_parser_lambda_declarator_opt): Likewise.
+
 2019-07-24  Martin Sebor  <msebor@redhat.com>
 
 	PR driver/80545

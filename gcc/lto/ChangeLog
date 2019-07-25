@@ -1,3 +1,8 @@
+2019-07-25  Martin Liska  <mliska@suse.cz>
+
+	* lto-common.c (compare_tree_sccs_1): Use new macros
+	(e.g. DECL_SET_LAMBDA_FUNCTION and DECL_LAMBDA_FUNCTION_P).
+
 2019-07-22  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* lang.opt (flag_dump_callgraph): New flag.

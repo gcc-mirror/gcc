@@ -1395,7 +1395,7 @@ maybe_warn_alloc_args_overflow (tree fn, tree exp, tree args[2], int idx[2])
 		  && fn
 		  && !args[1]
 		  && lang_GNU_CXX ()
-		  && DECL_IS_OPERATOR_NEW (fn)
+		  && DECL_IS_OPERATOR_NEW_P (fn)
 		  && integer_all_onesp (args[i]))
 		continue;
 
