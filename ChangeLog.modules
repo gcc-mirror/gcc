@@ -1,5 +1,24 @@
 2019-07-24  Nathan Sidwell  <nathan@acm.org>
 
+	Drop import alias detection, via controlling macros.
+	gcc/cp/
+	* module.cc (bytes_in::no_more): Delete.
+	(module_state::{read,write}_config): Drop controlling macro.
+	(module_state::write_readme): Likewise.
+	(module_state::read): Drop alias return.
+	(module_state::slurp): Delete.  Replace all uses with field
+	access.
+	(module_state::resolve_alias): Delete.
+	(module_state::is_alias): Delete.
+	(module_state::read_imports): Drop alias detection.
+	gcc/testsuite/
+	* g++.dg/modules/alias-[12]_b.C: Drop controlling macro scans.
+	* g++.dg/modules/macro-2_c.H: Likewise.
+	* g++.dg/modules/macro-3_[abc].[CH]: Likewise.
+	* g++.dg/modules/stdio-1_a.H: Likewise.
+	* g++.dg/modules/alias-3_*: Delete.
+	* g++.dg/modules/sys/alias-3_a.H: Delete.
+
 	Merge trunk r273764.
 
 	gcc/testsuite/

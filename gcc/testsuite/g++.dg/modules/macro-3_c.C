@@ -16,7 +16,6 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {>Controlling macro is MACRO_3a_H} module } }
 // { dg-final { scan-lang-dump {Read new macro #define foo at} module } }
 // { dg-final { scan-lang-dump {Read new macro #define bar at} module } }
 

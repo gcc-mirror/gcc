@@ -498,11 +498,6 @@ public:
   {
     return pos != size;
   }
-  /* Seek to end.  */
-  void no_more ()
-  {
-    pos = size;
-  }
 
 public:
   /* Start reading at OFFSET.  */
@@ -3280,11 +3275,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   module_state *parent;
   tree name;		/* Name of the module.  */
 
-  /* Sadly this cannot be anonymous, because GTY.  */
-  union {
-    slurping *GTY ((tag ("false"))) slurp;	/* Data for loading.  */
-    module_state *GTY ((tag ("true"))) alias;	/* Alias of */
-  } GTY ((desc ("%1.alias_p"))) u1;
+  slurping *slurp;	/* Data for loading.  */
 
   const char *flatname;	/* Flatname of module.  */
   char *filename;	/* CMI Filename */
@@ -3317,7 +3308,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool interface_p : 1; /* Is an interface (partition or primary).  */
   bool exported_p : 1;	/* Direct_p && exported.  */
   bool imported_p : 1;	/* Import has been done.  */
-  bool alias_p : 1;	/* Alias for other module.  */
   bool partition_p : 1; /* A partition.  */
   bool from_partition_p : 1; /* Direct import of a partition.  */
   bool cmi_noted_p : 1;
@@ -3330,23 +3320,16 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void release ()
   {
     imports = exports = NULL;
-    if (!alias_p)
-      slurped ();
+    slurped ();
   }
   void slurped ()
   {
-    gcc_checking_assert (!alias_p);
-    delete u1.slurp;
-    u1.slurp = NULL;
-  }
-  slurping *slurp () const
-  {
-    gcc_checking_assert (!alias_p);
-    return u1.slurp;
+    delete slurp;
+    slurp = NULL;
   }
   elf_in *from () const
   {
-    elf_in *from = slurp ()->from;
+    elf_in *from = slurp->from;
     gcc_checking_assert (from);
     return from;
   }
@@ -3377,17 +3360,12 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   {
     return header_p;
   }
-  bool is_alias () const
-  {
-    return alias_p;
-  }
   bool is_partition () const
   {
     return partition_p;
   }
 
  public:
-  module_state *resolve_alias ();
   bool check_not_purview (location_t loc);
 
  public:
@@ -3400,7 +3378,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
  public:
   /* Read and write module.  */
   void write (elf_out *to, cpp_reader *);
-  module_state *read (int fd, int e, cpp_reader *);
+  void read (int fd, int e, cpp_reader *);
 
   /* Read a section.  */
   void load_section (unsigned snum);
@@ -3419,7 +3397,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   /* The README, for human consumption.  */
-  void write_readme (elf_out *to, const char *opts, const cpp_hashnode *node);
+  void write_readme (elf_out *to, const char *opts);
   void write_env (elf_out *to);
 
  private:
@@ -3435,7 +3413,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   void write_config (elf_out *to, struct module_state_config &, unsigned crc);
-  bool read_config (cpp_reader *, struct module_state_config &);
+  bool read_config (struct module_state_config &);
 
  public:
   void note_cmi_name ();
@@ -3531,16 +3509,16 @@ struct module_state_hash : ggc_ptr_hash<module_state> {
 
 module_state::module_state (tree name, module_state *parent, bool partition)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    parent (parent), name (name), flatname (NULL), filename (NULL),
+    parent (parent), name (name), slurp (NULL),
+    flatname (NULL), filename (NULL),
     unnamed_lwm (0), unnamed_num (0),
     ordinary_locs (0, 0), macro_locs (0, 0),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
     mod (MODULE_UNKNOWN), subst (0), crc (0), remap (0),
     partition_p (partition)
 {
-  u1.slurp = NULL;
   header_p = direct_p = primary_p = interface_p = exported_p
-    = imported_p = alias_p = from_partition_p = cmi_noted_p = false;
+    = imported_p = from_partition_p = cmi_noted_p = false;
   if (name && TREE_CODE (name) == STRING_CST)
     header_p = true;
   gcc_checking_assert (header_p
@@ -4374,7 +4352,7 @@ create_dirs (char *path)
 	*base = sep;
 	if (failed
 	    /* Maybe racing with another creator (of a *different*
-	       submodule).  */
+	       module).  */
 	    && errno != EEXIST)
 	  break;
       }
@@ -8602,7 +8580,7 @@ trees_in::tree_node ()
 
 	// FIXME: I think owner is only needed for namespace-scope CTX?
 	owner = u ();
-	owner = state->slurp ()->remap_module (owner);
+	owner = state->slurp->remap_module (owner);
 	int ident = i ();
 	if ((owner != MODULE_NONE
 	     || TREE_CODE (ctx) != NAMESPACE_DECL)
@@ -8673,7 +8651,7 @@ trees_in::tree_node ()
 	tree ctx = tree_node ();
 	tree name = tree_node ();
 	if (owner != MODULE_NONE)
-	  owner = state->slurp ()->remap_module (owner);
+	  owner = state->slurp->remap_module (owner);
 
 	res = get_imported_namespace (ctx, name, owner);
 	if (!res || TREE_CODE (res) != NAMESPACE_DECL)
@@ -12519,21 +12497,6 @@ module_mapper::translate_include (location_t loc, const char *path)
   return xlate;
 }
 
-/* If this is an alias, return the aliased module after transferring
-   the exported flag.  Return the actual import in either case.  */
-
-module_state *
-module_state::resolve_alias ()
-{
-  module_state *result = this;
-  if (is_alias ())
-    {
-      result = u1.alias;
-      dump (dumper::MAPPER) && dump ("%M is an alias of %M", this, result);
-    }
-  return result;
-}
-
 /* If THIS is the current purview, issue an import error and return false.  */
 
 bool
@@ -12614,8 +12577,7 @@ module_state::announce (const char *what) const
      readelf -pgnu.c++.README $(module).gcm */
 
 void
-module_state::write_readme (elf_out *to, const char *options,
-			    const cpp_hashnode *node)
+module_state::write_readme (elf_out *to, const char *options)
 {
   bytes_out readme (to);
 
@@ -12639,8 +12601,6 @@ module_state::write_readme (elf_out *to, const char *options,
   readme.printf ("module: %s", get_flatname ());
   readme.printf ("source: %s", main_input_filename);
   readme.printf ("options: %s", options);
-  if (node)
-    readme.printf ("macro: %s", NODE_NAME (node));
 
   /* The following fields could be expected to change between
      otherwise identical compilations.  Consider a distributed build
@@ -12804,8 +12764,8 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
   while (count--)
     {
       unsigned ix = sec.u ();
-      if (ix >= slurp ()->remap->length ()
-	  || ix < MODULE_IMPORT_BASE || (*slurp ()->remap)[ix])
+      if (ix >= slurp->remap->length ()
+	  || ix < MODULE_IMPORT_BASE || (*slurp->remap)[ix])
 	{
 	  sec.set_overrun ();
 	  break;
@@ -12889,9 +12849,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
       if (imp->crc != crc)
 	error_at (loc, "import %qs has CRC mismatch", imp->get_flatname ());
 
-      imp = imp->resolve_alias ();
-
-      (*slurp ()->remap)[ix] = imp->mod;
+      (*slurp->remap)[ix] = imp->mod;
       if (lmaps)
 	set_import (imp, exported);
       dump () && dump ("Found %simport:%u %M->%u", !lmaps ? "indirect "
@@ -12930,13 +12888,13 @@ module_state::read_imports (cpp_reader *reader, line_maps *lmaps)
     return false;
 
   dump () && dump ("Reading %u imports",
-		   slurp ()->remap->length () - MODULE_IMPORT_BASE);
+		   slurp->remap->length () - MODULE_IMPORT_BASE);
   dump.indent ();
 
   /* Read the imports.  */
   unsigned direct = read_imports (sec, reader, lmaps);
   unsigned indirect = read_imports (sec, NULL, NULL);
-  if (direct + indirect + MODULE_IMPORT_BASE != slurp ()->remap->length ())
+  if (direct + indirect + MODULE_IMPORT_BASE != slurp->remap->length ())
     from ()->set_error (elf::E_BAD_IMPORT);
 
   dump.outdent ();
@@ -13620,7 +13578,7 @@ module_state::read_cluster (unsigned snum)
 
 	    if (owner)
 	      {
-		owner = slurp ()->remap_module (owner);
+		owner = slurp->remap_module (owner);
 		if (!owner)
 		  goto bad_tom_riddle;
 		import = (*modules)[owner];
@@ -14230,7 +14188,7 @@ module_state::read_location (bytes_in &sec) const
 	unsigned off = sec.u ();
 	location_t adjusted = MAX_LOCATION_T - off;
 
-	adjusted -= slurp ()->loc_deltas.second;
+	adjusted -= slurp->loc_deltas.second;
 	if (adjusted < macro_locs.first)
 	  sec.set_overrun ();
 	else if (adjusted < macro_locs.second)
@@ -14247,7 +14205,7 @@ module_state::read_location (bytes_in &sec) const
 	unsigned off = sec.u ();
 	location_t adjusted = off;
 
-	adjusted += slurp ()->loc_deltas.first;
+	adjusted += slurp->loc_deltas.first;
 	if (adjusted >= ordinary_locs.second)
 	  sec.set_overrun ();
 	else if (adjusted >= ordinary_locs.first)
@@ -14263,7 +14221,7 @@ module_state::read_location (bytes_in &sec) const
      case LK_IMPORT_MACRO:
      case LK_IMPORT_ORDINARY:
        {
-	 unsigned mod = slurp ()->remap_module (sec.u ());
+	 unsigned mod = slurp->remap_module (sec.u ());
 	 unsigned off = sec.u ();
 
 	 if (mod < MODULE_IMPORT_BASE)
@@ -14689,9 +14647,9 @@ module_state::read_locations ()
       (line_map_new_raw (line_table, false, num_ordinary));
 
     location_t lwm = offset;
-    slurp ()->loc_deltas.first = offset - zero;
-    ordinary_locs.first = zero + low_bits + slurp ()->loc_deltas.first;
-    dump () && dump ("Ordinary loc delta %d", slurp ()->loc_deltas.first);
+    slurp->loc_deltas.first = offset - zero;
+    ordinary_locs.first = zero + low_bits + slurp->loc_deltas.first;
+    dump () && dump ("Ordinary loc delta %d", slurp->loc_deltas.first);
 
     for (unsigned ix = 0; ix != num_ordinary && !sec.get_overrun (); ix++)
       {
@@ -14700,7 +14658,7 @@ module_state::read_locations ()
 
 	/* Record the current HWM so that the below read_location is
 	   ok.  */
-	ordinary_locs.second = hwm + slurp ()->loc_deltas.first;
+	ordinary_locs.second = hwm + slurp->loc_deltas.first;
 	map->start_location = hwm + (offset - zero);
 	if (map->start_location < lwm)
 	  sec.set_overrun ();
@@ -14721,7 +14679,7 @@ module_state::read_locations ()
       }
 
     location_t hwm = sec.u ();
-    ordinary_locs.second = hwm + slurp ()->loc_deltas.first;
+    ordinary_locs.second = hwm + slurp->loc_deltas.first;
 
     /* highest_location is the one handed out, not the next one to
        hand out.  */
@@ -14740,16 +14698,16 @@ module_state::read_locations ()
     dump () && dump ("Macro maps:%u zero:%u", num_macros, zero);
 
     location_t offset = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
-    slurp ()->loc_deltas.second = zero - offset;
-    macro_locs.second = zero - slurp ()->loc_deltas.second;
-    dump () && dump ("Macro loc delta %d", slurp ()->loc_deltas.second);
+    slurp->loc_deltas.second = zero - offset;
+    macro_locs.second = zero - slurp->loc_deltas.second;
+    dump () && dump ("Macro loc delta %d", slurp->loc_deltas.second);
 
     for (unsigned ix = 0; ix != num_macros && !sec.get_overrun (); ix++)
       {
 	unsigned lwm = sec.u ();
 	/* Record the current LWM so that the below read_location is
 	   ok.  */
-	macro_locs.first = lwm - slurp ()->loc_deltas.second;
+	macro_locs.first = lwm - slurp->loc_deltas.second;
 
 	unsigned n_tokens = sec.u ();
 	cpp_hashnode *node = sec.cpp_node ();
@@ -14785,7 +14743,7 @@ module_state::read_locations ()
 		   MAP_START_LOCATION (macro) + n_tokens);
       }
     location_t lwm = sec.u ();
-    macro_locs.first = lwm - slurp ()->loc_deltas.second;
+    macro_locs.first = lwm - slurp->loc_deltas.second;
 
     dump () && dump ("Macro location lwm:%u", macro_locs.first);
 
@@ -15280,7 +15238,6 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
   macros.create (100);
   cpp_forall_identifiers (reader, maybe_add_macro, &macros);
 
-  const cpp_hashnode *controlling_node = cpp_main_controlling_macro (reader);
   unsigned count = 0;
   if (macros.length ())
     {
@@ -15308,16 +15265,6 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
 	      warning_at (mac.def->line, 0,
 			  "not exporting %<#define %E%> as it is a keyword",
 			  identifier (node));
-	      slot.offset = 0;
-	      continue;
-	    }
-
-	  if (node == controlling_node)
-	    {
-	      /* The controlling macro is written in the config, not
-		 here.  */
-	      dump () && dump ("Controlling macro %I",
-			       identifier (controlling_node));
 	      slot.offset = 0;
 	      continue;
 	    }
@@ -15370,23 +15317,22 @@ bool
 module_state::read_macros ()
 {
   /* Get the tbl section.  */
-  if (!slurp ()->macro_tbl.begin (loc, from (), MOD_SNAME_PFX ".mac"))
+  if (!slurp->macro_tbl.begin (loc, from (), MOD_SNAME_PFX ".mac"))
     return false;
 
   /* Get the def section.  */
-  if (!slurp ()->macro_defs.begin (loc, from (), MOD_SNAME_PFX ".def"))
+  if (!slurp->macro_defs.begin (loc, from (), MOD_SNAME_PFX ".def"))
     return false;
 
   return true;
 }
 
 /* Install the macro name table.  */
-// FIXME: Deal with clobbering controlling macros
 
 void
 module_state::install_macros ()
 {
-  bytes_in &sec = slurp ()->macro_tbl;
+  bytes_in &sec = slurp->macro_tbl;
   if (!sec.size)
     return;
 
@@ -15432,7 +15378,7 @@ module_state::install_macros ()
     }
 
   /* We're now done with the table.  */
-  elf_in::release (slurp ()->from, sec);
+  elf_in::release (slurp->from, sec);
 
   dump.outdent ();
 }
@@ -15442,11 +15388,11 @@ module_state::install_macros ()
 void
 module_state::import_macros ()
 {
-  bitmap_ior_into (headers, slurp ()->headers);
+  bitmap_ior_into (headers, slurp->headers);
 
   bitmap_iterator bititer;
   unsigned bitnum;
-  EXECUTE_IF_SET_IN_BITMAP (slurp ()->headers, 0, bitnum, bititer)
+  EXECUTE_IF_SET_IN_BITMAP (slurp->headers, 0, bitnum, bititer)
     (*modules)[bitnum]->install_macros ();
 }
 
@@ -15507,7 +15453,7 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
 	  unsigned mod = slot.get_mod ();
 	  if (slot.get_undef () && bitmap_bit_p (visible, mod))
 	    {
-	      bitmap arg = mod ? (*modules)[mod]->slurp ()->headers : headers;
+	      bitmap arg = mod ? (*modules)[mod]->slurp->headers : headers;
 	      bitmap_and_compl_into (visible, arg);
 	      bitmap_set_bit (visible, mod);
 	    }
@@ -15530,7 +15476,7 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
 	  if (mod)
 	    {
 	      const module_state *imp = (*modules)[mod];
-	      bytes_in &sec = imp->slurp ()->macro_defs;
+	      bytes_in &sec = imp->slurp->macro_defs;
 	      if (!sec.get_overrun ())
 		{
 		  dump (dumper::MACRO)
@@ -15674,29 +15620,7 @@ space_cmp (const void *a_, const void *b_)
 
 /* Tool configuration:  MOD_SNAME_PFX .config
 
-   This is data that confirms current state (or fails).
-
-   u32:version
-   u32:crc
-   u:module-name
-
-   controlling_macro
-
-   u:<target-triplet>
-   u:<host-triplet>
-   s:options
-
-   u:fixed_trees->length()
-   u32:global_crc
-
-   u:modules->length ()
-   direct-imports
-   indirect-imports
-
-   u:decl-section-lwm
-   u:decl-section-hwm
-   u:unnamed
-*/
+   This is data that confirms current state (or fails).  */
 
 /* Data for config reading and writing.  */
 struct module_state_config {
@@ -15708,15 +15632,12 @@ struct module_state_config {
   unsigned num_bindings;
   unsigned num_macros;
   unsigned num_inits;
-  const cpp_hashnode *controlling_node;
-  module_state *alias;
 
 public:
   module_state_config ()
     :opt_str (get_opts ()), sec_range (0,0), num_unnamed (0),
      num_imports (0), num_partitions (0),
-     num_bindings (0), num_macros (0), num_inits (0),
-     controlling_node (NULL), alias (NULL)
+     num_bindings (0), num_macros (0), num_inits (0)
   {
   }
   static void release ()
@@ -15844,19 +15765,6 @@ module_state::write_config (elf_out *to, module_state_config &config,
 
   cfg.u (to->name (is_header () ? "" : get_flatname ()));
 
-  if (!is_header ())
-    ;
-  else if (config.controlling_node)
-    {
-      gcc_assert (cpp_user_macro_p (config.controlling_node));
-      dump () && dump ("Controlling macro=%I",
-		       identifier (config.controlling_node));
-      cfg.cpp_node (config.controlling_node);
-      write_define (cfg, config.controlling_node->value.macro, false);
-    }
-  else
-    cfg.u (0);
-
   /* Configuration. */
   dump () && dump ("Writing target='%s', host='%s'",
 		   TARGET_MACHINE, HOST_MACHINE);
@@ -15915,7 +15823,7 @@ module_state::note_cmi_name ()
 }
 
 bool
-module_state::read_config (cpp_reader *reader, module_state_config &config)
+module_state::read_config (module_state_config &config)
 {
   bytes_in cfg;
 
@@ -15989,56 +15897,6 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
       }
   }
 
-  /* Read controlling macro.  We do this before validating the CRC,
-     as the latter is computed from names we originally used.  */
-  if (!is_header ())
-    ;
-  else if (cpp_hashnode *node = cfg.cpp_node ())
-    {
-      cpp_macro *macro = read_define (cfg, reader, false);
-      if (cfg.get_overrun ())
-	goto done;
-
-      dump () && dump ("Controlling macro is %I", identifier (node));
-      if (cpp_user_macro_p (node))
-	{
-	  /* Already defined, find alias. Expect pseudo-import  */
-	  cpp_macro *existing = node->value.macro;
-	  if (!existing)
-	    existing = cpp_get_deferred_macro (reader, node, loc);
-
-	  if (!existing)
-	    ;
-	  else if (!existing->imported)
-	    {
-	      error_at (loc, "controlling macro %E was not set by an import",
-			identifier (node));
-	      inform (existing->line, "controlling macro defined here");
-	    }
-	  else if (!node->deferred)
-	    {
-	      error_at (loc, "circular alias of controlling macro %E",
-			identifier (node));
-	      inform (existing->line, "aliased here");
-	    }
-	  else
-	    {
-	      /* It's an alias.  Go find it.  */
-	      macro_import &imp = (*macro_imports)[node->deferred - 1];
-	      macro_import::slot &slot = imp[0];
-
-	      config.alias = (*modules)[slot.get_mod ()];
-	      cfg.no_more ();
-	      goto done;
-	    }
-	}
-
-      /* Install as pseudo-import.  We'll complete this installation
-	 once the module number's assigned.  */
-      cpp_set_deferred_macro (node, macro);
-      config.controlling_node = node;
-    }
-
   /* Check the CRC after the above sanity checks, so that the user is
      clued in.  */
   {
@@ -16104,7 +15962,7 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
   config.num_partitions = cfg.u ();
 
   /* Allocate the REMAP vector.  */
-  slurp ()->alloc_remap (config.num_imports);
+  slurp->alloc_remap (config.num_imports);
 
   /* Random config data.  */
   config.sec_range.first = cfg.u ();
@@ -16364,7 +16222,6 @@ module_state::write (elf_out *to, cpp_reader *reader)
   write_locations (to, range_bits, config.num_partitions, &crc);
 
   config.num_macros = header_module_p () ? write_macros (to, reader, &crc) : 0;
-  config.controlling_node = cpp_main_controlling_macro (reader);
 
   /* Write initializers that header units might contain.  */
   if (is_header ())
@@ -16381,7 +16238,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   sccs.release ();
 
   /* Human-readable info.  */
-  write_readme (to, config.opt_str, config.controlling_node);
+  write_readme (to, config.opt_str);
   // FIXME: Write ths info to the 'reproducer' file yet to be implemented
   // write_env (to);
 
@@ -16392,34 +16249,31 @@ module_state::write (elf_out *to, cpp_reader *reader)
 /* Read a CMI from FD.  E is errno from its fopen.  Reading will
    be lazy, if this is an import and flag_module_lazy is in effect.  */
 
-module_state *
+void
 module_state::read (int fd, int e, cpp_reader *reader)
 {
-  gcc_checking_assert (!u1.slurp);
-  u1.slurp = new slurping (new elf_in (fd, e));
+  gcc_checking_assert (!slurp);
+  slurp = new slurping (new elf_in (fd, e));
   if (!from ()->begin (loc))
-    return NULL;
+    return;
 
   module_state_config config;
 
-  if (!read_config (reader, config))
-    return NULL;
-
-  if (config.alias)
-    return config.alias;
+  if (!read_config (config))
+    return;
 
   if (!read_locations ())
-    return NULL;
+    return;
 
   /* Read the import table.  */
   if (config.num_imports > MODULE_IMPORT_BASE
       && !read_imports (reader, line_table))
-    return NULL;
+    return;
 
   /* Read the elided partition table, if we're the primary partition.  */
   if (config.num_partitions && is_primary ()
       && !read_partitions (config.num_partitions))
-    return NULL;
+    return;
 
   /* Determine the module's number.  */
   gcc_checking_assert (mod == MODULE_UNKNOWN);
@@ -16430,7 +16284,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
     {
       sorry ("too many modules loaded (limit is %u)", ix);
       from ()->set_error (elf::E_BAD_IMPORT);
-      return NULL;
+      return;
     }
 
   vec_safe_push (modules, this);
@@ -16438,21 +16292,11 @@ module_state::read (int fd, int e, cpp_reader *reader)
   bitmap_set_bit (imports, ix);
   bitmap_set_bit (exports, ix);
   if (is_header ())
-    bitmap_set_bit (slurp ()->headers, ix);
+    bitmap_set_bit (slurp->headers, ix);
   mod = remap = ix;
 
-  (*slurp ()->remap)[MODULE_PURVIEW] = mod;
+  (*slurp->remap)[MODULE_PURVIEW] = mod;
   dump () && dump ("Assigning %M module number %u", this, mod);
-
-  /* Finish registering the controlling macro.  */
-  if (config.controlling_node
-      && !config.controlling_node->deferred
-      && config.controlling_node->value.macro)
-    {
-      cpp_hashnode *node = const_cast <cpp_hashnode *> (config.controlling_node);
-      get_macro_imports (node).append (mod);
-      dump () && dump ("Registering controlling macro %I", identifier (node));
-    }
 
   /* We should not have been frozen during the importing done by
      read_config.  */
@@ -16461,7 +16305,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
   cpp_options *cpp_opts = cpp_get_options (reader);
   if (config.num_macros && !cpp_opts->preprocessed)
     if (!read_macros ())
-      return NULL;
+      return;
 
   if (!flag_preprocess_only)
     {
@@ -16475,13 +16319,13 @@ module_state::read (int fd, int e, cpp_reader *reader)
 
       spaces.release ();
       if (!ok)
-	return NULL;
+	return;
 
       /* And unnamed.  */
       unnamed_lwm = vec_safe_length (unnamed_ary);
       if (config.num_unnamed
 	  && !read_unnamed (config.num_unnamed, config.sec_range))
-	return NULL;
+	return;
 
       if (!flag_module_lazy)
 	{
@@ -16497,15 +16341,13 @@ module_state::read (int fd, int e, cpp_reader *reader)
 	}
 
       if (!read_inits (config.num_inits))
-	return NULL;
+	return;
     }
 
   /* We're done with the string and non-decl sections now.  */
   from ()->release ();
-  slurp ()->remaining = config.sec_range.second - config.sec_range.first;
-  slurp ()->lru = ++lazy_lru;
-
-  return NULL;
+  slurp->remaining = config.sec_range.second - config.sec_range.first;
+  slurp->lru = ++lazy_lru;
 }
 
 void
@@ -16530,13 +16372,13 @@ module_state::load_section (unsigned snum)
 {
   maybe_defrost ();
 
-  unsigned old_current = slurp ()->current;
-  slurp ()->current = snum;
-  slurp ()->lru = 0;  /* Do not swap out.  */
+  unsigned old_current = slurp->current;
+  slurp->current = snum;
+  slurp->lru = 0;  /* Do not swap out.  */
   read_cluster (snum);
-  slurp ()->lru = ++lazy_lru;
-  slurp ()->current = old_current;
-  slurp ()->remaining--;
+  slurp->lru = ++lazy_lru;
+  slurp->current = old_current;
+  slurp->remaining--;
 }
 
 /* After a reading operation, make sure things are still ok.  If not,
@@ -16548,15 +16390,15 @@ module_state::load_section (unsigned snum)
 bool
 module_state::check_read (unsigned diag_count, tree ns, tree id)
 {
-  bool done = (slurp ()->current == ~0u
-	       && (from ()->get_error () || !slurp ()->remaining));
+  bool done = (slurp->current == ~0u
+	       && (from ()->get_error () || !slurp->remaining));
   if (done)
     {
       lazy_open--;
-      if (slurp ()->macro_defs.size)
-	from ()->preserve (slurp ()->macro_defs);
-      if (slurp ()->macro_tbl.size)
-	from ()->preserve (slurp ()->macro_tbl);
+      if (slurp->macro_defs.size)
+	from ()->preserve (slurp->macro_defs);
+      if (slurp->macro_tbl.size)
+	from ()->preserve (slurp->macro_tbl);
       from ()->end ();
     }
 
@@ -16568,7 +16410,7 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
 	 problems, so bail out, if this is the top level.
 	 Otherwise return NULL to let our importer know (and
 	 fail).  */
-      if (slurp ()->remaining && id)
+      if (slurp->remaining && id)
 	error_at (loc, "failed to load binding %<%E%s%E@%s%>: %s",
 		  ns, &"::"[ns == global_namespace ? 2 : 0], id,
 		  get_flatname (), err);
@@ -16591,7 +16433,7 @@ module_state::check_read (unsigned diag_count, tree ns, tree id)
 
   if (done)
     {
-      slurp ()->close ();
+      slurp->close ();
       if (!is_header ())
 	slurped ();
     }
@@ -16717,7 +16559,7 @@ module_state::set_import (module_state const *other, bool is_export)
 
   if (is_header () && other->is_header () && mod >= MODULE_IMPORT_BASE)
     /* We only see OTHER's headers if it is header.  */
-    bitmap_ior_into (slurp ()->headers, other->slurp ()->headers);
+    bitmap_ior_into (slurp->headers, other->slurp->headers);
 }
 
 /* Return the namespace-scope decl that determines the owning module
@@ -16953,14 +16795,8 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   announce ("importing");
   imported_p = true;
   lazy_open++;
-  module_state *alias = read (fd, e, reader);
+  read (fd, e, reader);
   bool ok = check_read (diags);
-  if (alias)
-    {
-      slurped ();
-      alias_p = true;
-      u1.alias = alias;
-    }
   announce (flag_module_lazy && mod != MODULE_PURVIEW ? "lazy" : "imported");
 
   return ok;
@@ -17008,14 +16844,13 @@ module_state::direct_import (cpp_reader *reader, bool lazy)
 
   if (is_imported ())
     {
-      module_state *imp = resolve_alias ();
-      imp->direct_p = true;
+      direct_p = true;
       if (exported_p)
-	imp->exported_p = true;
+	exported_p = true;
 
-      (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
-      if (imp->is_header ())
-	imp->import_macros ();
+      (*modules)[MODULE_NONE]->set_import (this, exported_p);
+      if (is_header ())
+	import_macros ();
     }
 
   dump.pop (n);
@@ -17061,21 +16896,21 @@ module_state::freeze_an_elf ()
   for (unsigned ix = modules->length (); ix--;)
     {
       module_state *candidate = (*modules)[ix];
-      if (candidate && candidate->u1.slurp && candidate->slurp ()->lru
+      if (candidate && candidate->slurp && candidate->slurp->lru
 	  && candidate->from ()->is_freezable ()
-	  && (!victim || victim->slurp ()->lru > candidate->slurp ()->lru))
+	  && (!victim || victim->slurp->lru > candidate->slurp->lru))
 	victim = candidate;
     }
 
   if (victim)
     {
       dump () && dump ("Freezing '%s'", victim->filename);
-      if (victim->slurp ()->macro_defs.size)
+      if (victim->slurp->macro_defs.size)
 	/* Save the macro definitions to a buffer.  */
-	victim->from ()->preserve (victim->slurp ()->macro_defs);
-      if (victim->slurp ()->macro_tbl.size)
+	victim->from ()->preserve (victim->slurp->macro_defs);
+      if (victim->slurp->macro_tbl.size)
 	/* Save the macro definitions to a buffer.  */
-	victim->from ()->preserve (victim->slurp ()->macro_tbl);
+	victim->from ()->preserve (victim->slurp->macro_tbl);
       victim->from ()->freeze ();
       lazy_open--;
     }
@@ -17095,7 +16930,7 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
   dump () && dump ("Lazily binding %P@%N section:%u", ns, id, name, snum);
 
   unsigned diags = outermost ? errorcount + warningcount + 1 : 0;
-  if (snum < slurp ()->current && flag_module_lazy)
+  if (snum < slurp->current && flag_module_lazy)
     load_section (snum);
 
   if (mslot->is_lazy ())

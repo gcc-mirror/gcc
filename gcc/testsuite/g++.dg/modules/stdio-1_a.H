@@ -12,4 +12,3 @@
 // { dg-final { scan-lang-dump {Writing section:60 } module } }
 // { dg-final { scan-lang-dump {Depset:0 decl function_decl:'::printf@[^\n]*stdio-1_a.H:1'} module } }
 // { dg-final { scan-lang-dump {Depset:1 binding namespace_decl:'::printf'} module } }
-// { dg-final { scan-lang-dump {Controlling macro=_PROXY_STDIO_H} module } }

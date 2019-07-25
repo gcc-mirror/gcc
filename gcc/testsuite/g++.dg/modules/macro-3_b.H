@@ -15,12 +15,10 @@ import "macro-3_a.H";
 
 #endif
 
-// { dg-final { scan-lang-dump {Controlling macro is MACRO_3a_H} module } }
 // { dg-final { scan-lang-dump {Read new macro #define foo at} module } }
 // { dg-final { scan-lang-dump {Read new macro #define bar at} module } }
 // { dg-final { scan-lang-dump-not {Read [^ ]* macro #define bob at} module } }
 
-// { dg-final { scan-lang-dump-not {Controlling macro=MACRO_3b_H} module } }
 // { dg-final { scan-lang-dump {Writing macro #define bob at} module } }
 // { dg-final { scan-lang-dump {Writing macro #undef & #define bar at} module } }
 // { dg-final { scan-lang-dump {Writing macro #undef foo at} module } }

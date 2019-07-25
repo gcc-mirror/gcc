@@ -1,6 +1,6 @@
 // { dg-additional-options "-fmodules-ts -fdump-lang-module -isystem [srcdir]/sys" }
 
-// These find different headers with different controlling macros, so are different
+// These find different headers
 import "alias-2_a.H";
 import <alias-2_a.H>;
 
@@ -10,5 +10,4 @@ int main ()
   frob (1);
 }
 
-// { dg-final { scan-lang-dump {Controlling macro is ALIAS_2_A_SYS} module } }
-// { dg-final { scan-lang-dump {Controlling macro is ALIAS_2_A} module } }
+// { dg-final { scan-lang-dump-times {CMI is} 2 module } }
