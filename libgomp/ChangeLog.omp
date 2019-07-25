@@ -1,5 +1,13 @@
 2019-09-10  Andrew Stubbs  <ams@codesourcery.com>
 
+	* plugin/plugin-gcn.c (HSA_AMD_AGENT_INFO_COMPUTE_UNIT_COUNT): Define.
+	(dump_hsa_agent_info): Dump compute unit count.
+	(get_cu_count): New function.
+	(parse_target_attributes): Use get_cu_count for default gdims.
+	(gcn_exec): Likewise.
+
+2019-09-10  Andrew Stubbs  <ams@codesourcery.com>
+
 	* plugin/plugin-gcn.c (obstack_chunk_alloc): Delete.
 	(obstack_chunk_free): Delete.
 	(obstack.h): Remove include.

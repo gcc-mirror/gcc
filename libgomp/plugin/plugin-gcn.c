@@ -44,6 +44,11 @@
 #include "oacc-int.h"
 #include <assert.h>
 
+/* Additional definitions not in HSA 1.1.
+   FIXME: this needs to be updated in hsa.h for upstream, but the only source
+          right now is the ROCr source which may cause license issues.  */
+#define HSA_AMD_AGENT_INFO_COMPUTE_UNIT_COUNT 0xA002
+
 /* These probably won't be in elf.h for a while.  */
 #define R_AMDGPU_NONE		0
 #define R_AMDGPU_ABS32_LO	1	/* (S + A) & 0xFFFFFFFF  */
@@ -844,6 +849,14 @@ dump_hsa_agent_info (hsa_agent_t agent, void *data __attribute__((unused)))
     }
   else
     HSA_DEBUG ("HSA_AGENT_INFO_DEVICE: FAILED\n");
+
+  uint32_t cu_count;
+  status = hsa_fns.hsa_agent_get_info_fn
+    (agent, HSA_AMD_AGENT_INFO_COMPUTE_UNIT_COUNT, &cu_count);
+  if (status == HSA_STATUS_SUCCESS)
+    HSA_DEBUG ("HSA_AMD_AGENT_INFO_COMPUTE_UNIT_COUNT: %u\n", cu_count);
+  else
+    HSA_DEBUG ("HSA_AMD_AGENT_INFO_COMPUTE_UNIT_COUNT: FAILED\n");
 
   uint32_t size;
   status = hsa_fns.hsa_agent_get_info_fn (agent, HSA_AGENT_INFO_WAVEFRONT_SIZE,
@@ -2449,6 +2462,18 @@ init_kernel (struct kernel_info *kernel)
 		       "mutex");
 }
 
+static int
+get_cu_count (struct agent_info *agent)
+{
+  uint32_t cu_count;
+  hsa_status_t status = hsa_fns.hsa_agent_get_info_fn
+    (agent->id, HSA_AMD_AGENT_INFO_COMPUTE_UNIT_COUNT, &cu_count);
+  if (status == HSA_STATUS_SUCCESS)
+    return cu_count;
+  else
+    return 64;  /* The usual number for older devices.  */
+}
+
 /* Calculate the maximum grid size for OMP threads / OACC workers.
    This depends on the kernel's resource usage levels.  */
 
@@ -2527,8 +2552,8 @@ parse_target_attributes (void **input,
 	}
 
       def->ndim = 3;
-      /* Fiji has 64 CUs.  */
-      def->gdims[0] = (gcn_teams > 0) ? gcn_teams : 64;
+      /* Fiji has 64 CUs, but Vega20 has 60.  */
+      def->gdims[0] = (gcn_teams > 0) ? gcn_teams : get_cu_count (agent);
       /* Each thread is 64 work items wide.  */
       def->gdims[1] = 64;
       /* A work group can have 16 wavefronts.  */
@@ -3308,7 +3333,7 @@ gcn_exec (struct kernel_info *kernel, size_t mapnum, void **hostaddrs,
      problem size, so let's do a reasonable number of single-worker gangs.
      64 gangs matches a typical Fiji device.  */
 
-  if (dims[0] == 0) dims[0] = 64; /* Gangs.  */
+  if (dims[0] == 0) dims[0] = get_cu_count (kernel->agent); /* Gangs.  */
   if (dims[1] == 0) dims[1] = 16; /* Workers.  */
 
   /* The incoming dimensions are expressed in terms of gangs, workers, and
