@@ -1,3 +1,9 @@
+2019-07-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (SATrev): Change to code attribute.
+	(*satsi_<SAT:code>): Adjust for the above.
+	(*satsi_<SAT:code>_shift): Likewise.
+
 2019-07-25  Richard Biener  <rguenther@suse.de>
 
 	* gimple-loop-versioning.cc (loop_versioning::prune_loop_conditions):
