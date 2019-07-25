@@ -1,5 +1,18 @@
 2019-07-24  Nathan Sidwell  <nathan@acm.org>
 
+	Default to gcm.cache directory.
+	gcc/cp/
+	* cxx-mapper.c (flag_root): Change default.
+	(module2bmi): Headers have same suffix.
+	(client::action): Prefix root dir to look for bmi.
+	gcc/
+	* doc/invoke.texi (C++ Module Mapper): Update docs.
+	gcc/testsuite/
+	* g++.dg/modules/dep-1_[ab].C: Update scans.
+	* g++.dg/modules/dep-2.C: Update scans.
+	* g++.dg/modules/modules.exp (DEFAULT_REPO): New.
+	(dg-module-cmi): Adjust.
+
 	Drop import alias detection, via controlling macros.
 	gcc/cp/
 	* module.cc (bytes_in::no_more): Delete.

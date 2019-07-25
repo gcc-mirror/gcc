@@ -1,4 +1,4 @@
-/* -*- C++ -*- modules.  Experimental!
+/* C++ modules.  Experimental!
    Copyright (C) 2018-2019 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
@@ -109,7 +109,7 @@ static bool flag_sequential = false;
 static bool flag_fallback = false;
 
 /* Root binary directory.  */
-static const char *flag_root = ".";
+static const char *flag_root = "gcm.cache";
 
 /* String comparison for the mapper map.  */
 struct string_cmp {
@@ -318,9 +318,10 @@ module2bmi (const char *module)
 	      }
 	}
 
-      strcpy (workspace + l, is_header ? ".gchm" : ".gcm");
+      strcpy (workspace + l, ".gcm");
       res = workspace;
     }
+
   return res;
 }
 
@@ -1102,9 +1103,18 @@ client::action ()
 			  }
 			if (!do_imp)
 			  /* See if the BMI exists.  */
+			  // FIXME: We should have syntax for this in
+			  // a config file?  This is unpleasant.
 			  if (const char *bmi = module2bmi (module))
 			    {
-			      int fd = ::open (bmi, O_RDONLY);
+			      size_t l = strlen (bmi);
+			      size_t r = strlen (flag_root);
+			      char *buf = new char [l + r + 2];
+			      memcpy (buf, flag_root, r);
+			      buf[r] = DIR_SEPARATOR;
+			      memcpy (buf + r + 1, bmi, l + 1);
+			      int fd = ::open (buf, O_RDONLY);
+			      delete[] buf;
 			      if (fd >= 0)
 				{
 				  ::close (fd);

@@ -44,6 +44,8 @@ global module_do
 global module_cmis
 global module_headers
 
+set DEFAULT_REPO "gcm.cache"
+
 # Register the module name this produces.
 # dg-module-cmi !?=?NAME WHEN?
 # dg-module-cmi !?{} - header unit
@@ -67,22 +69,27 @@ proc dg-module-cmi { args } {
 	set not 0
     }
 
-    if { $name == "" } {
-	# get the source file name.  ick!
-	upvar prog srcname
-	if { [lindex [file split $srcname] 0] == "/" } {
-	    set cmi ".$srcname.gchm"
-	} else {
-	    set cmi "!/$srcname.gchm"
-	}
-	# subst /../ -> /!!/
-	set path [file split $cmi]
-	set rplac [lmap elt $path {expr {$elt == ".." ? "!!" : $elt}}]
-	set cmi [file join {*}$rplac]
-    } elseif { [string index $name 0] == "=" } {
+    if { [string index $name 0] == "=" } {
 	set cmi [string range $name 1 end]
     } else {
-	set cmi "$name.gcm"
+	if { $name == "" } {
+	    # get the source file name.  ick!
+	    upvar prog srcname
+	    set cmi "$srcname.gcm"
+	    if { [string index $cmi 0] == "/" } {
+		set cmi [string range $cmi 1 end]
+	    } else {
+		set cmi "!/$cmi"
+	    }
+	    set path [file split $cmi]
+	    # subst /../ -> /!!/
+	    set rplac [lmap elt $path {expr {$elt == ".." ? "!!" : $elt}}]
+	    set cmi [file join {*}$rplac]
+	} else {
+	    set cmi "$name.gcm"
+	}
+	global DEFAULT_REPO
+	set cmi "$DEFAULT_REPO/$cmi"
     }
 
     # delete file, so we don't get confused by a stale one.

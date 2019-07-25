@@ -30220,7 +30220,7 @@ The @option{-fmodule-mapper} family of options are described below.
 @subsection Module Mapper
 @cindex C++ Module Mapper
 
-An module mapper provides a line-based server or file that the
+A module mapper provides a line-based server or file that the
 compiler queries to determine the mapping between module names and CMI
 files.  It is also used to build CMIs on demand.  A mapper may be
 specified with the @option{-fmodule-mapper=@var{val}} option or
@@ -30275,8 +30275,8 @@ used if no @var{ident} is specified.  In the file case, all non-blank
 lines are significant, unless a value is specified, in which case only
 lines beginning with @var{ident} are significant.  The @var{ident}
 must be separated by whitespace from the module name.  Be aware that
-@samp{?}  and @samp{|} characters are often significant to the shell,
-and therefore may need quoting.
+@samp{<}, @samp{>}, @samp{?}  and @samp{|} characters are often
+significant to the shell, and therefore may need quoting.
 
 The mapper is connected to or loaded lazily, when the first module
 mapping is required.  The networking protocols are only supported on
@@ -30384,9 +30384,15 @@ server traffic, but requires the build system to recreate the same
 directory structure within the repository across a parellelized build
 system.
 
-The default mapper generates CMI files in the current directory,
-appending a @samp{.gcm} suffix to the module name.  Header unit names
-append @samp{.gchm}.  They may also contain directory separators.
+The default mapper generates CMI files in a @samp{gcm.cache}
+directory.  CMI files have a @samp{.gcm} suffix.  The module unit name
+is used directly to provide the basename.  Header units construct a
+relative path using the underlying header file name.  If the path is
+already relative, a @samp{!} directory is prepended.  Internal
+@samp{..} components are translated to @samp{!!}.  No attempt is made
+to canonicalize these filenames beyond that done by the preprocessor's
+include search algorithm, as in general it is ambiguous when symbolic
+links are present.
 
 The mapper protocol was published as ``A Module Mapper''
 @uref{http//wg21.link/p1184}.  It is intended that build systems will
