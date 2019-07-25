@@ -1,4 +1,11 @@
 2019-07-25  Martin Liska  <mliska@suse.cz>
+	    Dominik Infuhr  <dominik.infuehr@theobroma-systems.com>
+
+	PR c++/23383
+	* decl.c (cxx_init_decl_processing): Mark delete operators
+	with DECL_SET_IS_OPERATOR_DELETE.
+
+2019-07-25  Martin Liska  <mliska@suse.cz>
 
 	* decl.c (duplicate_decls): Use new macros
 	(e.g. DECL_SET_LAMBDA_FUNCTION and DECL_LAMBDA_FUNCTION_P).

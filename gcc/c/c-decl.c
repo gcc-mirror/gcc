@@ -2641,6 +2641,8 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	  DECL_IS_MALLOC (newdecl) |= DECL_IS_MALLOC (olddecl);
 	  if (DECL_IS_OPERATOR_NEW_P (olddecl))
 	    DECL_SET_IS_OPERATOR_NEW (newdecl, true);
+	  if (DECL_IS_OPERATOR_DELETE_P (olddecl))
+	    DECL_SET_IS_OPERATOR_DELETE (newdecl, true);
 	  TREE_READONLY (newdecl) |= TREE_READONLY (olddecl);
 	  DECL_PURE_P (newdecl) |= DECL_PURE_P (olddecl);
 	  DECL_IS_NOVOPS (newdecl) |= DECL_IS_NOVOPS (olddecl);

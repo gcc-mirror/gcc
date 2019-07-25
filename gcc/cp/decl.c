@@ -4363,8 +4363,10 @@ cxx_init_decl_processing (void)
     opnew = push_cp_library_fn (VEC_NEW_EXPR, newtype, 0);
     DECL_IS_MALLOC (opnew) = 1;
     DECL_SET_IS_OPERATOR_NEW (opnew, true);
-    push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
-    push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+    tree opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
+    DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+    opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+    DECL_SET_IS_OPERATOR_DELETE (opdel, true);
     if (flag_sized_deallocation)
       {
 	/* Also push the sized deallocation variants:
@@ -4376,8 +4378,10 @@ cxx_init_decl_processing (void)
 	deltype = cp_build_type_attribute_variant (void_ftype_ptr_size,
 						   extvisattr);
 	deltype = build_exception_variant (deltype, empty_except_spec);
-	push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
-	push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+	opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
+	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
       }
 
     if (aligned_new_threshold)
@@ -4405,8 +4409,10 @@ cxx_init_decl_processing (void)
 					    align_type_node, NULL_TREE);
 	deltype = cp_build_type_attribute_variant (deltype, extvisattr);
 	deltype = build_exception_variant (deltype, empty_except_spec);
-	push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
-	push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+	opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
+	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+	DECL_SET_IS_OPERATOR_DELETE (opdel, true);
 
 	if (flag_sized_deallocation)
 	  {
@@ -4416,8 +4422,10 @@ cxx_init_decl_processing (void)
 						NULL_TREE);
 	    deltype = cp_build_type_attribute_variant (deltype, extvisattr);
 	    deltype = build_exception_variant (deltype, empty_except_spec);
-	    push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
-	    push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+	    opdel = push_cp_library_fn (DELETE_EXPR, deltype, ECF_NOTHROW);
+	    DECL_SET_IS_OPERATOR_DELETE (opdel, true);
+	    opdel = push_cp_library_fn (VEC_DELETE_EXPR, deltype, ECF_NOTHROW);
+	    DECL_SET_IS_OPERATOR_DELETE (opdel, true);
 	  }
       }
 

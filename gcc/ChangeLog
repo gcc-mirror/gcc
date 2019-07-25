@@ -1,4 +1,26 @@
 2019-07-25  Martin Liska  <mliska@suse.cz>
+	    Dominik Infuhr  <dominik.infuehr@theobroma-systems.com>
+
+	PR c++/23383
+	* common.opt: Add -fallocation-dce
+	* gimple.c (gimple_call_operator_delete_p): New.
+	* gimple.h (gimple_call_operator_delete_p): Likewise.
+	* tree-core.h (enum function_decl_type): Add OPERATOR_DELETE.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Handle
+	DECL_IS_OPERATOR_DELETE_P.
+	(mark_all_reaching_defs_necessary_1): Likewise.
+	(propagate_necessity): Likewise.
+	(eliminate_unnecessary_stmts): Handle
+	gimple_call_operator_delete_p.
+	* tree-streamer-in.c (unpack_ts_function_decl_value_fields):
+	Add packing of OPERATOR_DELETE.
+	* tree-streamer-out.c (pack_ts_function_decl_value_fields):
+	Similarly here.
+	* tree.h (DECL_IS_OPERATOR_DELETE_P): New.
+	(DECL_SET_IS_OPERATOR_DELETE): New.
+	(DECL_IS_REPLACEABLE_OPERATOR_NEW_P): Likewise.
+
+2019-07-25  Martin Liska  <mliska@suse.cz>
 
 	* calls.c (maybe_warn_alloc_args_overflow): Use new macros
 	(e.g. DECL_SET_LAMBDA_FUNCTION and DECL_LAMBDA_FUNCTION_P).

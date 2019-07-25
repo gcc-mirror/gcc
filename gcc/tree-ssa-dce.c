@@ -237,6 +237,12 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 
 	    default:;
 	    }
+
+	if (callee != NULL_TREE
+	    && flag_allocation_dce
+	    && DECL_IS_REPLACEABLE_OPERATOR_NEW_P (callee))
+	  return;
+
 	/* Most, but not all function calls are required.  Function calls that
 	   produce no result and have no side effects (i.e. const pure
 	   functions) are unnecessary.  */
@@ -588,6 +594,11 @@ mark_all_reaching_defs_necessary_1 (ao_ref *ref ATTRIBUTE_UNUSED,
 
 	  default:;
 	  }
+
+      if (callee != NULL_TREE
+	  && (DECL_IS_REPLACEABLE_OPERATOR_NEW_P (callee)
+	      || DECL_IS_OPERATOR_DELETE_P (callee)))
+	return false;
     }
 
   if (! gimple_clobber_p (def_stmt))
@@ -774,7 +785,10 @@ propagate_necessity (bool aggressive)
 	  /* If this is a call to free which is directly fed by an
 	     allocation function do not mark that necessary through
 	     processing the argument.  */
-	  if (gimple_call_builtin_p (stmt, BUILT_IN_FREE))
+	  if (gimple_call_builtin_p (stmt, BUILT_IN_FREE)
+	      || (is_gimple_call (stmt)
+		  && gimple_call_operator_delete_p (as_a <gcall *> (stmt))))
+
 	    {
 	      tree ptr = gimple_call_arg (stmt, 0);
 	      gimple *def_stmt;
@@ -784,10 +798,11 @@ propagate_necessity (bool aggressive)
 	      if (TREE_CODE (ptr) == SSA_NAME
 		  && is_gimple_call (def_stmt = SSA_NAME_DEF_STMT (ptr))
 		  && (def_callee = gimple_call_fndecl (def_stmt))
-		  && DECL_BUILT_IN_CLASS (def_callee) == BUILT_IN_NORMAL
-		  && (DECL_FUNCTION_CODE (def_callee) == BUILT_IN_ALIGNED_ALLOC
-		      || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_MALLOC
-		      || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_CALLOC))
+		  && ((DECL_BUILT_IN_CLASS (def_callee) == BUILT_IN_NORMAL
+		       && (DECL_FUNCTION_CODE (def_callee) == BUILT_IN_ALIGNED_ALLOC
+			   || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_MALLOC
+			   || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_CALLOC))
+		      || DECL_IS_REPLACEABLE_OPERATOR_NEW_P (def_callee)))
 		continue;
 	    }
 
@@ -840,6 +855,11 @@ propagate_necessity (bool aggressive)
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_SAVE
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_RESTORE
 		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_ASSUME_ALIGNED))
+		continue;
+
+	      if (callee != NULL_TREE
+		  && (DECL_IS_REPLACEABLE_OPERATOR_NEW_P (callee)
+		      || DECL_IS_OPERATOR_DELETE_P (callee)))
 		continue;
 
 	      /* Calls implicitly load from memory, their arguments
@@ -1262,7 +1282,9 @@ eliminate_unnecessary_stmts (void)
 	     defining statement of its argument is not necessary
 	     (and thus is getting removed).  */
 	  if (gimple_plf (stmt, STMT_NECESSARY)
-	      && gimple_call_builtin_p (stmt, BUILT_IN_FREE))
+	      && (gimple_call_builtin_p (stmt, BUILT_IN_FREE)
+		  || (is_gimple_call (stmt)
+		      && gimple_call_operator_delete_p (as_a <gcall *> (stmt)))))
 	    {
 	      tree ptr = gimple_call_arg (stmt, 0);
 	      if (TREE_CODE (ptr) == SSA_NAME)

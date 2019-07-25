@@ -1,4 +1,10 @@
 2019-07-25  Martin Liska  <mliska@suse.cz>
+	    Dominik Infuhr  <dominik.infuehr@theobroma-systems.com>
+
+	PR c++/23383
+	* c-decl.c (merge_decls): Merge OPERATOR_DELETE flag.
+
+2019-07-25  Martin Liska  <mliska@suse.cz>
 
 	* c-decl.c (merge_decls): Use new macros
 	(e.g. DECL_SET_LAMBDA_FUNCTION and DECL_LAMBDA_FUNCTION_P).
