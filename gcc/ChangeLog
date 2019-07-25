@@ -16,6 +16,19 @@
 
 2019-07-24  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/91183
+	PR tree-optimization/86688
+	* builtins.c (compute_objsize): Handle MEM_REF.
+	* tree-ssa-strlen.c (class ssa_name_limit_t): New.
+	(get_min_string_length): Remove.
+	(count_nonzero_bytes): New function.
+	(handle_char_store): Rename...
+	(handle_store): to this.  Handle multibyte stores via integer types.
+	(strlen_check_and_optimize_stmt): Adjust conditional and the called
+	function name.
+
+2019-07-24  Martin Sebor  <msebor@redhat.com>
+
 	PR driver/80545
 	* diagnostic.c (diagnostic_classify_diagnostic): Use lang_mask.
 	(diagnostic_report_diagnostic): Same.
