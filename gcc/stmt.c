@@ -885,6 +885,7 @@ expand_case (gswitch *stmt)
   tree index_type = TREE_TYPE (index_expr);
   tree elt;
   basic_block bb = gimple_bb (stmt);
+  gimple *def_stmt;
 
   auto_vec<simple_case_node> case_list;
 
@@ -917,6 +918,31 @@ expand_case (gswitch *stmt)
     maxval = fold_convert (index_type, CASE_HIGH (elt));
   else
     maxval = fold_convert (index_type, CASE_LOW (elt));
+
+  /* Try to narrow the index type if it's larger than a word.
+     That is mainly for -O0 where an equivalent optimization
+     done by forward propagation is not run and is aimed at
+     avoiding a call to a comparison routine of libgcc.  */
+  if (TYPE_PRECISION (index_type) > BITS_PER_WORD
+      && TREE_CODE (index_expr) == SSA_NAME
+      && (def_stmt = SSA_NAME_DEF_STMT (index_expr))
+      && is_gimple_assign (def_stmt)
+      && gimple_assign_rhs_code (def_stmt) == NOP_EXPR)
+    {
+      tree inner_index_expr = gimple_assign_rhs1 (def_stmt);
+      tree inner_index_type = TREE_TYPE (inner_index_expr);
+
+      if (INTEGRAL_TYPE_P (inner_index_type)
+	  && TYPE_PRECISION (inner_index_type) <= BITS_PER_WORD
+	  && int_fits_type_p (minval, inner_index_type)
+	  && int_fits_type_p (maxval, inner_index_type))
+	{
+	  index_expr = inner_index_expr;
+	  index_type = inner_index_type;
+	  minval = fold_convert (index_type, minval);
+	  maxval = fold_convert (index_type, maxval);
+	}
+    }
 
   /* Compute span of values.  */
   range = fold_build2 (MINUS_EXPR, index_type, maxval, minval);
@@ -969,26 +995,21 @@ expand_case (gswitch *stmt)
 
   rtx_insn *before_case = get_last_insn ();
 
-  /* Decide how to expand this switch.
-     The two options at this point are a dispatch table (casesi or
-     tablejump) or a decision tree.  */
-
+  /* If the default case is unreachable, then set default_label to NULL
+     so that we omit the range check when generating the dispatch table.
+     We also remove the edge to the unreachable default case.  The block
+     itself will be automatically removed later.  */
+  if (EDGE_COUNT (default_edge->dest->succs) == 0
+      && gimple_seq_unreachable_p (bb_seq (default_edge->dest)))
     {
-      /* If the default case is unreachable, then set default_label to NULL
-	 so that we omit the range check when generating the dispatch table.
-	 We also remove the edge to the unreachable default case.  The block
-	 itself will be automatically removed later.  */
-      if (EDGE_COUNT (default_edge->dest->succs) == 0
-	  && gimple_seq_unreachable_p (bb_seq (default_edge->dest)))
-	{
-	  default_label = NULL;
-	  remove_edge (default_edge);
-	  default_edge = NULL;
-	}
-      emit_case_dispatch_table (index_expr, index_type,
-				case_list, default_label, default_edge,
-				minval, maxval, range, bb);
+      default_label = NULL;
+      remove_edge (default_edge);
+      default_edge = NULL;
     }
+
+  emit_case_dispatch_table (index_expr, index_type,
+			    case_list, default_label, default_edge,
+			    minval, maxval, range, bb);
 
   reorder_insns (NEXT_INSN (before_case), get_last_insn (), before_case);
 

@@ -1,5 +1,10 @@
 2019-07-25  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* stmt.c (expand_case): Try to narrow the index type if it's larger
+	than a word.  Tidy up.
+
+2019-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* cif-code.def (NEVER_CALL): New code.
 	* ipa-inline.c (want_inline_small_function_p): Fix formatting issues.
 	Set the failure to CIF_NEVER_CALL if the IPA count is zero.
