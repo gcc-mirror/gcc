@@ -1,3 +1,20 @@
+2019-07-25  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	* ipa-profile.c (get_most_common_single_value): Use
+	get_nth_most_common_value.
+	* profile.c (sort_hist_value): New function.
+	(compute_value_histograms): Call sort_hist_value to sort the
+	values after loading from disk.
+	* value-prof.c (get_most_common_single_value): Rename to ...
+	get_nth_most_common_value.  Add input params n, return
+	the n_th value and count.
+	(gimple_divmod_fixed_value_transform): Use
+	get_nth_most_common_value.
+	(gimple_ic_transform): Likewise.
+	(gimple_stringops_transform): Likewise.
+	* value-prof.h (get_most_common_single_value): Add input params
+	n, default to 0.
+
 2019-07-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91236
