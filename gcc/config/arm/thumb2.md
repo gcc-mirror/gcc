@@ -247,8 +247,8 @@
 ;; regs.  The high register alternatives are not taken into account when
 ;; choosing register preferences in order to reflect their expense.
 (define_insn "*thumb2_movsi_insn"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,l,r,r,l ,*hk,m,*m")
-	(match_operand:SI 1 "general_operand"	   "rk,I,Py,K,j,mi,*mi,l,*hk"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,l,r,r,lk*r,m")
+	(match_operand:SI 1 "general_operand"	   "rk,I,Py,K,j,mi,lk*r"))]
   "TARGET_THUMB2 && !TARGET_IWMMXT && !TARGET_HARD_FLOAT
    && (   register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
@@ -262,22 +262,20 @@
     case 3: return \"mvn%?\\t%0, #%B1\";
     case 4: return \"movw%?\\t%0, %1\";
     case 5:
-    case 6:
       /* Cannot load it directly, split to load it via MOV / MOVT.  */
       if (!MEM_P (operands[1]) && arm_disable_literal_pool)
 	return \"#\";
       return \"ldr%?\\t%0, %1\";
-    case 7:
-    case 8: return \"str%?\\t%1, %0\";
+    case 6: return \"str%?\\t%1, %0\";
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "type" "mov_reg,mov_imm,mov_imm,mvn_imm,mov_imm,load_4,load_4,store_4,store_4")
-   (set_attr "length" "2,4,2,4,4,4,4,4,4")
+  [(set_attr "type" "mov_reg,mov_imm,mov_imm,mvn_imm,mov_imm,load_4,store_4")
+   (set_attr "length" "2,4,2,4,4,4,4")
    (set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no,no,no")
-   (set_attr "pool_range" "*,*,*,*,*,1018,4094,*,*")
-   (set_attr "neg_pool_range" "*,*,*,*,*,0,0,*,*")]
+   (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no")
+   (set_attr "pool_range" "*,*,*,*,*,4094,*")
+   (set_attr "neg_pool_range" "*,*,*,*,*,0,*")]
 )
 
 (define_insn "tls_load_dot_plus_four"
