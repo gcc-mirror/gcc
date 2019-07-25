@@ -1,3 +1,9 @@
+2019-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cif-code.def (NEVER_CALL): New code.
+	* ipa-inline.c (want_inline_small_function_p): Fix formatting issues.
+	Set the failure to CIF_NEVER_CALL if the IPA count is zero.
+
 2019-07-25  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/thumb2.md (thumb2_movsi_insn): Fix load/store low reg.

@@ -810,7 +810,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 				  | INLINE_HINT_loop_stride))
 		       && !(big_speedup = big_speedup_p (e)))))
 	{
-          e->inline_failed = CIF_MAX_INLINE_INSNS_SINGLE_LIMIT;
+	  e->inline_failed = CIF_MAX_INLINE_INSNS_SINGLE_LIMIT;
 	  want_inline = false;
 	}
       else if (!DECL_DECLARED_INLINE_P (callee->decl)
@@ -818,12 +818,12 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	       && growth >= PARAM_VALUE (PARAM_MAX_INLINE_INSNS_SMALL))
 	{
 	  /* growth_likely_positive is expensive, always test it last.  */
-          if (growth >= MAX_INLINE_INSNS_SINGLE
+	  if (growth >= MAX_INLINE_INSNS_SINGLE
 	      || growth_likely_positive (callee, growth))
 	    {
-              e->inline_failed = CIF_NOT_DECLARED_INLINED;
+	      e->inline_failed = CIF_NOT_DECLARED_INLINED;
 	      want_inline = false;
- 	    }
+	    }
 	}
       /* Apply MAX_INLINE_INSNS_AUTO limit for functions not declared inline
 	 Upgrade it to MAX_INLINE_INSNS_SINGLE when hints suggests that
@@ -839,19 +839,22 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	       && !(big_speedup == -1 ? big_speedup_p (e) : big_speedup))
 	{
 	  /* growth_likely_positive is expensive, always test it last.  */
-          if (growth >= MAX_INLINE_INSNS_SINGLE
+	  if (growth >= MAX_INLINE_INSNS_SINGLE
 	      || growth_likely_positive (callee, growth))
 	    {
 	      e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
 	      want_inline = false;
- 	    }
+	    }
 	}
       /* If call is cold, do not inline when function body would grow. */
       else if (!e->maybe_hot_p ()
 	       && (growth >= MAX_INLINE_INSNS_SINGLE
 		   || growth_likely_positive (callee, growth)))
 	{
-          e->inline_failed = CIF_UNLIKELY_CALL;
+	  if (e->count.ipa () == profile_count::zero ())
+	    e->inline_failed = CIF_NEVER_CALL;
+	  else
+	    e->inline_failed = CIF_UNLIKELY_CALL;
 	  want_inline = false;
 	}
     }
