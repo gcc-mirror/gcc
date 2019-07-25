@@ -2171,6 +2171,14 @@ process_alt_operands (int only_alternative)
 		      }
 		    else
 		      {
+			/* If the operands do not match and one
+			   operand is INOUT, we can not match them.
+			   Try other possibilities, e.g. other
+			   alternatives or commutative operand
+			   exchange.  */
+			if (curr_static_id->operand[nop].type == OP_INOUT
+			    || curr_static_id->operand[m].type == OP_INOUT)
+			  break;
 			/* Operands don't match.  If the operands are
 			   different user defined explicit hard
 			   registers, then we cannot make them match
