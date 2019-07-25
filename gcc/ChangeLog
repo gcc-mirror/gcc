@@ -1,3 +1,10 @@
+2019-07-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (extract_range_from_multiplicative_op): Add
+	type parameter and use it instead of guessing expression
+	type from the first operand.
+	(extract_range_from_binary_expr): Pass expr_type down.
+
 2019-07-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (SATrev): Change to code attribute.
