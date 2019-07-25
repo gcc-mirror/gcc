@@ -1,4 +1,4 @@
---  { dg-do run }
+--  { dg-do run { target i?86-*-* x86_64-*-* } }
 
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
 
