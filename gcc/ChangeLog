@@ -1,3 +1,10 @@
+2019-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91236
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Fix
+	size of CONSTRUCTOR write.  Fix buffer size we pass to
+	native_encode_expr.
+
 2019-07-24  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* config.gcc (msp430*-*-*): Fix non-GNU style in r273774.

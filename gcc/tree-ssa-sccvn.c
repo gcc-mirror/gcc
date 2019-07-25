@@ -1818,7 +1818,7 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
       if (TREE_CODE (pd.rhs) == CONSTRUCTOR)
 	/* Empty CONSTRUCTOR.  */
 	memset (buffer + MAX (0, pd.offset),
-		0, MIN ((HOST_WIDE_INT)sizeof (buffer),
+		0, MIN ((HOST_WIDE_INT)sizeof (buffer) - MAX (0, pd.offset),
 			pd.size + MIN (0, pd.offset)));
       else
 	{
@@ -1833,7 +1833,7 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
 	      pad = GET_MODE_SIZE (mode) - pd.size;
 	    }
 	  len = native_encode_expr (pd.rhs, buffer + MAX (0, pd.offset),
-				    sizeof (buffer - MAX (0, pd.offset)),
+				    sizeof (buffer) - MAX (0, pd.offset),
 				    MAX (0, -pd.offset) + pad);
 	  if (len <= 0 || len < (pd.size - MAX (0, -pd.offset)))
 	    {
