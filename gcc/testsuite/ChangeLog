@@ -2,6 +2,7 @@
 
 	PR tree-optimization/91183
 	PR tree-optimization/86688
+	* gcc.dg/Wstringop-overflow-14.c: Disable for stricly aligned targets.
 	* gcc.dg/strlenopt-70.c: Fix bugs.
 	* gcc.dg/strlenopt-71.c: Same.
 	* gcc.dg/strlenopt-72.c: Same.

@@ -2,7 +2,7 @@
    types than char are diagnosed.
    { dg-do compile }
    { dg-require-effective-target int32plus }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall -Wno-array-bounds" } */
 
 typedef __INT16_TYPE__  int16_t;
 typedef __INT32_TYPE__  int32_t;
@@ -21,6 +21,13 @@ void test_memcpy_cond (int i)
 {
   char *p = a4 + 1;
   const char *q = i ? s4 : t4;
+  // On strictly aligned target the call below is left unchanged and
+  // triggers (inaccurately) a -Warray-bounds.  The test suppresses
+  // the warning above, which then lets -Wstringop-overrflow detect
+  // the overflow just before expansion.
+  // On other targets it's transformed into a store of a 4-byte integer
+  // which is detected by -Wstringop-overrflow in the strlen pass (i.e.,
+  // before it gets to expansion).
   memcpy (p, q, 4);         // { dg-warning "writing 4 bytes into a region of size 3" }
 }
 
