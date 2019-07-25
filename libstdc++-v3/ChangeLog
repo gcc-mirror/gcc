@@ -1,3 +1,10 @@
+2019-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bit (endian): Move definition here as per P1612R1.
+	* include/std/type_traits (endian): Remove definition from here.
+	* testsuite/20_util/endian/1.cc: Rename to ...
+	* testsuite/26_numerics/endian/1.cc: ... here. Adjust header.
+
 2019-07-25  Martin Liska  <mliska@suse.cz>
 	    Dominik Infuhr  <dominik.infuehr@theobroma-systems.com>
 

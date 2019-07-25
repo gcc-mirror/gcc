@@ -315,6 +315,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     log2p1(_Tp __x) noexcept
     { return std::__log2p1(__x); }
 
+  /// Byte order
+  enum class endian
+  {
+    little = __ORDER_LITTLE_ENDIAN__,
+    big    = __ORDER_BIG_ENDIAN__,
+    native = __BYTE_ORDER__
+  };
 #endif // C++2a
 
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -18,7 +18,7 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do compile { target c++2a } }
 
-#include <type_traits>
+#include <bit>
 
 static_assert( std::is_enum_v<std::endian> );
 static_assert( std::endian::little != std::endian::big );
