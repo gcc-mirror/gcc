@@ -5,7 +5,12 @@
    unaligned stores and where GCC lowers multi-character stores into smaller
    numbers of wider stores.
    { dg-do compile }
-   { dg-options "-O2 -fdump-tree-optimized" }  */
+   { dg-options "-O2 -fdump-tree-optimized" }
+   On strictly aligned targets the consecutive char assignments used
+   by the test aren't merged.  When they involve multiple trailing nuls
+   these assignments then defeat the strlen optimization as a result of
+   pr83821.  When the bug is resolved the directive below can be removed.
+   { dg-require-effective-target non_strict_align } */
 
 #include "strlenopt.h"
 
