@@ -3981,16 +3981,16 @@
 )
 
 (define_code_iterator SAT [smin smax])
-(define_code_iterator SATrev [smin smax])
+(define_code_attr SATrev [(smin "smax") (smax "smin")])
 (define_code_attr SATlo [(smin "1") (smax "2")])
 (define_code_attr SAThi [(smin "2") (smax "1")])
 
 (define_insn "*satsi_<SAT:code>"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-        (SAT:SI (SATrev:SI (match_operand:SI 3 "s_register_operand" "r")
+        (SAT:SI (<SATrev>:SI (match_operand:SI 3 "s_register_operand" "r")
                            (match_operand:SI 1 "const_int_operand" "i"))
                 (match_operand:SI 2 "const_int_operand" "i")))]
-  "TARGET_32BIT && arm_arch6 && <SAT:CODE> != <SATrev:CODE>
+  "TARGET_32BIT && arm_arch6
    && arm_sat_operator_match (operands[<SAT:SATlo>], operands[<SAT:SAThi>], NULL, NULL)"
 {
   int mask;
@@ -4011,12 +4011,12 @@
 
 (define_insn "*satsi_<SAT:code>_shift"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-        (SAT:SI (SATrev:SI (match_operator:SI 3 "sat_shift_operator"
+        (SAT:SI (<SATrev>:SI (match_operator:SI 3 "sat_shift_operator"
                              [(match_operand:SI 4 "s_register_operand" "r")
                               (match_operand:SI 5 "const_int_operand" "i")])
                            (match_operand:SI 1 "const_int_operand" "i"))
                 (match_operand:SI 2 "const_int_operand" "i")))]
-  "TARGET_32BIT && arm_arch6 && <SAT:CODE> != <SATrev:CODE>
+  "TARGET_32BIT && arm_arch6
    && arm_sat_operator_match (operands[<SAT:SATlo>], operands[<SAT:SAThi>], NULL, NULL)"
 {
   int mask;
