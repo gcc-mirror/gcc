@@ -2695,6 +2695,18 @@ gimple_builtin_call_types_compatible_p (const gimple *stmt, tree fndecl)
   return true;
 }
 
+/* Return true when STMT is operator delete call.  */
+
+bool
+gimple_call_operator_delete_p (const gcall *stmt)
+{
+  tree fndecl;
+
+  if ((fndecl = gimple_call_fndecl (stmt)) != NULL_TREE)
+    return DECL_IS_OPERATOR_DELETE_P (fndecl);
+  return false;
+}
+
 /* Return true when STMT is builtins call.  */
 
 bool

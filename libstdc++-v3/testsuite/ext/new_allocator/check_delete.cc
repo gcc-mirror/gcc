@@ -17,6 +17,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-fno-allocation-dce" }
+
 // 20.4.1.1 allocator members
 
 #include <cstdlib>

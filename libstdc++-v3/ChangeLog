@@ -1,3 +1,13 @@
+2019-07-25  Martin Liska  <mliska@suse.cz>
+	    Dominik Infuhr  <dominik.infuehr@theobroma-systems.com>
+
+	PR c++/23383
+	* testsuite/ext/bitmap_allocator/check_delete.cc: Add
+	-fno-allocation-dce.
+	* testsuite/ext/bitmap_allocator/check_new.cc: Likewise.
+	* testsuite/ext/new_allocator/check_delete.cc: Likewise.
+	* testsuite/ext/new_allocator/check_new.cc: Likewise.
+
 2019-07-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/26_numerics/bit/bitops.count/*: Rename to ...
