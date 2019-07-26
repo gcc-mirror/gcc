@@ -6162,6 +6162,11 @@ memories.  A return value of NULL indicates that the target does not
 handle this VAR_DECL, and normal RTL expanding is resumed.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_GOACC_EXPLODE_ARGS (void)
+Define this hook to TRUE if arguments to offload regions should be
+exploded, i.e. passed as true arguments rather than in an argument array.
+@end deftypefn
+
 @node Anchored Addresses
 @section Anchored Addresses
 @cindex anchored addresses

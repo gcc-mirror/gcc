@@ -362,8 +362,6 @@ extern void GOMP_teams_reg (void (*) (void *), void *, unsigned, unsigned,
 
 extern void GOACC_parallel_keyed (int, void (*) (void *), size_t,
 				  void **, size_t *, unsigned short *, ...);
-extern void GOACC_parallel_keyed_v2 (int, int, void (*) (void *), size_t,
-				  void **, size_t *, unsigned short *, ...);
 extern void GOACC_parallel (int, void (*) (void *), size_t, void **, size_t *,
 			    unsigned short *, int, int, int, int, int, ...);
 extern void GOACC_data_start (int, size_t, void **, size_t *,

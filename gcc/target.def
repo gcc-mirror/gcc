@@ -1729,6 +1729,13 @@ handle this VAR_DECL, and normal RTL expanding is resumed.",
 rtx, (tree var),
 NULL)
 
+DEFHOOK
+(explode_args,
+"Define this hook to TRUE if arguments to offload regions should be\n\
+exploded, i.e. passed as true arguments rather than in an argument array.",
+bool, (void),
+hook_bool_void_false)
+
 HOOK_VECTOR_END (goacc)
 
 /* Functions relating to vectorization.  */

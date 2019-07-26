@@ -51206,6 +51206,35 @@ ix86_push_rounding (poly_int64 bytes)
   return ROUND_UP (bytes, UNITS_PER_WORD);
 }
 
+/* Return TRUE if offloaded OpenACC target-code regions should have their
+   parameters passed as separate function arguments, rather than in an array.
+   This can be a performance win on some (NVidia) GPUs.  */
+
+bool
+ix86_goacc_explode_args (void)
+{
+#ifdef OFFLOAD_TARGETS
+  const char *offload_targets = OFFLOAD_TARGETS;
+  if (strstr (offload_targets, "nvptx"))
+    {
+      if (strchr (offload_targets, ','))
+	{
+	  static bool warned_ptx_args = false;
+	  if (!warned_ptx_args)
+	    {
+	      warning (0, "NVidia PTX parameter-passing optimization disabled "
+		       "with multiple offload targets");
+	      warned_ptx_args = true;
+	    }
+	  return false;
+	}
+      return true;
+    }
+
+#endif
+  return false;
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
@@ -51980,6 +52009,9 @@ ix86_run_selftests (void)
 #undef TARGET_GET_MULTILIB_ABI_NAME
 #define TARGET_GET_MULTILIB_ABI_NAME \
   ix86_get_multilib_abi_name
+
+#undef TARGET_GOACC_EXPLODE_ARGS
+#define TARGET_GOACC_EXPLODE_ARGS ix86_goacc_explode_args
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

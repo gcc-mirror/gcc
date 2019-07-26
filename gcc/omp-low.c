@@ -562,7 +562,7 @@ build_receiver_ref (tree var, bool by_ref, omp_context *ctx)
 {
   tree x, field = lookup_field (var, ctx);
 
-  if (is_oacc_parallel_or_serial (ctx))
+  if (is_oacc_parallel_or_serial (ctx) && targetm.goacc.explode_args ())
     x = lookup_parm (var, ctx);
   else
     {
@@ -716,7 +716,7 @@ build_sender_ref (tree var, omp_context *ctx)
 static void
 install_parm_decl (tree var, tree type, omp_context *ctx)
 {
-  if (!is_oacc_parallel_or_serial (ctx))
+  if (!is_oacc_parallel_or_serial (ctx) || !targetm.goacc.explode_args ())
     return;
 
   splay_tree_key key = (splay_tree_key) var;
@@ -1932,7 +1932,7 @@ create_omp_child_function (omp_context *ctx, bool task_copy,
   if (task_copy)
     type = build_function_type_list (void_type_node, ptr_type_node,
 				     ptr_type_node, NULL_TREE);
-  else if (is_oacc_parallel_or_serial (ctx))
+  else if (is_oacc_parallel_or_serial (ctx) && targetm.goacc.explode_args ())
     {
       tree *arg_types = (tree *) alloca (sizeof (tree) * map_cnt);
       for (unsigned int i = 0; i < map_cnt; i++)
@@ -2012,7 +2012,7 @@ create_omp_child_function (omp_context *ctx, bool task_copy,
   DECL_CONTEXT (t) = decl;
   DECL_RESULT (decl) = t;
 
-  if (!is_oacc_parallel_or_serial (ctx))
+  if (!is_oacc_parallel_or_serial (ctx) || !targetm.goacc.explode_args ())
     {
       tree data_name = get_identifier (".omp_data_i");
       t = build_decl (DECL_SOURCE_LOCATION (decl), PARM_DECL, data_name,
@@ -2947,7 +2947,7 @@ scan_omp_target (gomp_target *stmt, omp_context *outer_ctx)
   bool base_pointers_restrict = false;
   if (offloaded)
     {
-      if (!is_oacc_parallel_or_serial (ctx))
+      if (!is_oacc_parallel_or_serial (ctx) || !targetm.goacc.explode_args ())
 	{
 	  create_omp_child_function (ctx, false);
 	  gimple_omp_target_set_child_fn (stmt, ctx->cb.dst_fn);
@@ -9826,6 +9826,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   location_t loc = gimple_location (stmt);
   bool offloaded, data_region;
   unsigned int map_cnt = 0, init_cnt = 0;
+  bool oacc_explode_args = targetm.goacc.explode_args ();
 
   offloaded = is_gimple_omp_offloaded (stmt);
   switch (gimple_omp_target_kind (stmt))
@@ -9883,7 +9884,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   /* Determine init_cnt to finish initialize ctx.  */
 
-  if (is_oacc_parallel_or_serial (ctx))
+  if (is_oacc_parallel_or_serial (ctx) && oacc_explode_args)
     {
       for (c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
 	switch (OMP_CLAUSE_CODE (c))
@@ -10215,7 +10216,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   if (offloaded)
     {
-      if (is_oacc_parallel_or_serial (ctx))
+      if (is_oacc_parallel_or_serial (ctx) && oacc_explode_args)
 	gcc_assert (init_cnt == map_cnt);
       target_nesting_level++;
       lower_omp (&tgt_body, ctx);
@@ -10459,7 +10460,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    if (s == NULL_TREE && is_gimple_omp_oacc (ctx->stmt))
 	      s = integer_one_node;
 	    s = fold_convert (size_type_node, s);
-	    decl_args = append_decl_arg (ovar, decl_args, ctx);
+	    if (oacc_explode_args)
+	      decl_args = append_decl_arg (ovar, decl_args, ctx);
 	    purpose = size_int (map_idx++);
 	    CONSTRUCTOR_APPEND_ELT (vsize, purpose, s);
 	    if (TREE_CODE (s) != INTEGER_CST)
@@ -10601,7 +10603,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    else
 	      s = TYPE_SIZE_UNIT (TREE_TYPE (ovar));
 	    s = fold_convert (size_type_node, s);
-	    decl_args = append_decl_arg (ovar, decl_args, ctx);
+	    if (oacc_explode_args)
+	      decl_args = append_decl_arg (ovar, decl_args, ctx);
 	    purpose = size_int (map_idx++);
 	    CONSTRUCTOR_APPEND_ELT (vsize, purpose, s);
 	    if (TREE_CODE (s) != INTEGER_CST)
@@ -10674,7 +10677,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 				       gimple_build_label (opt_arg_label));
 	      }
 	    s = size_int (0);
-	    decl_args = append_decl_arg (ovar, decl_args, ctx);
+	    if (oacc_explode_args)
+	      decl_args = append_decl_arg (ovar, decl_args, ctx);
 	    purpose = size_int (map_idx++);
 	    CONSTRUCTOR_APPEND_ELT (vsize, purpose, s);
 	    gcc_checking_assert (tkind
@@ -10687,7 +10691,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  }
 
       gcc_assert (map_idx == map_cnt);
-      if (is_oacc_parallel_or_serial (ctx))
+      if (is_oacc_parallel_or_serial (ctx) && oacc_explode_args)
 	DECL_ARGUMENTS (child_fn) = nreverse (decl_args);
 
       DECL_INITIAL (TREE_VEC_ELT (t, 1))
@@ -10727,7 +10731,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     {
       t = build_fold_addr_expr_loc (loc, ctx->sender_decl);
       /* fixup_child_record_type might have changed receiver_decl's type.  */
-      if (!is_oacc_parallel_or_serial (ctx))
+      if (!is_oacc_parallel_or_serial (ctx) || !oacc_explode_args)
 	{
 	  t = fold_convert_loc (loc, TREE_TYPE (ctx->receiver_decl), t);
 	  gimple_seq_add_stmt (&new_body,

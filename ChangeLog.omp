@@ -1,3 +1,9 @@
+2019-07-31  Julian Brown  <julian@codesourcery.com>
+
+	* configure.ac (amdgcn*-*-*): Add target-libffi to noconfigdirs for AMD
+	GCN.
+	* configure: Regenerated.
+
 2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* Makefile.def (lang_env_dependencies): Disable `cxx' dependency

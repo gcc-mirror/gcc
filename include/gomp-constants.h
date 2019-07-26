@@ -293,6 +293,7 @@ enum gomp_map_kind
 #define GOMP_LAUNCH_DIM		1  /* Launch dimensions, op = mask */
 #define GOMP_LAUNCH_ASYNC	2  /* Async, op = cst val if not MAX  */
 #define GOMP_LAUNCH_WAIT	3  /* Waits, op = num waits.  */
+#define GOMP_LAUNCH_ARGS_EXPLODED 4 /* Exploded args, op ignored.  */
 #define GOMP_LAUNCH_CODE_SHIFT	28
 #define GOMP_LAUNCH_DEVICE_SHIFT 16
 #define GOMP_LAUNCH_OP_SHIFT 0
