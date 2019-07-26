@@ -460,15 +460,23 @@ proc object-size { args } {
     set text [lindex $output 1]
     set lines [split $text "\n"]
 
+    set l0match {^\s*text\s+data\s+bss\s+dec\s+hex\s+filename\s*$}
+    set l1match {^\s*\d+\s+\d+\s+\d+\s+\d+\s+[\da-fA-F]+\s+}
+
+    if { [istarget *-*-darwin*] } {
+      set l0match {^\s*__TEXT\s+__DATA\s+__OBJC\s+others\s+dec\s+hex\s*$}
+      set l1match {^\s*\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+[\da-fA-F]+\s+}
+    }
+
     set line0 [lindex $lines 0]
-    if ![regexp {^\s*text\s+data\s+bss\s+dec\s+hex\s+filename\s*$} $line0] {
+    if ![regexp $l0match $line0] {
         verbose -log "$testcase object-size: $size did not produce expected first line: $line0"
         unresolved "$testcase object-size $what $cmp $with"
         return
     }
 
     set line1 [lindex $lines 1]
-    if ![regexp {^\s*\d+\s+\d+\s+\d+\s+\d+\s+[\da-fA-F]+\s+} $line1] {
+    if ![regexp $l1match $line1] {
         verbose -log "$testcase object-size: $size did not produce expected second line: $line1"
         unresolved "$testcase object-size $what $cmp $with"
         return
