@@ -1,3 +1,21 @@
+2019-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2019-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/numeric (midpoint(T, T)): Avoid std::abs in constexpr
+	function.
+
+	Backport from mainline
+	2019-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/numeric (midpoint(T, T)): Change implementation for
+	floating-point types to avoid incorrect rounding of denormals.
+	* testsuite/26_numerics/midpoint/floating.cc: Add check for correct
+	rounding with denormals.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: Adjust dg-error line numbers.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: Likewise.
+
 2019-07-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/91067
