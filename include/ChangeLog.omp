@@ -1,3 +1,7 @@
+2019-07-31  Julian Brown  <julian@codesourcery.com>
+
+	* gomp-constants.h (GOMP_LAUNCH_ARGS_EXPLODED): Define.
+
 2020-04-19  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR other/76739

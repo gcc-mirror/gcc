@@ -796,6 +796,9 @@ case "${target}" in
   alpha*-*-*vms*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
+  amdgcn*-*-*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
   arm*-*-freebsd*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;

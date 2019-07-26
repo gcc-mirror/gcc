@@ -1,3 +1,29 @@
+2019-07-31  Julian Brown  <julian@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* builtin-types.def (BT_FN_VOID_INT_INT_OMPFN_SIZE_PTR_PTR_PTR_VAR):
+	Remove.
+	* config/i386/i386.c (ix86_goacc_explode_args): New.
+	(TARGET_GOACC_EXPLODE_ARGS): Define, using above function.
+	* doc/tm.texi: Regenerated.
+	* doc/tm.texi.in: Add TARGET_GOACC_EXPLODE_ARGS hook.
+	* fortran/types.def (BT_FN_VOID_INT_INT_OMPFN_SIZE_PTR_PTR_PTR_VAR):
+	Remove.
+	* omp-builtins.def (GOACC_parallel_keyed_v2): Remove.
+	* omp-expand.c (expand_omp_target): Use explode_args target hook.
+	Use GOMP_LAUNCH_ARGS_EXPLODED launch tag.  Handle exploded args for
+	serial target kinds.
+	* omp-low.c (build_receiver_ref, build_sender_ref,
+	create_omp_child_function, scan_omp_target, lower_omp_target): Use
+	explode_args target hook.
+	* target.def (explode_args): New target hook.
+	* tree-ssa-structalias.c (target.h): Include.
+	(find_func_aliases_for_builtin_call): Conditionalise disabling of pass
+	for OpenACC parallel regions based on explode_args target hook.  Remove
+	'params' from BUILT_IN_GOACC_PARALLEL arguments.
+	(find_func_clobbers): Likewise.
+	(ipa_pta_execute): Update for removed 'params' argument.
+
 2019-07-10  Cesar Philippidis  <cesar@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 

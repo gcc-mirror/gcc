@@ -1,3 +1,12 @@
+2019-07-31  Julian Brown  <julian@codesourcery.com>
+
+	* libgomp.map (GOMP_2.0.GOMP_4_BRANCH): Remove GOACC_parallel_keyed_v2.
+	* libgomp_g.h (GOACC_parallel_keyed_v2): Remove prototype.
+	* oacc-parallel.c (GOACC_parallel_keyed_internal): Rename to...
+	(GOACC_parallel_keyed): ...this.  Handle GOMP_LAUNCH_ARGS_EXPLODED
+	launch tag.  Remove previous wrapper functions.
+	(GOACC_parallel_keyed_v2): Remove.
+
 2019-01-23  Thomas Schwinge <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c: Update.

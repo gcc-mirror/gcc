@@ -43,6 +43,8 @@
 #include "attribs.h"
 #include "tree-ssa.h"
 #include "tree-cfg.h"
+#include "target.h"
+#include "gomp-constants.h"
 
 /* The idea behind this analyzer is to generate set constraints from the
    program, then solve the resulting constraints in order to generate the
@@ -4779,10 +4781,10 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
       case BUILT_IN_GOMP_PARALLEL:
       case BUILT_IN_GOACC_PARALLEL:
 	{
-	  bool oacc_parallel = false;
 	  if (in_ipa_mode)
 	    {
 	      unsigned int fnpos, argpos;
+	      bool oacc_exploded_parallel = false;
 	      switch (DECL_FUNCTION_CODE (fndecl))
 		{
 		case BUILT_IN_GOMP_PARALLEL:
@@ -4793,16 +4795,28 @@ find_func_aliases_for_builtin_call (struct function *fn, gcall *t)
 		case BUILT_IN_GOACC_PARALLEL:
 		  /* __builtin_GOACC_parallel (flags_m, fn, mapnum, hostaddrs,
 					       sizes, kinds, ...).  */
-		  fnpos = 2;
-		  argpos = 4;
-		  oacc_parallel = gimple_call_arg (t, 1) == integer_one_node;
+		  fnpos = 1;
+		  argpos = 3;
+		  if (targetm.goacc.explode_args ())
+		    for (int i = 6; i < gimple_call_num_args (t); i++)
+		      {
+		        tree arg = gimple_call_arg (t, i);
+			if (TREE_CODE (arg) == INTEGER_CST
+			    && (tree_to_shwi (arg)
+				== GOMP_LAUNCH_PACK (GOMP_LAUNCH_ARGS_EXPLODED,
+						     0, 0)))
+			  {
+			    oacc_exploded_parallel = true;
+			    break;
+			  }
+		      }
 		  break;
 		default:
 		  gcc_unreachable ();
 		}
 
-	      if (oacc_parallel)
-		break;
+	      if (oacc_exploded_parallel)
+	        break;
 
 	      tree fnarg = gimple_call_arg (t, fnpos);
 	      gcc_assert (TREE_CODE (fnarg) == ADDR_EXPR);
@@ -5367,7 +5381,7 @@ find_func_clobbers (struct function *fn, gimple *origt)
 	      unsigned int fnpos, argpos;
 	      unsigned int implicit_use_args[2];
 	      unsigned int num_implicit_use_args = 0;
-	      bool oacc_parallel = false;
+	      bool oacc_exploded_parallel = false;
 	      switch (DECL_FUNCTION_CODE (decl))
 		{
 		case BUILT_IN_GOMP_PARALLEL:
@@ -5378,17 +5392,29 @@ find_func_clobbers (struct function *fn, gimple *origt)
 		case BUILT_IN_GOACC_PARALLEL:
 		  /* __builtin_GOACC_parallel (flags_m, fn, mapnum, hostaddrs,
 					       sizes, kinds, ...).  */
-		  fnpos = 2;
-		  argpos = 4;
+		  fnpos = 1;
+		  argpos = 3;
+		  implicit_use_args[num_implicit_use_args++] = 4;
 		  implicit_use_args[num_implicit_use_args++] = 5;
-		  implicit_use_args[num_implicit_use_args++] = 6;
-		  oacc_parallel = gimple_call_arg (t, 1) == integer_one_node;
+		  if (targetm.goacc.explode_args ())
+		    for (int i = 6; i < gimple_call_num_args (t); i++)
+		      {
+		        tree arg = gimple_call_arg (t, i);
+			if (TREE_CODE (arg) == INTEGER_CST
+			    && (tree_to_shwi (arg)
+				== GOMP_LAUNCH_PACK (GOMP_LAUNCH_ARGS_EXPLODED,
+						     0, 0)))
+			  {
+			    oacc_exploded_parallel = true;
+			    break;
+			  }
+		      }
 		  break;
 		default:
 		  gcc_unreachable ();
 		}
 
-	      if (oacc_parallel)
+	      if (oacc_exploded_parallel)
 		break;
 
 	      tree fnarg = gimple_call_arg (t, fnpos);
@@ -8390,7 +8416,7 @@ ipa_pta_execute (void)
 		if (gimple_call_builtin_p (stmt, BUILT_IN_GOMP_PARALLEL))
 		  called_decl = TREE_OPERAND (gimple_call_arg (stmt, 0), 0);
 		else if (gimple_call_builtin_p (stmt, BUILT_IN_GOACC_PARALLEL))
-		  called_decl = TREE_OPERAND (gimple_call_arg (stmt, 2), 0);
+		  called_decl = TREE_OPERAND (gimple_call_arg (stmt, 1), 0);
 
 		if (called_decl != NULL_TREE
 		    && !fndecl_maybe_in_other_partition (called_decl))
