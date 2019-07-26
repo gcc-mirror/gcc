@@ -1,5 +1,5 @@
 /* PR ipa/88561 */
-/* { dg-options "-O3 -fdump-tree-tracer-details -fdump-tree-dom3-details" } */
+/* { dg-options "-O3 -fdump-tree-tracer-details -fdump-tree-dom3-details -fno-profile-values" } */
 
 struct nsISupports
 {

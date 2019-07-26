@@ -1,3 +1,9 @@
+2019-07-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/89330
+	* g++.dg/lto/pr89330_[01].C: New test.
+	* g++.dg/tree-prof/devirt.C: Added -fno-profile-values to dg-options.
+
 2019-07-25  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/91183

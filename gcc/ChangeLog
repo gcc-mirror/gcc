@@ -1,3 +1,16 @@
+2019-07-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/89330
+	* ipa-inline-transform.c (check_speculations_1): New function.
+	(push_all_edges_in_set_to_vec): Likewise.
+	(check_speculations): Use check_speculations_1, new parameter
+	new_edges.
+	(inline_call): Pass new_edges to check_speculations.
+	* ipa-inline.c (add_new_edges_to_heap): Assert edge_callee is not
+	NULL.
+	(speculation_useful_p): Early return true if edge is inlined, remove
+	later checks for inline_failed.
+
 2019-07-25  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/91223
