@@ -1,3 +1,8 @@
+2019-07-26  Tamar Christina  <tamar.christina@arm.com>
+
+	* convert.c (convert_to_real_1): Move part of conversion code...
+	* match.pd: ...To here.
+
 2019-07-26  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/89330
