@@ -1,3 +1,9 @@
+2019-07-26  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/util/testsuite_iterators.h
+	(bidirectional_iterator_wrapper): Fix type comment.
+	(random_access_iterator_wrapper): Likewise.
+
 2019-07-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/bit (endian): Move definition here as per P1612R1.
