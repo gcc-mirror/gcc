@@ -344,7 +344,7 @@ namespace __gnu_test
    * @brief bidirectional_iterator wrapper for pointer
    *
    * This class takes a pointer and wraps it to provide exactly
-   * the requirements of a forward_iterator. It should not be
+   * the requirements of a bidirectional_iterator. It should not be
    * instantiated directly, but generated from a test_container
    */
   template<class T>
@@ -408,7 +408,7 @@ namespace __gnu_test
    * @brief random_access_iterator wrapper for pointer
    *
    * This class takes a pointer and wraps it to provide exactly
-   * the requirements of a forward_iterator. It should not be
+   * the requirements of a random_access_iterator. It should not be
    * instantiated directly, but generated from a test_container
    */
   template<class T>
