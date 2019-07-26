@@ -86,19 +86,6 @@ static_assert( test( X{} ).did_not_match() );
 enum E : unsigned { e };
 static_assert( test( e ).did_not_match() );
 
-#ifndef __STRICT_ANSI__
-#include <cstddef>
-static_assert( std::rotl(std::byte{0}, 4) == std::byte{0} );
-static_assert( std::rotl(std::byte{0x01}, 4) == std::byte{0x10} );
-static_assert( std::rotl(std::byte{0x02}, 3) == std::byte{0x10} );
-static_assert( std::rotl(std::byte{0x03}, 2) == std::byte{0x0c} );
-static_assert( std::rotl(std::byte{0x30}, 2) == std::byte{0xc0} );
-static_assert( std::rotl(std::byte{0x40}, 1) == std::byte{0x80} );
-static_assert( std::rotl(std::byte{0x41}, 9) == std::byte{0x82} );
-#else
-static_assert( test( (std::byte)0 ).did_not_match() );
-#endif
-
 #if !defined(__STRICT_ANSI__) && defined _GLIBCXX_USE_INT128
 static_assert( test( (unsigned __int128)0 ) );
 static_assert( test( (__int128)0 ).did_not_match() );
@@ -115,3 +102,6 @@ static_assert( test( (__GLIBCXX_TYPE_INT_N_1)0 ).did_not_match() );
 static_assert( test( (unsigned __GLIBCXX_TYPE_INT_N_2)0 ) );
 static_assert( test( (__GLIBCXX_TYPE_INT_N_2)0 ).did_not_match() );
 #endif
+
+#include <cstddef>
+static_assert( test( (std::byte)0 ).did_not_match() );
