@@ -1,4 +1,8 @@
-2018-07-24  Tamar Christina  <tamar.christina@arm.com>
+2019-07-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/scanasm.exp (object-size): Handle Darwin's size command.
+
+2018-07-26  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.dg/type-convert-var.c: New test.
 
