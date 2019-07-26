@@ -1,5 +1,27 @@
 2019-07-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	Backport from mainline (partial)
+	2019-06-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bit (rotl(byte, unsigned), rotr(byte, unsigned))
+	(countl_zero(byte), countl_one(byte), countr_zero(byte))
+	(countr_one(byte), popcount(byte), ispow2(byte), ceil2(byte))
+	(floor2(byte), log2p1(byte)): Remove.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2.cc: Remove test for
+	std::byte overload.
+	* testsuite/26_numerics/bit/bit.pow.two/floor2.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/ispow2.cc: Likewise.
+	* testsuite/26_numerics/bit/bit.pow.two/log2p1.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.count/countl_one.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.count/countl_zero.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.count/countr_one.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.count/countr_zero.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.count/popcount.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.rot/rotl.cc: Likewise.
+	* testsuite/26_numerics/bit/bitops.rot/rotr.cc: Likewise.
+	
+2019-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
 	Backport from mainline
 	2019-07-16  Jason Merrill  <jason@redhat.com>
 
