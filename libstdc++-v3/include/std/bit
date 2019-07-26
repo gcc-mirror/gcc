@@ -315,6 +315,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     log2p1(_Tp __x) noexcept
     { return std::__log2p1(__x); }
 
+#define __cpp_lib_endian 201907L
+
   /// Byte order
   enum class endian
   {

@@ -1,3 +1,11 @@
+2019-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bit (__cpp_lib_endian): Define.
+	* include/std/version (__cpp_lib_endian): Define.
+	* testsuite/26_numerics/endian/2.cc: New.
+	* testsuite/26_numerics/endian/3.cc: New.
+	* testsuite/26_numerics/endian/4.cc: New.
+
 2019-07-26  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/util/testsuite_iterators.h
