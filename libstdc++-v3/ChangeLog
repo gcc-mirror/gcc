@@ -1,6 +1,14 @@
 2019-07-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-07-16  Jason Merrill  <jason@redhat.com>
+
+	* include/std/memory (uses_allocator_construction_args): Add parens
+	around constraint.
+
+2019-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2019-07-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/c++config (_GLIBCXX_HAVE_BUILTIN_LAUNDER)
