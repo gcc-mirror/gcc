@@ -1,3 +1,7 @@
+2018-07-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/type-convert-var.c: New test.
+
 2019-07-26  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/89330
