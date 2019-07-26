@@ -1,6 +1,14 @@
 2019-07-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-06-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Fix outdated reference to
+	C++17 working draft.
+
+2019-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2019-06-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/numeric (midpoint(T, T)): Avoid std::abs in constexpr
