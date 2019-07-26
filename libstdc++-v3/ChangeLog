@@ -1,5 +1,19 @@
 2019-07-26  Jonathan Wakely  <jwakely@redhat.com>
 
+	Backport from mainline
+	2019-07-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bit (__ceil2): Make unrepresentable results undefined,
+	as per P1355R2. Add debug assertion. Perform one left shift, not two,
+	so that out of range values cause undefined behaviour. Ensure that
+	shift will still be undefined if left operand is promoted.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2.cc: Replace checks for
+	unrepresentable values with checks that they are not core constant
+	expressions.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2_neg.cc: New test.
+
+2019-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
 	Backport from mainline (partial)
 	2019-06-26  Jonathan Wakely  <jwakely@redhat.com>
 
