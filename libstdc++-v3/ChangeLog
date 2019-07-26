@@ -1,6 +1,15 @@
 2019-07-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-07-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_HAVE_BUILTIN_LAUNDER)
+	(_GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED): Use __has_builtin
+	instead of __is_identifier to detect Clang support.
+
+2019-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2019-05-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Add feature test macro for
