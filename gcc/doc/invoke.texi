@@ -30142,59 +30142,53 @@ not get debugging information for routines in the precompiled header.
 @cindex C++ Modules
 @cindex Speed of Compilation
 
-C++ Modules are an experimental feature, providing a modular system
-for C++, replacing header file technology.  There were two module
-schemes, which overlap to some extent:
-
-@itemize
-
-@item n4720
-``Working Draft, Extensions to C++ for Modules'', aka the TS,
-@uref{http://wg21.link/n4720}
-
-@item p0947
-``Another Take On Modules'', aka the ATOM proposal,
-@uref{http://wg21.link/p0947}
-
-@end itemize
-
-These are now combined into ``Merging Modules''
-@uref{http//wg21.link/p1103}, which I am following.  Use the
-@option{-fmodules-ts} option to enable.  @emph{Modules support is a
+Modules are a new C++ language feature coming in C++2a.  As the name
+suggests, it provides a modular compilation system, intending to
+provide both faster builds and better library isolation.  The
+``Merging Modules'' paper @uref{http//wg21.link/p1103}, provides the
+easiest to read set of changes to the standard, although it does not
+capture later changes.  That specification is now in the C++ Working
+Draft, @uref{git@@github.com:cplusplus/draft.git}, but this has not
+completed the final comments and voting.  @emph{Modules support is a
 work in progress.  The implementation is not complete, and the
-specification is a moving target.  Syntax, semantics and command-line
-options are not stable.}
+specification is still a moving target.  Syntax, semantics and
+command-line options are not stable.}
 
-A module interface unit creates a Compiled Module Interface (CMI) file,
-encoding the exported declarations of the module.  Importing a module
-reads in the CMI.  The dependency graph of imports is a Directed
-Acyclic Graph (DAG).
+Modular compilation is @emph{not} enabled with the @option{-std=c++2a}
+option.  You must explicitly enable it with the @option{-fmodules-ts}
+option to enable.
 
-A CMI filename may be a pathname containing subdirectories.  When
-creating an output CMI any missing directory components are created in
-a manner that is safe for concurrent builds creating multiple,
-different, CMIs within a common subdirectory graph.
+Compiling a module interface unit produces an additional output (to
+the assembly or object file), called a Compiled Module Interface
+(CMI).  This encods the exported declarations of the module.  Importing a
+module reads in the CMI.  The dependency graph of imports is a
+Directed Acyclic Graph (DAG).
+
+Header files may themselves be compiled to header units, which are a
+transitional ability aiming at faster compilation.  The
+@option{-fmodule-header} option is used to enable this, and implies
+the @option{-fmodules-ts} option.  These CMIs are named by the fully
+resolved underlying header file, and thus may be a complete pathname
+containing subdirectories.  If the header file is found at an absolute
+pathname, the CMI location is still relative to a CMI root directory.
+
+When creating an output CMI any missing directory components are
+created in a manner that is safe for concurrent builds creating
+multiple, different, CMIs within a common subdirectory graph.
 
 CMI contents are written to a temporary file, which is then atomically
 renamed.  Observers will either see old contents (if there is an
 existing file), or complete new contents.  They will not observe the
-CMI during its creation.
+CMI during its creation.  This is unlike object file creation, which
+may be observed externally.
 
-As this is not a standard part of C++, you need to use the
-@option{-fmodules-ts} option to enable it.
+CMIs are read in lazily.  Generally blocks are read when name lookup
+or template instantiation occurs.  To inhibit this, the
+@option{-fno-module-lazy} option may be used.
 
-The @option{-fmodule-header} family of options enable compilation of a
-header as a header unit module.  Using this option implies
-@option{-fmodules-ts}.
-
-The @option{-fno-module-lazy} option disables lazy module loading.
-Usually importing a module will load minimal information, deferring
-the bulk of the loading to the point at which name lookup inspects a
-particular namespace-scope name.
-
-The @option{-fmodule-only} option disables generation of the associated
-object file for compiling a module interface.  Only the binary module
-interface is generated.  This option is implied when using the
+The @option{-fmodule-only} option disables generation of the
+associated object file for compiling a module interface.  Only the CMI
+is generated.  This option is implied when using the
 @option{-fmodule-header} option.
 
 The @option{--param lazy-modules=@var{n}} parameter controls the limit
@@ -30203,11 +30197,14 @@ Should more modules be imported, an LRU algorithm is used to determine
 which files to close -- until that file is needed again.  This limit
 may be exceeded with deep module dependency hierarchies.  With large
 code bases there may be more imports than the process limit of file
-descriptors.  By default, the limit is 20 less than the per-process
-file descriptor hard limit, if that is determinable.
+descriptors.  By default, the limit is a few less than the per-process
+file descriptor hard limit, if that is determinable.@footnote{Where
+applicable the soft limit is incremented as needed towards the hard limit.}
 
-The @option{-fforce-module-macros} option loads all of a header unit's
-macros.  Normally they are lazily loaded on use.
+The @option{-fforce-module-macros} option causes all imported macros
+to be resolved at the end of compilation.  Without this, imported
+macros are only resolved when expanded or (re)defined.  This option
+will detect conflicting import definitions for all macros.
 
 The @option{-fmodule-mapper} family of options are described below.
 
