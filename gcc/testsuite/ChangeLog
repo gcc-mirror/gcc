@@ -1,3 +1,8 @@
+2019-07-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/powerpc/bmi2-bzhi64-1a.c: Add options to enable altivec
+	and vsx.
+
 2019-07-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* lib/scanasm.exp (object-size): Handle Darwin's size command.
