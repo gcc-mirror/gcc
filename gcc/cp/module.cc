@@ -3820,13 +3820,15 @@ node_template_info (tree decl, int &use)
 	  else
 	    {
 	      /* An enum, where we don't explicitly encode use_tpl.
-		 If the containing type (there must be one), is an
-		 ({im,ex}plicit) instantiation, then this is too.  If
-		 it's a partial or explicit specialization, then this
-		 is not!.  */
-	      use_tpl = CLASSTYPE_USE_TEMPLATE (DECL_CONTEXT (decl));
-	      if (use_tpl == 2)
-		use_tpl = 0;
+		 If the containing context (a type or a function), is
+		 an ({im,ex}plicit) instantiation, then this is too.
+		 If it's a partial or explicit specialization, then
+		 this is not!.  */
+	      tree ctx = CP_DECL_CONTEXT (decl);
+	      if (TYPE_P (ctx))
+		ctx = TYPE_STUB_DECL (ctx);
+	      node_template_info (ctx, use);
+	      use_tpl = use != 2 ? use : 0;
 	    }
 	}
     }

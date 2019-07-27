@@ -1,3 +1,10 @@
+2019-07-28  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (node_template_info): Enums may be function-local.
+	gcc/testsuite/
+	* g++.dg/modules/enum-7.C: New.
+
 2019-07-27  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
