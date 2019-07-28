@@ -254,9 +254,6 @@
 %{mcpu=8540: %{!Dppc*: %{!Dmpc*: -Dppc8540}  } } \
 %{mcpu=e6500: -D__PPC_CPU_E6500__}"
 
-#undef	ASM_DEFAULT_SPEC
-#define	ASM_DEFAULT_SPEC "-mppc%{m64:64}"
-
 #undef	ASM_SPEC
 #define	ASM_SPEC "%{!m64:%(asm_spec32)}%{m64:%(asm_spec64)} %(asm_spec_common)"
 

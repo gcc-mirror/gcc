@@ -134,11 +134,9 @@ extern int dot_symbols;
     }								\
   while (0)
 
-#undef	ASM_DEFAULT_SPEC
 #undef	ASM_SPEC
 #undef	LINK_OS_FREEBSD_SPEC
 
-#define	ASM_DEFAULT_SPEC "-mppc%{!m32:64}"
 #define	ASM_SPEC	 "%{m32:%(asm_spec32)}%{!m32:%(asm_spec64)} %(asm_spec_common)"
 #define	LINK_OS_FREEBSD_SPEC "%{m32:%(link_os_freebsd_spec32)}%{!m32:%(link_os_freebsd_spec64)}"
 
