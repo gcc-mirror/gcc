@@ -1,5 +1,10 @@
 2019-07-28  Alan Modra  <amodra@gmail.com>
 
+	* gcc/config/rs6000/rs6000-call.c (rs6000_output_mi_thunk): Use
+	gen_sibcall.
+
+2019-07-28  Alan Modra  <amodra@gmail.com>
+
 	PR target/91135
 	* config/rs6000/linux.h (GNU_USER_TARGET_D_OS_VERSIONS): Don't
 	define.
