@@ -1,3 +1,18 @@
+2019-07-28  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/89330
+	* cgraph.c (symbol_table::create_edge): Always allocate
+	a cgraph_edge.
+	(symbol_table::free_edge): Store summary_id to
+	edge_released_summary_ids if != -1;
+	* cgraph.h (NEXT_FREE_NODE): Remove.
+	(SET_NEXT_FREE_NODE): Likewise.
+	(NEXT_FREE_EDGE): Likewise.
+	(symbol_table::release_symbol): Store summary_id to
+	cgraph_released_summary_ids if != -1;
+	(symbol_table::allocate_cgraph_symbol): Always allocate
+	a cgraph_node.
+
 2019-07-28  Alan Modra  <amodra@gmail.com>
 
 	* gcc/config/rs6000/rs6000-call.c (rs6000_output_mi_thunk): Use
