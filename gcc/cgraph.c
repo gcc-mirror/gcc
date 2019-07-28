@@ -846,17 +846,8 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
       gcc_assert (is_gimple_call (call_stmt));
     }
 
-  if (free_edges)
-    {
-      edge = free_edges;
-      free_edges = NEXT_FREE_EDGE (edge);
-    }
-  else
-    {
-      edge = ggc_alloc<cgraph_edge> ();
-      edge->m_summary_id = -1;
-    }
-
+  edge = ggc_alloc<cgraph_edge> ();
+  edge->m_summary_id = -1;
   edges_count++;
 
   gcc_assert (++edges_max_uid != 0);
@@ -1013,16 +1004,13 @@ cgraph_edge::remove_caller (void)
 void
 symbol_table::free_edge (cgraph_edge *e)
 {
+  edges_count--;
+  if (e->m_summary_id != -1)
+    edge_released_summary_ids.safe_push (e->m_summary_id);
+
   if (e->indirect_info)
     ggc_free (e->indirect_info);
-
-  /* Clear out the edge so we do not dangle pointers.  */
-  int summary_id = e->m_summary_id;
-  memset (e, 0, sizeof (*e));
-  e->m_summary_id = summary_id;
-  NEXT_FREE_EDGE (e) = free_edges;
-  free_edges = e;
-  edges_count--;
+  ggc_free (e);
 }
 
 /* Remove the edge in the cgraph.  */
