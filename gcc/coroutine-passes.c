@@ -575,10 +575,15 @@ execute_finalize_frame (void)
 	  {
 	  case IFN_CO_FRAME:
 	    {
-	    tree size = gimple_call_arg (stmt, 0);
-	    update_gimple_call (&gsi, builtin_decl_explicit (BUILT_IN_MALLOC), 1, size);
-	    changed = true;
+	      tree lhs = gimple_call_lhs (stmt);
+	      tree size = gimple_call_arg (stmt, 0);
+	      gassign *grpl = gimple_build_assign (lhs, size);
+	      gsi_replace (&gsi, grpl, true);
+	      //update_gimple_call (&gsi, builtin_decl_explicit (BUILT_IN_MALLOC), 1, size);
+	      changed = true;
 	    }
+	    //gsi_next (&gsi);
+	    break;
 	  default:
 	    gsi_next (&gsi);
 	    break;

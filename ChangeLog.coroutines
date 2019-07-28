@@ -1,5 +1,20 @@
 2019-07-28  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/
+	* coroutine-passes.c (execute_finalize_frame): Copy the first argument
+	for now.
+	* internal-fn.def (CO_FRAME): Mark as pure.
+
+	gcc/cp/
+	* coroutines.cc (morph_fn_to_coro): If the user has declared a method
+	to handle allocation failure, use a no-throw new and check its return
+	using the provided method if the return is NULL.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/gro_on_alloc_fail_0.C: New test.
+
+2019-07-28  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/testsuite/
 	* g++.dg/coroutines/torture/coro-torture.exp: Default to c++17.
 

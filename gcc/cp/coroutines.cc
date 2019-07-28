@@ -2367,46 +2367,86 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree r = build_stmt (fn_start, DECL_EXPR, coro_fp);
   add_stmt (r);
 
+  /* We are going to copy the behaviour of clang w.r.t to failed allocation
+     of the coroutine frame.
+     1. If the promise has a 'get_return_object_on_allocation_failure()'
+	method, then we use a nothrow new and check the return value, calling
+	the method on failure to initialise an early return.
+     2. Otherwise, we call new and the ramp is expected to terminate with an
+	unhandled exception in the case of failure to allocate.
+
+     The get_return_object_on_allocation_failure() must be a static method.
+  */
+  tree grooaf_meth =
+    lookup_promise_member (orig, "get_return_object_on_allocation_failure",
+			   fn_start, false /*musthave*/);
+
   /* Allocate the frame.  This is a place-holder which we might alter or lower
      in some special way after the full contents of the frame are known.  */
-  tree allocated
-    = build_call_expr_internal_loc (fn_start, IFN_CO_FRAME,
-				    build_pointer_type (void_type_node), 1,
-				    TYPE_SIZE_UNIT (coro_frame_type));
-  allocated = build1 (CONVERT_EXPR, coro_frame_ptr, allocated);
+  tree resizeable
+    = build_call_expr_internal_loc (fn_start, IFN_CO_FRAME, size_type_node, 2,
+				    TYPE_SIZE_UNIT (coro_frame_type), coro_fp);
+  tree grooaf = NULL_TREE;
+  tree new_fn = NULL_TREE;
+  tree nwname = ovl_op_identifier(false, NEW_EXPR);
+  tree fns = lookup_name_real(nwname, 0, 1, /*block_p=*/true, 0, 0);
+  vec<tree, va_gc>* arglist;
+  vec_alloc(arglist, 2);
+  arglist->quick_push (resizeable);
+  if (grooaf_meth && BASELINK_P (grooaf_meth))
+    {
+      tree fn = BASELINK_FUNCTIONS (grooaf_meth);
+      if (TREE_CODE (fn) == FUNCTION_DECL && DECL_STATIC_FUNCTION_P (fn))
+	grooaf = build_call_expr_loc (fn_start, fn, 0);
+      tree nth_ns = lookup_qualified_name (std_node,
+					   get_identifier ("nothrow"),
+					   0, true /*complain*/, false);
+      arglist->quick_push (nth_ns);
+      new_fn = lookup_arg_dependent (nwname, fns, arglist);
+    }
+  else
+    new_fn = lookup_arg_dependent (nwname, fns, arglist);
+
+  new_fn = build_new_function_call (new_fn, &arglist, true /*complain*/);
+  tree allocated = build1 (CONVERT_EXPR, coro_frame_ptr, new_fn);
   r = build2 (INIT_EXPR, TREE_TYPE (coro_fp), coro_fp, allocated);
   r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
-  /* Test for NULL and quit if so.  */
+  /* If the user provided a method to return an object on alloc fail, then
+     check the returned pointer and call the func if it's null.
+     Otherwise, no check, and we fail for noexcept/fno-exceptions cases.  */
 
-  tree cfra_label = create_named_label_with_ctx (fn_start, "coro.frame.active",
-						 current_scope ());
-  tree early_ret_list = NULL;
-  /* Default construct an empty return object.  */
-  r = build_special_member_call (DECL_RESULT (orig), complete_ctor_identifier,
-				 NULL, fn_return_type, LOOKUP_NORMAL,
-				 tf_warning_or_error);
-  r = coro_build_cvt_void_expr_stmt (r, fn_start);
-  append_to_statement_list (r, &early_ret_list);
-  // We know it's the correct type.
-  r = DECL_RESULT (orig);
-  r = build_stmt (fn_start, RETURN_EXPR, r);
-  TREE_NO_WARNING (r) |= 1;
-  r = maybe_cleanup_point_expr_void (r);
-  append_to_statement_list (r, &early_ret_list);
+  if (grooaf)
+    {
+      tree cfra_label = create_named_label_with_ctx (fn_start,
+						     "coro.frame.active",
+						     current_scope ());
+      tree early_ret_list = NULL;
+      /* init the retval using the user's func.  */
+      r = build2 (INIT_EXPR, TREE_TYPE (DECL_RESULT (orig)),
+		  DECL_RESULT (orig), grooaf);
+      r = coro_build_cvt_void_expr_stmt (r, fn_start);
+      append_to_statement_list (r, &early_ret_list);
+      // We know it's the correct type.
+      r = DECL_RESULT (orig);
+      r = build_stmt (fn_start, RETURN_EXPR, r);
+      TREE_NO_WARNING (r) |= 1;
+      r = maybe_cleanup_point_expr_void (r);
+      append_to_statement_list (r, &early_ret_list);
 
-  tree goto_st = NULL;
-  r = build1 (GOTO_EXPR, void_type_node, cfra_label);
-  append_to_statement_list (r, &goto_st);
+      tree goto_st = NULL;
+      r = build1 (GOTO_EXPR, void_type_node, cfra_label);
+      append_to_statement_list (r, &goto_st);
 
-  tree ckk = build1 (CONVERT_EXPR, coro_frame_ptr, integer_zero_node);
-  tree ckz = build2 (EQ_EXPR, boolean_type_node, coro_fp, ckk);
-  r = build3 (COND_EXPR, void_type_node, ckz, early_ret_list, empty_list);
-  add_stmt (r);
+      tree ckk = build1 (CONVERT_EXPR, coro_frame_ptr, integer_zero_node);
+      tree ckz = build2 (EQ_EXPR, boolean_type_node, coro_fp, ckk);
+      r = build3 (COND_EXPR, void_type_node, ckz, early_ret_list, empty_list);
+      add_stmt (r);
 
-  cfra_label = build_stmt (fn_start, LABEL_EXPR, cfra_label);
-  add_stmt (cfra_label);
+      cfra_label = build_stmt (fn_start, LABEL_EXPR, cfra_label);
+      add_stmt (cfra_label);
+    }
 
   /* deref the frame pointer, to use in member access code.  */
   tree deref_fp = build_x_arrow (fn_start, coro_fp, tf_warning_or_error);
