@@ -1,3 +1,8 @@
+2019-07-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/lto/pr89330_0.C (dg-lto-options): Add -fPIC.
+	Require fpic support.
+
 2019-07-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/powerpc/bmi2-bzhi64-1a.c: Add options to enable altivec
