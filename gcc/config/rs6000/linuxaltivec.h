@@ -28,5 +28,8 @@
 #define	TARGET_DEFAULT MASK_ALTIVEC
 #endif
 
+#undef	ASM_DEFAULT_EXTRA
+#define	ASM_DEFAULT_EXTRA " %{!mvsx:%{!maltivec:%{!mno-altivec:-maltivec}}}"
+
 #undef  SUBSUBTARGET_OVERRIDE_OPTIONS
 #define SUBSUBTARGET_OVERRIDE_OPTIONS rs6000_altivec_abi = 1

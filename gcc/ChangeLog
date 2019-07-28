@@ -1,3 +1,16 @@
+2019-07-28  Alan Modra  <amodra@gmail.com>
+
+	PR target/91050
+	* config/rs6000/sysv4.h (ASM_DEFAULT_SPEC): Modify if -m64.
+	* config/rs6000/default64.h (ASM_DEFAULT_SPEC): Define.
+	* config/rs6000/freebsd64.h (ASM_DEFAULT_SPEC): Don't define.
+	* config/rs6000/linux64.h (ASM_DEFAULT_SPEC): Likewise.
+	* config/rs6000/rtems.h (ASM_DEFAULT_SPEC): Likewise.
+	* config/rs6000/rs6000.h (ASM_DEFAULT_EXTRA): Define and use
+	in asm_default spec.
+	* config/rs6000/eabialtivec.h (ASM_DEFAULT_EXTRA): Redefine.
+	* config/rs6000/linuxaltivec.h (ASM_DEFAULT_EXTRA): Redefine.
+
 2019-07-28  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/include/gpl_v3.texi (Copying): Use https for www.gnu.org.
