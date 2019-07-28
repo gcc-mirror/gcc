@@ -8,9 +8,12 @@ global DG_TORTURE_OPTIONS LTO_TORTURE_OPTIONS
 dg-init
 torture-init
 
+set DEFAULT_COROFLAGS $DEFAULT_CXXFLAGS
+lappend DEFAULT_COROFLAGS "-std=c++17" "-fcoroutines"
+
 set-torture-options [concat $DG_TORTURE_OPTIONS $LTO_TORTURE_OPTIONS]
 
-gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] "" "-fcoroutines"
+gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] "" $DEFAULT_COROFLAGS
 
 torture-finish
 dg-finish

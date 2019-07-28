@@ -1,3 +1,8 @@
+2019-07-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/coro-torture.exp: Default to c++17.
+
 2019-07-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Merge trunk r273656.
