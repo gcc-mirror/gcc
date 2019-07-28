@@ -1,3 +1,7 @@
+2019-07-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/include/gpl_v3.texi (Copying): Use https for www.gnu.org.
+
 2019-07-26  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/89517
