@@ -1,3 +1,9 @@
+2019-07-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Fix broken reference
+	to the Doxygen manual. Avoid a "here" link on the way.
+	Fix another broken link to Doxygen docblocks.
+
 2019-07-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/bit (__cpp_lib_endian): Define.
