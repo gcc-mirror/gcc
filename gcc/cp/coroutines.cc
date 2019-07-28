@@ -2397,7 +2397,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     {
       tree fn = BASELINK_FUNCTIONS (grooaf_meth);
       if (TREE_CODE (fn) == FUNCTION_DECL && DECL_STATIC_FUNCTION_P (fn))
-	grooaf = build_call_expr_loc (fn_start, fn, 0);
+	{
+	  grooaf = build_call_expr_loc (fn_start, fn, 0);
+	  TREE_USED (fn) = 1;
+	}
       tree nth_ns = lookup_qualified_name (std_node,
 					   get_identifier ("nothrow"),
 					   0, true /*complain*/, false);

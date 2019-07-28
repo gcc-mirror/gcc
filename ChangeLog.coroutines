@@ -1,5 +1,11 @@
 2019-07-28  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* coroutines.cc (morph_fn_to_coro): If we use the allocation failure
+	method, mark it as used.
+
+2019-07-28  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/
 	* coroutine-passes.c (execute_finalize_frame): Copy the first argument
 	for now.
