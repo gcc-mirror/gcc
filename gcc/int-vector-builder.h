@@ -26,10 +26,11 @@ along with GCC; see the file COPYING3.  If not see
    encoding as tree and rtx constants.  See vector_builder for more
    details.  */
 template<typename T>
-class int_vector_builder : public vector_builder<T, int_vector_builder<T> >
+class int_vector_builder : public vector_builder<T, poly_uint64,
+						 int_vector_builder<T> >
 {
-  typedef vector_builder<T, int_vector_builder> parent;
-  friend class vector_builder<T, int_vector_builder>;
+  typedef vector_builder<T, poly_uint64, int_vector_builder> parent;
+  friend class vector_builder<T, poly_uint64, int_vector_builder>;
 
 public:
   int_vector_builder () {}
@@ -45,6 +46,8 @@ private:
   T apply_step (T, unsigned int, T) const;
   bool can_elide_p (T) const { return true; }
   void note_representative (T *, T) {}
+
+  static poly_uint64 shape_nelts (poly_uint64 x) { return x; }
 };
 
 /* Create a new builder for a vector with FULL_NELTS elements.

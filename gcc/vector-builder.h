@@ -45,8 +45,11 @@ along with GCC; see the file COPYING3.  If not see
       variable-length vectors.  finalize () then canonicalizes the encoding
       to a simpler form if possible.
 
-   The derived class Derived provides this functionality for specific Ts.
-   Derived needs to provide the following interface:
+   Shape is the type that specifies the number of elements in the vector
+   and (where relevant) the type of each element.
+
+   The derived class Derived provides the functionality of this class
+   for specific Ts.  Derived needs to provide the following interface:
 
       bool equal_p (T elt1, T elt2) const;
 
@@ -82,9 +85,30 @@ along with GCC; see the file COPYING3.  If not see
 
 	  Record that ELT2 is being elided, given that ELT1_PTR points to
 	  the last encoded element for the containing pattern.  This is
-	  again provided for TREE_OVERFLOW handling.  */
+	  again provided for TREE_OVERFLOW handling.
 
-template<typename T, typename Derived>
+      static poly_uint64 shape_nelts (Shape shape);
+
+	  Return the number of elements in SHAPE.
+
+    The class provides additional functionality for the case in which
+    T can describe a vector constant as well as an individual element.
+    This functionality requires:
+
+      static poly_uint64 nelts_of (T x);
+
+	  Return the number of elements in vector constant X.
+
+      static unsigned int npatterns_of (T x);
+
+	  Return the number of patterns used to encode vector constant X.
+
+      static unsigned int nelts_per_pattern_of (T x);
+
+	  Return the number of elements used to encode each pattern
+	  in vector constant X.  */
+
+template<typename T, typename Shape, typename Derived>
 class vector_builder : public auto_vec<T, 32>
 {
 public:
@@ -101,7 +125,12 @@ public:
   bool operator == (const Derived &) const;
   bool operator != (const Derived &x) const { return !operator == (x); }
 
+  bool new_unary_operation (Shape, T, bool);
+  bool new_binary_operation (Shape, T, T, bool);
+
   void finalize ();
+
+  static unsigned int binary_encoded_nelts (T, T);
 
 protected:
   void new_vector (poly_uint64, unsigned int, unsigned int);
@@ -121,16 +150,16 @@ private:
   unsigned int m_nelts_per_pattern;
 };
 
-template<typename T, typename Derived>
+template<typename T, typename Shape, typename Derived>
 inline const Derived *
-vector_builder<T, Derived>::derived () const
+vector_builder<T, Shape, Derived>::derived () const
 {
   return static_cast<const Derived *> (this);
 }
 
-template<typename T, typename Derived>
+template<typename T, typename Shape, typename Derived>
 inline
-vector_builder<T, Derived>::vector_builder ()
+vector_builder<T, Shape, Derived>::vector_builder ()
   : m_full_nelts (0),
     m_npatterns (0),
     m_nelts_per_pattern (0)
@@ -140,18 +169,18 @@ vector_builder<T, Derived>::vector_builder ()
    starts with these explicitly-encoded elements and may contain additional
    elided elements.  */
 
-template<typename T, typename Derived>
+template<typename T, typename Shape, typename Derived>
 inline unsigned int
-vector_builder<T, Derived>::encoded_nelts () const
+vector_builder<T, Shape, Derived>::encoded_nelts () const
 {
   return m_npatterns * m_nelts_per_pattern;
 }
 
 /* Return true if every element of the vector is explicitly encoded.  */
 
-template<typename T, typename Derived>
+template<typename T, typename Shape, typename Derived>
 inline bool
-vector_builder<T, Derived>::encoded_full_vector_p () const
+vector_builder<T, Shape, Derived>::encoded_full_vector_p () const
 {
   return known_eq (m_npatterns * m_nelts_per_pattern, m_full_nelts);
 }
@@ -159,11 +188,11 @@ vector_builder<T, Derived>::encoded_full_vector_p () const
 /* Start building a vector that has FULL_NELTS elements.  Initially
    encode it using NPATTERNS patterns with NELTS_PER_PATTERN each.  */
 
-template<typename T, typename Derived>
+template<typename T, typename Shape, typename Derived>
 void
-vector_builder<T, Derived>::new_vector (poly_uint64 full_nelts,
-					unsigned int npatterns,
-					unsigned int nelts_per_pattern)
+vector_builder<T, Shape, Derived>::new_vector (poly_uint64 full_nelts,
+					       unsigned int npatterns,
+					       unsigned int nelts_per_pattern)
 {
   m_full_nelts = full_nelts;
   m_npatterns = npatterns;
@@ -175,9 +204,9 @@ vector_builder<T, Derived>::new_vector (poly_uint64 full_nelts,
 /* Return true if this vector and OTHER have the same elements and
    are encoded in the same way.  */
 
-template<typename T, typename Derived>
+template<typename T, typename Shape, typename Derived>
 bool
-vector_builder<T, Derived>::operator == (const Derived &other) const
+vector_builder<T, Shape, Derived>::operator == (const Derived &other) const
 {
   if (maybe_ne (m_full_nelts, other.m_full_nelts)
       || m_npatterns != other.m_npatterns
@@ -195,9 +224,9 @@ vector_builder<T, Derived>::operator == (const Derived &other) const
 /* Return the value of vector element I, which might or might not be
    encoded explicitly.  */
 
-template<typename T, typename Derived>
+template<typename T, typename Shape, typename Derived>
 T
-vector_builder<T, Derived>::elt (unsigned int i) const
+vector_builder<T, Shape, Derived>::elt (unsigned int i) const
 {
   /* First handle elements that are already present in the underlying
      vector, regardless of whether they're part of the encoding or not.  */
@@ -225,12 +254,118 @@ vector_builder<T, Derived>::elt (unsigned int i) const
 				 derived ()->step (prev, final));
 }
 
+/* Try to start building a new vector of shape SHAPE that holds the result of
+   a unary operation on vector constant VEC.  ALLOW_STEPPED_P is true if the
+   operation can handle stepped encodings directly, without having to expand
+   the full sequence.
+
+   Return true if the operation is possible, which it always is when
+   ALLOW_STEPPED_P is true.  Leave the builder unchanged otherwise.  */
+
+template<typename T, typename Shape, typename Derived>
+bool
+vector_builder<T, Shape, Derived>::new_unary_operation (Shape shape, T vec,
+							bool allow_stepped_p)
+{
+  poly_uint64 full_nelts = Derived::shape_nelts (shape);
+  gcc_assert (known_eq (full_nelts, Derived::nelts_of (vec)));
+  unsigned int npatterns = Derived::npatterns_of (vec);
+  unsigned int nelts_per_pattern = Derived::nelts_per_pattern_of (vec);
+  if (!allow_stepped_p && nelts_per_pattern > 2)
+    {
+      if (!full_nelts.is_constant ())
+	return false;
+      npatterns = full_nelts.to_constant ();
+      nelts_per_pattern = 1;
+    }
+  derived ()->new_vector (shape, npatterns, nelts_per_pattern);
+  return true;
+}
+
+/* Try to start building a new vector of shape SHAPE that holds the result of
+   a binary operation on vector constants VEC1 and VEC2.  ALLOW_STEPPED_P is
+   true if the operation can handle stepped encodings directly, without
+   having to expand the full sequence.
+
+   Return true if the operation is possible.  Leave the builder unchanged
+   otherwise.  */
+
+template<typename T, typename Shape, typename Derived>
+bool
+vector_builder<T, Shape, Derived>::new_binary_operation (Shape shape,
+							 T vec1, T vec2,
+							 bool allow_stepped_p)
+{
+  poly_uint64 full_nelts = Derived::shape_nelts (shape);
+  gcc_assert (known_eq (full_nelts, Derived::nelts_of (vec1))
+	      && known_eq (full_nelts, Derived::nelts_of (vec2)));
+  /* Conceptually we split the patterns in VEC1 and VEC2 until we have
+     an equal number for both.  Each split pattern requires the same
+     number of elements per pattern as the original.  E.g. splitting:
+
+       { 1, 2, 3, ... }
+
+     into two gives:
+
+       { 1, 3, 5, ... }
+       { 2, 4, 6, ... }
+
+     while splitting:
+
+       { 1, 0, ... }
+
+     into two gives:
+
+       { 1, 0, ... }
+       { 0, 0, ... }.  */
+  unsigned int npatterns
+    = least_common_multiple (Derived::npatterns_of (vec1),
+			     Derived::npatterns_of (vec2));
+  unsigned int nelts_per_pattern
+    = MAX (Derived::nelts_per_pattern_of (vec1),
+	   Derived::nelts_per_pattern_of (vec2));
+  if (!allow_stepped_p && nelts_per_pattern > 2)
+    {
+      if (!full_nelts.is_constant ())
+	return false;
+      npatterns = full_nelts.to_constant ();
+      nelts_per_pattern = 1;
+    }
+  derived ()->new_vector (shape, npatterns, nelts_per_pattern);
+  return true;
+}
+
+/* Return the number of elements that the caller needs to operate on in
+   order to handle a binary operation on vector constants VEC1 and VEC2.
+   This static function is used instead of new_binary_operation if the
+   result of the operation is not a constant vector.  */
+
+template<typename T, typename Shape, typename Derived>
+unsigned int
+vector_builder<T, Shape, Derived>::binary_encoded_nelts (T vec1, T vec2)
+{
+  poly_uint64 nelts = Derived::nelts_of (vec1);
+  gcc_assert (known_eq (nelts, Derived::nelts_of (vec2)));
+  /* See new_binary_operation for details.  */
+  unsigned int npatterns
+    = least_common_multiple (Derived::npatterns_of (vec1),
+			     Derived::npatterns_of (vec2));
+  unsigned int nelts_per_pattern
+    = MAX (Derived::nelts_per_pattern_of (vec1),
+	   Derived::nelts_per_pattern_of (vec2));
+  unsigned HOST_WIDE_INT const_nelts;
+  if (nelts.is_constant (&const_nelts))
+    return MIN (npatterns * nelts_per_pattern, const_nelts);
+  return npatterns * nelts_per_pattern;
+}
+
 /* Return the number of leading duplicate elements in the range
    [START:END:STEP].  The value is always at least 1.  */
 
-template<typename T, typename Derived>
+template<typename T, typename Shape, typename Derived>
 unsigned int
-vector_builder<T, Derived>::count_dups (int start, int end, int step) const
+vector_builder<T, Shape, Derived>::count_dups (int start, int end,
+					       int step) const
 {
   gcc_assert ((end - start) % step == 0);
 
@@ -245,10 +380,10 @@ vector_builder<T, Derived>::count_dups (int start, int end, int step) const
 /* Change the encoding to NPATTERNS patterns of NELTS_PER_PATTERN each,
    but without changing the underlying vector.  */
 
-template<typename T, typename Derived>
+template<typename T, typename Shape, typename Derived>
 void
-vector_builder<T, Derived>::reshape (unsigned int npatterns,
-				     unsigned int nelts_per_pattern)
+vector_builder<T, Shape, Derived>::reshape (unsigned int npatterns,
+					    unsigned int nelts_per_pattern)
 {
   unsigned int old_encoded_nelts = encoded_nelts ();
   unsigned int new_encoded_nelts = npatterns * nelts_per_pattern;
@@ -268,11 +403,11 @@ vector_builder<T, Derived>::reshape (unsigned int npatterns,
 /* Return true if elements [START, END) contain a repeating sequence of
    STEP elements.  */
 
-template<typename T, typename Derived>
+template<typename T, typename Shape, typename Derived>
 bool
-vector_builder<T, Derived>::repeating_sequence_p (unsigned int start,
-						  unsigned int end,
-						  unsigned int step)
+vector_builder<T, Shape, Derived>::repeating_sequence_p (unsigned int start,
+							 unsigned int end,
+							 unsigned int step)
 {
   for (unsigned int i = start; i < end - step; ++i)
     if (!derived ()->equal_p ((*this)[i], (*this)[i + step]))
@@ -283,11 +418,11 @@ vector_builder<T, Derived>::repeating_sequence_p (unsigned int start,
 /* Return true if elements [START, END) contain STEP interleaved linear
    series.  */
 
-template<typename T, typename Derived>
+template<typename T, typename Shape, typename Derived>
 bool
-vector_builder<T, Derived>::stepped_sequence_p (unsigned int start,
-						unsigned int end,
-						unsigned int step)
+vector_builder<T, Shape, Derived>::stepped_sequence_p (unsigned int start,
+						       unsigned int end,
+						       unsigned int step)
 {
   if (!derived ()->allow_steps_p ())
     return false;
@@ -316,9 +451,9 @@ vector_builder<T, Derived>::stepped_sequence_p (unsigned int start,
 /* Try to change the number of encoded patterns to NPATTERNS, returning
    true on success.  */
 
-template<typename T, typename Derived>
+template<typename T, typename Shape, typename Derived>
 bool
-vector_builder<T, Derived>::try_npatterns (unsigned int npatterns)
+vector_builder<T, Shape, Derived>::try_npatterns (unsigned int npatterns)
 {
   if (m_nelts_per_pattern == 1)
     {
@@ -369,9 +504,9 @@ vector_builder<T, Derived>::try_npatterns (unsigned int npatterns)
 
 /* Replace the current encoding with the canonical form.  */
 
-template<typename T, typename Derived>
+template<typename T, typename Shape, typename Derived>
 void
-vector_builder<T, Derived>::finalize ()
+vector_builder<T, Shape, Derived>::finalize ()
 {
   /* The encoding requires the same number of elements to come from each
      pattern.  */
