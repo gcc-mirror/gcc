@@ -1,3 +1,21 @@
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/scanasm.exp (parse_function_bodies, check_function_body)
+	(check-function-bodies): New procedures.
+	* gcc.target/aarch64/sve/init_1.c: Use check-function-bodies
+	instead of scan-assembler.
+	* gcc.target/aarch64/sve/init_2.c: Likewise.
+	* gcc.target/aarch64/sve/init_3.c: Likewise.
+	* gcc.target/aarch64/sve/init_4.c: Likewise.
+	* gcc.target/aarch64/sve/init_5.c: Likewise.
+	* gcc.target/aarch64/sve/init_6.c: Likewise.
+	* gcc.target/aarch64/sve/init_7.c: Likewise.
+	* gcc.target/aarch64/sve/init_8.c: Likewise.
+	* gcc.target/aarch64/sve/init_9.c: Likewise.
+	* gcc.target/aarch64/sve/init_10.c: Likewise.
+	* gcc.target/aarch64/sve/init_11.c: Likewise.
+	* gcc.target/aarch64/sve/init_12.c: Likewise.
+
 2019-07-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/lto/pr89330_0.C (dg-lto-options): Add -fPIC.
