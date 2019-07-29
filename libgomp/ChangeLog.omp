@@ -1,5 +1,12 @@
 2019-07-31  Julian Brown  <julian@codesourcery.com>
 
+	* config/nvptx/gomp_print.c (gomp_print_string, gomp_print_integer,
+	gomp_print_double): New.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_openacc_async_construct): Add
+	dummy device parameter.
+
+2019-07-31  Julian Brown  <julian@codesourcery.com>
+
 	* libgomp.map (GOMP_2.0.GOMP_4_BRANCH): Remove GOACC_parallel_keyed_v2.
 	* libgomp_g.h (GOACC_parallel_keyed_v2): Remove prototype.
 	* oacc-parallel.c (GOACC_parallel_keyed_internal): Rename to...
