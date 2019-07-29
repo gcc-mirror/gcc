@@ -904,7 +904,7 @@ TODO :
 */
 
 static tree
-co_await_expander (tree *stmt, int *do_subtree, void *d)
+co_await_expander (tree *stmt, int */*do_subtree*/, void *d)
 {
   if (STATEMENT_CLASS_P (*stmt) || !EXPR_P (*stmt))
     return NULL_TREE;
