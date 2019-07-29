@@ -193,6 +193,25 @@ vn_constant_eq_with_type (tree c1, tree c2)
 	  && types_compatible_p (TREE_TYPE (c1), TREE_TYPE (c2)));
 }
 
+/* Instead of having a local availability lattice for each basic-block
+   and availability at X defined as union of the local availabilities
+   at X and its dominators we're turning this upside down and track
+   availability per value given values are usually made available at very
+   few points.
+   So we have a chain of LOCATION, LEADER entries where LOCATION is
+   specifying the basic-block LEADER is made available for VALUE.
+   We prepend to this chain in RPO order thus for iteration we can simply
+   remove the last entries.
+   LOCATION is the basic-block index and LEADER is its SSA name version.  */
+struct vn_avail
+{
+  vn_avail *next;
+  /* The basic-block LEADER is made available.  */
+  int location;
+  /* The LEADER for the value we are chained on.  */
+  int leader;
+};
+
 typedef struct vn_ssa_aux
 {
   /* SSA name this vn_ssa_aux is associated with in the lattice.  */
@@ -201,6 +220,10 @@ typedef struct vn_ssa_aux
   tree valnum;
   /* Statements to insert if needs_insertion is true.  */
   gimple_seq expr;
+
+  /* AVAIL entries, last in RPO order is first.  This is only tracked
+     for SSA names also serving as values (NAME == VALNUM).  */
+  vn_avail *avail;
 
   /* Unique identifier that all expressions with the same value have. */
   unsigned int value_id;

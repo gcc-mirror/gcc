@@ -2126,36 +2126,17 @@ class rpo_elim : public eliminate_dom_walker
 {
 public:
   rpo_elim(basic_block entry_)
-    : eliminate_dom_walker (CDI_DOMINATORS, NULL), entry (entry_) {}
-  ~rpo_elim();
+    : eliminate_dom_walker (CDI_DOMINATORS, NULL), entry (entry_),
+      m_avail_freelist (NULL) {}
 
   virtual tree eliminate_avail (basic_block, tree op);
 
   virtual void eliminate_push_avail (basic_block, tree);
 
   basic_block entry;
-  /* Instead of having a local availability lattice for each
-     basic-block and availability at X defined as union of
-     the local availabilities at X and its dominators we're
-     turning this upside down and track availability per
-     value given values are usually made available at very
-     few points (at least one).
-     So we have a value -> vec<location, leader> map where
-     LOCATION is specifying the basic-block LEADER is made
-     available for VALUE.  We push to this vector in RPO
-     order thus for iteration we can simply pop the last
-     entries.
-     LOCATION is the basic-block index and LEADER is its
-     SSA name version.  */
-  /* ???  We'd like to use auto_vec here with embedded storage
-     but that doesn't play well until we can provide move
-     constructors and use std::move on hash-table expansion.
-     So for now this is a bit more expensive than necessary.
-     We eventually want to switch to a chaining scheme like
-     for hashtable entries for unwinding which would make
-     making the vector part of the vn_ssa_aux structure possible.  */
-  typedef hash_map<tree, vec<std::pair<int, int> > > rpo_avail_t;
-  rpo_avail_t m_rpo_avail;
+  /* Freelist of avail entries which are allocated from the vn_ssa_aux
+     obstack.  */
+  vn_avail *m_avail_freelist;
 };
 
 /* Global RPO state for access from hooks.  */
@@ -6197,14 +6178,6 @@ vn_lookup_simplify_result (gimple_match_op *res_op)
   return res;
 }
 
-rpo_elim::~rpo_elim ()
-{
-  /* Release the avail vectors.  */
-  for (rpo_avail_t::iterator i = m_rpo_avail.begin ();
-       i != m_rpo_avail.end (); ++i)
-    (*i).second.release ();
-}
-
 /* Return a leader for OPs value that is valid at BB.  */
 
 tree
@@ -6220,16 +6193,15 @@ rpo_elim::eliminate_avail (basic_block bb, tree op)
     {
       if (SSA_NAME_IS_DEFAULT_DEF (valnum))
 	return valnum;
-      vec<std::pair<int, int> > *av = m_rpo_avail.get (valnum);
-      if (!av || av->is_empty ())
+      vn_avail *av = VN_INFO (valnum)->avail;
+      if (!av)
 	return NULL_TREE;
-      int i = av->length () - 1;
-      if ((*av)[i].first == bb->index)
+      if (av->location == bb->index)
 	/* On tramp3d 90% of the cases are here.  */
-	return ssa_name ((*av)[i].second);
+	return ssa_name (av->leader);
       do
 	{
-	  basic_block abb = BASIC_BLOCK_FOR_FN (cfun, (*av)[i].first);
+	  basic_block abb = BASIC_BLOCK_FOR_FN (cfun, av->location);
 	  /* ???  During elimination we have to use availability at the
 	     definition site of a use we try to replace.  This
 	     is required to not run into inconsistencies because
@@ -6243,7 +6215,7 @@ rpo_elim::eliminate_avail (basic_block bb, tree op)
 	     executable.  */
 	  if (dominated_by_p_w_unex (bb, abb))
 	    {
-	      tree leader = ssa_name ((*av)[i].second);
+	      tree leader = ssa_name (av->leader);
 	      /* Prevent eliminations that break loop-closed SSA.  */
 	      if (loops_state_satisfies_p (LOOP_CLOSED_SSA)
 		  && ! SSA_NAME_IS_DEFAULT_DEF (leader)
@@ -6265,8 +6237,9 @@ rpo_elim::eliminate_avail (basic_block bb, tree op)
 	  /* ???  Can we somehow skip to the immediate dominator
 	     RPO index (bb_to_rpo)?  Again, maybe not worth, on
 	     tramp3d the worst number of elements in the vector is 9.  */
+	  av = av->next;
 	}
-      while (--i >= 0);
+      while (av);
     }
   else if (valnum != VN_TOP)
     /* valnum is is_gimple_min_invariant.  */
@@ -6290,15 +6263,19 @@ rpo_elim::eliminate_push_avail (basic_block bb, tree leader)
       print_generic_expr (dump_file, valnum);
       fprintf (dump_file, "\n");
     }
-  bool existed;
-  vec<std::pair<int, int> > &av = m_rpo_avail.get_or_insert (valnum, &existed);
-  if (!existed)
+  vn_ssa_aux_t value = VN_INFO (valnum);
+  vn_avail *av;
+  if (m_avail_freelist)
     {
-      new (&av) vec<std::pair<int, int> >;
-      av = vNULL;
-      av.reserve_exact (2);
+      av = m_avail_freelist;
+      m_avail_freelist = m_avail_freelist->next;
     }
-  av.safe_push (std::make_pair (bb->index, SSA_NAME_VERSION (leader)));
+  else
+    av = XOBNEW (&vn_ssa_aux_obstack, vn_avail);
+  av->location = bb->index;
+  av->leader = SSA_NAME_VERSION (leader);
+  av->next = value->avail;
+  value->avail = av;
 }
 
 /* Valueization hook for RPO VN plus required state.  */
@@ -6780,15 +6757,17 @@ do_unwind (unwind_state *to, int rpo_idx, rpo_elim &avail, int *bb_to_rpo)
   /* Prune [rpo_idx, ] from avail.  */
   /* ???  This is O(number-of-values-in-region) which is
      O(region-size) rather than O(iteration-piece).  */
-  for (rpo_elim::rpo_avail_t::iterator i
-       = avail.m_rpo_avail.begin ();
-       i != avail.m_rpo_avail.end (); ++i)
+  for (hash_table<vn_ssa_aux_hasher>::iterator i = vn_ssa_aux_hash->begin ();
+       i != vn_ssa_aux_hash->end (); ++i)
     {
-      while (! (*i).second.is_empty ())
+      while ((*i)->avail)
 	{
-	  if (bb_to_rpo[(*i).second.last ().first] < rpo_idx)
+	  if (bb_to_rpo[(*i)->avail->location] < rpo_idx)
 	    break;
-	  (*i).second.pop ();
+	  vn_avail *av = (*i)->avail;
+	  (*i)->avail = (*i)->avail->next;
+	  av->next = avail.m_avail_freelist;
+	  avail.m_avail_freelist = av;
 	}
     }
 }
@@ -7184,11 +7163,16 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 	max_visited = rpo_state[i].visited;
     }
   unsigned nvalues = 0, navail = 0;
-  for (rpo_elim::rpo_avail_t::iterator i = avail.m_rpo_avail.begin ();
-       i != avail.m_rpo_avail.end (); ++i)
+  for (hash_table<vn_ssa_aux_hasher>::iterator i = vn_ssa_aux_hash->begin ();
+       i != vn_ssa_aux_hash->end (); ++i)
     {
       nvalues++;
-      navail += (*i).second.length ();
+      vn_avail *av = (*i)->avail;
+      while (av)
+	{
+	  navail++;
+	  av = av->next;
+	}
     }
   statistics_counter_event (cfun, "RPO blocks", n);
   statistics_counter_event (cfun, "RPO blocks visited", nblk);
