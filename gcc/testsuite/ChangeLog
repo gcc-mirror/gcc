@@ -1,5 +1,11 @@
 2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* c-c++-common/guality/Og-dce-1.c: New test.
+	* c-c++-common/guality/Og-dce-2.c: Likewise.
+	* c-c++-common/guality/Og-dce-3.c: Likewise.
+
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* c-c++-common/guality/Og-global-dse-1.c: New test.
 
 2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>

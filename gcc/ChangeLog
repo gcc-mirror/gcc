@@ -1,5 +1,16 @@
 2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR debug/86638
+	* tree-ssa-dce.c (keep_all_vdefs_p): New function.
+	(mark_stmt_if_obviously_necessary): Mark all stmts with vdefs as
+	necessary if keep_all_vdefs_p is true.
+	(mark_aliased_reaching_defs_necessary): Add a gcc_checking_assert
+	that keep_all_vdefs_p is false.
+	(mark_all_reaching_defs_necessary): Likewise.
+	(propagate_necessity): Skip the vuse scan if keep_all_vdefs_p is true.
+
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* common.opt (Og): Change the initial value of flag_dse to 0.
 	* opts.c (default_options_table): Move OPT_ftree_dse from
 	OPT_LEVELS_1_PLUS to OPT_LEVELS_1_PLUS_NOT_DEBUG.  Also add
