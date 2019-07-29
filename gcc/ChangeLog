@@ -1,3 +1,9 @@
+2019-07-28  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/91222
+	* ipa-devirt.c (warn_types_mismatch): Compare indentifiers
+	than INDENTIFIER_POINTER.
+
 2019-07-28  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/89330

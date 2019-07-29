@@ -1003,7 +1003,7 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
 	n2 = DECL_NAME (n2);
       /* Most of the time, the type names will match, do not be unnecesarily
          verbose.  */
-      if (IDENTIFIER_POINTER (n1) != IDENTIFIER_POINTER (n2))
+      if (n1 != n2)
         inform (loc_t1,
 	        "type %qT defined in anonymous namespace cannot match "
 	        "type %qT across the translation unit boundary",
