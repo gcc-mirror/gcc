@@ -1,5 +1,12 @@
 2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* c-c++-common/guality/Og-static-wo-1.c: New test.
+	* g++.dg/guality/guality.exp: Separate the c-c++-common tests into
+	"Og" and "general" tests.  Run the latter at -O0 and -Og only.
+	* gcc.dg/guality/guality.exp: Likewise.
+
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* lib/scanasm.exp (parse_function_bodies, check_function_body)
 	(check-function-bodies): New procedures.
 	* gcc.target/aarch64/sve/init_1.c: Use check-function-bodies

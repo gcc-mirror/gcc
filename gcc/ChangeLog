@@ -1,5 +1,10 @@
 2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-cfg.c (execute_fixup_cfg): Don't delete stores to write-only
+	variables for -Og.
+
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* doc/sourcebuild.texi (check-function-bodies): Document.
 
 2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
