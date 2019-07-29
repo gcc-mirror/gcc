@@ -1,3 +1,20 @@
+2019-07-25  Martin Liska  <mliska@suse.cz>
+	    Dominik Infuhr  <dominik.infuehr@theobroma-systems.com>
+
+	PR c++/23383
+	* c-decl.c (merge_decls): Merge OPERATOR_DELETE flag.
+
+2019-07-25  Martin Liska  <mliska@suse.cz>
+
+	* c-decl.c (merge_decls): Use new macros
+	(e.g. DECL_SET_LAMBDA_FUNCTION and DECL_LAMBDA_FUNCTION_P).
+
+2019-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83518
+	* gimple-parser.c (c_parser_parse_gimple_body): When we have
+	a CFG also rebuild cgraph edges.
+
 2019-07-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_clause_name): Handle bind clause.

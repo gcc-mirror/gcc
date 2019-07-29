@@ -342,6 +342,13 @@ gfc_copy_expr (gfc_expr *p)
 	case BT_ASSUMED:
 	  break;		/* Already done.  */
 
+	case BT_BOZ:
+	  q->boz.len = p->boz.len;
+	  q->boz.rdx = p->boz.rdx;
+	  q->boz.str = XCNEWVEC (char, q->boz.len + 1);
+	  strncpy (q->boz.str, p->boz.str, p->boz.len);
+	  break;
+
 	case BT_PROCEDURE:
         case BT_VOID:
            /* Should never be reached.  */
@@ -3634,45 +3641,30 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform,
       && !gfc_check_conformance (lvalue, rvalue, "array assignment"))
     return false;
 
-  if (rvalue->is_boz && lvalue->ts.type != BT_INTEGER
+  if (rvalue->ts.type == BT_BOZ && lvalue->ts.type != BT_INTEGER
       && lvalue->symtree->n.sym->attr.data
       && !gfc_notify_std (GFC_STD_GNU, "BOZ literal at %L used to "
 			  "initialize non-integer variable %qs",
 			  &rvalue->where, lvalue->symtree->n.sym->name))
     return false;
-  else if (rvalue->is_boz && !lvalue->symtree->n.sym->attr.data
+  else if (rvalue->ts.type == BT_BOZ && !lvalue->symtree->n.sym->attr.data
       && !gfc_notify_std (GFC_STD_GNU, "BOZ literal at %L outside "
 			  "a DATA statement and outside INT/REAL/DBLE/CMPLX",
 			  &rvalue->where))
     return false;
 
   /* Handle the case of a BOZ literal on the RHS.  */
-  if (rvalue->is_boz && lvalue->ts.type != BT_INTEGER)
+  if (rvalue->ts.type == BT_BOZ)
     {
-      int rc;
-      if (warn_surprising)
-	gfc_warning (OPT_Wsurprising,
-		     "BOZ literal at %L is bitwise transferred "
-		     "non-integer symbol %qs", &rvalue->where,
-		     lvalue->symtree->n.sym->name);
-      if (!gfc_convert_boz (rvalue, &lvalue->ts))
-	return false;
-      if ((rc = gfc_range_check (rvalue)) != ARITH_OK)
-	{
-	  if (rc == ARITH_UNDERFLOW)
-	    gfc_error ("Arithmetic underflow of bit-wise transferred BOZ at %L"
-		       ". This check can be disabled with the option "
-		       "%<-fno-range-check%>", &rvalue->where);
-	  else if (rc == ARITH_OVERFLOW)
-	    gfc_error ("Arithmetic overflow of bit-wise transferred BOZ at %L"
-		       ". This check can be disabled with the option "
-		       "%<-fno-range-check%>", &rvalue->where);
-	  else if (rc == ARITH_NAN)
-	    gfc_error ("Arithmetic NaN of bit-wise transferred BOZ at %L"
-		       ". This check can be disabled with the option "
-		       "%<-fno-range-check%>", &rvalue->where);
-	  return false;
-	}
+      /* FIXME BOZ.  Need gfc_invalid_boz() here?.  */
+      if (lvalue->ts.type == BT_INTEGER
+	  && gfc_boz2int (rvalue, lvalue->ts.kind))
+	return true;
+      if (lvalue->ts.type == BT_REAL
+	  && gfc_boz2real (rvalue, lvalue->ts.kind))
+	return true;
+
+      return false;
     }
 
   if (gfc_expr_attr (lvalue).pdt_kind || gfc_expr_attr (lvalue).pdt_len)

@@ -450,6 +450,14 @@ Import::import(Gogo* gogo, const std::string& local_name,
       this->require_c_string("\n");
     }
 
+  // Finalize methods for any imported types. This call is made late in the
+  // import process so as to A) avoid finalization of a type whose methods
+  // refer to types that are only partially read in, and B) capture both the
+  // types imported by read_types() directly, and those imported indirectly
+  // because they are referenced by an imported function or variable.
+  // See issues #33013 and #33219 for more on why this is needed.
+  this->finalize_methods();
+
   return this->package_;
 }
 
@@ -677,12 +685,6 @@ Import::read_types()
       if (this->add_to_globals_)
 	this->gogo_->add_named_type(nt);
     }
-
-  // Finalize methods for any imported types. This is done after most of
-  // read_types() is complete so as to avoid method finalization of a type
-  // whose methods refer to types that are only partially read in.
-  // See issue #33013 for more on why this is needed.
-  this->finalize_methods();
 
   return true;
 }

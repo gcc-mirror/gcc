@@ -41,6 +41,6 @@ if ( r8.o(1) /= 9 .or. r8.o(2) /= 9 .or. r8.o(3) /= 9 ) call aborts ("r8.o")
 if (     r8.p(1,1) /= 1 .or. r8.p(2,1) /= 2 .or. r8.p(1,2) /= 3 &
     .or. r8.p(2,2) /= 4) &
   call aborts ("r8.p")
-if ( r8.canary /= z'3D3D3D3D' ) call aborts ("r8.canary")
+if ( r8.canary /= int(z'3D3D3D3D') ) call aborts ("r8.canary")
 
 end

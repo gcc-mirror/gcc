@@ -1,3 +1,13 @@
+2019-07-22  Andrea Corallo <andrea.corallo@arm.com>
+
+	* jit-recording.c (unary_op_reproducer_strings): Make it extern.
+	(binary_op_reproducer_strings): Likewise.
+	* jit-recording.h (unary_op_reproducer_strings): Likewise.
+	(binary_op_reproducer_strings): Likewise.
+	* libgccjit.c (gcc_jit_context_new_unary_op): Check result_type to be a
+	numeric type.
+	* libgccjit.c (gcc_jit_context_new_binary_op): Improve error message.
+
 2019-07-04  Andrea Corallo <andrea.corallo@arm.com>
 
 	* libgccjit.c (gcc_jit_context_new_binary_op): Check result_type to be a

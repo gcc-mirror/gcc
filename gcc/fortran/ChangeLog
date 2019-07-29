@@ -1,3 +1,103 @@
+2019-07-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/65819
+	* dependency.h (gfc_dep_resovler): Add optional argument identical.
+	* dependency.c (gfc_check_dependency): Do not alway return 1 if
+	the symbol is the same. Pass on identical to gfc_dep_resolver.
+	(gfc_check_element_vs_element): Whitespace fix.
+	(gfc_dep_resolver): Adjust comment for function.  If identical is
+	true, return 1 if any overlap has been found.
+
+2019-07-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/54072
+	* check.c (gfc_invalid_boz): Fix comment.
+	(illegal_boz_arg): New function.
+	(gfc_check_transfer): Use to arguments.
+	(gfc_check_storage_size): Ditto.
+	(gfc_check_complex): Remove leftover comment from BOZ patch.
+	* primary.c (match_boz_constant): Remove leftover comment.
+
+2019-07-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* arith.c (gfc_convert_integer, gfc_convert_real, gfc_convert_complex):
+	Move to ...
+	* primary.c (convert_integer, convert_real, convert_complex): ... here.
+	Rename and make static functions.
+	(match_integer_constant): Use convert_integer
+	(match_real_constant): Use convert_real.
+	(match_complex_constant: Use convert_complex.
+	* arith.h (gfc_convert_integer, gfc_convert_real, gfc_convert_complex):
+	Remove prototypes.
+	* array.c (match_array_cons_element): A BOZ cannot be a data
+	statement value.  Jump to a common exit point.
+	* check.c (gfc_invalid_boz): New function.  Emit error or warning
+	for a BOZ in an invalid context.
+	(boz_args_check): Move to top of file to prevent need of forward
+	declaration.
+	(is_boz_constant): New function.  Check that BOZ expr is constant.
+	(gfc_boz2real): New function. In-place conversion of BOZ literal
+	constant to REAL in accordance to F2018.
+	(gfc_boz2int): New function. In-place conversion of BOZ literal
+	constant to INTEGER in accordance to F2018.
+	(gfc_check_achar, gfc_check_char, gfc_check_float): Use gfc_invalid_boz.  Convert BOZ
+	as needed.
+	(gfc_check_bge_bgt_ble_blt): Enforce F2018 requirements on BGE,
+	BGT, BLE, and BLT intrinsic functions.
+	(gfc_check_cmplx): Re-organize to check kind, if present, first.
+	Convert BOZ real and/or imaginary parts as needed in accordance to
+	F2018.
+	(gfc_check_complex):  Use gfc_invalid_boz.  Convert BOZ as needed.
+	(gfc_check_dcmplx, gfc_check_dble ): Convert BOZ as needed.
+	(gfc_check_dshift):  Make dshift[lr] conform to F2018 standard.
+ 	gfc_check_float (gfc_expr *a)
+	(gfc_check_iand_ieor_ior):  Make IAND, IEOR, and IOR conform to
+	F2018 standard.
+	(gfc_check_int): Conform to F2018 standard.
+	(gfc_check_intconv): Deprecate SHORT and LONG aliases for INT2 and
+	INT.  Simply return for a BOZ argument. See gfc_simplify_intconv.
+	(gfc_check_merge_bits): Make MERGE_BITS conform to Fortran 2018
+	standard.
+	(gfc_check_real): Remove incorrect comment. Check kind, if present,
+	first.  Simply return for a BOZ argument. See gfc_simplify_real.
+	(gfc_check_and): Re-do error handling for BOZ arguments.  Remove
+	special casing ts.type != BT_INTEGER or BT_LOGICAL.
+	* decl.c (match_old_style_init): Check for BOZ in old-style
+	initialization.  Issue error or warning depending on
+	-fallow-invalid-boz option.  Issue error if variable is not an
+	INTEGER or REAL and the value is BOZ.
+	* expr.c (gfc_copy_expr): Copy a BT_BOZ gfc_expr.
+	(gfc_check_assign): Re-do error handling for a BOZ in an assignment
+	statement.  Do in-place conversion of RHS based on LHS type of
+	INTEGER or REAL.
+	* gfortran.h (gfc_expr): Add a boz component.  Remove is_boz component.
+	(gfc_boz2int, gfc_boz2real, gfc_invalid_boz): New prototypes.
+	* interface.c (gfc_extend_assign): Guard against replacing an
+	intrinsic involving a BOZ literal constant on RHS.
+	* invoke.texi: Doument -fallow-invalid-boz.
+	* lang.opt: New option. -fallow-invalid-boz.
+	* libgfortran.h (bt): Elevate BOZ to a basic type.
+	* misc.c (gfc_basic_typename, gfc_typename): Translate BT_BOZ to BOZ.
+	* primary.c (convert_integer, convert_real, convert_complex): to here.
+	Rename and make static functions.
+	* primary.c(match_boz_constant): Rewrite parsing of a BOZ. Re-do
+	error handling.  Deprecate 'X' for hexidecimal and postfix notation.
+	Use -fallow-invalid-boz and gfc_invalid_boz to accept deprecated code.
+	* resolve.c (resolve_ordinary_assign): Rework a RHS that is a
+	BOZ literal constant.  Use gfc_invalid_boz to allow previous
+	nonstandard behavior.  Remove range checking of BOZ conversion.
+	* simplify.c (convert_boz): Remove function.
+	(simplify_cmplx): Remove conversion of BOZ constants, because
+	conversion is done in gfc_check_cmplx.
+	(gfc_simplify_float): Remove conversion of BOZ constant, because
+	conversion is done in gfc_check_float.
+	(simplify_intconv): Use gfc_boz2int to convert BOZ to INTEGER.
+	Remove range checking for BOZ conversion.
+	(gfc_simplify_real): Use k, if present, to determine kind.  Convert
+	BOZ to REAL.  Remove range checking for BOZ conversion.
+	target-memory.c (gfc_convert_boz): Rewrite to deal with convert of
+	a BOZ to a REAL value.
+
 2019-07-21  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/91030

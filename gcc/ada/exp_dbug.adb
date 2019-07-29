@@ -914,6 +914,14 @@ package body Exp_Dbug is
       --  names produced for Ghost entities, while "__ghost_" can appear in
       --  names of entities inside a child/local package called "Ghost".
 
+      --  The compiler-generated finalizer for an enabled Ghost unit is treated
+      --  specially, as its name must be known to the binder, which has no
+      --  knowledge of Ghost status. In that case, the finalizer is not marked
+      --  as Ghost so that no prefix is added. Note that the special ___ghost_
+      --  prefix is retained when the Ghost unit is ignored, which still allows
+      --  inspecting the final executable for the presence of an ignored Ghost
+      --  finalizer procedure.
+
       if Is_Ghost_Entity (E)
         and then not Is_Compilation_Unit (E)
         and then (Name_Len < 9

@@ -2234,8 +2234,17 @@ package body Sem_Ch5 is
                It : Interp;
 
             begin
+               --  THe domain of iteralion must implement either the RM
+               --  iterator interface, or the SPARK Iterable aspect.
+
                if No (Iterator) then
-                  null;  --  error reported below
+                  if No
+                     (Find_Aspect (Etype (Iter_Name), Aspect_Iterable))
+                  then
+                     Error_Msg_NE ("cannot iterate over&",
+                       N, Base_Type (Etype (Iter_Name)));
+                     return;
+                  end if;
 
                elsif not Is_Overloaded (Iterator) then
                   Check_Reverse_Iteration (Etype (Iterator));

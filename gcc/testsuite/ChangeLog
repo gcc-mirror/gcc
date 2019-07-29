@@ -1,3 +1,296 @@
+2019-07-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/lto/pr89330_0.C (dg-lto-options): Add -fPIC.
+	Require fpic support.
+
+2019-07-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/powerpc/bmi2-bzhi64-1a.c: Add options to enable altivec
+	and vsx.
+
+2019-07-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/scanasm.exp (object-size): Handle Darwin's size command.
+
+2018-07-26  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/type-convert-var.c: New test.
+
+2019-07-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/89330
+	* g++.dg/lto/pr89330_[01].C: New test.
+	* g++.dg/tree-prof/devirt.C: Added -fno-profile-values to dg-options.
+
+2019-07-25  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91183
+	PR tree-optimization/86688
+	* gcc.dg/Wstringop-overflow-14.c: Disable for stricly aligned targets.
+	* gcc.dg/strlenopt-70.c: Fix bugs.
+	* gcc.dg/strlenopt-71.c: Same.
+	* gcc.dg/strlenopt-72.c: Same.
+
+2019-07-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/91223
+	* gcc.target/i386/pr91223.c: New test.
+
+2019-07-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR gcov-profile/91087
+	* g++.dg/gcov/pr16855.C: Xfail the count lines for the DTORs and the
+	"final" line for the failure summaries.  Adjust source layout so that
+	dejagnu xfail expressions work.
+
+2019-07-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/65819
+	* gfortran.dg/dependency_54.f90: New test.
+
+2019-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/case_optimization3.ad[sb]: New test.
+
+2019-07-25  Martin Liska  <mliska@suse.cz
+	    Dominik Infuhr  <dominik.infuehr@theobroma-systems.com>
+
+	PR c++/23383
+	* g++.dg/cpp1y/new1.C: New test.
+
+2019-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/91245
+	* gnat.dg/float_value1.adb: Only run on x86.
+
+2019-07-24  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91183
+	PR tree-optimization/86688
+	* gcc/testsuite/c-c++-common/ubsan/object-size-9.c: Disable warnings.
+	* gcc.dg/Wstringop-overflow-14.c: New test.
+	* gcc.dg/attr-nonstring-2.c: Remove xfails.
+	* gcc.dg/strlenopt-70.c: New test.
+	* gcc.dg/strlenopt-71.c: New test.
+	* gcc.dg/strlenopt-72.c: New test.
+	* gcc.dg/strlenopt-8.c: Remove xfails.
+
+2019-07-24  Martin Sebor  <msebor@redhat.com>
+
+	PR driver/80545
+	* gcc.misc-tests/help.exp: Add tests.
+	* lib/options.exp: Handle C++.
+
+2019-07-24  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/arc.exp (check_effective_target_accregs): New
+	predicate.
+	* gcc.target/arc/builtin_special.c: Update test/
+	* gcc.target/arc/interrupt-1.c: Likewise.
+	* gcc.target/arc/interrupt-10.c: New test.
+	* gcc.target/arc/interrupt-11.c: Likewise.
+	* gcc.target/arc/interrupt-12.c: Likewise.
+
+2019-07-24  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/addsub-signed-overflow-1.c: New test.
+	* gcc.target/s390/addsub-signed-overflow-2.c: New test.
+	* gcc.target/s390/mul-signed-overflow-1.c: New test.
+	* gcc.target/s390/mul-signed-overflow-2.c: New test.
+
+2019-07-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR middle-end/91166
+	* gcc.target/aarch64/sve/pr91166.c: New test.
+
+2019-07-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/54072
+	* gfortran.dg/illegal_boz_arg_1.f90: New tests.
+
+2019-07-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/achar_5.f90: Fix for new BOZ handling.
+	* arithmetic_overflow_1.f90: Ditto.
+	* gfortran.dg/boz_11.f90: Ditto.
+	* gfortran.dg/boz_12.f90: Ditto.
+	* gfortran.dg/boz_4.f90: Ditto.
+	* gfortran.dg/boz_5.f90: Ditto.
+	* gfortran.dg/boz_6.f90: Ditto.
+	* gfortran.dg/boz_7.f90: Ditto.
+	* gfortran.dg/boz_8.f90: Ditto.
+	* gfortran.dg/dec_structure_6.f90: Ditto.
+	* gfortran.dg/dec_union_1.f90: Ditto.
+	* gfortran.dg/dec_union_2.f90: Ditto.
+	* gfortran.dg/dec_union_5.f90: Ditto.
+	* gfortran.dg/dshift_3.f90: Ditto.
+	* gfortran.dg/gnu_logical_2.f90: Ditto.
+	* gfortran.dg/int_conv_1.f90: Ditto.
+	* gfortran.dg/ishft_1.f90: Ditto.
+	* gfortran.dg/nan_4.f90: Ditto.
+	* gfortran.dg/no_range_check_3.f90: Ditto.
+	* gfortran.dg/pr16433.f: Ditto.
+	* gfortran.dg/pr44491.f90: Ditto.
+	* gfortran.dg/pr58027.f90: Ditto.
+	* gfortran.dg/pr81509_2.f90: Ditto.
+	* gfortran.dg/unf_io_convert_1.f90: Ditto.
+	* gfortran.dg/unf_io_convert_2.f90: Ditto.
+	* gfortran.fortran-torture/execute/intrinsic_fraction_exponent.f90:
+	Ditto.
+	* gfortran.fortran-torture/execute/intrinsic_mvbits.f90: Ditto.
+	* gfortran.fortran-torture/execute/intrinsic_nearest.f90: Ditto.
+	* gfortran.fortran-torture/execute/seq_io.f90: Ditto.
+	* gfortran.dg/gnu_logical_1.F: Delete test.
+	* gfortran.dg/merge_bits_3.f90: New test.
+	* gfortran.dg/merge_bits_3.f90: Ditto.
+	* gfortran.dg/boz_int.f90: Ditto.
+	* gfortran.dg/boz_bge.f90: Ditto.
+	* gfortran.dg/boz_complex_1.f90: Ditto.
+	* gfortran.dg/boz_complex_2.f90: Ditto.
+	* gfortran.dg/boz_complex_3.f90: Ditto.
+	* gfortran.dg/boz_dble.f90: Ditto.
+	* gfortran.dg/boz_dshift_1.f90: Ditto.
+	* gfortran.dg/boz_dshift_2.f90: Ditto.
+	* gfortran.dg/boz_float_1.f90: Ditto.
+	* gfortran.dg/boz_float_2.f90: Ditto.
+	* gfortran.dg/boz_float_3.f90: Ditto.
+	* gfortran.dg/boz_iand_1.f90: Ditto.
+	* gfortran.dg/boz_iand_2.f90: Ditto.
+
+2019-07-23  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/86061
+	* gcc.dg/tree-ssa/pr86061.c: New test.
+
+2019-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83518
+	* gcc.dg/tree-ssa/ssa-fre-79.c: New testcase.
+
+2019-07-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/task4.adb: New testcase.
+
+2019-07-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/range_check5.adb: New testcase.
+
+2019-07-23  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/iter5.adb: Add an expected error.
+	* gnat.dg/iter6.adb: New testcase.
+
+2019-07-23  Yannick Moy  <moy@adacore.com>
+
+	* gnat.dg/ghost6.adb, gnat.dg/ghost6_pkg.ads: New testcase.
+
+2019-07-22  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* gcc.target/aarch64/simd/ssra.c: New test.
+	* gcc.target/aarch64/simd/usra.c: New test.
+
+2019-07-22  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/isr-push-pop-main.c: New test.
+	* gcc.target/msp430/isr-push-pop-isr-430.c: Likewise.
+	* gcc.target/msp430/isr-push-pop-isr-430x.c: Likewise.
+	* gcc.target/msp430/isr-push-pop-leaf-isr-430.c: Likewise.
+	* gcc.target/msp430/isr-push-pop-leaf-isr-430x.c: Likewise.
+
+2019-07-22  Andrea Corallo <andrea.corallo@arm.com>
+
+	* jit.dg/test-error-gcc_jit_context_new_unary_op-bad-res-type.c:
+	New testcase.
+	* jit.dg/test-error-gcc_jit_context_new_binary_op-bad-res-type.c:
+	Adjust error message.
+
+2019-07-22  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse4_1-check.h: New.
+	* gcc.target/powerpc/sse4_1-pblendvb.c: New.
+	* gcc.target/powerpc/sse4_1-pblendw.c: New.
+	* gcc.target/powerpc/sse4_1-pblendw-2.c: New.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/fixedpnt6.adb: New testcase.
+
+2019-07-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/warn26.adb: New testcase.
+
+2019-07-22  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/class_wide5.adb: New testcase.
+
+2019-07-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/opt80.adb: New testcase.
+
+2019-07-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/warn25.adb: New testcase.
+
+2019-07-22  Yannick Moy  <moy@adacore.com>
+
+	* gnat.dg/warn24.adb: New testcase.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/inline17.adb, gnat.dg/inline17_pkg1.adb,
+	gnat.dg/inline17_pkg1.ads, gnat.dg/inline17_pkg2.ads,
+	gnat.dg/inline17_pkg3.adb, gnat.dg/inline17_pkg3.ads: New
+	testcase.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/iter5.adb, gnat.dg/iter5_pkg.ads: New testcase.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/enum_val1.adb: New testcase.
+
+2019-07-22  Nicolas Roche  <roche@adacore.com>
+
+	* gnat.dg/float_value1.adb: New testcase.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/encode_string1.adb, gnat.dg/encode_string1_pkg.adb,
+	gnat.dg/encode_string1_pkg.ads: New testcase.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn23.adb: New testcase.
+
+2019-07-22  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/cpp_constructor2.adb: New testcase.
+
+2019-07-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/warn22.adb: New testcase.
+
+2019-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_invariant1.adb, gnat.dg/loop_invariant1.ads: New
+	testcase.
+
+2019-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91221
+	* g++.dg/pr91221.C: New testcase.
+
+2019-07-22  Martin Liska  <mliska@suse.cz>
+
+	PR driver/91172
+	* gcc.dg/pr91172.c: New test.
+
+2019-07-22  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/tls-2.c: New test.
+	* gcc.target/arc/tls-3.c: Likewise.
+
 2019-07-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/67853
@@ -47,6 +340,7 @@
 
 2019-07-19  Jeff Law  <law@redhat.com>
 
+	PR tree-optimization/86061
 	* gcc.dg/tree-ssa/ssa-dse-37.c: New test.
 	* gcc.dg/tree-ssa/ssa-dse-38.c: New test.
 
@@ -102,7 +396,7 @@
 	* g++.dg/lto/alias-5_1.C: New.
 	* g++.dg/lto/alias-5_2.c: New.
 
-2019-07-18  Bin Cheng  <bin.linux@linux.alibaba.com>
+2019-07-18  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/91137
 	* gcc.c-torture/execute/pr91137.c: New test.

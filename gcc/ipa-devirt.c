@@ -1613,7 +1613,7 @@ add_type_duplicate (odr_type val, tree type)
   val->types_set->add (type);
 
   if (!odr_hash)
-    return NULL;
+    return false;
 
   gcc_checking_assert (can_be_name_hashed_p (type)
 		       && can_be_name_hashed_p (val->type));

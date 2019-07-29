@@ -92,6 +92,11 @@ package GNAT.Expect.TTY is
       Columns    : Natural);
    --  Sets up the size of the terminal as reported to the spawned process
 
+   function Is_Process_Running
+      (Descriptor : in out TTY_Process_Descriptor)
+      return Boolean;
+   --  Return True is the process is still alive
+
 private
 
    --  All declarations in the private part must be fully commented ???
@@ -129,9 +134,14 @@ private
       Cmd   : String;
       Args  : System.Address);
 
+   Still_Active : constant Integer := -1;
+
    type TTY_Process_Descriptor is new Process_Descriptor with record
-      Process   : System.Address;  --  Underlying structure used in C
-      Use_Pipes : Boolean := True;
+      Process     : System.Address;
+      --  Underlying structure used in C
+      Exit_Status : Integer := Still_Active;
+      --  Hold the exit status of the process.
+      Use_Pipes   : Boolean := True;
    end record;
 
 end GNAT.Expect.TTY;

@@ -445,9 +445,10 @@
 
       <para>
 	Adding Doxygen markup to a file (informally called
-	<quote>doxygenating</quote>) is very simple. The Doxygen manual can be
-	found
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.stack.nl/~dimitri/doxygen/download.html#latestman">here</link>.
+	<quote>doxygenating</quote>) is very simple. See the
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" 
+         xlink:href="http://www.doxygen.nl/download.html#latestman">Doxygen
+         manual</link> for details.
 	We try to use a very-recent version of Doxygen.
       </para>
 
@@ -463,7 +464,8 @@
 
       <para>
 	Some commentary to accompany
-	the first list in the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.stack.nl/~dimitri/doxygen/manual/docblocks.html">Special
+	the first list in the <link xmlns:xlink="http://www.w3.org/1999/xlink"
+        xlink:href="http://www.doxygen.nl/manual/docblocks.html">Special
 	Documentation Blocks</link> section of the Doxygen manual:
       </para>
 

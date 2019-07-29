@@ -4274,6 +4274,12 @@ gfc_extend_assign (gfc_code *c, gfc_namespace *ns)
   lhs = c->expr1;
   rhs = c->expr2;
 
+  /* Don't allow an intrinsic assignment with a BOZ rhs to be replaced.  */
+  if (c->op == EXEC_ASSIGN
+      && c->expr1->expr_type == EXPR_VARIABLE
+      && c->expr2->expr_type == EXPR_CONSTANT && c->expr2->ts.type == BT_BOZ)
+    return false;
+
   /* Don't allow an intrinsic assignment to be replaced.  */
   if (lhs->ts.type != BT_DERIVED && lhs->ts.type != BT_CLASS
       && (rhs->rank == 0 || rhs->rank == lhs->rank)

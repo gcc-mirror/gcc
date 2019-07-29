@@ -715,10 +715,14 @@ package body Sem_SPARK is
 
    function Get_Root_Object
      (Expr              : Node_Id;
-      Through_Traversal : Boolean := True) return Entity_Id;
+      Through_Traversal : Boolean := True;
+      Is_Traversal      : Boolean := False) return Entity_Id;
    --  Return the root of the path expression Expr, or Empty for an allocator,
    --  NULL, or a function call. Through_Traversal is True if it should follow
-   --  through calls to traversal functions.
+   --  through calls to traversal functions. Is_Traversal is True if this
+   --  corresponds to a value returned from a traversal function, which should
+   --  allow if-expressions and case-expressions that refer to the same root,
+   --  even if the paths are not the same in all branches.
 
    generic
       with procedure Handle_Parameter_Or_Global
@@ -745,11 +749,19 @@ package body Sem_SPARK is
    --  A procedure that is called when deep globals or aliased globals are used
    --  without any global aspect.
 
-   function Is_Path_Expression (Expr : Node_Id) return Boolean;
-   --  Return whether Expr corresponds to a path
+   function Is_Path_Expression
+     (Expr         : Node_Id;
+      Is_Traversal : Boolean := False) return Boolean;
+   --  Return whether Expr corresponds to a path. Is_Traversal is True if this
+   --  corresponds to a value returned from a traversal function, which should
+   --  allow if-expressions and case-expressions.
 
-   function Is_Subpath_Expression (Expr : Node_Id) return Boolean;
-   --  Return True if Expr can be part of a path expression
+   function Is_Subpath_Expression
+     (Expr         : Node_Id;
+      Is_Traversal : Boolean := False) return Boolean;
+   --  Return True if Expr can be part of a path expression. Is_Traversal is
+   --  True if this corresponds to a value returned from a traversal function,
+   --  which should allow if-expressions and case-expressions.
 
    function Is_Prefix_Or_Almost (Pref, Expr : Node_Id) return Boolean;
    --  Determine if the candidate Prefix is indeed a prefix of Expr, or almost
@@ -1407,9 +1419,37 @@ package body Sem_SPARK is
             Check_Expression (Subtype_Indication (Decl), Read);
 
          when N_Object_Declaration =>
+            Expr := Expression (Decl);
+
             Check_Type (Target_Typ);
 
-            Expr := Expression (Decl);
+            --  A declaration of a stand-alone object of an anonymous access
+            --  type shall have an explicit initial value and shall occur
+            --  immediately within a subprogram body, an entry body, or a
+            --  block statement (SPARK RM 3.10(4)).
+
+            if Is_Anonymous_Access_Type (Target_Typ) then
+               declare
+                  Scop : constant Entity_Id := Scope (Target);
+               begin
+                  if not Is_Local_Context (Scop) then
+                     if Emit_Messages then
+                        Error_Msg_N
+                          ("object of anonymous access type must be declared "
+                           & "immediately within a subprogram, entry or block "
+                           & "(SPARK RM 3.10(4))", Decl);
+                     end if;
+                  end if;
+               end;
+
+               if No (Expr) then
+                  if Emit_Messages then
+                     Error_Msg_N ("object of anonymous access type must be "
+                                  & "initialized (SPARK RM 3.10(4))", Decl);
+                  end if;
+               end if;
+            end if;
+
             if Present (Expr) then
                Check_Assignment (Target => Target,
                                  Expr   => Expr);
@@ -1746,6 +1786,31 @@ package body Sem_SPARK is
                      end if;
 
                      Next (Assoc);
+                  end loop;
+               end;
+
+            when N_If_Expression =>
+               declare
+                  Cond      : constant Node_Id := First (Expressions (Expr));
+                  Then_Part : constant Node_Id := Next (Cond);
+                  Else_Part : constant Node_Id := Next (Then_Part);
+               begin
+                  Read_Expression (Cond);
+                  Read_Indexes (Then_Part);
+                  Read_Indexes (Else_Part);
+               end;
+
+            when N_Case_Expression =>
+               declare
+                  Cases    : constant List_Id := Alternatives (Expr);
+                  Cur_Case : Node_Id := First (Cases);
+
+               begin
+                  Read_Expression (Expression (Expr));
+
+                  while Present (Cur_Case) loop
+                     Read_Indexes (Expression (Cur_Case));
+                     Next (Cur_Case);
                   end loop;
                end;
 
@@ -2811,9 +2876,14 @@ package body Sem_SPARK is
          --  independently for R permission. Outputs are checked
          --  independently to have RW permission on exit.
 
-         when Pragma_Contract_Cases
+         --  Postconditions are checked for correct use of 'Old, but starting
+         --  from the corresponding declaration, in order to avoid dealing with
+         --  with contracts on generic subprograms, which are not handled in
+         --  GNATprove.
+
+         when Pragma_Precondition
             | Pragma_Postcondition
-            | Pragma_Precondition
+            | Pragma_Contract_Cases
             | Pragma_Refined_Post
          =>
             null;
@@ -3115,14 +3185,14 @@ package body Sem_SPARK is
                      if Is_Anonymous_Access_Type (Return_Typ) then
                         pragma Assert (Is_Traversal_Function (Subp));
 
-                        if Nkind (Expr) /= N_Null and then Emit_Messages then
+                        if Nkind (Expr) /= N_Null then
                            declare
                               Expr_Root : constant Entity_Id :=
-                                Get_Root_Object (Expr);
+                                Get_Root_Object (Expr, Is_Traversal => True);
                               Param     : constant Entity_Id :=
                                 First_Formal (Subp);
                            begin
-                              if Param /= Expr_Root then
+                              if Param /= Expr_Root and then Emit_Messages then
                                  Error_Msg_NE
                                    ("returned value must be rooted in "
                                     & "traversed parameter & "
@@ -3642,10 +3712,31 @@ package body Sem_SPARK is
 
    function Get_Root_Object
      (Expr              : Node_Id;
-      Through_Traversal : Boolean := True) return Entity_Id
+      Through_Traversal : Boolean := True;
+      Is_Traversal      : Boolean := False) return Entity_Id
    is
+      function GRO (Expr : Node_Id) return Entity_Id;
+      --  Local wrapper on the actual function, to propagate the values of
+      --  optional parameters.
+
+      ---------
+      -- GRO --
+      ---------
+
+      function GRO (Expr : Node_Id) return Entity_Id is
+      begin
+         return Get_Root_Object (Expr, Through_Traversal, Is_Traversal);
+      end GRO;
+
+      Get_Root_Object : Boolean;
+      pragma Unmodified (Get_Root_Object);
+      --  Local variable to mask the name of function Get_Root_Object, to
+      --  prevent direct call. Instead GRO wrapper should be called.
+
+   --  Start of processing for Get_Root_Object
+
    begin
-      if not Is_Subpath_Expression (Expr) then
+      if not Is_Subpath_Expression (Expr, Is_Traversal) then
          if Emit_Messages then
             Error_Msg_N ("name expected here for path", Expr);
          end if;
@@ -3663,7 +3754,7 @@ package body Sem_SPARK is
             | N_Selected_Component
             | N_Slice
          =>
-            return Get_Root_Object (Prefix (Expr), Through_Traversal);
+            return GRO (Prefix (Expr));
 
          --  There is no root object for an (extension) aggregate, allocator,
          --  concat, or NULL.
@@ -3684,7 +3775,7 @@ package body Sem_SPARK is
             if Through_Traversal
               and then Is_Traversal_Function_Call (Expr)
             then
-               return Get_Root_Object (First_Actual (Expr), Through_Traversal);
+               return GRO (First_Actual (Expr));
             else
                return Empty;
             end if;
@@ -3693,7 +3784,7 @@ package body Sem_SPARK is
             | N_Type_Conversion
             | N_Unchecked_Type_Conversion
          =>
-            return Get_Root_Object (Expression (Expr), Through_Traversal);
+            return GRO (Expression (Expr));
 
          when N_Attribute_Reference =>
             pragma Assert
@@ -3705,6 +3796,69 @@ package body Sem_SPARK is
                or else Get_Attribute_Id (Attribute_Name (Expr)) =
                  Attribute_Image);
             return Empty;
+
+         when N_If_Expression =>
+            if Is_Traversal then
+               declare
+                  Cond      : constant Node_Id := First (Expressions (Expr));
+                  Then_Part : constant Node_Id := Next (Cond);
+                  Else_Part : constant Node_Id := Next (Then_Part);
+                  Then_Root : constant Entity_Id := GRO (Then_Part);
+                  Else_Root : constant Entity_Id := GRO (Else_Part);
+               begin
+                  if Nkind (Then_Part) = N_Null then
+                     return Else_Root;
+                  elsif Nkind (Else_Part) = N_Null then
+                     return Then_Part;
+                  elsif Then_Root = Else_Root then
+                     return Then_Root;
+                  else
+                     if Emit_Messages then
+                        Error_Msg_N
+                          ("same name expected here in each branch", Expr);
+                     end if;
+                     return Empty;
+                  end if;
+               end;
+            else
+               if Emit_Messages then
+                  Error_Msg_N ("name expected here for path", Expr);
+               end if;
+               return Empty;
+            end if;
+
+         when N_Case_Expression =>
+            if Is_Traversal then
+               declare
+                  Cases       : constant List_Id := Alternatives (Expr);
+                  Cur_Case    : Node_Id := First (Cases);
+                  Cur_Root    : Entity_Id;
+                  Common_Root : Entity_Id := Empty;
+
+               begin
+                  while Present (Cur_Case) loop
+                     Cur_Root := GRO (Expression (Cur_Case));
+
+                     if Common_Root = Empty then
+                        Common_Root := Cur_Root;
+                     elsif Common_Root /= Cur_Root then
+                        if Emit_Messages then
+                           Error_Msg_N
+                             ("same name expected here in each branch", Expr);
+                        end if;
+                        return Empty;
+                     end if;
+                     Next (Cur_Case);
+                  end loop;
+
+                  return Common_Root;
+               end;
+            else
+               if Emit_Messages then
+                  Error_Msg_N ("name expected here for path", Expr);
+               end if;
+               return Empty;
+            end if;
 
          when others =>
             raise Program_Error;
@@ -3872,11 +4026,44 @@ package body Sem_SPARK is
       end case;
    end Is_Deep;
 
+   ----------------------
+   -- Is_Local_Context --
+   ----------------------
+
+   function Is_Local_Context (Scop : Entity_Id) return Boolean is
+   begin
+      return Is_Subprogram_Or_Entry (Scop)
+        or else Ekind (Scop) = E_Block;
+   end Is_Local_Context;
+
    ------------------------
    -- Is_Path_Expression --
    ------------------------
 
-   function Is_Path_Expression (Expr : Node_Id) return Boolean is
+   function Is_Path_Expression
+     (Expr         : Node_Id;
+      Is_Traversal : Boolean := False) return Boolean
+   is
+      function IPE (Expr : Node_Id) return Boolean;
+      --  Local wrapper on the actual function, to propagate the values of
+      --  optional parameter Is_Traversal.
+
+      ---------
+      -- IPE --
+      ---------
+
+      function IPE (Expr : Node_Id) return Boolean is
+      begin
+         return Is_Path_Expression (Expr, Is_Traversal);
+      end IPE;
+
+      Is_Path_Expression : Boolean;
+      pragma Unmodified (Is_Path_Expression);
+      --  Local variable to mask the name of function Is_Path_Expression, to
+      --  prevent direct call. Instead IPE wrapper should be called.
+
+   --  Start of processing for Is_Path_Expression
+
    begin
       case Nkind (Expr) is
          when N_Expanded_Name
@@ -3907,7 +4094,47 @@ package body Sem_SPARK is
             | N_Type_Conversion
             | N_Unchecked_Type_Conversion
          =>
-            return Is_Path_Expression (Expression (Expr));
+            return IPE (Expression (Expr));
+
+         --  When returning from a traversal function, consider an
+         --  if-expression as a possible path expression.
+
+         when N_If_Expression =>
+            if Is_Traversal then
+               declare
+                  Cond      : constant Node_Id := First (Expressions (Expr));
+                  Then_Part : constant Node_Id := Next (Cond);
+                  Else_Part : constant Node_Id := Next (Then_Part);
+               begin
+                  return IPE (Then_Part)
+                    and then IPE (Else_Part);
+               end;
+            else
+               return False;
+            end if;
+
+         --  When returning from a traversal function, consider
+         --  a case-expression as a possible path expression.
+
+         when N_Case_Expression =>
+            if Is_Traversal then
+               declare
+                  Cases    : constant List_Id := Alternatives (Expr);
+                  Cur_Case : Node_Id := First (Cases);
+
+               begin
+                  while Present (Cur_Case) loop
+                     if not IPE (Expression (Cur_Case)) then
+                        return False;
+                     end if;
+                     Next (Cur_Case);
+                  end loop;
+
+                  return True;
+               end;
+            else
+               return False;
+            end if;
 
          when others =>
             return False;
@@ -4033,9 +4260,12 @@ package body Sem_SPARK is
    -- Is_Subpath_Expression --
    ---------------------------
 
-   function Is_Subpath_Expression (Expr : Node_Id) return Boolean is
+   function Is_Subpath_Expression
+     (Expr         : Node_Id;
+      Is_Traversal : Boolean := False) return Boolean
+   is
    begin
-      return Is_Path_Expression (Expr)
+      return Is_Path_Expression (Expr, Is_Traversal)
         or else (Nkind (Expr) = N_Attribute_Reference
                   and then
                     (Get_Attribute_Id (Attribute_Name (Expr)) =
@@ -4676,13 +4906,10 @@ package body Sem_SPARK is
 
          when Borrow =>
 
-            --  Forbidden during elaboration
+            --  Forbidden during elaboration, an error is already issued in
+            --  Check_Declaration, just return.
 
             if Inside_Elaboration then
-               if not Inside_Procedure_Call and then Emit_Messages then
-                  Error_Msg_N ("illegal borrow during elaboration", Expr);
-               end if;
-
                return;
             end if;
 
@@ -4695,13 +4922,10 @@ package body Sem_SPARK is
 
          when Observe =>
 
-            --  Forbidden during elaboration
+            --  Forbidden during elaboration, an error is already issued in
+            --  Check_Declaration, just return.
 
             if Inside_Elaboration then
-               if not Inside_Procedure_Call and then Emit_Messages then
-                  Error_Msg_N ("illegal observe during elaboration", Expr);
-               end if;
-
                return;
             end if;
 

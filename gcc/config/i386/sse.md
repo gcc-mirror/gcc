@@ -853,6 +853,13 @@
    (V4SF "k") (V2DF "q")
    (SF "k") (DF "q")])
 
+;; Mapping of vector modes to VPTERNLOG suffix
+(define_mode_attr ternlogsuffix
+  [(V8DI "q") (V4DI "q") (V2DI "q")
+   (V16SI "d") (V8SI "d") (V4SI "d")
+   (V32HI "d") (V16HI "d") (V8HI "d")
+   (V64QI "d") (V32QI "d") (V16QI "d")])
+
 ;; Number of scalar elements in each vector type
 (define_mode_attr ssescalarnum
   [(V64QI "64") (V16SI "16") (V8DI "8")
@@ -6558,21 +6565,25 @@
 	  (match_dup 2)
 	  (match_dup 3)
 	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
-  "TARGET_AVX512DQ"
+  "TARGET_AVX512F"
   "{
     operands[2] = CONSTM1_RTX (<MODE>mode);
     operands[3] = CONST0_RTX (<MODE>mode);
   }")
 
 (define_insn "*<avx512>_cvtmask2<ssemodesuffix><mode>"
-  [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")
+  [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v,v")
 	(vec_merge:VI48_AVX512VL
 	  (match_operand:VI48_AVX512VL 2 "vector_all_ones_operand")
 	  (match_operand:VI48_AVX512VL 3 "const0_operand")
-	  (match_operand:<avx512fmaskmode> 1 "register_operand" "k")))]
-  "TARGET_AVX512DQ"
-  "vpmovm2<ssemodesuffix>\t{%1, %0|%0, %1}"
-  [(set_attr "prefix" "evex")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand" "k,Yk")))]
+  "TARGET_AVX512F"
+  "@
+   vpmovm2<ssemodesuffix>\t{%1, %0|%0, %1}
+   vpternlog<ssemodesuffix>\t{$0x81, %0, %0, %0%{%1%}%{z%}|%0%{%1%}%{z%}, %0, %0, 0x81}"
+  [(set_attr "isa" "avx512dq,*")
+   (set_attr "length_immediate" "0,1")
+   (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "sse2_cvtps2pd<mask_name>"
@@ -12723,8 +12734,21 @@
 		(match_dup 2)))]
   "TARGET_SSE"
 {
-  operands[2] = force_reg (<MODE>mode, CONSTM1_RTX (<MODE>mode));
+  if (!TARGET_AVX512F)
+    operands[2] = force_reg (<MODE>mode, CONSTM1_RTX (<MODE>mode));
+  else
+    operands[2] = CONSTM1_RTX (<MODE>mode);
 })
+
+(define_insn "<mask_codefor>one_cmpl<mode>2<mask_name>"
+  [(set (match_operand:VI 0 "register_operand" "=v")
+	(xor:VI (match_operand:VI 1 "nonimmediate_operand" "vm")
+		(match_operand:VI 2 "vector_all_ones_operand" "BC")))]
+  "TARGET_AVX512F"
+  "vpternlog<ternlogsuffix>\t{$0x55, %1, %0, %0<mask_operand3>|%0<mask_operand3>, %0, %1, 0x55}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
 
 (define_expand "<sse2_avx2>_andnot<mode>3"
   [(set (match_operand:VI_AVX2 0 "register_operand")

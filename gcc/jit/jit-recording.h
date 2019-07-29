@@ -30,6 +30,9 @@ namespace gcc {
 
 namespace jit {
 
+extern const char * const unary_op_reproducer_strings[];
+extern const char * const binary_op_reproducer_strings[];
+
 class result;
 class dump;
 class reproducer;

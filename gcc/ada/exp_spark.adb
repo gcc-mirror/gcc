@@ -522,12 +522,6 @@ package body Exp_SPARK is
 
          Insert_Explicit_Dereference (Pref);
          Analyze_And_Resolve (Pref, Designated_Type (Typ));
-
-         if Ekind (Etype (Pref)) = E_Private_Subtype
-           and then Is_For_Access_Subtype (Etype (Pref))
-         then
-            Set_Etype (Pref, Base_Type (Etype (Pref)));
-         end if;
       end if;
    end Expand_SPARK_N_Selected_Component;
 

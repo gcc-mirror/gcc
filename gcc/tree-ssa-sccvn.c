@@ -1818,7 +1818,7 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
       if (TREE_CODE (pd.rhs) == CONSTRUCTOR)
 	/* Empty CONSTRUCTOR.  */
 	memset (buffer + MAX (0, pd.offset),
-		0, MIN ((HOST_WIDE_INT)sizeof (buffer),
+		0, MIN ((HOST_WIDE_INT)sizeof (buffer) - MAX (0, pd.offset),
 			pd.size + MIN (0, pd.offset)));
       else
 	{
@@ -1833,7 +1833,7 @@ vn_walk_cb_data::push_partial_def (const pd_data &pd, tree vuse,
 	      pad = GET_MODE_SIZE (mode) - pd.size;
 	    }
 	  len = native_encode_expr (pd.rhs, buffer + MAX (0, pd.offset),
-				    sizeof (buffer - MAX (0, pd.offset)),
+				    sizeof (buffer) - MAX (0, pd.offset),
 				    MAX (0, -pd.offset) + pad);
 	  if (len <= 0 || len < (pd.size - MAX (0, -pd.offset)))
 	    {
@@ -2455,7 +2455,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	           (vuse, vr->set, vr->type, vr->operands, val);
 	}
       /* For now handle clearing memory with partial defs.  */
-      else if (integer_zerop (gimple_call_arg (def_stmt, 1))
+      else if (known_eq (ref->size, maxsize)
+	       && integer_zerop (gimple_call_arg (def_stmt, 1))
 	       && tree_to_poly_int64 (len).is_constant (&leni)
 	       && offset.is_constant (&offseti)
 	       && offset2.is_constant (&offset2i)
@@ -2503,7 +2504,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      return vn_reference_lookup_or_insert_for_pieces
 		  (vuse, vr->set, vr->type, vr->operands, val);
 	    }
-	  else if (maxsize.is_constant (&maxsizei)
+	  else if (known_eq (ref->size, maxsize)
+		   && maxsize.is_constant (&maxsizei)
 		   && maxsizei % BITS_PER_UNIT == 0
 		   && offset.is_constant (&offseti)
 		   && offseti % BITS_PER_UNIT == 0
@@ -2700,9 +2702,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	   && gimple_assign_single_p (def_stmt)
 	   && (DECL_P (gimple_assign_rhs1 (def_stmt))
 	       || TREE_CODE (gimple_assign_rhs1 (def_stmt)) == MEM_REF
-	       || handled_component_p (gimple_assign_rhs1 (def_stmt)))
-	   /* Handling this is more complicated, give up for now.  */
-	   && data->partial_defs.is_empty ())
+	       || handled_component_p (gimple_assign_rhs1 (def_stmt))))
     {
       tree base2;
       int i, j, k;
@@ -2806,8 +2806,30 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       /* Try folding the new reference to a constant.  */
       tree val = fully_constant_vn_reference_p (vr);
       if (val)
-	return vn_reference_lookup_or_insert_for_pieces
-		 (vuse, vr->set, vr->type, vr->operands, val);
+	{
+	  if (data->partial_defs.is_empty ())
+	    return vn_reference_lookup_or_insert_for_pieces
+		(vuse, vr->set, vr->type, vr->operands, val);
+	  /* This is the only interesting case for partial-def handling
+	     coming from targets that like to gimplify init-ctors as
+	     aggregate copies from constant data like aarch64 for
+	     PR83518.  */
+	  if (maxsize.is_constant (&maxsizei)
+	      && known_eq (ref->size, maxsize))
+	    {
+	      pd_data pd;
+	      pd.rhs = val;
+	      pd.offset = 0;
+	      pd.size = maxsizei / BITS_PER_UNIT;
+	      return data->push_partial_def (pd, vuse, maxsizei);
+	    }
+	}
+
+      /* Continuing with partial defs isn't easily possible here, we
+         have to find a full def from further lookups from here.  Probably
+	 not worth the special-casing everywhere.  */
+      if (!data->partial_defs.is_empty ())
+	return (void *)-1;
 
       /* Adjust *ref from the new operands.  */
       if (!ao_ref_init_from_vn_reference (&r, vr->set, vr->type, vr->operands))

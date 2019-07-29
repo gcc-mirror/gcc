@@ -1169,6 +1169,8 @@
 ;; This code iterator allows the shifts supported in arithmetic instructions
 (define_code_iterator ASHIFT [ashift ashiftrt lshiftrt])
 
+(define_code_iterator SHIFTRT [ashiftrt lshiftrt])
+
 ;; Code iterator for logical operations
 (define_code_iterator LOGICAL [and ior xor])
 
@@ -1350,6 +1352,9 @@
 ;; Similar for the instruction mnemonics
 (define_code_attr shift [(ashift "lsl") (ashiftrt "asr")
 			 (lshiftrt "lsr") (rotatert "ror")])
+
+;; Op prefix for shift right and accumulate.
+(define_code_attr sra_op [(ashiftrt "s") (lshiftrt "u")])
 
 ;; Map shift operators onto underlying bit-field instructions
 (define_code_attr bfshift [(ashift "ubfiz") (ashiftrt "sbfx")

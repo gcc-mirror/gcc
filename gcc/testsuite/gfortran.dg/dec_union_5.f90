@@ -25,11 +25,11 @@ end structure
 record /s5/ r5
 
 ! Unions with arrays
-r5.a(1) = z'41'
-r5.a(2) = z'42'
-r5.a(3) = z'43'
-r5.a(4) = z'44'
-r5.a(5) = z'45'
+r5.a(1) = int(z'41',1)
+r5.a(2) = int(z'42',1)
+r5.a(3) = int(z'43',1)
+r5.a(4) =int( z'44',1)
+r5.a(5) = int(z'45',1)
 if (     r5.s(1) .ne. 'A' &
     .or. r5.s(2) .ne. 'B' &
     .or. r5.s(3) .ne. 'C' &

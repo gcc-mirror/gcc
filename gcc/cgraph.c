@@ -846,17 +846,8 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
       gcc_assert (is_gimple_call (call_stmt));
     }
 
-  if (free_edges)
-    {
-      edge = free_edges;
-      free_edges = NEXT_FREE_EDGE (edge);
-    }
-  else
-    {
-      edge = ggc_alloc<cgraph_edge> ();
-      edge->m_summary_id = -1;
-    }
-
+  edge = ggc_alloc<cgraph_edge> ();
+  edge->m_summary_id = -1;
   edges_count++;
 
   gcc_assert (++edges_max_uid != 0);
@@ -1013,16 +1004,13 @@ cgraph_edge::remove_caller (void)
 void
 symbol_table::free_edge (cgraph_edge *e)
 {
+  edges_count--;
+  if (e->m_summary_id != -1)
+    edge_released_summary_ids.safe_push (e->m_summary_id);
+
   if (e->indirect_info)
     ggc_free (e->indirect_info);
-
-  /* Clear out the edge so we do not dangle pointers.  */
-  int summary_id = e->m_summary_id;
-  memset (e, 0, sizeof (*e));
-  e->m_summary_id = summary_id;
-  NEXT_FREE_EDGE (e) = free_edges;
-  free_edges = e;
-  edges_count--;
+  ggc_free (e);
 }
 
 /* Remove the edge in the cgraph.  */
@@ -2203,6 +2191,22 @@ cgraph_node::dump (FILE *f)
 	edge->indirect_info->context.dump (f);
     }
 }
+
+/* Dump call graph node to file F in graphviz format.  */
+
+void
+cgraph_node::dump_graphviz (FILE *f)
+{
+  cgraph_edge *edge;
+
+  for (edge = callees; edge; edge = edge->next_callee)
+    {
+      cgraph_node *callee = edge->callee;
+
+      fprintf (f, "\t\"%s\" -> \"%s\"\n", name (), callee->name ());
+    }
+}
+
 
 /* Dump call graph node NODE to stderr.  */
 

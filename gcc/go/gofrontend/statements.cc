@@ -5880,6 +5880,7 @@ Select_statement::lower_two_case(Block* b)
      : this->clauses_->at(1));
   Location loc = this->location();
   Expression* chan = chancase.channel();
+  Type* valtype = chan->type()->channel_type()->element_type();
 
   Temporary_statement* chantmp = Statement::make_temporary(NULL, chan, loc);
   b->add_statement(chantmp);
@@ -5891,7 +5892,8 @@ Select_statement::lower_two_case(Block* b)
     {
       // if selectnbsend(chan, &val) { body } else { default body }
 
-      Temporary_statement* ts = Statement::make_temporary(NULL, chancase.val(), loc);
+      Temporary_statement* ts =
+        Statement::make_temporary(valtype, chancase.val(), loc);
       // Tell the escape analysis that the value escapes, as it may be sent
       // to a channel.
       ts->set_value_escapes();
@@ -5904,7 +5906,6 @@ Select_statement::lower_two_case(Block* b)
     }
   else
     {
-      Type* valtype = chan->type()->channel_type()->element_type();
       Temporary_statement* ts = Statement::make_temporary(valtype, NULL, loc);
       b->add_statement(ts);
 

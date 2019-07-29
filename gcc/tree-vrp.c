@@ -1238,7 +1238,7 @@ extract_range_into_wide_ints (const value_range_base *vr,
 
 static void
 extract_range_from_multiplicative_op (value_range_base *vr,
-				      enum tree_code code,
+				      enum tree_code code, tree type,
 				      const value_range_base *vr0,
 				      const value_range_base *vr1)
 {
@@ -1253,7 +1253,6 @@ extract_range_from_multiplicative_op (value_range_base *vr,
   gcc_assert (vr0->kind () == VR_RANGE
 	      && vr0->kind () == vr1->kind ());
 
-  tree type = vr0->type ();
   wide_int res_lb, res_ub;
   wide_int vr0_lb = wi::to_wide (vr0->min ());
   wide_int vr0_ub = wi::to_wide (vr0->max ());
@@ -1785,7 +1784,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 	  vr->set_varying ();
 	  return;
 	}
-      extract_range_from_multiplicative_op (vr, code, &vr0, &vr1);
+      extract_range_from_multiplicative_op (vr, code, expr_type, &vr0, &vr1);
       return;
     }
   else if (code == RSHIFT_EXPR
@@ -1806,7 +1805,8 @@ extract_range_from_binary_expr (value_range_base *vr,
 	      if (vr0.kind () != VR_RANGE || vr0.symbolic_p ())
 		vr0.set (VR_RANGE, vrp_val_min (expr_type),
 			 vrp_val_max (expr_type));
-	      extract_range_from_multiplicative_op (vr, code, &vr0, &vr1);
+	      extract_range_from_multiplicative_op (vr, code, expr_type,
+						    &vr0, &vr1);
 	      return;
 	    }
 	  else if (code == LSHIFT_EXPR
@@ -4292,10 +4292,12 @@ class vrp_prop : public ssa_propagation_engine
 
   class vr_values vr_values;
   /* Temporary delegator to minimize code churn.  */
-  value_range *get_value_range (const_tree op)
+  const value_range *get_value_range (const_tree op)
     { return vr_values.get_value_range (op); }
+  void set_def_to_varying (const_tree def)
+    { vr_values.set_def_to_varying (def); }
   void set_defs_to_varying (gimple *stmt)
-    { return vr_values.set_defs_to_varying (stmt); }
+    { vr_values.set_defs_to_varying (stmt); }
   void extract_range_from_stmt (gimple *stmt, edge *taken_edge_p,
 				tree *output_p, value_range *vr)
     { vr_values.extract_range_from_stmt (stmt, taken_edge_p, output_p, vr); }
@@ -5148,7 +5150,7 @@ vrp_prop::vrp_initialize ()
 	  if (!stmt_interesting_for_vrp (phi))
 	    {
 	      tree lhs = PHI_RESULT (phi);
-	      get_value_range (lhs)->set_varying ();
+	      set_def_to_varying (lhs);
 	      prop_set_simulate_again (phi, false);
 	    }
 	  else
@@ -5343,7 +5345,7 @@ vrp_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 	    use_operand_p use_p;
 	    enum ssa_prop_result res = SSA_PROP_VARYING;
 
-	    get_value_range (lhs)->set_varying ();
+	    set_def_to_varying (lhs);
 
 	    FOR_EACH_IMM_USE_FAST (use_p, iter, lhs)
 	      {

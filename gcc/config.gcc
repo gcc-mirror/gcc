@@ -673,7 +673,7 @@ x86_cpus="generic intel"
 # Common parts for widely ported systems.
 case ${target} in
 *-*-darwin*)
-  tmake_file="t-darwin ${cpu_type}/t-darwin"
+  tmake_file="t-darwin "
   tm_file="${tm_file} darwin.h"
   case ${target} in
   *-*-darwin9*)
@@ -1645,16 +1645,25 @@ hppa[12]*-*-hpux11*)
 		dwarf2=no
 	fi
 	;;
+i[34567]86-*-darwin1[89]*)
+	echo "Error: 32bit target is not supported after Darwin17" 1>&2
+	;;
 i[34567]86-*-darwin*)
 	need_64bit_isa=yes
 	# Baseline choice for a machine that allows m64 support.
+	with_cpu=${with_cpu:-core2}
+	tmake_file="${tmake_file} ${cpu_type}/t-darwin32-biarch t-slibgcc"
+	tm_file="${tm_file} ${cpu_type}/darwin32-biarch.h"
+	;;
+x86_64-*-darwin1[89]* | x86_64-*-darwin2[01]*)
+	# Only 64b from now
 	with_cpu=${with_cpu:-core2}
 	tmake_file="${tmake_file} t-slibgcc"
 	;;
 x86_64-*-darwin*)
 	with_cpu=${with_cpu:-core2}
-	tmake_file="${tmake_file} ${cpu_type}/t-darwin64 t-slibgcc"
-	tm_file="${tm_file} ${cpu_type}/darwin64.h"
+	tmake_file="${tmake_file} ${cpu_type}/t-darwin64-biarch t-slibgcc"
+	tm_file="${tm_file} ${cpu_type}/darwin64-biarch.h"
 	;;
 i[34567]86-*-elfiamcu)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h newlib-stdint.h i386/iamcu.h"
@@ -2503,6 +2512,12 @@ msp430*-*-*)
 	cxx_target_objs="msp430-c.o"
 	tmake_file="${tmake_file} msp430/t-msp430"
 	extra_gcc_objs="driver-msp430.o"
+	# Enable .init_array unless it has been explicitly disabled.
+	# The MSP430 EABI mandates the use of .init_array, and the Newlib CRT
+	# code since mid-2019 expects it.
+	if test x${disable_initfini_array} != xyes; then
+		gcc_cv_initfini_array=yes
+	fi
 	;;
 nds32*-*-*)
 	target_cpu_default="0"
@@ -2616,24 +2631,31 @@ pdp11-*-*)
 #	extra_headers=
 #	;;
 powerpc-*-darwin*)
-	extra_options="${extra_options} rs6000/darwin.opt"
+	extra_options="${extra_options} ${cpu_type}/darwin.opt"
 	case ${target} in
-	  *-darwin1[0-9]* | *-darwin[8-9]*)
-	    tmake_file="${tmake_file} rs6000/t-darwin8"
-	    tm_file="${tm_file} rs6000/darwin8.h"
+	  *-darwin1[0-9]* | *-darwin9*)
+	    tmake_file="${tmake_file} ${cpu_type}/t-darwin32-biarch"
+	    tm_file="${tm_file} ${cpu_type}/darwin32-biarch.h"
+	    ;;
+	  *-darwin8*)
+	    tmake_file="${tmake_file} ${cpu_type}/t-darwin32-biarch"
+	    tm_file="${tm_file} ${cpu_type}/darwin32-biarch.h"
+	    tm_file="${tm_file} ${cpu_type}/darwin8.h"
 	    ;;
 	  *-darwin7*)
-	    tm_file="${tm_file} rs6000/darwin7.h"
+	    tm_file="${tm_file} ${cpu_type}/darwin7.h"
 	    ;;
-	  *-darwin[0-6]*)
+	  *-darwin[456]*)
+	    # Earlier - ingle arch, with 32b only
+	    # OS X 10.0, the first edition is Darwin4
 	    ;;
 	esac
 	tmake_file="${tmake_file} t-slibgcc"
 	;;
 powerpc64-*-darwin*)
 	extra_options="${extra_options} ${cpu_type}/darwin.opt"
-	tmake_file="${tmake_file} ${cpu_type}/t-darwin64 t-slibgcc"
-	tm_file="${tm_file} ${cpu_type}/darwin8.h ${cpu_type}/darwin64.h"
+	tmake_file="${tmake_file} ${cpu_type}/t-darwin64-biarch t-slibgcc"
+	tm_file="${tm_file} ${cpu_type}/darwin64-biarch.h"
 	;;
 powerpc*-*-freebsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h ${fbsd_tm_file} rs6000/sysv4.h"
@@ -3880,32 +3902,40 @@ case "${target}" in
 				  sed -e 's/,.*$//'`
 			  fi
 
+			  # Use the pre-processor to strip flatten the options.
+			  # This makes the format less rigid than if we use
+			  # grep and sed directly here.
+			  opt_macro="AARCH64_OPT_EXTENSION(A, B, C, D, E, F)=A, B, C, D, E, F"
+			  options_parsed="`$ac_cv_prog_CPP -D"$opt_macro" -x c \
+				${srcdir}/config/aarch64/aarch64-option-extensions.def`"
+
+			  # Match one element inside AARCH64_OPT_EXTENSION, we
+			  # consume anything that's not a ,.
+			  elem="[ 	]*\([^,]\+\)[ 	]*"
+
+			  # Repeat the pattern for the number of entries in the
+			  # AARCH64_OPT_EXTENSION, currently 6 times.
+			  sed_patt="^$elem,$elem,$elem,$elem,$elem,$elem"
+
 			  while [ x"$ext_val" != x ]
 			  do
 				ext_val=`echo $ext_val | sed -e 's/\+//'`
 				ext=`echo $ext_val | sed -e 's/\+.*//'`
 				base_ext=`echo $ext | sed -e 's/^no//'`
+				opt_line=`echo -e "$options_parsed" | \
+					grep "^\"$base_ext\""`
 
 				if [ x"$base_ext" = x ] \
-				    || grep "^AARCH64_OPT_EXTENSION(\"$base_ext\"," \
-				    ${srcdir}/config/aarch64/aarch64-option-extensions.def \
-				    > /dev/null; then
+				    || [[ -n $opt_line ]]; then
 
-				  ext_canon=`grep "^AARCH64_OPT_EXTENSION(\"$base_ext\"," \
-					${srcdir}/config/aarch64/aarch64-option-extensions.def | \
-					sed -e 's/^[^,]*,[ 	]*//' | \
-					sed -e 's/,.*$//'`
-				  ext_on=`grep "^AARCH64_OPT_EXTENSION(\"$base_ext\"," \
-					${srcdir}/config/aarch64/aarch64-option-extensions.def | \
-					sed -e 's/^[^,]*,[ 	]*[^,]*,[ 	]*//' | \
-					sed -e 's/,.*$//' | \
-					sed -e 's/).*$//'`
-				  ext_off=`grep "^AARCH64_OPT_EXTENSION(\"$base_ext\"," \
-					${srcdir}/config/aarch64/aarch64-option-extensions.def | \
-					sed -e 's/^[^,]*,[ 	]*[^,]*,[ 	]*[^,]*,[ 	]*//' | \
-					sed -e 's/,.*$//' | \
-					sed -e 's/).*$//'`
-
+				  # These regexp extract the elements based on
+				  # their group match index in the regexp.
+				  ext_canon=`echo -e "$opt_line" | \
+					sed -e "s/$sed_patt/\2/"`
+				  ext_on=`echo -e "$opt_line" | \
+					sed -e "s/$sed_patt/\3/"`
+				  ext_off=`echo -e "$opt_line" | \
+					sed -e "s/$sed_patt/\4/"`
 
 				  if [ $ext = $base_ext ]; then
 					# Adding extension

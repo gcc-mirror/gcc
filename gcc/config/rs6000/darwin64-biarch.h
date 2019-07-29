@@ -1,4 +1,5 @@
-/* Target definitions for PowerPC running Darwin (Mac OS X).
+/* Target definitions for PowerPC64 running Darwin (Mac OS X) for a 64b host
+   supporting a 32b multilib.
    Copyright (C) 2006-2019 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -25,8 +26,13 @@
 #undef DARWIN_ARCH_SPEC
 #define DARWIN_ARCH_SPEC "%{m32:ppc;:ppc64}"
 
+/* Actually, there's really only 970 as an active option.  */
 #undef DARWIN_SUBARCH_SPEC
 #define DARWIN_SUBARCH_SPEC DARWIN_ARCH_SPEC
 
-#undef DARWIN_CRT2_SPEC
-#define DARWIN_CRT2_SPEC ""
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS			\
+  DARWIN_EXTRA_SPECS                            \
+  { "darwin_arch", DARWIN_ARCH_SPEC },		\
+  { "darwin_crt2", "" },			\
+  { "darwin_subarch", DARWIN_SUBARCH_SPEC },

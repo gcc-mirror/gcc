@@ -1,3 +1,603 @@
+2019-07-28  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/89330
+	* cgraph.c (symbol_table::create_edge): Always allocate
+	a cgraph_edge.
+	(symbol_table::free_edge): Store summary_id to
+	edge_released_summary_ids if != -1;
+	* cgraph.h (NEXT_FREE_NODE): Remove.
+	(SET_NEXT_FREE_NODE): Likewise.
+	(NEXT_FREE_EDGE): Likewise.
+	(symbol_table::release_symbol): Store summary_id to
+	cgraph_released_summary_ids if != -1;
+	(symbol_table::allocate_cgraph_symbol): Always allocate
+	a cgraph_node.
+
+2019-07-28  Alan Modra  <amodra@gmail.com>
+
+	* gcc/config/rs6000/rs6000-call.c (rs6000_output_mi_thunk): Use
+	gen_sibcall.
+
+2019-07-28  Alan Modra  <amodra@gmail.com>
+
+	PR target/91135
+	* config/rs6000/linux.h (GNU_USER_TARGET_D_OS_VERSIONS): Don't
+	define.
+	* config/rs6000/linux64.h (TARGET_OS_CPP_BUILTINS): Invoke
+	GNU_USER_TARGET_OS_CPP_BUILTINS for aixdesc abi.
+	(GNU_USER_TARGET_D_OS_VERSIONS): Don't define.
+
+2019-07-28  Alan Modra  <amodra@gmail.com>
+
+	PR target/91050
+	* config/rs6000/sysv4.h (ASM_DEFAULT_SPEC): Modify if -m64.
+	* config/rs6000/default64.h (ASM_DEFAULT_SPEC): Define.
+	* config/rs6000/freebsd64.h (ASM_DEFAULT_SPEC): Don't define.
+	* config/rs6000/linux64.h (ASM_DEFAULT_SPEC): Likewise.
+	* config/rs6000/rtems.h (ASM_DEFAULT_SPEC): Likewise.
+	* config/rs6000/rs6000.h (ASM_DEFAULT_EXTRA): Define and use
+	in asm_default spec.
+	* config/rs6000/eabialtivec.h (ASM_DEFAULT_EXTRA): Redefine.
+	* config/rs6000/linuxaltivec.h (ASM_DEFAULT_EXTRA): Redefine.
+
+2019-07-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/include/gpl_v3.texi (Copying): Use https for www.gnu.org.
+
+2019-07-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/89517
+	* config.gcc: Relax parsing of AARCH64_OPT_EXTENSION.
+	* config/aarch64/aarch64-option-extensions.def: Add new comments
+	and restore easier to read options.
+
+2019-07-26  Tamar Christina  <tamar.christina@arm.com>
+
+	* convert.c (convert_to_real_1): Move part of conversion code...
+	* match.pd: ...To here.
+
+2019-07-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/89330
+	* ipa-inline-transform.c (check_speculations_1): New function.
+	(push_all_edges_in_set_to_vec): Likewise.
+	(check_speculations): Use check_speculations_1, new parameter
+	new_edges.
+	(inline_call): Pass new_edges to check_speculations.
+	* ipa-inline.c (add_new_edges_to_heap): Assert edge_callee is not
+	NULL.
+	(speculation_useful_p): Early return true if edge is inlined, remove
+	later checks for inline_failed.
+
+2019-07-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/91223
+	* lra-constraints.c (process_alt_operands): Fail for unsuccessful
+	matching with INOUT operand.
+
+2019-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stmt.c (expand_case): Try to narrow the index type if it's larger
+	than a word.  Tidy up.
+
+2019-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cif-code.def (NEVER_CALL): New code.
+	* ipa-inline.c (want_inline_small_function_p): Fix formatting issues.
+	Set the failure to CIF_NEVER_CALL if the IPA count is zero.
+
+2019-07-25  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/thumb2.md (thumb2_movsi_insn): Fix load/store low reg.
+	* config/arm/vfp.md (thumb2_movsi_vfp): Likewise.
+
+2019-07-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.c (add_type_duplicate): Fix return value.
+
+2019-07-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (extract_range_from_multiplicative_op): Add
+	type parameter and use it instead of guessing expression
+	type from the first operand.
+	(extract_range_from_binary_expr): Pass expr_type down.
+
+2019-07-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (SATrev): Change to code attribute.
+	(*satsi_<SAT:code>): Adjust for the above.
+	(*satsi_<SAT:code>_shift): Likewise.
+
+2019-07-25  Richard Biener  <rguenther@suse.de>
+
+	* gimple-loop-versioning.cc (loop_versioning::prune_loop_conditions):
+	Make value_range * temporary const.
+	* gimple-ssa-evrp-analyze.c (evrp_range_analyzer::try_find_new_range):
+	Likewise.
+	(evrp_range_analyzer::record_ranges_from_): Likewise.
+	(evrp_range_analyzer::pop_value_range): Return a const value_range *,
+	deal with having recorded a const one.
+	* gimple-ssa-evrp-analyze.h (evrp_range_analyzer::get_value_range):
+	Return a const value_range *.
+	(evrp_range_analyzer::pop_value_range): Likewise.
+	(evrp_range_analyzer::stack): Record const value_range *s.
+	* gimple-ssa-evrp.c (evrp_dom_walker::before_dom_children):
+	Adjust.
+	* gimple-ssa-sprintf.c (get_int_range): Likewise.
+	(format_integer): Likewise.
+	(sprintf_dom_walker::handle_gimple_call): Likewise.
+	* tree-ssa-dom.c (simplify_stmt_for_jump_threading): Likewise.
+	* tree-vrp.c (vrp_prop::set_def_to_varying): Add.
+	(vrp_prop::get_value_range): Adjust.
+	(vrp_prop::vrp_initialize): Use set_def_to_varying instead of
+	modifying the lattice in-place.
+	(vrp_prop::visit_stmt): Likewise.
+	* vr-values.c (vr_values::get_lattice_entry): New private method.
+	(vr_values::get_value_range): Wrap it and return a const
+	value_range *.
+	(vr_values::set_def_to_varying): New.
+	(vr_values::set_defs_to_varying): Use it.
+	(vr_values::update_value_range): Likewise.
+	(vr_values::vrp_stmt_computes_nonzero): Adjust.
+	(values::op_with_constant_singleton_va): Likewise.
+	(vr_values::extract_range_for_var_from_co): Likewise.
+	(vr_values::extract_range_from_ssa_name): Likewise.
+	(vr_values::extract_range_from_cond_expr): Likewise.
+	(vr_values::extract_range_basic): Likewise.
+	(compare_ranges): Take const value_range *, adjust.
+	(compare_range_with_value): Likewise.
+	(vrp_valueize): Adjust.
+	(vrp_valueize_1): Likewise.
+	(vr_values::get_vr_for_comparison): Return a const value_range *.
+	(vr_values::compare_name_with_value): Adjust.
+	(vr_values::compare_names): Likewise.
+	(vr_values::vrp_evaluate_conditional_warnv_with_ops_using_ranges):
+	Likewise.
+	(vr_values::vrp_evaluate_conditional): Likewise.
+	(find_case_label_ranges): Take a const value_range *.
+	(vr_values::vrp_visit_switch_stmt): Adjust.
+	(vr_values::extract_range_from_phi_node): Likewise.
+	(vr_values::simplify_div_or_mod_using_ran): Likewise.
+	(vr_values::simplify_abs_using_ranges): Likewise.
+	(test_for_singularity): Take a const value_range *.
+	(range_fits_type_p): Likewise.
+	(vr_values::simplify_cond_using_ranges_1): Adjust.
+	(vr_values::simplify_cond_using_ranges_2): Likewise.
+	(vr_values::simplify_switch_using_ranges): Likewise.
+	(vr_values::simplify_float_conversion_usi): Likewise.
+	(vr_values::two_valued_val_range_p): Likewise.
+	* vr-values.h (vr_values::get_value_range): Return a const
+	value_range *.
+	(vr_values::set_def_to_varying): New.
+	(vr_values::get_lattice_entry): New private method.
+	(vr_values::get_vr_for_comparison): Return a const value_range *.
+
+2019-07-25  Martin Liska  <mliska@suse.cz>
+	    Dominik Infuhr  <dominik.infuehr@theobroma-systems.com>
+
+	PR c++/23383
+	* common.opt: Add -fallocation-dce
+	* gimple.c (gimple_call_operator_delete_p): New.
+	* gimple.h (gimple_call_operator_delete_p): Likewise.
+	* tree-core.h (enum function_decl_type): Add OPERATOR_DELETE.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Handle
+	DECL_IS_OPERATOR_DELETE_P.
+	(mark_all_reaching_defs_necessary_1): Likewise.
+	(propagate_necessity): Likewise.
+	(eliminate_unnecessary_stmts): Handle
+	gimple_call_operator_delete_p.
+	* tree-streamer-in.c (unpack_ts_function_decl_value_fields):
+	Add packing of OPERATOR_DELETE.
+	* tree-streamer-out.c (pack_ts_function_decl_value_fields):
+	Similarly here.
+	* tree.h (DECL_IS_OPERATOR_DELETE_P): New.
+	(DECL_SET_IS_OPERATOR_DELETE): New.
+	(DECL_IS_REPLACEABLE_OPERATOR_NEW_P): Likewise.
+
+2019-07-25  Martin Liska  <mliska@suse.cz>
+
+	* calls.c (maybe_warn_alloc_args_overflow): Use new macros
+	(e.g. DECL_SET_LAMBDA_FUNCTION and DECL_LAMBDA_FUNCTION_P).
+	* coverage.c (coverage_begin_function): Likewise.
+	* fold-const.c (tree_expr_nonzero_warnv_p): Likewise.
+	* gimple.c (gimple_call_nonnull_result_p): Likewise.
+	* ipa-icf.c (sem_item::compare_referenced_symbol_properties): Likewise.
+	(sem_item::hash_referenced_symbol_properties): Likewise.
+	* lto-streamer-out.c (hash_tree): Likewise.
+	* predict.c (expr_expected_value_1): Likewise.
+	* tree-inline.c (expand_call_inline): Likewise.
+	* tree-streamer-in.c (unpack_ts_function_decl_value_fields): Likewise.
+	* tree-streamer-out.c (pack_ts_function_decl_value_fields): Likewise.
+	* tree-core.h (enum function_decl_type): New enum.
+	(struct tree_function_decl): Remove operator_new_flag and lambda_function.
+	* tree.h (FUNCTION_DECL_DECL_TYPE): New.
+	(set_function_decl_type): Likewise.
+	(DECL_IS_OPERATOR_NEW_P): New.
+	(DECL_SET_IS_OPERATOR_NEW): Likewise.
+	(DECL_LAMBDA_FUNCTION): Likewise.
+	(DECL_LAMBDA_FUNCTION_P): Likewise.
+	(DECL_IS_OPERATOR_NEW): Remove.
+	(DECL_SET_LAMBDA_FUNCTION): Likewise.
+
+2019-07-25  Xiong Hu Luo  <luoxhu@linux.ibm.com>
+
+	* ipa-profile.c (get_most_common_single_value): Use
+	get_nth_most_common_value.
+	* profile.c (sort_hist_value): New function.
+	(compute_value_histograms): Call sort_hist_value to sort the
+	values after loading from disk.
+	* value-prof.c (get_most_common_single_value): Rename to ...
+	get_nth_most_common_value.  Add input params n, return
+	the n_th value and count.
+	(gimple_divmod_fixed_value_transform): Use
+	get_nth_most_common_value.
+	(gimple_ic_transform): Likewise.
+	(gimple_stringops_transform): Likewise.
+	* value-prof.h (get_most_common_single_value): Add input params
+	n, default to 0.
+
+2019-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91236
+	* tree-ssa-sccvn.c (vn_walk_cb_data::push_partial_def): Fix
+	size of CONSTRUCTOR write.  Fix buffer size we pass to
+	native_encode_expr.
+
+2019-07-24  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config.gcc (msp430*-*-*): Fix non-GNU style in r273774.
+	* config/msp430/msp430.h (ENDFILE_SPEC): Fix non-GNU style in
+	r273773.
+
+2019-07-24  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config.gcc (msp430*-*-*): Enable initfini_array by default unless
+	explicitly disabled with --disable-initfini-array.
+
+2019-07-24  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.h (ENDFILE_SPEC): Wrap uses of crtn*.o in
+	if-exists.
+
+2019-07-24  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91183
+	PR tree-optimization/86688
+	* builtins.c (compute_objsize): Handle MEM_REF.
+	* tree-ssa-strlen.c (class ssa_name_limit_t): New.
+	(get_min_string_length): Remove.
+	(count_nonzero_bytes): New function.
+	(handle_char_store): Rename...
+	(handle_store): to this.  Handle multibyte stores via integer types.
+	(strlen_check_and_optimize_stmt): Adjust conditional and the called
+	function name.
+
+2019-07-24  Martin Sebor  <msebor@redhat.com>
+
+	PR driver/80545
+	* diagnostic.c (diagnostic_classify_diagnostic): Use lang_mask.
+	(diagnostic_report_diagnostic): Same.
+	* diagnostic.h (diagnostic_context::option_enabled): Add an argument.
+	(diagnostic_context::lang_mask): New data member.
+	* ipa-pure-const.c (suggest_attribute): Use
+	lang_hooks.option_lang_mask ().
+	* opts-common.c (option_enabled): Handle new argument.
+	(get_option_state): Pass an additional argument.
+	* opts.c (print_filtered_help): Print supported languages for
+	unsupported options.  Adjust printing of current state.
+	* opts.h (option_enabled): Add argument.
+	* toplev.c (print_switch_values): Use lang_mask.
+	(general_init): Set global_dc->lang_mask.
+
+2019-07-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/87030
+	* config/i386/darwin.h (REAL_LIBGCC_SPEC): Revert change from r273749.
+
+2019-07-24  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraphunit.c (symbol_table::compile): Start and stop 
+	TV_CGRAPH_IPA_PASSES and TV_CGRAPH_FUNC_EXPANSION timers.
+	* timevar.def (TV_CGRAPH_IPA_PASSES, TV_CGRAPH_FUNC_EXPANSION): New.
+
+2019-07-24  Oliver Browne  <oliverbrowne62@gmail.com>
+
+	* gimplify.c (flag_instrument_functions_exclude_p): Include
+	namespace/class information in the printable name.
+	* opts.c (add_comma_separated_to_vector): Add NUL terminator
+	to tokens entered into the vector.
+
+2019-07-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-nested.c (build_simple_mem_ref_notrap): New function.
+	(get_static_chain): Call it instead of build_simple_mem_ref.
+	(get_frame_field): Likewise.
+	(get_nonlocal_debug_decl): Likewise.
+	(convert_nonlocal_reference_op): Likewise.
+
+2019-07-24  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (arc_output_function_epilogue): Delete
+	declaration.
+	(arc_compute_frame_size): Millicode is disabled when compiling
+	ISR.
+	(arc_return_address_register): Likewise.
+	(arc_compute_function_type): Likewise.
+	(arc_compute_frame_size): Likewise.
+	(secondary_reload_info): Likewise.
+	(arc_get_unalign): Likewise.
+	(arc_can_use_return_insn): Declare.
+	* config/arc/arc.c (AUX_LP_START): Define
+	(AUX_LP_END): Likewise.
+	(arc_frame_info): Update gmask member to 64-bit datum.
+	(GMASK_LEN): Update.
+	(arc_compute_function_type): Make it static, move it forward.
+	(arc_must_save_register): Update, consider the extra regs.
+	(arc_compute_millicode_save_restore_regs): Update to use the 64
+	bit gmask.
+	(arc_compute_frame_size): Likewise.
+	(arc_enter_leave_p): Likewise.
+	(arc_save_callee_saves): Likewise.
+	(arc_restore_callee_saves): Likewise.
+	(arc_save_callee_enter): Likewise.
+	(arc_restore_callee_leave): Likewise.
+	(arc_save_callee_milli): Likewise.
+	(arc_restore_callee_milli): Likewise.
+	(arc_expand_prologue): Add new interrupt handling.
+	(arc_return_address_register): Make it static, move it forward.
+	(arc_expand_epilogue): Add new interrupt handling.
+	(arc_get_unalign): Delete.
+	(arc_epilogue_uses): Make sure we do not remove the extra
+	saved/restored registers when interrupt.
+	(arc_can_use_return_insn): New function.
+	(push_reg): Likewise.
+	(pop_reg): Likewise.
+	(arc_save_callee_saves): Add ZOL and FPX aux registers saving
+	procedures.
+	(arc_restore_callee_saves): Likewise, but restoring.
+	* config/arc/arc.md (VUNSPEC_ARC_ARC600_RTIE): Define.
+	(R33_REG): Likewise.
+	(R34_REG): Likewise.
+	(R35_REG): Likewise.
+	(R36_REG): Likewise.
+	(R37_REG): Likewise.
+	(R38_REG): Likewise.
+	(R39_REG): Likewise.
+	(R45_REG): Likewise.
+	(R46_REG): Likewise.
+	(R47_REG): Likewise.
+	(R48_REG): Likewise.
+	(R49_REG): Likewise.
+	(R50_REG): Likewise.
+	(R51_REG): Likewise.
+	(R52_REG): Likewise.
+	(R53_REG): Likewise.
+	(R54_REG): Likewise.
+	(R55_REG): Likewise.
+	(R56_REG): Likewise.
+	(R58_REG): Likewise.
+	(type): Add rtie attribute.
+	(in_call_delay_slot): Use RETURN_ADDR_REGNUM.
+	(movsi_insn): Accept moves to lp_count.
+	(rtie): Update pattern.
+	(simple_return): Simplify it, don't use this pattern as a return
+	from an interrupt.
+	(arc600_rtie): New pattern.
+	(p_return_i): Clean up.
+	(return): Likewise.
+	* config/arc/builtins.def (rtie): Only available for non ARC6xx
+	family CPUs.
+	* config/arc/predicates.md (move_src_operand): Consider lp_count
+	as a register.
+
+2019-07-24  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/predicates.md (addv_const_operand): New predicate.
+	* config/s390/s390-modes.def (CCO): New condition code mode.
+	* config/s390/s390.c (s390_match_ccmode_set): Handle E_CCOmode.
+	(s390_branch_condition_mask): Likewise.
+	* config/s390/s390.md ("addv<mode>4", "subv<mode>4")
+	("mulv<mode>4"): New expanders.
+	("*addv<mode>3_ccoverflow", "*addv<mode>3_ccoverflow_const")
+	("*subv<mode>3_ccoverflow", "*mulv<mode>3_ccoverflow"): New
+	pattern definitions.
+
+2019-07-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR middle-end/91166
+	* match.pd (vec_perm_expr(v, v, mask) -> v): New pattern.
+	(define_predicates): Add entry for uniform_vector_p.
+	(vec_same_elem_p): New match pattern.
+
+2019-07-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/87030
+	* config/i386/darwin.h (REAL_LIBGCC_SPEC): Move from here...
+	* config/i386/darwin32-biarch.h .. to here.
+	* config/i386/darwin64-biarch.h: Adjust comments.
+	* config/rs6000/darwin32-biarch.h: Likewise.
+	* config/rs6000/darwin64-biarch.h: Likewise.
+	* config.gcc: Missed commit from r273746
+	(*-*-darwin*): Don't include CPU t-darwin here.
+	(i[34567]86-*-darwin*): Adjust to use biarch files. Produce
+	an error message if i686-darwin configuration is attempted for
+	Darwin >= 18.
+
+2019-07-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR bootstrap/87030
+	* config.gcc (*-*-darwin*): Don't include CPU t-darwin here.
+	(i[34567]86-*-darwin*): Adjust to use biarch files. Produce
+	an error message if i686-darwin configuration is attempted for
+	Darwin >= 18.
+	(x86_64-*-darwin*): Switch to single multilib for Darwin >= 18.
+	(powerpc-*-darwin*): Use biarch files where needed.
+	(powerpc64-*-darwin*): Likewise.
+	* config/i386/darwin.h (REAL_LIBGCC_SPEC): Move to new biarch file.
+	(DARWIN_ARCH_SPEC, DARWIN_SUBARCH_SPEC): Revise for default single
+	arch case.
+	* config/i386/darwin32-biarch.h: New.
+	* config/i386/darwin64.h: Rename.
+	* gcc/config/i386/darwin64-biarch.h: To this.
+	* config/i386/t-darwin: Rename.
+	* gcc/config/i386/t-darwin32-biarch: To this.
+	* config/i386/t-darwin64: Rename.
+	* gcc/config/i386/t-darwin64-biarch: To this.
+	* config/rs6000/darwin32-biarch.h: New.
+	* config/rs6000/darwin64.h: Rename.
+	* config/rs6000/darwin64-biarch.h: To this.
+	(DARWIN_ARCH_SPEC, DARWIN_SUBARCH_SPEC): Revise for default single
+	arch case.
+	* config/rs6000/t-darwin8: Rename.
+	* config/rs6000/t-darwin32-biarch: To this.
+	* config/rs6000/t-darwin64 Rename.
+	* config/rs6000/t-darwin64-biarch: To this.
+
+2019-07-23  Martin Sebor  <msebor@redhat.com>
+
+	* configure.ac (ACX_PROG_CXX_WARNING_OPTS): Revert r273311.
+
+2019-07-23  Vladislav Ivanishin <vlad@ispras.ru>
+
+	* gdbinit.in (reload-gdbhooks): New command with an attached doc string.
+	(rh): New alias for it.
+
+2019-07-23  Vladislav Ivanishin <vlad@ispras.ru>
+
+	* gdbhooks.py: Pass replace=True to
+	gdb.printing.register_pretty_printer.
+
+2019-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR debug/91231
+	* lto-streamer-in.c (input_function): Drop inline-entry markers
+	that ended up with an unknown location block.
+
+2019-07-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/83518
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Handle aggregate
+	init from a constant even when partial defs are already recorded.
+
+2019-07-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* i386-common.c: Use PROCESSOR_ZNVER2 scheduler for znver2.
+	* config/i386/znver1.md: Enable patterns for znver2 and add store
+	variants which use extra AGU unit.
+
+2019-07-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386-options.c (ix86_option_override_internal): Default
+	PARAM_AVOID_FMA_MAX_BITS to 256 for znver2.
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_256FMA_CHAINS): Set
+	for ZNVER2.
+
+2019-07-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/x86-tune-costs.h (znver2_memcpy): Update.
+	(znver2_costs): Update 256 bit SSE costs and multiplication.
+
+2019-07-23  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (<avx512>_cvtmask2<ssemodesuffix><mode>):
+	Require only AVX512F.
+	(*<avx512>_cvtmask2<ssemodesuffix><mode>): Likewise.  Add
+	alternative expanding to vpternlog.
+
+2019-07-23  Martin Liska  <mliska@suse.cz>
+
+	* dwarf2out.c (gen_producer_string): Canonize -flto=N
+	to -flto in dwarf producer string.
+
+2019-07-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (label_for_bb): Remove global var.
+	(main_block_label): Take label_for_bb as argument.
+	(cleanup_dead_labels_eh): Likewise, adjust.
+	(cleanup_dead_labels): Adjust.
+
+2019-07-22  Paul A. Clarke  <pc@us.ibm.com>
+
+	* doc/extend.texi (Basic PowerPC Built-in Functions Available on all
+	Configurations): Add documentation for __builtin_mtfsf.
+
+2019-07-22  Ilia Diachkov  <ilia.diachkov@optimitech.com>
+
+	* config/riscv/riscv-opts.h (struct riscv_align_data): New.
+	* config/riscv/riscv.c (riscv_constant_alignment): Use
+	riscv_align_data_type.
+	* config/riscv/riscv.h (RISCV_EXPAND_ALIGNMENT): New.
+	(DATA_ALIGNMENT): Use RISCV_EXPAND_ALIGNMENT.
+	(LOCAL_ALIGNMENT): Use RISCV_EXPAND_ALIGNMENT.
+	* config/riscv/riscv.opt (malign-data): New.
+	* doc/invoke.texi (RISC-V Options): Document -malign-data=.
+
+2019-07-02  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* cgraph.c (dump_graphviz): New function.
+	* cgraph.h (dump_graphviz): New function.
+	* symtab.c (dump_graphviz): New function.
+
+2019-07-22  Sylvia Taylor  <sylvia.taylor@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(*aarch64_simd_sra<mode>): New.
+	* config/aarch64/iterators.md
+	(SHIFTRT): New iterator.
+	(sra_op): New attribute.
+
+2019-07-22  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* config/msp430/msp430.c (msp430_preserve_reg_p): Don't save
+	callee-saved regs R4->R10 in an interrupt function that calls another
+	function.
+
+2019-07-22  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/smmintrin.h (_mm_blend_epi16): New.
+	(_mm_blendv_epi8): New.
+
+2019-07-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91221
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Appropriately
+	restrict partial-def handling of empty constructors and
+	memset to refs with known offset.
+
+2019-07-22  Jan Beulich  <jbeulich@suse.com>
+
+	* config/i386/sse.md (ternlogsuffix): New.
+	(one_cmpl<mode>2): Don't force CONSTM1_RTX into a register when
+	AVX512F is in use.
+	(<mask_codefor>one_cmpl<mode>2<mask_name>): New.
+
+2019-07-22  Martin Liska  <mliska@suse.cz>
+
+	* config/avr/avr.c (avr_asm_output_aligned_decl_common): Update
+	comment.
+	* toplev.c (compile_file): Do not emit __gnu_lto_v1 symbol.
+
+2019-07-22  Martin Liska  <mliska@suse.cz>
+
+	* lto-section-in.c (lto_get_section_data):
+	Use new function get_compression.
+	* lto-streamer-out.c (produce_lto_section): Use
+	set_compression to encode compression algorithm.
+	* lto-streamer.h (struct lto_section): Do not
+	use bitfields in the format.
+
+2019-07-22  Martin Liska  <mliska@suse.cz>
+
+	PR driver/91172
+	* opts-common.c (decode_cmdline_option): Decode
+	argument of -Werror and check it for a wrong language.
+	* opts-global.c (complain_wrong_lang): Remove such case.
+
+2019-07-22  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (prepare_move_operands): Always use an
+	intermediate register when storing a TLS symbols.
+
 2019-07-22  Stafford Horne  <shorne@gmail.com>
 
 	* config/or1k/or1k.c (or1k_expand_compare): Check for int before
@@ -255,6 +855,7 @@
 
 2019-07-19  Jeff Law  <law@redhat.com>
 
+	PR tree-optimization/86061
 	* tree-ssa-dse.c (initialize_ao_ref_for_dse): Handle
 	strncpy.  Drop some trivial dead code.
 	(maybe_trim_memstar_call): Handle strncpy.
@@ -417,7 +1018,7 @@
 	(rsbsi3_carryin_shift): Likewise.
 	(negsi2_carryin_compare): Likewise.
 
-2019-07-18  Bin Cheng  <bin.linux@linux.alibaba.com>
+2019-07-18  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/91137
 	* tree-ssa-loop-ivopts.c (struct ivopts_data): New field.
@@ -1223,9 +1824,11 @@
 	(ix86_noce_conversion_profitable_p): Same.
 	(ix86_init_cost): Same.
 	(ix86_simd_clone_usable): Same.
-	* configure.ac: Same.
+	* configure.ac (ACX_PROG_CXX_WARNING_OPTS): Add -Wclass-is-pod and
+	Wstruct-not-pod.
 	* coretypes.h: Same.
-	* data-streamer-in.c (string_for_index): Same.
+	* data-streamer-in.c (string_for_index): Change class-key of PODs
+	to struct and others to class.
 	(streamer_read_indexed_string): Same.
 	(streamer_read_string): Same.
 	(bp_unpack_indexed_string): Same.

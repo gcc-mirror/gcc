@@ -116,13 +116,13 @@ by type.  Explanations are in the following sections.
 @table @emph
 @item Fortran Language Options
 @xref{Fortran Dialect Options,,Options controlling Fortran dialect}.
-@gccoptlist{-fall-intrinsics -fbackslash -fcray-pointer -fd-lines-as-code @gol
--fd-lines-as-comments -fdec -fdec-structure -fdec-intrinsic-ints @gol
--fdec-static -fdec-math -fdec-include -fdec-format-defaults @gol
--fdec-blank-format-item -fdefault-double-8 -fdefault-integer-8 @gol
--fdefault-real-8 -fdefault-real-10 -fdefault-real-16 -fdollar-ok @gol
--ffixed-line-length-@var{n} -ffixed-line-length-none -fpad-source @gol
--ffree-form -ffree-line-length-@var{n} -ffree-line-length-none @gol
+@gccoptlist{-fall-intrinsics -fallow-invalid-boz -fbackslash -fcray-pointer @gol
+-fd-lines-as-code -fd-lines-as-comments -fdec -fdec-structure @gol
+-fdec-intrinsic-ints -fdec-static -fdec-math -fdec-include @gol
+-fdec-format-defaults -fdec-blank-format-item -fdefault-double-8 @gol
+-fdefault-integer-8 -fdefault-real-8 -fdefault-real-10 -fdefault-real-16 @gol
+-fdollar-ok @gol -ffixed-line-length-@var{n} -ffixed-line-length-none @gol
+-fpad-source -ffree-form -ffree-line-length-@var{n} -ffree-line-length-none @gol
 -fimplicit-none -finteger-4-integer-8 -fmax-identifier-length @gol
 -fmodule-private -ffixed-form -fno-range-check -fopenacc -fopenmp @gol
 -freal-4-real-10 -freal-4-real-16 -freal-4-real-8 -freal-8-real-10 @gol
@@ -230,6 +230,13 @@ force standard-compliance but get access to the full range of intrinsics
 available with @command{gfortran}.  As a consequence, @option{-Wintrinsics-std}
 will be ignored and no user-defined procedure with the same name as any
 intrinsic will be called except when it is explicitly declared @code{EXTERNAL}.
+
+@item -fallow-invalid-boz
+@opindex @code{allow-invalid-boz}
+A BOZ literal constant can occur in a limited number of context in
+standard conforming Fortran.  This option degrades an error condition
+to a warning, and allows a BOZ literal constant to appear where the
+Fortran standard would otherwise prohibits it.
 
 @item -fd-lines-as-code
 @itemx -fd-lines-as-comments

@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "spellcheck.h"
 #include "opt-suggestions.h"
+#include "diagnostic-color.h"
 
 static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 
@@ -262,6 +263,8 @@ add_comma_separated_to_vector (void **pvec, const char *arg)
       else
 	*w++ = *r++;
     }
+
+  *w = '\0';
   if (*token_start != '\0')
     v->safe_push (token_start);
 
@@ -1458,10 +1461,37 @@ print_filtered_help (unsigned int include_flags,
 	  else
 	    strcpy (new_help, "\t");
 
+	  /* Set to print whether the option is enabled or disabled,
+	     or, if it's an alias for another option, the name of
+	     the aliased option.  */
+	  bool print_state = false;
+
 	  if (flag_var != NULL
 	      && option->var_type != CLVC_DEFER)
 	    {
-	      if (option->flags & CL_JOINED)
+	      /* If OPTION is only available for a specific subset
+		 of languages other than this one, mention them.  */
+	      bool avail_for_lang = true;
+	      if (unsigned langset = option->flags & CL_LANG_ALL)
+		{
+		  if (!(langset & lang_mask))
+		    {
+		      avail_for_lang = false;
+		      strcat (new_help, _("[available in "));
+		      for (unsigned i = 0, n = 0; (1U << i) < CL_LANG_ALL; ++i)
+			if (langset & (1U << i))
+			  {
+			    if (n++)
+			      strcat (new_help, ", ");
+			    strcat (new_help, lang_names[i]);
+			  }
+		      strcat (new_help, "]");
+		    }
+		}
+	      if (!avail_for_lang)
+		; /* Print nothing else if the option is not available
+		     in the current language.  */
+	      else if (option->flags & CL_JOINED)
 		{
 		  if (option->var_type == CLVC_STRING)
 		    {
@@ -1485,12 +1515,50 @@ print_filtered_help (unsigned int include_flags,
 				"%s", arg);
 		    }
 		  else
-		    sprintf (new_help + strlen (new_help),
-			     "%d", * (int *) flag_var);
+		    {
+		      if (option->cl_host_wide_int)
+			sprintf (new_help + strlen (new_help),
+				 _("%llu bytes"), (unsigned long long)
+				 *(unsigned HOST_WIDE_INT *) flag_var);
+		      else
+			sprintf (new_help + strlen (new_help),
+				 "%i", * (int *) flag_var);
+		    }
 		}
 	      else
-		strcat (new_help, option_enabled (i, opts)
-			? _("[enabled]") : _("[disabled]"));
+		print_state = true;
+	    }
+	  else
+	    /* When there is no argument, print the option state only
+	       if the option takes no argument.  */
+	    print_state = !(option->flags & CL_JOINED);
+
+	  if (print_state)
+	    {
+	      if (option->alias_target < N_OPTS
+		  && option->alias_target != OPT_SPECIAL_deprecated
+		  && option->alias_target != OPT_SPECIAL_ignore
+		  && option->alias_target != OPT_SPECIAL_input_file
+		  && option->alias_target != OPT_SPECIAL_program_name
+		  && option->alias_target != OPT_SPECIAL_unknown)
+		{
+		  const struct cl_option *target
+		    = &cl_options[option->alias_target];
+		  sprintf (new_help + strlen (new_help), "%s%s",
+			   target->opt_text,
+			   option->alias_arg ? option->alias_arg : "");
+		}
+	      else if (option->alias_target == OPT_SPECIAL_ignore)
+		strcat (new_help, ("[ignored]"));
+	      else
+		{
+		  /* Print the state for an on/off option.  */
+		  int ena = option_enabled (i, lang_mask, opts);
+		  if (ena > 0)
+		    strcat (new_help, _("[enabled]"));
+		  else if (ena == 0)
+		    strcat (new_help, _("[disabled]"));
+		}
 	    }
 
 	  help = new_help;

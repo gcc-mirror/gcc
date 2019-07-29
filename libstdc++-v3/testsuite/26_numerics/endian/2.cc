@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2019 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,19 +18,10 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do compile { target c++2a } }
 
-#include <type_traits>
+#include <bit>
 
-static_assert( std::is_enum_v<std::endian> );
-static_assert( std::endian::little != std::endian::big );
-static_assert( std::endian::native == std::endian::big
-		|| std::endian::native == std::endian::little );
-
-namespace gnu {
-  int little, big, native;
-}
-
-using namespace std;
-using namespace gnu;
-
-// std::endian is a scoped-enum so these should refer to gnu::native etc.
-int test = little + big + native;
+#ifndef __cpp_lib_endian
+# error "Feature-test macro for endian missing in <bit>"
+#elif __cpp_lib_endian != 201907L
+# error "Feature-test macro for endian has wrong value in <bit>"
+#endif
