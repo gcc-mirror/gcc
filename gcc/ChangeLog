@@ -1,3 +1,12 @@
+2019-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91257
+	* tree-vrp.c (operand_less_p): Avoid dispatching to fold for
+	most cases, instead call compare_values which handles the
+	symbolic ranges we handle specially.
+	(compare_values_warnv): Do not call operand_less_p but open-code
+	the effective fold calls.  Avoid converting so much.
+
 2019-07-29  Martin Liska  <mliska@suse.cz>
 
 	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Do not
