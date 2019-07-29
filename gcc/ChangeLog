@@ -1,5 +1,14 @@
 2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* simplify-rtx.c (simplify_const_unary_operation): Fold a
+	VEC_DUPLICATE of a fixed-length vector even if the result
+	is variable-length.  Likewise fold a duplicate of a
+	variable-length vector if the variable-length vector is
+	itself a duplicate of a fixed-length sequence.
+	(test_vector_ops_duplicate): Test more cases.
+
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* vector-builder.h (vector_builder): Add a shape template parameter.
 	(vector_builder::new_unary_operation): New function, generalizing
 	the old tree_vector_builder function.

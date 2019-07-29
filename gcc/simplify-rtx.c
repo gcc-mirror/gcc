@@ -1736,23 +1736,24 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
       }
       if (CONST_SCALAR_INT_P (op) || CONST_DOUBLE_AS_FLOAT_P (op))
 	return gen_const_vec_duplicate (mode, op);
-      unsigned int n_elts;
       if (GET_CODE (op) == CONST_VECTOR
-	  && GET_MODE_NUNITS (mode).is_constant (&n_elts))
+	  && (CONST_VECTOR_DUPLICATE_P (op)
+	      || CONST_VECTOR_NUNITS (op).is_constant ()))
 	{
-	  /* This must be constant if we're duplicating it to a constant
-	     number of elements.  */
-	  unsigned int in_n_elts = CONST_VECTOR_NUNITS (op).to_constant ();
-	  gcc_assert (in_n_elts < n_elts);
-	  gcc_assert ((n_elts % in_n_elts) == 0);
-	  rtvec v = rtvec_alloc (n_elts);
-	  for (unsigned i = 0; i < n_elts; i++)
-	    RTVEC_ELT (v, i) = CONST_VECTOR_ELT (op, i % in_n_elts);
-	  return gen_rtx_CONST_VECTOR (mode, v);
+	  unsigned int npatterns = (CONST_VECTOR_DUPLICATE_P (op)
+				    ? CONST_VECTOR_NPATTERNS (op)
+				    : CONST_VECTOR_NUNITS (op).to_constant ());
+	  gcc_assert (multiple_p (GET_MODE_NUNITS (mode), npatterns));
+	  rtx_vector_builder builder (mode, npatterns, 1);
+	  for (unsigned i = 0; i < npatterns; i++)
+	    builder.quick_push (CONST_VECTOR_ELT (op, i));
+	  return builder.build ();
 	}
     }
 
-  if (VECTOR_MODE_P (mode) && GET_CODE (op) == CONST_VECTOR)
+  if (VECTOR_MODE_P (mode)
+      && GET_CODE (op) == CONST_VECTOR
+      && known_eq (GET_MODE_NUNITS (mode), CONST_VECTOR_NUNITS (op)))
     {
       gcc_assert (GET_MODE (op) == op_mode);
 
@@ -6977,6 +6978,18 @@ test_vector_ops_duplicate (machine_mode mode, rtx scalar_reg)
       && mode_for_vector (inner_mode, 2).exists (&narrower_mode)
       && VECTOR_MODE_P (narrower_mode))
     {
+      /* Test VEC_DUPLICATE of a vector.  */
+      rtx_vector_builder nbuilder (narrower_mode, 2, 1);
+      nbuilder.quick_push (const0_rtx);
+      nbuilder.quick_push (const1_rtx);
+      rtx_vector_builder builder (mode, 2, 1);
+      builder.quick_push (const0_rtx);
+      builder.quick_push (const1_rtx);
+      ASSERT_RTX_EQ (builder.build (),
+		     simplify_unary_operation (VEC_DUPLICATE, mode,
+					       nbuilder.build (),
+					       narrower_mode));
+
       /* Test VEC_SELECT of a vector.  */
       rtx vec_par
 	= gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, const1_rtx, const0_rtx));
