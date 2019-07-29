@@ -1,6 +1,20 @@
 2019-07-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91257
+	* tree-ssa-sccvn.h (struct vn_avail): New.
+	(struct vn_ssa_aux): Add avail member.
+	* tree-ssa-sccvn.c (class rpo_elim): Remove m_rpo_avail
+	member, add m_avail_freelist one.
+	(rpo_elim::~rpo_elim): Remove.
+	(rpo_elim::eliminate_avail): Adjust to new avail tracking
+	data structure.
+	(rpo_elim::eliminate_push_avail): Likewise.
+	(do_unwind): Likewise.
+	(do_rpo_vn): Likewise.
+
+2019-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91257
 	* tree-vrp.c (operand_less_p): Avoid dispatching to fold for
 	most cases, instead call compare_values which handles the
 	symbolic ranges we handle specially.
