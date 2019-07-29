@@ -8423,10 +8423,10 @@ no effect.  Otherwise @option{-Og} enables all @option{-O1}
 optimization flags except for those that may interfere with debugging:
 
 @gccoptlist{-fbranch-count-reg  -fdelayed-branch @gol
--fif-conversion  -fif-conversion2  @gol
+-fdse  -fif-conversion  -fif-conversion2  @gol
 -finline-functions-called-once @gol
 -fmove-loop-invariants  -fssa-phiopt @gol
--ftree-bit-ccp  -ftree-pta  -ftree-sra}
+-ftree-bit-ccp  -ftree-dse  -ftree-pta  -ftree-sra}
 
 @end table
 
