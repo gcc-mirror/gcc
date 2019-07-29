@@ -1,3 +1,12 @@
+2019-07-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/51333
+	* libsupc++/cxxabi.h (__gnu_cxx::recursive_init_error): Do not define
+	constructor inline.
+	* libsupc++/guard_error.cc (__gnu_cxx::recursive_init_error): Define
+	constructor.
+	* testsuite/18_support/51333.cc: New test.
+
 2019-07-28  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/documentation_hacking.xml: Fix broken reference
