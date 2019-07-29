@@ -1,5 +1,9 @@
 2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* doc/sourcebuild.texi (check-function-bodies): Document.
+
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* simplify-rtx.c (simplify_const_unary_operation): Fold a
 	VEC_DUPLICATE of a fixed-length vector even if the result
 	is variable-length.  Likewise fold a duplicate of a
