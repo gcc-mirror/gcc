@@ -1,3 +1,9 @@
+2019-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91267
+	* vr-values.c (vr_values::update_value_range): Add early return
+	for effectively VARYING lattice entry.
+
 2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR debug/86638
