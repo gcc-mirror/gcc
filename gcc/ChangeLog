@@ -1,5 +1,14 @@
 2019-07-29  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* config/msp430/msp430.h (DRIVER_SELF_SPECS): Define and emit errors
+	when -m{code,data}-region are used without -mlarge.
+	* config/msp430/msp430.c (msp430_option_override): Error when a
+	non-default code or data region is used without -mlarge.
+	(msp430_section_attr): Emit a warning and do not add upper/lower/either
+	attributes when they are used without -mlarge.
+
+2019-07-29  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	PR target/70320
 	* config/msp430/msp430.h: Define ADDITIONAL_REGISTER_NAMES.
 
