@@ -1,3 +1,8 @@
+2019-07-31  Julian Brown  <julian@codesourcery.com>
+
+	* config/nvptx/gomp_print.c (gomp_print_string, gomp_print_integer,
+	gomp_print_double): New.
+
 2019-01-23  Thomas Schwinge <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c: Update.
