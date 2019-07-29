@@ -202,8 +202,12 @@ vr_values::update_value_range (const_tree var, value_range *new_vr)
 	new_vr->intersect (&nr);
     }
 
-  /* Update the value range, if necessary.  */
+  /* Update the value range, if necessary.  If we cannot allocate a lattice
+     entry for VAR keep it at VARYING.  This happens when DOM feeds us stmts
+     with SSA names allocated after setting up the lattice.  */
   old_vr = get_lattice_entry (var);
+  if (!old_vr)
+    return false;
   is_new = !old_vr->equal_p (*new_vr, /*ignore_equivs=*/false);
 
   if (is_new)
