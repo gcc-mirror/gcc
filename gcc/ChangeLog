@@ -1,3 +1,35 @@
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* vector-builder.h (vector_builder): Add a shape template parameter.
+	(vector_builder::new_unary_operation): New function, generalizing
+	the old tree_vector_builder function.
+	(vector_builder::new_binary_operation): Likewise.
+	(vector_builder::binary_encoded_nelts): Likewise.
+	* int-vector-builder.h (int_vector_builder): Update template
+	parameters to vector_builder.
+	(int_vector_builder::shape_nelts): New function.
+	* rtx-vector-builder.h (rtx_vector_builder): Update template
+	parameters to vector_builder.
+	(rtx_vector_builder::shape_nelts): New function.
+	(rtx_vector_builder::nelts_of): Likewise.
+	(rtx_vector_builder::npatterns_of): Likewise.
+	(rtx_vector_builder::nelts_per_pattern_of): Likewise.
+	* tree-vector-builder.h (tree_vector_builder): Update template
+	parameters to vector_builder.
+	(tree_vector_builder::shape_nelts): New function.
+	(tree_vector_builder::nelts_of): Likewise.
+	(tree_vector_builder::npatterns_of): Likewise.
+	(tree_vector_builder::nelts_per_pattern_of): Likewise.
+	* tree-vector-builder.c (tree_vector_builder::new_unary_operation)
+	(tree_vector_builder::new_binary_operation): Delete.
+	(tree_vector_builder::binary_encoded_nelts): Likewise.
+	* simplify-rtx.c: Include rtx-vector-builder.h.
+	(distributes_over_addition_p): New function.
+	(simplify_const_unary_operation)
+	(simplify_const_binary_operation): Generalize handling of vector
+	constants to include variable-length vectors.
+	(test_vector_ops_series): Add more tests.
+
 2019-07-28  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/91222
