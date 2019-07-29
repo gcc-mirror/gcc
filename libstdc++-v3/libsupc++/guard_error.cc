@@ -26,6 +26,6 @@
 
 namespace __gnu_cxx
 {
-  recursive_init_error::~recursive_init_error() throw() { }
+  recursive_init_error::recursive_init_error() noexcept { }
+  recursive_init_error::~recursive_init_error() noexcept { }
 }
-
