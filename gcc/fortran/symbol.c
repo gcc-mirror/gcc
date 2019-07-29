@@ -4357,6 +4357,19 @@ gfc_get_gsymbol (const char *name, bool bind_c)
   return s;
 }
 
+void
+gfc_traverse_gsymbol (gfc_gsymbol *gsym,
+		      void (*do_something) (gfc_gsymbol *, void *),
+		      void *data)
+{
+  if (gsym->left)
+    gfc_traverse_gsymbol (gsym->left, do_something, data);
+
+  (*do_something) (gsym, data);
+
+  if (gsym->right)
+    gfc_traverse_gsymbol (gsym->right, do_something, data);
+}
 
 static gfc_symbol *
 get_iso_c_binding_dt (int sym_id)
