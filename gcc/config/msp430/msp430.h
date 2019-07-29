@@ -68,6 +68,14 @@ extern bool msp430x;
 #define LINK_SPEC "%{mrelax:--relax} %{mlarge:%{!r:%{!g:--gc-sections}}} " \
   "%{mcode-region=*:--code-region=%*} %{mdata-region=*:--data-region=%*}"
 
+#define DRIVER_SELF_SPECS \
+  " %{!mlarge:%{mcode-region=*:%{mdata-region=*:%e-mcode-region and "	\
+    "-mdata-region require the large memory model (-mlarge)}}}" \
+  " %{!mlarge:%{mcode-region=*:"	\
+    "%e-mcode-region requires the large memory model (-mlarge)}}"	\
+  " %{!mlarge:%{mdata-region=*:"	\
+    "%e-mdata-region requires the large memory model (-mlarge)}}"
+
 extern const char * msp430_select_hwmult_lib (int, const char **);
 # define EXTRA_SPEC_FUNCTIONS				\
   { "msp430_hwmult_lib", msp430_select_hwmult_lib },

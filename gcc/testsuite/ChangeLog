@@ -1,5 +1,13 @@
 2019-07-29  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* gcc.target/msp430/pr78818-data-region.c: Add -mlarge to dg-options.
+	* gcc.target/msp430/region-misuse-code.c: New test.
+	* gcc.target/msp430/region-misuse-data.c: Likewise.
+	* gcc.target/msp430/region-misuse-code-data.c: Likewise.
+	* gcc.target/msp430/region-attribute-misuse.c: Likewise.
+
+2019-07-29  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	PR target/70320
 	* gcc.target/msp430/asm-register-names-lower-case.c: New test.
 	* gcc.target/msp430/asm-register-names-upper-case.c: Likewise.

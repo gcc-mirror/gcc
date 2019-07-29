@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-mdata-region=either" } */
+/* { dg-skip-if "" { *-*-* } { "-mcpu=msp430" } { "" } } */
+/* { dg-options "-mlarge -mdata-region=either" } */
 
 /* { dg-final { scan-assembler-not "\\.either\\.data" } } */
 /* { dg-final { scan-assembler-not "\\.either\\.bss" } } */
