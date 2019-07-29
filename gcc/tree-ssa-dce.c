@@ -1364,12 +1364,13 @@ eliminate_unnecessary_stmts (void)
 		     did not mark as necessary, it will confuse the
 		     special logic we apply to malloc/free pair removal.  */
 		  && (!(call = gimple_call_fndecl (stmt))
-		      || DECL_BUILT_IN_CLASS (call) != BUILT_IN_NORMAL
-		      || (DECL_FUNCTION_CODE (call) != BUILT_IN_ALIGNED_ALLOC
-			  && DECL_FUNCTION_CODE (call) != BUILT_IN_MALLOC
-			  && DECL_FUNCTION_CODE (call) != BUILT_IN_CALLOC
-			  && !ALLOCA_FUNCTION_CODE_P
-			      (DECL_FUNCTION_CODE (call)))))
+		      || ((DECL_BUILT_IN_CLASS (call) != BUILT_IN_NORMAL
+			   || (DECL_FUNCTION_CODE (call) != BUILT_IN_ALIGNED_ALLOC
+			       && DECL_FUNCTION_CODE (call) != BUILT_IN_MALLOC
+			       && DECL_FUNCTION_CODE (call) != BUILT_IN_CALLOC
+			       && !ALLOCA_FUNCTION_CODE_P
+			       (DECL_FUNCTION_CODE (call))))
+			  && !DECL_IS_REPLACEABLE_OPERATOR_NEW_P (call))))
 		{
 		  something_changed = true;
 		  if (dump_file && (dump_flags & TDF_DETAILS))
