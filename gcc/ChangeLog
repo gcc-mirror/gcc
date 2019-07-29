@@ -1,3 +1,8 @@
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* wide-int.h (generic_wide_int::sext_elt): New function.
+	* inchash.h (hash::add_wide_int): Use it instead of elt.
+
 2019-07-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm-builtins.c (acle_builtin_data): Expand VAR1 to
