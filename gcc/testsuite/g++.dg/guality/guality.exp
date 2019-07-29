@@ -65,8 +65,22 @@ if {[check_guality "
     return 0;
   }
 "]} {
-  gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] "" ""
-  gcc-dg-runtest [lsort [glob $srcdir/c-c++-common/guality/*.c]] "" ""
+    set general [list]
+    set Og [list]
+    foreach file [lsort [glob $srcdir/c-c++-common/guality/*.c]] {
+	switch -glob -- [file tail $file] {
+	    Og-* { lappend Og $file }
+	    * { lappend general $file }
+	}
+    }
+
+    gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] "" ""
+    gcc-dg-runtest $general "" ""
+    set-torture-options \
+	[list "-O0" "-Og"] \
+	[list {}] \
+	[list "-Og -flto"]
+    gcc-dg-runtest $Og "" ""
 }
 
 if [info exists guality_gdb_name] {
