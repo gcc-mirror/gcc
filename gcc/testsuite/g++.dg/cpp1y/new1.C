@@ -61,5 +61,13 @@ new_array_load() {
   delete [] x;
 }
 
+void
+test_unused() {
+  volatile double d = 0.0;
+  double *p = new double ();
+  d += 1.0;
+  delete p;
+}
+
 /* { dg-final { scan-tree-dump-times "Deleting : operator delete" 5 "cddce1"} } */
 /* { dg-final { scan-tree-dump-times "Deleting : _\\d+ = operator new" 7 "cddce1"} } */

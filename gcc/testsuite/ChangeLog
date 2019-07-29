@@ -1,3 +1,8 @@
+2019-07-29  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/cpp1y/new1.C (test_unused): Add new case that causes
+	ICE.
+
 2019-07-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91267
