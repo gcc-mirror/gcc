@@ -1,5 +1,8 @@
 2019-07-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/91216
+	* gcc.dg/gomp/pr91216.c: New test.
+
 	PR target/91150
 	* gcc.target/i386/avx512bw-pr91150.c: New test.
 
