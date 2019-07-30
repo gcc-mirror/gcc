@@ -1,3 +1,10 @@
+2019-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91150
+	* config/i386/i386-expand.c (expand_vec_perm_blend): Change mask type
+	from unsigned to unsigned HOST_WIDE_INT.  For E_V64QImode cast
+	comparison to unsigned HOST_WIDE_INT before shifting it left.
+
 2019-07-30  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (movstrict<mode>): Use register_operand
