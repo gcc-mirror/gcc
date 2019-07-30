@@ -1,3 +1,9 @@
+2019-07-30  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/91270
+	* tree-ssa-dce.c (propagate_necessity): Mark 2nd argument
+	of delete operator as needed.
+
 2019-07-25  Martin Liska  <mliska@suse.cz>
 	    Dominik Infuhr  <dominik.infuehr@theobroma-systems.com>
 
