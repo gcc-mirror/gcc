@@ -2496,34 +2496,38 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   tree p = build_class_member_access_expr (deref_fp, promise_m, NULL_TREE,
 					   false, tf_warning_or_error);
 
-  /* Do a placement new constructor for the promise type (we never call the
-     new operator, just the constructor on the object in place in the frame.
-     
-     First try to find a constructor with the same parameter list as the
-     original function (if it has params), failing that find a constructor
-     with no parameter list.
-  */
-
-  if (DECL_ARGUMENTS (orig))
+  if (TYPE_NEEDS_CONSTRUCTING (promise_type))
     {
-      vec<tree, va_gc> *args = make_tree_vector ();
-      tree arg;
-      for (arg = DECL_ARGUMENTS (orig); arg != NULL; arg = DECL_CHAIN (arg))
-	vec_safe_push (args, arg);
-      r = build_special_member_call (p, complete_ctor_identifier, &args,
-				    promise_type, LOOKUP_NORMAL,
-				    tf_none);
-      release_tree_vector (args);
+      /* Do a placement new constructor for the promise type (we never call
+	 the new operator, just the constructor on the object in place in the
+	 frame).
+
+	 First try to find a constructor with the same parameter list as the
+	 original function (if it has params), failing that find a constructor
+	 with no parameter list.
+      */
+
+      if (DECL_ARGUMENTS (orig))
+	{
+	vec<tree, va_gc> *args = make_tree_vector ();
+	tree arg;
+	for (arg = DECL_ARGUMENTS (orig); arg != NULL; arg = DECL_CHAIN (arg))
+	  vec_safe_push (args, arg);
+	r = build_special_member_call (p, complete_ctor_identifier, &args,
+				       promise_type, LOOKUP_NORMAL, tf_none);
+	release_tree_vector (args);
+	}
+      else
+	r = NULL_TREE;
+
+      if (r == NULL_TREE || r == error_mark_node)
+	r = build_special_member_call (p, complete_ctor_identifier, NULL,
+				       promise_type, LOOKUP_NORMAL,
+				       tf_warning_or_error);
+
+      r = coro_build_cvt_void_expr_stmt (r, fn_start);
+      add_stmt (r);
     }
-  else
-    r = NULL_TREE;
-    
-  if (r == NULL_TREE || r == error_mark_node)
-    r = build_special_member_call (p, complete_ctor_identifier, NULL,
-				  promise_type, LOOKUP_NORMAL,
-				  tf_warning_or_error);
-  r = coro_build_cvt_void_expr_stmt (r, fn_start);
-  add_stmt (r);
 
   /* Copy in any of the function params we found to be used.
      Param types with non-trivial dtors will have to be moved into position

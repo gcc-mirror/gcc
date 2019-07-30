@@ -1,3 +1,9 @@
+2019-07-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (morph_fn_to_coro): Check that the promise needs
+	constructing before building one.
+
 2019-07-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
