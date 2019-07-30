@@ -1,3 +1,7 @@
+2019-07-30  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_option_override): Quote a C type.
+
 2019-07-30  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/thumb2.md (thumb2_movsi_insn): Adjust literal offset.
