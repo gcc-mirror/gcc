@@ -1,3 +1,8 @@
+2019-07-30  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/91258
+	* g++.dg/ubsan/vla-1.C: Suppress a valid warning.
+
 2019-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91296
