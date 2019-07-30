@@ -1,3 +1,10 @@
+2019-07-30  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/89330
+	* cgraph.c (cgraph_edge::make_direct): Use
+	edge->indirect_unknown_callee as edge->resolve_speculation can
+	deallocate edge which is this pointer.
+
 2019-07-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91257
