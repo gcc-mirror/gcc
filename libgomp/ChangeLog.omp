@@ -1,3 +1,7 @@
+2019-09-10  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* config/gcn/team.c (gomp_gcn_exit_kernel): Free GCN thread list.
+
 2019-09-10  Andrew Stubbs  <ams@codesourcery.com>
 
 	* plugin/plugin-gcn.c (HSA_AMD_AGENT_INFO_COMPUTE_UNIT_COUNT): Define.

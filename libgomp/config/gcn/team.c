@@ -93,6 +93,7 @@ void
 gomp_gcn_exit_kernel (void)
 {
   gomp_free_thread (gcn_thrs ());
+  free (gcn_thrs ());
 }
 
 /* This function contains the idle loop in which a thread waits
