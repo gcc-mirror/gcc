@@ -1,3 +1,16 @@
+2019-07-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91257
+	* bitmap.h (bitmap_ior_into_and_free): Declare.
+	* bitmap.c (bitmap_list_unlink_element): Add defaulted param
+	whether to add the unliked element to the freelist.
+	(bitmap_list_insert_element_after): Add defaulted param for
+	an already allocated element.
+	(bitmap_ior_into_and_free): New function.
+	* tree-ssa-structalias.c (condense_visit): Reduce the
+	ponts-to and edge bitmaps of the SCC members in a
+	logarithmic fashion rather than all to one.
+
 2019-07-30  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-ssa-math-opts.c (convert_mult_to_fma): Add a mul_cond

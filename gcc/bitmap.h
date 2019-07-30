@@ -415,6 +415,7 @@ extern void bitmap_clear_range (bitmap, unsigned int, unsigned int);
 extern void bitmap_set_range (bitmap, unsigned int, unsigned int);
 extern bool bitmap_ior (bitmap, const_bitmap, const_bitmap);
 extern bool bitmap_ior_into (bitmap, const_bitmap);
+extern bool bitmap_ior_into_and_free (bitmap, bitmap *);
 extern void bitmap_xor (bitmap, const_bitmap, const_bitmap);
 extern void bitmap_xor_into (bitmap, const_bitmap);
 
