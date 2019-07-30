@@ -500,6 +500,10 @@ fdump-fortran-optimized
 Fortran Var(flag_dump_fortran_optimized)
 Display the code tree after front end optimization.
 
+fdump-fortran-global
+Fortran Var(flag_dump_fortran_global)
+Display the global symbol table after parsing.
+
 fdump-parse-tree
 Fortran Alias(fdump-fortran-original)
 Display the code tree after parsing; deprecated option.

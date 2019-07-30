@@ -3443,3 +3443,36 @@ write_interop_decl (gfc_symbol *sym)
   else if (sym->attr.flavor == FL_PROCEDURE)
     write_proc (sym, true);
 }
+
+/* This section deals with dumping the global symbol tree.  */
+
+/* Callback function for printing out the contents of the tree.  */
+
+static void
+show_global_symbol (gfc_gsymbol *gsym, void *f_data)
+{
+  FILE *out;
+  out = (FILE *) f_data;
+
+  if (gsym->name)
+    fprintf (out, "name=%s", gsym->name);
+
+  if (gsym->sym_name)
+    fprintf (out, ", sym_name=%s", gsym->sym_name);
+
+  if (gsym->mod_name)
+    fprintf (out, ", mod_name=%s", gsym->mod_name);
+
+  if (gsym->binding_label)
+    fprintf (out, ", binding_label=%s", gsym->binding_label);
+
+  fputc ('\n', out);
+}
+
+/* Show all global symbols.  */
+
+void
+gfc_dump_global_symbols (FILE *f)
+{
+  gfc_traverse_gsymbol (gfc_gsym_root, show_global_symbol, (void *) f);
+}
