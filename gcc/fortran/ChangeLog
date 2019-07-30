@@ -1,3 +1,9 @@
+2019-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91296
+	* interface.c (compare_actual_expr): When checking for aliasing, add
+	a case to handle REF_INQUIRY (e.g., foo(x%re, x%im) do not alias).
+
 2019-07-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	Paul Thomas <pault@gcc.gnu.org>
 
