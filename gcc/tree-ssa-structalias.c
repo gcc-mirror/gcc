@@ -2071,36 +2071,73 @@ condense_visit (constraint_graph_t graph, class scc_info *si, unsigned int n)
   /* See if any components have been identified.  */
   if (si->dfs[n] == my_dfs)
     {
-      while (si->scc_stack.length () != 0
-	     && si->dfs[si->scc_stack.last ()] >= my_dfs)
+      if (si->scc_stack.length () != 0
+	  && si->dfs[si->scc_stack.last ()] >= my_dfs)
 	{
-	  unsigned int w = si->scc_stack.pop ();
-	  si->node_mapping[w] = n;
-
-	  if (!bitmap_bit_p (graph->direct_nodes, w))
+	  /* Find the first node of the SCC and do non-bitmap work.  */
+	  bool direct_p = true;
+	  unsigned first = si->scc_stack.length ();
+	  do
+	    {
+	      --first;
+	      unsigned int w = si->scc_stack[first];
+	      si->node_mapping[w] = n;
+	      if (!bitmap_bit_p (graph->direct_nodes, w))
+		direct_p = false;
+	    }
+	  while (first > 0
+		 && si->dfs[si->scc_stack[first - 1]] >= my_dfs);
+	  if (!direct_p)
 	    bitmap_clear_bit (graph->direct_nodes, n);
 
-	  /* Unify our nodes.  */
-	  if (graph->preds[w])
+	  /* Want to reduce to node n, push that first.  */
+	  si->scc_stack.reserve (1);
+	  si->scc_stack.quick_push (si->scc_stack[first]);
+	  si->scc_stack[first] = n;
+
+	  unsigned scc_size = si->scc_stack.length () - first;
+	  unsigned split = scc_size / 2;
+	  unsigned carry = scc_size - split * 2;
+	  while (split > 0)
 	    {
-	      if (!graph->preds[n])
-		graph->preds[n] = BITMAP_ALLOC (&predbitmap_obstack);
-	      bitmap_ior_into (graph->preds[n], graph->preds[w]);
+	      for (unsigned i = 0; i < split; ++i)
+		{
+		  unsigned a = si->scc_stack[first + i];
+		  unsigned b = si->scc_stack[first + split + carry + i];
+
+		  /* Unify our nodes.  */
+		  if (graph->preds[b])
+		    {
+		      if (!graph->preds[a])
+			std::swap (graph->preds[a], graph->preds[b]);
+		      else
+			bitmap_ior_into_and_free (graph->preds[a],
+						  &graph->preds[b]);
+		    }
+		  if (graph->implicit_preds[b])
+		    {
+		      if (!graph->implicit_preds[a])
+			std::swap (graph->implicit_preds[a],
+				   graph->implicit_preds[b]);
+		      else
+			bitmap_ior_into_and_free (graph->implicit_preds[a],
+						  &graph->implicit_preds[b]);
+		    }
+		  if (graph->points_to[b])
+		    {
+		      if (!graph->points_to[a])
+			std::swap (graph->points_to[a], graph->points_to[b]);
+		      else
+			bitmap_ior_into_and_free (graph->points_to[a],
+						  &graph->points_to[b]);
+		    }
+		}
+	      unsigned remain = split + carry;
+	      split = remain / 2;
+	      carry = remain - split * 2;
 	    }
-	  if (graph->implicit_preds[w])
-	    {
-	      if (!graph->implicit_preds[n])
-		graph->implicit_preds[n] = BITMAP_ALLOC (&predbitmap_obstack);
-	      bitmap_ior_into (graph->implicit_preds[n],
-			       graph->implicit_preds[w]);
-	    }
-	  if (graph->points_to[w])
-	    {
-	      if (!graph->points_to[n])
-		graph->points_to[n] = BITMAP_ALLOC (&predbitmap_obstack);
-	      bitmap_ior_into (graph->points_to[n],
-			       graph->points_to[w]);
-	    }
+	  /* Actually pop the SCC.  */
+	  si->scc_stack.truncate (first);
 	}
       bitmap_set_bit (si->deleted, n);
     }
