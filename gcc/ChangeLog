@@ -1,3 +1,11 @@
+2019-07-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-ssa-math-opts.c (convert_mult_to_fma): Add a mul_cond
+	parameter.  When nonnull, make sure that the addition or subtraction
+	has the same condition.
+	(math_opts_dom_walker::after_dom_children): Try convert_mult_to_fma
+	for CFN_COND_MUL too.
+
 2019-07-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91291
