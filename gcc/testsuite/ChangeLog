@@ -1,3 +1,7 @@
+2019-07-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-cond-arith-7.c: New test.
+
 2019-07-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/91282
