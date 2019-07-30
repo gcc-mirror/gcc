@@ -1,3 +1,12 @@
+2019-07-30  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Document new behavior.
+	* lto-wrapper.c (cpuset_popcount): New function
+	is a copy of libgomp/config/linux/proc.c.
+	(init_num_threads): Likewise.
+	(run_gcc): Automatically detect core count for -flto.
+	(jobserver_active_p): New function.
+
 2019-07-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91257

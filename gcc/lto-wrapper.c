@@ -1110,6 +1110,136 @@ cmp_priority (const void *a, const void *b)
   return *((const int *)b)-*((const int *)a);
 }
 
+/* Number of CPUs that can be used for parallel LTRANS phase.  */
+
+static unsigned long nthreads_var = 0;
+
+#ifdef HAVE_PTHREAD_AFFINITY_NP
+unsigned long cpuset_size;
+static unsigned long get_cpuset_size;
+cpu_set_t *cpusetp;
+
+unsigned long
+static cpuset_popcount (unsigned long cpusetsize, cpu_set_t *cpusetp)
+{
+#ifdef CPU_COUNT_S
+  /* glibc 2.7 and above provide a macro for this.  */
+  return CPU_COUNT_S (cpusetsize, cpusetp);
+#else
+#ifdef CPU_COUNT
+  if (cpusetsize == sizeof (cpu_set_t))
+    /* glibc 2.6 and above provide a macro for this.  */
+    return CPU_COUNT (cpusetp);
+#endif
+  size_t i;
+  unsigned long ret = 0;
+  STATIC_ASSERT (sizeof (cpusetp->__bits[0]) == sizeof (unsigned long int));
+  for (i = 0; i < cpusetsize / sizeof (cpusetp->__bits[0]); i++)
+    {
+      unsigned long int mask = cpusetp->__bits[i];
+      if (mask == 0)
+	continue;
+      ret += __builtin_popcountl (mask);
+    }
+  return ret;
+#endif
+}
+#endif
+
+/* At startup, determine the default number of threads.  It would seem
+   this should be related to the number of cpus online.  */
+
+static void
+init_num_threads (void)
+{
+#ifdef HAVE_PTHREAD_AFFINITY_NP
+#if defined (_SC_NPROCESSORS_CONF) && defined (CPU_ALLOC_SIZE)
+  cpuset_size = sysconf (_SC_NPROCESSORS_CONF);
+  cpuset_size = CPU_ALLOC_SIZE (cpuset_size);
+#else
+  cpuset_size = sizeof (cpu_set_t);
+#endif
+
+  cpusetp = (cpu_set_t *) xmalloc (gomp_cpuset_size);
+  do
+    {
+      int ret = pthread_getaffinity_np (pthread_self (), gomp_cpuset_size,
+					cpusetp);
+      if (ret == 0)
+	{
+	  /* Count only the CPUs this process can use.  */
+	  nthreads_var = cpuset_popcount (cpuset_size, cpusetp);
+	  if (nthreads_var == 0)
+	    break;
+	  get_cpuset_size = cpuset_size;
+#ifdef CPU_ALLOC_SIZE
+	  unsigned long i;
+	  for (i = cpuset_size * 8; i; i--)
+	    if (CPU_ISSET_S (i - 1, cpuset_size, cpusetp))
+	      break;
+	  cpuset_size = CPU_ALLOC_SIZE (i);
+#endif
+	  return;
+	}
+      if (ret != EINVAL)
+	break;
+#ifdef CPU_ALLOC_SIZE
+      if (cpuset_size < sizeof (cpu_set_t))
+	cpuset_size = sizeof (cpu_set_t);
+      else
+	cpuset_size = cpuset_size * 2;
+      if (cpuset_size < 8 * sizeof (cpu_set_t))
+	cpusetp
+	  = (cpu_set_t *) realloc (cpusetp, cpuset_size);
+      else
+	{
+	  /* Avoid fatal if too large memory allocation would be
+	     requested, e.g. kernel returning EINVAL all the time.  */
+	  void *p = realloc (cpusetp, cpuset_size);
+	  if (p == NULL)
+	    break;
+	  cpusetp = (cpu_set_t *) p;
+	}
+#else
+      break;
+#endif
+    }
+  while (1);
+  cpuset_size = 0;
+  nthreads_var = 1;
+  free (cpusetp);
+  cpusetp = NULL;
+#endif
+#ifdef _SC_NPROCESSORS_ONLN
+  nthreads_var = sysconf (_SC_NPROCESSORS_ONLN);
+#endif
+}
+
+/* FIXME: once using -std=c11, we can use std::thread::hardware_concurrency.  */
+
+/* Return true when a jobserver is running and can accept a job.  */
+
+static bool
+jobserver_active_p (void)
+{
+  const char *makeflags = getenv ("MAKEFLAGS");
+  if (makeflags == NULL)
+    return false;
+
+  const char *needle = "--jobserver-auth=";
+  const char *n = strstr (makeflags, needle);
+  if (n == NULL)
+    return false;
+
+  int rfd = -1;
+  int wfd = -1;
+
+  return ((sscanf(n, "--jobserver-auth=%d,%d", &rfd, &wfd) == 2)
+	  && rfd > 0
+	  && wfd > 0
+	  && fcntl (rfd, F_GETFD) >= 0
+	  && fcntl (wfd, F_GETFD) >= 0);
+}
 
 /* Execute gcc. ARGC is the number of arguments. ARGV contains the arguments. */
 
@@ -1122,8 +1252,10 @@ run_gcc (unsigned argc, char *argv[])
   char *list_option_full = NULL;
   const char *linker_output = NULL;
   const char *collect_gcc, *collect_gcc_options;
-  int parallel = 0;
+  /* Make linking parallel by default.  */
+  int parallel = 1;
   int jobserver = 0;
+  int auto_parallel = 0;
   bool no_partition = false;
   struct cl_decoded_option *fdecoded_options = NULL;
   struct cl_decoded_option *offload_fdecoded_options = NULL;
@@ -1247,10 +1379,7 @@ run_gcc (unsigned argc, char *argv[])
 
 	case OPT_flto_:
 	  if (strcmp (option->arg, "jobserver") == 0)
-	    {
-	      jobserver = 1;
-	      parallel = 1;
-	    }
+	    jobserver = 1;
 	  else
 	    {
 	      parallel = atoi (option->arg);
@@ -1291,7 +1420,16 @@ run_gcc (unsigned argc, char *argv[])
     {
       lto_mode = LTO_MODE_LTO;
       jobserver = 0;
+      auto_parallel = 0;
       parallel = 0;
+    }
+  else if (!jobserver && parallel)
+    {
+      /* If there's no explicit usage of jobserver and
+	 parallel is enabled, then automatically detect
+	 jobserver or number of cores.  */
+      auto_parallel = 1;
+      jobserver = jobserver_active_p ();
     }
 
   if (linker_output)
@@ -1484,7 +1622,21 @@ cont1:
       strcpy (tmp, ltrans_output_file);
 
       if (jobserver)
-	obstack_ptr_grow (&argv_obstack, xstrdup ("-fwpa=jobserver"));
+	{
+	  if (verbose)
+	    fprintf (stderr, "Using make jobserver\n");
+	  obstack_ptr_grow (&argv_obstack, xstrdup ("-fwpa=jobserver"));
+	}
+      else if (auto_parallel)
+	{
+	  char buf[256];
+	  init_num_threads ();
+	  if (verbose)
+	    fprintf (stderr, "LTO parallelism level set to %ld\n",
+		     nthreads_var);
+	  sprintf (buf, "-fwpa=%ld", nthreads_var);
+	  obstack_ptr_grow (&argv_obstack, xstrdup (buf));
+	}
       else if (parallel > 1)
 	{
 	  char buf[256];
@@ -1692,7 +1844,8 @@ cont:
 	  i = 3;
 	  if (!jobserver)
 	    {
-	      snprintf (jobs, 31, "-j%d", parallel);
+	      snprintf (jobs, 31, "-j%ld",
+			auto_parallel ? nthreads_var : parallel);
 	      new_argv[i++] = jobs;
 	    }
 	  new_argv[i++] = "all";
