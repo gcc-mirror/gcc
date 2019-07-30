@@ -1,3 +1,11 @@
+2019-07-30  Jan Hubicka  <jh@suse.cz>
+
+	Backport from mainline
+	2019-07-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/x86-tune-costs.h (znver2_memcpy): Update.
+	(znver2_costs): Update 256 bit SSE costs and multiplication.
+
 2019-07-24  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	Backport from mainline
