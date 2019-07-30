@@ -804,10 +804,11 @@ propagate_necessity (bool aggressive)
 	  /* If this is a call to free which is directly fed by an
 	     allocation function do not mark that necessary through
 	     processing the argument.  */
-	  if (gimple_call_builtin_p (stmt, BUILT_IN_FREE)
-	      || (is_gimple_call (stmt)
-		  && gimple_call_operator_delete_p (as_a <gcall *> (stmt))))
-
+	  bool is_delete_operator
+	    = (is_gimple_call (stmt)
+	       && gimple_call_operator_delete_p (as_a <gcall *> (stmt)));
+	  if (is_delete_operator
+	      || gimple_call_builtin_p (stmt, BUILT_IN_FREE))
 	    {
 	      tree ptr = gimple_call_arg (stmt, 0);
 	      gimple *def_stmt;
@@ -822,7 +823,17 @@ propagate_necessity (bool aggressive)
 			   || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_MALLOC
 			   || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_CALLOC))
 		      || DECL_IS_REPLACEABLE_OPERATOR_NEW_P (def_callee)))
-		continue;
+		{
+		  /* Some delete operators have size as 2nd argument.  */
+		  if (is_delete_operator && gimple_call_num_args (stmt) >= 2)
+		    {
+		      tree size_argument = gimple_call_arg (stmt, 1);
+		      if (TREE_CODE (size_argument) == SSA_NAME)
+			mark_operand_necessary (size_argument);
+		    }
+
+		  continue;
+		}
 	    }
 
 	  FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
