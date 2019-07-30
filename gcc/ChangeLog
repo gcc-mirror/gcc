@@ -1,3 +1,8 @@
+2019-07-30  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/arm/thumb2.md (thumb2_movsi_insn): Adjust literal offset.
+	* config/arm/vfp.md (thumb2_movsi_vfp): Likewise.
+
 2019-07-30  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/89330
