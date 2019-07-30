@@ -1,3 +1,8 @@
+2019-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91150
+	* gcc.target/i386/avx512bw-pr91150.c: New test.
+
 2019-07-29  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc.target/msp430/pr78818-data-region.c: Add -mlarge to dg-options.
