@@ -3488,6 +3488,13 @@ compare_actual_expr (gfc_expr *e1, gfc_expr *e2)
 	case REF_SUBSTRING:
 	  return false;
 
+	case REF_INQUIRY:
+	  if (e1->symtree->n.sym->ts.type == BT_COMPLEX
+	      && e1->ts.type == BT_REAL && e2->ts.type == BT_REAL
+	      && r1->u.i != r2->u.i)
+	    return false;
+	  break;
+
 	default:
 	  gfc_internal_error ("compare_actual_expr(): Bad component code");
 	}
