@@ -274,7 +274,7 @@
    (set_attr "length" "2,4,2,4,4,4,4")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no")
-   (set_attr "pool_range" "*,*,*,*,*,4094,*")
+   (set_attr "pool_range" "*,*,*,*,*,1018,*")
    (set_attr "neg_pool_range" "*,*,*,*,*,0,*")]
 )
 
