@@ -6253,7 +6253,8 @@ void
 rpo_elim::eliminate_push_avail (basic_block bb, tree leader)
 {
   tree valnum = VN_INFO (leader)->valnum;
-  if (valnum == VN_TOP)
+  if (valnum == VN_TOP
+      || is_gimple_min_invariant (valnum))
     return;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
