@@ -1,5 +1,11 @@
 2019-07-31  Julian Brown  <julian@codesourcery.com>
 
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Use relative
+	line numbers for warning.
+	* testsuite/libgomp.oacc-c-c++-common/serial-dims.c: Likewise.
+
+2019-07-31  Julian Brown  <julian@codesourcery.com>
+
 	* config/nvptx/gomp_print.c (gomp_print_string, gomp_print_integer,
 	gomp_print_double): New.
 	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_openacc_async_construct): Add
