@@ -1,6 +1,13 @@
 2019-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2019-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/headers/cfloat/values_c++17.cc: New test.
+
+2019-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2019-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/memory (make_obj_using_allocator): Qualify call to
