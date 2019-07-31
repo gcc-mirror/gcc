@@ -236,6 +236,7 @@
     UNSPEC_REV_SUBREG
     UNSPEC_SPECULATION_TRACKER
     UNSPEC_COPYSIGN
+    UNSPEC_TTEST		; Represent transaction test.
 ])
 
 (define_c_enum "unspecv" [
@@ -251,6 +252,9 @@
     UNSPECV_BTI_C		; Represent BTI c.
     UNSPECV_BTI_J		; Represent BTI j.
     UNSPECV_BTI_JC		; Represent BTI jc.
+    UNSPECV_TSTART		; Represent transaction start.
+    UNSPECV_TCOMMIT		; Represent transaction commit.
+    UNSPECV_TCANCEL		; Represent transaction cancel.
   ]
 )
 
@@ -7240,6 +7244,43 @@
   [(set_attr "type" "block")
    (set_attr "length" "12")
    (set_attr "speculation_barrier" "true")]
+)
+
+;; Transactional Memory Extension (TME) instructions.
+
+(define_insn "tstart"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec_volatile:DI [(const_int 0)] UNSPECV_TSTART))
+   (clobber (mem:BLK (scratch)))]
+  "TARGET_TME"
+  "tstart\\t%0"
+  [(set_attr "type" "tme")]
+)
+
+(define_insn "ttest"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec_volatile:DI [(const_int 0)] UNSPEC_TTEST))
+   (clobber (mem:BLK (scratch)))]
+  "TARGET_TME"
+  "ttest\\t%0"
+  [(set_attr "type" "tme")]
+)
+
+(define_insn "tcommit"
+  [(unspec_volatile:BLK [(const_int 0)] UNSPECV_TCOMMIT)
+   (clobber (mem:BLK (scratch)))]
+  "TARGET_TME"
+  "tcommit"
+  [(set_attr "type" "tme")]
+)
+
+(define_insn "tcancel"
+  [(unspec_volatile:BLK
+     [(match_operand 0 "const_int_operand" "n")] UNSPECV_TCANCEL)
+   (clobber (mem:BLK (scratch)))]
+  "TARGET_TME && (UINTVAL (operands[0]) <= 65535)"
+  "tcancel\\t#%0"
+  [(set_attr "type" "tme")]
 )
 
 ;; AdvSIMD Stuff

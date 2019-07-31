@@ -438,6 +438,11 @@ enum aarch64_builtins
   /* Special cased Armv8.3-A Complex FMA by Lane quad Builtins.  */
   AARCH64_SIMD_FCMLA_LANEQ_BUILTIN_BASE,
   AARCH64_SIMD_FCMLA_LANEQ_BUILTINS
+  /* TME builtins.  */
+  AARCH64_TME_BUILTIN_TSTART,
+  AARCH64_TME_BUILTIN_TCOMMIT,
+  AARCH64_TME_BUILTIN_TTEST,
+  AARCH64_TME_BUILTIN_TCANCEL,
   AARCH64_BUILTIN_MAX
 };
 
@@ -1067,6 +1072,35 @@ aarch64_init_pauth_hint_builtins (void)
 			    NULL_TREE);
 }
 
+/* Initialize the transactional memory extension (TME) builtins.  */
+static void
+aarch64_init_tme_builtins (void)
+{
+  tree ftype_uint64_void
+    = build_function_type_list (uint64_type_node, NULL);
+  tree ftype_void_void
+    = build_function_type_list (void_type_node, NULL);
+  tree ftype_void_uint64
+    = build_function_type_list (void_type_node, uint64_type_node, NULL);
+
+  aarch64_builtin_decls[AARCH64_TME_BUILTIN_TSTART]
+    = add_builtin_function ("__builtin_aarch64_tstart", ftype_uint64_void,
+			    AARCH64_TME_BUILTIN_TSTART, BUILT_IN_MD,
+			    NULL, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_TME_BUILTIN_TTEST]
+    = add_builtin_function ("__builtin_aarch64_ttest", ftype_uint64_void,
+			    AARCH64_TME_BUILTIN_TTEST, BUILT_IN_MD,
+			    NULL, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_TME_BUILTIN_TCOMMIT]
+    = add_builtin_function ("__builtin_aarch64_tcommit", ftype_void_void,
+			    AARCH64_TME_BUILTIN_TCOMMIT, BUILT_IN_MD,
+			    NULL, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_TME_BUILTIN_TCANCEL]
+    = add_builtin_function ("__builtin_aarch64_tcancel", ftype_void_uint64,
+			    AARCH64_TME_BUILTIN_TCANCEL, BUILT_IN_MD,
+			    NULL, NULL_TREE);
+}
+
 void
 aarch64_init_builtins (void)
 {
@@ -1104,6 +1138,9 @@ aarch64_init_builtins (void)
      register them.  */
   if (!TARGET_ILP32)
     aarch64_init_pauth_hint_builtins ();
+
+  if (TARGET_TME)
+    aarch64_init_tme_builtins ();
 }
 
 tree
@@ -1507,6 +1544,47 @@ aarch64_expand_fcmla_builtin (tree exp, rtx target, int fcode)
   return target;
 }
 
+/* Function to expand an expression EXP which calls one of the Transactional
+   Memory Extension (TME) builtins FCODE with the result going to TARGET.  */
+static rtx
+aarch64_expand_builtin_tme (int fcode, tree exp, rtx target)
+{
+  switch (fcode)
+    {
+    case AARCH64_TME_BUILTIN_TSTART:
+      target = gen_reg_rtx (DImode);
+      emit_insn (GEN_FCN (CODE_FOR_tstart) (target));
+      break;
+
+    case AARCH64_TME_BUILTIN_TTEST:
+      target = gen_reg_rtx (DImode);
+      emit_insn (GEN_FCN (CODE_FOR_ttest) (target));
+      break;
+
+    case AARCH64_TME_BUILTIN_TCOMMIT:
+      emit_insn (GEN_FCN (CODE_FOR_tcommit) ());
+      break;
+
+    case AARCH64_TME_BUILTIN_TCANCEL:
+      {
+	tree arg0 = CALL_EXPR_ARG (exp, 0);
+	rtx op0 = expand_normal (arg0);
+	if (CONST_INT_P (op0) && UINTVAL (op0) <= 65536)
+	  emit_insn (GEN_FCN (CODE_FOR_tcancel) (op0));
+	else
+	  {
+	    error ("%Kargument must be a 16-bit constant immediate", exp);
+	    return const0_rtx;
+	  }
+      }
+      break;
+
+    default :
+      gcc_unreachable ();
+    }
+    return target;
+}
+
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient.  */
 rtx
@@ -1626,6 +1704,12 @@ aarch64_expand_builtin (tree exp,
       || fcode == AARCH64_BUILTIN_RSQRT_V2SF
       || fcode == AARCH64_BUILTIN_RSQRT_V4SF)
     return aarch64_expand_builtin_rsqrt (fcode, exp, target);
+
+  if (fcode == AARCH64_TME_BUILTIN_TSTART
+      || fcode == AARCH64_TME_BUILTIN_TCOMMIT
+      || fcode == AARCH64_TME_BUILTIN_TTEST
+      || fcode == AARCH64_TME_BUILTIN_TCANCEL)
+    return aarch64_expand_builtin_tme (fcode, exp, target);
 
   gcc_unreachable ();
 }

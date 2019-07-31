@@ -199,6 +199,9 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_SVE2_SHA3	(1ULL << 31)
 #define AARCH64_FL_SVE2_BITPERM	(1ULL << 32)
 
+/* Transactional Memory Extension.  */
+#define AARCH64_FL_TME	      (1ULL << 33)  /* Has TME instructions.  */
+
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
 
@@ -243,6 +246,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_F16FML	   (aarch64_isa_flags & AARCH64_FL_F16FML)
 #define AARCH64_ISA_RCPC8_4	   (aarch64_isa_flags & AARCH64_FL_RCPC8_4)
 #define AARCH64_ISA_V8_5	   (aarch64_isa_flags & AARCH64_FL_V8_5)
+#define AARCH64_ISA_TME		   (aarch64_isa_flags & AARCH64_FL_TME)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
@@ -286,6 +290,9 @@ extern unsigned aarch64_architecture_version;
 
 /* Armv8.3-a Complex number extension to AdvSIMD extensions.  */
 #define TARGET_COMPLEX (TARGET_SIMD && TARGET_ARMV8_3)
+
+/* TME instructions are enabled.  */
+#define TARGET_TME (AARCH64_ISA_TME)
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */
