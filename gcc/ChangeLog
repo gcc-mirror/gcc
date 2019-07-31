@@ -1,3 +1,9 @@
+2019-07-31  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-dce.c (propagate_necessity): Delete operator can
+	have size and (or) alignment as 2nd and later arguments.
+	Mark all of them as necessary.
+
 2019-07-31  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91178
