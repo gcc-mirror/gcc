@@ -1,3 +1,9 @@
+2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91293
+	* tree-vect-slp.c (vect_build_slp_tree_2): Do not swap operands
+	of reduction stmts.
+
 2019-07-31  Matt Thomas  <matt@3am-software.com>
 	    Nick Hudson <nick@nthcliff.demon.co.uk>
 	    Matthew Green <mrg@eterna.com.au>
