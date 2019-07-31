@@ -1,3 +1,7 @@
+2019-07-31  Maxim Blinov  <maxim.blinov@embecosm.com>
+
+	* gcc.target/riscv/attribute-10.c: New test.
+
 2019-07-31  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91280
