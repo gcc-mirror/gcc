@@ -4315,6 +4315,8 @@ vr_values::simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
   return false;
 }
 
+/* Set the lattice entry for VAR to VR.  */
+
 void
 vr_values::set_vr_value (tree var, value_range *vr)
 {
@@ -4323,3 +4325,13 @@ vr_values::set_vr_value (tree var, value_range *vr)
   vr_value[SSA_NAME_VERSION (var)] = vr;
 }
 
+/* Swap the lattice entry for VAR with VR and return the old entry.  */
+
+value_range *
+vr_values::swap_vr_value (tree var, value_range *vr)
+{
+  if (SSA_NAME_VERSION (var) >= num_vr_values)
+    return NULL;
+  std::swap (vr_value[SSA_NAME_VERSION (var)], vr);
+  return vr;
+}

@@ -1,3 +1,20 @@
+2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	* vr-values.h (vr_values::swap_vr_value): New.
+	(vr_values::free_value_range): likewise.
+	* vr-values.c (vr_values::swap_vr_value): Implement.
+	* gimple-ssa-evrp-analyze.h (evrp_range_analyzer::pop_value_range):
+	Do not return a range or take a var.
+	(evrp_range_analyzer::stack): Change back to recording a non-const
+	value_range *.
+	* gimple-ssa-evrp-analyze.c
+	(evrp_range_analyzer::record_ranges_from_stmt): Free unused
+	value-range.
+	(evrp_range_analyzer::pop_to_marker): Adjust.
+	(evrp_range_analyzer::push_value_range): Use new swap_vr_value.
+	(evrp_range_analyzer::pop_value_range): Likewise.  Free the
+	no longer needed value-range.
+
 2019-07-31  Martin Liska  <mliska@suse.cz>
 
 	* tree-ssa-dce.c (propagate_necessity): Delete operator can
