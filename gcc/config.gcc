@@ -1522,6 +1522,14 @@ hppa*-*-openbsd*)
 	gas=yes
 	gnu_ld=yes
 	;;
+hppa*-*-netbsd*)
+	target_cpu_default="MASK_PA_11|MASK_NO_SPACE_REGS"
+	tm_file="${tm_file} dbxelf.h elfos.h ${nbsd_tm_file} \
+		 pa/pa-netbsd.h pa/pa32-regs.h pa/pa32-netbsd.h"
+	tmake_file="${tmake_file}"
+	tm_defines="${tm_defines} CHAR_FAST8=1 SHORT_FAST16=1"
+	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
+	;;
 hppa[12]*-*-hpux10*)
 	case ${target} in
 	hppa1.1-*-* | hppa2*-*-*)
