@@ -1,3 +1,8 @@
+2019-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl2.c (delete_sanity): Improve diagnostic locations, use
+	cp_expr_loc_or_loc in four places.
+
 2019-07-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90538 - multiple expansions of capture packs
