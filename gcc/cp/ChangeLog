@@ -1,5 +1,17 @@
 2019-07-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/90538 - multiple expansions of capture packs
+	* cp-tree.h (DECLTYPE_FOR_INIT_CAPTURE): Remove.
+	* lambda.c (add_capture): Copy parameter packs from init.
+	(lambda_capture_field_type): Always use auto for init-capture.
+	* pt.c (uses_parameter_packs): Return tree.
+	(tsubst) [DECLTYPE_TYPE]: Remove init-capture handling.
+	(gen_elem_of_pack_expansion_instantiation): Don't push
+	local_specialization_stack.
+	(prepend_one_capture): New.
+	(tsubst_lambda_expr): Use it.  Don't touch local_specializations.
+	(do_auto_deduction): Avoid redundant error.
+
 	Fix copy_node of TEMPLATE_INFO.
 	* cp-tree.h (struct tree_template_info): Use tree_base instead of
 	tree_common.  Add tmpl and args fields.
