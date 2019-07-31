@@ -1,5 +1,11 @@
 2019-07-31  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/91280
+	* tree-ssa-structalias.c (get_constraint_for_component_ref):
+	Decompose MEM_REF manually for offset handling.
+
+2019-07-31  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/91293
 	* tree-vect-slp.c (vect_build_slp_tree_2): Do not swap operands
 	of reduction stmts.
