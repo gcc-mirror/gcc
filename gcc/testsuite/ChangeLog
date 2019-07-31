@@ -1,3 +1,10 @@
+2019-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91201
+	* gcc.target/i386/sse2-pr91201.c: New test.
+	* gcc.target/i386/avx2-pr91201.c: New test.
+	* gcc.target/i386/avx512bw-pr91201.c: New test.
+
 2019-07-31  Sudakshina Das  <sudi.das@arm.com>
 
 	* gcc.target/aarch64/acle/tme.c: New test.
