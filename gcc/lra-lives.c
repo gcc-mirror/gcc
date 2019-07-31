@@ -624,10 +624,10 @@ check_pseudos_live_through_calls (int regno,
 static inline bool
 reg_early_clobber_p (const struct lra_insn_reg *reg, int n_alt)
 {
-  return (reg->early_clobber
-	  && (n_alt == LRA_UNKNOWN_ALT
-	      || (n_alt != LRA_NON_CLOBBERED_ALT
-		  && TEST_BIT (reg->early_clobber_alts, n_alt))));
+  return (n_alt == LRA_UNKNOWN_ALT
+	  ? reg->early_clobber_alts != 0
+	  : (n_alt != LRA_NON_CLOBBERED_ALT
+	     && TEST_BIT (reg->early_clobber_alts, n_alt)));
 }
 
 /* Return true if call instructions CALL1 and CALL2 use ABIs that
