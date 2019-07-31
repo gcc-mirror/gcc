@@ -2238,9 +2238,20 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
 	  tree rhs = gimple_assign_rhs1 (def_stmt);
 	  if (TREE_CODE (rhs) == SSA_NAME)
 	    rhs = SSA_VAL (rhs);
-	  len = native_encode_expr (gimple_assign_rhs1 (def_stmt),
+	  unsigned pad = 0;
+	  if (BYTES_BIG_ENDIAN
+	      && is_a <scalar_mode> (TYPE_MODE (TREE_TYPE (rhs))))
+	    {
+	      /* On big-endian the padding is at the 'front' so
+		 just skip the initial bytes.  */
+	      fixed_size_mode mode
+		  = as_a <fixed_size_mode> (TYPE_MODE (TREE_TYPE (rhs)));
+	      pad = GET_MODE_SIZE (mode) - size2 / BITS_PER_UNIT;
+	    }
+	  len = native_encode_expr (rhs,
 				    buffer, sizeof (buffer),
-				    (offseti - offset2) / BITS_PER_UNIT);
+				    ((offseti - offset2) / BITS_PER_UNIT
+				     + pad));
 	  if (len > 0 && len * BITS_PER_UNIT >= maxsizei)
 	    {
 	      tree type = vr->type;

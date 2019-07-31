@@ -1,3 +1,38 @@
+2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-07-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91200
+	* tree-ssa-phiopt.c (cond_store_replacement): Check we have
+	no PHI nodes in middle-bb.
+
+	2019-07-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91162
+	* tree-cfg.c (move_block_to_fn): When releasing a virtual PHI
+	node make sure to replace all uses with something valid.
+
+	2019-07-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91145
+	* tree-vect-slp.c (vect_build_slp_tree_2): Fix reduction
+	chain check.
+
+	2019-07-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91131
+	* gimplify.c (gimplify_compound_literal_expr): Force a temporary
+	when the object is volatile and we have not cleared it even though
+	there are no nonzero elements.
+
+	2019-07-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91126
+	* tree-ssa-sccvn.c (n_walk_cb_data::push_partial_def): Adjust
+	native encoding offset for BYTES_BIG_ENDIAN.
+	(vn_reference_lookup_3): Likewise.
+
 2019-07-30  Jan Hubicka  <jh@suse.cz>
 
 	Backport from mainline

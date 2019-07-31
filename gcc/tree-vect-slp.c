@@ -1126,7 +1126,8 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  FOR_EACH_VEC_ELT (stmts, i, other_info)
 	    {
 	      /* But for reduction chains only check on the first stmt.  */
-	      if (REDUC_GROUP_FIRST_ELEMENT (other_info)
+	      if (!STMT_VINFO_DATA_REF (other_info)
+		  && REDUC_GROUP_FIRST_ELEMENT (other_info)
 		  && REDUC_GROUP_FIRST_ELEMENT (other_info) != stmt_info)
 		continue;
 	      if (STMT_VINFO_DEF_TYPE (other_info) != def_type)
