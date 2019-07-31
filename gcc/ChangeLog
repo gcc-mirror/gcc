@@ -1,3 +1,8 @@
+2019-07-31  Alexander Monakov  <amonakov@ispras.ru>
+
+	* ipa-devirt.c (type_warning_cmp): Make static.
+	(decl_warning_cmp): Ditto.
+
 2019-07-31  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/91050
