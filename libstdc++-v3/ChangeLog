@@ -1,5 +1,8 @@
 2019-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/memory (make_obj_using_allocator): Qualify call to
+	uses_allocator_construction_args.
+
 	P0631R4 Math Constants
 	* include/Makefile.am: Add new header.
 	* include/Makefile.in: Regenerate.
