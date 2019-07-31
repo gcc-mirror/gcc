@@ -3526,7 +3526,7 @@ likely_target_p (struct cgraph_node *n)
 /* Compare type warning records P1 and P2 and choose one with larger count;
    helper for qsort.  */
 
-int
+static int
 type_warning_cmp (const void *p1, const void *p2)
 {
   const odr_type_warn_count *t1 = (const odr_type_warn_count *)p1;
@@ -3542,7 +3542,7 @@ type_warning_cmp (const void *p1, const void *p2)
 /* Compare decl warning records P1 and P2 and choose one with larger count;
    helper for qsort.  */
 
-int
+static int
 decl_warning_cmp (const void *p1, const void *p2)
 {
   const decl_warn_count *t1 = *(const decl_warn_count * const *)p1;
