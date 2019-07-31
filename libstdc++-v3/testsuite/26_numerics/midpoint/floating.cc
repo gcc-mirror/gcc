@@ -61,13 +61,13 @@ test03()
 namespace test04
 {
   // https://gcc.gnu.org/ml/libstdc++/2019-03/msg00065.html
-  constexpr double d = DBL_MIN + __DBL_DENORM_MIN__;
+  constexpr double d = DBL_MIN + DBL_TRUE_MIN;
   static_assert( std::midpoint(d, d) == d );
 
-  constexpr float f = FLT_MIN + __FLT_DENORM_MIN__;
+  constexpr float f = FLT_MIN + FLT_TRUE_MIN;
   static_assert( std::midpoint(f, f) == f );
 
-  constexpr long double l = LDBL_MIN + __LDBL_DENORM_MIN__;
+  constexpr long double l = LDBL_MIN + LDBL_TRUE_MIN;
   static_assert( std::midpoint(l, l) == l );
 }
 
