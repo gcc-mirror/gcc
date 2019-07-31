@@ -1,3 +1,12 @@
+2019-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91201
+	* config/i386/sse.md (reduc_plus_scal_v16qi): New expander.
+	(REDUC_PLUS_MODE): Add V32QImode for TARGET_AVX and V64QImode for
+	TARGET_AVX512F.
+	(reduc_plus_scal_<mode>): Improve formatting by introducing
+	a temporary.
+
 2019-07-31  Sudakshina Das  <sudi.das@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (enum aarch64_builtins): Add
