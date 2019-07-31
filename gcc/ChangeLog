@@ -1,3 +1,12 @@
+2019-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2019-06-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* ginclude/float.h (FLT_DECIMAL_DIG, DBL_DECIMAL_DIG, LDBL_DECIMAL_DIG)
+	(FLT_HAS_SUBNORM, DBL_HAS_SUBNORM, LDBL_HAS_SUBNORM, FLT_TRUE_MIN)
+	(DBL_TRUE_MIN, LDBL_TRUE_MIN): Also define for C++17.
+
 2019-07-31  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
