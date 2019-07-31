@@ -1,3 +1,11 @@
+2019-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91301
+	* gimplify.c (gimplify_omp_for): If for class iterator on
+	distribute parallel for there is no data sharing clause
+	on inner_for_stmt, look for private clause on combined
+	parallel too and if found, move it to inner_for_stmt.
+
 2019-07-31  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* lra-int.h (lra_operand_data): Remove early_clobber field.
