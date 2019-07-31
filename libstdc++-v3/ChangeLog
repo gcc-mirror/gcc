@@ -1,5 +1,16 @@
 2019-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	P0631R4 Math Constants
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Include new header.
+	* include/std/numbers: New header.
+	* include/std/version (__cpp_lib_math_constants): Define.
+	* testsuite/26_numerics/numbers/1.cc: New test.
+	* testsuite/26_numerics/numbers/2.cc: New test.
+	* testsuite/26_numerics/numbers/3.cc: New test.
+	* testsuite/26_numerics/numbers/nonfloat_neg.cc: New test.
+
 	* include/std/bit: Add Doxygen comments.
 
 	PR libstdc++/91308
