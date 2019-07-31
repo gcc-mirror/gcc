@@ -62,14 +62,14 @@ class evrp_range_analyzer
   DISABLE_COPY_AND_ASSIGN (evrp_range_analyzer);
   class vr_values *vr_values;
 
-  const value_range *pop_value_range (tree var);
+  void pop_value_range ();
   value_range *try_find_new_range (tree, tree op, tree_code code, tree limit);
   void record_ranges_from_incoming_edge (basic_block);
   void record_ranges_from_phis (basic_block);
   void set_ssa_range_info (tree, value_range *);
 
   /* STACK holds the old VR.  */
-  auto_vec<std::pair <tree, const value_range*> > stack;
+  auto_vec<std::pair <tree, value_range *> > stack;
 
   /* True if we are updating global ranges, false otherwise.  */
   bool m_update_global_ranges;
