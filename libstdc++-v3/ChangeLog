@@ -1,3 +1,13 @@
+2019-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91308
+	* include/bits/unique_ptr.h (unique_ptr::__safe_conversion_up): Remove
+	constraints on deleter that should only apply to the constructor.
+	(unique_ptr<T[], D>::__safe_conversion_up): Likewise.
+	(unique_ptr<T[], D>::unique_ptr(unique_ptr<U, D>&&)): Restore
+	constraints on deleter here.
+	* testsuite/20_util/unique_ptr/assign/91308.cc: New test.
+
 2019-07-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/51333

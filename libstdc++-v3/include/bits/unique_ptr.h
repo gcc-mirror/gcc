@@ -245,14 +245,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // unique_ptr
       template<typename _Up, typename _Ep>
 	using __safe_conversion_up = __and_<
-	        is_convertible<typename unique_ptr<_Up, _Ep>::pointer, pointer>,
-                __not_<is_array<_Up>>,
-                __or_<__and_<is_reference<deleter_type>,
-                             is_same<deleter_type, _Ep>>,
-                      __and_<__not_<is_reference<deleter_type>>,
-                             is_convertible<_Ep, deleter_type>>
-                >
-              >;
+	  is_convertible<typename unique_ptr<_Up, _Ep>::pointer, pointer>,
+	  __not_<is_array<_Up>>
+        >;
 
     public:
       // Constructors.
@@ -492,16 +487,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // helper template for detecting a safe conversion from another
       // unique_ptr
       template<typename _Up, typename _Ep,
-               typename _Up_up = unique_ptr<_Up, _Ep>,
-	       typename _Up_element_type = typename _Up_up::element_type>
+               typename _UPtr = unique_ptr<_Up, _Ep>,
+	       typename _UP_pointer = typename _UPtr::pointer,
+	       typename _UP_element_type = typename _UPtr::element_type>
 	using __safe_conversion_up = __and_<
           is_array<_Up>,
           is_same<pointer, element_type*>,
-          is_same<typename _Up_up::pointer, _Up_element_type*>,
-          is_convertible<_Up_element_type(*)[], element_type(*)[]>,
-          __or_<__and_<is_reference<deleter_type>, is_same<deleter_type, _Ep>>,
-                __and_<__not_<is_reference<deleter_type>>,
-                       is_convertible<_Ep, deleter_type>>>
+          is_same<_UP_pointer, _UP_element_type*>,
+          is_convertible<_UP_element_type(*)[], element_type(*)[]>
         >;
 
       // helper template for detecting a safe conversion from a raw pointer
@@ -590,8 +583,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_t()
         { }
 
-      template<typename _Up, typename _Ep,
-	       typename = _Require<__safe_conversion_up<_Up, _Ep>>>
+      template<typename _Up, typename _Ep, typename = _Require<
+	       __safe_conversion_up<_Up, _Ep>,
+	       typename conditional<is_reference<_Dp>::value,
+				    is_same<_Ep, _Dp>,
+				    is_convertible<_Ep, _Dp>>::type>>
 	unique_ptr(unique_ptr<_Up, _Ep>&& __u) noexcept
 	: _M_t(__u.release(), std::forward<_Ep>(__u.get_deleter()))
 	{ }
