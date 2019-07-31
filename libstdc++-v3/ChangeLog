@@ -3,6 +3,14 @@
 	Backport from mainline
 	2019-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/memory (make_obj_using_allocator): Qualify call to
+	uses_allocator_construction_args.
+
+2019-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2019-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/91308
 	* include/bits/unique_ptr.h (unique_ptr::__safe_conversion_up): Remove
 	constraints on deleter that should only apply to the constructor.
