@@ -1,5 +1,7 @@
 2019-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/bit: Add Doxygen comments.
+
 	PR libstdc++/91308
 	* include/bits/unique_ptr.h (unique_ptr::__safe_conversion_up): Remove
 	constraints on deleter that should only apply to the constructor.
