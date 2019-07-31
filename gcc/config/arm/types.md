@@ -546,6 +546,10 @@
 ; The classification below is for coprocessor instructions
 ;
 ; coproc
+;
+; The classification below is for TME instructions
+;
+; tme
 
 (define_attr "type"
  "adc_imm,\
@@ -1091,7 +1095,8 @@
   crypto_sha3,\
   crypto_sm3,\
   crypto_sm4,\
-  coproc"
+  coproc,\
+  tme"
    (const_string "untyped"))
 
 ; Is this an (integer side) multiply with a 32-bit (or smaller) result?

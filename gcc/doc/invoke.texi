@@ -16095,6 +16095,8 @@ Enable SVE2 aes instructions.  This also enables SVE2 instructions.
 @item sve2-sha3
 Enable SVE2 sha3 instructions.  This also enables SVE2 instructions.
 @option{-march=armv8.5-a}.
+@item tme
+Enable the Transactional Memory Extension.
 
 @end table
 

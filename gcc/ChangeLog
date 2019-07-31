@@ -1,3 +1,30 @@
+2019-07-31  Sudakshina Das  <sudi.das@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (enum aarch64_builtins): Add
+	AARCH64_TME_BUILTIN_TSTART, AARCH64_TME_BUILTIN_TCOMMIT,
+	AARCH64_TME_BUILTIN_TTEST and AARCH64_TME_BUILTIN_TCANCEL.
+	(aarch64_init_tme_builtins): New.
+	(aarch64_init_builtins): Call aarch64_init_tme_builtins.
+	(aarch64_expand_builtin_tme): New.
+	(aarch64_expand_builtin): Handle TME builtins.
+	* config/aarch64/aarch64-c.c (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_TME when enabled.
+	* config/aarch64/aarch64-option-extensions.def: Add "tme".
+	* config/aarch64/aarch64.h (AARCH64_FL_TME, AARCH64_ISA_TME): New.
+	(TARGET_TME): New.
+	* config/aarch64/aarch64.md (define_c_enum "unspec"): Add UNSPEC_TTEST.
+	(define_c_enum "unspecv"): Add UNSPECV_TSTART, UNSPECV_TCOMMIT and
+	UNSPECV_TCANCEL.
+	(tstart, ttest, tcommit, tcancel): New instructions.
+	* config/aarch64/arm_acle.h (__tstart, __tcommit): New.
+	(__tcancel, __ttest): New.
+	(_TMFAILURE_REASON, _TMFAILURE_RTRY, _TMFAILURE_CNCL): New macro.
+	(_TMFAILURE_MEM, _TMFAILURE_IMP, _TMFAILURE_ERR): Likewise.
+	(_TMFAILURE_SIZE, _TMFAILURE_NEST, _TMFAILURE_DBG): Likewise.
+	(_TMFAILURE_INT, _TMFAILURE_TRIVIAL): Likewise.
+	* config/arm/types.md: Add new tme type attr.
+	* doc/invoke.texi: Document "tme".
+
 2019-07-31  Joel Hutton  <Joel.Hutton@arm.com>
 
 	* config/arm/arm_cmse.h (cmse_nonsecure_caller): Add
