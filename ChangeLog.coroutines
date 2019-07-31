@@ -1,3 +1,10 @@
+2019-07-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (finish_co_await_expr): Use the expression type as
+	the tree type when processing template decls.
+	(finish_co_yield_expr): Likewise.
+
 2019-07-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
