@@ -634,6 +634,9 @@ hppa[12]*-*-hpux11*)
 hppa*-*-openbsd*)
 	tmake_file="$tmake_file pa/t-openbsd"
 	;;
+hppa*-*-netbsd*)
+	tmake_file="$tmake_file pa/t-netbsd"
+	;;
 i[34567]86-*-darwin*)
 	tmake_file="$tmake_file i386/t-crtpc t-crtfm i386/t-msabi"
 	tm_file="$tm_file i386/darwin-lib.h"

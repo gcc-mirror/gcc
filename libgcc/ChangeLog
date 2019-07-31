@@ -1,3 +1,11 @@
+2019-07-31  Matt Thomas  <matt@3am-software.com>
+	    Nick Hudson <nick@nthcliff.demon.co.uk>
+	    Matthew Green <mrg@eterna.com.au>
+	    Maya Rashish <coypu@sdf.org>
+
+	* config.host (hppa*-*-netbsd*): New case.
+	* config/pa/t-netbsd: New file.
+
 2019-07-31  Joel Hutton  <Joel.Hutton@arm.com>
 
 	* config/arm/cmse.c (cmse_check_address_range): Add
