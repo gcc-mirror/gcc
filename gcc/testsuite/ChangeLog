@@ -1,3 +1,8 @@
+2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91178
+	* gcc.dg/torture/pr91178-2.c: New testcase.
+
 2019-07-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91201
