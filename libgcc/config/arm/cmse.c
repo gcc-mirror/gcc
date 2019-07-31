@@ -30,6 +30,7 @@
    address range.  See ACLE changes for ARMv8-M.  */
 
 void *
+__attribute__ ((warn_unused_result))
 cmse_check_address_range (void *p, size_t size, int flags)
 {
   cmse_address_info_t permb, perme;

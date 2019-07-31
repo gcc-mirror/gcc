@@ -164,6 +164,7 @@ __CMSE_TT_ASM (at)
 
 /* FIXME: diagnose use outside cmse_nonsecure_entry functions.  */
 __extension__ static __inline int __attribute__ ((__always_inline__))
+__attribute__ ((warn_unused_result))
 cmse_nonsecure_caller (void)
 {
   return __builtin_arm_cmse_nonsecure_caller ();
@@ -184,6 +185,7 @@ cmse_nonsecure_caller (void)
 #define CMSE_MPU_READ		8
 
 __extension__ void *
+__attribute__ ((warn_unused_result))
 cmse_check_address_range (void *, size_t, int);
 
 #define cmse_check_pointed_object(p, f) \

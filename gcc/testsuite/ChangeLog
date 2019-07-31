@@ -1,3 +1,7 @@
+2019-07-31  Joel Hutton  <Joel.Hutton@arm.com>
+
+	* gcc.target/arm/cmse/cmse-17.c: New test.
+
 2019-07-30  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/91258
