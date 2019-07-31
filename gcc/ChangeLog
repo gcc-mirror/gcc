@@ -1,3 +1,8 @@
+2019-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91201
+	* config/i386/mmx.md (reduc_plus_scal_v8qi): New expander.
+
 2019-07-31  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md
