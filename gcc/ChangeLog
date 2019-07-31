@@ -1,3 +1,23 @@
+2019-07-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lra-int.h (lra_operand_data): Remove early_clobber field.
+	(lra_insn_reg): Likewise.
+	* lra.c (debug_operand_data): Update accordingly.
+	(setup_operand_alternative): Likewise.
+	(new_insn_reg): Likewise.  Remove early_clobber parameter.
+	(collect_non_operand_hard_regs): Update call accordingly.
+	Don't assign to lra_insn_reg::early_clobber.
+	(add_regs_to_insn_regno_info): Remove early_clobber parameter
+	and update calls to new_insn_reg.
+	(lra_update_insn_regno_info): Update calls accordingly.
+	* lra-constraints.c (update_and_check_small_class_inputs): Take the
+	alternative number as a parameter and test whether the operand
+	is earlyclobbered in that particular alternative.
+	(process_alt_operands): Update call accordingly.  Use per-alternative
+	checks for earyclobber here too.
+	* lra-lives.c (reg_early_clobber_p): Check early_clobber_alts
+	against zero for IRA_UNKNOWN_ALT.
+
 2019-07-30  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_option_override): Quote a C type.

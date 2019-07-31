@@ -536,16 +536,14 @@ object_allocator<lra_insn_reg> lra_insn_reg_pool ("insn regs");
 
 /* Create LRA insn related info about a reference to REGNO in INSN
    with TYPE (in/out/inout), biggest reference mode MODE, flag that it
-   is reference through subreg (SUBREG_P), flag that is early
-   clobbered in the insn (EARLY_CLOBBER), and reference to the next
+   is reference through subreg (SUBREG_P), and reference to the next
    insn reg info (NEXT).  If REGNO can be early clobbered,
    alternatives in which it can be early clobbered are given by
    EARLY_CLOBBER_ALTS.  CLOBBER_HIGH marks if reference is a clobber
    high.  */
 static struct lra_insn_reg *
 new_insn_reg (rtx_insn *insn, int regno, enum op_type type,
-	      machine_mode mode,
-	      bool subreg_p, bool early_clobber,
+	      machine_mode mode, bool subreg_p,
 	      alternative_mask early_clobber_alts,
 	      struct lra_insn_reg *next, bool clobber_high)
 {
@@ -556,7 +554,6 @@ new_insn_reg (rtx_insn *insn, int regno, enum op_type type,
       && partial_subreg_p (lra_reg_info[regno].biggest_mode, mode))
     lra_reg_info[regno].biggest_mode = mode;
   ir->subreg_p = subreg_p;
-  ir->early_clobber = early_clobber;
   ir->early_clobber_alts = early_clobber_alts;
   ir->clobber_high = clobber_high;
   ir->regno = regno;
@@ -605,7 +602,7 @@ static struct lra_operand_data debug_operand_data =
     0, /* early_clobber_alts */
     E_VOIDmode, /* We are not interesting in the operand mode.  */
     OP_IN,
-    0, 0, 0, 0
+    0, 0, 0
   };
 
 /* The following data are used as static insn data for all debug
@@ -801,7 +798,6 @@ setup_operand_alternative (lra_insn_recog_data_t data,
   for (i = 0; i < nop; i++)
     {
       static_data->operand[i].early_clobber_alts = 0;
-      static_data->operand[i].early_clobber = false;
       static_data->operand[i].is_address = false;
       if (static_data->operand[i].constraint[0] == '%')
 	{
@@ -817,7 +813,6 @@ setup_operand_alternative (lra_insn_recog_data_t data,
   for (j = 0; j < nalt; j++)
     for (i = 0; i < nop; i++, op_alt++)
       {
-	static_data->operand[i].early_clobber |= op_alt->earlyclobber;
 	if (op_alt->earlyclobber)
 	  static_data->operand[i].early_clobber_alts |= (alternative_mask) 1 << j;
 	static_data->operand[i].is_address |= op_alt->is_address;
@@ -878,10 +873,7 @@ collect_non_operand_hard_regs (rtx_insn *insn, rtx *x,
 		if (curr->type != type)
 		  curr->type = OP_INOUT;
 		if (early_clobber)
-		  {
-		    curr->early_clobber = true;
-		    curr->early_clobber_alts = ALL_ALTERNATIVES;
-		  }
+		  curr->early_clobber_alts = ALL_ALTERNATIVES;
 		break;
 	      }
 	  if (curr == NULL)
@@ -897,7 +889,6 @@ collect_non_operand_hard_regs (rtx_insn *insn, rtx *x,
 			 && regno <= LAST_STACK_REG));
 #endif
 	      list = new_insn_reg (data->insn, regno, type, mode, subreg_p,
-				   early_clobber,
 				   early_clobber ? ALL_ALTERNATIVES : 0, list,
 				   clobber_high);
 	    }
@@ -1449,15 +1440,13 @@ lra_get_copy (int n)
 /* This page contains code dealing with info about registers in
    insns.  */
 
-/* Process X of INSN recursively and add info (operand type is
-   given by TYPE, flag of that it is early clobber is EARLY_CLOBBER)
-   about registers in X to the insn DATA.  If X can be early clobbered,
-   alternatives in which it can be early clobbered are given by
-   EARLY_CLOBBER_ALTS.  */
+/* Process X of INSN recursively and add info (operand type is given
+   by TYPE) about registers in X to the insn DATA.  If X can be early
+   clobbered, alternatives in which it can be early clobbered are given
+   by EARLY_CLOBBER_ALTS.  */
 static void
 add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x,
-			     rtx_insn *insn,
-			     enum op_type type, bool early_clobber,
+			     rtx_insn *insn, enum op_type type,
 			     alternative_mask early_clobber_alts)
 {
   int i, j, regno;
@@ -1487,8 +1476,7 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x,
       if (bitmap_set_bit (&lra_reg_info[regno].insn_bitmap, INSN_UID (insn)))
 	{
 	  data->regs = new_insn_reg (data->insn, regno, type, mode, subreg_p,
-				     early_clobber, early_clobber_alts,
-				     data->regs, false);
+				     early_clobber_alts, data->regs, false);
 	  return;
 	}
       else
@@ -1500,15 +1488,12 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x,
 		  /* The info cannot be integrated into the found
 		     structure.  */
 		  data->regs = new_insn_reg (data->insn, regno, type, mode,
-					     subreg_p, early_clobber,
-					     early_clobber_alts, data->regs,
-					     false);
+					     subreg_p, early_clobber_alts,
+					     data->regs, false);
 		else
 		  {
 		    if (curr->type != type)
 		      curr->type = OP_INOUT;
-		    if (curr->early_clobber != early_clobber)
-		      curr->early_clobber = true;
 		    curr->early_clobber_alts |= early_clobber_alts;
 		  }
 		return;
@@ -1520,23 +1505,23 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x,
   switch (code)
     {
     case SET:
-      add_regs_to_insn_regno_info (data, SET_DEST (x), insn, OP_OUT, false, 0);
-      add_regs_to_insn_regno_info (data, SET_SRC (x), insn, OP_IN, false, 0);
+      add_regs_to_insn_regno_info (data, SET_DEST (x), insn, OP_OUT, 0);
+      add_regs_to_insn_regno_info (data, SET_SRC (x), insn, OP_IN, 0);
       break;
     case CLOBBER:
       /* We treat clobber of non-operand hard registers as early
 	 clobber.  */
       add_regs_to_insn_regno_info (data, XEXP (x, 0), insn, OP_OUT,
-				   true, ALL_ALTERNATIVES);
+				   ALL_ALTERNATIVES);
       break;
     case CLOBBER_HIGH:
       gcc_unreachable ();
     case PRE_INC: case PRE_DEC: case POST_INC: case POST_DEC:
-      add_regs_to_insn_regno_info (data, XEXP (x, 0), insn, OP_INOUT, false, 0);
+      add_regs_to_insn_regno_info (data, XEXP (x, 0), insn, OP_INOUT, 0);
       break;
     case PRE_MODIFY: case POST_MODIFY:
-      add_regs_to_insn_regno_info (data, XEXP (x, 0), insn, OP_INOUT, false, 0);
-      add_regs_to_insn_regno_info (data, XEXP (x, 1), insn, OP_IN, false, 0);
+      add_regs_to_insn_regno_info (data, XEXP (x, 0), insn, OP_INOUT, 0);
+      add_regs_to_insn_regno_info (data, XEXP (x, 1), insn, OP_IN, 0);
       break;
     default:
       if ((code != PARALLEL && code != EXPR_LIST) || type != OP_OUT)
@@ -1557,12 +1542,12 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x,
       for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
 	{
 	  if (fmt[i] == 'e')
-	    add_regs_to_insn_regno_info (data, XEXP (x, i), insn, type, false, 0);
+	    add_regs_to_insn_regno_info (data, XEXP (x, i), insn, type, 0);
 	  else if (fmt[i] == 'E')
 	    {
 	      for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 		add_regs_to_insn_regno_info (data, XVECEXP (x, i, j), insn,
-					     type, false, 0);
+					     type, 0);
 	    }
 	}
     }
@@ -1652,11 +1637,10 @@ lra_update_insn_regno_info (rtx_insn *insn)
   for (i = static_data->n_operands - 1; i >= 0; i--)
     add_regs_to_insn_regno_info (data, *data->operand_loc[i], insn,
 				 static_data->operand[i].type,
-				 static_data->operand[i].early_clobber,
 				 static_data->operand[i].early_clobber_alts);
   if ((code = GET_CODE (PATTERN (insn))) == CLOBBER || code == USE)
     add_regs_to_insn_regno_info (data, XEXP (PATTERN (insn), 0), insn,
-				 code == USE ? OP_IN : OP_OUT, false, 0);
+				 code == USE ? OP_IN : OP_OUT, 0);
   if (CALL_P (insn))
     /* On some targets call insns can refer to pseudos in memory in
        CALL_INSN_FUNCTION_USAGE list.  Process them in order to
@@ -1673,7 +1657,7 @@ lra_update_insn_regno_info (rtx_insn *insn)
 	if ((code == USE || code == CLOBBER)
 	    && MEM_P (XEXP (XEXP (link, 0), 0)))
 	  add_regs_to_insn_regno_info (data, XEXP (XEXP (link, 0), 0), insn,
-				       code == USE ? OP_IN : OP_OUT, false, 0);
+				       code == USE ? OP_IN : OP_OUT, 0);
       }
   if (NONDEBUG_INSN_P (insn))
     setup_insn_reg_info (data, freq);
