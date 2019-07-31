@@ -10663,6 +10663,22 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		  && OMP_CLAUSE_DECL (*pc) == orig_decl)
 		break;
 	    if (*pc == NULL_TREE)
+	      {
+		tree *spc;
+		for (spc = &OMP_PARALLEL_CLAUSES (*data[1]);
+		     *spc; spc = &OMP_CLAUSE_CHAIN (*spc))
+		  if (OMP_CLAUSE_CODE (*spc) == OMP_CLAUSE_PRIVATE
+		      && OMP_CLAUSE_DECL (*spc) == orig_decl)
+		    break;
+		if (*spc)
+		  {
+		    tree c = *spc;
+		    *spc = OMP_CLAUSE_CHAIN (c);
+		    OMP_CLAUSE_CHAIN (c) = NULL_TREE;
+		    *pc = c;
+		  }
+	      }
+	    if (*pc == NULL_TREE)
 	      ;
 	    else if (OMP_CLAUSE_CODE (*pc) == OMP_CLAUSE_PRIVATE)
 	      {

@@ -1,3 +1,8 @@
+2019-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91301
+	* testsuite/libgomp.c++/for-27.C: New test.
+
 2019-07-23  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* testsuite/libgomp.fortran/reduction4.f90: Update BOZ usage
