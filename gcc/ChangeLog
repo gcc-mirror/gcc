@@ -1,3 +1,16 @@
+2019-07-31  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/91050
+	* config/rs6000/rs6000.opt (mdejagnu-cpu=): Delete option.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Remove
+	use of deleted rs6000_dejagnu_cpu_index variable.
+	* config/rs6000/rs6000.h (DRIVER_SELF_SPECS): Define.
+	(SUBTARGET_DRIVER_SELF_SPECS): Likewise.
+	* config/darwin.h (DRIVER_SELF_SPECS): Rename from this ...
+	(SUBTARGET_DRIVER_SELF_SPECS): ...to this.
+	* config/i386/i386.h (DRIVER_SELF_SPECS): Define.
+	(SUBTARGET_DRIVER_SELF_SPECS): Likewise.
+
 2019-07-31  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/91280
