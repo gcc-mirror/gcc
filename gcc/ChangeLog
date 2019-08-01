@@ -1,3 +1,10 @@
+2019-08-01  Richard Biener  <rguenther@suse.de>
+
+	* domwalk.c (bb_postorder): Remove static variable.
+	(cmp_bb_postorder): Adjust.
+	(sort_bbs_postorder): Adjust and use gcc_sort_r.
+	(dom_walker::walk): Adjust.
+
 2019-08-01  Alexander Monakov  <amonakov@ispras.ru>
 
 	* sort.cc (sort_r_ctx): New struct.
