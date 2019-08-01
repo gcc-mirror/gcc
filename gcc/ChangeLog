@@ -1,3 +1,8 @@
+2019-08-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/85693
+	* config/i386/mmx.md (usadv8qi): New expander.
+
 2019-08-01  Matthew Beliveau  <mbelivea@redhat.com>
 
 	PR c++/90590

@@ -1970,6 +1970,21 @@
   DONE;
 })
 
+(define_expand "usadv8qi"
+  [(match_operand:V2SI 0 "register_operand")
+   (match_operand:V8QI 1 "register_operand")
+   (match_operand:V8QI 2 "vector_operand")
+   (match_operand:V2SI 3 "vector_operand")]
+  "TARGET_MMX_WITH_SSE"
+{
+  rtx t1 = gen_reg_rtx (V1DImode);
+  rtx t2 = gen_reg_rtx (V2SImode);
+  emit_insn (gen_mmx_psadbw (t1, operands[1], operands[2]));
+  convert_move (t2, t1, 0);
+  emit_insn (gen_addv2si3 (operands[0], t2, operands[3]));
+  DONE;
+})
+
 (define_insn_and_split "mmx_pmovmskb"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(unspec:SI [(match_operand:V8QI 1 "register_operand" "y,x")]

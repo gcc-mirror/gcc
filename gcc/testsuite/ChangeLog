@@ -1,3 +1,8 @@
+2019-08-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/85693
+	* gcc.target/i386/pr85693-1.c: New test.
+
 2019-08-01  Matthew Beliveau  <mbelivea@redhat.com>
 
 	PR c++/90590

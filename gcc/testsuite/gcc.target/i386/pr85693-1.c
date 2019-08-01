@@ -1,7 +1,7 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-msse2 -O2 -ftree-vectorize" } */
 
-#define N 1024
+#define N 8
 
 int abs (int);
 
