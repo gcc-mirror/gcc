@@ -1,5 +1,9 @@
 2019-08-01  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* cfgrtl.c (relink_block_chain): Add line returns in dump file.
+
+2019-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* cgraph.h (cgraph_edge::maybe_hot_p): Tweak comment.
 	* cgraph.c (cgraph_edge::maybe_hot_p): Likewise.  Remove useless test.
 	* predict.c (maybe_hot_count_p): Likewise.
