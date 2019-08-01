@@ -58,8 +58,25 @@ struct sort_ctx
   size_t nlim; // limit for network sort
 };
 
+/* Like sort_ctx, but for use with qsort_r-style comparators.  Several
+   functions in this file are templates that work with either context type.  */
+struct sort_r_ctx
+{
+  void          *data;
+  sort_r_cmp_fn *cmp_;
+  char   *out;
+  size_t n;
+  size_t size;
+  size_t nlim;
+  int cmp (const void *a, const void *b)
+  {
+    return cmp_ (a, b, data);
+  }
+};
+
 /* Helper for netsort. Permute, possibly in-place, 2 or 3 elements,
    placing E0 to C->OUT, E1 to C->OUT + C->SIZE, and so on.  */
+template<typename sort_ctx>
 static void
 reorder23 (sort_ctx *c, char *e0, char *e1, char *e2)
 {
@@ -90,6 +107,7 @@ do {                                                     \
 }
 
 /* Like reorder23, but permute 4 or 5 elements.  */
+template<typename sort_ctx>
 static void
 reorder45 (sort_ctx *c, char *e0, char *e1, char *e2, char *e3, char *e4)
 {
@@ -127,21 +145,23 @@ do {                                                     \
    Return E0^E1 if E0 compares less than E1, zero otherwise.
    This is noinline to avoid code growth and confine invocation
    to a single call site, assisting indirect branch prediction.  */
+template<typename sort_ctx>
 noinline static intptr_t
-cmp1 (char *e0, char *e1, cmp_fn *cmp)
+cmp1 (char *e0, char *e1, sort_ctx *c)
 {
   intptr_t x = (intptr_t)e0 ^ (intptr_t)e1;
-  return x & (cmp (e0, e1) >> 31);
+  return x & (c->cmp (e0, e1) >> 31);
 }
 
 /* Execute network sort on 2 to 5 elements from IN, placing them into C->OUT.
    IN may be equal to C->OUT, in which case elements are sorted in place.  */
+template<typename sort_ctx>
 static void
 netsort (char *in, sort_ctx *c)
 {
 #define CMP(e0, e1)                   \
 do {                                  \
-  intptr_t x = cmp1 (e1, e0, c->cmp); \
+  intptr_t x = cmp1 (e1, e0, c);      \
   e0 = (char *)((intptr_t)e0 ^ x);    \
   e1 = (char *)((intptr_t)e1 ^ x);    \
 } while (0)
@@ -176,6 +196,7 @@ do {                                  \
 /* Execute merge sort on N elements from IN, placing them into OUT,
    using TMP as temporary storage if IN is equal to OUT.
    This is a stable sort if netsort is used only for 2 or 3 elements.  */
+template<typename sort_ctx>
 static void
 mergesort (char *in, sort_ctx *c, size_t n, char *out, char *tmp)
 {
@@ -217,6 +238,17 @@ do {                                            \
   memcpy (out, l, r - out);
 }
 
+#if CHECKING_P
+/* Adapter for using two-argument comparators in functions expecting the
+   three-argument sort_r_cmp_fn type.  */
+static int
+cmp2to3 (const void *a, const void *b, void *c)
+{
+  return ((cmp_fn *)c) (a, b);
+}
+#endif
+
+/* Replacement for C qsort.  */
 void
 gcc_qsort (void *vbase, size_t n, size_t size, cmp_fn *cmp)
 {
@@ -235,10 +267,30 @@ gcc_qsort (void *vbase, size_t n, size_t size, cmp_fn *cmp)
   if (buf != scratch)
     free (buf);
 #if CHECKING_P
-  qsort_chk (vbase, n, size, cmp);
+  qsort_chk (vbase, n, size, cmp2to3, (void*)cmp);
 #endif
 }
 
+/* Substitute for Glibc qsort_r.  */
+void
+gcc_sort_r (void *vbase, size_t n, size_t size, sort_r_cmp_fn *cmp, void *data)
+{
+  if (n < 2)
+    return;
+  char *base = (char *)vbase;
+  sort_r_ctx c = {data, cmp, base, n, size, 5};
+  long long scratch[32];
+  size_t bufsz = (n / 2) * size;
+  void *buf = bufsz <= sizeof scratch ? scratch : xmalloc (bufsz);
+  mergesort (base, &c, n, base, (char *)buf);
+  if (buf != scratch)
+    free (buf);
+#if CHECKING_P
+  qsort_chk (vbase, n, size, cmp, data);
+#endif
+}
+
+/* Stable sort, signature-compatible to C qsort.  */
 void
 gcc_stablesort (void *vbase, size_t n, size_t size, cmp_fn *cmp)
 {

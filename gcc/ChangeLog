@@ -1,3 +1,20 @@
+2019-08-01  Alexander Monakov  <amonakov@ispras.ru>
+
+	* sort.cc (sort_r_ctx): New struct.
+	(reorder23): Make templated on context type.
+	(reorder45): Ditto.
+	(cmp1): Ditto.  Adjust signature.
+	(netsort): Ditto.
+	(mergesort): Ditto.
+	[CHECKING_P] (cmp2to3): New static function.  Use it...
+	(gcc_qsort) [CHECKING_P]: ...here.
+	(gcc_sort_r): New function.
+	* system.h (sort_r_cmp_fn): New function typedef.
+	(qsort_chk): Adjust signature.
+	(gcc_sort_r): Declare.
+	* vec.c (qsort_chk_error): Adjust.
+	(qsort_chk): Adjust.
+
 2019-08-01  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (has_abnormal_preds): Remove global var.
