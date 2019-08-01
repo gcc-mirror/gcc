@@ -1,6 +1,12 @@
 2019-08-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (get_await_suspend_return_type): Handle TARGET_EXPR
+	as well as CALL_EXPR.
+
+2019-08-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (transform_await_expr): Rearrange and cater for the
 	await_suspend() return type.
 

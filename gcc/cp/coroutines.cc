@@ -1947,17 +1947,24 @@ struct __susp_frame_data {
   unsigned count;
 };
 
-/* Helper to return the type of an awaiter's await_suspend() method.  */
+/* Helper to return the type of an awaiter's await_suspend() method.
+   We start with the result of the build method call, which will be either
+   a call expression (void, bool) or a target expressions (handle).  */
 static tree
 get_await_suspend_return_type (tree aw_expr)
 {
   tree susp_fn = TREE_VEC_ELT (TREE_OPERAND (aw_expr, 3), 1);
-  gcc_checking_assert (TREE_CODE (susp_fn) == CALL_EXPR);
-  susp_fn = CALL_EXPR_FN (susp_fn);
-  if (TREE_CODE (susp_fn) == ADDR_EXPR)
-    susp_fn = TREE_OPERAND (susp_fn, 0);
-
-  return TREE_TYPE (TREE_TYPE (susp_fn));
+  if (TREE_CODE (susp_fn) == CALL_EXPR)
+    {
+      susp_fn = CALL_EXPR_FN (susp_fn);
+      if (TREE_CODE (susp_fn) == ADDR_EXPR)
+	susp_fn = TREE_OPERAND (susp_fn, 0);
+      return TREE_TYPE (TREE_TYPE (susp_fn));
+    }
+  else if (TREE_CODE (susp_fn) == TARGET_EXPR)
+    return TREE_TYPE (susp_fn);
+  debug_tree (susp_fn);
+  return TREE_TYPE (susp_fn);
 }
 
 /* If this is an await, then register it and decide on what coro
