@@ -164,6 +164,7 @@
 #endif
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants 201907L
+#define __cpp_lib_constexpr_algorithms 201711L
 #endif // C++2a
 #endif // C++17
 #endif // C++14

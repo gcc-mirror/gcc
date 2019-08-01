@@ -77,6 +77,57 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  /*
+   * A constexpr wrapper for __builtin_memmove.
+   * @param __num The number of elements of type _Tp (not bytes).
+   */
+  template<bool _IsMove, typename _Tp>
+    _GLIBCXX14_CONSTEXPR
+    inline void*
+    __memmove(_Tp* __dst, const _Tp* __src, size_t __num)
+    {
+#ifdef __cpp_lib_is_constant_evaluated
+      if (std::is_constant_evaluated())
+	{
+	  for(; __num > 0; --__num)
+	    {
+	      if constexpr (_IsMove)
+		*__dst = std::move(*__src);
+	      else
+		*__dst = *__src;
+	      ++__src;
+	      ++__dst;
+	    }
+	  return __dst;
+	}
+      else
+#endif
+	return __builtin_memmove(__dst, __src, sizeof(_Tp) * __num);
+      return __dst;
+    }
+
+  /*
+   * A constexpr wrapper for __builtin_memcmp.
+   * @param __num The number of elements of type _Tp (not bytes).
+   */
+  template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR
+    inline int
+    __memcmp(const _Tp* __first1, const _Tp* __first2, size_t __num)
+    {
+#ifdef __cpp_lib_is_constant_evaluated
+      if (std::is_constant_evaluated())
+	{
+	  for(; __num > 0; ++__first1, ++__first2, --__num)
+	    if (*__first1 != *__first2)
+	      return *__first1 < *__first2 ? -1 : 1;
+	  return 0;
+	}
+      else
+#endif
+	return __builtin_memcmp(__first1, __first2, sizeof(_Tp) * __num);
+    }
+
 #if __cplusplus < 201103L
   // See http://gcc.gnu.org/ml/libstdc++/2004-08/msg00167.html: in a
   // nutshell, we are partially implementing the resolution of DR 187,
@@ -276,6 +327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Fallback implementation of the function in bits/stl_iterator.h used to
   // remove the __normal_iterator wrapper. See copy, fill, ...
   template<typename _Iterator>
+    _GLIBCXX20_CONSTEXPR
     inline _Iterator
     __niter_base(_Iterator __it)
     _GLIBCXX_NOEXCEPT_IF(std::is_nothrow_copy_constructible<_Iterator>::value)
@@ -285,12 +337,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // __normal_iterator back again (this assumes that __normal_iterator
   // is only used to wrap random access iterators, like pointers).
   template<typename _From, typename _To>
+    _GLIBCXX20_CONSTEXPR
     inline _From
     __niter_wrap(_From __from, _To __res)
     { return __from + (__res - std::__niter_base(__from)); }
 
   // No need to wrap, iterator already has the right type.
   template<typename _Iterator>
+    _GLIBCXX20_CONSTEXPR
     inline _Iterator
     __niter_wrap(const _Iterator&, _Iterator __res)
     { return __res; }
@@ -305,6 +359,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move
     {
       template<typename _II, typename _OI>
+	_GLIBCXX20_CONSTEXPR
 	static _OI
 	__copy_m(_II __first, _II __last, _OI __result)
 	{
@@ -319,6 +374,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move<true, false, _Category>
     {
       template<typename _II, typename _OI>
+	_GLIBCXX20_CONSTEXPR
 	static _OI
 	__copy_m(_II __first, _II __last, _OI __result)
 	{
@@ -333,6 +389,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move<false, false, random_access_iterator_tag>
     {
       template<typename _II, typename _OI>
+	_GLIBCXX20_CONSTEXPR
 	static _OI
 	__copy_m(_II __first, _II __last, _OI __result)
 	{
@@ -352,6 +409,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move<true, false, random_access_iterator_tag>
     {
       template<typename _II, typename _OI>
+	_GLIBCXX20_CONSTEXPR
 	static _OI
 	__copy_m(_II __first, _II __last, _OI __result)
 	{
@@ -371,6 +429,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move<_IsMove, true, random_access_iterator_tag>
     {
       template<typename _Tp>
+	_GLIBCXX20_CONSTEXPR
 	static _Tp*
 	__copy_m(const _Tp* __first, const _Tp* __last, _Tp* __result)
 	{
@@ -383,12 +442,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 	  const ptrdiff_t _Num = __last - __first;
 	  if (_Num)
-	    __builtin_memmove(__result, __first, sizeof(_Tp) * _Num);
+	    std::__memmove<_IsMove>(__result, __first, _Num);
 	  return __result + _Num;
 	}
     };
 
   template<bool _IsMove, typename _II, typename _OI>
+    _GLIBCXX20_CONSTEXPR
     inline _OI
     __copy_move_a(_II __first, _II __last, _OI __result)
     {
@@ -399,7 +459,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			     && __is_pointer<_II>::__value
 			     && __is_pointer<_OI>::__value
 			     && __are_same<_ValueTypeI, _ValueTypeO>::__value);
-
       return std::__copy_move<_IsMove, __simple,
 			      _Category>::__copy_m(__first, __last, __result);
     }
@@ -434,6 +493,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   istreambuf_iterator<_CharT, char_traits<_CharT> >, _CharT*);
 
   template<bool _IsMove, typename _II, typename _OI>
+    _GLIBCXX20_CONSTEXPR
     inline _OI
     __copy_move_a2(_II __first, _II __last, _OI __result)
     {
@@ -461,6 +521,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  within [first,last).
   */
   template<typename _II, typename _OI>
+    _GLIBCXX20_CONSTEXPR
     inline _OI
     copy(_II __first, _II __last, _OI __result)
     {
@@ -493,6 +554,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  within [first,last).
   */
   template<typename _II, typename _OI>
+    _GLIBCXX20_CONSTEXPR
     inline _OI
     move(_II __first, _II __last, _OI __result)
     {
@@ -515,6 +577,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move_backward
     {
       template<typename _BI1, typename _BI2>
+	_GLIBCXX20_CONSTEXPR
 	static _BI2
 	__copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
 	{
@@ -529,6 +592,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move_backward<true, false, _Category>
     {
       template<typename _BI1, typename _BI2>
+	_GLIBCXX20_CONSTEXPR
 	static _BI2
 	__copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
 	{
@@ -543,11 +607,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move_backward<false, false, random_access_iterator_tag>
     {
       template<typename _BI1, typename _BI2>
+	_GLIBCXX20_CONSTEXPR
 	static _BI2
 	__copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
 	{
-	  typename iterator_traits<_BI1>::difference_type __n;
-	  for (__n = __last - __first; __n > 0; --__n)
+	  typename iterator_traits<_BI1>::difference_type
+	    __n = __last - __first;
+	  for (; __n > 0; --__n)
 	    *--__result = *--__last;
 	  return __result;
 	}
@@ -558,11 +624,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move_backward<true, false, random_access_iterator_tag>
     {
       template<typename _BI1, typename _BI2>
+	_GLIBCXX20_CONSTEXPR
 	static _BI2
 	__copy_move_b(_BI1 __first, _BI1 __last, _BI2 __result)
 	{
-	  typename iterator_traits<_BI1>::difference_type __n;
-	  for (__n = __last - __first; __n > 0; --__n)
+	  typename iterator_traits<_BI1>::difference_type
+	    __n = __last - __first;
+	  for (; __n > 0; --__n)
 	    *--__result = std::move(*--__last);
 	  return __result;
 	}
@@ -573,6 +641,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __copy_move_backward<_IsMove, true, random_access_iterator_tag>
     {
       template<typename _Tp>
+	_GLIBCXX20_CONSTEXPR
 	static _Tp*
 	__copy_move_b(const _Tp* __first, const _Tp* __last, _Tp* __result)
 	{
@@ -585,12 +654,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 	  const ptrdiff_t _Num = __last - __first;
 	  if (_Num)
-	    __builtin_memmove(__result - _Num, __first, sizeof(_Tp) * _Num);
+	    std::__memmove<_IsMove>(__result - _Num, __first, _Num);
 	  return __result - _Num;
 	}
     };
 
   template<bool _IsMove, typename _BI1, typename _BI2>
+    _GLIBCXX20_CONSTEXPR
     inline _BI2
     __copy_move_backward_a(_BI1 __first, _BI1 __last, _BI2 __result)
     {
@@ -602,6 +672,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			     && __is_pointer<_BI2>::__value
 			     && __are_same<_ValueType1, _ValueType2>::__value);
 
+#ifdef __cpp_lib_is_constant_evaluated
+      if (std::is_constant_evaluated())
+	return std::__copy_move_backward<true, false,
+			      _Category>::__copy_move_b(__first, __last,
+							__result);
+#endif
       return std::__copy_move_backward<_IsMove, __simple,
 				       _Category>::__copy_move_b(__first,
 								 __last,
@@ -609,6 +685,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<bool _IsMove, typename _BI1, typename _BI2>
+    _GLIBCXX20_CONSTEXPR
     inline _BI2
     __copy_move_backward_a2(_BI1 __first, _BI1 __last, _BI2 __result)
     {
@@ -637,6 +714,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  that the start of the output range may overlap [first,last).
   */
   template<typename _BI1, typename _BI2>
+    _GLIBCXX20_CONSTEXPR
     inline _BI2
     copy_backward(_BI1 __first, _BI1 __last, _BI2 __result)
     {
@@ -672,6 +750,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  that the start of the output range may overlap [first,last).
   */
   template<typename _BI1, typename _BI2>
+    _GLIBCXX20_CONSTEXPR
     inline _BI2
     move_backward(_BI1 __first, _BI1 __last, _BI2 __result)
     {
@@ -694,6 +773,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<typename _ForwardIterator, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline typename
     __gnu_cxx::__enable_if<!__is_scalar<_Tp>::__value, void>::__type
     __fill_a(_ForwardIterator __first, _ForwardIterator __last,
@@ -704,6 +784,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _ForwardIterator, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline typename
     __gnu_cxx::__enable_if<__is_scalar<_Tp>::__value, void>::__type
     __fill_a(_ForwardIterator __first, _ForwardIterator __last,
@@ -738,6 +819,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  to @c memset or @c wmemset.
   */
   template<typename _ForwardIterator, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline void
     fill(_ForwardIterator __first, _ForwardIterator __last, const _Tp& __value)
     {
@@ -801,6 +883,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<typename _OutputIterator, typename _Size, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline typename
     __gnu_cxx::__enable_if<!__is_scalar<_Tp>::__value, _OutputIterator>::__type
     __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value)
@@ -814,6 +897,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _OutputIterator, typename _Size, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline typename
     __gnu_cxx::__enable_if<__is_scalar<_Tp>::__value, _OutputIterator>::__type
     __fill_n_a(_OutputIterator __first, _Size __n, const _Tp& __value)
@@ -828,6 +912,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Size, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline typename
     __gnu_cxx::__enable_if<__is_byte<_Tp>::__value, _Tp*>::__type
     __fill_n_a(_Tp* __first, _Size __n, const _Tp& __c)
@@ -854,6 +939,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // DR 865. More algorithms that throw away information
   // DR 426. search_n(), fill_n(), and generate_n() with negative n
   template<typename _OI, typename _Size, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline _OI
     fill_n(_OI __first, _Size __n, const _Tp& __value)
     {
@@ -870,6 +956,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __equal
     {
       template<typename _II1, typename _II2>
+	_GLIBCXX20_CONSTEXPR
 	static bool
 	equal(_II1 __first1, _II1 __last1, _II2 __first2)
 	{
@@ -884,16 +971,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __equal<true>
     {
       template<typename _Tp>
+	_GLIBCXX20_CONSTEXPR
 	static bool
 	equal(const _Tp* __first1, const _Tp* __last1, const _Tp* __first2)
 	{
 	  if (const size_t __len = (__last1 - __first1))
-	    return !__builtin_memcmp(__first1, __first2, sizeof(_Tp) * __len);
+	    return !std::__memcmp(__first1, __first2, __len);
 	  return true;
 	}
     };
 
   template<typename _II1, typename _II2>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __equal_aux(_II1 __first1, _II1 __last1, _II2 __first2)
     {
@@ -912,11 +1001,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __lc_rai
     {
       template<typename _II1, typename _II2>
+	_GLIBCXX20_CONSTEXPR
 	static _II1
 	__newlast1(_II1, _II1 __last1, _II2, _II2)
 	{ return __last1; }
 
       template<typename _II>
+	_GLIBCXX20_CONSTEXPR
 	static bool
 	__cnd2(_II __first, _II __last)
 	{ return __first != __last; }
@@ -926,6 +1017,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __lc_rai<random_access_iterator_tag, random_access_iterator_tag>
     {
       template<typename _RAI1, typename _RAI2>
+	_GLIBCXX20_CONSTEXPR
 	static _RAI1
 	__newlast1(_RAI1 __first1, _RAI1 __last1,
 		   _RAI2 __first2, _RAI2 __last2)
@@ -938,12 +1030,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _RAI>
-	static bool
+	static _GLIBCXX20_CONSTEXPR bool
 	__cnd2(_RAI, _RAI)
 	{ return true; }
     };
 
   template<typename _II1, typename _II2, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     bool
     __lexicographical_compare_impl(_II1 __first1, _II1 __last1,
 				   _II2 __first2, _II2 __last2,
@@ -969,11 +1062,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __lexicographical_compare
     {
       template<typename _II1, typename _II2>
+	_GLIBCXX20_CONSTEXPR
 	static bool __lc(_II1, _II1, _II2, _II2);
     };
 
   template<bool _BoolType>
     template<typename _II1, typename _II2>
+      _GLIBCXX20_CONSTEXPR
       bool
       __lexicographical_compare<_BoolType>::
       __lc(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
@@ -987,6 +1082,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __lexicographical_compare<true>
     {
       template<typename _Tp, typename _Up>
+	_GLIBCXX20_CONSTEXPR
 	static bool
 	__lc(const _Tp* __first1, const _Tp* __last1,
 	     const _Up* __first2, const _Up* __last2)
@@ -994,13 +1090,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  const size_t __len1 = __last1 - __first1;
 	  const size_t __len2 = __last2 - __first2;
 	  if (const size_t __len = std::min(__len1, __len2))
-	    if (int __result = __builtin_memcmp(__first1, __first2, __len))
+	    if (int __result = std::__memcmp(__first1, __first2, __len))
 	      return __result < 0;
 	  return __len1 < __len2;
 	}
     };
 
   template<typename _II1, typename _II2>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __lexicographical_compare_aux(_II1 __first1, _II1 __last1,
 				  _II2 __first2, _II2 __last2)
@@ -1019,6 +1116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _ForwardIterator, typename _Tp, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     _ForwardIterator
     __lower_bound(_ForwardIterator __first, _ForwardIterator __last,
 		  const _Tp& __val, _Compare __comp)
@@ -1057,6 +1155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @ingroup binary_search_algorithms
   */
   template<typename _ForwardIterator, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline _ForwardIterator
     lower_bound(_ForwardIterator __first, _ForwardIterator __last,
 		const _Tp& __val)
@@ -1112,6 +1211,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  ranges are equal.
   */
   template<typename _II1, typename _II2>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     equal(_II1 __first1, _II1 __last1, _II2 __first2)
     {
@@ -1144,6 +1244,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  ranges are equal.
   */
   template<typename _IIter1, typename _IIter2, typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     equal(_IIter1 __first1, _IIter1 __last1,
 	  _IIter2 __first2, _BinaryPredicate __binary_pred)
@@ -1162,6 +1263,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 #if __cplusplus >= 201103L
   // 4-iterator version of std::equal<It1, It2> for use in C++11.
   template<typename _II1, typename _II2>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __equal4(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
     {
@@ -1187,6 +1289,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 
   // 4-iterator version of std::equal<It1, It2, BinaryPred> for use in C++11.
   template<typename _II1, typename _II2, typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __equal4(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2,
 	     _BinaryPredicate __binary_pred)
@@ -1231,6 +1334,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  ranges are equal.
   */
   template<typename _II1, typename _II2>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     equal(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
     {
@@ -1263,6 +1367,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  ranges are equal.
   */
   template<typename _IIter1, typename _IIter2, typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     equal(_IIter1 __first1, _IIter1 __last1,
 	  _IIter2 __first2, _IIter2 __last2, _BinaryPredicate __binary_pred)
@@ -1294,6 +1399,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  then this is an inline call to @c memcmp.
   */
   template<typename _II1, typename _II2>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     lexicographical_compare(_II1 __first1, _II1 __last1,
 			    _II2 __first2, _II2 __last2)
@@ -1330,6 +1436,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  comp parameter instead of @c <.
   */
   template<typename _II1, typename _II2, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     lexicographical_compare(_II1 __first1, _II1 __last1,
 			    _II2 __first2, _II2 __last2, _Compare __comp)
@@ -1347,6 +1454,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     pair<_InputIterator1, _InputIterator2>
     __mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
 	       _InputIterator2 __first2, _BinaryPredicate __binary_pred)
@@ -1373,6 +1481,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  to by the iterators are not equal.
   */
   template<typename _InputIterator1, typename _InputIterator2>
+    _GLIBCXX20_CONSTEXPR
     inline pair<_InputIterator1, _InputIterator2>
     mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
 	     _InputIterator2 __first2)
@@ -1407,6 +1516,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     inline pair<_InputIterator1, _InputIterator2>
     mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
 	     _InputIterator2 __first2, _BinaryPredicate __binary_pred)
@@ -1424,6 +1534,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     pair<_InputIterator1, _InputIterator2>
     __mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
 	       _InputIterator2 __first2, _InputIterator2 __last2,
@@ -1453,6 +1564,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
    *  to by the iterators are not equal.
   */
   template<typename _InputIterator1, typename _InputIterator2>
+    _GLIBCXX20_CONSTEXPR
     inline pair<_InputIterator1, _InputIterator2>
     mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
 	     _InputIterator2 __first2, _InputIterator2 __last2)
@@ -1489,6 +1601,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   */
   template<typename _InputIterator1, typename _InputIterator2,
 	   typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     inline pair<_InputIterator1, _InputIterator2>
     mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
 	     _InputIterator2 __first2, _InputIterator2 __last2,

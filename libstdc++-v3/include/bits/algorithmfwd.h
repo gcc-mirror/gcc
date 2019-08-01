@@ -191,21 +191,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // adjacent_find
 
+#if __cplusplus > 201703L
+#  define __cpp_lib_constexpr_algorithms 201711L
+#endif
+
 #if __cplusplus >= 201103L
   template<typename _IIter, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     bool
     all_of(_IIter, _IIter, _Predicate);
 
   template<typename _IIter, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     bool
     any_of(_IIter, _IIter, _Predicate);
 #endif
 
   template<typename _FIter, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     bool
     binary_search(_FIter, _FIter, const _Tp&);
 
   template<typename _FIter, typename _Tp, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     bool
     binary_search(_FIter, _FIter, const _Tp&, _Compare);
 
@@ -222,19 +230,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<typename _IIter, typename _OIter>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     copy(_IIter, _IIter, _OIter);
 
   template<typename _BIter1, typename _BIter2>
+    _GLIBCXX20_CONSTEXPR
     _BIter2
     copy_backward(_BIter1, _BIter1, _BIter2);
 
 #if __cplusplus >= 201103L
   template<typename _IIter, typename _OIter, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     copy_if(_IIter, _IIter, _OIter, _Predicate);
 
   template<typename _IIter, typename _Size, typename _OIter>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     copy_n(_IIter, _Size, _OIter);
 #endif
@@ -243,28 +255,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // count_if
 
   template<typename _FIter, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     pair<_FIter, _FIter>
     equal_range(_FIter, _FIter, const _Tp&);
 
   template<typename _FIter, typename _Tp, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     pair<_FIter, _FIter>
     equal_range(_FIter, _FIter, const _Tp&, _Compare);
 
   template<typename _FIter, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     void
     fill(_FIter, _FIter, const _Tp&);
 
   template<typename _OIter, typename _Size, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     fill_n(_OIter, _Size, const _Tp&);
 
   // find
 
   template<typename _FIter1, typename _FIter2>
+    _GLIBCXX20_CONSTEXPR
     _FIter1
     find_end(_FIter1, _FIter1, _FIter2, _FIter2);
 
   template<typename _FIter1, typename _FIter2, typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     _FIter1
     find_end(_FIter1, _FIter1, _FIter2, _FIter2, _BinaryPredicate);
 
@@ -273,6 +291,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
   template<typename _IIter, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     _IIter
     find_if_not(_IIter, _IIter, _Predicate);
 #endif
@@ -282,10 +301,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // generate_n
 
   template<typename _IIter1, typename _IIter2>
+    _GLIBCXX20_CONSTEXPR
     bool
     includes(_IIter1, _IIter1, _IIter2, _IIter2);
 
   template<typename _IIter1, typename _IIter2, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     bool
     includes(_IIter1, _IIter1, _IIter2, _IIter2, _Compare);
 
@@ -299,47 +320,58 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
   template<typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     bool
     is_heap(_RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     bool
     is_heap(_RAIter, _RAIter, _Compare);
 
   template<typename _RAIter>
+    _GLIBCXX20_CONSTEXPR
     _RAIter
     is_heap_until(_RAIter, _RAIter);
 
   template<typename _RAIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     _RAIter
     is_heap_until(_RAIter, _RAIter, _Compare);
 
   template<typename _IIter, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     bool
     is_partitioned(_IIter, _IIter, _Predicate);
 
   template<typename _FIter1, typename _FIter2>
+    _GLIBCXX20_CONSTEXPR
     bool
     is_permutation(_FIter1, _FIter1, _FIter2);
 
   template<typename _FIter1, typename _FIter2,
 	   typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     bool
     is_permutation(_FIter1, _FIter1, _FIter2, _BinaryPredicate);
 
   template<typename _FIter>
+    _GLIBCXX20_CONSTEXPR
     bool
     is_sorted(_FIter, _FIter);
 
   template<typename _FIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     bool
     is_sorted(_FIter, _FIter, _Compare);
 
   template<typename _FIter>
+    _GLIBCXX20_CONSTEXPR
     _FIter
     is_sorted_until(_FIter, _FIter);
 
   template<typename _FIter, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     _FIter
     is_sorted_until(_FIter, _FIter, _Compare);
 #endif
@@ -349,10 +381,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     iter_swap(_FIter1, _FIter2);
 
   template<typename _FIter, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     _FIter
     lower_bound(_FIter, _FIter, const _Tp&);
 
   template<typename _FIter, typename _Tp, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     _FIter
     lower_bound(_FIter, _FIter, const _Tp&, _Compare);
 
@@ -453,6 +487,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
   template<typename _IIter, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     bool
     none_of(_IIter, _IIter, _Predicate);
 #endif
@@ -473,10 +508,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
   template<typename _IIter, typename _OIter1,
 	   typename _OIter2, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     pair<_OIter1, _OIter2>
     partition_copy(_IIter, _IIter, _OIter1, _OIter2, _Predicate);
 
   template<typename _FIter, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     _FIter
     partition_point(_FIter, _FIter, _Predicate);
 #endif
@@ -508,28 +545,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // random_shuffle
 
   template<typename _FIter, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     _FIter
     remove(_FIter, _FIter, const _Tp&);
 
   template<typename _FIter, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     _FIter
     remove_if(_FIter, _FIter, _Predicate);
 
   template<typename _IIter, typename _OIter, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     remove_copy(_IIter, _IIter, _OIter, const _Tp&);
 
   template<typename _IIter, typename _OIter, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     remove_copy_if(_IIter, _IIter, _OIter, _Predicate);
 
   // replace
 
   template<typename _IIter, typename _OIter, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     replace_copy(_IIter, _IIter, _OIter, const _Tp&, const _Tp&);
 
   template<typename _Iter, typename _OIter, typename _Predicate, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     replace_copy_if(_Iter, _Iter, _OIter, _Predicate, const _Tp&);
 
@@ -540,6 +583,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     reverse(_BIter, _BIter);
 
   template<typename _BIter, typename _OIter>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     reverse_copy(_BIter, _BIter, _OIter);
 
@@ -551,6 +595,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   template<typename _FIter, typename _OIter>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     rotate_copy(_FIter, _FIter, _FIter, _OIter);
 
@@ -598,82 +643,101 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // transform
 
   template<typename _FIter>
+    _GLIBCXX20_CONSTEXPR
     _FIter
     unique(_FIter, _FIter);
 
   template<typename _FIter, typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     _FIter
     unique(_FIter, _FIter, _BinaryPredicate);
 
   // unique_copy
 
   template<typename _FIter, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     _FIter
     upper_bound(_FIter, _FIter, const _Tp&);
 
   template<typename _FIter, typename _Tp, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     _FIter
     upper_bound(_FIter, _FIter, const _Tp&, _Compare);
 
 _GLIBCXX_BEGIN_NAMESPACE_ALGO
 
   template<typename _FIter>
+    _GLIBCXX20_CONSTEXPR
     _FIter
     adjacent_find(_FIter, _FIter);
 
   template<typename _FIter, typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     _FIter
     adjacent_find(_FIter, _FIter, _BinaryPredicate);
 
   template<typename _IIter, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     typename iterator_traits<_IIter>::difference_type
     count(_IIter, _IIter, const _Tp&);
 
   template<typename _IIter, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     typename iterator_traits<_IIter>::difference_type
     count_if(_IIter, _IIter, _Predicate);
 
   template<typename _IIter1, typename _IIter2>
+    _GLIBCXX20_CONSTEXPR
     bool
     equal(_IIter1, _IIter1, _IIter2);
 
   template<typename _IIter1, typename _IIter2, typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     bool
     equal(_IIter1, _IIter1, _IIter2, _BinaryPredicate);
 
   template<typename _IIter, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     _IIter
     find(_IIter, _IIter, const _Tp&);
 
   template<typename _FIter1, typename _FIter2>
+    _GLIBCXX20_CONSTEXPR
     _FIter1
     find_first_of(_FIter1, _FIter1, _FIter2, _FIter2);
 
   template<typename _FIter1, typename _FIter2, typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     _FIter1
     find_first_of(_FIter1, _FIter1, _FIter2, _FIter2, _BinaryPredicate);
 
   template<typename _IIter, typename _Predicate>
+    _GLIBCXX20_CONSTEXPR
     _IIter
     find_if(_IIter, _IIter, _Predicate);
 
   template<typename _IIter, typename _Funct>
+    _GLIBCXX20_CONSTEXPR
     _Funct
     for_each(_IIter, _IIter, _Funct);
 
   template<typename _FIter, typename _Generator>
+    _GLIBCXX20_CONSTEXPR
     void
     generate(_FIter, _FIter, _Generator);
 
   template<typename _OIter, typename _Size, typename _Generator>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     generate_n(_OIter, _Size, _Generator);
 
   template<typename _IIter1, typename _IIter2>
+    _GLIBCXX20_CONSTEXPR
     bool
     lexicographical_compare(_IIter1, _IIter1, _IIter2, _IIter2);
 
   template<typename _IIter1, typename _IIter2, typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     bool
     lexicographical_compare(_IIter1, _IIter1, _IIter2, _IIter2, _Compare);
 
@@ -688,11 +752,13 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     max_element(_FIter, _FIter, _Compare);
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     merge(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);
 
   template<typename _IIter1, typename _IIter2, typename _OIter,
 	   typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     merge(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare);
 
@@ -707,10 +773,12 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     min_element(_FIter, _FIter, _Compare);
 
   template<typename _IIter1, typename _IIter2>
+    _GLIBCXX20_CONSTEXPR
     pair<_IIter1, _IIter2>
     mismatch(_IIter1, _IIter1, _IIter2);
 
   template<typename _IIter1, typename _IIter2, typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     pair<_IIter1, _IIter2>
     mismatch(_IIter1, _IIter1, _IIter2, _BinaryPredicate);
 
@@ -748,64 +816,78 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 #endif
 
   template<typename _FIter, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     void
     replace(_FIter, _FIter, const _Tp&, const _Tp&);
 
   template<typename _FIter, typename _Predicate, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     void
     replace_if(_FIter, _FIter, _Predicate, const _Tp&);
 
   template<typename _FIter1, typename _FIter2>
+    _GLIBCXX20_CONSTEXPR
     _FIter1
     search(_FIter1, _FIter1, _FIter2, _FIter2);
 
   template<typename _FIter1, typename _FIter2, typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     _FIter1
     search(_FIter1, _FIter1, _FIter2, _FIter2, _BinaryPredicate);
 
   template<typename _FIter, typename _Size, typename _Tp>
+    _GLIBCXX20_CONSTEXPR
     _FIter
     search_n(_FIter, _FIter, _Size, const _Tp&);
 
   template<typename _FIter, typename _Size, typename _Tp,
 	   typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     _FIter
     search_n(_FIter, _FIter, _Size, const _Tp&, _BinaryPredicate);
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     set_difference(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);
 
   template<typename _IIter1, typename _IIter2, typename _OIter,
 	   typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     set_difference(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare);
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     set_intersection(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);
 
   template<typename _IIter1, typename _IIter2, typename _OIter,
 	   typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     set_intersection(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare);
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     set_symmetric_difference(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);
 
   template<typename _IIter1, typename _IIter2, typename _OIter,
 	   typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     set_symmetric_difference(_IIter1, _IIter1, _IIter2, _IIter2,
 			     _OIter, _Compare);
 
   template<typename _IIter1, typename _IIter2, typename _OIter>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     set_union(_IIter1, _IIter1, _IIter2, _IIter2, _OIter);
 
   template<typename _IIter1, typename _IIter2, typename _OIter,
 	   typename _Compare>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     set_union(_IIter1, _IIter1, _IIter2, _IIter2, _OIter, _Compare);
 
@@ -826,19 +908,23 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     stable_sort(_RAIter, _RAIter, _Compare);
 
   template<typename _IIter, typename _OIter, typename _UnaryOperation>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     transform(_IIter, _IIter, _OIter, _UnaryOperation);
 
   template<typename _IIter1, typename _IIter2, typename _OIter,
 	   typename _BinaryOperation>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     transform(_IIter1, _IIter1, _IIter2, _OIter, _BinaryOperation);
 
   template<typename _IIter, typename _OIter>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     unique_copy(_IIter, _IIter, _OIter);
 
   template<typename _IIter, typename _OIter, typename _BinaryPredicate>
+    _GLIBCXX20_CONSTEXPR
     _OIter
     unique_copy(_IIter, _IIter, _OIter, _BinaryPredicate);
 

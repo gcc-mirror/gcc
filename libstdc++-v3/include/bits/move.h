@@ -145,6 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // C++11 version of std::exchange for internal use.
   template <typename _Tp, typename _Up = _Tp>
+    _GLIBCXX20_CONSTEXPR
     inline _Tp
     __exchange(_Tp& __obj, _Up&& __new_val)
     {
