@@ -1,6 +1,12 @@
 2019-08-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (co_await_expander): Simplify argument computation
+	for await_suspend().
+
+2019-08-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (struct suspend_point_info): Add space for the
 	await_suspend method type.  Rename the handle field.
 	(transform_await_expr): Rename the handle field.

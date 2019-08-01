@@ -1007,13 +1007,13 @@ co_await_expander (tree *stmt, int */*do_subtree*/, void *d)
   tree handle_type = TREE_TYPE (data->self_h);
   tree hfa_m = lookup_member (handle_type, get_identifier ("from_address"),
 			     1, 0, tf_warning_or_error);
+
   r = build1 (CONVERT_EXPR, build_pointer_type (void_type_node), data->coro_fp);
   vec<tree, va_gc>* args = make_tree_vector_single (r);
   /* Dummy instance for the method call.  */
   tree tmp_hdl = build_lang_decl (VAR_DECL, NULL_TREE, handle_type);
   tree hfa = build_new_method_call (tmp_hdl, hfa_m, &args, NULL_TREE,
 				    LOOKUP_NORMAL, NULL, tf_warning_or_error);
-  hfa = build_target_expr_with_type (hfa, handle_type, tf_warning_or_error);
 
   tree suspend = TREE_VEC_ELT (awaiter_calls, 1); /* await_suspend().  */
 
