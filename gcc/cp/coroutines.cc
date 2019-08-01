@@ -1180,8 +1180,10 @@ struct suspend_point_info {
   tree awaitable_type;
   /* coro frame field name.  */
   tree await_field_id;
-  /* coro frame handle field name, NULL_TREE if not needed.  */
-  tree save_handle_id;
+  /* suspend method return type.  */
+  tree suspend_type;
+  /* suspend handle field name, NULL_TREE if not needed.  */
+  tree susp_handle_id;
 };
 
 static hash_map<tree, struct suspend_point_info> *suspend_points;
@@ -1218,9 +1220,9 @@ transform_await_expr (tree await_expr, struct __await_xform_data *xform)
 					    true, tf_warning_or_error);
  
   tree ah = NULL_TREE;
-  if (si->save_handle_id)
+  if (si->susp_handle_id)
     {
-      tree ah_m = lookup_member (coro_frame_type, si->save_handle_id,
+      tree ah_m = lookup_member (coro_frame_type, si->susp_handle_id,
 				 /*protect*/1,  /*want_type*/ 0,
 				 tf_warning_or_error);
       ah = build_class_member_access_expr (xform->actor_frame, ah_m, NULL_TREE,
@@ -1900,7 +1902,8 @@ build_init_or_final_await (location_t loc, bool is_final)
 
 
 static bool
-register_await_info (tree await_expr, tree aw_type, tree aw_nam, tree h_nam)
+register_await_info (tree await_expr, tree aw_type, tree aw_nam,
+		     tree susp_type, tree susp_handle_nam)
 {
   bool seen;
   struct suspend_point_info &s
@@ -1914,7 +1917,8 @@ register_await_info (tree await_expr, tree aw_type, tree aw_nam, tree h_nam)
     }
   s.awaitable_type = aw_type;
   s.await_field_id = aw_nam;
-  s.save_handle_id = h_nam;
+  s.suspend_type = susp_type;
+  s.susp_handle_id = susp_handle_nam;
   return true;
 }
 
@@ -1937,10 +1941,23 @@ struct __susp_frame_data {
   unsigned count;
 };
 
+/* Helper to return the type of an awaiter's await_suspend() method.  */
+static tree
+get_await_suspend_return_type (tree aw_expr)
+{
+  tree susp_fn = TREE_VEC_ELT (TREE_OPERAND (aw_expr, 3), 1);
+  gcc_checking_assert (TREE_CODE (susp_fn) == CALL_EXPR);
+  susp_fn = CALL_EXPR_FN (susp_fn);
+  if (TREE_CODE (susp_fn) == ADDR_EXPR)
+    susp_fn = TREE_OPERAND (susp_fn, 0);
+
+  return TREE_TYPE (TREE_TYPE (susp_fn));
+}
+
 /* If this is an await, then register it and decide on what coro
    frame storage is needed.
    If this is a co_yield (which embeds an await), drop the yield
-   and record the await (the yield was kept for diagnostics only.  */
+   and record the await (the yield was kept for diagnostics only).  */
 static tree
 register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
 {
@@ -1968,13 +1985,32 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
   snprintf (buf, bufsize, "__aw_s.%d", data->count);
   tree aw_field_nam = coro_make_frame_entry (data->field_list, buf,
 					     aw_field_type, aw_loc);
-  /* TODO: be more intelligent about whether we need a coro handle
-     saved across the suspend.  */
-  snprintf (buf, bufsize, "__aw_h.%d", data->count);
-  tree handle_field_nam = coro_make_frame_entry (data->field_list, buf,
-						 data->handle_type, aw_loc);
 
-  register_await_info (aw_expr, aw_field_type, aw_field_nam, handle_field_nam);
+  /* Find out what we have to do with the awaiter's suspend method (this
+     determines if we need somewhere to stash the suspend method's handle).
+     Cache the result of this in the suspend point info.
+     [expr.await]
+     (5.1) If the result of await-ready is false, the coroutine is considered
+	   suspended. Then:
+     (5.1.1) If the type of await-suspend is std::coroutine_handle<Z>,
+	     await-suspend.resume() is evaluated.
+     (5.1.2) if the type of await-suspend is bool, await-suspend is evaluated,
+	     and the coroutine is resumed if the result is false.
+     (5.1.3) Otherwise, await-suspend is evaluated.
+  */
+  tree susp_typ = get_await_suspend_return_type (aw_expr);
+  tree handle_field_nam;
+  if (VOID_TYPE_P (susp_typ)
+      || TREE_CODE (susp_typ) == BOOLEAN_TYPE)
+    handle_field_nam = NULL_TREE; /* no handle is needed.  */
+  else
+    {
+      snprintf (buf, bufsize, "__aw_h.%d", data->count);
+      handle_field_nam = coro_make_frame_entry (data->field_list, buf,
+						data->handle_type, aw_loc);
+    }
+  register_await_info (aw_expr, aw_field_type, aw_field_nam,
+		       susp_typ, handle_field_nam);
 
   data->count++;
   return NULL_TREE;
@@ -2248,14 +2284,23 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 				handle_type, fn_start);
 
   /* Initial suspend is mandated.  */
-  tree init_susp_name = coro_make_frame_entry (&field_list, "__is",
+  tree init_susp_name = coro_make_frame_entry (&field_list, "__aw_s.is",
 					      initial_suspend_type, fn_start);
-  /* We really need to figure this out from the awaiter type.  */
-  tree init_hand_name = coro_make_frame_entry (&field_list, "__ih",
-					       handle_type, fn_start);
+
+  /* Figure out if we need a saved handle from the awaiter type.  */
+  tree ret_typ = get_await_suspend_return_type (initial_await);
+  tree init_hand_name;
+  if (VOID_TYPE_P (ret_typ)
+      || TREE_CODE (ret_typ) == BOOLEAN_TYPE)
+    init_hand_name = NULL_TREE; /* no handle is needed.  */
+  else
+    {
+      init_hand_name = coro_make_frame_entry (&field_list, "__ih",
+					      ret_typ, fn_start);
+    }
 
   register_await_info (initial_await, initial_suspend_type,
-		       init_susp_name, init_hand_name);
+		       init_susp_name, ret_typ, init_hand_name);
 
   /* Now insert the data for any body await points.  */
   struct __susp_frame_data body_aw_points = { &field_list, handle_type, 0 };
@@ -2265,14 +2310,22 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   delete visited;
 
   /* Final suspend is mandated.  */
-  tree fin_susp_name = coro_make_frame_entry (&field_list, "__fs",
+  tree fin_susp_name = coro_make_frame_entry (&field_list, "__aw_s.fs",
 					      final_suspend_type, fn_start);
 
-  tree fin_hand_name = coro_make_frame_entry (&field_list, "__fh",
-					      handle_type, fn_start);
+  ret_typ = get_await_suspend_return_type (final_await);
+  tree fin_hand_name;
+  if (VOID_TYPE_P (ret_typ)
+      || TREE_CODE (ret_typ) == BOOLEAN_TYPE)
+    fin_hand_name = NULL_TREE; /* no handle is needed.  */
+  else
+    {
+      fin_hand_name = coro_make_frame_entry (&field_list, "__fh",
+					     ret_typ, fn_start);
+    }
 
   register_await_info (final_await, final_suspend_type,
-		       fin_susp_name, fin_hand_name);
+		       fin_susp_name, void_type_node, fin_hand_name);
 
   /* 3. Now add in fields for function params (if there are any) that are used
      within the function body.  This is conservative; we can't tell at this

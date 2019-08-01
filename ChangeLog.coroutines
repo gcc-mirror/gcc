@@ -1,3 +1,15 @@
+2019-08-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
+	* coroutines.cc (struct suspend_point_info): Add space for the
+	await_suspend method type.  Rename the handle field.
+	(transform_await_expr): Rename the handle field.
+	(register_await_info): Cache the suspend method return type.
+	(get_await_suspend_return_type): New.
+	(register_awaits): Handle caching the await_suspend return type.
+	(morph_fn_to_coro): Ensure that we have the right suspend types
+	for initial and final suspends.
+
 2019-07-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
