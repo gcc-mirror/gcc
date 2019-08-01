@@ -1,6 +1,17 @@
 2019-08-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (build_co_await): Expect a record type for a
+	await_suspend() returning a handle.
+	(co_await_expander): Deal with the three cases of return type
+	that are allowed for await_suspend().
+
+	gcc/testsuite/
+	* g++.dg/coroutines/torture/co-ret-9.C: New test.
+
+2019-08-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (get_await_suspend_return_type): Handle TARGET_EXPR
 	as well as CALL_EXPR.
 

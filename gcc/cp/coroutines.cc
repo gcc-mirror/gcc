@@ -405,7 +405,8 @@ build_co_await (location_t loc, tree a, tree mode)
     OK = true;
   else if (same_type_p (susp_return_type, boolean_type_node))
     OK = true;
-  else if (POINTER_TYPE_P (susp_return_type))
+  else if (TREE_CODE (susp_return_type) == RECORD_TYPE)
+    /* TODO: this isn't enough of a test.  */
     OK = true;
 
   if (!OK)
@@ -958,7 +959,7 @@ co_await_expander (tree *stmt, int */*do_subtree*/, void *d)
 
   tree actor = data->actor_fn;
   location_t loc = EXPR_LOCATION (*stmt);
-  //tree sv_handle = TREE_OPERAND (saved_co_await, 0); /* not yet.  */
+  tree sv_handle = TREE_OPERAND (saved_co_await, 0);
   tree var = TREE_OPERAND (saved_co_await, 1); /* frame slot. */
   tree expr = TREE_OPERAND (saved_co_await, 2); /* initialiser.  */
   tree awaiter_calls = TREE_OPERAND (saved_co_await, 3);
@@ -1024,12 +1025,36 @@ co_await_expander (tree *stmt, int */*do_subtree*/, void *d)
   xform.to = hfa;
   cp_walk_tree (&suspend, replace_proxy, &xform, NULL);
 
-  /* We are not (yet) going to muck around with figuring out the actions
-     for different return type on the suspend, our simple case assumes
-     it's void.  */
-
-  suspend = coro_build_cvt_void_expr_stmt (suspend, loc);
-  append_to_statement_list (suspend, &body_list);
+  if (sv_handle == NULL_TREE)
+    {
+      /* void return, we just call it and hit the yield.  */
+      suspend = coro_build_cvt_void_expr_stmt (suspend, loc);
+      append_to_statement_list (suspend, &body_list);
+    }
+  else if (sv_handle == boolean_type_node)
+    {
+      /* Boolean return, continue if the call returns false.  */
+      suspend = build1_loc (loc, TRUTH_NOT_EXPR, boolean_type_node, suspend);
+      suspend = build1_loc (loc, CLEANUP_POINT_EXPR, boolean_type_node,
+			    suspend);
+      tree go_on = build1_loc (loc, GOTO_EXPR, void_type_node, resume_label);
+      r = build3_loc (loc, COND_EXPR, void_type_node, suspend,
+		      go_on, empty_list);
+      append_to_statement_list (r, &body_list);
+    }
+  else
+    {
+      r = build2_loc (loc, INIT_EXPR, TREE_TYPE (sv_handle),
+		      sv_handle, suspend);
+      append_to_statement_list (r, &body_list);
+      tree resume = lookup_member (TREE_TYPE(sv_handle),
+				   get_identifier ("resume"), 1, 0,
+				   tf_warning_or_error);
+      resume = build_new_method_call (sv_handle, resume, NULL, NULL_TREE,
+				      LOOKUP_NORMAL, NULL, tf_warning_or_error);
+      resume = coro_build_cvt_void_expr_stmt (resume, loc);
+      append_to_statement_list (resume, &body_list);
+    }
 
   tree d_l = build1 (ADDR_EXPR, build_reference_type (void_type_node),
 		     destroy_label);
