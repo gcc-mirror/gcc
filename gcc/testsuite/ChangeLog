@@ -1,3 +1,11 @@
+2019-08-01  Matthew Beliveau  <mbelivea@redhat.com>
+
+	PR c++/90590
+	* c-c++-common/pr90590-1.c: New test.
+	* c-c++-common/pr90590-1.h: New test.
+	* c-c++-common/pr90590-2.c: New test.
+	* c-c++-common/pr90590-2.h: New test.
+
 2019-08-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90805 - detect narrowing in case values.

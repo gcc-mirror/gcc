@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "gimplify.h"
 #include "c-family/c-indentation.h"
+#include "c-family/c-spellcheck.h"
 #include "calls.h"
 #include "stor-layout.h"
 
@@ -1626,6 +1627,15 @@ c_do_switch_warnings (splay_tree cases, location_t switch_location,
       /* If the switch expression is a constant, we only really care
 	 about whether that constant is handled by the switch.  */
       if (cond && tree_int_cst_compare (cond, value))
+	continue;
+
+      /* If the enumerator is defined in a system header and uses a reserved
+	 name, then we continue to avoid throwing a warning.  */
+      location_t loc = DECL_SOURCE_LOCATION
+	    (TYPE_STUB_DECL (TYPE_MAIN_VARIANT (type)));
+      if (in_system_header_at (loc)
+	  && name_reserved_for_implementation_p
+	      (IDENTIFIER_POINTER (TREE_PURPOSE (chain))))
 	continue;
 
       /* If there is a default_node, the only relevant option is
