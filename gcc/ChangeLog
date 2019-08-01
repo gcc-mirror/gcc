@@ -1,3 +1,9 @@
+2019-08-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/90947
+	* tree.c (type_initializer_zero_p): Define.
+	* tree.h (type_initializer_zero_p): New function.
+
 2019-08-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgrtl.c (relink_block_chain): Add line returns in dump file.

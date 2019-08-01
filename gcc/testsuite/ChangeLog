@@ -1,3 +1,11 @@
+2019-08-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/90947
+	* c-c++-common/array-1.c: New test.
+	* g++.dg/abi/mangle73.C: New test.
+	* g++.dg/cpp2a/nontype-class23.C: New test.
+	* g++.dg/init/array53.C: New test.
+
 2019-08-01  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/85693
