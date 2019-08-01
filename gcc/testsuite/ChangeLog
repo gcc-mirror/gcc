@@ -1,3 +1,10 @@
+2019-08-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90805 - detect narrowing in case values.
+	* c-c++-common/pr89888.c: Update expected dg-error.
+	* g++.dg/cpp0x/Wnarrowing17.C: New test.
+	* g++.dg/cpp0x/enum28.C: Update expected dg-error.
+
 2019-08-01  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc/testsuite/g++.dg/lto/pr89330_0.C: Add effective-target shared.

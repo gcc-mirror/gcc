@@ -3631,16 +3631,23 @@ case_conversion (tree type, tree value)
 
   value = mark_rvalue_use (value);
 
+  if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
+    type = type_promotes_to (type);
+
+  tree ovalue = value;
+  /* The constant-expression VALUE shall be a converted constant expression
+     of the adjusted type of the switch condition, which doesn't allow
+     narrowing conversions.  */
+  value = build_converted_constant_expr (type, value, tf_warning_or_error);
+
   if (cxx_dialect >= cxx11
       && (SCOPED_ENUM_P (type)
-	  || !INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (value))))
-    {
-      if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
-	type = type_promotes_to (type);
-      value = (perform_implicit_conversion_flags
-	       (type, value, tf_warning_or_error,
-		LOOKUP_IMPLICIT | LOOKUP_NO_NON_INTEGRAL));
-    }
+	  || !INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (ovalue))))
+    /* Use the converted value.  */;
+  else
+    /* The already integral case.  */
+    value = ovalue;
+
   return cxx_constant_value (value);
 }
 

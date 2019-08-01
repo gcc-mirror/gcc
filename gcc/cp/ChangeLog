@@ -1,3 +1,8 @@
+2019-08-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90805 - detect narrowing in case values.
+	* decl.c (case_conversion): Detect narrowing in case values.
+
 2019-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl2.c (delete_sanity): Improve diagnostic locations, use
