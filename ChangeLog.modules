@@ -1,3 +1,20 @@
+2019-08-01  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (module_state::deferred_macro): Emit warning if at end
+	of TU.
+	(finish_module_processing): Adjust.
+	gcc/
+	* doc/invoke.texi (fforce-module-macros): Replace documentation
+	with ...
+	(Winvalid-imported-macros): ... this.
+	gcc/c-family/
+	* c.opt (fforce-module-macros): Replace with ...
+	(Winvalid-imported-macros): ... this.
+	gcc/testsuite/
+	* g++.dg/modules/macro-4_[abcdeg].C: Update.
+	* g++.dg/modules/macro-5_c.C: Update.
+
 2019-07-28  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

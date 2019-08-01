@@ -1616,9 +1616,9 @@ fmodule-lazy
 C++ ObjC++ Var(flag_module_lazy) Init(1)
 Enable lazy module importing.
 
-fforce-module-macros
-C++ ObjC++ RejectNegative Var(flag_module_macros) Init(0)
-Ensure all imported macros are loaded.
+Winvalid-imported-macros
+C++ ObjC++ Var(warn_imported_macros)
+Warn about macros that have conflicting header units definitions.
 
 fmax-include-depth=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger

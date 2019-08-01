@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodule-header -fforce-module-macros" }
+// { dg-additional-options "-fmodule-header -Winvalid-imported-macros" }
 // { dg-module-cmi {} }
 
 #ifndef MACRO_4_a

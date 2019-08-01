@@ -2682,11 +2682,12 @@ Compile as a header unit.
 @opindex fmodule-only
 Only emit the module CMI, inhibiting any object file.
 
-@item -fforce-module-macros
-@opindex fforce-module-macros
-Load header unit macros at end of compilation.  This is not standard
-conforming, but can be helpful to confirm all imported macros are
-consistent.
+@item -Winvalid-imported-macros
+@opindex Winvalid-imported-macros
+@opindex Wno-invalid-imported-macros
+Verify all imported macro definitions are valid at end of
+compilation.  This is not enabled by default, as it requires
+additional processing to determine.
 
 @item -fmodule-mapper=@r{[}@var{hostname}@r{]}:@var{port}@r{[}?@var{ident}@r{]}
 @itemx -fmodule-mapper=|@var{program}@r{[}?@var{ident}@r{]} @var{args...}
@@ -3071,7 +3072,6 @@ union U @{
 @end itemize
 
 @item -Wabi-tag @r{(C++ and Objective-C++ only)}
-@opindex Wabi-tag
 @opindex Wabi-tag
 Warn when a type with an ABI tag is used in a context that does not
 have that ABI tag.  See @ref{C++ Attributes} for more information
@@ -30201,7 +30201,7 @@ descriptors.  By default, the limit is a few less than the per-process
 file descriptor hard limit, if that is determinable.@footnote{Where
 applicable the soft limit is incremented as needed towards the hard limit.}
 
-The @option{-fforce-module-macros} option causes all imported macros
+The @option{-Winvalid-imported-macros} option causes all imported macros
 to be resolved at the end of compilation.  Without this, imported
 macros are only resolved when expanded or (re)defined.  This option
 will detect conflicting import definitions for all macros.

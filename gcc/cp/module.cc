@@ -15423,7 +15423,7 @@ module_state::undef_macro (cpp_reader *, location_t loc, cpp_hashnode *node)
   dump.pop (n);
 }
 
-/* NODE is a deferred macro node.  Determine the defintion and return
+/* NODE is a deferred macro node.  Determine the definition and return
    it, with NULL if undefined.  May issue diagnostics.
 
    This can leak memory, when merging declarations -- the string
@@ -15516,8 +15516,15 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
 
   if (failed)
     {
-      error_at (loc, "inconsistent imported macro definition %qE",
-		identifier (node));
+      /* If LOC is the first loc, this is the end of file check, which
+	 is a warning.  */
+      if (loc == MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 0)))
+	warning_at (loc, OPT_Winvalid_imported_macros,
+		    "inconsistent imported macro definition %qE",
+		    identifier (node));
+      else
+	error_at (loc, "inconsistent imported macro definition %qE",
+		  identifier (node));
       for (unsigned ix = defs.length (); ix--;)
 	{
 	  macro_export &exp = defs[ix];
@@ -15693,7 +15700,6 @@ module_state_config::get_opts ()
       if (opt->opt_index == OPT_fmodule_lazy
 	  || opt->opt_index == OPT_fmodule_header
 	  || opt->opt_index == OPT_fmodule_header_
-	  || opt->opt_index == OPT_fforce_module_macros
 	  || opt->opt_index == OPT_fmodule_mapper_
 	  || opt->opt_index == OPT_fmodule_only
 	  || opt->opt_index == OPT_fmodules_ts)
@@ -17657,7 +17663,7 @@ finish_module_processing (cpp_reader *reader)
   if (header_module_p ())
     module_kind &= ~MK_EXPORTING;
 
-  if (flag_module_macros)
+  if (warn_imported_macros)
     {
       /* Force loading of any remaining deferred macros.  This will
 	 produce diagnostics if they are ill-formed.  */
