@@ -1,3 +1,13 @@
+2019-08-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (vec_extractv2si_0): Add (r,x) alternative.
+	(*vec_extractv2si_0_zext_sse4): New insn pattern.
+	(*vec_extractv2si_0_zext): Ditto.
+	(*vec_extractv2si_1): Add (rm,x) alternative.
+	(*vec_extractv2si_1_zext): New insn pattern.
+	(*vec_extractv2si_zext_mem): Add "TARGET_MMX || TARGET_MMX_WITH_SSE"
+	insn constraint.
+
 2019-08-01  Richard Biener  <rguenther@suse.de>
 
 	* domwalk.c (bb_postorder): Remove static variable.
