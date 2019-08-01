@@ -1,3 +1,127 @@
+2019-08-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement C++20 p0202 - Add Constexpr Modifiers to Functions
+	in <algorithm> and <utility> Headers.
+	Implement C++20 p1023 - constexpr comparison operators for std::array.
+	* include/bits/algorithmfwd.h (all_of, any_of, binary_search, copy,
+	copy_backward, copy_if, copy_n, equal_range, fill, find_end,
+	find_if_not, includes, is_heap, is_heap_until, is_partitioned,
+	is_permutation, is_sorted, is_sorted_until, iter_swap, lower_bound,
+	none_of, partition_copy, partition_point, remove, remove_if,
+	remove_copy, remove_copy_if, replace_copy, replace_copy_if,
+	reverse_copy, rotate_copy, uunique, upper_bound, adjacent_find, count,
+	count_if, equal, find, find_first_of, find_if, for_each, generate,
+	generate_n, lexicographical_compare, merge, mismatch, replace,
+	replace_if, search, search_n, set_difference, set_intersection,
+	set_symmetric_difference, set_union, transform, unique_copy):
+	Mark constexpr.
+	* include/bits/cpp_type_traits.h (__miter_base): Mark constexpr.
+	* include/bits/predefined_ops.h (_Iter_less_val::operator(),
+	_Val_less_iter::operator(), _Iter_equal_to_iter::operator(),
+	_Iter_equal_to_val::operator(), _Iter_equals_val::operator()):
+	 Use const ref instead of ref arg;
+	(_Iter_less_val, __iter_less_val, _Val_less_iter, __val_less_iter,
+	__iter_equal_to_iter, __iter_equal_to_val, __iter_comp_val,
+	_Iter_comp_val, _Val_comp_iter, __val_comp_iter, __iter_equals_val,
+	_Iter_equals_iter, __iter_comp_iter, _Iter_pred, __pred_iter,
+	_Iter_comp_to_val, __iter_comp_val, _Iter_comp_to_iter,
+	__iter_comp_iter): Mark constexpr.
+	* include/bits/stl_algo.h (__find_if, __find_if_not, __find_if_not_n,
+	__search, __search_n_aux, __search_n, __find_end, find_end, all_of,
+	none_of, any_of, find_if_not, is_partitioned, partition_point,
+	__remove_copy_if, remove_copy, remove_copy_if, copy_if, __copy_n,
+	copy_n, partition_copy, __remove_if, remove, remove_if, __adjacent_find,
+	__unique, unique, __unique_copy, reverse_copy, rotate_copy,
+	__unguarded_linear_insert, __insertion_sort, __unguarded_insertion_sort,
+	__final_insertion_sort, lower_bound, __upper_bound, upper_bound,
+	__equal_range, equal_range, binary_search, __includes, includes,
+	__next_permutation, __prev_permutation, __replace_copy_if, replace_copy,
+	replace_copy_if, __count_if, is_sorted, __is_sorted_until,
+	is_sorted_until, __is_permutation, is_permutation, for_each, find,
+	find_if, find_first_of, adjacent_find, count, count_if, search,
+	search_n, transform, replace, replace_if, generate, generate_n,
+	unique_copy, __merge, merge, __set_union, set_union, __set_intersection,
+	set_intersection, __set_difference, set_difference,
+	__set_symmetric_difference, set_symmetric_difference):  Mark constexpr.
+	* include/bits/stl_algobase.h (__memmove, __memcmp): New maybe constexpr
+	wrappers around __builtin_memmove and __builtin_memcmp
+	respectively;
+	(__niter_base, __niter_wrap, __copy_m, __copy_move_a, __copy_move_a2,
+	copy, move, __copy_move_b, __copy_move_backward_a,
+	__copy_move_backward_a2, copy_backward, move_backward, __fill_a, fill,
+	__fill_n_a, fill_n, equal, __lc_rai::__newlast1, __lc_rai::__cnd2,
+	__lexicographical_compare_impl, __lexicographical_compare,
+	__lexicographical_compare<true>::__lc, __lexicographical_compare_aux,
+	__lower_bound, lower_bound, equal, __equal4, lexicographical_compare,
+	__mismatch, mismatch, __is_heap_until, __is_heap, is_heap_until,
+	is_heap): Mark constexpr.
+	* include/bits/stl_heap.h (__is_heap_until, __is_heap, is_heap_until,
+	is_heap): Mark constexpr.
+	* include/bits/stl_iterator.h (__niter_base, __miter_base): Mark constexpr.
+	* include/std/array: Make comparison ops constexpr.
+	* include/std/utility: Make exchange constexpr.
+	* include/std/version (__cpp_lib_constexpr_algorithms): New macro.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Adjust.
+	* testsuite/23_containers/array/tuple_interface/
+	tuple_element_neg.cc: Adjust.
+	* testsuite/20_util/exchange/constexpr.cc: New.
+	* testsuite/23_containers/array/comparison_operators/constexpr.cc: New.
+	* testsuite/25_algorithms/constexpr_macro.cc: New.
+	* testsuite/25_algorithms/adjacent_find/constexpr.cc: New.
+	* testsuite/25_algorithms/all_of/constexpr.cc: New.
+	* testsuite/25_algorithms/any_of/constexpr.cc: New.
+	* testsuite/25_algorithms/binary_search/constexpr.cc: New.
+	* testsuite/25_algorithms/copy/constexpr.cc: New.
+	* testsuite/25_algorithms/copy_backward/constexpr.cc: New.
+	* testsuite/25_algorithms/copy_if/constexpr.cc: New.
+	* testsuite/25_algorithms/copy_n/constexpr.cc: New.
+	* testsuite/25_algorithms/count/constexpr.cc: New.
+	* testsuite/25_algorithms/count_if/constexpr.cc: New.
+	* testsuite/25_algorithms/equal/constexpr.cc: New.
+	* testsuite/25_algorithms/equal_range/constexpr.cc: New.
+	* testsuite/25_algorithms/fill/constexpr.cc: New.
+	* testsuite/25_algorithms/fill_n/constexpr.cc: New.
+	* testsuite/25_algorithms/find/constexpr.cc: New.
+	* testsuite/25_algorithms/find_end/constexpr.cc: New.
+	* testsuite/25_algorithms/find_first_of/constexpr.cc: New.
+	* testsuite/25_algorithms/find_if/constexpr.cc: New.
+	* testsuite/25_algorithms/find_if_not/constexpr.cc: New.
+	* testsuite/25_algorithms/for_each/constexpr.cc: New.
+	* testsuite/25_algorithms/generate/constexpr.cc: New.
+	* testsuite/25_algorithms/generate_n/constexpr.cc: New.
+	* testsuite/25_algorithms/is_heap/constexpr.cc: New.
+	* testsuite/25_algorithms/is_heap_until/constexpr.cc: New.
+	* testsuite/25_algorithms/is_partitioned/constexpr.cc: New.
+	* testsuite/25_algorithms/is_permutation/constexpr.cc: New.
+	* testsuite/25_algorithms/is_sorted/constexpr.cc: New.
+	* testsuite/25_algorithms/is_sorted_until/constexpr.cc: New.
+	* testsuite/25_algorithms/lexicographical_compare/constexpr.cc: New.
+	* testsuite/25_algorithms/lower_bound/constexpr.cc: New.
+	* testsuite/25_algorithms/merge/constexpr.cc: New.
+	* testsuite/25_algorithms/mismatch/constexpr.cc: New.
+	* testsuite/25_algorithms/none_of/constexpr.cc: New.
+	* testsuite/25_algorithms/partition_copy/constexpr.cc: New.
+	* testsuite/25_algorithms/partition_point/constexpr.cc: New.
+	* testsuite/25_algorithms/remove/constexpr.cc: New.
+	* testsuite/25_algorithms/remove_copy/constexpr.cc: New.
+	* testsuite/25_algorithms/remove_copy_if/constexpr.cc: New.
+	* testsuite/25_algorithms/remove_if/constexpr.cc: New.
+	* testsuite/25_algorithms/replace_copy/constexpr.cc: New.
+	* testsuite/25_algorithms/replace_copy_if/constexpr.cc: New.
+	* testsuite/25_algorithms/replace_if/constexpr.cc: New.
+	* testsuite/25_algorithms/reverse_copy/constexpr.cc: New.
+	* testsuite/25_algorithms/rotate_copy/constexpr.cc: New.
+	* testsuite/25_algorithms/search/constexpr.cc: New.
+	* testsuite/25_algorithms/search_n/constexpr.cc: New.
+	* testsuite/25_algorithms/set_difference/constexpr.cc: New.
+	* testsuite/25_algorithms/set_intersection/constexpr.cc: New.
+	* testsuite/25_algorithms/set_symmetric_difference/constexpr.cc: New.
+	* testsuite/25_algorithms/set_union/constexpr.cc: New.
+	* testsuite/25_algorithms/transform/constexpr.cc: New.
+	* testsuite/25_algorithms/unique/constexpr.cc: New.
+	* testsuite/25_algorithms/unique_copy/constexpr.cc: New.
+	* testsuite/25_algorithms/upper_bound/constexpr.cc: New.
+
 2019-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/memory (make_obj_using_allocator): Qualify call to

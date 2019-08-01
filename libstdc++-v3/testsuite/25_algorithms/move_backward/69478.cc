@@ -37,3 +37,4 @@ test01()
   trivial_rvalstruct a[1], b[1];
   std::move_backward(a, a + 1, b);
 }
+// { dg-prune-output "use of deleted" }

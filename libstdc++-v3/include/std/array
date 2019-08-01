@@ -248,16 +248,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   // Array comparisons.
   template<typename _Tp, std::size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     operator==(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return std::equal(__one.begin(), __one.end(), __two.begin()); }
 
   template<typename _Tp, std::size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     operator!=(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return !(__one == __two); }
 
   template<typename _Tp, std::size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     operator<(const array<_Tp, _Nm>& __a, const array<_Tp, _Nm>& __b)
     {
@@ -266,16 +269,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     }
 
   template<typename _Tp, std::size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     operator>(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return __two < __one; }
 
   template<typename _Tp, std::size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     operator<=(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return !(__one > __two); }
 
   template<typename _Tp, std::size_t _Nm>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     operator>=(const array<_Tp, _Nm>& __one, const array<_Tp, _Nm>& __two)
     { return !(__one < __two); }
@@ -289,6 +295,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX_STD_C::__array_traits<_Tp, _Nm>::_Is_swappable::value
     >::type
 #else
+    _GLIBCXX20_CONSTEXPR
     void
 #endif
     swap(array<_Tp, _Nm>& __one, array<_Tp, _Nm>& __two)
