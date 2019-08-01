@@ -1,3 +1,12 @@
+2019-08-01  Marek Polacek  <polacek@redhat.com>	
+
+	Backported from mainline
+	2018-06-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86098 - ICE with template placeholder for TTP.
+	* typeck.c (structural_comptypes) [TEMPLATE_TYPE_PARM]: Check
+	CLASS_PLACEHOLDER_TEMPLATE.
+
 2019-06-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/90810

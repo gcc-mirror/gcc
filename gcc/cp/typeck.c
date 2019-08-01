@@ -1384,6 +1384,11 @@ structural_comptypes (tree t1, tree t2, int strict)
 	 template parameters set, they can't be equal.  */
       if (!comp_template_parms_position (t1, t2))
 	return false;
+      /* If T1 and T2 don't represent the same class template deduction,
+         they aren't equal.  */
+      if (CLASS_PLACEHOLDER_TEMPLATE (t1)
+	  != CLASS_PLACEHOLDER_TEMPLATE (t2))
+	return false;
       /* Constrained 'auto's are distinct from parms that don't have the same
 	 constraints.  */
       if (!equivalent_placeholder_constraints (t1, t2))
