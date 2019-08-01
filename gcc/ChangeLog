@@ -1,3 +1,8 @@
+2019-08-01  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/predicates.md (pcrel_external_address): Update
+	comment.
+
 2019-08-01  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/85693

@@ -1656,7 +1656,7 @@
 
 ;; Return true if the operand is an external symbol whose address can be loaded
 ;; into a register using:
-;;	PLA reg,label@pcrel@got
+;;	PLD reg,label@pcrel@got
 ;;
 ;; The linker will either optimize this to either a PADDI if the label is
 ;; defined locally in another module or a PLD of the address if the label is
