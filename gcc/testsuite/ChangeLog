@@ -1,3 +1,7 @@
+2019-08-01  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/attribute-10.c: Fix testcase on rv64.
+
 2019-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/diagnostic/delete1.C: New.
