@@ -7471,8 +7471,9 @@ c_parser_sizeof_expression (c_parser *parser)
 	error_at (expr_loc, "%<sizeof%> applied to a bit-field");
       result = c_expr_sizeof_expr (expr_loc, expr);
     }
-  if (finish != UNKNOWN_LOCATION)
-    set_c_expr_source_range (&result, start, finish);
+  if (finish == UNKNOWN_LOCATION)
+    finish = start;
+  set_c_expr_source_range (&result, start, finish);
   return result;
 }
 
