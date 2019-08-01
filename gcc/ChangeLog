@@ -1,3 +1,12 @@
+2019-08-01  Alan Modra  <amodra@gmail.com>
+
+	PR target/91135
+	* config/rs6000/linux.h (GNU_USER_TARGET_D_OS_VERSIONS): Don't
+	define.
+	* config/rs6000/linux64.h (TARGET_OS_CPP_BUILTINS): Invoke
+	GNU_USER_TARGET_OS_CPP_BUILTINS for aixdesc abi.
+	(GNU_USER_TARGET_D_OS_VERSIONS): Don't define.
+
 2019-07-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
