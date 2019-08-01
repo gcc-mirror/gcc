@@ -149,7 +149,7 @@ set_hot_bb_threshold (gcov_type min)
   min_count = min;
 }
 
-/* Return TRUE if frequency FREQ is considered to be hot.  */
+/* Return TRUE if COUNT is considered to be hot in function FUN.  */
 
 bool
 maybe_hot_count_p (struct function *fun, profile_count count)
@@ -173,8 +173,6 @@ maybe_hot_count_p (struct function *fun, profile_count count)
       if (node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
 	  && count < (ENTRY_BLOCK_PTR_FOR_FN (fun)->count.apply_scale (2, 3)))
 	return false;
-      if (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION) == 0)
-	return false;
       if (count.apply_scale (PARAM_VALUE (HOT_BB_FREQUENCY_FRACTION), 1)
 	  < ENTRY_BLOCK_PTR_FOR_FN (fun)->count)
 	return false;
@@ -186,8 +184,8 @@ maybe_hot_count_p (struct function *fun, profile_count count)
   return (count.to_gcov_type () >= get_hot_bb_threshold ());
 }
 
-/* Return true in case BB can be CPU intensive and should be optimized
-   for maximal performance.  */
+/* Return true if basic block BB of function FUN can be CPU intensive
+   and should thus be optimized for maximum performance.  */
 
 bool
 maybe_hot_bb_p (struct function *fun, const_basic_block bb)
@@ -196,8 +194,8 @@ maybe_hot_bb_p (struct function *fun, const_basic_block bb)
   return maybe_hot_count_p (fun, bb->count);
 }
 
-/* Return true in case BB can be CPU intensive and should be optimized
-   for maximal performance.  */
+/* Return true if edge E can be CPU intensive and should thus be optimized
+   for maximum performance.  */
 
 bool
 maybe_hot_edge_p (edge e)
@@ -205,12 +203,11 @@ maybe_hot_edge_p (edge e)
   return maybe_hot_count_p (cfun, e->count ());
 }
 
-/* Return true if profile COUNT and FREQUENCY, or function FUN static
-   node frequency reflects never being executed.  */
+/* Return true if COUNT is considered to be never executed in function FUN
+   or if function FUN is considered so in the static profile.  */
    
 static bool
-probably_never_executed (struct function *fun,
-                         profile_count count)
+probably_never_executed (struct function *fun, profile_count count)
 {
   gcc_checking_assert (fun);
   if (count.ipa () == profile_count::zero ())
@@ -222,8 +219,8 @@ probably_never_executed (struct function *fun,
      desirable.  */
   if (count.precise_p () && profile_status_for_fn (fun) == PROFILE_READ)
     {
-      int unlikely_count_fraction = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
-      if (count.apply_scale (unlikely_count_fraction, 1) >= profile_info->runs)
+      const int unlikely_frac = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
+      if (count.apply_scale (unlikely_frac, 1) >= profile_info->runs)
 	return false;
       return true;
     }
@@ -234,8 +231,7 @@ probably_never_executed (struct function *fun,
   return false;
 }
 
-
-/* Return true in case BB is probably never executed.  */
+/* Return true if basic block BB of function FUN is probably never executed.  */
 
 bool
 probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
@@ -243,8 +239,7 @@ probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
   return probably_never_executed (fun, bb->count);
 }
 
-
-/* Return true if E is unlikely executed for obvious reasons.  */
+/* Return true if edge E is unlikely executed for obvious reasons.  */
 
 static bool
 unlikely_executed_edge_p (edge e)
@@ -254,7 +249,7 @@ unlikely_executed_edge_p (edge e)
 	 || (e->flags & (EDGE_EH | EDGE_FAKE));
 }
 
-/* Return true in case edge E is probably never executed.  */
+/* Return true if edge E of function FUN is probably never executed.  */
 
 bool
 probably_never_executed_edge_p (struct function *fun, edge e)
@@ -264,7 +259,7 @@ probably_never_executed_edge_p (struct function *fun, edge e)
   return probably_never_executed (fun, e->count ());
 }
 
-/* Return true when current function should always be optimized for size.  */
+/* Return true if function FUN should always be optimized for size.  */
 
 bool
 optimize_function_for_size_p (struct function *fun)
@@ -275,7 +270,7 @@ optimize_function_for_size_p (struct function *fun)
   return n && n->optimize_for_size_p ();
 }
 
-/* Return true when current function should always be optimized for speed.  */
+/* Return true if function FUN should always be optimized for speed.  */
 
 bool
 optimize_function_for_speed_p (struct function *fun)
@@ -283,7 +278,7 @@ optimize_function_for_speed_p (struct function *fun)
   return !optimize_function_for_size_p (fun);
 }
 
-/* Return the optimization type that should be used for the function FUN.  */
+/* Return the optimization type that should be used for function FUN.  */
 
 optimization_type
 function_optimization_type (struct function *fun)
@@ -293,7 +288,7 @@ function_optimization_type (struct function *fun)
 	  : OPTIMIZE_FOR_SIZE);
 }
 
-/* Return TRUE when BB should be optimized for size.  */
+/* Return TRUE if basic block BB should be optimized for size.  */
 
 bool
 optimize_bb_for_size_p (const_basic_block bb)
@@ -302,7 +297,7 @@ optimize_bb_for_size_p (const_basic_block bb)
 	  || (bb && !maybe_hot_bb_p (cfun, bb)));
 }
 
-/* Return TRUE when BB should be optimized for speed.  */
+/* Return TRUE if basic block BB should be optimized for speed.  */
 
 bool
 optimize_bb_for_speed_p (const_basic_block bb)
@@ -310,7 +305,7 @@ optimize_bb_for_speed_p (const_basic_block bb)
   return !optimize_bb_for_size_p (bb);
 }
 
-/* Return the optimization type that should be used for block BB.  */
+/* Return the optimization type that should be used for basic block BB.  */
 
 optimization_type
 bb_optimization_type (const_basic_block bb)
@@ -320,7 +315,7 @@ bb_optimization_type (const_basic_block bb)
 	  : OPTIMIZE_FOR_SIZE);
 }
 
-/* Return TRUE when BB should be optimized for size.  */
+/* Return TRUE if edge E should be optimized for size.  */
 
 bool
 optimize_edge_for_size_p (edge e)
@@ -328,7 +323,7 @@ optimize_edge_for_size_p (edge e)
   return optimize_function_for_size_p (cfun) || !maybe_hot_edge_p (e);
 }
 
-/* Return TRUE when BB should be optimized for speed.  */
+/* Return TRUE if edge E should be optimized for speed.  */
 
 bool
 optimize_edge_for_speed_p (edge e)
@@ -336,7 +331,7 @@ optimize_edge_for_speed_p (edge e)
   return !optimize_edge_for_size_p (e);
 }
 
-/* Return TRUE when BB should be optimized for size.  */
+/* Return TRUE if the current function is optimized for size.  */
 
 bool
 optimize_insn_for_size_p (void)
@@ -344,7 +339,7 @@ optimize_insn_for_size_p (void)
   return optimize_function_for_size_p (cfun) || !crtl->maybe_hot_insn_p;
 }
 
-/* Return TRUE when BB should be optimized for speed.  */
+/* Return TRUE if the current function is optimized for speed.  */
 
 bool
 optimize_insn_for_speed_p (void)
@@ -352,7 +347,7 @@ optimize_insn_for_speed_p (void)
   return !optimize_insn_for_size_p ();
 }
 
-/* Return TRUE when LOOP should be optimized for size.  */
+/* Return TRUE if LOOP should be optimized for size.  */
 
 bool
 optimize_loop_for_size_p (class loop *loop)
@@ -360,7 +355,7 @@ optimize_loop_for_size_p (class loop *loop)
   return optimize_bb_for_size_p (loop->header);
 }
 
-/* Return TRUE when LOOP should be optimized for speed.  */
+/* Return TRUE if LOOP should be optimized for speed.  */
 
 bool
 optimize_loop_for_speed_p (class loop *loop)
@@ -368,7 +363,7 @@ optimize_loop_for_speed_p (class loop *loop)
   return optimize_bb_for_speed_p (loop->header);
 }
 
-/* Return TRUE when LOOP nest should be optimized for speed.  */
+/* Return TRUE if nest rooted at LOOP should be optimized for speed.  */
 
 bool
 optimize_loop_nest_for_speed_p (class loop *loop)
@@ -396,7 +391,7 @@ optimize_loop_nest_for_speed_p (class loop *loop)
   return false;
 }
 
-/* Return TRUE when LOOP nest should be optimized for size.  */
+/* Return TRUE if nest rooted at LOOP should be optimized for size.  */
 
 bool
 optimize_loop_nest_for_size_p (class loop *loop)
@@ -404,7 +399,7 @@ optimize_loop_nest_for_size_p (class loop *loop)
   return !optimize_loop_nest_for_speed_p (loop);
 }
 
-/* Return true when edge E is likely to be well predictable by branch
+/* Return true if edge E is likely to be well predictable by branch
    predictor.  */
 
 bool
@@ -3532,8 +3527,8 @@ drop_profile (struct cgraph_node *node, profile_count call_count)
 void
 handle_missing_profiles (void)
 {
+  const int unlikely_frac = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
   struct cgraph_node *node;
-  int unlikely_count_fraction = PARAM_VALUE (UNLIKELY_BB_COUNT_FRACTION);
   auto_vec<struct cgraph_node *, 64> worklist;
 
   /* See if 0 count function has non-0 count callers.  In this case we
@@ -3563,8 +3558,7 @@ handle_missing_profiles (void)
 
       if (call_count > 0
           && fn && fn->cfg
-          && (call_count.apply_scale (unlikely_count_fraction, 1)
-	      >= profile_info->runs))
+          && call_count.apply_scale (unlikely_frac, 1) >= profile_info->runs)
         {
           drop_profile (node, call_count);
           worklist.safe_push (node);
