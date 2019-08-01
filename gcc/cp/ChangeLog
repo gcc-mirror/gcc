@@ -1,3 +1,9 @@
+2019-08-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/90947
+	* decl.c (reshape_init_array_1): Avoid truncating initializer
+	lists containing string literals.
+
 2019-08-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/90805 - detect narrowing in case values.
