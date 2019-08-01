@@ -1,3 +1,31 @@
+2019-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cgraph.h (cgraph_edge::maybe_hot_p): Tweak comment.
+	* cgraph.c (cgraph_edge::maybe_hot_p): Likewise.  Remove useless test.
+	* predict.c (maybe_hot_count_p): Likewise.
+	(maybe_hot_bb_p): Tweak comment.
+	(maybe_hot_edge_p): Likewise.
+	(probably_never_executed): Likewise.  Minor tweak.
+	(probably_never_executed_bb_p): Likewise.
+	(unlikely_executed_edge_p): Likewise.
+	(probably_never_executed_edge_p): Likewise.
+	(optimize_function_for_size_p): Likewise.
+	(optimize_function_for_speed_p): Likewise.
+	(function_optimization_type): Likewise.
+	(optimize_bb_for_size_p): Likewise.
+	(optimize_bb_for_speed_p): Likewise.
+	(bb_optimization_type): Likewise.
+	(optimize_edge_for_size_p): Likewise.
+	(optimize_edge_for_speed_p): Likewise.
+	(optimize_insn_for_size_p): Likewise.
+	(optimize_insn_for_speed_p): Likewise.
+	(optimize_loop_for_size_p): Likewise.
+	(optimize_loop_for_speed_p): Likewise.
+	(optimize_loop_nest_for_speed_p): Likewise.
+	(optimize_loop_nest_for_size_p): Likewise.
+	(predictable_edge_p): Likewise.
+	(handle_missing_profiles): Minor tweak.
+
 2019-08-01  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/predicates.md (pcrel_external_address): Update
