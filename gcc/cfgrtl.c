@@ -3703,13 +3703,13 @@ relink_block_chain (bool stay_in_cfglayout_mode)
 	{
 	  fprintf (dump_file, " %i ", index);
 	  if (get_bb_original (bb))
-	    fprintf (dump_file, "duplicate of %i ",
+	    fprintf (dump_file, "duplicate of %i\n",
 		     get_bb_original (bb)->index);
 	  else if (forwarder_block_p (bb)
 		   && !LABEL_P (BB_HEAD (bb)))
-	    fprintf (dump_file, "compensation ");
+	    fprintf (dump_file, "compensation\n");
 	  else
-	    fprintf (dump_file, "bb %i ", bb->index);
+	    fprintf (dump_file, "bb %i\n", bb->index);
 	}
     }
 
