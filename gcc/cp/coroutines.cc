@@ -1209,16 +1209,15 @@ transform_await_expr (tree await_expr, struct __await_xform_data *xform)
       error_at (loc, "no suspend point info for %qD", await_expr);
       return error_mark_node;
     }
-  
-  /* Get a reference to the initial suspend var in the frame.
-     Synthesize the init expression.  */
+
+  /* So, on entry, we have:
+     in : CO_AWAIT_EXPR (a, e_proxy, o, awr_call_vector, mode)
+          We no longer need a [it had diagnostic value, maybe?]
+          We need to replace the promise proxy in all elements
+          We need to replace the e_proxy in the awr_call.
+  */
+
   tree coro_frame_type = TREE_TYPE (xform->actor_frame);
-  tree as_m = lookup_member (coro_frame_type, si->await_field_id,
-			     /*protect*/1,  /*want_type*/ 0,
-			     tf_warning_or_error);
-  tree as = build_class_member_access_expr (xform->actor_frame, as_m, NULL_TREE,
-					    true, tf_warning_or_error);
- 
   tree ah = NULL_TREE;
   if (si->susp_handle_id)
     {
@@ -1228,23 +1227,30 @@ transform_await_expr (tree await_expr, struct __await_xform_data *xform)
       ah = build_class_member_access_expr (xform->actor_frame, ah_m, NULL_TREE,
 					   true, tf_warning_or_error);
     }
+  else if (TREE_CODE (si->suspend_type) == BOOLEAN_TYPE)
+    ah = boolean_type_node;
 
-  /* So, on entry, we have:
-     in : CO_AWAIT_EXPR (a, e_proxy, o, awr_call_vector, mode)
-          We no longer need a [it had diagnostic value, maybe?]
-          We need to replace the promise proxy in all elements
-          We need to replace the e_proxy in the awr_call.
-  */
-
-  /* Replace Op 0 with the frame slot for the temporary handle, thus discarding
-     'a'.  */
+  /* Replace Op 0 with the frame slot for the temporary handle, if it's needed.
+     If there's no frame type to be stored we flag boolean_type for that case
+     and an empty pointer for void return.  */
   TREE_OPERAND (await_expr, 0) = ah;
 
   /* FIXME: determine if it's better to walk the co_await several times with
      a quick test, or once with a more complex test.  */
 
+  /* Get a reference to the initial suspend var in the frame.  */
+  tree as_m = lookup_member (coro_frame_type, si->await_field_id,
+			     /*protect*/1,  /*want_type*/ 0,
+			     tf_warning_or_error);
+  tree as = build_class_member_access_expr (xform->actor_frame, as_m, NULL_TREE,
+					    true, tf_warning_or_error);
+
+  /* Replace references to the instance proxy with the frame entry now
+     computed.  */
   struct __proxy_replace data = { TREE_OPERAND (await_expr, 1), as};
   cp_walk_tree (&await_expr, replace_proxy, &data, NULL);
+
+  /* .. and replace.  */
   TREE_OPERAND (await_expr, 1) = as;
 
  /* Now do the self_handle.  */
