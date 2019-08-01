@@ -1,3 +1,8 @@
+2019-08-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (has_abnormal_preds): Remove global var.
+	(compute_antic): Localize it here.
+
 2019-07-31  Maxim Blinov  <maxim.blinov@embecosm.com>
 
 	* common/config/riscv/riscv-common.c: Check -march string ends
