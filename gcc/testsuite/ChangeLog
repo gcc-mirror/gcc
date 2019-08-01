@@ -1,6 +1,11 @@
 2019-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2019-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91150
+	* gcc.target/i386/avx512bw-pr91150.c: New test.
+
 	2019-07-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91157
