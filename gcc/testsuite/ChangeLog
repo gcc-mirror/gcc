@@ -1,3 +1,9 @@
+2019-08-02  Steve Ellcey  <sellcey@marvell.com>
+
+	* gcc.target/aarch64/simd_pcs_attribute.c: New test.
+	* gcc.target/aarch64/simd_pcs_attribute-2.c: Ditto.
+	* gcc.target/aarch64/simd_pcs_attribute-3.c: Ditto.
+
 2019-08-02  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/91201
