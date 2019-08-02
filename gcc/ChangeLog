@@ -1,3 +1,9 @@
+2019-08-02  Alexander Monakov  <amonakov@ispras.ru>
+
+	* tree-ssa-loop-im.c (sort_bbs_in_loop_postorder_cmp): Simplify casts
+	from 'const void *'.
+	(sort_locs_in_loop_postorder_cmp): Likewise.
+
 2019-08-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/invoke.texi (hot-bb-count-fraction): Rework description.

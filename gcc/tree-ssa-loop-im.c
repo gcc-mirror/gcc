@@ -1583,8 +1583,8 @@ sort_bbs_in_loop_postorder_cmp (const void *bb1_, const void *bb2_,
 				void *bb_loop_postorder_)
 {
   unsigned *bb_loop_postorder = (unsigned *)bb_loop_postorder_;
-  basic_block bb1 = *(basic_block *)const_cast<void *>(bb1_);
-  basic_block bb2 = *(basic_block *)const_cast<void *>(bb2_);
+  basic_block bb1 = *(const basic_block *)bb1_;
+  basic_block bb2 = *(const basic_block *)bb2_;
   class loop *loop1 = bb1->loop_father;
   class loop *loop2 = bb2->loop_father;
   if (loop1->num == loop2->num)
@@ -1599,8 +1599,8 @@ sort_locs_in_loop_postorder_cmp (const void *loc1_, const void *loc2_,
 				 void *bb_loop_postorder_)
 {
   unsigned *bb_loop_postorder = (unsigned *)bb_loop_postorder_;
-  mem_ref_loc *loc1 = (mem_ref_loc *)const_cast<void *>(loc1_);
-  mem_ref_loc *loc2 = (mem_ref_loc *)const_cast<void *>(loc2_);
+  const mem_ref_loc *loc1 = (const mem_ref_loc *)loc1_;
+  const mem_ref_loc *loc2 = (const mem_ref_loc *)loc2_;
   class loop *loop1 = gimple_bb (loc1->stmt)->loop_father;
   class loop *loop2 = gimple_bb (loc2->stmt)->loop_father;
   if (loop1->num == loop2->num)
