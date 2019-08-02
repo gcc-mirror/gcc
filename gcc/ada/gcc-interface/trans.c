@@ -524,22 +524,27 @@ gigi (Node_Id gnat_root,
        NULL_TREE, is_default, true, true, true, false, false, NULL, Empty);
 
   /* Hooks to call when entering/leaving an exception handler.  */
-  ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
-
+  ftype = build_function_type_list (ptr_type_node,
+				    ptr_type_node, NULL_TREE);
   begin_handler_decl
-    = create_subprog_decl (get_identifier ("__gnat_begin_handler"), NULL_TREE,
-			   ftype, NULL_TREE,
+    = create_subprog_decl (get_identifier ("__gnat_begin_handler_v1"),
+			   NULL_TREE, ftype, NULL_TREE,
 			   is_default, true, true, true, false, false, NULL,
 			   Empty);
-  /* __gnat_begin_handler is a dummy procedure.  */
+  /* __gnat_begin_handler_v1 is not a dummy procedure, but we arrange
+     for it not to throw.  */
   TREE_NOTHROW (begin_handler_decl) = 1;
 
+  ftype = build_function_type_list (ptr_type_node,
+				    ptr_type_node, ptr_type_node,
+				    ptr_type_node, NULL_TREE);
   end_handler_decl
-    = create_subprog_decl (get_identifier ("__gnat_end_handler"), NULL_TREE,
+    = create_subprog_decl (get_identifier ("__gnat_end_handler_v1"), NULL_TREE,
 			   ftype, NULL_TREE,
 			   is_default, true, true, true, false, false, NULL,
 			   Empty);
 
+  ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   unhandled_except_decl
     = create_subprog_decl (get_identifier ("__gnat_unhandled_except_handler"),
 			   NULL_TREE, ftype, NULL_TREE,
@@ -6201,37 +6206,55 @@ Exception_Handler_to_gnu_gcc (Node_Id gnat_node)
   start_stmt_group ();
   gnat_pushlevel ();
 
-  /* Expand a call to the begin_handler hook at the beginning of the handler,
-     and arrange for a call to the end_handler hook to occur on every possible
-     exit path.
+  /* Expand a call to the begin_handler hook at the beginning of the
+     handler, and arrange for a call to the end_handler hook to occur
+     on every possible exit path.  GDB sets a breakpoint in the
+     begin_handler for catchpoints.
 
-     The hooks expect a pointer to the low level occurrence. This is required
-     for our stack management scheme because a raise inside the handler pushes
-     a new occurrence on top of the stack, which means that this top does not
-     necessarily match the occurrence this handler was dealing with.
+     A v1 begin handler saves the cleanup from the exception object,
+     and marks the exception as in use, so that it will not be
+     released by other handlers.  A v1 end handler restores the
+     cleanup and releases the exception object, unless it is still
+     claimed, or the exception is being propagated (reraised).
 
      __builtin_eh_pointer references the exception occurrence being
-     propagated. Upon handler entry, this is the exception for which the
-     handler is triggered. This might not be the case upon handler exit,
-     however, as we might have a new occurrence propagated by the handler's
-     body, and the end_handler hook called as a cleanup in this context.
+     handled or propagated.  Within the handler region, it is the
+     former, but within the else branch of the EH_ELSE_EXPR, i.e. the
+     exceptional cleanup path, it is the latter, so we must save the
+     occurrence being handled early on, so that, should an exception
+     be (re)raised, we can release the current exception, or figure
+     out we're not to release it because we're propagating a reraise
+     thereof.
 
-     We use a local variable to retrieve the incoming value at handler entry
-     time, and reuse it to feed the end_handler hook's argument at exit.  */
+     We use local variables to retrieve the incoming value at handler
+     entry time (EXPTR), the saved cleanup (EXCLN) and the token
+     (EXVTK), and reuse them to feed the end_handler hook's argument
+     at exit.  */
 
+  /* CODE: void *EXPTR = __builtin_eh_pointer (0); */
   tree gnu_current_exc_ptr
     = build_call_expr (builtin_decl_explicit (BUILT_IN_EH_POINTER),
 		       1, integer_zero_node);
-  tree prev_gnu_incoming_exc_ptr = gnu_incoming_exc_ptr;
-  gnu_incoming_exc_ptr
+  tree exc_ptr
     = create_var_decl (get_identifier ("EXPTR"), NULL_TREE,
 		       ptr_type_node, gnu_current_exc_ptr,
-		       false, false, false, false, false, true, true,
+		       true, false, false, false, false, true, true,
 		       NULL, gnat_node);
 
-  add_stmt_with_node (build_call_n_expr (begin_handler_decl, 1,
-					 gnu_incoming_exc_ptr),
-		      gnat_node);
+  tree prev_gnu_incoming_exc_ptr = gnu_incoming_exc_ptr;
+  gnu_incoming_exc_ptr = exc_ptr;
+
+  /* begin_handler_decl must not throw, so we can use it as an
+     initializer for a variable used in cleanups.
+
+     CODE: void *EXCLN = __gnat_begin_handler_v1 (EXPTR); */
+  tree exc_cleanup
+    = create_var_decl (get_identifier ("EXCLN"), NULL_TREE,
+		       ptr_type_node,
+		       build_call_n_expr (begin_handler_decl, 1,
+					  exc_ptr),
+		       true, false, false, false, false,
+		       true, true, NULL, gnat_node);
 
   /* Declare and initialize the choice parameter, if present.  */
   if (Present (Choice_Parameter (gnat_node)))
@@ -6239,21 +6262,64 @@ Exception_Handler_to_gnu_gcc (Node_Id gnat_node)
       tree gnu_param
 	= gnat_to_gnu_entity (Choice_Parameter (gnat_node), NULL_TREE, true);
 
+      /* CODE: __gnat_set_exception_parameter (&choice_param, EXPTR); */
       add_stmt (build_call_n_expr
 		(set_exception_parameter_decl, 2,
 		 build_unary_op (ADDR_EXPR, NULL_TREE, gnu_param),
 		 gnu_incoming_exc_ptr));
     }
 
+  /* CODE: <handler proper> */
   add_stmt_list (Statements (gnat_node));
 
-  /* We don't have an End_Label at hand to set the location of the cleanup
-     actions, so we use that of the exception handler itself instead.  */
-  tree stmt = build_call_n_expr (end_handler_decl, 1, gnu_incoming_exc_ptr);
+  tree call = build_call_n_expr (end_handler_decl, 3,
+				 exc_ptr,
+				 exc_cleanup,
+				 null_pointer_node);
+  /* If the handler can only end by falling off the end, don't bother
+     with cleanups.  */
   if (stmt_list_cannot_alter_control_flow_p (Statements (gnat_node)))
-    add_stmt_with_node (stmt, gnat_node);
+    /* CODE: __gnat_end_handler_v1 (EXPTR, EXCLN, NULL);  */
+    add_stmt_with_node (call, gnat_node);
+  /* Otherwise, all of the above is after
+     CODE: try {
+
+     The call above will appear after
+     CODE: } finally {
+
+     And the code below will appear after
+     CODE: } else {
+
+     The else block to a finally block is taken instead of the finally
+     block when an exception propagates out of the try block.  */
   else
-    add_cleanup (stmt, gnat_node);
+    {
+      start_stmt_group ();
+      gnat_pushlevel ();
+      /* CODE: void *EXPRP = __builtin_eh_handler (0); */
+      tree prop_ptr
+	= create_var_decl (get_identifier ("EXPRP"), NULL_TREE,
+			   ptr_type_node,
+			   build_call_expr (builtin_decl_explicit
+					    (BUILT_IN_EH_POINTER),
+					    1, integer_zero_node),
+			   true, false, false, false, false,
+			   true, true, NULL, gnat_node);
+
+      /* CODE: __gnat_end_handler_v1 (EXPTR, EXCLN, EXPRP);  */
+      tree ecall = build_call_n_expr (end_handler_decl, 3,
+				      exc_ptr,
+				      exc_cleanup,
+				      prop_ptr);
+
+      add_stmt_with_node (ecall, gnat_node);
+
+      /* CODE: } */
+      gnat_poplevel ();
+      tree eblk = end_stmt_group ();
+      tree ehls = build2 (EH_ELSE_EXPR, void_type_node, call, eblk);
+      add_cleanup (ehls, gnat_node);
+    }
 
   gnat_poplevel ();
 
@@ -8270,19 +8336,11 @@ gnat_to_gnu (Node_Id gnat_node)
       gcc_assert (No (Name (gnat_node)) && Back_End_Exceptions ());
 
       start_stmt_group ();
-      gnat_pushlevel ();
 
-      /* Clear the current exception pointer so that the occurrence won't be
-	 deallocated.  */
-      gnu_expr = create_var_decl (get_identifier ("SAVED_EXPTR"), NULL_TREE,
-				  ptr_type_node, gnu_incoming_exc_ptr,
-				  false, false, false, false, false,
-				  true, true, NULL, gnat_node);
+      add_stmt_with_node (build_call_n_expr (reraise_zcx_decl, 1,
+					     gnu_incoming_exc_ptr),
+			  gnat_node);
 
-      add_stmt (build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_incoming_exc_ptr,
-				 build_int_cst (ptr_type_node, 0)));
-      add_stmt (build_call_n_expr (reraise_zcx_decl, 1, gnu_expr));
-      gnat_poplevel ();
       gnu_result = end_stmt_group ();
       break;
 
@@ -9073,7 +9131,23 @@ add_cleanup (tree gnu_cleanup, Node_Id gnat_node)
 {
   if (Present (gnat_node))
     set_expr_location_from_node (gnu_cleanup, gnat_node, true);
-  append_to_statement_list (gnu_cleanup, &current_stmt_group->cleanups);
+  /* An EH_ELSE_EXPR must be by itself, and that's all we need when we
+     use it.  The assert below makes sure that is so.  Should we ever
+     need more than that, we could combine EH_ELSE_EXPRs, and copy
+     non-EH_ELSE_EXPR stmts into both cleanup paths of an
+     EH_ELSE_EXPR.  */
+  if (TREE_CODE (gnu_cleanup) == EH_ELSE_EXPR)
+    {
+      gcc_assert (!current_stmt_group->cleanups);
+      current_stmt_group->cleanups = gnu_cleanup;
+    }
+  else
+    {
+      gcc_assert (!current_stmt_group->cleanups
+		  || (TREE_CODE (current_stmt_group->cleanups)
+		      != EH_ELSE_EXPR));
+      append_to_statement_list (gnu_cleanup, &current_stmt_group->cleanups);
+    }
 }
 
 /* Set the BLOCK node corresponding to the current code group to GNU_BLOCK.  */
