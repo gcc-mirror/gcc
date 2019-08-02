@@ -5552,6 +5552,15 @@ gfc_match_equivalence (void)
   gfc_common_head *common_head = NULL;
   bool common_flag;
   int cnt;
+  char c;
+
+  /* EQUIVALENCE has been matched.  After gobbling any possible whitespace,
+     the next character needs to be '('.  Check that here, and return
+     MATCH_NO for a variable of the form equivalencej.  */
+  gfc_gobble_whitespace ();
+  c = gfc_peek_ascii_char ();
+  if (c != '(')
+    return MATCH_NO;
 
   tail = NULL;
 
