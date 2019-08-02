@@ -1,5 +1,8 @@
 2019-08-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	* function.c (assign_parm_adjust_stack_rtl): Revise STRICT_ALIGNMENT
+	check to use targetm.slow_unaligned_access instead.
+
 	* function.c (assign_param_data_one): Remove unused data members.
 
 2019-08-02  Steve Ellcey  <sellcey@marvell.com>
