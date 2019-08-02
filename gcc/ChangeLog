@@ -1,3 +1,17 @@
+2019-08-02  Martin Liska  <mliska@suse.cz>
+
+	PR lto/91313
+	* gcc.c (driver::maybe_run_linker): Call detect_jobserver
+	to detect working job server.
+	(driver::detect_jobserver): Test whether jobserver
+	is active from GCC driver. That will prevent situation where
+	GCC is invoked from a LD plugin and the linker already uses
+	file descriptors suggested by make.  That leads to a wrong
+	detection.
+	* gcc.h (driver): Add detect_jobserver.
+	* lto-wrapper.c (jobserver_active_p): Simplify sscanf by
+	not scanning for --jobserver-auth prefix.
+
 2019-08-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91201
