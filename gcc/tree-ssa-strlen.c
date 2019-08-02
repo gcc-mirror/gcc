@@ -3351,32 +3351,37 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	      return false;
 	    }
 	}
-      /* If si->nonzero_chars > OFFSET, we aren't overwriting '\0',
-	 and if we aren't storing '\0', we know that the length of the
-	 string and any other zero terminated string in memory remains
-	 the same.  In that case we move to the next gimple statement and
-	 return to signal the caller that it shouldn't invalidate anything.  
-
-	 This is benefical for cases like:
-
-	 char p[20];
-	 void foo (char *q)
-	 {
-	   strcpy (p, "foobar");
-	   size_t len = strlen (p);        // This can be optimized into 6
-	   size_t len2 = strlen (q);        // This has to be computed
-	   p[0] = 'X';
-	   size_t len3 = strlen (p);        // This can be optimized into 6
-	   size_t len4 = strlen (q);        // This can be optimized into len2
-	   bar (len, len2, len3, len4);
-        }
-	*/ 
-      else if (storing_nonzero_p && cmp > 0)
+      if (cmp > 0
+	  && storing_nonzero_p
+	  && TREE_CODE (TREE_TYPE (rhs)) == INTEGER_TYPE)
 	{
+	  /* Handle a single non-nul character store.
+	     If si->nonzero_chars > OFFSET, we aren't overwriting '\0',
+	     and if we aren't storing '\0', we know that the length of the
+	     string and any other zero terminated string in memory remains
+	     the same.  In that case we move to the next gimple statement and
+	     return to signal the caller that it shouldn't invalidate anything.
+	     This is benefical for cases like:
+
+	     char p[20];
+	     void foo (char *q)
+	     {
+	       strcpy (p, "foobar");
+	       size_t len = strlen (p);     // can be folded to 6
+	       size_t len2 = strlen (q);    // has to be computed
+	       p[0] = 'X';
+	       size_t len3 = strlen (p);    // can be folded to 6
+	       size_t len4 = strlen (q);    // can be folded to len2
+	       bar (len, len2, len3, len4);
+	     } */
 	  gsi_next (gsi);
 	  return false;
 	}
-      else if (storing_all_zeros_p || storing_nonzero_p || (offset != 0 && cmp > 0))
+
+      if (storing_all_zeros_p
+	  || storing_nonzero_p
+	  || (offset != 0 && cmp > 0))
+
 	{
 	  /* When STORING_NONZERO_P, we know that the string will start
 	     with at least OFFSET + 1 nonzero characters.  If storing
