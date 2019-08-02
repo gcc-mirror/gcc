@@ -14970,6 +14970,25 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")])
 
+(define_insn "*vec_extractv16qi_zext"
+  [(set (match_operand:HI 0 "register_operand" "=r,r")
+	(zero_extend:HI
+	  (vec_select:QI
+	    (match_operand:V16QI 1 "register_operand" "x,v")
+	    (parallel
+	      [(match_operand:SI 2 "const_0_to_15_operand")]))))]
+  "TARGET_SSE4_1"
+  "@
+   %vpextrb\t{%2, %1, %k0|%k0, %1, %2}
+   vpextrb\t{%2, %1, %k0|%k0, %1, %2}"
+  [(set_attr "isa" "*,avx512bw")
+   (set_attr "type" "sselog1")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "TI")])
+
 (define_insn "*vec_extract<mode>_mem"
   [(set (match_operand:<ssescalarmode> 0 "register_operand" "=r")
 	(vec_select:<ssescalarmode>

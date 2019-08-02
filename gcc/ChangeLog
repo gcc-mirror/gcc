@@ -1,3 +1,8 @@
+2019-08-02  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91201
+	* config/i386/sse.md (*vec_extractv16qi_zext): New insn pattern.
+
 2019-08-02  Alexander Monakov  <amonakov@ispras.ru>
 
 	* tree-ssa-loop-im.c (sort_bbs_in_loop_postorder_cmp): Simplify casts
