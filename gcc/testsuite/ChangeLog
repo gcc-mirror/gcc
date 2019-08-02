@@ -1,3 +1,7 @@
+2019-08-02  Senthil Kumar Selvaraj  <senthilkumar.selvaraj@microchip.com>
+
+	* gcc.dg/torture/ssa-fre-6.c: Add dg-require-effective-target int32.
+
 2019-08-02  Kito Cheng  <kito.cheng@sifive.com>
 
 	* g++.dg/lto/pr87906_0.C: Add dg-require-effective-target shared check.
