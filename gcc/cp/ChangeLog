@@ -1,3 +1,8 @@
+2019-08-02  Martin Liska  <mliska@suse.cz>
+
+	* decl.c (grok_op_properties):
+	Mark DECL_SET_IS_OPERATOR_DELETE for user-provided delete operators.
+
 2019-08-01  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/90947
