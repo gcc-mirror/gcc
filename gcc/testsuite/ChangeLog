@@ -1,3 +1,7 @@
+2019-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp1z/nodiscard6.C: New.
+
 2019-08-02  Senthil Kumar Selvaraj  <senthilkumar.selvaraj@microchip.com>
 
 	* gcc.dg/torture/ssa-fre-5.c: Add dg-require-effective-target int32.

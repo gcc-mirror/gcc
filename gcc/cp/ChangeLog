@@ -1,3 +1,8 @@
+2019-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* tree.c (handle_nodiscard_attribute): Do not warn about nodiscard
+	applied to a constructor.
+
 2019-08-02  Martin Liska  <mliska@suse.cz>
 
 	* decl.c (grok_op_properties):
