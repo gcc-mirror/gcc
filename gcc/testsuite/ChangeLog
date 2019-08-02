@@ -1,3 +1,8 @@
+2019-08-02  Senthil Kumar Selvaraj  <senthilkumar.selvaraj@microchip.com>
+
+	* gcc.dg/torture/ssa-fre-5.c: Add dg-require-effective-target int32.
+	* gcc.dg/torture/ssa-fre-7.c: Likewise.
+
 2019-08-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/91201
