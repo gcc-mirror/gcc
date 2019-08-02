@@ -1267,113 +1267,123 @@ static bool
 vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
 				     unsigned int *i_p)
 {
-  unsigned int i = *i_p;
-  vn_reference_op_t op = &(*ops)[i];
-  vn_reference_op_t mem_op = &(*ops)[i - 1];
-  gimple *def_stmt;
-  enum tree_code code;
-  poly_offset_int off;
+  bool changed = false;
+  vn_reference_op_t op;
 
-  def_stmt = SSA_NAME_DEF_STMT (op->op0);
-  if (!is_gimple_assign (def_stmt))
-    return false;
-
-  code = gimple_assign_rhs_code (def_stmt);
-  if (code != ADDR_EXPR
-      && code != POINTER_PLUS_EXPR)
-    return false;
-
-  off = poly_offset_int::from (wi::to_poly_wide (mem_op->op0), SIGNED);
-
-  /* The only thing we have to do is from &OBJ.foo.bar add the offset
-     from .foo.bar to the preceding MEM_REF offset and replace the
-     address with &OBJ.  */
-  if (code == ADDR_EXPR)
+  do
     {
-      tree addr, addr_base;
-      poly_int64 addr_offset;
+      unsigned int i = *i_p;
+      op = &(*ops)[i];
+      vn_reference_op_t mem_op = &(*ops)[i - 1];
+      gimple *def_stmt;
+      enum tree_code code;
+      poly_offset_int off;
 
-      addr = gimple_assign_rhs1 (def_stmt);
-      addr_base = get_addr_base_and_unit_offset (TREE_OPERAND (addr, 0),
-						 &addr_offset);
-      /* If that didn't work because the address isn't invariant propagate
-         the reference tree from the address operation in case the current
-	 dereference isn't offsetted.  */
-      if (!addr_base
-	  && *i_p == ops->length () - 1
-	  && known_eq (off, 0)
-	  /* This makes us disable this transform for PRE where the
-	     reference ops might be also used for code insertion which
-	     is invalid.  */
-	  && default_vn_walk_kind == VN_WALKREWRITE)
+      def_stmt = SSA_NAME_DEF_STMT (op->op0);
+      if (!is_gimple_assign (def_stmt))
+	return changed;
+
+      code = gimple_assign_rhs_code (def_stmt);
+      if (code != ADDR_EXPR
+	  && code != POINTER_PLUS_EXPR)
+	return changed;
+
+      off = poly_offset_int::from (wi::to_poly_wide (mem_op->op0), SIGNED);
+
+      /* The only thing we have to do is from &OBJ.foo.bar add the offset
+	 from .foo.bar to the preceding MEM_REF offset and replace the
+	 address with &OBJ.  */
+      if (code == ADDR_EXPR)
 	{
-	  auto_vec<vn_reference_op_s, 32> tem;
-	  copy_reference_ops_from_ref (TREE_OPERAND (addr, 0), &tem);
-	  /* Make sure to preserve TBAA info.  The only objects not
-	     wrapped in MEM_REFs that can have their address taken are
-	     STRING_CSTs.  */
-	  if (tem.length () >= 2
-	      && tem[tem.length () - 2].opcode == MEM_REF)
+	  tree addr, addr_base;
+	  poly_int64 addr_offset;
+
+	  addr = gimple_assign_rhs1 (def_stmt);
+	  addr_base = get_addr_base_and_unit_offset (TREE_OPERAND (addr, 0),
+						     &addr_offset);
+	  /* If that didn't work because the address isn't invariant propagate
+	     the reference tree from the address operation in case the current
+	     dereference isn't offsetted.  */
+	  if (!addr_base
+	      && *i_p == ops->length () - 1
+	      && known_eq (off, 0)
+	      /* This makes us disable this transform for PRE where the
+		 reference ops might be also used for code insertion which
+		 is invalid.  */
+	      && default_vn_walk_kind == VN_WALKREWRITE)
 	    {
-	      vn_reference_op_t new_mem_op = &tem[tem.length () - 2];
-	      new_mem_op->op0
-		= wide_int_to_tree (TREE_TYPE (mem_op->op0),
-				    wi::to_poly_wide (new_mem_op->op0));
+	      auto_vec<vn_reference_op_s, 32> tem;
+	      copy_reference_ops_from_ref (TREE_OPERAND (addr, 0), &tem);
+	      /* Make sure to preserve TBAA info.  The only objects not
+		 wrapped in MEM_REFs that can have their address taken are
+		 STRING_CSTs.  */
+	      if (tem.length () >= 2
+		  && tem[tem.length () - 2].opcode == MEM_REF)
+		{
+		  vn_reference_op_t new_mem_op = &tem[tem.length () - 2];
+		  new_mem_op->op0
+		      = wide_int_to_tree (TREE_TYPE (mem_op->op0),
+					  wi::to_poly_wide (new_mem_op->op0));
+		}
+	      else
+		gcc_assert (tem.last ().opcode == STRING_CST);
+	      ops->pop ();
+	      ops->pop ();
+	      ops->safe_splice (tem);
+	      --*i_p;
+	      return true;
 	    }
-	  else
-	    gcc_assert (tem.last ().opcode == STRING_CST);
-	  ops->pop ();
-	  ops->pop ();
-	  ops->safe_splice (tem);
-	  --*i_p;
-	  return true;
+	  if (!addr_base
+	      || TREE_CODE (addr_base) != MEM_REF
+	      || (TREE_CODE (TREE_OPERAND (addr_base, 0)) == SSA_NAME
+		  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (TREE_OPERAND (addr_base,
+								    0))))
+	    return changed;
+
+	  off += addr_offset;
+	  off += mem_ref_offset (addr_base);
+	  op->op0 = TREE_OPERAND (addr_base, 0);
 	}
-      if (!addr_base
-	  || TREE_CODE (addr_base) != MEM_REF
-	  || (TREE_CODE (TREE_OPERAND (addr_base, 0)) == SSA_NAME
-	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (TREE_OPERAND (addr_base, 0))))
-	return false;
+      else
+	{
+	  tree ptr, ptroff;
+	  ptr = gimple_assign_rhs1 (def_stmt);
+	  ptroff = gimple_assign_rhs2 (def_stmt);
+	  if (TREE_CODE (ptr) != SSA_NAME
+	      || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ptr)
+	      /* Make sure to not endlessly recurse.
+		 See gcc.dg/tree-ssa/20040408-1.c for an example.  Can easily
+		 happen when we value-number a PHI to its backedge value.  */
+	      || SSA_VAL (ptr) == op->op0
+	      || !poly_int_tree_p (ptroff))
+	    return changed;
 
-      off += addr_offset;
-      off += mem_ref_offset (addr_base);
-      op->op0 = TREE_OPERAND (addr_base, 0);
+	  off += wi::to_poly_offset (ptroff);
+	  op->op0 = ptr;
+	}
+
+      mem_op->op0 = wide_int_to_tree (TREE_TYPE (mem_op->op0), off);
+      if (tree_fits_shwi_p (mem_op->op0))
+	mem_op->off = tree_to_shwi (mem_op->op0);
+      else
+	mem_op->off = -1;
+      /* ???  Can end up with endless recursion here!?
+	 gcc.c-torture/execute/strcmp-1.c  */
+      if (TREE_CODE (op->op0) == SSA_NAME)
+	op->op0 = SSA_VAL (op->op0);
+      if (TREE_CODE (op->op0) != SSA_NAME)
+	op->opcode = TREE_CODE (op->op0);
+
+      changed = true;
     }
-  else
-    {
-      tree ptr, ptroff;
-      ptr = gimple_assign_rhs1 (def_stmt);
-      ptroff = gimple_assign_rhs2 (def_stmt);
-      if (TREE_CODE (ptr) != SSA_NAME
-	  || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ptr)
-	  /* Make sure to not endlessly recurse.
-	     See gcc.dg/tree-ssa/20040408-1.c for an example.  Can easily
-	     happen when we value-number a PHI to its backedge value.  */
-	  || SSA_VAL (ptr) == op->op0
-	  || !poly_int_tree_p (ptroff))
-	return false;
+  /* Tail-recurse.  */
+  while (TREE_CODE (op->op0) == SSA_NAME);
 
-      off += wi::to_poly_offset (ptroff);
-      op->op0 = ptr;
-    }
-
-  mem_op->op0 = wide_int_to_tree (TREE_TYPE (mem_op->op0), off);
-  if (tree_fits_shwi_p (mem_op->op0))
-    mem_op->off = tree_to_shwi (mem_op->op0);
-  else
-    mem_op->off = -1;
-  /* ???  Can end up with endless recursion here!?
-     gcc.c-torture/execute/strcmp-1.c  */
-  if (TREE_CODE (op->op0) == SSA_NAME)
-    op->op0 = SSA_VAL (op->op0);
-  if (TREE_CODE (op->op0) != SSA_NAME)
-    op->opcode = TREE_CODE (op->op0);
-
-  /* And recurse.  */
-  if (TREE_CODE (op->op0) == SSA_NAME)
-    vn_reference_maybe_forwprop_address (ops, i_p);
-  else if (TREE_CODE (op->op0) == ADDR_EXPR)
+  /* Fold a remaining *&.  */
+  if (TREE_CODE (op->op0) == ADDR_EXPR)
     vn_reference_fold_indirect (ops, i_p);
-  return true;
+
+  return changed;
 }
 
 /* Optimize the reference REF to a constant if possible or return
