@@ -1,3 +1,16 @@
+2019-08-02  Alexandre Oliva <oliva@adacore.com>
+
+	* libgnat/a-exexpr.adb (Begin_Handler_v1, End_Handler_v1): New.
+	(Claimed_Cleanup): New.
+	(Begin_Handler, End_Handler): Document.
+	* gcc-interface/trans.c (gigi): Switch to exception handler
+	ABI #1.
+	(Exception_Handler_to_gnu_gcc): Save the original cleanup
+	returned by begin handler, pass it to end handler, and use
+	EH_ELSE_EXPR to pass a propagating exception to end handler.
+	(gnat_to_gnu): Leave the exception pointer alone for reraise.
+	(add_cleanup): Handle EH_ELSE_EXPR, require it by itself.
+
 2019-07-23  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations,
