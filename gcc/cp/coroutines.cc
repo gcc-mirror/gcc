@@ -2644,8 +2644,13 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
 	  if (TYPE_NEEDS_CONSTRUCTING (parm.frame_type))
 	    {
-	      vec<tree, va_gc> *p_in = make_tree_vector_single (arg);
-	      /* Make a placement new.  */
+	      vec<tree, va_gc> *p_in;
+	      if (classtype_has_move_assign_or_move_ctor_p(parm.frame_type,
+		  true /* user-declared */))
+		p_in = make_tree_vector_single (rvalue (arg));
+	      else
+		p_in = make_tree_vector_single (arg);
+	      /* Construct in place or move as relevant.  */
 	      r = build_special_member_call (fld_idx, complete_ctor_identifier,
 					    &p_in, parm.frame_type,
 					    LOOKUP_NORMAL,
