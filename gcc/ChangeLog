@@ -1,3 +1,13 @@
+2019-08-02  Richard Biener  <rguenther@suse.de>
+
+	* vec.h (vec::sort): Add gcc_qsort_r support.
+	(vec::bsearch): Add an overload with gcc_qsort_r style callbacks.
+	* tree-ssa-loop-im.c (sort_bbs_in_loop_postorder_cmp): Adjust
+	to gcc_qsort_r style callback.
+	(sort_locs_in_loop_postorder_cmp): Likewise.
+	(analyze_memory_references): Use gcc_sort_r interfaces.
+	(find_ref_loc_in_loop_cmp): Use new bsearch overload.
+
 2019-08-02  Martin Liska  <mliska@suse.cz>
 
 	PR lto/91313
