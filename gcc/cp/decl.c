@@ -13678,7 +13678,10 @@ grok_op_properties (tree decl, bool complain)
 	}
 
       if (op_flags & OVL_OP_FLAG_DELETE)
-	coerce_delete_type (decl, loc);
+	{
+	  DECL_SET_IS_OPERATOR_DELETE (decl, true);
+	  coerce_delete_type (decl, loc);
+	}
       else
 	{
 	  DECL_SET_IS_OPERATOR_NEW (decl, true);
