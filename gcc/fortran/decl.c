@@ -621,6 +621,13 @@ gfc_match_data (void)
   gfc_expr *e;
   gfc_ref *ref;
   match m;
+  char c;
+
+  /* DATA has been matched.  In free form source code, the next character
+     needs to be whitespace.  Check that here.  */
+  c = gfc_peek_ascii_char ();
+  if (gfc_current_form == FORM_FREE && !gfc_is_whitespace (c))
+    return MATCH_NO;
 
   /* Before parsing the rest of a DATA statement, check F2008:c1206.  */
   if ((gfc_current_state () == COMP_FUNCTION

@@ -1,5 +1,11 @@
 2019-08-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	PR fortran/90985
+	* decl.c (gfc_match_data): In free-form code, DATA be followed by
+	whitespace.
+
+2019-08-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	PR fortran/90986
 	* match.c (gfc_match_equivalence): Check that EQUIVALENCE is followed
 	by '('.
