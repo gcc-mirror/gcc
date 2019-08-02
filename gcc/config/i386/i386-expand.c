@@ -2286,16 +2286,16 @@ ix86_unordered_fp_compare (enum rtx_code code)
 
   switch (code)
     {
-    case GT:
-    case GE:
     case LT:
     case LE:
+    case GT:
+    case GE:
+    case LTGT:
       return false;
 
     case EQ:
     case NE:
 
-    case LTGT:
     case UNORDERED:
     case ORDERED:
     case UNLT:
