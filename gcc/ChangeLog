@@ -1,3 +1,15 @@
+2019-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (hot-bb-count-fraction): Rework description.
+	(hot-bb-count-ws-permille): Likewise.
+	(hot-bb-frequency-fraction): Likewise.
+	(unlikely-bb-count-fraction): Likewise.
+	* params.def (hot-bb-count-fraction): Rework description.
+	(hot-bb-count-ws-permille): Likewise.
+	(hot-bb-frequency-fraction): Likewise.
+	(unlikely-bb-count-fraction): Likewise.  Remove min and max values.
+	* predict.c (get_hot_bb_threshold): Deal with 0 HOT_BB_COUNT_FRACTION.
+
 2019-08-02  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/91323
