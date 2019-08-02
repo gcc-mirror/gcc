@@ -1,6 +1,15 @@
 2019-08-02  Martin Sebor  <msebor@redhat.com>
 
 	Backport from mainline
+	2019-06-05  Martin Sebor  <msebor@redhat.com>
+
+	PR c/90737
+	* c-c++-common/Wreturn-local-addr.c: New test.
+	* g++.dg/warn/Wreturn-local-addr-6.C: New test.
+
+2019-08-02  Martin Sebor  <msebor@redhat.com>
+
+	Backport from mainline
 	2019-07-09  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/90989
