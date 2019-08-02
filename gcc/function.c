@@ -2811,8 +2811,9 @@ assign_parm_adjust_stack_rtl (struct assign_parm_data_one *data)
      ultimate type, don't use that slot after entry.  We'll make another
      stack slot, if we need one.  */
   if (stack_parm
-      && ((STRICT_ALIGNMENT
-	   && GET_MODE_ALIGNMENT (data->nominal_mode) > MEM_ALIGN (stack_parm))
+      && ((GET_MODE_ALIGNMENT (data->nominal_mode) > MEM_ALIGN (stack_parm)
+	   && targetm.slow_unaligned_access (data->nominal_mode,
+					     MEM_ALIGN (stack_parm)))
 	  || (data->nominal_type
 	      && TYPE_ALIGN (data->nominal_type) > MEM_ALIGN (stack_parm)
 	      && MEM_ALIGN (stack_parm) < PREFERRED_STACK_BOUNDARY)))
