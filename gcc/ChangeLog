@@ -1,3 +1,29 @@
+2019-08-02  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91178
+	* tree-ssa-sccvn.c (vn_reference_maybe_forwprop_address):
+	Use tail-recursion.
+
+	2019-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91178
+	* tree-ssa.c (release_defs_bitset): Iterate from higher to
+	lower SSA names to avoid quadratic behavior in the common case.
+	* tree-data-ref.c (split_constant_offset): Add limit argument
+	and pass it down.  Initialize it from PARAM_SSA_NAME_DEF_CHAIN_LIMIT.
+	(split_constant_offset_1): Add limit argument and use it to
+	limit SSA def walking.  Optimize the common plus/minus case.
+
+	2019-07-12  Martin Sebor  <msebor@redhat.com>
+
+	* doc/invoke.texi (ssa-name-def-chain-limit): Document new --param.
+	* params.def (PARAM_SSA_NAME_DEF_CHAIN_LIMIT): Add new --param.
+	* tree-vrp.c (vrp_prop::check_mem_ref): Use
+	PARAM_SSA_NAME_DEF_CHAIN_LIMIT.
+
 2019-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

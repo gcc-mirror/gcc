@@ -1,3 +1,20 @@
+2019-08-02  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91178
+	* gcc.dg/torture/pr91178-2.c: New testcase.
+
+	2019-07-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91178
+	* gcc.dg/torture/pr91178.c: New testcase.
+
+	2019-07-12  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Warray-bounds-43.c: New test.
+
 2019-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
