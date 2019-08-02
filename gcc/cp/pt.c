@@ -25562,7 +25562,14 @@ value_dependent_expression_p (tree expression)
       if (DECL_HAS_VALUE_EXPR_P (expression))
 	{
 	  tree value_expr = DECL_VALUE_EXPR (expression);
-	  if (value_dependent_expression_p (value_expr))
+	  if (value_dependent_expression_p (value_expr)
+	      /* __PRETTY_FUNCTION__ inside a template function is dependent
+		 on the name of the function.  */
+	      || (DECL_PRETTY_FUNCTION_P (expression)
+		  /* It might be used in a template, but not a template
+		     function, in which case its DECL_VALUE_EXPR will be
+		     "top level".  */
+		  && value_expr == error_mark_node))
 	    return true;
 	}
       return false;
