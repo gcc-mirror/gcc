@@ -1,3 +1,11 @@
+2019-08-02  Steve Ellcey  <sellcey@marvell.com>
+
+	* omp-simd-clone.c (simd_clone_adjust_return_type): Remove call to
+	build_distinct_type_copy.
+	(simd_clone_adjust_argument_types): Ditto.
+	(simd_clone_adjust): Call build_distinct_type_copy here.
+	(expand_simd_clones): Ditto.
+
 2019-08-02  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/91201
