@@ -1,3 +1,9 @@
+2019-08-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-minversion-link.c: New test.
+
 2019-08-02  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
