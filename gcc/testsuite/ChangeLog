@@ -1,3 +1,8 @@
+2019-08-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77575
+	* g++.dg/cpp0x/nontype2.C: New test.
+
 2019-08-02  Steve Ellcey  <sellcey@marvell.com>
 
 	* gcc.target/aarch64/simd_pcs_attribute.c: New test.
