@@ -3,6 +3,21 @@
 	Backport from mainline
 	2019-07-31  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/91280
+	* g++.dg/torture/pr91280.C: New testcase.
+
+	2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91293
+	* gcc.dg/vect/pr91293-1.c: New testcase.
+	* gcc.dg/vect/pr91293-2.c: Likewise.
+	* gcc.dg/vect/pr91293-3.c: Likewise.
+
+2019-08-02  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2019-07-31  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/91178
 	* gcc.dg/torture/pr91178-2.c: New testcase.
 
