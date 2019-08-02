@@ -1,5 +1,10 @@
 2019-08-02  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/53009
+	* g++.dg/cpp0x/nontype3.C: New test.
+
+2019-08-02  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/77575
 	* g++.dg/cpp0x/nontype2.C: New test.
 
