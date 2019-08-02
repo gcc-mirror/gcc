@@ -14706,6 +14706,17 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
 
     case E_V16QImode:
       use_vec_extr = TARGET_SSE4_1;
+      if (!use_vec_extr
+	  && TARGET_SSE2
+	  && elt == 0
+	  && (optimize_insn_for_size_p () || TARGET_INTER_UNIT_MOVES_FROM_VEC))
+	{
+	  tmp = gen_reg_rtx (SImode);
+	  ix86_expand_vector_extract (false, tmp, gen_lowpart (V4SImode, vec),
+				      0);
+	  emit_insn (gen_rtx_SET (target, gen_lowpart (QImode, tmp)));
+	  return;
+	}
       break;
 
     case E_V8SFmode:

@@ -1,3 +1,10 @@
+2019-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91201
+	* config/i386/i386-expand.c (ix86_expand_vector_extract): For elt == 0
+	V16QImode extraction without sse4.1 try to use V4SImode lowpart
+	extraction.
+
 2019-08-01  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/90947
