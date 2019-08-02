@@ -1,3 +1,11 @@
+2019-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91201
+	* gcc.target/i386/sse2-pr91201-3.c: New test.
+	* gcc.target/i386/sse2-pr91201-4.c: New test.
+	* gcc.target/i386/sse2-pr91201-5.c: New test.
+	* gcc.target/i386/sse2-pr91201-6.c: New test.
+
 2019-08-02  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/cpp1y/new2.C: New test.
