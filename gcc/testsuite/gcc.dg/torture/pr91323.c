@@ -36,15 +36,15 @@ main (void)
   feclearexcept (FE_INVALID);
 
   r = f1 (nanf, argf);
-  if (fetestexcept (FE_INVALID))
+  if (r != 0 || fetestexcept (FE_INVALID))
     __builtin_abort ();
 
   r = f2 (nanf, argf);
-  if (fetestexcept (FE_INVALID))
+  if (r != 0 || fetestexcept (FE_INVALID))
     __builtin_abort ();
 
   r = f3 (nanf, argf);
-  if (!fetestexcept (FE_INVALID))
+  if (r != 0 || !fetestexcept (FE_INVALID))
     __builtin_abort ();
 
   return 0;
