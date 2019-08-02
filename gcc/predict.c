@@ -132,11 +132,15 @@ get_hot_bb_threshold ()
 {
   if (min_count == -1)
     {
-      gcov_type t = profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION);
-      set_hot_bb_threshold (t);
+      const int hot_frac = PARAM_VALUE (HOT_BB_COUNT_FRACTION);
+      const gcov_type min_hot_count
+	= hot_frac
+	  ? profile_info->sum_max / hot_frac
+	  : (gcov_type)profile_count::max_count;
+      set_hot_bb_threshold (min_hot_count);
       if (dump_file)
 	fprintf (dump_file, "Setting hotness threshold to %" PRId64 ".\n",
-		 min_count);
+		 min_hot_count);
     }
   return min_count;
 }

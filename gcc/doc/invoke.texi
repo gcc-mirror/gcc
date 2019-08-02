@@ -11443,13 +11443,38 @@ for vectorizer. Value -1 means no limit.
 The maximum number of iterations of a loop the brute-force algorithm
 for analysis of the number of iterations of the loop tries to evaluate.
 
+@item hot-bb-count-fraction
+The denominator n of fraction 1/n of the maximal execution count of a
+basic block in the entire program that a basic block needs to at least
+have in order to be considered hot.  The default is 10000, which means
+that a basic block is considered hot if its execution count is greater
+than 1/10000 of the maximal execution count.  0 means that it is never
+considered hot.  Used in non-LTO mode.
+
 @item hot-bb-count-ws-permille
-A basic block profile count is considered hot if it contributes to 
-the given permillage (i.e.@: 0...1000) of the entire profiled execution.
+The number of most executed permilles, ranging from 0 to 1000, of the
+profiled execution of the entire program to which the execution count
+of a basic block must be part of in order to be considered hot.  The
+default is 990, which means that a basic block is considered hot if
+its execution count contributes to the upper 990 permilles, or 99.0%,
+of the profiled execution of the entire program.  0 means that it is
+never considered hot.  Used in LTO mode.
 
 @item hot-bb-frequency-fraction
-Select fraction of the entry block frequency of executions of basic block in
-function given basic block needs to have to be considered hot.
+The denominator n of fraction 1/n of the execution frequency of the
+entry block of a function that a basic block of this function needs
+to at least have in order to be considered hot.  The default is 1000,
+which means that a basic block is considered hot in a function if it
+is executed more frequently than 1/1000 of the frequency of the entry
+block of the function.  0 means that it is never considered hot.
+
+@item unlikely-bb-count-fraction
+The denominator n of fraction 1/n of the number of profiled runs of
+the entire program below which the execution count of a basic block
+must be in order for the basic block to be considered unlikely executed.
+The default is 20, which means that a basic block is considered unlikely
+executed if it is executed in fewer than 1/20, or 5%, of the runs of
+the program.  0 means that it is always considered unlikely executed.
 
 @item max-predicted-iterations
 The maximum number of loop iterations we predict statically.  This is useful
@@ -12130,11 +12155,6 @@ A threshold on the average loop count considered by the swing modulo scheduler.
 The number of cycles the swing modulo scheduler considers when checking
 conflicts using DFA.
 
-@item hot-bb-count-fraction
-Select fraction of the maximal count of repetitions of basic block
-in program given basic block needs
-to have to be considered hot (used in non-LTO mode)
-
 @item max-inline-insns-recursive-auto
 The maximum number of instructions non-inline function
 can grow to via recursive inlining.
@@ -12171,10 +12191,6 @@ Maximum number of arrays per scop.
 
 @item max-vartrack-reverse-op-size
 Max. size of loc list for which reverse ops should be added.
-
-@item unlikely-bb-count-fraction
-The minimum fraction of profile runs a given basic block execution count
-must be not to be considered unlikely.
 
 @item tracer-dynamic-coverage-feedback
 The percentage of function, weighted by execution frequency,
