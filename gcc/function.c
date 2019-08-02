@@ -2274,8 +2274,6 @@ struct assign_parm_data_one
   int partial;
   BOOL_BITFIELD named_arg : 1;
   BOOL_BITFIELD passed_pointer : 1;
-  BOOL_BITFIELD on_stack : 1;
-  BOOL_BITFIELD loaded_in_reg : 1;
 };
 
 /* A subroutine of assign_parms.  Initialize ALL.  */
