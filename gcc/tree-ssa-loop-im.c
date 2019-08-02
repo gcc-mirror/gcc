@@ -1579,8 +1579,10 @@ static unsigned *bb_loop_postorder;
 /* qsort sort function to sort blocks after their loop fathers postorder.  */
 
 static int
-sort_bbs_in_loop_postorder_cmp (const void *bb1_, const void *bb2_)
+sort_bbs_in_loop_postorder_cmp (const void *bb1_, const void *bb2_,
+				void *bb_loop_postorder_)
 {
+  unsigned *bb_loop_postorder = (unsigned *)bb_loop_postorder_;
   basic_block bb1 = *(basic_block *)const_cast<void *>(bb1_);
   basic_block bb2 = *(basic_block *)const_cast<void *>(bb2_);
   class loop *loop1 = bb1->loop_father;
@@ -1593,8 +1595,10 @@ sort_bbs_in_loop_postorder_cmp (const void *bb1_, const void *bb2_)
 /* qsort sort function to sort ref locs after their loop fathers postorder.  */
 
 static int
-sort_locs_in_loop_postorder_cmp (const void *loc1_, const void *loc2_)
+sort_locs_in_loop_postorder_cmp (const void *loc1_, const void *loc2_,
+				 void *bb_loop_postorder_)
 {
+  unsigned *bb_loop_postorder = (unsigned *)bb_loop_postorder_;
   mem_ref_loc *loc1 = (mem_ref_loc *)const_cast<void *>(loc1_);
   mem_ref_loc *loc2 = (mem_ref_loc *)const_cast<void *>(loc2_);
   class loop *loop1 = gimple_bb (loc1->stmt)->loop_father;
@@ -1622,7 +1626,8 @@ analyze_memory_references (void)
     if (bb->loop_father != current_loops->tree_root)
       bbs[i++] = bb;
   n = i;
-  qsort (bbs, n, sizeof (basic_block), sort_bbs_in_loop_postorder_cmp);
+  gcc_sort_r (bbs, n, sizeof (basic_block), sort_bbs_in_loop_postorder_cmp,
+	      bb_loop_postorder);
 
   /* Visit blocks in loop postorder and assign mem-ref IDs in that order.
      That results in better locality for all the bitmaps.  */
@@ -1637,10 +1642,10 @@ analyze_memory_references (void)
      loop postorder number.  */
   im_mem_ref *ref;
   FOR_EACH_VEC_ELT (memory_accesses.refs_list, i, ref)
-    ref->accesses_in_loop.qsort (sort_locs_in_loop_postorder_cmp);
+    ref->accesses_in_loop.sort (sort_locs_in_loop_postorder_cmp,
+				bb_loop_postorder);
 
   free (bbs);
-//  free (bb_loop_postorder);
 
   /* Propagate the information about accessed memory references up
      the loop hierarchy.  */
@@ -1700,8 +1705,10 @@ mem_refs_may_alias_p (im_mem_ref *mem1, im_mem_ref *mem2,
    in a loop.  */
 
 static int
-find_ref_loc_in_loop_cmp (const void *loop_, const void *loc_)
+find_ref_loc_in_loop_cmp (const void *loop_, const void *loc_,
+			  void *bb_loop_postorder_)
 {
+  unsigned *bb_loop_postorder = (unsigned *)bb_loop_postorder_;
   class loop *loop = (class loop *)const_cast<void *>(loop_);
   mem_ref_loc *loc = (mem_ref_loc *)const_cast<void *>(loc_);
   class loop *loc_loop = gimple_bb (loc->stmt)->loop_father;
@@ -1726,7 +1733,8 @@ for_all_locs_in_loop (class loop *loop, im_mem_ref *ref, FN fn)
 
   /* Search for the cluster of locs in the accesses_in_loop vector
      which is sorted after postorder index of the loop father.  */
-  loc = ref->accesses_in_loop.bsearch (loop, find_ref_loc_in_loop_cmp);
+  loc = ref->accesses_in_loop.bsearch (loop, find_ref_loc_in_loop_cmp,
+				       bb_loop_postorder);
   if (!loc)
     return false;
 
