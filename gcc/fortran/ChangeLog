@@ -1,3 +1,9 @@
+2019-08-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90297
+	* match.c (gfc_match_equivalence): Check that EQUIVALENCE is followed
+	by '('.
+
 2019-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91296
