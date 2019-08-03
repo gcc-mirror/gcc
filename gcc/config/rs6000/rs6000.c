@@ -3639,6 +3639,15 @@ darwin_rs6000_override_options (void)
       rs6000_isa_flags |= OPTION_MASK_POWERPC64;
       warning (0, "%qs requires PowerPC64 architecture, enabling", "-m64");
     }
+
+  /* The linkers [ld64] that support 64Bit do not need the JBSR longcall
+     optimisation, and will not work with the most generic case (where the
+     symbol is undefined external, but there is no symbl stub).  */
+  if (TARGET_64BIT)
+    rs6000_default_long_calls = 0;
+
+  /* ld_classic is (so far) still used for kernel (static) code, and supports
+     the JBSR longcall / branch islands.  */
   if (flag_mkernel)
     {
       rs6000_default_long_calls = 1;
