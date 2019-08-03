@@ -1,3 +1,10 @@
+2019-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc.dg/instancetype-0.m: New.
+
 2019-08-02  Martin Sebor  <msebor@redhat.com>
 
 	Backport from mainline
