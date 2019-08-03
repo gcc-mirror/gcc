@@ -3,6 +3,13 @@
 	Backport from mainline
 	2019-07-07  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/darwin.c (darwin_override_options): Make a final check on PIC
+	options.
+
+2019-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-07-07  Iain Sandoe  <iain@sandoe.co.uk>
 	* config/darwin.c (darwin_override_options): Don't jam symbol stubs
 	on for kernel code.
 
