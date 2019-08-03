@@ -334,39 +334,45 @@ gfc_get_label_decl (gfc_st_label * lp)
     }
 }
 
+/* Return the name of an identifier.  */
+
+static const char *
+sym_identifier (gfc_symbol *sym)
+{
+  if (sym->attr.is_main_program && strcmp (sym->name, "main") == 0)
+    return "MAIN__";
+  else
+    return sym->name;
+}
 
 /* Convert a gfc_symbol to an identifier of the same name.  */
 
 static tree
 gfc_sym_identifier (gfc_symbol * sym)
 {
-  if (sym->attr.is_main_program && strcmp (sym->name, "main") == 0)
-    return (get_identifier ("MAIN__"));
-  else
-    return (get_identifier (sym->name));
+  return get_identifier (sym_identifier (sym));
 }
 
+/* Construct mangled name from symbol name.   */
 
-/* Construct mangled name from symbol name.  */
-
-static tree
-gfc_sym_mangled_identifier (gfc_symbol * sym)
+static const char *
+mangled_identifier (gfc_symbol *sym)
 {
-  char name[GFC_MAX_MANGLED_SYMBOL_LEN + 1];
-
+  static char name[GFC_MAX_MANGLED_SYMBOL_LEN + 1];
   /* Prevent the mangling of identifiers that have an assigned
      binding label (mainly those that are bind(c)).  */
+
   if (sym->attr.is_bind_c == 1 && sym->binding_label)
-    return get_identifier (sym->binding_label);
+    return sym->binding_label;
 
   if (!sym->fn_result_spec)
     {
       if (sym->module == NULL)
-	return gfc_sym_identifier (sym);
+	return sym_identifier (sym);
       else
 	{
 	  snprintf (name, sizeof name, "__%s_MOD_%s", sym->module, sym->name);
-	  return get_identifier (name);
+	  return name;
 	}
     }
   else
@@ -381,17 +387,40 @@ gfc_sym_mangled_identifier (gfc_symbol * sym)
 		    sym->ns->proc_name->module,
 		    sym->ns->proc_name->name,
 		    sym->name);
-	  return get_identifier (name);
+	  return name;
 	}
       else
 	{
 	  snprintf (name, sizeof name, "__%s_PROC_%s",
 		    sym->ns->proc_name->name, sym->name);
-	  return get_identifier (name);
+	  return name;
 	}
     }
 }
 
+/* Get mangled identifier, adding the symbol to the global table if
+   it is not yet already there.  */
+
+static tree
+gfc_sym_mangled_identifier (gfc_symbol * sym)
+{
+  tree result;
+  gfc_gsymbol *gsym;
+  const char *name;
+
+  name = mangled_identifier (sym);
+  result = get_identifier (name);
+
+  gsym = gfc_find_gsymbol (gfc_gsym_root, name);
+  if (gsym == NULL)
+    {
+      gsym = gfc_get_gsymbol (name, false);
+      gsym->ns = sym->ns;
+      gsym->sym_name = sym->name;
+    }
+
+  return result;
+}
 
 /* Construct mangled function name from symbol name.  */
 
@@ -1863,6 +1892,22 @@ get_proc_pointer_decl (gfc_symbol *sym)
 {
   tree decl;
   tree attributes;
+
+  if (sym->module || sym->fn_result_spec)
+    {
+      const char *name;
+      gfc_gsymbol *gsym;
+
+      name = mangled_identifier (sym);
+      gsym = gfc_find_gsymbol (gfc_gsym_root, name);
+      if (gsym != NULL)
+	{
+	  gfc_symbol *s;
+	  gfc_find_symbol (sym->name, gsym->ns, 0, &s);
+	  if (s && s->backend_decl)
+	    return s->backend_decl;
+	}
+    }
 
   decl = sym->backend_decl;
   if (decl)
