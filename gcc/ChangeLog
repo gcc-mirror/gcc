@@ -3,6 +3,14 @@
 	Backport from mainline
 	2019-06-27  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* config/rs6000/rs6000.c (darwin_rs6000_override_options): Honour
+	user-specified float mode choice for kernel mode code.
+
+2019-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2019-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* config/rs6000/rs6000.c (darwin_rs6000_override_options): Do not
 	use longcall for 64b code.
 
