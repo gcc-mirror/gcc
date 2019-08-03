@@ -1,6 +1,14 @@
 2019-08-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
+	2019-06-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.gcc (powerpc-*-darwin*, powerpc64-*-darwin*): Remove
+	override on extra_headers.
+
+2019-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
 	2019-06-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/rs6000/rs6000.c (darwin_rs6000_override_options): Honour
