@@ -56,6 +56,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     class optional;
 
+namespace pmr {
+  template<typename _Tp>
+    class __pmroptional;
+}
+
   /// Tag type to disengage optional objects.
   struct nullopt_t
   {
@@ -632,22 +637,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class optional;
 
   template<typename _Tp, typename _Up>
-    using __converts_from_optional =
-      __or_<is_constructible<_Tp, const optional<_Up>&>,
-	    is_constructible<_Tp, optional<_Up>&>,
-	    is_constructible<_Tp, const optional<_Up>&&>,
-	    is_constructible<_Tp, optional<_Up>&&>,
-	    is_convertible<const optional<_Up>&, _Tp>,
-	    is_convertible<optional<_Up>&, _Tp>,
-	    is_convertible<const optional<_Up>&&, _Tp>,
-	    is_convertible<optional<_Up>&&, _Tp>>;
+      using __converts_from_optional =
+        __or_<is_constructible<_Tp, const pmr::__pmroptional<_Up>&>,
+  	    is_constructible<_Tp, pmr::__pmroptional<_Up>&>,
+  	    is_constructible<_Tp, const pmr::__pmroptional<_Up>&&>,
+  	    is_constructible<_Tp, pmr::__pmroptional<_Up>&&>,
+  	    is_convertible<const pmr::__pmroptional<_Up>&, _Tp>,
+  	    is_convertible<pmr::__pmroptional<_Up>&, _Tp>,
+  	    is_convertible<const pmr::__pmroptional<_Up>&&, _Tp>,
+  	    is_convertible<pmr::__pmroptional<_Up>&&, _Tp>,
+  	    is_constructible<_Tp, const std::optional<_Up>&>,
+  	    is_constructible<_Tp, std::optional<_Up>&>,
+  	    is_constructible<_Tp, const std::optional<_Up>&&>,
+  	    is_constructible<_Tp, std::optional<_Up>&&>,
+  	    is_convertible<const std::optional<_Up>&, _Tp>,
+  	    is_convertible<std::optional<_Up>&, _Tp>,
+  	    is_convertible<const std::optional<_Up>&&, _Tp>,
+  	    is_convertible<std::optional<_Up>&&, _Tp>>;
 
-  template<typename _Tp, typename _Up>
-    using __assigns_from_optional =
-      __or_<is_assignable<_Tp&, const optional<_Up>&>,
-	    is_assignable<_Tp&, optional<_Up>&>,
-	    is_assignable<_Tp&, const optional<_Up>&&>,
-	    is_assignable<_Tp&, optional<_Up>&&>>;
+    template<typename _Tp, typename _Up>
+      using __assigns_from_optional =
+        __or_<is_assignable<_Tp&, const pmr::__pmroptional<_Up>&>,
+  	    is_assignable<_Tp&, pmr::__pmroptional<_Up>&>,
+  	    is_assignable<_Tp&, const pmr::__pmroptional<_Up>&&>,
+  	    is_assignable<_Tp&, pmr::__pmroptional<_Up>&&>,
+  	    is_assignable<_Tp&, const std::optional<_Up>&>,
+  	    is_assignable<_Tp&, std::optional<_Up>&>,
+  	    is_assignable<_Tp&, const std::optional<_Up>&&>,
+  	    is_assignable<_Tp&, std::optional<_Up>&&>>;
 
   /**
     * @brief Class template for optional values.
@@ -754,6 +771,57 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    emplace(std::move(*__t));
 	}
 
+
+      template<typename _Up,
+	       _Requires<__not_<is_same<_Tp, _Up>>,
+			 is_constructible<_Tp, const _Up&>,
+			 is_convertible<const _Up&, _Tp>,
+			 __not_<__converts_from_optional<_Tp, _Up>>> = true>
+	constexpr
+	optional(const pmr::__pmroptional<_Up>& __t)
+	{
+	  if (__t)
+	    emplace(*__t);
+	}
+
+      template<typename _Up,
+	       _Requires<__not_<is_same<_Tp, _Up>>,
+			 is_constructible<_Tp, const _Up&>,
+			 __not_<is_convertible<const _Up&, _Tp>>,
+			 __not_<__converts_from_optional<_Tp, _Up>>> = false>
+	explicit constexpr
+	optional(const pmr::__pmroptional<_Up>& __t)
+	{
+	  if (__t)
+	    emplace(*__t);
+	}
+
+      template <typename _Up,
+		_Requires<__not_<is_same<_Tp, _Up>>,
+			  is_constructible<_Tp, _Up&&>,
+			  is_convertible<_Up&&, _Tp>,
+			  __not_<__converts_from_optional<_Tp, _Up>>> = true>
+	constexpr
+	optional(pmr::__pmroptional<_Up>&& __t)
+	{
+	  if (__t)
+	    emplace(std::move(*__t));
+	}
+
+      template <typename _Up,
+		_Requires<__not_<is_same<_Tp, _Up>>,
+			  is_constructible<_Tp, _Up&&>,
+			  __not_<is_convertible<_Up&&, _Tp>>,
+			  __not_<__converts_from_optional<_Tp, _Up>>> = false>
+	explicit constexpr
+	optional(pmr::__pmroptional<_Up>&& __t)
+	{
+	  if (__t)
+	    emplace(std::move(*__t));
+	}
+
+
+
       template<typename... _Args,
 	       _Requires<is_constructible<_Tp, _Args&&...>> = false>
 	explicit constexpr
@@ -824,6 +892,53 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			    __not_<__assigns_from_optional<_Tp, _Up>>>,
 		    optional&>
 	operator=(optional<_Up>&& __u)
+	{
+	  if (__u)
+	    {
+	      if (this->_M_is_engaged())
+		this->_M_get() = std::move(*__u);
+	      else
+		this->_M_construct(std::move(*__u));
+	    }
+	  else
+	    {
+	      this->_M_reset();
+	    }
+
+	  return *this;
+	}
+
+      template<typename _Up>
+	enable_if_t<__and_v<__not_<is_same<_Tp, _Up>>,
+			    is_constructible<_Tp, const _Up&>,
+			    is_assignable<_Tp&, _Up>,
+			    __not_<__converts_from_optional<_Tp, _Up>>,
+			    __not_<__assigns_from_optional<_Tp, _Up>>>,
+		    optional&>
+	operator=(const pmr::__pmroptional<_Up>& __u)
+	{
+	  if (__u)
+	    {
+	      if (this->_M_is_engaged())
+		this->_M_get() = *__u;
+	      else
+		this->_M_construct(*__u);
+	    }
+	  else
+	    {
+	      this->_M_reset();
+	    }
+	  return *this;
+	}
+
+      template<typename _Up>
+        enable_if_t<__and_v<__not_<is_same<_Tp, _Up>>,
+			    is_constructible<_Tp, _Up>,
+			    is_assignable<_Tp&, _Up>,
+			    __not_<__converts_from_optional<_Tp, _Up>>,
+			    __not_<__assigns_from_optional<_Tp, _Up>>>,
+		    optional&>
+	operator=(pmr::__pmroptional<_Up>&& __u)
 	{
 	  if (__u)
 	    {

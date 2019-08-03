@@ -36,6 +36,25 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  template <class _Tp, class _Alloc, typename=  __void_t<>>
+  struct __domain_allocator_traits : false_type { };
+
+
+  template <class _Tp, class _Alloc>
+  struct __domain_allocator_traits< _Tp, _Alloc,
+  	__void_t<decltype(_Tp::domain_alloc_rebind)>>
+  : __is_invocable<decltype(_Tp::domain_alloc_rebind), const _Alloc&>::type
+  {
+    using __rT = decltype(_Tp::domain_alloc_rebind);
+    constexpr static __rT* rebind = &_Tp::domain_alloc_rebind;
+  };
+
+
+  template<typename _Tp, typename _Alloc>
+  struct __uses_domain_allocator
+  : __domain_allocator_traits<_Tp,_Alloc>::type
+  { };
+
   // This is used for std::experimental::erased_type from Library Fundamentals.
   struct __erased_type { };
 
@@ -44,7 +63,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // The second condition will always be false for types not using the TS.
   template<typename _Alloc, typename _Tp>
     using __is_erased_or_convertible
-      = __or_<is_convertible<_Alloc, _Tp>, is_same<_Tp, __erased_type>>;
+      = __or_<is_convertible<_Alloc, _Tp>,
+	      is_same<_Tp, __erased_type>>;
 
   /// [allocator.tag]
   struct allocator_arg_t { explicit allocator_arg_t() = default; };
@@ -81,11 +101,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Alloc>
     struct __uses_alloc2 : __uses_alloc_base { const _Alloc* _M_a; };
 
-  template<bool, typename _Tp, typename _Alloc, typename... _Args>
+  template<typename _Alloc>
+    struct __uses_alloc3 : __uses_alloc_base { const _Alloc* _M_a; };
+
+  template<bool, bool, typename _Tp, typename _Alloc, typename... _Args>
     struct __uses_alloc;
 
   template<typename _Tp, typename _Alloc, typename... _Args>
-    struct __uses_alloc<true, _Tp, _Alloc, _Args...>
+    struct __uses_alloc<true, false, _Tp, _Alloc, _Args...>
     : conditional<
         is_constructible<_Tp, allocator_arg_t, const _Alloc&, _Args...>::value,
         __uses_alloc1<_Alloc>,
@@ -101,12 +124,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Tp, typename _Alloc, typename... _Args>
-    struct __uses_alloc<false, _Tp, _Alloc, _Args...>
+   struct __uses_alloc<false, true, _Tp, _Alloc, _Args...>
+   : __uses_alloc3<_Alloc> { };
+
+  template<typename _Tp, typename _Alloc, typename... _Args>
+   struct __uses_alloc<true, true, _Tp, _Alloc, _Args...>
+   : __uses_alloc3<_Alloc> { };
+
+  template<typename _Tp, typename _Alloc, typename... _Args>
+    struct __uses_alloc<false, false,  _Tp, _Alloc, _Args...>
     : __uses_alloc0 { };
 
   template<typename _Tp, typename _Alloc, typename... _Args>
     using __uses_alloc_t =
-      __uses_alloc<uses_allocator<_Tp, _Alloc>::value, _Tp, _Alloc, _Args...>;
+      __uses_alloc<__and_<uses_allocator<_Tp, _Alloc>,
+		      __not_<__uses_domain_allocator<_Tp, _Alloc>>>::value,
+		  __uses_domain_allocator<_Tp, _Alloc>::value,
+		  _Tp, _Alloc, _Args...>;
 
   template<typename _Tp, typename _Alloc, typename... _Args>
     inline __uses_alloc_t<_Tp, _Alloc, _Args...>
@@ -177,6 +211,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void __uses_allocator_construct_impl(__uses_alloc2<_Alloc> __a, _Tp* __ptr,
 					 _Args&&... __args)
     { ::new ((void*)__ptr) _Tp(std::forward<_Args>(__args)..., *__a._M_a); }
+
+  template<typename _Tp, typename _Alloc, typename... _Args>
+      void __uses_allocator_construct_impl(__uses_alloc3<_Alloc> __a, _Tp* __ptr,
+  					 _Args&&... __args)
+    { ::new ((void*)__ptr) _Tp(std::forward<_Args>(__args)...,
+			       __domain_allocator_traits<_Tp, _Alloc>::rebind(*__a._M_a)); }
 
   template<typename _Tp, typename _Alloc, typename... _Args>
     void __uses_allocator_construct(const _Alloc& __a, _Tp* __ptr,
