@@ -54,7 +54,9 @@
   do							\
     {							\
       if (!TARGET_64BIT) builtin_define ("__ppc__");	\
+      if (!TARGET_64BIT) builtin_define ("__PPC__");	\
       if (TARGET_64BIT) builtin_define ("__ppc64__");	\
+      if (TARGET_64BIT) builtin_define ("__PPC64__");	\
       builtin_define ("__POWERPC__");			\
       builtin_define ("__NATURAL_ALIGNMENT__");		\
       darwin_cpp_builtins (pfile);			\
