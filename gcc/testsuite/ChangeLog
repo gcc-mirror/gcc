@@ -3,6 +3,14 @@
 	Backport from mainline.
 	2019-06-24  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc.target/powerpc/safe-indirect-jump-1.c: Skip for Darwin.
+	* gcc.target/powerpc/safe-indirect-jump-7.c: Likewise.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-06-24  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc.target/powerpc/spec-barr-1.c: Adjust scan assembler regex
 	to recognise Darwin's register names.
 
