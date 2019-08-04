@@ -1,3 +1,8 @@
+2019-08-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Prerequisites): Remove reference to Tcl 8.6
+	bug that was fixed in Tcl 8.6.1.
+
 2019-08-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* function.c (assign_parm_adjust_stack_rtl): Revise STRICT_ALIGNMENT
