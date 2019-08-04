@@ -1,6 +1,14 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-06-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/cpp0x/alignas4.C: Amend test to check for zerofill syntax
+	on Darwin.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-06-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/90698
