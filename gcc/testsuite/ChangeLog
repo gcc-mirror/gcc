@@ -1,6 +1,14 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-07-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/powerpc/bmi2-bzhi64-1a.c: Add options to enable altivec
+	and vsx.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-07-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR gcov-profile/91087
