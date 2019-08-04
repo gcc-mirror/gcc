@@ -1,3 +1,8 @@
+2019-08-04  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: doxygen.org is now
+	doxygen.nl.
+
 2019-08-01  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement C++20 p0202 - Add Constexpr Modifiers to Functions

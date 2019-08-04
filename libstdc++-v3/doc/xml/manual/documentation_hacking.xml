@@ -261,7 +261,7 @@
 
       <para>
 	Prerequisite tools are Bash 2.0 or later,
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.doxygen.org">Doxygen</link>, and
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.doxygen.nl">Doxygen</link>, and
 	the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/software/coreutils/">GNU
 	coreutils</link>. (GNU versions of find, xargs, and possibly
 	sed and grep are used, just because the GNU versions make
