@@ -1,3 +1,11 @@
+2019-08-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
+	2019-05-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.c (rs6000_dbx_register_number): Return the
+	correct numbers for TFHAR, TFIAR, TEXASR.
+
 2019-07-23  Matthew Beliveau  <mbelivea@redhat.com>
 	
 	Backported from mainline
