@@ -1,6 +1,15 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/powerpc/pr71785.c: For Darwin, make test non-PIC,
+	expect the out-of-line GPR restore, and test specifically for
+	absence of branches to local labels.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-06-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/powerpc/pr64205.c: Require effective target dfp.
