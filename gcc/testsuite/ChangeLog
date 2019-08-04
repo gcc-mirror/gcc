@@ -1,6 +1,13 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/pr90760.c: Require alias support.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-06-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR testsuite/65364
