@@ -1,6 +1,16 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-06-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/90698
+	* gcc.target/i386/pr49866.c: XFAIL for Darwin.
+	* gcc.target/i386/pr63538.c: Likewise.
+	* gcc.target/i386/pr61599-1.c: Skip for Darwin.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-05-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/cpp0x/pr84497.C: Require alias support.
