@@ -80,6 +80,12 @@ along with GCC; see the file COPYING3.  If not see
    generate a binding table section, mapping each namespace&name to a
    defining section.  This allows lazy loading.
 
+   We do not separate declarations and definitions.  My guess is that
+   if you refer to the declaration, you'll also need the definition
+   (template body, inline function, class definition etc).  But this
+   does mean we can get larger SCCs than if we separated them.  It is
+   unclear whether this is a win or not.
+
    Notice this means we embed section indices into the contents of
    other sections.  Thus random manipulation of the CMI file by ELF
    tools may well break it.  The kosher way would probably be to
@@ -12602,7 +12608,7 @@ module_state::write_readme (elf_out *to, const char *options)
   /* Module information.  */
   readme.printf ("module: %s", get_flatname ());
   readme.printf ("source: %s", main_input_filename);
-  readme.printf ("options: %s", options);
+  readme.printf ("dialect: %s", options);
 
   /* The following fields could be expected to change between
      otherwise identical compilations.  Consider a distributed build
@@ -15662,96 +15668,18 @@ private:
 
 char *module_state_config::opts;
 
-/* Generate a string of the compilation options.  */
+/* Generate a string of the significant compilation options.
+   Generally assume the user knows what they're doing, in the same way
+   that object files can be mixed.  */
 
 const char *
 module_state_config::get_opts ()
 {
-  if (opts)
-    return opts;
-
-  /* Concatenate important options.  */
-  size_t opt_alloc = EXPERIMENT (2, 200);
-  size_t opt_len = 0;
-  char *opt_str = XNEWVEC (char, opt_alloc);
-
-  for (unsigned ix = 0; ix != save_decoded_options_count; ix++)
-    {
-      const cl_decoded_option *opt = &save_decoded_options[ix];
-      if (opt->opt_index >= N_OPTS)
-	continue;
-      // FIXME: There's probably a better way to get options we care
-      // about?  What does LTO do?
-      const char *text = opt->orig_option_with_args_text;
-
-      if (opt->opt_index >= N_OPTS)
-	continue;
-
-      /* Drop non-options (filename or somesuch).  */
-      if (text[0] != '-')
-	continue;
-
-      /* Drop anything not -f* -m* -O* -std=* */
-      if (!strchr ("fmO", text[1])
-	  && 0 != strncmp (&text[1], "std=", 4))
-	continue;
-
-      /* Drop module-related options we don't need to preserve.  */
-      if (opt->opt_index == OPT_fmodule_lazy
-	  || opt->opt_index == OPT_fmodule_header
-	  || opt->opt_index == OPT_fmodule_header_
-	  || opt->opt_index == OPT_fmodule_mapper_
-	  || opt->opt_index == OPT_fmodule_only
-	  || opt->opt_index == OPT_fmodules_ts)
-	continue;
-
-      /* Drop random options.  */
-      if (opt->opt_index == OPT_frandom_seed
-	  || opt->opt_index == OPT_frandom_seed_)
-	continue;
-
-      /* Drop -fpic.  */
-      if (opt->opt_index == OPT_fpic
-	  || opt->opt_index == OPT_fPIC
-	  || opt->opt_index == OPT_fPIE)
-	continue;
-
-      /* Drop profiling.  */
-      if (opt->opt_index >= OPT_fprofile
-	   && opt->opt_index <= OPT_fprofile_values)
-	continue;
-
-      /* Drop diagnostic formatting options.  */
-      if (opt->opt_index == OPT_fmessage_length_
-	  || (opt->opt_index >= OPT_fdiagnostics_color_
-	      && opt->opt_index <= OPT_fdiagnostics_show_template_tree))
-	continue;
-
-      /* Drop any dump control options.  */
-      if (opt->opt_index >= OPT_fdump_
-	  && opt->opt_index <= OPT_fdump_unnumbered_links)
-	continue;
-
-      /* Drop preprocessing options.  */
-      if (opt->opt_index == OPT_fpreprocessed
-	  || opt->opt_index == OPT_fdirectives_only)
-	continue;
-
-      size_t l = strlen (text);
-      if (opt_alloc < opt_len + l + 2)
-	{
-	  opt_alloc = (opt_len + l + 2) * 2;
-	  opt_str = XRESIZEVEC (char, opt_str, opt_alloc);
-	}
-      if (opt_len)
-	opt_str[opt_len++] = ' ';
-      memcpy (&opt_str[opt_len], text, l);
-      opt_len += l;
-    }
-
-  opt_str[opt_len] = 0;
-
-  opts = opt_str;
+  if (!opts)
+    opts = concat (get_cxx_dialect_name (cxx_dialect),
+		   flag_concepts ? "/concepts" : "",
+		   flag_coroutines ? "/coroutines" : "",
+		   NULL);
 
   return opts;
 }

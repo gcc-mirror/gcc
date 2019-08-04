@@ -389,4 +389,5 @@ extern tree add_imported_namespace (tree ctx, tree name, unsigned mod,
 extern bool note_pending_specializations (tree ns, tree name,
 					  unsigned import_kind);
 extern void note_loaded_specializations (tree ns, tree name);
+extern const char *get_cxx_dialect_name (enum cxx_dialect dialect);
 #endif /* GCC_CP_NAME_LOOKUP_H */

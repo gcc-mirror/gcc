@@ -1,3 +1,13 @@
+2019-08-04  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* name-lookup.c (get_cxx_dialect_name): Make extern.
+	* name-lookup.h (get_cxx_dialect_name): Declare.
+	* module.cc (module_state_config::get_opts): Just determine C++
+	dialect.
+	gcc/testsuite/
+	* g++.dg/modules/flag-1_[ab].C: Adjust.
+
 2019-08-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

@@ -7084,7 +7084,7 @@ get_std_name_hint (const char *name)
 
 /* Describe DIALECT.  */
 
-static const char *
+const char *
 get_cxx_dialect_name (enum cxx_dialect dialect)
 {
   switch (dialect)
