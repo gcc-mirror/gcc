@@ -1,6 +1,100 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-06-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/90709
+	* obj-c++.dg/proto-lossage-7.mm: Use proxy headers.
+	* obj-c++.dg/strings/const-cfstring-2.mm: Likewise.
+	* obj-c++.dg/strings/const-cfstring-5.mm: Likewise
+	* obj-c++.dg/strings/const-str-12.mm: Likewise.
+	* obj-c++.dg/syntax-error-1.mm: Likewise.
+	* obj-c++.dg/torture/strings/const-cfstring-1.mm: Likewise.
+	* obj-c++.dg/torture/strings/const-str-10.mm: Likewise.
+	* obj-c++.dg/torture/strings/const-str-11.mm: Likewise.
+	* obj-c++.dg/torture/strings/const-str-9.mm: Likewise.
+	* obj-c++.dg/cxx-ivars-3.mm: Skip on later Darwin, where the 10.4 API
+	in no longer supported, also on m64 where there's no meaning to it.
+	* obj-c++.dg/isa-field-1.mm: Suppress unwanted warning, add comment why.
+	* obj-c++.dg/objc-gc-3.mm: Skip for Darwin > 16, the API use is an error
+	there.
+	* obj-c++.dg/qual-types-1.mm: Prune a spurious l64 warning.
+	* obj-c++.dg/stubify-1.mm: Tidy up after better compiler warnings.
+	* obj-c++.dg/stubify-2.mm: Likewise.
+	* obj-c++.dg/try-catch-1.mm: Likewise.
+	* obj-c++.dg/try-catch-3.mm: Likewise.
+
+	Backport from mainline.
+	2019-06-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/90709
+	* objc.dg/encode-7-next-64bit.m: Use proxy headers.
+	* objc.dg/image-info.m: Likewise.
+	* objc.dg/method-6.m: Likewise.
+	* objc.dg/no-extra-load.m: Likewise.
+	* objc.dg/objc-foreach-4.m: Likewise.
+	* objc.dg/objc-foreach-5.m: Likewise.
+	* objc.dg/proto-lossage-7.m: Likewise.
+	* objc.dg/strings/const-cfstring-2.m: Likewise.
+	* objc.dg/strings/const-cfstring-5.m: Likewise.
+	* objc.dg/strings/const-str-12b.m: Likewise.
+	* objc.dg/symtab-1.m: Likewise.
+	* objc.dg/torture/strings/const-cfstring-1.m: Likewise.
+	* objc.dg/torture/strings/const-str-10.m: Likewise.
+	* objc.dg/torture/strings/const-str-11.m: Likewise.
+	* objc.dg/torture/strings/const-str-9.m: Likewise.
+	* objc.dg/zero-link-1.m: Likewise.
+	* objc.dg/zero-link-2.m: Likewise.
+	* objc.dg/zero-link-3.m: Likewise.
+	* objc.dg/isa-field-1.m: Suppress unwanted warning, add comment why.
+	* objc.dg/headers.m: XFAIL for Darwin14-19.
+	* objc.dg/objc-gc-4.m: Skip for Darwin > 16, the API use is an error
+	there.
+
+	Backport from mainline.
+	2019-06-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc/90709
+	* objc-obj-c++-shared/CF-CFString.h: New.
+	* objc-obj-c++-shared/F-NSArray.h: New.
+	* objc-obj-c++-shared/F-NSAutoreleasePool.h: New.
+	* objc-obj-c++-shared/F-NSObject.h: New.
+	* objc-obj-c++-shared/F-NSString.h: New.
+	* objc-obj-c++-shared/F-NSValue.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFArray.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFAvailability.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFBase.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFCharacterSet.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFData.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFDictionary.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFLocale.h: New.
+	* objc-obj-c++-shared/GNUStep/CoreFoundation/CFString.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSArray.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSAutoreleasePool.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSDate.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSEnumerator.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSGeometry.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSObjCRuntime.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSObject.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSRange.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSString.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSValue.h: New.
+	* objc-obj-c++-shared/GNUStep/Foundation/NSZone.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/GNUstep.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/GSBlocks.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/GSConfig.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/GSObjCRuntime.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/GSVersionMacros.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/NSArray+GNUstepBase.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/NSMutableString+GNUstepBase.h:
+	New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/NSNumber+GNUstepBase.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/NSObject+GNUstepBase.h: New.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/NSString+GNUstepBase.h: New.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-07-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/powerpc/bmi2-bzhi64-1a.c: Add options to enable altivec
