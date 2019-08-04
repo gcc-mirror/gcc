@@ -1,3 +1,10 @@
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-15  Iain Sandoe  <iain@sandoe.co.uk>
+	* gcc.dg/pr87600.h: Add __POWERPC__ as an alternate test
+	for PowerPC platforms.
+
 2019-08-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
@@ -527,9 +534,6 @@
        * gcc.target/i386/returninst3.c : Likewise
 
 2019-05-30  Iain Sandoe  <iain@sandoe.co.uk>
-
-	Backport from mainline.
-	2019-05-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/82920
 	* g++.dg/cet-notrack-1.C: Adjust scan assembler for Darwin.
