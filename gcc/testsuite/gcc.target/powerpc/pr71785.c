@@ -1,6 +1,11 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-options "-O2" } */
-/* { dg-final { scan-assembler-not {\mb\M} } } */
+/* We have to lose the default pic codegen on Darwin.  */
+/* { dg-additional-options "-mdynamic-no-pic" { target powerpc*-*-darwin* } } */
+/* ... and account for the out-of-line GPR restore.  */
+/* { dg-final { scan-assembler-times {\mb[ \t]*restGPR} 1 { target powerpc*-*-darwin* } } } */
+/* { dg-final { scan-assembler-not {\mb[ \t]L} { target powerpc*-*-darwin* } } } */
+/* { dg-final { scan-assembler-not {\mb\M} { target { ! powerpc*-*-darwin* } } } } */
 
 /* Check that all computed gotos in this testcase end up unfactored completely.
    If some is not there will be a unconditional jump left; if all works fine,
