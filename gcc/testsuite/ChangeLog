@@ -1,6 +1,16 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-05-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/pr39013-1.c: Adjust scan-asms for PIE to
+	account for PIC code on Darwin.
+	* gcc.target/i386/pr39013-2.c: Likewise.
+	* gcc.target/i386/pr64317.c: Likewise.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-05-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/i386/pr59874-3.c: Use the spelling of popcnt
