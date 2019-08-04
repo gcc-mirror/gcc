@@ -1,6 +1,14 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-05-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/pr86257.c: Require native TLS support.
+	* gcc.target/i386/stack-prot-sym.c: Likewise.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-05-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/i386/pr22076.c: Adjust options to
