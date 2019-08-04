@@ -1,3 +1,12 @@
+2019-08-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88227
+	* check.c (oct2bin):  New function.  Convert octal string to binary.
+	(hex2bin): New function.  Convert hexidecimal string to binary.
+	(bin2real): New function.  Convert binary string to REAL.  Use
+	oct2bin and hex2bin.
+	(gfc_boz2real):  Use fallback conversion bin2real.
+
 2019-08-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/90985

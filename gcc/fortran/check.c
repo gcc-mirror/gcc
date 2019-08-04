@@ -55,6 +55,7 @@ gfc_invalid_boz (const char *msg, locus *loc)
 
 
 /* Issue an error for an illegal BOZ argument.  */
+
 static bool
 illegal_boz_arg (gfc_expr *x)
 {
@@ -98,6 +99,167 @@ is_boz_constant (gfc_expr *a)
     }
 
   return true;
+}
+
+
+/* Convert a octal string into a binary string.  This is used in the
+   fallback conversion of an octal string to a REAL.  */
+
+static char *
+oct2bin(int nbits, char *oct)
+{
+  const char bits[8][5] = {
+    "000", "001", "010", "011", "100", "101", "110", "111"};
+
+  char *buf, *bufp;
+  int i, j, n;
+
+  j = nbits + 1;
+  if (nbits == 64) j++;
+
+  bufp = buf = XCNEWVEC (char, j + 1);
+  memset (bufp, 0, j + 1);
+
+  n = strlen (oct);
+  for (i = 0; i < n; i++, oct++)
+    {
+      j = *oct - 48;
+      strcpy (bufp, &bits[j][0]);
+      bufp += 3;
+    }
+
+  bufp = XCNEWVEC (char, nbits + 1);
+  if (nbits == 64)
+    strcpy (bufp, buf + 2);
+  else
+    strcpy (bufp, buf + 1);
+
+  free (buf);
+
+  return bufp;
+}
+
+
+/* Convert a hexidecimal string into a binary string.  This is used in the
+   fallback conversion of a hexidecimal string to a REAL.  */
+
+static char *
+hex2bin(int nbits, char *hex)
+{
+  const char bits[16][5] = {
+    "0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111",
+    "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111"};
+
+  char *buf, *bufp;
+  int i, j, n;
+
+  bufp = buf = XCNEWVEC (char, nbits + 1);
+  memset (bufp, 0, nbits + 1);
+
+  n = strlen (hex);
+  for (i = 0; i < n; i++, hex++)
+    {
+      j = *hex;
+      if (j > 47 && j < 58)
+         j -= 48;
+      else if (j > 64 && j < 71)
+         j -= 55;
+      else if (j > 96 && j < 103)
+         j -= 87;
+      else
+         gcc_unreachable ();
+
+      strcpy (bufp, &bits[j][0]);
+      bufp += 4;
+   }
+
+   return buf;
+}
+
+
+/* Fallback conversion of a BOZ string to REAL.  */
+
+static void
+bin2real (gfc_expr *x, int kind)
+{
+  char buf[114], *sp;
+  int b, i, ie, t, w;
+  bool sgn;
+  mpz_t em;
+
+  i = gfc_validate_kind (BT_REAL, kind, false);
+  t = gfc_real_kinds[i].digits - 1;
+
+  /* Number of bits in the exponent.  */
+  if (gfc_real_kinds[i].max_exponent == 16384)
+    w = 15;
+  else if (gfc_real_kinds[i].max_exponent == 1024)
+    w = 11;
+  else
+    w = 8;
+
+  if (x->boz.rdx == 16)
+    sp = hex2bin (gfc_real_kinds[i].mode_precision, x->boz.str);
+  else if (x->boz.rdx == 8)
+    sp = oct2bin (gfc_real_kinds[i].mode_precision, x->boz.str);
+  else
+    sp = x->boz.str;
+
+  /* Extract sign bit. */
+  sgn = *sp != '0';
+
+  /* Extract biased exponent. */
+  memset (buf, 0, 114);
+  strncpy (buf, ++sp, w);
+  mpz_init (em);
+  mpz_set_str (em, buf, 2);
+  ie = mpz_get_si (em);
+
+  mpfr_init2 (x->value.real, t + 1);
+  x->ts.type = BT_REAL;
+  x->ts.kind = kind;
+
+  sp += w;		/* Set to first digit in significand. */
+  b = (1 << w) - 1;
+  if ((i == 0 && ie == b) || (i == 1 && ie == b)
+      || ((i == 2 || i == 3) && ie == b))
+    {
+      bool zeros = true;
+      if (i == 2) sp++;
+      for (; *sp; sp++)
+	{
+	  if (*sp != '0')
+	    {
+	      zeros = false;
+	      break;
+	    }
+	}
+
+      if (zeros)
+	mpfr_set_inf (x->value.real, 1);
+      else
+	mpfr_set_nan (x->value.real);
+    }
+  else
+    {
+      if (i == 2)
+	strncpy (buf, sp, t + 1);
+      else
+	{
+	  /* Significand with hidden bit. */
+ 	  buf[0] = '1';
+	  strncpy (&buf[1], sp, t);
+	}
+
+      /* Convert to significand to integer. */
+      mpz_set_str (em, buf, 2);
+      ie -= ((1 << (w - 1)) - 1);	/* Unbiased exponent. */
+      mpfr_set_z_2exp (x->value.real, em, ie - t, GFC_RND_MODE);
+    }
+
+   if (sgn) mpfr_neg (x->value.real, x->value.real, GFC_RND_MODE);
+
+   mpz_clear (em);
 }
 
 
@@ -158,21 +320,31 @@ gfc_boz2real (gfc_expr *x, int kind)
 	    buf[0] = '1';
 	}
     }
- 
+
   /* Reset BOZ string to the truncated or padded version.  */
   free (x->boz.str);
   x->boz.len = len;
   x->boz.str = XCNEWVEC (char, len + 1);
   strncpy (x->boz.str, buf, len);
 
-  /* Convert to widest possible integer.  */
-  gfc_boz2int (x, gfc_max_integer_kind);
-  ts.type = BT_REAL;
-  ts.kind = kind;
-  if (!gfc_convert_boz (x, &ts))
+  /* For some targets, the largest INTEGER in terms of bits is smaller than
+     the bits needed to hold the REAL.  Fortunately, the kind type parameter
+     indicates the number of bytes required to an INTEGER and a REAL.  */
+  if (gfc_max_integer_kind < kind)
     {
-      gfc_error ("Failure in conversion of BOZ to REAL at %L", &x->where);
-      return false;
+      bin2real (x, kind);
+    }
+  else
+    {
+      /* Convert to widest possible integer.  */
+      gfc_boz2int (x, gfc_max_integer_kind);
+      ts.type = BT_REAL;
+      ts.kind = kind;
+      if (!gfc_convert_boz (x, &ts))
+	{
+	  gfc_error ("Failure in conversion of BOZ to REAL at %L", &x->where);
+	  return false;
+	}
     }
 
   return true;
