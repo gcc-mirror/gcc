@@ -2,6 +2,20 @@
 
 	Backport from mainline.
 	2019-05-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/target-supports.exp 
+	(check_effective_target_powerpc_p8vector_ok): No support for Darwin.
+	(check_effective_target_powerpc_p9vector_ok): Likewise.
+	(check_effective_target_powerpc_float128_sw_ok): Likewise.
+	(check_effective_target_powerpc_float128_hw_ok): Likewise.
+	(check_effective_target_powerpc_vsx_ok): Likewise.
+	* gcc.target/powerpc/bfp/bfp.exp: Don't try to run this for Darwin.
+	* gcc.target/powerpc/dfp/dfp.exp: Likewise.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-15  Iain Sandoe  <iain@sandoe.co.uk>
 	* gcc.dg/pr87600.h: Add __POWERPC__ as an alternate test
 	for PowerPC platforms.
 
