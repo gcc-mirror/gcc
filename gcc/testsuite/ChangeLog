@@ -1,6 +1,17 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-05-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR rtl-optimisation/64895
+	* gcc.target/i386/fuse-caller-save-rec.c: Remove XFAILs.
+	* gcc.target/i386/fuse-caller-save.c: Likewise.
+	* gcc.target/i386/fuse-caller-save-xmm.c: Adjust tests for
+	PIC cases, remove XFAILs.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-05-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR testsuite/27221
