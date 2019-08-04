@@ -10,5 +10,5 @@ bar  (struct B *b, int x)
 }
 
 /* This fails to combine in 32bit mode but not for x32.  */
-/* { dg-final { scan-assembler-times "and" 1 { xfail { { ! x32 } && ilp32 } } } } */
-/* { dg-final { scan-assembler-times "or" 1 { xfail { { ! x32 } && ilp32 } } } } */
+/* { dg-final { scan-assembler-times {\tand[lq]} 1 { xfail { { ! x32 } && ilp32 } } } } */
+/* { dg-final { scan-assembler-times {\tor} 1 { xfail { { ! x32 } && ilp32 } } } } */

@@ -3,11 +3,29 @@
 	Backport from mainline.
 	2019-05-24  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc.target/i386/pconfig-1.c: Scan for the string in the generated
+	code, not in comments or miscellaneous directives.
+	* gcc.target/i386/pr18041-1.c: Likewise.
+	* gcc.target/i386/pr18041-2.c: Likewise.
+	* gcc.target/i386/wbinvd-1.c: Likewise.
+	* gcc.target/i386/wbnoinvd-1.c: Likewise.
+	* gcc.target/i386/pr66819-3.c: Specifically, check that there is no
+	call to "bar".
+	* gcc.target/i386/pr66819-4.c: Likewise.
+	* gcc.target/i386/pr82662.c
+	* gcc.target/i386/ptwrite2.c: Make the checks look for the specific
+	destination register, don't try the m32 test on m64 targets.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-24  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc.target/i386/pr67985-2.c: Adjust label checks for
 	Darwin.
 	* gcc.target/i386/pr77881.c: Likewise.
 
-2019-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
 	2019-05-24  Iain Sandoe  <iain@sandoe.co.uk>
