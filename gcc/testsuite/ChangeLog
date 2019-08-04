@@ -1,6 +1,15 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-06-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/65364
+	* gcc.dg/uninit-19.c (fn1): Adjust target condition for Darwin.
+	(fn2): Likewise.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-06-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.dg/attr-copy-6.c: Require alias support.
