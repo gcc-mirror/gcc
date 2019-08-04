@@ -1,6 +1,13 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-07-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/pr57438-2.c: Remove.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-06-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/powerpc/safe-indirect-jump-1.c: Skip for Darwin.
