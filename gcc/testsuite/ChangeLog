@@ -1,6 +1,16 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-07-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR gcov-profile/91087
+	* g++.dg/gcov/pr16855.C: Xfail the count lines for the DTORs and the
+	"final" line for the failure summaries.  Adjust source layout so that
+	dejagnu xfail expressions work.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-07-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/powerpc/stabs-attrib-vect-darwin.c: Require stabs
