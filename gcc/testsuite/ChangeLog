@@ -1,6 +1,16 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-05-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/falign-functions-3.c: Adjust align syntax
+	and label for Darwin.
+	* gcc.target/i386/attr-aligned-2.c: Adjust align syntax for
+	Darwin.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-05-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/i386/pr86257.c: Require native TLS support.
