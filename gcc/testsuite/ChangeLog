@@ -1,6 +1,14 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-05-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/pr22076.c: Adjust options to
+	match codegen expected by the scan-asms.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-05-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/i386/pr39013-1.c: Adjust scan-asms for PIE to
