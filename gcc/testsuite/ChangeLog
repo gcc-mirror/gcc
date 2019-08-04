@@ -1,6 +1,15 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-05-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/63891
+	* gcc.dg/darwin-weakimport-3.c: Adjust options and explain
+	the reasons.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-05-20  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR testsuite/58321
