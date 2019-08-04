@@ -3,6 +3,15 @@
 	Backport from mainline.
 	2019-05-24  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc.target/i386/pr67985-2.c: Adjust label checks for
+	Darwin.
+	* gcc.target/i386/pr77881.c: Likewise.
+
+2019-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-05-24  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc.target/i386/falign-functions-2.c: Skip for Darwin.
 	* gcc.target/i386/pr70738-7.c: Likewise.
 	* gcc.target/i386/pr24414.c: Likewise.
