@@ -1,6 +1,15 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-06-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/cpp/isysroot-1.c: Use <example.h> as the test header.
+	* gcc.dg/cpp/usr/include/stdio.h: Rename...
+	* gcc.dg/cpp/usr/include/example.h: ... to this.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-06-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/powerpc/builtins-2.c: Require VSX hardware support.
