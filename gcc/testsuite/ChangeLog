@@ -1,6 +1,14 @@
 2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-06-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/powerpc/darwin-bool-1.c: Suppress the pedantic
+	warning about _Bool.
+
+2019-08-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-06-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/pr71694.C: Use non-PIC codegen for Darwin m32.
