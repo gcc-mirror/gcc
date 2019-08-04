@@ -36287,10 +36287,20 @@ rs6000_init_dwarf_reg_sizes_extra (tree address)
 unsigned int
 rs6000_dbx_register_number (unsigned int regno, unsigned int format)
 {
-  /* Except for the above, we use the internal number for non-DWARF
-     debug information, and also for .eh_frame.  */
+  /* We use the GCC 7 (and before) internal number for non-DWARF debug
+     information, and also for .eh_frame.  */
   if ((format == 0 && write_symbols != DWARF2_DEBUG) || format == 2)
-    return regno;
+    {
+      /* Translate the regnos to their numbers in GCC 7 (and before).  */
+      if (regno == TFHAR_REGNO)
+	regno = 114;
+      else if (regno == TFIAR_REGNO)
+	regno = 115;
+      else if (regno == TEXASR_REGNO)
+	regno = 116;
+
+      return regno;
+    }
 
   /* On some platforms, we use the standard DWARF register
      numbering for .debug_info and .debug_frame.  */
@@ -36317,6 +36327,12 @@ rs6000_dbx_register_number (unsigned int regno, unsigned int format)
     return 356;
   if (regno == VSCR_REGNO)
     return 67;
+  if (regno == TFHAR_REGNO)
+    return 228;
+  if (regno == TFIAR_REGNO)
+    return 229;
+  if (regno == TEXASR_REGNO)
+    return 230;
 #endif
   return regno;
 }
