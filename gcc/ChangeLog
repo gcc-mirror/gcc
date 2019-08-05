@@ -1,5 +1,12 @@
 2019-08-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gimple-fold.c (gimple_fold_mask_load_store_mem_ref)
+	(gimple_fold_mask_load, gimple_fold_mask_store): New functions.
+	(gimple_fold_call): Use them to fold IFN_MASK_LOAD and
+	IFN_MASK_STORE.
+
+2019-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gimple.h (gimple_move_vops): Declare.
 	* gimple.c (gimple_move_vops): New function
 	* gimple-fold.c (replace_call_with_call_and_fold)
