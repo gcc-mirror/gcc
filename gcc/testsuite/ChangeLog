@@ -1,3 +1,8 @@
+2019-08-05  Steven g. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91372
+	* gfortran.dg/pr91372.f90: New test.
+
 2019-08-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91338 - Implement P1161R3: Deprecate a[b,c].

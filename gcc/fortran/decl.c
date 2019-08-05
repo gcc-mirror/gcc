@@ -624,9 +624,10 @@ gfc_match_data (void)
   char c;
 
   /* DATA has been matched.  In free form source code, the next character
-     needs to be whitespace.  Check that here.  */
+     needs to be whitespace or '(' from an implied do-loop.  Check that
+     here.  */
   c = gfc_peek_ascii_char ();
-  if (gfc_current_form == FORM_FREE && !gfc_is_whitespace (c))
+  if (gfc_current_form == FORM_FREE && !gfc_is_whitespace (c) && c != '(')
     return MATCH_NO;
 
   /* Before parsing the rest of a DATA statement, check F2008:c1206.  */
