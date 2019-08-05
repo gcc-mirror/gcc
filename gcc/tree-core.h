@@ -1857,36 +1857,32 @@ struct GTY(()) tree_function_decl {
   tree vindex;
 
   /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is
-     DECL_FUNCTION_CODE.  Otherwise unused.
-     ???  The bitfield needs to be able to hold all target function
-	  codes as well.  */
-  ENUM_BITFIELD(built_in_function) function_code : 12;
-  ENUM_BITFIELD(built_in_class) built_in_class : 2;
+     DECL_FUNCTION_CODE.  Otherwise unused.  */
+  enum built_in_function function_code;
 
+  ENUM_BITFIELD(built_in_class) built_in_class : 2;
   unsigned static_ctor_flag : 1;
   unsigned static_dtor_flag : 1;
-
   unsigned uninlinable : 1;
   unsigned possibly_inlined : 1;
   unsigned novops_flag : 1;
   unsigned returns_twice_flag : 1;
+
   unsigned malloc_flag : 1;
   unsigned declared_inline_flag : 1;
   unsigned no_inline_warning_flag : 1;
-
   unsigned no_instrument_function_entry_exit : 1;
-
-  /* Align the bitfield to boundary of a byte.  */
-  ENUM_BITFIELD(function_decl_type) decl_type: 2;
-
   unsigned no_limit_stack : 1;
   unsigned disregard_inline_limits : 1;
   unsigned pure_flag : 1;
   unsigned looping_const_or_pure_flag : 1;
+
+  /* Align the bitfield to boundary of a byte.  */
+  ENUM_BITFIELD(function_decl_type) decl_type: 2;
   unsigned has_debug_args_flag : 1;
   unsigned versioned_function : 1;
 
-  /* 0 bits left.  */
+  /* 12 bits left for future expansion.  */
 };
 
 struct GTY(()) tree_translation_unit_decl {
