@@ -489,7 +489,7 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete,
   /* An array can't have been allocated by new, so complain.  */
   if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
       && (complain & tf_warning))
-    warning_at (cp_expr_loc_or_loc (exp, input_location), 0,
+    warning_at (cp_expr_loc_or_input_loc (exp), 0,
 		"deleting array %q#E", exp);
 
   t = build_expr_type_conversion (WANT_POINTER, exp, true);
@@ -497,7 +497,7 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete,
   if (t == NULL_TREE || t == error_mark_node)
     {
       if (complain & tf_error)
-	error_at (cp_expr_loc_or_loc (exp, input_location),
+	error_at (cp_expr_loc_or_input_loc (exp),
 		  "type %q#T argument given to %<delete%>, expected pointer",
 		  TREE_TYPE (exp));
       return error_mark_node;
@@ -511,7 +511,7 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete,
   if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
     {
       if (complain & tf_error)
-	error_at (cp_expr_loc_or_loc (exp, input_location),
+	error_at (cp_expr_loc_or_input_loc (exp),
 		  "cannot delete a function.  Only pointer-to-objects are "
 		  "valid arguments to %<delete%>");
       return error_mark_node;
@@ -521,8 +521,7 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete,
   if (VOID_TYPE_P (TREE_TYPE (type)))
     {
       if (complain & tf_warning)
-	warning_at (cp_expr_loc_or_loc (exp, input_location),
-		    OPT_Wdelete_incomplete,
+	warning_at (cp_expr_loc_or_input_loc (exp), OPT_Wdelete_incomplete,
 		    "deleting %qT is undefined", type);
       doing_vec = 0;
     }

@@ -4059,7 +4059,7 @@ check_for_bare_parameter_packs (tree t, location_t loc /* = UNKNOWN_LOCATION */)
   if (parameter_packs)
     {
       if (loc == UNKNOWN_LOCATION)
-	loc = cp_expr_loc_or_loc (t, input_location);
+	loc = cp_expr_loc_or_input_loc (t);
       error_at (loc, "parameter packs not expanded with %<...%>:");
       while (parameter_packs)
         {
@@ -6306,7 +6306,7 @@ static bool
 check_valid_ptrmem_cst_expr (tree type, tree expr,
 			     tsubst_flags_t complain)
 {
-  location_t loc = cp_expr_loc_or_loc (expr, input_location);
+  location_t loc = cp_expr_loc_or_input_loc (expr);
   tree orig_expr = expr;
   STRIP_NOPS (expr);
   if (null_ptr_cst_p (expr))
@@ -6525,7 +6525,7 @@ unify_arg_conversion (bool explain_p, tree to_type,
 		      tree from_type, tree arg)
 {
   if (explain_p)
-    inform (cp_expr_loc_or_loc (arg, input_location),
+    inform (cp_expr_loc_or_input_loc (arg),
 	    "  cannot convert %qE (type %qT) to type %qT",
 	    arg, from_type, to_type);
   return unify_invalid (explain_p);
@@ -6765,7 +6765,7 @@ static tree
 convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 {
   tree expr_type;
-  location_t loc = cp_expr_loc_or_loc (expr, input_location);
+  location_t loc = cp_expr_loc_or_input_loc (expr);
 
   /* Detect immediately string literals as invalid non-type argument.
      This special-case is not needed for correctness (we would easily
@@ -18965,10 +18965,10 @@ tsubst_copy_and_build (tree t,
 
 		    bool diag = true;
 		    if (in_lambda)
-		      error_at (cp_expr_loc_or_loc (t, input_location),
+		      error_at (cp_expr_loc_or_input_loc (t),
 				msg, function);
 		    else
-		      diag = permerror (cp_expr_loc_or_loc (t, input_location),
+		      diag = permerror (cp_expr_loc_or_input_loc (t),
 					msg, function);
 		    if (diag)
 		      {
@@ -18983,8 +18983,7 @@ tsubst_copy_and_build (tree t,
 			  /* Can't say anything more.  */;
 			else if (DECL_CLASS_SCOPE_P (fn))
 			  {
-			    location_t loc = cp_expr_loc_or_loc (t,
-							      input_location);
+			    location_t loc = cp_expr_loc_or_input_loc (t);
 			    inform (loc,
 				    "declarations in dependent base %qT are "
 				    "not found by unqualified lookup",
@@ -19032,14 +19031,13 @@ tsubst_copy_and_build (tree t,
 	      gcc_assert (nargs == 1);
 	      if (vec_safe_length (call_args) != 1)
 		{
-		  error_at (cp_expr_loc_or_loc (t, input_location),
+		  error_at (cp_expr_loc_or_input_loc (t),
 			    "wrong number of arguments to "
 			    "%<__builtin_launder%>");
 		  ret = error_mark_node;
 		}
 	      else
-		ret = finish_builtin_launder (cp_expr_loc_or_loc (t,
-							       input_location),
+		ret = finish_builtin_launder (cp_expr_loc_or_input_loc (t),
 					      (*call_args)[0], complain);
 	      break;
 
@@ -19047,7 +19045,7 @@ tsubst_copy_and_build (tree t,
 	      gcc_assert (nargs == 1);
 	      if (vec_safe_length (call_args) != 1)
 		{
-		  error_at (cp_expr_loc_or_loc (t, input_location),
+		  error_at (cp_expr_loc_or_input_loc (t),
 			    "wrong number of arguments to "
 			    "%<__builtin_convertvector%>");
 		  ret = error_mark_node;
@@ -26602,7 +26600,7 @@ resolve_typename_type (tree type, bool only_current_p)
 
 	     [temp.names]: In a qualified-id of a declarator-id, the keyword
 	     template shall not appear at the top level.  */
-	  pedwarn (cp_expr_loc_or_loc (fullname, input_location), OPT_Wpedantic,
+	  pedwarn (cp_expr_loc_or_input_loc (fullname), OPT_Wpedantic,
 		   "keyword %<template%> not allowed in declarator-id");
 	  tmpl = decl;
 	}

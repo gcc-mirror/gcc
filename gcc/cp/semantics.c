@@ -658,7 +658,7 @@ maybe_convert_cond (tree cond)
   if (TREE_CODE (cond) == MODIFY_EXPR
       && !TREE_NO_WARNING (cond)
       && warn_parentheses
-      && warning_at (cp_expr_loc_or_loc (cond, input_location),
+      && warning_at (cp_expr_loc_or_input_loc (cond),
 		     OPT_Wparentheses, "suggest parentheses around "
 				       "assignment used as truth value"))
     TREE_NO_WARNING (cond) = 1;
@@ -2428,7 +2428,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	  || any_type_dependent_arguments_p (*args))
 	{
 	  result = build_min_nt_call_vec (orig_fn, *args);
-	  SET_EXPR_LOCATION (result, cp_expr_loc_or_loc (fn, input_location));
+	  SET_EXPR_LOCATION (result, cp_expr_loc_or_input_loc (fn));
 	  KOENIG_LOOKUP_P (result) = koenig_p;
 	  if (is_overloaded_fn (fn))
 	    fn = get_fns (fn);
@@ -10104,7 +10104,7 @@ cp_build_vec_convert (tree arg, location_t loc, tree type,
 
   tree ret = NULL_TREE;
   if (!type_dependent_expression_p (arg) && !dependent_type_p (type))
-    ret = c_build_vec_convert (cp_expr_loc_or_loc (arg, input_location), arg,
+    ret = c_build_vec_convert (cp_expr_loc_or_input_loc (arg), arg,
 			       loc, type, (complain & tf_error) != 0);
 
   if (!processing_template_decl)

@@ -7509,11 +7509,17 @@ cp_expr_loc_or_loc (const_tree t, location_t or_loc)
   return loc;
 }
 
+inline location_t
+cp_expr_loc_or_input_loc (const_tree t)
+{
+  return cp_expr_loc_or_loc (t, input_location);
+}
+
 inline void
 cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
 				diagnostic_t diag_kind)
 {
-  cxx_incomplete_type_diagnostic (cp_expr_loc_or_loc (value, input_location),
+  cxx_incomplete_type_diagnostic (cp_expr_loc_or_input_loc (value),
 				  value, type, diag_kind);
 }
 
