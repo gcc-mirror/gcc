@@ -1,3 +1,19 @@
+2019-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91341
+	* gcc.target/i386/avx-loadu2-m128-1.c: New test.
+	* gcc.target/i386/avx-loadu2-m128-2.c: New test.
+	* gcc.target/i386/avx-loadu2-m128d-1.c: New test.
+	* gcc.target/i386/avx-loadu2-m128d-2.c: New test.
+	* gcc.target/i386/avx-loadu2-m128i-1.c: New test.
+	* gcc.target/i386/avx-loadu2-m128i-2.c: New test.
+	* gcc.target/i386/avx-storeu2-m128-1.c: New test.
+	* gcc.target/i386/avx-storeu2-m128-2.c: New test.
+	* gcc.target/i386/avx-storeu2-m128d-1.c: New test.
+	* gcc.target/i386/avx-storeu2-m128d-2.c: New test.
+	* gcc.target/i386/avx-storeu2-m128i-1.c: New test.
+	* gcc.target/i386/avx-storeu2-m128i-2.c: New test.
+
 2019-08-05  Kito Cheng  <kito.cheng@sifive.com>
 
 	* gcc.target/riscv/promote-type-for-libcall.c: New.
