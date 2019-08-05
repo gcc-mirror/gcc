@@ -17,6 +17,10 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+/* Undef gnu-user.h macros we don't want.  */
+#undef CPLUSPLUS_CPP_SPEC
+#undef LINK_GCC_C_SEQUENCE_SPEC
+
 /* Override the defaults, which exist to force the proper definition.  */
 
 #ifdef IN_LIBGCC2
