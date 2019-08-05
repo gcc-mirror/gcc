@@ -1,3 +1,14 @@
+2019-08-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
+	2019-06-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gnatlink.adb (Link_Step): Remove duplicate -static-libgcc switches.
+	Push -shared-libgcc explicitly, when it is the target default (unless
+	overidden by the static flag).
+	When the user has put an instance of shared/static-libgcc do not push
+	a duplicate of this.
+
 2019-07-04  James Clarke <jrtc27@debian.org>
 
 	* libgnarl/s-osinte__kfreebsd-gnu.ads (clockid_t): Make type
