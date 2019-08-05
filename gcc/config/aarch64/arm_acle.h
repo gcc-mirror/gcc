@@ -29,13 +29,13 @@
 
 #include <stdint.h>
 
-#pragma GCC push_options
-
-#pragma GCC target ("+nothing+crc")
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#pragma GCC push_options
+
+#pragma GCC target ("+nothing+crc")
 
 __extension__ static __inline uint32_t __attribute__ ((__always_inline__))
 __crc32b (uint32_t __a, uint8_t __b)
@@ -85,10 +85,53 @@ __crc32d (uint32_t __a, uint64_t __b)
   return __builtin_aarch64_crc32x (__a, __b);
 }
 
+#pragma GCC pop_options
+
+#ifdef __ARM_FEATURE_TME
+#pragma GCC push_options
+#pragma GCC target ("+nothing+tme")
+
+#define _TMFAILURE_REASON     0x00007fffu
+#define _TMFAILURE_RTRY       0x00008000u
+#define _TMFAILURE_CNCL       0x00010000u
+#define _TMFAILURE_MEM        0x00020000u
+#define _TMFAILURE_IMP        0x00040000u
+#define _TMFAILURE_ERR        0x00080000u
+#define _TMFAILURE_SIZE       0x00100000u
+#define _TMFAILURE_NEST       0x00200000u
+#define _TMFAILURE_DBG        0x00400000u
+#define _TMFAILURE_INT        0x00800000u
+#define _TMFAILURE_TRIVIAL    0x01000000u
+
+__extension__ static __inline uint64_t __attribute__ ((__always_inline__))
+__tstart (void)
+{
+  return __builtin_aarch64_tstart ();
+}
+
+__extension__ static __inline void __attribute__ ((__always_inline__))
+__tcommit (void)
+{
+  __builtin_aarch64_tcommit ();
+}
+
+__extension__ static __inline void __attribute__ ((__always_inline__))
+__tcancel (const uint64_t __reason)
+{
+  __builtin_aarch64_tcancel (__reason);
+}
+
+__extension__ static __inline uint64_t __attribute__ ((__always_inline__))
+__ttest (void)
+{
+  return __builtin_aarch64_ttest ();
+}
+
+#pragma GCC pop_options
+#endif
+
 #ifdef __cplusplus
 }
 #endif
-
-#pragma GCC pop_options
 
 #endif

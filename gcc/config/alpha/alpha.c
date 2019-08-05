@@ -526,7 +526,7 @@ alpha_option_override (void)
 	  alpha_fptm = ALPHA_FPTM_SU;
 	}
       if (target_flags_explicit & MASK_LONG_DOUBLE_128)
-	warning (0, "128-bit long double not supported for VAX floats");
+	warning (0, "128-bit %<long double%> not supported for VAX floats");
       target_flags &= ~MASK_LONG_DOUBLE_128;
     }
 

@@ -115,6 +115,14 @@ static bool cfg_altered;
 static int *bb_postorder;
 
 
+/* True if we should treat any stmt with a vdef as necessary.  */
+
+static inline bool
+keep_all_vdefs_p ()
+{
+  return optimize_debug;
+}
+
 /* If STMT is not already marked necessary, mark it, and add it to the
    worklist if ADD_TO_WORKLIST is true.  */
 
@@ -312,6 +320,12 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
     }
 
   if (stmt_may_clobber_global_p (stmt))
+    {
+      mark_stmt_necessary (stmt, true);
+      return;
+    }
+
+  if (gimple_vdef (stmt) && keep_all_vdefs_p ())
     {
       mark_stmt_necessary (stmt, true);
       return;
@@ -532,6 +546,9 @@ mark_aliased_reaching_defs_necessary_1 (ao_ref *ref, tree vdef, void *data)
 static void
 mark_aliased_reaching_defs_necessary (gimple *stmt, tree ref)
 {
+  /* Should have been caught before calling this function.  */
+  gcc_checking_assert (!keep_all_vdefs_p ());
+
   unsigned int chain;
   ao_ref refd;
   gcc_assert (!chain_ovfl);
@@ -610,6 +627,8 @@ mark_all_reaching_defs_necessary_1 (ao_ref *ref ATTRIBUTE_UNUSED,
 static void
 mark_all_reaching_defs_necessary (gimple *stmt)
 {
+  /* Should have been caught before calling this function.  */
+  gcc_checking_assert (!keep_all_vdefs_p ());
   walk_aliased_vdefs (NULL, gimple_vuse (stmt),
 		      mark_all_reaching_defs_necessary_1, NULL, &visited);
 }
@@ -785,10 +804,11 @@ propagate_necessity (bool aggressive)
 	  /* If this is a call to free which is directly fed by an
 	     allocation function do not mark that necessary through
 	     processing the argument.  */
-	  if (gimple_call_builtin_p (stmt, BUILT_IN_FREE)
-	      || (is_gimple_call (stmt)
-		  && gimple_call_operator_delete_p (as_a <gcall *> (stmt))))
-
+	  bool is_delete_operator
+	    = (is_gimple_call (stmt)
+	       && gimple_call_operator_delete_p (as_a <gcall *> (stmt)));
+	  if (is_delete_operator
+	      || gimple_call_builtin_p (stmt, BUILT_IN_FREE))
 	    {
 	      tree ptr = gimple_call_arg (stmt, 0);
 	      gimple *def_stmt;
@@ -803,7 +823,20 @@ propagate_necessity (bool aggressive)
 			   || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_MALLOC
 			   || DECL_FUNCTION_CODE (def_callee) == BUILT_IN_CALLOC))
 		      || DECL_IS_REPLACEABLE_OPERATOR_NEW_P (def_callee)))
-		continue;
+		{
+		  /* Delete operators can have alignment and (or) size as next
+		     arguments.  When being a SSA_NAME, they must be marked
+		     as necessary.  */
+		  if (is_delete_operator && gimple_call_num_args (stmt) >= 2)
+		    for (unsigned i = 1; i < gimple_call_num_args (stmt); i++)
+		      {
+			tree arg = gimple_call_arg (stmt, i);
+			if (TREE_CODE (arg) == SSA_NAME)
+			  mark_operand_necessary (arg);
+		      }
+
+		  continue;
+		}
 	    }
 
 	  FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
@@ -811,6 +844,10 @@ propagate_necessity (bool aggressive)
 
 	  use = gimple_vuse (stmt);
 	  if (!use)
+	    continue;
+
+	  /* No need to search for vdefs if we intrinsicly keep them all.  */
+	  if (keep_all_vdefs_p ())
 	    continue;
 
 	  /* If we dropped to simple mode make all immediately
@@ -1341,12 +1378,13 @@ eliminate_unnecessary_stmts (void)
 		     did not mark as necessary, it will confuse the
 		     special logic we apply to malloc/free pair removal.  */
 		  && (!(call = gimple_call_fndecl (stmt))
-		      || DECL_BUILT_IN_CLASS (call) != BUILT_IN_NORMAL
-		      || (DECL_FUNCTION_CODE (call) != BUILT_IN_ALIGNED_ALLOC
-			  && DECL_FUNCTION_CODE (call) != BUILT_IN_MALLOC
-			  && DECL_FUNCTION_CODE (call) != BUILT_IN_CALLOC
-			  && !ALLOCA_FUNCTION_CODE_P
-			      (DECL_FUNCTION_CODE (call)))))
+		      || ((DECL_BUILT_IN_CLASS (call) != BUILT_IN_NORMAL
+			   || (DECL_FUNCTION_CODE (call) != BUILT_IN_ALIGNED_ALLOC
+			       && DECL_FUNCTION_CODE (call) != BUILT_IN_MALLOC
+			       && DECL_FUNCTION_CODE (call) != BUILT_IN_CALLOC
+			       && !ALLOCA_FUNCTION_CODE_P
+			       (DECL_FUNCTION_CODE (call))))
+			  && !DECL_IS_REPLACEABLE_OPERATOR_NEW_P (call))))
 		{
 		  something_changed = true;
 		  if (dump_file && (dump_flags & TDF_DETAILS))

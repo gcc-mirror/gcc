@@ -214,7 +214,10 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 				    old_vr->max ());
 	      tem.intersect (vrs[i].second);
 	      if (tem.equal_p (*old_vr))
-		continue;
+		{
+		  vr_values->free_value_range (vrs[i].second);
+		  continue;
+		}
 	      push_value_range (vrs[i].first, vrs[i].second);
 	      if (is_fallthru
 		  && m_update_global_ranges
@@ -393,7 +396,7 @@ evrp_range_analyzer::pop_to_marker (void)
 {
   gcc_checking_assert (!stack.is_empty ());
   while (stack.last ().first != NULL_TREE)
-    pop_value_range (stack.last ().first);
+    pop_value_range ();
   stack.pop ();
 }
 
@@ -421,17 +424,18 @@ evrp_range_analyzer::push_value_range (tree var, value_range *vr)
       dump_value_range (dump_file, vr);
       fprintf (dump_file, "\n");
     }
-  stack.safe_push (std::make_pair (var, get_value_range (var)));
-  vr_values->set_vr_value (var, vr);
+  value_range *old_vr = vr_values->swap_vr_value (var, vr);
+  stack.safe_push (std::make_pair (var, old_vr));
 }
 
-/* Pop the Value Range from the vrp_stack and update VAR with it.  */
+/* Pop a Value Range from the vrp_stack.  */
 
-const value_range *
-evrp_range_analyzer::pop_value_range (tree var)
+void
+evrp_range_analyzer::pop_value_range ()
 {
-  const value_range *vr = stack.last ().second;
-  gcc_checking_assert (var == stack.last ().first);
+  std::pair<tree, value_range *> e = stack.pop ();
+  tree var = e.first;
+  value_range *vr = e.second;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "popping range for ");
@@ -440,9 +444,9 @@ evrp_range_analyzer::pop_value_range (tree var)
       dump_value_range (dump_file, vr);
       fprintf (dump_file, "\n");
     }
-  /* We saved off a lattice entry, now give it back - it can now
-     be modified again, thus the const casting.  */
-  vr_values->set_vr_value (var, const_cast <value_range *> (vr));
-  stack.pop ();
-  return vr;
+  /* We saved off a lattice entry, now give it back and release
+     the one we popped.  */
+  value_range *popped_vr = vr_values->swap_vr_value (var, vr);
+  if (popped_vr)
+    vr_values->free_value_range (popped_vr);
 }

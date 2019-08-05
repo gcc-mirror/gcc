@@ -1620,9 +1620,9 @@
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn_and_split "*vec_extractv2si_0"
-  [(set (match_operand:SI 0 "nonimmediate_operand"     "=x,m,y, m,r")
+  [(set (match_operand:SI 0 "nonimmediate_operand"     "=x,m,y, m,r,r")
 	(vec_select:SI
-	  (match_operand:V2SI 1 "nonimmediate_operand" "xm,x,ym,y,m")
+	  (match_operand:V2SI 1 "nonimmediate_operand" "xm,x,ym,y,m,x")
 	  (parallel [(const_int 0)])))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
@@ -1630,33 +1630,76 @@
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 1))]
   "operands[1] = gen_lowpart (SImode, operands[1]);"
-  [(set_attr "mmx_isa" "*,*,native,native,*")])
+  [(set_attr "isa" "*,*,*,*,*,sse2")
+   (set_attr "mmx_isa" "*,*,native,native,*,*")
+   (set (attr "preferred_for_speed")
+     (cond [(eq_attr "alternative" "5")
+	      (symbol_ref "TARGET_INTER_UNIT_MOVES_FROM_VEC")
+	   ]
+	   (symbol_ref "true")))])
+
+(define_insn "*vec_extractv2si_0_zext_sse4"
+  [(set (match_operand:DI 0 "register_operand" "=r,x")
+	(zero_extend:DI
+	  (vec_select:SI
+	    (match_operand:V2SI 1 "register_operand" "x,x")
+	    (parallel [(const_int 0)]))))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSE4_1"
+  "#"
+  [(set_attr "isa" "x64,*")
+   (set (attr "preferred_for_speed")
+     (cond [(eq_attr "alternative" "0")
+	      (symbol_ref "TARGET_INTER_UNIT_MOVES_FROM_VEC")
+	   ]
+	   (symbol_ref "true")))])
+
+(define_insn "*vec_extractv2si_0_zext"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	  (vec_select:SI
+	    (match_operand:V2SI 1 "register_operand" "x")
+	    (parallel [(const_int 0)]))))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && TARGET_64BIT && TARGET_SSE2 && TARGET_INTER_UNIT_MOVES_FROM_VEC"
+  "#")
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(zero_extend:DI
+	  (vec_select:SI
+	    (match_operand:V2SI 1 "register_operand")
+	    (parallel [(const_int 0)]))))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && TARGET_SSE2 && reload_completed"
+  [(set (match_dup 0) (zero_extend:DI (match_dup 1)))]
+  "operands[1] = gen_lowpart (SImode, operands[1]);")
 
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.c
 (define_insn "*vec_extractv2si_1"
-  [(set (match_operand:SI 0 "nonimmediate_operand"     "=y,x,x,y,x,r")
+  [(set (match_operand:SI 0 "nonimmediate_operand"     "=y,rm,x,x,y,x,r")
 	(vec_select:SI
-	  (match_operand:V2SI 1 "nonimmediate_operand" " 0,x,x,o,o,o")
+	  (match_operand:V2SI 1 "nonimmediate_operand" " 0,x ,x,x,o,o,o")
 	  (parallel [(const_int 1)])))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "@
    punpckhdq\t%0, %0
+   %vpextrd\t{$1, %1, %0|%0, %1, 1}
    %vpshufd\t{$0xe5, %1, %0|%0, %1, 0xe5}
    shufps\t{$0xe5, %1, %0|%0, %1, 0xe5}
    #
    #
    #"
-  [(set_attr "isa" "*,sse2,noavx,*,*,*")
-   (set_attr "mmx_isa" "native,*,*,native,*,*")
-   (set_attr "type" "mmxcvt,sseshuf1,sseshuf1,mmxmov,ssemov,imov")
+  [(set_attr "isa" "*,sse4,sse2,noavx,*,*,*")
+   (set_attr "mmx_isa" "native,*,*,*,native,*,*")
+   (set_attr "type" "mmxcvt,ssemov,sseshuf1,sseshuf1,mmxmov,ssemov,imov")
    (set (attr "length_immediate")
-     (if_then_else (eq_attr "alternative" "1,2")
+     (if_then_else (eq_attr "alternative" "1,2,3")
 		   (const_string "1")
 		   (const_string "*")))
-   (set_attr "prefix" "orig,maybe_vex,orig,orig,orig,orig")
-   (set_attr "mode" "DI,TI,V4SF,SI,SI,SI")])
+   (set_attr "prefix" "orig,maybe_vex,maybe_vex,orig,orig,orig,orig")
+   (set_attr "mode" "DI,TI,TI,V4SF,SI,SI,SI")])
 
 (define_split
   [(set (match_operand:SI 0 "register_operand")
@@ -1667,13 +1710,28 @@
   [(set (match_dup 0) (match_dup 1))]
   "operands[1] = adjust_address (operands[1], SImode, 4);")
 
+(define_insn "*vec_extractv2si_1_zext"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	  (vec_select:SI
+	    (match_operand:V2SI 1 "register_operand" "x")
+	    (parallel [(const_int 1)]))))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE)
+   && TARGET_64BIT && TARGET_SSE4_1"
+  "%vpextrd\t{$1, %1, %k0|%k0, %1, 1}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "TI")])
+
 (define_insn_and_split "*vec_extractv2si_zext_mem"
   [(set (match_operand:DI 0 "register_operand" "=y,x,r")
 	(zero_extend:DI
 	  (vec_select:SI
 	    (match_operand:V2SI 1 "memory_operand" "o,o,o")
 	    (parallel [(match_operand:SI 2 "const_0_to_1_operand")]))))]
-  "TARGET_64BIT"
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_64BIT"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (zero_extend:DI (match_dup 1)))]
@@ -1896,6 +1954,36 @@
    (set_attr "mmx_isa" "native,*,*")
    (set_attr "type" "mmxshft,sseiadd,sseiadd")
    (set_attr "mode" "DI,TI,TI")])
+
+(define_expand "reduc_plus_scal_v8qi"
+ [(plus:V8QI
+    (match_operand:QI 0 "register_operand")
+    (match_operand:V8QI 1 "register_operand"))]
+ "TARGET_MMX_WITH_SSE"
+{
+  rtx tmp = gen_reg_rtx (V8QImode);
+  emit_move_insn (tmp, CONST0_RTX (V8QImode));
+  rtx tmp2 = gen_reg_rtx (V1DImode);
+  emit_insn (gen_mmx_psadbw (tmp2, operands[1], tmp));
+  tmp2 = gen_lowpart (V8QImode, tmp2);
+  emit_insn (gen_vec_extractv8qiqi (operands[0], tmp2, const0_rtx));
+  DONE;
+})
+
+(define_expand "usadv8qi"
+  [(match_operand:V2SI 0 "register_operand")
+   (match_operand:V8QI 1 "register_operand")
+   (match_operand:V8QI 2 "vector_operand")
+   (match_operand:V2SI 3 "vector_operand")]
+  "TARGET_MMX_WITH_SSE"
+{
+  rtx t1 = gen_reg_rtx (V1DImode);
+  rtx t2 = gen_reg_rtx (V2SImode);
+  emit_insn (gen_mmx_psadbw (t1, operands[1], operands[2]));
+  convert_move (t2, t1, 0);
+  emit_insn (gen_addv2si3 (operands[0], t2, operands[3]));
+  DONE;
+})
 
 (define_insn_and_split "mmx_pmovmskb"
   [(set (match_operand:SI 0 "register_operand" "=r,r")

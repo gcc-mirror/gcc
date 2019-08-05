@@ -1,3 +1,49 @@
+2019-08-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/88227
+	* check.c (oct2bin):  New function.  Convert octal string to binary.
+	(hex2bin): New function.  Convert hexidecimal string to binary.
+	(bin2real): New function.  Convert binary string to REAL.  Use
+	oct2bin and hex2bin.
+	(gfc_boz2real):  Use fallback conversion bin2real.
+
+2019-08-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90985
+	* decl.c (gfc_match_data): In free-form code, DATA be followed by
+	whitespace.
+
+2019-08-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90986
+	* match.c (gfc_match_equivalence): Check that EQUIVALENCE is followed
+	by '('.
+
+2019-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91296
+	* interface.c (compare_actual_expr): When checking for aliasing, add
+	a case to handle REF_INQUIRY (e.g., foo(x%re, x%im) do not alias).
+
+2019-07-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/90813
+	* dump-parse-tree.c (show_global_symbol): New function.
+	(gfc_dump_global_symbols): New function.
+	* gfortran.h (gfc_traverse_gsymbol): Add prototype.
+	(gfc_dump_global_symbols): Likewise.
+	* invoke.texi: Document -fdump-fortran-global.
+	* lang.opt: Add -fdump-fortran-global.
+	* parse.c (gfc_parse_file): Handle flag_dump_fortran_global.
+	* symbol.c (gfc_traverse_gsymbol): New function.
+	* trans-decl.c (sym_identifier): New function.
+	(mangled_identifier): New function, doing most of the work
+	of gfc_sym_mangled_identifier.
+	(gfc_sym_mangled_identifier): Use mangled_identifier.  Add mangled
+	identifier to global symbol table.
+	(get_proc_pointer_decl): Use backend decl from global identifier
+	if present.
+
 2019-07-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/65819

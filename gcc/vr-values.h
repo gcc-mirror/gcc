@@ -41,8 +41,9 @@ class vr_values
   ~vr_values (void);
 
   const value_range *get_value_range (const_tree);
-
   void set_vr_value (tree, value_range *);
+  value_range *swap_vr_value (tree, value_range *);
+
   void set_def_to_varying (const_tree);
   void set_defs_to_varying (gimple *);
   bool update_value_range (const_tree, value_range *);
@@ -68,6 +69,8 @@ class vr_values
   /* Allocate a new value_range object.  */
   value_range *allocate_value_range (void)
     { return vrp_value_range_pool.allocate (); }
+  void free_value_range (value_range *vr)
+    { vrp_value_range_pool.remove (vr); }
 
   /* */
   void cleanup_edges_and_switches (void);

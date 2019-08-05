@@ -1520,6 +1520,48 @@ _mm256_setr_m128i (__m128i __L, __m128i __H)
   return _mm256_set_m128i (__H, __L);
 }
 
+extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_loadu2_m128 (float const *__PH, float const *__PL)
+{
+  return _mm256_insertf128_ps (_mm256_castps128_ps256 (_mm_loadu_ps (__PL)),
+			       _mm_loadu_ps (__PH), 1);
+}
+
+extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_storeu2_m128 (float *__PH, float *__PL, __m256 __A)
+{
+  _mm_storeu_ps (__PL, _mm256_castps256_ps128 (__A));
+  _mm_storeu_ps (__PH, _mm256_extractf128_ps (__A, 1));
+}
+
+extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_loadu2_m128d (double const *__PH, double const *__PL)
+{
+  return _mm256_insertf128_pd (_mm256_castpd128_pd256 (_mm_loadu_pd (__PL)),
+			       _mm_loadu_pd (__PH), 1);
+}
+
+extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_storeu2_m128d (double *__PH, double *__PL, __m256d __A)
+{
+  _mm_storeu_pd (__PL, _mm256_castpd256_pd128 (__A));
+  _mm_storeu_pd (__PH, _mm256_extractf128_pd (__A, 1));
+}
+
+extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_loadu2_m128i (__m128i_u const *__PH, __m128i_u const *__PL)
+{
+  return _mm256_insertf128_si256 (_mm256_castsi128_si256 (_mm_loadu_si128 (__PL)),
+				  _mm_loadu_si128 (__PH), 1);
+}
+
+extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_storeu2_m128i (__m128i_u *__PH, __m128i_u *__PL, __m256i __A)
+{
+  _mm_storeu_si128 (__PL, _mm256_castsi256_si128 (__A));
+  _mm_storeu_si128 (__PH, _mm256_extractf128_si256 (__A, 1));
+}
+
 #ifdef __DISABLE_AVX__
 #undef __DISABLE_AVX__
 #pragma GCC pop_options

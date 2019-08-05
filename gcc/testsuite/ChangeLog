@@ -1,3 +1,270 @@
+2019-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91341
+	* gcc.target/i386/avx-loadu2-m128-1.c: New test.
+	* gcc.target/i386/avx-loadu2-m128-2.c: New test.
+	* gcc.target/i386/avx-loadu2-m128d-1.c: New test.
+	* gcc.target/i386/avx-loadu2-m128d-2.c: New test.
+	* gcc.target/i386/avx-loadu2-m128i-1.c: New test.
+	* gcc.target/i386/avx-loadu2-m128i-2.c: New test.
+	* gcc.target/i386/avx-storeu2-m128-1.c: New test.
+	* gcc.target/i386/avx-storeu2-m128-2.c: New test.
+	* gcc.target/i386/avx-storeu2-m128d-1.c: New test.
+	* gcc.target/i386/avx-storeu2-m128d-2.c: New test.
+	* gcc.target/i386/avx-storeu2-m128i-1.c: New test.
+	* gcc.target/i386/avx-storeu2-m128i-2.c: New test.
+
+2019-08-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/promote-type-for-libcall.c: New.
+
+2019-08-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90985
+	* gfortran.dg/pr90985.f90: New test.
+
+2019-08-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/90986
+	* gfortran.dg/equiv_10.f90: New test.
+
+2019-08-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/56428
+	* g++.dg/cpp0x/nontype4.C: New test.
+
+2019-08-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/53009
+	* g++.dg/cpp0x/nontype3.C: New test.
+
+2019-08-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/77575
+	* g++.dg/cpp0x/nontype2.C: New test.
+
+2019-08-02  Steve Ellcey  <sellcey@marvell.com>
+
+	* gcc.target/aarch64/simd_pcs_attribute.c: New test.
+	* gcc.target/aarch64/simd_pcs_attribute-2.c: Ditto.
+	* gcc.target/aarch64/simd_pcs_attribute-3.c: Ditto.
+
+2019-08-02  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91201
+	* gcc.target/i386/sse4_1-pr91201.c: New test.
+
+2019-08-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91230 - wrong error with __PRETTY_FUNCTION__ and generic lambda.
+	* g++.dg/cpp1y/lambda-generic-pretty1.C: New test.
+
+2019-08-02  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91323
+	* gcc.dg/torture/pr91323.c: New test.
+
+2019-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp1z/nodiscard6.C: New.
+
+2019-08-02  Senthil Kumar Selvaraj  <senthilkumar.selvaraj@microchip.com>
+
+	* gcc.dg/torture/ssa-fre-5.c: Add dg-require-effective-target int32.
+	* gcc.dg/torture/ssa-fre-7.c: Likewise.
+
+2019-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91201
+	* gcc.target/i386/sse2-pr91201-3.c: New test.
+	* gcc.target/i386/sse2-pr91201-4.c: New test.
+	* gcc.target/i386/sse2-pr91201-5.c: New test.
+	* gcc.target/i386/sse2-pr91201-6.c: New test.
+
+2019-08-02  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/cpp1y/new2.C: New test.
+
+2019-08-02  Senthil Kumar Selvaraj  <senthilkumar.selvaraj@microchip.com>
+
+	* gcc.dg/torture/ssa-fre-6.c: Add dg-require-effective-target int32.
+
+2019-08-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	* g++.dg/lto/pr87906_0.C: Add dg-require-effective-target shared check.
+
+2019-08-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/90947
+	* c-c++-common/array-1.c: New test.
+	* g++.dg/abi/mangle73.C: New test.
+	* g++.dg/cpp2a/nontype-class23.C: New test.
+	* g++.dg/init/array53.C: New test.
+
+2019-08-01  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/85693
+	* gcc.target/i386/pr85693-1.c: New test.
+
+2019-08-01  Matthew Beliveau  <mbelivea@redhat.com>
+
+	PR c++/90590
+	* c-c++-common/pr90590-1.c: New test.
+	* c-c++-common/pr90590-1.h: New test.
+	* c-c++-common/pr90590-2.c: New test.
+	* c-c++-common/pr90590-2.h: New test.
+
+2019-08-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90805 - detect narrowing in case values.
+	* c-c++-common/pr89888.c: Update expected dg-error.
+	* g++.dg/cpp0x/Wnarrowing17.C: New test.
+	* g++.dg/cpp0x/enum28.C: Update expected dg-error.
+
+2019-08-01  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc/testsuite/g++.dg/lto/pr89330_0.C: Add effective-target shared.
+
+2019-08-01  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/attribute-10.c: Fix testcase on rv64.
+
+2019-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/diagnostic/delete1.C: New.
+
+2019-07-31  Maxim Blinov  <maxim.blinov@embecosm.com>
+
+	* gcc.target/riscv/attribute-10.c: New test.
+
+2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91280
+	* g++.dg/torture/pr91280.C: New testcase.
+
+2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91293
+	* gcc.dg/vect/pr91293-1.c: New testcase.
+	* gcc.dg/vect/pr91293-2.c: Likewise.
+	* gcc.dg/vect/pr91293-3.c: Likewise.
+
+2019-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91201
+	* gcc.target/i386/sse2-pr91201-2.c: New test.
+
+2019-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91178
+	* gcc.dg/torture/pr91178-2.c: New testcase.
+
+2019-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91201
+	* gcc.target/i386/sse2-pr91201.c: New test.
+	* gcc.target/i386/avx2-pr91201.c: New test.
+	* gcc.target/i386/avx512bw-pr91201.c: New test.
+
+2019-07-31  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/aarch64/acle/tme.c: New test.
+	* gcc.target/aarch64/pragma_cpp_predefs_2.c: New test.
+
+2019-07-31  Joel Hutton  <Joel.Hutton@arm.com>
+
+	* gcc.target/arm/cmse/cmse-17.c: New test.
+
+2019-07-30  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/91258
+	* g++.dg/ubsan/vla-1.C: Suppress a valid warning.
+
+2019-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91296
+	* gfortran.dg/pr91296.f90: New test.
+
+2019-07-30  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/91270
+	* g++.dg/torture/pr91270.C: New test.
+
+2019-07-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/vect-cond-arith-7.c: New test.
+
+2019-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/91282
+	* gcc.dg/type-convert-var.c: Add -fexcess-precision=fast to
+	dg-additional-options.
+
+	PR middle-end/91216
+	* gcc.dg/gomp/pr91216.c: New test.
+
+	PR target/91150
+	* gcc.target/i386/avx512bw-pr91150.c: New test.
+
+2019-07-29  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/pr78818-data-region.c: Add -mlarge to dg-options.
+	* gcc.target/msp430/region-misuse-code.c: New test.
+	* gcc.target/msp430/region-misuse-data.c: Likewise.
+	* gcc.target/msp430/region-misuse-code-data.c: Likewise.
+	* gcc.target/msp430/region-attribute-misuse.c: Likewise.
+
+2019-07-29  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	PR target/70320
+	* gcc.target/msp430/asm-register-names-lower-case.c: New test.
+	* gcc.target/msp430/asm-register-names-upper-case.c: Likewise.
+
+2019-07-29  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/cpp1y/new1.C (test_unused): Add new case that causes
+	ICE.
+
+2019-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/91267
+	* gcc.dg/torture/pr91267.c: New testcase.
+
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-c++-common/guality/Og-dce-1.c: New test.
+	* c-c++-common/guality/Og-dce-2.c: Likewise.
+	* c-c++-common/guality/Og-dce-3.c: Likewise.
+
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-c++-common/guality/Og-global-dse-1.c: New test.
+
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-c++-common/guality/Og-static-wo-1.c: New test.
+	* g++.dg/guality/guality.exp: Separate the c-c++-common tests into
+	"Og" and "general" tests.  Run the latter at -O0 and -Og only.
+	* gcc.dg/guality/guality.exp: Likewise.
+
+2019-07-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/scanasm.exp (parse_function_bodies, check_function_body)
+	(check-function-bodies): New procedures.
+	* gcc.target/aarch64/sve/init_1.c: Use check-function-bodies
+	instead of scan-assembler.
+	* gcc.target/aarch64/sve/init_2.c: Likewise.
+	* gcc.target/aarch64/sve/init_3.c: Likewise.
+	* gcc.target/aarch64/sve/init_4.c: Likewise.
+	* gcc.target/aarch64/sve/init_5.c: Likewise.
+	* gcc.target/aarch64/sve/init_6.c: Likewise.
+	* gcc.target/aarch64/sve/init_7.c: Likewise.
+	* gcc.target/aarch64/sve/init_8.c: Likewise.
+	* gcc.target/aarch64/sve/init_9.c: Likewise.
+	* gcc.target/aarch64/sve/init_10.c: Likewise.
+	* gcc.target/aarch64/sve/init_11.c: Likewise.
+	* gcc.target/aarch64/sve/init_12.c: Likewise.
+
 2019-07-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/lto/pr89330_0.C (dg-lto-options): Add -fPIC.

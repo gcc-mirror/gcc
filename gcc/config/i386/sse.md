@@ -2728,9 +2728,30 @@
   DONE;
 })
 
+(define_expand "reduc_plus_scal_v16qi"
+ [(plus:V16QI
+    (match_operand:QI 0 "register_operand")
+    (match_operand:V16QI 1 "register_operand"))]
+ "TARGET_SSE2"
+{
+  rtx tmp = gen_reg_rtx (V1TImode);
+  emit_insn (gen_sse2_lshrv1ti3 (tmp, gen_lowpart (V1TImode, operands[1]),
+				 GEN_INT (64)));
+  rtx tmp2 = gen_reg_rtx (V16QImode);
+  emit_insn (gen_addv16qi3 (tmp2, operands[1], gen_lowpart (V16QImode, tmp)));
+  rtx tmp3 = gen_reg_rtx (V16QImode);
+  emit_move_insn (tmp3, CONST0_RTX (V16QImode));
+  rtx tmp4 = gen_reg_rtx (V2DImode);
+  emit_insn (gen_sse2_psadbw (tmp4, tmp2, tmp3));
+  tmp4 = gen_lowpart (V16QImode, tmp4);
+  emit_insn (gen_vec_extractv16qiqi (operands[0], tmp4, const0_rtx));
+  DONE;
+})
+
 (define_mode_iterator REDUC_PLUS_MODE
  [(V4DF "TARGET_AVX") (V8SF "TARGET_AVX")
-  (V8DF "TARGET_AVX512F") (V16SF "TARGET_AVX512F")])
+  (V8DF "TARGET_AVX512F") (V16SF "TARGET_AVX512F")
+  (V32QI "TARGET_AVX") (V64QI "TARGET_AVX512F")])
 
 (define_expand "reduc_plus_scal_<mode>"
  [(plus:REDUC_PLUS_MODE
@@ -2741,8 +2762,8 @@
   rtx tmp = gen_reg_rtx (<ssehalfvecmode>mode);
   emit_insn (gen_vec_extract_hi_<mode> (tmp, operands[1]));
   rtx tmp2 = gen_reg_rtx (<ssehalfvecmode>mode);
-  emit_insn (gen_add<ssehalfvecmodelower>3
-    (tmp2, tmp, gen_lowpart (<ssehalfvecmode>mode, operands[1])));
+  rtx tmp3 = gen_lowpart (<ssehalfvecmode>mode, operands[1]);
+  emit_insn (gen_add<ssehalfvecmodelower>3 (tmp2, tmp, tmp3));
   emit_insn (gen_reduc_plus_scal_<ssehalfvecmodelower> (operands[0], tmp2));
   DONE;
 })
@@ -14945,6 +14966,25 @@
        (eq (const_string "<PEXTR_MODE12:MODE>mode") (const_string "V8HImode"))
        (const_string "*")
        (const_string "1")))
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*vec_extractv16qi_zext"
+  [(set (match_operand:HI 0 "register_operand" "=r,r")
+	(zero_extend:HI
+	  (vec_select:QI
+	    (match_operand:V16QI 1 "register_operand" "x,v")
+	    (parallel
+	      [(match_operand:SI 2 "const_0_to_15_operand")]))))]
+  "TARGET_SSE4_1"
+  "@
+   %vpextrb\t{%2, %1, %k0|%k0, %1, %2}
+   vpextrb\t{%2, %1, %k0|%k0, %1, %2}"
+  [(set_attr "isa" "*,avx512bw")
+   (set_attr "type" "sselog1")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")])

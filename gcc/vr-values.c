@@ -202,8 +202,12 @@ vr_values::update_value_range (const_tree var, value_range *new_vr)
 	new_vr->intersect (&nr);
     }
 
-  /* Update the value range, if necessary.  */
+  /* Update the value range, if necessary.  If we cannot allocate a lattice
+     entry for VAR keep it at VARYING.  This happens when DOM feeds us stmts
+     with SSA names allocated after setting up the lattice.  */
   old_vr = get_lattice_entry (var);
+  if (!old_vr)
+    return false;
   is_new = !old_vr->equal_p (*new_vr, /*ignore_equivs=*/false);
 
   if (is_new)
@@ -4311,6 +4315,8 @@ vr_values::simplify_stmt_using_ranges (gimple_stmt_iterator *gsi)
   return false;
 }
 
+/* Set the lattice entry for VAR to VR.  */
+
 void
 vr_values::set_vr_value (tree var, value_range *vr)
 {
@@ -4319,3 +4325,13 @@ vr_values::set_vr_value (tree var, value_range *vr)
   vr_value[SSA_NAME_VERSION (var)] = vr;
 }
 
+/* Swap the lattice entry for VAR with VR and return the old entry.  */
+
+value_range *
+vr_values::swap_vr_value (tree var, value_range *vr)
+{
+  if (SSA_NAME_VERSION (var) >= num_vr_values)
+    return NULL;
+  std::swap (vr_value[SSA_NAME_VERSION (var)], vr);
+  return vr;
+}

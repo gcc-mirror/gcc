@@ -1866,11 +1866,12 @@ prohibited_class_reg_set_mode_p (enum reg_class rclass,
    alternative.  */
 static unsigned int curr_small_class_check = 0;
 
-/* Update number of used inputs of class OP_CLASS for operand NOP.
-   Return true if we have more such class operands than the number of
-   available regs.  */
+/* Update number of used inputs of class OP_CLASS for operand NOP
+   of alternative NALT.  Return true if we have more such class operands
+   than the number of available regs.  */
 static bool
-update_and_check_small_class_inputs (int nop, enum reg_class op_class)
+update_and_check_small_class_inputs (int nop, int nalt,
+				     enum reg_class op_class)
 {
   static unsigned int small_class_check[LIM_REG_CLASSES];
   static int small_class_input_nums[LIM_REG_CLASSES];
@@ -1881,7 +1882,7 @@ update_and_check_small_class_inputs (int nop, enum reg_class op_class)
       && hard_reg_set_intersect_p (reg_class_contents[op_class],
 				   ira_no_alloc_regs)
       && (curr_static_id->operand[nop].type != OP_OUT
-	  || curr_static_id->operand[nop].early_clobber))
+	  || TEST_BIT (curr_static_id->operand[nop].early_clobber_alts, nalt)))
     {
       if (small_class_check[op_class] == curr_small_class_check)
 	small_class_input_nums[op_class]++;
@@ -2150,7 +2151,8 @@ process_alt_operands (int only_alternative)
 			/* We should reject matching of an early
 			   clobber operand if the matching operand is
 			   not dying in the insn.  */
-			if (! curr_static_id->operand[m].early_clobber
+			if (!TEST_BIT (curr_static_id->operand[m]
+				       .early_clobber_alts, nalt)
 			    || operand_reg[nop] == NULL_RTX
 			    || (find_regno_note (curr_insn, REG_DEAD,
 						 REGNO (op))
@@ -2234,7 +2236,8 @@ process_alt_operands (int only_alternative)
 			   it results in less hard regs required for
 			   the insn than a non-matching earlyclobber
 			   alternative.  */
-			if (curr_static_id->operand[m].early_clobber)
+			if (TEST_BIT (curr_static_id->operand[m]
+				      .early_clobber_alts, nalt))
 			  {
 			    if (lra_dump_file != NULL)
 			      fprintf
@@ -2875,7 +2878,8 @@ process_alt_operands (int only_alternative)
               goto fail;
             }
 
-	  if (update_and_check_small_class_inputs (nop, this_alternative))
+	  if (update_and_check_small_class_inputs (nop, nalt,
+						   this_alternative))
 	    {
 	      if (lra_dump_file != NULL)
 		fprintf (lra_dump_file,

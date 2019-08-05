@@ -554,3 +554,169 @@ proc scan-lto-assembler { args } {
     verbose "output_file: $output_file"
     dg-scan "scan-lto-assembler" 1 $testcase $output_file $args
 }
+
+# Read assembly file FILENAME and store a mapping from function names
+# to function bodies in array RESULT.  FILENAME has already been uploaded
+# locally where necessary and is known to exist.
+
+proc parse_function_bodies { filename result } {
+    upvar $result up_result
+
+    # Regexp for the start of a function definition (name in \1).
+    set label {^([a-zA-Z_]\S+):$}
+
+    # Regexp for the end of a function definition.
+    set terminator {^\s*\.size}
+
+    # Regexp for lines that aren't interesting.
+    set fluff {^\s*(?:\.|//)}
+
+    set fd [open $filename r]
+    set in_function 0
+    while { [gets $fd line] >= 0 } {
+	if { [regexp $label $line dummy function_name] } {
+	    set in_function 1
+	    set function_body ""
+	} elseif { $in_function } {
+	    if { [regexp $terminator $line] } {
+		set up_result($function_name) $function_body
+		set in_function 0
+	    } elseif { ![regexp $fluff $line] } {
+		append function_body $line "\n"
+	    }
+	}
+    }
+    close $fd
+}
+
+# FUNCTIONS is an array that maps function names to function bodies.
+# Return true if it contains a definition of function NAME and if
+# that definition matches BODY_REGEXP.
+
+proc check_function_body { functions name body_regexp } {
+    upvar $functions up_functions
+
+    if { ![info exists up_functions($name)] } {
+	return 0
+    }
+    return [regexp "^$body_regexp\$" $up_functions($name)]
+}
+
+# Check the implementations of functions against expected output.  Used as:
+#
+# { dg-do { check-function-bodies PREFIX TERMINATOR[ OPTION] } }
+#
+# See sourcebuild.texi for details.
+
+proc check-function-bodies { args } {
+    if { [llength $args] < 2 } {
+	error "too few arguments to check-function-bodies"
+    }
+    if { [llength $args] > 3 } {
+	error "too many arguments to check-function-bodies"
+    }
+
+    if { [llength $args] == 3 } {
+	set required_flag [lindex $args 2]
+
+	upvar 2 dg-extra-tool-flags extra_tool_flags
+	set flags $extra_tool_flags
+
+	global torture_current_flags
+	if { [info exists torture_current_flags] } {
+	    append flags " " $torture_current_flags
+	}
+	if { ![regexp " $required_flag " $flags] } {
+	    return
+	}
+    }
+
+    set testcase [testname-for-summary]
+    # The name might include a list of options; extract the file name.
+    set filename [lindex $testcase 0]
+
+    global srcdir
+    set input_filename "$srcdir/$filename"
+    set output_filename "[file rootname [file tail $filename]].s"
+
+    set prefix [lindex $args 0]
+    set prefix_len [string length $prefix]
+    set terminator [lindex $args 1]
+    if { [string equal $terminator ""] } {
+	set terminator "*/"
+    }
+    set terminator_len [string length $terminator]
+
+    set have_bodies 0
+    if { [is_remote host] } {
+	remote_upload host "$filename"
+    }
+    if { [file exists $output_filename] } {
+	parse_function_bodies $output_filename functions
+	set have_bodies 1
+    } else {
+	verbose -log "$testcase: output file does not exist"
+    }
+
+    set count 0
+    set function_regexp ""
+    set label {^(\S+):$}
+
+    set lineno 1
+    set fd [open $input_filename r]
+    set in_function 0
+    while { [gets $fd line] >= 0 } {
+	if { [string equal -length $prefix_len $line $prefix] } {
+	    set line [string trim [string range $line $prefix_len end]]
+	    if { !$in_function } {
+		if { [regexp "^(.*\\S)\\s+{(.*)}\$" $line dummy \
+			  line selector] } {
+		    set selector [dg-process-target $selector]
+		} else {
+		    set selector "P"
+		}
+		if { ![regexp $label $line dummy function_name] } {
+		    close $fd
+		    error "check-function-bodies: line $lineno does not have a function label"
+		}
+		set in_function 1
+		set function_regexp ""
+	    } elseif { [string equal $line "("] } {
+		append function_regexp "(?:"
+	    } elseif { [string equal $line "|"] } {
+		append function_regexp "|"
+	    } elseif { [string equal $line ")"] } {
+		append function_regexp ")"
+	    } elseif { [string equal $line "..."] } {
+		append function_regexp ".*"
+	    } else {
+		append function_regexp "\t" $line "\n"
+	    }
+	} elseif { [string equal -length $terminator_len $line $terminator] } {
+	    if { ![string equal $selector "N"] } {
+		if { [string equal $selector "F"] } {
+		    setup_xfail "*-*-*"
+		}
+		set testname "$testcase check-function-bodies $function_name"
+		if { !$have_bodies } {
+		    unresolved $testname
+		} elseif { [check_function_body functions $function_name \
+				$function_regexp] } {
+		    pass $testname
+		} else {
+		    fail $testname
+		}
+	    }
+	    set in_function 0
+	    incr count
+	}
+	incr lineno
+    }
+    close $fd
+    if { $in_function } {
+	error "check-function-bodies: missing \"$terminator\""
+    }
+    if { $count == 0 } {
+	error "check-function-bodies: no matches found"
+    }
+}

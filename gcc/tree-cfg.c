@@ -9579,7 +9579,8 @@ execute_fixup_cfg (void)
 	     Keep access when store has side effect, i.e. in case when source
 	     is volatile.  */
 	  if (gimple_store_p (stmt)
-	      && !gimple_has_side_effects (stmt))
+	      && !gimple_has_side_effects (stmt)
+	      && !optimize_debug)
 	    {
 	      tree lhs = get_base_address (gimple_get_lhs (stmt));
 

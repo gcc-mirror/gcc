@@ -3489,9 +3489,6 @@ rs6000_option_override_internal (bool global_init_p)
   /* Don't override by the processor default if given explicitly.  */
   set_masks &= ~rs6000_isa_flags_explicit;
 
-  if (global_init_p && rs6000_dejagnu_cpu_index >= 0)
-    rs6000_cpu_index = rs6000_dejagnu_cpu_index;
-
   /* Process the -mcpu=<xxx> and -mtune=<xxx> argument.  If the user changed
      the cpu in a target attribute or pragma, but did not specify a tuning
      option, use the cpu for the tuning option rather than the option specified

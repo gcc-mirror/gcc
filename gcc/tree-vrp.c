@@ -909,22 +909,17 @@ operand_less_p (tree val, tree val2)
   /* LT is folded faster than GE and others.  Inline the common case.  */
   if (TREE_CODE (val) == INTEGER_CST && TREE_CODE (val2) == INTEGER_CST)
     return tree_int_cst_lt (val, val2);
+  else if (TREE_CODE (val) == SSA_NAME && TREE_CODE (val2) == SSA_NAME)
+    return val == val2 ? 0 : -2;
   else
     {
-      tree tcmp;
-
-      fold_defer_overflow_warnings ();
-
-      tcmp = fold_binary_to_constant (LT_EXPR, boolean_type_node, val, val2);
-
-      fold_undefer_and_ignore_overflow_warnings ();
-
-      if (!tcmp
-	  || TREE_CODE (tcmp) != INTEGER_CST)
-	return -2;
-
-      if (!integer_zerop (tcmp))
+      int cmp = compare_values (val, val2);
+      if (cmp == -1)
 	return 1;
+      else if (cmp == 0 || cmp == 1)
+	return 0;
+      else
+	return -2;
     }
 
   return 0;
@@ -958,8 +953,8 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
 
   /* Convert the two values into the same type.  This is needed because
      sizetype causes sign extension even for unsigned types.  */
-  val2 = fold_convert (TREE_TYPE (val1), val2);
-  STRIP_USELESS_TYPE_CONVERSION (val2);
+  if (!useless_type_conversion_p (TREE_TYPE (val1), TREE_TYPE (val2)))
+    val2 = fold_convert (TREE_TYPE (val1), val2);
 
   const bool overflow_undefined
     = INTEGRAL_TYPE_P (TREE_TYPE (val1))
@@ -1067,31 +1062,42 @@ compare_values_warnv (tree val1, tree val2, bool *strict_overflow_p)
     }
   else
     {
-      tree t;
+      if (TREE_CODE (val1) == INTEGER_CST && TREE_CODE (val2) == INTEGER_CST)
+	{
+	  /* We cannot compare overflowed values.  */
+	  if (TREE_OVERFLOW (val1) || TREE_OVERFLOW (val2))
+	    return -2;
+
+	  return tree_int_cst_compare (val1, val2);
+	}
 
       /* First see if VAL1 and VAL2 are not the same.  */
-      if (val1 == val2 || operand_equal_p (val1, val2, 0))
+      if (operand_equal_p (val1, val2, 0))
 	return 0;
 
+      fold_defer_overflow_warnings ();
+
       /* If VAL1 is a lower address than VAL2, return -1.  */
-      if (operand_less_p (val1, val2) == 1)
-	return -1;
+      tree t = fold_binary_to_constant (LT_EXPR, boolean_type_node, val1, val2);
+      if (t && integer_onep (t))
+	{
+	  fold_undefer_and_ignore_overflow_warnings ();
+	  return -1;
+	}
 
       /* If VAL1 is a higher address than VAL2, return +1.  */
-      if (operand_less_p (val2, val1) == 1)
-	return 1;
-
-      /* If VAL1 is different than VAL2, return +2.
-	 For integer constants we either have already returned -1 or 1
-	 or they are equivalent.  We still might succeed in proving
-	 something about non-trivial operands.  */
-      if (TREE_CODE (val1) != INTEGER_CST
-	  || TREE_CODE (val2) != INTEGER_CST)
+      t = fold_binary_to_constant (LT_EXPR, boolean_type_node, val2, val1);
+      if (t && integer_onep (t))
 	{
-          t = fold_binary_to_constant (NE_EXPR, boolean_type_node, val1, val2);
-	  if (t && integer_onep (t))
-	    return 2;
+	  fold_undefer_and_ignore_overflow_warnings ();
+	  return 1;
 	}
+
+      /* If VAL1 is different than VAL2, return +2.  */
+      t = fold_binary_to_constant (NE_EXPR, boolean_type_node, val1, val2);
+      fold_undefer_and_ignore_overflow_warnings ();
+      if (t && integer_onep (t))
+	return 2;
 
       return -2;
     }
@@ -5414,8 +5420,10 @@ union_ranges (enum value_range_kind *vr0type,
 	      enum value_range_kind vr1type,
 	      tree vr1min, tree vr1max)
 {
-  bool mineq = vrp_operand_equal_p (*vr0min, vr1min);
-  bool maxeq = vrp_operand_equal_p (*vr0max, vr1max);
+  int cmpmin = compare_values (*vr0min, vr1min);
+  int cmpmax = compare_values (*vr0max, vr1max);
+  bool mineq = cmpmin == 0;
+  bool maxeq = cmpmax == 0;
 
   /* [] is vr0, () is vr1 in the following classification comments.  */
   if (mineq && maxeq)
@@ -5515,8 +5523,8 @@ union_ranges (enum value_range_kind *vr0type,
       else
 	gcc_unreachable ();
     }
-  else if ((maxeq || operand_less_p (vr1max, *vr0max) == 1)
-	   && (mineq || operand_less_p (*vr0min, vr1min) == 1))
+  else if ((maxeq || cmpmax == 1)
+	   && (mineq || cmpmin == -1))
     {
       /* [ (  ) ] or [(  ) ] or [ (  )] */
       if (*vr0type == VR_RANGE
@@ -5549,8 +5557,8 @@ union_ranges (enum value_range_kind *vr0type,
       else
 	gcc_unreachable ();
     }
-  else if ((maxeq || operand_less_p (*vr0max, vr1max) == 1)
-	   && (mineq || operand_less_p (vr1min, *vr0min) == 1))
+  else if ((maxeq || cmpmax == -1)
+	   && (mineq || cmpmin == 1))
     {
       /* ( [  ] ) or ([  ] ) or ( [  ]) */
       if (*vr0type == VR_RANGE
@@ -5589,10 +5597,10 @@ union_ranges (enum value_range_kind *vr0type,
       else
 	gcc_unreachable ();
     }
-  else if ((operand_less_p (vr1min, *vr0max) == 1
-	    || operand_equal_p (vr1min, *vr0max, 0))
-	   && operand_less_p (*vr0min, vr1min) == 1
-	   && operand_less_p (*vr0max, vr1max) == 1)
+  else if (cmpmin == -1
+	   && cmpmax == -1
+	   && (operand_less_p (vr1min, *vr0max) == 1
+	       || operand_equal_p (vr1min, *vr0max, 0)))
     {
       /* [  (  ]  ) or [   ](   ) */
       if (*vr0type == VR_RANGE
@@ -5626,10 +5634,10 @@ union_ranges (enum value_range_kind *vr0type,
       else
 	gcc_unreachable ();
     }
-  else if ((operand_less_p (*vr0min, vr1max) == 1
-	    || operand_equal_p (*vr0min, vr1max, 0))
-	   && operand_less_p (vr1min, *vr0min) == 1
-	   && operand_less_p (vr1max, *vr0max) == 1)
+  else if (cmpmin == 1
+	   && cmpmax == 1
+	   && (operand_less_p (*vr0min, vr1max) == 1
+	       || operand_equal_p (*vr0min, vr1max, 0)))
     {
       /* (  [  )  ] or (   )[   ] */
       if (*vr0type == VR_RANGE

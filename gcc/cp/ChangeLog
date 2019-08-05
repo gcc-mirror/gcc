@@ -1,3 +1,60 @@
+2019-08-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91230 - wrong error with __PRETTY_FUNCTION__ and generic lambda.
+	* pt.c (value_dependent_expression_p): Consider __PRETTY_FUNCTION__
+	inside a template function value-dependent.
+
+2019-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* tree.c (handle_nodiscard_attribute): Do not warn about nodiscard
+	applied to a constructor.
+
+2019-08-02  Martin Liska  <mliska@suse.cz>
+
+	* decl.c (grok_op_properties):
+	Mark DECL_SET_IS_OPERATOR_DELETE for user-provided delete operators.
+
+2019-08-01  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/90947
+	* decl.c (reshape_init_array_1): Avoid truncating initializer
+	lists containing string literals.
+
+2019-08-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/90805 - detect narrowing in case values.
+	* decl.c (case_conversion): Detect narrowing in case values.
+
+2019-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl2.c (delete_sanity): Improve diagnostic locations, use
+	cp_expr_loc_or_loc in four places.
+
+2019-07-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90538 - multiple expansions of capture packs
+	* cp-tree.h (DECLTYPE_FOR_INIT_CAPTURE): Remove.
+	* lambda.c (add_capture): Copy parameter packs from init.
+	(lambda_capture_field_type): Always use auto for init-capture.
+	* pt.c (uses_parameter_packs): Return tree.
+	(tsubst) [DECLTYPE_TYPE]: Remove init-capture handling.
+	(gen_elem_of_pack_expansion_instantiation): Don't push
+	local_specialization_stack.
+	(prepend_one_capture): New.
+	(tsubst_lambda_expr): Use it.  Don't touch local_specializations.
+	(do_auto_deduction): Avoid redundant error.
+
+	Fix copy_node of TEMPLATE_INFO.
+	* cp-tree.h (struct tree_template_info): Use tree_base instead of
+	tree_common.  Add tmpl and args fields.
+	(TI_TEMPLATE, TI_ARGS): Adjust.
+
+2019-07-30  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/91270
+	* tree-ssa-dce.c (propagate_necessity): Mark 2nd argument
+	of delete operator as needed.
+
 2019-07-25  Martin Liska  <mliska@suse.cz>
 	    Dominik Infuhr  <dominik.infuehr@theobroma-systems.com>
 

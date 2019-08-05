@@ -125,7 +125,8 @@ extern GTY(()) int darwin_ms_struct;
 
    However, a few can be handled and we can elide options that are silently-
    ignored defaults, plus warn on obsolete ones that no longer function.  */
-#define DRIVER_SELF_SPECS						\
+#undef SUBTARGET_DRIVER_SELF_SPECS
+#define SUBTARGET_DRIVER_SELF_SPECS					\
 "%{fapple-kext|mkernel:-static}",					\
 "%{gfull:-g -fno-eliminate-unused-debug-symbols} %<gfull",		\
 "%{gsplit-dwarf:%ngsplit-dwarf is not supported on this platform} \

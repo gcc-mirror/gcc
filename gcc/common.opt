@@ -1955,7 +1955,7 @@ Common Var(flag_dce) Init(1) Optimization
 Use the RTL dead code elimination pass.
 
 fdse
-Common Var(flag_dse) Init(1) Optimization
+Common Var(flag_dse) Init(0) Optimization
 Use the RTL dead store elimination pass.
 
 freschedule-modulo-scheduled-loops
