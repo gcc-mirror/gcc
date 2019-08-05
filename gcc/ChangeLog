@@ -1,3 +1,10 @@
+2019-08-05  Martin Liska  <mliska@suse.cz>
+
+	PR c++/91334
+	* tree-ssa-dce.c (propagate_necessity): Handle new operators
+	with not arguments.
+	(eliminate_unnecessary_stmts): Likewise.
+
 2019-08-05  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/91169

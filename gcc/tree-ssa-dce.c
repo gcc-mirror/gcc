@@ -810,6 +810,11 @@ propagate_necessity (bool aggressive)
 	  if (is_delete_operator
 	      || gimple_call_builtin_p (stmt, BUILT_IN_FREE))
 	    {
+	      /* It can happen that a user delete operator has the pointer
+		 argument optimized out already.  */
+	      if (gimple_call_num_args (stmt) == 0)
+		continue;
+
 	      tree ptr = gimple_call_arg (stmt, 0);
 	      gimple *def_stmt;
 	      tree def_callee;
@@ -1323,13 +1328,18 @@ eliminate_unnecessary_stmts (void)
 		  || (is_gimple_call (stmt)
 		      && gimple_call_operator_delete_p (as_a <gcall *> (stmt)))))
 	    {
-	      tree ptr = gimple_call_arg (stmt, 0);
-	      if (TREE_CODE (ptr) == SSA_NAME)
+	      /* It can happen that a user delete operator has the pointer
+		 argument optimized out already.  */
+	      if (gimple_call_num_args (stmt) > 0)
 		{
-		  gimple *def_stmt = SSA_NAME_DEF_STMT (ptr);
-		  if (!gimple_nop_p (def_stmt)
-		      && !gimple_plf (def_stmt, STMT_NECESSARY))
-		    gimple_set_plf (stmt, STMT_NECESSARY, false);
+		  tree ptr = gimple_call_arg (stmt, 0);
+		  if (TREE_CODE (ptr) == SSA_NAME)
+		    {
+		      gimple *def_stmt = SSA_NAME_DEF_STMT (ptr);
+		      if (!gimple_nop_p (def_stmt)
+			  && !gimple_plf (def_stmt, STMT_NECESSARY))
+			gimple_set_plf (stmt, STMT_NECESSARY, false);
+		    }
 		}
 	    }
 
