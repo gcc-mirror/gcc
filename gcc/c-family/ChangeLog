@@ -1,3 +1,10 @@
+2019-08-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91338 - Implement P1161R3: Deprecate a[b,c].
+	* c-opts.c (c_common_post_options): Enable -Wcomma-subscript by
+	default for C++2a, unless -Wno-deprecated.
+	* c.opt (Wcomma-subscript): New warning.
+
 2019-07-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_LOOP.

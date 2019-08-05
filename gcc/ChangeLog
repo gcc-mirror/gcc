@@ -1,3 +1,8 @@
+2019-08-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91338 - Implement P1161R3: Deprecate a[b,c].
+	* doc/invoke.texi: Document -Wcomma-subscript.
+
 2019-08-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* tree-core.h (tree_function_decl): Make function_code an
