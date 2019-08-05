@@ -3053,7 +3053,7 @@ location_of (tree t)
     return DECL_SOURCE_LOCATION (t);
   if (TREE_CODE (t) == DEFERRED_PARSE)
     return defparse_location (t);
-  return cp_expr_loc_or_loc (t, input_location);
+  return cp_expr_loc_or_input_loc (t);
 }
 
 /* Now the interfaces from error et al to dump_type et al. Each takes an

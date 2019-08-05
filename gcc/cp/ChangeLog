@@ -1,3 +1,41 @@
+2019-08-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (cp_expr_loc_or_input_loc): New.
+	(cxx_incomplete_type_diagnostic): Use it.
+	* call.c (build_converted_constant_expr_internal, convert_like_real,
+	convert_arg_to_ellipsis, convert_for_arg_passing, build_over_call,
+	build_cxx_call, perform_implicit_conversion_flags,
+	initialize_reference): Likewise.
+	* constexpr.c (cxx_eval_internal_function, cxx_eval_call_expression,
+	eval_and_check_array_index, cxx_eval_store_expression,
+	cxx_eval_statement_list, cxx_eval_loop_expr,
+	cxx_eval_constant_expression, potential_constant_expression_1):
+	Likewise.
+	* constraint.cc (check_for_logical_overloads,
+	satisfy_predicate_constraint): Likewise.
+	* cp-gimplify.c (cp_gimplify_expr): Likewise.
+	* cvt.c (cp_convert_to_pointer, convert_to_reference,
+	cp_convert_and_check, ocp_convert, maybe_warn_nodiscard): Likewise.
+	* decl.c (pop_switch): Likewise.
+	* decl2.c (delete_sanity): Likewise.
+	* error.c (location_of): Likewise.
+	* init.c (maybe_warn_list_ctor, build_aggr_init,
+	warn_placement_new_too_small, build_new_1, build_vec_init): Likewise.
+	* lex.c (unqualified_name_lookup_error): Likewise.
+	* parser.c (cp_parser_initializer_list, cp_parser_omp_for_cond):
+	Likewise.
+	* pt.c (check_for_bare_parameter_packs, check_valid_ptrmem_cst_expr,
+	unify_arg_conversion, convert_nontype_argument,
+	tsubst_copy_and_build, resolve_typename_type): Likewise.
+	* semantics.c (maybe_convert_cond, finish_call_expr,
+	cp_build_vec_convert): Likewise.
+	* typeck.c (decay_conversion, rationalize_conditional_expr,
+	cp_build_unary_op, build_x_compound_expr_from_list,
+	maybe_warn_about_returning_address_of_local,
+	maybe_warn_pessimizing_move): Likewise.
+	* typeck2.c (check_narrowing, digest_init_r,
+	process_init_constructor_array): Likewise.
+
 2019-08-05  Tom Honermann  <tom@honermann.net>
 
 	* parser.c (cp_parser_template_declaration_after_parameters): Enable

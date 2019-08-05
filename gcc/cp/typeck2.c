@@ -1006,7 +1006,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain, bool const_only)
 
   if (!ok)
     {
-      location_t loc = cp_expr_loc_or_loc (init, input_location);
+      location_t loc = cp_expr_loc_or_input_loc (init);
       if (cxx_dialect == cxx98)
 	{
 	  if (complain & tf_warning)
@@ -1085,7 +1085,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
 					complain))
     return error_mark_node;
 
-  location_t loc = cp_expr_loc_or_loc (init, input_location);
+  location_t loc = cp_expr_loc_or_input_loc (init);
 
   tree stripped_init = init;
 
@@ -1402,7 +1402,7 @@ process_init_constructor_array (tree type, tree init, int nested, int flags,
       if (nested == 2 && !domain && !vec_safe_is_empty (v))
 	{
 	  if (complain & tf_error)
-	    error_at (cp_expr_loc_or_loc (init, input_location),
+	    error_at (cp_expr_loc_or_input_loc (init),
 		      "initialization of flexible array member "
 		      "in a nested context");
 	  return PICFLAG_ERRONEOUS;
