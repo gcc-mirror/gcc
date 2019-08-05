@@ -1,3 +1,8 @@
+2019-08-05  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (Common Variable Attributes): Document alias
+	attribute.
+
 2019-08-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91338 - Implement P1161R3: Deprecate a[b,c].
