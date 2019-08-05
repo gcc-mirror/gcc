@@ -1,3 +1,11 @@
+2019-08-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backport from mainline
+	2019-08-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.c (riscv_promote_function_mode): New.
+	(TARGET_PROMOTE_FUNCTION_MODE): Use riscv_promote_function_mode.
+
 2019-08-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from trunk
