@@ -1,3 +1,8 @@
+2019-08-08  Julian Brown  <julian@codesourcery.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_openacc_exec_params,
+	GOMP_OFFLOAD_openacc_async_exec_params): New functions.
+
 2019-07-31  Julian Brown  <julian@codesourcery.com>
 
 	* config/nvptx/gomp_print.c (gomp_print_string, gomp_print_integer,
