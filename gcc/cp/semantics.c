@@ -1745,14 +1745,16 @@ force_paren_expr (tree expr)
       && TREE_CODE (expr) != SCOPE_REF)
     return expr;
 
+  location_t loc = cp_expr_location (expr);
+
   if (TREE_CODE (expr) == COMPONENT_REF
       || TREE_CODE (expr) == SCOPE_REF)
     REF_PARENTHESIZED_P (expr) = true;
   else if (processing_template_decl)
-    expr = build1 (PAREN_EXPR, TREE_TYPE (expr), expr);
+    expr = build1_loc (loc, PAREN_EXPR, TREE_TYPE (expr), expr);
   else
     {
-      expr = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (expr), expr);
+      expr = build1_loc (loc, VIEW_CONVERT_EXPR, TREE_TYPE (expr), expr);
       REF_PARENTHESIZED_P (expr) = true;
     }
 
