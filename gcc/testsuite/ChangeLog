@@ -1,3 +1,11 @@
+2019-08-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91338 - Implement P1161R3: Deprecate a[b,c].
+	* g++.dg/cpp2a/comma1.C: New test.
+	* g++.dg/cpp2a/comma2.C: New test.
+	* g++.dg/cpp2a/comma3.C: New test.
+	* g++.dg/cpp2a/comma4.C: New test.
+
 2019-08-05  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/mask_load_1.c: New test.

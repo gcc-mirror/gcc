@@ -1,3 +1,12 @@
+2019-08-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91338 - Implement P1161R3: Deprecate a[b,c].
+	* parser.c (cp_parser_postfix_open_square_expression): Warn about uses
+	of a comma operator within a subscripting expression.
+	(cp_parser_skip_to_closing_square_bracket_1): New function, made out
+	of...
+	(cp_parser_skip_to_closing_square_bracket): ...this.
+
 2019-08-05  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (force_paren_expr): Preserve location.
