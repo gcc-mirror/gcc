@@ -1,3 +1,8 @@
+2019-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91169
+	* gnat.dg/array37.adb: New testcase.
+
 2019-08-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/91341
