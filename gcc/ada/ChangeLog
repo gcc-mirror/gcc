@@ -1,6 +1,14 @@
 2019-08-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline.
+	2019-07-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* libgnat/system-darwin-ppc.ads: Set Stack_Check_Probes True for
+	PPC Darwin.
+
+2019-08-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline.
 	2019-06-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gnatlink.adb (Link_Step): Remove duplicate -static-libgcc switches.
