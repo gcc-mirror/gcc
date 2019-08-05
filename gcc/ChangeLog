@@ -1,3 +1,10 @@
+2019-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91341
+	* config/i386/avxintrin.h (_mm256_loadu2_m128, _mm256_storeu2_m128,
+	_mm256_loadu2_m128d, _mm256_storeu2_m128d, _mm256_loadu2_m128i,
+	_mm256_storeu2_m128i): New function.
+
 2019-08-05  Kito Cheng  <kito.cheng@sifive.com>
 
 	* config/riscv/riscv.c (riscv_promote_function_mode): New.
