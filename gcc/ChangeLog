@@ -1,3 +1,9 @@
+2019-08-05  Alan Modra  <amodra@gmail.com>
+
+	PR target/91349
+	* config/rs6000/freebsd64.h (CPLUSPLUS_CPP_SPEC),
+	(LINK_GCC_C_SEQUENCE_SPEC): Undef.
+
 2019-08-04  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from trunk
