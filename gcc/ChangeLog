@@ -77,6 +77,12 @@
 	* doc/install.texi (Prerequisites): Remove reference to Tcl 8.6
 	bug that was fixed in Tcl 8.6.1.
 
+2019-08-02  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/future.md: New file.
+	* config/rs6000/rs6000.md: Include future.md.
+	* config/rs6000/t-rs6000 (MD_INCLUDES): Add future.md.
+
 2019-08-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* function.c (assign_parm_adjust_stack_rtl): Revise STRICT_ALIGNMENT
