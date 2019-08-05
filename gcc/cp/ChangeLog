@@ -1,3 +1,9 @@
+2019-08-05  Tom Honermann  <tom@honermann.net>
+
+	* parser.c (cp_parser_template_declaration_after_parameters): Enable
+	class template argument deduction for non-type template parameters
+	in literal operator templates.
+
 2019-08-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91338 - Implement P1161R3: Deprecate a[b,c].
