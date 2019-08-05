@@ -3305,11 +3305,13 @@ check_restricted (gfc_expr *e)
 	 restricted expression in an elemental procedure, it will have
 	 already been simplified away once we get here.  Therefore we
 	 don't need to jump through hoops to distinguish valid from
-	 invalid cases.  */
-      if (sym->attr.dummy && sym->ns == gfc_current_ns
+	 invalid cases.  Allowed in F2018.  */
+      if (gfc_notification_std (GFC_STD_F2008)
+	  && sym->attr.dummy && sym->ns == gfc_current_ns
 	  && sym->ns->proc_name && sym->ns->proc_name->attr.elemental)
 	{
-	  gfc_error ("Dummy argument %qs not allowed in expression at %L",
+	  gfc_error_now ("Dummy argument %qs not "
+		     "allowed in expression at %L",
 		     sym->name, &e->where);
 	  break;
 	}
