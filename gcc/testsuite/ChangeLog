@@ -1,3 +1,8 @@
+2019-08-05  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.target/msp430/pr80993.c: Add cleanup-saved-temps to final
+	actions.
+
 2019-08-05  Martin Liska  <mliska@suse.cz>
 
 	PR c++/91334
