@@ -1,5 +1,10 @@
 2019-08-08  Julian Brown  <julian@codesourcery.com>
 
+	* plugin/plugin-gcn.c (gcn_exec): Use 1 for the default number of
+	workers.
+
+2019-08-08  Julian Brown  <julian@codesourcery.com>
+
 	* plugin/configfrag.ac (amdgcn): Set tgt_plugin.
 	* testsuite/lib/libgomp.exp (offload_target_to_openacc_device_type):
 	Add AMD GCN support.

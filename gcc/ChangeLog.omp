@@ -1,3 +1,10 @@
+2019-08-08  Julian Brown  <julian@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_goacc_validate_dims): Ensure
+	flag_worker_partitioning is not set.
+	(TARGET_GOACC_WORKER_PARTITIONING): Remove target hook definition.
+	* config/gcn/gcn.opt (macc-experimental-workers): Default to off.
+
 2019-07-31  Julian Brown  <julian@codesourcery.com>
 
 	* builtin-types.def (BT_FN_VOID_INT_INT_OMPFN_SIZE_PTR_PTR_PTR_VAR):
