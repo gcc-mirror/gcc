@@ -1,3 +1,10 @@
+2019-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/91169
+	* fold-const.c (get_array_ctor_element_at_index): Create
+	offset_ints according to the sign of the index type and treat
+	that as signed if it is obviously so.
+
 2019-08-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/91341
