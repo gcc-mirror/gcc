@@ -289,10 +289,7 @@ adjust_simduid_builtins (hash_table<simduid_to_vf> *htab)
 		       : BUILT_IN_GOMP_ORDERED_END);
 		  gimple *g
 		    = gimple_build_call (builtin_decl_explicit (bcode), 0);
-		  tree vdef = gimple_vdef (stmt);
-		  gimple_set_vdef (g, vdef);
-		  SSA_NAME_DEF_STMT (vdef) = g;
-		  gimple_set_vuse (g, gimple_vuse (stmt));
+		  gimple_move_vops (g, stmt);
 		  gsi_replace (&i, g, true);
 		  continue;
 		}

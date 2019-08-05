@@ -2057,6 +2057,18 @@ gimple_copy (gimple *stmt)
   return copy;
 }
 
+/* Move OLD_STMT's vuse and vdef operands to NEW_STMT, on the assumption
+   that OLD_STMT is about to be removed.  */
+
+void
+gimple_move_vops (gimple *new_stmt, gimple *old_stmt)
+{
+  tree vdef = gimple_vdef (old_stmt);
+  gimple_set_vuse (new_stmt, gimple_vuse (old_stmt));
+  gimple_set_vdef (new_stmt, vdef);
+  if (vdef && TREE_CODE (vdef) == SSA_NAME)
+    SSA_NAME_DEF_STMT (vdef) = new_stmt;
+}
 
 /* Return true if statement S has side-effects.  We consider a
    statement to have side effects if:
