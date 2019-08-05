@@ -1,3 +1,10 @@
+2019-08-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backport from mainline
+	2019-08-05  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/promote-type-for-libcall.c: New.
+
 2019-08-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from mainline.
