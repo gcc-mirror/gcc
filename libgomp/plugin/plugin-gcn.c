@@ -3292,6 +3292,14 @@ GOMP_OFFLOAD_openacc_exec (void (*fn_ptr) (void *), size_t mapnum,
 }
 
 void
+GOMP_OFFLOAD_openacc_exec_params (void (*fn_ptr) (void *), size_t mapnum,
+				  void **hostaddrs, void **devaddrs,
+				  unsigned *dims, void *targ_mem_desc)
+{
+  GOMP_PLUGIN_fatal ("OpenACC exec params unimplemented.");
+}
+
+void
 GOMP_OFFLOAD_openacc_async_exec (void (*fn_ptr) (void *), size_t mapnum,
 				 void **hostaddrs, void **devaddrs,
 				 unsigned *dims, void *targ_mem_desc,
@@ -3301,6 +3309,15 @@ GOMP_OFFLOAD_openacc_async_exec (void (*fn_ptr) (void *), size_t mapnum,
 
   gcn_exec (kernel, mapnum, hostaddrs, devaddrs, dims, targ_mem_desc, true,
 	    aq);
+}
+
+void
+GOMP_OFFLOAD_openacc_async_exec_params (void (*fn) (void *), size_t mapnum,
+					void **hostaddrs, void **devaddrs,
+					unsigned *dims, void *targ_mem_desc,
+					struct goacc_asyncqueue *aq)
+{
+  GOMP_PLUGIN_fatal ("OpenACC async exec params unimplemented.");
 }
 
 struct goacc_asyncqueue *
