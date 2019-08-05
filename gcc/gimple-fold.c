@@ -641,14 +641,7 @@ replace_call_with_call_and_fold (gimple_stmt_iterator *gsi, gimple *repl)
   gimple *stmt = gsi_stmt (*gsi);
   gimple_call_set_lhs (repl, gimple_call_lhs (stmt));
   gimple_set_location (repl, gimple_location (stmt));
-  if (gimple_vdef (stmt)
-      && TREE_CODE (gimple_vdef (stmt)) == SSA_NAME)
-    {
-      gimple_set_vdef (repl, gimple_vdef (stmt));
-      SSA_NAME_DEF_STMT (gimple_vdef (repl)) = repl;
-    }
-  if (gimple_vuse (stmt))
-    gimple_set_vuse (repl, gimple_vuse (stmt));
+  gimple_move_vops (repl, stmt);
   gsi_replace (gsi, repl, false);
   fold_stmt (gsi);
 }
@@ -832,11 +825,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 			= gimple_build_assign (fold_build2 (MEM_REF, desttype,
 							    dest, off0),
 					       srcmem);
-		      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-		      gimple_set_vdef (new_stmt, gimple_vdef (stmt));
-		      if (gimple_vdef (new_stmt)
-			  && TREE_CODE (gimple_vdef (new_stmt)) == SSA_NAME)
-			SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
+		      gimple_move_vops (new_stmt, stmt);
 		      if (!lhs)
 			{
 			  gsi_replace (gsi, new_stmt, false);
@@ -1097,11 +1086,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	= gimple_build_assign (fold_build2 (MEM_REF, desttype, dest, off0),
 			       fold_build2 (MEM_REF, srctype, src, off0));
 set_vop_and_replace:
-      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-      gimple_set_vdef (new_stmt, gimple_vdef (stmt));
-      if (gimple_vdef (new_stmt)
-	  && TREE_CODE (gimple_vdef (new_stmt)) == SSA_NAME)
-	SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
+      gimple_move_vops (new_stmt, stmt);
       if (!lhs)
 	{
 	  gsi_replace (gsi, new_stmt, false);
@@ -1273,13 +1258,7 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
 
   var = fold_build2 (MEM_REF, etype, dest, build_int_cst (ptr_type_node, 0));
   gimple *store = gimple_build_assign (var, build_int_cst_type (etype, cval));
-  gimple_set_vuse (store, gimple_vuse (stmt));
-  tree vdef = gimple_vdef (stmt);
-  if (vdef && TREE_CODE (vdef) == SSA_NAME)
-    {
-      gimple_set_vdef (store, gimple_vdef (stmt));
-      SSA_NAME_DEF_STMT (gimple_vdef (stmt)) = store;
-    }
+  gimple_move_vops (store, stmt);
   gsi_insert_before (gsi, store, GSI_SAME_STMT);
   if (gimple_call_lhs (stmt))
     {
@@ -2982,11 +2961,7 @@ gimple_fold_builtin_stpcpy (gimple_stmt_iterator *gsi)
 			tem, build_int_cst (size_type_node, 1));
   gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
   gcall *repl = gimple_build_call (fn, 3, dest, src, lenp1);
-  gimple_set_vuse (repl, gimple_vuse (stmt));
-  gimple_set_vdef (repl, gimple_vdef (stmt));
-  if (gimple_vdef (repl)
-      && TREE_CODE (gimple_vdef (repl)) == SSA_NAME)
-    SSA_NAME_DEF_STMT (gimple_vdef (repl)) = repl;
+  gimple_move_vops (repl, stmt);
   gsi_insert_before (gsi, repl, GSI_SAME_STMT);
   /* Replace the result with dest + len.  */
   stmts = NULL;
@@ -4134,9 +4109,7 @@ fold_builtin_atomic_compare_exchange (gimple_stmt_iterator *gsi)
 				  gimple_call_arg (stmt, 5));
   tree lhs = make_ssa_name (ctype);
   gimple_call_set_lhs (g, lhs);
-  gimple_set_vdef (g, gimple_vdef (stmt));
-  gimple_set_vuse (g, gimple_vuse (stmt));
-  SSA_NAME_DEF_STMT (gimple_vdef (g)) = g;
+  gimple_move_vops (g, stmt);
   tree oldlhs = gimple_call_lhs (stmt);
   if (stmt_can_throw_internal (cfun, stmt))
     {
@@ -4315,8 +4288,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 		      SSA_NAME_DEF_STMT (lhs) = gimple_build_nop ();
 		      set_ssa_default_def (cfun, var, lhs);
 		    }
-		  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-		  gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+		  gimple_move_vops (new_stmt, stmt);
 		  gsi_replace (gsi, new_stmt, false);
 		  return true;
 		}
