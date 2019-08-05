@@ -1,5 +1,12 @@
 2019-08-05  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* tree-core.h (tree_function_decl): Make function_code an
+	independent field.  Group the remaining bitfields into bytes
+	and move decl_type so that it contines to be at a byte boundary.
+	Leave 12 bits for future expansion.
+
+2019-08-05  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gimple-fold.c (gimple_fold_mask_load_store_mem_ref)
 	(gimple_fold_mask_load, gimple_fold_mask_store): New functions.
 	(gimple_fold_call): Use them to fold IFN_MASK_LOAD and
