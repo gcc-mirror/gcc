@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "target.h"
 #include "tree.h"
-#include "cp/cp-tree.h"
+#include "langhooks.h"
 #include "gimple.h"
 #include "tree-pass.h"
 #include "cgraph.h"
@@ -792,6 +792,12 @@ static gimple *
 maybe_build_inner_data_region (location_t loc, gimple *body,
 			       tree inner_bind_vars, gimple *inner_cleanup)
 {
+  /* Is this an instantiation of a template?  (In this case, we don't care what
+     the generic decl is - just whether the function decl has one.)  */
+  bool generic_inst_p
+    = (lang_hooks.decls.get_generic_function_decl (current_function_decl)
+       != NULL);
+
   /* Build data 'create (var)' clauses for these local variables.
      Below we will add these to a data region enclosing the entire body
      of the decomposed kernels region.  */
@@ -802,8 +808,7 @@ maybe_build_inner_data_region (location_t loc, gimple *body,
       next = TREE_CHAIN (v);
       if (DECL_ARTIFICIAL (v)
 	  || TREE_CODE (v) == CONST_DECL
-	  || (DECL_LANG_SPECIFIC (current_function_decl)
-	      && DECL_TEMPLATE_INSTANTIATION (current_function_decl)))
+	  || generic_inst_p)
 	{
 	  /* If this is an artificial temporary, it need not be mapped.  We
 	     move its declaration into the bind inside the data region.
