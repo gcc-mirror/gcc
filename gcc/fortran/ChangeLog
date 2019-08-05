@@ -1,3 +1,10 @@
+2019-08-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/87233
+	* expr.c (check_restricted): Relax constraint C1279 which was
+	removed from F2008 and above.
+
 2019-07-30  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91296
