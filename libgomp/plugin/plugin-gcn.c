@@ -4416,6 +4416,14 @@ GOMP_OFFLOAD_openacc_exec (void (*fn_ptr) (void *),
 /* Run an asynchronous OpenACC kernel on the specified queue.  */
 
 void
+GOMP_OFFLOAD_openacc_exec_params (void (*fn_ptr) (void *), size_t mapnum,
+				  void **hostaddrs, void **devaddrs,
+				  unsigned *dims, void *targ_mem_desc)
+{
+  GOMP_PLUGIN_fatal ("OpenACC exec params unimplemented.");
+}
+
+void
 GOMP_OFFLOAD_openacc_async_exec (void (*fn_ptr) (void *),
 				 size_t mapnum __attribute__((unused)),
 				 void **hostaddrs __attribute__((unused)),
@@ -4429,6 +4437,15 @@ GOMP_OFFLOAD_openacc_async_exec (void (*fn_ptr) (void *),
 }
 
 /* Create a new asynchronous thread and queue for running future kernels.  */
+
+void
+GOMP_OFFLOAD_openacc_async_exec_params (void (*fn) (void *), size_t mapnum,
+					void **hostaddrs, void **devaddrs,
+					unsigned *dims, void *targ_mem_desc,
+					struct goacc_asyncqueue *aq)
+{
+  GOMP_PLUGIN_fatal ("OpenACC async exec params unimplemented.");
+}
 
 struct goacc_asyncqueue *
 GOMP_OFFLOAD_openacc_async_construct (int device)
