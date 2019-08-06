@@ -24315,12 +24315,11 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	}
       else if (push_tinst_level (fn))
 	{
+	  push_to_top_level ();
 	  push_access_scope (fn);
 	  push_deferring_access_checks (dk_no_deferred);
 	  input_location = DECL_SOURCE_LOCATION (fn);
 
-	  tree save_ccp = current_class_ptr;
-	  tree save_ccr = current_class_ref;
 	  /* If needed, set current_class_ptr for the benefit of
 	     tsubst_copy/PARM_DECL.  */
 	  tree tdecl = DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (fn));
@@ -24346,9 +24345,6 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 					/*function_p=*/false,
 					/*i_c_e_p=*/true);
 
-	  current_class_ptr = save_ccp;
-	  current_class_ref = save_ccr;
-
 	  /* Build up the noexcept-specification.  */
 	  spec = build_noexcept_spec (noex, tf_warning_or_error);
 
@@ -24358,6 +24354,7 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	  pop_deferring_access_checks ();
 	  pop_access_scope (fn);
 	  pop_tinst_level ();
+	  pop_from_top_level ();
 	}
       else
 	spec = noexcept_false_spec;
