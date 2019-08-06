@@ -1,3 +1,29 @@
+2019-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV): Rename to ...
+	(OMP_CLAUSE_LASTPRIVATE_LOOP_IV): ... this.  Adjust comment.
+	* gimplify.c (gimple_add_tmp_var): In SIMD contexts, turn addressable
+	new vars into GOVD_PRIVATE rather than GOVD_LOCAL.
+	(gimplify_omp_for): Don't do C++ random access iterator clause
+	adjustments on combined constructs from OMP_LOOP.  For OMP_LOOP,
+	don't predetermine the artificial iterator in case of C++ random
+	access iterators as lastprivate, but private.  For OMP_LOOP, force
+	bind expr around simd body and force for_pre_body before the
+	construct.  Use OMP_CLAUSE_LASTPRIVATE_LOOP_IV instead of
+	OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV.
+	(gimplify_omp_loop): Add firstprivate clauses on OMP_PARALLEL for
+	diff var of C++ random access iterators.  Handle
+	OMP_CLAUSE_FIRSTPRIVATE.  For OMP_CLAUSE_LASTPRIVATE_LOOP_IV, if
+	not outermost also add OMP_CLAUSE_FIRSTPRIVATE, and in both cases
+	clear OMP_CLAUSE_LASTPRIVATE_LOOP_IV on the lastprivate clause
+	on the OMP_FOR and OMP_DISTRIBUTE constructs if any.
+	* omp-low.c (lower_rec_input_clauses): For
+	OMP_CLAUSE_LASTPRIVATE_LOOP_IV on simd copy construct the private
+	variables instead of default constructing them.
+	(lower_lastprivate_clauses): Use OMP_CLAUSE_LASTPRIVATE_LOOP_IV
+	instead of OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV and move the
+	is_taskloop_ctx check from the assert to the guarding condition.
+
 2019-08-06  Kito Cheng  <kito.cheng@sifive.com>
 
 	* gcc/config/riscv/multilib-generator: (canonical_order): New.

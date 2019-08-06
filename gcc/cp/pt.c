@@ -16404,6 +16404,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE_ORDER:
+	case OMP_CLAUSE_BIND:
 	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_SEQ:
@@ -16732,7 +16733,8 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree &orig_declv,
     {
       tree *pc;
       int j;
-      for (j = (omp_parallel_combined_clauses == NULL ? 1 : 0); j < 2; j++)
+      for (j = ((omp_parallel_combined_clauses == NULL
+		|| TREE_CODE (t) == OMP_LOOP) ? 1 : 0); j < 2; j++)
 	{
 	  for (pc = j ? clauses : omp_parallel_combined_clauses; *pc; )
 	    {
@@ -16772,7 +16774,10 @@ tsubst_omp_for_iterator (tree t, int i, tree declv, tree &orig_declv,
 	}
       if (*pc == NULL_TREE)
 	{
-	  tree c = build_omp_clause (input_location, OMP_CLAUSE_PRIVATE);
+	  tree c = build_omp_clause (input_location,
+				     TREE_CODE (t) == OMP_LOOP
+				     ? OMP_CLAUSE_LASTPRIVATE
+				     : OMP_CLAUSE_PRIVATE);
 	  OMP_CLAUSE_DECL (c) = decl;
 	  c = finish_omp_clauses (c, C_ORT_OMP);
 	  if (c)

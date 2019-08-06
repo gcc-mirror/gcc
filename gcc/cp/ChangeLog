@@ -1,3 +1,28 @@
+2019-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_for_loop): For OMP_LOOP, ignore parallel
+	clauses and predetermine iterator as lastprivate.
+	* semantics.c (handle_omp_for_class_iterator): Use
+	OMP_CLAUSE_LASTPRIVATE_LOOP_IV instead of
+	OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV, set it for lastprivate also
+	on OMP_LOOP construct.  If a clause is missing for class iterator
+	on OMP_LOOP, add firstprivate clause, and if there is private
+	clause, turn it into firstprivate too.
+	(finish_omp_for): Formatting fix.  For OMP_LOOP, adjust
+	OMP_CLAUSE_LASTPRIVATE_LOOP_IV clause CP_CLAUSE_INFO, so that it
+	uses copy ctor instead of default ctor.
+	* cp-gimplify.c (cp_gimplify_expr): Handle OMP_LOOP like
+	OMP_DISTRIBUTE etc.
+	(cp_fold_r): Likewise.
+	(cp_genericize_r): Likewise.
+	(cxx_omp_finish_clause): Also finish lastprivate clause with
+	OMP_CLAUSE_LASTPRIVATE_LOOP_IV flag.
+	* pt.c (tsubst_omp_clauses): Handle OMP_CLAUSE_BIND.
+	(tsubst_omp_for_iterator): For OMP_LOOP, ignore parallel
+	clauses and predetermine iterator as lastprivate.
+	* constexpr.c (potential_constant_expression_1): Handle OMP_LOOP
+	like OMP_DISTRIBUTE etc.
+
 2019-08-05  Marek Polacek  <polacek@redhat.com>
 
 	DR 2413 - typename in conversion-function-ids.

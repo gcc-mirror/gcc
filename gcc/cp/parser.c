@@ -37458,7 +37458,8 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	real_decl = decl;
       if (cclauses != NULL
 	  && cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL] != NULL
-	  && real_decl != NULL_TREE)
+	  && real_decl != NULL_TREE
+	  && code != OMP_LOOP)
 	{
 	  tree *c;
 	  for (c = &cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL]; *c ; )
@@ -37518,12 +37519,12 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	    }
 	  if (c == NULL)
 	    {
-	      if (code != OMP_SIMD)
-		c = build_omp_clause (loc, OMP_CLAUSE_PRIVATE);
-	      else if (collapse == 1)
-		c = build_omp_clause (loc, OMP_CLAUSE_LINEAR);
-	      else
+	      if ((code == OMP_SIMD && collapse != 1) || code == OMP_LOOP)
 		c = build_omp_clause (loc, OMP_CLAUSE_LASTPRIVATE);
+	      else if (code != OMP_SIMD)
+		c = build_omp_clause (loc, OMP_CLAUSE_PRIVATE);
+	      else
+		c = build_omp_clause (loc, OMP_CLAUSE_LINEAR);
 	      OMP_CLAUSE_DECL (c) = add_private_clause;
 	      c = finish_omp_clauses (c, C_ORT_OMP);
 	      if (c)
