@@ -1,5 +1,8 @@
 2019-08-05  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/50476
+	* gcc.dg/uninit-pr50476.c: New test.
+
 	PR c++/60517
 	* g++.dg/pr60517.C: New test.
 
