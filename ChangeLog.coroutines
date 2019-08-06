@@ -1,6 +1,12 @@
 2019-08-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (transform_local_var_uses): If a local var needs
+	constructing, then do so.
+
+2019-08-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (register_awaits): Set the handle for the
 	await_suspend() return to the correct type.
 

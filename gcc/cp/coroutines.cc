@@ -1412,11 +1412,26 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	 contained var's context should have been re-written when its bind
 	 expression was processed.  */
       add_stmt (*stmt);
+      tree r;
       /* Now add an initialiser for the frame version of this var, with the
 	 intent that the obvious optimisation will get done.  */
-      tree r = build_modify_expr (loc, revised, TREE_TYPE (revised),
-				 INIT_EXPR, EXPR_LOCATION (*stmt),
-				 var_decl, TREE_TYPE (var_decl));
+      if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (var_decl)))
+	{
+	  vec<tree, va_gc> *p_in;
+	  if (classtype_has_move_assign_or_move_ctor_p (TREE_TYPE (var_decl),
+	      true /* user-declared */))
+	    p_in = make_tree_vector_single (rvalue (var_decl));
+	  else
+	    p_in = make_tree_vector_single (var_decl);
+	  /* Construct in place or move as relevant.  */
+	  r = build_special_member_call (revised, complete_ctor_identifier,
+					 &p_in, TREE_TYPE (var_decl),
+					 LOOKUP_NORMAL, tf_warning_or_error);
+	  release_tree_vector (p_in);
+	}
+      else
+	r = cp_build_modify_expr (loc, revised, INIT_EXPR, var_decl,
+				  tf_warning_or_error);
       r = coro_build_cvt_void_expr_stmt (r, EXPR_LOCATION (*stmt));
       add_stmt (r);
       *stmt = pop_stmt_list (init_and_copy);
