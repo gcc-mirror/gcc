@@ -6449,6 +6449,20 @@ gfc_generate_return (void)
 				    TREE_TYPE (result), DECL_RESULT (fndecl),
 				    result);
 	}
+      else
+	{
+	  /* If the function does not have a result variable, result is
+	     NULL_TREE, and a 'return' is generated without a variable.
+	     The following generates a 'return __result_XXX' where XXX is
+	     the function name.  */
+	  if (sym == sym->result && sym->attr.function)
+	    {
+	      result = gfc_get_fake_result_decl (sym, 0);
+	      result = fold_build2_loc (input_location, MODIFY_EXPR,
+					TREE_TYPE (result),
+					DECL_RESULT (fndecl), result);
+	    }
+	}
     }
 
   return build1_v (RETURN_EXPR, result);
