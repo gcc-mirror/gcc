@@ -1,3 +1,7 @@
+2019-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/desig1.C: Check location too.
+
 2019-08-05  Marek Polacek  <polacek@redhat.com>
 
 	DR 2413 - typename in conversion-function-ids.
