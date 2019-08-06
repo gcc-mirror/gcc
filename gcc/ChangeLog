@@ -1,3 +1,8 @@
+2019-08-06  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_node::dump): Dump DECL_IS_OPERATOR_NEW_P
+	and DECL_IS_OPERATOR_DELETE_P.
+
 2019-08-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV): Rename to ...
