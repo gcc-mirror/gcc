@@ -1,3 +1,10 @@
+2019-08-05  Marek Polacek  <polacek@redhat.com>
+
+	DR 2413 - typename in conversion-function-ids.
+	* parser.c (cp_parser_conversion_type_id): Call
+	cp_parser_type_specifier_seq with CP_PARSER_FLAGS_TYPENAME_OPTIONAL
+	instead of CP_PARSER_FLAGS_NONE.
+
 2019-08-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cp-tree.h (cp_expr_loc_or_input_loc): New.

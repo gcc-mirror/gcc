@@ -1,3 +1,8 @@
+2019-08-05  Marek Polacek  <polacek@redhat.com>
+
+	DR 2413 - typename in conversion-function-ids.
+	* g++.dg/cpp2a/typename17.C: New test.
+
 2019-08-05  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/50476
