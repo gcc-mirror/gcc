@@ -1,3 +1,11 @@
+2019-08-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/numbers [!__STRICT_ANSI__ && _GLIBCXX_USE_FLOAT128]
+	(e_v, log2e_v, log10e_v, pi_v, inv_pi_v, inv_sqrtpi_v, ln2_v, ln10_v)
+	(sqrt2_v, sqrt3_v, inv_sqrt3, egamma_v, phi_v): Add explicit
+	specializations for __float128.
+	* testsuite/26_numerics/numbers/float128.cc: New test.
+
 2019-08-04  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/documentation_hacking.xml: doxygen.org is now
