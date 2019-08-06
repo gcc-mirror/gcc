@@ -2045,7 +2045,7 @@ register_awaits (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
     {
       snprintf (buf, bufsize, "__aw_h.%d", data->count);
       handle_field_nam = coro_make_frame_entry (data->field_list, buf,
-						data->handle_type, aw_loc);
+						susp_typ, aw_loc);
     }
   register_await_info (aw_expr, aw_field_type, aw_field_nam,
 		       susp_typ, handle_field_nam);
