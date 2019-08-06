@@ -1,3 +1,12 @@
+2019-08-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/avx512vp2intersect-2intersect-1b.c (AVX512F):
+	Remove.
+	(AVX512VP2INTERSECT): Define.
+	* gcc.target/i386/avx512vp2intersect-2intersectvl-1b.c (AVX512F):
+	Remove.
+	(AVX512VP2INTERSECT): Define.
+
 2019-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/desig1.C: Check location too.
