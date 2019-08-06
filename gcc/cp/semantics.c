@@ -8422,24 +8422,25 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
 
   incr = cp_convert (TREE_TYPE (diff), incr, tf_warning_or_error);
   incr = cp_fully_fold (incr);
-  bool taskloop_iv_seen = false;
+  tree loop_iv_seen = NULL_TREE;
   for (c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
     if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
 	&& OMP_CLAUSE_DECL (c) == iter)
       {
-	if (code == OMP_TASKLOOP)
+	if (code == OMP_TASKLOOP || code == OMP_LOOP)
 	  {
-	    taskloop_iv_seen = true;
-	    OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV (c) = 1;
+	    loop_iv_seen = c;
+	    OMP_CLAUSE_LASTPRIVATE_LOOP_IV (c) = 1;
 	  }
 	break;
       }
-    else if (code == OMP_TASKLOOP
+    else if ((code == OMP_TASKLOOP || code == OMP_LOOP)
 	     && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE
 	     && OMP_CLAUSE_DECL (c) == iter)
       {
-	taskloop_iv_seen = true;
-	OMP_CLAUSE_PRIVATE_TASKLOOP_IV (c) = 1;
+	loop_iv_seen = c;
+	if (code == OMP_TASKLOOP)
+	  OMP_CLAUSE_PRIVATE_TASKLOOP_IV (c) = 1;
       }
 
   decl = create_temporary_var (TREE_TYPE (diff));
@@ -8459,7 +8460,7 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
   tree diffvar = NULL_TREE;
   if (code == OMP_TASKLOOP)
     {
-      if (!taskloop_iv_seen)
+      if (!loop_iv_seen)
 	{
 	  tree ivc = build_omp_clause (locus, OMP_CLAUSE_FIRSTPRIVATE);
 	  OMP_CLAUSE_DECL (ivc) = iter;
@@ -8474,6 +8475,28 @@ handle_omp_for_class_iterator (int i, location_t locus, enum tree_code code,
       diffvar = create_temporary_var (TREE_TYPE (diff));
       pushdecl (diffvar);
       add_decl_expr (diffvar);
+    }
+  else if (code == OMP_LOOP)
+    {
+      if (!loop_iv_seen)
+	{
+	  /* While iterators on the loop construct are predetermined
+	     lastprivate, if the decl is not declared inside of the
+	     loop, OMP_CLAUSE_LASTPRIVATE should have been added
+	     already.  */
+	  loop_iv_seen = build_omp_clause (locus, OMP_CLAUSE_FIRSTPRIVATE);
+	  OMP_CLAUSE_DECL (loop_iv_seen) = iter;
+	  OMP_CLAUSE_CHAIN (loop_iv_seen) = clauses;
+	  clauses = loop_iv_seen;
+	}
+      else if (OMP_CLAUSE_CODE (loop_iv_seen) == OMP_CLAUSE_PRIVATE)
+	{
+	  OMP_CLAUSE_PRIVATE_DEBUG (loop_iv_seen) = 0;
+	  OMP_CLAUSE_PRIVATE_OUTER_REF (loop_iv_seen) = 0;
+	  OMP_CLAUSE_CODE (loop_iv_seen) = OMP_CLAUSE_FIRSTPRIVATE;
+	}
+      if (OMP_CLAUSE_CODE (loop_iv_seen) == OMP_CLAUSE_FIRSTPRIVATE)
+	cxx_omp_finish_clause (loop_iv_seen, NULL);
     }
 
   orig_pre_body = *pre_body;
@@ -8825,9 +8848,7 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
     omp_for = NULL_TREE;
 
   if (omp_for == NULL)
-    {
-      return NULL;
-    }
+    return NULL;
 
   add_stmt (omp_for);
 
@@ -8926,6 +8947,16 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	      gcc_unreachable ();
 	    }
 	}
+  /* Override saved methods on OMP_LOOP's OMP_CLAUSE_LASTPRIVATE_LOOP_IV
+     clauses, we need copy ctor for those rather than default ctor,
+     plus as for other lastprivates assignment op and dtor.  */
+  if (code == OMP_LOOP && !processing_template_decl)
+    for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
+	  && OMP_CLAUSE_LASTPRIVATE_LOOP_IV (c)
+	  && cxx_omp_create_clause_info (c, TREE_TYPE (OMP_CLAUSE_DECL (c)),
+					 false, true, true, true))
+	CP_OMP_CLAUSE_INFO (c) = NULL_TREE;
 
   return omp_for;
 }

@@ -6437,6 +6437,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case OMP_SIMD:
     case OMP_DISTRIBUTE:
     case OMP_TASKLOOP:
+    case OMP_LOOP:
     case OMP_TEAMS:
     case OMP_TARGET_DATA:
     case OMP_TARGET:

@@ -796,6 +796,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     case OMP_FOR:
     case OMP_SIMD:
     case OMP_DISTRIBUTE:
+    case OMP_LOOP:
     case OMP_TASKLOOP:
       ret = cp_gimplify_omp_for (expr_p, pre_p);
       break;
@@ -1053,7 +1054,7 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data)
 
   code = TREE_CODE (stmt);
   if (code == OMP_FOR || code == OMP_SIMD || code == OMP_DISTRIBUTE
-      || code == OMP_TASKLOOP || code == OACC_LOOP)
+      || code == OMP_LOOP || code == OMP_TASKLOOP || code == OACC_LOOP)
     {
       tree x;
       int i, n;
@@ -1544,6 +1545,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     case OMP_FOR:
     case OMP_SIMD:
     case OMP_DISTRIBUTE:
+    case OMP_LOOP:
     case OACC_LOOP:
       genericize_omp_for_stmt (stmt_p, walk_subtrees, data);
       break;
@@ -2097,7 +2099,9 @@ cxx_omp_finish_clause (tree c, gimple_seq *)
   tree decl, inner_type;
   bool make_shared = false;
 
-  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_FIRSTPRIVATE)
+  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_FIRSTPRIVATE
+      && (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_LASTPRIVATE
+	  || !OMP_CLAUSE_LASTPRIVATE_LOOP_IV (c)))
     return;
 
   decl = OMP_CLAUSE_DECL (c);
@@ -2115,9 +2119,11 @@ cxx_omp_finish_clause (tree c, gimple_seq *)
   /* Check for special function availability by building a call to one.
      Save the results, because later we won't be in the right context
      for making these queries.  */
+  bool first = OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE;
   if (!make_shared
       && CLASS_TYPE_P (inner_type)
-      && cxx_omp_create_clause_info (c, inner_type, false, true, false, true))
+      && cxx_omp_create_clause_info (c, inner_type, !first, first, !first,
+				     true))
     make_shared = true;
 
   if (make_shared)

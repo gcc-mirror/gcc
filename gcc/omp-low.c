@@ -5139,8 +5139,17 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		x = NULL;
 	    do_private:
 	      tree nx;
-	      nx = lang_hooks.decls.omp_clause_default_ctor
-						(c, unshare_expr (new_var), x);
+	      bool copy_ctor;
+	      copy_ctor = false;
+	      nx = unshare_expr (new_var);
+	      if (is_simd
+		  && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
+		  && OMP_CLAUSE_LASTPRIVATE_LOOP_IV (c))
+		copy_ctor = true;
+	      if (copy_ctor)
+		nx = lang_hooks.decls.omp_clause_copy_ctor (c, nx, x);
+	      else
+		nx = lang_hooks.decls.omp_clause_default_ctor (c, nx, x);
 	      if (is_simd)
 		{
 		  tree y = lang_hooks.decls.omp_clause_dtor (c, new_var);
@@ -5165,8 +5174,16 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			}
 
 		      if (nx)
-			x = lang_hooks.decls.omp_clause_default_ctor
-						(c, unshare_expr (ivar), x);
+			{
+			  tree iv = unshare_expr (ivar);
+			  if (copy_ctor)
+			    x = lang_hooks.decls.omp_clause_copy_ctor (c, iv,
+								       x);
+			  else
+			    x = lang_hooks.decls.omp_clause_default_ctor (c,
+									  iv,
+									  x);
+			}
 		      else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE__CONDTEMP_)
 			{
 			  x = build2 (MODIFY_EXPR, TREE_TYPE (ivar),
@@ -6469,9 +6486,9 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *body_p,
 
 	  x = NULL_TREE;
 	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
-	      && OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV (c))
+	      && OMP_CLAUSE_LASTPRIVATE_LOOP_IV (c)
+	      && is_taskloop_ctx (ctx))
 	    {
-	      gcc_checking_assert (is_taskloop_ctx (ctx));
 	      tree ovar = maybe_lookup_decl_in_outer_ctx (var,
 							  ctx->outer->outer);
 	      if (is_global_var (ovar))

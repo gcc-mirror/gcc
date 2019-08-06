@@ -1517,10 +1517,11 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_LASTPRIVATE_GIMPLE_SEQ(NODE) \
   (OMP_CLAUSE_CHECK (NODE))->omp_clause.gimple_reduction_init
 
-/* True if a LASTPRIVATE clause is for a C++ class IV on taskloop construct
-   (thus should be lastprivate on the outer taskloop and firstprivate on
-   task).  */
-#define OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV(NODE) \
+/* True if a LASTPRIVATE clause is for a C++ class IV on taskloop or
+   loop construct (thus should be lastprivate on the outer taskloop and
+   firstprivate on task for the taskloop construct and carefully handled
+   for loop construct).  */
+#define OMP_CLAUSE_LASTPRIVATE_LOOP_IV(NODE) \
   TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LASTPRIVATE))
 
 /* True if a LASTPRIVATE clause has CONDITIONAL: modifier.  */
