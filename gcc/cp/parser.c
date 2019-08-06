@@ -14844,8 +14844,9 @@ cp_parser_conversion_type_id (cp_parser* parser)
   parser->type_definition_forbidden_message
     = G_("types may not be defined in a conversion-type-id");
 
-  /* Parse the type-specifiers.  */
-  cp_parser_type_specifier_seq (parser, CP_PARSER_FLAGS_NONE,
+  /* Parse the type-specifiers.  DR 2413 clarifies that `typename' is
+     optional in conversion-type-id.  */
+  cp_parser_type_specifier_seq (parser, CP_PARSER_FLAGS_TYPENAME_OPTIONAL,
 				/*is_declaration=*/false,
 				/*is_trailing_return=*/false,
 				&type_specifiers);
