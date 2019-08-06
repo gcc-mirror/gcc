@@ -791,7 +791,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 #if __cplusplus > 201703L
-#define __cpp_lib_bind_front 201902L
+#define __cpp_lib_bind_front 201907L
 
   template<typename _Fd, typename... _BoundArgs>
     struct _Bind_front
@@ -877,7 +877,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Fn, typename... _Args>
     using _Bind_front_t
-      = _Bind_front<decay_t<_Fn>, unwrap_ref_decay_t<_Args>...>;
+      = _Bind_front<decay_t<_Fn>, decay_t<_Args>...>;
 
   template<typename _Fn, typename... _Args>
     _Bind_front_t<_Fn, _Args...>

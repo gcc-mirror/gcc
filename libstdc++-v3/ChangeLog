@@ -1,5 +1,12 @@
 2019-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
+	P1651R0 bind_front should not unwrap reference_wrapper
+	* include/std/functional (bind_front): Don't unwrap reference_wrapper.
+	* include/std/version (__cpp_lib_bind_front): Update value.
+	* testsuite/20_util/function_objects/bind_front/1.cc: Fix test for
+	feature test macro.
+	* testsuite/20_util/function_objects/bind_front/2.cc: New test.
+
 	* include/std/numbers [!__STRICT_ANSI__ && _GLIBCXX_USE_FLOAT128]
 	(e_v, log2e_v, log10e_v, pi_v, inv_pi_v, inv_sqrtpi_v, ln2_v, ln10_v)
 	(sqrt2_v, sqrt3_v, inv_sqrt3, egamma_v, phi_v): Add explicit
