@@ -5520,8 +5520,9 @@ check_array_designated_initializer (constructor_elt *ce,
 	    sorry ("non-trivial designated initializers not supported");
 	}
       else
-	error ("C99 designator %qE is not an integral constant-expression",
-	       ce->index);
+	error_at (cp_expr_loc_or_input_loc (ce->index),
+		  "C99 designator %qE is not an integral constant-expression",
+		  ce->index);
 
       return false;
     }

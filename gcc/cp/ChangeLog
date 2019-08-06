@@ -1,3 +1,8 @@
+2019-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (check_array_designated_initializer): Use
+	cp_expr_loc_or_input_loc in one place.
+
 2019-08-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_for_loop): For OMP_LOOP, ignore parallel
