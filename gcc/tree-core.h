@@ -307,8 +307,11 @@ enum omp_clause_code {
   OMP_CLAUSE_MAP,
 
   /* OpenACC clause: use_device (variable-list).
-     OpenMP clause: use_device_ptr (variable-list).  */
+     OpenMP clause: use_device_ptr (ptr-list).  */
   OMP_CLAUSE_USE_DEVICE_PTR,
+
+  /* OpenMP clause: use_device_addr (variable-list).  */
+  OMP_CLAUSE_USE_DEVICE_ADDR,
 
   /* OpenMP clause: is_device_ptr (variable-list).  */
   OMP_CLAUSE_IS_DEVICE_PTR,

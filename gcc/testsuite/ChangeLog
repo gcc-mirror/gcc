@@ -1,3 +1,9 @@
+2019-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/target-data-1.c (foo): Use use_device_addr clause
+	instead of use_device_ptr clause where required by OpenMP 5.0, add
+	further tests for both use_device_ptr and use_device_addr clauses.
+
 2019-08-07  Kewen Lin  <linkw@gcc.gnu.org>
 
 	* gcc.target/powerpc/vec_rotate-1.c: New test.
