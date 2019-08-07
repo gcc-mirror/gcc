@@ -1,5 +1,17 @@
 2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/iterators.md (SVE_COND_FP_MAXMIN_PUBLIC): New
+	int iterator.
+	(maxmin_uns_op): Handle UNSPEC_COND_FMAXNM and UNSPEC_COND_FMINNM.
+	* config/aarch64/aarch64-sve.md
+	(<FMAXMIN:su><FMAXMIN:maxmin><SVE_F:mode>3): Rename to...
+	(<SVE_COND_FP_MAXMIN_PUBLIC:optab><SVE_F:mode>3): ...this and
+	use a single unspec for the rhs.
+	(*<su><maxmin><mode>3): Delete.
+	(<maxmin_uns><SVE_F:mode>3): Use a single unspec for the rhs.
+
+2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (UNSPEC_COND_FABS, UNSPEC_COND_FNEG)
 	(UNSPEC_COND_FRINTA, UNSPEC_COND_FRINTI, UNSPEC_COND_FRINTM)
 	(UNSPEC_COND_FRINTN, UNSPEC_COND_FRINTP, UNSPEC_COND_FRINTX)

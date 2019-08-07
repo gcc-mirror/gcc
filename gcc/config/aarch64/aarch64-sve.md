@@ -2186,69 +2186,51 @@
 ;; ---- [FP] Maximum and minimum
 ;; -------------------------------------------------------------------------
 ;; Includes:
-;; - FMAX
 ;; - FMAXNM
-;; - FMIN
 ;; - FMINNM
 ;; -------------------------------------------------------------------------
 
-;; Unpredicated floating-point MAX/MIN.
-(define_expand "<su><maxmin><mode>3"
+;; Unpredicated floating-point MAX/MIN (the rtx codes).  These are more
+;; relaxed than fmax/fmin, but we implement them in the same way.
+(define_expand "<optab><mode>3"
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_dup 3)
-	   (FMAXMIN:SVE_F (match_operand:SVE_F 1 "register_operand")
-			  (match_operand:SVE_F 2 "register_operand"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SVE_F 1 "register_operand")
+	   (match_operand:SVE_F 2 "register_operand")]
+	  SVE_COND_FP_MAXMIN_PUBLIC))]
   "TARGET_SVE"
   {
     operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
-;; Floating-point MAX/MIN predicated with a PTRUE.
-(define_insn "*<su><maxmin><mode>3"
-  [(set (match_operand:SVE_F 0 "register_operand" "=w, ?&w")
-	(unspec:SVE_F
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (FMAXMIN:SVE_F (match_operand:SVE_F 2 "register_operand" "%0, w")
-			  (match_operand:SVE_F 3 "register_operand" "w, w"))]
-	  UNSPEC_MERGE_PTRUE))]
-  "TARGET_SVE"
-  "@
-   f<maxmin>nm\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
-   movprfx\t%0, %2\;f<maxmin>nm\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
-  [(set_attr "movprfx" "*,yes")]
-)
-
-;; Unpredicated fmax/fmin.
+;; Unpredicated fmax/fmin (the libm functions).
 (define_expand "<maxmin_uns><mode>3"
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_dup 3)
-	   (unspec:SVE_F [(match_operand:SVE_F 1 "register_operand")
-			  (match_operand:SVE_F 2 "register_operand")]
-			 FMAXMIN_UNS)]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SVE_F 1 "register_operand")
+	   (match_operand:SVE_F 2 "register_operand")]
+	  SVE_COND_FP_MAXMIN_PUBLIC))]
   "TARGET_SVE"
   {
     operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
-;; fmax/fmin predicated with a PTRUE.
-(define_insn "*<maxmin_uns><mode>3"
+;; Predicated floating-point maximum/minimum.
+(define_insn "*<optab><mode>3"
   [(set (match_operand:SVE_F 0 "register_operand" "=w, ?&w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
-	   (unspec:SVE_F [(match_operand:SVE_F 2 "register_operand" "%0, w")
-			  (match_operand:SVE_F 3 "register_operand" "w, w")]
-			 FMAXMIN_UNS)]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SVE_F 2 "register_operand" "%0, w")
+	   (match_operand:SVE_F 3 "register_operand" "w, w")]
+	  SVE_COND_FP_MAXMIN_PUBLIC))]
   "TARGET_SVE"
   "@
-   <maxmin_uns_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
-   movprfx\t%0, %2\;<maxmin_uns_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
+   <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+   movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>"
   [(set_attr "movprfx" "*,yes")]
 )
 
