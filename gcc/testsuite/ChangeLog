@@ -1,5 +1,9 @@
 2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* gcc.target/aarch64/sve/init_13.c: New test.
+
+2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* gcc.target/aarch64/sve/init_12.c: Expect w1 to be moved into
 	a temporary FPR.
 

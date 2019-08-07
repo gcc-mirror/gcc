@@ -1,5 +1,10 @@
 2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/constraints.md (Z): Handle floating-point zeros too.
+	* config/aarch64/predicates.md (aarch64_reg_or_zero): Likewise.
+
+2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve.md (vec_shl_insert_<mode>): Add
 	MOVPRFX alternatives.  Make the GPR alternatives more expensive
 	than the FPR ones.
