@@ -1,3 +1,55 @@
+2019-08-07  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.target/i386/math_m_pi.h: New.
+	* gcc.target/i386/sse4_1-round.h: Use it.
+	* gcc.target/i386/pr73350.c: Likewise.
+	* gcc.target/i386/avx512f-vfixupimmpd-2.c: Likewise.
+	* gcc.target/i386/avx512f-vfixupimmps-2.c: Likewise.
+	* gcc.target/i386/avx512f-vfixupimmsd-2.c: Likewise.
+	* gcc.target/i386/avx512f-vfixupimmss-2.c: Likewise.
+	* gcc.target/i386/avx512f-vfixupimmss-2.c: Likewise.
+	* gcc.target/i386/avx-ceil-sfix-2-vec.c: Likewise.  Drop
+	dg-skip-if "no M_PI".
+	* gcc.target/i386/avx-cvt-2-vec.c: Likewise.
+	* gcc.target/i386/avx-floor-sfix-2-vec.c: Likewise.
+	* gcc.target/i386/avx-rint-sfix-2-vec.c: Likewise.
+	* gcc.target/i386/avx-round-sfix-2-vec.c: Likewise.
+	* gcc.target/i386/avx512f-ceil-sfix-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-ceil-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-ceilf-sfix-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-ceilf-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-floor-sfix-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-floor-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-floorf-sfix-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-floorf-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-rint-sfix-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-rintf-sfix-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-round-sfix-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-roundf-sfix-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-trunc-vec-1.c: Likewise.
+	* gcc.target/i386/avx512f-truncf-vec-1.c: Likewise.
+	* gcc.target/i386/sse2-cvt-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-ceil-sfix-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-ceil-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-ceilf-sfix-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-ceilf-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-floor-sfix-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-floor-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-floorf-sfix-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-floorf-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-rint-sfix-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-rint-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-rintf-sfix-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-rintf-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-round-sfix-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-round-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-roundf-sfix-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-roundf-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-roundsd-4.c: Likewise.
+	* gcc.target/i386/sse4_1-roundss-4.c: Likewise.
+	* gcc.target/i386/sse4_1-trunc-vec.c: Likewise.
+	* gcc.target/i386/sse4_1-truncf-vec.c: Likewise.
+
 2019-08-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91359
