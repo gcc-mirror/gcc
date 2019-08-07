@@ -1501,8 +1501,6 @@
 (define_int_iterator FMAXMINV [UNSPEC_FMAXV UNSPEC_FMINV
 			       UNSPEC_FMAXNMV UNSPEC_FMINNMV])
 
-(define_int_iterator BITWISEV [UNSPEC_ANDV UNSPEC_IORV UNSPEC_XORV])
-
 (define_int_iterator LOGICALF [UNSPEC_ANDF UNSPEC_IORF UNSPEC_XORF])
 
 (define_int_iterator HADDSUB [UNSPEC_SHADD UNSPEC_UHADD
@@ -1612,6 +1610,20 @@
 
 (define_int_iterator MUL_HIGHPART [UNSPEC_SMUL_HIGHPART UNSPEC_UMUL_HIGHPART])
 
+(define_int_iterator SVE_INT_REDUCTION [UNSPEC_ANDV
+					UNSPEC_IORV
+					UNSPEC_SMAXV
+					UNSPEC_SMINV
+					UNSPEC_UMAXV
+					UNSPEC_UMINV
+					UNSPEC_XORV])
+
+(define_int_iterator SVE_FP_REDUCTION [UNSPEC_FADDV
+				       UNSPEC_FMAXV
+				       UNSPEC_FMAXNMV
+				       UNSPEC_FMINV
+				       UNSPEC_FMINNMV])
+
 (define_int_iterator SVE_COND_FP_UNARY [UNSPEC_COND_FABS
 					UNSPEC_COND_FNEG
 					UNSPEC_COND_FRINTA
@@ -1682,6 +1694,15 @@
 			(UNSPEC_ANDV "and")
 			(UNSPEC_IORV "ior")
 			(UNSPEC_XORV "xor")
+			(UNSPEC_UMAXV "umax")
+			(UNSPEC_UMINV "umin")
+			(UNSPEC_SMAXV "smax")
+			(UNSPEC_SMINV "smin")
+			(UNSPEC_FADDV "plus")
+			(UNSPEC_FMAXNMV "smax")
+			(UNSPEC_FMAXV "smax_nan")
+			(UNSPEC_FMINNMV "smin")
+			(UNSPEC_FMINV "smin_nan")
 			(UNSPEC_COND_FABS "abs")
 			(UNSPEC_COND_FADD "add")
 			(UNSPEC_COND_FDIV "div")
@@ -1730,10 +1751,6 @@
 				 (UNSPEC_FMINV "fmin")
 				 (UNSPEC_FMAXNM "fmaxnm")
 				 (UNSPEC_FMINNM "fminnm")])
-
-(define_int_attr bit_reduc_op [(UNSPEC_ANDV "andv")
-			       (UNSPEC_IORV "orv")
-			       (UNSPEC_XORV "eorv")])
 
 ;; The SVE logical instruction that implements an unspec.
 (define_int_attr logicalf_op [(UNSPEC_ANDF "and")
@@ -1932,7 +1949,20 @@
 			 (UNSPEC_COND_FCMLT "lt")
 			 (UNSPEC_COND_FCMNE "ne")])
 
-(define_int_attr sve_fp_op [(UNSPEC_COND_FABS "fabs")
+(define_int_attr sve_int_op [(UNSPEC_ANDV "andv")
+			     (UNSPEC_IORV "orv")
+			     (UNSPEC_XORV "eorv")
+			     (UNSPEC_UMAXV "umaxv")
+			     (UNSPEC_UMINV "uminv")
+			     (UNSPEC_SMAXV "smaxv")
+			     (UNSPEC_SMINV "sminv")])
+
+(define_int_attr sve_fp_op [(UNSPEC_FADDV "faddv")
+			    (UNSPEC_FMAXNMV "fmaxnmv")
+			    (UNSPEC_FMAXV "fmaxv")
+			    (UNSPEC_FMINNMV "fminnmv")
+			    (UNSPEC_FMINV "fminv")
+			    (UNSPEC_COND_FABS "fabs")
 			    (UNSPEC_COND_FADD "fadd")
 			    (UNSPEC_COND_FDIV "fdiv")
 			    (UNSPEC_COND_FMAXNM "fmaxnm")

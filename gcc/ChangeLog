@@ -1,5 +1,31 @@
 2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/iterators.md (BITWISEV): Delete.
+	(SVE_INT_REDUCTION, SVE_FP_REDUCTION): New int iterators.
+	(optab): Handle UNSPEC_UMAXV, UNSPEC_UMINV, UNSPEC_SMAXV,
+	UNSPEC_SMINV, UNSPEC_FADDV, UNSPEC_FMAXNMV, UNSPEC_FMAXV,
+	UNSPEC_FMINNMV, UNSPEC_FMINV.
+	(bit_reduc_op): Delete.
+	(sve_int_op): New int attribute.
+	(sve_fp_op): Handle UNSPEC_FADDV, UNSPEC_FMAXNMV, UNSPEC_FMAXV,
+	UNSPEC_FMINNMV, UNSPEC_FMINV.
+	* config/aarch64/aarch64-sve.md
+	(reduc_<MAXMINV:maxmin_uns>_scal_<SVE_I:mode>)
+	(*reduc_<MAXMINV:maxmin_uns>_scal_<SVE_I:mode>)
+	(reduc_<BITWISEV:optab>_scal_<SVE_I:mode>)
+	(*reduc_<BITWISEV:optab>_scal_<SVE_I:mode>): Merge into...
+	(reduc_<SVE_INT_REDUCTION:optab>_scal_<SVE_I:mode>)
+	(*reduc_<SVE_INT_REDUCTION:optab>_scal_<SVE_I:mode>): ...these
+	new patterns.
+	(reduc_plus_scal_<SVE_F:mode>, *reduc_plus_scal_<SVE_I:mode>)
+	(reduc_<FMAXMINV:optab>_scal_<SVE_F:mode>)
+	(*reduc_<FMAXMINV:optab>_scal_<SVE_F:mode>): Merge into...
+	(reduc_<SVE_FP_REDUCTION:optab>_scal_<SVE_F:mode>)
+	(*reduc_<SVE_FP_REDUCTION:optab>_scal_<SVE_F:mode>): ...these
+	new patterns.
+
+2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve.md (fma<mode>4, *fma<mode>4)
 	(fnma<mode>4, *fnma<mode>4, fnms<mode>4, *fnms<mode>4)
 	(fms<mode>4, *fms<mode>4): Replace with...
