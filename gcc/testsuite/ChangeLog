@@ -1,3 +1,8 @@
+2019-08-07  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91385
+	* gcc.target/i386/pr91385.c: New test.
+
 2019-08-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/81429 - wrong parsing of constructor with C++11 attribute.
