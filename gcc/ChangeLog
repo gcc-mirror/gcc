@@ -1,3 +1,9 @@
+2019-08-07  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/91385
+	* config/i386/sse.md (*negsi2_1_zext): Simplify insn pattern.
+	(*negsi2_cmpz_zext): Ditto.
+
 2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/iterators.md (commutative): Remove.
