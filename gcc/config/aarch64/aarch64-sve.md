@@ -85,10 +85,6 @@
 ;; ---- [INT] Dot product
 ;; ---- [INT] Sum of absolute differences
 ;; ---- [FP] General ternary arithmetic corresponding to unspecs
-;; ---- [FP] FMLA and FMAD
-;; ---- [FP] FMLS and FMSB
-;; ---- [FP] FNMLA and FNMAD
-;; ---- [FP] FNMLS and FNMSB
 ;;
 ;; == Comparisons and selects
 ;; ---- [INT,FP] Select based on predicates
@@ -2469,13 +2465,46 @@
 ;; - FNMSB
 ;; -------------------------------------------------------------------------
 
+;; Unpredicated floating-point ternary operations.
+(define_expand "<optab><mode>4"
+  [(set (match_operand:SVE_F 0 "register_operand")
+	(unspec:SVE_F
+	  [(match_dup 4)
+	   (match_operand:SVE_F 1 "register_operand")
+	   (match_operand:SVE_F 2 "register_operand")
+	   (match_operand:SVE_F 3 "register_operand")]
+	  SVE_COND_FP_TERNARY))]
+  "TARGET_SVE"
+  {
+    operands[4] = aarch64_ptrue_reg (<VPRED>mode);
+  }
+)
+
+;; Predicated floating-point ternary operations.
+(define_insn "*<optab><mode>4"
+  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, ?&w")
+	(unspec:SVE_F
+	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
+	   (match_operand:SVE_F 2 "register_operand" "%w, 0, w")
+	   (match_operand:SVE_F 3 "register_operand" "w, w, w")
+	   (match_operand:SVE_F 4 "register_operand" "0, w, w")]
+	  SVE_COND_FP_TERNARY))]
+  "TARGET_SVE"
+  "@
+   <sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+   <sve_fmad_op>\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
+   movprfx\t%0, %4\;<sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
+  [(set_attr "movprfx" "*,*,yes")]
+)
+
 ;; Predicated floating-point ternary operations with merging.
 (define_expand "cond_<optab><mode>"
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand")
 	   (unspec:SVE_F
-	     [(match_operand:SVE_F 2 "register_operand")
+	     [(match_dup 1)
+	      (match_operand:SVE_F 2 "register_operand")
 	      (match_operand:SVE_F 3 "register_operand")
 	      (match_operand:SVE_F 4 "register_operand")]
 	     SVE_COND_FP_TERNARY)
@@ -2496,7 +2525,8 @@
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_F
-	     [(match_operand:SVE_F 2 "register_operand" "0, w")
+	     [(match_dup 1)
+	      (match_operand:SVE_F 2 "register_operand" "0, w")
 	      (match_operand:SVE_F 3 "register_operand" "w, w")
 	      (match_operand:SVE_F 4 "register_operand" "w, w")]
 	     SVE_COND_FP_TERNARY)
@@ -2516,7 +2546,8 @@
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl")
 	   (unspec:SVE_F
-	     [(match_operand:SVE_F 2 "register_operand" "w, w")
+	     [(match_dup 1)
+	      (match_operand:SVE_F 2 "register_operand" "w, w")
 	      (match_operand:SVE_F 3 "register_operand" "w, w")
 	      (match_operand:SVE_F 4 "register_operand" "0, w")]
 	     SVE_COND_FP_TERNARY)
@@ -2536,7 +2567,8 @@
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
 	   (unspec:SVE_F
-	     [(match_operand:SVE_F 2 "register_operand" "w, w, w")
+	     [(match_dup 1)
+	      (match_operand:SVE_F 2 "register_operand" "w, w, w")
 	      (match_operand:SVE_F 3 "register_operand" "w, w, w")
 	      (match_operand:SVE_F 4 "register_operand" "w, w, w")]
 	     SVE_COND_FP_TERNARY)
@@ -2559,174 +2591,6 @@
     operands[5] = operands[4] = operands[0];
   }
   [(set_attr "movprfx" "yes")]
-)
-
-;; -------------------------------------------------------------------------
-;; ---- [FP] FMLA and FMAD
-;; -------------------------------------------------------------------------
-;; Includes:
-;; - FMAD
-;; - FMLA
-;; -------------------------------------------------------------------------
-
-;; Unpredicated fma (%0 = (%1 * %2) + %3).
-(define_expand "fma<mode>4"
-  [(set (match_operand:SVE_F 0 "register_operand")
-	(unspec:SVE_F
-	  [(match_dup 4)
-	   (fma:SVE_F (match_operand:SVE_F 1 "register_operand")
-		      (match_operand:SVE_F 2 "register_operand")
-		      (match_operand:SVE_F 3 "register_operand"))]
-	  UNSPEC_MERGE_PTRUE))]
-  "TARGET_SVE"
-  {
-    operands[4] = aarch64_ptrue_reg (<VPRED>mode);
-  }
-)
-
-;; fma predicated with a PTRUE.
-(define_insn "*fma<mode>4"
-  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, ?&w")
-	(unspec:SVE_F
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
-	   (fma:SVE_F (match_operand:SVE_F 3 "register_operand" "%0, w, w")
-		      (match_operand:SVE_F 4 "register_operand" "w, w, w")
-		      (match_operand:SVE_F 2 "register_operand" "w, 0, w"))]
-	  UNSPEC_MERGE_PTRUE))]
-  "TARGET_SVE"
-  "@
-   fmad\t%0.<Vetype>, %1/m, %4.<Vetype>, %2.<Vetype>
-   fmla\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
-   movprfx\t%0, %2\;fmla\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>"
-  [(set_attr "movprfx" "*,*,yes")]
-)
-
-;; -------------------------------------------------------------------------
-;; ---- [FP] FMLS and FMSB
-;; -------------------------------------------------------------------------
-;; Includes:
-;; - FMLS
-;; - FMSB
-;; -------------------------------------------------------------------------
-
-;; Unpredicated fnma (%0 = (-%1 * %2) + %3).
-(define_expand "fnma<mode>4"
-  [(set (match_operand:SVE_F 0 "register_operand")
-	(unspec:SVE_F
-	  [(match_dup 4)
-	   (fma:SVE_F (neg:SVE_F
-			(match_operand:SVE_F 1 "register_operand"))
-		      (match_operand:SVE_F 2 "register_operand")
-		      (match_operand:SVE_F 3 "register_operand"))]
-	  UNSPEC_MERGE_PTRUE))]
-  "TARGET_SVE"
-  {
-    operands[4] = aarch64_ptrue_reg (<VPRED>mode);
-  }
-)
-
-;; fnma predicated with a PTRUE.
-(define_insn "*fnma<mode>4"
-  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, ?&w")
-	(unspec:SVE_F
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
-	   (fma:SVE_F (neg:SVE_F
-			(match_operand:SVE_F 3 "register_operand" "%0, w, w"))
-		      (match_operand:SVE_F 4 "register_operand" "w, w, w")
-		      (match_operand:SVE_F 2 "register_operand" "w, 0, w"))]
-	  UNSPEC_MERGE_PTRUE))]
-  "TARGET_SVE"
-  "@
-   fmsb\t%0.<Vetype>, %1/m, %4.<Vetype>, %2.<Vetype>
-   fmls\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
-   movprfx\t%0, %2\;fmls\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>"
-  [(set_attr "movprfx" "*,*,yes")]
-)
-
-;; -------------------------------------------------------------------------
-;; ---- [FP] FNMLA and FNMAD
-;; -------------------------------------------------------------------------
-;; Includes:
-;; - FNMAD
-;; - FNMLA
-;; -------------------------------------------------------------------------
-
-;; Unpredicated fnms (%0 = (-%1 * %2) - %3).
-(define_expand "fnms<mode>4"
-  [(set (match_operand:SVE_F 0 "register_operand")
-	(unspec:SVE_F
-	  [(match_dup 4)
-	   (fma:SVE_F (neg:SVE_F
-			(match_operand:SVE_F 1 "register_operand"))
-		      (match_operand:SVE_F 2 "register_operand")
-		      (neg:SVE_F
-			(match_operand:SVE_F 3 "register_operand")))]
-	  UNSPEC_MERGE_PTRUE))]
-  "TARGET_SVE"
-  {
-    operands[4] = aarch64_ptrue_reg (<VPRED>mode);
-  }
-)
-
-;; fnms predicated with a PTRUE.
-(define_insn "*fnms<mode>4"
-  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, ?&w")
-	(unspec:SVE_F
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
-	   (fma:SVE_F (neg:SVE_F
-			(match_operand:SVE_F 3 "register_operand" "%0, w, w"))
-		      (match_operand:SVE_F 4 "register_operand" "w, w, w")
-		      (neg:SVE_F
-			(match_operand:SVE_F 2 "register_operand" "w, 0, w")))]
-	  UNSPEC_MERGE_PTRUE))]
-  "TARGET_SVE"
-  "@
-   fnmad\t%0.<Vetype>, %1/m, %4.<Vetype>, %2.<Vetype>
-   fnmla\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
-   movprfx\t%0, %2\;fnmla\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>"
-  [(set_attr "movprfx" "*,*,yes")]
-)
-
-;; -------------------------------------------------------------------------
-;; ---- [FP] FNMLS and FNMSB
-;; -------------------------------------------------------------------------
-;; Includes:
-;; - FNMLS
-;; - FNMSB
-;; -------------------------------------------------------------------------
-
-;; Unpredicated fms (%0 = (%1 * %2) - %3).
-(define_expand "fms<mode>4"
-  [(set (match_operand:SVE_F 0 "register_operand")
-	(unspec:SVE_F
-	  [(match_dup 4)
-	   (fma:SVE_F (match_operand:SVE_F 1 "register_operand")
-		      (match_operand:SVE_F 2 "register_operand")
-		      (neg:SVE_F
-			(match_operand:SVE_F 3 "register_operand")))]
-	  UNSPEC_MERGE_PTRUE))]
-  "TARGET_SVE"
-  {
-    operands[4] = aarch64_ptrue_reg (<VPRED>mode);
-  }
-)
-
-;; fms predicated with a PTRUE.
-(define_insn "*fms<mode>4"
-  [(set (match_operand:SVE_F 0 "register_operand" "=w, w, ?&w")
-	(unspec:SVE_F
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl, Upl, Upl")
-	   (fma:SVE_F (match_operand:SVE_F 3 "register_operand" "%0, w, w")
-		      (match_operand:SVE_F 4 "register_operand" "w, w, w")
-		      (neg:SVE_F
-			(match_operand:SVE_F 2 "register_operand" "w, 0, w")))]
-	  UNSPEC_MERGE_PTRUE))]
-  "TARGET_SVE"
-  "@
-   fnmsb\t%0.<Vetype>, %1/m, %4.<Vetype>, %2.<Vetype>
-   fnmls\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
-   movprfx\t%0, %2\;fnmls\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>"
-  [(set_attr "movprfx" "*,*,yes")]
 )
 
 ;; =========================================================================

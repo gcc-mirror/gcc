@@ -1,5 +1,16 @@
 2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-sve.md (fma<mode>4, *fma<mode>4)
+	(fnma<mode>4, *fnma<mode>4, fnms<mode>4, *fnms<mode>4)
+	(fms<mode>4, *fms<mode>4): Replace with...
+	(<SVE_COND_FP_TERNARY:optab><SVE_F:mode>4)
+	(*<SVE_COND_FP_TERNARY:optab><SVE_F:mode>4): ...these new patterns.
+	Use unspecs instead of rtx codes.
+	(cond_<optab><mode>, *cond_<optab><mode>_2, *cond_<optab><mode>_4)
+	(*cond_<optab><mode>_any): Add the predicate to SVE_COND_FP_TERNARY.
+
+2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (SVE_COND_FP_MAXMIN_PUBLIC): New
 	int iterator.
 	(maxmin_uns_op): Handle UNSPEC_COND_FMAXNM and UNSPEC_COND_FMINNM.
