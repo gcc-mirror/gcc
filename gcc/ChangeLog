@@ -1,5 +1,9 @@
 2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-sve.md (*pred_fold_left_plus_<mode>): Delete.
+
+2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/iterators.md (UNSPEC_COND_ADD): Rename to...
 	(UNSPEC_COND_FADD): ...this.
 	(UNSPEC_COND_SUB): Rename to...
