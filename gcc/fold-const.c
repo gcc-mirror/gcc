@@ -115,11 +115,11 @@ static tree negate_expr (tree);
 static tree associate_trees (location_t, tree, tree, enum tree_code, tree);
 static enum comparison_code comparison_to_compcode (enum tree_code);
 static enum tree_code compcode_to_comparison (enum comparison_code);
-static int twoval_comparison_p (tree, tree *, tree *);
+static bool twoval_comparison_p (tree, tree *, tree *);
 static tree eval_subst (location_t, tree, tree, tree, tree, tree);
 static tree optimize_bit_field_compare (location_t, enum tree_code,
 					tree, tree, tree);
-static int simple_operand_p (const_tree);
+static bool simple_operand_p (const_tree);
 static bool simple_operand_p_2 (tree);
 static tree range_binop (enum tree_code, tree, tree, int, tree, int);
 static tree range_predecessor (tree);
@@ -2939,7 +2939,7 @@ combine_comparisons (location_t loc,
    addresses with TREE_CONSTANT flag set so we know that &var == &var
    even if var is volatile.  */
 
-int
+bool
 operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 {
   /* When checking, verify at the outermost operand_equal_p call that
@@ -2958,10 +2958,10 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	      hashval_t h1 = hstate1.end ();
 	      gcc_assert (h0 == h1);
 	    }
-	  return 1;
+	  return true;
 	}
       else
-	return 0;
+	return false;
     }
 
   STRIP_ANY_LOCATION_WRAPPER (arg0);
@@ -2971,19 +2971,19 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
   if (TREE_CODE (arg0) == ERROR_MARK || TREE_CODE (arg1) == ERROR_MARK
       || TREE_TYPE (arg0) == error_mark_node
       || TREE_TYPE (arg1) == error_mark_node)
-    return 0;
+    return false;
 
   /* Similar, if either does not have a type (like a template id),
      they aren't equal.  */
   if (!TREE_TYPE (arg0) || !TREE_TYPE (arg1))
-    return 0;
+    return false;
 
   /* We cannot consider pointers to different address space equal.  */
   if (POINTER_TYPE_P (TREE_TYPE (arg0))
       && POINTER_TYPE_P (TREE_TYPE (arg1))
       && (TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (arg0)))
 	  != TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (arg1)))))
-    return 0;
+    return false;
 
   /* Check equality of integer constants before bailing out due to
      precision differences.  */
@@ -3005,13 +3005,13 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       if (TYPE_UNSIGNED (TREE_TYPE (arg0)) != TYPE_UNSIGNED (TREE_TYPE (arg1))
 	  || POINTER_TYPE_P (TREE_TYPE (arg0))
 			     != POINTER_TYPE_P (TREE_TYPE (arg1)))
-	return 0;
+	return false;
 
       /* If both types don't have the same precision, then it is not safe
 	 to strip NOPs.  */
       if (element_precision (TREE_TYPE (arg0))
 	  != element_precision (TREE_TYPE (arg1)))
-	return 0;
+	return false;
 
       STRIP_NOPS (arg0);
       STRIP_NOPS (arg1);
@@ -3058,17 +3058,17 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	      && TREE_CODE (TREE_OPERAND (arg0, 0)) == ADDR_EXPR
 	      && TREE_OPERAND (TREE_OPERAND (arg0, 0), 0) == arg1
 	      && integer_zerop (TREE_OPERAND (arg0, 1)))
-	    return 1;
+	    return true;
 	  else if (TREE_CODE (arg1) == MEM_REF
 		   && DECL_P (arg0)
 		   && TREE_CODE (TREE_OPERAND (arg1, 0)) == ADDR_EXPR
 		   && TREE_OPERAND (TREE_OPERAND (arg1, 0), 0) == arg0
 		   && integer_zerop (TREE_OPERAND (arg1, 1)))
-	    return 1;
-	  return 0;
+	    return true;
+	  return false;
 	}
       else
-	return 0;
+	return false;
     }
 
   /* When not checking adddresses, this is needed for conversions and for
@@ -3077,7 +3077,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       || TREE_CODE (TREE_TYPE (arg1)) == ERROR_MARK
       || (TYPE_MODE (TREE_TYPE (arg0)) != TYPE_MODE (TREE_TYPE (arg1))
 	  && !(flags & OEP_ADDRESS_OF)))
-    return 0;
+    return false;
 
   /* If ARG0 and ARG1 are the same SAVE_EXPR, they are necessarily equal.
      We don't care about side effects in that case because the SAVE_EXPR
@@ -3092,7 +3092,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       && (TREE_CODE (arg0) == SAVE_EXPR
 	  || (flags & OEP_MATCH_SIDE_EFFECTS)
 	  || (! TREE_SIDE_EFFECTS (arg0) && ! TREE_SIDE_EFFECTS (arg1))))
-    return 1;
+    return true;
 
   /* Next handle constant cases, those for which we can return 1 even
      if ONLY_CONST is set.  */
@@ -3108,7 +3108,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 
       case REAL_CST:
 	if (real_identical (&TREE_REAL_CST (arg0), &TREE_REAL_CST (arg1)))
-	  return 1;
+	  return true;
 
 
 	if (!HONOR_SIGNED_ZEROS (arg0))
@@ -3116,26 +3116,26 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	    /* If we do not distinguish between signed and unsigned zero,
 	       consider them equal.  */
 	    if (real_zerop (arg0) && real_zerop (arg1))
-	      return 1;
+	      return true;
 	  }
-	return 0;
+	return false;
 
       case VECTOR_CST:
 	{
 	  if (VECTOR_CST_LOG2_NPATTERNS (arg0)
 	      != VECTOR_CST_LOG2_NPATTERNS (arg1))
-	    return 0;
+	    return false;
 
 	  if (VECTOR_CST_NELTS_PER_PATTERN (arg0)
 	      != VECTOR_CST_NELTS_PER_PATTERN (arg1))
-	    return 0;
+	    return false;
 
 	  unsigned int count = vector_cst_encoded_nelts (arg0);
 	  for (unsigned int i = 0; i < count; ++i)
 	    if (!operand_equal_p (VECTOR_CST_ENCODED_ELT (arg0, i),
 				  VECTOR_CST_ENCODED_ELT (arg1, i), flags))
-	      return 0;
-	  return 1;
+	      return false;
+	  return true;
 	}
 
       case COMPLEX_CST:
@@ -3164,7 +3164,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       }
 
   if (flags & OEP_ONLY_CONST)
-    return 0;
+    return false;
 
 /* Define macros to test an operand from arg0 and arg1 for equality and a
    variant that allows null and views null as being different from any
@@ -3187,7 +3187,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
         case FIX_TRUNC_EXPR:
 	  if (TYPE_UNSIGNED (TREE_TYPE (arg0))
 	      != TYPE_UNSIGNED (TREE_TYPE (arg1)))
-	    return 0;
+	    return false;
 	  break;
 	default:
 	  break;
@@ -3199,7 +3199,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
     case tcc_comparison:
     case tcc_binary:
       if (OP_SAME (0) && OP_SAME (1))
-	return 1;
+	return true;
 
       /* For commutative ops, allow the other order.  */
       return (commutative_tree_code (TREE_CODE (arg0))
@@ -3215,7 +3215,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       if ((flags & OEP_MATCH_SIDE_EFFECTS) == 0
 	  && (TREE_SIDE_EFFECTS (arg0)
 	      || TREE_SIDE_EFFECTS (arg1)))
-	return 0;
+	return false;
 
       switch (TREE_CODE (arg0))
 	{
@@ -3224,11 +3224,11 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	    {
 	      if (TYPE_ALIGN (TREE_TYPE (arg0))
 		  != TYPE_ALIGN (TREE_TYPE (arg1)))
-		return 0;
+		return false;
 	      /* Verify that the access types are compatible.  */
 	      if (TYPE_MAIN_VARIANT (TREE_TYPE (arg0))
 		  != TYPE_MAIN_VARIANT (TREE_TYPE (arg1)))
-		return 0;
+		return false;
 	    }
 	  flags &= ~OEP_ADDRESS_OF;
 	  return OP_SAME (0);
@@ -3238,7 +3238,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  if (!operand_equal_p (TYPE_SIZE (TREE_TYPE (arg0)),
 				TYPE_SIZE (TREE_TYPE (arg1)),
 				flags & ~OEP_ADDRESS_OF))
-	    return 0;
+	    return false;
 
 	/* Fallthru.  */
 	case REALPART_EXPR:
@@ -3256,10 +3256,10 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 		      || !operand_equal_p (TYPE_SIZE (TREE_TYPE (arg0)),
 					   TYPE_SIZE (TREE_TYPE (arg1)),
 					   flags)))
-		return 0;
+		return false;
 	      /* Verify that access happens in similar types.  */
 	      if (!types_compatible_p (TREE_TYPE (arg0), TREE_TYPE (arg1)))
-		return 0;
+		return false;
 	      /* Verify that accesses are TBAA compatible.  */
 	      if (!alias_ptr_types_compatible_p
 		    (TREE_TYPE (TREE_OPERAND (arg0, 1)),
@@ -3268,11 +3268,11 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 		      != MR_DEPENDENCE_CLIQUE (arg1))
 		  || (MR_DEPENDENCE_BASE (arg0)
 		      != MR_DEPENDENCE_BASE (arg1)))
-		return 0;
+		return false;
 	     /* Verify that alignment is compatible.  */
 	     if (TYPE_ALIGN (TREE_TYPE (arg0))
 		 != TYPE_ALIGN (TREE_TYPE (arg1)))
-		return 0;
+		return false;
 	    }
 	  flags &= ~OEP_ADDRESS_OF;
 	  return (OP_SAME (0) && OP_SAME (1)
@@ -3285,7 +3285,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
 	  if (!OP_SAME (0))
-	    return 0;
+	    return false;
 	  flags &= ~OEP_ADDRESS_OF;
 	  /* Compare the array index by value if it is constant first as we
 	     may have different types but same value here.  */
@@ -3313,18 +3313,18 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	     may be NULL when we're called to compare MEM_EXPRs.  */
 	  if (!OP_SAME_WITH_NULL (0)
 	      || !OP_SAME (1))
-	    return 0;
+	    return false;
 	  flags &= ~OEP_ADDRESS_OF;
 	  return OP_SAME_WITH_NULL (2);
 
 	case BIT_FIELD_REF:
 	  if (!OP_SAME (0))
-	    return 0;
+	    return false;
 	  flags &= ~OEP_ADDRESS_OF;
 	  return OP_SAME (1) && OP_SAME (2);
 
 	default:
-	  return 0;
+	  return false;
 	}
 
     case tcc_expression:
@@ -3347,7 +3347,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	case WIDEN_MULT_PLUS_EXPR:
 	case WIDEN_MULT_MINUS_EXPR:
 	  if (!OP_SAME (2))
-	    return 0;
+	    return false;
 	  /* The multiplcation operands are commutative.  */
 	  /* FALLTHRU */
 
@@ -3355,7 +3355,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	case TRUTH_OR_EXPR:
 	case TRUTH_XOR_EXPR:
 	  if (OP_SAME (0) && OP_SAME (1))
-	    return 1;
+	    return true;
 
 	  /* Otherwise take into account this is a commutative operation.  */
 	  return (operand_equal_p (TREE_OPERAND (arg0, 0),
@@ -3365,7 +3365,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 
 	case COND_EXPR:
 	  if (! OP_SAME (1) || ! OP_SAME_WITH_NULL (2))
-	    return 0;
+	    return false;
 	  flags &= ~OEP_ADDRESS_OF;
 	  return OP_SAME (0);
 
@@ -3392,17 +3392,17 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	case POSTINCREMENT_EXPR:
 	  if (flags & OEP_LEXICOGRAPHIC)
 	    return OP_SAME (0) && OP_SAME (1);
-	  return 0;
+	  return false;
 
 	case CLEANUP_POINT_EXPR:
 	case EXPR_STMT:
 	case SAVE_EXPR:
 	  if (flags & OEP_LEXICOGRAPHIC)
 	    return OP_SAME (0);
-	  return 0;
+	  return false;
 
 	default:
-	  return 0;
+	  return false;
 	}
 
     case tcc_vl_exp:
@@ -3413,13 +3413,13 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	      != (CALL_EXPR_FN (arg1) == NULL_TREE))
 	    /* If not both CALL_EXPRs are either internal or normal function
 	       functions, then they are not equal.  */
-	    return 0;
+	    return false;
 	  else if (CALL_EXPR_FN (arg0) == NULL_TREE)
 	    {
 	      /* If the CALL_EXPRs call different internal functions, then they
 		 are not equal.  */
 	      if (CALL_EXPR_IFN (arg0) != CALL_EXPR_IFN (arg1))
-		return 0;
+		return false;
 	    }
 	  else
 	    {
@@ -3427,7 +3427,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 		 equal.  */
 	      if (! operand_equal_p (CALL_EXPR_FN (arg0), CALL_EXPR_FN (arg1),
 				     flags))
-		return 0;
+		return false;
 	    }
 
 	  /* FIXME: We could skip this test for OEP_MATCH_SIDE_EFFECTS.  */
@@ -3438,7 +3438,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	    else
 	      cef &= ECF_CONST;
 	    if (!cef && !(flags & OEP_LEXICOGRAPHIC))
-	      return 0;
+	      return false;
 	  }
 
 	  /* Now see if all the arguments are the same.  */
@@ -3451,14 +3451,14 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 		 a0 = next_const_call_expr_arg (&iter0),
 		   a1 = next_const_call_expr_arg (&iter1))
 	      if (! operand_equal_p (a0, a1, flags))
-		return 0;
+		return false;
 
 	    /* If we get here and both argument lists are exhausted
 	       then the CALL_EXPRs are equal.  */
 	    return ! (a0 || a1);
 	  }
 	default:
-	  return 0;
+	  return false;
 	}
 
     case tcc_declaration:
@@ -3480,7 +3480,7 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	      constants).  */
 	  if (!VECTOR_TYPE_P (TREE_TYPE (arg0))
 	      || !VECTOR_TYPE_P (TREE_TYPE (arg1)))
-	    return 0;
+	    return false;
 
 	  /* Be sure that vectors constructed have the same representation.
 	     We only tested element precision and modes to match.
@@ -3488,14 +3488,14 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	     parts match.  */
 	  if (maybe_ne (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)),
 			TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1))))
-	    return 0;
+	    return false;
 
 	  vec<constructor_elt, va_gc> *v0 = CONSTRUCTOR_ELTS (arg0);
 	  vec<constructor_elt, va_gc> *v1 = CONSTRUCTOR_ELTS (arg1);
 	  unsigned int len = vec_safe_length (v0);
 
 	  if (len != vec_safe_length (v1))
-	    return 0;
+	    return false;
 
 	  for (unsigned int i = 0; i < len; i++)
 	    {
@@ -3512,9 +3512,9 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 		  || (c1->index
 		      && (TREE_CODE (c1->index) != INTEGER_CST 
 			  || compare_tree_int (c1->index, i))))
-		return 0;
+		return false;
 	    }
-	  return 1;
+	  return true;
 	}
       else if (TREE_CODE (arg0) == STATEMENT_LIST
 	       && (flags & OEP_LEXICOGRAPHIC))
@@ -3528,16 +3528,16 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	    {
 	      /* The lists don't have the same number of statements.  */
 	      if (tsi_end_p (tsi1) ^ tsi_end_p (tsi2))
-		return 0;
+		return false;
 	      if (tsi_end_p (tsi1) && tsi_end_p (tsi2))
-		return 1;
+		return true;
 	      if (!operand_equal_p (tsi_stmt (tsi1), tsi_stmt (tsi2),
 				    flags & (OEP_LEXICOGRAPHIC
 					     | OEP_NO_HASH_CHECK)))
-		return 0;
+		return false;
 	    }
 	}
-      return 0;
+      return false;
 
     case tcc_statement:
       switch (TREE_CODE (arg0))
@@ -3545,17 +3545,17 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	case RETURN_EXPR:
 	  if (flags & OEP_LEXICOGRAPHIC)
 	    return OP_SAME_WITH_NULL (0);
-	  return 0;
+	  return false;
 	case DEBUG_BEGIN_STMT:
 	  if (flags & OEP_LEXICOGRAPHIC)
-	    return 1;
-	  return 0;
+	    return true;
+	  return false;
 	default:
-	  return 0;
+	  return false;
 	 }
 
     default:
-      return 0;
+      return false;
     }
 
 #undef OP_SAME
@@ -3606,7 +3606,7 @@ operand_equal_for_comparison_p (tree arg0, tree arg1)
 
    If this is true, return 1.  Otherwise, return zero.  */
 
-static int
+static bool
 twoval_comparison_p (tree arg, tree *cval1, tree *cval2)
 {
   enum tree_code code = TREE_CODE (arg);
@@ -3630,14 +3630,14 @@ twoval_comparison_p (tree arg, tree *cval1, tree *cval2)
 	      && twoval_comparison_p (TREE_OPERAND (arg, 1), cval1, cval2));
 
     case tcc_constant:
-      return 1;
+      return true;
 
     case tcc_expression:
       if (code == COND_EXPR)
 	return (twoval_comparison_p (TREE_OPERAND (arg, 0), cval1, cval2)
 		&& twoval_comparison_p (TREE_OPERAND (arg, 1), cval1, cval2)
 		&& twoval_comparison_p (TREE_OPERAND (arg, 2), cval1, cval2));
-      return 0;
+      return false;
 
     case tcc_comparison:
       /* First see if we can handle the first operand, then the second.  For
@@ -3648,7 +3648,7 @@ twoval_comparison_p (tree arg, tree *cval1, tree *cval2)
 
       if (operand_equal_p (TREE_OPERAND (arg, 0),
 			   TREE_OPERAND (arg, 1), 0))
-	return 0;
+	return false;
 
       if (*cval1 == 0)
 	*cval1 = TREE_OPERAND (arg, 0);
@@ -3659,7 +3659,7 @@ twoval_comparison_p (tree arg, tree *cval1, tree *cval2)
       else if (operand_equal_p (*cval2, TREE_OPERAND (arg, 0), 0))
 	;
       else
-	return 0;
+	return false;
 
       if (operand_equal_p (*cval1, TREE_OPERAND (arg, 1), 0))
 	;
@@ -3668,12 +3668,12 @@ twoval_comparison_p (tree arg, tree *cval1, tree *cval2)
       else if (operand_equal_p (*cval2, TREE_OPERAND (arg, 1), 0))
 	;
       else
-	return 0;
+	return false;
 
-      return 1;
+      return true;
 
     default:
-      return 0;
+      return false;
     }
 }
 
@@ -4353,7 +4353,7 @@ decode_field_reference (location_t loc, tree *exp_, HOST_WIDE_INT *pbitsize,
 /* Return nonzero if MASK represents a mask of SIZE ones in the low-order
    bit positions and MASK is SIGNED.  */
 
-static int
+static bool
 all_ones_mask_p (const_tree mask, unsigned int size)
 {
   tree type = TREE_TYPE (mask);
@@ -4408,7 +4408,7 @@ sign_bit_p (tree exp, const_tree val)
 /* Subroutine for fold_truth_andor_1: determine if an operand is simple enough
    to be evaluated unconditionally.  */
 
-static int
+static bool
 simple_operand_p (const_tree exp)
 {
   /* Strip any conversions that don't change the machine mode.  */
