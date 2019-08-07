@@ -1,5 +1,11 @@
 2019-08-07  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/81429 - wrong parsing of constructor with C++11 attribute.
+	* g++.dg/cpp0x/gen-attrs-68.C: New test.
+	* g++.dg/cpp0x/gen-attrs-69.C: New test.
+
+2019-08-07  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/91346 - Implement P1668R1, allow unevaluated asm in constexpr.
 	* g++.dg/cpp2a/inline-asm1.C: New test.
 	* g++.dg/cpp2a/inline-asm2.C: New test.
