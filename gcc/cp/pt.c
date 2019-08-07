@@ -16303,6 +16303,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	case OMP_CLAUSE_MAP:
 	case OMP_CLAUSE_NONTEMPORAL:
 	case OMP_CLAUSE_USE_DEVICE_PTR:
+	case OMP_CLAUSE_USE_DEVICE_ADDR:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE_INCLUSIVE:
 	case OMP_CLAUSE_EXCLUSIVE:
@@ -16427,6 +16428,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	  case OMP_CLAUSE_IN_REDUCTION:
 	  case OMP_CLAUSE_TASK_REDUCTION:
 	  case OMP_CLAUSE_USE_DEVICE_PTR:
+	  case OMP_CLAUSE_USE_DEVICE_ADDR:
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
 	  case OMP_CLAUSE_INCLUSIVE:
 	  case OMP_CLAUSE_EXCLUSIVE:

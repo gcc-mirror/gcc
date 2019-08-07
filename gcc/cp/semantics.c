@@ -7524,18 +7524,39 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      tree type = TREE_TYPE (t);
 	      if (!TYPE_PTR_P (type)
-		  && TREE_CODE (type) != ARRAY_TYPE
-		  && (!TYPE_REF_P (type)
-		      || (!TYPE_PTR_P (TREE_TYPE (type))
-			  && TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE)))
+		  && (!TYPE_REF_P (type) || !TYPE_PTR_P (TREE_TYPE (type))))
 		{
-		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "%qs variable is neither a pointer, nor an array "
-			    "nor reference to pointer or array",
-			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-		  remove = true;
+		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_PTR
+		      && ort == C_ORT_OMP)
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"%qs variable is neither a pointer "
+				"nor reference to pointer",
+				omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		      remove = true;
+		    }
+		  else if (TREE_CODE (type) != ARRAY_TYPE
+			   && (!TYPE_REF_P (type)
+			       || TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE))
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"%qs variable is neither a pointer, nor an "
+				"array nor reference to pointer or array",
+				omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		      remove = true;
+		    }
 		}
 	    }
+	  goto check_dup_generic;
+
+	case OMP_CLAUSE_USE_DEVICE_ADDR:
+	  field_ok = true;
+	  t = OMP_CLAUSE_DECL (c);
+	  if (!processing_template_decl
+	      && (VAR_P (t) || TREE_CODE (t) == PARM_DECL)
+	      && !TYPE_REF_P (TREE_TYPE (t))
+	      && !cxx_mark_addressable (t))
+	    remove = true;
 	  goto check_dup_generic;
 
 	case OMP_CLAUSE_NOWAIT:

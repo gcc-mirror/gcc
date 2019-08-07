@@ -1,3 +1,16 @@
+2019-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_name): Parse use_device_addr clause.
+	(c_parser_omp_clause_use_device_addr): New function.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_USE_DEVICE_ADDR.
+	(OMP_TARGET_DATA_CLAUSE_MASK): Add PRAGMA_OMP_CLAUSE_USE_DEVICE_ADDR.
+	(c_parser_omp_target_data): Handle PRAGMA_OMP_CLAUSE_USE_DEVICE_ADDR
+	like PRAGMA_OMP_CLAUSE_USE_DEVICE_PTR, adjust diagnostics about no
+	map or use_device_* clauses.
+	* c-typeck.c (c_finish_omp_clauses): For OMP_CLAUSE_USE_DEVICE_PTR
+	in OpenMP, require pointer type rather than pointer or array type.
+	Handle OMP_CLAUSE_USE_DEVICE_ADDR.
+
 2019-07-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/91192

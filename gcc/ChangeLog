@@ -1,3 +1,20 @@
+2019-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum omp_clause_code): Adjust OMP_CLAUSE_USE_DEVICE_PTR
+	OpenMP description.  Add OMP_CLAUSE_USE_DEVICE_ADDR clause.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name): Add entries
+	for OMP_CLAUSE_USE_DEVICE_ADDR clause.
+	(walk_tree_1): Handle OMP_CLAUSE_USE_DEVICE_ADDR.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Likewise.
+	* gimplify.c (gimplify_scan_omp_clauses, gimplify_adjust_omp_clauses):
+	Likewise.
+	* omp-low.c (scan_sharing_clauses, lower_omp_target): Likewise.
+	Treat OMP_CLAUSE_USE_DEVICE_ADDR like OMP_CLAUSE_USE_DEVICE_PTR
+	clause with array or reference to array types, no matter what type
+	except for reference it has.
+
 2019-08-07  Kewen Lin  <linkw@gcc.gnu.org>
 
 	* config/rs6000/vector.md (vrotr<mode>3): New define_expand.

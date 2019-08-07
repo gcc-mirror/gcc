@@ -1,3 +1,10 @@
+2019-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add
+	PRAGMA_OMP_CLAUSE_USE_DEVICE_ADDR.  Set PRAGMA_OACC_CLAUSE_USE_DEVICE
+	equal to PRAGMA_OMP_CLAUSE_USE_DEVICE_PTR instead of being a separate
+	enumeration value.
+
 2019-08-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91338 - Implement P1161R3: Deprecate a[b,c].
