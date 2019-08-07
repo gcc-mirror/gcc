@@ -1,3 +1,7 @@
+2019-08-07  Kewen Lin  <linkw@gcc.gnu.org>
+
+	* config/rs6000/vector.md (vrotr<mode>3): New define_expand.
+
 2019-08-07  Kito Cheng  <kito.cheng@sifive.com>
 
 	* gcc/config/riscv/multilib-generator: (canonical_order): Add 'g'.
