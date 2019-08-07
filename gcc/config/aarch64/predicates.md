@@ -57,9 +57,9 @@
             (match_test "REGNO_REG_CLASS (REGNO (op)) == FP_REGS"))))
 
 (define_predicate "aarch64_reg_or_zero"
-  (and (match_code "reg,subreg,const_int")
+  (and (match_code "reg,subreg,const_int,const_double")
        (ior (match_operand 0 "register_operand")
-	    (match_test "op == const0_rtx"))))
+	    (match_test "op == CONST0_RTX (GET_MODE (op))"))))
 
 (define_predicate "aarch64_reg_or_fp_zero"
   (ior (match_operand 0 "register_operand")
