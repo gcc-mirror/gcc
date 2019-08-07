@@ -1,5 +1,11 @@
 2019-08-07  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/81429 - wrong parsing of constructor with C++11 attribute.
+	* parser.c (cp_parser_constructor_declarator_p): Handle the scenario
+	when a parameter declaration begins with [[attribute]].
+
+2019-08-07  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/91346 - Implement P1668R1, allow unevaluated asm in constexpr.
 	* constexpr.c (cxx_eval_constant_expression): Handle ASM_EXPR.
 	(potential_constant_expression_1) <case ASM_EXPR>: Allow.
