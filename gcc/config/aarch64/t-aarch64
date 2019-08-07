@@ -103,3 +103,10 @@ aarch64-bti-insert.o: $(srcdir)/config/aarch64/aarch64-bti-insert.c \
 comma=,
 MULTILIB_OPTIONS    = $(subst $(comma),/, $(patsubst %, mabi=%, $(subst $(comma),$(comma)mabi=,$(TM_MULTILIB_CONFIG))))
 MULTILIB_DIRNAMES   = $(subst $(comma), ,$(TM_MULTILIB_CONFIG))
+
+insn-conditions.md: s-check-sve-md
+s-check-sve-md: $(srcdir)/config/aarch64/check-sve-md.awk \
+		$(srcdir)/config/aarch64/aarch64-sve.md
+	$(AWK) -f $(srcdir)/config/aarch64/check-sve-md.awk \
+	  $(srcdir)/config/aarch64/aarch64-sve.md
+	$(STAMP) s-check-sve-md
