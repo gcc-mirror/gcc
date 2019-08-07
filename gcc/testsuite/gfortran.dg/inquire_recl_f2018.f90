@@ -39,4 +39,11 @@ program inqrecl
   if (r /= -2) then
      STOP 5
   end if
+
+  ! Also inquire by filename for a non-opened unit is considered
+  ! unconnected similar to the first test.
+  inquire(file='unconnectedfile.txt', recl=r)
+  if (r /= -1) then
+     stop 6
+  end if
 end program inqrecl
