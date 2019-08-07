@@ -1,3 +1,11 @@
+2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-sve.md: Reorganize contents and add
+	banner comments.
+	* config/aarch64/check-sve-md.awk: New file.
+	* config/aarch64/t-aarch64 (s-check-sve-md): New rule.
+	(insn-conditions.md): Depend on it.
+
 2019-08-07  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/91385
