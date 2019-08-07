@@ -1772,11 +1772,14 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor,
 	}
     }
 
-  tree free_coro_fr
-    = build_call_expr_loc (loc,
-			   builtin_decl_explicit (BUILT_IN_FREE), 1, actor_fp);
-  free_coro_fr = coro_build_cvt_void_expr_stmt (free_coro_fr, loc);
-  add_stmt (free_coro_fr);
+  tree delname = ovl_op_identifier(false, DELETE_EXPR);
+  tree fns = lookup_name_real(delname, 0, 1, /*block_p=*/true, 0, 0);
+  vec<tree, va_gc>* arglist = make_tree_vector_single (actor_fp);
+  tree del_coro_fr = lookup_arg_dependent (delname, fns, arglist);
+  del_coro_fr = build_new_function_call (del_coro_fr, &arglist,
+					  true /*complain*/);
+  del_coro_fr = coro_build_cvt_void_expr_stmt (del_coro_fr, loc);
+  add_stmt (del_coro_fr);
   finish_then_clause (need_free_if);
   tree scope = IF_SCOPE (need_free_if);
   IF_SCOPE (need_free_if) = NULL;
