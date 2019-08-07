@@ -1,3 +1,15 @@
+2019-08-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91346 - Implement P1668R1, allow unevaluated asm in constexpr.
+	* constexpr.c (cxx_eval_constant_expression): Handle ASM_EXPR.
+	(potential_constant_expression_1) <case ASM_EXPR>: Allow.
+	* cp-tree.h (finish_asm_stmt): Adjust.
+	* parser.c (cp_parser_asm_definition): Grab the locaion of "asm" and
+	use it.  Change an error to a pedwarn.  Allow asm in C++2a, warn
+	otherwise.
+	* pt.c (tsubst_expr): Pass a location down to finish_asm_stmt.
+	* semantics.c (finish_asm_stmt): New location_t parameter.  Use it.
+
 2019-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_clause_name): Parse use_device_addr clause.
