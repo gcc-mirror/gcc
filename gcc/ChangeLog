@@ -1,5 +1,23 @@
 2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/iterators.md (UNSPEC_COND_FABS, UNSPEC_COND_FNEG)
+	(UNSPEC_COND_FRINTA, UNSPEC_COND_FRINTI, UNSPEC_COND_FRINTM)
+	(UNSPEC_COND_FRINTN, UNSPEC_COND_FRINTP, UNSPEC_COND_FRINTX)
+	(UNSPEC_COND_FRINTZ, UNSPEC_COND_FSQRT): New unspecs.
+	(optab, sve_fp_op): Handle them.
+	(SVE_FP_UNARY): Delete.
+	(optab): Remove sqrt entry.
+	(sve_fp_op): Remove neg, abs and sqrt entries.
+	(SVE_COND_FP_UNARY): New int iterator.
+	* config/aarch64/aarch64-sve.md (<frint_pattern><mode>2)
+	(*<frint_pattern><mode>2): Delete.
+	(<SVE_FP_UNARY:optab><SVE_F:mode>2): Replace with...
+	(<SVE_COND_FP_UNARY:optab><SVE_F:mode>2): ...this.
+	(*<SVE_FP_UNARY:optab><SVE_F:mode>2): Replace with...
+	(*<SVE_COND_FP_UNARY:optab><SVE_F:mode>2): ...this.
+
+2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve.md (*pred_fold_left_plus_<mode>): Delete.
 
 2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>

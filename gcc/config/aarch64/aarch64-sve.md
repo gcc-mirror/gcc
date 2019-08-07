@@ -50,8 +50,7 @@
 ;;
 ;; == Unary arithmetic
 ;; ---- [INT] General unary arithmetic corresponding to rtx codes
-;; ---- [FP] General unary arithmetic corresponding to rtx codes
-;; ---- [FP] Rounding
+;; ---- [FP] General unary arithmetic corresponding to unspecs
 ;; ---- [PRED] Inverse
 
 ;; == Binary arithmetic
@@ -1138,11 +1137,18 @@
 )
 
 ;; -------------------------------------------------------------------------
-;; ---- [FP] General unary arithmetic corresponding to rtx codes
+;; ---- [FP] General unary arithmetic corresponding to unspecs
 ;; -------------------------------------------------------------------------
 ;; Includes:
 ;; - FABS
 ;; - FNEG
+;; - FRINTA
+;; - FRINTI
+;; - FRINTM
+;; - FRINTN
+;; - FRINTP
+;; - FRINTX
+;; - FRINTZ
 ;; - FSQRT
 ;; -------------------------------------------------------------------------
 
@@ -1151,8 +1157,8 @@
   [(set (match_operand:SVE_F 0 "register_operand")
 	(unspec:SVE_F
 	  [(match_dup 2)
-	   (SVE_FP_UNARY:SVE_F (match_operand:SVE_F 1 "register_operand"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SVE_F 1 "register_operand")]
+	  SVE_COND_FP_UNARY))]
   "TARGET_SVE"
   {
     operands[2] = aarch64_ptrue_reg (<VPRED>mode);
@@ -1164,49 +1170,10 @@
   [(set (match_operand:SVE_F 0 "register_operand" "=w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (SVE_FP_UNARY:SVE_F (match_operand:SVE_F 2 "register_operand" "w"))]
-	  UNSPEC_MERGE_PTRUE))]
+	   (match_operand:SVE_F 2 "register_operand" "w")]
+	  SVE_COND_FP_UNARY))]
   "TARGET_SVE"
   "<sve_fp_op>\t%0.<Vetype>, %1/m, %2.<Vetype>"
-)
-
-;; -------------------------------------------------------------------------
-;; ---- [FP] Rounding
-;; -------------------------------------------------------------------------
-;; Includes:
-;; - FRINTA
-;; - FRINTI
-;; - FRINTM
-;; - FRINTN
-;; - FRINTP
-;; - FRINTX
-;; - FRINTZ
-;; -------------------------------------------------------------------------
-
-;; Unpredicated FRINTy.
-(define_expand "<frint_pattern><mode>2"
-  [(set (match_operand:SVE_F 0 "register_operand")
-	(unspec:SVE_F
-	  [(match_dup 2)
-	   (unspec:SVE_F [(match_operand:SVE_F 1 "register_operand")]
-			 FRINT)]
-	  UNSPEC_MERGE_PTRUE))]
-  "TARGET_SVE"
-  {
-    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
-  }
-)
-
-;; FRINTy predicated with a PTRUE.
-(define_insn "*<frint_pattern><mode>2"
-  [(set (match_operand:SVE_F 0 "register_operand" "=w")
-	(unspec:SVE_F
-	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (unspec:SVE_F [(match_operand:SVE_F 2 "register_operand" "w")]
-			 FRINT)]
-	  UNSPEC_MERGE_PTRUE))]
-  "TARGET_SVE"
-  "frint<frint_suffix>\t%0.<Vetype>, %1/m, %2.<Vetype>"
 )
 
 ;; -------------------------------------------------------------------------
@@ -2042,11 +2009,10 @@
   [(set (match_operand:SVE_F 0 "register_operand" "=w")
 	(unspec:SVE_F
 	  [(match_operand:<VPRED> 1 "register_operand" "Upl")
-	   (abs:SVE_F
-	     (minus:SVE_F
-	       (match_operand:SVE_F 2 "register_operand" "0")
-	       (match_operand:SVE_F 3 "register_operand" "w")))]
-	UNSPEC_MERGE_PTRUE))]
+	   (minus:SVE_F
+	     (match_operand:SVE_F 2 "register_operand" "0")
+	     (match_operand:SVE_F 3 "register_operand" "w"))]
+	UNSPEC_COND_FABS))]
   "TARGET_SVE"
   "fabd\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>"
 )
