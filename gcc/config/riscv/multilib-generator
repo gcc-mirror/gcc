@@ -36,17 +36,17 @@ abis = collections.OrderedDict()
 required = []
 reuse = []
 
-canonical_order = "mafdqlcbjtpvn"
+canonical_order = "mafdgqlcbjtpvn"
 
 def arch_canonicalize(arch):
   # TODO: Support Z, S, H, or X extensions.
   # TODO: Support implied extensions, e.g. D implied F in latest spec.
   # TODO: Support extension version.
   new_arch = ""
-  if arch[:5] in ['rv32e', 'rv32i', 'rv64i']:
+  if arch[:5] in ['rv32e', 'rv32i', 'rv32g', 'rv64i', 'rv64g']:
     new_arch = arch[:5]
   else:
-    raise Exception("Unexpected arch: `%d`" % arch[:5])
+    raise Exception("Unexpected arch: `%s`" % arch[:5])
 
   # Find any Z, S, H or X
   long_ext_prefixes = ['z', 's', 'h', 'x']
