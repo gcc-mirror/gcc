@@ -3152,46 +3152,26 @@
   "uaddv\t%d0, %1, %2.<Vetype>"
 )
 
-;; Unpredicated integer MAX/MIN reduction.
-(define_expand "reduc_<maxmin_uns>_scal_<mode>"
-  [(set (match_operand:<VEL> 0 "register_operand")
-	(unspec:<VEL> [(match_dup 2)
-		       (match_operand:SVE_I 1 "register_operand")]
-		      MAXMINV))]
-  "TARGET_SVE"
-  {
-    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
-  }
-)
-
-;; Predicated integer MAX/MIN reduction.
-(define_insn "*reduc_<maxmin_uns>_scal_<mode>"
-  [(set (match_operand:<VEL> 0 "register_operand" "=w")
-	(unspec:<VEL> [(match_operand:<VPRED> 1 "register_operand" "Upl")
-		       (match_operand:SVE_I 2 "register_operand" "w")]
-		      MAXMINV))]
-  "TARGET_SVE"
-  "<maxmin_uns_op>v\t%<Vetype>0, %1, %2.<Vetype>"
-)
-
+;; Unpredicated integer reductions.
 (define_expand "reduc_<optab>_scal_<mode>"
   [(set (match_operand:<VEL> 0 "register_operand")
 	(unspec:<VEL> [(match_dup 2)
 		       (match_operand:SVE_I 1 "register_operand")]
-		      BITWISEV))]
+		      SVE_INT_REDUCTION))]
   "TARGET_SVE"
   {
     operands[2] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
+;; Predicated integer reductions.
 (define_insn "*reduc_<optab>_scal_<mode>"
   [(set (match_operand:<VEL> 0 "register_operand" "=w")
 	(unspec:<VEL> [(match_operand:<VPRED> 1 "register_operand" "Upl")
 		       (match_operand:SVE_I 2 "register_operand" "w")]
-		      BITWISEV))]
+		      SVE_INT_REDUCTION))]
   "TARGET_SVE"
-  "<bit_reduc_op>\t%<Vetype>0, %1, %2.<Vetype>"
+  "<sve_int_op>\t%<Vetype>0, %1, %2.<Vetype>"
 )
 
 ;; -------------------------------------------------------------------------
@@ -3205,48 +3185,26 @@
 ;; - FMINV
 ;; -------------------------------------------------------------------------
 
-;; Unpredicated floating-point add reduction.
-(define_expand "reduc_plus_scal_<mode>"
+;; Unpredicated floating-point tree reductions.
+(define_expand "reduc_<optab>_scal_<mode>"
   [(set (match_operand:<VEL> 0 "register_operand")
 	(unspec:<VEL> [(match_dup 2)
 		       (match_operand:SVE_F 1 "register_operand")]
-		      UNSPEC_FADDV))]
+		      SVE_FP_REDUCTION))]
   "TARGET_SVE"
   {
     operands[2] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
 
-;; Predicated floating-point add reduction.
-(define_insn "*reduc_plus_scal_<mode>"
+;; Predicated floating-point tree reductions.
+(define_insn "*reduc_<optab>_scal_<mode>"
   [(set (match_operand:<VEL> 0 "register_operand" "=w")
 	(unspec:<VEL> [(match_operand:<VPRED> 1 "register_operand" "Upl")
 		       (match_operand:SVE_F 2 "register_operand" "w")]
-		      UNSPEC_FADDV))]
+		      SVE_FP_REDUCTION))]
   "TARGET_SVE"
-  "faddv\t%<Vetype>0, %1, %2.<Vetype>"
-)
-
-;; Unpredicated floating-point MAX/MIN reduction.
-(define_expand "reduc_<maxmin_uns>_scal_<mode>"
-  [(set (match_operand:<VEL> 0 "register_operand")
-	(unspec:<VEL> [(match_dup 2)
-		       (match_operand:SVE_F 1 "register_operand")]
-		      FMAXMINV))]
-  "TARGET_SVE"
-  {
-    operands[2] = aarch64_ptrue_reg (<VPRED>mode);
-  }
-)
-
-;; Predicated floating-point MAX/MIN reduction.
-(define_insn "*reduc_<maxmin_uns>_scal_<mode>"
-  [(set (match_operand:<VEL> 0 "register_operand" "=w")
-	(unspec:<VEL> [(match_operand:<VPRED> 1 "register_operand" "Upl")
-		       (match_operand:SVE_F 2 "register_operand" "w")]
-		      FMAXMINV))]
-  "TARGET_SVE"
-  "<maxmin_uns_op>v\t%<Vetype>0, %1, %2.<Vetype>"
+  "<sve_fp_op>\t%<Vetype>0, %1, %2.<Vetype>"
 )
 
 ;; -------------------------------------------------------------------------
