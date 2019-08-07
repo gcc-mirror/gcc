@@ -763,7 +763,7 @@ tree ipa_find_agg_cst_for_param (struct ipa_agg_jump_function *agg, tree scalar,
 bool ipa_load_from_parm_agg (struct ipa_func_body_info *fbi,
 			     vec<ipa_param_descriptor, va_gc> *descriptors,
 			     gimple *stmt, tree op, int *index_p,
-			     HOST_WIDE_INT *offset_p, HOST_WIDE_INT *size_p,
+			     HOST_WIDE_INT *offset_p, poly_int64 *size_p,
 			     bool *by_ref, bool *guaranteed_unmodified = NULL);
 
 /* Debugging interface.  */
