@@ -256,6 +256,7 @@ if test x"$enable_offload_targets" != x; then
 		;;
 	      *)
 		tgt_name=gcn
+		tgt_plugin=gcn
 		PLUGIN_GCN=$tgt
 		PLUGIN_GCN_CPPFLAGS=$HSA_RUNTIME_CPPFLAGS
 		PLUGIN_GCN_LDFLAGS="$HSA_RUNTIME_LDFLAGS"

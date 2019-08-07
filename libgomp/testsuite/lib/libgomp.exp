@@ -316,6 +316,9 @@ proc offload_target_to_openacc_device_type { offload_target } {
 	nvptx* {
 	    return "nvidia"
 	}
+	amdgcn* {
+	    return "gcn"
+	}
 	default {
 	    error "Unknown offload target: $offload_target"
 	}
@@ -463,8 +466,8 @@ proc check_effective_target_openacc_amdgcn_accel_selected { } {
     if { ![check_effective_target_openacc_amdgcn_accel_present] } {
 	return 0;
     }
-    global offload_target_openacc
-    if { [string match "amdgcn*" $offload_target_openacc] } {
+    global offload_target
+    if { [string match "amdgcn*" $offload_target] } {
         return 1;
     }
     return 0;

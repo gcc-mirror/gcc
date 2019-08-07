@@ -90,9 +90,8 @@ if { $lang_test_file_found } {
 
 		set acc_mem_shared 0
 	    }
-	    amdgcn* {
+	    gcn {
 		set acc_mem_shared 0
-		set tagopt "-DACC_DEVICE_TYPE_gcn=\"$offload_target_openacc\""
 	    }
 	    default {
 		error "Unknown OpenACC device type: $openacc_device_type (offload target: $offload_target)"

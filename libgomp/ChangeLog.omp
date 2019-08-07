@@ -1,5 +1,18 @@
 2019-08-08  Julian Brown  <julian@codesourcery.com>
 
+	* plugin/configfrag.ac (amdgcn): Set tgt_plugin.
+	* testsuite/lib/libgomp.exp (offload_target_to_openacc_device_type):
+	Add AMD GCN support.
+	(check_effective_target_openacc_amdgcn_accel_selected): Test
+	offload_target instead of offload_target_openacc.
+	* testsuite/libgomp.oacc-c++/c++.exp (amdgcn*): Rename stanza to...
+	(gcn): ...this. Don't set tagopt redundantly here.
+	* testsuite/libgomp.oacc-c/c.exp (amdgcn*, gcn): Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp (amdgcn*, gcn): Likewise.
+	* configure: Regenerated.
+
+2019-08-08  Julian Brown  <julian@codesourcery.com>
+
 	* plugin/plugin-gcn.c (GOMP_OFFLOAD_openacc_exec_params,
 	GOMP_OFFLOAD_openacc_async_exec_params): New functions.
 
