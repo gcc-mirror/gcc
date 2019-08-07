@@ -1,3 +1,11 @@
+2019-08-07  Martin Liska  <mliska@suse.cz>
+
+	* fold-const.c (twoval_comparison_p): Replace int
+	with bool as a return type.
+	(simple_operand_p): Likewise.
+	(operand_equal_p): Replace int with bool as a return type.
+	* fold-const.h (operand_equal_p): Likewise.
+
 2019-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-core.h (enum omp_clause_code): Adjust OMP_CLAUSE_USE_DEVICE_PTR
