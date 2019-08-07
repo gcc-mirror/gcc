@@ -2717,12 +2717,21 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
     }
 
   tree gro_context_body = push_stmt_list ();
-  tree gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"),
-			      TREE_TYPE (TREE_OPERAND (get_ro, 0)));
-  DECL_CONTEXT (gro) = current_scope ();
-  r = build_stmt (fn_start, DECL_EXPR, gro);
-  add_stmt (r);
-  tree gro_bind_vars = gro;
+  tree gro, gro_bind_vars;
+  if (same_type_p (TREE_TYPE (get_ro), fn_return_type))
+    {
+      gro = DECL_RESULT (orig);
+      gro_bind_vars = NULL_TREE; // We don't need a separate var.
+    }
+  else
+    {
+      gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"),
+			     TREE_TYPE (TREE_OPERAND (get_ro, 0)));
+      DECL_CONTEXT (gro) = current_scope ();
+      r = build_stmt (fn_start, DECL_EXPR, gro);
+      add_stmt (r);
+      gro_bind_vars = gro;  // We need a temporary var.
+    }
 
   // init our actual var.
   r = build2_loc (fn_start, INIT_EXPR, TREE_TYPE (gro), gro, get_ro);
@@ -2751,8 +2760,10 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   /* done, we just need the return value.  */
   bool no_warning;
   if (same_type_p (TREE_TYPE (gro), fn_return_type))
-     /* Already got it.  */
-    r = check_return_expr (rvalue (gro), &no_warning);
+    {
+      /* Already got it.  */
+      r = check_return_expr (DECL_RESULT (orig), &no_warning);
+    }
   else
     {
       // construct the return value with a single GRO param.
@@ -2764,11 +2775,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       r = coro_build_cvt_void_expr_stmt (r, input_location);
       add_stmt (r);
       release_tree_vector (args);
-      // We know it's the correct type.
-      r = DECL_RESULT (orig);
     }
 
-  r = build_stmt (input_location, RETURN_EXPR, r);
+  r = build_stmt (input_location, RETURN_EXPR, DECL_RESULT (orig));
   TREE_NO_WARNING (r) |= no_warning;
   r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);

@@ -1,6 +1,12 @@
 2019-08-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (morph_fn_to_coro): Create the return object
+	in place when possible.
+
+2019-08-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (build_actor_fn): Lookup and use delete operator
 	instead of builtin_free().
 
