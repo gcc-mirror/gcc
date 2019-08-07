@@ -1925,10 +1925,3 @@
 			      (UNSPEC_COND_FMLS "fmsb")
 			      (UNSPEC_COND_FNMLA "fnmad")
 			      (UNSPEC_COND_FNMLS "fnmsb")])
-
-(define_int_attr commutative [(UNSPEC_COND_ADD "true")
-			      (UNSPEC_COND_SUB "false")
-			      (UNSPEC_COND_MUL "true")
-			      (UNSPEC_COND_DIV "false")
-			      (UNSPEC_COND_MIN "true")
-			      (UNSPEC_COND_MAX "true")])

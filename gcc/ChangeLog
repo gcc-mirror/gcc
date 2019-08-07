@@ -1,3 +1,7 @@
+2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (commutative): Remove.
+
 2019-08-07  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR driver/91130
