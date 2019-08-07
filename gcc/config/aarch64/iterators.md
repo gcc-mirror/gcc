@@ -468,6 +468,7 @@
     UNSPEC_XORF		; Used in aarch64-sve.md.
     UNSPEC_SMUL_HIGHPART ; Used in aarch64-sve.md.
     UNSPEC_UMUL_HIGHPART ; Used in aarch64-sve.md.
+    UNSPEC_COND_FABS	; Used in aarch64-sve.md.
     UNSPEC_COND_FADD	; Used in aarch64-sve.md.
     UNSPEC_COND_FCMEQ	; Used in aarch64-sve.md.
     UNSPEC_COND_FCMGE	; Used in aarch64-sve.md.
@@ -481,8 +482,17 @@
     UNSPEC_COND_FMLA	; Used in aarch64-sve.md.
     UNSPEC_COND_FMLS	; Used in aarch64-sve.md.
     UNSPEC_COND_FMUL	; Used in aarch64-sve.md.
+    UNSPEC_COND_FNEG	; Used in aarch64-sve.md.
     UNSPEC_COND_FNMLA	; Used in aarch64-sve.md.
     UNSPEC_COND_FNMLS	; Used in aarch64-sve.md.
+    UNSPEC_COND_FRINTA	; Used in aarch64-sve.md.
+    UNSPEC_COND_FRINTI	; Used in aarch64-sve.md.
+    UNSPEC_COND_FRINTM	; Used in aarch64-sve.md.
+    UNSPEC_COND_FRINTN	; Used in aarch64-sve.md.
+    UNSPEC_COND_FRINTP	; Used in aarch64-sve.md.
+    UNSPEC_COND_FRINTX	; Used in aarch64-sve.md.
+    UNSPEC_COND_FRINTZ	; Used in aarch64-sve.md.
+    UNSPEC_COND_FSQRT	; Used in aarch64-sve.md.
     UNSPEC_COND_FSUB	; Used in aarch64-sve.md.
     UNSPEC_LASTB	; Used in aarch64-sve.md.
     UNSPEC_FCADD90	; Used in aarch64-simd.md.
@@ -1241,9 +1251,6 @@
 ;; SVE integer unary operations.
 (define_code_iterator SVE_INT_UNARY [abs neg not popcount])
 
-;; SVE floating-point unary operations.
-(define_code_iterator SVE_FP_UNARY [abs neg sqrt])
-
 ;; SVE integer binary operations.
 (define_code_iterator SVE_INT_BINARY [plus minus mult smax umax smin umin
 				      and ior xor])
@@ -1307,8 +1314,7 @@
 			 (leu "leu")
 			 (geu "geu")
 			 (gtu "gtu")
-			 (abs "abs")
-			 (sqrt "sqrt")])
+			 (abs "abs")])
 
 ;; For comparison operators we use the FCM* and CM* instructions.
 ;; As there are no CMLE or CMLT instructions which act on 3 vector
@@ -1462,10 +1468,7 @@
 ;; The floating-point SVE instruction that implements an rtx code.
 (define_code_attr sve_fp_op [(plus "fadd")
 			     (minus "fsub")
-			     (mult "fmul")
-			     (neg "fneg")
-			     (abs "fabs")
-			     (sqrt "fsqrt")])
+			     (mult "fmul")])
 
 ;; The SVE immediate constraint to use for an rtl code.
 (define_code_attr sve_imm_con [(eq "vsc")
@@ -1609,6 +1612,17 @@
 
 (define_int_iterator MUL_HIGHPART [UNSPEC_SMUL_HIGHPART UNSPEC_UMUL_HIGHPART])
 
+(define_int_iterator SVE_COND_FP_UNARY [UNSPEC_COND_FABS
+					UNSPEC_COND_FNEG
+					UNSPEC_COND_FRINTA
+					UNSPEC_COND_FRINTI
+					UNSPEC_COND_FRINTM
+					UNSPEC_COND_FRINTN
+					UNSPEC_COND_FRINTP
+					UNSPEC_COND_FRINTX
+					UNSPEC_COND_FRINTZ
+					UNSPEC_COND_FSQRT])
+
 (define_int_iterator SVE_COND_FP_BINARY [UNSPEC_COND_FADD
 					 UNSPEC_COND_FDIV
 					 UNSPEC_COND_FMAXNM
@@ -1663,6 +1677,7 @@
 			(UNSPEC_ANDV "and")
 			(UNSPEC_IORV "ior")
 			(UNSPEC_XORV "xor")
+			(UNSPEC_COND_FABS "abs")
 			(UNSPEC_COND_FADD "add")
 			(UNSPEC_COND_FDIV "div")
 			(UNSPEC_COND_FMAXNM "smax")
@@ -1670,8 +1685,17 @@
 			(UNSPEC_COND_FMLA "fma")
 			(UNSPEC_COND_FMLS "fnma")
 			(UNSPEC_COND_FMUL "mul")
+			(UNSPEC_COND_FNEG "neg")
 			(UNSPEC_COND_FNMLA "fnms")
 			(UNSPEC_COND_FNMLS "fms")
+			(UNSPEC_COND_FRINTA "round")
+			(UNSPEC_COND_FRINTI "nearbyint")
+			(UNSPEC_COND_FRINTM "floor")
+			(UNSPEC_COND_FRINTN "frintn")
+			(UNSPEC_COND_FRINTP "ceil")
+			(UNSPEC_COND_FRINTX "rint")
+			(UNSPEC_COND_FRINTZ "btrunc")
+			(UNSPEC_COND_FSQRT "sqrt")
 			(UNSPEC_COND_FSUB "sub")])
 
 (define_int_attr  maxmin_uns [(UNSPEC_UMAXV "umax")
@@ -1901,11 +1925,21 @@
 			 (UNSPEC_COND_FCMLT "lt")
 			 (UNSPEC_COND_FCMNE "ne")])
 
-(define_int_attr sve_fp_op [(UNSPEC_COND_FADD "fadd")
+(define_int_attr sve_fp_op [(UNSPEC_COND_FABS "fabs")
+			    (UNSPEC_COND_FADD "fadd")
 			    (UNSPEC_COND_FDIV "fdiv")
 			    (UNSPEC_COND_FMAXNM "fmaxnm")
 			    (UNSPEC_COND_FMINNM "fminnm")
 			    (UNSPEC_COND_FMUL "fmul")
+			    (UNSPEC_COND_FNEG "fneg")
+			    (UNSPEC_COND_FRINTA "frinta")
+			    (UNSPEC_COND_FRINTI "frinti")
+			    (UNSPEC_COND_FRINTM "frintm")
+			    (UNSPEC_COND_FRINTN "frintn")
+			    (UNSPEC_COND_FRINTP "frintp")
+			    (UNSPEC_COND_FRINTX "frintx")
+			    (UNSPEC_COND_FRINTZ "frintz")
+			    (UNSPEC_COND_FSQRT "fsqrt")
 			    (UNSPEC_COND_FSUB "fsub")])
 
 (define_int_attr sve_fp_op_rev [(UNSPEC_COND_FADD "fadd")
