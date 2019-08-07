@@ -18,9 +18,9 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# MULTILIB_OPTIONS = mno-hw-mul/mhw-mulx mcustom-fpu-cfg=60-1/mcustom-fpu-cfg=60-2
-# MULTILIB_DIRNAMES = nomul mulx fpu-60-1 fpu-60-2
-# MULTILIB_EXCEPTIONS = 
+MULTILIB_OPTIONS = mno-hw-mul/mhw-mulx mcustom-fpu-cfg=60-1/mcustom-fpu-cfg=60-2
+MULTILIB_DIRNAMES = nomul mulx fpu-60-1 fpu-60-2
+MULTILIB_EXCEPTIONS =
 
 # MULTILIB_OPTIONS += EL/EB
 # MULTILIB_DIRNAMES += le be
