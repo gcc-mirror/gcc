@@ -1,3 +1,10 @@
+2019-08-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR driver/91130
+	* lto-wrapper.c (find_and_merge_options): Use CL_DRIVER when
+	processing COLLECT_GCC_OPTIONS.
+	(run_gcc): Likewise.
+
 2019-08-07  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR tree-optimization/91109
