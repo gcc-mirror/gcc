@@ -5289,6 +5289,18 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
       r = void_node;
       break;
 
+    case ASM_EXPR:
+      if (!ctx->quiet)
+	{
+	  error_at (cp_expr_loc_or_input_loc (t),
+		    "inline assembly is not a constant expression");
+	  inform (cp_expr_loc_or_input_loc (t),
+		  "only unevaluated inline assembly is allowed in a "
+		  "%<constexpr%> function in C++2a");
+	}
+      *non_constant_p = true;
+      return t;
+
     default:
       if (STATEMENT_CODE_P (TREE_CODE (t)))
 	{
@@ -6469,12 +6481,17 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       /* GCC internal stuff.  */
     case VA_ARG_EXPR:
     case TRANSACTION_EXPR:
-    case ASM_EXPR:
     case AT_ENCODE_EXPR:
     fail:
       if (flags & tf_error)
 	error_at (loc, "expression %qE is not a constant expression", t);
       return false;
+
+    case ASM_EXPR:
+      /* In C++2a, unevaluated inline assembly is permitted in constexpr
+	 functions.  If it's used in earlier standard modes, we pedwarn in
+	 cp_parser_asm_definition.  */
+      return true;
 
     case OBJ_TYPE_REF:
       if (cxx_dialect >= cxx2a)

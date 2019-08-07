@@ -1484,8 +1484,9 @@ finish_compound_stmt (tree stmt)
    considered volatile, and whether it is asm inline.  */
 
 tree
-finish_asm_stmt (int volatile_p, tree string, tree output_operands,
-		 tree input_operands, tree clobbers, tree labels, bool inline_p)
+finish_asm_stmt (location_t loc, int volatile_p, tree string,
+		 tree output_operands, tree input_operands, tree clobbers,
+		 tree labels, bool inline_p)
 {
   tree r;
   tree t;
@@ -1532,7 +1533,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 		     effectively const.  */
 		  || (CLASS_TYPE_P (TREE_TYPE (operand))
 		      && C_TYPE_FIELDS_READONLY (TREE_TYPE (operand)))))
-	    cxx_readonly_error (input_location, operand, lv_asm);
+	    cxx_readonly_error (loc, operand, lv_asm);
 
 	  tree *op = &operand;
 	  while (TREE_CODE (*op) == COMPOUND_EXPR)
@@ -1585,8 +1586,9 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 	     resolve the overloading.  */
 	  if (TREE_TYPE (operand) == unknown_type_node)
 	    {
-	      error ("type of %<asm%> operand %qE could not be determined",
-		     TREE_VALUE (t));
+	      error_at (loc,
+			"type of %<asm%> operand %qE could not be determined",
+			TREE_VALUE (t));
 	      operand = error_mark_node;
 	    }
 
@@ -1634,7 +1636,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 	}
     }
 
-  r = build_stmt (input_location, ASM_EXPR, string,
+  r = build_stmt (loc, ASM_EXPR, string,
 		  output_operands, input_operands,
 		  clobbers, labels);
   ASM_VOLATILE_P (r) = volatile_p || noutputs == 0;

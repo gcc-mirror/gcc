@@ -19817,16 +19817,18 @@ cp_parser_asm_definition (cp_parser* parser)
   bool invalid_inputs_p = false;
   bool invalid_outputs_p = false;
   required_token missing = RT_NONE;
+  location_t asm_loc = cp_lexer_peek_token (parser->lexer)->location;
 
   /* Look for the `asm' keyword.  */
   cp_parser_require_keyword (parser, RID_ASM, RT_ASM);
 
+  /* In C++2a, unevaluated inline assembly is permitted in constexpr
+     functions.  */
   if (parser->in_function_body
-      && DECL_DECLARED_CONSTEXPR_P (current_function_decl))
-    {
-      error ("%<asm%> in %<constexpr%> function");
-      cp_function_chain->invalid_constexpr = true;
-    }
+      && DECL_DECLARED_CONSTEXPR_P (current_function_decl)
+      && (cxx_dialect < cxx2a))
+    pedwarn (asm_loc, 0, "%<asm%> in %<constexpr%> function only available "
+	     "with %<-std=c++2a%> or %<-std=gnu++2a%>");
 
   /* Handle the asm-qualifier-list.  */
   location_t volatile_loc = UNKNOWN_LOCATION;
@@ -20032,7 +20034,7 @@ cp_parser_asm_definition (cp_parser* parser)
       /* Create the ASM_EXPR.  */
       if (parser->in_function_body)
 	{
-	  asm_stmt = finish_asm_stmt (volatile_p, string, outputs,
+	  asm_stmt = finish_asm_stmt (asm_loc, volatile_p, string, outputs,
 				      inputs, clobbers, labels, inline_p);
 	  /* If the extended syntax was not used, mark the ASM_EXPR.  */
 	  if (!extended_p)

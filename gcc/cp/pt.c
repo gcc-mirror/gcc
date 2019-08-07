@@ -17396,8 +17396,9 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	 					  complain, in_decl);
 	tree labels = tsubst_copy_asm_operands (ASM_LABELS (t), args,
 						complain, in_decl);
-	tmp = finish_asm_stmt (ASM_VOLATILE_P (t), string, outputs, inputs,
-			       clobbers, labels, ASM_INLINE_P (t));
+	tmp = finish_asm_stmt (EXPR_LOCATION (t), ASM_VOLATILE_P (t), string,
+			       outputs, inputs, clobbers, labels,
+			       ASM_INLINE_P (t));
 	tree asm_expr = tmp;
 	if (TREE_CODE (asm_expr) == CLEANUP_POINT_EXPR)
 	  asm_expr = TREE_OPERAND (asm_expr, 0);

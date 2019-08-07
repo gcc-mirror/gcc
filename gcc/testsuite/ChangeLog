@@ -1,3 +1,10 @@
+2019-08-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91346 - Implement P1668R1, allow unevaluated asm in constexpr.
+	* g++.dg/cpp2a/inline-asm1.C: New test.
+	* g++.dg/cpp2a/inline-asm2.C: New test.
+	* g++.dg/cpp1y/constexpr-neg1.C: Adjust dg-error.
+
 2019-08-07  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/53796
