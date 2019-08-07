@@ -1,5 +1,11 @@
 2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
 
+	* config/aarch64/aarch64-sve.md (vec_shl_insert_<mode>): Add
+	MOVPRFX alternatives.  Make the GPR alternatives more expensive
+	than the FPR ones.
+
+2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
+
 	* config/aarch64/aarch64-sve.md (fold_extract_last_<mode>):
 	Disparage the GPR alternative relative to the FPR one.
 	Fix handling of 8-bit and 16-bit FPR values.
