@@ -1,4 +1,4 @@
-! { dg do run }
+! { dg-do run }
 ! PR fortran/91359
 ! Orginal code contributed by Brian T. Carcich <briantcarcich at gmail dot com>
 !

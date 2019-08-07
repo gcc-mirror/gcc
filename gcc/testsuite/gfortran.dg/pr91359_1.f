@@ -1,12 +1,12 @@
-! { dg do run }
+! { dg-do run }
 ! PR fortran/91359
 ! Orginal code contributed by Brian T. Carcich <briantcarcich at gmail dot com>
 !
-      logical function zero() result(a)
+      logical function zero()
          goto 2
 1        return
-2        a = .false.
-         if (.not.a) goto 1
+2        zero = .false.
+         if (.not.zero) goto 1
          return
       end
 
