@@ -17097,17 +17097,17 @@ aarch64_unspec_cond_code (rtx_code code)
   switch (code)
     {
     case NE:
-      return UNSPEC_COND_NE;
+      return UNSPEC_COND_FCMNE;
     case EQ:
-      return UNSPEC_COND_EQ;
+      return UNSPEC_COND_FCMEQ;
     case LT:
-      return UNSPEC_COND_LT;
+      return UNSPEC_COND_FCMLT;
     case GT:
-      return UNSPEC_COND_GT;
+      return UNSPEC_COND_FCMGT;
     case LE:
-      return UNSPEC_COND_LE;
+      return UNSPEC_COND_FCMLE;
     case GE:
-      return UNSPEC_COND_GE;
+      return UNSPEC_COND_FCMGE;
     default:
       gcc_unreachable ();
     }
