@@ -3468,21 +3468,6 @@
   "fadda\t%<Vetype>0, %3, %<Vetype>0, %2.<Vetype>"
 )
 
-;; Predicated form of the above in-order reduction.
-(define_insn "*pred_fold_left_plus_<mode>"
-  [(set (match_operand:<VEL> 0 "register_operand" "=w")
-	(unspec:<VEL>
-	  [(match_operand:<VEL> 1 "register_operand" "0")
-	   (unspec:SVE_F
-	     [(match_operand:<VPRED> 2 "register_operand" "Upl")
-	      (match_operand:SVE_F 3 "register_operand" "w")
-	      (match_operand:SVE_F 4 "aarch64_simd_imm_zero")]
-	     UNSPEC_SEL)]
-	  UNSPEC_FADDA))]
-  "TARGET_SVE"
-  "fadda\t%<Vetype>0, %2, %<Vetype>0, %3.<Vetype>"
-)
-
 ;; =========================================================================
 ;; == Permutes
 ;; =========================================================================
