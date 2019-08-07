@@ -523,7 +523,7 @@ predicate::stream_out (struct output_block *ob)
 
 predicate
 add_condition (class ipa_fn_summary *summary, int operand_num,
-	       HOST_WIDE_INT size, struct agg_position_info *aggpos,
+	       poly_int64 size, struct agg_position_info *aggpos,
 	       enum tree_code code, tree val)
 {
   int i;
@@ -549,7 +549,7 @@ add_condition (class ipa_fn_summary *summary, int operand_num,
   for (i = 0; vec_safe_iterate (summary->conds, i, &c); i++)
     {
       if (c->operand_num == operand_num
-	  && c->size == size
+	  && maybe_ne (c->size, size)
 	  && c->code == code
 	  && c->val == val
 	  && c->agg_contents == agg_contents
