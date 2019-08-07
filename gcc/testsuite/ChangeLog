@@ -1,3 +1,8 @@
+2019-08-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/67533
+	* g++.dg/tls/thread_local-ice5.C: New test.
+
 2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/init_13.c: New test.
