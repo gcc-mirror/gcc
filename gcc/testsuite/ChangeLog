@@ -1,3 +1,9 @@
+2019-08-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/53796
+	* gfortran.dg/inquire_recl_f2018.f90: Test for unconnected unit
+	with inquire via filename.
+
 2019-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/target-data-1.c (foo): Use use_device_addr clause
