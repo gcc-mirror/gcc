@@ -6932,8 +6932,10 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
 	    nflags = GOVD_MAP | GOVD_MAP_TO_ONLY | GOVD_EXPLICIT;
 	  else if (flags & GOVD_PRIVATE)
 	    nflags = GOVD_PRIVATE;
-	  else if ((ctx->region_type & (ORT_TARGET | ORT_TARGET_DATA)) != 0
-		   && (flags & GOVD_FIRSTPRIVATE))
+	  else if (((ctx->region_type & (ORT_TARGET | ORT_TARGET_DATA)) != 0
+		    && (flags & GOVD_FIRSTPRIVATE))
+		   || (ctx->region_type == ORT_TARGET_DATA
+		       && (flags & GOVD_DATA_SHARE_CLASS) == 0))
 	    nflags = GOVD_PRIVATE | GOVD_EXPLICIT;
 	  else
 	    nflags = GOVD_FIRSTPRIVATE;
@@ -9016,6 +9018,9 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_USE_DEVICE_ADDR:
+	  flags = GOVD_EXPLICIT;
+	  goto do_add;
+
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	  flags = GOVD_FIRSTPRIVATE | GOVD_EXPLICIT;
 	  goto do_add;
@@ -12404,8 +12409,27 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
 				      OMP_CLAUSES (expr));
       break;
     case OMP_TARGET_DATA:
-      stmt = gimple_build_omp_target (body, GF_OMP_TARGET_KIND_DATA,
-				      OMP_CLAUSES (expr));
+      /* Put use_device_{ptr,addr} clauses last, as map clauses are supposed
+	 to be evaluated before the use_device_{ptr,addr} clauses if they
+	 refer to the same variables.  */
+      {
+	tree use_device_clauses;
+	tree *pc, *uc = &use_device_clauses;
+	for (pc = &OMP_CLAUSES (expr); *pc; )
+	  if (OMP_CLAUSE_CODE (*pc) == OMP_CLAUSE_USE_DEVICE_PTR
+	      || OMP_CLAUSE_CODE (*pc) == OMP_CLAUSE_USE_DEVICE_ADDR)
+	    {
+	      *uc = *pc;
+	      *pc = OMP_CLAUSE_CHAIN (*pc);
+	      uc = &OMP_CLAUSE_CHAIN (*uc);
+	    }
+	  else
+	    pc = &OMP_CLAUSE_CHAIN (*pc);
+	*uc = NULL_TREE;
+	*pc = use_device_clauses;
+	stmt = gimple_build_omp_target (body, GF_OMP_TARGET_KIND_DATA,
+					OMP_CLAUSES (expr));
+      }
       break;
     case OMP_TEAMS:
       stmt = gimple_build_omp_teams (body, OMP_CLAUSES (expr));
