@@ -2761,7 +2761,7 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   bool no_warning;
   if (same_type_p (TREE_TYPE (gro), fn_return_type))
     {
-      /* Already got it.  */
+      /* Already got the result.  */
       r = check_return_expr (DECL_RESULT (orig), &no_warning);
     }
   else
@@ -2781,19 +2781,6 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   TREE_NO_WARNING (r) |= no_warning;
   r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
-
-#if CLANG_DOES_THIS_BUT_IT_SEEMS_UNREACHABLE
-  tree del_gro_label = create_named_label_with_ctx (input_location,
-						    "coro.destroy.retval",
-						     current_scope ());
-  r = build_stmt (input_location, LABEL_EXPR, del_gro_label);
-  add_stmt (r);
-
-  r = build_special_member_call(gro, complete_dtor_identifier, NULL,
-				fn_return_type, LOOKUP_NORMAL,
-				tf_warning_or_error);
-  add_stmt (r);
-#endif
   BIND_EXPR_VARS (gro_context_bind) = gro_bind_vars;
   BIND_EXPR_BODY (gro_context_bind) = pop_stmt_list (gro_context_body);
   BIND_EXPR_BODY (ramp_bind) = pop_stmt_list (ramp_body);
