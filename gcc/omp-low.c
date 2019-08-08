@@ -1243,9 +1243,9 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
 	       && !omp_is_reference (decl))
 	      || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-	    install_var_field (decl, true, 3, ctx);
+	    install_var_field (decl, true, 11, ctx);
 	  else
-	    install_var_field (decl, false, 3, ctx);
+	    install_var_field (decl, false, 11, ctx);
 	  if (DECL_SIZE (decl)
 	      && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
 	    {
@@ -11857,11 +11857,16 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
 	    ovar = OMP_CLAUSE_DECL (c);
 	    var = lookup_decl_in_outer_ctx (ovar, ctx);
-	    x = build_sender_ref (ovar, ctx);
 	    if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR)
-	      tkind = GOMP_MAP_USE_DEVICE_PTR;
+	      {
+		tkind = GOMP_MAP_USE_DEVICE_PTR;
+		x = build_sender_ref ((splay_tree_key) &DECL_UID (ovar), ctx);
+	      }
 	    else
-	      tkind = GOMP_MAP_FIRSTPRIVATE_INT;
+	      {
+		tkind = GOMP_MAP_FIRSTPRIVATE_INT;
+		x = build_sender_ref (ovar, ctx);
+	      }
 	    type = TREE_TYPE (ovar);
 	    if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_USE_DEVICE_ADDR
 		 && !omp_is_reference (ovar))
@@ -12032,7 +12037,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case OMP_CLAUSE_IS_DEVICE_PTR:
 	    var = OMP_CLAUSE_DECL (c);
 	    if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR)
-	      x = build_sender_ref (var, ctx);
+	      x = build_sender_ref ((splay_tree_key) &DECL_UID (var), ctx);
 	    else
 	      x = build_receiver_ref (var, false, ctx);
 	    if (is_variable_sized (var))

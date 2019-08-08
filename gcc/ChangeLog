@@ -1,3 +1,16 @@
+2019-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (omp_add_variable): Use GOVD_PRIVATE | GOVD_EXPLICIT
+	for VLA helper variables on target data even if not GOVD_FIRSTPRIVATE.
+	(gimplify_scan_omp_clauses): For OMP_CLAUSE_USE_DEVICE_* use just
+	GOVD_EXPLICIT flags.
+	(gimplify_omp_workshare): For OMP_TARGET_DATA move all
+	OMP_CLAUSE_USE_DEVICE_* clauses to the end of clauses chain.
+	* omp-low.c (scan_sharing_clauses): For OMP_CLAUSE_USE_DEVICE_*
+	call install_var_field with mask 11 instead of 3.
+	(lower_omp_target): For OMP_CLAUSE_USE_DEVICE_* use pass
+	(splay_tree_key) &DECL_UID (var) to build_sender_ref instead of var.
+
 2019-08-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/constraints.md (Z): Handle floating-point zeros too.
