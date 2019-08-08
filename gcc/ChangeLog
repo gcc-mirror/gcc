@@ -1,3 +1,16 @@
+2019-08-08  Jim Wilson  <jimw@sifive.com>
+
+	PR target/91229
+	* config/riscv/riscv.c (riscv_flatten_aggregate_field): New arg
+	ignore_zero_width_bit_field_p.  Skip zero size bitfields when true.
+	Pass into recursive call.
+	(riscv_flatten_aggregate_argument): New arg.  Pass to
+	riscv_flatten_aggregate_field.
+	(riscv_pass_aggregate_in_fpr_pair_p): New local warned.  Call
+	riscv_flatten_aggregate_argument twice, with false and true as last
+	arg.  Process result twice.  Compare results and warn if different.
+	(riscv_pass_aggregate_in_fpr_and_gpr_p): Likewise.
+
 2019-08-08  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/91352
