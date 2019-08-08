@@ -1,3 +1,7 @@
+2019-08-08  Mihailo Stojanovic <mistojanovic@wavecomp.com>
+
+	* doc/extend.texi: Add const qualifier to ld intrinsics.
+
 2019-08-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/dfp.md (D64_D128): Rename to ...

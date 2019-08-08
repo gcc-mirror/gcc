@@ -16272,10 +16272,10 @@ v8i16 __builtin_msa_insve_h (v8i16, imm0_7, v8i16);
 v4i32 __builtin_msa_insve_w (v4i32, imm0_3, v4i32);
 v2i64 __builtin_msa_insve_d (v2i64, imm0_1, v2i64);
 
-v16i8 __builtin_msa_ld_b (void *, imm_n512_511);
-v8i16 __builtin_msa_ld_h (void *, imm_n1024_1022);
-v4i32 __builtin_msa_ld_w (void *, imm_n2048_2044);
-v2i64 __builtin_msa_ld_d (void *, imm_n4096_4088);
+v16i8 __builtin_msa_ld_b (const void *, imm_n512_511);
+v8i16 __builtin_msa_ld_h (const void *, imm_n1024_1022);
+v4i32 __builtin_msa_ld_w (const void *, imm_n2048_2044);
+v2i64 __builtin_msa_ld_d (const void *, imm_n4096_4088);
 
 v16i8 __builtin_msa_ldi_b (imm_n512_511);
 v8i16 __builtin_msa_ldi_h (imm_n512_511);
