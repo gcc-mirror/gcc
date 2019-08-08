@@ -8781,6 +8781,8 @@ finish_enum (tree enumtype, tree values, tree attributes)
       && !in_sizeof && !in_typeof && !in_alignof)
     struct_parse_info->struct_types.safe_push (enumtype);
 
+  C_TYPE_BEING_DEFINED (enumtype) = 0;
+
   return enumtype;
 }
 

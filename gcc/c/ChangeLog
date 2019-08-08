@@ -1,3 +1,7 @@
+2019-08-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* c-decl.c (finish_enum): Clear C_TYPE_BEING_DEFINED.
+
 2019-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.c (c_finish_omp_clauses): For C_ORT_OMP
