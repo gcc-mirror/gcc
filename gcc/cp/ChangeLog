@@ -1,5 +1,9 @@
 2019-08-08  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/87519 - bogus warning with -Wsign-conversion.
+	* typeck.c (cp_build_binary_op): Use same_type_p instead of comparing
+	the types directly.
+
 	* constexpr.c (inline_asm_in_constexpr_error): New.
 	(cxx_eval_constant_expression) <case ASM_EXPR>: Call it.
 	(potential_constant_expression_1) <case ASM_EXPR>: Likewise.

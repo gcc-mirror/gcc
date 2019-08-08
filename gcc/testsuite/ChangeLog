@@ -1,5 +1,8 @@
 2019-08-08  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/87519 - bogus warning with -Wsign-conversion.
+	* g++.dg/warn/Wsign-conversion-5.C: New test.
+
 	* g++.dg/cpp2a/inline-asm3.C: New test.
 
 2019-08-07  Steven G. Kargl  <kargl@gcc.gnu.org>
