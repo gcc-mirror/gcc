@@ -5509,9 +5509,9 @@ cp_build_binary_op (const op_location_t &location,
   if (! converted)
     {
       warning_sentinel w (warn_sign_conversion, short_compare);
-      if (TREE_TYPE (op0) != result_type)
+      if (!same_type_p (TREE_TYPE (op0), result_type))
 	op0 = cp_convert_and_check (result_type, op0, complain);
-      if (TREE_TYPE (op1) != result_type)
+      if (!same_type_p (TREE_TYPE (op1), result_type))
 	op1 = cp_convert_and_check (result_type, op1, complain);
 
       if (op0 == error_mark_node || op1 == error_mark_node)
