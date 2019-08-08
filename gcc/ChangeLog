@@ -1,3 +1,9 @@
+2019-08-08  Martin Liska  <mliska@suse.cz>
+
+	* cgraphclones.c (set_new_clone_decl_and_node_flags): Drop
+	IS_OPERATOR_NEW and IS_OPERATOR_DELETE.
+	(create_version_clone_with_body): Likewise.
+
 2019-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (omp_add_variable): Use GOVD_PRIVATE | GOVD_EXPLICIT
