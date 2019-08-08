@@ -1,3 +1,9 @@
+2019-08-08  Jim Wilson  <jimw@sifive.com>
+
+	PR target/91229
+	* gcc.target/riscv/flattened-struct-abi-1.c: New test.
+	* gcc.target/riscv/flattened-struct-abi-2.c: New test.
+
 2019-08-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/79520
