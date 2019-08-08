@@ -4411,6 +4411,17 @@ lookup_placeholder (const constexpr_ctx *ctx, bool lval, tree type)
   return ob;
 }
 
+/* Complain about an attempt to evaluate inline assembly.  */
+
+static void
+inline_asm_in_constexpr_error (location_t loc)
+{
+  auto_diagnostic_group d;
+  error_at (loc, "inline assembly is not a constant expression");
+  inform (loc, "only unevaluated inline assembly is allowed in a "
+	  "%<constexpr%> function in C++2a");
+}
+
 /* Attempt to reduce the expression T to a constant value.
    On failure, issue diagnostic and return error_mark_node.  */
 /* FIXME unify with c_fully_fold */
@@ -5291,13 +5302,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 
     case ASM_EXPR:
       if (!ctx->quiet)
-	{
-	  error_at (cp_expr_loc_or_input_loc (t),
-		    "inline assembly is not a constant expression");
-	  inform (cp_expr_loc_or_input_loc (t),
-		  "only unevaluated inline assembly is allowed in a "
-		  "%<constexpr%> function in C++2a");
-	}
+	inline_asm_in_constexpr_error (cp_expr_loc_or_input_loc (t));
       *non_constant_p = true;
       return t;
 
@@ -6488,10 +6493,9 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return false;
 
     case ASM_EXPR:
-      /* In C++2a, unevaluated inline assembly is permitted in constexpr
-	 functions.  If it's used in earlier standard modes, we pedwarn in
-	 cp_parser_asm_definition.  */
-      return true;
+      if (flags & tf_error)
+	inline_asm_in_constexpr_error (loc);
+      return false;
 
     case OBJ_TYPE_REF:
       if (cxx_dialect >= cxx2a)
