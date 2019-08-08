@@ -206,6 +206,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       typedef __uses_alloc1<typename __inner_type::__type> __uses_alloc1_;
       typedef __uses_alloc2<typename __inner_type::__type> __uses_alloc2_;
+      typedef __uses_alloc3<typename __inner_type::__type> __uses_alloc3_;
 
       template<typename _Tp, typename... _Args>
         void
@@ -226,7 +227,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       std::forward<_Args>(__args)...,
 			       inner_allocator());
         }
-#endif // C++17
+
+      template<typename _Tp, typename... _Args>
+        void
+        _M_construct(__uses_alloc3_, _Tp* __p, _Args&&... __args)
+		 {
+	  typedef __outermost_alloc_traits<scoped_allocator_adaptor> _O_traits;
+	  _O_traits::construct(__outermost(*this), __p,
+					   std::forward<_Args>(__args)...,
+					   inner_allocator());
+        }
+  #endif // C++17
+
 
       template<typename _Alloc>
         static _Alloc

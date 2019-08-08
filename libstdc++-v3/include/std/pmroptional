@@ -60,8 +60,7 @@ namespace pmr {
   
 
   template<typename _Tp>
-  using optional = conditional_t<__or_<uses_allocator<_Tp, polymorphic_allocator<void>>,
-		    __uses_domain_allocator<_Tp,polymorphic_allocator<void>>>::value,
+  using optional = conditional_t<uses_allocator<_Tp, polymorphic_allocator<void>>::value,
 		  __pmroptional<_Tp> , std::optional<_Tp>>;
 
 

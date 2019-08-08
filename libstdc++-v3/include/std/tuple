@@ -97,6 +97,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Head_base(allocator_arg_t, __uses_alloc2<_Alloc> __a)
 	: _Head(*__a._M_a) { }
 
+      template<typename _Alloc>
+    _Head_base(allocator_arg_t, __uses_alloc3<_Alloc> __a)
+    : _Head(*__a._M_a) { }
+
       template<typename _UHead>
 	_Head_base(__uses_alloc0, _UHead&& __uhead)
 	: _Head(std::forward<_UHead>(__uhead)) { }
@@ -108,6 +112,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Alloc, typename _UHead>
 	_Head_base(__uses_alloc2<_Alloc> __a, _UHead&& __uhead)
 	: _Head(std::forward<_UHead>(__uhead), *__a._M_a) { }
+
+      template<typename _Alloc, typename _UHead>
+    _Head_base(__uses_alloc3<_Alloc> __a, _UHead&& __uhead)
+    : _Head(std::forward<_UHead>(__uhead), *__a._M_a) { }
 
       static constexpr _Head&
       _M_head(_Head_base& __b) noexcept { return __b; }

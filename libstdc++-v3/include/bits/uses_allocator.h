@@ -36,19 +36,27 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  template <class _Tp, class _Alloc, typename=  __void_t<>>
-  struct __domain_allocator_traits : false_type { };
 
+	template <class _Tp, class _Alloc, typename =  __void_t<>>
+	struct __domain_allocator_detector
+	: false_type
+	{
+	};
+
+	template <class _Tp, class _Alloc>
+	struct __domain_allocator_detector< _Tp, _Alloc,
+	__void_t<decltype(_Tp::domain_alloc_rebind)>>
+	: __is_invocable<decltype(_Tp::domain_alloc_rebind), const _Alloc&>::type
+	{
+		using __rT = decltype(_Tp::domain_alloc_rebind);
+		inline static __rT* rebind = &_Tp::domain_alloc_rebind;
+	};
 
   template <class _Tp, class _Alloc>
-  struct __domain_allocator_traits< _Tp, _Alloc,
-  	__void_t<decltype(_Tp::domain_alloc_rebind)>>
-  : __is_invocable<decltype(_Tp::domain_alloc_rebind), const _Alloc&>::type
-  {
-    using __rT = decltype(_Tp::domain_alloc_rebind);
-    constexpr static __rT* rebind = &_Tp::domain_alloc_rebind;
-  };
+  struct __domain_allocator_traits
+  : __domain_allocator_detector<_Tp, _Alloc> {
 
+  };
 
   template<typename _Tp, typename _Alloc>
   struct __uses_domain_allocator
@@ -85,7 +93,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// [allocator.uses.trait]
   template<typename _Tp, typename _Alloc>
     struct uses_allocator
-    : __uses_allocator_helper<_Tp, _Alloc>::type
+    : __or_<__uses_allocator_helper<_Tp, _Alloc>,
+           __uses_domain_allocator<_Tp,_Alloc>>
+
     { };
 
   struct __uses_alloc_base { };

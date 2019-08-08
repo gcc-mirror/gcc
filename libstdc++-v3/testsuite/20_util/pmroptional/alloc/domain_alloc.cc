@@ -38,7 +38,7 @@ struct my_alloc{} test_alloc;
 
 struct value_type
 {
-  constexpr static my_alloc*  domain_alloc_rebind(std::pmr::polymorphic_allocator<void>const& _a) { return &test_alloc; };
+  static my_alloc*  domain_alloc_rebind(std::pmr::polymorphic_allocator<void>const& _a) { return &test_alloc; };
   value_type(my_alloc* alloc)
   {
     tagged_constructor_called = true;

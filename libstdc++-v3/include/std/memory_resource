@@ -331,6 +331,7 @@ namespace pmr
     private:
       using __uses_alloc1_ = __uses_alloc1<polymorphic_allocator>;
       using __uses_alloc2_ = __uses_alloc2<polymorphic_allocator>;
+      using __uses_alloc3_ = __uses_alloc3<polymorphic_allocator>;
 
       template<typename _Ind, typename... _Args>
 	static tuple<_Args&&...>
@@ -352,6 +353,12 @@ namespace pmr
 	_S_construct_p(__uses_alloc2_ __ua, index_sequence<_Ind...>,
 		       tuple<_Args...>& __t)
 	{ return { std::get<_Ind>(std::move(__t))..., *__ua._M_a }; }
+
+	template<size_t... _Ind, typename... _Args>
+  	static tuple<_Args&&..., polymorphic_allocator>
+  	_S_construct_p(__uses_alloc3_ __ua, index_sequence<_Ind...>,
+  		       tuple<_Args...>& __t)
+  	{ return { std::get<_Ind>(std::move(__t))...,*__ua._M_a }; }
 
       memory_resource* _M_resource;
     };

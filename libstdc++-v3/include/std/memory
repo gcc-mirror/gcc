@@ -219,7 +219,7 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
 	      return tuple<allocator_arg_t, const _Alloc&, _Args&&...>(
 		  allocator_arg, __a, std::forward<_Args>(__args)...);
 	    }
-	  else
+	  else if constexpr (!__uses_domain_allocator<remove_cv_t<_Tp>, _Alloc>::value)
 	    {
 	      static_assert(is_constructible_v<_Tp, _Args..., const _Alloc&>,
 		  "construction with an allocator must be possible"
@@ -228,6 +228,12 @@ get_pointer_safety() noexcept { return pointer_safety::relaxed; }
 	      return tuple<_Args&&..., const _Alloc&>(
 		  std::forward<_Args>(__args)..., __a);
 	    }
+	  else if constexpr (__uses_domain_allocator<remove_cv_t<_Tp>, _Alloc>::value)
+	  {
+		return tuple<_Args&&..., const _Alloc&>(
+				  std::forward<_Args>(__args)...,
+				  __domain_allocator_traits<_Tp, _Alloc>::rebind(__a._M_a));
+	   }
 	}
       else
 	{
