@@ -1,5 +1,12 @@
 2019-08-08  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/dfp.md (D64_D128): Rename to ...
+	(DDTD): ... this, throughout.
+	(dfp_suffix): Rename to ...
+	(q): ... this, throughout.
+
+2019-08-08  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/dfp.md (D64_D128): Move earlier in the file.
 	(dfp_suffix): Ditto.
 	(adddd3, addtd3): Merge to ...
