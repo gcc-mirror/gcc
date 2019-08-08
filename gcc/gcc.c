@@ -8380,8 +8380,8 @@ driver::detect_jobserver () const
 	    = (sscanf (n + strlen (needle), "%d,%d", &rfd, &wfd) == 2
 	       && rfd > 0
 	       && wfd > 0
-	       && fcntl (rfd, F_GETFD) >= 0
-	       && fcntl (wfd, F_GETFD) >= 0);
+	       && is_valid_fd (rfd)
+	       && is_valid_fd (wfd));
 
 	  /* Drop the jobserver if it's not working now.  */
 	  if (!jobserver)
