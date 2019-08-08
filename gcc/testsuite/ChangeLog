@@ -1,3 +1,12 @@
+2019-08-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/enum20.C: Test location(s) too.
+	* g++.dg/other/friend3.C: Likewise.
+	* g++.dg/parse/dtor5.C: Likewise.
+	* g++.dg/parse/friend7.C: Likewise.
+	* g++.dg/template/error22.C: Likewise.
+	* g++.old-deja/g++.brendan/err-msg5.C: Likewise.
+
 2019-08-08  Jim Wilson  <jimw@sifive.com>
 
 	PR target/91229

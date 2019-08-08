@@ -1,3 +1,8 @@
+2019-08-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use id_loc and EXPR_LOCATION in
+	a few error messages.
+
 2019-08-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87519 - bogus warning with -Wsign-conversion.
