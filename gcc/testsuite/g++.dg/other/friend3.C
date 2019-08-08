@@ -4,10 +4,10 @@
 
 struct A
 {
-  friend ~A();  // { dg-error "qualified name" }
+  friend ~A();  // { dg-error "10:expected qualified name" }
 };
 
 struct B
 {
-  friend ~A();  // { dg-error "qualified name" }
+  friend ~A();  // { dg-error "10:expected qualified name" }
 };
