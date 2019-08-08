@@ -1,5 +1,11 @@
 2019-08-08  Martin Liska  <mliska@suse.cz>
 
+	PR bootstrap/91352
+	* gcc.c (driver::detect_jobserver): Use is_valid_fd.
+	* lto-wrapper.c (jobserver_active_p): Likewise.
+
+2019-08-08  Martin Liska  <mliska@suse.cz>
+
 	* cgraphclones.c (set_new_clone_decl_and_node_flags): Drop
 	IS_OPERATOR_NEW and IS_OPERATOR_DELETE.
 	(create_version_clone_with_body): Likewise.
