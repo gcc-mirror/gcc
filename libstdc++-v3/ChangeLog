@@ -1,3 +1,15 @@
+2019-08-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	P0325R4 to_array from LFTS with updates
+	* include/experimental/array (to_array): Qualify call to __to_array.
+	* include/std/array (__cpp_lib_to_array, to_array): Define for C++20.
+	* include/std/version (__cpp_lib_to_array): Likewise.
+	* testsuite/23_containers/array/creation/1.cc: New test.
+	* testsuite/23_containers/array/creation/2.cc: New test.
+	* testsuite/23_containers/array/creation/3_neg.cc: New test.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc:
+	Use zero for dg-error line number.
+
 2019-08-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	P1651R0 bind_front should not unwrap reference_wrapper
