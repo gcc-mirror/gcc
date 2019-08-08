@@ -28,6 +28,12 @@
    UNSPEC_MOVSD_STORE
   ])
 
+; Either of the two decimal modes.
+(define_mode_iterator D64_D128 [DD TD])
+
+(define_mode_attr dfp_suffix [(DD "")
+			      (TD "q")])
+
 
 (define_insn "movsd_store"
   [(set (match_operand:DD 0 "nonimmediate_operand" "=m")
@@ -150,84 +156,44 @@
   [(set_attr "type" "dfp")
    (set_attr "length" "8")])
 
-(define_insn "adddd3"
-  [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
-	(plus:DD (match_operand:DD 1 "gpc_reg_operand" "%d")
-		 (match_operand:DD 2 "gpc_reg_operand" "d")))]
+(define_insn "add<mode>3"
+  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
+	(plus:D64_D128 (match_operand:D64_D128 1 "gpc_reg_operand" "%d")
+		       (match_operand:D64_D128 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
-  "dadd %0,%1,%2"
+  "dadd<dfp_suffix> %0,%1,%2"
   [(set_attr "type" "dfp")])
 
-(define_insn "addtd3"
-  [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
-	(plus:TD (match_operand:TD 1 "gpc_reg_operand" "%d")
-		 (match_operand:TD 2 "gpc_reg_operand" "d")))]
+(define_insn "sub<mode>3"
+  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
+	(minus:D64_D128 (match_operand:D64_D128 1 "gpc_reg_operand" "d")
+			(match_operand:D64_D128 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
-  "daddq %0,%1,%2"
+  "dsub<dfp_suffix> %0,%1,%2"
   [(set_attr "type" "dfp")])
 
-(define_insn "subdd3"
-  [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
-	(minus:DD (match_operand:DD 1 "gpc_reg_operand" "d")
-		  (match_operand:DD 2 "gpc_reg_operand" "d")))]
+(define_insn "mul<mode>3"
+  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
+	(mult:D64_D128 (match_operand:D64_D128 1 "gpc_reg_operand" "%d")
+		       (match_operand:D64_D128 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
-  "dsub %0,%1,%2"
+  "dmul<dfp_suffix> %0,%1,%2"
   [(set_attr "type" "dfp")])
 
-(define_insn "subtd3"
-  [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
-	(minus:TD (match_operand:TD 1 "gpc_reg_operand" "d")
-		  (match_operand:TD 2 "gpc_reg_operand" "d")))]
+(define_insn "div<mode>3"
+  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
+	(div:D64_D128 (match_operand:D64_D128 1 "gpc_reg_operand" "d")
+		      (match_operand:D64_D128 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
-  "dsubq %0,%1,%2"
+  "ddiv<dfp_suffix> %0,%1,%2"
   [(set_attr "type" "dfp")])
 
-(define_insn "muldd3"
-  [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
-	(mult:DD (match_operand:DD 1 "gpc_reg_operand" "%d")
-		 (match_operand:DD 2 "gpc_reg_operand" "d")))]
-  "TARGET_DFP"
-  "dmul %0,%1,%2"
-  [(set_attr "type" "dfp")])
-
-(define_insn "multd3"
-  [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
-	(mult:TD (match_operand:TD 1 "gpc_reg_operand" "%d")
-		 (match_operand:TD 2 "gpc_reg_operand" "d")))]
-  "TARGET_DFP"
-  "dmulq %0,%1,%2"
-  [(set_attr "type" "dfp")])
-
-(define_insn "divdd3"
-  [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
-	(div:DD (match_operand:DD 1 "gpc_reg_operand" "d")
-		(match_operand:DD 2 "gpc_reg_operand" "d")))]
-  "TARGET_DFP"
-  "ddiv %0,%1,%2"
-  [(set_attr "type" "dfp")])
-
-(define_insn "divtd3"
-  [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
-	(div:TD (match_operand:TD 1 "gpc_reg_operand" "d")
-		(match_operand:TD 2 "gpc_reg_operand" "d")))]
-  "TARGET_DFP"
-  "ddivq %0,%1,%2"
-  [(set_attr "type" "dfp")])
-
-(define_insn "*cmpdd_internal1"
+(define_insn "*cmp<mode>_internal1"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(compare:CCFP (match_operand:DD 1 "gpc_reg_operand" "d")
-		      (match_operand:DD 2 "gpc_reg_operand" "d")))]
+	(compare:CCFP (match_operand:D64_D128 1 "gpc_reg_operand" "d")
+		      (match_operand:D64_D128 2 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
-  "dcmpu %0,%1,%2"
-  [(set_attr "type" "dfp")])
-
-(define_insn "*cmptd_internal1"
-  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(compare:CCFP (match_operand:TD 1 "gpc_reg_operand" "d")
-		      (match_operand:TD 2 "gpc_reg_operand" "d")))]
-  "TARGET_DFP"
-  "dcmpuq %0,%1,%2"
+  "dcmpu<dfp_suffix> %0,%1,%2"
   [(set_attr "type" "dfp")])
 
 (define_insn "floatdidd2"
@@ -244,46 +210,25 @@
   "dcffixq %0,%1"
   [(set_attr "type" "dfp")])
 
-;; Convert a decimal64 to a decimal64 whose value is an integer.
+;; Convert a decimal64/128 to a decimal64/128 whose value is an integer.
 ;; This is the first stage of converting it to an integer type.
 
-(define_insn "ftruncdd2"
-  [(set (match_operand:DD 0 "gpc_reg_operand" "=d")
-	(fix:DD (match_operand:DD 1 "gpc_reg_operand" "d")))]
+(define_insn "ftrunc<mode>2"
+  [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
+	(fix:D64_D128 (match_operand:D64_D128 1 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
-  "drintn. 0,%0,%1,1"
+  "drintn<dfp_suffix>. 0,%0,%1,1"
   [(set_attr "type" "dfp")])
 
-;; Convert a decimal64 whose value is an integer to an actual integer.
+;; Convert a decimal64/128 whose value is an integer to an actual integer.
 ;; This is the second stage of converting decimal float to integer type.
 
-(define_insn "fixdddi2"
+(define_insn "fix<mode>di2"
   [(set (match_operand:DI 0 "gpc_reg_operand" "=d")
-	(fix:DI (match_operand:DD 1 "gpc_reg_operand" "d")))]
+	(fix:DI (match_operand:D64_D128 1 "gpc_reg_operand" "d")))]
   "TARGET_DFP"
-  "dctfix %0,%1"
+  "dctfix<dfp_suffix> %0,%1"
   [(set_attr "type" "dfp")])
-
-;; Convert a decimal128 to a decimal128 whose value is an integer.
-;; This is the first stage of converting it to an integer type.
-
-(define_insn "ftrunctd2"
-  [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
-	(fix:TD (match_operand:TD 1 "gpc_reg_operand" "d")))]
-  "TARGET_DFP"
-  "drintnq. 0,%0,%1,1"
-  [(set_attr "type" "dfp")])
-
-;; Convert a decimal128 whose value is an integer to an actual integer.
-;; This is the second stage of converting decimal float to integer type.
-
-(define_insn "fixtddi2"
-  [(set (match_operand:DI 0 "gpc_reg_operand" "=d")
-	(fix:DI (match_operand:TD 1 "gpc_reg_operand" "d")))]
-  "TARGET_DFP"
-  "dctfixq %0,%1"
-  [(set_attr "type" "dfp")])
-
 
 ;; Decimal builtin support
 
@@ -297,11 +242,6 @@
    UNSPEC_DSCRI])
 
 (define_code_iterator DFP_TEST [eq lt gt unordered])
-
-(define_mode_iterator D64_D128 [DD TD])
-
-(define_mode_attr dfp_suffix [(DD "")
-			      (TD "q")])
 
 (define_insn "dfp_ddedpd_<mode>"
   [(set (match_operand:D64_D128 0 "gpc_reg_operand" "=d")
