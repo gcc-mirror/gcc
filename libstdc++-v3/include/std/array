@@ -88,7 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  Sets support random access iterators.
    *
    *  @tparam  Tp  Type of element. Required to be a complete type.
-   *  @tparam  N  Number of elements.
+   *  @tparam  Nm  Number of elements.
   */
   template<typename _Tp, std::size_t _Nm>
     struct array
@@ -342,6 +342,44 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       static_assert(_Int < _Nm, "array index is within bounds");
       return std::move(_GLIBCXX_STD_C::get<_Int>(__arr));
     }
+
+#if __cplusplus > 201703L
+#define __cpp_lib_to_array 201907L
+
+  template<bool _Move = false, typename _Tp, size_t... _Idx>
+    constexpr array<remove_cv_t<_Tp>, sizeof...(_Idx)>
+    __to_array(_Tp (&__a)[sizeof...(_Idx)], index_sequence<_Idx...>)
+    {
+      if constexpr (_Move)
+	return {{std::move(__a[_Idx])...}};
+      else
+	return {{__a[_Idx]...}};
+    }
+
+  template<typename _Tp, size_t _Nm>
+    constexpr array<remove_cv_t<_Tp>, _Nm>
+    to_array(_Tp (&__a)[_Nm])
+    noexcept(is_nothrow_constructible_v<_Tp, _Tp&>)
+    {
+      static_assert(!is_array_v<_Tp>);
+      static_assert(is_constructible_v<_Tp, _Tp&>);
+      if constexpr (is_constructible_v<_Tp, _Tp&>)
+	return _GLIBCXX_STD_C::__to_array(__a, make_index_sequence<_Nm>{});
+      __builtin_unreachable(); // FIXME: see PR c++/91388
+    }
+
+  template<typename _Tp, size_t _Nm>
+    constexpr array<remove_cv_t<_Tp>, _Nm>
+    to_array(_Tp (&&__a)[_Nm])
+    noexcept(is_nothrow_move_constructible_v<_Tp>)
+    {
+      static_assert(!is_array_v<_Tp>);
+      static_assert(is_move_constructible_v<_Tp>);
+      if constexpr (is_move_constructible_v<_Tp>)
+	return _GLIBCXX_STD_C::__to_array<1>(__a, make_index_sequence<_Nm>{});
+      __builtin_unreachable(); // FIXME: see PR c++/91388
+    }
+#endif // C++20
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
 } // namespace std

@@ -1,7 +1,7 @@
-// { dg-do compile { target c++11 } }
-// { dg-require-normal-mode "" }
+// { dg-options "-std=gnu++2a" }
+// { dg-do compile { target c++2a } }
 
-// Copyright (C) 2012-2019 Free Software Foundation, Inc.
+// Copyright (C) 2019 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,37 @@
 
 #include <array>
 
-typedef std::tuple_element<1, std::array<int, 1>>::type type;
+void
+test01()
+{
+  int two_dee[3][4];
+  std::to_array(two_dee); // { dg-error "here" }
+}
 
-// { dg-error "static assertion failed" "" { target *-*-* } 0 }
+void
+test02()
+{
+  struct X
+  {
+    int two_dee[3][4];
+  };
+  std::to_array(X{}.two_dee); // { dg-error "here" }
+}
+
+void
+test03()
+{
+  struct MoveOnly
+  {
+    MoveOnly() = default;
+    MoveOnly(MoveOnly&&) = default;
+  };
+
+  MoveOnly mo[2];
+  std::to_array(mo); // { dg-error "here" }
+
+  const MoveOnly cmo[3];
+  std::to_array(std::move(cmo)); // { dg-error "here" }
+}
+
+// { dg-prune-output "static assertion failed" }

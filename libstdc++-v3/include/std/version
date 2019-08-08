@@ -153,6 +153,7 @@
 #define __cpp_lib_atomic_ref 201806L
 #define __cpp_lib_bind_front 201907L
 #define __cpp_lib_bounded_array_traits 201902L
+#define __cpp_lib_constexpr_algorithms 201711L
 #if __cpp_impl_destroying_delete
 # define __cpp_lib_destroying_delete 201806L
 #endif
@@ -164,7 +165,7 @@
 #endif
 #define __cpp_lib_list_remove_return_type 201806L
 #define __cpp_lib_math_constants 201907L
-#define __cpp_lib_constexpr_algorithms 201711L
+#define __cpp_lib_to_array 201907L
 #endif // C++2a
 #endif // C++17
 #endif // C++14
