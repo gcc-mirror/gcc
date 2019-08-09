@@ -1,5 +1,11 @@
 2019-08-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-parser.c (check_no_duplicate_clause): Simplify using
+	omp_find_clause.
+	(c_parser_omp_clause_if): Fix up printing of target {enter,exit} data
+	directive name modifiers.
+	(c_parser_omp_clause_proc_bind): Check for duplicate proc_bind clause.
+
 	PR c/91401
 	* c-parser.c (c_parser_omp_clause_dist_schedule): Fix up typos in the
 	check_no_duplicate_clause call.  Comment it out, instead emit a
