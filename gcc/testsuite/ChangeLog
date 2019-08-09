@@ -1,3 +1,20 @@
+2019-08-09  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/tree-prof/indir-call-prof.C: Add -optimize
+	to -fdump-ipa-profile.
+	* g++.dg/tree-prof/morefunc.C: Likewise.
+	* g++.dg/tree-prof/reorder.C: Likewise.
+	* gcc.dg/tree-prof/ic-misattribution-1.c: Likewise.
+	* gcc.dg/tree-prof/indir-call-prof.c: Likewise.
+	* gcc.dg/tree-prof/stringop-1.c: Likewise.
+	* gcc.dg/tree-prof/stringop-2.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-1.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-2.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-3.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-4.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-5.c: Likewise.
+	* gcc.dg/tree-prof/val-prof-7.c: Likewise.
+
 2019-08-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/if-4.c: New test.
