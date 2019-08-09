@@ -1,3 +1,9 @@
+2019-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/91401
+	* c-c++-common/gomp/pr91401-1.c: New test.
+	* c-c++-common/gomp/pr91401-2.c: New test.
+
 2019-08-09  Alexandre Oliva <oliva@adacore.com>
 
 	* gcc.target/i386/sse2-mul-1.c: Use rand.  Drop fallback.

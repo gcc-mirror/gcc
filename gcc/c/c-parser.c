@@ -14811,7 +14811,10 @@ c_parser_omp_clause_dist_schedule (c_parser *parser, tree list)
     c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 			       "expected %<,%> or %<)%>");
 
-  check_no_duplicate_clause (list, OMP_CLAUSE_SCHEDULE, "schedule");
+  /* check_no_duplicate_clause (list, OMP_CLAUSE_DIST_SCHEDULE,
+				"dist_schedule"); */
+  if (omp_find_clause (list, OMP_CLAUSE_DIST_SCHEDULE))
+    warning_at (loc, 0, "too many %qs clauses", "dist_schedule");
   if (t == error_mark_node)
     return list;
 
