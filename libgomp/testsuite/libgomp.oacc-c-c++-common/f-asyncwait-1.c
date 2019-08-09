@@ -3,7 +3,6 @@
 /* Based on '../libgomp.oacc-fortran/asyncwait-1.f90'.  */
 
 /* { dg-additional-options "--param=openacc-kernels=decompose" } */
-/* { dg-xfail-run-if TODO { openacc_radeon_accel_selected } } */
 
 /* { dg-additional-options "-fopt-info-all-omp" }
    { dg-additional-options "-foffload=-fopt-info-all-omp" } */
