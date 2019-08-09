@@ -1,5 +1,13 @@
 2019-08-09  Martin Liska  <mliska@suse.cz>
 
+	* ipa-icf.c (sem_function::merge): Define AUTO_DUMP_SCOPE and
+	use dump_printf to report optimization.
+	(sem_variable::merge): Likwise.
+	(sem_item_optimizer::merge_classes): Use dump_printf to report
+	ICF hits.
+
+2019-08-09  Martin Liska  <mliska@suse.cz>
+
 	* value-prof.c (gimple_divmod_fixed_value_transform):
 	Use dump_printf_loc.
 	(gimple_mod_pow2_value_transform): Likewise.

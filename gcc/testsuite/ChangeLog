@@ -1,5 +1,38 @@
 2019-08-09  Martin Liska  <mliska@suse.cz>
 
+	* g++.dg/ipa/ipa-icf-2.C: Add -optimized to -fdump-ipa-icf.
+	* g++.dg/ipa/ipa-icf-3.C: Likewise.
+	* g++.dg/ipa/ipa-icf-4.C: Likewise.
+	* g++.dg/ipa/ipa-icf-6.C: Likewise.
+	* gcc.dg/ipa/ipa-icf-1.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-10.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-11.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-12.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-13.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-16.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-18.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-2.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-20.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-21.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-23.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-25.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-26.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-27.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-3.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-35.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-36.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-37.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-38.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-39.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-5.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-7.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-8.c: Likewise.
+	* gcc.dg/ipa/ipa-icf-merge-1.c: Likewise.
+	* gcc.dg/ipa/pr64307.c: Likewise.
+	* gcc.dg/ipa/pr90555.c: Likewise.
+
+2019-08-09  Martin Liska  <mliska@suse.cz>
+
 	* g++.dg/tree-prof/indir-call-prof.C: Add -optimize
 	to -fdump-ipa-profile.
 	* g++.dg/tree-prof/morefunc.C: Likewise.

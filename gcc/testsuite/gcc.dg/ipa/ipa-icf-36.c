@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-ipa-icf -fmerge-all-constants"  } */
+/* { dg-options "-O2 -fdump-ipa-icf-optimized-all-all-all-all -fmerge-all-constants"  } */
 static int a;
 static int b;
 static const int c = 2;
