@@ -1,5 +1,11 @@
 2019-08-09  Martin Liska  <mliska@suse.cz>
 
+	* doc/invoke.texi: Document the option value.
+	* lto-wrapper.c (run_gcc): Set auto_parallel
+	only with -flto=auto.
+
+2019-08-09  Martin Liska  <mliska@suse.cz>
+
 	* opts.c (common_handle_option): Error for an invalid argument
 	to -flto=.
 
