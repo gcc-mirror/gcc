@@ -1,3 +1,11 @@
+2019-08-09  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc.target/i386/sse2-mul-1.c: Use rand.  Drop fallback.
+	* gcc.target/i386/sse4_1-blendps-2.c: Likewise.
+	* gcc.target/i386/sse4_1-blendps.c: Likewise.
+	* gcc.target/i386/xop-vshift-1.c: Likewise.
+	* gcc.target/powerpc/direct-move.h: Likewise.
+
 2019-08-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/enum20.C: Test location(s) too.
