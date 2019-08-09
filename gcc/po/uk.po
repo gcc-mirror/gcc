@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gcc 9.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-05-02 20:28+0000\n"
-"PO-Revision-Date: 2019-05-07 20:56+0300\n"
+"PO-Revision-Date: 2019-07-04 20:43+0300\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
 "Language: uk\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Lokalize 19.03.70\n"
+"X-Generator: Lokalize 19.07.70\n"
 
 #: cfgrtl.c:2705
 msgid "flow control insn inside a basic block"
@@ -1182,7 +1182,7 @@ msgstr ""
 
 #: langhooks.c:380
 msgid "At top level:"
-msgstr ""
+msgstr "На верхньому рівні:"
 
 #: langhooks.c:396 cp/error.c:3458
 #, c-format
@@ -1192,7 +1192,7 @@ msgstr "У функції-члені %qs"
 #: langhooks.c:400 cp/error.c:3461
 #, c-format
 msgid "In function %qs"
-msgstr ""
+msgstr "У функції %qs"
 
 #: langhooks.c:445 cp/error.c:3411
 msgid "    inlined from %qs at %r%s:%d:%d%R"
@@ -1209,7 +1209,7 @@ msgstr ""
 
 #: lra-assigns.c:1841 reload1.c:2078
 msgid "this is the insn:"
-msgstr ""
+msgstr "це інструкція:"
 
 #: lra-constraints.c:2971
 msgid "unable to generate reloads for impossible constraints:"
@@ -2308,7 +2308,7 @@ msgstr ""
 #: params.def:938
 #, no-c-format
 msgid "The maximum ratio between array size and switch branches for a switch conversion to take place."
-msgstr ""
+msgstr "Максимальне значення відношення розміру масиву до кількості відгалужень перемикання для перетворення на перемикання."
 
 #: params.def:946
 #, no-c-format
@@ -3692,7 +3692,7 @@ msgstr ""
 
 #: config/ia64/ia64.c:11242
 msgid "invalid conversion to %<__fpreg%>"
-msgstr ""
+msgstr "некоректне перетворення до %<__fpreg%>"
 
 #: config/ia64/ia64.c:11255 config/ia64/ia64.c:11266
 msgid "invalid operation on %<__fpreg%>"
@@ -4732,7 +4732,7 @@ msgstr ""
 
 #: cp/error.c:3456
 msgid "In lambda function"
-msgstr ""
+msgstr "У лямбда-функції"
 
 #: cp/error.c:3476
 #, c-format
@@ -5483,7 +5483,7 @@ msgstr ""
 #: fortran/trans.c:901
 #, c-format
 msgid "Attempting to allocate already allocated variable '%s'"
-msgstr ""
+msgstr "Спроба розмістити у пам'яті вже розміщену змінну «%s»"
 
 #: fortran/trans.c:907
 msgid "Attempting to allocate already allocated variable"
@@ -17671,7 +17671,7 @@ msgstr ""
 #: cgraph.c:3252
 #, gcc-internal-format
 msgid "inlined_to pointer is set but no predecessors found"
-msgstr ""
+msgstr "встановлено вказівник inlined_to, але не виявлено попередників"
 
 #: cgraph.c:3257
 #, gcc-internal-format
@@ -18063,7 +18063,7 @@ msgstr ""
 #: convert.c:557
 #, gcc-internal-format
 msgid "conversion to incomplete type"
-msgstr ""
+msgstr "перетворення до неповного типу"
 
 #: convert.c:1032
 #, gcc-internal-format
@@ -22091,7 +22091,7 @@ msgstr ""
 #: symtab.c:1158
 #, gcc-internal-format
 msgid "implicit_section flag is set but section isn%'t"
-msgstr ""
+msgstr "встановлено прапорець implicit_section, але розділ не є"
 
 #: symtab.c:1165
 #, gcc-internal-format
@@ -22727,22 +22727,22 @@ msgstr ""
 #: tree-cfg.c:3581
 #, gcc-internal-format
 msgid "invalid types in address space conversion"
-msgstr ""
+msgstr "некоректні типи у перетворенні простору адрес"
 
 #: tree-cfg.c:3595
 #, gcc-internal-format
 msgid "invalid types in fixed-point conversion"
-msgstr ""
+msgstr "некоректні типи у перетворенні із фіксованою крапкою"
 
 #: tree-cfg.c:3610
 #, gcc-internal-format
 msgid "invalid types in conversion to floating point"
-msgstr ""
+msgstr "некоректні типи у перетворенні до значення із рухомою крапкою"
 
 #: tree-cfg.c:3625
 #, gcc-internal-format
 msgid "invalid types in conversion to integer"
-msgstr ""
+msgstr "некоректні типи у перетворенні до цілого значення"
 
 #: tree-cfg.c:3665
 #, gcc-internal-format
@@ -23052,7 +23052,7 @@ msgstr ""
 #: tree-cfg.c:4791
 #, gcc-internal-format
 msgid "incorrect entry in label_to_block_map"
-msgstr ""
+msgstr "некоректний запис у label_to_block_map"
 
 #: tree-cfg.c:4801
 #, gcc-internal-format
@@ -25105,7 +25105,7 @@ msgstr ""
 #: c-family/c-common.c:1530 c-family/c-common.c:1592
 #, gcc-internal-format
 msgid "conversion to %qT from %qT may change the sign of the result"
-msgstr ""
+msgstr "перетворення з %qT до %qT може змінити знак результату"
 
 #: c-family/c-common.c:1778
 #, gcc-internal-format
@@ -26971,7 +26971,7 @@ msgstr ""
 #: c-family/c-warn.c:1196
 #, gcc-internal-format
 msgid "conversion to %qT from boolean expression"
-msgstr ""
+msgstr "перетворення до %qT з булевого виразу"
 
 #: c-family/c-warn.c:1214 c-family/c-warn.c:1289
 #, gcc-internal-format
@@ -27372,7 +27372,7 @@ msgstr ""
 #: c-family/c-warn.c:2182
 #, gcc-internal-format
 msgid "comparison of integer expressions of different signedness: %qT and %qT"
-msgstr ""
+msgstr "порівняння цілочисельних виразів невід'ємного і різнознакового діапазонів: %qT і %qT"
 
 #: c-family/c-warn.c:2235
 #, gcc-internal-format
@@ -33484,7 +33484,7 @@ msgstr ""
 #: c/c-convert.c:168
 #, gcc-internal-format
 msgid "conversion to non-scalar type requested"
-msgstr ""
+msgstr "запит на перетворення до нечислового типу"
 
 #: c/c-decl.c:828
 #, gcc-internal-format
@@ -33524,12 +33524,12 @@ msgstr ""
 #: c/c-decl.c:1299
 #, gcc-internal-format
 msgid "unused variable %q+D"
-msgstr ""
+msgstr "невикористана змінна %q+D"
 
 #: c/c-decl.c:1303 cp/decl.c:686
 #, gcc-internal-format
 msgid "variable %qD set but not used"
-msgstr ""
+msgstr "змінній %qD надано значення, але цю змінну ніде не використано"
 
 #: c/c-decl.c:1308
 #, gcc-internal-format
@@ -33999,7 +33999,7 @@ msgstr ""
 #: c/c-decl.c:4920 c/c-decl.c:4935 c/c-typeck.c:7973
 #, gcc-internal-format
 msgid "variable-sized object may not be initialized"
-msgstr ""
+msgstr "об'єкт розмірності змінної може бути не ініціалізовано"
 
 #: c/c-decl.c:4926
 #, gcc-internal-format
@@ -34019,7 +34019,7 @@ msgstr ""
 #: c/c-decl.c:5067
 #, gcc-internal-format
 msgid "%qD should be initialized"
-msgstr ""
+msgstr "%qD має бути ініціалізовано"
 
 #: c/c-decl.c:5148
 #, gcc-internal-format
@@ -34971,7 +34971,7 @@ msgstr ""
 #: c/c-decl.c:9708 cp/decl.c:16244
 #, gcc-internal-format
 msgid "parameter %qD set but not used"
-msgstr ""
+msgstr "встановлено значення параметра %qD, але сам параметр ніде не використано"
 
 #. If we get here, declarations have been used in a for loop without
 #. the C99 for loop scope.  This doesn't make much sense, so don't
@@ -37543,7 +37543,7 @@ msgstr ""
 #: c/c-typeck.c:6933
 #, gcc-internal-format
 msgid "ISO C prohibits argument conversion to union type"
-msgstr ""
+msgstr "У ISO C заборонено перетворення аргументу до типу об'єднання"
 
 #: c/c-typeck.c:7001
 #, gcc-internal-format
@@ -37718,7 +37718,7 @@ msgstr ""
 #: c/c-typeck.c:7418
 #, gcc-internal-format
 msgid "incompatible types when initializing type %qT using type %qT"
-msgstr ""
+msgstr "несумісні типи при ініціалізації типу %qT за допомогою %qT"
 
 #: c/c-typeck.c:7428
 #, gcc-internal-format
@@ -37779,7 +37779,7 @@ msgstr ""
 #: c/c-typeck.c:8255 cp/decl.c:6477
 #, gcc-internal-format
 msgid "opaque vector types cannot be initialized"
-msgstr ""
+msgstr "непрозорі типи векторів не може бути ініціалізовано"
 
 #: c/c-typeck.c:8475
 #, gcc-internal-format
@@ -39980,7 +39980,7 @@ msgstr ""
 #: cp/constexpr.c:837
 #, gcc-internal-format
 msgid "member %qD must be initialized by mem-initializer in %<constexpr%> constructor"
-msgstr ""
+msgstr "член %qD має бути ініціалізовано ініціалізатором mem у конструкторі %<constexpr%>"
 
 #: cp/constexpr.c:878
 #, gcc-internal-format
@@ -40711,7 +40711,7 @@ msgstr ""
 #: cp/decl.c:672
 #, gcc-internal-format
 msgid "unused variable %qD"
-msgstr ""
+msgstr "невикористана змінна %qD"
 
 #: cp/decl.c:681
 #, gcc-internal-format
@@ -41497,7 +41497,7 @@ msgstr ""
 #: cp/decl.c:6471
 #, gcc-internal-format
 msgid "in C++98 %qD must be initialized by constructor, not by %<{...}%>"
-msgstr ""
+msgstr "у C++98 %qD має бути ініціалізовано конструктором, а не за допомогою %<{...}%>"
 
 #: cp/decl.c:6578
 #, gcc-internal-format
@@ -44063,7 +44063,7 @@ msgstr ""
 #: cp/init.c:780
 #, gcc-internal-format
 msgid "%qD should be initialized in the member initialization list"
-msgstr ""
+msgstr "%qD має бути ініціалізовано у списку ініціалізації членів"
 
 #: cp/init.c:801
 #, gcc-internal-format
@@ -44084,7 +44084,7 @@ msgstr ""
 #: cp/method.c:1393 cp/method.c:1404
 #, gcc-internal-format
 msgid "%q#D should be initialized"
-msgstr ""
+msgstr "%q#D має бути ініціалізовано"
 
 #: cp/init.c:945 cp/init.c:2466 cp/method.c:1401
 #, gcc-internal-format
@@ -44094,12 +44094,12 @@ msgstr ""
 #: cp/init.c:1127
 #, gcc-internal-format
 msgid "%qD will be initialized after"
-msgstr ""
+msgstr "%qD буде ініціалізовано після"
 
 #: cp/init.c:1130
 #, gcc-internal-format
 msgid "base %qT will be initialized after"
-msgstr ""
+msgstr "базове %qT буде ініціалізовано після"
 
 #: cp/init.c:1134
 #, gcc-internal-format
@@ -44114,7 +44114,7 @@ msgstr ""
 #: cp/init.c:1138
 #, gcc-internal-format
 msgid "  when initialized here"
-msgstr ""
+msgstr "  коли ініціалізовано тут"
 
 #: cp/init.c:1155
 #, gcc-internal-format
@@ -44179,7 +44179,7 @@ msgstr ""
 #: cp/init.c:1798 cp/init.c:4515 cp/typeck2.c:1263
 #, gcc-internal-format
 msgid "array must be initialized with a brace-enclosed initializer"
-msgstr ""
+msgstr "масив має бути ініціалізовано за допомогою взятого у фігурні дужки ініціалізатора"
 
 #: cp/init.c:2108 cp/semantics.c:3353
 #, gcc-internal-format
@@ -45556,7 +45556,7 @@ msgstr ""
 #: cp/parser.c:10593 cp/parser.c:10614 cp/parser.c:10785
 #, gcc-internal-format
 msgid "already captured %qD in lambda expression"
-msgstr ""
+msgstr "вже захоплене %qD у лямбда-виразі"
 
 #: cp/parser.c:10608
 #, gcc-internal-format
@@ -45596,7 +45596,7 @@ msgstr ""
 #: cp/parser.c:10747
 #, gcc-internal-format
 msgid "too many %<...%> in lambda capture"
-msgstr ""
+msgstr "забагато %<...%> у лямбда-захопленні"
 
 #: cp/parser.c:10758
 #, gcc-internal-format
@@ -45918,12 +45918,12 @@ msgstr ""
 #: cp/parser.c:15513
 #, gcc-internal-format
 msgid "invalid encoding prefix in literal operator"
-msgstr ""
+msgstr "некоректний префікс кодування у буквальному операторі"
 
 #: cp/parser.c:15549
 #, gcc-internal-format
 msgid "expected operator"
-msgstr ""
+msgstr "мало бути вказано оператор"
 
 #. Warn that we do not support `export'.
 #: cp/parser.c:15595
@@ -45999,7 +45999,7 @@ msgstr ""
 #: cp/parser.c:16540
 #, gcc-internal-format
 msgid "parse error in template argument list"
-msgstr ""
+msgstr "помилка обробки у списку аргументів шаблона"
 
 #. The name does not name a template.
 #: cp/parser.c:16608 cp/parser.c:16764 cp/parser.c:16973
@@ -46046,12 +46046,12 @@ msgstr ""
 #: cp/parser.c:17294
 #, gcc-internal-format
 msgid "template specialization with C linkage"
-msgstr ""
+msgstr "спеціалізація шаблона із C-компонуванням"
 
 #: cp/parser.c:17515
 #, gcc-internal-format
 msgid "expected type specifier"
-msgstr ""
+msgstr "мало бути вказано специфікатор типу"
 
 #: cp/parser.c:17702
 #, gcc-internal-format
@@ -48227,7 +48227,7 @@ msgstr ""
 #: cp/pt.c:15137
 #, gcc-internal-format
 msgid "empty initializer in lambda init-capture"
-msgstr ""
+msgstr "порожній ініціалізатор у захопленні під час ініціалізації лямбди"
 
 #: cp/pt.c:15212
 #, gcc-internal-format
@@ -50044,7 +50044,7 @@ msgstr ""
 #: cp/typeck.c:8697
 #, gcc-internal-format
 msgid "invalid conversion to type %qT from type %qT"
-msgstr ""
+msgstr "некоректне перетворення з типу %qT до типу %qT"
 
 #: cp/typeck.c:9012
 msgid "cannot convert %qH to %qI in default argument"
@@ -62796,7 +62796,7 @@ msgstr ""
 #: fortran/trans-decl.c:5809
 #, gcc-internal-format
 msgid "Unused variable %qs declared at %L"
-msgstr ""
+msgstr "Невикористану змінну %qs оголошено у рядку %L"
 
 #: fortran/trans-decl.c:5858
 #, gcc-internal-format
