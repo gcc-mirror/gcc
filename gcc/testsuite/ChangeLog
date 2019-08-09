@@ -1,3 +1,8 @@
+2019-08-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/90313
+	* g++.dg/torture/pr90313.cc: New test.
+
 2019-08-09  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/lto/devirt-19_0.C: Add -flto=auto.
