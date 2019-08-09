@@ -1,3 +1,10 @@
+2019-08-13  Julian Brown  <julian@codesourcery.com>
+
+	* omp-oacc-kernels.c (add_wait): New function, split out of...
+	(add_async_clauses_and_wait): ...here. Call new outlined function.
+	(decompose_kernels_region_body): Add wait at the end of
+	explicitly-asynchronous kernels regions.
+
 2019-07-31  Julian Brown  <julian@codesourcery.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 
