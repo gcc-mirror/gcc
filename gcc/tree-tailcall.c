@@ -479,6 +479,35 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       && !stmt_can_throw_external (cfun, stmt))
     return;
 
+  /* If the function returns a value, then at present, the tail call
+     must return the same type of value.  There is conceptually a copy
+     between the object returned by the tail call candidate and the
+     object returned by CFUN itself.
+
+     This means that if we have:
+
+	 lhs = f (&<retval>);    // f reads from <retval>
+				 // (lhs is usually also <retval>)
+
+     there is a copy between the temporary object returned by f and lhs,
+     meaning that any use of <retval> in f occurs before the assignment
+     to lhs begins.  Thus the <retval> that is live on entry to the call
+     to f is really an independent local variable V that happens to be
+     stored in the RESULT_DECL rather than a local VAR_DECL.
+
+     Turning this into a tail call would remove the copy and make the
+     lifetimes of the return value and V overlap.  The same applies to
+     tail recursion, since if f can read from <retval>, we have to assume
+     that CFUN might already have written to <retval> before the call.
+
+     The problem doesn't apply when <retval> is passed by value, but that
+     isn't a case we handle anyway.  */
+  tree result_decl = DECL_RESULT (cfun->decl);
+  if (result_decl
+      && may_be_aliased (result_decl)
+      && ref_maybe_used_by_stmt_p (call, result_decl))
+    return;
+
   /* We found the call, check whether it is suitable.  */
   tail_recursion = false;
   func = gimple_call_fndecl (call);
