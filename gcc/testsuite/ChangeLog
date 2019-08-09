@@ -1,3 +1,14 @@
+2019-08-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/vec_rotate-1.c: Rename to ...
+	* gcc.target/powerpc/vec-rotate-1.c: ... this.  Add -maltivec option.
+	* gcc.target/powerpc/vec_rotate-2.c: Rename to ...
+	* gcc.target/powerpc/vec-rotate-2.c: ... this.
+	* gcc.target/powerpc/vec_rotate-3.c: Rename to ...
+	* gcc.target/powerpc/vec-rotate-3.c: ... this.  Add -maltivec option.
+	* gcc.target/powerpc/vec_rotate-4.c: Rename to ...
+	* gcc.target/powerpc/vec-rotate-4.c: ... this.
+
 2019-08-09  Sam Tebbs <sam.tebbs@arm.com>
 
 	* lib/target-supports.exp
