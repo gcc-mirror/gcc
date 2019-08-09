@@ -1,3 +1,8 @@
+2019-08-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	*confit/arm/arm.md (addsi3_compare_op1): Add 16-bit thumb-2 variants.
+	(addsi3_compare_op2): Likewise.
+
 2019-08-09  Martin Liska  <mliska@suse.cz>
 
 	* alias.c (alias_ptr_types_compatible_p): Strengten

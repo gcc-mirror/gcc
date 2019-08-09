@@ -930,35 +930,49 @@
 (define_insn "*addsi3_compare_op1"
   [(set (reg:CC_C CC_REGNUM)
 	(compare:CC_C
-	 (plus:SI (match_operand:SI 1 "s_register_operand" "r,r,r")
-		  (match_operand:SI 2 "arm_add_operand" "I,L,r"))
+	 (plus:SI (match_operand:SI 1 "s_register_operand" "l,0,l,0,r,r,r")
+		  (match_operand:SI 2 "arm_add_operand" "lPd,Py,lPx,Pw,I,L,r"))
 	 (match_dup 1)))
-   (set (match_operand:SI 0 "s_register_operand" "=r,r,r")
+   (set (match_operand:SI 0 "s_register_operand" "=l,l,l,l,r,r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_32BIT"
   "@
    adds%?\\t%0, %1, %2
+   adds%?\\t%0, %0, %2
+   subs%?\\t%0, %1, #%n2
+   subs%?\\t%0, %0, #%n2
+   adds%?\\t%0, %1, %2
    subs%?\\t%0, %1, #%n2
    adds%?\\t%0, %1, %2"
   [(set_attr "conds" "set")
-   (set_attr "type"  "alus_imm,alus_imm,alus_sreg")]
+   (set_attr "arch" "t2,t2,t2,t2,*,*,*")
+   (set_attr "length" "2,2,2,2,4,4,4")
+   (set_attr "type"
+    "alus_sreg,alus_imm,alus_sreg,alus_imm,alus_imm,alus_imm,alus_sreg")]
 )
 
 (define_insn "*addsi3_compare_op2"
   [(set (reg:CC_C CC_REGNUM)
 	(compare:CC_C
-	 (plus:SI (match_operand:SI 1 "s_register_operand" "r,r,r")
-		  (match_operand:SI 2 "arm_add_operand" "I,L,r"))
+	 (plus:SI (match_operand:SI 1 "s_register_operand" "l,0,l,0,r,r,r")
+		  (match_operand:SI 2 "arm_add_operand" "lPd,Py,lPx,Pw,I,L,r"))
 	 (match_dup 2)))
-   (set (match_operand:SI 0 "s_register_operand" "=r,r,r")
+   (set (match_operand:SI 0 "s_register_operand" "=l,l,l,l,r,r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
   "TARGET_32BIT"
   "@
    adds%?\\t%0, %1, %2
+   adds%?\\t%0, %0, %2
+   subs%?\\t%0, %1, #%n2
+   subs%?\\t%0, %0, #%n2
+   adds%?\\t%0, %1, %2
    subs%?\\t%0, %1, #%n2
    adds%?\\t%0, %1, %2"
   [(set_attr "conds" "set")
-   (set_attr "type" "alus_imm,alus_imm,alus_sreg")]
+   (set_attr "arch" "t2,t2,t2,t2,*,*,*")
+   (set_attr "length" "2,2,2,2,4,4,4")
+   (set_attr "type"
+    "alus_sreg,alus_imm,alus_sreg,alus_imm,alus_imm,alus_imm,alus_sreg")]
 )
 
 (define_insn "*compare_addsi2_op0"
