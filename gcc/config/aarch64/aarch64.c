@@ -18546,19 +18546,21 @@ aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
   /* Sort the operands.  */
   qsort (temp_operands, 4, 2 * sizeof (rtx *), aarch64_ldrstr_offset_compare);
 
+  /* Copy the memory operands so that if we have to bail for some
+     reason the original addresses are unchanged.  */
   if (load)
     {
-      mem_1 = temp_operands[1];
-      mem_2 = temp_operands[3];
-      mem_3 = temp_operands[5];
-      mem_4 = temp_operands[7];
+      mem_1 = copy_rtx (temp_operands[1]);
+      mem_2 = copy_rtx (temp_operands[3]);
+      mem_3 = copy_rtx (temp_operands[5]);
+      mem_4 = copy_rtx (temp_operands[7]);
     }
   else
     {
-      mem_1 = temp_operands[0];
-      mem_2 = temp_operands[2];
-      mem_3 = temp_operands[4];
-      mem_4 = temp_operands[6];
+      mem_1 = copy_rtx (temp_operands[0]);
+      mem_2 = copy_rtx (temp_operands[2]);
+      mem_3 = copy_rtx (temp_operands[4]);
+      mem_4 = copy_rtx (temp_operands[6]);
       gcc_assert (code == UNKNOWN);
     }
 
