@@ -6,11 +6,11 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 5.2.0\n"
+"Project-Id-Version: cpplib 9.1-b20190203\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2019-02-01 23:01+0000\n"
-"PO-Revision-Date: 2015-10-08 13:27+0800\n"
-"Last-Translator: Wei-Lun Chao <bluebat@member.fsf.org>\n"
+"PO-Revision-Date: 2019-07-10 19:02+0800\n"
+"Last-Translator: pan93412 <pan93412@gmail.com>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"
@@ -18,6 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 2.2.1\n"
 
 #: charset.c:674
 #, c-format
@@ -137,7 +138,7 @@ msgstr "將逸出序列轉換到執行字元集"
 
 #: charset.c:1614
 msgid "missing open quote"
-msgstr ""
+msgstr "遺失左引號"
 
 #: charset.c:1829 charset.c:1893
 msgid "character constant too long for its type"
@@ -278,7 +279,7 @@ msgstr "# 後的「%s」不是一個正整數"
 #: directives.c:1087
 #, c-format
 msgid "file \"%s\" linemarker ignored due to incorrect nesting"
-msgstr ""
+msgstr "因為巢狀項目不正確，因此忽略了「%s」檔案的行標記 (linemarker)"
 
 #: directives.c:1147 directives.c:1149 directives.c:1151 directives.c:1737
 #, c-format
@@ -439,10 +440,8 @@ msgid "invalid prefix \"0b\" for floating constant"
 msgstr "無效的浮點常數前綴「0b」"
 
 #: expr.c:666
-#, fuzzy
-#| msgid "use of C++11 hexadecimal floating constant"
 msgid "use of C++17 hexadecimal floating constant"
-msgstr "使用 C++11 式的十六進位浮點常數"
+msgstr "使用 C++17 式的十六進位浮點常數"
 
 #: expr.c:669
 msgid "use of C99 hexadecimal floating constant"
@@ -534,10 +533,9 @@ msgid "imaginary number in preprocessor expression"
 msgstr "預先處理運算式中出現虛數"
 
 #: expr.c:1173
-#, fuzzy, c-format
-#| msgid "\"%s\" is not defined"
+#, c-format
 msgid "\"%s\" is not defined, evaluates to 0"
-msgstr "「%s」未定義"
+msgstr "「%s」未定義，判斷值為 0"
 
 #: expr.c:1186
 msgid "assertions are a GCC extension"
@@ -697,13 +695,11 @@ msgstr "「%.*s」不在 NFC 中"
 
 #: lex.c:1365
 msgid "__VA_OPT__ is not available until C++2a"
-msgstr ""
+msgstr "__VA_OPT__ 在 C++2a 之前皆不支援"
 
 #: lex.c:1372
-#, fuzzy
-#| msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
 msgid "__VA_OPT__ can only appear in the expansion of a C++2a variadic macro"
-msgstr "__VA_ARGS__ 只能出現在 C++11 可變參數巨集的展開中"
+msgstr "__VA_OPT__ 只能出現在 C++2a 可變參數巨集的展開中"
 
 #: lex.c:1403 lex.c:1495
 #, c-format
@@ -754,10 +750,8 @@ msgid "missing terminating %c character"
 msgstr "缺少終止 %c 字元"
 
 #: lex.c:2072
-#, fuzzy
-#| msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
 msgid "C++11 requires a space between string literal and macro"
-msgstr "無效的實字後綴；C++11 要求一個空白位於實字和字串巨集之間"
+msgstr "C++11 在字串常數和巨集中間需要一個空白"
 
 #: lex.c:2876 lex.c:2910
 msgid "C++ style comments are not allowed in ISO C90"
@@ -781,10 +775,8 @@ msgid "unspellable token %s"
 msgstr "無法拼出的識別字 %s"
 
 #: macro.c:94
-#, fuzzy
-#| msgid "'##' cannot appear at either end of a macro expansion"
 msgid "'##' cannot appear at either end of __VA_OPT__"
-msgstr "「##」不能出現在巨集展開的兩端"
+msgstr "「##」不能出現在 __VA_OPT__ 的尾端"
 
 #: macro.c:354
 #, c-format
@@ -868,26 +860,24 @@ msgstr "重複的巨集參數「%s」"
 #: macro.c:3141
 #, c-format
 msgid "expected parameter name, found \"%s\""
-msgstr ""
+msgstr "原先期望參數名稱，卻找到「%s」"
 
 #: macro.c:3142
 #, c-format
 msgid "expected ',' or ')', found \"%s\""
-msgstr ""
+msgstr "原先期望「,」或「)」，卻找到「%s」"
 
 #: macro.c:3143
 msgid "expected parameter name before end of line"
-msgstr ""
+msgstr "原先期望在行尾前有參數名稱"
 
 #: macro.c:3144
-#, fuzzy
-#| msgid "unexpected end of file after #line"
 msgid "expected ')' before end of line"
-msgstr "#line 之後未預期的檔案結束"
+msgstr "原先期望在行尾前有「)」"
 
 #: macro.c:3145
 msgid "expected ')' after \"...\""
-msgstr ""
+msgstr "原先期望「...」後有「)」"
 
 #: macro.c:3202
 msgid "anonymous variadic macros were introduced in C++11"
