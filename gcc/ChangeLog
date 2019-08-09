@@ -1,3 +1,12 @@
+2020-02-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backport from mainline
+	2019-08-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/90313
+	* tree-tailcall.c (find_tail_calls): Reject calls that might
+	read from an escaped RESULT_DECL.
+
 2020-02-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92003
