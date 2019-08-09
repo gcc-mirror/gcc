@@ -1,4 +1,4 @@
-/* { dg-options "-O3" } */
+/* { dg-options "-O3 -maltivec" } */
 /* { dg-require-effective-target powerpc_altivec_ok } */
 
 /* Check vectorizer can exploit vector rotation instructions on Power, mainly
