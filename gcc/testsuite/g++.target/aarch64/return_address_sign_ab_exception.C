@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "--save-temps" } */
+/* { dg-require-effective-target arm_v8_3a_bkey_directive } */
 
 __attribute__((target("branch-protection=pac-ret+leaf")))
 int foo_a () {
