@@ -1,3 +1,8 @@
+2019-09-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* reload1.c (finish_spills): Do not check ira_conflicts_p when
+	handling spilled pseudos.
+
 2019-09-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/91386

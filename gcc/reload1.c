@@ -4225,13 +4225,8 @@ finish_spills (int global)
       spill_reg_order[i] = -1;
 
   EXECUTE_IF_SET_IN_REG_SET (&spilled_pseudos, FIRST_PSEUDO_REGISTER, i, rsi)
-    if (! ira_conflicts_p || reg_renumber[i] >= 0)
+    if (reg_renumber[i] >= 0)
       {
-	/* Record the current hard register the pseudo is allocated to
-	   in pseudo_previous_regs so we avoid reallocating it to the
-	   same hard reg in a later pass.  */
-	gcc_assert (reg_renumber[i] >= 0);
-
 	SET_HARD_REG_BIT (pseudo_previous_regs[i], reg_renumber[i]);
 	/* Mark it as no longer having a hard register home.  */
 	reg_renumber[i] = -1;
