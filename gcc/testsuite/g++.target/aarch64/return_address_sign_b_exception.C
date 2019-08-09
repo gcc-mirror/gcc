@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-mbranch-protection=pac-ret+leaf+b-key --save-temps" } */
+/* { dg-require-effective-target arm_v8_3a_bkey_directive } */
 
 int foo () {
   throw 22;

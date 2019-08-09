@@ -9463,6 +9463,16 @@ proc check_effective_target_arm_v8_3a_complex_neon_hw { } {
     } [add_options_for_arm_v8_3a_complex_neon ""]]
 }
 
+# Return 1 if the assembler supports assembling the Armv8.3 pointer authentication B key directive
+proc check_effective_target_arm_v8_3a_bkey_directive { } {
+	return [check_no_compiler_messages cet object {
+		int main(void) {
+			asm (".cfi_b_key_frame");
+			return 0;
+		}
+	}]
+}
+
 # Returns 1 if the target is using glibc, 0 otherwise.
 
 proc check_effective_target_glibc { } {
