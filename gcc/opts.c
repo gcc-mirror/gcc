@@ -2825,6 +2825,7 @@ common_handle_option (struct gcc_options *opts,
     case OPT_flto_:
       if (strcmp (arg, "none") != 0
 	  && strcmp (arg, "jobserver") != 0
+	  && strcmp (arg, "auto") != 0
 	  && atoi (arg) == 0)
 	error_at (loc,
 		  "unrecognized argument to %<-flto=%> option: %qs", arg);

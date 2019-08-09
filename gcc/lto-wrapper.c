@@ -1252,8 +1252,7 @@ run_gcc (unsigned argc, char *argv[])
   char *list_option_full = NULL;
   const char *linker_output = NULL;
   const char *collect_gcc, *collect_gcc_options;
-  /* Make linking parallel by default.  */
-  int parallel = 1;
+  int parallel = 0;
   int jobserver = 0;
   int auto_parallel = 0;
   bool no_partition = false;
@@ -1380,6 +1379,11 @@ run_gcc (unsigned argc, char *argv[])
 	case OPT_flto_:
 	  if (strcmp (option->arg, "jobserver") == 0)
 	    jobserver = 1;
+	  else if (strcmp (option->arg, "auto") == 0)
+	    {
+	      parallel = 1;
+	      auto_parallel = 1;
+	    }
 	  else
 	    {
 	      parallel = atoi (option->arg);
@@ -1423,14 +1427,8 @@ run_gcc (unsigned argc, char *argv[])
       auto_parallel = 0;
       parallel = 0;
     }
-  else if (!jobserver && parallel)
-    {
-      /* If there's no explicit usage of jobserver and
-	 parallel is enabled, then automatically detect
-	 jobserver or number of cores.  */
-      auto_parallel = 1;
-      jobserver = jobserver_active_p ();
-    }
+  else if (!jobserver && auto_parallel)
+    jobserver = jobserver_active_p ();
 
   if (linker_output)
     {
