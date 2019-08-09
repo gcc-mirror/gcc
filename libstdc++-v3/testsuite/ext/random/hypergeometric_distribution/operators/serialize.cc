@@ -38,6 +38,7 @@ test01()
   str << u;
 
   str >> v;
+  VERIFY( u == v );
 }
 
 int

@@ -1,3 +1,22 @@
+2019-08-09  Corentin Gay  <gay@adacore.com>
+
+	* testsuite/ext/random/beta_distribution/operators/serialize.cc,
+	testsuite/ext/random/hypergeometric_distribution/operators/serialize.cc,
+	testsuite/ext/random/normal_mv_distribution/operators/serialize.cc,
+	testsuite/ext/random/triangular_distribution/operators/serialize.cc,
+	testsuite/ext/random/von_mises_distribution/operators/serialize.cc:
+	Add call to `VERIFY`.
+
+2019-08-09  Alexandre Oliva <oliva@adacore.com>
+
+	* include/ext/random
+	(normal_mv_distribution::param_type::param_type): New private
+	ctor taking a decomposed varcov matrix, for use by...
+	(operator>>): ... this, befriended.
+	* include/ext/random.tcc (operator>>): Use it.
+	(normal_mv_distribution::param_type::_M_init_lower): Adjust
+	member function name in exception message.
+
 2019-08-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	P0325R4 to_array from LFTS with updates

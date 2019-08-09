@@ -23,6 +23,7 @@
 
 #include <ext/random>
 #include <sstream>
+#include <testsuite_hooks.h>
 
 void
 test01()
@@ -35,6 +36,7 @@ test01()
   str << u;
 
   str >> v;
+  VERIFY( u == v );
 }
 
 int main()
