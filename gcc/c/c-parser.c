@@ -11898,15 +11898,8 @@ static void
 check_no_duplicate_clause (tree clauses, enum omp_clause_code code,
 			   const char *name)
 {
-  tree c;
-
-  for (c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
-    if (OMP_CLAUSE_CODE (c) == code)
-      {
-	location_t loc = OMP_CLAUSE_LOCATION (c);
-	error_at (loc, "too many %qs clauses", name);
-	break;
-      }
+  if (tree c = omp_find_clause (clauses, code))
+    error_at (OMP_CLAUSE_LOCATION (c), "too many %qs clauses", name);
 }
 
 /* OpenACC 2.0
@@ -12616,8 +12609,8 @@ c_parser_omp_clause_if (c_parser *parser, tree list, bool is_omp)
 	      case OMP_TARGET_DATA: p = "target data"; break;
 	      case OMP_TARGET: p = "target"; break;
 	      case OMP_TARGET_UPDATE: p = "target update"; break;
-	      case OMP_TARGET_ENTER_DATA: p = "enter data"; break;
-	      case OMP_TARGET_EXIT_DATA: p = "exit data"; break;
+	      case OMP_TARGET_ENTER_DATA: p = "target enter data"; break;
+	      case OMP_TARGET_EXIT_DATA: p = "target exit data"; break;
 	      default: gcc_unreachable ();
 	      }
 	    error_at (location, "too many %<if%> clauses with %qs modifier",
@@ -14856,6 +14849,7 @@ c_parser_omp_clause_proc_bind (c_parser *parser, tree list)
   else
     goto invalid_kind;
 
+  check_no_duplicate_clause (list, OMP_CLAUSE_PROC_BIND, "proc_bind");
   c_parser_consume_token (parser);
   parens.skip_until_found_close (parser);
   c = build_omp_clause (clause_loc, OMP_CLAUSE_PROC_BIND);
