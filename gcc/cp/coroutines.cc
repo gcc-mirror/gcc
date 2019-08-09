@@ -2473,8 +2473,13 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
   ramp_label = build_stmt (fn_start, LABEL_EXPR, ramp_label);
   add_stmt (ramp_label);
 
-  /* The decl_expr for the coro frame pointer.  */
+  /* The decl_expr for the coro frame pointer, initialise to zero so that we
+     can pass it to the IFN_CO_FRAME (since there's no way to pass a type,
+     directly apparently).  This avoids a "used unitialised" warning.  */
   tree r = build_stmt (fn_start, DECL_EXPR, coro_fp);
+  tree zeroinit = build1 (CONVERT_EXPR, coro_frame_ptr, integer_zero_node);
+  r = build2 (INIT_EXPR, TREE_TYPE (coro_fp), coro_fp, zeroinit);
+  r = coro_build_cvt_void_expr_stmt (r, fn_start);
   add_stmt (r);
 
   /* We are going to copy the behaviour of clang w.r.t to failed allocation
@@ -2492,7 +2497,9 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 			   fn_start, false /*musthave*/);
 
   /* Allocate the frame.  This is a place-holder which we might alter or lower
-     in some special way after the full contents of the frame are known.  */
+     in some special way after the full contents of the frame are known.  As
+     noted above we pass the frame pointer, so that the internal function can
+     get access to the frame type info.  */
   tree resizeable
     = build_call_expr_internal_loc (fn_start, IFN_CO_FRAME, size_type_node, 2,
 				    TYPE_SIZE_UNIT (coro_frame_type), coro_fp);
