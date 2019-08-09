@@ -1,3 +1,8 @@
+2019-08-09  Martin Liska  <mliska@suse.cz>
+
+	* alias.c (alias_ptr_types_compatible_p): Strengten
+	type comparison in LTO mode.
+
 2019-08-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/90313
