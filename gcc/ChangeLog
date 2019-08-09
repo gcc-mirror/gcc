@@ -1,5 +1,10 @@
 2019-08-09  Martin Liska  <mliska@suse.cz>
 
+	* opts.c (common_handle_option): Error for an invalid argument
+	to -flto=.
+
+2019-08-09  Martin Liska  <mliska@suse.cz>
+
 	* ipa-icf.c (sem_function::merge): Define AUTO_DUMP_SCOPE and
 	use dump_printf to report optimization.
 	(sem_variable::merge): Likwise.
