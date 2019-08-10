@@ -1,6 +1,13 @@
 2019-08-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (struct __coro_aw_data): Reorder await state
+	vars struct and update comments.
+	(expand_co_awaits): Likewise.
+
+2019-08-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* coroutines.cc (transform_local_var_uses): Remove dead instances
 	of local variables copied to the frame.
 

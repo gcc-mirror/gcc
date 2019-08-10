@@ -865,13 +865,13 @@ expand_co_returns (tree *fnbody, tree promise_proxy, tree promise, tree fs_label
 
 /* Support for expansion of co_await statements.  */
 struct __coro_aw_data {
-  tree actor_fn; /* Decl for context */
-  tree coro_fp;
-  tree resume_idx;
-  tree cleanup;
-  tree cororet;
-  tree self_h;
-  unsigned index; // resume point.
+  tree actor_fn;   /* Decl for context.  */
+  tree coro_fp;    /* Frame pointer var.  */
+  tree resume_idx; /* This is the index var in the frame.  */
+  tree self_h;     /* This is a handle to the current coro (frame var).  */
+  tree cleanup;    /* This is where to go once we complete local destroy.  */
+  tree cororet;    /* This is where to go if we suspend.  */
+  unsigned index;  /* This is our current resume index.  */
 };
 
 static tree
@@ -897,11 +897,6 @@ co_await_find_in_subtree (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED,
    When we leave:
    the IFN_CO_YIELD carries the labels of the resume and destroy
    branch targets for this await.
-
-TODO :
-  This doesn't check the return type await_suspend, it assumes it to be void.
-  This doesn't deal with the return value from await_resume, it assumes it to
-  be void.
 
 */
 
@@ -1192,8 +1187,8 @@ static tree
 expand_co_awaits (tree fn, tree *fnbody, tree coro_fp, tree resume_idx,
 		  tree cleanup, tree cororet, tree self_h)
 {
-  struct __coro_aw_data data = {fn, coro_fp, resume_idx,
-				cleanup, cororet, self_h, 2};
+  struct __coro_aw_data data = {fn, coro_fp, resume_idx, self_h,
+				cleanup, cororet, 2};
   cp_walk_tree (fnbody, co_await_expander, &data, NULL);
   return *fnbody;
 }
