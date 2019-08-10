@@ -1,3 +1,14 @@
+2019-08-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.dg/boz_8.f90: Adjust error messages.
+	* gfortran.dg/nan_4.f90: Ditto.
+	* gfortran.dg/boz_1.f90: Add -fallow-invalid-boz to dg-options,
+	and test for warnings.
+	* gfortran.dg/boz_3.f90: Ditto.
+	* gfortran.dg/boz_4.f90: Ditto.
+	* gfortran.dg/dec_structure_6.f90: Ditto.
+	* gfortran.dg/ibits.f90: Ditto.
+
 2019-08-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/91238

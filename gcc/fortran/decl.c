@@ -579,9 +579,10 @@ match_old_style_init (const char *name)
 	  && nd->var->expr->ts.type != BT_REAL
 	  && nd->value->expr->ts.type == BT_BOZ)
 	{
-	  gfc_error ("Mismatch in variable type and BOZ literal constant "
-		     "at %L in an old-style initialization",
-		     &nd->value->expr->where);
+	  gfc_error ("BOZ literal constant near %L cannot be assigned to "
+		     "a %qs variable in an old-style initialization",
+		     &nd->value->expr->where,
+		     gfc_typename (&nd->value->expr->ts));
 	  return MATCH_ERROR;
 	}
     }

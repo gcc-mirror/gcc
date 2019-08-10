@@ -3641,29 +3641,44 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform,
       && !gfc_check_conformance (lvalue, rvalue, "array assignment"))
     return false;
 
-  if (rvalue->ts.type == BT_BOZ && lvalue->ts.type != BT_INTEGER
-      && lvalue->symtree->n.sym->attr.data
-      && !gfc_notify_std (GFC_STD_GNU, "BOZ literal at %L used to "
-			  "initialize non-integer variable %qs",
-			  &rvalue->where, lvalue->symtree->n.sym->name))
-    return false;
-  else if (rvalue->ts.type == BT_BOZ && !lvalue->symtree->n.sym->attr.data
-      && !gfc_notify_std (GFC_STD_GNU, "BOZ literal at %L outside "
-			  "a DATA statement and outside INT/REAL/DBLE/CMPLX",
-			  &rvalue->where))
-    return false;
-
   /* Handle the case of a BOZ literal on the RHS.  */
   if (rvalue->ts.type == BT_BOZ)
     {
-      /* FIXME BOZ.  Need gfc_invalid_boz() here?.  */
+      if (lvalue->symtree->n.sym->attr.data)
+	{
+	  if (lvalue->ts.type == BT_INTEGER
+	      && gfc_boz2int (rvalue, lvalue->ts.kind))
+	    return true;
+
+	  if (lvalue->ts.type == BT_REAL
+	      && gfc_boz2real (rvalue, lvalue->ts.kind))
+	    {
+	      if (gfc_invalid_boz ("BOZ literal constant near %L cannot "
+				   "be assigned to a REAL variable",
+				   &rvalue->where))
+		return false;
+	      return true;
+	    }
+	}
+
+      if (!lvalue->symtree->n.sym->attr.data
+	  && gfc_invalid_boz ("BOZ literal constant at %L is neither a "
+			      "data-stmt-constant nor an actual argument to "
+			      "INT, REAL, DBLE, or CMPLX intrinsic function",
+			      &rvalue->where))
+	return false;
+
       if (lvalue->ts.type == BT_INTEGER
 	  && gfc_boz2int (rvalue, lvalue->ts.kind))
 	return true;
+
       if (lvalue->ts.type == BT_REAL
 	  && gfc_boz2real (rvalue, lvalue->ts.kind))
 	return true;
 
+      gfc_error ("BOZ literal constant near %L cannot be assigned to a "
+		 "%qs variable", &rvalue->where, gfc_typename (&lvalue->ts));
+ 
       return false;
     }
 

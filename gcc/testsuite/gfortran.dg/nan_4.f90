@@ -9,8 +9,8 @@
 !
 program test
   implicit none
-  real(4), parameter :: r0 = z'FFFFFFFF'
+  real(4), parameter :: r0 = z'FFFFFFFF' ! { dg-warning "BOZ literal constant" }
   real(4) r
-  data r/z'FFFFFFFF'/
-  r = z'FFFFFFFF'       ! { dg-warning "neither a DATA statement value" }
+  data r/z'FFFFFFFF'/   ! { dg-warning "BOZ literal constant" }
+  r = z'FFFFFFFF'       ! { dg-warning "BOZ literal constant" }
 end program test
