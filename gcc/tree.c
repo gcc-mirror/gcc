@@ -332,6 +332,7 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_PROC_BIND  */
   1, /* OMP_CLAUSE_SAFELEN  */
   1, /* OMP_CLAUSE_SIMDLEN  */
+  0, /* OMP_CLAUSE_DEVICE_TYPE  */
   0, /* OMP_CLAUSE_FOR  */
   0, /* OMP_CLAUSE_PARALLEL  */
   0, /* OMP_CLAUSE_SECTIONS  */
@@ -416,6 +417,7 @@ const char * const omp_clause_code_name[] =
   "proc_bind",
   "safelen",
   "simdlen",
+  "device_type",
   "for",
   "parallel",
   "sections",
@@ -12404,6 +12406,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_MERGEABLE:
 	case OMP_CLAUSE_PROC_BIND:
+	case OMP_CLAUSE_DEVICE_TYPE:
 	case OMP_CLAUSE_INBRANCH:
 	case OMP_CLAUSE_NOTINBRANCH:
 	case OMP_CLAUSE_FOR:

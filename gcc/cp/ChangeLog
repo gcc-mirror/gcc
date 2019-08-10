@@ -1,3 +1,14 @@
+2019-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_name): Parse device_type.
+	(cp_parser_omp_clause_device_type): New function.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_DEVICE_TYPE.
+	(OMP_DECLARE_TARGET_CLAUSE_MASK): Add PRAGMA_OMP_CLAUSE_DEVICE_TYPE.
+	(cp_parser_omp_declare_target): Handle device_type clauses.  Remove
+	diagnostics for declare target with clauses nested in clause-less
+	declare target declaration-definition-seq.
+	* semantics.c (finish_omp_clauses): Handle OMP_CLAUSE_DEVICE_TYPE.
+
 2019-08-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (check_no_duplicate_clause): Simplify using

@@ -415,6 +415,9 @@ enum omp_clause_code {
   /* OpenMP clause: simdlen (constant-integer-expression).  */
   OMP_CLAUSE_SIMDLEN,
 
+  /* OpenMP clause: device_type ({host,nohost,any}).  */
+  OMP_CLAUSE_DEVICE_TYPE,
+
   /* OpenMP clause: for.  */
   OMP_CLAUSE_FOR,
 
@@ -1468,6 +1471,13 @@ enum omp_clause_proc_bind_kind
   OMP_CLAUSE_PROC_BIND_LAST
 };
 
+enum omp_clause_device_type_kind
+{
+  OMP_CLAUSE_DEVICE_TYPE_HOST = 1,
+  OMP_CLAUSE_DEVICE_TYPE_NOHOST = 2,
+  OMP_CLAUSE_DEVICE_TYPE_ANY = 3
+};
+
 enum omp_clause_linear_kind
 {
   OMP_CLAUSE_LINEAR_DEFAULT,
@@ -1544,6 +1554,7 @@ struct GTY(()) tree_omp_clause {
     enum tree_code                 if_modifier;
     enum omp_clause_defaultmap_kind defaultmap_kind;
     enum omp_clause_bind_kind      bind_kind;
+    enum omp_clause_device_type_kind device_type_kind;
     /* The dimension a OMP_CLAUSE__GRIDDIM_ clause of a gridified target
        construct describes.  */
     unsigned int		   dimension;
