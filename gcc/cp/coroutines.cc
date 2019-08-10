@@ -1377,6 +1377,21 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
 	}
       cp_walk_tree (&BIND_EXPR_BODY (*stmt), transform_local_var_uses,
 		    d, NULL);
+      /* Now we have processed and removed references to the original vars,
+	 we can drop those from the bind.  */
+      for (tree *pvar = &BIND_EXPR_VARS (*stmt); *pvar != NULL; )
+	{
+	  bool existed;
+	  __local_var_info_t &local_var =
+	  lvd->local_var_uses->get_or_insert (*pvar, &existed);
+	  gcc_checking_assert (existed);
+
+	  if (local_var.field_id == NULL_TREE)
+	    pvar = &DECL_CHAIN (*pvar); /* Wasn't used.  */
+
+	  *pvar = DECL_CHAIN (*pvar); // discard this one, we replaced it.
+	}
+
       *do_subtree = 0; /* We've done the body already.  */
       return NULL_TREE;
     }

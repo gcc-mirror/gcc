@@ -1,5 +1,11 @@
 2019-08-10  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* coroutines.cc (transform_local_var_uses): Remove dead instances
+	of local variables copied to the frame.
+
+2019-08-10  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/cp/ChangeLog:
 	* coroutines.cc (transform_local_var_uses): Initialise frame
 	copies of local vars directly.
