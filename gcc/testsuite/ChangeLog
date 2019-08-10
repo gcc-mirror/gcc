@@ -1,5 +1,10 @@
 2019-08-10  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/declare-target-2.c: Don't expect error for
+	declare target with clauses in between declare target without clauses
+	and end declare target.
+	* c-c++-common/gomp/declare-target-4.c: New test.
+
 	PR target/91408
 	* gcc.target/i386/pr91408.c: New test.
 

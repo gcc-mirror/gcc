@@ -1,5 +1,14 @@
 2019-08-10  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_DEVICE_TYPE.
+	(enum omp_clause_device_type_kind): New enum.
+	(struct tree_omp_clause): Add subcode.device_type_kind.
+	* tree.h (OMP_CLAUSE_DEVICE_TYPE_KIND): Define.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name): Add entries
+	for device_type clause.
+	(walk_tree_1): Handle OMP_CLAUSE_DEVICE_TYPE.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+
 	PR target/91408
 	* config/i386/mmx.md (usadv8qi): Use register_operand instead of
 	vector_operand.
