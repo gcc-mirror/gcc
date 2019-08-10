@@ -1,3 +1,23 @@
+2019-08-10  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* decl.c (match_old_style_init): Use a clearer error message.
+	* expr.c (gfc_check_assign): Update BOZ checking to provide a stricter
+	adherence to the Fortran standard.  Use gfc_invalid_boz () to
+	relax errors into warnings.
+	* gfortran.h (gfc_isym_id): Add new ids GFC_ISYM_DFLOAT,
+	GFC_ISYM_FLOAT, GFC_ISYM_REALPART, and GFC_ISYM_SNGL
+	* intrinsic.c (add_functions): Use new ids to split REAL generic into
+	REAL, FLOAT, DFLOAT, SNGL, and REALPART generics.
+	(gfc_intrinsic_func_interface): Allow new intrinsics in an
+	initialization expression
+	* resolve.c (resolve_operator): Deal with BOZ as operands.
+        Use gfc_invalid_boz to allow for errors or warnings via the
+	-fallow-invalid-boz option.  A BOZ cannot be an operand to an
+	unary operator.  Both operands of a binary operator cannot be BOZ.
+        For binary operators, convert a BOZ operand into the type and
+	kind of the other operand for REAL or INTEGER operand.
+	* trans-intrinsic.c: Use new ids to cause conversions to happen.
+
 2019-08-06  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91359

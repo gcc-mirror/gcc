@@ -10,8 +10,9 @@
 !
 real :: r
 integer :: i
-data i/z'111'/, r/z'4455'/ ! { dg-error "BOZ literal at .1. used to initialize non-integer variable 'r'" }
-r = z'FFFF' ! { dg-error "a DATA statement value" }
-i = z'4455' ! { dg-error "a DATA statement value" }
+data i/z'111'/
+data r/z'4455'/   ! { dg-error "BOZ literal constant" }
+r = z'FFFF'       ! { dg-error "BOZ literal constant" }
+i = z'4455'       ! { dg-error "BOZ literal constant" }
 r = real(z'FFFFFFFFF')
 end

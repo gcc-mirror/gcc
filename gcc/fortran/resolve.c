@@ -3930,6 +3930,14 @@ resolve_operator (gfc_expr *e)
     case INTRINSIC_PARENTHESES:
       if (!gfc_resolve_expr (e->value.op.op1))
 	return false;
+      if (e->value.op.op1
+	  && e->value.op.op1->ts.type == BT_BOZ && !e->value.op.op2)
+	{
+	  gfc_error ("BOZ literal constant at %L cannot be an operand of "
+		     "unary operator %qs", &e->value.op.op1->where,
+		     gfc_op2string (e->value.op.op));
+	  return false;
+	}
       break;
     }
 
@@ -3938,6 +3946,16 @@ resolve_operator (gfc_expr *e)
   op1 = e->value.op.op1;
   op2 = e->value.op.op2;
   dual_locus_error = false;
+
+  /* op1 and op2 cannot both be BOZ.  */
+  if (op1 && op1->ts.type == BT_BOZ
+      && op2 && op2->ts.type == BT_BOZ)
+    {
+      gfc_error ("Operands at %L and %L cannot appear as operands of "
+		 "binary operator %qs", &op1->where, &op2->where,
+		 gfc_op2string (e->value.op.op));
+      return false;
+    }
 
   if ((op1 && op1->expr_type == EXPR_NULL)
       || (op2 && op2->expr_type == EXPR_NULL))
@@ -4090,6 +4108,36 @@ resolve_operator (gfc_expr *e)
 	  e->ts.type = BT_LOGICAL;
 	  e->ts.kind = gfc_default_logical_kind;
 	  break;
+	}
+
+      /* If op1 is BOZ, then op2 is not!.  Try to convert to type of op2.  */
+      if (op1->ts.type == BT_BOZ)
+	{
+	  if (gfc_invalid_boz ("BOZ literal constant near %L cannot appear as "
+				"an operand of a relational operator",
+				&op1->where))
+	    return false;
+
+	  if (op2->ts.type == BT_INTEGER && !gfc_boz2int (op1, op2->ts.kind))
+	    return false;
+
+	  if (op2->ts.type == BT_REAL && !gfc_boz2real (op1, op2->ts.kind))
+	    return false;
+	}
+
+      /* If op2 is BOZ, then op1 is not!.  Try to convert to type of op2. */
+      if (op2->ts.type == BT_BOZ)
+	{
+	  if (gfc_invalid_boz ("BOZ literal constant near %L cannot appear as "
+				"an operand of a relational operator",
+				&op2->where))
+	    return false;
+
+	  if (op1->ts.type == BT_INTEGER && !gfc_boz2int (op2, op1->ts.kind))
+	    return false;
+
+	  if (op1->ts.type == BT_REAL && !gfc_boz2real (op2, op1->ts.kind))
+	    return false;
 	}
 
       if (gfc_numeric_ts (&op1->ts) && gfc_numeric_ts (&op2->ts))
@@ -6431,6 +6479,7 @@ resolve_compcall (gfc_expr* e, const char **name)
 		 e->value.compcall.name, &e->where);
       return false;
     }
+
 
   /* These must not be assign-calls!  */
   gcc_assert (!e->value.compcall.assign);
