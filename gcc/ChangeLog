@@ -1,3 +1,9 @@
+2019-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91408
+	* config/i386/mmx.md (usadv8qi): Use register_operand instead of
+	vector_operand.
+
 2019-09-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* reload1.c (finish_spills): Do not check ira_conflicts_p when
