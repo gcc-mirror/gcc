@@ -1,3 +1,8 @@
+2019-08-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91408
+	* gcc.target/i386/pr91408.c: New test.
+
 2019-08-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* gcc.target/powerpc/vec_rotate-1.c: Rename to ...
