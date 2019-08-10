@@ -1,11 +1,16 @@
+2019-06-25  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* brig-lang.c (brig_build_c_type_nodes): Accept "__intN__"
+	format of "__intN" types for SIZE_TYPE.
+
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
-        * brigfrontend/brig-control-handler.cc
-        (brig_directive_control_handler::operator): Remove trailing newline
-        from a diagnostic.
-        * brigfrontend/brig-module-handler.cc
-        (brig_directive_module_handler::operator): Remove a duplicated space
-        from a diagnostic.
+	* brigfrontend/brig-control-handler.cc
+	(brig_directive_control_handler::operator): Remove trailing newline
+	from a diagnostic.
+	* brigfrontend/brig-module-handler.cc
+	(brig_directive_module_handler::operator): Remove a duplicated space
+	from a diagnostic.
 
 2019-01-01  Jakub Jelinek  <jakub@redhat.com>
 
@@ -18,7 +23,7 @@
 2018-07-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/82063
-	* brig/brig-lang.c (brig_langhook_handle_option): Change function
+	* brig-lang.c (brig_langhook_handle_option): Change function
 	argument to HOST_WIDE_INT.
 
 2018-07-04  Martin Jambor  <mjambor@suse.cz>
@@ -46,7 +51,7 @@
 
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
-	* brig/brigfrontend/brig-basic-inst-handler.cc:  Fix handling of NOPs.
+	* brigfrontend/brig-basic-inst-handler.cc: Fix handling of NOPs.
 
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
@@ -75,52 +80,52 @@
 	- add qualifiers to generated function parameters.
 	Const and restrict on the hidden local/private pointers,
 	the arg buffer and the context pointer help some optimizations.
-	* brig/brigfrontend/brig-basic-inst-handler.cc: See above.
-	* brig/brigfrontend/brig-branch-inst-handler.cc: See above.
-	* brig/brigfrontend/brig-cmp-inst-handler.cc: See above.
-	* brig/brigfrontend/brig-code-entry-handler.cc: See above.
-	* brig/brigfrontend/brig-code-entry-handler.h: See above.
-	* brig/brigfrontend/brig-control-handler.cc: See above.
-	* brig/brigfrontend/brig-cvt-inst-handler.cc: See above.
-	* brig/brigfrontend/brig-function-handler.cc: See above.
-	* brig/brigfrontend/brig-function.cc: See above.
-	* brig/brigfrontend/brig-function.h: See above.
-	* brig/brigfrontend/brig-label-handler.cc: See above.
-	* brig/brigfrontend/brig-lane-inst-handler.cc: See above.
-	* brig/brigfrontend/brig-mem-inst-handler.cc: See above.
-	* brig/brigfrontend/phsa.h: See above.
-	* brig/lang.opt: See above.
+	* brigfrontend/brig-basic-inst-handler.cc: See above.
+	* brigfrontend/brig-branch-inst-handler.cc: See above.
+	* brigfrontend/brig-cmp-inst-handler.cc: See above.
+	* brigfrontend/brig-code-entry-handler.cc: See above.
+	* brigfrontend/brig-code-entry-handler.h: See above.
+	* brigfrontend/brig-control-handler.cc: See above.
+	* brigfrontend/brig-cvt-inst-handler.cc: See above.
+	* brigfrontend/brig-function-handler.cc: See above.
+	* brigfrontend/brig-function.cc: See above.
+	* brigfrontend/brig-function.h: See above.
+	* brigfrontend/brig-label-handler.cc: See above.
+	* brigfrontend/brig-lane-inst-handler.cc: See above.
+	* brigfrontend/brig-mem-inst-handler.cc: See above.
+	* brigfrontend/phsa.h: See above.
+	* lang.opt: See above.
 
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
-	* brig/brigfrontend/brig-function-handler.cc: Skip multiple forward
+	* brigfrontend/brig-function-handler.cc: Skip multiple forward
 	declarations of the same function.
 
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
-	* brig/brig-lang.c: Do not allow optimizations based on known C
+	* brig-lang.c: Do not allow optimizations based on known C
 	builtins.
 
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
-	* brig/brig-lang.c: Allow controlling strict aliasing from
+	* brig-lang.c: Allow controlling strict aliasing from
 	cmd line.
 
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
-	* brig/brigfrontend/brig-code-entry-handler.cc: The modulo in
+	* brigfrontend/brig-code-entry-handler.cc: The modulo in
 	ID computation should not be needed.
 
 2018-05-04  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
-	* brig/brig-lang.c: Add support for whole program
+	* brig-lang.c: Add support for whole program
 	optimizations by marking the kernels externally visible.
-	* brig/brigfrontend/brig-branch-inst-handler.cc: See above.
-	* brig/brigfrontend/brig-function-handler.cc: See above.
-	* brig/brigfrontend/brig-function.cc: See above.
-	* brig/brigfrontend/brig-to-generic.cc: See above.
-	* brig/brigfrontend/brig-to-generic.h: See above.
-	* brig/brigfrontend/brig-variable-handler.h: See above.
+	* brigfrontend/brig-branch-inst-handler.cc: See above.
+	* brigfrontend/brig-function-handler.cc: See above.
+	* brigfrontend/brig-function.cc: See above.
+	* brigfrontend/brig-to-generic.cc: See above.
+	* brigfrontend/brig-to-generic.h: See above.
+	* brigfrontend/brig-variable-handler.h: See above.
 
 2018-01-03  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
@@ -217,7 +222,7 @@
 	can be used to patch away BRIG entries at the binary level.
 	Also add extra error detection for zeroed regions: make sure
 	the byteCount field is never zero.
-	* brig/brigfrontend/phsa.h: Added a new error prefix for
+	* brigfrontend/phsa.h: Added a new error prefix for
 	errors which are due to corrupted BRIG modules.
 
 2017-10-09  Henry Linjamäki  <henry.linjamaki@parmance.com>

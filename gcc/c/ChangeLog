@@ -76,7 +76,7 @@
 	* c-decl.c (finish_function): Check targetm.warn_func_return
 	before issuing a -Wreturn-type warning.
 
-2019-07-12  Alexandre Oliva <oliva@adacore.com>
+2019-07-12  Alexandre Oliva  <oliva@adacore.com>
 
 	* gimple-parser.c (c_parser_gimple_try_stmt): New.
 	(c_parser_compound_statement): Call it.
@@ -117,6 +117,12 @@
 	* gimple-parser.c (c_parser_gimple_postfix_expression): Handle
 	_Literal (char *) &"foo" for address literals pointing to
 	STRING_CSTs.
+
+2019-06-25  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* c-parser.c (c_parse_init): Create keyword for "__intN__" type.
+	* c-decl.c (declspecs_add_type): Don't pedwarn about "__intN" ISO
+	C incompatibility if alternate "__intN__" form is used.
 
 2019-06-24  Martin Sebor  <msebor@redhat.com>
 
@@ -166,17 +172,17 @@
 
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
-        * c-decl.c (start_decl): Quote keywords, operators, and
-        types in diagnostics.
-        (finish_decl): Same.
-        * c-parser.c (c_parser_asm_statement): Same.
-        (c_parser_conditional_expression): Same.
-        (c_parser_transaction_cancel): Same.
-        * c-typeck.c (c_common_type): Same.
-        (build_conditional_expr): Same.
-        (digest_init): Same.
-        (process_init_element): Same.
-        (build_binary_op): Same.
+	* c-decl.c (start_decl): Quote keywords, operators, and
+	types in diagnostics.
+	(finish_decl): Same.
+	* c-parser.c (c_parser_asm_statement): Same.
+	(c_parser_conditional_expression): Same.
+	(c_parser_transaction_cancel): Same.
+	* c-typeck.c (c_common_type): Same.
+	(build_conditional_expr): Same.
+	(digest_init): Same.
+	(process_init_element): Same.
+	(build_binary_op): Same.
 
 2019-05-17  Richard Biener  <rguenther@suse.de>
 
@@ -335,7 +341,7 @@
 	(c_parser_oacc_simple_clause): Replace parser with loc formal
 	parameter.  Adjust all users.
 
-2019-02-19  Chung-Lin Tang <cltang@codesourcery.com>
+2019-02-19  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR c/87924
 	* c-parser.c (c_parser_oacc_clause_wait): Add representation of wait
@@ -715,7 +721,7 @@
 
 	PR c/87347
 	* c-parser.c (warn_for_abs): Bail out if TYPE_ARG_TYPES is NULL.  Fix
-        comment.
+	comment.
 
 2018-09-17  David Malcolm  <dmalcolm@redhat.com>
 
@@ -807,7 +813,7 @@
 	(build_binary_op): Use it when calling binary_op_error.
 
 2018-08-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
-	
+
 	* c-decl.c (start_decl): Do not warn if variables is named as main
 	and is a local variable.
 
@@ -848,8 +854,8 @@
 	type here, instead add "omp declare target implicit" attribute.
 	(finish_decl): Diagnose vars without mappable type here.
 
-2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
-	    Thomas Schwinge <thomas@codesourcery.com>
+2018-06-20  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
 	* c-parser.c (c_parser_omp_clause_name): Add support for finalize
@@ -1092,7 +1098,7 @@
 	PR c/82679
 	* c-decl.c (grokdeclarator): Check declspecs insted of atomicp.
 
-2017-12-12  Alexandre Oliva <aoliva@redhat.com>
+2017-12-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* c-objc-common.h (LANG_HOOKS_EMITS_BEGIN_STMT): Redefine as true.
 	* c-parser.c (add_debug_begin_stmt): New.
@@ -1204,7 +1210,7 @@
 	* c-typeck.c (c_start_case): Build SWITCH_EXPR using build2 instead
 	of build3.
 
-2017-11-14 Boris Kolpackov  <boris@codesynthesis.com>
+2017-11-14  Boris Kolpackov  <boris@codesynthesis.com>
 
 	* Make-lang.in (c.install-plugin): Install backend import library.
 
@@ -1612,7 +1618,7 @@
 
 	PR c/81417
 	* c-array-notation.c (fix_builtin_array_notation_fn): Update calls to
-	build_conditional_expr.	
+	build_conditional_expr.
 	* c-parser.c (c_parser_conditional_expression): Create locations for
 	EXP1 and EXP2 from their source ranges.  Pass the locations down to
 	build_conditional_expr.
@@ -1640,7 +1646,7 @@
 	* c-warn.c (warn_for_multistatement_macros): Prevent bogus
 	warnings.  Avoid walking MACRO_MAP_LOCATIONS.
 
-2017-07-31  Jan Hubicka <hubicka@ucw.cz>
+2017-07-31  Jan Hubicka  <hubicka@ucw.cz>
 	    Martin Liska  <mliska@suse.cz>
 
 	* c-typeck.c (c_finish_goto_label): Build gimple predict
@@ -1836,7 +1842,7 @@
 	* c-convert.c (convert): Replace c_save_expr with save_expr.  Don't
 	call c_fully_fold.
 	(convert) <case COMPLEX_TYPE>: Remove special handling of COMPLEX_TYPEs.
-	* c-decl.c (grokdeclarator): Replace c_save_expr with save_expr. 
+	* c-decl.c (grokdeclarator): Replace c_save_expr with save_expr.
 	* c-fold.c (c_fully_fold_internal): Handle SAVE_EXPR.
 	* c-parser.c (c_parser_declaration_or_fndef): Replace c_save_expr with
 	save_expr.
@@ -2068,7 +2074,7 @@
 	set_c_expr_source_range when parsing ssa-name.
 
 2017-02-10  Prasad Ghangal  <prasad.ghangal@gmail.com>
-	Richard Biener  <rguenther@suse.de>
+	    Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.c (c_parser_gimple_binary_expression): Avoid
 	building IL when arguments are error_mark_node.
@@ -3513,7 +3519,6 @@
 	    Julian Brown  <julian@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 
-	c/
 	* c-parser.c (c_parser_declaration_or_fndef): Add OpenACC
 	routine arg.
 	(c_parser_declaration_or_fndef): Call c_finish_oacc_routine.
@@ -4935,7 +4940,7 @@
 
 	PR c/49706
 	* c-typeck.c (parser_build_binary_op): Warn when logical not is used
-	on the left hand side operand of a comparison. 
+	on the left hand side operand of a comparison.
 
 2014-06-05  Marek Polacek  <polacek@redhat.com>
 
@@ -5753,7 +5758,7 @@
 	(build_cilk_spawn): New function.
 	(build_cilk_sync): Likewise.
 	* Makefile.in (c-decl.o): Added cilk.h in dependency list.
-	
+
 2013-10-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR other/33426
@@ -6038,7 +6043,7 @@
 
 	* c-array-notation.c (expand_array_notation_exprs): Added
 	ARRAY_NOTATION_REF case.
-	
+
 2013-06-07  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-array-notation.c (length_mismatch_in_expr_p): Moved this
@@ -6054,7 +6059,7 @@
 	(replace_invariant_exprs): Initialized additional_tcodes to NULL.
 	(struct inv_list): Moved this to c-family/array-notation-common.c.
 	* c-tree.h (is_cilkplus_builtin_reduce): Remove prototype.
-	
+
 2013-06-05  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-typeck.c (convert_arguments): Moved checking of builtin cilkplus
@@ -6073,7 +6078,7 @@
 	to the end of function parsing.
 	* c-array-notation.c (fix_conditional_array_notations_1): Expanded the
 	whole if-statement instead of just the condition.
-	(expand_array_notation_exprs): Added MODIFY_EXPR case.	
+	(expand_array_notation_exprs): Added MODIFY_EXPR case.
 
 2013-06-03  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
@@ -6081,7 +6086,7 @@
 	* c-array-notation.c (build_array_notation_expr): Initialized rhs_length
 	array to NULL_TREE if they are unused.  Also added a check for the
 	field to be NULL before its fields are used in future.
-	
+
 2013-05-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/57450
@@ -6129,7 +6134,7 @@
 	(c_parser_array_notation): New function.
 	* c-array-notation.c: New file.
 	* c-tree.h (is_cilkplus_reduce_builtin): Protoize.
-	
+
 2013-05-23  Mike Stump  <mikestump@comcast.net>
 
 	* c-typeck.c (convert_for_assignment): Handle references to memory

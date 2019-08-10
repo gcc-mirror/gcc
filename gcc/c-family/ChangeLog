@@ -75,6 +75,11 @@
 	* c-omp.c (c_finish_omp_atomic): Allow tree_invariant_p in addition
 	to SAVE_EXPR in first operand of a COMPOUND_EXPR.
 
+2019-06-25  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* c-common.c (c_common_nodes_and_builtins): Define
+	alternate "__intN__" name for "__intN" types.
+
 2019-06-24  Jan Hubicka  <jh@suse.cz>
 
 	* c-common.c (braced_lists_to_strings): Check that
@@ -184,36 +189,36 @@
 
 2019-05-16  Martin Sebor  <msebor@redhat.com>
 
-        * c-attribs.c (handle_no_sanitize_attribute): Quote identifiers,
-        keywords, operators, and types in diagnostics.
-        (handle_scalar_storage_order_attribute): Same.
-        (handle_mode_attribute): Same.
-        (handle_visibility_attribute): Same.
-        (handle_assume_aligned_attribute): Same.
-        (handle_no_split_stack_attribute): Same.
-        * c-common.c (shorten_compare): Same.
-        (c_common_truthvalue_conversion): Same.
-        (cb_get_source_date_epoch): Same.
-        * c-lex.c (cb_def_pragma): Quote keywords, operators, and types
-        in diagnostics.
-        (interpret_float): Same.
-        * c-omp.c (c_finish_omp_for): Same.
-        * c-opts.c (c_common_post_options): Same.
-        * c-pch.c (c_common_pch_pragma): Same.
-        * c-pragma.c (pop_alignment): Same.
-        (handle_pragma_pack): Same.
-        (apply_pragma_weak): Same.
-        (handle_pragma_weak): Same.
-        (handle_pragma_scalar_storage_order): Same.
-        (handle_pragma_redefine_extname): Same.
-        (add_to_renaming_pragma_list): Same.
-        (maybe_apply_renaming_pragma): Same.
-        (push_visibility): Same.
-        (handle_pragma_visibility): Same.
-        (handle_pragma_optimize): Same.
-        (handle_pragma_message): Same.
-        * c-warn.c (warn_for_omitted_condop): Same.
-        (lvalue_error): Same.
+	* c-attribs.c (handle_no_sanitize_attribute): Quote identifiers,
+	keywords, operators, and types in diagnostics.
+	(handle_scalar_storage_order_attribute): Same.
+	(handle_mode_attribute): Same.
+	(handle_visibility_attribute): Same.
+	(handle_assume_aligned_attribute): Same.
+	(handle_no_split_stack_attribute): Same.
+	* c-common.c (shorten_compare): Same.
+	(c_common_truthvalue_conversion): Same.
+	(cb_get_source_date_epoch): Same.
+	* c-lex.c (cb_def_pragma): Quote keywords, operators, and types
+	in diagnostics.
+	(interpret_float): Same.
+	* c-omp.c (c_finish_omp_for): Same.
+	* c-opts.c (c_common_post_options): Same.
+	* c-pch.c (c_common_pch_pragma): Same.
+	* c-pragma.c (pop_alignment): Same.
+	(handle_pragma_pack): Same.
+	(apply_pragma_weak): Same.
+	(handle_pragma_weak): Same.
+	(handle_pragma_scalar_storage_order): Same.
+	(handle_pragma_redefine_extname): Same.
+	(add_to_renaming_pragma_list): Same.
+	(maybe_apply_renaming_pragma): Same.
+	(push_visibility): Same.
+	(handle_pragma_visibility): Same.
+	(handle_pragma_optimize): Same.
+	(handle_pragma_message): Same.
+	* c-warn.c (warn_for_omitted_condop): Same.
+	(lvalue_error): Same.
 
 2019-05-15  Richard Biener  <rguenther@suse.de>
 
@@ -221,7 +226,7 @@
 	* c-common.c (c_common_mark_addressable_vec): Also mark
 	a COMPOUND_LITERAL_EXPR_DECL addressable similar to
 	c_mark_addressable.
- 
+
 2019-05-06  Nathan Sidwell  <nathan@acm.org>
 
 	* c-opts.c (handle_defered_opts): Rename struct deps to struc mkdeps.
@@ -284,7 +289,7 @@
 
 2019-04-05  Marek Polacek  <polacek@redhat.com>
 
-	PR c++/89973 - -Waddress-of-packed-member ICE with invalid conversion. 
+	PR c++/89973 - -Waddress-of-packed-member ICE with invalid conversion.
 	* c-warn.c (check_address_or_pointer_of_packed_member): Check the type
 	of RHS.
 
@@ -1056,7 +1061,7 @@
 2018-08-01  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/86650
-	* c-family/c-format.c (gcc_tdiag_char_table): Update comment for "%G".
+	* c-format.c (gcc_tdiag_char_table): Update comment for "%G".
 	(gcc_cdiag_char_table, gcc_cxxdiag_char_table): Same.
  	(init_dynamic_diag_info): Update from "gcall *" to "gimple *".
  	* c-format.h (T89_G): Update to be "gimple *" rather than
@@ -1095,7 +1100,7 @@
 2018-07-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/82063
-	* gcc/c-family/c.opt (-Warray-bounds): Remove redundant -Wall.
+	* c.opt (-Warray-bounds): Remove redundant -Wall.
 
 2018-07-20  Martin Sebor  <msebor@redhat.com>
 
@@ -1175,8 +1180,8 @@
 
 	* cppspec.c: Include opt-suggestions.h.
 
-2018-06-20  Chung-Lin Tang <cltang@codesourcery.com>
-	    Thomas Schwinge <thomas@codesourcery.com>
+2018-06-20  Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
 	* c-pragma.h (enum pragma_omp_clause): Add
@@ -1265,7 +1270,7 @@
 
 	PR c/55976
 	* c-opts.c (c_common_post_options): Set default for warn_return_type
-	for C++/C++ with ObjC extensions only. For C, makes it possible to 
+	for C++/C++ with ObjC extensions only. For C, makes it possible to
 	differentiate between default (no option), -Wreturn-type, and
 	-Wno-return-type.
 
@@ -1407,12 +1412,12 @@
 2018-03-12  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/83456
-	* gcc/c-family/c-common.c (check_function_restrict): Return bool.
+	* c-common.c (check_function_restrict): Return bool.
 	Restore checking of bounded built-in functions.
 	(check_function_arguments): Also return the result
 	of warn_for_restrict.
-	* gcc/c-family/c-common.c (check_function_restrict): Return bool.
-	* gcc/c-family/c-warn.c (warn_for_restrict): Return bool.
+	* c-common.c (check_function_restrict): Return bool.
+	* c-warn.c (warn_for_restrict): Return bool.
 
 2018-03-02  Marek Polacek  <polacek@redhat.com>
 
@@ -1623,7 +1628,7 @@
 	* c-pragma.c (init_pragma): Register pragma GCC unroll.
 	* c-pragma.h (enum pragma_kind): Add PRAGMA_UNROLL.
 
-2017-12-22  Alexandre Oliva <aoliva@redhat.com>
+2017-12-22  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/83527
 	PR debug/83419
@@ -1677,7 +1682,7 @@
 	Adjust the size of buf1 and buf2, add a new buf to avoid
 	format-overflow warning.
 
-2017-12-12  Alexandre Oliva <aoliva@redhat.com>
+2017-12-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* c-semantics.c (pop_stmt_list): Move begin stmt marker into
 	subsequent statement list.
@@ -1981,7 +1986,7 @@
 	rather than DECL_INITIAL.
 	(common_handle_aligned_attribute): Likewise.
 
-2017-09-20  Alexandre Oliva <aoliva@redhat.com>
+2017-09-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* c.opt (gen-decls): Add RejectNegative.
 
@@ -2043,7 +2048,7 @@
 	* c-warn.c (warn_tautological_bitwise_comparison): New function.
 	(warn_tautological_cmp): Call it.
 
-2017-09-01  Boris Kolpackov <boris@codesynthesis.com>
+2017-09-01  Boris Kolpackov  <boris@codesynthesis.com>
 
 	* c-opts.c (c_common_finish): Write dependency information even if
 	there are errors.
@@ -2134,7 +2139,7 @@
 	* c-format.c (struct format_check_context): Add field "arglocs".
 	(check_function_format): Add param "arglocs"; pass it to
 	check_format_info.
-	(check_format_info):  Add param "arglocs"; use it to initialize
+	(check_format_info): Add param "arglocs"; use it to initialize
 	new field of format_ctx.
 	(check_format_arg): Pass format_ctx->arglocs to new param of
 	check_format_info_main.
@@ -2802,7 +2807,7 @@
 	PR middle-end/77708
 	* c.opt (-Wformat-truncation): New option.
 
-2017-01-06  Alexandre Oliva <aoliva@redhat.com>
+2017-01-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* c-pretty-print.c (pp_c_tree_decl_identifier): Convert 16-bit
 	value to unsigned short to fit in 4 hex digits without
@@ -3413,7 +3418,7 @@
 	(format_warning_va): Move to substring-locations.c.
 	(format_warning_at_substring): Likewise.
 
-2016-09-06 Martin Sebor  <msebor@redhat.com>
+2016-09-06  Martin Sebor  <msebor@redhat.com>
 
 	PR c/77336
 	* c-format.c (check_function_format): Avoid issuing warnings for
@@ -5883,7 +5888,7 @@
 	Commentary and rearrangement of tests.
 	* g++.dg/cpp1y/feat-cxx14.C: Enable aggregate NSDMI test.
 	Commentary and rearrangement of tests.
-	* g++.dg/cpp1y/feat-cxx98-neg.C: Ditto
+	* g++.dg/cpp1y/feat-cxx98-neg.C: Ditto.
 	* g++.dg/cpp1y/feat-cxx98.C: Commentary.
 
 2014-10-29  Richard Sandiford  <richard.sandiford@arm.com>
@@ -6273,7 +6278,7 @@
 
 2014-08-03  Marek Polacek  <polacek@redhat.com>
 
-	* c-common.c (check_case_value):  Add location_t parameter.  Use it.
+	* c-common.c (check_case_value): Add location_t parameter.  Use it.
 	(c_add_case_label): Pass loc to check_case_value.
 
 2014-08-02  Trevor Saunders  <tsaunders@mozilla.com>
@@ -6630,7 +6635,7 @@
 	* c-common.h (registered_builtin_types): Declare.
 
 2014-04-14  Richard Biener  <rguenther@suse.de>
-	Marc Glisse  <marc.glisse@inria.fr>
+	    Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c/60819
 	* c-common.c (convert_vector_to_pointer_for_subscript): Properly
@@ -6890,7 +6895,7 @@
 	* c-common.c (c_common_attribute_table): Added "cilk simd function"
 	attribute.
 	* c-pragma.h (enum pragma_cilk_clause): Remove.
-	(enum pragma_omp_clause):  Added the following fields:
+	(enum pragma_omp_clause): Added the following fields:
 	PRAGMA_CILK_CLAUSE_NOMASK, PRAGMA_CILK_CLAUSE_MASK,
 	PRAGMA_CILK_CLAUSE_VECTORLENGTH, PRAGMA_CILK_CLAUSE_NONE,
 	PRAGMA_CILK_CLAUSE_LINEAR, PRAGMA_CILK_CLAUSE_PRIVATE,
@@ -6964,8 +6969,8 @@
 2013-11-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* c-common.c: Add required include files from gimple.h.
-	* c-gimplify.c: Likewise
-	* cilk.c: Likewise
+	* c-gimplify.c: Likewise.
+	* cilk.c: Likewise.
 
 2013-11-22  David Malcolm  <dmalcolm@redhat.com>
 
@@ -7475,7 +7480,7 @@
 	(pp_c_direct_abstract_declarator): Likewise.
 	* c-pretty-print.c (c_pretty_printer::abstract_declarator): Rename
 	from pp_c_abstract_declarator.  Adjust.
-	(c_pretty_printer::direct_abstract_declarator):  Rename from
+	(c_pretty_printer::direct_abstract_declarator): Rename from
 	pp_c_direct_abstract_declarator.  Adjust.
 	(c_pretty_printer::function_specifier): Rename from
 	pp_c_function_specifier.  Adjust.
@@ -7957,15 +7962,15 @@
 	* c-opts.c (c_common_handle_option): Do not handle Wformat here.
 	* c-format.c (set_Wformat): Delete.
 	(decode_format_attr): Replace OPT_Wformat with OPT_Wformat_.
-	(maybe_read_dollar_number):  Likewise.
-	(avoid_dollar_number):  Likewise.
-	(finish_dollar_format_checking):  Likewise.
-	(check_format_info):  Likewise.
-	(check_format_info_main):  Likewise.
-	(check_format_types):  Likewise.
-	(format_type_warning):  Likewise.
-	* c-common.c (int):  Likewise.
-	(check_function_sentinel):  Likewise.
+	(maybe_read_dollar_number): Likewise.
+	(avoid_dollar_number): Likewise.
+	(finish_dollar_format_checking): Likewise.
+	(check_format_info): Likewise.
+	(check_format_info_main): Likewise.
+	(check_format_types): Likewise.
+	(format_type_warning): Likewise.
+	* c-common.c (int): Likewise.
+	(check_function_sentinel): Likewise.
 	* c-common.h (warn_format,set_Wformat): Do not declare here.
 
 2012-11-07  Manuel López-Ibáñez  <manu@gcc.gnu.org>
@@ -8313,7 +8318,7 @@
 2012-05-16  Dodji Seketeli  <dodji@redhat.com>
 
 	PR preprocessor/7263
-	* c-lex.c (c_lex_with_flags):  Pass a virtual location to the call
+	* c-lex.c (c_lex_with_flags): Pass a virtual location to the call
 	to cpp_classify_number.  For diagnostics, use the precise location
 	instead of the global input_location.
 
@@ -8389,7 +8394,7 @@
 2012-04-30  Dodji Seketeli  <dodji@redhat.com>
 
 	Add -Wvarargs option
-	* c.opt (Wvarargs):  Define new option.
+	* c.opt (Wvarargs): Define new option.
 
 2012-04-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
@@ -8589,7 +8594,7 @@
 2011-11-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/51010
-	c-family/
+	* c-pretty-print.c (pp_c_expression): Handle SSA_NAMEs.
 
 2011-11-07  Richard Henderson  <rth@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
@@ -9525,7 +9530,7 @@
 	first_target_format_type: New variable.
 	(handle_format_attribute): Set up first_target_format_type, pass the
 	expected format arg string type to check_format_string().
-	* c-common.h (FMT_FLAG_PARSE_ARG_CONVERT_EXTERNAL):  New flag.
+	* c-common.h (FMT_FLAG_PARSE_ARG_CONVERT_EXTERNAL): New flag.
 	* stub-objc.c (objc_string_ref_type_p): New.
 	(objc_check_format_arg): New.
 
@@ -9670,7 +9675,7 @@
 
 	Merge from 'apple/trunk' branch on FSF servers.
 
-	2006-03-27 Fariborz Jahanian  <fjahanian@apple.com>
+	2006-03-27  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 4133425
 	* c-common.h (objc_diagnose_private_ivar): New decl.
@@ -9712,7 +9717,7 @@
 2010-10-13  Iain Sandoe  <iains@gcc.gnu.org>
 
 	merge from FSF apple 'trunk' branch.
-	2006-04-26 Fariborz Jahanian  <fjahanian@apple.com>
+	2006-04-26  Fariborz Jahanian  <fjahanian@apple.com>
 
 	Radar 3803157 (method attributes)
 	* c-common.c (handle_deprecated_attribute): Recognize
