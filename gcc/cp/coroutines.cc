@@ -1384,8 +1384,12 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
   tree var_decl = *stmt;
   /* Look inside cleanups, we don't want to wrap a statement list in a
      cleanup.  */
+  bool needs_cleanup = true;
   if (TREE_CODE(var_decl) == CLEANUP_POINT_EXPR)
     var_decl = TREE_OPERAND (var_decl, 0);
+  else
+    needs_cleanup = false;
+
   /* Look inside the decl_expr for the actual var.  */
   bool decl_expr_p = TREE_CODE(var_decl) == DECL_EXPR;
   if (decl_expr_p && TREE_CODE (DECL_EXPR_DECL (var_decl)) == VAR_DECL)
@@ -1404,37 +1408,15 @@ transform_local_var_uses (tree *stmt, int *do_subtree, void *d)
   tree revised = local_var_info->field_idx;
   gcc_checking_assert (DECL_CONTEXT (var_decl) == lvd->context);
 
-  if (decl_expr_p)
+  if (decl_expr_p && DECL_INITIAL (var_decl))
     {
       location_t loc = DECL_SOURCE_LOCATION (var_decl);
-      tree init_and_copy = push_stmt_list ();
-      /* Just copy the original cleanup/DECL, including any init, the
-	 contained var's context should have been re-written when its bind
-	 expression was processed.  */
-      add_stmt (*stmt);
-      tree r;
-      /* Now add an initialiser for the frame version of this var, with the
-	 intent that the obvious optimisation will get done.  */
-      if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (var_decl)))
-	{
-	  vec<tree, va_gc> *p_in;
-	  if (classtype_has_move_assign_or_move_ctor_p (TREE_TYPE (var_decl),
-	      true /* user-declared */))
-	    p_in = make_tree_vector_single (rvalue (var_decl));
-	  else
-	    p_in = make_tree_vector_single (var_decl);
-	  /* Construct in place or move as relevant.  */
-	  r = build_special_member_call (revised, complete_ctor_identifier,
-					 &p_in, TREE_TYPE (var_decl),
-					 LOOKUP_NORMAL, tf_warning_or_error);
-	  release_tree_vector (p_in);
-	}
-      else
-	r = cp_build_modify_expr (loc, revised, INIT_EXPR, var_decl,
-				  tf_warning_or_error);
-      r = coro_build_cvt_void_expr_stmt (r, EXPR_LOCATION (*stmt));
-      add_stmt (r);
-      *stmt = pop_stmt_list (init_and_copy);
+      tree r = cp_build_modify_expr (loc, revised, INIT_EXPR,
+				     DECL_INITIAL (var_decl),
+				     tf_warning_or_error);
+      if (needs_cleanup)
+	r = coro_build_cvt_void_expr_stmt (r, EXPR_LOCATION (*stmt));
+      *stmt = r;
     }
   else
     *stmt = revised;
