@@ -1,4 +1,4 @@
-2019-08-02  Alexandre Oliva <oliva@adacore.com>
+2019-08-02  Alexandre Oliva  <oliva@adacore.com>
 
 	* libgnat/a-exexpr.adb (Begin_Handler_v1, End_Handler_v1): New.
 	(Claimed_Cleanup): New.
@@ -281,7 +281,7 @@
 
 2019-07-22  Ed Schonberg  <schonberg@adacore.com>
 
-	* freeze.adb (Freeze_Fixed_Point_Type):  When freezing a
+	* freeze.adb (Freeze_Fixed_Point_Type): When freezing a
 	fixed-point subtype, check whether the parent type declarastion
 	includes an aspect specification for the 'Small type attribute,
 	and inherit the specified value.
@@ -1945,7 +1945,7 @@
 	* libgnat/g-traceb.ads, libgnat/g-traceb.adb (Call_Chain): New
 	function.
 
-2019-07-04  James Clarke <jrtc27@debian.org>
+2019-07-04  James Clarke  <jrtc27@debian.org>
 
 	* libgnarl/s-osinte__kfreebsd-gnu.ads (clockid_t): Make type
 	definition public.
@@ -2508,7 +2508,7 @@
 
 2019-07-03  Ed Schonberg  <schonberg@adacore.com>
 
-	* inline.adb (Make_Loop_Labels_Unique):  New procedure to modify
+	* inline.adb (Make_Loop_Labels_Unique): New procedure to modify
 	the source code of subprograms that are inlined by the
 	front-end, to prevent accidental duplication between loop labels
 	in the inlined code and the code surrounding the inlined call.
