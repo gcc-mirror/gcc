@@ -1,3 +1,11 @@
+2019-08-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90893
+	* runtime.cc (enum libcall_type): Rename to...
+	(enum d_libcall_type): ...this.
+	(get_libcall_type): Use d_libcall_type.
+	(build_libcall_decl): Likewise.
+
 2019-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/90559
