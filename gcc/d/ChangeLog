@@ -1,5 +1,11 @@
 2019-08-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
+	PR d/91238
+	* d-codegen.cc (build_address): If taking the address of a CALL_EXPR,
+	wrap it in a TARGET_EXPR.
+
+2019-08-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
 	PR d/90893
 	* runtime.cc (enum libcall_type): Rename to...
 	(enum d_libcall_type): ...this.
