@@ -4600,7 +4600,7 @@
 	* config/arm/sync.md
 	(@atomic_compare_and_swap<CCSI:arch><NARROW:mode>_1): Use
 	<NARROW:sync_predtab> instead of (implicitly) <CCSI:sync_predtab>.
-	(@atomic_compare_and_swap<CCSI:arch><SIDI:mode>_1): Likewise.
+	(@atomic_compare_and_swap<CCSI:arch><SIDI:mode>_1): Likewise use
 	<SIDI:sync_predtab>.  Use <SIDI:cas_cmp_operand> and
 	<SIDI:cas_cmp_str>.
 
