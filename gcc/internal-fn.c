@@ -2896,6 +2896,14 @@ expand_CO_YIELD (internal_fn, gcall *)
 }
 
 static void
+expand_CO_SUSPN (internal_fn, gcall *)
+{
+  /* should be expanded before here!  */
+  fprintf (stderr, "Unexpanded CO_SUSPN\n");
+  //gcc_unreachable ();
+}
+
+static void
 expand_CO_ACTOR (internal_fn, gcall *)
 {
   /* should be expanded before here!  */

@@ -59,6 +59,16 @@ lower_coro_builtin (gimple_stmt_iterator *gsi, bool *handled_ops_p,
   if (gimple_code (stmt) != GIMPLE_CALL)
     return NULL_TREE;
 
+  if (gimple_call_internal_p (stmt)
+      && gimple_call_internal_fn (stmt) == IFN_CO_SUSPN)
+    {
+      tree dest = TREE_OPERAND (gimple_call_arg (stmt, 0), 0);
+      ggoto *g = gimple_build_goto (dest);
+      gsi_replace (gsi, g, false /* don't re-do EH.  */);
+      *handled_ops_p = true;
+     return NULL_TREE;
+    }
+
   tree decl = gimple_call_fndecl (stmt);
   if (decl && fndecl_built_in_p (decl, BUILT_IN_NORMAL))
     {

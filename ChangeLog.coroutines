@@ -1,6 +1,17 @@
 2019-08-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/
+	* coroutine-passes.c (lower_coro_builtin): Lower IFN_CO_SUSPN.
+	* internal-fn.c (expand_CO_SUSPN): New.
+	* internal-fn.def (CO_SUSPN): New.
+
+	gcc/cp/ChangeLog:
+	* coroutines.cc (co_await_expander): Encode the scope exiting
+	return as an internal function.
+
+2019-08-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
 	* passes.def: Lower coroutine builtins after the EH/cleanup
 	expansions.
 

@@ -1055,6 +1055,8 @@ co_await_expander (tree *stmt, int */*do_subtree*/, void *d)
 		     destroy_label);
   tree r_l = build1 (ADDR_EXPR, build_reference_type (void_type_node),
 		     resume_label);
+  tree susp = build1 (ADDR_EXPR, build_reference_type (void_type_node),
+		     data->cororet);
   tree final_susp = build_int_cst (integer_type_node, is_final ? 1 : 0);
 
   susp_idx = build_int_cst (integer_type_node, data->index);
@@ -1073,7 +1075,8 @@ co_await_expander (tree *stmt, int */*do_subtree*/, void *d)
   r = build_case_label (build_int_cst (integer_type_node, 0), NULL_TREE,
 			create_anon_label_with_ctx (loc, actor));
   add_stmt (r); // case 0:
-  r = build1_loc (loc, GOTO_EXPR, void_type_node, data->cororet);
+  // Hide the suspend return from the cleanup machinery.
+  r =  build_call_expr_internal_loc (loc, IFN_CO_SUSPN, void_type_node, 1, susp);
   add_stmt (r); //   goto ret;
   r = build_case_label (build_int_cst (integer_type_node, 1), NULL_TREE,
 			create_anon_label_with_ctx (loc, actor));
