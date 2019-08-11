@@ -1,3 +1,8 @@
+2019-08-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90601
+	* gdc.dg/pr90601.d: New test.
+
 2019-08-10  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/boz_8.f90: Adjust error messages.
