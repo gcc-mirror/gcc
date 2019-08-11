@@ -367,11 +367,13 @@ execute_expand_coro_ifns (void)
 	    break;
 	  case IFN_CO_YIELD:
 	    {
-	    /* .CO_YIELD (NUM, FINAL, RES_LAB, DEST_LAB);
+	    /* .CO_YIELD (NUM, FINAL, RES_LAB, DEST_LAB, FRAME_PTR);
 	       NUM = await number.
 	       FINAL = 1 if this is the final_suspend() await.
 	       RES_LAB = resume point label.
 	       DEST_LAB = destroy point label.
+	       FRAME_PTR = is a null pointer with the type of the coro
+			   frame, so that we can resize, if needed.
 	    */
 	    if (dump_file)
 	      fprintf (dump_file, "saw CO_YIELD in BB %u\n", bb->index);

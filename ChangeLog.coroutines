@@ -1,6 +1,12 @@
 2019-08-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/
+	* coroutine-passes.c (execute_expand_coro_ifns): Update call
+	argument description.
+
+2019-08-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
 	* coroutine-passes.c (lower_coro_builtin): Lower IFN_CO_SUSPN.
 	* internal-fn.c (expand_CO_SUSPN): New.
 	* internal-fn.def (CO_SUSPN): New.
