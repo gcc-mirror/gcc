@@ -1,3 +1,9 @@
+2019-08-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90601
+	* d-convert.cc (convert_expr): Don't convert an expression to its
+	original front-end type before converting to its target type.
+
 2019-08-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/91238
