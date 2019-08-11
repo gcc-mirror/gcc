@@ -1,3 +1,12 @@
+2019-08-11  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/91413
+	* invoke.texi (-fmax-stack-var-size): Document increased default.
+	* options.c (gfc_post_options): Increase default stack var size to
+	65536 bytes.
+	* trans-decl.c (gfc_finish_var_decl): Generate warning when local
+	array moved to static storage.
+
 2019-08-10  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* decl.c (match_old_style_init): Use a clearer error message.
