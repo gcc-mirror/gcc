@@ -1,3 +1,8 @@
+2019-08-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
+	* internal-fn.def (CO_YIELD): Remove argument signature.
+
 2019-08-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
