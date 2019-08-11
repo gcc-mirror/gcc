@@ -37,9 +37,9 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_lower_omp);
   NEXT_PASS (pass_lower_cf);
   NEXT_PASS (pass_lower_tm);
-  NEXT_PASS (pass_coroutine_lower_builtins);
   NEXT_PASS (pass_refactor_eh);
   NEXT_PASS (pass_lower_eh);
+  NEXT_PASS (pass_coroutine_lower_builtins);
   NEXT_PASS (pass_build_cfg);
   NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_expand_omp);
