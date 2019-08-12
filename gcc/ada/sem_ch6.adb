@@ -8420,11 +8420,12 @@ package body Sem_Ch6 is
 
    begin
       --  This check applies only if we have a subprogram declaration with an
-      --  untagged record type.
+      --  untagged record type that is conformant to the predefined op.
 
       if Nkind (Decl) /= N_Subprogram_Declaration
         or else not Is_Record_Type (Typ)
         or else Is_Tagged_Type (Typ)
+        or else Etype (Next_Formal (First_Formal (Eq_Op))) /= Typ
       then
          return;
       end if;
