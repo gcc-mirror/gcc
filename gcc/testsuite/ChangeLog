@@ -1,3 +1,9 @@
+2019-08-12  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat.dg/generic_inst7.adb, gnat.dg/generic_inst7_pkg.adb,
+	gnat.dg/generic_inst7_pkg.ads, gnat.dg/generic_inst7_types.ads:
+	New testcase.
+
 2019-08-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/equal10.adb, gnat.dg/equal10.ads: New testcase.
