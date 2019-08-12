@@ -11229,12 +11229,12 @@ package body Exp_Ch4 is
 
       --     Tnn : typ'Base := typ'Base (x);
       --     [constraint_error when Tnn < typ'First or else Tnn > typ'Last]
-      --     Tnn
+      --     typ (Tnn)
 
       --  This is necessary when there is a conversion of integer to float or
       --  to fixed-point to ensure that the correct checks are made. It is not
-      --  necessary for float to float where it is enough to simply set the
-      --  Do_Range_Check flag.
+      --  necessary for the float-to-float case where it is enough to just set
+      --  the Do_Range_Check flag on the expression.
 
       procedure Real_Range_Check is
          Btyp : constant Entity_Id := Base_Type (Target_Type);
@@ -11246,6 +11246,7 @@ package body Exp_Ch4 is
          Hi_Val : Node_Id;
          Lo_Arg : Node_Id;
          Lo_Val : Node_Id;
+         Expr   : Entity_Id;
          Tnn    : Entity_Id;
 
       begin
@@ -11255,6 +11256,12 @@ package body Exp_Ch4 is
             return;
          end if;
 
+         Expr := Expression (N);
+
+         --  Clear the flag once for all
+
+         Set_Do_Range_Check (Expr, False);
+
          --  Nothing to do if range checks suppressed, or target has the same
          --  range as the base type (or is the base type).
 
@@ -11263,22 +11270,24 @@ package body Exp_Ch4 is
                       and then
                     Hi = Type_High_Bound (Btyp))
          then
-            --  Unset the range check flag on the current value of
-            --  Expression (N), since the captured Operand may have
-            --  been rewritten (such as for the case of a conversion
-            --  to a fixed-point type).
-
-            Set_Do_Range_Check (Expression (N), False);
             return;
          end if;
 
          --  Nothing to do if expression is an entity on which checks have been
          --  suppressed.
 
-         if Is_Entity_Name (Operand)
-           and then Range_Checks_Suppressed (Entity (Operand))
+         if Is_Entity_Name (Expr)
+           and then Range_Checks_Suppressed (Entity (Expr))
          then
-            Set_Do_Range_Check (Expression (N), False);
+            return;
+         end if;
+
+         --  Nothing to do if expression was rewritten into a float-to-float
+         --  conversion, since this kind of conversions is handled elsewhere.
+
+         if Is_Floating_Point_Type (Etype (Expr))
+           and then Is_Floating_Point_Type (Target_Type)
+         then
             return;
          end if;
 
@@ -11288,12 +11297,12 @@ package body Exp_Ch4 is
          --  not trust it to be in range (might be infinite)
 
          declare
-            S_Lo : constant Node_Id := Type_Low_Bound (Operand_Type);
-            S_Hi : constant Node_Id := Type_High_Bound (Operand_Type);
+            S_Lo : constant Node_Id := Type_Low_Bound (Etype (Expr));
+            S_Hi : constant Node_Id := Type_High_Bound (Etype (Expr));
 
          begin
-            if (not Is_Floating_Point_Type (Operand_Type)
-                 or else Is_Constrained (Operand_Type))
+            if (not Is_Floating_Point_Type (Etype (Expr))
+                 or else Is_Constrained (Etype (Expr)))
               and then Compile_Time_Known_Value (S_Lo)
               and then Compile_Time_Known_Value (S_Hi)
               and then Compile_Time_Known_Value (Hi)
@@ -11306,7 +11315,7 @@ package body Exp_Ch4 is
                   S_Hiv : Ureal;
 
                begin
-                  if Is_Real_Type (Operand_Type) then
+                  if Is_Real_Type (Etype (Expr)) then
                      S_Lov := Expr_Value_R (S_Lo);
                      S_Hiv := Expr_Value_R (S_Hi);
                   else
@@ -11318,7 +11327,6 @@ package body Exp_Ch4 is
                     and then S_Lov >= D_Lov
                     and then S_Hiv <= D_Hiv
                   then
-                     Set_Do_Range_Check (Expression (N), False);
                      return;
                   end if;
                end;
@@ -11327,18 +11335,21 @@ package body Exp_Ch4 is
 
          --  Otherwise rewrite the conversion as described above
 
-         Set_Do_Range_Check (Expression (N), False);
+         Conv := Convert_To (Btyp, Expr);
 
-         Conv := Relocate_Node (N);
-         Rewrite (Subtype_Mark (Conv), New_Occurrence_Of (Btyp, Loc));
-         Set_Etype (Conv, Btyp);
+         --  If a conversion is necessary, then copy the specific flags from
+         --  the original one and also move the Do_Overflow_Check flag since
+         --  this new conversion is to the base type.
 
-         --  Enable overflow except for case of integer to float conversions,
-         --  where it is never required, since we can never have overflow in
-         --  this case.
+         if Nkind (Conv) = N_Type_Conversion then
+            Set_Conversion_OK  (Conv, Conversion_OK  (N));
+            Set_Float_Truncate (Conv, Float_Truncate (N));
+            Set_Rounded_Result (Conv, Rounded_Result (N));
 
-         if not Is_Integer_Type (Operand_Type) then
-            Enable_Overflow_Check (Conv);
+            if Do_Overflow_Check (N) then
+               Set_Do_Overflow_Check (Conv);
+               Set_Do_Overflow_Check (N, False);
+            end if;
          end if;
 
          Tnn := Make_Temporary (Loc, 'T', Conv);
@@ -11361,26 +11372,23 @@ package body Exp_Ch4 is
          --  in systems where Duration is larger than Long_Integer.
 
          if Is_Ordinary_Fixed_Point_Type (Target_Type)
-           and then Is_Floating_Point_Type (Operand_Type)
-           and then RM_Size (Base_Type (Target_Type)) <=
-                    RM_Size (Standard_Long_Integer)
+           and then Is_Floating_Point_Type (Etype (Expr))
+           and then RM_Size (Btyp) <= RM_Size (Standard_Long_Integer)
            and then Nkind (Lo) = N_Real_Literal
            and then Nkind (Hi) = N_Real_Literal
          then
-            --  Find the integer type of the right size to perform an unchecked
-            --  conversion to the target fixed-point type.
-
             declare
-               Bfx_Type : constant Entity_Id := Base_Type (Target_Type);
-               Expr_Id  : constant Entity_Id :=
-                            Make_Temporary (Loc, 'T', Conv);
+               Expr_Id : constant Entity_Id := Make_Temporary (Loc, 'T', Conv);
                Int_Type : Entity_Id;
 
             begin
-               if RM_Size (Bfx_Type) > RM_Size (Standard_Integer) then
+               --  Find an integer type of the appropriate size to perform an
+               --  unchecked conversion to the target fixed-point type.
+
+               if RM_Size (Btyp) > RM_Size (Standard_Integer) then
                   Int_Type := Standard_Long_Integer;
 
-               elsif RM_Size (Bfx_Type) > RM_Size (Standard_Short_Integer) then
+               elsif RM_Size (Btyp) > RM_Size (Standard_Short_Integer) then
                   Int_Type := Standard_Integer;
 
                else
@@ -11388,9 +11396,9 @@ package body Exp_Ch4 is
                end if;
 
                --  Generate a temporary with the integer value. Required in the
-               --  CCG compiler to ensure that runtime checks reference this
+               --  CCG compiler to ensure that run-time checks reference this
                --  integer expression (instead of the resulting fixed-point
-               --  value) because fixed-point values are handled by means of
+               --  value because fixed-point values are handled by means of
                --  unsigned integer types).
 
                Insert_Action (N,
@@ -11443,7 +11451,8 @@ package body Exp_Ch4 is
                 Attribute_Name => Name_Last);
          end if;
 
-         --  Build code for range checking
+         --  Build code for range checking. Note that checks are suppressed
+         --  here since we don't want a recursive range check popping up.
 
          Insert_Actions (N, New_List (
            Make_Object_Declaration (Loc,
@@ -11464,10 +11473,10 @@ package body Exp_Ch4 is
                   Make_Op_Gt (Loc,
                     Left_Opnd  => Hi_Arg,
                     Right_Opnd => Hi_Val)),
-              Reason   => CE_Range_Check_Failed)));
+              Reason   => CE_Range_Check_Failed)),
+           Suppress => All_Checks);
 
-         Rewrite (N, New_Occurrence_Of (Tnn, Loc));
-         Analyze_And_Resolve (N, Btyp);
+         Rewrite (Expr, New_Occurrence_Of (Tnn, Loc));
       end Real_Range_Check;
 
       -----------------------------
