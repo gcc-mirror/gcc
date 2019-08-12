@@ -30,9 +30,9 @@ with Debug_A;  use Debug_A;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Expander; use Expander;
-with Exp_Disp; use Exp_Disp;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Ch7;  use Exp_Ch7;
+with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
@@ -51,12 +51,12 @@ with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
 with Sem_Aggr; use Sem_Aggr;
 with Sem_Attr; use Sem_Attr;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
-with Sem_Ch4;  use Sem_Ch4;
 with Sem_Ch3;  use Sem_Ch3;
+with Sem_Ch4;  use Sem_Ch4;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
@@ -67,9 +67,9 @@ with Sem_Elab; use Sem_Elab;
 with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
 with Sem_Intr; use Sem_Intr;
-with Sem_Util; use Sem_Util;
-with Targparm; use Targparm;
+with Sem_Mech; use Sem_Mech;
 with Sem_Type; use Sem_Type;
+with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
 with Sinfo.CN; use Sinfo.CN;
@@ -77,6 +77,7 @@ with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
 with Style;    use Style;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
@@ -4613,8 +4614,19 @@ package body Sem_Res is
 
                if Nkind (A) = N_Type_Conversion then
                   if Is_Scalar_Type (A_Typ) then
-                     Apply_Scalar_Range_Check
-                       (Expression (A), Etype (Expression (A)), A_Typ);
+
+                     --  Special case here tailored to Exp_Ch6.Is_Legal_Copy,
+                     --  which would prevent the check from being generated.
+                     --  This is for Starlet only though, so long obsolete.
+
+                     if Mechanism (F) = By_Reference
+                       and then Is_Valued_Procedure (Nam)
+                     then
+                        null;
+                     else
+                        Apply_Scalar_Range_Check
+                          (Expression (A), Etype (Expression (A)), A_Typ);
+                     end if;
 
                      --  In addition the return value must meet the constraints
                      --  of the object type (see the comment below).

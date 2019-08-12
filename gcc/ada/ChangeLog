@@ -1,5 +1,13 @@
 2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sem_res.adb: Add with & use clause for Sem_Mech and
+	alphabetize.
+	(Resolve_Actuals): Do not apply a scalar range check for the
+	source of a conversion whose result is passed by reference to a
+	valued procedure.
+
+2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* checks.adb (Insert_Valid_Check): Reset the Do_Range_Check flag
 	on the validated object.
 	* exp_ch6.adb (Add_Call_By_Copy_Code): Reset the Do_Range_Check
