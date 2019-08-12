@@ -1,3 +1,13 @@
+2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq): Expand the array equality if
+	either operand is a possibly unaligned slice.
+	* exp_ch6.adb (Expand_Simple_Function_Return): Do not generate a
+	copy for a possibly unaligned object if it is represented as a
+	scalar.
+	* exp_util.adb (Is_Possibly_Unaligned_Slice): Do not always
+	return false if the target doesn't have strict alignment.
+
 2019-08-12  Bob Duff  <duff@adacore.com>
 
 	* sem_ch12.adb (Instantiate_Package_Body): Remove suppression of

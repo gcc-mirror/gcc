@@ -8485,12 +8485,6 @@ package body Exp_Util is
          return False;
       end if;
 
-      --  We only need to worry if the target has strict alignment
-
-      if not Target_Strict_Alignment then
-         return False;
-      end if;
-
       --  If it is a slice, then look at the array type being sliced
 
       declare
