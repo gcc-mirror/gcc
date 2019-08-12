@@ -1,3 +1,9 @@
+2019-08-12  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst (gnatmetric, gnatpp,
+	gnatstub): Remove documentation for Ada language version
+	switches, and note that they are no longer needed.
+
 2019-08-12  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch5.adb (Prepare_Param_Spec_Loop): Set the parents of the
