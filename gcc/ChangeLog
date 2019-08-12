@@ -1,5 +1,11 @@
 2019-08-12  Richard Biener  <rguenther@suse.de>
 
+	PR lto/91375
+	* tree.c (free_lang_data_in_type): Do not free TYPE_BINFO dependent on
+	flag_devirtualize.
+
+2019-08-12  Richard Biener  <rguenther@suse.de>
+
 	PR driver/91130
 	* lto-wrapper.c (get_options_from_collect_gcc_options): Remove
 	lang_mask option, always use CL_DRIVER.
