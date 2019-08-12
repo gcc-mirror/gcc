@@ -201,7 +201,31 @@ package body Exp_SPARK is
       --  by the corresponding literal value.
 
       elsif Attr_Id = Attribute_Enum_Rep then
-         Exp_Attr.Expand_N_Attribute_Reference (N);
+         declare
+            Exprs : constant List_Id := Expressions (N);
+         begin
+            if Is_Non_Empty_List (Exprs) then
+               Expr := First (Exprs);
+            else
+               Expr := Prefix (N);
+            end if;
+
+            --  If the argument is a literal, expand it
+
+            if Nkind (Expr) in N_Has_Entity
+              and then
+                (Ekind (Entity (Expr)) = E_Enumeration_Literal
+                 or else
+                   (Nkind (Expr) in N_Has_Entity
+                    and then Ekind (Entity (Expr)) = E_Constant
+                    and then Present (Renamed_Object (Entity (Expr)))
+                    and then Is_Entity_Name (Renamed_Object (Entity (Expr)))
+                    and then Ekind (Entity (Renamed_Object (Entity (Expr)))) =
+                      E_Enumeration_Literal))
+            then
+               Exp_Attr.Expand_N_Attribute_Reference (N);
+            end if;
+         end;
 
       --  For attributes which return Universal_Integer, introduce a conversion
       --  to the expected type with the appropriate check flags set.
