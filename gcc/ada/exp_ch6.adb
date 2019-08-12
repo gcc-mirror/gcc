@@ -203,8 +203,8 @@ package body Exp_Ch6 is
    --  For all parameter modes, actuals that denote components and slices of
    --  packed arrays are expanded into suitable temporaries.
    --
-   --  For non-scalar objects that are possibly unaligned, add call by copy
-   --  code (copy in for IN and IN OUT, copy out for OUT and IN OUT).
+   --  For nonscalar objects that are possibly unaligned, add call by copy code
+   --  (copy in for IN and IN OUT, copy out for OUT and IN OUT).
    --
    --  For OUT and IN OUT parameters, add predicate checks after the call
    --  based on the predicates of the actual type.
@@ -2019,7 +2019,7 @@ package body Exp_Ch6 is
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
                Add_Simple_Call_By_Copy_Code;
 
-            --  If a non-scalar actual is possibly bit-aligned, we need a copy
+            --  If a nonscalar actual is possibly bit-aligned, we need a copy
             --  because the back-end cannot cope with such objects. In other
             --  cases where alignment forces a copy, the back-end generates
             --  it properly. It should not be generated unconditionally in the
@@ -2235,7 +2235,7 @@ package body Exp_Ch6 is
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
                Add_Simple_Call_By_Copy_Code;
 
-            --  If a non-scalar actual is possibly unaligned, we need a copy
+            --  If a nonscalar actual is possibly unaligned, we need a copy
 
             elsif Is_Possibly_Unaligned_Object (Actual)
               and then not Represented_As_Scalar (Etype (Formal))
@@ -7413,12 +7413,13 @@ package body Exp_Ch6 is
          end;
       end if;
 
-      --  If we are returning an object that may not be bit-aligned, then copy
-      --  the value into a temporary first. This copy may need to expand to a
-      --  loop of component operations.
+      --  If we are returning a nonscalar object that is possibly unaligned,
+      --  then copy the value into a temporary first. This copy may need to
+      --  expand to a loop of component operations.
 
       if Is_Possibly_Unaligned_Slice (Exp)
-        or else Is_Possibly_Unaligned_Object (Exp)
+        or else (Is_Possibly_Unaligned_Object (Exp)
+                  and then not Represented_As_Scalar (Etype (Exp)))
       then
          declare
             ExpR : constant Node_Id   := Relocate_Node (Exp);
