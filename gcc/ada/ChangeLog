@@ -1,3 +1,8 @@
+2019-08-12  Jerome Lambourg  <lambourg@adacore.com>
+
+	* libgnarl/s-taprop__vxworks.adb (Abort_Handler): Only call
+	s-tpopsp.Self when actually needed.
+
 2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch4.adb (Discrete_Range_Check): Return if checks are
