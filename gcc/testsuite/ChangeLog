@@ -1,3 +1,11 @@
+2019-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/83250
+	PR target/91340
+	* gcc.target/i386/avx-typecast-1.c: New test.
+	* gcc.target/i386/avx-typecast-2.c: New test.
+	* gcc.target/i386/avx512f-typecast-2.c: New test.
+
 2019-08-12  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/null_check.adb: New testcase.

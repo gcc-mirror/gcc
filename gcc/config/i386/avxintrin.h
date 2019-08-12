@@ -1484,6 +1484,26 @@ _mm256_castsi128_si256 (__m128i __A)
   return (__m256i) __builtin_ia32_si256_si ((__v4si)__A);
 }
 
+/* Similarly, but with zero extension instead of undefined values.  */
+
+extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_zextpd128_pd256 (__m128d __A)
+{
+  return _mm256_insertf128_pd (_mm256_setzero_pd (), __A, 0);
+}
+
+extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_zextps128_ps256 (__m128 __A)
+{
+  return _mm256_insertf128_ps (_mm256_setzero_ps (), __A, 0);
+}
+
+extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_zextsi128_si256 (__m128i __A)
+{
+  return _mm256_insertf128_si256 (_mm256_setzero_si256 (), __A, 0);
+}
+
 extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_set_m128 ( __m128 __H, __m128 __L)
 {
