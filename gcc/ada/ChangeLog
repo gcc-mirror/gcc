@@ -1,5 +1,10 @@
 2019-08-12  Bob Duff  <duff@adacore.com>
 
+	* libgnat/a-tifiio.adb (Put_Scaled): Prevent AA from being
+	negative, since Field is range 0 .. something.
+
+2019-08-12  Bob Duff  <duff@adacore.com>
+
 	* doc/gnat_ugn/gnat_utility_programs.rst (gnatmetric, gnatpp,
 	gnatstub): Remove documentation for Ada language version
 	switches, and note that they are no longer needed.
