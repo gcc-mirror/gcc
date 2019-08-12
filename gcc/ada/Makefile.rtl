@@ -171,6 +171,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-cwila1$(objext) \
   a-cwila9$(objext) \
   a-decima$(objext) \
+  a-dhfina$(objext) \
   a-diocst$(objext) \
   a-direct$(objext) \
   a-direio$(objext) \

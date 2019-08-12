@@ -1,3 +1,22 @@
+2019-08-12  Justin Squirek  <squirek@adacore.com>
+
+	* libgnat/a-dhfina.adb, libgnat/a-dhfina.ads (Is_Simple_Name,
+	Is_Root_Directory, Is_Parent_Directory,
+	Is_Current_Directory_Name, Is_Relative_Name, Initial_Directory,
+	Relative_Name, Compose): Add implementation and documentation.
+	* libgnat/a-direct.adb (Containing_Directory): Modify routine to
+	use routines from Ada.Directories.Hierarchical_File_Names and
+	remove incorrect special case for parent directories.
+	(Fetch_Next_Entry): Add check for current directory and parent
+	directory and ignore them under certain circumstances.
+	(Simple_Nmae): Add check for null result from
+	Simple_Name_Internal and raise Name_Error.
+	(Simple_Name_Internal): Add explicit check for root directories,
+	sanitize trailing directory separators, and modify behavior so
+	that current and parent directories are considered valid
+	results.
+	* Makefile.rtl: Add entry to GNATRTL_NONTASKING_OBJS.
+
 2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* freeze.adb (Freeze_Entity): Give the same error for an
