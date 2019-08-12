@@ -1,3 +1,7 @@
+2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/range_check6.adb: New testcase.
+
 2019-08-11  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/90601

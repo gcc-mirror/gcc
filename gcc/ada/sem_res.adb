@@ -4517,7 +4517,7 @@ package body Sem_Res is
                end if;
             end if;
 
-            if Etype (A) = Any_Type then
+            if A_Typ = Any_Type then
                Set_Etype (N, Any_Type);
                return;
             end if;
@@ -4539,18 +4539,10 @@ package body Sem_Res is
 
                --  Apply required constraint checks
 
-               --  Gigi looks at the check flag and uses the appropriate types.
-               --  For now since one flag is used there is an optimization
-               --  which might not be done in the IN OUT case since Gigi does
-               --  not do any analysis. More thought required about this ???
-
-               --  In fact is this comment obsolete??? doesn't the expander now
-               --  generate all these tests anyway???
-
-               if Is_Scalar_Type (Etype (A)) then
+               if Is_Scalar_Type (A_Typ) then
                   Apply_Scalar_Range_Check (A, F_Typ);
 
-               elsif Is_Array_Type (Etype (A)) then
+               elsif Is_Array_Type (A_Typ) then
                   Apply_Length_Check (A, F_Typ);
 
                elsif Is_Record_Type (F_Typ)
@@ -4624,9 +4616,8 @@ package body Sem_Res is
                      Apply_Scalar_Range_Check
                        (Expression (A), Etype (Expression (A)), A_Typ);
 
-                     --  In addition, the returned value of the parameter must
-                     --  satisfy the bounds of the object type (see comment
-                     --  below).
+                     --  In addition the return value must meet the constraints
+                     --  of the object type (see the comment below).
 
                      Apply_Scalar_Range_Check (A, A_Typ, F_Typ);
 
@@ -4650,6 +4641,7 @@ package body Sem_Res is
                     and then Ekind (F) = E_Out_Parameter
                   then
                      Apply_Length_Check (A, F_Typ);
+
                   else
                      Apply_Range_Check (A, A_Typ, F_Typ);
                   end if;
@@ -11757,6 +11749,8 @@ package body Sem_Res is
         and then (Is_Fixed_Point_Type (Operand_Typ)
                    or else (not GNATprove_Mode
                              and then Is_Floating_Point_Type (Operand_Typ)))
+        and then not Range_Checks_Suppressed (Target_Typ)
+        and then not Range_Checks_Suppressed (Operand_Typ)
       then
          Set_Do_Range_Check (Operand);
       end if;

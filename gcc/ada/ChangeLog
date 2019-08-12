@@ -1,5 +1,24 @@
 2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* checks.adb (Insert_Valid_Check): Reset the Do_Range_Check flag
+	on the validated object.
+	* exp_ch6.adb (Add_Call_By_Copy_Code): Reset the Do_Range_Check
+	flag on the actual here, as well as on the Expression if the
+	actual is a N_Type_Conversion node.
+	(Add_Validation_Call_By_Copy_Code): Generate the incoming range
+	check if needed and reset the Do_Range_Check flag on the
+	Expression if the actual is a N_Type_Conversion node.
+	(Expand_Actuals): Do not reset the Do_Range_Check flag here.
+	Generate the incoming range check for In parameters here instead
+	of...
+	(Expand_Call_Helper): ...here.  Remove redudant condition.
+	* sem_res.adb (Resolve_Actuals): Use local variable A_Typ and
+	remove obsolete comments.
+	(Resolve_Type_Conversion): Do not force the Do_Range_Check flag
+	on the operand if range checks are suppressed.
+
+2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* checks.adb (Activate_Range_Check): Remove redundant argument.
 	(Generate_Range_Check): Likewise.
 	(Apply_Float_Conversion_Check): Reset the Do_Range_Check flag on
