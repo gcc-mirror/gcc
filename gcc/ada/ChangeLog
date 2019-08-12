@@ -1,5 +1,14 @@
 2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* exp_ch4.adb (Real_Range_Check): Do not rewrite the conversion
+	node but its expression instead, after having fetched its
+	current value.  Clear the Do_Range_Check flag on entry.  Return
+	early for a rewritten float-to-float conversion.  Remove
+	redundant local variable.  Suppress all checks when inserting
+	the temporary and do not reanalyze the node.
+
+2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* sprint.ads: Minor comment tweak.
 
 2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
