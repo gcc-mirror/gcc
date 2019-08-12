@@ -10969,7 +10969,9 @@ package body Exp_Ch4 is
       -- Discrete_Range_Check --
       --------------------------
 
-      --  Case of conversions to a discrete type
+      --  Case of conversions to a discrete type. We let Generate_Range_Check
+      --  do the heavy lifting, after converting a fixed-point operand to an
+      --  appropriate integer type.
 
       procedure Discrete_Range_Check is
          Expr : Node_Id;
@@ -10983,6 +10985,21 @@ package body Exp_Ch4 is
          end if;
 
          Expr := Expression (N);
+
+         --  Nothing to do if range checks suppressed
+
+         if Range_Checks_Suppressed (Target_Type) then
+            return;
+         end if;
+
+         --  Nothing to do if expression is an entity on which checks have been
+         --  suppressed.
+
+         if Is_Entity_Name (Expr)
+           and then Range_Checks_Suppressed (Entity (Expr))
+         then
+            return;
+         end if;
 
          --  Before we do a range check, we have to deal with treating
          --  a fixed-point operand as an integer. The way we do this

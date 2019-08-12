@@ -1,5 +1,10 @@
 2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* exp_ch4.adb (Discrete_Range_Check): Return if checks are
+	suppressed.
+
+2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* sem_res.adb: Add with & use clause for Sem_Mech and
 	alphabetize.
 	(Resolve_Actuals): Do not apply a scalar range check for the
