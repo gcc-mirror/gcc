@@ -1,5 +1,15 @@
 2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* exp_util.ads (Component_May_Be_Bit_Aligned): Small comment
+	tweaks.
+	(Possible_Bit_Aligned_Component): Likewise.
+	(Type_May_Have_Bit_Aligned_Components): Likewise.
+	* exp_util.adb (Component_May_Be_Bit_Aligned): Likewise.
+	(Possible_Bit_Aligned_Component): Likewise.
+	(Type_May_Have_Bit_Aligned_Components): Likewise.
+
+2019-08-12  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* exp_ch4.adb (Expand_N_Op_Eq): Expand the array equality if
 	either operand is a possibly unaligned slice.
 	* exp_ch6.adb (Expand_Simple_Function_Return): Do not generate a

@@ -4444,8 +4444,8 @@ package body Exp_Util is
 
    begin
       --  If no component clause, then everything is fine, since the back end
-      --  never bit-misaligns by default, even if there is a pragma Packed for
-      --  the record.
+      --  never misaligns from byte boundaries by default, even if there is a
+      --  pragma Pack for the record.
 
       if No (Comp) or else No (Component_Clause (Comp)) then
          return False;
@@ -10707,9 +10707,9 @@ package body Exp_Util is
                Ptyp : constant Entity_Id := Etype (P);
 
             begin
-               --  If we know the component size and it is less than 64, then
-               --  we are definitely OK. The back end always does assignment of
-               --  misaligned small objects correctly.
+               --  If we know the component size and it is not larger than 64,
+               --  then we are definitely OK. The back end does the assignment
+               --  of misaligned small objects correctly.
 
                if Known_Static_Component_Size (Ptyp)
                  and then Component_Size (Ptyp) <= 64
@@ -10732,13 +10732,15 @@ package body Exp_Util is
                Comp : constant Entity_Id := Entity (Selector_Name (N));
 
             begin
-               --  If there is no component clause, then we are in the clear
-               --  since the back end will never misalign a large component
-               --  unless it is forced to do so. In the clear means we need
-               --  only the recursive test on the prefix.
+               --  This is the crucial test: if the component itself causes
+               --  trouble, then we can stop and return True.
 
                if Component_May_Be_Bit_Aligned (Comp) then
                   return True;
+
+               --  Otherwise, we need to test the prefix, to see if we are
+               --  selecting from a possibly unaligned component.
+
                else
                   return Possible_Bit_Aligned_Component (P);
                end if;
@@ -10751,7 +10753,7 @@ package body Exp_Util is
             return Possible_Bit_Aligned_Component (Prefix (N));
 
          --  For an unchecked conversion, check whether the expression may
-         --  be bit-aligned.
+         --  be bit aligned.
 
          when N_Unchecked_Type_Conversion =>
             return Possible_Bit_Aligned_Component (Expression (N));
@@ -13505,9 +13507,17 @@ package body Exp_Util is
          begin
             E := First_Component_Or_Discriminant (Typ);
             while Present (E) loop
-               if Component_May_Be_Bit_Aligned (E)
-                 or else Type_May_Have_Bit_Aligned_Components (Etype (E))
-               then
+               --  This is the crucial test: if the component itself causes
+               --  trouble, then we can stop and return True.
+
+               if Component_May_Be_Bit_Aligned (E) then
+                  return True;
+               end if;
+
+               --  Otherwise, we need to test its type, to see if it may
+               --  itself contain a troublesome component.
+
+               if Type_May_Have_Bit_Aligned_Components (Etype (E)) then
                   return True;
                end if;
 
