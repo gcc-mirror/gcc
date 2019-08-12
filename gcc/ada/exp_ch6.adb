@@ -1406,6 +1406,16 @@ package body Exp_Ch6 is
                Init := New_Occurrence_Of (Var, Loc);
             end if;
 
+         --  Access types are passed in without checks, but if a copy-back is
+         --  required for a null-excluding check on an in-out or out parameter,
+         --  then the initial value is that of the actual.
+
+         elsif Is_Access_Type (E_Formal)
+           and then Can_Never_Be_Null (Etype (Actual))
+           and then not Can_Never_Be_Null (E_Formal)
+         then
+            Init := New_Occurrence_Of (Var, Loc);
+
          else
             Init := Empty;
          end if;
@@ -1544,6 +1554,19 @@ package body Exp_Ch6 is
                         Type_Access_Level (E_Formal))));
 
                else
+                  if Is_Access_Type (E_Formal)
+                    and then Can_Never_Be_Null (Etype (Actual))
+                    and then not Can_Never_Be_Null (E_Formal)
+                  then
+                     Append_To (Post_Call,
+                       Make_Raise_Constraint_Error (Loc,
+                         Condition =>
+                           Make_Op_Eq (Loc,
+                             Left_Opnd  => New_Occurrence_Of (Temp, Loc),
+                             Right_Opnd => Make_Null (Loc)),
+                         Reason => CE_Access_Check_Failed));
+                  end if;
+
                   Append_To (Post_Call,
                     Make_Assignment_Statement (Loc,
                       Name       => Lhs,
@@ -1942,7 +1965,8 @@ package body Exp_Ch6 is
             Apply_Constraint_Check (Actual, E_Formal);
 
          --  Out parameter case. No constraint checks on access type
-         --  RM 6.4.1 (13)
+         --  RM 6.4.1 (13), but on return a null-excluding check may be
+         --  required (see below).
 
          elsif Is_Access_Type (E_Formal) then
             null;
@@ -2049,11 +2073,14 @@ package body Exp_Ch6 is
             --  formal subtype are not the same, requiring a check.
 
             --  It is necessary to exclude tagged types because of "downward
-            --  conversion" errors.
+            --  conversion" errors, but null-excluding checks on return may be
+            --  required.
 
             elsif Is_Access_Type (E_Formal)
-              and then not Same_Type (E_Formal, E_Actual)
               and then not Is_Tagged_Type (Designated_Type (E_Formal))
+              and then (not Same_Type (E_Formal, E_Actual)
+                or else (Can_Never_Be_Null (E_Actual)
+                          and then not Can_Never_Be_Null (E_Formal)))
             then
                Add_Call_By_Copy_Code;
 

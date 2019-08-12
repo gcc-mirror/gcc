@@ -1,5 +1,13 @@
 2019-08-12  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch6.adb (Expand_Actuals. Add_Call_By_Copy_Code): Add code
+	to generate proper checks when an actual for an in-out or out
+	parameter has a non-null access type.  No constraints are
+	applied to an inbound access parameter, but on exit a not-null
+	check must be performed if the type of the actual requires it.
+
+2019-08-12  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_util.adb (Is_Expaned_Priority_Attribute): Check whether
 	call comes from a rewritten attribute before comparing name with
 	Get_Ceiling run-time subprogram.
