@@ -1,5 +1,8 @@
 2019-08-12  Jason Merrill  <jason@redhat.com>
 
+	PR c++/91378 - ICE with noexcept and auto return type.
+	* pt.c (maybe_instantiate_noexcept): push_to_top_level.
+
 	PR c++/90538 - multiple expansions of capture packs
 	* cp-tree.h (DECLTYPE_FOR_INIT_CAPTURE): Remove.
 	* lambda.c (add_capture): Copy parameter packs from init.
