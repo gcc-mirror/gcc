@@ -401,32 +401,27 @@ package Exp_Util is
    --  case overflow.
 
    function Component_May_Be_Bit_Aligned (Comp : Entity_Id) return Boolean;
-   --  This function is in charge of detecting record components that may
-   --  cause trouble in the back end if an attempt is made to assign the
-   --  component. The back end can handle such assignments with no problem if
-   --  the components involved are small (64-bits or less) records or scalar
-   --  items (including bit-packed arrays represented with modular types) or
-   --  are both aligned on a byte boundary (starting on a byte boundary, and
-   --  occupying an integral number of bytes).
+   --  This function is in charge of detecting record components that may cause
+   --  trouble for the back end if an attempt is made to access the component
+   --  as a whole. The back end can handle such accesses with no problem if the
+   --  components involved are small (64 bits or less) records or scalar items
+   --  (including bit-packed arrays represented with a modular type), or else
+   --  if they are aligned on byte boundaries (i.e. starting on a byte boundary
+   --  and occupying an integral number of bytes).
    --
    --  However, problems arise for records larger than 64 bits, or for arrays
    --  (other than bit-packed arrays represented with a modular type) if the
-   --  component starts on a non-byte boundary, or does not occupy an integral
-   --  number of bytes (i.e. there are some bits possibly shared with fields
-   --  at the start or beginning of the component). The back end cannot handle
-   --  loading and storing such components in a single operation.
+   --  component either does not start on a byte boundary or does not occupy an
+   --  integral number of bytes (i.e. there are some bits possibly shared with
+   --  other components at the start or the end of the component). The back end
+   --  cannot handle loading from or storing to such components as a whole.
    --
-   --  This function is used to detect the troublesome situation. it is
-   --  conservative in the sense that it produces True unless it knows for
-   --  sure that the component is safe (as outlined in the first paragraph
-   --  above). The code generation for record and array assignment checks for
-   --  trouble using this function, and if so the assignment is generated
+   --  This function is used to detect the troublesome situation. It is meant
+   --  to be conservative in the sense that it produces True unless it knows
+   --  for sure that the component is safe (as outlined in the first paragraph
+   --  above). The processing for record and array assignment indirectly checks
+   --  for trouble using this function and, if so, the assignment is expanded
    --  component-wise, which the back end is required to handle correctly.
-   --
-   --  Note that in GNAT 3, the back end will reject such components anyway,
-   --  so the hard work in checking for this case is wasted in GNAT 3, but
-   --  it is harmless, so it is easier to do it in all cases, rather than
-   --  conditionalize it in GNAT 5 or beyond.
 
    function Containing_Package_With_Ext_Axioms
      (E : Entity_Id) return Entity_Id;
@@ -962,12 +957,12 @@ package Exp_Util is
    --  returned only if the replacement is safe.
 
    function Possible_Bit_Aligned_Component (N : Node_Id) return Boolean;
-   --  This function is used during processing the assignment of a record or
-   --  indexed component. The argument N is either the left hand or right hand
-   --  side of an assignment, and this function determines if there is a record
-   --  component reference where the record may be bit aligned in a manner that
-   --  causes trouble for the back end (see Component_May_Be_Bit_Aligned for
-   --  further details).
+   --  This function is used during processing the assignment of a record or an
+   --  array, or the construction of an aggregate. The argument N is either the
+   --  left or the right hand side of an assignment and the function determines
+   --  whether there is a record component reference where the component may be
+   --  bit aligned in a manner that causes trouble for the back end (see also
+   --  Component_May_Be_Bit_Aligned for further details).
 
    function Power_Of_Two (N : Node_Id) return Nat;
    --  Determines if N is a known at compile time value which  is of the form
@@ -1170,8 +1165,9 @@ package Exp_Util is
    function Type_May_Have_Bit_Aligned_Components
      (Typ : Entity_Id) return Boolean;
    --  Determines if Typ is a composite type that has within it (looking down
-   --  recursively at any subcomponents), a record type which has component
-   --  that may be bit aligned (see Possible_Bit_Aligned_Component). The result
+   --  recursively at subcomponents) a record which contains a component that
+   --  may be bit aligned in a manner that causes trouble for the back end
+   --  (see also Component_May_Be_Bit_Aligned for further details). The result
    --  is conservative, in that a result of False is decisive. A result of True
    --  means that such a component may or may not be present.
 
