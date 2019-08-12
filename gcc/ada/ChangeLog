@@ -1,3 +1,11 @@
+2019-08-12  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-except.ads: Update obsolete comment, still making
+	clear that this is a variant.  Add explicit default for Id
+	component of Exception_Occurrence, because that value is used.
+	Define Null_Occurrence less redundantly.
+	* libgnat/a-einuoc.adb: Minor simplification of code.
+
 2019-08-12  Justin Squirek  <squirek@adacore.com>
 
 	* libgnat/a-dhfina.adb, libgnat/a-dhfina.ads (Is_Simple_Name,
