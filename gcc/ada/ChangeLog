@@ -1,5 +1,11 @@
 2019-08-12  Bob Duff  <duff@adacore.com>
 
+	* libgnat/a-cbmutr.adb (Is_Reachable): Declare Idx to be of the
+	base subtype.  Clearly it makes no sense to loop "while Idx >=
+	0", if Idx is of a nonnegative subtype.
+
+2019-08-12  Bob Duff  <duff@adacore.com>
+
 	* libgnat/a-tifiio.adb (Put_Scaled): Prevent AA from being
 	negative, since Field is range 0 .. something.
 
